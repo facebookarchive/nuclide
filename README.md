@@ -4,6 +4,29 @@
 to provide IDE-like functionality for a variety of programming languages and
 technologies.
 
+### Important Early Access Notice
+
+**Nuclide is currently in a pre-release state, and we are providing early access
+to a small number of external users in order to help ensure the quality of the
+project at launch. During this time, please do not share the code more broadly -
+it is changing fast and we are looking for high quality feedback from a small
+number of initial users.**
+
+**As the project progresses over the coming weeks, we will be incrementally
+adding more of the Nuclide suite of packages in preparation for the full launch.
+The current release focusses on Hack, Flow, Mercurial, and remote development.
+It also includes some core utilities that will be used by the next set of
+packages, to be released very soon.**
+
+**We want to thank you for your patience and help in putting this project
+together. _Please_ feel free to raise issues and offer pull requests during this
+early access period, and we will work hard to get to them!**
+
+**Thanks!** - from all the Nuclide Team.
+
+
+## Packages
+
 Most developers choose to maintain individual Node and Atom packages in their
 own repositories. Because Nuclide is composed of so many packages, we chose to
 organize all of its code in a single repository rather than across a multitude of
