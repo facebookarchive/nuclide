@@ -1,0 +1,25 @@
+{
+  "name": "nuclide-commons",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "Provides common utilities for other Nuclide packages",
+  "nuclide": {
+    "packageType": "Node",
+    "testRunner": "npm"
+  },
+  "engines": {
+    "atom": ">0.194.0"
+  },
+  "dependencies": {
+    "dequeue": "1.0.5",
+    "nuclide-node-transpiler": "0.0.0",
+    "shell-escape": "0.2.0",
+    "temp": "0.8.1",
+    "rimraf": "2.2.8",
+    "mkdirp": "0.5.0"
+  },
+  "scripts": {
+    "test": "jasmine-node-transpiled spec"
+  }
+}

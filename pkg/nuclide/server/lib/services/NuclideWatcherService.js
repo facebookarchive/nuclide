@@ -1,0 +1,143 @@
+'use babel';
+/*
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ */
+
+/* @flow */
+
+var {fsPromise} = require('nuclide-commons');
+var path = require('path');
+var {EventEmitter} = require('events');
+var WatchmanClient = require('./WatchmanClient');
+
+var watchmanClient: ?WatchmanClient = null;
+
+type WatchEntry = {
+  eventEmitter: EventEmitter;
+  subscriptionCount: number;
+};
+
+var watchedFiles: {[filePath: string]: WatchEntry} = {};
+var watchedDirectories: {[directoryPath: string]: WatchEntry} = {};
+
+async function watchFile(filePath: string): Promise<number> {
+  var exists = await fsPromise.exists(filePath);
+  if (!exists) {
+    // Atom watcher behavior compatability.
+    throw new Error('Can\'t watch a non-existing file! : ' + filePath);
+  }
+  var realPath = await fsPromise.realpath(filePath);
+  var watchEntry = watchedFiles[realPath];
+  if (!watchEntry) {
+    watchEntry = watchedFiles[realPath] = {
+      eventEmitter: new EventEmitter(),
+      subscriptionCount: 0,
+    };
+  }
+  watchEntry.subscriptionCount++;
+  return this.registerEventEmitter(watchEntry.eventEmitter);
+}
+
+async function unwatchFile(filePath: string): Promise<void> {
+  var exists = await fsPromise.exists(filePath);
+  if (!exists) {
+    return;
+  }
+  var realPath = await fsPromise.realpath(filePath);
+  var watchEntry = watchedFiles[realPath];
+  if (watchEntry) {
+    if (--watchEntry.subscriptionCount === 0) {
+      delete watchedFiles[realPath];
+    }
+  }
+}
+
+async function watchDirectory(directoryPath: string): Promise<number> {
+  var exists = await fsPromise.exists(directoryPath);
+  if (!exists) {
+    return;
+  }
+  var realPath = await fsPromise.realpath(directoryPath);
+  var watchEntry = watchedDirectories[realPath];
+  if (!watchEntry) {
+    watchEntry = watchedDirectories[realPath] = {
+      eventEmitter: new EventEmitter(),
+      subscriptionCount: 0,
+    };
+  }
+  watchEntry.subscriptionCount++;
+  return this.registerEventEmitter(watchEntry.eventEmitter);
+}
+
+async function unwatchDirectory(directoryPath: string): Promise<void> {
+  var exists = await fsPromise.exists(directoryPath);
+  if (!exists) {
+    return;
+  }
+  var realPath = await fsPromise.realpath(directoryPath);
+  var watchEntry = watchedDirectories[realPath];
+  if (watchEntry) {
+    if (--watchEntry.subscriptionCount === 0) {
+      delete watchedDirectories[realPath];
+    }
+  }
+}
+
+async function watchDirectoryRecursive(directoryPath: string, channel: string): Promise {
+  watchmanClient = watchmanClient || new WatchmanClient();
+  if (watchmanClient.hasSubscription(directoryPath)) {
+    return;
+  }
+  var watcher = await watchmanClient.watchDirectoryRecursive(directoryPath);
+
+  watcher.on('change', (entries: Array<FileChange>) => {
+    this.publish(channel);
+
+    var directoryChanges = {};
+
+    for (var i = 0; i < entries.length; i++) {
+      var entry = entries[i];
+      var entryPath = path.join(watcher.root, entry.name);
+      if (watchedFiles[entryPath]) {
+        var fileWatcherEntry = watchedFiles[entryPath];
+        // TODO(most): handle `rename`, if needed.
+        if (!entry.exists) {
+          fileWatcherEntry.eventEmitter.emit('delete');
+        } else {
+          fileWatcherEntry.eventEmitter.emit('change');
+        }
+      } else if (entry.new || !entry.exists) {
+        var entryDirectoryPath = path.join(entryPath, '..');
+        if (watchedDirectories[entryDirectoryPath]) {
+          directoryChanges[entryDirectoryPath] = (directoryChanges[entryDirectoryPath] || []).concat([entry]);
+        }
+      }
+    }
+
+    for (var watchedDirectoryPath in directoryChanges) {
+      var changes = directoryChanges[watchedDirectoryPath];
+      var directoryWatcherEntry = watchedDirectories[watchedDirectoryPath];
+      directoryWatcherEntry.eventEmitter.emit('change', changes);
+    }
+  });
+}
+
+async function unwatchDirectoryRecursive(directoryPath: string) {
+  watchmanClient = watchmanClient || new WatchmanClient();
+  await watchmanClient.unwatch(directoryPath);
+}
+
+module.exports = {
+  services: {
+    '/watcher/watchFile': {handler: watchFile, method: 'post'},
+    '/watcher/unwatchFile': {handler: unwatchFile, method: 'post'},
+    '/watcher/watchDirectory': {handler: watchDirectory, method: 'post'},
+    '/watcher/unwatchDirectory': {handler: unwatchDirectory, method: 'post'},
+    '/watcher/watchDirectoryRecursive': {handler: watchDirectoryRecursive, method: 'post'},
+    '/watcher/unwatchDirectoryRecursive': {handler: unwatchDirectoryRecursive, method: 'post'},
+  },
+};

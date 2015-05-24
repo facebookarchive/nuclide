@@ -1,0 +1,39 @@
+{
+  "name": "nuclide-flow",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "Provides support for Flow in Nuclide",
+  "nuclide": {
+    "packageType": "Atom",
+    "testRunner": "apm"
+  },
+  "providedServices": {
+    "autocomplete.provider": {
+      "versions": {
+        "2.0.0": "createAutocompleteProvider"
+      }
+    },
+    "nuclide-click-to-symbol.provider": {
+      "versions": {
+        "0.0.0": "createClickToSymbolDelegate"
+      }
+    }
+  },
+
+  "//": "This is what triggers the linter integration:",
+  "//": "https://github.com/AtomLinter/Linter/issues/247",
+  "linter-package": true,
+  "linter-implementation": "FlowLinter",
+
+  "engines": {
+    "atom": ">0.188.0"
+  },
+  "dependencies": {
+    "nuclide-client": "0.0.0",
+    "nuclide-commons": "0.0.0",
+    "nuclide-flow-base": "0.0.0",
+    "nuclide-atom-helpers": "0.0.0",
+    "nuclide-click-to-symbol-delegate": "0.0.0"
+  }
+}

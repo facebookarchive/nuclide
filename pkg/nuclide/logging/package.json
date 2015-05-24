@@ -1,0 +1,15 @@
+{
+  "name": "nuclide-logging",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "Provides logging on both Nuclide client and Nuclide server",
+  "nuclide": {
+    "packageType": "Node",
+    "testRunner": "npm"
+  },
+  "dependencies": {
+    "log4js": "0.6.21",
+    "nuclide-commons": "0.0.0"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "name": "nuclide-analytics",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "Provides a standard API for packages to send analytics to arbitrary providers.",
+  "nuclide": {
+    "packageType": "Node",
+    "testRunner": "apm"
+  },
+  "engines": {
+    "atom": ">0.194.0"
+  },
+  "dependencies": {
+    "nuclide-atom-helpers": "0.0.0",
+    "nuclide-logging": "0.0.0",
+    "parse": "1.3.0"
+  }
+}

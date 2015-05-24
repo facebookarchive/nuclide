@@ -1,0 +1,18 @@
+{
+  "name": "nuclide-panel",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "Provides support for new UI panels in Nuclide",
+  "nuclide": {
+    "packageType": "Node",
+    "testRunner": "apm"
+  },
+  "engines": {
+    "atom": ">=0.186.0"
+  },
+  "dependencies": {
+    "nuclide-atom-npm": "0.0.0",
+    "react-for-atom": "0.13.6"
+  }
+}

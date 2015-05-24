@@ -1,0 +1,14 @@
+@import "ui-variables";
+@import "syntax-variables";
+
+atom-text-editor::shadow .highlight.symbol-navigation > .region {
+  border-bottom: 1px solid @syntax-text-color;
+}
+
+atom-text-editor.symbol-navigation::shadow .editor-contents--private {
+  /**
+   * Unfortunately, this cannot be a property of `.symbol-navigation .region`:
+   * https://discuss.atom.io/t/some-css-styles-not-honored-by-decorations/11662
+   */
+  cursor: pointer;
+}

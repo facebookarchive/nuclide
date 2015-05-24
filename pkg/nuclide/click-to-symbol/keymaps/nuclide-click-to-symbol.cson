@@ -1,0 +1,3 @@
+'atom-text-editor:not(.mini)':
+  'alt': 'nuclide-click-to-symbol:activate'
+  'cmd': 'nuclide-click-to-symbol:activate'

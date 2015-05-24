@@ -1,0 +1,11 @@
+'menu': [
+  {
+    'label': 'Packages'
+    'submenu': [
+      {
+        'label': 'Connect...',
+        'command': 'nuclide-ssh-dialog:connect',
+      }
+    ]
+  }
+]

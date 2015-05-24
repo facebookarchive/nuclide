@@ -1,0 +1,19 @@
+{
+  "name": "nuclide-ui-tree",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "Provides abstract tree view functionality for Nuclide",
+  "nuclide": {
+    "packageType": "Node",
+    "testRunner": "apm"
+  },
+  "engines": {
+    "atom": ">0.177.0"
+  },
+  "dependencies": {
+    "nuclide-atom-npm": "0.0.0",
+    "nuclide-commons": "0.0.0",
+    "react-for-atom": "0.13.6"
+  }
+}

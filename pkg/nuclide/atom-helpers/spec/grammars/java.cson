@@ -1,0 +1,8 @@
+# From https://github.com/atom/language-java/blob/27154ef235a0dc5a17e23e69d29d88a20eced330/grammars/java.cson
+'scopeName': 'source.java'
+'name': 'Java'
+'fileTypes': [
+  'java'
+  'bsh'
+]
+'patterns': []

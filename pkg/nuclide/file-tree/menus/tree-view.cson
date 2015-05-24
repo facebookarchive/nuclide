@@ -1,0 +1,5 @@
+'context-menu':
+  # Show this in all text editors.
+  'atom-pane[data-active-item-path] atom-text-editor': [
+    {'label': 'Reveal in File Tree', 'command': 'nuclide-file-tree:reveal-active-file'}
+  ]

@@ -1,0 +1,50 @@
+[
+  {
+    "useServiceFramework": false,
+    "path": "lib/services/NuclideFsService.js"
+  },
+  {
+    "useServiceFramework": false,
+    "path": "lib/services/NuclideProcService.js"
+  },
+  {
+    "useServiceFramework": false,
+    "path": "lib/services/NuclideSearchService.js"
+  },
+  {
+    "useServiceFramework": false,
+    "path": "lib/services/NuclideWatcherService.js"
+  },
+  {
+    "useServiceFramework": false,
+    "path": "lib/services/NuclideHackService.js"
+  },
+  {
+    "useServiceFramework": false,
+    "path": "lib/services/SourceControlService.js"
+  },
+  {
+    "definition": "nuclide-flow-base/lib/FlowService.js",
+    "implementation": "nuclide-flow-base/lib/LocalFlowService.js",
+    "name": "FlowService",
+    "useServiceFramework": true
+  },
+  {
+    "definition": "nuclide-hg-repository-base/lib/HgService.js",
+    "implementation": "nuclide-hg-repository-base/lib/LocalHgService.js",
+    "name": "HgService",
+    "useServiceFramework": true
+  },
+  {
+    "definition": "nuclide-clang/lib/ClangService.js",
+    "implementation": "nuclide-clang/lib/LocalClangService.js",
+    "name": "ClangService",
+    "useServiceFramework": true
+  },
+  {
+    "definition": "nuclide-arcanist-base/lib/ArcanistBaseService.js",
+    "implementation": "nuclide-arcanist-base/lib/LocalArcanistBaseService.js",
+    "name": "ArcanistBaseService",
+    "useServiceFramework": true
+  }
+]

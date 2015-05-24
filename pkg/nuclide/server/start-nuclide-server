@@ -1,0 +1,4 @@
+#!/bin/bash
+
+cd "$(dirname "$(readlink "$0" || printf %s "$0")")" > /dev/null 2>&1
+scripts/nuclide_server_manager.py "$@"

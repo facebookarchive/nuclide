@@ -1,0 +1,36 @@
+{
+  "name": "nuclide-file-tree",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "Provides the file tree view panel for Nuclide",
+  "nuclide": {
+    "packageType": "Atom",
+    "testRunner": "apm"
+  },
+  "engines": {
+    "atom": ">0.186.0"
+  },
+  "providedServices": {
+    "nuclide-file-tree": {
+      "versions": {
+        "0.0.0": "getController"
+      }
+    }
+  },
+  "dependencies": {
+    "fs-plus": "2.8.0",
+    "immutable": "3.6.2",
+    "nuclide-atom-helpers": "0.0.0",
+    "nuclide-commons": "0.0.0",
+    "nuclide-logging": "0.0.0",
+    "nuclide-panel": "0.0.0",
+    "nuclide-ui-atom-input": "0.0.0",
+    "nuclide-ui-tree": "0.0.0",
+    "react-for-atom": "0.13.6"
+  },
+  "devDependencies": {
+    "rimraf": "~2.2.2",
+    "temp": "0.8.1"
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "name": "nuclide-server",
+  "repository": "https://github.com/facebook/nuclide",
+  "version": "0.0.0",
+  "description": "Provides a collection of services that are run on the Nuclide server to support remote file editing",
+  "nuclide": {
+    "packageType": "Node",
+    "testRunner": "npm",
+    "excludeTestsFromContinuousIntegration": true
+  },
+  "dependencies": {
+    "connect": "3.3.4",
+    "event-kit": "1.1.1",
+    "fb-watchman": "0.0.1",
+    "fs-plus": "~2.8.0",
+    "nuclide-arcanist-base": "0.0.0",
+    "nuclide-clang": "0.0.0",
+    "nuclide-commons": "0.0.0",
+    "nuclide-flow-base": "0.0.0",
+    "nuclide-hg-repository-base": "0.0.0",
+    "nuclide-logging": "0.0.0",
+    "nuclide-node-transpiler": "0.0.0",
+    "nuclide-path-search": "0.0.0",
+    "nuclide-service-transformer": "0.0.0",
+    "nuclide-hack-common": "0.0.0",
+    "request": "2.53.0",
+    "uuid": "2.0.1",
+    "ws": "0.7.1",
+    "yargs": "3.1.0"
+  },
+  "devDependencies": {
+    "temp": "0.8.1",
+    "rimraf": "2.2.8"
+  },
+  "scripts": {
+    "test": "jasmine-node-transpiled spec"
+  }
+}

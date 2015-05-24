@@ -1,0 +1,14 @@
+{
+  "name": "nuclide-atom-npm",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "Utility to load an Atom package that is packaged as a Node package",
+  "nuclide": {
+    "packageType": "Node",
+    "testRunner": "apm"
+  },
+  "dependencies": {
+    "nuclide-commons": "0.0.0"
+  }
+}

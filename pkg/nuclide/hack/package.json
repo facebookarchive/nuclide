@@ -1,0 +1,48 @@
+{
+  "name": "nuclide-hack",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "Provides hack language support in Nuclide",
+  "nuclide": {
+    "packageType": "Atom",
+    "testRunner": "apm"
+  },
+  "providedServices": {
+    "autocomplete.provider": {
+      "versions": {
+        "2.0.0": "createAutocompleteProvider"
+      }
+    },
+    "nuclide-click-to-symbol.provider": {
+      "versions": {
+        "0.0.0": "createClickToSymbolDelegate"
+      }
+    },
+    "nuclide-code-format.provider": {
+      "versions": {
+        "0.0.0": "createCodeFormatProvider"
+      }
+    },
+    "nuclide-type-hint.provider": {
+      "versions": {
+        "0.0.0": "createTypeHintProvider"
+      }
+    }
+  },
+  "//": "https://github.com/atom/apm/issues/120",
+  "linter-package": true,
+  "linter-implementation": "HackLinter",
+  "engines": {
+    "atom": ">=0.196.0"
+  },
+  "dependencies": {
+    "nuclide-logging": "0.0.0",
+    "nuclide-atom-helpers": "0.0.0",
+    "nuclide-click-to-symbol-delegate": "0.0.0",
+    "nuclide-client": "0.0.0",
+    "nuclide-commons": "0.0.0",
+    "nuclide-hack-common": "0.0.0",
+    "nuclide-text-buffer": "4.2.0"
+  }
+}

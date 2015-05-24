@@ -1,0 +1,30 @@
+{
+  "name": "nuclide-click-to-symbol",
+  "repository": "https://github.com/facebook/nuclide",
+  "author": "Facebook",
+  "main": "./lib/main",
+  "nuclide": {
+    "packageType": "Atom",
+    "testRunner": "apm"
+  },
+  "activationCommands": {
+    "atom-text-editor:not(.mini)": ["nuclide-click-to-symbol:activate"]
+  },
+  "consumedServices": {
+    "nuclide-click-to-symbol.provider": {
+      "versions": {
+        "0.0.0": "registerDelegate"
+      }
+    }
+  },
+  "version": "0.0.0",
+  "description": "Click to symbol API",
+  "engines": {
+    "atom": ">0.124.0"
+  },
+  "dependencies": {
+    "nuclide-analytics": "0.0.0",
+    "nuclide-commons": "0.0.0",
+    "nuclide-click-to-symbol-delegate": "0.0.0"
+  }
+}

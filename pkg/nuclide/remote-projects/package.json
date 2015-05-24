@@ -1,0 +1,28 @@
+{
+  "name": "nuclide-remote-projects",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "Manages remote projects",
+  "nuclide": {
+    "packageType": "Atom",
+    "testRunner": "apm"
+  },
+  "providedServices": {
+    "atom.directory-provider": {
+      "versions": {
+        "0.1.0": "createRemoteDirectoryProvider"
+      }
+    }
+  },
+  "engines": {
+    "atom": ">=0.199.0"
+  },
+  "dependencies": {
+    "nuclide-atom-helpers": "0.0.0",
+    "nuclide-logging": "0.0.0",
+    "nuclide-remote-connection": "0.0.0",
+    "nuclide-remote-uri": "0.0.0",
+    "nuclide-ssh-dialog": "0.0.0"
+  }
+}

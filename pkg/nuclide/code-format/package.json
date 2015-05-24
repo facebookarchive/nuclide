@@ -1,0 +1,24 @@
+{
+  "name": "nuclide-code-format",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "Provides a code-formatting provider API",
+  "nuclide": {
+    "packageType": "Atom",
+    "testRunner": "apm"
+  },
+  "engines": {
+    "atom": ">=0.190.0"
+  },
+  "dependencies": {
+    "nuclide-logging": "0.0.0"
+  },
+  "consumedServices": {
+    "nuclide-code-format.provider": {
+      "versions": {
+        "0.0.0": "consumeProvider"
+      }
+    }
+  }
+}

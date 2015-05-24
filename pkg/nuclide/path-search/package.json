@@ -1,0 +1,25 @@
+{
+  "name": "nuclide-path-search",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "Provides path search functionality in Nuclide",
+  "nuclide": {
+    "packageType": "Node",
+    "testRunner": "npm"
+  },
+  "dependencies": {
+    "heap": "0.2.6",
+    "nuclide-commons": "0.0.0",
+    "nuclide-node-transpiler": "0.0.0",
+    "nuclide-task": "0.0.0",
+    "split": "0.3.2"
+  },
+  "devDependencies": {
+    "nuclide-test-helpers": "0.0.0",
+    "temp": "0.8.1"
+  },
+  "scripts": {
+    "test": "jasmine-node-transpiled spec"
+  }
+}

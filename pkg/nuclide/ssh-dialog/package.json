@@ -1,0 +1,26 @@
+{
+  "name": "nuclide-ssh-dialog",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "Provides a dialog to allow Nuclide users to connect to remote servers",
+  "nuclide": {
+    "packageType": "Atom",
+    "testRunner": "apm"
+  },
+  "engines": {
+    "atom": ">=0.184.0"
+  },
+  "dependencies": {
+    "nuclide-client": "0.0.0",
+    "nuclide-commons": "0.0.0",
+    "nuclide-logging": "0.0.0",
+    "nuclide-remote-connection": "0.0.0",
+    "nuclide-ui-checkbox": "0.0.0",
+    "nuclide-ui-atom-input": "0.0.0",
+    "react-for-atom": "0.13.6"
+  },
+  "devDependencies": {
+    "temp": "0.8.1"
+  }
+}

@@ -1,0 +1,31 @@
+@import "ui-variables";
+
+.nuclide-tree-root {
+  margin: 0 -10px;
+
+  .nuclide-tree-component-item {
+    line-height: @component-line-height;
+    padding-right: 5px;
+
+    .nuclide-tree-component-item-arrow {
+      font-family: 'Octicons Regular';
+      -webkit-font-smoothing: antialiased;
+      width: 16px;
+      display: inline-block;
+      position: relative;
+      top: -1px;
+    }
+
+    .icon::before {
+      position: relative;
+      top: 1px;
+    }
+  }
+
+  .nuclide-tree-component-selected {
+    color: @text-color-selected;
+    background-color: @background-color-selected;
+    text-shadow: none;
+  }
+
+}

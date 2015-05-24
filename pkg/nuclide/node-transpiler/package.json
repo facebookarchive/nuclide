@@ -1,0 +1,26 @@
+{
+  "name": "nuclide-node-transpiler",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "Transpiles JavaScript files that 'use babel'",
+  "nuclide": {
+    "//": "TODO(7010049): Re-enable tests in CI",
+    "packageType": "Node",
+    "testRunner": "npm",
+    "excludeTestsFromContinuousIntegration": true
+  },
+  "dependencies": {
+    "babel-core": "5.1.11",
+    "babel-runtime": "5.1.11",
+    "bluebird": "2.9.0",
+    "es6-collections": "0.5.1",
+    "jasmine-focused": "1.0.7"
+  },
+  "bin": {
+    "jasmine-node-transpiled": "bin/jasmine-node-transpiled"
+  },
+  "scripts": {
+    "test": "bin/jasmine-node-transpiled spec"
+  }
+}

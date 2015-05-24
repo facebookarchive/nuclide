@@ -1,0 +1,12 @@
+[include]
+
+[ignore]
+.*/spec/.*
+
+[libs]
+../../interfaces/atom/1.0/
+
+[options]
+
+[version]
+0.10.0

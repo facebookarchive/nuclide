@@ -1,0 +1,35 @@
+#!/usr/bin/env node
+/*
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ */
+
+/**
+ * This is a command-line utility to transpile a .js file in the same way that
+ * Atom would.
+ */
+
+if (process.argv.length < 3) {
+  console.error('No file specified. Usage: [--with-yield] <file>');
+  process.exit(1);
+}
+
+var isYieldSupported = false;
+var path = require('path');
+var file;
+if (process.argv.length === 3) {
+  file = process.argv[2];
+} else if (process.argv[2] === '--with-yield') {
+  isYieldSupported = true;
+  file = process.argv[3];
+}
+var filePath = path.join(process.env.PWD, file);
+
+var fs = require('fs');
+var sourceCode = fs.readFileSync(filePath);
+var transpileFile = require('../lib/transpile').transpileFile;
+var code = transpileFile(sourceCode, filePath, isYieldSupported);
+console.log(code);

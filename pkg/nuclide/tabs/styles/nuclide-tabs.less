@@ -1,0 +1,14 @@
+.tab-bar {
+  display: flex;
+  .tab {
+    width: 20px;
+    transition:
+      flex-grow 0.1s linear,
+      color 1s ease-in, // preserve parent's icon color transition
+      !important;       // which has the same selector
+    &.active, &:hover {
+      flex-grow: 2;
+      width: fit-content;
+    }
+  }
+}

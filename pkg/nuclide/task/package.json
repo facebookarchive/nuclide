@@ -1,0 +1,20 @@
+{
+  "name": "nuclide-task",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/bootloader",
+  "version": "0.0.0",
+  "description": "Provides a utility to run babel code in a separate process",
+  "nuclide": {
+    "packageType": "Node",
+    "testRunner": "npm"
+  },
+  "dependencies": {
+    "nuclide-node-transpiler": "0.0.0"
+  },
+  "devDependencies": {
+    "nuclide-test-helpers": "0.0.0"
+  },
+  "scripts": {
+    "test": "jasmine-node-transpiled spec"
+  }
+}

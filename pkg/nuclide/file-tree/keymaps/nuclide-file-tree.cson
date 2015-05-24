@@ -1,0 +1,14 @@
+# We try to make this more specific so it overrides the keybinding for the built-in tree-view.
+'.platform-darwin atom-workspace':
+  'cmd-\\': 'nuclide-file-tree:toggle'
+  'cmd-|': 'nuclide-file-tree:reveal-active-file'
+
+'.platform-win32 atom-workspace, .platform-linux atom-workspace':
+  'ctrl-\\': 'nuclide-file-tree:toggle'
+  'ctrl-|': 'nuclide-file-tree:reveal-active-file'
+
+
+# TODO(jjiaa): Remove this after we figure out how to disable the tree-view package.
+'atom-workspace':
+  'ctrl-alt-cmd-\\': 'tree-view:toggle'
+  'ctrl-alt-cmd-|': 'tree-view:reveal-active-file'

@@ -1,0 +1,24 @@
+{
+  "name": "nuclide-remote-connection",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "Remote connections and monitoring",
+  "nuclide": {
+    "packageType": "Node",
+    "testRunner": "apm"
+  },
+  "dependencies": {
+    "nuclide-commons": "0.0.0",
+    "nuclide-logging": "0.0.0",
+    "nuclide-node-transpiler": "0.0.0",
+    "nuclide-server": "0.0.0",
+    "ssh2": "0.4.2"
+  },
+  "scripts": {
+    "test": "jasmine-node-transpiled spec"
+  },
+  "devDependencies": {
+    "temp": "0.8.1"
+  }
+}

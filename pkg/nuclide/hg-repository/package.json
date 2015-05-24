@@ -1,0 +1,30 @@
+{
+  "name": "nuclide-hg-repository",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "Provides support for Mercurial source control repositories",
+  "nuclide": {
+    "packageType": "Atom",
+    "testRunner": "apm"
+  },
+  "providedServices": {
+    "atom.repository-provider": {
+      "versions": {
+        "0.1.0": "createHgRepositoryProvider"
+      }
+    }
+  },
+  "engines": {
+    "atom": ">0.177.0"
+  },
+  "dependencies": {
+    "nuclide-client": "0.0.0",
+    "nuclide-commons": "0.0.0",
+    "nuclide-hg-repository-base": "0.0.0",
+    "nuclide-remote-connection": "0.0.0"
+  },
+  "devDependencies": {
+    "temp": "0.8.1"
+  }
+}

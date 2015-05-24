@@ -1,0 +1,60 @@
+@import "ui-variables";
+
+.nuclide-panel-component-container {
+  cursor: default;
+  -webkit-user-select: none;
+  white-space: nowrap;
+}
+
+.nuclide-panel-component-scroller {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  overflow: auto;
+}
+
+.nuclide-panel-component-content {
+  // This enables descendants to set their widths relative to this div.
+  //
+  // Otherwise they would set their widths relative to the scroller, which
+  // would have a smaller width than this div when the content is scrollable.
+  position: relative;
+
+  // This expands the div to always fill the scroller.
+  min-width: 100%;
+  min-height: 100%;
+
+  // This expands the div to fit the children, so it fills the width of the
+  // scroller even if the content is scrolled horizontally.
+  display: inline-block;
+
+  padding-left: 10px;
+  padding-right: 10px;
+
+  background-color: @tree-view-background-color;
+
+  &:focus {
+    background-color: darken(@tool-panel-background-color, 5%);
+  }
+}
+
+.nuclide-panel-component-resize-handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: 4px;
+  cursor: col-resize;
+}
+
+.nuclide-panel-component-resize-cursor-overlay {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  cursor: col-resize;
+  z-index: 4;
+}
