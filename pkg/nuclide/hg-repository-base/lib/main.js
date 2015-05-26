@@ -21,4 +21,8 @@ module.exports = {
   get hgConstants() {
     return require('./hg-constants');
   },
+
+  get revisions() {
+    return require('./hg-revision-expression-helpers');
+  },
 };
