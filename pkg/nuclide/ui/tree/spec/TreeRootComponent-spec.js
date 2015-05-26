@@ -7,17 +7,13 @@
  * the root directory of this source tree.
  */
 /* @flow */
-var LazyTreeNode = require('../lib/LazyTreeNode');
+
+var LazyTestTreeNode = require('./LazyTestTreeNode');
 var React = require('react-for-atom');
-var {TestUtils} = React.addons;
 var TreeNodeComponent = require('../lib/TreeNodeComponent');
 var TreeRootComponent = require('../lib/TreeRootComponent');
 
-class LazyTestTreeNode extends LazyTreeNode {
-  getLabel(): string {
-    return this._item.label;
-  }
-}
+var {TestUtils} = React.addons;
 
 function fetchChildrenForNodes(nodes: Array<LazyFileTreeNode>): Promise {
   return Promise.all(nodes.map((node) => node.fetchChildren()));
@@ -42,7 +38,8 @@ function getNodeComponents(component: TreeRootComponent): mixed {
 }
 
 describe('TreeRootComponent', () => {
-  // We use `renderComponent` in `beforeEach` to return the component so the test
+
+  // Use `renderComponent` in `beforeEach` to return the component so the test
   // methods have a chance to modify the default props.
   var renderComponent: (props: mixed) => ReactComponent;
   var props;
@@ -212,6 +209,72 @@ describe('TreeRootComponent', () => {
 
         component.collapseNodeKey(nodes['G'].getKey());
         expect(component.getSelectedNodes()).toEqual([nodes['G']]);
+      });
+    });
+
+  });
+
+  describe('clicking a node', () => {
+
+    it('toggles whether the node is selected', () => {
+      waitsForPromise(async () => {
+        var component = renderComponent(props);
+        component.setRoots([nodes['G']]);
+        await fetchChildrenForNodes(component.getRootNodes());
+
+        expect(component.getSelectedNodes()).toEqual([]);
+
+        var treeNodes = TestUtils.scryRenderedComponentsWithType(
+            component,
+            TreeNodeComponent
+          );
+        var firstTreeNodeDomNode = React.findDOMNode(treeNodes[0]);
+
+        TestUtils.Simulate.click(firstTreeNodeDomNode);
+
+        expect(component.getSelectedNodes()).toEqual([nodes['G']]);
+      });
+    });
+
+    it('toggles whether the node is collapsed if click is on the arrow', () => {
+      waitsForPromise(async () => {
+        var component = renderComponent(props);
+        component.setRoots([nodes['G']]);
+        await fetchChildrenForNodes(component.getRootNodes());
+
+        expect(component.getExpandedNodes()).toEqual([nodes['G']]);
+
+        var treeNodes = TestUtils.scryRenderedComponentsWithType(
+            component,
+            TreeNodeComponent
+          );
+        var firstTreeNodeArrowDomNode =
+            React.findDOMNode(treeNodes[0].refs['arrow']);
+
+        TestUtils.Simulate.click(firstTreeNodeArrowDomNode);
+
+        expect(component.getExpandedNodes()).toEqual([]);
+      });
+    });
+
+    it('does not toggle whether node is selected if click is on the arrow', () => {
+      waitsForPromise(async () => {
+        var component = renderComponent(props);
+        component.setRoots([nodes['G']]);
+        await fetchChildrenForNodes(component.getRootNodes());
+
+        expect(component.getSelectedNodes()).toEqual([]);
+
+        var treeNodes = TestUtils.scryRenderedComponentsWithType(
+            component,
+            TreeNodeComponent
+          );
+        var firstTreeNodeArrowDomNode =
+            React.findDOMNode(treeNodes[0].refs['arrow']);
+
+        TestUtils.Simulate.click(firstTreeNodeArrowDomNode);
+
+        expect(component.getSelectedNodes()).toEqual([]);
       });
     });
 

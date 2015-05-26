@@ -9,7 +9,14 @@
 /* @flow */
 
 class LazyTreeNode {
+
   _children: ?Immutable.List;
+  _fetchChildren: (node: LazyTreeNode) => Promise;
+  _isCacheValid: boolean;
+  _isContainer: boolean;
+  _item: any;
+  _key: ?string;
+  _parent: ?LazyTreeNode;
   _pendingFetch: ?Promise;
 
   /**
@@ -97,6 +104,7 @@ class LazyTreeNode {
   invalidateCache(): void {
     this._isCacheValid = false;
   }
+
 }
 
 module.exports = LazyTreeNode;
