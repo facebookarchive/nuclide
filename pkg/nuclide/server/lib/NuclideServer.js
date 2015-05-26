@@ -1,4 +1,6 @@
 'use babel';
+/* @flow */
+
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -6,8 +8,6 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-
-/* @flow */
 
 var blocked = require('./blocked');
 var connect = require('connect');
@@ -130,7 +130,7 @@ class NuclideServer {
     if (localServiceInstance[EVENT_HANDLE_REGISTERED]) {
       return localServiceInstance;
     }
-    
+
     var serviceApi = parseServiceApiSync(serviceConfig.definition);
 
     serviceApi.eventMethodNames.forEach(methodName => {
@@ -252,7 +252,7 @@ class NuclideServer {
 
   _setupServiceFrameworkSubscriptionHandler() {
     this._registerService('/serviceFramework/subscribeEvent', (serviceOptions: mixed, clientId: string, serviceName: string, methodName: string) => {
-      
+
       // Create the service instance and register the event handle.
       var [serviceConfig] = this._serviceWithServiceFrameworkConfigs.filter(config => config.name === serviceName);
       this._getServiceFrameworkServiceAndRegisterEventHandle(serviceConfig, serviceOptions);

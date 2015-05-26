@@ -1,4 +1,6 @@
 'use babel';
+/* flow */
+
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -6,7 +8,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-/* flow */
+
 var {isNuclideUriFlowTypeAnnotation} = require('./flow-annotation');
 var t = require('babel-core').types;
 
@@ -65,11 +67,11 @@ function createGetUriOfRemotePathAssignmentExpression(identifier: Identifier): A
 }
 
 /**
- * It creates a manipulation assigment expression for an identifier node, by comparing it's flow 
+ * It creates a manipulation assigment expression for an identifier node, by comparing it's flow
  * type with typeNodeValidator.
  *
  * The key feature is that if the node is an Object or an Array, and the object's property or
- * the array's item matches given flow type according to node's flow type definition, the 
+ * the array's item matches given flow type according to node's flow type definition, the
  * creator could handle it and create correct assignment expression. As long as the flow type of
  * the node is a valid json object, this creator could create the expected assignment
  * expression.
@@ -77,7 +79,7 @@ function createGetUriOfRemotePathAssignmentExpression(identifier: Identifier): A
  * For example, say we are intersted in flow type `fooType` and we want to manipulate the
  * object with `fooType` by `object = bar(object)`. Following the expected result of created
  * assignmentExpression:
- * 
+ *
  * `object: fooType` => `object = bar(object)`.
  *
  * `object: {a: fooType, b: number}` => `object.a = bar(object.a)`.
@@ -88,9 +90,9 @@ function createGetUriOfRemotePathAssignmentExpression(identifier: Identifier): A
 class ManipulationAssignmentExpressionCreator {
   /**
    * Initialize the creator.
-   * @param typeNodeValidator A function who take a FlowTypeNode as argument and return true 
+   * @param typeNodeValidator A function who take a FlowTypeNode as argument and return true
    *    if it is the type we want to manipulate.
-   * @param identifierToAssignmentExpression A function who take an idnentifier as argument and 
+   * @param identifierToAssignmentExpression A function who take an idnentifier as argument and
    *    create an manipulation assignment expression.
    */
   constructor(typeNodeValidator: (typeNode: FlowTypeNode) => boolean,
@@ -100,7 +102,7 @@ class ManipulationAssignmentExpressionCreator {
   }
 
   /**
-   * Create the manipulation assignment expression for the identifier if the flowTypeNode or the 
+   * Create the manipulation assignment expression for the identifier if the flowTypeNode or the
    * flowTypeNode's nested node matches the typeNodeValidator. If nothing matches, just return
    * null.
    */
@@ -125,8 +127,8 @@ class ManipulationAssignmentExpressionCreator {
   }
 
   _visitGenericTypeAnnotationNode(flowTypeNode: FlowTypeNode, identifier: Identifier): ?AssignmentExpression{
-    if (flowTypeNode.id && 
-        flowTypeNode.id.type === 'Identifier' && 
+    if (flowTypeNode.id &&
+        flowTypeNode.id.type === 'Identifier' &&
         flowTypeNode.id.name === 'Array') {
       return this._visitArrayTypeAnnotationNode(flowTypeNode, identifier);
     } else {
@@ -138,7 +140,7 @@ class ManipulationAssignmentExpressionCreator {
    * Visit the node typed as `Array<$nestedFlowType>` and create the manipulation
    * expression if nestedFlowType should be manipulate.
    *
-   * For example, if the nestedFlowType should be manipuated,  the generated expression will be 
+   * For example, if the nestedFlowType should be manipuated,  the generated expression will be
    * in following form:
    * ```
    * identifier = identifier.map(arg0 => {
@@ -156,7 +158,7 @@ class ManipulationAssignmentExpressionCreator {
 
     var nestedFlowType = flowTypeNode.typeParameters.params[0];
     var arrowFunctionParam = t.identifier('item');
-    var assignmentExpression = this._visit(nestedFlowType, arrowFunctionParam); 
+    var assignmentExpression = this._visit(nestedFlowType, arrowFunctionParam);
 
     if (!assignmentExpression) {
       return null;
@@ -170,7 +172,7 @@ class ManipulationAssignmentExpressionCreator {
           t.returnStatement(arrowFunctionParam),
         ]
       )
-    ); 
+    );
 
     var callArrayMapExpression = t.callExpression(
       /* callee */ t.memberExpression(
@@ -190,14 +192,14 @@ class ManipulationAssignmentExpressionCreator {
   }
 
   /**
-   * Visit the node typed as `{property0: flowType0, property1: flowtype1... }` and create the 
+   * Visit the node typed as `{property0: flowType0, property1: flowtype1... }` and create the
    * manipulation expression if any of its properties should be manipulated.
    *
-   * For example, if `identifier.property0` should be manipuated,  the generated expression will be 
+   * For example, if `identifier.property0` should be manipuated,  the generated expression will be
    * in following form:
    * ```
    * identifier = ((arg0) => {
-   *  arg0.property0 = manipulation(arg0.property0); 
+   *  arg0.property0 = manipulation(arg0.property0);
    * }) (identifier);
    *
    * ```
@@ -230,7 +232,7 @@ class ManipulationAssignmentExpressionCreator {
       /* body */ t.blockStatement(
         assignmentExpressions.concat(t.returnStatement(objectIdentifier)),
       )
-    ); 
+    );
 
     var callArrowFunctionExpression = t.callExpression(
       /* callee */ arrowFunction,
@@ -250,7 +252,7 @@ class ManipulationAssignmentExpressionCreator {
    * Visit the node typed as `?$nestedFlowType` (nullable) and create the if statement
    * manipulation expression if the nested flow type should be manipulated.
    *
-   * For example, if `identifier: ?$nestedFlowType` should be manipuated,  the generated expression will be 
+   * For example, if `identifier: ?$nestedFlowType` should be manipuated,  the generated expression will be
    * in following form:
    * ```
    * if (identifier !== null) {
@@ -280,22 +282,22 @@ module.exports = {
   ManipulationAssignmentExpressionCreator,
 
   createGetPathOfUriAssignmentExpression(
-    flowTypeNode: FlowTypeNode, 
+    flowTypeNode: FlowTypeNode,
     identifier: Identifier
   ): ?AssignmentExpression {
     var creator = new ManipulationAssignmentExpressionCreator(
         isNuclideUriFlowTypeAnnotation,
-        createGetPathOfUriAssignmentExpression);    
+        createGetPathOfUriAssignmentExpression);
     return creator.create(flowTypeNode, identifier);
   },
 
   createGetUriOfRemotePathAssignmentExpression(
-    flowTypeNode: FlowTypeNode, 
-    identifier: Identifier 
+    flowTypeNode: FlowTypeNode,
+    identifier: Identifier
   ): ?AssignmentExpression {
     var creator = new ManipulationAssignmentExpressionCreator(
         isNuclideUriFlowTypeAnnotation,
-        createGetUriOfRemotePathAssignmentExpression);    
+        createGetUriOfRemotePathAssignmentExpression);
     return creator.create(flowTypeNode, identifier);
   },
 }

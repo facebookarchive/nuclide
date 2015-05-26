@@ -1,4 +1,6 @@
 'use babel';
+/* flow */
+
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -6,7 +8,6 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-/* flow */
 
 /**
  * Babel's plugin who auto generate remote service implementation based on service definition class.
@@ -20,7 +21,7 @@
  *
  * To address this problem, we support flow type `NuclideUri` for parameter and `Promise<NuclideUri>`
  * for return value in RPC method definition:
- *   a) If a parameter is typed as `NuclideUri`, the generated method in remote service assumes 
+ *   a) If a parameter is typed as `NuclideUri`, the generated method in remote service assumes
  *      the parameter is a remote file uri ('nuclide://$host:$post/$path'). So it parses the
  *      parameter and calls to rpc with the parsed path.
  *   b) If the return value is typed as `Promise<NuclideUri>`, the generated method treats result
@@ -28,7 +29,7 @@
  *      and return the uri to caller.
  *   c) For event method definition, if the callback's parameter is typed as `NuclideUri`, the
  *      generated method assembles the paramter with remote host/port information as well.
- *   d) We also support nested flow type definition for parameter and return value like 
+ *   d) We also support nested flow type definition for parameter and return value like
  *      `Array<NuclideUri>` or `{file: NuclideUri, sizeInByte: number}` etc, as it will be properly
  *      transformed. For more information, please read comments in 'nuclide-uri-transformer.js'.
  *
@@ -79,7 +80,7 @@
  *    getLastOpenedFile() {
  *      return this._connection.makeRpc('TestService/getLastOpenedFile', [], this._options).then(arg0 => {
  *          arg0 = this._connection.getUriOfRemotePath(arg0);
- *          return arg0; 
+ *          return arg0;
  *      });
  *    }
  *    onFileChanged(callback) {
@@ -216,7 +217,7 @@ function createGetUriFromPathPromiseExpression(
         t.returnStatement(arrowFunctionParameter),
       ]
     )
-  ); 
+  );
 
   return t.callExpression(
     /* callee */ t.memberExpression(
@@ -229,8 +230,8 @@ function createGetUriFromPathPromiseExpression(
 
 function createRemoteRpcMethodDefinition(classDeclaration: mixed, methodDefinition: mixed): mixed {
 
-  // For each parameter of the method, check its flow type and create manipulation expression if 
-  // the flow type matches or contains `NuclideUri`. 
+  // For each parameter of the method, check its flow type and create manipulation expression if
+  // the flow type matches or contains `NuclideUri`.
   var parametersManipulationExpressions = [];
 
   methodDefinition.value.params.forEach(param => {
@@ -244,8 +245,8 @@ function createRemoteRpcMethodDefinition(classDeclaration: mixed, methodDefiniti
   // AST node of
   // `this._connection.makeRpc(
   //   '$className/$methodName',
-  //   [$methodParam0, 
-  //    $methodParam1, 
+  //   [$methodParam0,
+  //    $methodParam1,
   //    ....],
   //   this._options);
   // );`
@@ -268,13 +269,13 @@ function createRemoteRpcMethodDefinition(classDeclaration: mixed, methodDefiniti
   // manipulation code in `returnValue.then(...)` block.
   var methodReturnType = methodDefinition.value.returnType;
   if (methodReturnType !== undefined &&
-      isGenericFlowTypeAnnotation(methodReturnType.typeAnnotation, 'Promise')) { 
+      isGenericFlowTypeAnnotation(methodReturnType.typeAnnotation, 'Promise')) {
 
     var typeParameters = methodReturnType.typeAnnotation.typeParameters;
 
     if (typeParameters && typeParameters.params.length == 1)  {
       rpcCallExpression = createGetUriFromPathPromiseExpression(
-          rpcCallExpression, typeParameters.params[0]); 
+          rpcCallExpression, typeParameters.params[0]);
     }
   }
 
@@ -301,9 +302,9 @@ function createRemoteRpcMethodDefinition(classDeclaration: mixed, methodDefiniti
  * If the callback function's parameter is typed as `NuclideUri` or has nested type of `NuclideUri`,
  * create a new callback function which transform the paramter's NuclideUri first then call to the
  * original callback.
- * 
+ *
  * For example, given callback `callback: (payload: NuclideUri) => void`, it returns a new arrow
- * function: 
+ * function:
  * ```
  * payload => {
  *   payload = this._connection.getUriOfRemotePath(payload);
@@ -315,9 +316,9 @@ function createManipulatedCallbackArrowFunction(callbackAstNode: mixed): ?mixed 
   if (!callbackAstNode.typeAnnotation.typeAnnotation.params) {
     return null;
   }
-  
+
   var parameterManipulateExpressions = [];
-  
+
   callbackAstNode.typeAnnotation.typeAnnotation.params.forEach(callbackParameterFlowtypeNode => {
     var identifier = callbackParameterFlowtypeNode.name;
     var manipulateCallbackParameterAssignmentExpression = createGetUriOfRemotePathAssignmentExpression(
@@ -349,7 +350,7 @@ function createManipulatedCallbackArrowFunction(callbackAstNode: mixed): ?mixed 
         ]
       ),
     )
-  ); 
+  );
 }
 
 function createRemoteEventMethodDefinition(classDeclaration: mixed, methodDefinition: mixed): mixed {

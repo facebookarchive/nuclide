@@ -1,4 +1,6 @@
 'use babel';
+/* flow */
+
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -6,7 +8,6 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-/* flow */
 
 var {asyncExecute, findNearestFile, getConfigValueAsync} = require('nuclide-commons');
 var logger = require('nuclide-logging').getLogger();
@@ -45,9 +46,9 @@ class LocalFlowService extends FlowService {
   }
 
   async findDefinition(
-    file: NuclideUri, 
+    file: NuclideUri,
     currentContents: string,
-    line: number, 
+    line: number,
     column: number
   ): Promise<?{file:NuclideUri; line:number; column:number}> {
     var options = await getFlowExecOptions(file);
@@ -127,10 +128,10 @@ class LocalFlowService extends FlowService {
   }
 
   async getAutocompleteSuggestions(
-    file: NuclideUri, 
-    currentContents: string, 
-    line: number, 
-    column: number, 
+    file: NuclideUri,
+    currentContents: string,
+    line: number,
+    column: number,
     prefix: string
   ): Promise<mixed> {
     var options = await getFlowExecOptions(file);

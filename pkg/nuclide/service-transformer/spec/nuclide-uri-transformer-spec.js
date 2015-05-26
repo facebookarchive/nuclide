@@ -1,4 +1,6 @@
 'use babel';
+/* flow */
+
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -6,7 +8,6 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-/* flow */
 
 type Identifier = mixed;
 type AssignmentExpression = mixed;
@@ -78,7 +79,7 @@ function testTransformNuclideUri(stringFlowType: string, obj: any, expected: any
 
   // Eval the transfomred source code to get the transformed foo ready to use.
   eval(transformedFunctionCode);
-  
+
   expect(foo(obj)).toEqual(expected);
 }
 
@@ -93,22 +94,22 @@ describe('Nuclide nuclide uri transformer test suite.', function() {
     testTransformNuclideUri('?Array<NuclideUri>', null, null);
     testTransformNuclideUri('Array<?NuclideUri>', [null, 'b'], [null, 'b' + SUFFIX]);
     testTransformNuclideUri(
-      '{nuclideUri: NuclideUri; string: string}', 
+      '{nuclideUri: NuclideUri; string: string}',
       {nuclideUri: 'a', string: 'a'},
       {nuclideUri: 'a' + SUFFIX, string: 'a'},
     );
     testTransformNuclideUri(
-      '{nuclideUri: ?NuclideUri; string: string}', 
+      '{nuclideUri: ?NuclideUri; string: string}',
       {nuclideUri: 'a', string: 'a'},
       {nuclideUri: 'a' + SUFFIX, string: 'a'},
     );
     testTransformNuclideUri(
-      '{nuclideUri: ?NuclideUri; string: string}', 
+      '{nuclideUri: ?NuclideUri; string: string}',
       {nuclideUri: null, string: 'a'},
       {nuclideUri: null, string: 'a'},
     );
     testTransformNuclideUri(
-      'Array<{nuclideUri: NuclideUri; string: string}>', 
+      'Array<{nuclideUri: NuclideUri; string: string}>',
       [
         {nuclideUri: 'a', string: 'a'},
         {nuclideUri: 'b', string: 'b'},
@@ -119,7 +120,7 @@ describe('Nuclide nuclide uri transformer test suite.', function() {
       ],
     );
     testTransformNuclideUri(
-      '{nuclideUris: Array<NuclideUri>; string: string}', 
+      '{nuclideUris: Array<NuclideUri>; string: string}',
       {nuclideUris: ['a', 'b'], string: 'a'},
       {nuclideUris: ['a' + SUFFIX, 'b' + SUFFIX], string: 'a'},
     );

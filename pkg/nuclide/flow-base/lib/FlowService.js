@@ -1,4 +1,6 @@
 'use babel';
+/* flow */
+
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -6,14 +8,13 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-/* flow */
 
 class FlowService {
 
   findDefinition(
-    file: NuclideUri, 
+    file: NuclideUri,
     currentContents: string,
-    line: number, 
+    line: number,
     column: number
   ): Promise<?{file:NuclideUri; line:number; column:number}> {
     return Promise.reject('Not implemented');
@@ -24,10 +25,10 @@ class FlowService {
   }
 
   getAutocompleteSuggestions(
-    file: NuclideUri, 
-    currentContents: string, 
-    line: number, 
-    column: number, 
+    file: NuclideUri,
+    currentContents: string,
+    line: number,
+    column: number,
     prefix: string
   ): Promise<mixed> {
     return Promise.reject('Not implemented');

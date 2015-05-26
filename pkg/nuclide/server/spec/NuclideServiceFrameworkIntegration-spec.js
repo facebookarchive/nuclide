@@ -1,4 +1,6 @@
 'use babel';
+/* flow */
+
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -6,7 +8,6 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-/* flow */
 
 var path = require('path');
 var NuclideServer = require('../lib/NuclideServer');
@@ -38,12 +39,12 @@ describe('when more than one service instance is created for the same service', 
         name: definitionClassName,
         definition: definitionClassAbsolutePath,
         implementation: implementationClassPathAbsolutePath,
-      }]; 
+      }];
       server._registerServiceWithServiceFramework(server._serviceWithServiceFrameworkConfigs[0]);
 
       await server.connect();
 
-      // Set up two service options using same service. 
+      // Set up two service options using same service.
       var options1 = {cwd: '/1'};
       var options2 = {cwd: '/2'};
       var client = new NuclideClient(

@@ -1,4 +1,6 @@
 'use babel';
+/* @flow */
+
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -7,7 +9,6 @@
  * the root directory of this source tree.
  */
 
-/* @flow */
 type SearchQuery = {
   provider: string;
   query: string;
