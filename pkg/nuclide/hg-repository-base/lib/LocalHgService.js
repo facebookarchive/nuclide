@@ -15,6 +15,7 @@ var watchman = require('fb-watchman');
 var fs = require('fs');
 var LocalHgServiceBase = require('./LocalHgServiceBase');
 var logger = require('nuclide-logging').getLogger();
+var {getWatchmanBinaryPath} = require('nuclide-watchman-helpers');
 var path = require('path');
 
 var WATCHMAN_SUBSCRIPTION_NAME_PRIMARY = 'hg-repository-watchman-subscription-primary';
@@ -49,7 +50,7 @@ class LocalHgService extends LocalHgServiceBase {
 
   async _subscribeToWatchman(): Promise<void> {
     this._watchmanClient = new watchman.Client({
-      watchmanBinaryPath: await this._getWatchmanBinaryPath(),
+      watchmanBinaryPath: await getWatchmanBinaryPath(),
     });
     this._watchmanClient.command(['watch', this.getWorkingDirectory()], (watchError, watchResp) => {
       if (watchError) {
@@ -284,24 +285,6 @@ class LocalHgService extends LocalHgServiceBase {
             // The bookmark.current file is deleted during a rebase.
             this._hgBookmarkDidChange();
           }
-        }
-      });
-    });
-  }
-
-  // TODO (jessicalin) Use fs-promise.js here when it's untangled from
-  // nuclide-server.
-  _getWatchmanBinaryPath(): Promise<string> {
-    var defaultPath = '/usr/local/bin/watchman'; // A guess at where it's located.
-    return new Promise((resolve, reject) => {
-      fs.stat(defaultPath, (error, stats) => {
-        // `stats` contains a `mode` property, a number which can be used to determine whether
-        // this is executable. However, the number itself is platform-dependent.
-        if (stats && stats.isFile()) {
-          resolve(defaultPath);
-        } else {
-          // Let the watchman Client find the watchman binary via the default env PATH.
-          resolve('watchman');
         }
       });
     });
