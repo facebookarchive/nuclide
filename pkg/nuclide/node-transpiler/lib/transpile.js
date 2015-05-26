@@ -31,7 +31,6 @@ function transpileFile(sourceCode, filePath, isYieldSupported) {
       'useStrict',
     ],
     optional: [
-      'reactCompat',
       (isYieldSupported ? 'asyncToGenerator' : 'regenerator'),
     ],
     stage: 0,
