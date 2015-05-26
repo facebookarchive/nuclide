@@ -23,7 +23,7 @@ module.exports = class HgRepositoryProvider {
       return null;
     }
 
-    var {findHgRepository} = require('nuclide-hg-repository-base');
+    var {findHgRepository} = require('nuclide-source-control-helpers');
     var {repoPath, originURL, workingDirectoryPath} = findHgRepository(directory.getPath());
 
     if (repoPath) {

@@ -15,7 +15,7 @@
  */
 
 function getHgRepository(directoryPath: string) {
-  var {findHgRepository} = require('nuclide-hg-repository-base');
+  var {findHgRepository} = require('nuclide-source-control-helpers');
   return findHgRepository(directoryPath);
 }
 

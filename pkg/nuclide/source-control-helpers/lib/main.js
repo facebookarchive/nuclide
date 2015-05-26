@@ -10,5 +10,7 @@
  */
 
 module.exports = {
-    // TODO(jessicalin): Add export code here.
+  get findHgRepository() {
+    return require('./hg-repository');
+  },
 };

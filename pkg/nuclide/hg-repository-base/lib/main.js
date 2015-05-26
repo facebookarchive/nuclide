@@ -18,10 +18,6 @@ module.exports = {
     return require('./LocalHgService');
   },
 
-  get findHgRepository() {
-    return require('./find-hg-repository');
-  },
-
   get hgConstants() {
     return require('./hg-constants');
   },
