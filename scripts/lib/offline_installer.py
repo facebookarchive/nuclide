@@ -34,7 +34,7 @@ class OfflineInstaller(object):
                 continue
             else:
                 package_json = os.path.join(config['packageRootAbsolutePath'], 'package.json')
-                pkg = PackageNeedsDepsInstalled(config['name'], package_json, include_dev_dependencies=True)
+                pkg = PackageNeedsDepsInstalled(config['name'], package_json, config['includeDevDependencies'])
                 queue.append(pkg)
 
         # Process the items in the queue in order. Dependencies will be traversed in a depth-first

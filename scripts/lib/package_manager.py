@@ -229,6 +229,7 @@ def load_package_configs():
         package_type = nuclide_config.get('packageType')
         test_runner = nuclide_config.get('testRunner')
         disableTests = nuclide_config.get('excludeTestsFromContinuousIntegration', False)
+        includeDevDependencies = nuclide_config.get('includeDevDependencies', True)
 
         config = {}
         config['name'] = manifest['name']
@@ -237,6 +238,7 @@ def load_package_configs():
         config['packageRootAbsolutePath'] = os.path.dirname(path)
         config['testRunner'] = test_runner
         config['excludeTestsFromContinuousIntegration'] = disableTests
+        config['includeDevDependencies'] = includeDevDependencies
         config['excludeFromRelease'] = False
         package_map[config['name']] = config
 

@@ -28,7 +28,7 @@ class DependencyFinder(object):
             package_json = os.path.join(src_path, 'package.json')
             self._process_package_json(package_json,
                                        package_to_version_set,
-                                       include_dev_dependencies=True)
+                                       include_dev_dependencies=config['includeDevDependencies'])
 
         # Write deps based on package_to_version_set.
         # Leveraging semver from npm makes this fairly straightforward.
