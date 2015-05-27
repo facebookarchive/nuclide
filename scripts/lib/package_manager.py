@@ -189,6 +189,13 @@ class TopologicalInstaller(object):
                         inactive_process = process
                         break
 
+                # Verify the error code of the completed process.
+                exitcode = inactive_process.exitcode
+                if exitcode:
+                    config = process_to_config[inactive_process]
+                    raise Exception('Installing package %s failed with exit code %s' %
+                        (config['name'], exitcode))
+
                 # Remove the process from the worker pool.
                 completed_config = process_to_config[inactive_process]
                 del process_to_config[inactive_process]
