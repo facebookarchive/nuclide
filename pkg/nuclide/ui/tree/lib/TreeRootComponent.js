@@ -386,12 +386,20 @@ var TreeRootComponent = React.createClass({
     var expandedKeys = this.state.expandedKeys;
     roots.forEach((root) => expandedKeys.add(root.getKey()));
 
+    // We have to create the listener before setting the state so it can pick
+    // up the changes from `setState`.
+    var promise = this._createDidUpdateListener(/* shouldResolve */ () => {
+      var rootsReady = (this.state.roots === roots);
+      var childrenReady = this.state.roots.every(root => root.isCacheValid());
+      return rootsReady && childrenReady;
+    });
+
     this.setState({
       roots,
       expandedKeys,
     });
 
-    return this._createDidUpdateListener(/* shouldResolve */ () => this.state.roots === roots);
+    return promise;
   },
 
   _createDidUpdateListener(shouldResolve: () => boolean): Promise {
