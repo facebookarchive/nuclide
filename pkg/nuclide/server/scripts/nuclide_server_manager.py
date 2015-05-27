@@ -26,8 +26,10 @@ from nuclide_certificates_generator import NuclideCertificatesGenerator
 from process_info import ProcessInfo
 
 try:
-    from fb.nuclide_config import OPEN_PORTS
+    from fb.nuclide_config import EXTRA_NODE_PATHS, OPEN_PORTS
 except ImportError as e:
+    # Default extra $PATH elements for Node v0.12.
+    EXTRA_NODE_PATHS = []
     # Default open ports.
     OPEN_PORTS = [9090, 9091, 9092, 9093]
     pass
@@ -35,7 +37,7 @@ except ImportError as e:
 TEST_VERSION = 'test-version'
 # Certificates store is ~/.certs
 CERTS_DIR = os.path.join(os.path.expanduser('~'), '.certs')
-NODE_PATHS = ['/opt/local/bin', '/usr/local/bin']
+NODE_PATHS = EXTRA_NODE_PATHS + ['/opt/local/bin', '/usr/local/bin']
 
 # This class manages Nuclide servers.
 # It can start/restart a server.
@@ -209,7 +211,7 @@ def get_option_parser():
     return parser
 
 if __name__ == '__main__':
-    os.environ["PATH"] += os.pathsep + os.pathsep.join(NODE_PATHS)
+    os.environ['PATH'] = os.pathsep.join(NODE_PATHS) + os.pathsep + os.environ.get('PATH', '')
     parser = get_option_parser()
     options, args = parser.parse_args(sys.argv[1:])
 
