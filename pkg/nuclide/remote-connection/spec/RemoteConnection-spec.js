@@ -11,7 +11,6 @@
 
 var fs = require('fs');
 var RemoteConnection = require('../lib/RemoteConnection');
-var SshHandshake = require('../lib/SshHandshake');
 var {EventEmitter} = require('events');
 var path = require('path');
 var pathToFakePk = path.join(__dirname, 'fakepk');
@@ -19,8 +18,8 @@ var pathToFakePk = path.join(__dirname, 'fakepk');
 describe('RemoteConnection', () => {
   var testConnections = RemoteConnection.test.connections;
   var testConnection;
-  var testHostname = 'most.fb.com';
-  var testPath = '/home/most/www';
+  var testHostname = 'foo.nuclide.com';
+  var testPath = '/home/foo/test';
 
   beforeEach(() => {
     fs.writeFileSync(pathToFakePk, '');
@@ -38,68 +37,6 @@ describe('RemoteConnection', () => {
     }
   });
 
-  class MockSshConnection extends EventEmitter {
-    connect(config) { }
-    end() { }
-  }
-
-  describe('connect()', () => {
-    it('calls delegates onError when ssh connection fails', () => {
-      var mockError = new Error('mock error');
-      var handshakeDelegate = jasmine.createSpyObj('delegate', ['onError']);
-      var sshConnection = new MockSshConnection();
-      var sshHandshake = new SshHandshake(handshakeDelegate, sshConnection);
-      var config = {pathToPrivateKey: pathToFakePk};
-
-      sshHandshake.connect(config);
-      sshConnection.emit('error', mockError);
-
-      expect(handshakeDelegate.onError.callCount).toBe(1);
-      expect(handshakeDelegate.onError.calls[0].args[0]).toBe(mockError);
-      expect(handshakeDelegate.onError.calls[0].args[1]).toBe(config);
-    });
-
-    it('calls delegates onError when private key does not exist', () => {
-      var handshakeDelegate = jasmine.createSpyObj('delegate', ['onError']);
-      var sshConnection = new MockSshConnection();
-      var sshHandshake = new SshHandshake(handshakeDelegate, sshConnection);
-      var config = {pathToPrivateKey: pathToFakePk + '.oops'};
-
-      sshHandshake.connect(config);
-
-      var onErrorCalled = false;
-
-      handshakeDelegate.onError.andCallFake((e, _config) => {
-        expect(e.code).toBe('ENOENT');
-        expect(_config).toBe(config);
-        onErrorCalled = true;
-      });
-
-      waitsFor(() => {
-        return onErrorCalled;
-      });
-
-      runs(() => {
-        expect(handshakeDelegate.onError.callCount).toBe(1);
-      });
-    });
-  });
-
-  describe('cancel()', () => {
-    it('calls SshConnection.end()', () => {
-      var sshConnection = new MockSshConnection();
-      var sshHandshake = new SshHandshake({}, sshConnection);
-      var config = {pathToPrivateKey: pathToFakePk};
-
-      spyOn(sshConnection, 'end');
-
-      sshHandshake.connect(config);
-      sshHandshake.cancel();
-
-      expect(sshConnection.end.calls.length).toBe(1);
-    });
-  });
-
   describe('getByHostnameAndPath()', () => {
     it('gets a connection if the hostname and path matches', () => {
       var conn = RemoteConnection.getByHostnameAndPath(testHostname, testPath);
@@ -107,12 +44,12 @@ describe('RemoteConnection', () => {
     });
 
     it('returns undefined if the path is not matching', () => {
-      var conn = RemoteConnection.getByHostnameAndPath(testHostname, '/home/mikeo/www');
+      var conn = RemoteConnection.getByHostnameAndPath(testHostname, '/home/bar/test');
       expect(conn).toBeUndefined();
     });
 
     it('returns undefined if the hostname is not matching', () => {
-      var conn = RemoteConnection.getByHostnameAndPath('mikeo.fb.com', testPath);
+      var conn = RemoteConnection.getByHostnameAndPath('bar.nuclide.com', testPath);
       expect(conn).toBeUndefined();
     });
 
@@ -129,12 +66,12 @@ describe('RemoteConnection', () => {
     });
 
     it('returns undefined if the path is not matching', () => {
-      var conn = RemoteConnection.getForUri(`nuclide://${testHostname}:9292$/home/mikeo/www`);
+      var conn = RemoteConnection.getForUri(`nuclide://${testHostname}:9292$/home/bar/test`);
       expect(conn).toBeUndefined();
     });
 
     it('returns undefined if the hostname is not matching', () => {
-      var conn = RemoteConnection.getForUri(`nuclide://mikeo.fb.com:9292${testPath}`);
+      var conn = RemoteConnection.getForUri(`nuclide://bar.nuclide.com:9292${testPath}`);
       expect(conn).toBeUndefined();
     });
 
