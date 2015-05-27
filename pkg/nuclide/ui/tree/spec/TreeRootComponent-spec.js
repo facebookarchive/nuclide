@@ -83,7 +83,7 @@ describe('TreeRootComponent', () => {
     };
 
     props = {
-      initialRoots: [nodes['A'], nodes['D']],
+      initialRoots: [],
       eventHandlerSelector: '.test',
       labelClassNameForNode: (node) => node.getItem().label,
     };
@@ -91,12 +91,32 @@ describe('TreeRootComponent', () => {
 
   describe('setRoots', () => {
     it('preserves state for reusable roots + removes state for non-reusable roots', () => {
-      var component = renderComponent(props);
-      component.setRoots([nodes['G'], nodes['A']]);
+      waitsForPromise(async () => {
+        var component = renderComponent(props);
+        await component.setRoots([nodes['A']]);
+        await component.setRoots([nodes['G'], nodes['A']]);
 
-      expect(component.getRootNodes()).toEqual([nodes['G'], nodes['A']]);
-      expect(component.getSelectedNodes()).toEqual([nodes['A']]);
-      expect(component.getExpandedNodes()).toEqual([nodes['A'], nodes['G']]);
+        expect(component.getRootNodes()).toEqual([nodes['G'], nodes['A']]);
+        expect(component.getSelectedNodes()).toEqual([]);
+        expect(component.getExpandedNodes()).toEqual([nodes['A'], nodes['G']]);
+      });
+    });
+
+    it('returns a Promise that resolves after the children are rendered', () => {
+      waitsForPromise(async () => {
+        var component = renderComponent(props);
+
+        // The children should be in the tree if we `await` the promise.
+        await component.setRoots([nodes['D']]);
+        var nodeComponents = getNodeComponents(component);
+        expect(nodeComponents['E']).not.toBeUndefined();
+
+        // The children shouldn't immediately be in the tree if we don't
+        // `await` the promise.
+        component.setRoots([nodes['A']]);
+        nodeComponents = getNodeComponents(component);
+        expect(nodeComponents['B']).toBeUndefined();
+      });
     });
   });
 
@@ -104,8 +124,7 @@ describe('TreeRootComponent', () => {
     it('moves the selection to the parent when collapsing a non-container node', () => {
       waitsForPromise(async () => {
         var component = renderComponent(props);
-        component.setRoots([nodes['A']]);
-        await fetchChildrenForNodes(component.getRootNodes());
+        await component.setRoots([nodes['A']]);
 
         clickNodeWithLabel(component, 'B');
         expect(component.getSelectedNodes()).toEqual([nodes['B']]);
@@ -119,8 +138,7 @@ describe('TreeRootComponent', () => {
     it('moves the selection to the parent when collapsing an already-collapsed container node', () => {
       waitsForPromise(async () => {
         var component = renderComponent(props);
-        component.setRoots([nodes['G']]);
-        await fetchChildrenForNodes(component.getRootNodes());
+        await component.setRoots([nodes['G']]);
 
         clickNodeWithLabel(component, 'H');
         expect(component.getSelectedNodes()).toEqual([nodes['H']]);
@@ -135,8 +153,7 @@ describe('TreeRootComponent', () => {
     it('collapses the selection when collapsing an expanded container node', () => {
       waitsForPromise(async () => {
         var component = renderComponent(props);
-        component.setRoots([nodes['G']]);
-        await fetchChildrenForNodes(component.getRootNodes());
+        await component.setRoots([nodes['G']]);
 
         clickNodeWithLabel(component, 'H');
         atom.commands.dispatch(hostEl, 'core:move-right');
@@ -152,8 +169,7 @@ describe('TreeRootComponent', () => {
     it('does nothing when collapsing an already-collapsed root element', () => {
       waitsForPromise(async () => {
         var component = renderComponent(props);
-        component.setRoots([nodes['G']]);
-        await fetchChildrenForNodes(component.getRootNodes());
+        await component.setRoots([nodes['G']]);
 
         clickNodeWithLabel(component, 'G');
         expect(component.getSelectedNodes()).toEqual([nodes['G']]);
@@ -169,8 +185,7 @@ describe('TreeRootComponent', () => {
     it('collapses the selection when collapsing an expanded root element', () => {
       waitsForPromise(async () => {
         var component = renderComponent(props);
-        component.setRoots([nodes['G']]);
-        await fetchChildrenForNodes(component.getRootNodes());
+        await component.setRoots([nodes['G']]);
 
         clickNodeWithLabel(component, 'G');
         expect(component.getSelectedNodes()).toEqual([nodes['G']]);
@@ -188,8 +203,7 @@ describe('TreeRootComponent', () => {
     it('deselects descendants of the node', () => {
       waitsForPromise(async () => {
         var component = renderComponent(props);
-        component.setRoots([nodes['G']]);
-        await fetchChildrenForNodes(component.getRootNodes());
+        await component.setRoots([nodes['G']]);
 
         component.selectNodeKey(nodes['H'].getKey());
         expect(component.getSelectedNodes()).toEqual([nodes['H']]);
@@ -202,8 +216,7 @@ describe('TreeRootComponent', () => {
     it('does not deselect the node', () => {
       waitsForPromise(async () => {
         var component = renderComponent(props);
-        component.setRoots([nodes['G']]);
-        await fetchChildrenForNodes(component.getRootNodes());
+        await component.setRoots([nodes['G']]);
 
         component.selectNodeKey(nodes['G'].getKey());
         expect(component.getSelectedNodes()).toEqual([nodes['G']]);

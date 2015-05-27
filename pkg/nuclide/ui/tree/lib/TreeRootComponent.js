@@ -10,6 +10,7 @@
  */
 
 var {CompositeDisposable} = require('atom');
+var {EventEmitter} = require('events');
 var LazyTreeNode = require('./LazyTreeNode');
 var TreeNodeComponent = require('./TreeNodeComponent');
 var {forEachCachedNode} = require('./tree-node-traversals');
@@ -127,6 +128,8 @@ var TreeRootComponent = React.createClass({
         firstSelectedDescendant.getDOMNode().scrollIntoViewIfNeeded(false);
       }
     }
+
+    this._emitter.emit('did-update');
   },
 
   _deselectDescendants(root: LazyTreeNode): void {
@@ -343,11 +346,16 @@ var TreeRootComponent = React.createClass({
 
           'core:confirm': () => this._confirmSelection(),
         }));
+
+    this._emitter = new EventEmitter();
   },
 
   componentWillUnmount(): void {
     if (this._subscriptions) {
       this._subscriptions.dispose();
+    }
+    if (this._emitter) {
+      this._emitter.removeAllListeners();
     }
   },
 
@@ -359,7 +367,10 @@ var TreeRootComponent = React.createClass({
     };
   },
 
-  setRoots(roots: Array<LazyTreeNode>): void {
+  /**
+   * Returns a Promise that's resolved when the roots are rendered.
+   */
+  setRoots(roots: Array<LazyTreeNode>): Promise {
     // Remove old state for roots that are no longer relevant.
     var oldRoots = this.state.roots;
     var rootKeys = new Set(roots.map((root) => root.getKey()));
@@ -378,6 +389,20 @@ var TreeRootComponent = React.createClass({
     this.setState({
       roots,
       expandedKeys,
+    });
+
+    return this._createDidUpdateListener(/* shouldResolve */ () => this.state.roots === roots);
+  },
+
+  _createDidUpdateListener(shouldResolve: () => boolean): Promise {
+    return new Promise(resolve => {
+      var listener = () => {
+        if (shouldResolve()) {
+          resolve();
+          this._emitter.removeListener('did-update', listener);
+        }
+      };
+      this._emitter.addListener('did-update', listener);
     });
   },
 
