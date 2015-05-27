@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "nuclide-analytics": "0.0.0",
+    "nuclide-atom-interfaces": "0.0.0",
     "nuclide-commons": "0.0.0",
     "nuclide-click-to-symbol-delegate": "0.0.0"
   }

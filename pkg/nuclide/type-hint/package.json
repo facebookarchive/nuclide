@@ -12,6 +12,7 @@
     "atom": ">=0.196.0"
   },
   "dependencies": {
+    "nuclide-atom-interfaces": "0.0.0"
   },
   "consumedServices": {
     "nuclide-type-hint.provider": {

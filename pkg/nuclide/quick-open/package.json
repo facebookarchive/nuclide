@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "nuclide-atom-helpers": "0.0.0",
+    "nuclide-atom-interfaces": "0.0.0",
     "nuclide-client": "0.0.0",
     "nuclide-commons": "0.0.0",
     "nuclide-logging": "0.0.0",

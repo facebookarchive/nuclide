@@ -30,10 +30,11 @@
     "atom": ">0.188.0"
   },
   "dependencies": {
+    "nuclide-atom-helpers": "0.0.0",
+    "nuclide-atom-interfaces": "0.0.0",
+    "nuclide-click-to-symbol-delegate": "0.0.0",
     "nuclide-client": "0.0.0",
     "nuclide-commons": "0.0.0",
-    "nuclide-flow-base": "0.0.0",
-    "nuclide-atom-helpers": "0.0.0",
-    "nuclide-click-to-symbol-delegate": "0.0.0"
+    "nuclide-flow-base": "0.0.0"
   }
 }

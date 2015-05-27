@@ -10,5 +10,8 @@
   },
   "engines": {
     "atom": ">=0.187.0"
+  },
+  "dependencies": {
+    "nuclide-atom-interfaces": "0.0.0"
   }
 }

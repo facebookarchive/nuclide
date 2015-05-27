@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "heap": "0.2.6",
+    "nuclide-atom-interfaces": "0.0.0",
     "nuclide-commons": "0.0.0",
     "nuclide-node-transpiler": "0.0.0",
     "nuclide-task": "0.0.0",

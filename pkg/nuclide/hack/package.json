@@ -37,12 +37,13 @@
     "atom": ">=0.196.0"
   },
   "dependencies": {
-    "nuclide-logging": "0.0.0",
     "nuclide-atom-helpers": "0.0.0",
+    "nuclide-atom-interfaces": "0.0.0",
     "nuclide-click-to-symbol-delegate": "0.0.0",
     "nuclide-client": "0.0.0",
     "nuclide-commons": "0.0.0",
     "nuclide-hack-common": "0.0.0",
+    "nuclide-logging": "0.0.0",
     "nuclide-text-buffer": "4.2.0"
   }
 }

@@ -22,6 +22,7 @@
     "fs-plus": "2.8.0",
     "immutable": "3.6.2",
     "nuclide-atom-helpers": "0.0.0",
+    "nuclide-atom-interfaces": "0.0.0",
     "nuclide-commons": "0.0.0",
     "nuclide-logging": "0.0.0",
     "nuclide-panel": "0.0.0",
