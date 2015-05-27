@@ -13,10 +13,9 @@ var React = require('react-for-atom');
 
 var PanelComponent = require('./PanelComponent');
 
-
 type PanelControllerState = {
   isVisible: boolean;
-  width: number;
+  resizableLength: number;
 };
 
 /**
@@ -25,17 +24,27 @@ type PanelControllerState = {
  * support different sides in the future.
  */
 class PanelController {
+  _hostEl: HTMLElement;
+  _panel: atom$Panel;
+
   /**
    * @param childElement should use PanelController.getEventHandlerSelector() to
    *     get the selector it needs for its eventHandlerSelector prop.
    */
-  constructor(childElement: ReactElement, state: ?PanelControllerState) {
+  constructor(
+    childElement: ReactElement,
+    props: {dock: string; scrollable?: boolean},
+    state: ?PanelControllerState
+  ) {
     this._hostEl = document.createElement('div');
+    // Fill the entire panel with this div so content can also use 100% to fill
+    // up the entire panel.
+    this._hostEl.style.height = '100%';
 
-    var props = {};
     var shouldBeVisible = false;
+    var initialLength = null;
     if (state) {
-      props.initialContainerWidthInPixels = state.width;
+      props.initialLength = state.resizableLength;
       shouldBeVisible = state.isVisible;
     }
 
@@ -68,13 +77,13 @@ class PanelController {
   }
 
   getChildComponent(): ReactComponent {
-    return this._component.refs['child'];
+    return this._component.getChildComponent();
   }
 
   serialize(): PanelControllerState {
     return {
       isVisible: this.isVisible(),
-      width: this._component.getContainerWidthInPixels(),
+      resizableLength: this._component.getLength(),
     };
   }
 }

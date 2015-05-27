@@ -15,8 +15,7 @@ var {
   PropTypes,
 } = React;
 
-
-const CONTAINER_MINIMUM_WIDTH_IN_PIXELS = 100;
+const MINIMUM_LENGTH = 100;
 const DOUBLE_CLICK_TIME_INTERVAL_THRESHOLD_MS = 500;
 
 /**
@@ -25,13 +24,27 @@ const DOUBLE_CLICK_TIME_INTERVAL_THRESHOLD_MS = 500;
  */
 var PanelComponent = React.createClass({
   propTypes: {
-    initialContainerWidthInPixels: PropTypes.number,
+    initialLength: PropTypes.number,
+    dock: PropTypes.oneOf(['left', 'bottom']).isRequired,
+    /**
+     * Scrollable contents are mounted in a div that may overflow.
+     * Non-scrollable contents may match their bounds directly to that of the
+     * container.
+     */
+    scrollable: PropTypes.bool,
   },
 
-  getInitialState(): mixed {
+  getDefaultProps(): Object {
+    return {
+      initalLength: 200,
+      scrollable: false,
+    };
+  },
+
+  getInitialState(): Object {
     return {
       isResizing: false,
-      containerWidthInPixels: this.props.initialContainerWidthInPixels || 200,
+      length: this.props.initialLength,
     };
   },
 
@@ -40,77 +53,91 @@ var PanelComponent = React.createClass({
     // is resizing the panel, even if their mouse leaves the handle.
     var resizeCursorOverlay = null;
     if (this.state.isResizing) {
-      resizeCursorOverlay = <div className='nuclide-panel-component-resize-cursor-overlay' />;
+      resizeCursorOverlay = <div className={`nuclide-panel-component-resize-cursor-overlay ${this.props.dock}`} />;
     }
 
-    var containerStyle = {
-      width: this.state.containerWidthInPixels,
-      minWidth: CONTAINER_MINIMUM_WIDTH_IN_PIXELS,
-    };
+    var containerStyle;
+    if (this.props.dock === 'left') {
+      containerStyle = {
+        width: this.state.length,
+        minWidth: MINIMUM_LENGTH,
+      };
+    } else if (this.props.dock === 'bottom') {
+      containerStyle = {
+        height: this.state.length,
+        minHeight: MINIMUM_LENGTH,
+      };
+    }
 
-    var children = addons.createFragment(
-      addons.cloneWithProps(
-        React.Children.only(this.props.children),
-        {'ref': 'child'}
-      )
-    );
+    // The `tabIndex` makes the element focusable so it can handle events.
+    var content = React.cloneElement(
+      React.Children.only(this.props.children),
+      {tabIndex: -1, ref: 'child'});
+    if (this.props.scrollable) {
+      content = <div className='nuclide-panel-component-scrollable-content'>{content}</div>;
+    }
 
-    // The `tabIndex` makes the element focusable so it can handle events. We
-    // put it on the content div because its CSS expands it to fill the panel.
     return (
-      <div>
-        <div key='nuclide-panel-component'
-             className='nuclide-panel-component-container'
-             ref='container'
-             style={containerStyle}>
-          <div className='nuclide-panel-component-scroller'>
-            <div className='nuclide-panel-component-content' tabIndex={-1} ref='focusReceiver'>
-              {children}
-            </div>
-          </div>
-          <div className='nuclide-panel-component-resize-handle' onMouseDown={this._handleMouseDown} />
-          {resizeCursorOverlay}
+      <div className={`nuclide-panel-component ${this.props.dock}`}
+           ref='container'
+           style={containerStyle}>
+        <div className={`nuclide-panel-component-resize-handle ${this.props.dock}`}
+             onMouseDown={this._handleMouseDown}
+             onDoubleClick={this._handleDoubleClick} />
+        <div className='nuclide-panel-component-scroller'>
+          {content}
         </div>
+        {resizeCursorOverlay}
       </div>
     );
   },
 
-  getContainerWidthInPixels(): number {
-    return this.state.containerWidthInPixels;
+  /**
+   * Returns the current resizable length.
+   *
+   * For panels docked left or right, the length is the width. For panels
+   * docked top or bottom, it's the height.
+   */
+  getLength(): number {
+    return this.state.length;
   },
 
-  _handleMouseDown(event: MouseEvent): void {
+  focus(): void {
+    this.refs.child.getDOMNode().focus();
+  },
+
+  getChildComponent(): void {
+    return this.refs.child;
+  },
+
+  _handleMouseDown(event: SyntheticMouseEvent): void {
     this._resizeSubscriptions = new CompositeDisposable();
 
-    var handleMouseMove = (e) => this._handleMouseMove(e);
-    window.addEventListener('mousemove', handleMouseMove);
-    this._resizeSubscriptions.add({dispose: () => window.removeEventListener('mousemove', handleMouseMove)});
+    window.addEventListener('mousemove', this._handleMouseMove);
+    this._resizeSubscriptions.add({
+      dispose: () => window.removeEventListener('mousemove', this._handleMouseMove)
+    });
 
-    var handleMouseUp = (e) => this._handleMouseUp(e);
-    window.addEventListener('mouseup', handleMouseUp);
-    this._resizeSubscriptions.add({dispose: () => window.removeEventListener('mouseup', handleMouseUp)});
+    window.addEventListener('mouseup', this._handleMouseUp);
+    this._resizeSubscriptions.add({
+      dispose: () => window.removeEventListener('mouseup', this._handleMouseUp)
+    });
 
     this.setState({isResizing: true});
   },
 
-  _handleMouseMove(event: MouseEvent): void {
+  _handleMouseMove(event: SyntheticMouseEvent): void {
     var containerEl = this.refs['container'].getDOMNode();
-    var containerWidthInPixels = event.pageX - containerEl.getBoundingClientRect().left;
-    this.setState({containerWidthInPixels});
+    var length = 0;
+    if (this.props.dock === 'left') {
+      length = event.pageX - containerEl.getBoundingClientRect().left;
+    } else if (this.props.dock === 'bottom') {
+      length = containerEl.getBoundingClientRect().bottom - event.pageY;
+    }
+    this.setState({length});
   },
 
-  _handleMouseUp(event: MouseEvent): void {
-    // Since we cannot listen to both 'click' and 'dblclick' on the same element,
-    // determine if this is a double click, and handle it first.
-    var now = new Date();
-    if (this._lastClick) {
-      var difference = now - this._lastClick;
-      if (difference <= DOUBLE_CLICK_TIME_INTERVAL_THRESHOLD_MS) {
-        this._handleDoubleClick();
-      }
-    }
-    this._lastClick = now;
-
+  _handleMouseUp(event: SyntheticMouseEvent): void {
     if (this._resizeSubscriptions) {
       this._resizeSubscriptions.dispose();
     }
@@ -121,15 +148,21 @@ var PanelComponent = React.createClass({
    * Resize the pane to fit its contents.
    */
   _handleDoubleClick(): void {
-      // Set the width to 0 so that resizing works when width exceeds the offsetwidth of the 'focusReceiver'.
-      var containerWidthInPixels = 0;
-      this.setState({containerWidthInPixels});
-      containerWidthInPixels = this.refs['focusReceiver'].getDOMNode().offsetWidth;
-      this.setState({containerWidthInPixels});
-  },
-
-  focus(): void {
-    this.refs['focusReceiver'].getDOMNode().focus();
+    // Reset size to 0 and read the content's natural width (after re-layout)
+    // to determine the size to scale to.
+    this.setState({length: 0});
+    this.forceUpdate(() => {
+      var length = 0;
+      var childNode = this.refs.child.getDOMNode();
+      if (this.props.dock === 'left') {
+        length = childNode.offsetWidth;
+      } else if (this.props.dock === 'bottom') {
+        length = childNode.offsetHeight;
+      } else {
+        throw new Error('unhandled dock');
+      }
+      this.setState({length});
+    });
   },
 });
 

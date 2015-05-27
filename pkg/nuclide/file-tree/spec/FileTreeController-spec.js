@@ -14,6 +14,7 @@ var Immutable = require('immutable');
 var path = require('path');
 var rmdir = require('rimraf');
 var temp = require('temp').track();
+var timers = require('timers');
 
 var rootBasenames = [
   'dir1',
@@ -22,6 +23,15 @@ var rootBasenames = [
 
 function fetchChildrenForNodes(nodes: Array<LazyFileTreeNode>): Promise {
   return Promise.all(nodes.map((node) => node.fetchChildren()));
+}
+
+/**
+ * Wait for render.
+ */
+function waitForRender(): Promise {
+  return new Promise((resolve, reject) => {
+    timers.setImmediate(resolve);
+  });
 }
 
 /**
@@ -44,6 +54,7 @@ describe('FileTreeController', () => {
       atom.project.setPaths(rootPaths);
 
       fileTreeController = new FileTreeController();
+      await waitForRender();
       treeComponent = fileTreeController.getTreeComponent();
       rootNodes = treeComponent.getRootNodes();
       await fetchChildrenForNodes(rootNodes);
@@ -88,6 +99,7 @@ describe('FileTreeController', () => {
         // since they have the same basenames as the existing root paths in 'fixtures'.
         fileTreeController.destroy();
         fileTreeController = new FileTreeController();
+        await waitForRender();
         treeComponent = fileTreeController.getTreeComponent();
 
         rootNodes = treeComponent.getRootNodes();

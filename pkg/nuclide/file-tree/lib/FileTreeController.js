@@ -179,7 +179,10 @@ class FileTreeController {
     var childComponent = (
       <TreeRootComponent {...props} />
     );
-    this._panelController = new PanelController(childComponent, state && state.panel);
+    this._panelController = new PanelController(
+        childComponent,
+        {dock: 'left', scrollable: true},
+        state && state.panel);
 
     this._subscriptions.add(atom.commands.add(
         PanelController.getEventHandlerSelector(),
