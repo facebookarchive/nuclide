@@ -27,13 +27,9 @@ class PanelController {
   _hostEl: HTMLElement;
   _panel: atom$Panel;
 
-  /**
-   * @param childElement should use PanelController.getEventHandlerSelector() to
-   *     get the selector it needs for its eventHandlerSelector prop.
-   */
   constructor(
     childElement: ReactElement,
-    props: {dock: string; scrollable?: boolean},
+    props: {dock: string},
     state: ?PanelControllerState
   ) {
     this._hostEl = document.createElement('div');
@@ -87,7 +83,5 @@ class PanelController {
     };
   }
 }
-
-PanelController.getEventHandlerSelector = () => '.nuclide-panel-component-content';
 
 module.exports = PanelController;

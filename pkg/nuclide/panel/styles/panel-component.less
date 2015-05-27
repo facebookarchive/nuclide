@@ -22,36 +22,13 @@
 .nuclide-panel-component-scroller {
   overflow: auto;
   flex: 1 1 auto;
-}
-
-.nuclide-panel-component-scrollable-content {
-  // This enables descendants to set their widths relative to this div.
-  //
-  // Otherwise they would set their widths relative to the scroller, which
-  // would have a smaller width than this div when the content is scrollable.
-  position: relative;
-
-  // This expands the div to always fill the scroller.
-  min-height: 100%;
-  min-width: 100%;
-
-  // This expands the div to fit the children, so it fills the width of the
-  // scroller even if the content is scrolled horizontally.
-  display: inline-block;
-
-  padding-left: 10px;
-  padding-right: 10px;
-
-  background-color: @tree-view-background-color;
-
-  &:focus {
-    background-color: darken(@tool-panel-background-color, 5%);
-  }
+  height: 100%;
 }
 
 .nuclide-panel-component-resize-handle {
   width: auto;
   height: auto;
+  flex: 0 0 auto;
 
   &.left {
     width: 4px;

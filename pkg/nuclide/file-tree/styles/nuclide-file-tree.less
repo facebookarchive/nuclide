@@ -1,0 +1,18 @@
+@import "ui-variables";
+
+.nuclide-file-tree {
+  padding-left: 10px;
+  padding-right: 10px;
+
+  // Fill all vertical space.
+  min-height: 100%;
+
+  // Allow block to extend past parent's width, for autoresizing purposes.
+  display: inline-block;
+
+  background-color: @tree-view-background-color;
+
+  &:focus {
+    background-color: darken(@tool-panel-background-color, 5%);
+  }
+}

@@ -26,18 +26,11 @@ var PanelComponent = React.createClass({
   propTypes: {
     initialLength: PropTypes.number,
     dock: PropTypes.oneOf(['left', 'bottom']).isRequired,
-    /**
-     * Scrollable contents are mounted in a div that may overflow.
-     * Non-scrollable contents may match their bounds directly to that of the
-     * container.
-     */
-    scrollable: PropTypes.bool,
   },
 
   getDefaultProps(): Object {
     return {
       initalLength: 200,
-      scrollable: false,
     };
   },
 
@@ -69,19 +62,16 @@ var PanelComponent = React.createClass({
       };
     }
 
-    // The `tabIndex` makes the element focusable so it can handle events.
     var content = React.cloneElement(
       React.Children.only(this.props.children),
-      {tabIndex: -1, ref: 'child'});
-    if (this.props.scrollable) {
-      content = <div className='nuclide-panel-component-scrollable-content'>{content}</div>;
-    }
+      {ref: 'child'});
 
     return (
       <div className={`nuclide-panel-component ${this.props.dock}`}
            ref='container'
            style={containerStyle}>
         <div className={`nuclide-panel-component-resize-handle ${this.props.dock}`}
+             ref='handle'
              onMouseDown={this._handleMouseDown}
              onDoubleClick={this._handleDoubleClick} />
         <div className='nuclide-panel-component-scroller'>
@@ -154,10 +144,11 @@ var PanelComponent = React.createClass({
     this.forceUpdate(() => {
       var length = 0;
       var childNode = this.refs.child.getDOMNode();
+      var handle = this.refs.handle.getDOMNode();
       if (this.props.dock === 'left') {
-        length = childNode.offsetWidth;
+        length = childNode.offsetWidth + handle.offsetWidth;
       } else if (this.props.dock === 'bottom') {
-        length = childNode.offsetHeight;
+        length = childNode.offsetHeight + handle.offsetHeight;
       } else {
         throw new Error('unhandled dock');
       }

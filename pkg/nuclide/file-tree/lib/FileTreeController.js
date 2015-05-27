@@ -133,6 +133,20 @@ type FileTreeControllerState = {
 
 type NodeState = {node: LazyFileTreeNode; subscription: ?Disposable};
 
+var FileTree = React.createClass({
+  render() {
+    return (
+      <div className="nuclide-file-tree" tabIndex="-1">
+        <TreeRootComponent ref="root" {...this.props}/>
+      </div>
+    );
+  },
+
+  getTreeRoot(): ?ReactComponent {
+    return this.refs.root;
+  },
+});
+
 class FileTreeController {
   constructor(state: ?FileTreeControllerState) {
     this._fetchChildrenWithController = (node) => fetchChildren(node, this);
@@ -155,7 +169,7 @@ class FileTreeController {
     this._roots = directories.map(
         (directory) => this.getNodeAndSetState(directory, /* parent */ null));
 
-    var eventHandlerSelector = PanelController.getEventHandlerSelector();
+    var eventHandlerSelector = '.nuclide-file-tree';
 
     this._subscriptions.add(atom.commands.add(
         eventHandlerSelector,
@@ -176,16 +190,13 @@ class FileTreeController {
       props.initialExpandedNodeKeys = state.tree.expandedNodeKeys;
       props.initialSelectedNodeKeys = state.tree.selectedNodeKeys;
     }
-    var childComponent = (
-      <TreeRootComponent {...props} />
-    );
     this._panelController = new PanelController(
-        childComponent,
-        {dock: 'left', scrollable: true},
+        <FileTree {...props} />,
+        {dock: 'left'},
         state && state.panel);
 
     this._subscriptions.add(atom.commands.add(
-        PanelController.getEventHandlerSelector(),
+        eventHandlerSelector,
         {
           'nuclide-file-tree:add-file': () => this.openAddFileDialog(),
           'nuclide-file-tree:add-folder': () => this.openAddFolderDialog(),
@@ -344,9 +355,8 @@ class FileTreeController {
 
   getTreeComponent(): ?TreeRootComponent {
     var component = this._panelController.getChildComponent();
-    // TODO(jjiaa): find a more reliable way to tell that the child component is the right type.
-    if (component && component.hasOwnProperty('setRoots')) {
-      return component;
+    if (component && component.hasOwnProperty('getTreeRoot')) {
+      return component.getTreeRoot();
     }
     return null;
   }
