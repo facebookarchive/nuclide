@@ -269,8 +269,8 @@ class NuclideServer {
 
     this._registerService('/serviceFramework/unsubscribeEvent', (serviceOptions: mixed, clientId: string, serviceName: string, methodName: string) => {
       var eventName = getRemoteEventName(serviceName, methodName, serviceOptions);
-      if (this._eventSubscriptions.has(evetName)) {
-        this._eventSubscriptions.get(eventNames).delete(clientId);
+      if (this._eventSubscriptions.has(eventName)) {
+        this._eventSubscriptions.get(eventName).delete(clientId);
       }
       logger.debug(`${clientId} unsubscribed to ${eventName}`);
     }, 'post');
