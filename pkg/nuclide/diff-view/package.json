@@ -11,5 +11,6 @@
     "atom": ">=0.199.0"
   },
   "dependencies": {
+    "react-for-atom": "0.13.6"
   }
 }

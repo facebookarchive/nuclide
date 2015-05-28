@@ -11,7 +11,7 @@
 class DiffViewElement extends HTMLElement {
 
   initialize(model) {
-    // TODO(most): Create the React diff view component, initialize it with the model and attach here.
+    this._model = model;
     return this;
   }
 
@@ -27,8 +27,9 @@ class DiffViewElement extends HTMLElement {
    * This guarantees no two diiff views are open for the same URI.
    */
   getURI() {
-    return null;
+    return this._model.getURI();
   }
+
 }
 
 module.exports = DiffViewElement = document.registerElement('nuclide-diff-view', {
