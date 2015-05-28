@@ -116,7 +116,10 @@ async function watchDirectoryRecursive(directoryPath: string, channel: string): 
         } else {
           fileWatcherEntry.eventEmitter.emit('change');
         }
-      } else if (entry.new || !entry.exists) {
+      }
+      // A file watch event can also be considered a directry change
+      // for the parent directory if a file was created or deleted.
+      if (entry.new || !entry.exists) {
         var entryDirectoryPath = path.join(entryPath, '..');
         if (watchedDirectories[entryDirectoryPath]) {
           directoryChanges[entryDirectoryPath] = (directoryChanges[entryDirectoryPath] || []).concat([entry]);
