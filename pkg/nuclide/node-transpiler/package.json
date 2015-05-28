@@ -5,10 +5,8 @@
   "version": "0.0.0",
   "description": "Transpiles JavaScript files that 'use babel'",
   "nuclide": {
-    "//": "TODO(7010049): Re-enable tests in CI",
     "packageType": "Node",
-    "testRunner": "npm",
-    "excludeTestsFromContinuousIntegration": true
+    "testRunner": "npm"
   },
   "dependencies": {
     "babel-core": "5.1.11",
