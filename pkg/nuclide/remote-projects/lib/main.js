@@ -51,7 +51,7 @@ async function restoreNuclideProjectState(remoteProjectConfig: RemoteConnectionC
   }
   // Reload the project files that have empty text editors/buffers open.
   atom.workspace.getTextEditors().forEach((editor) => {
-    var rawUrl = editor.getUri();
+    var rawUrl = editor.getURI();
     if (!rawUrl) {
       return;
     }
