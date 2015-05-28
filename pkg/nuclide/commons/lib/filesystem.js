@@ -121,6 +121,7 @@ var asyncFs = {
   'mkdir',
   'readFile',
   'readdir',
+  'readlink',
   'realpath',
   'rename',
   'stat',
