@@ -1,10 +1,6 @@
 'use babel';
 /* @flow */
 
-/**
- * Represents a Buck project on disk. All Buck commands for a project should be
- * done through an instance of this class.
- */
 class BuckProject {
 
   getPath(): Promise<NuclideUri> {
@@ -52,16 +48,6 @@ class BuckProject {
   }
 
   buildRuleTypeFor(aliasOrTarget: string): Promise<string> {
-    return Promise.reject('Not implemented');
-  }
-
-  /**
-   * Find the Buck file where the target is defined.
-   */
-  findTargetLocation(
-    path: NuclideUri, 
-    name: string
-  ): Promise<?{path: NuclideUri; line: number; column: number}> {
     return Promise.reject('Not implemented');
   }
 

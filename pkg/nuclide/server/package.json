@@ -14,6 +14,7 @@
     "fb-watchman": "0.0.1",
     "fs-plus": "~2.8.0",
     "nuclide-arcanist-base": "0.0.0",
+    "nuclide-buck-base": "0.0.0",
     "nuclide-clang": "0.0.0",
     "nuclide-commons": "0.0.0",
     "nuclide-flow-base": "0.0.0",

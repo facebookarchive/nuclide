@@ -46,5 +46,17 @@
     "implementation": "nuclide-arcanist-base/lib/LocalArcanistBaseService.js",
     "name": "ArcanistBaseService",
     "useServiceFramework": true
+    },
+  {
+    "definition": "nuclide-buck-base/lib/BuckUtils.js",
+    "implementation": "nuclide-buck-base/lib/LocalBuckUtils.js",
+    "name": "BuckUtils",
+    "useServiceFramework": true
+  },
+  {
+    "definition": "nuclide-buck-base/lib/BuckProject.js",
+    "implementation": "nuclide-buck-base/lib/LocalBuckProject.js",
+    "name": "BuckProject",
+    "useServiceFramework": true
   }
 ]
