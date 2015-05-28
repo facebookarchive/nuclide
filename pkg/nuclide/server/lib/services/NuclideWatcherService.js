@@ -36,10 +36,13 @@ async function watchFile(filePath: string): Promise<number> {
     watchEntry = watchedFiles[realPath] = {
       eventEmitter: new EventEmitter(),
       subscriptionCount: 0,
+      eventEmitterId: null,
     };
   }
   watchEntry.subscriptionCount++;
-  return this.registerEventEmitter(watchEntry.eventEmitter);
+  // A watch entry would have only a permanent eventEmitterId for all the future watch requests.
+  watchEntry.eventEmitterId = watchEntry.eventEmitterId || this.registerEventEmitter(watchEntry.eventEmitter);
+  return watchEntry.eventEmitterId;
 }
 
 async function unwatchFile(filePath: string): Promise<void> {
@@ -67,10 +70,13 @@ async function watchDirectory(directoryPath: string): Promise<number> {
     watchEntry = watchedDirectories[realPath] = {
       eventEmitter: new EventEmitter(),
       subscriptionCount: 0,
+      eventEmitterId: null,
     };
   }
   watchEntry.subscriptionCount++;
-  return this.registerEventEmitter(watchEntry.eventEmitter);
+  // A watch entry would have only a permanent eventEmitterId for all the future watch requests.
+  watchEntry.eventEmitterId = watchEntry.eventEmitterId || this.registerEventEmitter(watchEntry.eventEmitter);
+  return watchEntry.eventEmitterId;
 }
 
 async function unwatchDirectory(directoryPath: string): Promise<void> {
