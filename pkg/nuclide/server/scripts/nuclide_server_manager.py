@@ -34,10 +34,12 @@ except ImportError as e:
     OPEN_PORTS = [9090, 9091, 9092, 9093]
     pass
 
-TEST_VERSION = 'test-version'
 # Certificates store is ~/.certs
 CERTS_DIR = os.path.join(os.path.expanduser('~'), '.certs')
 NODE_PATHS = EXTRA_NODE_PATHS + ['/opt/local/bin', '/usr/local/bin']
+
+VERSION_FILE = os.path.join(os.path.dirname(__file__), '../node_modules/nuclide-version/version.json')
+
 
 # This class manages Nuclide servers.
 # It can start/restart a server.
@@ -45,7 +47,6 @@ NODE_PATHS = EXTRA_NODE_PATHS + ['/opt/local/bin', '/usr/local/bin']
 class NuclideServerManager(object):
     def __init__(self, options):
         self.options = options
-        self._root = os.path.realpath(os.path.join(os.path.dirname(__file__), '..'))
 
     def _is_port_open(self, port):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -71,13 +72,13 @@ class NuclideServerManager(object):
         # Otherwise, skip version checking.
         version = None
         try:
-            with open(os.path.join(self._root, 'VERSION_INFO')) as f:
+            with open(VERSION_FILE) as f:
                 version_json = json.load(f)
             version = str(version_json['Version'])
         except IOError as e:
-            print('No VERSION_INFO file. Skip version verification.', file=sys.stderr)
+            print('No version.json. Skip version verification.', file=sys.stderr)
         except (KeyError, ValueError) as e:
-            print('Corrupted VERSION_INFO file. Skip version verification.', file=sys.stderr)
+            print('Corrupted version.json. Skip version verification.', file=sys.stderr)
         return version
 
     def _ensure_certs_dir(self):

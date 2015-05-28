@@ -20,7 +20,6 @@ import utils
 from nuclide_certificates_generator import NuclideCertificatesGenerator
 from process_info import ProcessInfo
 
-TEST_VERSION = 'test-version'
 # Changing this will break server upgrade, as we rely on it to find existing servers.
 SCRIPT_NAME = 'nuclide-main.js'
 SCRIPT_PATH = os.path.join('lib', SCRIPT_NAME)

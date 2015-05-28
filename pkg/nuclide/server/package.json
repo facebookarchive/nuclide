@@ -24,6 +24,7 @@
     "nuclide-path-search": "0.0.0",
     "nuclide-service-transformer": "0.0.0",
     "nuclide-source-control-helpers": "0.0.0",
+    "nuclide-version": "0.0.0",
     "request": "2.53.0",
     "uuid": "2.0.1",
     "ws": "0.7.1",

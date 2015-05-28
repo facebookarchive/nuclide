@@ -13,6 +13,7 @@ var {execSync} = require('child_process');
 var NuclideServer = require('../lib/NuclideServer');
 var NuclideClient = require('../lib/NuclideClient');
 var NuclideRemoteEventbus = require('../lib/NuclideRemoteEventbus');
+var {getVersion} = require('nuclide-version');
 
 var server;
 var client;
@@ -61,7 +62,7 @@ describe('Nuclide Sercure Server test suite', () => {
   it('responds to HTTPS request', () => {
     waitsForPromise(async () => {
       var version = await client.version();
-      expect(version).toEqual('test-version');
+      expect(version.toString()).toEqual(getVersion());
     });
   });
 });

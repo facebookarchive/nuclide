@@ -23,10 +23,10 @@ var path = require('path');
 var {EventEmitter} = require('events');
 var WebSocketServer = require('ws').Server;
 var {deserializeArgs, sendJsonResponse, sendTextResponse} = require('./utils');
+var {getVersion} = require('nuclide-version');
 
 var logger = require('nuclide-logging').getLogger();
 
-const TEST_VERSION = 'test-version';
 var EVENT_HANDLE_REGISTERED = '_nuclideServerEventHandleRegstered';
 var idIncrement = 0;
 
@@ -221,14 +221,7 @@ class NuclideServer {
   }
 
   _setupVersionHandler() {
-    try {
-      // Cannot use require() who counts on extension (.json) for parsing file as json.
-      var json = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../VERSION_INFO')));
-      this._version = json.Version.toString();
-    } catch (e) {
-      this._version = TEST_VERSION;
-      // No VERSION_INFO file, no version. e.g. in your development env.
-    }
+    this._version = getVersion().toString();
     this._registerService('/server/version', () => this._version, 'post', true);
   }
 

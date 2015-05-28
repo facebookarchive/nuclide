@@ -14,17 +14,14 @@ var {EventEmitter} = require('events');
 var NuclideServer = require('../lib/NuclideServer');
 var NuclideRemoteEventbus = require('../lib/NuclideRemoteEventbus');
 var NuclideClient = require('../lib/NuclideClient');
+var {getVersion} = require('nuclide-version');
 
 var server;
 var client;
-var json = { Version: 8 };
-var version_file = path.resolve(__dirname, '../VERSION_INFO');
 
 describe('Nuclide Server test suite', () => {
   beforeEach(() => {
     jasmine.getEnv().defaultTimeoutInterval = 10000;
-    // Write VERSION_FILE before running the test
-    fs.writeFileSync(version_file, JSON.stringify(json));
 
     waitsForPromise(async () => {
       server = new NuclideServer({port: 8176});
@@ -36,16 +33,12 @@ describe('Nuclide Server test suite', () => {
   afterEach(() => {
     client.eventbus.socket.close();
     server.close();
-
-    if (fs.existsSync(version_file)) {
-      fs.unlink(version_file);
-    }
   });
 
   it('responds to version', () => {
     waitsForPromise(async () => {
       var version = await client.version();
-      expect(version).toEqual(json.Version);
+      expect(version.toString()).toEqual(getVersion());
     });
   });
 

@@ -19,7 +19,7 @@ function getConnectionDialogDefaultSettings(): mixed {
     cwd: path.join('/home', username),
     pathToPrivateKey: path.join(process.env.HOME, '.ssh/id_rsa'),
     useSshAgent: false,
-    remoteServerCommand: path.join(process.env.HOME, '.nuclide', 'start-nuclide-server'),
+    remoteServerCommand: path.join(process.env.HOME, 'nuclide', 'start-nuclide-server'),
     sshPort: 22,
   };
 }
