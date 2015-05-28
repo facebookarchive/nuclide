@@ -19,8 +19,22 @@ var DiffViewComponent = React.createClass({
 
   async componentDidMount(): Promise<void> {
     this._subscriptions = new CompositeDisposable();
-    var {oldText, newText} = await this.props.model.getDiffState();
-    // TODO(most): Initialize the diff editors with the model state and setup marker updates.
+
+    var DiffViewEditor = require('./DiffViewEditor');
+
+    this._oldDiffEditor = new DiffViewEditor(this._getOldTextEditorElement());
+    this._newDiffEditor = new DiffViewEditor(this._getNewTextEditorElement());
+
+    // The first version of the diff view will have both editors readonly.
+    // But later on, the right editor will be editable and savable.
+    this._oldDiffEditor.setReadOnly();
+    this._newDiffEditor.setReadOnly();
+
+    var {oldText, newText, filePath} = await this.props.model.getDiffState();
+    this._oldDiffEditor.setFileContents(filePath, oldText);
+    this._newDiffEditor.setFileContents(filePath, newText);
+
+    // TODO(most): update diff markers.
   },
 
   componentWillUnmount(): void {
