@@ -25,6 +25,10 @@ module.exports = class DiffViewEditor {
     this._editor.setGrammar(grammar);
   }
 
+  getText(): string {
+    return this._editor.getText();
+  }
+
   setReadOnly(): void {
     // Unfotunately, there is no other clean way to make an editor read only.
     // Got this from Atom's code to make an editor read-only.

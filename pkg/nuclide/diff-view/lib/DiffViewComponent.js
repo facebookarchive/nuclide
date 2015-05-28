@@ -34,7 +34,17 @@ var DiffViewComponent = React.createClass({
     this._oldDiffEditor.setFileContents(filePath, oldText);
     this._newDiffEditor.setFileContents(filePath, newText);
 
-    // TODO(most): update diff markers.
+    this._updateDiffMarkers();
+
+    // TODO(most): Setup scroll syncing between the two editors.
+  },
+
+  _updateDiffMarkers() {
+    var {addedLines, removedLines, oldLineOffsets, newLineOffsets} =
+        this.props.model.computeDiff(this._oldDiffEditor.getText(), this._newDiffEditor.getText());
+
+    // TODO(most): update the editors with the highlight markers at the added and removed lines.
+    // TODO(most): update the editors with the empty line offsets required for diff comparability.
   },
 
   componentWillUnmount(): void {

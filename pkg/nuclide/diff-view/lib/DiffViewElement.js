@@ -24,7 +24,7 @@ class DiffViewElement extends HTMLElement {
 
   /**
    * Return the tab URI for the opened diff view tab item.
-   * This guarantees no two diiff views are open for the same URI.
+   * This guarantees only one diff view will be opened per URI.
    */
   getURI() {
     return this._model.getURI();
