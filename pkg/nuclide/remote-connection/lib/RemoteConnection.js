@@ -19,6 +19,7 @@ var RemoteDirectory = require('./RemoteDirectory');
 var NuclideClient = require('nuclide-server/lib/NuclideClient');
 var NuclideRemoteEventbus = require('nuclide-server/lib/NuclideRemoteEventbus');
 var {fsPromise} = require('nuclide-commons');
+var {getVersion} = require('nuclide-version');
 
 const HEARTBEAT_AWAY_REPORT_COUNT = 3;
 const HEARTBEAT_NOTIFICATION_ERROR = 1;
@@ -43,6 +44,7 @@ var _connections: Array<RemoteConnection> = [];
 class RemoteConnection {
   _entries: {[path: string]: RemoteFile|RemoteDirectory};
   _config: RemoteConnectionConfiguration;
+  _initialized: ?bool;
 
   _heartbeatNetworkAwayCount: int;
   _lastHeartbeatNotification: ?HeartbeatNotification;
@@ -58,10 +60,7 @@ class RemoteConnection {
     this._subscriptions.dispose();
   }
 
-  async addToProject() {
-    // Save to cache.
-    _connections.push(this);
-    this._monitorConnectionHeartbeat();
+  async _addToProject() {
     var workingDirectoryUri = this._getUriForInitialWorkingDirectory();
     // If restoring state, then the project already exists with local directory and wrong repo instances.
     // Hence, we remove it here, if existing, and add the new path for which we added a workspace opener handler.
@@ -85,7 +84,7 @@ class RemoteConnection {
       /*methodArgs*/ [remotePath],
       /*extraOptions*/ {method: 'POST', json: true}
     );
-    this.setHgRepositoryDescription(hgRepoDescription);
+    this._setHgRepositoryDescription(hgRepoDescription);
   }
 
   _monitorConnectionHeartbeat() {
@@ -228,7 +227,7 @@ class RemoteConnection {
   }
 
   // A workaround before Atom 2.0: see ::getHgRepoInfo of main.js.
-  setHgRepositoryDescription(hgRepositoryDescription): void {
+  _setHgRepositoryDescription(hgRepositoryDescription): void {
     this._hgRepositoryDescription = hgRepositoryDescription;
   }
 
@@ -262,18 +261,41 @@ class RemoteConnection {
     });
   }
 
-  async verifyServer(): void {
-    // Do version check.
-    var client = this.getClient();
-    try {
-      await client.version();
-    } catch (e) {
-      client.eventbus.close();
-      throw e;
+  async initialize(): void {
+    // Right now we don't re-handshake.
+    if (this._initialized === undefined) {
+      this._initialized = false;
+      // Do version check.
+      var client = this._getClient();
+      var serverVersion;
+      try {
+        serverVersion = await client.version();
+      } catch (e) {
+        client.eventbus.close();
+        throw e;
+      }
+      var clientVersion = getVersion();
+      if (clientVersion != serverVersion) {
+        client.eventbus.close();
+        throw new Error(`Version mismatch. Client at ${clientVersion} while server at ${serverVersion}.`);
+      }
+      this._initialized = true;
+      // Save to cache.
+      _connections.push(this);
+      this._monitorConnectionHeartbeat();
+      this._addToProject();
     }
   }
 
   getClient(): NuclideClient {
+    if (!this._initialized) {
+      throw new Error('Remote connection has not been initialized.');
+    } else {
+      return this._getClient();
+    }
+  }
+
+  _getClient(): NuclideClient {
     if (!this._client) {
       var uri;
       var cwd = this._config.cwd;

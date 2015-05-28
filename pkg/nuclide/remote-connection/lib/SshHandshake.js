@@ -231,7 +231,7 @@ class SshHandshake {
 
     var finishHandshake = async(connection: RemoteConnection) => {
       try {
-        await connection.verifyServer();
+        await connection.initialize();
       } catch (e) {
         error = new Error(`Failed to connect to Nuclide server on ${this._config.host}: ${e.message}`);
         this._delegate.onError(error, this._config);

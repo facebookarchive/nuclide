@@ -21,9 +21,7 @@ function getLogger() {
 async function createRemoteConnection(remoteProjectConfig: RemoteConnectionConfiguration): Promise<?RemoteConnection> {
   var connection = new RemoteConnection(remoteProjectConfig);
   try {
-    // TODO: better RemoteConnection API.
-    await connection.verifyServer();
-    await connection.addToProject();
+    await connection.initialize();
     return connection;
   } catch (e) {
     // If connection fails using saved config, open connect dialog.
@@ -118,8 +116,6 @@ module.exports = {
   },
 
   deactivate(): void {
-    // Remove the remote project roots from the project to not include it in Atom's state-saving hash calculation.
-    cleanupRemoteNuclideProjects();
     // This should always be true here, but we do this to appease Flow.
     if (subscriptions) {
       subscriptions.dispose();
