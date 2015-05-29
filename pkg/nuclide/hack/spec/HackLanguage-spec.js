@@ -39,7 +39,7 @@ describe('HackLanguage', () => {
         expect(errors[0].range.start).toEqual({ row : 14, column : 11 });
         expect(errors[0].line).toBe(14);
         expect(errors[0].col).toBe(11);
-        expect(errors[0].message).toMatch(/\(Hack\) await.*async/);
+        expect(errors[0].message).toMatch(/await.*async/);
       });
     });
   });

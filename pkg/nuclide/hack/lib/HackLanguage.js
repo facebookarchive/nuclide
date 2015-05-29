@@ -292,23 +292,27 @@ function getSymbolType(input: string) {
 }
 
 function parseErrorsFromResponse(response: mixed): Array<mixed> {
-  var errors = response.errors.map((error) => {
+  var errors = response.errors.map(error => {
+    var rootCause = null;
     var errorParts = error.message;
-    return errorParts.map((errorPart) => {
-      var {descr, start, end, line, path} = errorPart;
-      descr = '(Hack) ' + descr;
-      start--;
-      line--;
-      var range = new Range(
-        [line, start],
-        [line, end]
-      );
+    return errorParts.map(errorPart => {
+      if (!rootCause) {
+        var {start, end, line, path} = errorPart;
+        start--;
+        line--;
+        rootCause = {
+          range: new Range([line, start], [line, end]),
+          path,
+          start,
+          line,
+        };
+      }
       return {
-        path,
-        range,
-        line,
-        message: descr,
-        col: start,
+        path: rootCause.path,
+        range: rootCause.range,
+        line: rootCause.line,
+        message: errorPart.descr,
+        col: rootCause.start,
         linter: 'hack',
         level: 'error',
       };
