@@ -1,3 +1,6 @@
+/**
+ * Essential Classes
+ */
 type atom$IDisposable = {
   dispose: () => void;
 }
@@ -17,6 +20,14 @@ declare class atom$CompositeDisposable {
   add(disposable: atom$IDisposable): void;
   remove(disposable: atom$IDisposable): void;
   clear(): void;
+}
+
+declare class atom$Config {
+  observe(
+    keyPath: string,
+    optionsOrCallback?: (Object | (value: any) => void),
+    callback?: (value: any) => void
+  ): atom$IDisposable;
 }
 
 declare class atom$Cursor {
@@ -133,6 +144,7 @@ declare class atom$TextEditor {
 
   // Event Subscription
   onDidDestroy(callback: () => void): atom$Disposable;
+  getBuffer(): atom$TextBuffer;
 
   // File Details
   getTitle(): string;
@@ -224,8 +236,8 @@ declare class atom$Workspace {
   // Pane Items
   getPaneItems(): Array<Object>;
   getActivePaneItem(): Object;
-  getTextEditors(): Array<TextEditor>;
-  getActiveTextEditor(): ?TextEditor;
+  getTextEditors(): Array<atom$TextEditor>;
+  getActiveTextEditor(): ?atom$TextEditor;
 
   // Panes
   // Panels
@@ -238,15 +250,29 @@ declare class atom$Workspace {
   // Searching and Replacing
 }
 
+/**
+ * Extended Classes
+ */
+
+declare class atom$ContextMenuManager {
+  add(itemsBySelector: Object): void;
+}
+
 declare class atom$Directory {
   getPath(): string;
 }
 
 declare class atom$Project {
-    getDirectories(): Array<atom$Directory>
+  getDirectories(): Array<atom$Directory>
 }
 
-import * as React from "React";
+declare class atom$TextBuffer {
+  // Search And Replace
+  scanInRange(regex: RegExp, range: Range, iterator: (data: Object) => void): void;
+
+  // Buffer Range Details
+  rangeForRow(row: number, includeNewLine?: boolean): Range;
+}
 
 // The items in this declaration are available off of `require('atom')`.
 // This list is not complete.
@@ -258,7 +284,6 @@ declare module "atom" {
   declare class Point extends atom$Point {}
   declare class Range extends atom$Range {}
   declare class TextEditor extends atom$TextEditor {}
-  declare var React: React;
 }
 
 // Make sure that common types can be referenced without the `atom$` prefix
@@ -272,6 +297,8 @@ declare class TextEditor extends atom$TextEditor {}
 // This list is not complete.
 type AtomGlobal = {
   commands: atom$CommandRegistry;
+  config: atom$Config;
+  contextMenu: atom$ContextMenuManager;
   packages: atom$PackageManager;
   views: atom$ViewRegistry;
   workspace: atom$Workspace;
