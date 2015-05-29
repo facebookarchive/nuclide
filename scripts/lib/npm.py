@@ -24,16 +24,19 @@ class Npm (object):
     def __init__(self, verbose=False):
         self._verbose = verbose
 
-    def install(self, package_root, clean=False, local_packages=None):
+    def install(self, package_root, clean=False, local_packages=None, include_dev_dependencies=True):
         if clean:
             shutil.rmtree(os.path.join(package_root, 'node_modules'), ignore_errors=True)
         else:
             self._clean_unused_dependencies(package_root);
 
-        self._npm_install(package_root)
+        self._npm_install(package_root, include_dev_dependencies)
 
-    def _npm_install(self, package_root):
-        self._execute(['npm', 'install'], cwd=package_root)
+    def _npm_install(self, package_root, include_dev_dependencies):
+        npm_command = ['npm', 'install']
+        if not include_dev_dependencies:
+            npm_command.append('--production')
+        self._execute(npm_command, cwd=package_root)
 
     def _clean_unused_dependencies(self, package_root):
         """Remove unused dependencies for a given package.

@@ -307,7 +307,7 @@ def install_dependencies(package_config, npm):
         link_dependencys_executable(src_path, local_dependency)
 
     # Install other public node dependencies.
-    npm.install(src_path, local_packages=package_config['localDependencies'])
+    npm.install(src_path, local_packages=package_config['localDependencies'], include_dev_dependencies=package_config['includeDevDependencies'])
     logging.info('Done installing dependencies for %s', name)
 
     # Install libclang dependencies, if appropriate.
