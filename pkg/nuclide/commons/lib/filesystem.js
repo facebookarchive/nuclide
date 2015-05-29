@@ -108,9 +108,9 @@ async function rmdir(filePath: string): Promise {
 }
 
 var asyncFs = {
-  isRoot,
-  findNearestFile,
   exists,
+  findNearestFile,
+  isRoot,
   mkdirp,
   rmdir,
   tempfile,
@@ -119,8 +119,8 @@ var asyncFs = {
 [
   'lstat',
   'mkdir',
-  'readFile',
   'readdir',
+  'readFile',
   'readlink',
   'realpath',
   'rename',
