@@ -527,7 +527,12 @@ class FileTreeController {
   }
 
   deleteSelection() {
-    var selectedNodes = this._panelController.getChildComponent().getSelectedNodes();
+    var treeComponent = this.getTreeComponent();
+    if (!treeComponent) {
+      return;
+    }
+
+    var selectedNodes = treeComponent.getSelectedNodes();
     if (selectedNodes.length === 0 || selectedNodes.some(node => node.isRoot())) {
       return;
     }
@@ -563,7 +568,12 @@ class FileTreeController {
   }
 
   _getSelectedItems(): Array<string> {
-    var selectedNodes = this._panelController.getChildComponent().getSelectedNodes();
+    var treeComponent = this.getTreeComponent();
+    if (!treeComponent) {
+      return [];
+    }
+
+    var selectedNodes = treeComponent.getSelectedNodes();
     return selectedNodes.map((node) => node.getItem());
   }
 
