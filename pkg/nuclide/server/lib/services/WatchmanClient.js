@@ -33,6 +33,12 @@ class WatchmanClient {
     this._watchmanVersionPromise = this.version();
   }
 
+  dispose() {
+    if (this._client) {
+      this._client.end();
+    }
+  }
+
   _initWatchmanClient() {
     var client = this._client = new watchman.Client();
     client.on('end', () => this._onClientEnd());

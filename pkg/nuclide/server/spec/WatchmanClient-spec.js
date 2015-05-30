@@ -31,6 +31,10 @@ describe('WatchmanClient test suite', () => {
     waits(1010);
   });
 
+  afterEach(() => {
+    client.dispose();
+  });
+
   describe('restore subscriptions', () => {
     it('restores subscriptions on client end', () => {
       waitsForPromise(async () => {
