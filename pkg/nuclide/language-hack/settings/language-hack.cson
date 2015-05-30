@@ -1,4 +1,4 @@
-'.source.php':
+'.source.hack':
   'editor':
     'commentStart': '// '
     'nonWordCharacters': '/\\()"\':,.;<>~!@#%^&*|+=[]{}`?-'
@@ -3086,10 +3086,10 @@
       'zlib_encode'
       'zlib_get_coding_type'
     ]
-'.source.php .meta.array.php':
+'.source.hack .meta.array.php':
   'editor':
     'decreaseIndentPattern': '(?x)\n\t    ^ (.* \\*/)? \\s*\n\t    (\\)+)\n\t'
-'.source.php:not(.string)':
+'.source.hack:not(.string)':
   'editor':
     'increaseIndentPattern': '(?x)\n\t    (   \\{ (?! .+ \\} ) .*\n\t    |   array\\(\n\t    |   (\\[)\n\t    |   ((else)?if|else|for(each)?|while|switch) .* :\n\t    )   \\s* (/[/*] .*)? $'
     'decreaseIndentPattern': '(?x)\n\t    ^ (.* \\*/)? \\s*\n\t    (\n\t        (\\})         |\n\t        (\\)+[;,])    |\n\t        (\\][;,])     |\n\t        (else:)      |\n\t        ((end(if|for(each)?|while|switch));)\n\t    )\n\t'

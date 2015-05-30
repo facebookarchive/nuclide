@@ -1,24 +1,14 @@
-'scopeName': 'text.html.php'
-'name': 'PHP'
+'scopeName': 'text.html.hack'
+'name': 'HACK'
 'fileTypes': [
-  'aw'
-  'ctp'
-  'inc'
-  'install'
-  'module'
+  'hh'
   'php'
-  'php3'
-  'php4'
-  'php5'
-  'phpt'
-  'phtml'
-  'profile'
 ]
-'firstLineMatch': '^#!.*(?<!-)php[0-9]{0,1}\\b'
+'firstLineMatch': '<?hh'
 'foldingStartMarker': '(/\\*|\\{\\s*$|<<<HTML)'
 'foldingStopMarker': '(\\*/|^\\s*\\}|^HTML;)'
 'injections':
-  'text.html.php - (meta.embedded | meta.tag), L:text.html.php meta.tag, L:source.js.embedded.html':
+  'text.html.hack - (meta.embedded | meta.tag), L:text.html.hack meta.tag, L:source.js.embedded.html':
     'patterns': [
       {
         'begin': '(^\\s*)(?=<\\?(?![^?]*\\?>))'
@@ -35,13 +25,13 @@
             'beginCaptures':
               '0':
                 'name': 'punctuation.section.embedded.begin.php'
-            'contentName': 'source.php'
+            'contentName': 'source.hack'
             'end': '(\\?)>'
             'endCaptures':
               '0':
                 'name': 'punctuation.section.embedded.end.php'
               '1':
-                'name': 'source.php'
+                'name': 'source.hack'
             'name': 'meta.embedded.block.php'
             'patterns': [
               {
@@ -56,13 +46,13 @@
         'beginCaptures':
           '0':
             'name': 'punctuation.section.embedded.begin.php'
-        'contentName': 'source.php'
+        'contentName': 'source.hack'
         'end': '(\\?)>'
         'endCaptures':
           '0':
             'name': 'punctuation.section.embedded.end.php'
           '1':
-            'name': 'source.php'
+            'name': 'source.hack'
         'name': 'meta.embedded.block.php'
         'patterns': [
           {
@@ -84,23 +74,23 @@
           {
             'captures':
               '1':
-                'name': 'source.php'
+                'name': 'source.hack'
               '2':
                 'name': 'punctuation.section.embedded.end.php'
               '3':
-                'name': 'source.php'
+                'name': 'source.hack'
             'match': '\\G(\\s*)((\\?))(?=>)'
             'name': 'meta.special.empty-tag.php'
           }
           {
             'begin': '\\G'
-            'contentName': 'source.php'
+            'contentName': 'source.hack'
             'end': '(\\?)(?=>)'
             'endCaptures':
               '0':
                 'name': 'punctuation.section.embedded.end.php'
               '1':
-                'name': 'source.php'
+                'name': 'source.hack'
             'patterns': [
               {
                 'include': '#language'
