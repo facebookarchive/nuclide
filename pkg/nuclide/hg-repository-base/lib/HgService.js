@@ -134,6 +134,19 @@ class HgService {
   fetchCommonAncestorOfHeadAndRevision(revision: string): Promise<string> {
     return Promise.reject(new Error('not implemented'));
   }
+
+  /**
+   * @param revisionFrom The revision expression of the "start" (older) revision.
+   * @param revisionTo The revision expression of the "end" (newer) revision.
+   * @return An array of revision numbers that are between revisionFrom and
+   *   revisionTo, plus revisionFrom and revisionTo; and the values
+   *   are all 'true'. "Between" means that revisionFrom is an ancestor of, and
+   *   revisionTo is a descendant of.
+   */
+  fetchRevisionNumbersBetweenRevisions(revisionFrom: string, revisionTo: string): Promise<Array<string>> {
+    return Promise.reject(new Error('not implemented'));
+  }
+
 }
 
 module.exports = HgService;

@@ -14,7 +14,8 @@ var {EventEmitter} = require('events');
 var HgService = require('./HgService');
 var {HgStatusOption} = require('./hg-constants');
 var {parseHgDiffUnifiedOutput} = require('./hg-output-helpers');
-var {fetchCommonAncestorOfHeadAndRevision} = require('./hg-revision-expression-helpers');
+var {fetchCommonAncestorOfHeadAndRevision,
+    fetchRevisionNumbersBetweenRevisions} = require('./hg-revision-expression-helpers');
 var {fetchFileContentAtRevision, fetchFilesChangedAtRevision} = require('./hg-revision-state-helpers');
 var {asyncExecute} = require('nuclide-commons');
 var path = require('path');
@@ -198,6 +199,10 @@ class LocalHgServiceBase extends HgService {
 
   fetchCommonAncestorOfHeadAndRevision(revision: string): Promise<string> {
     return fetchCommonAncestorOfHeadAndRevision(revision, this._workingDirectory);
+  }
+
+  fetchRevisionNumbersBetweenRevisions(revisionFrom: string, revisionTo: string): Promise<Array<string>> {
+    return fetchRevisionNumbersBetweenRevisions(revisionFrom, revisionTo, this._workingDirectory);
   }
 
 }

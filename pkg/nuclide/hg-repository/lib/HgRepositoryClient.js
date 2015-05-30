@@ -735,6 +735,18 @@ class HgRepositoryClient {
     return this._service.fetchCommonAncestorOfHeadAndRevision(revision);
   }
 
+  fetchRevisionNumbersBetweenRevisions(revisionFrom: string, revisionTo: string): Promise<Array<string>> {
+    return this._service.fetchRevisionNumbersBetweenRevisions(revisionFrom, revisionTo);
+  }
+
+  /**
+   * A convenience method wrapping `fetchRevisionNumbersBetweenRevisions`.
+   */
+  fetchRevisionNumbersBetweenRevisionAndHead(revision: string): Promise<Array<string>> {
+    var {expressionForRevisionsBeforeHead} = require('nuclide-hg-repository-base').revisions;
+    return this.fetchRevisionNumbersBetweenRevisions(revision, expressionForRevisionsBeforeHead(0));
+  }
+
 }
 
 module.exports = HgRepositoryClient;

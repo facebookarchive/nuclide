@@ -76,7 +76,56 @@ async function fetchCommonAncestorOfHeadAndRevision(revision: string, workingDir
   }
 }
 
+/**
+ * @param revisionFrom The revision expression of the "start" (older) revision.
+ * @param revisionTo The revision expression of the "end" (newer) revision.
+ * @param workingDirectory The working directory of the Hg repository.
+ * @return An array of revision numbers that are between revisionFrom and
+ *   revisionTo, plus revisionFrom and revisionTo; and the values
+ *   are all 'true'. "Between" means that revisionFrom is an ancestor of, and
+ *   revisionTo is a descendant of.
+ */
+async function fetchRevisionNumbersBetweenRevisions(
+    revisionFrom: string, revisionTo: string, workingDirectory: string): Promise<Array<string>> {
+  var {asyncExecute} = require('nuclide-commons');
+
+  var revisionExpression = `${revisionFrom}::${revisionTo}`;
+  // shell-escape does not wrap revisionExpression in quotes without this toString conversion.
+  revisionExpression = revisionExpression.toString();
+
+  // shell-escape does not wrap '{rev}' in quotes unless it is double-quoted.
+  var args = ['log', '--template', "{rev}\n", "--rev", revisionExpression];
+  var options = {
+    cwd: workingDirectory,
+  };
+
+  try {
+    var {stdout: revisionNumbersString} = await asyncExecute('hg', args, options);
+    return parseRevisionNumbersOutput(revisionNumbersString);
+  } catch (e) {
+    logger.warn('Failed to get revision numbers between two revisions: ', e.stderr, e.command);
+    throw new Error(`Could not fetch revision numbers between the revisions: ${revisionFrom}, ${revisionTo}`);
+  }
+}
+
+/**
+ * Helper function to `fetchRevisionsNumbersBetweenRevisions`.
+ */
+function parseRevisionNumbersOutput(revisionNumbersOutput): Array<string> {
+  var numbers = revisionNumbersOutput.split('\n');
+  var result = [];
+  numbers.forEach(numberString => {
+    var trimmedNumber = numberString.trim();
+    if (trimmedNumber.length) {
+      result.push(trimmedNumber);
+    }
+  });
+  return result;
+}
+
+
 module.exports = {
   fetchCommonAncestorOfHeadAndRevision,
+  fetchRevisionNumbersBetweenRevisions,
   expressionForRevisionsBeforeHead,
 };
