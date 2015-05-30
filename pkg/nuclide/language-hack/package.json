@@ -1,18 +1,14 @@
 {
-  "name": "language-php",
-  "version": "0.24.0",
-  "description": "PHP language support in Atom",
+  "name": "language-hack",
+  "repository": "github.com/facebook/nuclide",
+  "version": "0.0.0",
+  "description": "Hack language support in Atom",
+  "nuclide": {
+    "packageType": "Atom",
+    "testRunner": "apm"
+  },
   "engines": {
     "atom": "*",
     "node": "*"
-  },
-  "homepage": "http://atom.github.io/language-php",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/atom/language-php.git"
-  },
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/atom/language-php/issues"
   }
 }
