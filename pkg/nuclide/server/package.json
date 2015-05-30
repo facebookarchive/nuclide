@@ -11,7 +11,6 @@
   "dependencies": {
     "connect": "3.3.4",
     "event-kit": "1.1.1",
-    "fb-watchman": "0.0.1",
     "fs-plus": "~2.8.0",
     "nuclide-arcanist-base": "0.0.0",
     "nuclide-buck-base": "0.0.0",
@@ -26,6 +25,7 @@
     "nuclide-service-transformer": "0.0.0",
     "nuclide-source-control-helpers": "0.0.0",
     "nuclide-version": "0.0.0",
+    "nuclide-watchman-helpers": "0.0.0",
     "request": "2.53.0",
     "uuid": "2.0.1",
     "ws": "0.7.1",

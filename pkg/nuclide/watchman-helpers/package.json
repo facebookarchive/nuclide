@@ -9,8 +9,13 @@
     "testRunner": "npm"
   },
   "dependencies": {
+    "fb-watchman": "0.0.1",
     "nuclide-commons": "0.0.0",
+    "nuclide-logging": "0.0.0",
     "nuclide-node-transpiler": "0.0.0"
+  },
+  "devDependencies": {
+    "temp": "0.8.1"
   },
   "scripts": {
     "test": "jasmine-node-transpiled spec"

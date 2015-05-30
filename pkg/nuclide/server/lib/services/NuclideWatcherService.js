@@ -12,7 +12,7 @@
 var {fsPromise} = require('nuclide-commons');
 var path = require('path');
 var {EventEmitter} = require('events');
-var WatchmanClient = require('./WatchmanClient');
+var {WatchmanClient} = require('nuclide-watchman-helpers');
 
 var watchmanClient: ?WatchmanClient = null;
 

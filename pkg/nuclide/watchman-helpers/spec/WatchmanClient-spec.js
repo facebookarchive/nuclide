@@ -12,7 +12,7 @@
 var fs = require('fs');
 var path = require('path');
 var temp = require('temp').track();
-var WatchmanClient = require('../lib/services/WatchmanClient');
+var WatchmanClient = require('../lib/WatchmanClient');
 
 var FILE_MODE = 33188;
 

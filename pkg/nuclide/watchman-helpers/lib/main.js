@@ -30,4 +30,8 @@ async function getWatchmanBinaryPath(): Promise<string> {
 
 module.exports = {
   getWatchmanBinaryPath,
+
+  get WatchmanClient() {
+    return require('./WatchmanClient');
+  },
 };
