@@ -124,6 +124,16 @@ class HgService {
   fetchFilesChangedAtRevision(revision: string): Promise<?RevisionFileChanges> {
     return Promise.reject(new Error('not implemented'));
   }
+
+  /**
+   * @param revision The revision expression of a revision of interest. Note:
+   * this can be the name of a bookmark, such as 'master'.
+   * @return An expression for the common ancestor of the revision of interest and
+   * the current Hg head.
+   */
+  fetchCommonAncestorOfHeadAndRevision(revision: string): Promise<string> {
+    return Promise.reject(new Error('not implemented'));
+  }
 }
 
 module.exports = HgService;

@@ -731,6 +731,10 @@ class HgRepositoryClient {
     return this._service.fetchFilesChangedAtRevision(revision);
   }
 
+  fetchCommonAncestorOfHeadAndRevision(revision: string): Promise<string> {
+    return this._service.fetchCommonAncestorOfHeadAndRevision(revision);
+  }
+
 }
 
 module.exports = HgRepositoryClient;
