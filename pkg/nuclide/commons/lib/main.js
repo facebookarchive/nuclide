@@ -39,6 +39,10 @@ module.exports = {
     return require('./array');
   },
 
+  get object() {
+    return require('./object');
+  },
+
   get fsPromise() {
     return require('./filesystem');
   },
