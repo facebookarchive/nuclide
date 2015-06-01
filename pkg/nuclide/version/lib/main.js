@@ -34,6 +34,11 @@ var version;
 function getVersion(): string {
   if (!version) {
     try {
+      // TODO: The reason we are using version.json file is for our Python
+      // server scripts to read and parse. We shall at one point rewrite our
+      // Python scripts in Node, and then we can hard code the version in code,
+      // instead of reading from the json file.
+      //
       // Cannot use require() who counts on extension (.json) for parsing file as json.
       var json = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../version.json')));
       version = json.Version.toString();
