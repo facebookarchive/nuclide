@@ -1,0 +1,17 @@
+{
+  "name": "nuclide-ui-tabs",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "Provides a static tab-bar react component based on the native Atom tab styles",
+  "nuclide": {
+    "packageType": "Node",
+    "testRunner": "apm"
+  },
+  "dependencies": {
+    "nuclide-atom-npm": "0.0.0",
+    "nuclide-atom-interfaces": "0.0.0",
+    "object-assign": "2.0.0",
+    "react-classset": "0.0.2",
+    "react-for-atom": "0.13.6"
+  }
+}
