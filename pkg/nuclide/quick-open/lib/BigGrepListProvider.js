@@ -13,7 +13,7 @@ var logger;
 var pathUtil = require('path');
 var React = require('react-for-atom');
 
-var {QuickSelectionProvider} = require('./QuickSelectionProvider');
+var QuickSelectionProvider = require('./QuickSelectionProvider');
 
 const BIGGREP_SEARCH_PROVIDER = 'biggrep';
 

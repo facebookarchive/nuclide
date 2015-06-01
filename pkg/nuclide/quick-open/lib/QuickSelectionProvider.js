@@ -39,6 +39,4 @@ class QuickSelectionProvider {
 
 }
 
-module.exports = {
-  QuickSelectionProvider,
-};
+module.exports = QuickSelectionProvider;

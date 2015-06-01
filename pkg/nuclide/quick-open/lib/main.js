@@ -17,7 +17,7 @@ class Activation {
     var {CompositeDisposable} = require('atom');
     this._subscriptions = new CompositeDisposable();
 
-    var {QuickSelectionComponent} = require('./QuickSelectionComponent');
+    var QuickSelectionComponent = require('./QuickSelectionComponent');
 
     var reactDiv = document.createElement('div');
     this._searchPanel = atom.workspace.addModalPanel({item: reactDiv, visible:false});

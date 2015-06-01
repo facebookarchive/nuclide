@@ -10,8 +10,8 @@
  */
 
 var React = require('react-for-atom');
-var {QuickSelectionComponent} = require('../lib/QuickSelectionComponent');
-var {QuickSelectionProvider} = require('../lib/QuickSelectionProvider');
+var QuickSelectionComponent = require('../lib/QuickSelectionComponent');
+var QuickSelectionProvider = require('../lib/QuickSelectionProvider');
 
 class TestQuickSelectionProvider extends QuickSelectionProvider {
   _items: Array<number>;

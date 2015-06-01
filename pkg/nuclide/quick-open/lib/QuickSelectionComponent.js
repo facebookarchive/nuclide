@@ -11,7 +11,7 @@
 
 var AtomInput = require('nuclide-ui-atom-input');
 var {CompositeDisposable, Disposable, Emitter} = require('atom');
-var {QuickSelectionProvider} = require('./QuickSelectionProvider');
+var QuickSelectionProvider = require('./QuickSelectionProvider');
 var {debounce} = require('nuclide-commons');
 var React = require('react-for-atom');
 
@@ -219,6 +219,4 @@ var QuickSelectionComponent = React.createClass({
   },
 });
 
-module.exports = {
-  QuickSelectionComponent,
-};
+module.exports = QuickSelectionComponent;

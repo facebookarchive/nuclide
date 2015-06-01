@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-var {QuickSelectionProvider} = require('./QuickSelectionProvider');
+var QuickSelectionProvider = require('./QuickSelectionProvider');
 var {fileTypeClass} = require('nuclide-atom-helpers');
 var {getClient} = require('nuclide-client');
 var React = require('react-for-atom');
