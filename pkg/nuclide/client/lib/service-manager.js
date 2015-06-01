@@ -28,8 +28,14 @@ var cachedServices: Map<string, mixed> = new Map();
  *    create a remote service with given serviceOptions or create a local service if the
  *    uri is local path.
  */
-function getServiceByNuclideUri(serviceName: string, nuclideUri=null: ?NuclideUri, serviceOptions=null: ?mixed): ?mixed {
-  var hostname = (nuclideUri && isRemote(nuclideUri)) ? getHostname(nuclideUri) : null;
+function getServiceByNuclideUri(
+  serviceName: string,
+  nuclideUri: ?NuclideUri = null,
+  serviceOptions: ?mixed = null
+): ?mixed {
+  var hostname = (nuclideUri && isRemote(nuclideUri)) ?
+    getHostname(nuclideUri) :
+    null;
   return getService(serviceName, hostname, serviceOptions);
 }
 

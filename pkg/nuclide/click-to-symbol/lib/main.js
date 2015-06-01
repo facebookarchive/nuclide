@@ -8,15 +8,15 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-var clickToSymbols: array<ClickToSymbol> = [];
-var delegates: array<ClickToSymbolDelegate> = [];
+
+var clickToSymbols: Array<ClickToSymbol> = [];
+var delegates: Array<ClickToSymbolDelegate> = [];
 var editorViewSubscription: ?Object;
 var usesCmdKeyToActivate: boolean;
 var cmdKeySettingObserver: ?Object;
 
-
 function findClickableRangesAndCallback(
-    editor: Editor,
+    editor: TextEditor,
     row: number,
     column: number,
     shiftKey: boolean): Promise {

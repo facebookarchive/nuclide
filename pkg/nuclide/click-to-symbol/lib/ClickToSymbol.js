@@ -8,10 +8,11 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
+
 var {trackTimingAndCallAsync} = require('nuclide-analytics');
 var CLICK_TO_SYMBOL_EVENT = 'clickToSymbol';
 
-module.exports = class ClickToSymbol {
+class ClickToSymbol {
   symbolNavigationMarkers: ?array<DisplayBufferMarker>;
 
   /**
@@ -22,7 +23,7 @@ module.exports = class ClickToSymbol {
   constructor(
       textEditor: TextEditor,
       shouldUseCmdKeyToActivate: () => boolean,
-      findClickableRangesAndCallback: ?(editor: Editor, row: number, column: number, shiftKey: boolean) => Promise) {
+      findClickableRangesAndCallback: ?(editor: TextEditor, row: number, column: number, shiftKey: boolean) => Promise) {
     // TODO(6974959): Eliminate the use of the undocumented __spacePenView property.
     this.editorView = atom.views.getView(textEditor).__spacePenView;
     this.findClickableRangesAndCallback = findClickableRangesAndCallback;
@@ -130,3 +131,5 @@ module.exports = class ClickToSymbol {
     this.editorView.off('mousemove', this.onMouseMove);
   }
 };
+
+module.exports = ClickToSymbol;
