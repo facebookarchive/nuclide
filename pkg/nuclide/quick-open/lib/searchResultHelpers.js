@@ -33,6 +33,17 @@ function filterEmptyResults(resultsGroupedByService: GroupedResults) : GroupedRe
   return filteredTree;
 }
 
+function flattenResults(resultsGroupedByService: GroupedResults): Array<any> {
+  var items = [];
+  for (var serviceName in resultsGroupedByService) {
+    for (var dirName in resultsGroupedByService[serviceName]) {
+      items.push(resultsGroupedByService[serviceName][dirName].items);
+    }
+  }
+  return Array.prototype.concat.apply([], items);
+}
+
 module.exports = {
   filterEmptyResults,
+  flattenResults,
 };

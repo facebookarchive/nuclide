@@ -11,6 +11,7 @@
 
 var {
   filterEmptyResults,
+  flattenResults,
 } = require('../lib/searchResultHelpers');
 
 var SEARCH_RESULTS_FIXTURE = {
@@ -45,7 +46,7 @@ describe('searchResultHelper', () => {
     it('does not include empty folders', () => {
       var filteredResults = filterEmptyResults(SEARCH_RESULTS_FIXTURE);
 
-      expect (filteredResults).toEqual({
+      expect(filteredResults).toEqual({
         searchService: {
           folderB: {
             items: [1, 2, 3],
@@ -57,6 +58,14 @@ describe('searchResultHelper', () => {
           },
         },
       });
+    });
+  });
+
+  describe('flattenResults', () => {
+    it('returns an array of flattened results', () => {
+      expect(flattenResults(SEARCH_RESULTS_FIXTURE)).toEqual(
+        [1, 2, 3, 4, 5, 6]
+      );
     });
   });
 });
