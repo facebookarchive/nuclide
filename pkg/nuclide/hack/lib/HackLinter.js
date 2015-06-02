@@ -11,6 +11,7 @@
 
 var url = require('url');
 var {findDiagnostics} = require('./hack');
+var {HACK_GRAMMAR, HACK_LINTER_NAME} = require('nuclide-hack-common/lib/constants');
 var Linter = require(`${atom.packages.resolvePackagePath('linter')}/lib/linter`);
 
 class HackLinter extends Linter {
@@ -53,8 +54,8 @@ class HackLinter extends Linter {
   }
 }
 
-HackLinter.syntax = 'text.html.php';
+HackLinter.syntax = HACK_GRAMMAR;
 
-HackLinter.prototype.linterName = 'hack';
+HackLinter.prototype.linterName = HACK_LINTER_NAME;
 
 module.exports = HackLinter;

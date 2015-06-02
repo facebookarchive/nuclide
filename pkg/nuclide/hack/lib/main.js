@@ -12,7 +12,7 @@
 import type {Point} from 'atom';
 
 var {CompositeDisposable} = require('atom');
-var {PHP_GRAMMAR} = require('nuclide-hack-common/lib/constants');
+var {HACK_GRAMMAR} = require('nuclide-hack-common/lib/constants');
 
 // One of text or snippet is required.
 type Suggestion = {
@@ -32,7 +32,7 @@ module.exports = {
     var hack = require('./hack');
     subscriptions = new CompositeDisposable();
     subscriptions.add(atom.workspace.observeTextEditors((editor) => {
-      if (PHP_GRAMMAR === editor.getGrammar().scopeName) {
+      if (HACK_GRAMMAR === editor.getGrammar().scopeName) {
         hack.onDidSave(editor); // Trigger an initial diagnostics check.
         subscriptions.add(editor.onDidSave(() => hack.onDidSave(editor)));
       }
@@ -45,7 +45,7 @@ module.exports = {
     var autocompleteProvider = new AutocompleteProvider();
 
     return {
-      selector: '.' + PHP_GRAMMAR,
+      selector: '.' + HACK_GRAMMAR,
       inclusionPriority: 1,
       excludeLowerPriority: true,
 
@@ -68,7 +68,7 @@ module.exports = {
     var codeFormatProvider = new CodeFormatProvider();
 
     return {
-      selector: PHP_GRAMMAR,
+      selector: HACK_GRAMMAR,
       inclusionPriority: 1,
 
       formatCode(editor: TextEditor, range: Range): Promise<string> {
@@ -82,7 +82,7 @@ module.exports = {
     var typeHintProvider = new TypeHintProvider();
 
     return {
-      selector: PHP_GRAMMAR,
+      selector: HACK_GRAMMAR,
       inclusionPriority: 1,
 
       typeHint(editor: TextEditor, position: Point): Promise<string> {

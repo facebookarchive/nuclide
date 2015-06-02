@@ -43,6 +43,6 @@ module.exports = {
     TRAIT:          8,
   },
 
-  PHP_GRAMMAR: 'text.html.php',
-
+  HACK_GRAMMAR: 'text.html.hack',
+  HACK_LINTER_NAME: 'HACK',
 };

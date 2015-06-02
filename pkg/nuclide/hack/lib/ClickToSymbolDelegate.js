@@ -13,7 +13,7 @@ var AbstractDelegate = require('nuclide-click-to-symbol-delegate');
 var {findDefinition} = require('./hack');
 var {goToLocation} = require('nuclide-atom-helpers');
 
-var {PHP_GRAMMAR} = require('nuclide-hack-common/lib/constants');
+var {HACK_GRAMMAR} = require('nuclide-hack-common/lib/constants');
 
 module.exports =
 class ClickToSymbolDelegate extends AbstractDelegate {
@@ -26,7 +26,7 @@ class ClickToSymbolDelegate extends AbstractDelegate {
   }
 
   async getClickableRangesAndCallback(editor: TextEditor, row: number, column: number): ?Promise {
-    if (PHP_GRAMMAR !== editor.getGrammar().scopeName) {
+    if (HACK_GRAMMAR !== editor.getGrammar().scopeName) {
       return null;
     }
 
