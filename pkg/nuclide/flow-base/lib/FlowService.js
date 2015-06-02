@@ -20,7 +20,15 @@ class FlowService {
     return Promise.reject('Not implemented');
   }
 
-  findDiagnostics(file: NuclideUri): Promise<mixed> {
+  findDiagnostics(
+    file: NuclideUri
+  ): Promise<
+      Array<{
+        message: Array<{
+          path: NuclideUri; descr: string; code: number; line: number; endline: number; start: number; end: number;
+        }>
+      }>>
+  {
     return Promise.reject('Not implemented');
   }
 
