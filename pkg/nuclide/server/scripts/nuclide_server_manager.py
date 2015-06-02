@@ -38,13 +38,12 @@ except ImportError as e:
 CERTS_DIR = os.path.join(os.path.expanduser('~'), '.certs')
 NODE_PATHS = EXTRA_NODE_PATHS + ['/opt/local/bin', '/usr/local/bin']
 
-VERSION_FILE = os.path.join(os.path.dirname(__file__), '../node_modules/nuclide-version/version.json')
-
 
 # This class manages Nuclide servers.
-# It can start/restart a server.
-# TODO: stop a server
 class NuclideServerManager(object):
+
+    version_file = os.path.join(os.path.dirname(__file__), '../node_modules/nuclide-version/version.json')
+
     def __init__(self, options):
         self.options = options
 
@@ -67,12 +66,14 @@ class NuclideServerManager(object):
                 return port
         return None
 
-    def _get_version(self):
+    # Get the protocol version of the build.
+    @staticmethod
+    def _get_version():
         # Read version from version file if it exists.
         # Otherwise, skip version checking.
         version = None
         try:
-            with open(VERSION_FILE) as f:
+            with open(NuclideServerManager.version_file) as f:
                 version_json = json.load(f)
             version = str(version_json['Version'])
         except IOError as e:
@@ -165,7 +166,7 @@ class NuclideServerManager(object):
 
         # At this moment, the port is either open, or we have an existing server running.
         if server.is_running():
-            version = self._get_version()
+            version = NuclideServerManager._get_version()
             running_version = server.get_version()
             # If the common names don't match, we restart.
             if (version and version != running_version) or \
@@ -226,8 +227,7 @@ if __name__ == '__main__':
         for server in servers:
             server.print_json()
         ret = 0
-        # TODO: remove the older log print after migration.
-        print('The log file can be found at %s, and older log at ~/.nohup.out.' % LOG_FILE, file=sys.stderr)
+        print('The log file can be found at %s.' % LOG_FILE, file=sys.stderr)
     elif options.command == 'stopall':
         manager.stop_all()
         ret = 0

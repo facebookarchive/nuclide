@@ -20,18 +20,18 @@ import utils
 from nuclide_certificates_generator import NuclideCertificatesGenerator
 from process_info import ProcessInfo
 
-# Changing this will break server upgrade, as we rely on it to find existing servers.
-SCRIPT_NAME = 'nuclide-main.js'
-SCRIPT_PATH = os.path.join('lib', SCRIPT_NAME)
 LOG_FILE = '~/nuclide.nohup.out'
 
 # This class represents a Nuclide server process on a port.
 class NuclideServer(object):
+    # Changing this will break server upgrade, as we rely on it to find existing servers.
+    script_name = 'nuclide-main.js'
+    script_path = os.path.realpath(os.path.join(os.path.dirname(__file__), '../lib', script_name))
+
     # Pass in proc for an existing Nuclide server.
     def __init__(self, port, workspace=None, proc=None):
         self._clear_states()
         self.port = port
-        self._root = os.path.realpath(os.path.join(os.path.dirname(__file__), '..'))
         self._proc = proc
         # TODO: really support workspace.
         if workspace is not None and os.path.exists(workspace):
@@ -45,7 +45,7 @@ class NuclideServer(object):
     @staticmethod
     def get_processes(port=None):
         matches = []
-        procs = ProcessInfo.get_processes(getpass.getuser(), re.escape(SCRIPT_NAME + " --port"))
+        procs = ProcessInfo.get_processes(getpass.getuser(), re.escape(NuclideServer.script_name + " --port"))
         for proc in procs:
             port_from_proc = int(proc.get_command_param('port'))
             # If port not specified, skip port check and add to result list.
@@ -116,6 +116,7 @@ class NuclideServer(object):
 
     def print_json(self):
         output = {'version': self.get_version(), 'port': self.port, 'workspace': self.workspace}
+        output['pid'] = self._get_proc_info().get_pid()
         server_cert, server_key, ca = self.get_server_certificate_files()
         if server_cert is not None and server_key is not None and ca is not None:
             client_cert, client_key = self.get_client_certificate_files(ca)
@@ -173,7 +174,7 @@ class NuclideServer(object):
                 return 1
 
         # Start Nuclide server.
-        js_cmd = '%s --port %d' % (os.path.join(self._root, SCRIPT_PATH), self.port)
+        js_cmd = '%s --port %d' % (NuclideServer.script_path, self.port)
         if cert and key and ca:
             js_cmd += ' --cert %s --key %s --ca %s' % (cert, key, ca)
         if quiet:

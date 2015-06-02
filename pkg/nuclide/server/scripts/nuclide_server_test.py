@@ -15,7 +15,7 @@ from nuclide_certificates_generator import NuclideCertificatesGenerator
 from nuclide_server_test_base import NuclideServerTestBase
 from nuclide_server import NuclideServer
 
-TIMEOUT = 20
+TIMEOUT = 10
 
 class NuclideServerTest(NuclideServerTestBase):
 
@@ -61,8 +61,8 @@ class NuclideServerTest(NuclideServerTestBase):
         self.assertEquals(ca, gen.ca_cert)
 
     def test_script_name(self):
-        self.assertEquals(nuclide_server.SCRIPT_NAME, 'nuclide-main.js',
-            'Changing SCRIPT_NAME breaks server upgrade.')
+        self.assertEquals(NuclideServer.script_name, 'nuclide-main.js',
+            'Changing script_name breaks server upgrade.')
 
     def test_workspace(self):
         # Verify workspace gets resolved to real path.
