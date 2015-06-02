@@ -17,6 +17,9 @@ var {
 
 var INDENT_IN_PX = 10;
 var INDENT_PER_LEVEL_IN_PX = 15;
+var DOWN_ARROW = '\uF0A3';
+var RIGHT_ARROW = '\uF078';
+var SPINNER = '\uF087';
 
 /**
  * Represents one entry in a TreeComponent.
@@ -51,9 +54,15 @@ var TreeNodeComponent = React.createClass({
 
     var arrow;
     if (node.isContainer()) {
-      arrow = this.props.isExpanded(node) ? '\uF0A3' : '\uF078';
-    } else {
-      arrow = '';
+      if (this.props.isExpanded(node)) {
+        if (node.isCacheValid()) {
+          arrow = DOWN_ARROW;
+        } else {
+          arrow = <span className='nuclide-tree-component-item-arrow-spinner'>{SPINNER}</span>;
+        }
+      } else {
+        arrow = RIGHT_ARROW;
+      }
     }
 
     var decorationClassName = this.props.labelClassNameForNode(node);
