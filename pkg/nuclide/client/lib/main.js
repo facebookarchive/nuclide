@@ -12,6 +12,7 @@
 var {getService, getServiceByNuclideUri} = require('./service-manager');
 var localClients: {[rootPath: string]: NuclideClient} = {};
 var {RemoteConnection} = require('nuclide-remote-connection');
+var localEventBus: ?NuclideLocalEventbus = null;
 
 module.exports = {
   getClient(path: string): ?NuclideClient {
@@ -20,6 +21,10 @@ module.exports = {
       return connection ? connection.getClient() : null;
     } else {
       var localClient = null;
+      if (!localEventBus) {
+        var NuclideLocalEventbus = require('nuclide-server/lib/NuclideLocalEventbus');
+        localEventBus = new NuclideLocalEventbus();
+      }
       atom.project.getPaths().forEach(rootPath => {
         if (!path.startsWith(rootPath)) {
           return;
@@ -27,12 +32,11 @@ module.exports = {
         // Create a local client with its root as the working directory, if none already exists.
         if (!localClients[rootPath]) {
           var NuclideClient = require('nuclide-server/lib/NuclideClient');
-          var NuclideLocalEventbus = require('nuclide-server/lib/NuclideLocalEventbus');
-          var eventbus = new NuclideLocalEventbus();
+
 
           localClients[rootPath] = new NuclideClient(
             /*id: string*/ 'local',
-            /*eventbus: NuclideLocalEventBus*/ eventbus,
+            /*eventbus: NuclideLocalEventBus*/ localEventBus,
             /*options: NuclideClientOptions*/ {cwd: rootPath}
           );
         }
