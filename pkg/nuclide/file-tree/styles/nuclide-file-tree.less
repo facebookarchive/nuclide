@@ -14,6 +14,10 @@
   background-color: @tree-view-background-color;
 
   &:focus {
-    background-color: darken(@tool-panel-background-color, 5%);
+    background-color: contrast(
+        @text-color,
+        darken(@tree-view-background-color, 2%),
+        lighten(@tree-view-background-color, 5%),
+        25%);
   }
 }
