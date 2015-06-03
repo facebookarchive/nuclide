@@ -61,7 +61,7 @@ class RemoteConnection {
   }
 
   async _addToProject() {
-    var workingDirectoryUri = this._getUriForInitialWorkingDirectory();
+    var workingDirectoryUri = this.getUriForInitialWorkingDirectory();
     // If restoring state, then the project already exists with local directory and wrong repo instances.
     // Hence, we remove it here, if existing, and add the new path for which we added a workspace opener handler.
     atom.project.removePath(workingDirectoryUri);
@@ -220,7 +220,7 @@ class RemoteConnection {
     }
 
     if (!entry.isDirectory()) {
-      throw new Error('Path is not a directory');
+      throw new Error('Path is not a directory:' + uri);
     }
 
     return entry;
@@ -352,7 +352,7 @@ class RemoteConnection {
     return this._config.host;
   }
 
-  _getUriForInitialWorkingDirectory(): string {
+  getUriForInitialWorkingDirectory(): string {
     return this.getUriOfRemotePath(this.getPathForInitialWorkingDirectory());
   }
 
