@@ -34,4 +34,9 @@ module.exports = {
   get WatchmanClient() {
     return require('./WatchmanClient');
   },
+
+  // Exposed for testing.
+  get WatchmanSubscription() {
+    return require('./WatchmanSubscription');
+  },
 };
