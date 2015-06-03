@@ -260,6 +260,11 @@ class FileTreeController {
         shouldDisplayIfTreeIsEmpty: true,
       },
       {
+        label: 'Add Remote Project Folder',
+        command: 'nuclide-ssh-dialog:connect',
+        shouldDisplayIfTreeIsEmpty: true,
+      },
+      {
         label: 'Remove Project Folder',
         command: 'nuclide-file-tree:remove-project-folder-selection',
         shouldDisplayForSelectedNodes(nodes) {
