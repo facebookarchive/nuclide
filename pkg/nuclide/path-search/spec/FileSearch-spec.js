@@ -33,12 +33,18 @@ function aFileSearchShould(typename) {
 
     beforeEach(() => {
       waitsForPromise(async () => {
+        // Don't create a real PathSearchUpdater that relies on watchman.
+        var mockPathSetUpdater = {
+          startUpdatingPathSet: () => Promise.resolve({dispose: () => {}}),
+        };
+
         dirPath = await dirPathFn();
-        search = await fileSearchForDirectory(dirPath);
-        deeperSearch = await fileSearchForDirectory(path.join(dirPath, 'deeper'));
+        search = await fileSearchForDirectory(dirPath, mockPathSetUpdater);
+        deeperSearch = await fileSearchForDirectory(path.join(dirPath, 'deeper'), mockPathSetUpdater);
         uriSearch = await fileSearchForDirectory(url.format({protocol: 'http',
                                                              host: 'somehost.fb.com',
-                                                             pathname: dirPath}));
+                                                             pathname: dirPath}),
+                                                 mockPathSetUpdater);
       });
     });
 

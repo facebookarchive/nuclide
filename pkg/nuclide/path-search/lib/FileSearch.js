@@ -69,8 +69,11 @@ var fileSearchForDirectoryUri = {};
 
 /**
  * FileSearch is an object with a query() method.
+ * @param directoryUri The directory to get the FileSearch for.
+ * @param pathSetUpdater Exposed for testing purposes. The pathSetUpdater to use
+ *   in this method--likely a mock.
  */
-async function fileSearchForDirectory(directoryUri: string): Promise<FileSearch> {
+async function fileSearchForDirectory(directoryUri: string, pathSetUpdater: ?PathSetUpdater): Promise<FileSearch> {
   var fileSearch = fileSearchForDirectoryUri[directoryUri];
   if (fileSearch) {
     return fileSearch;
@@ -79,10 +82,26 @@ async function fileSearchForDirectory(directoryUri: string): Promise<FileSearch>
   var directory = url.parse(directoryUri).path;
   var realpath = await fsPromise.realpath(directory);
   var pathSet = await createPathSet(realpath);
+
+  var pathSetUpdater = pathSetUpdater || getPathSetUpdater();
+  var disposable = await pathSetUpdater.startUpdatingPathSet(pathSet, realpath);
+  // TODO: Stop updating the pathSet when the fileSearch is torn down. But
+  // currently the fileSearch is never torn down.
+
   var pathSearch = new PathSearch(pathSet);
   fileSearch = new FileSearch(realpath, directoryUri, pathSearch);
   fileSearchForDirectoryUri[directoryUri] = fileSearch;
   return fileSearch;
+}
+
+var pathSetUpdater;
+
+function getPathSetUpdater() {
+  if (!pathSetUpdater) {
+    var PathSetUpdater = require('./PathSetUpdater');
+    pathSetUpdater = new PathSetUpdater();
+  }
+  return pathSetUpdater;
 }
 
 // The return values of the following functions must be JSON-serializable so they
