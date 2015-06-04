@@ -17,17 +17,18 @@ var {WatchmanSubscription} = require('nuclide-watchman-helpers');
 describe('PathSetUpdater', () => {
   var MOCK_WATCHMAN_PROJECT_ROOT = '/Mock/Root';
   var INITIAL_PATHS = {
-    [path.join(MOCK_WATCHMAN_PROJECT_ROOT, 'a')]: true,
-    [path.join(MOCK_WATCHMAN_PROJECT_ROOT, 'b')]: true,
+    'a': true,
+    'b': true,
   };
   var TEST_DIRECTORY = '/Mock/Root/To/Test/Dir';
+  var RELATIVE_PATH = path.relative(MOCK_WATCHMAN_PROJECT_ROOT, TEST_DIRECTORY);
   var pathSet;
   var pathSetUpdater;
 
   var createMockWatchmanSubscription = (directoryPath: string) => {
     return Promise.resolve(new WatchmanSubscription(
       /*subscriptionRoot*/ MOCK_WATCHMAN_PROJECT_ROOT,
-      /*pathFromSubscriptionRootToSubscriptionPath*/ path.relative(MOCK_WATCHMAN_PROJECT_ROOT, TEST_DIRECTORY),
+      /*pathFromSubscriptionRootToSubscriptionPath*/ RELATIVE_PATH,
       /*subscriptionPath*/ TEST_DIRECTORY,
       /*subscriptionCount*/ 1,
       /*subscriptionOptions*/ null // Not used in this test.
@@ -70,13 +71,13 @@ describe('PathSetUpdater', () => {
         // result in changes to the pathSet.
         var mockChanges = [
           {
-            name: 'c',
+            name: path.join(RELATIVE_PATH, 'c'),
             new: true,
             exists: true,
             mode: 1234,
           },
           {
-            name: 'a',
+            name: path.join(RELATIVE_PATH, 'a'),
             new: false,
             exists: false,
             mode: 1234,
@@ -85,23 +86,20 @@ describe('PathSetUpdater', () => {
         emitMockWatchmanUpdate(mockChanges);
         var newValues = [];
         await pathSet.submit(aPath => newValues.push(aPath));
-        expect(newValues.sort()).toEqual([
-          path.join(MOCK_WATCHMAN_PROJECT_ROOT, 'b'),
-          path.join(MOCK_WATCHMAN_PROJECT_ROOT, 'c'),
-        ]);
+        expect(newValues.sort()).toEqual(['b', 'c']);
 
         // Verify that disposing the Disposable stops updates to the pathSet.
         disposable.dispose();
         expect(mockWatchmanClient.unwatch).toHaveBeenCalledWith(TEST_DIRECTORY);
         var unnoticedChanges = [
           {
-            name: 'd',
+            name: path.join(RELATIVE_PATH, 'd'),
             new: true,
             exists: true,
             mode: 1234,
           },
           {
-            name: 'b',
+            name: path.join(RELATIVE_PATH, 'b'),
             new: false,
             exists: false,
             mode: 1234,

@@ -41,7 +41,10 @@ class PathSetUpdater {
   async startUpdatingPathSet(pathSet: PathSet, localDirectory: string): Promise<Disposable> {
     var subscription = await this._addWatchmanSubscription(localDirectory);
     this._pathSetToSubscription.set(pathSet, subscription);
-    subscription.on('change', this._processWatchmanUpdate.bind(this, subscription.root, pathSet));
+
+    subscription.on('change',
+        (files) => this._processWatchmanUpdate(subscription.pathFromSubscriptionRootToSubscriptionPath, pathSet, files));
+
     var {Disposable} = require('event-kit');
     return new Disposable(() => this._stopUpdatingPathSet(pathSet));
   }
@@ -85,21 +88,32 @@ class PathSetUpdater {
   // Section: PathSet Updating
 
   /**
-   * @param watchmanSubscriptionRoot The absolute path of the directory that is watched.
+   * Adds or removes paths from the pathSet based on the files in the update.
+   * This method assumes the pathSet should be populated with file paths that
+   * are *RELATIVE* to the localDirectory passed into PathSetUpdater::startUpdatingPathSet.
+   * @param pathFromSubscriptionRootToDir The path from the watched
+   *   root directory (what watchman actually watches) to the directory of interest
+   *   (i.e. the localDirectory passed to PathSetUpdater::startUpdatingPathSet).
+   *   For example, this string should be '' if those are the same.
    * @param pathSet The PathSet that should be updated by this watchman update.
    * @param files The `files` field of an fb-watchman update. Each file in the
    *   update is expected to contain fields for `name`, `new`, and `exists`.
    */
-  _processWatchmanUpdate(watchmanSubscriptionRoot: string, pathSet: PathSet, files: mixed): void {
+  _processWatchmanUpdate(pathFromSubscriptionRootToDir: ?string, pathSet: PathSet, files: mixed): void {
     var newPaths = [];
     var deletedPaths = [];
 
     files.forEach(file => {
-      var absolutePath = path.join(watchmanSubscriptionRoot, file.name);
+      var fileName = file.name;
+      // Watchman returns paths relative to the subscription root, which may be
+      // different from (i.e. a parent directory of) the localDirectory passed into
+      // PathSetUpdater::startUpdatingPathSet. But the PathSet expects paths
+      // relative to the localDirectory. Thus we need to do this adjustment.
+      var adjustedPath = pathFromSubscriptionRootToDir ? fileName.slice(pathFromSubscriptionRootToDir.length + 1) : fileName;
       if (file.new) {
-        newPaths.push(absolutePath);
+        newPaths.push(adjustedPath);
       } else if (!file.exists) {
-        deletedPaths.push(absolutePath);
+        deletedPaths.push(adjustedPath);
       }
     });
 
