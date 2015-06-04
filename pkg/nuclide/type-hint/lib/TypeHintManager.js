@@ -62,6 +62,10 @@ class TypeHintManager {
     }
     this._typeHintTimer = setTimeout(() => {
       this._typeHintTimer = null;
+      if (!editorView.component) {
+        // The editor was destroyed, but the destroy handler haven't yet been called to cancel the timer.
+        return;
+      }
       // Delay a bit + Cancel and schedule another update if the mouse keeps moving.
       var screenPosition = editorView.component.screenPositionForMouseEvent(e);
       var position = editor.bufferPositionForScreenPosition(screenPosition);
