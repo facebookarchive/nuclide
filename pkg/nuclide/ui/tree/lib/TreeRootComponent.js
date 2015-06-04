@@ -383,17 +383,9 @@ var TreeRootComponent = React.createClass({
    * Returns a Promise that's resolved when the roots are rendered.
    */
   setRoots(roots: Array<LazyTreeNode>): Promise {
-    // Remove old state for roots that are no longer relevant.
-    var oldRoots = this.state.roots;
-    var rootKeys = new Set(roots.map((root) => root.getKey()));
-    oldRoots.forEach((root) => {
-      if (!rootKeys.has(root.getKey())) {
-        this.removeStateForSubtree(root);
-      }
+    this.state.roots.forEach((root) => {
+      this.removeStateForSubtree(root);
     });
-
-    // Collect the roots, reusing old ones if possible to preserve state.
-    roots = roots.map((root) => this.getNodeForKey(root.getKey()) || root);
 
     var expandedKeys = this.state.expandedKeys;
     roots.forEach((root) => expandedKeys.add(root.getKey()));

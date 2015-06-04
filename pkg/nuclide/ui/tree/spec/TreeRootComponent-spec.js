@@ -98,7 +98,8 @@ describe('TreeRootComponent', () => {
 
         expect(component.getRootNodes()).toEqual([nodes['G'], nodes['A']]);
         expect(component.getSelectedNodes()).toEqual([]);
-        expect(component.getExpandedNodes()).toEqual([nodes['A'], nodes['G']]);
+        var expandedNodeKeys = component.getExpandedNodes().map(node => node.getKey());
+        expect(expandedNodeKeys).toEqual([nodes['G'].getKey(), nodes['A'].getKey()]);
       });
     });
 
