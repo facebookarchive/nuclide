@@ -1,0 +1,22 @@
+{
+  "name": "nuclide-buck-toolbar",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "engines": {
+    "atom": ">=0.192.0"
+  },
+  "nuclide": {
+    "packageType": "Node",
+    "testRunner": "apm"
+  },
+  "description": "Provides a toolbar in Nuclide to build projects with Buck",
+  "dependencies": {
+    "nuclide-logging": "0.0.0",
+    "nuclide-atom-npm": "0.0.0",
+    "nuclide-commons": "0.0.0",
+    "nuclide-service-hub-plus": "0.0.0",
+    "nuclide-ui-atom-combo-box": "0.0.0",
+    "react-for-atom": "0.13.6"
+  }
+}

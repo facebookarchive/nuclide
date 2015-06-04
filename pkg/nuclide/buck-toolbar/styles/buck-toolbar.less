@@ -1,0 +1,33 @@
+.buck-toolbar .combobox-combobox {
+  display: inline-block;
+  width: 200px;
+  vertical-align: middle;
+  margin-right: 5px;
+}
+
+.buck-toolbar .combobox-option-container {
+  // Need z-index=2 to appear over text editor tabs.
+  z-index: 2;
+}
+
+.buck-toolbar > label {
+  vertical-align: -webkit-baseline-middle;
+}
+
+.buck-toolbar-progress-bar {
+  margin-left: 5px;
+  vertical-align: middle;
+  width: 150px;
+
+  /**
+   * The default animation applied to a <progress> element by Atom causes the CPU to spike, even
+   * when the value of the <progress> bar is not being updated:
+   *
+   *     -webkit-animation: animate-stripes 5s linear infinite
+   *
+   * Therefore, we disable the animation in order to keep CPU usage under control.
+   *
+   * Filed as https://github.com/atom/atom/issues/6646.
+   */
+  -webkit-animation: none;
+}
