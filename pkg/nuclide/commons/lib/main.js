@@ -66,4 +66,8 @@ module.exports = {
   get vcs() {
     return require('./vcs');
   },
+
+  get dnsUtils() {
+    return require('./dns_utils');
+  },
 };

@@ -90,28 +90,35 @@ class SshHandshake {
     }
 
     this._config = config;
-    if (config.useSshAgent) {
-      this._connection.connect({
-        host: config.host,
-        port: config.sshPort,
-        username: config.username,
-        // Point to ssh-agent's socket for ssh-agent-based authentication.
-        agent: process.env.SSH_AUTH_SOCK,
-        tryKeyboard: true,
-      });
-    } else {
-      fsPromise.readFile(config.pathToPrivateKey).then((privateKey) => {
+
+    var {lookupPreferIpv6} = require('nuclide-commons').dnsUtils;
+
+    lookupPreferIpv6(config.host).then((address) => {
+      if (config.useSshAgent) {
         this._connection.connect({
-          host: config.host,
+          host: address,
           port: config.sshPort,
           username: config.username,
-          privateKey: privateKey,
+          // Point to ssh-agent's socket for ssh-agent-based authentication.
+          agent: process.env.SSH_AUTH_SOCK,
           tryKeyboard: true,
         });
-      }).catch((e) => {
-        this._delegate.onError(e, this._config);
-      });
-    }
+      } else {
+        fsPromise.readFile(config.pathToPrivateKey).then((privateKey) => {
+          this._connection.connect({
+            host: address,
+            port: config.sshPort,
+            username: config.username,
+            privateKey: privateKey,
+            tryKeyboard: true,
+          });
+        }).catch((e) => {
+          this._delegate.onError(e, this._config);
+        });
+      }
+    }).catch((e) => {
+      this._delegate.onError(e, this._config);
+    });
   }
 
   cancel() {
