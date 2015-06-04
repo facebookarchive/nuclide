@@ -21,14 +21,14 @@ import tempfile
 from utils import check_output_silent
 from utils import is_ip_address
 
-# openssl config file.
-OPENSSL_CNF = os.path.join(os.path.dirname(__file__), 'openssl.cnf')
 # SAN = Subject Alternative Name.
 OPENSSL_SAN = 'OPENSSL_SAN'
 # regex pattern for matching common name.
 SUBJECT_CN_REGEX = 'subject=.*/CN=([^/\n]*)'
 
 class NuclideCertificatesGenerator(object):
+    # openssl config file.
+    openssl_cnf = os.path.join(os.path.dirname(__file__), 'openssl.cnf')
 
     @staticmethod
     def get_text(cert_file):
@@ -101,7 +101,7 @@ class NuclideCertificatesGenerator(object):
         try:
             check_output_silent(shlex.split('openssl genrsa -out %s 1024' % key_file))
             args = shlex.split('openssl req -new -key %s -out %s -subj /CN=%s -config %s'
-                    % (key_file, csr_file, common_name, OPENSSL_CNF))
+                    % (key_file, csr_file, common_name, NuclideCertificatesGenerator.openssl_cnf))
             check_output_silent(args, env=self._env)
         except subprocess.CalledProcessError as e:
             print('openssl failed: %s' % e.output, file=sys.stderr)
@@ -114,7 +114,7 @@ class NuclideCertificatesGenerator(object):
         try:
             # Enable v3_req extensions.
             args = shlex.split('openssl x509 -req -days %d -in %s -CA %s -CAkey %s -set_serial %d -out %s -extensions v3_req -extfile %s'
-                    % (self._expiration_days, csr_file, self.ca_cert, self.ca_key, serial, cert_file, OPENSSL_CNF))
+                    % (self._expiration_days, csr_file, self.ca_cert, self.ca_key, serial, cert_file, NuclideCertificatesGenerator.openssl_cnf))
             check_output_silent(args, env=self._env)
         except subprocess.CalledProcessError as e:
             print('openssl failed: %s' % e.output, file=sys.stderr)

@@ -66,7 +66,7 @@ class NuclideServerTest(NuclideServerTestBase):
 
     def test_workspace(self):
         # Verify workspace gets resolved to real path.
-        workspace = os.path.join(os.path.dirname(__file__), '..')
+        workspace = os.path.join(os.getcwd(), '..')
         server = NuclideServer(9090, workspace)
         self.assertEquals(server.workspace, os.path.realpath(workspace))
         # Verify non-existing workspace resolved to None.

@@ -10,8 +10,13 @@ import tempfile
 import unittest
 
 from nuclide_certificates_generator import NuclideCertificatesGenerator
+from utils import write_resource_to_file
 
 class NuclideCertificatesGeneratorTest(unittest.TestCase):
+
+    def setUp(self):
+      temp_dir = tempfile.mkdtemp()
+      NuclideCertificatesGenerator.openssl_cnf = write_resource_to_file('openssl.cnf', temp_dir)
 
     def verify_key_file(self, key_file):
         with open(key_file, "r") as f:

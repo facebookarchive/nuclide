@@ -13,6 +13,8 @@ import socket
 import subprocess
 import sys
 
+from pkg_resources import resource_string
+
 # Run the process silently without stdout and stderr.
 # On success, return stdout. Otherwise, raise CalledProcessError
 # with combined stdout and stderr.
@@ -64,3 +66,12 @@ def is_ip_address(addr):
         return True
     except socket.error:
         return False
+
+# Read the resource and write it to a given dir using the resource name as file name.
+# Return the file path.
+def write_resource_to_file(name, dir):
+    content = resource_string(__name__, name)
+    target_path = os.path.join(dir, os.path.basename(name))
+    with open(target_path, 'w') as f:
+        f.write(content)
+    return target_path
