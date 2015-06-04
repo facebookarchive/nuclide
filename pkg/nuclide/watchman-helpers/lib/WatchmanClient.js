@@ -88,10 +88,11 @@ class WatchmanClient {
         since: clock,
         expression: relativePath ? ['dirname', relativePath] : undefined,
       };
+      // relativePath is undefined if watchRoot is the same as directoryPath.
       var subscription = this._subscriptions[directoryPath] =
           new WatchmanSubscription(
             /*subscriptionRoot*/ watchRoot,
-            /*subscriptionRelative*/ !!relativePath,
+            /*pathFromSubscriptionRootToSubscriptionPath*/ relativePath,
             /*subscriptionPath*/ directoryPath,
             /*subscriptionCount*/ 1,
             /*subscriptionOptions*/ options
@@ -114,7 +115,7 @@ class WatchmanClient {
 
       await this._unsubscribe(subscription.path, subscription.name);
       // Don't delete the watcher if there are other users for it.
-      if (!subscription.isRelative) {
+      if (!subscription.pathFromSubscriptionRootToSubscriptionPath) {
         await this._deleteWatcher(entryPath);
       }
       delete this._subscriptions[entryPath];

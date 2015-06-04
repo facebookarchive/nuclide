@@ -27,7 +27,7 @@ describe('PathSetUpdater', () => {
   var createMockWatchmanSubscription = (directoryPath: string) => {
     return Promise.resolve(new WatchmanSubscription(
       /*subscriptionRoot*/ MOCK_WATCHMAN_PROJECT_ROOT,
-      /*subscriptionRelative*/ true,
+      /*pathFromSubscriptionRootToSubscriptionPath*/ path.relative(MOCK_WATCHMAN_PROJECT_ROOT, TEST_DIRECTORY),
       /*subscriptionPath*/ TEST_DIRECTORY,
       /*subscriptionCount*/ 1,
       /*subscriptionOptions*/ null // Not used in this test.
