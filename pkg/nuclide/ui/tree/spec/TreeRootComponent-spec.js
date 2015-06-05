@@ -313,6 +313,91 @@ describe('TreeRootComponent', () => {
     });
   });
 
+  describe('collapseNodeKey', () => {
+    it('returns a Promise that resolves after the node is collapsed', () => {
+      waitsForPromise(async () => {
+        var component = renderComponent(props);
+        await component.setRoots([nodes['A']]);
+        expect(component.getExpandedNodes()).toEqual([nodes['A']]);
+
+        await component.collapseNodeKey(nodes['A'].getKey());
+        expect(component.getExpandedNodes()).toEqual([]);
+      });
+    });
+
+    it('keeps a non-container node collapsed', () => {
+      waitsForPromise(async () => {
+        var component = renderComponent(props);
+        await component.setRoots([nodes['A']]);
+
+        await component.collapseNodeKey(nodes['B'].getKey());
+
+        expect(component.getExpandedNodes()).toEqual([nodes['A']]);
+      });
+    });
+
+    it('resolves promises even if they are about to be overridden by a parallel call', () => {
+      waitsForPromise(async () => {
+        var component = renderComponent(props);
+
+        await component.setRoots([nodes['G']]);
+        await component.expandNodeKey(nodes['H'].getKey());
+        await component.expandNodeKey(nodes['I'].getKey());
+
+        var collapseNodeKeyPromise1 = component.collapseNodeKey(nodes['H'].getKey());
+        var collapseNodeKeyPromise2 = component.collapseNodeKey(nodes['I'].getKey());
+        await collapseNodeKeyPromise2;
+        await collapseNodeKeyPromise1;
+        expect(component.getExpandedNodes().map(node => node.getKey()))
+            .toEqual([
+              nodes['G'].getKey(),
+            ]);
+      });
+    });
+
+    it('rejects expandNodeKey and resolves collapseNodeKey when called in succession', () => {
+      waitsForPromise(async () => {
+        var component = renderComponent(props);
+
+        await component.setRoots([nodes['G']]);
+
+        var expandNodeKeyPromise = component.expandNodeKey(nodes['H'].getKey());
+        var collapseNodeKeyPromise = component.collapseNodeKey(nodes['H'].getKey());
+        await collapseNodeKeyPromise;
+        var isRejected = false;
+        try {
+          await expandNodeKeyPromise;
+        } catch (error) {
+          isRejected = true;
+        }
+        expect(isRejected).toBe(true);
+        expect(component.getExpandedNodes().map(node => node.getKey()))
+            .toEqual([
+              nodes['G'].getKey(),
+            ]);
+      });
+    });
+
+    it('resolves collapseNodeKey and resolves expandNodeKey when called in succession', () => {
+      waitsForPromise(async () => {
+        var component = renderComponent(props);
+
+        await component.setRoots([nodes['G']]);
+        await component.expandNodeKey(nodes['H'].getKey());
+
+        var collapseNodeKeyPromise = component.collapseNodeKey(nodes['H'].getKey());
+        var expandNodeKeyPromise = component.expandNodeKey(nodes['H'].getKey());
+        await expandNodeKeyPromise;
+        await collapseNodeKeyPromise;
+        expect(component.getExpandedNodes().map(node => node.getKey()))
+            .toEqual([
+              nodes['G'].getKey(),
+              nodes['H'].getKey(),
+            ]);
+      });
+    });
+  });
+
   describe('collapsing a node', () => {
 
     it('deselects descendants of the node', () => {

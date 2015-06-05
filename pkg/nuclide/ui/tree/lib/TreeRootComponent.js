@@ -547,12 +547,16 @@ var TreeRootComponent = React.createClass({
     return Promise.resolve();
   },
 
-  collapseNodeKey(nodeKey: string): void {
+  collapseNodeKey(nodeKey: string): Promise<void> {
     var node = this.getNodeForKey(nodeKey);
 
-    if (node != null) {
+    if (node && node.isContainer()) {
+      var promise = this._createDidUpdateListener(/* shouldResolve */ () => !this.state.expandedKeys.has(nodeKey));
       this._toggleNodeExpanded(node, false /* forceExpanded */);
+      return promise;
     }
+
+    return Promise.resolve();
   },
 
   isNodeKeyExpanded(nodeKey: string): boolean {
