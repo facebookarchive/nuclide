@@ -47,7 +47,7 @@ module.exports = {
       if (uri.startsWith(NUCLIDE_DIFF_VIEW_URI)) {
         var filePath = uri.slice(NUCLIDE_DIFF_VIEW_URI.length);
         var model = new DiffViewModel(uri, filePath);
-        return model.getDiffState().then(() => {
+        return model.fetchDiffState().then(() => {
           return createView(model);
         }, (err) => {
           var errorMessge = 'Cannot open diff view for file: ' + filePath + '<br/>Error: ' + err.message;

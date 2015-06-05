@@ -18,7 +18,7 @@ var DiffViewComponent = React.createClass({
     model: PropTypes.object.isRequired,
   },
 
-  async componentDidMount(): Promise<void> {
+  componentDidMount() {
     this._subscriptions = new CompositeDisposable();
 
     var DiffViewEditor = require('./DiffViewEditor');
@@ -31,7 +31,8 @@ var DiffViewComponent = React.createClass({
     this._oldDiffEditor.setReadOnly();
     this._newDiffEditor.setReadOnly();
 
-    var {oldText, newText, filePath} = await this.props.model.getDiffState();
+    var diffViewState = this.props.model.getDiffState();
+    var {oldText, newText, filePath} = diffViewState;
     this._oldDiffEditor.setFileContents(filePath, oldText);
     this._newDiffEditor.setFileContents(filePath, newText);
 

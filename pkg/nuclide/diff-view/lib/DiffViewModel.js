@@ -27,15 +27,40 @@ class DiffViewModel {
   constructor(uri: string, filePath: string) {
     this._uri = uri;
     this._filePath = filePath;
+    this._diffState = null;
   }
 
-  getDiffState(): Promise<DiffViewState> {
-    // TODO(most): fetch from the repo and the filesystem.
-    return Promise.resolve({
+  async fetchDiffState(): Promise<void> {
+    var {find} = require('nuclide-commons').array;
+    var rootDirectory = find(atom.project.getDirectories(), directory => directory.contains(this._filePath));
+    if (!rootDirectory) {
+      throw new Error('Cannot find root directory for file: ' + this._filePath);
+    }
+    var repository = await atom.project.repositoryForDirectory(rootDirectory);
+    if (!repository || repository.getType() !== 'hg') {
+      throw new Error('Diff view only supports hg repositories right now: ' + repository && repository.getType());
+    }
+    var committedContents = await repository.fetchFileContentAtRevision(this._filePath);
+
+    var {getClient} = require('nuclide-client');
+    var {getPath} = require('nuclide-remote-uri');
+
+    var client = getClient(this._filePath);
+    var localFilePath = getPath(this._filePath);
+    var filesystemContents = await client.readFile(localFilePath, 'utf8');
+
+    this._diffState = {
       filePath: this._filePath,
-      oldText: 'sossa\nabc-long-text\ndef\nghikl\nnew-line-of-matching-text\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nab\n-cdef',
-      newText: 'sossa\nnew-abc-long-text\nghiklm\nnew-line-of-matching-text\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nlol\n-cdef',
-    });
+      oldText: committedContents,
+      newText: filesystemContents,
+    };
+  }
+
+  getDiffState(): DiffViewState {
+    if (!this._diffState) {
+      throw new Error('No diff state is set!');
+    }
+    return this._diffState;
   }
 
   getURI(): string {
