@@ -36,9 +36,14 @@ var DiffViewComponent = React.createClass({
     this._oldDiffEditor.setFileContents(filePath, oldText);
     this._newDiffEditor.setFileContents(filePath, newText);
 
-    this._updateDiffMarkers();
+    var SyncScroll = require('./SyncScroll');
+    this._subscriptions.add(new SyncScroll(
+        this._getOldTextEditorElement().getModel(),
+        this._getNewTextEditorElement().getModel()
+      )
+    );
 
-    // TODO(most): Setup scroll syncing between the two editors.
+    this._updateDiffMarkers();
   },
 
   _updateDiffMarkers() {

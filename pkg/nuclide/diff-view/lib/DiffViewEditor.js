@@ -50,7 +50,7 @@ module.exports = class DiffViewEditor {
    * @param addedLines An array of buffer line numbers that should be highlighted as added.
    * @param removedLines An array of buffer line numbers that should be highlighted as removed.
    */
-  setHighlightedLines(addedLines: ?Array<number> = [], removedLines: ?Array<number> = []): void {
+  setHighlightedLines(addedLines: ?Array<number> = [], removedLines: ?Array<number> = []) {
     for (var marker of this._markers) {
       marker.destroy();
     }
