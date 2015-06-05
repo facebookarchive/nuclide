@@ -1,10 +1,54 @@
+@import 'ui-variables';
+@import 'octicon-utf-codes';
+
 .diff-view-component {
   height: 100%;
-  color: white;
+  padding-bottom: 31px;
+
+  .title {
+    width: 100%;
+    text-align: center;
+
+    p {
+      color: @text-color-subtle;
+      font-size: larger;
+      margin: 5px;
+    }
+  }
 
   .split-pane {
     width: 50%;
     height: 100%;
     float: left;
+  }
+}
+
+atom-text-editor, atom-text-editor::shadow {
+
+  .diff-view-insert .region {
+    background-color: @background-color-success;
+  }
+  .diff-view-delete .region {
+    background-color: @background-color-error;
+  }
+
+  .gutter .line-number {
+    &.diff-view-insert .icon-right {
+      visibility: visible;
+      &:before {
+        color: @background-color-success;
+        content: @primitive-dot;
+        font-size: 1.1em;
+      }
+    }
+
+    &.diff-view-delete .icon-right {
+      visibility: visible;
+      &:before {
+        color: @background-color-error;
+        content: @primitive-dot;
+        font-size: 1.1em;
+      }
+    }
   }
 }

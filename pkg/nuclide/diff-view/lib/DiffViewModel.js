@@ -33,8 +33,8 @@ class DiffViewModel {
     // TODO(most): fetch from the repo and the filesystem.
     return Promise.resolve({
       filePath: this._filePath,
-      oldText: 'sossa\nabc-long-text\ndef\nghikl\nnew-line-of-matching-text',
-      newText: 'sossa\nnew-abc-long-text\nghiklm\nnew-line-of-matching-text',
+      oldText: 'sossa\nabc-long-text\ndef\nghikl\nnew-line-of-matching-text\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nab\n-cdef',
+      newText: 'sossa\nnew-abc-long-text\nghiklm\nnew-line-of-matching-text\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nlol\n-cdef',
     });
   }
 

@@ -44,8 +44,14 @@ var DiffViewComponent = React.createClass({
     var {addedLines, removedLines, oldLineOffsets, newLineOffsets} =
         this.props.model.computeDiff(this._oldDiffEditor.getText(), this._newDiffEditor.getText());
 
-    // TODO(most): update the editors with the highlight markers at the added and removed lines.
-    // TODO(most): update the editors with the empty line offsets required for diff comparability.
+    // Set the empty space offsets in the diff editors marking for no-matching diff section.
+    this._newDiffEditor.setOffsets(newLineOffsets);
+    this._oldDiffEditor.setOffsets(oldLineOffsets);
+
+    // Set highlighted lines in the diff editors marking the added and deleted lines.
+    // This trigges a redraw for the editor, hence being done after the offsets have been set.
+    this._newDiffEditor.setHighlightedLines(addedLines, undefined);
+    this._oldDiffEditor.setHighlightedLines(undefined, removedLines);
   },
 
   componentWillUnmount(): void {
@@ -59,11 +65,15 @@ var DiffViewComponent = React.createClass({
     return (
       <div className='diff-view-component'>
         <div className='split-pane'>
-          <p>Old File</p>
+          <div className='title'>
+            <p>Original</p>
+          </div>
           <atom-text-editor ref='old' style={{height: '100%'}} />
         </div>
         <div className='split-pane'>
-          <p>New File</p>
+          <div className='title'>
+            <p>Changed</p>
+          </div>
           <atom-text-editor ref='new' style={{height: '100%'}} />
         </div>
       </div>
