@@ -11,13 +11,16 @@
 
 class LazyTreeNode {
 
+  // Protected
+  __isContainer: boolean;
+  __item: any;
+  __key: ?string;
+  __parent: ?LazyTreeNode;
+
+  // Private
   _children: ?Immutable.List;
   _fetchChildren: (node: LazyTreeNode) => Promise;
   _isCacheValid: boolean;
-  _isContainer: boolean;
-  _item: any;
-  _key: ?string;
-  _parent: ?LazyTreeNode;
   _pendingFetch: ?Promise;
 
   /**
@@ -29,26 +32,26 @@ class LazyTreeNode {
       parent: ?LazyTreeNode,
       isContainer: boolean,
       fetchChildren: (node: LazyTreeNode) => Promise) {
-    this._item = item;
-    this._parent = parent;
-    this._isContainer = isContainer;
+    this.__item = item;
+    this.__parent = parent;
+    this.__isContainer = isContainer;
     this._fetchChildren = fetchChildren;
     this._children = null;
     this._isCacheValid = false;
     this._pendingFetch = null;
-    this._key = null;
+    this.__key = null;
   }
 
   isRoot(): boolean {
-    return this._parent === null;
+    return this.__parent === null;
   }
 
   getParent(): ?LazyTreeNode {
-    return this._parent;
+    return this.__parent;
   }
 
   getItem(): any {
-    return this._item;
+    return this.__item;
   }
 
   getCachedChildren(): ?Immutable.List<LazyTreeNode> {
@@ -78,13 +81,13 @@ class LazyTreeNode {
    * LazyTreeNodes that make up the tree.
    */
   getKey(): string {
-    if (!this._key) {
+    if (!this.__key) {
       // TODO(mbolin): Escape slashes.
-      var prefix = this._parent ? this._parent.getKey() : '/';
-      var suffix = this._isContainer ? '/' : '';
-      this._key = prefix + this.getLabel() + suffix;
+      var prefix = this.__parent ? this.__parent.getKey() : '/';
+      var suffix = this.__isContainer ? '/' : '';
+      this.__key = prefix + this.getLabel() + suffix;
     }
-    return this._key;
+    return this.__key;
   }
 
   /**
@@ -95,7 +98,7 @@ class LazyTreeNode {
   }
 
   isContainer(): boolean {
-    return this._isContainer;
+    return this.__isContainer;
   }
 
   isCacheValid(): boolean {

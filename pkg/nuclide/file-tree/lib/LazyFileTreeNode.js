@@ -21,7 +21,7 @@ class LazyFileTreeNode extends LazyTreeNode {
       fetchChildren: (node: LazyTreeNode) => Promise) {
     super(file, parent, file.isDirectory(), fetchChildren);
     this._file = file;
-    this._key = null;
+    this.__key = null;
   }
 
   /**
@@ -33,12 +33,12 @@ class LazyFileTreeNode extends LazyTreeNode {
   }
 
   getKey(): string {
-    if (!this._key) {
-      var label = this._parent ? this._parent.getKey() + this.getLabel() : this._file.getPath();
-      var suffix = this._isContainer && !label.endsWith('/') ? '/' : '';
-      this._key = label + suffix;
+    if (!this.__key) {
+      var label = this.__parent ? this.__parent.getKey() + this.getLabel() : this._file.getPath();
+      var suffix = this.__isContainer && !label.endsWith('/') ? '/' : '';
+      this.__key = label + suffix;
     }
-    return this._key;
+    return this.__key;
   }
 
   getLabel(): string {

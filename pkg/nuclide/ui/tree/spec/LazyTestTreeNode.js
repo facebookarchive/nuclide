@@ -14,7 +14,7 @@ var LazyTreeNode = require('../lib/LazyTreeNode');
 class LazyTestTreeNode extends LazyTreeNode {
 
   getLabel(): string {
-    return this._item.label;
+    return this.__item.label;
   }
 
 }
