@@ -244,6 +244,10 @@ class FileTreeController {
       }
     }));
 
+    this._subscriptions.add(atom.workspace.onDidChangeActivePaneItem(() => {
+      this.selectActiveFile();
+    }));
+
     this.addContextMenuItemGroup([
       {
         label: 'New',
@@ -510,7 +514,12 @@ class FileTreeController {
     }
   }
 
-  async revealActiveFile(): void {
+  revealActiveFile(): Promise<void> {
+    this.setVisible(true);
+    return this.selectActiveFile();
+  }
+
+  async selectActiveFile(): Promise<void> {
     var editor = atom.workspace.getActiveTextEditor();
     if (!editor) {
       return;
@@ -554,7 +563,6 @@ class FileTreeController {
         }
       }
     }
-    this.setVisible(true);
   }
 
   deleteSelection() {
