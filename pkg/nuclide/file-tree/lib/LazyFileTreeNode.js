@@ -8,12 +8,15 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
+
 var {LazyTreeNode} = require('nuclide-ui-tree');
 
 class LazyFileTreeNode extends LazyTreeNode {
 
+  _file: (atom$File | atom$Directory);
+
   constructor(
-      file: File | Directory,
+      file: atom$File | atom$Directory,
       parent: ?LazyFileTreeNode,
       fetchChildren: (node: LazyTreeNode) => Promise) {
     super(file, parent, file.isDirectory(), fetchChildren);
@@ -41,6 +44,14 @@ class LazyFileTreeNode extends LazyTreeNode {
   getLabel(): string {
     return this._file.getBaseName();
   }
+
+  isSymlink(): boolean {
+    // The `symlink` property is assigned in the atom$Directory and atom$File
+    // constructors with the `@symlink` class property syntax in its argument
+    // list.
+    return this._file.symlink;
+  }
+
 }
 
 module.exports = LazyFileTreeNode;

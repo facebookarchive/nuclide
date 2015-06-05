@@ -71,11 +71,17 @@ function labelClassNameForNode(node: LazyFileTreeNode) {
     'name': true,
   };
 
-  classObj[
-    node.isContainer() ?
-    'icon-file-directory' :
-    fileTypeClass(node.getLabel())
-  ] = true;
+  var iconClassName;
+  if (node.isContainer()) {
+    iconClassName = node.isSymlink()
+      ? 'icon-file-symlink-directory'
+      : 'icon-file-directory';
+  } else if (node.isSymlink()) {
+    iconClassName = 'icon-file-symlink-file';
+  } else {
+    iconClassName = fileTypeClass(node.getLabel());
+  }
+  classObj[iconClassName] = true;
 
   return addons.classSet(classObj);
 }

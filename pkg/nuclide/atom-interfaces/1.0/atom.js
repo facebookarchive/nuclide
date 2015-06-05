@@ -259,7 +259,27 @@ declare class atom$ContextMenuManager {
 }
 
 declare class atom$Directory {
+  symlink: boolean;
+
+  // File Metadata
+  isFile(): boolean;
+  isDirectory(): boolean;
+
+  // Managing Paths
   getPath(): string;
+  getBaseName(): string;
+}
+
+declare class atom$File {
+  symlink: boolean;
+
+  // File Metadata
+  isFile(): boolean;
+  isDirectory(): boolean;
+
+  // Managing Paths
+  getPath(): string;
+  getBaseName(): string;
 }
 
 declare class atom$Project {
