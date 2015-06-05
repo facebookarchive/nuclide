@@ -42,6 +42,18 @@ module.exports = {
 
     var DiffViewModel = require('./DiffViewModel');
 
+    subscriptions.add(atom.commands.add(
+      'atom-text-editor',
+      'nuclide-diff-view:open',
+      () => {
+        var editor = atom.workspace.getActiveTextEditor();
+        if (!editor) {
+          return logger.warn('No active text editor for diff view!');
+        }
+        atom.workspace.open(NUCLIDE_DIFF_VIEW_URI + editor.getPath());
+      }
+    ));
+
     // The Diff View will open its main UI in a tab, like Atom's preferences and welcome pages.
     subscriptions.add(atom.workspace.addOpener(uri => {
       if (uri.startsWith(NUCLIDE_DIFF_VIEW_URI)) {
