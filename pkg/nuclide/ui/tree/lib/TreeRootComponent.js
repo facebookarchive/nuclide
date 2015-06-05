@@ -407,19 +407,26 @@ var TreeRootComponent = React.createClass({
   },
 
   _createDidUpdateListener(shouldResolve: () => boolean): Promise {
-    return new Promise(resolve => {
+    return new Promise((resolve, reject) => {
       var listener = () => {
         if (shouldResolve()) {
           resolve(null);
-
-          if (this._emitter) {
-            this._emitter.removeListener('did-update', listener);
-          }
+          // Set this to null so this promise can't be rejected anymore.
+          this._rejectDidUpdateListenerPromise = null;
+          this._emitter.removeListener('did-update', listener);
         }
       };
 
-      if (this._emitter) {
-        this._emitter.addListener('did-update', listener);
+      this._emitter.addListener('did-update', listener);
+
+      // We need to reject the previous promise, so it doesn't get leaked.
+      if (this._rejectDidUpdateListenerPromise) {
+        this._rejectDidUpdateListenerPromise();
+        this._rejectDidUpdateListenerPromise = null;
+      }
+      this._rejectDidUpdateListenerPromise = () => {
+        reject();
+        this._emitter.removeListener('did-update', listener);
       }
     });
   },

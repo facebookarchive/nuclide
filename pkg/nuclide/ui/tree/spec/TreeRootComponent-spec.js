@@ -119,6 +119,26 @@ describe('TreeRootComponent', () => {
         expect(nodeComponents['B']).toBeUndefined();
       });
     });
+
+    it('rejects outdated promises', () => {
+      waitsForPromise(async () => {
+        var component = renderComponent(props);
+
+        var setRootsPromise1 = component.setRoots([nodes['A']]);
+        var setRootsPromise2 = component.setRoots([nodes['D']]);
+        await setRootsPromise2;
+        var isRejected = false;
+        try {
+          await setRootsPromise1;
+        } catch (error) {
+          isRejected = true;
+        }
+        expect(isRejected).toBe(true);
+        nodeComponents = getNodeComponents(component);
+        expect(nodeComponents['B']).toBeUndefined();
+        expect(nodeComponents['E']).not.toBeUndefined();
+      });
+    });
   });
 
   describe('handling core:move-left', () => {
