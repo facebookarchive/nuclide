@@ -382,7 +382,7 @@ var TreeRootComponent = React.createClass({
   /**
    * Returns a Promise that's resolved when the roots are rendered.
    */
-  setRoots(roots: Array<LazyTreeNode>): Promise {
+  setRoots(roots: Array<LazyTreeNode>): Promise<void> {
     this.state.roots.forEach((root) => {
       this.removeStateForSubtree(root);
     });
@@ -406,11 +406,11 @@ var TreeRootComponent = React.createClass({
     return promise;
   },
 
-  _createDidUpdateListener(shouldResolve: () => boolean): Promise {
+  _createDidUpdateListener(shouldResolve: () => boolean): Promise<void> {
     return new Promise((resolve, reject) => {
       var listener = () => {
         if (shouldResolve()) {
-          resolve(null);
+          resolve();
           // Set this to null so this promise can't be rejected anymore.
           this._rejectDidUpdateListenerPromise = null;
           this._emitter.removeListener('did-update', listener);
@@ -503,11 +503,16 @@ var TreeRootComponent = React.createClass({
   /**
    * Selects a node by key if it's in the file tree; otherwise, do nothing.
    */
-  selectNodeKey(nodeKey: string): void {
+  selectNodeKey(nodeKey: string): Promise<void> {
     if (!this.getNodeForKey(nodeKey)) {
-      return;
+      return Promise.reject();
     }
+
+    // We have to create the listener before setting the state so it can pick
+    // up the changes from `setState`.
+    var promise = this._createDidUpdateListener(/* shouldResolve */ () => this.state.selectedKeys.has(nodeKey));
     this.setState({selectedKeys: new Set([nodeKey])});
+    return promise;
   },
 
   getNodeForKey(nodeKey: string): ?LazyTreeNode {

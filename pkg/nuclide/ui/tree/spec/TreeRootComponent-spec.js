@@ -219,6 +219,48 @@ describe('TreeRootComponent', () => {
     });
   });
 
+  describe('selectNodeKey', () => {
+    it('returns a Promise that resolves after the node is selected', () => {
+      waitsForPromise(async () => {
+        var component = renderComponent(props);
+        await component.setRoots([nodes['A']]);
+
+        await component.selectNodeKey(nodes['B'].getKey());
+        expect(component.getSelectedNodes()).toEqual([nodes['B']]);
+      });
+    });
+
+    it('resolves promises even if they are about to be overridden by a parallel call', () => {
+      waitsForPromise(async () => {
+        var component = renderComponent(props);
+
+        await component.setRoots([nodes['A']]);
+
+        var selectNodeKeyPromise1 = component.selectNodeKey(nodes['B'].getKey());
+        var selectNodeKeyPromise2 = component.selectNodeKey(nodes['A'].getKey());
+        await selectNodeKeyPromise2;
+        await selectNodeKeyPromise1;
+        expect(component.getSelectedNodes().map(node => node.getKey()))
+            .toEqual([nodes['A'].getKey()]);
+      });
+    });
+
+    it('rejects if the key does not exist', () => {
+      waitsForPromise(async () => {
+        var component = renderComponent(props);
+        await component.setRoots([nodes['A']]);
+
+        var isRejected = false;
+        try {
+          await component.selectNodeKey('unknown key');
+        } catch (error) {
+          isRejected = true;
+        }
+        expect(isRejected).toBe(true);
+      });
+    });
+  });
+
   describe('collapsing a node', () => {
 
     it('deselects descendants of the node', () => {
