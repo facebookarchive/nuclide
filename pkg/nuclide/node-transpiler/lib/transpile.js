@@ -11,40 +11,7 @@
  */
 
 var fs = require('fs');
-var babel = require('babel-core');
-
-/**
- * @param isYieldSupported whether the target environment supports yield/generators.
- *     This is an optional boolean argument that defaults to false.
- */
-function transpileFile(sourceCode, filePath, isYieldSupported) {
-  // These options should be kept in sync with
-  // https://github.com/atom/atom/blob/master/src/babel.coffee.
-  //
-  // The one exception is regenerator vs. asyncToGenerator because we must use
-  // regenerator when targetting Node 0.10.x, but we can use asyncToGenerator
-  // when targetting io.js.
-  var options = {
-    filename: filePath,
-    sourceMap: 'inline',
-    blacklist: [
-      'useStrict',
-    ],
-    optional: [
-      (isYieldSupported ? 'asyncToGenerator' : 'regenerator'),
-    ],
-    stage: 0,
-  };
-
-  try {
-    return babel.transform(sourceCode, options).code;
-  } catch (e) {
-    /* eslint-disable no-console */
-    console.error(e);
-    /* eslint-enable no-console */
-    throw e;
-  }
-}
+var createOrFetchFromCache = require('./babel-cache').createOrFetchFromCache;
 
 function startsWith(str, prefix) {
   return str.lastIndexOf(prefix, 0) === 0;
@@ -60,9 +27,7 @@ function loadFile(module, filePath) {
       /* eslint-enable quotes */ {
     js = sourceCode;
   } else {
-    // TODO(mbolin): write the compiled code to a cache to improve startup
-    // time.
-    js = transpileFile(sourceCode, filePath);
+    js = createOrFetchFromCache(sourceCode, filePath);
   }
 
   return module._compile(js, filePath);
@@ -112,5 +77,4 @@ function startTranspile() {
 
 module.exports = {
   startTranspile: startTranspile,
-  transpileFile: transpileFile,
 };

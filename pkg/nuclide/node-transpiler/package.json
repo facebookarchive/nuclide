@@ -13,7 +13,8 @@
     "babel-runtime": "5.1.11",
     "bluebird": "2.9.0",
     "es6-collections": "0.5.1",
-    "jasmine-focused": "1.0.7"
+    "jasmine-focused": "1.0.7",
+    "temp": "0.8.1"
   },
   "bin": {
     "jasmine-node-transpiled": "bin/jasmine-node-transpiled"

@@ -30,6 +30,6 @@ var filePath = path.join(process.env.PWD, file);
 
 var fs = require('fs');
 var sourceCode = fs.readFileSync(filePath);
-var transpileFile = require('../lib/transpile').transpileFile;
+var transpileFile = require('../lib/babel-cache').transpileFile;
 var code = transpileFile(sourceCode, filePath, isYieldSupported);
 console.log(code);
