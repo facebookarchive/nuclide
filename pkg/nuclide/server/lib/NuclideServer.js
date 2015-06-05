@@ -17,7 +17,8 @@ var http = require('http');
 var https = require('https');
 var {loadConfigsOfServiceWithServiceFramework,
   loadConfigsOfServiceWithoutServiceFramework,
-  SERVICE_FRAMEWORK_EVENT_CHANNEL} = require('./config');
+  SERVICE_FRAMEWORK_EVENT_CHANNEL,
+  SERVICE_FRAMEWORK_RPC_CHANNEL} = require('./config');
 var {parseServiceApiSync} = require('nuclide-service-transformer');
 var path = require('path');
 var {EventEmitter} = require('events');
@@ -165,6 +166,9 @@ class NuclideServer {
     serviceApi.rpcMethodNames.forEach(methodName => {
       this._registerService(
         '/' + serviceApi.className + '/' + methodName,
+
+        // Take serviceOptions as first argument for serviceFramework service.
+        // TODO(chenshen) seperate the logic of service initialization.
         (serviceOptions, ...args) => {
           var localServiceInstance = this._getServiceFrameworkServiceAndRegisterEventHandle(
               serviceConfig, serviceOptions);
@@ -361,8 +365,28 @@ class NuclideServer {
     });
   }
 
-  _onSocketMessage(client: SocketClient, message: mixed) {
-    throw new Error('unkown websocket message: ' + message);
+  async _onSocketMessage(client: SocketClient, message: mixed): void {
+    message = JSON.parse(message);
+    var {serviceName, methodName, methodArgs, serviceOptions, requestId} = message;
+    var result = null;
+    var error = null;
+
+    try {
+      var result = await this.callService(
+        '/' + serviceName + '/' + methodName,
+        [serviceOptions].concat(methodArgs),
+      );
+    } catch (e) {
+      logger.error('Failed to call %s/%s with error %o', serviceName, methodName, e);
+      error = e;
+    }
+    
+    this._sendSocketMessage(client.socket, {
+      channel: SERVICE_FRAMEWORK_RPC_CHANNEL,
+      requestId,
+      result,
+      error,
+    });
   }
 
   /**

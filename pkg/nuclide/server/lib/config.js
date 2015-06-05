@@ -20,7 +20,9 @@
 
 var path = require('path');
 
-const SERVICE_FRAMEWORK_EVENT_CHANNEL = 'service_framework';
+const SERVICE_FRAMEWORK_EVENT_CHANNEL = 'service_framework_event';
+const SERVICE_FRAMEWORK_RPC_CHANNEL = 'service_framework_rpc';
+const SERVICE_FRAMEWORK_RPC_TIMEOUT_MS = 60 * 1000;
 const SERVICES_CONFIG_PATH = path.resolve(__dirname, '../services-config.json');
 
 function loadConfigsOfServiceWithServiceFramework(): Array<mixed> {
@@ -61,4 +63,6 @@ module.exports = {
   loadConfigsOfServiceWithoutServiceFramework,
   loadConfigsOfServiceWithServiceFramework,
   SERVICE_FRAMEWORK_EVENT_CHANNEL,
+  SERVICE_FRAMEWORK_RPC_CHANNEL,
+  SERVICE_FRAMEWORK_RPC_TIMEOUT_MS,
 };

@@ -15,7 +15,9 @@ var {serializeArgs} = require('./utils');
 var {EventEmitter} = require('events');
 var NuclideSocket = require('./NuclideSocket');
 var extend = require('util')._extend;
-var {SERVICE_FRAMEWORK_EVENT_CHANNEL} = require('./config');
+var {SERVICE_FRAMEWORK_EVENT_CHANNEL,
+  SERVICE_FRAMEWORK_RPC_CHANNEL,
+  SERVICE_FRAMEWORK_RPC_TIMEOUT_MS} = require('./config');
 var logger = require('nuclide-logging').getLogger();
 
 type NuclideRemoteEventbusOptions = {
@@ -30,11 +32,19 @@ class NuclideRemoteEventbus {
     this.socket.on('message', (message) => this._handleSocketMessage(message));
     this.eventbus = new EventEmitter();
     this.serviceFrameworkEventEmitter = new EventEmitter();
+    this._rpcRequestId = 1;
+    this._serviceFrameworkRpcEmitter = new EventEmitter();
     this._eventEmitters = {};
   }
 
   _handleSocketMessage(message: mixed) {
     var {channel, event} = message;
+
+    if (channel === SERVICE_FRAMEWORK_RPC_CHANNEL) {
+      var {requestId, error, result} = message;
+      this._serviceFrameworkRpcEmitter.emit(requestId.toString(), error, result);
+      return;
+    }
 
     if (channel === SERVICE_FRAMEWORK_EVENT_CHANNEL) {
       this.serviceFrameworkEventEmitter.emit.apply(this.serviceFrameworkEventEmitter,
@@ -113,26 +123,30 @@ class NuclideRemoteEventbus {
       serviceName: string,
       methodName: string,
       methodArgs: Array<mixed>,
-      serviceOptions: mixed
+      serviceOptions: mixed,
+      timeout=SERVICE_FRAMEWORK_RPC_TIMEOUT_MS: number
     ): Promise<string|mixed> {
-    // Use serviceOptions as first argument of methodArgs as it is the simplest
-    // way to pass serviceOptions to client without changing lots of code.
-    // TODO(chenshen) make it better.
-    var {args, argTypes} = serializeArgs([serviceOptions].concat(methodArgs));
-    try {
-      return await this.socket.xhrRequest({
-        uri: serviceName + '/' + methodName,
-        qs: {
-          args,
-          argTypes,
-        },
-        method: 'POST', 
-        json: true,
+
+    var requestId = this._rpcRequestId ++;
+
+    this.socket.send({
+      serviceName,
+      methodName,
+      methodArgs,
+      serviceOptions,
+      requestId,
+    });
+
+    return new Promise((resolve, reject) => {
+      this._serviceFrameworkRpcEmitter.once(requestId.toString(), (error, result) => {
+        error ? reject(error) : resolve(result);
       });
-    } catch (err) {
-      logger.error(err);
-      throw err;
-    }
+
+      setTimeout(() => {
+        this._serviceFrameworkRpcEmitter.removeAllListeners(requestId);
+        reject(`Timeout after ${timeout} for ${serviceName}/${methodName}`);
+      }, timeout);
+    });
   }
 
   async subscribeToChannel(channel: string, handler: (event: ?mixed) => void): Promise<Disposable> {
