@@ -67,12 +67,13 @@ describe('TreeRootComponent', () => {
     //      G
     //     / \
     //    H   I
-    //  /
-    // J
+    //  /   /
+    // J   K
     nodes['G'] = new LazyTestTreeNode({label: 'G'}, /* parent */ null, true, async () => [nodes['H'], nodes['I']]);
     nodes['H'] = new LazyTestTreeNode({label: 'H'}, /* parent */ nodes['G'], true, async () => [nodes['J']]);
+    nodes['I'] = new LazyTestTreeNode({label: 'I'}, /* parent */ nodes['G'], true, async () => [nodes['K']]);
     nodes['J'] = new LazyTestTreeNode({label: 'J'}, /* parent */ nodes['H'], false, async () => null);
-    nodes['I'] = new LazyTestTreeNode({label: 'I'}, /* parent */ nodes['G'], false, async () => null);
+    nodes['K'] = new LazyTestTreeNode({label: 'K'}, /* parent */ nodes['I'], false, async () => null);
 
     hostEl = document.createElement('div');
     hostEl.className = 'test';
@@ -257,6 +258,57 @@ describe('TreeRootComponent', () => {
           isRejected = true;
         }
         expect(isRejected).toBe(true);
+      });
+    });
+  });
+
+  describe('expandNodeKey', () => {
+    it('returns a Promise that resolves after a container node is expanded', () => {
+      waitsForPromise(async () => {
+        var component = renderComponent(props);
+        await component.setRoots([nodes['G']]);
+
+        await component.expandNodeKey(nodes['H'].getKey());
+
+        expect(component.getExpandedNodes()).toEqual([nodes['G'], nodes['H']]);
+        var nodeComponents = getNodeComponents(component);
+        expect(nodeComponents['J']).not.toBeUndefined();
+      });
+    });
+
+    it('does not expand a non-container node', () => {
+      waitsForPromise(async () => {
+        var component = renderComponent(props);
+        await component.setRoots([nodes['A']]);
+
+        await component.expandNodeKey(nodes['B'].getKey());
+
+        expect(component.getExpandedNodes()).toEqual([nodes['A']]);
+      });
+    });
+
+    it('rejects older promises even though they will succeed', () => {
+      waitsForPromise(async () => {
+        var component = renderComponent(props);
+
+        await component.setRoots([nodes['G']]);
+
+        var expandNodeKeyPromise1 = component.expandNodeKey(nodes['H'].getKey());
+        var expandNodeKeyPromise2 = component.expandNodeKey(nodes['I'].getKey());
+        await expandNodeKeyPromise2;
+        var isRejected = false;
+        try {
+          await expandNodeKeyPromise1;
+        } catch (error) {
+          isRejected = true;
+        }
+        expect(isRejected).toBe(true);
+        expect(component.getExpandedNodes().map(node => node.getKey()))
+            .toEqual([
+              nodes['G'].getKey(),
+              nodes['H'].getKey(),
+              nodes['I'].getKey(),
+            ]);
       });
     });
   });

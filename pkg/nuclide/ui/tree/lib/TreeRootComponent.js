@@ -521,12 +521,30 @@ var TreeRootComponent = React.createClass({
     }
   },
 
-  expandNodeKey(nodeKey: string): void {
+  /**
+   * If this function is called multiple times in parallel, the later calls will
+   * cause the previous promises to reject even if they end up expanding the
+   * node key successfully.
+   *
+   * If we don't reject, then we might leak promises if a node key is expanded
+   * and collapsed in succession (the collapse could succeed first, causing
+   * the expand to never resolve).
+   */
+  expandNodeKey(nodeKey: string): Promise<void> {
     var node = this.getNodeForKey(nodeKey);
 
-    if (node != null) {
+    if (node && node.isContainer()) {
+      var promise = this._createDidUpdateListener(/* shouldResolve */ () => {
+        var isExpanded = this.state.expandedKeys.has(nodeKey);
+        var node = this.getNodeForKey(nodeKey);
+        var isDoneFetching = (node && node.isContainer() && node.isCacheValid());
+        return isExpanded && isDoneFetching;
+      });
       this._toggleNodeExpanded(node, true /* forceExpanded */);
+      return promise;
     }
+
+    return Promise.resolve();
   },
 
   collapseNodeKey(nodeKey: string): void {
