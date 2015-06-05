@@ -79,6 +79,57 @@ describe('FileTreeController', () => {
     });
   });
 
+  describe('revealActiveFile', () => {
+    it('succeeds for a deeply-nested file', () => {
+      waitsForPromise(async () => {
+        var filePath = path.join(fixturesPath, 'dir1/dir1/dir1/file1');
+        await atom.workspace.open(filePath);
+
+        await fileTreeController.revealActiveFile();
+
+        var selectedFilePaths = treeComponent.getSelectedNodes()
+            .map(node => node.getItem().getPath());
+        expect(selectedFilePaths).toEqual([filePath]);
+      });
+    });
+
+    it('only expands ancestors for a non-existent file', () => {
+      waitsForPromise(async () => {
+        var filePath = path.join(fixturesPath, 'dir1/dir1/dir1/unknown');
+        await atom.workspace.open(filePath);
+
+        await fileTreeController.revealActiveFile();
+
+        var expandedFilePathsSet = new Set(treeComponent.getExpandedNodes()
+            .map(node => node.getItem().getPath()));
+        expect(expandedFilePathsSet.has(path.join(fixturesPath, 'dir1'))).toBe(true);
+        expect(expandedFilePathsSet.has(path.join(fixturesPath, 'dir1/dir1'))).toBe(true);
+        expect(expandedFilePathsSet.has(path.join(fixturesPath, 'dir1/dir1/dir1'))).toBe(true);
+        var selectedFilePaths = treeComponent.getSelectedNodes()
+            .map(node => node.getItem().getPath());
+        expect(selectedFilePaths).toEqual([path.join(fixturesPath, 'dir1/dir1/dir1')]);
+      });
+    });
+
+    it('does not expand non-existent ancestors', () => {
+      waitsForPromise(async () => {
+        var filePath = path.join(fixturesPath, 'dir1/dir1/unknown/unknown');
+        await atom.workspace.open(filePath);
+
+        await fileTreeController.revealActiveFile();
+
+        var expandedFilePathsSet = new Set(treeComponent.getExpandedNodes()
+            .map(node => node.getItem().getPath()));
+        expect(expandedFilePathsSet.has(path.join(fixturesPath, 'dir1'))).toBe(true);
+        expect(expandedFilePathsSet.has(path.join(fixturesPath, 'dir1/dir1'))).toBe(true);
+        expect(expandedFilePathsSet.has(path.join(fixturesPath, 'dir1/dir1/unknown'))).toBe(false);
+        var selectedFilePaths = treeComponent.getSelectedNodes()
+            .map(node => node.getItem().getPath());
+        expect(selectedFilePaths).toEqual([path.join(fixturesPath, 'dir1/dir1')]);
+      });
+    });
+  });
+
   xdescribe('tests that modify the filesystem', () => {
     var tempPath;
     function getPathsInRoot(paths: Array<string>): Immutable.List<string> {

@@ -510,7 +510,7 @@ class FileTreeController {
     }
   }
 
-  revealActiveFile(): void {
+  async revealActiveFile(): void {
     var editor = atom.workspace.getActiveTextEditor();
     if (!editor) {
       return;
@@ -524,13 +524,33 @@ class FileTreeController {
         var filePath = file.getPath();
         var rootDirectory = find(atom.project.getDirectories(), directory => directory.contains(filePath));
         if (rootDirectory) {
+          // Accumulate all the ancestor keys from the file up to the root.
           var directory = file.getParent();
+          var ancestorKeys = [];
           while (rootDirectory.getPath() !== directory.getPath()) {
-            treeComponent.expandNodeKey(new LazyFileTreeNode(directory).getKey());
+            ancestorKeys.push(new LazyFileTreeNode(directory).getKey());
             directory = directory.getParent();
           }
-          treeComponent.expandNodeKey(new LazyFileTreeNode(rootDirectory).getKey());
-          treeComponent.selectNodeKey(new LazyFileTreeNode(file).getKey());
+          ancestorKeys.push(new LazyFileTreeNode(rootDirectory).getKey());
+
+          // Expand each node from the root down to the file.
+          for (var nodeKey of ancestorKeys.reverse()) {
+            try {
+              // Select the node to ensure it's visible.
+              await treeComponent.selectNodeKey(nodeKey);
+              await treeComponent.expandNodeKey(nodeKey);
+            } catch (error) {
+              // If the node isn't in the tree, its descendants aren't either.
+              return;
+            }
+          }
+
+          try {
+            await treeComponent.selectNodeKey(new LazyFileTreeNode(file).getKey());
+          } catch (error) {
+            // It's ok if the node isn't in the tree, so we can ignore the error.
+            return;
+          }
         }
       }
     }
