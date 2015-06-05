@@ -24,6 +24,9 @@ class Npm (object):
     def __init__(self, verbose=False):
         self._verbose = verbose
 
+    def info(self, package_root):
+        return self._execute(['npm', 'info'], cwd=package_root)
+
     def install(self, package_root, clean=False, local_packages=None, include_dev_dependencies=True):
         if clean:
             shutil.rmtree(os.path.join(package_root, 'node_modules'), ignore_errors=True)
@@ -62,11 +65,9 @@ class Npm (object):
 
     def _execute(self, cmd_args, cwd=None):
         if self._verbose:
-            fs.cross_platform_check_call(cmd_args, cwd=cwd, stderr=subprocess.STDOUT)
+            output = fs.cross_platform_check_output(cmd_args, cwd=cwd, stderr=subprocess.STDOUT)
+            print output
         else:
             with open(os.devnull, 'w') as devnull:
-                fs.cross_platform_check_call(cmd_args,
-                                             cwd=cwd,
-                                             stdout=devnull,
-                                             stderr=devnull,
-                                             )
+                output = fs.cross_platform_check_output(cmd_args, cwd=cwd, stderr=devnull)
+        return output

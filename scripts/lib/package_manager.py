@@ -325,8 +325,8 @@ def install_dependencies(package_config, npm):
     is_node_package = package_config.get('isNodePackage')
     if not is_node_package:
         logging.info('Running `apm link %s`...', src_path)
-        args = ['apm', 'link', src_path]
-        fs.cross_platform_check_call(args)
+        cmd_args = ['apm', 'link', src_path]
+        fs.cross_platform_check_output(cmd_args)
         logging.info('Done linking %s', name)
 
 

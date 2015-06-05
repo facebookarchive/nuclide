@@ -60,25 +60,22 @@ def enhanced_remove(src):
     else:
         raise Exception('%s is nether a file, a symbolic link nor a drectory' % src)
 
-
-def cross_platform_check_call(args, cwd=None, stdout=None, stderr=None):
-    '''Use this instead of subprocess.check_call() when the executable in args is not an absolute path.
-
-    args: Array of strings, such as ['npm', 'install'].
+def cross_platform_check_output(cmd_args, **kwargs):
+    ''' This is a subprocess.check_output() implementation providing cross-platform support
     '''
+
+    # Unfortunately, it appears that shell=True must be used on Windows to behave like it does on
+    # OS X and Linux: https://bugs.python.org/issue17023. Alternatively, we could try to get the
+    # full path to the executable, but that seems like a pain.
     if platform_checker.is_windows():
-        # Unfortunately, it appears that shell=True must be used on Windows to get check_call to
-        # behave like it does on OS X and Linux: https://bugs.python.org/issue17023. Alternatively,
-        # we could try to get the full path to the executable, but that seems like a pain.
-        subprocess.check_call(args,
-                              cwd=cwd,
-                              stdout=stdout,
-                              stderr=stderr,
-                              shell=True,
-                              )
-    else:
-        subprocess.check_call(args,
-                              cwd=cwd,
-                              stdout=stdout,
-                              stderr=stderr,
-                              )
+        kwargs['shell'] = True
+
+    kwargs['stdout'] = subprocess.PIPE
+    process = subprocess.Popen(cmd_args, **kwargs)
+    stdout, stderr = process.communicate()
+    returncode = process.returncode
+
+    if returncode:
+        raise subprocess.CalledProcessError(returncode, cmd_args, output=stdout)
+
+    return stdout
