@@ -11,8 +11,7 @@
 
 var TestService = require('REQUIRE_PLACE_HOLDER');
 
-// Auto-generated: DO NOT MODIFY.
-
+/* Auto-generated: DO NOT MODIFY.*/
 class RemoteTestService extends TestService {
   constructor(connection, options) {
     super();

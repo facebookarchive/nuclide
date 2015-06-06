@@ -11,8 +11,7 @@
 
 var NuclideTypedTestService = require('REQUIRE_PLACE_HOLDER');
 
-// Auto-generated: DO NOT MODIFY.
-
+/* Auto-generated: DO NOT MODIFY.*/
 class RemoteNuclideTypedTestService extends NuclideTypedTestService {
   constructor(connection, options) {
     super();

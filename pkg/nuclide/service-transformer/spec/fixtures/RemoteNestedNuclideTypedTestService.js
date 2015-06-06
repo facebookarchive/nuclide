@@ -11,8 +11,7 @@
 
 var NestedNuclideTypedTestService = require('REQUIRE_PLACE_HOLDER');
 
-// Auto-generated: DO NOT MODIFY.
-
+/* Auto-generated: DO NOT MODIFY.*/
 class RemoteNestedNuclideTypedTestService extends NestedNuclideTypedTestService {
   constructor(connection, options) {
     super();
