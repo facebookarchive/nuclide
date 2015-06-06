@@ -41,7 +41,7 @@ type NuclideServerOptions = {
 
 type SocketClient = {
   id: string;
-  subscriptions: {[channel: string]: (event: mixed) => void};
+  subscriptions: {[channel: string]: (event: any) => void};
   socket: WebSocket;
 };
 
@@ -59,7 +59,7 @@ class NuclideServer {
   _port: number;
   _version: string;
   _serviceWithoutServiceFrameworkConfigs: Array<string>;
-  _serviceWithServiceFrameworkConfigs: Array<mixed>;
+  _serviceWithServiceFrameworkConfigs: Array<any>;
 
   constructor(options: NuclideServerOptions) {
     var {serverKey, serverCertificate, port, certificateAuthorityCertificate, trackEventLoop} = options;
@@ -126,7 +126,7 @@ class NuclideServer {
   }
 
   _getServiceFrameworkServiceAndRegisterEventHandle(
-      serviceConfig: ServiceConfig, serviceOptions: mixed): mixed {
+      serviceConfig: ServiceConfig, serviceOptions: any): any {
     var localServiceInstance = getService(serviceConfig.name, serviceOptions, serviceConfig.implementation);
     if (localServiceInstance[EVENT_HANDLE_REGISTERED]) {
       return localServiceInstance;
@@ -230,7 +230,7 @@ class NuclideServer {
   }
 
   _setupSubscriptionHandler() {
-    this._registerService('/eventbus/subscribe', (clientId: string, channel: string, options: mixed) => {
+    this._registerService('/eventbus/subscribe', (clientId: string, channel: string, options: any) => {
       var client = this._clients[clientId];
       if (!client) {
         return logger.error('Client with clientId: %s not found!', clientId);
@@ -248,7 +248,7 @@ class NuclideServer {
   }
 
   _setupServiceFrameworkSubscriptionHandler() {
-    this._registerService('/serviceFramework/subscribeEvent', (serviceOptions: mixed, clientId: string, serviceName: string, methodName: string) => {
+    this._registerService('/serviceFramework/subscribeEvent', (serviceOptions: any, clientId: string, serviceName: string, methodName: string) => {
 
       // Create the service instance and register the event handle.
       var [serviceConfig] = this._serviceWithServiceFrameworkConfigs.filter(config => config.name === serviceName);
@@ -264,7 +264,7 @@ class NuclideServer {
       logger.debug(`${clientId} subscribed to ${eventName}`);
     }, 'post');
 
-    this._registerService('/serviceFramework/unsubscribeEvent', (serviceOptions: mixed, clientId: string, serviceName: string, methodName: string) => {
+    this._registerService('/serviceFramework/unsubscribeEvent', (serviceOptions: any, clientId: string, serviceName: string, methodName: string) => {
       var eventName = getRemoteEventName(serviceName, methodName, serviceOptions);
       if (this._eventSubscriptions.has(eventName)) {
         this._eventSubscriptions.get(eventName).delete(clientId);
@@ -289,7 +289,7 @@ class NuclideServer {
   /**
    * Calls a registered service with a name and arguments.
    */
-  callService(serviceName: string, args: Array<mixed>): Promise<any> {
+  callService(serviceName: string, args: Array<any>): Promise<any> {
     var serviceFunction = this._serviceRegistry[serviceName];
     if (!serviceFunction) {
       throw Error('No service registered with name: ' + serviceName);
@@ -365,7 +365,7 @@ class NuclideServer {
     });
   }
 
-  async _onSocketMessage(client: SocketClient, message: mixed): void {
+  async _onSocketMessage(client: SocketClient, message: any): void {
     message = JSON.parse(message);
     var {serviceName, methodName, methodArgs, serviceOptions, requestId} = message;
     var result = null;
@@ -380,7 +380,7 @@ class NuclideServer {
       logger.error('Failed to call %s/%s with error %o', serviceName, methodName, e);
       error = e;
     }
-    
+
     this._sendSocketMessage(client.socket, {
       channel: SERVICE_FRAMEWORK_RPC_CHANNEL,
       requestId,
@@ -435,7 +435,7 @@ class NuclideServer {
     eventEmitter.consumed = true;
   }
 
-  _sendSocketMessage(socket: WebSocket, message: mixed) {
+  _sendSocketMessage(socket: WebSocket, message: any) {
     socket.send(JSON.stringify(message));
   }
 

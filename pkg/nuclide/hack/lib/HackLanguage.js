@@ -32,7 +32,7 @@ module.exports = class HackLanguage {
     this._hackWorker.dispose();
   }
 
-  async getCompletions(path: string, contents: string, offset: number): Promise<Array<mixed>> {
+  async getCompletions(path: string, contents: string, offset: number): Promise<Array<any>> {
     // Calculate the offset of the cursor from the beginning of the file.
     // Then insert AUTO332 in at this offset. (Hack uses this as a marker.)
     var markedContents = contents.substring(0, offset) +
@@ -97,7 +97,7 @@ module.exports = class HackLanguage {
     }
   }
 
-  async getDiagnostics(path: string, contents: string): Promise<Array<mixed>> {
+  async getDiagnostics(path: string, contents: string): Promise<Array<any>> {
     if (!isHackFile(contents)) {
       return [];
     }
@@ -108,7 +108,7 @@ module.exports = class HackLanguage {
     return parseErrorsFromResponse(response);
   }
 
-  async getServerDiagnostics(): Promise<Array<mixed>> {
+  async getServerDiagnostics(): Promise<Array<any>> {
     var response = await this._client.getHackDiagnostics();
     return parseErrorsFromResponse(response);
   }
@@ -119,7 +119,7 @@ module.exports = class HackLanguage {
       lineNumber: number,
       column: number,
       lineText: string
-    ): Promise<Array<mixed>> {
+    ): Promise<Array<any>> {
 
     if (!isHackFile(contents)) {
       return null;
@@ -157,7 +157,7 @@ module.exports = class HackLanguage {
       contents: string,
       lineNumber: number,
       column: number
-    ): Promise<mixed> {
+    ): Promise<any> {
 
     await this.updateFile(path, contents);
     var webWorkerMessage = {cmd: 'hh_get_method_name', args: [path, lineNumber - 1, column - 1]};
@@ -181,7 +181,7 @@ module.exports = class HackLanguage {
       contents: string,
       lineNumber: number,
       column: number
-    ): Promise<Array<mixed>> {
+    ): Promise<Array<any>> {
 
     await this.updateFile(path, contents);
     var webWorkerMessage = {cmd: 'hh_infer_pos', args: [path, lineNumber, column]};
@@ -204,7 +204,7 @@ module.exports = class HackLanguage {
       contents: string,
       lineNumber: number,
       column: number
-    ): Promise<Array<mixed>> {
+    ): Promise<Array<any>> {
 
     try {
       var symbol = await this.getSymbolNameAtPosition(path, contents, lineNumber, column);
@@ -221,7 +221,7 @@ module.exports = class HackLanguage {
   }
 
   async _getDefinitionFromStringParse(contents: string,
-      lineNumber: number, column: number, lineText: string): Promise<Array<mixed>> {
+      lineNumber: number, column: number, lineText: string): Promise<Array<any>> {
     var search = null;
     var start = column;
     // Scan for the word start for the hack variable or function we are trying to get definition for.
@@ -291,7 +291,7 @@ function getSymbolType(input: string) {
   return symbolType;
 }
 
-function parseErrorsFromResponse(response: mixed): Array<mixed> {
+function parseErrorsFromResponse(response: any): Array<any> {
   var errors = response.errors.map(error => {
     var rootCause = null;
     var errorParts = error.message;
@@ -332,7 +332,7 @@ function shouldDoServerCompletion(type: CompletionType): boolean {
   return serverCompletionTypes.has(type);
 }
 
-function processCompletions(completionsResponse: Array<mixed>): Array<mixed> {
+function processCompletions(completionsResponse: Array<any>): Array<any> {
   return completionsResponse.map((completion) => {
     var {name, type, func_details: functionDetails} = completion;
     if (type && type.indexOf('(') === 0 && type.lastIndexOf(')') === type.length - 1) {

@@ -11,7 +11,7 @@
 
 var parseServiceApiSync = require('../lib/service-parser');
 
-function testParseServiceApi(sourceFilePath: string, expected: mixed): void {
+function testParseServiceApi(sourceFilePath: string, expected: any): void {
   var parsed = parseServiceApiSync(require.resolve(sourceFilePath));
   expect(parsed.rpcMethodNames.sort()).toEqual(expected.rpcMethodNames.sort());
   expect(parsed.eventMethodNames.sort()).toEqual(expected.eventMethodNames.sort());

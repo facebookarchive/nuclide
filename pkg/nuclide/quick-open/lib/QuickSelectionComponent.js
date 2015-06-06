@@ -26,7 +26,7 @@ var QuickSelectionComponent = React.createClass({
     provider: PropTypes.instanceOf(QuickSelectionProvider).isRequired,
   },
 
-  componentWillReceiveProps(nextProps: mixed) {
+  componentWillReceiveProps(nextProps: any) {
     if (nextProps.provider !== this.props.provider) {
       this.clear();
       if (nextProps.provider) {
@@ -35,7 +35,7 @@ var QuickSelectionComponent = React.createClass({
     }
   },
 
-  componentDidUpdate(prevProps: mixed, prevState: mixed) {
+  componentDidUpdate(prevProps: any, prevState: any) {
     if (prevState.items !== this.state.items) {
       this.moveSelectionToTop();
       this._emitter.emit('items-changed', this.state.items);
@@ -90,11 +90,11 @@ var QuickSelectionComponent = React.createClass({
     return this._emitter.on('canceled', callback);
   },
 
-  onSelection(callback: (selection: mixed) => void): Disposable {
+  onSelection(callback: (selection: any) => void): Disposable {
     return this._emitter.on('selected', callback);
   },
 
-  onItemsChanged(callback: (newItems: Array<mixed>) => void): Disposable {
+  onItemsChanged(callback: (newItems: Array<any>) => void): Disposable {
     return this._emitter.on('items-changed', callback);
   },
 
@@ -143,7 +143,7 @@ var QuickSelectionComponent = React.createClass({
     this.setState({selectedIndex: 0});
   },
 
-  componentForItem(item: mixed): ReactElement {
+  componentForItem(item: any): ReactElement {
     return this.getProvider().getComponentForItem(item);
   },
 

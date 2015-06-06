@@ -10,7 +10,7 @@
  */
 
 class AbstractProvider {
-  async query(cwd: string, queryString: string): Promise<mixed> {
+  async query(cwd: string, queryString: string): Promise<any> {
     throw new Error('not implemented');
   }
 

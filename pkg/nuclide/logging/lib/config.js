@@ -19,7 +19,7 @@ var logDirectory = path.dirname(LOG_FILE_PATH);
 var logDirectoryInitialized = false;
 
 module.exports = {
-  async getDefaultConfig(): Promise<mixed> {
+  async getDefaultConfig(): Promise<any> {
 
     if (!logDirectoryInitialized) {
       await fsPromise.mkdirp(logDirectory);

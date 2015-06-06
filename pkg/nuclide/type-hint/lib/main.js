@@ -13,7 +13,7 @@ var typeHintManager: ?TypeHintManager = null;
 
 module.exports = {
 
-  activate(state: ?mixed): void {
+  activate(state: ?any): void {
     if (!typeHintManager) {
       var TypeHintManager = require('./TypeHintManager');
       typeHintManager = new TypeHintManager();

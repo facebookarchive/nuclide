@@ -9,9 +9,9 @@
  * the root directory of this source tree.
  */
 
-type Identifier = mixed;
-type AssignmentExpression = mixed;
-type FlowTypeNode = mixed;
+type Identifier = any;
+type AssignmentExpression = any;
+type FlowTypeNode = any;
 
 var babel = require('babel-core');
 var fs = require('fs');
@@ -42,7 +42,7 @@ var manipulationCreator = new ManipulationAssignmentExpressionCreator(
     isNuclideUriFlowTypeAnnotation,
     addSuffixManipulation);
 
-function createOnetimeHelperPlugin(): mixed {
+function createOnetimeHelperPlugin(): any {
   var expired = false;
   return new Transformer('helper', {
     FunctionDeclaration(node, parent) {

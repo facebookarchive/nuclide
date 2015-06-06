@@ -17,7 +17,7 @@ var DEFAULT_WEBWORKER_TIMEOUT = 30 * 1000;
 var DEFAULT_POOR_PERF_TIMEOUT = 8 * 1000;
 
 type WorkerTask = {
-  workerMessage: mixed;
+  workerMessage: any;
   onResponse: (response: any) => void;
   onFail: (error: Error) => void;
 };
@@ -57,7 +57,7 @@ class HackWorker {
   /**
    * Runs a web worker task and returns a promise of the value expected from the hack worker.
    */
-  runWorkerTask(workerMessage: mixed, options: any): Promise<mixed> {
+  runWorkerTask(workerMessage: any, options: any): Promise<any> {
     return new Promise((resolve, reject) => {
       options = options || {};
       var queue = options.isDependency ? this._depTaskQueue : this._taskQueue;
@@ -112,7 +112,7 @@ class HackWorker {
     this._worker.postMessage(task);
   }
 
-  _handleHackWorkerReply(reply: mixed) {
+  _handleHackWorkerReply(reply: any) {
     this._clearTimers();
     if (this._activeTask) {
       this._activeTask.onResponse(reply);

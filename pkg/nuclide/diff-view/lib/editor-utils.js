@@ -11,7 +11,7 @@
 
  type LineRangesWithOffsets = {
   regions: Array<{bufferRows: number; screenRows: number}>;
-  screenLines: Array<mixed>;
+  screenLines: Array<any>;
  };
 
 /*
@@ -22,11 +22,11 @@
  * @param emptyLineFactory A custom function to create a new empty line, representing an offset screen line.
  */
 function buildLineRangesWithOffsets(
-    screenLines: Array<mixed>,
-    lineOffsets: mixed,
+    screenLines: Array<any>,
+    lineOffsets: any,
     startBufferRow: number,
     endBufferRow: number,
-    emptyLineFactory: () => mixed
+    emptyLineFactory: () => any
     ): LineRangesWithOffsets {
 
   var offsetLineNumbers = Object.keys(lineOffsets).sort().map(lineNumber => parseInt(lineNumber, 10));

@@ -19,7 +19,7 @@ var serviceConfigs = loadConfigsOfServiceWithServiceFramework();
 
 // A cache stores services in form of '$serviceName@$host:$options' => $serviceObject. A special
 // case would be the local service, where the $host will be empty string.
-var cachedServices: Map<string, mixed> = new Map();
+var cachedServices: Map<string, any> = new Map();
 
 /**
  * Create or get a cached service with given serviceOptions.
@@ -31,8 +31,8 @@ var cachedServices: Map<string, mixed> = new Map();
 function getServiceByNuclideUri(
   serviceName: string,
   nuclideUri: ?NuclideUri = null,
-  serviceOptions: ?mixed = null
-): ?mixed {
+  serviceOptions: ?any = null
+): ?any {
   var hostname = (nuclideUri && isRemote(nuclideUri)) ?
     getHostname(nuclideUri) :
     null;
@@ -44,7 +44,7 @@ function getServiceByNuclideUri(
  * it returns a local service, otherwise a remote service will be returned. For the same host
  * serviceOptions, the same service instance will be returned.
  */
-function getService(serviceName: string, hostname: ?string, serviceOptions: ?mixed): ?mixed {
+function getService(serviceName: string, hostname: ?string, serviceOptions: ?any): ?any {
   var [serviceConfig] = serviceConfigs.filter(config => config.name === serviceName);
   if (!serviceConfig) {
     logger.error('Service %s undefined.', serviceName);
@@ -69,14 +69,14 @@ function getService(serviceName: string, hostname: ?string, serviceOptions: ?mix
   return serviceInstance;
 }
 
-function createRemoteService(serviceConfig: ServiceConfig, hostname: string, serviceOptions: mixed): mixed {
+function createRemoteService(serviceConfig: ServiceConfig, hostname: string, serviceOptions: any): any {
   var {requireRemoteServiceSync} = require('nuclide-service-transformer');
   var remoteServiceClass = requireRemoteServiceSync(serviceConfig.definition);
   var remoteConnection = RemoteConnection.getByHostnameAndPath(hostname, null);
   return new remoteServiceClass(remoteConnection, serviceOptions);
 }
 
-function createLocalService(serviceConfig: ServiceConfig, serviceOptions: mixed): mixed {
+function createLocalService(serviceConfig: ServiceConfig, serviceOptions: any): any {
   var serviceClass = require(serviceConfig.implementation);
   return new serviceClass(serviceOptions);
 }

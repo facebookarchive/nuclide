@@ -14,7 +14,7 @@ var request = require('request');
 const MAX_REQUEST_LENGTH = 1e6;
 
 type ResponseBody = {body: string; response: HttpResponse};
-type QueryParams = {[key:string]: mixed};
+type QueryParams = {[key:string]: any};
 type SerializedArguments = {args: Array<string>; argTypes: Array<string>};
 
 /**
@@ -24,7 +24,7 @@ type SerializedArguments = {args: Array<string>; argTypes: Array<string>};
  * If you want to use the npm's qs module to encode the query parameters, explicitly provide the option:
  * {useQuerystring: false}
  */
-function asyncRequest(options: mixed): Promise<ResponseBody> {
+function asyncRequest(options: any): Promise<ResponseBody> {
   return new Promise((resolve, reject) => {
     if (options.useQuerystring === undefined) {
       options.useQuerystring = true;
@@ -67,7 +67,7 @@ function sendTextResponse(response: http.ServerResponse, text: any, statusCode: 
 /**
  * Write a json response text with an optional status code.
  */
-function sendJsonResponse(response: http.ServerResponse, json: mixed, statusCode: ?number): void {
+function sendJsonResponse(response: http.ServerResponse, json: any, statusCode: ?number): void {
   response.setHeader('Content-Type', 'application/json');
   sendTextResponse(response, JSON.stringify(json), statusCode);
 }
@@ -103,7 +103,7 @@ function getQueryParameters(requestUrl): QueryParams {
  * to send the metadata about the argument types with the data
  * to help the server understand and parse it.
  */
-function serializeArgs(args: Array<mixed>): SerializedArguments {
+function serializeArgs(args: Array<any>): SerializedArguments {
   var argsOnHttp = [];
   var argTypes = [];
   args.forEach(function(arg) {

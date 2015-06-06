@@ -111,7 +111,7 @@ async function getAllSystemInfo(): Promise<any> {
   };
 }
 
-async function addSystemInfoPropertiesTo(data: mixed): void {
+async function addSystemInfoPropertiesTo(data: any): void {
   var allSystemInfo = await getAllSystemInfo();
   for (var info :string in allSystemInfo) {
     // we know that this has only its own properties

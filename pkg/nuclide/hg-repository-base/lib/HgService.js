@@ -48,7 +48,7 @@ class HgService {
    * @param options An Object with the following fields:
    *   * `hgStatusOption`: an HgStatusOption
    */
-  fetchStatuses(filePaths: Array<NuclideUri>, options: ?mixed): Promise<{[key: string]: StatusCodeId}> {
+  fetchStatuses(filePaths: Array<NuclideUri>, options: ?any): Promise<{[key: string]: StatusCodeId}> {
     return Promise.reject(new Error('not implemented'));
   }
 

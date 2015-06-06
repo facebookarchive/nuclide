@@ -46,7 +46,7 @@ var providers;
  */
 
 // Cache of previously indexed folders for later use.
-var fileSearchers: mixed = {};
+var fileSearchers: any = {};
 
 // TODO (mikeo): Make this another search provider
 async function doSearchDirectory(directoryUri: string, query: string): Promise<Array<FileSearchResult>> {

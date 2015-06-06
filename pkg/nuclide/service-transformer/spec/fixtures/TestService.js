@@ -10,19 +10,19 @@
  */
 
 class TestService {
-  foo(): Promise<mixed> {
+  foo(): Promise<any> {
     return Promise.reject('not implemented');
   }
 
-  bar(arg0: string): Promise<mixed> {
+  bar(arg0: string): Promise<any> {
     return Promise.reject('not implemented');
   }
 
-  qux(arg0: string, arg1: number): Promise<mixed> {
+  qux(arg0: string, arg1: number): Promise<any> {
     return Promise.reject('not implemented');
   }
 
-  onNorf(callback: (payload: mixed) => void): Disposable {
+  onNorf(callback: (payload: any) => void): Disposable {
     return Promise.reject('not implemented');
   }
 

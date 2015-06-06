@@ -405,7 +405,7 @@ class HgRepositoryClient {
    *   project, it will be ignored.
    * See HgService::getStatuses for more information.
    */
-  async getStatuses(paths: Array<string>, options: ?mixed): Promise<{[key: string]: StatusCodeNumber}> {
+  async getStatuses(paths: Array<string>, options: ?any): Promise<{[key: string]: StatusCodeNumber}> {
     var statusMap = {};
     var isRelavantStatus = this._getPredicateForRelevantStatuses(options);
 
@@ -440,7 +440,7 @@ class HgRepositoryClient {
    * @param filePaths An array of file paths to update the status for. If a path
    *   is not in the project, it will be ignored.
    */
-  async _updateStatuses(filePaths: Array<string>, options: ?mixed): Promise<{[key: string]: StatusCodeId}> {
+  async _updateStatuses(filePaths: Array<string>, options: ?any): Promise<{[key: string]: StatusCodeId}> {
     var pathsInRepo = filePaths.filter((filePath) => {
       return this._isPathRelevant(filePath);
     });
@@ -506,7 +506,7 @@ class HgRepositoryClient {
    * Returns a filter for whether or not the given status code should be
    * returned, given the passed-in options for ::getStatuses.
    */
-  _getPredicateForRelevantStatuses(options: ?mixed): (code: StatusCodeId) => boolean {
+  _getPredicateForRelevantStatuses(options: ?any): (code: StatusCodeId) => boolean {
     var hasOptions = options && ('hgStatusOption' in options);
 
     if (hasOptions && (options.hgStatusOption === HgStatusOption.ONLY_IGNORED)) {

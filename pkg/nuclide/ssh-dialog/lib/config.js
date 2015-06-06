@@ -11,7 +11,7 @@
 
 var path = require('path');
 
-function getConnectionDialogDefaultSettings(): mixed {
+function getConnectionDialogDefaultSettings(): any {
   var username = process.env.USER;
   return {
     host: '',

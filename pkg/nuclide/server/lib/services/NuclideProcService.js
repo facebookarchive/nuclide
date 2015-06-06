@@ -40,7 +40,7 @@ var DEFAULT_OPTIONS = {
  *    "stderr": "",
  * }
  */
-function exec(command: string, options: mixed): Promise<ExecResult> {
+function exec(command: string, options: any): Promise<ExecResult> {
   var mixedOptions = extend(extend({}, DEFAULT_OPTIONS), options);
   return new Promise((resolve, reject) => {
     var proc = child_process.exec(command, mixedOptions, (error, stdout, stderr) => {

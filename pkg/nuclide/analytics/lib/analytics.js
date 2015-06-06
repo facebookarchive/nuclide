@@ -17,7 +17,7 @@ module.exports = {
   * @param eventName Name of the event to be tracked.
   * @param values The object containing the data to track.
   */
-  track(key: string, values: mixed) {},
+  track(key: string, values: any) {},
 
   /**
   * Measure the execution time of a synchronous function and track its duration.

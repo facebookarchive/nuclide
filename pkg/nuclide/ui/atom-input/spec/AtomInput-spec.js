@@ -14,7 +14,7 @@ var React = require('react-for-atom');
 
 var reactElement;
 
-function createWithProps(props: mixed) {
+function createWithProps(props: any) {
   var hostEl = document.createElement('div');
   return React.render(<AtomInput {...props} />, hostEl);
 }

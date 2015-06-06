@@ -11,19 +11,19 @@
 
 class NullHackClient {
 
-  getHackDiagnostics(): Promise<Array<mixed>> {
+  getHackDiagnostics(): Promise<Array<any>> {
     return Promise.resolve({errors: []});
   }
 
-  getHackCompletions(query: string): Promise<Array<mixed>> {
+  getHackCompletions(query: string): Promise<Array<any>> {
     return Promise.resolve([]);
   }
 
-  getHackDefinition(query: string, symbolType: SymbolType): Promise<Array<mixed>> {
+  getHackDefinition(query: string, symbolType: SymbolType): Promise<Array<any>> {
     return Promise.resolve([]);
   }
 
-  getHackDependencies(dependenciesInfo: Array<{name: string; type: string}>): Promise<mixed> {
+  getHackDependencies(dependenciesInfo: Array<{name: string; type: string}>): Promise<any> {
     return Promise.resolve({});
   }
 
@@ -31,7 +31,7 @@ class NullHackClient {
       search: string,
       filterTypes: ?Array<SearchResultType>,
       searchPostfix: ?string
-    ): Promise<Array<mixed>> {
+    ): Promise<Array<any>> {
     return Promise.resolve([]);
   }
 

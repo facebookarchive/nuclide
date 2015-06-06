@@ -15,8 +15,8 @@
  */
 class DelayedEventManager {
   constructor(
-    setTimeoutFunc: (callback: mixed, delay: number) => mixed,
-    clearTimeoutFunc: (identifier: mixed) => void
+    setTimeoutFunc: (callback: any, delay: number) => any,
+    clearTimeoutFunc: (identifier: any) => void
   ) {
     // These functions are passed from above to facilitate testing.
     this._setTimeoutFunction = setTimeoutFunc;
@@ -42,7 +42,7 @@ class DelayedEventManager {
    * Creates an event and returns an identifier that can be used to cancel it,
    * or null if the manager cannot accept events.
    */
-  addEvent(callback: () => void, delayInMilliseconds: number): ?mixed {
+  addEvent(callback: () => void, delayInMilliseconds: number): ?any {
     if (!this._canAcceptEvents) {
       return null;
     }
@@ -56,7 +56,7 @@ class DelayedEventManager {
   /**
    * Cancel the event with the given identifier.
    */
-  cancelEvent(identifier: mixed): void {
+  cancelEvent(identifier: any): void {
     var hadId = this._ids.delete(identifier);
     if (hadId) {
       // Prevent 'this' from being bound to DelayedEventManager.

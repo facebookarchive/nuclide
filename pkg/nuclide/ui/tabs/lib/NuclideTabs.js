@@ -29,7 +29,7 @@ var NuclideTabs = React.createClass({
     triggeringEvent: PropTypes.string.isRequired,
   },
 
-  getDefaultProps(): mixed {
+  getDefaultProps(): any {
     return {
       triggeringEvent: 'onClick',
     };

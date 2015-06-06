@@ -25,7 +25,7 @@ const SERVICE_FRAMEWORK_RPC_CHANNEL = 'service_framework_rpc';
 const SERVICE_FRAMEWORK_RPC_TIMEOUT_MS = 60 * 1000;
 const SERVICES_CONFIG_PATH = path.resolve(__dirname, '../services-config.json');
 
-function loadConfigsOfServiceWithServiceFramework(): Array<mixed> {
+function loadConfigsOfServiceWithServiceFramework(): Array<any> {
   return require(SERVICES_CONFIG_PATH)
     .filter(config => config.useServiceFramework)
     .map(config => {

@@ -35,11 +35,11 @@ class BuckProject {
    *
    * An error should be thrown only if the specified targets are invalid.
    */
-  build(buildTargets: Array<string> | string): Promise<mixed> {
+  build(buildTargets: Array<string> | string): Promise<any> {
     return Promise.reject('Not implemented');
   }
 
-  findTargetsWithReferencedFile(filePath: NuclideUri, options: mixed): Promise<{json: mixed; targets: Array<mixed>}> {
+  findTargetsWithReferencedFile(filePath: NuclideUri, options: any): Promise<{json: any; targets: Array<any>}> {
     return Promise.reject('Not implemented');
   }
 

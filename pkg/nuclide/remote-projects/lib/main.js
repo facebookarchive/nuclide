@@ -90,7 +90,7 @@ async function createEditorForNuclide(connection: RemoteConnection, uri: string)
 
 module.exports = {
 
-  activate(state: ?mixed): void {
+  activate(state: ?any): void {
     subscriptions = new CompositeDisposable();
     // Don't do require or any other expensive operations in activate().
     subscriptions.add(atom.packages.onDidActivateInitialPackages(() =>{
@@ -114,7 +114,7 @@ module.exports = {
     }));
   },
 
-  serialize(): ?mixed {
+  serialize(): ?any {
     var remoteProjectsConfig = getRemoteRootDirectories()
         .map(directory => {
           var connection = RemoteConnection.getForUri(directory.getPath());

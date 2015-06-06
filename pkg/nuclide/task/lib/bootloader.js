@@ -14,7 +14,7 @@ var {EventEmitter} = require('events');
 export type InvokeRemoteMethodParams = {
   file: string;
   method: ?string;
-  args: ?Array<mixed>;
+  args: ?Array<any>;
 };
 
 /**
@@ -70,7 +70,7 @@ class Task {
    *     method. If an error is thrown, a rejected Promise will be returned
    *     instead.
    */
-  invokeRemoteMethod(params: InvokeRemoteMethodParams): Promise<mixed> {
+  invokeRemoteMethod(params: InvokeRemoteMethodParams): Promise<any> {
     var requestId = (++this._id).toString(16);
     var request = {
       id: requestId,

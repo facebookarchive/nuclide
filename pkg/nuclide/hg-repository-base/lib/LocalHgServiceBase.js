@@ -48,7 +48,7 @@ class LocalHgServiceBase extends HgService {
   /**
    * See HgService::fetchStatuses for details.
    */
-  async fetchStatuses(filePaths: Array<string>, options: ?mixed): Promise<{[key: string]: StatusCodeId}> {
+  async fetchStatuses(filePaths: Array<string>, options: ?any): Promise<{[key: string]: StatusCodeId}> {
     var statusMap = {};
 
     var args = ['status', '-Tjson'];
@@ -161,7 +161,7 @@ class LocalHgServiceBase extends HgService {
   /**
    * Calls out to asyncExecute using the 'hg' command.
    */
-  _hgAsyncExecute(args, options): Promise<mixed> {
+  _hgAsyncExecute(args, options): Promise<any> {
     return asyncExecute('hg', args, options);
   }
 

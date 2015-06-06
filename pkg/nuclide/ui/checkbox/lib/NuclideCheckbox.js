@@ -23,14 +23,14 @@ var NuclideCheckbox = React.createClass({
     checked: PropTypes.bool,
   },
 
-  getDefaultProps(): mixed {
+  getDefaultProps(): any {
     return {
       labelText: '',
       checked: false,
     };
   },
 
-  getInitialState(): mixed {
+  getInitialState(): any {
     return {
       checked: this.props.checked,
     };

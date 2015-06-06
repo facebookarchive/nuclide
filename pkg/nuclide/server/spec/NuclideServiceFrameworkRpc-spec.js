@@ -18,7 +18,7 @@ function testRpcServiceWithServiceFramworkRegistered(
   definitionClassAbsolutePath: string,
   implementationClassPathAbsolutePath: string,
   definitionClassName: string,
-  testCases: Array<{methodName: string; args: Array<mixed>; expected: mixed}>,
+  testCases: Array<{methodName: string; args: Array<any>; expected: any}>,
 ): void {
   waitsForPromise(async () => {
     var server = new NuclideServer({port: 8176});

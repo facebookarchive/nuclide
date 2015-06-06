@@ -16,7 +16,7 @@ var NuclideClient = require('../lib/NuclideClient');
 
 type EventMethodTestCase = {
   methodName: string;
-  callback: (payload: mixed) => void;
+  callback: (payload: any) => void;
   expectations: () => void;
   timeoutMs: number
 }

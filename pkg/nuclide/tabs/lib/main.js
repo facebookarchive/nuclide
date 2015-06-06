@@ -11,7 +11,7 @@
 
 module.exports = {
 
-  activate(state: ?mixed): void {
+  activate(state: ?any): void {
 
   },
 

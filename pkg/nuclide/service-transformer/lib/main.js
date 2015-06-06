@@ -43,7 +43,7 @@ function transpile(sourceFilePath: string, destFilePath: string): void {
  *     own file and require it from main.js, `module.parent` should be changed to
  *     `module.parent.parent` as there is another level of requirement.
  */
-function requireRemoteServiceSync(serviceDefinitionFilePath: string): mixed {
+function requireRemoteServiceSync(serviceDefinitionFilePath: string): any {
   // Resolve serviceDefinitionFilePath based on the caller's module, and fallback to
   // this file's module in case module.parent doesn't exist (we are using repl).
   // Note that `require('module')._resolveFilename(path, module)` is equivelent to

@@ -117,7 +117,7 @@ function parseRevisionFileChangeOutput(output: string, workingDirectory: string)
 }
 
 
-async function hgAsyncExecute(args: Array<string>, execOptions: mixed): Promise<mixed> {
+async function hgAsyncExecute(args: Array<string>, execOptions: any): Promise<any> {
   try {
     var output = await asyncExecute('hg', args, execOptions);
   } catch (e) {

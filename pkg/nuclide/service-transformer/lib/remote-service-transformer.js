@@ -37,11 +37,11 @@
  *
  * ```
  *  class TestService {
- *    getStatus(includeIgnored: boolean): Promise<mixed> {
+ *    getStatus(includeIgnored: boolean): Promise<any> {
  *      return Promise.reject('not implemented');
  *    }
  *
- *    getFileStatus(fileUri: NuclideUri): Promise<mixed> {
+ *    getFileStatus(fileUri: NuclideUri): Promise<any> {
  *      return Promise.reject('not implemented');
  *    }
  *
@@ -49,7 +49,7 @@
  *      return Promise.reject('not implemented');
  *    }
  *
- *    onFileChanged(callback: (payload: mixed) => void): Disposable {
+ *    onFileChanged(callback: (payload: any) => void): Disposable {
  *      return Promise.reject('not implemented');
  *    }
  *  }
@@ -104,7 +104,7 @@ var GENERATED_CLASS_PREFIX = 'Remote';
 /**
  * Create ast expression of `var $baseClassName = require('$baseClassFilePath');`.
  */
-function createBaseClassRequireExpression(baseClassName: string, baseClassFilePath: string): mixed {
+function createBaseClassRequireExpression(baseClassName: string, baseClassFilePath: string): any {
   return t.variableDeclaration(
     /* kind */ 'var',
     /* declarations */ [
@@ -119,7 +119,7 @@ function createBaseClassRequireExpression(baseClassName: string, baseClassFilePa
   );
 }
 
-function createRemoteClassDeclaration(classDeclaration: mixed): mixed {
+function createRemoteClassDeclaration(classDeclaration: any): any {
   // Create remote method definition for each class method.
   var remoteMethodDefinitions = classDeclaration.body.body.map((methodDefinition) => {
     if (isEventMethodName(methodDefinition.key.name)) {
@@ -149,7 +149,7 @@ function createRemoteClassDeclaration(classDeclaration: mixed): mixed {
   return remoteClassDeclaration;
 }
 
-function createConstructorDefinition(): mixed {
+function createConstructorDefinition(): any {
   var constructorFunctionExpression = t.functionExpression(
     /* id */ null,
     /* params */ [t.identifier('connection'), t.identifier('options')],
@@ -198,8 +198,8 @@ function createConstructorDefinition(): mixed {
  * or its child flow type node matches NuclideUri.
  */
 function createGetUriFromPathPromiseExpression(
-    promiseNode: mixed,
-    nestedflowTypeNodeOfPromise: mixed): mixed {
+    promiseNode: any,
+    nestedflowTypeNodeOfPromise: any): any {
 
   var arrowFunctionParameter = t.identifier('result');
   var assignmentExpression = createGetUriOfRemotePathAssignmentExpression(
@@ -228,7 +228,7 @@ function createGetUriFromPathPromiseExpression(
   );
 }
 
-function createRemoteRpcMethodDefinition(classDeclaration: mixed, methodDefinition: mixed): mixed {
+function createRemoteRpcMethodDefinition(classDeclaration: any, methodDefinition: any): any {
 
   // For each parameter of the method, check its flow type and create manipulation expression if
   // the flow type matches or contains `NuclideUri`.
@@ -312,7 +312,7 @@ function createRemoteRpcMethodDefinition(classDeclaration: mixed, methodDefiniti
  * }
  * ```
  */
-function createManipulatedCallbackArrowFunction(callbackAstNode: mixed): ?mixed {
+function createManipulatedCallbackArrowFunction(callbackAstNode: any): ?any {
   if (!callbackAstNode.typeAnnotation.typeAnnotation.params) {
     return null;
   }
@@ -353,7 +353,7 @@ function createManipulatedCallbackArrowFunction(callbackAstNode: mixed): ?mixed 
   );
 }
 
-function createRemoteEventMethodDefinition(classDeclaration: mixed, methodDefinition: mixed): mixed {
+function createRemoteEventMethodDefinition(classDeclaration: any, methodDefinition: any): any {
   var remoteEventMethodBody = [];
   var callbackParameter = methodDefinition.value.params[0];
 
@@ -412,7 +412,7 @@ function createRemoteEventMethodDefinition(classDeclaration: mixed, methodDefini
   );
 }
 
-function createRemoteServiceTransformer(baseClassFilePath: string): mixed {
+function createRemoteServiceTransformer(baseClassFilePath: string): any {
   return new Transformer('remote-service', {
     ClassDeclaration: function (node, parent) {
       // Skip classes with `Remote` prefix as it's generated.

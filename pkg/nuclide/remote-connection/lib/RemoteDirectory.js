@@ -27,7 +27,7 @@ class RemoteDirectory {
   /**
    * @param uri should be of the form "nuclide://example.com:9090/path/to/directory".
    */
-  constructor(remote: RemoteConnection, uri: string, options: ?mixed) {
+  constructor(remote: RemoteConnection, uri: string, options: ?any) {
     Object.defineProperty(this, MARKER_PROPERTY_FOR_REMOTE_DIRECTORY, {value: true});
     this._remote = remote;
     this._uri = uri;

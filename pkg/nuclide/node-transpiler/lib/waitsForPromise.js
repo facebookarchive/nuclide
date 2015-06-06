@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-function waitsForPromise(...args): mixed {
+function waitsForPromise(...args): any {
   if (args.length > 1) {
     var {shouldReject, timeout} = args[0];
   } else {

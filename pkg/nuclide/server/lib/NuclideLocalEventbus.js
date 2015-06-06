@@ -54,9 +54,9 @@ class NuclideLocalEventbus extends EventEmitter {
   async callMethod(
       serviceName: string,
       methodName: string,
-      methodArgs: ?Array<mixed>,
-      extraOptions: ?mixed
-    ): Promise<string|mixed> {
+      methodArgs: ?Array<any>,
+      extraOptions: ?any
+    ): Promise<string|any> {
 
     var serviceId = '/' + serviceName + '/' + methodName;
     // extend the default options with the extra options
@@ -67,7 +67,7 @@ class NuclideLocalEventbus extends EventEmitter {
     return service.handler.apply(this, methodArgs);
   }
 
-  callService(serviceName: string, args: Array<mixed>): Promise<any> {
+  callService(serviceName: string, args: Array<any>): Promise<any> {
     var serviceFunction = this._services[serviceName];
     if (!serviceFunction) {
       throw Error('No service registered with name: ' + serviceName);
@@ -75,7 +75,7 @@ class NuclideLocalEventbus extends EventEmitter {
     return serviceFunction.handler.apply(this, args);
   }
 
-  async subscribeToChannel(channel: string, handler: (event: ?mixed) => void): Promise<Disposable> {
+  async subscribeToChannel(channel: string, handler: (event: ?any) => void): Promise<Disposable> {
     this.on(channel, handler);
     return {
       dispose: () => this.removeListener(channel, handler),

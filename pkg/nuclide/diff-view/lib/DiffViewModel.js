@@ -80,7 +80,7 @@ class DiffViewModel {
   }
 
   _computeDiffChunks(oldText: string, newText: string)
-      :{addedLines: Array<number>; removedLines: Array<number>; chunks: Array<mixed>;} {
+      :{addedLines: Array<number>; removedLines: Array<number>; chunks: Array<any>;} {
 
     var JsDiff = require('diff');
 
@@ -129,7 +129,7 @@ class DiffViewModel {
     return {addedLines, removedLines, chunks};
   }
 
-  _computeOffsets(diffChunks: Array<mixed>): {oldLineOffsets: mixed; newLineOffsets: mixed;} {
+  _computeOffsets(diffChunks: Array<any>): {oldLineOffsets: any; newLineOffsets: any;} {
     var newLineOffsets = {};
     var oldLineOffsets = {};
 

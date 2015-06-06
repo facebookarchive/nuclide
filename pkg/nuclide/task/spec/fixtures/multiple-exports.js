@@ -23,7 +23,7 @@ function product(...factors: Array<number>): number {
   return factors.reduce((prev: number, current: number) => (prev * current), 1);
 }
 
-function asyncFetch(): Promise<mixed> {
+function asyncFetch(): Promise<any> {
   return Promise.resolve({
     ignoredByJsonSerialization: undefined,
     shouldShowUpInJsonSerialization: null,

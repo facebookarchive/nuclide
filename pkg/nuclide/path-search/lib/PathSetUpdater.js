@@ -99,7 +99,7 @@ class PathSetUpdater {
    * @param files The `files` field of an fb-watchman update. Each file in the
    *   update is expected to contain fields for `name`, `new`, and `exists`.
    */
-  _processWatchmanUpdate(pathFromSubscriptionRootToDir: ?string, pathSet: PathSet, files: mixed): void {
+  _processWatchmanUpdate(pathFromSubscriptionRootToDir: ?string, pathSet: PathSet, files: any): void {
     var newPaths = [];
     var deletedPaths = [];
 

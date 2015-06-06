@@ -16,7 +16,7 @@ var React = require('react-for-atom');
 describe('FileDialogComponent', () => {
   // We use `renderComponent` in `beforeEach` to return the component so the test
   // methods have a chance to modify the default props.
-  var renderComponent: (props: mixed) => ReactComponent;
+  var renderComponent: (props: any) => ReactComponent;
   var props;
   var hostEl;
 

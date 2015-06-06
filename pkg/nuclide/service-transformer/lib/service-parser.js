@@ -13,9 +13,9 @@ var babel = require('babel-core');
 var fs = require('fs');
 var {isEventMethodName} = require('./method-name-parser');
 
-var cache: Map<string, mixed> = new Map();
+var cache: Map<string, any> = new Map();
 
-function parseAst(sourceFilePath: string): mixed {
+function parseAst(sourceFilePath: string): any {
   var sourceCode = fs.readFileSync(sourceFilePath, 'utf8');
 
   return babel.transform(sourceCode, {
@@ -28,7 +28,7 @@ function parseAst(sourceFilePath: string): mixed {
  * {className: $className, rpcMethodNames: [$methodName, ...], eventMethodNames: [$methodName, ..]}.
  * Keep it sync as it will be called from NuclideServer's constructor.
  */
-function parseServiceApiSync(absoluteServiceDefinitionClassFilePath: string): mixed {
+function parseServiceApiSync(absoluteServiceDefinitionClassFilePath: string): any {
   if (cache.has(absoluteServiceDefinitionClassFilePath)) {
     return cache.get(absoluteServiceDefinitionClassFilePath);
   }

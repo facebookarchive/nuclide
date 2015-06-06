@@ -29,11 +29,11 @@ var clientToHackLanguage: {[clientId: string]: HackLanguage} = {};
 /**
  * Map of project id to an array of Hack Service diagnostics
  */
-var clientToHackLinterCache: {[clientId: string]: Array<mixed>} = {};
+var clientToHackLinterCache: {[clientId: string]: Array<any>} = {};
 
 module.exports = {
 
-  async findDiagnostics(editor: TextEditor): Promise<Array<mixed>> {
+  async findDiagnostics(editor: TextEditor): Promise<Array<any>> {
     var buffer = editor.getBuffer();
     var hackLanguage = await getHackLanguageForBuffer(buffer);
     var {path} = url.parse(editor.getPath());
@@ -47,7 +47,7 @@ module.exports = {
     return mixedErrors;
   },
 
-  async fetchCompletionsForEditor(editor: TextEditor, prefix: string): Promise<Array<mixed>> {
+  async fetchCompletionsForEditor(editor: TextEditor, prefix: string): Promise<Array<any>> {
     var hackLanguage = await getHackLanguageForBuffer(editor.getBuffer());
     var {path} = url.parse(editor.getPath());
     var contents = editor.getText();
@@ -94,7 +94,7 @@ module.exports = {
    * If a location can be found for the declaration, the return value will
    * resolve to an object with these fields: file, line, column.
    */
-  async findDefinition(editor: TextEditor, line: number, column: number): Promise<mixed> {
+  async findDefinition(editor: TextEditor, line: number, column: number): Promise<any> {
     var hackLanguage = await getHackLanguageForBuffer(editor.getBuffer());
     var {path, protocol, host} = url.parse(editor.getPath());
 

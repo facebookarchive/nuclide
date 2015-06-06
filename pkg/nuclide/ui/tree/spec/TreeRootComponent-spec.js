@@ -28,7 +28,7 @@ function clickNodeWithLabel(component: TreeRootComponent, label: string): void {
 /**
  * Returns an object whose keys are labels and values are TreeNodeComponent's.
  */
-function getNodeComponents(component: TreeRootComponent): mixed {
+function getNodeComponents(component: TreeRootComponent): any {
   var nodeComponents = {};
   TestUtils.scryRenderedComponentsWithType(component, TreeNodeComponent)
       .forEach(nodeComponent => {
@@ -42,7 +42,7 @@ describe('TreeRootComponent', () => {
 
   // Use `renderComponent` in `beforeEach` to return the component so the test
   // methods have a chance to modify the default props.
-  var renderComponent: (props: mixed) => ReactComponent;
+  var renderComponent: (props: any) => ReactComponent;
   var props;
   var hostEl;
   var nodes;

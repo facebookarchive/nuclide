@@ -78,7 +78,7 @@ module.exports = class DiffViewEditor {
     return marker;
   }
 
-  setOffsets(lineOffsets: mixed): void {
+  setOffsets(lineOffsets: any): void {
     this._lineOffsets = lineOffsets;
     // When the diff view is editable: upon edits in the new editor, the old editor needs to update its
     // rendering state to show the offset wrapped lines.

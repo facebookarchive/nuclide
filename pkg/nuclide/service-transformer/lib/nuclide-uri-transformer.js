@@ -12,9 +12,9 @@
 var {isNuclideUriFlowTypeAnnotation} = require('./flow-annotation');
 var t = require('babel-core').types;
 
-type Identifier = mixed;
-type AssignmentExpression = mixed;
-type FlowTypeNode = mixed;
+type Identifier = any;
+type AssignmentExpression = any;
+type FlowTypeNode = any;
 
 /**
  * Given the identifier, create following assignment expression:
@@ -260,7 +260,7 @@ class ManipulationAssignmentExpressionCreator {
    * }
    * ```
    */
-  _visitNullableTypeAnnotationNode(flowTypeNode: FlowTypeNode, identifier: Identifier): ?mixed {
+  _visitNullableTypeAnnotationNode(flowTypeNode: FlowTypeNode, identifier: Identifier): ?any {
     if (!flowTypeNode.typeAnnotation) {
       return null;
     }

@@ -22,7 +22,7 @@ function isRoot(filePath: string): boolean {
  * @return path to a temporary file. The caller is responsible for cleaning up
  *     the file.
  */
-function tempfile(options: mixed): Promise<string> {
+function tempfile(options: any): Promise<string> {
   return new Promise((resolve, reject) => {
     require('temp').open(options, (err, info) => {
       if (err) {

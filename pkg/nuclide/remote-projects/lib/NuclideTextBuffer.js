@@ -13,7 +13,7 @@ var {CompositeDisposable, TextBuffer} = require('atom');
 
 class NuclideTextBuffer extends TextBuffer {
 
-  constructor(connection: RemoteConnection, params: mixed) {
+  constructor(connection: RemoteConnection, params: any) {
     super(params);
     this.connection = connection;
     this.setPath(params.filePath);

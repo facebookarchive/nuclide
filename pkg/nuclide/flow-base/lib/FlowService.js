@@ -38,7 +38,7 @@ class FlowService {
     line: number,
     column: number,
     prefix: string
-  ): Promise<mixed> {
+  ): Promise<any> {
     return Promise.reject('Not implemented');
   }
 }

@@ -10,7 +10,7 @@
  */
 
 class NuclideTypedTestService {
-  foo(arg0: NuclideUri, arg1: string): Promise<mixed> {
+  foo(arg0: NuclideUri, arg1: string): Promise<any> {
     return Promise.reject('not implemented');
   }
 

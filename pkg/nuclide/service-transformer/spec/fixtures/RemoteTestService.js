@@ -28,7 +28,7 @@ class RemoteTestService extends TestService {
   qux(arg0: string, arg1: number) {
     return this._connection.makeRpc('TestService/qux', [arg0, arg1], this._options);
   }
-  onNorf(callback: (payload: mixed) => void) {
+  onNorf(callback: (payload: any) => void) {
     return this._connection.registerEventListener('TestService/onNorf', callback, this._options);
   }
   onetimeRegistration(arg0: string) {

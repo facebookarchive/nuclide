@@ -134,7 +134,7 @@ class RemoteConnection {
       }
     };
 
-    var onHeartbeatError = (error: mixed) => {
+    var onHeartbeatError = (error: any) => {
       var {code, message} = error;
       switch (code) {
           case 'NETWORK_AWAY':
@@ -329,11 +329,11 @@ class RemoteConnection {
    * Make rpc call through this connection given serviceUri in form of `$serviceName/$methodName`
    * and args as arguments list.
    */
-  makeRpc(serviceUri: string, args: Array<mixed>, serviceOptions: mixed): Promise<mixed> {
+  makeRpc(serviceUri: string, args: Array<any>, serviceOptions: any): Promise<any> {
     return this.getClient().makeRpc(serviceUri, args, serviceOptions);
   }
 
-  registerEventListener(eventName: string, callback: (payload: mixed) => void, serviceOptions: mixed): Disposable {
+  registerEventListener(eventName: string, callback: (payload: any) => void, serviceOptions: any): Disposable {
     return this.getClient().registerEventListener(eventName, callback, serviceOptions);
   }
 

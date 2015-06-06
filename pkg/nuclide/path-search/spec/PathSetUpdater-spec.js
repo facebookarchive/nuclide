@@ -39,7 +39,7 @@ describe('PathSetUpdater', () => {
     unwatch: null,
   };
 
-  var emitMockWatchmanUpdate = (update: mixed) => {
+  var emitMockWatchmanUpdate = (update: any) => {
     var subscription = pathSetUpdater._pathSetToSubscription.get(pathSet);
     if (!subscription) {
       return;

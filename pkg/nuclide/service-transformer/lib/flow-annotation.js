@@ -13,7 +13,7 @@ type NuclideUri = string;
 
 var NUCLIDE_URI_FLOW_TYPE_NAME = 'NuclideUri';
 
-function isGenericFlowTypeAnnotation(typeAnnotation: ?mixed, annotationName: string): boolean {
+function isGenericFlowTypeAnnotation(typeAnnotation: ?any, annotationName: string): boolean {
    return !!typeAnnotation &&
       typeAnnotation.type === 'GenericTypeAnnotation' &&
       !!typeAnnotation.id &&
@@ -24,7 +24,7 @@ function isGenericFlowTypeAnnotation(typeAnnotation: ?mixed, annotationName: str
 module.exports = {
   isGenericFlowTypeAnnotation,
 
-  isNuclideUriFlowTypeAnnotation(typeAnnotation: ?mixed): boolean {
+  isNuclideUriFlowTypeAnnotation(typeAnnotation: ?any): boolean {
     return isGenericFlowTypeAnnotation(typeAnnotation, NUCLIDE_URI_FLOW_TYPE_NAME);
   },
 };

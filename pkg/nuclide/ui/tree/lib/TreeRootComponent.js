@@ -90,7 +90,7 @@ var TreeRootComponent = React.createClass({
     initialSelectedNodeKeys: PropTypes.arrayOf(PropTypes.string),
   },
 
-  getDefaultProps(): mixed {
+  getDefaultProps(): any {
     return {
       onClickNode(node: LazyTreeNode) {},
       onClickNodeArrow(node: LazyTreeNode) {},
@@ -99,7 +99,7 @@ var TreeRootComponent = React.createClass({
     };
   },
 
-  getInitialState(): mixed {
+  getInitialState(): any {
     var rootKeys = this.props.initialRoots.map((root) => root.getKey());
 
     var selectedKeys;

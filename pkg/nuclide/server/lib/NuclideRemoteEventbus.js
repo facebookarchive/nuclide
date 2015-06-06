@@ -37,7 +37,7 @@ class NuclideRemoteEventbus {
     this._eventEmitters = {};
   }
 
-  _handleSocketMessage(message: mixed) {
+  _handleSocketMessage(message: any) {
     var {channel, event} = message;
 
     if (channel === SERVICE_FRAMEWORK_RPC_CHANNEL) {
@@ -63,7 +63,7 @@ class NuclideRemoteEventbus {
     this.eventbus.emit(channel, event);
   }
 
-  _subscribeEventOnServer(serviceName: string, methodName: string, serviceOptions: mixed): Promise {
+  _subscribeEventOnServer(serviceName: string, methodName: string, serviceOptions: any): Promise {
     return this.callServiceFrameworkMethod(
       'serviceFramework',
       'subscribeEvent',
@@ -72,7 +72,7 @@ class NuclideRemoteEventbus {
    );
   }
 
-  _unsubscribeEventFromServer(serviceName: string, methodName: string, serviceOptions: mixed): Promise {
+  _unsubscribeEventFromServer(serviceName: string, methodName: string, serviceOptions: any): Promise {
     return this.callServiceFrameworkMethod(
       'serviceFramework',
       'unsubscribeEvent',
@@ -83,8 +83,8 @@ class NuclideRemoteEventbus {
 
   registerEventListener(
     localEventName: string, 
-    callback: (...args: Array<mixed>) => void, 
-    serviceOptions: mixed
+    callback: (...args: Array<any>) => void, 
+    serviceOptions: any
   ): Disposable {
     var [serviceName, eventMethodName] = localEventName.split('/');
     var remoteEventName = getRemoteEventName(serviceName, eventMethodName, serviceOptions);
@@ -100,9 +100,9 @@ class NuclideRemoteEventbus {
   async callMethod(
       serviceName: string,
       methodName: string,
-      methodArgs: ?Array<mixed>,
-      extraOptions: ?mixed
-    ): Promise<string|mixed> {
+      methodArgs: ?Array<any>,
+      extraOptions: ?any
+    ): Promise<string|any> {
     var {args, argTypes} = serializeArgs(methodArgs || []);
     try {
       return await this.socket.xhrRequest(extend({
@@ -122,10 +122,10 @@ class NuclideRemoteEventbus {
   async callServiceFrameworkMethod(
       serviceName: string,
       methodName: string,
-      methodArgs: Array<mixed>,
-      serviceOptions: mixed,
+      methodArgs: Array<any>,
+      serviceOptions: any,
       timeout=SERVICE_FRAMEWORK_RPC_TIMEOUT_MS: number
-    ): Promise<string|mixed> {
+    ): Promise<string|any> {
 
     var requestId = this._rpcRequestId ++;
 
@@ -149,7 +149,7 @@ class NuclideRemoteEventbus {
     });
   }
 
-  async subscribeToChannel(channel: string, handler: (event: ?mixed) => void): Promise<Disposable> {
+  async subscribeToChannel(channel: string, handler: (event: ?any) => void): Promise<Disposable> {
     await this._callSubscribe(channel);
     this.eventbus.on(channel, handler);
     return {
@@ -157,7 +157,7 @@ class NuclideRemoteEventbus {
     };
   }
 
-  async _callSubscribe(channel: string, options: ?mixed = {}): Promise {
+  async _callSubscribe(channel: string, options: ?any = {}): Promise {
     // Wait for the client to connect, for the server to find a medium to send the events to.
     await this.socket.waitForConnect();
     await this.callMethod(

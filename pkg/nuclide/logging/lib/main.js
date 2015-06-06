@@ -28,7 +28,7 @@ var lazyLogger;
  * params `config` and `options` are configurations used by log4js, refer
  * https://www.npmjs.com/package/log4js#configuration for more information.
  */
-function configLog4jsLogger(config: mixed, options: mixed): void {
+function configLog4jsLogger(config: any, options: any): void {
   var log4js = require('log4js');
   log4js.configure(config, options);
   global[LOG4JS_INSTANCE_KEY] = log4js.getLogger(LOGGER_CATEGORY);
@@ -37,11 +37,11 @@ function configLog4jsLogger(config: mixed, options: mixed): void {
 // Create a lazy logger, who won't initialize log4js logger until `lazyLogger.$level(...)` is called.
 // In this way other package could depends on this upon activate without worrying initialization of
 // logger taking too much time.
-function createLazyLogger(): mixed {
+function createLazyLogger(): any {
   lazyLogger = {};
 
   LOGGER_LEVELS.forEach((level) => {
-    lazyLogger[level] = async (...args: Array<mixed>) => {
+    lazyLogger[level] = async (...args: Array<any>) => {
       if (global[LOG4JS_INSTANCE_KEY] === undefined) {
         var defaultConfig = await require('./config').getDefaultConfig();
         configLog4jsLogger(defaultConfig, {});

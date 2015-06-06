@@ -75,7 +75,7 @@ class LocalBuckProject extends BuckProject {
     return targets;
   }
 
-  async build(buildTargets: Array<string> | string): Promise<mixed> {
+  async build(buildTargets: Array<string> | string): Promise<any> {
     if (typeof buildTargets === 'string') {
       buildTargets = [buildTargets];
     }
@@ -122,7 +122,7 @@ class LocalBuckProject extends BuckProject {
   /**
    * @param filePath absolute path.
    */
-  async findTargetsWithReferencedFile(filePath: string, options: mixed): Promise {
+  async findTargetsWithReferencedFile(filePath: string, options: any): Promise {
     var args = ['targets', '--referenced_file', filePath];
 
     var type = options['type'];

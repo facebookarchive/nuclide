@@ -37,7 +37,7 @@ function createView (model): HTMLElement {
 
 module.exports = {
 
-  activate(state: ?mixed): void {
+  activate(state: ?any): void {
     subscriptions = new CompositeDisposable();
 
     var DiffViewModel = require('./DiffViewModel');
@@ -70,7 +70,7 @@ module.exports = {
     }));
   },
 
-  serialize(): ?mixed {
+  serialize(): ?any {
     // TODO(most): Return the state of the diff view here, so, we can restore it on reload or restart.
   },
 

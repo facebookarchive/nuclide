@@ -17,7 +17,7 @@ var FlowService = require('./FlowService');
 /**
  * If this returns null, then it is not safe to run flow.
  */
-async function getFlowExecOptions(file: string): Promise<?mixed> {
+async function getFlowExecOptions(file: string): Promise<?any> {
   var flowConfigDirectory = await findNearestFile('.flowconfig', path.dirname(file));
   if (flowConfigDirectory) {
     return {
@@ -83,7 +83,7 @@ class LocalFlowService extends FlowService {
     }
   }
 
-  async findDiagnostics(file: NuclideUri): Promise<mixed> {
+  async findDiagnostics(file: NuclideUri): Promise<any> {
     var options = await getFlowExecOptions(file);
     if (!options) {
       return [];
@@ -133,7 +133,7 @@ class LocalFlowService extends FlowService {
     line: number,
     column: number,
     prefix: string
-  ): Promise<mixed> {
+  ): Promise<any> {
     var options = await getFlowExecOptions(file);
     if (!options) {
       return [];

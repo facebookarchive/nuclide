@@ -114,7 +114,7 @@ class NuclideSocket extends EventEmitter {
     }
   }
 
-  send(data: mixed): void {
+  send(data: any): void {
     if (!this._websocket || !this._connected) {
       this._cachedMessages.push(data);
       return;
@@ -122,7 +122,7 @@ class NuclideSocket extends EventEmitter {
     this._websocket.send(JSON.stringify(data));
   }
 
-  async xhrRequest(options: mixed): Promise<string|mixed> {
+  async xhrRequest(options: any): Promise<string|any> {
     var {certificateAuthorityCertificate, clientKey, clientCertificate} = this._options;
     if (certificateAuthorityCertificate && clientKey && clientCertificate) {
       options.agentOptions = {

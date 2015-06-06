@@ -304,7 +304,7 @@ class LocalHgService extends LocalHgServiceBase {
   /**
    * @param update The latest watchman update.
    */
-  _filesDidChange(update: mixed): Promise<void> {
+  _filesDidChange(update: any): Promise<void> {
     var workingDirectory = this.getWorkingDirectory();
     var changedFiles = update.files.map(file => path.join(workingDirectory, file.name));
     this._emitter.emit('files-changed', changedFiles);

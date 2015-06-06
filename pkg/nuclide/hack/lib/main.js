@@ -63,7 +63,7 @@ module.exports = {
   },
 
   /** Provider for code format service. */
-  createCodeFormatProvider(): mixed {
+  createCodeFormatProvider(): any {
     var CodeFormatProvider = require('./CodeFormatProvider');
     var codeFormatProvider = new CodeFormatProvider();
 
@@ -77,7 +77,7 @@ module.exports = {
     };
   },
 
-  createTypeHintProvider(): mixed {
+  createTypeHintProvider(): any {
     var TypeHintProvider = require('./TypeHintProvider');
     var typeHintProvider = new TypeHintProvider();
 

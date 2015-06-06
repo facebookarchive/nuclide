@@ -142,7 +142,7 @@ class WatchmanClient {
     }
   }
 
-  async _watchProject(directoryPath: string): Promise<mixed> {
+  async _watchProject(directoryPath: string): Promise<any> {
     var watchmanVersion = await this._watchmanVersionPromise;
     if (!watchmanVersion || watchmanVersion < '3.1.0') {
       throw new Error('Watchman version: ' + this._watchmanVersion + ' does not support watch-project');

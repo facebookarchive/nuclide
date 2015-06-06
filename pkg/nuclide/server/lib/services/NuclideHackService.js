@@ -65,7 +65,7 @@ async function _callHHClient(
 /**
  * Gets the hh_client diagnistics for all files open
  */
-function getDiagnostics(options = {}): Promise<Array<mixed>> {
+function getDiagnostics(options = {}): Promise<Array<any>> {
   return _callHHClient(
     /*args*/ [],
     /*errorStream*/ true,
@@ -78,7 +78,7 @@ function getDiagnostics(options = {}): Promise<Array<mixed>> {
 /**
  * Gets the hh_client autocompletions for the passed query string (file contents with a marker).
  */
-function getCompletions(query: string, options): Promise<Array<mixed>> {
+function getCompletions(query: string, options): Promise<Array<any>> {
   return _callHHClient(
     /*args*/ ['--auto-complete'],
     /*errorStream*/ false,
@@ -91,7 +91,7 @@ function getCompletions(query: string, options): Promise<Array<mixed>> {
 /**
  * Gets the hh_client definition of the query with a given symbol type.
  */
-async function getDefinition(query: string, symbolType: SymbolType, options = {}): Promise<Array<mixed>> {
+async function getDefinition(query: string, symbolType: SymbolType, options = {}): Promise<Array<any>> {
   var searchTypes = symbolTypeToSearchTypes(symbolType);
   var searchResults = [];
   try {
@@ -117,7 +117,7 @@ async function getDefinition(query: string, symbolType: SymbolType, options = {}
 async function getDependencies(
       dependenciesInfo: Array<{name: string; type: string}>,
       options = {}
-    ): Promise<mixed> {
+    ): Promise<any> {
   var dependencies = {};
 
   // hh_server currently is single threaded and processes one request at a time.
@@ -171,7 +171,7 @@ async function getSearchResults(
     filterTypes: ?Array<SearchResultType>,
     searchPostfix: ?string,
     options = {}
-  ): Promise<Array<mixed>> {
+  ): Promise<Array<any>> {
 
   if (!search) {
     return [];
@@ -203,9 +203,9 @@ async function getSearchResults(
 
 // Eventually this will happen on the hack side, but for now, this will do.
 function filterSearchResults(
-  results: Array<mixed>,
+  results: Array<any>,
   filter: Array<SearchResultType>)
-  : Array<mixed> {
+  : Array<any> {
 
   return results.filter((result) => {
     var info = result.additionalInfo;

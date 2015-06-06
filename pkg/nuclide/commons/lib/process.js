@@ -35,7 +35,7 @@ function createCommand(command: string, args: Array<string>):
   return {commandString, commandStringWithArgs};
 }
 
-function createExecEnvironment(originalEnvirnment: mixed, commonBinaryPaths: Array<string>): mixed {
+function createExecEnvironment(originalEnvirnment: any, commonBinaryPaths: Array<string>): any {
   var execEnvironment = {};
   for (var key in originalEnvirnment) {
     execEnvironment[key] = originalEnvirnment[key];
@@ -68,7 +68,7 @@ function createExecEnvironment(originalEnvirnment: mixed, commonBinaryPaths: Arr
 function asyncExecute(
     command: string,
     args: Array<string>,
-    options: ?mixed = {}): Promise {
+    options: ?any = {}): Promise {
   var {commandString, commandStringWithArgs} = createCommand(command, args);
 
   // Add commons binary paths to the PATH when no custom env provided.

@@ -249,7 +249,7 @@ class NuclideClient {
   /**
    * Make rpc call to service given serviceUri in form of `$serviceName/$methodName` and args as arguments list.
    */
-  makeRpc(serviceUri: string, args: Array<mixed>, serviceOptions: mixed): Promise<mixed> {
+  makeRpc(serviceUri: string, args: Array<any>, serviceOptions: any): Promise<any> {
     var [serviceName, methodName] = serviceUri.split('/');
     return this.eventbus.callServiceFrameworkMethod(
       serviceName,
@@ -259,7 +259,7 @@ class NuclideClient {
    );
   }
 
-  registerEventListener(eventName: string, callback: (...args: Array<mixed>) => void, serviceOptions: mixed): Disposable {
+  registerEventListener(eventName: string, callback: (...args: Array<any>) => void, serviceOptions: any): Disposable {
     return this.eventbus.registerEventListener(eventName, callback, serviceOptions);
   }
 
@@ -280,7 +280,7 @@ class NuclideClient {
    *   gid: Number Sets the group identity of the process. (See setgid(2).),
    * }
    */
-  exec(command: string, options: ?mixed): Promise<ExecResult> {
+  exec(command: string, options: ?any): Promise<ExecResult> {
     var {cwd} = this._options;
     var mixedOptions = extend(extend({}, {cwd}), options);
     return this.eventbus.callMethod(
@@ -294,7 +294,7 @@ class NuclideClient {
   /**
    * Searches the contents of `directory` for paths mathing `query`.
    */
-  async searchDirectory(directory: string, query: string): Promise<mixed> {
+  async searchDirectory(directory: string, query: string): Promise<any> {
     return await this.eventbus.callMethod(
       /*serviceName*/ 'search',
       /*methodName*/ 'directory',
@@ -429,7 +429,7 @@ class NuclideClient {
     );
   }
 
-  getHackDependencies(dependenciesInfo: Array<{name: string; type: string}>): Promise<mixed> {
+  getHackDependencies(dependenciesInfo: Array<{name: string; type: string}>): Promise<any> {
     var {cwd} = this._options;
     return this.eventbus.callMethod(
       /*serviceName*/ 'hack',

@@ -22,7 +22,7 @@ class ClickToSymbolDelegate extends AbstractDelegate {
     return 20;
   }
 
-  async getClickableRangesAndCallback(editor: TextEditor, row: number, column: number): Promise<?mixed> {
+  async getClickableRangesAndCallback(editor: TextEditor, row: number, column: number): Promise<?any> {
     if (!GRAMMARS.has(editor.getGrammar().scopeName)) {
       return null;
     }

@@ -13,7 +13,7 @@ var url = require('url');
 var path = require('path');
 var {CompositeDisposable, Disposable} = require('atom');
 var subscriptions: ?CompositeDisposable = null;
-var defaultConfig: ?mixed = null;
+var defaultConfig: ?any = null;
 
 var dialogPromiseQueue: ?PromiseQueue = null;
 
@@ -73,7 +73,7 @@ function openConnectionDialog(props): Promise<?RemoteConnection> {
   });
 }
 
-function getDefaultConfig(): mixed {
+function getDefaultConfig(): any {
   if (defaultConfig) {
     return defaultConfig;
   }
@@ -86,7 +86,7 @@ function getDefaultConfig(): mixed {
 }
 
 module.exports = {
-  activate(state: ?mixed): void {
+  activate(state: ?any): void {
     subscriptions = new CompositeDisposable();
     // If this package was activated by an nuclide-ssh-dialog:connect event,
     // the listener registered here will fire after this method finishes.

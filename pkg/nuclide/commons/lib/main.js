@@ -11,7 +11,7 @@
 
 module.exports = {
 
-  asyncFind(items: array, test: mixed, thisArg: mixed): Promise {
+  asyncFind(items: array, test: any, thisArg: any): Promise {
     return require('./promises').asyncFind(items, test, thisArg);
   },
 
@@ -19,15 +19,15 @@ module.exports = {
     return require('./config').getConfigValueAsync(key);
   },
 
-  asyncExecute(command: string, args: array<string>, options: mixed): Promise {
+  asyncExecute(command: string, args: array<string>, options: any): Promise {
     return require('./process').asyncExecute(command, args, options);
   },
 
-  checkOutput(command: string, args: array<string>, options?: mixed): Promise {
+  checkOutput(command: string, args: array<string>, options?: any): Promise {
     return require('./process').checkOutput(command, args, options);
   },
 
-  readFile(filePath: string, options?: mixed): Promise {
+  readFile(filePath: string, options?: any): Promise {
     return require('./filesystem').readFile(filePath, options);
   },
 

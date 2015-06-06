@@ -13,7 +13,7 @@ var codeFormatManager: ?CodeFormatManager = null;
 
 module.exports = {
 
-  activate(state: ?mixed): void {
+  activate(state: ?any): void {
     var CodeFormatManager = require('./CodeFormatManager');
     codeFormatManager = new CodeFormatManager();
   },

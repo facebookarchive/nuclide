@@ -25,7 +25,7 @@ class QuickSelectionProvider {
   /**
    * Asynchronously executes a search based on @query.
    */
-  executeQuery(query: string): Promise<Array<mixed>> {
+  executeQuery(query: string): Promise<Array<any>> {
     return Promise.reject('Not implemented');
   }
 
@@ -33,7 +33,7 @@ class QuickSelectionProvider {
    * Returns a ReactElement based on @item, which should be an
    * object returned from executeQuery, above.
    */
-  getComponentForItem(item: mixed): ReactElement {
+  getComponentForItem(item: any): ReactElement {
     return <div>{item.toString()}</div>
   }
 

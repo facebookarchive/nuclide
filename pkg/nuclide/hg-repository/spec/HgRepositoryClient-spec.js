@@ -18,7 +18,7 @@ var temp = require('temp').track();
 
 // This class is meant to be stubbed out in this suite of tests.
 class MockHgService extends HgService {
-  fetchStatuses(filePaths: Array<NuclideUri>, options: ?mixed): Promise<{[key: string]: StatusCodeId}> {
+  fetchStatuses(filePaths: Array<NuclideUri>, options: ?any): Promise<{[key: string]: StatusCodeId}> {
   }
 
   onFilesDidChange(callback: () => void): Disposable {

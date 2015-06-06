@@ -10,7 +10,7 @@
  */
 var util = require('util');
 
-function layout(loggingEvent: mixed): Array<mixed> {
+function layout(loggingEvent: any): Array<any> {
   var eventInfo = util.format(
     '[%s] [%s] %s - ',
     loggingEvent.startTime.toISOString(),
@@ -33,7 +33,7 @@ function layout(loggingEvent: mixed): Array<mixed> {
  * Comparing to log4js's console appender(https://fburl.com/69861669), you can expand and explore
  * the object in console logged by this Appender.
  */
-function consoleAppender(): (loggingEvent: mixed) => void {
+function consoleAppender(): (loggingEvent: any) => void {
   return (loggingEvent) => {
     console.log.apply(console, layout(loggingEvent));
   };

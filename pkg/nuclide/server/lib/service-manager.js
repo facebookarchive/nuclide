@@ -12,9 +12,9 @@
 var logger = require('nuclide-logging').getLogger();
 
 // A cache stores services in form of '$serviceName@$cwd' => $serviceObject.
-var cachedServices: Map<string, mixed> = new Map();
+var cachedServices: Map<string, any> = new Map();
 
-function optionsToString(options: ?mixed): string {
+function optionsToString(options: ?any): string {
   if (!options) {
     return '';
   } else if (options instanceof Array) {
@@ -32,7 +32,7 @@ function optionsToString(options: ?mixed): string {
 /**
  * Create a new or retrieve a cached service instance by serviceName and service options.
  */
-function getService(serviceName: string, options: mixed, localImplementationClassPath: string): mixed {
+function getService(serviceName: string, options: any, localImplementationClassPath: string): any {
   var key = serviceName + '@' + optionsToString(options);
   if (!cachedServices.has(key)) {
     logger.debug(`Create service instance: ${key}`);
@@ -42,12 +42,12 @@ function getService(serviceName: string, options: mixed, localImplementationClas
   return cachedServices.get(key);
 }
 
-function createLocalService(localImplementationClassPath: string, options: mixed): mixed {
+function createLocalService(localImplementationClassPath: string, options: any): any {
   var serviceClass = require(localImplementationClassPath);
   return new serviceClass(options);
 }
 
-function getRemoteEventName(serviceName: string, eventMethodName: string, serviceOptions: mixed): string {
+function getRemoteEventName(serviceName: string, eventMethodName: string, serviceOptions: any): string {
   return getLocalEventName(serviceName, eventMethodName) + '@' + optionsToString(serviceOptions);
 }
 

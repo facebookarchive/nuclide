@@ -30,7 +30,7 @@ function resetTimeouts(): void {
   intervalTimeouts = {};
 }
 
-function fakeSetTimeout(callback: () => ?mixed, ms: number): number {
+function fakeSetTimeout(callback: () => ?any, ms: number): number {
   var id = ++timeoutCount;
   timeouts.push([id, now + ms, callback]);
   timeouts = timeouts
@@ -43,7 +43,7 @@ function fakeClearTimeout(idToClear: number): void {
       .filter(([id, strikeTime, callback]) => (id !== idToClear));
 }
 
-function fakeSetInterval(callback: () => ?mixed, ms: number): number {
+function fakeSetInterval(callback: () => ?any, ms: number): number {
   var id = ++intervalCount;
   var action = () => {
     callback();
