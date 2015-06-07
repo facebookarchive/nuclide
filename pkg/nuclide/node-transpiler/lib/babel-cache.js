@@ -15,22 +15,37 @@ var crypto = require('crypto');
 var fs = require('fs');
 var path = require('path');
 var temp = require('temp').track();
+var cacheDir = createCacheDir();
 
-var babelVersion = require('babel-core/package.json')['version'];
-var cacheDir = path.join(__dirname, '../babel-cache');
-if (!fs.existsSync(cacheDir)) {
-  fs.mkdirSync(cacheDir);
-}
+/**
+ * Tries to create a "babel-cache" directory if it does not already exist.
+ * @return {?string} path to the cache directory or {@code null} if it could not be created.
+ */
+function createCacheDir() {
+  try {
+    var cacheDir = path.join(__dirname, '../babel-cache');
+    if (!fs.existsSync(cacheDir)) {
+      fs.mkdirSync(cacheDir);
+    }
 
-cacheDir = path.join(cacheDir, createCachePathComponentForBabelVersionAndOptions());
-if (!fs.existsSync(cacheDir)) {
-  fs.mkdirSync(cacheDir);
+    cacheDir = path.join(cacheDir, createCachePathComponentForBabelVersionAndOptions());
+    if (!fs.existsSync(cacheDir)) {
+      fs.mkdirSync(cacheDir);
+    }
+    return cacheDir;
+  } catch (e) {
+    // It is possible that nuclide-node-transpiler is loaded on a read-only filesystem,
+    // so print out the error and swallow it.
+    console.error(e);
+    return null;
+  }
 }
 
 function createCachePathComponentForBabelVersionAndOptions() {
   var shasum = crypto.createHash('sha1');
 
   // Include the version of Babel in the cache key.
+  var babelVersion = require('babel-core/package.json')['version'];
   shasum.update(babelVersion, 'utf8');
   shasum.update('\u0000', 'utf8');
 
@@ -45,6 +60,11 @@ function createCachePathComponentForBabelVersionAndOptions() {
  * @param filePath identifies the path on disk where `sourceCode` came from.
  */
 function createOrFetchFromCache(sourceCode, filePath) {
+  // If there is no cache directory, then transpile the file and exit.
+  if (!cacheDir) {
+    return transpileFile(sourceCode, filePath, /* isYieldSupported */ false);
+  }
+
   // Use the SHA-1 of the file contents as the cache key. (The Babel version and transpilation
   // options are already encoded via the cacheDir.)
   var shasum = crypto.createHash('sha1');
@@ -57,8 +77,7 @@ function createOrFetchFromCache(sourceCode, filePath) {
     return fs.readFileSync(transpiledFile, 'utf8');
   }
 
-  var options = createOptions(filePath, /* isYieldSupported */ false);
-  var code = transpileFileWithOptions(sourceCode, options, filePath);
+  var code = transpileFile(sourceCode, filePath, /* isYieldSupported */ false);
 
   // Asynchronously write the result to the cache. Write the file to a temp file first and then move
   // it so the write to the cache is atomic. Although Node is single-threaded, there could be
