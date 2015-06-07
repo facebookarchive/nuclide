@@ -24,8 +24,7 @@ class ClickToSymbol {
       textEditor: TextEditor,
       shouldUseCmdKeyToActivate: () => boolean,
       findClickableRangesAndCallback: ?(editor: TextEditor, row: number, column: number, shiftKey: boolean) => Promise) {
-    // TODO(6974959): Eliminate the use of the undocumented __spacePenView property.
-    this.editorView = atom.views.getView(textEditor).__spacePenView;
+    this.editorView = atom.views.getView(textEditor);
     this.findClickableRangesAndCallback = findClickableRangesAndCallback;
     this.shouldUseCmdKeyToActivate = shouldUseCmdKeyToActivate;
     this.symbolNavigationMarkers = null;
@@ -33,10 +32,10 @@ class ClickToSymbol {
     this.editor = textEditor;
 
     this.onMouseDown = this.onMouseDown.bind(this);
-    this.editorView.on('mousedown', this.onMouseDown);
+    this.editorView.addEventListener('mousedown', this.onMouseDown);
 
     this.onMouseMove = this.onMouseMove.bind(this);
-    this.editorView.on('mousemove', this.onMouseMove);
+    this.editorView.addEventListener('mousemove', this.onMouseMove);
   }
 
   async onMouseDown(e: MouseEvent) {
@@ -85,18 +84,10 @@ class ClickToSymbol {
   }
 
   getRowAndColumnForMouseEvent(e): Point {
-    // Calculate screen position.
-    var offset = this.editorView.scrollView.offset();
-
-    var editorRelativeLeft = e.pageX - offset.left + this.editorView.scrollLeft();
-    var editorRelativeTop = e.pageY - offset.top + this.editorView.scrollTop();
-
-    var screenPosition = {
-      row: Math.floor(editorRelativeTop / this.editorView.lineHeight),
-      column: Math.floor(editorRelativeLeft / this.editor.getDefaultCharWidth()),
-    };
-
-    // Convert screen position to buffer position.
+    // component.screenPositionForMouseEvent is an undocumented method but it
+    // may become public. See discussion at https://github.com/atom/atom/issues/7082.
+    // TODO (t7337039) Convert to the public method if it becomes public.
+    var screenPosition = this.editorView.component.screenPositionForMouseEvent(e);
     return this.editor.bufferPositionForScreenPosition(screenPosition);
   }
 
@@ -123,12 +114,12 @@ class ClickToSymbol {
         return marker;
       });
     }
-    this.editorView.toggleClass('symbol-navigation', !!ranges);
+    this.editorView.classList.toggle('symbol-navigation', !!ranges);
   }
 
   dispose() {
-    this.editorView.off('mousedown', this.onMouseDown);
-    this.editorView.off('mousemove', this.onMouseMove);
+    this.editorView.removeEventListener('mousedown', this.onMouseDown);
+    this.editorView.removeEventListener('mousemove', this.onMouseMove);
   }
 };
 
