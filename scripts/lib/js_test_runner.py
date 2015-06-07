@@ -40,11 +40,11 @@ class JsTestRunner(object):
             parallel_tests = []
             serial_tests = npm_tests + apm_tests
         else:
-            # For now, we run the npm tests in parallel, but the apm tests serially.
-            # Once we are certain that apm tests can be run in parallel in a stable way,
-            # we will run all tests in parallel.
-            parallel_tests = npm_tests
-            serial_tests = apm_tests
+            # Currently, all tests appear to be able to be run in parallel. We keep this code
+            # here in case we have to special-case any tests (on a short-term basis) to be run
+            # serially after all of the parallel tests have finished.
+            parallel_tests = npm_tests + apm_tests
+            serial_tests = []
 
         if parallel_tests:
             pool = Pool(processes=cpu_count())
