@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-var {getServiceByNuclideUri} = require('nuclide-client');
+var getServiceByNuclideUri;
 
 // One of text or snippet is required.
 type Suggestion = {
@@ -45,6 +45,9 @@ module.exports = {
       var line = cursor.getBufferRow();
       var col = cursor.getBufferColumn();
 
+      if (!getServiceByNuclideUri) {
+        getServiceByNuclideUri = require('nuclide-client').getServiceByNuclideUri;
+      }
       return getServiceByNuclideUri('FlowService', file)
         .getAutocompleteSuggestions(file, contents, line, col, prefix);
     };
