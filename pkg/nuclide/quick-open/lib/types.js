@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-export type FileResult = mixed;
+export type FileResult = any;
 
 export type GroupedResult = {string: {string: {items: Array<FileResult>}}};
 

@@ -65,7 +65,7 @@ class OmniSearchResultProvider extends QuickSelectionProvider {
     }
   }
 
-  async _getQueriesForDirectory(query: string, directory: mixed): mixed {
+  async _getQueriesForDirectory(query: string, directory: any): any {
     var {getClient} = require('nuclide-client');
     var directoryPath = directory.getPath();
     var basename = directory.getBaseName();

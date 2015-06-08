@@ -40,7 +40,7 @@ describe('NuclideCheckbox', () => {
 
     Simulate.click(node);
 
-    expect(onChange).toHaveBeenCalledWith('second');
+    expect(onChange).toHaveBeenCalledWith(props.tabs[1]);
   });
 
   it('should work with customized event types', () => {
@@ -63,7 +63,7 @@ describe('NuclideCheckbox', () => {
     // `Simulate` does not currently support mouseEnter: https://github.com/facebook/react/issues/1297
     SimulateNative.mouseOver(React.findDOMNode(node));
 
-    expect(onChange).toHaveBeenCalledWith('second');
+    expect(onChange).toHaveBeenCalledWith(props.tabs[1]);
   });
 
 });

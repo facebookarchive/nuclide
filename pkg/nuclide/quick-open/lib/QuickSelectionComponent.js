@@ -106,12 +106,7 @@ var QuickSelectionComponent = React.createClass({
         var newResults = {};
         this.setState(
           {
-            activeTab:
-              (array.find(
-                RENDERABLE_TABS,
-                tab => tab.providerName === nextProps.provider.constructor.name
-              ) || DEFAULT_TAB)
-              .title,
+            activeTab: nextProps.provider.constructor.name || DEFAULT_TAB.providerName,
             resultsByService: newResults,
            },
            () => {
@@ -155,7 +150,7 @@ var QuickSelectionComponent = React.createClass({
       selectedDirectory: '',
       selectedService: '',
       selectedItemIndex: -1,
-      activeTab: DEFAULT_TAB.title,
+      activeTab: DEFAULT_TAB.providerName,
     };
   },
 
@@ -519,14 +514,14 @@ var QuickSelectionComponent = React.createClass({
     this.getInputTextEditor().blur();
   },
 
-  _handleTabChange(newTabName: string) {
+  _handleTabChange(newTab: any) {
     clearTimeout(this._scheduledCancel);
-    if (newTabName !== this.state.activeTab) {
+    var providerName = newTab.providerName;
+    if (providerName !== this.state.activeTab) {
       this.setState({
-        activeTab: newTabName,
+        activeTab: providerName,
       }, () => {
-        var providerName = array.find(RENDERABLE_TABS, tab => tab.title === newTabName).providerName;
-        this._emitter.emit('active-provider-changed', providerName);
+        this._emitter.emit('active-provider-changed', newTab.providerName);
       });
     }
   },
@@ -542,7 +537,8 @@ var QuickSelectionComponent = React.createClass({
         );
       }
       return {
-        name: tab.title,
+        ...tab,
+        name: tab.providerName,
         tabContent: <span>{tab.title}{keyBinding}</span>
       };
     });
