@@ -28,6 +28,13 @@ class QuickSelectionProvider {
   }
 
   /**
+   * Returns the number of milliseconds used to debounce any calls to executeQuery.
+   */
+  getDebounceDelay(): number {
+    return 200;
+  }
+
+  /**
    * Asynchronously executes a search based on @query.
    */
   executeQuery(query: string): GroupedResultPromise {

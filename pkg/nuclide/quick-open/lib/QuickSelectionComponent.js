@@ -116,6 +116,7 @@ var QuickSelectionComponent = React.createClass({
            },
            () => {
              this.setQuery(this.refs.queryInput.getText());
+             this._updateQueryHandler();
              this._emitter.emit('items-changed', newResults);
            }
         );
@@ -179,9 +180,8 @@ var QuickSelectionComponent = React.createClass({
       }
     });
 
-    var debounced = debounce(() => this.setQuery(inputTextEditor.model.getText()), 200);
-
-    inputTextEditor.model.onDidChange(debounced);
+    this._updateQueryHandler();
+    inputTextEditor.model.onDidChange(this._handleTextInputChange);
     this.clear();
   },
 
@@ -208,6 +208,17 @@ var QuickSelectionComponent = React.createClass({
 
   onTabChange(callback: (providerName: string) => void): Disposable {
     return this._emitter.on('active-provider-changed', callback);
+  },
+
+  _updateQueryHandler(): void {
+    this._debouncedQueryHandler = debounce(
+      () => this.setQuery(this.getInputTextEditor().model.getText()),
+      this.getProvider().getDebounceDelay()
+    );
+  },
+
+  _handleTextInputChange(): void {
+    this._debouncedQueryHandler();
   },
 
   select() {

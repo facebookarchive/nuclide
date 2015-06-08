@@ -31,6 +31,10 @@ class OpenFileListProvider extends QuickSelectionProvider {
      .map((file) => ({path: file, matchIndexes: []}));
   }
 
+  getDebounceDelay(): number {
+    return 0;
+  }
+
   getPromptText() {
     return 'Search names of open files';
   }
