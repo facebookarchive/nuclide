@@ -10,6 +10,7 @@
   },
   "activationCommands": {
     "atom-workspace": [
+      "nuclide-quick-open:toggle-omni-search",
       "nuclide-quick-open:toggle-quick-open",
       "nuclide-quick-open:toggle-symbol-search",
       "nuclide-quick-open:toggle-biggrep-search",

@@ -55,6 +55,9 @@ class Activation {
     this._searchComponent.onTabChange(providerName => this.toggleProvider(providerName));
 
     this._subscriptions.add(
+      atom.commands.add('atom-workspace', 'nuclide-quick-open:toggle-omni-search', () => {
+        this.toggleProvider('OmniSearchResultProvider');
+      }),
       atom.commands.add('atom-workspace', 'nuclide-quick-open:toggle-quick-open', () => {
         this.toggleProvider('FileListProvider');
       }),

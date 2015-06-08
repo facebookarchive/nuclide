@@ -38,6 +38,11 @@ var cx = require('react-classset');
 // keep `action` in sync with keymap.
 var RENDERABLE_TABS = [
   {
+   providerName: 'OmniSearchResultProvider',
+   title: 'All Results',
+   action: 'nuclide-quick-open:toggle-omni-search',
+  },
+  {
    providerName: 'BigGrepListProvider',
    title: 'BigGrep',
    action: 'nuclide-quick-open:toggle-biggrep-search',
@@ -193,7 +198,7 @@ var QuickSelectionComponent = React.createClass({
     return this._emitter.on('selected', callback);
   },
 
-  onSelectionChanged(callback: (selectionIndex: mixed) => void): Disposable {
+  onSelectionChanged(callback: (selectionIndex: any) => void): Disposable {
     return this._emitter.on('selection-changed', callback);
   },
 
@@ -222,7 +227,7 @@ var QuickSelectionComponent = React.createClass({
     this.setSelectedIndex('', '', -1);
   },
 
-  _getCurrentResultContext(): mixed{
+  _getCurrentResultContext(): any{
     var nonEmptyResults = filterEmptyResults(this.state.resultsByService);
     var serviceNames = Object.keys(nonEmptyResults);
     var currentServiceIndex = serviceNames.indexOf(this.state.selectedService);
@@ -392,11 +397,11 @@ var QuickSelectionComponent = React.createClass({
     return this.state.resultsByService[serviceName][directory].items[itemIndex];
   },
 
-  componentForItem(item: any): ReactElement {
-    return this.getProvider().getComponentForItem(item);
+  componentForItem(item: any, serviceName: string): ReactElement {
+    return this.getProvider().getComponentForItem(item, serviceName);
   },
 
-  getSelectedIndex(): mixed {
+  getSelectedIndex(): any {
     return {
       selectedDirectory: this.state.selectedDirectory,
       selectedService: this.state.selectedService,
@@ -434,7 +439,7 @@ var QuickSelectionComponent = React.createClass({
     });
   },
 
-  _subscribeToResult(serviceName: string, directory:string, resultPromise: Promise<mixed>) {
+  _subscribeToResult(serviceName: string, directory:string, resultPromise: Promise<any>) {
     resultPromise.then((items) => {
       var updatedItems = {
         waiting: false,
