@@ -79,25 +79,6 @@ describe('FileTreeController', () => {
     });
   });
 
-  describe('selectActiveFile', () => {
-    it('automatically selects the active file', () => {
-      waitsForPromise(async () => {
-        var filePath = path.join(fixturesPath, 'dir1/dir1/dir1/file1');
-        await atom.workspace.open(filePath);
-
-        // Selecting the active file is triggered by the file opening and
-        // happens asynchronously. Since we don't have access to the `Promise`
-        // for this feature, we need to rely on a timeout.
-        waits(100);
-        runs(() => {
-          var selectedFilePaths = treeComponent.getSelectedNodes()
-              .map(node => node.getItem().getPath());
-          expect(selectedFilePaths).toEqual([filePath]);
-        });
-      });
-    });
-  });
-
   describe('revealActiveFile', () => {
     it('succeeds for a deeply-nested file', () => {
       waitsForPromise(async () => {
