@@ -20,7 +20,7 @@ var QuickSelectionProvider = require('./QuickSelectionProvider');
 var {
   debounce,
   object,
-  } = require('nuclide-commons');
+} = require('nuclide-commons');
 var React = require('react-for-atom');
 
 var {
@@ -43,7 +43,6 @@ var QuickSelectionComponent = React.createClass({
 
   componentWillReceiveProps(nextProps: any) {
     if (nextProps.provider !== this.props.provider) {
-      this.clear();
       if (nextProps.provider) {
         this.refs.queryInput.getTextEditor().setPlaceholderText(nextProps.provider.getPromptText());
       }
@@ -52,11 +51,14 @@ var QuickSelectionComponent = React.createClass({
 
   componentDidUpdate(prevProps: any, prevState: any) {
     if (prevState.resultsByService !== this.state.resultsByService) {
-      this.moveSelectionToTop();
       this._emitter.emit('items-changed', this.state.resultsByService);
     }
 
-    if (prevState.selectedIndex !== this.state.selectedIndex) {
+    if (
+      prevState.selectedItemIndex !== this.state.selectedItemIndex ||
+      prevState.selectedService !== this.state.selectedService ||
+      prevState.selectedDirectory !== this.state.selectedDirectory
+    ) {
       this._updateScrollPosition();
     }
   },
@@ -75,7 +77,9 @@ var QuickSelectionComponent = React.createClass({
         },
         */
       },
-      selectedIndex: -1,
+      selectedDirectory: '',
+      selectedService: '',
+      selectedItemIndex: -1,
     };
   },
 
@@ -120,16 +124,20 @@ var QuickSelectionComponent = React.createClass({
     return this._emitter.on('selected', callback);
   },
 
+  onSelectionChanged(callback: (selectionIndex: mixed) => void): Disposable {
+    return this._emitter.on('selection-changed', callback);
+  },
+
   onItemsChanged(callback: (newItems: GroupedResult) => void): Disposable {
     return this._emitter.on('items-changed', callback);
   },
 
   select() {
-    var flatResults = flattenResults(this.state.resultsByService);
-    if (flatResults.length === 0) {
+    var selectedItem = this.getSelectedItem();
+    if (!selectedItem) {
       this.cancel();
     } else {
-      this._emitter.emit('selected', flatResults[this.state.selectedIndex]);
+      this._emitter.emit('selected', selectedItem);
     }
   },
 
@@ -137,20 +145,112 @@ var QuickSelectionComponent = React.createClass({
     this._emitter.emit('canceled');
   },
 
+  clearSelection() {
+    this.setSelectedIndex('', '', -1);
+  },
+
+  _getCurrentResultContext(): mixed{
+    var nonEmptyResults = filterEmptyResults(this.state.resultsByService);
+    var serviceNames = Object.keys(nonEmptyResults);
+    var currentServiceIndex = serviceNames.indexOf(this.state.selectedService);
+    var currentService = nonEmptyResults[this.state.selectedService];
+
+    if (!currentService) {
+      return null;
+    }
+
+    var directoryNames = Object.keys(currentService);
+    var currentDirectoryIndex = directoryNames.indexOf(this.state.selectedDirectory);
+    var currentDirectory = currentService[this.state.selectedDirectory];
+
+    if (!currentDirectory || !currentDirectory.items) {
+      return null;
+    }
+
+    return {
+      nonEmptyResults,
+      serviceNames,
+      currentServiceIndex,
+      currentService,
+      directoryNames,
+      currentDirectoryIndex,
+      currentDirectory,
+    };
+  },
+
   moveSelectionDown() {
-    var flatResults = flattenResults(this.state.resultsByService);
-    if (this.state.selectedIndex < flatResults.length - 1) {
-      this.setState({selectedIndex: this.state.selectedIndex + 1});
-    } else {
+    var context = this._getCurrentResultContext();
+    if (!context) {
       this.moveSelectionToTop();
+      return;
+    }
+
+    if (this.state.selectedItemIndex < context.currentDirectory.items.length - 1) {
+      // only bump the index if remaining in current directory
+      this.setSelectedIndex(
+        this.state.selectedService,
+        this.state.selectedDirectory,
+        this.state.selectedItemIndex + 1
+      );
+    } else {
+      // otherwise go to next directory...
+      if (context.currentDirectoryIndex < context.directoryNames.length - 1) {
+        this.setSelectedIndex(
+          this.state.selectedService,
+          context.directoryNames[context.currentDirectoryIndex + 1],
+          0
+        );
+      } else {
+        // ...or the next service...
+        if (context.currentServiceIndex < context.serviceNames.length - 1) {
+          var newServiceName = context.serviceNames[context.currentServiceIndex + 1];
+          var newDirectoryName = Object.keys(context.nonEmptyResults[newServiceName]).shift();
+          this.setSelectedIndex(newServiceName, newDirectoryName, 0);
+        } else {
+          // ...or wrap around to the very top
+          this.moveSelectionToTop();
+        }
+      }
     }
   },
 
   moveSelectionUp() {
-    if (this.state.selectedIndex > 0) {
-      this.setState({selectedIndex: this.state.selectedIndex - 1});
-    } else {
+    var context = this._getCurrentResultContext();
+    if (!context) {
       this.moveSelectionToBottom();
+      return;
+    }
+
+    if (this.state.selectedItemIndex > 0) {
+      // only decrease the index if remaining in current directory
+      this.setSelectedIndex(
+        this.state.selectedService,
+        this.state.selectedDirectory,
+        this.state.selectedItemIndex - 1
+      );
+    } else {
+      // otherwise, go to the previous directory...
+      if (context.currentDirectoryIndex > 0) {
+        this.setSelectedIndex(
+          this.state.selectedService,
+          context.directoryNames[context.currentDirectoryIndex - 1],
+          context.currentService[context.directoryNames[context.currentDirectoryIndex - 1]].items.length - 1
+        );
+      } else {
+        // ...or the previous service...
+        if (context.currentServiceIndex > 0) {
+          var newServiceName = context.serviceNames[context.currentServiceIndex - 1];
+          var newDirectoryName = Object.keys(context.nonEmptyResults[newServiceName]).pop();
+          this.setSelectedIndex(
+            newServiceName,
+            newDirectoryName,
+            context.nonEmptyResults[newServiceName][newDirectoryName].items.length - 1
+          );
+        } else {
+          // ...or wrap around to the very bottom
+          this.moveSelectionToBottom();
+        }
+      }
     }
   },
 
@@ -168,27 +268,75 @@ var QuickSelectionComponent = React.createClass({
     }
   },
 
-  moveSelectionToBottom() {
-    var flatResults = flattenResults(this.state.resultsByService);
-    this.setState({selectedIndex: Math.max(flatResults.length - 1, 0)});
+  moveSelectionToBottom(): void {
+    var bottom = this._getOuterResults(Array.prototype.pop);
+    if (!bottom) {
+      return;
+    }
+    this.setSelectedIndex(bottom.serviceName, bottom.directoryName, bottom.results.length - 1);
   },
 
-  moveSelectionToTop() {
-    this.setState({selectedIndex: 0});
+  moveSelectionToTop(): void {
+    var top = this._getOuterResults(Array.prototype.shift);
+    if (!top) {
+      return;
+    }
+    this.setSelectedIndex(top.serviceName, top.directoryName, 0);
+  },
+
+  _getOuterResults(arrayOperation: Function): void {
+    var nonEmptyResults = filterEmptyResults(this.state.resultsByService);
+    var serviceName = arrayOperation.call(Object.keys(nonEmptyResults));
+    if (!serviceName) {
+      return null;
+    }
+    var service = nonEmptyResults[serviceName];
+    var directoryName = arrayOperation.call(Object.keys(service));
+    return {
+      serviceName,
+      directoryName,
+      results: nonEmptyResults[serviceName][directoryName].items,
+    };
+  },
+
+  getSelectedItem() {
+    return this.getItemAtIndex(
+      this.state.selectedService,
+      this.state.selectedDirectory,
+      this.state.selectedItemIndex
+    );
+  },
+
+  getItemAtIndex(serviceName, directory, itemIndex) {
+    if (
+      itemIndex === -1 ||
+      !this.state.resultsByService[serviceName] ||
+      !this.state.resultsByService[serviceName][directory] ||
+      !this.state.resultsByService[serviceName][directory].items[itemIndex]
+    ) {
+      return null;
+    }
+    return this.state.resultsByService[serviceName][directory].items[itemIndex];
   },
 
   componentForItem(item: any): ReactElement {
     return this.getProvider().getComponentForItem(item);
   },
 
-  getSelectedIndex(): number {
-    return this.state.selectedIndex;
+  getSelectedIndex(): mixed {
+    return {
+      selectedDirectory: this.state.selectedDirectory,
+      selectedService: this.state.selectedService,
+      selectedItemIndex: this.state.selectedItemIndex,
+    };
   },
 
-  setSelectedIndex(index: number) {
+  setSelectedIndex(service: string, directory: string, itemIndex: number) {
     this.setState({
-      selectedIndex: index,
-    });
+      selectedService: service,
+      selectedDirectory: directory,
+      selectedItemIndex: itemIndex,
+    }, () => this._emitter.emit('selection-changed', this.getSelectedIndex()));
   },
 
   _setResult(serviceName, dirName, results) {
@@ -272,6 +420,7 @@ var QuickSelectionComponent = React.createClass({
 
   clear() {
     this.getInputTextEditor().model.setText('');
+    this.clearSelection();
   },
 
   focus() {
@@ -336,7 +485,11 @@ var QuickSelectionComponent = React.createClass({
           );
         }
         var itemComponents = resultsForDirectory.items.map((item, itemIndex) => {
-            var isSelected = itemsRendered === this.state.selectedIndex;
+            var isSelected = (
+              serviceName === this.state.selectedService &&
+              dirName === this.state.selectedDirectory &&
+              itemIndex === this.state.selectedItemIndex
+            );
             itemsRendered++;
             return (
               <li
@@ -347,7 +500,7 @@ var QuickSelectionComponent = React.createClass({
                 })}
                 key={serviceName + dirName + itemIndex}
                 onMouseDown={this.select}
-                onMouseEnter={this.setSelectedIndex.bind(this, itemsRendered - 1)}>
+                onMouseEnter={this.setSelectedIndex.bind(this, serviceName, dirName, itemIndex)}>
                 {this.componentForItem(item, serviceName)}
               </li>
             );
