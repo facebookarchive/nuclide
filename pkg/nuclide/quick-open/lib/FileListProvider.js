@@ -34,29 +34,13 @@ function getLogger() {
 }
 class FileListProvider extends QuickSelectionProvider {
 
-  // Returns the currently opened tabs, ordered from most recently opened to least recently opened.
-  _getOpenTabs(): Array<string> {
-    return atom.workspace.getTextEditors()
-                         .sort((a,b) => b.lastOpened - a.lastOpened)
-                         .map((editor) => editor.getPath());
-  }
-
   getPromptText() {
     return 'Fuzzy File Name Search';
   }
 
   async executeQuery(query: string): GroupedResultPromise {
     if (query.length === 0) {
-      // On no query, return the list of tabs, minus the open tab.
-      return {
-        workspace: {
-          openfiles: Promise.resolve({
-            results: this._getOpenTabs().slice(1).map(
-              (file) => {return {path: file, matchIndexes: []}}
-            ),
-          })
-        }
-      }
+      return {};
     }
     var queries = atom.project.getDirectories().map(async (directory) => {
       var directoryPath = directory.getPath();

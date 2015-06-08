@@ -63,6 +63,9 @@ class Activation {
       }),
       atom.commands.add('atom-workspace', 'nuclide-quick-open:toggle-biggrep-search', () => {
         this.toggleProvider('BigGrepListProvider');
+      }),
+      atom.commands.add('atom-workspace', 'nuclide-quick-open:toggle-openfilename-search', () => {
+        this.toggleProvider('OpenFileListProvider');
       })
     );
   }

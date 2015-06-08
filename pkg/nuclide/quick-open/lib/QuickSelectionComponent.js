@@ -51,7 +51,12 @@ var RENDERABLE_TABS = [
    providerName: 'FileListProvider',
    title: 'Filenames',
    action: 'nuclide-quick-open:toggle-quick-open',
-  }
+  },
+  {
+   providerName: 'OpenFileListProvider',
+   title: 'Open Files',
+   action: 'nuclide-quick-open:toggle-openfilename-search',
+  },
 ];
 
 var DEFAULT_TAB = RENDERABLE_TABS[0];

@@ -12,7 +12,8 @@
     "atom-workspace": [
       "nuclide-quick-open:toggle-quick-open",
       "nuclide-quick-open:toggle-symbol-search",
-      "nuclide-quick-open:toggle-biggrep-search"
+      "nuclide-quick-open:toggle-biggrep-search",
+      "nuclide-quick-open:toggle-openfilename-search"
     ]
   },
   "engines": {
