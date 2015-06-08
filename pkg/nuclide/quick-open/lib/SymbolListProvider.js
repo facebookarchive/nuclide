@@ -21,8 +21,47 @@ var React = require('react-for-atom');
 var QuickSelectionProvider = require('./QuickSelectionProvider');
 
 var assign = Object.assign || require('object-assign');
+var cx = require('react-classset');
 
-const HACK_SEARCH_PROVIDER = 'hack';
+var HACK_SEARCH_PROVIDER = 'hack';
+
+var ICONS = {
+  'interface': 'icon-puzzle',
+  'function': 'icon-zap',
+  'method': 'icon-zap',
+  'typedef': 'icon-tag',
+  'class': 'icon-code',
+  'abstract class': 'icon-code',
+  'constant': 'icon-quote',
+  'trait': 'icon-checklist',
+  'enum': 'icon-file-binary',
+  'default': 'no-icon',
+  'unknown': 'icon-squirrel',
+}
+
+function bestIconForItem(item) {
+  if (!item.additionalInfo) {
+    return ICONS.default;
+  }
+  // look for exact match
+  if (ICONS[item.additionalInfo]) {
+    return ICONS[item.additionalInfo];
+  };
+  // look for presence match, e.g. in 'static method in FooBarClass'
+  for (var keyword in ICONS) {
+    if (item.additionalInfo.indexOf(keyword) !== -1) {
+      return ICONS[keyword];
+    }
+  }
+  return ICONS.unknown;
+}
+
+function getLogger() {
+  if (!logger) {
+    logger = require('nuclide-logging').getLogger();
+  }
+  return logger;
+}
 
 class SymbolListProvider extends QuickSelectionProvider {
   getPromptText() {
@@ -62,14 +101,16 @@ class SymbolListProvider extends QuickSelectionProvider {
           }
           searchRequests[provider.name] = request;
         });
-        return {[basename]: searchRequests};
+        var queries = {};
+        queries[basename] = searchRequests;
+        return queries;
       });
 
       var outputs = [];
       try {
         outputs = await Promise.all(queries);
       } catch(e) {
-        this.getLogger().error(e);
+        getLogger().error(e);
       }
       return assign.apply(null, [{}].concat(outputs));
     }
@@ -78,24 +119,18 @@ class SymbolListProvider extends QuickSelectionProvider {
   // Returns a component with the name of the symbol on top, and the file's name on the bottom.
   // Styling based on https://github.com/atom/fuzzy-finder/blob/master/lib/fuzzy-finder-view.coffee
   getComponentForItem(item: FileResult): ReactElement {
-   var filePath = item.path;
-   var filename = pathUtil.basename(filePath);
-   var name = item.name;
+    var filePath = item.path;
+    var filename = pathUtil.basename(filePath);
+    var name = item.name;
 
-   // TODO(mikeo): add new icons based on the type of symbol
-   var nameClasses = ['primary-line', 'file', 'icon', 'icon-file-text'].join(' ');
-   var fileClasses = ['secondary-line', 'path', 'no-icon'].join(' ');
-
-   return (
-     <div className={'two-lines'}>
-       <div className={nameClasses}>{name}</div>
-       <div className={fileClasses}>{filename}</div>
-     </div>
-   );
-  }
-
-  getLogger() {
-   return logger || require('nuclide-logging').getLogger();
+    var icon = bestIconForItem(item);
+    var symbolClasses = cx('file', 'icon', icon);
+    return (
+      <div title={item.additionalInfo || ''}>
+        <span className={symbolClasses}><code>{name}</code></span>
+        <span className="omnisearch-symbol-result-filename">{filename}</span>
+      </div>
+    );
   }
 }
 
