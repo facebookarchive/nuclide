@@ -12,30 +12,6 @@
 var fs = require('fs-plus');
 var path = require('path');
 
-var CODE_EXTENSIONS = {
-  '.coffee': true,
-  '.cpp': true,
-  '.css': true,
-  '.go': true,
-  '.h': true,
-  '.hh': true,
-  '.hpp': true,
-  '.html': true,
-  '.java': true,
-  '.js': true,
-  '.json': true,
-  '.less': true,
-  '.m': true,
-  '.mm': true,
-  '.php': true,
-  '.py': true,
-  '.rb': true,
-  '.sh': true,
-  '.swift': true,
-  '.xml': true,
-  '.yaml': true,
-};
-
 function fileTypeClass(filename: string): string {
   var typeClass;
   var ext = path.extname(filename);
@@ -50,8 +26,6 @@ function fileTypeClass(filename: string): string {
     typeClass = 'icon-file-pdf';
   } else if (fs.isBinaryExtension(ext)) {
     typeClass = 'icon-file-binary';
-  } else if (CODE_EXTENSIONS.hasOwnProperty(ext)) {
-    typeClass = 'icon-file-code';
   } else {
     typeClass = 'icon-file-text';
   }

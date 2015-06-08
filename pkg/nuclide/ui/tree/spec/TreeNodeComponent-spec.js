@@ -20,13 +20,16 @@ describe('TreeNodeComponent', () => {
   var props;
   var treeNodeComponent;
 
+  var iconClassName = 'icon-file-text';
+  var label = 'file.js';
+
   beforeEach(() => {
     props = {
       depth: 0,
       isExpanded: () => {},
       isSelected: false,
-      labelClassNameForNode: () => {},
-      node: new LazyTestTreeNode({label: ''}, null, false, null),
+      labelClassNameForNode: () => iconClassName,
+      node: new LazyTestTreeNode({label}, null, false, null),
       onClick: () => {},
       onClickArrow: () => {},
       onMouseDown: () => {},
@@ -38,6 +41,30 @@ describe('TreeNodeComponent', () => {
     treeNodeComponent = TestUtils.renderIntoDocument(
         <TreeNodeComponent {...props} />
       );
+  });
+
+  describe('rendering its icons', () => {
+
+    // The package expects icons to have a `data-name` attribute with the name
+    // of the file and for the list item in the tree to have the class names
+    // 'entry', 'file', and 'list-item'.
+    //
+    // See: https://atom.io/packages/file-icons
+    it('uses selectors necessary for the "file-icons" package', () => {
+      var domNode = React.findDOMNode(treeNodeComponent);
+
+      expect(domNode.classList.contains('entry')).toBe(true);
+      expect(domNode.classList.contains('file')).toBe(true);
+      expect(domNode.classList.contains('list-item')).toBe(true);
+
+      var iconComponent = TestUtils.findRenderedDOMComponentWithClass(
+        treeNodeComponent,
+        iconClassName
+      );
+
+      expect(React.findDOMNode(iconComponent).dataset.name).toEqual(label);
+    })
+
   });
 
   describe('clicking a node', () => {
