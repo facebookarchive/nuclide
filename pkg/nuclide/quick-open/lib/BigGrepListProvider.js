@@ -17,7 +17,6 @@ import type {
 var logger;
 var pathUtil = require('path');
 var React = require('react-for-atom');
-
 var QuickSelectionProvider = require('./QuickSelectionProvider');
 
 var assign = Object.assign || require('object-assign');
@@ -88,20 +87,16 @@ class BigGrepListProvider extends QuickSelectionProvider {
     }
   }
 
-  // Returns a component with the name of the symbol on top, and the file's name on the bottom.
-  // Styling based on https://github.com/atom/fuzzy-finder/blob/master/lib/fuzzy-finder-view.coffee
   getComponentForItem(item: FileResult): ReactElement {
     var filePath = item.path;
     var filename = pathUtil.basename(filePath);
+    var query = item.query || '';
     var context = item.context;
 
-    var nameClasses = ['primary-line', 'file', 'icon', 'icon-file-text'].join(' ');
-    var fileClasses = ['secondary-line', 'path', 'no-icon'].join(' ');
-
     return (
-      <div className={'two-lines'}>
-        <div className={nameClasses}>{filename}</div>
-        <div className={fileClasses}>{context}</div>
+      <div>
+        <span className="file icon icon-file-text">{filename}</span>
+        <span className="omnisearch-biggrep-result-context">{context}</span>
       </div>
     );
   }
