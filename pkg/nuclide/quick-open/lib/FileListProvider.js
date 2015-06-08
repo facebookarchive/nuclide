@@ -21,6 +21,7 @@ var React = require('react-for-atom');
 var path = require('path');
 var {getClient} = require('nuclide-client');
 var QuickSelectionProvider = require('./QuickSelectionProvider');
+var FileResultComponent = require('./FileResultComponent');
 
 var assign = Object.assign || require('object-assign');
 var logger;
@@ -80,48 +81,7 @@ class FileListProvider extends QuickSelectionProvider {
   // Returns a component with the filename on top, and the file's folder on the bottom.
   // Styling based on https://github.com/atom/fuzzy-finder/blob/master/lib/fuzzy-finder-view.coffee
   getComponentForItem(item: FileResult): ReactElement {
-    var filePath = item.path;
-
-    var filenameStart = filePath.lastIndexOf(path.sep);
-    var importantIndexes = [filenameStart, filePath.length].concat(item.matchIndexes)
-                                                           .sort((index1, index2) => index1 - index2);
-
-    var folderComponents = [];
-    var filenameComponents = [];
-
-    var last = -1;
-    // Split the path into it's path and directory, with matching characters pulled out and highlighted.
-    //
-    // When there's no matches, the ouptut is equivalent to just calling path.dirname/basename.
-    importantIndexes.forEach((index) => {
-      // If the index is after the filename start, push the new text elements
-      // into `filenameComponents`, otherwise push them into `folderComponents`.
-      var target = index <= filenameStart ? folderComponents : filenameComponents;
-
-      // If there was text before the `index`, push it onto `target` unstyled.
-      var previousString = filePath.slice(last + 1, index);
-      if (previousString.length !== 0) {
-        target.push(<span>{previousString}</span>);
-      }
-
-      // Don't put the '/' between the folder path and the filename on either line.
-      if (index !== filenameStart && index < filePath.length) {
-        var character = filePath.charAt(index);
-        target.push(<span className='nuclide-file-search-match'>{character}</span>);
-      }
-
-      last = index;
-    });
-
-    var filenameClasses = ['primary-line', 'file', 'icon', fileTypeClass(filePath)].join(' ');
-    var folderClasses = ['secondary-line', 'path', 'no-icon'].join(' ');
-
-    return (
-      <div className={'two-lines nuclide-file-search'}>
-        <div className={filenameClasses}>{filenameComponents}</div>
-        <div className={folderClasses}>{folderComponents}</div>
-      </div>
-    );
+    return FileResultComponent.getComponentForItem(item);
   };
 }
 

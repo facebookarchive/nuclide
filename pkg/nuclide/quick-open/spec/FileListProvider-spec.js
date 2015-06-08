@@ -44,15 +44,15 @@ describe('FileListProvider', () => {
       var containerDiv = document.createElement('div');
       React.render(output, containerDiv);
 
-      var pathHighlights = toArray(containerDiv.querySelectorAll('.path .nuclide-file-search-match')).map((node) => node.innerHTML);
-      var pathPlain = toArray(containerDiv.querySelectorAll('.path :not(.nuclide-file-search-match)')).map((node) => node.innerHTML);
+      var pathHighlights = toArray(containerDiv.querySelectorAll('.path .quick-open-file-search-match')).map((node) => node.innerHTML);
+      var pathPlain = toArray(containerDiv.querySelectorAll('.path :not(.quick-open-file-search-match)')).map((node) => node.innerHTML);
 
       // Expect the 's' at index 1 to be highlighted, and the text before/after to not be.
       expect(pathHighlights).toEqual(['s']);
       expect(pathPlain).toEqual(['/', 'ome']);
 
-      var fileHighlights = toArray(containerDiv.querySelectorAll('.file .nuclide-file-search-match')).map((node) => node.innerHTML);
-      var filePlain = toArray(containerDiv.querySelectorAll('.file :not(.nuclide-file-search-match)')).map((node) => node.innerHTML);
+      var fileHighlights = toArray(containerDiv.querySelectorAll('.file .quick-open-file-search-match')).map((node) => node.innerHTML);
+      var filePlain = toArray(containerDiv.querySelectorAll('.file :not(.quick-open-file-search-match)')).map((node) => node.innerHTML);
 
       // Expect the 'f' at index 6 to be highlighted, and the text after to not be.
       expect(fileHighlights).toEqual(['f']);
