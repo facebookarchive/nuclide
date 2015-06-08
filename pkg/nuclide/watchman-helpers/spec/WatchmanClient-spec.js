@@ -16,7 +16,7 @@ var WatchmanClient = require('../lib/WatchmanClient');
 
 var FILE_MODE = 33188;
 
-describe('WatchmanClient test suite', () => {
+xdescribe('WatchmanClient test suite', () => {
 
   var dirPath;
   var client;
