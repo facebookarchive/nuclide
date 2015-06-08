@@ -10,15 +10,20 @@
  */
 
 var {CompositeDisposable, TextEditor} = require('atom');
-var {RemoteConnection} = require('nuclide-remote-connection');
 var subscriptions: ?CompositeDisposable = null;
-var logger = null;
 
+var logger = null;
 function getLogger() {
-  return logger  || (logger = require('nuclide-logging').getLogger());
+  return logger || (logger = require('nuclide-logging').getLogger());
+}
+
+var RemoteConnection: ?RemoteConnection = null;
+function getRemoteConnection(): RemoteConnection {
+  return RemoteConnection || (RemoteConnection = require('nuclide-remote-connection').RemoteConnection);
 }
 
 async function createRemoteConnection(remoteProjectConfig: RemoteConnectionConfiguration): Promise<?RemoteConnection> {
+  var RemoteConnection = getRemoteConnection();
   var connection = new RemoteConnection(remoteProjectConfig);
   try {
     await connection.initialize();
@@ -97,7 +102,7 @@ module.exports = {
       // Subscribe opener before restoring the remote projects.
       subscriptions.add(atom.workspace.addOpener((uri = '') => {
         if (uri.startsWith('nuclide:')) {
-          var connection = RemoteConnection.getForUri(uri);
+          var connection = getRemoteConnection().getForUri(uri);
           // On Atom restart, it tries to open the uri path as a file tab because it's not a local directory.
           // We can't let that create a file with the initial working directory path.
           if (connection && uri !== connection.getUriForInitialWorkingDirectory()) {
@@ -117,7 +122,7 @@ module.exports = {
   serialize(): ?any {
     var remoteProjectsConfig = getRemoteRootDirectories()
         .map(directory => {
-          var connection = RemoteConnection.getForUri(directory.getPath());
+          var connection = getRemoteConnection().getForUri(directory.getPath());
           return connection && connection.getConfig();
         }).filter(config => !!config);
     return {
