@@ -9,6 +9,10 @@
  * the root directory of this source tree.
  */
 
+var SearchResultManager = require('./SearchResultManager');
+
+var DEFAULT_PROVIDER = 'FileListProvider';
+
 var _quickSelectionComponent = null;
 function getQuickSelectionComponentLazily() {
   if (_quickSelectionComponent === null) {
@@ -31,8 +35,7 @@ class Activation {
 
     var {CompositeDisposable} = require('atom');
     this._subscriptions = new CompositeDisposable();
-    var FileListProvider = require('./FileListProvider');
-    this._currentProvider = new FileListProvider();
+    this._currentProvider = SearchResultManager.getProvider(DEFAULT_PROVIDER);
     this._reactDiv = document.createElement('div');
     this._searchPanel = atom.workspace.addModalPanel({item: this._reactDiv, visible:false});
     this._searchComponent = this._render();
@@ -49,21 +52,17 @@ class Activation {
     });
 
     this._searchComponent.onCancellation(() => this.closeSearchPanel());
-    this._searchComponent.onTabChange(providerName => {
-      this.toggleProvider(require('./' + providerName));
-    });
+    this._searchComponent.onTabChange(providerName => this.toggleProvider(providerName));
+
     this._subscriptions.add(
       atom.commands.add('atom-workspace', 'nuclide-quick-open:toggle-quick-open', () => {
-        var FileListProvider = require('./FileListProvider');
-        this.toggleProvider(FileListProvider);
+        this.toggleProvider('FileListProvider');
       }),
       atom.commands.add('atom-workspace', 'nuclide-quick-open:toggle-symbol-search', () => {
-        var SymbolListProvider = require('./SymbolListProvider');
-        this.toggleProvider(SymbolListProvider);
+        this.toggleProvider('SymbolListProvider');
       }),
       atom.commands.add('atom-workspace', 'nuclide-quick-open:toggle-biggrep-search', () => {
-        var BigGrepListProvider = require('./BigGrepListProvider');
-        this.toggleProvider(BigGrepListProvider);
+        this.toggleProvider('BigGrepListProvider');
       })
     );
   }
@@ -83,7 +82,8 @@ class Activation {
     this._subscriptions.dispose();
   }
 
-  toggleProvider(provider) {
+  toggleProvider(providerName) {
+    var provider = SearchResultManager.getProvider(providerName);
     // "toggle" behavior
     if (
       this._searchPanel !== null &&
@@ -94,7 +94,7 @@ class Activation {
       return;
     }
 
-    this._currentProvider = new provider();
+    this._currentProvider = provider;
     if (this._searchComponent) {
       this._searchComponent = this._render();
     }
