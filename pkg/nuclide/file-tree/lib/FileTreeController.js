@@ -257,6 +257,12 @@ class FileTreeController {
             command: 'nuclide-file-tree:add-folder',
           },
         ],
+        // Show 'New' menu only when a single directory is selected so the
+        // target is obvious and can handle a "new" object.
+        shouldDisplayForSelectedNodes(nodes) {
+          return nodes.length === 1 &&
+            nodes.every(node => node.isContainer());
+        },
       },
     ]);
     this.addContextMenuItemGroup([
@@ -274,7 +280,7 @@ class FileTreeController {
         label: 'Remove Project Folder',
         command: 'nuclide-file-tree:remove-project-folder-selection',
         shouldDisplayForSelectedNodes(nodes) {
-          return nodes.length > 0 && nodes.every((node) => node.isRoot());
+          return nodes.length > 0 && nodes.every(node => node.isRoot());
         },
       },
     ]);
@@ -357,7 +363,9 @@ class FileTreeController {
     }
   }
 
-  addContextMenuItemGroup(menuItemDefinitions: Array<TreeMenuItemDefinition>): void {
+  addContextMenuItemGroup(
+    menuItemDefinitions: Array<TreeMenuItemDefinition>
+  ): void {
     var treeComponent = this.getTreeComponent();
     if (treeComponent) {
       treeComponent.addContextMenuItemGroup(menuItemDefinitions);
