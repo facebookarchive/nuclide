@@ -85,7 +85,6 @@ class Activation {
     this._previousFocus = document.activeElement;
     if (this._searchComponent && this._searchPanel) {
       this._searchPanel.show();
-      this._searchComponent.clear();
       this._searchComponent.focus();
     }
   }
@@ -93,7 +92,6 @@ class Activation {
   closeSearchPanel() {
     if (this._searchComponent && this._searchPanel) {
       this._searchPanel.hide();
-      this._searchComponent.clear();
       this._searchComponent.blur();
     }
 

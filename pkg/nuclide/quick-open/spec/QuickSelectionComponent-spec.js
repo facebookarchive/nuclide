@@ -14,9 +14,9 @@ var QuickSelectionComponent = require('../lib/QuickSelectionComponent');
 var QuickSelectionProvider = require('../lib/QuickSelectionProvider');
 
 class TestQuickSelectionProvider extends QuickSelectionProvider {
-  _items: Array<number>;
+  _items: {string: {string: Promise<FileResult>}};
 
-  constructor(items: Array<number>) {
+  constructor(items: {string: {string: Promise<FileResult>}}) {
     super();
     this._items = items;
   }
@@ -25,7 +25,7 @@ class TestQuickSelectionProvider extends QuickSelectionProvider {
     return 'test';
   }
 
-  executeQuery(query: String): Promise<Array<number>> {
+  executeQuery(query: String): Promise<{string: {string: Promise<FileResult>}}> {
     return Promise.resolve(this._items);
   }
 }
@@ -39,9 +39,12 @@ describe('QuickSelectionComponent', () => {
 
     componentRoot = document.createElement('div');
     document.body.appendChild(componentRoot);
+
+    var testProvider = new TestQuickSelectionProvider({});
     component = React.render(
-                  <QuickSelectionComponent provider={new TestQuickSelectionProvider([])} />,
-                  componentRoot);
+      <QuickSelectionComponent provider={testProvider} />,
+      componentRoot
+    );
   });
 
   afterEach(() => {
@@ -51,16 +54,16 @@ describe('QuickSelectionComponent', () => {
 
   // Updates the component to be using a TestQuickSelectionProvider that will serve @items, then
   // executes @callback after the component has completely updated to be using the new provider.
-  function withItemsSetTo(items: Array<number>, callback: (component: QuickSelectionComponent) => void) {
+  function withItemsSetTo(items: {string: {string: Promise<FileResult>}}, callback: (component: QuickSelectionComponent) => void) {
     waitsForPromise(() => new Promise((resolve, reject) => {
+
       component.onItemsChanged((newItems) => {
-        if (newItems === items) {
-          resolve(component);
-        }
+        resolve(component);
       });
-
-      component.setProvider(new TestQuickSelectionProvider(items));
-
+      component = React.render(
+        <QuickSelectionComponent provider={new TestQuickSelectionProvider(items)} />,
+        componentRoot
+      );
       window.advanceClock(250);
 
       component.clear();
@@ -71,7 +74,7 @@ describe('QuickSelectionComponent', () => {
 
   describe('Confirmation', () => {
     it('should return the selected item on selection', () => {
-      withItemsSetTo([1, 2, 3], () => {
+      withItemsSetTo({testDirectory: {testProvider: Promise.resolve({results: [1, 2, 3]})}}, () => {
         expect(component.getSelectedIndex()).toBe(0);
 
         waitsForPromise(() => new Promise((resolve, reject) => {
@@ -86,7 +89,7 @@ describe('QuickSelectionComponent', () => {
     });
 
     it('should select on the core:confirm command (enter)', () => {
-      withItemsSetTo([1, 2, 3], () => {
+      withItemsSetTo({testDirectory: {testProvider: Promise.resolve({results: [1, 2, 3]})}}, () => {
         var componentNode = component.getDOMNode();
 
         expect(component.getSelectedIndex()).toBe(0);
@@ -104,7 +107,7 @@ describe('QuickSelectionComponent', () => {
     });
 
     it('should cancel instead of selecting when there are no items', () => {
-      withItemsSetTo([], () => {
+      withItemsSetTo({}, () => {
         waitsForPromise(() => new Promise((resolve, reject) => {
             component.onCancellation((item) => {
               resolve();
@@ -118,7 +121,7 @@ describe('QuickSelectionComponent', () => {
 
   describe('Cancellation', () => {
     it('should cancel on the core:cancel command (esc)', () => {
-      withItemsSetTo([1, 2, 3], () => {
+      withItemsSetTo({testDirectory: {testProvider: Promise.resolve({results: [1, 2, 3]})}}, () => {
         var componentNode = component.getDOMNode();
 
         waitsForPromise(() => new Promise((resolve, reject) => {
@@ -134,7 +137,7 @@ describe('QuickSelectionComponent', () => {
 
   describe('Selection', () => {
     it('should move the selection and wrap at the top/bottom', () => {
-      withItemsSetTo([1, 2, 3], () => {
+      withItemsSetTo({testDirectory: {testProvider: Promise.resolve({results: [1, 2, 3]})}}, () => {
         expect(component.getSelectedIndex()).toBe(0);
 
         component.moveSelectionDown();
@@ -152,7 +155,7 @@ describe('QuickSelectionComponent', () => {
     });
 
     it('should move the selection appropriately on core:move* commands', () => {
-      withItemsSetTo([1, 2, 3], () => {
+      withItemsSetTo({testDirectory: {testProvider: Promise.resolve({results: [1, 2, 3]})}}, () => {
         var componentNode = component.getDOMNode();
 
         expect(component.getSelectedIndex()).toBe(0);
@@ -172,7 +175,7 @@ describe('QuickSelectionComponent', () => {
     });
 
     it('should reset the selection when the list contents change', () => {
-      withItemsSetTo([1, 2, 3], () => {
+      withItemsSetTo({testDirectory: {testProvider: Promise.resolve({results: [1, 2, 3]})}}, () => {
         expect(component.getSelectedIndex()).toBe(0);
 
         component.moveSelectionDown();
@@ -184,8 +187,8 @@ describe('QuickSelectionComponent', () => {
       });
     });
 
-    it('should keep the selection index at 0 when there are no items', () => {
-      withItemsSetTo([], () => {
+    it('should keep the selection index at -1 when there are no items', () => {
+      withItemsSetTo({}, () => {
         expect(component.getSelectedIndex()).toBe(0);
 
         component.moveSelectionDown();

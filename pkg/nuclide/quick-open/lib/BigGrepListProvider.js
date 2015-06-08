@@ -9,11 +9,18 @@
  * the root directory of this source tree.
  */
 
+import type {
+  FileResult,
+  GroupedResultPromise,
+} from './types';
+
 var logger;
 var pathUtil = require('path');
 var React = require('react-for-atom');
 
 var QuickSelectionProvider = require('./QuickSelectionProvider');
+
+var assign = Object.assign || require('object-assign');
 
 const BIGGREP_SEARCH_PROVIDER = 'biggrep';
 
@@ -29,31 +36,45 @@ class BigGrepListProvider extends QuickSelectionProvider {
     return 'Big Grep Search';
   }
 
-  async executeQuery(query: string): Promise<Array<FileResult>> {
+  async executeQuery(query: string): GroupedResultPromise {
     var {getClient} = require('nuclide-client');
     if (query.length === 0) {
       return [];
     } else {
       var url = require('url');
-      var {find} = require('nuclide-commons').array;
       var queries = atom.project.getDirectories().map(async (directory) => {
         var directoryPath = directory.getPath();
+        var basename = directory.getBaseName();
         var client = getClient(directoryPath);
 
         var {protocol, host, path: rootDirectory} = url.parse(directoryPath);
-        var providers = await client.getSearchProviders(rootDirectory);
-
-        if (!find(providers, (p) => p.name === BIGGREP_SEARCH_PROVIDER)) {
+        var allProviders = await client.getSearchProviders(rootDirectory);
+        var providers = allProviders.filter(p => p.name === BIGGREP_SEARCH_PROVIDER);
+        if (!providers.length) {
           return [];
         }
-        var {results} = await client.doSearchQuery(rootDirectory, BIGGREP_SEARCH_PROVIDER, query);
 
-        // If this is a remote file, prepend protocol://host to path.
-        if (protocol && host) {
-          results.forEach(r => r.path = `${protocol}//${host}${r.path}`);
-        }
-
-        return results;
+        var shouldPrependBasePath = !!(protocol && host);
+        var searchRequests = {};
+        providers.forEach(provider => {
+          var request = client.doSearchQuery(rootDirectory,  provider.name, query);
+          if (shouldPrependBasePath) {
+            request = request.then(
+              response => {
+                response.results.forEach(r => {r.path = `${protocol}//${host}${r.path}`;});
+                return response;
+              }
+            );
+          }
+          request = request.then(
+            response => {
+              response.results.forEach(r => {r.query = query;});
+              return response;
+            }
+          );
+          searchRequests[provider.name] = request;
+        });
+        return {[basename]: searchRequests};
       });
 
       var outputs = [];
@@ -63,8 +84,7 @@ class BigGrepListProvider extends QuickSelectionProvider {
         getLogger().error(e);
       }
 
-      // Flattens results.
-      return [].concat.apply([], outputs);
+      return assign.apply(null, [{}].concat(outputs));
     }
   }
 

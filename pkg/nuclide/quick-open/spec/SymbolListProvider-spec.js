@@ -25,36 +25,50 @@ describe('SymbolListProvider', () => {
 
     describe('local searching', () => {
       beforeEach(() => {
-        spyOn(atom.project, 'getDirectories').andReturn([{getPath: () => '/'}]);
+        spyOn(atom.project, 'getDirectories').andReturn([{
+          getPath: () => '/',
+          getBaseName: () => 'base',
+        }]);
       });
 
       it('returns local paths', () => {
         waitsForPromise(async () => {
           mockClient.getSearchProviders.andReturn(Promise.resolve([{name: 'hack'}]));
 
-          var results = await provider.executeQuery('asdf');
-
+          var queries = await provider.executeQuery('asdf');
           expect(mockClient.getSearchProviders).toHaveBeenCalledWith('/');
           expect(mockClient.doSearchQuery).toHaveBeenCalledWith('/', 'hack', 'asdf');
-          expect(results[0].path).toEqual('/some/path');
+          expect(Object.keys(queries)).toEqual(['base']);
+          expect(Object.keys(queries.base)).toEqual(['hack']);
+
+          var result = await queries.base.hack;
+
+          expect(result.results[0].path).toEqual('/some/path');
         });
       });
     });
 
     describe('remote searching', () => {
       beforeEach(() => {
-        spyOn(atom.project, 'getDirectories').andReturn([{getPath: () => 'nuclide://some.host:1234/some/remote/path'}]);
+        spyOn(atom.project, 'getDirectories').andReturn([{
+          getPath: () => 'nuclide://some.host:1234/some/remote/path',
+          getBaseName: () => 'path',
+        }]);
       });
 
       it('returns remote paths when doing remote search', () => {
         waitsForPromise(async () => {
           mockClient.getSearchProviders.andReturn(Promise.resolve([{name: 'hack'}]));
 
-          var results = await provider.executeQuery('asdf');
-
+          var queries = await provider.executeQuery('asdf');
           expect(mockClient.getSearchProviders).toHaveBeenCalledWith('/some/remote/path');
           expect(mockClient.doSearchQuery).toHaveBeenCalledWith('/some/remote/path', 'hack', 'asdf');
-          expect(results[0].path).toEqual('nuclide://some.host:1234/some/path');
+
+          expect(Object.keys(queries)).toEqual(['path']);
+          expect(Object.keys(queries.path)).toEqual(['hack']);
+
+          var result = await queries.path.hack;
+          expect(result.results[0].path).toEqual('nuclide://some.host:1234/some/path');
         });
       });
 
@@ -62,11 +76,10 @@ describe('SymbolListProvider', () => {
         waitsForPromise(async () => {
           mockClient.getSearchProviders.andReturn(Promise.resolve([]));
 
-          var results = await provider.executeQuery('asdf');
-
+          var queries = await provider.executeQuery('asdf');
           expect(mockClient.getSearchProviders).toHaveBeenCalledWith('/some/remote/path');
           expect(mockClient.doSearchQuery).not.toHaveBeenCalled();
-          expect(results.length).toEqual(0);
+          expect(queries).toEqual({});
         });
       });
     });

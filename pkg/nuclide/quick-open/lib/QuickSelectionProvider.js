@@ -9,6 +9,11 @@
  * the root directory of this source tree.
  */
 
+import type {
+  FileResult,
+  GroupedResultPromise,
+} from './types';
+
 var React = require('react-for-atom');
 
 /**
@@ -25,7 +30,7 @@ class QuickSelectionProvider {
   /**
    * Asynchronously executes a search based on @query.
    */
-  executeQuery(query: string): Promise<Array<any>> {
+  executeQuery(query: string): GroupedResultPromise {
     return Promise.reject('Not implemented');
   }
 
@@ -33,7 +38,7 @@ class QuickSelectionProvider {
    * Returns a ReactElement based on @item, which should be an
    * object returned from executeQuery, above.
    */
-  getComponentForItem(item: any): ReactElement {
+  getComponentForItem(item: FileResult): ReactElement {
     return <div>{item.toString()}</div>
   }
 

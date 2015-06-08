@@ -1,11 +1,36 @@
 @import "ui-variables";
 
-.file, .path {
-  .nuclide-file-search-match {
-    font-weight: bold;
-  }
+.nuclide-file-search-match {
+  color: @text-color-highlight;
+  font-weight: bold;
 }
 
 .quick-open-result-item {
   cursor: pointer;
+}
+
+.omnisearch-modal {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.omnisearch-results {
+  background: @app-background-color;
+  min-height: 20em;
+  overflow: hidden;
+  padding: 10px;
+}
+
+.omnisearch-pane {
+  flex-grow: 1;
+  -webkit-mask: linear-gradient(to left, fade(@app-background-color, 0),  @app-background-color 1em) no-repeat;
+}
+
+.omnisearch-preview {
+  align-items: center;
+  background-color: @background-color-highlight;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
 }
