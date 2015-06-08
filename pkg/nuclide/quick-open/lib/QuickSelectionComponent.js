@@ -477,11 +477,6 @@ var QuickSelectionComponent = React.createClass({
     return this.props.provider;
   },
 
-  setProvider(newProvider: QuickSelectionProvider) {
-    this.setProps({provider: newProvider});
-    this.clear();
-  },
-
   getInputTextEditor(): Element {
     return this.refs.queryInput.getDOMNode();
   },

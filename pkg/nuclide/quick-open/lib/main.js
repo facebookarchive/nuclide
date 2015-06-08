@@ -9,25 +9,33 @@
  * the root directory of this source tree.
  */
 
+var _quickSelectionComponent = null;
+function getQuickSelectionComponentLazily() {
+  if (_quickSelectionComponent === null) {
+    _quickSelectionComponent = require('./QuickSelectionComponent');;
+  }
+  return _quickSelectionComponent;
+}
+
+var _react = null;
+function getReactLazily() {
+  if (_react === null) {
+    _react = require('react-for-atom');
+  }
+  return _react;
+}
+
 class Activation {
   constructor(state: ?Object) {
     this._previousFocus = null;
-    this._currentProvider = null;
 
     var {CompositeDisposable} = require('atom');
     this._subscriptions = new CompositeDisposable();
-
-    var QuickSelectionComponent = require('./QuickSelectionComponent');
-
-    var reactDiv = document.createElement('div');
-    this._searchPanel = atom.workspace.addModalPanel({item: reactDiv, visible:false});
-
-    var React = require('react-for-atom');
-    this._searchComponent = React.render(
-      <QuickSelectionComponent/>,
-      reactDiv
-    );
-
+    var FileListProvider = require('./FileListProvider');
+    this._currentProvider = new FileListProvider();
+    this._reactDiv = document.createElement('div');
+    this._searchPanel = atom.workspace.addModalPanel({item: this._reactDiv, visible:false});
+    this._searchComponent = this._render();
     this._searchComponent.onSelection((selection) => {
       var options = {};
       if (selection.line) {
@@ -60,27 +68,37 @@ class Activation {
     );
   }
 
+  _render() {
+    var QuickSelectionComponent = getQuickSelectionComponentLazily();
+    var React = getReactLazily();
+    return React.render(
+      <QuickSelectionComponent
+        provider={this._currentProvider}
+      />,
+      this._reactDiv
+    );
+  }
+
   dispose() {
     this._subscriptions.dispose();
   }
 
   toggleProvider(provider) {
-    if (this._searchPanel !== null && this._searchPanel.isVisible()) {
-      if (provider === this._currentProvider) {
-        this.closeSearchPanel();
-      } else if (this._searchComponent) {
-        this._currentProvider = provider;
-        this._searchComponent.setProvider(new provider());
-      }
-    } else {
-      if (provider !== this._currentProvider) {
-        this._currentProvider = provider;
-        if (this._searchComponent) {
-          this._searchComponent.setProvider(new provider());
-        }
-      }
-      this.showSearchPanel();
+    // "toggle" behavior
+    if (
+      this._searchPanel !== null &&
+      this._searchPanel.isVisible() &&
+      provider === this._currentProvider
+    ) {
+      this.closeSearchPanel();
+      return;
     }
+
+    this._currentProvider = new provider();
+    if (this._searchComponent) {
+      this._searchComponent = this._render();
+    }
+    this.showSearchPanel();
   }
 
   showSearchPanel() {
