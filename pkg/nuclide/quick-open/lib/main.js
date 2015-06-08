@@ -41,7 +41,9 @@ class Activation {
     });
 
     this._searchComponent.onCancellation(() => this.closeSearchPanel());
-
+    this._searchComponent.onTabChange(providerName => {
+      this.toggleProvider(require('./' + providerName));
+    });
     this._subscriptions.add(
       atom.commands.add('atom-workspace', 'nuclide-quick-open:toggle-quick-open', () => {
         var FileListProvider = require('./FileListProvider');

@@ -18,10 +18,12 @@ var AtomInput = require('nuclide-ui-atom-input');
 var {CompositeDisposable, Disposable, Emitter} = require('atom');
 var QuickSelectionProvider = require('./QuickSelectionProvider');
 var {
+  array,
   debounce,
   object,
 } = require('nuclide-commons');
 var React = require('react-for-atom');
+var NuclideTabs = require('nuclide-ui-tabs');
 
 var {
   filterEmptyResults,
@@ -33,6 +35,27 @@ var {PropTypes} = React;
 var assign = Object.assign || require('object-assign');
 var cx = require('react-classset');
 
+// keep `action` in sync with keymap.
+var RENDERABLE_TABS = [
+  {
+   providerName: 'BigGrepListProvider',
+   title: 'BigGrep',
+   action: 'nuclide-quick-open:toggle-biggrep-search',
+  },
+  {
+   providerName: 'SymbolListProvider',
+   title: 'Symbols',
+   action: 'nuclide-quick-open:toggle-symbol-search',
+  },
+  {
+   providerName: 'FileListProvider',
+   title: 'Filenames',
+   action: 'nuclide-quick-open:toggle-quick-open',
+  }
+];
+
+var DEFAULT_TAB = RENDERABLE_TABS[0];
+
 var QuickSelectionComponent = React.createClass({
   _emitter: undefined,
   _subscriptions: undefined,
@@ -41,10 +64,51 @@ var QuickSelectionComponent = React.createClass({
     provider: PropTypes.instanceOf(QuickSelectionProvider).isRequired,
   },
 
+  statics: {
+    /**
+     * Determine what the applicable shortcut for a given action is within this component's context.
+     * For example, this will return different keybindings on windows vs linux.
+      *
+     * TODO replace with humanizeKeystroke from autocomplete-plus package,
+     * once it becomes a standalone package:
+     * https://github.com/atom/underscore-plus/blob/master/src/underscore-plus.coffee#L179
+     */
+    _findKeybindingForAction(action: string): string {
+      var matchingKeyBindings = atom.keymaps.findKeyBindings({
+        command: action,
+        target: this._modalNode,
+      });
+      var keystroke = (matchingKeyBindings.length && matchingKeyBindings[0].keystrokes) || '';
+      return (
+        keystroke
+          .replace(/cmd/gi, '⌘')
+          .replace(/alt/gi, '⌥')
+          .replace(/[\+-]/g, '')
+          .toUpperCase()
+      );
+    },
+  },
+
   componentWillReceiveProps(nextProps: any) {
     if (nextProps.provider !== this.props.provider) {
       if (nextProps.provider) {
         this.refs.queryInput.getTextEditor().setPlaceholderText(nextProps.provider.getPromptText());
+        var newResults = {};
+        this.setState(
+          {
+            activeTab:
+              (array.find(
+                RENDERABLE_TABS,
+                tab => tab.providerName === nextProps.provider.constructor.name
+              ) || DEFAULT_TAB)
+              .title,
+            resultsByService: newResults,
+           },
+           () => {
+             this.setQuery(this.refs.queryInput.getText());
+             this._emitter.emit('items-changed', newResults);
+           }
+        );
       }
     }
   },
@@ -80,34 +144,34 @@ var QuickSelectionComponent = React.createClass({
       selectedDirectory: '',
       selectedService: '',
       selectedItemIndex: -1,
+      activeTab: DEFAULT_TAB.title,
     };
   },
 
   componentDidMount() {
     this._emitter = new Emitter();
     this._subscriptions = new CompositeDisposable();
-
-    var node = this.getDOMNode();
+    this._modalNode = this.getDOMNode();
     this._subscriptions.add(
-      atom.commands.add(node, 'core:move-up', this.moveSelectionUp),
-      atom.commands.add(node, 'core:move-down', this.moveSelectionDown),
-      atom.commands.add(node, 'core:move-to-top', this.moveSelectionToTop),
-      atom.commands.add(node, 'core:move-to-bottom', this.moveSelectionToBottom),
-      atom.commands.add(node, 'core:confirm', this.select),
-      atom.commands.add(node, 'core:cancel', this.cancel)
+      atom.commands.add(this._modalNode, 'core:move-up', this.moveSelectionUp),
+      atom.commands.add(this._modalNode, 'core:move-down', this.moveSelectionDown),
+      atom.commands.add(this._modalNode, 'core:move-to-top', this.moveSelectionToTop),
+      atom.commands.add(this._modalNode, 'core:move-to-bottom', this.moveSelectionToBottom),
+      atom.commands.add(this._modalNode, 'core:confirm', this.select),
+      atom.commands.add(this._modalNode, 'core:cancel', this.cancel)
     );
 
     var inputTextEditor = this.getInputTextEditor();
     inputTextEditor.addEventListener('blur', (event) => {
       if (event.relatedTarget !== null) {
-        this.cancel();
+        // cancel can be interrupted by user interaction with the modal
+        this._scheduledCancel = setTimeout(this.cancel, 100);
       }
     });
 
     var debounced = debounce(() => this.setQuery(inputTextEditor.model.getText()), 200);
 
     inputTextEditor.model.onDidChange(debounced);
-
     this.clear();
   },
 
@@ -130,6 +194,10 @@ var QuickSelectionComponent = React.createClass({
 
   onItemsChanged(callback: (newItems: GroupedResult) => void): Disposable {
     return this._emitter.on('items-changed', callback);
+  },
+
+  onTabChange(callback: (providerName: string) => void): Disposable {
+    return this._emitter.on('active-provider-changed', callback);
   },
 
   select() {
@@ -435,6 +503,45 @@ var QuickSelectionComponent = React.createClass({
     this.getInputTextEditor().blur();
   },
 
+  _handleTabChange(newTabName: string) {
+    clearTimeout(this._scheduledCancel);
+    if (newTabName !== this.state.activeTab) {
+      this.setState({
+        activeTab: newTabName,
+      }, () => {
+        var providerName = array.find(RENDERABLE_TABS, tab => tab.title === newTabName).providerName;
+        this._emitter.emit('active-provider-changed', providerName);
+      });
+    }
+  },
+
+  _renderTabs(): ReactElement {
+    var tabs = RENDERABLE_TABS.map(tab => {
+      var keyBinding = null;
+      if (tab.action) {
+        keyBinding = (
+          <kbd className="key-binding">
+            {QuickSelectionComponent._findKeybindingForAction(tab.action)}
+          </kbd>
+        );
+      }
+      return {
+        name: tab.title,
+        tabContent: <span>{tab.title}{keyBinding}</span>
+      };
+    });
+    return (
+      <div className="omnisearch-tabs">
+        <NuclideTabs
+          tabs={tabs}
+          activeTabName={this.state.activeTab}
+          onActiveTabChange={this._handleTabChange}
+          triggeringEvent="onMouseEnter"
+        />
+      </div>
+    );
+  },
+
   _renderEmptyMessage(message: string): ReactElement {
     return (
       <ul className='background-message centered'>
@@ -550,6 +657,7 @@ var QuickSelectionComponent = React.createClass({
     return (
       <div className="select-list omnisearch-modal" ref="modal">
         <AtomInput ref="queryInput" placeholderText={promptText} />
+        {this._renderTabs()}
         <div className="omnisearch-results">
           {noResultsMessage}
           <div className="omnisearch-pane">

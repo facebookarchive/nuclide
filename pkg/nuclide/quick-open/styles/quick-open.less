@@ -15,6 +15,12 @@
   overflow: hidden;
 }
 
+.omnisearch-tabs {
+  align-items: center;
+  display: flex;
+  flex-flow: row wrap;
+}
+
 .omnisearch-results {
   background: @app-background-color;
   min-height: 20em;
@@ -33,4 +39,19 @@
   display: flex;
   flex-direction: row;
   justify-content: center;
+}
+
+.omnisearch-tabs {
+  margin-top: 8px;
+}
+
+.omnisearch-tabs .key-binding {
+  letter-spacing: 0;
+  font-size: 0.9em;
+  opacity: 0.5;
+  transition: opacity 0.2s ease-out;
+}
+
+.omnisearch-tabs .key-binding:hover {
+  opacity: 1;
 }
