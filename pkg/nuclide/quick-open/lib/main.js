@@ -86,6 +86,7 @@ class Activation {
     if (this._searchComponent && this._searchPanel) {
       this._searchPanel.show();
       this._searchComponent.focus();
+      this._searchComponent.selectInput();
     }
   }
 

@@ -427,6 +427,10 @@ var QuickSelectionComponent = React.createClass({
     this.getInputTextEditor().focus();
   },
 
+  selectInput() {
+    this.refs.queryInput.getTextEditor().selectAll();
+  },
+
   blur() {
     this.getInputTextEditor().blur();
   },
