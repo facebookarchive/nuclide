@@ -51,6 +51,10 @@ module.exports = {
     return require('./strings');
   },
 
+  get paths() {
+    return require('./paths');
+  },
+
   get PromiseQueue() {
     return require('./PromiseQueue');
   },

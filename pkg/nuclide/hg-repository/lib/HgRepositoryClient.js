@@ -340,7 +340,8 @@ class HgRepositoryClient {
     if (!directoryPath) {
       return status;
     }
-    var dirPath = this._ensureTrailingSeparator(directoryPath);
+    var {ensureTrailingSeparator} = require('nuclide-commons').paths;
+    var dirPath = ensureTrailingSeparator(directoryPath);
     Object.keys(this._hgStatusCache).some((filePath) => {
       if (!filePath.startsWith(dirPath)) {
         return false;
@@ -353,13 +354,6 @@ class HgRepositoryClient {
       return false;
     });
     return status;
-  }
-
-  /**
-   * @return The path with a trailing separator, if it doesn't already have one.
-   */
-  _ensureTrailingSeparator(filePath: string): string {
-    return path.normalize(filePath + path.sep);
   }
 
   // We don't want to do any synchronous 'hg status' calls. Just use cached values.
