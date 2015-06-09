@@ -10,7 +10,7 @@ import os
 import os.path
 import shutil
 import subprocess
-from json_helpers import json_load
+from json_helpers import json_load, json_loads
 
 DEPENDENCIES_KEYS = [
     'dependencies',
@@ -23,9 +23,19 @@ class Npm (object):
     '''Abstraction around the npm executable.'''
     def __init__(self, verbose=False):
         self._verbose = verbose
+        self._info_by_root = {}
 
-    def info(self, package_root):
-        return self._execute(['npm', 'info'], cwd=package_root)
+    def info(self, package_root, force=False):
+        # Memoize the info accessor by default unless forced to refetch.
+        if force or not package_root in self._info_by_root:
+            try:
+                info = json_loads(self._execute(['npm', 'info', '--json'], cwd=package_root))
+            except subprocess.CalledProcessError:
+                # For example, if the package has not been published yet.
+                logging.info('npm info failed for %s. It may not yet be published.', package_root)
+                info = {}
+            self._info_by_root[package_root] = info
+        return self._info_by_root[package_root]
 
     def install(self, package_root, clean=False, local_packages=None, include_dev_dependencies=True):
         if clean:

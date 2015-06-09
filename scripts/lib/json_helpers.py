@@ -31,3 +31,7 @@ def json_load(path):
             return json.load(f)
     except ValueError as e:
         raise ChainedError('Error loading JSON from file: %s' % path, e)
+
+
+def json_loads(str):
+    return json.loads(str)
