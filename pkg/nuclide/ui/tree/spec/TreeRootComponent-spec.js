@@ -421,66 +421,70 @@ describe('TreeRootComponent', () => {
     });
   });
 
-  describe('clicking a node', () => {
-    it('toggles whether the node is selected', () => {
-      waitsForPromise(async () => {
-        var component = renderComponent(props);
-        await component.setRoots([nodes['G']]);
+  describe('clicking', () => {
+    describe('clicking an arrow', () => {
+      it('toggles whether the node is collapsed', () => {
+        waitsForPromise(async () => {
+          var component = renderComponent(props);
+          await component.setRoots([nodes['G']]);
 
-        expect(component.getSelectedNodes()).toEqual([]);
+          expect(component.getExpandedNodes()).toEqual([nodes['G']]);
 
-        var nodeComponents = getNodeComponents(component);
-        TestUtils.Simulate.click(React.findDOMNode(nodeComponents['G']));
+          var nodeComponents = getNodeComponents(component);
+          TestUtils.Simulate.click(React.findDOMNode(nodeComponents['G'].refs['arrow']));
 
-        expect(component.getSelectedNodes()).toEqual([nodes['G']]);
+          expect(component.getExpandedNodes()).toEqual([]);
+        });
+      });
+
+      it('does not toggle whether node is selected', () => {
+        waitsForPromise(async () => {
+          var component = renderComponent(props);
+          await component.setRoots([nodes['G']]);
+
+          expect(component.getSelectedNodes()).toEqual([]);
+
+          var nodeComponents = getNodeComponents(component);
+          TestUtils.Simulate.click(React.findDOMNode(nodeComponents['G'].refs['arrow']));
+
+          expect(component.getSelectedNodes()).toEqual([]);
+        });
       });
     });
 
-    it('toggles whether the node is collapsed if click is on the arrow', () => {
-      waitsForPromise(async () => {
-        var component = renderComponent(props);
-        await component.setRoots([nodes['G']]);
+    describe('clicking an unselected node', () => {
+      it('toggles whether the node is selected', () => {
+        waitsForPromise(async () => {
+          var component = renderComponent(props);
+          await component.setRoots([nodes['G']]);
 
-        expect(component.getExpandedNodes()).toEqual([nodes['G']]);
+          expect(component.getSelectedNodes()).toEqual([]);
 
-        var nodeComponents = getNodeComponents(component);
-        TestUtils.Simulate.click(React.findDOMNode(nodeComponents['G'].refs['arrow']));
+          var nodeComponents = getNodeComponents(component);
+          TestUtils.Simulate.click(React.findDOMNode(nodeComponents['G']));
 
-        expect(component.getExpandedNodes()).toEqual([]);
+          expect(component.getSelectedNodes()).toEqual([nodes['G']]);
+        });
       });
-    });
 
-    it('selects node if right clicking or ctrl clicking for context menu', () => {
-      waitsForPromise(async () => {
-        var component = renderComponent(props);
-        await component.setRoots([nodes['G']]);
+      it('selects node if right clicking or ctrl clicking for context menu', () => {
+        waitsForPromise(async () => {
+          var component = renderComponent(props);
+          await component.setRoots([nodes['G']]);
 
-        expect(component.getSelectedNodes()).toEqual([]);
+          expect(component.getSelectedNodes()).toEqual([]);
 
-        var nodeComponents = getNodeComponents(component);
+          var nodeComponents = getNodeComponents(component);
 
-        TestUtils.Simulate.mouseDown(React.findDOMNode(nodeComponents['G']), {button: 2});
-        expect(component.getSelectedNodes()).toEqual([nodeComponents['G'].props.node]);
+          TestUtils.Simulate.mouseDown(React.findDOMNode(nodeComponents['G']), {button: 2});
+          expect(component.getSelectedNodes()).toEqual([nodeComponents['G'].props.node]);
 
-        TestUtils.Simulate.mouseDown(React.findDOMNode(nodeComponents['H']), {button: 0, ctrlKey: true});
-        expect(component.getSelectedNodes()).toEqual([nodeComponents['H'].props.node]);
+          TestUtils.Simulate.mouseDown(React.findDOMNode(nodeComponents['H']), {button: 0, ctrlKey: true});
+          expect(component.getSelectedNodes()).toEqual([nodeComponents['H'].props.node]);
 
-        TestUtils.Simulate.mouseDown(React.findDOMNode(nodeComponents['I']), {button: 0});
-        expect(component.getSelectedNodes()).toEqual([nodeComponents['H'].props.node]);
-      });
-    });
-
-    it('does not toggle whether node is selected if click is on the arrow', () => {
-      waitsForPromise(async () => {
-        var component = renderComponent(props);
-        await component.setRoots([nodes['G']]);
-
-        expect(component.getSelectedNodes()).toEqual([]);
-
-        var nodeComponents = getNodeComponents(component);
-        TestUtils.Simulate.click(React.findDOMNode(nodeComponents['G'].refs['arrow']));
-
-        expect(component.getSelectedNodes()).toEqual([]);
+          TestUtils.Simulate.mouseDown(React.findDOMNode(nodeComponents['I']), {button: 0});
+          expect(component.getSelectedNodes()).toEqual([nodeComponents['H'].props.node]);
+        });
       });
     });
   });
