@@ -707,7 +707,11 @@ class FileTreeController {
           await new Promise((resolve, reject) => {
             fs.move(
                 entry.getPath(),
-                path.join(rootDirectory.getPath(), relativeFilePath),
+                // Use `resolve` to strip trailing slashes because renaming a
+                // file to a name with a trailing slash is an error.
+                path.resolve(
+                  path.join(rootDirectory.getPath(), relativeFilePath)
+                ),
                 error => error ? reject(error) : resolve());
           });
         } else {
