@@ -693,8 +693,6 @@ class FileTreeController {
           // TODO(jjiaa): This special-case can be eliminated once `delete()`
           // is added to `Directory` and `File`.
           await new Promise((resolve, reject) => {
-            console.log('moving', entry.getPath());
-            console.log('to', path.join(rootDirectory.getPath(), relativeFilePath));
             fs.move(
                 entry.getPath(),
                 path.join(rootDirectory.getPath(), relativeFilePath),
