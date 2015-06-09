@@ -48,7 +48,7 @@ class HgService {
    * @param options An Object with the following fields:
    *   * `hgStatusOption`: an HgStatusOption
    */
-  fetchStatuses(filePaths: Array<NuclideUri>, options: ?any): Promise<{[key: string]: StatusCodeId}> {
+  fetchStatuses(filePaths: Array<NuclideUri>, options: ?any): Promise<{[key: NuclideUri]: StatusCodeId}> {
     return Promise.reject(new Error('not implemented'));
   }
 
@@ -58,7 +58,7 @@ class HgService {
    * .hgignore files. (See ::onHgIgnoreFileDidChange.)
    * @return A Disposable on which you can call `dispose` to remove the callback.
    */
-  onFilesDidChange(callback: () => void): Disposable {
+  onFilesDidChange(callback: (changedPaths: Array<NuclideUri>) => void): Disposable {
     throw new Error('not implemented');
   }
 
