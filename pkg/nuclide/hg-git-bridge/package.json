@@ -1,0 +1,21 @@
+{
+  "name": "nuclide-hg-git-bridge",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "Helpers that account for the differences between Atom's GitRepository and Nuclide's HgRepositoryClient",
+  "nuclide": {
+    "packageType": "Node",
+    "testRunner": "apm"
+  },
+  "dependencies": {
+    "nuclide-node-transpiler": "0.0.0"
+  },
+  "devDependencies": {
+    "nuclide-commons": "0.0.0",
+    "temp": "0.8.1"
+  },
+  "scripts": {
+    "test": "jasmine-node-transpiled spec"
+  }
+}
