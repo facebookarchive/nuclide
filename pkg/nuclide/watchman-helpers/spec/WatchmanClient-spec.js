@@ -16,7 +16,7 @@ var WatchmanClient = require('../lib/WatchmanClient');
 
 var FILE_MODE = 33188;
 
-xdescribe('WatchmanClient test suite', () => {
+describe('WatchmanClient test suite', () => {
 
   var dirPath;
   var client;
@@ -44,11 +44,12 @@ xdescribe('WatchmanClient test suite', () => {
         waits(1010);
         runs(() => fs.writeFileSync(filePath, 'def'));
         waitsFor(() => changeHandler.callCount > 0);
-        runs(() => {
+        runs(async () => {
           expect(changeHandler.callCount).toBe(1);
           expect(changeHandler.argsForCall[0][0]).toEqual([{name: 'test.txt', mode: FILE_MODE, new: false, exists: true}]);
           // End the socket client to watchman to trigger restore subscriptions.
-          client._client.end();
+          var internalClient = await client._clientPromise;
+          internalClient.end();
         });
         waits(1000); // Wait for WatchmanClient to restore subscriptions.
         runs(() => fs.unlinkSync(filePath));

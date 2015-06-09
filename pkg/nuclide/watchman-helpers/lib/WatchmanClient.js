@@ -12,6 +12,7 @@
 var watchman = require('fb-watchman');
 var WatchmanSubscription = require('./WatchmanSubscription');
 var logger = require('nuclide-logging').getLogger();
+var {getWatchmanBinaryPath} = require('./main');
 
 type WatchmanSubscriptionResponse = {
   root: string;
@@ -34,23 +35,33 @@ class WatchmanClient {
   }
 
   dispose() {
-    if (this._client) {
-      this._client.end();
+    if (this._clientPromise) {
+      this._clientPromise.then(client => client.end());
     }
   }
 
   _initWatchmanClient() {
-    var client = this._client = new watchman.Client();
-    client.on('end', () => this._onClientEnd());
-    client.on('error', (error) => logger.error('Error while talking to watchman: ', error));
-    client.on('subscription', (response) => this._onSubscriptionResult(response));
+    this._clientPromise = this._createClientPromise();
+    this._clientPromise.then(client => {
+      client.on('end', () => this._onClientEnd());
+      client.on('error', error => logger.error('Error while talking to watchman: ', error));
+      client.on('subscription', response => this._onSubscriptionResult(response));
+    });
+  }
+
+  async _createClientPromise(): Promise<watchman.Client> {
+    return new watchman.Client({
+      watchmanBinaryPath: await getWatchmanBinaryPath(),
+    });
   }
 
   _onClientEnd() {
     logger.warn('Watchman client ended, creating a new client!');
-    this._client.removeAllListeners('end');
-    this._client.removeAllListeners('error');
-    this._client.removeAllListeners('subscription');
+    this._clientPromise.then(client => {
+      client.removeAllListeners('end');
+      client.removeAllListeners('error');
+      client.removeAllListeners('subscription');
+    });
     this._initWatchmanClient();
     this._restoreSubscriptions();
   }
@@ -145,7 +156,7 @@ class WatchmanClient {
   async _watchProject(directoryPath: string): Promise<any> {
     var watchmanVersion = await this._watchmanVersionPromise;
     if (!watchmanVersion || watchmanVersion < '3.1.0') {
-      throw new Error('Watchman version: ' + this._watchmanVersion + ' does not support watch-project');
+      throw new Error('Watchman version: ' + watchmanVersion + ' does not support watch-project');
     }
     var response = await this._command('watch-project', directoryPath);
     if (response.warning) {
@@ -164,7 +175,7 @@ class WatchmanClient {
     return version;
   }
 
-  async _subscribe(
+  _subscribe(
         watchRoot: string,
         subscriptionName: ?string,
         options: ?WatchmanSubscriptionOptions = {}
@@ -177,8 +188,10 @@ class WatchmanClient {
    */
   _command(...args): Promise<any> {
     return new Promise((resolve, reject) => {
-      this._client.command(args, (error, response) =>
-          error ? reject(error) : resolve(response));
+      this._clientPromise.then(client => {
+        client.command(args, (error, response) =>
+            error ? reject(error) : resolve(response));
+      }).catch(reject);
     });
   }
 }
