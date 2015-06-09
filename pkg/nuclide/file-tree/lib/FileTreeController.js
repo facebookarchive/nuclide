@@ -93,12 +93,18 @@ function rowClassNameForNode(node: LazyFileTreeNode) {
   });
 }
 
+// TODO (t7337695) Make this function more efficient.
 function vcsClassNameForEntry(entry: File | Directory): string {
   var path = entry.getPath();
 
   var className = '';
+  var {repositoryContainsPath} = require('nuclide-hg-git-bridge');
   atom.project.getRepositories().every(function(repository: ?Repository) {
     if (!repository) {
+      return true;
+    }
+
+    if (!repositoryContainsPath(repository, path)) {
       return true;
     }
 
