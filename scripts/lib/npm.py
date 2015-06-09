@@ -37,6 +37,9 @@ class Npm (object):
             self._info_by_root[package_root] = info
         return self._info_by_root[package_root]
 
+    def publish(self, package_root):
+        return self._execute(['npm', 'publish'], cwd=package_root)
+
     def install(self, package_root, clean=False, local_packages=None, include_dev_dependencies=True):
         if clean:
             shutil.rmtree(os.path.join(package_root, 'node_modules'), ignore_errors=True)
