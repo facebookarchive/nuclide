@@ -90,11 +90,16 @@ function createEditorForNuclide(connection: RemoteConnection, uri: string): Text
 
   var buffer = new NuclideTextBuffer(connection, {filePath: uri});
   buffer.setEncoding(atom.config.get('core.fileEncoding'));
-  buffer.load().then(() => {}, (err) => {
+  var textEditor = new TextEditor(/*editorOptions*/ {buffer, registerEditor: true});
+  buffer.load().then(() => {
+    // At that time the editor was returned empty, it only used the file name to select
+    // the grammar - but now the contents have loaded, the grammar needs to be reloaded.
+    textEditor.reloadGrammar();
+  }, (err) => {
     getLogger().warn('buffer load issue:', err);
     closeTabForBuffer(buffer);
   });
-  return new TextEditor(/*editorOptions*/ {buffer, registerEditor: true});
+  return textEditor;
 }
 
 module.exports = {
