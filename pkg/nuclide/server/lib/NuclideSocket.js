@@ -154,36 +154,37 @@ class NuclideSocket extends EventEmitter {
       // Error code could could be one of:
       // ['ENOTFOUND', 'ECONNREFUSED', 'ECONNRESET', 'ETIMEDOUT']
       // A heuristic mapping is done between the xhr error code to the state of server connection.
-      var {code, message} = err;
-      var errorCode = null;
-      switch (code) {
+      var {code: originalCode, message} = err;
+      var code = null;
+      switch (originalCode) {
         case 'ENOTFOUND':
         // A socket operation failed because the network was down.
         case 'ENETDOWN':
         // The range of the temporary ports for connection are all taken,
         // This is temporal with many http requests, but should be counted as a network away event.
         case 'EADDRNOTAVAIL':
-          errorCode = 'NETWORK_AWAY';
+        // The host server is unreachable, could be in a VPN.
+        case 'EHOSTUNREACH':
+        // A request timeout is considered a network away event.
+        case 'ETIMEDOUT':
+          code = 'NETWORK_AWAY';
           break;
         case 'ECONNREFUSED':
           // Server shut down or port no longer accessible.
           if (this._heartbeatConnectedOnce) {
-            errorCode = 'SERVER_CRASHED';
+            code = 'SERVER_CRASHED';
           } else {
-            errorCode = 'PORT_NOT_ACCESSIBLE';
+            code = 'PORT_NOT_ACCESSIBLE';
           }
           break;
         case 'ECONNRESET':
-          errorCode = 'INVALID_CERTIFICATE';
-          break;
-        case 'ETIMEDOUT':
-          errorCode = 'REQUEST_TIMEOUT';
+          code = 'INVALID_CERTIFICATE';
           break;
         default:
-          errorCode = code;
+          code = originalCode;
           break;
       }
-      this.emit('heartbeat.error', {code: errorCode, message});
+      this.emit('heartbeat.error', {code, originalCode, message});
     }
   }
 

@@ -134,18 +134,23 @@ class RemoteConnection {
       }
     };
 
+    var notifyNetworkAway = (code: string) => {
+      this._heartbeatNetworkAwayCount++;
+      if (this._heartbeatNetworkAwayCount >= HEARTBEAT_AWAY_REPORT_COUNT) {
+        addHeartbeatNotification(HEARTBEAT_NOTIFICATION_WARNING, code,
+          'Nuclide server can not be reached at: ' + serverUri +
+          '<br/>Check your network connection!',
+          /*dismissable*/ true);
+      }
+    };
+
     var onHeartbeatError = (error: any) => {
-      var {code, message} = error;
+      var {code, message, originalCode} = error;
+      logger.info('Heartbeat network error:', code, originalCode, message);
       switch (code) {
           case 'NETWORK_AWAY':
-            // Notify switching networks, disconnected or fragile connection.
-            this._heartbeatNetworkAwayCount++;
-            if (this._heartbeatNetworkAwayCount >= HEARTBEAT_AWAY_REPORT_COUNT) {
-              addHeartbeatNotification(HEARTBEAT_NOTIFICATION_WARNING, code,
-                'Nuclide server can not be reached at: ' + serverUri +
-                '<br/>Check your network connection!',
-                /*dismissable*/ true);
-            }
+            // Notify switching networks, disconnected, timeout, unreachable server or fragile connection.
+            notifyNetworkAway(code);
             break;
           case 'SERVER_CRASHED':
             // Server shut down or port no longer accessible.
@@ -173,12 +178,8 @@ class RemoteConnection {
             // TODO(most): reconnect RemoteConnection, restore the current project state.
             // and finally change dismissable to false and type to 'WARNING'.
             break;
-          case 'REQUEST_TIMEOUT':
-            // The heartbeat request timed out on the network or on the server (e.g. event loop blocked).
-            // Keep sending, nothing gets triggered because multiple other calls have already been made.
-            logger.warn('Heartbeat request timed out!', code, message);
-            break;
           default:
+            notifyNetworkAway(code);
             logger.error('Unrecongnized heartbeat error code: ' + code, message);
             break;
         }
