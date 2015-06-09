@@ -80,16 +80,20 @@ function getRemoteRootDirectories() {
   return atom.project.getDirectories().filter(directory => directory.getPath().startsWith('nuclide:'));
 }
 
-async function createEditorForNuclide(connection: RemoteConnection, uri: string): Promise<TextEditor> {
+/**
+ * The TextEditor must be returned synchronously to prevent Atom from creating multiple tabs
+ * for the same file, because Atom doesn't cache pending opener promises.
+ */
+function createEditorForNuclide(connection: RemoteConnection, uri: string): TextEditor {
   var NuclideTextBuffer = require('./NuclideTextBuffer');
+  var {closeTabForBuffer} = require('nuclide-atom-helpers');
+
   var buffer = new NuclideTextBuffer(connection, {filePath: uri});
   buffer.setEncoding(atom.config.get('core.fileEncoding'));
-  try {
-    await buffer.load();
-  } catch (err) {
+  buffer.load().then(() => {}, (err) => {
     getLogger().warn('buffer load issue:', err);
-    throw err;
-  }
+    closeTabForBuffer(buffer);
+  });
   return new TextEditor(/*editorOptions*/ {buffer, registerEditor: true});
 }
 
