@@ -17,6 +17,15 @@ var path = require('path');
 var temp = require('temp').track();
 var cacheDir = createCacheDir();
 
+// Check whether the target environment supports yield/generators by evaluating a `generator function`.
+// (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*)
+try {
+  eval('function * test() {};');
+  var isYieldSupported = true;
+} catch(e) {
+  var isYieldSupported = false;
+}
+
 /**
  * Tries to create a "babel-cache" directory if it does not already exist.
  * @return {?string} path to the cache directory or {@code null} if it could not be created.
@@ -50,7 +59,7 @@ function createCachePathComponentForBabelVersionAndOptions() {
   shasum.update('\u0000', 'utf8');
 
   // Include the options used by createOrFetchFromCache() in the cache key.
-  var options = createOptions(/* filePath */ '', /* isYieldSupported */ false);
+  var options = createOptions(/* filePath */ '');
   updateDigestForJsonValue(shasum, options);
   return shasum.digest('hex');
 }
@@ -62,7 +71,7 @@ function createCachePathComponentForBabelVersionAndOptions() {
 function createOrFetchFromCache(sourceCode, filePath) {
   // If there is no cache directory, then transpile the file and exit.
   if (!cacheDir) {
-    return transpileFile(sourceCode, filePath, /* isYieldSupported */ false);
+    return transpileFile(sourceCode, filePath);
   }
 
   // Use the SHA-1 of the file contents as the cache key. (The Babel version and transpilation
@@ -77,7 +86,7 @@ function createOrFetchFromCache(sourceCode, filePath) {
     return fs.readFileSync(transpiledFile, 'utf8');
   }
 
-  var code = transpileFile(sourceCode, filePath, /* isYieldSupported */ false);
+  var code = transpileFile(sourceCode, filePath);
 
   // Asynchronously write the result to the cache. Write the file to a temp file first and then move
   // it so the write to the cache is atomic. Although Node is single-threaded, there could be
@@ -102,11 +111,9 @@ function createOrFetchFromCache(sourceCode, filePath) {
 /**
  * @param filePath identifies the path on disk where `sourceCode` that the options are for came
  *     from.
- * @param isYieldSupported whether the target environment supports yield/generators.
- *     This is an optional boolean argument that defaults to false.
  * @return object specifying Babel transpilation options.
  */
-function createOptions(filePath, isYieldSupported) {
+function createOptions(filePath) {
   // These options should be kept in sync with
   // https://github.com/atom/atom/blob/master/src/babel.coffee.
   //
@@ -165,12 +172,10 @@ function updateDigestForJsonValue(shasum, value) {
 /**
  * @param sourceCode string of JavaScript source code that starts with the 'use babel' pragma.
  * @param filePath identifies the path on disk where `sourceCode` came from.
- * @param isYieldSupported whether the target environment supports yield/generators.
- *     This is an optional boolean argument that defaults to false.
  * @return the transpiled code as a string.
  */
-function transpileFile(sourceCode, filePath, isYieldSupported) {
-  var options = createOptions(filePath, isYieldSupported);
+function transpileFile(sourceCode, filePath) {
+  var options = createOptions(filePath);
   return transpileFileWithOptions(sourceCode, options, filePath);
 }
 
