@@ -97,7 +97,7 @@ function vcsClassNameForEntry(entry: File | Directory): string {
   var path = entry.getPath();
 
   var className = '';
-  atom.project.getRepositories().every((repository: ?Repository) => {
+  atom.project.getRepositories().every(function(repository: ?Repository) {
     if (!repository) {
       return true;
     }
@@ -124,7 +124,7 @@ function vcsClassNameForEntry(entry: File | Directory): string {
     }
 
     return true;
-  });
+  }, this);
   return className;
 }
 
@@ -154,6 +154,9 @@ var FileTree = React.createClass({
 });
 
 class FileTreeController {
+  _hostElement: ?Element;
+  _keyToState: ?Map<string, NodeState>;
+
   constructor(state: ?FileTreeControllerState) {
     this._fetchChildrenWithController = (node) => fetchChildren(node, this);
 
@@ -227,7 +230,7 @@ class FileTreeController {
         }
         this._repositorySubscriptions = new CompositeDisposable();
         var rootPaths = atom.project.getPaths();
-        atom.project.getRepositories().forEach((repository: ?Repository) => {
+        atom.project.getRepositories().forEach(function(repository: ?Repository) {
           if (repository) {
             this._repositorySubscriptions.add(repository.onDidChangeStatuses(() => {
               this.forceUpdate();
@@ -240,7 +243,7 @@ class FileTreeController {
               repository.getStatuses([repository.getProjectDirectory()]);
             }
           }
-        });
+        }, this);
       }
     }));
 
@@ -384,7 +387,10 @@ class FileTreeController {
    * Returns the cached node for `entry` or creates a new one. It sets the appropriate bookkeeping
    * state if it creates a new node.
    */
-  getNodeAndSetState(entry: File | Directory, parent: ?LazyFileTreeNode): LazyFileTreeNode {
+  getNodeAndSetState(
+    entry: atom$File | atom$Directory,
+    parent: ?LazyFileTreeNode
+  ): LazyFileTreeNode {
     // We need to create a node to get the path, even if we don't end up returning it.
     var node = new LazyFileTreeNode(entry, parent, this._fetchChildrenWithController);
     var nodeKey = node.getKey();
@@ -606,7 +612,7 @@ class FileTreeController {
     });
   }
 
-  _getSelectedItems(): Array<string> {
+  _getSelectedItems(): Array<LazyFileTreeNode> {
     var treeComponent = this.getTreeComponent();
     if (!treeComponent) {
       return [];
@@ -709,7 +715,7 @@ class FileTreeController {
     this._openDialog(<FileDialogComponent {...props} />);
   }
 
-  _openDialog(component: ReactComponent): void {
+  _openDialog(component: ReactElement): void {
     this._closeDialog();
 
     this._hostElement = document.createElement('div');
@@ -738,7 +744,12 @@ class FileTreeController {
    *
    * This is useful for populating the file dialogs.
    */
-  _getSelectedEntryAndDirectoryAndRoot(): ?{entry: File | Directory; directory: Directory; root: Directory} {
+  _getSelectedEntryAndDirectoryAndRoot(
+  ): ?{
+    entry: atom$File | atom$Directory;
+    directory: atom$Directory;
+    root: ?atom$Directory
+  } {
     var treeComponent = this.getTreeComponent();
     if (!treeComponent) {
       this._logError('nuclide-file-tree: Cannot get the directory for the selection because no file tree exists.');
@@ -751,7 +762,7 @@ class FileTreeController {
       entry = selectedNodes[0].getItem();
     } else {
       var rootDirectories = atom.project.getDirectories();
-      if (rootDirectory.length > 0) {
+      if (rootDirectories.length > 0) {
         entry = rootDirectories[0];
       } else {
         // We shouldn't be able to reach this error because it should only be
@@ -764,7 +775,7 @@ class FileTreeController {
 
     return {
       entry,
-      directory: entry.isFile() ? entry.getParent() : entry,
+      directory: (entry && entry.isFile()) ? entry.getParent() : entry,
       root: this._getRootDirectory(entry),
     };
   }
@@ -772,7 +783,7 @@ class FileTreeController {
   /**
    * Returns the workspace root directory for the entry, or the entry's parent.
    */
-  _getRootDirectory(entry: File | Directory): ?Directory {
+  _getRootDirectory(entry: atom$File | atom$Directory): ?atom$Directory {
     if (!entry) {
       return null;
     }

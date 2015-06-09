@@ -276,6 +276,10 @@ declare class atom$Directory {
   // Managing Paths
   getPath(): string;
   getBaseName(): string;
+
+  // Traversing
+  getParent(): atom$Directory;
+  contains(path: string): boolean;
 }
 
 declare class atom$File {
@@ -288,6 +292,9 @@ declare class atom$File {
   // Managing Paths
   getPath(): string;
   getBaseName(): string;
+
+  // Traversing
+  getParent(): atom$Directory;
 }
 
 declare class atom$Project {
