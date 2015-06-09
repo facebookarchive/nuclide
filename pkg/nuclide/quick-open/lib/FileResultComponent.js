@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {FileResult} from './types';
+
 var React = require('react-for-atom');
 var {fileTypeClass} = require('nuclide-atom-helpers');
 var path = require('path');
@@ -52,9 +54,13 @@ class FileResultComponent {
     var filenameClasses = ['file', 'icon', fileTypeClass(filePath)].join(' ');
     var folderClasses = ['path', 'no-icon'].join(' ');
 
+    // `data-name` is support for the "file-icons" package.
+    // See: https://atom.io/packages/file-icons
     return (
       <div>
-        <span className={filenameClasses}>{filenameComponents}</span>
+        <span className={filenameClasses} data-name={path.basename(filePath)}>
+          {filenameComponents}
+        </span>
         <span className={folderClasses}>{folderComponents}</span>
       </div>
     );
