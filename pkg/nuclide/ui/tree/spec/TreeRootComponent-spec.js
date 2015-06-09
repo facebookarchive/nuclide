@@ -16,13 +16,9 @@ var TreeRootComponent = require('../lib/TreeRootComponent');
 
 var {TestUtils} = React.addons;
 
-function fetchChildrenForNodes(nodes: Array<LazyFileTreeNode>): Promise {
-  return Promise.all(nodes.map((node) => node.fetchChildren()));
-}
-
 function clickNodeWithLabel(component: TreeRootComponent, label: string): void {
   var nodeComponents = getNodeComponents(component);
-  TestUtils.Simulate.click(nodeComponents[label].getDOMNode());
+  TestUtils.Simulate.click(React.findDOMNode(nodeComponents[label]));
 }
 
 /**
@@ -39,7 +35,6 @@ function getNodeComponents(component: TreeRootComponent): any {
 }
 
 describe('TreeRootComponent', () => {
-
   // Use `renderComponent` in `beforeEach` to return the component so the test
   // methods have a chance to modify the default props.
   var renderComponent: (props: any) => ReactComponent;
@@ -399,7 +394,6 @@ describe('TreeRootComponent', () => {
   });
 
   describe('collapsing a node', () => {
-
     it('deselects descendants of the node', () => {
       waitsForPromise(async () => {
         var component = renderComponent(props);
@@ -425,26 +419,18 @@ describe('TreeRootComponent', () => {
         expect(component.getSelectedNodes()).toEqual([nodes['G']]);
       });
     });
-
   });
 
   describe('clicking a node', () => {
-
     it('toggles whether the node is selected', () => {
       waitsForPromise(async () => {
         var component = renderComponent(props);
-        component.setRoots([nodes['G']]);
-        await fetchChildrenForNodes(component.getRootNodes());
+        await component.setRoots([nodes['G']]);
 
         expect(component.getSelectedNodes()).toEqual([]);
 
-        var treeNodes = TestUtils.scryRenderedComponentsWithType(
-            component,
-            TreeNodeComponent
-          );
-        var firstTreeNodeDomNode = React.findDOMNode(treeNodes[0]);
-
-        TestUtils.Simulate.click(firstTreeNodeDomNode);
+        var nodeComponents = getNodeComponents(component);
+        TestUtils.Simulate.click(React.findDOMNode(nodeComponents['G']));
 
         expect(component.getSelectedNodes()).toEqual([nodes['G']]);
       });
@@ -453,19 +439,12 @@ describe('TreeRootComponent', () => {
     it('toggles whether the node is collapsed if click is on the arrow', () => {
       waitsForPromise(async () => {
         var component = renderComponent(props);
-        component.setRoots([nodes['G']]);
-        await fetchChildrenForNodes(component.getRootNodes());
+        await component.setRoots([nodes['G']]);
 
         expect(component.getExpandedNodes()).toEqual([nodes['G']]);
 
-        var treeNodes = TestUtils.scryRenderedComponentsWithType(
-            component,
-            TreeNodeComponent
-          );
-        var firstTreeNodeArrowDomNode =
-            React.findDOMNode(treeNodes[0].refs['arrow']);
-
-        TestUtils.Simulate.click(firstTreeNodeArrowDomNode);
+        var nodeComponents = getNodeComponents(component);
+        TestUtils.Simulate.click(React.findDOMNode(nodeComponents['G'].refs['arrow']));
 
         expect(component.getExpandedNodes()).toEqual([]);
       });
@@ -474,48 +453,35 @@ describe('TreeRootComponent', () => {
     it('selects node if right clicking or ctrl clicking for context menu', () => {
       waitsForPromise(async () => {
         var component = renderComponent(props);
-        component.setRoots([nodes['G']]);
-        await fetchChildrenForNodes(component.getRootNodes());
+        await component.setRoots([nodes['G']]);
 
         expect(component.getSelectedNodes()).toEqual([]);
 
-        var treeNodes = TestUtils.scryRenderedComponentsWithType(
-            component,
-            TreeNodeComponent
-          );
+        var nodeComponents = getNodeComponents(component);
 
-        TestUtils.Simulate.mouseDown(treeNodes[0].getDOMNode(), {button: 2});
-        expect(component.getSelectedNodes()).toEqual([treeNodes[0].props.node]);
+        TestUtils.Simulate.mouseDown(React.findDOMNode(nodeComponents['G']), {button: 2});
+        expect(component.getSelectedNodes()).toEqual([nodeComponents['G'].props.node]);
 
-        TestUtils.Simulate.mouseDown(treeNodes[1].getDOMNode(), {button: 0, ctrlKey: true});
-        expect(component.getSelectedNodes()).toEqual([treeNodes[1].props.node]);
+        TestUtils.Simulate.mouseDown(React.findDOMNode(nodeComponents['H']), {button: 0, ctrlKey: true});
+        expect(component.getSelectedNodes()).toEqual([nodeComponents['H'].props.node]);
 
-        TestUtils.Simulate.mouseDown(treeNodes[2].getDOMNode(), {button: 0});
-        expect(component.getSelectedNodes()).toEqual([treeNodes[1].props.node]);
+        TestUtils.Simulate.mouseDown(React.findDOMNode(nodeComponents['I']), {button: 0});
+        expect(component.getSelectedNodes()).toEqual([nodeComponents['H'].props.node]);
       });
     });
 
     it('does not toggle whether node is selected if click is on the arrow', () => {
       waitsForPromise(async () => {
         var component = renderComponent(props);
-        component.setRoots([nodes['G']]);
-        await fetchChildrenForNodes(component.getRootNodes());
+        await component.setRoots([nodes['G']]);
 
         expect(component.getSelectedNodes()).toEqual([]);
 
-        var treeNodes = TestUtils.scryRenderedComponentsWithType(
-            component,
-            TreeNodeComponent
-          );
-        var firstTreeNodeArrowDomNode =
-            React.findDOMNode(treeNodes[0].refs['arrow']);
-
-        TestUtils.Simulate.click(firstTreeNodeArrowDomNode);
+        var nodeComponents = getNodeComponents(component);
+        TestUtils.Simulate.click(React.findDOMNode(nodeComponents['G'].refs['arrow']));
 
         expect(component.getSelectedNodes()).toEqual([]);
       });
     });
-
   });
-
 });
