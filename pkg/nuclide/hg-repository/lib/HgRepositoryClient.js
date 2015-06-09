@@ -12,6 +12,7 @@
 var {CompositeDisposable, Emitter, TextEditor} = require('atom');
 var {StatusCodeId, StatusCodeIdToNumber, StatusCodeNumber, HgStatusOption} =
     require('nuclide-hg-repository-base').hgConstants;
+var {isRemote} = require('nuclide-remote-uri');
 var path = require('path');
 
 /**
@@ -445,6 +446,17 @@ class HgRepositoryClient {
       return this._isPathRelevant(filePath);
     });
     var statusMapPathToStatusId = await this._service.fetchStatuses(pathsInRepo, options);
+    // Until the service framework can do this transformation, we do this manual
+    // adjustment for remote paths.
+    if (isRemote(this._workingDirectory.getPath())) {
+      var remote = this._workingDirectory._remote;
+      Object.keys(statusMapPathToStatusId).forEach((filePath) => {
+        var localPath = remote.getPathOfUri(filePath);
+        var adjustedFilePath = remote.getUriOfRemotePath(localPath);
+        statusMapPathToStatusId[adjustedFilePath] = statusMapPathToStatusId[filePath];
+        delete statusMapPathToStatusId[filePath];
+      });
+    }
 
     var queriedFiles = new Set(pathsInRepo);
     var statusChangeEvents = [];
