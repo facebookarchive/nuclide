@@ -87,7 +87,6 @@ function getRemoteRootDirectories() {
  */
 async function createEditorForNuclide(connection: RemoteConnection, uri: string): TextEditor {
   var NuclideTextBuffer = require('./NuclideTextBuffer');
-  var {closeTabForBuffer} = require('nuclide-atom-helpers');
 
   var buffer = new NuclideTextBuffer(connection, {filePath: uri});
   buffer.setEncoding(atom.config.get('core.fileEncoding'));
@@ -107,19 +106,19 @@ module.exports = {
     // Don't do require or any other expensive operations in activate().
     subscriptions.add(atom.packages.onDidActivateInitialPackages(() =>{
       // Subscribe opener before restoring the remote projects.
-      subscriptions.add(atom.workspace.addOpener(async (uri = '') => {
+      subscriptions.add(atom.workspace.addOpener((uri = '') => {
         if (uri.startsWith('nuclide:')) {
           var connection = getRemoteConnection().getForUri(uri);
           // On Atom restart, it tries to open the uri path as a file tab because it's not a local directory.
           // We can't let that create a file with the initial working directory path.
           if (connection && uri !== connection.getUriForInitialWorkingDirectory()) {
             if (pendingFiles[uri]) {
-              return await pendingFiles[uri];
+              return pendingFiles[uri];
             }
-            pendingFiles[uri] = createEditorForNuclide(connection, uri);
-            var textEditor = await pendingFiles[uri];
-            delete pendingFiles[uri];
-            return textEditor;
+            var textEditorPromise = pendingFiles[uri] = createEditorForNuclide(connection, uri);
+            var removeFromCache = () => delete pendingFiles[uri];
+            textEditorPromise.then(removeFromCache, removeFromCache);
+            return textEditorPromise;
           }
         }
       }));
