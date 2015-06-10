@@ -20,26 +20,6 @@ module.exports = {
   track(key: string, values: any) {},
 
   /**
-   * Measure the execution time of a synchronous function and track its duration.
-   * @param eventName Name of the event to be tracked.
-   * @param functionToTrack The zero argument function or lambda whose execution will be timed.
-   * @returns The result of functionToTrack.
-   */
-  trackTimingAndCall(eventName: string, functionToTrack: () => ?any): ?any {
-    return functionToTrack();
-  },
-
-  /**
-   * Measure the execution time of an asynchronous function (returning a Promise) and track its duration.
-   * @param eventName Name of the event to be tracked.
-   * @param functionToTrack The zero argument function or lambda whose resolution or rejection will be timed.
-   * @returns The result of functionToTrack.
-   */
-  trackTimingAndCallAsync(eventName: string, asyncFunctionToTrack: () => Promise): Promise {
-    return asyncFunctionToTrack();
-  },
-
-  /**
    * A no-op decorator factory (https://github.com/wycats/javascript-decorators). 
    */
   trackTiming(eventName=null: ?string): any {

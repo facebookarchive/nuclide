@@ -9,19 +9,31 @@
  * the root directory of this source tree.
  */
 
+var {trackTiming} = require('../lib/main');
+
+class Test {
+
+  @trackTiming()
+  foo() {
+    return 1;
+  }
+
+  @trackTiming()
+  bar() {
+    return Promise.resolve(1);
+  }
+}
+
 describe('Default analytics implementation', () => {
-  var eventName = 'TEST';
 
   it('correctly executes a sync function call', () => {
-    var {trackTimingAndCall} = require('../lib/main');
-    var result = trackTimingAndCall(eventName, () => 1);
+    var result = (new Test()).foo();
     expect(result).toBe(1);
   });
 
   it('correctly executes an async function call', () => {
     waitsForPromise(async () => {
-      var {trackTimingAndCallAsync} = require('../lib/main');
-      var result = await trackTimingAndCallAsync(eventName, () => Promise.resolve(1));
+      var result = await (new Test()).bar();
       expect(result).toBe(1);
     });
   });

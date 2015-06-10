@@ -9,8 +9,7 @@
  * the root directory of this source tree.
  */
 
-var {trackTimingAndCallAsync} = require('nuclide-analytics');
-var CLICK_TO_SYMBOL_EVENT = 'clickToSymbol';
+var {trackTiming} = require('nuclide-analytics');
 
 class ClickToSymbol {
   symbolNavigationMarkers: ?array<DisplayBufferMarker>;
@@ -25,7 +24,7 @@ class ClickToSymbol {
       shouldUseCmdKeyToActivate: () => boolean,
       findClickableRangesAndCallback: ?(editor: TextEditor, row: number, column: number, shiftKey: boolean) => Promise) {
     this.editorView = atom.views.getView(textEditor);
-    this.findClickableRangesAndCallback = findClickableRangesAndCallback;
+    this._findClickableRangesAndCallback = findClickableRangesAndCallback;
     this.shouldUseCmdKeyToActivate = shouldUseCmdKeyToActivate;
     this.symbolNavigationMarkers = null;
 
@@ -36,6 +35,11 @@ class ClickToSymbol {
 
     this.onMouseMove = this.onMouseMove.bind(this);
     this.editorView.addEventListener('mousemove', this.onMouseMove);
+  }
+
+  @trackTiming()
+  findClickableRangesAndCallback(...args): Promise {
+    return this._findClickableRangesAndCallback.apply(this, args);
   }
 
   async onMouseDown(e: MouseEvent) {
@@ -51,14 +55,11 @@ class ClickToSymbol {
     }
 
     var rowAndColumn = this.getRowAndColumnForMouseEvent(e);
-    var clickableRangesAndCallback =
-        await trackTimingAndCallAsync(CLICK_TO_SYMBOL_EVENT, () => {
-      return this.findClickableRangesAndCallback(
+    var clickableRangesAndCallback = await this.findClickableRangesAndCallback(
           this.editor,
           rowAndColumn.row,
           rowAndColumn.column,
           e.shiftKey);
-    });
     if (clickableRangesAndCallback) {
       clickableRangesAndCallback.callback();
     }
