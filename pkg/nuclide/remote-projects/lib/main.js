@@ -11,6 +11,7 @@
 
 var {CompositeDisposable, TextEditor} = require('atom');
 var subscriptions: ?CompositeDisposable = null;
+var pendingFiles = {};
 
 var logger = null;
 function getLogger() {
@@ -81,25 +82,22 @@ function getRemoteRootDirectories() {
 }
 
 /**
- * The TextEditor must be returned synchronously to prevent Atom from creating multiple tabs
+ * The same TextEditor must be returned to prevent Atom from creating multiple tabs
  * for the same file, because Atom doesn't cache pending opener promises.
  */
-function createEditorForNuclide(connection: RemoteConnection, uri: string): TextEditor {
+async function createEditorForNuclide(connection: RemoteConnection, uri: string): TextEditor {
   var NuclideTextBuffer = require('./NuclideTextBuffer');
   var {closeTabForBuffer} = require('nuclide-atom-helpers');
 
   var buffer = new NuclideTextBuffer(connection, {filePath: uri});
   buffer.setEncoding(atom.config.get('core.fileEncoding'));
-  var textEditor = new TextEditor(/*editorOptions*/ {buffer, registerEditor: true});
-  buffer.load().then(() => {
-    // At that time the editor was returned empty, it only used the file name to select
-    // the grammar - but now the contents have loaded, the grammar needs to be reloaded.
-    textEditor.reloadGrammar();
-  }, (err) => {
+  try {
+    await buffer.load();
+  } catch(err) {
     getLogger().warn('buffer load issue:', err);
-    closeTabForBuffer(buffer);
-  });
-  return textEditor;
+    throw err;
+  }
+  return new TextEditor(/*editorOptions*/ {buffer, registerEditor: true});
 }
 
 module.exports = {
@@ -109,13 +107,19 @@ module.exports = {
     // Don't do require or any other expensive operations in activate().
     subscriptions.add(atom.packages.onDidActivateInitialPackages(() =>{
       // Subscribe opener before restoring the remote projects.
-      subscriptions.add(atom.workspace.addOpener((uri = '') => {
+      subscriptions.add(atom.workspace.addOpener(async (uri = '') => {
         if (uri.startsWith('nuclide:')) {
           var connection = getRemoteConnection().getForUri(uri);
           // On Atom restart, it tries to open the uri path as a file tab because it's not a local directory.
           // We can't let that create a file with the initial working directory path.
           if (connection && uri !== connection.getUriForInitialWorkingDirectory()) {
-            return createEditorForNuclide(connection, uri);
+            if (pendingFiles[uri]) {
+              return await pendingFiles[uri];
+            }
+            pendingFiles[uri] = createEditorForNuclide(connection, uri);
+            var textEditor = await pendingFiles[uri];
+            delete pendingFiles[uri];
+            return textEditor;
           }
         }
       }));
