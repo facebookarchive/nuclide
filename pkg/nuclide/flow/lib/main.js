@@ -21,6 +21,18 @@ type Suggestion = {
   className: ?string;
 }
 
+type Request = {
+  editor: TextEditor;
+  prefix: string;
+}
+
+type Autocomplete = {
+  selector: string;
+  disableForSelector: string;
+  inclusionPriority: number;
+  getSuggestions: (request: Request) => Suggestion;
+}
+
 module.exports = {
 
   config: {
@@ -34,10 +46,8 @@ module.exports = {
   activate() {},
 
   /** Provider for autocomplete service. */
-  createAutocompleteProvider() {
-    var getSuggestions = (
-      request: {editor: TextEditor; bufferPosition: Point; scopeDescriptor: any; prefix: string}
-    ) => {
+  createAutocompleteProvider(): Autocomplete {
+    var getSuggestions = (request: Request) => {
       var {editor, prefix} = request;
       var file = editor.getPath();
       var contents = editor.getText();
