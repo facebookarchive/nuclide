@@ -468,19 +468,7 @@ class FileTreeController {
 
   onConfirmSelection(node: LazyFileTreeNode): void {
     var entry = node.getItem();
-    if (entry.isFile()) {
-      atom.workspace.open(entry.getPath(), {activatePane: true, searchAllPanes: true});
-    } else {
-      var treeComponent = this.getTreeComponent();
-      if (treeComponent) {
-        var nodeKey = node.getKey();
-        if (treeComponent.isNodeKeyExpanded(nodeKey)) {
-          treeComponent.collapseNodeKey(node.getKey());
-        } else {
-          treeComponent.expandNodeKey(node.getKey());
-        }
-      }
-    }
+    atom.workspace.open(entry.getPath(), {activatePane: true, searchAllPanes: true});
   }
 
   removeRootFolderSelection(): void {

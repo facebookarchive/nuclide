@@ -79,6 +79,8 @@ var TreeRootComponent = React.createClass({
   propTypes: {
     initialRoots: PropTypes.arrayOf(PropTypes.instanceOf(LazyTreeNode)).isRequired,
     eventHandlerSelector: PropTypes.string.isRequired,
+    // A node can be confirmed if it is a selected non-container node and the
+    // user is clicks on it or presses <enter>.
     onConfirmSelection: PropTypes.func.isRequired,
     labelClassNameForNode: PropTypes.func.isRequired,
     rowClassNameForNode: PropTypes.func,
@@ -193,11 +195,7 @@ var TreeRootComponent = React.createClass({
       return;
     }
 
-    if (node.isContainer()) {
-      this._toggleNodeExpanded(node);
-    } else {
-      this.props.onConfirmSelection(node);
-    }
+    this._confirmNode(node);
   },
 
   _onClickNodeArrow(event: SyntheticEvent, node: LazyTreeNode): void {
@@ -618,9 +616,17 @@ var TreeRootComponent = React.createClass({
     var key = this._getFirstSelectedKey();
     if (key) {
       var node = this.getNodeForKey(key);
-      this.props.onConfirmSelection(node);
+      this._confirmNode(node);
     }
   },
+
+  _confirmNode(node: LazyTreeNode): void {
+    if (node.isContainer()) {
+      this._toggleNodeExpanded(node);
+    } else {
+      this.props.onConfirmSelection(node);
+    }
+  }
 });
 
 module.exports = TreeRootComponent;

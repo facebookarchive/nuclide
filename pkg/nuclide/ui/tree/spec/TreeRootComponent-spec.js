@@ -462,7 +462,7 @@ describe('TreeRootComponent', () => {
     });
 
     describe('<enter> (i.e. `core:confirm`) on a selected node', () => {
-      it('calls onConfirmSelection if the node is a container', () => {
+      it('toggles whether the node is collapsed if it is a container', () => {
         waitsForPromise(async () => {
           var component = renderComponent(props);
           await component.setRoots([nodes['G']]);
@@ -474,10 +474,12 @@ describe('TreeRootComponent', () => {
           var nodeComponents = getNodeComponents(component);
 
           atom.commands.dispatch(hostEl, 'core:confirm');
+          expect(component.isNodeKeyExpanded(nodes['G'].getKey())).toBe(false);
+
+          atom.commands.dispatch(hostEl, 'core:confirm');
           expect(component.isNodeKeyExpanded(nodes['G'].getKey())).toBe(true);
 
-          expect(onConfirmSelection).toHaveBeenCalledWith(nodes['G']);
-          expect(onConfirmSelection.callCount).toBe(1);
+          expect(onConfirmSelection.callCount).toBe(0);
         });
       });
 
