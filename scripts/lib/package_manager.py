@@ -298,16 +298,13 @@ def install_dependencies(package_config, npm):
 
     # Link private node dependencies.
     src_path = package_config['packageRootAbsolutePath']
-    fs.mkdirs(os.path.join(src_path, 'node_modules'))
+    node_modules_path = os.path.join(src_path, 'node_modules')
+    fs.mkdirs(node_modules_path)
     for local_dependency, local_dependency_config in package_config['localDependencies'].items():
         src_dir = local_dependency_config['packageRootAbsolutePath']
-        dest_dir = os.path.join(src_path, 'node_modules', local_dependency)
-        if platform_checker.is_windows():
-            shutil.rmtree(dest_dir, ignore_errors=True)
-            shutil.copytree(src_dir, dest_dir)
-        else:
-            symlink(src_dir, dest_dir)
-        link_dependencys_executable(src_path, local_dependency)
+        dest_dir = os.path.join(node_modules_path, local_dependency)
+        symlink(src_dir, dest_dir)
+        link_dependencys_executable(node_modules_path, local_dependency)
 
     # Install other public node dependencies.
     npm.install(src_path, local_packages=package_config['localDependencies'], include_dev_dependencies=package_config['includeDevDependencies'])
@@ -335,9 +332,8 @@ def install_dependencies(package_config, npm):
 # a symlink from the executable file configured in 'bin' field to current package's
 # ./node_modules/.bin/ folder. (https://docs.npmjs.com/files/package.json#bin)
 # In our case, we need it to run customized jasmine unittest.
-def link_dependencys_executable(package_root, dependency_name):
-    node_modules_path = os.path.join(package_root, 'node_modules')
-    dependency_root = os.path.join(package_root, 'node_modules', dependency_name)
+def link_dependencys_executable(node_modules_path, dependency_name):
+    dependency_root = os.path.join(node_modules_path, dependency_name)
     dependency_config = json_load(os.path.join(dependency_root, 'package.json'))
 
     # The bin field would ether be a dict or a string. if it's a dict,
@@ -353,8 +349,12 @@ def link_dependencys_executable(package_root, dependency_name):
     else:
         symlinks_to_create = {dependency_name: bin_config}
 
+    dot_bin_path = os.path.join(node_modules_path, '.bin')
+    if platform_checker.is_windows():
+        fs.mkdirs(dot_bin_path)
+
     for dst_name, relative_src_path in symlinks_to_create.items():
-        absolute_dst_path = os.path.join(node_modules_path, '.bin', dst_name)
+        absolute_dst_path = os.path.join(dot_bin_path, dst_name)
         absolute_src_path = os.path.join(dependency_root, relative_src_path)
 
         if platform_checker.is_windows():

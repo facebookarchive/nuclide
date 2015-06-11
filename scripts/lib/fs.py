@@ -41,10 +41,13 @@ def symlink(src, dest):
     dest_dir = os.path.dirname(dest)
     if not os.path.isdir(dest_dir):
         os.makedirs(dest_dir)
-    if not os.path.islink(dest) or \
-        os.path.realpath(os.path.join(dest_dir, src)) != os.path.realpath(dest):
+    if (not os.path.islink(dest) or
+        os.path.realpath(os.path.join(dest_dir, src)) != os.path.realpath(dest)):
         try:
-            os.symlink(src, dest)
+            if platform_checker.is_windows() and os.path.isdir(src):
+                cross_platform_check_output(['mklink', '/J', '/D', dest, src])
+            else:
+                os.symlink(src, dest)
         except OSError as e:
             if e.errno == errno.EEXIST:
                 os.remove(dest)
