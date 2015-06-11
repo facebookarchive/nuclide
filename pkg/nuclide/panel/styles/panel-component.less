@@ -17,6 +17,11 @@
     flex-direction: column;
     width: 100%;
   }
+
+  &.right {
+    flex-direction: row;
+    height: 100%;
+  }
 }
 
 .nuclide-panel-component-scroller {
@@ -39,6 +44,11 @@
     height: 4px;
     cursor: row-resize;
   }
+
+  &.right{
+    width: 4px;
+    cursor: col-resize;
+  }
 }
 
 .nuclide-panel-component-cursor-overlay {
@@ -55,5 +65,9 @@
 
   &.bottom {
     cursor: row-resize;
+  }
+
+  &.right {
+    cursor: col-resize;
   }
 }

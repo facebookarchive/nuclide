@@ -25,7 +25,7 @@ const DOUBLE_CLICK_TIME_INTERVAL_THRESHOLD_MS = 500;
 var PanelComponent = React.createClass({
   propTypes: {
     initialLength: PropTypes.number,
-    dock: PropTypes.oneOf(['left', 'bottom']).isRequired,
+    dock: PropTypes.oneOf(['left', 'bottom', 'right']).isRequired,
   },
 
   getDefaultProps(): Object {
@@ -50,7 +50,7 @@ var PanelComponent = React.createClass({
     }
 
     var containerStyle;
-    if (this.props.dock === 'left') {
+    if (this.props.dock === 'left' || this.props.dock === 'right') {
       containerStyle = {
         width: this.state.length,
         minWidth: MINIMUM_LENGTH,
@@ -123,6 +123,8 @@ var PanelComponent = React.createClass({
       length = event.pageX - containerEl.getBoundingClientRect().left;
     } else if (this.props.dock === 'bottom') {
       length = containerEl.getBoundingClientRect().bottom - event.pageY;
+    } else if (this.props.dock === 'right') {
+      length = containerEl.getBoundingClientRect().right - event.pageX;
     }
     this.setState({length});
   },
@@ -145,7 +147,7 @@ var PanelComponent = React.createClass({
       var length = 0;
       var childNode = this.refs.child.getDOMNode();
       var handle = this.refs.handle.getDOMNode();
-      if (this.props.dock === 'left') {
+      if (this.props.dock === 'left' || this.props.dock === 'right') {
         length = childNode.offsetWidth + handle.offsetWidth;
       } else if (this.props.dock === 'bottom') {
         length = childNode.offsetHeight + handle.offsetHeight;
