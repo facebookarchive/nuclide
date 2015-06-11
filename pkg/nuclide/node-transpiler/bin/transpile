@@ -12,24 +12,17 @@
  * Atom would.
  */
 
-if (process.argv.length < 3) {
-  console.error('No file specified. Usage: [--with-yield] <file>');
+if (process.argv.length !== 3) {
+  console.error('No file specified. Usage: <file>');
   process.exit(1);
 }
 
-var isYieldSupported = false;
+var file = process.argv[2];
 var path = require('path');
-var file;
-if (process.argv.length === 3) {
-  file = process.argv[2];
-} else if (process.argv[2] === '--with-yield') {
-  isYieldSupported = true;
-  file = process.argv[3];
-}
 var filePath = path.join(process.env.PWD, file);
 
 var fs = require('fs');
 var sourceCode = fs.readFileSync(filePath);
 var transpileFile = require('../lib/babel-cache').transpileFile;
-var code = transpileFile(sourceCode, filePath, isYieldSupported);
+var code = transpileFile(sourceCode, filePath);
 console.log(code);
