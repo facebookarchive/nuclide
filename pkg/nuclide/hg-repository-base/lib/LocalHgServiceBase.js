@@ -161,7 +161,13 @@ class LocalHgServiceBase extends HgService {
   /**
    * Calls out to asyncExecute using the 'hg' command.
    */
-  _hgAsyncExecute(args, options): Promise<any> {
+  _hgAsyncExecute(args: Array<string>, options: any): Promise<any> {
+    // Setting HGPLAIN=1 overrides any custom aliases a user has defined.
+    if (options.env) {
+      options.env['HGPLAIN'] = 1;
+    } else {
+      options.env = {'HGPLAIN': 1};
+    }
     return asyncExecute('hg', args, options);
   }
 
