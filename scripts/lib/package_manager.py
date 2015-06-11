@@ -70,6 +70,9 @@ class PackageManager(object):
     def get_local_package_root(self, package_name):
         return self._package_map[package_name]['packageRootAbsolutePath']
 
+    def get_package_map(self):
+        return self._package_map
+
     def get_deps(self, package_json, include_dev_dependencies=False, include_local_dependencies=False):
         '''Return a dependency map: key is package name and value is semver range.'''
         # Although it appears that different versions of a package can be requested by
@@ -242,6 +245,10 @@ def load_package_configs():
 
         config = {}
         config['name'] = manifest['name']
+        config['repository'] = manifest.get('repository')
+        config['version'] = manifest.get('version')
+        config['description'] = manifest.get('description')
+        config['packageType'] = package_type
         config['isNodePackage'] = package_type == 'Node'
         config['localDependencies'] = {}
         config['packageRootAbsolutePath'] = os.path.dirname(path)
@@ -344,7 +351,7 @@ def link_dependencys_executable(node_modules_path, dependency_name):
     bin_config = dependency_config.get('bin')
     if not bin_config:
         return
-    elif type(bin_config) == dict:
+    elif isinstance(bin_config, dict):
         symlinks_to_create = bin_config
     else:
         symlinks_to_create = {dependency_name: bin_config}

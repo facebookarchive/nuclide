@@ -5,7 +5,9 @@
 # the root directory of this source tree.
 
 import codecs
+import collections
 import json
+import sys
 
 class ChainedError(Exception):
     def __init__(self, message, cause):
@@ -28,7 +30,15 @@ def json_load(path):
         # We use codecs here because sometimes Python decides to use the ascii
         # codec and chokes on utf-8 characters. This has bitten us in the past.
         with codecs.open(path, 'r', 'utf-8') as f:
-            return json.load(f)
+            if sys.version_info >= (2, 7):
+                # object_pairs_hook=... preserves member order iteration in the resulting objects
+                # Member order is used by package linting
+                #
+                # However, this is Python 2.7 only, so we conditionally enable it
+                return json.load(f, object_pairs_hook=collections.OrderedDict)
+            else:
+                return json.load(f)
+
     except ValueError as e:
         raise ChainedError('Error loading JSON from file: %s' % path, e)
 
