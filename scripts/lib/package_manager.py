@@ -177,7 +177,8 @@ class TopologicalInstaller(object):
         # If not, do a busy wait. When a job finishes, decrement the number of deps in the parent.
         # When the parent has zero deps, then it is added to the work queue.
         while True:
-            num_active = len(filter(is_alive, process_to_config))
+            # Note that filter() returns an iterator rather than a list in Python 3.
+            num_active = len(list(filter(is_alive, process_to_config)))
             if num_active == NUM_PROCESSES:
                 # All workers are busy: wait and try again.
                 continue

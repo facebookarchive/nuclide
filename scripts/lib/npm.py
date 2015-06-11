@@ -79,7 +79,7 @@ class Npm (object):
     def _execute(self, cmd_args, cwd=None):
         if self._verbose:
             output = fs.cross_platform_check_output(cmd_args, cwd=cwd, stderr=subprocess.STDOUT)
-            print output
+            print(output)
         else:
             with open(os.devnull, 'w') as devnull:
                 output = fs.cross_platform_check_output(cmd_args, cwd=cwd, stderr=devnull)

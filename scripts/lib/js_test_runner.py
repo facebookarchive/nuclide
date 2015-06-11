@@ -77,7 +77,8 @@ def run_js_test(test_runner, pkg_path, name):
             shell=shell)
     stdout = []
     for line in proc.stdout:
-        logging.info('[%s test %s]: %s', test_runner, name, line.rstrip())
+        # line is a bytes string literal in Python 3.
+        logging.info('[%s test %s]: %s', test_runner, name, line.rstrip().decode('utf-8'))
         stdout.append(line)
     proc.wait()
 
