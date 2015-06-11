@@ -9,9 +9,33 @@
  * the root directory of this source tree.
  */
 
+import type {
+  GroupedResult,
+} from './types';
+
+var {track} = require('nuclide-analytics');
+var {
+  debounce,
+} = require('nuclide-commons');
 var SearchResultManager = require('./SearchResultManager');
 
 var DEFAULT_PROVIDER = 'FileListProvider';
+/**
+ * A "session" for the purpose of analytics. It exists from the moment the quick-open UI becomes
+ * visible until it gets closed, either via file selection or cancellation.
+ */
+var analyticsSessionId = null;
+var AnalyticsEvents = {
+  CHANGE_SELECTION: 'quickopen-change-selection',
+  CHANGE_TAB:       'quickopen-change-tab',
+  CLOSE_PANEL:      'quickopen-close-panel',
+  OPEN_PANEL:       'quickopen-open-panel',
+  SELECT_FILE:      'quickopen-select-file',
+};
+var AnalyticsDebounceDelays = {
+  CHANGE_TAB: 100,
+  CHANGE_SELECTION: 100,
+};
 
 var _quickSelectionComponent = null;
 function getQuickSelectionComponentLazily() {
@@ -48,12 +72,44 @@ class Activation {
         options.initialColumn = selection.column;
       }
       atom.workspace.open(selection.path, options);
+      var query = this._searchComponent.getInputTextEditor().textContent;
+      var providerName = this._currentProvider.constructor.name;
+      track(
+        AnalyticsEvents.SELECT_FILE,
+        {
+          'quickopen-filepath': selection.path,
+          'quickopen-query': query,
+          'quickopen-provider': providerName,
+          'quickopen-session': analyticsSessionId,
+        }
+      );
       this.closeSearchPanel();
     });
 
     this._searchComponent.onCancellation(() => this.closeSearchPanel());
-    this._searchComponent.onTabChange(providerName => this.toggleProvider(providerName));
+    this._searchComponent.onTabChange(debounce(providerName => {
+      analyticsSessionId = analyticsSessionId || Date.now().toString();
+      track(
+        AnalyticsEvents.CHANGE_TAB,
+        {
+          'quickopen-provider': providerName,
+          'quickopen-session': analyticsSessionId,
+        }
+      );
+      this.toggleProvider(providerName);
+    }, AnalyticsDebounceDelays.CHANGE_TAB));
+    this._searchComponent.onSelectionChanged(debounce((selection: any) => {
+      track(
+        AnalyticsEvents.CHANGE_SELECTION,
+        {
 
+          'quickopen-selected-index': selection.selectedItemIndex.toString(),
+          'quickopen-selected-service': Number.prototype.toString.call(selection.selectedItemIndex),
+          'quickopen-selected-directory': selection.selectedDirectory,
+          'quickopen-session': analyticsSessionId,
+        }
+      );
+    }, AnalyticsDebounceDelays.CHANGE_SELECTION));
     this._subscriptions.add(
       atom.commands.add('atom-workspace', 'nuclide-quick-open:toggle-omni-search', () => {
         this.toggleProvider('OmniSearchResultProvider');
@@ -88,7 +144,15 @@ class Activation {
     this._subscriptions.dispose();
   }
 
-  toggleProvider(providerName) {
+  toggleProvider(providerName: string) {
+    analyticsSessionId = analyticsSessionId || Date.now().toString();
+    track(
+      AnalyticsEvents.CHANGE_TAB,
+      {
+        'quickopen-provider': providerName,
+        'quickopen-session': analyticsSessionId,
+      }
+    );
     var provider = SearchResultManager.getProvider(providerName);
     // "toggle" behavior
     if (
@@ -110,6 +174,13 @@ class Activation {
   showSearchPanel() {
     this._previousFocus = document.activeElement;
     if (this._searchComponent && this._searchPanel) {
+      // Start a new search "session" for analytics purposes.
+      track(
+        AnalyticsEvents.OPEN_PANEL,
+        {
+          'quickopen-session': analyticsSessionId,
+        }
+      );
       this._searchPanel.show();
       this._searchComponent.focus();
       this._searchComponent.selectInput();
@@ -118,8 +189,15 @@ class Activation {
 
   closeSearchPanel() {
     if (this._searchComponent && this._searchPanel) {
+      track(
+        AnalyticsEvents.CLOSE_PANEL,
+        {
+          'quickopen-session': analyticsSessionId,
+        }
+      );
       this._searchPanel.hide();
       this._searchComponent.blur();
+      analyticsSessionId = null;
     }
 
     if (this._previousFocus !== null) {
