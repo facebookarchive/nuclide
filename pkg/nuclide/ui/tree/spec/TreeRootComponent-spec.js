@@ -421,7 +421,7 @@ describe('TreeRootComponent', () => {
     });
   });
 
-  describe('clicking', () => {
+  describe('user interaction', () => {
     var onClickNode;
     var onConfirmSelection;
 
@@ -463,6 +463,46 @@ describe('TreeRootComponent', () => {
           expect(component.getSelectedNodes()).toEqual([]);
           expect(onClickNode.callCount).toBe(0);
           expect(onConfirmSelection.callCount).toBe(0);
+        });
+      });
+    });
+
+    describe('<enter> (i.e. `core:confirm`) on a selected node', () => {
+      it('calls onConfirmSelection if the node is a container', () => {
+        waitsForPromise(async () => {
+          var component = renderComponent(props);
+          await component.setRoots([nodes['G']]);
+          await component.selectNodeKey(nodes['G'].getKey())
+
+          expect(component.getSelectedNodes()).toEqual([nodes['G']]);
+          expect(component.isNodeKeyExpanded(nodes['G'].getKey())).toBe(true);
+
+          var nodeComponents = getNodeComponents(component);
+
+          atom.commands.dispatch(hostEl, 'core:confirm');
+          expect(component.isNodeKeyExpanded(nodes['G'].getKey())).toBe(true);
+
+          expect(onClickNode.callCount).toBe(0);
+          expect(onConfirmSelection).toHaveBeenCalledWith(nodes['G']);
+          expect(onConfirmSelection.callCount).toBe(1);
+        });
+      });
+
+      it('calls onConfirmSelection if the node is not a container', () => {
+        waitsForPromise(async () => {
+          var component = renderComponent(props);
+          await component.setRoots([nodes['G']]);
+          await component.expandNodeKey(nodes['H'].getKey());
+          await component.selectNodeKey(nodes['J'].getKey())
+
+          expect(component.getSelectedNodes()).toEqual([nodes['J']]);
+
+          var nodeComponents = getNodeComponents(component);
+          atom.commands.dispatch(hostEl, 'core:confirm');
+
+          expect(onClickNode.callCount).toBe(0);
+          expect(onConfirmSelection).toHaveBeenCalledWith(nodes['J']);
+          expect(onConfirmSelection.callCount).toBe(1);
         });
       });
     });
