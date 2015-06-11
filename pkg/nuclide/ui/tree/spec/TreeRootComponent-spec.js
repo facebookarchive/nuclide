@@ -422,13 +422,9 @@ describe('TreeRootComponent', () => {
   });
 
   describe('user interaction', () => {
-    var onClickNode;
     var onConfirmSelection;
 
     beforeEach(() => {
-      onClickNode = jasmine.createSpy('onClickNode');
-      props.onClickNode = onClickNode;
-
       onConfirmSelection = jasmine.createSpy('onConfirmSelection');
       props.onConfirmSelection = onConfirmSelection;
     })
@@ -445,7 +441,6 @@ describe('TreeRootComponent', () => {
           TestUtils.Simulate.click(React.findDOMNode(nodeComponents['G'].refs['arrow']));
 
           expect(component.getExpandedNodes()).toEqual([]);
-          expect(onClickNode.callCount).toBe(0);
           expect(onConfirmSelection.callCount).toBe(0);
         });
       });
@@ -461,7 +456,6 @@ describe('TreeRootComponent', () => {
           TestUtils.Simulate.click(React.findDOMNode(nodeComponents['G'].refs['arrow']));
 
           expect(component.getSelectedNodes()).toEqual([]);
-          expect(onClickNode.callCount).toBe(0);
           expect(onConfirmSelection.callCount).toBe(0);
         });
       });
@@ -482,7 +476,6 @@ describe('TreeRootComponent', () => {
           atom.commands.dispatch(hostEl, 'core:confirm');
           expect(component.isNodeKeyExpanded(nodes['G'].getKey())).toBe(true);
 
-          expect(onClickNode.callCount).toBe(0);
           expect(onConfirmSelection).toHaveBeenCalledWith(nodes['G']);
           expect(onConfirmSelection.callCount).toBe(1);
         });
@@ -500,7 +493,6 @@ describe('TreeRootComponent', () => {
           var nodeComponents = getNodeComponents(component);
           atom.commands.dispatch(hostEl, 'core:confirm');
 
-          expect(onClickNode.callCount).toBe(0);
           expect(onConfirmSelection).toHaveBeenCalledWith(nodes['J']);
           expect(onConfirmSelection.callCount).toBe(1);
         });
@@ -525,12 +517,11 @@ describe('TreeRootComponent', () => {
           TestUtils.Simulate.click(React.findDOMNode(nodeComponents['G']));
           expect(component.isNodeKeyExpanded(nodes['G'].getKey())).toBe(true);
 
-          expect(onClickNode.callCount).toBe(0);
           expect(onConfirmSelection.callCount).toBe(0);
         });
       });
 
-      it('calls onClickNode if the node is not a container', () => {
+      it('calls onConfirmSelection if the node is not a container', () => {
         waitsForPromise(async () => {
           var component = renderComponent(props);
           await component.setRoots([nodes['G']]);
@@ -542,9 +533,8 @@ describe('TreeRootComponent', () => {
           var nodeComponents = getNodeComponents(component);
           TestUtils.Simulate.click(React.findDOMNode(nodeComponents['J']));
 
-          expect(onClickNode).toHaveBeenCalledWith(nodes['J']);
-          expect(onClickNode.callCount).toBe(1);
-          expect(onConfirmSelection.callCount).toBe(0);
+          expect(onConfirmSelection).toHaveBeenCalledWith(nodes['J']);
+          expect(onConfirmSelection.callCount).toBe(1);
         });
       });
     });
@@ -564,7 +554,6 @@ describe('TreeRootComponent', () => {
           expect(component.getSelectedNodes()).toEqual([nodes['G']]);
           expect(component.isNodeKeyExpanded(nodes['G'].getKey())).toBe(true);
 
-          expect(onClickNode.callCount).toBe(0);
           expect(onConfirmSelection.callCount).toBe(0);
         });
       });
@@ -581,7 +570,6 @@ describe('TreeRootComponent', () => {
           TestUtils.Simulate.click(React.findDOMNode(nodeComponents['J']));
           expect(component.getSelectedNodes()).toEqual([nodes['J']]);
 
-          expect(onClickNode.callCount).toBe(0);
           expect(onConfirmSelection.callCount).toBe(0);
         });
       });
@@ -604,7 +592,6 @@ describe('TreeRootComponent', () => {
           TestUtils.Simulate.mouseDown(React.findDOMNode(nodeComponents['I']), {button: 0});
           expect(component.getSelectedNodes()).toEqual([nodeComponents['H'].props.node]);
 
-          expect(onClickNode.callCount).toBe(0);
           expect(onConfirmSelection.callCount).toBe(0);
         });
       });

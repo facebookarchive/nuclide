@@ -79,7 +79,6 @@ var TreeRootComponent = React.createClass({
   propTypes: {
     initialRoots: PropTypes.arrayOf(PropTypes.instanceOf(LazyTreeNode)).isRequired,
     eventHandlerSelector: PropTypes.string.isRequired,
-    onClickNode: PropTypes.func.isRequired,
     onConfirmSelection: PropTypes.func.isRequired,
     labelClassNameForNode: PropTypes.func.isRequired,
     rowClassNameForNode: PropTypes.func,
@@ -91,7 +90,6 @@ var TreeRootComponent = React.createClass({
 
   getDefaultProps(): any {
     return {
-      onClickNode(node: LazyTreeNode) {},
       onConfirmSelection(node: LazyTreeNode) {},
       elementToRenderWhenEmpty: null,
     };
@@ -198,7 +196,7 @@ var TreeRootComponent = React.createClass({
     if (node.isContainer()) {
       this._toggleNodeExpanded(node);
     } else {
-      this.props.onClickNode(node);
+      this.props.onConfirmSelection(node);
     }
   },
 

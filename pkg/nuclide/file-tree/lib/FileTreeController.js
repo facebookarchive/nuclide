@@ -60,11 +60,6 @@ async function fetchChildren(node: LazyFileTreeNode, controller: FileTreeControl
   return new Immutable.List(newChildren);
 }
 
-function onClickNode(node: LazyFileTreeNode) {
-  var file = node.getItem();
-  atom.workspace.open(file.getPath(), {activatePane: false, searchAllPanes: true});
-}
-
 function labelClassNameForNode(node: LazyFileTreeNode) {
   var classObj = {
     'icon': true,
@@ -195,7 +190,6 @@ class FileTreeController {
     var props = {
       initialRoots: this._roots,
       eventHandlerSelector,
-      onClickNode,
       onConfirmSelection: (node) => this.onConfirmSelection(node),
       labelClassNameForNode,
       rowClassNameForNode,
