@@ -12,9 +12,11 @@
     "atom": ">0.177.0"
   },
   "dependencies": {
-    "nuclide-atom-interfaces": "0.0.0",
     "nuclide-atom-npm": "0.0.0",
     "nuclide-commons": "0.0.0",
     "react-for-atom": "0.13.6"
+  },
+  "devDependencies": {
+    "nuclide-atom-interfaces": "0.0.0"
   }
 }

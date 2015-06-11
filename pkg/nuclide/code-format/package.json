@@ -12,8 +12,10 @@
     "atom": ">=0.190.0"
   },
   "dependencies": {
-    "nuclide-atom-interfaces": "0.0.0",
     "nuclide-logging": "0.0.0"
+  },
+  "devDependencies": {
+    "nuclide-atom-interfaces": "0.0.0"
   },
   "consumedServices": {
     "nuclide-code-format.provider": {

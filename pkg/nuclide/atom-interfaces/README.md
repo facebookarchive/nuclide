@@ -4,21 +4,22 @@ Atom type declarations for use with the Flow type checker.
 
 ## Usage
 
-1. Add `nuclide-atom-interfaces` as a dependency in package.json
+1. Add `nuclide-atom-interfaces` as a development dependency in
+   package.json:
 
     ```json
-    "dependencies": {
+    "devDependencies": {
       "nuclide-atom-interfaces": "0.0.0"
     }
     ```
 
-2. Run the setup script to symlink the local NPM package
+2. Run the setup script to symlink the local NPM package:
 
     ```sh
     ./scripts/dev/setup
     ```
 
-3. Reference the interfaces in the local `.flowconfig`
+3. Reference the interfaces in the local `.flowconfig`:
 
     ```
     [libs]

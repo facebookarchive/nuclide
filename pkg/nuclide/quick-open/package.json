@@ -22,7 +22,6 @@
   },
   "dependencies": {
     "nuclide-atom-helpers": "0.0.0",
-    "nuclide-atom-interfaces": "0.0.0",
     "nuclide-client": "0.0.0",
     "nuclide-commons": "0.0.0",
     "nuclide-logging": "0.0.0",
@@ -31,5 +30,8 @@
     "object-assign": "2.0.0",
     "react-for-atom": "0.13.6",
     "react-classset": "0.0.2"
+  },
+  "devDependencies": {
+    "nuclide-atom-interfaces": "0.0.0"
   }
 }

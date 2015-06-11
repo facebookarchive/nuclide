@@ -22,7 +22,6 @@
     "fs-plus": "2.8.0",
     "immutable": "3.6.2",
     "nuclide-atom-helpers": "0.0.0",
-    "nuclide-atom-interfaces": "0.0.0",
     "nuclide-commons": "0.0.0",
     "nuclide-hg-git-bridge": "0.0.0",
     "nuclide-logging": "0.0.0",
@@ -32,6 +31,7 @@
     "react-for-atom": "0.13.6"
   },
   "devDependencies": {
+    "nuclide-atom-interfaces": "0.0.0",
     "rimraf": "~2.2.2",
     "temp": "0.8.1"
   }

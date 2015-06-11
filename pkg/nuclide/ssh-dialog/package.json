@@ -12,7 +12,6 @@
     "atom": ">=0.184.0"
   },
   "dependencies": {
-    "nuclide-atom-interfaces": "0.0.0",
     "nuclide-client": "0.0.0",
     "nuclide-commons": "0.0.0",
     "nuclide-logging": "0.0.0",
@@ -23,6 +22,7 @@
     "react-for-atom": "0.13.6"
   },
   "devDependencies": {
+    "nuclide-atom-interfaces": "0.0.0",
     "temp": "0.8.1"
   }
 }

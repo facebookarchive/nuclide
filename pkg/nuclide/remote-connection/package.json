@@ -9,7 +9,6 @@
     "testRunner": "apm"
   },
   "dependencies": {
-    "nuclide-atom-interfaces": "0.0.0",
     "nuclide-commons": "0.0.0",
     "nuclide-logging": "0.0.0",
     "nuclide-node-transpiler": "0.0.0",
@@ -21,6 +20,7 @@
     "test": "jasmine-node-transpiled spec"
   },
   "devDependencies": {
+    "nuclide-atom-interfaces": "0.0.0",
     "temp": "0.8.1"
   }
 }
