@@ -80,7 +80,6 @@ var TreeRootComponent = React.createClass({
     initialRoots: PropTypes.arrayOf(PropTypes.instanceOf(LazyTreeNode)).isRequired,
     eventHandlerSelector: PropTypes.string.isRequired,
     onClickNode: PropTypes.func.isRequired,
-    onClickNodeArrow: PropTypes.func.isRequired,
     onConfirmSelection: PropTypes.func.isRequired,
     labelClassNameForNode: PropTypes.func.isRequired,
     rowClassNameForNode: PropTypes.func,
@@ -93,7 +92,6 @@ var TreeRootComponent = React.createClass({
   getDefaultProps(): any {
     return {
       onClickNode(node: LazyTreeNode) {},
-      onClickNodeArrow(node: LazyTreeNode) {},
       onConfirmSelection(node: LazyTreeNode) {},
       elementToRenderWhenEmpty: null,
     };
