@@ -19,7 +19,8 @@ if (process.argv.length !== 3) {
 
 var file = process.argv[2];
 var path = require('path');
-var filePath = path.join(process.env.PWD, file);
+
+var filePath = path.resolve(process.env.PWD, file);
 
 var fs = require('fs');
 var sourceCode = fs.readFileSync(filePath);
