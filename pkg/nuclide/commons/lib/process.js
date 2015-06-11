@@ -61,8 +61,10 @@ function createExecEnvironment(originalEnvirnment: any, commonBinaryPaths: Array
  *       queueName string The queue on which to block dependent calls.
  *       stdin string The contents to write to stdin.
  * @return Promise that resolves to an object with the properties:
- *     stdout string The contents of the process's output stream.
- *     stderr string The contents of the process's error stream.
+ *     stdout string The contents of the process's output stream. (If this exceeds the maxBuffer,
+ *         then this Promise will reject.)
+ *     stderr string The contents of the process's error stream. (If this exceeds the maxBuffer,
+ *         then this Promise will reject.)
  *     exitCode number The exit code returned by the process.
  */
 function asyncExecute(
@@ -84,9 +86,13 @@ function asyncExecute(
       options,
       (error, stdout, stderr) => {
         var exitCode = error ? error.code : 0;
+        // If there is an internal error, such as "stdout maxBuffer exceeded.",
+        // then there will not be an exitCode, but there will be an errorMessage.
+        var errorMessage = error ? error.message : null;
         var result = {
           stdout,
           stderr,
+          errorMessage,
           exitCode,
           command: commandStringWithArgs,
         };
