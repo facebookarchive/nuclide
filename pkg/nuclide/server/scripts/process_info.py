@@ -80,9 +80,14 @@ class ProcessInfo(object):
             new_columns.append('command')
             args.append('-o')
             args.append(','.join(columns))
-        if user is not None:
+
+        if user is None:
+            # List processes from all users.
+            args.append('-A')
+        else:
             args.append('-u')
             args.append(user)
+
         stdout = utils.check_output_silent(args)
         procs = []
         for line in stdout.splitlines():

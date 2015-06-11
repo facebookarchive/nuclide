@@ -42,10 +42,11 @@ class NuclideServer(object):
     # Get Nuclide server process info from ps.
     # Return a list of process info.
     # Port is an optional filter.
+    # By default, it only gets you your Nuclide server processes.
     @staticmethod
-    def get_processes(port=None):
+    def get_processes(user=getpass.getuser(), port=None):
         matches = []
-        procs = ProcessInfo.get_processes(getpass.getuser(), re.escape(NuclideServer.script_name + " --port"))
+        procs = ProcessInfo.get_processes(user, re.escape(NuclideServer.script_name + " --port"))
         for proc in procs:
             port_from_proc = int(proc.get_command_param('port'))
             # If port not specified, skip port check and add to result list.
@@ -81,7 +82,7 @@ class NuclideServer(object):
 
     def _get_proc_info(self):
         if self._proc is None:
-            procs = self.get_processes(self.port)
+            procs = self.get_processes(port=self.port)
             if len(procs) == 1:
                 self._proc = procs[0]
             elif len(procs) > 1:

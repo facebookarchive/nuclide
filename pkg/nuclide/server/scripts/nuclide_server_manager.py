@@ -89,9 +89,9 @@ class NuclideServerManager(object):
 
     # If port_filter is given, only list servers in that list.
     @staticmethod
-    def list_servers(port_filter=[]):
+    def list_servers(user=getpass.getuser(), port_filter=[]):
         servers = []
-        for proc in NuclideServer.get_processes():
+        for proc in NuclideServer.get_processes(user):
             port = int(proc.get_command_param('port'))
             if not port_filter or port in port_filter:
                 server = NuclideServer(port, proc=proc)
@@ -133,7 +133,7 @@ class NuclideServerManager(object):
     # Find and use existing Nuclide server's port if there is a match,
     # or obtain an open port.
     def _obtain_nuclide_server_port(self):
-        servers = self.list_servers(OPEN_PORTS)
+        servers = self.list_servers(port_filter=OPEN_PORTS)
         if len(servers) > 0:
             for server in servers:
                 # Return existing server port if the protocol matches.
@@ -222,8 +222,12 @@ if __name__ == '__main__':
     if options.command == 'start':
         ret = manager.start_nuclide()
         print('The log file can be found at %s.' % LOG_FILE, file=sys.stderr)
-    elif options.command == 'list':
-        servers = manager.list_servers()
+    elif options.command == 'list' or options.command == 'listall':
+        if options.command == 'listall':
+            # List processes for all users.
+            servers = manager.list_servers(user=None)
+        else:
+            servers = manager.list_servers()
         for server in servers:
             server.print_json()
         ret = 0
