@@ -14,6 +14,7 @@ var path = require('path');
 function getConnectionDialogDefaultSettings(): any {
   // Windows uses %USERNAME% instead of $USER.
   var username = process.env['USER'] || process.env['USERNAME'];
+  var homeDir = process.env['HOME'] || process.env['USERPROFILE'];
   return {
     host: '',
     username: username,
@@ -21,9 +22,9 @@ function getConnectionDialogDefaultSettings(): any {
     // so we always want to use `/` as the path separator for cwd, even if Atom
     // is running on Windows.
     cwd: '/home/' + username,
-    pathToPrivateKey: path.join(process.env.HOME, '.ssh/id_rsa'),
+    pathToPrivateKey: path.join(homeDir, '.ssh/id_rsa'),
     useSshAgent: false,
-    remoteServerCommand: path.join(process.env.HOME, 'nuclide', 'start-nuclide-server'),
+    remoteServerCommand: path.join(homeDir, 'nuclide', 'start-nuclide-server'),
     sshPort: 22,
   };
 }
