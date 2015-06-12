@@ -5,6 +5,7 @@
 # the root directory of this source tree.
 
 import errno
+import logging
 import os
 import platform_checker
 import shutil
@@ -79,6 +80,7 @@ def cross_platform_check_output(cmd_args, **kwargs):
     returncode = process.returncode
 
     if returncode:
+        logging.error('Error running %s in %s', cmd_args, kwargs.get('cwd', os.getcwd()))
         raise subprocess.CalledProcessError(returncode, cmd_args, output=stdout)
 
     return stdout
