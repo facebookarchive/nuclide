@@ -1,0 +1,17 @@
+{
+  "name": "nuclide-file-watcher",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "Watch for editor conflicts and prompt to reload, ignore or compare",
+  "nuclide": {
+    "packageType": "Atom",
+    "testRunner": "apm"
+  },
+  "engines": {
+    "atom": ">=0.207.0"
+  },
+  "devDependencies": {
+    "nuclide-atom-interfaces": "0.0.0"
+  }
+}
