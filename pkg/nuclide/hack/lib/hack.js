@@ -63,7 +63,15 @@ module.exports = {
     var completions = await hackLanguage.getCompletions(path, contents, offset);
     // Filter out the completions that do not contain the prefix as a token in the match text case insentively.
     var tokenLowerCase = prefix.toLowerCase();
-    return completions.filter(completion => completion.matchText.toLowerCase().indexOf(tokenLowerCase) >= 0);
+
+    var {compareHackCompletions} = require('./utils');
+    var hackCompletionsCompartor = compareHackCompletions(prefix);
+
+    return completions
+      .filter(completion => completion.matchText.toLowerCase().indexOf(tokenLowerCase) >= 0)
+      // Sort the auto-completions based on a scoring function considering:
+      // case sensitivity, position in the completion, private functions and alphabetical order.
+      .sort((completion1, completion2) => hackCompletionsCompartor(completion1.matchText, completion2.matchText));
   },
 
   async formatSourceFromEditor(editor: TextEditor, range: Range): Promise<string> {
