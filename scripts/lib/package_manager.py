@@ -51,15 +51,11 @@ class PackageManager(object):
     def get_configs(self, include_packages_that_depend_on_atom=True):
         for package_config in self._configs_in_topological_order:
             is_atom_package = package_config['testRunner'] == 'apm'
-            exclude = package_config.get('excludeFromRelease', False)
             package_name = package_config['name']
 
             if is_atom_package and not include_packages_that_depend_on_atom:
                 # If Atom packages are to be excluded, silently ignore them.
                 logging.debug('Excluding atom package: %s' % package_name)
-                pass
-            elif exclude:
-                logging.info('Excluding from installation: %s' % package_name)
             else:
                 logging.debug('Including package: %s' % package_name)
                 yield package_config
@@ -255,7 +251,6 @@ def load_package_configs():
         config['testRunner'] = test_runner
         config['excludeTestsFromContinuousIntegration'] = disableTests
         config['includeDevDependencies'] = includeDevDependencies
-        config['excludeFromRelease'] = False
         config['installLibClang'] = installLibClang
         package_map[config['name']] = config
 

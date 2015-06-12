@@ -30,12 +30,9 @@ class OfflineInstaller(object):
         queue = deque()
         for config in self._package_manager.get_configs(
                 include_packages_that_depend_on_atom=include_packages_that_depend_on_atom):
-            if config.get('excludeFromRelease', False):
-                continue
-            else:
-                package_json = os.path.join(config['packageRootAbsolutePath'], 'package.json')
-                pkg = PackageNeedsDepsInstalled(config['name'], package_json, config['includeDevDependencies'])
-                queue.append(pkg)
+            package_json = os.path.join(config['packageRootAbsolutePath'], 'package.json')
+            pkg = PackageNeedsDepsInstalled(config['name'], package_json, config['includeDevDependencies'])
+            queue.append(pkg)
 
         # Process the items in the queue in order. Dependencies will be traversed in a depth-first
         # manner, so a package's dependencies will be added to the front of the queue.

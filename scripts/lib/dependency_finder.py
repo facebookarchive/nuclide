@@ -21,9 +21,6 @@ class DependencyFinder(object):
     def write_dependencies(self, output_dir):
         package_to_version_set = {}
         for config in self._package_manager.get_configs():
-            if config.get('excludeFromRelease', False):
-                continue
-
             src_path = config['packageRootAbsolutePath']
             package_json = os.path.join(src_path, 'package.json')
             self._process_package_json(package_json,
