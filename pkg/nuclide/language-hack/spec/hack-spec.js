@@ -7,7 +7,7 @@ describe('PHP grammar', () => {
   var grammar = null;
 
   beforeEach(() => {
-    waitsForPromise(() => atom.packages.activatePackage('language-hack'));
+    waitsForPromise(() => atom.packages.activatePackage('nuclide-language-hack'));
     runs(() => grammar = atom.grammars.grammarForScopeName('text.html.hack'));
   });
 

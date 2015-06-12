@@ -1,5 +1,5 @@
 {
-  "name": "language-hack",
+  "name": "nuclide-language-hack",
   "repository": "github.com/facebook/nuclide",
   "version": "0.0.0",
   "description": "Hack language support in Atom",
