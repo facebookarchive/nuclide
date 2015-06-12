@@ -1,0 +1,21 @@
+{
+  "name": "nuclide-installer",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "Installs the suite of Atom packages that compose Nuclide",
+  "nuclide": {
+    "packageType": "Atom",
+    "testRunner": "apm"
+  },
+  "engines": {
+    "atom": ">=0.207.0"
+  },
+  "dependencies": {
+    "nuclide-commons": "0.0.0",
+    "nuclide-installer-base": "0.0.0"
+  },
+  "devDependencies": {
+    "nuclide-atom-interfaces": "0.0.0"
+  }
+}
