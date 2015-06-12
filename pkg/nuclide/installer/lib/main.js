@@ -16,11 +16,10 @@ module.exports = {
     // Add a delay before checking for package updates so that this
     // is not on the critical path for Atom startup.
     setTimeout(async () => {
-      var {exists} = require('nuclide-commons').fsPromise;
-      var pathToConfig = require.resolve('./config.json');
-      var hasConfig = await exists(pathToConfig);
-
-      if (!hasConfig) {
+      var pathToConfig;
+      try {
+        pathToConfig = require.resolve('./config.json');
+      } catch (e) {
         // The config.json file will not be present in development.
         return;
       }

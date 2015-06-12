@@ -12,7 +12,6 @@
     "atom": ">=0.207.0"
   },
   "dependencies": {
-    "nuclide-commons": "0.0.0",
     "nuclide-installer-base": "0.0.0"
   },
   "devDependencies": {
