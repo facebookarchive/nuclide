@@ -37,6 +37,7 @@ class NuclideSocket extends EventEmitter {
     this._reconnectTime = INITIAL_RECONNECT_TIME_MS;
     this._reconnectTimer = null;
     this._connected = false;
+    this._previouslyConnected = false;
     this._cachedMessages = [];
 
     var {protocol, host} = url.parse(serverUri);
@@ -44,6 +45,7 @@ class NuclideSocket extends EventEmitter {
     this._websocketUri = websocketUri;
 
     this._heartbeatConnectedOnce = false;
+    this._lastHeartbeat = null;
     this._monitorServerHeartbeat();
 
     this._reconnect();
@@ -72,8 +74,13 @@ class NuclideSocket extends EventEmitter {
       this._websocket = websocket;
       // Handshake the server with my client id to manage my re-connect attemp, if it is.
       websocket.send(this.id, () => {
+        if (this._previouslyConnected) {
+          this.emit('reconnect');
+        } else {
+          this.emit('connect');
+        }
         this._connected = true;
-        this.emit('connect');
+        this._previouslyConnected = true;
         this._cachedMessages.splice(0).forEach((message) => this.send(message));
       });
     });
@@ -149,8 +156,14 @@ class NuclideSocket extends EventEmitter {
         method: 'POST',
       });
       this._heartbeatConnectedOnce = true;
+      if (this._lastHeartbeat === 'away') {
+        // Trigger a websocket reconnect.
+        this._websocket.close();
+      }
+      this._lastHeartbeat  = 'here';
       this.emit('heartbeat');
     } catch (err) {
+      this._lastHeartbeat  = 'away';
       // Error code could could be one of:
       // ['ENOTFOUND', 'ECONNREFUSED', 'ECONNRESET', 'ETIMEDOUT']
       // A heuristic mapping is done between the xhr error code to the state of server connection.

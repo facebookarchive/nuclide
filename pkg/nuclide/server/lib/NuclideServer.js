@@ -42,7 +42,7 @@ type NuclideServerOptions = {
 type SocketClient = {
   id: string;
   subscriptions: {[channel: string]: (event: any) => void};
-  socket: WebSocket;
+  socket: ?WebSocket;
 };
 
 type ServiceConfig = {
@@ -145,7 +145,7 @@ class NuclideServer {
             return;
           }
 
-          this._sendSocketMessage(client.socket, {
+          this._sendSocketMessage(client, {
             channel: SERVICE_FRAMEWORK_EVENT_CHANNEL,
             event: {
               name: eventName,
@@ -238,7 +238,7 @@ class NuclideServer {
         return logger.warn('Client %s already subscribed to channel: %s', clientId, channel);
       } else {
         var subscibeHandler = client.subscriptions[channel] = (event) =>
-            this._sendSocketMessage(client.socket, {channel, event});
+            this._sendSocketMessage(client, {channel, event});
         this.subscribe(channel, subscibeHandler);
       }
       if (options.eventEmitterId) {
@@ -344,24 +344,42 @@ class NuclideServer {
   }
 
   _onConnection(socket: WebSocket): void {
+    logger.info('WebSocket connecting');
+
     var subscriptions = {};
-    var client = {socket, subscriptions};
+    var client = null;
 
     socket.on('error', (e) =>
-      logger.error('Client #%s error: %s', client.id, e.message));
+      logger.error('Client #%s error: %s', client ? client.id : 'unkown', e.message));
 
     socket.once('message', (clientId) => {
-      client.id = clientId;
-      this._clients[clientId] = client;
+      client = this._clients[clientId] = this._clients[clientId] || {subscriptions: {}, id: clientId};
+      // If an existing client, we close its socket before listening to the new socket.
+      if (client.socket) {
+        client.socket.close();
+        client.socket = null;
+      }
+      logger.info('Client #%s connecting with a new socket!', clientId);
+      client.socket = socket;
       socket.on('message', (message) => this._onSocketMessage(client, message));
     });
 
     socket.on('close', () => {
-      for (var channel in subscriptions) {
+      if (!client) {
+        return;
+      }
+      if (client.socket === socket) {
+        client.socket = null;
+      }
+      logger.info('Client #%s closing a socket!', client.id);
+      // TODO: enable subscription cleanup when we have a robust reconnect scenario.
+      /*
+      for (var channel in client.subscriptions) {
         this.unsubscribe(channel, subscriptions[channel]);
       }
       this._eventSubscriptions.forEach(value => value.delete(client.id));
       delete this._clients[client.id];
+      */
     });
   }
 
@@ -381,7 +399,7 @@ class NuclideServer {
       error = e;
     }
 
-    this._sendSocketMessage(client.socket, {
+    this._sendSocketMessage(client, {
       channel: SERVICE_FRAMEWORK_RPC_CHANNEL,
       requestId,
       result,
@@ -435,8 +453,11 @@ class NuclideServer {
     eventEmitter.consumed = true;
   }
 
-  _sendSocketMessage(socket: WebSocket, message: any) {
-    socket.send(JSON.stringify(message));
+  _sendSocketMessage(client: SocketClient, message: any) {
+    if (!client.socket) {
+      return;
+    }
+    client.socket.send(JSON.stringify(message));
   }
 
   close() {
