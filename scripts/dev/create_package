@@ -1,0 +1,239 @@
+#!/usr/bin/env python
+
+# Utility to create a new package for Nuclide. Usage:
+#
+#     ./create_package nuclide-xxx
+#
+# This will create the directory:
+#
+#     pkg/nuclide/xxx
+#
+# It will create all of the necessary boilerplate files underneath it:
+#
+#     .flowconfig
+#     package.json
+#     lib/main.js
+
+import commands
+import os
+import os.path
+import subprocess
+import sys
+
+# Add the lib directory to $PYTHONPATH so library code can be imported.
+sys.path.append(os.path.join(os.path.dirname(__file__), '../lib'))
+
+from json_helpers import json_load
+from package_manager import PACKAGES_PATH
+from nuclide_config import NUCLIDE_CONFIG
+
+NPM = 'npm'
+APM = 'apm'
+NODE_PACKAGE = 'node'
+ATOM_PACKAGE = 'atom'
+DEFAULT_DIRECTORY = 'nuclide'
+PACKAGE_DIRECTORIES = [DEFAULT_DIRECTORY, 'fb']
+
+APM_FLOWCONFIG = """\
+[include]
+
+[ignore]
+
+[libs]
+./node_modules/nuclide-atom-interfaces/1.0/
+
+[options]
+
+"""
+
+NPM_FLOWCONFIG = """\
+[include]
+
+[ignore]
+
+[libs]
+
+[options]
+
+"""
+
+USERNAME = commands.getoutput("whoami")
+
+COPYRIGHT_BLOCK = """\
+/*
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ */"""
+
+ATOM_MAIN_JS = """\
+'use babel';
+/* @flow */
+
+%s
+
+module.exports = {
+
+  activate(state: ?Object): void {
+    // TODO(%s): Add activation code here.
+  },
+
+};
+""" % (COPYRIGHT_BLOCK, USERNAME)
+
+NODE_MAIN_JS = """\
+'use babel';
+/* @flow */
+
+%s
+
+module.exports = {
+  // TODO(%s): Add export code here.
+};
+""" % (COPYRIGHT_BLOCK, USERNAME)
+
+ATOM_APM_PACKAGE_JSON_TEMPLATE = """\
+{
+  "name": "%s",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "",
+  "nuclide": {
+    "packageType": "Atom",
+    "testRunner": "apm"
+  },
+  "activationCommands": {
+  },
+  "engines": {
+    "atom": ">=%s"
+  },
+  "devDependencies": {
+    "nuclide-atom-interfaces": "0.0.0"
+  }
+}
+"""
+
+NODE_APM_PACKAGE_JSON_TEMPLATE = """\
+{
+  "name": "%s",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "",
+  "nuclide": {
+    "packageType": "Node",
+    "testRunner": "apm"
+  },
+  "dependencies": {
+    "nuclide-atom-interfaces": "0.0.0"
+  }
+}
+"""
+
+NODE_NPM_PACKAGE_JSON_TEMPLATE = """\
+{
+  "name": "%s",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "",
+  "nuclide": {
+    "packageType": "Node",
+    "testRunner": "npm"
+  },
+  "dependencies": {
+    "nuclide-node-transpiler": "0.0.0"
+  },
+  "scripts": {
+    "test": "jasmine-node-transpiled spec"
+  }
+}
+"""
+
+# Return the directory name and package name.
+def get_dir_and_package_name(user_input):
+    for dir in PACKAGE_DIRECTORIES:
+        if user_input.startswith(dir + '-'):
+            # Example, given 'nuclide-foo' we shall return ('nuclide/foo', nuclide-foo)
+            return os.path.join(dir, user_input[len(dir) + 1:]), user_input
+    # If user input does not start with any known sub directory names, default is 'nuclide'.
+    # For example, given 'foo', we shall return ('nuclide/foo', nuclide-foo)
+    return os.path.join(DEFAULT_DIRECTORY, user_input), DEFAULT_DIRECTORY + '-' + user_input
+
+def create_package(dir_name, package_name, package_type, test_runner):
+    # Create the directory for the new package.
+    pkg_dir = os.path.join(PACKAGES_PATH, dir_name)
+    os.makedirs(pkg_dir)
+
+    # Add the .flowconfig file.
+    if test_runner == NPM:
+        flowconfig = NPM_FLOWCONFIG
+    else:
+        flowconfig = APM_FLOWCONFIG
+    with open(os.path.join(pkg_dir, '.flowconfig'), 'w') as f:
+        f.write(flowconfig)
+
+    # Add the lib/main.js file.
+    lib_dir = os.path.join(pkg_dir, 'lib')
+    os.makedirs(lib_dir)
+    with open(os.path.join(lib_dir, 'main.js'), 'w') as f:
+        f.write(NODE_MAIN_JS if package_type == NODE_PACKAGE else ATOM_MAIN_JS)
+
+    # Add the spec folder.
+    spec_dir = os.path.join(pkg_dir, 'spec')
+    os.makedirs(spec_dir)
+
+    # Add the package.json file.
+    with open(os.path.join(pkg_dir, 'package.json'), 'w') as f:
+        if package_type == NODE_PACKAGE:
+            if test_runner == NPM:
+                f.write(NODE_NPM_PACKAGE_JSON_TEMPLATE % package_name)
+            else:
+                f.write(NODE_APM_PACKAGE_JSON_TEMPLATE % package_name)
+        else:
+            nuclide_config = json_load(NUCLIDE_CONFIG)
+            atom_version = nuclide_config['atomVersion']
+            f.write(ATOM_APM_PACKAGE_JSON_TEMPLATE % (package_name, atom_version))
+
+    print 'New package created at: %s.' % pkg_dir
+    print 'Running setup to pick up the changes.'
+    setup_script = os.path.join(os.path.dirname(__file__), './setup')
+    subprocess.check_call([setup_script])
+
+def prompt_and_create_package(user_input):
+    if user_input is None:
+        user_input = raw_input('Enter the name of your new package: ').strip()
+    dir_name, package_name = get_dir_and_package_name(user_input)
+    print('Using %s as package name under pkg/%s.' % (package_name, dir_name))
+
+    answer = raw_input(
+            'Can this package be used outside of Atom (e.g., on a server)? [Y/n]: ').strip()
+    if len(answer) > 0 and (answer[0] == 'N' or answer[0] == 'n'):
+        test_runner = APM
+        package_type = None
+    else:
+        test_runner = NPM
+        package_type = NODE_PACKAGE
+    print('Using %s as test runner.' % test_runner)
+
+    if package_type is None:
+        answer = raw_input(
+                'Can this package be loaded synchronously via require() in Atom? [Y/n]: ').strip()
+        if len(answer) > 0 and (answer[0] == 'N' or answer[0] == 'n'):
+            package_type = ATOM_PACKAGE
+        else:
+            package_type = NODE_PACKAGE
+    print('Using %s as package type.' % package_type)
+
+    create_package(dir_name, package_name, package_type, test_runner)
+
+def main():
+    args = sys.argv[1:]
+    user_input = args[0] if len(args) > 0 else None
+    prompt_and_create_package(user_input)
+
+if __name__  == '__main__':
+    main()
