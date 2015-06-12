@@ -60,6 +60,8 @@ function createExecEnvironment(originalEnvirnment: any, commonBinaryPaths: Array
  *     The additional options we provide:
  *       queueName string The queue on which to block dependent calls.
  *       stdin string The contents to write to stdin.
+ *       pipedCommand string a command to pipe the output of command through.
+ *       pipedArgs array of strings as arguments.
  * @return Promise that resolves to an object with the properties:
  *     stdout string The contents of the process's output stream. (If this exceeds the maxBuffer,
  *         then this Promise will reject.)
@@ -70,8 +72,18 @@ function createExecEnvironment(originalEnvirnment: any, commonBinaryPaths: Array
 function asyncExecute(
     command: string,
     args: Array<string>,
-    options: ?any = {}): Promise {
+    options: any = {}): Promise {
   var {commandString, commandStringWithArgs} = createCommand(command, args);
+
+  if (options && options.pipedCommand) {
+    var {
+      commandString: pipedCommandString,
+      commandStringWithArgs: pipedCommandStringWithArgs,
+    } = createCommand(options.pipedCommand, options.pipedArgs || []);
+
+    commandString += '|' + pipedCommandString;
+    commandStringWithArgs += '|' + pipedCommandStringWithArgs;
+  }
 
   // Add commons binary paths to the PATH when no custom env provided.
   options.env = options.env || createExecEnvironment(process.env, COMMON_BINARY_PATHS);
