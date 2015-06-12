@@ -19,6 +19,22 @@ function isEmpty(obj: Object): bool {
   return true;
 }
 
+function copyProperties(src: Object, dest: Object): void {
+  for (var key in src) {
+    dest[key] = src[key];
+  }
+}
+
+/**
+ * Modeled after Object.assign():
+ * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign
+ */
+function assign(target: Object, ...sources: Array<Object>): Object {
+  sources.forEach(source => copyProperties(source, target));
+  return target;
+}
+
 module.exports = {
+  assign,
   isEmpty,
 };

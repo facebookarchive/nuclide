@@ -166,7 +166,10 @@ class LocalHgServiceBase extends HgService {
     if (options.env) {
       options.env['HGPLAIN'] = 1;
     } else {
-      options.env = {'HGPLAIN': 1};
+      var {assign} = require('nuclide-commons').object;
+      var env = {'HGPLAIN': 1};
+      assign(env, process.env);
+      options.env = env;
     }
     return asyncExecute('hg', args, options);
   }
