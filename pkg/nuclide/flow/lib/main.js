@@ -9,7 +9,9 @@
  * the root directory of this source tree.
  */
 
-var getServiceByNuclideUri;
+function getServiceByNuclideUri(service, file = null) {
+  return require('nuclide-client').getServiceByNuclideUri(service, file);
+}
 
 // One of text or snippet is required.
 type Suggestion = {
@@ -47,7 +49,7 @@ module.exports = {
 
   /** Provider for autocomplete service. */
   createAutocompleteProvider(): Autocomplete {
-    var getSuggestions = (request: Request) => {
+    var getSuggestions = request => {
       var {editor, prefix} = request;
       var file = editor.getPath();
       var contents = editor.getText();
@@ -55,9 +57,6 @@ module.exports = {
       var line = cursor.getBufferRow();
       var col = cursor.getBufferColumn();
 
-      if (!getServiceByNuclideUri) {
-        getServiceByNuclideUri = require('nuclide-client').getServiceByNuclideUri;
-      }
       return getServiceByNuclideUri('FlowService', file)
         .getAutocompleteSuggestions(file, contents, line, col, prefix);
     };
@@ -80,5 +79,6 @@ module.exports = {
     // TODO(mbolin): Find a way to unregister the autocomplete provider from
     // ServiceHub, or set a boolean in the autocomplete provider to always return
     // empty results.
+    getServiceByNuclideUri('FlowService').dispose();
   }
 };

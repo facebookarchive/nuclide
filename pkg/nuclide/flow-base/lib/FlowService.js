@@ -19,6 +19,9 @@ class FlowService {
   ): Promise<?{file:NuclideUri; line:number; column:number}> {
     return Promise.reject('Not implemented');
   }
+  dispose(): Promise<void> {
+    return Promise.reject('Not implemented');
+  }
 
   findDiagnostics(
     file: NuclideUri

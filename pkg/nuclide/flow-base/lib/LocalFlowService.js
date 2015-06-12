@@ -37,12 +37,55 @@ function insertAutocompleteToken(contents: string, line: number, col: number) {
 }
 
 class LocalFlowService extends FlowService {
+  startedServers: Set<string>;
+
+  constructor() {
+    super();
+    this.startedServers = new Set();
+  }
+
+  async dispose(): Promise<void> {
+    var pathToFlow = await this._getPathToFlow();
+    for (var path of this.startedServers) {
+      asyncExecute(pathToFlow, ['stop', path], {});
+    }
+  }
+
   _getPathToFlow(): Promise<string> {
     if (global.atom) {
       return getConfigValueAsync('nuclide-flow.pathToFlow')();
     } else {
       return Promise.resolve('flow');
     }
+  }
+
+  async _execFlow(args: Array<mixed>, options: Object): Promise<Object> {
+    var maxTries = 5;
+    args.push("--no-auto-start");
+    var pathToFlow = await this._getPathToFlow();
+    for (var i = 0; ; i++) {
+      try {
+        var result = await asyncExecute(pathToFlow, args, options);
+        return result;
+      } catch (e) {
+        if (i >= maxTries) {
+          throw e;
+        }
+        if (e.stderr.match("There is no flow server running")) {
+          // the flow root (where .flowconfig exists) conveniently appears in
+          // the error message enclosed in single quotes.
+          var root = e.stderr.match(/'[^']*'/)[0].replace(/'/g, '');
+          this.startedServers.add(root);
+          await asyncExecute(pathToFlow, ['start', root], {});
+        } else {
+          // not sure what happened, but we'll let the caller deal with it
+          throw e;
+        }
+        // try again
+      }
+    }
+    // otherwise flow complains
+    return {};
   }
 
   async findDefinition(
@@ -63,22 +106,26 @@ class LocalFlowService extends FlowService {
     // ensure he or she got accurate results.
     options.stdin = currentContents;
 
-    var pathToFlow = await this._getPathToFlow();
     var args = ['get-def', '--json', '--path', file, line, column];
-    var result = await asyncExecute(pathToFlow, args, options);
-    if (result.exitCode === 0) {
-      var json = JSON.parse(result.stdout);
-      if (json['path']) {
-        return {
-          file: json['path'],
-          line: json['line'] - 1,
-          column: json['start'] - 1,
-        };
+    try {
+      var result = await this._execFlow(args, options);
+      if (result.exitCode === 0) {
+        var json = JSON.parse(result.stdout);
+        if (json['path']) {
+          return {
+            file: json['path'],
+            line: json['line'] - 1,
+            column: json['start'] - 1,
+          };
+        } else {
+          return null;
+        }
       } else {
+        logger.error(result.stderr);
         return null;
       }
-    } else {
-      logger.error(result.stderr);
+    } catch(e) {
+      logger.error(e.stderr);
       return null;
     }
   }
@@ -88,8 +135,6 @@ class LocalFlowService extends FlowService {
     if (!options) {
       return [];
     }
-
-    var pathToFlow = await this._getPathToFlow();
 
     // Currently, `flow status` does not take the path of a file to check.
     // It would be nice if it would take the path and use it for filtering,
@@ -103,7 +148,7 @@ class LocalFlowService extends FlowService {
 
     var result;
     try {
-      result = await asyncExecute(pathToFlow, args, options);
+      result = await this._execFlow(args, options);
     } catch (e) {
       // This codepath will be exercised when Flow finds type errors as the
       // exit code will be non-zero. Note this codepath could also be exercised
@@ -142,19 +187,22 @@ class LocalFlowService extends FlowService {
     var args = ['autocomplete', '--json', file];
 
     options.stdin = insertAutocompleteToken(currentContents, line, column);
-    var pathToFlow = await this._getPathToFlow();
-    var result = await asyncExecute(pathToFlow, args, options);
-    if (result.exitCode === 0) {
-      var json = JSON.parse(result.stdout);
-      var replacementPrefix = /^\s*$/.test(prefix) ? '' : prefix;
-      return json.map(item => {
-        return {
-          text: item['name'],
-          rightLabel: item['type'],
-          replacementPrefix,
-        };
-      });
-    } else {
+    try {
+      var result = await this._execFlow(args, options);
+      if (result.exitCode === 0) {
+        var json = JSON.parse(result.stdout);
+        var replacementPrefix = /^\s*$/.test(prefix) ? '' : prefix;
+        return json.map(item => {
+          return {
+            text: item['name'],
+            rightLabel: item['type'],
+            replacementPrefix,
+          };
+        });
+      } else {
+        return [];
+      }
+    } catch (_) {
       return [];
     }
   }

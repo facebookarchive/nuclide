@@ -8,7 +8,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
- 
+
 var {getServiceByNuclideUri} = require('nuclide-client');
 var Linter = require(`${atom.packages.resolvePackagePath('linter')}/lib/linter`);
 var {Range} = require('atom');
