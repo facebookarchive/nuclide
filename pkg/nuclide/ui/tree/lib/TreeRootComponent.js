@@ -73,7 +73,8 @@ var FIRST_SELECTED_DESCENDANT_REF: string = 'firstSelectedDescendant';
 var TreeRootComponent = React.createClass({
   _allKeys: (null: ?Array<string>),
   _emitter: (null: ?EventEmitter),
-  _keyToNode: (null: ?Object<string, string>),
+  _keyToNode: (null: ?{[key: string]: LazyTreeNode}),
+  _rejectDidUpdateListenerPromise: (null: ?() => void),
   _subscriptions: (null: ?CompositeDisposable),
 
   propTypes: {
@@ -404,14 +405,19 @@ var TreeRootComponent = React.createClass({
     return new Promise((resolve, reject) => {
       var listener = () => {
         if (shouldResolve()) {
-          resolve();
+          resolve(undefined);
+
           // Set this to null so this promise can't be rejected anymore.
           this._rejectDidUpdateListenerPromise = null;
-          this._emitter.removeListener('did-update', listener);
+          if (this._emitter) {
+            this._emitter.removeListener('did-update', listener);
+          }
         }
       };
 
-      this._emitter.addListener('did-update', listener);
+      if (this._emitter) {
+        this._emitter.addListener('did-update', listener);
+      }
 
       // We need to reject the previous promise, so it doesn't get leaked.
       if (this._rejectDidUpdateListenerPromise) {
@@ -419,8 +425,10 @@ var TreeRootComponent = React.createClass({
         this._rejectDidUpdateListenerPromise = null;
       }
       this._rejectDidUpdateListenerPromise = () => {
-        reject();
-        this._emitter.removeListener('did-update', listener);
+        reject(undefined);
+        if (this._emitter) {
+          this._emitter.removeListener('did-update', listener);
+        }
       }
     });
   },

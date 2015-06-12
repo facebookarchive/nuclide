@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type Immutable from 'immutable';
+
 class LazyTreeNode {
 
   // Protected
@@ -59,21 +61,24 @@ class LazyTreeNode {
   }
 
   fetchChildren(): Promise {
-    if (!this._pendingFetch) {
-      this._pendingFetch = this._fetchChildren(this)
-          .then((children) => {
+    var pendingFetch = this._pendingFetch;
+    if (!pendingFetch) {
+      pendingFetch = this._fetchChildren(this).then((children) => {
             // Store the children before returning them from the Promise.
             this._children = children;
             this._isCacheValid = true;
             return children;
           });
+      this._pendingFetch = pendingFetch;
 
       // Make sure that whether the fetch succeeds or fails, the _pendingFetch
       // field is cleared.
-      var clear = () => { this._pendingFetch = null; };
-      this._pendingFetch.then(clear, clear);
+      var clear = () => {
+        this._pendingFetch = null;
+      };
+      pendingFetch.then(clear, clear);
     }
-    return this._pendingFetch;
+    return pendingFetch;
   }
 
   /**
@@ -81,13 +86,15 @@ class LazyTreeNode {
    * LazyTreeNodes that make up the tree.
    */
   getKey(): string {
-    if (!this.__key) {
+    var key = this.__key;
+    if (!key) {
       // TODO(mbolin): Escape slashes.
       var prefix = this.__parent ? this.__parent.getKey() : '/';
       var suffix = this.__isContainer ? '/' : '';
-      this.__key = prefix + this.getLabel() + suffix;
+      key = prefix + this.getLabel() + suffix;
+      this.__key = key;
     }
-    return this.__key;
+    return key;
   }
 
   /**
