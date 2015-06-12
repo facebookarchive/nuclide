@@ -125,10 +125,19 @@ module.exports = {
       return null;
     }
     var pos = result[0];
+    var range = null;
+    // If the search string was expanded to include more than a valid regex php word.
+    // e.g. in case of XHP tags, the start and end column are provided to underline the full range
+    // to visit its definition.
+    if (pos.searchStartColumn && pos.searchEndColumn) {
+      var {Range} = require('atom');
+      range = new Range([line, pos.searchStartColumn], [line, pos.searchEndColumn]);
+    }
     return {
       file: getFilePath(pos.path, protocol, host),
       line: pos.line - 1,
       column: pos.column - 1,
+      range,
     };
   },
 

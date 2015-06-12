@@ -13,7 +13,11 @@ var {Range} = require('atom');
 var HackWorker = require('./HackWorker');
 var {CompletionType, SymbolType} = require('nuclide-hack-common/lib/constants');
 var logger = require('nuclide-logging').getLogger();
-var wordCharRegex = /\w/;
+// The word char regex include \ to search for namespaced classes.
+var wordCharRegex = /[\w\\]/;
+// The xhp char regex include : and - to match xhp tags like <ui:button-group>.
+var xhpCharRegex = /[\w:-]/;
+var XHP_LINE_TEXT_REGEX = /<([a-z][a-z0-9_.:-]*)[^>]*\/?>/gi;
 
 /**
  * The HackLanguage is the controller that servers language requests by trying to get worker results
@@ -134,7 +138,7 @@ module.exports = class HackLanguage {
         this._getDefinitionFromIdentifyMethod(path, contents, lineNumber, column),
         // Third stage, do simple string parsing of the file to get a string to search the server for.
         // Then ask the server for the location of that string.
-        this._getDefinitionFromStringParse(contents, lineNumber, column, lineText),
+        this._getDefinitionFromStringParse(lineText, column),
       ]);
     // We now have results from all 3 sources. Chose the best results to show to the user.
     if (identifyMethodResults.length === 1) {
@@ -220,22 +224,8 @@ module.exports = class HackLanguage {
     }
   }
 
-  async _getDefinitionFromStringParse(contents: string,
-      lineNumber: number, column: number, lineText: string): Promise<Array<any>> {
-    var search = null;
-    var start = column;
-    // Scan for the word start for the hack variable or function we are trying to get definition for.
-    while (start >= 0 && wordCharRegex.test(lineText.charAt(start))) {
-      start--;
-    }
-    if (lineText[start] === '$') {
-      start--;
-    }
-    var end = column;
-    while (wordCharRegex.test(lineText.charAt(end))) {
-      end++;
-    }
-    search = lineText.substring(start + 1, end);
+  async _getDefinitionFromStringParse(lineText: string, column: number): Promise<Array<any>> {
+    var {search, start, end} = this._parseStringForExpression(lineText, column);
     if (!search) {
       return [];
     }
@@ -246,7 +236,51 @@ module.exports = class HackLanguage {
       // ignore the error
       logger.warn('_getDefinitionFromStringParse error:', err);
     }
-    return defs;
+    return defs.map(definition => {
+      return {
+        path: definition.path,
+        line: definition.line,
+        column: definition.column,
+        searchStartColumn: start,
+        searchEndColumn: end,
+      };
+    });
+  }
+
+  _parseStringForExpression(lineText: string, column: number): string {
+    var search = null;
+    var start = column;
+
+    var isXHP = false;
+    var xhpMatch;
+    while  (xhpMatch = XHP_LINE_TEXT_REGEX.exec(lineText)) {
+      var xhpMatchIndex = xhpMatch.index + 1;
+      if (column >= xhpMatchIndex && column < (xhpMatchIndex + xhpMatch[1].length)) {
+        isXHP = true;
+        break;
+      }
+    }
+
+    var syntaxCharRegex = isXHP ? xhpCharRegex : wordCharRegex;
+    // Scan for the word start for the hack variable, function or xhp tag
+    // we are trying to get the definition for.
+    while (start >= 0 && syntaxCharRegex.test(lineText.charAt(start))) {
+      start--;
+    }
+    if (lineText[start] === '$') {
+      start--;
+    }
+    start++;
+    var end = column;
+    while (syntaxCharRegex.test(lineText.charAt(end))) {
+      end++;
+    }
+    search = lineText.substring(start, end);
+    // XHP UI elements start with : but the usages doesn't have that colon.
+    if (isXHP && !search.startsWith(':')) {
+      search = ':' + search;
+    }
+    return {search, start, end};
   }
 
   async getType(path: string, contents: string, expression: string, lineNumber: number, column: number): ?string {

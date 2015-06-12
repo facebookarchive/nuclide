@@ -119,6 +119,39 @@ class HackClass {}
         });
       });
     });
+
+    it('_parseStringForExpression returns a php expression from a line', () => {
+      var {search} = hackLanguage._parseStringForExpression('  $abcd = 123;', 4);
+      expect(search).toEqual('$abcd');
+    });
+
+    it('_parseStringForExpression returns an XHP expression from a line', () => {
+      var {search} = hackLanguage._parseStringForExpression('  <ui:test:element attr="123">', 7);
+      expect(search).toEqual(':ui:test:element');
+    });
+
+    it('_parseStringForExpression returns an php expression from a line with <', () => {
+      var {search} = hackLanguage._parseStringForExpression('  $abc = $def<$lol;', 11);
+      expect(search).toEqual('$def');
+    });
+
+    it('_parseStringForExpression returns an php expression from a line with < and >', () => {
+      var {search} = hackLanguage._parseStringForExpression('  $abc = $def <$lol && $x > $z;', 11);
+      expect(search).toEqual('$def');
+    });
+
+    it('_parseStringForExpression returns an php expression from a line with php code and xhp expression', () => {
+      var {search} = hackLanguage._parseStringForExpression('  $abc = $get$Xhp() . <ui:button attr="cs">;', 25);
+      expect(search).toEqual(':ui:button');
+    });
+
+    it('_parseStringForExpression returns an php expression from a line with multiple xhp expression', () => {
+      var lineText = '  $abc = <ui:button attr="cs"> . <ui:radio>;';
+      expect(hackLanguage._parseStringForExpression(lineText, 4).search).toBe('$abc');
+      expect(hackLanguage._parseStringForExpression(lineText, 15).search).toBe(':ui:button');
+      expect(hackLanguage._parseStringForExpression(lineText, 23).search).toBe('attr');
+      expect(hackLanguage._parseStringForExpression(lineText, 36).search).toBe(':ui:radio');
+    });
   });
 
 });

@@ -48,9 +48,10 @@ class ClickToSymbolDelegate extends AbstractDelegate {
 
     // Create the actual-call promise synchronously for next calls to consume.
     this._pendingSameMatch = (async () => {
-      var range = matchAndRange.range;
       var location = await findDefinition(editor, row, column);
       if (location) {
+        // Optionally use the range returned from the definition match, if any.
+        var range = location.range || matchAndRange.range;
         return {
           clickableRanges: [range],
           callback: () => goToLocation(location.file, location.line, location.column),
