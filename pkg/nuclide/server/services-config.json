@@ -58,5 +58,11 @@
     "implementation": "nuclide-buck-base/lib/LocalBuckProject.js",
     "name": "BuckProject",
     "useServiceFramework": true
+  },
+  {
+    "definition": "nuclide-debugger-hhvm-proxy/lib/HhvmDebuggerProxyService.js",
+    "implementation": "nuclide-debugger-hhvm-proxy/lib/LocalHhvmDebuggerProxyService.js",
+    "name": "HhvmDebuggerProxyService",
+    "useServiceFramework": true
   }
 ]

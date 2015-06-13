@@ -1,0 +1,19 @@
+{
+  "name": "nuclide-debugger-hhvm-proxy",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "Proxies from chrome debug protocol to dbgp for hhvm debugging.",
+  "nuclide": {
+    "packageType": "Node",
+    "testRunner": "npm"
+  },
+  "dependencies": {
+    "nuclide-logging": "0.0.0",
+    "nuclide-node-transpiler": "0.0.0",
+    "xml2js": "0.4.9"
+  },
+  "scripts": {
+    "test": "jasmine-node-transpiled spec"
+  }
+}

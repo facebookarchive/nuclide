@@ -16,6 +16,7 @@
     "nuclide-buck-base": "0.0.0",
     "nuclide-clang": "0.0.0",
     "nuclide-commons": "0.0.0",
+    "nuclide-debugger-hhvm-proxy": "0.0.0",
     "nuclide-flow-base": "0.0.0",
     "nuclide-hack-common": "0.0.0",
     "nuclide-hg-repository-base": "0.0.0",
