@@ -11,37 +11,80 @@
 
 var {Directory} = require('atom');
 
+/**
+ * @param directory Either a RemoteDirectory or Directory we are interested in.
+ * @return If the directory is part of a Mercurial repository, returns an object
+ *  with the following field:
+ *  * originURL The string URL of the repository origin.
+ *  * repoPath The path/uri to the repository (.hg folder).
+ *  * workingDirectory A Directory (or RemoteDirectory) object that represents
+ *    the repository's working directory.
+ *  * workingDirectoryLocalPath The local path to the workingDirectory of the
+ *    repository (i.e. if it's a remote directory, the URI minus the hostname).
+ *  If the directory is not part of a Mercurial repository, returns null.
+ */
+function getRepositoryDescription(directory: Directory): ?mixed {
+  var {RemoteDirectory} = require('nuclide-remote-connection');
+
+  if (RemoteDirectory.isRemoteDirectory(directory)) {
+    var repositoryDescription = directory.getHgRepositoryDescription();
+    if (!repositoryDescription.repoPath) {
+      return null;
+    }
+
+    var remoteConnection = directory._remote;
+    var {repoPath, originURL, workingDirectoryPath} = repositoryDescription;
+    var workingDirectoryLocalPath = workingDirectoryPath;
+    // These paths are all relative to the remote fs. We need to turn these into URIs.
+    var repoPath = remoteConnection.getUriOfRemotePath(repoPath);
+    var workingDirectoryPath = remoteConnection.getUriOfRemotePath(workingDirectoryPath);
+    return {
+      originURL,
+      repoPath,
+      workingDirectory: new RemoteDirectory(remoteConnection, workingDirectoryPath),
+      workingDirectoryLocalPath,
+    };
+  } else {
+    var {findHgRepository} = require('nuclide-source-control-helpers');
+    var repositoryDescription = findHgRepository(directory.getPath());
+    if (!repositoryDescription.repoPath) {
+      return null;
+    }
+
+    var {repoPath, originURL, workingDirectoryPath} = repositoryDescription;
+    return {
+      originURL,
+      repoPath,
+      workingDirectory: new Directory(workingDirectoryPath),
+      workingDirectoryLocalPath: workingDirectoryPath,
+    };
+  }
+}
+
 module.exports = class HgRepositoryProvider {
   repositoryForDirectory(directory: Directory) {
     return Promise.resolve(this.repositoryForDirectorySync(directory));
   }
 
   repositoryForDirectorySync(directory: Directory): ?HgRepository {
-    var {RemoteDirectory} = require('nuclide-remote-connection');
-    if (RemoteDirectory.isRemoteDirectory(directory)) {
-      // This provider does not support remote directories at this time.
+    var repositoryDescription = getRepositoryDescription(directory);
+    if (!repositoryDescription) {
       return null;
     }
 
-    var {findHgRepository} = require('nuclide-source-control-helpers');
-    var {repoPath, originURL, workingDirectoryPath} = findHgRepository(directory.getPath());
+    var {originURL, repoPath, workingDirectory, workingDirectoryLocalPath} = repositoryDescription;
 
-    if (repoPath) {
-      var HgRepositoryClient = require('./HgRepositoryClient');
-      var {getServiceByNuclideUri} = require('nuclide-client');
-      var service = getServiceByNuclideUri(
-        'HgService',
-        directory.getPath(),
-        {workingDirectory: workingDirectoryPath}
-      );
-      var workingDirectory = new Directory(workingDirectoryPath);
-      return new HgRepositoryClient(repoPath, service, {
-        workingDirectory,
-        projectRootDirectory: directory,
-        originURL,
-      });
-    } else {
-      return null;
-    }
+    var {getServiceByNuclideUri} = require('nuclide-client');
+    var service = getServiceByNuclideUri(
+      'HgService',
+      directory.getPath(),
+      {workingDirectory: workingDirectoryLocalPath}
+    );
+    var HgRepositoryClient = require('./HgRepositoryClient');
+    return new HgRepositoryClient(repoPath, service, {
+      workingDirectory,
+      projectRootDirectory: directory,
+      originURL,
+    });
   }
 }
