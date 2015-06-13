@@ -255,6 +255,11 @@ declare class atom$Workspace {
     priority?: number;
   }): atom$Panel;
 
+  addModalPanel(options: {
+    item: Node | Disposable;
+    visible?: boolean;
+    priority?: number;
+  }): atom$Panel;
   // Searching and Replacing
 }
 
