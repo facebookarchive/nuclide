@@ -45,7 +45,7 @@ Nuclide packages are not publicly available in [npm](https://www.npmjs.com/) or
 
 * Python 2.6 or later.
 * Atom v0.207.0 or later.
-* `node`, `npm`, and `apm` must be on your `$PATH`. (Node must be v0.12.0 or later.)
+* `node`, `npm`, `apm`, and `git` must be on your `$PATH`. (Node must be v0.12.0 or later.)
 * *Optional, but strongly recommended:* install the Atom [linter](https://atom.io/packages/linter) package.
 
 **Build and install Nuclide**
@@ -62,7 +62,10 @@ or if you are on Windows:
 python scripts\dev\setup
 ```
 
-This will fetch the appropriate dependencies from [npm](https://www.npmjs.com/) and
+If you see any errors, try running the setup script again with the `--verbose` flag to get more
+debugging information.
+
+The setup script will fetch the appropriate dependencies from [npm](https://www.npmjs.com/) and
 perform any necessary build steps. When complete, you should see several `nuclide-`
 packages in your `~/.atom/packages` directory. Starting Atom after running `./scripts/dev/setup`
 for the first time may be a little slow because of the large number of Babel files that
