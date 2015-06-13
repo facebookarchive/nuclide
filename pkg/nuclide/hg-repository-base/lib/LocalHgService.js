@@ -52,7 +52,8 @@ class LocalHgService extends LocalHgServiceBase {
     this._watchmanClient = new watchman.Client({
       watchmanBinaryPath: await getWatchmanBinaryPath(),
     });
-    this._watchmanClient.command(['watch', this.getWorkingDirectory()], (watchError, watchResp) => {
+    var workingDirectory = this.getWorkingDirectory();
+    this._watchmanClient.command(['watch', workingDirectory], (watchError, watchResp) => {
       if (watchError) {
         logger.error('Error initiating watchman watch: ' + watchError);
         return;
@@ -61,7 +62,7 @@ class LocalHgService extends LocalHgServiceBase {
       // first subscribe. We don't want this behavior, so we issue a `clock`
       // command to give a logical time constraint on the subscription.
       // This is recommended by https://www.npmjs.com/package/fb-watchman.
-      this._watchmanClient.command(['clock', this.getWorkingDirectory()], (clockError, clockResp) => {
+      this._watchmanClient.command(['clock', workingDirectory], (clockError, clockResp) => {
         if (clockError) {
           logger.error('Failed to query watchman clock: ', clockError);
           return;
@@ -70,14 +71,13 @@ class LocalHgService extends LocalHgServiceBase {
         // Subscribe to changes to files unrelated to source control.
         this._watchmanClient.command([
           'subscribe',
-          this.getWorkingDirectory(),
+          workingDirectory,
           WATCHMAN_SUBSCRIPTION_NAME_PRIMARY,
           {
             fields: ['name', 'exists', 'new'],
             expression: ['allof',
-              ['not', ['match', '.hg/*', 'wholename']],
-              ['not', ['match', '.hg', 'wholename']],
-              ['not', ['match', '.hgignore', 'wholename']],
+              ['not', ['dirname', '.hg']],
+              ['not', ['name', '.hgignore', 'wholename']],
               // This watchman subscription is used to determine when and which
               // files to fetch new statuses for. There is no reason to include
               // directories in these updates, and in fact they may make us overfetch
@@ -101,11 +101,11 @@ class LocalHgService extends LocalHgServiceBase {
         // Subscribe to changes to .hgignore files.
         this._watchmanClient.command([
           'subscribe',
-          this.getWorkingDirectory(),
+          workingDirectory,
           WATCHMAN_SUBSCRIPTION_NAME_HGIGNORE,
           {
             fields: ['name'],
-            expression: ['match', '*.hgignore', 'wholename'],
+            expression: ['name', '.hgignore', 'wholename'],
             since: clockResp.clock,
           },
         ], (subscribeError, subscribeResp) => {
@@ -119,18 +119,16 @@ class LocalHgService extends LocalHgServiceBase {
           logger.debug(`Watchman subscription ${WATCHMAN_SUBSCRIPTION_NAME_HGIGNORE} established.`);
         });
 
-        // TODO (jessicalin) Pass this in.
-        var hgRepoDir = path.join(this.getWorkingDirectory(), '.hg');
-
         // Subscribe to changes to the source control lock file.
         this._watchmanClient.command([
           'subscribe',
-          hgRepoDir,
+          workingDirectory,
           WATCHMAN_SUBSCRIPTION_NAME_HGLOCK,
           {
             fields: ['name', 'exists'],
-            expression: ['match', 'wlock', 'basename'],
+            expression: ['name', '.hg/wlock', 'wholename'],
             since: clockResp.clock,
+            defer_vcs: false,
           },
         ], (subscribeError, subscribeResp) => {
           if (subscribeError) {
@@ -146,12 +144,13 @@ class LocalHgService extends LocalHgServiceBase {
         // Subscribe to changes to the source control directory state file.
         this._watchmanClient.command([
           'subscribe',
-          hgRepoDir,
+          workingDirectory,
           WATCHMAN_SUBSCRIPTION_NAME_HGDIRSTATE,
           {
             fields: ['name', 'exists'],
-            expression: ['match', 'dirstate', 'wholename'],
+            expression: ['name', '.hg/dirstate', 'wholename'],
             since: clockResp.clock,
+            defer_vcs: false,
           },
         ], (subscribeError, subscribeResp) => {
           if (subscribeError) {
@@ -167,12 +166,13 @@ class LocalHgService extends LocalHgServiceBase {
         // Subscribe to changes in the current Hg bookmark.
         this._watchmanClient.command([
           'subscribe',
-          hgRepoDir,
+          workingDirectory,
           WATCHMAN_SUBSCRIPTION_NAME_HGBOOKMARK,
           {
             fields: ['name', 'exists'],
-            expression: ['match', 'bookmarks.current', 'wholename'],
+            expression: ['name', '.hg/bookmarks.current', 'wholename'],
             since: clockResp.clock,
+            defer_vcs: false,
           },
         ], (subscribeError, subscribeResp) => {
           if (subscribeError) {
