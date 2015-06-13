@@ -256,7 +256,7 @@ declare class atom$Workspace {
   }): atom$Panel;
 
   addModalPanel(options: {
-    item: Node | Disposable;
+    item: HTMLElement;
     visible?: boolean;
     priority?: number;
   }): atom$Panel;
