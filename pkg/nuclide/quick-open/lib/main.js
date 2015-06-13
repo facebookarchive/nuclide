@@ -13,11 +13,17 @@ import type {
   GroupedResult,
 } from './types';
 
+import type {
+  QuickSelectionComponent,
+} from './QuickSelectionComponent';
+
 var {track} = require('nuclide-analytics');
 var {
   debounce,
 } = require('nuclide-commons');
+
 var SearchResultManager = require('./SearchResultManager');
+var QuickSelectionProvider = require('./QuickSelectionProvider');
 
 var DEFAULT_PROVIDER = 'FileListProvider';
 /**
@@ -37,10 +43,10 @@ var AnalyticsDebounceDelays = {
   CHANGE_SELECTION: 100,
 };
 
-var _quickSelectionComponent = null;
+var _quickSelectionComponent: ?QuickSelectionComponent = null;
 function getQuickSelectionComponentLazily() {
-  if (_quickSelectionComponent === null) {
-    _quickSelectionComponent = require('./QuickSelectionComponent');;
+  if (!_quickSelectionComponent) {
+    _quickSelectionComponent = require('./QuickSelectionComponent');
   }
   return _quickSelectionComponent;
 }
@@ -54,6 +60,13 @@ function getReactLazily() {
 }
 
 class Activation {
+  _currentProvider: QuickSelectionProvider;
+  _previousFocus: ?Element;
+  _reactDiv: Element;
+  _searchComponent: QuickSelectionComponent;
+  _searchPanel: atom$Panel;
+  _subscriptions: atom$CompositeDisposable;
+
   constructor(state: ?Object) {
     this._previousFocus = null;
 

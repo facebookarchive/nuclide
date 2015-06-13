@@ -684,3 +684,5 @@ var QuickSelectionComponent = React.createClass({
 });
 
 module.exports = QuickSelectionComponent;
+
+export type QuickSelectionComponent = QuickSelectionComponent;
