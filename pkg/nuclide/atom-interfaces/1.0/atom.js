@@ -194,7 +194,7 @@ declare class atom$TextEditor {
   }): atom$Decoration;
   // Markers
   markBufferPosition(position: atom$Point | Array<number>): atom$Marker;
-  markBufferRange(range: atom$Range | number[][]): atom$Marker;
+  markBufferRange(range: atom$Range | Array<Array<number>>): atom$Marker;
 
   // Cursors
   getCursorBufferPosition(): atom$Point;
