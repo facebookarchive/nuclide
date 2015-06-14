@@ -4,7 +4,6 @@
   "version": "0.0.0",
   "description": "Provides support for the cxx family of languages via the clang compiler",
   "nuclide": {
-    "installLibClang": true,
     "packageType": "Node",
     "testRunner": "npm"
   },

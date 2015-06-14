@@ -237,7 +237,6 @@ def load_package_configs():
         test_runner = nuclide_config.get('testRunner')
         disableTests = nuclide_config.get('excludeTestsFromContinuousIntegration', False)
         includeDevDependencies = nuclide_config.get('includeDevDependencies', True)
-        installLibClang = nuclide_config.get('installLibClang', False)
 
         config = {}
         config['name'] = manifest['name']
@@ -251,7 +250,6 @@ def load_package_configs():
         config['testRunner'] = test_runner
         config['excludeTestsFromContinuousIntegration'] = disableTests
         config['includeDevDependencies'] = includeDevDependencies
-        config['installLibClang'] = installLibClang
         package_map[config['name']] = config
 
     # Special-case some legacy package-loading code.
@@ -311,16 +309,6 @@ def install_dependencies(package_config, npm):
     # Install other public node dependencies.
     npm.install(src_path, local_packages=package_config['localDependencies'], include_dev_dependencies=package_config['includeDevDependencies'])
     logging.info('Done installing dependencies for %s', name)
-
-    # Install libclang dependencies, if appropriate.
-    if package_config.get('installLibClang', False):
-        try:
-            from fb.libclang import install_libclang
-            logging.info('Installing libclang extra dependencies...')
-            install_libclang(src_path)
-            logging.info('Done installing libclang extra dependencies.')
-        except ImportError:
-            logging.info('Skip Libclang installation for open source version.')
 
     is_node_package = package_config.get('isNodePackage')
     if not is_node_package:
