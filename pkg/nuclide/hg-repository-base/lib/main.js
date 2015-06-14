@@ -21,4 +21,9 @@ module.exports = {
   get LocalHgService() {
     return require('./LocalHgService');
   },
+
+  // Exposed for testing
+  get MockHgService() {
+    return require('../spec/MockHgService');
+  },
 };

@@ -9,10 +9,11 @@
  * the root directory of this source tree.
  */
 
-var {GitRepository} = require('atom');
+var {Directory, GitRepository} = require('atom');
 var fs = require('fs');
 var repositoryContainsPath = require('../lib/repositoryContainsPath');
 var {asyncExecute} = require('nuclide-commons');
+var {HgRepositoryClient, MockHgService} = require('nuclide-hg-repository-base');
 var path = require('path');
 var temp = require('temp').track();
 
@@ -52,9 +53,24 @@ describe('repositoryContainsPath', () => {
 
   it('is accurate for HgRepositoryClient.', () => {
     waitsForPromise(async () => {
-      // TODO (t7348849) Move HgRepositoryClient to hg-repository-base so it
-      // can be required here for the test. Then write this test, which will
-      // look like the test for Git above.
+      // Create temporary Hg repository.
+      await asyncExecute('hg', ['init'], {cwd: repoRoot});
+
+      var hgRepository = new HgRepositoryClient(
+        /* repoPath */ path.join(repoRoot, '.hg'),
+        /* hgService */ new MockHgService(),
+        /* options */  {
+          originURL: 'testURL',
+          workingDirectory: new Directory(repoRoot),
+          projectRootDirectory: new Directory(repoRoot),
+        }
+      );
+
+      expect(repositoryContainsPath(hgRepository, repoRoot)).toBe(true);
+      var subdir = path.join(repoRoot, 'subdir');
+      expect(repositoryContainsPath(hgRepository, subdir)).toBe(true);
+      var parentDir = path.resolve(tempFolder, '..');
+      expect(repositoryContainsPath(hgRepository, parentDir)).toBe(false);
     });
   });
 });

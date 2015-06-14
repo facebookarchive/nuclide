@@ -9,40 +9,13 @@
  * the root directory of this source tree.
  */
 
-var {Directory, Disposable} = require('atom');
+var {Directory} = require('atom');
 var HgRepositoryClient = require('../lib/HgRepositoryClient');
-var HgService = require('../lib/HgService');
+var MockHgService = require('./MockHgService');
 var {HgStatusOption, StatusCodeId, StatusCodeNumber} = require('../lib/hg-constants');
 var path = require('path');
 var temp = require('temp').track();
 
-// This class is meant to be stubbed out in this suite of tests.
-class MockHgService extends HgService {
-  fetchStatuses(filePaths: Array<NuclideUri>, options: ?any): Promise<{[key: string]: StatusCodeId}> {
-  }
-
-  onFilesDidChange(callback: () => void): Disposable {
-    return new Disposable();
-  }
-
-  onHgIgnoreFileDidChange(callback: () => void): Disposable {
-    return new Disposable();
-  }
-
-  onHgRepoStateDidChange(callback: () => void): Disposable {
-    return new Disposable();
-  }
-
-  fetchDiffInfo(filePath: NuclideUri): Promise<?DiffInfo> {
-  }
-
-  fetchCurrentBookmark(): Promise<string> {
-  }
-
-  onHgBookmarkDidChange(): Disposable {
-    return new Disposable();
-  }
-}
 
 describe('HgRepositoryClient', () => {
   var tempDir = temp.mkdirSync('testproj');

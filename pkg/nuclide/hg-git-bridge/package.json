@@ -13,6 +13,7 @@
   },
   "devDependencies": {
     "nuclide-commons": "0.0.0",
+    "nuclide-hg-repository-base": "0.0.0",
     "temp": "0.8.1"
   },
   "scripts": {
