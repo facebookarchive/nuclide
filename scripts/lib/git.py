@@ -25,6 +25,9 @@ class Git (object):
             shutil.rmtree(directory, ignore_errors=True)
         self._execute(['clone', repository, directory])
 
+    def pull(self, repository_directory):
+        self._execute(['pull'], repository_directory)
+
     def checkout(self, repository_directory, branch, create=False):
         cmd_args = ['checkout', branch]
         if create:

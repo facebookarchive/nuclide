@@ -24,6 +24,8 @@ def json_dump(obj, path):
         # Make sure all files we write out end with a trailing newline.
         f.write('\n')
 
+def json_dumps(obj, indent=2):
+    return json.dumps(obj, indent=indent, separators=(',', ': '), sort_keys=True)
 
 def json_load(path):
     try:
