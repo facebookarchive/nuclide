@@ -20,14 +20,11 @@
   },
   "dependencies": {
     "nuclide-client": "0.0.0",
-    "nuclide-commons": "0.0.0",
     "nuclide-hg-repository-base": "0.0.0",
     "nuclide-remote-connection": "0.0.0",
-    "nuclide-remote-uri": "0.0.0",
     "nuclide-source-control-helpers": "0.0.0"
   },
   "devDependencies": {
-    "nuclide-atom-interfaces": "0.0.0",
-    "temp": "0.8.1"
+    "nuclide-atom-interfaces": "0.0.0"
   }
 }

@@ -6,14 +6,18 @@
   "description": "Provides base support for Mercurial source control repositories",
   "nuclide": {
     "packageType": "Node",
-    "testRunner": "npm"
+    "testRunner": "apm"
   },
   "dependencies": {
     "fb-watchman": "0.0.1",
     "nuclide-commons": "0.0.0",
     "nuclide-logging": "0.0.0",
     "nuclide-node-transpiler": "0.0.0",
+    "nuclide-remote-uri": "0.0.0",
     "nuclide-watchman-helpers": "0.0.0"
+  },
+  "devDependencies": {
+    "temp": "0.8.1"
   },
   "scripts": {
     "test": "jasmine-node-transpiled spec"

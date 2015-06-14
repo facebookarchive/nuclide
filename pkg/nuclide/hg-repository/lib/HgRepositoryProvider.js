@@ -80,7 +80,7 @@ module.exports = class HgRepositoryProvider {
       directory.getPath(),
       {workingDirectory: workingDirectoryLocalPath}
     );
-    var HgRepositoryClient = require('./HgRepositoryClient');
+    var {HgRepositoryClient} = require('nuclide-hg-repository-base');
     return new HgRepositoryClient(repoPath, service, {
       workingDirectory,
       projectRootDirectory: directory,

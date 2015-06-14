@@ -10,19 +10,15 @@
  */
 
 module.exports = {
+  get HgRepositoryClient() {
+    return require('./HgRepositoryClient');
+  },
+
   get HgService() {
     return require('./HgService');
   },
 
   get LocalHgService() {
     return require('./LocalHgService');
-  },
-
-  get hgConstants() {
-    return require('./hg-constants');
-  },
-
-  get revisions() {
-    return require('./hg-revision-expression-helpers');
   },
 };

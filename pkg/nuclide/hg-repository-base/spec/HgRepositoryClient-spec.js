@@ -11,8 +11,8 @@
 
 var {Directory, Disposable} = require('atom');
 var HgRepositoryClient = require('../lib/HgRepositoryClient');
-var {HgService} = require('nuclide-hg-repository-base');
-var {HgStatusOption, StatusCodeId, StatusCodeNumber} = require('nuclide-hg-repository-base').hgConstants;
+var HgService = require('../lib/HgService');
+var {HgStatusOption, StatusCodeId, StatusCodeNumber} = require('../lib/hg-constants');
 var path = require('path');
 var temp = require('temp').track();
 
