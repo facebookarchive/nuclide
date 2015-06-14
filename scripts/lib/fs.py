@@ -35,9 +35,12 @@ def mkdirs(path):
         else:
             raise e
 
-def symlink(src, dest):
+def symlink(src, dest, relative=False):
     """Create symlink from src to dest, create directory if dest's dirname doesn't exist, won't
        throw exception if dest already exists and its symlink points to src.
+
+       Args:
+        relative: Create relative symlink instead of absolute symlink (only works on *nix).
     """
     dest_dir = os.path.dirname(dest)
     if not os.path.isdir(dest_dir):
@@ -48,6 +51,8 @@ def symlink(src, dest):
             if platform_checker.is_windows() and os.path.isdir(src):
                 cross_platform_check_output(['mklink', '/J', '/D', dest, src])
             else:
+                if relative and os.path.isabs(src):
+                    src = os.path.relpath(src, os.path.dirname(dest))
                 os.symlink(src, dest)
         except OSError as e:
             if e.errno == errno.EEXIST:

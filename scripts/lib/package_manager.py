@@ -305,7 +305,7 @@ def install_dependencies(package_config, npm):
     for local_dependency, local_dependency_config in package_config['localDependencies'].items():
         src_dir = local_dependency_config['packageRootAbsolutePath']
         dest_dir = os.path.join(node_modules_path, local_dependency)
-        symlink(src_dir, dest_dir)
+        symlink(src_dir, dest_dir, relative=True)
         link_dependencys_executable(node_modules_path, local_dependency)
 
     # Install other public node dependencies.
@@ -362,4 +362,4 @@ def link_dependencys_executable(node_modules_path, dependency_name):
         if platform_checker.is_windows():
             shutil.copyfile(absolute_src_path, absolute_dst_path)
         else:
-            symlink(absolute_src_path, absolute_dst_path)
+            symlink(absolute_src_path, absolute_dst_path, relative=True)
