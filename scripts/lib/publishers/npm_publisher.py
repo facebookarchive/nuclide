@@ -28,7 +28,7 @@ class NpmPublisher(AbstractPublisher):
         self._npm = npm
 
     def get_package_name(self):
-        return self._config['name']
+        return self._config.package_name
 
     def get_published_version(self):
         ''' Reads the `npm info` of the package, gets the current version (of the form 0.0.x)
@@ -37,7 +37,7 @@ class NpmPublisher(AbstractPublisher):
         logging.info('Attempting to determine version of %s in npm', self.get_package_name())
 
         # We often call this multiple times to check publication progress, so force non-memoization.
-        semver = self._npm.info(self._config['packageRootAbsolutePath'], force=True).get('version')
+        semver = self._npm.info(self._config.package_directory, force=True).get('version')
 
         match = self._version_regex.match(semver)
         if match:
@@ -56,7 +56,7 @@ class NpmPublisher(AbstractPublisher):
         logging.info('Publishing %s to npm at version %s', self.get_package_name(), new_version)
 
         # Create temporary directory and copy package into it (without dependencies).
-        package = self._config['packageRootAbsolutePath']
+        package = self._config.package_directory
         tmp_root = tempfile.mkdtemp()
         tmp_package = os.path.join(tmp_root, self.get_package_name())
         logging.info('Copying %s to tmpdir: %s', self.get_package_name(), tmp_package)
@@ -76,7 +76,7 @@ class NpmPublisher(AbstractPublisher):
             if not dependency_key in package:
                 continue
             for (dependency, version) in package[dependency_key].items():
-                if not dependency in self._config['localDependencies']:
+                if not self._config.is_nuclide_npm_package(dependency):
                     continue
                 if version != nil_semver:
                     raise AssertionError('Local dependency %s in package %s was not at version 0' %

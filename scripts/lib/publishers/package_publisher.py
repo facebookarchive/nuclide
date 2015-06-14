@@ -4,23 +4,55 @@
 # This source code is licensed under the license found in the LICENSE file in
 # the root directory of this source tree.
 
+import fs
 import logging
+import os
+from json_helpers import json_load
 from npm import Npm
+from abstract_publisher import AbstractPublisherConfig
 from npm_publisher import NpmPublisher
 
 class PackagePublisher(object):
 
     @staticmethod
-    def _get_publisher(config):
-        if config['isNodePackage']:
-            return NpmPublisher(config, Npm())
-        return None
+    def create_package_publisher_from_packages_script(path_to_nuclide_repo, dry_run=False):
+        def get_list_of_packages(package_type):
+            stdout = fs.cross_platform_check_output(
+                    ['./scripts/dev/packages', '--package-type', package_type],
+                    cwd=path_to_nuclide_repo)
+            # Split by newlines and then remove the last element, which will be the empty string.
+            return stdout.split('\n')[:-1]
+        node_packages = get_list_of_packages('Node')
+        atom_packages = get_list_of_packages('Atom')
 
-    def __init__(self, package_manager, dry_run=False):
-        self._publishers = filter(None, [
-            PackagePublisher._get_publisher(config) for config in package_manager.get_configs()
-            if not config.get('excludeFromRelease', False)
-        ])
+        nuclide_npm_packages = set()
+        publishers = []
+        npm = Npm()
+        def process_packages(packages, is_npm):
+            for package_json in packages:
+                package_name = json_load(package_json)['name']
+                if is_npm:
+                    nuclide_npm_packages.add(package_name)
+
+                config = AbstractPublisherConfig(
+                    package_name,
+                    os.path.dirname(package_json),
+                    nuclide_npm_packages)
+                if is_npm:
+                    publisher = NpmPublisher(config, npm)
+                    publishers.append(publisher)
+                else:
+                    # TODO: Create ApmPublisher and move publishers.append() after if/else.
+                    pass
+
+        # Note that the resulting publishers array will be organized such that all
+        # Node packages appear in topologically sorted order followed by all Atom packages.
+        process_packages(node_packages, is_npm=True)
+        process_packages(atom_packages, is_npm=False)
+        return PackagePublisher(publishers, dry_run)
+
+    def __init__(self, publishers, dry_run):
+        self._publishers = publishers
         self._dry_run = dry_run
 
     def publish(self):

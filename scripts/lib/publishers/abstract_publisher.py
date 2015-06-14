@@ -6,6 +6,29 @@
 
 from abc import ABCMeta, abstractmethod
 
+
+class AbstractPublisherConfig(object):
+    '''Arguments for an AbstractPublisher constructor.'''
+    def __init__(self, package_name, package_directory, nuclide_npm_package_names):
+        self._package_name = package_name
+        self._package_directory = package_directory
+        self._nuclide_npm_package_names = nuclide_npm_package_names
+
+    @property
+    def package_name(self):
+        return self._package_name
+
+    @property
+    def package_directory(self):
+        return self._package_directory
+
+    def is_nuclide_npm_package(self, package_name):
+        return package_name in self._nuclide_npm_package_names
+
+    def __str__(self):
+        return 'name: %s; directory: %s' % (self.package_name, self.package_directory)
+
+
 class AbstractPublisher(object):
     '''This abstract class exists simply to articulate the expected interface of npm and apm
        publisher classes and provides some abstraction over the two package management systems.
