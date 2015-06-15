@@ -214,7 +214,12 @@ class HgRepositoryClient {
    * @return The current Hg bookmark.
    */
   getShortHead(filePath): string {
-    return this._currentBookmark ? this._currentBookmark : '';
+    if (!this._currentBookmark) {
+      // Kick off a fetch to get the current bookmark. This is async.
+      this.fetchCurrentBookmark();
+      return '';
+    }
+    return this._currentBookmark;
   }
 
   // TODO This is a stub.
@@ -657,11 +662,11 @@ class HgRepositoryClient {
    * Section: Retrieving Bookmark (async methods)
    *
    */
-  async fetchCurrentBookmark(): Promise<void> {
+  async fetchCurrentBookmark(): Promise<string> {
     var newlyFetchedBookmark = await this._service.fetchCurrentBookmark();
     if (newlyFetchedBookmark !== this._currentBookmark) {
       this._currentBookmark = newlyFetchedBookmark;
-      // The status bar uses this as a signal to refresh the 'shortHead'.
+      // The Atom status-bar uses this as a signal to refresh the 'shortHead'.
       // There is currently no dedicated 'shortHeadDidChange' event.
       this._emitter.emit('did-change-statuses');
     }
