@@ -1,0 +1,126 @@
+#!/usr/bin/env python
+
+# Copyright (c) 2015-present, Facebook, Inc.
+# All rights reserved.
+#
+# This source code is licensed under the license found in the LICENSE file in
+# the root directory of this source tree.
+
+# Publishes Nuclide packages (currently just those which are node modules, to npm)
+
+# Set up the logging early on in the process.
+import logging
+logging.basicConfig(level=logging.INFO, format='%(message)s')
+
+# Do other ordinary imports.
+import os.path
+import re
+import shutil
+import sys
+import tempfile
+
+# Add the lib/ directory to $PYTHONPATH so library code can be imported.
+sys.path.append(os.path.join(os.path.dirname(__file__), '../lib'))
+
+# Parse the command-line arguments.
+import optparse
+parser = optparse.OptionParser(usage='usage: %prog [options] X',
+                               description='Publishes Nuclide packages. You must specify the ' +
+                                           'given version X (which becomes 0.0.X in npm & apm) ' +
+                                           'of the packages that will be published. If the ' +
+                                           'v0.0.X tag already exists in the repo, that is the ' +
+                                           'commit that will be published. If it does not, it ' +
+                                           'will be added to the current HEAD. If you specify a ' +
+                                           'target version of 0, the script will increment the ' +
+                                           'highest version that has been previously tagged.')
+parser.add_option('--local-repo', '-r', metavar='PATH',
+                  help='A local up-to-date clone of the GitHub Nuclide repo to avoid cloning ' +
+                       'anew. It is not recommended to use this in production, and you must ' +
+                       'be careful to ensure that local repo has the same version tags ' +
+                       'as the origin repo, since those are used to determine which commit to ' +
+                       'publish (and a new tag will be created, and pushed, if the local repo ' +
+                       'does not already have the tag corresponding to the specified version).')
+parser.add_option('--dry-run', '-n', action='store_true', default=False,
+                  help='Show what would happen but don\'t actually publish.')
+parser.add_option('--find-latest', '-l', action='store_true', default=False,
+                  help='Find the highest version number and exit. Useful after previous failures.')
+
+
+options, args = parser.parse_args(sys.argv[1:])
+dry_run = options.dry_run
+local_repo = options.local_repo
+
+master_tmpdir = tempfile.mkdtemp('publish_packages')
+
+from git import Git
+git = Git()
+
+# Establish the repo directory to use.
+if local_repo:
+    repo = local_repo
+    logging.info('Using Nuclide from existing repo directory %s', repo)
+else:
+    repo = os.path.join(master_tmpdir, 'repo')
+    logging.info('Cloning Nuclide to temporary repo directory %s', repo)
+    git.clone('git@github.com:facebook/nuclide.git', repo, clean=True)
+
+head = git.get_head(repo)[0:8]
+logging.info('Repo HEAD is at commit %s', head)
+
+# Build a map of version numbers to commit hash.
+tag_regex = re.compile('^v0\.0\.([1-9]\d*)$')
+commits_by_version = {}
+for tag, commit in git.get_tags(repo):
+    match = tag_regex.match(tag)
+    if match:
+        commits_by_version[int(match.group(1))] = commit[0:8]
+highest_version = int(max(commits_by_version.keys()))
+logging.info('Repo has %d versions tagged; highest is %d', len(commits_by_version), highest_version)
+
+if options.find_latest:
+    exit()
+
+# Determine the version being requested.
+if len(args) != 1 or not re.match('^\d+$', args[0]):
+    print 'You must specify a single (integer) version argument'
+    exit()
+target_version = int(args[0])
+
+# Increment version if none was provided.
+if target_version == 0:
+    logging.info('No version specified; incrementing highest previous version %s', highest_version)
+    target_version = highest_version + 1
+
+# Determine which commit to checkout for publication.
+if target_version in commits_by_version:
+    target_commit = commits_by_version[target_version]
+    logging.info('Repo previously tagged with version %d; using that commit, %s',
+                 target_version, target_commit)
+    git.checkout(repo, target_commit)
+else:
+    target_commit = head
+    logging.info('Repo not previously tagged with version %d; using HEAD, %s',
+                 target_version, target_commit)
+    if not dry_run:
+        logging.info('Tagging version at target commit prior to publication; pushing tag to origin')
+        tag = 'v0.0.%d' % target_version
+        logging.info('Tagging %s with %s', target_commit, tag)
+        git.add_tag(repo, tag, 'Auto-tagged by package publisher')
+        git.push_tag(repo, tag)
+
+# Create publisher and pass in temp directory so all the artefacts are gathered in on place.
+logging.info('Publishing Nuclide packages to target version %d from commit %s',
+             target_version, target_commit)
+from publishers import PackagePublisher
+package_publisher = PackagePublisher.create_package_publisher(repo, master_tmpdir)
+if not dry_run:
+    package_publisher.publish(target_version)
+
+# Tidy up; delete the temporary directory if we created one.
+logging.info('Publication complete')
+if local_repo:
+    logging.info('Local repo has been left at %s', target_commit)
+if dry_run:
+    logging.info('Dry run mode: the tempdir has been left for inspection: %s', master_tmpdir)
+else:
+    shutil.rmtree(master_tmpdir)

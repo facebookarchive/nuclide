@@ -8,7 +8,7 @@ import logging
 import os
 import re
 import shutil
-import tempfile
+import subprocess
 
 from abstract_publisher import AbstractPublisher
 from json_helpers import json_load, json_dump
@@ -23,9 +23,10 @@ class NpmPublisher(AbstractPublisher):
 
     _version_regex = re.compile('^0\.0\.(\d+)$')
 
-    def __init__(self, config, npm):
+    def __init__(self, config, npm, tmpdir):
         self._config = config
         self._npm = npm
+        self._tmpdir = os.path.join(tmpdir, 'npm')
 
     def get_package_name(self):
         return self._config.package_name
@@ -57,8 +58,7 @@ class NpmPublisher(AbstractPublisher):
 
         # Create temporary directory and copy package into it (without dependencies).
         package = self._config.package_directory
-        tmp_root = tempfile.mkdtemp()
-        tmp_package = os.path.join(tmp_root, self.get_package_name())
+        tmp_package = os.path.join(self._tmpdir, self.get_package_name())
         logging.info('Copying %s to tmpdir: %s', self.get_package_name(), tmp_package)
         shutil.copytree(package, tmp_package, ignore=shutil.ignore_patterns('node_modules'))
 
@@ -85,7 +85,9 @@ class NpmPublisher(AbstractPublisher):
 
         # Write the adjusted package file back to the temporary directory and publish it.
         json_dump(package, package_file)
-        self._npm.publish(tmp_package)
 
-        # Tidy up the temporary directory.
-        shutil.rmtree(tmp_root)
+        try:
+            self._npm.publish(tmp_package)
+        except subprocess.CalledProcessError:
+            logging.error('FAILED to publish package %s at version %d; it may already be published',
+                          self.get_package_name(), new_version)

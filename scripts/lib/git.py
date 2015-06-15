@@ -5,7 +5,6 @@
 # the root directory of this source tree.
 
 import fs
-import logging
 import os
 import shutil
 import subprocess
@@ -28,24 +27,26 @@ class Git (object):
     def pull(self, repository_directory):
         self._execute(['pull'], repository_directory)
 
-    def checkout(self, repository_directory, branch, create=False):
-        cmd_args = ['checkout', branch]
+    def checkout(self, repository_directory, branch_or_tag, create=False):
+        cmd_args = ['checkout', branch_or_tag]
         if create:
             cmd_args.insert(1, '-b')
         self._execute(cmd_args, repository_directory)
 
     def get_head(self, repository_directory):
         ''' Returns hash of current local HEAD commit. '''
-        return self._execute(['show-ref', '--head', '--heads', '-s', 'HEAD'], repository_directory)
+        return self._execute(['show-ref', '--head', '--heads', '-s', 'HEAD'],
+                             repository_directory).strip()
 
     def get_tag(self, repository_directory, tag):
         ''' Returns hash of specified tag. '''
         return self._execute(['show-ref', '--tags', '-s', tag], repository_directory)
 
     def get_tags(self, repository_directory):
-        ''' Returns an array of tag/hash tuples for the speficied repo. '''
+        ''' Returns an array of tag/commit hash tuples for the specified repo. '''
         output = self._execute(['show-ref', '--tags'], repository_directory)
-        return [(tag, hash) for (hash, tag) in [line.split(' ') for line in output.splitlines()]]
+        # This command lists tags starting with '/refs/tags'; name starts from the 11th character
+        return [(tag[10:], cmt) for (cmt, tag) in [line.split(' ') for line in output.splitlines()]]
 
     def add_tag(self, repository_directory, tag_name, tag_message):
         self._execute(['tag', '-a', tag_name, '-m', tag_message], repository_directory)
