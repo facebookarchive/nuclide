@@ -25,6 +25,7 @@ type NuclideSocketOptions = {
 const INITIAL_RECONNECT_TIME_MS = 10;
 const MAX_RECONNECT_TIME_MS = 5000;
 const HEARTBEAT_INTERVAL_MS = 5000;
+const MAX_HEARTBEAT_AWAY_RECONNECT_MS = 60000;
 
 // TODO(most): Rename class to reflect its new responsibilities (not just WebSocket connection).
 class NuclideSocket extends EventEmitter {
@@ -46,6 +47,7 @@ class NuclideSocket extends EventEmitter {
 
     this._heartbeatConnectedOnce = false;
     this._lastHeartbeat = null;
+    this._lastHeartbeatTime = null;
     this._monitorServerHeartbeat();
 
     this._reconnect();
@@ -70,8 +72,8 @@ class NuclideSocket extends EventEmitter {
     });
 
     websocket.on('open', () => {
-      this._reconnectTime = INITIAL_RECONNECT_TIME_MS;
       this._websocket = websocket;
+      this._reconnectTime = INITIAL_RECONNECT_TIME_MS;
       // Handshake the server with my client id to manage my re-connect attemp, if it is.
       websocket.send(this.id, () => {
         if (this._previouslyConnected) {
@@ -94,7 +96,7 @@ class NuclideSocket extends EventEmitter {
 
     websocket.on('error', (error) => {
       logger.error('WebSocket Error - reconnecting...', error);
-      websocket.close();
+      this._cleanWebSocket();
       this._scheduleReconnect();
     });
 
@@ -104,6 +106,13 @@ class NuclideSocket extends EventEmitter {
       var json = JSON.parse(data);
       this.emit('message', json);
     });
+  }
+
+  _cleanWebSocket() {
+    if (this._websocket) {
+      this._websocket.close();
+      this._websocket = null;
+    }
   }
 
   _scheduleReconnect() {
@@ -118,6 +127,13 @@ class NuclideSocket extends EventEmitter {
     this._reconnectTime = this._reconnectTime * 2;
     if (this._reconnectTime > MAX_RECONNECT_TIME_MS) {
       this._reconnectTime = MAX_RECONNECT_TIME_MS;
+    }
+  }
+
+  _clearReconnectTimer() {
+    if (this._reconnectTimer) {
+      clearTimeout(this._reconnectTimer);
+      this._reconnectTimer = null;
     }
   }
 
@@ -156,13 +172,20 @@ class NuclideSocket extends EventEmitter {
         method: 'POST',
       });
       this._heartbeatConnectedOnce = true;
-      if (this._lastHeartbeat === 'away') {
+      var now = Date.now();
+      this._lastHeartbeatTime = this._lastHeartbeatTime || now;
+      if (this._lastHeartbeat === 'away'
+          || ((now - this._lastHeartbeatTime) > MAX_HEARTBEAT_AWAY_RECONNECT_MS)) {
         // Trigger a websocket reconnect.
-        this._websocket.close();
+        this._cleanWebSocket();
+        this._clearReconnectTimer();
+        this._reconnect();
       }
       this._lastHeartbeat  = 'here';
+      this._lastHeartbeatTime = now;
       this.emit('heartbeat');
     } catch (err) {
+      this._connected = false;
       this._lastHeartbeat  = 'away';
       // Error code could could be one of:
       // ['ENOTFOUND', 'ECONNREFUSED', 'ECONNRESET', 'ETIMEDOUT']
@@ -213,10 +236,7 @@ class NuclideSocket extends EventEmitter {
     if (this._reconnectTimer) {
       clearTimeout(this._reconnectTimer);
     }
-    if (this._websocket) {
-      this._websocket.close();
-      this._websocket = null;
-    }
+    this._cleanWebSocket();
     this._cachedMessages = [];
     this._reconnectTime = INITIAL_RECONNECT_TIME_MS;
     clearInterval(this._heartbeatInterval);
