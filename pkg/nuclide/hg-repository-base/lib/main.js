@@ -10,8 +10,8 @@
  */
 
 module.exports = {
-  get HgRepositoryClient() {
-    return require('./HgRepositoryClient');
+  get hgConstants() {
+    return require('./hg-constants');
   },
 
   get HgService() {
@@ -25,5 +25,9 @@ module.exports = {
   // Exposed for testing
   get MockHgService() {
     return require('../spec/MockHgService');
+  },
+
+  get revisions() {
+    return require('./hg-revision-expression-helpers');
   },
 };

@@ -11,7 +11,7 @@
 
 var {CompositeDisposable, Emitter, TextEditor} = require('atom');
 var {StatusCodeId, StatusCodeIdToNumber, StatusCodeNumber, HgStatusOption} =
-    require('./hg-constants');
+    require('nuclide-hg-repository-base').hgConstants;
 var {isRemote} = require('nuclide-remote-uri');
 var path = require('path');
 
@@ -749,7 +749,7 @@ class HgRepositoryClient {
    * A convenience method wrapping `fetchRevisionNumbersBetweenRevisions`.
    */
   fetchRevisionNumbersBetweenRevisionAndHead(revision: string): Promise<Array<string>> {
-    var {expressionForRevisionsBeforeHead} = require('./hg-revision-expression-helpers').revisions;
+    var {expressionForRevisionsBeforeHead} = require('nuclide-hg-repository-base').revisions;
     return this.fetchRevisionNumbersBetweenRevisions(revision, expressionForRevisionsBeforeHead(0));
   }
 

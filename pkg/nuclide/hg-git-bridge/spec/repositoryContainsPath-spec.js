@@ -13,7 +13,8 @@ var {Directory, GitRepository} = require('atom');
 var fs = require('fs');
 var repositoryContainsPath = require('../lib/repositoryContainsPath');
 var {asyncExecute} = require('nuclide-commons');
-var {HgRepositoryClient, MockHgService} = require('nuclide-hg-repository-base');
+var {MockHgService} = require('nuclide-hg-repository-base');
+var {HgRepositoryClient} = require('nuclide-hg-repository-client');
 var path = require('path');
 var temp = require('temp').track();
 

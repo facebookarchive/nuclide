@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "nuclide-client": "0.0.0",
-    "nuclide-hg-repository-base": "0.0.0",
+    "nuclide-hg-repository-client": "0.0.0",
     "nuclide-remote-connection": "0.0.0",
     "nuclide-source-control-helpers": "0.0.0"
   },
