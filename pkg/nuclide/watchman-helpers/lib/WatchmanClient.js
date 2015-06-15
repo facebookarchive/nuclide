@@ -11,6 +11,7 @@
 
 var watchman = require('fb-watchman');
 var WatchmanSubscription = require('./WatchmanSubscription');
+var {ensureTrailingSeparator} = require('nuclide-commons').paths;
 var logger = require('nuclide-logging').getLogger();
 var {getWatchmanBinaryPath} = require('./main');
 
@@ -86,7 +87,8 @@ class WatchmanClient {
     subscription.emit('change', response.files);
   }
 
-  async watchDirectoryRecursive(directoryPath: string) : Promise<WatchmanSubscription> {
+  async watchDirectoryRecursive(localDirectoryPath: string) : Promise<WatchmanSubscription> {
+    var directoryPath = ensureTrailingSeparator(localDirectoryPath);
     var existingSubscription = this._subscriptions[directoryPath];
     if (existingSubscription) {
       existingSubscription.subscriptionCount++;
