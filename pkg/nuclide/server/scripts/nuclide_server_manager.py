@@ -9,6 +9,7 @@
 from __future__ import print_function
 
 import getpass
+import glob
 import json
 import optparse
 import os
@@ -17,6 +18,7 @@ import shlex
 import subprocess
 import socket
 import sys
+import tempfile
 import time
 
 from collections import defaultdict
@@ -36,8 +38,8 @@ except ImportError as e:
 
 # Certificates store is ~/.certs
 CERTS_DIR = os.path.join(os.path.expanduser('~'), '.certs')
+CERTS_EXPIRATION_DAYS = 7
 NODE_PATHS = EXTRA_NODE_PATHS + ['/opt/local/bin', '/usr/local/bin']
-
 
 # This class manages Nuclide servers.
 class NuclideServerManager(object):
@@ -103,7 +105,19 @@ class NuclideServerManager(object):
         for server in NuclideServerManager.list_servers():
             server.stop()
 
-    # Clean up bad processes.
+    def cleanup_certificates(self, days_to_keep):
+        try:
+            print('Cleaning up old files...', file=sys.stderr)
+            certs_dir = self.options.certs_dir or self._ensure_certs_dir()
+            current = time.time()
+            seconds_to_keep = 3600 * 24 * days_to_keep
+            for file in glob.glob(os.path.join(certs_dir, 'nuclide*')):
+                if current - os.path.getmtime(file) > seconds_to_keep:
+                    os.unlink(file)
+        except Exception as e:
+            print('Error in cleaning up certificates: %s' % e)
+
+    # Clean up bad processes and old files.
     def cleanup(self):
 
         # TODO: Remove it after migration is complete.
@@ -129,6 +143,8 @@ class NuclideServerManager(object):
                 print('Multiple Nuclide processes on port %d. Something wrong. Clean them up...' % port, file=sys.stderr)
                 for proc in server_proc_map[port]:
                     proc.stop()
+
+        self.cleanup_certificates(CERTS_EXPIRATION_DAYS)
 
     # Find and use existing Nuclide server's port if there is a match,
     # or obtain an open port.
@@ -183,6 +199,7 @@ class NuclideServerManager(object):
             return self.start_server(server)
 
     def start_server(self, server):
+        print('Starting Nuclide server...', file=sys.stderr)
         if self.options.insecure:
             # Use http.
             return server.start(self.options.timeout, quiet=self.options.quiet)
@@ -195,7 +212,7 @@ class NuclideServerManager(object):
 
             # TODO: Client common name is 'nuclide'.
             #       We may want to generate unique common name and verify it.
-            certs_generator = NuclideCertificatesGenerator(certs_dir, common_name, 'nuclide', expiration_days=30)
+            certs_generator = NuclideCertificatesGenerator(certs_dir, common_name, 'nuclide', expiration_days=CERTS_EXPIRATION_DAYS)
             return server.start(self.options.timeout, cert=certs_generator.server_cert,
                 key=certs_generator.server_key, ca=certs_generator.ca_cert, quiet=self.options.quiet)
 
