@@ -17,14 +17,9 @@ var path = require('path');
 var temp = require('temp').track();
 var cacheDir = createCacheDir();
 
-// Check whether the target environment supports yield/generators by evaluating a `generator function`.
-// (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*)
-try {
-  eval('function * test() {};');
-  var isYieldSupported = true;
-} catch(e) {
-  var isYieldSupported = false;
-}
+// The yield claims available in node 0.12.x but requires --harmony flag to be able to execute
+// the code generated from the latest regenerator with node 0.12.x.
+var isYieldSupported = false;
 
 /**
  * Tries to create a "babel-cache" directory if it does not already exist.
