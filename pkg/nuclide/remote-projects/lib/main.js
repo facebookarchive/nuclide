@@ -128,6 +128,8 @@ module.exports = {
       cleanupRemoteNuclideProjects();
       var remoteProjectsConfig = (state && state.remoteProjectsConfig) || [];
       remoteProjectsConfig.forEach(restoreNuclideProjectState);
+      // Clear obsolete config.
+      atom.config.set('nuclide.remoteProjectsConfig', []);
     }));
   },
 
