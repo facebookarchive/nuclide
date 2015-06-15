@@ -264,34 +264,6 @@ class NuclideClient {
   }
 
   /**
-   * Executes a command on the remote connected server and returns the result.
-   * Promisified http://nodejs.org/api/child_process.html#child_process_child_process_exec_command_options_callback
-   * If no options cwd provided, it uses the cwd that was passed into the
-   * NuclideClient's options parameter, if it exists.
-   * options: {
-   *   cwd: String Current working directory of the child process,
-   *   env: Object Environment key-value pairs,
-   *   encoding: String (Default: 'utf8'),
-   *   shell: String Shell to execute the command with (Default: '/bin/sh' on UNIX, 'cmd.exe' on Windows),
-   *   timeout: Number (Default: 0),
-   *   maxBuffer: Number (Default: 200*1024),
-   *   killSignal: String (Default: 'SIGTERM'),
-   *   uid: Number Sets the user identity of the process. (See setuid(2).),
-   *   gid: Number Sets the group identity of the process. (See setgid(2).),
-   * }
-   */
-  exec(command: string, options: ?any): Promise<ExecResult> {
-    var {cwd} = this._options;
-    var mixedOptions = extend(extend({}, {cwd}), options);
-    return this.eventbus.callMethod(
-      /*serviceName*/ 'proc',
-      /*methodName*/ 'exec',
-      /*methodArgs*/ [command, mixedOptions],
-      /*extraOptions*/ {method: 'POST', json: true}
-    );
-  }
-
-  /**
    * Searches the contents of `directory` for paths mathing `query`.
    */
   async searchDirectory(directory: string, query: string): Promise<any> {
@@ -448,6 +420,15 @@ class NuclideClient {
       /*serviceName*/ 'hack',
       /*methodName*/ 'getSearchResults',
       /*methodArgs*/ [search, filterTypes, searchPostfix, {cwd}],
+      /*extraOptions*/ {method: 'POST', json: true}
+    );
+  }
+
+  isHackClientAvailable(): Promise<boolean> {
+    return this.eventbus.callMethod(
+      /*serviceName*/ 'hack',
+      /*methodName*/ 'isClientAvailable',
+      /*methodArgs*/ [],
       /*extraOptions*/ {method: 'POST', json: true}
     );
   }

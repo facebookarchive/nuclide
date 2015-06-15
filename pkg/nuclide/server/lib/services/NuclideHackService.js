@@ -15,7 +15,8 @@ var {asyncExecute, fsPromise} = require('nuclide-commons');
 var extend = require('util')._extend;
 
 const HH_NEWLINE = '<?hh\n';
-const HH_STRICT_NEWLINE = '<?hh // strict\n'
+const HH_STRICT_NEWLINE = '<?hh // strict\n';
+const PATH_TO_HH_CLIENT = 'hh_client';
 
 /**
  * Executes the hh_client on the remote connected dev box using the ExecClient passed
@@ -27,7 +28,6 @@ async function _callHHClient(
   processInput: string,
   cwd: string): Promise<any> {
   // append args on the end of our commands
-  var pathToHH = 'hh_client';
   var defaults = ['--retries', '0', '--retry-if-init', 'false', '--from', 'nuclide'];
   if (outputJson) {
     defaults.unshift('--json');
@@ -38,7 +38,7 @@ async function _callHHClient(
 
   var execResult;
   try {
-    execResult = await asyncExecute(pathToHH, allArgs, {stdin: processInput});
+    execResult = await asyncExecute(PATH_TO_HH_CLIENT, allArgs, {stdin: processInput});
   } catch (err) {
     // For some reason Hack outputs sometimes on stderr
     // and sometimes on stdout depending on the type of request.
@@ -259,6 +259,16 @@ function symbolTypeToSearchTypes(symbolType: SymbolType): ?Array<SearchResultTyp
   }
 }
 
+async function isClientAvailable(): Promise<boolean> {
+  try {
+    var {stdout} = await asyncExecute('which', [PATH_TO_HH_CLIENT]);
+    // The `stdout` would be empty if there is no such command.
+    return stdout.trim().length > 0;
+  } catch (e) {
+    return false;
+  }
+}
+
 module.exports = {
   services: {
     '/hack/getDiagnostics': {handler: getDiagnostics, method: 'post'},
@@ -266,5 +276,6 @@ module.exports = {
     '/hack/getDefinition': {handler: getDefinition, method: 'post'},
     '/hack/getDependencies': {handler: getDependencies, method: 'post'},
     '/hack/getSearchResults': {handler: getSearchResults, method: 'post'},
+    '/hack/isClientAvailable': {handler: isClientAvailable, method: 'post'},
   }
 };

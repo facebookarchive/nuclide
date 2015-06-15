@@ -202,15 +202,15 @@ async function createHackLanguageIfNotExisting(client: NuclideClient, filePath: 
     return clientToHackLanguage[clientId];
   }
   var hackClient;
-  var [{stdout}, nearestPath] = await Promise.all([
-    client.exec('which hh_client'),
+  var [isHackClientAvailable, nearestPath] = await Promise.all([
+    client.isHackClientAvailable(),
     client.findNearestFile('.hhconfig', pathUtil.dirname(filePath)),
   ]);
   // If multiple calls, were done asynchronously, make sure to return the single-created HackLanguage.
   if (clientToHackLanguage[clientId]) {
     return clientToHackLanguage[clientId];
   }
-  if (stdout.trim() && nearestPath) {
+  if (isHackClientAvailable && nearestPath) {
     hackClient = client;
   } else {
     hackClient = new NullHackClient();

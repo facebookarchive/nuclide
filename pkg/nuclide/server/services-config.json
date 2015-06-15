@@ -5,10 +5,6 @@
   },
   {
     "useServiceFramework": false,
-    "path": "lib/services/NuclideProcService.js"
-  },
-  {
-    "useServiceFramework": false,
     "path": "lib/services/NuclideSearchService.js"
   },
   {

@@ -74,13 +74,4 @@ describe('NuclideLocalEventBus test suite', () => {
       });
     });
   });
-
-  describe('Can exec stuff', () => {
-    it('exec works as expected', () => {
-      waitsForPromise(async () => {
-        var {stdout} = await client.exec('echo abc');
-        expect(stdout.trim()).toBe('abc');
-      });
-    });
-  });
 });
