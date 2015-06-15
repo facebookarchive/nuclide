@@ -8,47 +8,95 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-var exec = require('child_process').exec;
+
+var {
+  execFile,
+  spawn,
+} = require('child_process');
+var {assign} = require('./object');
 var path = require('path');
 var PromiseQueue = require('./PromiseQueue');
-var blockingQueues = {};
 
+var platformPathPromise: ?Promise<string>;
+
+var blockingQueues = {};
 var COMMON_BINARY_PATHS = ['/usr/bin', '/bin', '/usr/sbin', '/sbin', '/usr/local/bin'];
 
-function createCommand(command: string, args: Array<string>):
-    {commandString: string; commandStringWithArgs: string} {
-  var commandStringWithArgs = command;
-  if (args && args.length) {
-    var shellescape = require('shell-escape');
-    commandStringWithArgs += ' ' + shellescape(args);
+/* Captures the value of the PATH env variable returned by Darwin's (OS X) `path_helper` utility.
+ * `path_helper -s`'s return value looks like this:
+ *
+ *     PATH="/usr/bin"; export PATH;
+ */
+var DARWIN_PATH_HELPER_REGEXP = /PATH=\"([^\"]+)\"/;
+
+function getPlatformPath(): Promise<string> {
+  if (platformPathPromise) {
+    // Path is being fetched, await the Promise that's in flight.
+    return platformPathPromise;
   }
 
-  var commandString = commandStringWithArgs;
   if (process.platform === 'darwin') {
-    // OS X apps don't inherit PATH when not launched from the
-    // CLI, so reconstruct it. This is a bug, filed
-    // against Atom here: https://github.com/AtomLinter/Linter/issues/150
+    // OS X apps don't inherit PATH when not launched from the CLI, so reconstruct it. This is a
+    // bug, filed against Atom Linter here: https://github.com/AtomLinter/Linter/issues/150
     // TODO(jjiaa): remove this hack when the Atom issue is closed
-    commandString = 'eval `/usr/libexec/path_helper -s` && ' + commandString;
+    platformPathPromise = new Promise((resolve, reject) => {
+      execFile('/usr/libexec/path_helper', ['-s'], (error, stdout, stderr) => {
+        if (error) {
+          reject(error);
+        } else {
+          var match = stdout.match(DARWIN_PATH_HELPER_REGEXP);
+          resolve((match && match.length > 1) ? match[1] : '');
+        }
+      });
+    });
+  } else {
+    platformPathPromise = Promise.resolve('');
   }
 
-  return {commandString, commandStringWithArgs};
+  return platformPathPromise;
 }
 
-function createExecEnvironment(originalEnvirnment: any, commonBinaryPaths: Array<string>): any {
-  var execEnvironment = {};
-  for (var key in originalEnvirnment) {
-    execEnvironment[key] = originalEnvirnment[key];
-  }
-  execEnvironment.PATH = execEnvironment.PATH || '';
-  for (var i = 0; i < commonBinaryPaths.length; i++) {
-    var binaryPath = commonBinaryPaths[i];
-    if (execEnvironment.PATH.indexOf(binaryPath) === -1) {
-      execEnvironment.PATH += path.delimiter + binaryPath;
+function appendCommonBinaryPaths(env: Object, commonBinaryPaths: Array<string>): void {
+  commonBinaryPaths.forEach((binaryPath) => {
+    if (env.PATH.indexOf(binaryPath) === -1) {
+      env.PATH += path.delimiter + binaryPath;
     }
-  }
-  return execEnvironment;
+  });
 }
+
+async function createExecEnvironment(
+    originalEnv: any, commonBinaryPaths: Array<string>): Promise<Object> {
+  var execEnv = assign({}, originalEnv);
+  execEnv.PATH = execEnv.PATH || '';
+
+  var platformPath;
+  var commonBinaryPathsAppended = false;
+  try {
+    platformPath = await getPlatformPath();
+  } catch (error) {
+    // If there's an error fetching the platform's PATH, use the default set of common binary paths.
+    appendCommonBinaryPaths(execEnv, commonBinaryPaths);
+    commonBinaryPathsAppended = true;
+  }
+
+  // If the platform returns a non-empty PATH, use it. Otherwise use the default set of common
+  // binary paths.
+  if (platformPath) {
+    execEnv.PATH = platformPath;
+  } else if (!commonBinaryPathsAppended) {
+    appendCommonBinaryPaths(execEnv, commonBinaryPaths);
+  }
+
+  return execEnv;
+}
+
+type process$asyncExecuteRet = {
+  command?: string;
+  errorMessage?: string;
+  exitCode: number;
+  stderr: string;
+  stdout: string;
+};
 
 /**
  * Returns a promise that resolves to the result of executing a process.
@@ -63,55 +111,66 @@ function createExecEnvironment(originalEnvirnment: any, commonBinaryPaths: Array
  *       pipedCommand string a command to pipe the output of command through.
  *       pipedArgs array of strings as arguments.
  * @return Promise that resolves to an object with the properties:
- *     stdout string The contents of the process's output stream. (If this exceeds the maxBuffer,
- *         then this Promise will reject.)
- *     stderr string The contents of the process's error stream. (If this exceeds the maxBuffer,
- *         then this Promise will reject.)
+ *     stdout string The contents of the process's output stream.
+ *     stderr string The contents of the process's error stream.
  *     exitCode number The exit code returned by the process.
  */
 function asyncExecute(
     command: string,
     args: Array<string>,
-    options: any = {}): Promise {
-  var {commandString, commandStringWithArgs} = createCommand(command, args);
-
-  if (options && options.pipedCommand) {
-    var {
-      commandString: pipedCommandString,
-      commandStringWithArgs: pipedCommandStringWithArgs,
-    } = createCommand(options.pipedCommand, options.pipedArgs || []);
-
-    commandString += '|' + pipedCommandString;
-    commandStringWithArgs += '|' + pipedCommandStringWithArgs;
-  }
-
-  // Add commons binary paths to the PATH when no custom env provided.
-  options.env = options.env || createExecEnvironment(process.env, COMMON_BINARY_PATHS);
+    options: any = {}): Promise<process$asyncExecuteRet> {
+  // Clone passed in options so this function doesn't modify an object it doesn't own.
+  var localOptions = assign({}, options);
 
   var executor = (resolve, reject) => {
-    // TODO(mbolin): Use child_process.execFile() instead of exec() so the args
-    // do not need to be escaped. The only reason this isn't a one-line fix is
-    // because of the PATH hack in createCommand(). Once this is cleaned up, we
-    // can also eliminate our dependency on shell-escape.
-    var child = exec(
-      commandString,
-      options,
-      (error, stdout, stderr) => {
-        var exitCode = error ? error.code : 0;
-        // If there is an internal error, such as "stdout maxBuffer exceeded.",
-        // then there will not be an exitCode, but there will be an errorMessage.
-        var errorMessage = error ? error.message : null;
-        var result = {
-          stdout,
-          stderr,
-          errorMessage,
-          exitCode,
-          command: commandStringWithArgs,
-        };
-        (exitCode === 0 ? resolve : reject)(result);
-      }
-    );
-    if ((typeof options.stdin) === 'string') {
+    var firstChild;
+    var lastChild;
+
+    if (localOptions.pipedCommand) {
+      // If a second command is given, pipe stdout of first to stdin of second. String output
+      // returned in this function's Promise will be stderr/stdout of the second command.
+      firstChild = spawn(command, args, localOptions);
+      lastChild = spawn(localOptions.pipedCommand, localOptions.pipedArgs, {env: localOptions.env});
+      firstChild.stdout.pipe(lastChild.stdin);
+    } else {
+      lastChild = spawn(command, args, localOptions);
+      firstChild = lastChild;
+    }
+
+    var stderr = '';
+    var stdout = '';
+    lastChild.on('close', (exitCode) => {
+      // If the process exited with an error (non-zero code), reject, otherwise resolve.
+      (exitCode === 0 ? resolve : reject)({
+        exitCode,
+        stderr,
+        stdout,
+      });
+    });
+
+    lastChild.on('error', error => {
+      var exitCode = error ? error.code : 0;
+      // If there is an internal error, such as "stdout maxBuffer exceeded.",
+      // then there will not be an exitCode, but there will be an errorMessage.
+      var errorMessage = error ? error.message : null;
+      reject({
+        stdout,
+        stderr,
+        errorMessage,
+        exitCode,
+        command: [command].concat(args).join(' '),
+      });
+    });
+
+    lastChild.stderr.on('data', data => {
+      stderr += data;
+    });
+
+    lastChild.stdout.on('data', data => {
+      stdout += data;
+    });
+
+    if ((typeof localOptions.stdin) === 'string') {
       // Note that the Node docs have this scary warning about stdin.end() on
       // http://nodejs.org/api/child_process.html#child_process_child_stdin:
       //
@@ -119,17 +178,33 @@ function asyncExecute(
       // this stream via end() often causes the child process to terminate."
       //
       // In practice, this has not appeared to cause any issues thus far.
-      child.stdin.write(options.stdin);
-      child.stdin.end();
+      firstChild.stdin.write(localOptions.stdin);
+      firstChild.stdin.end();
     }
   };
-  if (options.queueName === undefined) {
-    return new Promise(executor);
-  } else {
-    if (!blockingQueues[options.queueName]) {
-      blockingQueues[options.queueName] = new PromiseQueue();
+
+  function makePromise() {
+    if (localOptions.queueName === undefined) {
+      return new Promise(executor);
+    } else {
+      if (!blockingQueues[localOptions.queueName]) {
+        blockingQueues[localOptions.queueName] = new PromiseQueue();
+      }
+      return blockingQueues[localOptions.queueName].submit(executor);
     }
-    return blockingQueues[options.queueName].submit(executor);
+  }
+
+  if (localOptions.env) {
+    return makePromise();
+  } else {
+    // If no environment is supplied, fetch it first and use it when executing the given command.
+    return createExecEnvironment(process.env, COMMON_BINARY_PATHS).then(
+      val => {
+        localOptions.env = val;
+        return makePromise();
+      },
+      err => makePromise()
+    );
   }
 }
 
@@ -137,19 +212,20 @@ function asyncExecute(
  * Executes a command and returns stdout if exit code is 0, otherwise reject
  * with a message and stderr.
  */
-async function checkOutput(cmd: string, args: string[], options?: Object): Promise<string> {
-  var {stdout, stderr, exitCode} = await asyncExecute(cmd, args, options);
-  if (exitCode !== 0) {
-    throw new Error(`Process exited with non-zero exit code (${exitCode}). stderr: ${stderr}`);
+async function checkOutput(cmd: string, args: Array<string>, options: any = {}): Promise<string> {
+  try {
+    var {stdout} = await asyncExecute(cmd, args, options);
+    return stdout;
+  } catch(e) {
+    throw new Error(`Process exited with non-zero exit code (${e.exitCode}). stderr: ${e.stderr}`);
   }
-  return stdout;
 }
 
 module.exports = {
   asyncExecute,
   checkOutput,
   __test__: {
-    createCommand,
+    DARWIN_PATH_HELPER_REGEXP,
     createExecEnvironment,
   },
 };
