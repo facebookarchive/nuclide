@@ -23,6 +23,7 @@
     "nuclide-logging": "0.0.0",
     "nuclide-node-transpiler": "0.0.0",
     "nuclide-path-search": "0.0.0",
+    "nuclide-remote-uri": "0.0.0",
     "nuclide-service-transformer": "0.0.0",
     "nuclide-source-control-helpers": "0.0.0",
     "nuclide-version": "0.0.0",
