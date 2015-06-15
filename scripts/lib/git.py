@@ -34,12 +34,18 @@ class Git (object):
             cmd_args.insert(1, '-b')
         self._execute(cmd_args, repository_directory)
 
-    def get_tags(self, repository_directory, pattern=None):
-        cmd_args = ['tag']
-        if pattern:
-            cmd_args.extend(['-l', pattern])
-        tags = self._execute(cmd_args, repository_directory)
-        return tags.splitlines()
+    def get_head(self, repository_directory):
+        ''' Returns hash of current local HEAD commit. '''
+        return self._execute(['show-ref', '--head', '--heads', '-s', 'HEAD'], repository_directory)
+
+    def get_tag(self, repository_directory, tag):
+        ''' Returns hash of specified tag. '''
+        return self._execute(['show-ref', '--tags', '-s', tag], repository_directory)
+
+    def get_tags(self, repository_directory):
+        ''' Returns an array of tag/hash tuples for the speficied repo. '''
+        output = self._execute(['show-ref', '--tags'], repository_directory)
+        return [(tag, hash) for (hash, tag) in [line.split(' ') for line in output.splitlines()]]
 
     def add_tag(self, repository_directory, tag_name, tag_message):
         self._execute(['tag', '-a', tag_name, '-m', tag_message], repository_directory)
