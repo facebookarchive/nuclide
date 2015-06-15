@@ -180,7 +180,7 @@ function getFilePath(filePath: string, protocol: ?string, host: ?string): string
 
 function getClientId(buffer: TextBuffer): string {
   var client = getClient(buffer.getUri());
-  return client.getID();
+  return client ? client.getID() : 'undefined';
 }
 
 function getHackLanguageForBuffer(buffer: TextBuffer): Promise<?HackLanguage> {
