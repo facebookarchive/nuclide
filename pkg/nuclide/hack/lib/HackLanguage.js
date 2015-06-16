@@ -19,6 +19,8 @@ var wordCharRegex = /[\w\\]/;
 var xhpCharRegex = /[\w:-]/;
 var XHP_LINE_TEXT_REGEX = /<([a-z][a-z0-9_.:-]*)[^>]*\/?>/gi;
 
+const UPDATE_DEPENDENCIES_INTERVAL_MS = 10000;
+
 /**
  * The HackLanguage is the controller that servers language requests by trying to get worker results
  * and/or results from HackService (which would be executing hh_client on a supporting server)
@@ -30,10 +32,31 @@ module.exports = class HackLanguage {
     this._hackWorker = new HackWorker();
     this._client = client;
     this._pathContentsMap = {};
+
+    this._setupUpdateDependenciesInterval();
+  }
+
+  _setupUpdateDependenciesInterval() {
+    // Fetch any dependencies the HackWorker needs after learning about this file.
+    // We don't block any realtime logic on the dependency fetching - it could take a while.
+    var pendingUpdateDependencies = false;
+
+    var finishUpdateDependencies = () => {
+      pendingUpdateDependencies = false;
+    };
+
+    this._updateDependenciesInterval = setInterval(() => {
+      if (pendingUpdateDependencies) {
+        return;
+      }
+      pendingUpdateDependencies = true;
+      this.updateDependencies().then(finishUpdateDependencies, finishUpdateDependencies);
+    }, UPDATE_DEPENDENCIES_INTERVAL_MS);
   }
 
   dispose() {
     this._hackWorker.dispose();
+    clearInterval(this._updateDependenciesInterval);
   }
 
   async getCompletions(path: string, contents: string, offset: number): Promise<Array<any>> {
@@ -73,8 +96,10 @@ module.exports = class HackLanguage {
         // Ignore the error, it's just dependency fetching.
         logger.warn('getHackDependencies error:', err);
       }
-      await Promise.all(Object.keys(dependencies).map(
-          path => this.updateDependency(path, dependencies[path])));
+      // Serially update depednecies not to block the worker from serving other feature requests.
+      for (var path in dependencies) {
+        await this.updateDependency(path, dependencies[path]);
+      }
   }
 
   async updateDependency(path: string, contents: string): Promise {

@@ -153,21 +153,15 @@ module.exports = {
     // Update the HackWorker model with the contents of the file opened or saved.
     await hackLanguage.updateFile(path, contents);
 
-    var diagnostics;
+    var diagnostics = [];
     try {
       diagnostics = await hackLanguage.getServerDiagnostics();
     } catch (err) {
       logger.error('Hack: getServerDiagnostics failed', err);
     }
-    if (diagnostics) {
-      clientToHackLinterCache[getClientId(buffer)] = diagnostics;
-      // Trigger the linter to catch the new diagnostics.
-      atom.commands.dispatch(atom.views.getView(editor), 'linter:lint');
-    }
-
-    // Fetch any dependencies the HackWorker needs after learning about this file.
-    // We don't block any realtime logic on the dependency fetching - it could take a while.
-    hackLanguage.updateDependencies();
+    clientToHackLinterCache[getClientId(buffer)] = diagnostics;
+    // Trigger the linter to catch the new diagnostics.
+    atom.commands.dispatch(atom.views.getView(editor), 'linter:lint');
   },
 };
 
