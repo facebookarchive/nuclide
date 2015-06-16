@@ -14,10 +14,11 @@ var localClients: {[rootPath: string]: NuclideClient} = {};
 var {RemoteConnection} = require('nuclide-remote-connection');
 var localEventBus: ?NuclideLocalEventbus = null;
 var {containsPath} = require('./utils');
+var {isRemote} = require('nuclide-remote-uri');
 
 module.exports = {
   getClient(path: string): ?NuclideClient {
-    if (path.startsWith('nuclide://')) {
+    if (isRemote(path)) {
       var connection = RemoteConnection.getForUri(path);
       return connection ? connection.getClient() : null;
     } else {
