@@ -15,6 +15,8 @@ var path = require('path');
 
 /**
  * @param repoPath The full path to the repository directory (.hg).
+ * @return A promise that resolves to the current bookmark name, if it exists.
+ *   Promise will reject if there is no current bookmark name.
  */
 function fetchCurrentBookmark(repoPath: string): Promise<string> {
   var bookmarkFile = path.join(repoPath, 'bookmarks.current');

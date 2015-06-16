@@ -280,11 +280,7 @@ class LocalHgService extends LocalHgServiceBase {
           }
           this._allowEventsAgain();
         } else if (update.subscription === WATCHMAN_SUBSCRIPTION_NAME_HGBOOKMARK) {
-          var bookmarkFile = update.files[0];
-          if (bookmarkFile.exists) {
-            // The bookmark.current file is deleted during a rebase.
-            this._hgBookmarkDidChange();
-          }
+          this._hgBookmarkDidChange();
         }
       });
     });

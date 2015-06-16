@@ -663,7 +663,14 @@ class HgRepositoryClient {
    *
    */
   async fetchCurrentBookmark(): Promise<string> {
-    var newlyFetchedBookmark = await this._service.fetchCurrentBookmark();
+    var newlyFetchedBookmark = '';
+    try {
+      var newlyFetchedBookmark = await this._service.fetchCurrentBookmark();
+    } catch (e) {
+      // Suppress the error. There are legitimate times when there may be no
+      // current bookmark, such as during a rebase. In this case, we just want
+      // to return an empty string if there is no current bookmark.
+    }
     if (newlyFetchedBookmark !== this._currentBookmark) {
       this._currentBookmark = newlyFetchedBookmark;
       // The Atom status-bar uses this as a signal to refresh the 'shortHead'.
