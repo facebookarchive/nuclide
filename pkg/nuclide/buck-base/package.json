@@ -1,5 +1,6 @@
 {
   "name": "nuclide-buck-base",
+  "repository": "https://github.com/facebook/nuclide",
   "version": "0.0.0",
   "description": "Provides API to work with Buck",
   "nuclide": {
@@ -17,4 +18,3 @@
     "test": "jasmine-node-transpiled spec"
   }
 }
-
