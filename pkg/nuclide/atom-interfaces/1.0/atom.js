@@ -102,7 +102,13 @@ declare class atom$Marker {
 }
 
 declare class atom$PackageManager {
+  // Package system data
+  getApmPath(): string;
+  getPackageDirPaths(): Array<string>;
+
+  // General package data
   resolvePackagePath(name: string): ?string;
+  isBundledPackage(name: string): boolean;
 }
 
 declare class atom$Panel {

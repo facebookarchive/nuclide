@@ -37,34 +37,26 @@ async function installPackagesInConfig(config: InstallConfig): Promise {
  * of the `"user"` property of the JSON to produce a map of (name, version) pairs
  * that correspond to user-installed Atom packages.
  */
-function getInstalledPackages(apm): Promise<{[key: PackageName]: PackageVersion}> {
-  var {BufferedProcess} = require('atom');
-  return new Promise((resolve, reject) => {
-    var json = '';
-    var apm = atom.packages.getApmPath();
-    new BufferedProcess({
-      command: apm,
-      args: ['ls', '--json'],
-      stdout(data: string) {
-        json += data;
-      },
-      exit(exitCode: number) {
-        if (exitCode === 0) {
-          var installedPackages = {};
-          JSON.parse(json)['user'].forEach(pkg => {
-            installedPackages[pkg['name']] = pkg['version'];
-          });
-          resolve(installedPackages);
-        } else {
-          /*eslint-disable no-console*/
-          // Write to the console because this make it easier for users to report errors.
-          console.error(`Could not get the list of Atom packages from ${apm} ls --json.`);
-          /*eslint-enable no-console*/
-          reject(`apm ls --json failed with exit code ${exitCode}`);
-        }
-      },
-    });
+async function getInstalledPackages(): Promise<{[key: PackageName]: PackageVersion}> {
+  var {asyncExecute} = require('nuclide-commons');
+  var apm = atom.packages.getApmPath();
+  var json;
+  try {
+    var {stdout} = await asyncExecute(apm, ['ls', '--json']);
+    json = stdout;
+  } catch (e) {
+    /*eslint-disable no-console*/
+    // Write to the console because this make it easier for users to report errors.
+    console.error(`Could not get the list of Atom packages from ${apm} ls --json.`);
+    /*eslint-enable no-console*/
+    throw Error(`${apm} ls --json failed with exit code ${e.exitCode}`);
+  }
+
+  var installedPackages = {};
+  JSON.parse(json)['user'].forEach(pkg => {
+    installedPackages[pkg['name']] = pkg['version'];
   });
+  return installedPackages;
 }
 
 function findPackagesToInstall(
@@ -84,7 +76,7 @@ function findPackagesToInstall(
 }
 
 /**
- * Installs the list of Atom packages serially. 
+ * Installs the list of Atom packages serially.
  */
 function installApmPackages(packages: Array<string>): Promise {
   var {asyncExecute, PromiseQueue} = require('nuclide-commons');
