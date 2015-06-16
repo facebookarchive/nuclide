@@ -374,6 +374,14 @@ var TreeRootComponent = React.createClass({
     };
   },
 
+  invalidateCachedNodes(): void {
+    this.state.roots.forEach(root => {
+      forEachCachedNode(root, node => {
+        node.invalidateCache();
+      });
+    });
+  },
+
   /**
    * Returns a Promise that's resolved when the roots are rendered.
    */

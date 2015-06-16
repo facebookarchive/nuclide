@@ -130,9 +130,26 @@ describe('TreeRootComponent', () => {
           isRejected = true;
         }
         expect(isRejected).toBe(true);
-        nodeComponents = getNodeComponents(component);
+        var nodeComponents = getNodeComponents(component);
         expect(nodeComponents['B']).toBeUndefined();
         expect(nodeComponents['E']).not.toBeUndefined();
+      });
+    });
+  });
+
+  describe('invalidateCachedNodes', () => {
+    it('invalidates the cached nodes', () => {
+      waitsForPromise(async () => {
+        var component = renderComponent(props);
+        await component.setRoots([nodes['G'], nodes['A']]);
+
+        expect(nodes['G'].isCacheValid()).toBe(true);
+        expect(nodes['A'].isCacheValid()).toBe(true);
+
+        component.invalidateCachedNodes();
+
+        expect(nodes['G'].isCacheValid()).toBe(false);
+        expect(nodes['A'].isCacheValid()).toBe(false);
       });
     });
   });

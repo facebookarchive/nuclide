@@ -214,6 +214,7 @@ class FileTreeController {
           'nuclide-file-tree:remove-project-folder-selection': () => this.removeRootFolderSelection(),
           'nuclide-file-tree:copy-full-path': () => this.copyFullPath(),
           'nuclide-file-tree:show-in-file-manager': () => this.showInFileManager(),
+          'nuclide-file-tree:reload': () => this.reload(),
         }));
 
     this._subscriptions.add(atom.project.onDidChangePaths((paths) => {
@@ -322,6 +323,12 @@ class FileTreeController {
             process.platform === 'darwin'
           );
         },
+      },
+    ]);
+    this.addContextMenuItemGroup([
+      {
+        label: 'Reload',
+        command: 'nuclide-file-tree:reload',
       },
     ]);
   }
@@ -598,6 +605,15 @@ class FileTreeController {
         'Cancel': null,
       },
     });
+  }
+
+  reload() {
+    var treeComponent = this.getTreeComponent();
+    if (!treeComponent) {
+      return;
+    }
+    treeComponent.invalidateCachedNodes();
+    treeComponent.forceUpdate();
   }
 
   _getSelectedItems(): Array<LazyFileTreeNode> {
