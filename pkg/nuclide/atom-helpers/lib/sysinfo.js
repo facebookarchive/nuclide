@@ -11,16 +11,17 @@
 
 // Since nuclide-logging depends on getUnixname, we should use
 // console.error in this file instead of nuclide-logging.
+/*eslint-disable no-console */
 
 var {asyncExecute, getConfigValueAsync} = require('nuclide-commons');
 var path = require('path');
 var atomMeta = require(path.join(atom.getLoadSettings().resourcePath, 'package.json'));
+
 var unixname;
 var buildNumber = null;
 var smokeBuildNumber = null;
 var osVersion;
 var clangVersion;
-var flowVersion;
 
 function getUnixname(): Promise<string> {
   if (!unixname) {
@@ -73,25 +74,53 @@ function getClangVersion(): Promise<string> {
   return clangVersion;
 }
 
-async function getFlowVersion(): Promise<string> {
-  if (!flowVersion) {
-    try {
-      var pathToFlow = await getConfigValueAsync('nuclide-flow.pathToFlow')();
-      var result = await asyncExecute(pathToFlow, ['--version'], {});
-      flowVersion = result.stdout.trim();
-    } catch (e) {
-      console.error(e);
-      flowVersion = '';
-    }
+var flowVersionPromise: ?Promise<string>;
+
+function getFlowVersion(): Promise<string> {
+  if (!flowVersionPromise) {
+    flowVersionPromise = determineFlowVersion();
+  }
+  return flowVersionPromise;
+}
+
+async function determineFlowVersion(): Promise<string> {
+  var flowVersion;
+  try {
+    var pathToFlow = await getConfigValueAsync('nuclide-flow.pathToFlow')();
+    var result = await asyncExecute(pathToFlow, ['--version'], {});
+    flowVersion = result.stdout.trim();
+  } catch (e) {
+    console.error(e);
+    flowVersion = '';
   }
   return flowVersion;
 }
 
-async function getAllSystemInfo(): Promise<any> {
+type SystemInfo = {
+  buildNumber: string;
+  clangVersion: string;
+  flowVersion: string;
+  osVersion: string;
+  smokeBuildNumber: string;
+  unixname: string;
+  userID: string;
+  version: string;
+};
+
+var allSystemInfoPromise: ?Promise<SystemInfo>;
+
+function getAllSystemInfo(): Promise<SystemInfo> {
+  if (!allSystemInfoPromise) {
+    allSystemInfoPromise = determineAllSystemInfo();
+  }
+  return allSystemInfoPromise;
+}
+
+async function determineAllSystemInfo(): Promise<SystemInfo> {
   var [
     userID,
-    osVersion,
-    clangVersion,
+    localOsVersion,
+    localClangVersion,
     flowVersion
   ] = await Promise.all([
     getUnixname(),
@@ -103,17 +132,17 @@ async function getAllSystemInfo(): Promise<any> {
     version: atom.getVersion(),
     buildNumber: getBuildNumber(),
     smokeBuildNumber: getSmokeBuildNumber(),
-    userID: userID,
+    userID,
     unixname: userID,
-    osVersion: osVersion,
-    clangVersion: clangVersion,
-    flowVersion: flowVersion,
+    osVersion: localOsVersion,
+    clangVersion: localClangVersion,
+    flowVersion,
   };
 }
 
-async function addSystemInfoPropertiesTo(data: any): void {
+async function addSystemInfoPropertiesTo(data: {[key: string]: mixed}): Promise<void> {
   var allSystemInfo = await getAllSystemInfo();
-  for (var info :string in allSystemInfo) {
+  for (var info in allSystemInfo) {
     // we know that this has only its own properties
     data[info] = allSystemInfo[info];
   }
