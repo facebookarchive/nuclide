@@ -39,13 +39,13 @@ class HackProvider extends AbstractProvider {
     return this._server.callService('/hack/getSearchResults', [queryString, undefined, searchPostfix, {cwd}]);
   }
 
-  async isAvailable(cwd: string) {
+  async isAvailable(cwd: string): Promise<boolean> {
     var {asyncExecute, fsPromise} = require('nuclide-commons');
 
     //TODO(most): when asyncExecute stops throwing on non-zero exit revisit this try
     try {
       var [{stdout}, nearestPath] = await Promise.all([
-        asyncExecute('which hh_client'),
+        asyncExecute('which', ['hh_client']),
         fsPromise.findNearestFile('.hhconfig', cwd),
       ]);
       if (stdout.trim() && nearestPath) {
