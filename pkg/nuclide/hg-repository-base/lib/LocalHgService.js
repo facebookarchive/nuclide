@@ -25,8 +25,7 @@ var WATCHMAN_SUBSCRIPTION_NAME_HGDIRSTATE = 'hg-repository-watchman-subscription
 var WATCHMAN_SUBSCRIPTION_NAME_HGBOOKMARK = 'hg-repository-watchman-subscription-hgbookmark';
 var EVENT_DELAY_IN_MS = 1000;
 
-import type LocalHgServiceOptions from "LocalHgServiceBase";
-
+import type LocalHgServiceOptions from './hg-types';
 
 // To make LocalHgServiceBase more easily testable, the watchman dependency is
 // broken out. We add the watchman dependency here.

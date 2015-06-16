@@ -20,14 +20,7 @@ var {fetchFileContentAtRevision, fetchFilesChangedAtRevision} = require('./hg-re
 var {asyncExecute} = require('nuclide-commons');
 var path = require('path');
 
-/**
- * @param workingDirectory The path of the working directory of this repository.
- * Note: this should be a local path, not a URI (e.g. a URI used to represent a
- * remote directory.
- */
-export type LocalHgServiceOptions = {
-  workingDirectory: string;
-};
+import type LocalHgServiceOptions from './hg-types';
 
 class LocalHgServiceBase extends HgService {
   constructor(options: LocalHgServiceOptions) {
