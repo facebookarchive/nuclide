@@ -17,14 +17,14 @@ function getConnectionDialogDefaultSettings(): any {
   var homeDir = process.env['HOME'] || process.env['USERPROFILE'];
   return {
     host: '',
-    username: username,
+    username,
     // Do not use path.join() because we assume that the remote machine is *nix,
     // so we always want to use `/` as the path separator for cwd, even if Atom
     // is running on Windows.
     cwd: '/home/' + username,
-    pathToPrivateKey: path.join(homeDir, '.ssh/id_rsa'),
+    pathToPrivateKey: path.join(homeDir, '.ssh', 'id_rsa'),
     useSshAgent: false,
-    remoteServerCommand: path.join(homeDir, 'nuclide', 'start-nuclide-server'),
+    remoteServerCommand: 'nuclide-start-server',
     sshPort: 22,
   };
 }

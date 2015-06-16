@@ -8,6 +8,9 @@
     "testRunner": "npm",
     "excludeTestsFromContinuousIntegration": true
   },
+  "bin": {
+    "nuclide-start-server": "./start-nuclide-server"
+  },
   "dependencies": {
     "connect": "3.3.4",
     "event-kit": "1.1.1",
