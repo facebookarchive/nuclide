@@ -59,7 +59,7 @@ class LocalFlowService extends FlowService {
     }
   }
 
-  async _execFlow(args: Array<mixed>, options: Object): Promise<Object> {
+  async _execFlow(args: Array<any>, options: Object): Promise<Object> {
     var maxTries = 5;
     args.push("--no-auto-start");
     var pathToFlow = await this._getPathToFlow();
