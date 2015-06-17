@@ -10,13 +10,10 @@
  */
 var {CompositeDisposable} = require('atom');
 var React = require('react-for-atom');
-var {
-  addons,
-  PropTypes,
-} = React;
 
-const MINIMUM_LENGTH = 100;
-const DOUBLE_CLICK_TIME_INTERVAL_THRESHOLD_MS = 500;
+var {PropTypes} = React;
+
+var MINIMUM_LENGTH = 100;
 
 /**
  * A container for centralizing the logic for making panels scrollable,
@@ -24,8 +21,9 @@ const DOUBLE_CLICK_TIME_INTERVAL_THRESHOLD_MS = 500;
  */
 var PanelComponent = React.createClass({
   propTypes: {
-    initialLength: PropTypes.number,
+    children: React.PropTypes.element.isRequired,
     dock: PropTypes.oneOf(['left', 'bottom', 'right']).isRequired,
+    initialLength: PropTypes.number,
   },
 
   getDefaultProps(): Object {
