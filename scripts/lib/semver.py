@@ -19,7 +19,7 @@ def find_version_in_range(versions, semver_range):
     Assumes the environment has `node` on the $PATH.
     '''
     logging.debug('Trying to match %s against %s.', semver_range, versions)
-    args = [platform_checker.get_node_executable(), semver] + versions + ['-r', semver_range]
+    args = [platform_checker.get_node_executable(), semver, '-r', semver_range] + versions
     shell = True if platform_checker.is_windows() else False
     proc = subprocess.Popen(args, stdout=subprocess.PIPE, shell=shell)
     matching_versions = []

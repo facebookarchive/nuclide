@@ -10,6 +10,7 @@ import os
 import platform_checker
 import shutil
 import subprocess
+import sys
 
 try:
     import queue

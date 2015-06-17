@@ -17,7 +17,7 @@
     "ssh2": "0.4.2"
   },
   "scripts": {
-    "test": "jasmine-node-transpiled spec"
+    "test": "node --harmony node_modules/.bin/jasmine-node-transpiled spec"
   },
   "devDependencies": {
     "nuclide-atom-interfaces": "0.0.0",

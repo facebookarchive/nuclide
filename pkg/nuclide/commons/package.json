@@ -20,6 +20,6 @@
     "mkdirp": "0.5.0"
   },
   "scripts": {
-    "test": "jasmine-node-transpiled spec"
+    "test": "node --harmony node_modules/.bin/jasmine-node-transpiled spec"
   }
 }

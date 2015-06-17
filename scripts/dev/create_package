@@ -148,7 +148,7 @@ NODE_NPM_PACKAGE_JSON_TEMPLATE = """\
     "nuclide-node-transpiler": "0.0.0"
   },
   "scripts": {
-    "test": "jasmine-node-transpiled spec"
+    "test": "node --harmony node_modules/.bin/jasmine-node-transpiled spec"
   }
 }
 """

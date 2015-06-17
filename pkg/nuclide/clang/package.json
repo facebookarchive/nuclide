@@ -15,6 +15,6 @@
     "split": "0.3.2"
   },
   "scripts": {
-    "test": "jasmine-node-transpiled spec"
+    "test": "node --harmony node_modules/.bin/jasmine-node-transpiled spec"
   }
 }

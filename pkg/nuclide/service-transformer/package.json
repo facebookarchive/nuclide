@@ -17,6 +17,6 @@
     "nuclide-service-transpile": "bin/nuclide-service-transpile"
   },
   "scripts": {
-    "test": "jasmine-node-transpiled spec"
+    "test": "node --harmony node_modules/.bin/jasmine-node-transpiled spec"
   }
 }

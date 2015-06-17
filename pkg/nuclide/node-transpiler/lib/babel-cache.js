@@ -17,10 +17,6 @@ var path = require('path');
 var temp = require('temp').track();
 var cacheDir = createCacheDir();
 
-// The yield claims available in node 0.12.x but requires --harmony flag to be able to execute
-// the code generated from the latest regenerator with node 0.12.x.
-var isYieldSupported = false;
-
 /**
  * Tries to create a "babel-cache" directory if it does not already exist.
  * @return {?string} path to the cache directory or {@code null} if it could not be created.
@@ -122,7 +118,7 @@ function createOptions(filePath) {
       'useStrict',
     ],
     optional: [
-      (isYieldSupported ? 'asyncToGenerator' : 'regenerator'),
+      'asyncToGenerator',
     ],
     stage: 0,
   };

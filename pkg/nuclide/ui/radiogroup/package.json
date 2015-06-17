@@ -14,6 +14,6 @@
     "react-for-atom": "0.13.6"
   },
   "scripts": {
-    "test": "jasmine-node-transpiled spec"
+    "test": "node --harmony node_modules/.bin/jasmine-node-transpiled spec"
   }
 }
