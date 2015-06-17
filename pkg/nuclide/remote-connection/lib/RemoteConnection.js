@@ -47,6 +47,7 @@ class RemoteConnection {
   _entries: {[path: string]: RemoteFile|RemoteDirectory};
   _config: RemoteConnectionConfiguration;
   _initialized: ?bool;
+  _closed: ?bool;
 
   _heartbeatNetworkAwayCount: int;
   _lastHeartbeatNotification: ?HeartbeatNotification;
@@ -56,6 +57,7 @@ class RemoteConnection {
     this._entries = {};
     this._config = config;
     this._heartbeatNetworkAwayCount = 0;
+    this._closed = false;
   }
 
   dispose(): void {
@@ -262,12 +264,12 @@ class RemoteConnection {
       try {
         serverVersion = await client.version();
       } catch (e) {
-        client.eventbus.close();
+        client.close();
         throw e;
       }
       var clientVersion = getVersion();
       if (clientVersion != serverVersion) {
-        client.eventbus.close();
+        client.close();
         throw new Error(`Version mismatch. Client at ${clientVersion} while server at ${serverVersion}.`);
       }
       this._initialized = true;
@@ -284,9 +286,25 @@ class RemoteConnection {
     _emitter.emit('did-add', this);
   }
 
+  close(): void {
+    // Close the eventbus that will stop the heartbeat interval, websocket reconnect trials, ..etc.
+    if (this._client) {
+      this._client.close();
+      this._client = null;
+    }
+    if (!this._closed) {
+      // Future getClient calls should fail, if it has a cached RemoteConnection instance.
+      this._closed = true;
+      // Remove from _connections to not be considered in future connection queries.
+      _connections.splice(_connections.indexOf(this), 1);
+    }
+  }
+
   getClient(): NuclideClient {
     if (!this._initialized) {
       throw new Error('Remote connection has not been initialized.');
+    } else if (this._closed) {
+      throw new Error('Remote connection has been closed.');
     } else {
       return this._getClient();
     }
@@ -382,6 +400,10 @@ class RemoteConnection {
       return connection.getRemoteHostname() === hostname &&
           (path === null || path.startsWith(connection.getPathForInitialWorkingDirectory()));
     })[0];
+  }
+
+  static getByHostname(hostname: string): Array<RemoteConnection> {
+    return _connections.filter(connection => connection.getRemoteHostname() === hostname);
   }
 }
 

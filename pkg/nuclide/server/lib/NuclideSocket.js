@@ -38,6 +38,7 @@ class NuclideSocket extends EventEmitter {
     this._reconnectTime = INITIAL_RECONNECT_TIME_MS;
     this._reconnectTimer = null;
     this._connected = false;
+    this._closed = false;
     this._previouslyConnected = false;
     this._cachedMessages = [];
 
@@ -91,7 +92,9 @@ class NuclideSocket extends EventEmitter {
       this._websocket = null;
       this._connected = false;
       this.emit('disconnect');
-      this._scheduleReconnect();
+      if (!this._closed) {
+        this._scheduleReconnect();
+      }
     });
 
     websocket.on('error', (error) => {
@@ -229,6 +232,7 @@ class NuclideSocket extends EventEmitter {
   }
 
   close() {
+    this._closed = true;
     if (this._connected) {
       this._connected = false;
       this.emit('disconnect');

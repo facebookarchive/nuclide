@@ -93,7 +93,7 @@ class NuclideRemoteEventbus {
     return new Disposable(() => {
       this.serviceFrameworkEventEmitter.removeListener(remoteEventName, callback);
       return subscribePromise.then(
-          () => this._unsubscribeEventFromServer(serviceName, eventMethodName, serviceOoptions));
+          () => this._unsubscribeEventFromServer(serviceName, eventMethodName, serviceOptions));
     });
   }
 

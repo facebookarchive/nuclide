@@ -444,6 +444,13 @@ class NuclideClient {
       /*extraOptions*/ {method: 'POST', json: true}
     );
   }
+
+  close() : void {
+    if (this.eventbus) {
+      this.eventbus.close();
+      this.eventbus = null;
+    }
+  }
 }
 
 function createStats(jsonStats: any) {
