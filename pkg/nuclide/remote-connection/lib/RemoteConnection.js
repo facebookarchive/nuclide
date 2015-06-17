@@ -13,6 +13,7 @@ var {CompositeDisposable, Disposable} = require('atom');
 var net = require('net');
 var url = require('url');
 var logger = require('nuclide-logging').getLogger();
+var {EventEmitter} = require('events');
 
 var RemoteFile = require('./RemoteFile');
 var RemoteDirectory = require('./RemoteDirectory');
@@ -40,6 +41,7 @@ type RemoteConnectionConfiguration = {
 }
 
 var _connections: Array<RemoteConnection> = [];
+var _emitter: EventEmitter = new EventEmitter();
 
 class RemoteConnection {
   _entries: {[path: string]: RemoteFile|RemoteDirectory};
@@ -58,18 +60,6 @@ class RemoteConnection {
 
   dispose(): void {
     this._subscriptions.dispose();
-  }
-
-  async _addToProject() {
-    var workingDirectoryUri = this.getUriForInitialWorkingDirectory();
-    // If restoring state, then the project already exists with local directory and wrong repo instances.
-    // Hence, we remove it here, if existing, and add the new path for which we added a workspace opener handler.
-    atom.project.removePath(workingDirectoryUri);
-
-    // A workaround before Atom 2.0: see ::getHgRepoInfo.
-    await this._setHgRepoInfo();
-
-    atom.project.addPath(workingDirectoryUri);
   }
 
   // A workaround before Atom 2.0: Atom's Project::setPaths currently uses
@@ -281,11 +271,17 @@ class RemoteConnection {
         throw new Error(`Version mismatch. Client at ${clientVersion} while server at ${serverVersion}.`);
       }
       this._initialized = true;
-      // Save to cache.
-      _connections.push(this);
       this._monitorConnectionHeartbeat();
-      this._addToProject();
+      // A workaround before Atom 2.0: see ::getHgRepoInfo.
+      await this._setHgRepoInfo();
+      // Save to cache.
+      this._addConnection();
     }
+  }
+
+  _addConnection() {
+    _connections.push(this);
+    _emitter.emit('did-add', this);
   }
 
   getClient(): NuclideClient {
@@ -364,23 +360,30 @@ class RemoteConnection {
   getConfig(): RemoteConnectionConfiguration{
     return this._config;
   }
+
+  static onDidAddRemoteConnection(handler: (connection: RemoteConnection) => void): Disposable {
+    _emitter.on('did-add', handler);
+    return new Disposable(() => {
+      _emitter.removeListener('did-add', handler);
+    });
+  }
+
+  static getForUri(uri: string): ?RemoteConnection {
+    var {hostname, path} = url.parse(uri);
+    return RemoteConnection.getByHostnameAndPath(hostname, path);
+  }
+
+  /**
+   * Get cached connection match the hostname and the path has the prefix of connection.cwd. If path is null,
+   * then return the connection who matches the hostname and ignore connection.cwd.
+   */
+  static getByHostnameAndPath(hostname: string, path: ?string): ?RemoteConnection {
+    return _connections.filter((connection) => {
+      return connection.getRemoteHostname() === hostname &&
+          (path === null || path.startsWith(connection.getPathForInitialWorkingDirectory()));
+    })[0];
+  }
 }
-
-RemoteConnection.getForUri = function(uri: string): ?RemoteConnection {
-  var {hostname, path} = url.parse(uri);
-  return RemoteConnection.getByHostnameAndPath(hostname, path);
-};
-
-/**
- * Get cached connection match the hostname and the path has the prefix of connection.cwd. If path is null,
- * then return the connection who matches the hostname and ignore connection.cwd.
- */
-RemoteConnection.getByHostnameAndPath = function(hostname: string, path: ?string): ?RemoteConnection {
-  return _connections.filter((connection) => {
-    return connection.getRemoteHostname() === hostname &&
-        (path === null || path.startsWith(connection.getPathForInitialWorkingDirectory()));
-  })[0];
-};
 
 // Expose local variables for testability.
 RemoteConnection.test = {

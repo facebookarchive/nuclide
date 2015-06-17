@@ -18,7 +18,7 @@ function getLogger() {
   return logger || (logger = require('nuclide-logging').getLogger());
 }
 
-var RemoteConnection: ?RemoteConnection = null;
+var RemoteConnection = null;
 function getRemoteConnection(): RemoteConnection {
   return RemoteConnection || (RemoteConnection = require('nuclide-remote-connection').RemoteConnection);
 }
@@ -37,6 +37,15 @@ async function createRemoteConnection(remoteProjectConfig: RemoteConnectionConfi
       initialCwd: remoteProjectConfig.cwd,
     });
   }
+}
+
+function addRemoteFolderToProject(connection: RemoteConnection) {
+  var workingDirectoryUri = connection.getUriForInitialWorkingDirectory();
+  // If restoring state, then the project already exists with local directory and wrong repo instances.
+  // Hence, we remove it here, if existing, and add the new path for which we added a workspace opener handler.
+  atom.project.removePath(workingDirectoryUri);
+
+  atom.project.addPath(workingDirectoryUri);
 }
 
 /**
@@ -103,8 +112,13 @@ module.exports = {
 
   activate(state: ?any): void {
     subscriptions = new CompositeDisposable();
+
+    subscriptions.add(getRemoteConnection().onDidAddRemoteConnection(connection => {
+      addRemoteFolderToProject(connection);
+    }));
+
     // Don't do require or any other expensive operations in activate().
-    subscriptions.add(atom.packages.onDidActivateInitialPackages(() =>{
+    subscriptions.add(atom.packages.onDidActivateInitialPackages(() => {
       // Subscribe opener before restoring the remote projects.
       subscriptions.add(atom.workspace.addOpener((uri = '') => {
         if (uri.startsWith('nuclide:')) {
