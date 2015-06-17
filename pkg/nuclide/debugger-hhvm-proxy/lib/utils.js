@@ -10,9 +10,20 @@
  */
 
 
-function log(message) {
+function log(message: string) {
   var logger = require('nuclide-logging').getLogger();
-  logger.debug('hhvm debugger: ' + message);
+  logger.info('hhvm debugger: ' + message);
+}
+
+function logError(message: string) {
+  var logger = require('nuclide-logging').getLogger();
+  logger.error('hhvm debugger: ' + message);
+}
+
+function logErrorAndThrow(message: string) {
+  logError(message);
+  logError(new Error().stack);
+  throw new Error(message);
 }
 
 /**
@@ -51,7 +62,6 @@ function parseXml(xml: string): mixed {
  * Throws if the message is malformatted.
  */
 function parseDbgpMessage(message: string): string {
-  log('Translating server message: ' + message);
 
   var components = message.split('\x00');
   if (components.length !== 3) {
@@ -63,7 +73,6 @@ function parseDbgpMessage(message: string): string {
     throw new Error('Error: Server message expected length ' + length + ' got length ' +
       value.length);
   }
-  log('Translating server message result: ' + value);
 
   var json = parseXml(value);
   log('Translating server message result json: ' + JSON.stringify(json));
@@ -78,10 +87,15 @@ function pathToUri(path: string): string {
   return 'file://' + path;
 }
 
+var DUMMY_FRAME_ID = 'Frame.0';
+
 module.exports = {
   log,
+  logError,
+  logErrorAndThrow,
   makeDbgpMessage,
   parseDbgpMessage,
   parseXml,
   pathToUri,
+  DUMMY_FRAME_ID,
 };
