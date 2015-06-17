@@ -33,6 +33,8 @@ parser = optparse.OptionParser(usage='usage: %prog [options] X',
                                            'will be added to the current HEAD. If you specify a ' +
                                            'target version of 0, the script will increment the ' +
                                            'highest version that has been previously tagged.')
+parser.add_option('--access-token', '-a', metavar='TOKEN',
+                  help='A GitHub access token with sufficient rights to create new apm repos.')
 parser.add_option('--local-repo', '-r', metavar='PATH',
                   help='A local up-to-date clone of the GitHub Nuclide repo to avoid cloning ' +
                        'anew. It is not recommended to use this in production, and you must ' +
@@ -112,7 +114,8 @@ else:
 logging.info('Publishing Nuclide packages to target version %d from commit %s',
              target_version, target_commit)
 from publishers import PackagePublisher
-package_publisher = PackagePublisher.create_package_publisher(repo, master_tmpdir)
+package_publisher = PackagePublisher.create_package_publisher(repo, master_tmpdir,
+                                                              options.access_token)
 if not dry_run:
     package_publisher.publish(target_version)
 

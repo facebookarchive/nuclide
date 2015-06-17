@@ -33,6 +33,13 @@ class Git (object):
             cmd_args.insert(1, '-b')
         self._execute(cmd_args, repository_directory)
 
+    def add_all(self, repository_directory):
+        self._execute(['add', '-A'], repository_directory)
+
+    def commit_all(self, repository_directory, message):
+        self.add_all(repository_directory)
+        self._execute(['commit', '-a', '-m', message], repository_directory)
+
     def get_head(self, repository_directory):
         ''' Returns hash of current local HEAD commit. '''
         return self._execute(['show-ref', '--head', '--heads', '-s', 'HEAD'],

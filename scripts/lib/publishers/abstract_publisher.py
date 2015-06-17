@@ -9,10 +9,12 @@ from abc import ABCMeta, abstractmethod
 
 class AbstractPublisherConfig(object):
     '''Arguments for an AbstractPublisher constructor.'''
-    def __init__(self, package_name, package_directory, nuclide_npm_package_names):
+    def __init__(self, package_name, package_directory,
+                 nuclide_npm_package_names, nuclide_apm_package_names):
         self._package_name = package_name
         self._package_directory = package_directory
         self._nuclide_npm_package_names = nuclide_npm_package_names
+        self._nuclide_apm_package_names = nuclide_apm_package_names
 
     @property
     def package_name(self):
@@ -24,6 +26,9 @@ class AbstractPublisherConfig(object):
 
     def is_nuclide_npm_package(self, package_name):
         return package_name in self._nuclide_npm_package_names
+
+    def is_nuclide_apm_package(self, package_name):
+        return package_name in self._nuclide_apm_package_names
 
     def __str__(self):
         return 'name: %s; directory: %s' % (self.package_name, self.package_directory)
@@ -49,5 +54,5 @@ class AbstractPublisher(object):
         pass
 
     @abstractmethod
-    def publish(self, new_version):
+    def publish(self, new_version, atom_semver):
         pass

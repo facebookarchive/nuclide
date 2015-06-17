@@ -38,7 +38,7 @@ class NpmPublisher(AbstractPublisher):
         logging.info('Attempting to determine version of %s in npm', self.get_package_name())
 
         # We often call this multiple times to check publication progress, so force non-memoization.
-        semver = self._npm.info(self._config.package_directory, force=True).get('version')
+        semver = self._npm.info(self._config.package_directory, force=True).get('version', '')
 
         match = self._version_regex.match(semver)
         if match:
@@ -53,13 +53,13 @@ class NpmPublisher(AbstractPublisher):
     def is_published_version(self, target_version):
         return self.get_published_version() == target_version
 
-    def publish(self, new_version):
+    def publish(self, new_version, atom_semver):
         logging.info('Publishing %s to npm at version %s', self.get_package_name(), new_version)
 
         # Create temporary directory and copy package into it (without dependencies).
         package = self._config.package_directory
         tmp_package = os.path.join(self._tmpdir, self.get_package_name())
-        logging.info('Copying %s to tmpdir: %s', self.get_package_name(), tmp_package)
+        logging.info('Copying %s to tmpdir', self.get_package_name())
         shutil.copytree(package, tmp_package, ignore=shutil.ignore_patterns('node_modules'))
 
         # Load package.json and rewrite version number within it.
