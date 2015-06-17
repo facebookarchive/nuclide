@@ -25,8 +25,9 @@ function getRemoteConnection(): RemoteConnection {
 
 async function createRemoteConnection(remoteProjectConfig: RemoteConnectionConfiguration): Promise<?RemoteConnection> {
   var RemoteConnection = getRemoteConnection();
-  var connection = new RemoteConnection(remoteProjectConfig);
+
   try {
+    var connection = new RemoteConnection(restoreClientKey(remoteProjectConfig));
     await connection.initialize();
     return connection;
   } catch (e) {
@@ -146,7 +147,99 @@ async function createEditorForNuclide(connection: RemoteConnection, uri: string)
   return new TextEditor(/*editorOptions*/ {buffer, registerEditor: true});
 }
 
+/**
+ * Encrypts the clientKey of a RemoteConnectionConfiguration.
+ * @param remoteProjectConfig - The config with the clientKey we want encrypted.
+ * @return returns the passed in config with the clientKey encrypted.
+ */
+function protectClientKey(remoteProjectConfig: RemoteConnectionConfiguration): RemoteConnectionConfiguration {
+  var {replacePassword} = require('nuclide-keytar-wrapper');
+  var crypto = require('crypto');
+
+  var sha1 = crypto.createHash('sha1');
+  sha1.update(`${remoteProjectConfig.host}:${remoteProjectConfig.port}`);
+  var sha1sum = sha1.digest('hex');
+
+  var {salt, password, encryptedString} = encryptString(remoteProjectConfig.clientKey);
+  replacePassword('nuclide.remoteProjectConfig', sha1sum, `${password}`);
+
+  remoteProjectConfig.clientKey = encryptedString + '.' + salt;
+
+  return remoteProjectConfig;
+}
+
+/**
+ * Decrypts the clientKey of a RemoteConnectionConfiguration.
+ * @param remoteProjectConfig - The config with the clientKey we want encrypted.
+ * @return returns the passed in config with the clientKey encrypted.
+ */
+function restoreClientKey(remoteProjectConfig: RemoteConnectionConfiguration): RemoteConnectionConfiguration {
+  var {getPassword} = require('nuclide-keytar-wrapper');
+  var crypto = require('crypto');
+
+  var sha1 = crypto.createHash('sha1');
+  sha1.update(`${remoteProjectConfig.host}:${remoteProjectConfig.port}`);
+  var sha1sum = sha1.digest('hex');
+
+  var password = getPassword('nuclide.remoteProjectConfig', sha1sum);
+
+  if (!password) {
+    throw new Error('Cannot find password for encrypted client key');
+  }
+
+  var salt;
+  var clientKey;
+
+  [clientKey, salt] = remoteProjectConfig.clientKey.split('.');
+
+  if (!clientKey || !salt) {
+    throw new Error('Cannot decrypt client key');
+  }
+
+  remoteProjectConfig.clientKey = decryptString(clientKey, password, salt);
+
+  return remoteProjectConfig;
+}
+
+function decryptString(text: string, password: string, salt: string): string {
+  var crypto = require('crypto');
+
+  var decipher = crypto.createDecipheriv(
+      'aes-128-cbc',
+      new Buffer(password, 'base64'),
+      new Buffer(salt, 'base64'));
+
+  var decryptedString = decipher.update(text, 'base64', 'utf8');
+  decryptedString += decipher.final('utf8');
+
+  return decryptedString;
+}
+
+function encryptString(text: string): any {
+  var crypto = require('crypto');
+  var password = crypto.randomBytes(16).toString('base64');
+  var salt = crypto.randomBytes(16).toString('base64');
+
+  var cipher = crypto.createCipheriv(
+    'aes-128-cbc',
+    new Buffer(password, 'base64'),
+    new Buffer(salt, 'base64'));
+
+  var encryptedString = cipher.update(text, 'utf8', 'base64');
+  encryptedString += cipher.final('base64');
+
+  return {
+    password,
+    salt,
+    encryptedString,
+  };
+}
+
 module.exports = {
+  __test__: {
+    decryptString,
+    encryptString,
+  },
 
   activate(state: ?any): void {
     subscriptions = new CompositeDisposable();
@@ -189,11 +282,11 @@ module.exports = {
     }));
   },
 
-  serialize(): ?any {
+  serialize(): any {
     var remoteProjectsConfig = getRemoteRootDirectories()
         .map(directory => {
           var connection = getRemoteConnection().getForUri(directory.getPath());
-          return connection && connection.getConfig();
+          return connection && protectClientKey(connection.getConfig());
         }).filter(config => !!config);
     return {
       remoteProjectsConfig,
