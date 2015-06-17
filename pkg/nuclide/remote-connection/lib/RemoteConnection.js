@@ -297,6 +297,7 @@ class RemoteConnection {
       this._closed = true;
       // Remove from _connections to not be considered in future connection queries.
       _connections.splice(_connections.indexOf(this), 1);
+      _emitter.emit('did-close', this);
     }
   }
 
@@ -383,6 +384,13 @@ class RemoteConnection {
     _emitter.on('did-add', handler);
     return new Disposable(() => {
       _emitter.removeListener('did-add', handler);
+    });
+  }
+
+  static onDidCloseRemoteConnection(handler: (connection: RemoteConnection) => void): Disposable {
+    _emitter.on('did-close', handler);
+    return new Disposable(() => {
+      _emitter.removeListener('did-close', handler);
     });
   }
 

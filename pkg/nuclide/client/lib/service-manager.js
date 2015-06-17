@@ -21,6 +21,15 @@ var serviceConfigs = loadConfigsOfServiceWithServiceFramework();
 // case would be the local service, where the $host will be empty string.
 var cachedServices: Map<string, any> = new Map();
 
+RemoteConnection.onDidCloseRemoteConnection((connection: RemoteConnection) => {
+  for (var cacheEntry of cachedServices) {
+    var [cacheKey, serviceInstance] = cacheEntry;
+    if (serviceInstance._connection === connection) {
+      cachedServices.delete(cacheKey);
+    }
+  }
+});
+
 /**
  * Create or get a cached service with given serviceOptions.
  * @param nuclideUri It could either be either a local path or a remote path in form of
