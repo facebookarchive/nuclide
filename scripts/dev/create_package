@@ -127,7 +127,7 @@ NODE_APM_PACKAGE_JSON_TEMPLATE = """\
     "packageType": "Node",
     "testRunner": "apm"
   },
-  "dependencies": {
+  "devDependencies": {
     "nuclide-atom-interfaces": "0.0.0"
   }
 }
