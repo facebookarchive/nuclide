@@ -4,7 +4,7 @@
     'submenu': [
       {
         'label': 'Connect...',
-        'command': 'nuclide-ssh-dialog:connect',
+        'command': 'nuclide-remote-projects:connect',
       }
     ]
   }

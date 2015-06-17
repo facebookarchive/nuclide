@@ -11,8 +11,6 @@
 
 var url = require('url');
 var path = require('path');
-var {CompositeDisposable, Disposable} = require('atom');
-var subscriptions: ?CompositeDisposable = null;
 var defaultConfig: ?any = null;
 
 var dialogPromiseQueue: ?PromiseQueue = null;
@@ -85,25 +83,4 @@ function getDefaultConfig(): any {
   return defaultConfig;
 }
 
-module.exports = {
-  activate(state: ?any): void {
-    subscriptions = new CompositeDisposable();
-    // If this package was activated by an nuclide-ssh-dialog:connect event,
-    // the listener registered here will fire after this method finishes.
-    subscriptions.add(atom.commands.add(
-        'atom-workspace',
-        'nuclide-ssh-dialog:connect',
-        openConnectionDialog
-    ));
-  },
-
-  openConnectionDialog,
-
-  deactivate(): void {
-    // This should always be true here, but we do this to appease Flow.
-    if (subscriptions) {
-      subscriptions.dispose();
-      subscriptions = null;
-    }
-  },
-};
+module.exports = {openConnectionDialog};

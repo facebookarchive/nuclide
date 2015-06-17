@@ -5,7 +5,7 @@
   "version": "0.0.0",
   "description": "Provides a dialog to allow Nuclide users to connect to remote servers",
   "nuclide": {
-    "packageType": "Atom",
+    "packageType": "Node",
     "testRunner": "apm"
   },
   "engines": {
