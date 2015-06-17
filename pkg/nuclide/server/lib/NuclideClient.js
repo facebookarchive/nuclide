@@ -287,6 +287,18 @@ class NuclideClient {
     );
   }
 
+  /**
+   * Returns the server version.
+   */
+  shutdownServer(): Promise {
+    return this.eventbus.callMethod(
+      /*serviceName*/ 'server',
+      /*methodName*/ 'shutdown',
+      /*methodArgs*/ [],
+      /*extraOptions*/ {method: 'POST'}
+    );
+  }
+
   async watchFile(filePath: string): Promise<FsWatcher> {
     var watcherId = await this.eventbus.callMethod(
       /*serviceName*/ 'watcher',

@@ -28,6 +28,8 @@ var {getVersion} = require('nuclide-version');
 
 var logger = require('nuclide-logging').getLogger();
 
+const SERVER_SHUTDOWN_TIMEOUT_MS = 1000;
+
 var EVENT_HANDLE_REGISTERED = '_nuclideServerEventHandleRegstered';
 var idIncrement = 0;
 
@@ -202,6 +204,7 @@ class NuclideServer {
   _setupServices() {
     this._serviceRegistry = {};
     this._setupVersionHandler();
+    this._setupShutdownHandler();
     this._setupSubscriptionHandler();
     this._setupServiceFrameworkSubscriptionHandler();
     this._serviceWithoutServiceFrameworkConfigs = loadConfigsOfServiceWithoutServiceFramework();
@@ -227,6 +230,24 @@ class NuclideServer {
   _setupVersionHandler() {
     this._version = getVersion().toString();
     this._registerService('/server/version', () => this._version, 'post', true);
+  }
+
+  _setupShutdownHandler() {
+    var shutdownServer = () => {
+      logger.info('Shutting down the server');
+      try {
+        this.close();
+      } catch (e) {
+        logger.error('Error while shutting down, but proceeding anyway:', e);
+      } finally {
+        process.exit(0);
+      }
+    };
+    this._registerService('/server/shutdown', () => {
+      logger.info('Server received a shutdown request - terminating!');
+      // Shutdown after timeout to give a chance to reply success to the shutdown request.
+      setTimeout(shutdownServer, SERVER_SHUTDOWN_TIMEOUT_MS);
+    }, 'post');
   }
 
   _setupSubscriptionHandler() {
