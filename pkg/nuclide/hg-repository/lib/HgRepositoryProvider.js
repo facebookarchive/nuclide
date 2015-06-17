@@ -11,6 +11,11 @@
 
 var {Directory} = require('atom');
 
+var logger = null;
+function getLogger() {
+  return logger || (logger = require('nuclide-logging').getLogger());
+}
+
 /**
  * @param directory Either a RemoteDirectory or Directory we are interested in.
  * @return If the directory is part of a Mercurial repository, returns an object
@@ -67,24 +72,29 @@ module.exports = class HgRepositoryProvider {
   }
 
   repositoryForDirectorySync(directory: Directory): ?HgRepository {
-    var repositoryDescription = getRepositoryDescription(directory);
-    if (!repositoryDescription) {
+    try {
+      var repositoryDescription = getRepositoryDescription(directory);
+      if (!repositoryDescription) {
+        return null;
+      }
+
+      var {originURL, repoPath, workingDirectory, workingDirectoryLocalPath} = repositoryDescription;
+
+      var {getServiceByNuclideUri} = require('nuclide-client');
+      var service = getServiceByNuclideUri(
+        'HgService',
+        directory.getPath(),
+        {workingDirectory: workingDirectoryLocalPath}
+      );
+      var {HgRepositoryClient} = require('nuclide-hg-repository-client');
+      return new HgRepositoryClient(repoPath, service, {
+        workingDirectory,
+        projectRootDirectory: directory,
+        originURL,
+      });
+    } catch (err) {
+      getLogger().error('Failed to create an HgRepositoryClient for ', directory.getPath(), ', error: ', err);
       return null;
     }
-
-    var {originURL, repoPath, workingDirectory, workingDirectoryLocalPath} = repositoryDescription;
-
-    var {getServiceByNuclideUri} = require('nuclide-client');
-    var service = getServiceByNuclideUri(
-      'HgService',
-      directory.getPath(),
-      {workingDirectory: workingDirectoryLocalPath}
-    );
-    var {HgRepositoryClient} = require('nuclide-hg-repository-client');
-    return new HgRepositoryClient(repoPath, service, {
-      workingDirectory,
-      projectRootDirectory: directory,
-      originURL,
-    });
   }
 }
