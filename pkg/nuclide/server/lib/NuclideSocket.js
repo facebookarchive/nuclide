@@ -89,6 +89,9 @@ class NuclideSocket extends EventEmitter {
     });
 
     websocket.on('close', () => {
+      if (this._websocket !== websocket) {
+        return;
+      }
       this._websocket = null;
       this._connected = false;
       this.emit('disconnect');
@@ -98,6 +101,9 @@ class NuclideSocket extends EventEmitter {
     });
 
     websocket.on('error', (error) => {
+      if (this._websocket !== websocket) {
+        return;
+      }
       logger.error('WebSocket Error - reconnecting...', error);
       this._cleanWebSocket();
       this._scheduleReconnect();
@@ -181,8 +187,7 @@ class NuclideSocket extends EventEmitter {
           || ((now - this._lastHeartbeatTime) > MAX_HEARTBEAT_AWAY_RECONNECT_MS)) {
         // Trigger a websocket reconnect.
         this._cleanWebSocket();
-        this._clearReconnectTimer();
-        this._reconnect();
+        this._scheduleReconnect();
       }
       this._lastHeartbeat  = 'here';
       this._lastHeartbeatTime = now;
