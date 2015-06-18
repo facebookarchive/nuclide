@@ -139,11 +139,14 @@ class ApmPublisher(AbstractPublisher):
         # Update the version of the Atom engine required.
         package['engines'] = {'atom': '>=%s' % atom_semver}
 
+        # Rewrite the repository URL.
+        repository = 'https://github.com/facebooknuclideapm/%s' % self.get_package_name()
+        package['repository'] = repository
+
         # Write the adjusted package file back to the temporary directory and publish it.
         json_dump(package, package_file)
 
         # TODO (jpearce) Consider also prefixing the readme.
-        # TODO (jpearce) Workout if we have to rewrite the repository URL - probably.
 
         # Write out the packages to install for the nuclide-installer package.
         if self.get_package_name() == 'nuclide-installer':
