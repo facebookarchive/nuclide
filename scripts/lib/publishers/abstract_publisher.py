@@ -54,5 +54,11 @@ class AbstractPublisher(object):
         pass
 
     @abstractmethod
+    def prepublish(self, new_version, atom_semver):
+        '''Must be invoked before publish(). This will be invoked for a --dry-run.'''
+        pass
+
+    @abstractmethod
     def publish(self, new_version, atom_semver):
+        '''prepublish() must be invoked before this method. This will not be invoked for a --dry-run.'''
         pass

@@ -65,12 +65,14 @@ class PackagePublisher(object):
     def __init__(self, publishers):
         self._publishers = publishers
 
-    def publish(self, target_version):
+    def publish(self, target_version, is_dry_run):
         '''This publishes packages at the given version.'''
 
         # We use topological order (and fail aggressively) so that published packages always
         # have an equal version (ideally) or lower version (after failure) than their dependencies.
-        self._publish_new_versions(target_version)
+        self._publish_new_versions(target_version, is_dry_run)
+        if is_dry_run:
+            return
 
         # Check to see whether all packages are now at the version we were aiming for.
         verified = self._verify_published_versions(target_version)
@@ -79,12 +81,14 @@ class PackagePublisher(object):
         else:
             logging.info('Publication successful')
 
-    def _publish_new_versions(self, version):
+    def _publish_new_versions(self, version, is_dry_run):
         from nuclide_config import NUCLIDE_CONFIG
         atom_semver = json_load(NUCLIDE_CONFIG)['atomVersion']
         logging.info('Publishing packages at new version %d (Atom %s)', version, atom_semver)
         for publisher in self._publishers:
-            publisher.publish(version, atom_semver)
+            publisher.prepublish(version, atom_semver)
+            if not is_dry_run:
+                publisher.publish(version, atom_semver)
 
     def _verify_published_versions(self, target_version):
         verified = True

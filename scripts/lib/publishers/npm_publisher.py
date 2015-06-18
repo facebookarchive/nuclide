@@ -53,7 +53,7 @@ class NpmPublisher(AbstractPublisher):
     def is_published_version(self, target_version):
         return self.get_published_version() == target_version
 
-    def publish(self, new_version, atom_semver):
+    def prepublish(self, new_version, atom_semver):
         logging.info('Publishing %s to npm at version %s', self.get_package_name(), new_version)
 
         # Create temporary directory and copy package into it (without dependencies).
@@ -86,6 +86,7 @@ class NpmPublisher(AbstractPublisher):
         # Write the adjusted package file back to the temporary directory and publish it.
         json_dump(package, package_file)
 
+    def publish(self, new_version, atom_semver):
         try:
             self._npm.publish(tmp_package)
         except subprocess.CalledProcessError:

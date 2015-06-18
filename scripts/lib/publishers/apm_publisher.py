@@ -101,7 +101,7 @@ class ApmPublisher(AbstractPublisher):
     def is_published_version(self, target_version):
         return self.get_published_version() == target_version
 
-    def publish(self, new_version, atom_semver):
+    def prepublish(self, new_version, atom_semver):
         logging.info('Publishing %s to apm at version %s', self.get_package_name(), new_version)
 
         # Clean repo out, leaving .git metadata in place.
@@ -151,6 +151,7 @@ class ApmPublisher(AbstractPublisher):
             logging.info('Removing launch files from repo for %s', self.get_package_name())
             self.clean_repo(except_files=['package.json', 'README.md'])
 
+    def publish(self, new_version, atom_semver):
         # TODO: (jpearce) Get GitHub to unblock nuclide-*; this fails  currently.
         try:
             self._apm.publish(self._repo, '0.0.%d' % new_version)

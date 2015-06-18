@@ -115,8 +115,7 @@ logging.info('Publishing Nuclide packages to target version v0.0.%d from commit 
 from publishers import PackagePublisher
 package_publisher = PackagePublisher.create_package_publisher(repo, master_tmpdir,
                                                               options.access_token)
-if not dry_run:
-    package_publisher.publish(target_version)
+package_publisher.publish(target_version, dry_run)
 
 # Tidy up; delete the temporary directory if we created one.
 logging.info('Publication complete')
