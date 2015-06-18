@@ -25,6 +25,12 @@ npm-debug.log*
 node_modules
 '''
 
+README_PREFIX = '''\
+**NOTE:** The official repository for this package is https://github.com/facebook/nuclide.
+Please file all issues and pull requests there.
+
+'''
+
 class ApmPublisher(AbstractPublisher):
     ''' Reads and publishes apm packages assuming an incrementing revision number rather than using
         full-fledged semver. Nuclide packages are developed as a consistent set, with 0.0.0 as the
@@ -158,7 +164,15 @@ class ApmPublisher(AbstractPublisher):
             with open(path_to_gitignore, 'w') as f:
                 f.write(DEFAULT_GITIGNORE)
 
-        # TODO (jpearce) Consider also prefixing the readme.
+        # Prefix the README.md with information about the proper repository.
+        path_to_readme = os.path.join(self._repo, 'README.md')
+        if os.path.exists(path_to_readme):
+            with open(path_to_readme, 'r') as f:
+                readme_contents = README_PREFIX + f.read()
+        else:
+            readme_contents = README_PREFIX
+        with open(path_to_readme, 'w') as f:
+            f.write(readme_contents)
 
         # Write out the packages to install for the nuclide-installer package.
         if self.get_package_name() == 'nuclide-installer':
