@@ -60,14 +60,14 @@ git = Git()
 # Establish the repo directory to use.
 if local_repo:
     repo = local_repo
-    logging.info('Using Nuclide from existing repo directory %s', repo)
+    logging.info('Using Nuclide from existing repo directory: %s', repo)
 else:
     repo = os.path.join(master_tmpdir, 'repo')
-    logging.info('Cloning Nuclide to temporary repo directory %s', repo)
+    logging.info('Cloning Nuclide to temporary repo directory: %s', repo)
     git.clone('git@github.com:facebook/nuclide.git', repo, clean=True)
 
 head = git.get_head(repo)[0:8]
-logging.info('Repo HEAD is at commit %s', head)
+logging.info('Repo HEAD is at commit: %s', head)
 
 # Build a map of version numbers to commit hash.
 tag_regex = re.compile('^v0\.0\.([1-9]\d*)$')
@@ -77,21 +77,19 @@ for tag, commit in git.get_tags(repo):
     if match:
         commits_by_version[int(match.group(1))] = commit[0:8]
 highest_version = int(max(commits_by_version.keys()))
-logging.info('Repo has %d versions tagged; highest is %d', len(commits_by_version), highest_version)
+logging.info('Repo has %d versions tagged; highest is %d.', len(commits_by_version), highest_version)
 
 if options.find_latest:
     exit()
 
 # Determine the version being requested.
 if len(args) != 1 or not re.match('^\d+$', args[0]):
-    print 'You must specify a single (integer) version argument'
-    exit()
+    print('''
+PUBLISH FAILED!!!
+You must specify a single (integer) version argument.
+''')
+    exit(1)
 target_version = int(args[0])
-
-# Increment version if none was provided.
-if target_version == 0:
-    logging.info('No version specified; incrementing highest previous version %s', highest_version)
-    target_version = highest_version + 1
 
 # Determine which commit to checkout for publication.
 if target_version in commits_by_version:
@@ -100,18 +98,19 @@ if target_version in commits_by_version:
                  target_version, target_commit)
     git.checkout(repo, target_commit)
 else:
-    target_commit = head
-    logging.info('Repo not previously tagged with version %d; using HEAD, %s',
-                 target_version, target_commit)
-    if not dry_run:
-        logging.info('Tagging version at target commit prior to publication; pushing tag to origin')
-        tag = 'v0.0.%d' % target_version
-        logging.info('Tagging %s with %s', target_commit, tag)
-        git.add_tag(repo, tag, 'Auto-tagged by package publisher')
-        git.push_tag(repo, tag)
+    print('''
+PUBLISH FAILED!!!
+No commit found at %(version)s. Please tag the public GitHub repo and try again. Run:
+
+  git tag -a %(version)s -m 'Tagging %(version)s for release.'
+  git push origin %(version)s
+
+Try running this script again once the %(version)s tag is committed.
+''' % {'version': 'v0.0.%d' % target_version})
+    exit(1)
 
 # Create publisher and pass in temp directory so all the artefacts are gathered in on place.
-logging.info('Publishing Nuclide packages to target version %d from commit %s',
+logging.info('Publishing Nuclide packages to target version v0.0.%d from commit %s',
              target_version, target_commit)
 from publishers import PackagePublisher
 package_publisher = PackagePublisher.create_package_publisher(repo, master_tmpdir,
