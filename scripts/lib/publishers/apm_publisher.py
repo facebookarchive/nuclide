@@ -19,6 +19,12 @@ APM_ORG_NAME = 'facebooknuclideapm'
 
 PRE_LAUNCH = True
 
+DEFAULT_GITIGNORE = '''\
+.DS_Store
+npm-debug.log*
+node_modules
+'''
+
 class ApmPublisher(AbstractPublisher):
     ''' Reads and publishes apm packages assuming an incrementing revision number rather than using
         full-fledged semver. Nuclide packages are developed as a consistent set, with 0.0.0 as the
@@ -145,6 +151,12 @@ class ApmPublisher(AbstractPublisher):
 
         # Write the adjusted package file back to the temporary directory and publish it.
         json_dump(package, package_file)
+
+        # Add a boilerplate .gitignore file if the package does not already have one.
+        path_to_gitignore = os.path.join(self._repo, '.gitignore')
+        if not os.path.exists(path_to_gitignore):
+            with open(path_to_gitignore, 'w') as f:
+                f.write(DEFAULT_GITIGNORE)
 
         # TODO (jpearce) Consider also prefixing the readme.
 

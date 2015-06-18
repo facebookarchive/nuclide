@@ -20,7 +20,7 @@ DEPENDENCIES_KEYS = [
 ]
 
 
-class Apm (object):
+class Apm(object):
     '''Abstraction around the apm executable and npm-like actions.'''
     def __init__(self, git, verbose=False):
         self._git = git
