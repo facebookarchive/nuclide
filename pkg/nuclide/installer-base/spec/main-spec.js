@@ -20,16 +20,11 @@ describe('findPackagesToInstall', () => {
       'nuclide-xyz': '7.8.9',
     };
     var config = {
-      defaultVersion: '1.2.3',
       packages: [
         {
           // Already installed, but requested version does not match.
           name: 'nuclide-abc',
           version: '4.5.6',
-        },
-        {
-          // Not installed with no version specified: should use default version.
-          name: 'nuclide-def',
         },
         {
           // Not installed with version specified: should use specified version.
@@ -45,7 +40,6 @@ describe('findPackagesToInstall', () => {
     };
     expect(findPackagesToInstall(config, installedPackages)).toEqual([
       'nuclide-abc@4.5.6',
-      'nuclide-def@1.2.3',
       'nuclide-ghi@4.5.6',
     ]);
   });

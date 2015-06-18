@@ -40,8 +40,7 @@ def generate_config():
 
     # Create the JSON data for the config.
     config_json = {
-      'defaultVersion': default_version,
-      'packages': map(lambda package_name: {'name': package_name}, packages),
+      'packages': map(lambda package_name: {'name': package_name, 'version': semver_version}, packages),
     }
 
     # Return the serialized JSON.

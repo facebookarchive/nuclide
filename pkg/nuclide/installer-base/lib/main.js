@@ -14,11 +14,10 @@ type PackageVersion = string;
 
 type InstallConfigEntry = {
   name: PackageName;
-  version: ?PackageVersion;
+  version: PackageVersion;
 };
 
 type InstallConfig = {
-  defaultVersion: PackageVersion;
   packages: Array<InstallConfigEntry>;
 };
 
@@ -63,11 +62,15 @@ function findPackagesToInstall(
   config: InstallConfig,
   installedPackages: {[key: PackageName]: PackageVersion}
   ): Array<string> {
-  var {defaultVersion} = config;
   var packagesToInstall = [];
   config.packages.forEach(pkg => {
-    var {name} = pkg;
-    var version = pkg.version || defaultVersion;
+    var {name, version} = pkg;
+    if (!name) {
+      throw Error(`Entry without a name in ${JSON.stringify(config, null, 2)}`);
+    }
+    if (!version) {
+      throw Error(`Entry without a version in ${JSON.stringify(config, null, 2)}`);
+    }
     if (installedPackages[name] !== version) {
       packagesToInstall.push(`${name}@${version}`);
     }
