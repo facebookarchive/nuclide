@@ -14,12 +14,30 @@ var logger = require('nuclide-logging').getLogger();
 var path = require('path');
 var FlowService = require('./FlowService');
 
+async function isFlowInstalled(): Promise<boolean> {
+  var os = require('os');
+  var platform = os.platform();
+  if (platform === 'linux' || platform === 'darwin') {
+    var path = await _getPathToFlow();
+    try {
+      await asyncExecute("which", [path]);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  } else {
+    // Flow does not currently work in Windows.
+    return false;
+  }
+}
+
 /**
  * If this returns null, then it is not safe to run flow.
  */
-async function getFlowExecOptions(file: string): Promise<?any> {
+async function getFlowExecOptions(file: string): Promise<any> {
   var flowConfigDirectory = await findNearestFile('.flowconfig', path.dirname(file));
-  if (flowConfigDirectory) {
+  var installed = await isFlowInstalled();
+  if (flowConfigDirectory && installed) {
     return {
       cwd: flowConfigDirectory,
     };
@@ -36,6 +54,14 @@ function insertAutocompleteToken(contents: string, line: number, col: number) {
   return lines.join('\n');
 }
 
+function _getPathToFlow(): Promise<string> {
+  if (global.atom) {
+    return getConfigValueAsync('nuclide-flow.pathToFlow')();
+  } else {
+    return Promise.resolve('flow');
+  }
+}
+
 class LocalFlowService extends FlowService {
   startedServers: Set<string>;
 
@@ -45,24 +71,16 @@ class LocalFlowService extends FlowService {
   }
 
   async dispose(): Promise<void> {
-    var pathToFlow = await this._getPathToFlow();
+    var pathToFlow = await _getPathToFlow();
     for (var path of this.startedServers) {
       asyncExecute(pathToFlow, ['stop', path], {});
-    }
-  }
-
-  _getPathToFlow(): Promise<string> {
-    if (global.atom) {
-      return getConfigValueAsync('nuclide-flow.pathToFlow')();
-    } else {
-      return Promise.resolve('flow');
     }
   }
 
   async _execFlow(args: Array<any>, options: Object): Promise<Object> {
     var maxTries = 5;
     args.push("--no-auto-start");
-    var pathToFlow = await this._getPathToFlow();
+    var pathToFlow = await _getPathToFlow();
     for (var i = 0; ; i++) {
       try {
         var result = await asyncExecute(pathToFlow, args, options);

@@ -90,7 +90,6 @@ async function determineFlowVersion(): Promise<string> {
     var result = await asyncExecute(pathToFlow, ['--version'], {});
     flowVersion = result.stdout.trim();
   } catch (e) {
-    console.error(e);
     flowVersion = '';
   }
   return flowVersion;
