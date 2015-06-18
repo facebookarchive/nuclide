@@ -77,6 +77,10 @@ class LocalHgService extends LocalHgServiceBase {
             expression: ['allof',
               ['not', ['dirname', '.hg']],
               ['not', ['name', '.hgignore', 'wholename']],
+              // It seems to be a watchman's bug that even we configured `.buckd` and `buck-out`
+              // to be ignored, watchman will still fire file change events for these two path.
+              ['not', ['dirname', '.buckd']],
+              ['not', ['dirname', 'buck-out']],
               // This watchman subscription is used to determine when and which
               // files to fetch new statuses for. There is no reason to include
               // directories in these updates, and in fact they may make us overfetch
