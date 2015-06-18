@@ -27,11 +27,14 @@ class PackagePublisher(object):
                     cwd=path_to_nuclide_repo)
             # Split by newlines and then remove the last element, which will be the empty string.
             return stdout.split('\n')[:-1]
+        # These are lists of absolute paths to package.json files.
         node_packages = get_list_of_packages('Node')
         atom_packages = get_list_of_packages('Atom')
 
+        # These are sets of package names.
         nuclide_npm_packages = set()
         nuclide_apm_packages = set()
+
         publishers = []
         git = Git()
         apm = Apm(git)

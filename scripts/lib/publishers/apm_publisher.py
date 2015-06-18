@@ -129,8 +129,7 @@ class ApmPublisher(AbstractPublisher):
             if not dependency_key in package:
                 continue
             for (dependency, version) in package[dependency_key].items():
-                if not (self._config.is_nuclide_npm_package(dependency) or
-                        self._config.is_nuclide_apm_package(dependency)):
+                if not self._config.is_nuclide_npm_package(dependency):
                     continue
                 if version != nil_semver:
                     raise AssertionError('Local dependency %s in package %s was not at version 0' %
@@ -146,12 +145,19 @@ class ApmPublisher(AbstractPublisher):
         # TODO (jpearce) Consider also prefixing the readme.
         # TODO (jpearce) Workout if we have to rewrite the repository URL - probably.
 
+        # Write out the packages to install for the nuclide-installer package.
+        if self.get_package_name() == 'nuclide-installer':
+            from publishers.nuclide_installer_config import generate_config
+            installer_config_json = generate_config('v' + new_semver, self._config.apm_package_names)
+            with open(os.path.join(self._repo, 'lib', 'config.json'), 'w') as f:
+                f.write(installer_config_json)
+
+    def publish(self, new_version, atom_semver):
         if PRE_LAUNCH:
             # Temporarily delete everything before publishing, to keep everything under wraps.
             logging.info('Removing launch files from repo for %s', self.get_package_name())
             self.clean_repo(except_files=['package.json', 'README.md'])
 
-    def publish(self, new_version, atom_semver):
         # TODO: (jpearce) Get GitHub to unblock nuclide-*; this fails  currently.
         try:
             self._apm.publish(self._repo, '0.0.%d' % new_version)
