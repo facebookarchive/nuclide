@@ -187,7 +187,7 @@ class NuclideServer(object):
             with open(os.devnull, "w") as f:
                 subprocess.Popen(args, stdout=f, stderr=subprocess.STDOUT)
         else:
-            p = subprocess.Popen('nohup node --harmony %s >> %s 2>&1 &' % (js_cmd, LOG_FILE), shell=True)
+            p = subprocess.Popen('nohup node --harmony %s > %s 2>&1 &' % (js_cmd, LOG_FILE), shell=True)
 
         for i in range(0, timeout + 1):
             # Wait for a sec and then ping endpoint for version.
