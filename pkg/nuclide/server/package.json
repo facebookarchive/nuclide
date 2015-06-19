@@ -9,7 +9,7 @@
     "excludeTestsFromContinuousIntegration": true
   },
   "bin": {
-    "nuclide-start-server": "./start-nuclide-server"
+    "nuclide-start-server": "./nuclide-start-server"
   },
   "dependencies": {
     "connect": "3.3.4",

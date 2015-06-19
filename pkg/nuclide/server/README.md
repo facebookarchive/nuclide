@@ -44,7 +44,7 @@ specify the path of the startup script and provide it as part of the client's
 ![Connect menu](http://nuclide.io/images/docs/connect_menu.png)
 
 Therefore, ensure you know the path to the
-`pkg/nuclide/server/start-nuclide-server` script and enter it into the 'Remote
+`pkg/nuclide/server/nuclide-start-server` script and enter it into the 'Remote
 Server Command' field at the bottom of the client's 'Connect...' dialog. After
 providing your SSH credentials, submit the dialog to connect.
 
@@ -58,7 +58,7 @@ or start the server on a specific port using the `-p` flag.
 For example:
 
 ```
-[...]/start-nuclide-server -p 9099
+[...]/nuclide-start-server -p 9099
 ```
 
 This connection will then initiate the Nuclide server on the remote machine if
@@ -76,7 +76,7 @@ If you want to debug the server starting up, you can of course run the command
 directly:
 
 ```
-./start-nuclide-server
+./nuclide-start-server
 ```
 
 A successful start will display the port upon which the server has started, and
@@ -87,10 +87,10 @@ Nuclide started on port 9099.
 {"workspace": null, "ca": "-----BEGIN CERTIFICATE-----\n...
 ```
 
-The `start-nuclide-server` command also has a useful help option:
+The `nuclide-start-server` command also has a useful help option:
 
 ```
-./start-nuclide-server -h
+./nuclide-start-server -h
 ```
 
 This explains many of the other options available, such as timeout, workspace
