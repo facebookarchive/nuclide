@@ -19,8 +19,23 @@ def find_version_in_range(versions, semver_range):
     Assumes the environment has `node` on the $PATH.
     '''
     logging.debug('Trying to match %s against %s.', semver_range, versions)
-    args = [platform_checker.get_node_executable(), semver, '-r', semver_range] + versions
-    shell = True if platform_checker.is_windows() else False
+    if platform_checker.is_windows():
+        shell = True
+        # Because we have to use `shell=True` on Windows due to https://bugs.python.org/issue17023,
+        # we have to do our own escaping. In particular, if semver_range is '>=0.12.0' and is not
+        # escaped correctly, then Windows will try to write to a file with that name. The built-in
+        # escaping done by subprocess.Popen() does not appear to do the right thing here (it uses
+        # single quotes instead of double quotes, which is not sufficient), so we must do the
+        # escaping ourselves and convert the args into a string to override the default escaping.
+        semver_range = '"%s"' % semver_range
+    else:
+        shell = False
+
+    args = [platform_checker.get_node_executable(), semver, '--range', semver_range] + versions
+
+    if platform_checker.is_windows():
+        args = ' '.join(args)
+
     proc = subprocess.Popen(args, stdout=subprocess.PIPE, shell=shell)
     matching_versions = []
     for line in proc.stdout:
