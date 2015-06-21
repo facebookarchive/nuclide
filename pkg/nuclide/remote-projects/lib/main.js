@@ -64,7 +64,7 @@ function addRemoteFolderToProject(connection: RemoteConnection) {
     }
 
     var choice = atom.confirm({
-      message: 'No more remote projects on the host: `' + hostname + '`, Would you like to shutdown Nuclide server there?',
+      message: 'No more remote projects on the host: \'' + hostname + '\'. Would you like to shutdown Nuclide server there?',
       buttons: ['Shutdown', 'Keep It'],
     });
     if (choice === 1) {
