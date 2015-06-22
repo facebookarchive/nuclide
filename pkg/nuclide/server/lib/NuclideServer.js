@@ -122,7 +122,7 @@ class NuclideServer {
 
   _createWebSocketServer(): WebSocketServer {
     var webSocketServer = new WebSocketServer({server: this._webServer});
-    webSocketServer.on('connection', this._onConnection.bind(this));
+    webSocketServer.on('connection', (socket) => this._onConnection(socket));
     webSocketServer.on('error', (error) => logger.error('WebSocketServer Error:', error));
     return webSocketServer;
   }
@@ -374,7 +374,8 @@ class NuclideServer {
       logger.error('Client #%s error: %s', client ? client.id : 'unkown', e.message));
 
     socket.once('message', (clientId) => {
-      client = this._clients[clientId] = this._clients[clientId] || {subscriptions: {}, id: clientId};
+      client = this._clients[clientId] = this._clients[clientId] ||
+          {subscriptions: {}, id: clientId, messageQueue: []};
       // If an existing client, we close its socket before listening to the new socket.
       if (client.socket) {
         client.socket.close();
@@ -382,6 +383,7 @@ class NuclideServer {
       }
       logger.info('Client #%s connecting with a new socket!', clientId);
       client.socket = socket;
+      client.messageQueue.splice(0).forEach(message => this._sendSocketMessage(client, message.data));
       socket.on('message', (message) => this._onSocketMessage(client, message));
     });
 
@@ -474,11 +476,25 @@ class NuclideServer {
     eventEmitter.consumed = true;
   }
 
-  _sendSocketMessage(client: SocketClient, message: any) {
-    if (!client.socket) {
+  _sendSocketMessage(client: SocketClient, data: any) {
+    // Wrap the data in an object, because if `data` is a primitive data type,
+    // finding it in an array would return the first matching item, not necessarily the same inserted item.
+    var message = {data};
+    var {id, socket, messageQueue} = client;
+    messageQueue.push(message);
+    if (!socket) {
       return;
     }
-    client.socket.send(JSON.stringify(message));
+    socket.send(JSON.stringify(data), (err) => {
+      if (err) {
+        logger.warn('Failed sending socket message to client:', id, data);
+      } else {
+        var messageIndex = messageQueue.indexOf(message);
+        if (messageIndex !== -1) {
+          messageQueue.splice(messageIndex, 1);
+        }
+      }
+    });
   }
 
   close() {

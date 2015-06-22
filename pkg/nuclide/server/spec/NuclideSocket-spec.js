@@ -74,6 +74,8 @@ describe('NuclideSocket test suite', () => {
     it('on ECONNREFUSED, emits PORT_NOT_ACCESSIBLE, when the server was never accessible', () => {
       var heartbeatErrorHandler = jasmine.createSpy();
       socket.on('heartbeat.error', heartbeatErrorHandler);
+      // Assume the hearbeat didn't happen.
+      socket.on('heartbeat', () => { socket._heartbeatConnectedOnce = false; });
       server.close();
       window.advanceClock(5050); // Advance the heartbeat interval.
       waitsFor(() => heartbeatErrorHandler.callCount > 0);
@@ -97,6 +99,47 @@ describe('NuclideSocket test suite', () => {
       window.advanceClock(5050); // Advance the heartbeat interval.
       waitsFor(() => heartbeatErrorHandler.callCount > 0);
       runs(() => expect(heartbeatErrorHandler.argsForCall[0][0].code).toBe('NETWORK_AWAY'));
+    });
+  });
+
+  describe('reconnect flow', () => {
+    it('the socket would send the cached messages on reconnect', () => {
+      var reconnectHandler = jasmine.createSpy();
+      socket.on('reconnect', reconnectHandler);
+      spyOn(server, '_onSocketMessage');
+
+      var message0 = {foo0: 'bar0'};
+      var message1 = {foo1: 'bar1'};
+      var message2 = {foo2: 'bar2'};
+      var message3 = {foo3: 'bar3'};
+      var message4 = {foo4: 'bar4'};
+
+      waitsForPromise(() => socket.waitForConnect());
+      runs(() => socket.send(message0));
+      waitsFor(() => server._onSocketMessage.calls.length === 1);
+
+      runs(() => {
+        // This call will error, because the socket will be closed on the next statement synchronously.
+        socket.send(message1); // The messages will be cached and sent in order.
+        socket._cleanWebSocket();
+
+        socket.send(message2); // The messages will be cached and sent in order.
+        // Make sure a close event on the old socket doesn't have any effect on the reconnect with a new socket.
+        window.advanceClock(31 * 1000); // The default WebSocket's close timeout is 30 seconds.
+        socket.send(message3); // The messages will be cached and sent in order.
+        socket._scheduleReconnect();
+        socket.send(message4); // The messages will be cached and sent in order.
+        window.advanceClock(6000); // The maximum reconnect time is 5 seconds.
+      });
+      waitsFor(() => reconnectHandler.callCount > 0);
+      waitsFor(() => server._onSocketMessage.calls.length === 5);
+      runs(() => {
+        expect(server._onSocketMessage.calls[0].args[1]).toEqual(JSON.stringify(message0));
+        expect(server._onSocketMessage.calls[1].args[1]).toEqual(JSON.stringify(message1));
+        expect(server._onSocketMessage.calls[2].args[1]).toEqual(JSON.stringify(message2));
+        expect(server._onSocketMessage.calls[3].args[1]).toEqual(JSON.stringify(message3));
+        expect(server._onSocketMessage.calls[4].args[1]).toEqual(JSON.stringify(message4));
+      });
     });
   });
 });

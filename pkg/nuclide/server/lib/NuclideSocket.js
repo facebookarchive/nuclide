@@ -72,53 +72,71 @@ class NuclideSocket extends EventEmitter {
       ca: certificateAuthorityCertificate,
     });
 
-    websocket.on('open', () => {
+    var onSocketOpen = () => {
       this._websocket = websocket;
       this._reconnectTime = INITIAL_RECONNECT_TIME_MS;
       // Handshake the server with my client id to manage my re-connect attemp, if it is.
       websocket.send(this.id, () => {
         if (this._previouslyConnected) {
+          logger.info('WebSocket reconnected');
           this.emit('reconnect');
         } else {
+          logger.info('WebSocket connected');
           this.emit('connect');
         }
         this._connected = true;
         this._previouslyConnected = true;
-        this._cachedMessages.splice(0).forEach((message) => this.send(message));
+        this._cachedMessages.splice(0).forEach(message => this.send(message.data));
       });
-    });
+    }
+    websocket.on('open', onSocketOpen);
 
-    websocket.on('close', () => {
+    var onSocketClose = () => {
       if (this._websocket !== websocket) {
         return;
       }
+      logger.info('WebSocket closed.');
       this._websocket = null;
       this._connected = false;
       this.emit('disconnect');
       if (!this._closed) {
+        logger.info('WebSocket reconnecting after closed.');
         this._scheduleReconnect();
       }
-    });
+    };
+    websocket.on('close', onSocketClose);
 
-    websocket.on('error', (error) => {
+    var onSocketError = (error) => {
       if (this._websocket !== websocket) {
         return;
       }
       logger.error('WebSocket Error - reconnecting...', error);
       this._cleanWebSocket();
       this._scheduleReconnect();
-    });
+    };
+    websocket.on('error', onSocketError);
 
-    websocket.on('message', (data, flags) => {
+    var onSocketMessage = (data, flags) => {
       // flags.binary will be set if a binary data is received.
       // flags.masked will be set if the data was masked.
       var json = JSON.parse(data);
       this.emit('message', json);
-    });
+    };
+
+    websocket.on('message', onSocketMessage);
+    // WebSocket inherits from EventEmitter, and doesn't dispose the listeners on close.
+    // Here, I added an expando property function to allow disposing those listeners on the created instance.
+    websocket.dispose = () => {
+      websocket.removeListener('open', onSocketOpen);
+      websocket.removeListener('close', onSocketClose);
+      websocket.removeListener('error', onSocketError);
+      websocket.removeListener('message', onSocketMessage);
+    };
   }
 
   _cleanWebSocket() {
     if (this._websocket) {
+      this._websocket.dispose();
       this._websocket.close();
       this._websocket = null;
     }
@@ -147,11 +165,23 @@ class NuclideSocket extends EventEmitter {
   }
 
   send(data: any): void {
-    if (!this._websocket || !this._connected) {
-      this._cachedMessages.push(data);
+    // Wrap the data in an object, because if `data` is a primitive data type,
+    // finding it in an array would return the first matching item, not necessarily the same inserted item.
+    var message = {data};
+    this._cachedMessages.push(message);
+    if (!this._connected || !this._websocket) {
       return;
     }
-    this._websocket.send(JSON.stringify(data));
+    this._websocket.send(JSON.stringify(data), (err) => {
+      if (err) {
+        logger.warn('WebSocket error, but caching the message:', err);
+      } else {
+        var messageIndex = this._cachedMessages.indexOf(message);
+        if (messageIndex !== -1) {
+          this._cachedMessages.splice(messageIndex, 1);
+        }
+      }
+    });
   }
 
   async xhrRequest(options: any): Promise<string|any> {
