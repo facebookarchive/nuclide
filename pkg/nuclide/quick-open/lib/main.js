@@ -24,8 +24,13 @@ var {
 
 var SearchResultManager = require('./SearchResultManager');
 var QuickSelectionProvider = require('./QuickSelectionProvider');
+var {
+  debounce,
+} = require('nuclide-commons');
 
 var DEFAULT_PROVIDER = 'FileListProvider';
+var MAX_MODAL_WIDTH = 800;
+
 /**
  * A "session" for the purpose of analytics. It exists from the moment the quick-open UI becomes
  * visible until it gets closed, either via file selection or cancellation.
@@ -66,6 +71,7 @@ class Activation {
   _searchComponent: QuickSelectionComponent;
   _searchPanel: atom$Panel;
   _subscriptions: atom$CompositeDisposable;
+  _debouncedUpdateModalPosition: () => void;
 
   constructor(state: ?Object) {
     this._previousFocus = null;
@@ -74,7 +80,11 @@ class Activation {
     this._subscriptions = new CompositeDisposable();
     this._currentProvider = SearchResultManager.getProvider(DEFAULT_PROVIDER);
     this._reactDiv = document.createElement('div');
-    this._searchPanel = atom.workspace.addModalPanel({item: this._reactDiv, visible:false});
+    this._searchPanel = atom.workspace.addModalPanel({item: this._reactDiv, visible: false});
+    this._debouncedUpdateModalPosition = debounce(this._updateModalPosition.bind(this), 200);
+    window.addEventListener('resize', this._debouncedUpdateModalPosition);
+    this._updateModalPosition();
+
     this._searchComponent = this._render();
     this._searchComponent.onSelection((selection) => {
       var options = {};
@@ -142,6 +152,15 @@ class Activation {
     );
   }
 
+  _updateModalPosition() {
+    // Customize modal element
+    var modalElement = this._searchPanel.getItem().parentNode;
+    var {width, height} = document.documentElement.getBoundingClientRect();
+    var modalWidth = Math.min(MAX_MODAL_WIDTH, width);
+    modalElement.style.setProperty('width', modalWidth + 'px');
+    modalElement.style.setProperty('margin-left', (-modalWidth / 2) + 'px');
+  }
+
   _render() {
     var QuickSelectionComponent = getQuickSelectionComponentLazily();
     var React = getReactLazily();
@@ -155,6 +174,7 @@ class Activation {
 
   dispose() {
     this._subscriptions.dispose();
+    window.removeEventListener('resize', this._debouncedUpdateModalPosition);
   }
 
   toggleProvider(providerName: string) {
