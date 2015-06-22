@@ -47,6 +47,10 @@ module.exports = {
     return require('./filesystem');
   },
 
+  get httpPromise() {
+    return require('./http');
+  },
+
   get strings() {
     return require('./strings');
   },
