@@ -14,9 +14,6 @@ PACKAGES_TO_EXCLUDE = set([
     # Note that it is important to exclude the nuclide-installer from the list.
     # We don't want it to try to install itself!
     'nuclide-installer',
-
-    # This UI added by this package is still a bit janky, so it should not be included by default.
-    'nuclide-tabs',
 ])
 
 def generate_config(semver_version, apm_package_names):
