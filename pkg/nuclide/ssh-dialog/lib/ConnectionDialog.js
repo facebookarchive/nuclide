@@ -10,7 +10,7 @@
  */
 
 var AtomInput = require('nuclide-ui-atom-input');
-var NuclideCheckbox = require('nuclide-ui-checkbox');
+var RadioGroup = require('nuclide-ui-radiogroup');
 var {CompositeDisposable} = require('atom');
 var React = require('react-for-atom');
 var {SshHandshake} = require('nuclide-remote-connection');
@@ -18,6 +18,13 @@ var path = require('path');
 var logger = require('nuclide-logging').getLogger();
 
 var {PropTypes} = React;
+
+var {SupportedMethods} = SshHandshake;
+var authMethods = [
+  SupportedMethods.SSL_AGENT,
+  SupportedMethods.PASSWORD,
+  SupportedMethods.PRIVATE_KEY,
+];
 
 /** Component to prompt the user for connection details. */
 var ConnectionDetailsPrompt = React.createClass({
@@ -28,7 +35,7 @@ var ConnectionDetailsPrompt = React.createClass({
     initialRemoteServerCommand: PropTypes.string,
     initialSshPort: PropTypes.string,
     initialPathToPrivateKey: PropTypes.string,
-    initialUseSshAgent: PropTypes.bool,
+    initialAuthMethod: PropTypes.shape(Object.keys(SupportedMethods)),
     onConfirm: PropTypes.func.isRequired,
     onCancel: PropTypes.func.isRequired,
   },
@@ -41,11 +48,34 @@ var ConnectionDetailsPrompt = React.createClass({
       remoteServerCommand: this.props.initialRemoteServerCommand,
       sshPort: this.props.initialSshPort,
       pathToPrivateKey: this.props.initialPathToPrivateKey,
-      useSshAgent: this.props.initialUseSshAgent,
+      selectedAuthMethodIndex: authMethods.indexOf(this.props.initialAuthMethod),
     };
   },
 
+  handleAuthMethodChange(newIndex) {
+    this.setState({
+      selectedAuthMethodIndex: newIndex,
+    });
+  },
+
   render() {
+    var activeAuthMethod = authMethods[this.state.selectedAuthMethodIndex];
+    var sshAgentLabel = (
+      <div className='block'>
+        ssh-agent-based authentication
+      </div>
+    );
+    var passwordLabel = (
+      <div className='block'>
+        Ask for password
+      </div>
+    );
+    var privateKeyLabel = (
+      <div className='block'>
+        Private Key File:&nbsp;
+      </div>
+    );
+
     return (
       <div ref='root'>
         <div className='block'>
@@ -61,16 +91,22 @@ var ConnectionDetailsPrompt = React.createClass({
           <AtomInput ref='cwd' initialValue={this.state.cwd} />
         </div>
         <div className='block'>
+          Authentication method:
+        </div>
+        <RadioGroup
+          optionLabels={[sshAgentLabel, passwordLabel, privateKeyLabel]}
+          onSelectedChange={this.handleAuthMethodChange}
+          selectedIndex={this.state.selectedAuthMethodIndex}
+        />
+        <div className='block'>
+          <AtomInput ref='pathToPrivateKey' placeholder='Path to private key' initialValue={this.state.pathToPrivateKey} />
+        </div>
+        <div className='block'>
           Advanced Settings
         </div>
         <div className='block'>
           SSH Port:
           <AtomInput ref='sshPort' initialValue={this.state.sshPort} />
-        </div>
-        <div className='block'>
-          Private Key:
-          <AtomInput ref='pathToPrivateKey' initialValue={this.state.pathToPrivateKey} />
-          <NuclideCheckbox ref='sshAgent' labelText='Use ssh-agent-based authentication' checked={this.state.useSshAgent} />
         </div>
         <div className='block'>
           Remote Server Command:
@@ -107,12 +143,17 @@ var ConnectionDetailsPrompt = React.createClass({
   },
 
   getText(fieldName: string): string {
-    return this.refs[fieldName].getText().trim();
+    return (this.refs[fieldName] && this.refs[fieldName].getText().trim()) || '';
   },
 
-  getUseSshAgent(): bool {
-    return this.refs['sshAgent'].isChecked();
-  }
+  getAuthMethod(): string {
+    return authMethods[this.state.selectedAuthMethodIndex];
+  },
+
+  getAuthMethodIndex(): number {
+    return this.state.selectedAuthMethodIndex;
+  },
+
 });
 
 /** Component to prompt the user for authentication information. */
@@ -131,14 +172,31 @@ var AuthenticationPrompt = React.createClass({
         .replace(/\\n/g, '<br>');
 
     return (
-      <div ref='root'>
+      <div ref='root' className='password-prompt-container'>
         <div className='block'
              style={{whiteSpace: 'pre'}}
              dangerouslySetInnerHTML={{__html: safeHtml}}
         />
-        <AtomInput ref='password' />
+        {
+        // We need native-key-bindings so that delete works and we need
+        // _onKeyUp so that escape and enter work
+        }
+        <input type='password'
+               className='nuclide-password native-key-bindings'
+               ref='password'
+               onKeyUp={this._onKeyUp}/>
       </div>
     );
+  },
+
+  _onKeyUp(e) {
+    if(e.keyCode == 13){
+        this.props.onConfirm();
+    }
+
+    if(e.keyCode == 27){
+        this.props.onCancel();
+    }
   },
 
   componentDidMount() {
@@ -157,7 +215,7 @@ var AuthenticationPrompt = React.createClass({
         'core:cancel',
         (event) => this.props.onCancel()));
 
-    this.refs['password'].focus();
+    React.findDOMNode(this.refs.password).focus();
   },
 
   componentWillUnmount() {
@@ -168,7 +226,7 @@ var AuthenticationPrompt = React.createClass({
   },
 
   getPassword() {
-    return this.refs['password'].getText();
+    return React.findDOMNode(this.refs.password).value;
   },
 });
 
@@ -203,7 +261,6 @@ var ConnectionDialog = React.createClass({
     initialCwd: PropTypes.string,
     initialSshPort: PropTypes.string,
     initialPathToPrivateKey: PropTypes.string,
-    initialUseSshAgent: PropTypes.bool,
     onConnect: PropTypes.func.isRequired,
     onError: PropTypes.func.isRequired,
     onCancel: PropTypes.func.isRequired,
@@ -258,7 +315,7 @@ var ConnectionDialog = React.createClass({
           initialCwd={this.props.initialCwd}
           initialSshPort={this.props.initialSshPort}
           initialPathToPrivateKey={this.props.initialPathToPrivateKey}
-          initialUseSshAgent={this.props.initialUseSshAgent}
+          initialAuthMethod={this.props.initialAuthMethod}
           onConfirm={this.ok}
           onCancel={this.cancel}
         />
@@ -332,7 +389,7 @@ var ConnectionDialog = React.createClass({
       var cwd = connectionDetailsPrompt.getText('cwd');
       var sshPort = connectionDetailsPrompt.getText('sshPort');
       var remoteServerCommand = connectionDetailsPrompt.getText('remoteServerCommand');
-      var useSshAgent = connectionDetailsPrompt.getUseSshAgent();
+      var authMethod = connectionDetailsPrompt.getAuthMethod();
       if (username && server && cwd && remoteServerCommand) {
         this.setState({mode: WAITING_FOR_CONNECTION});
         this.state.sshHandshake.connect({
@@ -340,7 +397,7 @@ var ConnectionDialog = React.createClass({
           sshPort,
           username,
           pathToPrivateKey,
-          useSshAgent,
+          authMethod,
           cwd,
           remoteServerCommand,
         });

@@ -55,7 +55,7 @@ function openConnectionDialog(props): Promise<?RemoteConnection> {
       initialCwd: rememberedDialogSettings.cwd,
       initialSshPort: String(rememberedDialogSettings.sshPort),
       initialPathToPrivateKey: rememberedDialogSettings.pathToPrivateKey,
-      initialUseSshAgent: rememberedDialogSettings.useSshAgent,
+      initialAuthMethod: rememberedDialogSettings.authMethod,
       onConnect: async (connection, config) => {
         resolve(connection);
         saveConfig(config);

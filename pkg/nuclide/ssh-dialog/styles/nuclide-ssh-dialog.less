@@ -1,5 +1,21 @@
+@import "ui-variables";
+
 .nuclide-ok-cancel {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
+}
+
+.nuclide-password {
+  color: @text-color;
+  background-color: @input-background-color;
+  border: 1px solid @input-border-color;
+  line-height: @component-line-height;
+  border-radius: 2px;
+  resize: none;
+  width: 100%;
+}
+
+.password-prompt-container {
+  padding: @component-padding;
 }

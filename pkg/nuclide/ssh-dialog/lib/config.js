@@ -23,8 +23,8 @@ function getConnectionDialogDefaultSettings(): any {
     // is running on Windows.
     cwd: '/home/' + username,
     pathToPrivateKey: path.join(homeDir, '.ssh', 'id_rsa'),
-    useSshAgent: false,
     remoteServerCommand: 'nuclide-start-server',
+    authMethod: require('nuclide-remote-connection').SshHandshake.SupportedMethods.SSL_AGENT,
     sshPort: 22,
   };
 }

@@ -28,8 +28,15 @@ type SshConnectionConfiguration = {
   pathToPrivateKey: string; // The path to private key
   remoteServerCommand: string; // Command to use to start server
   cwd: string; // Path to remote directory user should start in upon connection.
-  useSshAgent: boolean; // Whether to use the system ssh agent to connect to the sevcer.
+  authMethod: string; // Which of the authentication methods in `SupportedMethods` to use.
+  password: string; // for simple password-based authentication
 }
+
+var SupportedMethods = {
+  SSL_AGENT: 'SSL_AGENT',
+  PASSWORD: 'PASSWORD',
+  PRIVATE_KEY: 'PRIVATE_KEY',
+};
 
 /**
  * The server is asking for replies to the given prompts for
@@ -78,7 +85,7 @@ class SshHandshake {
     this._heartbeatNetworkAwayCount = 0;
     this._connection = connection ? connection : new SshConnection();
     this._connection.on('ready', this._onConnect.bind(this));
-    this._connection.on('error', (e) => this._delegate.onError(e, this._config));
+    this._connection.on('error', e => this._delegate.onError(e, this._config));
     this._connection.on('keyboard-interactive', this._onKeyboardInteractive.bind(this));
   }
 
@@ -94,7 +101,7 @@ class SshHandshake {
     var {lookupPreferIpv6} = require('nuclide-commons').dnsUtils;
 
     lookupPreferIpv6(config.host).then((address) => {
-      if (config.useSshAgent) {
+      if (config.authMethod === SupportedMethods.SSL_AGENT) {
         this._connection.connect({
           host: address,
           port: config.sshPort,
@@ -103,7 +110,18 @@ class SshHandshake {
           agent: process.env.SSH_AUTH_SOCK,
           tryKeyboard: true,
         });
-      } else {
+      } else if (config.authMethod === SupportedMethods.PASSWORD) {
+          // When the user chooses password-based authentication, we specify
+          // the config as follows so that it falls through to the keyboard
+          // interactive path, which will ultimately prompt the user for a
+          // password.
+          this._connection.connect({
+            host: address,
+            port: config.sshPort,
+            username: config.username,
+            tryKeyboard: true,
+          });
+      } else if (config.authMethod === SupportedMethods.PRIVATE_KEY) {
         fsPromise.readFile(config.pathToPrivateKey).then((privateKey) => {
           this._connection.connect({
             host: address,
@@ -115,6 +133,8 @@ class SshHandshake {
         }).catch((e) => {
           this._delegate.onError(e, this._config);
         });
+      } else {
+        throw new Error('Invalid authentication method');
       }
     }).catch((e) => {
       this._delegate.onError(e, this._config);
@@ -279,5 +299,7 @@ class SshHandshake {
     return this._config;
   }
 }
+
+SshHandshake.SupportedMethods = SupportedMethods;
 
 module.exports = SshHandshake;

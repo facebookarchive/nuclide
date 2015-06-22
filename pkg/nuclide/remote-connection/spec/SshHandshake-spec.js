@@ -26,7 +26,7 @@ describe('SshHandshake', () => {
       var handshakeDelegate = jasmine.createSpyObj('delegate', ['onError']);
       var sshConnection = new MockSshConnection();
       var sshHandshake = new SshHandshake(handshakeDelegate, sshConnection);
-      var config = {pathToPrivateKey: pathToFakePk};
+      var config = {pathToPrivateKey: pathToFakePk, authMethod: 'PRIVATE_KEY'};
 
       sshHandshake.connect(config);
       sshConnection.emit('error', mockError);
@@ -40,7 +40,7 @@ describe('SshHandshake', () => {
       var handshakeDelegate = jasmine.createSpyObj('delegate', ['onError']);
       var sshConnection = new MockSshConnection();
       var sshHandshake = new SshHandshake(handshakeDelegate, sshConnection);
-      var config = {pathToPrivateKey: pathToFakePk + '.oops'};
+      var config = {pathToPrivateKey: pathToFakePk + '.oops', authMethod: 'PRIVATE_KEY'};
 
       sshHandshake.connect(config);
 
