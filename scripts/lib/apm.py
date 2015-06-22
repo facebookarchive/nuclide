@@ -39,8 +39,9 @@ class Apm(object):
             self._info_by_name[name] = info
         return self._info_by_name[name]
 
-    def publish(self, package_repo, new_version):
-        self._execute(['apm', 'publish', new_version], cwd=package_repo)
+    def publish(self, package_repo, tag):
+        '''tag must already exist in the GitHub repo'''
+        self._execute(['apm', 'publish', '--tag', tag], cwd=package_repo)
 
     def _execute(self, cmd_args, cwd=None):
         if self._verbose:

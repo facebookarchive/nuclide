@@ -46,9 +46,10 @@ class ApmPublisher(AbstractPublisher):
         self._tmpdir = os.path.join(tmpdir, 'apm')
         self._git = git
         self._github_access_token = github_access_token
-        self._repo = self._checkout_apm_repo()
+        self._repo = None # This will be initialized in prepublish().
 
     def _checkout_apm_repo(self, create_if_missing=True):
+        '''Returns the path to the directory where the clone of the repo was written.'''
         repo = os.path.join(self._tmpdir, self.get_package_name())
         logging.info('Cloning apm repo %s into %s.', self.get_package_name(), repo)
         try:
@@ -60,6 +61,12 @@ class ApmPublisher(AbstractPublisher):
                 self._create_apm_repo()
                 # The call below must NOT create_if_missing, otherwise we might infinitely recurse.
                 repo = self._checkout_apm_repo(create_if_missing=False)
+
+                # Initialize the repository by creating and pushing the first commit.
+                with open(os.path.join(repo, 'README.md'), 'w') as f:
+                    f.write('# %s\n' % self.get_package_name())
+                self._git.commit_all(repo, 'Initial import.')
+                self._git.push_to_master(repo)
             else:
                 raise
         return repo
@@ -114,6 +121,8 @@ class ApmPublisher(AbstractPublisher):
         return self.get_published_version() == target_version
 
     def prepublish(self, new_version, atom_semver):
+        self._repo = self._checkout_apm_repo()
+
         logging.info('Publishing %s to apm at version %s', self.get_package_name(), new_version)
 
         # Clean repo out, leaving .git metadata in place.
@@ -181,15 +190,32 @@ class ApmPublisher(AbstractPublisher):
             with open(os.path.join(self._repo, 'lib', 'config.json'), 'w') as f:
                 f.write(installer_config_json)
 
-    def publish(self, new_version, atom_semver):
         if PRE_LAUNCH:
             # Temporarily delete everything before publishing, to keep everything under wraps.
             logging.info('Removing launch files from repo for %s', self.get_package_name())
             self.clean_repo(except_files=['package.json', 'README.md'])
+            # Also sanitize the README.md.
+            with open(path_to_readme, 'w') as f:
+                f.write(README_PREFIX)
+            # And strip the description in package.json.
+            manifest = json_load(package_file)
+            manifest['description'] = ''
+            json_dump(manifest, package_file)
 
-        # TODO: (jpearce) Get GitHub to unblock nuclide-*; this fails  currently.
+        # Now that all of the local changes have been written, commit them.
+        tag_name = 'v' + new_semver
+        self._git.commit_all(self._repo,
+                             'Committing changes in preparation for publishing %s' % tag_name)
+        self._git.add_tag(self._repo, tag_name, 'Atom package %s.' % tag_name)
+        # We commit the tag first because we should fail if the tag has already been pushed.
+        self._git.push_tag(self._repo, tag_name)
+        # Pushing to master is not strictly necessary, but it makes it easier to audit the changes
+        # that have been made between versions over time.
+        self._git.push_to_master(self._repo)
+
+    def publish(self, new_version, atom_semver):
         try:
-            self._apm.publish(self._repo, '0.0.%d' % new_version)
+            self._apm.publish(self._repo, 'v0.0.%d' % new_version)
         except subprocess.CalledProcessError:
             logging.error('FAILED to publish package %s at version %d; it may already be published',
                           self.get_package_name(), new_version)

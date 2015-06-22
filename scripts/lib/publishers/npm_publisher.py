@@ -27,6 +27,7 @@ class NpmPublisher(AbstractPublisher):
         self._config = config
         self._npm = npm
         self._tmpdir = os.path.join(tmpdir, 'npm')
+        self._tmp_package = os.path.join(self._tmpdir, self.get_package_name())
 
     def get_package_name(self):
         return self._config.package_name
@@ -58,14 +59,13 @@ class NpmPublisher(AbstractPublisher):
 
         # Create temporary directory and copy package into it (without dependencies).
         package = self._config.package_directory
-        tmp_package = os.path.join(self._tmpdir, self.get_package_name())
         logging.info('Copying %s to tmpdir', self.get_package_name())
-        shutil.copytree(package, tmp_package, ignore=shutil.ignore_patterns('node_modules'))
+        shutil.copytree(package, self._tmp_package, ignore=shutil.ignore_patterns('node_modules'))
 
         # Load package.json and rewrite version number within it.
         nil_semver = '0.0.0'
         new_semver = '0.0.%d' % new_version
-        package_file = os.path.join(tmp_package, 'package.json')
+        package_file = os.path.join(self._tmp_package, 'package.json')
         package = json_load(package_file)
         if package['version'] != nil_semver:
             raise AssertionError('Local package %s was not at version 0' % self.get_package_name())
@@ -88,7 +88,7 @@ class NpmPublisher(AbstractPublisher):
 
     def publish(self, new_version, atom_semver):
         try:
-            self._npm.publish(tmp_package)
+            self._npm.publish(self._tmp_package)
         except subprocess.CalledProcessError:
             logging.error('FAILED to publish package %s at version %d; it may already be published',
                           self.get_package_name(), new_version)
