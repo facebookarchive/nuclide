@@ -126,10 +126,39 @@ function asyncExecute(
     var firstChild;
     var lastChild;
 
+    var firstChildStderr;
     if (localOptions.pipedCommand) {
       // If a second command is given, pipe stdout of first to stdin of second. String output
       // returned in this function's Promise will be stderr/stdout of the second command.
       firstChild = spawn(command, args, localOptions);
+      firstChildStderr = '';
+
+      firstChild.on('close', exitCode => {
+        // Reject if first child exits unexpectedly, but do not resolve yet. The last child of the
+        // piped commands will resolve the promise when it exits.
+        if (exitCode !== 0) {
+          reject({
+            exitCode,
+            stderr: firstChildStderr,
+            stdout: '',
+          });
+        }
+      })
+
+      firstChild.on('error', error => {
+        reject({
+          command: [command].concat(args).join(' '),
+          errorMessage: error.message,
+          exitCode: error.code,
+          stderr: firstChildStderr,
+          stdout: '',
+        });
+      });
+
+      firstChild.stderr.on('data', data => {
+        firstChildStderr += data;
+      });
+
       lastChild = spawn(localOptions.pipedCommand, localOptions.pipedArgs, {env: localOptions.env});
       firstChild.stdout.pipe(lastChild.stdin);
     } else {
@@ -139,7 +168,7 @@ function asyncExecute(
 
     var stderr = '';
     var stdout = '';
-    lastChild.on('close', (exitCode) => {
+    lastChild.on('close', exitCode => {
       // If the process exited with an error (non-zero code), reject, otherwise resolve.
       (exitCode === 0 ? resolve : reject)({
         exitCode,
@@ -149,23 +178,18 @@ function asyncExecute(
     });
 
     lastChild.on('error', error => {
-      var exitCode = error ? error.code : 0;
-      // If there is an internal error, such as "stdout maxBuffer exceeded.",
-      // then there will not be an exitCode, but there will be an errorMessage.
-      var errorMessage = error ? error.message : null;
       reject({
-        stdout,
-        stderr,
-        errorMessage,
-        exitCode,
         command: [command].concat(args).join(' '),
+        errorMessage: error.message,
+        exitCode: error.code,
+        stderr,
+        stdout,
       });
     });
 
     lastChild.stderr.on('data', data => {
       stderr += data;
     });
-
     lastChild.stdout.on('data', data => {
       stdout += data;
     });

@@ -68,6 +68,26 @@ describe('process.asyncExecute', () => {
       });
     });
 
+    describe('pipedCommand', () => {
+      it('captures an error message if the first command exits', () => {
+        waitsForPromise(async () => {
+          try {
+            await processLib.asyncExecute(
+              'exit',
+              ['5'],
+              {env: process.env, pipedCommand: 'head', pipedArgs: ['-10']});
+          } catch(error) {
+            // `exit` with a non-zero error code should reject the Promise and return the generic
+            // ENOENT (End Of ENTity) exit code.
+            expect(error.exitCode).toEqual('ENOENT');
+            return;
+          }
+          // Force failure if the error was not thrown.
+          expect('should have exited because of error code > 0').toEqual(null);
+        });
+      });
+    });
+
     describe('checkOutput', () => {
       it('returns output of the running process', () => {
         waitsForPromise(async () => {
