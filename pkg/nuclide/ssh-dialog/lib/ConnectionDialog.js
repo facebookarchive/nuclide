@@ -58,6 +58,16 @@ var ConnectionDetailsPrompt = React.createClass({
     });
   },
 
+  _onKeyUp(e) {
+    if(e.key === 'Enter'){
+      this.props.onConfirm();
+    }
+
+    if(e.key === 'Escape'){
+      this.props.onCancel();
+    }
+  },
+
   render() {
     var activeAuthMethod = authMethods[this.state.selectedAuthMethodIndex];
     var sshAgentLabel = (
@@ -65,9 +75,16 @@ var ConnectionDetailsPrompt = React.createClass({
         ssh-agent-based authentication
       </div>
     );
+
+    // We need native-key-bindings so that delete works and we need
+    // _onKeyUp so that escape and enter work
     var passwordLabel = (
       <div className='block'>
-        Ask for password
+        <input type='password'
+               className='nuclide-password native-key-bindings'
+               ref='password'
+               onKeyUp={this._onKeyUp}
+               placeholder='Password'/>
       </div>
     );
     var privateKeyLabel = (
@@ -154,6 +171,10 @@ var ConnectionDetailsPrompt = React.createClass({
     return this.state.selectedAuthMethodIndex;
   },
 
+  getPassword(): string {
+    return (this.refs.password && React.findDOMNode(this.refs.password).value) || '';
+  },
+
 });
 
 /** Component to prompt the user for authentication information. */
@@ -171,16 +192,16 @@ var AuthenticationPrompt = React.createClass({
         .replace(/</g, '&lt;')
         .replace(/\\n/g, '<br>');
 
+
+    // We need native-key-bindings so that delete works and we need
+    // _onKeyUp so that escape and enter work
     return (
       <div ref='root' className='password-prompt-container'>
         <div className='block'
              style={{whiteSpace: 'pre'}}
              dangerouslySetInnerHTML={{__html: safeHtml}}
         />
-        {
-        // We need native-key-bindings so that delete works and we need
-        // _onKeyUp so that escape and enter work
-        }
+
         <input type='password'
                className='nuclide-password native-key-bindings'
                ref='password'
@@ -190,12 +211,12 @@ var AuthenticationPrompt = React.createClass({
   },
 
   _onKeyUp(e) {
-    if(e.keyCode == 13){
-        this.props.onConfirm();
+    if(e.key === 'Enter'){
+      this.props.onConfirm();
     }
 
-    if(e.keyCode == 27){
-        this.props.onCancel();
+    if(e.key === 'Escape'){
+      this.props.onCancel();
     }
   },
 
@@ -390,6 +411,7 @@ var ConnectionDialog = React.createClass({
       var sshPort = connectionDetailsPrompt.getText('sshPort');
       var remoteServerCommand = connectionDetailsPrompt.getText('remoteServerCommand');
       var authMethod = connectionDetailsPrompt.getAuthMethod();
+      var password = connectionDetailsPrompt.getPassword();
       if (username && server && cwd && remoteServerCommand) {
         this.setState({mode: WAITING_FOR_CONNECTION});
         this.state.sshHandshake.connect({
@@ -400,6 +422,7 @@ var ConnectionDialog = React.createClass({
           authMethod,
           cwd,
           remoteServerCommand,
+          password,
         });
       } else {
         // TODO(mbolin): Tell user to fill out all of the fields.

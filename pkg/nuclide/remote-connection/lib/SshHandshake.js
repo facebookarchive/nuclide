@@ -112,13 +112,13 @@ class SshHandshake {
         });
       } else if (config.authMethod === SupportedMethods.PASSWORD) {
           // When the user chooses password-based authentication, we specify
-          // the config as follows so that it falls through to the keyboard
-          // interactive path, which will ultimately prompt the user for a
-          // password.
+          // the config as follows so that it tries simple password auth and
+          // failing that it falls through to the keyboard interactive path
           this._connection.connect({
             host: address,
             port: config.sshPort,
             username: config.username,
+            password: config.password,
             tryKeyboard: true,
           });
       } else if (config.authMethod === SupportedMethods.PRIVATE_KEY) {
