@@ -24,7 +24,7 @@ function getConnectionDialogDefaultSettings(): any {
     cwd: '/home/' + username,
     pathToPrivateKey: path.join(homeDir, '.ssh', 'id_rsa'),
     remoteServerCommand: 'nuclide-start-server',
-    authMethod: require('nuclide-remote-connection').SshHandshake.SupportedMethods.SSL_AGENT,
+    authMethod: require('nuclide-remote-connection').SshHandshake.SupportedMethods.PASSWORD,
     sshPort: 22,
   };
 }
