@@ -277,7 +277,7 @@ class FileTreeController {
       },
       {
         label: 'Add Remote Project Folder',
-        command: 'nuclide-ssh-dialog:connect',
+        command: 'nuclide-remote-projects:connect',
         shouldDisplayIfTreeIsEmpty: true,
       },
       {
