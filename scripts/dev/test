@@ -11,6 +11,7 @@ import logging
 logging.basicConfig(level=logging.INFO, format='%(message)s')
 
 # Do other ordinary imports.
+import os
 import os.path
 import sys
 
@@ -48,6 +49,11 @@ if not options.no_install:
 # Create the constructor args for JsTestRunner.
 from package_manager import PackageManager
 package_manager = PackageManager()
+
+# Some tests compare created files and all their properties to an oracle. If
+# they are created with a different umask, then the permissions are different
+# and the tests fail.
+os.umask(022)
 
 # Create and run JsTestRunner.
 from js_test_runner import JsTestRunner
