@@ -16,8 +16,12 @@ class AutocompleteProvider {
   async getAutocompleteSuggestions(
       request: {editor: TextEditor; bufferPosition: Point; scopeDescriptor: any; prefix: string}):
       Promise<Array<{snippet: string; rightLabel: string}>> {
-    var {fetchCompletionsForEditor} = require('./hack');
     var replacementPrefix = this.findPrefix(request.editor);
+    if (!replacementPrefix) {
+      return [];
+    }
+
+    var {fetchCompletionsForEditor} = require('./hack');
     var completions = await fetchCompletionsForEditor(request.editor, replacementPrefix);
 
     return completions.map(completion => {
