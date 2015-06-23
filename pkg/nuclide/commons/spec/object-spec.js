@@ -28,3 +28,10 @@ describe('object.isEmpty', () => {
   });
 
 });
+
+describe('object.keyMirror', () => {
+  it('correctly mirrors objects', () => {
+    expect(objectHelpers.keyMirror({a: null, b: null}))
+      .toEqual({a: 'a', b: 'b'});
+  });
+});

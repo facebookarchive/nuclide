@@ -34,7 +34,22 @@ function assign(target: Object, ...sources: Array<Object>): Object {
   return target;
 }
 
+/**
+ * Constructs an enumeration with keys equal to their value.
+ * e.g. keyMirror({a: null, b: null}) => {a: 'a', b: 'b'}
+ *
+ * Based off the equivalent function in www.
+ */
+function keyMirror(obj: Object): Object {
+  var ret = {};
+  Object.keys(obj).forEach(key => {
+    ret[key] = key;
+  });
+  return ret;
+}
+
 module.exports = {
   assign,
   isEmpty,
+  keyMirror,
 };
