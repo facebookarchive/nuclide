@@ -23,6 +23,7 @@ var {
 var AtomInput = React.createClass({
 
   propTypes: {
+    disabled: React.PropTypes.bool,
     initialValue: React.PropTypes.string,
     placeholderText: React.PropTypes.string,
     onFocus: React.PropTypes.func,
@@ -31,6 +32,7 @@ var AtomInput = React.createClass({
 
   getDefaultProps() {
     return {
+      disabled: false,
       placeholderText: null,
       onFocus: () => {},
       onBlur: () => {},
@@ -57,6 +59,15 @@ var AtomInput = React.createClass({
     if (placeholderText !== null) {
       textEditor.setPlaceholderText(placeholderText);
     }
+    if (this.props.disabled) {
+      this._updateDisabledState(true);
+    }
+  },
+
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.disabled !== this.props.disabled) {
+      this._updateDisabledState(nextProps.disabled);
+    }
   },
 
   componentWillUnmount() {
@@ -66,6 +77,15 @@ var AtomInput = React.createClass({
     if (this._disposables) {
       this._disposables.dispose();
       this._disposables = null;
+    }
+  },
+
+  _updateDisabledState(isDisabled: boolean): void {
+    // Hack to set TextEditor to read-only mode, per https://github.com/atom/atom/issues/6880
+    if (isDisabled) {
+      this._getTextEditorElement().removeAttribute('tabindex');
+    } else {
+      this._getTextEditorElement().setAttribute('tabindex', -1);
     }
   },
 
