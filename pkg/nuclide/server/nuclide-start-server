@@ -6,5 +6,8 @@
 # This source code is licensed under the license found in the LICENSE file in
 # the root directory of this source tree.
 
+# This will make the current directory the real path this script lives in
+cd "$( cd "$(dirname $0)" ; pwd -P )" > /dev/null 2>&1
+# This will make the current directory the path that contains the scripts dir
 cd "$(dirname "$(readlink "$0" || printf %s "$0")")" > /dev/null 2>&1
 scripts/nuclide_server_manager.py "$@"
