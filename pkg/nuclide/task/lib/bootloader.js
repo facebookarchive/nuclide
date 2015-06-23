@@ -41,6 +41,7 @@ class Task {
       var id = response['id'];
       this._emitter.emit(id, response);
     });
+    child.on('error', log);
     child.send({
       action: 'bootstrap',
       transpiler: require.resolve('nuclide-node-transpiler'),

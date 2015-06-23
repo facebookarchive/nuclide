@@ -84,3 +84,9 @@ function isPromise(arg) {
 }
 
 process.on('message', processMessage);
+process.on('uncaughtException', function(err) {
+  /*eslint-disable no-console*/
+  console.error('uncaughtException:', err);
+  /*eslint-enable no-console*/
+  process.exit(1);
+});

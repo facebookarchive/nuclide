@@ -126,11 +126,25 @@ function asyncExecute(
     var firstChild;
     var lastChild;
 
+    var streamNames = ['stdin', 'stdout', 'stderr'];
+    function monitorStreamErrors(process: ChildProcess): void {
+      streamNames.forEach(streamName => {
+        process[streamName].on('error', error => {
+          // This can happen without the full execution of the command to fail, but we want to learn about it.
+          // Can't use nuclide-logging here to not cause cycle dependency.
+          /*eslint-disable no-console*/
+          console.error('asyncExecute stream error with command:', command, args, options, 'error:', error);
+          /*eslint-enable no-console*/
+        });
+      });
+    }
+
     var firstChildStderr;
     if (localOptions.pipedCommand) {
       // If a second command is given, pipe stdout of first to stdin of second. String output
       // returned in this function's Promise will be stderr/stdout of the second command.
       firstChild = spawn(command, args, localOptions);
+      monitorStreamErrors(firstChild);
       firstChildStderr = '';
 
       firstChild.on('close', exitCode => {
@@ -160,9 +174,11 @@ function asyncExecute(
       });
 
       lastChild = spawn(localOptions.pipedCommand, localOptions.pipedArgs, {env: localOptions.env});
+      monitorStreamErrors(lastChild);
       firstChild.stdout.pipe(lastChild.stdin);
     } else {
       lastChild = spawn(command, args, localOptions);
+      monitorStreamErrors(lastChild);
       firstChild = lastChild;
     }
 
