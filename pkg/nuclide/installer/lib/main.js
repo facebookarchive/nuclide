@@ -9,7 +9,11 @@
  * the root directory of this source tree.
  */
 
-var TIME_TO_WAIT_BEFORE_CHECKING_FOR_UPDATES_IN_MS = 20 * 1000;
+// This should be long enough that it does not interfere with Atom load time,
+// but short enough so that users who have just installed the nuclide-installer
+// for the first time do not get impatient waiting to see Nuclide packages start
+// to appear under Installed Packages in Settings.
+var TIME_TO_WAIT_BEFORE_CHECKING_FOR_UPDATES_IN_MS = 5 * 1000;
 
 module.exports = {
   activate(state: ?Object): void {
