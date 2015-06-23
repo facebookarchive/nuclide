@@ -17,8 +17,6 @@ from json_helpers import json_load, json_dump, json_dumps
 
 APM_ORG_NAME = 'facebooknuclideapm'
 
-PRE_LAUNCH = True
-
 DEFAULT_GITIGNORE = '''\
 .DS_Store
 npm-debug.log*
@@ -189,18 +187,6 @@ class ApmPublisher(AbstractPublisher):
             installer_config_json = generate_config(new_semver, self._config.apm_package_names)
             with open(os.path.join(self._repo, 'lib', 'config.json'), 'w') as f:
                 f.write(installer_config_json)
-
-        if PRE_LAUNCH:
-            # Temporarily delete everything before publishing, to keep everything under wraps.
-            logging.info('Removing launch files from repo for %s', self.get_package_name())
-            self.clean_repo(except_files=['package.json', 'README.md'])
-            # Also sanitize the README.md.
-            with open(path_to_readme, 'w') as f:
-                f.write(README_PREFIX)
-            # And strip the description in package.json.
-            manifest = json_load(package_file)
-            manifest['description'] = ''
-            json_dump(manifest, package_file)
 
         # Now that all of the local changes have been written, commit them.
         tag_name = 'v' + new_semver
