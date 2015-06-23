@@ -94,4 +94,5 @@ module.exports = {
 
     return processDiagnostics(diagnostics, file);
   },
+  processDiagnostics,
 };

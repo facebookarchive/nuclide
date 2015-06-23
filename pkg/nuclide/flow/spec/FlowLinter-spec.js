@@ -13,7 +13,7 @@ var {Range} = require('atom');
 
 // TODO(7154684): Re-enable this test once the Atom linter package is redesigned so it does not
 // run the risk of a race condition with respect to package loading during testing.
-xdescribe('FlowLinter::processDiagnostics', () => {
+describe('FlowLinter::processDiagnostics', () => {
 
   var FlowLinter = require('../lib/FlowLinter');
 
@@ -35,11 +35,9 @@ xdescribe('FlowLinter::processDiagnostics', () => {
     ];
 
     var expectedOutput = {
-      message: 'message',
-      linter: 'flow',
-      level: 'error',
-      line: 1,
-      col: 3,
+      text: 'message',
+      type: 'Error',
+      filePath: 'myPath',
       range: new Range([0, 2], [1, 4]),
     };
 
@@ -95,11 +93,9 @@ xdescribe('FlowLinter::processDiagnostics', () => {
     ];
 
     var expectedOutput = {
-      message: 'message more message',
-      linter: 'flow',
-      level: 'error',
-      line: 1,
-      col: 3,
+      type: 'Error',
+      text: 'message more message',
+      filePath: 'myPath',
       range: new Range([0, 2], [1, 4]),
     };
 
