@@ -186,7 +186,7 @@ class ApmPublisher(AbstractPublisher):
         # Write out the packages to install for the nuclide-installer package.
         if self.get_package_name() == 'nuclide-installer':
             from publishers.nuclide_installer_config import generate_config
-            installer_config_json = generate_config('v' + new_semver, self._config.apm_package_names)
+            installer_config_json = generate_config(new_semver, self._config.apm_package_names)
             with open(os.path.join(self._repo, 'lib', 'config.json'), 'w') as f:
                 f.write(installer_config_json)
 
