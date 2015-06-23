@@ -43,7 +43,7 @@ var NuclideRadioGroup = React.createClass({
 
   render: function(): ReactElement {
     var checkboxes = this.props.optionLabels.map((labelContent, i) => {
-      var id = uid + '-' + i;
+      var id = 'nuclide-radiogroup-' + uid + '-' + i;
       return (
         <div key={i}>
           <input

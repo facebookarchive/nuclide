@@ -7,15 +7,48 @@
 }
 
 .nuclide-password {
-  color: @text-color;
   background-color: @input-background-color;
   border: 1px solid @input-border-color;
-  line-height: @component-line-height;
   border-radius: 2px;
+  color: @text-color;
+  line-height: @component-line-height;
+  padding: 0 0.5em;
   resize: none;
   width: 100%;
 }
 
 .password-prompt-container {
   padding: @component-padding;
+}
+
+.nuclide-auth-selector {
+  margin-bottom: 20px;
+}
+
+.nuclide-auth-method {
+  align-items: center;
+  display: flex;
+  height: 30px;
+}
+
+.nuclide-auth-method-input,
+.nuclide-auth-method-label {
+  display: inline-block;
+}
+
+.nuclide-auth-method-input {
+  margin-left: 1em;
+}
+
+.nuclide-auth-method-label {
+  min-width: 8em;
+}
+
+.nuclide-auth-method-password,
+.nuclide-auth-method-privatekey {
+  width: 250px;
+}
+
+.nuclide-auth-method-privatekey {
+  margin-top: 10px;
 }

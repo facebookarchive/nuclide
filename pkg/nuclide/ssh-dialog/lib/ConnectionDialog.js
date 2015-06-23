@@ -68,7 +68,7 @@ var ConnectionDetailsPrompt = React.createClass({
     }
   },
 
-  _handlePasswordInputClick() {
+  _handlePasswordInputClick(event) {
     var passwordAuthMethodIndex = authMethods.indexOf(SupportedMethods.PASSWORD);
     this.setState(
       {
@@ -87,8 +87,12 @@ var ConnectionDetailsPrompt = React.createClass({
         selectedAuthMethodIndex: privateKeyAuthMethodIndex,
       },
       () => {
-        React.findDOMNode(this.refs['pathToPrivateKey']).focus();
-      });
+        // when setting this immediately, Atom will unset the focus...
+        setTimeout(() => {
+          React.findDOMNode(this.refs['pathToPrivateKey']).focus();
+        }, 100);
+      }
+    );
   },
 
   render() {
@@ -96,25 +100,40 @@ var ConnectionDetailsPrompt = React.createClass({
     // We need native-key-bindings so that delete works and we need
     // _onKeyUp so that escape and enter work
     var passwordLabel = (
-      <div className='block'>
-        <input type='password'
-          className='nuclide-password native-key-bindings'
-          disabled={activeAuthMethod !== SupportedMethods.PASSWORD}
-          ref='password'
-          onClick={this._handlePasswordInputClick}
-          onKeyUp={this._onKeyUp}
-          placeholder='Password'
-        />
+      <div className='nuclide-auth-method'>
+        <div className='nuclide-auth-method-label'>
+          Password:
+        </div>
+        <div className='nuclide-auth-method-input nuclide-auth-method-password'>
+          <input type='password'
+            className='nuclide-password native-key-bindings'
+            disabled={activeAuthMethod !== SupportedMethods.PASSWORD}
+            ref='password'
+            onClick={this._handlePasswordInputClick}
+            onKeyUp={this._onKeyUp}
+          />
+        </div>
       </div>
     );
     var privateKeyLabel = (
-      <div className='block'>
-        Private Key File:&nbsp;
+      <div className='nuclide-auth-method'>
+        <div className='nuclide-auth-method-label'>
+          Private Key File:
+        </div>
+        <div className='nuclide-auth-method-input nuclide-auth-method-privatekey'>
+          <AtomInput
+            ref='pathToPrivateKey'
+            disabled={activeAuthMethod !== SupportedMethods.PRIVATE_KEY}
+            onClick={this._handleKeyFileInputClick}
+            placeholder='Path to private key'
+            initialValue={this.state.pathToPrivateKey}
+          />
+        </div>
       </div>
     );
     var sshAgentLabel = (
-      <div className='block'>
-        ssh-agent-based authentication
+      <div className='nuclide-auth-method'>
+        Use ssh-agent
       </div>
     );
     return (
@@ -134,22 +153,15 @@ var ConnectionDetailsPrompt = React.createClass({
         <div className='block'>
           Authentication method:
         </div>
-        <RadioGroup
-          optionLabels={[
-            passwordLabel,
-            sshAgentLabel,
-            privateKeyLabel,
-          ]}
-          onSelectedChange={this.handleAuthMethodChange}
-          selectedIndex={this.state.selectedAuthMethodIndex}
-        />
-        <div className='block'>
-          <AtomInput
-            ref='pathToPrivateKey'
-            disabled={activeAuthMethod !== SupportedMethods.PRIVATE_KEY}
-            onClick={this._handleKeyFileInputClick}
-            placeholder='Path to private key'
-            initialValue={this.state.pathToPrivateKey}
+        <div className='nuclide-auth-selector'>
+          <RadioGroup
+            optionLabels={[
+              passwordLabel,
+              sshAgentLabel,
+              privateKeyLabel,
+            ]}
+            onSelectedChange={this.handleAuthMethodChange}
+            selectedIndex={this.state.selectedAuthMethodIndex}
           />
         </div>
         <div className='block'>
