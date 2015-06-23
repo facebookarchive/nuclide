@@ -11,8 +11,6 @@
 
 var {Range} = require('atom');
 
-// TODO(7154684): Re-enable this test once the Atom linter package is redesigned so it does not
-// run the risk of a race condition with respect to package loading during testing.
 describe('FlowLinter::processDiagnostics', () => {
 
   var FlowLinter = require('../lib/FlowLinter');
