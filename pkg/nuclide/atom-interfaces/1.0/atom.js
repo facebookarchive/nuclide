@@ -213,6 +213,11 @@ declare class atom$TextEditor {
   // Indentation
   indentationForBufferRow(bufferRow: number): number;
 
+  // Grammars
+  // TODO: define Grammar class
+  getGrammar(): /*atom$Grammar*/ Object;
+  setGrammar(grammar: /*atom$Grammar*/ Object): void;
+
   // Gutter
   addGutter(options: {
     name: string;
@@ -320,24 +325,44 @@ declare class atom$TextBuffer {
   rangeForRow(row: number, includeNewLine?: boolean): Range;
 }
 
+declare class atom$Notification {
+  getType(): string;
+  getMessage(): string;
+}
+
+declare class atom$NotificationManager {
+  // Events
+  onDidAddNotification(callback: (notification: atom$Notification) => void): atom$IDisposable;
+
+  // Adding Notifications
+  addSuccess(message: string, options?: Object): atom$Notification;
+  addInfo(message: string, options?: Object): atom$Notification;
+  addWarning(message: string, options?: Object): atom$Notification;
+  addError(message: string, options?: Object): atom$Notification;
+  addFatalError(message: string, options?: Object): atom$Notification;
+
+  // Getting Notifications
+  getNotifications(): Array<atom$Notification>;
+}
+
 // The items in this declaration are available off of `require('atom')`.
 // This list is not complete.
 declare module "atom" {
-  declare class CompositeDisposable extends atom$CompositeDisposable {}
-  declare class Disposable extends atom$Disposable {}
-  declare class Emitter extends atom$Emitter {}
-  declare class Panel extends atom$Panel {}
-  declare class Point extends atom$Point {}
-  declare class Range extends atom$Range {}
-  declare class TextEditor extends atom$TextEditor {}
+  declare var CompositeDisposable: typeof atom$CompositeDisposable;
+  declare var Disposable: typeof atom$Disposable;
+  declare var Emitter: typeof atom$Emitter;
+  declare var Panel: typeof atom$Panel;
+  declare var Point: typeof atom$Point;
+  declare var Range: typeof atom$Range;
+  declare var TextEditor: typeof atom$TextEditor;
+  declare var Notification: typeof atom$Notification;
 }
 
 // Make sure that common types can be referenced without the `atom$` prefix
 // in type declarations.
-import * as Atom from "atom"
-declare class Cursor extends atom$Cursor {}
-declare class Panel extends atom$Panel {}
-declare class TextEditor extends atom$TextEditor {}
+declare var Cursor: typeof atom$Cursor;
+declare var Panel: typeof atom$Panel;
+declare var TextEditor: typeof atom$TextEditor;
 
 // The properties of this type match the properties of the `atom` global.
 // This list is not complete.
@@ -345,6 +370,7 @@ type AtomGlobal = {
   commands: atom$CommandRegistry;
   config: atom$Config;
   contextMenu: atom$ContextMenuManager;
+  notifications: atom$NotificationManager;
   packages: atom$PackageManager;
   views: atom$ViewRegistry;
   workspace: atom$Workspace;
