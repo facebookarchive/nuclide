@@ -80,7 +80,7 @@ var ConnectionDetailsPrompt = React.createClass({
     );
   },
 
-  _handleKeyFileInputClick() {
+  _handleKeyFileInputClick(event) {
     var privateKeyAuthMethodIndex = authMethods.indexOf(SupportedMethods.PRIVATE_KEY);
     this.setState(
       {
@@ -90,7 +90,7 @@ var ConnectionDetailsPrompt = React.createClass({
         // when setting this immediately, Atom will unset the focus...
         setTimeout(() => {
           React.findDOMNode(this.refs['pathToPrivateKey']).focus();
-        }, 100);
+        }, 0);
       }
     );
   },
