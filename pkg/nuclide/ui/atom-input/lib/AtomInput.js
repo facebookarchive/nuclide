@@ -27,6 +27,7 @@ var AtomInput = React.createClass({
     initialValue: React.PropTypes.string,
     placeholderText: React.PropTypes.string,
     onFocus: React.PropTypes.func,
+    onClick: React.PropTypes.func,
     onBlur: React.PropTypes.func,
   },
 
@@ -34,6 +35,7 @@ var AtomInput = React.createClass({
     return {
       disabled: false,
       placeholderText: null,
+      onClick: () => {},
       onFocus: () => {},
       onBlur: () => {},
     };
@@ -94,6 +96,7 @@ var AtomInput = React.createClass({
       <atom-text-editor
           mini
           ref='input'
+          onClick={this.props.onClick}
           onFocus={this.props.onFocus}
           onBlur={this.props.onBlur}>
         {this.state.value}

@@ -68,6 +68,29 @@ var ConnectionDetailsPrompt = React.createClass({
     }
   },
 
+  _handlePasswordInputClick() {
+    var passwordAuthMethodIndex = authMethods.indexOf(SupportedMethods.PASSWORD);
+    this.setState(
+      {
+        selectedAuthMethodIndex: passwordAuthMethodIndex,
+      },
+      () => {
+        React.findDOMNode(this.refs['password']).focus();
+      }
+    );
+  },
+
+  _handleKeyFileInputClick() {
+    var privateKeyAuthMethodIndex = authMethods.indexOf(SupportedMethods.PRIVATE_KEY);
+    this.setState(
+      {
+        selectedAuthMethodIndex: privateKeyAuthMethodIndex,
+      },
+      () => {
+        React.findDOMNode(this.refs['pathToPrivateKey']).focus();
+      });
+  },
+
   render() {
     var activeAuthMethod = authMethods[this.state.selectedAuthMethodIndex];
     // We need native-key-bindings so that delete works and we need
@@ -75,11 +98,13 @@ var ConnectionDetailsPrompt = React.createClass({
     var passwordLabel = (
       <div className='block'>
         <input type='password'
-               className='nuclide-password native-key-bindings'
-               disabled={activeAuthMethod !== SupportedMethods.PASSWORD}
-               ref='password'
-               onKeyUp={this._onKeyUp}
-               placeholder='Password'/>
+          className='nuclide-password native-key-bindings'
+          disabled={activeAuthMethod !== SupportedMethods.PASSWORD}
+          ref='password'
+          onClick={this._handlePasswordInputClick}
+          onKeyUp={this._onKeyUp}
+          placeholder='Password'
+        />
       </div>
     );
     var privateKeyLabel = (
@@ -122,6 +147,7 @@ var ConnectionDetailsPrompt = React.createClass({
           <AtomInput
             ref='pathToPrivateKey'
             disabled={activeAuthMethod !== SupportedMethods.PRIVATE_KEY}
+            onClick={this._handleKeyFileInputClick}
             placeholder='Path to private key'
             initialValue={this.state.pathToPrivateKey}
           />
