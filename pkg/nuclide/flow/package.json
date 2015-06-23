@@ -14,18 +14,17 @@
         "2.0.0": "createAutocompleteProvider"
       }
     },
+    "linter": {
+      "versions": {
+        "0.3.0": "provideLinter"
+      }
+    },
     "nuclide-click-to-symbol.provider": {
       "versions": {
         "0.0.0": "createClickToSymbolDelegate"
       }
     }
   },
-
-  "//": "This is what triggers the linter integration:",
-  "//": "https://github.com/AtomLinter/Linter/issues/247",
-  "linter-package": true,
-  "linter-implementation": "FlowLinter",
-
   "engines": {
     "atom": ">0.188.0"
   },

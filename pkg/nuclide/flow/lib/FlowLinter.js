@@ -10,7 +10,6 @@
  */
 
 var {getServiceByNuclideUri} = require('nuclide-client');
-var Linter = require(`${atom.packages.resolvePackagePath('linter')}/lib/linter`);
 var {Range} = require('atom');
 
 /**
@@ -38,12 +37,10 @@ function flowMessageToLinterMessage(message) {
   );
 
   return {
-    level: 'error',
-    message: message['descr'],
+    type: 'Error',
+    text: message['descr'],
+    filePath: message['path'],
     range: range,
-    line: message['line'],
-    col: message['start'],
-    linter: 'flow',
   };
 }
 
@@ -66,55 +63,31 @@ function mergeFlowMessages(messages: Array) {
   return message;
 }
 
-class FlowLinter extends Linter {
-  constructor(editor) {
-    super(editor);
-  }
+function processDiagnostics(diagnostics: Array<Object>, targetFile: string) {
+  var hasMessageWithPath = function(message) {
+    return message['path'] === targetFile;
+  };
 
-  /**
-   * @param filePath This is not the path of the actual file: this is the path
-   *     to a temporary file with the same name as the original file that
-   *     contains the (potentially unsaved) contents of the editor.
-   * @param callback Takes an array of message objects that correspond to lint
-   *     warnings or errors. Although undocumented
-   *     (https://github.com/AtomLinter/Linter/issues/247), a message object
-   *     should have the following properties:
-   *     - level (string: 'warning' or 'error')
-   *     - message (string) the message to display
-   *     - range (Range) text to highlight to show the diagnostic
-   *     - line (number) where the diagnostics occurs
-   *     - col (number) where the diagnostics occurs
-   *     - linter (string) linter that reported the error
-   */
-  async lintFile(filePath, callback): Promise<?Array> {
-    var file = this.editor.getPath();
-    var diagnostics = await getServiceByNuclideUri('FlowService', file).findDiagnostics(file);
-    if (!diagnostics.length) {
-      callback([]);
-      return;
-    }
+  // Filter messages not addressing `targetFile` and merge messages spanning multiple files.
+  var messages = diagnostics.map( (diagnostic) => {
+                  var diagnosticMessages = diagnostic['message'];
+                  return mergeFlowMessages(diagnosticMessages);
+                 }).filter(hasMessageWithPath);
 
-    var messages = FlowLinter.processDiagnostics(diagnostics, file);
-    callback(messages);
-  }
-
-   static processDiagnostics(diagnostics: Array, targetFile: string) {
-     var hasMessageWithPath = function(message) {
-       return message['path'] === targetFile;
-     };
-
-     // Filter messages not addressing `targetFile` and merge messages spanning multiple files.
-     var messages = diagnostics.map( (diagnostic) => {
-                     var diagnosticMessages = diagnostic['message'];
-                     return mergeFlowMessages(diagnosticMessages);
-                    }).filter(hasMessageWithPath);
-
-     return messages.map(flowMessageToLinterMessage);
-   }
+  return messages.map(flowMessageToLinterMessage);
 }
 
-FlowLinter.syntax = 'source.js';
+module.exports = {
+  grammarScopes: ['source.js'],
+  scope: 'file',
+  lintOnFly: true,
+  async lint(textEditor: TextEditor): Promise<Array<Object>> {
+    var file = textEditor.getPath();
+    var diagnostics = await getServiceByNuclideUri('FlowService', file).findDiagnostics(file);
+    if (!diagnostics.length) {
+      return [];
+    }
 
-FlowLinter.prototype.linterName = 'flow';
-
-module.exports = FlowLinter;
+    return processDiagnostics(diagnostics, file);
+  },
+};

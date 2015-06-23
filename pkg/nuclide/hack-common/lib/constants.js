@@ -44,5 +44,4 @@ module.exports = {
   },
 
   HACK_GRAMMAR: 'text.html.hack',
-  HACK_LINTER_NAME: 'HACK',
 };

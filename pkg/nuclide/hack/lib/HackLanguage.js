@@ -133,7 +133,6 @@ module.exports = class HackLanguage {
     await this.updateFile(path, contents);
     var webWorkerMessage = {cmd: 'hh_check_file', args: [path]};
     var response = await this._hackWorker.runWorkerTask(webWorkerMessage);
-
     return parseErrorsFromResponse(response);
   }
 
@@ -367,13 +366,10 @@ function parseErrorsFromResponse(response: any): Array<any> {
         };
       }
       return {
-        path: rootCause.path,
+        type: 'Error',
+        text: errorPart.descr,
+        filePath: rootCause.path,
         range: rootCause.range,
-        line: rootCause.line,
-        message: errorPart.descr,
-        col: rootCause.start,
-        linter: 'hack',
-        level: 'error',
       };
     });
   });

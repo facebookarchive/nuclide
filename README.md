@@ -46,7 +46,7 @@ Nuclide packages are not publicly available in [npm](https://www.npmjs.com/) or
 * Python 2.6 or later.
 * Atom v0.207.0 or later.
 * `node`, `npm`, `apm`, and `git` must be on your `$PATH`. (Node must be v0.12.0 or later.)
-* *Optional, but strongly recommended:* install the Atom [linter](https://atom.io/packages/linter) package.
+* *Optional, but strongly recommended:* install the Atom [linter-plus](https://atom.io/packages/linter-plus) package.
 
 **Build and install Nuclide**
 

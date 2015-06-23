@@ -14,6 +14,11 @@
         "2.0.0": "createAutocompleteProvider"
       }
     },
+    "linter": {
+      "versions": {
+        "0.3.0": "provideLinter"
+      }
+    },
     "nuclide-click-to-symbol.provider": {
       "versions": {
         "0.0.0": "createClickToSymbolDelegate"
@@ -30,9 +35,6 @@
       }
     }
   },
-  "//": "https://github.com/atom/apm/issues/120",
-  "linter-package": true,
-  "linter-implementation": "HackLinter",
   "engines": {
     "atom": ">=0.196.0"
   },

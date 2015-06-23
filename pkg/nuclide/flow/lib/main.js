@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-function getServiceByNuclideUri(service, file = null) {
+function getServiceByNuclideUri(service, file?) {
   return require('nuclide-client').getServiceByNuclideUri(service, file);
 }
 
@@ -73,6 +73,10 @@ module.exports = {
     // Set up click-to-symbol.
     var ClickToSymbolDelegate = require('./ClickToSymbolDelegate');
     return new ClickToSymbolDelegate();
+  },
+
+  provideLinter() {
+    return require('./FlowLinter');
   },
 
   deactivate() {

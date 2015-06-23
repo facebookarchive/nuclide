@@ -91,6 +91,10 @@ module.exports = {
     };
   },
 
+  provideLinter() {
+    return require('./HackLinter');
+  },
+
   deactivate(): void {
     if (subscriptions) {
       subscriptions.dispose();
