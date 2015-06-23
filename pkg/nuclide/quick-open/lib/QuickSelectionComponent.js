@@ -36,21 +36,11 @@ var assign = Object.assign || require('object-assign');
 var cx = require('react-classset');
 
 // keep `action` in sync with keymap.
-var RENDERABLE_TABS = [
+var DEFAULT_TABS = [
   {
    providerName: 'OmniSearchResultProvider',
    title: 'All Results',
    action: 'nuclide-quick-open:toggle-omni-search',
-  },
-  {
-   providerName: 'BigGrepListProvider',
-   title: 'BigGrep',
-   action: 'nuclide-quick-open:toggle-biggrep-search',
-  },
-  {
-   providerName: 'SymbolListProvider',
-   title: 'Symbols',
-   action: 'nuclide-quick-open:toggle-symbol-search',
   },
   {
    providerName: 'FileListProvider',
@@ -63,6 +53,64 @@ var RENDERABLE_TABS = [
    action: 'nuclide-quick-open:toggle-openfilename-search',
   },
 ];
+
+var DYNAMIC_TABS = {
+  biggrep: {
+   providerName: 'BigGrepListProvider',
+   title: 'BigGrep',
+   action: 'nuclide-quick-open:toggle-biggrep-search',
+  },
+  hack: {
+   providerName: 'SymbolListProvider',
+   title: 'Symbols',
+   action: 'nuclide-quick-open:toggle-symbol-search',
+  },
+};
+
+var RENDERABLE_TABS = DEFAULT_TABS.slice();
+
+async function _getServicesForDirectory(directory: any): any {
+  var {getClient} = require('nuclide-client');
+  var directoryPath = directory.getPath();
+  var basename = directory.getBaseName();
+  var client = getClient(directoryPath);
+  var url = require('url');
+  var {protocol, host, path: rootDirectory} = url.parse(directoryPath);
+  var providers = await client.getSearchProviders(rootDirectory);
+  return providers;
+}
+
+async function _getEligibleServices() {
+  var paths = atom.project.getDirectories();
+  var services = paths.map(
+    _getServicesForDirectory
+  );
+  return Promise.all(services);
+}
+
+function updateRenderableTabs() {
+  var eligibleServiceTabs = _getEligibleServices().then((services) => {
+    RENDERABLE_TABS = DEFAULT_TABS.slice();
+    var dynamicTab = Array.prototype.concat.apply([], services)
+      .filter(service => DYNAMIC_TABS.hasOwnProperty(service.name))
+      .map(service => DYNAMIC_TABS[service.name]);
+    // insert dynamic tabs at index 1 (after the OmniSearchProvider).
+    RENDERABLE_TABS.splice.apply(
+      RENDERABLE_TABS,
+      [1, 0].concat(dynamicTab)
+    );
+  });
+}
+
+// This timeout is required to keep tests from breaking, since `atom.project` appears to still
+// be initializing at the time this module is required, breaking the documented API behavior, which
+// specifies that "An instance of [Project] is always available as the `atom.project` global."
+// https://atom.io/docs/api/v0.211.0/Project
+var disposeOfMe;
+setTimeout(() => {
+  disposeOfMe = atom.project.onDidChangePaths(updateRenderableTabs);
+}, 1000);
+updateRenderableTabs();
 
 var DEFAULT_TAB = RENDERABLE_TABS[0];
 
