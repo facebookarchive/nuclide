@@ -494,21 +494,21 @@ var QuickSelectionComponent = React.createClass({
   },
 
   _subscribeToResult(serviceName: string, directory:string, resultPromise: Promise<any>) {
-    resultPromise.then((items) => {
+    resultPromise.then(items => {
       var updatedItems = {
         waiting: false,
         error: null,
         items: items.results,
       };
       this._setResult(serviceName, directory, updatedItems);
-    }.bind(this)).catch(error => {
+    }).catch(error => {
       var updatedItems = {
         waiting: false,
         error: 'an error occurred', error,
         items: [],
       };
       this._setResult(serviceName, directory, updatedItems);
-    }.bind(this));
+    });
   },
 
   setQuery(query: string) {
