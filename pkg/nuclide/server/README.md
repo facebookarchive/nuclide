@@ -36,39 +36,7 @@ installed on the server, and not those used by the Atom client itself.
 
 ## Running Nuclide Server
 
-You do not need to explicitly start the server since the Nuclide client will
-attempt to do so when it first connects over SSH. However, you will need to
-specify the path of the startup script and provide it as part of the client's
-'Connect...' dialog. This is found in the 'Packages' menu:
-
-![Connect menu](http://nuclide.io/images/docs/connect_menu.png)
-
-Therefore, ensure you know the path to the
-`pkg/nuclide/server/nuclide-start-server` script and enter it into the 'Remote
-Server Command' field at the bottom of the client's 'Connect...' dialog. After
-providing your SSH credentials, submit the dialog to connect.
-
-![Connect dialog](http://nuclide.io/images/docs/connect.png)
-
-(Note that all of the values shown above are examples and will vary based on
-your own username, filesystem, and SSH and Nuclide configuration.)
-
-You can either let the script pick an open port for you from a list of predefined ports,
-or start the server on a specific port using the `-p` flag.
-For example:
-
-```
-[...]/nuclide-start-server -p 9099
-```
-
-This connection will then initiate the Nuclide server on the remote machine if
-it is not yet running. The result will be that the root folder you just
-specified will appear in the left-hand tree view, underneath any local folders
-you might have had open:
-
-![Tree view](http://nuclide.io/images/docs/tree_remote.png)
-
-You can now use this tree to open and edit files as you would expect.
+You do not need to explicitly start the server since the Nuclide client will attempt to do so when it first connects over SSH, as explained in [Remote Projects README](../remote-projects/README.md).
 
 ## Troubleshooting
 
@@ -76,21 +44,21 @@ If you want to debug the server starting up, you can of course run the command
 directly:
 
 ```
-./nuclide-start-server
+./pkg/nuclide/server/nuclide-start-server
 ```
 
 A successful start will display the port upon which the server has started, and
 a JSON dump of certificate information:
 
 ```
-Nuclide started on port 9099.
+Nuclide started on port 9090.
 {"workspace": null, "ca": "-----BEGIN CERTIFICATE-----\n...
 ```
 
 The `nuclide-start-server` command also has a useful help option:
 
 ```
-./nuclide-start-server -h
+./pkg/nuclide/server/nuclide-start-server -h
 ```
 
 This explains many of the other options available, such as timeout, workspace
