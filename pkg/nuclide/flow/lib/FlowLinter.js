@@ -83,6 +83,10 @@ module.exports = {
   lintOnFly: true,
   async lint(textEditor: TextEditor): Promise<Array<Object>> {
     var file = textEditor.getPath();
+    if (!file) {
+      return [];
+    }
+
     var diagnostics = await getServiceByNuclideUri('FlowService', file).findDiagnostics(file);
     if (!diagnostics.length) {
       return [];

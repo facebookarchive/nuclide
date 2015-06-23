@@ -19,7 +19,9 @@ module.exports = {
   lintOnFly: true,
   async lint(textEditor: TextEditor): Promise<Array<Object>> {
     var file = textEditor.getBuffer().file;
-
+    if (!file) {
+      return [];
+    }
     // RemoteFile has a getRealPath() method that returns a Promise but Atom's
     // built-in File does not.
     var getRealPath = file.getRealPath ? file.getRealPath :
