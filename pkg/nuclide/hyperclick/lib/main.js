@@ -9,8 +9,24 @@
  * the root directory of this source tree.
  */
 
+var hyperclick: ?Hyperclick = null;
+
 module.exports = {
   activate() {
-    // TODO(jjiaa): Add the implementation for the package.
+    var Hyperclick = require('./Hyperclick');
+    hyperclick = new Hyperclick();
+  },
+
+  deactivate() {
+    if (hyperclick) {
+      hyperclick.dispose();
+      hyperclick = null;
+    }
+  },
+
+  consumeProvider(provider: HyperclickProvider | Array<HyperclickProvider>): void {
+    if (hyperclick) {
+      hyperclick.consumeProvider(provider);
+    }
   },
 };

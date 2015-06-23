@@ -6,5 +6,12 @@
   "description": "Hyperclick UI",
   "engines": {
     "atom": ">=0.196.0"
+  },
+  "consumedServices": {
+    "hyperclick.provider": {
+      "versions": {
+        "0.0.0": "consumeProvider"
+      }
+    }
   }
 }
