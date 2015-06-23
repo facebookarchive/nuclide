@@ -21,8 +21,8 @@ var {PropTypes} = React;
 
 var {SupportedMethods} = SshHandshake;
 var authMethods = [
-  SupportedMethods.SSL_AGENT,
   SupportedMethods.PASSWORD,
+  SupportedMethods.SSL_AGENT,
   SupportedMethods.PRIVATE_KEY,
 ];
 
@@ -70,18 +70,13 @@ var ConnectionDetailsPrompt = React.createClass({
 
   render() {
     var activeAuthMethod = authMethods[this.state.selectedAuthMethodIndex];
-    var sshAgentLabel = (
-      <div className='block'>
-        ssh-agent-based authentication
-      </div>
-    );
-
     // We need native-key-bindings so that delete works and we need
     // _onKeyUp so that escape and enter work
     var passwordLabel = (
       <div className='block'>
         <input type='password'
                className='nuclide-password native-key-bindings'
+               disabled={activeAuthMethod !== SupportedMethods.PASSWORD}
                ref='password'
                onKeyUp={this._onKeyUp}
                placeholder='Password'/>
@@ -92,7 +87,11 @@ var ConnectionDetailsPrompt = React.createClass({
         Private Key File:&nbsp;
       </div>
     );
-
+    var sshAgentLabel = (
+      <div className='block'>
+        ssh-agent-based authentication
+      </div>
+    );
     return (
       <div ref='root'>
         <div className='block'>
@@ -111,12 +110,21 @@ var ConnectionDetailsPrompt = React.createClass({
           Authentication method:
         </div>
         <RadioGroup
-          optionLabels={[sshAgentLabel, passwordLabel, privateKeyLabel]}
+          optionLabels={[
+            passwordLabel,
+            sshAgentLabel,
+            privateKeyLabel,
+          ]}
           onSelectedChange={this.handleAuthMethodChange}
           selectedIndex={this.state.selectedAuthMethodIndex}
         />
         <div className='block'>
-          <AtomInput ref='pathToPrivateKey' placeholder='Path to private key' initialValue={this.state.pathToPrivateKey} />
+          <AtomInput
+            ref='pathToPrivateKey'
+            disabled={activeAuthMethod !== SupportedMethods.PRIVATE_KEY}
+            placeholder='Path to private key'
+            initialValue={this.state.pathToPrivateKey}
+          />
         </div>
         <div className='block'>
           Advanced Settings
