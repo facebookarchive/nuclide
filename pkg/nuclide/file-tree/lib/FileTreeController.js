@@ -190,7 +190,8 @@ class FileTreeController {
     var props = {
       initialRoots: this._roots,
       eventHandlerSelector,
-      onConfirmSelection: (node) => this.onConfirmSelection(node),
+      onConfirmSelection: this.onConfirmSelection.bind(this),
+      onKeepSelection: this.onKeepSelection.bind(this),
       labelClassNameForNode,
       rowClassNameForNode,
       elementToRenderWhenEmpty: <div>No project root</div>,
@@ -475,7 +476,22 @@ class FileTreeController {
 
   onConfirmSelection(node: LazyFileTreeNode): void {
     var entry = node.getItem();
-    atom.workspace.open(entry.getPath(), {activatePane: true, searchAllPanes: true});
+    atom.workspace.open(entry.getPath(), {
+      activatePane: !atom.config.get('tabs.usePreviewTabs'),
+      searchAllPanes: true,
+    });
+  }
+
+  onKeepSelection(): void {
+    if (!atom.config.get('tabs.usePreviewTabs')) {
+      return;
+    }
+
+    var activePaneItem = atom.workspace.getActivePaneItem();
+    atom.commands.dispatch(atom.views.getView(activePaneItem), 'tabs:keep-preview-tab');
+
+    // "Activate" the already-active pane to give it focus.
+    atom.workspace.getActivePane().activate();
   }
 
   removeRootFolderSelection(): void {

@@ -80,9 +80,12 @@ var TreeRootComponent = React.createClass({
   propTypes: {
     initialRoots: PropTypes.arrayOf(PropTypes.instanceOf(LazyTreeNode)).isRequired,
     eventHandlerSelector: PropTypes.string.isRequired,
-    // A node can be confirmed if it is a selected non-container node and the
-    // user is clicks on it or presses <enter>.
+    // A node can be confirmed if it is a selected non-container node and the user is clicks on it
+    // or presses <enter>.
     onConfirmSelection: PropTypes.func.isRequired,
+    // A node can be "kept" (opened permanently) by double clicking it. This only has an effect
+    // when the `usePreviewTabs` setting is enabled in the "tabs" package.
+    onKeepSelection: PropTypes.func.isRequired,
     labelClassNameForNode: PropTypes.func.isRequired,
     rowClassNameForNode: PropTypes.func,
     // Render will return this component if there are no root nodes.
@@ -191,8 +194,10 @@ var TreeRootComponent = React.createClass({
       selectedKeys: new Set([node.getKey()]),
     });
 
-    if (!this._isNodeSelected(node)) {
-      // User clicked on a new item, so do not toggle its state any further yet.
+    if (!this._isNodeSelected(node) &&
+        (node.isContainer() || !atom.config.get('tabs.usePreviewTabs'))) {
+      // User clicked on a new directory or the user isn't using the "Preview Tabs" feature of the
+      // `tabs` package, so don't toggle the node's state any further yet.
       return;
     }
 
@@ -201,6 +206,13 @@ var TreeRootComponent = React.createClass({
 
   _onClickNodeArrow(event: SyntheticEvent, node: LazyTreeNode): void {
     this._toggleNodeExpanded(node);
+  },
+
+  _onDoubleClickNode(event: SyntheticMouseEvent, node: LazyTreeNode): void {
+    // Double clicking a non-directory will keep the created tab open.
+    if (!node.isContainer()) {
+      this.props.onKeepSelection();
+    }
   },
 
   _onMouseDown(event: SyntheticMouseEvent, node: LazyTreeNode): void {
@@ -275,6 +287,7 @@ var TreeRootComponent = React.createClass({
               rowClassNameForNode={this.props.rowClassNameForNode}
               onClickArrow={this._onClickNodeArrow}
               onClick={this._onClickNode}
+              onDoubleClick={this._onDoubleClickNode}
               onMouseDown={this._onMouseDown}
               key={node.getKey()}
               ref={ref}
@@ -632,7 +645,9 @@ var TreeRootComponent = React.createClass({
     var key = this._getFirstSelectedKey();
     if (key) {
       var node = this.getNodeForKey(key);
-      this._confirmNode(node);
+      if (node) {
+        this._confirmNode(node);
+      }
     }
   },
 

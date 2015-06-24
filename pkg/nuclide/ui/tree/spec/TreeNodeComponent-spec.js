@@ -32,11 +32,13 @@ describe('TreeNodeComponent', () => {
       node: new LazyTestTreeNode({label}, null, false, null),
       onClick: () => {},
       onClickArrow: () => {},
+      onDoubleClick: () => {},
       onMouseDown: () => {},
     };
 
     spyOn(props, 'onClick');
     spyOn(props, 'onClickArrow');
+    spyOn(props, 'onDoubleClick');
 
     treeNodeComponent = TestUtils.renderIntoDocument(
         <TreeNodeComponent {...props} />
@@ -63,7 +65,7 @@ describe('TreeNodeComponent', () => {
       );
 
       expect(React.findDOMNode(iconComponent).dataset.name).toEqual(label);
-    })
+    });
 
   });
 
@@ -89,6 +91,17 @@ describe('TreeNodeComponent', () => {
       TestUtils.Simulate.click(arrow);
       expect(props.onClick).not.toHaveBeenCalled();
       expect(props.onClickArrow).toHaveBeenCalled();
+    });
+
+  });
+
+  describe('double clicking a node', () => {
+
+    it('calls its `onDoubleClick` callback', () => {
+      var domNode = React.findDOMNode(treeNodeComponent);
+
+      TestUtils.Simulate.doubleClick(domNode);
+      expect(props.onDoubleClick).toHaveBeenCalled();
     });
 
   });

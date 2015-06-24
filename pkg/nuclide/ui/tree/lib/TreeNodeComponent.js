@@ -30,6 +30,7 @@ var TreeNodeComponent = React.createClass({
     depth: PropTypes.number.isRequired,
     onClickArrow: PropTypes.func.isRequired,
     onClick: PropTypes.func.isRequired,
+    onDoubleClick: PropTypes.func.isRequired,
     onMouseDown: PropTypes.func.isRequired,
     isExpanded: PropTypes.func.isRequired,
     isSelected: PropTypes.bool.isRequired,
@@ -71,7 +72,12 @@ var TreeNodeComponent = React.createClass({
 
     var decorationClassName = this.props.labelClassNameForNode(node);
     return (
-      <div className={rowClassName} style={itemStyle} onClick={this._onClick} onMouseDown={this._onMouseDown}>
+      <div
+        className={rowClassName}
+        style={itemStyle}
+        onClick={this._onClick}
+        onDoubleClick={this._onDoubleClick}
+        onMouseDown={this._onMouseDown}>
         <span className='nuclide-tree-component-item-arrow' ref='arrow'>
           {arrow}
         </span>
@@ -92,6 +98,10 @@ var TreeNodeComponent = React.createClass({
     } else {
       this.props.onClick(event, this.props.node);
     }
+  },
+
+  _onDoubleClick(event: SyntheticEvent): void {
+    this.props.onDoubleClick(event, this.props.node);
   },
 
   _onMouseDown(event: SyntheticEvent): void {

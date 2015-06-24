@@ -14,11 +14,13 @@ type atom$IDisposable = {
 }
 
 declare class atom$CommandRegistry {
+  // Methods
   add(
     target: string,
     commandName: string | {[commandName: string]: (event: Event) => void},
     callback?: (event: Event) => void
   ): atom$Disposable;
+  dispatch(target: HTMLElement, commandName: string): void;
 }
 
 declare class atom$CompositeDisposable {
@@ -31,11 +33,22 @@ declare class atom$CompositeDisposable {
 }
 
 declare class atom$Config {
+  // Config Subscription
   observe(
     keyPath: string,
     optionsOrCallback?: (Object | (value: any) => void),
     callback?: (value: any) => void
   ): atom$IDisposable;
+
+  // Managing Settings
+  get(
+    keyPath: string,
+    options?: {
+      excludeSources?: Array<string>;
+      sources?: Array<string>;
+      scope?: Object;
+    }
+  ): mixed;
 }
 
 declare class atom$Cursor {
@@ -109,6 +122,11 @@ declare class atom$PackageManager {
   // General package data
   resolvePackagePath(name: string): ?string;
   isBundledPackage(name: string): boolean;
+}
+
+declare class atom$Pane {
+  // Lifecycle
+  activate(): void;
 }
 
 declare class atom$Panel {
@@ -232,11 +250,13 @@ declare class atom$TextEditor {
 }
 
 declare class atom$ViewRegistry {
+  // Methods
   addViewProvider(providerSpec: {
     modelConstructor: any;
     viewConstructor?: any;
     createView?: (...args: any[]) => ?HTMLElement;
   }): atom$Disposable;
+  getView(object: Object): HTMLElement;
 }
 
 declare class atom$Workspace {
@@ -259,6 +279,8 @@ declare class atom$Workspace {
   getActiveTextEditor(): ?atom$TextEditor;
 
   // Panes
+  getActivePane(): atom$Pane;
+
   // Panels
   addBottomPanel(options: {
     item: Object;
