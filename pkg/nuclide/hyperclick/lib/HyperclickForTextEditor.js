@@ -43,6 +43,14 @@ class HyperclickForTextEditor {
     this._textEditorView.addEventListener('keyup', this._onKeyUp);
   }
 
+  _confirmSuggestion(suggestion: HyperclickSuggestion): void {
+    if (Array.isArray(suggestion.callback) && suggestion.callback.length > 0) {
+      // TODO(jjiaa): Show a UI for the list of suggestions.
+    } else {
+      suggestion.callback();
+    }
+  }
+
   _onMouseMove(event: MouseEvent): Promise {
     // We save the last `MouseEvent` so the user can trigger Hyperclick by
     // pressing the key without moving the mouse again. We only save the
@@ -64,8 +72,11 @@ class HyperclickForTextEditor {
       return;
     }
 
-    // TODO(jjiaa): Handle the event.
+    if (this._lastSuggestionAtMouse) {
+      this._confirmSuggestion(this._lastSuggestionAtMouse);
+    }
 
+    this._clearSuggestion();
     // Prevent the <meta-click> event from adding another cursor.
     event.stopPropagation();
   }
