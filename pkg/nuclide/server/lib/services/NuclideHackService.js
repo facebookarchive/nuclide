@@ -11,7 +11,7 @@
 
 var logger = require('nuclide-logging').getLogger();
 var {SearchResultType, SymbolType} = require('nuclide-hack-common/lib/constants');
-var {asyncExecute, fsPromise} = require('nuclide-commons');
+var {checkOutput, fsPromise} = require('nuclide-commons');
 var extend = require('util')._extend;
 
 const HH_NEWLINE = '<?hh\n';
@@ -36,18 +36,7 @@ async function _callHHClient(
   var allArgs = defaults.concat(args);
   allArgs.push(cwd);
 
-  var execResult;
-  try {
-    execResult = await asyncExecute(PATH_TO_HH_CLIENT, allArgs, {stdin: processInput});
-  } catch (err) {
-    // For some reason Hack outputs sometimes on stderr
-    // and sometimes on stdout depending on the type of request.
-    // Throw if the error isn't a result of the process exec command with stderr.
-    if (err.exitCode === undefined) {
-      throw err;
-    }
-    execResult = err;
-  }
+  var execResult = await checkOutput(PATH_TO_HH_CLIENT, allArgs, {stdin: processInput});
 
   var output = errorStream ? execResult.stderr : execResult.stdout;
   if (outputJson) {
@@ -260,13 +249,9 @@ function symbolTypeToSearchTypes(symbolType: SymbolType): ?Array<SearchResultTyp
 }
 
 async function isClientAvailable(): Promise<boolean> {
-  try {
-    var {stdout} = await asyncExecute('which', [PATH_TO_HH_CLIENT]);
-    // The `stdout` would be empty if there is no such command.
-    return stdout.trim().length > 0;
-  } catch (e) {
-    return false;
-  }
+  var {stdout} = await checkOutput('which', [PATH_TO_HH_CLIENT]);
+  // The `stdout` would be empty if there is no such command.
+  return stdout.trim().length > 0;
 }
 
 module.exports = {
