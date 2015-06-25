@@ -39,10 +39,28 @@ type HyperclickSuggestion = {
 class Hyperclick {
   constructor() {
     this._consumedProviders = [];
+
+    this._hyperclickForTextEditors = new Set();
+    this._textEditorSubscription = atom.workspace.observeTextEditors(textEditor => {
+      var HyperclickForTextEditor = require('./HyperclickForTextEditor');
+      var hyperclickForTextEditor = new HyperclickForTextEditor(textEditor, this);
+      this._hyperclickForTextEditors.add(hyperclickForTextEditor);
+
+      textEditor.onDidDestroy(() => {
+        hyperclickForTextEditor.dispose();
+        this._hyperclickForTextEditors.delete(hyperclickForTextEditor);
+      });
+    });
   }
 
   dispose() {
     this._consumedProviders = null;
+    if (this._textEditorSubscription) {
+      this._textEditorSubscription.dispose();
+      this._textEditorSubscription = null;
+    }
+    this._hyperclickForTextEditors.forEach(hyperclick => hyperclick.dispose());
+    this._hyperclickForTextEditors.clear();
   }
 
   consumeProvider(provider: HyperclickProvider | Array<HyperclickProvider>): void {
