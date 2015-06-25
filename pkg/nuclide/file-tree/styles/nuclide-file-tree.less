@@ -5,8 +5,11 @@
   padding-left: 10px;
   padding-right: 10px;
 
-  // Fill horizontal space if tree is narrower than its containing panel.
+  // Fill horizontal and vertical space if tree is narrower or shorter than its containing panel.
+  min-height: -webkit-min-content;
   min-width: -webkit-min-content;
+
+  // Fill horizontal space if content is narrower than the containing panel.
   width: 100%;
 
   &:focus {
