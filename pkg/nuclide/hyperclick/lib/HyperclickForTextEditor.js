@@ -41,6 +41,10 @@ class HyperclickForTextEditor {
     this._textEditorView.addEventListener('keydown', this._onKeyDown);
     this._onKeyUp = this._onKeyUp.bind(this);
     this._textEditorView.addEventListener('keyup', this._onKeyUp);
+
+    this._commandSubscription = atom.commands.add(this._textEditorView, {
+      'hyperclick:confirm-cursor': () => this._confirmSuggestionAtCursor(),
+    });
   }
 
   _confirmSuggestion(suggestion: HyperclickSuggestion): void {
@@ -129,6 +133,15 @@ class HyperclickForTextEditor {
     this._updateNavigationMarkers(null);
   }
 
+  async _confirmSuggestionAtCursor() {
+    var suggestion = await this._hyperclick.getSuggestion(
+        this._textEditor,
+        this._textEditor.getCursorBufferPosition());
+    if (suggestion) {
+      this._confirmSuggestion(suggestion);
+    }
+  }
+
   /**
    * Add markers for the given range(s), or clears them if `ranges` is null.
    */
@@ -167,6 +180,7 @@ class HyperclickForTextEditor {
     this._mouseEventHandlerEl.removeEventListener('mousedown', this._onMouseDown);
     this._textEditorView.removeEventListener('keydown', this._onKeyDown);
     this._textEditorView.removeEventListener('keyup', this._onKeyUp);
+    this._commandSubscription.dispose();
   }
 }
 

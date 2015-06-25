@@ -404,4 +404,31 @@ describe('Hyperclick', () => {
       });
     });
   });
+
+  describe('hyperclick:confirm-cursor', () => {
+    it('confirms the suggestion at the cursor even if the mouse moved', () => {
+      waitsForPromise(async () => {
+        var callback = jasmine.createSpy('callback');
+        var provider = {
+          getSuggestionForWord(sourceTextEditor, text, range) {
+            return {range, callback};
+          },
+        };
+        spyOn(provider, 'getSuggestionForWord').andCallThrough();
+        hyperclick.consumeProvider(provider);
+
+        var mousePosition = new Point(0, 1);
+        dispatch(MouseEvent, 'mousemove', mousePosition, {metaKey: true});
+        await hyperclickForTextEditor.getSuggestionAtMouse();
+
+        textEditor.setCursorBufferPosition(new Point(0, 8));
+        atom.commands.dispatch(textEditorView, 'hyperclick:confirm-cursor');
+        expect(provider.getSuggestionForWord).toHaveBeenCalledWith(
+            textEditor,
+            'word2',
+            Range.fromObject([[0, 6], [0, 11]]));
+        waitsFor(() => callback.callCount === 1);
+      });
+    });
+  });
 });
