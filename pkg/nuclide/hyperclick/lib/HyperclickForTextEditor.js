@@ -20,6 +20,14 @@ class HyperclickForTextEditor {
 
     this._hyperclick = hyperclick;
 
+    this._lastMouseEvent = null;
+    // We store the original promise that we use to retrieve the last suggestion
+    // so callers can also await it to know when it's available.
+    this._lastSuggestionAtMousePromise = null;
+    // We store the last suggestion since we must await it immediately anyway.
+    this._lastSuggestionAtMouse = null;
+    this._navigationMarkers = null;
+
     // We deliberately use a DOM node that's deeper than `scrollViewNode` so
     // we can handle <meta-click> and still prevent the text editor from adding
     // another cursor.
@@ -39,7 +47,11 @@ class HyperclickForTextEditor {
       clientY: event.clientY,
     };
 
-    // TODO(jjiaa): Handle the event.
+    if (this._isHyperclickEvent(event)) {
+      this._setSuggestionForLastMouseEvent();
+    } else {
+      this._clearSuggestion();
+    }
   }
 
   _onMouseDown(event: MouseEvent): void {
@@ -51,6 +63,66 @@ class HyperclickForTextEditor {
 
     // Prevent the <meta-click> event from adding another cursor.
     event.stopPropagation();
+  }
+
+  /**
+   * Returns a `Promise` that's resolved when the latest suggestion's available.
+   */
+  getSuggestionAtMouse(): Promise<HyperclickSuggestion> {
+    return this._lastSuggestionAtMousePromise || Promise.resolve(null);
+  }
+
+  async _setSuggestionForLastMouseEvent(): void {
+    if (!this._lastMouseEvent) {
+      return;
+    }
+
+    var position = this._textEditorView.component.screenPositionForMouseEvent(this._lastMouseEvent);
+
+    if (this._lastSuggestionAtMouse) {
+      var {range} = this._lastSuggestionAtMouse;
+      var isInLastRanges = (Array.isArray(range) && range.some(r => r.containsPoint(position)));
+      if (isInLastRanges || (!Array.isArray(range) && range.containsPoint(position))) {
+        return;
+      }
+    }
+
+    this._lastSuggestionAtMousePromise = this._hyperclick.getSuggestion(this._textEditor, position);
+    this._lastSuggestionAtMouse = await this._lastSuggestionAtMousePromise;
+    if (this._lastSuggestionAtMouse) {
+      this._updateNavigationMarkers(this._lastSuggestionAtMouse.range);
+    }
+  }
+
+  _clearSuggestion(): void {
+    this._lastSuggestionAtMousePromise = null;
+    this._lastSuggestionAtMouse = null;
+    this._updateNavigationMarkers(null);
+  }
+
+  /**
+   * Add markers for the given range(s), or clears them if `ranges` is null.
+   */
+  _updateNavigationMarkers(range: ?Range | ?Array<Range>): void {
+    if (this._navigationMarkers) {
+      this._navigationMarkers.forEach(marker => marker.destroy());
+      this._navigationMarkers = null;
+    }
+
+    if (range) {
+      var ranges = Array.isArray(range) ? range : [range];
+
+      this._navigationMarkers = ranges.map(markerRange => {
+        var marker = this._textEditor.markBufferRange(markerRange, {invalidate: 'never'});
+        this._textEditor.decorateMarker(
+            marker,
+            {type: 'highlight', class: 'hyperclick'});
+        return marker;
+      });
+      this._textEditorView.classList.add('hyperclick');
+    } else {
+      this._textEditorView.classList.remove('hyperclick');
+    }
   }
 
   /**

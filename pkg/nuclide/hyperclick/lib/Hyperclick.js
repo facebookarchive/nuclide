@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+ var {Range} = require('atom');
+
 type HyperclickProvider = {
   // Use this to provide a suggestion for single-word matches.
   // Optionally set `wordRegExp` to adjust word-matching.
@@ -31,6 +33,48 @@ type HyperclickSuggestion = {
   // The function to call when the underlined text is clicked.
   callback: () => void | Array<{title: string; callback: () => {}}>;
 };
+
+/**
+ * Returns the text and range for the word that contains the given position.
+ */
+function getWordTextAndRange(
+    textEditor: TextEditor,
+    position: Point,
+    wordRegExp?: ?RegExp): {text: string; range: Range} {
+  if (!wordRegExp) {
+    wordRegExp = textEditor.getLastCursor().wordRegExp();
+  }
+
+  var textAndRange = {text: '', range: new Range(position, position)};
+  var buffer = textEditor.getBuffer();
+  buffer.scanInRange(wordRegExp, buffer.rangeForRow(position.row), data => {
+    if (data.range.containsPoint(position)) {
+      textAndRange = {
+        text: data.matchText,
+        range: data.range,
+      };
+      data.stop();
+    } else if (data.range.end.column > position.column) {
+      // Stop the scan if the scanner has passed our position.
+      data.stop();
+    }
+  });
+
+  return textAndRange;
+}
+
+/**
+ * Calls the given functions and returns the first non-null return value.
+ */
+async function findTruthyReturnValue(fns: Array<undefined | () => Promise<any>>): Promise<any> {
+  for (var i = 0; i < fns.length; i++) {
+    var fn = fns[i];
+    var result = typeof fn === 'function' ? await fn() : null;
+    if (result) {
+      return result;
+    }
+  }
+}
 
 /**
  * Construct this object to enable Hyperclick in the Atom workspace.
@@ -73,6 +117,24 @@ class Hyperclick {
 
   _consumeSingleProvider(provider: HyperclickProvider): void {
     this._consumedProviders.push(provider);
+  }
+
+  /**
+   * Returns the first suggestion from the consumed providers.
+   */
+  getSuggestion(textEditor: TextEditor, position: Point): Promise {
+    return findTruthyReturnValue(this._consumedProviders.map(provider => {
+      if (provider.getSuggestion) {
+        return () => provider.getSuggestion(textEditor, position);
+      } else if (provider.getSuggestionForWord) {
+        return () => {
+          var {text, range} = getWordTextAndRange(textEditor, position, provider.wordRegExp);
+          return provider.getSuggestionForWord(textEditor, text, range);
+        };
+      }
+
+      throw new Error('Hyperclick must have either `getSuggestion` or `getSuggestionForWord`')
+    }));
   }
 }
 
