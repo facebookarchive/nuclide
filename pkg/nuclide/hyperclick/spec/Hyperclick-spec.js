@@ -431,4 +431,181 @@ describe('Hyperclick', () => {
       });
     });
   });
+
+  describe('priority', () => {
+    it('confirms higher priority provider when it is consumed first', () => {
+      waitsForPromise(async () => {
+        var callback1 = jasmine.createSpy('callback');
+        var provider1 = {
+          getSuggestionForWord(sourceTextEditor, text, range) {
+            return {range, callback: callback1};
+          },
+          priority: 5,
+        };
+        hyperclick.consumeProvider(provider1);
+
+        var callback2 = jasmine.createSpy('callback');
+        var provider2 = {
+          getSuggestionForWord(sourceTextEditor, text, range) {
+            return {range, callback: callback1};
+          },
+          priority: 3,
+        };
+        hyperclick.consumeProvider(provider2);
+
+        var mousePosition = new Point(0, 1);
+        dispatch(MouseEvent, 'mousemove', mousePosition, {metaKey: true});
+        await hyperclickForTextEditor.getSuggestionAtMouse();
+        dispatch(MouseEvent, 'mousedown', mousePosition, {metaKey: true});
+
+        expect(callback1.callCount).toBe(1);
+        expect(callback2.callCount).toBe(0);
+      });
+    });
+
+    it('confirms higher priority provider when it is consumed last', () => {
+      waitsForPromise(async () => {
+        var callback1 = jasmine.createSpy('callback');
+        var provider1 = {
+          getSuggestionForWord(sourceTextEditor, text, range) {
+            return {range, callback: callback1};
+          },
+          priority: 3,
+        };
+        hyperclick.consumeProvider(provider1);
+
+        var callback2 = jasmine.createSpy('callback');
+        var provider2 = {
+          getSuggestionForWord(sourceTextEditor, text, range) {
+            return {range, callback: callback2};
+          },
+          priority: 5,
+        };
+        hyperclick.consumeProvider(provider2);
+
+        var mousePosition = new Point(0, 1);
+        dispatch(MouseEvent, 'mousemove', mousePosition, {metaKey: true});
+        await hyperclickForTextEditor.getSuggestionAtMouse();
+        dispatch(MouseEvent, 'mousedown', mousePosition, {metaKey: true});
+
+        expect(callback1.callCount).toBe(0);
+        expect(callback2.callCount).toBe(1);
+      });
+    });
+
+    it('confirms >0 priority before default priority', () => {
+      waitsForPromise(async () => {
+        var callback1 = jasmine.createSpy('callback');
+        var provider1 = {
+          getSuggestionForWord(sourceTextEditor, text, range) {
+            return {range, callback: callback1};
+          },
+        };
+        hyperclick.consumeProvider(provider1);
+
+        var callback2 = jasmine.createSpy('callback');
+        var provider2 = {
+          getSuggestionForWord(sourceTextEditor, text, range) {
+            return {range, callback: callback2};
+          },
+          priority: 1,
+        };
+        hyperclick.consumeProvider(provider2);
+
+        var mousePosition = new Point(0, 1);
+        dispatch(MouseEvent, 'mousemove', mousePosition, {metaKey: true});
+        await hyperclickForTextEditor.getSuggestionAtMouse();
+        dispatch(MouseEvent, 'mousedown', mousePosition, {metaKey: true});
+
+        expect(callback1.callCount).toBe(0);
+        expect(callback2.callCount).toBe(1);
+      });
+    });
+
+    it('confirms <0 priority after default priority', () => {
+      waitsForPromise(async () => {
+        var callback1 = jasmine.createSpy('callback');
+        var provider1 = {
+          getSuggestionForWord(sourceTextEditor, text, range) {
+            return {range, callback: callback1};
+          },
+          priority: -1,
+        };
+        hyperclick.consumeProvider(provider1);
+
+        var callback2 = jasmine.createSpy('callback');
+        var provider2 = {
+          getSuggestionForWord(sourceTextEditor, text, range) {
+            return {range, callback: callback2};
+          },
+        };
+        hyperclick.consumeProvider(provider2);
+
+        var mousePosition = new Point(0, 1);
+        dispatch(MouseEvent, 'mousemove', mousePosition, {metaKey: true});
+        await hyperclickForTextEditor.getSuggestionAtMouse();
+        dispatch(MouseEvent, 'mousedown', mousePosition, {metaKey: true});
+
+        expect(callback1.callCount).toBe(0);
+        expect(callback2.callCount).toBe(1);
+      });
+    });
+
+    it('confirms same-priority in the order they are consumed', () => {
+      waitsForPromise(async () => {
+        var callback1 = jasmine.createSpy('callback');
+        var provider1 = {
+          getSuggestionForWord(sourceTextEditor, text, range) {
+            return {range, callback: callback1};
+          },
+        };
+        hyperclick.consumeProvider(provider1);
+
+        var callback2 = jasmine.createSpy('callback');
+        var provider2 = {
+          getSuggestionForWord(sourceTextEditor, text, range) {
+            return {range, callback: callback2};
+          },
+        };
+        hyperclick.consumeProvider(provider2);
+
+        var mousePosition = new Point(0, 1);
+        dispatch(MouseEvent, 'mousemove', mousePosition, {metaKey: true});
+        await hyperclickForTextEditor.getSuggestionAtMouse();
+        dispatch(MouseEvent, 'mousedown', mousePosition, {metaKey: true});
+
+        expect(callback1.callCount).toBe(1);
+        expect(callback2.callCount).toBe(0);
+      });
+    });
+
+    it('confirms highest priority provider when multiple are consumed at a time', () => {
+      waitsForPromise(async () => {
+        var callback1 = jasmine.createSpy('callback');
+        var provider1 = {
+          getSuggestionForWord(sourceTextEditor, text, range) {
+            return {range, callback: callback1};
+          },
+          priority: 1,
+        };
+        var callback2 = jasmine.createSpy('callback');
+        var provider2 = {
+          getSuggestionForWord(sourceTextEditor, text, range) {
+            return {range, callback: callback2};
+          },
+          priority: 2,
+        };
+
+        hyperclick.consumeProvider([provider1, provider2]);
+
+        var mousePosition = new Point(0, 1);
+        dispatch(MouseEvent, 'mousemove', mousePosition, {metaKey: true});
+        await hyperclickForTextEditor.getSuggestionAtMouse();
+        dispatch(MouseEvent, 'mousedown', mousePosition, {metaKey: true});
+
+        expect(callback1.callCount).toBe(0);
+        expect(callback2.callCount).toBe(1);
+      });
+    });
+  });
 });

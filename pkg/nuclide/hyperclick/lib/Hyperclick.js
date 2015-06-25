@@ -116,6 +116,22 @@ class Hyperclick {
   }
 
   _consumeSingleProvider(provider: HyperclickProvider): void {
+    var priority = provider.priority || 0;
+    for (var i = 0, len = this._consumedProviders.length; i < len; i++) {
+      var item = this._consumedProviders[i];
+      if (provider === item) {
+        return;
+      }
+
+      var itemPriority = item.priority || 0;
+      if (priority > itemPriority) {
+        this._consumedProviders.splice(i, 0, provider);
+        return;
+      }
+    }
+
+    // If we made it all the way through the loop, provider must be lower
+    // priority than all of the existing providers, so add it to the end.
     this._consumedProviders.push(provider);
   }
 
