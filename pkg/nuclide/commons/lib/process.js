@@ -65,7 +65,7 @@ function appendCommonBinaryPaths(env: Object, commonBinaryPaths: Array<string>):
 }
 
 async function createExecEnvironment(
-    originalEnv: any, commonBinaryPaths: Array<string>): Promise<Object> {
+    originalEnv: Object, commonBinaryPaths: Array<string>): Promise<Object> {
   var execEnv = assign({}, originalEnv);
   execEnv.PATH = execEnv.PATH || '';
 
@@ -115,10 +115,10 @@ type process$asyncExecuteRet = {
  *     stderr string The contents of the process's error stream.
  *     exitCode number The exit code returned by the process.
  */
-function asyncExecute(
+function checkOutput(
     command: string,
     args: Array<string>,
-    options: any = {}): Promise<process$asyncExecuteRet> {
+    options: ?Object = {}): Promise<process$asyncExecuteRet> {
   // Clone passed in options so this function doesn't modify an object it doesn't own.
   var localOptions = assign({}, options);
 
@@ -147,19 +147,8 @@ function asyncExecute(
       monitorStreamErrors(firstChild);
       firstChildStderr = '';
 
-      firstChild.on('close', exitCode => {
-        // Reject if first child exits unexpectedly, but do not resolve yet. The last child of the
-        // piped commands will resolve the promise when it exits.
-        if (exitCode !== 0) {
-          reject({
-            exitCode,
-            stderr: firstChildStderr,
-            stdout: '',
-          });
-        }
-      })
-
       firstChild.on('error', error => {
+        // Reject early with the result when encountering an error.
         reject({
           command: [command].concat(args).join(' '),
           errorMessage: error.message,
@@ -185,8 +174,7 @@ function asyncExecute(
     var stderr = '';
     var stdout = '';
     lastChild.on('close', exitCode => {
-      // If the process exited with an error (non-zero code), reject, otherwise resolve.
-      (exitCode === 0 ? resolve : reject)({
+      resolve({
         exitCode,
         stderr,
         stdout,
@@ -194,6 +182,7 @@ function asyncExecute(
     });
 
     lastChild.on('error', error => {
+      // Reject early with the result when encountering an error.
       reject({
         command: [command].concat(args).join(' '),
         errorMessage: error.message,
@@ -210,7 +199,7 @@ function asyncExecute(
       stdout += data;
     });
 
-    if ((typeof localOptions.stdin) === 'string') {
+    if (typeof localOptions.stdin === 'string') {
       // Note that the Node docs have this scary warning about stdin.end() on
       // http://nodejs.org/api/child_process.html#child_process_child_stdin:
       //
@@ -246,17 +235,15 @@ function asyncExecute(
   );
 }
 
-/**
- * Executes a command and returns stdout if exit code is 0, otherwise reject
- * with a message and stderr.
- */
-async function checkOutput(cmd: string, args: Array<string>, options: any = {}): Promise<string> {
-  try {
-    var {stdout} = await asyncExecute(cmd, args, options);
-    return stdout;
-  } catch(e) {
-    throw new Error(`Process exited with non-zero exit code (${e.exitCode}). stderr: ${e.stderr}`);
+async function asyncExecute(
+    command: string,
+    args: Array<string>,
+    options: ?Object = {}): Promise<process$asyncExecuteRet> {
+  var result = await checkOutput(command, args, options);
+  if (result.exitCode !== 0) {
+    throw result;
   }
+  return result;
 }
 
 module.exports = {

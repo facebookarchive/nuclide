@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-var {array, checkOutput} = require('nuclide-commons');
+var {array, asyncExecute} = require('nuclide-commons');
 var path = require('path');
 
 type Device = {
@@ -25,6 +25,19 @@ var DeviceState = {
   Shutdown: 'Shutdown',
   Booted: 'Booted',
 };
+
+/**
+ * Executes a command and returns stdout if exit code is 0, otherwise reject
+ * with a message and stderr.
+ */
+async function checkStdout(cmd: string, args: Array<string>, options: ?Object = {}): Promise<string> {
+  try {
+    var {stdout} = await asyncExecute(cmd, args, options);
+    return stdout;
+  } catch(e) {
+    throw new Error(`Process exited with non-zero exit code (${e.exitCode}). stderr: ${e.stderr}`);
+  }
+}
 
 /**
  * Delay for a period of time.
@@ -44,7 +57,7 @@ function wait(milliseconds: number): Promise {
   * Retrieve the bundle identifier of the given app bundle.
   */
 async function getBundleIdentifier(bundlePath: string): Promise<string> {
-  var bundleIdentifier = await checkOutput(
+  var bundleIdentifier = await checkStdout(
     'defaults', ['read', path.join(bundlePath, 'Info.plist'), 'CFBundleIdentifier']);
   return bundleIdentifier.trim();
 }
@@ -53,16 +66,16 @@ async function getBundleIdentifier(bundlePath: string): Promise<string> {
   * Install app into simulator.
   */
 function installApp(udid: string, bundlePath: string): Promise {
-  return checkOutput('xcrun', ['simctl', 'install', udid, bundlePath]);
+  return checkStdout('xcrun', ['simctl', 'install', udid, bundlePath]);
 }
 
 /**
   * Start the simulator GUI for a particular simulator.
   */
 async function startSimulator(udid: string): Promise {
-  var xcodePath = await checkOutput('xcode-select', ['--print-path']);
+  var xcodePath = await checkStdout('xcode-select', ['--print-path']);
   xcodePath = xcodePath.trim();
-  await checkOutput('open', [
+  await checkStdout('open', [
     '--new',
     '-a', path.join(xcodePath, 'Applications/iOS Simulator.app'),
     '--args', '-CurrentDeviceUDID', udid
@@ -90,7 +103,7 @@ async function launchApp(udid: string, bundleId: string, debug: boolean): Promis
     args.push('--wait-for-debugger');
   }
   args.push(udid, bundleId);
-  var output = await checkOutput('xcrun', args);
+  var output = await checkStdout('xcrun', args);
   var captures = /^(.*): ([0-9]+)$/.exec(output.trim());
   if (!captures) {
     throw new Error('Failed to parse result of simctl launch. output: ' + output);
@@ -99,7 +112,7 @@ async function launchApp(udid: string, bundleId: string, debug: boolean): Promis
 }
 
 async function getDevices(): Promise<Device[]> {
-  var stdout = await checkOutput('xcrun', ['simctl', 'list', 'devices']);
+  var stdout = await checkStdout('xcrun', ['simctl', 'list', 'devices']);
 
   // Output looks something like this:
   //

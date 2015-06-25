@@ -58,6 +58,43 @@ describe('process.asyncExecute', () => {
       });
     });
 
+    it('checkOutput throws an error if the process cannot be started', () => {
+      waitsForPromise(async () => {
+          try {
+            await processLib.checkOutput('non_existing_command');
+          } catch(error) {
+            // `exit` with a non-zero error code should reject the Promise and return the generic
+            // ENOENT (End Of ENTity) exit code.
+            expect(error.exitCode).toBe('ENOENT');
+            return;
+          }
+          // Force failure if the error was not thrown.
+          expect('should have exited because of error code > 0').toEqual(null);
+        });
+    });
+
+    it('checkOutput does not throw an error if the exit code !== 0', () => {
+      waitsForPromise(async () => {
+          var {exitCode} = await processLib.checkOutput(process.execPath, ['-e', 'process.exit(1)']);
+          expect(exitCode).toBe(1);
+        });
+    });
+
+    it('asyncExecute throw an error if the exit code !== 0', () => {
+      waitsForPromise(async () => {
+          try {
+            await processLib.asyncExecute(process.execPath, ['-e', 'process.exit(1)']);
+          } catch(error) {
+            // `exit` with a non-zero error code should reject the Promise and return the generic
+            // ENOENT (End Of ENTity) exit code.
+            expect(error.exitCode).toEqual(1);
+            return;
+          }
+          // Force failure if the error was not thrown.
+          expect('should have exited because of error code > 0').toEqual(null);
+        });
+    });
+
     it('pipes stdout to stdin of `pipedCommand`', () => {
       waitsForPromise(async () => {
         var val = await processLib.asyncExecute(
@@ -84,15 +121,6 @@ describe('process.asyncExecute', () => {
           }
           // Force failure if the error was not thrown.
           expect('should have exited because of error code > 0').toEqual(null);
-        });
-      });
-    });
-
-    describe('checkOutput', () => {
-      it('returns output of the running process', () => {
-        waitsForPromise(async () => {
-          expect(await processLib.checkOutput('echo', ['-n', 'howdy']))
-            .toEqual('howdy');
         });
       });
     });
