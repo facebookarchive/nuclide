@@ -15,12 +15,16 @@ class HhvmDebuggerProxyService {
     throw new Error('abstract');
   }
 
+  onSessionEnd(callback: () => void): Disposable {
+    throw new Error('abstract');
+  }
+
   // port: must match port in hhvm's xdebug.ini config file
   attach(port: number, pid: ?number, idekey: ?string, path: ?string): Promise<string> {
     throw new Error('abstract');
   }
 
-  sendCommand(message: string): Promise<string> {
+  sendCommand(message: string): void {
     throw new Error('abstract');
   }
 
