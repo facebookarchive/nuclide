@@ -36,6 +36,11 @@ class HyperclickForTextEditor {
     this._mouseEventHandlerEl.addEventListener('mousemove', this._onMouseMove);
     this._onMouseDown = this._onMouseDown.bind(this);
     this._mouseEventHandlerEl.addEventListener('mousedown', this._onMouseDown);
+
+    this._onKeyDown = this._onKeyDown.bind(this);
+    this._textEditorView.addEventListener('keydown', this._onKeyDown);
+    this._onKeyUp = this._onKeyUp.bind(this);
+    this._textEditorView.addEventListener('keyup', this._onKeyUp);
   }
 
   _onMouseMove(event: MouseEvent): Promise {
@@ -63,6 +68,19 @@ class HyperclickForTextEditor {
 
     // Prevent the <meta-click> event from adding another cursor.
     event.stopPropagation();
+  }
+
+  _onKeyDown(event: KeyboardEvent): void {
+    // Show the suggestion at the last known mouse position.
+    if (this._isHyperclickEvent(event)) {
+      this._setSuggestionForLastMouseEvent();
+    }
+  }
+
+  _onKeyUp(event: KeyboardEvent): void {
+    if (!this._isHyperclickEvent(event)) {
+      this._clearSuggestion();
+    }
   }
 
   /**
@@ -136,6 +154,8 @@ class HyperclickForTextEditor {
   dispose() {
     this._mouseEventHandlerEl.removeEventListener('mousemove', this._onMouseMove);
     this._mouseEventHandlerEl.removeEventListener('mousedown', this._onMouseDown);
+    this._textEditorView.removeEventListener('keydown', this._onKeyDown);
+    this._textEditorView.removeEventListener('keyup', this._onKeyUp);
   }
 }
 
