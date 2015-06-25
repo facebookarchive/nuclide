@@ -162,7 +162,7 @@ function checkOutput(
         firstChildStderr += data;
       });
 
-      lastChild = spawn(localOptions.pipedCommand, localOptions.pipedArgs, {env: localOptions.env});
+      lastChild = spawn(localOptions.pipedCommand, localOptions.pipedArgs, localOptions);
       monitorStreamErrors(lastChild);
       firstChild.stdout.pipe(lastChild.stdin);
     } else {
