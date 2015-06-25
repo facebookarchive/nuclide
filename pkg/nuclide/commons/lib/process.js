@@ -234,18 +234,16 @@ function asyncExecute(
     }
   }
 
-  if (localOptions.env) {
-    return makePromise();
-  } else {
-    // If no environment is supplied, fetch it first and use it when executing the given command.
-    return createExecEnvironment(process.env, COMMON_BINARY_PATHS).then(
-      val => {
-        localOptions.env = val;
-        return makePromise();
-      },
-      err => makePromise()
-    );
-  }
+  return createExecEnvironment(localOptions.env || process.env, COMMON_BINARY_PATHS).then(
+    val => {
+      localOptions.env = val;
+      return makePromise();
+    },
+    err => {
+      localOptions.env = localOptions.env || process.env;
+      return makePromise();
+    }
+  );
 }
 
 /**
