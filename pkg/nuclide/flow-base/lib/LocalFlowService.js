@@ -11,56 +11,8 @@
 
 var {asyncExecute, findNearestFile, getConfigValueAsync} = require('nuclide-commons');
 var logger = require('nuclide-logging').getLogger();
-var path = require('path');
 var FlowService = require('./FlowService');
-
-async function isFlowInstalled(): Promise<boolean> {
-  var os = require('os');
-  var platform = os.platform();
-  if (platform === 'linux' || platform === 'darwin') {
-    var path = await _getPathToFlow();
-    try {
-      await asyncExecute("which", [path]);
-      return true;
-    } catch (e) {
-      return false;
-    }
-  } else {
-    // Flow does not currently work in Windows.
-    return false;
-  }
-}
-
-/**
- * If this returns null, then it is not safe to run flow.
- */
-async function getFlowExecOptions(file: string): Promise<any> {
-  var flowConfigDirectory = await findNearestFile('.flowconfig', path.dirname(file));
-  var installed = await isFlowInstalled();
-  if (flowConfigDirectory && installed) {
-    return {
-      cwd: flowConfigDirectory,
-    };
-  } else {
-    return null;
-  }
-}
-
-function insertAutocompleteToken(contents: string, line: number, col: number) {
-  var lines = contents.split('\n');
-  var theLine = lines[line];
-  theLine = theLine.substring(0, col) + 'AUTO332' + theLine.substring(col);
-  lines[line] = theLine;
-  return lines.join('\n');
-}
-
-function _getPathToFlow(): Promise<string> {
-  if (global.atom) {
-    return getConfigValueAsync('nuclide-flow.pathToFlow')();
-  } else {
-    return Promise.resolve('flow');
-  }
-}
+var {getPathToFlow, getFlowExecOptions, insertAutocompleteToken} = require('./FlowHelpers.js');
 
 class LocalFlowService extends FlowService {
   startedServers: Set<string>;
@@ -71,7 +23,7 @@ class LocalFlowService extends FlowService {
   }
 
   async dispose(): Promise<void> {
-    var pathToFlow = await _getPathToFlow();
+    var pathToFlow = await getPathToFlow();
     for (var path of this.startedServers) {
       asyncExecute(pathToFlow, ['stop', path], {});
     }
@@ -80,7 +32,7 @@ class LocalFlowService extends FlowService {
   async _execFlow(args: Array<any>, options: Object): Promise<Object> {
     var maxTries = 5;
     args.push("--no-auto-start");
-    var pathToFlow = await _getPathToFlow();
+    var pathToFlow = await getPathToFlow();
     for (var i = 0; ; i++) {
       try {
         var result = await asyncExecute(pathToFlow, args, options);
@@ -223,6 +175,45 @@ class LocalFlowService extends FlowService {
     } catch (_) {
       return [];
     }
+  }
+
+  async getType(
+    file: NuclideUri,
+    currentContents: string,
+    line: number,
+    column: number
+  ): Promise<?string> {
+    var options = await getFlowExecOptions(file);
+    if (!options) {
+      return null;
+    }
+
+    options.stdin = currentContents;
+
+    line = line + 1;
+    column = column + 1;
+    var args = ['type-at-pos', line, column];
+
+    var output;
+    try {
+      var result = await this._execFlow(args, options);
+      output = result.stdout;
+    } catch (e) {
+      logger.error('flow type-at-pos failed: ' + file + ':' + line + ':' + column, e);
+      return null;
+    }
+    // instead of returning a nonzero exit code, or saying that the type is
+    // "(unknown)", Flow sometimes just prints a message that includes the
+    // string "Failure" at the beginning of the second line.
+    if (output.match(/\nFailure/)) {
+      return null;
+    }
+    // the type appears by itself on the first line.
+    var type = output.split('\n')[0];
+    if (type === '(unknown)' || type === '') {
+      return null;
+    }
+    return type;
   }
 }
 

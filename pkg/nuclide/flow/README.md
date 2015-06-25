@@ -19,6 +19,13 @@ This is what you need to do to get Flow working on your system:
 
 Visit the [Flow page](http://flowtype.org/) for more detailed instructions.
 
+# Overview
+
+* Shows Flow errors inline
+* Provides Flow-drive inline autocomplete
+* `cmd-click` on a symbol jumps to its definition
+* Hovering over an expression exposes its type
+
 # Examples
 
 This package shows Flow errors inline:
@@ -29,6 +36,3 @@ This package also integrates click to symbol with Flow, so a `cmd-click` on a
 symbol will jump to its definition.
 
 ![Click to Symbol](./images/FlowClickDefine.gif)
-
-There is also support for inline autocomplete of JavaScript functions and
-methods.

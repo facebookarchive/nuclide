@@ -23,6 +23,11 @@
       "versions": {
         "0.0.0": "createClickToSymbolDelegate"
       }
+    },
+    "nuclide-type-hint.provider": {
+      "versions": {
+        "0.0.0": "createTypeHintProvider"
+      }
     }
   },
   "engines": {

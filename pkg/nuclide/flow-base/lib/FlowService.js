@@ -44,6 +44,15 @@ class FlowService {
   ): Promise<any> {
     return Promise.reject('Not implemented');
   }
+
+  getType(
+    file: NuclideUri,
+    currentContents: string,
+    line: number,
+    column: number
+  ): Promise<?string> {
+    return Promise.reject('Not implemented');
+  }
 }
 
 module.exports = FlowService;

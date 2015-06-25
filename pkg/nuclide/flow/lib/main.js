@@ -43,6 +43,12 @@ module.exports = {
       default: 'flow',
       description: 'Absolute path to the Flow executable on your system.',
     },
+
+    enableTypeHints: {
+      type: 'boolean',
+      default: true,
+      description: 'Display tooltips with Flow types',
+    },
   },
 
   activate() {},
@@ -77,6 +83,19 @@ module.exports = {
 
   provideLinter() {
     return require('./FlowLinter');
+  },
+
+  createTypeHintProvider(): any {
+    var TypeHintProvider = require('./TypeHintProvider');
+    var typeHintProvider = new TypeHintProvider();
+
+    return {
+      selector: 'source.js',
+      inclusionPriority: 1,
+      typeHint(editor: TextEditor, position: Point): Promise<any> {
+        return typeHintProvider.typeHint(editor, position);
+      },
+    };
   },
 
   deactivate() {
