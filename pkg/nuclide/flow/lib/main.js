@@ -75,10 +75,8 @@ module.exports = {
     };
   },
 
-  createClickToSymbolDelegate() {
-    // Set up click-to-symbol.
-    var ClickToSymbolDelegate = require('./ClickToSymbolDelegate');
-    return new ClickToSymbolDelegate();
+  getHyperclickProvider() {
+    return require('./HyperclickProvider');
   },
 
   provideLinter() {
