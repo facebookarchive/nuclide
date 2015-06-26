@@ -124,7 +124,7 @@ function dirname(uri: NuclideUri): NuclideUri {
  *
  * Returns null if not a valid file: URI.
  */
-function uriToAtomUri(uri: string): ?string {
+function uriToNuclideUri(uri: string): ?string {
   var urlParts = require('url').parse(uri, false);
   if (urlParts.protocol === 'file:' && urlParts.path) { // only handle real files for now.
     return urlParts.path;
@@ -132,6 +132,17 @@ function uriToAtomUri(uri: string): ?string {
     return uri;
   } else {
     return null;
+  }
+}
+
+/**
+ * Converts local paths to file: URI's. Leaves remote URI's alone.
+ */
+function nuclideUriToUri(uri: NuclideUri): string {
+  if (isRemote(uri)) {
+    return uri;
+  } else {
+    return 'file://' + uri;
   }
 }
 
@@ -151,5 +162,6 @@ module.exports = {
   relative,
   normalize,
   getParent,
-  uriToAtomUri,
+  uriToNuclideUri,
+  nuclideUriToUri,
 };
