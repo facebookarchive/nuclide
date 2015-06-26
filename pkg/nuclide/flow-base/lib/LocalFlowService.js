@@ -17,23 +17,23 @@
    column:number;
  }
 
-var {asyncExecute, findNearestFile, getConfigValueAsync} = require('nuclide-commons');
+var {asyncExecute, safeSpawn, findNearestFile, getConfigValueAsync} = require('nuclide-commons');
 var logger = require('nuclide-logging').getLogger();
 var FlowService = require('./FlowService');
 var {getPathToFlow, getFlowExecOptions, insertAutocompleteToken} = require('./FlowHelpers.js');
 
 class LocalFlowService extends FlowService {
-  startedServers: Set<string>;
+  _startedServers: Set<ChildProcess>;
 
   constructor() {
     super();
-    this.startedServers = new Set();
+    this._startedServers = new Set();
   }
 
   async dispose(): Promise<void> {
-    var pathToFlow = await getPathToFlow();
-    for (var path of this.startedServers) {
-      asyncExecute(pathToFlow, ['stop', path], {});
+    for (var server of this._startedServers) {
+      // The default, SIGTERM, does not reliably kill the flow servers.
+      server.kill('SIGKILL');
     }
   }
 
@@ -53,8 +53,17 @@ class LocalFlowService extends FlowService {
           // the flow root (where .flowconfig exists) conveniently appears in
           // the error message enclosed in single quotes.
           var root = e.stderr.match(/'[^']*'/)[0].replace(/'/g, '');
-          this.startedServers.add(root);
-          await asyncExecute(pathToFlow, ['start', root], {});
+          // `flow server` will start a server in the foreground. asyncExecute
+          // will not resolve the promise until the process exits, which in this
+          // case is never. We need to use spawn directly to get access to the
+          // ChildProcess object.
+          var serverProcess = safeSpawn(pathToFlow, ['server', root]);
+          var logIt = data => {
+            logger.debug('flow server: ' + data);
+          };
+          serverProcess.stdout.on('data', logIt);
+          serverProcess.stderr.on('data', logIt);
+          this._startedServers.add(serverProcess);
         } else {
           // not sure what happened, but we'll let the caller deal with it
           throw e;

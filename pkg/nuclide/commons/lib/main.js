@@ -27,6 +27,10 @@ module.exports = {
     return require('./process').checkOutput(command, args, options);
   },
 
+  safeSpawn(command: string, args: Array<string>, options: Object): ChildProcess {
+    return require('./process').safeSpawn(command, args, options);
+  },
+
   readFile(filePath: string, options?: any): Promise {
     return require('./filesystem').readFile(filePath, options);
   },

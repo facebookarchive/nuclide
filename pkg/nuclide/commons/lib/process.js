@@ -29,6 +29,8 @@ var COMMON_BINARY_PATHS = ['/usr/bin', '/bin', '/usr/sbin', '/sbin', '/usr/local
  */
 var DARWIN_PATH_HELPER_REGEXP = /PATH=\"([^\"]+)\"/;
 
+const STREAM_NAMES = ['stdin', 'stdout', 'stderr'];
+
 function getPlatformPath(): Promise<string> {
   if (platformPathPromise) {
     // Path is being fetched, await the Promise that's in flight.
@@ -90,6 +92,34 @@ async function createExecEnvironment(
   return execEnv;
 }
 
+function logError(...args) {
+  // Can't use nuclide-logging here to not cause cycle dependency.
+  /*eslint-disable no-console*/
+  console.error(...args);
+  /*eslint-enable no-console*/
+}
+
+function monitorStreamErrors(process: child_process$ChildProcess, command, args, options): void {
+  STREAM_NAMES.forEach(streamName => {
+    process[streamName].on('error', error => {
+      // This can happen without the full execution of the command to fail, but we want to learn about it.
+      logError('stream error with command:', command, args, options, 'error:', error);
+    });
+  });
+}
+
+/** Basically like spawn, except it handles and logs errors instead of crashing
+  * the process. This is much lower-level than asyncExecute. Unless you have a
+  * specific reason you should use asyncExecute instead. */
+function safeSpawn(command: string, args: Array<string> = [], options: Object = {}): child_process$ChildProcess {
+  var child = spawn(command, args, options);
+  monitorStreamErrors(child, command, args, options);
+  child.on('error', error => {
+    logError('error with command:', command, args, options, 'error:', error);
+  });
+  return child;
+}
+
 type process$asyncExecuteRet = {
   command?: string;
   errorMessage?: string;
@@ -126,25 +156,12 @@ function checkOutput(
     var firstChild;
     var lastChild;
 
-    var streamNames = ['stdin', 'stdout', 'stderr'];
-    function monitorStreamErrors(process: ChildProcess): void {
-      streamNames.forEach(streamName => {
-        process[streamName].on('error', error => {
-          // This can happen without the full execution of the command to fail, but we want to learn about it.
-          // Can't use nuclide-logging here to not cause cycle dependency.
-          /*eslint-disable no-console*/
-          console.error('asyncExecute stream error with command:', command, args, options, 'error:', error);
-          /*eslint-enable no-console*/
-        });
-      });
-    }
-
     var firstChildStderr;
     if (localOptions.pipedCommand) {
       // If a second command is given, pipe stdout of first to stdin of second. String output
       // returned in this function's Promise will be stderr/stdout of the second command.
       firstChild = spawn(command, args, localOptions);
-      monitorStreamErrors(firstChild);
+      monitorStreamErrors(firstChild, command, args, localOptions);
       firstChildStderr = '';
 
       firstChild.on('error', error => {
@@ -163,11 +180,11 @@ function checkOutput(
       });
 
       lastChild = spawn(localOptions.pipedCommand, localOptions.pipedArgs, localOptions);
-      monitorStreamErrors(lastChild);
+      monitorStreamErrors(lastChild, command, args, localOptions);
       firstChild.stdout.pipe(lastChild.stdin);
     } else {
       lastChild = spawn(command, args, localOptions);
-      monitorStreamErrors(lastChild);
+      monitorStreamErrors(lastChild, command, args, localOptions);
       firstChild = lastChild;
     }
 
@@ -249,6 +266,7 @@ async function asyncExecute(
 module.exports = {
   asyncExecute,
   checkOutput,
+  safeSpawn,
   __test__: {
     DARWIN_PATH_HELPER_REGEXP,
     createExecEnvironment,

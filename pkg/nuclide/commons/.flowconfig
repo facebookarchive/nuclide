@@ -1,8 +1,8 @@
 [include]
 
 [ignore]
+.*/spec/.*
 
 [libs]
 
 [options]
-

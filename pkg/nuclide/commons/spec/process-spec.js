@@ -126,3 +126,11 @@ describe('process.asyncExecute', () => {
     });
   }
 });
+
+describe('process.safeSpawn', () => {
+  it('should not crash the process on an error', () => {
+    var child = processLib.safeSpawn('fakeCommand');
+    expect(child).not.toBe(null);
+    expect(child.listeners('error').length).toBeGreaterThan(0);
+  });
+});
