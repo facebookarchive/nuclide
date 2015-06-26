@@ -65,6 +65,10 @@ class HyperclickForTextEditor {
     };
 
     if (this._isHyperclickEvent(event)) {
+      // Clear the suggestion if the mouse moved out of the range.
+      if (!this._isMouseAtLastSuggestion()) {
+        this._clearSuggestion();
+      }
       this._setSuggestionForLastMouseEvent();
     } else {
       this._clearSuggestion();
@@ -114,17 +118,31 @@ class HyperclickForTextEditor {
 
     if (this._lastSuggestionAtMouse) {
       var {range} = this._lastSuggestionAtMouse;
-      var isInLastRanges = (Array.isArray(range) && range.some(r => r.containsPoint(position)));
-      if (isInLastRanges || (!Array.isArray(range) && range.containsPoint(position))) {
+      if (this._isPositionInRange(position, range)) {
         return;
       }
     }
 
     this._lastSuggestionAtMousePromise = this._hyperclick.getSuggestion(this._textEditor, position);
     this._lastSuggestionAtMouse = await this._lastSuggestionAtMousePromise;
-    if (this._lastSuggestionAtMouse) {
+    // Only update the markers if there's a new suggestion and it's under the mouse.
+    if (this._lastSuggestionAtMouse && this._isMouseAtLastSuggestion()) {
       this._updateNavigationMarkers(this._lastSuggestionAtMouse.range);
     }
+  }
+
+  _isMouseAtLastSuggestion(): boolean {
+    if (!this._lastSuggestionAtMouse) {
+      return false;
+    }
+    var position = this._textEditorView.component.screenPositionForMouseEvent(this._lastMouseEvent);
+    return this._isPositionInRange(position, this._lastSuggestionAtMouse.range);
+  }
+
+  _isPositionInRange(position: Position, range: Range | Array<Range>): boolean {
+    return (Array.isArray(range)
+        ? range.some(r => r.containsPoint(position))
+        : range.containsPoint(position));
   }
 
   _clearSuggestion(): void {
