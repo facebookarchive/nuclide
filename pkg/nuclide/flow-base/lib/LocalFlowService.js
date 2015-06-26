@@ -9,6 +9,14 @@
  * the root directory of this source tree.
  */
 
+ import type {Diagnostic} from './FlowService';
+
+ type Loc = {
+   file:NuclideUri;
+   line:number;
+   column:number;
+ }
+
 var {asyncExecute, findNearestFile, getConfigValueAsync} = require('nuclide-commons');
 var logger = require('nuclide-logging').getLogger();
 var FlowService = require('./FlowService');
@@ -63,7 +71,7 @@ class LocalFlowService extends FlowService {
     currentContents: string,
     line: number,
     column: number
-  ): Promise<?{file:NuclideUri; line:number; column:number}> {
+  ): Promise<?Loc> {
     var options = await getFlowExecOptions(file);
     if (!options) {
       return null;
@@ -82,11 +90,12 @@ class LocalFlowService extends FlowService {
       if (result.exitCode === 0) {
         var json = JSON.parse(result.stdout);
         if (json['path']) {
-          return {
+          // t7492048
+          return ({
             file: json['path'],
             line: json['line'] - 1,
             column: json['start'] - 1,
-          };
+          } : ?Loc);
         } else {
           return null;
         }
@@ -100,7 +109,7 @@ class LocalFlowService extends FlowService {
     }
   }
 
-  async findDiagnostics(file: NuclideUri): Promise<any> {
+  async findDiagnostics(file: NuclideUri): Promise<Array<Diagnostic>> {
     var options = await getFlowExecOptions(file);
     if (!options) {
       return [];

@@ -12,7 +12,7 @@
 var path = require('path');
 var {asyncExecute, findNearestFile, getConfigValueAsync} = require('nuclide-commons');
 
-function insertAutocompleteToken(contents: string, line: number, col: number) {
+function insertAutocompleteToken(contents: string, line: number, col: number): string {
   var lines = contents.split('\n');
   var theLine = lines[line];
   theLine = theLine.substring(0, col) + 'AUTO332' + theLine.substring(col);

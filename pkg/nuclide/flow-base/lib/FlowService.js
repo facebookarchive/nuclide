@@ -9,6 +9,18 @@
  * the root directory of this source tree.
  */
 
+export type Diagnostic = {
+  message: Array<{
+    path: NuclideUri;
+    descr: string;
+    code: number;
+    line: number;
+    endline: number;
+    start: number;
+    end: number;
+  }>
+}
+
 class FlowService {
 
   findDefinition(
@@ -25,12 +37,7 @@ class FlowService {
 
   findDiagnostics(
     file: NuclideUri
-  ): Promise<
-      Array<{
-        message: Array<{
-          path: NuclideUri; descr: string; code: number; line: number; endline: number; start: number; end: number;
-        }>
-      }>>
+  ): Promise<Array<Diagnostic>>
   {
     return Promise.reject('Not implemented');
   }
