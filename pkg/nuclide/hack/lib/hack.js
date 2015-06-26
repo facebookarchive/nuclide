@@ -104,7 +104,7 @@ module.exports = {
     var {path} = url.parse(editor.getPath());
     var contents = editor.getText();
 
-    var type = await hackLanguage.getType(path, contents, matchData.word, position.row + 1, position.column + 1);
+    var type = await hackLanguage.getType(path, contents, matchData.wordMatch[0], position.row + 1, position.column + 1);
     if (!type) {
       return null;
     } else {

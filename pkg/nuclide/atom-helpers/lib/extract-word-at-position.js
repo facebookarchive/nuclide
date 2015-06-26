@@ -30,7 +30,7 @@ function extractWordAtPosition(editor: TextEditor, position: Point, wordRegex: ?
   });
   if (matchData) {
     return {
-      word: matchData.match[0],
+      wordMatch: matchData.match,
       range: matchData.range,
     };
   } else {
