@@ -173,7 +173,6 @@ type InsertTextOptions = {
 }
 
 declare class atom$TextEditor {
-
   // Event Subscription
   onDidDestroy(callback: () => void): atom$Disposable;
   getBuffer(): atom$TextBuffer;
@@ -216,6 +215,7 @@ declare class atom$TextEditor {
     onlyNonEmpty?: boolean;
     gutterName?: string;
   }): atom$Decoration;
+
   // Markers
   markBufferPosition(position: atom$Point | Array<number>): atom$Marker;
   markBufferRange(range: atom$Range | Array<Array<number>>): atom$Marker;
@@ -340,6 +340,8 @@ declare class atom$Project {
 }
 
 declare class atom$TextBuffer {
+  file: ?atom$File;
+
   // Search And Replace
   scanInRange(regex: RegExp, range: Range, iterator: (data: Object) => void): void;
 

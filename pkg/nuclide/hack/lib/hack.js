@@ -39,7 +39,9 @@ module.exports = {
     if (!hackLanguage) {
       return [];
     }
-    var {path} = url.parse(editor.getPath());
+
+    var editorPath = editor.getPath();
+    var {path} = url.parse(editorPath);
     var contents = editor.getText();
     var errors = await hackLanguage.getDiagnostics(path, contents);
     var mixedErrors = errors;
@@ -47,6 +49,13 @@ module.exports = {
     if (clientToHackLinterCache[clientId]) {
       mixedErrors = errors.concat(clientToHackLinterCache[clientId]);
     }
+
+    mixedErrors.forEach(error => {
+      // Preserve original Nuclide URI so remote files return with a "nuclide://" prefix and are
+      // associated with the correct TextEditor and tab.
+      error.filePath = editorPath;
+    });
+
     return mixedErrors;
   },
 
