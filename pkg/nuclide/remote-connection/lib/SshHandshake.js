@@ -103,12 +103,17 @@ class SshHandshake {
 
     lookupPreferIpv6(config.host).then((address) => {
       if (config.authMethod === SupportedMethods.SSL_AGENT) {
+        // Point to ssh-agent's socket for ssh-agent-based authentication.
+        var agent = process.env['SSH_AUTH_SOCK'];
+        if (!agent && /^win/.test(process.platform)) {
+          // #100: On Windows, fall back to pageant.
+          agent = 'pageant';
+        }
         this._connection.connect({
           host: address,
           port: config.sshPort,
           username: config.username,
-          // Point to ssh-agent's socket for ssh-agent-based authentication.
-          agent: process.env.SSH_AUTH_SOCK,
+          agent,
           tryKeyboard: true,
         });
       } else if (config.authMethod === SupportedMethods.PASSWORD) {
