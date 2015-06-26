@@ -14,14 +14,14 @@
         "2.0.0": "createAutocompleteProvider"
       }
     },
+    "hyperclick.provider": {
+      "versions": {
+        "0.0.0": "getHyperclickProvider"
+      }
+    },
     "linter": {
       "versions": {
         "1.0.4": "provideLinter"
-      }
-    },
-    "nuclide-click-to-symbol.provider": {
-      "versions": {
-        "0.0.0": "createClickToSymbolDelegate"
       }
     },
     "nuclide-code-format.provider": {
@@ -40,7 +40,6 @@
   },
   "dependencies": {
     "nuclide-atom-helpers": "0.0.0",
-    "nuclide-click-to-symbol-delegate": "0.0.0",
     "nuclide-client": "0.0.0",
     "nuclide-commons": "0.0.0",
     "nuclide-hack-common": "0.0.0",
