@@ -99,10 +99,29 @@ class DbgpSocket {
     return response.$.success !== '0';
   }
 
+  /**
+   * Returns a breakpoint id
+   */
+  async setBreakpoint(filename: string, lineNumber: number): Promise<string> {
+    var response = await this._callDebugger('breakpoint_set', `-t line -f ${filename} -n ${lineNumber}`);
+    if (response.error) {
+      throw new Error('Error setting breakpoint: ' + JSON.stringify(response));
+    }
+    // TODO: Validate that response.$.state === 'enabled'
+    return response.$.id;
+  }
+
+  async removeBreakpoint(breakpointId: string): Promise {
+    var response = await this._callDebugger('breakpoint_remove', `-d ${breakpointId}`);
+    if (response.error) {
+      throw new Error('Error removing breakpoint: ' + JSON.stringify(response));
+    }
+  }
+
   // Sends command to hhvm.
   // Returns an object containing the resulting attributes.
-  _callDebugger(command: string): Promise<Object> {
-    var transactionId = this._sendCommand(command);
+  _callDebugger(command: string, params: ?string): Promise<Object> {
+    var transactionId = this._sendCommand(command, params);
     return new Promise((resolve, reject) => {
       this._calls.set(transactionId, {
         command,
@@ -111,9 +130,13 @@ class DbgpSocket {
     });
   }
 
-  _sendCommand(command: string): number {
+  _sendCommand(command: string, params: ?string): number {
     var id = ++this._transactionId;
-    this._sendMessage(command + ' -i ' + String(id));
+    var message = `${command} -i ${id}`;
+    if (params) {
+      message += ' ' + params;
+    }
+    this._sendMessage(message);
     return id;
   }
 

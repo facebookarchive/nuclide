@@ -59,6 +59,16 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
         expect(callback.sendMethod).toHaveBeenCalledWith('Debugger.resumed', undefined);
         expect(socket.getStackFrames).toHaveBeenCalledWith();
         expect(callback.sendMethod).toHaveBeenCalledWith(
+          'Debugger.scriptParsed',
+          {
+            scriptId: '/usr/test.php',
+            url: 'file:///usr/test.php',
+            startLine: 0,
+            startColumn: 0,
+            endLine: 0,
+            endColumn: 0 ,
+          });
+        expect(callback.sendMethod).toHaveBeenCalledWith(
           'Debugger.paused',
           {
             callFrames: [
@@ -184,6 +194,55 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
             data: {},
           });
         expect(onSessionEnd).toHaveBeenCalledWith();
+      });
+    });
+
+    it('setBreakpointByUrl', () => {
+      waitsForPromise(async () => {
+        socket.setBreakpoint = jasmine.createSpy('setBreakpoint')
+          .andCallFake(async () => {
+            return 12;
+          });
+
+        await handler.handleMethod(1, 'setBreakpointByUrl', {
+          lineNumber: 42,
+          url: 'file:///test.php',
+          columnNumber: 0,
+          condition: '',
+        });
+
+        expect(socket.setBreakpoint).toHaveBeenCalledWith('/test.php', 43);
+        expect(callback.replyToCommand).toHaveBeenCalledWith(
+          1,
+          {
+            breakpointId : 12,
+            locations : [
+              {
+                lineNumber : 42,
+                scriptId : '/test.php',
+              },
+            ]
+          },
+          undefined);
+      });
+    });
+
+    it('removeBreakpoint', () => {
+      waitsForPromise(async () => {
+        socket.removeBreakpoint = jasmine.createSpy('removeBreakpoint')
+          .andCallFake(async () => {});
+
+        await handler.handleMethod(1, 'removeBreakpoint', {
+          breakpointId: 42,
+        });
+
+        expect(socket.removeBreakpoint).toHaveBeenCalledWith(42);
+        expect(callback.replyToCommand).toHaveBeenCalledWith(
+          1,
+          {
+            id: 42,
+          },
+          undefined);
       });
     });
 

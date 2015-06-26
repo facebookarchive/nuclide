@@ -10,7 +10,7 @@
  */
 
 
-var {log, logErrorAndThrow} = require('./utils');
+var {log, logErrorAndThrow, uriToPath} = require('./utils');
 var Handler = require('./Handler');
 var {
   STATUS_STARTING,
@@ -89,13 +89,51 @@ class DebuggerHandler extends Handler {
     case 'getScriptSource':
       // TODO: Handle file read errors.
       // TODO: Handle non-file scriptIds
-      this.replyToCommand(id, { scriptSource: this._files.getFileSource(params.scriptId) });
+      this.replyToCommand(id, { scriptSource: await this._files.getFileSource(params.scriptId) });
+      break;
+
+    case 'setBreakpointByUrl':
+      this._setBreakpointByUrl(id, params);
+      break;
+
+    case 'removeBreakpoint':
+      this._removeBreakpoint(id, params);
       break;
 
     default:
       this.unknownMethod(id, method, params);
       break;
     }
+  }
+
+  async _setBreakpointByUrl(id: number, params: Object): Promise {
+    var {lineNumber, url, columnNumber, condition} = params;
+    if (!url || condition !== '' || columnNumber !== 0) {
+      this.replyWithError(id, 'Invalid arguments to Debugger.setBreakpointByUrl: ' + JSON.stringify(params));
+      return;
+    }
+
+    try {
+      var path = uriToPath(url);
+      this._files.registerFile(path);
+      var breakpointId = await this._socket.setBreakpoint(path, lineNumber + 1);
+      this.replyToCommand(id, {
+        breakpointId: breakpointId,
+        locations: [
+          {
+            lineNumber,
+            scriptId: path,
+          },
+        ]});
+      } catch (e) {
+        this.replyWithError(id, e.message);
+      }
+  }
+
+  async _removeBreakpoint(id: number, params: Object): Promise {
+    var {breakpointId} = params;
+    await this._socket.removeBreakpoint(breakpointId);
+    this.replyToCommand(id, {id: breakpointId});
   }
 
   async _debuggerEnable(id: number): Promise {
@@ -108,7 +146,7 @@ class DebuggerHandler extends Handler {
     return frames.stack.map(frame => this._convertFrame(frame));
   }
 
-  _convertFrame(frame: Object) {
+  _convertFrame(frame: Object, frameIndex: number): Object {
     log('Converting frame: ' + JSON.stringify(frame));
     try {
       var {

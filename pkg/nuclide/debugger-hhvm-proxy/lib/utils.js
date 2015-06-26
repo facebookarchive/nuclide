@@ -87,6 +87,14 @@ function pathToUri(path: string): string {
   return 'file://' + path;
 }
 
+function uriToPath(uri: string): string {
+  var components = require('url').parse(uri);
+  if (components.protocol !== 'file:') {
+    logErrorAndThrow('unexpected file protocol. Got: ' + components.protocol);
+  }
+  return components.pathname;
+}
+
 var DUMMY_FRAME_ID = 'Frame.0';
 
 module.exports = {
@@ -97,5 +105,6 @@ module.exports = {
   parseDbgpMessage,
   parseXml,
   pathToUri,
+  uriToPath,
   DUMMY_FRAME_ID,
 };

@@ -128,4 +128,58 @@ describe('debugger-hhvm-proxy DbgpSocket', () => {
         expect(locationOfFrame(frame1)).toEqual({lineNumber:9, scriptId: fileOfFrame(frame1)});
       });
     });
+
+    it('setBreakpoint', () => {
+      waitsForPromise(async () => {
+        var call = dbgpSocket.setBreakpoint('/test.php', 42);
+        testCallResult(
+          'breakpoint_set -i 1 -t line -f /test.php -n 42',
+          {
+            command: 'breakpoint_set',
+            transaction_id: '1',
+            state: 'enabled',
+            id: '12',
+          });
+        var result = await call;
+        expect(result).toBe('12');
+      });
+    });
+
+    it('setBreakpoint - error', () => {
+      var call = dbgpSocket.setBreakpoint('/test.php', 42);
+      testCallResult(
+        'breakpoint_set -i 1 -t line -f /test.php -n 42',
+        {
+          command: 'breakpoint_set',
+          transaction_id: '1',
+        },
+        '<error code="1" apperr="42"><message>setBreakpoint error</message></error>');
+      waitsForPromise({shouldReject: true}, async () => (await call));
+    });
+
+    it('removeBreakpoint', () => {
+      waitsForPromise(async () => {
+        var call = dbgpSocket.removeBreakpoint('42');
+        testCallResult(
+          'breakpoint_remove -i 1 -d 42',
+          {
+            command: 'breakpoint_remove',
+            transaction_id: '1',
+          });
+        var result = await call;
+        expect(result).toBe(undefined);
+      });
+    });
+
+    it('removeBreakpoint - error', () => {
+      var call = dbgpSocket.removeBreakpoint('42');
+      testCallResult(
+        'breakpoint_remove -i 1 -d 42',
+        {
+          command: 'breakpoint_remove',
+          transaction_id: '1',
+        },
+        '<error code="1" apperr="42"><message>removeBreakpoint error</message></error>');
+      waitsForPromise({shouldReject: true}, async () => (await call));
+    });
 });

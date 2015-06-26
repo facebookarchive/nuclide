@@ -10,7 +10,7 @@
  */
 
 
-var {logErrorAndThrow} = require('./utils');
+var {uriToPath} = require('./utils');
 
 /**
  * A dbgp Frame after it is converted from XML to JSON:
@@ -45,11 +45,7 @@ function functionOfFrame(frame: DbgpStackFrame): string {
 
 // Returns an absolute path
 function fileOfFrame(frame: DbgpStackFrame): string {
-  var components = require('url').parse(frame.$.filename);
-  if (components.protocol !== 'file:') {
-    logErrorAndThrow('unexpected file protocol. Got: ' + components.protocol);
-  }
-  return components.pathname;
+  return uriToPath(frame.$.filename);
 }
 
 function locationOfFrame(frame: DbgpStackFrame) {
