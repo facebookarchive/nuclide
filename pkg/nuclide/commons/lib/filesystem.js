@@ -19,6 +19,24 @@ function isRoot(filePath: string): boolean {
 }
 
 /**
+ * Create a temp directory with given prefix. The caller is responsible for cleaning up the
+ *   drectory.
+ * @param prefix optinal prefix for the temp directory name.
+ * @return path to a temporary directory.
+ */
+function tempdir(prefix='': string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    require('temp').mkdir(prefix, (err, dirPath) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(dirPath);
+      }
+    });
+  });
+}
+
+/**
  * @return path to a temporary file. The caller is responsible for cleaning up
  *     the file.
  */
@@ -113,6 +131,7 @@ var asyncFs = {
   isRoot,
   mkdirp,
   rmdir,
+  tempdir,
   tempfile,
 };
 
