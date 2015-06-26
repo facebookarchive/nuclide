@@ -12,9 +12,9 @@
  import type {Diagnostic} from './FlowService';
 
  type Loc = {
-   file:NuclideUri;
-   line:number;
-   column:number;
+   file: NuclideUri;
+   line: number;
+   column: number;
  }
 
 var {asyncExecute, safeSpawn, findNearestFile, getConfigValueAsync} = require('nuclide-commons');
