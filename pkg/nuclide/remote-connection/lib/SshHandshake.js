@@ -10,6 +10,7 @@
  */
 
 var SshConnection = require('ssh2').Client;
+var fs = require('fs-plus');
 var net = require('net');
 var url = require('url');
 var logger = require('nuclide-logging').getLogger();
@@ -122,12 +123,14 @@ class SshHandshake {
             tryKeyboard: true,
           });
       } else if (config.authMethod === SupportedMethods.PRIVATE_KEY) {
-        fsPromise.readFile(config.pathToPrivateKey).then((privateKey) => {
+        // We use fs-plus's normalize() function because it will expand the ~, if present.
+        var expandedPath = fs.normalize(config.pathToPrivateKey);
+        fsPromise.readFile(expandedPath).then(privateKey => {
           this._connection.connect({
             host: address,
             port: config.sshPort,
             username: config.username,
-            privateKey: privateKey,
+            privateKey,
             tryKeyboard: true,
           });
         }).catch((e) => {
