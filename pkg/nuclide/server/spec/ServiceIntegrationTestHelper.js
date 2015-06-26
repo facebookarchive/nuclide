@@ -61,16 +61,22 @@ class ServiceIntegrationTestHelper {
     this._className = className;
     this._definitionPath = definitionPath;
     this._implementationPath = implementationPath;
+    spyOn(require('../lib/config'), 'loadConfigsOfServiceWithServiceFramework')
+        .andCallFake(() => {
+          return [{
+            name: className,
+            definition: definitionPath,
+            implementation: implementationPath,
+          }];
+        });
+    spyOn(require('../lib/config'), 'loadConfigsOfServiceWithoutServiceFramework')
+        .andCallFake(() => {
+          return [];
+        });
   }
 
   async start(): Promise<void> {
     this._server = new NuclideServer({port: 0});
-    this._server._serviceWithServiceFrameworkConfigs = [{
-      name: this._className,
-      definition: this._definitionPath,
-      implementation: this._implementationPath,
-    }];
-    this._server._registerServiceWithServiceFramework(this._server._serviceWithServiceFrameworkConfigs[0]);
     await this._server.connect();
 
     var port = this._server._webServer.address().port;

@@ -15,9 +15,7 @@ var fs = require('fs');
 var {getService, getRemoteEventName} = require('./service-manager');
 var http = require('http');
 var https = require('https');
-var {loadConfigsOfServiceWithServiceFramework,
-  loadConfigsOfServiceWithoutServiceFramework,
-  SERVICE_FRAMEWORK_EVENT_CHANNEL,
+var {SERVICE_FRAMEWORK_EVENT_CHANNEL,
   SERVICE_FRAMEWORK_RPC_CHANNEL} = require('./config');
 var {parseServiceApiSync} = require('nuclide-service-transformer');
 var path = require('path');
@@ -202,6 +200,10 @@ class NuclideServer {
   }
 
   _setupServices() {
+    // Lazy require these functions so that we could spyOn them while testing in
+    // ServiceIntegrationTestHelper.
+    var {loadConfigsOfServiceWithServiceFramework,
+      loadConfigsOfServiceWithoutServiceFramework} = require('./config');
     this._serviceRegistry = {};
     this._setupVersionHandler();
     this._setupShutdownHandler();
