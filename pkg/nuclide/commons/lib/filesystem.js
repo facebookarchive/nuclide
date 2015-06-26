@@ -125,6 +125,7 @@ var asyncFs = {
   'realpath',
   'rename',
   'stat',
+  'symlink',
   'unlink',
   'writeFile',
 ].forEach((methodName) => {
