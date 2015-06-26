@@ -16,6 +16,7 @@ var WatchmanClient = require('../lib/WatchmanClient');
 
 var FILE_MODE = 33188;
 
+// TODO: #7344702 Re-enable and don't depend on watchman.
 xdescribe('WatchmanClient test suite', () => {
 
   var dirPath;

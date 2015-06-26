@@ -237,7 +237,8 @@ describe('RemoteDirectory::rename()', () => {
   });
 });
 
-describe('RemoteDirectory::onDidChange()', () => {
+// TODO: #7344702 Re-enable and don't depend on watchman.
+xdescribe('RemoteDirectory::onDidChange()', () => {
   var WATCHMAN_SETTLE_TIME_MS = 1 * 1000;
   var directoryPath;
   var filePath;
