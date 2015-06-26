@@ -201,9 +201,13 @@ class SshHandshake {
       var cmd = `${this._config.remoteServerCommand} --workspace=${this._config.cwd} --common_name=${this._config.host} -t 20`;
       // Add sync word before and after the remote command, so that we can extract the stdout
       // without noises from .bashrc or .bash_profile.
-      // Note that without 'bash -ic' in the following, .bash_profile gets run
-      // which may import .bashrc in some setup.
-      this._connection.exec(`bash -ic 'echo ${SYNC_WORD};${cmd};echo ${SYNC_WORD}'`, (err, stream) => {
+      // Note: we use --login to imitate a login shell.  This will only execute
+      // .profile/.bash_profile/.bash_login.  .bashrc will only be loaded if
+      // it is sourced in one of the login scripts.  This is pretty typical
+      // though so likely .bashrc will be loaded.
+      // Note 2: That though this is a login shell, this is not an interactive
+      // shell so anything behind a if [ -z $PS1 ] or the like will be skipped.
+      this._connection.exec(`bash --login -c 'echo ${SYNC_WORD};${cmd};echo ${SYNC_WORD}'`, (err, stream) => {
         if (err) {
           reject(err);
           return;
