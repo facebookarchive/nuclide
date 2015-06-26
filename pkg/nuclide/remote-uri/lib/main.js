@@ -118,6 +118,22 @@ function dirname(uri: NuclideUri): NuclideUri {
   }
 }
 
+/**
+ * uri is either a file: uri, or a nuclide: uri.
+ * must convert file: uri's to just a path for atom.
+ *
+ * Returns null if not a valid file: URI.
+ */
+function uriToAtomUri(uri: string): ?string {
+  var urlParts = require('url').parse(uri, false);
+  if (urlParts.protocol === 'file:' && urlParts.path) { // only handle real files for now.
+    return urlParts.path;
+  } else if (isRemote(uri)) {
+    return uri;
+  } else {
+    return null;
+  }
+}
 
 
 module.exports = {
@@ -135,4 +151,5 @@ module.exports = {
   relative,
   normalize,
   getParent,
+  uriToAtomUri,
 };
