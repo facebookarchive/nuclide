@@ -16,7 +16,7 @@ var https = require('https');
 // Although rfc forbids the usage of white space in content type
 // (http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.7), it's still
 // a common practice to use that so we need to deal with it in regex.
-var contentTypeRe = /\s*\w+\/\w+\s*;\s*charset\s*=\s*(\w+)\s*/;
+var contentTypeRe = /\s*\w+\/\w+\s*;\s*charset\s*=\s*([^\s]+)\s*/;
 
 function getProtocolModule(url: string): any {
   var {protocol} = require('url').parse(url);
@@ -69,7 +69,9 @@ module.exports = {
         if (response.statusCode < 200 || response.statusCode >= 300) {
           reject(`Bad status ${response.statusCode}`);
         } else {
+          response.on('error', reject);
           response.pipe(file);
+          file.on('error', reject);
           file.on('finish', () => file.close(resolve));
         }
       }).on('error', reject);
