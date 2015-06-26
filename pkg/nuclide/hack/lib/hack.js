@@ -144,8 +144,8 @@ module.exports = {
     }
     return {
       file: getFilePath(pos.path, protocol, host),
-      line: pos.line - 1,
-      column: pos.column - 1,
+      line: pos.line,
+      column: pos.column,
       range,
     };
   },

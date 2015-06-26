@@ -110,8 +110,8 @@ class HackClass {}
         expect(definitions.length).toBe(1);
         expect(definitions[0]).toEqual({
           path: filePath,
-          line: 8,
-          column: 7,
+          line: 7,
+          column: 6,
           length: 9,
         });
       });

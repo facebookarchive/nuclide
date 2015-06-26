@@ -218,8 +218,8 @@ module.exports = class HackLanguage {
     if (position.filename) {
       return [{
         path: position.filename,
-        line: position.line,
-        column: position.char_start,
+        line: position.line - 1,
+        column: position.char_start - 1,
         length: position.char_end - position.char_start + 1,
       }];
     } else {
