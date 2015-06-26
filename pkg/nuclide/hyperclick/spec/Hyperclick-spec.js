@@ -608,4 +608,112 @@ describe('Hyperclick', () => {
       });
     });
   });
+
+  describe('multiple suggestions', () => {
+    it('confirms the first suggestion', () => {
+      waitsForPromise(async () => {
+        var callback = [
+          {
+            title: 'callback1',
+            callback: jasmine.createSpy('callback1'),
+          },
+          {
+            title: 'callback2',
+            callback: jasmine.createSpy('callback1'),
+          },
+        ];
+        var provider = {
+          getSuggestionForWord(sourceTextEditor, text, range) {
+            return {range, callback};
+          },
+        };
+        hyperclick.consumeProvider(provider);
+
+        var position = new Point(0, 1);
+        dispatch(MouseEvent, 'mousemove', position, {metaKey: true});
+        await hyperclickForTextEditor.getSuggestionAtMouse();
+        dispatch(MouseEvent, 'mousedown', position, {metaKey: true});
+
+        var suggestionListEl = textEditorView.querySelector('hyperclick-suggestion-list');
+        expect(suggestionListEl).toExist();
+
+        atom.commands.dispatch(textEditorView, 'editor:newline');
+
+        expect(callback[0].callback.callCount).toBe(1);
+        expect(callback[1].callback.callCount).toBe(0);
+        expect(textEditorView.querySelector('hyperclick-suggestion-list')).not.toExist();
+      });
+    });
+
+    it('confirms the second suggestion', () => {
+      waitsForPromise(async () => {
+        var callback = [
+          {
+            title: 'callback1',
+            callback: jasmine.createSpy('callback1'),
+          },
+          {
+            title: 'callback2',
+            callback: jasmine.createSpy('callback1'),
+          },
+        ];
+        var provider = {
+          getSuggestionForWord(sourceTextEditor, text, range) {
+            return {range, callback};
+          },
+        };
+        hyperclick.consumeProvider(provider);
+
+        var position = new Point(0, 1);
+        dispatch(MouseEvent, 'mousemove', position, {metaKey: true});
+        await hyperclickForTextEditor.getSuggestionAtMouse();
+        dispatch(MouseEvent, 'mousedown', position, {metaKey: true});
+
+        var suggestionListEl = textEditorView.querySelector('hyperclick-suggestion-list');
+        expect(suggestionListEl).toExist();
+
+        atom.commands.dispatch(textEditorView, 'core:move-down');
+        atom.commands.dispatch(textEditorView, 'editor:newline');
+
+        expect(callback[0].callback.callCount).toBe(0);
+        expect(callback[1].callback.callCount).toBe(1);
+        expect(textEditorView.querySelector('hyperclick-suggestion-list')).not.toExist();
+      });
+    });
+
+    it('is cancelable', () => {
+      waitsForPromise(async () => {
+        var callback = [
+          {
+            title: 'callback1',
+            callback: jasmine.createSpy('callback1'),
+          },
+          {
+            title: 'callback2',
+            callback: jasmine.createSpy('callback1'),
+          },
+        ];
+        var provider = {
+          getSuggestionForWord(sourceTextEditor, text, range) {
+            return {range, callback};
+          },
+        };
+        hyperclick.consumeProvider(provider);
+
+        var position = new Point(0, 1);
+        dispatch(MouseEvent, 'mousemove', position, {metaKey: true});
+        await hyperclickForTextEditor.getSuggestionAtMouse();
+        dispatch(MouseEvent, 'mousedown', position, {metaKey: true});
+
+        var suggestionListEl = textEditorView.querySelector('hyperclick-suggestion-list');
+        expect(suggestionListEl).toExist();
+
+        atom.commands.dispatch(textEditorView, 'core:cancel');
+
+        expect(callback[0].callback.callCount).toBe(0);
+        expect(callback[1].callback.callCount).toBe(0);
+        expect(textEditorView.querySelector('hyperclick-suggestion-list')).not.toExist();
+      });
+    });
+  });
 });

@@ -49,7 +49,7 @@ class HyperclickForTextEditor {
 
   _confirmSuggestion(suggestion: HyperclickSuggestion): void {
     if (Array.isArray(suggestion.callback) && suggestion.callback.length > 0) {
-      // TODO(jjiaa): Show a UI for the list of suggestions.
+      this._hyperclick.showSuggestionList(this._textEditor, suggestion);
     } else {
       suggestion.callback();
     }

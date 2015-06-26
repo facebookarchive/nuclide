@@ -13,5 +13,8 @@
         "0.0.0": "consumeProvider"
       }
     }
+  },
+  "dependencies": {
+    "react-for-atom": "0.13.6"
   }
 }

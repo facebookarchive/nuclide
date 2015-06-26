@@ -9,7 +9,9 @@
  * the root directory of this source tree.
  */
 
- var {Range} = require('atom');
+var {Range} = require('atom');
+var SuggestionList = require('./SuggestionList');
+var SuggestionListElement = require('./SuggestionListElement');
 
 type HyperclickProvider = {
   // Use this to provide a suggestion for single-word matches.
@@ -84,6 +86,11 @@ class Hyperclick {
   constructor() {
     this._consumedProviders = [];
 
+    this._suggestionList = new SuggestionList();
+    this._suggestionListViewSubscription = atom.views.addViewProvider(
+        SuggestionList,
+        model => new SuggestionListElement().initialize(model));
+
     this._hyperclickForTextEditors = new Set();
     this._textEditorSubscription = atom.workspace.observeTextEditors(textEditor => {
       var HyperclickForTextEditor = require('./HyperclickForTextEditor');
@@ -151,6 +158,10 @@ class Hyperclick {
 
       throw new Error('Hyperclick must have either `getSuggestion` or `getSuggestionForWord`')
     }));
+  }
+
+  showSuggestionList(textEditor: TextEditor, suggestion: HyperclickSuggestion): void {
+    this._suggestionList.show(textEditor, suggestion);
   }
 }
 
