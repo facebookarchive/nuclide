@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+var getWordTextAndRange = require('./get-word-text-and-range');
+
 /**
  * Construct this object to enable Hyperclick in a text editor.
  * Call `dispose` to disable the feature.
@@ -27,6 +29,8 @@ class HyperclickForTextEditor {
     // We store the last suggestion since we must await it immediately anyway.
     this._lastSuggestionAtMouse = null;
     this._navigationMarkers = null;
+
+    this._lastWordRange = null;
 
     // We deliberately use a DOM node that's deeper than `scrollViewNode` so
     // we can handle <meta-click> and still prevent the text editor from adding
@@ -63,6 +67,21 @@ class HyperclickForTextEditor {
       clientX: event.clientX,
       clientY: event.clientY,
     };
+
+    // Don't fetch suggestions if the mouse is still in the same 'word', where
+    // 'word' is a whitespace-delimited group of characters.
+    //
+    // If the last suggestion had multiple ranges, we have no choice but to
+    // fetch suggestions because the new word might be between those ranges.
+    // This should be ok because it will reuse that last suggestion until the
+    // mouse moves off of it.
+    var lastSuggestionIsNotMultiRange = !this._lastSuggestionAtMouse ||
+        !Array.isArray(this._lastSuggestionAtMouse.range);
+    if (this._isMouseAtLastWordRange() && lastSuggestionIsNotMultiRange) {
+      return;
+    }
+    var {range} = getWordTextAndRange(this._textEditor, this._getMousePosition());
+    this._lastWordRange = range;
 
     if (this._isHyperclickEvent(event)) {
       // Clear the suggestion if the mouse moved out of the range.
@@ -114,7 +133,7 @@ class HyperclickForTextEditor {
       return;
     }
 
-    var position = this._textEditorView.component.screenPositionForMouseEvent(this._lastMouseEvent);
+    var position = this._getMousePosition();
 
     if (this._lastSuggestionAtMouse) {
       var {range} = this._lastSuggestionAtMouse;
@@ -131,12 +150,22 @@ class HyperclickForTextEditor {
     }
   }
 
+  _getMousePosition(): Point {
+    return this._textEditorView.component.screenPositionForMouseEvent(this._lastMouseEvent);
+  }
+
   _isMouseAtLastSuggestion(): boolean {
     if (!this._lastSuggestionAtMouse) {
       return false;
     }
-    var position = this._textEditorView.component.screenPositionForMouseEvent(this._lastMouseEvent);
-    return this._isPositionInRange(position, this._lastSuggestionAtMouse.range);
+    return this._isPositionInRange(this._getMousePosition(), this._lastSuggestionAtMouse.range);
+  }
+
+  _isMouseAtLastWordRange(): boolean {
+    if (!this._lastWordRange) {
+      return false;
+    }
+    return this._isPositionInRange(this._getMousePosition(), this._lastWordRange);
   }
 
   _isPositionInRange(position: Position, range: Range | Array<Range>): boolean {

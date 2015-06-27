@@ -12,6 +12,7 @@
 var {Range} = require('atom');
 var SuggestionList = require('./SuggestionList');
 var SuggestionListElement = require('./SuggestionListElement');
+var getWordTextAndRange = require('./get-word-text-and-range');
 
 type HyperclickProvider = {
   // Use this to provide a suggestion for single-word matches.
@@ -35,35 +36,6 @@ type HyperclickSuggestion = {
   // The function to call when the underlined text is clicked.
   callback: () => void | Array<{title: string; callback: () => {}}>;
 };
-
-/**
- * Returns the text and range for the word that contains the given position.
- */
-function getWordTextAndRange(
-    textEditor: TextEditor,
-    position: Point,
-    wordRegExp?: ?RegExp): {text: string; range: Range} {
-  if (!wordRegExp) {
-    wordRegExp = textEditor.getLastCursor().wordRegExp();
-  }
-
-  var textAndRange = {text: '', range: new Range(position, position)};
-  var buffer = textEditor.getBuffer();
-  buffer.scanInRange(wordRegExp, buffer.rangeForRow(position.row), data => {
-    if (data.range.containsPoint(position)) {
-      textAndRange = {
-        text: data.matchText,
-        range: data.range,
-      };
-      data.stop();
-    } else if (data.range.end.column > position.column) {
-      // Stop the scan if the scanner has passed our position.
-      data.stop();
-    }
-  });
-
-  return textAndRange;
-}
 
 /**
  * Calls the given functions and returns the first non-null return value.

@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+/* eslint-env browser */
+
 var {Point, Range} = require('atom');
 var Hyperclick = require('../lib/Hyperclick');
 
@@ -225,6 +227,26 @@ describe('Hyperclick', () => {
   });
 
   describe('avoids excessive calls', () => {
+    it('ignores <mousemove> in the same word as the last position', () => {
+      waitsForPromise(async () => {
+        var provider = {
+          getSuggestionForWord(sourceTextEditor, text, range) {
+            // Never resolve this, so we know that no suggestion is set.
+            return new Promise(() => {});
+          },
+        };
+        spyOn(provider, 'getSuggestionForWord').andCallThrough();
+        hyperclick.consumeProvider(provider);
+
+        var position = new Point(0, 1);
+        dispatch(MouseEvent, 'mousemove', position, {metaKey: true});
+        dispatch(MouseEvent, 'mousemove', position.translate([0, 1]), {metaKey: true});
+        dispatch(MouseEvent, 'mousemove', position.translate([0, 2]), {metaKey: true});
+
+        expect(provider.getSuggestionForWord.callCount).toBe(1);
+      });
+    });
+
     it('ignores <mousemove> in the same single-range as the last suggestion', () => {
       waitsForPromise(async () => {
         var callback = jasmine.createSpy('callback');
