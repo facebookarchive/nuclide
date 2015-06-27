@@ -4,6 +4,10 @@ atom-text-editor::shadow .highlight.hyperclick > .region {
   border-bottom: 1px solid @syntax-text-color;
 }
 
+atom-text-editor::shadow .highlight.hyperclick-loading > .region {
+  border-bottom: 1px dashed @syntax-text-color;
+}
+
 atom-text-editor.hyperclick::shadow .editor-contents--private {
   /**
    * Unfortunately, this cannot be a property of `.symbol-navigation .region`:

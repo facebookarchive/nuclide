@@ -142,11 +142,17 @@ class HyperclickForTextEditor {
       }
     }
 
+    // Add the loading marker.
+    this._updateNavigationMarkers(null, /* loading */ true);
+
     this._lastSuggestionAtMousePromise = this._hyperclick.getSuggestion(this._textEditor, position);
     this._lastSuggestionAtMouse = await this._lastSuggestionAtMousePromise;
-    // Only update the markers if there's a new suggestion and it's under the mouse.
     if (this._lastSuggestionAtMouse && this._isMouseAtLastSuggestion()) {
-      this._updateNavigationMarkers(this._lastSuggestionAtMouse.range);
+      // Add the hyperclick markers if there's a new suggestion and it's under the mouse.
+      this._updateNavigationMarkers(this._lastSuggestionAtMouse.range, /* loading */ false);
+    } else {
+      // Remove all the markers if we've finished loading and there's no suggestion.
+      this._updateNavigationMarkers(null);
     }
   }
 
@@ -168,7 +174,7 @@ class HyperclickForTextEditor {
     return this._isPositionInRange(this._getMousePosition(), this._lastWordRange);
   }
 
-  _isPositionInRange(position: Position, range: Range | Array<Range>): boolean {
+  _isPositionInRange(position: Point, range: Range | Array<Range>): boolean {
     return (Array.isArray(range)
         ? range.some(r => r.containsPoint(position))
         : range.containsPoint(position));
@@ -192,25 +198,36 @@ class HyperclickForTextEditor {
   /**
    * Add markers for the given range(s), or clears them if `ranges` is null.
    */
-  _updateNavigationMarkers(range: ?Range | ?Array<Range>): void {
+  _updateNavigationMarkers(range: ?Range | ?Array<Range>, loading?: boolean): void {
     if (this._navigationMarkers) {
       this._navigationMarkers.forEach(marker => marker.destroy());
       this._navigationMarkers = null;
     }
 
+    // Only change the cursor to a pointer if there is a suggestion ready.
+    if (range && !loading) {
+      this._textEditorView.classList.add('hyperclick');
+    } else {
+      this._textEditorView.classList.remove('hyperclick');
+    }
+
+    // Display a dashed underline at the current word while hyperclick is loading.
+    // If hyperclick is done loading, display a solid underline.
+    var className = 'hyperclick';
+    if (!range && loading) {
+      range = this._lastWordRange;
+      className = 'hyperclick-loading';
+    }
+
     if (range) {
       var ranges = Array.isArray(range) ? range : [range];
-
       this._navigationMarkers = ranges.map(markerRange => {
         var marker = this._textEditor.markBufferRange(markerRange, {invalidate: 'never'});
         this._textEditor.decorateMarker(
             marker,
-            {type: 'highlight', class: 'hyperclick'});
+            {type: 'highlight', class: className});
         return marker;
       });
-      this._textEditorView.classList.add('hyperclick');
-    } else {
-      this._textEditorView.classList.remove('hyperclick');
     }
   }
 
