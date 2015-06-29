@@ -10,10 +10,6 @@
  */
 
 import type {
-  GroupedResult,
-} from './types';
-
-import type {
   QuickSelectionComponent,
 } from './QuickSelectionComponent';
 
