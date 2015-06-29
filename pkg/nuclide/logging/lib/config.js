@@ -12,7 +12,6 @@
 var {fsPromise} = require('nuclide-commons');
 var path = require('path');
 
-var LOGGER_CATEGORY = 'nuclide';
 var LOG_FILE_PATH = '/tmp/nuclide-logs/nuclide.log';
 
 var logDirectory = path.dirname(LOG_FILE_PATH);
@@ -36,12 +35,11 @@ module.exports = {
           },
         },
         {
-          type: 'file',
+          type: 'dateFile',
+          alwaysIncludePattern: true,
           absolute: true,
           filename: LOG_FILE_PATH,
-          category: LOGGER_CATEGORY,
-          maxLogSize: 5 * 1024 * 1024, // 5 MB
-          backups: 10,
+          pattern: '-yyyy-MM-dd',
         },
       ],
     };
