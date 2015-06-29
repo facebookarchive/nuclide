@@ -46,7 +46,7 @@ module.exports = {
 
     enableTypeHints: {
       type: 'boolean',
-      default: true,
+      default: false,
       description: 'Display tooltips with Flow types',
     },
   },
