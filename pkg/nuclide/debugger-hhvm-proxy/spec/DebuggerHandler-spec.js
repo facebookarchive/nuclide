@@ -15,12 +15,14 @@ var DebuggerHandler = require('../lib/DebuggerHandler');
 describe('debugger-hhvm-proxy DebuggerHandler', () => {
     var callback;
     var socket;
+    var cache;
     var handler;
 
     beforeEach(() => {
       callback = jasmine.createSpyObj('callback', ['replyToCommand', 'replyWithError', 'sendMethod']);
       socket = jasmine.createSpyObj('socket', ['getStatus', 'getStackFrames', 'sendContinuationCommand', 'sendBreakCommand']);
-      handler = new DebuggerHandler(callback, socket);
+      cache = jasmine.createSpyObj('cache', ['enable', 'disable', 'getScopesForFrame']);
+      handler = new DebuggerHandler(callback, socket, cache);
     });
 
     it('enable', () => {
@@ -55,9 +57,13 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
         await handler.handleMethod(1, 'enable');
 
         expect(socket.getStatus).toHaveBeenCalledWith();
+        expect(cache.disable).toHaveBeenCalledWith();
         expect(socket.sendContinuationCommand).toHaveBeenCalledWith('step_into');
         expect(callback.sendMethod).toHaveBeenCalledWith('Debugger.resumed', undefined);
         expect(socket.getStackFrames).toHaveBeenCalledWith();
+        expect(cache.enable).toHaveBeenCalledWith();
+        expect(cache.getScopesForFrame).toHaveBeenCalledWith(0);
+        expect(cache.getScopesForFrame).toHaveBeenCalledWith(1);
         expect(callback.sendMethod).toHaveBeenCalledWith(
           'Debugger.scriptParsed',
           {
@@ -79,13 +85,7 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
                     lineNumber: 4,
                     scriptId: '/usr/test.php',
                   },
-                  scopeChain: [
-                    {
-                      type: 'local',
-                      object: {
-                        value: 'TODO: scopeOfFrame',
-                      },
-                    }],
+                  scopeChain: undefined,
                   'this': { value: 'TODO: this-object'},
               },
               {
@@ -95,13 +95,7 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
                     lineNumber: 14,
                     scriptId: '/usr/test.php',
                   },
-                  scopeChain: [
-                    {
-                      type: 'local',
-                      object: {
-                        value: 'TODO: scopeOfFrame',
-                      },
-                    }],
+                  scopeChain: undefined,
                   'this': { value: 'TODO: this-object'},
               },
             ],
@@ -136,8 +130,10 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
 
         await handler.handleMethod(1, chromeCommand);
 
+        expect(cache.disable).toHaveBeenCalledWith();
         expect(socket.sendContinuationCommand).toHaveBeenCalledWith(dbgpCommand);
         expect(callback.sendMethod).toHaveBeenCalledWith('Debugger.resumed', undefined);
+        expect(cache.enable).toHaveBeenCalledWith();
         expect(socket.getStackFrames).toHaveBeenCalledWith();
         expect(callback.sendMethod).toHaveBeenCalledWith(
           'Debugger.paused',
@@ -182,6 +178,7 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
 
         await handler.handleMethod(1, 'resume');
 
+        expect(cache.disable).toHaveBeenCalledWith();
         expect(socket.sendContinuationCommand).toHaveBeenCalledWith('run');
         expect(callback.sendMethod).toHaveBeenCalledWith('Debugger.resumed', undefined);
         expect(socket.sendContinuationCommand).toHaveBeenCalledWith('stop');

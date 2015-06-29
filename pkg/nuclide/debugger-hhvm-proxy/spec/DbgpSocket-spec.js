@@ -182,4 +182,34 @@ describe('debugger-hhvm-proxy DbgpSocket', () => {
         '<error code="1" apperr="42"><message>removeBreakpoint error</message></error>');
       waitsForPromise({shouldReject: true}, async () => (await call));
     });
+
+    it('getContextsForFrame', () => {
+      waitsForPromise(async () => {
+        var call = dbgpSocket.getContextsForFrame('42');
+        testCallResult(
+          'context_names -i 1 -d 42',
+          {
+            command: 'context_names',
+            transaction_id: '1',
+          },
+          '<context name="Local" id="0"/>' +
+          '<context name="Global" id="1"/>' +
+          '<context name="Class" id="2"/>');
+        var result = await call;
+        expect(result).toEqual([
+          {
+            name: 'Local',
+            id: '0',
+          },
+          {
+            name: 'Global',
+            id: '1',
+          },
+          {
+            name: 'Class',
+            id : '2',
+          }
+        ]);
+      });
+    });
 });

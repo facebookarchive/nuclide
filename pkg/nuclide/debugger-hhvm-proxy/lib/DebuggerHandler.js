@@ -30,13 +30,15 @@ const SESSION_END_EVENT = 'session-end-event';
 // Handles all 'Debug.*' Chrome dev tools messages
 class DebuggerHandler extends Handler {
   _socket: DbgpSocket;
+  _dataCache: DataCache;
   _files: FileCache;
   _emitter: EventEmitter;
 
-  constructor(callback: ChromeCallback, socket: DbgpSocket) {
+  constructor(callback: ChromeCallback, socket: DbgpSocket, dataCache: DataCache) {
     super('Debugger', callback);
 
     this._socket = socket;
+    this._dataCache = dataCache;
     var FileCache = require('./FileCache');
     this._files = new FileCache(callback);
     var {EventEmitter} = require('events');
@@ -143,10 +145,11 @@ class DebuggerHandler extends Handler {
 
   async _getStackFrames(): Promise<Array<Object>> {
     var frames = await this._socket.getStackFrames();
-    return frames.stack.map(frame => this._convertFrame(frame));
+    return await Promise.all(
+      frames.stack.map((frame, frameIndex) => this._convertFrame(frame, frameIndex)));
   }
 
-  _convertFrame(frame: Object, frameIndex: number): Object {
+  async _convertFrame(frame: Object, frameIndex: number): Promise<Object> {
     log('Converting frame: ' + JSON.stringify(frame));
     try {
       var {
@@ -163,7 +166,7 @@ class DebuggerHandler extends Handler {
         callFrameId: idOfFrame(frame),
         functionName: functionOfFrame(frame),
         location: locationOfFrame(frame),
-        scopeChain: scopesOfFrame(frame),
+        scopeChain: await this._dataCache.getScopesForFrame(frameIndex),
         'this': thisObjectOfFrame(frame),
       };
     } catch (e) {
@@ -181,6 +184,7 @@ class DebuggerHandler extends Handler {
   // is a status message which occurs after execution stops.
   async _sendContinuationCommand(command: string): Promise {
     log('Sending continuation command: ' + command);
+    this._dataCache.disable();
     var statusPromise = this._socket.sendContinuationCommand(command);
     this.sendMethod('Debugger.resumed');
     await this._sendStatus(await statusPromise);
@@ -202,6 +206,7 @@ class DebuggerHandler extends Handler {
       await this._sendContinuationCommand(COMMAND_STEP_INTO);
       break;
     case STATUS_BREAK:
+      this._dataCache.enable();
       await this._sendPausedMessage();
       break;
     case STATUS_RUNNING:

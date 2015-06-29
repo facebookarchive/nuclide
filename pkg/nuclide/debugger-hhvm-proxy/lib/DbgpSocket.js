@@ -26,6 +26,11 @@ const COMMAND_STEP_OVER = 'step_over';
 const COMMAND_STEP_OUT = 'step_out';
 const COMMAND_STOP = 'stop';
 
+type DbgpContext = {
+  name: string;
+  id: string;
+};
+
 /**
  * Handles sending and recieving dbgp messages over a net Socket.
  * Dbgp documentation can be found at http://xdebug.org/docs-dbgp.php
@@ -76,6 +81,11 @@ class DbgpSocket {
 
   getStackFrames(): Promise<Array<Object>> {
     return this._callDebugger('stack_get');
+  }
+
+  async getContextsForFrame(frameIndex: number): Promise<Array<DbgpContext>> {
+    var result = await this._callDebugger('context_names', `-d ${frameIndex}`);
+    return result.context.map(context => context.$);
   }
 
   // Returns one of:

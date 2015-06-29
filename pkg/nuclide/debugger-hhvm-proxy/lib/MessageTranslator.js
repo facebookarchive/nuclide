@@ -13,6 +13,7 @@
 var {log} = require('./utils');
 var ChromeCallback = require('./ChromeCallback');
 var {DbgpSocket} = require('./DbgpSocket');
+var DataCache = require('./DataCache');
 var DebuggerHandler = require('./DebuggerHandler');
 var PageHandler = require('./PageHandler');
 var ConsoleHandler = require('./ConsoleHandler');
@@ -25,6 +26,7 @@ var RuntimeHandler = require('./RuntimeHandler');
  */
 class MessageTranslator {
   _socket: ?DbgpSocket;
+  _dataCache: DataCache;
   _callback: ChromeCallback;
   _debuggerHandler: DebuggerHandler;
   _handlers: Map<string, Handler>;
@@ -32,9 +34,10 @@ class MessageTranslator {
   constructor(socket: Socket, callback: (message: string) => void) {
     var dbgpSocket = new DbgpSocket(socket);
     this._socket = dbgpSocket;
+    this._dataCache = new DataCache(dbgpSocket);
     this._callback = new ChromeCallback(callback);
     this._handlers = new Map();
-    this._debuggerHandler = new DebuggerHandler(this._callback, dbgpSocket);
+    this._debuggerHandler = new DebuggerHandler(this._callback, dbgpSocket, this._dataCache);
     this._addHandler(this._debuggerHandler);
     this._addHandler(new PageHandler(this._callback));
     this._addHandler(new ConsoleHandler(this._callback));
