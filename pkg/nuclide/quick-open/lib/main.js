@@ -13,7 +13,11 @@ import type {
   QuickSelectionComponent,
 } from './QuickSelectionComponent';
 
-var {track} = require('nuclide-analytics');
+var trackFunction;
+function track(...args) {
+  var trackFunc = trackFunction || (trackFunction = require('nuclide-analytics').track);
+  trackFunc.apply(null, args);
+}
 
 var debounceFunction = null;
 function debounce(...args) {
