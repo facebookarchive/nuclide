@@ -9,7 +9,10 @@
  * the root directory of this source tree.
  */
 
-function extractWordAtPosition(editor: TextEditor, position: Point, wordRegex: ?RegEx): ?{word: string; range: Range} {
+function extractWordAtPosition(
+    editor: atom$TextEditor,
+    position: atom$Point,
+    wordRegex: ?RegExp): ?{word: string; range: Range} {
   if (!wordRegex) {
     wordRegex = editor.getLastCursor().wordRegExp();
   }

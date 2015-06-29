@@ -16,7 +16,7 @@ var {Range} = require('atom');
  */
 function getWordTextAndRange(
     textEditor: TextEditor,
-    position: Point,
+    position: atom$Point,
     wordRegExp?: ?RegExp): {text: string; range: Range} {
   if (!wordRegExp) {
     wordRegExp = textEditor.getLastCursor().wordRegExp();

@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type Hyperclick from './Hyperclick';
+
 var getWordTextAndRange = require('./get-word-text-and-range');
 
 /**
@@ -59,7 +61,7 @@ class HyperclickForTextEditor {
     }
   }
 
-  _onMouseMove(event: MouseEvent): Promise {
+  _onMouseMove(event: MouseEvent): ?Promise {
     // We save the last `MouseEvent` so the user can trigger Hyperclick by
     // pressing the key without moving the mouse again. We only save the
     // relevant properties to prevent retaining a reference to the event.
@@ -128,7 +130,7 @@ class HyperclickForTextEditor {
     return this._lastSuggestionAtMousePromise || Promise.resolve(null);
   }
 
-  async _setSuggestionForLastMouseEvent(): void {
+  async _setSuggestionForLastMouseEvent(): Promise<void> {
     if (!this._lastMouseEvent) {
       return;
     }
@@ -156,7 +158,7 @@ class HyperclickForTextEditor {
     }
   }
 
-  _getMousePosition(): Point {
+  _getMousePosition(): atom$Point {
     return this._textEditorView.component.screenPositionForMouseEvent(this._lastMouseEvent);
   }
 
@@ -174,7 +176,7 @@ class HyperclickForTextEditor {
     return this._isPositionInRange(this._getMousePosition(), this._lastWordRange);
   }
 
-  _isPositionInRange(position: Point, range: Range | Array<Range>): boolean {
+  _isPositionInRange(position: atom$Point, range: Range | Array<Range>): boolean {
     return (Array.isArray(range)
         ? range.some(r => r.containsPoint(position))
         : range.containsPoint(position));
@@ -186,7 +188,7 @@ class HyperclickForTextEditor {
     this._updateNavigationMarkers(null);
   }
 
-  async _confirmSuggestionAtCursor() {
+  async _confirmSuggestionAtCursor(): Promise<void> {
     var suggestion = await this._hyperclick.getSuggestion(
         this._textEditor,
         this._textEditor.getCursorBufferPosition());
@@ -198,7 +200,7 @@ class HyperclickForTextEditor {
   /**
    * Add markers for the given range(s), or clears them if `ranges` is null.
    */
-  _updateNavigationMarkers(range: ?Range | ?Array<Range>, loading?: boolean): void {
+  _updateNavigationMarkers(range: ?(Range | Array<Range>), loading?: boolean): void {
     if (this._navigationMarkers) {
       this._navigationMarkers.forEach(marker => marker.destroy());
       this._navigationMarkers = null;

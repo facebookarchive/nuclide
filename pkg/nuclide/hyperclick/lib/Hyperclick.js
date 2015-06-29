@@ -9,7 +9,6 @@
  * the root directory of this source tree.
  */
 
-var {Range} = require('atom');
 var SuggestionList = require('./SuggestionList');
 var SuggestionListElement = require('./SuggestionListElement');
 var getWordTextAndRange = require('./get-word-text-and-range');
@@ -23,7 +22,7 @@ type HyperclickProvider = {
 
   // Use this to provide a suggestion if it can have non-contiguous ranges.
   // A primary use-case for this is Objective-C methods.
-  getSuggestion?: (textEditor: TextEditor, position: Point) => ?Promise<HyperclickSuggestion>;
+  getSuggestion?: (textEditor: TextEditor, position: atom$Point) => ?Promise<HyperclickSuggestion>;
 
   // The higher this is, the more precedence the provider gets. Defaults to 0.
   priority?: number;
