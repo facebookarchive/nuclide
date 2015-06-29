@@ -75,6 +75,13 @@ and restart Atom to get it back.)
 * Python 2.6 or later.
 * Atom v0.209.0 or later.
 * `node`, `npm`, `apm`, and `git` must be on your `$PATH`. (Node must be v0.12.0 or later.)
+* [Watchman](https://facebook.github.io/watchman/) version 3.2 or above. It must
+be in `/usr/local/bin/` or in your $PATH. Note that Watchman is not currently available
+on Windows (June 2015). Without Watchman, Nuclide will lose some functionality:
+for instance, in the [`hg-repository`](https://github.com/facebook/nuclide/tree/master/pkg/nuclide/hg-repository),
+[`server`](https://github.com/facebook/nuclide/tree/master/pkg/nuclide/server), and
+[`quick-open`](https://github.com/facebook/nuclide/tree/master/pkg/nuclide/quick-open)
+packages.
 
 **Build and install Nuclide**
 
