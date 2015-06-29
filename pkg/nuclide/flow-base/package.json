@@ -13,7 +13,8 @@
     "nuclide-node-transpiler": "0.0.0"
   },
   "devDependencies": {
-    "nuclide-atom-interfaces": "0.0.0"
+    "nuclide-atom-interfaces": "0.0.0",
+    "nuclide-test-helpers": "0.0.0"
   },
   "scripts": {
     "test": "node --harmony node_modules/.bin/jasmine-node-transpiled spec"

@@ -33,6 +33,26 @@ async function expectAsyncFailure(
   }
 }
 
+/**
+  * This is useful for mocking a module that the module under test requires.
+  * After setting up the mocks, you must invalidate the require cache and then
+  * re-require the module under test so that it picks up the mocked
+  * dependencies.
+  *
+  * The require parameter is needed because require is bound differently in each
+  * file, and we need to execute this in the caller's context.
+  */
+function clearRequireCache(require: Object, module: string): void {
+  delete require.cache[require.resolve(module)];
+}
+
+function uncachedRequire(require: Object, module: string): mixed {
+  clearRequireCache(require, module);
+  return require(module);
+}
+
 module.exports = {
+  uncachedRequire,
+  clearRequireCache,
   expectAsyncFailure,
 };

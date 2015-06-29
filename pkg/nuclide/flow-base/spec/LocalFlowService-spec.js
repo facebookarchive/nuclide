@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+var {uncachedRequire} = require('nuclide-test-helpers');
+
 describe('LocalFlowService', () => {
   var file = 'test.js';
   var currentContents = '/* @flow */\nvar x = "this_is_a_string"';
@@ -21,8 +23,7 @@ describe('LocalFlowService', () => {
     var localFlowService = '../lib/LocalFlowService';
     // we have to invalidate the require cache in order to mock modules we
     // depend on
-    delete require.cache[require.resolve(localFlowService)];
-    return new (require(localFlowService))();
+    return new (uncachedRequire(require, localFlowService))();
   }
 
   beforeEach(() => {
