@@ -82,4 +82,8 @@ module.exports = {
   get dnsUtils() {
     return require('./dns_utils');
   },
+
+  get env() {
+    return require('./environment');
+  },
 };
