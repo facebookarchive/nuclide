@@ -15,12 +15,24 @@ var path = require('path');
 
 /**
  * @param repoPath The full path to the repository directory (.hg).
- * @return A promise that resolves to the current bookmark name, if it exists.
- *   Promise will reject if there is no current bookmark name.
+ * @return A promise that resolves to the current bookmark name, if it exists,
+ *   or else an empty string.
  */
-function fetchCurrentBookmark(repoPath: string): Promise<string> {
+async function fetchCurrentBookmark(repoPath: string): Promise<string> {
   var bookmarkFile = path.join(repoPath, 'bookmarks.current');
-  return fsPromise.readFile(bookmarkFile, 'utf-8');
+  var result;
+  try {
+    result = await fsPromise.readFile(bookmarkFile, 'utf-8');
+  } catch (e) {
+    if (!(e.code === 'ENOENT')) {
+      // We expect an error if the bookmark file doesn't exist. Otherwise, the
+      // error is unexpected, so log it.
+      var logger = require('nuclide-logging').getLogger();
+      logger.error(e);
+    }
+    result = '';
+  }
+  return result;
 }
 
 module.exports = {
