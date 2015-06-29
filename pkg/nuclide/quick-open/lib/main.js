@@ -18,15 +18,19 @@ import type {
 } from './QuickSelectionComponent';
 
 var {track} = require('nuclide-analytics');
-var {
-  debounce,
-} = require('nuclide-commons');
 
-var SearchResultManager = require('./SearchResultManager');
+var debounceFunction = null;
+function debounce(...args) {
+  var debounceFunc = debounceFunction || (debounceFunction = require('nuclide-commons').debounce);
+  return debounceFunc.apply(null, args);
+};
+
+var searchResultManager = null;
+function getSearchResultManager() {
+  return searchResultManager || (searchResultManager = require('./SearchResultManager'));
+};
+
 var QuickSelectionProvider = require('./QuickSelectionProvider');
-var {
-  debounce,
-} = require('nuclide-commons');
 
 var DEFAULT_PROVIDER = 'FileListProvider';
 var MAX_MODAL_WIDTH = 800;
@@ -78,7 +82,7 @@ class Activation {
 
     var {CompositeDisposable} = require('atom');
     this._subscriptions = new CompositeDisposable();
-    this._currentProvider = SearchResultManager.getProvider(DEFAULT_PROVIDER);
+    this._currentProvider = getSearchResultManager().getProvider(DEFAULT_PROVIDER);
     this._reactDiv = document.createElement('div');
     this._searchPanel = atom.workspace.addModalPanel({item: this._reactDiv, visible: false});
     this._debouncedUpdateModalPosition = debounce(this._updateModalPosition.bind(this), 200);
@@ -186,7 +190,7 @@ class Activation {
         'quickopen-session': analyticsSessionId,
       }
     );
-    var provider = SearchResultManager.getProvider(providerName);
+    var provider = getSearchResultManager().getProvider(providerName);
     // "toggle" behavior
     if (
       this._searchPanel !== null &&
