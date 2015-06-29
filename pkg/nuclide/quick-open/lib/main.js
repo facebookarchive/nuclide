@@ -79,11 +79,10 @@ class Activation {
   _subscriptions: atom$CompositeDisposable;
   _debouncedUpdateModalPosition: () => void;
 
-  constructor(state: ?Object) {
+  constructor() {
     this._previousFocus = null;
 
     var {CompositeDisposable} = require('atom');
-    this._subscriptions = new CompositeDisposable();
     this._currentProvider = getSearchResultManager().getProvider(DEFAULT_PROVIDER);
     this._reactDiv = document.createElement('div');
     this._searchPanel = atom.workspace.addModalPanel({item: this._reactDiv, visible: false});
@@ -139,23 +138,6 @@ class Activation {
         }
       );
     }, AnalyticsDebounceDelays.CHANGE_SELECTION));
-    this._subscriptions.add(
-      atom.commands.add('atom-workspace', 'nuclide-quick-open:toggle-omni-search', () => {
-        this.toggleProvider('OmniSearchResultProvider');
-      }),
-      atom.commands.add('atom-workspace', 'nuclide-quick-open:toggle-quick-open', () => {
-        this.toggleProvider('FileListProvider');
-      }),
-      atom.commands.add('atom-workspace', 'nuclide-quick-open:toggle-symbol-search', () => {
-        this.toggleProvider('SymbolListProvider');
-      }),
-      atom.commands.add('atom-workspace', 'nuclide-quick-open:toggle-biggrep-search', () => {
-        this.toggleProvider('BigGrepListProvider');
-      }),
-      atom.commands.add('atom-workspace', 'nuclide-quick-open:toggle-openfilename-search', () => {
-        this.toggleProvider('OpenFileListProvider');
-      })
-    );
   }
 
   _updateModalPosition() {
@@ -176,11 +158,6 @@ class Activation {
       />,
       this._reactDiv
     );
-  }
-
-  dispose() {
-    this._subscriptions.dispose();
-    window.removeEventListener('resize', this._debouncedUpdateModalPosition);
   }
 
   toggleProvider(providerName: string) {
@@ -246,20 +223,54 @@ class Activation {
   }
 }
 
+var {CompositeDisposable} = require('atom');
+
 var activation: ?Activation = null;
+var activationListeners: ?CompositeDisposable = null;
+
+function activateSearchUI(): void {
+  if (!activation) {
+    activation = new Activation();
+  }
+}
 
 module.exports = {
 
-  activate(state: ?Object): void {
-    if (!activation) {
-      activation = new Activation(state);
-    }
+  activate(): void {
+    activationListeners = new CompositeDisposable();
+    activationListeners.add(
+      atom.commands.add('atom-workspace', {
+        'nuclide-quick-open:toggle-omni-search': () => {
+          activateSearchUI();
+          activation.toggleProvider('OmniSearchResultProvider');
+        },
+        'nuclide-quick-open:toggle-quick-open': () => {
+          activateSearchUI();
+          activation.toggleProvider('FileListProvider');
+        },
+        'nuclide-quick-open:toggle-symbol-search': () => {
+          activateSearchUI();
+          activation.toggleProvider('SymbolListProvider');
+        },
+        'nuclide-quick-open:toggle-biggrep-search': () => {
+          activateSearchUI();
+          activation.toggleProvider('BigGrepListProvider');
+        },
+        'nuclide-quick-open:toggle-openfilename-search': () => {
+          activateSearchUI();
+          activation.toggleProvider('OpenFileListProvider');
+        },
+      })
+    );
   },
 
   deactivate(): void {
     if (activation) {
-      activation.dispose();
       activation = null;
+    }
+    if (activationListeners) {
+      activationListeners.dispose();
+      activationListeners = null;
     }
   }
 };

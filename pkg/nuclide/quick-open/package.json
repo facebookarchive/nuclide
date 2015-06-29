@@ -8,15 +8,6 @@
     "packageType": "Atom",
     "testRunner": "apm"
   },
-  "activationCommands": {
-    "atom-workspace": [
-      "nuclide-quick-open:toggle-omni-search",
-      "nuclide-quick-open:toggle-quick-open",
-      "nuclide-quick-open:toggle-symbol-search",
-      "nuclide-quick-open:toggle-biggrep-search",
-      "nuclide-quick-open:toggle-openfilename-search"
-    ]
-  },
   "engines": {
     "atom": ">=0.187.0"
   },
