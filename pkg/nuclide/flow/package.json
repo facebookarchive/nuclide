@@ -39,5 +39,8 @@
     "nuclide-client": "0.0.0",
     "nuclide-commons": "0.0.0",
     "nuclide-flow-base": "0.0.0"
+  },
+  "devDependencies": {
+    "nuclide-test-helpers": "0.0.0"
   }
 }

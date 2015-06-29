@@ -51,7 +51,26 @@ function uncachedRequire(require: Object, module: string): mixed {
   return require(module);
 }
 
+/**
+ * Jasmine has trouble spying on properties supplied by getters, so to make it
+ * work we have to get the value, delete the getter, and set the value as a
+ * property.
+ *
+ * This makes two assumptions:
+ * - The getter is idempotent (otherwise, callers in other tests might be
+ *   surprised when the value here is returned)
+ * - The getter returns a function (otherwise, it doesn't make sense to spy on
+ *   it)
+ */
+function spyOnGetterValue(object: Object, f: string) {
+  var value = object[f];
+  delete object[f];
+  object[f] = value;
+  return spyOn(object, f);
+}
+
 module.exports = {
+  spyOnGetterValue,
   uncachedRequire,
   clearRequireCache,
   expectAsyncFailure,
