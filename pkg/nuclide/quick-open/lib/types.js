@@ -14,3 +14,6 @@ export type FileResult = any;
 export type GroupedResult = {string: {string: {items: Array<FileResult>}}};
 
 export type GroupedResultPromise = Promise<GroupedResult>;
+
+var QuickSelectionProvider = require('./QuickSelectionProvider');
+export type QuickSelectionProvider = QuickSelectionProvider;

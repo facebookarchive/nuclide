@@ -13,6 +13,10 @@ import type {
   QuickSelectionComponent,
 } from './QuickSelectionComponent';
 
+import type {
+  QuickSelectionProvider,
+} from './types';
+
 var trackFunction;
 function track(...args) {
   var trackFunc = trackFunction || (trackFunction = require('nuclide-analytics').track);
@@ -29,8 +33,6 @@ var searchResultManager = null;
 function getSearchResultManager() {
   return searchResultManager || (searchResultManager = require('./SearchResultManager'));
 };
-
-var QuickSelectionProvider = require('./QuickSelectionProvider');
 
 var DEFAULT_PROVIDER = 'FileListProvider';
 var MAX_MODAL_WIDTH = 800;
