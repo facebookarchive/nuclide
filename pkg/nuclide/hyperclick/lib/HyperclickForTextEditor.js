@@ -144,8 +144,8 @@ class HyperclickForTextEditor {
       }
     }
 
-    // Add the loading marker.
-    this._updateNavigationMarkers(null, /* loading */ true);
+    // Show the loading cursor.
+    this._textEditorView.classList.add('hyperclick-loading');
 
     this._lastSuggestionAtMousePromise = this._hyperclick.getSuggestion(this._textEditor, position);
     this._lastSuggestionAtMouse = await this._lastSuggestionAtMousePromise;
@@ -156,6 +156,8 @@ class HyperclickForTextEditor {
       // Remove all the markers if we've finished loading and there's no suggestion.
       this._updateNavigationMarkers(null);
     }
+
+    this._textEditorView.classList.remove('hyperclick-loading');
   }
 
   _getMousePosition(): atom$Point {
@@ -213,21 +215,13 @@ class HyperclickForTextEditor {
       this._textEditorView.classList.remove('hyperclick');
     }
 
-    // Display a dashed underline at the current word while hyperclick is loading.
-    // If hyperclick is done loading, display a solid underline.
-    var className = 'hyperclick';
-    if (!range && loading) {
-      range = this._lastWordRange;
-      className = 'hyperclick-loading';
-    }
-
     if (range) {
       var ranges = Array.isArray(range) ? range : [range];
       this._navigationMarkers = ranges.map(markerRange => {
         var marker = this._textEditor.markBufferRange(markerRange, {invalidate: 'never'});
         this._textEditor.decorateMarker(
             marker,
-            {type: 'highlight', class: className});
+            {type: 'highlight', class: 'hyperclick'});
         return marker;
       });
     }
