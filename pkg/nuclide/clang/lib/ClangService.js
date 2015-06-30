@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {NuclideUri, Declaration} from './types';
+
 class ClangService {
   compile(src: NuclideUri, contents: string): Promise<any> {
     return Promise.reject('Not implemented');
@@ -24,7 +26,12 @@ class ClangService {
     return Promise.reject('Not implemented');
   }
 
-  getIdForPosition(src: NuclideUri, contents: string, line: number, column: number): Promise {
+  getDeclarationInfo(
+    src: NuclideUri,
+    contents: string,
+    line: number,
+    column: number
+  ): Promise<?{file: NuclideUri; line: number; column: number; info: Array<Declaration>}> {
     return Promise.reject('Not implemented');
   }
 }
