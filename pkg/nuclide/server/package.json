@@ -38,8 +38,9 @@
     "yargs": "3.1.0"
   },
   "devDependencies": {
-    "temp": "0.8.1",
-    "rimraf": "2.2.8"
+    "nuclide-jasmine": "0.0.0",
+    "rimraf": "2.2.8",
+    "temp": "0.8.1"
   },
   "scripts": {
     "test": "node --harmony node_modules/.bin/jasmine-node-transpiled spec"

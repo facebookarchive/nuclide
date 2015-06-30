@@ -1,0 +1,20 @@
+{
+  "name": "nuclide-jasmine",
+  "repository": "https://github.com/facebook/nuclide",
+  "version": "0.0.0",
+  "description": "Atom-compatible Jasmine test runner that runs outside of Atom",
+  "nuclide": {
+    "packageType": "Node",
+    "testRunner": "npm"
+  },
+  "dependencies": {
+    "jasmine-focused": "1.0.7",
+    "nuclide-node-transpiler": "0.0.0"
+  },
+  "bin": {
+    "jasmine-node-transpiled": "bin/jasmine-node-transpiled"
+  },
+  "scripts": {
+    "test": "node --harmony bin/jasmine-node-transpiled spec"
+  }
+}

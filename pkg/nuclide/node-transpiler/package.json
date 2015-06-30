@@ -11,13 +11,6 @@
   "dependencies": {
     "babel-core": "5.5.4",
     "babel-runtime": "5.5.4",
-    "jasmine-focused": "1.0.7",
     "temp": "0.8.1"
-  },
-  "bin": {
-    "jasmine-node-transpiled": "bin/jasmine-node-transpiled"
-  },
-  "scripts": {
-    "test": "node --harmony bin/jasmine-node-transpiled spec"
   }
 }

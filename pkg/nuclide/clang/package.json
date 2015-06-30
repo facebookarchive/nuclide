@@ -12,8 +12,10 @@
     "nuclide-buck-base": "0.0.0",
     "nuclide-commons": "0.0.0",
     "nuclide-logging": "0.0.0",
-    "nuclide-node-transpiler": "0.0.0",
     "split": "0.3.2"
+  },
+  "devDependencies": {
+    "nuclide-jasmine": "0.0.0"
   },
   "scripts": {
     "test": "node --harmony node_modules/.bin/jasmine-node-transpiled spec"

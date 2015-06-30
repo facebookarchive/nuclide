@@ -9,11 +9,11 @@
     "testRunner": "npm"
   },
   "dependencies": {
-    "nuclide-commons": "0.0.0",
-    "nuclide-node-transpiler": "0.0.0"
+    "nuclide-commons": "0.0.0"
   },
   "devDependencies": {
     "fs-plus": "",
+    "nuclide-jasmine": "0.0.0",
     "temp": "0.8.1"
   },
   "scripts": {

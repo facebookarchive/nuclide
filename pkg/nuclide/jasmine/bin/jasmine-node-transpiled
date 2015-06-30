@@ -12,8 +12,8 @@ if (!process.env.NODE_ENV) {
   process.env.NODE_ENV = 'test';
 }
 
-// Load module itself to start transpiling.
-require('../lib/main');
+// Load nuclide-node-transpiler to start transpiling.
+require('nuclide-node-transpiler');
 
 // Load waitsForPromise into global.
 global.waitsForPromise = require('../lib/waitsForPromise');

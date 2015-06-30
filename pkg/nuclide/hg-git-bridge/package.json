@@ -8,16 +8,10 @@
     "packageType": "Node",
     "testRunner": "apm"
   },
-  "dependencies": {
-    "nuclide-node-transpiler": "0.0.0"
-  },
   "devDependencies": {
     "nuclide-commons": "0.0.0",
     "nuclide-hg-repository-base": "0.0.0",
     "nuclide-hg-repository-client": "0.0.0",
     "temp": "0.8.1"
-  },
-  "scripts": {
-    "test": "node --harmony node_modules/.bin/jasmine-node-transpiled spec"
   }
 }

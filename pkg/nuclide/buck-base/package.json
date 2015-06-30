@@ -9,10 +9,12 @@
   },
   "dependencies": {
     "fs-plus": "2.8.0",
-    "nuclide-logging": "0.0.0",
-    "nuclide-node-transpiler": "0.0.0",
     "nuclide-commons": "0.0.0",
+    "nuclide-logging": "0.0.0",
     "temp": "0.8.1"
+  },
+  "devDependencies": {
+    "nuclide-jasmine": "0.0.0"
   },
   "scripts": {
     "test": "node --harmony node_modules/.bin/jasmine-node-transpiled spec"

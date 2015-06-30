@@ -9,10 +9,6 @@
     "testRunner": "apm"
   },
   "dependencies": {
-    "nuclide-client": "0.0.0",
-    "nuclide-node-transpiler": "0.0.0"
-  },
-  "scripts": {
-    "test": "node --harmony node_modules/.bin/jasmine-node-transpiled spec"
+    "nuclide-client": "0.0.0"
   }
 }

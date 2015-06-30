@@ -13,6 +13,9 @@
     "mkdirp": "0.5.0",
     "nuclide-node-transpiler": "0.0.0"
   },
+  "devDependencies": {
+    "nuclide-jasmine": "0.0.0"
+  },
   "bin": {
     "nuclide-service-transpile": "bin/nuclide-service-transpile"
   },

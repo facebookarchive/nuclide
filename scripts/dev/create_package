@@ -144,8 +144,8 @@ NODE_NPM_PACKAGE_JSON_TEMPLATE = """\
     "packageType": "Node",
     "testRunner": "npm"
   },
-  "dependencies": {
-    "nuclide-node-transpiler": "0.0.0"
+  "devDependencies": {
+    "nuclide-jasmine": "0.0.0"
   },
   "scripts": {
     "test": "node --harmony node_modules/.bin/jasmine-node-transpiled spec"

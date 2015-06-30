@@ -9,11 +9,10 @@
   },
   "dependencies": {
     "nuclide-commons": "0.0.0",
-    "nuclide-logging": "0.0.0",
-    "nuclide-node-transpiler": "0.0.0"
+    "nuclide-logging": "0.0.0"
   },
   "devDependencies": {
-    "nuclide-atom-interfaces": "0.0.0",
+    "nuclide-jasmine": "0.0.0",
     "nuclide-test-helpers": "0.0.0"
   },
   "scripts": {

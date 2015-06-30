@@ -20,8 +20,8 @@
     "nuclide-ui-atom-input": "0.0.0",
     "nuclide-ui-tabs": "0.0.0",
     "object-assign": "2.0.0",
-    "react-for-atom": "0.13.6",
-    "react-classset": "0.0.2"
+    "react-classset": "0.0.2",
+    "react-for-atom": "0.13.6"
   },
   "devDependencies": {
     "nuclide-atom-interfaces": "0.0.0"

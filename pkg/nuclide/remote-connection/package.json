@@ -12,13 +12,9 @@
     "fs-plus": "2.8.0",
     "nuclide-commons": "0.0.0",
     "nuclide-logging": "0.0.0",
-    "nuclide-node-transpiler": "0.0.0",
     "nuclide-server": "0.0.0",
     "nuclide-version": "0.0.0",
     "ssh2": "0.4.2"
-  },
-  "scripts": {
-    "test": "node --harmony node_modules/.bin/jasmine-node-transpiled spec"
   },
   "devDependencies": {
     "nuclide-atom-interfaces": "0.0.0",

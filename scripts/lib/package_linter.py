@@ -10,6 +10,8 @@ import sys
 
 from json_helpers import json_load
 
+EXPECTED_NPM_TEST_COMMAND = 'node --harmony node_modules/.bin/jasmine-node-transpiled spec'
+
 # Detects errors in Nuclide pacakge.json files.
 #  - missing/empty description
 #  - missing/incorrect repository
@@ -29,6 +31,8 @@ class PackageLinter(object):
     def validate_package(self, package_name, package):
         self.expect_field_in(package_name, package, 'packageType', ['Node', 'Atom'])
         self.expect_field_in(package_name, package, 'testRunner', ['npm', 'apm'])
+        self.verify_test_runner(package)
+
         if not 'description' in package:
             self.report_error('Missing "description" for %s', package_name)
         elif not package['description']:
@@ -45,18 +49,62 @@ class PackageLinter(object):
         self.validate_dependencies(package, 'dependencies')
         self.validate_dependencies(package, 'devDependencies')
 
+    def verify_test_runner(self, package):
+        test_runner = package['testRunner']
+        package_name = package['name']
+        if test_runner == 'npm':
+            if not 'scripts' in package:
+                self.report_error(
+                    'Package %s should have a "scripts" section with a "test" property.',
+                    package_name)
+            elif not 'test' in package['scripts']:
+                if package_name in ['nuclide-atom-interfaces', 'nuclide-node-transpiler']:
+                    # nuclide-atom-interfaces does not contain any code, so no tests.
+                    # nuclide-node-transpiler is a dependency of nuclide-jasmine, so it cannot
+                    # use nuclide-jasmine as a test runner. As it stands, it has no tests.
+                    return
+
+                self.report_error(
+                    ('Package %s should have a "test" property in its "scripts" section ' +
+                        'to define how its tests are run.'),
+                    package_name)
+            elif package['scripts']['test'] != EXPECTED_NPM_TEST_COMMAND:
+                if package_name == 'nuclide-jasmine':
+                    # nuclide-jasmine must have a slightly different test script than
+                    # EXPECTED_NPM_TEST_COMMAND.
+                    return
+
+                self.report_error(
+                    'Package %s should have a "test" property with the value: %s',
+                    package_name,
+                    EXPECTED_NPM_TEST_COMMAND)
+        elif test_runner == 'apm':
+            if 'scripts' in package and 'test' in package['scripts']:
+                self.report_error(
+                    ('Package %s should not have a custom scripts/test section ' +
+                        'because it will use apm as its test runner.'),
+                    package_name)
+        else:
+            self.report_error('Unknown test runner for package %s.', package_name)
+
     def validate_dependencies(self, package, field):
         if field in package:
             for dependent_package_name in package[field]:
                 dependent_package = self._package_map.get(dependent_package_name)
-                self.validate_dependency(package, dependent_package, dependent_package_name)
+                self.validate_dependency(package, dependent_package, dependent_package_name, field)
 
-    def validate_dependency(self, package, dependent_package, dependent_package_name):
+    def validate_dependency(self, package, dependent_package, dependent_package_name, field):
         if not dependent_package:
             if dependent_package_name.startswith('nuclide-'):
                 self.report_error('Missing dependency %s from %s', dependent_package_name,
                         package['name'])
             return
+
+        if dependent_package_name == 'nuclide-jasmine' and field != 'devDependencies':
+            self.report_error(
+                'Package %s depends directly on nuclide-jasmine, but should be in devDependencies.',
+                package['name'])
+
         if package['testRunner'] == 'npm' and dependent_package['testRunner'] != 'npm':
             self.report_error('Cannot reference non-npm package %s from npm package %s',
                     dependent_package_name, package['name'])

@@ -13,11 +13,13 @@
   },
   "dependencies": {
     "dequeue": "1.0.5",
-    "nuclide-node-transpiler": "0.0.0",
-    "shell-escape": "0.2.0",
-    "temp": "0.8.1",
+    "mkdirp": "0.5.0",
     "rimraf": "2.2.8",
-    "mkdirp": "0.5.0"
+    "shell-escape": "0.2.0",
+    "temp": "0.8.1"
+  },
+  "devDependencies": {
+    "nuclide-jasmine": "0.0.0"
   },
   "scripts": {
     "test": "node --harmony node_modules/.bin/jasmine-node-transpiled spec"

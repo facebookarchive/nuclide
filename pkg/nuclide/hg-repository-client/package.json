@@ -11,13 +11,9 @@
   "dependencies": {
     "nuclide-commons": "0.0.0",
     "nuclide-hg-repository-base": "0.0.0",
-    "nuclide-remote-uri": "0.0.0",
-    "nuclide-node-transpiler": "0.0.0"
+    "nuclide-remote-uri": "0.0.0"
   },
   "devDependencies": {
     "temp": "0.8.1"
-  },
-  "scripts": {
-    "test": "node --harmony node_modules/.bin/jasmine-node-transpiled spec"
   }
 }

@@ -12,6 +12,7 @@
     "nuclide-node-transpiler": "0.0.0"
   },
   "devDependencies": {
+    "nuclide-jasmine": "0.0.0",
     "nuclide-test-helpers": "0.0.0"
   },
   "scripts": {
