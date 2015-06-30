@@ -9,13 +9,14 @@
  * the root directory of this source tree.
  */
 
- import type {Diagnostic} from './FlowService';
+import type {Diagnostic} from './FlowService';
+import type {NuclideUri} from 'nuclide-remote-uri';
 
- type Loc = {
-   file: NuclideUri;
-   line: number;
-   column: number;
- }
+type Loc = {
+  file: NuclideUri;
+  line: number;
+  column: number;
+}
 
 var {asyncExecute, safeSpawn, findNearestFile, getConfigValueAsync} = require('nuclide-commons');
 var logger = require('nuclide-logging').getLogger();

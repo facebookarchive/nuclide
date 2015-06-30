@@ -14,6 +14,8 @@
 //
 // This package creates, queries and decomposes NuclideUris.
 
+export type NuclideUri = string;
+
 var REMOTE_PATH_URI_PREFIX = 'nuclide://';
 
 var pathPackage = require('path');
