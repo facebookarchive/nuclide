@@ -214,10 +214,13 @@ class NuclideServer {
 
     this._serviceWithoutServiceFrameworkConfigs.forEach((config: string) => {
       this._registerServiceWithoutServiceFramework(config);
+      logger.info(`Registered service ${config} without ServiceFramework.`);
     });
 
-    this._serviceWithServiceFrameworkConfigs
-        .forEach(config => this._registerServiceWithServiceFramework(config));
+    this._serviceWithServiceFrameworkConfigs.forEach(config => {
+      this._registerServiceWithServiceFramework(config);
+      logger.info(`Registered service ${config.name} with ServiceFramework.`);
+    });
 
     // Setup error handler.
     this._app.use((error, request, response, next) => {

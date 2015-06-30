@@ -1,0 +1,25 @@
+[
+  {
+    "filePath": "test.js",
+    "matches": [
+      {
+        "matchText": "Hello World",
+        "lineText": "Console.log('Hello World.');",
+        "lineTextOffset": 0,
+        "range": [
+          [ 12, 13 ],
+          [ 12, 24 ]
+        ]
+      },
+      {
+        "matchText": "Hello World",
+        "lineText": "Console.log('Hello World.');",
+        "lineTextOffset": 0,
+        "range": [
+          [ 14, 13 ],
+          [ 14, 24 ]
+        ]
+      }
+    ]
+  }
+]

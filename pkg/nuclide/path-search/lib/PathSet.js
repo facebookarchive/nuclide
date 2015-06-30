@@ -20,6 +20,8 @@ type ProcessorJob = {
   chunkCount: number;
 };
 
+type ForEachCallback = (key: string, value: string, set: PathSet) => void;
+
 var INITIAL_CHUNK_SIZE = 200;
 
 /**
@@ -120,6 +122,27 @@ class PathSet {
       paths.forEach(path => { props[path] = {value: false, enumerable: true}; });
       this._latestPaths = Object.freeze(Object.create(proto, props));
     }
+  }
+
+  /**
+   * Helper function to iterate over all the elements in this set.
+   * Compatible with https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set/forEach.
+   */
+  forEach(callback: ForEachCallback): void {
+    for(var path in this._paths) {
+      callback(path, path, this);
+    }
+  }
+
+  /**
+   * Helper function to obtain a list of all of the paths in this set.
+   */
+  values(): Array<string> {
+    var values = [];
+    for(var path in this._paths) {
+      values.push(path);
+    }
+    return values;
   }
 
   /**

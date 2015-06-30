@@ -42,7 +42,7 @@
     "implementation": "nuclide-arcanist-base/lib/LocalArcanistBaseService.js",
     "name": "ArcanistBaseService",
     "useServiceFramework": true
-    },
+  },
   {
     "definition": "nuclide-buck-base/lib/BuckUtils.js",
     "implementation": "nuclide-buck-base/lib/LocalBuckUtils.js",
@@ -59,6 +59,12 @@
     "definition": "nuclide-debugger-hhvm-proxy/lib/HhvmDebuggerProxyService.js",
     "implementation": "nuclide-debugger-hhvm-proxy/lib/LocalHhvmDebuggerProxyService.js",
     "name": "HhvmDebuggerProxyService",
+    "useServiceFramework": true
+  },
+  {
+    "definition": "nuclide-remote-search/lib/FindInProjectService.js",
+    "implementation": "nuclide-remote-search/lib/LocalFindInProjectService.js",
+    "name": "FindInProjectService",
     "useServiceFramework": true
   }
 ]
