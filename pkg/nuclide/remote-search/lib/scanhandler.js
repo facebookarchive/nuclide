@@ -23,7 +23,7 @@ async function search(directory: string, regex: string): Promise<Array<search$Fi
 
   // Sort matches in a Map of filename => Array<Match>.
   var matchesByFile = new Map();
-  var output = await asyncExecute('hg', ['grep', '-in', regex], opts)
+  var output = await asyncExecute('hg', ['wgrep', '-in', regex], opts)
     .catch(() => asyncExecute('git', ['grep', '-in', regex], opts))
     .catch(() => asyncExecute('find', ['.', '-type', 'f', '-exec', 'grep', '-Hn', regex, "{}", ";"], opts))
     .catch(() => { throw new Error(`Failed to execute a grep search.`) });

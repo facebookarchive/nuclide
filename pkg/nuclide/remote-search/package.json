@@ -14,7 +14,8 @@
     "split": "0.3.2"
   },
   "devDependencies": {
-    "nuclide-atom-interfaces": "0.0.0"
+    "nuclide-atom-interfaces": "0.0.0",
+    "temp": "0.8.1"
   },
   "scripts": {
     "test": "node --harmony node_modules/.bin/jasmine-node-transpiled spec"
