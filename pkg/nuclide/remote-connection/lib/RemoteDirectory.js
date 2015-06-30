@@ -121,6 +121,10 @@ class RemoteDirectory {
     return this._localPath;
   }
 
+  getHost(): string {
+    return this._host;
+  }
+
   getRealPathSync(): string {
     throw new Error('Not implemented');
   }

@@ -13,6 +13,11 @@
       "versions": {
         "0.1.0": "createRemoteDirectoryProvider"
       }
+    },
+    "atom.directory-searcher": {
+      "versions": {
+        "0.1.0": "createRemoteDirectorySearcher"
+      }
     }
   },
   "engines": {
@@ -21,6 +26,7 @@
   "dependencies": {
     "nuclide-atom-helpers": "0.0.0",
     "nuclide-keytar-wrapper": "0.0.0",
+    "nuclide-client": "0.0.0",
     "nuclide-logging": "0.0.0",
     "nuclide-remote-connection": "0.0.0",
     "nuclide-remote-uri": "0.0.0",

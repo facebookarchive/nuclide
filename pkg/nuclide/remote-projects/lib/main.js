@@ -10,6 +10,9 @@
  */
 
 var {CompositeDisposable, TextEditor} = require('atom');
+var {getServiceByNuclideUri} = require('nuclide-client');
+var {RemoteDirectory} = require('nuclide-remote-connection');
+
 var subscriptions: ?CompositeDisposable = null;
 var pendingFiles = {};
 
@@ -304,5 +307,11 @@ module.exports = {
   createRemoteDirectoryProvider(): RemoteDirectoryProvider {
     var RemoteDirectoryProvider = require('./RemoteDirectoryProvider');
     return new RemoteDirectoryProvider();
+  },
+
+  createRemoteDirectorySearcher(): RemoteDirectorySearcher {
+    var RemoteDirectorySearcher = require('./RemoteDirectorySearcher');
+    return new RemoteDirectorySearcher((dir: RemoteDirectory) =>
+      getServiceByNuclideUri('FindInProjectService', dir.getPath()));
   },
 };
