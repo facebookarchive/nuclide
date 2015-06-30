@@ -247,6 +247,9 @@ def load_package_configs():
         config['packageType'] = package_type
         config['isNodePackage'] = package_type == 'Node'
         config['localDependencies'] = {}
+        config['dependencies'] = manifest.get('dependencies', {})
+        config['devDependencies'] = manifest.get('devDependencies', {})
+        config['scripts'] = manifest.get('scripts', {})
         config['packageRootAbsolutePath'] = os.path.dirname(path)
         config['testRunner'] = test_runner
         config['excludeTestsFromContinuousIntegration'] = disableTests
