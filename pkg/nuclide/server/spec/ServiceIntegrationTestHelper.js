@@ -30,7 +30,7 @@ class _RemoteConnectionMock {
   }
 
   getUriOfRemotePath(remotePath: string): string {
-    return `http://localhost:${this._port}/${remotePath}`;
+    return `nuclide://localhost:${this._port}/${remotePath}`;
   }
 
   getPathOfUri(uri: string): string {
@@ -81,7 +81,7 @@ class ServiceIntegrationTestHelper {
 
     var port = this._server._webServer.address().port;
     this._client = new NuclideClient(
-      'test', new NuclideRemoteEventbus(`http://localhost:${port}`));
+      'test', new NuclideRemoteEventbus(`nuclide://localhost:${port}`));
     this._connection = new _RemoteConnectionMock(this._client, port);
   }
 
@@ -98,6 +98,10 @@ class ServiceIntegrationTestHelper {
   getLocalService(serviceOptions={}: any): any {
     var serviceClass = require(this._implementationPath);
     return new serviceClass(serviceOptions);
+  }
+
+  getRemoteConnection(): _RemoteConnectionMock {
+    return this._connection;
   }
 }
 
