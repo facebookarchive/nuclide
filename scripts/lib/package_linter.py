@@ -153,7 +153,7 @@ class PackageLinter(object):
 
     def validate_dependency(self, package, dependent_package, dependent_package_name, field):
         if not dependent_package:
-            if dependent_package_name.startswith('nuclide-'):
+            if dependent_package_name in self._package_map:
                 self.report_error('Missing dependency %s from %s', dependent_package_name,
                         package['name'])
             return

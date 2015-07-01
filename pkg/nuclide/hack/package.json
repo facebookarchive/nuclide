@@ -43,8 +43,7 @@
     "nuclide-client": "0.0.0",
     "nuclide-commons": "0.0.0",
     "nuclide-hack-common": "0.0.0",
-    "nuclide-logging": "0.0.0",
-    "nuclide-text-buffer": "4.2.0"
+    "nuclide-logging": "0.0.0"
   },
   "devDependencies": {
     "nuclide-atom-interfaces": "0.0.0"
