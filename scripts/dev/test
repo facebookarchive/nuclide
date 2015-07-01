@@ -34,10 +34,18 @@ options, args = parser.parse_args(sys.argv[1:])
 include_apm = not options.no_atom
 atom.add_node_executables_to_path(parser, include_apm)
 
+# Run ./lint_packages first because it is cheap to run and catches a lot of errors.
+import subprocess
+try:
+    subprocess.check_call([
+        os.path.join(os.path.dirname(__file__), 'lint_packages'),
+    ])
+except subprocess.CalledProcessError:
+    sys.exit(1)
+
 # Run ./setup, if appropriate.
 if not options.no_install:
     # Run setup.
-    import subprocess
     setup = os.path.join(os.path.dirname(__file__), 'setup')
     setup_args = [setup]
     if options.atom_app_dir:
