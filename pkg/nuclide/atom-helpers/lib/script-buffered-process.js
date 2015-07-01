@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 var {BufferedProcess} = require('atom');
-var _ = require('underscore');
+var {object} = require('nuclide-commons');
 
 /**
  * Wrapper around BufferedProcess that runs the command using unix `script`
@@ -20,7 +20,7 @@ var _ = require('underscore');
 module.exports =
 class ScriptBufferedProcess extends BufferedProcess {
   constructor(options) {
-    options = _.clone(options);
+    options = object.assign({}, options);
     if (options.args == null) {
       options.args = [];
     }

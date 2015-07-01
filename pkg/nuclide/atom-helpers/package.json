@@ -10,8 +10,7 @@
   },
   "dependencies": {
     "fs-plus": "2.8.0",
-    "nuclide-commons": "0.0.0",
-    "underscore": "~1.5.2"
+    "nuclide-commons": "0.0.0"
   },
   "devDependencies": {
     "nuclide-atom-interfaces": "0.0.0"

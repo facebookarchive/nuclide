@@ -17,6 +17,11 @@ except ImportError:
 
 EXPECTED_NPM_TEST_COMMAND = 'node --harmony node_modules/.bin/jasmine-node-transpiled spec'
 PATH_TO_ATOM_INTERFACES = './node_modules/nuclide-atom-interfaces/1.0/'
+DEPENDENCY_BLACKLIST = {
+  'nuclide-atom-interfaces': 'it should be in devDependencies.',
+  'q': 'we should use real Promise objects.',
+  'underscore': 'it is a large dependency that we do not want to take on.',
+}
 
 # Detects errors in Nuclide pacakge.json files.
 #  - missing/empty description
@@ -150,6 +155,12 @@ class PackageLinter(object):
             for dependent_package_name in package[field]:
                 dependent_package = self._package_map.get(dependent_package_name)
                 self.validate_dependency(package, dependent_package, dependent_package_name, field)
+                if field == 'dependencies' and dependent_package_name in DEPENDENCY_BLACKLIST:
+                    self.report_error(
+                        '%s should not depend on %s because %s',
+                        package['name'],
+                        dependent_package_name,
+                        DEPENDENCY_BLACKLIST[dependent_package_name])
 
     def validate_dependency(self, package, dependent_package, dependent_package_name, field):
         if not dependent_package:
