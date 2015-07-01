@@ -1,0 +1,29 @@
+@import "ui-variables";
+
+.combobox-option-container {
+  background: @base-background-color;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+  padding: 10px 0;
+  position: absolute;
+  z-index: 1;
+}
+
+.combobox-item {
+  cursor: pointer;
+  padding: 4px 10px;
+}
+
+.combobox-item-selected,
+.combobox-item:hover {
+  background-color: @background-color-selected;
+  color: @text-color-highlight;
+}
+
+.combobox-item-empty {
+  font-style: italic;
+  text-align: center;
+}
+
+.combobox-fuzzy-highlight {
+  color: @text-color-highlight;
+}
