@@ -8,7 +8,8 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-var {asyncFind} = require('../lib/main');
+var {asyncFind, denodeify} = require('../lib/main');
+var {expectAsyncFailure} = require('nuclide-test-helpers');
 
 describe('promises::asyncFind()', () => {
 
@@ -81,5 +82,77 @@ describe('promises::asyncFind()', () => {
       expect(observedError).toBe(undefined);
     });
   });
+});
 
+describe('denodeify()', () => {
+  /**
+   * Vararg function that assumes that all elements except the last are
+   * numbers, as the last argument is a callback function. All of the
+   * other arguments are multiplied together. If the result is not NaN,
+   * then the callback is called with the product. Otherwise, the callback
+   * is called with an error.
+   *
+   * This function exhibits some of the quirky behavior of Node APIs that
+   * accept a variable number of arguments in the middle of the parameter list
+   * rather than at the end. The type signature of this function cannot be
+   * expressed in Flow.
+   */
+  function asyncProduct(): void {
+    var factors = Array.prototype.slice.call(arguments, 0, arguments.length - 1);
+    var product = factors.reduce((previousValue, currentValue) => {
+      return previousValue * currentValue;
+    }, 1);
+
+    var callback = arguments[arguments.length - 1];
+    if (isNaN(product)) {
+      callback(new Error('product was NaN'));
+    } else {
+      callback(null, product);
+    }
+  }
+
+  var denodeifiedAsyncProduct = denodeify(asyncProduct);
+
+  it('resolves Promise when callback succeeds', () => {
+    waitsForPromise(async () => {
+      var trivialProduct = await denodeifiedAsyncProduct();
+      expect(trivialProduct).toBe(1);
+
+      var product = await denodeifiedAsyncProduct(1, 2, 3, 4, 5);
+      expect(product).toBe(120);
+    });
+  });
+
+  it('rejects Promise when callback fails', () => {
+    waitsForPromise(async () => {
+      await expectAsyncFailure(denodeifiedAsyncProduct('a', 'b'), (error: Error) => {
+        expect(error.message).toBe('product was NaN');
+      });
+    });
+  });
+
+  function checksReceiver(expectedReceiver, callback) {
+    if (this === expectedReceiver) {
+      callback(null, 'winner');
+    } else {
+      callback(new Error('unexpected receiver'));
+    }
+  }
+
+  var denodeifiedChecksReceiver = denodeify(checksReceiver);
+
+  it('result of denodeify propagates receiver as expected', () => {
+    waitsForPromise(async () => {
+      var receiver = {denodeifiedChecksReceiver};
+      var result = await receiver.denodeifiedChecksReceiver(receiver);
+      expect(result).toBe('winner');
+    });
+
+    waitsForPromise(async () => {
+      var receiver = {denodeifiedChecksReceiver};
+      await expectAsyncFailure(receiver.denodeifiedChecksReceiver(null), (error: Error) => {
+        expect(error.message).toBe('unexpected receiver');
+      });
+    });
+  });
 });
