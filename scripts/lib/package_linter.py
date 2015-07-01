@@ -34,8 +34,12 @@ class PackageLinter(object):
 
     def validate_packages(self):
         for package_name in self._package_map:
-            self.validate_package(package_name, self._package_map[package_name])
+            if not self.is_whitelisted_package(package_name):
+                self.validate_package(package_name, self._package_map[package_name])
         return not self._had_error
+
+    def is_whitelisted_package(self, package_name):
+        return False
 
     def validate_package(self, package_name, package):
         self.expect_field_in(package_name, package, 'packageType', ['Node', 'Atom'])
