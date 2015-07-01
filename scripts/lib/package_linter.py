@@ -58,8 +58,17 @@ class PackageLinter(object):
         self.expect_field(package_name, package, 'version', '0.0.0')
         self.expect_alpha_sort(package_name, package, 'dependencies')
         self.expect_alpha_sort(package_name, package, 'devDependencies')
-        if not package['name'].startswith('nuclide-') and not 'isLegacyPackage' in package:
-            self.report_error('Package names must start with "nuclide-" found %s', package['name'])
+
+        package_name = package['name']
+        has_valid_prefix = False
+        prefixes = self.get_valid_package_prefixes()
+        for prefix in prefixes:
+            if package_name.startswith(prefix):
+                has_valid_prefix = True
+                break
+        if not has_valid_prefix and not 'isLegacyPackage' in package:
+            self.report_error('Package name %s must start with one of %s', package_name, prefixes)
+
         if not package['isNodePackage']:
             self.expect_field(package_name, package, 'testRunner', 'apm')
         self.validate_dependencies(package, 'dependencies')
@@ -189,6 +198,9 @@ class PackageLinter(object):
         elif not fieldValue in values:
             self.report_error('Incorrect "%s" for %s. Found %s',
                     field, package_name, fieldValue)
+
+    def get_valid_package_prefixes(self):
+        return ['nuclide-', 'hyperclick']
 
     def report_error(self, message, *args):
         logging.error('PACKAGE ERROR: ' + message, *args)
