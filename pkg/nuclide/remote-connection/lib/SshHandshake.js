@@ -213,9 +213,10 @@ class SshHandshake {
       // .profile/.bash_profile/.bash_login.  .bashrc will only be loaded if
       // it is sourced in one of the login scripts.  This is pretty typical
       // though so likely .bashrc will be loaded.
-      // Note 2: That though this is a login shell, this is not an interactive
-      // shell so anything behind a if [ -z $PS1 ] or the like will be skipped.
-      this._connection.exec(`bash --login -c 'echo ${SYNC_WORD};${cmd};echo ${SYNC_WORD}'`, (err, stream) => {
+      // Note 2: We also run this as an interactive shell, even though it isn't.
+      // That is so anything behind an `if [ -z $PS1 ]`, such as adding entries
+      // to the $PATH, will not be skipped
+      this._connection.exec(`bash --login -i -c 'echo ${SYNC_WORD};${cmd};echo ${SYNC_WORD}'`, (err, stream) => {
         if (err) {
           reject(err);
           return;
