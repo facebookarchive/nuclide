@@ -17,15 +17,11 @@ var Hyperclick = require('../lib/Hyperclick');
 describe('Hyperclick', () => {
   var textEditor;
   var textEditorView;
-  var mouseEventHandlerEl;
   var hyperclick;
   var hyperclickForTextEditor;
   beforeEach(() => waitsForPromise(async () => {
     textEditor = await atom.workspace.open('hyperclick.txt');
     textEditorView = atom.views.getView(textEditor);
-    // We need to dispatch to this specific element because it's hidden in the
-    // text editor's shadow root.
-    mouseEventHandlerEl = textEditorView.component.scrollViewNode.querySelector('.lines');
 
     // We need the view attached to the DOM for the mouse events to work.
     jasmine.attachToDOM(textEditorView);
@@ -67,7 +63,7 @@ describe('Hyperclick', () => {
       properties = {clientX, clientY};
     }
     var event = new eventClass(type, properties);
-    mouseEventHandlerEl.dispatchEvent(event);
+    textEditorView.dispatchEvent(event);
   }
 
   describe('<meta-mousemove> + <meta-mousedown>', () => {

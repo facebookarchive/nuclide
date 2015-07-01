@@ -34,14 +34,10 @@ class HyperclickForTextEditor {
 
     this._lastWordRange = null;
 
-    // We deliberately use a DOM node that's deeper than `scrollViewNode` so
-    // we can handle <meta-click> and still prevent the text editor from adding
-    // another cursor.
-    this._mouseEventHandlerEl = this._textEditorView.component.scrollViewNode.querySelector('.lines');
     this._onMouseMove = this._onMouseMove.bind(this);
-    this._mouseEventHandlerEl.addEventListener('mousemove', this._onMouseMove);
+    this._textEditorView.addEventListener('mousemove', this._onMouseMove);
     this._onMouseDown = this._onMouseDown.bind(this);
-    this._mouseEventHandlerEl.addEventListener('mousedown', this._onMouseDown);
+    this._textEditorView.addEventListener('mousedown', this._onMouseDown);
 
     this._onKeyDown = this._onKeyDown.bind(this);
     this._textEditorView.addEventListener('keydown', this._onKeyDown);
@@ -236,8 +232,8 @@ class HyperclickForTextEditor {
   }
 
   dispose() {
-    this._mouseEventHandlerEl.removeEventListener('mousemove', this._onMouseMove);
-    this._mouseEventHandlerEl.removeEventListener('mousedown', this._onMouseDown);
+    this._textEditorView.removeEventListener('mousemove', this._onMouseMove);
+    this._textEditorView.removeEventListener('mousedown', this._onMouseDown);
     this._textEditorView.removeEventListener('keydown', this._onKeyDown);
     this._textEditorView.removeEventListener('keyup', this._onKeyUp);
     this._commandSubscription.dispose();
