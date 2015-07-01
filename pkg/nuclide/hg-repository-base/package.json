@@ -9,7 +9,7 @@
     "testRunner": "npm"
   },
   "dependencies": {
-    "fb-watchman": "0.0.1",
+    "fb-watchman": "1.1.0",
     "nuclide-commons": "0.0.0",
     "nuclide-logging": "0.0.0",
     "nuclide-watchman-helpers": "0.0.0"

@@ -99,8 +99,11 @@ class WatchmanClient {
       var options = {
         fields: ['name', 'new', 'exists', 'mode'],
         since: clock,
-        expression: relativePath ? ['dirname', relativePath] : undefined,
       };
+      if (relativePath) {
+        // Passing an 'undefined' expression causes an exception in fb-watchman.
+        options.expression = ['dirname', relativePath];
+      }
       // relativePath is undefined if watchRoot is the same as directoryPath.
       var subscription = this._subscriptions[directoryPath] =
           new WatchmanSubscription(
