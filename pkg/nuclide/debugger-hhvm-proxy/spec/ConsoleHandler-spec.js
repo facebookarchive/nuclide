@@ -22,22 +22,30 @@ describe('debugger-hhvm-proxy ConsoleHandler', () => {
     });
 
     it('enable', () => {
-      handler.handleMethod(1, 'enable');
-      expect(callback.replyToCommand).toHaveBeenCalledWith(1, {}, undefined);
+      waitsForPromise(async () => {
+        await handler.handleMethod(1, 'enable');
+        expect(callback.replyToCommand).toHaveBeenCalledWith(1, {}, undefined);
+      });
     });
 
     it('disable', () => {
-      handler.handleMethod(2, 'disable');
-      expect(callback.replyToCommand).toHaveBeenCalledWith(2, {}, undefined);
+      waitsForPromise(async () => {
+        await handler.handleMethod(2, 'disable');
+        expect(callback.replyToCommand).toHaveBeenCalledWith(2, {}, undefined);
+      });
     });
 
     it('clearMessages', () => {
-      handler.handleMethod(3, 'clearMessages');
-      expect(callback.sendMethod).toHaveBeenCalledWith('Console.messagesCleared', undefined);
+      waitsForPromise(async () => {
+        await handler.handleMethod(3, 'clearMessages');
+        expect(callback.sendMethod).toHaveBeenCalledWith('Console.messagesCleared', undefined);
+      });
     });
 
     it('unknown', () => {
-      handler.handleMethod(4, 'unknown');
-      expect(callback.replyWithError).toHaveBeenCalledWith(4, jasmine.any(String));
+      waitsForPromise(async () => {
+        await handler.handleMethod(4, 'unknown');
+        expect(callback.replyWithError).toHaveBeenCalledWith(4, jasmine.any(String));
+      });
     });
 });

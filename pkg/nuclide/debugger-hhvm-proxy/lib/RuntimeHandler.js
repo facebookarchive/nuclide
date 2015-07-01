@@ -15,8 +15,12 @@ var Handler = require('./Handler');
 
 // Handles all 'Runtime.*' Chrome dev tools messages
 class RuntimeHandler extends Handler {
-  constructor(callback: ChromeCallback) {
+  _dataCache: DataCache;
+
+  constructor(callback: ChromeCallback, dataCache: DataCache) {
     super('Runtime', callback);
+
+    this._dataCache = dataCache;
   }
 
   async handleMethod(id: number, method: string, params: ?Object): Promise {
@@ -25,13 +29,17 @@ class RuntimeHandler extends Handler {
       this._notifyExecutionContext(id);
       break;
 
+    case 'getProperties':
+      await this._getProperties(id, params);
+      break;
+
     default:
       this.unknownMethod(id, method, params);
       break;
     }
   }
 
-  _notifyExecutionContext(id: number) {
+  _notifyExecutionContext(id: number): void {
     this.sendMethod('Runtime.executionContextCreated',
     {
       'context': {
@@ -41,6 +49,21 @@ class RuntimeHandler extends Handler {
       }
     });
     this.replyToCommand(id, {});
+  }
+
+  async _getProperties(id: number, params: Object): Promise {
+    // params also has properties:
+    //    ownProperties
+    //    generatePreview
+    var {objectId, accessorPropertiesOnly} = params;
+    var result;
+    if (!accessorPropertiesOnly) {
+      result = await this._dataCache.getProperties(objectId);
+    } else {
+      // TODO: Handle remaining params
+      result = [];
+    }
+    this.replyToCommand(id, {result});
   }
 }
 

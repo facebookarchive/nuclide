@@ -10,13 +10,33 @@
  */
 
 
-var DataCache = require('../lib/DataCache');
+var {uncachedRequire} = require('nuclide-test-helpers');
+var {
+  remoteObjectIdOfObjectId,
+  createContextObjectId,
+  pagedObjectId,
+  singlePageObjectId,
+} = require('../lib/ObjectId');
+
+const PROPERTIES = ['property'];
+const CONVERTED_PROPERTIES = ['converted-properties'];
 
 describe('debugger-hhvm-proxy DataCache', () => {
     var socket;
     var cache;
 
+    var contextId = createContextObjectId(1, 2, 3);
+    var contextRemoteId = remoteObjectIdOfObjectId(contextId);
+    var pagedId = pagedObjectId(contextId, 'fullname-value',
+      {pagesize: 32, startIndex: 0, count: 42});
+    var pagedRemoteId = remoteObjectIdOfObjectId(pagedId);
+    var singlePageId = singlePageObjectId(contextId, 'fullname-value', 42);
+    var singlePageRemoteId = remoteObjectIdOfObjectId(singlePageId);
+    var convertProperties;
+    var getPagedProperties;
+
     beforeEach(() => {
+
       socket = jasmine.createSpyObj('socket', ['getContextsForFrame']);
       socket.getContextsForFrame = jasmine.createSpy('getContextsForFrame').
       andReturn(Promise.resolve([
@@ -34,6 +54,11 @@ describe('debugger-hhvm-proxy DataCache', () => {
         },
       ]));
 
+      var properties = require('../lib/properties');
+      convertProperties = spyOn(properties, 'convertProperties').andReturn(CONVERTED_PROPERTIES);
+      getPagedProperties = spyOn(properties, 'getPagedProperties').andReturn(CONVERTED_PROPERTIES);
+
+      var DataCache = uncachedRequire(require, '../lib/DataCache');
       cache = new DataCache(socket);
     });
 
@@ -85,6 +110,40 @@ describe('debugger-hhvm-proxy DataCache', () => {
             type: 'global',
           },
         ]);
+      });
+    });
+
+    it('getProperties - context', () => {
+      waitsForPromise(async () => {
+        socket.getContextProperties = jasmine.createSpy('getContextProperties').
+          andReturn(Promise.resolve(PROPERTIES));
+
+        cache.enable();
+        var result = await cache.getProperties(contextRemoteId);
+        expect(result).toEqual(CONVERTED_PROPERTIES);
+        expect(socket.getContextProperties).toHaveBeenCalledWith(2, 3);
+        expect(convertProperties).toHaveBeenCalledWith(contextId, PROPERTIES);
+      });
+    });
+
+    it('getProperties - paged', () => {
+      waitsForPromise(async () => {
+        cache.enable();
+        var result = await cache.getProperties(pagedRemoteId);
+        expect(result).toEqual(CONVERTED_PROPERTIES);
+        expect(getPagedProperties).toHaveBeenCalledWith(pagedId);
+      });
+    });
+
+    it('getProperties - single page', () => {
+      waitsForPromise(async () => {
+        socket.getPropertiesByFullname = jasmine.createSpy('getPropertiesByFullname').
+          andReturn(Promise.resolve(PROPERTIES));
+        cache.enable();
+        var result = await cache.getProperties(singlePageRemoteId);
+        expect(result).toEqual(CONVERTED_PROPERTIES);
+        expect(socket.getPropertiesByFullname).toHaveBeenCalledWith(2, 3, 'fullname-value', 42);
+        expect(convertProperties).toHaveBeenCalledWith(singlePageId, PROPERTIES);
       });
     });
 });

@@ -14,7 +14,8 @@
     "xml2js": "0.4.9"
   },
   "devDependencies": {
-    "nuclide-jasmine": "0.0.0"
+    "nuclide-jasmine": "0.0.0",
+    "nuclide-test-helpers": "0.0.0"
   },
   "scripts": {
     "test": "node --harmony node_modules/.bin/jasmine-node-transpiled spec"

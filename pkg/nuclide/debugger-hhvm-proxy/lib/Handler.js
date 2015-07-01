@@ -43,7 +43,7 @@ class Handler {
     this._callback.replyToCommand(id, result, error);
   }
 
-  sendMethod(method: string, params: ?Object) {
+  sendMethod(method: string, params: ?Object): void {
     this._callback.sendMethod(method, params);
   }
 }

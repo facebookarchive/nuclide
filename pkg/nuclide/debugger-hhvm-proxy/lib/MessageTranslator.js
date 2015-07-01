@@ -41,7 +41,7 @@ class MessageTranslator {
     this._addHandler(this._debuggerHandler);
     this._addHandler(new PageHandler(this._callback));
     this._addHandler(new ConsoleHandler(this._callback));
-    this._addHandler(new RuntimeHandler(this._callback));
+    this._addHandler(new RuntimeHandler(this._callback, this._dataCache));
   }
 
   _addHandler(handler: Handler): void {
@@ -73,7 +73,11 @@ class MessageTranslator {
       return;
     }
 
-    await this._handlers.get(domain).handleMethod(id, method, params);
+    try {
+      await this._handlers.get(domain).handleMethod(id, method, params);
+    } catch (e) {
+      this._replyWithError(id, `Error handling command: ${e}\n ${e.stack}`);
+    }
   }
 
   _replyWithError(id: number, error: string): void {

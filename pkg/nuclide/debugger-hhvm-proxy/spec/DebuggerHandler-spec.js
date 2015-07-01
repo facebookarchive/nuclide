@@ -86,7 +86,6 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
                     scriptId: '/usr/test.php',
                   },
                   scopeChain: undefined,
-                  'this': { value: 'TODO: this-object'},
               },
               {
                   callFrameId: 1,
@@ -96,7 +95,6 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
                     scriptId: '/usr/test.php',
                   },
                   scopeChain: undefined,
-                  'this': { value: 'TODO: this-object'},
               },
             ],
             reason: 'breakpoint',

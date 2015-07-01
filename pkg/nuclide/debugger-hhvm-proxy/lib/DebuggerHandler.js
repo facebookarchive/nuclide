@@ -95,11 +95,11 @@ class DebuggerHandler extends Handler {
       break;
 
     case 'setBreakpointByUrl':
-      this._setBreakpointByUrl(id, params);
+      await this._setBreakpointByUrl(id, params);
       break;
 
     case 'removeBreakpoint':
-      this._removeBreakpoint(id, params);
+      await this._removeBreakpoint(id, params);
       break;
 
     default:
@@ -157,8 +157,6 @@ class DebuggerHandler extends Handler {
         functionOfFrame,
         fileOfFrame,
         locationOfFrame,
-        scopesOfFrame,
-        thisObjectOfFrame,
       } = require('./frame');
 
       this._files.registerFile(fileOfFrame(frame));
@@ -167,10 +165,9 @@ class DebuggerHandler extends Handler {
         functionName: functionOfFrame(frame),
         location: locationOfFrame(frame),
         scopeChain: await this._dataCache.getScopesForFrame(frameIndex),
-        'this': thisObjectOfFrame(frame),
       };
     } catch (e) {
-      logErrorAndThrow('Exception converting frame: ' + e);
+      logErrorAndThrow('Exception converting frame: ' + e + ' ' + e.stack);
     }
   }
 

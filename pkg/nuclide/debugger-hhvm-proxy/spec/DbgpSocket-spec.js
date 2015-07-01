@@ -212,4 +212,34 @@ describe('debugger-hhvm-proxy DbgpSocket', () => {
         ]);
       });
     });
+
+    it('getContextProperties', () => {
+      waitsForPromise(async () => {
+        var call = dbgpSocket.getContextProperties(43, '42');
+        testCallResult(
+          'context_get -i 1 -d 43 -c 42',
+          {
+            command: 'context_get',
+            transaction_id: '1',
+          },
+          '<property>the-result</property>');
+        var result = await call;
+        expect(result).toEqual(['the-result']);
+      });
+    });
+
+    it('getPropertiesByFullname', () => {
+      waitsForPromise(async () => {
+        var call = dbgpSocket.getPropertiesByFullname(43, '42', 'fullname-value', 45);
+        testCallResult(
+          'property_value -i 1 -d 43 -c 42 -n fullname-value -p 45',
+          {
+            command: 'property_value',
+            transaction_id: '1',
+          },
+          '<property><property>the-result</property></property>');
+        var result = await call;
+        expect(result).toEqual(['the-result']);
+      });
+    });
 });

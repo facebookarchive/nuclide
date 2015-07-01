@@ -56,34 +56,9 @@ function locationOfFrame(frame: DbgpStackFrame) {
   };
 }
 
-function scopesOfFrame(frame: DbgpStackFrame) {
-  // TODO: Array of Scope
-  // object: Runtime.RemoteObject
-  // type: "catch" , "closure" , "global" , "local" , "with"
-  return [
-    {
-      type: 'local',
-      object: {
-        value: 'TODO: scopeOfFrame',
-      },
-    }];
-}
-
-function thisObjectOfFrame(frame: DbgpStackFrame) {
-  // RemoteObject:
-  // className
-  // description
-  // objectId
-  // subtype - "array" , "date" , "node" , "null" , "regexp"
-  // type - "boolean" , "function" , "number" , "object" , "string" , "undefined"
-  return {value: 'TODO: this-object'};
-}
-
 module.exports = {
   idOfFrame,
   functionOfFrame,
   fileOfFrame,
   locationOfFrame,
-  scopesOfFrame,
-  thisObjectOfFrame,
 };

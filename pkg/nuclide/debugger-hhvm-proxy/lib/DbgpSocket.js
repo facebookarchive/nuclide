@@ -31,6 +31,31 @@ type DbgpContext = {
   id: string;
 };
 
+type DbgpProperty = {
+  $: {
+    name: string;
+    fullname: string;
+    address: string;
+    type: string;
+
+    // array or object
+    children?: boolean;
+    numChildren?: number;
+    page?: number;
+    pagesize?: number;
+
+    // string
+    size?: number;
+    encoding?: string;
+  };
+
+  // Value if present, subject to encoding if present
+  _?: string;
+
+  // array or object members
+  property?: Array<DbgpProperty>;
+};
+
 /**
  * Handles sending and recieving dbgp messages over a net Socket.
  * Dbgp documentation can be found at http://xdebug.org/docs-dbgp.php
@@ -86,6 +111,21 @@ class DbgpSocket {
   async getContextsForFrame(frameIndex: number): Promise<Array<DbgpContext>> {
     var result = await this._callDebugger('context_names', `-d ${frameIndex}`);
     return result.context.map(context => context.$);
+  }
+
+  async getContextProperties(frameIndex: number, contextId: string): Promise<Array<DbgpProperty>> {
+    var result = await this._callDebugger('context_get', `-d ${frameIndex} -c ${contextId}`);
+    // 0 results yields missing 'property' member
+    return result.property || [];
+  }
+
+  async getPropertiesByFullname(frameIndex: number, contextId: string, fullname: string,
+      page: number): Promise<Array<DbgpProperty>> {
+    var result = await this._callDebugger(
+      'property_value', `-d ${frameIndex} -c ${contextId} -n ${fullname} -p ${page}`);
+    // property_value returns the outer property, we want the children ...
+    // 0 results yields missing 'property' member
+    return result.property[0].property || [];
   }
 
   // Returns one of:
