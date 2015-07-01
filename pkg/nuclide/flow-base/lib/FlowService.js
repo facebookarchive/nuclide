@@ -37,7 +37,20 @@ class FlowService {
 
   findDiagnostics(
     file: NuclideUri
-  ): Promise<Array<Diagnostic>>
+  ): Promise<Array<{message:
+        Array<{
+          path: NuclideUri;
+          descr: string;
+          code: number;
+          line: number;
+          endline: number;
+          start: number;
+          end: number;
+        }>
+    }>>
+  // Ideally, this would just be Promise<Array<Diagnostic>>, but the service
+  // framework doesn't pick up on NuclideUri if it's embedded in a type defined
+  // elsewhere.
   {
     return Promise.reject('Not implemented');
   }
