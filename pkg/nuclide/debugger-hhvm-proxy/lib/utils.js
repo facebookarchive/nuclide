@@ -54,6 +54,10 @@ function parseXml(xml: string): mixed {
   return resultValue;
 }
 
+function base64Decode(value: string): string {
+  return new Buffer(value, 'base64').toString();
+}
+
 /**
  * Server messages are formatted as a string containing:
  * length <NULL> xml-blob <NULL>
@@ -104,6 +108,7 @@ module.exports = {
   makeDbgpMessage,
   parseDbgpMessage,
   parseXml,
+  base64Decode,
   pathToUri,
   uriToPath,
   DUMMY_FRAME_ID,
