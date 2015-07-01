@@ -7,8 +7,7 @@
     "packageType": "Atom",
     "testRunner": "apm"
   },
-  "engines": {
-    "atom": "*",
-    "node": "*"
+  "devDependencies": {
+    "nuclide-atom-interfaces": "0.0.0"
   }
 }

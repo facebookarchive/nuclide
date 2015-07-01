@@ -9,6 +9,7 @@
     "testRunner": "apm"
   },
   "devDependencies": {
+    "nuclide-atom-interfaces": "0.0.0",
     "nuclide-commons": "0.0.0",
     "nuclide-hg-repository-base": "0.0.0",
     "nuclide-hg-repository-client": "0.0.0",

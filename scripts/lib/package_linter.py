@@ -10,12 +10,21 @@ import sys
 
 from json_helpers import json_load
 
+try:
+    from ConfigParser import ConfigParser, NoOptionError
+except ImportError:
+    from configparser import ConfigParser, NoOptionError
+
 EXPECTED_NPM_TEST_COMMAND = 'node --harmony node_modules/.bin/jasmine-node-transpiled spec'
+PATH_TO_ATOM_INTERFACES = './node_modules/nuclide-atom-interfaces/1.0/'
 
 # Detects errors in Nuclide pacakge.json files.
 #  - missing/empty description
 #  - missing/incorrect repository
 #  - missing/incorrect version
+#  - missing/incorrect scripts/test property
+#  - missing/incorrect .flowconfig
+#  - packages used in Atom must declare nuclide-atom-interfaces in devDependencies
 #  - unsorted dependencies
 #  - unsorted devDependencies
 class PackageLinter(object):
@@ -31,7 +40,10 @@ class PackageLinter(object):
     def validate_package(self, package_name, package):
         self.expect_field_in(package_name, package, 'packageType', ['Node', 'Atom'])
         self.expect_field_in(package_name, package, 'testRunner', ['npm', 'apm'])
-        self.verify_test_runner(package)
+        if package['testRunner'] == 'npm':
+            self.verify_npm_package(package)
+        else:
+            self.verify_apm_package(package)
 
         if not 'description' in package:
             self.report_error('Missing "description" for %s', package_name)
@@ -49,43 +61,76 @@ class PackageLinter(object):
         self.validate_dependencies(package, 'dependencies')
         self.validate_dependencies(package, 'devDependencies')
 
-    def verify_test_runner(self, package):
-        test_runner = package['testRunner']
+    def verify_npm_package(self, package):
+        self.verify_npm_test_property(package)
+        self.read_flowconfig_for_package(package)
+
+    def verify_npm_test_property(self, package):
+        '''npm packages should use nuclide-jasmine for running tests.'''
         package_name = package['name']
-        if test_runner == 'npm':
-            if not 'scripts' in package:
-                self.report_error(
-                    'Package %s should have a "scripts" section with a "test" property.',
-                    package_name)
-            elif not 'test' in package['scripts']:
-                if package_name in ['nuclide-atom-interfaces', 'nuclide-node-transpiler']:
-                    # nuclide-atom-interfaces does not contain any code, so no tests.
-                    # nuclide-node-transpiler is a dependency of nuclide-jasmine, so it cannot
-                    # use nuclide-jasmine as a test runner. As it stands, it has no tests.
-                    return
+        if not 'scripts' in package:
+            self.report_error(
+                'Package %s should have a "scripts" section with a "test" property.',
+                package_name)
+        elif not 'test' in package['scripts']:
+            if package_name in ['nuclide-atom-interfaces', 'nuclide-node-transpiler']:
+                # nuclide-atom-interfaces does not contain any code, so no tests.
+                # nuclide-node-transpiler is a dependency of nuclide-jasmine, so it cannot
+                # use nuclide-jasmine as a test runner. As it stands, it has no tests.
+                return
 
-                self.report_error(
-                    ('Package %s should have a "test" property in its "scripts" section ' +
-                        'to define how its tests are run.'),
-                    package_name)
-            elif package['scripts']['test'] != EXPECTED_NPM_TEST_COMMAND:
-                if package_name == 'nuclide-jasmine':
-                    # nuclide-jasmine must have a slightly different test script than
-                    # EXPECTED_NPM_TEST_COMMAND.
-                    return
+            self.report_error(
+                ('Package %s should have a "test" property in its "scripts" section ' +
+                    'to define how its tests are run.'),
+                package_name)
+        elif package['scripts']['test'] != EXPECTED_NPM_TEST_COMMAND:
+            if package_name == 'nuclide-jasmine':
+                # nuclide-jasmine must have a slightly different test script than
+                # EXPECTED_NPM_TEST_COMMAND.
+                return
 
+            self.report_error(
+                'Package %s should have a "test" property with the value: %s',
+                package_name,
+                EXPECTED_NPM_TEST_COMMAND)
+
+    def verify_apm_package(self, package):
+        self.verify_apm_test_property(package)
+        config = self.read_flowconfig_for_package(package)
+        if config:
+            try:
+                config.get('libs', PATH_TO_ATOM_INTERFACES)
+            except NoOptionError:
                 self.report_error(
-                    'Package %s should have a "test" property with the value: %s',
-                    package_name,
-                    EXPECTED_NPM_TEST_COMMAND)
-        elif test_runner == 'apm':
-            if 'scripts' in package and 'test' in package['scripts']:
-                self.report_error(
-                    ('Package %s should not have a custom scripts/test section ' +
-                        'because it will use apm as its test runner.'),
-                    package_name)
-        else:
-            self.report_error('Unknown test runner for package %s.', package_name)
+                    'Package %s should have an entry for %s in its [libs] section.',
+                    package['name'],
+                    PATH_TO_ATOM_INTERFACES)
+
+    def verify_apm_test_property(self, package):
+        '''apm packages should not specify a separate test runner.'''
+        package_name = package['name']
+        if 'scripts' in package and 'test' in package['scripts']:
+            self.report_error(
+                ('Package %s should not have a custom scripts/test section ' +
+                    'because it will use apm as its test runner.'),
+                package_name)
+
+        if (not 'nuclide-atom-interfaces' in package.get('devDependencies', {}) and
+                package_name != 'nuclide-atom-interfaces'):
+            self.report_error(
+                ('Package %s should have nuclide-atom-interfaces in its devDependencies ' +
+                    'because it uses apm as its test runner.'),
+                package_name)
+
+    def read_flowconfig_for_package(self, package):
+        flowconfig_path = os.path.join(package['packageRootAbsolutePath'], '.flowconfig')
+        if not os.path.isfile(flowconfig_path):
+            self.report_error('Expected .flowconfig file at %s not found.', flowconfig_path)
+            return None
+
+        config = ConfigParser(allow_no_value=True)
+        config.read(flowconfig_path)
+        return config
 
     def validate_dependencies(self, package, field):
         if field in package:
