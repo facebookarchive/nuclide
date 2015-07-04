@@ -19,8 +19,7 @@ class HhvmDebuggerProxyService {
     throw new Error('abstract');
   }
 
-  // port: must match port in hhvm's xdebug.ini config file
-  attach(port: number, pid: ?number, idekey: ?string, path: ?string): Promise<string> {
+  attach(config: ConnectionConfig): Promise<string> {
     throw new Error('abstract');
   }
 

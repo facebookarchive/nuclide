@@ -13,8 +13,26 @@
 var {
   log,
   parseDbgpMessage,
-  pathToUri,
+  uriToPath,
 } = require('./utils');
+
+/**
+ * xdebugPort is the port to listen for dbgp connections on.
+ *
+ * If present scriptRegex must be a valid RegExp. Only dbgp connections whose script
+ * path matches scriptRegex will be accepted. Dbgp connections which do not match
+ * the scriptRegex will be ignored.
+ *
+ * Similarly, the idekeyRegex filters incoming dbgp connections by idekey,
+ * and pid filters connections by process id (appid in the dbgp terminology).
+ * Note that 0 pid also does not filter on process id.
+ */
+type ConnectionConfig = {
+  xdebugPort: number;
+  pid?: number;
+  scriptRegex?: string;
+  idekeyRegex?: string;
+};
 
 /**
  * Connect to requested dbgp debuggee on given port.
@@ -29,11 +47,10 @@ var {
  *
  * TODO: Add timeout or cancel callback.
  */
-function getFirstConnection(
-  port: number,
-  pid: ?number,
-  idekey: ?string,
-  path: ?string): Promise<Socket> {
+function getFirstConnection(config: ConnectionConfig): Promise<Socket> {
+
+  var port = config.xdebugPort;
+  var {pid, idekeyRegex, scriptRegex} = config;
 
   log('Creating debug server on port ' + port);
 
@@ -119,9 +136,9 @@ function getFirstConnection(
         return false;
     }
 
-    return (pid === null || attributes.appid === String(pid)) &&
-      (idekey === null || attributes.idekey === idekey) &&
-      (path === null || attributes.fileuri === pathToUri(path));
+    return (!pid || attributes.appid === String(pid)) &&
+      (!idekeyRegex || new RegExp(idekeyRegex).test(attributes.idekey)) &&
+      (!scriptRegex || new RegExp(scriptRegex).test(uriToPath(attributes.fileuri)));
   }
 
   return new Promise((resolve, reject) => {

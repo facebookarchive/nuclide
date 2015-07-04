@@ -45,7 +45,6 @@ const SESSION_END_EVENT = 'session-end';
  */
 class LocalHhvmDebuggerProxyService extends HhvmDebuggerProxyService {
   _state: string;
-  _port: number;
   _emitter: EventEmitter;
   _translator: ?MessageTranslator;
 
@@ -53,7 +52,6 @@ class LocalHhvmDebuggerProxyService extends HhvmDebuggerProxyService {
     super();
 
     this._state = INITIAL;
-    this._port = 0;
     this._translator = null;
     var {EventEmitter} = require("events");
     this._emitter = new EventEmitter();
@@ -74,14 +72,12 @@ class LocalHhvmDebuggerProxyService extends HhvmDebuggerProxyService {
     };
   }
 
-  // port: must match port in hhvm's xdebug.ini config file
-  attach(port: number, pid: ?number, idekey: ?string, path: ?string): Promise<string> {
-    this._port = port;
+  attach(config: ConnectionConfig): Promise<string> {
+    log('Connecting config: ' + JSON.stringify(config));
+
     this._setState(CONNECTING);
     return new Promise((resolve, reject) => {
-      // TODO: Add optional filtering on pid, idekey, path
-      // TODO: Disable pid filtering for now to ease development.
-      getFirstConnection(port, null, null, null).then(socket => {
+      getFirstConnection(config).then(socket => {
         try {
           socket.on('end', this._onEnd.bind(this));
           socket.on('error', this._onError.bind(this));
@@ -123,7 +119,7 @@ class LocalHhvmDebuggerProxyService extends HhvmDebuggerProxyService {
   }
 
   _setState(newState: string): void {
-    log('state change from ' + this._state + ' to ' + newState + ' on port ' + this._port);
+    log('state change from ' + this._state + ' to ' + newState);
     // TODO: Consider logging socket info: remote ip, etc.
     this._state = newState;
 
