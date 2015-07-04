@@ -1,5 +1,5 @@
 {
-  "name": "nuclide-phabricator-comments",
+  "name": "nuclide-fb-phabricator-comments",
   "repository": "https://github.com/facebook/nuclide",
   "main": "./lib/main",
   "version": "0.0.0",
