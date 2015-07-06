@@ -1,13 +1,46 @@
-[
-  {
-    "matches" : [
-     {
-       "lineText" : "Hello World!",
-       "lineTextOffset" : 0,
-       "matchText" : "Hello World",
-       "range" : [[0,0],[0,11]]
-     }
-    ],
-    "filePath" : "tracked.txt"
-  }
-]
+{
+  "updates": [
+    {
+      "matches": [
+        {
+          "lineText": "Hello World!",
+          "lineTextOffset": 0,
+          "matchText": "Hello World",
+          "range": [
+            [
+              0,
+              0
+            ],
+            [
+              0,
+              11
+            ]
+          ]
+        }
+      ],
+      "filePath": "tracked.txt"
+    }
+  ],
+  "results": [
+    {
+      "matches": [
+        {
+          "lineText": "Hello World!",
+          "lineTextOffset": 0,
+          "matchText": "Hello World",
+          "range": [
+            [
+              0,
+              0
+            ],
+            [
+              0,
+              11
+            ]
+          ]
+        }
+      ],
+      "filePath": "tracked.txt"
+    }
+  ]
+}

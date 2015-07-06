@@ -24,16 +24,18 @@ describe('Scan Handler Tests', () => {
       var folder = temp.mkdirSync();
       fs.writeFileSync(path.join(folder, 'file1.js'), `var a = 4;
         console.log("Hello World!");
-        console.log(a);`);
+        console.log(a);
+        console.error("Hello World!");`);
 
       fs.mkdirSync(path.join(folder, 'directory'));
       fs.writeFileSync(path.join(folder, 'directory', 'file2.js'), `var a = 4;
         console.log("Hello World!");
         console.log(a);`);
 
-      var results = await scanhandler.search(folder, 'Hello World');
+      var updates = [];
+      var results = await scanhandler.search(folder, 'Hello World', update => { updates.push(update) });
       var expected = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'basic.json')));
-      expect(expected).toEqual(results);
+      expect({ results, updates }).toEqual(expected);
     });
   });
 
@@ -55,9 +57,10 @@ describe('Scan Handler Tests', () => {
       // Create a file that is untracked.
       fs.writeFileSync(path.join(folder, 'untracked.txt'), 'Hello World!');
 
-      var results = await scanhandler.search(folder, 'Hello World');
+      var updates = [];
+      var results = await scanhandler.search(folder, 'Hello World', update => { updates.push(update) });
       var expected = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'repo.json')));
-      expect(results).toEqual(expected);
+      expect({ updates, results }).toEqual(expected);
     });
   });
 
@@ -83,9 +86,10 @@ describe('Scan Handler Tests', () => {
 
       await asyncExecute('hg', ['commit', '-m', 'test commit'], {cwd: folder});
 
-      var results = await scanhandler.search(folder, 'Hello World');
+      var updates = [];
+      var results = await scanhandler.search(folder, 'Hello World', update => { updates.push(update) });
       var expected = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'repo.json')));
-      expect(results).toEqual(expected);
+      expect({ updates, results }).toEqual(expected);
     });
   });
 });
