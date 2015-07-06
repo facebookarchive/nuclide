@@ -87,7 +87,7 @@ var TreeRootComponent = React.createClass({
     // when the `usePreviewTabs` setting is enabled in the "tabs" package.
     onKeepSelection: PropTypes.func.isRequired,
     labelClassNameForNode: PropTypes.func.isRequired,
-    rowClassNameForNode: PropTypes.func,
+    rowClassNameForNode: PropTypes.func.isRequired,
     // Render will return this component if there are no root nodes.
     elementToRenderWhenEmpty: PropTypes.element,
     initialExpandedNodeKeys: PropTypes.arrayOf(PropTypes.string),
@@ -96,8 +96,9 @@ var TreeRootComponent = React.createClass({
 
   getDefaultProps(): any {
     return {
-      onConfirmSelection(node: LazyTreeNode) {},
       elementToRenderWhenEmpty: null,
+      onConfirmSelection(node: LazyTreeNode) {},
+      rowClassNameForNode(node: LazyTreeNode) { return ''; },
     };
   },
 
@@ -281,10 +282,13 @@ var TreeRootComponent = React.createClass({
 
         var child = (
           <TreeNodeComponent {...item}
-              isExpanded={this._isNodeExpanded}
+              isContainer={node.isContainer()}
+              isExpanded={this._isNodeExpanded(node)}
+              isLoading={!node.isCacheValid()}
               isSelected={isNodeSelected}
-              labelClassNameForNode={this.props.labelClassNameForNode}
-              rowClassNameForNode={this.props.rowClassNameForNode}
+              label={node.getLabel()}
+              labelClassName={this.props.labelClassNameForNode(node)}
+              rowClassName={this.props.rowClassNameForNode(node)}
               onClickArrow={this._onClickNodeArrow}
               onClick={this._onClickNode}
               onDoubleClick={this._onDoubleClickNode}

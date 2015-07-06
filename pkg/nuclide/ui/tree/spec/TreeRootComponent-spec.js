@@ -37,10 +37,10 @@ function getNodeComponents(component: TreeRootComponent): any {
 describe('TreeRootComponent', () => {
   // Use `renderComponent` in `beforeEach` to return the component so the test
   // methods have a chance to modify the default props.
-  var renderComponent: (props: any) => ReactComponent;
+  var renderComponent: (props: any) => TreeRootComponent;
   var props;
   var hostEl;
-  var nodes;
+  var nodes: {[key: string]: LazyTreeNode};
 
   beforeEach(() => {
     nodes = {};
@@ -82,6 +82,8 @@ describe('TreeRootComponent', () => {
       initialRoots: [],
       eventHandlerSelector: '.test',
       labelClassNameForNode: (node) => node.getItem().label,
+      onKeepSelection() {},
+      rowClassNameForNode: (node) => '',
     };
   });
 
@@ -444,7 +446,7 @@ describe('TreeRootComponent', () => {
     beforeEach(() => {
       onConfirmSelection = jasmine.createSpy('onConfirmSelection');
       props.onConfirmSelection = onConfirmSelection;
-    })
+    });
 
     describe('clicking an arrow', () => {
       it('toggles whether the node is collapsed', () => {
@@ -488,8 +490,6 @@ describe('TreeRootComponent', () => {
           expect(component.getSelectedNodes()).toEqual([nodes['G']]);
           expect(component.isNodeKeyExpanded(nodes['G'].getKey())).toBe(true);
 
-          var nodeComponents = getNodeComponents(component);
-
           atom.commands.dispatch(hostEl, 'core:confirm');
           expect(component.isNodeKeyExpanded(nodes['G'].getKey())).toBe(false);
 
@@ -509,7 +509,6 @@ describe('TreeRootComponent', () => {
 
           expect(component.getSelectedNodes()).toEqual([nodes['J']]);
 
-          var nodeComponents = getNodeComponents(component);
           atom.commands.dispatch(hostEl, 'core:confirm');
 
           expect(onConfirmSelection).toHaveBeenCalledWith(nodes['J']);

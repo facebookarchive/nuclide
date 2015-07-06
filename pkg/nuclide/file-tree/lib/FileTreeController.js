@@ -81,7 +81,11 @@ function labelClassNameForNode(node: LazyFileTreeNode) {
   return addons.classSet(classObj);
 }
 
-function rowClassNameForNode(node: LazyFileTreeNode) {
+function rowClassNameForNode(node: ?LazyFileTreeNode) {
+  if (!node) {
+    return '';
+  }
+
   var vcsClassName = vcsClassNameForEntry(node.getItem());
   return addons.classSet({
     [vcsClassName]: vcsClassName,
@@ -144,7 +148,7 @@ var FileTree = React.createClass({
   render() {
     return (
       <div className="nuclide-file-tree" tabIndex="-1">
-        <TreeRootComponent ref="root" {...this.props}/>
+        <TreeRootComponent ref="root" {...this.props} />
       </div>
     );
   },

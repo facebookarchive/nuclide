@@ -26,9 +26,12 @@ describe('TreeNodeComponent', () => {
   beforeEach(() => {
     props = {
       depth: 0,
-      isExpanded: () => {},
+      isContainer: false,
+      isExpanded: false,
+      isLoading: false,
       isSelected: false,
-      labelClassNameForNode: () => iconClassName,
+      label,
+      labelClassName: iconClassName,
       node: new LazyTestTreeNode({label}, null, false, null),
       onClick: () => {},
       onClickArrow: () => {},
