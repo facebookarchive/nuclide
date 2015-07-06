@@ -14,7 +14,8 @@ var {extractWordAtPosition} = require('nuclide-atom-helpers');
 var HackLanguage = require('./HackLanguage');
 var NullHackClient = require('./NullHackClient');
 var logger = require('nuclide-logging').getLogger();
-var url = require('url');
+var {parse, getPath} = require('nuclide-remote-uri');
+
 var pathUtil = require('path');
 
 const NULL_CONNECTION_ID = 'null';
@@ -41,7 +42,7 @@ module.exports = {
     }
 
     var editorPath = editor.getPath();
-    var {path} = url.parse(editorPath);
+    var path = getPath(editorPath);
     var contents = editor.getText();
     var errors = await hackLanguage.getDiagnostics(path, contents);
     var mixedErrors = errors;
@@ -64,7 +65,7 @@ module.exports = {
     if (!hackLanguage) {
       return [];
     }
-    var {path} = url.parse(editor.getPath());
+    var path = getPath(editor.getPath());
     var contents = editor.getText();
     var cursor = editor.getLastCursor();
     var offset = editor.getBuffer().characterIndexForPosition(cursor.getBufferPosition());
@@ -101,7 +102,7 @@ module.exports = {
       return null;
     }
 
-    var {path} = url.parse(editor.getPath());
+    var path = getPath(editor.getPath());
     var contents = editor.getText();
 
     var type = await hackLanguage.getType(path, contents, matchData.wordMatch[0], position.row + 1, position.column + 1);
@@ -124,7 +125,7 @@ module.exports = {
     if (!hackLanguage) {
       return null;
     }
-    var {path, protocol, host} = url.parse(editor.getPath());
+    var {path, protocol, host} = parse(editor.getPath());
 
     var contents = editor.getText();
     var buffer = editor.getBuffer();
@@ -151,7 +152,7 @@ module.exports = {
   },
 
   async onDidSave(editor: TextEditor): void {
-    var {path} = url.parse(editor.getPath());
+    var path = getPath(editor.getPath());
     var contents = editor.getText();
     var buffer = editor.getBuffer();
     var hackLanguage = await getHackLanguageForBuffer(buffer);
@@ -188,7 +189,7 @@ function getClientId(buffer: TextBuffer): string {
 
 function getHackLanguageForBuffer(buffer: TextBuffer): Promise<?HackLanguage> {
   var uri = buffer.getUri();
-  var {path: filePath} = url.parse(uri);
+  var filePath = getPath(uri);
   // `getClient` can return null if a file path doesn't have a root directory in the tree.
   // Also, returns null when reloading Atom with open files, while the RemoteConnection creation is pending.
   var client = getClient(uri);
