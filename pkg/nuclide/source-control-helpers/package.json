@@ -9,7 +9,7 @@
     "testRunner": "npm"
   },
   "dependencies": {
-    "fs-plus": "2.5",
+    "fs-plus": "2.8.0",
     "ini": "1.3.2",
     "nuclide-commons": "0.0.0"
   },
