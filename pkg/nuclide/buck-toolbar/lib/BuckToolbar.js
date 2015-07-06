@@ -73,6 +73,10 @@ var BuckToolbar = React.createClass({
     this.setState({currentProgress: 0, maxProgress});
   },
 
+  setCurrentProgressToMaxProgress() {
+    this.setCurrentProgress(this.state.maxProgress);
+  },
+
   render(): ReactElement {
     return (
       <div className='buck-toolbar'>
@@ -234,6 +238,7 @@ var BuckToolbar = React.createClass({
         } else if (type === 'BuildRuleFinished') {
           this.setCurrentProgress(++ruleCount);
         } else if (type === 'BuildFinished') {
+          this.setCurrentProgressToMaxProgress();
           isFinished = true;
           ws.close();
         }
