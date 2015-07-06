@@ -98,7 +98,7 @@ module.exports = class DiffViewEditor {
       () => {
         var copy = screenLines[0].copy();
         copy.token = [];
-        copy.text = 'empty_lolo';
+        copy.text = '';
         copy.tags = [];
         return copy;
       }

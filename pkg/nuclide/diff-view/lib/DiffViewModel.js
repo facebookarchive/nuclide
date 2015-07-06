@@ -31,12 +31,14 @@ class DiffViewModel {
   }
 
   async fetchDiffState(): Promise<void> {
-    var {find} = require('nuclide-commons').array;
-    var rootDirectory = find(atom.project.getDirectories(), directory => directory.contains(this._filePath));
-    if (!rootDirectory) {
-      throw new Error('Cannot find root directory for file: ' + this._filePath);
-    }
-    var repository = await atom.project.repositoryForDirectory(rootDirectory);
+    // Calling atom.project.repositoryForDirectory gets the real path of the directory,
+    // which is another round-trip and calls the repository providers to get an existing repository.
+    // Instead, the first match of the filtering here is the only possible match.
+    var {repositoryContainsPath} = require('nuclide-hg-git-bridge');
+    var repository = atom.project.getRepositories().filter(repo => {
+      return repositoryContainsPath(repo, this._filePath);
+    })[0];
+
     if (!repository || repository.getType() !== 'hg') {
       throw new Error('Diff view only supports hg repositories right now: found ' + (repository && repository.getType()));
     }
