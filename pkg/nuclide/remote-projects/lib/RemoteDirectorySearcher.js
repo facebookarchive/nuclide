@@ -42,22 +42,56 @@ class RemoteDirectorySearcher {
   search(directories: Array<RemoteDirectory>, regex: RegExp, options: Object): RemoteDirectorySearch {
     var isCancelled = false;
     var promise = new Promise((resolve, reject) => {
-      // Create and resolve a promise for each search directory.
-      var searchPromises = directories.map(dir => {
-        var service = this._serviceProvider(dir);
-        return service.search(dir.getPath(), regex.source);
-      });
+      var seenFiles = new Set(); // The files that we have seen updates for.
+      var onUpdate = (requestId, update) => {
+        // Ensure that this update is for one of our current requests.
+        if (myRequests && myRequests.indexOf(requestId) === -1) {
+          return;
+        }
 
-      var pathsSearched = 0;
-      Promise.all(searchPromises).then(allResults => {
-        allResults.forEach(results => {
-          results.forEach(options.didMatch);
-          pathsSearched += results.length;
-          options.didSearchPaths(pathsSearched);
-        });
+        options.didMatch(update);
 
-        // Reject the promise if the search was cancelled, otherwise resolve.
-        (isCancelled ? reject : resolve)(null);
+        // Call didSearchPaths with the number of unique files we have seen matches in. This is
+        // not technically correct, as didSearchPaths is also supposed to count files for which
+        // no matches were found. However, we currently have no way of obtaining this information.
+        seenFiles.add(update.filePath);
+        options.didSearchPaths(seenFiles.size);
+      };
+
+      var myRequests = null; // We don't yet know what our search ids are.
+      var completedRequests = new Set(); // Keep track of completed search ids.
+      var onCompleted = requestId => {
+        if (requestId) {
+          completedRequests.add(requestId);
+        }
+
+        // Check if we've recieved our search id's, and that every search id is completed.
+        var complete = myRequests && myRequests.every(request => completedRequests.has(request));
+        if (complete) { // If all searches are complete.
+          // Unsubscribe from events.
+          updateDisposables.forEach(disposable => disposable.dispose());
+          completionDisposables.forEach(disposable => disposable.dispose());
+
+          // Reject the promise if the search was cancelled, otherwise resolve.
+          (isCancelled ? reject : resolve)(null);
+        }
+      };
+
+      // Get the remote service that corresponds to each remote directory.
+      var services = directories.map(dir => this._serviceProvider(dir));
+
+      // Subscribe to file update and search completion update.
+      var updateDisposables = services.map(service => service.onMatchesUpdate(onUpdate));
+      var completionDisposables = services.map(service => service.onSearchCompleted(onCompleted));
+
+      // Start the search in each given directory, getting a list of requestIds.
+      var searchIdPromises = directories.map((dir, index) =>
+        services[index].search(dir.getPath(), regex.source));
+
+      // Resolve all of the searchIds, and then wait for their completion.
+      Promise.all(searchIdPromises).then(searchIds => {
+        myRequests = searchIds; // Store our search Ids.
+        onCompleted(); // Check for completion.
       });
     });
 

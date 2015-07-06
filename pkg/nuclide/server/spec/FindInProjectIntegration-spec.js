@@ -18,32 +18,59 @@ describe('FindInProjectService-Integration', () => {
   function makePortable(jsonObject) {
       return JSON.parse(
         JSON.stringify(jsonObject, null, 2)
-          .replace(new RegExp('\/\/localhost:\\d*/*' + __dirname), 'VARIABLE')
+          .replace(new RegExp('\/\/localhost:\\d*/*' + __dirname, 'g'), 'VARIABLE')
       );
   }
 
   it('can execute a basic search', () => {
+    var testHelper = new ServiceIntegrationTestHelper('FindInProjectService',
+      path.join(__dirname, '../node_modules/nuclide-remote-search/lib/FindInProjectService.js'),
+      path.join(__dirname, '../node_modules/nuclide-remote-search/lib/LocalFindInProjectService.js'));
+
     waitsForPromise(async () => {
-      // Star the integration test helper.
-      var testHelper = new ServiceIntegrationTestHelper('FindInProjectService',
-        path.join(__dirname, '../node_modules/nuclide-remote-search/lib/FindInProjectService.js'),
-        path.join(__dirname, '../node_modules/nuclide-remote-search/lib/LocalFindInProjectService.js'));
+      // Start the integration test helper.
       await testHelper.start();
-      var remoteService = testHelper.getRemoteService();
+      return new Promise((resolve, reject) => {
+        var remoteService = testHelper.getRemoteService();
 
-      // Search in the fixtures/basic directory.
-      var connection = testHelper.getRemoteConnection();
-      var input_dir = path.join(__dirname, 'fixtures', 'basic');
-      var uri = connection.getUriOfRemotePath(input_dir);
-      var results = await remoteService.search(
-        uri,
-        /hello world/.source
-      );
+        // Search in the fixtures/basic directory.
+        var connection = testHelper.getRemoteConnection();
+        var input_dir = path.join(__dirname, 'fixtures', 'basic');
+        var uri = connection.getUriOfRemotePath(input_dir);
 
-      // Should equal fixtures/basic.json
-      var expected = JSON.parse(fs.readFileSync(input_dir + '.json'));
-      expect( makePortable( results ) ).toEqual(expected);
-      testHelper.stop();
+        // Capture onUpdate messages.
+        var updates = [];
+        var updateDisposable = remoteService.onMatchesUpdate((requestId, update) => updates.push(update));
+
+        // OnCompletion event handler.
+        var myRequest = null, completedRequest = null;
+        var onCompleted = requestId => {
+          if (requestId) {
+            completedRequest = requestId;
+          }
+
+          var complete = myRequest && completedRequest && myRequest === completedRequest;
+          if (complete) { // If all searches are complete.
+            // Should equal fixtures/basic.json.
+            var expected = JSON.parse(fs.readFileSync(input_dir + '.json'));
+            expect( makePortable( { myRequest, updates } ) ).toEqual(expected);
+            testHelper.stop();
+
+            updateDisposable.dispose();
+            completedDisposable.dispose();
+
+            // Resolve the promise.
+            resolve();
+          }
+        };
+        var completedDisposable = remoteService.onSearchCompleted(onCompleted);
+
+        // Start seach.
+        remoteService.search(uri, /hello world/.source).then(id => {
+          myRequest = id;
+          onCompleted();
+        });
+      });
     });
   });
 });

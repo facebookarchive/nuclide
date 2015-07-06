@@ -1,37 +1,60 @@
-[
-  {
-    "matches": [
-      {
-        "lineText": "Console.log('Hello World.');",
-        "lineTextOffset": 0,
-        "matchText": "Hello World",
-        "range": [
-          [
-            12,
-            13
-          ],
-          [
-            12,
-            24
+{
+  "myRequest" : 1,
+  "updates": [
+    {
+      "matches": [
+        {
+          "lineText": "Console.log('Hello World.');",
+          "lineTextOffset": 0,
+          "matchText": "Hello World",
+          "range": [
+            [
+              12,
+              13
+            ],
+            [
+              12,
+              24
+            ]
           ]
-        ]
-      },
-      {
-        "lineText": "Console.log('Hello World.');",
-        "lineTextOffset": 0,
-        "matchText": "Hello World",
-        "range": [
-          [
-            14,
-            13
-          ],
-          [
-            14,
-            24
+        }
+      ],
+      "filePath": "nuclide:VARIABLE/fixtures/basic/test.js"
+    },
+    {
+      "matches": [
+        {
+          "lineText": "Console.log('Hello World.');",
+          "lineTextOffset": 0,
+          "matchText": "Hello World",
+          "range": [
+            [
+              12,
+              13
+            ],
+            [
+              12,
+              24
+            ]
           ]
-        ]
-      }
-    ],
-    "filePath": "nuclide:VARIABLE/fixtures/basic/test.js"
-  }
-]
+        },
+        {
+          "lineText": "Console.log('Hello World.');",
+          "lineTextOffset": 0,
+          "matchText": "Hello World",
+          "range": [
+            [
+              14,
+              13
+            ],
+            [
+              14,
+              24
+            ]
+          ]
+        }
+      ],
+      "filePath": "nuclide:VARIABLE/fixtures/basic/test.js"
+    }
+  ]
+}

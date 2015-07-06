@@ -10,13 +10,31 @@
  */
 
 class FindInProjectService {
-  search(
-    directory: NuclideUri,
-    regex: string
-  ): Promise<Array<{
-    filePath: NuclideUri;
-    matches: Array<{lineText: string; lineTextOffset: number; matchText: string; range: Array<Array<number>>}>;
-  }>> {
+  // Create a search request.
+  search(directory: NuclideUri, regex: string): Promise<Number> {
+    return Promise.reject('Not implemented');
+  }
+
+  // Subscribe to the completion of searches.
+  onSearchCompleted(callback: (requestId: number) => void): Disposable {
+    return Promise.reject('Not implemented');
+  }
+
+  // Subscribe to an event triggered whenever new matches are found in a file.
+  onMatchesUpdate(
+    callback: (
+      requestId: number,
+      fileResult: {
+        filePath: NuclideUri;
+        matches: Array<{
+          lineText: string;
+          lineTextOffset: number;
+          matchText: string;
+          range: Array<Array<number>>
+        }>
+      }
+    ) => void
+  ): Disposable {
     return Promise.reject('Not implemented');
   }
 }
