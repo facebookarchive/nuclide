@@ -734,4 +734,37 @@ describe('Hyperclick', () => {
       });
     });
   });
+
+  describe('when the editor has soft-wrapped lines', () => {
+    beforeEach(() => {
+      textEditor.setSoftWrapped(true);
+      atom.config.set('editor.softWrapAtPreferredLineLength', true);
+      atom.config.set('editor.preferredLineLength', 6); // This wraps each word onto its own line.
+    });
+
+    it('Hyperclick correctly detects the word being moused over.', () => {
+      waitsForPromise(async () => {
+
+        var callback = jasmine.createSpy('callback');
+        var provider = {
+          getSuggestionForWord(sourceTextEditor, text, range) {
+            return {range, callback};
+          },
+        };
+        spyOn(provider, 'getSuggestionForWord').andCallThrough();
+        hyperclick.consumeProvider(provider);
+
+        var position = new Point(8, 0);
+        var expectedText = 'word9';
+        var expectedBufferRange = Range.fromObject([[2, 12], [2, 17]]);
+        dispatch(MouseEvent, 'mousemove', position, {metaKey: true});
+        await hyperclickForTextEditor.getSuggestionAtMouse();
+        expect(provider.getSuggestionForWord).toHaveBeenCalledWith(
+            textEditor,
+            expectedText,
+            expectedBufferRange);
+        expect(provider.getSuggestionForWord.callCount).toBe(1);
+      });
+    });
+  });
 });

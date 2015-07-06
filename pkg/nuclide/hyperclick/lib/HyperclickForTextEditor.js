@@ -78,7 +78,7 @@ class HyperclickForTextEditor {
     if (this._isMouseAtLastWordRange() && lastSuggestionIsNotMultiRange) {
       return;
     }
-    var {range} = getWordTextAndRange(this._textEditor, this._getMousePosition());
+    var {range} = getWordTextAndRange(this._textEditor, this._getMousePositionAsBufferPosition());
     this._lastWordRange = range;
 
     if (this._isHyperclickEvent(event)) {
@@ -131,7 +131,7 @@ class HyperclickForTextEditor {
       return;
     }
 
-    var position = this._getMousePosition();
+    var position = this._getMousePositionAsBufferPosition();
 
     if (this._lastSuggestionAtMouse) {
       var {range} = this._lastSuggestionAtMouse;
@@ -156,22 +156,23 @@ class HyperclickForTextEditor {
     this._textEditorView.classList.remove('hyperclick-loading');
   }
 
-  _getMousePosition(): atom$Point {
-    return this._textEditorView.component.screenPositionForMouseEvent(this._lastMouseEvent);
+  _getMousePositionAsBufferPosition(): atom$Point {
+    var screenPosition = this._textEditorView.component.screenPositionForMouseEvent(this._lastMouseEvent);
+    return this._textEditor.bufferPositionForScreenPosition(screenPosition);
   }
 
   _isMouseAtLastSuggestion(): boolean {
     if (!this._lastSuggestionAtMouse) {
       return false;
     }
-    return this._isPositionInRange(this._getMousePosition(), this._lastSuggestionAtMouse.range);
+    return this._isPositionInRange(this._getMousePositionAsBufferPosition(), this._lastSuggestionAtMouse.range);
   }
 
   _isMouseAtLastWordRange(): boolean {
     if (!this._lastWordRange) {
       return false;
     }
-    return this._isPositionInRange(this._getMousePosition(), this._lastWordRange);
+    return this._isPositionInRange(this._getMousePositionAsBufferPosition(), this._lastWordRange);
   }
 
   _isPositionInRange(position: atom$Point, range: Range | Array<Range>): boolean {
