@@ -14,6 +14,7 @@ var nuclideUri = require('../lib/main');
 describe('nuclide-uri', () => {
   var localUri = '/usr/local/file';
   var remoteUri = nuclideUri.createRemoteUri('fb.com', 8000, '/usr/local');
+  var remoteUriWithSpaces = nuclideUri.createRemoteUri('fb.com', 8000, '/a b/c d');
 
   it('isRemote', () => {
     expect(nuclideUri.isRemote('/')).toBe(false);
@@ -27,6 +28,7 @@ describe('nuclide-uri', () => {
 
   it('createRemoteUri', () => {
     expect(remoteUri).toBe('nuclide://fb.com:8000/usr/local');
+    expect(remoteUriWithSpaces).toBe('nuclide://fb.com:8000/a b/c d');
   });
 
   it('join', () => {
@@ -40,6 +42,10 @@ describe('nuclide-uri', () => {
     expect(nuclideUri.getHostname(remoteUri)).toBe('fb.com');
     expect(nuclideUri.getPort(remoteUri)).toBe(8000);
     expect(nuclideUri.getPath(remoteUri)).toBe('/usr/local');
+
+    expect(nuclideUri.getHostname(remoteUriWithSpaces)).toBe('fb.com');
+    expect(nuclideUri.getPort(remoteUriWithSpaces)).toBe(8000);
+    expect(nuclideUri.getPath(remoteUriWithSpaces)).toBe('/a b/c d');
   });
 
   it('parsing local', () => {
@@ -57,6 +63,7 @@ describe('nuclide-uri', () => {
   it('dirname', () => {
     expect(nuclideUri.dirname(localUri)).toBe('/usr/local');
     expect(nuclideUri.dirname(remoteUri)).toBe('nuclide://fb.com:8000/usr');
+    expect(nuclideUri.dirname(remoteUriWithSpaces)).toBe('nuclide://fb.com:8000/a b');
   });
 
   it('getParent', () => {
@@ -69,12 +76,15 @@ describe('nuclide-uri', () => {
     expect(nuclideUri.normalize(remoteUri)).toBe(remoteUri);
     expect(nuclideUri.normalize('/usr/local/..')).toBe('/usr');
     expect(nuclideUri.normalize('nuclide://fb.com:8000/usr/local/..')).toBe('nuclide://fb.com:8000/usr');
+    expect(nuclideUri.normalize('/a b/c d/..')).toBe('/a b');
   });
 
   it('relative', () => {
     expect(() => nuclideUri.relative(localUri, remoteUri)).toThrow();
     expect(nuclideUri.relative(nuclideUri.dirname(remoteUri), remoteUri)).toBe('local');
     expect(nuclideUri.relative(remoteUri, nuclideUri.dirname(remoteUri))).toBe('..');
+    expect(nuclideUri.relative(nuclideUri.dirname(remoteUriWithSpaces), remoteUriWithSpaces)).toBe('c d');
+    expect(nuclideUri.relative(remoteUriWithSpaces, nuclideUri.dirname(remoteUriWithSpaces))).toBe('..');
     expect(nuclideUri.relative(nuclideUri.dirname(localUri), localUri)).toBe('file');
     expect(nuclideUri.relative(localUri, nuclideUri.dirname(localUri))).toBe('..');
   });
