@@ -21,10 +21,24 @@ var ClangService = require('./ClangService');
  * mock class as ClangService's local implementation to make sure nothing breaks.
  */
 class LocalClangServiceMock extends ClangService {
-  async compile(src: NuclideUri, contents: string): Promise<any> {
-    return {
+  compile(
+    src: NuclideUri,
+    contents: string
+  ): Promise<{
+    diagnostics: Array<{
+      spelling: string; 
+      severity: number; 
+      location: {
+        column: number;
+        file: NuclideUri;
+        line: number;
+      };
+      ranges: any;
+    }>
+  }> {
+    return Promise.resolve({
       diagnostics: [],
-    };
+    });
   }
 
   getCompletions(src: NuclideUri, contents: string, line: number, column: number,

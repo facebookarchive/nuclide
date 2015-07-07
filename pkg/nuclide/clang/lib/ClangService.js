@@ -10,7 +10,21 @@
  */
 
 class ClangService {
-  compile(src: NuclideUri, contents: string): Promise<any> {
+  compile(
+    src: NuclideUri,
+    contents: string
+  ): Promise<{
+    diagnostics: Array<{
+      spelling: string; 
+      severity: number; 
+      location: {
+        column: number;
+        file: NuclideUri;
+        line: number;
+      };
+      ranges: any;
+    }>
+  }> {
     return Promise.reject('Not implemented');
   }
 
