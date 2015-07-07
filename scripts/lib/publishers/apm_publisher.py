@@ -38,10 +38,11 @@ class ApmPublisher(AbstractPublisher):
 
     _version_regex = re.compile('^0\.0\.(\d+)$')
 
-    def __init__(self, config, apm, tmpdir, git, github_access_token=None):
+    def __init__(self, config, apm, tmpdir, boilerplate_files, git, github_access_token=None):
         self._config = config
         self._apm = apm
         self._tmpdir = os.path.join(tmpdir, 'apm')
+        self._boilerplate_files = boilerplate_files
         self._git = git
         self._github_access_token = github_access_token
         self._repo = None # This will be initialized in prepublish().
@@ -131,6 +132,12 @@ class ApmPublisher(AbstractPublisher):
         package = self._config.package_directory
         logging.info('Copying package %s', self.get_package_name())
         self.copy_into_repo(package)
+
+        # Make sure that standard boilerplate files are included in the repo.
+        for name, src in self._boilerplate_files.items():
+            shutil.copyfile(
+                src,
+                os.path.join(self._repo, name))
 
         # Load package.json and rewrite version number within it.
         # TODO (jpearce): reconcile with very similar npm code

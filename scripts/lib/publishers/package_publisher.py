@@ -39,6 +39,9 @@ class PackagePublisher(object):
         git = Git()
         apm = Apm(git)
         npm = Npm()
+        boilerplate_files = {
+            'LICENSE': os.path.join(path_to_nuclide_repo, 'LICENSE'),
+        }
 
         def process_packages(packages, is_npm):
             for package_json in packages:
@@ -54,9 +57,9 @@ class PackagePublisher(object):
                     nuclide_npm_packages,
                     nuclide_apm_packages)
                 if is_npm:
-                    publisher = NpmPublisher(config, npm, master_tmpdir)
+                    publisher = NpmPublisher(config, npm, master_tmpdir, boilerplate_files)
                 else:
-                    publisher = ApmPublisher(config, apm, master_tmpdir, git, github_access_token)
+                    publisher = ApmPublisher(config, apm, master_tmpdir, boilerplate_files, git, github_access_token)
                 publishers.append(publisher)
 
         # Note that the resulting publishers array will be organized such that all

@@ -23,11 +23,12 @@ class NpmPublisher(AbstractPublisher):
 
     _version_regex = re.compile('^0\.0\.(\d+)$')
 
-    def __init__(self, config, npm, tmpdir):
+    def __init__(self, config, npm, tmpdir, boilerplate_files):
         self._config = config
         self._npm = npm
         self._tmpdir = os.path.join(tmpdir, 'npm')
         self._tmp_package = os.path.join(self._tmpdir, self.get_package_name())
+        self._boilerplate_files = boilerplate_files
 
     def get_package_name(self):
         return self._config.package_name
@@ -61,6 +62,12 @@ class NpmPublisher(AbstractPublisher):
         package = self._config.package_directory
         logging.info('Copying %s to tmpdir', self.get_package_name())
         shutil.copytree(package, self._tmp_package, ignore=shutil.ignore_patterns('node_modules'))
+
+        # Make sure that standard boilerplate files are included in the repo.
+        for name, src in self._boilerplate_files.items():
+            shutil.copyfile(
+                src,
+                os.path.join(self._tmp_package, name))
 
         # Load package.json and rewrite version number within it.
         nil_semver = '0.0.0'
