@@ -38,16 +38,18 @@ class LocalFindInProjectService {
   search(directory: NuclideUri, regex: string): Promise<number> {
     var requestId = this._requests++; // Get a unique number to represent this request.
 
-    // Start the search.
-    scanhandler.search(directory, regex, update => {
-      // On update, normalize the paths, and try to pass the update to clients.
-      this._emitter.emit(ON_MATCHES_UPDATE, requestId, {
-        filePath: path.join(directory, update.filePath),
-        matches: update.matches,
+    // Start the search asynchronously.
+    process.nextTick(() => {
+      scanhandler.search(directory, regex, update => {
+        // On update, normalize the paths, and try to pass the update to clients.
+        this._emitter.emit(ON_MATCHES_UPDATE, requestId, {
+          filePath: path.join(directory, update.filePath),
+          matches: update.matches,
+        });
+      }).then(results => {
+        // Upon completion of search, emit event.
+        this._emitter.emit(ON_SEARCH_COMPLETED, requestId);
       });
-    }).then(results => {
-      // Upon completion of search, emit event.
-      this._emitter.emit(ON_SEARCH_COMPLETED, requestId);
     });
 
     // Return the request id to the client, without blocking on the search's completion.

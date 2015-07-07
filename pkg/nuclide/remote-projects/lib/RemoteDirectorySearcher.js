@@ -61,9 +61,7 @@ class RemoteDirectorySearcher {
       var myRequests = null; // We don't yet know what our search ids are.
       var completedRequests = new Set(); // Keep track of completed search ids.
       var onCompleted = requestId => {
-        if (requestId) {
-          completedRequests.add(requestId);
-        }
+        completedRequests.add(requestId);
 
         // Check if we've recieved our search id's, and that every search id is completed.
         var complete = myRequests && myRequests.every(request => completedRequests.has(request));
@@ -91,7 +89,6 @@ class RemoteDirectorySearcher {
       // Resolve all of the searchIds, and then wait for their completion.
       Promise.all(searchIdPromises).then(searchIds => {
         myRequests = searchIds; // Store our search Ids.
-        onCompleted(); // Check for completion.
       });
     });
 

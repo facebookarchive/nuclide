@@ -45,9 +45,7 @@ describe('FindInProjectService-Integration', () => {
         // OnCompletion event handler.
         var myRequest = null, completedRequest = null;
         var onCompleted = requestId => {
-          if (requestId) {
-            completedRequest = requestId;
-          }
+          completedRequest = requestId;
 
           var complete = myRequest && completedRequest && myRequest === completedRequest;
           if (complete) { // If all searches are complete.
@@ -66,10 +64,7 @@ describe('FindInProjectService-Integration', () => {
         var completedDisposable = remoteService.onSearchCompleted(onCompleted);
 
         // Start seach.
-        remoteService.search(uri, /hello world/.source).then(id => {
-          myRequest = id;
-          onCompleted();
-        });
+        remoteService.search(uri, /hello world/.source).then(id => { myRequest = id; });
       });
     });
   });
