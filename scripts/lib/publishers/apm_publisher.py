@@ -188,8 +188,9 @@ class ApmPublisher(AbstractPublisher):
             with open(os.path.join(self._repo, 'lib', 'config.json'), 'w') as f:
                 f.write(installer_config_json)
 
+    def publish(self, new_version, atom_semver):
         # Now that all of the local changes have been written, commit them.
-        tag_name = 'v' + new_semver
+        tag_name = 'v0.0.%d' % new_version
         self._git.commit_all(self._repo,
                              'Committing changes in preparation for publishing %s' % tag_name)
         self._git.add_tag(self._repo, tag_name, 'Atom package %s.' % tag_name)
@@ -199,9 +200,8 @@ class ApmPublisher(AbstractPublisher):
         # that have been made between versions over time.
         self._git.push_to_master(self._repo)
 
-    def publish(self, new_version, atom_semver):
         try:
-            self._apm.publish(self._repo, 'v0.0.%d' % new_version)
+            self._apm.publish(self._repo, tag_name)
         except subprocess.CalledProcessError:
             logging.error('FAILED to publish package %s at version %d; it may already be published',
                           self.get_package_name(), new_version)
