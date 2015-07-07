@@ -31,6 +31,8 @@ class RemoteNestedNuclideTypedTestService extends NestedNuclideTypedTestService 
     }
 
     c = obj => {
+      obj = require('nuclide-commons').object.assign({}, obj);
+
       if (obj.a !== null) {
         obj.a = this._connection.getPathOfUri(obj.a);
       }
@@ -40,6 +42,8 @@ class RemoteNestedNuclideTypedTestService extends NestedNuclideTypedTestService 
 
     if (d !== null) {
       d = obj => {
+        obj = require('nuclide-commons').object.assign({}, obj);
+
         if (obj.a !== null) {
           obj.a = this._connection.getPathOfUri(obj.a);
         }
@@ -58,6 +62,7 @@ class RemoteNestedNuclideTypedTestService extends NestedNuclideTypedTestService 
   }
   baz(a: { a: NuclideUri }, b: Array<NuclideUri>, c: number) {
     a = obj => {
+      obj = require('nuclide-commons').object.assign({}, obj);
       obj.a = this._connection.getPathOfUri(obj.a);
       return obj;
     }(a);
@@ -77,6 +82,7 @@ class RemoteNestedNuclideTypedTestService extends NestedNuclideTypedTestService 
   onNorf(callback: (payload: { file: NuclideUri }) => void) {
     var _callback = payload => {
       payload = obj => {
+        obj = require('nuclide-commons').object.assign({}, obj);
         obj.file = this._connection.getUriOfRemotePath(obj.file);
         return obj;
       }(payload);
@@ -89,6 +95,7 @@ class RemoteNestedNuclideTypedTestService extends NestedNuclideTypedTestService 
   onOops(callback: (payload: { file: NuclideUri }, wat: number) => void) {
     var _callback = (payload, wat) => {
       payload = obj => {
+        obj = require('nuclide-commons').object.assign({}, obj);
         obj.file = this._connection.getUriOfRemotePath(obj.file);
         return obj;
       }(payload);
@@ -101,6 +108,7 @@ class RemoteNestedNuclideTypedTestService extends NestedNuclideTypedTestService 
   onWoot(callback: (payload: { file: NuclideUri }, woot: NuclideUri) => void) {
     var _callback = (payload, woot) => {
       payload = obj => {
+        obj = require('nuclide-commons').object.assign({}, obj);
         obj.file = this._connection.getUriOfRemotePath(obj.file);
         return obj;
       }(payload);

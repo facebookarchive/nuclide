@@ -198,8 +198,9 @@ class ManipulationAssignmentExpressionCreator {
    * For example, if `identifier.property0` should be manipuated,  the generated expression will be
    * in following form:
    * ```
-   * identifier = ((arg0) => {
-   *  arg0.property0 = manipulation(arg0.property0);
+   * identifier = ((obj) => {
+   *  obj = require('nuclide-commons').object.assign({}, obj);
+   *  obj.property0 = manipulation(obj.property0);
    * }) (identifier);
    *
    * ```
@@ -227,10 +228,37 @@ class ManipulationAssignmentExpressionCreator {
       return null;
     }
 
+    // Create expression of `obj = require('nuclide-commons').object.assign({}, obj);`.
+    var shallowCopyExpression = t.expressionStatement(
+      t.assignmentExpression(
+        /* operator */ '=',
+        /* left */ objectIdentifier,
+        /* right */ t.callExpression(
+          /* callee */ t.memberExpression(
+            t.memberExpression(
+              t.callExpression(
+                /* callee */ t.identifier('require'),
+                /* arguments */ [t.literal('nuclide-commons')]
+              ),
+              t.identifier('object')
+            ),
+            t.identifier('assign')
+          ),
+          /* arguments */ [
+            t.objectExpression([]),
+            objectIdentifier,
+          ],
+        ),
+      )
+    );
+
     var arrowFunction = t.arrowFunctionExpression(
       /* params */ [objectIdentifier],
       /* body */ t.blockStatement(
-        assignmentExpressions.concat(t.returnStatement(objectIdentifier)),
+        [shallowCopyExpression].concat(
+          assignmentExpressions,
+          t.returnStatement(objectIdentifier),
+        ),
       )
     );
 
