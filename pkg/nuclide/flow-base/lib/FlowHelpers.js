@@ -54,9 +54,9 @@ async function getFlowExecOptions(file: string): Promise<?Object> {
   if (flowConfigDirectory && installed) {
     // TODO(nmote) remove typecast once Flow allows Promises to have covariant
     // type params
-    return ({
+    return {
       cwd: flowConfigDirectory,
-    }: ?Object);
+    };
   } else {
     return null;
   }

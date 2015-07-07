@@ -24,7 +24,7 @@ var FlowService = require('./FlowService');
 var {getPathToFlow, getFlowExecOptions, insertAutocompleteToken} = require('./FlowHelpers.js');
 
 class LocalFlowService extends FlowService {
-  _startedServers: Set<ChildProcess>;
+  _startedServers: Set<child_process$ChildProcess>;
 
   constructor() {
     super();
@@ -100,12 +100,11 @@ class LocalFlowService extends FlowService {
       if (result.exitCode === 0) {
         var json = JSON.parse(result.stdout);
         if (json['path']) {
-          // t7492048
-          return ({
+          return {
             file: json['path'],
             line: json['line'] - 1,
             column: json['start'] - 1,
-          } : ?Loc);
+          };
         } else {
           return null;
         }
