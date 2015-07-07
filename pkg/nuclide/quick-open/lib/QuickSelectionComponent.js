@@ -126,24 +126,15 @@ var QuickSelectionComponent = React.createClass({
     /**
      * Determine what the applicable shortcut for a given action is within this component's context.
      * For example, this will return different keybindings on windows vs linux.
-      *
-     * TODO replace with humanizeKeystroke from autocomplete-plus package,
-     * once it becomes a standalone package:
-     * https://github.com/atom/underscore-plus/blob/master/src/underscore-plus.coffee#L179
      */
     _findKeybindingForAction(action: string): string {
+      var {humanizeKeystroke} = require('nuclide-keystroke-label');
       var matchingKeyBindings = atom.keymaps.findKeyBindings({
         command: action,
         target: this._modalNode,
       });
       var keystroke = (matchingKeyBindings.length && matchingKeyBindings[0].keystrokes) || '';
-      return (
-        keystroke
-          .replace(/cmd/gi, '⌘')
-          .replace(/alt/gi, '⌥')
-          .replace(/[\+-]/g, '')
-          .toUpperCase()
-      );
+      return humanizeKeystroke(keystroke);
     },
   },
 
