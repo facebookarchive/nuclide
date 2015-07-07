@@ -11,14 +11,13 @@
 var {getServiceByNuclideUri} = require('nuclide-client');
 var {goToLocation} = require('nuclide-atom-helpers');
 
-var GRAMMARS = new Set([
-  'source.js',
-]);
+var {JS_GRAMMARS} = require('./constants.js');
+const JS_GRAMMARS_SET = new Set(JS_GRAMMARS);
 
 module.exports = {
   priority: 20,
   async getSuggestionForWord(textEditor: TextEditor, text: string, range: Range) {
-    if (!GRAMMARS.has(textEditor.getGrammar().scopeName)) {
+    if (!JS_GRAMMARS_SET.has(textEditor.getGrammar().scopeName)) {
       return null;
     }
 

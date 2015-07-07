@@ -12,6 +12,8 @@
 var {getServiceByNuclideUri} = require('nuclide-client');
 var {Range} = require('atom');
 
+var {JS_GRAMMARS} = require('./constants.js');
+
 /**
  * Currently, a diagnostic from Flow is an object with a "message" property.
  * Each item in the "message" array is an object with the following fields:
@@ -78,7 +80,7 @@ function processDiagnostics(diagnostics: Array<Object>, targetFile: string) {
 }
 
 module.exports = {
-  grammarScopes: ['source.js', 'source.js.jsx'],
+  grammarScopes: JS_GRAMMARS,
   scope: 'file',
   lintOnFly: true,
   async lint(textEditor: TextEditor): Promise<Array<Object>> {

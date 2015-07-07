@@ -9,6 +9,9 @@
  * the root directory of this source tree.
  */
 
+var {JS_GRAMMARS} = require('./constants.js');
+const GRAMMARS_STRING = JS_GRAMMARS.join(', ');
+
 function getServiceByNuclideUri(service, file?) {
   return require('nuclide-client').getServiceByNuclideUri(service, file);
 }
@@ -68,7 +71,7 @@ module.exports = {
     };
 
     return {
-      selector: '.source.js',
+      selector: GRAMMARS_STRING,
       disableForSelector: '.source.js .comment',
       inclusionPriority: 1,
       getSuggestions,
@@ -88,7 +91,7 @@ module.exports = {
     var typeHintProvider = new TypeHintProvider();
 
     return {
-      selector: 'source.js',
+      selector: GRAMMARS_STRING,
       inclusionPriority: 1,
       typeHint(editor: TextEditor, position: Point): Promise<any> {
         return typeHintProvider.typeHint(editor, position);
