@@ -71,8 +71,8 @@ class OmniSearchResultProvider extends QuickSelectionProvider {
     var basename = directory.getBaseName();
     var client = getClient(directoryPath);
 
-    var url = require('url');
-    var {protocol, host, path: rootDirectory} = url.parse(directoryPath);
+    var remoteUri = require('nuclide-remote-uri');
+    var {protocol, host, path: rootDirectory} = remoteUri.parse(directoryPath);
     var providers = await client.getSearchProviders(rootDirectory);
 
     var searchRequests = {};

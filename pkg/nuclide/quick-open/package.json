@@ -19,6 +19,7 @@
     "nuclide-commons": "0.0.0",
     "nuclide-keystroke-label": "0.0.0",
     "nuclide-logging": "0.0.0",
+    "nuclide-remote-uri": "0.0.0",
     "nuclide-ui-atom-input": "0.0.0",
     "nuclide-ui-tabs": "0.0.0",
     "object-assign": "2.0.0",

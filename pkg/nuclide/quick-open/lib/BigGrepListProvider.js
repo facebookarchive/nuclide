@@ -40,13 +40,13 @@ class BigGrepListProvider extends QuickSelectionProvider {
     if (query.length === 0) {
       return [];
     } else {
-      var url = require('url');
+      var remoteUri = require('nuclide-remote-uri');
       var queries = atom.project.getDirectories().map(async (directory) => {
         var directoryPath = directory.getPath();
         var basename = directory.getBaseName();
         var client = getClient(directoryPath);
 
-        var {protocol, host, path: rootDirectory} = url.parse(directoryPath);
+        var {protocol, host, path: rootDirectory} = remoteUri.parse(directoryPath);
         var allProviders = await client.getSearchProviders(rootDirectory);
         var providers = allProviders.filter(p => p.name === BIGGREP_SEARCH_PROVIDER);
         if (!providers.length) {

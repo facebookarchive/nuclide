@@ -79,8 +79,8 @@ class SymbolListProvider extends QuickSelectionProvider {
 
         var client = getClient(directoryPath);
 
-        var url = require('url');
-        var {protocol, host, path: rootDirectory} = url.parse(directoryPath);
+        var remoteUri = require('nuclide-remote-uri');
+        var {protocol, host, path: rootDirectory} = remoteUri.parse(directoryPath);
 
         var allProviders = await client.getSearchProviders(rootDirectory);
         var providers = allProviders.filter(p => p.name === HACK_SEARCH_PROVIDER);
