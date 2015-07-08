@@ -115,6 +115,9 @@ declare class atom$Marker {
 }
 
 declare class atom$PackageManager {
+  // Event Subscription
+  onDidLoadInitialPackages(callback: () => void): atom$Disposable;
+
   // Package system data
   getApmPath(): string;
   getPackageDirPaths(): Array<string>;
@@ -122,6 +125,14 @@ declare class atom$PackageManager {
   // General package data
   resolvePackagePath(name: string): ?string;
   isBundledPackage(name: string): boolean;
+
+  // Enabling and disabling packages
+  enablePackage(name: string): ?atom$Package;
+  disablePackage(name: string): ?atom$Package;
+  isPackageDisabled(name: string): boolean;
+
+  // Accessing loaded packages
+  isPackageLoaded(name: string): boolean;
 }
 
 declare class atom$Pane {
@@ -300,6 +311,11 @@ declare class atom$Workspace {
  * Extended Classes
  */
 
+declare class atom$Clipboard {
+  // Methods
+  write(text: string, metadata?: mixed): void;
+}
+
 declare class atom$ContextMenuManager {
   add(itemsBySelector: Object): void;
 }
@@ -336,7 +352,10 @@ declare class atom$File {
 }
 
 declare class atom$Project {
-  getDirectories(): Array<atom$Directory>
+  // Managing Paths
+  getPaths(): Array<string>;
+  removePath(projectPath: string): void;
+  getDirectories(): Array<atom$Directory>;
 }
 
 declare class atom$TextBuffer {
@@ -369,6 +388,12 @@ declare class atom$NotificationManager {
   getNotifications(): Array<atom$Notification>;
 }
 
+/**
+ * Private Classes
+ */
+
+declare class atom$Package { }
+
 // The items in this declaration are available off of `require('atom')`.
 // This list is not complete.
 declare module "atom" {
@@ -391,6 +416,8 @@ declare var TextEditor: typeof atom$TextEditor;
 // The properties of this type match the properties of the `atom` global.
 // This list is not complete.
 type AtomGlobal = {
+  // Properties
+  clipboard: atom$Clipboard;
   commands: atom$CommandRegistry;
   config: atom$Config;
   contextMenu: atom$ContextMenuManager;
@@ -399,6 +426,13 @@ type AtomGlobal = {
   views: atom$ViewRegistry;
   workspace: atom$Workspace;
   project: atom$Project;
+
+  // Messaging the User
+  confirm(options: {
+    buttons?: Array<string> | {[buttonName: string]: () => void};
+    detailedMessage?: string;
+    message: string;
+  }): ?number;
 }
 
 declare var atom: AtomGlobal;

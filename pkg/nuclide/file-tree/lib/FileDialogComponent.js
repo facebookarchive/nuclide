@@ -20,6 +20,8 @@ var {PropTypes} = React;
  * Component that displays UI to create a new file.
  */
 var FileDialogComponent = React.createClass({
+  _subscriptions: (null: ?CompositeDisposable),
+
   propTypes: {
     rootDirectory: PropTypes.object.isRequired,
     // The File or Directory to prepopulate the input with.
@@ -35,7 +37,7 @@ var FileDialogComponent = React.createClass({
     shouldSelectBasename: PropTypes.bool,
   },
 
-  getDefaultProps() {
+  getDefaultProps(): {[key: string]: mixed} {
     return {
       shouldSelectBasename: false,
     };
@@ -79,7 +81,7 @@ var FileDialogComponent = React.createClass({
     }
   },
 
-  render() {
+  render(): ReactElement {
     // The root element cannot have a 'key' property, so we use a dummy
     // <div> as the root. Ideally, the <atom-panel> would be the root.
     return (

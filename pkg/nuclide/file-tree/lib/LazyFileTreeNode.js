@@ -13,28 +13,16 @@ var {LazyTreeNode} = require('nuclide-ui-tree');
 
 class LazyFileTreeNode extends LazyTreeNode {
 
-  _file: (atom$File | atom$Directory);
-
   constructor(
       file: atom$File | atom$Directory,
       parent: ?LazyFileTreeNode,
       fetchChildren: (node: LazyTreeNode) => Promise) {
     super(file, parent, file.isDirectory(), fetchChildren);
-    this._file = file;
-    this.__key = null;
-  }
-
-  /**
-   * @return a sorted list where directories appear before files and items
-   *     are alphabetized by base name within their own type.
-   */
-  getCachedChildren(): ?Immutable.List<LazyTreeNode> {
-    return super.getCachedChildren();
   }
 
   getKey(): string {
     if (!this.__key) {
-      var label = this.__parent ? this.__parent.getKey() + this.getLabel() : this._file.getPath();
+      var label = this.__parent ? this.__parent.getKey() + this.getLabel() : this.getItem().getPath();
       var suffix = this.__isContainer && !label.endsWith('/') ? '/' : '';
       this.__key = label + suffix;
     }
@@ -42,14 +30,14 @@ class LazyFileTreeNode extends LazyTreeNode {
   }
 
   getLabel(): string {
-    return this._file.getBaseName();
+    return this.getItem().getBaseName();
   }
 
   isSymlink(): boolean {
     // The `symlink` property is assigned in the atom$Directory and atom$File
     // constructors with the `@symlink` class property syntax in its argument
     // list.
-    return this._file.symlink;
+    return this.getItem().symlink;
   }
 
 }

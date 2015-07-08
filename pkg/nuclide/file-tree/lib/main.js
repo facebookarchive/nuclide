@@ -8,9 +8,12 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
+
+import type FileTreeController from './FileTreeController';
+
 var {CompositeDisposable} = require('atom');
 
-var loadController: () => Promise<FileTreeController>;
+var loadController: ?() => Promise<FileTreeController>;
 var fileTreeController: ?FileTreeController = null;
 var subscriptions: ?CompositeDisposable = null;
 
@@ -23,8 +26,11 @@ var loadSubscription = atom.packages.onDidLoadInitialPackages(() => {
   if (atom.packages.isPackageLoaded('tree-view')) {
     atom.packages.unloadPackage('tree-view');
   }
-  loadSubscription.dispose();
-  loadSubscription = null;
+
+  if (loadSubscription) {
+    loadSubscription.dispose();
+    loadSubscription = null;
+  }
 });
 
 module.exports = {

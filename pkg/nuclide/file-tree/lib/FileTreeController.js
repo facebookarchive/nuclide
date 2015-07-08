@@ -61,7 +61,7 @@ async function fetchChildren(node: LazyFileTreeNode, controller: FileTreeControl
 }
 
 function labelClassNameForNode(node: LazyFileTreeNode) {
-  var classObj = {
+  var classObj: {[className: string]: boolean} = {
     'icon': true,
     'name': true,
   };
@@ -93,7 +93,7 @@ function rowClassNameForNode(node: ?LazyFileTreeNode) {
 }
 
 // TODO (t7337695) Make this function more efficient.
-function vcsClassNameForEntry(entry: File | Directory): string {
+function vcsClassNameForEntry(entry: atom$File | atom$Directory): string {
   var path = entry.getPath();
 
   var className = '';
@@ -133,7 +133,7 @@ function vcsClassNameForEntry(entry: File | Directory): string {
   return className;
 }
 
-function isLocalFile(entry: File | Directory): boolean {
+function isLocalFile(entry: atom$File | atom$Directory): boolean {
   return entry.getLocalPath === undefined;
 }
 
@@ -161,6 +161,8 @@ var FileTree = React.createClass({
 class FileTreeController {
   _hostElement: ?Element;
   _keyToState: ?Map<string, NodeState>;
+  _panelController: PanelController;
+  _subscriptions: CompositeDisposable;
 
   constructor(state: ?FileTreeControllerState) {
     this._fetchChildrenWithController = (node) => fetchChildren(node, this);
@@ -192,7 +194,7 @@ class FileTreeController {
           'core:delete': () => this.deleteSelection(),
         }));
 
-    var props = {
+    var props: {[key: string]: mixed} = {
       initialRoots: this._roots,
       eventHandlerSelector,
       onConfirmSelection: this.onConfirmSelection.bind(this),
@@ -540,7 +542,7 @@ class FileTreeController {
     }
   }
 
-  async revealActiveFile(): void {
+  async revealActiveFile(): Promise<void> {
     var editor = atom.workspace.getActiveTextEditor();
     if (!editor) {
       return;
@@ -666,7 +668,7 @@ class FileTreeController {
     });
   }
 
-  _reloadDirectory(directory: Directory): void {
+  _reloadDirectory(directory: atom$Directory): void {
     var directoryNode = this.getTreeComponent().getNodeForKey(new LazyFileTreeNode(directory).getKey());
     directoryNode.invalidateCache();
     this.forceUpdate();
@@ -674,7 +676,7 @@ class FileTreeController {
 
   _openAddDialog(
       entryType: string,
-      onConfirm: (rootDirectory: Directory, filePath: string) => void) {
+      onConfirm: (rootDirectory: atom$Directory, filePath: string) => Promise<void>) {
     var selection = this._getSelectedEntryAndDirectoryAndRoot();
     if (!selection) {
       return;
