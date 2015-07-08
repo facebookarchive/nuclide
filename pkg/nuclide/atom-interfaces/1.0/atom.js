@@ -282,6 +282,8 @@ declare class atom$Workspace {
     activePane?: boolean;
     searchAllPanes?: boolean;
   }): Promise<atom$TextEditor>;
+  reopenItem(): Promise<?atom$TextEditor>;
+  addOpener(callback: (uri: string) => any): atom$Disposable;
 
   // Pane Items
   getPaneItems(): Array<Object>;
