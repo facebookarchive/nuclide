@@ -31,7 +31,7 @@ module.exports = {
     return require('./promises').denodeify(f);
   },
 
-  safeSpawn(command: string, args: Array<string>, options: Object = {}): child_process$ChildProcess {
+  safeSpawn(command: string, args: Array<string>, options: Object): ChildProcess {
     return require('./process').safeSpawn(command, args, options);
   },
 

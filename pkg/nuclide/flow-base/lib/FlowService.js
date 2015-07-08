@@ -9,8 +9,6 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from 'nuclide-remote-uri';
-
 export type Diagnostic = {
   message: Array<{
     path: NuclideUri;
