@@ -68,7 +68,7 @@ describe('FileTreeController', () => {
     fileTreeController.destroy();
   });
 
-  describe('deleteSelection', () => {
+  xdescribe('deleteSelection', () => {
     it('checks if deleteSelection is called when core:backspace is triggered', () => {
       // Find div element
       var el = React.findDOMNode(TestUtils.findRenderedDOMComponentWithClass(
@@ -94,7 +94,7 @@ describe('FileTreeController', () => {
     });
   });
 
-  describe('getNodeAndSetState', () => {
+  xdescribe('getNodeAndSetState', () => {
     it('reuses an existing node if possible', () => {
       var rootDirectory = atom.project.getDirectories()[0];
       var originalNode = fileTreeController.getNodeAndSetState(rootDirectory);
@@ -107,7 +107,7 @@ describe('FileTreeController', () => {
     });
   });
 
-  describe('revealActiveFile', () => {
+  xdescribe('revealActiveFile', () => {
     it('succeeds for a deeply-nested file', () => {
       waitsForPromise(async () => {
         var filePath = path.join(fixturesPath, 'dir1/dir1/dir1/file1');

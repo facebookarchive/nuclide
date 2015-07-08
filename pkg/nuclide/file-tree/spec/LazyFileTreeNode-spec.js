@@ -12,7 +12,7 @@ var LazyFileTreeNode = require('../lib/LazyFileTreeNode');
 
 describe('LazyFileTreeNode', () => {
   describe('getKey', () => {
-    it('only ends with one "/" if the file is a container', () => {
+    xit('only ends with one "/" if the file is a container', () => {
       var node = new LazyFileTreeNode({
           getPath() {
             return '/a/b/';
