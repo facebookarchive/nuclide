@@ -47,7 +47,8 @@ describe('Task', () => {
       });
     });
 
-    it('can call a synchronous function from an exports object', () => {
+    // t7542202: fix this test and re-enable it
+    xit('can call a synchronous function from an exports object', () => {
       waitsForPromise(async () => {
         var result = await task.invokeRemoteMethod({
           file: require.resolve('./fixtures/multiple-exports.js'),
@@ -58,7 +59,8 @@ describe('Task', () => {
       });
     });
 
-    it('can call an async function from an exports object', () => {
+    // t7542202: fix this test and re-enable it
+    xit('can call an async function from an exports object', () => {
       waitsForPromise(async () => {
         var result = await task.invokeRemoteMethod({
           file: require.resolve('./fixtures/multiple-exports.js'),
