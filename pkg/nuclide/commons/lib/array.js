@@ -102,8 +102,16 @@ function findIndex(
   return result;
 }
 
+function remove<T>(array: Array<T>, element: T): void {
+  var index = array.indexOf(element);
+  if (index >= 0) {
+    array.splice(index, 1);
+  }
+}
+
 module.exports = {
   find,
   findIndex,
   from,
+  remove,
 };

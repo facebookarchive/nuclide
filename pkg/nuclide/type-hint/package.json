@@ -11,6 +11,9 @@
   "engines": {
     "atom": ">=0.196.0"
   },
+  "dependencies": {
+    "nuclide-commons": "0.0.0"
+  },
   "devDependencies": {
     "nuclide-atom-interfaces": "0.0.0"
   },

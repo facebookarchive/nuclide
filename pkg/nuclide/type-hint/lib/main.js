@@ -11,6 +11,8 @@
 
 var typeHintManager: ?TypeHintManager = null;
 
+var {Disposable} = require('atom');
+
 module.exports = {
 
   activate(state: ?any): void {
@@ -20,8 +22,9 @@ module.exports = {
     }
   },
 
-  consumeProvider(provider: TypeHintProvider) {
+  consumeProvider(provider: TypeHintProvider): Disposable {
     typeHintManager.addProvider(provider);
+    return new Disposable(() => typeHintManager.removeProvider(provider));
   },
 
   deactivate() {

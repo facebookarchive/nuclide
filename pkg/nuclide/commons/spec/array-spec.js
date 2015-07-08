@@ -256,3 +256,45 @@ describe('Array.prototype.findIndex()', () => {
     expect(count).toBe(1);
   });
 });
+
+describe('Array.remove', () => {
+  var a;
+  var empty;
+  var single;
+
+  beforeEach(() => {
+    a = ['a', 'b', 'c'];
+    empty = [];
+    single = ['x'];
+  });
+
+  it('removes an element properly', () => {
+    es6Array.remove(a, 'b');
+    expect(a).toEqual(['a', 'c']);
+  });
+
+  it('removes the first element properly', () => {
+    es6Array.remove(a, 'a');
+    expect(a).toEqual(['b', 'c']);
+  });
+
+  it('removes the last element properly', () => {
+    es6Array.remove(a, 'c');
+    expect(a).toEqual(['a', 'b']);
+  });
+
+  it('does nothing if the element is not found', () => {
+    es6Array.remove(a, 'd');
+    expect(a).toEqual(['a', 'b', 'c']);
+  });
+
+  it('does nothing to an empty array', () => {
+    es6Array.remove(empty, 'a');
+    expect(empty).toEqual([]);
+  });
+
+  it('works when there is a single element', () => {
+    es6Array.remove(single, 'x');
+    expect(single).toEqual([]);
+  });
+});

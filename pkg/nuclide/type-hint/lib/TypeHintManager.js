@@ -11,6 +11,8 @@
 
 var {CompositeDisposable, Disposable} = require('atom');
 
+var {remove} = require('nuclide-commons').array;
+
 const TYPEHINT_DELAY_MS = 200;
 
 type TypeHint = {
@@ -116,6 +118,10 @@ class TypeHintManager {
 
   addProvider(provider: TypeHintProvider) {
     this._typeHintProviders.push(provider);
+  }
+
+  removeProvider(provider: TypeHintProvider): void {
+    remove(this._typeHintProviders, provider);
   }
 
   dispose() {
