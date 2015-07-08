@@ -37,10 +37,6 @@ module.exports = {
   async findDiagnostics(editor: TextEditor): Promise<Array<any>> {
     var buffer = editor.getBuffer();
     var hackLanguage = await getHackLanguageForBuffer(buffer);
-    if (!hackLanguage) {
-      return [];
-    }
-
     var editorPath = editor.getPath();
     var path = getPath(editorPath);
     var contents = editor.getText();
@@ -62,9 +58,6 @@ module.exports = {
 
   async fetchCompletionsForEditor(editor: TextEditor, prefix: string): Promise<Array<any>> {
     var hackLanguage = await getHackLanguageForBuffer(editor.getBuffer());
-    if (!hackLanguage) {
-      return [];
-    }
     var path = getPath(editor.getPath());
     var contents = editor.getText();
     var cursor = editor.getLastCursor();
@@ -94,9 +87,6 @@ module.exports = {
 
   async typeHintFromEditor(editor: TextEditor, position: Point): Promise<?TypeHint> {
     var hackLanguage = await getHackLanguageForBuffer(editor.getBuffer());
-    if (!hackLanguage) {
-      return null;
-    }
     var matchData = extractWordAtPosition(editor, position, HACK_WORD_REGEX);
     if (!matchData) {
       return null;
@@ -122,9 +112,6 @@ module.exports = {
    */
   async findDefinition(editor: TextEditor, line: number, column: number): Promise<any> {
     var hackLanguage = await getHackLanguageForBuffer(editor.getBuffer());
-    if (!hackLanguage) {
-      return null;
-    }
     var {path, protocol, host} = parse(editor.getPath());
 
     var contents = editor.getText();
@@ -156,9 +143,6 @@ module.exports = {
     var contents = editor.getText();
     var buffer = editor.getBuffer();
     var hackLanguage = await getHackLanguageForBuffer(buffer);
-    if (!hackLanguage) {
-      return;
-    }
 
     // Update the HackWorker model with the contents of the file opened or saved.
     await hackLanguage.updateFile(path, contents);
@@ -184,18 +168,15 @@ function getFilePath(filePath: string, protocol: ?string, host: ?string): string
 
 function getClientId(buffer: TextBuffer): string {
   var client = getClient(buffer.getUri());
-  return client ? client.getID() : 'undefined';
+  return client.getID();
 }
 
-function getHackLanguageForBuffer(buffer: TextBuffer): Promise<?HackLanguage> {
+function getHackLanguageForBuffer(buffer: TextBuffer): Promise<HackLanguage> {
   var uri = buffer.getUri();
   var filePath = getPath(uri);
   // `getClient` can return null if a file path doesn't have a root directory in the tree.
   // Also, returns null when reloading Atom with open files, while the RemoteConnection creation is pending.
   var client = getClient(uri);
-  if (!client) {
-    return null;
-  }
   return createHackLanguageIfNotExisting(client, filePath);
   // TODO(most): dispose the language/worker on project close.
 }
