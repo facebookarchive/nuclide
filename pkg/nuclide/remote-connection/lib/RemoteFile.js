@@ -12,7 +12,7 @@
 var pathUtil = require('path');
 var crypto = require('crypto');
 var {Disposable, Emitter} = require('atom');
-var url = require('url');
+var remoteUri = require('nuclide-remote-uri');
 var logger = require('nuclide-logging').getLogger();
 
 /* Mostly implements https://atom.io/docs/api/latest/File */
@@ -23,7 +23,7 @@ class RemoteFile {
 
   constructor(remote: RemoteConnection, remotePath: string) {
     this._remote = remote;
-    var {path: localPath} = url.parse(remotePath);
+    var {path: localPath} = remoteUri.parse(remotePath);
     this._localPath = localPath;
     this._path = remotePath;
     this._emitter = new Emitter();
@@ -102,7 +102,7 @@ class RemoteFile {
   async _handleNativeRenameEvent(newPath: string): Promise {
     await this._unsubscribeFromNativeChangeEvents();
     this._cachedContents = null;
-    var {protocol, host} = url.parse(this._path);
+    var {protocol, host} = remoteUri.parse(this._path);
     this._localPath = newPath;
     this._path = protocol + '//' + host + this._localPath;
     await this._subscribeToNativeChangeEvents();
@@ -263,7 +263,7 @@ class RemoteFile {
   }
 
   getParent(): RemoteDirectory {
-    var {path: localPath, protocol, host} = url.parse(this._path);
+    var {path: localPath, protocol, host} = remoteUri.parse(this._path);
     var directoryPath = protocol + '//' + host + pathUtil.dirname(localPath);
     return this._remote.createDirectory(directoryPath);
   }

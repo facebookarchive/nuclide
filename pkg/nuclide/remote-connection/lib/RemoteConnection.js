@@ -11,7 +11,7 @@
 
 var {CompositeDisposable, Disposable} = require('atom');
 var net = require('net');
-var url = require('url');
+var remoteUri = require('nuclide-remote-uri');
 var logger = require('nuclide-logging').getLogger();
 var {EventEmitter} = require('events');
 
@@ -156,7 +156,7 @@ class RemoteConnection {
             break;
           case 'PORT_NOT_ACCESSIBLE':
             // Notify never heard a heartbeat from the server.
-            var {port} = url.parse(serverUri);
+            var {port} = remoteUri.parse(serverUri);
             addHeartbeatNotification(HEARTBEAT_NOTIFICATION_ERROR, code,
                 'Nuclide server is not reachable.<br/>It could be running on a port that is not accessible: ' + port,
                 /*dismissable*/ true);
@@ -190,11 +190,11 @@ class RemoteConnection {
   }
 
   getPathOfUri(uri: string): string {
-    return url.parse(uri).path;
+    return remoteUri.parse(uri).path;
   }
 
   createDirectory(uri: string): ?RemoteDirectory {
-    var {path} = url.parse(uri);
+    var {path} = remoteUri.parse(uri);
     path = require('path').normalize(path);
 
     var entry = this._entries[path];
@@ -225,7 +225,7 @@ class RemoteConnection {
   }
 
   createFile(uri: string): ?RemoteFile {
-    var {path} = url.parse(uri);
+    var {path} = remoteUri.parse(uri);
     path = require('path').normalize(path);
 
     var entry = this._entries[path];
@@ -395,7 +395,7 @@ class RemoteConnection {
   }
 
   static getForUri(uri: string): ?RemoteConnection {
-    var {hostname, path} = url.parse(uri);
+    var {hostname, path} = remoteUri.parse(uri);
     return RemoteConnection.getByHostnameAndPath(hostname, path);
   }
 

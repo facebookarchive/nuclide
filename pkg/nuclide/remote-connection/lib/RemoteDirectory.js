@@ -10,9 +10,9 @@
  */
 
 var path = require('path');
-var url = require('url');
 var {Disposable, Emitter} = require('atom');
 var logger = require('nuclide-logging').getLogger();
+var remoteUri = require('nuclide-remote-uri');
 
 var MARKER_PROPERTY_FOR_REMOTE_DIRECTORY = '__nuclide_remote_directory__';
 
@@ -33,7 +33,7 @@ class RemoteDirectory {
     this._uri = uri;
     this._emitter = new Emitter();
     this._subscriptionCount = 0;
-    var {path: directoryPath, protocol, host} = url.parse(uri);
+    var {path: directoryPath, protocol, host} = remoteUri.parse(uri);
     /** In the example, this would be "nuclide://example.com:9090". */
     this._host = protocol + '//' + host;
     /** In the example, this would be "/path/to/directory". */
@@ -138,7 +138,7 @@ class RemoteDirectory {
       return uri;
     }
     // Note: host of uri must match this._host.
-    var subpath = url.parse(uri).path;
+    var subpath = remoteUri.parse(uri).path;
     return path.relative(this._localPath, subpath);
   }
 
@@ -183,7 +183,7 @@ class RemoteDirectory {
     // setting the new `this._localPath`.
     await this._unsubscribeFromNativeChangeEvents();
 
-    var {protocol, host} = url.parse(this._uri);
+    var {protocol, host} = remoteUri.parse(this._uri);
     this._localPath = newPath;
     this._uri = protocol + '//' + host + this._localPath;
 
