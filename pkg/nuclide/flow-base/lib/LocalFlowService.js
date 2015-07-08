@@ -119,21 +119,18 @@ class LocalFlowService extends FlowService {
     }
   }
 
-  async findDiagnostics(file: NuclideUri): Promise<Array<Diagnostic>> {
+  async findDiagnostics(file: NuclideUri, currentContents: string): Promise<Array<Diagnostic>> {
     var options = await getFlowExecOptions(file);
     if (!options) {
       return [];
     }
 
-    // Currently, `flow status` does not take the path of a file to check.
-    // It would be nice if it would take the path and use it for filtering,
-    // as currently the client has to do the filtering.
-    //
-    // TODO(mbolin): Have `flow status` have the option to read a file from
-    // stdin and have its path specified by --path as `flow get-def` does.
-    // Then Flow could use the current contents of editor instead of what was
-    // most recently saved.
-    var args = ['status', '--json'];
+    options.stdin = currentContents;
+
+    // Currently, `flow check-contents` returns all of the errors in the
+    // project. It would be nice if it would use the path for filtering, as
+    // currently the client has to do the filtering.
+    var args = ['check-contents', '--json', file];
 
     var result;
     try {
