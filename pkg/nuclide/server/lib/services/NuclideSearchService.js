@@ -33,10 +33,9 @@ type SearchResponse = {
   results: Array<SearchQueryResult>;
 }
 
-var url = require('url');
-
-var {fileSearchForDirectory} = require('nuclide-path-search');
 var {fsPromise} = require('nuclide-commons');
+var {fileSearchForDirectory} = require('nuclide-path-search');
+var remoteUri = require('nuclide-remote-uri');
 
 var providers;
 
@@ -52,7 +51,7 @@ var fileSearchers: any = {};
 async function doSearchDirectory(directoryUri: string, query: string): Promise<Array<FileSearchResult>> {
   var search = fileSearchers[directoryUri];
   if (search === undefined) {
-    var directory = url.parse(directoryUri).path;
+    var directory = remoteUri.parse(directoryUri).path;
 
     var exists = await fsPromise.exists(directory);
     if (!exists) {
