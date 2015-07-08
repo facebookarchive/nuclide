@@ -27,13 +27,13 @@ describe('LocalFlowService', () => {
   }
 
   beforeEach(() => {
-    spyOn(require('../lib/FlowHelpers'), 'getFlowExecOptions').andReturn({});
+    spyOn(require('../lib/FlowHelpers'), 'getFlowExecOptions').andReturn({cwd: '/path/to/flow/root'});
     flowService = newFlowService();
   });
 
   afterEach(() => {
     flowService = null;
-    unspy(require('../lib/FlowHelpers'), 'getFlowExecOptions');
+    global.unspy(require('../lib/FlowHelpers'), 'getFlowExecOptions');
   });
 
   function mockExec(outputString) {
@@ -42,6 +42,10 @@ describe('LocalFlowService', () => {
 
   describe('flow server creation and teardown', () => {
     var childSpy;
+
+    function execFlow() {
+      flowService._execFlow([], {}, '/path/to/flow/root/file.js');
+    }
 
     beforeEach(() => {
       var called = false;
@@ -62,21 +66,21 @@ describe('LocalFlowService', () => {
       childSpy = {
         stdout: { on() {} },
         stderr: { on() {} },
+        on() {},
         kill() {},
       };
       spyOn(childSpy, 'kill');
+      spyOn(childSpy, 'on');
       spyOn(require('nuclide-commons'), 'safeSpawn').andReturn(childSpy);
       // we have to create another flow service here since we've mocked modules
       // we depend on since the outer beforeEach ran.
       flowService = newFlowService();
-      waitsForPromise(async () => {
-        await flowService._execFlow([], {});
-      });
+      waitsForPromise(async () => { await execFlow()});
     });
 
     afterEach(() => {
-      unspy(require('nuclide-commons'), 'asyncExecute');
-      unspy(require('nuclide-commons'), 'safeSpawn');
+      global.unspy(require('nuclide-commons'), 'asyncExecute');
+      global.unspy(require('nuclide-commons'), 'safeSpawn');
     });
 
     describe('_execFlow', () => {
@@ -85,6 +89,24 @@ describe('LocalFlowService', () => {
           'flow',
           ['server', '/path/to/flow/root']
         );
+      });
+    });
+
+    describe('crashing Flow', () => {
+      var event;
+      var handler;
+
+      beforeEach(() => {
+        [event, handler] = childSpy.on.mostRecentCall.args;
+        // simulate a Flow crash
+        handler(2, null);
+      });
+
+      it('should blacklist the root', () => {
+        expect(event).toBe('exit');
+        require('nuclide-commons').safeSpawn.reset();
+        waitsForPromise(async () => { await execFlow()});
+        expect(require('nuclide-commons').safeSpawn).not.toHaveBeenCalled();
       });
     });
 

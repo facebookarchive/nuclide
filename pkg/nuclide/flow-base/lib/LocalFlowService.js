@@ -19,16 +19,25 @@ type Loc = {
 }
 
 var {asyncExecute, safeSpawn, findNearestFile, getConfigValueAsync} = require('nuclide-commons');
+var {assign} = require('nuclide-commons').object;
 var logger = require('nuclide-logging').getLogger();
 var FlowService = require('./FlowService');
 var {getPathToFlow, getFlowExecOptions, insertAutocompleteToken} = require('./FlowHelpers.js');
 
 class LocalFlowService extends FlowService {
+  // The set of Flow server processes we have started, so we can kill them on
+  // teardown
   _startedServers: Set<ChildProcess>;
+  // The set of roots for which we have observed a Flow crash. If Flow crashes,
+  // we don't want to keep restarting Flow servers. We also don't want to
+  // disable Flow globally if only a specific Flow root in the project causes a
+  // crash.
+  _failedRoots: Set<string>;
 
   constructor() {
     super();
     this._startedServers = new Set();
+    this._failedRoots = new Set();
   }
 
   async dispose(): Promise<void> {
@@ -38,22 +47,32 @@ class LocalFlowService extends FlowService {
     }
   }
 
-  async _execFlow(args: Array<any>, options: Object): Promise<Object> {
+  /**
+   * Returns null if it is unsafe to run Flow (i.e. if it is not installed or if
+   * no .flowconfig file can be found).
+   */
+  async _execFlow(args: Array<any>, options: Object, file: string): Promise<?Object> {
     var maxTries = 5;
+    var flowOptions = await getFlowExecOptions(file);
+    if (!flowOptions) {
+      return null;
+    }
+    var root = flowOptions.cwd;
+    var localOptions = assign({}, options, flowOptions);
+    if (this._failedRoots.has(root)) {
+      return null;
+    }
     args.push("--no-auto-start");
     var pathToFlow = await getPathToFlow();
     for (var i = 0; ; i++) {
       try {
-        var result = await asyncExecute(pathToFlow, args, options);
+        var result = await asyncExecute(pathToFlow, args, localOptions);
         return result;
       } catch (e) {
         if (i >= maxTries) {
           throw e;
         }
         if (e.stderr.match("There is no flow server running")) {
-          // the flow root (where .flowconfig exists) conveniently appears in
-          // the error message enclosed in single quotes.
-          var root = e.stderr.match(/'[^']*'/)[0].replace(/'/g, '');
           // `flow server` will start a server in the foreground. asyncExecute
           // will not resolve the promise until the process exits, which in this
           // case is never. We need to use spawn directly to get access to the
@@ -64,6 +83,19 @@ class LocalFlowService extends FlowService {
           };
           serverProcess.stdout.on('data', logIt);
           serverProcess.stderr.on('data', logIt);
+          serverProcess.on('exit', (code, signal) => {
+            // We only want to blacklist this root if the Flow processes
+            // actually failed, rather than being killed manually. It seems that
+            // if they are killed, the code is null and the signal is 'SIGTERM'.
+            // In the Flow crashes I have observed, the code is 2 and the signal
+            // is null. So, let's blacklist conservatively for now and we can
+            // add cases later if we observe Flow crashes that do not fit this
+            // pattern.
+            if (code === 2 && signal === null) {
+              logger.error('Flow server unexpectedly exited', root);
+              this._failedRoots.add(root);
+            }
+          });
           this._startedServers.add(serverProcess);
         } else {
           // not sure what happened, but we'll let the caller deal with it
@@ -82,11 +114,7 @@ class LocalFlowService extends FlowService {
     line: number,
     column: number
   ): Promise<?Loc> {
-    var options = await getFlowExecOptions(file);
-    if (!options) {
-      return null;
-    }
-
+    var options = {};
     // We pass the current contents of the buffer to Flow via stdin.
     // This makes it possible for get-def to operate on the unsaved content in
     // the user's editor rather than what is saved on disk. It would be annoying
@@ -96,7 +124,10 @@ class LocalFlowService extends FlowService {
 
     var args = ['get-def', '--json', '--path', file, line, column];
     try {
-      var result = await this._execFlow(args, options);
+      var result = await this._execFlow(args, options, file);
+      if (!result) {
+        return null;
+      }
       if (result.exitCode === 0) {
         var json = JSON.parse(result.stdout);
         if (json['path']) {
@@ -120,10 +151,7 @@ class LocalFlowService extends FlowService {
   }
 
   async findDiagnostics(file: NuclideUri, currentContents: string): Promise<Array<Diagnostic>> {
-    var options = await getFlowExecOptions(file);
-    if (!options) {
-      return [];
-    }
+    var options = {};
 
     options.stdin = currentContents;
 
@@ -134,7 +162,10 @@ class LocalFlowService extends FlowService {
 
     var result;
     try {
-      result = await this._execFlow(args, options);
+      result = await this._execFlow(args, options, file);
+      if (!result) {
+        return [];
+      }
     } catch (e) {
       // This codepath will be exercised when Flow finds type errors as the
       // exit code will be non-zero. Note this codepath could also be exercised
@@ -165,16 +196,16 @@ class LocalFlowService extends FlowService {
     column: number,
     prefix: string
   ): Promise<any> {
-    var options = await getFlowExecOptions(file);
-    if (!options) {
-      return [];
-    }
+    var options = {};
 
     var args = ['autocomplete', '--json', file];
 
     options.stdin = insertAutocompleteToken(currentContents, line, column);
     try {
-      var result = await this._execFlow(args, options);
+      var result = await this._execFlow(args, options, file);
+      if (!result) {
+        return [];
+      }
       if (result.exitCode === 0) {
         var json = JSON.parse(result.stdout);
         var replacementPrefix = /^\s*$/.test(prefix) ? '' : prefix;
@@ -199,10 +230,7 @@ class LocalFlowService extends FlowService {
     line: number,
     column: number
   ): Promise<?string> {
-    var options = await getFlowExecOptions(file);
-    if (!options) {
-      return null;
-    }
+    var options = {};
 
     options.stdin = currentContents;
 
@@ -212,7 +240,10 @@ class LocalFlowService extends FlowService {
 
     var output;
     try {
-      var result = await this._execFlow(args, options);
+      var result = await this._execFlow(args, options, file);
+      if (!result) {
+        return null;
+      }
       output = result.stdout;
     } catch (e) {
       logger.error('flow type-at-pos failed: ' + file + ':' + line + ':' + column, e);
