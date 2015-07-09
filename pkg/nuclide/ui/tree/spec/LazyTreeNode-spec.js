@@ -8,19 +8,16 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-var LazyTreeNode = require('../lib/LazyTreeNode');
 
-class LazyTestTreeNode extends LazyTreeNode {
-  getLabel(): string {
-    return this._item.label;
-  }
-}
+import type LazyTreeNode from '../lib/LazyTreeNode';
+
+var LazyTestTreeNode = require('./LazyTestTreeNode');
 
 describe('LazyTreeNode', () => {
   it('caches the fetched children', () => {
     waitsForPromise(async () => {
       var children = null;
-      async function fetchChildren(parentNode: LazyTreeNode): Array<LazyTreeNode> {
+      async function fetchChildren(parentNode: LazyTreeNode): Promise<Array<LazyTreeNode>> {
         children = [
           new LazyTestTreeNode({label: 'B'}, /* parent */ parentNode, false),
           new LazyTestTreeNode({label: 'C'}, /* parent */ parentNode, false),
@@ -38,7 +35,7 @@ describe('LazyTreeNode', () => {
     it('returns true for a root', () => {
       waitsForPromise(async () => {
         var children = null;
-        async function fetchChildren(parentNode: LazyTreeNode): Array<LazyTreeNode> {
+        async function fetchChildren(parentNode: LazyTreeNode): Promise<Array<LazyTreeNode>> {
           children = [
             new LazyTestTreeNode({label: 'B'}, /* parent */ parentNode, false),
             new LazyTestTreeNode({label: 'C'}, /* parent */ parentNode, false),
@@ -53,7 +50,7 @@ describe('LazyTreeNode', () => {
     it('returns false for a fetched, non-root node', () => {
       waitsForPromise(async () => {
         var children = null;
-        async function fetchChildren(parentNode: LazyTreeNode): Array<LazyTreeNode> {
+        async function fetchChildren(parentNode: LazyTreeNode): Promise<Array<LazyTreeNode>> {
           children = [
             new LazyTestTreeNode({label: 'B'}, /* parent */ parentNode, false),
             new LazyTestTreeNode({label: 'C'}, /* parent */ parentNode, false),
