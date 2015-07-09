@@ -47,39 +47,58 @@ type ConnectionConfig = {
  *
  * TODO: Add timeout or cancel callback.
  */
-function getFirstConnection(config: ConnectionConfig): Promise<Socket> {
+class DbgpConnector {
+  _config: ConnectionConfig;
+  _server: ?Server;
+  _connected: boolean;
 
-  var port = config.xdebugPort;
-  var {pid, idekeyRegex, scriptRegex} = config;
-
-  log('Creating debug server on port ' + port);
-
-  var server = require('net').createServer();
-  server.on('close', socket => log('Closing port ' + port));
-  server.listen(port, () => log('Listening on port ' + port));
-
-  var connected = false;
-
-  function onSocketConnection(socket: Socket, accept: (socket: Socket) => void) {
-    log('Connection on port ' + port);
-    if (checkForExistingConnection(socket, 'Connection')) {
-      return;
-    }
-    socket.once('data', data => onSocketData(socket, data, accept));
+  constructor(config: ConnectionConfig) {
+    this._config = config;
+    this._server = null;
+    this._connected = false;
   }
 
-  function onServerError(error: Object, reject: (reason: Object) => void): void {
+  attach(): Promise<Socket> {
+    var port = this._config.xdebugPort;
+
+    log('Creating debug server on port ' + port);
+
+    var server = require('net').createServer();
+    this._server = server;
+    server.on('close', socket => log('Closing port ' + port));
+    server.listen(port, () => log('Listening on port ' + port));
+
+    return new Promise((resolve, reject) => {
+      server.on('error', error => this._onServerError(error, reject));
+      server.on('connection', socket => this._onSocketConnection(socket, resolve));
+      server.on('close', () => {reject('Connection aborted.')});
+    });
+  }
+
+  _onSocketConnection(socket: Socket, accept: (socket: Socket) => void) {
+    var port = this._config.xdebugPort;
+
+    log('Connection on port ' + port);
+    if (this._checkForExistingConnection(socket, 'Connection')) {
+      return;
+    }
+    socket.once('data', data => this._onSocketData(socket, data, accept));
+  }
+
+  _onServerError(error: Object, reject: (reason: Object) => void): void {
+    var port = this._config.xdebugPort;
+
     if (error.code === 'EADDRINUSE') {
       log('Port in use ' + port);
     } else {
       log('Unknown socket error ' + error.code);
     }
-    server.close();
+    this._server.close();
     reject(error);
   }
 
-  function onSocketData(socket: Socket, data: Buffer | string, accept: (socket: Socket) => void): void {
-    if (checkForExistingConnection(socket, 'Data')) {
+  _onSocketData(socket: Socket, data: Buffer | string, accept: (socket: Socket) => void): void {
+    if (this._checkForExistingConnection(socket, 'Data')) {
       return;
     }
 
@@ -93,10 +112,12 @@ function getFirstConnection(config: ConnectionConfig): Promise<Socket> {
       return;
     }
 
-    if (isCorrectConnection(message)) {
-      connected = true;
-      server.close();
+    if (this._isCorrectConnection(message)) {
+      this._connected = true;
       accept(socket);
+
+      this._server.close();
+      this._server = null;
     } else {
       log('Discarding connection ' + JSON.stringify(message));
       socket.end();
@@ -107,16 +128,20 @@ function getFirstConnection(config: ConnectionConfig): Promise<Socket> {
   /**
    * Checks if a connection already exists. If it does, then close the new socket.
    */
-  function checkForExistingConnection(socket: Socket, message: string): void {
-    if (connected) {
+  _checkForExistingConnection(socket: Socket, message: string): void {
+    var port = this._config.xdebugPort;
+
+    if (this._connected) {
       log('Ignoring ' + message + ' on port ' + port + ' after successful connection.');
       socket.end();
       socket.destroy();
     }
-    return connected;
+    return this._connected;
   }
 
-  function isCorrectConnection(message: Object): boolean {
+  _isCorrectConnection(message: Object): boolean {
+    var {pid, idekeyRegex, scriptRegex} = this._config;
+
     if (!message || !message.init || !message.init.$) {
       log('Incorrect init');
       return false;
@@ -141,12 +166,11 @@ function getFirstConnection(config: ConnectionConfig): Promise<Socket> {
       (!scriptRegex || new RegExp(scriptRegex).test(uriToPath(attributes.fileuri)));
   }
 
-  return new Promise((resolve, reject) => {
-    server.on('error', error => onServerError(error, reject));
-    server.on('connection', socket => onSocketConnection(socket, resolve));
-  });
+  dispose() {
+    if (this._server) {
+      this._server.close();
+    }
+  }
 }
 
-module.exports = {
-  getFirstConnection,
-};
+module.exports = {DbgpConnector};

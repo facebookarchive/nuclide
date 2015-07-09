@@ -93,4 +93,4 @@ class MessageTranslator {
   }
 }
 
-module.exports = MessageTranslator;
+module.exports = {MessageTranslator};

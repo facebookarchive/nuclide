@@ -10,7 +10,7 @@
  */
 
 
-var MessageTranslator = require('../lib/MessageTranslator');
+var {MessageTranslator} = require('../lib/MessageTranslator');
 
 describe('debugger-hhvm-proxy DebuggerHandler', () => {
     var callback;

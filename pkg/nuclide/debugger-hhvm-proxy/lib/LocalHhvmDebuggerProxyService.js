@@ -11,7 +11,7 @@
 
 
 const {log, logError} = require('./utils');
-const {getFirstConnection} = require('./connect');
+const {DbgpConnector} = require('./connect');
 
 // Connection states
 const INITIAL = 'initial';
@@ -47,11 +47,13 @@ class LocalHhvmDebuggerProxyService extends HhvmDebuggerProxyService {
   _state: string;
   _emitter: EventEmitter;
   _translator: ?MessageTranslator;
+  _connector: ?DbgpConnector;
 
   constructor() {
     super();
 
     this._state = INITIAL;
+    this._connector = null;
     this._translator = null;
     var {EventEmitter} = require("events");
     this._emitter = new EventEmitter();
@@ -72,34 +74,24 @@ class LocalHhvmDebuggerProxyService extends HhvmDebuggerProxyService {
     };
   }
 
-  attach(config: ConnectionConfig): Promise<string> {
+  async attach(config: ConnectionConfig): Promise<string> {
     log('Connecting config: ' + JSON.stringify(config));
 
     this._setState(CONNECTING);
-    return new Promise((resolve, reject) => {
-      getFirstConnection(config).then(socket => {
-        try {
-          socket.on('end', this._onEnd.bind(this));
-          socket.on('error', this._onError.bind(this));
 
-          var MessageTranslator = require('./MessageTranslator');
-          this._translator = new MessageTranslator(socket, message => this._emitter.emit(NOTIFY_EVENT, message));
-          this._translator.onSessionEnd(this._onEnd.bind(this));
+    var connector =  new DbgpConnector(config);
+    this._connector = connector;
+    var socket = await connector.attach();
+    socket.on('end', this._onEnd.bind(this));
+    socket.on('error', this._onError.bind(this));
 
-          this._setState(CONNECTED);
+    var {MessageTranslator} = require('./MessageTranslator');
+    this._translator = new MessageTranslator(socket, message => this._emitter.emit(NOTIFY_EVENT, message));
+    this._translator.onSessionEnd(this._onEnd.bind(this));
 
-          resolve('HHVM connected');
-        } catch (e) {
-          logError('Exception attaching: ' + e.message);
-          logError(e.stack);
-          reject(e);
-        }
-      },
-      reason => {
-        logError('Failed to attach: ' + reason.message);
-        reject(reason);
-      });
-    });
+    this._setState(CONNECTED);
+
+    return 'HHVM connected';
   }
 
   sendCommand(message: string): void {
@@ -136,6 +128,10 @@ class LocalHhvmDebuggerProxyService extends HhvmDebuggerProxyService {
     if (this._translator) {
       this._translator.dispose();
       this._translator = null;
+    }
+    if (this._connector) {
+      this._connector.dispose();
+      this._connector = null;
     }
   }
 }
