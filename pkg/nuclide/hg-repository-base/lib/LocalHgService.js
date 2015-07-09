@@ -23,9 +23,21 @@ var WATCHMAN_SUBSCRIPTION_NAME_HGIGNORE = 'hg-repository-watchman-subscription-h
 var WATCHMAN_SUBSCRIPTION_NAME_HGLOCK = 'hg-repository-watchman-subscription-hglock';
 var WATCHMAN_SUBSCRIPTION_NAME_HGDIRSTATE = 'hg-repository-watchman-subscription-hgdirstate';
 var WATCHMAN_SUBSCRIPTION_NAME_HGBOOKMARK = 'hg-repository-watchman-subscription-hgbookmark';
+var WATCHMAN_SUBSCRIPTION_NAME_ARC_BUILD_LOCK = 'arc-build-lock';
 var EVENT_DELAY_IN_MS = 1000;
 
 import type LocalHgServiceOptions from './hg-types';
+
+function getArcBuildLockFile(): ?string {
+  var lockFile;
+  try {
+    lockFile = require('./fb/config').arcBuildLockFile;
+  } catch (e) {
+    // purposely blank
+  }
+  return lockFile;
+}
+
 
 // To make LocalHgServiceBase more easily testable, the watchman dependency is
 // broken out. We add the watchman dependency here.
@@ -33,7 +45,7 @@ class LocalHgService extends LocalHgServiceBase {
   constructor(options: LocalHgServiceOptions) {
     super(options);
     this._delayedEventManager = new DelayedEventManager(setTimeout, clearTimeout);
-    this._wlockHeld = false;
+    this._lockFileHeld = false;
     this._shouldUseDirstate = true;
     this._subscribeToWatchman();
   }
@@ -187,6 +199,30 @@ class LocalHgService extends LocalHgServiceBase {
           }
           logger.debug(`Watchman subscription ${WATCHMAN_SUBSCRIPTION_NAME_HGBOOKMARK} established.`);
         });
+
+        // Subscribe to changes to a file that appears to be the 'arc build' lock file.
+        var arcBuildLockFile = getArcBuildLockFile();
+        if (arcBuildLockFile) {
+          this._watchmanClient.command([
+            'subscribe',
+            workingDirectory,
+            WATCHMAN_SUBSCRIPTION_NAME_ARC_BUILD_LOCK,
+            {
+              fields: ['name', 'exists'],
+              expression: ['name', arcBuildLockFile, 'wholename'],
+              since: clockResp.clock,
+            },
+          ], (subscribeError, subscribeResp) => {
+            if (subscribeError) {
+              logger.error(
+                `Failed to subscribe to ${WATCHMAN_SUBSCRIPTION_NAME_ARC_BUILD_LOCK} with clock limit: `,
+                subscribeError
+              );
+              return;
+            }
+            logger.debug(`Watchman subscription ${WATCHMAN_SUBSCRIPTION_NAME_ARC_BUILD_LOCK} established.`);
+          });
+        }
       });
 
       // Mercurial creates the .hg/wlock file before it modifies the working directory,
@@ -235,26 +271,27 @@ class LocalHgService extends LocalHgServiceBase {
             this._hgIgnoreFileDidChange.bind(this),
             EVENT_DELAY_IN_MS
           );
-        } else if (update.subscription === WATCHMAN_SUBSCRIPTION_NAME_HGLOCK) {
-          var wlock = update.files[0];
-          if (wlock.exists) {
+        } else if (update.subscription === WATCHMAN_SUBSCRIPTION_NAME_HGLOCK ||
+                   update.subscription === WATCHMAN_SUBSCRIPTION_NAME_ARC_BUILD_LOCK) {
+          var lockfile = update.files[0];
+          if (lockfile.exists) {
             // TODO: Implement a timer to unset this, in case watchman update
             // fails to notify of the removal of the lock. I haven't seen this
             // in practice but it's better to be safe.
-            this._wlockHeld = true;
-            // The wlock being created is a definitive start to a Mercurial action.
+            this._lockFileHeld = true;
+            // The lock being created is a definitive start to a Mercurial action/arc build.
             // Block the effects from any dirstate change, which is a fuzzier signal.
             this._shouldUseDirstate = false;
             this._delayedEventManager.setCanAcceptEvents(false);
             this._delayedEventManager.cancelAllEvents();
           } else {
-            this._wlockHeld = false;
+            this._lockFileHeld = false;
             this._delayedEventManager.setCanAcceptEvents(true);
-            // The wlock being deleted is a definitive end to a Mercurial action.
+            // The lock being deleted is a definitive end to a Mercurial action/arc build.
             // Block the effects from any dirstate change, which is a fuzzier signal.
             this._shouldUseDirstate = false;
           }
-          this._hgLockDidChange(wlock.exists);
+          this._hgLockDidChange(lockfile.exists);
         } else if (update.subscription === WATCHMAN_SUBSCRIPTION_NAME_HGDIRSTATE) {
           // We don't know whether the change to the dirstate is at the middle or end
           // of a Mercurial action. But we would rather have false positives (ignore
@@ -263,8 +300,8 @@ class LocalHgService extends LocalHgServiceBase {
           // Each time this watchman update fires, we will make the LocalHgService
           // ignore events for a certain grace period.
 
-          // The wlock is a more reliable signal, so defer to the wlock.
-          if (this._wlockHeld) {
+          // A lock file is a more reliable signal, so defer to it.
+          if (this._lockFileHeld) {
             return;
           }
 
@@ -313,8 +350,8 @@ class LocalHgService extends LocalHgServiceBase {
     this._emitter.emit('hg-ignore-changed');
   }
 
-  _hgLockDidChange(wlockExists: boolean): void {
-    if (!wlockExists) {
+  _hgLockDidChange(lockExists: boolean): void {
+    if (!lockExists) {
       this._emitHgRepoStateChanged();
     }
   }
