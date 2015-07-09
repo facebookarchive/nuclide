@@ -22,3 +22,17 @@ export type Reference = {
   start: Location,
   end: Location,
 };
+
+export type ReferenceGroup = {
+  references: Array<Reference>,
+  // Start and end range of the preview text.
+  startLine: number,
+  endLine: number,
+};
+
+export type FileReferences = {
+  uri: NuclideUri,
+  grammar: Object /* atom$Grammar */,
+  previewText: Array<string>,
+  refGroups: Array<ReferenceGroup>,
+};

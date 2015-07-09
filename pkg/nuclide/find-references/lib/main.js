@@ -31,6 +31,7 @@ var subscriptions: ?CompositeDisposable = null;
 var providers: Array<FindReferencesProvider> = [];
 
 async function createView(): Promise<?HTMLElement> {
+  /* $FlowFixMe - Flow thinks atom.workspace is null  */
   var editor = atom.workspace.getActiveTextEditor();
   if (!editor) {
     return null;
