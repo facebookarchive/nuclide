@@ -25,7 +25,7 @@ function transpile(sourceFilePath: string, destFilePath: string): void {
 
   var code = babel.transform(sourceCode, {
     plugins: [createRemoteServiceTransformer(sourceFilePath)],
-    blacklist: ['es6.arrowFunctions', 'es6.classes', 'flow', 'strict'],
+    blacklist: ['es6.arrowFunctions', 'es6.classes', 'strict'],
   }).code;
   // Append a newline at the end of code to make eslint happy.
   code += '\n';

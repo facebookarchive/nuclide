@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {Integer} from './types';
+
 class TestService {
   foo(): Promise<any> {
     return Promise.reject('not implemented');
@@ -18,7 +20,7 @@ class TestService {
     return Promise.reject('not implemented');
   }
 
-  qux(arg0: string, arg1: number): Promise<any> {
+  qux(arg0: string, arg1: Integer): Promise<any> {
     return Promise.reject('not implemented');
   }
 

@@ -21,16 +21,16 @@ class RemoteTestService extends TestService {
   foo() {
     return this._connection.makeRpc('TestService/foo', [], this._options);
   }
-  bar(arg0: string) {
+  bar(arg0) {
     return this._connection.makeRpc('TestService/bar', [arg0], this._options);
   }
-  qux(arg0: string, arg1: number) {
+  qux(arg0, arg1) {
     return this._connection.makeRpc('TestService/qux', [arg0, arg1], this._options);
   }
-  onNorf(callback: (payload: any) => void) {
+  onNorf(callback) {
     return this._connection.registerEventListener('TestService/onNorf', callback, this._options);
   }
-  onetimeRegistration(arg0: string) {
+  onetimeRegistration(arg0) {
     return this._connection.makeRpc('TestService/onetimeRegistration', [arg0], this._options);
   }
 }

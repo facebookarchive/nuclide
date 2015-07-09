@@ -18,7 +18,7 @@ class RemoteNestedNuclideTypedTestService extends NestedNuclideTypedTestService 
     this._connection = connection;
     this._options = options;
   }
-  foo(a: ?NuclideUri, b: ?Array<NuclideUri>, c: { a: ?NuclideUri }, d: ?{ a: ?NuclideUri }) {
+  foo(a, b, c, d) {
     if (a !== null) {
       a = this._connection.getPathOfUri(a);
     }
@@ -60,7 +60,7 @@ class RemoteNestedNuclideTypedTestService extends NestedNuclideTypedTestService 
       return result;
     });
   }
-  baz(a: { a: NuclideUri }, b: Array<NuclideUri>, c: number) {
+  baz(a, b, c) {
     a = obj => {
       obj = require('nuclide-commons').object.assign({}, obj);
       obj.a = this._connection.getPathOfUri(obj.a);
@@ -79,7 +79,7 @@ class RemoteNestedNuclideTypedTestService extends NestedNuclideTypedTestService 
       return result;
     });
   }
-  onNorf(callback: (payload: { file: NuclideUri }) => void) {
+  onNorf(callback) {
     var _callback = payload => {
       payload = obj => {
         obj = require('nuclide-commons').object.assign({}, obj);
@@ -92,7 +92,7 @@ class RemoteNestedNuclideTypedTestService extends NestedNuclideTypedTestService 
 
     return this._connection.registerEventListener('NestedNuclideTypedTestService/onNorf', _callback, this._options);
   }
-  onOops(callback: (payload: { file: NuclideUri }, wat: number) => void) {
+  onOops(callback) {
     var _callback = (payload, wat) => {
       payload = obj => {
         obj = require('nuclide-commons').object.assign({}, obj);
@@ -105,7 +105,7 @@ class RemoteNestedNuclideTypedTestService extends NestedNuclideTypedTestService 
 
     return this._connection.registerEventListener('NestedNuclideTypedTestService/onOops', _callback, this._options);
   }
-  onWoot(callback: (payload: { file: NuclideUri }, woot: NuclideUri) => void) {
+  onWoot(callback) {
     var _callback = (payload, woot) => {
       payload = obj => {
         obj = require('nuclide-commons').object.assign({}, obj);
