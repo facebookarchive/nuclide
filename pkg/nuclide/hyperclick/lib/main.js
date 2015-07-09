@@ -10,6 +10,7 @@
  */
 
 var hyperclick: ?Hyperclick = null;
+var {Disposable} = require('atom');
 
 module.exports = {
   activate() {
@@ -24,9 +25,14 @@ module.exports = {
     }
   },
 
-  consumeProvider(provider: HyperclickProvider | Array<HyperclickProvider>): void {
+  consumeProvider(provider: HyperclickProvider | Array<HyperclickProvider>): ?Disposable {
     if (hyperclick) {
       hyperclick.consumeProvider(provider);
+      return new Disposable(() => {
+        if (hyperclick) {
+          hyperclick.removeProvider(provider);
+        }
+      });
     }
   },
 };

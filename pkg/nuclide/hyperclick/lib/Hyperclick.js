@@ -12,6 +12,7 @@
 var SuggestionList = require('./SuggestionList');
 var SuggestionListElement = require('./SuggestionListElement');
 var getWordTextAndRange = require('./get-word-text-and-range');
+var {remove} = require('nuclide-commons').array;
 
 type HyperclickProvider = {
   // Use this to provide a suggestion for single-word matches.
@@ -85,12 +86,20 @@ class Hyperclick {
     this._hyperclickForTextEditors.clear();
   }
 
-  consumeProvider(provider: HyperclickProvider | Array<HyperclickProvider>): void {
-    if (Array.isArray(provider)) {
-      provider.forEach(singleProvider => this._consumeSingleProvider(singleProvider));
+  _applyToAll<T>(item: T | Array<T>, f: (x: T) => void): void {
+    if (Array.isArray(item)) {
+      item.forEach(x => f(x));
     } else {
-      this._consumeSingleProvider(provider);
+      f(item);
     }
+  }
+
+  consumeProvider(provider: HyperclickProvider | Array<HyperclickProvider>): void {
+    this._applyToAll(provider, singleProvider => this._consumeSingleProvider(singleProvider));
+  }
+
+  removeProvider(provider: HyperclickProvider | Array<HyperclickProvider>): void {
+    this._applyToAll(provider, singleProvider => this._removeSingleProvider(singleProvider));
   }
 
   _consumeSingleProvider(provider: HyperclickProvider): void {
@@ -111,6 +120,10 @@ class Hyperclick {
     // If we made it all the way through the loop, provider must be lower
     // priority than all of the existing providers, so add it to the end.
     this._consumedProviders.push(provider);
+  }
+
+  _removeSingleProvider(provider: HyperclickProvider): void {
+    remove(this._consumedProviders, provider);
   }
 
   /**

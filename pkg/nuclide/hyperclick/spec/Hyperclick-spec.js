@@ -66,6 +66,35 @@ describe('Hyperclick', () => {
     textEditorView.dispatchEvent(event);
   }
 
+  describe('simple case', () => {
+    var provider;
+
+    var position = new Point(0, 1);
+
+    beforeEach(() => {
+      provider = {
+        getSuggestionForWord(sourceTextEditor, text, range) {
+          return {range, callback: () => {}};
+        },
+      };
+      spyOn(provider, 'getSuggestionForWord').andCallThrough();
+      hyperclick.consumeProvider(provider);
+    });
+    it('should call the provider', () => {
+      waitsForPromise(async () => {
+        await hyperclick.getSuggestion(textEditor, position);
+        expect(provider.getSuggestionForWord).toHaveBeenCalled();
+      });
+    });
+    it('should not call a removed provider', () => {
+      waitsForPromise(async () => {
+        hyperclick.removeProvider(provider);
+        await hyperclick.getSuggestion(textEditor, position);
+        expect(provider.getSuggestionForWord).not.toHaveBeenCalled();
+      });
+    });
+  });
+
   describe('<meta-mousemove> + <meta-mousedown>', () => {
     it('consumes single-word providers without wordRegExp', () => {
       waitsForPromise(async () => {
