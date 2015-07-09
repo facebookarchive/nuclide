@@ -27,6 +27,7 @@ var {getVersion} = require('nuclide-version');
 var logger = require('nuclide-logging').getLogger();
 
 const SERVER_SHUTDOWN_TIMEOUT_MS = 1000;
+const STAT_BIN_SIZE_MS = 20;
 
 var EVENT_HANDLE_REGISTERED = '_nuclideServerEventHandleRegstered';
 var idIncrement = 0;
@@ -60,6 +61,8 @@ class NuclideServer {
   _version: string;
   _serviceWithoutServiceFrameworkConfigs: Array<string>;
   _serviceWithServiceFrameworkConfigs: Array<any>;
+  _responses: {[timeBin: string]: any};
+  _errors: Array<any>;
 
   constructor(options: NuclideServerOptions) {
     var {serverKey, serverCertificate, port, certificateAuthorityCertificate, trackEventLoop} = options;
@@ -205,6 +208,7 @@ class NuclideServer {
     var {loadConfigsOfServiceWithServiceFramework,
       loadConfigsOfServiceWithoutServiceFramework} = require('./config');
     this._serviceRegistry = {};
+    this._setupStatsHandler();
     this._setupVersionHandler();
     this._setupShutdownHandler();
     this._setupSubscriptionHandler();
@@ -230,6 +234,20 @@ class NuclideServer {
         next();
       }
     });
+  }
+
+  _setupStatsHandler() {
+    this._clearStats();
+    this._registerService(
+      '/server/getStats',
+      () => ({
+        errors: this._errors,
+        responses: this._responses,
+      }),
+      'get',
+      false,
+    );
+    this._registerService('/server/clearStats', this._clearStats.bind(this), 'post', false);
   }
 
   _setupVersionHandler() {
@@ -320,7 +338,45 @@ class NuclideServer {
     if (!serviceFunction) {
       throw Error('No service registered with name: ' + serviceName);
     }
-    return serviceFunction.apply(this, args);
+    return this._recordRequestStats(serviceName, args, serviceFunction);
+  }
+
+  /**
+   * Given a service request, records response time and errors
+   */
+  async _recordRequestStats(
+    serviceName: string,
+    args: Array<any>,
+    serviceFunction: () => Promise<any>,
+  ): Promise<any> {
+    var requestStart = Date.now();
+    var result = null;
+
+    try {
+      result = await serviceFunction.apply(this, args);
+
+      var responseTime = Date.now() - requestStart;
+      var bin = Math.floor(responseTime / STAT_BIN_SIZE_MS) * STAT_BIN_SIZE_MS;
+      if (!this._responses[bin]) {
+        this._responses[bin] = [];
+      }
+      this._responses[bin].push({serviceName});
+    } catch (e) {
+      var responseTime = Date.now() - requestStart;
+      this._errors.push({
+        error,
+        responseTime,
+        serviceName,
+      });
+      throw e;
+    }
+
+    return result;
+  }
+
+  _clearStats(): Object {
+    this._errors = [];
+    return this._responses = {};
   }
 
   /**
