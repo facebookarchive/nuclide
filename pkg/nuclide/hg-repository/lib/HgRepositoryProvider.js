@@ -11,12 +11,6 @@
 
 var {Directory} = require('atom');
 
-try {
-  var {ignoredRepositories} = require('./fb/config.json');
-} catch (e) {
-  var ignoredRepositories = [];
-}
-
 var logger = null;
 function getLogger() {
   return logger || (logger = require('nuclide-logging').getLogger());
@@ -40,13 +34,6 @@ function getRepositoryDescription(directory: Directory): ?mixed {
   if (RemoteDirectory.isRemoteDirectory(directory)) {
     var repositoryDescription = directory.getHgRepositoryDescription();
     if (!repositoryDescription.repoPath) {
-      return null;
-    }
-
-    // TODO(chenshen) fix the performance issue and enable disabled repositories.
-    // Disable remote hg feature for certain hg repsitory due to t7448942.
-    if (ignoredRepositories.indexOf(repositoryDescription.originURL) >= 0) {
-      logger.debug(`{repositoryDescription.originURL} is ignored.`);
       return null;
     }
 
