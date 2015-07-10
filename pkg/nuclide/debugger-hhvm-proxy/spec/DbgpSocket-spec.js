@@ -36,8 +36,12 @@ describe('debugger-hhvm-proxy DbgpSocket', () => {
       dbgpSocket = new DbgpSocket(socket);
     });
 
-    function testCallResult(socketWrite, onDataObject, body): void {
+    function testSocketWrite(socketWrite: string): void {
       expect(socket.write).toHaveBeenCalledWith(socketWrite + '\x00');
+    }
+
+    function testCallResult(socketWrite, onDataObject, body): void {
+      testSocketWrite(socketWrite);
       onData(makeMessage(onDataObject, body));
     }
 
@@ -240,6 +244,65 @@ describe('debugger-hhvm-proxy DbgpSocket', () => {
           '<property><property>the-result</property></property>');
         var result = await call;
         expect(result).toEqual(['the-result']);
+      });
+    });
+
+    it('mulitple messages', () => {
+      waitsForPromise(async () => {
+        var call1 = dbgpSocket.getContextsForFrame(0);
+        var call2 = dbgpSocket.getContextsForFrame(1);
+
+        testSocketWrite('context_names -i 1 -d 0');
+        testSocketWrite('context_names -i 2 -d 1');
+
+        var message1 = makeMessage({
+              command: 'context_names',
+              transaction_id: '1',
+            },
+            '<context name="Local" id="0"/>' +
+            '<context name="Global" id="1"/>' +
+            '<context name="Class" id="2"/>');
+        var message2 = makeMessage({
+              command: 'context_names',
+              transaction_id: '2',
+            },
+            '<context name="Local2" id="0"/>' +
+            '<context name="Global2" id="1"/>' +
+            '<context name="Class2" id="2"/>');
+
+        onData(message1 + message2);
+
+        var result1 = await call1;
+        expect(result1).toEqual([
+          {
+            name: 'Local',
+            id: '0',
+          },
+          {
+            name: 'Global',
+            id: '1',
+          },
+          {
+            name: 'Class',
+            id : '2',
+          }
+        ]);
+
+        var result2 = await call2;
+        expect(result2).toEqual([
+          {
+            name: 'Local2',
+            id: '0',
+          },
+          {
+            name: 'Global2',
+            id: '1',
+          },
+          {
+            name: 'Class2',
+            id : '2',
+          }
+        ]);
       });
     });
 });

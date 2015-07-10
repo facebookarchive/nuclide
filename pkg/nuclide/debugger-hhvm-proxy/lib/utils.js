@@ -59,28 +59,36 @@ function base64Decode(value: string): string {
 }
 
 /**
- * Server messages are formatted as a string containing:
+ * Dbgp messages are formatted as a string containing:
  * length <NULL> xml-blob <NULL>
- * Returns the xml-blob converted to a JS object
+ *
+ * A single message from the server may contain
+ * multiple Dbgp messages.
+ *
+ * Returns an array containing the xml-blobs converted to JS objects.
  *
  * Throws if the message is malformatted.
  */
-function parseDbgpMessage(message: string): string {
-
+function parseDbgpMessages(message: string): Array<string> {
+  var result = [];
   var components = message.split('\x00');
-  if (components.length !== 3) {
-    throw new Error('Error: Server message format expected 3 components. Got ' + components.length);
+  while (components.length >= 3) {
+    var length = Number(components.shift());
+    var value = components.shift();
+    if (value.length !== length) {
+      throw new Error('Error: Server message expected length ' + length + ' got length ' +
+        value.length);
+    }
+
+    var json = parseXml(value);
+    log('Translating server message result json: ' + JSON.stringify(json));
+    result.push(json);
   }
-  var length = Number(components[0]);
-  var value = components[1];
-  if (value.length !== length) {
-    throw new Error('Error: Server message expected length ' + length + ' got length ' +
-      value.length);
+  if (components.length !== 1) {
+    logError('Mismatched number of components in server message.');
   }
 
-  var json = parseXml(value);
-  log('Translating server message result json: ' + JSON.stringify(json));
-  return json;
+  return result;
 }
 
 function makeDbgpMessage(message: string): string {
@@ -106,7 +114,7 @@ module.exports = {
   logError,
   logErrorAndThrow,
   makeDbgpMessage,
-  parseDbgpMessage,
+  parseDbgpMessages,
   parseXml,
   base64Decode,
   pathToUri,

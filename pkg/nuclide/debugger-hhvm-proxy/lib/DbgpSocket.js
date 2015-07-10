@@ -10,7 +10,7 @@
  */
 
 
-var {log, logError, parseDbgpMessage} = require('./utils');
+var {log, logError, parseDbgpMessages} = require('./utils');
 
 // Responses to the 'satus' command
 const STATUS_STARTING = 'starting';
@@ -77,31 +77,34 @@ class DbgpSocket {
   _onData(data: Buffer | string): void {
     var message = data.toString();
     log('Recieved data: ' + message);
-    var {response} = parseDbgpMessage(message);
-    if (response) {
-      var responseAttributes = response.$;
-      var {command, transaction_id} = responseAttributes;
-      var transactionId = Number(transaction_id);
-      var call = this._calls.get(transactionId);
-      if (!call) {
-        logError('Missing call for response: ' + message);
-        return;
-      }
-      this._calls.delete(transactionId);
+    var responses = parseDbgpMessages(message);
+    responses.forEach(r => {
+      var response = r.response;
+      if (response) {
+        var responseAttributes = response.$;
+        var {command, transaction_id} = responseAttributes;
+        var transactionId = Number(transaction_id);
+        var call = this._calls.get(transactionId);
+        if (!call) {
+          logError('Missing call for response: ' + message);
+          return;
+        }
+        this._calls.delete(transactionId);
 
-      if (call.command !== command) {
-        logError('Bad command in response. Found ' + command + '. expected ' + call.command);
-        return;
+        if (call.command !== command) {
+          logError('Bad command in response. Found ' + command + '. expected ' + call.command);
+          return;
+        }
+        try {
+          log('Completing call: ' + message);
+          call.complete(response);
+        } catch (e) {
+          logError('Exception: ' + e.toString() + ' handling call: ' + message);
+        }
+      } else {
+        logError('Unexpected socket message: ' + message);
       }
-      try {
-        log('Completing call: ' + message);
-        call.complete(response);
-      } catch (e) {
-        logError('Exception: ' + e.toString() + ' handling call: ' + message);
-      }
-    } else {
-      logError('Unexpected socket message: ' + message);
-    }
+    });
   }
 
   getStackFrames(): Promise<Array<Object>> {

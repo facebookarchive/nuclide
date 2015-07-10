@@ -12,7 +12,7 @@
 
 var {
   log,
-  parseDbgpMessage,
+  parseDbgpMessages,
   uriToPath,
 } = require('./utils');
 
@@ -102,16 +102,26 @@ class DbgpConnector {
       return;
     }
 
-    var message;
-    try {
-      message = parseDbgpMessage(data.toString());
-    } catch (error) {
-      log('Non XML connection string: ' + data.toString() + '. Discarding connection.');
+    function failConnection(errorMessage: string): void {
+      log(errorMessage);
       socket.end();
       socket.destroy();
+    }
+
+    var messages;
+    try {
+      messages = parseDbgpMessages(data.toString());
+    } catch (error) {
+      failConnection('Non XML connection string: ' + data.toString() + '. Discarding connection.');
       return;
     }
 
+    if (messages.length !== 1) {
+      failConnection('Expected a single connection message. Got ' + messages.length);
+      return;
+    }
+
+    var message = messages[0];
     if (this._isCorrectConnection(message)) {
       this._connected = true;
       accept(socket);
@@ -119,9 +129,7 @@ class DbgpConnector {
       this._server.close();
       this._server = null;
     } else {
-      log('Discarding connection ' + JSON.stringify(message));
-      socket.end();
-      socket.destroy();
+      failConnection('Discarding connection ' + JSON.stringify(message));
     }
   }
 
