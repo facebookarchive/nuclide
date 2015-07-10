@@ -10,11 +10,6 @@
  */
 
 var {QuickSelectionProvider} = require('./QuickSelectionProvider');
-var {fileTypeClass} = require('nuclide-atom-helpers');
-var {getClient} = require('nuclide-client');
-var React = require('react-for-atom');
-var path = require('path');
-var {getClient} = require('nuclide-client');
 var QuickSelectionProvider = require('./QuickSelectionProvider');
 var FileResultComponent = require('./FileResultComponent');
 
@@ -23,12 +18,22 @@ var OPENFILE_SEARCH_PROVIDER = 'openfiles';
 class OpenFileListProvider extends QuickSelectionProvider {
 
   // Returns the currently opened tabs, ordered from most recently opened to least recently opened.
-  static getOpenTabsMatching(query: string): Array<string> {
+  static getOpenTabsMatching(query: string): Array<{path: string; matchIndexes: Array}> {
+    var seenPaths = {};
     return atom.workspace.getTextEditors()
-     .sort((a,b) => b.lastOpened - a.lastOpened)
-     .map((editor) => editor.getPath())
-     .filter(path => !query.length || (new RegExp(query, 'i')).test(path))
-     .map((file) => ({path: file, matchIndexes: []}));
+      .sort((a,b) => b.lastOpened - a.lastOpened)
+      .map((editor) => editor.getPath())
+      .filter(filePath => {
+        if (
+          (query.length && !(new RegExp(query, 'i')).test(filePath)) ||
+          seenPaths[filePath]
+        ) {
+          return false;
+        }
+        seenPaths[filePath] = true;
+        return true;
+      })
+      .map(filePath => ({path: filePath, matchIndexes: []}));
   }
 
   getDebounceDelay(): number {
