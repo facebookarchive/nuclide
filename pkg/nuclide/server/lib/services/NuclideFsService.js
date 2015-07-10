@@ -126,7 +126,6 @@ function realpath(path: string): Promise<string> {
  */
 function rename(sourcePath: string, destinationPath: string): Promise {
   return new Promise((resolve, reject) => {
-    // TODO(jjiaa): Use the Atom builtin version of fs-plus when it gets upgraded.
     var fsPlus = require('fs-plus');
     fsPlus.move(sourcePath, destinationPath, error => {
       error ? reject(error) : resolve();
