@@ -12,9 +12,11 @@
     "event-kit": "1.1.1",
     "heap": "0.2.6",
     "nuclide-commons": "0.0.0",
+    "nuclide-remote-uri": "0.0.0",
     "nuclide-task": "0.0.0",
     "nuclide-watchman-helpers": "0.0.0",
-    "split": "0.3.2"
+    "split": "0.3.2",
+    "url-join": "0.0.1"
   },
   "devDependencies": {
     "nuclide-atom-interfaces": "0.0.0",

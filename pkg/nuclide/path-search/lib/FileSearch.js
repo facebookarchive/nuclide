@@ -11,7 +11,8 @@
 
 var {createPathSet} = require('./PathSetFactory');
 var {fsPromise} = require('nuclide-commons');
-var url = require('url');
+var remoteUri = require('nuclide-remote-uri');
+var urlJoin = require('url-join');
 
 var PathSearch = require('./PathSearch');
 
@@ -50,7 +51,7 @@ class FileSearch {
     // TODO: Cache the result of this call to map().
     return resultSet.results.map(result => {
       return { score: result.score,
-               path: url.resolve(this._originalUri + '/', result.value),
+               path: urlJoin(this._originalUri, '/', result.value),
                matchIndexes: result.matchIndexes.map((index) => index + this._originalUri.length + 1),
              };
       });
@@ -79,7 +80,7 @@ async function fileSearchForDirectory(directoryUri: string, pathSetUpdater: ?Pat
     return fileSearch;
   }
 
-  var directory = url.parse(directoryUri).path;
+  var directory = remoteUri.parse(directoryUri).path;
   var realpath = await fsPromise.realpath(directory);
   var pathSet = await createPathSet(realpath);
 
