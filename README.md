@@ -19,6 +19,10 @@ or run the following from the command line:
 apm install nuclide-installer
 ```
 
+It is also *strongly recommended* to install the [linter](https://atom.io/packages/linter) 
+package if you haven't got it already. It allows Nuclide to display messages about linting your code 
+(if you don't have it, you won't see messages from [Flow](/docs/flow/) for example).
+
 The first time you start Atom after installing the `nuclide-installer` package, you will have to wait
 a few seconds for the installer to determine which Nuclide packages it needs to install or update.
 To determine whether the installer worked, go to the **Settings** view in Atom and select the **Packages**
