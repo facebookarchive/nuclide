@@ -440,8 +440,10 @@ var ConnectionDialog = React.createClass({
     if (this.props.onClosed) {
       this.props.onClosed();
     }
-
-    React.unmountComponentAtNode(this.getDOMNode().parentNode);
+    var domNode = React.findDOMNode(this);
+    if (domNode) {
+      React.unmountComponentAtNode(domNode.parentNode);
+    }
   },
 
   ok() {
