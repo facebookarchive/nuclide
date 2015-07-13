@@ -368,13 +368,17 @@ declare class atom$ContextMenuManager {
 declare class atom$Directory {
   symlink: boolean;
 
-  // File Metadata
+  // Directory Metadata
   isFile(): boolean;
   isDirectory(): boolean;
 
   // Managing Paths
   getPath(): string;
   getBaseName(): string;
+
+  // Event Subscription
+  onDidRename(callback: () => void): atom$Disposable;
+  onDidDelete(callback: () => void): atom$Disposable;
 
   // Traversing
   getParent(): atom$Directory;
@@ -387,6 +391,10 @@ declare class atom$File {
   // File Metadata
   isFile(): boolean;
   isDirectory(): boolean;
+
+  // Event Subscription
+  onDidRename(callback: () => void): atom$Disposable;
+  onDidDelete(callback: () => void): atom$Disposable;
 
   // Managing Paths
   getPath(): string;
@@ -437,6 +445,7 @@ declare class atom$TextBuffer {
 declare class atom$Notification {
   getType(): string;
   getMessage(): string;
+  dismiss(): void;
 }
 
 declare class atom$NotificationManager {

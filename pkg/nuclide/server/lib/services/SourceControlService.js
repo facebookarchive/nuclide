@@ -14,7 +14,7 @@
  * See t6913624.
  */
 
-function getHgRepository(directoryPath: string) {
+function getHgRepository(directoryPath: string): HgRepositoryDescription {
   var {findHgRepository} = require('nuclide-source-control-helpers');
   return findHgRepository(directoryPath);
 }

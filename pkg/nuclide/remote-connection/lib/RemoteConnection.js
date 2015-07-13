@@ -10,7 +10,6 @@
  */
 
 var {CompositeDisposable, Disposable} = require('atom');
-var net = require('net');
 var remoteUri = require('nuclide-remote-uri');
 var logger = require('nuclide-logging').getLogger();
 var {EventEmitter} = require('events');
@@ -27,7 +26,7 @@ const HEARTBEAT_NOTIFICATION_ERROR = 1;
 const HEARTBEAT_NOTIFICATION_WARNING = 2;
 
 type HeartbeatNotification = {
-  notification: Notification;
+  notification: atom$Notification;
   code: string;
 }
 
@@ -48,9 +47,11 @@ class RemoteConnection {
   _config: RemoteConnectionConfiguration;
   _initialized: ?bool;
   _closed: ?bool;
-
+  _subscriptions: CompositeDisposable;
+  _hgRepositoryDescription: ?HgRepositoryDescription;
   _heartbeatNetworkAwayCount: number;
   _lastHeartbeatNotification: ?HeartbeatNotification;
+  _client: ?NuclideClient;
 
   constructor(config: RemoteConnectionConfiguration) {
     this._subscriptions = new CompositeDisposable();
@@ -67,7 +68,7 @@ class RemoteConnection {
   // A workaround before Atom 2.0: Atom's Project::setPaths currently uses
   // ::repositoryForDirectorySync, so we need the repo information to already be
   // available when the new path is added. t6913624 tracks cleanup of this.
-  async _setHgRepoInfo(): void {
+  async _setHgRepoInfo(): Promise<void> {
     var eventBus = this.getClient().eventbus;
     var remotePath = this.getPathForInitialWorkingDirectory();
     var hgRepoDescription = await eventBus.callMethod(
@@ -87,13 +88,13 @@ class RemoteConnection {
      * Adds an Atom notification for the detected heartbeat network status
      * The function makes sure not to add many notifications for the same event and prioritize new events.
      */
-    var addHeartbeatNotification = (type: string, errorCode: string, message: string, dismissable: boolean) => {
+    var addHeartbeatNotification = (type: number, errorCode: string, message: string, dismissable: boolean) => {
       var {code, notification: existingNotification} = this._lastHeartbeatNotification || {};
       if (code && code === errorCode && dismissable) {
         // A dismissible heartbeat notification with this code is already active.
         return;
       }
-      var notification;
+      var notification = null;
       switch (type) {
         case HEARTBEAT_NOTIFICATION_ERROR:
           notification = atom.notifications.addError(message, {dismissable});
@@ -158,7 +159,7 @@ class RemoteConnection {
             // Notify never heard a heartbeat from the server.
             var {port} = remoteUri.parse(serverUri);
             addHeartbeatNotification(HEARTBEAT_NOTIFICATION_ERROR, code,
-                'Nuclide server is not reachable.<br/>It could be running on a port that is not accessible: ' + port,
+                `Nuclide server is not reachable.<br/>It could be running on a port that is not accessible: ${port}`,
                 /*dismissable*/ true);
             break;
           case 'INVALID_CERTIFICATE':
@@ -220,7 +221,7 @@ class RemoteConnection {
   }
 
   // A workaround before Atom 2.0: see ::getHgRepoInfo of main.js.
-  _setHgRepositoryDescription(hgRepositoryDescription): void {
+  _setHgRepositoryDescription(hgRepositoryDescription: HgRepositoryDescription): void {
     this._hgRepositoryDescription = hgRepositoryDescription;
   }
 
@@ -241,7 +242,7 @@ class RemoteConnection {
     return entry;
   }
 
-  _addHandlersForEntry(entry: File | Directory): void {
+  _addHandlersForEntry(entry: atom$File | atom$Directory): void {
     var oldPath = entry.getLocalPath();
     var renameSubscription = entry.onDidRename(() => {
       delete this._entries[oldPath];
@@ -254,7 +255,7 @@ class RemoteConnection {
     });
   }
 
-  async initialize(): void {
+  async initialize(): Promise<void> {
     // Right now we don't re-handshake.
     if (this._initialized === undefined) {
       this._initialized = false;
@@ -357,9 +358,11 @@ class RemoteConnection {
 
 
   _isSecure(): boolean {
-    return this._config.certificateAuthorityCertificate
+    return !!(
+        this._config.certificateAuthorityCertificate
         && this._config.clientCertificate
-        && this._config.clientKey;
+        && this._config.clientKey
+    );
   }
 
   getRemoteHost(): string {
@@ -402,13 +405,16 @@ class RemoteConnection {
   }
 
   /**
-   * Get cached connection match the hostname and the path has the prefix of connection.cwd. If path is null,
-   * then return the connection who matches the hostname and ignore connection.cwd.
+   * Get cached connection match the hostname and the path has the prefix of connection.cwd.
+   * @param hostname The connected server host name.
+   * @param path The absolute path that's has the prefix of cwd of the connection.
+   *   If path is null, empty or undefined, then return the connection which matches
+   *   the hostname and ignore the initial working directory.
    */
   static getByHostnameAndPath(hostname: string, path: ?string): ?RemoteConnection {
-    return _connections.filter((connection) => {
+    return _connections.filter(connection => {
       return connection.getRemoteHostname() === hostname &&
-          (path === null || path.startsWith(connection.getPathForInitialWorkingDirectory()));
+          (!path || path.startsWith(connection.getPathForInitialWorkingDirectory()));
     })[0];
   }
 
