@@ -394,6 +394,9 @@ declare class atom$File {
 
   // Traversing
   getParent(): atom$Directory;
+
+  // Reading and Writing
+  read(flushCache?: boolean): Promise<string>;
 }
 
 declare class atom$Grammar { }
