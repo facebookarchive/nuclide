@@ -6,6 +6,16 @@
  * the root directory of this source tree.
  */
 
+ /**
+  * Private Classes
+  */
+
+declare class atom$Model {
+  destroy(): void;
+}
+
+declare class atom$Package { }
+
 /**
  * Essential Classes
  */
@@ -135,9 +145,20 @@ declare class atom$PackageManager {
   isPackageLoaded(name: string): boolean;
 }
 
+type atom$PaneSplitParams = {
+  copyActiveItem?: boolean;
+  items?: Array<Object>;
+};
+
 declare class atom$Pane {
   // Lifecycle
   activate(): void;
+
+  // Splitting
+  splitLeft(params?: atom$PaneSplitParams): atom$Pane;
+  splitRight(params?: atom$PaneSplitParams): atom$Pane;
+  splitUp(params?: atom$PaneSplitParams): atom$Pane;
+  splitDown(params?: atom$PaneSplitParams): atom$Pane;
 }
 
 declare class atom$Panel {
@@ -183,9 +204,11 @@ type InsertTextOptions = {
   undo: string;
 }
 
-declare class atom$TextEditor {
+declare class atom$TextEditor extends atom$Model {
   // Event Subscription
+  onDidChange(callback: () => void): atom$Disposable;
   onDidDestroy(callback: () => void): atom$Disposable;
+  onWillInsertText(callback: (event: {cancel: () => void; text: string;}) => void): atom$Disposable;
   getBuffer(): atom$TextBuffer;
 
   // File Details
@@ -234,6 +257,7 @@ declare class atom$TextEditor {
   // Cursors
   getCursorBufferPosition(): atom$Point;
   getLastCursor(): atom$Cursor;
+  moveToEndOfLine(): void;
 
   // Selections
   // Searching and Replacing
@@ -243,9 +267,11 @@ declare class atom$TextEditor {
   indentationForBufferRow(bufferRow: number): number;
 
   // Grammars
-  // TODO: define Grammar class
-  getGrammar(): /*atom$Grammar*/ Object;
-  setGrammar(grammar: /*atom$Grammar*/ Object): void;
+  getGrammar(): atom$Grammar;
+  setGrammar(grammar: atom$Grammar): void;
+
+  // Clipboard Operations
+  pasteText(options?: Object): void;
 
   // Gutter
   addGutter(options: {
@@ -256,8 +282,13 @@ declare class atom$TextEditor {
 
   gutterWithName(name: string): ?atom$Gutter;
 
-  // Scrolling
+  // Scrolling the TextEditor
   scrollToBufferPosition(position: atom$Point | number[], options?: {center?: boolean}): void;
+  scrollToBottom(): void;
+
+  // TextEditor Rendering
+  getPlaceholderText(): string;
+  setPlaceholderText(placeholderText: string): void;
 }
 
 declare class atom$ViewRegistry {
@@ -313,9 +344,21 @@ declare class atom$Workspace {
  * Extended Classes
  */
 
+declare class atom$BufferedNodeProcess { }
+
+declare class atom$BufferedProcess {
+  // Helper Methods
+  kill(): void;
+}
+
 declare class atom$Clipboard {
   // Methods
   write(text: string, metadata?: mixed): void;
+  read(): string;
+  readWithMetadata(): {
+    metadata: ?mixed;
+    text: string;
+  };
 }
 
 declare class atom$ContextMenuManager {
@@ -353,6 +396,16 @@ declare class atom$File {
   getParent(): atom$Directory;
 }
 
+declare class atom$Grammar { }
+
+declare class atom$GrammarRegistry {
+  // Event Subscription
+  onDidAddGrammar(callback: (grammar: atom$Grammar) => void): atom$Disposable;
+
+  // Managing Grammars
+  grammarForScopeName(scopeName: string): ?atom$Grammar;
+}
+
 declare class atom$Project {
   // Managing Paths
   getPaths(): Array<string>;
@@ -362,6 +415,14 @@ declare class atom$Project {
 
 declare class atom$TextBuffer {
   file: ?atom$File;
+
+  // Mutating Text
+  setText(text: string): atom$Range;
+  append(text: string, options: {
+    normalizeLineEndings?: boolean;
+    undo?: string;
+  }): atom$Range;
+  delete(range: atom$Range): atom$Range;
 
   // Search And Replace
   scanInRange(regex: RegExp, range: Range, iterator: (data: Object) => void): void;
@@ -390,23 +451,21 @@ declare class atom$NotificationManager {
   getNotifications(): Array<atom$Notification>;
 }
 
-/**
- * Private Classes
- */
-
-declare class atom$Package { }
-
 // The items in this declaration are available off of `require('atom')`.
 // This list is not complete.
 declare module "atom" {
+  declare var BufferedNodeProcess: typeof atom$BufferedNodeProcess;
+  declare var BufferedProcess: typeof atom$BufferedProcess;
   declare var CompositeDisposable: typeof atom$CompositeDisposable;
+  declare var Directory: typeof atom$Directory;
   declare var Disposable: typeof atom$Disposable;
   declare var Emitter: typeof atom$Emitter;
-  declare var Panel: typeof atom$Panel;
+  declare var File: typeof atom$File;
+  declare var Notification: typeof atom$Notification;
   declare var Point: typeof atom$Point;
   declare var Range: typeof atom$Range;
+  declare var TextBuffer: typeof atom$TextBuffer;
   declare var TextEditor: typeof atom$TextEditor;
-  declare var Notification: typeof atom$Notification;
 }
 
 // Make sure that common types can be referenced without the `atom$` prefix
@@ -423,6 +482,7 @@ type AtomGlobal = {
   commands: atom$CommandRegistry;
   config: atom$Config;
   contextMenu: atom$ContextMenuManager;
+  grammars: atom$GrammarRegistry;
   notifications: atom$NotificationManager;
   packages: atom$PackageManager;
   views: atom$ViewRegistry;
