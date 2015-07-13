@@ -49,7 +49,7 @@ class RemoteConnection {
   _initialized: ?bool;
   _closed: ?bool;
 
-  _heartbeatNetworkAwayCount: int;
+  _heartbeatNetworkAwayCount: number;
   _lastHeartbeatNotification: ?HeartbeatNotification;
 
   constructor(config: RemoteConnectionConfiguration) {
@@ -274,8 +274,18 @@ class RemoteConnection {
       }
       this._initialized = true;
       this._monitorConnectionHeartbeat();
+
+      // Start watching the project for changes.
+      client.watchDirectoryRecursive(this._config.cwd, /* do nothing on change */() => {}).catch(err => {
+        var warningMessage = 'Watcher failed to start - watcher features disabled!<br/>' +
+            (err.message ? ('DETAILS: ' + err.message) : '');
+        // Add a persistent warning message to make sure the user sees it and intentionally dismissing it.
+        atom.notifications.addWarning(warningMessage, {dismissable: true});
+      });
+
       // A workaround before Atom 2.0: see ::getHgRepoInfo.
       await this._setHgRepoInfo();
+
       // Save to cache.
       this._addConnection();
     }
@@ -314,7 +324,6 @@ class RemoteConnection {
   _getClient(): NuclideClient {
     if (!this._client) {
       var uri;
-      var cwd = this._config.cwd;
       var options = {};
 
       // Use https if we have key, cert, and ca
@@ -329,14 +338,7 @@ class RemoteConnection {
 
       // The remote connection and client are identified by both the remote host and the inital working directory.
       var clientId = this.getRemoteHost() + this.getPathForInitialWorkingDirectory();
-      this._client = new NuclideClient(clientId, new NuclideRemoteEventbus(uri, options), {cwd});
-      // Start watching the project for changes.
-      this._client.watchDirectoryRecursive(cwd, /* do nothing on change */() => {}).catch((err) => {
-        var warningMessage = 'Watcher failed to start - watcher features disabled!<br/>' +
-            (err.message ? ('DETAILS: ' + err.message) : '');
-        // Add a persistent warning message to make sure the user sees it and intentionally dismissing it.
-        atom.notifications.addWarning(warningMessage, {dismissable: true});
-      });
+      this._client = new NuclideClient(clientId, new NuclideRemoteEventbus(uri, options), {cwd: this._config.cwd});
     }
     return this._client;
   }
