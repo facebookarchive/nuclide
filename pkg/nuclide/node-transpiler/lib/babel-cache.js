@@ -115,6 +115,7 @@ function createOptions(filePath) {
     filename: filePath,
     sourceMap: 'inline',
     blacklist: [
+      'es6.forOf',
       'useStrict',
     ],
     optional: [
