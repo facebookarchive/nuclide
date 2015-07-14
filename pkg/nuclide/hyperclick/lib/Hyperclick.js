@@ -41,8 +41,7 @@ type HyperclickSuggestion = {
  * Calls the given functions and returns the first non-null return value.
  */
 async function findTruthyReturnValue(fns: Array<undefined | () => Promise<any>>): Promise<any> {
-  for (var i = 0; i < fns.length; i++) {
-    var fn = fns[i];
+  for (var fn of fns) {
     var result = typeof fn === 'function' ? await fn() : null;
     if (result) {
       return result;
