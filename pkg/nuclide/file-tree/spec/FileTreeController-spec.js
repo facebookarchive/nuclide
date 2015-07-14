@@ -107,7 +107,7 @@ describe('FileTreeController', () => {
     });
   });
 
-  describe('openDuplicateDialog', () => {
+  xdescribe('openDuplicateDialog', () => {
     it('gets called when triggering nuclide-file-tree:duplicate-selection', () => {
       var el = React.findDOMNode(TestUtils.findRenderedDOMComponentWithClass(
         fileTreeController._panelController.getChildComponent(),
