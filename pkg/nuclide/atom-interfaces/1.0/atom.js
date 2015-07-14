@@ -523,5 +523,6 @@ declare class WebviewElement extends HTMLElement {
   src: string;
   nodeintegration: boolean;
 
+  getTitle(): string;
   send(): void;
 }
