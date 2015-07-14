@@ -1,0 +1,18 @@
+@import "ui-variables";
+
+/* ANSI Grammar */
+
+atom-text-editor .constant.character.hidden,
+atom-text-editor::shadow .constant.character.hidden {
+  display: none;
+}
+
+atom-text-editor .markup.other.green,
+atom-text-editor::shadow .markup.other.green {
+  color: @text-color-success;
+}
+
+atom-text-editor .markup.other.red,
+atom-text-editor::shadow .markup.other.red {
+  color: @text-color-error;
+}

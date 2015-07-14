@@ -1,0 +1,43 @@
+# Support for output marked up with ANSI color codes
+# See: https://en.wikipedia.org/wiki/ANSI_escape_code#Colors
+
+'scopeName': 'text.ansi'
+'fileTypes': [
+  'ansi'
+]
+'foldingStartCharacter': ''
+'foldingStopCharacter': ''
+'patterns': [
+  {
+    'name': 'constant.character.escape'
+
+    # Set the foreground color to "green"
+    'begin': '(\\[32m)'
+
+    # End when a reset (`[0m`) or a another foreground color (`[30m` - `[39m`) is found
+    'end': '(\\[0m|\\[3[0-9]m)'
+    'captures': {
+      '1': {
+        # Mark control characters as hidden so they don't appear in console output
+        'name': 'constant.character.hidden'
+      }
+    }
+    'contentName': 'markup.other.green'
+  }
+  {
+    'name': 'constant.character.escape'
+
+    # Set the foreground color to "red"
+    'begin': '(\\[31m)'
+
+    # End when a reset (`[0m`) or a another foreground color (`[30m` - `[39m`) is found
+    'end': '(\\[0m|\\[3[0-9]m)'
+    'captures': {
+      '1': {
+        # Mark control characters as hidden so they don't appear in console output
+        'name': 'constant.character.hidden'
+      }
+    }
+    'contentName': 'markup.other.red'
+  }
+]

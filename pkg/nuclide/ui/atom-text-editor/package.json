@@ -1,0 +1,18 @@
+{
+  "name": "nuclide-ui-atom-text-editor",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "A React component interface for Atom's <atom-text-editor> custom element.",
+  "nuclide": {
+    "packageType": "Atom",
+    "testRunner": "apm"
+  },
+  "dependencies": {
+    "nuclide-atom-npm": "0.0.0",
+    "react-for-atom": "0.13.6"
+  },
+  "devDependencies": {
+    "nuclide-atom-interfaces": "0.0.0"
+  }
+}
