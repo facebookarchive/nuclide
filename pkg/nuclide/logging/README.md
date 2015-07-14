@@ -7,7 +7,7 @@ A node package designed for logging on both Nuclide client and Nuclide server. I
 ```js
 var logger = require('nuclide-logging').getLogger();
 
-logger.deubg(...);
+logger.debug(...);
 logger.error(...);
 ```
 
