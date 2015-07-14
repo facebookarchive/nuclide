@@ -188,7 +188,7 @@ module.exports = class HackLanguage {
     ): Promise<any> {
 
     await this.updateFile(path, contents);
-    var webWorkerMessage = {cmd: 'hh_get_method_name', args: [path, lineNumber - 1, column - 1]};
+    var webWorkerMessage = {cmd: 'hh_get_method_name', args: [path, lineNumber, column]};
     var response = await this._hackWorker.runWorkerTask(webWorkerMessage);
     if (!response.name) {
       return null;
@@ -198,8 +198,8 @@ module.exports = class HackLanguage {
     return {
       name: response.name,
       type: symbolType,
-      line: position.line,
-      column: position.char_start,
+      line: position.line - 1,
+      column: position.char_start - 1,
       length: position.char_end - position.char_start + 1,
     };
   }
