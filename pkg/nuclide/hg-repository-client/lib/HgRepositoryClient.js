@@ -341,24 +341,8 @@ class HgRepositoryClient {
   // http://mercurial.selenic.com/wiki/FAQ#FAQ.2FCommonProblems.I_tried_to_check_in_an_empty_directory_and_it_failed.21
   // TODO: Make this method reflect New and Ignored statuses.
   getDirectoryStatus(directoryPath: string): StatusCodeNumber {
-    var status = StatusCodeNumber.CLEAN;
-    if (!directoryPath) {
-      return status;
-    }
-    var {ensureTrailingSeparator} = require('nuclide-commons').paths;
-    var dirPath = ensureTrailingSeparator(directoryPath);
-    Object.keys(this._hgStatusCache).some((filePath) => {
-      if (!filePath.startsWith(dirPath)) {
-        return false;
-      }
-      var pathStatus = StatusCodeIdToNumber[this._hgStatusCache[filePath]];
-      if (this.isStatusModified(pathStatus)) {
-        status = StatusCodeNumber.MODIFIED;
-        return true;
-      }
-      return false;
-    });
-    return status;
+    // TODO jessicalin: t7704060 tracks re-implementing this function.
+    return StatusCodeNumber.CLEAN;
   }
 
   // We don't want to do any synchronous 'hg status' calls. Just use cached values.

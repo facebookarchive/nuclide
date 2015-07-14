@@ -546,7 +546,7 @@ describe('HgRepositoryClient', () => {
     });
   });
 
-  describe('::getDirectoryStatus', () => {
+  xdescribe('::getDirectoryStatus', () => {
     var testDir = createFilePath('subDirectory');
     var directoriesBetween = path.join('dir1', 'dir2');
     var path_1 = path.join(testDir, directoriesBetween, 'test1.js');
