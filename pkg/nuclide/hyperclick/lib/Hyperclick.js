@@ -77,6 +77,9 @@ class Hyperclick {
 
   dispose() {
     this._consumedProviders = null;
+    if (this._suggestionListViewSubscription) {
+      this._suggestionListViewSubscription.dispose();
+    }
     if (this._textEditorSubscription) {
       this._textEditorSubscription.dispose();
       this._textEditorSubscription = null;
