@@ -36,7 +36,8 @@ class FlowService {
   }
 
   findDiagnostics(
-    file: NuclideUri
+    file: NuclideUri,
+    currentContents: ?string
   ): Promise<Array<{message:
         Array<{
           path: NuclideUri;

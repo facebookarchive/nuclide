@@ -120,6 +120,32 @@ describe('LocalFlowService', () => {
     });
   });
 
+  describe('findDiagnostics', () => {
+    function runWith(errors, filePath, contents) {
+      mockExec(JSON.stringify({errors}));
+      return flowService.findDiagnostics(filePath, contents);
+    }
+
+    it('should call flow status when currentContents is null', () => {
+      waitsForPromise(async () => {
+        await runWith([], file, null);
+        var flowArgs = flowService._execFlow.mostRecentCall.args[0];
+        expect(flowArgs[0]).toBe('status');
+      });
+    });
+
+    it('should call flow check-contents with currentContents when it is not null', () => {
+      waitsForPromise(async () => {
+        await runWith([], file, currentContents);
+        var execArgs = flowService._execFlow.mostRecentCall.args;
+        var flowArgs = execArgs[0];
+        var stdin = execArgs[1].stdin;
+        expect(flowArgs[0]).toBe('check-contents');
+        expect(stdin).toBe(currentContents);
+      });
+    });
+  });
+
   describe('getType', () => {
     function runWith(outputString) {
       mockExec(outputString);

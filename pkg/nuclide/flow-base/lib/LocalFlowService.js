@@ -150,15 +150,26 @@ class LocalFlowService extends FlowService {
     }
   }
 
-  async findDiagnostics(file: NuclideUri, currentContents: string): Promise<Array<Diagnostic>> {
+  /**
+   * If currentContents is null, it means that the file has not changed since
+   * it has been saved, so we can avoid piping the whole contents to the Flow
+   * process.
+   */
+  async findDiagnostics(file: NuclideUri, currentContents: ?string): Promise<Array<Diagnostic>> {
     var options = {};
 
-    options.stdin = currentContents;
+    var args;
+    if (currentContents) {
+      options.stdin = currentContents;
 
-    // Currently, `flow check-contents` returns all of the errors in the
-    // project. It would be nice if it would use the path for filtering, as
-    // currently the client has to do the filtering.
-    var args = ['check-contents', '--json', file];
+      // Currently, `flow check-contents` returns all of the errors in the
+      // project. It would be nice if it would use the path for filtering, as
+      // currently the client has to do the filtering.
+      args = ['check-contents', '--json', file];
+    } else {
+      // we can just use `flow status` if the contents are unchanged.
+      args = ['status', '--json', file];
+    }
 
     var result;
     try {

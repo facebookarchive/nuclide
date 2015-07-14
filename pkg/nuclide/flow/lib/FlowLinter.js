@@ -85,7 +85,7 @@ module.exports = {
   lintOnFly: true,
   async lint(textEditor: TextEditor): Promise<Array<Object>> {
     var file = textEditor.getPath();
-    var currentContents = textEditor.getText();
+    var currentContents = textEditor.isModified() ? textEditor.getText() : null;
     if (!file) {
       return [];
     }
