@@ -12,8 +12,19 @@ work on Windows.
 This is what you need to do to get Flow working on your system:
 
 * Install Flow.
-* Make sure `flow` is on your `$PATH`, or specify the path to the `flow` binary in
-  the settings for this package.
+* Make sure `flow` is on your `$PATH`, or specify the path to the `flow` binary
+  in the settings for this package.
+  * Please note that changes to your `$PATH` made in your `.bashrc` will not be
+    made available to Atom unless you start it from the command line.
+  * In particular, if you unzip the `flow.zip` file to your home directory, you
+    will probably need to explicitly specify the path to the `flow` binary in
+    the settings for the nuclide-flow package.
+  * For some context, this has been a longstanding source of confusion.
+    * Here is a [relevant linter
+      issue](https://github.com/AtomLinter/Linter/issues/150).
+    * Here is another [solution](http://serverfault.com/a/277034) that allows
+      the `$PATH` to be changed for all applications (launched from the command
+      line and the GUI) in OS X.
 * Create a `.flowconfig` file in the root of your project (this can be empty).
 * Add `/* @flow */` to the top of JavaScript files that you want checked.
 
