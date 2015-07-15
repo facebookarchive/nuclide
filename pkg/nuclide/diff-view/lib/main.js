@@ -48,7 +48,7 @@ module.exports = {
       () => {
         var editor = atom.workspace.getActiveTextEditor();
         if (!editor) {
-          return logger.warn('No active text editor for diff view!');
+          return getLogger().warn('No active text editor for diff view!');
         }
         atom.workspace.open(NUCLIDE_DIFF_VIEW_URI + editor.getPath());
       }
