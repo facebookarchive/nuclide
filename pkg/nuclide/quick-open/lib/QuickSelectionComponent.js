@@ -102,6 +102,10 @@ function updateRenderableTabs() {
   });
 }
 
+function sanitizeQuery(query: string): string {
+  return query.trim();
+}
+
 // This timeout is required to keep tests from breaking, since `atom.project` appears to still
 // be initializing at the time this module is required, breaking the documented API behavior, which
 // specifies that "An instance of [Project] is always available as the `atom.project` global."
@@ -505,7 +509,7 @@ var QuickSelectionComponent = React.createClass({
   setQuery(query: string) {
     var provider = this.getProvider();
     if (provider) {
-      var newItems = provider.executeQuery(query);
+      var newItems = provider.executeQuery(sanitizeQuery(query));
       newItems.then((requestsByDirectory) => {
         var groupedByService = {};
         for (var dirName in requestsByDirectory) {
