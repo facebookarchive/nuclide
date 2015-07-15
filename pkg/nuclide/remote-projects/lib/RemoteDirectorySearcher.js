@@ -84,7 +84,7 @@ class RemoteDirectorySearcher {
 
       // Start the search in each given directory, getting a list of requestIds.
       var searchIdPromises = directories.map((dir, index) =>
-        services[index].search(dir.getPath(), regex.source));
+        services[index].search(dir.getPath(), regex.source, !regex.ignoreCase));
 
       // Resolve all of the searchIds, and then wait for their completion.
       Promise.all(searchIdPromises).then(searchIds => {

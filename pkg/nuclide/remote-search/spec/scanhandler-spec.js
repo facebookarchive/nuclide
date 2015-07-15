@@ -16,9 +16,9 @@ var scanhandler = require('./../lib/scanhandler');
 var temp = require('temp').track();
 
 describe('Scan Handler Tests', () => {
+  /* UNIX GREP TESTS */
 
-  // find -exec grep test.
-  it('Should scan all files in a directory', () => {
+  it('Should recursively scan all files in a directory', () => {
     waitsForPromise(async () => {
       // Setup the test folder.
       var folder = temp.mkdirSync();
@@ -33,13 +33,29 @@ describe('Scan Handler Tests', () => {
         console.log(a);`);
 
       var updates = [];
-      var results = await scanhandler.search(folder, 'Hello World', update => { updates.push(update) });
+      var results = await scanhandler.search(folder, 'hello world', update => { updates.push(update) });
       var expected = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'basic.json')));
       expect({ results, updates }).toEqual(expected);
     });
   });
 
-  // git grep test.
+  it('Can execute a case sensitive search', () => {
+    waitsForPromise(async () => {
+      // Setup the test folder.
+      var folder = temp.mkdirSync();
+      fs.writeFileSync(path.join(folder, 'file1.js'), `var a = 4;
+        console.log("Hello World!");
+        console.log(a);
+        console.error("hello world!");`);
+
+      var updates = [];
+      var results = await scanhandler.search(folder, 'hello world', update => { updates.push(update) }, true);
+      var expected = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'casesensitive.json')));
+      expect({ results, updates }).toEqual(expected);
+    });
+  });
+
+  /* GIT GREP TESTS */
   it('Git repo: should ignore untracked files or files listed in .gitignore', () => {
     waitsForPromise(async () => {
       // Create a git repo in a temporary folder.
@@ -58,7 +74,7 @@ describe('Scan Handler Tests', () => {
       fs.writeFileSync(path.join(folder, 'untracked.txt'), 'Hello World!');
 
       var updates = [];
-      var results = await scanhandler.search(folder, 'Hello World', update => { updates.push(update) });
+      var results = await scanhandler.search(folder, 'hello world', update => { updates.push(update) });
       var expected = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'repo.json')));
       expect({ updates, results }).toEqual(expected);
     });
@@ -87,7 +103,7 @@ describe('Scan Handler Tests', () => {
       await asyncExecute('hg', ['commit', '-m', 'test commit'], {cwd: folder});
 
       var updates = [];
-      var results = await scanhandler.search(folder, 'Hello World', update => { updates.push(update) });
+      var results = await scanhandler.search(folder, 'hello world', update => { updates.push(update) });
       var expected = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'repo.json')));
       expect({ updates, results }).toEqual(expected);
     });

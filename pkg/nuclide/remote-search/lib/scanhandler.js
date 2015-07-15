@@ -26,9 +26,15 @@ type UpdateFileMatchesCallback = (result: search$FileResult) => void;
  * @param onFileMatchesUpdate - An optional callback, invoked whenever new matches are found.
  *  The results are cumulative, so each invokation also contains all the previous matches
  *  in the file.
+ * @param caseSensitive - True if the grep search should be performed case sensitively.
  * @returns A promise resolving to an array of all matches, grouped by file.
  */
-async function search(directory: string, regex: string, onFileMatchesUpdate: ?UpdateFileMatchesCallback): Promise<Array<search$FileResult>> {
+async function search(
+  directory: string,
+  regex: string,
+  onFileMatchesUpdate: ?UpdateFileMatchesCallback,
+  caseSensitive: boolean
+  ): Promise<Array<search$FileResult>> {
   // Matches are stored in a Map of filename => Array<Match>.
   var matchesByFile: Map<string, Array<search$Match>> = new Map();
 
@@ -46,7 +52,7 @@ async function search(directory: string, regex: string, onFileMatchesUpdate: ?Up
     var filePath = grepMatchResult[1];
 
     // Try to extract the actual "matched" text.
-    var matchTextResult = new RegExp(regex, 'i').exec(lineText);
+    var matchTextResult = new RegExp(regex, caseSensitive ? '' : 'i').exec(lineText);
     if (!matchTextResult) {
       return;
     }
@@ -74,9 +80,11 @@ async function search(directory: string, regex: string, onFileMatchesUpdate: ?Up
   };
 
   // Try running search commands, falling through to the next if there is an error.
-  await getLinesFromCommand('hg', ['wgrep', '-in', regex], directory, onLine)
-    .catch(() => getLinesFromCommand('git', ['grep', '-in', regex], directory, onLine))
-    .catch(() => getLinesFromCommand('grep', ['-rHn', '-e', regex, '.'], directory, onLine))
+  var vcsargs = (caseSensitive ? [] : ['-i']).concat(['-n', regex]);
+  var grepargs = (caseSensitive ? [] :  ['-i']).concat(['-rHn', '-e', regex, '.']);
+  await getLinesFromCommand('hg', ['wgrep'].concat(vcsargs), directory, onLine)
+    .catch(() => getLinesFromCommand('git', ['grep'].concat(vcsargs), directory, onLine))
+    .catch(() => getLinesFromCommand('grep', grepargs, directory, onLine))
     .catch(() => { throw new Error('Failed to execute a grep search.') });
 
   // Return final results.
@@ -103,12 +111,12 @@ function getLinesFromCommand(command: string,
       stderr += data;
     });
 
-    // Resolve promise if error code is zero - otherwise reject.
+    // Resolve promise if error code is 0 (found matches) or 1 (found no matches). Otherwise reject.
     proc.on('close', code => {
-      if (code === 0) {
-        resolve();
-      } else {
+      if (code > 1) {
         reject(new Error(stderr));
+      } else {
+        resolve();
       }
     });
   });

@@ -64,7 +64,7 @@ describe('FindInProjectService-Integration', () => {
         var completedDisposable = remoteService.onSearchCompleted(onCompleted);
 
         // Start seach.
-        remoteService.search(uri, /hello world/.source).then(id => { myRequest = id; });
+        remoteService.search(uri, /hello world/.source, false).then(id => { myRequest = id; });
       });
     });
   });

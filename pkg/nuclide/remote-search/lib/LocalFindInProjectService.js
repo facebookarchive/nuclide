@@ -35,7 +35,7 @@ class LocalFindInProjectService {
     this._emitter = new EventEmitter();
   }
 
-  search(directory: NuclideUri, regex: string): Promise<number> {
+  search(directory: NuclideUri, regex: string, caseSensitive: boolean): Promise<number> {
     var requestId = this._requests++; // Get a unique number to represent this request.
 
     // Start the search asynchronously.
@@ -46,7 +46,7 @@ class LocalFindInProjectService {
           filePath: path.join(directory, update.filePath),
           matches: update.matches,
         });
-      }).then(results => {
+      }, caseSensitive).then(results => {
         // Upon completion of search, emit event.
         this._emitter.emit(ON_SEARCH_COMPLETED, requestId);
       });
