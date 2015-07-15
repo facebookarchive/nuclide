@@ -29,10 +29,6 @@ class PackageManager(object):
     def __init__(self):
         # Keys are names of packages and values are the corresponding configs.
         self._package_map = load_package_configs()
-        package_sorter = PackageSorter(self._package_map)
-        # _configs_in_topological_order is sorted such that if B has a transitive dependency on A,
-        # then A appears before B in the list.
-        self._configs_in_topological_order = package_sorter.get_sorted_configs()
 
     def install_dependencies(self, npm, include_packages_that_depend_on_atom=True):
         import datetime
@@ -49,8 +45,28 @@ class PackageManager(object):
         logging.info('FINISH INSTALL: %s', end)
         logging.info('PackageManager.install() took %s seconds.', (end - start).seconds)
 
-    def get_configs(self, include_packages_that_depend_on_atom=True):
-        for package_config in self._configs_in_topological_order:
+    def install_dependencies_by_package_names(self, npm, package_names, copy_local_dependencies=False):
+        import datetime
+        start = datetime.datetime.now()
+        logging.info('START INSTALL: %s', start)
+
+        configs_to_install = []
+        for package_config in self.get_configs(package_names=package_names):
+            configs_to_install.append(package_config)
+        installer = TopologicalInstaller(npm, self._package_map, configs_to_install, copy_local_dependencies)
+        installer.install()
+
+        end = datetime.datetime.now()
+        logging.info('FINISH INSTALL: %s', end)
+        logging.info('PackageManager.install() took %s seconds.', (end - start).seconds)
+
+    def get_configs(self, include_packages_that_depend_on_atom=True, package_names=None):
+        package_sorter = PackageSorter(self._package_map, package_names_to_start=package_names)
+        # configs_in_topological_order is sorted such that if B has a transitive dependency on A,
+        # then A appears before B in the list.
+        configs_in_topological_order = package_sorter.get_sorted_configs()
+
+        for package_config in configs_in_topological_order:
             is_atom_package = package_config['testRunner'] == 'apm'
             package_name = package_config['name']
 
@@ -101,12 +117,24 @@ class PackageManager(object):
 
 
 class PackageSorter(object):
-    def __init__(self, package_map):
+    '''Topological sort packages in package_map by their dependencies.
+
+    Args:
+        package_names_to_start: If this optional parameter is given, we only sort the packages
+        list in package_name_to_start and their (transitive) depedencies.
+    '''
+    def __init__(self, package_map, package_names_to_start=None):
         self._package_map = package_map
         self._visited = set()
         self._sorted_configs = []
-        for package_name in package_map:
-            self._depth_first_search(package_name)
+        if package_names_to_start:
+            for package_name in package_names_to_start:
+                if package_name not in package_map:
+                    raise ValueError('Package ' + package_name + ' doesn\'t exist.')
+                self._depth_first_search(package_name)
+        else:
+            for package_name in package_map:
+                self._depth_first_search(package_name)
 
     def get_sorted_configs(self):
         return self._sorted_configs
@@ -123,7 +151,7 @@ class PackageSorter(object):
 
 class TopologicalInstaller(object):
     '''Installs npm/apm packages in topological order, exploiting parallelism.'''
-    def __init__(self, npm, package_map, configs_in_topological_order):
+    def __init__(self, npm, package_map, configs_in_topological_order, copy_local_dependencies=False):
         config_name_to_num_deps = {}
         config_name_to_parents = {}
         for config in configs_in_topological_order:
@@ -141,6 +169,7 @@ class TopologicalInstaller(object):
         self._configs_in_topological_order = list(configs_in_topological_order)
         self._config_name_to_num_deps = config_name_to_num_deps
         self._config_name_to_parents = config_name_to_parents
+        self._copy_local_dependencies = copy_local_dependencies
 
     def install(self):
         if platform_checker.is_windows():
@@ -152,7 +181,7 @@ class TopologicalInstaller(object):
 
     def _do_serial_install(self):
         for config in self._configs_in_topological_order:
-            install_dependencies(config, self._npm)
+            install_dependencies(config, self._npm, self._copy_local_dependencies)
 
     def _do_multiprocess_install(self):
         # Make a local copy of this map because it is mutated by this method and
@@ -212,7 +241,7 @@ class TopologicalInstaller(object):
             elif not configs_to_process.empty():
                 # There is room in the pool and work to be done: add a job!
                 config = configs_to_process.get()
-                process = Process(target=install_dependencies, args=(config, self._npm))
+                process = Process(target=install_dependencies, args=(config, self._npm, self._copy_local_dependencies))
                 process.start()
                 process_to_config[process] = config
             elif num_active > 0:
@@ -294,7 +323,7 @@ def find_packages():
             yield package_json
 
 
-def install_dependencies(package_config, npm):
+def install_dependencies(package_config, npm, copy_local_dependencies=False):
     name = package_config['name']
     is_node_package = package_config['isNodePackage']
     package_type = 'Node' if is_node_package else 'Atom'
@@ -307,7 +336,10 @@ def install_dependencies(package_config, npm):
     for local_dependency, local_dependency_config in package_config['localDependencies'].items():
         src_dir = local_dependency_config['packageRootAbsolutePath']
         dest_dir = os.path.join(node_modules_path, local_dependency)
-        symlink(src_dir, dest_dir, relative=True)
+        if copy_local_dependencies:
+            shutil.copytree(src_dir, dest_dir, True);
+        else:
+            symlink(src_dir, dest_dir, relative=True)
         link_dependencys_executable(node_modules_path, local_dependency)
 
     # Install other public node dependencies.
