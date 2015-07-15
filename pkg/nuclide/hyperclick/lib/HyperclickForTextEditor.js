@@ -182,6 +182,7 @@ class HyperclickForTextEditor {
   }
 
   _clearSuggestion(): void {
+    this._textEditorView.classList.remove('hyperclick-loading');
     this._lastSuggestionAtMousePromise = null;
     this._lastSuggestionAtMouse = null;
     this._updateNavigationMarkers(null);
