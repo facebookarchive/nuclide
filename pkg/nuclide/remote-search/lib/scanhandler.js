@@ -11,7 +11,8 @@
 
 import type {search$FileResult, search$Match} from './types';
 
-var {safeSpawn} = require('nuclide-commons');
+var path = require('path');
+var {safeSpawn, fsPromise} = require('nuclide-commons');
 var split = require('split');
 
 // This pattern is used for parsing the output of grep.
@@ -27,18 +28,60 @@ type UpdateFileMatchesCallback = (result: search$FileResult) => void;
  *  The results are cumulative, so each invokation also contains all the previous matches
  *  in the file.
  * @param caseSensitive - True if the grep search should be performed case sensitively.
+ * @param subdirs - An array of subdirectories to search within `directory`. If subdirs is an
+    empty array, then simply search in directory.
  * @returns A promise resolving to an array of all matches, grouped by file.
  */
 async function search(
   directory: string,
   regex: string,
   onFileMatchesUpdate: ?UpdateFileMatchesCallback,
-  caseSensitive: boolean
+  caseSensitive: boolean,
+  subdirs: Array<string>
   ): Promise<Array<search$FileResult>> {
   // Matches are stored in a Map of filename => Array<Match>.
   var matchesByFile: Map<string, Array<search$Match>> = new Map();
 
-  // Callback invoked each output line from the grep process.
+  if(!subdirs || subdirs.length === 0) {
+    // Since no subdirs were specified, run search on the root directory.
+    await searchInSubdir(matchesByFile, directory, '.', regex,
+      onFileMatchesUpdate, caseSensitive);
+  } else {
+    // Run the search on each subdirectory that exists.
+    await Promise.all(subdirs.map(async subdir => {
+      try {
+        var stat = await fsPromise.lstat(path.join(directory, subdir));
+      } catch(e) {
+        return;
+      }
+
+      if (!stat.isDirectory()) {
+        return;
+      }
+
+      return searchInSubdir(matchesByFile, directory, subdir, regex,
+        onFileMatchesUpdate, caseSensitive);
+    }));
+  }
+
+  // Return final results.
+  var results = [];
+  matchesByFile.forEach((matches, filePath) => { results.push({matches, filePath}) });
+  return results;
+}
+
+// Helper function that runs the search command on the given directory
+// `subdir`, relative to `directory`. The function returns a promise
+// that resolves when the command is done.
+function searchInSubdir(
+  matchesByFile: Map<string, Array<search$Match>>,
+  directory: string,
+  subdir: string,
+  regex: string,
+  onFileMatchesUpdate: ?UpdateFileMatchesCallback,
+  caseSensitive: boolean) {
+
+  // Callback invoked on each output line from the grep process.
   var onLine = line => {
     // Try to parse the output of grep.
     var grepMatchResult = line.match(GREP_PARSE_PATTERN);
@@ -49,7 +92,7 @@ async function search(
     // Extract the filename, line number, and line text from grep output.
     var lineText = grepMatchResult[3];
     var lineNo = parseInt(grepMatchResult[2], 10) - 1;
-    var filePath = grepMatchResult[1];
+    var filePath = path.join(subdir, grepMatchResult[1]);
 
     // Try to extract the actual "matched" text.
     var matchTextResult = new RegExp(regex, caseSensitive ? '' : 'i').exec(lineText);
@@ -82,17 +125,16 @@ async function search(
   // Try running search commands, falling through to the next if there is an error.
   var vcsargs = (caseSensitive ? [] : ['-i']).concat(['-n', regex]);
   var grepargs = (caseSensitive ? [] :  ['-i']).concat(['-rHn', '-e', regex, '.']);
-  await getLinesFromCommand('hg', ['wgrep'].concat(vcsargs), directory, onLine)
-    .catch(() => getLinesFromCommand('git', ['grep'].concat(vcsargs), directory, onLine))
-    .catch(() => getLinesFromCommand('grep', grepargs, directory, onLine))
-    .catch(() => { throw new Error('Failed to execute a grep search.') });
 
-  // Return final results.
-  var results = [];
-  matchesByFile.forEach((matches, filePath) => { results.push({matches, filePath}) });
-  return results;
+  var cmdDir = path.join(directory, subdir);
+  return getLinesFromCommand('hg', ['wgrep'].concat(vcsargs), cmdDir, onLine)
+    .catch(() => getLinesFromCommand('git', ['grep'].concat(vcsargs), cmdDir, onLine))
+    .catch(() => getLinesFromCommand('grep', grepargs, cmdDir, onLine))
+    .catch(() => { throw new Error('Failed to execute a grep search.')});
 }
 
+// Helper function that runs a command in a given directory, invoking a callback
+// as each line is written to stdout.
 function getLinesFromCommand(command: string,
   args: Array<string>,
   localDirectoryPath: string,

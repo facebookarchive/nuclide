@@ -19,6 +19,7 @@ type SearchResult = {
 type DirectorySearchDelegate = {
   didMatch: (result: SearchResult) => void;
   didSearchPaths: (count: number) => void;
+  inclusions: Array<string>;
 };
 
 type RemoteDirectorySearch = {
@@ -84,7 +85,7 @@ class RemoteDirectorySearcher {
 
       // Start the search in each given directory, getting a list of requestIds.
       var searchIdPromises = directories.map((dir, index) =>
-        services[index].search(dir.getPath(), regex.source, !regex.ignoreCase));
+        services[index].search(dir.getPath(), regex.source, !regex.ignoreCase, options.inclusions));
 
       // Resolve all of the searchIds, and then wait for their completion.
       Promise.all(searchIdPromises).then(searchIds => {

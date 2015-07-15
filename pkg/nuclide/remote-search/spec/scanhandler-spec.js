@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {search$FileResult} from '../lib/types';
+
 var {asyncExecute} = require("nuclide-commons");
 var fs = require('fs');
 var path = require('path');
@@ -33,7 +35,7 @@ describe('Scan Handler Tests', () => {
         console.log(a);`);
 
       var updates = [];
-      var results = await scanhandler.search(folder, 'hello world', update => { updates.push(update) });
+      var results = await scanhandler.search(folder, 'hello world', update => { updates.push(update) }, false, []);
       var expected = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'basic.json')));
       expect({ results, updates }).toEqual(expected);
     });
@@ -49,8 +51,32 @@ describe('Scan Handler Tests', () => {
         console.error("hello world!");`);
 
       var updates = [];
-      var results = await scanhandler.search(folder, 'hello world', update => { updates.push(update) }, true);
+      var results = await scanhandler.search(folder, 'hello world', update => { updates.push(update) }, true, []);
       var expected = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'casesensitive.json')));
+      expect({ results, updates }).toEqual(expected);
+    });
+  });
+
+  it('Can execute a search of subdirectories.', () => {
+    waitsForPromise(async () => {
+      // Setup the test folder.
+      var folder = temp.mkdirSync();
+      var testCode = 'console.log("Hello World!");'
+      fs.mkdirSync(path.join(folder, 'dir1'));
+      fs.writeFileSync(path.join(folder, 'dir1', 'file.txt'), testCode);
+      fs.mkdirSync(path.join(folder, 'dir2'));
+      fs.writeFileSync(path.join(folder, 'dir2', 'file.txt'), testCode);
+      fs.mkdirSync(path.join(folder, 'dir3'));
+      fs.writeFileSync(path.join(folder, 'dir3', 'file.txt'), testCode);
+
+      var updates = [];
+      var results = await scanhandler.search(folder, 'hello world', update => { updates.push(update) }, false, ['dir2', 'dir3', 'nonexistantdir']);
+      var expected = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'subdirs.json')));
+
+      // Since order in which results are returned for different subdirectories may not be deterministic, sort the list of matches by filename
+      sortResults(updates);
+      sortResults(results);
+
       expect({ results, updates }).toEqual(expected);
     });
   });
@@ -74,7 +100,7 @@ describe('Scan Handler Tests', () => {
       fs.writeFileSync(path.join(folder, 'untracked.txt'), 'Hello World!');
 
       var updates = [];
-      var results = await scanhandler.search(folder, 'hello world', update => { updates.push(update) });
+      var results = await scanhandler.search(folder, 'hello world', update => { updates.push(update) }, false, []);
       var expected = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'repo.json')));
       expect({ updates, results }).toEqual(expected);
     });
@@ -103,9 +129,23 @@ describe('Scan Handler Tests', () => {
       await asyncExecute('hg', ['commit', '-m', 'test commit'], {cwd: folder});
 
       var updates = [];
-      var results = await scanhandler.search(folder, 'hello world', update => { updates.push(update) });
+      var results = await scanhandler.search(folder, 'hello world', update => { updates.push(update) }, false, []);
       var expected = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'repo.json')));
       expect({ updates, results }).toEqual(expected);
     });
   });
 });
+
+// Helper function to sort an array of file results - first by their filepath,
+// and then by the number of matches.
+function sortResults(results: Array<search$FileResult>) {
+  results.sort((a, b) => {
+    if (a.filePath < b.filePath) {
+      return -1;
+    } else if (a.filePath > b.filePath) {
+      return 1;
+    } else {
+      return a.matches.length - b.matches.length;
+    }
+  });
+}

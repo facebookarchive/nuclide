@@ -18,7 +18,7 @@
           ]
         }
       ],
-      "filePath": "./directory/file2.js"
+      "filePath": "directory/file2.js"
     },
     {
       "matches": [
@@ -53,7 +53,7 @@
           ]
         }
       ],
-      "filePath": "./file1.js"
+      "filePath": "file1.js"
     }
   ],
   "updates": [
@@ -75,7 +75,7 @@
           ]
         }
       ],
-      "filePath": "./directory/file2.js"
+      "filePath": "directory/file2.js"
     },
     {
       "matches": [
@@ -110,7 +110,7 @@
           ]
         }
       ],
-      "filePath": "./file1.js"
+      "filePath": "file1.js"
     },
     {
       "matches": [
@@ -145,7 +145,7 @@
           ]
         }
       ],
-      "filePath": "./file1.js"
+      "filePath": "file1.js"
     }
   ]
 }

@@ -18,7 +18,7 @@
           ]
         }
       ],
-      "filePath": "./file1.js"
+      "filePath": "file1.js"
     }
   ],
   "updates": [
@@ -40,7 +40,7 @@
           ]
         }
       ],
-      "filePath": "./file1.js"
+      "filePath": "file1.js"
     }
   ]
 }

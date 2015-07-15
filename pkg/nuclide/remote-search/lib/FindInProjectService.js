@@ -11,7 +11,7 @@
 
 class FindInProjectService {
   // Create a search request.
-  search(directory: NuclideUri, regex: string, caseSensitive: bool): Promise<Number> {
+  search(directory: NuclideUri, regex: string, caseSensitive: bool, subdirs: Array<string>): Promise<Number> {
     return Promise.reject('Not implemented');
   }
 

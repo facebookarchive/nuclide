@@ -1,0 +1,86 @@
+{
+  "results": [
+    {
+      "matches": [
+        {
+          "lineText": "console.log(\"Hello World!\");",
+          "lineTextOffset": 0,
+          "matchText": "Hello World",
+          "range": [
+            [
+              0,
+              13
+            ],
+            [
+              0,
+              24
+            ]
+          ]
+        }
+      ],
+      "filePath": "dir2/file.txt"
+    },
+    {
+      "matches": [
+        {
+          "lineText": "console.log(\"Hello World!\");",
+          "lineTextOffset": 0,
+          "matchText": "Hello World",
+          "range": [
+            [
+              0,
+              13
+            ],
+            [
+              0,
+              24
+            ]
+          ]
+        }
+      ],
+      "filePath": "dir3/file.txt"
+    }
+  ],
+  "updates": [
+    {
+      "matches": [
+        {
+          "lineText": "console.log(\"Hello World!\");",
+          "lineTextOffset": 0,
+          "matchText": "Hello World",
+          "range": [
+            [
+              0,
+              13
+            ],
+            [
+              0,
+              24
+            ]
+          ]
+        }
+      ],
+      "filePath": "dir2/file.txt"
+    },
+    {
+      "matches": [
+        {
+          "lineText": "console.log(\"Hello World!\");",
+          "lineTextOffset": 0,
+          "matchText": "Hello World",
+          "range": [
+            [
+              0,
+              13
+            ],
+            [
+              0,
+              24
+            ]
+          ]
+        }
+      ],
+      "filePath": "dir3/file.txt"
+    }
+  ]
+}
