@@ -18,11 +18,15 @@ function getWordTextAndRange(
     textEditor: TextEditor,
     position: atom$Point,
     wordRegExp?: ?RegExp): {text: string; range: Range} {
+  var textAndRange = {text: '', range: new Range(position, position)};
   if (!wordRegExp) {
-    wordRegExp = textEditor.getLastCursor().wordRegExp();
+    var lastCursor = textEditor.getLastCursor();
+    if (!lastCursor) {
+      return textAndRange;
+    }
+    wordRegExp = lastCursor.wordRegExp();
   }
 
-  var textAndRange = {text: '', range: new Range(position, position)};
   var buffer = textEditor.getBuffer();
   buffer.scanInRange(wordRegExp, buffer.rangeForRow(position.row), data => {
     if (data.range.containsPoint(position)) {
