@@ -69,15 +69,38 @@ function installApp(udid: string, bundlePath: string): Promise {
   return checkStdout('xcrun', ['simctl', 'install', udid, bundlePath]);
 }
 
+async function getSimulatorPath(): ?string {
+  var {fsPromise} = require('nuclide-commons');
+
+  var xcodePath = await checkStdout('xcode-select', ['--print-path']);
+  xcodePath = xcodePath.trim();
+
+  // Check Xcode pre-7 simulator path.
+  var simulatorPath = path.join(xcodePath, 'Applications/iOS Simulator.app');
+  var exists = await fsPromise.exists(simulatorPath);
+  if (exists) {
+    return simulatorPath;
+  }
+
+  // Check Xcode 7 simulator path.
+  simulatorPath = path.join(xcodePath, 'Applications/Simulator.app');
+  exists = await fsPromise.exists(simulatorPath);
+
+  return exists ? simulatorPath : null;
+}
+
 /**
   * Start the simulator GUI for a particular simulator.
   */
 async function startSimulator(udid: string): Promise {
-  var xcodePath = await checkStdout('xcode-select', ['--print-path']);
-  xcodePath = xcodePath.trim();
+  var simulatorPath = await getSimulatorPath();
+  if (simulatorPath === null) {
+    throw new Error('Simulator cannot be found under current active Xcode directory.');
+  }
+
   await checkStdout('open', [
     '--new',
-    '-a', path.join(xcodePath, 'Applications/iOS Simulator.app'),
+    '-a', simulatorPath,
     '--args', '-CurrentDeviceUDID', udid
   ]);
   for (var i = 0; i < 10; i++) {
