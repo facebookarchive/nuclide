@@ -37,10 +37,10 @@ function testGenerateRemoteService(sourceFilePath: string, expectedFilePath: str
 
 describe('Nuclide service transformer test suite.', function() {
   it('test requireRemoteServiceSync() generate and load remote service', function() {
-    testGenerateRemoteService('./fixtures/TestService', './fixtures/RemoteTestService');
+    testGenerateRemoteService('./fixtures/TestService', './fixtures/TestService.js.expected');
     testGenerateRemoteService('./fixtures/NuclideTypedTestService',
-        './fixtures/RemoteNuclideTypedTestService');
+        './fixtures/NuclideTypedTestService.js.expected');
     testGenerateRemoteService('./fixtures/NestedNuclideTypedTestService',
-        './fixtures/RemoteNestedNuclideTypedTestService');
+        './fixtures/NestedNuclideTypedTestService.js.expected');
   });
 });

@@ -1,4 +1,8 @@
 'use babel';
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
 /* @flow */
 
 /*

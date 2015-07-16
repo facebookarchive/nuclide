@@ -11,6 +11,18 @@
 
 import type {Integer} from './types';
 
+export type Diagnostic = {
+  message: Array<{
+    path: NuclideUri;
+    descr: string;
+    code: number;
+    line: number;
+    endline: number;
+    start: number;
+    end: number;
+  }>
+}
+
 class TestService {
   foo(): Promise<any> {
     return Promise.reject('not implemented');

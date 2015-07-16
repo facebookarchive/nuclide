@@ -17,18 +17,31 @@ var path = require('path');
 var parseServiceApiSync = require('./service-parser');
 
 var TRANSPILED_FILE_FOLDER = path.join(__dirname, '../gen/');
+var BABEL_HEADER = "'use babel';";
 
 var transpiledFilePaths = new Set();
 
 function transpile(sourceFilePath: string, destFilePath: string): void {
   var sourceCode = fs.readFileSync(sourceFilePath, 'utf8');
 
+  // While transpiling Flow import, babel might insert some code at the top of file so that the
+  // generated code won't start with `'use babel';` and failed to load into Atom accordingly.
+  // To solve this problem, we remove the babel header before transpiling and add it back
+  // to the generated code.
+  if (!sourceCode.startsWith(BABEL_HEADER)) {
+    throw new Error(`Service source code should start with "'use babel';"`);
+  }
+
+  sourceCode = sourceCode.substring(BABEL_HEADER.length);
+
   var code = babel.transform(sourceCode, {
     plugins: [createRemoteServiceTransformer(sourceFilePath)],
     blacklist: ['es6.arrowFunctions', 'es6.classes', 'strict'],
   }).code;
-  // Append a newline at the end of code to make eslint happy.
-  code += '\n';
+
+  // Append `'use 6to5';` at beginning of code so it will be transpiled by babel.
+  // Also append a newline at the end of code to make eslint happy.
+  code = BABEL_HEADER + '\n' + code + '\n';
 
   mkdirp.sync(TRANSPILED_FILE_FOLDER);
   fs.writeFileSync(destFilePath, code);
