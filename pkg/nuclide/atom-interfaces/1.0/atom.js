@@ -6,9 +6,11 @@
  * the root directory of this source tree.
  */
 
- /**
-  * Private Classes
-  */
+/*eslint-disable no-unused-vars */
+
+/**
+ * Private Classes
+ */
 
 declare class atom$Model {
   destroy(): void;
@@ -465,7 +467,7 @@ declare class atom$NotificationManager {
 
 // The items in this declaration are available off of `require('atom')`.
 // This list is not complete.
-declare module "atom" {
+declare module 'atom' {
   declare var BufferedNodeProcess: typeof atom$BufferedNodeProcess;
   declare var BufferedProcess: typeof atom$BufferedProcess;
   declare var CompositeDisposable: typeof atom$CompositeDisposable;
@@ -514,7 +516,7 @@ declare var atom: AtomGlobal;
 /**
  * ipc is used by webviews to communicate with the parent view.
  */
-declare module "ipc" {
+declare module 'ipc' {
   declare function on(name: string, callback: (event: any) => void): atom$Disposable;
   declare function sendToHost(name: string, ...args: any[]): void;
 }

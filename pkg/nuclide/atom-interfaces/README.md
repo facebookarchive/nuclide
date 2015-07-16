@@ -23,5 +23,5 @@ Atom type declarations for use with the Flow type checker.
 
     ```
     [libs]
-    ./node_modules/nuclide-atom-interfaces/1.0
+    ./node_modules/nuclide-atom-interfaces/1.0/
     ```
