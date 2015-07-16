@@ -32,9 +32,10 @@ var DiffViewComponent = React.createClass({
     this._newDiffEditor.setReadOnly();
 
     var diffViewState = this.props.model.getDiffState();
-    var {oldText, newText, filePath} = diffViewState;
+    var {oldText, newText, filePath, uiComponents} = diffViewState;
     this._oldDiffEditor.setFileContents(filePath, oldText);
     this._newDiffEditor.setFileContents(filePath, newText);
+
 
     var SyncScroll = require('./SyncScroll');
     this._subscriptions.add(new SyncScroll(
@@ -43,13 +44,39 @@ var DiffViewComponent = React.createClass({
       )
     );
 
-    this._updateDiffMarkers();
+    this._inlineComponents = this._oldDiffEditor.renderComponentsInline(uiComponents);
   },
 
-  _updateDiffMarkers() {
+  _computeDiffLinesAndOffsets() {
     var {addedLines, removedLines, oldLineOffsets, newLineOffsets} =
         this.props.model.computeDiff(this._oldDiffEditor.getText(), this._newDiffEditor.getText());
 
+    this._inlineComponents.forEach(element => {
+      var domNode = React.findDOMNode(element.component);
+      // get the height of the component after it has been rendered in the DOM
+      var componentHeight = window.getComputedStyle(domNode).height;
+      // "123px" -> 123
+      componentHeight = Number(componentHeight.substring(0, componentHeight.length - 2));
+      var lineHeight = this._oldDiffEditor.getLineHeightInPixels();
+      // calculate the number of lines we need to insert in the buffer to make room
+      // for the component to be displayed
+      var offset = Math.ceil(componentHeight / lineHeight);
+      var offsetRow = element.bufferRow;
+
+      newLineOffsets[offsetRow] = (newLineOffsets[offsetRow] || 0) + offset;
+      oldLineOffsets[offsetRow] = (oldLineOffsets[offsetRow] || 0) + offset;
+    });
+
+    return {
+      addedLines,
+      removedLines,
+      newLineOffsets,
+      oldLineOffsets,
+    };
+  },
+
+  updateDiffMarkers() {
+    var {addedLines, removedLines, newLineOffsets, oldLineOffsets} = this._computeDiffLinesAndOffsets();
     // Set the empty space offsets in the diff editors marking for no-matching diff section.
     this._newDiffEditor.setOffsets(newLineOffsets);
     this._oldDiffEditor.setOffsets(oldLineOffsets);

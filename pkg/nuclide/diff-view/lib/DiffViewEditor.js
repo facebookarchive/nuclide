@@ -11,6 +11,12 @@
 
 var {Range}  = require('atom');
 var {buildLineRangesWithOffsets} = require('./editor-utils');
+var React = require('react-for-atom');
+
+type InlineComponent = {
+  node: ReactElement;
+  bufferRow: number;
+}
 
 /**
  * The DiffViewEditor manages the lifecycle of the two editors used in the diff view,
@@ -34,6 +40,29 @@ module.exports = class DiffViewEditor {
     // it uses those functions to determine if a line is foldable or not.
     // For Diff View, folding breaks offsets, hence we need to make it unfoldable.
     this._editor.isFoldableAtScreenRow = this._editor.isFoldableAtBufferRow = () => false;
+  }
+
+  renderComponentsInline(elements): Array<InlineComponent> {
+    var components = [];
+    elements.forEach(element => {
+      var {node, bufferRow} = element;
+      var container = document.createElement('div');
+      var component = React.render(node, container);
+      // an overlay marker at a buffer range with row x renders under row x + 1
+      // so, use range at bufferRow - 1 to actually display at bufferRow
+      var range = [[bufferRow - 1, 0], [bufferRow - 1, 0]];
+      var marker = this._editor.markBufferRange(range, {invalidate: 'never'});
+      this._editor.decorateMarker(marker, {type: 'overlay', item: container});
+      components.push({
+        bufferRow,
+        component,
+      });
+    });
+    return components;
+  }
+
+  getLineHeightInPixels(): number {
+    return this._editor.getLineHeightInPixels();
   }
 
   setFileContents(filePath: string, contents: string): void {

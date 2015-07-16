@@ -24,13 +24,21 @@ type TextDiff = {
 
 class DiffViewModel {
   // The model will evolve with every step of the diff view to include more of the diff and source control logic.
-  constructor(uri: string, filePath: string) {
+  constructor(uri: string, filePath: string, uiProviders: Array<Object>) {
     this._uri = uri;
     this._filePath = filePath;
     this._diffState = null;
+    this._uiProviders = uiProviders;
   }
 
   async fetchDiffState(): Promise<void> {
+    var uiElementPromises = this._uiProviders.map(provider => provider.composeUiElements(this._filePath));
+
+    var uiComponentLists = await* uiElementPromises;
+
+    // flatten uiComponentLists from list of lists of components to a list of components
+    var uiComponents = [].concat.apply([], uiComponentLists);
+
     // Calling atom.project.repositoryForDirectory gets the real path of the directory,
     // which is another round-trip and calls the repository providers to get an existing repository.
     // Instead, the first match of the filtering here is the only possible match.
@@ -55,6 +63,7 @@ class DiffViewModel {
       filePath: this._filePath,
       oldText: committedContents,
       newText: filesystemContents,
+      uiComponents,
     };
   }
 

@@ -10,6 +10,8 @@
  */
 
 var {CompositeDisposable} = require('atom');
+var uiProviders = [];
+var uriComponentMap = {};
 
 // This url style is the one Atom uses for the welcome and settings pages.
 const NUCLIDE_DIFF_VIEW_URI = 'atom://nuclide/diff-view';
@@ -31,6 +33,7 @@ function createView (model): HTMLElement {
 
   var hostElement = new DiffViewElement().initialize(model);
   var component = React.render(<DiffViewComponent model={model} />, hostElement);
+  uriComponentMap[model.getURI()] = component;
   // TODO(most): unmount component on tab close.
   return hostElement;
 }
@@ -58,7 +61,7 @@ module.exports = {
     subscriptions.add(atom.workspace.addOpener(uri => {
       if (uri.startsWith(NUCLIDE_DIFF_VIEW_URI)) {
         var filePath = uri.slice(NUCLIDE_DIFF_VIEW_URI.length);
-        var model = new DiffViewModel(uri, filePath);
+        var model = new DiffViewModel(uri, filePath, uiProviders);
         return model.fetchDiffState().then(() => {
           return createView(model);
         }, (err) => {
@@ -68,6 +71,13 @@ module.exports = {
         });
       }
     }));
+
+    subscriptions.add(atom.workspace.onDidOpen(event => {
+      if (event.uri.startsWith(NUCLIDE_DIFF_VIEW_URI)) {
+        var component = uriComponentMap[event.uri];
+        component.updateDiffMarkers();
+      }
+    }));
   },
 
   serialize(): ?any {
@@ -75,9 +85,22 @@ module.exports = {
   },
 
   deactivate(): void {
+    uiProviders.splice(0);
+    uriComponentMap = {};
     if (subscriptions) {
       subscriptions.dispose();
       subscriptions = null;
     }
+  },
+
+  /** The diff-view package can consume providers that return React components to
+   * be rendered inline.
+   * A uiProvider must have a method composeUiElements with the following spec:
+   * @param filePath The path of the file the diff view is opened for
+   * @return An array of InlineComments (defined above) to be rendered into the
+   *         diff view
+   */
+  consumeProvider(provider) {
+    uiProviders.push(provider);
   },
 };
