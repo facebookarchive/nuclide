@@ -242,6 +242,7 @@ class HyperclickForTextEditor {
 
   dispose() {
     this._isDestroyed = true;
+    this._clearSuggestion();
     this._textEditorView.removeEventListener('mousemove', this._onMouseMove);
     this._textEditorView.removeEventListener('mousedown', this._onMouseDown);
     this._textEditorView.removeEventListener('keydown', this._onKeyDown);
