@@ -12,6 +12,7 @@
 var SuggestionList = require('./SuggestionList');
 var SuggestionListElement = require('./SuggestionListElement');
 var getWordTextAndRange = require('./get-word-text-and-range');
+var {defaultWordRegExpForEditor} = require('./hyperclick-utils');
 var {remove} = require('nuclide-commons').array;
 
 type HyperclickProvider = {
@@ -132,12 +133,16 @@ class Hyperclick {
    * Returns the first suggestion from the consumed providers.
    */
   getSuggestion(textEditor: TextEditor, position: Point): Promise {
+    // Get the default word RegExp for this editor.
+    var defaultWordRegExp = defaultWordRegExpForEditor(textEditor);
+
     return findTruthyReturnValue(this._consumedProviders.map(provider => {
       if (provider.getSuggestion) {
         return () => provider.getSuggestion(textEditor, position);
       } else if (provider.getSuggestionForWord) {
         return () => {
-          var {text, range} = getWordTextAndRange(textEditor, position, provider.wordRegExp);
+          var wordRegExp = provider.wordRegExp || defaultWordRegExp;
+          var {text, range} = getWordTextAndRange(textEditor, position, wordRegExp);
           return provider.getSuggestionForWord(textEditor, text, range);
         };
       }

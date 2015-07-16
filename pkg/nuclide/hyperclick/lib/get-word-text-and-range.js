@@ -10,6 +10,7 @@
  */
 
 var {Range} = require('atom');
+var {defaultWordRegExpForEditor} = require('./hyperclick-utils');
 
 /**
  * Returns the text and range for the word that contains the given position.
@@ -19,12 +20,9 @@ function getWordTextAndRange(
     position: atom$Point,
     wordRegExp?: ?RegExp): {text: string; range: Range} {
   var textAndRange = {text: '', range: new Range(position, position)};
+  wordRegExp = wordRegExp || defaultWordRegExpForEditor(textEditor);
   if (!wordRegExp) {
-    var lastCursor = textEditor.getLastCursor();
-    if (!lastCursor) {
-      return textAndRange;
-    }
-    wordRegExp = lastCursor.wordRegExp();
+    return textAndRange;
   }
 
   var buffer = textEditor.getBuffer();
