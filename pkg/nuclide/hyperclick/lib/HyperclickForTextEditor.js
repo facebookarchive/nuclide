@@ -18,6 +18,8 @@ var getWordTextAndRange = require('./get-word-text-and-range');
  * Call `dispose` to disable the feature.
  */
 class HyperclickForTextEditor {
+  _isDestroyed: boolean;
+
   constructor(textEditor: TextEditor, hyperclick: Hyperclick) {
     this._textEditor = textEditor;
     this._textEditorView = atom.views.getView(textEditor);
@@ -47,6 +49,8 @@ class HyperclickForTextEditor {
     this._commandSubscription = atom.commands.add(this._textEditorView, {
       'hyperclick:confirm-cursor': () => this._confirmSuggestionAtCursor(),
     });
+
+    this._isDestroyed = false;
   }
 
   _confirmSuggestion(suggestion: HyperclickSuggestion): void {
@@ -145,6 +149,9 @@ class HyperclickForTextEditor {
 
     this._lastSuggestionAtMousePromise = this._hyperclick.getSuggestion(this._textEditor, position);
     this._lastSuggestionAtMouse = await this._lastSuggestionAtMousePromise;
+    if (this._isDestroyed) {
+      return;
+    }
     if (this._lastSuggestionAtMouse && this._isMouseAtLastSuggestion()) {
       // Add the hyperclick markers if there's a new suggestion and it's under the mouse.
       this._updateNavigationMarkers(this._lastSuggestionAtMouse.range, /* loading */ false);
@@ -234,6 +241,7 @@ class HyperclickForTextEditor {
   }
 
   dispose() {
+    this._isDestroyed = true;
     this._textEditorView.removeEventListener('mousemove', this._onMouseMove);
     this._textEditorView.removeEventListener('mousedown', this._onMouseDown);
     this._textEditorView.removeEventListener('keydown', this._onKeyDown);
