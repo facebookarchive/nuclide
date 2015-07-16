@@ -9,6 +9,14 @@
  * the root directory of this source tree.
  */
 
+export type HackReference = {
+  name: string,
+  filename: string,
+  line: number,
+  char_start: number,
+  char_end: number,
+};
+
 /**
  * Constants here represent enums with the same values got from hh_client and the Hack web worker.
  */

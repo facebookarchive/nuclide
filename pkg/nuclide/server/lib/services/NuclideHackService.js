@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {HackReference} from 'nuclide-hack-common';
+
 var logger = require('nuclide-logging').getLogger();
 var {SearchResultType, SymbolType} = require('nuclide-hack-common/lib/constants');
 var {checkOutput, fsPromise} = require('nuclide-commons');
@@ -25,7 +27,7 @@ async function _callHHClient(
   args: Array<string>,
   errorStream: boolean,
   outputJson: boolean,
-  processInput: string,
+  processInput: ?string,
   cwd: string): Promise<any> {
   // append args on the end of our commands
   var defaults = ['--retries', '0', '--retry-if-init', 'false', '--from', 'nuclide'];
@@ -248,6 +250,19 @@ function symbolTypeToSearchTypes(symbolType: SymbolType): ?Array<SearchResultTyp
   }
 }
 
+async function getReferences(
+  symbolName: string,
+  options: Object = {}
+): Promise<Array<HackReference>> {
+  return await _callHHClient(
+    /*args*/ ['--find-refs', symbolName],
+    /*errorStream*/ false,
+    /*outputJson*/ true,
+    /*processInput*/ null,
+    /*options*/ options.cwd
+  );
+}
+
 async function isClientAvailable(): Promise<boolean> {
   var {stdout} = await checkOutput('which', [PATH_TO_HH_CLIENT]);
   // The `stdout` would be empty if there is no such command.
@@ -261,6 +276,7 @@ module.exports = {
     '/hack/getDefinition': {handler: getDefinition, method: 'post'},
     '/hack/getDependencies': {handler: getDependencies, method: 'post'},
     '/hack/getSearchResults': {handler: getSearchResults, method: 'post'},
+    '/hack/getReferences': {handler: getReferences, method: 'post'},
     '/hack/isClientAvailable': {handler: isClientAvailable, method: 'post'},
   }
 };

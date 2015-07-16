@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {HackReference} from 'nuclide-hack-common';
+
 class NullHackClient {
 
   getHackDiagnostics(): Promise<Array<any>> {
@@ -33,6 +35,10 @@ class NullHackClient {
       searchPostfix: ?string
     ): Promise<Array<any>> {
     return Promise.resolve([]);
+  }
+
+  async getHackReferences(query: string): Promise<Array<HackReference>> {
+    return [];
   }
 
 }

@@ -14,6 +14,8 @@
  * make XHR requests to the NuclideFS service.  It is a Promise based API.
  */
 
+import type {HackReference} from 'nuclide-hack-common';
+
 var fs = require('fs');
 var extend = require('util')._extend;
 
@@ -432,6 +434,16 @@ class NuclideClient {
       /*serviceName*/ 'hack',
       /*methodName*/ 'getSearchResults',
       /*methodArgs*/ [search, filterTypes, searchPostfix, {cwd}],
+      /*extraOptions*/ {method: 'POST', json: true}
+    );
+  }
+
+  getHackReferences(query: string): Promise<Array<HackReference>> {
+    var {cwd} = this._options;
+    return this.eventbus.callMethod(
+      /*serviceName*/ 'hack',
+      /*methodName*/ 'getReferences',
+      /*methodArgs*/ [query, {cwd}],
       /*extraOptions*/ {method: 'POST', json: true}
     );
   }
