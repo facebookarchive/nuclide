@@ -5,7 +5,7 @@
   "version": "0.0.0",
   "description": "A React component interface for Atom's <atom-text-editor> custom element.",
   "nuclide": {
-    "packageType": "Atom",
+    "packageType": "Node",
     "testRunner": "apm"
   },
   "dependencies": {
