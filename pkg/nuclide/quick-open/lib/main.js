@@ -36,6 +36,8 @@ function getSearchResultManager() {
 
 var DEFAULT_PROVIDER = 'FileListProvider';
 var MAX_MODAL_WIDTH = 800;
+// don't pre-fill search input if selection is longer than this
+var MAX_SELECTION_LENGTH = 1000;
 
 /**
  * A "session" for the purpose of analytics. It exists from the moment the quick-open UI becomes
@@ -181,9 +183,6 @@ class Activation {
     }
 
     this._currentProvider = provider;
-    if (this._searchComponent) {
-      this._searchComponent = this._render();
-    }
     this.showSearchPanel();
   }
 
@@ -199,6 +198,12 @@ class Activation {
       );
       this._searchPanel.show();
       this._searchComponent.focus();
+      if (atom.config.get('nuclide-quick-open.useSelection')) {
+        var selectedText = this._getFirstSelectionText();
+        if (selectedText && selectedText.length <= MAX_SELECTION_LENGTH) {
+          this._searchComponent.setInputValue(selectedText.split('\n')[0]);
+        }
+      }
       this._searchComponent.selectInput();
     }
   }
@@ -219,6 +224,13 @@ class Activation {
     if (this._previousFocus !== null) {
       this._previousFocus.focus();
       this._previousFocus = null;
+    }
+  }
+
+  _getFirstSelectionText(): ?string {
+    var editor = atom.workspace.getActiveTextEditor();
+    if (editor) {
+      return editor.getSelections()[0].getText();
     }
   }
 }
@@ -258,6 +270,14 @@ function initSearch(projectPaths: Array<string>): void {
 }
 
 module.exports = {
+
+  config: {
+    useSelection: {
+      type: 'boolean',
+      default: true,
+      description: 'Use current selection to pre-fill search input',
+    },
+  },
 
   activate(): void {
     listeners = new CompositeDisposable();

@@ -200,7 +200,7 @@ var QuickSelectionComponent = React.createClass({
   componentDidMount() {
     this._emitter = new Emitter();
     this._subscriptions = new CompositeDisposable();
-    this._modalNode = this.getDOMNode();
+    this._modalNode = React.findDOMNode(this);
     this._subscriptions.add(
       atom.commands.add(this._modalNode, 'core:move-up', this.moveSelectionUp),
       atom.commands.add(this._modalNode, 'core:move-down', this.moveSelectionDown),
@@ -386,7 +386,7 @@ var QuickSelectionComponent = React.createClass({
     if (!(this.refs && this.refs.selectionList)) {
       return;
     }
-    var listNode =  this.refs.selectionList.getDOMNode();
+    var listNode =  React.findDOMNode(this.refs.selectionList);
     var selectedNode = listNode.getElementsByClassName('selected')[0];
     // false is passed for @centerIfNeeded parameter, which defaults to true.
     // Passing false causes the minimum necessary scroll to occur, so the selection sticks to the top/bottom
@@ -537,7 +537,7 @@ var QuickSelectionComponent = React.createClass({
   },
 
   getInputTextEditor(): Element {
-    return this.refs.queryInput.getDOMNode();
+    return React.findDOMNode(this.refs.queryInput);
   },
 
   clear() {
@@ -547,6 +547,10 @@ var QuickSelectionComponent = React.createClass({
 
   focus() {
     this.getInputTextEditor().focus();
+  },
+
+  setInputValue(value: string) {
+    this.refs.queryInput.getTextEditor().setText(value);
   },
 
   selectInput() {

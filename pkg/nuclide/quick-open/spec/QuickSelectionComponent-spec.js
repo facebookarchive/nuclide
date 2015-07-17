@@ -324,5 +324,12 @@ describe('QuickSelectionComponent', () => {
         }));
       });
     });
+
+    it('should allow input text to be set after mount', () => {
+      component.setInputValue('foo');
+      var editor = component.getInputTextEditor().model;
+      expect(editor.getText()).toBe('foo');
+    });
+
   });
 });

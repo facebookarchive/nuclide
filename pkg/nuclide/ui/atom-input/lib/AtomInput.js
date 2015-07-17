@@ -95,7 +95,6 @@ var AtomInput = React.createClass({
     return (
       <atom-text-editor
           mini
-          ref='input'
           onClick={this.props.onClick}
           onFocus={this.props.onFocus}
           onBlur={this.props.onBlur}>
@@ -121,7 +120,7 @@ var AtomInput = React.createClass({
   },
 
   _getTextEditorElement(): Element {
-    return this.refs['input'].getDOMNode();
+    return React.findDOMNode(this);
   },
 
   focus() {
