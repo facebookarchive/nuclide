@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+var fs = require('fs-plus');
 var path = require('path');
 var {fsPromise} = require('nuclide-commons');
 
@@ -31,6 +32,23 @@ async function loadStyles(stylesPath: string): Promise {
       .map(filePath => atom.themes.requireStylesheet(path.join(stylesPath, filePath)));
 }
 
+/**
+ * Load all of the grammars synchronously because the top-level load() function should be
+ * synchronous so that it works as expected with require().
+ */
+function loadGrammarsSync(packagePath: string) {
+  var grammarsDir = path.join(packagePath, 'grammars');
+  if (!fs.isDirectorySync(grammarsDir)) {
+    return;
+  }
+
+  fs.traverseTreeSync(
+    grammarsDir,
+    file => atom.grammars.loadGrammarSync(file),
+    directory => null
+  );
+}
+
 module.exports = {
   load(libPath: string, mainFilename: string): any {
     if (!atom.nuclide) {
@@ -42,6 +60,8 @@ module.exports = {
 
       var packagePath = path.dirname(libPath);
       loadStyles(path.join(packagePath, 'styles'));
+
+      loadGrammarsSync(packagePath);
     }
     return atom.nuclide[mainFilename];
   },

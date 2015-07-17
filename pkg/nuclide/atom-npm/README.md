@@ -16,7 +16,8 @@ value also functions as a key -- calling `require()` on the package will return
 the first package that was registered with this key.
 
 This approach prevents Node from having to evaluate the implementation multiple
-times and allows it to load resources from `styles/`, `keymaps/`, `menus/`, etc.
+times and allows it to load resources from `styles/` and `grammars/`.
+(Other directories, such as `menus/` and `keymaps/`, are future work.)
 
 ```js
 module.exports = require('nuclide-atom-npm').load(__dirname, 'AtomInput');
