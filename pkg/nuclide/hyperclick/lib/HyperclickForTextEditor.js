@@ -62,6 +62,11 @@ class HyperclickForTextEditor {
   }
 
   _onMouseMove(event: MouseEvent): ?Promise {
+    if (this._hyperclickLoading) {
+      // Show the loading cursor.
+      this._textEditorView.classList.add('hyperclick-loading');
+    }
+
     // We save the last `MouseEvent` so the user can trigger Hyperclick by
     // pressing the key without moving the mouse again. We only save the
     // relevant properties to prevent retaining a reference to the event.
@@ -144,8 +149,7 @@ class HyperclickForTextEditor {
       }
     }
 
-    // Show the loading cursor.
-    this._textEditorView.classList.add('hyperclick-loading');
+    this._hyperclickLoading = true;
 
     this._lastSuggestionAtMousePromise = this._hyperclick.getSuggestion(this._textEditor, position);
     this._lastSuggestionAtMouse = await this._lastSuggestionAtMousePromise;
@@ -160,6 +164,7 @@ class HyperclickForTextEditor {
       this._updateNavigationMarkers(null);
     }
 
+    this._hyperclickLoading = false;
     this._textEditorView.classList.remove('hyperclick-loading');
   }
 
@@ -189,6 +194,7 @@ class HyperclickForTextEditor {
   }
 
   _clearSuggestion(): void {
+    this._hyperclickLoading = false;
     this._textEditorView.classList.remove('hyperclick-loading');
     this._lastSuggestionAtMousePromise = null;
     this._lastSuggestionAtMouse = null;
