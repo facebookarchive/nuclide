@@ -45,6 +45,7 @@ module.exports = {
    */
   get(url: string): Promise<string> {
     return new Promise((resolve, reject) => {
+      var body = '';
       getProtocolModule(url).get(url, (response) => {
         if (response.statusCode < 200 || response.statusCode >= 300) {
           reject(`Bad status ${response.statusCode}`);
@@ -53,7 +54,8 @@ module.exports = {
           if (charset) {
             response.setEncoding(charset);
           }
-          response.on('data', resolve);
+          response.on('data', data => body += data);
+          response.on('end', () => resolve(body));
         }
       }).on('error', reject);
     });
