@@ -27,7 +27,7 @@ var {getPathToFlow, getFlowExecOptions, insertAutocompleteToken} = require('./Fl
 class LocalFlowService extends FlowService {
   // The set of Flow server processes we have started, so we can kill them on
   // teardown
-  _startedServers: Set<ChildProcess>;
+  _startedServers: Set<child_process$ChildProcess>;
   // The set of roots for which we have observed a Flow crash. If Flow crashes,
   // we don't want to keep restarting Flow servers. We also don't want to
   // disable Flow globally if only a specific Flow root in the project causes a
@@ -131,12 +131,11 @@ class LocalFlowService extends FlowService {
       if (result.exitCode === 0) {
         var json = JSON.parse(result.stdout);
         if (json['path']) {
-          // t7492048
-          return ({
+          return {
             file: json['path'],
             line: json['line'] - 1,
             column: json['start'] - 1,
-          } : ?Loc);
+          };
         } else {
           return null;
         }
