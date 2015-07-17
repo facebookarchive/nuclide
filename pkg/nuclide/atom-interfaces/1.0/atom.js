@@ -430,6 +430,18 @@ declare class atom$Project {
 declare class atom$TextBuffer {
   file: ?atom$File;
 
+  // Reading Text
+  isEmpty(): boolean;
+  getText(): string;
+  getLines(): Array<string>;
+  getLastLine(): string;
+  lineForRow(row: number): string;
+  lineEndingForRow(row: number): string;
+  lineLengthForRow(row: number): number;
+  isRowBlank(row: number): boolean;
+  previousNonBlankRow(startRow: number): ?number;
+  nextNonBlankRow(startRow: number): ?number;
+
   // Mutating Text
   setText(text: string): atom$Range;
   append(text: string, options: {
