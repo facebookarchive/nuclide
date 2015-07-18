@@ -1,0 +1,32 @@
+{
+  "name": "nuclide-ocaml",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "Provides support for OCaml in Nuclide",
+  "activationCommands": {
+  },
+  "nuclide": {
+    "packageType": "Atom",
+    "testRunner": "apm"
+  },
+  "providedServices": {
+    "hyperclick.provider": {
+      "versions": {
+        "0.0.0": "getHyperclickProvider"
+      }
+    }
+  },
+  "engines": {
+    "atom": ">=0.190.0"
+  },
+  "dependencies": {
+    "nuclide-atom-helpers": "0.0.0",
+    "nuclide-client": "0.0.0",
+    "nuclide-commons": "0.0.0",
+    "nuclide-logging": "0.0.0"
+  },
+  "devDependencies": {
+    "nuclide-atom-interfaces": "0.0.0"
+  }
+}

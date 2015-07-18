@@ -26,6 +26,12 @@
     "useServiceFramework": true
   },
   {
+    "definition": "nuclide-ocaml-base/lib/MerlinService.js",
+    "implementation": "nuclide-ocaml-base/lib/LocalMerlinService.js",
+    "name": "MerlinService",
+    "useServiceFramework": true
+  },
+  {
     "definition": "nuclide-hg-repository-base/lib/HgService.js",
     "implementation": "nuclide-hg-repository-base/lib/LocalHgService.js",
     "name": "HgService",
