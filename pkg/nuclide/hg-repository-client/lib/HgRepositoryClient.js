@@ -21,7 +21,7 @@ var path = require('path');
  *
  */
 
-var ACTIVE_PANEL_ITEM_SUBSCRIPTION_NAME = 'hg-repository-active-panel-item-subscription';
+var EDITOR_SUBSCRIPTION_NAME = 'hg-repository-editor-subscription';
 
 // TODO (jessicalin) Export these types from hg-constants.js when types can be
 // exported.
@@ -78,14 +78,8 @@ class HgRepositoryClient {
     this._hgDiffCache = {};
     this._hgDiffCacheFilesUpdating = new Set();
     this._hgDiffCacheFilesToClear = new Set();
-    this._disposables[ACTIVE_PANEL_ITEM_SUBSCRIPTION_NAME] =
-        (atom.workspace.observeActivePaneItem((item) => {
-      if (item instanceof TextEditor) {
-        var editor = item;
-      } else {
-        return;
-      }
-
+    this._disposables[EDITOR_SUBSCRIPTION_NAME] =
+        (atom.workspace.observeTextEditors((editor) => {
       if (!editor.getPath()) {
         // TODO: observe for when this editor's path changes.
         return;
@@ -95,16 +89,16 @@ class HgRepositoryClient {
         return;
       }
 
-      // Get initial diff stats for this editor, and refresh this information
-      // whenever the content of the editor changes.
       var filePath = editor.getPath();
-      this._updateDiffInfo(filePath);
-
       // If this editor has been previously active, we will have already
-      // registered listeners on it.
+      // initialized diff info and registered listeners on it.
       if (this._disposables[filePath]) {
         return;
       }
+
+      // Get initial diff stats for this editor, and refresh this information
+      // whenever the content of the editor changes.
+      this._updateDiffInfo(filePath);
 
       this._disposables[filePath] = new CompositeDisposable();
       this._disposables[filePath].add(editor.onDidSave((event) => {
