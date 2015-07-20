@@ -14,6 +14,10 @@ module.exports = {
     return require('./script-buffered-process');
   },
 
+  get atomEventDebounce() {
+    return require('./atom-event-debounce');
+  },
+
   get fileTypeClass() {
     return require('./file-type-class');
   },
