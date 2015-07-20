@@ -22,6 +22,9 @@ DEPENDENCY_BLACKLIST = {
   'q': 'we should use real Promise objects.',
   'underscore': 'it is a large dependency that we do not want to take on.',
 }
+VERSION_BLACKLIST = {
+  'fb-nuclide-installer': 'The installer needs to be versioned.',
+}
 
 # Detects errors in Nuclide pacakge.json files.
 #  - missing/empty description
@@ -60,7 +63,8 @@ class PackageLinter(object):
             self.report_error('Empty "description" for %s', package_name)
         self.expect_field(package_name, package,
                 'repository', 'https://github.com/facebook/nuclide')
-        self.expect_field(package_name, package, 'version', '0.0.0')
+        if package_name not in VERSION_BLACKLIST:
+            self.expect_field(package_name, package, 'version', '0.0.0')
         self.expect_alpha_sort(package_name, package, 'dependencies')
         self.expect_alpha_sort(package_name, package, 'devDependencies')
 
