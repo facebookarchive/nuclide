@@ -361,14 +361,14 @@ class NuclideServer {
         this._responses[bin] = [];
       }
       this._responses[bin].push({serviceName});
-    } catch (e) {
+    } catch (error) {
       var responseTime = Date.now() - requestStart;
       this._errors.push({
         error,
         responseTime,
         serviceName,
       });
-      throw e;
+      throw error;
     }
 
     return result;
