@@ -2,17 +2,32 @@
 
 /* ANSI Grammar */
 
-atom-text-editor .constant.character.hidden,
-atom-text-editor::shadow .constant.character.hidden {
+atom-text-editor[data-grammar="text ansi"],
+atom-text-editor[data-grammar="text ansi"]::shadow {
+  color: @text-color-selected;
+}
+
+atom-text-editor .ansi-escape-code,
+atom-text-editor::shadow .ansi-escape-code {
   display: none;
 }
 
-atom-text-editor .markup.other.green,
-atom-text-editor::shadow .markup.other.green {
-  color: @text-color-success;
+atom-text-editor .ansi.green,
+atom-text-editor::shadow .ansi.green {
+  color: rgb(103, 248, 111);
 }
 
-atom-text-editor .markup.other.red,
-atom-text-editor::shadow .markup.other.red {
-  color: @text-color-error;
+atom-text-editor .ansi.purple,
+atom-text-editor::shadow .ansi.purple {
+  color: magenta;
+}
+
+atom-text-editor .ansi.yellow,
+atom-text-editor::shadow .ansi.yellow {
+  color: rgb(255, 250, 114);
+}
+
+atom-text-editor .ansi.intensive,
+atom-text-editor::shadow .ansi.intensive {
+  font-weight: bold;
 }
