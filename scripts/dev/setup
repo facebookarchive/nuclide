@@ -54,3 +54,7 @@ if include_apm:
         if os.path.islink(full_path) and not os.path.exists(full_path):
             logging.info('Removing broken symlink %s', full_path)
             subprocess.check_call(['apm', 'uninstall', entry])
+
+# Run post package installation setup actions.
+from post_dev_setup import post_dev_setup
+post_dev_setup()
