@@ -5,6 +5,7 @@
   "version": "0.0.0",
   "description": "A wrapper that uses keytar shipped with apm",
   "nuclide": {
+    "excludeTestsFromContinuousIntegration": true,
     "packageType": "Node",
     "testRunner": "apm"
   },
