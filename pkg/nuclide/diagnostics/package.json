@@ -1,0 +1,19 @@
+{
+  "name": "nuclide-diagnostics",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "Provides an API to consume diagnostics.",
+  "nuclide": {
+    "packageType": "Atom",
+    "testRunner": "apm"
+  },
+  "activationCommands": {
+  },
+  "engines": {
+    "atom": ">=1.0.2"
+  },
+  "devDependencies": {
+    "nuclide-atom-interfaces": "0.0.0"
+  }
+}
