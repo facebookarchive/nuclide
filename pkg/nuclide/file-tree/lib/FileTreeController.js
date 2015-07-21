@@ -224,6 +224,7 @@ class FileTreeController {
           'nuclide-file-tree:copy-full-path': () => this.copyFullPath(),
           'nuclide-file-tree:show-in-file-manager': () => this.showInFileManager(),
           'nuclide-file-tree:reload': () => this.reload(),
+          'nuclide-file-tree:search-in-directory': () => this.searchInDirectory(),
         }));
 
     this._subscriptions.add(atom.project.onDidChangePaths((paths) => {
@@ -239,7 +240,6 @@ class FileTreeController {
           this._repositorySubscriptions.dispose();
         }
         this._repositorySubscriptions = new CompositeDisposable();
-        var rootPaths = atom.project.getPaths();
         atom.project.getRepositories().forEach(function(repository: ?Repository) {
           if (repository) {
             this._repositorySubscriptions.add(repository.onDidChangeStatuses(() => {
@@ -340,6 +340,14 @@ class FileTreeController {
           );
         },
       },
+      {
+        label: 'Search in Directory',
+        command: 'nuclide-file-tree:search-in-directory',
+        shouldDisplayForSelectedNodes(nodes) {
+          // There should be at least one directory in the selection.
+          return nodes.some(node => node.getItem().isDirectory());
+        },
+      }
     ]);
     this.addContextMenuItemGroup([
       {
@@ -548,6 +556,51 @@ class FileTreeController {
       var {asyncExecute} = require('nuclide-commons');
       asyncExecute('open', ['-R', filePath], /* options */ {});
     }
+  }
+
+  searchInDirectory(): void {
+    // Dispatch a command to show the `ProjectFindView`. This opens the view and
+    // focuses the search box.
+    var workspaceElement = atom.views.getView(atom.workspace);
+    atom.commands.dispatch(workspaceElement, 'project-find:show');
+
+    // Since the ProjectFindView is not actually created until the first command is
+    // dispatched, we delay the pre-filling to the start of the next event queue.
+    setImmediate(() => {
+      // Find panels that match the signature of a `ProjectFindView`.
+      var findInProjectPanels = atom.workspace.getBottomPanels().filter(
+        panel => panel.getItem().pathsEditor);
+      if (findInProjectPanels.length === 0) {
+        return;
+      }
+
+      // Remove non-directory selections.
+      var selectedDirs = this._getSelectedItems().filter(item => item.isDirectory());
+
+      // For each selected directory, get the path relative to the project root.
+      var paths = [];
+      selectedDirs.forEach(item => {
+        for (var root of atom.project.getDirectories()) {
+          // The selected directory is a subdirectory of this project.
+          if (root.contains(item.getPath())) {
+            return paths.push(root.relativize(item.getPath()));
+          }
+          // Edge case where the user clicks on the top-level directory.
+          if (root.getPath() === item.getPath()) {
+            return;
+          }
+        }
+
+        // Unable to search in this path.
+        var msg = `The selected directory ${item.getPath()} does not ` +
+          `appear to be under any of the project roots: ${atom.project.getPaths()}.`;
+        this._logError(msg, new Error(msg));
+        atom.notifications.addError(msg, {dismissable: true});
+      });
+
+      // Update the text field in the `ProjectFindView`.
+      findInProjectPanels[0].getItem().pathsEditor.setText(paths.join(', '));
+    });
   }
 
   async revealActiveFile(): Promise<void> {

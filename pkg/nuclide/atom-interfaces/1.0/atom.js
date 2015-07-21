@@ -16,7 +16,9 @@ declare class atom$Model {
   destroy(): void;
 }
 
-declare class atom$Package { }
+declare class atom$Package {
+  mainModule: any;
+}
 
 /**
  * Essential Classes
@@ -142,6 +144,9 @@ declare class atom$PackageManager {
   enablePackage(name: string): ?atom$Package;
   disablePackage(name: string): ?atom$Package;
   isPackageDisabled(name: string): boolean;
+
+  // Activating and deactivating packages
+  activatePackage(name: string): Promise<atom$Package>;
 
   // Accessing loaded packages
   isPackageLoaded(name: string): boolean;
@@ -329,6 +334,7 @@ declare class atom$Workspace {
   getActivePane(): atom$Pane;
 
   // Panels
+  getBottomPanels(): Array<atom$Panel>;
   addBottomPanel(options: {
     item: Object;
     visible?: boolean;
@@ -378,6 +384,7 @@ declare class atom$Directory {
   // Managing Paths
   getPath(): string;
   getBaseName(): string;
+  relativize(fullPath: string): string;
 
   // Event Subscription
   onDidRename(callback: () => void): atom$Disposable;
@@ -424,6 +431,7 @@ declare class atom$GrammarRegistry {
 declare class atom$Project {
   // Managing Paths
   getPaths(): Array<string>;
+  setPaths(paths: Array<string>): void;
   removePath(projectPath: string): void;
   getDirectories(): Array<atom$Directory>;
 }
