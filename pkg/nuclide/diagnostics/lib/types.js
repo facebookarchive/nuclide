@@ -73,3 +73,8 @@ export type ProjectDiagnosticMessage = {
   range?: atom$Range;
   trace?: Array<Trace>;
 };
+
+export type FileMessageUpdate = {
+  filePath: NuclideUri;
+  messages: Array<FileDiagnosticMessage>;
+};
