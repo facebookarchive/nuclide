@@ -125,6 +125,7 @@ class PackageSorter(object):
     '''
     def __init__(self, package_map, package_names_to_start=None):
         self._package_map = package_map
+        self._in_progress = set()
         self._visited = set()
         self._sorted_configs = []
         if package_names_to_start:
@@ -141,10 +142,19 @@ class PackageSorter(object):
 
     def _depth_first_search(self, package_name):
         if package_name in self._visited:
-            return
+            return None
+        if package_name in self._in_progress:
+            return (package_name, 'Recursive package dependencies: '+ package_name)
+        self._in_progress.add(package_name)
         package_config = self._package_map[package_name]
         for dependency in self._package_map[package_name]['localDependencies']:
-            self._depth_first_search(dependency)
+            error = self._depth_first_search(dependency)
+            if error is not None:
+                first_recursive_package, message = error;
+                if first_recursive_package == package_name:
+                    raise Exception(message);
+                return (first_recursive_package, message + ', ' + package_name)
+        self._in_progress.remove(package_name)
         self._sorted_configs.append(package_config)
         self._visited.add(package_name)
 
