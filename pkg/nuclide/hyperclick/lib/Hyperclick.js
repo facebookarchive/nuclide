@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+var HyperclickForTextEditor = require('./HyperclickForTextEditor');
 var SuggestionList = require('./SuggestionList');
 var SuggestionListElement = require('./SuggestionListElement');
 var getWordTextAndRange = require('./get-word-text-and-range');
@@ -64,15 +65,16 @@ class Hyperclick {
         model => new SuggestionListElement().initialize(model));
 
     this._hyperclickForTextEditors = new Set();
-    this._textEditorSubscription = atom.workspace.observeTextEditors(textEditor => {
-      var HyperclickForTextEditor = require('./HyperclickForTextEditor');
-      var hyperclickForTextEditor = new HyperclickForTextEditor(textEditor, this);
-      this._hyperclickForTextEditors.add(hyperclickForTextEditor);
+    this._textEditorSubscription = atom.workspace.observeTextEditors(
+      this.observeTextEditor.bind(this));
+  }
 
-      textEditor.onDidDestroy(() => {
-        hyperclickForTextEditor.dispose();
-        this._hyperclickForTextEditors.delete(hyperclickForTextEditor);
-      });
+  observeTextEditor(textEditor: TextEditor) {
+    var hyperclickForTextEditor = new HyperclickForTextEditor(textEditor, this);
+    this._hyperclickForTextEditors.add(hyperclickForTextEditor);
+    textEditor.onDidDestroy(() => {
+      hyperclickForTextEditor.dispose();
+      this._hyperclickForTextEditors.delete(hyperclickForTextEditor);
     });
   }
 

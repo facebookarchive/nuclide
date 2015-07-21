@@ -18,6 +18,13 @@
       }
     }
   },
+  "providedServices": {
+    "hyperclick.observeTextEditor": {
+      "versions": {
+        "0.0.0": "observeTextEditor"
+      }
+    }
+  },
   "dependencies": {
     "nuclide-commons": "0.0.0",
     "react-for-atom": "0.13.6"

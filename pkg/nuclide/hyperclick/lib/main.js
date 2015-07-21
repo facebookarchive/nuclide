@@ -35,4 +35,17 @@ module.exports = {
       });
     }
   },
+
+  /**
+   * A TextEditor whose creation is announced via atom.workspace.observeTextEditors() will be
+   * observed by default by hyperclick. However, if a TextEditor is created via some other means,
+   * (such as a building block for a piece of UI), then it must be observed explicitly.
+   */
+  observeTextEditor(): (textEditor: TextEditor) => void {
+    return (textEditor: TextEditor) => {
+      if (hyperclick) {
+        hyperclick.observeTextEditor(textEditor);
+      }
+    };
+  },
 };
