@@ -20,6 +20,7 @@ function parseAst(sourceFilePath: string): any {
 
   return babel.transform(sourceCode, {
     blacklist: ['es6.classes', 'flow', 'strict'],
+    optional: ['es7.classProperties'],
   }).ast;
 }
 
@@ -38,7 +39,11 @@ function parseServiceApiSync(absoluteServiceDefinitionClassFilePath: string): an
   var [classDeclaration] = ast.program.body
       .filter(astNode => astNode.type === 'ClassDeclaration');
 
-  var methodNames = classDeclaration.body.body.map(methodDefinition => methodDefinition.key.name);
+  var methodNames = classDeclaration.body.body
+    // Because class bodies in ES7 can contain static property intializers, ensure a part is a
+    // "MethodDefinition" before using it. Static properties have type "ClassProperty".
+    .filter(bodyPart => bodyPart.type === 'MethodDefinition')
+    .map(methodDefinition => methodDefinition.key.name);
   var rpcMethodNames = methodNames.filter(methodName => !isEventMethodName(methodName));
   var eventMethodNames = methodNames.filter(methodName => isEventMethodName(methodName));
 

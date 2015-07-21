@@ -10,6 +10,8 @@
  */
 
 class NuclideTypedTestService {
+  static fake = 'reallyFake';
+
   foo(arg0: NuclideUri, arg1: string): Promise<any> {
     return Promise.reject('not implemented');
   }

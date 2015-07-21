@@ -10,6 +10,7 @@
  */
 
 class NestedNuclideTypedTestService {
+  static fake = 'reallyFake';
   foo(a: ?NuclideUri, b: ?Array<NuclideUri>, c: {a: ?NuclideUri}, d: ?{a: ?NuclideUri}): Promise<?NuclideUri> {
     return Promise.reject('not implemented');
   }

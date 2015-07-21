@@ -24,6 +24,8 @@ export type Diagnostic = {
 }
 
 class TestService {
+  static fake = 'reallyFake';
+
   foo(): Promise<any> {
     return Promise.reject('not implemented');
   }

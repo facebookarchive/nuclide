@@ -120,12 +120,15 @@ function createBaseClassRequireExpression(baseClassName: string, baseClassFilePa
 }
 
 function createRemoteClassDeclaration(classDeclaration: any): any {
-  // Create remote method definition for each class method.
-  var remoteMethodDefinitions = classDeclaration.body.body.map((methodDefinition) => {
-    if (isEventMethodName(methodDefinition.key.name)) {
-      return createRemoteEventMethodDefinition(classDeclaration, methodDefinition);
-    } else {
-      return createRemoteRpcMethodDefinition(classDeclaration, methodDefinition);
+  var remoteMethodDefinitions = classDeclaration.body.body.map(bodyPart => {
+    // Create remote method definition for each class method. The part type must be checked because
+    // ES7 class properties are also part of the `body` array and have type `ClassProperty`.
+    if (bodyPart.type === 'MethodDefinition') {
+      if (isEventMethodName(bodyPart.key.name)) {
+        return createRemoteEventMethodDefinition(classDeclaration, bodyPart);
+      } else {
+        return createRemoteRpcMethodDefinition(classDeclaration, bodyPart);
+      }
     }
   });
 

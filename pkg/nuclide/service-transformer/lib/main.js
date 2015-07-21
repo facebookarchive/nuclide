@@ -35,8 +35,9 @@ function transpile(sourceFilePath: string, destFilePath: string): void {
   sourceCode = sourceCode.substring(BABEL_HEADER.length);
 
   var code = babel.transform(sourceCode, {
-    plugins: [createRemoteServiceTransformer(sourceFilePath)],
     blacklist: ['es6.arrowFunctions', 'es6.classes', 'strict'],
+    optional: ['es7.classProperties'],
+    plugins: [createRemoteServiceTransformer(sourceFilePath)],
   }).code;
 
   // Append `'use 6to5';` at beginning of code so it will be transpiled by babel.
