@@ -10,6 +10,7 @@
  */
 
 var fs = require('fs');
+var {matchers} = require('nuclide-test-helpers');
 var path = require('path');
 var {requireRemoteServiceSync} = require('../lib/main');
 
@@ -32,10 +33,14 @@ function testGenerateRemoteService(sourceFilePath: string, expectedFilePath: str
   var expectedCode = fs.readFileSync(path.resolve(__dirname, expectedFilePath), 'utf8')
       .replace('REQUIRE_PLACE_HOLDER', sourceFilePath);
 
-  expect(generatedCode).toEqual(expectedCode);
+  expect(generatedCode).diffLines(expectedCode);
 }
 
 describe('Nuclide service transformer test suite.', function() {
+  beforeEach(function() {
+    this.addMatchers(matchers);
+  });
+
   it('test requireRemoteServiceSync() generate and load remote service', function() {
     testGenerateRemoteService('./fixtures/TestService', './fixtures/TestService.js.expected');
     testGenerateRemoteService('./fixtures/NuclideTypedTestService',

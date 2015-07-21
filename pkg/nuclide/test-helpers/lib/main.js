@@ -74,4 +74,5 @@ module.exports = {
   uncachedRequire,
   clearRequireCache,
   expectAsyncFailure,
+  matchers: require('./matchers'),
 };

@@ -8,6 +8,10 @@
     "packageType": "Node",
     "testRunner": "npm"
   },
+  "dependencies": {
+    "chalk": "1.0.0",
+    "diff": "1.4.0"
+  },
   "devDependencies": {
     "nuclide-jasmine": "0.0.0"
   },

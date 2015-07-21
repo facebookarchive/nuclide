@@ -11,15 +11,19 @@
 
 import type {search$FileResult} from '../lib/types';
 
-var {asyncExecute} = require("nuclide-commons");
+var {asyncExecute} = require('nuclide-commons');
 var fs = require('fs');
+var {matchers} = require('nuclide-test-helpers');
 var path = require('path');
 var scanhandler = require('./../lib/scanhandler');
 var temp = require('temp').track();
 
 describe('Scan Handler Tests', () => {
-  /* UNIX GREP TESTS */
+  beforeEach(function() {
+    this.addMatchers(matchers);
+  });
 
+  /* UNIX GREP TESTS */
   it('Should recursively scan all files in a directory', () => {
     waitsForPromise(async () => {
       // Setup the test folder.
@@ -37,7 +41,7 @@ describe('Scan Handler Tests', () => {
       var updates = [];
       var results = await scanhandler.search(folder, 'hello world', update => { updates.push(update) }, false, []);
       var expected = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'basic.json')));
-      expect({ results, updates }).toEqual(expected);
+      expect({results, updates}).diffJson(expected);
     });
   });
 
@@ -53,7 +57,7 @@ describe('Scan Handler Tests', () => {
       var updates = [];
       var results = await scanhandler.search(folder, 'hello world', update => { updates.push(update) }, true, []);
       var expected = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'casesensitive.json')));
-      expect({ results, updates }).toEqual(expected);
+      expect({results, updates}).diffJson(expected);
     });
   });
 
@@ -77,7 +81,7 @@ describe('Scan Handler Tests', () => {
       sortResults(updates);
       sortResults(results);
 
-      expect({ results, updates }).toEqual(expected);
+      expect({results, updates}).diffJson(expected);
     });
   });
 
@@ -102,7 +106,7 @@ describe('Scan Handler Tests', () => {
       var updates = [];
       var results = await scanhandler.search(folder, 'hello world', update => { updates.push(update) }, false, []);
       var expected = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'repo.json')));
-      expect({ updates, results }).toEqual(expected);
+      expect({updates, results}).diffJson(expected);
     });
   });
 
@@ -131,7 +135,7 @@ describe('Scan Handler Tests', () => {
       var updates = [];
       var results = await scanhandler.search(folder, 'hello world', update => { updates.push(update) }, false, []);
       var expected = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'repo.json')));
-      expect({ updates, results }).toEqual(expected);
+      expect({updates, results}).diffJson(expected);
     });
   });
 });
