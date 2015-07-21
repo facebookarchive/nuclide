@@ -51,6 +51,17 @@ process.on('uncaughtException', (err) => {
   process.exit(1);
 });
 
+// This works in io.js as of v2.4.0 (possibly earlier versions, as well). Support for this was
+// introduced by https://github.com/nodejs/io.js/pull/758 in io.js.
+//
+// Unfortunately, the analogous change was rejected in Node v0.12.x:
+// https://github.com/joyent/node/issues/8997.
+//
+// We include this code here in anticipation of the Node/io.js merger.
+process.on('unhandledRejection', (error, promise) => {
+  logger.error(`Unhandled promise rejection ${promise}. Error:`, error);
+});
+
 var argv = require('yargs')
     .default('port', DEFAULT_PORT)
     .argv;
