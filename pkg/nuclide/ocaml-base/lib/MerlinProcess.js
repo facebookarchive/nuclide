@@ -121,6 +121,21 @@ class MerlinProcess {
     });
   }
 
+  async complete(path: NuclideUri, line, col, prefix): Promise<mixed> {
+    return await this._promiseQueue.submit(async (resolve, reject) => {
+       var result = await this.runSingleCommand([
+          'complete',
+          'prefix',
+          prefix,
+          'at',
+          {line: line + 1, col: col + 1},
+       ]);
+
+       resolve(result);
+    });
+  }
+
+
   /**
    * Run a command; parse the json output, return an object. This assumes
    * that merlin's protocol is line-based (results are json objects rendered

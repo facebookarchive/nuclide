@@ -21,6 +21,9 @@ class MerlinService {
   locate(path: NuclideUri, line: number, col: number, kind: string): Promise<{file: NuclideUri}> {
     return Promise.reject('Not implemented');
   }
+  complete(path: NuclideUri, line: number, col: number, prefix: string): Promise<mixed> {
+    return Promise.reject('Not implemented');
+  }
 }
 
 module.exports = MerlinService;

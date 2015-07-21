@@ -107,4 +107,33 @@ describe('LocalMerlinService', () => {
     });
   });
 
+
+  describe('complete()', () => {
+    it('sends the appropriate merlin command', () => {
+      waitsForPromise(async () => {
+        var expectedResult = [
+            { desc: 'unit -> int', info: '', kind: 'Value', name: 'derp' },
+            { desc: 'int', info: '', kind: 'Value', name: 'also' }
+        ];
+
+        var merlinService = await getMockedMerlinService(
+          (command) => {
+            if (command[0] === 'complete' &&
+                command[1] === 'prefix' &&
+                command[2] === 'FoodTest.' &&
+                command[3] === 'at' &&
+                command[4].line === 6 &&
+                command[4].col === 3) {
+              return expectedResult;
+            }
+
+            return null;
+        });
+
+        var result = await merlinService.complete('derp.ml', 5, 2, 'FoodTest.');
+
+        expect(JSON.stringify(result)).toBe(JSON.stringify(expectedResult));
+      });
+    });
+  });
 });

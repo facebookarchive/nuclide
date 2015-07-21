@@ -11,6 +11,11 @@
     "testRunner": "apm"
   },
   "providedServices": {
+    "autocomplete.provider": {
+      "versions": {
+        "2.0.0": "createAutocompleteProvider"
+      }
+    },
     "hyperclick.provider": {
       "versions": {
         "0.0.0": "getHyperclickProvider"
@@ -23,8 +28,7 @@
   "dependencies": {
     "nuclide-atom-helpers": "0.0.0",
     "nuclide-client": "0.0.0",
-    "nuclide-commons": "0.0.0",
-    "nuclide-logging": "0.0.0"
+    "nuclide-commons": "0.0.0"
   },
   "devDependencies": {
     "nuclide-atom-interfaces": "0.0.0"

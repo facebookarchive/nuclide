@@ -62,6 +62,9 @@ class LocalMerlinService extends MerlinService {
   async locate(path: NuclideUri, line: number, col: number, kind: string): Promise<{file: NuclideUri}> {
     return (await this._getInstance(path)).locate(path, line, col, kind);
   }
+  async complete(path: NuclideUri, line, col, prefix): Promise<mixed> {
+    return (await this._getInstance(path)).complete(path, line, col, prefix);
+  }
 }
 
 module.exports = LocalMerlinService;

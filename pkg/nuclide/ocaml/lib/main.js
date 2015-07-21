@@ -19,6 +19,15 @@ module.exports = {
 
   getHyperclickProvider() {
     return require('./HyperclickProvider');
-  }
+  },
 
+  createAutocompleteProvider(): mixed {
+    var getSuggestions = require('./AutoComplete').getAutocompleteSuggestions;
+    return {
+      selector: '.source.ocaml',
+      inclusionPriority: 1,
+      disableForSelector: '.source.ocaml .comment',
+      getSuggestions
+    };
+  }
 };
