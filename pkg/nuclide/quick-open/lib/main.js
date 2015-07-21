@@ -101,7 +101,11 @@ class Activation {
       if (selection.column) {
         options.initialColumn = selection.column;
       }
-      atom.workspace.open(selection.path, options);
+
+      atom.workspace.open(selection.path, options).then(textEditor => {
+        atom.commands.dispatch(atom.views.getView(textEditor), 'tabs:keep-preview-tab');
+      });
+
       var query = this._searchComponent.getInputTextEditor().textContent;
       var providerName = this._currentProvider.constructor.name;
       track(
