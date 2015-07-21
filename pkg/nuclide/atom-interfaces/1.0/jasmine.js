@@ -30,16 +30,16 @@ type JasmineMatcher = {
 };
 
 // Declaring, describing, and grouping tests
-declare function afterEach(func: () => void): void;
-declare function beforeEach(func: () => void): void;
-declare function describe(title: string, spec: () => void): void;
+declare function afterEach(func: () => mixed): void;
+declare function beforeEach(func: () => mixed): void;
+declare function describe(title: string, spec: () => mixed): void;
 declare function expect(actual: mixed): JasmineMatcher;
-declare function it(title: string, spec: () => void): void;
+declare function it(title: string, spec: () => mixed): void;
 
 // Disabling Specs and Suites
 // https://jasmine.github.io/1.3/introduction.html#section-Disabling_Specs_and_Suites
-declare function xdescribe(title: string, spec: () => void): void;
-declare function xit(title: string, spec: () => void): void;
+declare function xdescribe(title: string, spec: () => mixed): void;
+declare function xit(title: string, spec: () => mixed): void;
 
 // Spies
 // https://jasmine.github.io/1.3/introduction.html#section-Spies
@@ -68,13 +68,13 @@ type JasmineMockClock = {
 
 // Asynchronous Support
 // https://jasmine.github.io/1.3/introduction.html#section-Asynchronous_Support
-declare function runs(func: () => void): void;
-declare function waitsFor(latchFunction: () => void, failureMessage: string, timeout: number): void;
+declare function runs(func: () => mixed): void;
+declare function waitsFor(latchFunction: () => mixed, failureMessage: string, timeout: number): void;
 
 // Jasmine global
 declare var jasmine: {
   Clock: JasmineMockClock;
   any(expected: string | Object): mixed;
-  createSpy(name: string): void;
+  createSpy(name?: string): JasmineSpy;
   createSpyObj(name: string, spyNames: Array<string>): mixed;
 };
