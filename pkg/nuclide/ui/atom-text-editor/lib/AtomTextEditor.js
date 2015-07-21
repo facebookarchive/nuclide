@@ -50,7 +50,15 @@ class AtomTextEditor extends React.Component {
   }
 
   componentDidMount() {
-    React.findDOMNode(this).setModel(this._textEditorModel);
+    var atomTextEditorElement = React.findDOMNode(this);
+    atomTextEditorElement.setModel(this._textEditorModel);
+
+    // HACK! This is a workaround for the ViewRegistry where Atom has a default view provider for
+    // TextEditor (that we cannot override), which is responsible for creating the view associated
+    // with the TextEditor that we create and adding a mapping for it in its private views map.
+    // To workaround this, we reach into the internals of the ViewRegistry and update the entry in
+    // the map manually. Filed as https://github.com/atom/atom/issues/7954.
+    atom.views.views.set(this._textEditorModel, atomTextEditorElement);
   }
 
   componentWillReceiveProps(nextProps: Object) {
