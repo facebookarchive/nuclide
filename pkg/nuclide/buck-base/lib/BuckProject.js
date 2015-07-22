@@ -34,8 +34,20 @@ class BuckProject {
    * http://facebook.github.io/buck/command/build.html.
    *
    * An error should be thrown only if the specified targets are invalid.
+   * @return Promise that resolves to a build report.
    */
   build(buildTargets: Array<string> | string): Promise<any> {
+    return Promise.reject('Not implemented');
+  }
+
+  /**
+   * Runs `buck install --keep-going --build-report <tempfile>` with the specified targets.
+   * If `run` is set to 'true', it appends the buck invocation with `--run` to run the
+   * installed application.
+   *
+   * @return Promise that resolves to a build report.
+   */
+  install(buildTargets: Array<string> | string, run: boolean): Promise<any> {
     return Promise.reject('Not implemented');
   }
 

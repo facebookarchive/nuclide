@@ -11,7 +11,6 @@
 
 var buckServicePromise = require('nuclide-service-hub-plus')
     .consumeFirstProvider('buck.service');
-var IosSimulator = require('./IosSimulator');
 var {array} = require('nuclide-commons');
 
 async function getCurrentBuckProject(): Promise<?BuckProject> {
@@ -104,6 +103,10 @@ var BuckToolbar = React.createClass({
     return this.refs['buildTarget'].getText().trim();
   },
 
+  _build() {
+    this._doBuild(/* run */ false);
+  },
+
   _run() {
     this._buildAndLaunchApp(/* debug */ false);
   },
@@ -113,52 +116,8 @@ var BuckToolbar = React.createClass({
   },
 
   async _buildAndLaunchApp(debug: boolean): Promise {
-    var buildResult = await this._build();
-    if (!buildResult) {
-      return;
-    }
-
-    var {buckProject, buildTarget} = buildResult;
-    // TODO(mbolin): If buildTarget is a flavored build target, then the
-    // following logic will not work. Fix these methods so they tolerate
-    // flavored build targets.
-    var [outputFile, type] = await Promise.all([
-        buckProject.outputFileFor(buildTarget),
-        buckProject.buildRuleTypeFor(buildTarget),
-    ]);
-
-    if (!outputFile) {
-      atom.notifications.addWarning(
-          `${buildTarget} did not produce an output file to execute.`);
-      return;
-    }
-
-    if (type !== 'apple_bundle') {
-      // TODO(mbolin): For build targets that are known to be runnable, just
-      // use `buck run <target>`.
-      atom.notifications.addWarning(
-          `Nuclide does not know how to run a build rule of type ${type}.`);
-      return;
-    }
-
-    // Use the path to the output file of an apple_bundle() to determine where
-    // the .app directory was created to use with the iOS Simulator.
-    var {dotAppDirectoryForAppleBundleOutput} = require('./helpers');
-    var dotAppDirectory = dotAppDirectoryForAppleBundleOutput(outputFile);
-
-    var devices = await IosSimulator.getDevices();
-
-    // Pick an arbitrary device for now.
-    var device = array.find(devices, elem => elem.name === 'iPhone 5s');
-    if (!device && devices.length > 0) {
-      device = devices[0];
-    }
-    if (!device) {
-      throw new Error('No simulator devices available.');
-    }
-    if (device.state === IosSimulator.DeviceState.Shutdown) {
-      await IosSimulator.startSimulator(device.udid);
-    }
+    // TODO(natthu): Restore validation logic to make sure the target is installable.
+    // For now, let's leave that to Buck.
 
     // Stop any existing debugging sessions, as install hangs if an existing
     // app that's being overwritten is being debugged.
@@ -166,10 +125,13 @@ var BuckToolbar = React.createClass({
       atom.views.getView(atom.workspace),
       'nuclide-debugger:stop-debugging');
 
-    await IosSimulator.installApp(device.udid, dotAppDirectory);
-    var bundleIdentifier = await IosSimulator.getBundleIdentifier(dotAppDirectory);
-    var pid = await IosSimulator.launchApp(device.udid, bundleIdentifier, debug);
-    if (debug) {
+    var installResult = await this._doBuild(/* run */ true);
+    if (!installResult) {
+      return;
+    }
+    var {buckProject, buildTarget, pid} = installResult;
+
+    if (debug && pid) {
       // Use commands here to trigger package activation.
       atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:show');
       var debuggerService = await require('nuclide-service-hub-plus')
@@ -179,7 +141,12 @@ var BuckToolbar = React.createClass({
     }
   },
 
-  async _build(): Promise<?{buckProject: BuckProject; buildTarget: string}> {
+  /**
+   * @return Promise which may resolve to null if either
+   *   (a) the active file in the editor is not part of a Buck project, or
+   *   (b) there are errors in the build.
+   */
+  async _doBuild(run: boolean): Promise<?{buckProject: BuckProject; buildTarget: string, pid: ?number}> {
     var buildTarget = this.getBuildTarget();
     if (!buildTarget) {
       return;
@@ -200,8 +167,10 @@ var BuckToolbar = React.createClass({
       return;
     }
 
-    atom.notifications.addInfo(`buck build ${buildTarget} started.`);
+    var command = `buck ${run ? 'install' : 'build'} ${buildTarget}`;
+    atom.notifications.addInfo(`${command} started.`);
     this.setMaxProgressAndResetProgress(0);
+    var pid;
     var httpPort = await buckProject.getServerPort();
     if (httpPort > 0) {
       var uri = `ws://localhost:${httpPort}/ws/build`;
@@ -240,6 +209,13 @@ var BuckToolbar = React.createClass({
         } else if (type === 'BuildFinished') {
           this.setCurrentProgressToMaxProgress();
           isFinished = true;
+          if (!run) {
+            ws.close();
+          }
+        } else if (type === 'InstallFinished') {
+          if (message['success']) {
+            pid = message['pid'];
+          }
           ws.close();
         }
       };
@@ -252,7 +228,12 @@ var BuckToolbar = React.createClass({
       };
     }
 
-    var buildReport = await buckProject.build([buildTarget]);
+    var buildReport;
+    if (run) {
+      buildReport = await buckProject.install(buildTarget, true);
+    } else {
+      buildReport = await buckProject.build(buildTarget);
+    }
 
     if (!buildReport['success']) {
       // TODO(natthu): Update Buck to include build errors in the report and
@@ -261,8 +242,8 @@ var BuckToolbar = React.createClass({
       return;
     }
 
-    atom.notifications.addSuccess(`buck build ${buildTarget} succeeded.`);
-    return {buckProject, buildTarget};
+    atom.notifications.addSuccess(`${command} succeeded.`);
+    return {buckProject, buildTarget, pid};
   },
 });
 
