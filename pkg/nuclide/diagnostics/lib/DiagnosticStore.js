@@ -11,12 +11,15 @@
 
 import type {
   InvalidationMessage,
+  DiagnosticMessage,
   DiagnosticProvider,
   DiagnosticProviderUpdate,
   FileDiagnosticMessage,
   ProjectDiagnosticMessage,
   FileMessageUpdate,
 } from './types';
+
+import type {NuclideUri} from 'nuclide-remote-uri';
 
 var {Disposable, Emitter} = require('atom');
 
@@ -258,7 +261,7 @@ class DiagnosticStore {
     var allFileMessages = [];
     var relevantProviders = this._fileToProviders.get(filePath);
     if (relevantProviders) {
-      for (var provider of relevantProviders.values()) {
+      for (var provider of relevantProviders) {
         var messages = (this._providerToFileToMessages.get(provider)).get(filePath);
         allFileMessages = allFileMessages.concat(messages);
       }

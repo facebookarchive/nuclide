@@ -78,3 +78,5 @@ export type FileMessageUpdate = {
   filePath: NuclideUri;
   messages: Array<FileDiagnosticMessage>;
 };
+
+export type DiagnosticMessage = FileDiagnosticMessage | ProjectDiagnosticMessage;

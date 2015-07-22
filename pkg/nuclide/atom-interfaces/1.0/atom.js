@@ -94,7 +94,7 @@ declare class atom$Disposable {
 
 declare class atom$Emitter {
   dispose(): void;
-  on(name: string, callback: (v: any) => void): atom$Disposable;
+  on(name: string, callback: (v: any) => mixed): atom$Disposable;
   preempt(name: string, callback: (v: any) => void): atom$Disposable;
   emit(name: string, value: any): atom$Disposable;
 }
