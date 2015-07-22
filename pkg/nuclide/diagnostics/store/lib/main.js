@@ -10,7 +10,6 @@
  */
 
 import type {LinterProvider} from './LinterAdapter';
-import type {DiagnosticProvider} from './types';
 
 var {Disposable, CompositeDisposable} = require('atom');
 

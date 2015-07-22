@@ -9,11 +9,6 @@
  * the root directory of this source tree.
  */
 
-import type {
-  MessageUpdateCallback,
-  MessageInvalidationCallback,
-} from './types';
-
 import type {NuclideUri} from 'nuclide-remote-uri';
 
 type LinterMessage = {
