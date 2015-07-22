@@ -546,47 +546,32 @@ describe('HgRepositoryClient', () => {
     });
   });
 
-  xdescribe('::getDirectoryStatus', () => {
+  describe('::getDirectoryStatus', () => {
+    var {ensureTrailingSeparator} = require('nuclide-commons').paths;
     var testDir = createFilePath('subDirectory');
-    var directoriesBetween = path.join('dir1', 'dir2');
-    var path_1 = path.join(testDir, directoriesBetween, 'test1.js');
-    var path_2 = path.join(testDir, directoriesBetween, 'test2.js');
-    var path_3 = path.join(testDir, directoriesBetween, 'test3.js');
+    var subDirectory = path.join(testDir, 'dir1');
+    var subSubDirectory = path.join(subDirectory, 'dir2');
 
-    it('marks a directory as modified if there is any modified file within it.', () => {
+    it('marks a directory as modified only if it is in the modified directories cache.', () => {
       // Force the state of the hgStatusCache.
-      repo._hgStatusCache = {
-        [path_1]: StatusCodeId.MODIFIED,
-        [path_2]: StatusCodeId.ADDED,
-      };
+      repo._modifiedDirectoryCache = new Map();
+      repo._modifiedDirectoryCache.set(ensureTrailingSeparator(testDir), 1);
+      repo._modifiedDirectoryCache.set(ensureTrailingSeparator(subDirectory), 1);
+
       expect(repo.getDirectoryStatus(testDir)).toBe(StatusCodeNumber.MODIFIED);
-      expect(repo.getDirectoryStatus(path.join(testDir, 'dir1'))).toBe(StatusCodeNumber.MODIFIED);
-      expect(repo.getDirectoryStatus(path.join(testDir, 'dir1', 'dir2'))).toBe(StatusCodeNumber.MODIFIED);
-    });
-
-    it('marks a directory as clean if there are no modified files within it.', () => {
-      // Force the state of the hgStatusCache.
-      repo._hgStatusCache = {
-        [path_1]: StatusCodeId.ADDED,
-        [path_2]: StatusCodeId.IGNORED,
-        [path_3]: StatusCodeId.UNTRACKED,
-      };
-      expect(repo.getDirectoryStatus(testDir)).toBe(StatusCodeNumber.CLEAN);
-      expect(repo.getDirectoryStatus(path.join(testDir, 'dir1'))).toBe(StatusCodeNumber.CLEAN);
-      expect(repo.getDirectoryStatus(path.join(testDir, 'dir1', 'dir2'))).toBe(StatusCodeNumber.CLEAN);
+      expect(repo.getDirectoryStatus(subDirectory)).toBe(StatusCodeNumber.MODIFIED);
+      expect(repo.getDirectoryStatus(subSubDirectory)).toBe(StatusCodeNumber.CLEAN);
     });
 
     it('handles a null or undefined input "path" but handles paths with those names.', () => {
       var dir_called_null = createFilePath('null');
       var dir_called_undefined = createFilePath('undefined');
-      var path_within_null = path.join(dir_called_null, 'test1.js');
-      var path_within_undefined = path.join(dir_called_undefined, 'test1.js');
 
       // Force the state of the cache.
-      repo._hgStatusCache = {
-        [path_within_null]: StatusCodeId.MODIFIED,
-        [path_within_undefined]: StatusCodeId.MODIFIED,
-      };
+      repo._modifiedDirectoryCache = new Map();
+      repo._modifiedDirectoryCache.set(ensureTrailingSeparator(dir_called_null), 1);
+      repo._modifiedDirectoryCache.set(ensureTrailingSeparator(dir_called_undefined), 1);
+
       expect(repo.getDirectoryStatus(null)).toBe(StatusCodeNumber.CLEAN);
       expect(repo.getDirectoryStatus(undefined)).toBe(StatusCodeNumber.CLEAN);
       expect(repo.getDirectoryStatus(dir_called_null)).toBe(StatusCodeNumber.MODIFIED);

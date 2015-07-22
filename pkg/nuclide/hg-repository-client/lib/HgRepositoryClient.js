@@ -12,6 +12,7 @@
 var {CompositeDisposable, Emitter, TextEditor} = require('atom');
 var {StatusCodeId, StatusCodeIdToNumber, StatusCodeNumber, HgStatusOption} =
     require('nuclide-hg-repository-base').hgConstants;
+var {ensureTrailingSeparator} = require('nuclide-commons').paths;
 var {isRemote} = require('nuclide-remote-uri');
 var path = require('path');
 var {addAllParentDirectoriesToCache, removeAllParentDirectoriesFromCache} = require('./utils');
@@ -339,8 +340,14 @@ class HgRepositoryClient {
   // Tracking directory status isn't straightforward, as Hg only tracks files.
   // http://mercurial.selenic.com/wiki/FAQ#FAQ.2FCommonProblems.I_tried_to_check_in_an_empty_directory_and_it_failed.21
   // TODO: Make this method reflect New and Ignored statuses.
-  getDirectoryStatus(directoryPath: string): StatusCodeNumber {
-    // TODO jessicalin: t7704060 tracks re-implementing this function.
+  getDirectoryStatus(directoryPath: ?string): StatusCodeNumber {
+    if (!directoryPath) {
+      return StatusCodeNumber.CLEAN;
+    }
+    var directoryPathWithSeparator = ensureTrailingSeparator(directoryPath);
+    if (this._modifiedDirectoryCache.has(directoryPathWithSeparator)) {
+      return StatusCodeNumber.MODIFIED;
+    }
     return StatusCodeNumber.CLEAN;
   }
 
