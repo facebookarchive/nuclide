@@ -1,0 +1,14 @@
+@import "ui-variables";
+
+// TODO: Use border-image to support a wavy line instead of dashed.
+// See http://stackoverflow.com/a/17277997/396304.
+
+atom-text-editor .nuclide-diagnostics-gutter-ui-highlight-error > .region,
+atom-text-editor::shadow .nuclide-diagnostics-gutter-ui-highlight-error > .region {
+  border-bottom: 1px dashed @text-color-error;
+}
+
+atom-text-editor .nuclide-diagnostics-gutter-ui-highlight-warning > .region,
+atom-text-editor::shadow .nuclide-diagnostics-gutter-ui-highlight-warning > .region {
+  border-bottom: 1px dashed @text-color-warning;
+}

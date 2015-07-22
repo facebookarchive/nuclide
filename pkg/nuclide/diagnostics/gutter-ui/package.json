@@ -1,0 +1,22 @@
+{
+  "name": "nuclide-diagnostics-gutter-ui",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "Displays diagnostics in context in a TextEditor",
+  "nuclide": {
+    "packageType": "Atom",
+    "testRunner": "apm"
+  },
+  "consumedServices": {
+    "nuclide-diagnostics": {
+      "versions": {
+        "0.0.0": "setDiagnosticStore"
+      }
+    }
+  },
+  "devDependencies": {
+    "nuclide-atom-interfaces": "0.0.0",
+    "nuclide-diagnostics-base": "0.0.0"
+  }
+}
