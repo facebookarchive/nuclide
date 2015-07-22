@@ -15,7 +15,7 @@ var {Disposable, CompositeDisposable} = require('atom');
 
 var disposables = null;
 
-function addDisposable(disposable: atom$Disposable) {
+function addDisposable(disposable: atom$IDisposable) {
   if (disposables) {
     disposables.add(disposable);
   } else {
@@ -32,7 +32,7 @@ module.exports = {
     }
   },
 
-  consumeLinterProvider(provider: LinterProvider): atom$Disposable {
+  consumeLinterProvider(provider: LinterProvider): atom$IDisposable {
     var LinterAdapter = require('./LinterAdapter');
     var adapter = new LinterAdapter(provider);
     var diagnosticDisposable = this.consumeDiagnosticProvider(adapter);
@@ -44,7 +44,7 @@ module.exports = {
     return adapterDisposable;
   },
 
-  consumeDiagnosticProvider(provider: DiagnosticProvider): atom$Disposable {
+  consumeDiagnosticProvider(provider: DiagnosticProvider): atom$IDisposable {
     // TODO consume the provider
     var disposable = new Disposable(() => {
       // TODO deregister for any other events we subscribe to
