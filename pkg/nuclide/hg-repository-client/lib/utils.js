@@ -12,9 +12,9 @@
 var path = require('path');
 var {ensureTrailingSeparator} = require('nuclide-commons').paths;
 
-var ADD_ACTION = 1;
-var REMOVE_ACTION = 2;
-type DirectoriesCacheOperation = number;
+var ADD_ACTION = 'add';
+var REMOVE_ACTION = 'remove';
+type DirectoriesCacheOperation = 'add' | 'remove';
 
 var separatorRegex = new RegExp(path.sep, 'g');
 
