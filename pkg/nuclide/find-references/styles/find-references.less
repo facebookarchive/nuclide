@@ -1,0 +1,67 @@
+@import 'ui-variables';
+
+.nuclide-find-references {
+  background-color: @base-background-color;
+  color: @text-color;
+  font-size: @font-size;
+  height: 100%;
+  overflow-y: scroll;
+  padding: 12px;
+}
+
+.nuclide-find-references-loading {
+  margin: auto;
+}
+
+.nuclide-find-references-file {
+  margin-top: 12px;
+}
+
+.nuclide-find-references-filename {
+  font-size: 1.1em;
+  word-break: break-all;
+}
+
+.nuclide-find-references-refs {
+  margin: 12px 0 0 16px;
+}
+
+.nuclide-find-references-ref {
+  margin-bottom: 12px;
+  color: @text-color-subtle;
+}
+
+.nuclide-find-references-ref-name {
+  cursor: pointer;
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.nuclide-find-references-file-preview {
+  display: flex;
+  margin-top: 4px;
+
+  atom-text-editor[mini] {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    flex: 1;
+    font-size: 1em;
+  }
+
+  atom-text-editor::shadow .highlight.reference .region {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+}
+
+.nuclide-find-references-line-number-column {
+  background: @base-border-color;
+  border-top-left-radius: 2px;
+  border-bottom-left-radius: 2px;
+  font-family: Menlo, Monaco, Consolas, monospace;
+  padding: 0 0.5em;
+}
+
+.nuclide-find-references-line-number {
+  line-height: 24px;
+}

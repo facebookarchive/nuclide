@@ -18,7 +18,7 @@ export type Location = {
 
 export type Reference = {
   uri: NuclideUri,  // Nuclide URI of the file path
-  name: string,     // name of calling method/function/symbol
+  name: ?string,    // name of calling method/function/symbol
   start: Location,
   end: Location,
 };

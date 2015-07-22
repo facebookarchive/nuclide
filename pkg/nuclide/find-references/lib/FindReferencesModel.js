@@ -189,6 +189,14 @@ class FindReferencesModel {
       // Expand start/end lines with context.
       startLine = Math.max(startLine - this.getPreviewContext(), 1);
       endLine = Math.min(endLine + this.getPreviewContext(), fileLines.length);
+      // However, don't include blank lines.
+      while (startLine < endLine && fileLines[startLine - 1] === '') {
+        startLine++;
+      }
+      while (startLine < endLine && fileLines[endLine - 1] === '') {
+        endLine--;
+      }
+
       previewText.push(fileLines.slice(startLine - 1, endLine).join('\n'));
       return {references, startLine, endLine};
     });

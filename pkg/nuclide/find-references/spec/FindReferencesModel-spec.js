@@ -57,10 +57,10 @@ describe('FindReferencesModel', () => {
         {
           uri: '/test/1',
           grammar: fakeGrammar,
-          previewText: ['1\n2', '8\n9\n'],
+          previewText: ['1\n2', '8\n9'],
           refGroups: [
             {references: [refs[1]], startLine: 1, endLine: 2},
-            {references: [refs[0]], startLine: 8, endLine: 10},
+            {references: [refs[0]], startLine: 8, endLine: 9},
           ],
         },
         {

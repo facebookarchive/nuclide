@@ -71,7 +71,7 @@ async function tryCreateView(): Promise<?HTMLElement> {
       {dismissable: true}
     );
   } catch (e) {
-    getLogger().error('Error loading references', e);
+    getLogger().debug('Error loading references', e);
     atom.notifications.addError(
       'Error loading references: ' + e,
       {dismissable: true}
