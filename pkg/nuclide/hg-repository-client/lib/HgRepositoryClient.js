@@ -14,6 +14,7 @@ var {StatusCodeId, StatusCodeIdToNumber, StatusCodeNumber, HgStatusOption} =
     require('nuclide-hg-repository-base').hgConstants;
 var {isRemote} = require('nuclide-remote-uri');
 var path = require('path');
+var {addAllParentDirectoriesToCache, removeAllParentDirectoriesFromCache} = require('./utils');
 
 /**
  *
@@ -62,6 +63,9 @@ function filterForAllStatues() {
  */
 
 class HgRepositoryClient {
+  // Map of directory path to the number of modified files within that directory.
+  _modifiedDirectoryCache: Map<string, number>;
+
   constructor(repoPath: string, hgService: HgService, options: HgRepositoryOptions) {
     this._path = repoPath;
     this._workingDirectory = options.workingDirectory;
@@ -74,6 +78,7 @@ class HgRepositoryClient {
     this._disposables = {};
 
     this._hgStatusCache = {};
+    this._modifiedDirectoryCache = new Map();
 
     this._hgDiffCache = {};
     this._hgDiffCacheFilesUpdating = new Set();
@@ -450,8 +455,12 @@ class HgRepositoryClient {
         if (newStatusId === StatusCodeId.CLEAN) {
           // Don't bother keeping 'clean' files in the cache.
           delete this._hgStatusCache[filePath];
+          this._removeAllParentDirectoriesFromCache(filePath);
         } else {
           this._hgStatusCache[filePath] = newStatusId;
+          if (newStatusId === StatusCodeId.MODIFIED) {
+            this._addAllParentDirectoriesToCache(filePath);
+          }
         }
       }
       queriedFiles.delete(filePath);
@@ -475,8 +484,12 @@ class HgRepositoryClient {
       // No action needs to be taken for the HgStatusOption.ALL_STATUSES case.
     } else {
       queriedFiles.forEach((filePath) => {
-        if (this._hgStatusCache[filePath] !== StatusCodeId.IGNORED) {
+        var cachedStatusId = this._hgStatusCache[filePath];
+        if (cachedStatusId !== StatusCodeId.IGNORED) {
           delete this._hgStatusCache[filePath];
+          if (cachedStatusId === StatusCodeId.MODIFIED) {
+            this._removeAllParentDirectoriesFromCache(filePath);
+          }
         }
       });
     }
@@ -488,6 +501,22 @@ class HgRepositoryClient {
     this._emitter.emit('did-change-statuses');
 
     return statusMapPathToStatusId;
+  }
+
+  _addAllParentDirectoriesToCache(filePath: string) {
+    addAllParentDirectoriesToCache(
+      this._modifiedDirectoryCache,
+      filePath,
+      this._projectDirectory.getParent().getPath()
+    );
+  }
+
+  _removeAllParentDirectoriesFromCache(filePath: string) {
+    removeAllParentDirectoriesFromCache(
+      this._modifiedDirectoryCache,
+      filePath,
+      this._projectDirectory.getParent().getPath()
+    );
   }
 
   /**
@@ -701,6 +730,7 @@ class HgRepositoryClient {
   _refreshStatusesOfAllFilesInCache() {
     var pathsInStatusCache = Object.keys(this._hgStatusCache);
     this._hgStatusCache = {};
+    this._modifiedDirectoryCache = new Map();
     if (pathsInStatusCache.length) {
       this._updateStatuses(pathsInStatusCache, {hgStatusOption: HgStatusOption.ALL_STATUSES});
     }
