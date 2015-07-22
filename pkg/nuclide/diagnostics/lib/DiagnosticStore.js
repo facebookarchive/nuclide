@@ -29,13 +29,13 @@ var ALL_CHANGE_EVENT = 'messages-changed';
 class DiagnosticStore {
   // A map from each diagnostic provider to:
   // a map from each file it has messages for to the array of messages for that file.
-  _providerToFileToMessages: Map<DiagnosticProvider, Map<NuclideUri, Array<DiagnosticMessage>>>;
+  _providerToFileToMessages: Map<DiagnosticProvider, Map<NuclideUri, Array<FileDiagnosticMessage>>>;
   // A map from each file that has messages from any diagnostic provider
   // to the set of diagnostic providers that have messages for it.
   _fileToProviders: Map<NuclideUri, Set<DiagnosticProvider>>;
 
   // A map from each diagnostic provider to the array of project messages from it.
-  _providerToProjectDiagnostics: Map<DiagnosticProvider, Array<DiagnosticMessage>>;
+  _providerToProjectDiagnostics: Map<DiagnosticProvider, Array<ProjectDiagnosticMessage>>;
 
   // File paths are used as event names for the _fileChangeEmitter, so a second
   // emitter is used for other events to prevent event name collisions.
@@ -230,7 +230,7 @@ class DiagnosticStore {
    *   change. The array of messages is meant to completely replace any previous
    *   project-scope messages.
    */
-  onProjectMessagesDidUpdate(callback: (messages: Array<DiagnosticMessage>) => mixed): atom$Disposable {
+  onProjectMessagesDidUpdate(callback: (messages: Array<ProjectDiagnosticMessage>) => mixed): atom$Disposable {
     var emitterDisposable = this._nonFileChangeEmitter.on(PROJECT_MESSAGE_CHANGE_EVENT, callback);
     this._projectListenersCount += 1;
     return new Disposable(() => {
@@ -257,7 +257,7 @@ class DiagnosticStore {
    * Gets the current diagnostic messages for the file.
    * Prefer to get updates via ::onFileMessagesDidUpdate.
    */
-  getFileMessages(filePath: NuclideUri): Array<DiagnosticMessage> {
+  getFileMessages(filePath: NuclideUri): Array<FileDiagnosticMessage> {
     var allFileMessages = [];
     var relevantProviders = this._fileToProviders.get(filePath);
     if (relevantProviders) {
@@ -273,7 +273,7 @@ class DiagnosticStore {
    * Gets the current project-scope diagnostic messages.
    * Prefer to get updates via ::onProjectMessagesDidUpdate.
    */
-  getProjectMessages(): Array<DiagnosticMessage> {
+  getProjectMessages(): Array<ProjectDiagnosticMessage> {
     var allProjectMessages = [];
     for (var messages of this._providerToProjectDiagnostics.values()) {
       allProjectMessages = allProjectMessages.concat(messages);
