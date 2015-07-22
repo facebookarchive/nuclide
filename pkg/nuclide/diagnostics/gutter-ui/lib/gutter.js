@@ -10,6 +10,18 @@
  */
 var GUTTER_ID = 'nuclide-diagnostics-gutter';
 
+// TODO(mbolin): Make it so that when mousing over an element with this CSS class (or specifically,
+// the child element with the "region" CSS class), we also do a showPopupFor(). This seems to be
+// tricky given how the DOM of a TextEditor works today. There are div.tile elements, each of which
+// has its own div.highlights element and many div.line elements. The div.highlights element has 0
+// or more children, each child being a div.highlight with a child div.region. The div.region
+// element is defined to be {position: absolute; pointer-events: none; z-index: -1}. The absolute
+// positioning and negative z-index make it so it isn't eligible for mouseover events, so we
+// might have to listen for mouseover events on TextEditor and then use its own APIs, such as
+// decorationsForScreenRowRange(), to see if there is a hit target instead. Since this will be
+// happening onmousemove, we also have to be careful to make sure this is not expensive.
+var HIGHLIGHT_CSS = 'nuclide-diagnostics-gutter-ui-highlight';
+
 var ERROR_HIGHLIGHT_CSS = 'nuclide-diagnostics-gutter-ui-highlight-error';
 var WARNING_HIGHLIGHT_CSS = 'nuclide-diagnostics-gutter-ui-highlight-warning';
 
@@ -62,10 +74,10 @@ function applyUpdateToEditor(editor: TextEditor, update: FileMessageUpdate): voi
     var highlightCssClass;
     var gutterMarkerCssClass;
     if (message.type === 'Error') {
-      highlightCssClass = ERROR_HIGHLIGHT_CSS;
+      highlightCssClass = HIGHLIGHT_CSS + ' ' + ERROR_HIGHLIGHT_CSS;
       gutterMarkerCssClass = ERROR_GUTTER_CSS;
     } else {
-      highlightCssClass = WARNING_HIGHLIGHT_CSS;
+      highlightCssClass = HIGHLIGHT_CSS + ' ' + WARNING_HIGHLIGHT_CSS;
       gutterMarkerCssClass = WARNING_GUTTER_CSS;
     }
 
@@ -79,9 +91,7 @@ function applyUpdateToEditor(editor: TextEditor, update: FileMessageUpdate): voi
     }
 
     // This marker adds some UI to the gutter.
-    var item = document.createElement('span');
-    item.innerText = '\u25B6'; // Unicode character for a right-pointing triangle.
-    item.className = gutterMarkerCssClass;
+    var item = createGutterItem(message, gutterMarkerCssClass);
     gutter.decorateMarker(gutterMarker, {item});
     markers.add(gutterMarker);
   }
@@ -93,6 +103,58 @@ function applyUpdateToEditor(editor: TextEditor, update: FileMessageUpdate): voi
   } else {
     gutter.hide();
   }
+}
+
+function createGutterItem(
+    message: FileDiagnosticMessage,
+    gutterMarkerCssClass: string
+    ): HTMLElement {
+  var item = window.document.createElement('span');
+  item.innerText = '\u25B6'; // Unicode character for a right-pointing triangle.
+  item.className = gutterMarkerCssClass;
+  var popupElement;
+  item.addEventListener('mouseenter', event => {
+    popupElement = showPopupFor(message, item);
+  });
+  item.addEventListener('mouseleave', event => {
+    if (popupElement) {
+      popupElement.parentNode.removeChild(popupElement);
+    }
+  });
+  return item;
+}
+
+/**
+ * Shows a popup for the diagnostic just below the specified item.
+ */
+function showPopupFor(
+    message: FileDiagnosticMessage,
+    item: HTMLElement
+    ): HTMLElement {
+  var div = window.document.createElement('div');
+  var diagnosticTypeClass = message.type === 'Error'
+    ? 'nuclide-diagnostics-gutter-ui-gutter-popup-error'
+    : 'nuclide-diagnostics-gutter-ui-gutter-popup-warning';
+  div.className = 'nuclide-diagnostics-gutter-ui-gutter-popup ' + diagnosticTypeClass;
+
+  var {top, left} = item.getBoundingClientRect();
+
+  if (message.html) {
+    div.innerHTML = message.html;
+  } else if (message.text) {
+    div.innerText = message.text;
+  } else {
+    div.innerText = 'Diagnostic lacks message.';
+  }
+
+  // Move it down vertically so it does not end up under the mouse pointer.
+  div.style.top = (top + 15) + 'px';
+  div.style.left = left + 'px';
+
+  var workspaceElement = atom.views.getView(atom.workspace);
+  workspaceElement.parentNode.appendChild(div);
+
+  return div;
 }
 
 module.exports = {
