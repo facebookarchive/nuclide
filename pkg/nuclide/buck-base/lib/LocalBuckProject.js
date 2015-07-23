@@ -115,17 +115,11 @@ class LocalBuckProject extends BuckProject {
             `but nothing was written.`);
       }
 
-      var buildReport;
       try {
-        buildReport = JSON.parse(json);
+        return JSON.parse(json);
       } catch (e) {
         throw Error(`Failed to parse:\n${json}`);
       }
-
-      // Until a top-level "success" property is added to Buck build reports by
-      // default, we will add our own for convenience.
-      buildReport['success'] = require('./utils').isBuildSuccessful(buildReport);
-      return buildReport;
     } finally {
       fsPromise.unlink(report);
     }
