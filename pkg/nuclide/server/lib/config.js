@@ -18,15 +18,31 @@
   *      a service definition and a local implementation.
   */
 
+var fs = require('fs-plus');
 var path = require('path');
 
-const SERVICE_FRAMEWORK_EVENT_CHANNEL = 'service_framework_event';
-const SERVICE_FRAMEWORK_RPC_CHANNEL = 'service_framework_rpc';
-const SERVICE_FRAMEWORK_RPC_TIMEOUT_MS = 60 * 1000;
-const SERVICES_CONFIG_PATH = path.resolve(__dirname, '../services-config.json');
+var SERVICE_FRAMEWORK_EVENT_CHANNEL = 'service_framework_event';
+var SERVICE_FRAMEWORK_RPC_CHANNEL = 'service_framework_rpc';
+var SERVICE_FRAMEWORK_RPC_TIMEOUT_MS = 60 * 1000;
+var SERVICES_CONFIG_PATH = path.resolve(__dirname, '../services-config.json');
+var CUSTOM_SERVICES_CONFIG_PATH = path.resolve(
+  __dirname,
+  require(path.resolve(__dirname, '../package.json'))['nuclide']['customServices']
+);
+
+function loadConfigs(): Array<any> {
+  var configList = require(SERVICES_CONFIG_PATH);
+
+  if (fs.isFileSync(CUSTOM_SERVICES_CONFIG_PATH)) {
+    var customConfigs = require(CUSTOM_SERVICES_CONFIG_PATH);
+    configList = configList.concat(customConfigs);
+  }
+
+  return configList;
+}
 
 function loadConfigsOfServiceWithServiceFramework(): Array<any> {
-  return require(SERVICES_CONFIG_PATH)
+  return loadConfigs()
     .filter(config => config.useServiceFramework)
     .map(config => {
       return {
@@ -38,9 +54,9 @@ function loadConfigsOfServiceWithServiceFramework(): Array<any> {
 }
 
 function loadConfigsOfServiceWithoutServiceFramework(): Array<string> {
-  return require(SERVICES_CONFIG_PATH)
+  return loadConfigs()
     .filter(config => !config.useServiceFramework)
-    .map(config => _resolveServiceConfigPath(config.path))
+    .map(config => _resolveServiceConfigPath(config.path));
 }
 
 /**

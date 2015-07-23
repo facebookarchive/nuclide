@@ -6,7 +6,9 @@
   "nuclide": {
     "packageType": "Node",
     "testRunner": "npm",
-    "excludeTestsFromContinuousIntegration": true
+    "excludeTestsFromContinuousIntegration": true,
+    "customDeps": "fb/package.json",
+    "customServices": "fb/custom-services-config.json"
   },
   "bin": {
     "nuclide-start-server": "./nuclide-start-server"

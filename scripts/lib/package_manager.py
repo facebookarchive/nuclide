@@ -85,14 +85,23 @@ class PackageManager(object):
             dep_types += ['devDependencies']
 
         all_deps = {}
-        package = json_load(package_json)
+        config = create_config_for_package(package_json)
+        if not config:
+            # This must be a legacy package. Grr.
+            package = json_load(package_json)
+            config = {
+              'dependencies': package.get('dependencies', {}),
+              'devDependencies': package.get('devDependencies', {}),
+              'bundleDependencies': package.get('bundleDependencies', {}),
+              'bundledDependencies': package.get('bundledDependencies', {}),
+            }
 
         # Apparently both spellings are acceptable:
-        bundleDependencies = package.get('bundleDependencies', {})
-        bundledDependencies = package.get('bundledDependencies', {})
+        bundleDependencies = config['bundleDependencies']
+        bundledDependencies = config['bundledDependencies']
 
         for dep_type in dep_types:
-            deps = package.get(dep_type, {})
+            deps = config[dep_type]
             for dep, version in deps.items():
                 if dep in bundleDependencies or dep in bundledDependencies:
                     # There is only one case where we have seen this, which is
@@ -148,36 +157,15 @@ class PackageSorter(object):
 
 
 def load_package_configs():
+    '''Returns a map where keys are names of packages and values are package configs.'''
     package_map = {}
 
     # Load packages under the pkg/ directory.
     for path in find_packages():
-        manifest = json_load(path)
-        nuclide_config = manifest.get('nuclide')
-        # Skip if not a nuclide package.
-        if nuclide_config == None:
-            continue
-        package_type = nuclide_config.get('packageType')
-        test_runner = nuclide_config.get('testRunner')
-        disableTests = nuclide_config.get('excludeTestsFromContinuousIntegration', False)
-        includeDevDependencies = nuclide_config.get('includeDevDependencies', True)
-
-        config = {}
-        config['name'] = manifest['name']
-        config['repository'] = manifest.get('repository')
-        config['version'] = manifest.get('version')
-        config['description'] = manifest.get('description')
-        config['packageType'] = package_type
-        config['isNodePackage'] = package_type == 'Node'
-        config['localDependencies'] = {}
-        config['dependencies'] = manifest.get('dependencies', {})
-        config['devDependencies'] = manifest.get('devDependencies', {})
-        config['scripts'] = manifest.get('scripts', {})
-        config['packageRootAbsolutePath'] = os.path.dirname(path)
-        config['testRunner'] = test_runner
-        config['excludeTestsFromContinuousIntegration'] = disableTests
-        config['includeDevDependencies'] = includeDevDependencies
-        package_map[config['name']] = config
+        config = create_config_for_package(path)
+        if config:
+            # Update the map now that the config is complete.
+            package_map[config['name']] = config
 
     # Special-case some legacy package-loading code.
     include_legacy_packages = None
@@ -192,19 +180,65 @@ def load_package_configs():
     # Now that all of the packages have entries in the package_map, use the keys of the package_map
     # to populate the localDependencies array of each config.
     for package_name, package_config in package_map.items():
-        package_meta_path = os.path.join(package_config['packageRootAbsolutePath'], 'package.json')
-        if not os.path.exists(package_meta_path):
-            continue
-
-        package_meta = json_load(package_meta_path)
         all_deps = []
-        all_deps.extend(package_meta.get('dependencies', {}).keys())
-        all_deps.extend(package_meta.get('devDependencies', {}).keys())
+        all_deps.extend(package_config['dependencies'].keys())
+        all_deps.extend(package_config['devDependencies'].keys())
         for dependency in all_deps:
             if dependency in package_map:
                 package_config['localDependencies'][dependency] = package_map[dependency]
 
     return package_map
+
+
+def create_config_for_package(path):
+    '''Create a config for a package.json. Returns None if it is not a Nuclide package.
+
+    No code in this library should parse a package.json file directly. Instead, it should operate
+    on a package config that is created by this method. Because we may read extra properties in
+    package.json, such as "customDeps", it is critical that all scripts operate on a normalized
+    package config rather than a raw package.json.
+    '''
+    manifest = json_load(path)
+    nuclide_config = manifest.get('nuclide')
+    # Skip if not a nuclide package.
+    if nuclide_config == None:
+        return None
+
+    package_type = nuclide_config.get('packageType')
+    test_runner = nuclide_config.get('testRunner')
+    disableTests = nuclide_config.get('excludeTestsFromContinuousIntegration', False)
+    includeDevDependencies = nuclide_config.get('includeDevDependencies', True)
+
+    config = {}
+    config['name'] = manifest['name']
+    config['repository'] = manifest.get('repository')
+    config['version'] = manifest.get('version')
+    config['description'] = manifest.get('description')
+    config['packageType'] = package_type
+    config['isNodePackage'] = package_type == 'Node'
+    config['localDependencies'] = {}
+    config['dependencies'] = manifest.get('dependencies', {})
+    config['devDependencies'] = manifest.get('devDependencies', {})
+
+    # Apparently both spellings are acceptable:
+    config['bundleDependencies'] = manifest.get('bundleDependencies', {})
+    config['bundledDependencies'] = manifest.get('bundledDependencies', {})
+
+    config['scripts'] = manifest.get('scripts', {})
+    config['packageRootAbsolutePath'] = os.path.dirname(path)
+    config['testRunner'] = test_runner
+    config['excludeTestsFromContinuousIntegration'] = disableTests
+    config['includeDevDependencies'] = includeDevDependencies
+
+    # Check for custom dependencies.
+    if 'customDeps' in nuclide_config:
+        extra_json = os.path.join(os.path.dirname(path), nuclide_config['customDeps'])
+        if os.path.exists(extra_json):
+            extra_manifest = json_load(extra_json)
+            for dep, version in extra_manifest.get('dependencies', {}).items():
+                config['dependencies'][dep] = version
+
+    return config
 
 
 def find_packages():
