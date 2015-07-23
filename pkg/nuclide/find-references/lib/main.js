@@ -16,14 +16,14 @@ var {CompositeDisposable} = require('atom');
 var {getLogger} = require('nuclide-logging');
 var FindReferencesModel = require('./FindReferencesModel');
 
-type FindReferencesData = {
+export type FindReferencesData = {
   baseUri: string;
   referencedSymbolName: string;
   references: Array<Reference>;
 };
 
-type FindReferencesProvider = {
-  findReferences(editor: TextEditor, position: atom$Point): Promise<FindReferencesData>;
+export type FindReferencesProvider = {
+  findReferences(editor: TextEditor, position: atom$Point): Promise<?FindReferencesData>;
 };
 
 var FIND_REFERENCES_URI = 'atom://nuclide/find-references/';
@@ -31,8 +31,8 @@ var subscriptions: ?CompositeDisposable = null;
 var providers: Array<FindReferencesProvider> = [];
 
 async function createView(): Promise<?HTMLElement> {
-  /* $FlowFixMe - Flow thinks atom.workspace is null  */
-  var editor = atom.workspace.getActiveTextEditor();
+  // For some reason, Flow thinks atom.workspace is null here
+  var editor = (atom.workspace: any).getActiveTextEditor();
   if (!editor) {
     return null;
   }
@@ -41,6 +41,7 @@ async function createView(): Promise<?HTMLElement> {
     return null;
   }
   var point = editor.getCursorBufferPosition();
+  /* $FlowFixMe: need array compact function */
   var providerData = await Promise.all(providers.map(
     provider => provider.findReferences(editor, point)
   ));

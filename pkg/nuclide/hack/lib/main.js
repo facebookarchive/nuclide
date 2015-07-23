@@ -76,6 +76,10 @@ module.exports = {
     };
   },
 
+  createFindReferencesProvider(): any {
+    return require('./FindReferencesProvider');
+  },
+
   createTypeHintProvider(): any {
     var TypeHintProvider = require('./TypeHintProvider');
     var typeHintProvider = new TypeHintProvider();

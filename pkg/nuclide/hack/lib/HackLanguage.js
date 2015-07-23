@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {HackReference} from 'nuclide-hack-common';
+
 var {Range} = require('atom');
 var HackWorker = require('./HackWorker');
 var {CompletionType, SymbolType} = require('nuclide-hack-common/lib/constants');
@@ -28,10 +30,15 @@ const UPDATE_DEPENDENCIES_INTERVAL_MS = 10000;
  */
 module.exports = class HackLanguage {
 
-  constructor(client: NuclideClient) {
+  /**
+   * `basePath` should be the directory where the .hhconfig file is located.
+   * It should only be null if client is a NullHackClient.
+   */
+  constructor(client: NuclideClient, basePath: ?string) {
     this._hackWorker = new HackWorker();
     this._client = client;
     this._pathContentsMap = {};
+    this._basePath = basePath;
 
     this._setupUpdateDependenciesInterval();
   }
@@ -315,6 +322,17 @@ module.exports = class HackLanguage {
     var webWorkerMessage = {cmd: 'hh_infer_type', args: [path, lineNumber, column]};
     var {type} = await this._hackWorker.runWorkerTask(webWorkerMessage);
     return type;
+  }
+
+  async getReferences(contents: string, symbolName: string): Promise<?Array<HackReference>> {
+    if (!isHackFile(contents)) {
+      return null;
+    }
+    return await this._client.getHackReferences(symbolName);
+  }
+
+  getBasePath(): ?string {
+    return this._basePath;
   }
 };
 

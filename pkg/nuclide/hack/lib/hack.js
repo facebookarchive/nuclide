@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {HackReference} from 'nuclide-hack-common';
+
 var {getClient} = require('nuclide-client');
 var {extractWordAtPosition} = require('nuclide-atom-helpers');
 var HackLanguage = require('./HackLanguage');
@@ -138,6 +140,35 @@ module.exports = {
     };
   },
 
+  async findReferences(
+    editor: TextEditor,
+    line: number,
+    column: number
+  ): Promise<?{baseUri: string, symbolName: string; references: Array<HackReference>}> {
+    var hackLanguage = await getHackLanguageForBuffer(editor.getBuffer());
+    var {path, protocol, host} = parse(editor.getPath());
+    var contents = editor.getText();
+    var symbol = await hackLanguage.getSymbolNameAtPosition(
+      path,
+      contents,
+      line + 1,
+      column + 1
+    );
+    if (!symbol) {
+      return null;
+    }
+    var references = await hackLanguage.getReferences(contents, symbol.name);
+    if (!references) {
+      return null;
+    }
+    // Transform filenames back to Nuclide URIs.
+    references.forEach(ref => {
+      ref.filename = getFilePath(ref.filename, protocol, host);
+    });
+    var baseUri = getFilePath(hackLanguage.getBasePath(), protocol, host);
+    return {baseUri, symbolName: symbol.name, references};
+  },
+
   async onDidSave(editor: TextEditor): void {
     var path = getPath(editor.getPath());
     var contents = editor.getText();
@@ -200,6 +231,6 @@ async function createHackLanguageIfNotExisting(client: NuclideClient, filePath: 
   } else {
     hackClient = new NullHackClient();
   }
-  clientToHackLanguage[clientId] = new HackLanguage(hackClient);
+  clientToHackLanguage[clientId] = new HackLanguage(hackClient, nearestPath);
   return clientToHackLanguage[clientId];
 }
