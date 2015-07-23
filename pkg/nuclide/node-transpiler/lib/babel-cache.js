@@ -15,6 +15,7 @@ var crypto = require('crypto');
 var fs = require('fs');
 var path = require('path');
 var temp = require('temp').track();
+var mv = require('mv');
 var cacheDir = createCacheDir();
 
 /**
@@ -92,7 +93,19 @@ function createOrFetchFromCache(sourceCode, filePath) {
         return;
       }
 
-      fs.rename(info.path, transpiledFile);
+      // Use mv as fs.rename doesn't work across partitions.
+      var moveError = false;
+      mv(info.path, transpiledFile, {mkdirp: true},
+        function (err) {
+          if (err) {
+            console.error('nuclide-node-transpiler: Error moving file: \'' +
+              err.message + '\'. Stack trace:\n' + err.stack);
+            moveError = true;
+          }
+        });
+      if (moveError) {
+        return;
+      }
     });
   });
 
