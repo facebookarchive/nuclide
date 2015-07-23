@@ -32,7 +32,7 @@ declare class atom$CommandRegistry {
   add(
     target: string,
     commandName: string | {[commandName: string]: (event: Event) => void},
-    callback?: (event: Event) => void
+    callback?: (event: Event) => mixed // The return value will be ignored.
   ): atom$Disposable;
   dispatch(target: HTMLElement, commandName: string): void;
 }
