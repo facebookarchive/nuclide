@@ -40,9 +40,12 @@ class Npm (object):
     def publish(self, package_root):
         return self._execute(['npm', 'publish'], cwd=package_root)
 
+    def clean(self, package_root):
+        shutil.rmtree(os.path.join(package_root, 'node_modules'), ignore_errors=True)
+
     def install(self, package_root, clean=False, local_packages=None, include_dev_dependencies=True):
         if clean:
-            shutil.rmtree(os.path.join(package_root, 'node_modules'), ignore_errors=True)
+            self.clean(package_root)
         else:
             self._clean_unused_dependencies(package_root);
 
@@ -52,6 +55,12 @@ class Npm (object):
         npm_command = ['npm', 'install']
         if not include_dev_dependencies:
             npm_command.append('--production')
+        self._execute(npm_command, cwd=package_root)
+
+    def shrinkwrap(self, package_root, include_dev_dependencies=True):
+        npm_command = ['npm', 'shrinkwrap']
+        if include_dev_dependencies:
+            npm_command.append('--dev')
         self._execute(npm_command, cwd=package_root)
 
     def _clean_unused_dependencies(self, package_root):
