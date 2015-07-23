@@ -6,11 +6,12 @@
 
 import logging
 
-def post_dev_setup():
-    logging.info('Running post setup scripts...')
+def setup():
+    logging.info('Running pre-development setup scripts...')
     try:
-        from fb.post_dev_setup import fb_post_dev_setup
-        fb_post_dev_setup()
+        from fb.pre_installation_setup import fb_setup
+        fb_setup()
     except ImportError as e:
+        logging.info('Nothing needed to be run.')
         pass
-    logging.info('Post setup scripts executed.')
+    logging.info('Pre-development setup scripts executed.')
