@@ -238,6 +238,18 @@ class LocalHgServiceBase extends HgService {
     };
     return await this._hgAsyncExecute(args, execOptions);
   }
+
+  async checkout(revision: string, create: boolean): Promise<boolean> {
+    var options = {
+      cwd: this.getWorkingDirectory(),
+    };
+    try {
+      await this._hgAsyncExecute(['checkout', revision], options);
+    } catch (e) {
+      return false;
+    }
+    return true;
+  }
 }
 
 

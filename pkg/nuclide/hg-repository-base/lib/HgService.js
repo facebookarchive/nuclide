@@ -157,6 +157,15 @@ class HgService {
   getSmartlog(ttyOutput: boolean, concise: boolean): Promise<string> {
     return Promise.reject(new Error('not implemented'));
   }
+
+  /**
+   * @param revision This could be a changeset ID, name of a bookmark, revision number, etc.
+   * @param create Currently, this parameter is ignored.
+   * @return whether the call to `hg checkout` succeeded.
+   */
+  checkout(revision: string, create: boolean): Promise<boolean> {
+    return Promise.reject(new Error('not implemented'));
+  }
 }
 
 module.exports = HgService;

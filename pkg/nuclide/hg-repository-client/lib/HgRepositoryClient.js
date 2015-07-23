@@ -66,6 +66,7 @@ function filterForAllStatues() {
 class HgRepositoryClient {
   // Map of directory path to the number of modified files within that directory.
   _modifiedDirectoryCache: Map<string, number>;
+  _service: HgService;
 
   constructor(repoPath: string, hgService: HgService, options: HgRepositoryOptions) {
     this._path = repoPath;
@@ -709,6 +710,13 @@ class HgRepositoryClient {
   // TODO This is a stub.
   checkoutReference(reference: string, create: boolean): boolean {
     return false;
+  }
+
+  /**
+   * This is the async version of what checkoutReference() is meant to do.
+   */
+  async checkoutRevision(reference: string, create: boolean): Promise<boolean> {
+    return await this._service.checkout(reference, create);
   }
 
 
