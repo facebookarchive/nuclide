@@ -150,6 +150,9 @@ declare class atom$PackageManager {
 
   // Accessing loaded packages
   isPackageLoaded(name: string): boolean;
+
+  // Accessing available packages
+  getAvailablePackageNames(): Array<string>;
 }
 
 type atom$PaneSplitParams = {
