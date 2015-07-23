@@ -780,6 +780,9 @@ class HgRepositoryClient {
     return this.fetchRevisionNumbersBetweenRevisions(revision, expressionForRevisionsBeforeHead(0));
   }
 
+  getSmartlog(ttyOutput: boolean, concise: boolean): Promise<string> {
+    return this._service.getSmartlog(ttyOutput, concise);
+  }
 }
 
 module.exports = HgRepositoryClient;

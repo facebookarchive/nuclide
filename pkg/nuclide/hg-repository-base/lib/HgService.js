@@ -147,6 +147,16 @@ class HgService {
     return Promise.reject(new Error('not implemented'));
   }
 
+  /**
+   * Get the output of the experimental smartlog extension from Mercurial:
+   * https://bitbucket.org/facebook/hg-experimental/#markdown-header-smartlog.
+   * @param ttyOutput If true, return the output as if stdout were attached to a tty.
+   * @param concise true to run `hg smartlog`; false to run `hg sl`.
+   * @return The output from running the command.
+   */
+  getSmartlog(ttyOutput: boolean, concise: boolean): Promise<string> {
+    return Promise.reject(new Error('not implemented'));
+  }
 }
 
 module.exports = HgService;

@@ -22,6 +22,8 @@ var path = require('path');
 
 import type LocalHgServiceOptions from './hg-types';
 
+var isOsX = require('os').platform() === 'darwin';
+
 class LocalHgServiceBase extends HgService {
   constructor(options: LocalHgServiceOptions) {
     super();
@@ -153,18 +155,38 @@ class LocalHgServiceBase extends HgService {
 
   /**
    * Calls out to asyncExecute using the 'hg' command.
+   * @param options as specified by http://nodejs.org/api/child_process.html. Additional options:
+   *   - NO_HGPLAIN set if the $HGPLAIN environment variable should not be used.
+   *   - TTY_OUTPUT set if the command should be run as if it were attached to a tty.
    */
   _hgAsyncExecute(args: Array<string>, options: any): Promise<any> {
-    // Setting HGPLAIN=1 overrides any custom aliases a user has defined.
-    if (options.env) {
-      options.env['HGPLAIN'] = 1;
-    } else {
-      var {assign} = require('nuclide-commons').object;
-      var env = {'HGPLAIN': 1};
-      assign(env, process.env);
-      options.env = env;
+    if (!options['NO_HGPLAIN']) {
+      // Setting HGPLAIN=1 overrides any custom aliases a user has defined.
+      if (options.env) {
+        options.env['HGPLAIN'] = 1;
+      } else {
+        var {assign} = require('nuclide-commons').object;
+        var env = {'HGPLAIN': 1};
+        assign(env, process.env);
+        options.env = env;
+      }
     }
-    return asyncExecute('hg', args, options);
+
+    var cmd;
+    if (options['TTY_OUTPUT']) {
+      cmd = 'script';
+      if (isOsX) {
+        // On OS X, script takes the program to run and its arguments as varargs at the end.
+        args = ['-q', '/dev/null', 'hg'].concat(args);
+      } else {
+        // On Linux, script takes the command to run as the -c parameter.
+        var hgCommand = ['hg'].concat(args).join(' ');
+        args = ['-q', '/dev/null', '-c', hgCommand];
+      }
+    } else {
+      cmd = 'hg';
+    }
+    return asyncExecute(cmd, args, options);
   }
 
   fetchCurrentBookmark(): Promise<string> {
@@ -207,6 +229,15 @@ class LocalHgServiceBase extends HgService {
     return fetchRevisionNumbersBetweenRevisions(revisionFrom, revisionTo, this._workingDirectory);
   }
 
+  async getSmartlog(ttyOutput: boolean, concise: boolean): Promise<string> {
+    var args = [concise ? 'sl' : 'smartlog'];
+    var execOptions = {
+      cwd: this.getWorkingDirectory(),
+      NO_HGPLAIN: concise, // `hg sl` is likely user-defined.
+      TTY_OUTPUT: ttyOutput,
+    };
+    return await this._hgAsyncExecute(args, execOptions);
+  }
 }
 
 
