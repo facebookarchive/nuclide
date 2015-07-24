@@ -48,7 +48,7 @@ describe('LinterAdapter', () => {
   });
 
   it('should dispatch the linter on an event', () => {
-    eventCallback({});
+    eventCallback({getPath() { return 'foo'; }});
     expect(fakeLinter.lint).toHaveBeenCalled();
   });
 });

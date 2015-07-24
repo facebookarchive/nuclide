@@ -66,8 +66,14 @@ function linterMessageToDiagnosticMessage(msg: LinterMessage, providerName?: str
   }
 }
 
-function linterMessagesToDiagnosticUpdate(msgs: Array<LinterMessage>): DiagnosticProviderUpdate {
+function linterMessagesToDiagnosticUpdate(currentPath: ?NuclideUri, msgs: Array<LinterMessage>): DiagnosticProviderUpdate {
   var filePathToMessages = new Map();
+  if (currentPath) {
+    // Make sure we invalidate the messages for the current path. We may want to
+    // figure out which other paths we want to invalidate if it turns out that
+    // linters regularly return messages for other files.
+    filePathToMessages.set(currentPath, []);
+  }
   var projectMessages = [];
   for (var msg of msgs) {
     var diagnosticMessage = linterMessageToDiagnosticMessage(msg);
@@ -117,7 +123,7 @@ class LinterAdapter {
     var runLint = async editor => {
       if (this._enabled) {
         var linterMessages = await provider.lint(editor);
-        var diagnosticUpdate = linterMessagesToDiagnosticUpdate(linterMessages);
+        var diagnosticUpdate = linterMessagesToDiagnosticUpdate(editor.getPath(), linterMessages);
         this._emitter.emit('update', diagnosticUpdate);
       }
     };
