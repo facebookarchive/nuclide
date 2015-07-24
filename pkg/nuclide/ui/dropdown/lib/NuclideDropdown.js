@@ -50,8 +50,9 @@ var NuclideDropdown = React.createClass({
     });
     return (
       <select
+        className="nuclide-dropdown"
         onChange={this._onChange}
-        value={this._getValue(this.state.selectedIndex)}>
+        value={this.getSelectedValue()}>
         {options}
       </select>
     );
@@ -68,6 +69,10 @@ var NuclideDropdown = React.createClass({
       return null;
     }
     return this.props.menuItems[index].value;
+  },
+
+  getSelectedValue(): ?any {
+    return this._getValue(this.state.selectedIndex);
   },
 });
 

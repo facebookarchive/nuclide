@@ -49,6 +49,7 @@ function getLogger() {
 var AtomComboBox = require('nuclide-ui-atom-combo-box');
 var React = require('react-for-atom');
 var {PropTypes} = React;
+var SimulatorDropdown = require('./SimulatorDropdown');
 
 var BuckToolbar = React.createClass({
   displayName: 'BuckToolbar',
@@ -84,6 +85,7 @@ var BuckToolbar = React.createClass({
                       intialTextInput={this.props.initialBuildTarget}
                       placeholderText='Buck build target'
                       />
+        <SimulatorDropdown ref="simulator-menu" className="dropdown-menu" />
         <div className='btn-group'>
           <button onClick={this._build} className='btn'>Build</button>
           <button onClick={this._run} className='btn'>Run</button>
@@ -101,6 +103,10 @@ var BuckToolbar = React.createClass({
 
   getBuildTarget(): string {
     return this.refs['buildTarget'].getText().trim();
+  },
+
+  getSimulator(): ?string {
+    return this.refs['simulator-menu'].getSelectedSimulator();
   },
 
   _build() {
@@ -230,7 +236,7 @@ var BuckToolbar = React.createClass({
 
     var buildReport;
     if (run) {
-      buildReport = await buckProject.install(buildTarget, true);
+      buildReport = await buckProject.install(buildTarget, true, this.getSimulator());
     } else {
       buildReport = await buckProject.build(buildTarget);
     }

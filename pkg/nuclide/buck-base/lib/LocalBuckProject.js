@@ -76,23 +76,34 @@ class LocalBuckProject extends BuckProject {
   }
 
   build(buildTargets: Array<string> | string): Promise<any> {
-    return this._build(buildTargets, false, false);
+    return this._build(buildTargets, {install: false, run: false});
   }
 
-  install(buildTargets: Array<string> | string, run: boolean): Promise<any> {
-    return this._build(buildTargets, true, run);
+  install(buildTargets: Array<string> | string, run: boolean, simulator: ?string): Promise<any> {
+    return this._build(buildTargets, {install: true, run, simulator});
   }
 
-  async _build(buildTargets: Array<string> | string, install: boolean, run: boolean): Promise<any> {
+  async _build(buildTargets: Array<string> | string, options: any): Promise<any> {
     if (typeof buildTargets === 'string') {
       buildTargets = [buildTargets];
     }
+    var {
+      install,
+      run,
+      simulator
+    } = options;
 
     var report = await fsPromise.tempfile({suffix: '.json'});
     var args = install ? ['install'] : ['build'];
     args = args.concat(['--keep-going', '--build-report', report]);
-    if (install && run) {
-      args.push('--run');
+    if (install) {
+      if (run) {
+        args.push('--run');
+      }
+      if (simulator) {
+        args.push('--udid');
+        args.push(simulator);
+      }
     }
     buildTargets.forEach(target => args.push(target));
 

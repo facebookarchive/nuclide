@@ -17,6 +17,7 @@
     "nuclide-logging": "0.0.0",
     "nuclide-service-hub-plus": "0.0.0",
     "nuclide-ui-atom-combo-box": "0.0.0",
+    "nuclide-ui-dropdown": "0.0.0",
     "react-for-atom": "0.13.6"
   },
   "devDependencies": {

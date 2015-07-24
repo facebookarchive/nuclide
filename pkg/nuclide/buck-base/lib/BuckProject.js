@@ -42,12 +42,13 @@ class BuckProject {
 
   /**
    * Runs `buck install --keep-going --build-report <tempfile>` with the specified targets.
-   * If `run` is set to 'true', it appends the buck invocation with `--run` to run the
-   * installed application.
    *
+   * @param run If set to 'true', appends the buck invocation with '--run' to run the
+   *   installed application.
+   * @param simulator The UDID of the simulator to install the binary on.
    * @return Promise that resolves to a build report.
    */
-  install(buildTargets: Array<string> | string, run: boolean): Promise<any> {
+  install(buildTargets: Array<string> | string, run: boolean, simulator: ?string): Promise<any> {
     return Promise.reject('Not implemented');
   }
 
