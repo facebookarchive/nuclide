@@ -8,7 +8,6 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-import type {DiagnosticStore} from 'nuclide-diagnostics-base';
 
 var invariant = require('assert');
 var {CompositeDisposable} = require('atom');
@@ -24,7 +23,7 @@ module.exports = {
     subscriptions = new CompositeDisposable();
   },
 
-  setDiagnosticStore(store: DiagnosticStore): void {
+  consumeDiagnosticUpdates(diagnosticUpdater: DiagnosticUpdater): void {
     invariant(subscriptions);
 
     var {applyUpdateToEditor} = require('./gutter');
@@ -36,7 +35,7 @@ module.exports = {
       }
 
       var callback = applyUpdateToEditor.bind(/* receiver */ null, editor);
-      var disposable = store.onFileMessagesDidUpdate(callback, filePath);
+      var disposable = diagnosticUpdater.onFileMessagesDidUpdate(callback, filePath);
 
       // Be sure to remove the subscription on the DiagnosticStore once the editor is closed.
       editor.onDidDestroy(() => disposable.dispose());

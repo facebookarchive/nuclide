@@ -11,7 +11,7 @@
   "consumedServices": {
     "nuclide-diagnostics": {
       "versions": {
-        "0.0.0": "setDiagnosticStore"
+        "0.0.0": "consumeDiagnosticUpdates"
       }
     }
   },

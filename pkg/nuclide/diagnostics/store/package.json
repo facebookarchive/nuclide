@@ -25,6 +25,13 @@
       }
     }
   },
+  "providedServices": {
+    "nuclide-diagnostics": {
+      "versions": {
+        "0.0.0": "provideDiagnosticUpdates"
+      }
+    }
+  },
   "dependencies": {
     "nuclide-diagnostics-base": "0.0.0",
     "nuclide-logging": "0.0.0"

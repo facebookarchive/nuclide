@@ -16,6 +16,7 @@ var {Disposable, CompositeDisposable} = require('atom');
 
 var disposables = null;
 var diagnosticStore = null;
+var diagnosticUpdater = null;
 
 function addDisposable(disposable: atom$IDisposable) {
   if (disposables) {
@@ -32,6 +33,24 @@ function getDiagnosticStore(): DiagnosticStore {
     diagnosticStore = new DiagnosticStore();
   }
   return diagnosticStore;
+}
+
+/**
+ * @return A wrapper around the methods on DiagnosticStore that allow reading data.
+ */
+function getDiagnosticUpdater(): DiagnosticUpdater {
+  if (!diagnosticUpdater) {
+    var store = getDiagnosticStore();
+    diagnosticUpdater = {
+      onFileMessagesDidUpdate: store.onFileMessagesDidUpdate.bind(store),
+      onProjectMessagesDidUpdate: store.onProjectMessagesDidUpdate.bind(store),
+      onAllMessagesDidUpdate: store.onAllMessagesDidUpdate.bind(store),
+      getFileMessages: store.getFileMessages.bind(store),
+      getProjectMessages: store.getProjectMessages.bind(store),
+      getAllMessages: store.getAllMessages.bind(store),
+    };
+  }
+  return diagnosticUpdater;
 }
 
 module.exports = {
@@ -72,6 +91,10 @@ module.exports = {
     return compositeDisposable;
   },
 
+  provideDiagnosticUpdates(): DiagnosticUpdater {
+    return getDiagnosticUpdater();
+  },
+
   deactivate() {
     if (disposables) {
       disposables.dispose();
@@ -81,5 +104,6 @@ module.exports = {
       diagnosticStore.dispose();
       diagnosticStore = null;
     }
+    diagnosticUpdater = null;
   }
 };
