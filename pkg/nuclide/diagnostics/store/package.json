@@ -18,6 +18,11 @@
       "versions": {
         "1.0.4": "consumeLinterProvider"
       }
+    },
+    "nuclide-diagnostic-provider": {
+      "versions": {
+        "0.0.0": "consumeDiagnosticProvider"
+      }
     }
   },
   "dependencies": {

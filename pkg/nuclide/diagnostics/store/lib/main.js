@@ -9,11 +9,13 @@
  * the root directory of this source tree.
  */
 
+import type {DiagnosticStore} from 'nuclide-diagnostics-base';
 import type {LinterProvider} from './LinterAdapter';
 
 var {Disposable, CompositeDisposable} = require('atom');
 
 var disposables = null;
+var diagnosticStore = null;
 
 function addDisposable(disposable: atom$IDisposable) {
   if (disposables) {
@@ -22,6 +24,14 @@ function addDisposable(disposable: atom$IDisposable) {
     var logger = require('nuclide-logging').getLogger();
     logger.error('disposables is null');
   }
+}
+
+function getDiagnosticStore(): DiagnosticStore {
+  if (!diagnosticStore) {
+    var {DiagnosticStore} = require('nuclide-diagnostics-base');
+    diagnosticStore = new DiagnosticStore();
+  }
+  return diagnosticStore;
 }
 
 module.exports = {
@@ -45,20 +55,31 @@ module.exports = {
   },
 
   consumeDiagnosticProvider(provider: DiagnosticProvider): atom$IDisposable {
-    // TODO consume the provider
-    var disposable = new Disposable(() => {
-      // TODO deregister for any other events we subscribe to
-
-      // TODO remove the provider from anywhere we've stored it
-    });
-    addDisposable(disposable);
-    return disposable;
+    var store = getDiagnosticStore();
+    // Register the diagnostic store for updates from the new provider.
+    var compositeDisposable = new CompositeDisposable();
+    compositeDisposable.add(
+      provider.onMessageUpdate((update: DiagnosticProviderUpdate) => {
+        store.updateMessages(provider, update);
+      })
+    );
+    compositeDisposable.add(
+      provider.onMessageInvalidation((invalidationMessage: InvalidationMessage) => {
+        store.invalidateMessages(provider, invalidationMessage);
+      })
+    );
+    addDisposable(compositeDisposable);
+    return compositeDisposable;
   },
 
   deactivate() {
     if (disposables) {
       disposables.dispose();
       disposables = null;
+    }
+    if (diagnosticStore) {
+      diagnosticStore.dispose();
+      diagnosticStore = null;
     }
   }
 };
