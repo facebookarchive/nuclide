@@ -79,24 +79,26 @@ var BuckToolbar = React.createClass({
 
   render(): ReactElement {
     return (
-      <div className='buck-toolbar'>
-        <AtomComboBox ref='buildTarget'
-                      requestOptions={requestOptions}
-                      intialTextInput={this.props.initialBuildTarget}
-                      placeholderText='Buck build target'
-                      />
+      <div className="buck-toolbar">
+        <AtomComboBox
+          ref="buildTarget"
+          requestOptions={requestOptions}
+          intialTextInput={this.props.initialBuildTarget}
+          placeholderText="Buck build target"
+        />
         <SimulatorDropdown ref="simulator-menu" className="dropdown-menu" />
-        <div className='btn-group'>
-          <button onClick={this._build} className='btn'>Build</button>
-          <button onClick={this._run} className='btn'>Run</button>
-          <button onClick={this._debug} className='btn'>Debug</button>
+        <div className="btn-group">
+          <button onClick={this._build} className="btn">Build</button>
+          <button onClick={this._run} className="btn">Run</button>
+          <button onClick={this._debug} className="btn">Debug</button>
         </div>
 
-        <progress ref='progress-bar'
-                  className='inline-block buck-toolbar-progress-bar'
-                  value={this.state.currentProgress}
-                  max={this.state.maxProgress}
-                  />
+        <progress
+          ref="progress-bar"
+          className="inline-block buck-toolbar-progress-bar"
+          value={this.state.currentProgress}
+          max={this.state.maxProgress}
+        />
       </div>
     );
   },

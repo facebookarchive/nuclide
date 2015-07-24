@@ -14,6 +14,8 @@ var BuckUtils = require('./BuckUtils');
 
 class LocalBuckUtils extends BuckUtils {
 
+  _buckProjectDirectoryForPath: Object;
+
   constructor() {
     super();
     this._buckProjectDirectoryForPath = {};

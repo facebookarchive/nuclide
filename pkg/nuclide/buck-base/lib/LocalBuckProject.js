@@ -31,6 +31,9 @@ var BLOCKING_BUCK_COMMAND_QUEUE_PREFIX = 'buck';
  */
 class LocalBuckProject extends BuckProject {
 
+  _rootPath: string;
+  _serialQueueName: string;
+
   /**
    * @param options.rootPath Absolute path to the directory that contains the
    *     .buckconfig file to configure the project.
@@ -212,4 +215,4 @@ class LocalBuckProject extends BuckProject {
   }
 }
 
-module.exports = LocalBuckProject
+module.exports = LocalBuckProject;
