@@ -12,7 +12,7 @@ import shutil
 import subprocess
 
 from json_helpers import json_load, json_loads
-from package_manager import create_config_for_manifest
+from package_config import create_config_for_manifest
 
 DEPENDENCIES_KEYS = [
     'dependencies',
