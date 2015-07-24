@@ -420,7 +420,9 @@ declare class atom$File {
   read(flushCache?: boolean): Promise<string>;
 }
 
-declare class atom$Grammar { }
+declare class atom$Grammar {
+  scopeName: string;
+}
 
 declare class atom$GrammarRegistry {
   // Event Subscription
@@ -441,6 +443,11 @@ declare class atom$Project {
 
 declare class atom$TextBuffer {
   file: ?atom$File;
+
+  // Events
+  onDidStopChanging(callback: () => mixed): atom$Disposable;
+  onDidSave(callback: () => mixed): atom$Disposable;
+  onDidReload(callback: () => mixed): atom$Disposable;
 
   // Reading Text
   isEmpty(): boolean;

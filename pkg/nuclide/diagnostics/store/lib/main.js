@@ -53,21 +53,42 @@ function getDiagnosticUpdater(): DiagnosticUpdater {
   return diagnosticUpdater;
 }
 
+var consumeLegacyLinters = false;
+var adapters = new Set();
+
 module.exports = {
+  config: {
+    consumeLegacyLinters: {
+      type: 'boolean',
+      default: false,
+    },
+  },
 
   activate(state: ?Object): void {
     if (!disposables) {
       disposables = new CompositeDisposable();
     }
+    var settingName = 'nuclide-diagnostics-store.consumeLegacyLinters';
+    consumeLegacyLinters = ((atom.config.get(settingName): any): boolean);  // returns mixed so a cast is necessary
+    atom.config.observe(settingName, newValue => {
+      // To make this really solid, we should also probably trigger the linter
+      // for the active text editor. Possibly more trouble than it's worth,
+      // though, since this may be a temporary option.
+      consumeLegacyLinters = newValue;
+      adapters.forEach(adapter => adapter.setEnabled(newValue));
+    });
   },
 
   consumeLinterProvider(provider: LinterProvider): atom$IDisposable {
     var LinterAdapter = require('./LinterAdapter');
     var adapter = new LinterAdapter(provider);
+    adapter.setEnabled(consumeLegacyLinters);
+    adapters.add(adapter);
     var diagnosticDisposable = this.consumeDiagnosticProvider(adapter);
     var adapterDisposable = new Disposable(() => {
       diagnosticDisposable.dispose();
       adapter.dispose();
+      adapters.delete(adapter);
     });
     addDisposable(adapter);
     return adapterDisposable;

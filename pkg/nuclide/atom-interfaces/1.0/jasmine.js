@@ -77,4 +77,5 @@ declare var jasmine: {
   any(expected: string | Object): mixed;
   createSpy(name?: string): JasmineSpy;
   createSpyObj(name: string, spyNames: Array<string>): mixed;
+  unspy(obj: Object, prop: string): void;
 };
