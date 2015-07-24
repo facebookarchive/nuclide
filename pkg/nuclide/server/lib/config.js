@@ -21,14 +21,18 @@
 var fs = require('fs-plus');
 var path = require('path');
 
+var PACKAGE_ROOT = path.resolve(__dirname, '..');
+
+// Custom services path is defined in "package.json", which is always in the root, so resolve
+// the path to the custom services config from the root as well.
+var CUSTOM_SERVICES_CONFIG_PATH = path.resolve(
+  PACKAGE_ROOT,
+  require(path.resolve(PACKAGE_ROOT, 'package.json'))['nuclide']['customServices']
+);
 var SERVICE_FRAMEWORK_EVENT_CHANNEL = 'service_framework_event';
 var SERVICE_FRAMEWORK_RPC_CHANNEL = 'service_framework_rpc';
 var SERVICE_FRAMEWORK_RPC_TIMEOUT_MS = 60 * 1000;
-var SERVICES_CONFIG_PATH = path.resolve(__dirname, '../services-config.json');
-var CUSTOM_SERVICES_CONFIG_PATH = path.resolve(
-  __dirname,
-  require(path.resolve(__dirname, '../package.json'))['nuclide']['customServices']
-);
+var SERVICES_CONFIG_PATH = path.resolve(PACKAGE_ROOT, 'services-config.json');
 
 function loadConfigs(): Array<any> {
   var configList = require(SERVICES_CONFIG_PATH);
