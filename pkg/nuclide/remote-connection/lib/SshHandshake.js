@@ -21,6 +21,7 @@ var {fsPromise} = require('nuclide-commons');
 // Sync word and regex pattern for parsing command stdout.
 var SYNC_WORD = 'SYNSYN';
 var STDOUT_REGEX = /SYNSYN\n([\s\S]*)\nSYNSYN/;
+var READY_TIMEOUT = 60000;
 
 type SshConnectionConfiguration = {
   host: string; // host nuclide server is running on
@@ -115,6 +116,7 @@ class SshHandshake {
           username: config.username,
           agent,
           tryKeyboard: true,
+          readyTimeout: READY_TIMEOUT,
         });
       } else if (config.authMethod === SupportedMethods.PASSWORD) {
           // When the user chooses password-based authentication, we specify
@@ -137,6 +139,7 @@ class SshHandshake {
             username: config.username,
             privateKey,
             tryKeyboard: true,
+            readyTimeout: READY_TIMEOUT,
           });
         }).catch((e) => {
           this._delegate.onError(e, this._config);
