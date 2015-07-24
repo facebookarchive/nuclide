@@ -65,7 +65,15 @@ class PackageLinter(object):
                 'repository', 'https://github.com/facebook/nuclide')
         if package_name not in VERSION_BLACKLIST:
             self.expect_field(package_name, package, 'version', '0.0.0')
-        self.expect_alpha_sort(package_name, package, 'dependencies')
+
+        # Custom dependencies are added to the `dependencies` dict last, which means they will
+        # likely be out of alpha order. Check the `base` and `custom` dependencies instead, which
+        # preserve the order from the package.json files.
+        if 'customDependencies' in package:
+            self.expect_alpha_sort(package_name, package, 'baseDependencies')
+            self.expect_alpha_sort(package_name, package, 'customDependencies')
+        else:
+            self.expect_alpha_sort(package_name, package, 'dependencies')
         self.expect_alpha_sort(package_name, package, 'devDependencies')
 
         package_name = package['name']
