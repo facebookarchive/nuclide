@@ -10,7 +10,7 @@
  * the root directory of this source tree.
  */
 
-var NuclideTypedTestService = require('REQUIRE_PLACE_HOLDER');
+var NuclideTypedTestService = require('REQUIRE_PLACE_HOLDER').NuclideTypedTestService || require('REQUIRE_PLACE_HOLDER');
 
 /* Auto-generated: DO NOT MODIFY.*/
 class RemoteNuclideTypedTestService extends NuclideTypedTestService {

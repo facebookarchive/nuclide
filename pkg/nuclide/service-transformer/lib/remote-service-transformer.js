@@ -102,18 +102,24 @@ var {createGetUriOfRemotePathAssignmentExpression, createGetPathOfUriAssignmentE
 var GENERATED_CLASS_PREFIX = 'Remote';
 
 /**
- * Create ast expression of `var $baseClassName = require('$baseClassFilePath');`.
+ * Create ast expression of `var $baseClassName = require('$baseClassFilePath')
+ * .$baseClassName || require('$baseClassFilePath');`.
  */
 function createBaseClassRequireExpression(baseClassName: string, baseClassFilePath: string): any {
+  // Create a require expression that loads the file of the service definition.
+  var requireExpression = t.callExpression(t.identifier('require'),
+    [t.literal(baseClassFilePath)]);
+  // First try to access the service as a property of the module - if not,
+  // the service is the module itself.
+  var orExpression = t.binaryExpression('||', t.memberExpression(requireExpression,
+    t.identifier(baseClassName)), requireExpression);
+
   return t.variableDeclaration(
     /* kind */ 'var',
     /* declarations */ [
       t.variableDeclarator(
         /* id */ t.identifier(baseClassName),
-        /* init */ t.callExpression(
-          /* callee */ t.identifier('require'),
-          /* arguments */ [t.literal(baseClassFilePath)]
-        )
+        /* init */ orExpression
       ),
     ]
   );
@@ -445,20 +451,41 @@ function createRemoteServiceTransformer(baseClassFilePath: string): any {
 
     // Update `module.exports` to export generated remote class.
     ExpressionStatement: (node, parent) => {
-      // Ignore expression not in form of `module.exports = $identifier`.
+      // Ignore expression not in form of `module.exports = ...`.
       if (!t.isAssignmentExpression(node.expression) ||
           node.expression.operator !== '=' ||
           !t.isMemberExpression(node.expression.left) ||
           !t.isIdentifier(node.expression.left.object) ||
           !t.isIdentifier(node.expression.left.property) ||
           node.expression.left.object.name !== 'module' ||
-          node.expression.left.property.name !== 'exports' ||
-          !t.isIdentifier(node.expression.right)) {
+          node.expression.left.property.name !== 'exports') {
+        return;
+      }
+      var right = node.expression.right;
+
+      // If expression takes form `module.exports = $identifier`, then we are exporting
+      // only one class.
+      if (t.isIdentifier(right)) {
+        node.expression.right = t.identifier(
+          GENERATED_CLASS_PREFIX + node.expression.right.name);
         return;
       }
 
-      node.expression.right = t.identifier(
-          GENERATED_CLASS_PREFIX + node.expression.right.name);
+      // If expression takes form `module.exports = { $identifier, ..., $identifer }`, then
+      // we are exporting multiple classes.
+      if (t.isObjectExpression(right)) {
+        // Ensure that all the properties in this object are all identifier : identifier mappins.
+        var identifiers = right.properties.every(prop => {
+          return t.isIdentifier(prop.key) && t.isIdentifier(prop.value);
+        });
+        if (!identifiers) {
+          return;
+        }
+        // Prepend GENERATED_CLASS_PREFIX to every key and value.
+        right.properties.forEach(prop => {
+          prop.value = t.identifier(GENERATED_CLASS_PREFIX + prop.value.name);
+        });
+      }
     },
   });
 }

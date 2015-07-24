@@ -13,7 +13,7 @@ Object.defineProperty(exports, '__esModule', {
  * the root directory of this source tree.
  */
 
-var TestService = require('REQUIRE_PLACE_HOLDER');
+var TestService = require('REQUIRE_PLACE_HOLDER').TestService || require('REQUIRE_PLACE_HOLDER');
 
 /* Auto-generated: DO NOT MODIFY.*/
 class RemoteTestService extends TestService {

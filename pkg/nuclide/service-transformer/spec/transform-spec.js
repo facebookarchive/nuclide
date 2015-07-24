@@ -14,26 +14,27 @@ var {matchers} = require('nuclide-test-helpers');
 var path = require('path');
 var {requireRemoteServiceSync} = require('../lib/main');
 
-function testGenerateRemoteService(sourceFilePath: string, expectedFilePath: string): void {
-  sourceFilePath = require.resolve(sourceFilePath);
-  expectedFilePath = require.resolve(expectedFilePath);
+function testGenerateRemoteService(sourceFilePath: string, expectedFilePath: string, testDesc: ?string): void {
+  it(testDesc || sourceFilePath, function() {
+    sourceFilePath = require.resolve(sourceFilePath);
+    expectedFilePath = require.resolve(expectedFilePath);
 
-  var transpiledFilePath = path.join(
-      __dirname,
-      '../gen/',
-      path.basename(sourceFilePath));
+    var transpiledFilePath = path.join(
+        __dirname,
+        '../gen/',
+        path.basename(sourceFilePath));
 
-  if (fs.existsSync(transpiledFilePath)) {
-    fs.unlinkSync(transpiledFilePath);
-  }
+    if (fs.existsSync(transpiledFilePath)) {
+      fs.unlinkSync(transpiledFilePath);
+    }
 
-  requireRemoteServiceSync(sourceFilePath);
+    requireRemoteServiceSync(sourceFilePath);
 
-  var generatedCode = fs.readFileSync(transpiledFilePath, 'utf8');
-  var expectedCode = fs.readFileSync(path.resolve(__dirname, expectedFilePath), 'utf8')
-      .replace('REQUIRE_PLACE_HOLDER', sourceFilePath);
-
-  expect(generatedCode).diffLines(expectedCode);
+    var generatedCode = fs.readFileSync(transpiledFilePath, 'utf8');
+    var expectedCode = fs.readFileSync(path.resolve(__dirname, expectedFilePath), 'utf8')
+        .replace(/REQUIRE_PLACE_HOLDER/g, sourceFilePath);
+    expect(generatedCode).diffLines(expectedCode);
+  });
 }
 
 describe('Nuclide service transformer test suite.', function() {
@@ -41,11 +42,18 @@ describe('Nuclide service transformer test suite.', function() {
     this.addMatchers(matchers);
   });
 
-  it('test requireRemoteServiceSync() generate and load remote service', function() {
-    testGenerateRemoteService('./fixtures/TestService', './fixtures/TestService.js.expected');
+  describe('test requireRemoteServiceSync() generate and load remote service', function() {
+    testGenerateRemoteService('./fixtures/TestService',
+      './fixtures/TestService.js.expected',
+      'transforms a service with basic types.');
     testGenerateRemoteService('./fixtures/NuclideTypedTestService',
-        './fixtures/NuclideTypedTestService.js.expected');
+      './fixtures/NuclideTypedTestService.js.expected',
+      'transforms a service with NuclideUri arguments / retuns.');
     testGenerateRemoteService('./fixtures/NestedNuclideTypedTestService',
-        './fixtures/NestedNuclideTypedTestService.js.expected');
+      './fixtures/NestedNuclideTypedTestService.js.expected',
+      'transforms a service with nested NuclideUris');
+    testGenerateRemoteService('./fixtures/MultipleServiceDefinition',
+      './fixtures/MultipleServiceDefinition.js.expected',
+      'supports multiple service definitions in one file.');
   });
 });
