@@ -80,7 +80,7 @@ function getService(serviceName: string, hostname: ?string, serviceOptions: ?any
 
 function createRemoteService(serviceConfig: ServiceConfig, hostname: string, serviceOptions: any): any {
   var {requireRemoteServiceSync} = require('nuclide-service-transformer');
-  var remoteServiceClass = requireRemoteServiceSync(serviceConfig.definition);
+  var remoteServiceClass = requireRemoteServiceSync(serviceConfig.definition, serviceConfig.name);
   var remoteConnection = RemoteConnection.getByHostnameAndPath(hostname, null);
   return new remoteServiceClass(remoteConnection, serviceOptions);
 }

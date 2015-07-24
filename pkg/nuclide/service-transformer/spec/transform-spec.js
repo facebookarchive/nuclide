@@ -14,7 +14,7 @@ var {matchers} = require('nuclide-test-helpers');
 var path = require('path');
 var {requireRemoteServiceSync} = require('../lib/main');
 
-function testGenerateRemoteService(sourceFilePath: string, expectedFilePath: string, testDesc: ?string): void {
+function testGenerateRemoteService(serviceName: string, sourceFilePath: string, expectedFilePath: string, testDesc: ?string): void {
   it(testDesc || sourceFilePath, function() {
     sourceFilePath = require.resolve(sourceFilePath);
     expectedFilePath = require.resolve(expectedFilePath);
@@ -28,7 +28,7 @@ function testGenerateRemoteService(sourceFilePath: string, expectedFilePath: str
       fs.unlinkSync(transpiledFilePath);
     }
 
-    requireRemoteServiceSync(sourceFilePath);
+    requireRemoteServiceSync(sourceFilePath, serviceName);
 
     var generatedCode = fs.readFileSync(transpiledFilePath, 'utf8');
     var expectedCode = fs.readFileSync(path.resolve(__dirname, expectedFilePath), 'utf8')
@@ -43,16 +43,20 @@ describe('Nuclide service transformer test suite.', function() {
   });
 
   describe('test requireRemoteServiceSync() generate and load remote service', function() {
-    testGenerateRemoteService('./fixtures/TestService',
+    testGenerateRemoteService('TestService',
+      './fixtures/TestService',
       './fixtures/TestService.js.expected',
       'transforms a service with basic types.');
-    testGenerateRemoteService('./fixtures/NuclideTypedTestService',
+    testGenerateRemoteService('NuclideTypedTestService',
+      './fixtures/NuclideTypedTestService',
       './fixtures/NuclideTypedTestService.js.expected',
       'transforms a service with NuclideUri arguments / retuns.');
-    testGenerateRemoteService('./fixtures/NestedNuclideTypedTestService',
+    testGenerateRemoteService('NestedNuclideTypedTestService',
+      './fixtures/NestedNuclideTypedTestService',
       './fixtures/NestedNuclideTypedTestService.js.expected',
       'transforms a service with nested NuclideUris');
-    testGenerateRemoteService('./fixtures/MultipleServiceDefinition',
+    testGenerateRemoteService('TestServiceA',
+      './fixtures/MultipleServiceDefinition',
       './fixtures/MultipleServiceDefinition.js.expected',
       'supports multiple service definitions in one file.');
   });

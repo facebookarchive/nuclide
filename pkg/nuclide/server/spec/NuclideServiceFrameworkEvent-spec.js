@@ -16,7 +16,7 @@ type EventMethodTestCase = {
   methodName: string;
   callback: (payload: any) => void;
   expectations: () => void;
-  timeoutMs: number
+  timeoutMs: number;
 }
 
 function testEventServiceWithServiceFramworkRegistered(
@@ -29,13 +29,13 @@ function testEventServiceWithServiceFramworkRegistered(
     var testHelper = new ServiceIntegrationTestHelper(
         className,
         definitionClassAbsolutePath,
-        implementationClassPathAbsolutePath)
+        implementationClassPathAbsolutePath);
 
     await testHelper.start();
 
     var remoteService = testHelper.getRemoteService();
 
-    await Promise.all(testCases.map(async(testCase) => {
+    await Promise.all(testCases.map(async (testCase) => {
       remoteService[testCase.methodName](testCase.callback);
 
       await new Promise((resolve, reject) => {
@@ -97,6 +97,27 @@ describe('Nuclide serivce with service framework event test suite', () => {
             });
           },
           timeoutMs: 490,
+        },
+      ],
+    );
+  });
+
+  it('works with files that contain multiple services.', () => {
+    var eventTriggered = false;
+    testEventServiceWithServiceFramworkRegistered(
+      'TestServiceA',
+      path.resolve(__dirname, 'fixtures/MultipleServices.js'),
+      path.resolve(__dirname, 'fixtures/LocalMultipleServices.js'),
+      [
+        {
+          methodName: 'onEvent',
+          callback: () => {
+            eventTriggered = true;
+          },
+          expectations: () => {
+            expect(eventTriggered).toBe(true);
+          },
+          timeoutMs: 500,
         },
       ],
     );

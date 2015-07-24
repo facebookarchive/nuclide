@@ -11,15 +11,15 @@
 
 var parseServiceApiSync = require('../lib/service-parser');
 
-function testParseServiceApi(sourceFilePath: string, expected: any): void {
-  var parsed = parseServiceApiSync(require.resolve(sourceFilePath));
+function testParseServiceApi(sourceFilePath: string, serviceName: string, expected: any): void {
+  var parsed = parseServiceApiSync(require.resolve(sourceFilePath), serviceName);
   expect(parsed.rpcMethodNames.sort()).toEqual(expected.rpcMethodNames.sort());
   expect(parsed.eventMethodNames.sort()).toEqual(expected.eventMethodNames.sort());
 }
 
 describe('Nuclide service parser test suite.', function() {
   it('parse service api', function() {
-    testParseServiceApi('./fixtures/TestService', {
+    testParseServiceApi('./fixtures/TestService', 'TestService', {
       className: 'TestService',
       rpcMethodNames: ['foo', 'bar', 'qux', 'onetimeRegistration'],
       eventMethodNames: ['onNorf'],

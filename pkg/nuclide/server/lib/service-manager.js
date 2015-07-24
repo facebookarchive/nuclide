@@ -36,14 +36,15 @@ function getService(serviceName: string, options: any, localImplementationClassP
   var key = serviceName + '@' + optionsToString(options);
   if (!cachedServices.has(key)) {
     logger.debug(`Create service instance: ${key}`);
-    var serviceInstance = createLocalService(localImplementationClassPath, options);
+    var serviceInstance = createLocalService(serviceName, localImplementationClassPath, options);
     cachedServices.set(key, serviceInstance);
   }
   return cachedServices.get(key);
 }
 
-function createLocalService(localImplementationClassPath: string, options: any): any {
-  var serviceClass = require(localImplementationClassPath);
+function createLocalService(serviceName: string, localImplementationClassPath: string, options: any): any {
+  var serviceModule = require(localImplementationClassPath);
+  var serviceClass = serviceModule[serviceName] || serviceModule;
   return new serviceClass(options);
 }
 
@@ -59,4 +60,4 @@ module.exports = {
   getService,
   getRemoteEventName,
   optionsToString,
-}
+};

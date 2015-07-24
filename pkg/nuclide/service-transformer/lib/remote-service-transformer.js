@@ -282,7 +282,7 @@ function createRemoteRpcMethodDefinition(classDeclaration: any, methodDefinition
 
     var typeParameters = methodReturnType.typeAnnotation.typeParameters;
 
-    if (typeParameters && typeParameters.params.length == 1)  {
+    if (typeParameters && typeParameters.params.length === 1)  {
       rpcCallExpression = createGetUriFromPathPromiseExpression(
           rpcCallExpression, typeParameters.params[0]);
     }
@@ -342,8 +342,7 @@ function createManipulatedCallbackArrowFunction(callbackAstNode: any): ?any {
   }
 
   var parameterIdentifiers = callbackAstNode.typeAnnotation.typeAnnotation.params.map(
-      node => {
-        return node.name;});
+      node => node.name);
 
   return t.arrowFunctionExpression(
     /* params */ parameterIdentifiers,

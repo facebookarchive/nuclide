@@ -29,7 +29,7 @@ function parseAst(sourceFilePath: string): any {
  * {className: $className, rpcMethodNames: [$methodName, ...], eventMethodNames: [$methodName, ..]}.
  * Keep it sync as it will be called from NuclideServer's constructor.
  */
-function parseServiceApiSync(absoluteServiceDefinitionClassFilePath: string): any {
+function parseServiceApiSync(absoluteServiceDefinitionClassFilePath: string, serviceName: string): any {
   if (cache.has(absoluteServiceDefinitionClassFilePath)) {
     return cache.get(absoluteServiceDefinitionClassFilePath);
   }
@@ -37,7 +37,7 @@ function parseServiceApiSync(absoluteServiceDefinitionClassFilePath: string): an
   var ast = parseAst(absoluteServiceDefinitionClassFilePath);
 
   var [classDeclaration] = ast.program.body
-      .filter(astNode => astNode.type === 'ClassDeclaration');
+      .filter(astNode => astNode.type === 'ClassDeclaration' && astNode.id.name === serviceName);
 
   var methodNames = classDeclaration.body.body
     // Because class bodies in ES7 can contain static property intializers, ensure a part is a
@@ -53,7 +53,7 @@ function parseServiceApiSync(absoluteServiceDefinitionClassFilePath: string): an
     rpcMethodNames,
   };
 
-  cache.set(absoluteServiceDefinitionClassFilePath, serviceStructure);
+  cache.set(absoluteServiceDefinitionClassFilePath + '$' + serviceName, serviceStructure);
 
   return serviceStructure;
 }

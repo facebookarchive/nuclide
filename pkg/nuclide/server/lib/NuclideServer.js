@@ -135,7 +135,7 @@ class NuclideServer {
       return localServiceInstance;
     }
 
-    var serviceApi = parseServiceApiSync(serviceConfig.definition);
+    var serviceApi = parseServiceApiSync(serviceConfig.definition, serviceConfig.name);
 
     serviceApi.eventMethodNames.forEach(methodName => {
       localServiceInstance[methodName].call(localServiceInstance, (...args) => {
@@ -164,7 +164,7 @@ class NuclideServer {
   }
 
   _registerServiceWithServiceFramework(serviceConfig: ServiceConfig): void {
-    var serviceApi = parseServiceApiSync(serviceConfig.definition);
+    var serviceApi = parseServiceApiSync(serviceConfig.definition, serviceConfig.name);
 
     serviceApi.rpcMethodNames.forEach(methodName => {
       this._registerService(

@@ -14,7 +14,7 @@ var NuclideServer = require('../lib/NuclideServer');
 var NuclideRemoteEventbus = require('../lib/NuclideRemoteEventbus');
 var NuclideClient = require('../lib/NuclideClient');
 
-function testRpcServiceWithServiceFramworkRegistered(
+function testRpcServiceWithServiceFrameworkRegistered(
   definitionClassAbsolutePath: string,
   implementationClassPathAbsolutePath: string,
   definitionClassName: string,
@@ -52,7 +52,7 @@ describe('Nuclide serivce with service framework RPC test suite', () => {
     jasmine.getEnv().defaultTimeoutInterval = 10000;
   });
   it('call registered service', () => {
-    testRpcServiceWithServiceFramworkRegistered(
+    testRpcServiceWithServiceFrameworkRegistered(
       path.resolve(__dirname, 'fixtures/MathService.js'),
       path.resolve(__dirname, 'fixtures/LocalMathService.js'),
       'MathService',
@@ -71,6 +71,21 @@ describe('Nuclide serivce with service framework RPC test suite', () => {
           methodName: 'sum',
           args: [1, 2],
           expected: 3,
+        },
+      ],
+    );
+  });
+
+  it('can call a service in a file with multiple services.', () => {
+    testRpcServiceWithServiceFrameworkRegistered(
+      path.resolve(__dirname, 'fixtures/MultipleServices.js'),
+      path.resolve(__dirname, 'fixtures/LocalMultipleServices.js'),
+      'TestServiceA',
+      [
+        {
+          methodName: 'method',
+          args: [],
+          expected: 'A',
         },
       ],
     );
