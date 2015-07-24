@@ -95,6 +95,7 @@ function processDiagnostics(diagnostics: Array<FlowDiagnosticItem>, targetFile: 
 }
 
 module.exports = {
+  providerName: 'Flow',
   grammarScopes: JS_GRAMMARS,
   scope: 'file',
   lintOnFly: true,

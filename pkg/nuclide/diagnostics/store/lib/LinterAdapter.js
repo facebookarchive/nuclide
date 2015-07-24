@@ -41,7 +41,7 @@ var {Emitter, Disposable, CompositeDisposable} = require('atom');
 
 var {TextEventDispatcher} = require('./TextEventDispatcher');
 
-function linterMessageToDiagnosticMessage(msg: LinterMessage, providerName?: string = ''): DiagnosticMessage {
+function linterMessageToDiagnosticMessage(msg: LinterMessage, providerName: string): DiagnosticMessage {
   if (msg.filePath) {
     return {
       scope: 'file',
@@ -66,7 +66,7 @@ function linterMessageToDiagnosticMessage(msg: LinterMessage, providerName?: str
   }
 }
 
-function linterMessagesToDiagnosticUpdate(currentPath: ?NuclideUri, msgs: Array<LinterMessage>): DiagnosticProviderUpdate {
+function linterMessagesToDiagnosticUpdate(currentPath: ?NuclideUri, msgs: Array<LinterMessage>, providerName?: string = 'Unnamed Linter'): DiagnosticProviderUpdate {
   var filePathToMessages = new Map();
   if (currentPath) {
     // Make sure we invalidate the messages for the current path. We may want to
@@ -76,7 +76,7 @@ function linterMessagesToDiagnosticUpdate(currentPath: ?NuclideUri, msgs: Array<
   }
   var projectMessages = [];
   for (var msg of msgs) {
-    var diagnosticMessage = linterMessageToDiagnosticMessage(msg);
+    var diagnosticMessage = linterMessageToDiagnosticMessage(msg, providerName);
     if (diagnosticMessage.scope === 'file') {
       var path = diagnosticMessage.filePath;
       if (!filePathToMessages.has(path)) {
@@ -123,7 +123,7 @@ class LinterAdapter {
     var runLint = async editor => {
       if (this._enabled) {
         var linterMessages = await provider.lint(editor);
-        var diagnosticUpdate = linterMessagesToDiagnosticUpdate(editor.getPath(), linterMessages);
+        var diagnosticUpdate = linterMessagesToDiagnosticUpdate(editor.getPath(), linterMessages, provider.providerName);
         this._emitter.emit('update', diagnosticUpdate);
       }
     };

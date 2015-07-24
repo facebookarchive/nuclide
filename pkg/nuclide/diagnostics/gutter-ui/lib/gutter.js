@@ -142,7 +142,7 @@ function showPopupFor(
   if (message.html) {
     div.innerHTML = message.html;
   } else if (message.text) {
-    div.innerText = message.text;
+    div.innerText = message.providerName + ': ' + message.text;
   } else {
     div.innerText = 'Diagnostic lacks message.';
   }
