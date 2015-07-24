@@ -10,7 +10,9 @@ import os
 import os.path
 import shutil
 import subprocess
+
 from json_helpers import json_load, json_loads
+from package_manager import create_config_for_manifest
 
 DEPENDENCIES_KEYS = [
     'dependencies',
@@ -66,7 +68,7 @@ class Npm (object):
     def _clean_unused_dependencies(self, package_root):
         """Remove unused dependencies for a given package.
 
-        List folders under $pacakge_root/node_modules and compare them to
+        List folders under $package_root/node_modules and compare them to
         $package_root/package.json. If the folder is not a hidden folder (like '.bin') and doesn't
         occur in package.json, run `npm uninstall` to remove it.
         """
@@ -74,7 +76,14 @@ class Npm (object):
         if not os.path.exists(dependencies_root):
             return
 
-        meta = json_load(os.path.join(package_root, 'package.json'))
+        package_json_path = os.path.join(package_root, 'package.json')
+        meta = json_load(package_json_path)
+
+        # If working with a Nuclide packages, use its custom config builder because it loads info
+        # from more places than just the single "package.json".
+        if meta.get('nuclide') != None:
+            meta = create_config_for_manifest(package_json_path, meta)
+
         dependencies = set()
         for key in DEPENDENCIES_KEYS:
             dependencies = dependencies.union(set(meta.get(key, {}).keys()))

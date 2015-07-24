@@ -191,14 +191,20 @@ def load_package_configs():
 
 
 def create_config_for_package(path):
-    '''Create a config for a package.json. Returns None if it is not a Nuclide package.
+    '''Reads the package.json at `path` and returns a config created by
+    `create_config_for_manifest`.
+    '''
+    return create_config_for_manifest(path, json_load(path))
+
+
+def create_config_for_manifest(path, manifest):
+    '''Create a config for a parsed package.json. Returns None if it is not a Nuclide package.
 
     No code in this library should parse a package.json file directly. Instead, it should operate
     on a package config that is created by this method. Because we may read extra properties in
     package.json, such as "customDeps", it is critical that all scripts operate on a normalized
     package config rather than a raw package.json.
     '''
-    manifest = json_load(path)
     nuclide_config = manifest.get('nuclide')
     # Skip if not a nuclide package.
     if nuclide_config == None:
