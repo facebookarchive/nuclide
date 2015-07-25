@@ -47,11 +47,22 @@ class Npm (object):
 
     def install(self, package_root, clean=False, local_packages=None, include_dev_dependencies=True):
         if clean:
-            self.clean(package_root)
+            self.clean_dependencies(package_root)
         else:
             self._clean_unused_dependencies(package_root);
 
         self._npm_install(package_root, include_dev_dependencies)
+
+    def dedupe(self, package_root):
+        logging.info('Running npm dedupe for %s...', package_root)
+        self._execute(['npm', 'dedupe'], cwd=package_root)
+        logging.info('Dedupe %s finished.', package_root)
+
+    def clean_dependencies(self, package_root):
+        dependencies_root = os.path.join(package_root, 'node_modules')
+        if not os.path.exists(dependencies_root):
+            return
+        shutil.rmtree(dependencies_root)
 
     def _npm_install(self, package_root, include_dev_dependencies):
         npm_command = ['npm', 'install']
