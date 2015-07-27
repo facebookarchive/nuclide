@@ -79,15 +79,20 @@ var BuckToolbar = React.createClass({
 
   render(): ReactElement {
     return (
-      <div className="buck-toolbar">
+      <div className="buck-toolbar block">
         <AtomComboBox
+          className="inline-block"
           ref="buildTarget"
           requestOptions={requestOptions}
           intialTextInput={this.props.initialBuildTarget}
           placeholderText="Buck build target"
         />
-        <SimulatorDropdown ref="simulator-menu" className="dropdown-menu" />
-        <div className="btn-group">
+        <SimulatorDropdown
+          className="inline-block"
+          ref="simulator-menu"
+          title="Choose target device"
+        />
+        <div className="btn-group inline-block">
           <button onClick={this._build} className="btn">Build</button>
           <button onClick={this._run} className="btn">Run</button>
           <button onClick={this._debug} className="btn">Debug</button>

@@ -17,6 +17,7 @@ var {PropTypes} = React;
 var NuclideDropdown = React.createClass({
 
   propTypes: {
+    className: PropTypes.string.isRequired,
     menuItems: PropTypes.arrayOf(PropTypes.shape({
       label: PropTypes.node.isRequired,
       value: PropTypes.any,
@@ -26,13 +27,16 @@ var NuclideDropdown = React.createClass({
      * A function that gets called with the new selected value on change.
      */
     onSelectedChange: PropTypes.func.isRequired,
+    title: PropTypes.string.isRequired,
   },
 
   getDefaultProps(): any {
     return {
-      menuItems: [],
+      className: '',
       initialSelectedIndex: 0,
+      menuItems: [],
       onSelectedChange: emptyfunction,
+      title: '',
     };
   },
 
@@ -49,12 +53,16 @@ var NuclideDropdown = React.createClass({
       );
     });
     return (
-      <select
-        className="nuclide-dropdown"
-        onChange={this._onChange}
-        value={this.getSelectedValue()}>
-        {options}
-      </select>
+      <div className={'nuclide-dropdown-container ' + this.props.className}>
+        <select
+          className="btn nuclide-dropdown"
+          onChange={this._onChange}
+          title={this.props.title}
+          value={this.getSelectedValue()}>
+          {options}
+        </select>
+        <i className="icon icon-triangle-down" />
+      </div>
     );
   },
 

@@ -13,6 +13,8 @@ var IosSimulator = require('./IosSimulator');
 var NuclideDropdown = require('nuclide-ui-dropdown');
 var React = require('react-for-atom');
 
+var {PropTypes} = React;
+
 async function loadSimulators(): Promise<any> {
   var devices = await IosSimulator.getDevices();
 
@@ -23,6 +25,18 @@ async function loadSimulators(): Promise<any> {
 }
 
 var SimulatorDropdown = React.createClass({
+
+  propTypes: {
+    className: PropTypes.string.isRequired,
+    title: PropTypes.string.isRequired,
+  },
+
+  getDefaultProps(): {[key: string]: mixed} {
+    return {
+      className: '',
+      title: 'Choose a device',
+    };
+  },
 
   getInitialState(): any {
     return {
@@ -40,7 +54,11 @@ var SimulatorDropdown = React.createClass({
 
   render(): ReactElement {
     return (
-      <NuclideDropdown ref="dropdown" menuItems={this.state.menuItems} />
+      <NuclideDropdown
+        className={this.props.className}
+        menuItems={this.state.menuItems}
+        ref="dropdown"
+        title={this.props.title} />
     );
   },
 

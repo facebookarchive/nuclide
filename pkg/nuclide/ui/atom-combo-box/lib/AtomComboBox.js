@@ -33,10 +33,11 @@ var emptyfunction = require('emptyfunction');
 var AtomComboBox = React.createClass({
 
   propTypes: {
-    intialTextInput: PropTypes.string,
+    className: PropTypes.string.isRequired,
+    intialTextInput: PropTypes.string.isRequired,
     placeholderText: PropTypes.string,
-    maxOptionCount: PropTypes.number,
-    onSelect: PropTypes.func,
+    maxOptionCount: PropTypes.number.isRequired,
+    onSelect: PropTypes.func.isRequired,
     /**
      * promise-returning function; Gets called with
      * the current value of the input field as its only argument
@@ -44,8 +45,9 @@ var AtomComboBox = React.createClass({
     requestOptions: PropTypes.func.isRequired,
   },
 
-  getDefaultProps() {
+  getDefaultProps(): {[key: string]: mixed} {
     return {
+      className: '',
       intialTextInput: '',
       placeholderText: null,
       maxOptionCount: 10,
@@ -53,7 +55,7 @@ var AtomComboBox = React.createClass({
     };
   },
 
-  getInitialState() {
+  getInitialState(): {[key: string]: mixed} {
     return {
       filteredOptions: [],
       options: [],
@@ -232,7 +234,7 @@ var AtomComboBox = React.createClass({
       )
       : null;
     return (
-      <div className="combobox-combobox" onKeyDown={this._handleKeyDown}>
+      <div className={'combobox-combobox ' + this.props.className} onKeyDown={this._handleKeyDown}>
         <AtomInput
           ref="freeformInput"
           initialValue={this.props.intialTextInput}

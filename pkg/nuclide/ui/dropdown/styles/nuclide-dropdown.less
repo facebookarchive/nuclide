@@ -1,0 +1,18 @@
+.nuclide-dropdown-container {
+  display: inline-block;
+  position: relative;
+
+  > .icon {
+    pointer-events: none;
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+}
+
+.nuclide-dropdown {
+  /* Provide space for the right .icon */
+  padding-right: 2.4em;
+  -webkit-appearance: none;
+}
