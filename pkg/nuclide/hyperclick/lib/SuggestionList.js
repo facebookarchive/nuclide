@@ -8,8 +8,16 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
+ import type {
+   HyperclickSuggestion,
+ } from './types';
 
 class SuggestionList {
+  _textEditor: TextEditor;
+  _suggestion: HyperclickSuggestion;
+  _suggestionMarker: ?atom$Marker;
+  _overlayDecoration: ?atom$Decoration;
+
   show(textEditor: TextEditor, suggestion: HyperclickSuggestion): void {
     if (!textEditor || !suggestion) {
       return;

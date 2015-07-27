@@ -17,7 +17,9 @@ var React = require('react-for-atom');
  * registry. The overlay decoration only works through the view registry.
  */
 class SuggestionListElement extends HTMLElement {
-  initialize(model) {
+  _model: Object;
+
+  initialize(model: Object) {
     if (!model) {
       return;
     }
@@ -80,13 +82,13 @@ var SuggestionList = React.createClass({
       React.findDOMNode(this.refs['scroller']).removeEventListener('mousewheel', stopPropagation);
     }));
 
-    var keydown = (event) => {
+    var keydown = (event: Event) => {
       // If the user presses the enter key, confirm the selection.
       if (event.keyCode === 13) {
         event.stopImmediatePropagation();
         this._confirm();
       }
-    }
+    };
     textEditorView.addEventListener('keydown', keydown);
     this._subscriptions.add(new Disposable(() => {
       textEditorView.removeEventListener('keydown', keydown);
@@ -110,8 +112,8 @@ var SuggestionList = React.createClass({
     });
 
     return (
-      <div className='popover-list select-list hyperclick-suggestion-list-scroller' ref='scroller'>
-        <ol className='list-group' ref='selectionList'>
+      <div className="popover-list select-list hyperclick-suggestion-list-scroller" ref="scroller">
+        <ol className="list-group" ref="selectionList">
           {itemComponents}
         </ol>
       </div>

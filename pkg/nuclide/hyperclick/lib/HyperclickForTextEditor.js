@@ -8,6 +8,9 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
+import type {
+  HyperclickSuggestion,
+} from './types';
 
 import type Hyperclick from './Hyperclick';
 
@@ -18,7 +21,21 @@ var getWordTextAndRange = require('./get-word-text-and-range');
  * Call `dispose` to disable the feature.
  */
 class HyperclickForTextEditor {
+  _textEditor: TextEditor;
+  _textEditorView: HTMLElement;
+  _hyperclick: Hyperclick;
+  _lastMouseEvent: ?SyntheticMouseEvent;
+  _lastSuggestionAtMousePromise: ?Promise<HyperclickSuggestion>;
+  _lastSuggestionAtMouse: ?HyperclickSuggestion;
+  _navigationMarkers: ?Array<atom$Marker>;
+  _lastWordRange: ?atom$Range;
+  _onMouseMove: (event: SyntheticMouseEvent) => void;
+  _onMouseDown: (event: SyntheticMouseEvent) => void;
+  _onKeyDown: (event: SyntheticKeyboardEvent) => void;
+  _onKeyUp: (event: SyntheticKeyboardEvent) => void;
+  _commandSubscription: atom$Disposable;
   _isDestroyed: boolean;
+  _hyperclickLoading: boolean;
 
   constructor(textEditor: TextEditor, hyperclick: Hyperclick) {
     this._textEditor = textEditor;
@@ -51,6 +68,7 @@ class HyperclickForTextEditor {
     });
 
     this._isDestroyed = false;
+    this._hyperclickLoading = false;
   }
 
   _confirmSuggestion(suggestion: HyperclickSuggestion): void {
@@ -61,7 +79,7 @@ class HyperclickForTextEditor {
     }
   }
 
-  _onMouseMove(event: MouseEvent): ?Promise {
+  _onMouseMove(event: SyntheticMouseEvent): ?Promise {
     if (this._hyperclickLoading) {
       // Show the loading cursor.
       this._textEditorView.classList.add('hyperclick-loading');
@@ -101,7 +119,7 @@ class HyperclickForTextEditor {
     }
   }
 
-  _onMouseDown(event: MouseEvent): void {
+  _onMouseDown(event: SyntheticMouseEvent): void {
     if (!this._isHyperclickEvent(event)) {
       return;
     }
@@ -115,14 +133,14 @@ class HyperclickForTextEditor {
     event.stopPropagation();
   }
 
-  _onKeyDown(event: KeyboardEvent): void {
+  _onKeyDown(event: SyntheticKeyboardEvent): void {
     // Show the suggestion at the last known mouse position.
     if (this._isHyperclickEvent(event)) {
       this._setSuggestionForLastMouseEvent();
     }
   }
 
-  _onKeyUp(event: KeyboardEvent): void {
+  _onKeyUp(event: SyntheticKeyboardEvent): void {
     if (!this._isHyperclickEvent(event)) {
       this._clearSuggestion();
     }
@@ -131,7 +149,7 @@ class HyperclickForTextEditor {
   /**
    * Returns a `Promise` that's resolved when the latest suggestion's available.
    */
-  getSuggestionAtMouse(): Promise<HyperclickSuggestion> {
+  getSuggestionAtMouse(): Promise<?HyperclickSuggestion> {
     return this._lastSuggestionAtMousePromise || Promise.resolve(null);
   }
 
@@ -187,7 +205,7 @@ class HyperclickForTextEditor {
     return this._isPositionInRange(this._getMousePositionAsBufferPosition(), this._lastWordRange);
   }
 
-  _isPositionInRange(position: atom$Point, range: Range | Array<Range>): boolean {
+  _isPositionInRange(position: atom$Point, range: atom$Range | Array<atom$Range>): boolean {
     return (Array.isArray(range)
         ? range.some(r => r.containsPoint(position))
         : range.containsPoint(position));
@@ -241,7 +259,7 @@ class HyperclickForTextEditor {
   /**
    * Returns whether an event should be handled by hyperclick or not.
    */
-  _isHyperclickEvent(event: KeyboardEvent | MouseEvent): boolean {
+  _isHyperclickEvent(event: SyntheticKeyboardEvent | SyntheticMouseEvent): boolean {
     // If the user is pressing either the meta key or the alt key.
     return event.metaKey !== event.altKey;
   }

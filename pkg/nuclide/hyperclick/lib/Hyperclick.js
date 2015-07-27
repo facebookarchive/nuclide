@@ -8,6 +8,10 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
+import type {
+  HyperclickProvider,
+  HyperclickSuggestion,
+} from './types';
 
 var HyperclickForTextEditor = require('./HyperclickForTextEditor');
 var SuggestionList = require('./SuggestionList');
@@ -16,33 +20,10 @@ var getWordTextAndRange = require('./get-word-text-and-range');
 var {defaultWordRegExpForEditor} = require('./hyperclick-utils');
 var {remove} = require('nuclide-commons').array;
 
-type HyperclickProvider = {
-  // Use this to provide a suggestion for single-word matches.
-  // Optionally set `wordRegExp` to adjust word-matching.
-  getSuggestionForWord?: (textEditor: TextEditor, text: string, range: Range) =>
-      ?Promise<HyperclickSuggestion>;
-  wordRegExp?: RegExp;
-
-  // Use this to provide a suggestion if it can have non-contiguous ranges.
-  // A primary use-case for this is Objective-C methods.
-  getSuggestion?: (textEditor: TextEditor, position: atom$Point) => ?Promise<HyperclickSuggestion>;
-
-  // The higher this is, the more precedence the provider gets. Defaults to 0.
-  priority?: number;
-};
-
-type HyperclickSuggestion = {
-  // The range(s) to underline to provide as a visual cue for clicking.
-  range: ?Range | ?Array<Range>;
-
-  // The function to call when the underlined text is clicked.
-  callback: () => void | Array<{title: string; callback: () => {}}>;
-};
-
 /**
  * Calls the given functions and returns the first non-null return value.
  */
-async function findTruthyReturnValue(fns: Array<undefined | () => Promise<any>>): Promise<any> {
+async function findTruthyReturnValue(fns: Array<void | () => Promise<any>>): Promise<any> {
   for (var fn of fns) {
     var result = typeof fn === 'function' ? await fn() : null;
     if (result) {
@@ -56,6 +37,12 @@ async function findTruthyReturnValue(fns: Array<undefined | () => Promise<any>>)
  * Call `dispose` to disable the feature.
  */
 class Hyperclick {
+  _consumedProviders: Array<HyperclickProvider>;
+  _suggestionList: SuggestionList;
+  _suggestionListViewSubscription: atom$Disposable;
+  _hyperclickForTextEditors: Set<HyperclickForTextEditor>;
+  _textEditorSubscription: atom$Disposable;
+
   constructor() {
     this._consumedProviders = [];
 
@@ -79,13 +66,11 @@ class Hyperclick {
   }
 
   dispose() {
-    this._consumedProviders = null;
     if (this._suggestionListViewSubscription) {
       this._suggestionListViewSubscription.dispose();
     }
     if (this._textEditorSubscription) {
       this._textEditorSubscription.dispose();
-      this._textEditorSubscription = null;
     }
     this._hyperclickForTextEditors.forEach(hyperclick => hyperclick.dispose());
     this._hyperclickForTextEditors.clear();
@@ -134,22 +119,24 @@ class Hyperclick {
   /**
    * Returns the first suggestion from the consumed providers.
    */
-  getSuggestion(textEditor: TextEditor, position: Point): Promise {
+  getSuggestion(textEditor: TextEditor, position: atom$Point): Promise {
     // Get the default word RegExp for this editor.
     var defaultWordRegExp = defaultWordRegExpForEditor(textEditor);
 
-    return findTruthyReturnValue(this._consumedProviders.map(provider => {
+    return findTruthyReturnValue(this._consumedProviders.map((provider: HyperclickProvider) => {
       if (provider.getSuggestion) {
-        return () => provider.getSuggestion(textEditor, position);
+        var getSuggestion = provider.getSuggestion.bind(provider);
+        return () => getSuggestion(textEditor, position);
       } else if (provider.getSuggestionForWord) {
+        var getSuggestionForWord = provider.getSuggestionForWord.bind(provider);
         return () => {
           var wordRegExp = provider.wordRegExp || defaultWordRegExp;
           var {text, range} = getWordTextAndRange(textEditor, position, wordRegExp);
-          return provider.getSuggestionForWord(textEditor, text, range);
+          return getSuggestionForWord(textEditor, text, range);
         };
       }
 
-      throw new Error('Hyperclick must have either `getSuggestion` or `getSuggestionForWord`')
+      throw new Error('Hyperclick must have either `getSuggestion` or `getSuggestionForWord`');
     }));
   }
 

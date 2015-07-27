@@ -30,8 +30,8 @@ type atom$IDisposable = {
 declare class atom$CommandRegistry {
   // Methods
   add(
-    target: string,
-    commandName: string | {[commandName: string]: (event: Event) => void},
+    target: string | HTMLElement,
+    commandNameOrCommands: string | {[commandName: string]: () => void},
     callback?: (event: Event) => mixed // The return value will be ignored.
   ): atom$Disposable;
   dispatch(target: HTMLElement, commandName: string): void;
@@ -202,6 +202,7 @@ declare class atom$Range {
   constructor(pointA: atom$Point | number, pointB: atom$Point | number): void;
   start: atom$Point;
   end: atom$Point;
+  containsPoint(point: atom$Point, exclusive?: boolean): boolean;
   serialize(): Array<Array<number>>;
 }
 
@@ -213,6 +214,29 @@ type InsertTextOptions = {
   normalizeLineEndings: ?boolean;
   undo: string;
 }
+
+type DecorateMarkerParams = {
+  type: 'line',
+  class: string;
+  onlyHead?: boolean;
+  onlyEmpty?: boolean;
+  onlyNonEmpty?: boolean;
+} | {
+  type: 'gutter',
+  class: string;
+  onlyHead?: boolean;
+  onlyEmpty?: boolean;
+  onlyNonEmpty?: boolean;
+  gutterName?: string;
+} | {
+  type: 'highlight',
+  class?: string;
+  gutterName?: string;
+} | {
+  type: 'overlay',
+  item: Object,
+  position?: 'head' | 'tail', // Defaults to 'head' when unspecified.
+};
 
 declare class atom$TextEditor extends atom$Model {
   // Event Subscription
@@ -251,14 +275,7 @@ declare class atom$TextEditor extends atom$Model {
   // History
   // TextEditor Coordinates
   // Decorations
-  decorateMarker(marker: atom$Marker, decorationParams: {
-    type: string;
-    class: string;
-    onlyHead?: boolean;
-    onlyEmpty?: boolean;
-    onlyNonEmpty?: boolean;
-    gutterName?: string;
-  }): atom$Decoration;
+  decorateMarker(marker: atom$Marker, decorationParams: DecorateMarkerParams): atom$Decoration;
 
   // Markers
   markBufferPosition(position: atom$Point | Array<number>): atom$Marker;
@@ -303,11 +320,10 @@ declare class atom$TextEditor extends atom$Model {
 
 declare class atom$ViewRegistry {
   // Methods
-  addViewProvider(providerSpec: {
-    modelConstructor: any;
-    viewConstructor?: any;
-    createView?: (...args: any[]) => ?HTMLElement;
-  }): atom$Disposable;
+  addViewProvider(
+    modelConstructor: any,
+    createView?: (...args: any[]) => ?HTMLElement
+  ): atom$Disposable;
   getView(object: Object): HTMLElement;
 }
 
