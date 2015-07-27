@@ -83,6 +83,10 @@ module.exports = {
     return require('./vcs');
   },
 
+  get url() {
+    return require('./url');
+  },
+
   get dnsUtils() {
     return require('./dns_utils');
   },

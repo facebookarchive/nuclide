@@ -33,12 +33,7 @@ function createRemoteUri(hostname: string, remotePort: number, remotePath: strin
 }
 
 function parse(uri: NuclideUri): { hostname: ?string; port: ?string; path: string; } {
-  // url.parse seems to apply encodeURI to the uri. We typically don't want this behavior.
-  var parsedUri = require('url').parse(uri);
-  parsedUri.href = decodeURI(parsedUri.href);
-  parsedUri.path = decodeURI(parsedUri.path);
-  parsedUri.pathname = decodeURI(parsedUri.pathname);
-  return parsedUri;
+  return require('nuclide-commons').url.parse(uri);
 }
 
 function parseRemoteUri(remoteUri: NuclideUri): { hostname: string; port: string; path: string; } {
