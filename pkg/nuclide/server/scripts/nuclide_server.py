@@ -159,7 +159,7 @@ class NuclideServer(object):
     def restart(self, timeout):
         return self.start(timeout, force=True)
 
-    def start(self, timeout, cert=None, key=None, ca=None, force=False, quiet=False):
+    def start(self, timeout, cert=None, key=None, ca=None, force=False, quiet=False, debug=False):
         # If one but not all certificate files are given.
         if (cert or key or ca) and not (cert and key and ca):
             print('Incomplete certificate files.', file=sys.stderr)
@@ -180,6 +180,10 @@ class NuclideServer(object):
         js_cmd = '%s --port %d' % (NuclideServer.script_path, self.port)
         if cert and key and ca:
             js_cmd += ' --cert %s --key %s --ca %s' % (cert, key, ca)
+        if debug:
+            args = shlex.split('node debug --harmony %s' % js_cmd)
+            p = subprocess.Popen(args)
+            p.wait()
         if quiet:
             # No nohup logging.
             # TODO: This is a workaround for testing.
@@ -191,16 +195,17 @@ class NuclideServer(object):
         else:
             p = subprocess.Popen('nohup node --harmony %s > %s 2>&1 &' % (js_cmd, LOG_FILE), shell=True)
 
-        for i in range(0, timeout + 1):
-            # Wait for a sec and then ping endpoint for version.
-            running_version = self.get_version()
-            if running_version is not None:
-                print('Nuclide started on port %d.' % self.port, file=sys.stderr)
-                self.print_json()
-                return 0
-            time.sleep(1)
+        if not debug:
+            for i in range(0, timeout + 1):
+                # Wait for a sec and then ping endpoint for version.
+                running_version = self.get_version()
+                if running_version is not None:
+                    print('Nuclide started on port %d.' % self.port, file=sys.stderr)
+                    self.print_json()
+                    return 0
+                time.sleep(1)
 
-        print('Nuclide server failed to respond to version check on port %d.' % self.port, file=sys.stderr)
+            print('Nuclide server failed to respond to version check on port %d.' % self.port, file=sys.stderr)
         return 1
 
     @staticmethod

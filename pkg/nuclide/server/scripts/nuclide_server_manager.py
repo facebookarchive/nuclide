@@ -202,7 +202,7 @@ class NuclideServerManager(object):
         print('Starting Nuclide server...', file=sys.stderr)
         if self.options.insecure:
             # Use http.
-            return server.start(self.options.timeout, quiet=self.options.quiet)
+            return server.start(self.options.timeout, quiet=self.options.quiet, debug=self.options.debug)
         else:
             # Use https.
             certs_dir = self.options.certs_dir or self._ensure_certs_dir()
@@ -215,7 +215,8 @@ class NuclideServerManager(object):
             certs_generator = NuclideCertificatesGenerator(certs_dir, common_name, 'nuclide',
                                                            expiration_days=CERTS_EXPIRATION_DAYS)
             return server.start(self.options.timeout, cert=certs_generator.server_cert,
-                                key=certs_generator.server_key, ca=certs_generator.ca_cert, quiet=self.options.quiet)
+                                key=certs_generator.server_key, ca=certs_generator.ca_cert, quiet=self.options.quiet,
+                                debug=self.options.debug)
 
 
 def get_option_parser():
@@ -230,6 +231,7 @@ def get_option_parser():
     parser.add_option('-c', '--command', type=str, help='commands: list, start, stopall; default: %default',
                       default='start')
     parser.add_option('-q', '--quiet', help='suppress nohup logging', action="store_true", default=False)
+    parser.add_option('--debug', help='Start in debugger. Only use this flag interactively', action="store_true", default=False)
     return parser
 
 
