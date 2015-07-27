@@ -13,6 +13,7 @@ var {findDiagnostics} = require('./hack');
 var {HACK_GRAMMAR} = require('nuclide-hack-common/lib/constants');
 
 module.exports = {
+  providerName: 'Hack',
   grammarScopes: [HACK_GRAMMAR],
   scope: 'file',
   lintOnFly: true,
