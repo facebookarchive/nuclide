@@ -258,6 +258,9 @@ async function asyncExecute(
     options: ?Object = {}): Promise<process$asyncExecuteRet> {
   var result = await checkOutput(command, args, options);
   if (result.exitCode !== 0) {
+    // Duck typing Error.
+    result['message'] =
+        `exitCode: ${result.exitCode}, stderr: ${result.stderr}, stdout: ${result.stdout}.`;
     throw result;
   }
   return result;
