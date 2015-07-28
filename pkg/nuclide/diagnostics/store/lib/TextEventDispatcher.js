@@ -12,6 +12,8 @@
 var invariant = require('assert');
 var {Emitter, Disposable, CompositeDisposable} = require('atom');
 
+var {debounce} = require('nuclide-commons');
+
 type EventCallback = (editor: TextEditor) => mixed;
 
 type Event = 'did-reload' | 'did-change' | 'did-save';
@@ -126,9 +128,12 @@ class TextEventDispatcher {
     if (this._callbackContainer.isEmpty()) {
       this._registerEditorListeners();
     }
-    this._callbackContainer.addCallback(grammarScopes, events, callback);
+    // Sometimes these events get triggered several times in succession
+    // (particularly on startup).
+    var debouncedCallback = debounce(callback, 50, true);
+    this._callbackContainer.addCallback(grammarScopes, events, debouncedCallback);
     var disposables = new Disposable(() => {
-      this._callbackContainer.removeCallback(grammarScopes, events, callback);
+      this._callbackContainer.removeCallback(grammarScopes, events, debouncedCallback);
       if (this._callbackContainer.isEmpty()) {
         this._deregisterEditorListeners();
       }

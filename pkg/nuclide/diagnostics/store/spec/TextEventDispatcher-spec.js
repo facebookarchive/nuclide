@@ -97,4 +97,17 @@ describe('TextEventDispatcher', () => {
     triggerAtomEvent(fakeTextEditor);
     expect(callback).toHaveBeenCalled();
   });
+
+  it('should debounce events', () => {
+    var callback = jasmine.createSpy();
+    textEventDispatcher.onFileChange([grammar], callback);
+    // This test hinges on these two calls happening within 50 ms of each other.
+    // An initial attempt to mock the clock was unsuccessful, probably because
+    // of problems clearing the require cache thoroughly enough that the
+    // debounce function picks up the mocked clock. If this causes problems,
+    // figure out how to mock the clock properly.
+    triggerAtomEvent(fakeTextEditor);
+    triggerAtomEvent(fakeTextEditor);
+    expect(callback.callCount).toBe(1);
+  });
 });
