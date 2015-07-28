@@ -54,9 +54,15 @@ declare class atom$Config {
     callback?: (value: any) => void
   ): atom$IDisposable;
 
+  onDidChange(
+    keyPathOrCallback: (string | (event: Object) => void),
+    optionsOrCallback?: (Object | (event: Object) => void),
+    callback?: (event: Object) => void
+  ): atom$IDisposable;
+
   // Managing Settings
   get(
-    keyPath: string,
+    keyPath?: string,
     options?: {
       excludeSources?: Array<string>;
       sources?: Array<string>;
@@ -131,6 +137,7 @@ declare class atom$Marker {
 declare class atom$PackageManager {
   // Event Subscription
   onDidLoadInitialPackages(callback: () => void): atom$Disposable;
+  onDidActivateInitialPackages(callback: () => void): atom$Disposable;
 
   // Package system data
   getApmPath(): string;
