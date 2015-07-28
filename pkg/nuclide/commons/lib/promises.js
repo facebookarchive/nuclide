@@ -56,7 +56,6 @@ module.exports = {
 
   denodeify(f: (...args: Array<any>) => any): (...args: Array<any>) => Promise<any> {
     return function(...args: Array<any>) {
-      var self = this;
       return new Promise((resolve, reject) => {
         function callback(error, result) {
           if (error) {
@@ -65,8 +64,7 @@ module.exports = {
             resolve(result);
           }
         }
-
-        f.apply(self, args.concat([callback]));
+        f.apply(this, args.concat([callback]));
       });
     };
   },

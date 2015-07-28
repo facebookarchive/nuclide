@@ -1,6 +1,5 @@
 'use babel';
 
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -12,6 +11,8 @@
 
 var NestedNuclideTypedTestService = require('REQUIRE_PLACE_HOLDER').NestedNuclideTypedTestService || require('REQUIRE_PLACE_HOLDER');
 
+var analytics = require('nuclide-analytics');
+
 /* Auto-generated: DO NOT MODIFY.*/
 class RemoteNestedNuclideTypedTestService extends NestedNuclideTypedTestService {
   constructor(connection, options) {
@@ -19,6 +20,7 @@ class RemoteNestedNuclideTypedTestService extends NestedNuclideTypedTestService 
     this._connection = connection;
     this._options = options;
   }
+  @analytics.trackTiming()
   foo(a, b, c, d) {
     if (a !== null) {
       a = this._connection.getPathOfUri(a);
@@ -61,6 +63,7 @@ class RemoteNestedNuclideTypedTestService extends NestedNuclideTypedTestService 
       return result;
     });
   }
+  @analytics.trackTiming()
   baz(a, b, c) {
     a = obj => {
       obj = require('nuclide-commons').object.assign({}, obj);

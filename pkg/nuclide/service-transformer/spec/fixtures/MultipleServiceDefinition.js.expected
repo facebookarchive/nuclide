@@ -1,6 +1,5 @@
 'use babel';
 
-/* @flow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -12,6 +11,8 @@
 
 var TestServiceA = require('REQUIRE_PLACE_HOLDER').TestServiceA || require('REQUIRE_PLACE_HOLDER');
 
+var analytics = require('nuclide-analytics');
+
 /* Auto-generated: DO NOT MODIFY.*/
 class RemoteTestServiceA extends TestServiceA {
   constructor(connection, options) {
@@ -19,12 +20,15 @@ class RemoteTestServiceA extends TestServiceA {
     this._connection = connection;
     this._options = options;
   }
+  @analytics.trackTiming()
   foo() {
     return this._connection.makeRpc('TestServiceA/foo', [], this._options);
   }
 }
 
 var TestServiceB = require('REQUIRE_PLACE_HOLDER').TestServiceB || require('REQUIRE_PLACE_HOLDER');
+
+var analytics = require('nuclide-analytics');
 
 /* Auto-generated: DO NOT MODIFY.*/
 class RemoteTestServiceB extends TestServiceB {
@@ -33,6 +37,7 @@ class RemoteTestServiceB extends TestServiceB {
     this._connection = connection;
     this._options = options;
   }
+  @analytics.trackTiming()
   bar(arg0) {
     return this._connection.makeRpc('TestServiceB/bar', [arg0], this._options);
   }

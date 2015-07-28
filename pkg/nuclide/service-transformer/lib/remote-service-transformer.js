@@ -28,7 +28,7 @@
  *      from rpc call as a path. It assembles the path with remote host/port to a remote file uri
  *      and return the uri to caller.
  *   c) For event method definition, if the callback's parameter is typed as `NuclideUri`, the
- *      generated method assembles the paramter with remote host/port information as well.
+ *      generated method assembles the parameter with remote host/port information as well.
  *   d) We also support nested flow type definition for parameter and return value like
  *      `Array<NuclideUri>` or `{file: NuclideUri, sizeInByte: number}` etc, as it will be properly
  *      transformed. For more information, please read comments in 'nuclide-uri-transformer.js'.
@@ -120,6 +120,24 @@ function createBaseClassRequireExpression(baseClassName: string, baseClassFilePa
       t.variableDeclarator(
         /* id */ t.identifier(baseClassName),
         /* init */ orExpression
+      ),
+    ]
+  );
+}
+
+/**
+ * Create ast expression of `var analytics = require('nuclide-analytics');`.
+ */
+function createAnalyticsRequireExpression(): any {
+  return t.variableDeclaration(
+    /* kind */ 'var',
+    /* declarations */ [
+      t.variableDeclarator(
+        /* id */ t.identifier('analytics'),
+        /* init */ t.callExpression(
+          /* callee */ t.identifier('require'),
+          /* arguments */ [t.literal('nuclide-analytics')]
+        )
       ),
     ]
   );
@@ -300,11 +318,27 @@ function createRemoteRpcMethodDefinition(classDeclaration: any, methodDefinition
     ),
   );
 
-  return t.methodDefinition(
+  // Create the method defintion AST node.
+  var remoteMethodDefinition = t.methodDefinition(
     /* key */ t.identifier(methodDefinition.key.name),
     /* value */ remoteFunctionExpression,
     /* kind */ 'method'
   );
+
+  // Annotate this node with the analytics.trackTiming decorator.
+  remoteMethodDefinition.decorators = [
+    t.decorator(
+      t.callExpression(
+        t.memberExpression(
+          t.identifier('analytics'),
+          t.identifier('trackTiming')
+        ),
+        []
+      )
+    )
+  ];
+
+  return remoteMethodDefinition;
 }
 
 /**
@@ -444,6 +478,9 @@ function createRemoteServiceTransformer(baseClassFilePath: string): any {
       // ```
       // which is not what we expect.
       this.insertAfter(createRemoteClassDeclaration(node));
+
+      // Require the analytics package.
+      this.insertAfter(createAnalyticsRequireExpression());
 
       return createBaseClassRequireExpression(node.id.name, baseClassFilePath);
     },
