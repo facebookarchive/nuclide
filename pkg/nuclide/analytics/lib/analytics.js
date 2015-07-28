@@ -20,9 +20,14 @@ module.exports = {
   track(key: string, values: any) {},
 
   /**
-   * A no-op decorator factory (https://github.com/wycats/javascript-decorators). 
+   * A no-op decorator factory (https://github.com/wycats/javascript-decorators).
    */
   trackTiming(eventName=null: ?string): any {
     return (target: any, name: string, descriptor: any) => {};
   },
+
+  /**
+   * A no-op used used to set the sysinfo paramaters of a machine.
+   */
+  setSysInfo(sysInfo: Object): void {},
 };
