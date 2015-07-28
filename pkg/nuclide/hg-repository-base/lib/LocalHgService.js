@@ -89,6 +89,11 @@ class LocalHgService extends LocalHgServiceBase {
             expression: ['allof',
               ['not', ['dirname', '.hg']],
               ['not', ['name', '.hgignore', 'wholename']],
+              // Hg appears to modify temporary files that begin with these
+              // prefixes, every time a file is saved.
+              // TODO (t7832809) Remove this when it is unnecessary.
+              ['not', ['match', 'hg-checkexec-*', 'wholename']],
+              ['not', ['match', 'hg-checklink-*', 'wholename']],
               // It seems to be a watchman's bug that even we configured `.buckd` and `buck-out`
               // to be ignored, watchman will still fire file change events for these two path.
               ['not', ['dirname', '.buckd']],
