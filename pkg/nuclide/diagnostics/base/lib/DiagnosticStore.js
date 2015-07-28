@@ -195,6 +195,8 @@ class DiagnosticStore {
 
   /**
    * Call the callback when the filePath's messages have changed.
+   * In addition, the Store will immediately invoke the callback with the data
+   * currently in the Store, iff there is any.
    * @param callback The function to message when any of the filePaths' messages
    *   change. The array of messages is meant to completely replace any previous
    *   messages for this file path.
@@ -206,6 +208,11 @@ class DiagnosticStore {
     // Use the filePath as the event name.
     var emitterDisposable = this._fileChangeEmitter.on(filePath, callback);
     this._incrementFileListenerCount(filePath);
+
+    var fileMessages = this.getFileMessages(filePath);
+    if (fileMessages.length) {
+      callback({filePath, messages: fileMessages});
+    }
     return new Disposable(() => {
       emitterDisposable.dispose();
       this._decrementFileListenerCount(filePath);
@@ -226,6 +233,8 @@ class DiagnosticStore {
 
   /**
    * Call the callback when project-scope messages change.
+   * In addition, the Store will immediately invoke the callback with the data
+   * currently in the Store, iff there is any.
    * @param callback The function to message when the project-scope messages
    *   change. The array of messages is meant to completely replace any previous
    *   project-scope messages.
@@ -233,6 +242,11 @@ class DiagnosticStore {
   onProjectMessagesDidUpdate(callback: (messages: Array<ProjectDiagnosticMessage>) => mixed): atom$Disposable {
     var emitterDisposable = this._nonFileChangeEmitter.on(PROJECT_MESSAGE_CHANGE_EVENT, callback);
     this._projectListenersCount += 1;
+
+    var projectMessages = this.getProjectMessages();
+    if (projectMessages.length) {
+      callback(projectMessages);
+    }
     return new Disposable(() => {
       emitterDisposable.dispose();
       this._projectListenersCount -= 1;
@@ -241,12 +255,19 @@ class DiagnosticStore {
 
   /**
    * Call the callback when any messages change.
+   * In addition, the Store will immediately invoke the callback with data
+   * currently in the Store, iff there is any.
    * @param callback The function to message when any messages change. The array
    *   of messages is meant to completely replace any previous messages.
    */
   onAllMessagesDidUpdate(callback: (messages: Array<DiagnosticMessage>) => mixed): atom$Disposable {
     var emitterDisposable = this._nonFileChangeEmitter.on(ALL_CHANGE_EVENT, callback);
     this._allMessagesListenersCount += 1;
+
+    var allMessages = this.getAllMessages();
+    if (allMessages.length) {
+      callback(allMessages);
+    }
     return new Disposable(() => {
       emitterDisposable.dispose();
       this._allMessagesListenersCount -= 1;
