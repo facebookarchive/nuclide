@@ -38,6 +38,19 @@ function getArcBuildLockFile(): ?string {
   return lockFile;
 }
 
+/**
+ * @return Array of additional watch expressions to apply to the primary
+ *   watchman subscription.
+ */
+function getPrimaryWatchmanSubscriptionRefinements(): Array<mixed> {
+  var refinements = [];
+  try {
+    refinements = require('./fb/config').primaryWatchSubscriptionRefinements;
+  } catch (e) {
+    // purposely blank
+  }
+  return refinements;
+}
 
 // To make LocalHgServiceBase more easily testable, the watchman dependency is
 // broken out. We add the watchman dependency here.
@@ -79,6 +92,23 @@ class LocalHgService extends LocalHgServiceBase {
           return;
         }
 
+        var primarySubscriptionExpression = ['allof',
+          ['not', ['dirname', '.hg']],
+          ['not', ['name', '.hgignore', 'wholename']],
+          // Hg appears to modify temporary files that begin with these
+          // prefixes, every time a file is saved.
+          // TODO (t7832809) Remove this when it is unnecessary.
+          ['not', ['match', 'hg-checkexec-*', 'wholename']],
+          ['not', ['match', 'hg-checklink-*', 'wholename']],
+          // This watchman subscription is used to determine when and which
+          // files to fetch new statuses for. There is no reason to include
+          // directories in these updates, and in fact they may make us overfetch
+          // statuses. (See diff summary of D2021498.)
+          // This line restricts this subscription to only return files.
+          ['type', 'f'],
+        ];
+        primarySubscriptionExpression = primarySubscriptionExpression.concat(getPrimaryWatchmanSubscriptionRefinements());
+
         // Subscribe to changes to files unrelated to source control.
         this._watchmanClient.command([
           'subscribe',
@@ -86,26 +116,7 @@ class LocalHgService extends LocalHgServiceBase {
           WATCHMAN_SUBSCRIPTION_NAME_PRIMARY,
           {
             fields: ['name', 'exists', 'new'],
-            expression: ['allof',
-              ['not', ['dirname', '.hg']],
-              ['not', ['name', '.hgignore', 'wholename']],
-              // Hg appears to modify temporary files that begin with these
-              // prefixes, every time a file is saved.
-              // TODO (t7832809) Remove this when it is unnecessary.
-              ['not', ['match', 'hg-checkexec-*', 'wholename']],
-              ['not', ['match', 'hg-checklink-*', 'wholename']],
-              // It seems to be a watchman's bug that even we configured `.buckd` and `buck-out`
-              // to be ignored, watchman will still fire file change events for these two path.
-              ['not', ['dirname', '.buckd']],
-              ['not', ['dirname', 'buck-cache']],
-              ['not', ['dirname', 'buck-out']],
-              // This watchman subscription is used to determine when and which
-              // files to fetch new statuses for. There is no reason to include
-              // directories in these updates, and in fact they may make us overfetch
-              // statuses. (See diff summary of D2021498.)
-              // This line restricts this subscription to only return files.
-              ['type', 'f'],
-            ],
+            expression: primarySubscriptionExpression,
             since: clockResp.clock,
           },
         ], (subscribeError, subscribeResp) => {
