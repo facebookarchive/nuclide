@@ -14,6 +14,10 @@ import type {LinterProvider} from './LinterAdapter';
 
 var {Disposable, CompositeDisposable} = require('atom');
 
+const legacyLinterSetting = 'nuclide-diagnostics-store.consumeLegacyLinters';
+
+const legacyLintOnTheFlySetting = 'nuclide-diagnostics-store.legacyLintOnTheFly';
+
 var disposables = null;
 var diagnosticStore = null;
 var diagnosticUpdater = null;
@@ -54,6 +58,7 @@ function getDiagnosticUpdater(): DiagnosticUpdater {
 }
 
 var consumeLegacyLinters = false;
+var lintOnTheFly = false;
 var adapters = new Set();
 
 module.exports = {
@@ -62,20 +67,31 @@ module.exports = {
       type: 'boolean',
       default: false,
     },
+    legacyLintOnTheFly: {
+      type: 'boolean',
+      default: false,
+      description: 'Used only for legacy linters',
+    },
   },
 
   activate(state: ?Object): void {
     if (!disposables) {
       disposables = new CompositeDisposable();
     }
-    var settingName = 'nuclide-diagnostics-store.consumeLegacyLinters';
-    consumeLegacyLinters = ((atom.config.get(settingName): any): boolean);  // returns mixed so a cast is necessary
-    atom.config.observe(settingName, newValue => {
+
+    consumeLegacyLinters = ((atom.config.get(legacyLinterSetting): any): boolean);  // returns mixed so a cast is necessary
+    atom.config.observe(legacyLinterSetting, newValue => {
       // To make this really solid, we should also probably trigger the linter
       // for the active text editor. Possibly more trouble than it's worth,
       // though, since this may be a temporary option.
       consumeLegacyLinters = newValue;
       adapters.forEach(adapter => adapter.setEnabled(newValue));
+    });
+
+    lintOnTheFly = ((atom.config.get(legacyLintOnTheFlySetting): any): boolean);
+    atom.config.observe(legacyLintOnTheFlySetting, newValue => {
+      lintOnTheFly = newValue;
+      adapters.forEach(adapter => adapter.setLintOnFly(newValue));
     });
   },
 
@@ -83,6 +99,7 @@ module.exports = {
     var LinterAdapter = require('./LinterAdapter');
     var adapter = new LinterAdapter(provider);
     adapter.setEnabled(consumeLegacyLinters);
+    adapter.setLintOnFly(lintOnTheFly);
     adapters.add(adapter);
     var diagnosticDisposable = this.consumeDiagnosticProvider(adapter);
     var adapterDisposable = new Disposable(() => {

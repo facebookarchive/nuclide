@@ -95,6 +95,13 @@ function linterMessagesToDiagnosticUpdate(currentPath: ?NuclideUri, msgs: Array<
 
 var textEventDispatcher;
 
+function getTextEventDispatcher(): TextEventDispatcher {
+  if (!textEventDispatcher) {
+    textEventDispatcher = new TextEventDispatcher();
+  }
+  return textEventDispatcher;
+}
+
 /**
  * Provides an adapter between legacy linters (defined by the LinterProvider
  * type), and Nuclide Diagnostic Providers.
@@ -107,30 +114,50 @@ var textEventDispatcher;
  * linter.
  */
 class LinterAdapter {
+  _provider: LinterProvider;
+
   _emitter: Emitter;
 
   _disposables: CompositeDisposable;
 
   _enabled: boolean;
 
+  _currentEventSubscription: ?atom$Disposable;
+
   constructor(provider: LinterProvider) {
+    this._provider = provider;
     this._enabled = true;
-    if (!textEventDispatcher) {
-      textEventDispatcher = new TextEventDispatcher();
-    }
     this._disposables = new CompositeDisposable();
     this._emitter = new Emitter();
-    var runLint = async editor => {
-      if (this._enabled) {
-        var linterMessages = await provider.lint(editor);
-        var diagnosticUpdate = linterMessagesToDiagnosticUpdate(editor.getPath(), linterMessages, provider.providerName);
-        this._emitter.emit('update', diagnosticUpdate);
-      }
-    };
-    if (provider.lintOnFly) {
-      this._disposables.add(textEventDispatcher.onFileChange(provider.grammarScopes, runLint));
+
+    this._subscribeToEvent(provider.lintOnFly);
+
+  }
+
+  // Subscribes to the appropriate event depending on whether we should lint on
+  // the fly or not.
+  _subscribeToEvent(lintOnFly: boolean) {
+    if (this._currentEventSubscription) {
+      this._currentEventSubscription.dispose();
+      this._currentEventSubscription = null;
+    }
+    var runLint = editor => this._runLint(editor);
+    var dispatcher = getTextEventDispatcher();
+    var subscription;
+    if (lintOnFly) {
+      subscription = dispatcher.onFileChange(this._provider.grammarScopes, runLint);
     } else {
-      this._disposables.add(textEventDispatcher.onFileSave(provider.grammarScopes, runLint));
+      subscription = dispatcher.onFileSave(this._provider.grammarScopes, runLint);
+    }
+    this._currentEventSubscription = subscription;
+    this._disposables.add(subscription);
+  }
+
+  async _runLint(editor: TextEditor): Promise<void> {
+    if (this._enabled) {
+      var linterMessages = await this._provider.lint(editor);
+      var diagnosticUpdate = linterMessagesToDiagnosticUpdate(editor.getPath(), linterMessages, this._provider.providerName);
+      this._emitter.emit('update', diagnosticUpdate);
     }
   }
 
@@ -145,6 +172,10 @@ class LinterAdapter {
 
   setEnabled(enabled: boolean): void {
     this._enabled = enabled;
+  }
+
+  setLintOnFly(lintOnFly: boolean): void {
+    this._subscribeToEvent(lintOnFly && this._provider.lintOnFly);
   }
 
   dispose(): void {
