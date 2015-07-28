@@ -209,7 +209,7 @@ class DiagnosticStore {
     var emitterDisposable = this._fileChangeEmitter.on(filePath, callback);
     this._incrementFileListenerCount(filePath);
 
-    var fileMessages = this.getFileMessages(filePath);
+    var fileMessages = this._getFileMessages(filePath);
     if (fileMessages.length) {
       callback({filePath, messages: fileMessages});
     }
@@ -243,7 +243,7 @@ class DiagnosticStore {
     var emitterDisposable = this._nonFileChangeEmitter.on(PROJECT_MESSAGE_CHANGE_EVENT, callback);
     this._projectListenersCount += 1;
 
-    var projectMessages = this.getProjectMessages();
+    var projectMessages = this._getProjectMessages();
     if (projectMessages.length) {
       callback(projectMessages);
     }
@@ -264,7 +264,7 @@ class DiagnosticStore {
     var emitterDisposable = this._nonFileChangeEmitter.on(ALL_CHANGE_EVENT, callback);
     this._allMessagesListenersCount += 1;
 
-    var allMessages = this.getAllMessages();
+    var allMessages = this._getAllMessages();
     if (allMessages.length) {
       callback(allMessages);
     }
@@ -278,7 +278,7 @@ class DiagnosticStore {
    * Gets the current diagnostic messages for the file.
    * Prefer to get updates via ::onFileMessagesDidUpdate.
    */
-  getFileMessages(filePath: NuclideUri): Array<FileDiagnosticMessage> {
+  _getFileMessages(filePath: NuclideUri): Array<FileDiagnosticMessage> {
     var allFileMessages = [];
     var relevantProviders = this._fileToProviders.get(filePath);
     if (relevantProviders) {
@@ -294,7 +294,7 @@ class DiagnosticStore {
    * Gets the current project-scope diagnostic messages.
    * Prefer to get updates via ::onProjectMessagesDidUpdate.
    */
-  getProjectMessages(): Array<ProjectDiagnosticMessage> {
+  _getProjectMessages(): Array<ProjectDiagnosticMessage> {
     var allProjectMessages = [];
     for (var messages of this._providerToProjectDiagnostics.values()) {
       allProjectMessages = allProjectMessages.concat(messages);
@@ -306,7 +306,7 @@ class DiagnosticStore {
    * Gets all current diagnostic messages.
    * Prefer to get updates via ::onAllMessagesDidUpdate.
    */
-  getAllMessages(): Array<DiagnosticMessage> {
+  _getAllMessages(): Array<DiagnosticMessage> {
     var allMessages = [];
     // Get all file messages.
     for (var fileToMessages of this._providerToFileToMessages.values()) {
@@ -315,7 +315,7 @@ class DiagnosticStore {
       }
     }
     // Get all project messages.
-    allMessages = allMessages.concat(this.getProjectMessages());
+    allMessages = allMessages.concat(this._getProjectMessages());
     return allMessages;
   }
 
@@ -326,19 +326,19 @@ class DiagnosticStore {
 
   _emitFileMessages(filePath: NuclideUri): void {
     if (this._fileToListenersCount.get(filePath)) {
-      this._fileChangeEmitter.emit(filePath, {filePath, messages: this.getFileMessages(filePath)});
+      this._fileChangeEmitter.emit(filePath, {filePath, messages: this._getFileMessages(filePath)});
     }
   }
 
   _emitProjectMessages(): void {
     if (this._projectListenersCount) {
-      this._nonFileChangeEmitter.emit(PROJECT_MESSAGE_CHANGE_EVENT, this.getProjectMessages());
+      this._nonFileChangeEmitter.emit(PROJECT_MESSAGE_CHANGE_EVENT, this._getProjectMessages());
     }
   }
 
   _emitAllMessages(): void {
     if (this._allMessagesListenersCount) {
-      this._nonFileChangeEmitter.emit(ALL_CHANGE_EVENT, this.getAllMessages());
+      this._nonFileChangeEmitter.emit(ALL_CHANGE_EVENT, this._getAllMessages());
     }
   }
 }

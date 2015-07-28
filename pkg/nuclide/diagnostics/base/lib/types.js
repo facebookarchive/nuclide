@@ -85,7 +85,4 @@ export type DiagnosticUpdater = {
   onFileMessagesDidUpdate: (callback: (update: FileMessageUpdate) => mixed, filePath: NuclideUri) => atom$Disposable;
   onProjectMessagesDidUpdate: (callback: (messages: Array<ProjectDiagnosticMessage>) => mixed) => atom$Disposable;
   onAllMessagesDidUpdate: (callback: (messages: Array<DiagnosticMessage>) => mixed) => atom$Disposable;
-  getFileMessages: (filePath: NuclideUri) => Array<FileDiagnosticMessage>;
-  getProjectMessages: () => Array<ProjectDiagnosticMessage>;
-  getAllMessages: () => Array<DiagnosticMessage>;
 };

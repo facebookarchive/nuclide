@@ -152,9 +152,9 @@ describe('DiagnosticStore', () => {
     expect(spy_allMessages.mostRecentCall.args[0]).toContain(projectMessageA);
 
     // Expect the getter methods on DiagnosticStore to return correct info.
-    expect(diagnosticStore.getFileMessages('fileA')).toEqual([fileMessageA]);
-    expect(diagnosticStore.getProjectMessages()).toEqual([projectMessageA]);
-    var allMessages = diagnosticStore.getAllMessages();
+    expect(diagnosticStore._getFileMessages('fileA')).toEqual([fileMessageA]);
+    expect(diagnosticStore._getProjectMessages()).toEqual([projectMessageA]);
+    var allMessages = diagnosticStore._getAllMessages();
     expect(allMessages.length).toBe(2);
     expect(allMessages).toContain(fileMessageA);
     expect(allMessages).toContain(projectMessageA);
@@ -207,13 +207,13 @@ describe('DiagnosticStore', () => {
     expect(spy_allMessages.mostRecentCall.args[0]).toContain(projectMessageB);
 
     // Expect the getter methods on DiagnosticStore to return correct data.
-    expect(diagnosticStore.getFileMessages('fileA')).toEqual([fileMessageA]);
-    expect(diagnosticStore.getFileMessages('fileB')).toEqual([fileMessageB]);
-    var projectMessages = diagnosticStore.getProjectMessages();
+    expect(diagnosticStore._getFileMessages('fileA')).toEqual([fileMessageA]);
+    expect(diagnosticStore._getFileMessages('fileB')).toEqual([fileMessageB]);
+    var projectMessages = diagnosticStore._getProjectMessages();
     expect(projectMessages.length).toBe(2);
     expect(projectMessages).toContain(projectMessageA);
     expect(projectMessages).toContain(projectMessageB);
-    var allMessages = diagnosticStore.getAllMessages();
+    var allMessages = diagnosticStore._getAllMessages();
     expect(allMessages.length).toBe(4);
     expect(allMessages).toContain(fileMessageA);
     expect(allMessages).toContain(projectMessageA);
@@ -256,13 +256,13 @@ describe('DiagnosticStore', () => {
     expect(spy_allMessages.mostRecentCall.args[0]).toContain(projectMessageB);
 
     // Expect the getter methods on DiagnosticStore to return the correct info.
-    expect(diagnosticStore.getFileMessages('fileA')).toEqual([fileMessageA2]);
-    expect(diagnosticStore.getFileMessages('fileB')).toEqual([fileMessageB]);
-    var projectMessages = diagnosticStore.getProjectMessages();
+    expect(diagnosticStore._getFileMessages('fileA')).toEqual([fileMessageA2]);
+    expect(diagnosticStore._getFileMessages('fileB')).toEqual([fileMessageB]);
+    var projectMessages = diagnosticStore._getProjectMessages();
     expect(projectMessages.length).toBe(2);
     expect(projectMessages).toContain(projectMessageA2);
     expect(projectMessages).toContain(projectMessageB);
-    var allMessages = diagnosticStore.getAllMessages();
+    var allMessages = diagnosticStore._getAllMessages();
     expect(allMessages.length).toBe(4);
     expect(allMessages).toContain(fileMessageA2);
     expect(allMessages).toContain(projectMessageA2);
@@ -303,13 +303,13 @@ describe('DiagnosticStore', () => {
       expect(spy_allMessages.mostRecentCall.args[0]).toContain(projectMessageB);
 
       // Expect the getter methods on DiagnosticStore to return the correct info.
-      expect(diagnosticStore.getFileMessages('fileA')).toEqual([]);
-      expect(diagnosticStore.getFileMessages('fileB')).toEqual([fileMessageB]);
-      var projectMessages = diagnosticStore.getProjectMessages();
+      expect(diagnosticStore._getFileMessages('fileA')).toEqual([]);
+      expect(diagnosticStore._getFileMessages('fileB')).toEqual([fileMessageB]);
+      var projectMessages = diagnosticStore._getProjectMessages();
       expect(projectMessages.length).toBe(2);
       expect(projectMessages).toContain(projectMessageA2);
       expect(projectMessages).toContain(projectMessageB);
-      var allMessages = diagnosticStore.getAllMessages();
+      var allMessages = diagnosticStore._getAllMessages();
       expect(allMessages.length).toBe(3);
       expect(allMessages).toContain(projectMessageA2);
       expect(allMessages).toContain(fileMessageB);
@@ -347,12 +347,12 @@ describe('DiagnosticStore', () => {
       expect(spy_allMessages.mostRecentCall.args[0]).toContain(projectMessageB);
 
       // Expect the getter methods on DiagnosticStore to return the correct info.
-      expect(diagnosticStore.getFileMessages('fileA')).toEqual([]);
-      expect(diagnosticStore.getFileMessages('fileB')).toEqual([fileMessageB]);
-      var projectMessages = diagnosticStore.getProjectMessages();
+      expect(diagnosticStore._getFileMessages('fileA')).toEqual([]);
+      expect(diagnosticStore._getFileMessages('fileB')).toEqual([fileMessageB]);
+      var projectMessages = diagnosticStore._getProjectMessages();
       expect(projectMessages.length).toBe(1);
       expect(projectMessages).toContain(projectMessageB);
-      var allMessages = diagnosticStore.getAllMessages();
+      var allMessages = diagnosticStore._getAllMessages();
       expect(allMessages.length).toBe(2);
       expect(allMessages).toContain(fileMessageB);
       expect(allMessages).toContain(projectMessageB);
@@ -388,9 +388,9 @@ describe('DiagnosticStore', () => {
     expect(spy_allMessages.calls.length).toBe(1);
 
     // Expect the getter methods on DiagnosticStore to return the correct info.
-    expect(diagnosticStore.getFileMessages('fileA')).toEqual([]);
-    expect(diagnosticStore.getFileMessages('fileB')).toEqual([]);
-    expect(diagnosticStore.getProjectMessages().length).toBe(0);
-    expect(diagnosticStore.getAllMessages().length).toBe(0);
+    expect(diagnosticStore._getFileMessages('fileA')).toEqual([]);
+    expect(diagnosticStore._getFileMessages('fileB')).toEqual([]);
+    expect(diagnosticStore._getProjectMessages().length).toBe(0);
+    expect(diagnosticStore._getAllMessages().length).toBe(0);
   });
 });

@@ -49,9 +49,6 @@ function getDiagnosticUpdater(): DiagnosticUpdater {
       onFileMessagesDidUpdate: store.onFileMessagesDidUpdate.bind(store),
       onProjectMessagesDidUpdate: store.onProjectMessagesDidUpdate.bind(store),
       onAllMessagesDidUpdate: store.onAllMessagesDidUpdate.bind(store),
-      getFileMessages: store.getFileMessages.bind(store),
-      getProjectMessages: store.getProjectMessages.bind(store),
-      getAllMessages: store.getAllMessages.bind(store),
     };
   }
   return diagnosticUpdater;
