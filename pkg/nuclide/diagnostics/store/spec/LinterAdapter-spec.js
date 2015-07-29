@@ -19,17 +19,28 @@ function newLinterAdapter(linter) {
 
 var grammar = 'testgrammar';
 
+function makePromise(ret: mixed, timeout: number) {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      resolve(ret);
+    }, timeout);
+  });
+}
+
 describe('LinterAdapter', () => {
   var eventCallback: any;
   var fakeLinter: any;
   var RealTextEventDispatcher: any;
+  var linterAdapter: any;
+  var linterReturn: any;
 
   beforeEach(() => {
+    linterReturn = Promise.resolve([]);
     fakeLinter = {
       grammarScopes: [grammar],
       scope: 'file',
       lintOnFly: true,
-      lint: () => Promise.resolve([]),
+      lint: () => linterReturn,
     };
     spyOn(fakeLinter, 'lint').andCallThrough();
     class FakeEventDispatcher {
@@ -40,7 +51,8 @@ describe('LinterAdapter', () => {
     }
     RealTextEventDispatcher = require('../lib/TextEventDispatcher').TextEventDispatcher;
     require('../lib/TextEventDispatcher').TextEventDispatcher = (FakeEventDispatcher: any);
-    newLinterAdapter(fakeLinter);
+    linterAdapter = newLinterAdapter(fakeLinter);
+
   });
 
   afterEach(() => {
@@ -50,5 +62,28 @@ describe('LinterAdapter', () => {
   it('should dispatch the linter on an event', () => {
     eventCallback({getPath() { return 'foo'; }});
     expect(fakeLinter.lint).toHaveBeenCalled();
+  });
+
+  it('should not reorder results', () => {
+    waitsForPromise(async () => {
+      var numMessages = 0;
+      var lastMessage = null;
+      linterAdapter.onMessageUpdate(message => {
+        numMessages++;
+        lastMessage = message;
+      });
+      // dispatch two linter requests
+      linterReturn = makePromise([{type: 'Error', filePath: 'bar'}], 50);
+      eventCallback({getPath() { return 'foo'; }});
+      linterReturn = makePromise([{type: 'Error', filePath: 'baz'}], 10);
+      eventCallback({getPath() { return 'foo'; }});
+      // If we call it once with a larger value, the first promise will resolve
+      // first, even though the timeout is larger
+      window.advanceClock(30);
+      window.advanceClock(30);
+      waitsFor(() => {
+        return numMessages === 1 && lastMessage.filePathToMessages.has('baz');
+      }, 'There should be only the latest message', 100);
+    });
   });
 });

@@ -124,11 +124,16 @@ class LinterAdapter {
 
   _currentEventSubscription: ?atom$Disposable;
 
+  _lastDispatchedLint: number;
+  _lastFinishedLint: number;
+
   constructor(provider: LinterProvider) {
     this._provider = provider;
     this._enabled = true;
     this._disposables = new CompositeDisposable();
     this._emitter = new Emitter();
+    this._lastDispatchedLint = 0;
+    this._lastFinishedLint = 0;
 
     this._subscribeToEvent(provider.lintOnFly);
 
@@ -155,9 +160,14 @@ class LinterAdapter {
 
   async _runLint(editor: TextEditor): Promise<void> {
     if (this._enabled) {
+      var thisLint = this._lastDispatchedLint + 1;
+      this._lastDispatchedLint = thisLint;
       var linterMessages = await this._provider.lint(editor);
-      var diagnosticUpdate = linterMessagesToDiagnosticUpdate(editor.getPath(), linterMessages, this._provider.providerName);
-      this._emitter.emit('update', diagnosticUpdate);
+      if (this._lastFinishedLint < thisLint) {
+        var diagnosticUpdate = linterMessagesToDiagnosticUpdate(editor.getPath(), linterMessages, this._provider.providerName);
+        this._emitter.emit('update', diagnosticUpdate);
+        this._lastFinishedLint = thisLint;
+      }
     }
   }
 
