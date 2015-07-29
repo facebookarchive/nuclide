@@ -18,6 +18,7 @@ var NuclideDropdown = React.createClass({
 
   propTypes: {
     className: PropTypes.string.isRequired,
+    disabled: PropTypes.bool.isRequired,
     menuItems: PropTypes.arrayOf(PropTypes.shape({
       label: PropTypes.node.isRequired,
       value: PropTypes.any,
@@ -27,12 +28,18 @@ var NuclideDropdown = React.createClass({
      * A function that gets called with the new selected value on change.
      */
     onSelectedChange: PropTypes.func.isRequired,
+    /**
+     * Size of dropdown. Sizes match .btn classes in Atom's style guide. Default is medium (which
+     * does not have an associated 'size' string).
+     */
+    size: PropTypes.oneOf(['xs', 'sm', 'lg']),
     title: PropTypes.string.isRequired,
   },
 
   getDefaultProps(): any {
     return {
       className: '',
+      disabled: false,
       initialSelectedIndex: 0,
       menuItems: [],
       onSelectedChange: emptyfunction,
@@ -47,15 +54,18 @@ var NuclideDropdown = React.createClass({
   },
 
   render(): ReactElement {
-    var options = this.props.menuItems.map((item, i) => {
-      return (
-        <option key={item.value} value={item.value}>{item.label}</option>
-      );
-    });
+    var options = this.props.menuItems.map(item =>
+      <option key={item.value} value={item.value}>{item.label}</option>
+    );
+    var selectClassName = 'btn nuclide-dropdown';
+    if (this.props.size) {
+      selectClassName = `${selectClassName} btn-${this.props.size}`;
+    }
     return (
       <div className={'nuclide-dropdown-container ' + this.props.className}>
         <select
-          className="btn nuclide-dropdown"
+          className={selectClassName}
+          disabled={this.props.disabled}
           onChange={this._onChange}
           title={this.props.title}
           value={this.getSelectedValue()}>
@@ -66,7 +76,7 @@ var NuclideDropdown = React.createClass({
     );
   },
 
-  _onChange(event) {
+  _onChange(event: SyntheticMouseEvent) {
     var selectedIndex = event.target.selectedIndex;
     this.setState({selectedIndex});
     this.props.onSelectedChange(this._getValue(selectedIndex));
