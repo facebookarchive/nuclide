@@ -289,6 +289,14 @@ declare class atom$TextEditor extends atom$Model {
   markBufferRange(range: atom$Range | Array<Array<number>>): atom$Marker;
 
   // Cursors
+  setCursorBufferPosition(
+    position: atom$Point | Array<number>,
+    options?: {
+      autoscroll?: boolean;
+      wrapBeyondNewlines?: boolean;
+      wrapAtSoftNewlines?: boolean;
+      screenLine?: boolean;
+    }): void;
   getCursorBufferPosition(): atom$Point;
   getLastCursor(): atom$Cursor;
   moveToEndOfLine(): void;
