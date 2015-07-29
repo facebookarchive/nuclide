@@ -9,8 +9,8 @@
     "testRunner": "npm"
   },
   "dependencies": {
-    "babel-core": "5.8.3",
-    "babel-runtime": "5.8.3",
+    "babel-core": "5.8.14",
+    "babel-runtime": "5.8.12",
     "mv": "2.1.1",
     "temp": "0.8.1"
   }
