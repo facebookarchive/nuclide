@@ -33,8 +33,11 @@ describe('LinterAdapter', () => {
   var RealTextEventDispatcher: any;
   var linterAdapter: any;
   var linterReturn: any;
+  var fakeEditor: any;
 
   beforeEach(() => {
+    fakeEditor = {getPath() { return 'foo'; }};
+    spyOn(atom.workspace, 'getActiveTextEditor').andReturn(fakeEditor);
     linterReturn = Promise.resolve([]);
     fakeLinter = {
       grammarScopes: [grammar],
@@ -52,16 +55,24 @@ describe('LinterAdapter', () => {
     RealTextEventDispatcher = require('../lib/TextEventDispatcher').TextEventDispatcher;
     require('../lib/TextEventDispatcher').TextEventDispatcher = (FakeEventDispatcher: any);
     linterAdapter = newLinterAdapter(fakeLinter);
-
   });
 
   afterEach(() => {
     require('../lib/TextEventDispatcher').TextEventDispatcher = RealTextEventDispatcher;
+    jasmine.unspy(atom.workspace, 'getActiveTextEditor');
   });
 
   it('should dispatch the linter on an event', () => {
-    eventCallback({getPath() { return 'foo'; }});
+    eventCallback(fakeEditor);
     expect(fakeLinter.lint).toHaveBeenCalled();
+  });
+
+  it('should dispatch an event on subscribe if no lint is in progress', () => {
+    var callback = jasmine.createSpy();
+    linterAdapter.onMessageUpdate(callback);
+    waitsFor(() => {
+      return callback.callCount > 0;
+    }, 'It should call the callback', 100);
   });
 
   it('should not reorder results', () => {
@@ -74,15 +85,15 @@ describe('LinterAdapter', () => {
       });
       // dispatch two linter requests
       linterReturn = makePromise([{type: 'Error', filePath: 'bar'}], 50);
-      eventCallback({getPath() { return 'foo'; }});
+      eventCallback(fakeEditor);
       linterReturn = makePromise([{type: 'Error', filePath: 'baz'}], 10);
-      eventCallback({getPath() { return 'foo'; }});
+      eventCallback(fakeEditor);
       // If we call it once with a larger value, the first promise will resolve
       // first, even though the timeout is larger
       window.advanceClock(30);
       window.advanceClock(30);
       waitsFor(() => {
-        return numMessages === 1 && lastMessage.filePathToMessages.has('baz');
+        return numMessages === 2 && lastMessage.filePathToMessages.has('baz');
       }, 'There should be only the latest message', 100);
     });
   });

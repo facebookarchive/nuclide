@@ -172,7 +172,12 @@ class LinterAdapter {
   }
 
   onMessageUpdate(callback: MessageUpdateCallback): atom$Disposable {
-    return this._emitter.on('update', callback);
+    var disposable = this._emitter.on('update', callback);
+    var activeTextEditor = atom.workspace.getActiveTextEditor();
+    if (activeTextEditor && !this._lintInProgress()) {
+      this._runLint(activeTextEditor);
+    }
+    return disposable;
   }
 
   onMessageInvalidation(callback: MessageInvalidationCallback): atom$Disposable {
@@ -191,6 +196,10 @@ class LinterAdapter {
   dispose(): void {
     this._emitter.dispose();
     this._disposables.dispose();
+  }
+
+  _lintInProgress(): boolean {
+    return this._lastDispatchedLint > this._lastFinishedLint;
   }
 }
 
