@@ -79,11 +79,11 @@ class LocalBuckProject extends BuckProject {
   }
 
   build(buildTargets: Array<string> | string): Promise<any> {
-    return this._build(buildTargets, {install: false, run: false});
+    return this._build(buildTargets, {install: false, run: false, debug: false});
   }
 
-  install(buildTargets: Array<string> | string, run: boolean, simulator: ?string): Promise<any> {
-    return this._build(buildTargets, {install: true, run, simulator});
+  install(buildTargets: Array<string> | string, run: boolean, debug: boolean, simulator: ?string): Promise<any> {
+    return this._build(buildTargets, {install: true, run, debug, simulator});
   }
 
   async _build(buildTargets: Array<string> | string, options: any): Promise<any> {
@@ -93,6 +93,7 @@ class LocalBuckProject extends BuckProject {
     var {
       install,
       run,
+      debug,
       simulator
     } = options;
 
@@ -102,6 +103,9 @@ class LocalBuckProject extends BuckProject {
     if (install) {
       if (run) {
         args.push('--run');
+      }
+      if (debug) {
+        args.push('--wait-for-debugger');
       }
       if (simulator) {
         args.push('--udid');

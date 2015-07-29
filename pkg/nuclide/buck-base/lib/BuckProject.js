@@ -45,10 +45,13 @@ class BuckProject {
    *
    * @param run If set to 'true', appends the buck invocation with '--run' to run the
    *   installed application.
+   * @param debug If set to 'true', appends the buck invocation with '--wait-for-debugger'
+   *   telling the launched application to stop at the loader breakpoint
+   *   waiting for debugger to connect
    * @param simulator The UDID of the simulator to install the binary on.
    * @return Promise that resolves to a build report.
    */
-  install(buildTargets: Array<string> | string, run: boolean, simulator: ?string): Promise<any> {
+  install(buildTargets: Array<string> | string, run: boolean, debug: boolean, simulator: ?string): Promise<any> {
     return Promise.reject('Not implemented');
   }
 

@@ -138,7 +138,7 @@ var BuckToolbar = React.createClass({
       atom.views.getView(atom.workspace),
       'nuclide-debugger:stop-debugging');
 
-    var installResult = await this._doBuild(/* run */ true);
+    var installResult = await this._doBuild(/* run */ true, debug);
     if (!installResult) {
       return;
     }
@@ -159,7 +159,7 @@ var BuckToolbar = React.createClass({
    *   (a) the active file in the editor is not part of a Buck project, or
    *   (b) there are errors in the build.
    */
-  async _doBuild(run: boolean): Promise<?{buckProject: BuckProject; buildTarget: string, pid: ?number}> {
+  async _doBuild(run: boolean, debug: boolean = false): Promise<?{buckProject: BuckProject; buildTarget: string, pid: ?number}> {
     var buildTarget = this.getBuildTarget();
     if (!buildTarget) {
       return;
@@ -243,7 +243,7 @@ var BuckToolbar = React.createClass({
 
     var buildReport;
     if (run) {
-      buildReport = await buckProject.install(buildTarget, true, this.getSimulator());
+      buildReport = await buckProject.install(buildTarget, true, debug, this.getSimulator());
     } else {
       buildReport = await buckProject.build(buildTarget);
     }
