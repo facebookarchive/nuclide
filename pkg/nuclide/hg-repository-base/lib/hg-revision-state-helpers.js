@@ -39,12 +39,15 @@ var COPIED_FILE_PAIR_REGEX = /(.+) \((.+)/;
  * if the operation fails for whatever reason, including invalid input (e.g. if
  * you pass a filePath that does not exist at the given revision).
  */
-function fetchFileContentAtRevision(filePath: NuclideUri, revision: ?string): Promise<?string> {
+function fetchFileContentAtRevision(filePath: NuclideUri, revision: ?string, workingDirectory: string): Promise<?string> {
   var args = ['cat', filePath];
   if (revision) {
     args.splice(1, 0, '--rev', revision);
   }
-  return hgAsyncExecute(args);
+  var execOptions = {
+    cwd: workingDirectory,
+  };
+  return hgAsyncExecute(args, execOptions);
 }
 
 /**
@@ -121,7 +124,7 @@ async function hgAsyncExecute(args: Array<string>, execOptions: any): Promise<an
   try {
     var output = await asyncExecute('hg', args, execOptions);
   } catch (e) {
-    logger.error('Hg command: ', e.command, ' failed with error: ', e.stderr);
+    logger.error('Hg command: failed with error: ', e.stderr);
     return null;
   }
   return output.stdout;
