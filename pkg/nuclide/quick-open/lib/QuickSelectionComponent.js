@@ -10,9 +10,10 @@
  */
 
 import type {
-  FileResult,
   GroupedResult,
 } from './types';
+
+import type {Directory} from 'atom';
 
 var AtomInput = require('nuclide-ui-atom-input');
 var {CompositeDisposable, Disposable, Emitter} = require('atom');
@@ -35,8 +36,14 @@ var {PropTypes} = React;
 var assign = Object.assign || require('object-assign');
 var cx = require('react-classset');
 
+type TabInfo = {
+  providerName: string;
+  title: string;
+  action: string;
+};
+
 // keep `action` in sync with keymap.
-var DEFAULT_TABS = [
+var DEFAULT_TABS: Array<TabInfo> = [
   {
    providerName: 'OmniSearchResultProvider',
    title: 'All Results',
@@ -54,7 +61,7 @@ var DEFAULT_TABS = [
   },
 ];
 
-var DYNAMIC_TABS = {
+var DYNAMIC_TABS: {[key: string]: TabInfo} = {
   biggrep: {
    providerName: 'BigGrepListProvider',
    title: 'BigGrep',
@@ -69,37 +76,33 @@ var DYNAMIC_TABS = {
 
 var RENDERABLE_TABS = DEFAULT_TABS.slice();
 
-async function _getServicesForDirectory(directory: any): any {
+async function _getServicesForDirectory(directory: Directory): Promise<Array<{name:string}>> {
   var {getClient} = require('nuclide-client');
   var directoryPath = directory.getPath();
-  var basename = directory.getBaseName();
   var client = getClient(directoryPath);
   var remoteUri = require('nuclide-remote-uri');
   var {protocol, host, path: rootDirectory} = remoteUri.parse(directoryPath);
-  var providers = await client.getSearchProviders(rootDirectory);
-  return providers;
+  return await client.getSearchProviders(rootDirectory);
 }
 
-async function _getEligibleServices() {
-  var paths = atom.project.getDirectories();
-  var services = paths.map(
-    _getServicesForDirectory
-  );
+function _getEligibleServices(): Promise<Array<Array<{name:string}>>> {
+  var directories = atom.project.getDirectories();
+  var services = directories.map(_getServicesForDirectory);
   return Promise.all(services);
 }
 
-function updateRenderableTabs() {
-  var eligibleServiceTabs = _getEligibleServices().then((services) => {
-    RENDERABLE_TABS = DEFAULT_TABS.slice();
-    var dynamicTab = Array.prototype.concat.apply([], services)
-      .filter(service => DYNAMIC_TABS.hasOwnProperty(service.name))
-      .map(service => DYNAMIC_TABS[service.name]);
-    // insert dynamic tabs at index 1 (after the OmniSearchProvider).
-    RENDERABLE_TABS.splice.apply(
-      RENDERABLE_TABS,
-      [1, 0].concat(dynamicTab)
-    );
-  });
+async function updateRenderableTabs() {
+  var services = await _getEligibleServices();
+
+  // Array<Array<{name:string}>> => Array<{name:string}>.
+  var flattenedServices = Array.prototype.concat.apply([], services);
+  var dynamicTabs = flattenedServices
+    .filter(service => DYNAMIC_TABS.hasOwnProperty(service.name))
+    .map(service => DYNAMIC_TABS[service.name]);
+
+  // Insert dynamic tabs at index 1 (after the OmniSearchProvider).
+  RENDERABLE_TABS = DEFAULT_TABS.slice();
+  RENDERABLE_TABS.splice(1, 0, ...dynamicTabs);
 }
 
 function sanitizeQuery(query: string): string {
@@ -411,7 +414,7 @@ var QuickSelectionComponent = React.createClass({
     this.setSelectedIndex(top.serviceName, top.directoryName, 0);
   },
 
-  _getOuterResults(arrayOperation: Function): void {
+  _getOuterResults(arrayOperation: Function): ?{serviceName: string; directoryName: string; results: Array<mixed>} {
     var nonEmptyResults = filterEmptyResults(this.state.resultsByService);
     var serviceName = arrayOperation.call(Object.keys(nonEmptyResults));
     if (!serviceName) {
@@ -426,7 +429,7 @@ var QuickSelectionComponent = React.createClass({
     };
   },
 
-  getSelectedItem() {
+  getSelectedItem(): ?Object {
     return this.getItemAtIndex(
       this.state.selectedService,
       this.state.selectedDirectory,
@@ -434,7 +437,7 @@ var QuickSelectionComponent = React.createClass({
     );
   },
 
-  getItemAtIndex(serviceName, directory, itemIndex) {
+  getItemAtIndex(serviceName: string, directory: string, itemIndex: number): ?Object {
     if (
       itemIndex === -1 ||
       !this.state.resultsByService[serviceName] ||
@@ -466,12 +469,12 @@ var QuickSelectionComponent = React.createClass({
     }, () => this._emitter.emit('selection-changed', this.getSelectedIndex()));
   },
 
-  _setResult(serviceName, dirName, results) {
+  _setResult(serviceName: string, dirName: string, results) {
     var updatedResultsByDirectory = assign(
       {},
       this.state.resultsByService[serviceName],
       {
-        [dirName]: results
+        [dirName]: results,
       }
     );
     var updatedResultsByService = assign(
@@ -499,7 +502,7 @@ var QuickSelectionComponent = React.createClass({
     }).catch(error => {
       var updatedItems = {
         waiting: false,
-        error: 'an error occurred', error,
+        error: 'an error occurred: ' + error,
         items: [],
       };
       this._setResult(serviceName, directory, updatedItems);
@@ -603,7 +606,7 @@ var QuickSelectionComponent = React.createClass({
 
   _renderEmptyMessage(message: string): ReactElement {
     return (
-      <ul className='background-message centered'>
+      <ul className="background-message centered">
         <li>{message}</li>
       </ul>
     );
@@ -731,5 +734,3 @@ var QuickSelectionComponent = React.createClass({
 });
 
 module.exports = QuickSelectionComponent;
-
-export type QuickSelectionComponent = QuickSelectionComponent;
