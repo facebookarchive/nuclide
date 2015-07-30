@@ -18,7 +18,12 @@ var {containsPathSync} = require('./utils');
 var {isRemote} = require('nuclide-remote-uri');
 
 module.exports = {
-  getClient(path: string): NuclideClient {
+  /**
+   * @return null if the specified path is a remote NuclideUri and the corresponding
+   *     RemoteConnection has not been created yet. This is likely to happen if getClient() is
+   *     called early in the startup process and we are trying to restore a remote project root.
+   */
+  getClient(path: string): ?NuclideClient {
     if (isRemote(path)) {
       var connection = RemoteConnection.getForUri(path);
       return connection ? connection.getClient() : null;

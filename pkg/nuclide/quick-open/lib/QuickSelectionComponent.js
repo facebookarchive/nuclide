@@ -80,6 +80,13 @@ async function _getServicesForDirectory(directory: Directory): Promise<Array<{na
   var {getClient} = require('nuclide-client');
   var directoryPath = directory.getPath();
   var client = getClient(directoryPath);
+  if (!client) {
+    // If the RemoteConnection for the Directory has not been re-established yet, then `client` may
+    // be null. For now, we just ignore this, but ideally we would find a way to register a listener
+    // that notifies us when the RemoteConnection is created that runs updateRenderableTabs().
+    return [];
+  }
+
   var remoteUri = require('nuclide-remote-uri');
   var {protocol, host, path: rootDirectory} = remoteUri.parse(directoryPath);
   return await client.getSearchProviders(rootDirectory);
