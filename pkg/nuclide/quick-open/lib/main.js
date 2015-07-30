@@ -187,6 +187,9 @@ class Activation {
     }
 
     this._currentProvider = provider;
+    if (this._searchComponent) {
+      this._searchComponent = this._render();
+    }
     this.showSearchPanel();
   }
 
