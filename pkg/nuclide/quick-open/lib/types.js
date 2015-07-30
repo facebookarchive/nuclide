@@ -30,5 +30,12 @@ export type GroupedResult = {
 
 export type GroupedResultPromise = Promise<GroupedResult>;
 
+export type TabInfo = {
+  providerName: string;
+  title: string;
+  action: string;
+};
+
+
 var QuickSelectionProvider = require('./QuickSelectionProvider');
 export type QuickSelectionProvider = QuickSelectionProvider;

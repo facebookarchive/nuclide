@@ -17,6 +17,8 @@ import type {
   QuickSelectionProvider,
 } from './types';
 
+import type {TabManager} from './TabManager';
+
 var trackFunction;
 function track(...args) {
   var trackFunc = trackFunction || (trackFunction = require('nuclide-analytics').track);
@@ -79,12 +81,15 @@ class Activation {
   _searchComponent: QuickSelectionComponent;
   _searchPanel: atom$Panel;
   _subscriptions: atom$CompositeDisposable;
+  _tabManager: TabManager;
   _debouncedUpdateModalPosition: () => void;
 
   constructor() {
     this._previousFocus = null;
 
     var {CompositeDisposable} = require('atom');
+    this._subscriptions = new CompositeDisposable();
+
     this._currentProvider = getSearchResultManager().getProvider(DEFAULT_PROVIDER);
     this._reactDiv = document.createElement('div');
     this._searchPanel = atom.workspace.addModalPanel({item: this._reactDiv, visible: false});
@@ -92,7 +97,12 @@ class Activation {
     window.addEventListener('resize', this._debouncedUpdateModalPosition);
     this._updateModalPosition();
 
+    this._tabManager = require('./TabManager').getInstance();
     this._searchComponent = this._render();
+    this._subscriptions.add(
+      this._tabManager.onDidChangeTabs(() => this._render())
+    );
+
     this._searchComponent.onSelection((selection) => {
       var options = {};
       if (selection.line) {
@@ -161,6 +171,8 @@ class Activation {
     return React.render(
       <QuickSelectionComponent
         provider={this._currentProvider}
+        tabs={this._tabManager.getTabs()}
+        initialActiveTab={this._tabManager.getDefaultTab()}
       />,
       this._reactDiv
     );
@@ -239,6 +251,10 @@ class Activation {
     if (editor) {
       return editor.getSelections()[0].getText();
     }
+  }
+
+  dispose(): void {
+    this._subscriptions.dispose();
   }
 }
 
@@ -321,6 +337,7 @@ module.exports = {
 
   deactivate(): void {
     if (activation) {
+      activation.dispose();
       activation = null;
     }
     if (listeners) {

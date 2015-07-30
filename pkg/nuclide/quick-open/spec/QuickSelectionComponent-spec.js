@@ -10,6 +10,7 @@
  */
 
 var React = require('react-for-atom');
+var {TabManager} = require('../lib/TabManager');
 var QuickSelectionComponent = require('../lib/QuickSelectionComponent');
 var QuickSelectionProvider = require('../lib/QuickSelectionProvider');
 
@@ -33,6 +34,7 @@ class TestQuickSelectionProvider extends QuickSelectionProvider {
 describe('QuickSelectionComponent', () => {
   var componentRoot: Node;
   var component: QuickSelectionComponent;
+  var tabManager: TabManager;
 
   beforeEach(() => {
     spyOn(Date, 'now').andCallFake(() => window.now);
@@ -41,8 +43,13 @@ describe('QuickSelectionComponent', () => {
     document.body.appendChild(componentRoot);
 
     var testProvider = new TestQuickSelectionProvider({});
+    tabManager = new TabManager();
     component = React.render(
-      <QuickSelectionComponent provider={testProvider} />,
+      <QuickSelectionComponent
+        provider={testProvider}
+        tabs={tabManager.getTabs()}
+        initialActiveTab={tabManager.getDefaultTab()}
+      />,
       componentRoot
     );
   });
@@ -50,6 +57,8 @@ describe('QuickSelectionComponent', () => {
   afterEach(() => {
     React.unmountComponentAtNode(componentRoot);
     document.body.removeChild(componentRoot);
+    tabManager.dispose();
+    tabManager = null;
   });
 
   // Updates the component to be using a TestQuickSelectionProvider that will serve @items, then
@@ -61,7 +70,11 @@ describe('QuickSelectionComponent', () => {
         resolve(component);
       });
       component = React.render(
-        <QuickSelectionComponent provider={new TestQuickSelectionProvider(items)} />,
+        <QuickSelectionComponent
+          provider={new TestQuickSelectionProvider(items)}
+          tabs={tabManager.getTabs()}
+          initialActiveTab={tabManager.getDefaultTab()}
+        />,
         componentRoot
       );
       window.advanceClock(250);

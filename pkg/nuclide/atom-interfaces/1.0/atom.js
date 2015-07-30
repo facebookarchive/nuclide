@@ -470,6 +470,9 @@ declare class atom$GrammarRegistry {
 }
 
 declare class atom$Project {
+  // Event Subscription
+  onDidChangePaths(callback: (projectPaths: Array<string>) => mixed): atom$Disposable;
+
   // Managing Paths
   getPaths(): Array<string>;
   setPaths(paths: Array<string>): void;

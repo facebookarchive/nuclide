@@ -14,9 +14,8 @@ import type {
   FileResult,
   GroupedResult,
   ServiceName,
+  TabInfo,
 } from './types';
-
-import type {Directory} from 'atom';
 
 var AtomInput = require('nuclide-ui-atom-input');
 var {CompositeDisposable, Disposable, Emitter} = require('atom');
@@ -38,97 +37,9 @@ var {PropTypes} = React;
 
 var cx = require('react-classset');
 
-type TabInfo = {
-  providerName: string;
-  title: string;
-  action: string;
-};
-
-// keep `action` in sync with keymap.
-var DEFAULT_TABS: Array<TabInfo> = [
-  {
-   providerName: 'OmniSearchResultProvider',
-   title: 'All Results',
-   action: 'nuclide-quick-open:toggle-omni-search',
-  },
-  {
-   providerName: 'FileListProvider',
-   title: 'Filenames',
-   action: 'nuclide-quick-open:toggle-quick-open',
-  },
-  {
-   providerName: 'OpenFileListProvider',
-   title: 'Open Files',
-   action: 'nuclide-quick-open:toggle-openfilename-search',
-  },
-];
-
-var DYNAMIC_TABS: {[key: string]: TabInfo} = {
-  biggrep: {
-   providerName: 'BigGrepListProvider',
-   title: 'BigGrep',
-   action: 'nuclide-quick-open:toggle-biggrep-search',
-  },
-  hack: {
-   providerName: 'SymbolListProvider',
-   title: 'Symbols',
-   action: 'nuclide-quick-open:toggle-symbol-search',
-  },
-};
-
-var RENDERABLE_TABS = DEFAULT_TABS.slice();
-
-async function _getServicesForDirectory(directory: Directory): Promise<Array<{name:string}>> {
-  var {getClient} = require('nuclide-client');
-  var directoryPath = directory.getPath();
-  var client = getClient(directoryPath);
-  if (!client) {
-    // If the RemoteConnection for the Directory has not been re-established yet, then `client` may
-    // be null. For now, we just ignore this, but ideally we would find a way to register a listener
-    // that notifies us when the RemoteConnection is created that runs updateRenderableTabs().
-    return [];
-  }
-
-  var remoteUri = require('nuclide-remote-uri');
-  var {protocol, host, path: rootDirectory} = remoteUri.parse(directoryPath);
-  return await client.getSearchProviders(rootDirectory);
-}
-
-function _getEligibleServices(): Promise<Array<Array<{name:string}>>> {
-  var directories = atom.project.getDirectories();
-  var services = directories.map(_getServicesForDirectory);
-  return Promise.all(services);
-}
-
-async function updateRenderableTabs() {
-  var services = await _getEligibleServices();
-
-  // Array<Array<{name:string}>> => Array<{name:string}>.
-  var flattenedServices = Array.prototype.concat.apply([], services);
-  var dynamicTabs = flattenedServices
-    .filter(service => DYNAMIC_TABS.hasOwnProperty(service.name))
-    .map(service => DYNAMIC_TABS[service.name]);
-
-  // Insert dynamic tabs at index 1 (after the OmniSearchProvider).
-  RENDERABLE_TABS = DEFAULT_TABS.slice();
-  RENDERABLE_TABS.splice(1, 0, ...dynamicTabs);
-}
-
 function sanitizeQuery(query: string): string {
   return query.trim();
 }
-
-// This timeout is required to keep tests from breaking, since `atom.project` appears to still
-// be initializing at the time this module is required, breaking the documented API behavior, which
-// specifies that "An instance of [Project] is always available as the `atom.project` global."
-// https://atom.io/docs/api/v0.211.0/Project
-var disposeOfMe;
-setTimeout(() => {
-  disposeOfMe = atom.project.onDidChangePaths(updateRenderableTabs);
-}, 1000);
-updateRenderableTabs();
-
-var DEFAULT_TAB = RENDERABLE_TABS[0];
 
 /**
  * Determine what the applicable shortcut for a given action is within this component's context.
@@ -164,14 +75,15 @@ class QuickSelectionComponent extends React.Component {
   _boundSelect: () => void;
   _boundHandleTabChange: (tab: TabInfo) => void;
 
-  constructor() {
-    super();
+  constructor(props: Object) {
+    super(props);
     this._emitter = new Emitter();
     this._subscriptions = new CompositeDisposable();
     this._boundSelect = () => this.select();
     this._boundHandleTabChange = (tab: TabInfo) => this._handleTabChange(tab);
 
     this.state = {
+      activeTab: props.initialActiveTab,
       // treated as immutable
       resultsByService: {
         /* EXAMPLE:
@@ -187,7 +99,6 @@ class QuickSelectionComponent extends React.Component {
       selectedDirectory: '',
       selectedService: '',
       selectedItemIndex: -1,
-      activeTab: DEFAULT_TAB.providerName,
     };
   }
 
@@ -198,14 +109,14 @@ class QuickSelectionComponent extends React.Component {
         var newResults = {};
         this.setState(
           {
-            activeTab: nextProps.provider.constructor.name || DEFAULT_TAB.providerName,
+            activeTab: nextProps.provider.constructor.name || this.state.activeTab,
             resultsByService: newResults,
-           },
-           () => {
-             this.setQuery(this.refs['queryInput'].getText());
-             this._updateQueryHandler();
-             this._emitter.emit('items-changed', newResults);
-           }
+          },
+          () => {
+            this.setQuery(this.refs['queryInput'].getText());
+            this._updateQueryHandler();
+            this._emitter.emit('items-changed', newResults);
+          }
         );
       }
     }
@@ -604,7 +515,7 @@ class QuickSelectionComponent extends React.Component {
   }
 
   _renderTabs(): ReactElement {
-    var tabs = RENDERABLE_TABS.map(tab => {
+    var tabs = this.props.tabs.map(tab => {
       var keyBinding = null;
       if (tab.action) {
         keyBinding = (
@@ -760,8 +671,16 @@ class QuickSelectionComponent extends React.Component {
   }
 }
 
+var TabInfoPropType = PropTypes.shape({
+  providerName: React.PropTypes.string,
+  path: React.PropTypes.string,
+  score: React.PropTypes.number,
+});
+
 QuickSelectionComponent.propTypes = {
   provider: PropTypes.instanceOf(QuickSelectionProvider).isRequired,
+  tabs: PropTypes.arrayOf(TabInfoPropType).isRequired,
+  initialActiveTab: PropTypes.shape(TabInfoPropType).isRequired,
 };
 
 module.exports = QuickSelectionComponent;
