@@ -9,9 +9,24 @@
  * the root directory of this source tree.
  */
 
-export type FileResult = any;
+// TODO(7865619): Currently, this hardcodes the structure of file name search results, but this
+// should be a disjoint union of all known search result types.
+export type FileResult = {
+  matchIndexes: Array<number>;
+  path: string;
+  score: number;
+};
 
-export type GroupedResult = {string: {string: {items: Array<FileResult>}}};
+export type DirectoryName = string;
+export type ServiceName = string;
+
+export type GroupedResult = {
+  [key: DirectoryName]: {
+    [key: ServiceName]: {
+      items: Promise<Array<FileResult>>;
+    }
+  }
+};
 
 export type GroupedResultPromise = Promise<GroupedResult>;
 

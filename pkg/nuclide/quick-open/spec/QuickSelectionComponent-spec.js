@@ -95,7 +95,7 @@ describe('QuickSelectionComponent', () => {
 
     it('should select on the core:confirm command (enter)', () => {
       withItemsSetTo({testDirectory: {testProvider: Promise.resolve({results: [1, 2, 3]})}}, () => {
-        var componentNode = component.getDOMNode();
+        var componentNode = React.findDOMNode(component);
 
         var selectedItemIndex = component.getSelectedIndex();
         expect(selectedItemIndex.selectedDirectory).toBe('');
@@ -131,7 +131,7 @@ describe('QuickSelectionComponent', () => {
   describe('Cancellation', () => {
     it('should cancel on the core:cancel command (esc)', () => {
       withItemsSetTo({testDirectory: {testProvider: Promise.resolve({results: [1, 2, 3]})}}, () => {
-        var componentNode = component.getDOMNode();
+        var componentNode = React.findDOMNode(component);
 
         waitsForPromise(() => new Promise((resolve, reject) => {
             component.onCancellation((item) => {
@@ -235,7 +235,7 @@ describe('QuickSelectionComponent', () => {
 
     it('should move the selection appropriately on core:move* commands', () => {
       withItemsSetTo({testDirectory: {testProvider: Promise.resolve({results: [1, 2, 3]})}}, () => {
-        var componentNode = component.getDOMNode();
+        var componentNode = React.findDOMNode(component);
 
         var steps = [
           {expectedIndex: 0, nextCommand: 'core:move-up'},

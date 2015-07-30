@@ -302,6 +302,8 @@ declare class atom$TextEditor extends atom$Model {
   moveToEndOfLine(): void;
 
   // Selections
+  selectAll(): void;
+
   // Searching and Replacing
   // Tab Behavior
   // Soft Wrap Behavior

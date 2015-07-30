@@ -10,7 +10,10 @@
  */
 
 import type {
+  DirectoryName,
+  FileResult,
   GroupedResult,
+  ServiceName,
 } from './types';
 
 import type {Directory} from 'atom';
@@ -33,7 +36,6 @@ var {
 
 var {PropTypes} = React;
 
-var assign = Object.assign || require('object-assign');
 var cx = require('react-classset');
 
 type TabInfo = {
@@ -128,66 +130,48 @@ updateRenderableTabs();
 
 var DEFAULT_TAB = RENDERABLE_TABS[0];
 
-var QuickSelectionComponent = React.createClass({
-  _emitter: undefined,
-  _subscriptions: undefined,
+/**
+ * Determine what the applicable shortcut for a given action is within this component's context.
+ * For example, this will return different keybindings on windows vs linux.
+ */
+function _findKeybindingForAction(action: string, target: HTMLElement): string {
+  var {humanizeKeystroke} = require('nuclide-keystroke-label');
+  var matchingKeyBindings = atom.keymaps.findKeyBindings({
+    command: action,
+    target,
+  });
+  var keystroke = (matchingKeyBindings.length && matchingKeyBindings[0].keystrokes) || '';
+  return humanizeKeystroke(keystroke);
+}
 
-  propTypes: {
-    provider: PropTypes.instanceOf(QuickSelectionProvider).isRequired,
-  },
 
-  statics: {
-    /**
-     * Determine what the applicable shortcut for a given action is within this component's context.
-     * For example, this will return different keybindings on windows vs linux.
-     */
-    _findKeybindingForAction(action: string): string {
-      var {humanizeKeystroke} = require('nuclide-keystroke-label');
-      var matchingKeyBindings = atom.keymaps.findKeyBindings({
-        command: action,
-        target: this._modalNode,
-      });
-      var keystroke = (matchingKeyBindings.length && matchingKeyBindings[0].keystrokes) || '';
-      return humanizeKeystroke(keystroke);
-    },
-  },
-
-  componentWillReceiveProps(nextProps: any) {
-    if (nextProps.provider !== this.props.provider) {
-      if (nextProps.provider) {
-        this.refs.queryInput.getTextEditor().setPlaceholderText(nextProps.provider.getPromptText());
-        var newResults = {};
-        this.setState(
-          {
-            activeTab: nextProps.provider.constructor.name || DEFAULT_TAB.providerName,
-            resultsByService: newResults,
-           },
-           () => {
-             this.setQuery(this.refs.queryInput.getText());
-             this._updateQueryHandler();
-             this._emitter.emit('items-changed', newResults);
-           }
-        );
-      }
+type ResultsByService = {
+  [key: ServiceName]: {
+    [key: DirectoryName]: {
+      items: Array<FileResult>,
+      waiting: boolean,
+      error: ?string,
     }
-  },
+  }
+};
 
-  componentDidUpdate(prevProps: any, prevState: any) {
-    if (prevState.resultsByService !== this.state.resultsByService) {
-      this._emitter.emit('items-changed', this.state.resultsByService);
-    }
+class QuickSelectionComponent extends React.Component {
+  _emitter: Emitter;
+  _subscriptions: CompositeDisposable;
+  _scheduledCancel: number;
+  _modalNode: HTMLElement;
+  _debouncedQueryHandler: () => void;
+  _boundSelect: () => void;
+  _boundHandleTabChange: (tab: TabInfo) => void;
 
-    if (
-      prevState.selectedItemIndex !== this.state.selectedItemIndex ||
-      prevState.selectedService !== this.state.selectedService ||
-      prevState.selectedDirectory !== this.state.selectedDirectory
-    ) {
-      this._updateScrollPosition();
-    }
-  },
+  constructor() {
+    super();
+    this._emitter = new Emitter();
+    this._subscriptions = new CompositeDisposable();
+    this._boundSelect = () => this.select();
+    this._boundHandleTabChange = (tab: TabInfo) => this._handleTabChange(tab);
 
-  getInitialState() {
-    return {
+    this.state = {
       // treated as immutable
       resultsByService: {
         /* EXAMPLE:
@@ -205,69 +189,101 @@ var QuickSelectionComponent = React.createClass({
       selectedItemIndex: -1,
       activeTab: DEFAULT_TAB.providerName,
     };
-  },
+  }
+
+  componentWillReceiveProps(nextProps: any) {
+    if (nextProps.provider !== this.props.provider) {
+      if (nextProps.provider) {
+        this._getTextEditor().setPlaceholderText(nextProps.provider.getPromptText());
+        var newResults = {};
+        this.setState(
+          {
+            activeTab: nextProps.provider.constructor.name || DEFAULT_TAB.providerName,
+            resultsByService: newResults,
+           },
+           () => {
+             this.setQuery(this.refs['queryInput'].getText());
+             this._updateQueryHandler();
+             this._emitter.emit('items-changed', newResults);
+           }
+        );
+      }
+    }
+  }
+
+  componentDidUpdate(prevProps: any, prevState: any) {
+    if (prevState.resultsByService !== this.state.resultsByService) {
+      this._emitter.emit('items-changed', this.state.resultsByService);
+    }
+
+    if (
+      prevState.selectedItemIndex !== this.state.selectedItemIndex ||
+      prevState.selectedService !== this.state.selectedService ||
+      prevState.selectedDirectory !== this.state.selectedDirectory
+    ) {
+      this._updateScrollPosition();
+    }
+  }
 
   componentDidMount() {
-    this._emitter = new Emitter();
-    this._subscriptions = new CompositeDisposable();
     this._modalNode = React.findDOMNode(this);
     this._subscriptions.add(
-      atom.commands.add(this._modalNode, 'core:move-up', this.moveSelectionUp),
-      atom.commands.add(this._modalNode, 'core:move-down', this.moveSelectionDown),
-      atom.commands.add(this._modalNode, 'core:move-to-top', this.moveSelectionToTop),
-      atom.commands.add(this._modalNode, 'core:move-to-bottom', this.moveSelectionToBottom),
-      atom.commands.add(this._modalNode, 'core:confirm', this.select),
-      atom.commands.add(this._modalNode, 'core:cancel', this.cancel)
+      atom.commands.add(this._modalNode, 'core:move-up', this.moveSelectionUp.bind(this)),
+      atom.commands.add(this._modalNode, 'core:move-down', this.moveSelectionDown.bind(this)),
+      atom.commands.add(this._modalNode, 'core:move-to-top', this.moveSelectionToTop.bind(this)),
+      atom.commands.add(this._modalNode, 'core:move-to-bottom', this.moveSelectionToBottom.bind(this)),
+      atom.commands.add(this._modalNode, 'core:confirm', this.select.bind(this)),
+      atom.commands.add(this._modalNode, 'core:cancel', this.cancel.bind(this))
     );
 
     var inputTextEditor = this.getInputTextEditor();
     inputTextEditor.addEventListener('blur', (event) => {
       if (event.relatedTarget !== null) {
         // cancel can be interrupted by user interaction with the modal
-        this._scheduledCancel = setTimeout(this.cancel, 100);
+        this._scheduledCancel = setTimeout(this.cancel.bind(this), 100);
       }
     });
 
     this._updateQueryHandler();
-    inputTextEditor.model.onDidChange(this._handleTextInputChange);
+    inputTextEditor.model.onDidChange(() => this._handleTextInputChange());
     this.clear();
-  },
+  }
 
   componentWillUnmount() {
     this._emitter.dispose();
     this._subscriptions.dispose();
-  },
+  }
 
   onCancellation(callback: () => void): Disposable {
     return this._emitter.on('canceled', callback);
-  },
+  }
 
   onSelection(callback: (selection: any) => void): Disposable {
     return this._emitter.on('selected', callback);
-  },
+  }
 
   onSelectionChanged(callback: (selectionIndex: any) => void): Disposable {
     return this._emitter.on('selection-changed', callback);
-  },
+  }
 
   onItemsChanged(callback: (newItems: GroupedResult) => void): Disposable {
     return this._emitter.on('items-changed', callback);
-  },
+  }
 
   onTabChange(callback: (providerName: string) => void): Disposable {
     return this._emitter.on('active-provider-changed', callback);
-  },
+  }
 
   _updateQueryHandler(): void {
     this._debouncedQueryHandler = debounce(
       () => this.setQuery(this.getInputTextEditor().model.getText()),
       this.getProvider().getDebounceDelay()
     );
-  },
+  }
 
   _handleTextInputChange(): void {
     this._debouncedQueryHandler();
-  },
+  }
 
   select() {
     var selectedItem = this.getSelectedItem();
@@ -276,17 +292,17 @@ var QuickSelectionComponent = React.createClass({
     } else {
       this._emitter.emit('selected', selectedItem);
     }
-  },
+  }
 
   cancel() {
     this._emitter.emit('canceled');
-  },
+  }
 
   clearSelection() {
     this.setSelectedIndex('', '', -1);
-  },
+  }
 
-  _getCurrentResultContext(): any{
+  _getCurrentResultContext(): mixed {
     var nonEmptyResults = filterEmptyResults(this.state.resultsByService);
     var serviceNames = Object.keys(nonEmptyResults);
     var currentServiceIndex = serviceNames.indexOf(this.state.selectedService);
@@ -313,7 +329,7 @@ var QuickSelectionComponent = React.createClass({
       currentDirectoryIndex,
       currentDirectory,
     };
-  },
+  }
 
   moveSelectionDown() {
     var context = this._getCurrentResultContext();
@@ -349,7 +365,7 @@ var QuickSelectionComponent = React.createClass({
         }
       }
     }
-  },
+  }
 
   moveSelectionUp() {
     var context = this._getCurrentResultContext();
@@ -389,7 +405,7 @@ var QuickSelectionComponent = React.createClass({
         }
       }
     }
-  },
+  }
 
   // Update the scroll position of the list view to ensure the selected item is visible.
   _updateScrollPosition() {
@@ -403,7 +419,7 @@ var QuickSelectionComponent = React.createClass({
     if (selectedNode) {
       selectedNode.scrollIntoViewIfNeeded(false);
     }
-  },
+  }
 
   moveSelectionToBottom(): void {
     var bottom = this._getOuterResults(Array.prototype.pop);
@@ -411,7 +427,7 @@ var QuickSelectionComponent = React.createClass({
       return;
     }
     this.setSelectedIndex(bottom.serviceName, bottom.directoryName, bottom.results.length - 1);
-  },
+  }
 
   moveSelectionToTop(): void {
     var top = this._getOuterResults(Array.prototype.shift);
@@ -419,7 +435,7 @@ var QuickSelectionComponent = React.createClass({
       return;
     }
     this.setSelectedIndex(top.serviceName, top.directoryName, 0);
-  },
+  }
 
   _getOuterResults(arrayOperation: Function): ?{serviceName: string; directoryName: string; results: Array<mixed>} {
     var nonEmptyResults = filterEmptyResults(this.state.resultsByService);
@@ -434,7 +450,7 @@ var QuickSelectionComponent = React.createClass({
       directoryName,
       results: nonEmptyResults[serviceName][directoryName].items,
     };
-  },
+  }
 
   getSelectedItem(): ?Object {
     return this.getItemAtIndex(
@@ -442,7 +458,7 @@ var QuickSelectionComponent = React.createClass({
       this.state.selectedDirectory,
       this.state.selectedItemIndex
     );
-  },
+  }
 
   getItemAtIndex(serviceName: string, directory: string, itemIndex: number): ?Object {
     if (
@@ -454,11 +470,11 @@ var QuickSelectionComponent = React.createClass({
       return null;
     }
     return this.state.resultsByService[serviceName][directory].items[itemIndex];
-  },
+  }
 
   componentForItem(item: any, serviceName: string): ReactElement {
     return this.getProvider().getComponentForItem(item, serviceName);
-  },
+  }
 
   getSelectedIndex(): any {
     return {
@@ -466,7 +482,7 @@ var QuickSelectionComponent = React.createClass({
       selectedService: this.state.selectedService,
       selectedItemIndex: this.state.selectedItemIndex,
     };
-  },
+  }
 
   setSelectedIndex(service: string, directory: string, itemIndex: number) {
     this.setState({
@@ -474,31 +490,23 @@ var QuickSelectionComponent = React.createClass({
       selectedDirectory: directory,
       selectedItemIndex: itemIndex,
     }, () => this._emitter.emit('selection-changed', this.getSelectedIndex()));
-  },
+  }
 
-  _setResult(serviceName: string, dirName: string, results) {
-    var updatedResultsByDirectory = assign(
-      {},
-      this.state.resultsByService[serviceName],
-      {
-        [dirName]: results,
-      }
-    );
-    var updatedResultsByService = assign(
-      {},
-      this.state.resultsByService,
-      {
-        [serviceName]: updatedResultsByDirectory,
-      }
-    );
+  _setResult(serviceName: string, dirName: string, results: Array<mixed>) {
+    var updatedResultsByDirectory = {...this.state.resultsByService[serviceName]};
+    updatedResultsByDirectory[dirName] = results;
+
+    var updatedResultsByService = {...this.state.resultsByService};
+    updatedResultsByService[serviceName] = updatedResultsByDirectory;
+
     this.setState({
       resultsByService: updatedResultsByService,
     }, () => {
       this._emitter.emit('items-changed', updatedResultsByService);
     });
-  },
+  }
 
-  _subscribeToResult(serviceName: string, directory:string, resultPromise: Promise<any>) {
+  _subscribeToResult(serviceName: string, directory:string, resultPromise: Promise<{results: Array<FileResult>}>) {
     resultPromise.then(items => {
       var updatedItems = {
         waiting: false,
@@ -514,64 +522,76 @@ var QuickSelectionComponent = React.createClass({
       };
       this._setResult(serviceName, directory, updatedItems);
     });
-  },
+  }
 
   setQuery(query: string) {
     var provider = this.getProvider();
-    if (provider) {
-      var newItems = provider.executeQuery(sanitizeQuery(query));
-      newItems.then((requestsByDirectory) => {
-        var groupedByService = {};
-        for (var dirName in requestsByDirectory) {
-          var servicesForDirectory = requestsByDirectory[dirName];
-          for (var serviceName in servicesForDirectory) {
-            var promise = servicesForDirectory[serviceName];
-            this._subscribeToResult(serviceName, dirName, promise);
-            if (groupedByService[serviceName] === undefined) {
-              groupedByService[serviceName] = {};
-            }
-            groupedByService[serviceName][dirName] = {
-              items: [],
-              waiting: true,
-              error: null,
-            };
-          }
-        }
-        this.setState({resultsByService: groupedByService});
-      });
+    if (!provider) {
+      return;
     }
-  },
+
+    var newItems = provider.executeQuery(sanitizeQuery(query));
+    newItems.then((requestsByDirectory: GroupedResult) => {
+      var groupedByService: ResultsByService = {};
+      for (var dirName in requestsByDirectory) {
+        var servicesForDirectory = requestsByDirectory[dirName];
+        for (var serviceName in servicesForDirectory) {
+          var promise = servicesForDirectory[serviceName];
+          this._subscribeToResult(serviceName, dirName, promise);
+          if (groupedByService[serviceName] === undefined) {
+            groupedByService[serviceName] = {};
+          }
+          groupedByService[serviceName][dirName] = {
+            items: [],
+            waiting: true,
+            error: null,
+          };
+        }
+      }
+      this.setState({resultsByService: groupedByService});
+    });
+  }
 
   getProvider(): QuickSelectionProvider {
     return this.props.provider;
-  },
+  }
 
-  getInputTextEditor(): Element {
-    return React.findDOMNode(this.refs.queryInput);
-  },
+  // TODO: We need a type that corresponds to <atom-text-editor> that is more specific than
+  // HTMLElement, which would eliminate a number of Flow type errors in this file.
+  getInputTextEditor(): HTMLElement {
+    return React.findDOMNode(this.refs['queryInput']);
+  }
 
   clear() {
     this.getInputTextEditor().model.setText('');
     this.clearSelection();
-  },
+  }
 
   focus() {
     this.getInputTextEditor().focus();
-  },
-
-  setInputValue(value: string) {
-    this.refs.queryInput.getTextEditor().setText(value);
-  },
-
-  selectInput() {
-    this.refs.queryInput.getTextEditor().selectAll();
-  },
+  }
 
   blur() {
     this.getInputTextEditor().blur();
-  },
+  }
 
-  _handleTabChange(newTab: any) {
+  setInputValue(value: string) {
+    this._getTextEditor().setText(value);
+  }
+
+  selectInput() {
+    this._getTextEditor().selectAll();
+  }
+
+  _getTextEditor(): TextEditor {
+    return this.refs['queryInput'].getTextEditor();
+  }
+
+  /**
+   * @param newTab is actually a TabInfo plus the `name` and `tabContent` properties added by
+   *     _renderTabs(), which created the tab object in the first place.
+   */
+  _handleTabChange(newTab: TabInfo) {
     clearTimeout(this._scheduledCancel);
     var providerName = newTab.providerName;
     if (providerName !== this.state.activeTab) {
@@ -581,7 +601,7 @@ var QuickSelectionComponent = React.createClass({
         this._emitter.emit('active-provider-changed', newTab.providerName);
       });
     }
-  },
+  }
 
   _renderTabs(): ReactElement {
     var tabs = RENDERABLE_TABS.map(tab => {
@@ -589,7 +609,7 @@ var QuickSelectionComponent = React.createClass({
       if (tab.action) {
         keyBinding = (
           <kbd className="key-binding">
-            {QuickSelectionComponent._findKeybindingForAction(tab.action)}
+            {_findKeybindingForAction(tab.action, this._modalNode)}
           </kbd>
         );
       }
@@ -604,12 +624,12 @@ var QuickSelectionComponent = React.createClass({
         <NuclideTabs
           tabs={tabs}
           activeTabName={this.state.activeTab}
-          onActiveTabChange={this._handleTabChange}
+          onActiveTabChange={this._boundHandleTabChange}
           triggeringEvent="onMouseEnter"
         />
       </div>
     );
-  },
+  }
 
   _renderEmptyMessage(message: string): ReactElement {
     return (
@@ -617,7 +637,7 @@ var QuickSelectionComponent = React.createClass({
         <li>{message}</li>
       </ul>
     );
-  },
+  }
 
   _hasNoResults(): boolean {
     for (var serviceName in this.state.resultsByService) {
@@ -630,7 +650,7 @@ var QuickSelectionComponent = React.createClass({
       }
     }
     return true;
-  },
+  }
 
   render(): ReactElement {
     var itemsRendered = 0;
@@ -679,7 +699,7 @@ var QuickSelectionComponent = React.createClass({
                   selected: isSelected,
                 })}
                 key={serviceName + dirName + itemIndex}
-                onMouseDown={this.select}
+                onMouseDown={this._boundSelect}
                 onMouseEnter={this.setSelectedIndex.bind(this, serviceName, dirName, itemIndex)}>
                 {this.componentForItem(item, serviceName)}
               </li>
@@ -737,7 +757,11 @@ var QuickSelectionComponent = React.createClass({
         </div>
       </div>
     );
-  },
-});
+  }
+}
+
+QuickSelectionComponent.propTypes = {
+  provider: PropTypes.instanceOf(QuickSelectionProvider).isRequired,
+};
 
 module.exports = QuickSelectionComponent;
