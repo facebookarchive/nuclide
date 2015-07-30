@@ -17,8 +17,13 @@
 
 var fs = require('fs');
 var pathUtil = require('path');
+var temp = require('temp');
 var {fsPromise} = require('nuclide-commons');
 var {deserializeArgs} = require('../utils');
+
+type FileWithStats = {file: string; stats: fs.Stats, error: ?Error};
+// TODO: Add ServerResponse type to flow
+import type {IncomingMessage, ServerResponse} from 'http';
 
 
 ///////////////////
@@ -198,7 +203,7 @@ function unlink(path: string): Promise {
  *
  * The readFile function takes a request and response  It has no return value.
  */
-function readFile(request: http.IncomingMessage, response: http.OutgoingMessage, next: (err: Error) => void) {
+function readFile(request: IncomingMessage, response: ServerResponse, next: (err: Error) => void) {
   var [path, options] = deserializeArgs(request.url);
 
   try {
@@ -227,23 +232,43 @@ function readFile(request: http.IncomingMessage, response: http.OutgoingMessage,
  *
  * The writeFile function takes a request and response. It has no return value.
  */
-function writeFile(request: http.IncomingMessage, response: http.OutgoingMessage, next: (err: Error) => void) {
+function writeFile(request: IncomingMessage, response: ServerResponse, next: (err: Error) => void) {
   var [path, options] = deserializeArgs(request.url);
+  temp.open('nuclide', (error, info) => {
+    if (error) {
+      next(error);
+      return;
+    }
+    options =  options || {};
+    options.fd = info.fd;
 
-  try {
-    var fileStream = fs.createWriteStream(path, options);
-    fileStream.on('open', (fd) => {
-      // While writing something goes wrong.
-      request.pipe(fileStream).on('error', next).on('close', () => {
-        response.end();
-      });
+    var failed = false;
+
+    // While writing something goes wrong.
+    var tempStream = request.pipe(fs.createWriteStream(path, options));
+
+    var onError = streamError => {
+      failed = true;
+      tempStream.end();
+      next(streamError);
+    };
+
+    request.on('error', onError);
+    tempStream.on('error', onError);
+    tempStream.on('close', () => {
+      // TODO(mikeo): Clean up temp file if failed.
+      if (!failed) {
+         // TODO(mikeo): put renames into a queue so we don't write older save over new save.
+        fs.rename(info.path, path, renameError => {
+          if (renameError) {
+            next(renameError);
+            return;
+          }
+          response.end();
+        });
+      }
     });
-
-    // Failed to open file for writing.
-    fileStream.on('error', next);
-  } catch (e) {
-    next(new Error(`NuclideFs.writeFile for path ${path} error: ${e}`));
-  }
+  });
 }
 
 

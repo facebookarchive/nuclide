@@ -15,11 +15,10 @@
  */
 
 import type {HackReference} from 'nuclide-hack-common';
-
+import type FileWithStats from './NuclideFsService';
 var fs = require('fs');
 var extend = require('util')._extend;
 
-type FileWithStats = {file: string; stats: fs.Stats};
 type ExecResult = {error: ?Error; stdout: string; stderr: string};
 type NuclideClientOptions = {
   cwd: ?string;
