@@ -7,3 +7,4 @@
 ./node_modules/nuclide-atom-interfaces/1.0/
 
 [options]
+unsafe.enable_getters_and_setters=true

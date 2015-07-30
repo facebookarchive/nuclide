@@ -135,6 +135,19 @@ class PackageLinter(object):
                     'Package %s should have an entry for %s in its [libs] section.',
                     package['name'],
                     PATH_TO_ATOM_INTERFACES)
+            try:
+                value = config.get('options', 'unsafe.enable_getters_and_setters')
+                if value != 'true':
+                    self.report_error(
+                        'unsafe.enable_getters_and_setters in %s was "%s" instead of "true".',
+                        package['name'],
+                        value)
+            except NoOptionError:
+                self.report_error(
+                    'Package %s should have an entry for %s in its [options] section.',
+                    package['name'],
+                    'unsafe.enable_getters_and_setters')
+
 
     def verify_apm_test_property(self, package):
         '''apm packages should not specify a separate test runner.'''

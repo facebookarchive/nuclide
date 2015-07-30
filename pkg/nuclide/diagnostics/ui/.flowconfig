@@ -7,3 +7,4 @@
 ./node_modules/nuclide-diagnostics-base/lib/types.js
 
 [options]
+unsafe.enable_getters_and_setters=true
