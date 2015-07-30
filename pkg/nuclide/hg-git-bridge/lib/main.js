@@ -13,4 +13,8 @@ module.exports = {
   get repositoryContainsPath() {
     return require('./repositoryContainsPath');
   },
+
+  get repositoryForPath() {
+    return require('./repositoryForPath');
+  }
 };

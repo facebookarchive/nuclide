@@ -451,6 +451,9 @@ declare class atom$File {
   read(flushCache?: boolean): Promise<string>;
 }
 
+declare class atom$GitRepository {
+}
+
 declare class atom$Grammar {
   scopeName: string;
 }
