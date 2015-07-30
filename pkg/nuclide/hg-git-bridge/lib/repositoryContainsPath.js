@@ -18,7 +18,7 @@ var path = require('path');
  * @return boolean Whether the file path exists within the working directory
  *   (aka root directory) of the repository, or is the working directory.
  */
-function repositoryContainsPath(repository: GitRepository | HgRepositoryClient, filePath: string): boolean {
+function repositoryContainsPath(repository: Repository, filePath: string): boolean {
   var workingDirectoryPath = repository.getWorkingDirectory();
   if (pathsAreEqual(workingDirectoryPath, filePath)) {
     return true;

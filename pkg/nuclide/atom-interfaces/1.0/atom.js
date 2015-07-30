@@ -599,3 +599,44 @@ declare class WebviewElement extends HTMLElement {
   getTitle(): string;
   send(): void;
 }
+
+type RepositoryDidChangeStatusCallback = (event: {path: string; pathStatus: number}) => mixed;
+type RepositoryLineDiff = {
+  oldStart: number;
+  newStart: number;
+  oldLines: number;
+  newLines: number;
+};
+
+// Taken from the interface of GitRepository, which is also implemented
+// by HgRepositoryClient.
+declare class Repository {
+  // Event Subscription
+  onDidChangeStatus: (callback: RepositoryDidChangeStatusCallback) => atom$Disposable;
+  onDidChangeStatuses: (callback: () => mixed) => atom$Disposable;
+
+  // Repository Details
+  getType: () => string;
+  getPath: () => string;
+  getWorkingDirectory: () => string;
+  isProjectAtRoot: () => boolean;
+  relativize: (aPath: string) => string;
+
+  // Reading Status
+  isPathModified: (aPath: string) => boolean;
+  isPathNew: (aPath: string) => boolean;
+  isPathIgnored: (aPath: string) => boolean;
+  getDirectoryStatus: (aPath: string) => number;
+  getPathStatus: (aPath: string) => number;
+  getCachedPathStatus: (aPath: string) => ?number;
+  isStatusModified: (aPath: string) => boolean;
+  isStatusNew: (aPath: string) => boolean;
+
+  // Retrieving Diffs
+  getDiffStats: (filePath: string) => {added: number; deleted: number;};
+  getLineDiffs: (aPath: string, text: string) => Array<RepositoryLineDiff>;
+
+  // Checking Out
+  checkoutHead: (aPath: string) => boolean;
+  checkoutReference: (reference: string, create: boolean) => boolean;
+}
