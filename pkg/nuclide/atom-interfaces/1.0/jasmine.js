@@ -48,7 +48,7 @@ type JasmineSpyCall = {
 };
 
 type JasmineSpy = {
-  andCallFake(fake: () => mixed): void;
+  andCallFake(fake: (...args: Array<any>) => mixed): void;
   andCallThrough(): void;
   andReturn<T>(value: T): T;
   callCount: number;
@@ -69,7 +69,18 @@ type JasmineMockClock = {
 // Asynchronous Support
 // https://jasmine.github.io/1.3/introduction.html#section-Asynchronous_Support
 declare function runs(func: () => mixed): void;
-declare function waitsFor(latchFunction: () => mixed, failureMessage: string, timeout: number): void;
+
+// Apparently the arguments for waitsFor() can be specified in any order.
+type WaitsForArg = string | number | () => mixed;
+
+declare function waitsFor(
+  latchFunction?: WaitsForArg, failureMessage?: WaitsForArg, timeout?: WaitsForArg): void;
+
+type JasmineEnvironment = {
+  currentSpec: {
+    fail(message: string): void;
+  };
+};
 
 // Jasmine global
 declare var jasmine: {
@@ -77,5 +88,7 @@ declare var jasmine: {
   any(expected: string | Object): mixed;
   createSpy(name?: string): JasmineSpy;
   createSpyObj(name: string, spyNames: Array<string>): mixed;
+  getEnv(): JasmineEnvironment;
+  pp(value: mixed): string;
   unspy(obj: Object, prop: string): void;
 };

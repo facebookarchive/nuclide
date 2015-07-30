@@ -8,8 +8,16 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
+var invariant = require('assert');
 
-function waitsForPromise(...args): any {
+/*eslint-disable no-unused-vars*/
+type WaitsForPromiseOptions = {
+  shouldReject?: boolean;
+  timeout?: number;
+}
+/*eslint-enable no-unused-vars*/
+
+function waitsForPromise(...args: Array<WaitsForPromiseOptions | () => Promise<mixed>>): void {
   if (args.length > 1) {
     var {shouldReject, timeout} = args[0];
   } else {
@@ -19,7 +27,9 @@ function waitsForPromise(...args): any {
   var finished = false;
 
   runs(() => {
-    var promise = args[args.length - 1]();
+    var fn = args[args.length - 1];
+    invariant(typeof fn === 'function');
+    var promise = fn();
     if (shouldReject) {
       promise.then(() => {
         jasmine.getEnv().currentSpec.fail(

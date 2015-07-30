@@ -14,7 +14,7 @@
  * Use fakeSetTimeout, fakeClearTimeout, fakeSetInterval and fakeClearInterval to mock Node.js's
  * Timer utils, and using advanceClock to advance the fake timer to trigger timed callback.
  */
-var jasmine = require('jasmine-focused');
+require('jasmine-focused');
 
 var now = 0;
 var timeoutCount = 0;
@@ -61,7 +61,7 @@ function advanceClock(deltaMs: number): void {
   var advanceTo = now + deltaMs;
 
   while (timeouts.length !== 0 && timeouts[0][1] <= advanceTo) {
-    var [id, strikeTime, callback] = timeouts.shift();
+    var [ , strikeTime, callback] = timeouts.shift();
     now = strikeTime;
     callback();
   }
@@ -82,9 +82,9 @@ function useRealClock(): void {
  * unspy is a ported utility from Atom's `spec-helper.coffee` that restores the jasmine spied function
  * on an object to its original value.
  */
-function unspy(object, methodName) {
+function unspy(object: Object, methodName: string) {
   if (!object[methodName].hasOwnProperty('originalValue')) {
-    throw new Error("Not a spy");
+    throw new Error('Not a spy');
   }
   object[methodName] = object[methodName].originalValue;
 }

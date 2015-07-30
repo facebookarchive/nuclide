@@ -11,6 +11,9 @@
     "jasmine-focused": "1.0.7",
     "nuclide-node-transpiler": "0.0.0"
   },
+  "devDependencies": {
+    "nuclide-atom-interfaces": "0.0.0"
+  },
   "bin": {
     "jasmine-node-transpiled": "bin/jasmine-node-transpiled"
   },
