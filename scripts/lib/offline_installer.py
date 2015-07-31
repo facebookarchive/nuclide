@@ -23,7 +23,15 @@ class OfflineInstaller(object):
         self._package_manager = package_manager
         self._npm_directory = npm_directory
 
-    def install(self, copy_local_dependencies=False, include_packages_that_depend_on_atom=True):
+    def install(self,
+                copy_local_dependencies=False,
+                include_packages_that_depend_on_atom=True,
+                include_dev_dependencies_for_first_party_packages=True):
+        '''
+        Note that even when include_dev_dependencies_for_first_party_packages is True, we always
+        exclude devDependencies (i.e., do the equivalent of `npm install --production`) for our
+        transitive dependencies.
+        '''
         logging.info('OfflineInstaller.install() using %s as the ~/.npm directory.', self._npm_directory)
 
         # Add the set of packages to install to the queue in topological order.
@@ -31,7 +39,10 @@ class OfflineInstaller(object):
         for config in self._package_manager.get_configs(
                 include_packages_that_depend_on_atom=include_packages_that_depend_on_atom):
             package_json = os.path.join(config['packageRootAbsolutePath'], 'package.json')
-            pkg = PackageNeedsDepsInstalled(config['name'], package_json, include_dev_dependencies=True)
+            pkg = PackageNeedsDepsInstalled(
+                config['name'],
+                package_json,
+                include_dev_dependencies=include_dev_dependencies_for_first_party_packages)
             queue.append(pkg)
 
         # Process the items in the queue in order. Dependencies will be traversed in a depth-first
