@@ -174,8 +174,11 @@ class LinterAdapter {
   onMessageUpdate(callback: MessageUpdateCallback): atom$Disposable {
     var disposable = this._emitter.on('update', callback);
     var activeTextEditor = atom.workspace.getActiveTextEditor();
-    if (activeTextEditor && !this._lintInProgress()) {
-      this._runLint(activeTextEditor);
+    if (activeTextEditor) {
+      var matchesGrammar = this._provider.grammarScopes.indexOf(activeTextEditor.getGrammar().scopeName) !== -1;
+      if (!this._lintInProgress() && matchesGrammar) {
+        this._runLint(activeTextEditor);
+      }
     }
     return disposable;
   }
