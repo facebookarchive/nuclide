@@ -1,0 +1,32 @@
+{
+  "name": "nuclide-arcanist",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "Displays arcanist linter messages in Nuclide",
+  "nuclide": {
+    "packageType": "Atom",
+    "testRunner": "apm"
+  },
+  "activationCommands": {
+  },
+  "providedServices": {
+    "linter": {
+      "versions": {
+        "1.0.4": "provideLinter"
+      }
+    }
+  },
+  "engines": {
+    "atom": ">=1.0.3"
+  },
+  "dependencies": {
+    "nuclide-arcanist-client": "0.0.0",
+    "nuclide-commons": "0.0.0",
+    "nuclide-logging": "0.0.0",
+    "nuclide-remote-uri": "0.0.0"
+  },
+  "devDependencies": {
+    "nuclide-atom-interfaces": "0.0.0"
+  }
+}
