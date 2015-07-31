@@ -90,6 +90,7 @@ class PackageLinter(object):
             self.expect_field(package_name, package, 'testRunner', 'apm')
         self.validate_dependencies(package, 'dependencies')
         self.validate_dependencies(package, 'devDependencies')
+        self.validate_babelrc(package)
 
     def verify_npm_package(self, package):
         self.verify_npm_test_property(package)
@@ -174,6 +175,19 @@ class PackageLinter(object):
         config = ConfigParser(allow_no_value=True)
         config.read(flowconfig_path)
         return config
+
+    def validate_babelrc(self, package):
+        # See https://phabricator.fb.com/D2301649 for details on why this exists.
+        babelrc_path = os.path.join(package['packageRootAbsolutePath'], '.babelrc')
+        if not os.path.isfile(babelrc_path):
+            self.report_error('Expected .babelrc file at %s not found.', babelrc_path)
+            return
+
+        babel_options = json_load(babelrc_path)
+        expected_options = {'breakConfig': True}
+        if not babel_options == expected_options:
+            self.report_error('.babelrc file %s had options %s but expected %s' %
+                (babelrc_path, babel_options, expected_options))
 
     def validate_dependencies(self, package, field):
         if field in package:
