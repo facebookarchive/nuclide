@@ -119,7 +119,10 @@ function createGutterItem(
   });
   var dispose = () => {
     if (popupElement) {
-      popupElement.parentNode.removeChild(popupElement);
+      var parentNode = popupElement.parentNode;
+      if (parentNode) {
+        parentNode.removeChild(popupElement);
+      }
     }
   };
   item.addEventListener('mouseleave', dispose);
