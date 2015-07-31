@@ -45,50 +45,82 @@ describe('TextCallbackContainer', () => {
 describe('TextEventDispatcher', () => {
   var textEventDispatcher: any;
   var fakeTextEditor: any;
-  var callbacks: any;
+  var fakeTextEditor2: any;
+  var activeEditor: any;
+  // Stores callbacks that have subscribed to Atom text events. Can be called to simulate
+  var textEventCallbacks: any;
+  var paneSwitchCallbacks: any;
 
   function fakeObserveEditors(callback) {
     callback(fakeTextEditor);
+    callback(fakeTextEditor2);
     return new Disposable(() => {});
   }
 
-  function triggerAtomEvent(editor) {
-    for (var callback of callbacks) {
-      callback(editor);
-    }
-  }
 
-  beforeEach(() => {
-    callbacks = new Set();
-    // we could be more precise and keep track of which callback registered for
-    // which event, but this is good enough for a first pass
+  function makeFakeEditor(path?: string = '') {
+    var editor;
+    // Register a callback for this fake editor.
     var registerCallback = callback => {
-      callbacks.add(callback);
+      var set = textEventCallbacks.get(editor);
+      if (!set) {
+        set = new Set();
+        textEventCallbacks.set(editor, set);
+      }
+      set.add(callback);
       return new Disposable(() => {});
     };
-    fakeTextEditor = {
+    var buffer = {
+      onDidStopChanging: registerCallback,
+      onDidSave: registerCallback,
+      onDidReload: registerCallback,
+    };
+    editor = {
       getBuffer() {
-        return {
-          onDidStopChanging: registerCallback,
-          onDidSave: registerCallback,
-          onDidReload: registerCallback,
-        };
+        return buffer;
       },
       getGrammar() {
         return {
           scopeName: grammar,
         };
       },
+      // getPath is nice for debugging tests
+      getPath() {
+        return path;
+      }
     };
+    return editor;
+  }
+
+  function triggerAtomEvent(editor) {
+    for (var callback of textEventCallbacks.get(editor)) {
+      callback();
+    }
+  }
+
+  beforeEach(() => {
+    textEventCallbacks = new Map();
+    paneSwitchCallbacks = new Set();
+
+    fakeTextEditor = makeFakeEditor('foo');
+    fakeTextEditor2 = makeFakeEditor('bar');
+    activeEditor = fakeTextEditor;
     // weird Flow error here
     (spyOn(atom.workspace, 'observeTextEditors'): any).andCallFake(fakeObserveEditors);
-    spyOn(atom.workspace, 'getActiveTextEditor').andReturn(fakeTextEditor);
+    spyOn(atom.workspace, 'getActiveTextEditor').andCallFake(() => activeEditor);
+    spyOn(atom.workspace, 'getTextEditors').andReturn([fakeTextEditor, fakeTextEditor2]);
+    spyOn(atom.workspace, 'onDidChangeActivePaneItem').andCallFake(callback => {
+      paneSwitchCallbacks.add(callback);
+      return new Disposable(() => {});
+    });
     textEventDispatcher = new TextEventDispatcher();
   });
 
   afterEach(() => {
     jasmine.unspy(atom.workspace, 'observeTextEditors');
     jasmine.unspy(atom.workspace, 'getActiveTextEditor');
+    jasmine.unspy(atom.workspace, 'getTextEditors');
+    jasmine.unspy(atom.workspace, 'onDidChangeActivePaneItem');
   });
 
   it('should fire events', () => {
@@ -109,5 +141,15 @@ describe('TextEventDispatcher', () => {
     triggerAtomEvent(fakeTextEditor);
     triggerAtomEvent(fakeTextEditor);
     expect(callback.callCount).toBe(1);
+  });
+
+  it('should dispatch pending events on a tab switch', () => {
+    var callback = jasmine.createSpy();
+    textEventDispatcher.onFileChange([grammar], callback);
+    triggerAtomEvent(fakeTextEditor2);
+    expect(callback).not.toHaveBeenCalled();
+    activeEditor = fakeTextEditor2;
+    paneSwitchCallbacks.forEach(f => f());
+    expect(callback).toHaveBeenCalledWith(fakeTextEditor2);
   });
 });
