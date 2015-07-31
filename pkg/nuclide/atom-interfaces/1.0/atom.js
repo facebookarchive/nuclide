@@ -132,6 +132,7 @@ declare class atom$Marker {
     isValid: boolean;
     textChanged: boolean;
   }) => void): atom$Disposable;
+  onDidDestroy(callback: () => void): atom$Disposable;
 }
 
 declare class atom$PackageManager {

@@ -91,8 +91,9 @@ function applyUpdateToEditor(editor: TextEditor, update: FileMessageUpdate): voi
     }
 
     // This marker adds some UI to the gutter.
-    var item = createGutterItem(message, gutterMarkerCssClass);
+    var {item, dispose} = createGutterItem(message, gutterMarkerCssClass);
     gutter.decorateMarker(gutterMarker, {item});
+    gutterMarker.onDidDestroy(dispose);
     markers.add(gutterMarker);
   }
 
@@ -106,9 +107,9 @@ function applyUpdateToEditor(editor: TextEditor, update: FileMessageUpdate): voi
 }
 
 function createGutterItem(
-    message: FileDiagnosticMessage,
-    gutterMarkerCssClass: string
-    ): HTMLElement {
+  message: FileDiagnosticMessage,
+  gutterMarkerCssClass: string
+): {item: HTMLElement; dispose: () => void} {
   var item = window.document.createElement('span');
   item.innerText = '\u25B6'; // Unicode character for a right-pointing triangle.
   item.className = gutterMarkerCssClass;
@@ -116,12 +117,13 @@ function createGutterItem(
   item.addEventListener('mouseenter', event => {
     popupElement = showPopupFor(message, item);
   });
-  item.addEventListener('mouseleave', event => {
+  var dispose = () => {
     if (popupElement) {
       popupElement.parentNode.removeChild(popupElement);
     }
-  });
-  return item;
+  };
+  item.addEventListener('mouseleave', dispose);
+  return {item, dispose};
 }
 
 /**
