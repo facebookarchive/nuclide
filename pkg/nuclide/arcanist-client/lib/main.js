@@ -9,6 +9,9 @@
  * the root directory of this source tree.
  */
 
+import type {NuclideUri} from 'nuclide-remote-uri';
+import type {ArcanistBaseService} from 'nuclide-arcanist-base';
+
 function getService(fileName: NuclideUri): ArcanistBaseService {
   return require('nuclide-client').getServiceByNuclideUri('ArcanistBaseService', fileName);
 }
@@ -29,9 +32,14 @@ function getProjectRelativePath(fileName: NuclideUri): Promise<?string> {
   return getService(fileName).getProjectRelativePath(fileName);
 }
 
+function findDiagnostics(fileName: NuclideUri) {
+  return getService(fileName).findDiagnostics(fileName);
+}
+
 module.exports = {
   findArcConfigDirectory,
   readArcConfig,
   findArcProjectIdOfPath,
   getProjectRelativePath,
+  findDiagnostics,
 };

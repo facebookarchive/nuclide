@@ -3,6 +3,7 @@
 [ignore]
 
 [libs]
+./node_modules/nuclide-atom-interfaces/1.0/
 
 [options]
 

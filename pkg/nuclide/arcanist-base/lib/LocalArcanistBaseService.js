@@ -9,6 +9,10 @@
  * the root directory of this source tree.
  */
 
+import type {NuclideUri} from 'nuclide-remote-uri';
+
+var logger = require('nuclide-logging').getLogger();
+
 var ArcanistBaseService = require('./ArcanistBaseService');
 
 var ARC_CONFIG_FILE_NAME = '.arcconfig';
@@ -56,6 +60,60 @@ class LocalArcanistBaseService extends ArcanistBaseService {
     var arcPath = await this.findArcConfigDirectory(fileName);
     var path = require('path');
     return arcPath && fileName ? path.relative(arcPath, fileName) : null;
+  }
+
+  async findDiagnostics(pathToFile: NuclideUri): Promise {
+    var cwd = await this.findArcConfigDirectory(pathToFile);
+    if (cwd === null) {
+      return [];
+    }
+
+    var args = ['lint', '--output', 'json', pathToFile];
+    var options = {'cwd': cwd};
+    var {asyncExecute} = require('nuclide-commons');
+    var result = await asyncExecute('arc', args, options);
+
+    var json;
+    try {
+      json = JSON.parse(result.stdout);
+    } catch (error) {
+      logger.error('Error parsing `arc lint` JSON output', result.stdout);
+      return [];
+    }
+
+    // json is an object where the keys are file paths that are relative to the
+    // location of the .arcconfig file. There will be an entry in the map for
+    // the file even if there were no lint errors.
+    var key = require('path').relative(cwd, pathToFile);
+    var lints = json[key];
+
+    // TODO(7876450): For some reason, this does not work for particular values
+    // of pathToFile.
+    //
+    // For now, we defend against this by returning the empty array.
+    if (!lints) {
+      return [];
+    }
+
+    return lints.map((lint) => {
+      // Choose an appropriate level based on lint['severity'].
+      var severity = lint['severity'];
+      var level = severity === 'error' ? 'Error' : 'Warning';
+
+      var line = lint['line'];
+      // Sometimes the linter puts in global errors on line 0, which will result
+      // in a negative index. We offset those back to the first line.
+      var col = Math.max(0, lint['char'] - 1);
+      var row = Math.max(0, line - 1);
+
+      return {
+        type: level,
+        text: lint['description'],
+        filePath: pathToFile,
+        row,
+        col,
+      };
+    });
   }
 }
 

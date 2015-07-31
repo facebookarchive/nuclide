@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import type {NuclideUri} from 'nuclide-remote-uri';
 
 class ArcanistBaseService {
   findArcConfigDirectory(fileName: NuclideUri): Promise<?NuclideUri> {
@@ -24,6 +25,16 @@ class ArcanistBaseService {
   }
 
   getProjectRelativePath(fileName: NuclideUri): Promise<?string> {
+    throw new Error('abstract');
+  }
+
+  findDiagnostics(fileName: NuclideUri): Promise<Array<{
+        type: string,
+        text: string,
+        filePath: NuclideUri,
+        row: number,
+        col: number,
+      }>> {
     throw new Error('abstract');
   }
 }

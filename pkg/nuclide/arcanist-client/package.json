@@ -12,6 +12,8 @@
     "nuclide-client": "0.0.0"
   },
   "devDependencies": {
-    "nuclide-atom-interfaces": "0.0.0"
+    "nuclide-arcanist-base": "0.0.0",
+    "nuclide-atom-interfaces": "0.0.0",
+    "nuclide-remote-uri": "0.0.0"
   }
 }
