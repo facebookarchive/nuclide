@@ -11,7 +11,12 @@
 
 module.exports = {
   // Workaround for https://github.com/AtomLinter/Linter/issues/248.
+  //
+  // This is here for backwards compatibility with the 'linter' package, which
+  // does not support the allGrammarScopes extension.
   grammarScopes: atom.grammars.getGrammars().map(grammar => grammar.scopeName),
+  // extension to the linter protocol, overrides grammarScopes.
+  allGrammarScopes: true,
   providerName: 'Arc',
   scope: 'file',
   lintOnFly: false,
