@@ -65,6 +65,13 @@ var DiffViewComponent = React.createClass({
 
       newLineOffsets[offsetRow] = (newLineOffsets[offsetRow] || 0) + offset;
       oldLineOffsets[offsetRow] = (oldLineOffsets[offsetRow] || 0) + offset;
+
+      // TODO(gendron):
+      // horrible hack! Set the width of the overlay so that it won't resize when we
+      // type comment replies into the text editor.
+      // Need to figure out how Atom computes and sets the overlay dimensions.
+      var componentWidth = window.getComputedStyle(domNode).width;
+      domNode.style.width = componentWidth;
     });
 
     return {
