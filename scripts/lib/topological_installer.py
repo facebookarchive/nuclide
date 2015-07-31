@@ -145,7 +145,7 @@ def install_dependencies(package_config, npm, copy_local_dependencies=False):
         link_dependencys_executable(node_modules_path, local_dependency)
 
     # Install other public node dependencies.
-    npm.install(src_path, local_packages=package_config['localDependencies'], include_dev_dependencies=package_config['includeDevDependencies'])
+    npm.install(src_path, local_packages=package_config['localDependencies'], include_dev_dependencies=True)
     logging.info('Done installing dependencies for %s', name)
 
     is_node_package = package_config.get('isNodePackage')

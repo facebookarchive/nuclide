@@ -35,7 +35,6 @@ def create_config_for_manifest(path, manifest):
     test_runner = nuclide_config.get('testRunner')
     disableTests = nuclide_config.get(
         'excludeTestsFromContinuousIntegration', False)
-    includeDevDependencies = nuclide_config.get('includeDevDependencies', True)
 
     config = {}
     config['name'] = manifest['name']
@@ -56,7 +55,6 @@ def create_config_for_manifest(path, manifest):
     config['packageRootAbsolutePath'] = os.path.dirname(path)
     config['testRunner'] = test_runner
     config['excludeTestsFromContinuousIntegration'] = disableTests
-    config['includeDevDependencies'] = includeDevDependencies
 
     # Check for custom dependencies.
     if 'customDeps' in nuclide_config:

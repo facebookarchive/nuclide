@@ -31,7 +31,7 @@ class OfflineInstaller(object):
         for config in self._package_manager.get_configs(
                 include_packages_that_depend_on_atom=include_packages_that_depend_on_atom):
             package_json = os.path.join(config['packageRootAbsolutePath'], 'package.json')
-            pkg = PackageNeedsDepsInstalled(config['name'], package_json, config['includeDevDependencies'])
+            pkg = PackageNeedsDepsInstalled(config['name'], package_json, include_dev_dependencies=True)
             queue.append(pkg)
 
         # Process the items in the queue in order. Dependencies will be traversed in a depth-first
@@ -72,7 +72,9 @@ def process_package(pkg, copy_local_dependencies, queue, package_manager, npm_di
             install_package(name, version, package_dir, npm_directory)
 
             # Add the package.json for the dependency to the queue.
-            pkg_to_install = PackageNeedsDepsInstalled(name, os.path.join(package_dir, 'package.json'))
+            pkg_to_install = PackageNeedsDepsInstalled(name,
+                                                       os.path.join(package_dir, 'package.json'),
+                                                       include_dev_dependencies=False)
             queue.appendleft(pkg_to_install)
         else:
             # Unclear whether .bin should still get installed in this case. If so,
@@ -143,7 +145,7 @@ def find_available_versions(name, npm_directory):
 
 class PackageNeedsDepsInstalled(object):
     '''Represents a package.json on disk that needs its dependencies installed.'''
-    def __init__(self, name, package_json, include_dev_dependencies=False):
+    def __init__(self, name, package_json, include_dev_dependencies):
         self.name = name
         # Absolute path to the package.json.
         self.package_json = package_json
