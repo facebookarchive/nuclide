@@ -10,7 +10,7 @@
  */
 
 var invariant = require('assert');
-var {Emitter, Disposable, CompositeDisposable} = require('atom');
+var {Disposable, CompositeDisposable} = require('atom');
 
 var {debounce} = require('nuclide-commons');
 
@@ -182,8 +182,6 @@ class TextEventDispatcher {
           this._dispatchEvents(editor, event);
         };
       };
-      // TODO consider providing some sort of debouncing here, to avoid
-      // thrashing the providers or making them each implement their own.
       this._getEditorListenerDisposable().add(buffer.onDidStopChanging(makeDispatch('did-change')));
       this._getEditorListenerDisposable().add(buffer.onDidSave(makeDispatch('did-save')));
       this._getEditorListenerDisposable().add(buffer.onDidReload(makeDispatch('did-reload')));
