@@ -2,13 +2,13 @@
 '.platform-darwin atom-workspace':
   'cmd-t': 'nuclide-quick-open:toggle-omni-search'
   'cmd-alt-t': 'nuclide-quick-open:toggle-quick-open'
-  'cmd-alt-s': 'nuclide-quick-open:toggle-symbol-search'
+  'cmd-alt-y': 'nuclide-quick-open:toggle-symbol-search'
   'cmd-alt-g': 'nuclide-quick-open:toggle-biggrep-search'
   'cmd-alt-o': 'nuclide-quick-open:toggle-openfilename-search'
 
 '.platform-win32 atom-workspace, .platform-linux atom-workspace':
   'ctrl-t': 'nuclide-quick-open:toggle-omni-search'
   'ctrl-alt-t': 'nuclide-quick-open:toggle-quick-open'
-  'ctrl-alt-s': 'nuclide-quick-open:toggle-symbol-search'
+  'ctrl-alt-y': 'nuclide-quick-open:toggle-symbol-search'
   'ctrl-alt-g': 'nuclide-quick-open:toggle-biggrep-search'
   'ctrl-alt-o': 'nuclide-quick-open:toggle-openfilename-search'
