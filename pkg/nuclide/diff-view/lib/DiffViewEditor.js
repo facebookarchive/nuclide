@@ -44,8 +44,13 @@ module.exports = class DiffViewEditor {
 
   renderComponentsInline(elements): Array<InlineComponent> {
     var components = [];
+    var scrollToRow = this._scrollToRow.bind(this);
     elements.forEach(element => {
       var {node, bufferRow} = element;
+      var helpers = {
+        scrollToRow,
+      };
+      node.props.helpers = helpers;
       var container = document.createElement('div');
       var component = React.render(node, container);
       // an overlay marker at a buffer range with row x renders under row x + 1
@@ -140,5 +145,9 @@ module.exports = class DiffViewEditor {
     // Filed an issue: https://github.com/atom/atom/issues/6880
     this._editorElement.removeAttribute('tabindex');
     this._editor.getDecorations({class: 'cursor-line', type: 'line'})[0].destroy();
+  }
+
+  _scrollToRow(row): void {
+    this._editor.scrollToBufferPosition([row, 0]);
   }
 };
