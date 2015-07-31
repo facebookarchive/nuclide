@@ -32,6 +32,8 @@ export type LinterProvider = {
   // providerName is an extension to the current linter api
   providerName?: string;
   grammarScopes: Array<string>;
+  // extension to the linter API. overrides grammarScopes if true, to trigger the linter on all grammar scopes
+  allGrammarScopes?: boolean;
   scope: 'file' | 'project';
   lintOnFly: bool;
   lint: (textEditor: TextEditor) => Promise<Array<LinterMessage>>;
@@ -150,9 +152,17 @@ class LinterAdapter {
     var dispatcher = getTextEventDispatcher();
     var subscription;
     if (lintOnFly) {
-      subscription = dispatcher.onFileChange(this._provider.grammarScopes, runLint);
+      if (this._provider.allGrammarScopes) {
+        subscription = dispatcher.onAnyFileChange(runLint);
+      } else {
+        subscription = dispatcher.onFileChange(this._provider.grammarScopes, runLint);
+      }
     } else {
-      subscription = dispatcher.onFileSave(this._provider.grammarScopes, runLint);
+      if (this._provider.allGrammarScopes) {
+        subscription = dispatcher.onAnyFileSave(runLint);
+      } else {
+        subscription = dispatcher.onFileSave(this._provider.grammarScopes, runLint);
+      }
     }
     this._currentEventSubscription = subscription;
     this._disposables.add(subscription);

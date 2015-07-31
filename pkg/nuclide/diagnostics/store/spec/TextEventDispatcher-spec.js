@@ -32,11 +32,21 @@ describe('TextCallbackContainer', () => {
         expect(callbackSet.size).not.toBe(0);
       });
     });
+    textCallbackContainer._allGrammarCallbacks.forEach(callbackSet => {
+      expect(callbackSet.size).not.toBe(0);
+    });
   }
 
   it('should return callback', () => {
     textCallbackContainer.addCallback([grammar], ['did-reload'], callback);
     var callbacks = textCallbackContainer.getCallbacks(grammar, 'did-reload');
+    expect(callbacks).toEqual(new Set().add(callback));
+    checkInvariant();
+  });
+
+  it('should always return callbacks for all', () => {
+    textCallbackContainer.addCallback('all', ['did-save'], callback);
+    var callbacks = textCallbackContainer.getCallbacks('asdf', 'did-save');
     expect(callbacks).toEqual(new Set().add(callback));
     checkInvariant();
   });
@@ -151,5 +161,12 @@ describe('TextEventDispatcher', () => {
     activeEditor = fakeTextEditor2;
     paneSwitchCallbacks.forEach(f => f());
     expect(callback).toHaveBeenCalledWith(fakeTextEditor2);
+  });
+
+  it('should always dispatch to clients that request all changes', () => {
+    var callback = jasmine.createSpy();
+    textEventDispatcher.onAnyFileChange(callback);
+    triggerAtomEvent(fakeTextEditor);
+    expect(callback).toHaveBeenCalled();
   });
 });

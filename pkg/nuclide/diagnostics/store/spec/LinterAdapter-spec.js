@@ -34,6 +34,7 @@ describe('LinterAdapter', () => {
   var linterAdapter: any;
   var linterReturn: any;
   var fakeEditor: any;
+  var subscribedToAny: any;
 
   beforeEach(() => {
     fakeEditor = {
@@ -49,8 +50,15 @@ describe('LinterAdapter', () => {
       lint: () => linterReturn,
     };
     spyOn(fakeLinter, 'lint').andCallThrough();
+    eventCallback = null;
+    subscribedToAny = null;
     class FakeEventDispatcher {
       onFileChange(grammars, callback) {
+        eventCallback = callback;
+        return new Disposable(() => {});
+      }
+      onAnyFileChange(callback) {
+        subscribedToAny = true;
         eventCallback = callback;
         return new Disposable(() => {});
       }
@@ -68,6 +76,17 @@ describe('LinterAdapter', () => {
   it('should dispatch the linter on an event', () => {
     eventCallback(fakeEditor);
     expect(fakeLinter.lint).toHaveBeenCalled();
+  });
+
+  it("should subscribe to 'all' for linters for allGrammarScopes", () => {
+    newLinterAdapter({
+      grammarScopes: [],
+      allGrammarScopes: true,
+      scope: 'file',
+      lintOnFly: true,
+      lint: () => linterReturn,
+    });
+    expect(subscribedToAny).toBe(true);
   });
 
   it('should dispatch an event on subscribe if no lint is in progress', () => {

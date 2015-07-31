@@ -18,6 +18,13 @@ type EventCallback = (editor: TextEditor) => mixed;
 
 type Event = 'did-reload' | 'did-change' | 'did-save';
 
+// A reload changes the text in the buffer, so it should trigger a refresh.
+var FILE_CHANGE_EVENTS = ['did-change', 'did-reload'];
+
+// A reload basically indicates that an external program saved the file, so
+// it should trigger a refresh.
+var FILE_SAVE_EVENTS = ['did-save', 'did-reload'];
+
 /**
  * Stores callbacks keyed on grammar and event, to allow for easy retrieval when
  * we need to dispatch to all callbacks registered for a given (grammar, event)
@@ -28,12 +35,31 @@ class TextCallbackContainer<CallbackArg> {
   // invariant: no empty maps or sets (they should be removed instead)
   _callbacks: Map<string, Map<Event, Set<(arg: CallbackArg) => mixed>>>;
 
+  // event -> callback
+  // invariant: no keys mapping to empty sets (they should be removed instead)
+  _allGrammarCallbacks: Map<Event, Set<(arg: CallbackArg) => mixed>>;
+
   constructor() {
     this._callbacks = new Map();
+    this._allGrammarCallbacks = new Map();
   }
 
   getCallbacks(grammar: string, event: Event): Set<(arg: CallbackArg) => mixed> {
     var eventMap = this._callbacks.get(grammar);
+    var callbacksForGrammar = this._getCallbacksFromEventMap(eventMap, event);
+    var callbacksForAll = this._getCallbacksFromEventMap(this._allGrammarCallbacks, event);
+    var resultSet = new Set();
+    var add = callback => { resultSet.add(callback); };
+    callbacksForGrammar.forEach(add);
+    callbacksForAll.forEach(add);
+    return resultSet;
+  }
+
+  isEmpty(): boolean {
+    return this._callbacks.size === 0 && this._allGrammarCallbacks.size === 0;
+  }
+
+  _getCallbacksFromEventMap(eventMap: Map<Event, Set<(arg: CallbackArg) => mixed>>, event: Event): Set<(arg: CallbackArg) => mixed> {
     if (!eventMap) {
       return new Set();
     }
@@ -41,31 +67,24 @@ class TextCallbackContainer<CallbackArg> {
     if (!callbackSet) {
       return new Set();
     }
-    return new Set(callbackSet);
-  }
-
-  isEmpty(): boolean {
-    return this._callbacks.size === 0;
+    return callbackSet;
   }
 
   addCallback(
-      grammarScopes: Array<string>,
+      grammarScopes: Array<string> | 'all',
       events: Array<Event>,
       callback: (arg: CallbackArg) => mixed
       ): void {
-    for (var grammarScope of grammarScopes) {
-      var eventMap = this._callbacks.get(grammarScope);
-      if (!eventMap) {
-        eventMap = new Map();
-        this._callbacks.set(grammarScope, eventMap);
-      }
-      for (var event of events) {
-        var callbackSet = eventMap.get(event);
-        if (!callbackSet) {
-          callbackSet = new Set();
-          eventMap.set(event, callbackSet);
+    if (grammarScopes === 'all') {
+      this._addToEventMap(this._allGrammarCallbacks, events, callback);
+    } else {
+      for (var grammarScope of grammarScopes) {
+        var eventMap = this._callbacks.get(grammarScope);
+        if (!eventMap) {
+          eventMap = new Map();
+          this._callbacks.set(grammarScope, eventMap);
         }
-        callbackSet.add(callback);
+        this._addToEventMap(eventMap, events, callback);
       }
     }
   }
@@ -73,23 +92,48 @@ class TextCallbackContainer<CallbackArg> {
   // remove the callbacks, maintaining the invariant that there should be no
   // empty maps or sets in this._callbacks
   removeCallback(
-      grammarScopes: Array<string>,
+      grammarScopes: Array<string> | 'all',
       events: Array<Event>,
       callback: (arg: CallbackArg) => mixed
       ): void {
-    for (var grammarScope of grammarScopes) {
-      var eventMap = this._callbacks.get(grammarScope);
-      invariant(eventMap);
-      for (var event of events) {
-        var callbackSet = eventMap.get(event);
-        invariant(callbackSet);
-        callbackSet.delete(callback);
-        if (callbackSet.size === 0) {
-          eventMap.delete(event);
+    if (grammarScopes === 'all') {
+      this._removeFromEventMap(this._allGrammarCallbacks, events, callback);
+    } else {
+      for (var grammarScope of grammarScopes) {
+        var eventMap = this._callbacks.get(grammarScope);
+        invariant(eventMap);
+        this._removeFromEventMap(eventMap, events, callback);
+        if (eventMap.size === 0) {
+          this._callbacks.delete(grammarScope);
         }
       }
-      if (eventMap.size === 0) {
-        this._callbacks.delete(grammarScope);
+    }
+  }
+
+  _addToEventMap(
+      eventMap: Map<Event, Set<(arg: CallbackArg) => mixed>>,
+      events: Array<Event>,
+      callback: (arg: CallbackArg) => mixed): void {
+    for (var event of events) {
+      var callbackSet = eventMap.get(event);
+      if (!callbackSet) {
+        callbackSet = new Set();
+        eventMap.set(event, callbackSet);
+      }
+      callbackSet.add(callback);
+    }
+  }
+
+  _removeFromEventMap(
+      eventMap: Map<Event, Set<(arg: CallbackArg) => mixed>>,
+      events: Array<Event>,
+      callback: (arg: CallbackArg) => mixed): void {
+    for (var event of events) {
+      var callbackSet = eventMap.get(event);
+      invariant(callbackSet);
+      callbackSet.delete(callback);
+      if (callbackSet.size === 0) {
+        eventMap.delete(event);
       }
     }
   }
@@ -127,7 +171,7 @@ class TextEventDispatcher {
     this._pendingEvents = new WeakMap();
   }
 
-  _onEvents(grammarScopes: Array<string>, events: Array<Event>, callback: EventCallback) {
+  _onEvents(grammarScopes: Array<string> | 'all', events: Array<Event>, callback: EventCallback) {
     if (this._callbackContainer.isEmpty()) {
       this._registerEditorListeners();
     }
@@ -145,14 +189,18 @@ class TextEventDispatcher {
   }
 
   onFileChange(grammarScopes: Array<string>, callback: EventCallback): atom$Disposable {
-    // A reload changes the text in the buffer, so it should trigger a refresh.
-    return this._onEvents(grammarScopes, ['did-change', 'did-reload'], callback);
+    return this._onEvents(grammarScopes, FILE_CHANGE_EVENTS, callback);
+  }
+  onAnyFileChange(callback: EventCallback): atom$Disposable {
+    return this._onEvents('all', FILE_CHANGE_EVENTS, callback);
   }
 
   onFileSave(grammarScopes: Array<string>, callback: EventCallback): atom$Disposable {
-    // A reload basically indicates that an external program saved the file, so
-    // it should trigger a refresh.
-    return this._onEvents(grammarScopes, ['did-save', 'did-reload'], callback);
+    return this._onEvents(grammarScopes, FILE_SAVE_EVENTS, callback);
+  }
+
+  onAnyFileSave(callback: EventCallback): atom$Disposable {
+    return this._onEvents('all', FILE_SAVE_EVENTS, callback);
   }
 
   _registerEditorListeners(): void {
