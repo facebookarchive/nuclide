@@ -26,8 +26,8 @@ class LocalClangServiceMock extends ClangService {
     contents: string
   ): Promise<{
     diagnostics: Array<{
-      spelling: string; 
-      severity: number; 
+      spelling: string;
+      severity: number;
       location: {
         column: number;
         file: NuclideUri;
@@ -53,7 +53,7 @@ class LocalClangServiceMock extends ClangService {
   }
 
   async getDeclaration(src: NuclideUri, contents: string, line: number, column: number
-      ): Promise<?{file: NuclideUri; line: number; column: number}> {
+      ): Promise<?{file: NuclideUri; line: number; column: number; spelling: string;}> {
     return null;
   }
 

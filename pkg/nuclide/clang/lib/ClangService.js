@@ -15,8 +15,8 @@ class ClangService {
     contents: string
   ): Promise<{
     diagnostics: Array<{
-      spelling: string; 
-      severity: number; 
+      spelling: string;
+      severity: number;
       location: {
         column: number;
         file: NuclideUri;
@@ -34,7 +34,7 @@ class ClangService {
   }
 
   getDeclaration(src: NuclideUri, contents: string, line: number, column: number
-      ): Promise<?{file: NuclideUri; line: number; column: number}> {
+      ): Promise<?{file: NuclideUri; line: number; column: number; spelling: string;}> {
     return Promise.reject('Not implemented');
   }
 
