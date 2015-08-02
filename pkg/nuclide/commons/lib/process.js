@@ -240,7 +240,12 @@ function checkOutput(
     }
   }
 
-  return createExecEnvironment(localOptions.env || process.env, COMMON_BINARY_PATHS).then(
+  // Don't overwrite env if it has been set by caller.
+  if (localOptions.env) {
+    return makePromise();
+  }
+
+  return createExecEnvironment(process.env, COMMON_BINARY_PATHS).then(
     val => {
       localOptions.env = val;
       return makePromise();
