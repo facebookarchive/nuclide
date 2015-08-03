@@ -37,6 +37,7 @@ var AtomComboBox = React.createClass({
     intialTextInput: PropTypes.string.isRequired,
     placeholderText: PropTypes.string,
     maxOptionCount: PropTypes.number.isRequired,
+    onChange: PropTypes.func.isRequired,
     onSelect: PropTypes.func.isRequired,
     /**
      * promise-returning function; Gets called with
@@ -51,6 +52,7 @@ var AtomComboBox = React.createClass({
       intialTextInput: '',
       placeholderText: null,
       maxOptionCount: 10,
+      onChange: emptyfunction,
       onSelect: emptyfunction,
     };
   },
@@ -152,6 +154,7 @@ var AtomComboBox = React.createClass({
       filteredOptions: filteredOptions,
       selectedIndex,
     });
+    this.props.onChange(newText);
   },
 
   _handleItemClick(selectedValue: string, event: any) {

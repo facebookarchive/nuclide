@@ -60,6 +60,7 @@ var BuckToolbar = React.createClass({
 
   getInitialState() {
     return {
+      buttonsDisabled: !this.props.initialBuildTarget,
       currentProgress: 0,
       maxProgress: 100,
     };
@@ -78,6 +79,7 @@ var BuckToolbar = React.createClass({
   },
 
   render(): ReactElement {
+    var disabled = this.state.buttonsDisabled;
     return (
       <div className="buck-toolbar block">
         <AtomComboBox
@@ -85,6 +87,7 @@ var BuckToolbar = React.createClass({
           ref="buildTarget"
           requestOptions={requestOptions}
           intialTextInput={this.props.initialBuildTarget}
+          onChange={this._handleBuildTargetChange}
           placeholderText="Buck build target"
         />
         <SimulatorDropdown
@@ -93,9 +96,9 @@ var BuckToolbar = React.createClass({
           title="Choose target device"
         />
         <div className="btn-group inline-block">
-          <button onClick={this._build} className="btn">Build</button>
-          <button onClick={this._run} className="btn">Run</button>
-          <button onClick={this._debug} className="btn">Debug</button>
+          <button onClick={this._build} disabled={disabled} className="btn">Build</button>
+          <button onClick={this._run} disabled={disabled} className="btn">Run</button>
+          <button onClick={this._debug} disabled={disabled} className="btn">Debug</button>
         </div>
 
         <progress
@@ -106,6 +109,10 @@ var BuckToolbar = React.createClass({
         />
       </div>
     );
+  },
+
+  _handleBuildTargetChange(value: string) {
+    this.setState({buttonsDisabled: !value});
   },
 
   getBuildTarget(): string {
