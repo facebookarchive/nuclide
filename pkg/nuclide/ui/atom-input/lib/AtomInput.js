@@ -12,10 +12,7 @@
 var {CompositeDisposable} = require('atom');
 var React = require('react-for-atom');
 
-var {
-  addons,
-  PropTypes,
-} = React;
+var {PropTypes} = React;
 
 /**
  * An input field rendered as an <atom-text-editor mini />.
@@ -23,12 +20,13 @@ var {
 var AtomInput = React.createClass({
 
   propTypes: {
-    disabled: React.PropTypes.bool,
-    initialValue: React.PropTypes.string,
-    placeholderText: React.PropTypes.string,
-    onFocus: React.PropTypes.func,
-    onClick: React.PropTypes.func,
-    onBlur: React.PropTypes.func,
+    disabled: PropTypes.bool,
+    initialValue: PropTypes.string,
+    placeholderText: PropTypes.string,
+    onFocus: PropTypes.func,
+    onClick: PropTypes.func,
+    onBlur: PropTypes.func,
+    size: PropTypes.oneOf(['xs', 'sm', 'lg']),
   },
 
   getDefaultProps() {
@@ -87,13 +85,19 @@ var AtomInput = React.createClass({
     if (isDisabled) {
       this._getTextEditorElement().removeAttribute('tabindex');
     } else {
-      this._getTextEditorElement().setAttribute('tabindex', -1);
+      this._getTextEditorElement().setAttribute('tabindex', '-1');
     }
   },
 
   render() {
+    var className;
+    if (this.props.size) {
+      className = `atom-text-editor-${this.props.size}`;
+    }
+
     return (
       <atom-text-editor
+          className={className}
           mini
           onClick={this.props.onClick}
           onFocus={this.props.onFocus}
