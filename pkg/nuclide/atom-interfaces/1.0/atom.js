@@ -377,6 +377,11 @@ declare class atom$Workspace {
     visible?: boolean;
     priority?: number;
   }): atom$Panel;
+  addTopPanel(options: {
+    item: Object;
+    visible?: boolean;
+    priority?: number;
+  }): atom$Panel;
 
   addModalPanel(options: {
     item: HTMLElement;
