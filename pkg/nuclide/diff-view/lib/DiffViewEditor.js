@@ -43,14 +43,18 @@ module.exports = class DiffViewEditor {
   }
 
   renderComponentsInline(elements): Array<InlineComponent> {
+    var {object} = require('nuclide-commons');
     var components = [];
     var scrollToRow = this._scrollToRow.bind(this);
     elements.forEach(element => {
       var {node, bufferRow} = element;
+      if (!node.props.helpers) {
+        node.props.helpers = {};
+      }
       var helpers = {
         scrollToRow,
       };
-      node.props.helpers = helpers;
+      object.assign(node.props.helpers, helpers);
       var container = document.createElement('div');
       var component = React.render(node, container);
       // an overlay marker at a buffer range with row x renders under row x + 1
