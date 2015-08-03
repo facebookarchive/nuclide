@@ -136,6 +136,7 @@ var asyncFs = {
 };
 
 [
+  'chmod',
   'lstat',
   'mkdir',
   'readdir',

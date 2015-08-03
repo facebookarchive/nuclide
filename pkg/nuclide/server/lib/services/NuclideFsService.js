@@ -17,6 +17,7 @@
 
 var fs = require('fs');
 var pathUtil = require('path');
+var mv = require('mv');
 var temp = require('temp');
 var {fsPromise} = require('nuclide-commons');
 var {deserializeArgs} = require('../utils');
@@ -239,7 +240,7 @@ function writeFile(request: IncomingMessage, response: ServerResponse, next: (er
       next(error);
       return;
     }
-    options =  options || {};
+    options = options || {};
     options.fd = info.fd;
 
     var failed = false;
@@ -255,22 +256,44 @@ function writeFile(request: IncomingMessage, response: ServerResponse, next: (er
 
     request.on('error', onError);
     tempStream.on('error', onError);
-    tempStream.on('close', () => {
-      // TODO(mikeo): Clean up temp file if failed.
-      if (!failed) {
-         // TODO(mikeo): put renames into a queue so we don't write older save over new save.
-        fs.rename(info.path, path, renameError => {
-          if (renameError) {
-            next(renameError);
-            return;
-          }
-          response.end();
-        });
+    tempStream.on('close', async () => {
+      if (failed) {
+        // TODO(mikeo): Clean up temp file if failed.
+        // next(streamError) has already been called, so nothing to do here.
+        return;
       }
+
+      // Ensure file still has original permissions:
+      // https://github.com/facebook/nuclide/issues/157
+      // We update the mode of the temp file rather than the destination file because
+      // if we did the mv() then the chmod(), there would be a brief period between
+      // those two operations where the destination file might have the wrong permissions.
+      var permissions;
+      try {
+        var {mode: permissions} = await fsPromise.stat(path);
+      } catch (e) {
+        // If the file does not exist, then ENOENT will be thrown.
+        if (e.code !== 'ENOENT') {
+          throw error;
+        }
+      }
+      var tempFilePath = info.path;
+      if (permissions != null) {
+        await fsPromise.chmod(tempFilePath, permissions);
+      }
+
+      // TODO(mikeo): put renames into a queue so we don't write older save over new save.
+      // Use mv as fs.rename doesn't work across partitions.
+      mv(tempFilePath, path, {mkdirp: false}, async (renameError: ?Error) => {
+        if (renameError) {
+          next(renameError);
+        } else {
+          response.end();
+        }
+      });
     });
   });
 }
-
 
 module.exports = {
   services: {
