@@ -1,29 +1,30 @@
 @import "ui-variables";
 
-.combobox-option-container {
+.select-list.popover-list.popover-list-subtle {
+  background-color: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0;
+
+  /*
+   * Beat specificity of `.select-list.popover-list atom-text-editor` to ensure subtle dropdowns
+   * have no bottom margin.
+   */
+  atom-text-editor[mini] {
+    margin-bottom: 0;
+  }
+}
+
+.select-list.popover-list-subtle > ol.list-group {
   background: @base-background-color;
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
-  padding: 10px 0;
+  border: 1px solid @overlay-border-color;
+  border-top: none;
+  margin-top: 0;
   position: absolute;
-  z-index: 1;
-}
+  width: 100%;
 
-.combobox-item {
-  cursor: pointer;
-  padding: 4px 10px;
-}
-
-.combobox-item-selected,
-.combobox-item:hover {
-  background-color: @background-color-selected;
-  color: @text-color-highlight;
-}
-
-.combobox-item-empty {
-  font-style: italic;
-  text-align: center;
-}
-
-.combobox-fuzzy-highlight {
-  color: @text-color-highlight;
+  strong {
+    font-weight: bold;
+  }
 }

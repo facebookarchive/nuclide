@@ -9,17 +9,19 @@
  * the root directory of this source tree.
  */
 
-var {
-  CompositeDisposable,
-} = require('atom');
+type ComboboxOption = {
+  value: string;
+  valueLowercase: string;
+  matchIndex: number;
+};
+
+var {CompositeDisposable} = require('atom');
 var AtomInput = require('nuclide-ui-atom-input');
 var React = require('react-for-atom');
-var {
-  PropTypes,
-} = React;
 
-var cx = require('react-classset');
 var emptyfunction = require('emptyfunction');
+
+var {PropTypes} = React;
 
 /**
  * A Combo Box.
@@ -34,7 +36,7 @@ var AtomComboBox = React.createClass({
 
   propTypes: {
     className: PropTypes.string.isRequired,
-    intialTextInput: PropTypes.string.isRequired,
+    intialTextInput: PropTypes.string,
     placeholderText: PropTypes.string,
     maxOptionCount: PropTypes.number.isRequired,
     onChange: PropTypes.func.isRequired,
@@ -44,13 +46,12 @@ var AtomComboBox = React.createClass({
      * the current value of the input field as its only argument
      */
     requestOptions: PropTypes.func.isRequired,
+    size: PropTypes.oneOf(['xs', 'sm', 'lg']),
   },
 
   getDefaultProps(): {[key: string]: mixed} {
     return {
       className: '',
-      intialTextInput: '',
-      placeholderText: null,
       maxOptionCount: 10,
       onChange: emptyfunction,
       onSelect: emptyfunction,
@@ -89,7 +90,7 @@ var AtomComboBox = React.createClass({
     this.props.requestOptions(this.state.textInput).then(this.receiveUpdate);
   },
 
-  receiveUpdate(newOptions) {
+  receiveUpdate(newOptions: Array<string>) {
     var filteredOptions = this._getFilteredOptions(newOptions, this.state.textInput);
     this.setState({
       options: newOptions,
@@ -97,13 +98,13 @@ var AtomComboBox = React.createClass({
     });
   },
 
-  selectValue(newValue: string) {
+  selectValue(newValue: string, didRenderCallback?: () => mixed) {
     this.refs['freeformInput'].setText(newValue);
     this.setState({
       textInput: newValue,
       selectedIndex: -1,
       optionsVisible: false,
-    });
+    }, didRenderCallback);
     this.props.onSelect(newValue);
   },
 
@@ -112,7 +113,7 @@ var AtomComboBox = React.createClass({
   },
 
   // TODO use native (fuzzy/strict - configurable?) filter provider
-  _getFilteredOptions(options, filterValue) {
+  _getFilteredOptions(options: Array<string>, filterValue: string): Array<ComboboxOption> {
     var lowerCaseState = filterValue.toLowerCase();
     return options
       .map(
@@ -157,30 +158,44 @@ var AtomComboBox = React.createClass({
     this.props.onChange(newText);
   },
 
-  _handleItemClick(selectedValue: string, event: any) {
-    this.selectValue(selectedValue);
+  _handleInputBlur(): void {
+    // Delay hiding the combobox long enough for a click inside the combobox to trigger on it in
+    // case the blur was caused by a click inside the combobox. 150ms is empirically long enough to
+    // let the stack clear from this blur event and for the click event to trigger.
+    setTimeout(this._handleCancel, 150);
   },
 
-  _handleMoveDown(event) {
+  _handleItemClick(selectedValue: string, event: any) {
+    this.selectValue(selectedValue, () => {
+      // Focus the input again because the click will cause the input to blur. This mimics native
+      // <select> behavior by keeping focus in the form being edited.
+      var input = React.findDOMNode(this.refs['freeformInput']);
+      if (input) {
+        input.focus();
+      }
+    });
+  },
+
+  _handleMoveDown() {
     this.setState({
       selectedIndex: Math.min(
         this.props.maxOptionCount - 1,
         this.state.selectedIndex + 1,
         this.state.filteredOptions.length - 1
       )
-    });
+    }, this._scrollSelectedOptionIntoViewIfNeeded);
   },
 
-  _handleMoveUp(event) {
+  _handleMoveUp() {
     this.setState({
       selectedIndex: Math.max(
         0,
         this.state.selectedIndex - 1
       )
-    });
+    }, this._scrollSelectedOptionIntoViewIfNeeded);
   },
 
-  _handleCancel(event) {
+  _handleCancel() {
     this.setState({
       optionsVisible: false,
     });
@@ -190,6 +205,17 @@ var AtomComboBox = React.createClass({
     var option = this.state.filteredOptions[this.state.selectedIndex];
     if (option !== undefined) {
       this.selectValue(option.value);
+    }
+  },
+
+  _setSelectedIndex(selectedIndex: number) {
+    this.setState({selectedIndex});
+  },
+
+  _scrollSelectedOptionIntoViewIfNeeded(): void {
+    var selectedOption = React.findDOMNode(this.refs['selectedOption']);
+    if (selectedOption) {
+      selectedOption.scrollIntoViewIfNeeded();
     }
   },
 
@@ -207,41 +233,46 @@ var AtomComboBox = React.createClass({
             endOfMatchIndex,
             option.value.length
           );
+          var isSelected = i === this.state.selectedIndex;
           return (
-            <div
-              className={cx({
-                'combobox-item': true,
-                'combobox-item-selected': i === this.state.selectedIndex,
-              })}
+            <li
+              className={isSelected ? 'selected' : null}
               key={option.value}
-              onClick={this._handleItemClick.bind(this, option.value)}>
+              onClick={this._handleItemClick.bind(this, option.value)}
+              onMouseOver={this._setSelectedIndex.bind(this, i)}
+              ref={isSelected ? 'selectedOption' : null}>
               {beforeMatch}
-              <span className="combobox-fuzzy-highlight">{highlightedMatch}</span>
+              <strong className="text-highlight">{highlightedMatch}</strong>
               {afterMatch}
-            </div>
+            </li>
           );
         }
       );
     if (!options.length) {
       options.push(
-        <div className="combobox-item combobox-item-empty">
+        <li className="text-subtle" key="no-results-found">
           No results found
-        </div>
+        </li>
       );
     }
-    var optionsContainer = this.state.optionsVisible
-      ? (
-        <div className="combobox-option-container">
+
+    var optionsContainer;
+    if (this.state.optionsVisible) {
+      optionsContainer = (
+        <ol className="list-group">
           {options}
-        </div>
-      )
-      : null;
+        </ol>
+      );
+    }
+
     return (
-      <div className={'combobox-combobox ' + this.props.className} onKeyDown={this._handleKeyDown}>
+      <div className={'select-list popover-list popover-list-subtle ' + this.props.className}>
         <AtomInput
-          ref="freeformInput"
           initialValue={this.props.intialTextInput}
+          onBlur={this._handleInputBlur}
           placeholderText={this.props.placeholderText}
+          ref="freeformInput"
+          size={this.props.size}
         />
         {optionsContainer}
       </div>
