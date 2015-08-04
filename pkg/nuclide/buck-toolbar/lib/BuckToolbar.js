@@ -9,9 +9,7 @@
  * the root directory of this source tree.
  */
 
-var buckServicePromise = require('nuclide-service-hub-plus')
-    .consumeFirstProvider('buck.service');
-var {array} = require('nuclide-commons');
+var buckServicePromise = require('nuclide-service-hub-plus').consumeFirstProvider('buck.service');
 
 async function getCurrentBuckProject(): Promise<?BuckProject> {
   var activeEditor = atom.workspace.getActiveTextEditor();
@@ -86,6 +84,7 @@ var BuckToolbar = React.createClass({
           className="inline-block"
           ref="buildTarget"
           requestOptions={requestOptions}
+          size="sm"
           intialTextInput={this.props.initialBuildTarget}
           onChange={this._handleBuildTargetChange}
           placeholderText="Buck build target"
@@ -95,12 +94,11 @@ var BuckToolbar = React.createClass({
           ref="simulator-menu"
           title="Choose target device"
         />
-        <div className="btn-group inline-block">
+        <div className="btn-group btn-group-sm inline-block">
           <button onClick={this._build} disabled={disabled} className="btn">Build</button>
           <button onClick={this._run} disabled={disabled} className="btn">Run</button>
           <button onClick={this._debug} disabled={disabled} className="btn">Debug</button>
         </div>
-
         <progress
           ref="progress-bar"
           className="inline-block buck-toolbar-progress-bar"
@@ -149,7 +147,7 @@ var BuckToolbar = React.createClass({
     if (!installResult) {
       return;
     }
-    var {buckProject, buildTarget, pid} = installResult;
+    var {buckProject, pid} = installResult;
 
     if (debug && pid) {
       // Use commands here to trigger package activation.

@@ -65,7 +65,9 @@ var SimulatorDropdown = React.createClass({
         menuItems={this.state.menuItems}
         onSelectedChange={this._handleSelection}
         ref="dropdown"
-        title={this.props.title} />
+        size="sm"
+        title={this.props.title}
+      />
     );
   },
 
