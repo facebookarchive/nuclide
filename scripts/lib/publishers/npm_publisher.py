@@ -12,7 +12,7 @@ import subprocess
 
 from abstract_publisher import AbstractPublisher
 from json_helpers import json_load, json_dump
-from npm import DEPENDENCIES_KEYS
+from package_version_rewriter import update_package_json_versions
 
 class NpmPublisher(AbstractPublisher):
     ''' Reads and publishes npm packages assuming an incrementing revision number rather than using
@@ -70,25 +70,10 @@ class NpmPublisher(AbstractPublisher):
                 os.path.join(self._tmp_package, name))
 
         # Load package.json and rewrite version number within it.
-        nil_semver = '0.0.0'
-        new_semver = '0.0.%d' % new_version
         package_file = os.path.join(self._tmp_package, 'package.json')
         package = json_load(package_file)
-        if package['version'] != nil_semver:
-            raise AssertionError('Local package %s was not at version 0' % self.get_package_name())
-        package['version'] = new_semver
-
-        # Update the versions of our local dependencies accordingly.
-        for dependency_key in DEPENDENCIES_KEYS:
-            if not dependency_key in package:
-                continue
-            for (dependency, version) in package[dependency_key].items():
-                if not self._config.is_nuclide_npm_package(dependency):
-                    continue
-                if version != nil_semver:
-                    raise AssertionError('Local dependency %s in package %s was not at version 0' %
-                                         dependency, self.get_package_name())
-                package[dependency_key][dependency] = new_semver
+        package = update_package_json_versions(self.get_package_name(), package,
+            self._config.nuclide_npm_package_names, new_version)
 
         # Write the adjusted package file back to the temporary directory and publish it.
         json_dump(package, package_file)

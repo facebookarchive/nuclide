@@ -12,8 +12,8 @@ import subprocess
 import urllib2
 
 from abstract_publisher import AbstractPublisher
-from apm import DEPENDENCIES_KEYS
 from json_helpers import json_load, json_dump, json_dumps
+from package_version_rewriter import update_package_json_versions
 
 APM_ORG_NAME = 'facebooknuclideapm'
 
@@ -140,27 +140,10 @@ class ApmPublisher(AbstractPublisher):
                 os.path.join(self._repo, name))
 
         # Load package.json and rewrite version number within it.
-        # TODO (jpearce): reconcile with very similar npm code
-        nil_semver = '0.0.0'
-        new_semver = '0.0.%d' % new_version
         package_file = os.path.join(self._repo, 'package.json')
         package = json_load(package_file)
-        if package['version'] != nil_semver:
-            raise AssertionError('Local package %s was not at version 0' %
-                                 self.get_package_name())
-        package['version'] = new_semver
-
-        # Update the versions of our local dependencies accordingly.
-        for dependency_key in DEPENDENCIES_KEYS:
-            if not dependency_key in package:
-                continue
-            for (dependency, version) in package[dependency_key].items():
-                if not self._config.is_nuclide_npm_package(dependency):
-                    continue
-                if version != nil_semver:
-                    raise AssertionError('Local dependency %s in package %s was not at version 0' %
-                                         dependency, self.get_package_name())
-                package[dependency_key][dependency] = new_semver
+        package = update_package_json_versions(self.get_package_name(), package,
+            self._config.nuclide_npm_package_names, new_version)
 
         # Update the version of the Atom engine required.
         package['engines'] = {'atom': '>=%s' % atom_semver}
@@ -191,7 +174,7 @@ class ApmPublisher(AbstractPublisher):
         # Write out the packages to install for the nuclide-installer package.
         if self.get_package_name() == 'nuclide-installer':
             from publishers.nuclide_installer_config import generate_config
-            installer_config_json = generate_config(new_semver, self._config.apm_package_names)
+            installer_config_json = generate_config(package['version'], self._config.apm_package_names)
             with open(os.path.join(self._repo, 'lib', 'config.json'), 'w') as f:
                 f.write(installer_config_json)
 

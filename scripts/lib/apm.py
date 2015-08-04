@@ -13,12 +13,6 @@ import subprocess
 
 from json_helpers import json_load, json_loads
 
-DEPENDENCIES_KEYS = [
-    'dependencies',
-    'devDependencies',
-    'optionalDependencies',
-]
-
 
 class Apm(object):
     '''Abstraction around the apm executable and npm-like actions.'''

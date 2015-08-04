@@ -23,8 +23,9 @@ class AbstractPublisherConfig(object):
     def package_directory(self):
         return self._package_directory
 
-    def is_nuclide_npm_package(self, package_name):
-        return package_name in self._nuclide_npm_package_names
+    @property
+    def nuclide_npm_package_names(self):
+        return self._nuclide_npm_package_names
 
     @property
     def apm_package_names(self):
