@@ -11,10 +11,7 @@
 
 import type {Reference} from './types';
 
-var crypto = require('crypto');
 var {CompositeDisposable} = require('atom');
-var {getLogger} = require('nuclide-logging');
-var FindReferencesModel = require('./FindReferencesModel');
 
 export type FindReferencesData = {
   baseUri: string;
@@ -51,6 +48,7 @@ async function createView(): Promise<?HTMLElement> {
   }
 
   var {baseUri, referencedSymbolName, references} = providerData[0];
+  var FindReferencesModel = require('./FindReferencesModel');
   var model = new FindReferencesModel(
     baseUri,
     referencedSymbolName,
@@ -72,6 +70,7 @@ async function tryCreateView(): Promise<?HTMLElement> {
       {dismissable: true}
     );
   } catch (e) {
+    var {getLogger} = require('nuclide-logging');
     getLogger().debug('Error loading references', e);
     atom.notifications.addError(
       'Error loading references: ' + e,
@@ -89,6 +88,7 @@ module.exports = {
       'nuclide-find-references:activate',
       () => {
         // Generate a unique identifier.
+        var crypto = require('crypto');
         var id = (crypto.randomBytes(8) || '').toString('hex');
         atom.workspace.open(FIND_REFERENCES_URI + id);
       }

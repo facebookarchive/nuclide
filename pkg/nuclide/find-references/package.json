@@ -11,9 +11,6 @@
     "packageType": "Atom",
     "testRunner": "apm"
   },
-  "activationCommands": {
-    "atom-text-editor:not(.mini)": ["nuclide-find-references:activate"]
-  },
   "consumedServices": {
     "nuclide-find-references.provider": {
       "versions": {
