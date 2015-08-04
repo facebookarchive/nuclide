@@ -25,6 +25,13 @@ DEPENDENCY_BLACKLIST = {
 VERSION_BLACKLIST = {
   'fb-nuclide-installer': 'The installer needs to be versioned.',
 }
+PACKAGES_WITHOUT_TESTS = [
+  'nuclide-atom-interfaces', # contains no code, so no tests.
+  'nuclide-debugger-interfaces', # contains no code, so no tests.
+  # nuclide-node-transpiler is a dependency of nuclide-jasmine, so it cannot
+  # use nuclide-jasmine as a test runner. As it stands, it has no tests.
+  'nuclide-node-transpiler',
+]
 
 # Detects errors in Nuclide pacakge.json files.
 #  - missing/empty description
@@ -104,10 +111,7 @@ class PackageLinter(object):
                 'Package %s should have a "scripts" section with a "test" property.',
                 package_name)
         elif not 'test' in package['scripts']:
-            if package_name in ['nuclide-atom-interfaces', 'nuclide-node-transpiler']:
-                # nuclide-atom-interfaces does not contain any code, so no tests.
-                # nuclide-node-transpiler is a dependency of nuclide-jasmine, so it cannot
-                # use nuclide-jasmine as a test runner. As it stands, it has no tests.
+            if package_name in PACKAGES_WITHOUT_TESTS:
                 return
 
             self.report_error(
