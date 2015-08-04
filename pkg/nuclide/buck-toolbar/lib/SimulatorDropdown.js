@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+var {array} = require('nuclide-commons');
+
 var IosSimulator = require('./IosSimulator');
 var NuclideDropdown = require('nuclide-ui-dropdown');
 var React = require('react-for-atom');
@@ -41,6 +43,7 @@ var SimulatorDropdown = React.createClass({
   getInitialState(): any {
     return {
       menuItems: [],
+      selectedIndex: 0,
     };
   },
 
@@ -48,22 +51,31 @@ var SimulatorDropdown = React.createClass({
     loadSimulators().then(this.receiveMenuItems);
   },
 
-  receiveMenuItems(menuItems: any) {
-    this.setState({menuItems});
+  receiveMenuItems(menuItems: Array<{label: string, value: string}>) {
+    var index = array.findIndex(menuItems, item => item.label === 'iPhone 5s');
+    var selectedIndex = index === -1 ? 0 : index;
+    this.setState({menuItems, selectedIndex});
   },
 
   render(): ReactElement {
     return (
       <NuclideDropdown
         className={this.props.className}
+        selectedIndex={this.state.selectedIndex}
         menuItems={this.state.menuItems}
+        onSelectedChange={this._handleSelection}
         ref="dropdown"
         title={this.props.title} />
     );
   },
 
+  _handleSelection(newIndex: number) {
+    this.setState({selectedIndex: newIndex});
+  },
+
   getSelectedSimulator(): ?string {
-    return this.refs['dropdown'].getSelectedValue();
+    var selectedItem = this.state.menuItems[this.state.selectedIndex];
+    return selectedItem && selectedItem.value;
   },
 });
 

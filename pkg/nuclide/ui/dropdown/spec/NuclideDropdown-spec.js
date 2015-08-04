@@ -27,7 +27,7 @@ describe('NuclideDropdown', () => {
         {label: 'foo', value: 'vfoo'},
         {label: 'bar', value: 'vbar'},
       ],
-      initialSelectedIndex: 1,
+      selectedIndex: 1,
       onSelectedChange: () => {},
     };
     var component = renderIntoDocument(
@@ -39,17 +39,17 @@ describe('NuclideDropdown', () => {
     expect(select[0].getDOMNode().value).toBe('vbar');
   });
 
-  it('updates the selected value when a different menu item is selected', () => {
-    var changedVal;
-    var onChange = (val) => {
-      changedVal = val;
+  it('calls the callback with the new index when a different menu item is selected', () => {
+    var changedIndex;
+    var onChange = (index) => {
+      changedIndex = index;
     };
     var props = {
       menuItems: [
         {label: 'foo', value: 'vfoo'},
         {label: 'bar', value: 'vbar'},
       ],
-      initialSelectedIndex: 0,
+      selectedIndex: 0,
       onSelectedChange: onChange,
     };
     var component = renderIntoDocument(
@@ -59,6 +59,6 @@ describe('NuclideDropdown', () => {
     var select = scryRenderedDOMComponentsWithTag(component, 'select');
     select[0].getDOMNode().selectedIndex = 1;
     Simulate.change(React.findDOMNode(select[0]));
-    expect(changedVal).toBe('vbar');
+    expect(changedIndex).toBe(1);
   });
 });

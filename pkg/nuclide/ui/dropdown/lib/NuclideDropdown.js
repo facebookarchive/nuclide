@@ -23,9 +23,9 @@ var NuclideDropdown = React.createClass({
       label: PropTypes.node.isRequired,
       value: PropTypes.any,
     })).isRequired,
-    initialSelectedIndex: PropTypes.number,
+    selectedIndex: PropTypes.number.isRequired,
     /**
-     * A function that gets called with the new selected value on change.
+     * A function that gets called with the new selected index on change.
      */
     onSelectedChange: PropTypes.func.isRequired,
     /**
@@ -40,16 +40,10 @@ var NuclideDropdown = React.createClass({
     return {
       className: '',
       disabled: false,
-      initialSelectedIndex: 0,
+      selectedIndex: 0,
       menuItems: [],
       onSelectedChange: emptyfunction,
       title: '',
-    };
-  },
-
-  getInitialState(): any {
-    return {
-      selectedIndex: this.props.initialSelectedIndex,
     };
   },
 
@@ -61,6 +55,8 @@ var NuclideDropdown = React.createClass({
     if (this.props.size) {
       selectClassName = `${selectClassName} btn-${this.props.size}`;
     }
+    var selectedItem = this.props.menuItems[this.props.selectedIndex];
+    var selectedValue = selectedItem && selectedItem.value;
     return (
       <div className={'nuclide-dropdown-container ' + this.props.className}>
         <select
@@ -68,7 +64,7 @@ var NuclideDropdown = React.createClass({
           disabled={this.props.disabled}
           onChange={this._onChange}
           title={this.props.title}
-          value={this.getSelectedValue()}>
+          value={selectedValue}>
           {options}
         </select>
         <i className="icon icon-triangle-down" />
@@ -78,19 +74,7 @@ var NuclideDropdown = React.createClass({
 
   _onChange(event: SyntheticMouseEvent) {
     var selectedIndex = event.target.selectedIndex;
-    this.setState({selectedIndex});
-    this.props.onSelectedChange(this._getValue(selectedIndex));
-  },
-
-  _getValue(index: number): ?any {
-    if (this.props.menuItems[index] === undefined) {
-      return null;
-    }
-    return this.props.menuItems[index].value;
-  },
-
-  getSelectedValue(): ?any {
-    return this._getValue(this.state.selectedIndex);
+    this.props.onSelectedChange(selectedIndex);
   },
 });
 
