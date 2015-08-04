@@ -15,19 +15,34 @@ describe('OpenFileListProvider', () => {
 
   describe('getOpenTabsMatching', () => {
     it('should not return duplicate open files', () => {
-      //enable setTimeout: https://discuss.atom.io/t/solved-settimeout-not-working-firing-in-specs-tests/11427
-      jasmine.unspy(window, 'setTimeout');
-      waitsForPromise(() => new Promise((resolve, reject) => {
-        setTimeout(() => {
-          var matchingTabs = OpenFileListProvider.getOpenTabsMatching('file');
-          expect(matchingTabs.length).toBe(3);
-          resolve();
-        }, 100);
-        atom.workspace.open('file1');
-        atom.workspace.open('file2');
-        atom.workspace.open('file1', {split: 'right'});
-        atom.workspace.open('file3', {split: 'right'});
-      }));
+      waitsForPromise(async () => {
+        await Promise.all([
+          atom.workspace.open('file1'),
+          atom.workspace.open('file2'),
+        ]);
+        await atom.workspace.open('file1', {split: 'right'});
+        await atom.workspace.open('file3', {split: 'right'});
+      });
+
+      // Create an untitled text editor.
+      runs(() => {
+        expect(atom.workspace.getTextEditors().length).toBe(4);
+        atom.commands.dispatch(atom.views.getView(atom.workspace), 'application:new-file');
+      });
+
+      // Wait until the untitled text editor is open.
+      // TODO(mbolin): This should test for 5 rather than 4.
+      // Unfortunately, the above code to open an untitled text editor does not work today:
+      // https://discuss.atom.io/t/create-an-untitled-window-from-apm-test/19568.
+      // Once a workaround is found / the bug is fixed, this should be changed to verify that the
+      // untitled text editor is open.
+      waitsFor(() => atom.workspace.getTextEditors().length === 4);
+
+      // Ensure that getOpenTabsMatching() works in the presence of an untitled window.
+      runs(() => {
+        var matchingTabs = OpenFileListProvider.getOpenTabsMatching('file');
+        expect(matchingTabs.length).toBe(3);
+      });
     });
   });
 });
