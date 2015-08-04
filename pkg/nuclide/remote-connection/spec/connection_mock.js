@@ -21,7 +21,14 @@ var {
   '/watcher/unwatchDirectoryRecursive': unwatchDirectoryRecursive
 } = watcherServices;
 
-fsPromise.newFile = async function() {};
+/*
+ * Match the signature of `NuclideClient::newFile`:
+ *
+ *     newFile(path: string): Promise<boolean>
+ */
+fsPromise.newFile = async function(path) {
+  return true;
+};
 
 var eventbus = new EventEmitter();
 var eventEmitter;

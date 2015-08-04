@@ -221,7 +221,24 @@ describe('RemoteFile', () => {
     });
   });
 
-  describe('RemoteFile::exists()', () => {
+  describe('::create()', () => {
+    var tempDir;
+
+    beforeEach(() => {
+      tempDir = temp.mkdirSync('create_test');
+    });
+
+    it('returns true when file creation is successful', () => {
+      waitsForPromise(async () => {
+        var filePath = path.join(tempDir, 'create.txt');
+        var remoteFile = new RemoteFile(connectionMock, filePath);
+        var wasCreated = await remoteFile.create();
+        expect(wasCreated).toBe(true);
+      });
+    });
+  });
+
+  describe('::exists()', () => {
     var tempDir;
 
     beforeEach(() => {

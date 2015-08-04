@@ -214,11 +214,12 @@ class RemoteFile {
     return pathUtil.basename(this._path);
   }
 
-  async create(): Promise {
-    await this._remote.getClient().newFile(this._localPath);
+  async create(): Promise<boolean> {
+    var wasCreated = await this._remote.getClient().newFile(this._localPath);
     if (this._subscriptionCount > 0) {
       this._subscribeToNativeChangeEvents();
     }
+    return wasCreated;
   }
 
   async delete(): Promise {

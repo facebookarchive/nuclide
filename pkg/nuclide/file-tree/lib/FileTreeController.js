@@ -835,8 +835,11 @@ class FileTreeController {
         if (createdSuccessfully) {
           await entry.read().then(text => file.write(text));
           this._reloadDirectory(entry.getParent());
-          atom.workspace.open(file.getPath());
+          await atom.workspace.open(file.getPath());
           if (treeComponent) {
+            // TODO: This cannot reliably know when the file tree has re-rendered with this new
+            // child given the file tree's implementation, and so this can result in a promise
+            // rejection because it tries to select a node that does not yet exist.
             treeComponent.selectNodeKey(new LazyFileTreeNode(file).getKey());
           }
         } else {
