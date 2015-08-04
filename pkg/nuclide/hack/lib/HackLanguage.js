@@ -39,6 +39,7 @@ module.exports = class HackLanguage {
     this._client = client;
     this._pathContentsMap = {};
     this._basePath = basePath;
+    this._isFinishedLoadingDependencies = true;
 
     this._setupUpdateDependenciesInterval();
   }
@@ -86,27 +87,29 @@ module.exports = class HackLanguage {
     if (contents !== this._pathContentsMap[path]) {
       this._pathContentsMap[path] = contents;
       var webWorkerMessage = {cmd: 'hh_add_file', args: [path, contents]};
+      this._isFinishedLoadingDependencies = false;
       return await this._hackWorker.runWorkerTask(webWorkerMessage);
     }
   }
 
   async updateDependencies(): Promise {
-      var webWorkerMessage = {cmd: 'hh_get_deps', args: []};
-      var response = await this._hackWorker.runWorkerTask(webWorkerMessage);
-      if (!response.deps.length) {
-        return;
-      }
-      var dependencies = {};
-      try {
-        dependencies = await this._client.getHackDependencies(response.deps);
-      } catch (err) {
-        // Ignore the error, it's just dependency fetching.
-        logger.warn('getHackDependencies error:', err);
-      }
-      // Serially update depednecies not to block the worker from serving other feature requests.
-      for (var path in dependencies) {
-        await this.updateDependency(path, dependencies[path]);
-      }
+    var webWorkerMessage = {cmd: 'hh_get_deps', args: []};
+    var response = await this._hackWorker.runWorkerTask(webWorkerMessage);
+    if (!response.deps.length) {
+      this._isFinishedLoadingDependencies = true;
+      return;
+    }
+    var dependencies = {};
+    try {
+      dependencies = await this._client.getHackDependencies(response.deps);
+    } catch (err) {
+      // Ignore the error, it's just dependency fetching.
+      logger.warn('getHackDependencies error:', err);
+    }
+    // Serially update depednecies not to block the worker from serving other feature requests.
+    for (var path in dependencies) {
+      await this.updateDependency(path, dependencies[path]);
+    }
   }
 
   async updateDependency(path: string, contents: string): Promise {
@@ -114,6 +117,18 @@ module.exports = class HackLanguage {
       var webWorkerMessage = {cmd: 'hh_add_dep', args: [path, contents]};
       await this._hackWorker.runWorkerTask(webWorkerMessage, {isDependency: true});
     }
+  }
+
+  /**
+   * A simple way to estimate if all Hack dependencies have been loaded.
+   * This flag is turned off when a file gets updated or added, and gets turned back on
+   * once `updateDependencies()` returns no additional dependencies.
+   *
+   * The flag only updates every UPDATE_DEPENDENCIES_INTERVAL_MS, so it's not perfect -
+   * however, it should be good enough for loading indicators / warnings.
+   */
+  isFinishedLoadingDependencies(): boolean {
+    return this._isFinishedLoadingDependencies;
   }
 
   async formatSource(contents: string, startPosition: number, endPosition: number) {

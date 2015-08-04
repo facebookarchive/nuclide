@@ -175,4 +175,22 @@ class HackClass {}
     });
   });
 
+  describe('isFinishedLoadingDependencies()', () => {
+    it('updates the status of isFinishedLoadingDependencies', () => {
+      waitsForPromise(async () => {
+        var filePath = path.join(__dirname, 'fixtures', 'HackExample1.php');
+        var fileContents = fs.readFileSync(filePath, 'utf8');
+        await hackLanguage.updateFile(filePath, fileContents);
+        // Initially, dependencies haven't been loaded yet.
+        expect(hackLanguage.isFinishedLoadingDependencies()).toEqual(false);
+        await hackLanguage.updateDependencies();
+        // HackExample1 refers to another class, which Hack tries to load.
+        expect(hackLanguage.isFinishedLoadingDependencies()).toEqual(false);
+        await hackLanguage.updateDependencies();
+        // There's no further dependencies to fetch.
+        expect(hackLanguage.isFinishedLoadingDependencies()).toEqual(true);
+      });
+    });
+  });
+
 });

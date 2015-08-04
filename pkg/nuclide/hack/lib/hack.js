@@ -169,6 +169,11 @@ module.exports = {
     return {baseUri, symbolName: symbol.name, references};
   },
 
+  async isFinishedLoadingDependencies(editor: TextEditor): Promise<boolean> {
+    var hackLanguage = await getHackLanguageForBuffer(editor.getBuffer());
+    return hackLanguage.isFinishedLoadingDependencies();
+  },
+
   async onDidSave(editor: TextEditor): void {
     var path = getPath(editor.getPath());
     var contents = editor.getText();
