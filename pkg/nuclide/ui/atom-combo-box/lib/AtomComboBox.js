@@ -220,44 +220,42 @@ var AtomComboBox = React.createClass({
   },
 
   render(): ReactElement {
-    var options = this.state.filteredOptions
-      .map((option, i) =>
-        {
-          var beforeMatch = option.value.substring(0, option.matchIndex);
-          var endOfMatchIndex = option.matchIndex + this.state.textInput.length;
-          var highlightedMatch = option.value.substring(
-            option.matchIndex,
-            endOfMatchIndex
-          );
-          var afterMatch = option.value.substring(
-            endOfMatchIndex,
-            option.value.length
-          );
-          var isSelected = i === this.state.selectedIndex;
-          return (
-            <li
-              className={isSelected ? 'selected' : null}
-              key={option.value}
-              onClick={this._handleItemClick.bind(this, option.value)}
-              onMouseOver={this._setSelectedIndex.bind(this, i)}
-              ref={isSelected ? 'selectedOption' : null}>
-              {beforeMatch}
-              <strong className="text-highlight">{highlightedMatch}</strong>
-              {afterMatch}
-            </li>
-          );
-        }
-      );
-    if (!options.length) {
-      options.push(
-        <li className="text-subtle" key="no-results-found">
-          No results found
-        </li>
-      );
-    }
-
     var optionsContainer;
     if (this.state.optionsVisible) {
+      var options = this.state.filteredOptions.map((option, i) => {
+        var beforeMatch = option.value.substring(0, option.matchIndex);
+        var endOfMatchIndex = option.matchIndex + this.state.textInput.length;
+        var highlightedMatch = option.value.substring(
+          option.matchIndex,
+          endOfMatchIndex
+        );
+        var afterMatch = option.value.substring(
+          endOfMatchIndex,
+          option.value.length
+        );
+        var isSelected = i === this.state.selectedIndex;
+        return (
+          <li
+            className={isSelected ? 'selected' : null}
+            key={option.value}
+            onClick={this._handleItemClick.bind(this, option.value)}
+            onMouseOver={this._setSelectedIndex.bind(this, i)}
+            ref={isSelected ? 'selectedOption' : null}>
+            {beforeMatch}
+            <strong className="text-highlight">{highlightedMatch}</strong>
+            {afterMatch}
+          </li>
+        );
+      });
+
+      if (!options.length) {
+        options.push(
+          <li className="text-subtle" key="no-results-found">
+            No results found
+          </li>
+        );
+      }
+
       optionsContainer = (
         <ol className="list-group">
           {options}
