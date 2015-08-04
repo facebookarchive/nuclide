@@ -9,6 +9,9 @@
  * the root directory of this source tree.
  */
 
+import type RemoteConnection from './RemoteConnection';
+import type RemoteDirectory from './RemoteDirectory';
+
 var pathUtil = require('path');
 var crypto = require('crypto');
 var {Disposable, Emitter} = require('atom');
@@ -18,7 +21,16 @@ var logger = require('nuclide-logging').getLogger();
 /* Mostly implements https://atom.io/docs/api/latest/File */
 class RemoteFile {
 
+  _cachedContents: ?string;
+  _deleted: boolean;
+  _emitter: Emitter;
+  _encoding: ?string;
+  _localPath: string;
+  _path: string;
+  _pendingSubscription: boolean;
   _realpath: ?string;
+  _remote: RemoteConnection;
+  _subscriptionCount: number;
   _watchSubscription: ?FsWatcher;
 
   constructor(remote: RemoteConnection, remotePath: string) {
@@ -32,17 +44,17 @@ class RemoteFile {
     this._deleted = false;
   }
 
-  onDidChange(callback): Disposable {
+  onDidChange(callback: () => mixed): Disposable {
     this._willAddSubscription();
     return this._trackUnsubscription(this._emitter.on('did-change', callback));
   }
 
-  onDidRename(callback): Disposable {
+  onDidRename(callback: () => mixed): Disposable {
     this._willAddSubscription();
     return this._trackUnsubscription(this._emitter.on('did-rename', callback));
   }
 
-  onDidDelete(callback): Disposable {
+  onDidDelete(callback: () => mixed): Disposable {
     this._willAddSubscription();
     return this._trackUnsubscription(this._emitter.on('did-delete', callback));
   }
@@ -143,7 +155,7 @@ class RemoteFile {
     }
   }
 
-  onWillThrowWatchError(callback): Disposable {
+  onWillThrowWatchError(callback: () => mixed): Disposable {
     return this._emitter.on('will-throw-watch-error', callback);
   }
 
@@ -187,7 +199,7 @@ class RemoteFile {
     this._encoding = encoding;
   }
 
-  getEncoding(): string {
+  getEncoding(): ?string {
     return this._encoding;
   }
 
@@ -204,10 +216,12 @@ class RemoteFile {
   }
 
   async getRealPath(): Promise<string> {
-    if (!this._realpath) {
-      this._realpath = await this._remote.getClient().realpath(this._localPath);
+    var realpath = this._realpath;
+    if (!realpath) {
+      var realpath = await this._remote.getClient().realpath(this._localPath);
+      this._realpath = realpath;
     }
-    return this._realpath;
+    return realpath;
   }
 
   getBaseName(): string {
