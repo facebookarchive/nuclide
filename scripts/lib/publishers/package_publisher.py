@@ -7,7 +7,7 @@
 import fs
 import logging
 import os
-
+import subprocess
 
 from abstract_publisher import AbstractPublisherConfig
 from apm import Apm
@@ -16,6 +16,7 @@ from git import Git
 from json_helpers import json_load
 from npm import Npm
 from npm_publisher import NpmPublisher
+from transpiler import Transpiler
 
 class PackagePublisher(object):
 
@@ -53,6 +54,13 @@ class PackagePublisher(object):
             'LICENSE': os.path.join(path_to_nuclide_repo, 'LICENSE'),
         }
 
+        # Make sure that everything needed to run the transpile script is installed.
+        subprocess.check_call(['npm', 'install'],
+                              cwd=os.path.join(path_to_nuclide_repo, 'pkg/nuclide/node-transpiler'))
+        transpile_script = os.path.join(path_to_nuclide_repo,
+                                        'pkg/nuclide/node-transpiler/bin/transpile')
+        transpiler = Transpiler.create_transpiler(path_to_nuclide_repo, transpile_script)
+
         def process_packages(packages, is_npm):
             for package_json in packages:
                 package_name = json_load(package_json)['name']
@@ -67,9 +75,9 @@ class PackagePublisher(object):
                     nuclide_npm_packages,
                     nuclide_apm_packages)
                 if is_npm:
-                    publisher = NpmPublisher(config, npm, master_tmpdir, boilerplate_files)
+                    publisher = NpmPublisher(config, npm, master_tmpdir, transpiler, boilerplate_files)
                 else:
-                    publisher = ApmPublisher(config, apm, master_tmpdir, boilerplate_files, git, github_access_token)
+                    publisher = ApmPublisher(config, apm, master_tmpdir, transpiler, boilerplate_files, git, github_access_token)
                 publishers.append(publisher)
 
         # Note that the resulting publishers array will be organized such that all

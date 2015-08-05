@@ -23,11 +23,12 @@ class NpmPublisher(AbstractPublisher):
 
     _version_regex = re.compile('^0\.0\.(\d+)$')
 
-    def __init__(self, config, npm, tmpdir, boilerplate_files):
+    def __init__(self, config, npm, tmpdir, transpiler, boilerplate_files):
         self._config = config
         self._npm = npm
         self._tmpdir = os.path.join(tmpdir, 'npm')
         self._tmp_package = os.path.join(self._tmpdir, self.get_package_name())
+        self._transpiler = transpiler
         self._boilerplate_files = boilerplate_files
 
     def get_package_name(self):
@@ -77,6 +78,10 @@ class NpmPublisher(AbstractPublisher):
 
         # Write the adjusted package file back to the temporary directory and publish it.
         json_dump(package, package_file)
+
+        # Pre-transpile Babel files, as appropriate.
+        self._transpiler.transpile_in_place(self.get_package_name(), self._tmp_package)
+
 
     def publish(self, new_version, atom_semver):
         try:

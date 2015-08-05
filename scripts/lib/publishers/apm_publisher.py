@@ -38,10 +38,11 @@ class ApmPublisher(AbstractPublisher):
 
     _version_regex = re.compile('^0\.0\.(\d+)$')
 
-    def __init__(self, config, apm, tmpdir, boilerplate_files, git, github_access_token=None):
+    def __init__(self, config, apm, tmpdir, transpiler, boilerplate_files, git, github_access_token=None):
         self._config = config
         self._apm = apm
         self._tmpdir = os.path.join(tmpdir, 'apm')
+        self._transpiler = transpiler
         self._boilerplate_files = boilerplate_files
         self._git = git
         self._github_access_token = github_access_token
@@ -177,6 +178,10 @@ class ApmPublisher(AbstractPublisher):
             installer_config_json = generate_config(package['version'], self._config.apm_package_names)
             with open(os.path.join(self._repo, 'lib', 'config.json'), 'w') as f:
                 f.write(installer_config_json)
+
+        # Pre-transpile Babel files, as appropriate.
+        self._transpiler.transpile_in_place(self.get_package_name(), self._repo)
+
 
     def publish(self, new_version, atom_semver):
         # Now that all of the local changes have been written, commit them.
