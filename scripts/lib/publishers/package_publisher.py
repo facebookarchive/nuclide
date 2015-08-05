@@ -31,6 +31,16 @@ class PackagePublisher(object):
         node_packages = get_list_of_packages('Node')
         atom_packages = get_list_of_packages('Atom')
 
+        # Ensure that nuclide-installer is listed last in atom_packages. We do not want to publish a
+        # new version of the installer until we are sure that all of the packages it plans to
+        # install have been published.
+        for index, package_json_path in enumerate(atom_packages):
+            package_name = json_load(package_json_path)['name']
+            if package_name == 'nuclide-installer':
+                del atom_packages[index]
+                atom_packages.append(package_json_path)
+                break
+
         # These are sets of package names.
         nuclide_npm_packages = set()
         nuclide_apm_packages = set()
