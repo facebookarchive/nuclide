@@ -34,9 +34,9 @@ type RemoteConnectionConfiguration = {
   host: string; // host nuclide server is running on.
   port: number; // port to connect to.
   cwd: string; // Path to remote directory user should start in upon connection.
-  certificateAuthorityCertificate: ?Buffer; // certificate of certificate authority.
-  clientCertificate: ?Buffer; // client certificate for https connection.
-  clientKey: ?Buffer; // key for https connection.
+  certificateAuthorityCertificate?: Buffer; // certificate of certificate authority.
+  clientCertificate?: Buffer; // client certificate for https connection.
+  clientKey?: Buffer; // key for https connection.
 }
 
 var _connections: Array<RemoteConnection> = [];

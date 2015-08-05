@@ -12,15 +12,15 @@
 var SshConnection = require('ssh2').Client;
 var fs = require('fs-plus');
 var net = require('net');
-var url = require('url');
 var logger = require('nuclide-logging').getLogger();
+var invariant = require('assert');
 
 var RemoteConnection = require('./RemoteConnection');
 var {fsPromise} = require('nuclide-commons');
 
 // Sync word and regex pattern for parsing command stdout.
 var SYNC_WORD = 'SYNSYN';
-var STDOUT_REGEX = /SYNSYN\n([\s\S]*)\nSYNSYN/;
+var STDOUT_REGEX = /SYNSYN[\s\S\n]*({.*})[\s\S\n]*SYNSYN/;
 var READY_TIMEOUT = 60000;
 
 type SshConnectionConfiguration = {
@@ -76,15 +76,13 @@ class SshHandshake {
   _forwardingServer: net.Socket;
   _remoteHost: ?string;
   _remotePort: ?number;
-  _certificateAuthorityCertificate: ?Buffer;
-  _clientCertificate: ?Buffer;
-  _clientKey: ?Buffer;
-  _heartbeatNetworkAwayCount: int;
-  _lastHeartbeatNotification: ?HeartbeatNotification;
+  _certificateAuthorityCertificate: Buffer;
+  _clientCertificate: Buffer;
+  _clientKey: Buffer;
+  static SupportedMethods: {};
 
   constructor(delegate: SshConnectionDelegate, connection?: SshConnection) {
     this._delegate = delegate;
-    this._heartbeatNetworkAwayCount = 0;
     this._connection = connection ? connection : new SshConnection();
     this._connection.on('ready', this._onConnect.bind(this));
     this._connection.on('error', e => this._delegate.onError(e, this._config));
@@ -184,53 +182,62 @@ class SshHandshake {
     );
   }
 
-  _updateServerInfo(serverInfo) {
+  _updateServerInfo(serverInfo: {}) {
+    invariant(serverInfo.port);
     this._remotePort = serverInfo.port;
     this._remoteHost = `${serverInfo.hostname || this._config.host}`;
     // Because the value for the Initial Directory that the user supplied may have
     // been a symlink that was resolved by the server, overwrite the original `cwd`
     // value with the resolved value.
+    invariant(serverInfo.workspace);
     this._config.cwd = serverInfo.workspace;
+    invariant(serverInfo.ca);
     this._certificateAuthorityCertificate = serverInfo.ca;
+    invariant(serverInfo.cert);
     this._clientCertificate = serverInfo.cert;
+    invariant(serverInfo.key);
     this._clientKey = serverInfo.key;
   }
 
   _isSecure(): boolean {
-    return this._certificateAuthorityCertificate
+    return !!(this._certificateAuthorityCertificate
         && this._clientCertificate
-        && this._clientKey;
+        && this._clientKey);
   }
 
   _startRemoteServer(): Promise<void> {
     return new Promise((resolve, reject) => {
-      var errorText = '';
       var stdOut = '';
 
       //TODO: escape any single quotes
       //TODO: the timeout value shall be configurable using .json file too (t6904691).
-      var cmd = `${this._config.remoteServerCommand} --workspace=${this._config.cwd} --common_name=${this._config.host} -t 20`;
-      // Add sync word before and after the remote command, so that we can extract the stdout
-      // without noises from .bashrc or .bash_profile.
-      // Note: we use --login to imitate a login shell.  This will only execute
-      // .profile/.bash_profile/.bash_login.  .bashrc will only be loaded if
-      // it is sourced in one of the login scripts.  This is pretty typical
-      // though so likely .bashrc will be loaded.
-      // Note 2: We also run this as an interactive shell, even though it isn't.
-      // That is so anything behind an `if [ -z $PS1 ]`, such as adding entries
-      // to the $PATH, will not be skipped
-      this._connection.exec(`bash --login -i -c 'echo ${SYNC_WORD};${cmd};echo ${SYNC_WORD}'`, (err, stream) => {
+      var cmd = `${this._config.remoteServerCommand} --workspace=${this._config.cwd} --common_name=${this._config.host} -t 60`;
+
+      // This imitates a user typing:
+      //   $ ssh server
+      // then on the interactive prompt executing the remote server command.  If
+      // that works, then nuclide should also work.
+      //
+      // The reason we don'y use exec here is because people like to put as the
+      // last statement in their .bashrc zsh or fish.  This starts an
+      // and interactive child shell that never exits if you exec.
+      //
+      // This is a bad idea because besides breaking us, it also breaks this:
+      // $ ssh server any_cmd
+      this._connection.shell((err, stream) => {
         if (err) {
           reject(err);
           return;
         }
-        stream.on('close', async (code, signal) => {
+        stream.on('close', (code, signal) => {
           var rejectWithError = (error) => {
               logger.error(error);
-              errorText = `${error}\n\nstderr:${errorText}`;
+              var errorText = `${error}\n\nstdout:${stdOut}`;
               reject(new Error(errorText));
           };
 
+          // Note: this code is probably the code from the child shell if one
+          // is in use.
           if (code === 0) {
             var serverInfo;
             var match = STDOUT_REGEX.exec(stdOut);
@@ -253,18 +260,29 @@ class SshHandshake {
             this._updateServerInfo(serverInfo);
             resolve(undefined);
           } else {
-            reject(new Error(errorText));
+            reject(new Error(stdOut));
           }
-        }).on('data', (data) => {
+        }).on('data', data => {
           stdOut += data;
-        }).stderr.on('data', (data) => {
-          errorText += data;
         });
+        // Yes we exit twice.  This is because people who use shells like zsh
+        // or fish, etc like to put zsh/fish as the last statement of their
+        // .bashrc.  This means that when we exit zsh/fish, we then have to exit
+        // the parent bash shell.
+        //
+        // The second exit is ignored when there is only one shell.
+        //
+        // We will still hang forever if they have a shell within a shell within
+        // a shell.  But I can't bring myself to exit 3 times.
+        //
+        // TODO: (mikeo) There is a SHLVL environment variable set that can be
+        // used to decide how many times to exit
+        stream.end(`echo ${SYNC_WORD};${cmd};echo ${SYNC_WORD}\nexit\nexit\n`);
       });
     });
   }
 
-  async _onConnect(): void {
+  async _onConnect(): Promise<void> {
     try {
       await this._startRemoteServer();
     } catch (e) {
@@ -272,35 +290,43 @@ class SshHandshake {
       return;
     }
 
-    var finishHandshake = async(connection: RemoteConnection) => {
+    var finishHandshake = async (connection: RemoteConnection) => {
       try {
         await connection.initialize();
       } catch (e) {
-        error = new Error(`Failed to connect to Nuclide server on ${this._config.host}: ${e.message}`);
+        var error = new Error(`Failed to connect to Nuclide server on ${this._config.host}: ${e.message}`);
         this._delegate.onError(error, this._config);
       }
       this._delegate.onConnect(connection, this._config);
+      // If we are secure then we don't need the ssh tunnel.
+      if (this._isSecure()) {
+        this._connection.end();
+      }
     };
 
     // Use an ssh tunnel if server is not secure
     if (this._isSecure()) {
+      invariant(this._remoteHost);
+      invariant(this._remotePort);
       var connection = new RemoteConnection({
         host: this._remoteHost,
         port: this._remotePort,
         cwd: this._config.cwd,
         certificateAuthorityCertificate: this._certificateAuthorityCertificate,
         clientCertificate: this._clientCertificate,
-        clientKey: this._clientKey
+        clientKey: this._clientKey,
       });
       finishHandshake(connection);
     } else {
-      this._forwardingServer = net.createServer((sock) => {
+      this._forwardingServer = net.createServer(sock => {
         this._forwardSocket(sock);
       }).listen(0, 'localhost', () => {
-        var connection = new RemoteConnection({
+        var localPort = this._getLocalPort();
+        invariant(localPort);
+        connection = new RemoteConnection({
           host: 'localhost',
-          port: this._getLocalPort(),
-          cwd: this._config.cwd
+          port: localPort,
+          cwd: this._config.cwd,
         });
         finishHandshake(connection);
       });
