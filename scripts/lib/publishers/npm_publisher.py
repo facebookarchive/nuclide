@@ -76,6 +76,10 @@ class NpmPublisher(AbstractPublisher):
         package = update_package_json_versions(self.get_package_name(), package,
             self._config.nuclide_npm_package_names, new_version)
 
+        # Specify the license if it is not already specified.
+        if 'license' not in package:
+            package['license'] = 'SEE LICENSE IN LICENSE'
+
         # Write the adjusted package file back to the temporary directory and publish it.
         json_dump(package, package_file)
 

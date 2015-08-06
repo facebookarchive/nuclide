@@ -146,6 +146,10 @@ class ApmPublisher(AbstractPublisher):
         package = update_package_json_versions(self.get_package_name(), package,
             self._config.nuclide_npm_package_names, new_version)
 
+        # Specify the license if it is not already specified.
+        if 'license' not in package:
+            package['license'] = 'SEE LICENSE IN LICENSE'
+
         # Update the version of the Atom engine required.
         package['engines'] = {'atom': '>=%s' % atom_semver}
 
