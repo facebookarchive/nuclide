@@ -85,7 +85,7 @@ var BuckToolbar = React.createClass({
           ref="buildTarget"
           requestOptions={requestOptions}
           size="sm"
-          intialTextInput={this.props.initialBuildTarget}
+          initialTextInput={this.props.initialBuildTarget}
           onChange={this._handleBuildTargetChange}
           placeholderText="Buck build target"
         />

@@ -36,7 +36,7 @@ var AtomComboBox = React.createClass({
 
   propTypes: {
     className: PropTypes.string.isRequired,
-    intialTextInput: PropTypes.string,
+    initialTextInput: PropTypes.string,
     placeholderText: PropTypes.string,
     maxOptionCount: PropTypes.number.isRequired,
     onChange: PropTypes.func.isRequired,
@@ -64,7 +64,7 @@ var AtomComboBox = React.createClass({
       options: [],
       optionsVisible: false,
       selectedIndex: -1,
-      textInput: '',
+      textInput: this.props.initialTextInput,
     };
   },
 
@@ -266,7 +266,7 @@ var AtomComboBox = React.createClass({
     return (
       <div className={'select-list popover-list popover-list-subtle ' + this.props.className}>
         <AtomInput
-          initialValue={this.props.intialTextInput}
+          initialValue={this.props.initialTextInput}
           onBlur={this._handleInputBlur}
           placeholderText={this.props.placeholderText}
           ref="freeformInput"

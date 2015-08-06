@@ -21,7 +21,7 @@ var AtomInput = React.createClass({
 
   propTypes: {
     disabled: PropTypes.bool,
-    initialValue: PropTypes.string,
+    initialValue: PropTypes.string.isRequired,
     placeholderText: PropTypes.string,
     onFocus: PropTypes.func,
     onClick: PropTypes.func,
@@ -32,6 +32,7 @@ var AtomInput = React.createClass({
   getDefaultProps() {
     return {
       disabled: false,
+      initialValue: '',
       placeholderText: null,
       onClick: () => {},
       onFocus: () => {},
@@ -41,7 +42,7 @@ var AtomInput = React.createClass({
 
   getInitialState() {
     return {
-      value: this.props.initialValue || '',
+      value: this.props.initialValue,
     };
   },
 
@@ -89,7 +90,7 @@ var AtomInput = React.createClass({
     }
   },
 
-  render() {
+  render(): ReactElement {
     var className;
     if (this.props.size) {
       className = `atom-text-editor-${this.props.size}`;
@@ -97,11 +98,11 @@ var AtomInput = React.createClass({
 
     return (
       <atom-text-editor
-          className={className}
-          mini
-          onClick={this.props.onClick}
-          onFocus={this.props.onFocus}
-          onBlur={this.props.onBlur}>
+        className={className}
+        mini
+        onClick={this.props.onClick}
+        onFocus={this.props.onFocus}
+        onBlur={this.props.onBlur}>
         {this.state.value}
       </atom-text-editor>
     );
@@ -119,7 +120,7 @@ var AtomInput = React.createClass({
     return this._getTextEditorElement().getModel();
   },
 
-  onDidChange(callback: () => any): Disposable {
+  onDidChange(callback: () => any): atom$Disposable {
     return this.getTextEditor().onDidChange(callback);
   },
 
