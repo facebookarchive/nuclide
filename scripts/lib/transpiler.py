@@ -40,7 +40,7 @@ class Transpiler(object):
 
         # Keys are package names. (Note these could be Node or Atom packages.)
         # Values are arrays of relative paths under the package that identify paths that should not
-        # be transpiled. (Currently, every array is of length 1.)
+        # be transpiled.
         exclude_from_transpilation = {}
         config_files = [
             'pkg/nuclide/server/fb/custom-services-config.json',
@@ -60,10 +60,12 @@ class Transpiler(object):
                 index = definition.index('/')
                 package_name = definition[:index]
                 relative_path = definition[index + 1:]
-                exclude_from_transpilation[package_name] = [
-                    relative_path
-                ]
-
+                if package_name not in exclude_from_transpilation:
+                    paths = []
+                    exclude_from_transpilation[package_name] = paths
+                else:
+                    paths = exclude_from_transpilation[package_name]
+                paths.append(relative_path)
 
         return Transpiler(exclude_from_transpilation, transpile_script)
 
