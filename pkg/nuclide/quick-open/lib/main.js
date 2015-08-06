@@ -215,9 +215,11 @@ class Activation {
           'quickopen-session': analyticsSessionId,
         }
       );
+      // showSearchPanel gets called when changing providers even if it's already shown.
+      var isAlreadyVisible = this._searchPanel.isVisible();
       this._searchPanel.show();
       this._searchComponent.focus();
-      if (atom.config.get('nuclide-quick-open.useSelection')) {
+      if (atom.config.get('nuclide-quick-open.useSelection') && !isAlreadyVisible) {
         var selectedText = this._getFirstSelectionText();
         if (selectedText && selectedText.length <= MAX_SELECTION_LENGTH) {
           this._searchComponent.setInputValue(selectedText.split('\n')[0]);
