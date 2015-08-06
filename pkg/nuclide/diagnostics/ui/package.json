@@ -17,6 +17,7 @@
   },
   "devDependencies": {
     "nuclide-atom-interfaces": "0.0.0",
-    "nuclide-diagnostics-base": "0.0.0"
+    "nuclide-diagnostics-base": "0.0.0",
+    "react-for-atom": "0.13.6"
   }
 }

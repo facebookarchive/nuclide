@@ -8,6 +8,8 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
+var React = require('react-for-atom');
+
 var GUTTER_ID = 'nuclide-diagnostics-gutter';
 
 // TODO(mbolin): Make it so that when mousing over an element with this CSS class (or specifically,
@@ -60,15 +62,24 @@ function applyUpdateToEditor(editor: TextEditor, update: FileMessageUpdate): voi
     markers = new Set();
   }
 
+  var rowToMessage: Map<number, Array<FileDiagnosticMessage>> = new Map();
+  function addMessageForRow(message: FileDiagnosticMessage, row: number) {
+    var messages = rowToMessage.get(row);
+    if (!messages) {
+      messages = [];
+      rowToMessage.set(row, messages);
+    }
+    messages.push(message);
+  }
+
   for (var message of update.messages) {
     var range = message.range;
     var highlightMarker;
-    var gutterMarker;
     if (range) {
-      gutterMarker = editor.markBufferPosition([range.start.row, 0]);
+      addMessageForRow(message, range.start.row);
       highlightMarker = editor.markBufferRange(range);
     } else {
-      gutterMarker = editor.markBufferPosition([0, 0]);
+      addMessageForRow(message, 0);
     }
 
     var highlightCssClass;
@@ -89,9 +100,19 @@ function applyUpdateToEditor(editor: TextEditor, update: FileMessageUpdate): voi
       });
       markers.add(highlightMarker);
     }
+  }
+
+  // Find all of the gutter markers for the same row and combine them into one marker/popup.
+  for (var [row, messages] of rowToMessage.entries()) {
+    // If at least one of the diagnostics is an error rather than the warning,
+    // display the glyph in the gutter to represent an error rather than a warning.
+    var gutterMarkerCssClass = messages.some(msg => msg.type === 'Error')
+      ? ERROR_GUTTER_CSS
+      : WARNING_GUTTER_CSS;
 
     // This marker adds some UI to the gutter.
-    var {item, dispose} = createGutterItem(message, gutterMarkerCssClass);
+    var {item, dispose} = createGutterItem(messages, gutterMarkerCssClass);
+    var gutterMarker = editor.markBufferPosition([row, 0]);
     gutter.decorateMarker(gutterMarker, {item});
     gutterMarker.onDidDestroy(dispose);
     markers.add(gutterMarker);
@@ -99,15 +120,14 @@ function applyUpdateToEditor(editor: TextEditor, update: FileMessageUpdate): voi
 
   editorToMarkers.set(editor, markers);
 
+  // Once the gutter is shown for the first time, it is displayed for the lifetime of the TextEditor.
   if (update.messages.length > 0) {
     gutter.show();
-  } else {
-    gutter.hide();
   }
 }
 
 function createGutterItem(
-  message: FileDiagnosticMessage,
+  messages: Array<FileDiagnosticMessage>,
   gutterMarkerCssClass: string
 ): {item: HTMLElement; dispose: () => void} {
   var item = window.document.createElement('span');
@@ -115,14 +135,13 @@ function createGutterItem(
   item.className = gutterMarkerCssClass;
   var popupElement;
   item.addEventListener('mouseenter', event => {
-    popupElement = showPopupFor(message, item);
+    popupElement = showPopupFor(messages, item);
   });
   var dispose = () => {
     if (popupElement) {
-      var parentNode = popupElement.parentNode;
-      if (parentNode) {
-        parentNode.removeChild(popupElement);
-      }
+      React.unmountComponentAtNode(popupElement);
+      popupElement.parentNode.removeChild(popupElement);
+      popupElement = null;
     }
   };
   item.addEventListener('mouseleave', dispose);
@@ -133,34 +152,69 @@ function createGutterItem(
  * Shows a popup for the diagnostic just below the specified item.
  */
 function showPopupFor(
-    message: FileDiagnosticMessage,
+    messages: Array<FileDiagnosticMessage>,
     item: HTMLElement
     ): HTMLElement {
-  var div = window.document.createElement('div');
-  var diagnosticTypeClass = message.type === 'Error'
-    ? 'nuclide-diagnostics-gutter-ui-gutter-popup-error'
-    : 'nuclide-diagnostics-gutter-ui-gutter-popup-warning';
-  div.className = 'nuclide-diagnostics-gutter-ui-gutter-popup ' + diagnosticTypeClass;
+  var children = messages.map(message => {
+    var contents;
+    if (message.html) {
+      contents = <span dangerouslySetInnerHTML={{__html: message.html}} />;
+    } else if (message.text) {
+      contents = <span>{`${message.providerName}: ${message.text}`}</span>;
+    } else {
+      contents = <span>Diagnostic lacks message.</span>;
+    }
 
-  var {top, left} = item.getBoundingClientRect();
+    var diagnosticTypeClass = message.type === 'Error'
+      ? 'nuclide-diagnostics-gutter-ui-popup-error'
+      : 'nuclide-diagnostics-gutter-ui-popup-warning';
+    return (
+      <div className={`nuclide-diagnostics-gutter-ui-popup-diagnostic ${diagnosticTypeClass}`}>
+        {contents}
+      </div>
+    );
+  });
 
-  if (message.html) {
-    div.innerHTML = message.html;
-  } else if (message.text) {
-    div.innerText = message.providerName + ': ' + message.text;
-  } else {
-    div.innerText = 'Diagnostic lacks message.';
-  }
+  // The popup will be an absolutely positioned child element of <atom-workspace> so that it appears
+  // on top of everything.
+  var workspaceElement = atom.views.getView(atom.workspace);
+  var hostElement = window.document.createElement('div');
+  workspaceElement.parentNode.appendChild(hostElement);
 
   // Move it down vertically so it does not end up under the mouse pointer.
-  div.style.top = (top + 15) + 'px';
-  div.style.left = left + 'px';
+  var {top, left} = item.getBoundingClientRect();
+  top += 15;
 
-  var workspaceElement = atom.views.getView(atom.workspace);
-  workspaceElement.parentNode.appendChild(div);
+  React.render(
+    <DiagnosticsPopup left={left} top={top}>
+      {children}
+    </DiagnosticsPopup>,
+    hostElement);
 
-  return div;
+  return hostElement;
 }
+
+class DiagnosticsPopup extends React.Component {
+
+  render() {
+    return (
+      <div
+        className="nuclide-diagnostics-gutter-ui-popup"
+        style={{left: this.props.left + 'px', top: this.props.top + 'px'}}
+        >
+        {this.props.children}
+      </div>
+    );
+  }
+}
+
+var {PropTypes} = React;
+
+DiagnosticsPopup.propTypes = {
+  children: PropTypes.node,
+  left: PropTypes.number.isRequired,
+  top: PropTypes.number.isRequired,
+};
 
 module.exports = {
   applyUpdateToEditor,
