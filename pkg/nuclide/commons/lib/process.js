@@ -66,26 +66,37 @@ function appendCommonBinaryPaths(env: Object, commonBinaryPaths: Array<string>):
   });
 }
 
-async function createExecEnvironment(
-    originalEnv: Object, commonBinaryPaths: Array<string>): Promise<Object> {
+/**
+ * Since OS X apps don't inherit PATH when not launched from the CLI, this function creates a new
+ * environment object given the original environment by modifying the env.PATH using following
+ * logic:
+ *  1) If originalEnv.PATH doesn't equal to process.env.PATH, which means the PATH has been
+ *    modified, we shouldn't do anything.
+ *  1) If we are running in OS X, use `/usr/libexec/path_helper -s` to get the correct PATH and
+ *    REPLACE the PATH.
+ *  2) If step 1 failed or we are not running in OS X, APPEND commonBinaryPaths to current PATH.
+ */
+async function createExecEnvironment(originalEnv: Object, commonBinaryPaths: Array<string>): Promise<Object> {
   var execEnv = assign({}, originalEnv);
+
+  if (execEnv.PATH !== process.env.PATH) {
+    return execEnv;
+  }
+
   execEnv.PATH = execEnv.PATH || '';
 
-  var platformPath;
-  var commonBinaryPathsAppended = false;
+  var platformPath = null;
   try {
     platformPath = await getPlatformPath();
   } catch (error) {
-    // If there's an error fetching the platform's PATH, use the default set of common binary paths.
-    appendCommonBinaryPaths(execEnv, commonBinaryPaths);
-    commonBinaryPathsAppended = true;
+    logError('Failed to getPlatformPath', error);
   }
 
   // If the platform returns a non-empty PATH, use it. Otherwise use the default set of common
   // binary paths.
   if (platformPath) {
     execEnv.PATH = platformPath;
-  } else if (!commonBinaryPathsAppended) {
+  } else {
     appendCommonBinaryPaths(execEnv, commonBinaryPaths);
   }
 
@@ -111,7 +122,8 @@ function monitorStreamErrors(process: child_process$ChildProcess, command, args,
 /** Basically like spawn, except it handles and logs errors instead of crashing
   * the process. This is much lower-level than asyncExecute. Unless you have a
   * specific reason you should use asyncExecute instead. */
-function safeSpawn(command: string, args: Array<string> = [], options: Object = {}): child_process$ChildProcess {
+async function safeSpawn(command: string, args: Array<string> = [], options: Object = {}): Promise<child_process$ChildProcess> {
+  options.env = await createExecEnvironment(options.env || process.env, COMMON_BINARY_PATHS);
   var child = spawn(command, args, options);
   monitorStreamErrors(child, command, args, options);
   child.on('error', error => {
@@ -240,12 +252,7 @@ function checkOutput(
     }
   }
 
-  // Don't overwrite env if it has been set by caller.
-  if (localOptions.env) {
-    return makePromise();
-  }
-
-  return createExecEnvironment(process.env, COMMON_BINARY_PATHS).then(
+  return createExecEnvironment(localOptions.env || process.env, COMMON_BINARY_PATHS).then(
     val => {
       localOptions.env = val;
       return makePromise();

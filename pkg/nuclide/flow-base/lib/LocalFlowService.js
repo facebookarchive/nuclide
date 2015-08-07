@@ -77,7 +77,7 @@ class LocalFlowService extends FlowService {
           // will not resolve the promise until the process exits, which in this
           // case is never. We need to use spawn directly to get access to the
           // ChildProcess object.
-          var serverProcess = safeSpawn(pathToFlow, ['server', root]);
+          var serverProcess = await safeSpawn(pathToFlow, ['server', root]);
           var logIt = data => {
             logger.debug('flow server: ' + data);
           };

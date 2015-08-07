@@ -33,11 +33,19 @@ describe('process.asyncExecute', () => {
   });
 
   describe('createExecEnvironment()', () => {
-    it('combine the existing environment variables with the common paths passed', () => {
+    it('don\'t overwrite the PATH if it\'s different than process.env.PATH', () => {
       waitsForPromise(async () => {
         expect(
           await createExecEnvironment({foo: 'bar', PATH: '/bin'}, ['/abc/def'])
-        ).toEqual({foo: 'bar', PATH: '/bin' + path.delimiter + '/abc/def'});
+        ).toEqual({foo: 'bar', PATH: '/bin'});
+      });
+    });
+
+    it('combine the existing environment variables with the common paths passed', () => {
+      waitsForPromise(async () => {
+        expect(
+          await createExecEnvironment({foo: 'bar', PATH: process.env.PATH}, ['/abc/def'])
+        ).toEqual({foo: 'bar', PATH: process.env.PATH + path.delimiter + '/abc/def'});
       });
     });
   });
@@ -129,8 +137,10 @@ describe('process.asyncExecute', () => {
 
 describe('process.safeSpawn', () => {
   it('should not crash the process on an error', () => {
-    var child = processLib.safeSpawn('fakeCommand');
-    expect(child).not.toBe(null);
-    expect(child.listeners('error').length).toBeGreaterThan(0);
+    waitsForPromise(async () => {
+      var child = await processLib.safeSpawn('fakeCommand');
+      expect(child).not.toBe(null);
+      expect(child.listeners('error').length).toBeGreaterThan(0);
+    });
   });
 });

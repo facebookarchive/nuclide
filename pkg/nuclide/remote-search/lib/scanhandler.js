@@ -140,9 +140,9 @@ function getLinesFromCommand(command: string,
   localDirectoryPath: string,
   onLine: ?(line: string) => void): Promise {
 
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     // Spawn the search command in the given directory.
-    var proc = safeSpawn(command, args, { cwd: localDirectoryPath });
+    var proc = await safeSpawn(command, args, { cwd: localDirectoryPath });
 
     proc.on('error', reject); // Reject on error.
     proc.stdout.pipe(split()).on('data', onLine); // Call the callback on each line.
