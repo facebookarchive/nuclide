@@ -11,6 +11,11 @@ import os.path
 import shutil
 import subprocess
 
+try:
+    from urllib.request import urlopen, URLError
+except ImportError:
+    from urllib2 import urlopen, URLError
+
 from json_helpers import json_load, json_loads
 
 
@@ -32,6 +37,18 @@ class Apm(object):
                 info = {}
             self._info_by_name[name] = info
         return self._info_by_name[name]
+
+    def is_published(self, package_name, semver):
+        url = 'https://www.atom.io/api/packages/%s/' % package_name
+        try:
+            response = urlopen(url)
+            contents = response.read()
+        except URLError, e:
+            logging.error('Failed to fetch %s: %s', url, e)
+            return False
+
+        metadata = json_loads(contents)
+        return semver in metadata['versions']
 
     def publish(self, package_repo, tag):
         '''tag must already exist in the GitHub repo'''

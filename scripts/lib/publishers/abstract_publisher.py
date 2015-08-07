@@ -47,6 +47,10 @@ class AbstractPublisher(object):
         pass
 
     @abstractmethod
+    def is_already_published(self):
+        pass
+
+    @abstractmethod
     def get_published_version(self):
         pass
 

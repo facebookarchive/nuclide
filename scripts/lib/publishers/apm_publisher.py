@@ -99,6 +99,10 @@ class ApmPublisher(AbstractPublisher):
     def get_package_name(self):
         return self._config.package_name
 
+    def is_already_published(self, target_version):
+        semver = '0.0.%s' % target_version
+        return self._apm.is_published(self.get_package_name(), semver)
+
     def get_published_version(self):
         ''' Reads the `apm show` of the package, gets the current version (of the form 0.0.x)
             and then returns the incrementing version, integer x.

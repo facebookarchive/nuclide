@@ -110,6 +110,11 @@ class PackagePublisher(object):
         atom_semver = json_load(NUCLIDE_CONFIG)['atomVersion']
         logging.info('Publishing packages at new version %d (Atom %s)', version, atom_semver)
         for publisher in self._publishers:
+            if publisher.is_already_published(version) and not is_dry_run:
+                logging.info('Skipping %s@0.0.%s: already published.' %
+                    (publisher.get_package_name(), version))
+                continue
+
             publisher.prepublish(version, atom_semver)
             if not is_dry_run:
                 publisher.publish(version, atom_semver)

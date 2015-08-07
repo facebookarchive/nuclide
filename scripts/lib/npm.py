@@ -39,6 +39,15 @@ class Npm (object):
             self._info_by_root[package_root] = info
         return self._info_by_root[package_root]
 
+    def is_published(self, package_name, semver):
+        try:
+            metadata = json_loads(self._execute(['npm', 'info', '--json', package_name]))
+        except subprocess.CalledProcessError:
+            logging.info('npm info failed for %s. It may not yet be published.', package_name)
+            return False
+
+        return semver in metadata['versions']
+
     def publish(self, package_root):
         return self._execute(['npm', 'publish'], cwd=package_root)
 
