@@ -19,6 +19,7 @@ EXPECTED_NPM_TEST_COMMAND = 'node --harmony node_modules/.bin/jasmine-node-trans
 PATH_TO_ATOM_INTERFACES = './node_modules/nuclide-atom-interfaces/1.0/'
 DEPENDENCY_BLACKLIST = {
   'nuclide-atom-interfaces': 'it should be in devDependencies.',
+  'nuclide-debugger-interfaces': 'it should be in devDependencies',
   'q': 'we should use real Promise objects.',
   'underscore': 'it is a large dependency that we do not want to take on.',
 }
