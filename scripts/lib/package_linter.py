@@ -6,6 +6,7 @@
 
 import logging
 import os
+import re
 import sys
 
 from json_helpers import json_load
@@ -33,6 +34,8 @@ PACKAGES_WITHOUT_TESTS = [
   # use nuclide-jasmine as a test runner. As it stands, it has no tests.
   'nuclide-node-transpiler',
 ]
+
+EXACT_SEMVER_RE = re.compile(r'^\d+\.\d+\.\d+$')
 
 # Detects errors in Nuclide pacakge.json files.
 #  - missing/empty description
@@ -195,16 +198,33 @@ class PackageLinter(object):
                 (babelrc_path, babel_options, expected_options))
 
     def validate_dependencies(self, package, field):
-        if field in package:
-            for dependent_package_name in package[field]:
-                dependent_package = self._package_map.get(dependent_package_name)
-                self.validate_dependency(package, dependent_package, dependent_package_name, field)
-                if field == 'dependencies' and dependent_package_name in DEPENDENCY_BLACKLIST:
-                    self.report_error(
-                        '%s should not depend on %s because %s',
-                        package['name'],
-                        dependent_package_name,
-                        DEPENDENCY_BLACKLIST[dependent_package_name])
+        if field not in package:
+            return
+
+        for dependent_package_name, version in package[field].items():
+            self.validate_version(package['name'], dependent_package_name, version)
+
+            dependent_package = self._package_map.get(dependent_package_name)
+            self.validate_dependency(package, dependent_package, dependent_package_name, field)
+            if field == 'dependencies' and dependent_package_name in DEPENDENCY_BLACKLIST:
+                self.report_error(
+                    '%s should not depend on %s because %s',
+                    package['name'],
+                    dependent_package_name,
+                    DEPENDENCY_BLACKLIST[dependent_package_name])
+
+    def validate_version(self, package_name, dependency, version):
+        if not version:
+            self.report_error(
+                'Package %s should specify a version for %s rather than the empty string.',
+                package_name,
+                dependency)
+        elif not EXACT_SEMVER_RE.match(version):
+            self.report_error(
+                'Package %s should have a precise dependency for %s instead of %s.',
+                package_name,
+                dependency,
+                version)
 
     def validate_dependency(self, package, dependent_package, dependent_package_name, field):
         if not dependent_package:

@@ -12,7 +12,7 @@
     "atom": ">=0.187.0"
   },
   "dependencies": {
-    "flux": "^2.0.3",
+    "flux": "2.0.3",
     "nuclide-analytics": "0.0.0",
     "nuclide-atom-helpers": "0.0.0",
     "nuclide-client": "0.0.0",
