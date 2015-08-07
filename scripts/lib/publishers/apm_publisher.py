@@ -194,14 +194,28 @@ class ApmPublisher(AbstractPublisher):
     def publish(self, new_version, atom_semver):
         # Now that all of the local changes have been written, commit them.
         tag_name = 'v0.0.%d' % new_version
+
         self._git.commit_all(self._repo,
                              'Committing changes in preparation for publishing %s' % tag_name)
-        self._git.add_tag(self._repo, tag_name, 'Atom package %s.' % tag_name)
-        # We commit the tag first because we should fail if the tag has already been pushed.
-        self._git.push_tag(self._repo, tag_name)
-        # Pushing to master is not strictly necessary, but it makes it easier to audit the changes
-        # that have been made between versions over time.
-        self._git.push_to_master(self._repo)
+
+        tag_needs_commit = False
+        try:
+            self._git.add_tag(self._repo, tag_name, 'Atom package %s.' % tag_name)
+            tag_needs_commit = True
+        except subprocess.CalledProcessError, e:
+            if e.returncode == 128:
+                # Tag already exists in repo: checkout to tag. Most likely `apm publish` is what
+                # failed, so we need to try again.
+                self._git.checkout(self._repo, tag_name)
+            else:
+                raise e
+
+        if tag_needs_commit:
+            # We commit the tag first because we should fail if the tag has already been pushed.
+            self._git.push_tag(self._repo, tag_name)
+            # Pushing to master is not strictly necessary, but it makes it easier to audit the changes
+            # that have been made between versions over time.
+            self._git.push_to_master(self._repo)
 
         try:
             self._apm.publish(self._repo, tag_name)
