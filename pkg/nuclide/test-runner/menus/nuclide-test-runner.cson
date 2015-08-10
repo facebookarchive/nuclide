@@ -1,0 +1,9 @@
+'menu': [
+  'label': 'Packages',
+  'submenu': [
+    'label': 'Test Runner',
+    'submenu': [
+      {'command': 'nuclide-test-runner:toggle-panel', 'label': 'Toggle'}
+    ]
+  ]
+]

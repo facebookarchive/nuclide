@@ -1,0 +1,35 @@
+{
+  "name": "nuclide-test-runner",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "A panel for running tests provided by test runner service packages",
+  "nuclide": {
+    "packageType": "Atom",
+    "testRunner": "apm"
+  },
+  "engines": {
+    "atom": ">=1.0.3"
+  },
+  "consumedServices": {
+    "nuclide-test-runner.provider": {
+      "versions": {
+        "0.0.0": "consumeTestRunner"
+      }
+    }
+  },
+  "dependencies": {
+    "immutable": "3.6.2",
+    "nuclide-analytics": "0.0.0",
+    "nuclide-commons": "0.0.0",
+    "nuclide-logging": "0.0.0",
+    "nuclide-panel": "0.0.0",
+    "nuclide-ui-atom-text-editor": "0.0.0",
+    "nuclide-ui-dropdown": "0.0.0",
+    "nuclide-ui-tree": "0.0.0",
+    "react-for-atom": "0.13.6"
+  },
+  "devDependencies": {
+    "nuclide-atom-interfaces": "0.0.0"
+  }
+}

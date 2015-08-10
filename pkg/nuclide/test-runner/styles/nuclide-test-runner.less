@@ -1,0 +1,44 @@
+@import "ui-variables";
+
+@panel-padding-top: 6px;
+@toolbar-height: 28px;
+
+.btn.btn-subtle {
+  background-color: transparent;
+  background-image: none;
+  border: none;
+}
+
+.btn-subtle.icon:before {
+  margin-right: 0;
+}
+
+.nuclide-test-runner-panel-toolbar {
+  height: @toolbar-height;
+  line-height: 18px;
+  /* -5px to accomodate drag handle from the panel component. */
+  padding: (@panel-padding-top - 5px) @component-padding @panel-padding-top;
+}
+
+.nuclide-test-runner-panel {
+  flex: 1;
+  /* Let .nuclide-test-runner-panel position itself relative to this container. */
+  position: relative;
+}
+
+.nuclide-test-runner-console {
+  bottom: 0;
+  /* Let the `<atom-pane-container>` fill the height since it already has `flex: 1` applied. */
+  display: flex;
+  position: absolute;
+  top: @toolbar-height;
+  width: 100%;
+}
+
+.nuclide-test-runner-panel .nuclide-tree-root,
+.nuclide-test-runner-panel .nuclide-tree-root-placeholder {
+  /* Make tree in the panel scroll rather than overflow its parent. */
+  overflow: auto;
+  padding-left: @component-padding;
+  padding-right: @component-padding;
+}
