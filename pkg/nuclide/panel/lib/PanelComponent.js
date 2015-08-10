@@ -15,6 +15,8 @@ var {PropTypes} = React;
 
 var MINIMUM_LENGTH = 100;
 
+var emptyFunction = () => {};
+
 /**
  * A container for centralizing the logic for making panels scrollable,
  * resizeable, dockable, etc.
@@ -23,12 +25,14 @@ var PanelComponent = React.createClass({
   propTypes: {
     children: React.PropTypes.element.isRequired,
     dock: PropTypes.oneOf(['left', 'bottom', 'right']).isRequired,
-    initialLength: PropTypes.number,
+    initialLength: PropTypes.number.isRequired,
+    onResize: PropTypes.func.isRequired,
   },
 
   getDefaultProps(): Object {
     return {
       initalLength: 200,
+      onResize: emptyFunction,
     };
   },
 
@@ -124,7 +128,7 @@ var PanelComponent = React.createClass({
     } else if (this.props.dock === 'right') {
       length = containerEl.getBoundingClientRect().right - event.pageX;
     }
-    this.setState({length});
+    this._updateSize(length);
   },
 
   _handleMouseUp(event: SyntheticMouseEvent): void {
@@ -152,8 +156,14 @@ var PanelComponent = React.createClass({
       } else {
         throw new Error('unhandled dock');
       }
-      this.setState({length});
+      this._updateSize(length);
     });
+  },
+
+  // Whether this is width or height depends on the orientation of this panel.
+  _updateSize(newSize: number) {
+    this.setState({length: newSize});
+    this.props.onResize.call(null, newSize);
   },
 });
 
