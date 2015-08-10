@@ -11,11 +11,13 @@
 
 var {keyMirror} = require('nuclide-commons').object;
 
-// Keep in sync with the clang Python binding.
 // Maps clang's cursor types to the actual declaration types: for a full list see
 // https://github.com/llvm-mirror/clang/blob/master/include/clang/Basic/DeclNodes.td
+//
+// Keep in sync with the clang Python binding (../fb/lib/python/clang/cindex.py)
+// The order of the keys matches the ordering in cindex.py.
 var ClangCursorToDeclarationTypes = {
-  UNEXPOSED_DECL: null,
+  UNEXPOSED_DECL: '',
   STRUCT_DECL: 'Record',
   UNION_DECL: 'Record',
   CLASS_DECL: 'CXXRecord',
@@ -56,7 +58,29 @@ var ClangCursorToDeclarationTypes = {
   CXX_ACCESS_SPEC_DECL: 'AccessSpec',
 };
 
-var ClangCursorTypes = keyMirror(ClangCursorToDeclarationTypes);
+export type ClangCursorType = $Enum<typeof ClangCursorToDeclarationTypes>;
+
+export type Declaration = {
+  name: string,
+  type: ClangCursorType,
+  cursor_usr: ?string,
+  file: ?NuclideUri,
+};
+
+// Fetches information for a declaration and all its parents.
+// The first element in info will be for the declaration itself,
+// the second will be for its direct semantic parent (if it exists), etc.
+export type DeclarationInfo = {
+  file: NuclideUri,
+  line: number,
+  column: number,
+  info: Array<Declaration>,
+};
+
+export type NuclideUri = string;
+
+var ClangCursorTypes: {[key: ClangCursorType]: ClangCursorType} =
+  keyMirror(ClangCursorToDeclarationTypes);
 
 module.exports = {
   ClangCursorToDeclarationTypes,

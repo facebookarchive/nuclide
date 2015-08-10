@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri, Declaration} from './types';
+import type {NuclideUri, Declaration} from './main';
 
 var logger = require('nuclide-logging').getLogger();
 var ClangService = require('./ClangService');
@@ -41,7 +41,7 @@ class LocalClangServiceMock extends ClangService {
     });
   }
 
-  getCompletions(src: NuclideUri, contents: string, line: number, column: number,
+  async getCompletions(src: NuclideUri, contents: string, line: number, column: number,
       tokenStartColumn: number, prefix: string): Promise<any> {
     return {
       file: src,
@@ -57,13 +57,13 @@ class LocalClangServiceMock extends ClangService {
     return null;
   }
 
-  getDeclarationInfo(
+  async getDeclarationInfo(
     src: NuclideUri,
     contents: string,
     line: number,
     column: number
   ): Promise<?{file: NuclideUri; line: number; column: number; info: Array<Declaration>}> {
-    return {src, line, column, info: []};
+    return {file: src, line, column, info: []};
   }
 }
 

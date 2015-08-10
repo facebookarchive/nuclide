@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {NuclideUri, Declaration} from './main';
+
 class ClangService {
   compile(
     src: NuclideUri,
