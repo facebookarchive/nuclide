@@ -19,16 +19,18 @@ var extend = require('util')._extend;
 const HH_NEWLINE = '<?hh\n';
 const HH_STRICT_NEWLINE = '<?hh // strict\n';
 const PATH_TO_HH_CLIENT = 'hh_client';
+const HH_SERVER_INIT_MESSAGE = 'hh_server still initializing';
+const HH_SERVER_BUSY_MESSAGE = 'hh_server is busy';
 
 /**
- * Executes the hh_client on the remote connected dev box using the ExecClient passed
+ * Executes hh_client with proper arguments returning the result string or json object.
  */
 async function _callHHClient(
   args: Array<string>,
   errorStream: boolean,
   outputJson: boolean,
   processInput: ?string,
-  cwd: string): Promise<any> {
+  cwd: string): Promise<string | Object> {
   // append args on the end of our commands
   var defaults = ['--retries', '0', '--retry-if-init', 'false', '--from', 'nuclide'];
   if (outputJson) {
@@ -38,15 +40,21 @@ async function _callHHClient(
   var allArgs = defaults.concat(args);
   allArgs.push(cwd);
 
-  var execResult = await checkOutput(PATH_TO_HH_CLIENT, allArgs, {stdin: processInput});
+  var {stdout, stderr} = await checkOutput(PATH_TO_HH_CLIENT, allArgs, {stdin: processInput});
+  if (stderr.startsWith(HH_SERVER_INIT_MESSAGE)) {
+    throw new Error(`${HH_SERVER_INIT_MESSAGE}: try: \`arc build\` or try again later!`);
+  } else if (stderr.startsWith(HH_SERVER_BUSY_MESSAGE)) {
+    throw new Error(`${HH_SERVER_BUSY_MESSAGE}: try: \`arc build\` or try again later!`);
+  }
 
-  var output = errorStream ? execResult.stderr : execResult.stdout;
+  var output = errorStream ? stderr : stdout;
   if (outputJson) {
     try {
       return JSON.parse(output);
     } catch (err) {
-      logger.error('failed to parse hh_client output:', output);
-      throw new Error('failed to parse hh_client output: ' + output);
+      var errorMessage = `hh_client error, args: [${args.join(',')}], stdout: ${stdout}, stderr: ${stderr}`;
+      logger.error(errorMessage);
+      throw new Error(errorMessage);
     }
   } else {
     return output;
@@ -84,13 +92,8 @@ function getCompletions(query: string, options): Promise<Array<any>> {
  */
 async function getDefinition(query: string, symbolType: SymbolType, options = {}): Promise<Array<any>> {
   var searchTypes = symbolTypeToSearchTypes(symbolType);
-  var searchResults = [];
-  try {
-    searchResults = await getSearchResults(query, searchTypes, undefined, options);
-  } catch (e) {
-    logger.warn('getSearchResults error:', e);
-  }
-  return searchResults.filter((result) => {
+  var searchResults = await getSearchResults(query, searchTypes, undefined, options);
+  return searchResults.filter(result => {
     // If the request had a :: in it, it's a full name, so we should compare to
     // the name of the result in that format.
     var fullName = result.name;

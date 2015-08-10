@@ -15,7 +15,6 @@ var invariant = require('assert');
 var {getClient} = require('nuclide-client');
 var {extractWordAtPosition} = require('nuclide-atom-helpers');
 var HackLanguage = require('./HackLanguage');
-var NullHackClient = require('./NullHackClient');
 var logger = require('nuclide-logging').getLogger();
 var {parse, getPath} = require('nuclide-remote-uri');
 
@@ -211,12 +210,7 @@ module.exports = {
     // Update the HackWorker model with the contents of the file opened or saved.
     await hackLanguage.updateFile(path, contents);
 
-    var diagnostics = [];
-    try {
-      diagnostics = await hackLanguage.getServerDiagnostics();
-    } catch (err) {
-      logger.error('Hack: getServerDiagnostics failed', err);
-    }
+    var diagnostics = await hackLanguage.getServerDiagnostics();
     clientToHackLinterCache[getClientId(buffer)] = diagnostics;
     // Trigger the linter to catch the new diagnostics.
     atom.commands.dispatch(atom.views.getView(editor), 'linter:lint');
@@ -267,7 +261,7 @@ async function createHackLanguageIfNotExisting(client: NuclideClient, filePath: 
   if (isHackClientAvailable && nearestPath) {
     hackClient = client;
   } else {
-    hackClient = new NullHackClient();
+    hackClient = null;
   }
   clientToHackLanguage[clientId] = new HackLanguage(hackClient, nearestPath);
   return clientToHackLanguage[clientId];

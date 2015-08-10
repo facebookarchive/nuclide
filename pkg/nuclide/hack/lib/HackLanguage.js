@@ -32,9 +32,9 @@ module.exports = class HackLanguage {
 
   /**
    * `basePath` should be the directory where the .hhconfig file is located.
-   * It should only be null if client is a NullHackClient.
+   * It should only be null if client is null.
    */
-  constructor(client: NuclideClient, basePath: ?string) {
+  constructor(client: ?NuclideClient, basePath: ?string) {
     this._hackWorker = new HackWorker();
     this._client = client;
     this._pathContentsMap = {};
@@ -78,7 +78,11 @@ module.exports = class HackLanguage {
     var completionType = getCompletionType(response.completion_type);
     var completions = response.completions;
     if (shouldDoServerCompletion(completionType) || !completions.length) {
-      completions = await this._client.getHackCompletions(markedContents);
+      completions = await this._callHackService(
+        /*serviceName*/ 'getHackCompletions',
+        /*serviceArgs*/ [markedContents],
+        /*defaultValue*/ [],
+      );
     }
     return processCompletions(completions);
   }
@@ -99,13 +103,12 @@ module.exports = class HackLanguage {
       this._isFinishedLoadingDependencies = true;
       return;
     }
-    var dependencies = {};
-    try {
-      dependencies = await this._client.getHackDependencies(response.deps);
-    } catch (err) {
-      // Ignore the error, it's just dependency fetching.
-      logger.warn('getHackDependencies error:', err);
-    }
+
+    var dependencies = await this._callHackService(
+      /*serviceName*/ 'getHackDependencies',
+      /*serviceArgs*/ [response.deps],
+      /*defaultValue*/ {},
+    );
     // Serially update depednecies not to block the worker from serving other feature requests.
     for (var path in dependencies) {
       await this.updateDependency(path, dependencies[path]);
@@ -159,7 +162,11 @@ module.exports = class HackLanguage {
   }
 
   async getServerDiagnostics(): Promise<Array<any>> {
-    var response = await this._client.getHackDiagnostics();
+    var response = await this._callHackService(
+      /*serviceName*/ 'getHackDiagnostics',
+      /*serviceArgs*/ [],
+      /*defaultValue*/ {errors: []},
+    );
     return parseErrorsFromResponse(response);
   }
 
@@ -260,7 +267,11 @@ module.exports = class HackLanguage {
       var symbol = await this.getSymbolNameAtPosition(path, contents, lineNumber, column);
       var defs = [];
       if (symbol && symbol.name) {
-        defs = await this._client.getHackDefinition(symbol.name, symbol.type);
+        defs = await this._callHackService(
+          /*serviceName*/ 'getHackDefinition',
+          /*serviceArgs*/ [symbol.name, symbol.type],
+          /*defaultValue*/ [],
+        );
       }
       return defs;
     } catch (err) {
@@ -275,13 +286,11 @@ module.exports = class HackLanguage {
     if (!search) {
       return [];
     }
-    var defs = [];
-    try {
-      defs = await this._client.getHackDefinition(search, SymbolType.UNKNOWN);
-    } catch (err) {
-      // ignore the error
-      logger.warn('_getDefinitionFromStringParse error:', err);
-    }
+    var defs = await this._callHackService(
+      /*serviceName*/ 'getHackDefinition',
+      /*serviceArgs*/ [search, SymbolType.UNKNOWN],
+      /*defaultValue*/ [],
+    );
     return defs.map(definition => {
       return {
         path: definition.path,
@@ -343,12 +352,32 @@ module.exports = class HackLanguage {
     if (!isHackFile(contents)) {
       return null;
     }
-    return await this._client.getHackReferences(symbolName);
+    return await this._callHackService(
+      /*serviceName*/ 'getHackReferences',
+      /*serviceArgs*/ [symbolName],
+      /*defaultValue*/ null,
+    );
   }
 
   getBasePath(): ?string {
     return this._basePath;
   }
+
+  async _callHackService(serviceName: string, serviceArgs: Array<any>, defaultValue: any): Promise<any> {
+    if (!this._client) {
+      // hh_client isn't available on the host machine, no service calls can be done,
+      // default values are returned.
+      return defaultValue;
+    }
+    try {
+      return await this._client[serviceName].apply(this._client, serviceArgs);
+    } catch (error) {
+      logger.warn(`HACK: service call ${serviceName} failed with args:`, serviceArgs, error);
+      atom.notifications.addWarning(error.message || error);
+      return defaultValue;
+    }
+  }
+
 };
 
 var stringToCompletionType = {
@@ -382,7 +411,7 @@ function getSymbolType(input: string) {
   return symbolType;
 }
 
-function parseErrorsFromResponse(response: any): Array<any> {
+function parseErrorsFromResponse(response: {errors: Array<Object>}): Array<Object> {
   var errors = response.errors.map(error => {
     var rootCause = null;
     var errorParts = error.message;
@@ -421,7 +450,7 @@ function shouldDoServerCompletion(type: CompletionType): boolean {
 }
 
 function processCompletions(completionsResponse: Array<any>): Array<any> {
-  return completionsResponse.map((completion) => {
+  return completionsResponse.map(completion => {
     var {name, type, func_details: functionDetails} = completion;
     if (type && type.indexOf('(') === 0 && type.lastIndexOf(')') === type.length - 1) {
       type = type.substring(1, type.length - 1);
