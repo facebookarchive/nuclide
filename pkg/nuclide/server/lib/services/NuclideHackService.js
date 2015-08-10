@@ -62,7 +62,7 @@ function getDiagnostics(options = {}): Promise<Array<any>> {
     /*errorStream*/ true,
     /*outputJson*/ true,
     /*processInput*/ null,
-    /*options*/ options.cwd
+    /*cwd*/ options.cwd,
   );
 }
 
@@ -75,7 +75,7 @@ function getCompletions(query: string, options): Promise<Array<any>> {
     /*errorStream*/ false,
     /*outputJson*/ true,
     /*processInput*/ query,
-    /*options*/ options.cwd
+    /*cwd*/ options.cwd,
   );
 }
 
@@ -167,25 +167,32 @@ async function getSearchResults(
   if (!search) {
     return [];
   }
+  var {cwd} = options;
   var response = await _callHHClient(
       /*args*/ ['--search' + (searchPostfix || ''), search],
       /*errorStream*/ false,
       /*outputJson*/ true,
       /*processInput*/ null,
-      /*options*/ options.cwd
+      /*cwd*/ cwd,
   );
-  var results = response.map((result) => {
+  var results = response.map(result => {
+    var filePath = result.filename;
+    if (!filePath.startsWith(cwd)) {
+      return null;
+    }
     return {
       line: result.line - 1,
       column: result.char_start - 1,
       name: result.name,
-      path: result.filename,
+      path: filePath,
       length: result.char_end - result.char_start + 1,
       scope: result.scope,
       additionalInfo: result.desc,
       action: 'OPEN_PATH',
     };
   });
+  // Filter out files out of repo results, e.g. hh internal files.
+  results = results.filter(result => !!result);
   if (filterTypes) {
     results = filterSearchResults(results, filterTypes);
   }
@@ -259,7 +266,7 @@ async function getReferences(
     /*errorStream*/ false,
     /*outputJson*/ true,
     /*processInput*/ null,
-    /*options*/ options.cwd
+    /*cwd*/ options.cwd,
   );
 }
 
