@@ -214,7 +214,7 @@ class SshHandshake {
       var cmd = `${this._config.remoteServerCommand} --workspace=${this._config.cwd} --common_name=${this._config.host} -t 60`;
 
       // This imitates a user typing:
-      //   $ ssh server
+      //   $ TERM=nuclide ssh server
       // then on the interactive prompt executing the remote server command.  If
       // that works, then nuclide should also work.
       //
@@ -224,7 +224,13 @@ class SshHandshake {
       //
       // This is a bad idea because besides breaking us, it also breaks this:
       // $ ssh server any_cmd
-      this._connection.shell((err, stream) => {
+      //
+      // As a last resort we also set term to 'nuclide' so that if anything we
+      // haven't thought of happens, the user can always add the following to
+      // the top of their favorite shell startup file:
+      //
+      //   [ "$TERM" = "nuclide"] && return;
+      this._connection.shell({term: 'nuclide'}, (err, stream) => {
         if (err) {
           reject(err);
           return;
