@@ -27,6 +27,7 @@ var PanelComponent = React.createClass({
     dock: PropTypes.oneOf(['left', 'bottom', 'right']).isRequired,
     initialLength: PropTypes.number.isRequired,
     onResize: PropTypes.func.isRequired,
+    overflowX: PropTypes.string,
   },
 
   getDefaultProps(): Object {
@@ -68,15 +69,20 @@ var PanelComponent = React.createClass({
       React.Children.only(this.props.children),
       {ref: 'child'});
 
+    var scrollerStyle = {};
+    if (this.props.overflowX) {
+      scrollerStyle.overflowX = this.props.overflowX;
+    }
+
     return (
       <div className={`nuclide-panel-component ${this.props.dock}`}
-           ref='container'
+           ref="container"
            style={containerStyle}>
         <div className={`nuclide-panel-component-resize-handle ${this.props.dock}`}
-             ref='handle'
+             ref="handle"
              onMouseDown={this._handleMouseDown}
              onDoubleClick={this._handleDoubleClick} />
-        <div className='nuclide-panel-component-scroller'>
+        <div className="nuclide-panel-component-scroller" style={scrollerStyle}>
           {content}
         </div>
         {resizeCursorOverlay}

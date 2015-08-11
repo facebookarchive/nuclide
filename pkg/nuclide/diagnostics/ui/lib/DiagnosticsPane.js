@@ -119,6 +119,7 @@ class DiagnosticsPane extends React.Component {
         height={this.props.height}
         headerHeight={30}
         onRowClick={onRowClick}
+        overflowX="hidden"
         overflowY="auto"
         rowGetter={this._rowGetter}
         rowHeight={DEFAULT_ROW_TEXT_HEIGHT + ROW_VERTICAL_PADDING}

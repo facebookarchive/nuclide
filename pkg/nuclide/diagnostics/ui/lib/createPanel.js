@@ -26,6 +26,8 @@ function createDiagnosticsPanel(
   diagnosticUpdater: DiagnosticUpdater
 ): atom$Panel {
   var diagnosticsPanel: ?DiagnosticsPanel = null;
+  var bottomPanel: ?atom$Panel = null;
+  var diagnosticsNeedSorting = false;
   var props: PanelProps = {
     diagnostics: [],
     height: DEFAULT_TABLE_HEIGHT,
@@ -37,25 +39,41 @@ function createDiagnosticsPanel(
       },
       /* debounceIntervalMs */ 50,
       /* immediate */ false),
+    onDismiss() {
+      invariant(bottomPanel);
+      bottomPanel.hide();
+    },
   };
 
   var item = document.createElement('div');
   function render() {
+    if (bottomPanel && !bottomPanel.isVisible()) {
+      return;
+    }
+
+    // Do not bother to sort the diagnostics until a render is happening. This avoids doing
+    // potentially large sorts while the diagnostics pane is hidden.
+    if (diagnosticsNeedSorting) {
+      props.diagnostics = props.diagnostics.slice().sort(compareMessagesByFile);
+      diagnosticsNeedSorting = false;
+    }
+
     diagnosticsPanel = React.render(<DiagnosticsPanel {...props} />, item);
   }
 
   var disposable = diagnosticUpdater.onAllMessagesDidUpdate((messages: Array<DiagnosticMessage>) => {
-    props.diagnostics = messages.slice().sort(compareMessagesByFile);
+    props.diagnostics = messages;
+    diagnosticsNeedSorting = true;
     render();
   });
-  var panel = atom.workspace.addBottomPanel({item});
+  bottomPanel = atom.workspace.addBottomPanel({item});
   // Currently, destroy() does not appear to be idempotent:
   // https://github.com/atom/atom/commit/734a79b7ec9f449669e1871871fd0289397f9b60#commitcomment-12631908
-  panel.onDidDestroy(() => {
+  bottomPanel.onDidDestroy(() => {
     disposable.dispose();
     React.unmountComponentAtNode(item);
   });
-  return panel;
+  return bottomPanel;
 }
 
 module.exports = {

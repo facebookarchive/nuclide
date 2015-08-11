@@ -15,12 +15,33 @@ var {CompositeDisposable} = require('atom');
 var subscriptions: ?CompositeDisposable = null;
 var bottomPanel: ?atom$Panel = null;
 
+type ActivationState = {
+  hideDiagnosticsPanel: boolean;
+};
+
+var activationState: ?ActivationState = null;
+
+function createPanel(diagnosticUpdater: DiagnosticUpdater, disposables: CompositeDisposable) {
+  var panel = require('./createPanel').createDiagnosticsPanel(diagnosticUpdater);
+  bottomPanel = panel;
+
+  invariant(activationState);
+  activationState.hideDiagnosticsPanel = false;
+
+  var onDidChangeVisibleSubscription = panel.onDidChangeVisible((visible: boolean) => {
+    invariant(activationState);
+    activationState.hideDiagnosticsPanel = !visible;
+  });
+  disposables.add(onDidChangeVisibleSubscription);
+}
+
 module.exports = {
-  activate(state: ?Object): void {
+  activate(state: ?ActivationState): void {
     if (subscriptions) {
       return;
     }
 
+    activationState = state || {hideDiagnosticsPanel: false};
     subscriptions = new CompositeDisposable();
   },
 
@@ -42,7 +63,25 @@ module.exports = {
       editor.onDidDestroy(() => disposable.dispose());
     }));
 
-    bottomPanel = require('./createPanel').createDiagnosticsPanel(diagnosticUpdater);
+    var lazilyCreateTable = createPanel.bind(null, diagnosticUpdater, subscriptions);
+
+    var showTableSubscription = atom.commands.add(
+      atom.views.getView(atom.workspace),
+      'nuclide-diagnostics-ui:toggle-table',
+      () => {
+        if (!bottomPanel) {
+          lazilyCreateTable();
+        } else {
+          bottomPanel.isVisible() ? bottomPanel.hide() : bottomPanel.show();
+        }
+      }
+    );
+    subscriptions.add(showTableSubscription);
+
+    invariant(activationState);
+    if (!activationState.hideDiagnosticsPanel) {
+      lazilyCreateTable();
+    }
   },
 
   deactivate(): void {
@@ -55,5 +94,10 @@ module.exports = {
       bottomPanel.destroy();
       bottomPanel = null;
     }
+  },
+
+  serialize(): ActivationState {
+    invariant(activationState);
+    return activationState;
   },
 };
