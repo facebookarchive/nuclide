@@ -13,7 +13,7 @@ var {PanelComponent} = require('nuclide-panel');
 var React = require('react-for-atom');
 
 // This must match the value in diagnostics-table.less.
-var PANEL_HEADER_HEIGHT_IN_PX = 21;
+var PANEL_HEADER_HEIGHT_IN_PX = 28;
 
 // This must match the value in panel-component.less.
 var RESIZE_HANDLER_HEIGHT_IN_PX = 4;
@@ -64,12 +64,16 @@ class DiagnosticsPanel extends React.Component {
     var shortcutSpan = null;
     if (shortcut) {
       shortcutSpan = (
-        <span>
-          (Use <kbd className="key-binding">{getKeyboardShortcut()}</kbd> to toggle this panel.)
-          &nbsp;
+        <span className="text-subtle inline-block">
+          Use <kbd className="key-binding key-binding-sm text-highlight">
+          {getKeyboardShortcut()}
+          </kbd> to toggle this panel.
         </span>
       );
     }
+
+    var errorSpanClassName = `inline-block ${errorCount > 0 ? 'text-error' : ''}`;
+    var warningSpanClassName = `inline-block ${warningCount > 0 ? 'text-warning' : ''}`;
 
     // We hide the horizontal overflow in the PanelComponent because the presence of the scrollbar
     // throws off our height calculations.
@@ -83,20 +87,27 @@ class DiagnosticsPanel extends React.Component {
         <div>
           <div className="nuclide-diagnostics-pane-nav">
             <div className="nuclide-diagnostics-pane-nav-left">
-              <span className="nuclide-diagnostics-error-count">Errors: {errorCount}</span>
-              &nbsp;&nbsp;&nbsp;
-              <span className="nuclide-diagnostics-warning-count">Warnings: {warningCount}</span>
+              <span className={errorSpanClassName}>
+                Errors: {errorCount}
+              </span>
+              <span className={warningSpanClassName}>
+                Warnings: {warningCount}
+              </span>
             </div>
             <div className="nuclide-diagnostics-pane-nav-right">
               {shortcutSpan}
               <button
                 onClick={this.props.onDismiss}
-                className="btn btn-subtle btn-sm icon icon-x inline-block nuclide-diagnostics-pane-toggle-button"
+                className="btn btn-subtle btn-sm icon icon-x inline-block"
                 title="Close Panel"
               />
             </div>
           </div>
-          <DiagnosticsPane diagnostics={this.props.diagnostics} width={this.props.width} height={paneHeight} />
+          <DiagnosticsPane
+            diagnostics={this.props.diagnostics}
+            height={paneHeight}
+            width={this.props.width}
+          />
         </div>
       </PanelComponent>
     );

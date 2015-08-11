@@ -1,21 +1,20 @@
+@import "ui-variables";
+
+@pane-nav-height: 28px; // This must match the value in DiagnosticsPanel.js.
+@resize-handle-height: 4px; // Match height of .nuclide-panel-component-resize-handle.
+
 .nuclide-diagnostics-pane-nav {
   display: flex;
-  height: 21px; // This must match the value in DiagnosticsPanel.js.
+  height: @pane-nav-height;
+  line-height: @pane-nav-height - @resize-handle-height - 2px;
+  padding-bottom: @resize-handle-height;
+  /* Match padding right/left from .status-bar. */
+  padding-left: 0.75em;
+  padding-right: 0.75em;
 }
 
 .nuclide-diagnostics-pane-nav-left {
   flex: 1;
-  font-size: larger;
-  font-weight: bold;
-  padding-left: @component-padding;
-}
-
-.nuclide-diagnostics-error-count {
-  color: @text-color-error;
-}
-
-.nuclide-diagnostics-warning-count {
-  color: @text-color-warning;
 }
 
 .nuclide-diagnostics-pane-nav-right {
@@ -23,10 +22,14 @@
   text-align: right;
 }
 
-.btn.nuclide-diagnostics-pane-toggle-button {
-  padding-top: 0;
-}
-
 .nuclide-fixed-data-cell {
   display: inline-block;
+}
+
+.nuclide-diagnostics-pane-nav .key-binding-sm {
+  border: none;
+  line-height: 1;
+  margin-left: 0;
+  padding-bottom: 3px;
+  padding-top: 3px;
 }
