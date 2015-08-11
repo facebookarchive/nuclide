@@ -21,6 +21,8 @@ type ActivationState = {
 
 var activationState: ?ActivationState = null;
 
+var diagnosticUpdaterForTable: ?DiagnosticUpdater = null;
+
 function createPanel(diagnosticUpdater: DiagnosticUpdater, disposables: CompositeDisposable) {
   var panel = require('./createPanel').createDiagnosticsPanel(diagnosticUpdater);
   bottomPanel = panel;
@@ -63,6 +65,13 @@ module.exports = {
       editor.onDidDestroy(() => disposable.dispose());
     }));
 
+    // Currently, the DiagnosticsPanel is designed to work with only one DiagnosticUpdater.
+    // Therefore, we only create a DiagnosticsPanel for the first call to consumeDiagnosticUpdates.
+    if (diagnosticUpdaterForTable) {
+      return;
+    }
+    diagnosticUpdaterForTable = diagnosticUpdater;
+
     var lazilyCreateTable = createPanel.bind(null, diagnosticUpdater, subscriptions);
 
     var showTableSubscription = atom.commands.add(
@@ -94,6 +103,8 @@ module.exports = {
       bottomPanel.destroy();
       bottomPanel = null;
     }
+
+    diagnosticUpdaterForTable = null;
   },
 
   serialize(): ActivationState {
