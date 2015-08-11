@@ -10,9 +10,10 @@
  */
 
 module.exports = {
-
   activate(state: ?Object): void {
-    // TODO(jessicalin): Add activation code here.
   },
 
+  getBlameGutter() {
+    return require('./BlameGutter');
+  },
 };

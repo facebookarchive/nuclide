@@ -8,12 +8,18 @@
     "packageType": "Atom",
     "testRunner": "apm"
   },
-  "activationCommands": {
+  "providedServices": {
+    "nuclide-blame-ui.gutter": {
+      "versions": {
+        "0.0.0": "getBlameGutter"
+      }
+    }
   },
   "engines": {
     "atom": ">=1.0.3"
   },
   "devDependencies": {
-    "nuclide-atom-interfaces": "0.0.0"
+    "nuclide-atom-interfaces": "0.0.0",
+    "nuclide-blame-base": "0.0.0"
   }
 }

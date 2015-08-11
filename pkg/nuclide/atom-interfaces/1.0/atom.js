@@ -91,6 +91,8 @@ declare class atom$Cursor {
 
 declare class atom$Decoration {
   destroy(): void;
+  getMarker(): atom$Marker;
+  setProperties(properties: mixed): void;
 }
 
 declare class atom$Disposable {
