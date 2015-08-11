@@ -67,7 +67,7 @@ function flowMessageToLinterMessage(flowMessages) {
   var flowMessage = flowMessages[0];
 
   var linterMessage = {
-    type: flowMessage['level'] || 'Error',
+    type: flowMessage['level'] === 'error' ? 'Error' : 'Warning',
     text: flowMessages.map(errObj => errObj['descr']).join(' '),
     filePath: flowMessage['path'],
     range: extractRange(flowMessage),

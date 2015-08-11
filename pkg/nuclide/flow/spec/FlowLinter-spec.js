@@ -35,7 +35,7 @@ describe('FlowLinter::processDiagnostics', () => {
 
     var expectedOutput = {
       text: 'message',
-      type: 'error',
+      type: 'Error',
       filePath: 'myPath',
       range: new Range([0, 2], [1, 4]),
     };
@@ -64,7 +64,7 @@ describe('FlowLinter::processDiagnostics', () => {
 
     var expectedOutput = {
       text: 'message',
-      type: 'warning',
+      type: 'Warning',
       filePath: 'myPath',
       range: new Range([0, 2], [1, 4]),
     };
@@ -123,7 +123,7 @@ describe('FlowLinter::processDiagnostics', () => {
     ];
 
     var expectedOutput = {
-      type: 'error',
+      type: 'Error',
       text: 'message more message',
       filePath: 'myPath',
       range: new Range([0, 2], [1, 4]),
