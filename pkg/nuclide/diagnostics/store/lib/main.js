@@ -62,7 +62,7 @@ module.exports = {
   config: {
     consumeLegacyLinters: {
       type: 'boolean',
-      default: false,
+      default: true,
     },
     legacyLintOnTheFly: {
       type: 'boolean',
