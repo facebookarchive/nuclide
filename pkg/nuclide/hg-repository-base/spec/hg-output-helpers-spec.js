@@ -9,8 +9,9 @@
  * the root directory of this source tree.
  */
 
-var {parseHgDiffUnifiedOutput} = require('../lib/hg-output-helpers');
+var {parseHgBlameOutput, parseHgDiffUnifiedOutput} = require('../lib/hg-output-helpers');
 
+// `hg diff` output
 var multiChunkChangeHgDiffOutput =
 `diff --git a/test-test/blah/blah.js b/test-test/blah/blah.js
 --- a/jar-rename/blah/blah.js
@@ -25,6 +26,30 @@ diff --git a/test.xml b/test.xml
 +
 +test
 +test`;
+
+
+// `hg blame` output
+var hgBlameOutputWithError =
+`[abort: Tools/Nuclide/pkg/blah.js: no such file in rev c2096f856c82`;
+
+var hgBlameForFileWithCommitAndUncommittedChanges =
+`[
+ {
+  "line": "hello",
+  "line_number": 1,
+  "rev": 270510,
+  "user": "Abbot B a@b.com"
+ },
+ {
+  "line": "world",
+  "line_number": 2,
+  "rev": null,
+  "user": "a@b.com"
+ }
+]`;
+
+var unexpectedHgBlameOutput = 'not json';
+
 
 describe('hg-output-helpers', () => {
   describe('parseHgDiffUnifiedOutput', () => {
@@ -122,4 +147,21 @@ describe('hg-output-helpers', () => {
     });
   });
 
+  describe('parseHgBlameOutput', () => {
+    it('handles an error message from Hg.', () => {
+      var parseResults = parseHgBlameOutput(hgBlameOutputWithError);
+      expect(parseResults).toEqual(new Map());
+    });
+
+    it('parses the output of "hg blame" when there are committed and uncommited changes in the file.', () => {
+      var parseResults = parseHgBlameOutput(hgBlameForFileWithCommitAndUncommittedChanges);
+      var expectedBlame = new Map([[1, 'Abbot B a@b.com'], [2, 'a@b.com']]);
+      expect(parseResults).toEqual(expectedBlame);
+    });
+
+    it('gracefully handles unexpected output, e.g. if the error message changes.', () => {
+      var parseResults = parseHgBlameOutput(unexpectedHgBlameOutput);
+      expect(parseResults).toEqual(new Map());
+    });
+  });
 });
