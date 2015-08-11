@@ -235,7 +235,7 @@ TestRunnerPanel.propTypes = {
   onClickClose: PropTypes.func.isRequired,
   onClickRun: PropTypes.func.isRequired,
   onClickStop: PropTypes.func.isRequired,
-  path: PropTypes.string.isRequired,
+  path: PropTypes.string,
   progressValue: PropTypes.number,
   runDuration: PropTypes.number,
   // TODO: Should be `arrayOf(TestRunner)`, but that would require a real object since this is

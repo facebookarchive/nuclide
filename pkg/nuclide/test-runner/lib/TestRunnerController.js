@@ -63,9 +63,7 @@ class TestRunnerController {
 
     this._executionState = TestRunnerPanel.ExecutionState.STOPPED;
     this._testRunners = testRunners;
-    if (this._state.panelVisible) {
-      this._renderPanel();
-    }
+    this._renderPanel();
 
     // Bind Functions for use as callbacks;
     // TODO: Replace with property initializers when supported by Flow;
@@ -101,9 +99,9 @@ class TestRunnerController {
   }
 
   hidePanel() {
+    this._state.panelVisible = false;
     if (this._panel) {
       this._panel.hide();
-      this._state.panelVisible = false;
     }
   }
 
@@ -172,10 +170,10 @@ class TestRunnerController {
   }
 
   showPanel(): void {
+    this._state.panelVisible = true;
     this._renderPanel();
     if (this._panel) {
       this._panel.show();
-      this._state.panelVisible = true;
     }
   }
 
@@ -283,6 +281,12 @@ class TestRunnerController {
   }
 
   _renderPanel() {
+    // Initialize and render the contents of the panel only if the hosting container is visible by
+    // the user's choice.
+    if (!this._state.panelVisible) {
+      return;
+    }
+
     var root = this._root;
 
     if (!root) {

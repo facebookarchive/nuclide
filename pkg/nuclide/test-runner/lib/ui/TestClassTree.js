@@ -86,7 +86,7 @@ class TestClassTree extends React.Component {
 }
 
 TestClassTree.propTypes = {
-  testSuiteModel: PropTypes.object.isRequired,
+  testSuiteModel: PropTypes.object,
 };
 
 module.exports = TestClassTree;

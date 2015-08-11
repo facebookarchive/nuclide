@@ -32,7 +32,7 @@ var PanelComponent = React.createClass({
 
   getDefaultProps(): Object {
     return {
-      initalLength: 200,
+      initialLength: 200,
       onResize: emptyFunction,
     };
   },
