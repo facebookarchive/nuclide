@@ -96,7 +96,7 @@ class DiagnosticsPanel extends React.Component {
               />
             </div>
           </div>
-          <DiagnosticsPane diagnostics={this.props.diagnostics} height={paneHeight} />
+          <DiagnosticsPane diagnostics={this.props.diagnostics} width={this.props.width} height={paneHeight} />
         </div>
       </PanelComponent>
     );
@@ -110,6 +110,7 @@ DiagnosticsPanel.propTypes = {
   height: PropTypes.number.isRequired,
   onDismiss: PropTypes.func.isRequired,
   onResize: PropTypes.func.isRequired,
+  width: PropTypes.number.isRequired,
 };
 
 module.exports = DiagnosticsPanel;

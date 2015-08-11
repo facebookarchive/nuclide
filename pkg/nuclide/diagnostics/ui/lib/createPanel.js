@@ -15,11 +15,14 @@ var React = require('react-for-atom');
 var DiagnosticsPanel = require('./DiagnosticsPanel');
 
 var DEFAULT_TABLE_HEIGHT = 200;
+var DEFAULT_TABLE_WIDTH = 600;
 
 type PanelProps = {
   diagnostics: Array<DiagnosticMessage>;
+  width: number;
   height: number;
-  onResize: () => mixed;
+  onResize: () => void;
+  onDismiss: () => void;
 }
 
 function createDiagnosticsPanel(
@@ -30,6 +33,7 @@ function createDiagnosticsPanel(
   var diagnosticsNeedSorting = false;
   var props: PanelProps = {
     diagnostics: [],
+    width: DEFAULT_TABLE_WIDTH,
     height: DEFAULT_TABLE_HEIGHT,
     onResize: debounce(
       () => {
@@ -66,11 +70,45 @@ function createDiagnosticsPanel(
     diagnosticsNeedSorting = true;
     render();
   });
-  bottomPanel = atom.workspace.addBottomPanel({item});
+
+  // A FixedDataTable must specify its own width. We always want it to match that of the bottom
+  // panel. Unfortunately, there is no way to register for resize events on a DOM element: it is
+  // only possible to listen for resize events on a window. (MutationObserver does not help here.)
+  //
+  // As such, we employ a hack inspired by http://stackoverflow.com/a/20888342/396304.
+  // We create an invisible iframe with 100% width, so it will match the width of the panel. We
+  // subscribe to its resize events and use that as a proxy for the panel being resized and update
+  // the width of the FixedDataTable accordingly.
+  var iframe = document.createElement('iframe');
+  iframe.style.width = '100%';
+  iframe.style.height = '1px';
+  iframe.style.position = 'absolute';
+  iframe.style.visibility = 'hidden';
+  iframe.style.border = 'none';
+
+  // Both the iframe and the host element for the React component are children of the root element
+  // that serves as the item for the panel.
+  var rootElement = document.createElement('div');
+  rootElement.appendChild(iframe);
+  rootElement.appendChild(item);
+  bottomPanel = atom.workspace.addBottomPanel({item: rootElement});
+
+  // Now that the iframe is in the DOM, subscribe to its resize events.
+  var win = iframe.contentWindow;
+  var resizeListener = debounce(
+    () => {
+      props.width = win.innerWidth;
+      render();
+    },
+    /* debounceIntervalMs */ 50,
+    /* immediate */ false);
+  win.addEventListener('resize', resizeListener);
+
   // Currently, destroy() does not appear to be idempotent:
   // https://github.com/atom/atom/commit/734a79b7ec9f449669e1871871fd0289397f9b60#commitcomment-12631908
   bottomPanel.onDidDestroy(() => {
     disposable.dispose();
+    win.removeEventListener('resize', resizeListener);
     React.unmountComponentAtNode(item);
   });
   return bottomPanel;

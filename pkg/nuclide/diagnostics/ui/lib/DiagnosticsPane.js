@@ -125,16 +125,17 @@ class DiagnosticsPane extends React.Component {
         rowHeight={DEFAULT_ROW_TEXT_HEIGHT + ROW_VERTICAL_PADDING}
         rowHeightGetter={this._rowHeightGetter}
         rowsCount={this.props.diagnostics.length}
-        width={2000}
+        width={this.props.width}
         >
         <Column
           align="left"
           cellDataGetter={fileColumnCellDataGetter}
           cellRenderer={plainTextColumnCellRenderer}
           dataKey="filePath"
+          flexGrow={2}
           headerRenderer={this._renderHeader}
           label="File"
-          width={700}
+          width={100}
         />
         <Column
           align="left"
@@ -143,7 +144,7 @@ class DiagnosticsPane extends React.Component {
           dataKey="range"
           maxWidth={100}
           label="Location"
-          width={100}
+          width={75}
         />
         <Column
           align="left"
@@ -152,7 +153,7 @@ class DiagnosticsPane extends React.Component {
           dataKey="type"
           maxWidth={100}
           label="Type"
-          width={100}
+          width={75}
         />
         <Column
           align="left"
@@ -161,15 +162,16 @@ class DiagnosticsPane extends React.Component {
           dataKey="providerName"
           maxWidth={100}
           label="Source"
-          width={100}
+          width={75}
         />
         <Column
           align="left"
           cellDataGetter={messageColumnCellDataGetter}
           cellRenderer={messageColumnCellRenderer}
           dataKey="message"
+          flexGrow={3}
           label="Description"
-          width={1000}
+          width={100}
         />
       </Table>
     );
@@ -181,6 +183,7 @@ var {PropTypes} = React;
 DiagnosticsPane.propTypes = {
   height: PropTypes.number.isRequired,
   diagnostics: PropTypes.array.isRequired,
+  width: PropTypes.number.isRequired,
 };
 
 module.exports = DiagnosticsPane;
