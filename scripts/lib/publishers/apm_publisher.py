@@ -13,7 +13,7 @@ import urllib2
 
 from abstract_publisher import AbstractPublisher
 from json_helpers import json_load, json_dump, json_dumps
-from package_version_rewriter import update_package_json_versions
+from package_version_rewriter import update_package_json_versions, rewrite_shrinkwrap_file
 
 APM_ORG_NAME = 'facebooknuclideapm'
 
@@ -163,6 +163,9 @@ class ApmPublisher(AbstractPublisher):
 
         # Write the adjusted package file back to the temporary directory and publish it.
         json_dump(package, package_file)
+
+        rewrite_shrinkwrap_file(self._repo, self.get_package_name(),
+            self._config.npm_package_names(), new_version)
 
         # Add a boilerplate .gitignore file if the package does not already have one.
         path_to_gitignore = os.path.join(self._repo, '.gitignore')

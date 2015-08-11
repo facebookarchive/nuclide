@@ -12,7 +12,7 @@ import subprocess
 
 from abstract_publisher import AbstractPublisher
 from json_helpers import json_load, json_dump
-from package_version_rewriter import update_package_json_versions
+from package_version_rewriter import update_package_json_versions, rewrite_shrinkwrap_file
 
 class NpmPublisher(AbstractPublisher):
     ''' Reads and publishes npm packages assuming an incrementing revision number rather than using
@@ -90,6 +90,8 @@ class NpmPublisher(AbstractPublisher):
         # Pre-transpile Babel files, as appropriate.
         self._transpiler.transpile_in_place(self.get_package_name(), self._tmp_package)
 
+        rewrite_shrinkwrap_file(self._tmp_package, self.get_package_name(),
+            self._config.npm_package_names(), new_version)
 
     def publish(self, new_version, atom_semver):
         try:
