@@ -9,26 +9,14 @@
  * the root directory of this source tree.
  */
 var {Column, Table} = require('fixed-data-table-for-atom');
-var {PanelComponent} = require('nuclide-panel');
 var React = require('react-for-atom');
-var {debounce} = require('nuclide-commons');
-var invariant = require('assert');
+var {fileColumnCellDataGetter} = require('./paneUtils');
 
 type textAndType = {text: string, isPlainText: boolean};
 
 var ROW_VERTICAL_PADDING = 16; // 8px top and bottom padding.
 var DEFAULT_ROW_TEXT_HEIGHT = 15;
 var MAX_CHARS_PER_LINE = 100;
-var DEFAULT_TABLE_HEIGHT = 200;
-
-function fileColumnCellDataGetter(cellDataKey: 'filePath', diagnostic: DiagnosticMessage): string {
-  if (diagnostic.filePath) {
-    var [, relativePath] = atom.project.relativizePath(diagnostic.filePath);
-    return relativePath;
-  } else {
-    return '';
-  }
-}
 
 function locationColumnCellDataGetter(cellDataKey: 'range', diagnostic: DiagnosticMessage): string {
   return diagnostic.range ? 'Line ' + (diagnostic.range.start.row + 1) : '';
@@ -89,15 +77,9 @@ function onRowClick(
   atom.workspace.open(uri, options);
 }
 
-function compareMessagesByFile(a: DiagnosticMessage, b: DiagnosticMessage): number {
-  var aMsg = fileColumnCellDataGetter('filePath', a);
-  var bMsg = fileColumnCellDataGetter('filePath', b);
-  return aMsg.localeCompare(bMsg);
-}
-
 class DiagnosticsPane extends React.Component {
 
-  constructor(props) {
+  constructor(props: mixed) {
     super(props);
     this._rowGetter = this._rowGetter.bind(this);
     this._rowHeightGetter = this._rowHeightGetter.bind(this);
@@ -200,41 +182,4 @@ DiagnosticsPane.propTypes = {
   diagnostics: PropTypes.array.isRequired,
 };
 
-function createDiagnosticsPanel(
-  diagnosticUpdater: DiagnosticUpdater
-): atom$Panel {
-  var item = document.createElement('div');
-  var initialHeight = DEFAULT_TABLE_HEIGHT;
-  var currentMessages: Array<DiagnosticMessage> = [];
-  var panelComponent: ?PanelComponent = null;
-
-  var onResize = debounce(
-    () => {
-      invariant(panelComponent);
-      initialHeight = panelComponent.getLength();
-      render();
-    },
-    /* debounceIntervalMs */ 50,
-    /* immediate */ false);
-
-  function render() {
-    panelComponent = React.render(
-      <PanelComponent dock="bottom" initialLength={initialHeight} onResize={onResize}>
-        <DiagnosticsPane diagnostics={currentMessages} height={initialHeight} />
-      </PanelComponent>,
-      item
-    );
-  }
-
-  var disposable = diagnosticUpdater.onAllMessagesDidUpdate((messages: Array<DiagnosticMessage>) => {
-    currentMessages = messages.slice().sort(compareMessagesByFile);
-    render();
-  });
-  var panel = atom.workspace.addBottomPanel({item});
-  panel.onDidDestroy(() => disposable.dispose());
-  return panel;
-}
-
-module.exports = {
-  createDiagnosticsPanel,
-};
+module.exports = DiagnosticsPane;

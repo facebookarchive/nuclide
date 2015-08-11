@@ -42,7 +42,7 @@ module.exports = {
       editor.onDidDestroy(() => disposable.dispose());
     }));
 
-    bottomPanel = require('./DiagnosticsPane').createDiagnosticsPanel(diagnosticUpdater);
+    bottomPanel = require('./createPanel').createDiagnosticsPanel(diagnosticUpdater);
   },
 
   deactivate(): void {
