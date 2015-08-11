@@ -487,6 +487,7 @@ declare class atom$Project {
   setPaths(paths: Array<string>): void;
   removePath(projectPath: string): void;
   getDirectories(): Array<atom$Directory>;
+  relativizePath(): Array<string>; // [projectPath: ?string, relativePath: string]
 }
 
 declare class atom$TextBuffer {

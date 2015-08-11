@@ -13,6 +13,7 @@ var invariant = require('assert');
 var {CompositeDisposable} = require('atom');
 
 var subscriptions: ?CompositeDisposable = null;
+var bottomPanel: ?atom$Panel = null;
 
 module.exports = {
   activate(state: ?Object): void {
@@ -40,12 +41,19 @@ module.exports = {
       // Be sure to remove the subscription on the DiagnosticStore once the editor is closed.
       editor.onDidDestroy(() => disposable.dispose());
     }));
+
+    bottomPanel = require('./DiagnosticsPane').createDiagnosticsPanel(diagnosticUpdater);
   },
 
   deactivate(): void {
     if (subscriptions) {
       subscriptions.dispose();
       subscriptions = null;
+    }
+
+    if (bottomPanel) {
+      bottomPanel.destroy();
+      bottomPanel = null;
     }
   },
 };
