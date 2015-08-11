@@ -1,4 +1,4 @@
-'.source.php':
+'.source.hack':
   '$GLOBALS[\'…\']':
     'prefix': 'globals'
     'body': '$GLOBALS[\'${1:variable}\']${2: = }${3:something}${4:;}$0'
