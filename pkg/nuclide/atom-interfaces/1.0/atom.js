@@ -153,6 +153,9 @@ declare class atom$PackageManager {
   disablePackage(name: string): ?atom$Package;
   isPackageDisabled(name: string): boolean;
 
+  // Accessing active packages
+  getActivePackage(name: string): ?atom$Package;
+
   // Activating and deactivating packages
   activatePackage(name: string): Promise<atom$Package>;
 
