@@ -9,10 +9,32 @@
  * the root directory of this source tree.
  */
 
+var {Disposable} = require('atom');
+
+import type {BlameProvider} from 'nuclide-blame-base/blame-types';
+
+var registeredProviders: ?Set<BlameProvider>;
+
 module.exports = {
 
   activate(state: ?Object): void {
-    // TODO(jessicalin): Add activation code here.
   },
 
+  deactivate() {
+    if (registeredProviders) {
+      registeredProviders.clear();
+    }
+  },
+
+  consumeBlameProvider(provider: BlameProvider): atom$IDisposable {
+    if (!registeredProviders) {
+      registeredProviders = new Set();
+    }
+    registeredProviders.add(provider);
+    return new Disposable(() => {
+      if (registeredProviders) {
+        registeredProviders.delete(provider);
+      }
+    });
+  },
 };
