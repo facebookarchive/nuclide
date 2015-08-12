@@ -211,8 +211,13 @@ declare class atom$Point {
   toArray(): Array<number>;
 }
 
+type RangeConstructorArg =
+  atom$Point |
+  number |
+  [number, number];
+
 declare class atom$Range {
-  constructor(pointA: atom$Point | number, pointB: atom$Point | number): void;
+  constructor(pointA: RangeConstructorArg, pointB: RangeConstructorArg): void;
   start: atom$Point;
   end: atom$Point;
   containsPoint(point: atom$Point, exclusive?: boolean): boolean;
