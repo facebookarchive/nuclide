@@ -9,7 +9,7 @@
     "testRunner": "npm"
   },
   "dependencies": {
-    "jscodeshift": "0.3.3"
+    "jscodeshift": "0.3.5"
   },
   "devDependencies": {
     "nuclide-commons": "0.0.0",
