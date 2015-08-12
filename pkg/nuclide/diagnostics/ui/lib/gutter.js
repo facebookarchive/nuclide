@@ -31,6 +31,7 @@ var ERROR_GUTTER_CSS = 'nuclide-diagnostics-gutter-ui-gutter-error';
 var WARNING_GUTTER_CSS = 'nuclide-diagnostics-gutter-ui-gutter-warning';
 
 var editorToMarkers: WeakMap<TextEditor, Set<atom$Marker>> = new WeakMap();
+var itemToEditor: WeakMap<HTMLElement, TextEditor> = new WeakMap();
 
 function applyUpdateToEditor(editor: TextEditor, update: FileMessageUpdate): void {
   var gutter = editor.gutterWithName(GUTTER_ID);
@@ -112,6 +113,7 @@ function applyUpdateToEditor(editor: TextEditor, update: FileMessageUpdate): voi
 
     // This marker adds some UI to the gutter.
     var {item, dispose} = createGutterItem(messages, gutterMarkerCssClass);
+    itemToEditor.set(item, editor);
     var gutterMarker = editor.markBufferPosition([row, 0]);
     gutter.decorateMarker(gutterMarker, {item});
     gutterMarker.onDidDestroy(dispose);
@@ -190,6 +192,18 @@ function showPopupFor(
       {children}
     </DiagnosticsPopup>,
     hostElement);
+
+  // Check to see whether the popup is within the bounds of the TextEditor. If not, display it above
+  // the glyph rather than below it.
+  var editor = itemToEditor.get(item);
+  var editorElement = atom.views.getView(editor);
+  var {top: editorTop, height: editorHeight} = editorElement.getBoundingClientRect();
+  var {top: itemTop, height: itemHeight} = item.getBoundingClientRect();
+  var popupHeight = hostElement.firstElementChild.clientHeight;
+  if ((itemTop + itemHeight + popupHeight) > (editorTop + editorHeight)) {
+    var popupElement = hostElement.firstElementChild;
+    popupElement.style.top = String(itemTop - popupHeight) + 'px';
+  }
 
   return hostElement;
 }
