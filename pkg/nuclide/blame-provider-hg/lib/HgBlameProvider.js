@@ -23,7 +23,7 @@ function getLogger() {
 
 function hgRepositoryForEditor(editor: TextEditor): ?Repository {
   var repo = repositoryForPath(editor.getPath());
-  if (!repo || repo.getType !== 'hg') {
+  if (!repo || repo.getType() !== 'hg') {
     return null;
   }
   return repo;
