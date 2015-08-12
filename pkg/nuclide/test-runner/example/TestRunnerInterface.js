@@ -9,28 +9,10 @@
  * the root directory of this source tree.
  */
 
-type TestClassSummary = {
-  className: string;
-  fileName: string;
-  id: number;
-  name: string;
-};
-
-type TestRunInfo = {
-  children: Array<TestRunInfo>;
-  details: string;
-  durationSecs: number;
-  endedTime: number;
-  name: string;
-  numAssertions: number;
-  numFailures: number;
-  numMethods: number;
-  numSkipped: number;
-  status: number;
-  summary: string;
-  test_id: number;
-  test_json: TestClassSummary;
-};
+import type {
+  TestClassSummary,
+  TestRunInfo,
+} from '../lib/TestSuiteModel';
 
 /**
  * Objects returned from `getByUri` should implement the functions outlined in this interface. The

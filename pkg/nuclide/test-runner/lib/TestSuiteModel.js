@@ -9,15 +9,14 @@
  * the root directory of this source tree.
  */
 
-type TestClassSummary = {
+export type TestClassSummary = {
   className: string;
   fileName: string;
   id: number;
   name: string;
 };
 
-type TestRunInfo = {
-  children: Array<TestRunInfo>;
+export type TestRunInfo = {
   details: string;
   durationSecs: number;
   endedTime: number;
