@@ -8,6 +8,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
+var {track} = require('nuclide-analytics');
 var React = require('react-for-atom');
 
 var GUTTER_ID = 'nuclide-diagnostics-gutter';
@@ -205,7 +206,16 @@ function showPopupFor(
     popupElement.style.top = String(itemTop - popupHeight) + 'px';
   }
 
-  return hostElement;
+  try {
+    return hostElement;
+  } finally {
+    messages.forEach(message => {
+      track('diagnostics-gutter-show-popup', {
+        'diagnostics-provider': message.providerName,
+        'diagnostics-message': message.text || message.html,
+      });
+    });
+  }
 }
 
 class DiagnosticsPopup extends React.Component {

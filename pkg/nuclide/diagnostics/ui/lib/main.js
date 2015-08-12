@@ -31,6 +31,7 @@ function createPanel(diagnosticUpdater: DiagnosticUpdater, disposables: Composit
   var panel = require('./createPanel').createDiagnosticsPanel(
     diagnosticUpdater,
     activationState.diagnosticsPanelHeight);
+  logPanelIsDisplayed();
   bottomPanel = panel;
 
   activationState.hideDiagnosticsPanel = false;
@@ -107,6 +108,7 @@ module.exports = {
           tryRecordPanelHeight();
           bottomPanelRef.hide();
         } else {
+          logPanelIsDisplayed();
           bottomPanelRef.show();
         }
       }
@@ -139,3 +141,8 @@ module.exports = {
     return activationState;
   },
 };
+
+function logPanelIsDisplayed() {
+  var {track} = require('nuclide-analytics');
+  track('diagnostics-show-table');
+}

@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "fixed-data-table-for-atom": "0.4.3",
+    "nuclide-analytics": "0.0.0",
     "nuclide-commons": "0.0.0",
     "nuclide-keystroke-label": "0.0.0",
     "nuclide-panel": "0.0.0",
