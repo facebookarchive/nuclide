@@ -9,14 +9,10 @@
  * the root directory of this source tree.
  */
 
-export type BlameUpdate = {
-  // Maps a buffer line number to a unixname. The unixname should be a plain
-  // string, not HTML.
-  changed: Map<number, string>;
-  // A set of buffer line numbers that have been removed.
-  deleted: Set<number>;
-};
+// Map of line number (indexed starting at 1) to the name that line blames to.
+export type BlameForEditor = Map<number, string>;
 
 export type BlameProvider = {
-  observeBlame: (callback: (b: BlameUpdate) => mixed) => atom$IDisposable;
+  canProvideBlameForEditor: (editor: TextEditor) => boolean;
+  getBlameForEditor: (editor: TextEditor) => Promise<BlameForEditor>;
 };

@@ -11,7 +11,7 @@
 
 var {CompositeDisposable} = require('atom');
 
-import type {BlameUpdate, BlameProvider} from 'nuclide-blame-base/blame-types';
+import type {BlameForEditor, BlameProvider} from 'nuclide-blame-base/blame-types';
 
 var BLAME_DECORATION_CLASS = 'blame-decoration';
 
@@ -37,14 +37,15 @@ class BlameGutter {
     this._gutter = editor.addGutter({name: gutterName});
     this._setDefaultGutterStyle(this._gutter);
 
-    this._disposables = new CompositeDisposable();
-    this._disposables.add(
-      this._blameProvider.observeBlame(blameUpdate => this._updateBlame(blameUpdate))
-    );
+    this._fetchAndDisplayBlame();
+  }
+
+  async _fetchAndDisplayBlame(): Promise<void> {
+    var newBlame = await this._blameProvider.getBlameForEditor(this._editor);
+    this._updateBlame(newBlame);
   }
 
   destroy(): void {
-    this._disposables.dispose();
     this._gutter.destroy();
     for (var decoration of this._bufferLineToDecoration.values()) {
       decoration.getMarker().destroy();
@@ -57,15 +58,19 @@ class BlameGutter {
     gutterView.style.width = '100px';
   }
 
-  // The BlameGutter expects to only be updated with changes, not with the entire
-  // current blame. This means that every update indicates the DOM should be
-  // updated. In general, we want to avoid touching the DOM (i.e. changing the
-  // blame decoration div) unless the data has changed, to avoid flickering.
-  _updateBlame(update: BlameUpdate): void {
-    update.changed.forEach((blame, bufferLine) => {
-      this._setBlameLine(bufferLine, blame);
-    });
-    update.deleted.forEach((removedLine) => this._removeBlameLine(removedLine));
+  // The BlameForEditor completely replaces any previous blame information.
+  _updateBlame(blameForEditor: BlameForEditor): void {
+    var allPreviousBlamedLines = new Set(this._bufferLineToDecoration.keys());
+
+    for (var [bufferLine, blameName] of blameForEditor) {
+      this._setBlameLine(bufferLine, blameName);
+      allPreviousBlamedLines.delete(bufferLine);
+    }
+
+    // Any lines that weren't in the new blameForEditor are outdated.
+    for (var oldLine of allPreviousBlamedLines) {
+      this._removeBlameLine(oldLine);
+    }
   }
 
   _setBlameLine(bufferLine: number, blameName: string): void {
