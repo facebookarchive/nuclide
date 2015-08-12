@@ -34,6 +34,10 @@ PACKAGES_WITHOUT_TESTS = [
   # use nuclide-jasmine as a test runner. As it stands, it has no tests.
   'nuclide-node-transpiler',
 ]
+PACKAGE_NAME_WHITELIST = [
+    'hyperclick', # we want to upstream this to atom, so do not require nuclide- prefix
+]
+
 
 EXACT_SEMVER_RE = re.compile(r'^\d+\.\d+\.\d+$')
 
@@ -61,6 +65,11 @@ class PackageLinter(object):
         return False
 
     def validate_package(self, package_name, package):
+        # Show packages being linted when --verbose flag is specified
+        logging.debug('Linting package %s', package_name)
+
+        self.verify_package_name(package_name, package)
+
         self.expect_field_in(package_name, package, 'packageType', ['Node', 'Atom'])
         self.expect_field_in(package_name, package, 'testRunner', ['npm', 'apm'])
         if package['testRunner'] == 'npm':
@@ -102,6 +111,22 @@ class PackageLinter(object):
         self.validate_dependencies(package, 'dependencies')
         self.validate_dependencies(package, 'devDependencies')
         self.validate_babelrc(package)
+
+    def verify_package_name(self, package_name, package):
+        if package_name in PACKAGE_NAME_WHITELIST:
+            return
+        expected_package_name = ''
+        path = package['packageRootAbsolutePath']
+        while True:
+            path, component = os.path.split(path)
+            if component == 'pkg':
+                break
+            if expected_package_name == '':
+                expected_package_name = component
+            else:
+                expected_package_name = component + '-' + expected_package_name
+        if package_name != expected_package_name:
+            self.report_error('Expected package name %s found %s', expected_package_name, package_name)
 
     def verify_npm_package(self, package):
         self.verify_npm_test_property(package)
