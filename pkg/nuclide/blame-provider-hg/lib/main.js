@@ -9,10 +9,19 @@
  * the root directory of this source tree.
  */
 
+import type {BlameProvider} from 'nuclide-blame-base/blame-types';
+
+var blameProvider;
+
 module.exports = {
 
   activate(state: ?Object): void {
-    // TODO(jessicalin): Add activation code here.
   },
 
+  provideHgBlameProvider(): BlameProvider {
+    if (!blameProvider) {
+      blameProvider = require('./HgBlameProvider');
+    }
+    return blameProvider;
+  },
 };

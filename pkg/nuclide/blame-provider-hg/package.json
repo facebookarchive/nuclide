@@ -8,12 +8,22 @@
     "packageType": "Atom",
     "testRunner": "apm"
   },
-  "activationCommands": {
+  "providedServices": {
+    "nuclide-blame-provider": {
+      "versions": {
+        "0.0.0": "provideHgBlameProvider"
+      }
+    }
   },
   "engines": {
     "atom": ">=1.0.5"
   },
+  "dependencies": {
+    "nuclide-hg-git-bridge": "0.0.0",
+    "nuclide-logging": "0.0.0"
+  },
   "devDependencies": {
-    "nuclide-atom-interfaces": "0.0.0"
+    "nuclide-atom-interfaces": "0.0.0",
+    "nuclide-blame-base": "0.0.0"
   }
 }
