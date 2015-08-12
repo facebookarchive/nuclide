@@ -79,7 +79,7 @@ function createDiagnosticsPanel(
   // We create an invisible iframe with 100% width, so it will match the width of the panel. We
   // subscribe to its resize events and use that as a proxy for the panel being resized and update
   // the width of the FixedDataTable accordingly.
-  var iframe = document.createElement('iframe');
+  var iframe = window.document.createElement('iframe');
   iframe.style.width = '100%';
   iframe.style.height = '1px';
   iframe.style.position = 'absolute';
