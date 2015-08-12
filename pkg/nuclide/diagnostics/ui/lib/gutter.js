@@ -134,7 +134,7 @@ function createGutterItem(
   item.innerText = '\u25B6'; // Unicode character for a right-pointing triangle.
   item.className = gutterMarkerCssClass;
   var popupElement;
-  item.addEventListener('mouseenter', event => {
+  item.addEventListener('mouseover', event => {
     popupElement = showPopupFor(messages, item);
   });
   var dispose = () => {
@@ -144,7 +144,7 @@ function createGutterItem(
       popupElement = null;
     }
   };
-  item.addEventListener('mouseleave', dispose);
+  item.addEventListener('mouseout', dispose);
   return {item, dispose};
 }
 
