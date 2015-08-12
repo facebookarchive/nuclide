@@ -352,8 +352,8 @@ declare class atom$ViewRegistry {
 
 declare class atom$Workspace {
   // Event Subscription
-  observeTextEditors(callback: (editor: atom$TextEditor) => void): atom$Disposable;
-  onDidChangeActivePaneItem(callback: (item: mixed) => void): atom$Disposable;
+  observeTextEditors(callback: (editor: atom$TextEditor) => mixed): atom$Disposable;
+  onDidChangeActivePaneItem(callback: (item: mixed) => mixed): atom$Disposable;
   observeActivePaneItem(callback: (item: mixed) => mixed): atom$Disposable;
 
   // Opening
