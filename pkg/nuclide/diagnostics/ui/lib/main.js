@@ -12,11 +12,14 @@
 var invariant = require('assert');
 var {CompositeDisposable} = require('atom');
 
+var DEFAULT_TABLE_HEIGHT = 200;
+
 var subscriptions: ?CompositeDisposable = null;
 var bottomPanel: ?atom$Panel = null;
 
 type ActivationState = {
   hideDiagnosticsPanel: boolean;
+  diagnosticsPanelHeight: number;
 };
 
 var activationState: ?ActivationState = null;
@@ -24,10 +27,12 @@ var activationState: ?ActivationState = null;
 var diagnosticUpdaterForTable: ?DiagnosticUpdater = null;
 
 function createPanel(diagnosticUpdater: DiagnosticUpdater, disposables: CompositeDisposable) {
-  var panel = require('./createPanel').createDiagnosticsPanel(diagnosticUpdater);
+  invariant(activationState);
+  var panel = require('./createPanel').createDiagnosticsPanel(
+    diagnosticUpdater,
+    activationState.diagnosticsPanelHeight);
   bottomPanel = panel;
 
-  invariant(activationState);
   activationState.hideDiagnosticsPanel = false;
 
   var onDidChangeVisibleSubscription = panel.onDidChangeVisible((visible: boolean) => {
@@ -37,14 +42,31 @@ function createPanel(diagnosticUpdater: DiagnosticUpdater, disposables: Composit
   disposables.add(onDidChangeVisibleSubscription);
 }
 
+function tryRecordPanelHeight(): void {
+  invariant(activationState);
+  if (bottomPanel && bottomPanel.isVisible()) {
+    activationState.diagnosticsPanelHeight = bottomPanel.getItem().clientHeight;
+  }
+}
+
 module.exports = {
-  activate(state: ?ActivationState): void {
+  activate(state: ?Object): void {
     if (subscriptions) {
       return;
     }
-
-    activationState = state || {hideDiagnosticsPanel: false};
     subscriptions = new CompositeDisposable();
+
+    // Ensure the integrity of the ActivationState created from state.
+    if (!state) {
+      state = {};
+    }
+    if (typeof state.hideDiagnosticsPanel !== 'boolean') {
+      state.hideDiagnosticsPanel = false;
+    }
+    if (typeof state.diagnosticsPanelHeight !== 'number') {
+      state.diagnosticsPanelHeight = DEFAULT_TABLE_HEIGHT;
+    }
+    activationState = state;
   },
 
   consumeDiagnosticUpdates(diagnosticUpdater: DiagnosticUpdater): void {
@@ -78,10 +100,14 @@ module.exports = {
       atom.views.getView(atom.workspace),
       'nuclide-diagnostics-ui:toggle-table',
       () => {
-        if (!bottomPanel) {
+        var bottomPanelRef = bottomPanel;
+        if (!bottomPanelRef) {
           lazilyCreateTable();
+        } else if (bottomPanelRef.isVisible()) {
+          tryRecordPanelHeight();
+          bottomPanelRef.hide();
         } else {
-          bottomPanel.isVisible() ? bottomPanel.hide() : bottomPanel.show();
+          bottomPanelRef.show();
         }
       }
     );
@@ -108,6 +134,7 @@ module.exports = {
   },
 
   serialize(): ActivationState {
+    tryRecordPanelHeight();
     invariant(activationState);
     return activationState;
   },

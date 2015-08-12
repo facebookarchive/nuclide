@@ -14,7 +14,6 @@ var {compareMessagesByFile} = require('./paneUtils');
 var React = require('react-for-atom');
 var DiagnosticsPanel = require('./DiagnosticsPanel');
 
-var DEFAULT_TABLE_HEIGHT = 200;
 var DEFAULT_TABLE_WIDTH = 600;
 
 type PanelProps = {
@@ -26,7 +25,8 @@ type PanelProps = {
 }
 
 function createDiagnosticsPanel(
-  diagnosticUpdater: DiagnosticUpdater
+  diagnosticUpdater: DiagnosticUpdater,
+  initialHeight: number,
 ): atom$Panel {
   var diagnosticsPanel: ?DiagnosticsPanel = null;
   var bottomPanel: ?atom$Panel = null;
@@ -34,7 +34,7 @@ function createDiagnosticsPanel(
   var props: PanelProps = {
     diagnostics: [],
     width: DEFAULT_TABLE_WIDTH,
-    height: DEFAULT_TABLE_HEIGHT,
+    height: initialHeight,
     onResize: debounce(
       () => {
         invariant(diagnosticsPanel);
