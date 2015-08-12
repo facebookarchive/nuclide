@@ -788,6 +788,11 @@ class HgRepositoryClient {
     return this.fetchRevisionNumbersBetweenRevisions(revision, expressionForRevisionsBeforeHead(0));
   }
 
+  // See HgService.getBlameAtHead.
+  getBlameAtHead(filePath: NuclideUri): Promise<Map<number, string>> {
+    return this._service.getBlameAtHead(filePath);
+  }
+
   getSmartlog(ttyOutput: boolean, concise: boolean): Promise<string> {
     return this._service.getSmartlog(ttyOutput, concise);
   }

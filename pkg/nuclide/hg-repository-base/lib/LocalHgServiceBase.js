@@ -13,7 +13,7 @@
 var {EventEmitter} = require('events');
 var HgService = require('./HgService');
 var {HgStatusOption} = require('./hg-constants');
-var {parseHgDiffUnifiedOutput} = require('./hg-output-helpers');
+var {parseHgBlameOutput, parseHgDiffUnifiedOutput} = require('./hg-output-helpers');
 var {fetchCommonAncestorOfHeadAndRevision,
     fetchRevisionNumbersBetweenRevisions} = require('./hg-revision-expression-helpers');
 var {fetchFileContentAtRevision, fetchFilesChangedAtRevision} = require('./hg-revision-state-helpers');
@@ -23,6 +23,14 @@ var path = require('path');
 import type LocalHgServiceOptions from './hg-types';
 
 var isOsX = require('os').platform() === 'darwin';
+
+var logger;
+function getLogger() {
+  if (!logger) {
+    logger = require('nuclide-logging').getLogger();
+  }
+  return logger;
+}
 
 class LocalHgServiceBase extends HgService {
   constructor(options: LocalHgServiceOptions) {
@@ -227,6 +235,21 @@ class LocalHgServiceBase extends HgService {
 
   fetchRevisionNumbersBetweenRevisions(revisionFrom: string, revisionTo: string): Promise<Array<string>> {
     return fetchRevisionNumbersBetweenRevisions(revisionFrom, revisionTo, this._workingDirectory);
+  }
+
+  async getBlameAtHead(filePath: NuclideUri): Promise<Map<number, string>> {
+    var args = ['blame', '-r', 'wdir()', '-Tjson', '--number', '--user', '--line-number', filePath];
+    var execOptions = {
+      cwd: this.getWorkingDirectory(),
+    };
+    var output;
+    try {
+      output = await this._hgAsyncExecute(args, execOptions);
+    } catch (e) {
+      getLogger().error(`LocalHgServiceBase failed to fetch blame for file: ${filePath}`);
+      return new Map();
+    }
+    return parseHgBlameOutput(output.stdout);
   }
 
   async getSmartlog(ttyOutput: boolean, concise: boolean): Promise<string> {

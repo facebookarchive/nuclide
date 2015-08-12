@@ -148,6 +148,19 @@ class HgService {
   }
 
   /**
+   * Gets the blame for the filePath at the current revision, including uncommitted changes
+   * (but not unsaved changes).
+   * @param filePath The file to get blame information for.
+   * @return Map of line number (indexed starting at 1) to the name that line blames to.
+   *   The name is of the form: Firstname Lastname <username@email.com>.
+   *   The Firstname Lastname may not appear sometimes.
+   *   If no blame information is available, returns an empty Map.
+   */
+  getBlameAtHead(filePath: NuclideUri): Promise<Map<number, string>> {
+    return Promise.reject(new Error('HgService.getBlameAtHead not implemented'));
+  }
+
+  /**
    * Get the output of the experimental smartlog extension from Mercurial:
    * https://bitbucket.org/facebook/hg-experimental/#markdown-header-smartlog.
    * @param ttyOutput If true, return the output as if stdout were attached to a tty.
