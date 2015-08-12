@@ -1,0 +1,6 @@
+'use strict';
+
+import type three from 'three';
+import type two from 'two';
+
+var one: two;

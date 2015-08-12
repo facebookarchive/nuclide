@@ -1,0 +1,17 @@
+'use strict';
+
+var eight = require('eight');
+var five = require('five');
+var four = require('four');
+var nine = require('nine');
+var one = require('one');
+var seven = require('seven');
+var six = require('six');
+var three = require('three');
+var two = require('two');
+
+for (one in two) {}
+for (three of four) {}
+while (five) {}
+for (six; seven; eight) {}
+do {} while (nine);

@@ -1,0 +1,11 @@
+'use strict';
+
+var one = require('one');
+var two = require('two');
+
+function foo() {
+  switch (one) {
+    case two:
+      break;
+  }
+}

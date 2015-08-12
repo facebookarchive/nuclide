@@ -1,0 +1,7 @@
+'use strict';
+
+for (one in two) {}
+for (three of four) {}
+while (five) {}
+for (six; seven; eight) {}
+do {} while (nine);

@@ -1,0 +1,29 @@
+'use strict';
+
+var Image = require('Image.react');
+var MyConstants = require('MyConstants');
+var React = require('React');
+var XUISingleSelector = require('XUISingleSelector.react');
+var XUISingleSelectorOption = require('XUISingleSelectorOption.react');
+
+var emptyFunction = require('emptyFunction');
+var shallowCompare = require('shallowCompare');
+
+var {Component, PropTypes} = React;
+
+var Foo = React.createClass({
+  componentWillReceiveProps(props, state) {
+    return shallowCompare(this, props, state);
+  },
+
+  render() {
+    return (
+      <div>
+        <Image src={MyConstants.IMAGE_SRC} />
+        <XUISingleSelector Uppercase={emptyFunction}>
+          <XUISingleSelectorOption />
+        </XUISingleSelector>
+      </div>
+    );
+  },
+});

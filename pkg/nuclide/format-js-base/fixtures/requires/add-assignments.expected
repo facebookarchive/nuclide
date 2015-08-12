@@ -1,0 +1,12 @@
+'use strict';
+
+var four = require('four');
+var nine = require('nine');
+var six = require('six');
+var three = require('three');
+var two = require('two');
+
+var one = two;
+three = four;
+var five = six, seven;
+var {eight} = nine;

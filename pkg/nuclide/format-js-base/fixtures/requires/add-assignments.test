@@ -1,0 +1,6 @@
+'use strict';
+
+var one = two;
+three = four;
+var five = six, seven;
+var {eight} = nine;

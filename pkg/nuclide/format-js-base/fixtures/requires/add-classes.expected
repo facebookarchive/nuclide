@@ -1,0 +1,9 @@
+'use strict';
+
+var six = require('six');
+var three = require('three');
+
+class one {}
+class two extends three {}
+class four extends one {}
+class five extends six() {}

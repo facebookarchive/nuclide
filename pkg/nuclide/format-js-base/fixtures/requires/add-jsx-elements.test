@@ -1,0 +1,20 @@
+'use strict';
+
+var {Component, PropTypes} = React;
+
+var Foo = React.createClass({
+  componentWillReceiveProps(props, state) {
+    return shallowCompare(this, props, state);
+  },
+
+  render() {
+    return (
+      <div>
+        <Image src={MyConstants.IMAGE_SRC} />
+        <XUISingleSelector Uppercase={emptyFunction}>
+          <XUISingleSelectorOption />
+        </XUISingleSelector>
+      </div>
+    );
+  },
+});

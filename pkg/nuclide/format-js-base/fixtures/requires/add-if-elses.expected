@@ -1,0 +1,12 @@
+'use strict';
+
+var one = require('one');
+var two = require('two');
+
+if (one) {
+  // Nothing.
+} else if (two) {
+  // Nothing.
+} else {
+  // Nothing.
+}

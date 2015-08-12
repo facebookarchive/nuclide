@@ -1,0 +1,29 @@
+'use strict';
+
+var eight = require('eight');
+var eleven = require('eleven');
+var fifteen = require('fifteen');
+var five = require('five');
+var four = require('four');
+var nine = require('nine');
+var nineteen = require('nineteen');
+var one = require('one');
+var seven = require('seven');
+var seventeen = require('seventeen');
+var six = require('six');
+var sixteen = require('sixteen');
+var thirteen = require('thirteen');
+var three = require('three');
+var twelve = require('twelve');
+var twenty = require('twenty');
+var two = require('two');
+
+one ? two : three;
+!four;
+five++;
+six += seven;
+eight < nine;
+var ten = eleven ? twelve : {thirteen};
+var fourteen = fifteen || sixteen && seventeen;
+var eighteen = new nineteen();
+twenty;

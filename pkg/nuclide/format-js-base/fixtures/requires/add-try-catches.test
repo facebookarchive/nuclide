@@ -1,0 +1,9 @@
+'use strict';
+
+try {
+  // Nothing.
+} catch (e) {
+  // Nothing.
+} finally {
+  // Nothing.
+}

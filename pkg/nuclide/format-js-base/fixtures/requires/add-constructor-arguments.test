@@ -1,0 +1,3 @@
+'use strict';
+
+new one(two, {three});

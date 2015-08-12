@@ -1,0 +1,20 @@
+'use strict';
+
+require('ccc-side-effect');
+var AAA = require('AAA');
+var bbb = require('bbb');
+
+
+require('bbb-side-effect');
+var CCC = require('CCC');
+var aaa = require('aaa');
+
+
+require('aaa-side-effect');
+var BBB = require('BBB');
+var ccc = require('ccc');
+
+// Make sure they are used.
+aaa(AAA);
+bbb(BBB);
+ccc(CCC);
