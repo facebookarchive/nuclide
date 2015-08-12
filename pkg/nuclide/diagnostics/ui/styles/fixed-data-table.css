@@ -316,6 +316,7 @@ body[dir="rtl"] .fixedDataTableColumnResizerLineLayout_main {
 .fixedDataTableRowLayout_rowWrapper {
   position: absolute;
   top: 0;
+  cursor: pointer;
 }
 
 /** ScrollbarLayout */
