@@ -18,6 +18,10 @@
   line-height: 18px;
   /* -5px to accomodate drag handle from the panel component. */
   padding: (@panel-padding-top - 5px) @component-padding @panel-padding-top;
+  progress[value] {
+    /* See https://github.com/atom/atom/issues/6646. */
+    -webkit-animation: none;
+  }
 }
 
 .nuclide-test-runner-panel {
