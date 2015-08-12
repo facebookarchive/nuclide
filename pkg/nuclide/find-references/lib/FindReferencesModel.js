@@ -26,6 +26,11 @@ var {getLogger} = require('nuclide-logging');
 var {getClient} = require('nuclide-client');
 var {getPath} = require('nuclide-remote-uri');
 
+var FRAGMENT_GRAMMARS = {
+  'text.html.hack': 'source.hackfragment',
+  'text.html.php': 'source.hackfragment',
+};
+
 function compareLocation(x: Location, y: Location): number {
   var lineDiff = x.line - y.line;
   if (lineDiff) {
@@ -200,10 +205,14 @@ class FindReferencesModel {
       previewText.push(fileLines.slice(startLine - 1, endLine).join('\n'));
       return {references, startLine, endLine};
     });
+    var grammar = atom.grammars.selectGrammar(uri, fileContents);
+    var fragmentGrammar = FRAGMENT_GRAMMARS[grammar.scopeName];
+    if (fragmentGrammar) {
+      grammar = atom.grammars.grammarForScopeName(fragmentGrammar) || grammar;
+    }
     return {
       uri,
-      /* $FlowFixMe - define atom.grammars */
-      grammar: atom.grammars.selectGrammar(uri, fileContents),
+      grammar,
       previewText,
       refGroups,
     };

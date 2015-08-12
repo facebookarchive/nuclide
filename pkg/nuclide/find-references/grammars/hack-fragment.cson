@@ -1,0 +1,7 @@
+'scopeName': 'source.hackfragment'
+'name': 'HACK (fragment)'
+'patterns': [
+  {
+    'include': 'text.html.hack#language'
+  }
+]

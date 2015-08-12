@@ -73,7 +73,7 @@ async function tryCreateView(): Promise<?HTMLElement> {
     var {getLogger} = require('nuclide-logging');
     getLogger().debug('Error loading references', e);
     atom.notifications.addError(
-      'Error loading references: ' + e,
+      'nuclide-find-references: ' + e,
       {dismissable: true}
     );
   }

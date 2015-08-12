@@ -478,6 +478,7 @@ declare class atom$GrammarRegistry {
   // Managing Grammars
   grammarForScopeName(scopeName: string): ?atom$Grammar;
   loadGrammarSync(grammarPath: string): atom$Grammar;
+  selectGrammar(filePath: string, fileContents: string): atom$Grammar;
 }
 
 declare class atom$Project {
