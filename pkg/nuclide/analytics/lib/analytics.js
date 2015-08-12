@@ -17,7 +17,7 @@ module.exports = {
    * @param eventName Name of the event to be tracked.
    * @param values The object containing the data to track.
    */
-  track(eventName: string, values: Object) {},
+  track(eventName: string, values: {[key: string]: string}) {},
 
   /**
    * A no-op decorator factory (https://github.com/wycats/javascript-decorators).
