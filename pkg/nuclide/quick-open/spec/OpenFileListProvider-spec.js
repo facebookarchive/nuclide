@@ -9,12 +9,17 @@
  * the root directory of this source tree.
  */
 
-var OpenFileListProvider = require('../lib/OpenFileListProvider');
+var path = require('path');
 
 describe('OpenFileListProvider', () => {
 
   describe('getOpenTabsMatching', () => {
+
     it('should not return duplicate open files', () => {
+      // This cannot be loaded at the top-level of this file because it must be loaded after
+      // atom.workspace is defined.
+      var OpenFileListProvider = require('../lib/OpenFileListProvider');
+
       waitsForPromise(async () => {
         await Promise.all([
           atom.workspace.open('file1'),
@@ -41,7 +46,11 @@ describe('OpenFileListProvider', () => {
       // Ensure that getOpenTabsMatching() works in the presence of an untitled window.
       runs(() => {
         var matchingTabs = OpenFileListProvider.getOpenTabsMatching('file');
-        expect(matchingTabs.length).toBe(3);
+        expect(matchingTabs.map(match => path.basename(match.path))).toEqual([
+          'file3',
+          'file1',
+          'file2',
+        ]);
       });
     });
   });
