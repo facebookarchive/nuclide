@@ -49,4 +49,8 @@ module.exports = {
   get sysinfo() {
     return require('./sysinfo');
   },
+
+  get withLoadingNotification() {
+    return require('./with-loading-notification');
+  },
 };
