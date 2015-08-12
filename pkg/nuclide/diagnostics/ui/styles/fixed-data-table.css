@@ -1,5 +1,5 @@
 /**
- * FixedDataTable v0.4.1 
+ * FixedDataTable v0.4.1
  *
  * Copyright (c) 2015, Facebook, Inc.
  * All rights reserved.
@@ -7,18 +7,6 @@
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree. An additional grant
  * of patent rights can be found in the PATENTS file in the same directory.
- */
-
-/**
- * Copyright (c) 2015, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @providesModule fixedDataTable
- *
  */
 
 /**
@@ -60,16 +48,6 @@
 .public_fixedDataTable_horizontalScrollbar .public_Scrollbar_mainHorizontal {
   background-color: #fff;
 }
-/**
- * Copyright (c) 2015, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @providesModule fixedDataTableCell
- */
 
 /**
  * Table cell.
@@ -90,17 +68,6 @@
 .public_fixedDataTableCell_columnResizerKnob {
   background-color: #0284ff;
 }
-/**
- * Copyright (c) 2015, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @providesModule fixedDataTableColumnResizerLine
- *
- */
 
 /**
  * Column resizer line.
@@ -108,16 +75,6 @@
 .public_fixedDataTableColumnResizerLine_main {
   border-color: #0284ff;
 }
-/**
- * Copyright (c) 2015, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @providesModule fixedDataTableRow
- */
 
 /**
  * Table row.
@@ -138,17 +95,6 @@
 .public_fixedDataTableRow_columnsShadow {
   background: 0 0 url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAABCAYAAAD5PA/NAAAAFklEQVQIHWPSkNeSBmJhTQVtbiDNCgASagIIuJX8OgAAAABJRU5ErkJggg==) repeat-y;
 }
-/**
- * Copyright (c) 2015, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @providesModule Scrollbar
- *
- */
 
 /**
  * Scrollbars.
@@ -180,16 +126,8 @@
 .public_Scrollbar_faceActive:after {
   background-color: #7d7d7d;
 }
-/**
- * Copyright (c) 2015, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @providesModule fixedDataTableCellGroupLayout
- */
+
+/** fixedDataTableCellGroupLayout */
 
 .fixedDataTableCellGroupLayout_cellGroup {
   -webkit-backface-visibility: hidden;
@@ -211,16 +149,8 @@
   position: absolute;
   top: 0;
 }
-/**
- * Copyright (c) 2015, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @providesModule fixedDataTableCellLayout
- */
+
+/** fixedDataTableCellLayout */
 
 .fixedDataTableCellLayout_main {
   border-right-style: solid;
@@ -279,16 +209,8 @@
   visibility: hidden;
   width: 4px;
 }
-/**
- * Copyright (c) 2015, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @providesModule fixedDataTableColumnResizerLineLayout
- */
+
+/** fixedDataTableColumnResizerLineLayout */
 
 .fixedDataTableColumnResizerLineLayout_mouseArea {
   cursor: ew-resize;
@@ -316,16 +238,8 @@ body[dir="rtl"] .fixedDataTableColumnResizerLineLayout_main {
 .fixedDataTableColumnResizerLineLayout_hiddenElem {
   display: none !important;
 }
-/**
- * Copyright (c) 2015, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @providesModule fixedDataTableLayout
- */
+
+/** fixedDataTableLayout */
 
 .fixedDataTableLayout_main {
   border-style: solid;
@@ -368,16 +282,8 @@ body[dir="rtl"] .fixedDataTableColumnResizerLineLayout_main {
   bottom: 0;
   position: absolute;
 }
-/**
- * Copyright (c) 2015, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @providesModule fixedDataTableRowLayout
- */
+
+/** fixedDataTableRowLayout */
 
 .fixedDataTableRowLayout_main {
   box-sizing: border-box;
@@ -411,16 +317,8 @@ body[dir="rtl"] .fixedDataTableColumnResizerLineLayout_main {
   position: absolute;
   top: 0;
 }
-/**
- * Copyright (c) 2015, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @providesModule ScrollbarLayout
- */
+
+/** ScrollbarLayout */
 
 .ScrollbarLayout_main {
   box-sizing: border-box;
