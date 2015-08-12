@@ -14,10 +14,12 @@ var QuickSelectionProvider = require('./QuickSelectionProvider');
 function _loadProvider(providerName: string) {
   var provider = null;
   try {
-    // for now, assume that providers are stored in quick-open/lib
+    // For now, assume that providers are stored in quick-open/lib.
     provider = require('./' + providerName);
   } catch (e) {
-    throw new Error('Provider "' + providerName + '" not found', e);
+    var message = `Provider "${providerName}" not found. `;
+    e.message = message + e.message;
+    throw e;
   }
   return provider;
 }
