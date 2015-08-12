@@ -17,7 +17,12 @@ describe('TestSuiteModel', () => {
     {id: 1, fileName: 'foo', testName: 'foo', name: 'foo'},
     {id: 2, fileName: 'bar', testName: 'bar', name: 'bar'},
   ];
-  var testRun = {numAssertions: 1, numFailures: 0, numSkipped: 0, test_id: 1};
+  var testRun = {
+    numAssertions: 1,
+    numFailures: 0,
+    numSkipped: 0,
+    test_json: testClassSummaries[0],
+  };
 
   it('maps test class IDs from a Array<TestClassSummary>', () => {
     var model = new TestSuiteModel(testClassSummaries);

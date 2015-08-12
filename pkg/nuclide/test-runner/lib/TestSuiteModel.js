@@ -27,7 +27,6 @@ export type TestRunInfo = {
   numSkipped: number;
   status: number;
   summary: string;
-  test_id: number;
   test_json: TestClassSummary;
 };
 
@@ -43,7 +42,7 @@ class TestSuiteModel {
   }
 
   addTestRun(testRun: TestRunInfo): void {
-    this.testRuns.set(testRun.test_id, testRun);
+    this.testRuns.set(testRun.test_json.id, testRun);
   }
 
   /**
