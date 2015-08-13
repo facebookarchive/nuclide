@@ -87,7 +87,8 @@ function installApmPackages(packages: Array<string>): Promise {
   var apm = atom.packages.getApmPath();
   var promises = [];
   packages.forEach(pkg => {
-    var executor = (resolve, reject) => asyncExecute(apm, ['install', pkg]).then(resolve, reject);
+    var executor = (resolve, reject) =>
+      asyncExecute(apm, ['install', '--production', pkg]).then(resolve, reject);
     var promise = queue.submit(executor);
     promises.push(promise);
   });
