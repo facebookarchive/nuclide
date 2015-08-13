@@ -14,6 +14,7 @@ var {Disposable} = require('atom');
 import type {BlameProvider} from 'nuclide-blame-base/blame-types';
 
 var registeredProviders: ?Set<BlameProvider>;
+var blameGutterClass;
 
 module.exports = {
 
@@ -23,6 +24,18 @@ module.exports = {
   deactivate() {
     if (registeredProviders) {
       registeredProviders.clear();
+    }
+  },
+
+  consumeBlameGutterClass(blameGutter: mixed): atom$IDisposable {
+    // This package only expects one gutter UI. It will take the first one.
+    if (!blameGutterClass) {
+      blameGutterClass = blameGutter;
+      return new Disposable(() => {
+        blameGutterClass = null;
+      });
+    } else {
+      return new Disposable(() => {});
     }
   },
 
