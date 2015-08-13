@@ -11,6 +11,7 @@
 
 import type TestRunner from './TestRunner';
 
+var Ansi = require('./Ansi');
 var {
   CompositeDisposable,
   TextBuffer,
@@ -217,16 +218,16 @@ class TestRunnerController {
 
         // If a test run throws an exception, the stack trace is returned in 'details'. Append its
         // entirety to the console.
-        if (testInfo['details'] !== '') {
-          this._appendToBuffer(testInfo['details']);
+        if (testInfo.details !== '') {
+          this._appendToBuffer(testInfo.details);
         }
 
         // Append a PASS/FAIL message depending on whether the class has test failures.
-        var duration = Number(testInfo['durationSecs']).toFixed(3);
-        var passFailMsg = testInfo['numFailures'] === 0 ?
-          '\u001B[32mPASS\u001B[39m' :
-          '\u001B[31mFAIL\u001B[39m';
-        this._appendToBuffer(`${passFailMsg} ${testInfo['name']} (${duration}s)`);
+        this._appendToBuffer(TestRunModel.formatStatusMessage(
+          testInfo.name,
+          testInfo.durationSecs,
+          testInfo.status
+        ));
         this._renderPanel();
       })
     );
@@ -258,8 +259,8 @@ class TestRunnerController {
     );
     disposables.add(
       testRunnerService.onStderrData(info => {
-        // Color stderr output red in the console (ANSI [31m) to distinguish it as error.
-        this._appendToBuffer(`\u001B[31m${info.data}\u001B[39m`);
+        // Color stderr output red in the console to distinguish it as error.
+        this._appendToBuffer(`${Ansi.RED}${info.data}${Ansi.RESET}`);
       })
     );
 

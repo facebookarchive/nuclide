@@ -14,8 +14,8 @@ var TestSuiteModel = require('../lib/TestSuiteModel');
 describe('TestSuiteModel', () => {
 
   var testClassSummaries = [
-    {id: 1, fileName: 'foo', testName: 'foo', name: 'foo'},
-    {id: 2, fileName: 'bar', testName: 'bar', name: 'bar'},
+    {id: 1, fileName: 'foo', className: 'foo', name: 'foo'},
+    {id: 2, fileName: 'bar', className: 'bar', name: 'bar'},
   ];
   var testRun = {
     numAssertions: 1,
