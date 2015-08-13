@@ -139,8 +139,6 @@ class TextCallbackContainer<CallbackArg> {
   }
 }
 
-// TODO(7806872) make this available to all DiagnosticProviders, but think
-// carefully about the API and where this should live before doing so.
 /**
  * Meant to make it simple and easy for a DiagnosticProvider to subscribe to
  * relevant events. Currently provides two methods, onFileChange and onFileSave.
@@ -278,6 +276,6 @@ class TextEventDispatcher {
 module.exports = {
   TextEventDispatcher,
   __TEST__: {
-    TextCallbackContainer
-  }
+    TextCallbackContainer,
+  },
 };

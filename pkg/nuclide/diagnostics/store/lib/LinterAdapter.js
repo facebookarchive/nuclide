@@ -41,8 +41,6 @@ export type LinterProvider = {
 
 var {Emitter, Disposable, CompositeDisposable} = require('atom');
 
-var {TextEventDispatcher} = require('./TextEventDispatcher');
-
 function linterMessageToDiagnosticMessage(msg: LinterMessage, providerName: string): DiagnosticMessage {
   if (msg.filePath) {
     return {
@@ -95,13 +93,8 @@ function linterMessagesToDiagnosticUpdate(currentPath: ?NuclideUri, msgs: Array<
   };
 }
 
-var textEventDispatcher;
-
-function getTextEventDispatcher(): TextEventDispatcher {
-  if (!textEventDispatcher) {
-    textEventDispatcher = new TextEventDispatcher();
-  }
-  return textEventDispatcher;
+function getTextEventDispatcher() {
+  return require('nuclide-text-event-dispatcher').getInstance();
 }
 
 /**

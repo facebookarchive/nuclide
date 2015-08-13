@@ -33,13 +33,13 @@
     }
   },
   "dependencies": {
-    "nuclide-commons": "0.0.0",
     "nuclide-diagnostics-base": "0.0.0",
     "nuclide-logging": "0.0.0"
   },
   "devDependencies": {
     "nuclide-atom-interfaces": "0.0.0",
     "nuclide-remote-uri": "0.0.0",
-    "nuclide-test-helpers": "0.0.0"
+    "nuclide-test-helpers": "0.0.0",
+    "nuclide-text-event-dispatcher": "0.0.0"
   }
 }

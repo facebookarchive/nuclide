@@ -30,7 +30,6 @@ function makePromise(ret: mixed, timeout: number) {
 describe('LinterAdapter', () => {
   var eventCallback: any;
   var fakeLinter: any;
-  var RealTextEventDispatcher: any;
   var linterAdapter: any;
   var linterReturn: any;
   var fakeEditor: any;
@@ -63,13 +62,12 @@ describe('LinterAdapter', () => {
         return new Disposable(() => {});
       }
     }
-    RealTextEventDispatcher = require('../lib/TextEventDispatcher').TextEventDispatcher;
-    require('../lib/TextEventDispatcher').TextEventDispatcher = (FakeEventDispatcher: any);
+    spyOn(require('nuclide-text-event-dispatcher'), 'getInstance').andReturn(new FakeEventDispatcher());
     linterAdapter = newLinterAdapter(fakeLinter);
   });
 
   afterEach(() => {
-    require('../lib/TextEventDispatcher').TextEventDispatcher = RealTextEventDispatcher;
+    jasmine.unspy(require('nuclide-text-event-dispatcher'), 'getInstance');
     jasmine.unspy(atom.workspace, 'getActiveTextEditor');
   });
 
