@@ -13,7 +13,7 @@ import type {HackReference} from 'nuclide-hack-common';
 /* $FlowFixMe - relative requires not supported */
 import type NuclideClient from 'nuclide-server/lib/NuclideClient';
 
-var {Range} = require('atom');
+var {Range, Emitter} = require('atom');
 var HackWorker = require('./HackWorker');
 var {CompletionType, SymbolType} = require('nuclide-hack-common');
 var logger = require('nuclide-logging').getLogger();
@@ -24,6 +24,7 @@ var xhpCharRegex = /[\w:-]/;
 var XHP_LINE_TEXT_REGEX = /<([a-z][a-z0-9_.:-]*)[^>]*\/?>/gi;
 
 var /*const*/ UPDATE_DEPENDENCIES_INTERVAL_MS = 10000;
+var /*const*/ DEPENDENCIES_LOADED_EVENT = 'dependencies-loaded';
 
 /**
  * The HackLanguage is the controller that servers language requests by trying to get worker results
@@ -37,6 +38,7 @@ module.exports = class HackLanguage {
   _pathContentsMap: {[path: string]: string};
   _basePath: ?string;
   _isFinishedLoadingDependencies: boolean;
+  _emitter: Emitter;
   _updateDependenciesInterval: number;
 
   /**
@@ -49,6 +51,7 @@ module.exports = class HackLanguage {
     this._pathContentsMap = {};
     this._basePath = basePath;
     this._isFinishedLoadingDependencies = true;
+    this._emitter = new Emitter();
 
     this._setupUpdateDependenciesInterval();
   }
@@ -109,10 +112,14 @@ module.exports = class HackLanguage {
     var webWorkerMessage = {cmd: 'hh_get_deps', args: []};
     var response = await this._hackWorker.runWorkerTask(webWorkerMessage);
     if (!response.deps.length) {
+      if (!this._isFinishedLoadingDependencies) {
+        this._emitter.emit(DEPENDENCIES_LOADED_EVENT);
+      }
       this._isFinishedLoadingDependencies = true;
       return;
     }
 
+    this._isFinishedLoadingDependencies = false;
     var dependencies = await this._callHackService(
       /*serviceName*/ 'getHackDependencies',
       /*serviceArgs*/ [response.deps],
@@ -141,6 +148,10 @@ module.exports = class HackLanguage {
    */
   isFinishedLoadingDependencies(): boolean {
     return this._isFinishedLoadingDependencies;
+  }
+
+  onFinishedLoadingDependencies(callback: (() => mixed)): atom$Disposable {
+    return this._emitter.on(DEPENDENCIES_LOADED_EVENT, callback);
   }
 
   async formatSource(

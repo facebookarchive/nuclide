@@ -178,8 +178,10 @@ class HackClass {}
   describe('isFinishedLoadingDependencies()', () => {
     it('updates the status of isFinishedLoadingDependencies', () => {
       waitsForPromise(async () => {
+        var spy = jasmine.createSpy('callback');
         var filePath = path.join(__dirname, 'fixtures', 'HackExample1.php');
         var fileContents = fs.readFileSync(filePath, 'utf8');
+        hackLanguage.onFinishedLoadingDependencies(spy);
         await hackLanguage.updateFile(filePath, fileContents);
         // Initially, dependencies haven't been loaded yet.
         expect(hackLanguage.isFinishedLoadingDependencies()).toEqual(false);
@@ -189,6 +191,7 @@ class HackClass {}
         await hackLanguage.updateDependencies();
         // There's no further dependencies to fetch.
         expect(hackLanguage.isFinishedLoadingDependencies()).toEqual(true);
+        expect(spy).toHaveBeenCalled();
       });
     });
   });

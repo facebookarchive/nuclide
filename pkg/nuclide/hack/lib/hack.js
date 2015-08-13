@@ -198,6 +198,14 @@ module.exports = {
     return hackLanguage.isFinishedLoadingDependencies();
   },
 
+  async onFinishedLoadingDependencies(
+    editor: TextEditor,
+    callback: (() => mixed),
+  ): Promise<atom$Disposable> {
+    var hackLanguage = await getHackLanguageForBuffer(editor.getBuffer());
+    return hackLanguage.onFinishedLoadingDependencies(callback);
+  },
+
   async onDidSave(editor: TextEditor): void {
     var path = getPath(editor.getPath());
     var contents = editor.getText();
