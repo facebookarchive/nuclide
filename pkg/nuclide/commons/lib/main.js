@@ -94,4 +94,9 @@ module.exports = {
   get env() {
     return require('./environment');
   },
+
+  get promises() {
+    return require('./promises');
+  },
+
 };

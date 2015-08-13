@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 var {asyncFind, denodeify} = require('../lib/main');
+var {promises} = require('../lib/main');
 var {expectAsyncFailure} = require('nuclide-test-helpers');
 
 describe('promises::asyncFind()', () => {
@@ -84,7 +85,7 @@ describe('promises::asyncFind()', () => {
   });
 });
 
-describe('denodeify()', () => {
+describe('promises::denodeify()', () => {
   /**
    * Vararg function that assumes that all elements except the last are
    * numbers, as the last argument is a callback function. All of the
@@ -156,3 +157,153 @@ describe('denodeify()', () => {
     });
   });
 });
+
+describe('promises::asyncLimit()', () => {
+
+  beforeEach(() => window.useRealClock());
+
+  it('runs in series if limit is 1', () => {
+    waitsForPromise(async () => {
+      var {result, parallelismHistory} = await captureParallelismHistory(
+          promises.asyncLimit,
+          [
+            [1, 2, 3],
+            1,
+            (item) => waitPromise(10, item + 1),
+          ]
+      );
+      expect(parallelismHistory).toEqual([1, 1, 1]);
+      expect(result).toEqual([2, 3, 4]);
+    });
+  });
+
+  it('runs with the specified limit, until finishing', () => {
+    waitsForPromise(async () => {
+      var {result, parallelismHistory} = await captureParallelismHistory(
+          promises.asyncLimit,
+          [
+            [1, 2, 3, 4, 5, 6, 7, 8, 9],
+            3,
+            (item) => waitPromise(10 + item, item - 1),
+          ]
+      );
+      expect(result).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8]);
+      expect(parallelismHistory).toEqual([1, 2, 3, 3, 3, 3, 3, 3, 3]);
+    });
+  });
+
+  it('works when the limit is bigger than the array length', () => {
+    waitsForPromise(async () => {
+      var result = await promises.asyncLimit([1, 2, 3], 10, (item) => waitPromise(10, item * 2));
+      expect(result).toEqual([2, 4, 6]);
+    });
+  });
+
+  it('a rejected promise rejects the whole call with the error', () => {
+    waitsForPromise(async () => {
+      await expectAsyncFailure(promises.asyncLimit([1], 1, async (item) => {
+        throw new Error('rejected iterator promise');
+      }), (error: Error) => {
+        expect(error.message).toBe('rejected iterator promise');
+      });
+    });
+  });
+});
+
+describe('promises::asyncFilter()', () => {
+
+  beforeEach(() => window.useRealClock());
+
+  it('filters an array with an async iterator and maximum parallelization when no limit is specified', () => {
+    waitsForPromise(async () => {
+      var {result: filtered, parallelismHistory} = await captureParallelismHistory(
+          promises.asyncFilter,
+          [
+            [1, 2, 3, 4, 5],
+            (item) => waitPromise(10 + item, item > 2),
+          ]
+      );
+      expect(filtered).toEqual([3, 4, 5]);
+      expect(parallelismHistory).toEqual([1, 2, 3, 4, 5]);
+    });
+  });
+
+  it('filters an array with a limit on parallelization', () => {
+    waitsForPromise(async () => {
+      var {result: filtered, parallelismHistory} = await captureParallelismHistory(
+          promises.asyncFilter,
+          [
+            [1, 2, 3, 4, 5],
+            (item) => waitPromise(10 + item, item > 2),
+            3,
+          ]
+      );
+      expect(filtered).toEqual([3, 4, 5]);
+      // Increasing promise resolve time will gurantee maximum parallelization.
+      expect(parallelismHistory).toEqual([1, 2, 3, 3, 3]);
+    });
+  });
+});
+
+describe('promises::asyncSome()', () => {
+
+  beforeEach(() => window.useRealClock());
+
+  it('some an array with an async iterator and maximum parallelization when no limit is specified', () => {
+    waitsForPromise(async () => {
+      var {result, parallelismHistory} = await captureParallelismHistory(
+          promises.asyncSome,
+          [
+            [1, 2, 3, 4, 5],
+            (item) => waitPromise(10, item === 6),
+          ]
+      );
+      expect(result).toEqual(false);
+      expect(parallelismHistory).toEqual([1, 2, 3, 4, 5]);
+    });
+  });
+
+  it('some an array with a limit on parallelization', () => {
+    waitsForPromise(async () => {
+      var {result, parallelismHistory} = await captureParallelismHistory(
+          promises.asyncSome,
+          [
+            [1, 2, 3, 4, 5],
+            (item) => waitPromise(10 + item, item === 5),
+            3,
+          ]
+      );
+      expect(result).toEqual(true);
+      expect(parallelismHistory).toEqual([1, 2, 3, 3, 3]);
+    });
+  });
+});
+
+async function captureParallelismHistory(
+    asyncFunction: () => Promise<any>,
+    args: Array<any>
+  ): Promise<{result: any, parallelismHistory: Array<number>}> {
+
+  var parallelismHistory = [];
+  var parralelism = 0;
+  var result = await asyncFunction.apply(null, args.map(arg => {
+    if (typeof arg !== 'function') {
+      return arg;
+    }
+    var func = arg;
+    return async (item) => {
+      ++parralelism;
+      parallelismHistory.push(parralelism);
+      var value = await func(item);
+      --parralelism;
+      return value;
+    };
+  }));
+  return {result, parallelismHistory};
+}
+
+function waitPromise(timeoutMs: number, value: any): Promise {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => resolve(value), timeoutMs);
+  });
+}

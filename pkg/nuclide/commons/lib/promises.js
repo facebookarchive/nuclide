@@ -8,7 +8,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-module.exports = {
+var promises = module.exports = {
 
   /**
    * Returns a value derived asynchronously from an element in the items array.
@@ -67,6 +67,118 @@ module.exports = {
         f.apply(this, args.concat([callback]));
       });
     };
+  },
+
+  /**
+   * A Promise utility that runs a maximum of limit async operations at a time iterating over an array
+   * and returning the result of executions.
+   * e.g. to limit the number of file reads to 5,
+   * replace the code:
+   *    var fileContents = await Promise.all(filePaths.map(fsPromise.readFile))
+   * with:
+   *    var fileContents = await asyncLimit(filePaths, 5, fsPromise.readFile)
+   *
+   * This is particulrily useful to limit IO operations to a configurable maximum (to avoid blocking),
+   * while enjoying the configured level of parallelism.
+   *
+   * @param array the array of items for iteration.
+   * @param limit the configurable number of parallel async operations.
+   * @param mappingFunction the async Promise function that could return a useful result.
+   */
+  async asyncLimit<T, V>(array: Array<T>, limit: number, mappingFunction: (item: T) => Promise<V>): Promise<Array<V>> {
+    var result = new Array(array.length);
+    var parallelPromises = 0;
+    var index = 0;
+
+    var parallelLimit = Math.min(limit, array.length);
+
+    return new Promise((resolve, reject) => {
+      var runPromise = async () => {
+        if (index === array.length) {
+          if (parallelPromises === 0) {
+            resolve(result);
+          }
+          return;
+        }
+        ++parallelPromises;
+        var i = index++;
+        try {
+          result[i] = await mappingFunction(array[i]);
+        } catch (e) {
+          reject(e);
+        }
+        --parallelPromises;
+        runPromise();
+      };
+
+      while (parallelPromises < parallelLimit) {
+        runPromise();
+      }
+    });
+  },
+
+  /**
+   * `filter` Promise utility that allows filtering an array with an async Promise function.
+   * It's an alternative to `Array.prototype.filter` that accepts an async function.
+   * You can optionally configure a limit to set the maximum number of async operations at a time.
+   *
+   * Previously, with the `Promise.all` primitive, we can't set the parallelism limit and we have to
+   * `filter`, so, we replace the old `filter` code:
+   *     var existingFilePaths = [];
+   *     await Promise.all(filePaths.map(async (filePath) => {
+   *       if (await fsPromise.exists(filePath)) {
+   *         existingFilePaths.push(filePath);
+   *       }
+   *     }));
+   * with limit 5 parallel filesystem operations at a time:
+   *    var existingFilePaths = await asyncFilter(filePaths, fsPromise.exists, 5);
+   *
+   * @param array the array of items for `filter`ing.
+   * @param filterFunction the async `filter` function that returns a Promise that resolves to a boolean.
+   * @param limit the configurable number of parallel async operations.
+   */
+  async asyncFilter<T>(array: Array<T>, filterFunction: (item: T) => Promise<boolean>, limit?: number): Promise<Array<T>> {
+    var filteredList = [];
+    await promises.asyncLimit(array, limit || array.length, async (item: T) => {
+      if (await filterFunction(item)) {
+        filteredList.push(item);
+      }
+    });
+    return filteredList;
+  },
+
+  /**
+   * `some` Promise utility that allows `some` an array with an async Promise some function.
+   * It's an alternative to `Array.prototype.some` that accepts an async some function.
+   * You can optionally configure a limit to set the maximum number of async operations at a time.
+   *
+   * Previously, with the Promise.all primitive, we can't set the parallelism limit and we have to
+   * `some`, so, we replace the old `some` code:
+   *     var someFileExist = false;
+   *     await Promise.all(filePaths.map(async (filePath) => {
+   *       if (await fsPromise.exists(filePath)) {
+   *         someFileExist = true;
+   *       }
+   *     }));
+   * with limit 5 parallel filesystem operations at a time:
+   *    var someFileExist = await asyncSome(filePaths, fsPromise.exists, 5);
+   *
+   * @param array the array of items for `some`ing.
+   * @param someFunction the async `some` function that returns a Promise that resolves to a boolean.
+   * @param limit the configurable number of parallel async operations.
+   */
+  async asyncSome<T>(array: Array<T>, someFunction: (item: T) => Promise<boolean>, limit?: number): Promise<boolean> {
+    var resolved = false;
+    await promises.asyncLimit(array, limit || array.length, async (item: T) => {
+      if (resolved) {
+        // We don't need to call the someFunction anymore or wait any longer.
+        return;
+      }
+      if (await someFunction(item)) {
+        resolved = true;
+      }
+    });
+    return resolved;
   },
 
 };
