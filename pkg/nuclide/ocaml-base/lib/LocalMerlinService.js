@@ -41,7 +41,7 @@ class LocalMerlinService extends MerlinService {
     var options = {
       cwd: (dotMerlinPath ? require('path').dirname(dotMerlinPath) : '.'),
     };
-    var process = require('child_process').spawn(merlinPath, [], options);
+    var process = await require('nuclide-commons').safeSpawn(merlinPath, [], options);
     this._merlinProcessInstance = new MerlinProcess(process);
 
     if (dotMerlinPath) {
