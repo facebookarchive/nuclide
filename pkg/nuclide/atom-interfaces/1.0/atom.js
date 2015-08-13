@@ -311,6 +311,7 @@ declare class atom$TextEditor extends atom$Model {
   getCursorBufferPosition(): atom$Point;
   getLastCursor(): atom$Cursor;
   moveToEndOfLine(): void;
+  moveToBottom(): void;
 
   // Selections
   selectAll(): void;
@@ -400,6 +401,8 @@ declare class atom$Workspace {
     priority?: number;
   }): atom$Panel;
   // Searching and Replacing
+
+  destroyActivePaneItemOrEmptyPane(): void;
 }
 
 /**
@@ -593,12 +596,16 @@ type AtomGlobal = {
   workspace: atom$Workspace;
   project: atom$Project;
 
+  devMode: boolean;
+
   // Messaging the User
   confirm(options: {
     buttons?: Array<string> | {[buttonName: string]: () => void};
     detailedMessage?: string;
     message: string;
   }): ?number;
+
+  reload(): void;
 }
 
 declare var atom: AtomGlobal;

@@ -1,0 +1,228 @@
+'use babel';
+/* @flow */
+
+/*
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ */
+
+/* eslint-disable no-console */
+
+declare function waitsForPromise(
+  optionsOrFunc: ({shouldReject?: boolean, timeout?: number} | () => Promise<mixed>),
+  func?: () => Promise<mixed>,
+): void;
+
+declare class Benchmark {
+  description: string;
+  columns: Array<string>;
+  timeout: number;
+  iterations: number;
+  repetitions: number;
+  run: (iteration: number) => Object;
+  name?: string;
+  index?: number;
+}
+
+var fs = require('fs');
+var path = require('path');
+var {sleep, sleepUntilNoRequests, yellow, green} = require('../benchmarker-utils');
+var {writeTsv, writeAllTsv, readAllTsv} = require('../benchmarker-tsv');
+var {aggregateTable, avg} = require('../benchmarker-data');
+
+var RUN_STATE_KEY = 'nuclide-benchmarker-run-state';
+var RESULT_DIR_ROOT = '/tmp/nuclide-benchmarker-results';
+
+// These benchmarks need to load packages fast, and re-use native module information in localstorage.
+// Disabling devMode allows Atom to access the data stored within the installed-packages:*.* cache.
+atom.devMode = false;
+
+// Determine what benchmarks are to be run, and with which packages installed.
+var {benchmarks, packages} = getBenchmarksAndPackages();
+
+describe('Nuclide performance', () => {
+
+  // Rehydrate the state of the benchmark run following a restart or a reload.
+  var {benchmarkIndex, iteration, repetition, resultDir, resultFile} = getTestState();
+
+  // Load the benchmark we need to (continue to) run.
+  var benchmark: Benchmark = require('../benchmarks/' + benchmarks[benchmarkIndex]);
+  benchmark.index = benchmarkIndex;
+  benchmark.name = benchmarks[benchmarkIndex];
+
+  // Every record stored in a file has an iteration column at the start for aggregation purposes.
+  var columns = benchmark.columns;
+  columns.unshift('iteration');
+
+  it(benchmark.description, () => {
+
+    // The Atom spec runner spies on setTimeout and neuters it, but we need it to work as intended.
+    jasmine.unspy(window, 'setTimeout');
+
+    waitsForPromise({timeout: benchmark.timeout}, async () => {
+
+      // Load any packages that might have been passed in from the command line.
+      await Promise.all(packages.map(p => atom.packages.activatePackage(p)));
+
+      // If there is no result directory (probably a new overall benchmark run), create it.
+      if (!resultDir) {
+        resultDir = createResultDir();
+        setTestState({resultDir});
+        console.log(`Writing results for run to ${yellow(resultDir)}`);
+      }
+
+      // If there is no result file (probably the first iteration of a new benchmark), create it.
+      if (!resultFile) {
+        resultFile = createResultFile(resultDir, benchmark, columns);
+        setTestState({resultFile});
+        console.log(`Writing raw results for ${benchmark.name} to ${yellow(resultFile)}`);
+      }
+
+      // We are in no hurry. Give the new window 2 seconds to breathe before testing it.
+      await sleep(2000);
+      await sleepUntilNoRequests();
+
+      // Run the benchmark for this iteration/repetition and append the results to the result file.
+      console.log(yellow(`${benchmark.name}: ` +
+                          `iteration ${iteration + 1} of ${benchmark.iterations}, ` +
+                          `repetition ${repetition + 1} of ${benchmark.repetitions}`));
+      var result = await benchmark.run(iteration);
+      result.iteration = iteration;
+      writeTsv(resultFile, columns, result);
+
+      // Determine the next benchmark & iteration due so that when we reload Atom, it can continue.
+      var nextTestState = getNextTestState(benchmarks, benchmark, iteration, repetition);
+
+      // Detect if we have reached the end of an individual benchmark or of the whole run (and exit).
+      if (nextTestState.iteration === 0) {
+        var processedResultFile = processResultFile(resultFile, benchmark);
+        console.log(`Results for ${benchmark.name} are in ${green(processedResultFile)}`);
+      }
+      if (nextTestState.benchmarkIndex === 0) {
+        console.log(`All results for the run are in ${green(resultDir)}`);
+        return;
+      }
+
+      // Otherwise save state & reload for the next loop. 5 seconds is enough for the restart.
+      setTestState(nextTestState);
+      atom.reload();
+      await sleep(5000);
+
+    });
+  });
+
+});
+
+function getBenchmarksAndPackages(): {benchmarks: Array<string>, packages: Array<string>} {
+  var benchmarks = [];
+  if (process.env.BENCHMARK) {
+    // A single benchmark has been passed in from the command line or shell.
+    benchmarks = [process.env.BENCHMARK];
+  } else {
+    // Run all the benchmarks in the benchmarks folder.
+    benchmarks = fs.readdirSync(path.join(__dirname, '../benchmarks'))
+      .filter(filename => filename.endsWith('.js'))
+      .map(filename => filename.replace(/\.js$/, ''));
+  }
+
+  var packages = [];
+  if (process.env.BENCHMARK_PACKAGES) {
+    // packages to be loaded have been passed in from the command line or shell.
+    packages = process.env.BENCHMARK_PACKAGES.split(',').map(p => p.trim()).filter(p => p != '');
+  }
+  return {benchmarks, packages};
+}
+
+function getTestState(): Object {
+  var item = sessionStorage.getItem(RUN_STATE_KEY);
+  if (item) {
+    try {
+      return JSON.parse(item);
+    } catch (e) {}
+  }
+  return {
+    benchmarkIndex: 0,
+    iteration: 0,
+    repetition: 0,
+    resultDir: null,
+    resultFile: null,
+  };
+}
+
+function setTestState(newState: Object): void {
+  var state = getTestState();
+  for (var key in newState) {
+    state[key] = newState[key];
+  }
+  sessionStorage.setItem(RUN_STATE_KEY, JSON.stringify(state));
+}
+
+function createResultDir(): string {
+  if (!fs.existsSync(RESULT_DIR_ROOT)) {
+    fs.mkdirSync(RESULT_DIR_ROOT);
+  }
+  var resultDir = path.join(RESULT_DIR_ROOT, Date.now().toString());
+  fs.mkdirSync(resultDir);
+  return resultDir;
+}
+
+function createResultFile(
+  resultDir: string,
+  benchmark: {name: string},
+  columns: Array<string>,
+): string {
+  var resultFile = path.join(resultDir, benchmark.name + '.tsv');
+  writeTsv(resultFile, columns);
+  return resultFile;
+}
+
+function processResultFile(resultFile: string): string {
+  // Aggregates on the first column, averaging the other columns.
+  var {columns, records} = readAllTsv(resultFile);
+  var processedResultFile = resultFile.replace(/\.tsv$/, '.processed.tsv');
+  writeAllTsv(processedResultFile, columns, aggregateTable(columns, records, columns[0], avg));
+  return processedResultFile;
+}
+
+function getNextTestState(
+  benchmarks: Array<string>,
+  benchmark: Benchmark,
+  iteration: number,
+  repetition: number,
+): Object {
+  if (repetition < benchmark.repetitions - 1) {
+    // There is another repetition of this iteration to do.
+    return {repetition: repetition + 1};
+  }
+
+  if (iteration < benchmark.iterations - 1) {
+    // There is another iteration of this benchmark to do.
+    return {
+      repetition: 0,
+      iteration: iteration + 1,
+    };
+  }
+
+  if (benchmark.index < benchmarks.length - 1) {
+    // There is another benchmark of this run to do. Reset the file path.
+    return {
+      repetition: 0,
+      iteration: 0,
+      benchmarkIndex: benchmark.index + 1,
+      resultFile: null,
+    };
+  }
+
+  // Otherwise that was the final repetition of the final iteration of the final benchmark.
+  // We're done.
+  return {
+    repetition: 0,
+    iteration: 0,
+    benchmarkIndex: 0,
+    resultFile: null,
+    resultDir: null,
+  };
+}
