@@ -10,10 +10,12 @@
  */
 
 import type {HackReference} from 'nuclide-hack-common';
+/* $FlowFixMe - relative requires not supported */
+import type NuclideClient from 'nuclide-server/lib/NuclideClient';
 
 var {Range} = require('atom');
 var HackWorker = require('./HackWorker');
-var {CompletionType, SymbolType} = require('nuclide-hack-common/lib/constants');
+var {CompletionType, SymbolType} = require('nuclide-hack-common');
 var logger = require('nuclide-logging').getLogger();
 // The word char regex include \ to search for namespaced classes.
 var wordCharRegex = /[\w\\]/;
@@ -21,7 +23,7 @@ var wordCharRegex = /[\w\\]/;
 var xhpCharRegex = /[\w:-]/;
 var XHP_LINE_TEXT_REGEX = /<([a-z][a-z0-9_.:-]*)[^>]*\/?>/gi;
 
-const UPDATE_DEPENDENCIES_INTERVAL_MS = 10000;
+var /*const*/ UPDATE_DEPENDENCIES_INTERVAL_MS = 10000;
 
 /**
  * The HackLanguage is the controller that servers language requests by trying to get worker results
@@ -29,6 +31,13 @@ const UPDATE_DEPENDENCIES_INTERVAL_MS = 10000;
  * and combining and/or selecting the results to give back to the requester.
  */
 module.exports = class HackLanguage {
+
+  _hackWorker: HackWorker;
+  _client: ?NuclideClient;
+  _pathContentsMap: {[path: string]: string};
+  _basePath: ?string;
+  _isFinishedLoadingDependencies: boolean;
+  _updateDependenciesInterval: number;
 
   /**
    * `basePath` should be the directory where the .hhconfig file is located.
@@ -134,7 +143,11 @@ module.exports = class HackLanguage {
     return this._isFinishedLoadingDependencies;
   }
 
-  async formatSource(contents: string, startPosition: number, endPosition: number) {
+  async formatSource(
+    contents: string,
+    startPosition: number,
+    endPosition: number,
+  ): Promise<string> {
     var webWorkerMessage = {cmd: 'hh_format', args: [contents, startPosition, endPosition]};
     var response = await this._hackWorker.runWorkerTask(webWorkerMessage);
     var errorMessage = response.error_message;
@@ -176,7 +189,7 @@ module.exports = class HackLanguage {
       lineNumber: number,
       column: number,
       lineText: string
-    ): Promise<Array<any>> {
+    ): Promise<?Array<any>> {
 
     if (!isHackFile(contents)) {
       return null;
@@ -302,7 +315,10 @@ module.exports = class HackLanguage {
     });
   }
 
-  _parseStringForExpression(lineText: string, column: number): string {
+  _parseStringForExpression(
+    lineText: string,
+    column: number,
+  ): {search: string; start: number; end: number} {
     var search = null;
     var start = column;
 
@@ -338,7 +354,13 @@ module.exports = class HackLanguage {
     return {search, start, end};
   }
 
-  async getType(path: string, contents: string, expression: string, lineNumber: number, column: number): ?string {
+  async getType(
+    path: string,
+    contents: string,
+    expression: string,
+    lineNumber: number,
+    column: number,
+  ): Promise<?string> {
     if (!isHackFile(contents) || !expression.startsWith('$')) {
       return null;
     }
@@ -445,7 +467,7 @@ var serverCompletionTypes = new Set([
   CompletionType.TYPE,
 ]);
 
-function shouldDoServerCompletion(type: CompletionType): boolean {
+function shouldDoServerCompletion(type: number): boolean {
   return serverCompletionTypes.has(type);
 }
 
@@ -471,5 +493,5 @@ function processCompletions(completionsResponse: Array<any>): Array<any> {
 }
 
 function isHackFile(contents: string): boolean {
-  return contents && contents.startsWith('<?hh');
+  return Boolean(contents) && contents.startsWith('<?hh');
 }
