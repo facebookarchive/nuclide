@@ -10,7 +10,9 @@
  */
 
 var {CompositeDisposable} = require('atom');
+var FileTree = require('../components/FileTree');
 var FileTreeActions = require('./FileTreeActions');
+var FileTreeHelpers = require('./FileTreeHelpers');
 var FileTreeStore = require('./FileTreeStore');
 var {PanelComponent} = require('nuclide-panel');
 var React = require('react-for-atom');
@@ -77,22 +79,8 @@ class FileTreeController {
 
   _render(): void {
     React.render(
-      <PanelComponent dock="left">{this._renderFileTree()}</PanelComponent>,
+      <PanelComponent dock="left"><FileTree /></PanelComponent>,
       this._panelElement
-    );
-  }
-
-  _renderFileTree(): ReactElement {
-    var rootDirectories: Array<atom$Directory> = this._store.getRootDirectories();
-    if (rootDirectories.length === 0) {
-      return <div>No project root</div>;
-    }
-    return (
-      <div>
-        {rootDirectories.map((directory) => (
-          <div key={directory.getPath()}>{directory.getBaseName()}</div>
-        ))}
-      </div>
     );
   }
 
@@ -100,9 +88,12 @@ class FileTreeController {
     // If the remote-projects package hasn't loaded yet remote directories will be instantiated as
     // local directories but with invalid paths. We need to exclude those.
     var rootDirectories = atom.project.getDirectories().filter(directory => (
-      !isLocalFile(directory) || isFullyQualifiedLocalPath(directory.getPath())
+      FileTreeHelpers.isValidDirectory(directory)
     ));
-    this._actions.setRootDirectories(rootDirectories);
+    var directoryPaths = rootDirectories.map(
+      directory => FileTreeHelpers.dirPathToKey(directory.getPath())
+    );
+    this._actions.setRootDirectories(directoryPaths);
   }
 
   _setVisibility(shouldBeVisible: boolean): void {
@@ -134,14 +125,6 @@ class FileTreeController {
       },
     };
   }
-}
-
-function isLocalFile(entry: atom$File | atom$Directory): boolean {
-  return !('getLocalPath' in entry);
-}
-
-function isFullyQualifiedLocalPath(path: string): boolean {
-  return path.charAt(0) === '/';
 }
 
 module.exports = FileTreeController;

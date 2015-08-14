@@ -16,15 +16,15 @@ describe('FileTreeStore', () => {
   var actions: FileTreeActions = FileTreeActions.getInstance();
 
   it('should be initialized', () => {
-    var rootDirectories = store.get('rootDirectories');
+    var rootDirectories = store.getRootDirectories();
     expect(Array.isArray(rootDirectories)).toBe(true);
     expect(rootDirectories.length).toBe(0);
-    expect(store.get('foo')).toBe(undefined);
+    expect(rootDirectories === store.getData().rootDirectories).toBe(true);
   });
 
   it('should get updated via actions', () => {
     actions.setRootDirectories(['a', 'b']);
-    var rootDirectories = store.get('rootDirectories');
+    var rootDirectories = store.getRootDirectories();
     expect(Array.isArray(rootDirectories)).toBe(true);
     expect(rootDirectories.join(',')).toBe('a,b');
   });

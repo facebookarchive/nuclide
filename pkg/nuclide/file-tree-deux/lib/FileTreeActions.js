@@ -9,13 +9,11 @@
  * the root directory of this source tree.
  */
 
+var {ActionType} = require('./FileTreeConstants');
 var FileTreeDispatcher = require('./FileTreeDispatcher');
+var FileTreeStore = require('./FileTreeStore');
 
 import type {Dispatcher} from 'flux';
-
-var ActionType = {
-  SET_ROOT_DIRECTORIES: 'SET_ROOT_DIRECTORIES',
-};
 
 var instance: FileTreeActions;
 
@@ -26,8 +24,7 @@ var instance: FileTreeActions;
  */
 class FileTreeActions {
   _dispatcher: Dispatcher;
-
-  static ActionType: Object = ActionType;
+  _store: FileTreeStore;
 
   static getInstance(): FileTreeActions {
     if (!instance) {
@@ -38,12 +35,13 @@ class FileTreeActions {
 
   constructor() {
     this._dispatcher = FileTreeDispatcher.getInstance();
+    this._store = FileTreeStore.getInstance();
   }
 
-  setRootDirectories(directories: Array<atom$Directory>): void {
+  setRootDirectories(rootDirectories: Array<string>): void {
     this._dispatcher.dispatch({
       actionType: ActionType.SET_ROOT_DIRECTORIES,
-      directories,
+      rootDirectories,
     });
   }
 }
