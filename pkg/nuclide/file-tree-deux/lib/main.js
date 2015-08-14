@@ -9,31 +9,89 @@
  * the root directory of this source tree.
  */
 
+var {CompositeDisposable} = require('atom');
 var FileTreeController = require('./FileTreeController');
 
 import type {FileTreeControllerState} from './FileTreeController';
 
-var fileTreeController: ?FileTreeController;
+class Activation {
+  _fileTreeController: ?FileTreeController;
+  _packageState: ?FileTreeControllerState;
+  _subscriptions: CompositeDisposable;
+
+  constructor(state: ?FileTreeControllerState) {
+    this._packageState = state;
+    this._subscriptions = new CompositeDisposable();
+    this._subscriptions.add(
+      atom.config.observe('nuclide-file-tree-deux.enabled', () => this._update())
+    );
+    this._update();
+  }
+
+  dispose() {
+    this._deactivate();
+    this._subscriptions.dispose();
+  }
+
+  serialize(): ?FileTreeControllerState {
+    if (this._fileTreeController) {
+      return this._fileTreeController.serialize();
+    }
+  }
+
+  // This will activate or deactivate based on the config setting.
+  _update() {
+    var configEnabled = atom.config.get('nuclide-file-tree-deux.enabled');
+    if (configEnabled) {
+      this._activate();
+    } else {
+      this._deactivate();
+    }
+  }
+
+  _activate() {
+    // Guard against activate being called twice
+    if (!this._fileTreeController) {
+      this._fileTreeController = new FileTreeController(this._packageState);
+    }
+  }
+
+  _deactivate() {
+    // Guard against deactivate being called twice
+    if (this._fileTreeController) {
+      this._fileTreeController.destroy();
+      this._fileTreeController = null;
+    }
+  }
+}
+
+var activation: ?Activation = null;
 
 module.exports = {
-  activate(state: ?FileTreeControllerState): void {
-    // Guard against activate getting called twice
-    if (fileTreeController) {
-      return;
-    }
-    fileTreeController = new FileTreeController(state);
+  config: {
+    enabled: {
+      type: 'boolean',
+      default: false,
+      description: 'Use new File Tree (experimental)',
+    },
   },
 
-  deactivate(): void {
-    if (fileTreeController) {
-      fileTreeController.destroy();
-      fileTreeController = null;
+  activate(state: ?FileTreeControllerState): void {
+    if (!activation) {
+      activation = new Activation(state);
+    }
+  },
+
+  deactivate() {
+    if (activation) {
+      activation.dispose();
+      activation = null;
     }
   },
 
   serialize(): ?FileTreeControllerState {
-    if (fileTreeController) {
-      return fileTreeController.serialize();
+    if (activation) {
+      return activation.serialize();
     }
   },
 };
