@@ -114,7 +114,7 @@ module.exports = {
     var contents = editor.getText();
 
     var type = await hackLanguage.getType(path, contents, matchData.wordMatch[0], position.row + 1, position.column + 1);
-    if (!type) {
+    if (!type || type === '_') {
       return null;
     } else {
       return {
