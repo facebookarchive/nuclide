@@ -12,6 +12,8 @@
     "atom": ">=1.0.3"
   },
   "dependencies": {
+    "flux": "2.0.3",
+    "immutable": "3.7.4",
     "nuclide-panel": "0.0.0",
     "react-for-atom": "0.13.6"
   },

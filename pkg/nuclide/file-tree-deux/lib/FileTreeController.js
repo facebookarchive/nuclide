@@ -10,10 +10,10 @@
  */
 
 var {CompositeDisposable} = require('atom');
-var {PanelController} = require('nuclide-panel');
+var FileTreeActions = require('./FileTreeActions');
+var FileTreeStore = require('./FileTreeStore');
+var {PanelComponent} = require('nuclide-panel');
 var React = require('react-for-atom');
-
-var PANEL_OPTIONS = {dock: 'left'};
 
 export type FileTreeRootDirectoryState = {
   basePath: string;
@@ -32,16 +32,33 @@ export type FileTreeControllerState = {
 };
 
 class FileTreeController {
+  _actions: FileTreeActions;
   _isVisible: boolean;
-  _panelController: PanelController;
+  _panel: PanelComponent;
+  _panelElement: HTMLElement;
+  _store: FileTreeStore;
   _subscriptions: CompositeDisposable;
 
   constructor(state: ?FileTreeControllerState) {
     var panel = state && state.panel || {};
     // show the file tree by default
     this._isVisible = panel.isVisible != null ? panel.isVisible : true;
-    this._initializePane(state);
+    this._actions = FileTreeActions.getInstance();
+    this._store = FileTreeStore.getInstance();
     this._subscriptions = new CompositeDisposable();
+    // Initial root directories
+    this._updateRootDirectories();
+    // Subsequent root directories updated on change
+    this._subscriptions.add(
+      atom.project.onDidChangePaths(() => this._updateRootDirectories())
+    );
+    this._initializePanel();
+    // Initial render
+    this._render();
+    // Subsequent renders happen on changes to data store
+    this._subscriptions.add(
+      this._store.subscribe(() => this._render())
+    );
     this._subscriptions.add(atom.commands.add(
       'atom-workspace',
       {
@@ -50,27 +67,61 @@ class FileTreeController {
     ));
   }
 
-  _initializePane(state: ?FileTreeControllerState): void {
-    var panel = state && state.panel || {};
-    this._panelController = new PanelController(
-      <div>No project root</div>,
-      PANEL_OPTIONS,
-      panel
+  _initializePanel(): void {
+    this._panelElement = document.createElement('div');
+    this._panel = atom.workspace.addLeftPanel({
+      item: this._panelElement,
+      visible: this._isVisible,
+    });
+  }
+
+  _render(): void {
+    React.render(
+      <PanelComponent dock="left">{this._renderFileTree()}</PanelComponent>,
+      this._panelElement
     );
-    // panel controller will start out visible; toggle if necessary
-    if (!this._isVisible) {
-      this._panelController.toggle();
+  }
+
+  _renderFileTree(): ReactElement {
+    var rootDirectories: Array<atom$Directory> = this._store.getRootDirectories();
+    if (rootDirectories.length === 0) {
+      return <div>No project root</div>;
     }
+    return (
+      <div>
+        {rootDirectories.map((directory) => (
+          <div key={directory.getPath()}>{directory.getBaseName()}</div>
+        ))}
+      </div>
+    );
+  }
+
+  _updateRootDirectories(): void {
+    // If the remote-projects package hasn't loaded yet remote directories will be instantiated as
+    // local directories but with invalid paths. We need to exclude those.
+    var rootDirectories = atom.project.getDirectories().filter(directory => (
+      !isLocalFile(directory) || isFullyQualifiedLocalPath(directory.getPath())
+    ));
+    this._actions.setRootDirectories(rootDirectories);
+  }
+
+  _setVisibility(shouldBeVisible: boolean): void {
+    if (shouldBeVisible) {
+      this._panel.show();
+    } else {
+      this._panel.hide();
+    }
+    this._isVisible = shouldBeVisible;
   }
 
   toggleVisibility(): void {
-    this._isVisible = !this._isVisible;
-    this._panelController.toggle();
+    this._setVisibility(!this._isVisible);
   }
 
   destroy(): void {
-    this._panelController.destroy();
     this._subscriptions.dispose();
+    React.unmountComponentAtNode(this._panelElement);
+    this._panel.destroy();
   }
 
   serialize(): FileTreeControllerState {
@@ -83,6 +134,14 @@ class FileTreeController {
       },
     };
   }
+}
+
+function isLocalFile(entry: atom$File | atom$Directory): boolean {
+  return !('getLocalPath' in entry);
+}
+
+function isFullyQualifiedLocalPath(path: string): boolean {
+  return path.charAt(0) === '/';
 }
 
 module.exports = FileTreeController;
