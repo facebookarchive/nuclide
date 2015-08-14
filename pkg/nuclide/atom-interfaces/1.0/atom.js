@@ -581,6 +581,14 @@ declare var Cursor: typeof atom$Cursor;
 declare var Panel: typeof atom$Panel;
 declare var TextEditor: typeof atom$TextEditor;
 
+type atom$UnhandledErrorEvent = {
+  originalError: Object;
+  message: string;
+  url: string;
+  line: number;
+  column: number;
+}
+
 // The properties of this type match the properties of the `atom` global.
 // This list is not complete.
 type AtomGlobal = {
@@ -595,8 +603,11 @@ type AtomGlobal = {
   views: atom$ViewRegistry;
   workspace: atom$Workspace;
   project: atom$Project;
-
   devMode: boolean;
+
+  // Event Subscription
+  onWillThrowError(callback: (event: atom$UnhandledErrorEvent) => mixed): atom$Disposable;
+  onDidThrowError(callback: (event: atom$UnhandledErrorEvent) => mixed): atom$Disposable;
 
   // Messaging the User
   confirm(options: {

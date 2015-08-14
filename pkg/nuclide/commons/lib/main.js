@@ -99,4 +99,7 @@ module.exports = {
     return require('./promises');
   },
 
+  get error() {
+    return require('./error');
+  },
 };
