@@ -1,3 +1,5 @@
+@import "ui-variables";
+
 /**
  * FixedDataTable v0.4.1
  *
@@ -13,12 +15,7 @@
  * Table.
  */
 .public_fixedDataTable_main {
-  border-color: #d3d3d3;
-}
-
-.public_fixedDataTable_header,
-.public_fixedDataTable_hasBottomBorder {
-  border-color: #d3d3d3;
+  border-color: @inset-panel-border-color;
 }
 
 .public_fixedDataTable_header .public_fixedDataTableCell_main {
@@ -27,22 +24,8 @@
 
 .public_fixedDataTable_header,
 .public_fixedDataTable_header .public_fixedDataTableCell_main {
-  background-color: #f6f7f8;
-  background-image: -webkit-linear-gradient(#fff, #efefef);
-  background-image: linear-gradient(#fff, #efefef);
-}
-
-.public_fixedDataTable_footer .public_fixedDataTableCell_main {
-  background-color: #f6f7f8;
-  border-color: #d3d3d3;
-}
-
-.public_fixedDataTable_topShadow {
-  background: 0 0 url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAAECAYAAABP2FU6AAAAF0lEQVR4AWPUkNeSBhHCjJoK2twgFisAFagCCp3pJlAAAAAASUVORK5CYII=) repeat-x;
-}
-
-.public_fixedDataTable_bottomShadow {
-  background: 0 0 url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAAECAYAAABP2FU6AAAAHElEQVQI12MwNjZmZdAT1+Nm0JDWEGZQk1GTBgAWkwIeAEp52AAAAABJRU5ErkJggg==) repeat-x;
+  background-color: @panel-heading-background-color;
+  border-color: @inset-panel-border-color;
 }
 
 .public_fixedDataTable_horizontalScrollbar .public_Scrollbar_mainHorizontal {
@@ -53,8 +36,7 @@
  * Table cell.
  */
 .public_fixedDataTableCell_main {
-  background-color: #fff;
-  border-color: #d3d3d3;
+  border-color: transparent;
 }
 
 .public_fixedDataTableCell_highlighted {
@@ -79,21 +61,8 @@
 /**
  * Table row.
  */
-.public_fixedDataTableRow_main {
-  background-color: #fff;
-}
-
-.public_fixedDataTableRow_highlighted,
-.public_fixedDataTableRow_highlighted .public_fixedDataTableCell_main {
-  background-color: #f6f7f8;
-}
-
 .public_fixedDataTableRow_fixedColumnsDivider {
-  border-color: #d3d3d3;
-}
-
-.public_fixedDataTableRow_columnsShadow {
-  background: 0 0 url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAABCAYAAAD5PA/NAAAAFklEQVQIHWPSkNeSBmJhTQVtbiDNCgASagIIuJX8OgAAAABJRU5ErkJggg==) repeat-y;
+  border-color: @inset-panel-border-color;
 }
 
 /**
@@ -156,7 +125,6 @@
   border-right-style: solid;
   border-right-width: 1px;
   border-width: 0 1px 0 0;
-  box-sizing: border-box;
   display: block;
   overflow: hidden;
   position: absolute;
@@ -222,7 +190,6 @@
 .fixedDataTableColumnResizerLineLayout_main {
   border-right-style: solid;
   border-right-width: 1px;
-  box-sizing: border-box;
   position: absolute;
   z-index: 10;
 }
@@ -242,15 +209,15 @@ body[dir="rtl"] .fixedDataTableColumnResizerLineLayout_main {
 /** fixedDataTableLayout */
 
 .fixedDataTableLayout_main {
+  background-color: @inset-panel-background-color;
+  border-color: @inset-panel-border-color;
   border-style: solid;
-  border-width: 1px;
-  box-sizing: border-box;
+  border-width: 1px 0 0 0;
   overflow: hidden;
   position: relative;
 }
 
-.fixedDataTableLayout_header,
-.fixedDataTableLayout_hasBottomBorder {
+.fixedDataTableLayout_header {
   border-bottom-style: solid;
   border-bottom-width: 1px;
 }
@@ -262,15 +229,7 @@ body[dir="rtl"] .fixedDataTableColumnResizerLineLayout_main {
 
 .fixedDataTableLayout_topShadow,
 .fixedDataTableLayout_bottomShadow {
-  height: 4px;
-  left: 0;
-  position: absolute;
-  right: 0;
-  z-index: 1;
-}
-
-.fixedDataTableLayout_bottomShadow {
-  margin-top: -4px;
+  display: none;
 }
 
 .fixedDataTableLayout_rowsContainer {
@@ -286,7 +245,6 @@ body[dir="rtl"] .fixedDataTableColumnResizerLineLayout_main {
 /** fixedDataTableRowLayout */
 
 .fixedDataTableRowLayout_main {
-  box-sizing: border-box;
   overflow: hidden;
   position: absolute;
   top: 0;
@@ -309,10 +267,6 @@ body[dir="rtl"] .fixedDataTableColumnResizerLineLayout_main {
   width: 0;
 }
 
-.fixedDataTableRowLayout_columnsShadow {
-  width: 4px;
-}
-
 .fixedDataTableRowLayout_rowWrapper {
   position: absolute;
   top: 0;
@@ -322,7 +276,6 @@ body[dir="rtl"] .fixedDataTableColumnResizerLineLayout_main {
 /** ScrollbarLayout */
 
 .ScrollbarLayout_main {
-  box-sizing: border-box;
   outline: none;
   overflow: hidden;
   position: absolute;

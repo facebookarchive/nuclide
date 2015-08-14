@@ -18,6 +18,11 @@ var ROW_VERTICAL_PADDING = 16; // 8px top and bottom padding.
 var DEFAULT_ROW_TEXT_HEIGHT = 15;
 var MAX_CHARS_PER_LINE = 100;
 
+var TypeToHighlightClassName = {
+  ERROR: 'highlight-error',
+  WARNING: 'highlight-warning',
+};
+
 function locationColumnCellDataGetter(cellDataKey: 'range', diagnostic: DiagnosticMessage): string {
   return diagnostic.range ? 'Line ' + (diagnostic.range.start.row + 1) : '';
 }
@@ -34,6 +39,17 @@ function plainTextColumnCellRenderer(text: string): ReactElement {
   // For consistency with messageColumnCellDataGetter(), render plaintext in a <span> so that
   // everything lines up.
   return <span className="nuclide-fixed-data-cell">{text}</span>;
+}
+
+function typeColumnCellRenderer(text: string): ReactElement {
+  var highlightClassName = TypeToHighlightClassName[text.toUpperCase()] || 'highlight';
+  return (
+    <span className="nuclide-fixed-data-cell">
+      <span className={highlightClassName}>
+        {text}
+      </span>
+    </span>
+  );
 }
 
 /** @return text and a boolean indicating whether it is plaintext or HTML. */
@@ -149,7 +165,7 @@ class DiagnosticsPane extends React.Component {
         <Column
           align="left"
           cellDataGetter={typeColumnCellDataGetter}
-          cellRenderer={plainTextColumnCellRenderer}
+          cellRenderer={typeColumnCellRenderer}
           dataKey="type"
           maxWidth={100}
           label="Type"
