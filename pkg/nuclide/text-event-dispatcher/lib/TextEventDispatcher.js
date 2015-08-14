@@ -16,14 +16,14 @@ var {debounce} = require('nuclide-commons');
 
 type EventCallback = (editor: TextEditor) => mixed;
 
-type Event = 'did-reload' | 'did-change' | 'did-save';
+type Event = 'did-reload' | 'did-change' | 'did-save' | 'did-open';
 
 // A reload changes the text in the buffer, so it should trigger a refresh.
-var FILE_CHANGE_EVENTS = ['did-change', 'did-reload'];
+var FILE_CHANGE_EVENTS = ['did-change', 'did-reload', 'did-open'];
 
 // A reload basically indicates that an external program saved the file, so
 // it should trigger a refresh.
-var FILE_SAVE_EVENTS = ['did-save', 'did-reload'];
+var FILE_SAVE_EVENTS = ['did-save', 'did-reload', 'did-open'];
 
 /**
  * Stores callbacks keyed on grammar and event, to allow for easy retrieval when
@@ -231,6 +231,7 @@ class TextEventDispatcher {
       this._getEditorListenerDisposable().add(buffer.onDidStopChanging(makeDispatch('did-change')));
       this._getEditorListenerDisposable().add(buffer.onDidSave(makeDispatch('did-save')));
       this._getEditorListenerDisposable().add(buffer.onDidReload(makeDispatch('did-reload')));
+      this._dispatchEvents(editor, 'did-open');
     }));
   }
 
