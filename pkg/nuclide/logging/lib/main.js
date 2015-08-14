@@ -16,6 +16,7 @@
  * To make sure we only have one instance of log4js logger initialized globally, we save the logger
  * to `global` object.
  */
+import addPrepareStackTraceHook from './stacktrace';
 
 const LOGGER_CATEGORY = 'nuclide';
 const LOGGER_LEVELS = ['trace', 'debug', 'info', 'warn', 'error', 'fatal'];
@@ -54,6 +55,7 @@ function createLazyLogger(): any {
 }
 
 function getLogger() {
+  addPrepareStackTraceHook();
   return lazyLogger ? lazyLogger : createLazyLogger();
 }
 
