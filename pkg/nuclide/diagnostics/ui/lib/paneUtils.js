@@ -20,7 +20,15 @@ function fileColumnCellDataGetter(cellDataKey: 'filePath', diagnostic: Diagnosti
 function compareMessagesByFile(a: DiagnosticMessage, b: DiagnosticMessage): number {
   var aMsg = fileColumnCellDataGetter('filePath', a);
   var bMsg = fileColumnCellDataGetter('filePath', b);
-  return aMsg.localeCompare(bMsg);
+
+  var compareVal = aMsg.localeCompare(bMsg);
+  // If the messages are from the same file (`filePath` is equal and `localeCompare`
+  // returns 0), compare the line numbers within the file to determine their sort order.
+  if (compareVal === 0 && (a.range !== undefined && b.range !== undefined)) {
+    compareVal = a.range.start.row - b.range.start.row;
+  }
+
+  return compareVal;
 }
 
 module.exports = {
