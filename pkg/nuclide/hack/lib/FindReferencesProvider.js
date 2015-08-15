@@ -18,14 +18,19 @@ var {HACK_GRAMMAR} = require('nuclide-hack-common');
 module.exports = {
   async findReferences(
     textEditor: TextEditor,
-    position: atom$Point
+    position: atom$Point,
   ): Promise<?Object /*FindReferencesReturn*/> {
+    var {withLoadingNotification} = require('nuclide-atom-helpers');
+
     var fileUri = textEditor.getPath();
     if (!fileUri || HACK_GRAMMAR !== textEditor.getGrammar().scopeName) {
       return null;
     }
 
-    var result = await findReferences(textEditor, position.row, position.column);
+    var result = await withLoadingNotification(
+      findReferences(textEditor, position.row, position.column),
+      'Loading references from Hack server...',
+    );
     if (!result) {
       return {type: 'error', message: 'Only functions/methods are currently supported.'};
     }
@@ -59,5 +64,5 @@ module.exports = {
       referencedSymbolName: symbolName,
       references,
     };
-  }
+  },
 };
