@@ -10,7 +10,7 @@
  */
 
 // We can't pull in nuclide-find-references as a dependency, unfortunately.
-// import type {FindReferencesData} from 'nuclide-find-references';
+// import type {FindReferencesReturn} from 'nuclide-find-references';
 
 var {findReferences} = require('./hack');
 var {HACK_GRAMMAR} = require('nuclide-hack-common');
@@ -19,7 +19,7 @@ module.exports = {
   async findReferences(
     textEditor: TextEditor,
     position: atom$Point
-  ): Promise<?Object /*FindReferencesData*/> {
+  ): Promise<?Object /*FindReferencesReturn*/> {
     var fileUri = textEditor.getPath();
     if (!fileUri || HACK_GRAMMAR !== textEditor.getGrammar().scopeName) {
       return null;
@@ -27,13 +27,10 @@ module.exports = {
 
     var result = await findReferences(textEditor, position.row, position.column);
     if (!result) {
-      throw new Error('Could not find references.');
+      return {type: 'error', message: 'Only functions/methods are currently supported.'};
     }
 
     var {baseUri, symbolName, references} = result;
-    if (!references.length) {
-      throw new Error('No references found.');
-    }
 
     // Process this into the format nuclide-find-references expects.
     references = references.map(ref => {
@@ -57,6 +54,7 @@ module.exports = {
     }
 
     return {
+      type: 'data',
       baseUri,
       referencedSymbolName: symbolName,
       references,

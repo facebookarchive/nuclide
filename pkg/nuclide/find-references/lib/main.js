@@ -14,20 +14,28 @@ import type {Reference} from './types';
 var {CompositeDisposable} = require('atom');
 
 export type FindReferencesData = {
-  baseUri: string;
-  referencedSymbolName: string;
-  references: Array<Reference>;
+  type: 'data',
+  baseUri: string,
+  referencedSymbolName: string,
+  references: Array<Reference>,
 };
 
+export type FindReferencesError = {
+  type: 'error',
+  message: string,
+};
+
+export type FindReferencesReturn = FindReferencesData | FindReferencesError;
+
 export type FindReferencesProvider = {
-  findReferences(editor: TextEditor, position: atom$Point): Promise<?FindReferencesData>;
+  findReferences(editor: TextEditor, position: atom$Point): Promise<?FindReferencesReturn>;
 };
 
 var FIND_REFERENCES_URI = 'atom://nuclide/find-references/';
 var subscriptions: ?CompositeDisposable = null;
 var providers: Array<FindReferencesProvider> = [];
 
-async function createView(): Promise<?HTMLElement> {
+async function getProviderData(): Promise<?FindReferencesReturn> {
   // For some reason, Flow thinks atom.workspace is null here
   var editor = (atom.workspace: any).getActiveTextEditor();
   if (!editor) {
@@ -38,44 +46,42 @@ async function createView(): Promise<?HTMLElement> {
     return null;
   }
   var point = editor.getCursorBufferPosition();
-  /* $FlowFixMe: need array compact function */
   var providerData = await Promise.all(providers.map(
     provider => provider.findReferences(editor, point)
   ));
-  providerData = providerData.filter(x => !!x);
-  if (providerData.length === 0) {
-    return null;
-  }
+  return providerData.filter(x => !!x)[0];
+}
 
-  var {baseUri, referencedSymbolName, references} = providerData[0];
-  var FindReferencesModel = require('./FindReferencesModel');
-  var model = new FindReferencesModel(
-    baseUri,
-    referencedSymbolName,
-    references
-  );
-
-  var FindReferencesElement = require('./FindReferencesElement');
-  return new FindReferencesElement().initialize(model);
+function showError(message: string): void {
+  atom.notifications.addError('nuclide-find-references: ' + message, {dismissable: true});
 }
 
 async function tryCreateView(): Promise<?HTMLElement> {
   try {
-    var elem = await createView();
-    if (elem) {
-      return elem;
+    var data = await getProviderData();
+    if (data == null) {
+      showError('Symbol references are not available for this project.');
+    } else if (data.type === 'error') {
+      showError(data.message);
+    } else if (!data.references.length) {
+      showError('No references found.');
+    } else {
+      var {baseUri, referencedSymbolName, references} = data;
+      var FindReferencesModel = require('./FindReferencesModel');
+      var model = new FindReferencesModel(
+        baseUri,
+        referencedSymbolName,
+        references
+      );
+
+      var FindReferencesElement = require('./FindReferencesElement');
+      return new FindReferencesElement().initialize(model);
     }
-    atom.notifications.addError(
-      'Symbol references are not available for this project.',
-      {dismissable: true}
-    );
   } catch (e) {
+    // TODO(peterhal): Remove this when unhandled rejections have a default handler.
     var {getLogger} = require('nuclide-logging');
-    getLogger().debug('Error loading references', e);
-    atom.notifications.addError(
-      'nuclide-find-references: ' + e,
-      {dismissable: true}
-    );
+    getLogger().debug('Exception in nuclide-find-references', e);
+    showError(e);
   }
 }
 

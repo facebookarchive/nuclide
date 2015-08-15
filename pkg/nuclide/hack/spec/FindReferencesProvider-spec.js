@@ -55,6 +55,7 @@ describe('FindReferencesProvider', () => {
     waitsForPromise(async () => {
       var refs = await FindReferencesProvider.findReferences(mockEditor, new Point(1, 1));
       expect(refs).toEqual({
+        type: 'data',
         baseUri: '/test/',
         referencedSymbolName: 'TestClass::testFunction',
         references: [
