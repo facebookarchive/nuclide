@@ -10,7 +10,6 @@
  */
 
 async function timedAsync<T>(promise: Promise<T>): Promise<{time: number, ret: T}> {
-  await sleepUntilNoRequests();
   var start = Date.now();
   var ret = await promise;
   await sleepUntilNoRequests();
@@ -19,7 +18,6 @@ async function timedAsync<T>(promise: Promise<T>): Promise<{time: number, ret: T
 }
 
 function timedSync<T>(func: () => T): {time: number, ret: T} {
-  Promise.resolve(sleepUntilNoRequests());
   var start = Date.now();
   var ret = func();
   Promise.resolve(sleepUntilNoRequests());
