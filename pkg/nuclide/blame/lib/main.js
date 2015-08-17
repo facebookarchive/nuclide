@@ -9,22 +9,82 @@
  * the root directory of this source tree.
  */
 
-var {Disposable} = require('atom');
+var {CompositeDisposable, Disposable} = require('atom');
 
 import type {BlameProvider} from 'nuclide-blame-base/blame-types';
 
+var packageDisposables: CompositeDisposable;
 var registeredProviders: ?Set<BlameProvider>;
 var blameGutterClass;
+// Map of a TextEditor to its BlameGutter, if it exists.
+var textEditorToBlameGutter: Map<atom$TextEditor, mixed>;
+
+var PACKAGES_MISSING_MESSAGE =
+`Could not open blame: the nuclide-blame package needs other Atom packages to provide:
+  - a gutter UI class
+  - at least one blame provider
+
+You are missing one of these.`;
+
+// TODO (jessicalin) Allow the gutter to be removed.
+function removeBlameGutterForEditor(editor: atom$TextEditor): void {
+  var blameGutter = textEditorToBlameGutter.get(editor);
+  if (blameGutter) {
+    blameGutter.destroy();
+    textEditorToBlameGutter.delete(editor);
+  }
+}
+
+function showBlameGutterForEditor(editor: atom$TextEditor): void {
+  if (!blameGutterClass || !registeredProviders) {
+    atom.notifications.addInfo(PACKAGES_MISSING_MESSAGE);
+    return;
+  }
+
+  var blameGutter = textEditorToBlameGutter.get(editor);
+  if (!blameGutter) {
+    var providerForEditor = null;
+    for (var blameProvider of registeredProviders) {
+      if (blameProvider.canProvideBlameForEditor(editor)) {
+        providerForEditor = blameProvider;
+        break;
+      }
+    }
+
+    if (providerForEditor) {
+      blameGutter = new blameGutterClass('nuclide-blame', editor, providerForEditor);
+      textEditorToBlameGutter.set(editor, blameGutter);
+    } else {
+      atom.notifications.addInfo('Could not open blame: no blame information available for this file.');
+      var logger = require('nuclide-logging').getLogger();
+      logger.info('nuclide-blame: Could not open blame: no blame provider available for this file: ' + editor.getPath());
+    }
+  }
+}
+
+function showBlame(event) {
+  var editor = atom.workspace.getActiveTextEditor();
+  showBlameGutterForEditor(editor);
+}
 
 module.exports = {
-
   activate(state: ?Object): void {
+    textEditorToBlameGutter = new Map();
+    packageDisposables = new CompositeDisposable();
+    packageDisposables.add(atom.contextMenu.add(
+      {'atom-text-editor': [{label: 'Show Blame', command: 'nuclide-blame:show-blame'}]}
+    ));
+    packageDisposables.add(
+      atom.commands.add('atom-text-editor', 'nuclide-blame:show-blame', showBlame)
+    );
   },
 
   deactivate() {
+    packageDisposables.dispose();
     if (registeredProviders) {
       registeredProviders.clear();
     }
+    textEditorToBlameGutter.clear();
   },
 
   consumeBlameGutterClass(blameGutter: mixed): atom$IDisposable {

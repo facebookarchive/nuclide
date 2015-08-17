@@ -23,6 +23,9 @@
   "engines": {
     "atom": ">=1.0.3"
   },
+  "dependencies": {
+    "nuclide-logging": "0.0.0"
+  },
   "devDependencies": {
     "nuclide-atom-interfaces": "0.0.0"
   }
