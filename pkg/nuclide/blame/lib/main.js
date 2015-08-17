@@ -13,16 +13,6 @@ var {CompositeDisposable, Disposable} = require('atom');
 
 import type {BlameProvider} from 'nuclide-blame-base/blame-types';
 
-var packageDisposables: CompositeDisposable;
-var registeredProviders: ?Set<BlameProvider>;
-var blameGutterClass;
-// Map of a TextEditor to its BlameGutter, if it exists.
-var textEditorToBlameGutter: Map<atom$TextEditor, mixed>;
-
-
-/**
- * Section: Managing Gutters
- */
 var PACKAGES_MISSING_MESSAGE =
 `Could not open blame: the nuclide-blame package needs other Atom packages to provide:
   - a gutter UI class
@@ -30,113 +20,158 @@ var PACKAGES_MISSING_MESSAGE =
 
 You are missing one of these.`;
 
-function removeBlameGutterForEditor(editor: atom$TextEditor): void {
-  var blameGutter = textEditorToBlameGutter.get(editor);
-  if (blameGutter) {
-    blameGutter.destroy();
-    textEditorToBlameGutter.delete(editor);
-  }
-}
 
-function showBlameGutterForEditor(editor: atom$TextEditor): void {
-  if (!blameGutterClass || !registeredProviders) {
-    atom.notifications.addInfo(PACKAGES_MISSING_MESSAGE);
-    return;
+class Activation {
+  _packageDisposables: CompositeDisposable;
+  _registeredProviders: ?Set<BlameProvider>;
+  _blameGutterClass: mixed;
+  // Map of a TextEditor to its BlameGutter, if it exists.
+  _textEditorToBlameGutter: Map<atom$TextEditor, mixed>;
+
+  constructor() {
+    this._textEditorToBlameGutter = new Map();
+    this._packageDisposables = new CompositeDisposable();
+    this._packageDisposables.add(atom.contextMenu.add(
+      {'atom-text-editor': [{label: 'Show Blame', command: 'nuclide-blame:show-blame', shouldDisplay: () => this._canShowBlame()}]}
+    ));
+    this._packageDisposables.add(atom.contextMenu.add(
+      {'atom-text-editor': [{label: 'Hide Blame', command: 'nuclide-blame:hide-blame', shouldDisplay: () => this._canHideBlame()}]}
+    ));
+    this._packageDisposables.add(
+      atom.commands.add('atom-text-editor', 'nuclide-blame:show-blame', () => this._showBlame())
+    );
+    this._packageDisposables.add(
+      atom.commands.add('atom-text-editor', 'nuclide-blame:hide-blame', () => this._hideBlame())
+    );
   }
 
-  var blameGutter = textEditorToBlameGutter.get(editor);
-  if (!blameGutter) {
-    var providerForEditor = null;
-    for (var blameProvider of registeredProviders) {
-      if (blameProvider.canProvideBlameForEditor(editor)) {
-        providerForEditor = blameProvider;
-        break;
+  dispose() {
+    this._packageDisposables.dispose();
+    if (this._registeredProviders) {
+      this._registeredProviders.clear();
+    }
+    this._textEditorToBlameGutter.clear();
+  }
+
+  /**
+   * Section: Managing Gutters
+   */
+
+  _removeBlameGutterForEditor(editor: atom$TextEditor): void {
+    var blameGutter = this._textEditorToBlameGutter.get(editor);
+    if (blameGutter) {
+      blameGutter.destroy();
+      this._textEditorToBlameGutter.delete(editor);
+    }
+  }
+
+  _showBlameGutterForEditor(editor: atom$TextEditor): void {
+    if (!this._blameGutterClass || !this._registeredProviders) {
+      atom.notifications.addInfo(PACKAGES_MISSING_MESSAGE);
+      return;
+    }
+
+    var blameGutter = this._textEditorToBlameGutter.get(editor);
+    if (!blameGutter) {
+      var providerForEditor = null;
+      for (var blameProvider of this._registeredProviders) {
+        if (blameProvider.canProvideBlameForEditor(editor)) {
+          providerForEditor = blameProvider;
+          break;
+        }
+      }
+
+      if (providerForEditor) {
+        var blameGutterClass = this._blameGutterClass;
+        blameGutter = new blameGutterClass('nuclide-blame', editor, providerForEditor);
+        this._textEditorToBlameGutter.set(editor, blameGutter);
+      } else {
+        atom.notifications.addInfo('Could not open blame: no blame information available for this file.');
+        var logger = require('nuclide-logging').getLogger();
+        logger.info('nuclide-blame: Could not open blame: no blame provider available for this file: ' + editor.getPath());
       }
     }
-
-    if (providerForEditor) {
-      blameGutter = new blameGutterClass('nuclide-blame', editor, providerForEditor);
-      textEditorToBlameGutter.set(editor, blameGutter);
-    } else {
-      atom.notifications.addInfo('Could not open blame: no blame information available for this file.');
-      var logger = require('nuclide-logging').getLogger();
-      logger.info('nuclide-blame: Could not open blame: no blame provider available for this file: ' + editor.getPath());
-    }
   }
-}
 
+  /**
+   * Section: Managing Context Menus
+   */
 
-/**
- * Section: Managing Context Menus
- */
+  _showBlame(event): void {
+    var editor = atom.workspace.getActiveTextEditor();
+    this._showBlameGutterForEditor(editor);
+  }
 
-function showBlame(event): void {
-  var editor = atom.workspace.getActiveTextEditor();
-  showBlameGutterForEditor(editor);
-}
+  _hideBlame(event): void {
+    var editor = atom.workspace.getActiveTextEditor();
+    this._removeBlameGutterForEditor(editor);
+  }
 
-function hideBlame(event): void {
-  var editor = atom.workspace.getActiveTextEditor();
-  removeBlameGutterForEditor(editor);
-}
+  _canShowBlame(): boolean {
+    var editor = atom.workspace.getActiveTextEditor();
+    return !(this._textEditorToBlameGutter.get(editor));
+  }
 
-function canShowBlame(): boolean {
-  var editor = atom.workspace.getActiveTextEditor();
-  return !(textEditorToBlameGutter.get(editor));
-}
+  _canHideBlame(): boolean {
+    var editor = atom.workspace.getActiveTextEditor();
+    return !!(this._textEditorToBlameGutter.get(editor));
+  }
 
-function canHideBlame(): boolean {
-  var editor = atom.workspace.getActiveTextEditor();
-  return !!(textEditorToBlameGutter.get(editor));
-}
-
-module.exports = {
-  activate(state: ?Object): void {
-    textEditorToBlameGutter = new Map();
-    packageDisposables = new CompositeDisposable();
-    packageDisposables.add(atom.contextMenu.add(
-      {'atom-text-editor': [{label: 'Show Blame', command: 'nuclide-blame:show-blame', shouldDisplay: canShowBlame}]}
-    ));
-    packageDisposables.add(atom.contextMenu.add(
-      {'atom-text-editor': [{label: 'Hide Blame', command: 'nuclide-blame:hide-blame', shouldDisplay: canHideBlame}]}
-    ));
-    packageDisposables.add(
-      atom.commands.add('atom-text-editor', 'nuclide-blame:show-blame', showBlame)
-    );
-    packageDisposables.add(
-      atom.commands.add('atom-text-editor', 'nuclide-blame:hide-blame', hideBlame)
-    );
-  },
-
-  deactivate() {
-    packageDisposables.dispose();
-    if (registeredProviders) {
-      registeredProviders.clear();
-    }
-    textEditorToBlameGutter.clear();
-  },
+  /**
+   * Section: Consuming Services
+   */
 
   consumeBlameGutterClass(blameGutter: mixed): atom$IDisposable {
     // This package only expects one gutter UI. It will take the first one.
-    if (!blameGutterClass) {
-      blameGutterClass = blameGutter;
+    if (!this._blameGutterClass) {
+      this._blameGutterClass = blameGutter;
       return new Disposable(() => {
-        blameGutterClass = null;
+        this._blameGutterClass = null;
       });
     } else {
       return new Disposable(() => {});
     }
+  }
+
+  consumeBlameProvider(provider: BlameProvider): atom$IDisposable {
+    if (!this._registeredProviders) {
+      this._registeredProviders = new Set();
+    }
+    this._registeredProviders.add(provider);
+    return new Disposable(() => {
+      if (this._registeredProviders) {
+        this._registeredProviders.delete(provider);
+      }
+    });
+  }
+}
+
+
+var activation: ?Activation;
+
+module.exports = {
+  activate(state: ?Object): void {
+    if (!activation) {
+      activation = new Activation();
+    }
+  },
+
+  deactivate() {
+    if (activation) {
+      activation.dispose();
+      activation = null;
+    }
+  },
+
+  consumeBlameGutterClass(blameGutter: mixed): atom$IDisposable {
+    if (activation) {
+      return activation.consumeBlameGutterClass(blameGutter);
+    }
   },
 
   consumeBlameProvider(provider: BlameProvider): atom$IDisposable {
-    if (!registeredProviders) {
-      registeredProviders = new Set();
+    if (activation) {
+      return activation.consumeBlameProvider(provider);
     }
-    registeredProviders.add(provider);
-    return new Disposable(() => {
-      if (registeredProviders) {
-        registeredProviders.delete(provider);
-      }
-    });
   },
 };
