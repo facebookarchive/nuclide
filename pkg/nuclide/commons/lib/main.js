@@ -102,4 +102,8 @@ module.exports = {
   get error() {
     return require('./error');
   },
+
+  get session() {
+    return require('./session');
+  },
 };

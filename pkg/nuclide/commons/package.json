@@ -17,7 +17,8 @@
     "nuclide-test-helpers": "0.0.0",
     "rimraf": "2.2.8",
     "shell-escape": "0.2.0",
-    "temp": "0.8.1"
+    "temp": "0.8.1",
+    "uuid": "2.0.1"
   },
   "devDependencies": {
     "nuclide-jasmine": "0.0.0"
