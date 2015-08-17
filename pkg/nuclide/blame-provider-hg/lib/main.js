@@ -14,6 +14,13 @@ import type {BlameProvider} from 'nuclide-blame-base/blame-types';
 var blameProvider;
 
 module.exports = {
+  config: {
+    showVerboseBlame: {
+      type: 'boolean',
+      default: false,
+      description: 'Show complete name returned from "hg blame", instead of shortened name.',
+    },
+  },
 
   activate(state: ?Object): void {
   },
