@@ -71,7 +71,7 @@ var HG_BLAME_ERROR_MESSAGE_START = '[abort: ';
 
 /**
  * Parses the output of `hg blame -r "wdir()" -T json --number --user --line-number <filename>`.
- * @return Map of line number (indexed starting at 1) to the name that line blames to.
+ * @return Map of line number (0-indexed) to the name that line blames to.
  *   The name is of the form: Firstname Lastname <username@email.com>.
  *   The Firstname Lastname may not appear sometimes.
  */
@@ -88,8 +88,8 @@ function parseHgBlameOutput(output: string): Map<number,string> {
     // The error message may change. An error will return non-JSON.
     return results;
   }
-  arrayOfLineDescriptions.forEach((lineDescription) => {
-    results.set(lineDescription['line_number'], lineDescription['user']);
+  arrayOfLineDescriptions.forEach((lineDescription, index) => {
+    results.set(index, lineDescription['user']);
   });
 
   return results;

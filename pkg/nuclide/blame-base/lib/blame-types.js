@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-// Map of line number (indexed starting at 1) to the name that line blames to.
+// Map of line number (0-indexed) to the name that line blames to.
 export type BlameForEditor = Map<number, string>;
 
 export type BlameProvider = {
