@@ -19,6 +19,10 @@ var blameGutterClass;
 // Map of a TextEditor to its BlameGutter, if it exists.
 var textEditorToBlameGutter: Map<atom$TextEditor, mixed>;
 
+
+/**
+ * Section: Managing Gutters
+ */
 var PACKAGES_MISSING_MESSAGE =
 `Could not open blame: the nuclide-blame package needs other Atom packages to provide:
   - a gutter UI class
@@ -26,7 +30,6 @@ var PACKAGES_MISSING_MESSAGE =
 
 You are missing one of these.`;
 
-// TODO (jessicalin) Allow the gutter to be removed.
 function removeBlameGutterForEditor(editor: atom$TextEditor): void {
   var blameGutter = textEditorToBlameGutter.get(editor);
   if (blameGutter) {
@@ -62,9 +65,29 @@ function showBlameGutterForEditor(editor: atom$TextEditor): void {
   }
 }
 
-function showBlame(event) {
+
+/**
+ * Section: Managing Context Menus
+ */
+
+function showBlame(event): void {
   var editor = atom.workspace.getActiveTextEditor();
   showBlameGutterForEditor(editor);
+}
+
+function hideBlame(event): void {
+  var editor = atom.workspace.getActiveTextEditor();
+  removeBlameGutterForEditor(editor);
+}
+
+function canShowBlame(): boolean {
+  var editor = atom.workspace.getActiveTextEditor();
+  return !(textEditorToBlameGutter.get(editor));
+}
+
+function canHideBlame(): boolean {
+  var editor = atom.workspace.getActiveTextEditor();
+  return !!(textEditorToBlameGutter.get(editor));
 }
 
 module.exports = {
@@ -72,10 +95,16 @@ module.exports = {
     textEditorToBlameGutter = new Map();
     packageDisposables = new CompositeDisposable();
     packageDisposables.add(atom.contextMenu.add(
-      {'atom-text-editor': [{label: 'Show Blame', command: 'nuclide-blame:show-blame'}]}
+      {'atom-text-editor': [{label: 'Show Blame', command: 'nuclide-blame:show-blame', shouldDisplay: canShowBlame}]}
+    ));
+    packageDisposables.add(atom.contextMenu.add(
+      {'atom-text-editor': [{label: 'Hide Blame', command: 'nuclide-blame:hide-blame', shouldDisplay: canHideBlame}]}
     ));
     packageDisposables.add(
       atom.commands.add('atom-text-editor', 'nuclide-blame:show-blame', showBlame)
+    );
+    packageDisposables.add(
+      atom.commands.add('atom-text-editor', 'nuclide-blame:hide-blame', hideBlame)
     );
   },
 
