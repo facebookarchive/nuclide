@@ -55,6 +55,11 @@ function shortenBlameNames(blameInfo: BlameForEditor): BlameForEditor {
 }
 
 function canProvideBlameForEditor(editor: TextEditor): boolean {
+  if (editor.isModified()) {
+    atom.notifications.addInfo('There is Hg blame information for this file, but only for saved changes. Save, then try again.');
+    getLogger().info(`nuclide-blame: Could not open Hg blame due to unsaved changes in file: ${String(editor.getPath())}`);
+    return false;
+  }
   var repo = hgRepositoryForEditor(editor);
   return !!repo;
 }

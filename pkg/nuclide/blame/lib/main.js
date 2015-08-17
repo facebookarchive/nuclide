@@ -86,9 +86,9 @@ class Activation {
         blameGutter = new blameGutterClass('nuclide-blame', editor, providerForEditor);
         this._textEditorToBlameGutter.set(editor, blameGutter);
       } else {
-        atom.notifications.addInfo('Could not open blame: no blame information available for this file.');
+        atom.notifications.addInfo('Could not open blame: no blame information currently available for this file.');
         var logger = require('nuclide-logging').getLogger();
-        logger.info('nuclide-blame: Could not open blame: no blame provider available for this file: ' + editor.getPath());
+        logger.info(`nuclide-blame: Could not open blame: no blame provider currently available for this file: ${String(editor.getPath())}`);
       }
     }
   }
