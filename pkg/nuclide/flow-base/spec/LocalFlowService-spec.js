@@ -147,9 +147,12 @@ describe('LocalFlowService', () => {
   });
 
   describe('getType', () => {
-    function runWith(outputString) {
+    function runWithString(outputString) {
       mockExec(outputString);
       return flowService.getType(file, currentContents, line, column);
+    }
+    function runWith(outputType) {
+      return runWithString(JSON.stringify({type: outputType}));
     }
 
     it('should return the type on success', () => {
@@ -172,13 +175,7 @@ describe('LocalFlowService', () => {
 
     it('should return null on failure', () => {
       waitsForPromise(async () => {
-        expect(await runWith('something\nFailure uh oh')).toBe(null);
-      });
-    });
-
-    it('should return a type containing the string Failure', () => {
-      waitsForPromise(async () => {
-        expect(await runWith('Failure')).toBe('Failure');
+        expect(await runWithString('invalid json')).toBe(null);
       });
     });
 

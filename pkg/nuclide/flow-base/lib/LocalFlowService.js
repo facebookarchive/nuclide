@@ -247,7 +247,7 @@ class LocalFlowService extends FlowService {
 
     line = line + 1;
     column = column + 1;
-    var args = ['type-at-pos', line, column];
+    var args = ['type-at-pos', '--json', line, column];
 
     var output;
     try {
@@ -256,19 +256,31 @@ class LocalFlowService extends FlowService {
         return null;
       }
       output = result.stdout;
+      if (output === '') {
+        // if there is a syntax error, Flow returns the JSON on stderr while
+        // still returning a 0 exit code (t8018595)
+        output = result.stderr;
+      }
     } catch (e) {
       logger.error('flow type-at-pos failed: ' + file + ':' + line + ':' + column, e);
       return null;
     }
-    // instead of returning a nonzero exit code, or saying that the type is
-    // "(unknown)", Flow sometimes just prints a message that includes the
-    // string "Failure" at the beginning of the second line.
-    if (output.match(/\nFailure/)) {
+    var json;
+    try {
+      json = JSON.parse(output);
+    } catch (e) {
+      logger.error('invalid JSON from flow type-at-pos: ' + e);
       return null;
     }
-    // the type appears by itself on the first line.
-    var type = output.split('\n')[0];
-    if (type === '(unknown)' || type === '') {
+    var type = json['type'];
+    if (!type || type === '(unknown)' || type === '') {
+      if (type === '') {
+        // This should not happen. The Flow team believes it's an error in Flow
+        // if it does. I'm leaving the condition here because it used to happen
+        // before the switch to JSON and I'd rather log something than have the
+        // user experience regress in case I'm wrong.
+        logger.error('Received empty type hint from `flow type-at-pos`');
+      }
       return null;
     }
     return type;
