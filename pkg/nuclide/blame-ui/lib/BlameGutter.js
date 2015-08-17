@@ -15,6 +15,8 @@ import type {BlameForEditor, BlameProvider} from 'nuclide-blame-base/blame-types
 
 var {BLAME_DECORATION_CLASS} = require('./constants');
 var BLAME_GUTTER_DEFAULT_WIDTH = 50;
+var LOADING_SPINNER_ID = 'blame-loading-spinner';
+var MS_TO_WAIT_BEFORE_SPINNER = 2000;
 
 class BlameGutter {
   _editor: atom$TextEditor;
@@ -22,6 +24,9 @@ class BlameGutter {
   _bufferLineToDecoration: Map<number, atom$Decoration>;
   _gutter: atom$Gutter;
   _gutterWidthManager: BlameGutterWidthManager;
+  _loadingSpinnerIsPending: boolean;
+  _loadingSpinnerDiv: ?HTMLElement;
+  _loadingSpinnerTimeoutId: number;
 
   /**
    * @param gutterName A name for this gutter. Must not be used by any another
@@ -42,11 +47,44 @@ class BlameGutter {
   }
 
   async _fetchAndDisplayBlame(): Promise<void> {
+    // Add a loading spinner while we fetch the blame.
+    this._addLoadingSpinner();
+
     var newBlame = await this._blameProvider.getBlameForEditor(this._editor);
+
+    // Remove the loading spinner before setting the contents of the blame gutter.
+    this._cleanUpLoadingSpinner();
+
     this._updateBlame(newBlame);
   }
 
+  _addLoadingSpinner(): void {
+    if (this._loadingSpinnerIsPending) {
+      return;
+    }
+    this._loadingSpinnerIsPending = true;
+    this._loadingSpinnerTimeoutId = window.setTimeout(() => {
+      this._loadingSpinnerIsPending = false;
+      this._loadingSpinnerDiv = document.createElement('div');
+      this._loadingSpinnerDiv.id = LOADING_SPINNER_ID;
+      var gutterView = atom.views.getView(this._gutter);
+      gutterView.appendChild(this._loadingSpinnerDiv);
+    }, MS_TO_WAIT_BEFORE_SPINNER);
+  }
+
+  _cleanUpLoadingSpinner(): void {
+    if (this._loadingSpinnerIsPending) {
+      window.clearTimeout(this._loadingSpinnerTimeoutId);
+      this._loadingSpinnerIsPending = false;
+    }
+    if (this._loadingSpinnerDiv) {
+      this._loadingSpinnerDiv.remove();
+      this._loadingSpinnerDiv = null;
+    }
+  }
+
   destroy(): void {
+    this._cleanUpLoadingSpinner();
     this._gutterWidthManager.dispose();
     this._gutter.destroy();
     for (var decoration of this._bufferLineToDecoration.values()) {
