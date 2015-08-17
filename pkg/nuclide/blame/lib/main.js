@@ -27,9 +27,12 @@ class Activation {
   _blameGutterClass: mixed;
   // Map of a TextEditor to its BlameGutter, if it exists.
   _textEditorToBlameGutter: Map<atom$TextEditor, mixed>;
+  // Map of a TextEditor to the subscription on its ::onDidDestroy.
+  _textEditorToDestroySubscription: Map<atom$TextEditor, atom$Disposable>;
 
   constructor() {
     this._textEditorToBlameGutter = new Map();
+    this._textEditorToDestroySubscription = new Map();
     this._packageDisposables = new CompositeDisposable();
     this._packageDisposables.add(atom.contextMenu.add(
       {'atom-text-editor': [{label: 'Show Blame', command: 'nuclide-blame:show-blame', shouldDisplay: () => this._canShowBlame()}]}
@@ -51,6 +54,10 @@ class Activation {
       this._registeredProviders.clear();
     }
     this._textEditorToBlameGutter.clear();
+    for (var disposable of this._textEditorToDestroySubscription.values()) {
+      disposable.dispose();
+    }
+    this._textEditorToDestroySubscription.clear();
   }
 
   /**
@@ -85,12 +92,23 @@ class Activation {
         var blameGutterClass = this._blameGutterClass;
         blameGutter = new blameGutterClass('nuclide-blame', editor, providerForEditor);
         this._textEditorToBlameGutter.set(editor, blameGutter);
+        var destroySubscription = editor.onDidDestroy(() => this._editorWasDestroyed(editor));
+        this._textEditorToDestroySubscription.set(editor, destroySubscription);
       } else {
         atom.notifications.addInfo('Could not open blame: no blame information currently available for this file.');
         var logger = require('nuclide-logging').getLogger();
         logger.info(`nuclide-blame: Could not open blame: no blame provider currently available for this file: ${String(editor.getPath())}`);
       }
     }
+  }
+
+  _editorWasDestroyed(editor: atom$TextEditor): void {
+    var blameGutter = this._textEditorToBlameGutter.get(editor);
+    if (blameGutter) {
+      blameGutter.destroy();
+      this._textEditorToBlameGutter.delete(editor);
+    }
+    this._textEditorToDestroySubscription.delete(editor);
   }
 
   /**

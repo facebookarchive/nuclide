@@ -27,6 +27,7 @@ class BlameGutter {
   _loadingSpinnerIsPending: boolean;
   _loadingSpinnerDiv: ?HTMLElement;
   _loadingSpinnerTimeoutId: number;
+  _isDestroyed: boolean;
 
   /**
    * @param gutterName A name for this gutter. Must not be used by any another
@@ -36,6 +37,8 @@ class BlameGutter {
    *   information for this BlameGutter.
    */
   constructor(gutterName: string, editor: atom$TextEditor, blameProvider: BlameProvider) {
+    this._isDestroyed = false;
+
     this._editor = editor;
     this._blameProvider = blameProvider;
     this._bufferLineToDecoration = new Map();
@@ -51,6 +54,10 @@ class BlameGutter {
     this._addLoadingSpinner();
 
     var newBlame = await this._blameProvider.getBlameForEditor(this._editor);
+    // The BlameGutter could have been destroyed while blame was being fetched.
+    if (this._isDestroyed) {
+      return;
+    }
 
     // Remove the loading spinner before setting the contents of the blame gutter.
     this._cleanUpLoadingSpinner();
@@ -84,6 +91,7 @@ class BlameGutter {
   }
 
   destroy(): void {
+    this._isDestroyed = true;
     this._cleanUpLoadingSpinner();
     this._gutterWidthManager.dispose();
     this._gutter.destroy();
