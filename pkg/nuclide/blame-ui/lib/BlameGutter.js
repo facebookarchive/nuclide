@@ -9,18 +9,19 @@
  * the root directory of this source tree.
  */
 
-var {CompositeDisposable} = require('atom');
+var BlameGutterWidthManager = require('./BlameGutterWidthManager');
 
 import type {BlameForEditor, BlameProvider} from 'nuclide-blame-base/blame-types';
 
-var BLAME_DECORATION_CLASS = 'blame-decoration';
+var {BLAME_DECORATION_CLASS} = require('./constants');
+var BLAME_GUTTER_DEFAULT_WIDTH = 50;
 
 class BlameGutter {
   _editor: atom$TextEditor;
   _blameProvider: BlameProvider;
   _bufferLineToDecoration: Map<number, atom$Decoration>;
-  _disposables: atom$CompositeDisposable;
   _gutter: atom$Gutter;
+  _gutterWidthManager: BlameGutterWidthManager;
 
   /**
    * @param gutterName A name for this gutter. Must not be used by any another
@@ -35,7 +36,7 @@ class BlameGutter {
     this._bufferLineToDecoration = new Map();
 
     this._gutter = editor.addGutter({name: gutterName});
-    this._setDefaultGutterStyle(this._gutter);
+    this._gutterWidthManager = new BlameGutterWidthManager(this._gutter, BLAME_GUTTER_DEFAULT_WIDTH);
 
     this._fetchAndDisplayBlame();
   }
@@ -46,23 +47,22 @@ class BlameGutter {
   }
 
   destroy(): void {
+    this._gutterWidthManager.dispose();
     this._gutter.destroy();
     for (var decoration of this._bufferLineToDecoration.values()) {
       decoration.getMarker().destroy();
     }
   }
 
-  // TODO (jessicalin) Revisit the width.
-  _setDefaultGutterStyle(gutter: atom$Gutter): void {
-    var gutterView = atom.views.getView(gutter);
-    gutterView.style.width = '100px';
-  }
-
   // The BlameForEditor completely replaces any previous blame information.
   _updateBlame(blameForEditor: BlameForEditor): void {
     var allPreviousBlamedLines = new Set(this._bufferLineToDecoration.keys());
 
+    var longestBlame = 0;
     for (var [bufferLine, blameName] of blameForEditor) {
+      if (blameName.length > longestBlame) {
+        longestBlame = blameName.length;
+      }
       this._setBlameLine(bufferLine, blameName);
       allPreviousBlamedLines.delete(bufferLine);
     }
@@ -71,6 +71,9 @@ class BlameGutter {
     for (var oldLine of allPreviousBlamedLines) {
       this._removeBlameLine(oldLine);
     }
+
+    // Update the width of the gutter according to the new contents.
+    this._gutterWidthManager.updateGutterWidthToLineLength(longestBlame);
   }
 
   _setBlameLine(bufferLine: number, blameName: string): void {
