@@ -9,21 +9,19 @@
  * the root directory of this source tree.
  */
 
-var BlameGutterWidthManager = require('./BlameGutterWidthManager');
-
 import type {BlameForEditor, BlameProvider} from 'nuclide-blame-base/blame-types';
 
 var {BLAME_DECORATION_CLASS} = require('./constants');
 var BLAME_GUTTER_DEFAULT_WIDTH = 50;
 var LOADING_SPINNER_ID = 'blame-loading-spinner';
 var MS_TO_WAIT_BEFORE_SPINNER = 2000;
+var CHARACTERS_OF_PADDING_IN_BLAME = 2;
 
 class BlameGutter {
   _editor: atom$TextEditor;
   _blameProvider: BlameProvider;
   _bufferLineToDecoration: Map<number, atom$Decoration>;
   _gutter: atom$Gutter;
-  _gutterWidthManager: BlameGutterWidthManager;
   _loadingSpinnerIsPending: boolean;
   _loadingSpinnerDiv: ?HTMLElement;
   _loadingSpinnerTimeoutId: number;
@@ -44,7 +42,7 @@ class BlameGutter {
     this._bufferLineToDecoration = new Map();
 
     this._gutter = editor.addGutter({name: gutterName});
-    this._gutterWidthManager = new BlameGutterWidthManager(this._gutter, BLAME_GUTTER_DEFAULT_WIDTH);
+    this._updateGutterWidthToPixelWidth(BLAME_GUTTER_DEFAULT_WIDTH);
 
     this._fetchAndDisplayBlame();
   }
@@ -93,7 +91,6 @@ class BlameGutter {
   destroy(): void {
     this._isDestroyed = true;
     this._cleanUpLoadingSpinner();
-    this._gutterWidthManager.dispose();
     if (!this._editor.isDestroyed()) {
       // Due to a bug in the Gutter API, destroying a Gutter after the editor
       // has been destroyed results in an exception.
@@ -123,7 +120,17 @@ class BlameGutter {
     }
 
     // Update the width of the gutter according to the new contents.
-    this._gutterWidthManager.updateGutterWidthToLineLength(longestBlame);
+    this._updateGutterWidthToCharacterLength(longestBlame);
+  }
+
+  _updateGutterWidthToPixelWidth(pixelWidth: number): void {
+    var gutterView = atom.views.getView(this._gutter);
+    gutterView.style.width = `${pixelWidth}px`;
+  }
+
+  _updateGutterWidthToCharacterLength(characters: number): void {
+    var gutterView = atom.views.getView(this._gutter);
+    gutterView.style.width = `${characters + CHARACTERS_OF_PADDING_IN_BLAME}ch`;
   }
 
   _setBlameLine(bufferLine: number, blameName: string): void {
