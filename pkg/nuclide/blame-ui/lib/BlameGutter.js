@@ -94,7 +94,11 @@ class BlameGutter {
     this._isDestroyed = true;
     this._cleanUpLoadingSpinner();
     this._gutterWidthManager.dispose();
-    this._gutter.destroy();
+    if (!this._editor.isDestroyed()) {
+      // Due to a bug in the Gutter API, destroying a Gutter after the editor
+      // has been destroyed results in an exception.
+      this._gutter.destroy();
+    }
     for (var decoration of this._bufferLineToDecoration.values()) {
       decoration.getMarker().destroy();
     }
