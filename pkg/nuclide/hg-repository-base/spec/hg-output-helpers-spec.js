@@ -150,18 +150,18 @@ describe('hg-output-helpers', () => {
   describe('parseHgBlameOutput', () => {
     it('handles an error message from Hg.', () => {
       var parseResults = parseHgBlameOutput(hgBlameOutputWithError);
-      expect(parseResults).toEqual(new Map());
+      expect(parseResults).toEqual({});
     });
 
     it('parses the output of "hg blame" when there are committed and uncommited changes in the file.', () => {
       var parseResults = parseHgBlameOutput(hgBlameForFileWithCommitAndUncommittedChanges);
-      var expectedBlame = new Map([[1, 'Abbot B a@b.com'], [2, 'a@b.com']]);
+      var expectedBlame = {'0': 'Abbot B a@b.com', '1': 'a@b.com'};
       expect(parseResults).toEqual(expectedBlame);
     });
 
     it('gracefully handles unexpected output, e.g. if the error message changes.', () => {
       var parseResults = parseHgBlameOutput(unexpectedHgBlameOutput);
-      expect(parseResults).toEqual(new Map());
+      expect(parseResults).toEqual({});
     });
   });
 });

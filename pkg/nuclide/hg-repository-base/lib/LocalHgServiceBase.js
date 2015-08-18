@@ -237,7 +237,7 @@ class LocalHgServiceBase extends HgService {
     return fetchRevisionNumbersBetweenRevisions(revisionFrom, revisionTo, this._workingDirectory);
   }
 
-  async getBlameAtHead(filePath: NuclideUri): Promise<Map<number, string>> {
+  async getBlameAtHead(filePath: NuclideUri): Promise<{[key: string]: string}> {
     var args = ['blame', '-r', 'wdir()', '-Tjson', '--number', '--user', '--line-number', filePath];
     var execOptions = {
       cwd: this.getWorkingDirectory(),

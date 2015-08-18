@@ -40,9 +40,12 @@ var EMAIL_REGEX = /\b([A-Za-z0-9._%+-]+)@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}\b/;
  * The examples above would become 'foo'.
  * @return A new Map of the given blameInfo, in which the blame names are shortened.
  */
-function shortenBlameNames(blameInfo: BlameForEditor): BlameForEditor {
+function shortenBlameNames(blameInfo: {[key: string]: string}): BlameForEditor {
   var newBlameInfo = new Map();
-  for (var [blameLineNumber, blameName] of blameInfo) {
+  for (var index of Object.keys(blameInfo)) {
+    var blameName = blameInfo[index];
+    var blameLineNumber = parseInt(index, 10);
+
     var shortenedNameMatch = blameName.match(EMAIL_REGEX);
     if (shortenedNameMatch) {
       // Index 0 will be the whole email. Index 1 is the capture group.
@@ -52,6 +55,14 @@ function shortenBlameNames(blameInfo: BlameForEditor): BlameForEditor {
     }
   }
   return newBlameInfo;
+}
+
+function convertBlameToMap(blameInfo: {[key: string]: string}): BlameForEditor {
+  var blameMap = new Map();
+  for (var index of Object.keys(blameInfo)) {
+    blameMap.set(parseInt(index, 10), blameInfo[index]);
+  }
+  return blameMap;
 }
 
 function canProvideBlameForEditor(editor: TextEditor): boolean {
@@ -73,10 +84,12 @@ async function getBlameForEditor(editor: TextEditor): Promise<BlameForEditor> {
   }
 
   var blameForEditor = await repo.getBlameAtHead(editor.getPath());
+  // TODO (t8045823) Convert the return type of ::getBlameAtHead to a Map when
+  // the service framework supports a Map return type.
   if (!(atom.config.get('nuclide-blame-provider-hg.showVerboseBlame'))) {
     return shortenBlameNames(blameForEditor);
   } else {
-    return blameForEditor;
+    return convertBlameToMap(blameForEditor);
   }
 }
 

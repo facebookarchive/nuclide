@@ -151,12 +151,12 @@ class HgService {
    * Gets the blame for the filePath at the current revision, including uncommitted changes
    * (but not unsaved changes).
    * @param filePath The file to get blame information for.
-   * @return Map of line number (0-indexed) to the name that line blames to.
+   * @return An object that maps a line number (0-indexed) to the name that line blames to.
    *   The name is of the form: Firstname Lastname <username@email.com>.
    *   The Firstname Lastname may not appear sometimes.
    *   If no blame information is available, returns an empty Map.
    */
-  getBlameAtHead(filePath: NuclideUri): Promise<Map<number, string>> {
+  getBlameAtHead(filePath: NuclideUri): Promise<{[key: string]: string}> {
     return Promise.reject(new Error('HgService.getBlameAtHead not implemented'));
   }
 
