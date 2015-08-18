@@ -9,7 +9,8 @@
  * the root directory of this source tree.
  */
 
-var prepareStackTraceHooked = false;
+var PREPARE_STACK_TRACE_HOOKED_KEY = '_nuclide_stack_trace_hooked';
+
 var customizedPrepareStackTrace: ?() => string = null;
 
 /**
@@ -24,7 +25,7 @@ var customizedPrepareStackTrace: ?() => string = null;
  * customize Error.prepareStackTrace.
  */
 export default function addPrepareStackTraceHook(): void {
-  if (prepareStackTraceHooked) {
+  if (global[PREPARE_STACK_TRACE_HOOKED_KEY]) {
     return;
   }
 
@@ -41,13 +42,15 @@ export default function addPrepareStackTraceHook(): void {
   Object.defineProperty(Error, 'prepareStackTrace', {
     get: () => prepareStackTraceHook,
     set: newValue => {
-      customizedPrepareStackTrace = newValue;
+      if (newValue !== prepareStackTraceHook) {
+        customizedPrepareStackTrace = newValue;
+      }
     },
     enumerable: false,
     configurable: true,
   });
 
-  prepareStackTraceHooked = true;
+  global[PREPARE_STACK_TRACE_HOOKED_KEY] = true;
 }
 
 // The hook that attaches 'stackTrace' to error and then fallback to
@@ -84,6 +87,6 @@ function defaultPrepareStackTrace(error: Error, frames: Array<node$CallSite>): s
 
 export var __test__ = {
   resetPrepareStackTraceHooked: () => {
-    prepareStackTraceHooked = false;
+    global[PREPARE_STACK_TRACE_HOOKED_KEY] = false;
   },
 };
