@@ -41,6 +41,8 @@ export type LinterProvider = {
 
 var {Emitter, Disposable, CompositeDisposable} = require('atom');
 
+var {RequestSerializer} = require('nuclide-commons').promises;
+
 function linterMessageToDiagnosticMessage(msg: LinterMessage, providerName: string): DiagnosticMessage {
   if (msg.filePath) {
     return {
@@ -119,19 +121,16 @@ class LinterAdapter {
 
   _currentEventSubscription: ?atom$Disposable;
 
-  _lastDispatchedLint: number;
-  _lastFinishedLint: number;
+  _requestSerializer: RequestSerializer;
 
   constructor(provider: LinterProvider) {
     this._provider = provider;
     this._enabled = true;
     this._disposables = new CompositeDisposable();
     this._emitter = new Emitter();
-    this._lastDispatchedLint = 0;
-    this._lastFinishedLint = 0;
+    this._requestSerializer = new RequestSerializer();
 
     this._subscribeToEvent(provider.lintOnFly);
-
   }
 
   // Subscribes to the appropriate event depending on whether we should lint on
@@ -163,13 +162,11 @@ class LinterAdapter {
 
   async _runLint(editor: TextEditor): Promise<void> {
     if (this._enabled) {
-      var thisLint = this._lastDispatchedLint + 1;
-      this._lastDispatchedLint = thisLint;
-      var linterMessages = await this._provider.lint(editor);
-      if (this._lastFinishedLint < thisLint) {
+      var result = await this._requestSerializer.run(this._provider.lint(editor));
+      if (result.status === 'success') {
+        var linterMessages = result.result;
         var diagnosticUpdate = linterMessagesToDiagnosticUpdate(editor.getPath(), linterMessages, this._provider.providerName);
         this._emitter.emit('update', diagnosticUpdate);
-        this._lastFinishedLint = thisLint;
       }
     }
   }

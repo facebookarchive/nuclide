@@ -8,6 +8,66 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
+
+type RunReturn<T> = {
+  status: 'success';
+  result: T;
+} | {
+  status: 'outdated';
+};
+
+/**
+ * Allows a caller to ensure that the results it receives from consecutive
+ * promise resolutions are never outdated. Usage:
+ *
+ * var requestSerializer = new RequestSerializer();
+ *
+ * // in some later loop:
+ *
+ * // note that you do not await the async function here -- you must pass the
+ * // promise it returns to `run`
+ * var result = await requestSerializer.run(someAsyncFunction())
+ *
+ * if (result.status === 'success') {
+ *   ....
+ *   result.result
+ * } else if (result.status === 'outdated') {
+ *   ....
+ * }
+ *
+ * The contract is that the status is 'success' if and only if this was the most
+ * recently dispatched call of 'run'. For example, if you call run(promise1) and
+ * then run(promise2), and promise2 resolves first, the second callsite would
+ * receive a 'success' status. If promise1 later resolved, the first callsite
+ * would receive an 'outdated' status.
+ */
+class RequestSerializer {
+  _lastDispatchedOp: number;
+  _lastFinishedOp: number;
+
+  constructor() {
+    this._lastDispatchedOp = 0;
+    this._lastFinishedOp = 0;
+  }
+
+  async run<T>(promise: Promise<T>): Promise<RunReturn<T>> {
+    var thisOp = this._lastDispatchedOp + 1;
+    this._lastDispatchedOp = thisOp;
+    var result = await promise;
+    if (this._lastFinishedOp < thisOp) {
+      this._lastFinishedOp = thisOp;
+      return {
+        status: 'success',
+        result,
+      };
+    } else {
+      return {
+        status: 'outdated',
+      };
+    }
+  }
+}
+
 var promises = module.exports = {
 
   /**
@@ -181,4 +241,5 @@ var promises = module.exports = {
     return resolved;
   },
 
+  RequestSerializer,
 };
