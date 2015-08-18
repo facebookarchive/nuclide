@@ -20,6 +20,7 @@ var {fetchFileContentAtRevision, fetchFilesChangedAtRevision} = require('./hg-re
 var {asyncExecute} = require('nuclide-commons');
 var path = require('path');
 
+import type {DiffInfo, RevisionFileChanges, StatusCodeIdValue} from './hg-constants';
 import type LocalHgServiceOptions from './hg-types';
 
 var isOsX = require('os').platform() === 'darwin';
@@ -33,6 +34,9 @@ function getLogger() {
 }
 
 class LocalHgServiceBase extends HgService {
+  _emitter: EventEmitter;
+  _workingDirectory: string;
+
   constructor(options: LocalHgServiceOptions) {
     super();
     this._emitter = new EventEmitter();
@@ -41,7 +45,6 @@ class LocalHgServiceBase extends HgService {
 
   destroy() {
     this._emitter.removeAllListeners();
-    this._emitter = null;
   }
 
   getWorkingDirectory(): string {
@@ -51,7 +54,10 @@ class LocalHgServiceBase extends HgService {
   /**
    * See HgService::fetchStatuses for details.
    */
-  async fetchStatuses(filePaths: Array<string>, options: ?any): Promise<{[key: string]: StatusCodeId}> {
+  async fetchStatuses(
+    filePaths: Array<string>,
+    options: ?any
+  ): Promise<{[key: string]: StatusCodeIdValue}> {
     var statusMap = {};
 
     var args = ['status', '-Tjson'];
@@ -94,7 +100,7 @@ class LocalHgServiceBase extends HgService {
     return {
       dispose: () => {
         this._removeOnFilesDidChangeListener(callback);
-      }
+      },
     };
   }
 
@@ -115,7 +121,7 @@ class LocalHgServiceBase extends HgService {
     return {
       dispose: () => {
         this._removeOnHgIgnoreFileDidChangeListener(callback);
-      }
+      },
     };
   }
 
@@ -134,7 +140,7 @@ class LocalHgServiceBase extends HgService {
     return {
       dispose: () => {
         this._removeOnHgRepoStateDidChangeListener(callback);
-      }
+      },
     };
   }
 

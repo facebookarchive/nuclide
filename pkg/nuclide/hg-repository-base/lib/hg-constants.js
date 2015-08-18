@@ -10,7 +10,7 @@
  */
 /* @providesModule HgConstants */
 
-type HgRepositoryOptions = {
+export type HgRepositoryOptions = {
   /** The origin URL of this repository. */
   originURL: string;
 
@@ -25,8 +25,8 @@ type HgRepositoryOptions = {
  * These are status codes used by Mercurial's output.
  * Documented in http://selenic.com/hg/help/status.
  */
-type StatusCodeId = string;
-var StatusCodeId: {[key: string]: StatusCodeId} = {
+export type StatusCodeIdValue = 'A' | 'C' | 'I' | 'M' | '!' | 'R' | '?';
+var StatusCodeId: {[key: string]: StatusCodeIdValue} = {
   ADDED: 'A',
   CLEAN: 'C',
   IGNORED: 'I',
@@ -44,8 +44,8 @@ var StatusCodeId: {[key: string]: StatusCodeId} = {
  * The numbers themselves should not matter; they are meant to be passed
  * to ::isStatusNew/::isStatusModified to be interpreted.
  */
-type StatusCodeNumber = number;
-var StatusCodeNumber: {[key: string]: StatusCodeNumber} = {
+type StatusCodeNumberValue = 1 | 2 | 3 | 4 | 5 | 6 | 7;
+var StatusCodeNumber: {[key: string]: StatusCodeNumberValue} = {
   ADDED: 1,
   CLEAN: 2,
   IGNORED: 3,
@@ -55,7 +55,7 @@ var StatusCodeNumber: {[key: string]: StatusCodeNumber} = {
   UNTRACKED: 7,
 };
 
-var StatusCodeIdToNumber: {[key: StatusCodeId]: StatusCodeNumber} = {
+var StatusCodeIdToNumber: {[key: StatusCodeIdValue]: StatusCodeNumberValue} = {
   [StatusCodeId.ADDED]: StatusCodeNumber.ADDED,
   [StatusCodeId.CLEAN]: StatusCodeNumber.CLEAN,
   [StatusCodeId.IGNORED]: StatusCodeNumber.IGNORED,
@@ -65,8 +65,8 @@ var StatusCodeIdToNumber: {[key: StatusCodeId]: StatusCodeNumber} = {
   [StatusCodeId.UNTRACKED]: StatusCodeNumber.UNTRACKED,
 };
 
-type HgStatusOption = number;
-var HgStatusOption: {[key: string]: HgStatusOption} = {
+type HgStatusOptionValue = 1 | 2 | 3;
+var HgStatusOption: {[key: string]: HgStatusOptionValue} = {
   ONLY_NON_IGNORED: 1,  // only the output of `hg status`
   ONLY_IGNORED: 2,      // only the output of `hg status --ignored`
   ALL_STATUSES: 3,      // the output of `hg status --all`
@@ -79,7 +79,7 @@ type LineDiff = {
   newLines: number;
 };
 
-type DiffInfo = {
+export type DiffInfo = {
   added: number;
   deleted: number;
   lineDiffs: Array<LineDiff>;
