@@ -24,9 +24,6 @@ parser = optparse.OptionParser(usage='usage: %prog [options]',
 parser.add_option('--verbose', action='store_true', default=False, help='Verbose output')
 options, args = parser.parse_args(sys.argv[1:])
 
-if sys.version_info < (2, 7):
-    raise ValueError('Requires Python 2.7 or later for order preserved JSON keys.')
-
 verbose = options.verbose
 if verbose:
     logging.getLogger().setLevel(logging.DEBUG)

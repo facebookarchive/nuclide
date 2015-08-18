@@ -54,6 +54,9 @@ class PackageLinter(object):
     def __init__(self, package_map):
         self._had_error = False
         self._package_map = package_map
+        is_python_2_7_or_later = sys.version_info >= (2, 7)
+        self._preserves_json_property_order = is_python_2_7_or_later
+        self._supports_config_parser_allow_no_value = is_python_2_7_or_later
 
     def validate_packages(self):
         for package_name in self._package_map:
@@ -200,6 +203,10 @@ class PackageLinter(object):
                 package_name)
 
     def read_flowconfig_for_package(self, package):
+        if not self._supports_config_parser_allow_no_value:
+            sys.stderr.write('Python 2.7 or later is required to parse .flowconfig properly.\n')
+            return None
+
         flowconfig_path = os.path.join(package['packageRootAbsolutePath'], '.flowconfig')
         if not os.path.isfile(flowconfig_path):
             self.report_error('Expected .flowconfig file at %s not found.', flowconfig_path)
@@ -272,6 +279,10 @@ class PackageLinter(object):
                 dependent_package_name, package['name'])
 
     def expect_alpha_sort(self, package_name, package, field):
+        if not self._preserves_json_property_order:
+            sys.stderr.write('Python 2.7 or later is required to verify alpha-sort.\n')
+            return
+
         if field not in package:
             return
         last = None
