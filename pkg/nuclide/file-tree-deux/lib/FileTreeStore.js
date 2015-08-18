@@ -9,19 +9,22 @@
  * the root directory of this source tree.
  */
 
-var {Emitter} = require('atom');
+var {Disposable, Emitter} = require('atom');
 var {ActionType} = require('./FileTreeConstants');
 var FileTreeDispatcher = require('./FileTreeDispatcher');
 var FileTreeHelpers = require('./FileTreeHelpers');
+var FileTreeNode = require('./FileTreeNode');
+var Immutable = require('immutable');
 
 import type {Dispatcher} from 'flux';
 
 type ActionPayload = Object;
 type ChangeListener = () => mixed;
 type StoreData = {
-  childrenMap: { [key: string]: Array<string> },
+  childKeyMap: { [key: string]: Array<string> },
+  expandedKeysByRoot: { [key: string]: Immutable.Set<string> },
   isLoadingMap: { [key: string]: ?Promise },
-  rootDirectories: Array<string>,
+  rootKeys: Array<string>,
 };
 
 var instance: FileTreeStore;
@@ -55,16 +58,25 @@ class FileTreeStore {
 
   _getDefaults(): StoreData {
     return {
-      childrenMap: {},
+      childKeyMap: {},
+      expandedKeysByRoot: {},
       isLoadingMap: {},
-      rootDirectories: [],
+      rootKeys: [],
     };
   }
 
   _onDispatch(payload: ActionPayload): void {
     switch (payload.actionType) {
-      case ActionType.SET_ROOT_DIRECTORIES:
-        this._set('rootDirectories', payload.rootDirectories);
+      case ActionType.SET_ROOT_KEYS:
+        this._set('rootKeys', payload.rootKeys);
+        break;
+      case ActionType.EXPAND_NODE:
+        var rootKey = payload.rootKey;
+        this._setExpandedKeys(rootKey, this._getExpandedKeys(rootKey).add(payload.nodeKey));
+        break;
+      case ActionType.COLLAPSE_NODE:
+        var rootKey = payload.rootKey;
+        this._setExpandedKeys(rootKey, this._getExpandedKeys(rootKey).delete(payload.nodeKey));
         break;
     }
   }
@@ -85,53 +97,76 @@ class FileTreeStore {
     }
   }
 
-  // Used only for testing
-  getData(): StoreData {
-    return this._data;
+  getRootKeys(): Array<string> {
+    return this._data.rootKeys;
   }
 
-  getRootDirectories(): Array<string> {
-    return this._data.rootDirectories;
-  }
-
-  // Note: We actually don't need the first parameter (implementation detail) but we take it
-  // for consistency.
+  // Note: We actually don't need rootKey (implementation detail) but we take it for consistency.
   isLoading(rootKey: string, nodeKey: string): boolean {
     return !!this._getLoading(nodeKey);
   }
 
   isExpanded(rootKey: string, nodeKey: string): boolean {
-    return true; // for now
+    return this._getExpandedKeys(rootKey).has(nodeKey);
   }
 
-  getChildren(rootKey: string, nodeKey: string): Array<string> {
-    // Note: `children` and `isLoading` are not organized by `rootKey`.
-    var children = this._data.childrenMap[nodeKey];
-    if (children == null) {
-      // If a fetch is not already in progress we need to initiate now.
-      if (!this._getLoading(nodeKey)) {
-        var promise = FileTreeHelpers.fetchChildren(nodeKey);
-        // TODO: onReject
-        promise = promise.then((childKeys) => {
-          this._setChildren(nodeKey, childKeys);
-          this._setLoading(nodeKey, null);
-        });
-        this._setLoading(nodeKey, promise);
-      }
+  getChildKeys(rootKey: string, nodeKey: string): Array<string> {
+    var childKeys = this._data.childKeyMap[nodeKey];
+    if (childKeys == null) {
+      this._fetchChildKeys(nodeKey);
     }
-    return children || [];
+    return childKeys || [];
+  }
+
+  // If a fetch is not already in progress initiate a fetch now.
+  _fetchChildKeys(nodeKey: string): Promise {
+    var existingPromise = this._getLoading(nodeKey);
+    if (existingPromise) {
+      return existingPromise;
+    }
+    var promise = FileTreeHelpers.fetchChildren(nodeKey);
+    // TODO: onReject
+    promise = promise.then((keys) => {
+      this._setChildKeys(nodeKey, keys);
+      this._setLoading(nodeKey, null);
+    });
+    this._setLoading(nodeKey, promise);
+    return promise;
+  }
+
+  getRootNode(rootKey: string): FileTreeNode {
+    return this.getNode(rootKey, rootKey);
+  }
+
+  getNode(rootKey: string, nodeKey: string): FileTreeNode {
+    return new FileTreeNode(this, rootKey, nodeKey);
   }
 
   _getLoading(nodeKey: string): ?Promise {
     return this._data.isLoadingMap[nodeKey];
   }
 
-  _setLoading(nodeKey: string, promise: ?Promise): void {
-    this._set('isLoadingMap', setProperty(this._data.isLoadingMap, nodeKey, promise));
+  _setLoading(nodeKey: string, value: ?Promise): void {
+    this._set('isLoadingMap', setProperty(this._data.isLoadingMap, nodeKey, value));
   }
 
-  _setChildren(nodeKey: string, children: ?Array<string>): void {
-    this._set('childrenMap', setProperty(this._data.childrenMap, nodeKey, children));
+  _getExpandedKeys(rootKey: string): Immutable.Set<string> {
+    return this._data.expandedKeysByRoot[rootKey] || new Immutable.Set();
+  }
+
+  _setExpandedKeys(rootKey: string, expandedKeys: Immutable.Set<string>): void {
+    this._set(
+      'expandedKeysByRoot',
+      setProperty(this._data.expandedKeysByRoot, rootKey, expandedKeys)
+    );
+  }
+
+  _setChildKeys(nodeKey: string, childKeys: ?Array<string>): void {
+    var oldChildKeys = this._data.childKeyMap[nodeKey];
+    if (oldChildKeys && oldChildKeys.length) {
+      // TODO: cleanup removed children
+    }
+    this._set('childKeyMap', setProperty(this._data.childKeyMap, nodeKey, childKeys));
   }
 
   subscribe(listener: ChangeListener): Disposable {

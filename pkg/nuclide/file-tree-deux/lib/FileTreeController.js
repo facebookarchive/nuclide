@@ -71,6 +71,7 @@ class FileTreeController {
 
   _initializePanel(): void {
     this._panelElement = document.createElement('div');
+    this._panelElement.style.height = '100%';
     this._panel = atom.workspace.addLeftPanel({
       item: this._panelElement,
       visible: this._isVisible,
@@ -90,10 +91,10 @@ class FileTreeController {
     var rootDirectories = atom.project.getDirectories().filter(directory => (
       FileTreeHelpers.isValidDirectory(directory)
     ));
-    var directoryPaths = rootDirectories.map(
+    var rootKeys = rootDirectories.map(
       directory => FileTreeHelpers.dirPathToKey(directory.getPath())
     );
-    this._actions.setRootDirectories(directoryPaths);
+    this._actions.setRootKeys(rootKeys);
   }
 
   _setVisibility(shouldBeVisible: boolean): void {

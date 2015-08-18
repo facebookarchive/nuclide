@@ -9,10 +9,15 @@
  * the root directory of this source tree.
  */
 
+var cx = require('react-classset');
+var FileTreeActions = require('../lib/FileTreeActions');
 var FileTreeStore = require('../lib/FileTreeStore');
 var React = require('react-for-atom');
 
+import type FileTreeNode from '../lib/FileTreeNode';
+
 var {PropTypes} = React;
+var actions = FileTreeActions.getInstance();
 
 // Leading indent for each tree node
 var INDENT_IN_PX = 10;
@@ -22,86 +27,61 @@ var DOWN_ARROW = '\uF0A3';
 var RIGHT_ARROW = '\uF078';
 var SPINNER = '\uF087';
 
-// TODO: replace this with an actual class?
-type EntryDescriptor = {
-  key: string,
-  text: string,
-  indentLevel: number,
-  isDirectory: boolean,
-  isExpanded: boolean,
-  isLoading: boolean,
-};
-
 var store = FileTreeStore.getInstance();
 
 class RootDirectory extends React.Component {
   render(): ReactElement {
-    var rootKey = this.props.nodeKey;
-    // Note: This double rootKey stuff might seem strange but it's only because we're rendering a
-    // root-level directory. For all other directories it will be more clear.
-    var isExpanded = store.isExpanded(rootKey, rootKey);
-    if (isExpanded) {
-      // get children FIRST since it might affect isLoading (lazy fetching)
-      var children = store.getChildren(rootKey, rootKey);
-      var isLoading = store.isLoading(rootKey, rootKey);
-    }
     return (
       <div className="nuclide-tree-root">
-        {this._renderEntry({
-          key: this.props.nodeKey,
-          text: this.props.name,
-          indentLevel: 0,
-          isDirectory: true,
-          isExpanded,
-          isLoading,
-        })}
-        {isExpanded ? this._renderChildren(children) : null}
+        {this._renderNode(store.getRootNode(this.props.rootKey), 0)}
       </div>
     );
   }
 
-  _renderChildren(children: Array<string>): Array<ReactElement> {
-    return children.map(nodeKey => {
-      // TODO: We should use a TreeNode<key, name, type> or something
-      var isDirectory = nodeKey.slice(-1) === '/';
-      var nodeName = nodeKey.replace(/\/+$/, '').split('/').pop();
-      return this._renderEntry({
-        key: nodeKey,
-        text: nodeName,
-        indentLevel: 1,
-        isDirectory: isDirectory,
-        isExpanded: false,
-        isLoading: false,
-      });
-    });
-  }
-
-  // TODO: Do something about this parameter soup
-  _renderEntry(entry: EntryDescriptor): ReactElement {
-    var {key, text, indentLevel, isDirectory, isExpanded, isLoading} = entry;
+  _renderNode(node: FileTreeNode, indentLevel: number): Array<ReactElement> {
     var outerStyle = {
       paddingLeft: INDENT_IN_PX + indentLevel * INDENT_PER_LEVEL,
     };
     var outerClassName = 'entry file list-item nuclide-tree-component-item';
-    var innerClassName = 'icon name ' + (isDirectory ? 'icon-file-directory' : 'icon-file-text');
+    var innerClassName = cx({
+      'icon name': true,
+      'icon-file-directory': node.isDirectory,
+      'icon-file-text': !node.isDirectory,
+    });
+    var isExpanded = node.isExpanded();
     var icon: ?ReactElement;
-    if (isLoading) {
+    if (node.isLoading()) {
       icon = <span className="nuclide-tree-component-item-arrow-spinner">{SPINNER}</span>;
-    } else if (isDirectory) {
+    } else if (node.isDirectory) {
       icon = isExpanded ? <span>{DOWN_ARROW}</span> : <span>{RIGHT_ARROW}</span>;
     }
-    return (
-      <div key={key} className={outerClassName} style={outerStyle}>
-        <span className="nuclide-tree-component-item-arrow">{icon}</span>
-        <span className={innerClassName}>{text}</span>
-      </div>
-    );
+    var onClick = event => this._toggleExpanded(node);
+    var elements = [
+      <div key={node.nodeKey} className={outerClassName} style={outerStyle}>
+        <span onClick={onClick} className="nuclide-tree-component-item-arrow">{icon}</span>
+        <span className={innerClassName}>{node.nodeName}</span>
+      </div>,
+    ];
+    if (isExpanded) {
+      node.getChildNodes().forEach(childNode => {
+        elements = elements.concat(this._renderNode(childNode, indentLevel + 1));
+      });
+    }
+    return elements;
   }
+
+  _toggleExpanded(node: FileTreeNode) {
+    if (node.isExpanded()) {
+      actions.collapseNode(node.rootKey, node.nodeKey);
+    } else {
+      actions.expandNode(node.rootKey, node.nodeKey);
+    }
+  }
+
 }
 
 RootDirectory.propTypes = {
-  nodeKey: PropTypes.string.isRequired,
-  name: PropTypes.string.isRequired,
+  rootKey: PropTypes.string.isRequired,
 };
 
 

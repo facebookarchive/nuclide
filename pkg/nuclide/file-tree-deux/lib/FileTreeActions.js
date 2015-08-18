@@ -38,10 +38,33 @@ class FileTreeActions {
     this._store = FileTreeStore.getInstance();
   }
 
-  setRootDirectories(rootDirectories: Array<string>): void {
+  setRootKeys(rootKeys: Array<string>): void {
+    var existingRootKeySet: Set<string> = new Set(this._store.getRootKeys());
+    var addedRootKeys: Array<string> = rootKeys.filter(
+      key => !existingRootKeySet.has(key)
+    );
     this._dispatcher.dispatch({
-      actionType: ActionType.SET_ROOT_DIRECTORIES,
-      rootDirectories,
+      actionType: ActionType.SET_ROOT_KEYS,
+      rootKeys,
+    });
+    for (var rootKey: string of addedRootKeys) {
+      this.expandNode(rootKey, rootKey);
+    }
+  }
+
+  expandNode(rootKey: string, nodeKey: string): void {
+    this._dispatcher.dispatch({
+      actionType: ActionType.EXPAND_NODE,
+      rootKey,
+      nodeKey,
+    });
+  }
+
+  collapseNode(rootKey: string, nodeKey: string): void {
+    this._dispatcher.dispatch({
+      actionType: ActionType.COLLAPSE_NODE,
+      rootKey,
+      nodeKey,
     });
   }
 }

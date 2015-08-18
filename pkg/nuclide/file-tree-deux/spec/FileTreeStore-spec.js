@@ -15,17 +15,28 @@ describe('FileTreeStore', () => {
   var store: FileTreeStore = FileTreeStore.getInstance();
   var actions: FileTreeActions = FileTreeActions.getInstance();
 
-  it('should be initialized', () => {
-    var rootDirectories = store.getRootDirectories();
-    expect(Array.isArray(rootDirectories)).toBe(true);
-    expect(rootDirectories.length).toBe(0);
-    expect(rootDirectories === store.getData().rootDirectories).toBe(true);
+  it('should be initialized with no root keys', () => {
+    var rootKeys = store.getRootKeys();
+    expect(Array.isArray(rootKeys)).toBe(true);
+    expect(rootKeys.length).toBe(0);
   });
 
-  it('should get updated via actions', () => {
-    actions.setRootDirectories(['a', 'b']);
-    var rootDirectories = store.getRootDirectories();
-    expect(Array.isArray(rootDirectories)).toBe(true);
-    expect(rootDirectories.join(',')).toBe('a,b');
+  it('should update root keys via actions', () => {
+    actions.setRootKeys(['/foo/', '/bar/']);
+    var rootKeys = store.getRootKeys();
+    expect(Array.isArray(rootKeys)).toBe(true);
+    expect(rootKeys.join('|')).toBe('/foo/|/bar/');
+  });
+
+  it('should expand root keys as they are added', () => {
+    var rootKey = '/asdf/';
+    actions.setRootKeys([rootKey]);
+    var node = store.getNode(rootKey, rootKey);
+    expect(node.isExpanded()).toBe(true);
+  });
+
+  it('should consider non-existent keys collapsed', () => {
+    var node = store.getNode('/a/', '/a/b/c/');
+    expect(node.isExpanded()).toBe(false);
   });
 });

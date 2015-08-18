@@ -46,18 +46,15 @@ class FileTree extends React.Component {
   }
 
   _renderChildren() {
-    var rootDirectories: Array<string> = store.getRootDirectories();
-    if (rootDirectories.length === 0) {
+    var rootKeys: Array<string> = store.getRootKeys();
+    if (rootKeys.length === 0) {
       return <div>No project root</div>;
     }
-    return rootDirectories.map((nodeKey) => {
-      // TODO: remove this string manipulation
-      var nodeName = nodeKey.replace(/\/+$/, '').split('/').pop();
+    return rootKeys.map((rootKey) => {
       return (
         <RootDirectory
-          key={nodeKey}
-          nodeKey={nodeKey}
-          name={nodeName}
+          key={rootKey}
+          rootKey={rootKey}
         />
       );
     });
