@@ -66,6 +66,10 @@ class RequestSerializer {
       };
     }
   }
+
+  isRunInProgress(): boolean {
+    return this._lastDispatchedOp > this._lastFinishedOp;
+  }
 }
 
 var promises = module.exports = {

@@ -202,7 +202,7 @@ class LinterAdapter {
   }
 
   _lintInProgress(): boolean {
-    return this._lastDispatchedLint > this._lastFinishedLint;
+    return this._requestSerializer.isRunInProgress();
   }
 }
 
