@@ -41,6 +41,11 @@ describe('Scan Handler Tests', () => {
       var updates = [];
       var results = await scanhandler.search(folder, 'hello world', update => { updates.push(update) }, false, []);
       var expected = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'basic.json')));
+
+      // Sort the list of matches by filename to normalize order.
+      sortResults(updates);
+      sortResults(results);
+
       expect({results, updates}).diffJson(expected);
     });
   });
@@ -57,6 +62,11 @@ describe('Scan Handler Tests', () => {
       var updates = [];
       var results = await scanhandler.search(folder, 'hello world', update => { updates.push(update) }, true, []);
       var expected = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'casesensitive.json')));
+
+      // Sort the list of matches by filename to normalize order.
+      sortResults(updates);
+      sortResults(results);
+
       expect({results, updates}).diffJson(expected);
     });
   });
@@ -77,7 +87,7 @@ describe('Scan Handler Tests', () => {
       var results = await scanhandler.search(folder, 'hello world', update => { updates.push(update) }, false, ['dir2', 'dir3', 'nonexistantdir']);
       var expected = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'subdirs.json')));
 
-      // Since order in which results are returned for different subdirectories may not be deterministic, sort the list of matches by filename
+      // Sort the list of matches by filename to normalize order.
       sortResults(updates);
       sortResults(results);
 
@@ -106,6 +116,11 @@ describe('Scan Handler Tests', () => {
       var updates = [];
       var results = await scanhandler.search(folder, 'hello world', update => { updates.push(update) }, false, []);
       var expected = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'repo.json')));
+
+      // Sort the list of matches by filename to normalize order.
+      sortResults(updates);
+      sortResults(results);
+
       expect({updates, results}).diffJson(expected);
     });
   });
@@ -135,6 +150,11 @@ describe('Scan Handler Tests', () => {
       var updates = [];
       var results = await scanhandler.search(folder, 'hello world', update => { updates.push(update) }, false, []);
       var expected = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'repo.json')));
+
+      // Sort the list of matches by filename to normalize order.
+      sortResults(updates);
+      sortResults(results);
+
       expect({updates, results}).diffJson(expected);
     });
   });
