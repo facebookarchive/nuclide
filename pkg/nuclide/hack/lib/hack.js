@@ -172,7 +172,7 @@ module.exports = {
 
     var {path, protocol, host} = parse(editor.getPath());
     var contents = editor.getText();
-    var symbol = await hackLanguage.getSymbolNameAtPosition(
+    var symbol = await hackLanguage.getSymbolNameAtPositionWithDependencies(
       path,
       contents,
       line + 1,

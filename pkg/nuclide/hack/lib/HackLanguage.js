@@ -257,6 +257,24 @@ module.exports = class HackLanguage {
     };
   }
 
+  /**
+   * A thin wrapper around getSymbolNameAtPosition that waits for dependencies before reporting
+   * that no symbol name can be resolved.
+   */
+  async getSymbolNameAtPositionWithDependencies(
+    path: string,
+    contents: string,
+    lineNumber: number,
+    column: number,
+    timeout: ?number,
+  ): Promise<any> {
+    return this._waitForDependencies(
+      () => this.getSymbolNameAtPosition(path, contents, lineNumber, column),
+      x => x != null,
+      timeout,
+    );
+  }
+
   async _getDefinitionLocationAtPosition(
       path: string,
       contents: string,
@@ -409,6 +427,34 @@ module.exports = class HackLanguage {
       atom.notifications.addWarning(error.message || error);
       return defaultValue;
     }
+  }
+
+  /**
+   * Continually retries the function provided until either:
+   * 1) the return value is "acceptable" (if provided)
+   * 2) dependencies have finished loading, or
+   * 3) the specified timeout has been reached.
+   */
+  async _waitForDependencies<T>(
+    func: (() => Promise<T>),
+    acceptable: ?((value: T) => boolean),
+    timeoutMs: ?number,
+  ): Promise<T> {
+    var startTime = Date.now();
+    while (!timeoutMs || Date.now() - startTime < timeoutMs) {
+      var result = await func();
+      if ((acceptable && acceptable(result)) || this.isFinishedLoadingDependencies()) {
+        return result;
+      }
+      // Wait for dependencies to finish loading - to avoid polling, we'll wait for the callback.
+      await new Promise(resolve => {
+        var subscription = this.onFinishedLoadingDependencies(() => {
+          subscription.dispose();
+          resolve();
+        });
+      });
+    }
+    throw new Error('Timed out waiting for Hack dependencies');
   }
 
 };
