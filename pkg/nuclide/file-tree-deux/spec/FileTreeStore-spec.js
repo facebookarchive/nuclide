@@ -10,6 +10,7 @@
  */
 var FileTreeStore = require('../lib/FileTreeStore');
 var FileTreeActions = require('../lib/FileTreeActions');
+var pathModule = require('path');
 
 describe('FileTreeStore', () => {
   var store: FileTreeStore = FileTreeStore.getInstance();
@@ -22,21 +23,27 @@ describe('FileTreeStore', () => {
   });
 
   it('should update root keys via actions', () => {
-    actions.setRootKeys(['/foo/', '/bar/']);
+    var dir1 = pathModule.join(__dirname, 'fixtures/dir1') + '/';
+    var dir2 = pathModule.join(__dirname, 'fixtures/dir2') + '/';
+    actions.setRootKeys([dir1, dir2]);
     var rootKeys = store.getRootKeys();
     expect(Array.isArray(rootKeys)).toBe(true);
-    expect(rootKeys.join('|')).toBe('/foo/|/bar/');
+    expect(rootKeys.join('|')).toBe(`${dir1}|${dir2}`);
+    store.reset();
   });
 
   it('should expand root keys as they are added', () => {
-    var rootKey = '/asdf/';
+    var rootKey = pathModule.join(__dirname, 'fixtures') + '/';
     actions.setRootKeys([rootKey]);
     var node = store.getNode(rootKey, rootKey);
     expect(node.isExpanded()).toBe(true);
+    store.reset();
   });
 
   it('should consider non-existent keys collapsed', () => {
-    var node = store.getNode('/a/', '/a/b/c/');
+    var rootKey = pathModule.join(__dirname, 'fixtures') + '/';
+    var node = store.getNode(rootKey, rootKey + 'asdf');
     expect(node.isExpanded()).toBe(false);
+    store.reset();
   });
 });

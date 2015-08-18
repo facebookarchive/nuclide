@@ -15,6 +15,7 @@ var FileTreeDispatcher = require('./FileTreeDispatcher');
 var FileTreeHelpers = require('./FileTreeHelpers');
 var FileTreeNode = require('./FileTreeNode');
 var Immutable = require('immutable');
+var Logging = require('nuclide-logging');
 
 import type {Dispatcher} from 'flux';
 
@@ -25,6 +26,7 @@ type StoreData = {
   expandedKeysByRoot: { [key: string]: Immutable.Set<string> },
   isLoadingMap: { [key: string]: ?Promise },
   rootKeys: Array<string>,
+  subscriptionMap: { [key: string]: Disposable },
 };
 
 var instance: FileTreeStore;
@@ -38,6 +40,7 @@ class FileTreeStore {
   _data: StoreData;
   _dispatcher: Dispatcher;
   _emitter: Emitter;
+  _logger: any;
   _timer: ?Object;
 
   static getInstance(): FileTreeStore {
@@ -54,6 +57,7 @@ class FileTreeStore {
     this._dispatcher.register(
       payload => this._onDispatch(payload)
     );
+    this._logger = Logging.getLogger();
   }
 
   _getDefaults(): StoreData {
@@ -62,13 +66,14 @@ class FileTreeStore {
       expandedKeysByRoot: {},
       isLoadingMap: {},
       rootKeys: [],
+      subscriptionMap: {},
     };
   }
 
   _onDispatch(payload: ActionPayload): void {
     switch (payload.actionType) {
       case ActionType.SET_ROOT_KEYS:
-        this._set('rootKeys', payload.rootKeys);
+        this._setRootKeys(payload.rootKeys);
         break;
       case ActionType.EXPAND_NODE:
         var rootKey = payload.rootKey;
@@ -83,6 +88,9 @@ class FileTreeStore {
 
   // This is a private method because in Flux we should never externally write to the data store.
   // Only by receiving actions (from dispatcher) should the data store be changed.
+  // Note: `_set` can be called multiple times within one iteration of an event loop without
+  // thrashing the UI because we are using setImmediate to batch change notifications, effectively
+  // letting our views re-render once for multiple consecutive writes.
   _set(key: string, value: mixed): void {
     var oldData = this._data;
     // Immutability for the win!
@@ -161,12 +169,110 @@ class FileTreeStore {
     );
   }
 
+  _setRootKeys(rootKeys: Array<string>): void {
+    var oldRootKeys = this._data.rootKeys;
+    var newRootKeySet = new Set(rootKeys);
+    oldRootKeys.forEach((rootKey) => {
+      if (!newRootKeySet.has(rootKey)) {
+        this._purgeDirectory(rootKey);
+      }
+    });
+    var oldRootKeySet = new Set(oldRootKeys);
+    rootKeys.forEach((rootKey) => {
+      if (!oldRootKeySet.has(rootKey)) {
+        this._addSubscription(rootKey);
+      }
+    });
+    this._set('rootKeys', rootKeys);
+  }
+
   _setChildKeys(nodeKey: string, childKeys: ?Array<string>): void {
     var oldChildKeys = this._data.childKeyMap[nodeKey];
-    if (oldChildKeys && oldChildKeys.length) {
-      // TODO: cleanup removed children
+    if (oldChildKeys) {
+      var newChildKeySet = childKeys ? new Set(childKeys) : new Set();
+      oldChildKeys.forEach((childKey) => {
+        // if it's a directory and it doesn't exist in the new set of child keys
+        if (FileTreeHelpers.isDirKey(childKey) && !newChildKeySet.has(childKey)) {
+          this._purgeDirectory(childKey);
+        }
+      });
+    }
+    if (childKeys) {
+      var oldChildKeySet = oldChildKeys ? new Set(oldChildKeys) : new Set();
+      childKeys.forEach((childKey) => {
+        // if it's a directory and it doesn't exist in the old set of child keys
+        if (FileTreeHelpers.isDirKey(childKey) && !oldChildKeySet.has(childKey)) {
+          this._addSubscription(childKey);
+        }
+      });
     }
     this._set('childKeyMap', setProperty(this._data.childKeyMap, nodeKey, childKeys));
+  }
+
+  _onDirectoryChange(nodeKey: string): void {
+    this._fetchChildKeys(nodeKey);
+  }
+
+  _addSubscription(nodeKey: string): void {
+    var directory = FileTreeHelpers.getDirectoryByKey(nodeKey);
+    if (!directory) {
+      return;
+    }
+    var subscription;
+    try {
+      // this call might fail if we try to watch a non-existing directory, or if
+      // permission denied
+      subscription = directory.onDidChange(() => {
+        this._onDirectoryChange(nodeKey);
+      });
+    } catch (ex) {
+      // Log error but proceed un-interrupted because there's not much else we can do here.
+      this._logger.error(`Cannot subscribe to directory "${nodeKey}"`, ex);
+      return;
+    }
+    this._set('subscriptionMap', setProperty(this._data.subscriptionMap, nodeKey, subscription));
+  }
+
+  _removeSubscription(nodeKey: string): void {
+    var subscription = this._data.subscriptionMap[nodeKey];
+    if (subscription) {
+      subscription.dispose();
+      this._set('subscriptionMap', setProperty(this._data.subscriptionMap, nodeKey, null));
+    }
+  }
+
+  // If we purge a directory, then we need to purge it's descendent directoriess also. Purging
+  // removes stuff from the data store including cached list of child nodes and subscriptions.
+  _purgeDirectory(nodeKey: string): void {
+    var childKeys = this._data.childKeyMap[nodeKey];
+    if (childKeys) {
+      childKeys.forEach((childKey) => {
+        if (FileTreeHelpers.isDirKey(childKey)) {
+          this._purgeDirectory(childKey);
+        }
+      });
+      this._set('childKeyMap', setProperty(this._data.childKeyMap, nodeKey, null));
+    }
+    this._removeSubscription(nodeKey);
+    var expandedKeysByRoot = this._data.expandedKeysByRoot;
+    for (var rootKey of Object.keys(expandedKeysByRoot)) {
+      var expandedKeys = expandedKeysByRoot[rootKey];
+      if (expandedKeys.has(nodeKey)) {
+        this._setExpandedKeys(rootKey, expandedKeys.delete(nodeKey));
+      }
+    }
+  }
+
+  reset(): void {
+    var subscriptionMap = this._data.subscriptionMap;
+    for (var nodeKey of Object.keys(subscriptionMap)) {
+      var subscription = subscriptionMap[nodeKey];
+      if (subscription) {
+        subscription.dispose();
+      }
+    }
+    // Reset data store.
+    this._data = this._getDefaults();
   }
 
   subscribe(listener: ChangeListener): Disposable {

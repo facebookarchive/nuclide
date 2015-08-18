@@ -112,6 +112,7 @@ class FileTreeController {
 
   destroy(): void {
     this._subscriptions.dispose();
+    this._store.reset();
     React.unmountComponentAtNode(this._panelElement);
     this._panel.destroy();
   }

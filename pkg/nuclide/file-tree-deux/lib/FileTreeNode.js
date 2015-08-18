@@ -19,17 +19,15 @@ class FileTreeNode {
   nodeKey: string;
   nodePath: string;
   nodeName: string;
-  isDirectory: boolean;
+  isContainer: boolean;
 
   constructor(store: FileTreeStore, rootKey: string, nodeKey: string) {
     this._store = store;
     this.rootKey = rootKey;
     this.nodeKey = nodeKey;
-    var nodePath = FileTreeHelpers.dirKeyToPath(nodeKey);
-    this.nodePath = nodePath;
-    var index = nodePath.lastIndexOf('/');
-    this.nodeName = (index === -1) ? nodePath : nodePath.slice(index + 1);
-    this.isDirectory = (nodeKey.slice(-1) === '/');
+    this.nodePath = FileTreeHelpers.keyToPath(nodeKey);
+    this.nodeName = FileTreeHelpers.keyToName(nodeKey);
+    this.isContainer = FileTreeHelpers.isDirKey(nodeKey);
   }
 
   isLoading(): boolean {

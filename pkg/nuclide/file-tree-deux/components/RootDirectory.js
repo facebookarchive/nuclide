@@ -45,14 +45,14 @@ class RootDirectory extends React.Component {
     var outerClassName = 'entry file list-item nuclide-tree-component-item';
     var innerClassName = cx({
       'icon name': true,
-      'icon-file-directory': node.isDirectory,
-      'icon-file-text': !node.isDirectory,
+      'icon-file-directory': node.isContainer,
+      'icon-file-text': !node.isContainer,
     });
     var isExpanded = node.isExpanded();
     var icon: ?ReactElement;
     if (node.isLoading()) {
       icon = <span className="nuclide-tree-component-item-arrow-spinner">{SPINNER}</span>;
-    } else if (node.isDirectory) {
+    } else if (node.isContainer) {
       icon = isExpanded ? <span>{DOWN_ARROW}</span> : <span>{RIGHT_ARROW}</span>;
     }
     var onClick = event => this._toggleExpanded(node);

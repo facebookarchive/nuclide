@@ -23,12 +23,22 @@ var {
 type Directory = LocalDirectory | RemoteDirectory;
 type File = LocalFile | RemoteFile;
 
-function dirKeyToPath(key: string): string {
-  return key.replace(/\/+$/, '');
-}
-
 function dirPathToKey(path: string): string {
   return path.replace(/\/+$/, '') + '/';
+}
+
+function isDirKey(key: string): boolean {
+  return (key.slice(-1) === '/');
+}
+
+function keyToName(key: string): string {
+  var path = keyToPath(key);
+  var index = path.lastIndexOf('/');
+  return (index === -1) ? path : path.slice(index + 1);
+}
+
+function keyToPath(key: string): string {
+  return key.replace(/\/+$/, '');
 }
 
 // The array this resolves to contains the `nodeKey` of each child
@@ -57,7 +67,7 @@ function fetchChildren(nodeKey: string): Promise<Array<string>> {
 
 // TODO: cache these instantiated directories (also expose a way to purge)
 function getDirectoryByKey(key: string): ?Directory {
-  var path = dirKeyToPath(key);
+  var path = keyToPath(key);
   if (RemoteUri.isRemote(path)) {
     var connection = RemoteConnection.getForUri(path);
     if (!connection) {
@@ -87,8 +97,10 @@ function isFullyQualifiedLocalPath(path: string): boolean {
 }
 
 module.exports = {
-  dirKeyToPath,
   dirPathToKey,
+  isDirKey,
+  keyToName,
+  keyToPath,
   fetchChildren,
   getDirectoryByKey,
   isValidDirectory,

@@ -12,17 +12,33 @@ var {Directory} = require('atom');
 var FileTreeHelpers = require('../lib/FileTreeHelpers');
 
 describe('FileTreeHelpers', () => {
-  it('should convert keys to paths', () => {
-    expect(FileTreeHelpers.dirKeyToPath('/a')).toBe('/a');
-    expect(FileTreeHelpers.dirKeyToPath('/a/')).toBe('/a');
-    expect(FileTreeHelpers.dirKeyToPath('/a/b//')).toBe('/a/b');
-    expect(FileTreeHelpers.dirKeyToPath('foo://host:123/a/b//')).toBe('foo://host:123/a/b');
+  it('should convert key to path', () => {
+    expect(FileTreeHelpers.keyToPath('/a')).toBe('/a');
+    expect(FileTreeHelpers.keyToPath('/a/')).toBe('/a');
+    expect(FileTreeHelpers.keyToPath('/a/b//')).toBe('/a/b');
+    expect(FileTreeHelpers.keyToPath('nuclide://host:123/a/b//')).toBe('nuclide://host:123/a/b');
   });
 
-  it('should convert paths to keys', () => {
+  it('should convert path to key', () => {
     expect(FileTreeHelpers.dirPathToKey('/a')).toBe('/a/');
     expect(FileTreeHelpers.dirPathToKey('/a/')).toBe('/a/');
     expect(FileTreeHelpers.dirPathToKey('/a//')).toBe('/a/');
+  });
+
+  it('should convert path to name', () => {
+    expect(FileTreeHelpers.keyToName('/a/b/foo')).toBe('foo');
+    expect(FileTreeHelpers.keyToName('/a/b/foo/')).toBe('foo');
+    expect(FileTreeHelpers.keyToName('/a/b/foo//')).toBe('foo');
+    expect(FileTreeHelpers.keyToName('nuclide://host:123/a/b/foo//')).toBe('foo');
+    expect(FileTreeHelpers.keyToName('asdf')).toBe('asdf');
+  });
+
+  it('should determine if a key represents a directory', () => {
+    expect(FileTreeHelpers.isDirKey('/a/b/foo')).toBe(false);
+    expect(FileTreeHelpers.isDirKey('/a/b/')).toBe(true);
+    expect(FileTreeHelpers.isDirKey('/a/b//')).toBe(true);
+    expect(FileTreeHelpers.isDirKey('nuclide://host:456/a/b')).toBe(false);
+    expect(FileTreeHelpers.isDirKey('nuclide://host:456/a/b/')).toBe(true);
   });
 
   it('should instantiate a directory from a key', () => {
