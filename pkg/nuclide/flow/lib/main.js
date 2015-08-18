@@ -35,7 +35,7 @@ type Autocomplete = {
   selector: string;
   disableForSelector: string;
   inclusionPriority: number;
-  getSuggestions: (request: Request) => Suggestion;
+  getSuggestions: (request: Request) => Promise<Array<Suggestion>>;
 }
 
 module.exports = {
@@ -52,6 +52,12 @@ module.exports = {
       default: true,
       description: 'Display tooltips with Flow types',
     },
+
+    enableAutocomplete: {
+      type: 'boolean',
+      default: false,
+      description: 'Currently does not work well, enable it if you would like to try it anyway',
+    },
   },
 
   activate() {},
@@ -66,12 +72,17 @@ module.exports = {
       var line = cursor.getBufferRow();
       var col = cursor.getBufferColumn();
 
-      return getServiceByNuclideUri('FlowService', file)
-        .getAutocompleteSuggestions(file, contents, line, col, prefix);
+      var enabled = atom.config.get('nuclide-flow.enableAutocomplete');
+      if (enabled) {
+        return getServiceByNuclideUri('FlowService', file)
+          .getAutocompleteSuggestions(file, contents, line, col, prefix);
+      } else {
+        return Promise.resolve([]);
+      }
     };
 
     return {
-      selector: GRAMMARS_STRING,
+      selector: JS_GRAMMARS.map(grammar => '.' + grammar).join(', '),
       disableForSelector: '.source.js .comment',
       inclusionPriority: 1,
       getSuggestions,
