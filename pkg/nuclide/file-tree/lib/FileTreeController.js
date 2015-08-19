@@ -270,12 +270,6 @@ class FileTreeController {
             command: 'nuclide-file-tree:add-folder',
           },
         ],
-        // Show 'New' menu only when a single directory is selected so the
-        // target is obvious and can handle a "new" object.
-        shouldDisplayForSelectedNodes(nodes) {
-          return nodes.length === 1 &&
-            nodes.every(node => node.isContainer());
-        },
       },
     ]);
     this.addContextMenuItemGroup([
