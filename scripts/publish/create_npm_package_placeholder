@@ -1,0 +1,45 @@
+#!/usr/bin/env python
+
+# Copyright (c) 2015-present, Facebook, Inc.
+# All rights reserved.
+#
+# This source code is licensed under the license found in the LICENSE file in
+# the root directory of this source tree.
+
+# This is designed to be used for packages whose source code has been exported to GitHub, but have
+# not been published to apm yet. This establishes a placeholder for the package in apm so that the
+# name cannot be claimed by someone else. The true implementation of the package will be published
+# whenever the next Nuclide release happens.
+
+# Set up the logging early on in the process.
+import logging
+logging.basicConfig(level=logging.INFO, format='%(message)s')
+
+# Do other ordinary imports.
+import os
+import sys
+
+# Add the lib/ directory to $PYTHONPATH so library code can be imported.
+sys.path.append(os.path.join(os.path.dirname(__file__), '../lib'))
+
+import optparse
+parser = optparse.OptionParser(usage='usage: %prog [options] <path_to_package_json>',
+                               description='Creates a placeholder npm package for the package ' +
+                                           'defined in the specified package.json.')
+options, args = parser.parse_args(sys.argv[1:])
+
+if len(args) != 1:
+    print('Exactly one argument must be specified for the path to the package.json, but was: %s' %
+            args)
+    sys.exit(1)
+
+path_to_package_json = os.path.realpath(args[0])
+if not os.path.isfile(path_to_package_json):
+    print('Not a file: %s' % path_to_package_json)
+    sys.exit(1)
+
+from publishers.create_npm_package_placeholder import create_placeholder
+is_success = create_placeholder(path_to_package_json)
+if not is_success:
+    print('Failed to publish package at %s to npm.' % path_to_package_json)
+    sys.exit(1)
