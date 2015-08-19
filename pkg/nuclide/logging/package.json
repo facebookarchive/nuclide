@@ -6,6 +6,7 @@
   "description": "Provides logging on both Nuclide client and Nuclide server",
   "nuclide": {
     "packageType": "Node",
+    "customDeps": "fb/package.json",
     "testRunner": "npm"
   },
   "dependencies": {

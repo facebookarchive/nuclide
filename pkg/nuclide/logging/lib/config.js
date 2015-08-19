@@ -17,6 +17,23 @@ var LOG_FILE_PATH = `/tmp/nuclide-${USER}-logs/nuclide.log`;
 
 var logDirectory = path.dirname(LOG_FILE_PATH);
 var logDirectoryInitialized = false;
+var scribeAppenderPath = path.join(__dirname, '../fb/scribeAppender.js');
+
+async function getServerLogAppenderConfig(): Promise<?Object> {
+  // Skip if we are running in Atom or open source version of Nuclide.
+  if (global.atom || !(await fsPromise.exists(scribeAppenderPath))) {
+    return null;
+  }
+
+  return {
+    type: 'logLevelFilter',
+    level: 'DEBUG',
+    appender: {
+      type: scribeAppenderPath,
+      scribeCategory: 'errorlog_arsenal',
+    },
+  };
+}
 
 module.exports = {
   async getDefaultConfig(): Promise<any> {
@@ -26,7 +43,7 @@ module.exports = {
       logDirectoryInitialized = true;
     }
 
-    return {
+    var config = {
       appenders: [
         {
           'type': 'logLevelFilter',
@@ -44,6 +61,13 @@ module.exports = {
         },
       ],
     };
+
+    var serverLogAppenderConfig = await getServerLogAppenderConfig();
+    if (serverLogAppenderConfig) {
+      config.appenders.push(serverLogAppenderConfig);
+    }
+
+    return config;
   },
 
   LOG_FILE_PATH,
