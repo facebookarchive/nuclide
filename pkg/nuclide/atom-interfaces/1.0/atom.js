@@ -91,6 +91,9 @@ declare class atom$Cursor {
 
 declare class atom$Decoration {
   destroy(): void;
+  onDidChangeProperties(
+    callback: (event: {oldProperties: Object; newProperties: Object}) => mixed
+    ): atom$Disposable;
   getMarker(): atom$Marker;
   getProperties(): mixed;
   setProperties(properties: mixed): void;
