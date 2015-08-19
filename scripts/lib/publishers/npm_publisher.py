@@ -91,7 +91,7 @@ class NpmPublisher(AbstractPublisher):
         self._transpiler.transpile_in_place(self.get_package_name(), self._tmp_package)
 
         rewrite_shrinkwrap_file(self._tmp_package, self.get_package_name(),
-            self._config.npm_package_names(), new_version)
+            self._config.nuclide_npm_package_names, new_version)
 
     def publish(self, new_version, atom_semver):
         try:

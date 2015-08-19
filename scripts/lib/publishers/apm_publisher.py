@@ -165,7 +165,7 @@ class ApmPublisher(AbstractPublisher):
         json_dump(package, package_file)
 
         rewrite_shrinkwrap_file(self._repo, self.get_package_name(),
-            self._config.npm_package_names(), new_version)
+            self._config.nuclide_npm_package_names, new_version)
 
         # Add a boilerplate .gitignore file if the package does not already have one.
         path_to_gitignore = os.path.join(self._repo, '.gitignore')
