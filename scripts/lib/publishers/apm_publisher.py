@@ -9,13 +9,11 @@ import os
 import re
 import shutil
 import subprocess
-import urllib2
 
 from abstract_publisher import AbstractPublisher
-from json_helpers import json_load, json_dump, json_dumps
+from apm_repository_helper import ApmRepositoryHelper
+from json_helpers import json_load, json_dump
 from package_version_rewriter import update_package_json_versions, rewrite_shrinkwrap_file
-
-APM_ORG_NAME = 'facebooknuclideapm'
 
 DEFAULT_GITIGNORE = '''\
 .DS_Store
@@ -45,56 +43,15 @@ class ApmPublisher(AbstractPublisher):
         self._transpiler = transpiler
         self._boilerplate_files = boilerplate_files
         self._git = git
-        self._github_access_token = github_access_token
+        self._apm_repository_helper = ApmRepositoryHelper(git, github_access_token)
         self._repo = None # This will be initialized in prepublish().
 
-    def _checkout_apm_repo(self, create_if_missing=True):
+    def _checkout_apm_repo(self):
         '''Returns the path to the directory where the clone of the repo was written.'''
-        repo = os.path.join(self._tmpdir, self.get_package_name())
-        logging.info('Cloning apm repo %s into %s.', self.get_package_name(), repo)
-        try:
-            self._git.clone('git@github.com:%s/%s.git' % (APM_ORG_NAME, self.get_package_name()),
-                            repo)
-        except:
-            logging.warning('apm repo for %s does not exist.', self.get_package_name())
-            if create_if_missing:
-                self._create_apm_repo()
-                # The call below must NOT create_if_missing, otherwise we might infinitely recurse.
-                repo = self._checkout_apm_repo(create_if_missing=False)
-
-                # Initialize the repository by creating and pushing the first commit.
-                with open(os.path.join(repo, 'README.md'), 'w') as f:
-                    f.write('# %s\n' % self.get_package_name())
-                self._git.commit_all(repo, 'Initial import.')
-                self._git.push_to_master(repo)
-            else:
-                raise
+        package_name = self.get_package_name()
+        repo = os.path.join(self._tmpdir, package_name)
+        self._apm_repository_helper.checkout_apm_repo(package_name, repo, create_if_missing=True)
         return repo
-
-    def _create_apm_repo(self):
-        logging.info('Creating initial apm repo for %s.', self.get_package_name())
-        url = ('https://api.github.com/orgs/%s/repos?access_token=%s' %
-               (APM_ORG_NAME, self._get_github_access_token()))
-        data = json_dumps({
-            'name': self.get_package_name(),
-            'description': ('This is a read-only copy of the %s package found in ' +
-                            'https://github.com/facebook/nuclide/tree/master/pkg/. Please file ' +
-                            'issues and pull requests against the original instead of this copy.') %
-                            self.get_package_name(),
-            'homepage': 'http://nuclide.io',
-            'has_issues': 'false',
-            'has_wiki': 'false',
-            'has_downloads': 'false',
-        }, indent=None)
-        urllib2.urlopen(url=url, data=data).close()
-
-    def _get_github_access_token(self):
-        # This will fail for non-Facebook users unless a token has been passed in from above.
-        if self._github_access_token:
-            return self._github_access_token
-        else:
-            from fb import credentials
-            return credentials.NUCLIDE_BOT_TOKEN
 
     def get_package_name(self):
         return self._config.package_name
