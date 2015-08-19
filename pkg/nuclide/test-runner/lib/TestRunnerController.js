@@ -24,7 +24,6 @@ var TestSuiteModel = require('./TestSuiteModel');
 var {array} = require('nuclide-commons');
 var logger = require('nuclide-logging').getLogger();
 var os = require('os');
-var pathUtil = require('path');
 var {track} = require('nuclide-analytics');
 
 export type TestRunnerControllerState = {
@@ -49,8 +48,8 @@ class TestRunnerController {
   // Bound Functions for use as callbacks.
   clearOutput: Function;
   hidePanel: Function;
-  runTests: Function;
   stopTests: Function;
+  _handleClickRun: Function;
 
   constructor(state: ?TestRunnerControllerState = {}, testRunners: Set<TestRunner>) {
     this._state = {
@@ -70,16 +69,16 @@ class TestRunnerController {
     // TODO: Replace with property initializers when supported by Flow;
     this.clearOutput = this.clearOutput.bind(this);
     this.hidePanel = this.hidePanel.bind(this);
-    this.runTests = this.runTests.bind(this);
     this.stopTests = this.stopTests.bind(this);
+    this._handleClickRun = this._handleClickRun.bind(this);
   }
 
   clearOutput() {
     this._buffer.setText('');
-    this._path = '';
-    this._run = null;
+    this._path = undefined;
+    this._run = undefined;
     this._stopListening();
-    this._testSuiteModel = null;
+    this._testSuiteModel = undefined;
     this._renderPanel();
   }
 
@@ -100,16 +99,26 @@ class TestRunnerController {
   }
 
   hidePanel() {
+    this.stopTests();
     this._state.panelVisible = false;
     if (this._panel) {
       this._panel.hide();
     }
   }
 
-  runTests(): void {
-    // If the test runner panel is not rendered yet, bail because it's not possible to do work.
-    if (!this._testRunnerPanel) {
-      logger.warn('Attempted to run tests with a null or undefined test runner panel.');
+  /**
+   * @return A Promise that resolves when testing has succesfully started.
+   */
+  async runTests(path?: string): Promise<void> {
+    // If the test runner panel is not rendered yet, ensure it is rendered before continuing.
+    if (this._testRunnerPanel == null || !this._state.panelVisible) {
+      await new Promise((resolve, reject) => {
+        this.showPanel(resolve);
+      });
+    }
+
+    if (this._testRunnerPanel == null) {
+      logger.error('Test runner panel did not render as expected. Aborting testing.');
       return;
     }
 
@@ -120,45 +129,57 @@ class TestRunnerController {
       return;
     }
 
-    // Only do work if the active item is a text editor because it will likely have a path, which
-    // will be the root of the test running.
-    var activeTextEditor = atom.workspace.getActiveTextEditor();
-    if (!activeTextEditor) {
-      logger.debug('Attempted to run tests with no active text editor.');
-      return;
-    }
+    // 1. Use the `path` argument to this function
+    // 2. Use `this._path` on the instance
+    // 3. Let `testPath` be `undefined` so the path will be taken from the active `TextEditor`
+    var testPath = (path === undefined) ? this._path : path;
 
-    // If the active text editor has no path, bail because there's nowhere to run tests.
-    var activeTextEditorPath = activeTextEditor.getPath();
-    if (!activeTextEditorPath) {
-      logger.warn('Attempted to run tests on an editor with no path.');
-      return;
+    // If there's no path yet, get the path from the active `TextEditor`.
+    if (testPath === undefined) {
+      var activeTextEditor = atom.workspace.getActiveTextEditor();
+      if (!activeTextEditor) {
+        logger.debug('Attempted to run tests with no active text editor.');
+        return;
+      }
+
+      // If the active text editor has no path, bail because there's nowhere to run tests.
+      testPath = activeTextEditor.getPath();
+      if (!testPath) {
+        logger.warn('Attempted to run tests on an editor with no path.');
+        return;
+      }
     }
 
     // If there's no test runner service for the URI of the active text editor, nothing further can
     // be done.
-    var testRunnerService = selectedTestRunner.getByUri(activeTextEditorPath);
+    var testRunnerService = selectedTestRunner.getByUri(testPath);
     if (!testRunnerService) {
-      logger.warn(`No test runner service found for path "${activeTextEditorPath}"`);
+      logger.warn(`No test runner service found for path "${testPath}"`);
       return;
     }
 
     this.clearOutput();
-    this._runTestRunnerServiceForPath(testRunnerService, activeTextEditorPath);
+    this._runTestRunnerServiceForPath(testRunnerService, testPath);
     track('testrunner-run-tests', {
-      path: activeTextEditorPath,
+      path: testPath,
       testRunner: selectedTestRunner.label,
     });
 
     // Set state as "Running" to give immediate feedback in the UI.
     this._setExecutionState(TestRunnerPanel.ExecutionState.RUNNING);
-    this._path = activeTextEditorPath;
+    this._path = testPath;
     this._renderPanel();
   }
 
   stopTests(): void {
     if (this._run && this._run.testRunner) {
-      this._run.testRunner.stop(this._run.id);
+      try {
+        this._run.testRunner.stop(this._run.id);
+      } catch (e) {
+        // If the remote connection goes away, it won't be possible to stop tests. Log an error and
+        // proceed as usual.
+        logger.error(`Error when stopping test run #'${this._run.id}: ${e}`);
+      }
     }
 
     // Respond in the UI immediately and assume the process is properly killed.
@@ -170,9 +191,9 @@ class TestRunnerController {
     return this._state;
   }
 
-  showPanel(): void {
+  showPanel(didRender?: () => mixed): void {
     this._state.panelVisible = true;
-    this._renderPanel();
+    this._renderPanel(didRender);
     if (this._panel) {
       this._panel.show();
     }
@@ -195,8 +216,14 @@ class TestRunnerController {
     // class, an undo will never happen. Disable it when appending to prevent doing unneeded
     // bookkeeping.
     //
-    // @see https://atom.io/docs/api/v1.0.4/TextBuffer#instance-append
+    // @see {@link https://atom.io/docs/api/v1.0.4/TextBuffer#instance-append|TextBuffer::append}
     this._buffer.append(`${text}${os.EOL}`, {undo: 'skip'});
+  }
+
+  _handleClickRun(event: SyntheticMouseEvent): void {
+    // Don't pass a reference to `runTests` directly because the callback receives a mouse event as
+    // its argument. `runTests` needs to be called with no arguments.
+    this.runTests();
   }
 
   _runTestRunnerServiceForPath(testRunnerService: Object, path: NuclideUri): void {
@@ -268,10 +295,8 @@ class TestRunnerController {
     // is destroyed.
     this._compositeDisposable = disposables;
 
-    // Run tests in the path's containing directory.
-    // TODO: Run exactly the path given when it's possible to run tests from a directory in the file
-    // tree.
-    testRunnerService.run(pathUtil.dirname(path)).then(runId => {
+    // Run tests for the path.
+    testRunnerService.run(path).then(runId => {
       this._run = new TestRunModel(runId, testRunnerService);
     });
   }
@@ -281,7 +306,7 @@ class TestRunnerController {
     this._renderPanel();
   }
 
-  _renderPanel() {
+  _renderPanel(didRender?: () => mixed) {
     // Initialize and render the contents of the panel only if the hosting container is visible by
     // the user's choice.
     if (!this._state.panelVisible) {
@@ -310,7 +335,7 @@ class TestRunnerController {
         executionState={this._executionState}
         onClickClear={this.clearOutput}
         onClickClose={this.hidePanel}
-        onClickRun={this.runTests}
+        onClickRun={this._handleClickRun}
         onClickStop={this.stopTests}
         path={this._path}
         progressValue={progressValue}
@@ -321,7 +346,8 @@ class TestRunnerController {
         testRunners={array.from(this._testRunners)}
         testSuiteModel={this._testSuiteModel}
       />,
-      root
+      root,
+      didRender
     );
 
     if (!this._panel) {

@@ -30,6 +30,10 @@ function createPaneContainer(): Object {
   return new paneContainerClass();
 }
 
+function runStopButtonClassName(icon: string, className: string): string {
+  return `btn btn-sm icon inline-block icon-${icon} ${className}`;
+}
+
 class TestRunnerPanel extends React.Component {
 
   _paneContainer: Object;
@@ -99,19 +103,20 @@ class TestRunnerPanel extends React.Component {
       case TestRunnerPanel.ExecutionState.RUNNING:
         runStopButton = (
           <button
-            className="btn btn-error btn-sm icon inline-block icon-primitive-square"
+            className={runStopButtonClassName('primitive-square', 'btn-error')}
             onClick={this.props.onClickStop}>
             Stop
           </button>
         );
         break;
       case TestRunnerPanel.ExecutionState.STOPPED:
+        var initialTest = this.props.path === undefined;
         runStopButton = (
           <button
-            className="btn btn-primary btn-sm icon inline-block icon-playback-play"
+            className={runStopButtonClassName(initialTest ? 'playback-play' : 'sync', 'btn-primary')}
             disabled={this.isDisabled()}
             onClick={this.props.onClickRun}>
-            Test
+            {initialTest ? 'Test' : 'Re-Test'}
           </button>
         );
         break;
@@ -144,7 +149,7 @@ class TestRunnerPanel extends React.Component {
 
     var pathMsg;
     if (this.props.path) {
-      pathMsg = <span>{pathUtil.basename(this.props.path)}</span>;
+      pathMsg = <span title={this.props.path}>{pathUtil.basename(this.props.path)}</span>;
     }
 
     var dropdown;

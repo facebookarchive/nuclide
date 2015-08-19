@@ -25,6 +25,20 @@ function getLogger() {
   return logger;
 }
 
+/**
+ * Returns a string of length `length` + 1 by replacing extra characters in the middle of `str` with
+ * an ellipsis character. Example:
+ *
+ *     > limitString('foobar', 4)
+ *     'fo…ar'
+ */
+function limitString(str: string, length?: number = 20): string {
+  var strLength = str.length;
+  return (strLength > length) ?
+    `${str.substring(0, length / 2)}…${str.substring(str.length - length / 2)}` :
+    str;
+}
+
 class Activation {
 
   _controller: Object; // TODO: Should be `TestRunnerController`, but it is lazily required.
@@ -44,6 +58,57 @@ class Activation {
           this._controller.togglePanel();
         }
       )
+    );
+    this._disposables.add(
+      atom.commands.add(
+        '.entry.file.list-item',
+        'nuclide-test-runner:run-tests',
+        (event) => {
+          var target = event.currentTarget.querySelector('.name');
+          this._controller.runTests(target.dataset.path);
+        }
+      )
+    );
+    this._disposables.add(
+      atom.contextMenu.add({
+        '.entry.file.list-item': [
+          {type: 'separator'},
+          {
+            // Intentionally **not** an arrow function because Atom sets the context when calling
+            // this and allows dynamically setting values by assigning to `this`.
+            created: function(event) {
+              var target = event.target;
+              if (target.dataset.name === undefined) {
+                // If the event did not happen on the `name` span, search for it in the descendants.
+                target = target.querySelector('.name');
+              }
+              if (target.dataset.name === undefined) {
+                // If no necessary `.name` descendant is found, don't display a context menu.
+                return false;
+              }
+              var name = target.dataset.name;
+              this.command = 'nuclide-test-runner:run-tests';
+              this.label = `Run tests at '${limitString(name)}'`;
+            },
+            shouldDisplay: (event) => {
+              // Don't show a testing option if there are no test runners.
+              if (this._testRunners.size === 0) {
+                return false;
+              }
+
+              var target = event.target;
+              if (target.dataset.name === undefined) {
+                // If the event did not happen on the `name` span, search for it in the descendants.
+                target = target.querySelector('.name');
+              }
+              // If no descendant has the necessary dataset to create this menu item, don't create
+              // it.
+              return target != null && target.dataset.name != null && target.dataset.path != null;
+            },
+          },
+          {type: 'separator'},
+        ],
+      })
     );
   }
 

@@ -40,6 +40,22 @@ describe('TestRunnerController', () => {
 
   });
 
+  describe('runTests()', () => {
+
+    it('forces the panel to be shown', () => {
+      // The controller needs at least one test runner to run tests.
+      testRunners.add({getByUri() {}, label: ''});
+      // Start with `panelVisible: false` to ensure the panel is initially hidden.
+      var controller = new TestRunnerController({panelVisible: false}, testRunners);
+      expect(atom.workspace.getBottomPanels().length).toEqual(0);
+      waitsForPromise(async () => {
+        await controller.runTests();
+        expect(atom.workspace.getBottomPanels().length).toEqual(1);
+      });
+    });
+
+  });
+
   describe('on addition of new test runners', () => {
 
     // When new test runners are added, the dropdown in the UI needs to update. However, it should

@@ -428,7 +428,7 @@ declare class atom$Clipboard {
 }
 
 declare class atom$ContextMenuManager {
-  add(itemsBySelector: Object): void;
+  add(itemsBySelector: Object): atom$Disposable;
 }
 
 declare class atom$Directory {
