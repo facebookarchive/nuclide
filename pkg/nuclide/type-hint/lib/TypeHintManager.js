@@ -94,6 +94,13 @@ class TypeHintManager {
     }
 
     var {hint, range} = typeHint;
+
+    var {track} = require('nuclide-analytics');
+    track('type-hint-popup', {
+      'scope': scopeName,
+      'message': hint,
+    });
+
     // Transform the matched element range to the hint range.
     this._marker = editor.markBufferRange(range, {invalidate: 'never'});
 
