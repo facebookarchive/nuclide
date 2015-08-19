@@ -19,6 +19,9 @@ class ApmRepositoryHelper(object):
         self._git = git
         self._github_access_token = github_access_token
 
+    @property
+    def git(self):
+        return self._git
 
     def checkout_apm_repo(self, package_name, repo, create_if_missing):
         '''Returns the path to the directory where the clone of the repo was written.'''
