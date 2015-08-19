@@ -282,19 +282,20 @@ var TreeRootComponent = React.createClass({
 
         var child = (
           <TreeNodeComponent {...item}
-              isContainer={node.isContainer()}
-              isExpanded={this._isNodeExpanded(node)}
-              isLoading={!node.isCacheValid()}
-              isSelected={isNodeSelected}
-              label={node.getLabel()}
-              labelClassName={this.props.labelClassNameForNode(node)}
-              rowClassName={this.props.rowClassNameForNode(node)}
-              onClickArrow={this._onClickNodeArrow}
-              onClick={this._onClickNode}
-              onDoubleClick={this._onDoubleClickNode}
-              onMouseDown={this._onMouseDown}
-              key={node.getKey()}
-              ref={ref}
+            isContainer={node.isContainer()}
+            isExpanded={this._isNodeExpanded(node)}
+            isLoading={!node.isCacheValid()}
+            isSelected={isNodeSelected}
+            label={node.getLabel()}
+            labelClassName={this.props.labelClassNameForNode(node)}
+            rowClassName={this.props.rowClassNameForNode(node)}
+            onClickArrow={this._onClickNodeArrow}
+            onClick={this._onClickNode}
+            onDoubleClick={this._onDoubleClickNode}
+            onMouseDown={this._onMouseDown}
+            path={node.getKey()}
+            key={node.getLabel()}
+            ref={ref}
           />
         );
         children.push(child);
@@ -337,7 +338,7 @@ var TreeRootComponent = React.createClass({
     this._allKeys = allKeys;
     this._keyToNode = keyToNode;
     return (
-      <div className='nuclide-tree-root'>
+      <div className="nuclide-tree-root">
         {children}
       </div>
     );
@@ -454,7 +455,7 @@ var TreeRootComponent = React.createClass({
         if (this._emitter) {
           this._emitter.removeListener('did-update', listener);
         }
-      }
+      };
     });
   },
 
@@ -661,7 +662,7 @@ var TreeRootComponent = React.createClass({
     } else {
       this.props.onConfirmSelection(node);
     }
-  }
+  },
 });
 
 module.exports = TreeRootComponent;

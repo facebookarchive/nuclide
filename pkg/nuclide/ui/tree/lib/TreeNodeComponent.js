@@ -26,7 +26,6 @@ var SPINNER = '\uF087';
  */
 var TreeNodeComponent = React.createClass({
   propTypes: {
-    node: PropTypes.instanceOf(LazyTreeNode).isRequired,
     depth: PropTypes.number.isRequired,
     isContainer: PropTypes.bool.isRequired,
     isExpanded: PropTypes.bool.isRequired,
@@ -34,10 +33,12 @@ var TreeNodeComponent = React.createClass({
     isSelected: PropTypes.bool.isRequired,
     label: PropTypes.string.isRequired,
     labelClassName: PropTypes.string.isRequired,
+    node: PropTypes.instanceOf(LazyTreeNode).isRequired,
     onClickArrow: PropTypes.func.isRequired,
     onClick: PropTypes.func.isRequired,
     onDoubleClick: PropTypes.func.isRequired,
     onMouseDown: PropTypes.func.isRequired,
+    path: PropTypes.string.isRequired,
     rowClassName: PropTypes.string,
   },
 
@@ -48,7 +49,7 @@ var TreeNodeComponent = React.createClass({
   render(): ReactElement {
     var rowClassNameObj: {[key: string]: boolean} = {
       // Support for selectors in the "file-icons" package.
-      // See: https://atom.io/packages/file-icons
+      // @see {@link https://atom.io/packages/file-icons|file-icons}
       'entry file list-item': true,
       'nuclide-tree-component-item': true,
       'nuclide-tree-component-selected': this.props.isSelected,
@@ -65,7 +66,7 @@ var TreeNodeComponent = React.createClass({
     if (this.props.isContainer) {
       if (this.props.isExpanded) {
         if (this.props.isLoading) {
-          arrow = <span className='nuclide-tree-component-item-arrow-spinner'>{SPINNER}</span>;
+          arrow = <span className="nuclide-tree-component-item-arrow-spinner">{SPINNER}</span>;
         } else {
           arrow = DOWN_ARROW;
         }
@@ -81,21 +82,22 @@ var TreeNodeComponent = React.createClass({
         onClick={this._onClick}
         onDoubleClick={this._onDoubleClick}
         onMouseDown={this._onMouseDown}>
-        <span className='nuclide-tree-component-item-arrow' ref='arrow'>
+        <span className="nuclide-tree-component-item-arrow" ref="arrow">
           {arrow}
         </span>
         <span
           className={this.props.labelClassName}
           // `data-name` is support for selectors in the "file-icons" package.
-          // See: https://atom.io/packages/file-icons
-          data-name={this.props.label}>
+          // @see {@link https://atom.io/packages/file-icons|file-icons}
+          data-name={this.props.label}
+          data-path={this.props.path}>
           {this.props.label}
         </span>
       </div>
     );
   },
 
-  _onClick(event: SyntheticEvent): void {
+  _onClick(event: SyntheticMouseEvent): void {
     if (this.refs['arrow'].getDOMNode().contains(event.target)) {
       this.props.onClickArrow(event, this.props.node);
     } else {
@@ -103,11 +105,11 @@ var TreeNodeComponent = React.createClass({
     }
   },
 
-  _onDoubleClick(event: SyntheticEvent): void {
+  _onDoubleClick(event: SyntheticMouseEvent): void {
     this.props.onDoubleClick(event, this.props.node);
   },
 
-  _onMouseDown(event: SyntheticEvent): void {
+  _onMouseDown(event: SyntheticMouseEvent): void {
     this.props.onMouseDown(event, this.props.node);
   },
 });
