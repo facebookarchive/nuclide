@@ -33,6 +33,26 @@ describe('stacktrace hook', () => {
     __test__.resetPrepareStackTraceHooked();
   });
 
+  it('creates hooked prepareStackTrace', () => {
+    var {createHookedPrepareStackTrace} = __test__;
+    var prepareStackTrace = (error, frames) => 'test';
+    var hooked = createHookedPrepareStackTrace(prepareStackTrace);
+    expect(hooked.name).toBe('nuclideHookedPrepareStackTrace');
+    expect(hooked !== prepareStackTrace).toBe(true);
+  });
+
+  it('does\'t hook a hooked function again', () => {
+    var {createHookedPrepareStackTrace} = __test__;
+    var prepareStackTrace = (error, frames) => 'test';
+    var hooked = createHookedPrepareStackTrace(prepareStackTrace);
+    expect(hooked.name).toBe('nuclideHookedPrepareStackTrace');
+    expect(hooked !== prepareStackTrace).toBe(true);
+
+    var hookedTwice = createHookedPrepareStackTrace(hooked);
+    expect(hookedTwice.name).toBe('nuclideHookedPrepareStackTrace');
+    expect(hookedTwice).toBe(hooked);
+  });
+
   it('generates structured stacktrace', () => {
     addPrepareStackTraceHook();
     var e = new Error();
@@ -71,14 +91,23 @@ describe('stacktrace hook', () => {
     expect(typeof e.stack).toBe('string');
     validateStructuredStackTraceCreated(e);
 
+    var originalPrepareStackTrace = Error.prepareStackTrace;
+
+    // Add customization and verify it works.
     var customizedStack = 'There is no spoon';
     Error.prepareStackTrace = (_, frames) => {
       return customizedStack;
     };
 
     e = new Error();
-    // e.stack is customized.
     expect(e.stack).toBe(customizedStack);
+    validateStructuredStackTraceCreated(e);
+
+    // Revert the customization and verify it has been reverted.
+    Error.prepareStackTrace = originalPrepareStackTrace;
+    e = new Error();
+    expect(e.stackTrace).toBe(undefined);
+    expect(e.stack !== customizedStack).toBe(true);
     validateStructuredStackTraceCreated(e);
   });
 });

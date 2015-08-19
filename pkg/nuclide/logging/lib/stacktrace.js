@@ -8,10 +8,11 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
+type PrepareStackTraceFunction = (error: Error, frames: Array<node$CallSite>) => any;
 
-var PREPARE_STACK_TRACE_HOOKED_KEY = '_nuclide_stack_trace_hooked';
+var PREPARE_STACK_TRACE_HOOKED_KEY = '_nuclide_error_stack_trace_hooked';
 
-var customizedPrepareStackTrace: ?() => string = null;
+var hookedPrepareStackTrace: ?PrepareStackTraceFunction;
 
 /**
  * v8 provided a way to customize Error stacktrace generation by overwriting
@@ -28,33 +29,48 @@ export default function addPrepareStackTraceHook(): void {
   require('nuclide-commons').singleton.get(
     PREPARE_STACK_TRACE_HOOKED_KEY,
     () => {
-        // By default, Error.prepareStackTrace is null. However, if there is already a customization
-        // attached to Error.prepareStackTrace, we save it to customizedPrepareStackTrace so it will be
-        // called by by prepareStackTraceHook.
-        if (Error.prepareStackTrace) {
-          customizedPrepareStackTrace = Error.prepareStackTrace;
-        }
+      hookedPrepareStackTrace = createHookedPrepareStackTrace(Error.prepareStackTrace || defaultPrepareStackTrace);
 
-        // Hook Error.prepareStackTrace by leveraging get/set accessor. In this way, all the call to
-        // Error.prepareStackTrace will be handled by prepareStackTraceHook while writing to
-        // it will be saved to customizedPrepareStackTrace.
-        Object.defineProperty(Error, 'prepareStackTrace', {
-          get: () => prepareStackTraceHook,
-          set: newValue => {
-            if (newValue !== prepareStackTraceHook) {
-              customizedPrepareStackTrace = newValue;
-            }
-          },
-          enumerable: false,
-          configurable: true,
-        });
-        return true;
+      // Hook Error.prepareStackTrace by leveraging get/set accessor. In this way, writing to
+      // Error.prepareStackTrace will put the new prepareStackTrace functions in a wrapper that calls
+      // the hook.
+      Object.defineProperty(Error, 'prepareStackTrace', {
+        get: () => hookedPrepareStackTrace,
+        set: newValue => {
+          hookedPrepareStackTrace = createHookedPrepareStackTrace(newValue || defaultPrepareStackTrace);
+        },
+        enumerable: false,
+        configurable: true,
       });
+      return true;
+    },
+  );
 }
 
-// The hook that attaches 'stackTrace' to error and then fallback to
-// customizedPrepareStackTrace/defaultPrepareStackTrace.
-function prepareStackTraceHook(error: Error, frames: Array<node$CallSite>): string {
+/**
+ * Create a wrapper that calls to structuredStackTraceHook first, then return the result of
+ * prepareStackTrace.
+ */
+function createHookedPrepareStackTrace(
+  prepareStackTrace: PrepareStackTraceFunction,
+): PrepareStackTraceFunction {
+  // If the prepareStackTrace is already been hooked, just return it.
+  if (prepareStackTrace.name === 'nuclideHookedPrepareStackTrace') {
+    return prepareStackTrace;
+  }
+
+  var hookedFunction = function nuclideHookedPrepareStackTrace(
+    error: Error,
+    frames: Array<node$CallSite>,
+  ): any {
+    structuredStackTraceHook(error, frames);
+    return prepareStackTrace(error, frames);
+  };
+
+  return hookedFunction;
+}
+
+function structuredStackTraceHook(error: Error, frames: Array<node$CallSite>): void {
   error['stackTrace'] = frames.map(frame => {
     return {
       functionName: frame.getFunctionName(),
@@ -69,11 +85,6 @@ function prepareStackTraceHook(error: Error, frames: Array<node$CallSite>): stri
       isConstructor: frame.isConstructor(),
     };
   });
-
-  if (customizedPrepareStackTrace) {
-    return customizedPrepareStackTrace(error, frames);
-  }
-  return defaultPrepareStackTrace(error, frames);
 }
 
 function defaultPrepareStackTrace(error: Error, frames: Array<node$CallSite>): string {
@@ -85,6 +96,7 @@ function defaultPrepareStackTrace(error: Error, frames: Array<node$CallSite>): s
 }
 
 export var __test__ = {
+  createHookedPrepareStackTrace,
   resetPrepareStackTraceHooked: () => {
     require('nuclide-commons').singleton.clear(PREPARE_STACK_TRACE_HOOKED_KEY);
   },
