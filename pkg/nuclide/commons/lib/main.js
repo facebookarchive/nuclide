@@ -106,4 +106,8 @@ module.exports = {
   get session() {
     return require('./session');
   },
+
+  get singleton() {
+    return require('./singleton');
+  },
 };

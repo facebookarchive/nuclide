@@ -25,32 +25,31 @@ var customizedPrepareStackTrace: ?() => string = null;
  * customize Error.prepareStackTrace.
  */
 export default function addPrepareStackTraceHook(): void {
-  if (global[PREPARE_STACK_TRACE_HOOKED_KEY]) {
-    return;
-  }
+  require('nuclide-commons').singleton.get(
+    PREPARE_STACK_TRACE_HOOKED_KEY,
+    () => {
+        // By default, Error.prepareStackTrace is null. However, if there is already a customization
+        // attached to Error.prepareStackTrace, we save it to customizedPrepareStackTrace so it will be
+        // called by by prepareStackTraceHook.
+        if (Error.prepareStackTrace) {
+          customizedPrepareStackTrace = Error.prepareStackTrace;
+        }
 
-  // By default, Error.prepareStackTrace is null. However, if there is already a customization
-  // attached to Error.prepareStackTrace, we save it to customizedPrepareStackTrace so it will be
-  // called by by prepareStackTraceHook.
-  if (Error.prepareStackTrace) {
-    customizedPrepareStackTrace = Error.prepareStackTrace;
-  }
-
-  // Hook Error.prepareStackTrace by leveraging get/set accessor. In this way, all the call to
-  // Error.prepareStackTrace will be handled by prepareStackTraceHook while writing to
-  // it will be saved to customizedPrepareStackTrace.
-  Object.defineProperty(Error, 'prepareStackTrace', {
-    get: () => prepareStackTraceHook,
-    set: newValue => {
-      if (newValue !== prepareStackTraceHook) {
-        customizedPrepareStackTrace = newValue;
-      }
-    },
-    enumerable: false,
-    configurable: true,
-  });
-
-  global[PREPARE_STACK_TRACE_HOOKED_KEY] = true;
+        // Hook Error.prepareStackTrace by leveraging get/set accessor. In this way, all the call to
+        // Error.prepareStackTrace will be handled by prepareStackTraceHook while writing to
+        // it will be saved to customizedPrepareStackTrace.
+        Object.defineProperty(Error, 'prepareStackTrace', {
+          get: () => prepareStackTraceHook,
+          set: newValue => {
+            if (newValue !== prepareStackTraceHook) {
+              customizedPrepareStackTrace = newValue;
+            }
+          },
+          enumerable: false,
+          configurable: true,
+        });
+        return true;
+      });
 }
 
 // The hook that attaches 'stackTrace' to error and then fallback to
@@ -87,6 +86,6 @@ function defaultPrepareStackTrace(error: Error, frames: Array<node$CallSite>): s
 
 export var __test__ = {
   resetPrepareStackTraceHooked: () => {
-    global[PREPARE_STACK_TRACE_HOOKED_KEY] = false;
+    require('nuclide-commons').singleton.clear(PREPARE_STACK_TRACE_HOOKED_KEY);
   },
 };

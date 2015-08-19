@@ -32,7 +32,18 @@ var lazyLogger;
 function configLog4jsLogger(config: any, options: any): void {
   var log4js = require('log4js');
   log4js.configure(config, options);
-  global[LOG4JS_INSTANCE_KEY] = log4js.getLogger(LOGGER_CATEGORY);
+  return log4js.getLogger(LOGGER_CATEGORY);
+}
+
+export function updateConfig(config: any, options: any): void {
+  require('nuclide-commons').singleton.reset(
+        LOG4JS_INSTANCE_KEY,
+        Promise.resolve(configLog4jsLogger(config, options)));
+}
+
+async function createLog4jsLogger() {
+  var defaultConfig = await require('./config').getDefaultConfig();
+  return configLog4jsLogger(defaultConfig, {});
 }
 
 // Create a lazy logger, who won't initialize log4js logger until `lazyLogger.$level(...)` is called.
@@ -43,23 +54,16 @@ function createLazyLogger(): any {
 
   LOGGER_LEVELS.forEach((level) => {
     lazyLogger[level] = async (...args: Array<any>) => {
-      if (global[LOG4JS_INSTANCE_KEY] === undefined) {
-        var defaultConfig = await require('./config').getDefaultConfig();
-        configLog4jsLogger(defaultConfig, {});
-      }
-      global[LOG4JS_INSTANCE_KEY][level].apply(global[LOG4JS_INSTANCE_KEY], args);
+      var logger = await require('nuclide-commons').
+          singleton.get(LOG4JS_INSTANCE_KEY, createLog4jsLogger);
+      logger[level].apply(logger, args);
     };
   });
 
   return lazyLogger;
 }
 
-function getLogger() {
+export function getLogger() {
   addPrepareStackTraceHook();
   return lazyLogger ? lazyLogger : createLazyLogger();
 }
-
-module.exports = {
-  getLogger,
-  updateConfig: configLog4jsLogger,
-};

@@ -20,19 +20,12 @@ module.exports = {
    * Unless node process is terminated or `reset()` is called, the session id will keep identical.
    */
   get id(): string {
-    if (global[SESSION_ID_KEY] === undefined) {
-      var uuid = require('uuid');
-      var sessionId = uuid.v4();
-      global[SESSION_ID_KEY] = sessionId;
-    }
-    return global[SESSION_ID_KEY];
+    return require('./singleton').get(
+      SESSION_ID_KEY,
+      require('uuid').v4);
   },
 
   reset(): void {
-    global[SESSION_ID_KEY] = undefined;
-  },
-
-  __test__: {
-    SESSION_ID_KEY,
+    require('./singleton').clear(SESSION_ID_KEY);
   },
 };

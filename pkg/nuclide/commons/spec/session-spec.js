@@ -12,12 +12,10 @@
 describe('session.js', () => {
   it('keeps session id identical unless reset is called', () => {
     var session = require('../lib/session');
-    var {SESSION_ID_KEY} = session.__test__;
 
     var id = session.id;
     var id1 = session.id;
     expect(id).toEqual(id1);
-    expect(id).toEqual(global[SESSION_ID_KEY]);
 
     session.reset();
     var id2 = session.id;
