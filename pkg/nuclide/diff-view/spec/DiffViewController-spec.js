@@ -9,22 +9,12 @@
  * the root directory of this source tree.
  */
 
-var DiffViewModel = require('../lib/DiffViewModel');
+var DiffViewController = require('../lib/DiffViewController');
 
-describe('DiffViewModel', () => {
+describe('DiffViewController', () => {
   describe('computeDiff()', () => {
-    var model = null;
-
-    beforeEach(() => {
-      model = new DiffViewModel();
-    });
-
-    afterEach(() => {
-      model = null;
-    });
-
     it('diffs two empty texts', () => {
-      var {addedLines, removedLines, oldLineOffsets, newLineOffsets} = model.computeDiff('', '');
+      var {addedLines, removedLines, oldLineOffsets, newLineOffsets} = DiffViewController.computeDiff('', '');
       expect(addedLines).toEqual([]);
       expect(removedLines).toEqual([]);
       expect(oldLineOffsets).toEqual({});
@@ -32,7 +22,7 @@ describe('DiffViewModel', () => {
     });
 
     it('diffs simple text with one line changes', () => {
-      var {addedLines, removedLines, oldLineOffsets, newLineOffsets} = model.computeDiff(
+      var {addedLines, removedLines, oldLineOffsets, newLineOffsets} = DiffViewController.computeDiff(
 `simple text
 on multiline
 same end line`,
@@ -48,7 +38,7 @@ same end line`
     });
 
     it('diffs multi-line text changes', () => {
-      var {addedLines, removedLines, oldLineOffsets, newLineOffsets} = model.computeDiff(
+      var {addedLines, removedLines, oldLineOffsets, newLineOffsets} = DiffViewController.computeDiff(
 `This text is intended for testing.
 If we test at too low a level,
 testing for matching tags

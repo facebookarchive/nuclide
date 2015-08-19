@@ -10,16 +10,17 @@
  */
 
 class DiffViewElement extends HTMLElement {
+  _uri: string;
 
-  initialize(model) {
-    this._model = model;
+  initialize(uri: string) {
+    this._uri = uri;
     return this;
   }
 
   /**
    * Return the tab title for the opened diff view tab item.
    */
-  getTitle() {
+  getTitle(): string {
     return 'Diff View';
   }
 
@@ -27,8 +28,8 @@ class DiffViewElement extends HTMLElement {
    * Return the tab URI for the opened diff view tab item.
    * This guarantees only one diff view will be opened per URI.
    */
-  getURI() {
-    return this._model.getURI();
+  getURI(): string {
+    return this._uri;
   }
 
 }

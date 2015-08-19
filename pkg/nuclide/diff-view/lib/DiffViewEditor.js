@@ -18,11 +18,22 @@ type InlineComponent = {
   bufferRow: number;
 }
 
+type RenderedComponent = {
+  container: HTMLElement;
+  component: ReactComponent;
+  bufferRow: number;
+}
+
 /**
  * The DiffViewEditor manages the lifecycle of the two editors used in the diff view,
  * and controls its rendering of highlights and offsets.
  */
 module.exports = class DiffViewEditor {
+  _editor: Object;
+  _editorElement: Object;
+  _markers: Array<atom$Marker>;
+  _lineOffsets: Object;
+  _originalBuildScreenLines: () => Object;
 
   constructor(editorElement: TextEditorElement) {
     this._editorElement = editorElement;
@@ -42,9 +53,10 @@ module.exports = class DiffViewEditor {
     this._editor.isFoldableAtScreenRow = this._editor.isFoldableAtBufferRow = () => false;
   }
 
-  renderComponentsInline(elements): Array<InlineComponent> {
+  renderInlineComponents(elements: Array<InlineComponent>): Promise<Array<RenderedComponent>> {
     var {object} = require('nuclide-commons');
     var components = [];
+    var renderPromises = [];
     var scrollToRow = this._scrollToRow.bind(this);
     elements.forEach(element => {
       var {node, bufferRow} = element;
@@ -56,18 +68,31 @@ module.exports = class DiffViewEditor {
       };
       object.assign(node.props.helpers, helpers);
       var container = document.createElement('div');
-      var component = React.render(node, container);
+      var component;
+      var didRenderPromise = new Promise((res, rej) => {
+        component = React.render(node, container, () => {
+          res();
+        });
+      });
+      renderPromises.push(didRenderPromise);
+      components.push({
+        bufferRow,
+        component,
+        container,
+      });
+    });
+    return Promise.all(renderPromises).then(() => components);
+  }
+
+  attachInlineComponents(elements: Array<RenderedComponent>): void {
+    elements.forEach(element => {
+      var {bufferRow, container} = element;
       // an overlay marker at a buffer range with row x renders under row x + 1
       // so, use range at bufferRow - 1 to actually display at bufferRow
       var range = [[bufferRow - 1, 0], [bufferRow - 1, 0]];
       var marker = this._editor.markBufferRange(range, {invalidate: 'never'});
       this._editor.decorateMarker(marker, {type: 'overlay', item: container});
-      components.push({
-        bufferRow,
-        component,
-      });
     });
-    return components;
   }
 
   getLineHeightInPixels(): number {
@@ -80,6 +105,10 @@ module.exports = class DiffViewEditor {
     this._editor.setGrammar(grammar);
   }
 
+  getModel(): Object {
+    return this._editor;
+  }
+
   getText(): string {
     return this._editor.getText();
   }
@@ -88,7 +117,7 @@ module.exports = class DiffViewEditor {
    * @param addedLines An array of buffer line numbers that should be highlighted as added.
    * @param removedLines An array of buffer line numbers that should be highlighted as removed.
    */
-  setHighlightedLines(addedLines: ?Array<number> = [], removedLines: ?Array<number> = []) {
+  setHighlightedLines(addedLines: Array<number> = [], removedLines: Array<number> = []) {
     for (var marker of this._markers) {
       marker.destroy();
     }
@@ -101,7 +130,7 @@ module.exports = class DiffViewEditor {
    * @param type The type of highlight to be applied to the line.
   *    Could be a value of: ['insert', 'delete'].
    */
-  _createLineMarker(lineNumber: number, type: string): Marker {
+  _createLineMarker(lineNumber: number, type: string): atom$Marker {
     var screenPosition = this._editor.screenPositionForBufferPosition({row: lineNumber, column: 0});
     var range = new Range(
         screenPosition,
@@ -151,7 +180,7 @@ module.exports = class DiffViewEditor {
     this._editor.getDecorations({class: 'cursor-line', type: 'line'})[0].destroy();
   }
 
-  _scrollToRow(row): void {
+  _scrollToRow(row: number): void {
     this._editor.scrollToBufferPosition([row, 0]);
   }
 };
