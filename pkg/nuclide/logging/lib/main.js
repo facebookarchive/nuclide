@@ -38,7 +38,7 @@ function configLog4jsLogger(config: any, options: any): void {
 export function updateConfig(config: any, options: any): void {
   require('nuclide-commons').singleton.reset(
         LOG4JS_INSTANCE_KEY,
-        Promise.resolve(configLog4jsLogger(config, options)));
+        () => Promise.resolve(configLog4jsLogger(config, options)));
 }
 
 async function createLog4jsLogger() {
