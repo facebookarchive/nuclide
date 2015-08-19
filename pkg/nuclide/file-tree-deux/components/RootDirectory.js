@@ -55,10 +55,15 @@ class RootDirectory extends React.Component {
     } else if (node.isContainer) {
       icon = isExpanded ? <span>{DOWN_ARROW}</span> : <span>{RIGHT_ARROW}</span>;
     }
-    var onClick = event => this._toggleExpanded(node);
+    var onArrowClick = event => this._onArrowClick(event, node);
+    var onDoubleClick = event => this._onDoubleClick(event, node);
     var elements = [
-      <div key={node.nodeKey} className={outerClassName} style={outerStyle}>
-        <span onClick={onClick} className="nuclide-tree-component-item-arrow">{icon}</span>
+      <div
+        key={node.nodeKey}
+        className={outerClassName}
+        style={outerStyle}
+        onDoubleClick={onDoubleClick}>
+        <span onClick={onArrowClick} className="nuclide-tree-component-item-arrow">{icon}</span>
         <span className={innerClassName}>{node.nodeName}</span>
       </div>,
     ];
@@ -70,11 +75,17 @@ class RootDirectory extends React.Component {
     return elements;
   }
 
-  _toggleExpanded(node: FileTreeNode) {
+  _onArrowClick(event: SyntheticMouseEvent, node: FileTreeNode): void {
     if (node.isExpanded()) {
       actions.collapseNode(node.rootKey, node.nodeKey);
     } else {
       actions.expandNode(node.rootKey, node.nodeKey);
+    }
+  }
+
+  _onDoubleClick(event: SyntheticMouseEvent, node: FileTreeNode): void {
+    if (!node.isContainer) {
+      actions.confirmNode(node.rootKey, node.nodeKey);
     }
   }
 

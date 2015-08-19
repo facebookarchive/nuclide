@@ -11,6 +11,7 @@
 
 var {ActionType} = require('./FileTreeConstants');
 var FileTreeDispatcher = require('./FileTreeDispatcher');
+var FileTreeHelpers = require('./FileTreeHelpers');
 var FileTreeStore = require('./FileTreeStore');
 
 import type {Dispatcher} from 'flux';
@@ -66,6 +67,28 @@ class FileTreeActions {
       rootKey,
       nodeKey,
     });
+  }
+
+  confirmNode(rootKey: string, nodeKey: string): void {
+    var isDirectory = FileTreeHelpers.isDirKey(nodeKey);
+    if (isDirectory) {
+      var actionType = this._store.isExpanded(rootKey, nodeKey) ?
+        ActionType.COLLAPSE_NODE :
+        ActionType.EXPAND_NODE;
+      this._dispatcher.dispatch({
+        actionType: actionType,
+        rootKey,
+        nodeKey,
+      });
+    } else {
+      atom.workspace.open(
+        FileTreeHelpers.keyToPath(nodeKey),
+        {
+          activatePane: true,
+          searchAllPanes: true,
+        }
+      );
+    }
   }
 }
 
