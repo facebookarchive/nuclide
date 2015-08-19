@@ -43,6 +43,9 @@ class Git (object):
     def push_to_master(self, repository_directory):
         self._execute(['push', 'origin', 'HEAD:master'], repository_directory)
 
+    def push_to_repository(self, repository_directory, repository, refspec):
+        self._execute(['push', repository, refspec], repository_directory)
+
     def get_head(self, repository_directory):
         ''' Returns hash of current local HEAD commit. '''
         return self._execute(['show-ref', '--head', '--heads', '-s', 'HEAD'],
@@ -63,6 +66,12 @@ class Git (object):
 
     def push_tag(self, repository_directory, tag_name):
         self._execute(['push', 'origin', tag_name], repository_directory)
+
+    def merge(self, repository_directory, commit):
+        self._execute(['merge', commit], repository_directory)
+
+    def add_remote(self, repository_directory, name, url):
+        self._execute(['remote', 'add', name, url], repository_directory)
 
     # TODO (jpearce) Reconcile this with the similar function in the neighouring Npm class
     def _execute(self, cmd_args, repository_directory=None):
