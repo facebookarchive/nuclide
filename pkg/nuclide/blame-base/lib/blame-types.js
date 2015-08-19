@@ -10,7 +10,12 @@
  */
 
 // Map of line number (0-indexed) to the name that line blames to.
-export type BlameForEditor = Map<number, string>;
+export type BlameInfo = {
+  author: string;
+  changeset: ?string;
+};
+
+export type BlameForEditor = Map<number, BlameInfo>;
 
 export type BlameProvider = {
   canProvideBlameForEditor: (editor: TextEditor) => boolean;

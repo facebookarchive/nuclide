@@ -106,7 +106,11 @@ class BlameGutter {
     var allPreviousBlamedLines = new Set(this._bufferLineToDecoration.keys());
 
     var longestBlame = 0;
-    for (var [bufferLine, blameName] of blameForEditor) {
+    for (var [bufferLine, blameInfo] of blameForEditor) {
+      var blameName = blameInfo.author;
+      if (blameInfo.changeset) {
+        blameName += ` ${blameInfo.changeset}`;
+      }
       if (blameName.length > longestBlame) {
         longestBlame = blameName.length;
       }

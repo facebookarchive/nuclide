@@ -67,27 +67,27 @@ async function getBlameForEditor(editor: TextEditor): Promise<BlameForEditor> {
  * author portion will contain only the username.
  */
 function formatBlameInfo(
-  blameInfo: {[key: string]: string},
+  rawBlameData: {[key: string]: string},
   useShortName: boolean
 ): BlameForEditor {
   var extractAuthor = useShortName ? shortenBlameName : identity;
 
-  var newBlameInfo = new Map();
-  for (var serializedLineNumber in blameInfo) {
-    var blameName = blameInfo[serializedLineNumber];
+  var blameForEditor = new Map();
+  for (var serializedLineNumber in rawBlameData) {
+    var blameName = rawBlameData[serializedLineNumber];
     var lineNumber = parseInt(serializedLineNumber, 10);
     var index = blameName.lastIndexOf(' ');
     var changeSetId = blameName.substring(index + 1);
     var fullAuthor = blameName.substring(0, index);
 
-    var blame = extractAuthor(fullAuthor);
     // The ChangeSet ID will be null for uncommitted local changes.
-    if (changeSetId !== 'null') {
-      blame += ` ${changeSetId}`;
-    }
-    newBlameInfo.set(lineNumber, blame);
+    var blameInfo = {
+      author: extractAuthor(fullAuthor),
+      changeset: changeSetId !== 'null' ? changeSetId : null,
+    };
+    blameForEditor.set(lineNumber, blameInfo);
   }
-  return newBlameInfo;
+  return blameForEditor;
 }
 
 

@@ -22,11 +22,11 @@ describe('HgBlameProvider', () => {
         '5': 'No Email Here faceb00c',
       };
       var expectedShortenedBlame = new Map([
-        [1, 'foo faceb00c'],
-        [2, 'a.b faceb00c'],
-        [3, 'alice'],
-        [4, 'alice faceb00c'],
-        [5, 'No Email Here faceb00c'],
+        [1, {author: 'foo', changeset: 'faceb00c'}],
+        [2, {author: 'a.b', changeset: 'faceb00c'}],
+        [3, {author: 'alice', changeset: null}],
+        [4, {author: 'alice', changeset: 'faceb00c'}],
+        [5, {author: 'No Email Here', changeset: 'faceb00c'}],
       ]);
       var formattedBlameInfo = formatBlameInfo(originalBlame, /* useShortName */ true);
       var numEntries = 0;
