@@ -35,6 +35,10 @@ function createView (model): HTMLElement {
   var component = React.render(<DiffViewComponent model={model} />, hostElement);
   uriComponentMap[model.getURI()] = component;
   // TODO(most): unmount component on tab close.
+
+  var {track} = require('nuclide-analytics');
+  track('diff-view-open');
+
   return hostElement;
 }
 
