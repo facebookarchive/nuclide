@@ -9,29 +9,32 @@
  * the root directory of this source tree.
  */
 
-var {shortenBlameNames} = require('../lib/HgBlameProvider').__test__;
+var {formatBlameInfo} = require('../lib/HgBlameProvider').__test__;
 
 describe('HgBlameProvider', () => {
-  describe('shortenBlameNames', () => {
+  describe('formatBlameInfo', () => {
     it('Returns the front part of an email address, iff an email is present.', () => {
-      var originalBlame = new Map([
-        [1, 'Foo Bar <foo@bar.com>'],
-        [2, 'A B <a.b@c.org>'],
-        [3, 'alice@bob.com'],
-        [4, '<alice@bob.com>'],
-        [5, 'No Email Here'],
-      ]);
+      var originalBlame = {
+        '1': 'Foo Bar <foo@bar.com> faceb00c',
+        '2': 'A B <a.b@c.org> faceb00c',
+        '3': 'alice@bob.com null',
+        '4': '<alice@bob.com> faceb00c',
+        '5': 'No Email Here faceb00c',
+      };
       var expectedShortenedBlame = new Map([
-        [1, 'foo'],
-        [2, 'a.b'],
+        [1, 'foo faceb00c'],
+        [2, 'a.b faceb00c'],
         [3, 'alice'],
-        [4, 'alice'],
-        [5, 'No Email Here'],
+        [4, 'alice faceb00c'],
+        [5, 'No Email Here faceb00c'],
       ]);
-      var shortenedBlame = shortenBlameNames(originalBlame);
-      for (var key of shortenedBlame.keys()) {
-        expect(shortenedBlame.get(key)).toEqual(expectedShortenedBlame.get(key));
+      var formattedBlameInfo = formatBlameInfo(originalBlame, /* useShortName */ true);
+      var numEntries = 0;
+      for (var [index, blame] of formattedBlameInfo) {
+        ++numEntries;
+        expect(blame).toEqual(expectedShortenedBlame.get(index));
       }
+      expect(numEntries).toBe(5);
     });
   });
 });

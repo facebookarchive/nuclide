@@ -152,7 +152,7 @@ class HgService {
    * (but not unsaved changes).
    * @param filePath The file to get blame information for.
    * @return An object that maps a line number (0-indexed) to the name that line blames to.
-   *   The name is of the form: Firstname Lastname <username@email.com>.
+   *   The name is of the form: "Firstname Lastname <username@email.com> ChangeSetID".
    *   The Firstname Lastname may not appear sometimes.
    *   If no blame information is available, returns an empty Map.
    */

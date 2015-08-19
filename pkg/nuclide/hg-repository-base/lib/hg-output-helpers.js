@@ -18,6 +18,12 @@ var HUNK_DIFF_REGEX = /@@ .* @@/g;
 var HUNK_OLD_INFO_REGEX = /\-([0-9]+)((?:,[0-9]+)?)/;
 var HUNK_NEW_INFO_REGEX = /\+([0-9]+)((?:,[0-9]+)?)/;
 
+/**
+ * We choose a length that should be long enough to uniquely identify a ChangeSet with an Hg repo,
+ * while also being compact enough to display efficiently in a UI.
+ */
+var CHANGE_SET_ID_PREFIX_LENGTH = 8;
+
 // TODO (jessicalin) Import these from hg-constants.js when types can be exported.
 type LineDiff = {
   oldStart: number;
@@ -70,10 +76,15 @@ function parseHgDiffUnifiedOutput(output: string): DiffInfo {
 var HG_BLAME_ERROR_MESSAGE_START = '[abort: ';
 
 /**
- * Parses the output of `hg blame -r "wdir()" -T json --number --user --line-number <filename>`.
- * @return An object that maps line numbers (0-indexed) to the name that line blames to.
- *   The name is of the form: Firstname Lastname <username@email.com>.
- *   The Firstname Lastname may not appear sometimes.
+ * Parses the output of `hg blame -r "wdir()" -T json --changeset --user --line-number <filename>`.
+ * @return An object that maps line numbers (0-indexed) to the blame info for the line.
+ *   The blame info is of the form: "Firstname Lastname <username@email.com> ChangeSetID".
+ *   (The Firstname Lastname may not appear sometimes.)
+ *   The ChangeSetID will not be the full 40 digit hexadecimal number, but a prefix whose length is
+ *   determined by CHANGE_SET_ID_PREFIX_LENGTH.
+ *   TODO(t8045823): Once the service framework supports non-trivial types, return this
+ *   information via structured data rather than encoding both the name and ChangeSetID in one
+ *   string.
  */
 function parseHgBlameOutput(output: string): {[key: string]: string} {
   var results = {};
@@ -89,7 +100,11 @@ function parseHgBlameOutput(output: string): {[key: string]: string} {
     return results;
   }
   arrayOfLineDescriptions.forEach((lineDescription, index) => {
-    results[index] = lineDescription['user'];
+    var changeSetId: ?string = lineDescription['node'];
+    if (changeSetId != null) {
+      changeSetId = changeSetId.substring(0, CHANGE_SET_ID_PREFIX_LENGTH);
+    }
+    results[index] = `${lineDescription['user']} ${changeSetId}`;
   });
 
   return results;

@@ -37,13 +37,13 @@ var hgBlameForFileWithCommitAndUncommittedChanges =
  {
   "line": "hello",
   "line_number": 1,
-  "rev": 270510,
+  "node": "0559394b114a5245f9675bfa1e13203760a205bb",
   "user": "Abbot B a@b.com"
  },
  {
   "line": "world",
   "line_number": 2,
-  "rev": null,
+  "node": null,
   "user": "a@b.com"
  }
 ]`;
@@ -155,7 +155,7 @@ describe('hg-output-helpers', () => {
 
     it('parses the output of "hg blame" when there are committed and uncommited changes in the file.', () => {
       var parseResults = parseHgBlameOutput(hgBlameForFileWithCommitAndUncommittedChanges);
-      var expectedBlame = {'0': 'Abbot B a@b.com', '1': 'a@b.com'};
+      var expectedBlame = {'0': 'Abbot B a@b.com 0559394b', '1': 'a@b.com null'};
       expect(parseResults).toEqual(expectedBlame);
     });
 
