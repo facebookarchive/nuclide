@@ -38,6 +38,10 @@ class FileTreeNode {
     return this._store.isExpanded(this.rootKey, this.nodeKey);
   }
 
+  isSelected(): boolean {
+    return this._store.isSelected(this.rootKey, this.nodeKey);
+  }
+
   getChildKeys(): Array<string> {
     return this._store.getChildKeys(this.rootKey, this.nodeKey);
   }

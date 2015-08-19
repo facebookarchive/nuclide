@@ -13,6 +13,7 @@ var {ActionType} = require('./FileTreeConstants');
 var FileTreeDispatcher = require('./FileTreeDispatcher');
 var FileTreeHelpers = require('./FileTreeHelpers');
 var FileTreeStore = require('./FileTreeStore');
+var Immutable = require('immutable');
 
 import type {Dispatcher} from 'flux';
 
@@ -66,6 +67,28 @@ class FileTreeActions {
       actionType: ActionType.COLLAPSE_NODE,
       rootKey,
       nodeKey,
+    });
+  }
+
+  toggleSelectNode(rootKey: string, nodeKey: string): void {
+    var nodeKeys: Immutable.Set<string> = this._store.getSelectedKeys(rootKey);
+    if (nodeKeys.has(nodeKey)) {
+      nodeKeys = nodeKeys.delete(nodeKey);
+    } else {
+      nodeKeys = nodeKeys.add(nodeKey);
+    }
+    this._dispatcher.dispatch({
+      actionType: ActionType.SET_SELECTED_NODES,
+      rootKey,
+      nodeKeys,
+    });
+  }
+
+  selectSingleNode(rootKey: string, nodeKey: string): void {
+    this._dispatcher.dispatch({
+      actionType: ActionType.SET_SELECTED_NODES,
+      rootKey,
+      nodeKeys: new Immutable.Set([nodeKey]),
     });
   }
 

@@ -26,6 +26,7 @@ type StoreData = {
   expandedKeysByRoot: { [key: string]: Immutable.Set<string> },
   isLoadingMap: { [key: string]: ?Promise },
   rootKeys: Array<string>,
+  selectedKeysByRoot: { [key: string]: Immutable.Set<string> },
   subscriptionMap: { [key: string]: Disposable },
 };
 
@@ -66,6 +67,7 @@ class FileTreeStore {
       expandedKeysByRoot: {},
       isLoadingMap: {},
       rootKeys: [],
+      selectedKeysByRoot: {},
       subscriptionMap: {},
     };
   }
@@ -82,6 +84,10 @@ class FileTreeStore {
       case ActionType.COLLAPSE_NODE:
         var rootKey = payload.rootKey;
         this._setExpandedKeys(rootKey, this._getExpandedKeys(rootKey).delete(payload.nodeKey));
+        break;
+      case ActionType.SET_SELECTED_NODES:
+        var rootKey = payload.rootKey;
+        this._setSelectedKeys(rootKey, payload.nodeKeys);
         break;
     }
   }
@@ -118,12 +124,28 @@ class FileTreeStore {
     return this._getExpandedKeys(rootKey).has(nodeKey);
   }
 
+  isSelected(rootKey: string, nodeKey: string): boolean {
+    return this.getSelectedKeys(rootKey).has(nodeKey);
+  }
+
   getChildKeys(rootKey: string, nodeKey: string): Array<string> {
     var childKeys = this._data.childKeyMap[nodeKey];
     if (childKeys == null) {
       this._fetchChildKeys(nodeKey);
     }
     return childKeys || [];
+  }
+
+  getSelectedKeys(rootKey: string): Immutable.Set<string> {
+    return this._data.selectedKeysByRoot[rootKey] || new Immutable.Set();
+  }
+
+  getRootNode(rootKey: string): FileTreeNode {
+    return this.getNode(rootKey, rootKey);
+  }
+
+  getNode(rootKey: string, nodeKey: string): FileTreeNode {
+    return new FileTreeNode(this, rootKey, nodeKey);
   }
 
   // If a fetch is not already in progress initiate a fetch now.
@@ -142,14 +164,6 @@ class FileTreeStore {
     return promise;
   }
 
-  getRootNode(rootKey: string): FileTreeNode {
-    return this.getNode(rootKey, rootKey);
-  }
-
-  getNode(rootKey: string, nodeKey: string): FileTreeNode {
-    return new FileTreeNode(this, rootKey, nodeKey);
-  }
-
   _getLoading(nodeKey: string): ?Promise {
     return this._data.isLoadingMap[nodeKey];
   }
@@ -166,6 +180,13 @@ class FileTreeStore {
     this._set(
       'expandedKeysByRoot',
       setProperty(this._data.expandedKeysByRoot, rootKey, expandedKeys)
+    );
+  }
+
+  _setSelectedKeys(rootKey: string, selectedKeys: Immutable.Set<string>): void {
+    this._set(
+      'selectedKeysByRoot',
+      setProperty(this._data.selectedKeysByRoot, rootKey, selectedKeys)
     );
   }
 
@@ -242,7 +263,8 @@ class FileTreeStore {
   }
 
   // If we purge a directory, then we need to purge it's descendent directoriess also. Purging
-  // removes stuff from the data store including cached list of child nodes and subscriptions.
+  // removes stuff from the data store including cached list of child nodes, subscriptions,
+  // expanded directories and selected directories.
   _purgeDirectory(nodeKey: string): void {
     var childKeys = this._data.childKeyMap[nodeKey];
     if (childKeys) {
@@ -255,12 +277,19 @@ class FileTreeStore {
     }
     this._removeSubscription(nodeKey);
     var expandedKeysByRoot = this._data.expandedKeysByRoot;
-    for (var rootKey of Object.keys(expandedKeysByRoot)) {
+    Object.keys(expandedKeysByRoot).forEach((rootKey) => {
       var expandedKeys = expandedKeysByRoot[rootKey];
       if (expandedKeys.has(nodeKey)) {
         this._setExpandedKeys(rootKey, expandedKeys.delete(nodeKey));
       }
-    }
+    });
+    var selectedKeysByRoot = this._data.selectedKeysByRoot;
+    Object.keys(selectedKeysByRoot).forEach((rootKey) => {
+      var selectedKeys = selectedKeysByRoot[rootKey];
+      if (selectedKeys.has(nodeKey)) {
+        this._setSelectedKeys(rootKey, selectedKeys.delete(nodeKey));
+      }
+    });
   }
 
   reset(): void {

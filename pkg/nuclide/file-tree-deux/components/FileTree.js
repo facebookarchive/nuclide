@@ -14,17 +14,19 @@ var {CompositeDisposable} = require('atom');
 var React = require('react-for-atom');
 var RootDirectory = require('./RootDirectory');
 
+type Props = {};
+
 var store = FileTreeStore.getInstance();
 
 class FileTree extends React.Component {
   _subscriptions: CompositeDisposable;
 
-  constructor(props) {
+  constructor(props: Props) {
     super(props);
     this._subscriptions = new CompositeDisposable();
   }
 
-  componentDidMount() {
+  componentDidMount(): void {
     this._subscriptions.add(
       store.subscribe(() => {
         // Note: It's safe to call forceUpdate here because the change events are de-bounced.
@@ -33,11 +35,11 @@ class FileTree extends React.Component {
     );
   }
 
-  componentWillUnmount() {
+  componentWillUnmount(): void {
     this._subscriptions.dispose();
   }
 
-  render() {
+  render(): ReactElement {
     return (
       <div className="nuclide-file-tree">
         {this._renderChildren()}
@@ -45,7 +47,7 @@ class FileTree extends React.Component {
     );
   }
 
-  _renderChildren() {
+  _renderChildren(): ReactElement | Array<ReactElement> {
     var rootKeys: Array<string> = store.getRootKeys();
     if (rootKeys.length === 0) {
       return <div>No project root</div>;

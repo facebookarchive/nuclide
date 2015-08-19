@@ -42,7 +42,10 @@ class RootDirectory extends React.Component {
     var outerStyle = {
       paddingLeft: INDENT_IN_PX + indentLevel * INDENT_PER_LEVEL,
     };
-    var outerClassName = 'entry file list-item nuclide-tree-component-item';
+    var outerClassName = cx({
+      'entry file list-item nuclide-tree-component-item': true,
+      'nuclide-tree-component-selected': node.isSelected(),
+    });
     var innerClassName = cx({
       'icon name': true,
       'icon-file-directory': node.isContainer,
@@ -56,12 +59,14 @@ class RootDirectory extends React.Component {
       icon = isExpanded ? <span>{DOWN_ARROW}</span> : <span>{RIGHT_ARROW}</span>;
     }
     var onArrowClick = event => this._onArrowClick(event, node);
+    var onClick = event => this._onClick(event, node);
     var onDoubleClick = event => this._onDoubleClick(event, node);
     var elements = [
       <div
         key={node.nodeKey}
         className={outerClassName}
         style={outerStyle}
+        onClick={onClick}
         onDoubleClick={onDoubleClick}>
         <span onClick={onArrowClick} className="nuclide-tree-component-item-arrow">{icon}</span>
         <span className={innerClassName}>{node.nodeName}</span>
@@ -80,6 +85,15 @@ class RootDirectory extends React.Component {
       actions.collapseNode(node.rootKey, node.nodeKey);
     } else {
       actions.expandNode(node.rootKey, node.nodeKey);
+    }
+  }
+
+  _onClick(event: SyntheticMouseEvent, node: FileTreeNode) {
+    var modifySelection = event.ctrlKey || event.metaKey;
+    if (modifySelection) {
+      actions.toggleSelectNode(node.rootKey, node.nodeKey);
+    } else {
+      actions.selectSingleNode(node.rootKey, node.nodeKey);
     }
   }
 
