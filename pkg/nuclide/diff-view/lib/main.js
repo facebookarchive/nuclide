@@ -26,15 +26,14 @@ function getLogger() {
 
 // To add a view as a tab, we can either extend {View} from space-pen-views
 // and carry over the jQuery overhead or extend HTMLElement, like Atom's text-editor-element.
-function createView (uri): HTMLElement {
-  var filePath = uri.slice(NUCLIDE_DIFF_VIEW_URI.length);
+function createView (model): HTMLElement {
   var React = require('react-for-atom');
   var DiffViewElement = require('./DiffViewElement');
   var DiffViewComponent = require('./DiffViewComponent');
 
-  var hostElement = new DiffViewElement().initialize(uri);
-  var component = React.render(<DiffViewComponent filePath={filePath} uiProviders={uiProviders}/>, hostElement);
-  uriComponentMap[uri] = component;
+  var hostElement = new DiffViewElement().initialize(model);
+  var component = React.render(<DiffViewComponent model={model} />, hostElement);
+  uriComponentMap[model.getURI()] = component;
   // TODO(most): unmount component on tab close.
 
   var {track} = require('nuclide-analytics');
@@ -47,6 +46,8 @@ module.exports = {
 
   activate(state: ?any): void {
     subscriptions = new CompositeDisposable();
+
+    var DiffViewModel = require('./DiffViewModel');
 
     subscriptions.add(atom.commands.add(
       'atom-text-editor',
@@ -63,7 +64,22 @@ module.exports = {
     // The Diff View will open its main UI in a tab, like Atom's preferences and welcome pages.
     subscriptions.add(atom.workspace.addOpener(uri => {
       if (uri.startsWith(NUCLIDE_DIFF_VIEW_URI)) {
-        return createView(uri);
+        var filePath = uri.slice(NUCLIDE_DIFF_VIEW_URI.length);
+        var model = new DiffViewModel(uri, filePath, uiProviders);
+        return model.fetchDiffState().then(() => {
+          return createView(model);
+        }, (err) => {
+          var errorMessge = 'Cannot open diff view for file: ' + filePath + '<br/>Error: ' + err.message;
+          getLogger().error(errorMessge);
+          atom.notifications.addError(errorMessge);
+        });
+      }
+    }));
+
+    subscriptions.add(atom.workspace.onDidOpen(event => {
+      if (event.uri.startsWith(NUCLIDE_DIFF_VIEW_URI)) {
+        var component = uriComponentMap[event.uri];
+        component.updateDiffMarkers();
       }
     }));
   },
