@@ -294,7 +294,7 @@ var TreeRootComponent = React.createClass({
             onDoubleClick={this._onDoubleClickNode}
             onMouseDown={this._onMouseDown}
             path={node.getKey()}
-            key={node.getLabel()}
+            key={node.getKey()}
             ref={ref}
           />
         );
