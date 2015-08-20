@@ -86,6 +86,12 @@ class BlameGutter {
     } else {
       atom.notifications.addWarning(`No URL found for ${changeset}.`, {dismissable: true});
     }
+
+    var {track} = require('nuclide-analytics');
+    track('blame-gutter-click-revision', {
+      editorPath: this._editor.getPath(),
+      url,
+    });
   }
 
   async _fetchAndDisplayBlame(): Promise<void> {

@@ -94,6 +94,10 @@ class Activation {
         this._textEditorToBlameGutter.set(editor, blameGutter);
         var destroySubscription = editor.onDidDestroy(() => this._editorWasDestroyed(editor));
         this._textEditorToDestroySubscription.set(editor, destroySubscription);
+        var {track} = require('nuclide-analytics');
+        track('blame-open', {
+          editorPath: editor.getPath(),
+        });
       } else {
         atom.notifications.addInfo('Could not open blame: no blame information currently available for this file.');
         var logger = require('nuclide-logging').getLogger();
