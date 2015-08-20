@@ -8,18 +8,24 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-
-import type {BlameForEditor, BlameProvider} from 'nuclide-blame-base/blame-types';
+import type {
+  BlameForEditor,
+  BlameInfo,
+  BlameProvider,
+} from 'nuclide-blame-base/lib/blame-types';
 
 var {BLAME_DECORATION_CLASS} = require('./constants');
 var BLAME_GUTTER_DEFAULT_WIDTH = 50;
 var LOADING_SPINNER_ID = 'blame-loading-spinner';
 var MS_TO_WAIT_BEFORE_SPINNER = 2000;
-var CHARACTERS_OF_PADDING_IN_BLAME = 2;
+var CHANGESET_CSS_CLASS = 'nuclide-blame-ui-hash';
+var CLICKABLE_CHANGESET_CSS_CLASS = 'nuclide-blame-ui-hash-clickable';
+var HG_CHANGESET_DATA_ATTRIBUTE = 'hgChangeset';
 
 class BlameGutter {
   _editor: atom$TextEditor;
   _blameProvider: BlameProvider;
+  _changesetSpanClassName: string;
   _bufferLineToDecoration: Map<number, atom$Decoration>;
   _gutter: atom$Gutter;
   _loadingSpinnerIsPending: boolean;
@@ -39,12 +45,47 @@ class BlameGutter {
 
     this._editor = editor;
     this._blameProvider = blameProvider;
+    this._changesetSpanClassName = CHANGESET_CSS_CLASS;
     this._bufferLineToDecoration = new Map();
-
     this._gutter = editor.addGutter({name: gutterName});
     this._updateGutterWidthToPixelWidth(BLAME_GUTTER_DEFAULT_WIDTH);
 
+    // If getUrlForRevision() is available, add a single, top-level click handler for the gutter.
+    if (typeof blameProvider.getUrlForRevision === 'function') {
+      // We also want to style the changeset differently if it is clickable.
+      this._changesetSpanClassName += ' ' + CLICKABLE_CHANGESET_CSS_CLASS;
+
+      var onClick = this._onClick.bind(this);
+      var gutterView: HTMLElement = atom.views.getView(this._gutter);
+      gutterView.addEventListener('click', onClick);
+      this._gutter.onDidDestroy(() => gutterView.removeEventListener('click', onClick));
+    }
+
     this._fetchAndDisplayBlame();
+  }
+
+  /**
+   * If the user clicked on a ChangeSet ID, extract it from the DOM element via the data- attribute
+   * and find the corresponding Differential revision. If successful, open the URL for the revision.
+   */
+  async _onClick(e: MouseEvent): Promise<void> {
+    var target = e.target;
+    if (!target) {
+      return;
+    }
+
+    var changeset = target.dataset[HG_CHANGESET_DATA_ATTRIBUTE];
+    if (!changeset) {
+      return;
+    }
+
+    var url = await this._blameProvider.getUrlForRevision(this._editor, changeset);
+    if (url) {
+      // Note that 'shell' is not the public 'shell' package on npm but an Atom built-in.
+      require('shell').openExternal(url);
+    } else {
+      atom.notifications.addWarning(`No URL found for ${changeset}.`, {dismissable: true});
+    }
   }
 
   async _fetchAndDisplayBlame(): Promise<void> {
@@ -106,15 +147,18 @@ class BlameGutter {
     var allPreviousBlamedLines = new Set(this._bufferLineToDecoration.keys());
 
     var longestBlame = 0;
-    for (var [bufferLine, blameInfo] of blameForEditor) {
-      var blameName = blameInfo.author;
+    for (var blameInfo of blameForEditor.values()) {
+      var blameLength = blameInfo.author.length;
       if (blameInfo.changeset) {
-        blameName += ` ${blameInfo.changeset}`;
+        blameLength += blameInfo.changeset.length + 1;
       }
-      if (blameName.length > longestBlame) {
-        longestBlame = blameName.length;
+      if (blameLength > longestBlame) {
+        longestBlame = blameLength;
       }
-      this._setBlameLine(bufferLine, blameName);
+    }
+
+    for (var [bufferLine, blameInfo] of blameForEditor) {
+      this._setBlameLine(bufferLine, blameInfo, longestBlame);
       allPreviousBlamedLines.delete(bufferLine);
     }
 
@@ -134,17 +178,16 @@ class BlameGutter {
 
   _updateGutterWidthToCharacterLength(characters: number): void {
     var gutterView = atom.views.getView(this._gutter);
-    gutterView.style.width = `${characters + CHARACTERS_OF_PADDING_IN_BLAME}ch`;
+    gutterView.style.width = `${characters}ch`;
   }
 
-  _setBlameLine(bufferLine: number, blameName: string): void {
-    var blameDiv = document.createElement('div');
-    blameDiv.innerText = blameName;
+  _setBlameLine(bufferLine: number, blameInfo: BlameInfo, longestBlame: number): void {
+    var item = this._createGutterItem(blameInfo, longestBlame);
     var decorationProperties = {
       type: 'gutter',
       gutterName: this._gutter.name,
       class: BLAME_DECORATION_CLASS,
-      item: blameDiv,
+      item,
     };
 
     var decoration = this._bufferLineToDecoration.get(bufferLine);
@@ -168,6 +211,31 @@ class BlameGutter {
     // The recommended way of destroying a decoration is by destroying its marker.
     blameDecoration.getMarker().destroy();
     this._bufferLineToDecoration.delete(bufferLine);
+  }
+
+  _createGutterItem(blameInfo: BlameInfo, longestBlame: number): HTMLElement {
+    var doc = window.document;
+    var item = doc.createElement('div');
+
+    var authorSpan = doc.createElement('span');
+    authorSpan.innerText = blameInfo.author;
+    item.appendChild(authorSpan);
+
+    if (blameInfo.changeset) {
+      var numSpaces = longestBlame - blameInfo.author.length - blameInfo.changeset.length;
+      // Insert non-breaking spaces to ensure the changeset is right-aligned.
+      // Admittedly, this is a little gross, but it seems better than setting style.width on every
+      // item that we create and having to give it a special flexbox layout. Hooray monospace!
+      item.appendChild(doc.createTextNode('\u00A0'.repeat(numSpaces)));
+
+      var changesetSpan = doc.createElement('span');
+      changesetSpan.className = this._changesetSpanClassName;
+      changesetSpan.dataset[HG_CHANGESET_DATA_ATTRIBUTE] = blameInfo.changeset;
+      changesetSpan.innerText = blameInfo.changeset;
+      item.appendChild(changesetSpan);
+    }
+
+    return item;
   }
 }
 
