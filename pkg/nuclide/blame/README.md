@@ -29,15 +29,28 @@ To remove blame, open the context menu as above, and select 'Hide Blame'.
 ## How to Write a Blame Provider
 
 See the `nuclide-blame-provider-hg` Atom package as an example. A blame provider
-package should provide a service called "nuclide-blame-provider" through the Atom
+package should provide a service called `"nuclide-blame-provider"` through the Atom
 service hub. This service should return a provider Object that implements the
-following two methods:
-```
+following methods:
+
+```js
+/**
+ * @return Whether the provider can provide blame information for the specified TextEditor.
+ */
 canProvideBlameForEditor(editor: TextEditor) => boolean
-```
-and
-```
+
+/**
+ * @return Map where the keys are 0-indexed TextBuffer line numbers, and values are blame.
+ */
 getBlameForEditor(editor: TextEditor) => Promise<Map<number, string>>
 ```
-where the keys of the Map are 0-indexed TextBuffer line numbers, and values are
-blame.
+
+It should also implement the following method, so long as it has a non-trivial implementation:
+
+```js
+/**
+ * Tries to find a URL that contains more information about the revision. If no such URL exists,
+ * returns null.
+ */
+getUrlForRevision: (editor: TextEditor, revision: string) => Promise<?string>
+```
