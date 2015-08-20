@@ -258,6 +258,26 @@ class LocalHgServiceBase extends HgService {
     return parseHgBlameOutput(output.stdout);
   }
 
+  /**
+   * This implementation relies on the "phabdiff" template being available as defined in:
+   * https://bitbucket.org/facebook/hg-experimental/src/fbf23b3f96bade5986121a7c57d7400585d75f54/phabdiff.py.
+   */
+  async getDifferentialRevisionForChangeSetId(changeSetId: string): Promise<?string> {
+    var args = ['log', '-T', '{phabdiff}\n', '--limit', '1', '--rev', changeSetId];
+    var execOptions = {
+      cwd: this.getWorkingDirectory(),
+    };
+    try {
+      var output = await this._hgAsyncExecute(args, execOptions);
+      var stdout = output.stdout.trim();
+      return stdout ? stdout : null;
+    } catch (e) {
+      // This should not happen: `hg log` does not error even if it does not recognize the template.
+      getLogger().error(`Failed when trying to get differential revision for: ${changeSetId}`);
+      return null;
+    }
+  }
+
   async getSmartlog(ttyOutput: boolean, concise: boolean): Promise<string> {
     var args = [concise ? 'sl' : 'smartlog'];
     var execOptions = {

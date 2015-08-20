@@ -793,6 +793,11 @@ class HgRepositoryClient {
     return this._service.getBlameAtHead(filePath);
   }
 
+  // See HgService.getDifferentialRevisionForChangeSetId.
+  getDifferentialRevisionForChangeSetId(changeSetId: string): Promise<?string> {
+    return this._service.getDifferentialRevisionForChangeSetId(changeSetId);
+  }
+
   getSmartlog(ttyOutput: boolean, concise: boolean): Promise<string> {
     return this._service.getSmartlog(ttyOutput, concise);
   }
