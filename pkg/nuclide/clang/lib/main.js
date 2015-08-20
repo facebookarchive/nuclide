@@ -60,6 +60,11 @@ var ClangCursorToDeclarationTypes = {
 
 export type ClangCursorType = $Enum<typeof ClangCursorToDeclarationTypes>;
 
+export type ClangCursorExtent = {
+  start: {line: number; column: number};
+  end: {line: number; column: number};
+};
+
 export type Declaration = {
   name: string,
   type: ClangCursorType,
