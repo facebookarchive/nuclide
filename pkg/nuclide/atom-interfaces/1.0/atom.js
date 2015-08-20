@@ -437,6 +437,9 @@ declare class atom$ContextMenuManager {
 declare class atom$Directory {
   symlink: boolean;
 
+  // Event Subscription
+  onDidChange(callback: () => mixed): atom$Disposable;
+
   // Directory Metadata
   isFile(): boolean;
   isDirectory(): boolean;
@@ -452,11 +455,15 @@ declare class atom$Directory {
 
   // Traversing
   getParent(): atom$Directory;
+  getEntries(callback: (error: ?Error, entries: Array<atom$Directory | atom$File>) => mixed): void;
   contains(path: string): boolean;
 }
 
 declare class atom$File {
   symlink: boolean;
+
+  // Event Subscription
+  onDidChange(callback: () => mixed): atom$Disposable;
 
   // File Metadata
   isFile(): boolean;

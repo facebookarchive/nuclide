@@ -1,0 +1,22 @@
+@import "ui-variables";
+
+.nuclide-file-tree {
+  background-color: @tree-view-background-color;
+  padding-left: 10px;
+  padding-right: 10px;
+
+  // Fill horizontal and vertical space if tree is narrower or shorter than its containing panel.
+  min-height: -webkit-min-content;
+  min-width: -webkit-min-content;
+
+  // Fill horizontal space if content is narrower than the containing panel.
+  width: 100%;
+
+  &:focus {
+    background-color: contrast(
+        @text-color,
+        darken(@tree-view-background-color, 2%),
+        lighten(@tree-view-background-color, 5%),
+        25%);
+  }
+}

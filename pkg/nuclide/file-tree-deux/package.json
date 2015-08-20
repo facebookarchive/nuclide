@@ -14,6 +14,7 @@
   "dependencies": {
     "flux": "2.0.3",
     "immutable": "3.7.4",
+    "nuclide-commons": "0.0.0",
     "nuclide-logging": "0.0.0",
     "nuclide-panel": "0.0.0",
     "nuclide-remote-connection": "0.0.0",

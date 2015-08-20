@@ -10,12 +10,11 @@
  */
 
 var {CompositeDisposable} = require('atom');
-var FileTreeController = require('./FileTreeController');
 
 import type {FileTreeControllerState} from './FileTreeController';
 
 class Activation {
-  _fileTreeController: ?FileTreeController;
+  _fileTreeController: ?Object;
   _packageState: ?FileTreeControllerState;
   _subscriptions: CompositeDisposable;
 
@@ -52,6 +51,7 @@ class Activation {
   _activate() {
     // Guard against activate being called twice
     if (!this._fileTreeController) {
+      var FileTreeController = require('./FileTreeController');
       this._fileTreeController = new FileTreeController(this._packageState);
     }
   }

@@ -9,7 +9,6 @@
  * the root directory of this source tree.
  */
 
-var RemoteUri = require('nuclide-remote-uri');
 var {
   Directory: LocalDirectory,
   File: LocalFile,
@@ -19,6 +18,11 @@ var {
   RemoteDirectory,
   RemoteFile,
 } = require('nuclide-remote-connection');
+var RemoteUri = require('nuclide-remote-uri');
+
+var {parse} = require('nuclide-commons').url;
+var pathModule = require('path');
+var url = require('url');
 
 type Directory = LocalDirectory | RemoteDirectory;
 type File = LocalFile | RemoteFile;
@@ -41,6 +45,14 @@ function keyToPath(key: string): string {
   return key.replace(/\/+$/, '');
 }
 
+function getParentKey(key: string): string {
+  var path = keyToPath(key);
+  var parsed = parse(path);
+  parsed.pathname = pathModule.join(parsed.pathname, '..');
+  var parentPath = url.format(parsed);
+  return dirPathToKey(parentPath);
+}
+
 // The array this resolves to contains the `nodeKey` of each child
 function fetchChildren(nodeKey: string): Promise<Array<string>> {
   var directory = getDirectoryByKey(nodeKey);
@@ -49,6 +61,11 @@ function fetchChildren(nodeKey: string): Promise<Array<string>> {
     return Promise.resolve([]);
   }
   return new Promise((resolve, reject) => {
+    if (!directory) {
+      // TODO: reject?
+      resolve([]);
+      return;
+    }
     directory.getEntries((error, entries) => {
       // Resolve to an empty array if the directory deson't exist.
       if (error && error.code !== 'ENOENT') {
@@ -84,7 +101,6 @@ function isValidDirectory(directory: Directory): boolean {
   return (!isLocalFile(directory) || isFullyQualifiedLocalPath(directory.getPath()));
 }
 
-
 // Private Helpers
 
 function isLocalFile(entry: File | Directory): boolean {
@@ -101,6 +117,7 @@ module.exports = {
   isDirKey,
   keyToName,
   keyToPath,
+  getParentKey,
   fetchChildren,
   getDirectoryByKey,
   isValidDirectory,

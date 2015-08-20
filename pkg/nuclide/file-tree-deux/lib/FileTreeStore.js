@@ -9,13 +9,15 @@
  * the root directory of this source tree.
  */
 
-var {Disposable, Emitter} = require('atom');
 var {ActionType} = require('./FileTreeConstants');
+var {Disposable, Emitter} = require('atom');
 var FileTreeDispatcher = require('./FileTreeDispatcher');
 var FileTreeHelpers = require('./FileTreeHelpers');
 var FileTreeNode = require('./FileTreeNode');
 var Immutable = require('immutable');
 var Logging = require('nuclide-logging');
+
+var {array} = require('nuclide-commons');
 
 import type {Dispatcher} from 'flux';
 
@@ -89,6 +91,9 @@ class FileTreeStore {
         var rootKey = payload.rootKey;
         this._setSelectedKeys(rootKey, payload.nodeKeys);
         break;
+      case ActionType.CREATE_CHILD:
+        this._setChildKeys(payload.nodeKey, [payload.childKey]);
+        break;
     }
   }
 
@@ -113,6 +118,11 @@ class FileTreeStore {
 
   getRootKeys(): Array<string> {
     return this._data.rootKeys;
+  }
+
+  // Get the key of the *first* root node containing the given node.
+  getRootForKey(nodeKey: string): ?string {
+    return array.find(this._data.rootKeys, rootKey => nodeKey.startsWith(rootKey));
   }
 
   // Note: We actually don't need rootKey (implementation detail) but we take it for consistency.

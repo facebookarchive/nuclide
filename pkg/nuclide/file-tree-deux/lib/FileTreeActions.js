@@ -62,6 +62,21 @@ class FileTreeActions {
     });
   }
 
+  // Makes sure a specific child exists for a given node. If it does not exist, temporarily
+  // create it and initiate a fetch. This feature is exclusively for expanding to a node deep
+  // in a tree.
+  ensureChildNode(rootKey: string, nodeKey: string, childKey: string): void {
+    if (this._store.getChildKeys(rootKey, nodeKey).indexOf(childKey) !== -1) {
+      return;
+    }
+    this._dispatcher.dispatch({
+      actionType: ActionType.CREATE_CHILD,
+      rootKey,
+      nodeKey,
+      childKey,
+    });
+  }
+
   collapseNode(rootKey: string, nodeKey: string): void {
     this._dispatcher.dispatch({
       actionType: ActionType.COLLAPSE_NODE,

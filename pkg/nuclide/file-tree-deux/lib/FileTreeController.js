@@ -65,6 +65,7 @@ class FileTreeController {
       'atom-workspace',
       {
         'nuclide-file-tree-deux:toggle': () => this.toggleVisibility(),
+        'nuclide-file-tree-deux:reveal-active-file': () => this.revealActiveFile(),
       }
     ));
   }
@@ -108,6 +109,33 @@ class FileTreeController {
 
   toggleVisibility(): void {
     this._setVisibility(!this._isVisible);
+  }
+
+  revealActiveFile(): void {
+    var editor = atom.workspace.getActiveTextEditor();
+    var file = editor ? editor.getBuffer().file : null;
+    if (!file) {
+      return;
+    }
+    var nodeKey: string = file.getPath();
+    var rootKey: string = this._store.getRootForKey(nodeKey);
+    if (!rootKey) {
+      return;
+    }
+    var stack = [];
+    var key = nodeKey;
+    while (key !== rootKey) {
+      stack.push(key);
+      key = FileTreeHelpers.getParentKey(key);
+    }
+    // We want the stack to be [parentKey, ..., nodeKey].
+    stack.reverse();
+    stack.forEach((childKey, i) => {
+      var parentKey = (i === 0) ? rootKey : stack[i - 1];
+      this._actions.ensureChildNode(rootKey, parentKey, childKey);
+      this._actions.expandNode(rootKey, parentKey);
+    });
+    this._actions.selectSingleNode(rootKey, nodeKey);
   }
 
   destroy(): void {
