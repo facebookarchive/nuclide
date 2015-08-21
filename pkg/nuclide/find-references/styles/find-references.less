@@ -46,7 +46,9 @@
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
     flex: 1;
-    font-size: 1em;
+    font-size: @font-size;
+    line-height: @component-line-height;
+    max-height: none;
   }
 
   atom-text-editor::shadow .highlight.reference .region {
@@ -63,5 +65,6 @@
 }
 
 .nuclide-find-references-line-number {
-  line-height: 24px;
+  color: @text-color-selected;
+  line-height: @component-line-height;
 }
