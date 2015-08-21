@@ -115,5 +115,5 @@ module.exports = {
     // ServiceHub, or set a boolean in the autocomplete provider to always return
     // empty results.
     getServiceByNuclideUri('FlowService').dispose();
-  }
+  },
 };
