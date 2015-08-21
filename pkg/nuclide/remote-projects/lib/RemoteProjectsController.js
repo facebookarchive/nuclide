@@ -43,6 +43,9 @@ class RemoteProjectsController {
     }
     var textEditor = paneItem;
     var fileUri = textEditor.getPath();
+    if (!fileUri) {
+      return;
+    }
     if (remoteUri.isLocal(fileUri)) {
       this._renderStatusBar(ConnectionState.LOCAL, fileUri);
       return;
