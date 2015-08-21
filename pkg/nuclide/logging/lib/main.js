@@ -38,12 +38,7 @@ function configLog4jsLogger(config: any, options: any): void {
 export function updateConfig(config: any, options: any): void {
   require('nuclide-commons').singleton.reset(
         LOG4JS_INSTANCE_KEY,
-        () => Promise.resolve(configLog4jsLogger(config, options)));
-}
-
-async function createLog4jsLogger() {
-  var defaultConfig = await require('./config').getDefaultConfig();
-  return configLog4jsLogger(defaultConfig, {});
+        () => configLog4jsLogger(config, options));
 }
 
 // Create a lazy logger, who won't initialize log4js logger until `lazyLogger.$level(...)` is called.
@@ -51,11 +46,18 @@ async function createLog4jsLogger() {
 // logger taking too much time.
 function createLazyLogger(): any {
   lazyLogger = {};
+  var defaultConfigPromise;
 
   LOGGER_LEVELS.forEach((level) => {
     lazyLogger[level] = async (...args: Array<any>) => {
-      var logger = await require('nuclide-commons').
-          singleton.get(LOG4JS_INSTANCE_KEY, createLog4jsLogger);
+      if (!defaultConfigPromise) {
+        defaultConfigPromise = require('./config').getDefaultConfig();
+      }
+      var defaultConfig = await defaultConfigPromise;
+      var logger = require('nuclide-commons').singleton.get(
+        LOG4JS_INSTANCE_KEY,
+        () => configLog4jsLogger(defaultConfig),
+      );
       logger[level].apply(logger, args);
     };
   });
