@@ -16,16 +16,19 @@ var {findReferences} = require('./hack');
 var {HACK_GRAMMAR} = require('nuclide-hack-common');
 
 module.exports = {
+  async isEditorSupported(textEditor: TextEditor): Promise<boolean> {
+    var fileUri = textEditor.getPath();
+    if (!fileUri || HACK_GRAMMAR !== textEditor.getGrammar().scopeName) {
+      return false;
+    }
+    return true;
+  },
+
   async findReferences(
     textEditor: TextEditor,
     position: atom$Point,
   ): Promise<?Object /*FindReferencesReturn*/> {
     var {withLoadingNotification} = require('nuclide-atom-helpers');
-
-    var fileUri = textEditor.getPath();
-    if (!fileUri || HACK_GRAMMAR !== textEditor.getGrammar().scopeName) {
-      return null;
-    }
 
     var result = await withLoadingNotification(
       findReferences(textEditor, position.row, position.column),
