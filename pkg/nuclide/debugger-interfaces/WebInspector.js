@@ -31,6 +31,7 @@ declare class WebInspector$Script {
 
 declare class WebInspector$DebuggerModel$Location {
   lineNumber: string;
+  uiSourceCode: WebInspector$UISourceCode;
 }
 
 declare class WebInspector$CallFrame {
@@ -156,6 +157,10 @@ declare class WebInspector$Setting {
   set(value: any): void;
 }
 
+declare class WebInspector$DebuggerWorkspaceBinding {
+  rawLocationToUILocation(rawLocation: WebInspector$DebuggerModel$Location): WebInspector$UILocation;
+}
+
 declare var WebInspector: {
   App: typeof WebInspector$App;
   AppProvider: typeof WebInspector$AppProvider;
@@ -169,6 +174,7 @@ declare var WebInspector: {
   Workspace: typeof WebInspector$Workspace;
 
   breakpointManager: WebInspector$BreakpointManager;
+  debuggerWorkspaceBinding: WebInspector$DebuggerWorkspaceBinding;
   inspectorView: WebInspector$InspectorView;
   settings: WebInspector$Settings;
   targetManager: WebInspector$TargetManager;
