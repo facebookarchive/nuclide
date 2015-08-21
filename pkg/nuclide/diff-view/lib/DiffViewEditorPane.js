@@ -56,7 +56,7 @@ var DiffViewEditorPane = React.createClass({
 
   render(): ReactElement {
     return (
-      <atom-text-editor ref="editor" style={{height: '100%'}} />
+      <atom-text-editor ref="editor" style={{height: '100%', overflow: 'hidden'}} />
     );
   },
 

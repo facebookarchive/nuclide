@@ -33,6 +33,10 @@ atom-text-editor, atom-text-editor::shadow {
   }
 
   .gutter .line-number {
+    // The overlay marker has a z-index of 4.
+    // The gutter needs a higher z-index so that when the editor scrolls, the
+    // inline comment components are underneath it.
+    z-index: 5;
     &.diff-view-insert .icon-right {
       visibility: visible;
       &:before {
