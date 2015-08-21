@@ -107,7 +107,7 @@ class DiagnosticsPane extends React.Component {
   }
 
   _rowHeightGetter(rowIndex: number): number {
-    // TODO(mbolin): Improve this heuristic for determining the row height.
+    // TODO(t8055416): Improve this heuristic for determining the row height.
     var diagnostic = this._rowGetter(rowIndex);
     var filePath = fileColumnCellDataGetter('filePath', diagnostic);
     var {text: message} = messageColumnCellDataGetter('message', diagnostic);
