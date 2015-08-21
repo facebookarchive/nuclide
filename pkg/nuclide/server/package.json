@@ -16,6 +16,7 @@
   "dependencies": {
     "connect": "3.3.4",
     "event-kit": "1.1.1",
+    "fb-phabricator-comments-base": "0.0.0",
     "fs-plus": "2.8.0",
     "mv": "2.1.1",
     "nuclide-arcanist-base": "0.0.0",
