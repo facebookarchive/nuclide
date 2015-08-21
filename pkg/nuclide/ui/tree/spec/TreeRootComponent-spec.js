@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type LazyTreeNode from '../lib/LazyTreeNode';
+
 var LazyTestTreeNode = require('./LazyTestTreeNode');
 var React = require('react-for-atom');
 var TreeNodeComponent = require('../lib/TreeNodeComponent');
@@ -62,20 +64,22 @@ describe('TreeRootComponent', () => {
     //      G
     //     / \
     //    H   I
-    //  /   /
-    // J   K
+    //  /   /   \
+    // J   K     H(2)
     nodes['G'] = new LazyTestTreeNode({label: 'G'}, /* parent */ null, true, async () => [nodes['H'], nodes['I']]);
     nodes['H'] = new LazyTestTreeNode({label: 'H'}, /* parent */ nodes['G'], true, async () => [nodes['J']]);
-    nodes['I'] = new LazyTestTreeNode({label: 'I'}, /* parent */ nodes['G'], true, async () => [nodes['K']]);
+    nodes['I'] = new LazyTestTreeNode({label: 'I'}, /* parent */ nodes['G'], true, async () => [nodes['K'], nodes['H2']]);
     nodes['J'] = new LazyTestTreeNode({label: 'J'}, /* parent */ nodes['H'], false, async () => null);
     nodes['K'] = new LazyTestTreeNode({label: 'K'}, /* parent */ nodes['I'], false, async () => null);
+    nodes['H2'] = new LazyTestTreeNode({label: 'H'}, /* parent */ nodes['I'], false, async () => null);
 
     hostEl = document.createElement('div');
     hostEl.className = 'test';
     renderComponent = (componentProps) => {
       return React.render(
-          <TreeRootComponent {...componentProps} />,
-          hostEl);
+        <TreeRootComponent {...componentProps} />,
+        hostEl
+      );
     };
 
     props = {
@@ -485,7 +489,7 @@ describe('TreeRootComponent', () => {
         waitsForPromise(async () => {
           var component = renderComponent(props);
           await component.setRoots([nodes['G']]);
-          await component.selectNodeKey(nodes['G'].getKey())
+          await component.selectNodeKey(nodes['G'].getKey());
 
           expect(component.getSelectedNodes()).toEqual([nodes['G']]);
           expect(component.isNodeKeyExpanded(nodes['G'].getKey())).toBe(true);
@@ -505,7 +509,7 @@ describe('TreeRootComponent', () => {
           var component = renderComponent(props);
           await component.setRoots([nodes['G']]);
           await component.expandNodeKey(nodes['H'].getKey());
-          await component.selectNodeKey(nodes['J'].getKey())
+          await component.selectNodeKey(nodes['J'].getKey());
 
           expect(component.getSelectedNodes()).toEqual([nodes['J']]);
 
@@ -522,7 +526,7 @@ describe('TreeRootComponent', () => {
         waitsForPromise(async () => {
           var component = renderComponent(props);
           await component.setRoots([nodes['G']]);
-          await component.selectNodeKey(nodes['G'].getKey())
+          await component.selectNodeKey(nodes['G'].getKey());
 
           expect(component.getSelectedNodes()).toEqual([nodes['G']]);
           expect(component.isNodeKeyExpanded(nodes['G'].getKey())).toBe(true);
@@ -544,7 +548,7 @@ describe('TreeRootComponent', () => {
           var component = renderComponent(props);
           await component.setRoots([nodes['G']]);
           await component.expandNodeKey(nodes['H'].getKey());
-          await component.selectNodeKey(nodes['J'].getKey())
+          await component.selectNodeKey(nodes['J'].getKey());
 
           expect(component.getSelectedNodes()).toEqual([nodes['J']]);
 
@@ -615,4 +619,25 @@ describe('TreeRootComponent', () => {
       });
     });
   });
+
+  describe('rendering', () => {
+
+    it('creates one node for each unique path', () => {
+      waitsForPromise(async () => {
+        var component = renderComponent(props);
+        await component.setRoots([nodes['G']]);
+        // Ensure nodes with children are expanded so their subtrees render.
+        await component.expandNodeKey(nodes['H'].getKey());
+        await component.expandNodeKey(nodes['I'].getKey());
+
+        var renderedNodes = TestUtils.scryRenderedComponentsWithType(component, TreeNodeComponent);
+        // 6 nodes should render: G, H, I, J, K, and H(2). The two 'H' nodes have the same label, but
+        // both should render and be part of the length. If duplicate labels prevent the nodes from
+        // rendering, this test will fail.
+        expect(renderedNodes.length).toBe(6);
+      });
+    });
+
+  });
+
 });
