@@ -9,31 +9,48 @@
  * the root directory of this source tree.
  */
 
-// Serialization utils borrowed from https://fburl.com/68062438.
+var {assign} = require('nuclide-commons').object;
 var log4js = require('log4js');
 
-// JSON.stringify(new Error('test')) returns {}, which is not really useful for us.
-// The replacer allows us to serialize errors correctly.
-function errorReplacer(key: string, value: mixed): mixed {
-  if (value instanceof Array && key === 'data') {
-    value = value.map((item) => {
-      if (item && item.stack && JSON.stringify(item) === '{}') {
-        item = {stack: item.stack};
+import type {LoggingEvent} from './types';
+
+module.exports = {
+  /**
+   * JSON.stringify can't stringify instance of Error. To solve this problem, we
+   * patch the errors in loggingEvent.data and convert it to an Object with 'name', 'message',
+   * 'stack' and 'stackTrace' as fields.
+   * If there is no error attached to loggingEvent.data, we create a new error and append it to
+   * loggingEvent.data, so that we could get stack information which helps categorization in
+   * logview.
+   */
+  patchErrorsOfLoggingEvent(loggingEvent: LoggingEvent): LoggingEvent {
+    var loggingEventCopy = assign({}, loggingEvent);
+    loggingEventCopy.data = (loggingEventCopy.data || []).slice();
+
+    if (!loggingEventCopy.data.some(item => item instanceof Error)) {
+      loggingEventCopy.data.push(new Error('Auto generated Error'));
+    }
+
+    loggingEventCopy.data = loggingEventCopy.data.map(item => {
+      if (item instanceof Error) {
+        return {
+          name: item.name,
+          message: item.message,
+          stack: item.stack,
+          stackTrace: item.stackTrace,
+        };
       }
       return item;
     });
-  }
-  return value;
-}
 
-module.exports = {
-  errorReplacer,
+    return loggingEventCopy;
+  },
 
   /**
    * Takes a loggingEvent object, returns string representation of it.
    */
   serializeLoggingEvent(loggingEvent: mixed): string {
-    return JSON.stringify(loggingEvent, errorReplacer);
+    return JSON.stringify(loggingEvent);
   },
 
   /**
