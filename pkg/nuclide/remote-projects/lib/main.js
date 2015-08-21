@@ -9,9 +9,13 @@
  * the root directory of this source tree.
  */
 
+import type RemoteProjectsController from './RemoteProjectsController';
+
 var {CompositeDisposable, TextEditor} = require('atom');
 
 var subscriptions: ?CompositeDisposable = null;
+var controller: ?RemoteProjectsController = null;
+
 var pendingFiles = {};
 
 var logger = null;
@@ -245,6 +249,9 @@ module.exports = {
   activate(state: ?any): void {
     subscriptions = new CompositeDisposable();
 
+    var RemoteProjectsController = require('./RemoteProjectsController');
+    controller = new RemoteProjectsController();
+
     subscriptions.add(getRemoteConnection().onDidAddRemoteConnection(connection => {
       addRemoteFolderToProject(connection);
     }));
@@ -281,6 +288,12 @@ module.exports = {
       // Clear obsolete config.
       atom.config.set('nuclide.remoteProjectsConfig', []);
     }));
+  },
+
+  consumeStatusBar(statusBar: Element): void {
+    if (controller) {
+      controller.consumeStatusBar(statusBar);
+    }
   },
 
   serialize(): any {

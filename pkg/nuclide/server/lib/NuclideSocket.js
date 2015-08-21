@@ -60,6 +60,7 @@ class NuclideSocket extends EventEmitter {
         return resolve();
       } else {
         this.on('connect', resolve);
+        this.on('reconnect', resolve);
       }
     });
   }
@@ -77,6 +78,8 @@ class NuclideSocket extends EventEmitter {
       this._reconnectTime = INITIAL_RECONNECT_TIME_MS;
       // Handshake the server with my client id to manage my re-connect attemp, if it is.
       websocket.send(this.id, () => {
+        this._connected = true;
+        this.emit('status', this._connected);
         if (this._previouslyConnected) {
           logger.info('WebSocket reconnected');
           this.emit('reconnect');
@@ -84,7 +87,6 @@ class NuclideSocket extends EventEmitter {
           logger.info('WebSocket connected');
           this.emit('connect');
         }
-        this._connected = true;
         this._previouslyConnected = true;
         this._cachedMessages.splice(0).forEach(message => this.send(message.data));
       });
@@ -97,8 +99,7 @@ class NuclideSocket extends EventEmitter {
       }
       logger.info('WebSocket closed.');
       this._websocket = null;
-      this._connected = false;
-      this.emit('disconnect');
+      this._disconnect();
       if (!this._closed) {
         logger.info('WebSocket reconnecting after closed.');
         this._scheduleReconnect();
@@ -132,6 +133,12 @@ class NuclideSocket extends EventEmitter {
       websocket.removeListener('error', onSocketError);
       websocket.removeListener('message', onSocketMessage);
     };
+  }
+
+  _disconnect() {
+    this._connected = false;
+    this.emit('status', this._connected);
+    this.emit('disconnect');
   }
 
   _cleanWebSocket() {
@@ -223,7 +230,7 @@ class NuclideSocket extends EventEmitter {
       this._lastHeartbeatTime = now;
       this.emit('heartbeat');
     } catch (err) {
-      this._connected = false;
+      this._disconnect();
       this._lastHeartbeat  = 'away';
       // Error code could could be one of:
       // ['ENOTFOUND', 'ECONNREFUSED', 'ECONNRESET', 'ETIMEDOUT']
@@ -269,8 +276,7 @@ class NuclideSocket extends EventEmitter {
   close() {
     this._closed = true;
     if (this._connected) {
-      this._connected = false;
-      this.emit('disconnect');
+      this._disconnect();
     }
     if (this._reconnectTimer) {
       clearTimeout(this._reconnectTimer);
@@ -279,6 +285,10 @@ class NuclideSocket extends EventEmitter {
     this._cachedMessages = [];
     this._reconnectTime = INITIAL_RECONNECT_TIME_MS;
     clearInterval(this._heartbeatInterval);
+  }
+
+  isConnected(): boolean {
+    return this._connected;
   }
 }
 
