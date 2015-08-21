@@ -29,7 +29,7 @@ function buildLineRangesWithOffsets(
     emptyLineFactory: () => any
     ): LineRangesWithOffsets {
 
-  var offsetLineNumbers = Object.keys(lineOffsets).sort().map(lineNumber => parseInt(lineNumber, 10));
+  var offsetLineNumbers = Object.keys(lineOffsets).map(lineNumber => parseInt(lineNumber, 10)).sort((x, y) => x - y);
 
   var priorScreenLine = startBufferRow;
   var newRegions = [];

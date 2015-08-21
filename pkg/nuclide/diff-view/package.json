@@ -22,7 +22,8 @@
     "react-for-atom": "0.13.6"
   },
   "devDependencies": {
-    "nuclide-atom-interfaces": "0.0.0"
+    "nuclide-atom-interfaces": "0.0.0",
+    "nuclide-hg-repository-client": "0.0.0"
   },
   "consumedServices": {
     "phabricator-comments-ui.provider": {
