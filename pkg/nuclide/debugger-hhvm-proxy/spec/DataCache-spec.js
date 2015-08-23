@@ -20,6 +20,7 @@ var {
 
 const PROPERTIES = ['property'];
 const CONVERTED_PROPERTIES = ['converted-properties'];
+const EXPRESSION = ['expression'];
 
 describe('debugger-hhvm-proxy DataCache', () => {
     var socket;
@@ -34,6 +35,7 @@ describe('debugger-hhvm-proxy DataCache', () => {
     var singlePageRemoteId = remoteObjectIdOfObjectId(singlePageId);
     var convertProperties;
     var getPagedProperties;
+    var convertValue;
 
     beforeEach(() => {
 
@@ -57,6 +59,9 @@ describe('debugger-hhvm-proxy DataCache', () => {
       var properties = require('../lib/properties');
       convertProperties = spyOn(properties, 'convertProperties').andReturn(CONVERTED_PROPERTIES);
       getPagedProperties = spyOn(properties, 'getPagedProperties').andReturn(CONVERTED_PROPERTIES);
+
+      var values = require('../lib/values');
+      convertValue = spyOn(values, 'convertValue').andReturn(EXPRESSION);
 
       var DataCache = uncachedRequire(require, '../lib/DataCache');
       cache = new DataCache(socket);
@@ -144,6 +149,26 @@ describe('debugger-hhvm-proxy DataCache', () => {
         expect(result).toEqual(CONVERTED_PROPERTIES);
         expect(socket.getPropertiesByFullname).toHaveBeenCalledWith(2, 3, 'fullname-value', 42);
         expect(convertProperties).toHaveBeenCalledWith(singlePageId, PROPERTIES);
+      });
+    });
+
+    it('evaluateOnCallFrame', () => {
+      waitsForPromise(async () => {
+        socket.evaluateOnCallFrame = jasmine.createSpy('evaluateOnCallFrame')
+          .andReturn(Promise.resolve({result: PROPERTIES, wasThrown: false}));
+        cache.enable();
+        var result = await cache.evaluateOnCallFrame(5, 'expression');
+        expect(socket.evaluateOnCallFrame).toHaveBeenCalledWith(5, 'expression');
+        expect(convertValue).toHaveBeenCalledWith({
+            enableCount : 1,
+            frameIndex : 5,
+            contextId : 'Watch Context Id',
+          },
+          PROPERTIES);
+        expect(result).toEqual({
+          result: EXPRESSION,
+          wasThrown: false,
+        });
       });
     });
 });

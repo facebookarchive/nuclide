@@ -102,6 +102,11 @@ class DebuggerHandler extends Handler {
       await this._removeBreakpoint(id, params);
       break;
 
+    case 'evaluateOnCallFrame':
+      var result = await this._dataCache.evaluateOnCallFrame(Number(params.callFrameId), params.expression);
+      this.replyToCommand(id, result);
+      break;
+
     default:
       this.unknownMethod(id, method, params);
       break;

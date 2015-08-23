@@ -16,12 +16,16 @@ var {
   createContextObjectId,
   isContextObjectId,
   isPagedObjectId,
+  getWatchContextObjectId,
+  isWatchContextObjectId,
 } = require('./ObjectId');
 
 var {
   convertProperties,
   getPagedProperties,
 } = require('./properties.js');
+
+var {convertValue} = require('./values.js');
 
 // TODO: Move these Chrome types to a shared package.
 type RemoteObjectId = string;
@@ -97,6 +101,23 @@ class DataCache {
     });
   }
 
+  async evaluateOnCallFrame(frameIndex: number, expression: string): Promise<Object> {
+    if (!this.isEnabled()) {
+      throw new Error('Must be enabled to evaluate expression.');
+    }
+
+    var evaluatedResult = await this._socket.evaluateOnCallFrame(frameIndex, expression);
+    if (evaluatedResult.wasThrown) {
+      return evaluatedResult;
+    }
+    var id = getWatchContextObjectId(this._enableCount, frameIndex);
+    var result = convertValue(id, evaluatedResult.result);
+    return {
+      result,
+      wasThrown: false,
+    };
+  }
+
   _remoteObjectOfContext(frameIndex: number, context: DbgpContext): RemoteObject {
     return {
       description: context.name,
@@ -105,7 +126,7 @@ class DataCache {
     };
   }
 
-  _objectIdOfContext(frameIndex: number, context: DbgpContext): RemoteObjectId {
+  _objectIdOfContext(frameIndex: number, context: DbgpContext): ObjectId {
     return createContextObjectId(this._enableCount, frameIndex, context.id);
   }
 
@@ -129,7 +150,12 @@ class DataCache {
   }
 
   async _getSinglePageOfProperties(id: ObjectId): Promise<Array<PropertyDescriptor>> {
-    var properties = await this._socket.getPropertiesByFullname(id.frameIndex, id.contextId, id.fullname, id.page);
+    var properties = null;
+    if (isWatchContextObjectId(id)) {
+      properties = await this._socket.getPropertiesByFullnameAllConexts(id.frameIndex, id.fullname, id.page);
+    } else {
+      properties = await this._socket.getPropertiesByFullname(id.frameIndex, id.contextId, id.fullname, id.page);
+    }
     return convertProperties(id, properties);
   }
 

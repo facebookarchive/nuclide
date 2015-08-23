@@ -79,7 +79,7 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
           {
             callFrames: [
               {
-                  callFrameId: 0,
+                  callFrameId: '0',
                   functionName: 'foo',
                   location: {
                     lineNumber: 4,
@@ -88,7 +88,7 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
                   scopeChain: undefined,
               },
               {
-                  callFrameId: 1,
+                  callFrameId: '1',
                   functionName: 'main',
                   location: {
                     lineNumber: 14,

@@ -57,6 +57,12 @@ type ObjectId = {
   elementRange?: ElementRange;
 };
 
+const WATCH_CONTEXT_ID = 'Watch Context Id';
+
+function getWatchContextObjectId(enableCount: number, frameIndex: number): ObjectId {
+  return createContextObjectId(enableCount, frameIndex, WATCH_CONTEXT_ID);
+}
+
 function remoteObjectIdOfObjectId(id: ObjectId): RemoteObjectId {
   return JSON.stringify(id);
 }
@@ -81,6 +87,10 @@ function singlePageObjectId(objectId: ObjectId, fullname: string, page: number):
   result.fullname = fullname;
   result.page = page;
   return result;
+}
+
+function isWatchContextObjectId(id: ObjectId): boolean {
+  return id.contextId === WATCH_CONTEXT_ID;
 }
 
 function isContextObjectId(id: ObjectId): boolean {
@@ -176,4 +186,6 @@ module.exports = {
   startIndexOfObjectId,
   countOfObjectId,
   getChildIds,
+  getWatchContextObjectId,
+  isWatchContextObjectId,
 };

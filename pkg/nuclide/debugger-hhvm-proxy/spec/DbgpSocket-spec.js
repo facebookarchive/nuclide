@@ -120,13 +120,13 @@ describe('debugger-hhvm-proxy DbgpSocket', () => {
         expect(stack.length).toBe(2);
 
         var frame0 = stack[0];
-        expect(idOfFrame(frame0)).toBe(0);
+        expect(idOfFrame(frame0)).toBe('0');
         expect(functionOfFrame(frame0)).toBe('foo');
         expect(fileOfFrame(frame0)).toBe('/home/peterhal/test/dbgp/test-client.php');
         expect(locationOfFrame(frame0)).toEqual({lineNumber:3, scriptId: fileOfFrame(frame0)});
 
         var frame1 = stack[1];
-        expect(idOfFrame(frame1)).toBe(1);
+        expect(idOfFrame(frame1)).toBe('1');
         expect(functionOfFrame(frame1)).toBe('{main}');
         expect(fileOfFrame(frame1)).toBe('/home/peterhal/test/dbgp/test-client.php');
         expect(locationOfFrame(frame1)).toEqual({lineNumber:9, scriptId: fileOfFrame(frame1)});

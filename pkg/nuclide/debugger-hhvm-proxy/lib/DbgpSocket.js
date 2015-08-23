@@ -56,6 +56,11 @@ type DbgpProperty = {
   property?: Array<DbgpProperty>;
 };
 
+type EvaluationResult = {
+  result: DbgpProperty;
+  wasThrown: boolean;
+};
+
 /**
  * Handles sending and recieving dbgp messages over a net Socket.
  * Dbgp documentation can be found at http://xdebug.org/docs-dbgp.php
@@ -129,6 +134,33 @@ class DbgpSocket {
     // property_value returns the outer property, we want the children ...
     // 0 results yields missing 'property' member
     return result.property[0].property || [];
+  }
+
+  async getPropertiesByFullnameAllConexts(frameIndex: number, fullname: string,
+      page: number): Promise<Array<DbgpProperty>> {
+    // Pass zero as contextId to search all contexts.
+    return await this.getPropertiesByFullname(frameIndex, /*contextId*/'0', fullname, page);
+  }
+
+  async evaluateOnCallFrame(frameIndex: number, expression: string): Promise<EvaluationResult> {
+    // Escape any double quote in the expression.
+    var escapedExpression = expression.replace(/"/g, '\\"');
+    // Quote the input expression so that we can support expression with space in it(e.g. function evaluation).
+    var result = await this._callDebugger('property_value', `-d ${frameIndex} -n "${escapedExpression}"`);
+    if (result.error && result.error.length > 0) {
+      return {
+        // TODO: [jeffreytan] pass error message to UI.
+        // Currently, Chrome UI throws away any result if wasThown is true
+        // (see WebInspector.WatchExpression.prototype._createWatchExpression())
+        // so some modification to chrome code is required to support this.
+        result: null,
+        wasThrown: true,
+      };
+    }
+    return {
+      result: result.property[0] || [],
+      wasThrown: false,
+    };
   }
 
   // Returns one of:

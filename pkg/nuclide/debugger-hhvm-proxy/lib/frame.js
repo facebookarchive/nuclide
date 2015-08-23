@@ -34,9 +34,9 @@ type DbgpStackFrame = {
   }
 };
 
-function idOfFrame(frame: DbgpStackFrame): Number {
+function idOfFrame(frame: DbgpStackFrame): string {
   // TODO: Mangle in the transactionId of the most recent pause/status.
-  return Number(frame.$.level);
+  return frame.$.level;
 }
 
 function functionOfFrame(frame: DbgpStackFrame): string {
