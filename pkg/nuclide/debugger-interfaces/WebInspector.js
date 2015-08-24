@@ -161,6 +161,17 @@ declare class WebInspector$DebuggerWorkspaceBinding {
   rawLocationToUILocation(rawLocation: WebInspector$DebuggerModel$Location): WebInspector$UILocation;
 }
 
+declare class WebInspector$UserMetrics {
+  static UserAction: string;
+}
+
+declare class WebInspector$NotificationService {
+  addEventListener(
+    eventType: string,
+    listener: (event: WebInspector$Event) => void,
+    thisObject: Object): void;
+}
+
 declare var WebInspector: {
   App: typeof WebInspector$App;
   AppProvider: typeof WebInspector$AppProvider;
@@ -171,11 +182,13 @@ declare var WebInspector: {
   RootView: typeof WebInspector$RootView;
   SplitView: typeof WebInspector$SplitView;
   SidebarPane: typeof WebInspector$SidebarPane;
+  UserMetrics: typeof WebInspector$UserMetrics;
   Workspace: typeof WebInspector$Workspace;
 
   breakpointManager: WebInspector$BreakpointManager;
   debuggerWorkspaceBinding: WebInspector$DebuggerWorkspaceBinding;
   inspectorView: WebInspector$InspectorView;
+  notifications: WebInspector$NotificationService;
   settings: WebInspector$Settings;
   targetManager: WebInspector$TargetManager;
   workspace: WebInspector$Workspace;
