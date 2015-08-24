@@ -9,11 +9,16 @@
  * the root directory of this source tree.
  */
 
-var {fsPromise} = require('nuclide-commons');
+var {fsPromise, env} = require('nuclide-commons');
+var os = require('os');
 var path = require('path');
 var {USER} = require('nuclide-commons').env;
 
-var LOG_FILE_PATH = `/tmp/nuclide-${USER}-logs/nuclide.log`;
+if (env.runningInWindows()) {
+  var LOG_FILE_PATH = path.join(os.tmpdir(), `/nuclide-${USER}-logs/nuclide.log`);
+} else {
+  var LOG_FILE_PATH = `/tmp/nuclide-${USER}-logs/nuclide.log`;
+}
 
 var logDirectory = path.dirname(LOG_FILE_PATH);
 var logDirectoryInitialized = false;

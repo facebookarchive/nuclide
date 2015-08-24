@@ -19,4 +19,9 @@ module.exports = {
   get HOME() {
     return process.env['HOME'] || process.env['USERPROFILE'];
   },
+
+  runningInWindows(): boolean {
+    var os = require('os');
+    return os.platform() === 'win32' || os.platform() === 'win64';
+  },
 };
