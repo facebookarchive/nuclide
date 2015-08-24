@@ -13,7 +13,7 @@ import type {HackReference} from 'nuclide-hack-common';
 
 var logger = require('nuclide-logging').getLogger();
 var {SearchResultType, SymbolType} = require('nuclide-hack-common/lib/constants');
-var {checkOutput, fsPromise} = require('nuclide-commons');
+var {checkOutput, fsPromise, PromiseQueue} = require('nuclide-commons');
 var extend = require('util')._extend;
 
 const HH_NEWLINE = '<?hh\n';
@@ -21,6 +21,9 @@ const HH_STRICT_NEWLINE = '<?hh // strict\n';
 const PATH_TO_HH_CLIENT = 'hh_client';
 const HH_SERVER_INIT_MESSAGE = 'hh_server still initializing';
 const HH_SERVER_BUSY_MESSAGE = 'hh_server is busy';
+
+var hhPromiseQueue: ?PromiseQueue = null;
+var pendingSearchPromises: Map<string, Promise> = new Map();
 
 /**
  * Executes hh_client with proper arguments returning the result string or json object.
@@ -31,34 +34,50 @@ async function _callHHClient(
   outputJson: boolean,
   processInput: ?string,
   cwd: string): Promise<string | Object> {
-  // append args on the end of our commands
-  var defaults = ['--retries', '0', '--retry-if-init', 'false', '--from', 'nuclide'];
-  if (outputJson) {
-    defaults.unshift('--json');
+
+  if (!hhPromiseQueue) {
+    hhPromiseQueue = new PromiseQueue();
   }
 
-  var allArgs = defaults.concat(args);
-  allArgs.push(cwd);
+  return hhPromiseQueue.submit(async (resolve, reject) => {
+    // Append args on the end of our commands.
+    var defaults = ['--retries', '0', '--retry-if-init', 'false', '--from', 'nuclide'];
+    if (outputJson) {
+      defaults.unshift('--json');
+    }
 
-  var {stdout, stderr} = await checkOutput(PATH_TO_HH_CLIENT, allArgs, {stdin: processInput});
-  if (stderr.startsWith(HH_SERVER_INIT_MESSAGE)) {
-    throw new Error(`${HH_SERVER_INIT_MESSAGE}: try: \`arc build\` or try again later!`);
-  } else if (stderr.startsWith(HH_SERVER_BUSY_MESSAGE)) {
-    throw new Error(`${HH_SERVER_BUSY_MESSAGE}: try: \`arc build\` or try again later!`);
-  }
+    var allArgs = defaults.concat(args);
+    allArgs.push(cwd);
 
-  var output = errorStream ? stderr : stdout;
-  if (outputJson) {
+    var execResult = null;
     try {
-      return JSON.parse(output);
+      execResult = await checkOutput(PATH_TO_HH_CLIENT, allArgs, {stdin: processInput});
+    } catch (err) {
+      reject(err);
+      return;
+    }
+    var {stdout, stderr} = execResult;
+    if (stderr.contains(HH_SERVER_INIT_MESSAGE)) {
+      reject(new Error(`${HH_SERVER_INIT_MESSAGE}: try: \`arc build\` or try again later!`));
+      return;
+    } else if (stderr.startsWith(HH_SERVER_BUSY_MESSAGE)) {
+      reject(Error(`${HH_SERVER_BUSY_MESSAGE}: try: \`arc build\` or try again later!`));
+      return;
+    }
+
+    var output = errorStream ? stderr : stdout;
+    if (!outputJson) {
+      resolve(output);
+      return;
+    }
+    try {
+      resolve(JSON.parse(output));
     } catch (err) {
       var errorMessage = `hh_client error, args: [${args.join(',')}], stdout: ${stdout}, stderr: ${stderr}`;
       logger.error(errorMessage);
-      throw new Error(errorMessage);
+      reject(new Error(errorMessage));
     }
-  } else {
-    return output;
-  }
+  });
 }
 
 /**
@@ -171,13 +190,28 @@ async function getSearchResults(
     return [];
   }
   var {cwd} = options;
-  var response = await _callHHClient(
-      /*args*/ ['--search' + (searchPostfix || ''), search],
-      /*errorStream*/ false,
-      /*outputJson*/ true,
-      /*processInput*/ null,
-      /*cwd*/ cwd,
-  );
+
+  // `pendingSearchPromises` is used to temporally cache search result promises.
+  // So, when a matching search query is done in parallel, it will wait and resolve
+  // with the original search call.
+  var searchPromise = pendingSearchPromises.get(search);
+  if (!searchPromise) {
+    searchPromise = _callHHClient(
+        /*args*/ ['--search' + (searchPostfix || ''), search],
+        /*errorStream*/ false,
+        /*outputJson*/ true,
+        /*processInput*/ null,
+        /*cwd*/ cwd,
+    );
+    pendingSearchPromises.set(search, searchPromise);
+  }
+
+  var response = null;
+  try {
+    response = await searchPromise;
+  } finally {
+    pendingSearchPromises.delete(search);
+  }
   var results = response.map(result => {
     var filePath = result.filename;
     if (!filePath.startsWith(cwd)) {
