@@ -261,8 +261,11 @@ type DecorateMarkerParams = {
 };
 
 declare class atom$TextEditor extends atom$Model {
+  id: number;
+
   // Event Subscription
   onDidChange(callback: () => void): atom$Disposable;
+  onDidStopChanging(callback: () => void): atom$Disposable;
   onDidDestroy(callback: () => void): atom$Disposable;
   onWillInsertText(callback: (event: {cancel: () => void; text: string;}) => void): atom$Disposable;
   getBuffer(): atom$TextBuffer;
