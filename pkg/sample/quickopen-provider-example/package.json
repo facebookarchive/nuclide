@@ -1,0 +1,25 @@
+{
+  "name": "sample-quickopen-provider-example",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "An example provider for the nuclide-quick-open package",
+  "devDependencies": {
+    "nuclide-atom-interfaces": "0.0.24"
+  },
+  "providedServices": {
+    "nuclide-quick-open-register-provider": {
+      "description": "Register ourselves with the quick-open package",
+      "versions": {
+        "0.0.0": "registerProvider"
+      }
+    }
+  },
+  "consumedServices": {
+    "nuclide-quick-open-register-store": {
+      "versions": {
+        "0.0.0": "registerStore"
+      }
+    }
+  }
+}
