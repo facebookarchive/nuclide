@@ -279,7 +279,9 @@ class LocalHgServiceBase extends HgService {
   }
 
   async getSmartlog(ttyOutput: boolean, concise: boolean): Promise<string> {
-    var args = [concise ? 'sl' : 'smartlog'];
+    // disable the pager extension so that 'hg sl' terminates. We can't just use
+    // HGPLAIN because we have not found a way to get colored output when we do.
+    var args = ['--config', 'extensions.pager=!', concise ? 'sl' : 'smartlog'];
     var execOptions = {
       cwd: this.getWorkingDirectory(),
       NO_HGPLAIN: concise, // `hg sl` is likely user-defined.
