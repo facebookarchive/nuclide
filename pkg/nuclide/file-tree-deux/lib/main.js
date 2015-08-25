@@ -13,6 +13,22 @@ var {CompositeDisposable} = require('atom');
 
 import type {FileTreeControllerState} from './FileTreeController';
 
+// Unload 'tree-view' so we can control whether it is activated or not.
+//
+// Running the code in the global scope here ensures that it's called before 'tree-view' is
+// activated. This allows us to unload it before it's activated, ensuring it has minimal impact on
+// startup time.
+var loadSubscription = atom.packages.onDidLoadInitialPackages(() => {
+  if (atom.packages.isPackageLoaded('tree-view')) {
+    atom.packages.unloadPackage('tree-view');
+  }
+
+  if (loadSubscription) {
+    loadSubscription.dispose();
+    loadSubscription = null;
+  }
+});
+
 class Activation {
   _fileTreeController: ?Object;
   _packageState: ?FileTreeControllerState;
@@ -77,6 +93,12 @@ module.exports = {
   },
 
   activate(state: ?FileTreeControllerState): void {
+    // We need to check if the package is already disabled, otherwise Atom will add it to the
+    // 'core.disabledPackages' config multiple times.
+    if (!atom.packages.isPackageDisabled('tree-view')) {
+      atom.packages.disablePackage('tree-view');
+    }
+
     if (!activation) {
       activation = new Activation(state);
     }
@@ -87,6 +109,15 @@ module.exports = {
       activation.dispose();
       activation = null;
     }
+
+    // The user most likely wants either `nuclide-file-tree` or `tree-view` at any given point. If
+    // `nuclide-file-tree` is disabled, we should re-enable `tree-view` so they can still browse
+    // files.
+    //
+    // If the user only ever wants to use `nuclide-file-tree`, we still need to enable `tree-view`
+    // on shutdown. Otherwise, disabling `nuclide-file-tree` and reloading Atom would keep
+    // `tree-view` disabled.
+    atom.packages.enablePackage('tree-view');
   },
 
   serialize(): ?FileTreeControllerState {
