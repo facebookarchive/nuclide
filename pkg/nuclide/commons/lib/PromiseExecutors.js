@@ -11,7 +11,7 @@
 import Dequeue from 'dequeue';
 import {EventEmitter} from 'events';
 
-type Executor = (resolve: mixed, reject: mixed) => void;
+type Executor = (resolve: any, reject: any) => void;
 
 /**
  * A pool that executes Promise executors in parallel given the poolSize, in order.
