@@ -15,7 +15,7 @@ var {
 } = require('child_process');
 var {assign} = require('./object');
 var path = require('path');
-var PromiseQueue = require('./PromiseQueue');
+var {PromiseQueue} = require('./PromiseExecutors');
 
 var platformPathPromise: ?Promise<string>;
 

@@ -8,7 +8,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-var PromiseQueue = require('../lib/PromiseQueue');
+import {PromisePool, PromiseQueue} from '../lib/PromiseExecutors';
 
 describe('PromiseQueue', () => {
 
@@ -32,7 +32,7 @@ describe('PromiseQueue', () => {
   //   });
   // });
 
-  it('Run three async operations and make sure they do not overlap.', () => {
+  it('Run three async operations serially and make sure they do not overlap.', () => {
     var queue = new PromiseQueue();
     var res1Start, res1End;
     var res2Start, res2End;
@@ -70,6 +70,41 @@ describe('PromiseQueue', () => {
       expect(res2End - res1End >= 200).toBe(true);
       expect(res3End - res2End >= 300).toBe(true);
       expect(res3End - res1End >= 500).toBe(true);
+    });
+  });
+
+});
+
+
+describe('PromisePool', () => {
+  beforeEach(() => window.useRealClock());
+
+  it('Run async operations in parallel and do not exceed pool size.', () => {
+    var poolSize = 3;
+    var numDelayedExecutors = 30;
+    var delayMs = 10;
+    var numRunning = 0;
+
+    var executors = [];
+    for (var i = 0; i < numDelayedExecutors; i++) {
+      executors.push((resolve, reject) => {
+        numRunning++;
+        expect(numRunning <= poolSize).toBe(true);
+        setTimeout(() => {
+          expect(numRunning <= poolSize).toBe(true);
+          numRunning--;
+          resolve();
+        }, delayMs);
+      });
+    }
+
+    var queue = new PromisePool(poolSize);
+
+    waitsForPromise(async () => {
+      var start = Date.now();
+      await Promise.all(executors.map(executor => queue.submit(executor)));
+      var end = Date.now();
+      expect(end - start < numDelayedExecutors * delayMs / (poolSize - 1));
     });
   });
 

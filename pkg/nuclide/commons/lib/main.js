@@ -67,8 +67,12 @@ module.exports = {
     return require('./paths');
   },
 
+  get PromisePool() {
+    return require('./PromiseExecutors').PromisePool;
+  },
+
   get PromiseQueue() {
-    return require('./PromiseQueue');
+    return require('./PromiseExecutors').PromiseQueue;
   },
 
   get extend() {
