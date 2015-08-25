@@ -141,6 +141,11 @@ declare class atom$Marker {
   onDidDestroy(callback: () => void): atom$Disposable;
 }
 
+declare class atom$ServiceHub {
+  provide<T>(keyPath: string, version: string, service: T): atom$Disposable;
+  consume<T>(keyPath: string, versionRange: string, callback: (provider: T) => mixed): atom$Disposable;
+}
+
 declare class atom$PackageManager {
   // Event Subscription
   onDidLoadInitialPackages(callback: () => void): atom$Disposable;
@@ -170,6 +175,9 @@ declare class atom$PackageManager {
 
   // Accessing available packages
   getAvailablePackageNames(): Array<string>;
+
+  // (Undocumented.)
+  serviceHub: atom$ServiceHub;
 }
 
 type atom$PaneSplitParams = {

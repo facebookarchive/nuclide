@@ -9,11 +9,11 @@
  * the root directory of this source tree.
  */
 
-function consumeFirstProvider(keyPath: string, version = '0.0.0'): Promise {
+function consumeFirstProvider(keyPath: string, version: string = '0.0.0'): Promise {
   return new Promise((resolve, reject) => {
-    var sub = atom.packages.serviceHub.consume(keyPath, version, provider => {
+    var subscription = atom.packages.serviceHub.consume(keyPath, version, provider => {
       resolve(provider);
-      sub.dispose();
+      subscription.dispose();
     });
   });
 }
