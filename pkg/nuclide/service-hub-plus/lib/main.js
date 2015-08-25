@@ -13,8 +13,7 @@ function consumeFirstProvider(keyPath: string, version = '0.0.0'): Promise {
   return new Promise((resolve, reject) => {
     var sub = atom.packages.serviceHub.consume(keyPath, version, provider => {
       resolve(provider);
-      // Workaround for https://github.com/atom/service-hub/issues/7.
-      setTimeout(() => sub.dispose(), 0);
+      sub.dispose();
     });
   });
 }
