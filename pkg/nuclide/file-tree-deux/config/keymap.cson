@@ -1,0 +1,8 @@
+# We try to make this more specific so it overrides the keybinding for the built-in tree-view.
+'.platform-darwin atom-workspace':
+  'cmd-\\': 'nuclide-file-tree-deux:toggle'
+  'cmd-|': 'nuclide-file-tree-deux:reveal-active-file'
+
+'.platform-win32 atom-workspace, .platform-linux atom-workspace':
+  'ctrl-\\': 'nuclide-file-tree-deux:toggle'
+  'ctrl-|': 'nuclide-file-tree-deux:reveal-active-file'

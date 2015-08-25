@@ -17,6 +17,8 @@ var FileTreeStore = require('./FileTreeStore');
 var {PanelComponent} = require('nuclide-panel');
 var React = require('react-for-atom');
 
+var pathUtil = require('path');
+
 export type FileTreeRootDirectoryState = {
   basePath: string;
   isRemote: boolean;
@@ -68,6 +70,17 @@ class FileTreeController {
         'nuclide-file-tree-deux:reveal-active-file': () => this.revealActiveFile(),
       }
     ));
+    // Load this package's keymap outside the normal activate/deactive lifecycle so its keymaps are
+    // loaded only when users enable this package via its config.
+    //
+    // TODO: Move to normal keymaps/ directory when 'nuclide-file-tree' is fully replaced.
+    atom.keymaps.loadKeymap(
+      pathUtil.join(
+        atom.packages.resolvePackagePath('nuclide-file-tree-deux'),
+        'config',
+        'keymap.cson'
+      )
+    );
   }
 
   _initializePanel(): void {
