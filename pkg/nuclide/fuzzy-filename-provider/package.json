@@ -1,0 +1,33 @@
+{
+  "name": "nuclide-fuzzy-filename-provider",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "Provides fuzzy-search for filenames in project",
+  "nuclide": {
+    "packageType": "Atom",
+    "testRunner": "apm"
+  },
+  "dependencies": {
+    "nuclide-client": "0.0.0",
+    "nuclide-logging": "0.0.0"
+  },
+  "devDependencies": {
+    "nuclide-atom-interfaces": "0.0.0"
+  },
+  "providedServices": {
+    "nuclide-quick-open-register-provider": {
+      "description": "Register ourselves with the quick-open package",
+      "versions": {
+        "0.0.0": "registerProvider"
+      }
+    }
+  },
+  "consumedServices": {
+    "nuclide-quick-open-register-store": {
+      "versions": {
+        "0.0.0": "registerStore"
+      }
+    }
+  }
+}
