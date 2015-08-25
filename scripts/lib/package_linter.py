@@ -19,6 +19,7 @@ except ImportError:
 EXPECTED_NPM_TEST_COMMAND = 'node --harmony node_modules/.bin/jasmine-node-transpiled spec'
 PATH_TO_ATOM_INTERFACES = './node_modules/nuclide-atom-interfaces/1.0/'
 DEPENDENCY_BLACKLIST = {
+  'lodash': 'it is a large dependency that we do not want to take on.',
   'nuclide-atom-interfaces': 'it should be in devDependencies.',
   'nuclide-debugger-interfaces': 'it should be in devDependencies',
   'q': 'we should use real Promise objects.',
