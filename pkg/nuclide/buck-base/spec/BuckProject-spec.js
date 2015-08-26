@@ -101,4 +101,84 @@ describe('BuckProject', () => {
       );
     });
   });
+
+  describe('query()', () => {
+    it('works with deps() predicate in the query', () => {
+      var projectDir = copyProject('buck-query-project');
+      var buckProject = new BuckProject({rootPath: projectDir});
+
+      waitsForPromise({timeout: TIMEOUT}, async () => {
+        var deps = await buckProject.query('deps(//examples:one)');
+        expect(deps.sort()).toEqual([
+          '//examples:five',
+          '//examples:four',
+          '//examples:one',
+          '//examples:three',
+          '//examples:two',
+        ]);
+      });
+    });
+
+    it('works with deps() predicate with limit in the query', () => {
+      var projectDir = copyProject('buck-query-project');
+      var buckProject = new BuckProject({rootPath: projectDir});
+
+      waitsForPromise({timeout: TIMEOUT}, async () => {
+        var deps = await buckProject.query('deps(//examples:one, 1)');
+        expect(deps.sort()).toEqual([
+          '//examples:one',
+          '//examples:three',
+          '//examples:two',
+        ]);
+      });
+    });
+  });
+
+  describe('queryWithArgs()', () => {
+    it('works with deps() predicate in the query', () => {
+      var projectDir = copyProject('buck-query-project');
+      var buckProject = new BuckProject({rootPath: projectDir});
+
+      waitsForPromise({timeout: TIMEOUT}, async () => {
+        var deps = await buckProject.queryWithArgs(
+          "deps('%s') except '%s'",
+          ['//examples:one', '//examples:five']);
+        expect(Array.isArray(deps['//examples:one'])).toBe(true);
+        deps['//examples:one'].sort();
+        expect(deps).toEqual(
+          {
+            '//examples:one': [
+              '//examples:five',
+              '//examples:four',
+              '//examples:three',
+              '//examples:two',
+            ],
+            '//examples:five': [],
+          }
+        );
+      });
+    });
+
+    it('works with deps() predicate with limit in the query', () => {
+      var projectDir = copyProject('buck-query-project');
+      var buckProject = new BuckProject({rootPath: projectDir});
+
+      waitsForPromise({timeout: TIMEOUT}, async () => {
+        var deps = await buckProject.queryWithArgs(
+          "deps('%s', 1) except '%s'",
+          ['//examples:one', '//examples:five']);
+        expect(Array.isArray(deps['//examples:one'])).toBe(true);
+        deps['//examples:one'].sort();
+        expect(deps).toEqual(
+          {
+            '//examples:one': [
+              '//examples:three',
+              '//examples:two',
+            ],
+            '//examples:five': [],
+          }
+        );
+      });
+    });
+  });
 });

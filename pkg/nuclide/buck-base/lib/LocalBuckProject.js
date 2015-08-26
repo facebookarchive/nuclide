@@ -217,6 +217,28 @@ class LocalBuckProject extends BuckProject {
     var json: Object = JSON.parse(result.stdout);
     return json['http.port'];
   }
+
+  async query(query: string): Promise<Array<string>> {
+    var args = ['query', '--json', query];
+    var result = await this._runBuckCommandFromProjectRoot(args);
+    var json: Array<string> = JSON.parse(result.stdout);
+    return json;
+  }
+
+  async queryWithArgs(query: string, args: Array<string>): Promise<{[aliasOrTarget: string]: Array<string>}> {
+    var completeArgs = ['query', '--json', query].concat(args);
+    var result = await this._runBuckCommandFromProjectRoot(completeArgs);
+    var json: {[aliasOrTarget: string]: Array<string>} = JSON.parse(result.stdout);
+
+    // `buck query` does not include entries in the JSON for params that did not match anything. We
+    // massage the output to ensure that every argument has an entry in the output.
+    for (var arg of args) {
+      if (!json.hasOwnProperty(arg)) {
+        json[arg] = [];
+      }
+    }
+    return json;
+  }
 }
 
 module.exports = LocalBuckProject;

@@ -78,6 +78,24 @@ class BuckProject {
   getServerPort(): Promise<number> {
     return Promise.reject('Not implemented');
   }
+
+  /** Runs `buck query --json` with the specified query. */
+  query(query: string): Promise<Array<string>> {
+    return Promise.reject('Not implemented');
+  }
+
+  /**
+   * Runs `buck query --json` with a query that contains placeholders and therefore expects
+   * arguments.
+   * @param query Should contain '%s' placeholders.
+   * @param args Should be a list of build targets or aliases. The query will be run for each arg.
+   *   It will be substituted for '%s' when it is run.
+   * @return object where each arg in args will be a key. Its corresponding value will be the list
+   *   of matching build targets in its results.
+   */
+  queryWithArgs(query: string, args: Array<string>): Promise<{[aliasOrTarget: string]: Array<string>}> {
+    return Promise.reject('Not implemented');
+  }
 }
 
 module.exports = BuckProject;
