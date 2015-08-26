@@ -11,6 +11,7 @@
 
 var {CompositeDisposable} = require('atom');
 
+import type FileTreeControllerType from './FileTreeController';
 import type {FileTreeControllerState} from './FileTreeController';
 
 // Unload 'tree-view' so we can control whether it is activated or not.
@@ -30,7 +31,7 @@ var loadSubscription = atom.packages.onDidLoadInitialPackages(() => {
 });
 
 class Activation {
-  _fileTreeController: ?Object;
+  _fileTreeController: ?FileTreeControllerType;
   _packageState: ?FileTreeControllerState;
   _subscriptions: CompositeDisposable;
 

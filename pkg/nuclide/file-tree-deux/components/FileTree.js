@@ -12,7 +12,7 @@
 var FileTreeStore = require('../lib/FileTreeStore');
 var {CompositeDisposable} = require('atom');
 var React = require('react-for-atom');
-var RootDirectory = require('./RootDirectory');
+var RootNodeComponent = require('./RootNodeComponent');
 
 type Props = {};
 
@@ -54,10 +54,7 @@ class FileTree extends React.Component {
     }
     return rootKeys.map((rootKey) => {
       return (
-        <RootDirectory
-          key={rootKey}
-          rootKey={rootKey}
-        />
+        <RootNodeComponent key={rootKey} rootKey={rootKey} />
       );
     });
   }
