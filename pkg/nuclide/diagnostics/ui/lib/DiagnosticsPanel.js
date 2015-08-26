@@ -41,6 +41,10 @@ function getKeyboardShortcut(): string {
  * Dismissable panel that displays the diagnostics from nuclide-diagnostics-store.
  */
 class DiagnosticsPanel extends React.Component {
+  constructor(props: mixed) {
+    super(props);
+    this._onFilterByActiveTextEditorChange = this._onFilterByActiveTextEditorChange.bind(this);
+  }
 
   getHeight(): number {
     return this.refs['panel'].getLength();
@@ -49,7 +53,12 @@ class DiagnosticsPanel extends React.Component {
   render(): ReactElement {
     var warningCount = 0;
     var errorCount = 0;
-    this.props.diagnostics.forEach(diagnostic => {
+    var {diagnostics} = this.props;
+    if (this.props.filterByActiveTextEditor && this.props.pathToActiveTextEditor) {
+      var pathToFilterBy = this.props.pathToActiveTextEditor;
+      diagnostics = diagnostics.filter(diagnostic => diagnostic.filePath === pathToFilterBy);
+    }
+    diagnostics.forEach(diagnostic => {
       if (diagnostic.type === 'Error') {
         ++errorCount;
       } else if (diagnostic.type === 'Warning') {
@@ -93,6 +102,17 @@ class DiagnosticsPanel extends React.Component {
               <span className={warningSpanClassName}>
                 Warnings: {warningCount}
               </span>
+              <span className="inline-block">
+                <label className="nuclide-diagnostics-label">
+                  <input
+                    type="checkbox"
+                    checked={this.props.filterByActiveTextEditor}
+                    onChange={this._onFilterByActiveTextEditorChange}
+                  />
+                  &nbsp;
+                  Show only diagnostics for current file.
+                </label>
+              </span>
             </div>
             <div className="nuclide-diagnostics-pane-nav-right">
               {shortcutSpan}
@@ -104,13 +124,18 @@ class DiagnosticsPanel extends React.Component {
             </div>
           </div>
           <DiagnosticsPane
-            diagnostics={this.props.diagnostics}
+            diagnostics={diagnostics}
             height={paneHeight}
             width={this.props.width}
           />
         </div>
       </PanelComponent>
     );
+  }
+
+  _onFilterByActiveTextEditorChange(event: SyntheticEvent) {
+    var isChecked = ((event.target: any): HTMLInputElement).checked;
+    this.props.onFilterByActiveTextEditorChange.call(null, isChecked);
   }
 }
 
@@ -122,6 +147,9 @@ DiagnosticsPanel.propTypes = {
   onDismiss: PropTypes.func.isRequired,
   onResize: PropTypes.func.isRequired,
   width: PropTypes.number.isRequired,
+  pathToActiveTextEditor: PropTypes.string,
+  filterByActiveTextEditor: PropTypes.bool.isRequired,
+  onFilterByActiveTextEditorChange: PropTypes.func.isRequired,
 };
 
 module.exports = DiagnosticsPanel;

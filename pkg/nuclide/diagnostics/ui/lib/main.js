@@ -8,18 +8,24 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
+import invariant from 'assert';
+import {CompositeDisposable} from 'atom';
 
-var invariant = require('assert');
-var {CompositeDisposable} = require('atom');
+import type DiagnosticsPanel from './DiagnosticsPanel';
 
+var DEFAULT_HIDE_DIAGNOSTICS_PANEL = false;
 var DEFAULT_TABLE_HEIGHT = 200;
+var DEFAULT_FILTER_BY_ACTIVE_EDITOR = false;
 
 var subscriptions: ?CompositeDisposable = null;
 var bottomPanel: ?atom$Panel = null;
+var getDiagnosticsPanel: ?(() => ?DiagnosticsPanel);
+
 
 type ActivationState = {
   hideDiagnosticsPanel: boolean;
   diagnosticsPanelHeight: number;
+  filterByActiveTextEditor: boolean;
 };
 
 var activationState: ?ActivationState = null;
@@ -28,11 +34,16 @@ var diagnosticUpdaterForTable: ?DiagnosticUpdater = null;
 
 function createPanel(diagnosticUpdater: DiagnosticUpdater, disposables: CompositeDisposable) {
   invariant(activationState);
-  var panel = require('./createPanel').createDiagnosticsPanel(
+  var {
+    atomPanel: panel,
+    getDiagnosticsPanel: getDiagnosticsPanelFn,
+  } = require('./createPanel').createDiagnosticsPanel(
     diagnosticUpdater,
-    activationState.diagnosticsPanelHeight);
+    activationState.diagnosticsPanelHeight,
+    activationState.filterByActiveTextEditor);
   logPanelIsDisplayed();
   bottomPanel = panel;
+  getDiagnosticsPanel = getDiagnosticsPanelFn;
 
   activationState.hideDiagnosticsPanel = false;
 
@@ -43,10 +54,16 @@ function createPanel(diagnosticUpdater: DiagnosticUpdater, disposables: Composit
   disposables.add(onDidChangeVisibleSubscription);
 }
 
-function tryRecordPanelHeight(): void {
+function tryRecordActivationState(): void {
   invariant(activationState);
   if (bottomPanel && bottomPanel.isVisible()) {
     activationState.diagnosticsPanelHeight = bottomPanel.getItem().clientHeight;
+
+    invariant(getDiagnosticsPanel);
+    var diagnosticsPanel = getDiagnosticsPanel();
+    if (diagnosticsPanel) {
+      activationState.filterByActiveTextEditor = diagnosticsPanel.props.filterByActiveTextEditor;
+    }
   }
 }
 
@@ -62,10 +79,13 @@ module.exports = {
       state = {};
     }
     if (typeof state.hideDiagnosticsPanel !== 'boolean') {
-      state.hideDiagnosticsPanel = false;
+      state.hideDiagnosticsPanel = DEFAULT_HIDE_DIAGNOSTICS_PANEL;
     }
     if (typeof state.diagnosticsPanelHeight !== 'number') {
       state.diagnosticsPanelHeight = DEFAULT_TABLE_HEIGHT;
+    }
+    if (typeof state.filterByActiveTextEditor !== 'boolean') {
+      state.filterByActiveTextEditor = DEFAULT_FILTER_BY_ACTIVE_EDITOR;
     }
     activationState = state;
   },
@@ -105,7 +125,7 @@ module.exports = {
         if (!bottomPanelRef) {
           lazilyCreateTable();
         } else if (bottomPanelRef.isVisible()) {
-          tryRecordPanelHeight();
+          tryRecordActivationState();
           bottomPanelRef.hide();
         } else {
           logPanelIsDisplayed();
@@ -136,7 +156,7 @@ module.exports = {
   },
 
   serialize(): ActivationState {
-    tryRecordPanelHeight();
+    tryRecordActivationState();
     invariant(activationState);
     return activationState;
   },

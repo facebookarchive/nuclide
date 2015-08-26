@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 var invariant = require('assert');
+var {TextEditor} = require('atom');
 var {debounce} = require('nuclide-commons');
 var {compareMessagesByFile} = require('./paneUtils');
 var React = require('react-for-atom');
@@ -22,15 +23,21 @@ type PanelProps = {
   height: number;
   onResize: () => void;
   onDismiss: () => void;
+  pathToActiveTextEditor: ?string;
+  filterByActiveTextEditor: boolean;
+  onFilterByActiveTextEditorChange: (isChecked: boolean) => void;
 }
 
 function createDiagnosticsPanel(
   diagnosticUpdater: DiagnosticUpdater,
   initialHeight: number,
-): atom$Panel {
+  initialfilterByActiveTextEditor: boolean,
+): {atomPanel: atom$Panel; getDiagnosticsPanel: () => ?DiagnosticsPanel} {
   var diagnosticsPanel: ?DiagnosticsPanel = null;
   var bottomPanel: ?atom$Panel = null;
   var diagnosticsNeedSorting = false;
+  var activeEditor: ?atom$TextEditor = atom.workspace.getActiveTextEditor();
+  var pathToActiveTextEditor = activeEditor ? activeEditor.getPath() : null;
   var props: PanelProps = {
     diagnostics: [],
     width: DEFAULT_TABLE_WIDTH,
@@ -46,6 +53,12 @@ function createDiagnosticsPanel(
     onDismiss() {
       invariant(bottomPanel);
       bottomPanel.hide();
+    },
+    pathToActiveTextEditor,
+    filterByActiveTextEditor: initialfilterByActiveTextEditor,
+    onFilterByActiveTextEditorChange(isChecked: boolean) {
+      props.filterByActiveTextEditor = isChecked;
+      render();
     },
   };
 
@@ -65,11 +78,22 @@ function createDiagnosticsPanel(
     diagnosticsPanel = React.render(<DiagnosticsPanel {...props} />, item);
   }
 
-  var disposable = diagnosticUpdater.onAllMessagesDidUpdate((messages: Array<DiagnosticMessage>) => {
-    props.diagnostics = messages;
-    diagnosticsNeedSorting = true;
-    render();
+  var activePaneItemSubscription = atom.workspace.onDidChangeActivePaneItem(paneItem => {
+    if (paneItem instanceof TextEditor) {
+      props.pathToActiveTextEditor = paneItem ? paneItem.getPath() : null;
+      if (props.filterByActiveTextEditor) {
+        render();
+      }
+    }
   });
+
+  var messagesDidUpdateSubscription = diagnosticUpdater.onAllMessagesDidUpdate(
+    (messages: Array<DiagnosticMessage>) => {
+      props.diagnostics = messages;
+      diagnosticsNeedSorting = true;
+      render();
+    }
+  );
 
   // A FixedDataTable must specify its own width. We always want it to match that of the bottom
   // panel. Unfortunately, there is no way to register for resize events on a DOM element: it is
@@ -107,11 +131,18 @@ function createDiagnosticsPanel(
   // Currently, destroy() does not appear to be idempotent:
   // https://github.com/atom/atom/commit/734a79b7ec9f449669e1871871fd0289397f9b60#commitcomment-12631908
   bottomPanel.onDidDestroy(() => {
-    disposable.dispose();
+    activePaneItemSubscription.dispose();
+    messagesDidUpdateSubscription.dispose();
     win.removeEventListener('resize', resizeListener);
     React.unmountComponentAtNode(item);
   });
-  return bottomPanel;
+
+  return {
+    atomPanel: bottomPanel,
+    getDiagnosticsPanel(): ?DiagnosticsPanel {
+      return diagnosticsPanel;
+    },
+  };
 }
 
 module.exports = {
