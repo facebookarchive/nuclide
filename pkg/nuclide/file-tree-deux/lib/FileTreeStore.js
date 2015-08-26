@@ -24,12 +24,16 @@ import type {Dispatcher} from 'flux';
 type ActionPayload = Object;
 type ChangeListener = () => mixed;
 type StoreData = {
-  childKeyMap: { [key: string]: Array<string> },
-  expandedKeysByRoot: { [key: string]: Immutable.Set<string> },
-  isLoadingMap: { [key: string]: ?Promise },
-  rootKeys: Array<string>,
-  selectedKeysByRoot: { [key: string]: Immutable.Set<string> },
-  subscriptionMap: { [key: string]: Disposable },
+  childKeyMap: { [key: string]: Array<string> };
+  isDirtyMap: { [key: string]: boolean };
+  expandedKeysByRoot: { [key: string]: Immutable.Set<string> };
+  // Saves a list of child nodes that should be expande when a given key is expanded.
+  // Looks like: { rootKey: { nodeKey: [childKey1, childKey2] } }
+  previouslyExpanded: { [key: string]: { [key: string]: Array<string> } };
+  isLoadingMap: { [key: string]: ?Promise };
+  rootKeys: Array<string>;
+  selectedKeysByRoot: { [key: string]: Immutable.Set<string> };
+  subscriptionMap: { [key: string]: Disposable };
 };
 
 var instance: FileTreeStore;
@@ -66,7 +70,9 @@ class FileTreeStore {
   _getDefaults(): StoreData {
     return {
       childKeyMap: {},
+      isDirtyMap: {},
       expandedKeysByRoot: {},
+      previouslyExpanded: {},
       isLoadingMap: {},
       rootKeys: [],
       selectedKeysByRoot: {},
@@ -80,19 +86,17 @@ class FileTreeStore {
         this._setRootKeys(payload.rootKeys);
         break;
       case ActionType.EXPAND_NODE:
-        var rootKey = payload.rootKey;
-        this._setExpandedKeys(rootKey, this._getExpandedKeys(rootKey).add(payload.nodeKey));
+        this._expandNode(payload.rootKey, payload.nodeKey);
         break;
       case ActionType.COLLAPSE_NODE:
-        var rootKey = payload.rootKey;
-        this._setExpandedKeys(rootKey, this._getExpandedKeys(rootKey).delete(payload.nodeKey));
+        this._collapseNode(payload.rootKey, payload.nodeKey);
         break;
       case ActionType.SET_SELECTED_NODES:
         var rootKey = payload.rootKey;
         this._setSelectedKeys(rootKey, payload.nodeKeys);
         break;
       case ActionType.CREATE_CHILD:
-        this._setChildKeys(payload.nodeKey, [payload.childKey]);
+        this._createChild(payload.nodeKey, payload.childKey);
         break;
     }
   }
@@ -140,7 +144,7 @@ class FileTreeStore {
 
   getChildKeys(rootKey: string, nodeKey: string): Array<string> {
     var childKeys = this._data.childKeyMap[nodeKey];
-    if (childKeys == null) {
+    if (childKeys == null || this._data.isDirtyMap[nodeKey]) {
       this._fetchChildKeys(nodeKey);
     }
     return childKeys || [];
@@ -165,9 +169,13 @@ class FileTreeStore {
       return existingPromise;
     }
     var promise = FileTreeHelpers.fetchChildren(nodeKey);
-    // TODO: onReject
-    promise = promise.then((keys) => {
-      this._setChildKeys(nodeKey, keys);
+    promise.catch((error) => {
+      this._logger.error(`Error fetching children for "${nodeKey}"`, error);
+      // TODO: Notify the user and/or retry.
+    });
+    promise = promise.then(childKeys => {
+      this._setChildKeys(nodeKey, childKeys);
+      this._addSubscription(nodeKey);
       this._clearLoading(nodeKey);
     });
     this._setLoading(nodeKey, promise);
@@ -184,6 +192,61 @@ class FileTreeStore {
 
   _clearLoading(nodeKey: string): void {
     this._set('isLoadingMap', deleteProperty(this._data.isLoadingMap, nodeKey));
+  }
+
+  _expandNode(rootKey: string, nodeKey: string): void {
+    this._setExpandedKeys(rootKey, this._getExpandedKeys(rootKey).add(nodeKey));
+    // If we have child nodes that should also be expanded, expand them now.
+    var previouslyExpanded = this._data.previouslyExpanded[rootKey] || {};
+    if (previouslyExpanded[nodeKey]) {
+      for (var childKey of previouslyExpanded[nodeKey]) {
+        this._expandNode(rootKey, childKey);
+      }
+      // Clear the previouslyExpanded list since we're done with it.
+      previouslyExpanded = deleteProperty(previouslyExpanded, nodeKey);
+      this._set(
+        'previouslyExpanded',
+        setProperty(this._data.previouslyExpanded, rootKey, previouslyExpanded)
+      );
+
+    }
+  }
+
+  // When we collapse a node we need to do some cleanup removing subscriptions and selection.
+  _collapseNode(rootKey: string, nodeKey: string): void {
+    var childKeys = this._data.childKeyMap[nodeKey];
+    var selectedKeys = this._data.selectedKeysByRoot[rootKey];
+    var expandedChildKeys = [];
+    if (childKeys) {
+      childKeys.forEach((childKey) => {
+        // Unselect each child.
+        if (selectedKeys && selectedKeys.has(childKey)) {
+          selectedKeys = selectedKeys.delete(childKey);
+        }
+        // Collapse each child directory.
+        if (FileTreeHelpers.isDirKey(childKey)) {
+          if (this.isExpanded(rootKey, childKey)) {
+            expandedChildKeys.push(childKey);
+            this._collapseNode(rootKey, childKey);
+          }
+        }
+      });
+    }
+    // Save the list of expanded child nodes so next time we expand this node we can expand these
+    // children.
+    var previouslyExpanded = this._data.previouslyExpanded[rootKey] || {};
+    if (expandedChildKeys.length !== 0) {
+      previouslyExpanded = setProperty(previouslyExpanded, nodeKey, expandedChildKeys);
+    } else {
+      previouslyExpanded = deleteProperty(previouslyExpanded, nodeKey);
+    }
+    this._set(
+      'previouslyExpanded',
+      setProperty(this._data.previouslyExpanded, rootKey, previouslyExpanded)
+    );
+    this._setSelectedKeys(rootKey, selectedKeys);
+    this._setExpandedKeys(rootKey, this._getExpandedKeys(rootKey).delete(nodeKey));
+    this._removeSubscription(rootKey, nodeKey);
   }
 
   _getExpandedKeys(rootKey: string): Immutable.Set<string> {
@@ -209,22 +272,35 @@ class FileTreeStore {
     var newRootKeySet = new Set(rootKeys);
     oldRootKeys.forEach((rootKey) => {
       if (!newRootKeySet.has(rootKey)) {
-        this._purgeDirectory(rootKey);
-      }
-    });
-    var oldRootKeySet = new Set(oldRootKeys);
-    rootKeys.forEach((rootKey) => {
-      if (!oldRootKeySet.has(rootKey)) {
-        this._addSubscription(rootKey);
+        this._cleanupRoot(rootKey);
       }
     });
     this._set('rootKeys', rootKeys);
   }
 
-  _setChildKeys(nodeKey: string, childKeys: ?Array<string>): void {
+  // TODO: Should we cleanup childKeyMap and isLoadingMap? The latter contains promises which
+  // cannot be cancelled, so this might be tricky.
+  _cleanupRoot(rootKey: string): void {
+    var expandedKeys = this._data.expandedKeysByRoot[rootKey];
+    if (expandedKeys) {
+      expandedKeys.forEach((nodeKey) => {
+        this._removeSubscription(rootKey, nodeKey);
+      });
+      this._set('expandedKeysByRoot', deleteProperty(this._data.expandedKeysByRoot, rootKey));
+    }
+    this._set('selectedKeysByRoot', deleteProperty(this._data.selectedKeysByRoot, rootKey));
+  }
+
+  // This sets a single child node. It's useful when expanding to a deeply nested node.
+  _createChild(nodeKey: string, childKey: string): void {
+    this._setChildKeys(nodeKey, [childKey]);
+    this._set('isDirtyMap', deleteProperty(this._data.isDirtyMap, nodeKey));
+  }
+
+  _setChildKeys(nodeKey: string, childKeys: Array<string>): void {
     var oldChildKeys = this._data.childKeyMap[nodeKey];
     if (oldChildKeys) {
-      var newChildKeySet = childKeys ? new Set(childKeys) : new Set();
+      var newChildKeySet = new Set(childKeys);
       oldChildKeys.forEach((childKey) => {
         // if it's a directory and it doesn't exist in the new set of child keys
         if (FileTreeHelpers.isDirKey(childKey) && !newChildKeySet.has(childKey)) {
@@ -232,19 +308,7 @@ class FileTreeStore {
         }
       });
     }
-    if (childKeys) {
-      var oldChildKeySet = oldChildKeys ? new Set(oldChildKeys) : new Set();
-      childKeys.forEach((childKey) => {
-        // if it's a directory and it doesn't exist in the old set of child keys
-        if (FileTreeHelpers.isDirKey(childKey) && !oldChildKeySet.has(childKey)) {
-          this._addSubscription(childKey);
-        }
-      });
-    }
-    var childKeyMap = (childKeys == null) ?
-      deleteProperty(this._data.childKeyMap, nodeKey) :
-      setProperty(this._data.childKeyMap, nodeKey, childKeys);
-    this._set('childKeyMap', childKeyMap);
+    this._set('childKeyMap', setProperty(this._data.childKeyMap, nodeKey, childKeys));
   }
 
   _onDirectoryChange(nodeKey: string): void {
@@ -254,6 +318,10 @@ class FileTreeStore {
   _addSubscription(nodeKey: string): void {
     var directory = FileTreeHelpers.getDirectoryByKey(nodeKey);
     if (!directory) {
+      return;
+    }
+    // Don't create a new subscription if one already exists.
+    if (this._data.subscriptionMap[nodeKey]) {
       return;
     }
     var subscription;
@@ -269,9 +337,27 @@ class FileTreeStore {
       return;
     }
     this._set('subscriptionMap', setProperty(this._data.subscriptionMap, nodeKey, subscription));
+    this._set('isDirtyMap', deleteProperty(this._data.isDirtyMap, nodeKey));
   }
 
-  _removeSubscription(nodeKey: string): void {
+  _removeSubscription(rootKey: string, nodeKey: string): void {
+    var subscription = this._data.subscriptionMap[nodeKey];
+    if (!subscription) {
+      return;
+    }
+    var hasRemainingSubscribers = this._data.rootKeys.some((otherRootKey) => (
+      otherRootKey !== rootKey && this.isExpanded(otherRootKey, nodeKey)
+    ));
+    if (!hasRemainingSubscribers) {
+      subscription.dispose();
+      this._set('subscriptionMap', deleteProperty(this._data.subscriptionMap, nodeKey));
+      // Since we're no longer getting notifications when the directory contents change, go ahead
+      // and assume our child list is dirty.
+      this._set('isDirtyMap', setProperty(this._data.isDirtyMap, nodeKey, true));
+    }
+  }
+
+  _removeAllSubscriptions(nodeKey: string): void {
     var subscription = this._data.subscriptionMap[nodeKey];
     if (subscription) {
       subscription.dispose();
@@ -279,9 +365,9 @@ class FileTreeStore {
     }
   }
 
-  // If we purge a directory, then we need to purge it's descendent directoriess also. Purging
-  // removes stuff from the data store including cached list of child nodes, subscriptions,
-  // expanded directories and selected directories.
+  // This is called when a dirctory is physically removed from disk. When we purge a directory,
+  // we need to purge it's child directories also. Purging removes stuff from the data store
+  // including list of child nodes, subscriptions, expanded directories and selected directories.
   _purgeDirectory(nodeKey: string): void {
     var childKeys = this._data.childKeyMap[nodeKey];
     if (childKeys) {
@@ -292,7 +378,7 @@ class FileTreeStore {
       });
       this._set('childKeyMap', deleteProperty(this._data.childKeyMap, nodeKey));
     }
-    this._removeSubscription(nodeKey);
+    this._removeAllSubscriptions(nodeKey);
     var expandedKeysByRoot = this._data.expandedKeysByRoot;
     Object.keys(expandedKeysByRoot).forEach((rootKey) => {
       var expandedKeys = expandedKeysByRoot[rootKey];

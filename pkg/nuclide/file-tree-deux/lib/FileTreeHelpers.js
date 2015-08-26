@@ -56,10 +56,6 @@ function getParentKey(key: string): string {
 // The array this resolves to contains the `nodeKey` of each child
 function fetchChildren(nodeKey: string): Promise<Array<string>> {
   var directory = getDirectoryByKey(nodeKey);
-  if (!directory) {
-    // TODO: reject?
-    return Promise.resolve([]);
-  }
   return new Promise((resolve, reject) => {
     if (!directory) {
       // TODO: reject?
@@ -68,6 +64,7 @@ function fetchChildren(nodeKey: string): Promise<Array<string>> {
     }
     directory.getEntries((error, entries) => {
       // Resolve to an empty array if the directory deson't exist.
+      // TODO: should we reject promise?
       if (error && error.code !== 'ENOENT') {
         reject(error);
         return;
