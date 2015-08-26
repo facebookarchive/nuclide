@@ -67,7 +67,7 @@ describe('debugger-hhvm-proxy DataCache', () => {
       var values = require('../lib/values');
       convertValue = spyOn(values, 'convertValue').andReturn(EXPRESSION);
 
-      var DataCache = uncachedRequire(require, '../lib/DataCache');
+      var {DataCache} = uncachedRequire(require, '../lib/DataCache');
       cache = new DataCache(socket);
     });
     function enable() {

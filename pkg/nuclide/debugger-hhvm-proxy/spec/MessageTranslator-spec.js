@@ -14,13 +14,13 @@ var {MessageTranslator} = require('../lib/MessageTranslator');
 
 describe('debugger-hhvm-proxy DebuggerHandler', () => {
     var callback;
-    var socket;
+    var connection;
     var translater;
 
     beforeEach(() => {
       callback = jasmine.createSpy('callback');
-      socket = jasmine.createSpyObj('socket', ['write', 'end', 'destroy', 'on']);
-      translater = new MessageTranslator(socket, callback);
+      connection = jasmine.createSpyObj('connection', ['dispose']);
+      translater = new MessageTranslator(connection, callback);
     });
 
     it('handleCommand', () => {
@@ -39,7 +39,6 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
 
     it('dispose', () => {
       translater.dispose();
-      expect(socket.end).toHaveBeenCalled();
-      expect(socket.destroy).toHaveBeenCalled();
+      expect(connection.dispose).toHaveBeenCalledWith();
     });
 });

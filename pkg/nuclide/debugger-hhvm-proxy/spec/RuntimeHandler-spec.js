@@ -14,13 +14,13 @@ var RuntimeHandler = require('../lib/RuntimeHandler');
 
 describe('debugger-hhvm-proxy RuntimeHandler', () => {
     var callback;
-    var dataCache;
+    var connection;
     var handler;
 
     beforeEach(() => {
-      dataCache = jasmine.createSpyObj('dataCache', ['getProperties']);
+      connection = jasmine.createSpyObj('connection', ['getProperties']);
       callback = jasmine.createSpyObj('callback', ['replyToCommand', 'replyWithError', 'sendMethod']);
-      handler = new RuntimeHandler(callback, dataCache);
+      handler = new RuntimeHandler(callback, connection);
     });
 
     it('enable', () => {
@@ -38,7 +38,7 @@ describe('debugger-hhvm-proxy RuntimeHandler', () => {
 
     it('getProperties', () => {
       waitsForPromise(async () => {
-        dataCache.getProperties = jasmine.createSpy('getProperties').
+        connection.getProperties = jasmine.createSpy('getProperties').
           andReturn(Promise.resolve('the-result'));
 
         var objectId = 'object-id';
@@ -47,7 +47,7 @@ describe('debugger-hhvm-proxy RuntimeHandler', () => {
         var accessorPropertiesOnly = false;
         await handler.handleMethod(1, 'getProperties',
           {objectId, ownProperties, accessorPropertiesOnly, generatePreview});
-        expect(dataCache.getProperties).toHaveBeenCalledWith(objectId);
+        expect(connection.getProperties).toHaveBeenCalledWith(objectId);
         expect(callback.replyToCommand).toHaveBeenCalledWith(1, {result: 'the-result'}, undefined);
       });
     });

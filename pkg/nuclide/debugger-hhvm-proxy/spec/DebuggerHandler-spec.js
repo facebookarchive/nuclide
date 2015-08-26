@@ -14,23 +14,21 @@ var DebuggerHandler = require('../lib/DebuggerHandler');
 
 describe('debugger-hhvm-proxy DebuggerHandler', () => {
     var callback;
-    var socket;
-    var cache;
+    var connection;
     var handler;
 
     beforeEach(() => {
       callback = jasmine.createSpyObj('callback', ['replyToCommand', 'replyWithError', 'sendMethod']);
-      socket = jasmine.createSpyObj('socket', ['getStatus', 'getStackFrames', 'sendContinuationCommand', 'sendBreakCommand']);
-      cache = jasmine.createSpyObj('cache', ['enable', 'disable', 'getScopesForFrame']);
-      handler = new DebuggerHandler(callback, socket, cache);
+      connection = jasmine.createSpyObj('connection', ['getStatus', 'getStackFrames', 'sendContinuationCommand', 'sendBreakCommand', 'getScopesForFrame']);
+      handler = new DebuggerHandler(callback, connection);
     });
 
     it('enable', () => {
       waitsForPromise(async () => {
-        socket.getStatus = jasmine.createSpy('getStatus').andReturn(Promise.resolve('starting'));
-        socket.sendContinuationCommand = jasmine.createSpy('sendContinuationCommand')
+        connection.getStatus = jasmine.createSpy('getStatus').andReturn(Promise.resolve('starting'));
+        connection.sendContinuationCommand = jasmine.createSpy('sendContinuationCommand')
           .andReturn(Promise.resolve('break'));
-        socket.getStackFrames = jasmine.createSpy('getStackFrames').andReturn(Promise.resolve(
+        connection.getStackFrames = jasmine.createSpy('getStackFrames').andReturn(Promise.resolve(
           {
             stack: [
               {
@@ -56,12 +54,12 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
 
         await handler.handleMethod(1, 'enable');
 
-        expect(socket.getStatus).toHaveBeenCalledWith();
-        expect(socket.sendContinuationCommand).toHaveBeenCalledWith('step_into');
+        expect(connection.getStatus).toHaveBeenCalledWith();
+        expect(connection.sendContinuationCommand).toHaveBeenCalledWith('step_into');
         expect(callback.sendMethod).toHaveBeenCalledWith('Debugger.resumed', undefined);
-        expect(socket.getStackFrames).toHaveBeenCalledWith();
-        expect(cache.getScopesForFrame).toHaveBeenCalledWith(0);
-        expect(cache.getScopesForFrame).toHaveBeenCalledWith(1);
+        expect(connection.getStackFrames).toHaveBeenCalledWith();
+        expect(connection.getScopesForFrame).toHaveBeenCalledWith(0);
+        expect(connection.getScopesForFrame).toHaveBeenCalledWith(1);
         expect(callback.sendMethod).toHaveBeenCalledWith(
           'Debugger.scriptParsed',
           {
@@ -102,33 +100,33 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
     });
 
     it('pause - success', () => {
-      socket.sendBreakCommand = jasmine.createSpy('sendBreakCommand').andReturn(Promise.resolve(true));
+      connection.sendBreakCommand = jasmine.createSpy('sendBreakCommand').andReturn(Promise.resolve(true));
       handler.handleMethod(1, 'pause');
-      expect(socket.sendBreakCommand).toHaveBeenCalledWith();
+      expect(connection.sendBreakCommand).toHaveBeenCalledWith();
     });
 
     it('pause - failure', () => {
       waitsForPromise(async () => {
-        socket.sendBreakCommand = jasmine.createSpy('sendBreakCommand').andReturn(Promise.resolve(false));
+        connection.sendBreakCommand = jasmine.createSpy('sendBreakCommand').andReturn(Promise.resolve(false));
 
         await handler.handleMethod(1, 'pause');
 
-        expect(socket.sendBreakCommand).toHaveBeenCalledWith();
+        expect(connection.sendBreakCommand).toHaveBeenCalledWith();
         expect(callback.replyWithError).toHaveBeenCalledWith(1, jasmine.any(String));
       });
     });
 
     function testContinuationCommand(chromeCommand, dbgpCommand) {
       return async () => {
-        socket.sendContinuationCommand = jasmine.createSpy('sendContinuationCommand')
+        connection.sendContinuationCommand = jasmine.createSpy('sendContinuationCommand')
           .andReturn(Promise.resolve('break'));
-        socket.getStackFrames = jasmine.createSpy('getStackFrames').andReturn(Promise.resolve({stack: []}));
+        connection.getStackFrames = jasmine.createSpy('getStackFrames').andReturn(Promise.resolve({stack: []}));
 
         await handler.handleMethod(1, chromeCommand);
 
-        expect(socket.sendContinuationCommand).toHaveBeenCalledWith(dbgpCommand);
+        expect(connection.sendContinuationCommand).toHaveBeenCalledWith(dbgpCommand);
         expect(callback.sendMethod).toHaveBeenCalledWith('Debugger.resumed', undefined);
-        expect(socket.getStackFrames).toHaveBeenCalledWith();
+        expect(connection.getStackFrames).toHaveBeenCalledWith();
         expect(callback.sendMethod).toHaveBeenCalledWith(
           'Debugger.paused',
           {
@@ -158,7 +156,7 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
     it('stopping', () => {
       waitsForPromise(async () => {
         var status = 'stopping';
-        socket.sendContinuationCommand = jasmine.createSpy('sendContinuationCommand')
+        connection.sendContinuationCommand = jasmine.createSpy('sendContinuationCommand')
           .andCallFake(async () => {
             if (status === 'stopping') {
               status = 'stopped';
@@ -172,9 +170,9 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
 
         await handler.handleMethod(1, 'resume');
 
-        expect(socket.sendContinuationCommand).toHaveBeenCalledWith('run');
+        expect(connection.sendContinuationCommand).toHaveBeenCalledWith('run');
         expect(callback.sendMethod).toHaveBeenCalledWith('Debugger.resumed', undefined);
-        expect(socket.sendContinuationCommand).toHaveBeenCalledWith('stop');
+        expect(connection.sendContinuationCommand).toHaveBeenCalledWith('stop');
         expect(callback.sendMethod).toHaveBeenCalledWith('Debugger.resumed', undefined);
         expect(callback.sendMethod).toHaveBeenCalledWith(
           'Debugger.paused',
@@ -189,7 +187,7 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
 
     it('setBreakpointByUrl', () => {
       waitsForPromise(async () => {
-        socket.setBreakpoint = jasmine.createSpy('setBreakpoint')
+        connection.setBreakpoint = jasmine.createSpy('setBreakpoint')
           .andCallFake(async () => {
             return 12;
           });
@@ -201,7 +199,7 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
           condition: '',
         });
 
-        expect(socket.setBreakpoint).toHaveBeenCalledWith('/test.php', 43);
+        expect(connection.setBreakpoint).toHaveBeenCalledWith('/test.php', 43);
         expect(callback.replyToCommand).toHaveBeenCalledWith(
           1,
           {
@@ -219,14 +217,14 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
 
     it('removeBreakpoint', () => {
       waitsForPromise(async () => {
-        socket.removeBreakpoint = jasmine.createSpy('removeBreakpoint')
+        connection.removeBreakpoint = jasmine.createSpy('removeBreakpoint')
           .andCallFake(async () => {});
 
         await handler.handleMethod(1, 'removeBreakpoint', {
           breakpointId: 42,
         });
 
-        expect(socket.removeBreakpoint).toHaveBeenCalledWith(42);
+        expect(connection.removeBreakpoint).toHaveBeenCalledWith(42);
         expect(callback.replyToCommand).toHaveBeenCalledWith(
           1,
           {

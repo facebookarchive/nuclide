@@ -25,20 +25,23 @@ var {
   COMMAND_STOP,
 } = require('./DbgpSocket');
 
-const SESSION_END_EVENT = 'session-end-event';
+import type {Connection} from './Connection';
+import type ChromeCallback from './ChromeCallback';
+import type FileCache from './FileCache';
+import type {EventEmitter} from 'events';
+
+var /* const */ SESSION_END_EVENT = 'session-end-event';
 
 // Handles all 'Debug.*' Chrome dev tools messages
 class DebuggerHandler extends Handler {
-  _socket: DbgpSocket;
-  _dataCache: DataCache;
+  _connection: Connection;
   _files: FileCache;
   _emitter: EventEmitter;
 
-  constructor(callback: ChromeCallback, socket: DbgpSocket, dataCache: DataCache) {
+  constructor(callback: ChromeCallback, connection: Connection) {
     super('Debugger', callback);
 
-    this._socket = socket;
-    this._dataCache = dataCache;
+    this._connection = connection;
     var FileCache = require('./FileCache');
     this._files = new FileCache(callback);
     var {EventEmitter} = require('events');
@@ -50,7 +53,7 @@ class DebuggerHandler extends Handler {
     this._emitter.on(SESSION_END_EVENT, callback);
   }
 
-  async handleMethod(id: number, method: string, params: ?Object): Promise {
+  async handleMethod(id: number, method: string, params: Object): Promise {
 
     switch (method) {
 
@@ -103,7 +106,7 @@ class DebuggerHandler extends Handler {
       break;
 
     case 'evaluateOnCallFrame':
-      var result = await this._dataCache.evaluateOnCallFrame(Number(params.callFrameId), params.expression);
+      var result = await this._connection.evaluateOnCallFrame(Number(params.callFrameId), params.expression);
       this.replyToCommand(id, result);
       break;
 
@@ -123,7 +126,7 @@ class DebuggerHandler extends Handler {
     try {
       var path = uriToPath(url);
       this._files.registerFile(path);
-      var breakpointId = await this._socket.setBreakpoint(path, lineNumber + 1);
+      var breakpointId = await this._connection.setBreakpoint(path, lineNumber + 1);
       this.replyToCommand(id, {
         breakpointId: breakpointId,
         locations: [
@@ -139,7 +142,7 @@ class DebuggerHandler extends Handler {
 
   async _removeBreakpoint(id: number, params: Object): Promise {
     var {breakpointId} = params;
-    await this._socket.removeBreakpoint(breakpointId);
+    await this._connection.removeBreakpoint(breakpointId);
     this.replyToCommand(id, {id: breakpointId});
   }
 
@@ -149,7 +152,7 @@ class DebuggerHandler extends Handler {
   }
 
   async _getStackFrames(): Promise<Array<Object>> {
-    var frames = await this._socket.getStackFrames();
+    var frames = await this._connection.getStackFrames();
     return await Promise.all(
       frames.stack.map((frame, frameIndex) => this._convertFrame(frame, frameIndex)));
   }
@@ -169,35 +172,37 @@ class DebuggerHandler extends Handler {
         callFrameId: idOfFrame(frame),
         functionName: functionOfFrame(frame),
         location: locationOfFrame(frame),
-        scopeChain: await this._dataCache.getScopesForFrame(frameIndex),
+        scopeChain: await this._connection.getScopesForFrame(frameIndex),
       };
     } catch (e) {
       logErrorAndThrow('Exception converting frame: ' + e + ' ' + e.stack);
+      throw e;  // silence flow error.
     }
   }
 
   // Returns one of:
   //  starting, stopping, stopped, running, break
   _getStatus(): Promise<string> {
-    return this._socket.getStatus();
+    return this._connection.getStatus();
   }
 
   // Continuation commands get a response, but that response
   // is a status message which occurs after execution stops.
   async _sendContinuationCommand(command: string): Promise {
     log('Sending continuation command: ' + command);
-    var statusPromise = this._socket.sendContinuationCommand(command);
+    var statusPromise = this._connection.sendContinuationCommand(command);
     this.sendMethod('Debugger.resumed');
     await this._sendStatus(await statusPromise);
   }
 
   async _sendBreakCommand(id: number): Promise {
-    var response = await this._socket.sendBreakCommand();
+    var response = await this._connection.sendBreakCommand();
     if (!response) {
       this.replyWithError(id, 'Unable to break');
     }
   }
 
+  // TODO: Move this into Connection.
   async _sendStatus(status: string): Promise {
     log('Sending status: ' + status);
     switch (status) {

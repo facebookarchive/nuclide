@@ -12,12 +12,13 @@
 
 var {log} = require('./utils');
 var ChromeCallback = require('./ChromeCallback');
-var {DbgpSocket} = require('./DbgpSocket');
-var DataCache = require('./DataCache');
 var DebuggerHandler = require('./DebuggerHandler');
 var PageHandler = require('./PageHandler');
 var ConsoleHandler = require('./ConsoleHandler');
 var RuntimeHandler = require('./RuntimeHandler');
+var {Connection} = require('./Connection');
+
+import type Handler from './Handler';
 
 /**
  * Translates Chrome dev tools JSON messages to/from dbgp.
@@ -25,23 +26,22 @@ var RuntimeHandler = require('./RuntimeHandler');
  * Currently we reactively push files to the debuger when they appear in a stack trace.
  */
 class MessageTranslator {
-  _socket: ?DbgpSocket;
-  _dataCache: DataCache;
+  _isDisposed: boolean;
+  _connection: Connection;
   _callback: ChromeCallback;
   _debuggerHandler: DebuggerHandler;
   _handlers: Map<string, Handler>;
 
-  constructor(socket: Socket, callback: (message: string) => void) {
-    var dbgpSocket = new DbgpSocket(socket);
-    this._socket = dbgpSocket;
-    this._dataCache = new DataCache(dbgpSocket);
+  constructor(connection: Connection, callback: (message: string) => void) {
+    this._isDisposed = false;
+    this._connection = connection;
     this._callback = new ChromeCallback(callback);
     this._handlers = new Map();
-    this._debuggerHandler = new DebuggerHandler(this._callback, dbgpSocket, this._dataCache);
+    this._debuggerHandler = new DebuggerHandler(this._callback, connection);
     this._addHandler(this._debuggerHandler);
     this._addHandler(new PageHandler(this._callback));
     this._addHandler(new ConsoleHandler(this._callback));
-    this._addHandler(new RuntimeHandler(this._callback, this._dataCache));
+    this._addHandler(new RuntimeHandler(this._callback, this._connection));
   }
 
   _addHandler(handler: Handler): void {
@@ -86,9 +86,9 @@ class MessageTranslator {
   }
 
   dispose(): void {
-    if (this._socket) {
-      this._socket.dispose();
-      this._socket = null;
+    if (!this._isDisposed) {
+      this._isDisposed = true;
+      this._connection.dispose();
     }
   }
 }

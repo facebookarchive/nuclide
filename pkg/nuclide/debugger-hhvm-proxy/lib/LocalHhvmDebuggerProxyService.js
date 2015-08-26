@@ -83,7 +83,9 @@ class LocalHhvmDebuggerProxyService extends HhvmDebuggerProxyService {
     socket.on('error', this._onError.bind(this));
 
     var {MessageTranslator} = require('./MessageTranslator');
-    this._translator = new MessageTranslator(socket, message => this._emitter.emit(NOTIFY_EVENT, message));
+    var {Connection} = require('./Connection');
+    this._translator = new MessageTranslator(
+      new Connection(socket), message => this._emitter.emit(NOTIFY_EVENT, message));
     this._translator.onSessionEnd(this._onEnd.bind(this));
 
     this._setState(CONNECTED);

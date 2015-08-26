@@ -13,17 +13,20 @@
 var {DUMMY_FRAME_ID} = require('./utils');
 var Handler = require('./Handler');
 
+import type {Connection} from './Connection';
+import type ChromeCallback from './ChromeCallback';
+
 // Handles all 'Runtime.*' Chrome dev tools messages
 class RuntimeHandler extends Handler {
-  _dataCache: DataCache;
+  _connection: Connection;
 
-  constructor(callback: ChromeCallback, dataCache: DataCache) {
+  constructor(callback: ChromeCallback, connection: Connection) {
     super('Runtime', callback);
 
-    this._dataCache = dataCache;
+    this._connection = connection;
   }
 
-  async handleMethod(id: number, method: string, params: ?Object): Promise {
+  async handleMethod(id: number, method: string, params: Object): Promise {
     switch (method) {
     case 'enable':
       this._notifyExecutionContext(id);
@@ -58,7 +61,7 @@ class RuntimeHandler extends Handler {
     var {objectId, accessorPropertiesOnly} = params;
     var result;
     if (!accessorPropertiesOnly) {
-      result = await this._dataCache.getProperties(objectId);
+      result = await this._connection.getProperties(objectId);
     } else {
       // TODO: Handle remaining params
       result = [];

@@ -68,7 +68,7 @@ var {STATUS_BREAK} = require('./DbgpSocket');
  * RemoteObjects are only valid while the debuggee is paused.
  * Once the debuggee resumes, all RemoteObjects become invalid.
  */
-class DataCache {
+export class DataCache {
   _socket: DbgpSocket;
   _enabled: boolean;
   _enableCount: number;
@@ -195,5 +195,3 @@ function contextNameToScopeType(name: string): string {
     return 'closure';
   }
 }
-
-module.exports = DataCache;
