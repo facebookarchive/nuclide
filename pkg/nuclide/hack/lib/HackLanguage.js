@@ -415,9 +415,9 @@ module.exports = class HackLanguage {
   }
 
   async _callHackService(serviceName: string, serviceArgs: Array<any>, defaultValue: any): Promise<any> {
-    if (!this._client) {
-      // hh_client isn't available on the host machine, no service calls can be done,
-      // default values are returned.
+    if (!this._client || !this._client.eventbus) {
+      // hh_client isn't available on the host machine, or the remote connection has been closed.
+      // No service calls can be done, default values are returned.
       return defaultValue;
     }
     try {
