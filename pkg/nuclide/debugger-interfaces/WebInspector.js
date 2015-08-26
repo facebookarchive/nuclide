@@ -52,6 +52,7 @@ declare class WebInspector$DebuggerModel {
   static Events: {
     CallFrameSelected: string,
     DebuggerResumed: string,
+    DebuggerPaused: string,
   };
 
   resume(): void;
