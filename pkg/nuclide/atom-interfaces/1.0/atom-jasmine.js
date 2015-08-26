@@ -12,3 +12,4 @@
 // https://github.com/atom/atom/blob/master/spec/spec-helper.coffee
 
 declare function waitsForPromise(func: () => Promise<mixed>): void;
+declare function waitsForPromise(options: {timeout?: number, shouldReject?: boolean}, func: () => Promise<mixed>): void;
