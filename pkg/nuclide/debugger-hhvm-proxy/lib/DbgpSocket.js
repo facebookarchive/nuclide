@@ -11,6 +11,9 @@
 
 
 var {log, logError, parseDbgpMessages} = require('./utils');
+var {EventEmitter} = require('events');
+import type {Disposable} from 'nuclide-commons';
+import type {Socket} from 'net';
 
 // Responses to the 'satus' command
 const STATUS_STARTING = 'starting';
@@ -25,6 +28,8 @@ const COMMAND_STEP_INTO = 'step_into';
 const COMMAND_STEP_OVER = 'step_over';
 const COMMAND_STEP_OUT = 'step_out';
 const COMMAND_STOP = 'stop';
+
+const DBGP_SOCKET_STATUS_EVENT = 'dbgp-socket-status';
 
 type DbgpContext = {
   name: string;
@@ -57,7 +62,7 @@ type DbgpProperty = {
 };
 
 type EvaluationResult = {
-  result: DbgpProperty;
+  result: ?DbgpProperty;
   wasThrown: boolean;
 };
 
@@ -70,13 +75,19 @@ class DbgpSocket {
   _transactionId: number;
   // Maps from transactionId -> call
   _calls: Map<number, {command: string; complete: (results: Object) => void}>;
+  _emitter: EventEmitter;
 
   constructor(socket: Socket) {
     this._socket = socket;
     this._transactionId = 0;
     this._calls = new Map();
+    this._emitter = new EventEmitter();
 
     this._socket.on('data', this._onData.bind(this));
+  }
+
+  onStatus(callback: (status: string) => mixed): Disposable {
+    return require('nuclide-commons').event.attachEvent(this._emitter, DBGP_SOCKET_STATUS_EVENT, callback);
   }
 
   _onData(data: Buffer | string): void {
@@ -173,10 +184,12 @@ class DbgpSocket {
 
   // Continuation commands get a response, but that response
   // is a status message which occurs after execution stops.
-  // TODO: Convert the status reply to an event.
   async sendContinuationCommand(command: string): Promise<string> {
+    this._emitter.emit(DBGP_SOCKET_STATUS_EVENT, STATUS_RUNNING);
     var response = await this._callDebugger(command);
-    return response.$.status;
+    var status = response.$.status;
+    this._emitter.emit(DBGP_SOCKET_STATUS_EVENT, status);
+    return status;
   }
 
   async sendBreakCommand(): Promise<boolean> {

@@ -57,11 +57,9 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
         await handler.handleMethod(1, 'enable');
 
         expect(socket.getStatus).toHaveBeenCalledWith();
-        expect(cache.disable).toHaveBeenCalledWith();
         expect(socket.sendContinuationCommand).toHaveBeenCalledWith('step_into');
         expect(callback.sendMethod).toHaveBeenCalledWith('Debugger.resumed', undefined);
         expect(socket.getStackFrames).toHaveBeenCalledWith();
-        expect(cache.enable).toHaveBeenCalledWith();
         expect(cache.getScopesForFrame).toHaveBeenCalledWith(0);
         expect(cache.getScopesForFrame).toHaveBeenCalledWith(1);
         expect(callback.sendMethod).toHaveBeenCalledWith(
@@ -128,10 +126,8 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
 
         await handler.handleMethod(1, chromeCommand);
 
-        expect(cache.disable).toHaveBeenCalledWith();
         expect(socket.sendContinuationCommand).toHaveBeenCalledWith(dbgpCommand);
         expect(callback.sendMethod).toHaveBeenCalledWith('Debugger.resumed', undefined);
-        expect(cache.enable).toHaveBeenCalledWith();
         expect(socket.getStackFrames).toHaveBeenCalledWith();
         expect(callback.sendMethod).toHaveBeenCalledWith(
           'Debugger.paused',
@@ -176,7 +172,6 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
 
         await handler.handleMethod(1, 'resume');
 
-        expect(cache.disable).toHaveBeenCalledWith();
         expect(socket.sendContinuationCommand).toHaveBeenCalledWith('run');
         expect(callback.sendMethod).toHaveBeenCalledWith('Debugger.resumed', undefined);
         expect(socket.sendContinuationCommand).toHaveBeenCalledWith('stop');

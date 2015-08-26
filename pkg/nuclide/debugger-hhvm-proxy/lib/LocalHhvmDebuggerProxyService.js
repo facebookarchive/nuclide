@@ -68,10 +68,7 @@ class LocalHhvmDebuggerProxyService extends HhvmDebuggerProxyService {
   }
 
   _addListener(eventName: string, callback: Function): Disposable {
-    this._emitter.addListener(eventName, callback);
-    return {
-      dispose: () => this._emitter.removeListener(eventName, callback),
-    };
+    return require('nuclide-commons').event.attachEvent(this._emitter, eventName, callback);
   }
 
   async attach(config: ConnectionConfig): Promise<string> {

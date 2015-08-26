@@ -57,6 +57,10 @@ type PropertyDescriptor = {
   writable?: boolean;
 };
 
+import type {DbgpSocket} from './DbgpSocket';
+
+var {STATUS_BREAK} = require('./DbgpSocket');
+
 /**
  * Handles data value tracking between Chrome and Dbgp.
  *
@@ -73,9 +77,21 @@ class DataCache {
     this._socket = socket;
     this._enableCount = 0;
     this._enabled = false;
+    socket.onStatus(this._onStatusChanged.bind(this));
   }
 
-  disable(): void {
+  _onStatusChanged(status: string): void {
+    switch (status) {
+      case STATUS_BREAK:
+        this._enable();
+        break;
+      default:
+        this._disable();
+        break;
+    }
+  }
+
+  _disable(): void {
     this._enabled = false;
   }
 
@@ -83,7 +99,7 @@ class DataCache {
     return this._enabled;
   }
 
-  enable(): void {
+  _enable(): void {
     this._enableCount += 1;
     this._enabled = true;
   }

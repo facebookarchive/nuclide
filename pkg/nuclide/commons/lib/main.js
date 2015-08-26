@@ -107,6 +107,10 @@ module.exports = {
     return require('./error');
   },
 
+  get event() {
+    return require('./event');
+  },
+
   get session() {
     return require('./session');
   },

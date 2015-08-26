@@ -17,6 +17,7 @@ var {
   pagedObjectId,
   singlePageObjectId,
 } = require('../lib/ObjectId');
+var { STATUS_BREAK, STATUS_RUNNING } = require('../lib/DbgpSocket');
 
 const PROPERTIES = ['property'];
 const CONVERTED_PROPERTIES = ['converted-properties'];
@@ -36,6 +37,7 @@ describe('debugger-hhvm-proxy DataCache', () => {
     var convertProperties;
     var getPagedProperties;
     var convertValue;
+    var statusCallback;
 
     beforeEach(() => {
 
@@ -55,6 +57,8 @@ describe('debugger-hhvm-proxy DataCache', () => {
           id : '2',
         },
       ]));
+      socket.onStatus = callback => { statusCallback = callback; };
+      statusCallback = null;
 
       var properties = require('../lib/properties');
       convertProperties = spyOn(properties, 'convertProperties').andReturn(CONVERTED_PROPERTIES);
@@ -66,6 +70,12 @@ describe('debugger-hhvm-proxy DataCache', () => {
       var DataCache = uncachedRequire(require, '../lib/DataCache');
       cache = new DataCache(socket);
     });
+    function enable() {
+      statusCallback(STATUS_BREAK);
+    }
+    function disable() {
+      statusCallback(STATUS_RUNNING);
+    }
 
     it ('no enable', () => {
       waitsForPromise(
@@ -77,15 +87,15 @@ describe('debugger-hhvm-proxy DataCache', () => {
       waitsForPromise(
         {shouldReject: true, timeout: 0},
         async () => {
-          cache.enable();
-          cache.disable();
+          enable();
+          disable();
           await cache.getScopesForFrame(4);
         });
     });
 
     it('getScopesForFrame', () => {
       waitsForPromise(async () => {
-        cache.enable();
+        enable();
         var result = await cache.getScopesForFrame(42);
 
         expect(socket.getContextsForFrame).toHaveBeenCalledWith(42);
@@ -123,7 +133,7 @@ describe('debugger-hhvm-proxy DataCache', () => {
         socket.getContextProperties = jasmine.createSpy('getContextProperties').
           andReturn(Promise.resolve(PROPERTIES));
 
-        cache.enable();
+        enable();
         var result = await cache.getProperties(contextRemoteId);
         expect(result).toEqual(CONVERTED_PROPERTIES);
         expect(socket.getContextProperties).toHaveBeenCalledWith(2, 3);
@@ -133,7 +143,7 @@ describe('debugger-hhvm-proxy DataCache', () => {
 
     it('getProperties - paged', () => {
       waitsForPromise(async () => {
-        cache.enable();
+        enable();
         var result = await cache.getProperties(pagedRemoteId);
         expect(result).toEqual(CONVERTED_PROPERTIES);
         expect(getPagedProperties).toHaveBeenCalledWith(pagedId);
@@ -144,7 +154,7 @@ describe('debugger-hhvm-proxy DataCache', () => {
       waitsForPromise(async () => {
         socket.getPropertiesByFullname = jasmine.createSpy('getPropertiesByFullname').
           andReturn(Promise.resolve(PROPERTIES));
-        cache.enable();
+        enable();
         var result = await cache.getProperties(singlePageRemoteId);
         expect(result).toEqual(CONVERTED_PROPERTIES);
         expect(socket.getPropertiesByFullname).toHaveBeenCalledWith(2, 3, 'fullname-value', 42);
@@ -156,7 +166,7 @@ describe('debugger-hhvm-proxy DataCache', () => {
       waitsForPromise(async () => {
         socket.evaluateOnCallFrame = jasmine.createSpy('evaluateOnCallFrame')
           .andReturn(Promise.resolve({result: PROPERTIES, wasThrown: false}));
-        cache.enable();
+        enable();
         var result = await cache.evaluateOnCallFrame(5, 'expression');
         expect(socket.evaluateOnCallFrame).toHaveBeenCalledWith(5, 'expression');
         expect(convertValue).toHaveBeenCalledWith({

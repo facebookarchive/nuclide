@@ -186,7 +186,6 @@ class DebuggerHandler extends Handler {
   // is a status message which occurs after execution stops.
   async _sendContinuationCommand(command: string): Promise {
     log('Sending continuation command: ' + command);
-    this._dataCache.disable();
     var statusPromise = this._socket.sendContinuationCommand(command);
     this.sendMethod('Debugger.resumed');
     await this._sendStatus(await statusPromise);
@@ -208,7 +207,6 @@ class DebuggerHandler extends Handler {
       await this._sendContinuationCommand(COMMAND_STEP_INTO);
       break;
     case STATUS_BREAK:
-      this._dataCache.enable();
       await this._sendPausedMessage();
       break;
     case STATUS_RUNNING:

@@ -11,7 +11,7 @@
 
 
 var {makeDbgpMessage} = require('../lib/utils');
-var DbgpSocket = require('../lib/DbgpSocket').DbgpSocket;
+var {DbgpSocket, COMMAND_RUN, COMMAND_STEP_OVER, STATUS_RUNNING, STATUS_BREAK, STATUS_STOPPING} = require('../lib/DbgpSocket');
 var {idOfFrame, functionOfFrame, fileOfFrame, locationOfFrame} = require('../lib/frame');
 
 function makeMessage(obj, body) {
@@ -28,12 +28,15 @@ describe('debugger-hhvm-proxy DbgpSocket', () => {
     var socket;
     var dbgpSocket;
     var onData;
+    var onStatus;
 
     beforeEach(() => {
       socket = jasmine.createSpyObj('socket', ['write', 'end', 'destroy']);
+      onStatus = jasmine.createSpy('onStatus');
       socket.on = (event, callback) => { onData = callback; };
       spyOn(socket, 'on').andCallThrough();
       dbgpSocket = new DbgpSocket(socket);
+      dbgpSocket.onStatus(onStatus);
     });
 
     function testSocketWrite(socketWrite: string): void {
@@ -77,6 +80,42 @@ describe('debugger-hhvm-proxy DbgpSocket', () => {
             transaction_id: '1',
           },
           'stopping');
+      });
+    });
+
+    it('sendContinuationCommand - break', () => {
+      waitsForPromise(async () => {
+        var resultPromise = dbgpSocket.sendContinuationCommand(COMMAND_STEP_OVER);
+        expect(onStatus).toHaveBeenCalledWith(STATUS_RUNNING);
+        await testCall(
+          resultPromise,
+          'step_over -i 1',
+          {
+            status: 'break',
+            reason: 'ok',
+            command: 'step_over',
+            transaction_id: '1',
+          },
+          STATUS_BREAK);
+        expect(onStatus).toHaveBeenCalledWith(STATUS_BREAK);
+      });
+    });
+
+    it('sendContinuationCommand - stopping', () => {
+      waitsForPromise(async () => {
+        var resultPromise = dbgpSocket.sendContinuationCommand(COMMAND_STEP_OVER);
+        expect(onStatus).toHaveBeenCalledWith(STATUS_RUNNING);
+        await testCall(
+          resultPromise,
+          'step_over -i 1',
+          {
+            status: 'stopping',
+            reason: 'ok',
+            command: 'step_over',
+            transaction_id: '1',
+          },
+          STATUS_STOPPING);
+        expect(onStatus).toHaveBeenCalledWith(STATUS_STOPPING);
       });
     });
 
