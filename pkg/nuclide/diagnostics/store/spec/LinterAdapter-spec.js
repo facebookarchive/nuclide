@@ -11,11 +11,7 @@
 
 var {Disposable} = require('atom');
 
-var {uncachedRequire} = require('nuclide-test-helpers');
-
-function newLinterAdapter(linter) {
-  return new (uncachedRequire(require, '../lib/LinterAdapter'))(linter);
-}
+var LinterAdapter = require('../lib/LinterAdapter');
 
 var grammar = 'testgrammar';
 
@@ -34,6 +30,32 @@ describe('LinterAdapter', () => {
   var linterReturn: any;
   var fakeEditor: any;
   var subscribedToAny: any;
+  var newUpdateSubscriber: any;
+  var publishMessageUpdateSpy: any;
+
+  class FakeDiagnosticsProviderBase {
+    publishMessageUpdate: JasmineSpy;
+    publishMessageInvalidation: JasmineSpy;
+    constructor(options) {
+      eventCallback = options.onTextEditorEvent;
+      subscribedToAny = options.enableForAllGrammars;
+      newUpdateSubscriber = options.onNewUpdateSubscriber;
+      this.publishMessageUpdate = jasmine.createSpy();
+      publishMessageUpdateSpy = this.publishMessageUpdate;
+      this.publishMessageInvalidation = jasmine.createSpy();
+    }
+    onMessageUpdate(callback) {
+      this.publishMessageUpdate.andCallFake(callback);
+      return new Disposable(() => {});
+    }
+    onMessageInvalidation() {
+      return new Disposable(() => {});
+    }
+  }
+
+  function newLinterAdapter(linter) {
+    return new LinterAdapter(linter, (FakeDiagnosticsProviderBase: any));
+  }
 
   beforeEach(() => {
     fakeEditor = {
@@ -49,25 +71,10 @@ describe('LinterAdapter', () => {
       lint: () => linterReturn,
     };
     spyOn(fakeLinter, 'lint').andCallThrough();
-    eventCallback = null;
-    subscribedToAny = null;
-    class FakeEventDispatcher {
-      onFileChange(grammars, callback) {
-        eventCallback = callback;
-        return new Disposable(() => {});
-      }
-      onAnyFileChange(callback) {
-        subscribedToAny = true;
-        eventCallback = callback;
-        return new Disposable(() => {});
-      }
-    }
-    spyOn(require('nuclide-text-event-dispatcher'), 'getInstance').andReturn(new FakeEventDispatcher());
     linterAdapter = newLinterAdapter(fakeLinter);
   });
 
   afterEach(() => {
-    jasmine.unspy(require('nuclide-text-event-dispatcher'), 'getInstance');
     jasmine.unspy(atom.workspace, 'getActiveTextEditor');
   });
 
@@ -89,9 +96,9 @@ describe('LinterAdapter', () => {
 
   it('should dispatch an event on subscribe if no lint is in progress', () => {
     var callback = jasmine.createSpy();
-    linterAdapter.onMessageUpdate(callback);
+    newUpdateSubscriber(callback);
     waitsFor(() => {
-      return callback.callCount > 0;
+      return publishMessageUpdateSpy.callCount > 0;
     }, 'It should call the callback', 100);
   });
 
@@ -113,7 +120,7 @@ describe('LinterAdapter', () => {
       window.advanceClock(30);
       window.advanceClock(30);
       waitsFor(() => {
-        return numMessages === 2 && lastMessage.filePathToMessages.has('baz');
+        return numMessages === 1 && lastMessage.filePathToMessages.has('baz');
       }, 'There should be only the latest message', 100);
     });
   });

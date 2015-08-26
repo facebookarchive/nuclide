@@ -39,7 +39,7 @@ export type LinterProvider = {
   lint: (textEditor: TextEditor) => Promise<Array<LinterMessage>>;
 };
 
-var {Emitter, Disposable, CompositeDisposable} = require('atom');
+var {DiagnosticsProviderBase} = require('nuclide-diagnostics-provider-base');
 
 var {RequestSerializer} = require('nuclide-commons').promises;
 
@@ -95,10 +95,6 @@ function linterMessagesToDiagnosticUpdate(currentPath: ?NuclideUri, msgs: Array<
   };
 }
 
-function getTextEventDispatcher() {
-  return require('nuclide-text-event-dispatcher').getInstance();
-}
-
 /**
  * Provides an adapter between legacy linters (defined by the LinterProvider
  * type), and Nuclide Diagnostic Providers.
@@ -113,51 +109,24 @@ function getTextEventDispatcher() {
 class LinterAdapter {
   _provider: LinterProvider;
 
-  _emitter: Emitter;
-
-  _disposables: CompositeDisposable;
-
   _enabled: boolean;
-
-  _currentEventSubscription: ?atom$Disposable;
 
   _requestSerializer: RequestSerializer;
 
-  constructor(provider: LinterProvider) {
+  _providerUtils: DiagnosticsProviderBase;
+
+  constructor(provider: LinterProvider, ProviderBase?: typeof DiagnosticsProviderBase = DiagnosticsProviderBase) {
+    var utilsOptions = {
+      grammarScopes: new Set(provider.grammarScopes),
+      enableForAllGrammars: provider.allGrammarScopes,
+      shouldRunOnTheFly: provider.lintOnFly,
+      onTextEditorEvent: editor => this._runLint(editor),
+      onNewUpdateSubscriber: callback => this._newUpdateSubscriber(callback),
+    };
+    this._providerUtils = new ProviderBase(utilsOptions);
     this._provider = provider;
     this._enabled = true;
-    this._disposables = new CompositeDisposable();
-    this._emitter = new Emitter();
     this._requestSerializer = new RequestSerializer();
-
-    this._subscribeToEvent(provider.lintOnFly);
-  }
-
-  // Subscribes to the appropriate event depending on whether we should lint on
-  // the fly or not.
-  _subscribeToEvent(lintOnFly: boolean) {
-    if (this._currentEventSubscription) {
-      this._currentEventSubscription.dispose();
-      this._currentEventSubscription = null;
-    }
-    var runLint = editor => this._runLint(editor);
-    var dispatcher = getTextEventDispatcher();
-    var subscription;
-    if (lintOnFly) {
-      if (this._provider.allGrammarScopes) {
-        subscription = dispatcher.onAnyFileChange(runLint);
-      } else {
-        subscription = dispatcher.onFileChange(this._provider.grammarScopes, runLint);
-      }
-    } else {
-      if (this._provider.allGrammarScopes) {
-        subscription = dispatcher.onAnyFileSave(runLint);
-      } else {
-        subscription = dispatcher.onFileSave(this._provider.grammarScopes, runLint);
-      }
-    }
-    this._currentEventSubscription = subscription;
-    this._disposables.add(subscription);
   }
 
   async _runLint(editor: TextEditor): Promise<void> {
@@ -166,13 +135,12 @@ class LinterAdapter {
       if (result.status === 'success') {
         var linterMessages = result.result;
         var diagnosticUpdate = linterMessagesToDiagnosticUpdate(editor.getPath(), linterMessages, this._provider.providerName);
-        this._emitter.emit('update', diagnosticUpdate);
+        this._providerUtils.publishMessageUpdate(diagnosticUpdate);
       }
     }
   }
 
-  onMessageUpdate(callback: MessageUpdateCallback): atom$Disposable {
-    var disposable = this._emitter.on('update', callback);
+  _newUpdateSubscriber(callback: MessageUpdateCallback): void {
     var activeTextEditor = atom.workspace.getActiveTextEditor();
     if (activeTextEditor) {
       var matchesGrammar = this._provider.grammarScopes.indexOf(activeTextEditor.getGrammar().scopeName) !== -1;
@@ -180,12 +148,6 @@ class LinterAdapter {
         this._runLint(activeTextEditor);
       }
     }
-    return disposable;
-  }
-
-  onMessageInvalidation(callback: MessageInvalidationCallback): atom$Disposable {
-    // no-op; we don't publish invalidations
-    return new Disposable(() => {});
   }
 
   setEnabled(enabled: boolean): void {
@@ -193,16 +155,23 @@ class LinterAdapter {
   }
 
   setLintOnFly(lintOnFly: boolean): void {
-    this._subscribeToEvent(lintOnFly && this._provider.lintOnFly);
+    this._providerUtils.setRunOnTheFly(lintOnFly && this._provider.lintOnFly);
   }
 
   dispose(): void {
-    this._emitter.dispose();
-    this._disposables.dispose();
+    this._providerUtils.dispose();
   }
 
   _lintInProgress(): boolean {
     return this._requestSerializer.isRunInProgress();
+  }
+
+  onMessageUpdate(callback: MessageUpdateCallback): atom$Disposable {
+    return this._providerUtils.onMessageUpdate(callback);
+  }
+
+  onMessageInvalidation(callback: MessageInvalidationCallback): atom$Disposable {
+    return this._providerUtils.onMessageInvalidation(callback);
   }
 }
 
