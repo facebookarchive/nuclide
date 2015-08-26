@@ -47,6 +47,7 @@ module.exports = {
     return {
       selector: '.' + HACK_GRAMMAR,
       inclusionPriority: 1,
+      suggestionPriority: 3, // The context-sensitive hack autocompletions are more relevant than snippets.
       excludeLowerPriority: true,
 
       getSuggestions(
