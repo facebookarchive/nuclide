@@ -219,6 +219,10 @@ declare class atom$Point {
   copy(): atom$Point;
   negate(): atom$Point;
 
+  // Operations
+  translate(other: atom$Point): atom$Point;
+
+  // Conversion
   serialize(): Array<number>;
   toArray(): Array<number>;
 }
@@ -333,6 +337,18 @@ declare class atom$TextEditor extends atom$Model {
   selectAll(): void;
 
   // Searching and Replacing
+  scanInBufferRange(
+    regex: RegExp,
+    range: atom$Range,
+    iterator: (foundMatch: {
+      match: mixed;
+      matchText: string;
+      range: atom$Range;
+      stop: () => mixed;
+      replace: (replaceWith: string) => mixed;
+    }) => mixed
+  ): mixed;
+
   // Tab Behavior
   // Soft Wrap Behavior
   // Indentation
