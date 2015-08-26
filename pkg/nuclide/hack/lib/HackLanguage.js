@@ -423,8 +423,7 @@ module.exports = class HackLanguage {
     try {
       return await this._client[serviceName].apply(this._client, serviceArgs);
     } catch (error) {
-      logger.warn(`HACK: service call ${serviceName} failed with args:`, serviceArgs, error);
-      atom.notifications.addWarning(error.message || error);
+      logger.error(`HACK: service call ${serviceName} failed with args:`, serviceArgs, error);
       return defaultValue;
     }
   }
