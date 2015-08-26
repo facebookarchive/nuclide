@@ -122,6 +122,9 @@ module.exports = {
         store.invalidateMessages(provider, invalidationMessage);
       })
     );
+    compositeDisposable.add(new Disposable(() => {
+      store.invalidateMessages(provider, { scope: 'all' });
+    }));
     addDisposable(compositeDisposable);
     return compositeDisposable;
   },
