@@ -31,6 +31,9 @@ type LinterMessage = {
 export type LinterProvider = {
   // providerName is an extension to the current linter api
   providerName?: string;
+  // an extension allowing package authors to provide both the linter and
+  // diagnostics services, and have Nuclide ignore the linter one.
+  disabledForNuclide?: boolean;
   grammarScopes: Array<string>;
   // extension to the linter API. overrides grammarScopes if true, to trigger the linter on all grammar scopes
   allGrammarScopes?: boolean;

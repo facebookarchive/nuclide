@@ -56,7 +56,7 @@ function getDiagnosticUpdater(): DiagnosticUpdater {
 
 var consumeLegacyLinters = false;
 var lintOnTheFly = false;
-var adapters = new Set();
+var allLinterAdapters = new Set();
 
 module.exports = {
   config: {
@@ -82,30 +82,34 @@ module.exports = {
       // for the active text editor. Possibly more trouble than it's worth,
       // though, since this may be a temporary option.
       consumeLegacyLinters = newValue;
-      adapters.forEach(adapter => adapter.setEnabled(newValue));
+      allLinterAdapters.forEach(adapter => adapter.setEnabled(newValue));
     });
 
     lintOnTheFly = ((atom.config.get(legacyLintOnTheFlySetting): any): boolean);
     atom.config.observe(legacyLintOnTheFlySetting, newValue => {
       lintOnTheFly = newValue;
-      adapters.forEach(adapter => adapter.setLintOnFly(newValue));
+      allLinterAdapters.forEach(adapter => adapter.setLintOnFly(newValue));
     });
   },
 
-  consumeLinterProvider(provider: LinterProvider): atom$IDisposable {
-    var LinterAdapter = require('./LinterAdapter');
-    var adapter = new LinterAdapter(provider);
-    adapter.setEnabled(consumeLegacyLinters);
-    adapter.setLintOnFly(lintOnTheFly);
-    adapters.add(adapter);
-    var diagnosticDisposable = this.consumeDiagnosticProvider(adapter);
-    var adapterDisposable = new Disposable(() => {
-      diagnosticDisposable.dispose();
-      adapter.dispose();
-      adapters.delete(adapter);
-    });
-    addDisposable(adapter);
-    return adapterDisposable;
+  consumeLinterProvider(provider: LinterProvider | Array<LinterProvider>): atom$IDisposable {
+    var {createAdapters} = require('./LinterAdapterFactory');
+    var newAdapters = createAdapters(provider);
+    var adapterDisposables = new CompositeDisposable();
+    for (var adapter of newAdapters) {
+      adapter.setEnabled(consumeLegacyLinters);
+      adapter.setLintOnFly(lintOnTheFly);
+      allLinterAdapters.add(adapter);
+      var diagnosticDisposable = this.consumeDiagnosticProvider(adapter);
+      var adapterDisposable = new Disposable(() => {
+        diagnosticDisposable.dispose();
+        adapter.dispose();
+        allLinterAdapters.delete(adapter);
+      });
+      adapterDisposables.add(adapterDisposable);
+      addDisposable(adapter);
+    }
+    return adapterDisposables;
   },
 
   consumeDiagnosticProvider(provider: DiagnosticProvider): atom$IDisposable {
