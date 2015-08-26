@@ -168,7 +168,7 @@ class FileTreeStore {
     // TODO: onReject
     promise = promise.then((keys) => {
       this._setChildKeys(nodeKey, keys);
-      this._setLoading(nodeKey, null);
+      this._clearLoading(nodeKey);
     });
     this._setLoading(nodeKey, promise);
     return promise;
@@ -178,8 +178,12 @@ class FileTreeStore {
     return this._data.isLoadingMap[nodeKey];
   }
 
-  _setLoading(nodeKey: string, value: ?Promise): void {
+  _setLoading(nodeKey: string, value: Promise): void {
     this._set('isLoadingMap', setProperty(this._data.isLoadingMap, nodeKey, value));
+  }
+
+  _clearLoading(nodeKey: string): void {
+    this._set('isLoadingMap', deleteProperty(this._data.isLoadingMap, nodeKey));
   }
 
   _getExpandedKeys(rootKey: string): Immutable.Set<string> {
@@ -237,7 +241,10 @@ class FileTreeStore {
         }
       });
     }
-    this._set('childKeyMap', setProperty(this._data.childKeyMap, nodeKey, childKeys));
+    var childKeyMap = (childKeys == null) ?
+      deleteProperty(this._data.childKeyMap, nodeKey) :
+      setProperty(this._data.childKeyMap, nodeKey, childKeys);
+    this._set('childKeyMap', childKeyMap);
   }
 
   _onDirectoryChange(nodeKey: string): void {
@@ -268,7 +275,7 @@ class FileTreeStore {
     var subscription = this._data.subscriptionMap[nodeKey];
     if (subscription) {
       subscription.dispose();
-      this._set('subscriptionMap', setProperty(this._data.subscriptionMap, nodeKey, null));
+      this._set('subscriptionMap', deleteProperty(this._data.subscriptionMap, nodeKey));
     }
   }
 
@@ -283,7 +290,7 @@ class FileTreeStore {
           this._purgeDirectory(childKey);
         }
       });
-      this._set('childKeyMap', setProperty(this._data.childKeyMap, nodeKey, null));
+      this._set('childKeyMap', deleteProperty(this._data.childKeyMap, nodeKey));
     }
     this._removeSubscription(nodeKey);
     var expandedKeysByRoot = this._data.expandedKeysByRoot;
@@ -319,8 +326,18 @@ class FileTreeStore {
   }
 }
 
-// An easy way to set a property in an object using shallow copy rather than mutation
-function setProperty(object: Object, key: string, newValue: mixed) {
+// A helper to delete a property in an object using shallow copy rather than mutation
+function deleteProperty(object: Object, key: string): Object {
+  if (!object.hasOwnProperty(key)) {
+    return object;
+  }
+  var newObject = {...object};
+  delete newObject[key];
+  return newObject;
+}
+
+// A helper to set a property in an object using shallow copy rather than mutation
+function setProperty(object: Object, key: string, newValue: mixed): Object {
   var oldValue = object[key];
   if (oldValue === newValue) {
     return object;
