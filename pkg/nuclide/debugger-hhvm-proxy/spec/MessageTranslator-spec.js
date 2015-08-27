@@ -19,8 +19,12 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
 
     beforeEach(() => {
       callback = jasmine.createSpy('callback');
-      connection = jasmine.createSpyObj('connection', ['dispose']);
+      connection = jasmine.createSpyObj('connection', ['dispose', 'onStatus']);
       translater = new MessageTranslator(connection, callback);
+    });
+
+    it('constructor', () => {
+      expect(connection.onStatus).toHaveBeenCalled();
     });
 
     it('handleCommand', () => {

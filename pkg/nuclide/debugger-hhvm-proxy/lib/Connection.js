@@ -17,6 +17,7 @@ import type {Socket} from 'net';
 import type Scope from './DataCache';
 import type PropertyDescriptor from './DataCache';
 import type RemoteObjectId from './DataCache';
+import type {Disposable} from 'nuclide-commons';
 
 export class Connection {
   _socket: DbgpSocket;
@@ -26,6 +27,10 @@ export class Connection {
     var dbgpSocket = new DbgpSocket(socket);
     this._socket = dbgpSocket;
     this._dataCache = new DataCache(dbgpSocket);
+  }
+
+  onStatus(callback: (status: string) => mixed): Disposable {
+    return this._socket.onStatus(callback);
   }
 
   evaluateOnCallFrame(frameIndex: number, expression: string): Promise<Object> {

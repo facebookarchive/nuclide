@@ -11,23 +11,47 @@
 
 
 var DebuggerHandler = require('../lib/DebuggerHandler');
+var {
+  STATUS_STARTING,
+  STATUS_STOPPING,
+  STATUS_STOPPED,
+  STATUS_RUNNING,
+  STATUS_BREAK,
+  COMMAND_RUN,
+  COMMAND_STEP_INTO,
+  COMMAND_STEP_OVER,
+  COMMAND_STEP_OUT,
+  COMMAND_STOP,
+} = require('../lib/DbgpSocket');
+
 
 describe('debugger-hhvm-proxy DebuggerHandler', () => {
     var callback;
     var connection;
     var handler;
+    var onStatus;
 
     beforeEach(() => {
       callback = jasmine.createSpyObj('callback', ['replyToCommand', 'replyWithError', 'sendMethod']);
-      connection = jasmine.createSpyObj('connection', ['getStatus', 'getStackFrames', 'sendContinuationCommand', 'sendBreakCommand', 'getScopesForFrame']);
+      connection = jasmine.createSpyObj('connection', ['onStatus', 'getStatus', 'getStackFrames', 'sendContinuationCommand', 'sendBreakCommand', 'getScopesForFrame']);
+      connection.onStatus = jasmine.createSpy('onStatus').andCallFake(callback => { onStatus = callback; });
       handler = new DebuggerHandler(callback, connection);
     });
 
     it('enable', () => {
       waitsForPromise(async () => {
-        connection.getStatus = jasmine.createSpy('getStatus').andReturn(Promise.resolve('starting'));
-        connection.sendContinuationCommand = jasmine.createSpy('sendContinuationCommand')
-          .andReturn(Promise.resolve('break'));
+        connection.getStatus = jasmine.createSpy('getStatus').andReturn(Promise.resolve(STATUS_STARTING));
+
+        await handler.handleMethod(1, 'enable');
+        expect(callback.replyToCommand).toHaveBeenCalledWith(1, {}, undefined);
+        expect(connection.sendContinuationCommand).toHaveBeenCalledWith('step_into');
+        expect(connection.getStatus).toHaveBeenCalledWith();
+      });
+    });
+
+    it('stack', () => {
+
+      waitsForPromise(async () => {
         connection.getStackFrames = jasmine.createSpy('getStackFrames').andReturn(Promise.resolve(
           {
             stack: [
@@ -52,11 +76,8 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
             ]
           }));
 
-        await handler.handleMethod(1, 'enable');
+        await onStatus(STATUS_BREAK);
 
-        expect(connection.getStatus).toHaveBeenCalledWith();
-        expect(connection.sendContinuationCommand).toHaveBeenCalledWith('step_into');
-        expect(callback.sendMethod).toHaveBeenCalledWith('Debugger.resumed', undefined);
         expect(connection.getStackFrames).toHaveBeenCalledWith();
         expect(connection.getScopesForFrame).toHaveBeenCalledWith(0);
         expect(connection.getScopesForFrame).toHaveBeenCalledWith(1);
@@ -118,14 +139,18 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
 
     function testContinuationCommand(chromeCommand, dbgpCommand) {
       return async () => {
-        connection.sendContinuationCommand = jasmine.createSpy('sendContinuationCommand')
-          .andReturn(Promise.resolve('break'));
+        expect(connection.onStatus).toHaveBeenCalled();
+
         connection.getStackFrames = jasmine.createSpy('getStackFrames').andReturn(Promise.resolve({stack: []}));
 
         await handler.handleMethod(1, chromeCommand);
 
         expect(connection.sendContinuationCommand).toHaveBeenCalledWith(dbgpCommand);
+
+        await onStatus(STATUS_RUNNING);
         expect(callback.sendMethod).toHaveBeenCalledWith('Debugger.resumed', undefined);
+
+        await onStatus(STATUS_BREAK);
         expect(connection.getStackFrames).toHaveBeenCalledWith();
         expect(callback.sendMethod).toHaveBeenCalledWith(
           'Debugger.paused',
@@ -155,32 +180,13 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
 
     it('stopping', () => {
       waitsForPromise(async () => {
-        var status = 'stopping';
-        connection.sendContinuationCommand = jasmine.createSpy('sendContinuationCommand')
-          .andCallFake(async () => {
-            if (status === 'stopping') {
-              status = 'stopped';
-              return 'stopping';
-            } else {
-              return status;
-            }
-          });
         var onSessionEnd = jasmine.createSpy('onSessionEnd');
         handler.onSessionEnd(onSessionEnd);
 
-        await handler.handleMethod(1, 'resume');
-
+        await onStatus(STATUS_STOPPING);
         expect(connection.sendContinuationCommand).toHaveBeenCalledWith('run');
-        expect(callback.sendMethod).toHaveBeenCalledWith('Debugger.resumed', undefined);
-        expect(connection.sendContinuationCommand).toHaveBeenCalledWith('stop');
-        expect(callback.sendMethod).toHaveBeenCalledWith('Debugger.resumed', undefined);
-        expect(callback.sendMethod).toHaveBeenCalledWith(
-          'Debugger.paused',
-          {
-            callFrames: [],
-            reason: 'breakpoint',
-            data: {},
-          });
+
+        await onStatus(STATUS_STOPPED);
         expect(onSessionEnd).toHaveBeenCalledWith();
       });
     });

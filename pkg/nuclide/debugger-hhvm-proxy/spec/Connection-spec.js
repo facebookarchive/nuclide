@@ -22,6 +22,7 @@ describe('debugger-hhvm-proxy Connection', () => {
     socket = jasmine.createSpyObj('socket', ['write', 'end', 'destroy']);
 
     dbgpSocket = jasmine.createSpyObj('dbgpSocket', [
+        'onStatus',
         'setBreakpoint',
         'removeBreakpoint',
         'getStackFrames',
@@ -50,6 +51,12 @@ describe('debugger-hhvm-proxy Connection', () => {
   it('constructor', () => {
     expect(DbgpSocket).toHaveBeenCalledWith(socket);
     expect(DataCache).toHaveBeenCalledWith(dbgpSocket);
+  });
+
+  it('onStatus', () => {
+    function onStatus() {}
+    connection.onStatus(onStatus);
+    expect(dbgpSocket.onStatus).toHaveBeenCalledWith(onStatus);
   });
 
   it('dispose', () => {

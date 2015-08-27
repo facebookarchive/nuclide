@@ -46,6 +46,7 @@ class DebuggerHandler extends Handler {
     this._files = new FileCache(callback);
     var {EventEmitter} = require('events');
     this._emitter = new EventEmitter();
+    this._connection.onStatus(this._onStatusChanged.bind(this));
   }
 
   onSessionEnd(callback: () => void): void {
@@ -67,19 +68,19 @@ class DebuggerHandler extends Handler {
       break;
 
     case 'stepInto':
-      await this._sendContinuationCommand(COMMAND_STEP_INTO);
+      this._sendContinuationCommand(COMMAND_STEP_INTO);
       break;
 
     case 'stepOut':
-      await this._sendContinuationCommand(COMMAND_STEP_OUT);
+      this._sendContinuationCommand(COMMAND_STEP_OUT);
       break;
 
     case 'stepOver':
-      await this._sendContinuationCommand(COMMAND_STEP_OVER);
+      this._sendContinuationCommand(COMMAND_STEP_OVER);
       break;
 
     case 'resume':
-      await this._sendContinuationCommand(COMMAND_RUN);
+      this._sendContinuationCommand(COMMAND_RUN);
       break;
 
     case 'setPauseOnExceptions':
@@ -147,8 +148,8 @@ class DebuggerHandler extends Handler {
   }
 
   async _debuggerEnable(id: number): Promise {
-    await this._sendStatus(await this._getStatus());
     this.replyToCommand(id, {});
+    this._onStatusChanged(await this._getStatus());
   }
 
   async _getStackFrames(): Promise<Array<Object>> {
@@ -186,13 +187,9 @@ class DebuggerHandler extends Handler {
     return this._connection.getStatus();
   }
 
-  // Continuation commands get a response, but that response
-  // is a status message which occurs after execution stops.
-  async _sendContinuationCommand(command: string): Promise {
+  _sendContinuationCommand(command: string): void {
     log('Sending continuation command: ' + command);
-    var statusPromise = this._connection.sendContinuationCommand(command);
-    this.sendMethod('Debugger.resumed');
-    await this._sendStatus(await statusPromise);
+    this._connection.sendContinuationCommand(command);
   }
 
   async _sendBreakCommand(id: number): Promise {
@@ -202,33 +199,25 @@ class DebuggerHandler extends Handler {
     }
   }
 
-  // TODO: Move this into Connection.
-  async _sendStatus(status: string): Promise {
+  async _onStatusChanged(status: string): Promise {
     log('Sending status: ' + status);
     switch (status) {
     case STATUS_STARTING:
       // Starting status has no stack.
       // step before reporting initial status to get to the first instruction.
-      await this._sendContinuationCommand(COMMAND_STEP_INTO);
+      this._sendContinuationCommand(COMMAND_STEP_INTO);
       break;
     case STATUS_BREAK:
       await this._sendPausedMessage();
       break;
     case STATUS_RUNNING:
-      logErrorAndThrow('Unexpected running status');
+      this.sendMethod('Debugger.resumed');
       break;
     case STATUS_STOPPING:
       // TODO: May want to enable post-mortem features?
-      await this._sendContinuationCommand(COMMAND_STOP);
+      this._sendContinuationCommand(COMMAND_RUN);
       break;
     case STATUS_STOPPED:
-      this.sendMethod(
-        'Debugger.paused',
-        {
-          callFrames: [],
-          reason: 'breakpoint', // TODO: better reason?
-          data: {},
-        });
       this._endSession();
       break;
     default:
