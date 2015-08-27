@@ -60,10 +60,10 @@ class FileTreeController {
     );
     this._subscriptions.add(
       atom.commands.add('atom-workspace', {
-        'nuclide-file-tree-deux:toggle': () => this.toggleVisibility(),
-        'nuclide-file-tree-deux:reveal-active-file': () => this.revealActiveFile(),
-      }
-    ));
+        'nuclide-file-tree-deux:toggle': this.toggleVisibility.bind(this),
+        'nuclide-file-tree-deux:reveal-active-file': this.revealActiveFile.bind(this),
+      })
+    );
     // Load this package's keymap outside the normal activate/deactive lifecycle so its keymaps are
     // loaded only when users enable this package via its config.
     //
@@ -78,6 +78,7 @@ class FileTreeController {
     this._subscriptions.add(
       atom.commands.add(EVENT_HANDLER_SELECTOR, {
         'nuclide-file-tree-deux:search-in-directory': this._searchInDirectory.bind(this),
+        'nuclide-file-tree-deux:copy-full-path': this._copyFullPath.bind(this),
       })
     );
     if (state && state.tree) {
@@ -158,6 +159,15 @@ class FileTreeController {
     // Dispatch a command to show the `ProjectFindView`. This opens the view and focuses the search
     // box.
     atom.commands.dispatch((event.target: HTMLElement), 'project-find:show-in-current-directory');
+  }
+
+  _copyFullPath(): void {
+    var rootKey = this._store.getFocusedRootKey();
+    var nodeKey = rootKey ? this._store.getSelectedKeys(rootKey).first() : null;
+    if (rootKey != null && nodeKey != null) {
+      var node = this._store.getNode(rootKey, nodeKey);
+      atom.clipboard.write(node.getLocalPath());
+    }
   }
 
   destroy(): void {

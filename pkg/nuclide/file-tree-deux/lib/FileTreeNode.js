@@ -10,6 +10,9 @@
  */
 
 var FileTreeHelpers = require('./FileTreeHelpers');
+var RemoteUri = require('nuclide-remote-uri');
+
+var {url} = require('nuclide-commons');
 
 import type FileTreeStore from './FileTreeStore';
 
@@ -55,6 +58,17 @@ class FileTreeNode {
 
   getRelativePath(): string {
     return this.nodePath.slice(this.rootKey.length);
+  }
+
+  // For remote files we want the local path instead of full path.
+  // i.e, "/home/dir/file" vs "nuclide://hostname:123/home/dir/file"
+  getLocalPath(): string {
+    var path = this.nodePath;
+    if (RemoteUri.isRemote(path)) {
+      return url.parse(path).pathname;
+    } else {
+      return path;
+    }
   }
 }
 
