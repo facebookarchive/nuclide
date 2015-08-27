@@ -77,6 +77,7 @@ class FileTreeController {
     );
     this._subscriptions.add(
       atom.commands.add(EVENT_HANDLER_SELECTOR, {
+        'nuclide-file-tree-deux:remove-project-folder-selection': this._removeRootFolderSelection.bind(this),
         'nuclide-file-tree-deux:search-in-directory': this._searchInDirectory.bind(this),
         'nuclide-file-tree-deux:copy-full-path': this._copyFullPath.bind(this),
       })
@@ -153,6 +154,14 @@ class FileTreeController {
       this._actions.expandNode(rootKey, parentKey);
     });
     this._actions.selectSingleNode(rootKey, nodeKey);
+  }
+
+  _removeRootFolderSelection(): void {
+    var rootKey = this._store.getFocusedRootKey();
+    if (rootKey) {
+      var rootPath = FileTreeHelpers.keyToPath(rootKey);
+      atom.project.removePath(rootPath);
+    }
   }
 
   _searchInDirectory(event: Event): void {
