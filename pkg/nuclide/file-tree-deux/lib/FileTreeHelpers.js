@@ -98,8 +98,6 @@ function isValidDirectory(directory: Directory): boolean {
   return (!isLocalFile(directory) || isFullyQualifiedLocalPath(directory.getPath()));
 }
 
-// Private Helpers
-
 function isLocalFile(entry: File | Directory): boolean {
   // TODO: implement `RemoteDirectory.isRemoteDirectory()`
   return !('getLocalPath' in entry);
@@ -107,6 +105,13 @@ function isLocalFile(entry: File | Directory): boolean {
 
 function isFullyQualifiedLocalPath(path: string): boolean {
   return path.charAt(0) === '/';
+}
+
+function isContextClick(event: SyntheticMouseEvent): boolean {
+  return (
+    event.button === 2 ||
+    (event.button === 0 && event.ctrlKey === true && process.platform === 'darwin')
+  );
 }
 
 module.exports = {
@@ -118,4 +123,7 @@ module.exports = {
   fetchChildren,
   getDirectoryByKey,
   isValidDirectory,
+  isLocalFile,
+  isFullyQualifiedLocalPath,
+  isContextClick,
 };

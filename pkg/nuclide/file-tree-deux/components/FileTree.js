@@ -41,7 +41,7 @@ class FileTree extends React.Component {
 
   render(): ReactElement {
     return (
-      <div className="nuclide-file-tree">
+      <div className="nuclide-file-tree-deux">
         {this._renderChildren()}
       </div>
     );

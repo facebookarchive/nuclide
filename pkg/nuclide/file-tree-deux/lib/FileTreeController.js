@@ -14,6 +14,8 @@ import type {ExportStoreData} from './FileTreeStore';
 var {CompositeDisposable} = require('atom');
 var FileTree = require('../components/FileTree');
 var FileTreeActions = require('./FileTreeActions');
+var {EVENT_HANDLER_SELECTOR} = require('./FileTreeConstants');
+var FileTreeContextMenu = require('./FileTreeContextMenu');
 var FileTreeHelpers = require('./FileTreeHelpers');
 var FileTreeStore = require('./FileTreeStore');
 var {PanelComponent} = require('nuclide-panel');
@@ -56,9 +58,8 @@ class FileTreeController {
     this._subscriptions.add(
       this._store.subscribe(() => this._render())
     );
-    this._subscriptions.add(atom.commands.add(
-      'atom-workspace',
-      {
+    this._subscriptions.add(
+      atom.commands.add('atom-workspace', {
         'nuclide-file-tree-deux:toggle': () => this.toggleVisibility(),
         'nuclide-file-tree-deux:reveal-active-file': () => this.revealActiveFile(),
       }
@@ -74,9 +75,15 @@ class FileTreeController {
         'keymap.cson'
       )
     );
+    this._subscriptions.add(
+      atom.commands.add(EVENT_HANDLER_SELECTOR, {
+        'nuclide-file-tree-deux:search-in-directory': this._searchInDirectory.bind(this),
+      })
+    );
     if (state && state.tree) {
       this._store.loadData(state.tree);
     }
+    FileTreeContextMenu.initialize();
   }
 
   _initializePanel(): void {
@@ -145,6 +152,12 @@ class FileTreeController {
       this._actions.expandNode(rootKey, parentKey);
     });
     this._actions.selectSingleNode(rootKey, nodeKey);
+  }
+
+  _searchInDirectory(event: Event): void {
+    // Dispatch a command to show the `ProjectFindView`. This opens the view and focuses the search
+    // box.
+    atom.commands.dispatch((event.target: HTMLElement), 'project-find:show-in-current-directory');
   }
 
   destroy(): void {

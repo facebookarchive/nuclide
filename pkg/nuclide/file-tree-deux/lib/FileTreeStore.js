@@ -33,6 +33,7 @@ type StoreData = {
   // Saves a list of child nodes that should be expande when a given key is expanded.
   // Looks like: { rootKey: { nodeKey: [childKey1, childKey2] } }
   previouslyExpanded: { [key: string]: { [key: string]: Array<string> } };
+  focusedRootKey: ?string;
   isLoadingMap: { [key: string]: ?Promise };
   rootKeys: Array<string>;
   selectedKeysByRoot: { [key: string]: Immutable.Set<string> };
@@ -109,6 +110,7 @@ class FileTreeStore {
       isDirtyMap: {},
       expandedKeysByRoot: mapValues(data.expandedKeysByRoot, (keys) => new Immutable.Set(keys)),
       previouslyExpanded: {},
+      focusedRootKey: null,
       isLoadingMap: {},
       rootKeys: data.rootKeys,
       selectedKeysByRoot: mapValues(data.selectedKeysByRoot, (keys) => new Immutable.Set(keys)),
@@ -126,6 +128,7 @@ class FileTreeStore {
       isDirtyMap: {},
       expandedKeysByRoot: {},
       previouslyExpanded: {},
+      focusedRootKey: null,
       isLoadingMap: {},
       rootKeys: [],
       selectedKeysByRoot: {},
@@ -137,6 +140,9 @@ class FileTreeStore {
     switch (payload.actionType) {
       case ActionType.SET_ROOT_KEYS:
         this._setRootKeys(payload.rootKeys);
+        break;
+      case ActionType.SET_FOCUSED_ROOT:
+        this._set('focusedRootKey', payload.rootKey);
         break;
       case ActionType.EXPAND_NODE:
         this._expandNode(payload.rootKey, payload.nodeKey);
@@ -175,6 +181,10 @@ class FileTreeStore {
 
   getRootKeys(): Array<string> {
     return this._data.rootKeys;
+  }
+
+  getFocusedRootKey(): ?string {
+    return this._data.focusedRootKey || this._data.rootKeys[0];
   }
 
   // Get the key of the *first* root node containing the given node.

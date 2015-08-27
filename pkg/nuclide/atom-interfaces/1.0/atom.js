@@ -27,12 +27,14 @@ type atom$IDisposable = {
   dispose: () => void;
 }
 
+type atom$CommandCallback = (event: Event) => mixed;
+
 declare class atom$CommandRegistry {
   // Methods
   add(
     target: string | HTMLElement,
-    commandNameOrCommands: string | {[commandName: string]: () => void},
-    callback?: (event: Event) => mixed // The return value will be ignored.
+    commandNameOrCommands: string | {[commandName: string]: atom$CommandCallback},
+    callback?: atom$CommandCallback
   ): atom$Disposable;
   dispatch(target: HTMLElement, commandName: string): void;
 }

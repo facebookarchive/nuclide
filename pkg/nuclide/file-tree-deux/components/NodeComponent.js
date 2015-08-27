@@ -14,6 +14,8 @@ var FileTreeActions = require('../lib/FileTreeActions');
 var FileTreeNode = require('../lib/FileTreeNode');
 var React = require('react-for-atom');
 
+var {isContextClick} = require('../lib/FileTreeHelpers');
+
 var {PropTypes} = React;
 
 var getActions = FileTreeActions.getInstance;
@@ -30,6 +32,7 @@ class NodeComponent extends React.Component {
   constructor(props: Object) {
     super(props);
     this._onClick = this._onClick.bind(this);
+    this._onMouseDown = this._onMouseDown.bind(this);
     this._onDoubleClick = this._onDoubleClick.bind(this);
   }
 
@@ -40,7 +43,9 @@ class NodeComponent extends React.Component {
       paddingLeft: INDENT_IN_PX + indentLevel * INDENT_PER_LEVEL,
     };
     var outerClassName = cx({
-      'entry file list-item nuclide-tree-component-item': true,
+      'directory': node.isContainer,
+      'file': !node.isContainer,
+      'entry list-item nuclide-tree-component-item': true,
       'nuclide-tree-component-selected': node.isSelected(),
     });
     var innerClassName = cx({
@@ -60,9 +65,15 @@ class NodeComponent extends React.Component {
         className={outerClassName}
         style={outerStyle}
         onClick={this._onClick}
+        onMouseDown={this._onMouseDown}
         onDoubleClick={this._onDoubleClick}>
         <span ref="arrow" className="nuclide-tree-component-item-arrow">{icon}</span>
-        <span className={innerClassName}>{node.nodeName}</span>
+        <span
+          className={innerClassName}
+          data-name={node.nodeName}
+          data-path={node.nodePath}>
+          {node.nodeName}
+        </span>
       </div>
     );
   }
@@ -77,6 +88,16 @@ class NodeComponent extends React.Component {
       getActions().toggleSelectNode(node.rootKey, node.nodeKey);
     } else {
       getActions().selectSingleNode(node.rootKey, node.nodeKey);
+    }
+  }
+
+  _onMouseDown(event: SyntheticMouseEvent) {
+    // Select node on right-click (in order for context menu to behave correctly).
+    if (isContextClick(event)) {
+      var node = this.props.node;
+      if (!node.isSelected()) {
+        getActions().selectSingleNode(node.rootKey, node.nodeKey);
+      }
     }
   }
 
@@ -98,9 +119,8 @@ class NodeComponent extends React.Component {
 }
 
 NodeComponent.propTypes = {
-  node: PropTypes.instanceOf(FileTreeNode).isRequired,
   indentLevel: PropTypes.number.isRequired,
+  node: PropTypes.instanceOf(FileTreeNode).isRequired,
 };
-
 
 module.exports = NodeComponent;

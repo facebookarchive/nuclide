@@ -54,6 +54,13 @@ class FileTreeActions {
     }
   }
 
+  setFocusedRoot(rootKey: string): void {
+    this._dispatcher.dispatch({
+      actionType: ActionType.SET_FOCUSED_ROOT,
+      rootKey,
+    });
+  }
+
   expandNode(rootKey: string, nodeKey: string): void {
     this._dispatcher.dispatch({
       actionType: ActionType.EXPAND_NODE,

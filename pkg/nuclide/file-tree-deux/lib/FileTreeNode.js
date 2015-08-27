@@ -19,6 +19,7 @@ class FileTreeNode {
   nodeKey: string;
   nodePath: string;
   nodeName: string;
+  isRoot: boolean;
   isContainer: boolean;
 
   constructor(store: FileTreeStore, rootKey: string, nodeKey: string) {
@@ -27,6 +28,7 @@ class FileTreeNode {
     this.nodeKey = nodeKey;
     this.nodePath = FileTreeHelpers.keyToPath(nodeKey);
     this.nodeName = FileTreeHelpers.keyToName(nodeKey);
+    this.isRoot = rootKey === nodeKey;
     this.isContainer = FileTreeHelpers.isDirKey(nodeKey);
   }
 
@@ -49,6 +51,10 @@ class FileTreeNode {
   getChildNodes(): Array<FileTreeNode> {
     var childKeys = this._store.getChildKeys(this.rootKey, this.nodeKey);
     return childKeys.map(childKey => this._store.getNode(this.rootKey, childKey));
+  }
+
+  getRelativePath(): string {
+    return this.nodePath.slice(this.rootKey.length);
   }
 }
 
