@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {ExportStoreData} from './FileTreeStore';
+
 var {CompositeDisposable} = require('atom');
 var FileTree = require('../components/FileTree');
 var FileTreeActions = require('./FileTreeActions');
@@ -19,20 +21,11 @@ var React = require('react-for-atom');
 
 var pathUtil = require('path');
 
-export type FileTreeRootDirectoryState = {
-  basePath: string;
-  isRemote: boolean;
-  expandedKeys: Array<string>;
-  selectedKeys: Array<string>;
-};
-
 export type FileTreeControllerState = {
   panel: {
     isVisible: ?boolean;
   };
-  tree: {
-    roots: Array<FileTreeRootDirectoryState>
-  };
+  tree: ExportStoreData;
 };
 
 class FileTreeController {
@@ -81,6 +74,9 @@ class FileTreeController {
         'keymap.cson'
       )
     );
+    if (state && state.tree) {
+      this._store.loadData(state.tree);
+    }
   }
 
   _initializePanel(): void {
@@ -163,9 +159,7 @@ class FileTreeController {
       panel: {
         isVisible: this._isVisible,
       },
-      tree: {
-        roots: [],
-      },
+      tree: this._store.exportData(),
     };
   }
 }

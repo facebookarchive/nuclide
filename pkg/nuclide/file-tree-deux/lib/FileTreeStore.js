@@ -19,6 +19,9 @@ var Logging = require('nuclide-logging');
 
 var {array} = require('nuclide-commons');
 
+// Used to ensure the version we serialized is the same version we are deserializing.
+var VERSION = 1;
+
 import type {Dispatcher} from 'flux';
 
 type ActionPayload = Object;
@@ -34,6 +37,12 @@ type StoreData = {
   rootKeys: Array<string>;
   selectedKeysByRoot: { [key: string]: Immutable.Set<string> };
   subscriptionMap: { [key: string]: Disposable };
+};
+export type ExportStoreData = {
+  childKeyMap: { [key: string]: Array<string> };
+  expandedKeysByRoot: { [key: string]: Array<string> };
+  rootKeys: Array<string>;
+  selectedKeysByRoot: { [key: string]: Array<string> };
 };
 
 var instance: FileTreeStore;
@@ -65,6 +74,50 @@ class FileTreeStore {
       payload => this._onDispatch(payload)
     );
     this._logger = Logging.getLogger();
+  }
+
+  // TODO: Move to a serialization class [1] and use the built-in versioning mechanism. This might
+  // need to be done one level higher within main.js.
+  // 1: https://atom.io/docs/latest/behind-atom-serialization-in-atom
+  exportData(): ExportStoreData {
+    var data = this._data;
+    // Grab the child keys of only the expanded nodes.
+    var childKeyMap = {};
+    Object.keys(data.expandedKeysByRoot).forEach((rootKey) => {
+      var expandedKeySet = data.expandedKeysByRoot[rootKey];
+      for (var nodeKey of expandedKeySet) {
+        childKeyMap[nodeKey] = data.childKeyMap[nodeKey];
+      }
+    });
+    return {
+      version: VERSION,
+      childKeyMap: childKeyMap,
+      expandedKeysByRoot: mapValues(data.expandedKeysByRoot, (keySet) => keySet.toArray()),
+      rootKeys: data.rootKeys,
+      selectedKeysByRoot: mapValues(data.selectedKeysByRoot, (keySet) => keySet.toArray()),
+    };
+  }
+
+  // This is used to import store data from a previous export
+  loadData(data: ExportStoreData): void {
+    // Ensure we are not trying to load data from an earlier version of this package.
+    if (data.version !== VERSION) {
+      return;
+    }
+    this._data = {
+      childKeyMap: data.childKeyMap,
+      isDirtyMap: {},
+      expandedKeysByRoot: mapValues(data.expandedKeysByRoot, (keys) => new Immutable.Set(keys)),
+      previouslyExpanded: {},
+      isLoadingMap: {},
+      rootKeys: data.rootKeys,
+      selectedKeysByRoot: mapValues(data.selectedKeysByRoot, (keys) => new Immutable.Set(keys)),
+      subscriptionMap: {},
+    };
+    Object.keys(data.childKeyMap).forEach((nodeKey) => {
+      this._addSubscription(nodeKey);
+      this._fetchChildKeys(nodeKey);
+    });
   }
 
   _getDefaults(): StoreData {
@@ -430,6 +483,16 @@ function setProperty(object: Object, key: string, newValue: mixed): Object {
   }
   var newObject = {...object};
   newObject[key] = newValue;
+  return newObject;
+}
+
+// Create a new object by mapping over the properties of a given object, calling the given
+// function on each one.
+function mapValues(object: Object, fn: Function): Object {
+  var newObject = {};
+  Object.keys(object).forEach((key) => {
+    newObject[key] = fn(object[key], key);
+  });
   return newObject;
 }
 
