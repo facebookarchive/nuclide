@@ -11,18 +11,23 @@
 
 var {Point, Range} = require('atom');
 
+var FIELD_ACCESSORS = ['->', '::'];
+var PREFIX_LOOKBACK = Math.max.apply(null, FIELD_ACCESSORS.map(prefix => prefix.length));
+
 class AutocompleteProvider {
 
   async getAutocompleteSuggestions(
       request: {editor: TextEditor; bufferPosition: Point; scopeDescriptor: any; prefix: string}):
       Promise<Array<{snippet: string; rightLabel: string}>> {
-    var replacementPrefix = this.findPrefix(request.editor);
-    if (!replacementPrefix) {
+    var {editor, bufferPosition} = request;
+    var replacementPrefix = findHackPrefix(editor);
+
+    if (!replacementPrefix && !hasPrefix(editor, bufferPosition, FIELD_ACCESSORS, PREFIX_LOOKBACK)) {
       return [];
     }
 
     var {fetchCompletionsForEditor} = require('./hack');
-    var completions = await fetchCompletionsForEditor(request.editor, replacementPrefix);
+    var completions = await fetchCompletionsForEditor(editor, replacementPrefix);
 
     return completions.map(completion => {
       return {
@@ -32,22 +37,36 @@ class AutocompleteProvider {
       };
     });
   }
+}
 
-  findPrefix(editor: TextEditor): string {
-    var cursor = editor.getLastCursor();
-    // We use custom wordRegex to adopt php variables starting with $.
-    var currentRange = cursor.getCurrentWordBufferRange({wordRegex:/(\$\w*)|\w+/});
-    // Current word might go beyond the cursor, so we cut it.
-    var range = new Range(
-        currentRange.start,
-        new Point(cursor.getBufferRow(), cursor.getBufferColumn()));
-    var prefix = editor.getTextInBufferRange(range).trim();
-    // Prefix could just be $ or ends with string literal.
-    if (prefix === '$' || !/[\W]$/.test(prefix)) {
-      return prefix;
-    } else {
-      return '';
-    }
+/**
+ * Returns true if `bufferPosition` is prefixed with any of the passed `checkPrefixes`.
+ */
+function hasPrefix(
+    editor: TextEditor,
+    bufferPosition: Point,
+    checkPrefixes: Array<string>,
+    prefixLookback: number
+  ): boolean {
+  var priorChars = editor.getTextInBufferRange(
+      new Range(new Point(bufferPosition.row, bufferPosition.column - prefixLookback), bufferPosition));
+  return checkPrefixes.some(prefix => priorChars.endsWith(prefix));
+}
+
+function findHackPrefix(editor: TextEditor): ?string {
+  var cursor = editor.getLastCursor();
+  // We use custom wordRegex to adopt php variables starting with $.
+  var currentRange = cursor.getCurrentWordBufferRange({wordRegex:/(\$\w*)|\w+/});
+  // Current word might go beyond the cursor, so we cut it.
+  var range = new Range(
+      currentRange.start,
+      new Point(cursor.getBufferRow(), cursor.getBufferColumn()));
+  var prefix = editor.getTextInBufferRange(range).trim();
+  // Prefix could just be $ or ends with string literal.
+  if (prefix === '$' || !/[\W]$/.test(prefix)) {
+    return prefix;
+  } else {
+    return null;
   }
 }
 
