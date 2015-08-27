@@ -15,12 +15,15 @@ var {EventEmitter} = require('events');
 import type {Disposable} from 'nuclide-commons';
 import type {Socket} from 'net';
 
-// Responses to the 'satus' command
+// Responses to the DBGP 'status' command
 const STATUS_STARTING = 'starting';
 const STATUS_STOPPING = 'stopping';
 const STATUS_STOPPED = 'stopped';
 const STATUS_RUNNING = 'running';
 const STATUS_BREAK = 'break';
+// Error and End are not dbgp status codes, they relate to socket states.
+const STATUS_ERROR = 'error';
+const STATUS_END = 'end';
 
 // Valid continuation commands
 const COMMAND_RUN = 'run';
@@ -83,11 +86,22 @@ class DbgpSocket {
     this._calls = new Map();
     this._emitter = new EventEmitter();
 
+    this._socket.on('end', this._onEnd.bind(this));
+    this._socket.on('error', this._onError.bind(this));
     this._socket.on('data', this._onData.bind(this));
   }
 
   onStatus(callback: (status: string) => mixed): Disposable {
     return require('nuclide-commons').event.attachEvent(this._emitter, DBGP_SOCKET_STATUS_EVENT, callback);
+  }
+
+  _onError(error: Error): void {
+    logError('socket error ' + error.code);
+    this._emitStatus(STATUS_ERROR);
+  }
+
+  _onEnd(): void {
+    this._emitStatus(STATUS_END);
   }
 
   _onData(data: Buffer | string): void {
@@ -185,10 +199,10 @@ class DbgpSocket {
   // Continuation commands get a response, but that response
   // is a status message which occurs after execution stops.
   async sendContinuationCommand(command: string): Promise<string> {
-    this._emitter.emit(DBGP_SOCKET_STATUS_EVENT, STATUS_RUNNING);
+    this._emitStatus(STATUS_RUNNING);
     var response = await this._callDebugger(command);
     var status = response.$.status;
-    this._emitter.emit(DBGP_SOCKET_STATUS_EVENT, status);
+    this._emitStatus(status);
     return status;
   }
 
@@ -247,6 +261,10 @@ class DbgpSocket {
     }
   }
 
+  _emitStatus(status: string): void {
+    this._emitter.emit(DBGP_SOCKET_STATUS_EVENT, status);
+  }
+
   dispose(): void {
     if (this._socket) {
       // end - Sends the FIN packet and closes writing.
@@ -265,6 +283,8 @@ module.exports = {
   STATUS_STOPPED,
   STATUS_RUNNING,
   STATUS_BREAK,
+  STATUS_ERROR,
+  STATUS_END,
   COMMAND_RUN,
   COMMAND_STEP_INTO,
   COMMAND_STEP_OVER,

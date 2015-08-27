@@ -18,7 +18,6 @@ const INITIAL = 'initial';
 const CONNECTING = 'connecting';
 const CONNECTED = 'connected';
 const CLOSED = 'closed';
-const ERROR = 'error';
 
 const HhvmDebuggerProxyService = require('./HhvmDebuggerProxyService');
 
@@ -79,8 +78,6 @@ class LocalHhvmDebuggerProxyService extends HhvmDebuggerProxyService {
     var connector =  new DbgpConnector(config);
     this._connector = connector;
     var socket = await connector.attach();
-    socket.on('end', this._onEnd.bind(this));
-    socket.on('error', this._onError.bind(this));
 
     var {MessageTranslator} = require('./MessageTranslator');
     var {Connection} = require('./Connection');
@@ -104,17 +101,12 @@ class LocalHhvmDebuggerProxyService extends HhvmDebuggerProxyService {
     this._setState(CLOSED);
   }
 
-  _onError(error: Error): void {
-    this._setState(ERROR);
-    log('connection error ' + error.code);
-  }
-
   _setState(newState: string): void {
     log('state change from ' + this._state + ' to ' + newState);
     // TODO: Consider logging socket info: remote ip, etc.
     this._state = newState;
 
-    if (this._state === ERROR || this._state === CLOSED) {
+    if (this._state === CLOSED) {
       this.dispose();
     }
   }

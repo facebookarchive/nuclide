@@ -77,8 +77,6 @@ describe('debugger-hhvm-proxy proxy', () => {
 
       var result = await connectionPromise;
 
-      expect(socket.on).toHaveBeenCalledWith('end', jasmine.any(Function));
-      expect(socket.on).toHaveBeenCalledWith('error', jasmine.any(Function));
       expect(Connection).toHaveBeenCalledWith(socket);
       expect(MessageTranslator).toHaveBeenCalledWith(connection, jasmine.any(Function));
       expect(translater.onSessionEnd).toHaveBeenCalledWith(jasmine.any(Function));

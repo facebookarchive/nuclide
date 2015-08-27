@@ -18,6 +18,8 @@ var {
   STATUS_STOPPED,
   STATUS_RUNNING,
   STATUS_BREAK,
+  STATUS_ERROR,
+  STATUS_END,
   COMMAND_RUN,
   COMMAND_STEP_INTO,
   COMMAND_STEP_OVER,
@@ -37,6 +39,7 @@ class DebuggerHandler extends Handler {
   _connection: Connection;
   _files: FileCache;
   _emitter: EventEmitter;
+  _statusSubscription: ?Disposable;
 
   constructor(callback: ChromeCallback, connection: Connection) {
     super('Debugger', callback);
@@ -46,7 +49,7 @@ class DebuggerHandler extends Handler {
     this._files = new FileCache(callback);
     var {EventEmitter} = require('events');
     this._emitter = new EventEmitter();
-    this._connection.onStatus(this._onStatusChanged.bind(this));
+    this._statusSubscription = this._connection.onStatus(this._onStatusChanged.bind(this));
   }
 
   onSessionEnd(callback: () => void): void {
@@ -218,6 +221,8 @@ class DebuggerHandler extends Handler {
       this._sendContinuationCommand(COMMAND_RUN);
       break;
     case STATUS_STOPPED:
+    case STATUS_ERROR:
+    case STATUS_END:
       this._endSession();
       break;
     default:
@@ -238,6 +243,10 @@ class DebuggerHandler extends Handler {
 
   _endSession(): void {
     log('DebuggerHandler: Ending session');
+    if (this._statusSubscription) {
+      this._statusSubscription.dispose();
+      this._statusSubscription = null;
+    }
     this._emitter.emit(SESSION_END_EVENT);
   }
 }

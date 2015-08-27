@@ -11,7 +11,16 @@
 
 
 var {makeDbgpMessage} = require('../lib/utils');
-var {DbgpSocket, COMMAND_RUN, COMMAND_STEP_OVER, STATUS_RUNNING, STATUS_BREAK, STATUS_STOPPING} = require('../lib/DbgpSocket');
+var {
+  DbgpSocket,
+  COMMAND_RUN,
+  COMMAND_STEP_OVER,
+  STATUS_RUNNING,
+  STATUS_BREAK,
+  STATUS_STOPPING,
+  STATUS_ERROR,
+  STATUS_END,
+} = require('../lib/DbgpSocket');
 var {idOfFrame, functionOfFrame, fileOfFrame, locationOfFrame} = require('../lib/frame');
 
 function makeMessage(obj, body) {
@@ -28,12 +37,26 @@ describe('debugger-hhvm-proxy DbgpSocket', () => {
     var socket;
     var dbgpSocket;
     var onData;
+    var onEnd;
+    var onError;
     var onStatus;
 
     beforeEach(() => {
       socket = jasmine.createSpyObj('socket', ['write', 'end', 'destroy']);
       onStatus = jasmine.createSpy('onStatus');
-      socket.on = (event, callback) => { onData = callback; };
+      socket.on = (event, callback) => {
+        switch (event) {
+        case 'data':
+          onData = callback;
+          break;
+        case 'error':
+          onError = callback;
+          break;
+        case 'end':
+          onEnd = callback;
+          break;
+        }
+      };
       spyOn(socket, 'on').andCallThrough();
       dbgpSocket = new DbgpSocket(socket);
       dbgpSocket.onStatus(onStatus);
@@ -55,6 +78,8 @@ describe('debugger-hhvm-proxy DbgpSocket', () => {
     }
 
     it('constructor', () => {
+      expect(socket.on).toHaveBeenCalledWith('end', jasmine.any(Function));
+      expect(socket.on).toHaveBeenCalledWith('error', jasmine.any(Function));
       expect(socket.on).toHaveBeenCalledWith('data', jasmine.any(Function));
     });
 
@@ -62,6 +87,16 @@ describe('debugger-hhvm-proxy DbgpSocket', () => {
       dbgpSocket.dispose();
       expect(socket.end).toHaveBeenCalled();
       expect(socket.destroy).toHaveBeenCalled();
+    });
+
+    it('error', () => {
+      onError({code: 42});
+      expect(onStatus).toHaveBeenCalledWith(STATUS_ERROR);
+    });
+
+    it('end', () => {
+      onEnd();
+      expect(onStatus).toHaveBeenCalledWith(STATUS_END);
     });
 
     it('constructor', () => {
