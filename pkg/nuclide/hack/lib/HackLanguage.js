@@ -414,6 +414,10 @@ module.exports = class HackLanguage {
     return this._basePath;
   }
 
+  isHackClientAvailable(): boolean {
+    return !!this._client;
+  }
+
   async _callHackService(serviceName: string, serviceArgs: Array<any>, defaultValue: any): Promise<any> {
     if (!this._client || !this._client.eventbus) {
       // hh_client isn't available on the host machine, or the remote connection has been closed.

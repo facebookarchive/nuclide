@@ -16,6 +16,7 @@ var {getClient} = require('nuclide-client');
 var {extractWordAtPosition} = require('nuclide-atom-helpers');
 var HackLanguage = require('./HackLanguage');
 var logger = require('nuclide-logging').getLogger();
+var {awaitMilliSeconds} = require('nuclide-commons').promises;
 var {parse, getPath} = require('nuclide-remote-uri');
 
 var pathUtil = require('path');
@@ -29,10 +30,7 @@ const HACK_WORD_REGEX = /[a-zA-Z0-9_$]+/g;
  * Also, it deelegates the language feature request to the correct HackLanguage instance.
  */
 var clientToHackLanguage: {[clientId: string]: HackLanguage} = {};
-/**
- * Map of project id to an array of Hack Service diagnostics
- */
-var clientToHackLinterCache: {[clientId: string]: Array<any>} = {};
+var HH_DIAGNOSTICS_DELAY_MS = 3000;
 
 module.exports = {
 
@@ -43,23 +41,27 @@ module.exports = {
       return [];
     }
 
-    var editorPath = editor.getPath();
-    var path = getPath(editorPath);
+    var {path, protocol, host} = parse(editor.getPath());
     var contents = editor.getText();
-    var errors = await hackLanguage.getDiagnostics(path, contents);
-    var mixedErrors = errors;
-    var clientId = getClientId(buffer);
-    if (clientToHackLinterCache[clientId]) {
-      mixedErrors = errors.concat(clientToHackLinterCache[clientId]);
+
+    // Work around `hh_client` returns server busy error, and fails retrying (when enabled),
+    // if a `check` call is made before 3 seconds of a file being saved.
+    await awaitMilliSeconds(HH_DIAGNOSTICS_DELAY_MS);
+
+    var diagnostics = [];
+    if (hackLanguage.isHackClientAvailable()) {
+      diagnostics = await hackLanguage.getServerDiagnostics();
+    } else {
+      diagnostics = await hackLanguage.getDiagnostics(path, contents);
     }
 
-    mixedErrors.forEach(error => {
+    diagnostics.forEach(diagnostic => {
       // Preserve original Nuclide URI so remote files return with a "nuclide://" prefix and are
       // associated with the correct TextEditor and tab.
-      error.filePath = editorPath;
+      diagnostic.filePath = getFilePath(diagnostic.filePath, protocol, host);
     });
 
-    return mixedErrors;
+    return diagnostics;
   },
 
   async fetchCompletionsForEditor(editor: TextEditor, prefix: string): Promise<Array<any>> {
@@ -204,24 +206,6 @@ module.exports = {
   ): Promise<atom$Disposable> {
     var hackLanguage = await getHackLanguageForBuffer(editor.getBuffer());
     return hackLanguage.onFinishedLoadingDependencies(callback);
-  },
-
-  async onDidSave(editor: TextEditor): void {
-    var path = getPath(editor.getPath());
-    var contents = editor.getText();
-    var buffer = editor.getBuffer();
-    var hackLanguage = await getHackLanguageForBuffer(buffer);
-    if (!hackLanguage) {
-      return;
-    }
-
-    // Update the HackWorker model with the contents of the file opened or saved.
-    await hackLanguage.updateFile(path, contents);
-
-    var diagnostics = await hackLanguage.getServerDiagnostics();
-    clientToHackLinterCache[getClientId(buffer)] = diagnostics;
-    // Trigger the linter to catch the new diagnostics.
-    atom.commands.dispatch(atom.views.getView(editor), 'linter:lint');
   },
 };
 

@@ -245,5 +245,16 @@ var promises = module.exports = {
     return resolved;
   },
 
+  /*
+   * Returns a promise that will resolve after `milliSeconds` milli seconds.
+   * this can be used to pause execution asynchronously.
+   * e.g. await awaitMilliSeconds(1000), pauses the async flow execution for 1 second.
+   */
+  awaitMilliSeconds(milliSeconds: number): Promise {
+    return new Promise((resolve, reject) => {
+      setTimeout(resolve, milliSeconds);
+    });
+  },
+
   RequestSerializer,
 };

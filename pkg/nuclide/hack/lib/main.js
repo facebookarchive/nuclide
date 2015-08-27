@@ -31,12 +31,6 @@ module.exports = {
   activate() {
     var hack = require('./hack');
     subscriptions = new CompositeDisposable();
-    subscriptions.add(atom.workspace.observeTextEditors((editor) => {
-      if (HACK_GRAMMAR === editor.getGrammar().scopeName) {
-        hack.onDidSave(editor); // Trigger an initial diagnostics check.
-        subscriptions.add(editor.onDidSave(() => hack.onDidSave(editor)));
-      }
-    }));
   },
 
   /** Provider for autocomplete service. */
