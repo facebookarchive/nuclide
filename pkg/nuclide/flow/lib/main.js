@@ -9,8 +9,13 @@
  * the root directory of this source tree.
  */
 
+var invariant = require('assert');
+
+var {CompositeDisposable} = require('atom');
+
 var {JS_GRAMMARS} = require('./constants.js');
-const GRAMMARS_STRING = JS_GRAMMARS.join(', ');
+var GRAMMARS_STRING = JS_GRAMMARS.join(', ');
+var diagnosticsOnFlySetting = 'nuclide-flow.diagnosticsOnFly';
 
 function getServiceByNuclideUri(service, file?) {
   return require('nuclide-client').getServiceByNuclideUri(service, file);
@@ -40,6 +45,8 @@ type Autocomplete = {
 
 var flowDiagnosticsProvider;
 
+var disposables;
+
 module.exports = {
 
   config: {
@@ -60,9 +67,20 @@ module.exports = {
       default: false,
       description: 'Currently does not work well, enable it if you would like to try it anyway',
     },
+
+    diagnosticsOnFly: {
+      type: 'boolean',
+      default: false,
+      title: 'Diagnostics as you type',
+      description: 'Report Flow errors and warnings as you type, rather than waiting for a save',
+    },
   },
 
-  activate() {},
+  activate() {
+    if (!disposables) {
+      disposables = new CompositeDisposable();
+    }
+  },
 
   /** Provider for autocomplete service. */
   createAutocompleteProvider(): Autocomplete {
@@ -98,7 +116,13 @@ module.exports = {
   provideDiagnostics() {
     if (!flowDiagnosticsProvider) {
       var FlowDiagnosticsProvider = require('./FlowDiagnosticsProvider');
-      flowDiagnosticsProvider = new FlowDiagnosticsProvider();
+      var runOnTheFly = ((atom.config.get(diagnosticsOnFlySetting): any): boolean);
+      flowDiagnosticsProvider = new FlowDiagnosticsProvider(runOnTheFly);
+      invariant(disposables);
+      disposables.add(atom.config.observe(diagnosticsOnFlySetting, newValue => {
+        invariant(flowDiagnosticsProvider);
+        flowDiagnosticsProvider.setRunOnTheFly(newValue);
+      }));
     }
     return flowDiagnosticsProvider;
   },
@@ -121,6 +145,10 @@ module.exports = {
     // ServiceHub, or set a boolean in the autocomplete provider to always return
     // empty results.
     getServiceByNuclideUri('FlowService').dispose();
+    if (disposables) {
+      disposables.dispose();
+      disposables = null;
+    }
     if (flowDiagnosticsProvider) {
       flowDiagnosticsProvider.dispose();
       flowDiagnosticsProvider = null;

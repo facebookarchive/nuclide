@@ -37,8 +37,8 @@
     "nuclide-atom-helpers": "0.0.0",
     "nuclide-client": "0.0.0",
     "nuclide-commons": "0.0.0",
-    "nuclide-flow-base": "0.0.0",
-    "nuclide-text-event-dispatcher": "0.0.0"
+    "nuclide-diagnostics-provider-base": "0.0.0",
+    "nuclide-flow-base": "0.0.0"
   },
   "devDependencies": {
     "nuclide-atom-interfaces": "0.0.0",

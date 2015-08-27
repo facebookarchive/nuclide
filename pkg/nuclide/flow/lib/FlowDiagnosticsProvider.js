@@ -10,7 +10,9 @@
  */
 
 var {getServiceByNuclideUri} = require('nuclide-client');
-var {Emitter, Range, CompositeDisposable} = require('atom');
+var {RequestSerializer} = require('nuclide-commons').promises;
+var {DiagnosticsProviderBase} = require('nuclide-diagnostics-provider-base');
+var {Range} = require('atom');
 var invariant = require('assert');
 
 var {JS_GRAMMARS} = require('./constants.js');
@@ -86,15 +88,18 @@ function flowMessageToDiagnosticMessage(flowMessages) {
 }
 
 class FlowDiagnosticsProvider {
-  _emitter: Emitter;
+  _providerBase: DiagnosticsProviderBase;
+  _requestSerializer: RequestSerializer;
 
-  _disposables: CompositeDisposable;
-
-  constructor() {
-    this._emitter = new Emitter();
-    this._disposables = new CompositeDisposable();
-    var textEventDispatcher = require('nuclide-text-event-dispatcher').getInstance();
-    this._disposables.add(textEventDispatcher.onFileChange(JS_GRAMMARS, editor => this._runDiagnostics(editor)));
+  constructor(shouldRunOnTheFly: boolean, ProviderBase?: typeof DiagnosticsProviderBase = DiagnosticsProviderBase) {
+    var utilsOptions = {
+      grammarScopes: new Set(JS_GRAMMARS),
+      shouldRunOnTheFly,
+      onTextEditorEvent: editor => this._runDiagnostics(editor),
+      onNewUpdateSubscriber: callback => this._receivedNewUpdateSubscriber(callback),
+    };
+    this._providerBase = new ProviderBase(utilsOptions);
+    this._requestSerializer = new RequestSerializer();
   }
 
   async _runDiagnostics(textEditor: TextEditor): Promise<void> {
@@ -107,19 +112,20 @@ class FlowDiagnosticsProvider {
 
     var flowService = getServiceByNuclideUri('FlowService', file);
     invariant(flowService);
-    var diagnostics = await flowService.findDiagnostics(file, currentContents);
-    if (!diagnostics.length) {
+    var result = await this._requestSerializer.run(flowService.findDiagnostics(file, currentContents));
+    var diagnostics;
+    if (result.status === 'outdated') {
       return;
     }
+    var diagnostics = result.result;
 
     // we need to invalidate to make sure that files which are now clean have
     // the errors removed
-    this._emitter.emit('invalidate', { scope: 'file', filePaths: [file] });
-    this._emitter.emit('update', this._processDiagnostics(diagnostics, file));
+    this._providerBase.publishMessageInvalidation({ scope: 'file', filePaths: [file] });
+    this._providerBase.publishMessageUpdate(this._processDiagnostics(diagnostics, file));
   }
 
-  onMessageUpdate(callback: MessageUpdateCallback): atom$Disposable {
-    var disposable = this._emitter.on('update', callback);
+  _receivedNewUpdateSubscriber(callback: MessageUpdateCallback): void {
     // Every time we get a new subscriber, we need to push results to them. This
     // logic is common to all providers and should be abstracted out (t7813069)
     //
@@ -132,16 +138,22 @@ class FlowDiagnosticsProvider {
         this._runDiagnostics(activeTextEditor);
       }
     }
-    return disposable;
+  }
+
+  setRunOnTheFly(runOnTheFly: boolean): void {
+    this._providerBase.setRunOnTheFly(runOnTheFly);
+  }
+
+  onMessageUpdate(callback: MessageUpdateCallback): atom$Disposable {
+    return this._providerBase.onMessageUpdate(callback);
   }
 
   onMessageInvalidation(callback: MessageInvalidationCallback): atom$Disposable {
-    return this._emitter.on('invalidate', callback);
+    return this._providerBase.onMessageInvalidation(callback);
   }
 
   dispose() {
-    this._emitter.dispose();
-    this._disposables.dispose();
+    this._providerBase.dispose();
   }
 
   _processDiagnostics(diagnostics: Array<FlowDiagnosticItem>, targetFile: string): DiagnosticProviderUpdate {

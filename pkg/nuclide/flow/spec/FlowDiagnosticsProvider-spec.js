@@ -9,9 +9,7 @@
  * the root directory of this source tree.
  */
 
-var {Disposable, Range} = require('atom');
-
-var {uncachedRequire} = require('nuclide-test-helpers');
+var {Range} = require('atom');
 
 var testPath = 'myPath';
 
@@ -20,13 +18,9 @@ describe('FlowDiagnosticsProvider::processDiagnostics', () => {
   var flowDiagnosticsProvider: any;
 
   beforeEach(() => {
-    spyOn(require('nuclide-text-event-dispatcher'), 'getInstance').andReturn({
-      onFileChange() {
-        return new Disposable(() => {});
-      },
-    });
-    var FlowDiagnosticsProvider = uncachedRequire(require, '../lib/FlowDiagnosticsProvider');
-    flowDiagnosticsProvider = new FlowDiagnosticsProvider();
+    class FakeProviderBase { }
+    var FlowDiagnosticsProvider = require('../lib/FlowDiagnosticsProvider');
+    flowDiagnosticsProvider = new FlowDiagnosticsProvider(false, (FakeProviderBase: any));
   });
 
   it('should propertly transform a simple diagnostic', () => {
