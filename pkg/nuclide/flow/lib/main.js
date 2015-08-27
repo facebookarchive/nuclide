@@ -38,6 +38,8 @@ type Autocomplete = {
   getSuggestions: (request: Request) => Promise<Array<Suggestion>>;
 }
 
+var flowDiagnosticsProvider;
+
 module.exports = {
 
   config: {
@@ -93,8 +95,12 @@ module.exports = {
     return require('./HyperclickProvider');
   },
 
-  provideLinter() {
-    return require('./FlowLinter');
+  provideDiagnostics() {
+    if (!flowDiagnosticsProvider) {
+      var FlowDiagnosticsProvider = require('./FlowDiagnosticsProvider');
+      flowDiagnosticsProvider = new FlowDiagnosticsProvider();
+    }
+    return flowDiagnosticsProvider;
   },
 
   createTypeHintProvider(): any {
@@ -115,5 +121,9 @@ module.exports = {
     // ServiceHub, or set a boolean in the autocomplete provider to always return
     // empty results.
     getServiceByNuclideUri('FlowService').dispose();
+    if (flowDiagnosticsProvider) {
+      flowDiagnosticsProvider.dispose();
+      flowDiagnosticsProvider = null;
+    }
   },
 };

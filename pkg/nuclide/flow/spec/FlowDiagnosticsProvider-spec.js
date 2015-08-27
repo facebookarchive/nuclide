@@ -9,11 +9,25 @@
  * the root directory of this source tree.
  */
 
-var {Range} = require('atom');
+var {Disposable, Range} = require('atom');
 
-describe('FlowLinter::processDiagnostics', () => {
+var {uncachedRequire} = require('nuclide-test-helpers');
 
-  var FlowLinter = require('../lib/FlowLinter');
+var testPath = 'myPath';
+
+describe('FlowDiagnosticsProvider::processDiagnostics', () => {
+
+  var flowDiagnosticsProvider: any;
+
+  beforeEach(() => {
+    spyOn(require('nuclide-text-event-dispatcher'), 'getInstance').andReturn({
+      onFileChange() {
+        return new Disposable(() => {});
+      },
+    });
+    var FlowDiagnosticsProvider = uncachedRequire(require, '../lib/FlowDiagnosticsProvider');
+    flowDiagnosticsProvider = new FlowDiagnosticsProvider();
+  });
 
   it('should propertly transform a simple diagnostic', () => {
     var diags = [
@@ -21,7 +35,7 @@ describe('FlowLinter::processDiagnostics', () => {
         message: [
           {
             level: 'error',
-            path: 'myPath',
+            path: testPath,
             descr: 'message',
             line: 1,
             endline: 2,
@@ -34,13 +48,15 @@ describe('FlowLinter::processDiagnostics', () => {
     ];
 
     var expectedOutput = {
+      scope: 'file',
+      providerName: 'Flow',
       text: 'message',
       type: 'Error',
-      filePath: 'myPath',
+      filePath: testPath,
       range: new Range([0, 2], [1, 4]),
     };
 
-    var message = FlowLinter.processDiagnostics(diags, 'myPath')[0];
+    var message = flowDiagnosticsProvider._processDiagnostics(diags, testPath).filePathToMessages.get(testPath)[0];
     expect(message).toEqual(expectedOutput);
   });
 
@@ -50,7 +66,7 @@ describe('FlowLinter::processDiagnostics', () => {
         message: [
           {
             level: 'warning',
-            path: 'myPath',
+            path: testPath,
             descr: 'message',
             line: 1,
             endline: 2,
@@ -63,13 +79,15 @@ describe('FlowLinter::processDiagnostics', () => {
     ];
 
     var expectedOutput = {
+      scope: 'file',
+      providerName: 'Flow',
       text: 'message',
       type: 'Warning',
-      filePath: 'myPath',
+      filePath: testPath,
       range: new Range([0, 2], [1, 4]),
     };
 
-    var message = FlowLinter.processDiagnostics(diags, 'myPath')[0];
+    var message = flowDiagnosticsProvider._processDiagnostics(diags, testPath).filePathToMessages.get(testPath)[0];
     expect(message).toEqual(expectedOutput);
   });
 
@@ -90,8 +108,8 @@ describe('FlowLinter::processDiagnostics', () => {
       },
     ];
 
-    var message = FlowLinter.processDiagnostics(diags, 'myPath')[0];
-    expect(message).toBeUndefined();
+    var allMessages = flowDiagnosticsProvider._processDiagnostics(diags, testPath).filePathToMessages;
+    expect(allMessages.has(testPath)).toBe(false);
   });
 
   it('should create traces for diagnostics spanning multiple messages and combine the error text', () => {
@@ -100,7 +118,7 @@ describe('FlowLinter::processDiagnostics', () => {
         message: [
           {
             level: 'error',
-            path: 'myPath',
+            path: testPath,
             descr: 'message',
             line: 1,
             endline: 2,
@@ -123,9 +141,11 @@ describe('FlowLinter::processDiagnostics', () => {
     ];
 
     var expectedOutput = {
+      scope: 'file',
+      providerName: 'Flow',
       type: 'Error',
       text: 'message more message',
-      filePath: 'myPath',
+      filePath: testPath,
       range: new Range([0, 2], [1, 4]),
       trace: [{
         type: 'Trace',
@@ -135,8 +155,7 @@ describe('FlowLinter::processDiagnostics', () => {
       }],
     };
 
-    var message = FlowLinter.processDiagnostics(diags, 'myPath')[0];
+    var message = flowDiagnosticsProvider._processDiagnostics(diags, testPath).filePathToMessages.get(testPath)[0];
     expect(message).toEqual(expectedOutput);
   });
-
 });

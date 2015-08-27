@@ -19,7 +19,7 @@
         "^1.0.0": "consumeLinterProvider"
       }
     },
-    "nuclide-diagnostic-provider": {
+    "nuclide-diagnostics-provider": {
       "versions": {
         "0.0.0": "consumeDiagnosticProvider"
       }

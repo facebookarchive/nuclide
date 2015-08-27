@@ -19,9 +19,9 @@
         "0.0.0": "getHyperclickProvider"
       }
     },
-    "linter": {
+    "nuclide-diagnostics-provider": {
       "versions": {
-        "1.0.4": "provideLinter"
+        "0.0.0": "provideDiagnostics"
       }
     },
     "nuclide-type-hint.provider": {
@@ -37,10 +37,12 @@
     "nuclide-atom-helpers": "0.0.0",
     "nuclide-client": "0.0.0",
     "nuclide-commons": "0.0.0",
-    "nuclide-flow-base": "0.0.0"
+    "nuclide-flow-base": "0.0.0",
+    "nuclide-text-event-dispatcher": "0.0.0"
   },
   "devDependencies": {
     "nuclide-atom-interfaces": "0.0.0",
+    "nuclide-diagnostics-base": "0.0.0",
     "nuclide-test-helpers": "0.0.0"
   }
 }
