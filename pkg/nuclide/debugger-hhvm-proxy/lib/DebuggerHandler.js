@@ -27,7 +27,7 @@ var {
   COMMAND_STOP,
 } = require('./DbgpSocket');
 
-import type {Connection} from './Connection';
+import type {ConnectionMulitplexer} from './ConnectionMultiplexer';
 import type ChromeCallback from './ChromeCallback';
 import type FileCache from './FileCache';
 import type {EventEmitter} from 'events';
@@ -35,21 +35,21 @@ import type {EventEmitter} from 'events';
 var /* const */ SESSION_END_EVENT = 'session-end-event';
 
 // Handles all 'Debug.*' Chrome dev tools messages
-class DebuggerHandler extends Handler {
-  _connection: Connection;
+export class DebuggerHandler extends Handler {
+  _connectionMultiplexer: ConnectionMultiplexer;
   _files: FileCache;
   _emitter: EventEmitter;
   _statusSubscription: ?Disposable;
 
-  constructor(callback: ChromeCallback, connection: Connection) {
+  constructor(callback: ChromeCallback, connectionMultiplexer: ConnectionMultiplexer) {
     super('Debugger', callback);
 
-    this._connection = connection;
+    this._connectionMultiplexer = connectionMultiplexer;
     var FileCache = require('./FileCache');
     this._files = new FileCache(callback);
     var {EventEmitter} = require('events');
     this._emitter = new EventEmitter();
-    this._statusSubscription = this._connection.onStatus(this._onStatusChanged.bind(this));
+    this._statusSubscription = this._connectionMultiplexer.onStatus(this._onStatusChanged.bind(this));
   }
 
   onSessionEnd(callback: () => void): void {
@@ -110,7 +110,7 @@ class DebuggerHandler extends Handler {
       break;
 
     case 'evaluateOnCallFrame':
-      var result = await this._connection.evaluateOnCallFrame(Number(params.callFrameId), params.expression);
+      var result = await this._connectionMultiplexer.evaluateOnCallFrame(Number(params.callFrameId), params.expression);
       this.replyToCommand(id, result);
       break;
 
@@ -130,7 +130,7 @@ class DebuggerHandler extends Handler {
     try {
       var path = uriToPath(url);
       this._files.registerFile(path);
-      var breakpointId = await this._connection.setBreakpoint(path, lineNumber + 1);
+      var breakpointId = await this._connectionMultiplexer.setBreakpoint(path, lineNumber + 1);
       this.replyToCommand(id, {
         breakpointId: breakpointId,
         locations: [
@@ -146,7 +146,7 @@ class DebuggerHandler extends Handler {
 
   async _removeBreakpoint(id: number, params: Object): Promise {
     var {breakpointId} = params;
-    await this._connection.removeBreakpoint(breakpointId);
+    await this._connectionMultiplexer.removeBreakpoint(breakpointId);
     this.replyToCommand(id, {id: breakpointId});
   }
 
@@ -156,7 +156,7 @@ class DebuggerHandler extends Handler {
   }
 
   async _getStackFrames(): Promise<Array<Object>> {
-    var frames = await this._connection.getStackFrames();
+    var frames = await this._connectionMultiplexer.getStackFrames();
     return await Promise.all(
       frames.stack.map((frame, frameIndex) => this._convertFrame(frame, frameIndex)));
   }
@@ -176,7 +176,7 @@ class DebuggerHandler extends Handler {
         callFrameId: idOfFrame(frame),
         functionName: functionOfFrame(frame),
         location: locationOfFrame(frame),
-        scopeChain: await this._connection.getScopesForFrame(frameIndex),
+        scopeChain: await this._connectionMultiplexer.getScopesForFrame(frameIndex),
       };
     } catch (e) {
       logErrorAndThrow('Exception converting frame: ' + e + ' ' + e.stack);
@@ -187,16 +187,16 @@ class DebuggerHandler extends Handler {
   // Returns one of:
   //  starting, stopping, stopped, running, break
   _getStatus(): Promise<string> {
-    return this._connection.getStatus();
+    return this._connectionMultiplexer.getStatus();
   }
 
   _sendContinuationCommand(command: string): void {
     log('Sending continuation command: ' + command);
-    this._connection.sendContinuationCommand(command);
+    this._connectionMultiplexer.sendContinuationCommand(command);
   }
 
   async _sendBreakCommand(id: number): Promise {
-    var response = await this._connection.sendBreakCommand();
+    var response = await this._connectionMultiplexer.sendBreakCommand();
     if (!response) {
       this.replyWithError(id, 'Unable to break');
     }
@@ -250,5 +250,3 @@ class DebuggerHandler extends Handler {
     this._emitter.emit(SESSION_END_EVENT);
   }
 }
-
-module.exports = DebuggerHandler;

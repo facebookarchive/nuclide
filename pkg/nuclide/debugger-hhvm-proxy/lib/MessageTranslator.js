@@ -12,11 +12,11 @@
 
 var {log} = require('./utils');
 var ChromeCallback = require('./ChromeCallback');
-var DebuggerHandler = require('./DebuggerHandler');
+var {DebuggerHandler} = require('./DebuggerHandler');
 var PageHandler = require('./PageHandler');
 var ConsoleHandler = require('./ConsoleHandler');
-var RuntimeHandler = require('./RuntimeHandler');
-var {Connection} = require('./Connection');
+var {RuntimeHandler} = require('./RuntimeHandler');
+var {ConnectionMultiplexer} = require('./ConnectionMultiplexer');
 
 import type Handler from './Handler';
 
@@ -25,23 +25,23 @@ import type Handler from './Handler';
  * TODO: Should we proactively push files to the debugger?
  * Currently we reactively push files to the debuger when they appear in a stack trace.
  */
-class MessageTranslator {
+export class MessageTranslator {
   _isDisposed: boolean;
-  _connection: Connection;
+  _connectionMultiplexer: ConnectionMultiplexer;
   _callback: ChromeCallback;
   _debuggerHandler: DebuggerHandler;
   _handlers: Map<string, Handler>;
 
-  constructor(connection: Connection, callback: (message: string) => void) {
+  constructor(connectionMultiplexer: ConnectionMultiplexer, callback: (message: string) => void) {
     this._isDisposed = false;
-    this._connection = connection;
+    this._connectionMultiplexer = connectionMultiplexer;
     this._callback = new ChromeCallback(callback);
     this._handlers = new Map();
-    this._debuggerHandler = new DebuggerHandler(this._callback, connection);
+    this._debuggerHandler = new DebuggerHandler(this._callback, connectionMultiplexer);
     this._addHandler(this._debuggerHandler);
     this._addHandler(new PageHandler(this._callback));
     this._addHandler(new ConsoleHandler(this._callback));
-    this._addHandler(new RuntimeHandler(this._callback, this._connection));
+    this._addHandler(new RuntimeHandler(this._callback, this._connectionMultiplexer));
   }
 
   _addHandler(handler: Handler): void {
@@ -88,9 +88,7 @@ class MessageTranslator {
   dispose(): void {
     if (!this._isDisposed) {
       this._isDisposed = true;
-      this._connection.dispose();
+      this._connectionMultiplexer.dispose();
     }
   }
 }
-
-module.exports = {MessageTranslator};

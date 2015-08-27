@@ -10,17 +10,17 @@
  */
 
 
-var RuntimeHandler = require('../lib/RuntimeHandler');
+var {RuntimeHandler} = require('../lib/RuntimeHandler');
 
 describe('debugger-hhvm-proxy RuntimeHandler', () => {
     var callback;
-    var connection;
+    var connectionMultiplexer;
     var handler;
 
     beforeEach(() => {
-      connection = jasmine.createSpyObj('connection', ['getProperties']);
+      connectionMultiplexer = jasmine.createSpyObj('connectionMultiplexer', ['getProperties']);
       callback = jasmine.createSpyObj('callback', ['replyToCommand', 'replyWithError', 'sendMethod']);
-      handler = new RuntimeHandler(callback, connection);
+      handler = new RuntimeHandler(callback, connectionMultiplexer);
     });
 
     it('enable', () => {
@@ -38,7 +38,7 @@ describe('debugger-hhvm-proxy RuntimeHandler', () => {
 
     it('getProperties', () => {
       waitsForPromise(async () => {
-        connection.getProperties = jasmine.createSpy('getProperties').
+        connectionMultiplexer.getProperties = jasmine.createSpy('getProperties').
           andReturn(Promise.resolve('the-result'));
 
         var objectId = 'object-id';
@@ -47,7 +47,7 @@ describe('debugger-hhvm-proxy RuntimeHandler', () => {
         var accessorPropertiesOnly = false;
         await handler.handleMethod(1, 'getProperties',
           {objectId, ownProperties, accessorPropertiesOnly, generatePreview});
-        expect(connection.getProperties).toHaveBeenCalledWith(objectId);
+        expect(connectionMultiplexer.getProperties).toHaveBeenCalledWith(objectId);
         expect(callback.replyToCommand).toHaveBeenCalledWith(1, {result: 'the-result'}, undefined);
       });
     });

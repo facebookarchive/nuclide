@@ -33,6 +33,9 @@ describe('debugger-hhvm-proxy proxy', () => {
     connection = {};
     Connection = spyOn(require('../lib/Connection'), 'Connection').andReturn(connection);
 
+    connectionMultiplexer = {};
+    ConnectionMultiplexer = spyOn(require('../lib/ConnectionMultiplexer'), 'ConnectionMultiplexer').andReturn(connectionMultiplexer);
+
     translater = jasmine.createSpyObj('MessageTranslator', ['onSessionEnd', 'dispose', 'handleCommand']);
     MessageTranslator = spyOn(require('../lib/MessageTranslator'), 'MessageTranslator').andCallFake(
       (socketArg, handler) => {
@@ -52,6 +55,7 @@ describe('debugger-hhvm-proxy proxy', () => {
     unspy(require('../lib/connect'), 'DbgpConnector');
     unspy(require('../lib/MessageTranslator'), 'MessageTranslator');
     unspy(require('../lib/Connection'), 'Connection');
+    unspy(require('../lib/ConnectionMultiplexer'), 'ConnectionMultiplexer');
     clearRequireCache(require, '../lib/LocalHhvmDebuggerProxyService');
   });
 
@@ -78,7 +82,8 @@ describe('debugger-hhvm-proxy proxy', () => {
       var result = await connectionPromise;
 
       expect(Connection).toHaveBeenCalledWith(socket);
-      expect(MessageTranslator).toHaveBeenCalledWith(connection, jasmine.any(Function));
+      expect(ConnectionMultiplexer).toHaveBeenCalledWith(connection);
+      expect(MessageTranslator).toHaveBeenCalledWith(connectionMultiplexer, jasmine.any(Function));
       expect(translater.onSessionEnd).toHaveBeenCalledWith(jasmine.any(Function));
 
       expect(result).toBe('HHVM connected');

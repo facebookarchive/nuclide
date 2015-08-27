@@ -13,17 +13,17 @@
 var {DUMMY_FRAME_ID} = require('./utils');
 var Handler = require('./Handler');
 
-import type {Connection} from './Connection';
+import type {ConnectionMultiplexer} from './ConnectionMultiplexer';
 import type ChromeCallback from './ChromeCallback';
 
 // Handles all 'Runtime.*' Chrome dev tools messages
-class RuntimeHandler extends Handler {
-  _connection: Connection;
+export class RuntimeHandler extends Handler {
+  _connectionMultiplexer: ConnectionMultiplexer;
 
-  constructor(callback: ChromeCallback, connection: Connection) {
+  constructor(callback: ChromeCallback, connectionMultiplexer: ConnectionMultiplexer) {
     super('Runtime', callback);
 
-    this._connection = connection;
+    this._connectionMultiplexer = connectionMultiplexer;
   }
 
   async handleMethod(id: number, method: string, params: Object): Promise {
@@ -61,7 +61,7 @@ class RuntimeHandler extends Handler {
     var {objectId, accessorPropertiesOnly} = params;
     var result;
     if (!accessorPropertiesOnly) {
-      result = await this._connection.getProperties(objectId);
+      result = await this._connectionMultiplexer.getProperties(objectId);
     } else {
       // TODO: Handle remaining params
       result = [];
@@ -69,5 +69,3 @@ class RuntimeHandler extends Handler {
     this.replyToCommand(id, {result});
   }
 }
-
-module.exports = RuntimeHandler;
