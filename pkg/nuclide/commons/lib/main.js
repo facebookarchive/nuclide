@@ -27,6 +27,10 @@ module.exports = {
     return require('./process').checkOutput(command, args, options);
   },
 
+  createExecEnvironment(originalEnv: Object, commonBinaryPaths: Array<string>): Promise<Object> {
+    return require('./process').createExecEnvironment(originalEnv, commonBinaryPaths);
+  },
+
   denodeify(f: (...args: Array<any>) => any): (...args: Array<any>) => Promise<any> {
     return require('./promises').denodeify(f);
   },
@@ -117,5 +121,9 @@ module.exports = {
 
   get singleton() {
     return require('./singleton');
+  },
+
+  get COMMON_BINARY_PATHS() {
+    return require('./process').COMMON_BINARY_PATHS;
   },
 };

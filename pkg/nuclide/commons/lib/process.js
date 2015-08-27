@@ -282,8 +282,9 @@ module.exports = {
   asyncExecute,
   checkOutput,
   safeSpawn,
+  createExecEnvironment,
+  COMMON_BINARY_PATHS,
   __test__: {
     DARWIN_PATH_HELPER_REGEXP,
-    createExecEnvironment,
   },
 };

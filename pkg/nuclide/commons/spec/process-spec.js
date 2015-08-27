@@ -14,7 +14,6 @@ var path = require('path');
 
 var {
   DARWIN_PATH_HELPER_REGEXP,
-  createExecEnvironment,
 } = processLib.__test__;
 
 describe('process.asyncExecute', () => {
@@ -36,7 +35,7 @@ describe('process.asyncExecute', () => {
     it('don\'t overwrite the PATH if it\'s different than process.env.PATH', () => {
       waitsForPromise(async () => {
         expect(
-          await createExecEnvironment({foo: 'bar', PATH: '/bin'}, ['/abc/def'])
+          await processLib.createExecEnvironment({foo: 'bar', PATH: '/bin'}, ['/abc/def'])
         ).toEqual({foo: 'bar', PATH: '/bin'});
       });
     });
@@ -44,7 +43,7 @@ describe('process.asyncExecute', () => {
     it('combine the existing environment variables with the common paths passed', () => {
       waitsForPromise(async () => {
         expect(
-          await createExecEnvironment({foo: 'bar', PATH: process.env.PATH}, ['/abc/def'])
+          await processLib.createExecEnvironment({foo: 'bar', PATH: process.env.PATH}, ['/abc/def'])
         ).toEqual({foo: 'bar', PATH: process.env.PATH + path.delimiter + '/abc/def'});
       });
     });
