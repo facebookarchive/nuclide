@@ -9,6 +9,7 @@
  * Because this file helps set up the transpiling, it must be written in ES5 because
  * it will be evaluated before the transpiling is in place.
  */
+/*eslint-disable no-console*/
 
 var babel = require('babel-core');
 var crypto = require('crypto');
@@ -24,16 +25,16 @@ var cacheDir = createCacheDir();
  */
 function createCacheDir() {
   try {
-    var cacheDir = path.join(__dirname, '../babel-cache');
-    if (!fs.existsSync(cacheDir)) {
-      fs.mkdirSync(cacheDir);
+    var babelCacheDir = path.join(__dirname, '../babel-cache');
+    if (!fs.existsSync(babelCacheDir)) {
+      fs.mkdirSync(babelCacheDir);
     }
 
-    cacheDir = path.join(cacheDir, createCachePathComponentForBabelVersionAndOptions());
-    if (!fs.existsSync(cacheDir)) {
-      fs.mkdirSync(cacheDir);
+    babelCacheDir = path.join(babelCacheDir, createCachePathComponentForBabelVersionAndOptions());
+    if (!fs.existsSync(babelCacheDir)) {
+      fs.mkdirSync(babelCacheDir);
     }
-    return cacheDir;
+    return babelCacheDir;
   } catch (e) {
     // It is possible that nuclide-node-transpiler is loaded on a read-only filesystem,
     // so print out the error and swallow it.
