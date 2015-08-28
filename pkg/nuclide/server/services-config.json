@@ -72,11 +72,5 @@
     "implementation": "nuclide-remote-search/lib/LocalFindInProjectService.js",
     "name": "FindInProjectService",
     "useServiceFramework": true
-  },
-  {
-    "definition": "fb-phabricator-comments-base/lib/PhabricatorCommentsBaseService.js",
-    "implementation": "fb-phabricator-comments-base/lib/LocalPhabricatorCommentsBaseService.js",
-    "name": "PhabricatorCommentsBaseService",
-    "useServiceFramework": true
   }
 ]
