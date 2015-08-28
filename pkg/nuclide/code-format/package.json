@@ -15,7 +15,7 @@
     "nuclide-logging": "0.0.0"
   },
   "devDependencies": {
-    "nuclide-atom-interfaces": "0.0.0"
+    "nuclide-external-interfaces": "0.0.0"
   },
   "consumedServices": {
     "nuclide-code-format.provider": {

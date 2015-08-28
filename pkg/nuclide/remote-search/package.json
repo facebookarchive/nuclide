@@ -13,7 +13,7 @@
     "split": "0.3.2"
   },
   "devDependencies": {
-    "nuclide-atom-interfaces": "0.0.0",
+    "nuclide-external-interfaces": "0.0.0",
     "nuclide-jasmine": "0.0.0",
     "nuclide-test-helpers": "0.0.0",
     "split": "0.3.2",

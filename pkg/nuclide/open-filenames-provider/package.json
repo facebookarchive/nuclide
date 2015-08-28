@@ -9,7 +9,7 @@
     "testRunner": "apm"
   },
   "devDependencies": {
-    "nuclide-atom-interfaces": "0.0.0"
+    "nuclide-external-interfaces": "0.0.0"
   },
   "providedServices": {
     "nuclide-quick-open-register-provider": {

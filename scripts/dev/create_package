@@ -40,7 +40,7 @@ APM_FLOWCONFIG = """\
 [ignore]
 
 [libs]
-./node_modules/nuclide-atom-interfaces/1.0/
+./node_modules/nuclide-external-interfaces/1.0/
 
 [options]
 unsafe.enable_getters_and_setters=true
@@ -111,7 +111,7 @@ ATOM_APM_PACKAGE_JSON_TEMPLATE = """\
     "atom": ">=%s"
   },
   "devDependencies": {
-    "nuclide-atom-interfaces": "0.0.0"
+    "nuclide-external-interfaces": "0.0.0"
   }
 }
 """
@@ -128,7 +128,7 @@ NODE_APM_PACKAGE_JSON_TEMPLATE = """\
     "testRunner": "apm"
   },
   "devDependencies": {
-    "nuclide-atom-interfaces": "0.0.0"
+    "nuclide-external-interfaces": "0.0.0"
   }
 }
 """

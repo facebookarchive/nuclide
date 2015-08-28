@@ -17,11 +17,11 @@ except ImportError:
     from configparser import ConfigParser, NoOptionError
 
 EXPECTED_NPM_TEST_COMMAND = 'node --harmony node_modules/.bin/jasmine-node-transpiled spec'
-PATH_TO_ATOM_INTERFACES = './node_modules/nuclide-atom-interfaces/1.0/'
+PATH_TO_ATOM_INTERFACES = './node_modules/nuclide-external-interfaces/1.0/'
 DEPENDENCY_BLACKLIST = {
   'lodash': 'it is a large dependency that we do not want to take on.',
-  'nuclide-atom-interfaces': 'it should be in devDependencies.',
   'nuclide-debugger-interfaces': 'it should be in devDependencies',
+  'nuclide-external-interfaces': 'it should be in devDependencies.',
   'q': 'we should use real Promise objects.',
   'underscore': 'it is a large dependency that we do not want to take on.',
 }
@@ -29,8 +29,8 @@ VERSION_BLACKLIST = {
   'fb-nuclide-installer': 'The installer needs to be versioned.',
 }
 PACKAGES_WITHOUT_TESTS = [
-  'nuclide-atom-interfaces', # contains no code, so no tests.
   'nuclide-debugger-interfaces', # contains no code, so no tests.
+  'nuclide-external-interfaces', # contains no code, so no tests.
   # nuclide-node-transpiler is a dependency of nuclide-jasmine, so it cannot
   # use nuclide-jasmine as a test runner. As it stands, it has no tests.
   'nuclide-node-transpiler',
@@ -48,7 +48,7 @@ EXACT_SEMVER_RE = re.compile(r'^\d+\.\d+\.\d+$')
 #  - missing/incorrect version
 #  - missing/incorrect scripts/test property
 #  - missing/incorrect .flowconfig
-#  - packages used in Atom must declare nuclide-atom-interfaces in devDependencies
+#  - packages used in Atom must declare nuclide-external-interfaces in devDependencies
 #  - unsorted dependencies
 #  - unsorted devDependencies
 class PackageLinter(object):
@@ -196,10 +196,10 @@ class PackageLinter(object):
                     'because it will use apm as its test runner.'),
                 package_name)
 
-        if (not 'nuclide-atom-interfaces' in package.get('devDependencies', {}) and
-                package_name != 'nuclide-atom-interfaces'):
+        if (not 'nuclide-external-interfaces' in package.get('devDependencies', {}) and
+                package_name != 'nuclide-external-interfaces'):
             self.report_error(
-                ('Package %s should have nuclide-atom-interfaces in its devDependencies ' +
+                ('Package %s should have nuclide-external-interfaces in its devDependencies ' +
                     'because it uses apm as its test runner.'),
                 package_name)
 

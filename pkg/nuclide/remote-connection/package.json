@@ -18,7 +18,7 @@
     "ssh2": "0.4.2"
   },
   "devDependencies": {
-    "nuclide-atom-interfaces": "0.0.0",
+    "nuclide-external-interfaces": "0.0.0",
     "temp": "0.8.1"
   }
 }
