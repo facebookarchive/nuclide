@@ -33,6 +33,7 @@ var TESTS = [
   'add-try-catches',
   'add-types',
   'demote-requires',
+  'ignore-declared-jsx',
   'ignore-function-params',
   'promote-types',
   'remove-unused-requires',

@@ -15,8 +15,8 @@ import type {Collection} from '../types/ast';
 var jscs = require('jscodeshift');
 
 var getFirstNodePath = require('../utils/getFirstNodePath');
-var getJSXIdentifiers = require('../utils/getJSXIdentifiers');
 var getUndeclaredIdentifiers = require('../utils/getUndeclaredIdentifiers');
+var getUndeclaredJSXIdentifiers = require('../utils/getUndeclaredJSXIdentifiers');
 var {findModuleMap} = require('../options');
 
 function addMissingRequires(root: Collection, sourcePath: AbsolutePath): void {
@@ -33,9 +33,8 @@ function addMissingRequires(root: Collection, sourcePath: AbsolutePath): void {
     first.insertAfter(node);
   });
 
-  // JSX identifiers are always non-declaration identifiers. They always have
-  // to be declared somewhere else in a regular variable.
-  getJSXIdentifiers(root, sourcePath).forEach(name => {
+  // Add missing JSX requires.
+  getUndeclaredJSXIdentifiers(root, sourcePath).forEach(name => {
     var node = moduleMap.getRequire(name, {
       path: sourcePath,
       jsxIdentifier: true,
