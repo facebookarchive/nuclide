@@ -32,6 +32,7 @@
     "nuclide-path-search": "0.0.0",
     "nuclide-remote-search": "0.0.0",
     "nuclide-remote-uri": "0.0.0",
+    "nuclide-service-parser": "0.0.0",
     "nuclide-service-transformer": "0.0.0",
     "nuclide-source-control-helpers": "0.0.0",
     "nuclide-version": "0.0.0",
@@ -43,6 +44,7 @@
     "yargs": "3.1.0"
   },
   "devDependencies": {
+    "nuclide-external-interfaces": "0.0.0",
     "nuclide-jasmine": "0.0.0",
     "rimraf": "2.2.8"
   },

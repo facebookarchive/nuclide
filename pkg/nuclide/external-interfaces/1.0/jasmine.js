@@ -18,6 +18,7 @@ type JasmineMatcher = {
   toBeCloseTo(expected: number, precision: number): boolean;
   toBeDefined(): boolean;
   toBeFalsy(): boolean;
+  toBeTruthy(): boolean;
   toBeGreaterThan(expected: number): boolean;
   toBeLessThan(expected: number): boolean;
   toBeNull(): boolean;
