@@ -5,6 +5,7 @@
 # the root directory of this source tree.
 
 import fs
+import hashlib
 import logging
 import os
 import platform_checker
@@ -145,8 +146,19 @@ def install_dependencies(package_config, npm, copy_local_dependencies=False):
         link_dependencys_executable(node_modules_path, local_dependency)
 
     # Install other public node dependencies.
-    npm.install(src_path, local_packages=package_config['localDependencies'], include_dev_dependencies=True)
-    logging.info('Done installing dependencies for %s', name)
+    #
+    # We store the sha sum of package.json under the node_modules directory. If
+    # the sum matches, we skip the call to `npm install`.
+    sum_path = os.path.join(node_modules_path, 'package.json.sum')
+    package_json_path = os.path.join(src_path, 'package.json')
+    package_json_sum = hashlib.sha1(read_file(package_json_path)).hexdigest()
+    valid_sum = read_file(sum_path) == package_json_sum
+    if valid_sum:
+        logging.info('Dependencies for %s already installed', name)
+    else:
+        npm.install(src_path, local_packages=package_config['localDependencies'], include_dev_dependencies=True)
+        write_file(sum_path, package_json_sum)
+        logging.info('Done installing dependencies for %s', name)
 
     is_node_package = package_config.get('isNodePackage')
     if not is_node_package:
@@ -155,6 +167,17 @@ def install_dependencies(package_config, npm, copy_local_dependencies=False):
         fs.cross_platform_check_output(cmd_args)
         logging.info('Done linking %s', name)
 
+
+def read_file(filename):
+    try:
+        with open(filename) as file:
+            return file.read()
+    except IOError:
+        return None
+
+def write_file(filename, contents):
+    with open(filename, 'w') as file:
+        file.write(contents)
 
 # If a node module has 'bin' field configured in 'package.json', we should create
 # a symlink from the executable file configured in 'bin' field to current package's
