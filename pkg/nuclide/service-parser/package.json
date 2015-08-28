@@ -16,7 +16,11 @@
   "devDependencies": {
     "nuclide-external-interfaces": "0.0.0",
     "nuclide-jasmine": "0.0.0",
+    "nuclide-node-transpiler": "0.0.0",
     "nuclide-test-helpers": "0.0.0"
+  },
+  "bin": {
+    "validate": "bin/validate"
   },
   "scripts": {
     "test": "node --harmony node_modules/.bin/jasmine-node-transpiled spec"
