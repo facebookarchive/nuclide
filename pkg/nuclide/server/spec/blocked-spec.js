@@ -11,16 +11,17 @@
 
 var blocked = require('../lib/blocked');
 
-xdescribe('blocked()', () => {
+var now = 0;
+
+describe('blocked()', () => {
   var blockHandler;
   var intervalHandler;
 
   beforeEach(() => {
     blockHandler = jasmine.createSpy();
-    // Use spec-helper.coffee utils to test the the heartbeat interval.
-    window.setInterval = window.fakeSetInterval;
-    window.clearInterval = window.fakeClearInterval;
-    spyOn(Date, 'now').andCallFake(() => window.now);
+    jasmine.Clock.useMock();
+    unspy(Date, 'now');
+    spyOn(Date, 'now').andCallFake(() => now);
 
     intervalHandler = blocked(blockHandler, 100, 10);
   });
@@ -30,7 +31,9 @@ xdescribe('blocked()', () => {
   });
 
   it('reports blocking events over the threshold', () => {
-    window.advanceClock(150);
+    now = 150;
+    jasmine.Clock.tick(150);
+
     expect(blockHandler.callCount).toBe(1);
     expect(blockHandler.argsForCall[0][0]).toBe(50);
   });
