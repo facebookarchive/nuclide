@@ -15,17 +15,20 @@ var constantBuiltInTypes = require('../constants/builtInTypes');
 var constantBuiltIns = require('../constants/builtIns');
 var constantCommonAliases = require('../constants/commonAliases');
 
-function buildOptions(options: ?ExternalOptions): Options {
+/**
+ * Converts external options to a more usable internal representation.
+ */
+function convertOptions(options: ?ExternalOptions): Options {
   options = options || {};
 
-  // Pull out everything so it's safe to use
+  // Pull out everything so it's safe to use.
   var optionsBuiltIns = options.builtIns || [];
   var optionsBuiltInBlacklist = options.builtInBlacklist || [];
   var optionsBuiltInTypes = options.builtInTypes || [];
   var optionsBuiltInTypeBlacklist = options.builtInTypeBlacklist || [];
   var optionsCommonAliases = options.commonAliases || [];
 
-  // Construct builtIns
+  // Construct builtIns.
   var builtIns = new Set(constantBuiltIns);
   for (var addBuiltIn of optionsBuiltIns) {
     builtIns.add(addBuiltIn);
@@ -34,7 +37,7 @@ function buildOptions(options: ?ExternalOptions): Options {
     builtIns.delete(deleteBuiltIn);
   }
 
-  // Construct builInTypes
+  // Construct builInTypes.
   var builtInTypes = new Set(constantBuiltInTypes);
   for (var addBuiltInType of optionsBuiltInTypes) {
     builtInTypes.add(addBuiltInType);
@@ -43,7 +46,7 @@ function buildOptions(options: ?ExternalOptions): Options {
     builtInTypes.delete(deleteBuiltInType);
   }
 
-  // Construct common aliases
+  // Construct common aliases.
   var commonAliases = new Map();
   for (var entry of constantCommonAliases) {
     var [key, value] = entry;
@@ -55,7 +58,12 @@ function buildOptions(options: ?ExternalOptions): Options {
   }
 
   // TODO: Freeze this, can I use Object.freeze()?
-  return {builtIns, builtInTypes, commonAliases};
+  return {
+    builtIns,
+    builtInTypes,
+    commonAliases,
+    relativeRequires: !!options.relativeRequires,
+  };
 }
 
-module.exports = buildOptions;
+module.exports = convertOptions;

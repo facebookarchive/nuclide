@@ -10,11 +10,10 @@
  */
 
 import type {Collection} from '../types/ast';
-import type {Options} from '../types/options';
 
 var newLine = require('../constants/newLine');
 
-function printRoot(root: Collection, options: Options): string {
+function printRoot(root: Collection): string {
   // Print the new source
   var output = root.toSource({quote: 'single', trailingComma: true});
 

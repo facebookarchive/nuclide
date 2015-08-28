@@ -13,6 +13,7 @@ export type Options = {
   builtIns: Set<string>,
   builtInTypes: Set<string>,
   commonAliases: Map<string, string>,
+  relativeRequires: boolean,
 };
 
 export type ExternalOptions = {
@@ -21,4 +22,5 @@ export type ExternalOptions = {
   builtInTypes?: ?Array<string>,
   builtInTypeBlacklist?: ?Array<string>,
   commonAliases?: ?Array<string>,
+  relativeRequires?: ?boolean,
 };

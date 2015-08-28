@@ -9,31 +9,31 @@
  * the root directory of this source tree.
  */
 
+import type {AbsolutePath} from '../types/common';
 import type {Collection} from '../types/ast';
-import type {Options} from '../types/options';
 
 var jscs = require('jscodeshift');
 
 var getFirstNodePath = require('../utils/getFirstNodePath');
 var getUndeclaredTypes = require('../utils/getUndeclaredTypes');
+var {findModuleMap} = require('../options');
 
 var {statement} = jscs.template;
 
-function addMissingTypes(root: Collection, options: Options): void {
-  var first = getFirstNodePath(root, options);
+function addMissingTypes(root: Collection, sourcePath: AbsolutePath): void {
+  var first = getFirstNodePath(root);
   if (!first) {
     return;
   }
 
-  // Add the missing imports
-  var undeclared = getUndeclaredTypes(root, options);
-  undeclared.forEach(name => {
-    var moduleName = options.commonAliases.get(name) || name;
-    // TODO: remove this hack
-    var node = statement`import type _ from '_';`;
-    node.specifiers[0].id = jscs.identifier(name);
-    node.specifiers[0].local = jscs.identifier(name);
-    node.source = jscs.literal(moduleName);
+  var moduleMap = findModuleMap(sourcePath);
+  var requireOptions = {
+    path: sourcePath,
+    typeImport: true,
+  };
+
+  getUndeclaredTypes(root, sourcePath).forEach(name => {
+    var node = moduleMap.getRequire(name, requireOptions);
     first.insertAfter(node);
   });
 }

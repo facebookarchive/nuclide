@@ -18,6 +18,8 @@ var oneLineObjectPattern = require('./oneLineObjectPattern');
 /**
  * This takes in a require node and reprints it. This should remove whitespace
  * and allow us to have a consistent formatting of all requires.
+ *
+ * TODO: This trashes comments on requires, fix that!
  */
  function reprintRequire(node: Node): Node {
    var {statement} = jscs.template;

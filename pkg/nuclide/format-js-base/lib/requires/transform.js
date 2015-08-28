@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {AbsolutePath} from '../types/common';
 import type {Collection} from '../types/ast';
-import type {Options} from '../types/options';
 
 var addMissingRequires = require('./addMissingRequires');
 var addMissingTypes = require('./addMissingTypes');
@@ -22,15 +22,13 @@ var removeUnusedTypes = require('./removeUnusedTypes');
  * This is the collection of transforms that affect requires.
  *
  * TODO: Integrate with flow to ensure modules exist.
- * TODO: Add a more cental place to resolve a require's name that can take into
- * account aliases, known modules, if it's a react module, etc.
  */
-function transform(root: Collection, options: Options): void {
-  removeUnusedRequires(root, options);
-  addMissingRequires(root, options);
-  removeUnusedTypes(root, options);
-  addMissingTypes(root, options);
-  formatRequires(root, options);
+function transform(root: Collection, sourcePath: AbsolutePath): void {
+  removeUnusedRequires(root, sourcePath);
+  addMissingRequires(root, sourcePath);
+  removeUnusedTypes(root, sourcePath);
+  addMissingTypes(root, sourcePath);
+  formatRequires(root, sourcePath);
 }
 
 module.exports = transform;

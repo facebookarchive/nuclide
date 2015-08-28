@@ -12,7 +12,6 @@
 var jscodeshift = require('jscodeshift');
 var {readFile} = require('nuclide-commons').fsPromise;
 
-var buildOptions = require('../lib/utils/buildOptions');
 var printRoot = require('../lib/utils/printRoot');
 var requiresTransform = require('../lib/requires/transform');
 
@@ -51,8 +50,7 @@ describe('requiresTransform', () => {
         var test = await readFile(testPath, 'utf8');
 
         var root = jscodeshift(test);
-        var options = buildOptions();
-        requiresTransform(root, options);
+        requiresTransform(root, '/test-path.js');
         var actual = printRoot(root);
 
         var expected = await readFile(expectedPath, 'utf8');

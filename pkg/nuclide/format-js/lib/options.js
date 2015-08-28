@@ -11,18 +11,11 @@
 
 import type {ExternalOptions} from 'nuclide-format-js-base/lib/types/options';
 
-var options: ?ExternalOptions;
-
-function getOptions(): ExternalOptions {
-  return options || (options = buildOptions());
-}
-
-function clearOptions(): void {
-  options = null;
-}
-
-function buildOptions(): ExternalOptions {
-  return {
+function refreshOptions(): void {
+  var {buildOptions} = require('nuclide-format-js-base');
+  // TODO: For now we just apply these options globally to the root directory,
+  // eventually we should scope options correctly per project.
+  buildOptions('/', {
     builtIns: atom.config.get('nuclide-format-js.builtIns'),
     builtInBlacklist: atom.config.get('nuclide-format-js.builtInBlacklist'),
     builtInTypes: atom.config.get('nuclide-format-js.builtInTypes'),
@@ -32,7 +25,7 @@ function buildOptions(): ExternalOptions {
     commonAliases: fixCommonAliases(
       (atom.config.get('nuclide-format-js.commonAliases'): any)
     ),
-  };
+  });
 }
 
 /**
@@ -48,4 +41,4 @@ function fixCommonAliases(aliases: ?Array<string>): Array<[string, string]> {
   return pairs;
 }
 
-module.exports = {getOptions, clearOptions};
+module.exports = {refreshOptions};

@@ -15,8 +15,8 @@
  * sort of natural compare algorithm.
  */
 function compareStrings(one: ?string, two: ?string): number {
-  one = one || '';
-  two = two || '';
+  one = (one || '').toLowerCase();
+  two = (two || '').toLowerCase();
   return one.localeCompare(two);
 }
 

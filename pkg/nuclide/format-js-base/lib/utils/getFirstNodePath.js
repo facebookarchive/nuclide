@@ -10,7 +10,6 @@
  */
 
 import type {Collection, NodePath} from '../types/ast';
-import type {Options} from '../types/options';
 
 var jscs = require('jscodeshift');
 
@@ -21,7 +20,7 @@ var jscs = require('jscodeshift');
  * TODO: Don't assume there is a 'use-strict' that we can use as the first path
  * TODO: Alternatively, always add the 'use-strict' as something we can use
  */
-function getFirstNodePath(root: Collection, options: Options): NodePath {
+function getFirstNodePath(root: Collection): NodePath {
   return root
     .find(jscs.ExpressionStatement, {expression: {value: 'use strict'}})
     .paths()[0];

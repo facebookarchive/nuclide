@@ -9,9 +9,10 @@
  * the root directory of this source tree.
  */
 
+import type {AbsolutePath} from '../types/common';
 import type {Collection, Node, NodePath} from '../types/ast';
-import type {Options} from '../types/options';
 
+var {findOptions} = require('../options');
 var jscs = require('jscodeshift');
 
 type ConfigEntry = {
@@ -67,9 +68,10 @@ var CONFIG: Array<ConfigEntry> = [
  */
 function getDeclaredIdentifiers(
   root: Collection,
-  options: Options
+  sourcePath: AbsolutePath
 ): Set<string> {
   // Start with the globals since they are always "declared" and safe to use.
+  var options = findOptions(sourcePath);
   var ids = new Set(options.builtIns);
   CONFIG.forEach(config => {
     root

@@ -9,47 +9,38 @@
  * the root directory of this source tree.
  */
 
+import type {AbsolutePath} from '../types/common';
 import type {Collection} from '../types/ast';
-import type {Options} from '../types/options';
 
 var jscs = require('jscodeshift');
 
 var getFirstNodePath = require('../utils/getFirstNodePath');
 var getJSXIdentifiers = require('../utils/getJSXIdentifiers');
 var getUndeclaredIdentifiers = require('../utils/getUndeclaredIdentifiers');
+var {findModuleMap} = require('../options');
 
-function addMissingRequires(root: Collection, options: Options): void {
-  var first = getFirstNodePath(root, options);
+function addMissingRequires(root: Collection, sourcePath: AbsolutePath): void {
+  var first = getFirstNodePath(root);
   if (!first) {
     return;
   }
 
-  // Helper to add simple requires.
-  function addRequire(name: string, moduleName: string): void {
-    var node = jscs.variableDeclaration(
-      'var',
-      [jscs.variableDeclarator(
-        jscs.identifier(name),
-        jscs.callExpression(
-          jscs.identifier('require'),
-          [jscs.literal(moduleName)]
-        )
-      )]
-    );
-    first.insertAfter(node);
-  }
+  var moduleMap = findModuleMap(sourcePath);
 
   // Add the missing requires.
-  getUndeclaredIdentifiers(root, options).forEach(name => {
-    var moduleName = options.commonAliases.get(name) || name;
-    addRequire(name, moduleName);
+  getUndeclaredIdentifiers(root, sourcePath).forEach(name => {
+    var node = moduleMap.getRequire(name, {path: sourcePath});
+    first.insertAfter(node);
   });
 
   // JSX identifiers are always non-declaration identifiers. They always have
   // to be declared somewhere else in a regular variable.
-  getJSXIdentifiers(root, options).forEach(name => {
-    var moduleName = options.commonAliases.get(name) || name + '.react';
-    addRequire(name, moduleName);
+  getJSXIdentifiers(root, sourcePath).forEach(name => {
+    var node = moduleMap.getRequire(name, {
+      path: sourcePath,
+      jsxIdentifier: true,
+    });
+    first.insertAfter(node);
   });
 }
 

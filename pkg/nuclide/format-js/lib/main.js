@@ -21,8 +21,6 @@ module.exports = {
     }
 
     var formatCode = require('./formatCode');
-    var {clearOptions} = require('./options');
-
     var localSubscriptions = new CompositeDisposable();
     localSubscriptions.add(atom.commands.add(
       'atom-text-editor',
@@ -31,12 +29,20 @@ module.exports = {
       () => process.nextTick(() => formatCode())
     ));
 
+    var {refreshOptions} = require('./options');
+
+    // Set the initial options.
+    refreshOptions();
+
     // Observe changes to the config and remove them when they change.
-    atom.config.observe('nuclide-format-js.builtIns', clearOptions);
-    atom.config.observe('nuclide-format-js.builtInBlacklist', clearOptions);
-    atom.config.observe('nuclide-format-js.builtInTypes', clearOptions);
-    atom.config.observe('nuclide-format-js.builtInTypeBlacklist', clearOptions);
-    atom.config.observe('nuclide-format-js.commonAliases', clearOptions);
+    atom.config.observe('nuclide-format-js.builtIns', refreshOptions);
+    atom.config.observe('nuclide-format-js.builtInBlacklist', refreshOptions);
+    atom.config.observe('nuclide-format-js.builtInTypes', refreshOptions);
+    atom.config.observe(
+      'nuclide-format-js.builtInTypeBlacklist',
+      refreshOptions
+    );
+    atom.config.observe('nuclide-format-js.commonAliases', refreshOptions);
 
     // Set up run-on-save based on atom config.
     var runOnSave = atom.config.get('nuclide-format-js.runOnSave');

@@ -13,6 +13,9 @@ import type {NodePath} from '../types/ast';
 
 /**
  * Tests if a NodePath is in the global scope
+ *
+ * TODO: This doesn't quite do what I expect, e.g. if (x) { var foo = 4; }; will
+ * cause foo to be in the global scope due to hoisting.
  */
 function isGlobal(path: NodePath): boolean {
   return !!path.scope.isGlobal;

@@ -9,9 +9,10 @@
  * the root directory of this source tree.
  */
 
+import type {AbsolutePath} from '../types/common';
 import type {Collection, Node, NodePath} from '../types/ast';
-import type {Options} from '../types/options';
 
+var {findOptions} = require('../options');
 var jscs = require('jscodeshift');
 
 type ConfigEntry = {
@@ -57,8 +58,12 @@ var CONFIG: Array<ConfigEntry> = [
 /**
  * This will get a list of all flow types that are declared within root's AST
  */
-function getDeclaredTypes(root: Collection, options: Options): Set<string> {
+function getDeclaredTypes(
+  root: Collection,
+  sourcePath: AbsolutePath
+): Set<string> {
   // Start with the built in types that are always declared.
+  var options = findOptions(sourcePath);
   var ids = new Set(options.builtInTypes);
   CONFIG.forEach(config => {
     root
