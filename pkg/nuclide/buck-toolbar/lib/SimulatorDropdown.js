@@ -9,22 +9,13 @@
  * the root directory of this source tree.
  */
 
-var {array} = require('nuclide-commons');
-
 var IosSimulator = require('./IosSimulator');
 var NuclideDropdown = require('nuclide-ui-dropdown');
 var React = require('react-for-atom');
 
 var {PropTypes} = React;
 
-async function loadSimulators(): Promise<any> {
-  var devices = await IosSimulator.getDevices();
-
-  return devices.map(device => ({
-    label: device.name,
-    value: device.udid,
-  }));
-}
+import type {Device} from './IosSimulator';
 
 var SimulatorDropdown = React.createClass({
 
@@ -48,12 +39,15 @@ var SimulatorDropdown = React.createClass({
   },
 
   componentDidMount() {
-    loadSimulators().then(this.receiveMenuItems);
+    IosSimulator.getDevices().then(this.buildMenuItems);
   },
 
-  receiveMenuItems(menuItems: Array<{label: string, value: string}>) {
-    var index = array.findIndex(menuItems, item => item.label === 'iPhone 5s');
-    var selectedIndex = index === -1 ? 0 : index;
+  buildMenuItems(devices: Array<Device>) {
+    var selectedIndex = IosSimulator.selectDevice(devices);
+    var menuItems = devices.map(device => ({
+      label: `${device.name} (${device.os})`,
+      value: device.udid,
+    }));
     this.setState({menuItems, selectedIndex});
   },
 

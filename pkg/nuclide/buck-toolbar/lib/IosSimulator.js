@@ -9,12 +9,14 @@
  * the root directory of this source tree.
  */
 
+var {array} = require('nuclide-commons');
 var {asyncExecute} = require('nuclide-commons');
 
-type Device = {
-  udid: string;
+export type Device = {
   name: string;
+  udid: string;
   state: string;
+  os: string;
 }
 
 var DeviceState = {
@@ -38,38 +40,63 @@ async function checkStdout(cmd: string, args: Array<string>, options: ?Object = 
   }
 }
 
-async function getDevices(): Promise<Device[]> {
-  var stdout = await checkStdout('xcrun', ['simctl', 'list', 'devices']);
-
-  // Output looks something like this:
-  //
-  // > == Devices ==
-  // > -- iOS 8.3 --
-  // >     iPhone 4s (34582EC5-2135-4DF3-A615-3764E580B2B9) (Shutdown)
-  // >     iPhone 5 (F8739886-A276-4719-B116-06FEEB1411DF) (Shutdown)
-  // > -- Unavailable: com.apple.CoreSimulator.SimRuntime.iOS-7-1 --
-  // >     iPhone 4s (7CEBF91C-8740-458C-AC67-F137432A6BFA) (Shutdown) (unavailable, runtime profile not found)
-  var pattern = /^ {4}(.+) \(([0-9A-F-]+)\) \((Creating|Booting|Shutting Down|Shutdown|Booted)\)( \(unavailable, (.*)\))?$/;
-  //                  ^      ^                ^                                                 ^                ^
-  //                  |      2. udid          3. state                                          4. unavailable?  5. reason
-  //                  1. name
-  var lines = stdout.split('\n');
+function parseDevicesFromSimctlOutput(output: string): Device[] {
   var devices = [];
-  lines.forEach(line => {
-    var result = pattern.exec(line);
-    if (result && !result[4]) {
-      devices.push({
-        udid: result[2],
-        name: result[1],
-        state: result[3],
-      });
+  var currentOS = null;
+
+  output.split('\n').forEach(line => {
+    var section = line.match(/^-- (.+) --$/);
+    if (section) {
+      var header = section[1].match(/^iOS (.+)$/);
+      if (header) {
+        currentOS = header[1];
+      } else {
+        currentOS = null;
+      }
+      return;
+    }
+
+    var device = line.match(/^[ ]*([^()]+) \(([^()]+)\) \((Creating|Booting|Shutting Down|Shutdown|Booted)\)/);
+    if (device && currentOS) {
+      var [, name, udid, state] = device;
+      devices.push({name, udid, state, os: currentOS});
     }
   });
+
   return devices;
+}
+
+async function getDevices(): Promise<Device[]> {
+  var stdout = await checkStdout('xcrun', ['simctl', 'list', 'devices']);
+  return parseDevicesFromSimctlOutput(stdout);
+}
+
+function selectDevice(devices: Device[]): number {
+  var bootedDeviceIndex = array.findIndex(
+    devices,
+    device => device.state === DeviceState.Booted
+  );
+  if (bootedDeviceIndex > -1) {
+    return bootedDeviceIndex;
+  }
+
+  var defaultDeviceIndex = 0;
+  var lastOS = '';
+  devices.forEach((device, index) => {
+    if (device.name === 'iPhone 5s') {
+      if (device.os > lastOS) {
+        defaultDeviceIndex = index;
+        lastOS = device.os;
+      }
+    }
+  });
+  return defaultDeviceIndex;
 }
 
 
 module.exports = {
   DeviceState,
   getDevices,
+  parseDevicesFromSimctlOutput,
+  selectDevice,
 };
