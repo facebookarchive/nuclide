@@ -11,5 +11,8 @@
 // Type declarations for Atom's extensions to Jasmine v1.3
 // https://github.com/atom/atom/blob/master/spec/spec-helper.coffee
 
-declare function waitsForPromise(func: () => Promise<mixed>): void;
-declare function waitsForPromise(options: {timeout?: number, shouldReject?: boolean}, func: () => Promise<mixed>): void;
+/** Note that waitsForPromise has an optional first argument. */
+declare function waitsForPromise(
+  optionsOrFunc: {timeout?: number, shouldReject?: boolean} | () => Promise<mixed>,
+  func?: () => Promise<mixed>
+): void;
