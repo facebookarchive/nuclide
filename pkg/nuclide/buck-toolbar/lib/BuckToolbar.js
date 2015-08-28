@@ -49,32 +49,32 @@ var React = require('react-for-atom');
 var {PropTypes} = React;
 var SimulatorDropdown = require('./SimulatorDropdown');
 
-var BuckToolbar = React.createClass({
-  displayName: 'BuckToolbar',
+class BuckToolbar extends React.Component {
 
-  propTypes: {
-    initialBuildTarget: PropTypes.string,
-  },
-
-  getInitialState() {
-    return {
+  constructor(props: mixed) {
+    super(props);
+    this.state = {
       buttonsDisabled: !this.props.initialBuildTarget,
       currentProgress: 0,
       maxProgress: 100,
     };
-  },
+    this._handleBuildTargetChange = this._handleBuildTargetChange.bind(this);
+    this._build = this._build.bind(this);
+    this._run = this._run.bind(this);
+    this._debug = this._debug.bind(this);
+  }
 
   setCurrentProgress(currentProgress: number) {
     this.setState({currentProgress});
-  },
+  }
 
   setMaxProgressAndResetProgress(maxProgress: number) {
     this.setState({currentProgress: 0, maxProgress});
-  },
+  }
 
   setCurrentProgressToMaxProgress() {
     this.setCurrentProgress(this.state.maxProgress);
-  },
+  }
 
   render(): ReactElement {
     var disabled = this.state.buttonsDisabled;
@@ -107,31 +107,31 @@ var BuckToolbar = React.createClass({
         />
       </div>
     );
-  },
+  }
 
   _handleBuildTargetChange(value: string) {
     this.setState({buttonsDisabled: !value});
-  },
+  }
 
   getBuildTarget(): string {
     return this.refs['buildTarget'].getText().trim();
-  },
+  }
 
   getSimulator(): ?string {
     return this.refs['simulator-menu'].getSelectedSimulator();
-  },
+  }
 
   _build() {
     this._doBuild(/* run */ false);
-  },
+  }
 
   _run() {
     this._buildAndLaunchApp(/* debug */ false);
-  },
+  }
 
   _debug() {
     this._buildAndLaunchApp(/* debug */ true);
-  },
+  }
 
   async _buildAndLaunchApp(debug: boolean): Promise {
     // TODO(natthu): Restore validation logic to make sure the target is installable.
@@ -157,7 +157,7 @@ var BuckToolbar = React.createClass({
       var buckProjectPath = await buckProject.getPath();
       debuggerService.debugLLDB(pid, buckProjectPath);
     }
-  },
+  }
 
   /**
    * @return Promise which may resolve to null if either
@@ -262,7 +262,11 @@ var BuckToolbar = React.createClass({
 
     atom.notifications.addSuccess(`${command} succeeded.`);
     return {buckProject, buildTarget, pid};
-  },
-});
+  }
+}
+
+BuckToolbar.propTypes = {
+  initialBuildTarget: PropTypes.string,
+};
 
 module.exports = BuckToolbar;
