@@ -12,7 +12,7 @@
 import * as babel from 'babel-core';
 import generate from 'babel-core/lib/generation';
 
-import type {Definitions, FunctionType, Type} from './types';
+import type {Definitions, FunctionType, Type, InterfaceDefinition} from './types';
 
 var t = babel.types;
 
@@ -25,7 +25,16 @@ var observableFromPromise = promiseExpression => t.callExpression(
 
 var moduleDotExportsExpression = t.memberExpression(t.identifier('module'), t.identifier('exports'));
 var clientIdentifier = t.identifier('_client');
+
+// Functions that are implemented at the connection layer.
 var callRemoteFunctionExpression = t.memberExpression(clientIdentifier, t.identifier('callRemoteFunction'));
+var callRemoteMethodExpression = t.memberExpression(clientIdentifier, t.identifier('callRemoteMethod'));
+var createRemoteObjectExpression = t.memberExpression(clientIdentifier, t.identifier('createRemoteObject'));
+var disposeRemoteObjectExpression = t.memberExpression(clientIdentifier, t.identifier('disposeRemoteObject'));
+
+var thisDotIdPromiseExpression = t.memberExpression(t.thisExpression(), t.identifier('_idPromise'));
+
+var promiseDotRejectExpression = t.memberExpression(t.identifier('Promise'), t.identifier('reject'));
 
 var remoteModule = t.identifier('remoteModule');
 var emptyObject = t.objectExpression([]);
@@ -55,7 +64,12 @@ export default function generateProxy(defs: Definitions): string {
       t.memberExpression(remoteModule, t.identifier(name)), proxy));
   });
 
-  // TODO: Generate proxies for remotable interfaces.
+  // Generate a remote proxy for each remotable interface.
+  defs.interfaces.forEach((def, name) => {
+    var proxy = generateInterfaceProxy(name, def);
+    statements.push(t.assignmentExpression('=',
+      t.memberExpression(remoteModule, t.identifier(name)), proxy));
+  });
 
   // Return the remote module.
   statements.push(t.returnStatement(remoteModule));
@@ -87,13 +101,10 @@ function generateFunctionProxy(name: string, funcType: FunctionType): any {
   // Convert all of the arguments into marshaled form. `argumentsPromise` will resolve
   // to an array of the converted arguments.
   var args = funcType.argumentTypes.map((arg, i) => t.identifier(`arg${i}`));
-  var argumentsPromise = t.callExpression(promiseDotAllExpression,
-    [t.arrayExpression(
-      args.map((arg, i) => generateTransformStatement(arg, funcType.argumentTypes[i], true))
-    )]
-  );
+  var argumentsPromise = generateArgumentConversionPromise(funcType.argumentTypes);
 
   // Call the remoteFunctionCall method of the NuclideClient object.
+  var args = funcType.argumentTypes.map((arg, i) => t.identifier(`arg${i}`));
   var rpcCallExpression = t.callExpression(callRemoteFunctionExpression, [
     t.literal(name),
     t.literal(funcType.returnType.kind),
@@ -141,7 +152,162 @@ function generateFunctionProxy(name: string, funcType: FunctionType): any {
   }
 
   proxyStatments.push(t.returnStatement(rpcCallExpression));
-  return t.arrowFunctionExpression(args, t.blockStatement(proxyStatments));
+  return t.functionExpression(null, args, t.blockStatement(proxyStatments));
+}
+
+/**
+ * Helper function that generates statments that can be used to marshal all of the
+ * arguments to a function.
+ * @param argumentTypes - An array of the types of the function's arguments.
+ * @returns The marshalling statements, as assignment expressions.
+ */
+function generateArgumentConversionPromise(argumentTypes: Array<Type>): Array<any> {
+  // Convert all of the arguments into marshaled form.
+  var args = argumentTypes.map((arg, i) => t.identifier(`arg${i}`));
+  return t.callExpression(promiseDotAllExpression,
+    [t.arrayExpression(
+      args.map((arg, i) => generateTransformStatement(arg, argumentTypes[i], true))
+    )]
+  );
+}
+
+/**
+ * Generate a remote proxy for an interface.
+ * @param name - The name of the interface.
+ * @param def - The InterfaceDefinition object that encodes all if the interface's operations.
+ * @returns An anonymous ClassExpression node that can be assigned to a module property.
+ */
+function generateInterfaceProxy(name: string, def: InterfaceDefinition): any {
+  var methodDefinitions = [];
+
+  // Generate proxies for static methods.
+  def.staticMethods.forEach((funcType, methodName) => {
+    methodDefinitions.push(t.methodDefinition(
+      t.identifier(methodName),
+      generateFunctionProxy(`${name}/${methodName}`, funcType),
+      'method',
+      false,
+      true
+    ));
+  });
+
+  // Generate constructor proxy.
+  methodDefinitions.push(generateRemoteConstructor(name, def.constructorArgs));
+
+  // Generate proxies for instance methods.
+  def.instanceMethods.forEach((funcType, methodName) => {
+    methodDefinitions.push(generateRemoteDispatch(methodName, funcType));
+  });
+
+  // Generate the dispose method.
+  methodDefinitions.push(generateDisposeMethod());
+
+  return t.classExpression(null, t.classBody(methodDefinitions), null);
+}
+
+/**
+ * Helper function that generates a remote constructor proxy.
+ * @param className - The name of the interface.
+ * @param constructorArgs - The types of the arguments to the constructor.
+ * @returns A MethodDefinition node that can be added to a ClassBody.
+ */
+function generateRemoteConstructor(className: string, constructorArgs: Array<Type>) {
+  // Convert constructor arguments.
+  var args = constructorArgs.map((arg, i) => t.identifier(`arg${i}`));
+  var argumentsPromise = generateArgumentConversionPromise(constructorArgs);
+
+  // Make an RPC call that will return the id of the remote object.
+  var rpcCallExpression = t.callExpression(createRemoteObjectExpression, [
+    t.literal(className),
+    t.identifier('args'),
+  ]);
+  rpcCallExpression = thenPromise(argumentsPromise, t.arrowFunctionExpression(
+    [t.identifier('args')], rpcCallExpression));
+
+  // Set a promise that resolves when the id of the remotable object is known.
+  rpcCallExpression = t.assignmentExpression('=', thisDotIdPromiseExpression, rpcCallExpression);
+
+  var constructor = t.FunctionExpression(null, args, t.blockStatement([rpcCallExpression]));
+  return t.methodDefinition(t.identifier('constructor'), constructor, 'constructor', false, false);
+}
+
+/**
+ * Helper function that generates a proxy for an instance method of an interface.
+ * @param methodName - The name of the method.
+ * @param funcType - The type information for the function.
+ * @returns A MethodDefinition node that can be added to a ClassBody
+ */
+function generateRemoteDispatch(methodName: string, funcType: FunctionType) {
+  // First, convert the arguments.
+  var args = funcType.argumentTypes.map((arg, i) => t.identifier(`arg${i}`));
+  var argumentsPromise = generateArgumentConversionPromise(funcType.argumentTypes);
+
+  var id = t.identifier('id');
+  var rpcCallExpression = t.callExpression(callRemoteMethodExpression, [
+    id, t.literal(methodName), t.literal(funcType.returnType.kind), t.identifier('args')]);
+  rpcCallExpression = thenPromise(thisDotIdPromiseExpression, t.arrowFunctionExpression(
+    [id], rpcCallExpression));
+
+  rpcCallExpression = thenPromise(argumentsPromise, t.arrowFunctionExpression(
+    [t.identifier('args')],
+    rpcCallExpression,
+  ));
+
+  switch (funcType.returnType.kind) {
+    case 'void':
+      break;
+    case 'promise':
+      var value = t.identifier('value');
+      var type = funcType.returnType.type;
+      var transformer = t.arrowFunctionExpression([value],
+        generateTransformStatement(value, type, false));
+
+      rpcCallExpression = thenPromise(rpcCallExpression, transformer);
+      break;
+    case 'observable':
+      // TODO: _idPromise should be converted into an observable, then flatMap'ed.
+      throw new Error(`Observables not yet supported.`);
+    default:
+      throw new Error(`Unkown return type ${funcType.returnType.kind}.`);
+  }
+
+  var args = funcType.argumentTypes.map((arg, i) => t.identifier(`arg${i}`));
+  var funcExpression = t.functionExpression(null, args, t.blockStatement([
+    t.returnStatement(rpcCallExpression)]));
+  return t.methodDefinition(t.identifier(methodName), funcExpression, 'method', false, false);
+}
+
+/**
+ * Helper method that generates the dispose method for a class. The dispose method
+ * replaces `this._idPromise` with a Promise that rejects immediately, as well as calls
+ * `_client.disposeRemoteObject` with the object's id as a parameter.
+ * @returns A MethodDefinition node that can be attached to a class body.
+ */
+function generateDisposeMethod() {
+  var id = t.identifier('id');
+
+  // Replace `idPromise`.
+  var disposedError = t.newExpression(t.identifier('Error'),
+    [t.literal('This Remote Object has been disposed.')]);
+  var replaceIdPromise = t.expressionStatement(t.assignmentExpression('=',
+    thisDotIdPromiseExpression, t.callExpression(promiseDotRejectExpression, [disposedError])));
+
+  // Call `_client.disposeRemoteObject`.
+  var rpcCallExpression = t.callExpression(disposeRemoteObjectExpression, [id]);
+
+  // Wrap these statements in a `.then` on `idPromise`, so that they can execute after the
+  // id has been determined.
+  rpcCallExpression = t.callExpression(
+    t.memberExpression(thisDotIdPromiseExpression, t.identifier('then')),
+    [t.arrowFunctionExpression([id], t.blockStatement([
+      replaceIdPromise,
+      t.returnStatement(rpcCallExpression),
+    ]))]
+  );
+  var returnStatement = t.returnStatement(rpcCallExpression);
+
+  return t.methodDefinition(t.identifier('dispose'),
+    t.functionExpression(null, [], t.blockStatement([returnStatement])), 'method', false, false);
 }
 
 /**

@@ -4,7 +4,7 @@ import { Observable } from "rx-lite";
 module.exports = _client => {
   remoteModule = {}
 
-  remoteModule.ValueTypeTestA = (arg0, arg1) => {
+  remoteModule.ValueTypeTestA = function (arg0, arg1) {
     return Promise.all([_client.marshal(arg0, {
       kind: "named",
       name: "ValueTypeA"
@@ -20,7 +20,7 @@ module.exports = _client => {
     }));
   }
 
-  remoteModule.ValueTypeTestB = (arg0, arg1) => {
+  remoteModule.ValueTypeTestB = function (arg0, arg1) {
     return Promise.all([_client.marshal(arg0, {
       kind: "named",
       name: "ValueTypeA"

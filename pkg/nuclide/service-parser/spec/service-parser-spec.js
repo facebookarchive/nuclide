@@ -28,6 +28,11 @@ describe('Nuclide service parser test suite.', () => {
 
         definitions.functions = mapToJSON(definitions.functions);
         definitions.aliases = mapToJSON(definitions.aliases);
+
+        definitions.interfaces.forEach(def => {
+          def.staticMethods = mapToJSON(def.staticMethods);
+          def.instanceMethods = mapToJSON(def.instanceMethods);
+        });
         definitions.interfaces = mapToJSON(definitions.interfaces);
 
         expect(definitions).diffJson(expected);

@@ -1,0 +1,61 @@
+{
+  "aliases": {},
+  "functions": {
+    "getCurrentDirection": {
+      "argumentTypes": [],
+      "kind": "function",
+      "returnType": {
+        "kind": "promise",
+        "type": {
+          "kind": "named",
+          "name": "Vector2"
+        }
+      }
+    }
+  },
+  "interfaces": {
+    "Vector2": {
+      "constructorArgs": [
+        {
+          "kind": "number"
+        },
+        {
+          "kind": "number"
+        }
+      ],
+      "instanceMethods": {
+        "len": {
+          "argumentTypes": [],
+          "kind": "function",
+          "returnType": {
+            "kind": "promise",
+            "type": {
+              "kind": "number"
+            }
+          }
+        }
+      },
+      "staticMethods": {
+        "distance": {
+          "argumentTypes": [
+            {
+              "kind": "named",
+              "name": "Vector2"
+            },
+            {
+              "kind": "named",
+              "name": "Vector2"
+            }
+          ],
+          "kind": "function",
+          "returnType": {
+            "kind": "promise",
+            "type": {
+              "kind": "number"
+            }
+          }
+        }
+      }
+    }
+  }
+}

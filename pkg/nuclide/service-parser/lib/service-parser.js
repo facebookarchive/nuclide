@@ -12,7 +12,7 @@
 import * as babel from 'babel-core';
 import assert from 'assert';
 
-import type {Definitions, Type, FunctionType} from './types';
+import type {Definitions, Type, FunctionType, InterfaceDefinition} from './types';
 
 /**
  * Parse a definition file, returning an intermediate representation that has all of the
@@ -43,7 +43,9 @@ export default function parseServiceDefinition(source: string): Definitions {
           break;
         // TODO: Parse classes as remotable interfaces.
         case 'ClassDeclaration':
-          throw new Error('ClassDeclaration not yet supported.');
+          var {name, interfaceDefinition} = parseClassDeclaration(declaration);
+          defs.interfaces.set(name, interfaceDefinition);
+          break;
         // Unkown export declaration.
         default:
           throw new Error(`Unkown declaration type ${declaration.type} in definition body.`);
@@ -95,6 +97,78 @@ function parseTypeAlias(declaration: any): {name: string, type: Type} {
   return {
     name: declaration.id.name,
     type: parseTypeAnnotation(declaration.right),
+  };
+}
+
+/**
+ * Parse a ClassDeclaration AST Node.
+ * @param declaration - The AST node.
+ * @returns A record containing the name of the class, along with an InterfaceDefinition
+ *   object that describes it's method.
+ */
+function parseClassDeclaration(declaration: Object): {name: string,
+  interfaceDefinition: InterfaceDefinition} {
+    var def: InterfaceDefinition = {
+      constructorArgs: [],
+      staticMethods: new Map(),
+      instanceMethods: new Map(),
+    };
+
+    var classBody = declaration.body;
+    for (var method of classBody.body) {
+      if (method.kind === 'constructor') {
+        def.constructorArgs = method.value.params.map(param => {
+          if (!param.typeAnnotation) {
+            throw new Error(`Parameter ${param.name} doesn't have type annotation.`);
+          } else {
+            return parseTypeAnnotation(param.typeAnnotation.typeAnnotation);
+          }
+        });
+      } else {
+        var {name, type} = parseMethodDefinition(method);
+        if (method.static) {
+          def.staticMethods.set(name, type);
+        } else {
+          def.instanceMethods.set(name, type);
+        }
+      }
+    }
+    return {
+      name: declaration.id.name,
+      interfaceDefinition: def,
+    };
+}
+
+/**
+ * Helper function that parses an method definition in a class.
+ * @param defintion - The MethodDefinition AST node.
+ * @returns A record containing the name of the method, and a FunctionType object
+ *   encoding the arguments and return type of the method.
+ */
+function parseMethodDefinition(definition: any): {name: string, type: FunctionType} {
+  assert(definition.type === 'MethodDefinition', 'This is a MethodDefinition object.');
+  assert(definition.key && definition.key.type === 'Identifier',
+    'This method defintion has an key (a name).');
+  assert(definition.value.returnType.type === 'TypeAnnotation',
+    `${definition.key.name} missing a return type annotation.`);
+
+  var returnType = parseTypeAnnotation(definition.value.returnType.typeAnnotation);
+  assert(returnType.kind === 'void' || returnType.kind === 'promise' || returnType.kind === 'observable',
+    'The return type of a function must be of type Void, Promise, or Observable');
+
+  return {
+    name: definition.key.name,
+    type: {
+      kind: 'function',
+      argumentTypes: definition.value.params.map(param => {
+        if (!param.typeAnnotation) {
+          throw new Error(`Parameter ${param.name} doesn't have type annotation.`);
+        } else {
+          return parseTypeAnnotation(param.typeAnnotation.typeAnnotation);
+        }
+      }),
+      returnType,
+    },
   };
 }
 

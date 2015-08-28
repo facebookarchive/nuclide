@@ -4,7 +4,7 @@ import { Observable } from "rx-lite";
 module.exports = _client => {
   remoteModule = {}
 
-  remoteModule.TestFunctionA = (arg0, arg1) => {
+  remoteModule.TestFunctionA = function (arg0, arg1) {
     return Promise.all([_client.marshal(arg0, {
       kind: "string"
     }), _client.marshal(arg1, {
@@ -17,13 +17,13 @@ module.exports = _client => {
     }));
   }
 
-  remoteModule.TestFunctionB = () => {
+  remoteModule.TestFunctionB = function () {
     return Observable.fromPromise(Promise.all([])).flatMap(args => _client.callRemoteFunction("TestFunctionB", "observable", args)).flatMap(value => _client.unmarshal(value, {
       kind: "number"
     }));
   }
 
-  remoteModule.TestFunctionC = () => {
+  remoteModule.TestFunctionC = function () {
     return Promise.all([]).then(args => _client.callRemoteFunction("TestFunctionC", "void", args));
   }
 

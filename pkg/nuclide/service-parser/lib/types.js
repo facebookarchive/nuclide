@@ -20,7 +20,7 @@ export type Definitions = {
 };
 
 export type InterfaceDefinition = {
-  constructor: FunctionType;
+  constructorArgs: Array<Type>;
   instanceMethods: Map<string, FunctionType>;
   staticMethods: Map<string, FunctionType>;
 };
