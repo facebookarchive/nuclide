@@ -9,7 +9,6 @@
  * the root directory of this source tree.
  */
 var {BufferedProcess} = require('atom');
-var {object} = require('nuclide-commons');
 
 /**
  * Wrapper around BufferedProcess that runs the command using unix `script`
@@ -17,15 +16,30 @@ var {object} = require('nuclide-commons');
  * their stdout is terminal. `script` ensures terminal-like environment and
  * commands we run give colored output.
  */
-module.exports =
 class ScriptBufferedProcess extends BufferedProcess {
   constructor(options) {
-    options = object.assign({}, options);
-    if (options.args == null) {
-      options.args = [];
+    var localOptions = {...options};
+    if (localOptions.args == null) {
+      localOptions.args = [];
     }
-    options.args = ['-q', '/dev/null', options.command].concat(options.args);
-    options.command = 'script';
-    super(options);
+    localOptions.args = ['-q', '/dev/null', localOptions.command].concat(localOptions.args);
+    localOptions.command = 'script';
+    super(localOptions);
   }
 }
+
+/**
+ * @param options The argument to the constructor of ScriptBufferedProcess.
+ * @return A ScriptBufferedProcess with common binary paths added to `options.env`.
+ */
+async function createScriptBufferedProcessWithEnv(options: Object): Promise<BufferedProcess> {
+  var {createExecEnvironment, COMMON_BINARY_PATHS} = require('nuclide-commons');
+
+  var localOptions = {...options};
+  localOptions.env = await createExecEnvironment(localOptions.env || process.env, COMMON_BINARY_PATHS);
+  return new ScriptBufferedProcess(localOptions);
+}
+
+module.exports = {
+  createScriptBufferedProcessWithEnv,
+};

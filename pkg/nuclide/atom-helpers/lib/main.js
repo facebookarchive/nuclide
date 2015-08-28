@@ -10,12 +10,12 @@
  */
 
 module.exports = {
-  get ScriptBufferedProcess() {
-    return require('./script-buffered-process');
-  },
-
   get atomEventDebounce() {
     return require('./atom-event-debounce');
+  },
+
+  get createScriptBufferedProcessWithEnv() {
+    return require('./script-buffered-process').createScriptBufferedProcessWithEnv;
   },
 
   get fileTypeClass() {
