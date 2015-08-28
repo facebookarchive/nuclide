@@ -29,6 +29,7 @@ const MAX_HEARTBEAT_AWAY_RECONNECT_MS = 60000;
 
 // TODO(most): Rename class to reflect its new responsibilities (not just WebSocket connection).
 class NuclideSocket extends EventEmitter {
+  id: string;
 
   constructor(serverUri: string, options: ?NuclideSocketOptions) {
     super();

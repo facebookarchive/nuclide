@@ -61,6 +61,8 @@ export default class TypeRegistry {
     }, async (value: any, type: NullableType) => {
       return await this.unmarshal(value, { kind: type.name });
     });
+
+    this.registerType('void', value => null, value => null);
   }
 
   /**
@@ -95,6 +97,9 @@ export default class TypeRegistry {
    * @param type - The type object (used to find the appropriate function).
    */
   marshal(value: any, type: Type): Promise<any> {
+    if (!this._marshallers.has(type.kind)) {
+      throw new Error(`No marshaller found for type ${type.kind}.`);
+    }
     return this._marshallers.get(type.kind)(value, type);
   }
 
@@ -104,6 +109,9 @@ export default class TypeRegistry {
    * @param type - The type object (used to find the appropriate function).
    */
   unmarshal(value: any, type: Type): Promise<any> {
+    if (!this._unmarshallers.has(type.kind)) {
+      throw new Error(`No unmarshaller found for type ${type.kind}.`);
+    }
     return this._unmarshallers.get(type.kind)(value, type);
   }
 

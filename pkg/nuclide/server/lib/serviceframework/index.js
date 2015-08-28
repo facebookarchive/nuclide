@@ -9,14 +9,7 @@
  * the root directory of this source tree.
  */
 
-export var MESSAGE_TYPE = {
-  FUNCTION_CALL: 'FunctionCall',
-  METHOD_CALL: 'MethodCall',
-  NEW_OBJECT: 'NewObject',
-};
+import ServerComponent from  './ServerComponent';
+import ClientComponent from  './ClientComponent';
 
-export var RETURN_TYPE = {
-  PROMISE: 'promise',
-  VOID: 'void',
-  OBSERVABLE: 'observable',
-};
+export default {ServerComponent, ClientComponent};

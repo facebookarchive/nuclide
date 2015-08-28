@@ -25,11 +25,9 @@ var WebSocketServer = require('ws').Server;
 var {deserializeArgs, sendJsonResponse, sendTextResponse} = require('./utils');
 var {getVersion} = require('nuclide-version');
 
-var logger = require('nuclide-logging').getLogger();
+import ServiceFramework from './serviceframework';
 
-import {getDefinitions} from 'nuclide-service-parser';
-import {MESSAGE_TYPE, RETURN_TYPE} from './constants';
-import TypeRegistry from 'nuclide-service-parser/lib/TypeRegistry';
+var logger = require('nuclide-logging').getLogger();
 
 var SERVER_SHUTDOWN_TIMEOUT_MS = 1000;
 var STAT_BIN_SIZE_MS = 20;
@@ -45,7 +43,7 @@ type NuclideServerOptions = {
   trackEventLoop: ?boolean;
 }
 
-type SocketClient = {
+export type SocketClient = {
   id: string;
   subscriptions: {[channel: string]: (event: any) => void};
   socket: ?WebSocket;
@@ -69,9 +67,7 @@ class NuclideServer {
   _responses: {[timeBin: string]: any};
   _errors: Array<any>;
 
-  /* SERVICE FRAMEWORK 3.0 FIELDS */
-  _typeRegistry: TypeRegistry;
-  _remoteFunctions: Map<string, {localImplementation: Function; type: FunctionType}>;
+  _serverComponent: ServiceFramework.ServerComponent;
 
   constructor(options: NuclideServerOptions) {
     var {serverKey, serverCertificate, port, certificateAuthorityCertificate, trackEventLoop} = options;
@@ -106,50 +102,15 @@ class NuclideServer {
     this._eventEmitters = {};
 
     this._setupServices(); // Setup 1.0 and 2.0 services.
-    this._setupServices3(); // Setup 3.0 services.
 
     if (trackEventLoop) {
       blocked((ms: number) => {
         logger.info('NuclideServer event loop blocked for ' + ms + 'ms');
       });
     }
-  }
 
-  _loadServicesConfig() {
-    return require('../services-3.json');
-  }
-
-  /* Setup 3.0 services. */
-  _setupServices3() {
-    this._typeRegistry = new TypeRegistry();
-    this._remoteFunctions = new Map();
-
-    // NuclideUri type requires no transformations (it is done on the client side).
-    this._typeRegistry.registerType('NuclideUri', uri => uri, remotePath => remotePath);
-
-    var services = this._loadServicesConfig();
-    for (var service of services) {
-      logger.info(`Registering 3.0 service ${service.name}...`);
-      try {
-        var defs = getDefinitions(service.definition);
-        var localImpl = require(service.implementation);
-
-        defs.aliases.forEach((type, name) => {
-          logger.info(`Registering type alias ${name}...`);
-          this._typeRegistry.registerAlias(name, type);
-        });
-        defs.functions.forEach((type, name) => {
-          logger.info(`Registering function ${name}...`);
-          this._remoteFunctions.set(name,  {
-            localImplementation: localImpl[name],
-            type: type,
-          });
-        });
-      } catch(e) {
-        logger.error(`Failed to load service ${service.name}. Stack Trace:\n${e.stack}`);
-        continue;
-      }
-    }
+    // Setup 3.0 services.
+    this._serverComponent = new ServiceFramework.ServerComponent(this);
   }
 
   _attachUtilHandlers(app) {
@@ -514,74 +475,10 @@ class NuclideServer {
     });
   }
 
-  async _onSocketMessage3(client: SocketClient, message: any): Promise<void> {
-    var requestId = message.requestId;
-    var {localImplementation, type} = this._remoteFunctions.get(message.function);
-    var callError = null;
-
-    try {
-      switch (message.type) {
-        case MESSAGE_TYPE.FUNCTION_CALL:
-          // Transform arguments and call function.
-          var transfomedArgs = await* message.args.map((arg, i) => this._typeRegistry.unmarshal(arg, type.argumentTypes[i]));
-          var returnval = localImplementation.apply(this, transfomedArgs);
-          break;
-        case MESSAGE_TYPE.METHOD_CALL:
-          throw new Error('MethodCall not yet supported.');
-        case MESSAGE_TYPE.NEW_OBJECT:
-          throw new Error('NewObject not yet supported.');
-        default:
-          throw new Error(`Unkown message type ${message.type}`);
-      }
-    } catch (e) {
-      callError = e;
-    }
-
-    switch (type.returnType.kind) {
-      case RETURN_TYPE.VOID:
-        if (returnval) {
-          throw new Error('Expected no return value, but the function returned a value.');
-        }
-        // No need to send anything back to the user.
-        break;
-      case RETURN_TYPE.PROMISE:
-
-        if (callError != null) {
-          returnval = Promise.reject(callError);
-        }
-
-        if (!(returnval instanceof Promise)) {
-          throw new Error('Expected a Promise, but the function returned something else.');
-        }
-
-        // Transform result back.
-        returnval = returnval.then(value => this._typeRegistry.marshal(value, type.returnType.type));
-
-        returnval.then(result => {
-          this._sendSocketMessage(client, {
-            channel: SERVICE_FRAMEWORK3_CHANNEL,
-            requestId,
-            result,
-          });
-        }, error => {
-          this._sendSocketMessage(client, {
-            channel: SERVICE_FRAMEWORK3_CHANNEL,
-            requestId,
-            error,
-          });
-        });
-        break;
-      case RETURN_TYPE.OBSERVABLE:
-        throw new Error(`Observable return type not yet supported.`);
-      default:
-        throw new Error(`Unkown return type ${type.returnType.kind}.`);
-    }
-  }
-
   async _onSocketMessage(client: SocketClient, message: any): void {
     message = JSON.parse(message);
     if (message.protocol && message.protocol === SERVICE_FRAMEWORK3_CHANNEL) {
-      this._onSocketMessage3(client, message);
+      this._serverComponent.handleMessage(client, message);
       return;
     }
 

@@ -23,7 +23,7 @@ describe('InfoService', () => {
   it('Returns the correct version number', () => {
     waitsForPromise(async () => {
       invariant(testHelper);
-      var service = testHelper.getRemoteService('./services/InfoService.def');
+      var service = testHelper.getRemoteService('../services/InfoService.def');
 
       var version = await service.getServerVersion();
       expect(version).toBe(getVersion());

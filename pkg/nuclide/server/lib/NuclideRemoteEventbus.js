@@ -14,22 +14,34 @@ var {getRemoteEventName} = require('./service-manager');
 var {serializeArgs} = require('./utils');
 var {EventEmitter} = require('events');
 var NuclideSocket = require('./NuclideSocket');
-var extend = require('util')._extend;
 var {SERVICE_FRAMEWORK_EVENT_CHANNEL,
   SERVICE_FRAMEWORK_RPC_CHANNEL,
   SERVICE_FRAMEWORK_RPC_TIMEOUT_MS,
   SERVICE_FRAMEWORK3_CHANNEL} = require('./config');
 var logger = require('nuclide-logging').getLogger();
 
-import {MESSAGE_TYPE, RETURN_TYPE} from './constants';
+import {object} from 'nuclide-commons';
+import ServiceFramework from './serviceframework';
 
-type NuclideRemoteEventbusOptions = {
-  certificateAuthorityCertificate: ?Buffer;
-  clientCertificate: ?Buffer;
-  clientKey: ?Buffer;
+export type NuclideRemoteEventbusOptions = {
+  certificateAuthorityCertificate?: Buffer;
+  clientCertificate?: Buffer;
+  clientKey?: Buffer;
 };
 
 class NuclideRemoteEventbus {
+  socket: NuclideSocket;
+  eventbus: EventEmitter;
+
+  _rpcRequestId: number;
+  serviceFrameworkEventEmitter: EventEmitter;
+  _serviceFrameworkRpcEmitter: EventEmitter;
+  _serviceFramework3Emitter: EventEmitter;
+
+  _eventEmitters: { [key: number]: EventEmitter };
+
+  _clientComponent: ServiceFramework.ClientComponent;
+
   constructor(serverUri: string, options: ?NuclideRemoteEventbusOptions = {}) {
     this.socket = new NuclideSocket(serverUri, options);
     this.socket.on('message', (message) => this._handleSocketMessage(message));
@@ -39,6 +51,9 @@ class NuclideRemoteEventbus {
     this._serviceFrameworkRpcEmitter = new EventEmitter();
     this._serviceFramework3Emitter = new EventEmitter();
     this._eventEmitters = {};
+
+    this._clientComponent = new ServiceFramework.ClientComponent(this._serviceFramework3Emitter,
+      this.socket, () => this._rpcRequestId++);
   }
 
   _handleSocketMessage(message: any) {
@@ -73,7 +88,7 @@ class NuclideRemoteEventbus {
     this.eventbus.emit(channel, event);
   }
 
-  _subscribeEventOnServer(serviceName: string, methodName: string, serviceOptions: any): Promise {
+  _subscribeEventOnServer(serviceName: string, methodName: string, serviceOptions: any): Promise<any> {
     return this.callServiceFrameworkMethod(
       'serviceFramework',
       'subscribeEvent',
@@ -82,7 +97,7 @@ class NuclideRemoteEventbus {
    );
   }
 
-  _unsubscribeEventFromServer(serviceName: string, methodName: string, serviceOptions: any): Promise {
+  _unsubscribeEventFromServer(serviceName: string, methodName: string, serviceOptions: any): Promise<any> {
     return this.callServiceFrameworkMethod(
       'serviceFramework',
       'unsubscribeEvent',
@@ -112,10 +127,10 @@ class NuclideRemoteEventbus {
       methodName: string,
       methodArgs: ?Array<any>,
       extraOptions: ?any
-    ): Promise<string|any> {
+    ): Promise<any> {
     var {args, argTypes} = serializeArgs(methodArgs || []);
     try {
-      return await this.socket.xhrRequest(extend({
+      return await this.socket.xhrRequest(object.assign({
         uri: serviceName + '/' + methodName,
         qs: {
           args,
@@ -129,45 +144,13 @@ class NuclideRemoteEventbus {
     }
   }
 
-  callRemoteFunction(functionName: string, returnType: string, args: Array<any>) {
-    var requestId = this._rpcRequestId++;
-    this.socket.send({
-      protocol: SERVICE_FRAMEWORK3_CHANNEL,
-      type: MESSAGE_TYPE.FUNCTION_CALL,
-      function: functionName,
-      requestId,
-      args, // Assume args are already serialized.
-    });
-
-    switch (returnType) {
-      case RETURN_TYPE.VOID:
-        // No values to return
-        return;
-      case RETURN_TYPE.PROMISE:
-        return new Promise((resolve, reject) => {
-          this._serviceFramework3Emitter.once(requestId.toString(), (error, result) => {
-            error ? reject(error) : resolve(result);
-          });
-
-          setTimeout(() => {
-            this._serviceFramework3Emitter.removeAllListeners(requestId);
-            reject(`Timeout after ${timeout} for ${functionName}`);
-          }, SERVICE_FRAMEWORK_RPC_TIMEOUT_MS);
-        });
-      case RETURN_TYPE.OBSERVABLE:
-        throw new Error('Observable not yet supported as return type.');
-      default:
-        throw new Error(`Unkown return type: ${returnType}.`);
-    }
-  }
-
   async callServiceFrameworkMethod(
       serviceName: string,
       methodName: string,
       methodArgs: Array<any>,
       serviceOptions: any,
-      timeout=SERVICE_FRAMEWORK_RPC_TIMEOUT_MS: number
-    ): Promise<string|any> {
+      timeout: number =SERVICE_FRAMEWORK_RPC_TIMEOUT_MS
+    ): Promise<any> {
 
     var requestId = this._rpcRequestId ++;
 
@@ -185,10 +168,24 @@ class NuclideRemoteEventbus {
       });
 
       setTimeout(() => {
-        this._serviceFrameworkRpcEmitter.removeAllListeners(requestId);
+        this._serviceFrameworkRpcEmitter.removeAllListeners(requestId.toString());
         reject(`Timeout after ${timeout} for ${serviceName}/${methodName}`);
       }, timeout);
     });
+  }
+
+  // Delegate RPC functions to ServiceFramework.ClientComponent
+  callRemoteFunction(...args: Array<any>): any {
+    return this._clientComponent.callRemoteFunction.apply(this._clientComponent, args);
+  }
+  createRemoteObject(...args: Array<any>): Promise<number> {
+    return this._clientComponent.createRemoteObject.apply(this._clientComponent, args);
+  }
+  callRemoteMethod(...args: Array<any>): any {
+    return this._clientComponent.callRemoteMethod.apply(this._clientComponent, args);
+  }
+  disposeRemoteObject(...args: Array<any>): Promise<void> {
+    return this._clientComponent.disposeRemoteObject.apply(this._clientComponent, args);
   }
 
   async subscribeToChannel(channel: string, handler: (event: ?any) => void): Promise<Disposable> {
@@ -199,7 +196,7 @@ class NuclideRemoteEventbus {
     };
   }
 
-  async _callSubscribe(channel: string, options: ?any = {}): Promise {
+  async _callSubscribe(channel: string, options: ?any = {}): Promise<any> {
     // Wait for the client to connect, for the server to find a medium to send the events to.
     await this.socket.waitForConnect();
     await this.callMethod(
@@ -210,7 +207,7 @@ class NuclideRemoteEventbus {
     );
   }
 
-  consumeStream(streamId: number): Promise<Stream> {
+  consumeStream(streamId: number): Promise<EventEmitter> {
     var streamEvents = ['data', 'error', 'close', 'end'];
     return this.consumeEventEmitter(streamId, streamEvents, ['end']);
   }

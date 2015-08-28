@@ -18,7 +18,6 @@ import type {HackReference} from 'nuclide-hack-common';
 import type FileWithStats from './NuclideFsService';
 
 var fs = require('fs');
-var extend = require('util')._extend;
 
 type ExecResult = {error: ?Error; stdout: string; stderr: string};
 type NuclideClientOptions = {
@@ -252,8 +251,18 @@ class NuclideClient {
     );
   }
 
-  callRemoteFunction(functionName: string, returnType: string, args: Array<any>) {
-    return this.eventbus.callRemoteFunction(functionName, returnType, args);
+  // Delegate RPC functions to the NuclideRemoteEventbus class.
+  callRemoteFunction(...args: Array<any>): any {
+    return this.eventbus.callRemoteFunction.apply(this.eventbus, args);
+  }
+  createRemoteObject(...args: Array<any>): Promise<number> {
+    return this.eventbus.createRemoteObject.apply(this.eventbus, args);
+  }
+  callRemoteMethod(...args: Array<any>): any {
+    return this.eventbus.callRemoteMethod.apply(this.eventbus, args);
+  }
+  disposeRemoteObject(...args: Array<any>): Promise<void> {
+    return this.eventbus.disposeRemoteObject.apply(this.eventbus, args);
   }
 
   /**
