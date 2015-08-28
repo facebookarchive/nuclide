@@ -36,16 +36,18 @@ if verbose:
     logging.getLogger().setLevel(logging.DEBUG)
 
 # Run pre installation setup actions.
-from pre_installation_setup import setup 
+from pre_installation_setup import setup
 setup()
 
 # Enumerate and install packages.
 from npm import Npm
 from package_manager import PackageManager
+from platform_checker import is_windows
 
 package_manager = PackageManager()
 npm = Npm(verbose)
-package_manager.install_dependencies(npm, include_packages_that_depend_on_atom=include_apm)
+package_manager.install_dependencies(npm, include_packages_that_depend_on_atom=include_apm,
+                                     exclude_windows_incompatible_packages=is_windows())
 
 # Remove any dead symlinks under ~/.atom/packages. These can be created when a package is deleted or
 # renamed and a reference to the old package is still hanging around.

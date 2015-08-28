@@ -19,13 +19,16 @@ class PackageManager(object):
         # Keys are names of packages and values are the corresponding configs.
         self._package_map = load_package_configs()
 
-    def install_dependencies(self, npm, include_packages_that_depend_on_atom=True):
+    def install_dependencies(self, npm, include_packages_that_depend_on_atom=True,
+                             exclude_windows_incompatible_packages=False):
         import datetime
         start = datetime.datetime.now()
         logging.info('START INSTALL: %s', start)
 
         configs_to_install = []
-        for package_config in self.get_configs(include_packages_that_depend_on_atom):
+        for package_config in self.get_configs(
+                include_packages_that_depend_on_atom=include_packages_that_depend_on_atom,
+                exclude_windows_incompatible_packages=exclude_windows_incompatible_packages):
             configs_to_install.append(package_config)
         installer = TopologicalInstaller(npm, self._package_map, configs_to_install)
         installer.install()
@@ -49,7 +52,8 @@ class PackageManager(object):
         logging.info('FINISH INSTALL: %s', end)
         logging.info('PackageManager.install() took %s seconds.', (end - start).seconds)
 
-    def get_configs(self, include_packages_that_depend_on_atom=True, package_names=None):
+    def get_configs(self, include_packages_that_depend_on_atom=True,
+                    exclude_windows_incompatible_packages=False, package_names=None):
         package_sorter = PackageSorter(self._package_map, package_names_to_start=package_names)
         # configs_in_topological_order is sorted such that if B has a transitive dependency on A,
         # then A appears before B in the list.
@@ -58,6 +62,11 @@ class PackageManager(object):
         for package_config in configs_in_topological_order:
             is_atom_package = package_config['testRunner'] == 'apm'
             package_name = package_config['name']
+
+            if exclude_windows_incompatible_packages and package_config['windowsIncompatible']:
+                # Ignore Windows incompatible package while running in Windows.
+                logging.debug('Excluding Windows incompatible package: %s' % package_name)
+                continue
 
             if is_atom_package and not include_packages_that_depend_on_atom:
                 # If Atom packages are to be excluded, silently ignore them.

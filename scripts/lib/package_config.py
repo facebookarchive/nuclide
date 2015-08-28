@@ -35,6 +35,7 @@ def create_config_for_manifest(path, manifest):
     test_runner = nuclide_config.get('testRunner')
     disableTests = nuclide_config.get(
         'excludeTestsFromContinuousIntegration', False)
+    windows_incompatible = nuclide_config.get('windowsIncompatible', False)
     flowCheck = nuclide_config.get('flowCheck', False)
 
     config = {}
@@ -58,6 +59,7 @@ def create_config_for_manifest(path, manifest):
     config['excludeTestsFromContinuousIntegration'] = disableTests
 
     config['flowCheck'] = flowCheck
+    config['windowsIncompatible'] = windows_incompatible
 
     # Check for custom dependencies.
     if 'customDeps' in nuclide_config:
