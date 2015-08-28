@@ -100,17 +100,18 @@ class FileTreeActions {
       nodeKeys = nodeKeys.add(nodeKey);
     }
     this._dispatcher.dispatch({
-      actionType: ActionType.SET_SELECTED_NODES,
+      actionType: ActionType.SET_SELECTED_NODES_FOR_ROOT,
       rootKey,
       nodeKeys,
     });
   }
 
   selectSingleNode(rootKey: string, nodeKey: string): void {
+    var selectedKeysByRoot = {};
+    selectedKeysByRoot[rootKey] = new Immutable.Set([nodeKey]);
     this._dispatcher.dispatch({
-      actionType: ActionType.SET_SELECTED_NODES,
-      rootKey,
-      nodeKeys: new Immutable.Set([nodeKey]),
+      actionType: ActionType.SET_SELECTED_NODES_FOR_TREE,
+      selectedKeysByRoot,
     });
   }
 

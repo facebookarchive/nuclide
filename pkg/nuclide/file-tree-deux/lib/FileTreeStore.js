@@ -150,9 +150,11 @@ class FileTreeStore {
       case ActionType.COLLAPSE_NODE:
         this._collapseNode(payload.rootKey, payload.nodeKey);
         break;
-      case ActionType.SET_SELECTED_NODES:
-        var rootKey = payload.rootKey;
-        this._setSelectedKeys(rootKey, payload.nodeKeys);
+      case ActionType.SET_SELECTED_NODES_FOR_ROOT:
+        this._setSelectedKeys(payload.rootKey, payload.nodeKeys);
+        break;
+      case ActionType.SET_SELECTED_NODES_FOR_TREE:
+        this._setSelectedKeysByRoot(payload.selectedKeysByRoot);
         break;
       case ActionType.CREATE_CHILD:
         this._createChild(payload.nodeKey, payload.childKey);
@@ -323,11 +325,29 @@ class FileTreeStore {
     );
   }
 
+  _deleteSelectedKeys(rootKey: string): void {
+    this._set('selectedKeysByRoot', deleteProperty(this._data.selectedKeysByRoot, rootKey));
+  }
+
   _setSelectedKeys(rootKey: string, selectedKeys: Immutable.Set<string>): void {
     this._set(
       'selectedKeysByRoot',
       setProperty(this._data.selectedKeysByRoot, rootKey, selectedKeys)
     );
+  }
+
+  /**
+   * Sets the selected keys in all roots of the tree. The selected keys of root keys not in
+   * `selectedKeysByRoot` are deleted (the root is left with no selection).
+   */
+  _setSelectedKeysByRoot(selectedKeysByRoot: {[key: string]: Immutable.Set<string>}): void {
+    this.getRootKeys().forEach(rootKey => {
+      if (selectedKeysByRoot.hasOwnProperty(rootKey)) {
+        this._setSelectedKeys(rootKey, selectedKeysByRoot[rootKey]);
+      } else {
+        this._deleteSelectedKeys(rootKey);
+      }
+    });
   }
 
   _setRootKeys(rootKeys: Array<string>): void {
