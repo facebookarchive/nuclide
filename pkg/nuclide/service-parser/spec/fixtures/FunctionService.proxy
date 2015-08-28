@@ -1,0 +1,31 @@
+"use babel";
+import { Observable } from "rx-lite";
+
+module.exports = _client => {
+  remoteModule = {}
+
+  remoteModule.TestFunctionA = (arg0, arg1) => {
+    return Promise.all([_client.marshal(arg0, {
+      kind: "string"
+    }), _client.marshal(arg1, {
+      kind: "boolean"
+    })]).then(args => _client.callRemoteFunction("TestFunctionA", "promise", args)).then(value => _client.unmarshal(value, {
+      kind: "array",
+      type: {
+        kind: "string"
+      }
+    }));
+  }
+
+  remoteModule.TestFunctionB = () => {
+    return Observable.fromPromise(Promise.all([])).flatMap(args => _client.callRemoteFunction("TestFunctionB", "observable", args)).flatMap(value => _client.unmarshal(value, {
+      kind: "number"
+    }));
+  }
+
+  remoteModule.TestFunctionC = () => {
+    return Promise.all([]).then(args => _client.callRemoteFunction("TestFunctionC", "void", args));
+  }
+
+  return remoteModule;
+}

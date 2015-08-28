@@ -1,0 +1,110 @@
+{
+  "functions": {
+    "ValueTypeTestA": {
+      "argumentTypes": [
+        {
+          "kind": "named",
+          "name": "ValueTypeA"
+        },
+        {
+          "kind": "nullable",
+          "type": {
+            "kind": "named",
+            "name": "ValueTypeB"
+          }
+        }
+      ],
+      "kind": "function",
+      "returnType": {
+        "kind": "promise",
+        "type": {
+          "kind": "named",
+          "name": "ValueTypeA"
+        }
+      }
+    },
+    "ValueTypeTestB": {
+      "argumentTypes": [
+        {
+          "kind": "named",
+          "name": "ValueTypeA"
+        },
+        {
+          "type": {
+            "kind": "named",
+            "name": "ValueTypeB"
+          },
+          "kind": "array"
+        }
+      ],
+      "kind": "function",
+      "returnType": {
+        "kind": "promise",
+        "type": {
+          "fields": [
+            {
+              "name": "field1",
+              "optional": false,
+              "type": {
+                "kind": "string"
+              }
+            },
+            {
+              "name": "field2",
+              "optional": false,
+              "type": {
+                "kind": "string"
+              }
+            }
+          ],
+          "kind": "object"
+        }
+      }
+    }
+  },
+  "interfaces": {},
+  "aliases": {
+    "ValueTypeA": {
+      "fields": [
+        {
+          "name": "valueA",
+          "optional": false,
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "valueB",
+          "optional": false,
+          "type": {
+            "kind": "nullable",
+            "type": {
+              "kind": "named",
+              "name": "ValueTypeB"
+            }
+          }
+        },
+        {
+          "name": "valueC",
+          "optional": true,
+          "type": {
+            "kind": "boolean"
+          }
+        }
+      ],
+      "kind": "object"
+    },
+    "ValueTypeB": {
+      "fields": [
+        {
+          "name": "valueC",
+          "optional": false,
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "kind": "object"
+    }
+  }
+}

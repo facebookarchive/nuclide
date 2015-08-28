@@ -1,0 +1,43 @@
+{
+  "functions": {
+    "TestFunctionA": {
+      "argumentTypes": [
+        {
+          "kind": "string"
+        },
+        {
+          "kind": "boolean"
+        }
+      ],
+      "kind": "function",
+      "returnType": {
+        "kind": "promise",
+        "type": {
+          "type": {
+            "kind": "string"
+          },
+          "kind": "array"
+        }
+      }
+    },
+    "TestFunctionB": {
+      "argumentTypes": [],
+      "kind": "function",
+      "returnType": {
+        "kind": "observable",
+        "type": {
+          "kind": "number"
+        }
+      }
+    },
+    "TestFunctionC": {
+      "argumentTypes": [],
+      "kind": "function",
+      "returnType": {
+        "kind": "void"
+      }
+    }
+  },
+  "interfaces": {},
+  "aliases": {}
+}

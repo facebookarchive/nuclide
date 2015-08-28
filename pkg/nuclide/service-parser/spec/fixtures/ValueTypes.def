@@ -1,0 +1,17 @@
+export type ValueTypeA = {
+  valueA: string;
+  valueB: ?ValueTypeB;
+  valueC?: boolean;
+};
+
+export type ValueTypeB = {
+  valueC: string;
+};
+
+export function ValueTypeTestA(arg0: ValueTypeA, arg1: ?ValueTypeB): Promise<ValueTypeA> {}
+
+export function ValueTypeTestB(arg0: ValueTypeA, arg1: Array<ValueTypeB>):
+  Promise<{
+    field1: string;
+    field2: string;
+  }> {}

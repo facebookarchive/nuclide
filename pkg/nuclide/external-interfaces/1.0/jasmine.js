@@ -27,6 +27,10 @@ type JasmineMatcher = {
   toHaveBeenCalledWith(...args: Array<mixed>): boolean;
   toMatch(expected: mixed): boolean;
   toThrow(): boolean;
+
+  // Custom Matchers from nuclide-test-helpers
+  diffJson(expected: mixed): boolean;
+  diffLines(expected: string): boolean;
 };
 
 // Declaring, describing, and grouping tests
