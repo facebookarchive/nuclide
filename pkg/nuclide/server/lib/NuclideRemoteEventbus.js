@@ -17,8 +17,11 @@ var NuclideSocket = require('./NuclideSocket');
 var extend = require('util')._extend;
 var {SERVICE_FRAMEWORK_EVENT_CHANNEL,
   SERVICE_FRAMEWORK_RPC_CHANNEL,
-  SERVICE_FRAMEWORK_RPC_TIMEOUT_MS} = require('./config');
+  SERVICE_FRAMEWORK_RPC_TIMEOUT_MS,
+  SERVICE_FRAMEWORK3_CHANNEL} = require('./config');
 var logger = require('nuclide-logging').getLogger();
+
+import {MESSAGE_TYPE, RETURN_TYPE} from './constants';
 
 type NuclideRemoteEventbusOptions = {
   certificateAuthorityCertificate: ?Buffer;
@@ -34,6 +37,7 @@ class NuclideRemoteEventbus {
     this.serviceFrameworkEventEmitter = new EventEmitter();
     this._rpcRequestId = 1;
     this._serviceFrameworkRpcEmitter = new EventEmitter();
+    this._serviceFramework3Emitter = new EventEmitter();
     this._eventEmitters = {};
   }
 
@@ -49,6 +53,12 @@ class NuclideRemoteEventbus {
     if (channel === SERVICE_FRAMEWORK_EVENT_CHANNEL) {
       this.serviceFrameworkEventEmitter.emit.apply(this.serviceFrameworkEventEmitter,
           [event.name].concat(event.args));
+      return;
+    }
+
+    if (channel === SERVICE_FRAMEWORK3_CHANNEL) {
+      var {requestId, error, result} = message;
+      this._serviceFramework3Emitter.emit(requestId.toString(), error, result);
       return;
     }
 
@@ -82,8 +92,8 @@ class NuclideRemoteEventbus {
   }
 
   registerEventListener(
-    localEventName: string, 
-    callback: (...args: Array<any>) => void, 
+    localEventName: string,
+    callback: (...args: Array<any>) => void,
     serviceOptions: any
   ): Disposable {
     var [serviceName, eventMethodName] = localEventName.split('/');
@@ -116,6 +126,38 @@ class NuclideRemoteEventbus {
     } catch (err) {
       logger.error(err);
       throw err;
+    }
+  }
+
+  callRemoteFunction(functionName: string, returnType: string, args: Array<any>) {
+    var requestId = this._rpcRequestId++;
+    this.socket.send({
+      protocol: SERVICE_FRAMEWORK3_CHANNEL,
+      type: MESSAGE_TYPE.FUNCTION_CALL,
+      function: functionName,
+      requestId,
+      args, // Assume args are already serialized.
+    });
+
+    switch (returnType) {
+      case RETURN_TYPE.VOID:
+        // No values to return
+        return;
+      case RETURN_TYPE.PROMISE:
+        return new Promise((resolve, reject) => {
+          this._serviceFramework3Emitter.once(requestId.toString(), (error, result) => {
+            error ? reject(error) : resolve(result);
+          });
+
+          setTimeout(() => {
+            this._serviceFramework3Emitter.removeAllListeners(requestId);
+            reject(`Timeout after ${timeout} for ${functionName}`);
+          }, SERVICE_FRAMEWORK_RPC_TIMEOUT_MS);
+        });
+      case RETURN_TYPE.OBSERVABLE:
+        throw new Error('Observable not yet supported as return type.');
+      default:
+        throw new Error(`Unkown return type: ${returnType}.`);
     }
   }
 

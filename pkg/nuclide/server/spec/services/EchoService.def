@@ -1,0 +1,26 @@
+// Contains services that let us test marshalling by simply sending the arguments back.
+
+// Basic Primitives
+export function echoString(arg: string): Promise<string> {}
+export function echoNumber(arg: number): Promise<number> {}
+export function echoBoolean(arg: boolean): Promise<boolean> {}
+
+// More complex objects.
+export function echoDate(arg: Date): Promise<Date> {}
+export function echoRegExp(arg: RegExp): Promise<RegExp> {}
+export function echoBuffer(arg: Buffer): Promise<Buffer> {}
+
+// Parameterized types.
+export function echoArrayOfArrayOfDate(arg: Array<Array<Date>>): Promise<Array<Array<Date>>> {}
+export function echoObject(arg: {a: ?string; b: Buffer}): Promise<{a: ?string; b: Buffer}> {}
+
+// Value Types
+export type ValueTypeA = {
+  a: Date;
+  b: Buffer;
+  c?: number; // Note that as of 5.8.14, there is a bug with parsing optional props in Babel.
+};
+export function echoValueType(arg: ValueTypeA): Promise<ValueTypeA> {}
+
+// NuclideUri
+export function echoNuclideUri(arg: NuclideUri): Promise<NuclideUri> {}

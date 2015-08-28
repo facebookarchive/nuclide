@@ -16,6 +16,7 @@
 
 import type {HackReference} from 'nuclide-hack-common';
 import type FileWithStats from './NuclideFsService';
+
 var fs = require('fs');
 var extend = require('util')._extend;
 
@@ -25,7 +26,11 @@ type NuclideClientOptions = {
 };
 
 class NuclideClient {
-  constructor(id: string, eventbus : NuclideEventbus, options: ?NuclideClientOptions = {}) {
+  _id: string;
+  _options: NuclideClientOptions;
+  eventbus: NuclideEventbus;
+
+  constructor(id: string, eventbus: NuclideEventbus, options: ?NuclideClientOptions = {}) {
     this._id = id;
     this.eventbus = eventbus;
     this._options = options;
@@ -245,6 +250,10 @@ class NuclideClient {
       /*methodArgs*/ [fileName, pathToDirectory],
       /*extraOptions*/ {json: true}
     );
+  }
+
+  callRemoteFunction(functionName: string, returnType: string, args: Array<any>) {
+    return this.eventbus.callRemoteFunction(functionName, returnType, args);
   }
 
   /**

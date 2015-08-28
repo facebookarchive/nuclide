@@ -31,6 +31,8 @@ var CUSTOM_SERVICES_CONFIG_PATH = path.resolve(
 );
 var SERVICE_FRAMEWORK_EVENT_CHANNEL = 'service_framework_event';
 var SERVICE_FRAMEWORK_RPC_CHANNEL = 'service_framework_rpc';
+var SERVICE_FRAMEWORK3_CHANNEL = 'service_framework3_rpc';
+
 var SERVICE_FRAMEWORK_RPC_TIMEOUT_MS = 60 * 1000;
 var SERVICES_CONFIG_PATH = path.resolve(PACKAGE_ROOT, 'services-config.json');
 
@@ -85,4 +87,5 @@ module.exports = {
   SERVICE_FRAMEWORK_EVENT_CHANNEL,
   SERVICE_FRAMEWORK_RPC_CHANNEL,
   SERVICE_FRAMEWORK_RPC_TIMEOUT_MS,
+  SERVICE_FRAMEWORK3_CHANNEL,
 };

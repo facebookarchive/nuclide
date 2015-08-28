@@ -1,0 +1,7 @@
+[
+  {
+    "name": "InfoService",
+    "definition": "./services/InfoService.def",
+    "implementation": "./services/InfoService.js"
+  }
+]
