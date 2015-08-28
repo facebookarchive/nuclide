@@ -47,7 +47,7 @@ function testEventServiceWithServiceFramworkRegistered(
   });
 }
 
-describe('Nuclide serivce with service framework event test suite', () => {
+xdescribe('Nuclide serivce with service framework event test suite', () => {
   beforeEach(() => {
     jasmine.unspy(window, 'setTimeout');
     jasmine.getEnv().defaultTimeoutInterval = 10000;

@@ -79,7 +79,7 @@ describe('Nuclide Server test suite', () => {
     });
   });
 
-  describe('reconnect websocket flow', () => {
+  xdescribe('reconnect websocket flow', () => {
     it('server sent messages, while disconnected will still be delievered', () => {
       // Here is the initial message.
       var nuclideSocket = client.eventbus.socket;

@@ -11,7 +11,7 @@
 
 var blocked = require('../lib/blocked');
 
-describe('blocked()', () => {
+xdescribe('blocked()', () => {
   var blockHandler;
   var intervalHandler;
 

@@ -13,7 +13,7 @@ var http = require('http');
 var utils = require('../lib/utils');
 var querystring = require('querystring');
 
-describe('NuclideServer utils test', () => {
+xdescribe('NuclideServer utils test', () => {
   var server, customHandler;
 
   beforeEach(() => {

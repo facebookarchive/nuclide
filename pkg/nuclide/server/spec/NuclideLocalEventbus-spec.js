@@ -16,7 +16,7 @@ var {EventEmitter} = require('events');
 var NuclideClient = require('../lib/NuclideClient');
 var NuclideLocalEventBus = require('../lib/NuclideLocalEventbus');
 
-describe('NuclideLocalEventBus test suite', () => {
+xdescribe('NuclideLocalEventBus test suite', () => {
 
   var dirPath;
   var filePath;

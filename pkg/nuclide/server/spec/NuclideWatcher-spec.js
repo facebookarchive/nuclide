@@ -18,7 +18,7 @@ var {services: watcherServices} = require('../lib/services/NuclideWatcherService
 var FILE_MODE = 33188;
 var DIRECTORY_MODE = 16877;
 
-describe('NuclideWatcher test suite', () => {
+xdescribe('NuclideWatcher test suite', () => {
 
   var unwatchFile = watcherServices['/watcher/unwatchFile'].handler;
   var unwatchDirectoryRecursive = watcherServices['/watcher/unwatchDirectoryRecursive'].handler;

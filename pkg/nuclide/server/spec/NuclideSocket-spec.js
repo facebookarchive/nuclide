@@ -17,7 +17,7 @@ var server: NuclideServer;
 var client: NuclideClient;
 var socket: NuclideSocket;
 
-describe('NuclideSocket test suite', () => {
+xdescribe('NuclideSocket test suite', () => {
   beforeEach(() => {
     jasmine.getEnv().defaultTimeoutInterval = 10000;
     waitsForPromise(async () => {

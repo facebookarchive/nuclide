@@ -20,7 +20,7 @@ var pathToTestFile = path.join(pathToTestDir, 'testfile.txt');
 var server;
 var client;
 
-describe('NuclideSearch test suite', () => {
+xdescribe('NuclideSearch test suite', () => {
   beforeEach(() => {
     jasmine.getEnv().defaultTimeoutInterval = 10000;
     waitsForPromise(async () => {

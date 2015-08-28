@@ -20,7 +20,7 @@ function sleep(ms: number): Promise {
   });
 }
 
-describe('when more than one service instance is created for the same service', () => {
+xdescribe('when more than one service instance is created for the same service', () => {
   beforeEach(() => {
     jasmine.unspy(window, 'setTimeout');
     jasmine.getEnv().defaultTimeoutInterval = 10000;
