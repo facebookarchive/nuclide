@@ -35,7 +35,6 @@ xdescribe('NuclideServer utils test', () => {
   afterEach(() => {
     server.close();
     customHandler = null;
-    waits(1); // wait for the consumed port handle to return to the OS
   });
 
   it('can do http request in an async way', () => {
@@ -49,7 +48,7 @@ xdescribe('NuclideServer utils test', () => {
   it('parses the request body', () => {
     var bodyHandler = jasmine.createSpy();
     customHandler = (req, res) => {
-      utils.parseRequestBody(req).then(bodyHandler);
+      utils.parseRequestBody(req).then(bodyHandler).then(() => res.end());
     };
     utils.asyncRequest({uri: 'http://127.0.0.1:36845/abc', method: 'POST', body: 'string_abc'}, () => {});
     waitsFor(() => bodyHandler.callCount > 0);
