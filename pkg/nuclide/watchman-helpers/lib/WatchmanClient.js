@@ -10,10 +10,14 @@
  */
 
 var watchman = require('fb-watchman');
-var WatchmanSubscription = require('./WatchmanSubscription');
-var {ensureTrailingSeparator} = require('nuclide-commons').paths;
+
+var {isEmpty} = require('nuclide-commons').object;
 var logger = require('nuclide-logging').getLogger();
 var {getWatchmanBinaryPath} = require('./main');
+var path = require('path');
+
+import WatchmanSubscription from './WatchmanSubscription';
+import type {WatchmanSubscriptionOptions} from './WatchmanSubscription';
 
 type WatchmanSubscriptionResponse = {
   root: string;
@@ -29,16 +33,28 @@ type FileChange = {
 };
 
 class WatchmanClient {
+  _subscriptions: {[key: string]: WatchmanSubscription};
+  _clientPromise: Promise<watchman.Client>;
+  _watchmanVersionPromise: Promise<string>;
   constructor() {
     this._initWatchmanClient();
-    this._subscriptions = {};
+    this._subscriptions = Object.create(null);
     this._watchmanVersionPromise = this.version();
   }
 
-  dispose() {
-    if (this._clientPromise) {
-      this._clientPromise.then(client => client.end());
-    }
+  dispose(): Promise {
+    return new Promise((resolve, reject) => {
+      if (this._clientPromise) {
+        this._clientPromise.then(client => {
+          client.once('end', () => {
+            resolve();
+          });
+          client.end();
+        });
+      } else {
+        reject();
+      }
+    });
   }
 
   _initWatchmanClient() {
@@ -67,20 +83,33 @@ class WatchmanClient {
     this._restoreSubscriptions();
   }
 
-  async _restoreSubscriptions() {
-    var watchPromises = [];
+  async _restoreSubscriptions(): Promise {
+    var watchSubscriptions: Array<WatchmanSubscription> = [];
     for (var key in this._subscriptions) {
-      watchPromises.push(this._subscriptions[key]);
+      watchSubscriptions.push(this._subscriptions[key]);
     }
-    await Promise.all(watchPromises.map(async (subscription) => {
+    await Promise.all(watchSubscriptions.map(async (subscription: WatchmanSubscription) => {
       subscription.options.since = await this._clock(subscription.root);
       await this._watchProject(subscription.path);
       await this._subscribe(subscription.root, subscription.name, subscription.options);
     }));
   }
 
+  _getSubscription(entryPath: string): ?WatchmanSubscription {
+    return this._subscriptions[path.normalize(entryPath)];
+  }
+
+  _setSubscription(entryPath: string, subscription: WatchmanSubscription): WatchmanSubscription {
+    this._subscriptions[path.normalize(entryPath)] = subscription;
+    return subscription;
+  }
+
+  _deleteSubscription(entryPath: string): void {
+    delete this._subscriptions[path.normalize(entryPath)];
+  }
+
   _onSubscriptionResult(response: WatchmanSubscriptionResponse) {
-    var subscription = this._subscriptions[response.subscription];
+    var subscription = this._getSubscription(response.subscription);
     if (!subscription) {
       return logger.error('Subscription not found for response:!', response);
     }
@@ -88,15 +117,14 @@ class WatchmanClient {
   }
 
   async watchDirectoryRecursive(localDirectoryPath: string) : Promise<WatchmanSubscription> {
-    var directoryPath = ensureTrailingSeparator(localDirectoryPath);
-    var existingSubscription = this._subscriptions[directoryPath];
+    var existingSubscription = this._getSubscription(localDirectoryPath);
     if (existingSubscription) {
       existingSubscription.subscriptionCount++;
       return existingSubscription;
     } else {
-      var {watch: watchRoot, relative_path: relativePath} = await this._watchProject(directoryPath);
+      var {watch: watchRoot, relative_path: relativePath} = await this._watchProject(localDirectoryPath);
       var clock = await this._clock(watchRoot);
-      var options = {
+      var options: WatchmanSubscriptionOptions = {
         fields: ['name', 'new', 'exists', 'mode'],
         since: clock,
       };
@@ -105,28 +133,30 @@ class WatchmanClient {
         options.expression = ['dirname', relativePath];
       }
       // relativePath is undefined if watchRoot is the same as directoryPath.
-      var subscription = this._subscriptions[directoryPath] =
+      var subscription = this._setSubscription(localDirectoryPath,
           new WatchmanSubscription(
             /*subscriptionRoot*/ watchRoot,
             /*pathFromSubscriptionRootToSubscriptionPath*/ relativePath,
-            /*subscriptionPath*/ directoryPath,
+            /*subscriptionPath*/ localDirectoryPath,
             /*subscriptionCount*/ 1,
             /*subscriptionOptions*/ options
-          );
-      await this._subscribe(watchRoot, directoryPath, options);
+          ));
+      await this._subscribe(watchRoot, localDirectoryPath, options);
       return subscription;
     }
   }
 
   hasSubscription(entryPath: string): boolean {
-    return !!this._subscriptions[entryPath];
+    return !!this._getSubscription(entryPath);
   }
 
   async unwatch(entryPath: string): Promise {
-    if (!this._subscriptions[entryPath]) {
+    var subscription = this._getSubscription(entryPath);
+
+    if (!subscription) {
       return logger.error('No watcher entity found with path:', entryPath);
     }
-    var subscription = this._subscriptions[entryPath];
+
     if (--subscription.subscriptionCount === 0) {
 
       await this._unsubscribe(subscription.path, subscription.name);
@@ -134,7 +164,11 @@ class WatchmanClient {
       if (!subscription.pathFromSubscriptionRootToSubscriptionPath) {
         await this._deleteWatcher(entryPath);
       }
-      delete this._subscriptions[entryPath];
+      this._deleteSubscription(entryPath);
+
+      if (isEmpty(this._subscriptions)) {
+        await this.dispose();
+      }
     }
   }
 
@@ -147,7 +181,7 @@ class WatchmanClient {
     return this._command('watch-del', entryPath);
   }
 
-  _unsubscribe(subscriptionPath: string, subscriptionName: string) {
+  _unsubscribe(subscriptionPath: string, subscriptionName: string): Promise {
     return this._command('unsubscribe', subscriptionPath, subscriptionName);
   }
 
@@ -183,7 +217,7 @@ class WatchmanClient {
   _subscribe(
         watchRoot: string,
         subscriptionName: ?string,
-        options: ?WatchmanSubscriptionOptions = {}
+        options: WatchmanSubscriptionOptions
       ): Promise<WatchmanSubscription> {
     return this._command('subscribe', watchRoot, subscriptionName, options);
   }
@@ -191,7 +225,7 @@ class WatchmanClient {
   /*
    * Promisify calls to watchman client.
    */
-  _command(...args): Promise<any> {
+  _command(...args: Array<any>): Promise<any> {
     return new Promise((resolve, reject) => {
       this._clientPromise.then(client => {
         client.command(args, (error, response) =>

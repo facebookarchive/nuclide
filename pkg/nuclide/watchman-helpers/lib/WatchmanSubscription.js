@@ -11,9 +11,11 @@
 
 var {EventEmitter} = require('events');
 
-type WatchmanSubscriptionOptions = {
+export type WatchmanSubscriptionOptions = {
   expression: ?Array<string>; // e.g. ['match', '*.js'],
   fields: ?Array<string>; // e.g. ['name', 'size', 'exists', 'mode']
+  expression?: Array<string>; // e.g. ['dirname', relativePath]
+  since: string; // e.g. "c:1439492655:58601:1:14195"
 };
 
 /**
@@ -24,6 +26,12 @@ type WatchmanSubscriptionOptions = {
  *   subscriptionPath.
  */
 class WatchmanSubscription extends EventEmitter {
+  subscriptionCount: number;
+  root: string;
+  path: string;
+  pathFromSubscriptionRootToSubscriptionPath: ?string;
+  name: string;
+  options: WatchmanSubscriptionOptions;
   constructor(
       subscriptionRoot: string,
       pathFromSubscriptionRootToSubscriptionPath: ?string,
@@ -39,5 +47,4 @@ class WatchmanSubscription extends EventEmitter {
     this.options = subscriptionOptions;
   }
 }
-
 module.exports = WatchmanSubscription;

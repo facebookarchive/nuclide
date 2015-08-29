@@ -57,6 +57,11 @@ xdescribe('NuclideWatcher test suite', () => {
     };
     dirPath = temp.mkdirSync();
     filePath = path.join(dirPath, 'test.txt');
+    // Many people use restrict_root_files so watchman only will watch folders
+    // that have those listed files in them.  This list of root files almost
+    // always has .git in it.
+    var watchmanRootPath = path.join(dirPath, '.git');
+    fs.mkdirSync(watchmanRootPath);
     fs.writeFileSync(filePath, 'abc');
     // Setup the watchman project watcher.
     waitsForPromise(() => watchDirectoryRecursive(dirPath, () => {}));

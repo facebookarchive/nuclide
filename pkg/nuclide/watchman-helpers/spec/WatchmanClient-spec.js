@@ -16,8 +16,7 @@ var WatchmanClient = require('../lib/WatchmanClient');
 
 var FILE_MODE = 33188;
 
-// TODO: #7344702 Re-enable and don't depend on watchman.
-xdescribe('WatchmanClient test suite', () => {
+describe('WatchmanClient test suite', () => {
 
   var dirPath;
   var client;
@@ -29,6 +28,11 @@ xdescribe('WatchmanClient test suite', () => {
     dirPath = temp.mkdirSync();
     filePath = path.join(dirPath, 'test.txt');
     fs.writeFileSync(filePath, 'abc');
+    // Many people use restrict_root_files so watchman only will watch folders
+    // that have those listed files in them.  This list of root files almost
+    // always has .git in it.
+    var watchmanRootPath = path.join(dirPath, '.git');
+    fs.mkdirSync(watchmanRootPath);
     waits(1010);
   });
 
