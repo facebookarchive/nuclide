@@ -75,7 +75,7 @@ xdescribe('NuclideSocket test suite', () => {
       var heartbeatErrorHandler = jasmine.createSpy();
       socket.on('heartbeat.error', heartbeatErrorHandler);
       // Assume the hearbeat didn't happen.
-      socket.on('heartbeat', () => { socket._heartbeatConnectedOnce = false; });
+      socket._heartbeatConnectedOnce = false;
       server.close();
       window.advanceClock(5050); // Advance the heartbeat interval.
       waitsFor(() => heartbeatErrorHandler.callCount > 0);
