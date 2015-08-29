@@ -45,7 +45,7 @@ var providers;
  */
 
 // Cache of previously indexed folders for later use.
-var fileSearchers: any = {};
+var fileSearchers: any = Object.create(null);
 
 // TODO (mikeo): Make this another search provider
 async function doSearchDirectory(directoryUri: string, query: string): Promise<Array<FileSearchResult>> {
@@ -123,6 +123,10 @@ function initialize(server) {
 
 function shutdown(server) {
   clearProviders();
+  for (var k in fileSearchers) {
+    fileSearchers[k].dispose();
+  }
+  fileSearchers = Object.create(null);
 }
 
 module.exports = {

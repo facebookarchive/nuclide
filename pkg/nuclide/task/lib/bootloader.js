@@ -101,7 +101,7 @@ class Task {
 
   dispose() {
     if (this._child.connected) {
-      this._child.disconnect();
+      this._child.kill();
     }
     this._emitter.removeAllListeners();
   }
