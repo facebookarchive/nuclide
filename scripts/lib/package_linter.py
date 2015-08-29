@@ -271,6 +271,14 @@ class PackageLinter(object):
                 'Package %s depends directly on nuclide-jasmine, but should be in devDependencies.',
                 package['name'])
 
+        if not package['name'].startswith('fb-') and dependent_package_name.startswith('fb-'):
+            if ('baseDependencies' in package and package['baseDependencies'].has_key(dependent_package_name)):
+                self.report_error(
+                    'Package %s cannot list internal package %s in its `%s`.',
+                    package['name'],
+                    dependent_package_name,
+                    field)
+
         if package['testRunner'] == 'npm' and dependent_package['testRunner'] != 'npm':
             self.report_error('Cannot reference non-npm package %s from npm package %s',
                     dependent_package_name, package['name'])
