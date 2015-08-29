@@ -21,11 +21,9 @@ var FILE_MODE = 33188;
 
 describe('RemoteDirectory', () => {
 
-  it('does not have an existsSync() method', () => {
-    // existsSync() is not implemented to prevent GitRepositoryProvider from
-    // trying to create a GitRepository for this Directory. We need to create a
-    // RemoteGitRepositoryProvider to handle this case correctly.
-    expect(RemoteDirectory.prototype.existsSync).toBe(undefined);
+  it('does have a existsSync() method', () => {
+    var remoteDirectory = new RemoteDirectory(connectionMock, 'nuclide://example.com:9090/');
+    expect(remoteDirectory.existsSync()).toBe(false);
   });
 
   it('does not list the property used to mark the directory as remote as one of its enumerable properties.', () => {

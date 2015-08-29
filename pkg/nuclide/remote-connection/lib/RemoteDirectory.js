@@ -107,6 +107,10 @@ class RemoteDirectory {
     return this._isRoot(this._localPath);
   }
 
+  existsSync() {
+    return false;
+  }
+
   _isRoot(filePath) {
     filePath = path.normalize(filePath);
     var parts = path.parse(filePath);
