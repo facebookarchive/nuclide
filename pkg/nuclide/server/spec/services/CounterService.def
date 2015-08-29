@@ -1,4 +1,9 @@
 // An example counter service that contains a constructor + some basic methods.
+export type CounterChangeEvent = {
+  type: string;
+  oldValue: number;
+  newValue: number;
+};
 
 export class Counter {
   // Create a new counter with the given initial count.
@@ -12,6 +17,12 @@ export class Counter {
 
   // List all of the counters that have been created.
   static listCounters(): Promise<Array<Counter>> {}
+
+  // Subscribe to changes in the counter.
+  watchChanges(): Observable<CounterChangeEvent> {}
+
+  // Watch added counters.
+  static watchNewCounters(): Observable<Counter> {}
 
   // A static method that takes a Counter object as an argument.
   static indexOf(counter: Counter): Promise<number> {}

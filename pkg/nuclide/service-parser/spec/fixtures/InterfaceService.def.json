@@ -24,6 +24,16 @@
         }
       ],
       "instanceMethods": {
+        "watchChanges": {
+          "argumentTypes": [],
+          "kind": "function",
+          "returnType": {
+            "kind": "observable",
+            "type": {
+              "kind": "number"
+            }
+          }
+        },
         "len": {
           "argumentTypes": [],
           "kind": "function",

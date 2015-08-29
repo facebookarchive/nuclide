@@ -1,5 +1,5 @@
 "use babel";
-import { Observable } from "rx-lite";
+import { Observable } from "rx";
 
 module.exports = _client => {
   remoteModule = {}
@@ -32,6 +32,11 @@ module.exports = _client => {
     }
     len() {
       return Promise.all([]).then(args => this._idPromise.then(id => _client.callRemoteMethod(id, "len", "promise", args))).then(value => _client.unmarshal(value, {
+        kind: "number"
+      }));
+    }
+    watchChanges() {
+      return Observable.forkJoin(this._idPromise, Observable.concat().toArray()).concatMap(([id, args]) => _client.callRemoteMethod(id, "watchChanges", "observable", args)).concatMap(value => _client.unmarshal(value, {
         kind: "number"
       }));
     }

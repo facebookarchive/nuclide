@@ -9,11 +9,13 @@
  * the root directory of this source tree.
  */
 
+import {Disposable, Observable} from 'rx';
 import {getDefinitions} from 'nuclide-service-parser';
 import NuclideServer from '../NuclideServer';
 import TypeRegistry from 'nuclide-service-parser/lib/TypeRegistry';
 
-import type {RequestMessage, ErrorResponseMessage, PromiseResponseMessage} from './types';
+import type {RequestMessage, ErrorResponseMessage, PromiseResponseMessage,
+  ObservableResponseMessage} from './types';
 import type {SocketClient} from '../NuclideServer';
 
 var logger = require('nuclide-logging').getLogger();
@@ -36,6 +38,8 @@ export default class ServerComponent {
   _objectRegistry: Map<number, any>;
   _nextObjectId: number;
 
+  _subscriptions: Map<number, Disposable>;
+
   _server: NuclideServer;
 
   constructor(server: NuclideServer) {
@@ -47,6 +51,8 @@ export default class ServerComponent {
 
     this._nextObjectId = 1;
     this._objectRegistry = new Map();
+
+    this._subscriptions = new Map();
 
     // NuclideUri type requires no transformations (it is done on the client side).
     this._typeRegistry.registerType('NuclideUri', uri => uri, remotePath => remotePath);
@@ -179,6 +185,13 @@ export default class ServerComponent {
           returnVal = Promise.resolve();
           returnType = {kind: 'promise', type: { kind: 'void'}};
           break;
+        case 'DisposeObservable':
+          // Dispose an in-progress observable, before it has naturally completed.
+          if (this._subscriptions.has(requestId)) {
+            this._subscriptions.get(requestId).dispose();
+            this._subscriptions.delete(requestId);
+          }
+          break;
         default:
           throw new Error(`Unkown message type ${message.type}`);
       }
@@ -224,7 +237,53 @@ export default class ServerComponent {
         });
         break;
       case 'observable':
-        throw new Error(`Observable return type not yet supported.`);
+        // If there was an error executing the command, we send that back as an error Observable.
+        if (callError != null) {
+          returnVal = Observable.throw(callError);
+        }
+
+        // Ensure that the return value is an observable.
+        if (!(returnVal instanceof Observable)) {
+          returnVal = Observable.throw(new Error(
+            'Expected an Observable, but the function returned something else.'));
+        }
+
+        // Marshal the result, to send over the network.
+        returnVal = returnVal.concatMap(value => this._typeRegistry.marshal(value, returnType.type));
+
+        // Send the next, error, and completion events of the observable across the socket.
+        var subscription = returnVal.subscribe(data => {
+          var eventMessage: ObservableResponseMessage = {
+            channel: 'service_framework3_rpc',
+            type: 'ObservableMessage',
+            requestId,
+            result: {
+              type: 'next',
+              data: data,
+            },
+          };
+          this._server._sendSocketMessage(client, eventMessage);
+        }, error => {
+          var errorMessage: ErrorResponseMessage = {
+            channel: 'service_framework3_rpc',
+            type: 'ErrorMessage',
+            requestId,
+            error,
+          };
+          this._server._sendSocketMessage(client, errorMessage);
+          this._subscriptions.delete(requestId);
+        }, completed => {
+          var eventMessage: ObservableResponseMessage = {
+            channel: 'service_framework3_rpc',
+            type: 'ObservableMessage',
+            requestId,
+            result: { type: 'completed' },
+          };
+          this._server._sendSocketMessage(client, eventMessage);
+          this._subscriptions.delete(requestId);
+        });
+        this._subscriptions.set(requestId, subscription);
+        break;
       default:
         throw new Error(`Unkown return type ${returnType.kind}.`);
     }

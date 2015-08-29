@@ -88,7 +88,7 @@ class _RemoteConnectionMock {
             // of the remote proxy constructor.
             var object = { _idPromise: Promise.resolve(objectId) };
             Object.setPrototypeOf(object, proxy[name].prototype);
-            this._objectRegistry.set(objectId);
+            this._objectRegistry.set(objectId, object);
             return object;
           });
         });

@@ -1,5 +1,5 @@
 "use babel";
-import { Observable } from "rx-lite";
+import { Observable } from "rx";
 
 module.exports = _client => {
   remoteModule = {}
@@ -18,7 +18,7 @@ module.exports = _client => {
   }
 
   remoteModule.TestFunctionB = function () {
-    return Observable.fromPromise(Promise.all([])).flatMap(args => _client.callRemoteFunction("TestFunctionB", "observable", args)).flatMap(value => _client.unmarshal(value, {
+    return Observable.concat().toArray().concatMap(args => _client.callRemoteFunction("TestFunctionB", "observable", args)).concatMap(value => _client.unmarshal(value, {
       kind: "number"
     }));
   }

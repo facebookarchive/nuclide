@@ -46,7 +46,13 @@ export type DisposeRemoteObjectMessage = {
   objectId: number;
 };
 
-export type ResponseMethod = PromiseResponseMessage | ErrorResponseMessage;
+export type DisposeObservableMessage = {
+  protocol: 'service_framework3_rpc';
+  type: 'DisposeObservable';
+  requestId: number;
+}
+
+export type ResponseMethod = PromiseResponseMessage | ErrorResponseMessage | ObservableResponseMessage;
 
 export type ErrorResponseMessage = {
   channel: 'service_framework3_rpc';
@@ -60,3 +66,12 @@ export type PromiseResponseMessage = {
   requestId: number;
   result: any;
 };
+
+export type ObservableResponseMessage = {
+  channel: 'service_framework3_rpc';
+  type: 'ObservableMessage';
+  requestId: number;
+  result: ObservableResult;
+}
+
+export type ObservableResult = { type: 'completed'; } | { type: 'next'; data: any };

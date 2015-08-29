@@ -9,12 +9,15 @@
  * the root directory of this source tree.
  */
 
+import invariant from 'assert';
 import {EventEmitter} from 'events';
 import NuclideSocket from '../NuclideSocket';
+import {Observable} from 'rx';
 import {SERVICE_FRAMEWORK_RPC_TIMEOUT_MS} from '../config';
 
 import type {RequestMessage, CallRemoteFunctionMessage, CreateRemoteObjectMessage,
-  CallRemoteMethodMessage, DisposeRemoteObjectMessage, ReturnType} from './types';
+  CallRemoteMethodMessage, DisposeRemoteObjectMessage, DisposeObservableMessage,
+  ReturnType, ObservableResult} from './types';
 
 export default class ClientComponent {
   _emitter: EventEmitter;
@@ -125,7 +128,43 @@ export default class ClientComponent {
           }, SERVICE_FRAMEWORK_RPC_TIMEOUT_MS);
         });
       case 'observable':
-        throw new Error('Observable not yet supported as return type.');
+        var observable = Observable.create(observer => {
+          this._socket.send(message);
+
+          // Listen for 'next', 'error', and 'completed' events.
+          this._emitter.on(message.requestId.toString(), (error: ?Error, result: ?ObservableResult) => {
+            if (error) {
+              observer.onError(error);
+            } else {
+              invariant(result);
+              if (result.type === 'completed') {
+                observer.onCompleted();
+              } else if (result.type === 'next') {
+                observer.onNext(result.data);
+              }
+            }
+          });
+
+          // Observable dispose function, which is called on subscription dipsose, on stream
+          // completion, and on stream error.
+          return () => {
+            this._emitter.removeAllListeners(message.requestId.toString());
+
+            // Send a message to server to call the dispose function of
+            // the remote Observable subscription.
+            var disposeMessage: DisposeObservableMessage = {
+              protocol: 'service_framework3_rpc',
+              type: 'DisposeObservable',
+              requestId: message.requestId,
+            };
+            this._socket.send(disposeMessage);
+          };
+        });
+
+        // Timeout the observable.
+        return observable.timeout(SERVICE_FRAMEWORK_RPC_TIMEOUT_MS,  Observable.throw(
+          new Error(`Timeout after ${SERVICE_FRAMEWORK_RPC_TIMEOUT_MS} for requestId:` +
+          ` ${message.requestId}, ${timeoutMessage}.`)));
       default:
         throw new Error(`Unkown return type: ${returnType}.`);
     }

@@ -1,5 +1,5 @@
 "use babel";
-import { Observable } from "rx-lite";
+import { Observable } from "rx";
 
 module.exports = _client => {
   remoteModule = {}

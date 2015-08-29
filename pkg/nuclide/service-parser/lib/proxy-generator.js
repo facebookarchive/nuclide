@@ -81,7 +81,7 @@ export default function generateProxy(defs: Definitions): string {
     t.expressionStatement(t.literal('use babel')),
     t.importDeclaration([
       t.importSpecifier(t.identifier('Observable'), t.identifier('Observable'))],
-      t.literal('rx-lite')),
+      t.literal('rx')),
     assignment,
   ]);
 
@@ -132,20 +132,24 @@ function generateFunctionProxy(name: string, funcType: FunctionType): any {
       rpcCallExpression = thenPromise(rpcCallExpression, transformer);
       break;
     case 'observable':
+      // generateArgumentConversionObservable will return an observable that emits the transformed
+      // array of arguments. We concatMap this array through the RPC call, which will return the
+      // stream of events.
       rpcCallExpression = t.callExpression(
         t.memberExpression(
-          observableFromPromise(argumentsPromise), t.identifier('flatMap')
+          generateArgumentConversionObservable(funcType.argumentTypes), t.identifier('concatMap')
         ),
         [t.arrowFunctionExpression([t.identifier('args')], rpcCallExpression)]
       );
 
+      // We then map the incoming events through the appropriate marshaller. We use concatMap
+      // instead of flatMap, since concatMap ensures that the order of the events doesn't change.
       var value = t.identifier('value');
       var type = funcType.returnType.type;
       var transformer = t.arrowFunctionExpression([value],
         generateTransformStatement(value, type, false));
-
       rpcCallExpression = t.callExpression(
-        t.memberExpression(rpcCallExpression, t.identifier('flatMap')), [transformer]);
+        t.memberExpression(rpcCallExpression, t.identifier('concatMap')), [transformer]);
       break;
     default:
       throw new Error(`Unkown return type ${funcType.returnType.kind}.`);
@@ -159,7 +163,7 @@ function generateFunctionProxy(name: string, funcType: FunctionType): any {
  * Helper function that generates statments that can be used to marshal all of the
  * arguments to a function.
  * @param argumentTypes - An array of the types of the function's arguments.
- * @returns The marshalling statements, as assignment expressions.
+ * @returns An expression representing a promise that resolves to an array of the arguments.
  */
 function generateArgumentConversionPromise(argumentTypes: Array<Type>): Array<any> {
   // Convert all of the arguments into marshaled form.
@@ -169,6 +173,28 @@ function generateArgumentConversionPromise(argumentTypes: Array<Type>): Array<an
       args.map((arg, i) => generateTransformStatement(arg, argumentTypes[i], true))
     )]
   );
+}
+
+/**
+ * Helper function that generates an Observable that emits an array of converted arguments.
+ * @param argumentTypes - An array of the types of the function's arguments.
+ * @returns An expression that represents an Observable that emits an array of converted arguments.
+ * Example: `Observable.concat(_client.marshal(...), _client.marshal(...)).toArray()`
+ */
+function generateArgumentConversionObservable(argumentTypes: Array<Type>): Array<any> {
+  // Create identifiers that represent all of the arguments.
+  var args = argumentTypes.map((arg, i) => t.identifier(`arg${i}`));
+
+  // We create an initial observable by concatenating (http://rxmarbles.com/#concat) all of
+  // the marshalling promises. Concatenation takes multiple streams (Promises in this case), and
+  // returns one stream where all the elements of the input streams are emitted. Concat preserves
+  // order, ensuring that all of stream's elements are emitted before the next stream's can emit.
+  var argumentsObservable = t.callExpression(t.memberExpression(observableIdentifier, t.identifier('concat')),
+      args.map((arg, i) => generateTransformStatement(arg, argumentTypes[i], true)));
+
+  // Once we have a stream of the arguments, we can use toArray(), which returns an observable that
+  // waits for the stream to complete, and emits one event with all of the elements as an array.
+  return t.callExpression(t.memberExpression(argumentsObservable, t.identifier('toArray')), []);
 }
 
 /**
@@ -243,10 +269,12 @@ function generateRemoteDispatch(methodName: string, funcType: FunctionType) {
   var argumentsPromise = generateArgumentConversionPromise(funcType.argumentTypes);
 
   var id = t.identifier('id');
-  var rpcCallExpression = t.callExpression(callRemoteMethodExpression, [
+  var value = t.identifier('value');
+
+  var remoteMethodCall = t.callExpression(callRemoteMethodExpression, [
     id, t.literal(methodName), t.literal(funcType.returnType.kind), t.identifier('args')]);
-  rpcCallExpression = thenPromise(thisDotIdPromiseExpression, t.arrowFunctionExpression(
-    [id], rpcCallExpression));
+  var rpcCallExpression = thenPromise(thisDotIdPromiseExpression, t.arrowFunctionExpression(
+    [id], remoteMethodCall));
 
   rpcCallExpression = thenPromise(argumentsPromise, t.arrowFunctionExpression(
     [t.identifier('args')],
@@ -257,16 +285,36 @@ function generateRemoteDispatch(methodName: string, funcType: FunctionType) {
     case 'void':
       break;
     case 'promise':
-      var value = t.identifier('value');
-      var type = funcType.returnType.type;
       var transformer = t.arrowFunctionExpression([value],
-        generateTransformStatement(value, type, false));
-
+        generateTransformStatement(value, funcType.returnType.type, false));
       rpcCallExpression = thenPromise(rpcCallExpression, transformer);
       break;
     case 'observable':
-      // TODO: _idPromise should be converted into an observable, then flatMap'ed.
-      throw new Error(`Observables not yet supported.`);
+      var argumentsObservable = generateArgumentConversionObservable(funcType.argumentTypes);
+
+      // We need to resolve both the transformed arguments and the object id before making the RPC.
+      // We can use forkJoin - https://github.com/Reactive-Extensions/RxJS/blob/master/doc/api/core/operators/forkjoin.md.
+      // This will resolve to an Observable that emits an array with [id, args] as the two elements.
+      var idAndArgumentsObservable = t.callExpression(t.memberExpression(observableIdentifier,
+        t.identifier('forkJoin')), [thisDotIdPromiseExpression, argumentsObservable]);
+
+      // Once we resolve both the id and the transformed arguments, we can map them to then RPC call,
+      // which then returns the observable of data that we actually want to return.
+      rpcCallExpression = t.callExpression(
+        t.memberExpression(idAndArgumentsObservable, t.identifier('concatMap')),
+        [t.arrowFunctionExpression([
+          t.arrayPattern([t.identifier('id'), t.identifier('args')]),
+        ], remoteMethodCall)]
+      );
+
+      // Finally, we map the events through the appropriate marshaller. We use concatMap instead of
+      // flatMap to ensure that the order doesn't change, in case one event takes especially long
+      // to marshal.
+      var transformer = t.arrowFunctionExpression([value],
+        generateTransformStatement(value, funcType.returnType.type, false));
+      rpcCallExpression = t.callExpression(
+        t.memberExpression(rpcCallExpression, t.identifier('concatMap')), [transformer]);
+      break;
     default:
       throw new Error(`Unkown return type ${funcType.returnType.kind}.`);
   }
