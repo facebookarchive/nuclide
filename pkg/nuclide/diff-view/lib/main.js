@@ -89,6 +89,8 @@ module.exports = {
    *         diff view
    */
   consumeProvider(provider) {
-    uiProviders.push(provider);
+    // TODO(most): Fix UI rendering and re-introduce: t8174332
+    // uiProviders.push(provider);
+    return;
   },
 };
