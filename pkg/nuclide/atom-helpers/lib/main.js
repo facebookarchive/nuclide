@@ -50,6 +50,10 @@ module.exports = {
     return require('./observe-grammar-for-text-editors');
   },
 
+  get registerGrammarForFileExtension() {
+    return require('./register-grammar-for-file-extension');
+  },
+
   get sysinfo() {
     return require('./sysinfo');
   },

@@ -73,6 +73,9 @@ module.exports = {
   activate() {
     if (!disposables) {
       disposables = new CompositeDisposable();
+
+      var {registerGrammarForFileExtension} = require('nuclide-atom-helpers');
+      disposables.add(registerGrammarForFileExtension('source.ini', '.flowconfig'));
     }
   },
 
