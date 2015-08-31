@@ -11,12 +11,14 @@
 
 var cx = require('react-classset');
 var FileTreeActions = require('../lib/FileTreeActions');
-var FileTreeNode = require('../lib/FileTreeNode');
 var React = require('react-for-atom');
 
 var {isContextClick} = require('../lib/FileTreeHelpers');
 
-var {PropTypes} = React;
+var {
+  addons,
+  PropTypes,
+} = React;
 
 var getActions = FileTreeActions.getInstance;
 
@@ -36,32 +38,35 @@ class NodeComponent extends React.Component {
     this._onDoubleClick = this._onDoubleClick.bind(this);
   }
 
+  shouldComponentUpdate(nextProps: Object, nextState: Object) {
+    return addons.PureRenderMixin.shouldComponentUpdate.call(this, nextProps, nextState);
+  }
+
   render(): ReactElement {
-    var node = this.props.node;
     var indentLevel = this.props.indentLevel;
     var outerStyle = {
       paddingLeft: INDENT_IN_PX + indentLevel * INDENT_PER_LEVEL,
     };
     var outerClassName = cx({
-      'directory': node.isContainer,
-      'file': !node.isContainer,
+      'directory': this.props.isContainer,
+      'file': !this.props.isContainer,
       'entry list-item nuclide-tree-component-item': true,
-      'nuclide-tree-component-selected': node.isSelected(),
+      'nuclide-tree-component-selected': this.props.isSelected,
     });
     var innerClassName = cx({
       'icon name': true,
-      'icon-file-directory': node.isContainer,
-      'icon-file-text': !node.isContainer,
+      'icon-file-directory': this.props.isContainer,
+      'icon-file-text': !this.props.isContainer,
     });
     var icon: ?ReactElement;
-    if (node.isLoading()) {
+    if (this.props.isLoading) {
       icon = <span className="nuclide-tree-component-item-arrow-spinner">{SPINNER}</span>;
-    } else if (node.isContainer) {
-      icon = node.isExpanded() ? <span>{DOWN_ARROW}</span> : <span>{RIGHT_ARROW}</span>;
+    } else if (this.props.isContainer) {
+      icon = this.props.isExpanded ? <span>{DOWN_ARROW}</span> : <span>{RIGHT_ARROW}</span>;
     }
     return (
       <div
-        key={node.nodeKey}
+        key={this.props.nodeKey}
         className={outerClassName}
         style={outerStyle}
         onClick={this._onClick}
@@ -70,57 +75,60 @@ class NodeComponent extends React.Component {
         <span ref="arrow" className="nuclide-tree-component-item-arrow">{icon}</span>
         <span
           className={innerClassName}
-          data-name={node.nodeName}
-          data-path={node.nodePath}>
-          {node.nodeName}
+          data-name={this.props.nodeName}
+          data-path={this.props.nodePath}>
+          {this.props.nodeName}
         </span>
       </div>
     );
   }
 
   _onClick(event: SyntheticMouseEvent) {
-    var node = this.props.node;
     if (React.findDOMNode(this.refs.arrow).contains(event.target)) {
       return this._onArrowClick();
     }
     var modifySelection = event.ctrlKey || event.metaKey;
     if (modifySelection) {
-      getActions().toggleSelectNode(node.rootKey, node.nodeKey);
+      getActions().toggleSelectNode(this.props.rootKey, this.props.nodeKey);
     } else {
-      getActions().selectSingleNode(node.rootKey, node.nodeKey);
+      getActions().selectSingleNode(this.props.rootKey, this.props.nodeKey);
     }
   }
 
   _onMouseDown(event: SyntheticMouseEvent) {
     // Select node on right-click (in order for context menu to behave correctly).
     if (isContextClick(event)) {
-      var node = this.props.node;
-      if (!node.isSelected()) {
-        getActions().selectSingleNode(node.rootKey, node.nodeKey);
+      if (!this.props.isSelected) {
+        getActions().selectSingleNode(this.props.rootKey, this.props.nodeKey);
       }
     }
   }
 
   _onDoubleClick(): void {
-    var node = this.props.node;
-    if (!node.isContainer) {
-      getActions().confirmNode(node.rootKey, node.nodeKey);
+    if (!this.props.isContainer) {
+      getActions().confirmNode(this.props.rootKey, this.props.nodeKey);
     }
   }
 
   _onArrowClick(): void {
-    var node = this.props.node;
-    if (node.isExpanded()) {
-      getActions().collapseNode(node.rootKey, node.nodeKey);
+    if (this.props.isExpanded) {
+      getActions().collapseNode(this.props.rootKey, this.props.nodeKey);
     } else {
-      getActions().expandNode(node.rootKey, node.nodeKey);
+      getActions().expandNode(this.props.rootKey, this.props.nodeKey);
     }
   }
 }
 
 NodeComponent.propTypes = {
   indentLevel: PropTypes.number.isRequired,
-  node: PropTypes.instanceOf(FileTreeNode).isRequired,
+  isContainer: PropTypes.bool.isRequired,
+  isExpanded: PropTypes.bool.isRequired,
+  isLoading: PropTypes.bool.isRequired,
+  isSelected: PropTypes.bool.isRequired,
+  nodeKey: PropTypes.string.isRequired,
+  nodeName: PropTypes.string.isRequired,
+  nodePath: PropTypes.string.isRequired,
+  rootKey: PropTypes.string.isRequired,
 };
 
 module.exports = NodeComponent;

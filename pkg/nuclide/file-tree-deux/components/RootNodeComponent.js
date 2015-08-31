@@ -44,7 +44,18 @@ class RootNodeComponent extends React.Component {
 
   _renderNode(node: FileTreeNode, indentLevel: number): Array<ReactElement> {
     var elements = [
-      <NodeComponent key={node.nodeKey} node={node} indentLevel={indentLevel} />,
+      <NodeComponent
+        indentLevel={indentLevel}
+        isContainer={node.isContainer}
+        isExpanded={node.isExpanded()}
+        isLoading={node.isLoading()}
+        isSelected={node.isSelected()}
+        key={node.nodeKey}
+        nodeKey={node.nodeKey}
+        nodeName={node.nodeName}
+        nodePath={node.nodePath}
+        rootKey={node.rootKey}
+      />,
     ];
     if (node.isExpanded()) {
       node.getChildNodes().forEach(childNode => {
