@@ -1,0 +1,17 @@
+{
+  "name": "nuclide-process-output",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "Provides a service for opening a new Atom pane with the output of a running process.",
+  "nuclide": {
+    "packageType": "Atom",
+    "testRunner": "apm"
+  },
+  "engines": {
+    "atom": ">=1.0.7"
+  },
+  "devDependencies": {
+    "nuclide-external-interfaces": "0.0.0"
+  }
+}
