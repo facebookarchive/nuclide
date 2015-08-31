@@ -16,7 +16,7 @@ var {EventEmitter} = require('events');
 var NuclideClient = require('../lib/NuclideClient');
 var NuclideLocalEventBus = require('../lib/NuclideLocalEventbus');
 
-xdescribe('NuclideLocalEventBus test suite', () => {
+describe('NuclideLocalEventBus test suite', () => {
 
   var dirPath;
   var filePath;
@@ -29,6 +29,7 @@ xdescribe('NuclideLocalEventBus test suite', () => {
     filePath = path.join(dirPath, 'file.txt');
     fileContents = 'sample contents!';
     fs.writeFileSync(filePath, fileContents);
+    fs.mkdirSync(path.join(dirPath, '.git'));
     eventBus = new NuclideLocalEventBus();
     client = new NuclideClient('test', eventBus);
   });
@@ -70,6 +71,7 @@ xdescribe('NuclideLocalEventBus test suite', () => {
         runs(() => {
           expect(fileChangeHandler.callCount).toBe(1);
           expect(directoryChangeHandler.callCount).toBe(1);
+          client.unwatchDirectoryRecursive(dirPath);
         });
       });
     });
