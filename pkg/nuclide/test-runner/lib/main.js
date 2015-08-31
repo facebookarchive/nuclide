@@ -59,6 +59,7 @@ class Activation {
         }
       )
     );
+    // Listen for run events on files in the file tree
     this._disposables.add(
       atom.commands.add(
         '.entry.file.list-item',
@@ -69,43 +70,27 @@ class Activation {
         }
       )
     );
+    // Listen for run events on directories in the file tree
+    this._disposables.add(
+      atom.commands.add(
+        '.entry.directory.list-item',
+        'nuclide-test-runner:run-tests',
+        (event) => {
+          var target = event.currentTarget.querySelector('.name');
+          this._controller.runTests(target.dataset.path);
+        }
+      )
+    );
     this._disposables.add(
       atom.contextMenu.add({
+        '.entry.directory.list-item': [
+          {type: 'separator'},
+          this._createRunTestsContextMenuItem('Run tests in'),
+          {type: 'separator'},
+        ],
         '.entry.file.list-item': [
           {type: 'separator'},
-          {
-            // Intentionally **not** an arrow function because Atom sets the context when calling
-            // this and allows dynamically setting values by assigning to `this`.
-            created: function(event) {
-              var target = event.target;
-              if (target.dataset.name === undefined) {
-                // If the event did not happen on the `name` span, search for it in the descendants.
-                target = target.querySelector('.name');
-              }
-              if (target.dataset.name === undefined) {
-                // If no necessary `.name` descendant is found, don't display a context menu.
-                return false;
-              }
-              var name = target.dataset.name;
-              this.command = 'nuclide-test-runner:run-tests';
-              this.label = `Run tests at '${limitString(name)}'`;
-            },
-            shouldDisplay: (event) => {
-              // Don't show a testing option if there are no test runners.
-              if (this._testRunners.size === 0) {
-                return false;
-              }
-
-              var target = event.target;
-              if (target.dataset.name === undefined) {
-                // If the event did not happen on the `name` span, search for it in the descendants.
-                target = target.querySelector('.name');
-              }
-              // If no descendant has the necessary dataset to create this menu item, don't create
-              // it.
-              return target != null && target.dataset.name != null && target.dataset.path != null;
-            },
-          },
+          this._createRunTestsContextMenuItem('Run tests at'),
           {type: 'separator'},
         ],
       })
@@ -133,6 +118,42 @@ class Activation {
 
   serialize(): Object {
     return this._controller.serialize();
+  }
+
+  _createRunTestsContextMenuItem(label: string): Object {
+    return {
+      // Intentionally **not** an arrow function because Atom sets the context when calling this and
+      // allows dynamically setting values by assigning to `this`.
+      created: function(event) {
+        var target = event.target;
+        if (target.dataset.name === undefined) {
+          // If the event did not happen on the `name` span, search for it in the descendants.
+          target = target.querySelector('.name');
+        }
+        if (target.dataset.name === undefined) {
+          // If no necessary `.name` descendant is found, don't display a context menu.
+          return false;
+        }
+        var name = target.dataset.name;
+        this.command = 'nuclide-test-runner:run-tests';
+        this.label = `${label} '${limitString(name)}'`;
+      },
+      shouldDisplay: (event) => {
+        // Don't show a testing option if there are no test runners.
+        if (this._testRunners.size === 0) {
+          return false;
+        }
+
+        var target = event.target;
+        if (target.dataset.name === undefined) {
+          // If the event did not happen on the `name` span, search for it in the descendants.
+          target = target.querySelector('.name');
+        }
+        // If no descendant has the necessary dataset to create this menu item, don't create
+        // it.
+        return target != null && target.dataset.name != null && target.dataset.path != null;
+      },
+    };
   }
 
 }
