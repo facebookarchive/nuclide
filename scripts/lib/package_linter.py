@@ -58,11 +58,21 @@ class PackageLinter(object):
         is_python_2_7_or_later = sys.version_info >= (2, 7)
         self._preserves_json_property_order = is_python_2_7_or_later
         self._supports_config_parser_allow_no_value = is_python_2_7_or_later
+        self._current_package_json = None
 
     def validate_packages(self):
         for package_name in self._package_map:
             if not self.is_whitelisted_package(package_name):
-                self.validate_package(package_name, self._package_map[package_name])
+                package = self._package_map[package_name]
+                # It is admittedly a little gross to set this as a field rather than threading it
+                # through validate_package() or creating a new "Validator" object for each package
+                # that has the path to the package.json as a field so it doesn't have to be used as
+                # a "global". However, that would make this class harder to subclass. Fortunately,
+                # this logic is very fast, so it doesn't seem like we'll have to make it
+                # multi-threaded any time soon, so we can get away with sharing this field.
+                self._current_package_json = os.path.join(
+                        package['packageRootAbsolutePath'], 'package.json')
+                self.validate_package(package_name, package)
         return not self._had_error
 
     def is_whitelisted_package(self, package_name):
@@ -323,5 +333,5 @@ class PackageLinter(object):
         return ['nuclide-', 'hyperclick']
 
     def report_error(self, message, *args):
-        logging.error('PACKAGE ERROR: ' + message, *args)
+        logging.error('PACKAGE ERROR (' + self._current_package_json + '): ' + message, *args)
         self._had_error = True
