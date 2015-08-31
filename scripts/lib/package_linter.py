@@ -38,7 +38,7 @@ PACKAGES_WITHOUT_TESTS = [
 PACKAGE_NAME_WHITELIST = [
     'hyperclick', # we want to upstream this to atom, so do not require nuclide- prefix
 ]
-
+PATH_TO_FORMAT_PACKAGE_JSON_SCRIPT = 'fbobjc/Tools/Nuclide/scripts/dev/fix-package-json-files'
 
 EXACT_SEMVER_RE = re.compile(r'^\d+\.\d+\.\d+$')
 
@@ -308,8 +308,11 @@ class PackageLinter(object):
         for value in package[field]:
             if last:
                 if last >= value:
-                    self.report_error('Unsorted field "%s" in %s near %s',
-                            field, package_name, value)
+                    self.report_error('Unsorted field "%s" in %s near %s. Run %s to fix it.',
+                            field,
+                            package_name,
+                            value,
+                            PATH_TO_FORMAT_PACKAGE_JSON_SCRIPT)
                     return
             last = value
 

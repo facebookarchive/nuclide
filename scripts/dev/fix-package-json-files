@@ -1,0 +1,35 @@
+#!/bin/bash
+
+# Copyright (c) 2015-present, Facebook, Inc.
+# All rights reserved.
+#
+# This source code is licensed under the license found in the LICENSE file in
+# the root directory of this source tree.
+
+# Alpha-sorts the "dependencies" and "devDependencies" for every package's package.json file in the
+# repository.
+
+# TODO: Implement this in a platform-independent way. Node or Python would be preferred.
+
+set -e
+
+SCRIPT_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+SUMFILE=$SCRIPT_DIR/node_modules/package.json.sum
+
+set +e
+shasum -c $SUMFILE 2> /dev/null > /dev/null
+shacode=$?
+set -e
+
+if [[ $shacode -ne 0 ]] ; then
+  # Install jscodeshift via `npm install`, which spews some warnings.
+  $( cd $SCRIPT_DIR && npm install jscodeshift@0.3.6 2> /dev/null 1>&2 )
+
+  shasum $SCRIPT_DIR/node_modules/jscodeshift/package.json > $SUMFILE
+fi
+
+# Run ./scripts/dev/packages to get the list of package.json files and then pipe that
+# into the jscodeshift transform.
+$SCRIPT_DIR/packages | \
+    xargs $SCRIPT_DIR/node_modules/.bin/jscodeshift \
+    --transform $SCRIPT_DIR/../lib/sort-package-json-deps.js \
