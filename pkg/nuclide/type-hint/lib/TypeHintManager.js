@@ -27,11 +27,39 @@ type TypeHintProvider = {
 class TypeHintManager {
 
   _typeHintProviders: Array<TypeHintProvider>;
+  /**
+   * This helps determine if we should show the type hint when toggling it via
+   * command. The toggle command first negates this, and then if this is true
+   * shows a type hint, otherwise it hides the current typehint.
+   */
+  _typeHintToggle: boolean;
 
   constructor() {
     this._subscriptions = new CompositeDisposable();
+
+    this._subscriptions.add(atom.commands.add(
+      'atom-text-editor',
+      'nuclide-type-hint:toggle',
+      () => {
+        this._typeHintToggle = !this._typeHintToggle;
+        if (this._typeHintToggle) {
+          var editor = atom.workspace.getActiveTextEditor();
+          var position = editor.getCursorScreenPosition();
+          this._typeHintInEditor(editor, position);
+        } else {
+          this._typeHintElement.style.display = 'none';
+        }
+      }
+    ));
+
     // TODO(most): Replace with @jjiaa's mouseListenerForTextEditor introduced in D2005545.
     this._subscriptions.add(atom.workspace.observeTextEditors(editor => {
+      // When the cursor moves the next time we do a toggle we should show the
+      // new type hint
+      this._subscriptions.add(editor.onDidChangeCursorPosition(() => {
+        this._typeHintToggle = false;
+      }));
+
       var editorView = atom.views.getView(editor);
       var mouseMoveListener = (e) => this._delayedTypeHint(e, editor, editorView);
       editorView.addEventListener('mousemove', mouseMoveListener);
@@ -51,6 +79,7 @@ class TypeHintManager {
     this._typeHintElement.className = 'nuclide-type-hint-overlay';
     this._marker = null;
     this._typeHintTimer = null;
+    this._typeHintToggle = false;
   }
 
   _clearTypeHintTimer() {
@@ -111,6 +140,7 @@ class TypeHintManager {
     this._typeHintElement.style.left = - (expressionLength * editor.getDefaultCharWidth()) +  'px';
     this._typeHintElement.style.top = - (2 * editor.getLineHeightInPixels()) + 'px';
     this._typeHintElement.textContent = hint;
+    this._typeHintElement.style.display = 'block';
     editor.decorateMarker(this._marker, {type: 'overlay', position: 'head', item: this._typeHintElement});
   }
 
