@@ -569,7 +569,7 @@ declare class atom$TextBuffer {
 
   // Mutating Text
   setText(text: string): atom$Range;
-  append(text: string, options: {
+  append(text: string, options: ?{
     normalizeLineEndings?: boolean;
     undo?: string;
   }): atom$Range;
