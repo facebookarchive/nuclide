@@ -446,6 +446,10 @@ declare class atom$Workspace {
 declare class atom$BufferedNodeProcess { }
 
 declare class atom$BufferedProcess {
+  // Event Subscription
+  onWillThrowError(
+    callback: (errorObject: {error: Object, handle: mixed}) => mixed
+  ): atom$Disposable;
   // Helper Methods
   kill(): void;
 }
