@@ -46,6 +46,9 @@ export async function echoArrayOfArrayOfDate(arg: Array<Array<Date>>): Promise<A
 export async function echoObject(arg: {a: ?string; b: Buffer}): Promise<{a: ?string; b: Buffer}> {
   return arg;
 }
+export async function echoSet(arg: Set<string>): Promise<Set<string>> {
+  return arg;
+}
 
 // Value Type
 export async function echoValueType(arg: ValueTypeA): ValueTypeA {

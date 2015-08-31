@@ -13,6 +13,7 @@ export function echoBuffer(arg: Buffer): Promise<Buffer> {}
 // Parameterized types.
 export function echoArrayOfArrayOfDate(arg: Array<Array<Date>>): Promise<Array<Array<Date>>> {}
 export function echoObject(arg: {a: ?string; b: Buffer}): Promise<{a: ?string; b: Buffer}> {}
+export function echoSet(arg: Set<string>): Promise<Set<string>> {}
 
 // Value Types
 export type ValueTypeA = {

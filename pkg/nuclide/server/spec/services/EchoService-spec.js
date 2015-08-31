@@ -98,6 +98,15 @@ describe('EchoServer', () => {
       expect(results.b.equals(b)).toBe(true);
     });
   });
+  it('Echoes a Set.', () => {
+    var original = new Set(['a', 'b']);
+    waitsForPromise(async () => {
+      var results = await service.echoSet(original);
+      expect(results.has('a')).toBeTruthy();
+      expect(results.has('b')).toBeTruthy();
+      expect(results.has('c')).toBeFalsy();
+    });
+  });
 
   // Echo value types.
   it('Echoes a value type (struct).', () => {

@@ -187,7 +187,7 @@ export default class TypeRegistry {
   }
 
   _registerContainers(): void {
-    // Serialize / Deserialize Arrays
+    // Serialize / Deserialize Arrays.
     this.registerType('array', async (value: any, type: ArrayType) => {
       assert(value instanceof Array, 'Expected an object of type Array.');
       return await* value.map(elem => this.marshal(elem, type.type));
@@ -196,7 +196,7 @@ export default class TypeRegistry {
       return await* value.map(elem => this.unmarshal(elem, type.type));
     });
 
-    // Serialize and Deserialize Objects
+    // Serialize and Deserialize Objects.
     this.registerType('object', async (obj: any, type: ObjectType) => {
       assert(typeof obj === 'object', 'Expected an argument of type object.');
       var newObj = {}; // Create a new object so we don't mutate the original one.
@@ -229,6 +229,18 @@ export default class TypeRegistry {
       return newObj;
     });
 
-    // TODO: Serialize Map and Set.
+    // Serialize / Deserialize Sets.
+    this.registerType('set', async (value: any, type: SetType) => {
+      assert(value instanceof Set, 'Expected an object of type Set.');
+      var serializePromises = [];
+      for (var elem of value) {
+        serializePromises.push(this.marshal(elem, type.type));
+      }
+      return await Promise.all(serializePromises);
+    }, async (value: any, type: SetType) => {
+      assert(value instanceof Array, 'Expected an object of type Array.');
+      var elements = await Promise.all(value.map(elem => this.unmarshal(elem, type.type)));
+      return new Set(elements);
+    });
   }
 }
