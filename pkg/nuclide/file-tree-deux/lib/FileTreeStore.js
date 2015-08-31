@@ -355,23 +355,10 @@ class FileTreeStore {
     var newRootKeySet = new Set(rootKeys);
     oldRootKeys.forEach((rootKey) => {
       if (!newRootKeySet.has(rootKey)) {
-        this._cleanupRoot(rootKey);
+        this._purgeRoot(rootKey);
       }
     });
     this._set('rootKeys', rootKeys);
-  }
-
-  // TODO: Should we cleanup childKeyMap and isLoadingMap? The latter contains promises which
-  // cannot be cancelled, so this might be tricky.
-  _cleanupRoot(rootKey: string): void {
-    var expandedKeys = this._data.expandedKeysByRoot[rootKey];
-    if (expandedKeys) {
-      expandedKeys.forEach((nodeKey) => {
-        this._removeSubscription(rootKey, nodeKey);
-      });
-      this._set('expandedKeysByRoot', deleteProperty(this._data.expandedKeysByRoot, rootKey));
-    }
-    this._set('selectedKeysByRoot', deleteProperty(this._data.selectedKeysByRoot, rootKey));
   }
 
   // This sets a single child node. It's useful when expanding to a deeply nested node.
@@ -476,6 +463,29 @@ class FileTreeStore {
         this._setSelectedKeys(rootKey, selectedKeys.delete(nodeKey));
       }
     });
+  }
+
+  // TODO: Should we clean up isLoadingMap? It contains promises which cannot be cancelled, so this
+  // might be tricky.
+  _purgeRoot(rootKey: string): void {
+    var expandedKeys = this._data.expandedKeysByRoot[rootKey];
+    if (expandedKeys) {
+      expandedKeys.forEach((nodeKey) => {
+        this._removeSubscription(rootKey, nodeKey);
+      });
+      this._set('expandedKeysByRoot', deleteProperty(this._data.expandedKeysByRoot, rootKey));
+    }
+    this._set('selectedKeysByRoot', deleteProperty(this._data.selectedKeysByRoot, rootKey));
+    // Remove all child keys so that on re-addition of this root the children will be fetched again.
+    var childKeys = this._data.childKeyMap[rootKey];
+    if (childKeys) {
+      childKeys.forEach((childKey) => {
+        if (FileTreeHelpers.isDirKey(childKey)) {
+          this._set('childKeyMap', deleteProperty(this._data.childKeyMap, childKey));
+        }
+      });
+      this._set('childKeyMap', deleteProperty(this._data.childKeyMap, rootKey));
+    }
   }
 
   reset(): void {
