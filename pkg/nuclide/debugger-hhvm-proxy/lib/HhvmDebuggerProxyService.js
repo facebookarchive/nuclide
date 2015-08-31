@@ -23,6 +23,10 @@ class HhvmDebuggerProxyService {
     throw new Error('abstract');
   }
 
+  launchScript(scriptPath: string): Promise<string> {
+    throw new Error('abstract');
+  }
+
   sendCommand(message: string): void {
     throw new Error('abstract');
   }

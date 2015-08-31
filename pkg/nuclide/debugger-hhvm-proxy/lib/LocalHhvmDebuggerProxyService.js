@@ -93,6 +93,31 @@ class LocalHhvmDebuggerProxyService extends HhvmDebuggerProxyService {
     return 'HHVM connected';
   }
 
+  async launchScript(scriptPath: string): Promise<string> {
+    log('launchScript: ' + scriptPath);
+    var child_process = require('child_process');
+    var args = ['-c', 'xdebug.ini', scriptPath];
+    // TODO[jeffreytan]: make hhvm path configurable so that it will
+    // work for non-FB environment.
+    var proc = child_process.spawn('/usr/local/hphpi/bin/hhvm', args);
+
+    proc.stdout.on('data', chunk => {
+        // stdout should hopefully be set to line-buffering, in which case the
+        // string would come on one line.
+        var block: string = chunk.toString();
+        var output = `child_process stdout: ${block}`;
+        log(output);
+      });
+    proc.on('error', err => {
+      log('child_process error: ' + err);
+    });
+    proc.on('exit', code => {
+      log('child_process exit: ' + code);
+    });
+
+    return 'Script launched';
+  }
+
   sendCommand(message: string): void {
     log('Recieved command: ' + message);
     if (this._translator) {
