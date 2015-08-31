@@ -18,7 +18,9 @@ type Loc = {
   column: number;
 }
 
-var {asyncExecute, safeSpawn, findNearestFile, getConfigValueAsync} = require('nuclide-commons');
+import {filter} from 'fuzzaldrin';
+
+var {asyncExecute, safeSpawn} = require('nuclide-commons');
 var {assign} = require('nuclide-commons').object;
 var logger = require('nuclide-logging').getLogger();
 var FlowService = require('./FlowService');
@@ -219,14 +221,17 @@ class LocalFlowService extends FlowService {
       }
       if (result.exitCode === 0) {
         var json = JSON.parse(result.stdout);
-        var replacementPrefix = /^\s*$/.test(prefix) ? '' : prefix;
-        return json.map(item => {
+        // If it is just whitespace and punctuation, ignore it (this keeps us
+        // from eating leading dots).
+        var replacementPrefix = /^[\s.]*$/.test(prefix) ? '' : prefix;
+        var candidates = json.map(item => {
           return {
             text: item['name'],
             rightLabel: item['type'],
             replacementPrefix,
           };
         });
+        return filter(candidates, replacementPrefix, { key: 'text' });
       } else {
         return [];
       }

@@ -62,12 +62,6 @@ module.exports = {
       description: 'Display tooltips with Flow types',
     },
 
-    enableAutocomplete: {
-      type: 'boolean',
-      default: false,
-      description: 'Currently does not work well, enable it if you would like to try it anyway',
-    },
-
     diagnosticsOnFly: {
       type: 'boolean',
       default: false,
@@ -91,20 +85,16 @@ module.exports = {
       var cursor = editor.getLastCursor();
       var line = cursor.getBufferRow();
       var col = cursor.getBufferColumn();
-
-      var enabled = atom.config.get('nuclide-flow.enableAutocomplete');
-      if (enabled) {
-        return getServiceByNuclideUri('FlowService', file)
-          .getAutocompleteSuggestions(file, contents, line, col, prefix);
-      } else {
-        return Promise.resolve([]);
-      }
+      return getServiceByNuclideUri('FlowService', file)
+        .getAutocompleteSuggestions(file, contents, line, col, prefix);
     };
 
     return {
       selector: JS_GRAMMARS.map(grammar => '.' + grammar).join(', '),
       disableForSelector: '.source.js .comment',
       inclusionPriority: 1,
+      // We want to get ranked higher than the snippets provider.
+      suggestionPriority: 5,
       getSuggestions,
     };
   },

@@ -13,11 +13,11 @@ var {uncachedRequire} = require('nuclide-test-helpers');
 
 describe('LocalFlowService', () => {
   var file = 'test.js';
-  var currentContents = '/* @flow */\nvar x = "this_is_a_string"';
+  var currentContents = '/* @flow */\nvar x = "this_is_a_string"\nvar y;';
   var line = 2;
   var column = 12;
 
-  var flowService;
+  var flowService: any;
 
   function newFlowService() {
     var localFlowService = '../lib/LocalFlowService';
@@ -37,7 +37,7 @@ describe('LocalFlowService', () => {
   });
 
   function mockExec(outputString) {
-    spyOn(flowService, '_execFlow').andReturn({stdout: outputString});
+    spyOn(flowService, '_execFlow').andReturn({stdout: outputString, exitCode: 0});
   }
 
   describe('flow server creation and teardown', () => {
@@ -142,6 +142,83 @@ describe('LocalFlowService', () => {
         var stdin = execArgs[1].stdin;
         expect(flowArgs[0]).toBe('check-contents');
         expect(stdin).toBe(currentContents);
+      });
+    });
+  });
+
+  describe('getAutocompleteSuggestions', () => {
+    var prefix: any;
+    var optionNames: any;
+    var options: any;
+
+    function runWith(results) {
+      mockExec(JSON.stringify(results));
+      return flowService.getAutocompleteSuggestions(
+        file,
+        currentContents,
+        line,
+        column,
+        prefix,
+      );
+    }
+
+    async function getNameArray(results: Object): Promise<Array<string>> {
+      return ((await runWith(results)).map(item => item.text));
+    }
+
+    async function getNameSet(results: Object): Promise<Set<string>> {
+      return new Set(await getNameArray(results));
+    }
+
+    function hasEqualElements(set1: Set<string>, set2: Set<string>): boolean {
+      if (set1.size !== set2.size) {
+        return false;
+      }
+      for (var item of set1) {
+        if (!set2.has(item)) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    beforeEach(() => {
+      prefix = '';
+      optionNames = [
+        'Foo',
+        'foo',
+        'Bar',
+        'BigLongNameOne',
+        'BigLongNameTwo',
+      ];
+      options = optionNames.map(name => ({name, type: 'foo'}));
+    });
+
+    it('should provide suggestions', () => {
+      waitsForPromise(async () => {
+        expect(hasEqualElements(await getNameSet(options), new Set(optionNames))).toBe(true);
+      });
+    });
+
+    it('should not filter suggestions if the prefix is a .', () => {
+      waitsForPromise(async () => {
+        prefix = '.';
+        expect(hasEqualElements(await getNameSet(options), new Set(optionNames))).toBe(true);
+      });
+    });
+
+    it('should filter suggestions by the prefix', () => {
+      waitsForPromise(async () => {
+        prefix = 'bln';
+        expect(hasEqualElements(await getNameSet(options), new Set(['BigLongNameOne', 'BigLongNameTwo']))).toBe(true);
+      });
+    });
+
+    it('should rank better matches higher', () => {
+      waitsForPromise(async () => {
+        prefix = 'one';
+        var nameArray = await getNameArray(options);
+        expect(nameArray[0]).toEqual('BigLongNameOne');
       });
     });
   });
