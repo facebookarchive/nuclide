@@ -73,15 +73,15 @@ class RemoteProjectsController {
 
   consumeStatusBar(statusBar: Element): void {
     this._statusBarDiv = document.createElement('div');
-    this._statusBarDiv.className = 'nuclide-remote-projects-status-container';
+    this._statusBarDiv.className = 'nuclide-remote-projects inline-block';
 
     var tooltip = atom.tooltips.add(
       this._statusBarDiv,
-      {title: 'Click to show details.'}
+      {title: 'Click to show details of connection.'}
     );
-    var rightTile = statusBar.addRightTile({
+    var rightTile = statusBar.addLeftTile({
       item: this._statusBarDiv,
-      priority: -80,
+      priority: -99,
     });
 
     this._disposables.add(new Disposable(() => {

@@ -25,36 +25,30 @@ var StatusBarTile = React.createClass({
   },
 
   render(): ?ReactElement {
-    var message = null;
     var iconName = null;
     switch (this.props.connectionState) {
       case ConnectionState.NONE:
         break;
       case ConnectionState.LOCAL:
-        message = 'Local';
-        iconName = 'local';
+        iconName = 'device-desktop';
         break;
       case ConnectionState.CONNECTED:
-        message = 'Connected';
-        iconName = 'connected';
+        iconName = 'cloud-upload';
         break;
       case ConnectionState.DISCONNECTED:
-        message = 'Disconnected';
-        iconName = 'disconnected';
+        iconName = 'alert';
         break;
     }
     // When the active pane isn't a text editor, e.g. diff view, preferences, ..etc.,
     // We don't show a connection status bar.
-    if (!message) {
+    if (!iconName) {
       return null;
     }
-    var imageIconPath = `atom://nuclide-remote-projects/images/${iconName}_icon.png`;
     return (
-      <div className="nuclide-remote-projects-status-btn"
-        onClick={this.onStatusBarTileClicked}>
-          <img src={imageIconPath}></img>
-          <span>{message}</span>
-      </div>
+      <span
+        className={`icon icon-${iconName} nuclide-remote-projects-status-icon`}
+        onClick={this.onStatusBarTileClicked}
+      />
     );
   },
 
