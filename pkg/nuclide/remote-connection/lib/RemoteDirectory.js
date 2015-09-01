@@ -166,10 +166,11 @@ class RemoteDirectory {
   }
 
   async create(): Promise<boolean> {
-    await this._remote.getClient().mkdirp(this._localPath);
+    var created = await this._remote.getClient().mkdirp(this._localPath);
     if (this._subscriptionCount > 0) {
       this._subscribeToNativeChangeEvents();
     }
+    return created;
   }
 
   async delete(): Promise {
