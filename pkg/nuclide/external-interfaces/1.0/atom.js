@@ -243,6 +243,17 @@ declare class atom$Range {
   serialize(): Array<Array<number>>;
 }
 
+declare class atom$TooltipManager {
+  add(
+    target: HTMLElement,
+    options: {
+      title: string,
+      keyBindingCommand?: string,
+      keyBindingTarget?: HTMLElement,
+    }
+  ): atom$Disposable;
+}
+
 type InsertTextOptions = {
   select: boolean;
   autoIndent: boolean;
@@ -645,6 +656,7 @@ type AtomGlobal = {
   grammars: atom$GrammarRegistry;
   notifications: atom$NotificationManager;
   packages: atom$PackageManager;
+  tooltips: atom$TooltipManager;
   views: atom$ViewRegistry;
   workspace: atom$Workspace;
   project: atom$Project;
