@@ -12,4 +12,6 @@
 import ServerComponent from  './ServerComponent';
 import ClientComponent from  './ClientComponent';
 
-export default {ServerComponent, ClientComponent};
+import {loadServicesConfig} from './config';
+
+export default {ServerComponent, ClientComponent, loadServicesConfig};

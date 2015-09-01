@@ -265,6 +265,17 @@ class NuclideClient {
     return this.eventbus.disposeRemoteObject.apply(this.eventbus, args);
   }
 
+  // Delegate marshalling to the NuclideRemoteEventbus class.
+  marshal(...args): any {
+    return this.eventbus.marshal(...args);
+  }
+  unmarshal(...args): any {
+    return this.eventbus.unmarshal(...args);
+  }
+  registerType(...args): void {
+    return this.eventbus.registerType(...args);
+  }
+
   /**
    * Make rpc call to service given serviceUri in form of `$serviceName/$methodName` and args as arguments list.
    */

@@ -15,7 +15,11 @@ var {optionsToString} = require('nuclide-server/lib/service-manager');
 var {RemoteConnection} = require('nuclide-remote-connection');
 var {isRemote, getHostname} = require('nuclide-remote-uri');
 
+import {getProxy} from 'nuclide-service-parser';
+import ServiceFramework from 'nuclide-server/lib/serviceframework';
+
 var serviceConfigs = loadConfigsOfServiceWithServiceFramework();
+var newServices = ServiceFramework.loadServicesConfig();
 
 // A cache stores services in form of '$serviceName@$host:$options' => $serviceObject. A special
 // case would be the local service, where the $host will be empty string.
@@ -54,7 +58,19 @@ function getServiceByNuclideUri(
  * serviceOptions, the same service instance will be returned.
  */
 function getService(serviceName: string, hostname: ?string, serviceOptions: ?any): ?any {
-  var [serviceConfig] = serviceConfigs.filter(config => config.name === serviceName);
+  /** First, try to find a 3.0 service */
+  var [serviceConfig] = newServices.filter(config => config.name === serviceName);
+  if (serviceConfig) {
+    if (hostname) {
+      var remoteConnection = RemoteConnection.getByHostnameAndPath(hostname, null);
+      return getProxy(serviceConfig.definition, remoteConnection.getClient());
+    } else {
+      return require(config.implementation);
+    }
+  }
+
+  /** Then try to find a legacy service */
+  [serviceConfig] = serviceConfigs.filter(config => config.name === serviceName);
   if (!serviceConfig) {
     logger.error('Service %s undefined.', serviceName);
     return null;

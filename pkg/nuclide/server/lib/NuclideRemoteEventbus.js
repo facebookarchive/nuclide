@@ -188,6 +188,17 @@ class NuclideRemoteEventbus {
     return this._clientComponent.disposeRemoteObject.apply(this._clientComponent, args);
   }
 
+  // Delegate marshalling to the ServiceFramework.ClientComponent class.
+  marshal(...args): any {
+    return this._clientComponent.marshal(...args);
+  }
+  unmarshal(...args): any {
+    return this._clientComponent.unmarshal(...args);
+  }
+  registerType(...args): void {
+    return this._clientComponent.registerType(...args);
+  }
+
   async subscribeToChannel(channel: string, handler: (event: ?any) => void): Promise<Disposable> {
     await this._callSubscribe(channel);
     this.eventbus.on(channel, handler);

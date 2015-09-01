@@ -11,6 +11,7 @@
 
 import {Disposable, Observable} from 'rx';
 import {getDefinitions} from 'nuclide-service-parser';
+import {loadServicesConfig} from './config';
 import NuclideServer from '../NuclideServer';
 import TypeRegistry from 'nuclide-service-parser/lib/TypeRegistry';
 
@@ -57,7 +58,7 @@ export default class ServerComponent {
     // NuclideUri type requires no transformations (it is done on the client side).
     this._typeRegistry.registerType('NuclideUri', uri => uri, remotePath => remotePath);
 
-    var services = this._loadServicesConfig();
+    var services = loadServicesConfig();
     for (var service of services) {
       logger.info(`Registering 3.0 service ${service.name}...`);
       try {
@@ -287,10 +288,6 @@ export default class ServerComponent {
       default:
         throw new Error(`Unkown return type ${returnType.kind}.`);
     }
-  }
-
-  _loadServicesConfig() {
-    return require('../../services-3.json');
   }
 }
 

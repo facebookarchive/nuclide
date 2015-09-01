@@ -9,25 +9,85 @@
  * the root directory of this source tree.
  */
 
+import * as config from '../../lib/serviceframework/config';
+
 import invariant from 'assert';
 import {EventEmitter} from 'events';
 import NuclideSocket from '../NuclideSocket';
 import {Observable} from 'rx';
 import {SERVICE_FRAMEWORK_RPC_TIMEOUT_MS} from '../config';
 
+import TypeRegistry from 'nuclide-service-parser/lib/TypeRegistry';
+import {getProxy, getDefinitions} from 'nuclide-service-parser';
+
 import type {RequestMessage, CallRemoteFunctionMessage, CreateRemoteObjectMessage,
   CallRemoteMethodMessage, DisposeRemoteObjectMessage, DisposeObservableMessage,
   ReturnType, ObservableResult} from './types';
+
+var logger = require('nuclide-logging').getLogger();
 
 export default class ClientComponent {
   _emitter: EventEmitter;
   _socket: NuclideSocket;
   _requestIdGenerator: () => number;
 
+  _typeRegistry: TypeRegistry;
+  _objectRegistry: Map<number, any>;
+
   constructor(emitter: EventEmitter, socket: NuclideSocket, requestIdGenerator: () => number) {
     this._emitter = emitter;
     this._socket = socket;
     this._requestIdGenerator = requestIdGenerator;
+
+    this._typeRegistry = new TypeRegistry();
+    this._objectRegistry = new Map();
+
+    // Setup services.
+    var services = config.loadServicesConfig();
+    for (var service of services) {
+      logger.info(`Registering 3.0 service ${service.name}...`);
+      try {
+        var defs = getDefinitions(service.definition);
+        var proxy = getProxy(service.definition, this);
+
+        defs.aliases.forEach((type, name) => {
+          logger.info(`Registering type alias ${name}...`);
+          this._typeRegistry.registerAlias(name, type);
+        });
+        defs.interfaces.forEach((interfaceDef, name) => {
+          logger.info(`Registering interface ${name}.`);
+          this._typeRegistry.registerType(name, async object => {
+            return await object._idPromise;
+          }, async objectId => {
+            // Return a cached proxy, if one already exists, for this object.
+            if (this._objectRegistry.has(objectId)) {
+              return this._objectRegistry.get(objectId);
+            }
+
+            // Generate the proxy by manually setting the prototype of the object to be the prototype
+            // of the remote proxy constructor.
+            var object = { _idPromise: Promise.resolve(objectId) };
+            Object.setPrototypeOf(object, proxy[name].prototype);
+            this._objectRegistry.set(objectId, object);
+            return object;
+          });
+        });
+      } catch(e) {
+        logger.error(`Failed to load service ${service.name}. Stack Trace:\n${e.stack}`);
+        continue;
+      }
+    }
+  }
+
+  // Delegate marshalling to the type registry.
+  marshal(...args): any {
+    return this._typeRegistry.marshal(...args);
+  }
+  unmarshal(...args): any {
+    return this._typeRegistry.unmarshal(...args);
+  }
+  registerType(...args): void {
+    return this._typeRegistry.registerType(...args);
   }
 
   /**

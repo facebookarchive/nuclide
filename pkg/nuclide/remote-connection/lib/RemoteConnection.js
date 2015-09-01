@@ -287,6 +287,10 @@ class RemoteConnection {
       // A workaround before Atom 2.0: see ::getHgRepoInfo.
       await this._setHgRepoInfo();
 
+      // Register NuclideUri type conversions.
+      client.registerType('NuclideUri',
+        uri => this.getPathOfUri(uri), path => this.getUriOfRemotePath(path));
+
       // Save to cache.
       this._addConnection();
     }

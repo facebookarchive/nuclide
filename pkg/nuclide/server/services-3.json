@@ -1,7 +1,7 @@
 [
   {
     "name": "InfoService",
-    "definition": "../services/InfoService.def",
-    "implementation": "../services/InfoService.js"
+    "definition": "lib/services/InfoService.def",
+    "implementation": "lib/services/InfoService.js"
   }
 ]
