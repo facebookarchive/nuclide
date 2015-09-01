@@ -10,5 +10,7 @@
  */
 
 module.exports = {
-  // TODO(jessicalin): Add export code here.
+  get handleBuckAnsiOutput() {
+    return require('./handleBuckAnsiOutput');
+  },
 };

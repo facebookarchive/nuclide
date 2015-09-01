@@ -585,11 +585,13 @@ declare class atom$TextBuffer {
     undo?: string;
   }): atom$Range;
   delete(range: atom$Range): atom$Range;
+  deleteRows(startRow: number, endRow: number): atom$Range;
 
   // Search And Replace
   scanInRange(regex: RegExp, range: Range, iterator: (data: Object) => void): void;
 
   // Buffer Range Details
+  getLastRow(): number;
   rangeForRow(row: number, includeNewLine?: boolean): Range;
 }
 
