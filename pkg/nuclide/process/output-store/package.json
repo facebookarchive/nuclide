@@ -1,0 +1,14 @@
+{
+  "name": "nuclide-process-output-store",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "Utilities for storing the output of a process.",
+  "nuclide": {
+    "packageType": "Node",
+    "testRunner": "apm"
+  },
+  "devDependencies": {
+    "nuclide-external-interfaces": "0.0.0"
+  }
+}
