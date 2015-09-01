@@ -11,7 +11,7 @@
 
 var {Disposable} = require('atom');
 
-var {createAdapters} = require('../lib/LinterAdapterFactory');
+var {createAdapters, validateLinter} = require('../lib/LinterAdapterFactory');
 
 var grammar = 'testgrammar';
 
@@ -60,5 +60,37 @@ describe('createAdapters', () => {
 
   it('should return multiple adapters if it is passed an array', () => {
     expect(createAdaptersWithMock([fakeLinter, fakeLinter]).size).toBe(2);
+  });
+});
+
+describe('validateLinter', () => {
+  var linter: any;
+
+  beforeEach(() => {
+    linter = {
+      grammarScopes: [grammar],
+      scope: 'file',
+      lintOnFly: true,
+      lint: () => Promise.resolve([]),
+    };
+  });
+
+  it('should not return errors for a valid linter', () => {
+    expect(validateLinter(linter).length).toEqual(0);
+  });
+
+  it('should return errors for a linter with no lint function', () => {
+    linter.lint = undefined;
+    expect(validateLinter(linter)).toEqual([
+      'lint function must be specified',
+      'lint must be a function',
+    ]);
+  });
+
+  it('should return errors for a linter where lint is not a function', () => {
+    linter.lint = [];
+    expect(validateLinter(linter)).toEqual([
+      'lint must be a function',
+    ]);
   });
 });
