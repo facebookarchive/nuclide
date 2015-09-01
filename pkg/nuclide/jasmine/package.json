@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "description": "Atom-compatible Jasmine test runner that runs outside of Atom",
   "nuclide": {
+    "flowCheck": true,
     "packageType": "Node",
     "testRunner": "npm"
   },
