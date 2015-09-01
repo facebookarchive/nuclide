@@ -8,6 +8,13 @@
     "packageType": "Atom",
     "testRunner": "apm"
   },
+  "providedServices": {
+    "nuclide-process-output": {
+      "versions": {
+        "0.0.0": "provideProcessOutput"
+      }
+    }
+  },
   "engines": {
     "atom": ">=1.0.7"
   },

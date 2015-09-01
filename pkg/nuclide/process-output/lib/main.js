@@ -69,6 +69,18 @@ function createProcessOutputView(uri: string): HTMLElement {
   return hostElement;
 }
 
+function runCommandInNewPane(
+  command: string,
+  args: Array<string>,
+  options?: Object = {}) {
+    var commandInfo = JSON.stringify({
+      command,
+      args,
+      options,
+    });
+    atom.workspace.open(NUCLIDE_PROCESS_OUTPUT_VIEW_URI + commandInfo);
+}
+
 module.exports = {
 
   activate(state: ?Object): void {
@@ -92,5 +104,9 @@ module.exports = {
         processStore.dispose();
       }
     }
+  },
+
+  provideProcessOutput(): (command: string, args: Array<string>, options?: Object) => void {
+    return runCommandInNewPane;
   },
 };
