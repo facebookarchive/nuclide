@@ -17,12 +17,17 @@ import type Scope from './DataCache';
 import type PropertyDescriptor from './DataCache';
 import type RemoteObjectId from './DataCache';
 import type {Disposable} from 'nuclide-commons';
+import type {BreakpointStore} from './BreakpointStore';
 
 export class ConnectionMultiplexer {
   _connection: Connection;
+  _breakpointStore: BreakpointStore;
 
   constructor(connection: Connection) {
     this._connection = connection;
+    var {BreakpointStore} = require('./BreakpointStore');
+    this._breakpointStore = new BreakpointStore;
+    this._breakpointStore.addConnection(connection);
   }
 
   onStatus(callback: (status: string) => mixed): Disposable {
@@ -34,11 +39,11 @@ export class ConnectionMultiplexer {
   }
 
   setBreakpoint(filename: string, lineNumber: number): Promise<string> {
-    return this._connection.setBreakpoint(filename, lineNumber);
+    return this._breakpointStore.setBreakpoint(filename, lineNumber);
   }
 
   removeBreakpoint(breakpointId: string): Promise {
-    return this._connection.removeBreakpoint(breakpointId);
+    return this._breakpointStore.removeBreakpoint(breakpointId);
   }
 
   getStackFrames(): Promise<Array<Object>> {

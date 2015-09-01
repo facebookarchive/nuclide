@@ -47,7 +47,7 @@ type ConnectionConfig = {
  *
  * TODO: Add timeout or cancel callback.
  */
-class DbgpConnector {
+export class DbgpConnector {
   _config: ConnectionConfig;
   _server: ?Server;
   _connected: boolean;
@@ -180,5 +180,3 @@ class DbgpConnector {
     }
   }
 }
-
-module.exports = {DbgpConnector};
