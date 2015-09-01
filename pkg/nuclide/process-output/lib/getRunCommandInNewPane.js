@@ -12,8 +12,12 @@
 import type BufferedProcessError from 'nuclide-atom-helpers/ScriptBufferedProcessStore';
 import type {ScriptBufferedProcessStore} from 'nuclide-atom-helpers';
 import type ProcessOutputHandler from './types';
+export type RunCommandFunctionAndCleanup = {
+  runCommandInNewPane: (command: string, args: Array<string>, options?: Object) => void;
+  disposable: atom$IDisposable;
+};
 
-import {CompositeDisposable} from 'atom';
+import {CompositeDisposable, Disposable} from 'atom';
 import invariant from 'assert';
 
 var NUCLIDE_PROCESS_OUTPUT_VIEW_URI = 'atom://nuclide/process-output/';
@@ -106,32 +110,72 @@ function runCommandInNewPane(
   atom.workspace.open(NUCLIDE_PROCESS_OUTPUT_VIEW_URI + commandInfo, openOptions);
 }
 
-module.exports = {
+/**
+ * Set up and Teardown of Atom Opener
+ */
 
-  activate(state: ?Object): void {
-    if (!subscriptions) {
-      subscriptions = new CompositeDisposable();
-      subscriptions.add(atom.workspace.addOpener((uri, options) => {
-        if (uri.startsWith(NUCLIDE_PROCESS_OUTPUT_VIEW_URI)) {
-          return createProcessOutputView(uri, options);
-        }
-      }));
-      processToDisposables = new Map();
-    }
-  },
-
-  deactivate() {
-    if (subscriptions) {
-      subscriptions.dispose();
-    }
-    if (processToDisposables) {
-      for (var processStore of processToDisposables.keys()) {
-        processStore.dispose();
+function activateModule(): void {
+  if (!subscriptions) {
+    subscriptions = new CompositeDisposable();
+    subscriptions.add(atom.workspace.addOpener((uri, options) => {
+      if (uri.startsWith(NUCLIDE_PROCESS_OUTPUT_VIEW_URI)) {
+        return createProcessOutputView(uri, options);
       }
-    }
-  },
+    }));
+    processToDisposables = new Map();
+  }
+}
 
-  provideProcessOutput(): (command: string, args: Array<string>, options?: Object) => void {
-    return runCommandInNewPane;
-  },
-};
+function disposeModule(): void {
+  if (subscriptions) {
+    subscriptions.dispose();
+    subscriptions = null;
+  }
+  if (processToDisposables) {
+    for (var processStore of processToDisposables.keys()) {
+      processStore.dispose();
+    }
+    processToDisposables = null;
+  }
+}
+
+/**
+ * "Reference Counting"
+ */
+
+var references: number = 0;
+function incrementReferences() {
+  if (references === 0) {
+    activateModule();
+  }
+  references++;
+}
+
+function decrementReferences() {
+  references--;
+  if (references < 0) {
+    references = 0;
+    getLogger.error('getRunCommandInNewPane: number of decrementReferences() ' +
+      'calls has exceeded the number of incrementReferences() calls.');
+  }
+  if (references === 0) {
+    disposeModule();
+  }
+}
+
+/**
+ * @return a RunCommandFunctionAndCleanup, which has the fields:
+ *   - runCommandInNewPane: The function which can be used to create a new pane
+ *       with the output of a process.
+ *   - disposable: A Disposable which should be disposed when this function is
+ *       no longer needed by the caller.
+ */
+function getRunCommandInNewPane(): RunCommandFunctionAndCleanup {
+  incrementReferences();
+  return {
+    runCommandInNewPane,
+    disposable: new Disposable(() => decrementReferences()),
+  };
+}
+
+module.exports = getRunCommandInNewPane;
