@@ -10,8 +10,11 @@
  */
 
 module.exports = {
-  configDefaults: {
-    pathToMerlin: 'ocamlmerlin',
+  config: {
+    pathToMerlin: {
+      type: 'string',
+      default: 'ocamlmerlin',
+    },
   },
 
   activate(): void {
@@ -27,7 +30,7 @@ module.exports = {
       selector: '.source.ocaml',
       inclusionPriority: 1,
       disableForSelector: '.source.ocaml .comment',
-      getSuggestions
+      getSuggestions,
     };
-  }
+  },
 };
