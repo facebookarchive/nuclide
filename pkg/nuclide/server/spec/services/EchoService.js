@@ -49,6 +49,9 @@ export async function echoObject(arg: {a: ?string; b: Buffer}): Promise<{a: ?str
 export async function echoSet(arg: Set<string>): Promise<Set<string>> {
   return arg;
 }
+export async function echoMap(arg: Map<string, Date>): Promise<Map<string, Date>> {
+  return arg;
+}
 
 // Value Type
 export async function echoValueType(arg: ValueTypeA): ValueTypeA {

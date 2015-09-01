@@ -107,6 +107,22 @@ describe('EchoServer', () => {
       expect(results.has('c')).toBeFalsy();
     });
   });
+  it('Echoes a Map.', () => {
+    var original = new Map([
+      ['a', new Date()],
+      ['b', new Date(1995, 11, 17, 3, 24, 0)],
+    ]);
+    waitsForPromise(async () => {
+      var results = await service.echoMap(original);
+      expect(results.has('a')).toBeTruthy();
+      expect(results.get('a').getTime()).toBeTruthy(original.get('a').getTime());
+
+      expect(results.has('b')).toBeTruthy();
+      expect(results.get('b').getTime()).toBeTruthy(original.get('b').getTime());
+
+      expect(results.has('c')).toBeFalsy();
+    });
+  });
 
   // Echo value types.
   it('Echoes a value type (struct).', () => {

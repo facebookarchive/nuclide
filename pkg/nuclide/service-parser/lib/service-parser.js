@@ -227,6 +227,14 @@ function parseGenericTypeAnnotation(typeAnnotation) {
         kind: typeAnnotation.id.name.toLowerCase(),
         type: parseTypeAnnotation(typeAnnotation.typeParameters.params[0]),
       };
+    case 'Map':
+      assert(typeAnnotation.typeParameters.params.length === 2,
+        `${typeAnnotation.id.name} takes exactly two type parameters.`);
+      return {
+        kind: 'map',
+        keyType: parseTypeAnnotation(typeAnnotation.typeParameters.params[0]),
+        valueType: parseTypeAnnotation(typeAnnotation.typeParameters.params[1]),
+      };
     default:
       return {kind: 'named', name: typeAnnotation.id.name};
   }

@@ -242,5 +242,27 @@ export default class TypeRegistry {
       var elements = await Promise.all(value.map(elem => this.unmarshal(elem, type.type)));
       return new Set(elements);
     });
+
+    // Serialize / Deserialize Maps.
+    this.registerType('map', async (map: Map, type: MapType) => {
+      assert(map instanceof Map, 'Expected an object of type Set.');
+      var serializePromises = [];
+      for (var [key, value] of map) {
+        serializePromises.push(Promise.all([
+          this.marshal(key, type.keyType),
+          this.marshal(value, type.valueType),
+        ]));
+      }
+      return await Promise.all(serializePromises);
+    }, async (serialized: any, type: MapType) => {
+      assert(serialized instanceof Array, 'Expected an object of type Array.');
+      var entries = await Promise.all(
+        serialized.map(entry => Promise.all([
+          this.unmarshal(entry[0], type.keyType),
+          this.unmarshal(entry[1], type.valueType),
+        ]))
+      );
+      return new Map(entries);
+    });
   }
 }
