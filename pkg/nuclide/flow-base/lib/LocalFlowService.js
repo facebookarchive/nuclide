@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {Diagnostic} from './FlowService';
+import type {Diagnostics} from './FlowService';
 import type {NuclideUri} from 'nuclide-remote-uri';
 
 type Loc = {
@@ -24,7 +24,7 @@ var {asyncExecute, safeSpawn} = require('nuclide-commons');
 var {assign} = require('nuclide-commons').object;
 var logger = require('nuclide-logging').getLogger();
 var FlowService = require('./FlowService');
-var {getPathToFlow, getFlowExecOptions, insertAutocompleteToken} = require('./FlowHelpers.js');
+var {getPathToFlow, getFlowExecOptions, insertAutocompleteToken, findFlowConfigDir} = require('./FlowHelpers.js');
 
 class LocalFlowService extends FlowService {
   // The set of Flow server processes we have started, so we can kill them on
@@ -157,7 +157,7 @@ class LocalFlowService extends FlowService {
    * it has been saved, so we can avoid piping the whole contents to the Flow
    * process.
    */
-  async findDiagnostics(file: NuclideUri, currentContents: ?string): Promise<Array<Diagnostic>> {
+  async findDiagnostics(file: NuclideUri, currentContents: ?string): Promise<?Diagnostics> {
     var options = {};
 
     var args;
@@ -169,15 +169,19 @@ class LocalFlowService extends FlowService {
       // currently the client has to do the filtering.
       args = ['check-contents', '--json', file];
     } else {
-      // we can just use `flow status` if the contents are unchanged.
+      // We can just use `flow status` if the contents are unchanged.
       args = ['status', '--json', file];
     }
 
     var result;
+
+    // Dispatch both of these requests so they happen in parallel.
+    var flowResultPromise = this._execFlow(args, options, file);
+    var flowRootPromise = findFlowConfigDir(file);
     try {
-      result = await this._execFlow(args, options, file);
+      result = await flowResultPromise;
       if (!result) {
-        return [];
+        return null;
       }
     } catch (e) {
       // This codepath will be exercised when Flow finds type errors as the
@@ -187,8 +191,13 @@ class LocalFlowService extends FlowService {
         result = e;
       } else {
         logger.error(e);
-        return [];
+        return null;
       }
+    }
+    var flowRoot = await flowRootPromise;
+    if (!flowRoot) {
+      logger.error('Got a Flow result but did not find a flow config path');
+      return null;
     }
 
     var json;
@@ -196,10 +205,13 @@ class LocalFlowService extends FlowService {
       json = JSON.parse(result.stdout);
     } catch (e) {
       logger.error(e);
-      return [];
+      return null;
     }
 
-    return json['errors'];
+    return {
+      flowRoot,
+      messages: json['errors'].map(diagnostic => diagnostic['message']),
+    };
   }
 
   async getAutocompleteSuggestions(

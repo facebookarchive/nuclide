@@ -45,11 +45,15 @@ function getPathToFlow(): Promise<string> {
   }
 }
 
+function findFlowConfigDir(localFile: string): Promise<?string> {
+  return findNearestFile('.flowconfig', path.dirname(localFile));
+}
+
 /**
 * If this returns null, then it is not safe to run flow.
 */
-async function getFlowExecOptions(file: string): Promise<?Object> {
-  var flowConfigDirectory = await findNearestFile('.flowconfig', path.dirname(file));
+async function getFlowExecOptions(localFile: string): Promise<?Object> {
+  var flowConfigDirectory = await findFlowConfigDir(localFile);
   var installed = await isFlowInstalled();
   if (flowConfigDirectory && installed) {
     return {
@@ -65,4 +69,5 @@ module.exports = {
   isFlowInstalled,
   getPathToFlow,
   getFlowExecOptions,
+  findFlowConfigDir,
 };

@@ -17,6 +17,12 @@ var invariant = require('assert');
 
 var {JS_GRAMMARS} = require('./constants.js');
 
+/* TODO remove these duplicate definitions once we figure out importing types
+ * through symlinks. */
+export type Diagnostics = {
+  flowRoot: NuclideUri,
+  messages: Array<FlowDiagnosticItem>
+};
 type FlowError = {
   level: string,
   descr: string,
@@ -27,9 +33,7 @@ type FlowError = {
   end: number,
 }
 
-type FlowDiagnosticItem = {
-  message: Array<FlowError>,
-}
+type FlowDiagnosticItem = Array<FlowError>;
 
 /**
  * Currently, a diagnostic from Flow is an object with a "message" property.
@@ -91,6 +95,10 @@ class FlowDiagnosticsProvider {
   _providerBase: DiagnosticsProviderBase;
   _requestSerializer: RequestSerializer;
 
+  /** Maps flow root to the set of file paths under that root for which we have
+    * ever reported diagnostics. */
+  _flowRootToFilePaths: Map<NuclideUri, Set<NuclideUri>>;
+
   constructor(shouldRunOnTheFly: boolean, ProviderBase?: typeof DiagnosticsProviderBase = DiagnosticsProviderBase) {
     var utilsOptions = {
       grammarScopes: new Set(JS_GRAMMARS),
@@ -100,6 +108,7 @@ class FlowDiagnosticsProvider {
     };
     this._providerBase = new ProviderBase(utilsOptions);
     this._requestSerializer = new RequestSerializer();
+    this._flowRootToFilePaths = new Map();
   }
 
   async _runDiagnostics(textEditor: TextEditor): Promise<void> {
@@ -113,16 +122,39 @@ class FlowDiagnosticsProvider {
     var flowService = getServiceByNuclideUri('FlowService', file);
     invariant(flowService);
     var result = await this._requestSerializer.run(flowService.findDiagnostics(file, currentContents));
-    var diagnostics;
     if (result.status === 'outdated') {
       return;
     }
-    var diagnostics = result.result;
+    var diagnostics: ?Diagnostics = result.result;
+    if (!diagnostics) {
+      return;
+    }
+    var {flowRoot, messages} = diagnostics;
 
-    // we need to invalidate to make sure that files which are now clean have
-    // the errors removed
-    this._providerBase.publishMessageInvalidation({ scope: 'file', filePaths: [file] });
-    this._providerBase.publishMessageUpdate(this._processDiagnostics(diagnostics, file));
+    var pathsToInvalidate = this._getPathsToInvalidate(flowRoot);
+    /* TODO Consider optimizing for the common case of only a single flow root
+     * by invalidating all instead of enumerating the files. */
+    this._providerBase.publishMessageInvalidation({scope: 'file', filePaths: pathsToInvalidate});
+
+    var pathsForRoot = new Set();
+    this._flowRootToFilePaths.set(flowRoot, pathsForRoot);
+    for (var message of messages) {
+      /* Each message consists of several different components, each with its
+       * own text and path. */
+      for (var messageComponent of message) {
+        pathsForRoot.add(messageComponent.path);
+      }
+    }
+
+    this._providerBase.publishMessageUpdate(this._processDiagnostics(messages, file));
+  }
+
+  _getPathsToInvalidate(flowRoot: NuclideUri): Array<NuclideUri> {
+    var filePaths = this._flowRootToFilePaths.get(flowRoot);
+    if (!filePaths) {
+      return [];
+    }
+    return require('nuclide-commons').array.from(filePaths);
   }
 
   _receivedNewUpdateSubscriber(callback: MessageUpdateCallback): void {
@@ -157,15 +189,9 @@ class FlowDiagnosticsProvider {
   }
 
   _processDiagnostics(diagnostics: Array<FlowDiagnosticItem>, targetFile: string): DiagnosticProviderUpdate {
-    var hasMessageWithPath = function(message) {
-      return message['filePath'] === targetFile;
-    };
 
     // convert array messages to Error Objects with Traces
-    var fileDiagnostics = diagnostics
-      .map(diagnostic => diagnostic['message'])
-      .map(flowMessageToDiagnosticMessage)
-      .filter(hasMessageWithPath);
+    var fileDiagnostics = diagnostics.map(flowMessageToDiagnosticMessage);
 
     var filePathToMessages = new Map();
     for (var diagnostic of fileDiagnostics) {

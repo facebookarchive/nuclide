@@ -11,16 +11,26 @@
 
 import type {NuclideUri} from 'nuclide-remote-uri';
 
-export type Diagnostic = {
-  message: Array<{
-    path: NuclideUri;
-    descr: string;
-    code: number;
-    line: number;
-    endline: number;
-    start: number;
-    end: number;
-  }>
+// Diagnostic information, returned from findDiagnostics.
+export type Diagnostics = {
+  // The location of the .flowconfig where these messages came from.
+  flowRoot: NuclideUri,
+  messages: Array<Diagnostic>,
+};
+
+/* Each error or warning can consist of any number of different messages from
+ * Flow to help explain the problem and point to different locations that may be
+ * of interest. */
+export type Diagnostic = Array<SingleMessage>;
+
+export type SingleMessage = {
+  path: NuclideUri;
+  descr: string;
+  code: number;
+  line: number;
+  endline: number;
+  start: number;
+  end: number;
 }
 
 class FlowService {
@@ -40,8 +50,10 @@ class FlowService {
   findDiagnostics(
     file: NuclideUri,
     currentContents: ?string
-  ): Promise<Array<{message:
-        Array<{
+  ): Promise<?{
+      flowRoot: NuclideUri;
+      messages:
+        Array<Array<{
           path: NuclideUri;
           descr: string;
           code: number;
@@ -49,11 +61,11 @@ class FlowService {
           endline: number;
           start: number;
           end: number;
-        }>
-    }>>
-  // Ideally, this would just be Promise<Array<Diagnostic>>, but the service
-  // framework doesn't pick up on NuclideUri if it's embedded in a type defined
-  // elsewhere.
+        }>>
+    }>
+  /* Ideally, this would just be Promise<Diagnostics>, but the service
+   * framework doesn't pick up on NuclideUri if it's embedded in a type defined
+   * elsewhere. */
   {
     return Promise.reject('Not implemented');
   }

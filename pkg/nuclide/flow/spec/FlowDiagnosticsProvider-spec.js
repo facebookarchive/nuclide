@@ -24,22 +24,18 @@ describe('FlowDiagnosticsProvider::processDiagnostics', () => {
   });
 
   it('should propertly transform a simple diagnostic', () => {
-    var diags = [
+    var diags = [[
       {
-        message: [
-          {
-            level: 'error',
-            path: testPath,
-            descr: 'message',
-            line: 1,
-            endline: 2,
-            start: 3,
-            end: 4,
-            code: 0,
-          },
-        ],
+        level: 'error',
+        path: testPath,
+        descr: 'message',
+        line: 1,
+        endline: 2,
+        start: 3,
+        end: 4,
+        code: 0,
       },
-    ];
+    ]];
 
     var expectedOutput = {
       scope: 'file',
@@ -55,22 +51,18 @@ describe('FlowDiagnosticsProvider::processDiagnostics', () => {
   });
 
   it('should keep warnings as warnings', () => {
-    var diags = [
+    var diags = [[
       {
-        message: [
-          {
-            level: 'warning',
-            path: testPath,
-            descr: 'message',
-            line: 1,
-            endline: 2,
-            start: 3,
-            end: 4,
-            code: 0,
-          },
-        ],
+        level: 'warning',
+        path: testPath,
+        descr: 'message',
+        line: 1,
+        endline: 2,
+        start: 3,
+        end: 4,
+        code: 0,
       },
-    ];
+    ]];
 
     var expectedOutput = {
       scope: 'file',
@@ -85,54 +77,47 @@ describe('FlowDiagnosticsProvider::processDiagnostics', () => {
     expect(message).toEqual(expectedOutput);
   });
 
-  it('should filter diagnostics not in the target file', () => {
-    var diags = [
+  it('should not filter diagnostics not in the target file', () => {
+    var diags = [[
       {
-        message: [
-          {
-            path: 'notMyPath',
-            descr: 'message',
-            line: 1,
-            endline: 2,
-            start: 3,
-            end: 4,
-            code: 0,
-          },
-        ],
+        path: 'notMyPath',
+        descr: 'message',
+        line: 1,
+        endline: 2,
+        start: 3,
+        end: 4,
+        code: 0,
       },
-    ];
+    ]];
 
     var allMessages = flowDiagnosticsProvider._processDiagnostics(diags, testPath).filePathToMessages;
-    expect(allMessages.has(testPath)).toBe(false);
+    expect(allMessages.size).toBe(1);
+    expect(allMessages.has('notMyPath')).toBe(true);
   });
 
   it('should create traces for diagnostics spanning multiple messages and combine the error text', () => {
-    var diags = [
+    var diags = [[
       {
-        message: [
-          {
-            level: 'error',
-            path: testPath,
-            descr: 'message',
-            line: 1,
-            endline: 2,
-            start: 3,
-            end: 4,
-            code: 0,
-          },
-          {
-            level: 'error',
-            path: 'otherPath',
-            descr: 'more message',
-            line: 5,
-            endline: 6,
-            start: 7,
-            end: 8,
-            code: 0,
-          },
-        ],
+        level: 'error',
+        path: testPath,
+        descr: 'message',
+        line: 1,
+        endline: 2,
+        start: 3,
+        end: 4,
+        code: 0,
       },
-    ];
+      {
+        level: 'error',
+        path: 'otherPath',
+        descr: 'more message',
+        line: 5,
+        endline: 6,
+        start: 7,
+        end: 8,
+        code: 0,
+      },
+    ]];
 
     var expectedOutput = {
       scope: 'file',
