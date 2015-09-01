@@ -18,6 +18,8 @@ import type {EventEmitter} from 'events';
 export function attachEvent(emitter: EventEmitter, eventName: string, callback: Function): Disposable {
   emitter.addListener(eventName, callback);
   return {
-    dispose: () => { emitter.removeListener(eventName, callback) },
+    dispose() {
+      emitter.removeListener(eventName, callback);
+    },
   };
 }

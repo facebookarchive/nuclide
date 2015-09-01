@@ -12,8 +12,8 @@
 /**
  * O(1)-check if a given object is empty (has no properties, inherited or not)
  */
-function isEmpty(obj: Object): bool {
-  for (var key in obj) {
+function isEmpty(obj: Object): boolean {
+  for (var key in obj) { // eslint-disable-line no-unused-vars
     return false;
   }
   return true;

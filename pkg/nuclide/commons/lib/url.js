@@ -8,20 +8,21 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
+import invariant from 'assert';
 
 type ParsedUrl = {
+  auth: ?string;
+  hash: ?string;
   href: string;
-  protocol: string;
-  slashes: boolean;
-  host?: string;
-  auth?: string;
-  hostname?: string;
-  port?: string;
-  pathname: string;
-  search?: string;
+  host: ?string;
+  hostname: ?string;
   path: string;
-  query?: string;
-  hash?: string;
+  pathname: string;
+  port: ?string;
+  protocol: ?string;
+  query: ?any;
+  search: ?string;
+  slashes: ?boolean;
 };
 
 module.exports = {
@@ -29,8 +30,13 @@ module.exports = {
     // url.parse seems to apply encodeURI to the uri. We typically don't want this behavior.
     var parsedUri = require('url').parse(uri);
     parsedUri.href = decodeURI(parsedUri.href);
+
+    invariant(parsedUri.path);
     parsedUri.path = decodeURI(parsedUri.path);
+
+    invariant(parsedUri.pathname);
     parsedUri.pathname = decodeURI(parsedUri.pathname);
+
     return parsedUri;
-  }
+  },
 };

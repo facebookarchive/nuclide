@@ -34,9 +34,9 @@ describe('PromiseQueue', () => {
 
   it('Run three async operations serially and make sure they do not overlap.', () => {
     var queue = new PromiseQueue();
-    var res1Start, res1End;
-    var res2Start, res2End;
-    var res3Start, res3End;
+    var res1Start = 0, res1End = 0;
+    var res2Start = 0, res2End = 0;
+    var res3Start = 0, res3End = 0;
 
     runs(() => {
       queue.submit((resolve, reject) => {

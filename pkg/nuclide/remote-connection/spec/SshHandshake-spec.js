@@ -12,6 +12,7 @@
 var {EventEmitter} = require('events');
 var path = require('path');
 var pathToFakePk = path.join(__dirname, 'fakepk');
+var {clearRequireCache, uncachedRequire} = require('nuclide-test-helpers');
 var SshHandshake = require('../lib/SshHandshake');
 
 describe('SshHandshake', () => {
@@ -19,6 +20,24 @@ describe('SshHandshake', () => {
     connect(config) { }
     end() { }
   }
+
+  var dns;
+  var originalDnsLookup;
+
+  beforeEach(() => {
+    dns = uncachedRequire(require, 'dns');
+    originalDnsLookup = dns.lookup;
+    dns.lookup = (host, family, callback) => {
+      process.nextTick(() => {
+        callback(/* error */ null, /* address */ 'example.com');
+      });
+    };
+  });
+
+  afterEach(() => {
+    dns.lookup = originalDnsLookup;
+    clearRequireCache(require, 'dns');
+  });
 
   describe('connect()', () => {
     it('calls delegates onError when ssh connection fails', () => {

@@ -75,11 +75,10 @@ describe('Array.from()', () => {
   });
 
   it('produces an Array from an array-like', () => {
-    var arrayLike = {};
+    var arrayLike: {length: number} = {length: 3};
     arrayLike[0] = 'foo';
     arrayLike[1] = 'bar';
     arrayLike[2] = 'baz';
-    arrayLike['length'] = 3;
     expect(es6Array.from(arrayLike)).toEqual(['foo', 'bar', 'baz']);
   });
 
@@ -95,11 +94,10 @@ describe('Array.from()', () => {
   });
 
   it('applies mapFn in the array-like case', () => {
-    var arrayLike = {};
+    var arrayLike: {length: number} = {length: 3};
     arrayLike[0] = 'foo';
     arrayLike[1] = 'bar';
     arrayLike[2] = 'baz';
-    arrayLike['length'] = 3;
 
     var f = (arg) => arg + arg;
     expect(es6Array.from(arrayLike, f)).toEqual(['foofoo', 'barbar', 'bazbaz']);
@@ -129,7 +127,7 @@ describe('Array.prototype.find()', () => {
   it('finds using ===', () => {
     var array = ['foo', 'baz', 'biz'];
     var count = 0;
-    var test = (item) => { count++; return item === 'baz' };
+    var test = (item) => { count++; return item === 'baz'; };
     expect(es6Array.find(array, test)).toBe('baz');
     expect(count).toBe(2);
   });
@@ -137,7 +135,7 @@ describe('Array.prototype.find()', () => {
   it('returns undefined when element not found', () => {
     var array = ['foo', 'baz', 'biz'];
     var count = 0;
-    var test = (item) => { count++; return item === 'foobazbiz' };
+    var test = (item) => { count++; return item === 'foobazbiz'; };
     expect(es6Array.find(array, test)).toBe(undefined);
     expect(count).toBe(3);
   });
@@ -145,7 +143,7 @@ describe('Array.prototype.find()', () => {
   it('honors thisArg', () => {
     var array = ['foo', 'baz', 'biz'];
     var count = 0;
-    var test = function(item) { count++; return item.startsWith(this); };
+    var test = function(item: string) { count++; return item.startsWith(this); };
     expect(es6Array.find(array, test, 'f')).toBe('foo');
     expect(count).toBe(1);
     expect(es6Array.find(array, test, 'bi')).toBe('biz');
@@ -195,7 +193,7 @@ describe('Array.prototype.findIndex()', () => {
   it('finds using ===', () => {
     var array = ['foo', 'baz', 'biz'];
     var count = 0;
-    var test = (item) => { count++; return item === 'baz' };
+    var test = (item) => { count++; return item === 'baz'; };
     expect(es6Array.findIndex(array, test)).toBe(1);
     expect(count).toBe(2);
   });
@@ -203,7 +201,7 @@ describe('Array.prototype.findIndex()', () => {
   it('returns undefined when element not found', () => {
     var array = ['foo', 'baz', 'biz'];
     var count = 0;
-    var test = (item) => { count++; return item === 'foobazbiz' };
+    var test = (item) => { count++; return item === 'foobazbiz'; };
     expect(es6Array.findIndex(array, test)).toBe(-1);
     expect(count).toBe(3);
   });

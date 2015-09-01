@@ -8,6 +8,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
+type DnsFamily = 4 | 6;
 
 async function lookupPreferIpv6(host: string): Promise<string> {
   try {
@@ -20,15 +21,17 @@ async function lookupPreferIpv6(host: string): Promise<string> {
   }
 }
 
-function lookup(host, family) {
+function lookup(host: string, family: DnsFamily): Promise<string> {
   return new Promise((resolve, reject) => {
     var dns = require('dns');
-    dns.lookup(host, family, (error, address) => {
+    dns.lookup(host, family, (error: ?Error, address: ?string) => {
       if (error) {
         reject(error);
-        return;
+      } else if (address != null) {
+        resolve(address);
+      } else {
+        reject('One of error or address must be set.');
       }
-      resolve(address);
     });
   });
 }

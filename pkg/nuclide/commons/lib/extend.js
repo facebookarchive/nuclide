@@ -11,7 +11,7 @@
 
 var extend = require('util')._extend;
 
-function immutableExtend(...args) {
+function immutableExtend(...args: Array<mixed>) {
   var object = {};
   for (var i = 0; i < args.length; i++) {
     object = extend(object, args[i]);

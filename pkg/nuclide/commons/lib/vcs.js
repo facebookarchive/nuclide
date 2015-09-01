@@ -11,9 +11,14 @@
 var {asyncExecute} = require('./process');
 var path = require('path');
 
-var vcsInfoCache = {};
+type VcsInfo = {
+  vcs: string;
+  root: string;
+}
 
-async function findVcsHelper(src) {
+var vcsInfoCache: {[src: string]: VcsInfo} = {};
+
+async function findVcsHelper(src: string): Promise<VcsInfo> {
   var options = {
     'cwd': path.dirname(src),
   };
@@ -47,20 +52,21 @@ async function findVcsHelper(src) {
   throw new Error('Could not find VCS for: ' + src);
 }
 
-module.exports = {
-  /**
-   * For the given source file, find the type of vcs that is managing it as well
-   * as the root directory for the VCS.
-   */
-  async findVcs(src) {
-    var vcsInfo = vcsInfoCache[src];
-    if (vcsInfo) {
-      return vcsInfo;
-    }
-
-    vcsInfo = await findVcsHelper(src);
-    vcsInfoCache[src] = vcsInfo;
+/**
+ * For the given source file, find the type of vcs that is managing it as well
+ * as the root directory for the VCS.
+ */
+async function findVcs(src: string): Promise<VcsInfo> {
+  var vcsInfo = vcsInfoCache[src];
+  if (vcsInfo) {
     return vcsInfo;
-  },
+  }
 
+  vcsInfo = await findVcsHelper(src);
+  vcsInfoCache[src] = vcsInfo;
+  return vcsInfo;
+}
+
+module.exports = {
+  findVcs,
 };

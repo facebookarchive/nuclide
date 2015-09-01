@@ -24,7 +24,7 @@ function isRoot(filePath: string): boolean {
  * @param prefix optinal prefix for the temp directory name.
  * @return path to a temporary directory.
  */
-function tempdir(prefix='': string): Promise<string> {
+function tempdir(prefix: string = ''): Promise<string> {
   return new Promise((resolve, reject) => {
     require('temp').mkdir(prefix, (err, dirPath) => {
       if (err) {
@@ -66,7 +66,7 @@ async function findNearestFile(fileName: string, pathToDirectory: string): Promi
   // with fileName to pathToFile (or deleted the one that was cached), then we
   // would have a bug. This would probably be pretty rare, though.
   var currentPath = path.resolve(pathToDirectory);
-  do {
+  do { // eslint-disable-line no-constant-condition
     var fileToFind = path.join(currentPath, fileName);
     var hasFile = await exists(fileToFind);
     if (hasFile) {
@@ -153,7 +153,7 @@ var asyncFs = {
     var method = fs[methodName];
     return new Promise((resolve, reject) => {
       method.apply(fs, args.concat([
-        (err, result) => err ? reject(err) : resolve(result)
+        (err, result) => err ? reject(err) : resolve(result),
       ]));
     });
   };

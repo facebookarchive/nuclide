@@ -13,7 +13,6 @@ var {
   execFile,
   spawn,
 } = require('child_process');
-var {assign} = require('./object');
 var path = require('path');
 var {PromiseQueue} = require('./PromiseExecutors');
 
@@ -29,7 +28,7 @@ var COMMON_BINARY_PATHS = ['/usr/bin', '/bin', '/usr/sbin', '/sbin', '/usr/local
  */
 var DARWIN_PATH_HELPER_REGEXP = /PATH=\"([^\"]+)\"/;
 
-const STREAM_NAMES = ['stdin', 'stdout', 'stderr'];
+var STREAM_NAMES = ['stdin', 'stdout', 'stderr'];
 
 function getPlatformPath(): Promise<string> {
   if (platformPathPromise) {
@@ -77,7 +76,7 @@ function appendCommonBinaryPaths(env: Object, commonBinaryPaths: Array<string>):
  *  2) If step 1 failed or we are not running in OS X, APPEND commonBinaryPaths to current PATH.
  */
 async function createExecEnvironment(originalEnv: Object, commonBinaryPaths: Array<string>): Promise<Object> {
-  var execEnv = assign({}, originalEnv);
+  var execEnv = {...originalEnv};
 
   if (execEnv.PATH !== process.env.PATH) {
     return execEnv;
@@ -162,7 +161,7 @@ function checkOutput(
     args: Array<string>,
     options: ?Object = {}): Promise<process$asyncExecuteRet> {
   // Clone passed in options so this function doesn't modify an object it doesn't own.
-  var localOptions = assign({}, options);
+  var localOptions = {...options};
 
   var executor = (resolve, reject) => {
     var firstChild;
@@ -257,7 +256,7 @@ function checkOutput(
       localOptions.env = val;
       return makePromise();
     },
-    err => {
+    error => {
       localOptions.env = localOptions.env || process.env;
       return makePromise();
     }

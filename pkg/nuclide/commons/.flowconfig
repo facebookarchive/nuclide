@@ -1,9 +1,10 @@
 [include]
 
 [ignore]
-.*/spec/.*
 
 [libs]
+./node_modules/nuclide-external-interfaces/1.0/atom-jasmine.js
+./node_modules/nuclide-external-interfaces/1.0/jasmine.js
 
 [options]
 unsafe.enable_getters_and_setters=true

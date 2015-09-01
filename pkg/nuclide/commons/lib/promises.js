@@ -92,7 +92,7 @@ var promises = module.exports = {
    * @param thisArg Receiver that will be used when test is called.
    * @return Promise that resolves to an asynchronously derived value or null.
    */
-  asyncFind(items: array, test, thisArg): Promise {
+  asyncFind<T, U>(items: Array<T>, test: (t: T) => ?Promise<U>, thisArg?: mixed): Promise<?U> {
     return new Promise((resolve, reject) => {
       // Create a local copy of items to defend against the caller modifying the
       // array before this Promise is resolved.
@@ -150,7 +150,7 @@ var promises = module.exports = {
    * @param mappingFunction the async Promise function that could return a useful result.
    */
   async asyncLimit<T, V>(array: Array<T>, limit: number, mappingFunction: (item: T) => Promise<V>): Promise<Array<V>> {
-    var result = new Array(array.length);
+    var result: Array<V> = new Array(array.length);
     var parallelPromises = 0;
     var index = 0;
 

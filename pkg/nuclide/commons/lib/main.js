@@ -11,7 +11,7 @@
 
 module.exports = {
 
-  asyncFind(items: Array, test: any, thisArg: any): Promise {
+  asyncFind<T>(items: Array<T>, test: any, thisArg: any): Promise<?T> {
     return require('./promises').asyncFind(items, test, thisArg);
   },
 
@@ -39,7 +39,7 @@ module.exports = {
     return require('./process').safeSpawn(command, args, options);
   },
 
-  readFile(filePath: string, options?: any): Promise {
+  readFile(filePath: string, options?: any): Promise<string | Buffer> {
     return require('./filesystem').readFile(filePath, options);
   },
 
