@@ -190,17 +190,17 @@ export default class TypeRegistry {
     // Serialize / Deserialize Arrays.
     this.registerType('array', async (value: any, type: ArrayType) => {
       assert(value instanceof Array, 'Expected an object of type Array.');
-      return await* value.map(elem => this.marshal(elem, type.type));
+      return await Promise.all(value.map(elem => this.marshal(elem, type.type)));
     }, async (value: any, type: ArrayType) => {
       assert(value instanceof Array, 'Expected an object of type Array.');
-      return await* value.map(elem => this.unmarshal(elem, type.type));
+      return await Promise.all(value.map(elem => this.unmarshal(elem, type.type)));
     });
 
     // Serialize and Deserialize Objects.
     this.registerType('object', async (obj: any, type: ObjectType) => {
       assert(typeof obj === 'object', 'Expected an argument of type object.');
       var newObj = {}; // Create a new object so we don't mutate the original one.
-      await* type.fields.map(async prop => {
+      await Promise.all(type.fields.map(async prop => {
         // Check if the source object has this key.
         if (obj.hasOwnProperty(prop.name)) {
           newObj[prop.name] = await this.marshal(obj[prop.name], prop.type);
@@ -210,12 +210,12 @@ export default class TypeRegistry {
             throw new Error(`Source object is missing property ${prop.name}.`);
           }
         }
-      });
+      }));
       return newObj;
     }, async (obj: any, type: ObjectType) => {
       assert(typeof obj === 'object', 'Expected an argument of type object.');
       var newObj = {}; // Create a new object so we don't mutate the original one.
-      await* type.fields.map(async prop => {
+      await Promise.all(type.fields.map(async prop => {
         // Check if the source object has this key.
         if (obj.hasOwnProperty(prop.name)) {
           newObj[prop.name] = await this.unmarshal(obj[prop.name], prop.type);
@@ -225,7 +225,7 @@ export default class TypeRegistry {
             throw new Error(`Source object is missing property ${prop.name}.`);
           }
         }
-      });
+      }));
       return newObj;
     });
 
