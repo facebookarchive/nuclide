@@ -11,7 +11,15 @@
 
 import type {NuclideUri} from 'nuclide-remote-uri';
 
-var {getConfigValueAsync, findNearestFile, asyncFind} = require('nuclide-commons');
+var {
+  checkOutput,
+  findNearestFile,
+  getConfigValueAsync,
+  safeSpawn,
+} = require('nuclide-commons');
+
+var logger = require('nuclide-logging').getLogger();
+
 var MerlinService = require('./MerlinService');
 var MerlinProcess = require('./MerlinProcess');
 
@@ -23,25 +31,40 @@ function getPathToMerlin(): Promise<string> {
   }
 }
 
+var isInstalledCache: ?boolean = null;
+async function isInstalled(merlinPath: string): Promise<boolean> {
+  if (isInstalledCache == null) {
+    var result = await checkOutput('which', [merlinPath]);
+    isInstalledCache = result.exitCode === 0;
+    if (!isInstalledCache) {
+      logger.info('ocamlmerlin not installed');
+    }
+  }
+  return isInstalledCache;
+}
+
 class LocalMerlinService extends MerlinService {
   _merlinProcessInstance: ?MerlinProcess;
 
-  async _getInstance(file: NuclideUri): Promise<MerlinProcess> {
+  async _getInstance(file: NuclideUri): Promise<?MerlinProcess> {
     if (this._merlinProcessInstance && this._merlinProcessInstance.isRunning()) {
       return this._merlinProcessInstance;
     }
 
-    var logger = require('nuclide-logging').getLogger();
-    logger.debug('Spawning new ocamlmerlin process');
-
     var merlinPath = await getPathToMerlin();
+
+    if (!await isInstalled(merlinPath)) {
+      return null;
+    }
 
     var dotMerlinPath = await findNearestFile('.merlin', file);
 
     var options = {
       cwd: (dotMerlinPath ? require('path').dirname(dotMerlinPath) : '.'),
     };
-    var process = await require('nuclide-commons').safeSpawn(merlinPath, [], options);
+
+    logger.info('Spawning new ocamlmerlin process');
+    var process = await safeSpawn(merlinPath, [], options);
     this._merlinProcessInstance = new MerlinProcess(process);
 
     if (dotMerlinPath) {
@@ -53,17 +76,24 @@ class LocalMerlinService extends MerlinService {
     return this._merlinProcessInstance;
   }
 
-  async pushDotMerlinPath(path: NuclideUri): Promise<mixed> {
-    return (await this._getInstance(path)).pushDotMerlinPath(path);
+  async pushDotMerlinPath(path: NuclideUri): Promise<?mixed> {
+    var instance = await this._getInstance(path);
+    return instance ? instance.pushDotMerlinPath(path) : null;
   }
-  async pushNewBuffer(name: NuclideUri, content: string): Promise<mixed> {
-    return (await this._getInstance(name)).pushNewBuffer(name, content);
+
+  async pushNewBuffer(name: NuclideUri, content: string): Promise<?mixed> {
+    var instance = await this._getInstance(name);
+    return instance ? instance.pushNewBuffer(name, content) : null;
   }
-  async locate(path: NuclideUri, line: number, col: number, kind: string): Promise<{file: NuclideUri}> {
-    return (await this._getInstance(path)).locate(path, line, col, kind);
+
+  async locate(path: NuclideUri, line: number, col: number, kind: string): Promise<?{file: NuclideUri}> {
+    var instance = await this._getInstance(path);
+    return instance ? instance.locate(path, line, col, kind) : null;
   }
-  async complete(path: NuclideUri, line, col, prefix): Promise<mixed> {
-    return (await this._getInstance(path)).complete(path, line, col, prefix);
+
+  async complete(path: NuclideUri, line: number ,col: number, prefix: string): Promise<mixed> {
+    var instance = await this._getInstance(path);
+    return instance ? instance.complete(path, line, col, prefix) : null;
   }
 }
 

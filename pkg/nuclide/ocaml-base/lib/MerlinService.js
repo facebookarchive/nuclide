@@ -12,16 +12,16 @@
 import type {NuclideUri} from 'nuclide-remote-uri';
 
 class MerlinService {
-  pushDotMerlinPath(path: NuclideUri): Promise<mixed> {
+  pushDotMerlinPath(path: NuclideUri): Promise<?mixed> {
     return Promise.reject('Not implemented');
   }
-  pushNewBuffer(name: NuclideUri, content: string): Promise<mixed> {
+  pushNewBuffer(name: NuclideUri, content: string): Promise<?mixed> {
     return Promise.reject('Not implemented');
   }
-  locate(path: NuclideUri, line: number, col: number, kind: string): Promise<{file: NuclideUri}> {
+  locate(path: NuclideUri, line: number, col: number, kind: string): Promise<?{file: NuclideUri}> {
     return Promise.reject('Not implemented');
   }
-  complete(path: NuclideUri, line: number, col: number, prefix: string): Promise<mixed> {
+  complete(path: NuclideUri, line: number, col: number, prefix: string): Promise<?mixed> {
     return Promise.reject('Not implemented');
   }
 }

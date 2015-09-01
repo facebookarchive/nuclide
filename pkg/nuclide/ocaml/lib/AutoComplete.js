@@ -14,7 +14,7 @@ var {getServiceByNuclideUri} = require('nuclide-client');
 module.exports = {
   async getAutocompleteSuggestions(
       request: {editor: TextEditor; bufferPosition: Point; scopeDescriptor: any; prefix: string}):
-      Promise<Array<{snippet: string; rightLabel: string}>> {
+      Promise<?Array<{snippet: string; rightLabel: string}>> {
 
     var {editor, prefix} = request;
 
@@ -42,6 +42,9 @@ module.exports = {
 
     await ocamlmerlin.pushNewBuffer(path, text);
     var output = await ocamlmerlin.complete(path, line, col, linePrefix);
+    if (!output) {
+      return null;
+    }
     return output.entries.map((item) => {
       return {
         text: item.name,
@@ -49,5 +52,5 @@ module.exports = {
         replacementPrefix: replacementPrefix,
       };
     });
-  }
+  },
 };
