@@ -44,7 +44,7 @@ function createProcessOutputView(uri: string): HTMLElement {
 
   var processOutputStore = new ScriptBufferedProcessStore(command, args, options);
   var hostElement = new ProcessOutputWrapper();
-  hostElement.initialize(processOutputStore, /* title */ command);
+  hostElement.initialize(processOutputStore, {title: command});
 
   var processSubscriptions = new CompositeDisposable();
   invariant(processToDisposables);

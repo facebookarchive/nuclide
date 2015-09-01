@@ -10,6 +10,7 @@
  */
 
 import type {ScriptBufferedProcessStore} from 'nuclide-atom-helpers';
+import type ProcessOutputHandler from './types';
 
 var {CompositeDisposable, TextBuffer} = require('atom');
 var AtomTextEditor = require('nuclide-ui-atom-text-editor');
@@ -21,10 +22,19 @@ class ProcessOutputView extends React.Component {
   _processOutputStore: ScriptBufferedProcessStore;
   _textBuffer: atom$TextBuffer;
   _disposables: atom$CompositeDisposable;
+  _outputHandler: ?ProcessOutputHandler;
 
+  /**
+   * @param props.processOutputStore The ScriptBufferedProcessStore that provides
+   *   the output to display in this view.
+   * @param props.processOutputHandler (optional) A function that acts on the
+   *   output of the process. If not provided, the default action is to simply
+   *   append the output of the process to the view.
+   */
   constructor(props: {[key: string]: mixed}) {
     super(props);
     this._processOutputStore = props.processOutputStore;
+    this._outputHandler = props.processOutputHandler;
     this._textBuffer = new TextBuffer({
       load: false,
       text: '',
@@ -42,7 +52,11 @@ class ProcessOutputView extends React.Component {
   }
 
   _updateTextBuffer(newText: string) {
-    this._textBuffer.append(newText);
+    if (this._outputHandler) {
+      this._outputHandler(this._textBuffer, newText);
+    } else {
+      this._textBuffer.append(newText);
+    }
   }
 
   componentWillUnmount() {
@@ -64,6 +78,7 @@ class ProcessOutputView extends React.Component {
 
 ProcessOutputView.propTypes = {
   processOutputStore: React.PropTypes.object.isRequired,
+  processOutputHandler: React.PropTypes.func,
 };
 
 module.exports = ProcessOutputView;

@@ -10,6 +10,11 @@
  */
 
 import type {ScriptBufferedProcessStore} from 'nuclide-atom-helpers';
+import type ProcessOutputHandler from './types';
+type ProcessOutputWrapperOptions = {
+  title?: string;
+  processOutputHandler?: ProcessOutputHandler;
+};
 
 import ProcessOutputView from './ProcessOutputView';
 import React from 'react-for-atom';
@@ -20,19 +25,24 @@ class ProcessOutputWrapper extends HTMLElement {
 
   /**
    * @param store The ScriptBufferedProcessStore that provides data to this view.
-   * @param title The title to display in the Atom tab that this view opens in.
+   * @param options An Object of the form:
+   *   title: (optional) The title to display in the Atom tab that this view opens in.
+   *   processOutputHandler: (optional) A ProcessOutputHandler to pass to the ProcessOutputView.
    */
-  initialize(store: ScriptBufferedProcessStore, title?: string) {
+  initialize(store: ScriptBufferedProcessStore, options?: ProcessOutputWrapperOptions = {}) {
     this._processOutputStore = store;
-    this._title = title;
+    this._title = options.title || 'Process Output';
     React.render(
-      <ProcessOutputView processOutputStore={this._processOutputStore} />,
+      <ProcessOutputView
+        processOutputStore={this._processOutputStore}
+        processOutputHandler={options.processOutputHandler}
+      />,
       this
     );
   }
 
   getTitle(): string {
-    return this._title ? this._title : 'Process Output';
+    return this._title;
   }
 
   detachedCallback() {
