@@ -9,80 +9,64 @@
  * the root directory of this source tree.
  */
 
-import type {search$FileResult, search$Match} from './types';
-
-var path = require('path');
-var {safeSpawn, fsPromise} = require('nuclide-commons');
-var split = require('split');
+import {Observable} from 'rx';
+import path from 'path';
+import {safeSpawn, fsPromise} from 'nuclide-commons';
+import split from 'split';
 
 // This pattern is used for parsing the output of grep.
 var GREP_PARSE_PATTERN = /(.*):(\d*):(.*)/;
-
-type UpdateFileMatchesCallback = (result: search$FileResult) => void;
 
 /**
  * Searches for all instances of a pattern in a directory.
  * @param directory - The directory in which to perform a search.
  * @param regex - The pattern to match.
- * @param onFileMatchesUpdate - An optional callback, invoked whenever new matches are found.
- *  The results are cumulative, so each invokation also contains all the previous matches
- *  in the file.
- * @param caseSensitive - True if the grep search should be performed case sensitively.
  * @param subdirs - An array of subdirectories to search within `directory`. If subdirs is an
     empty array, then simply search in directory.
- * @returns A promise resolving to an array of all matches, grouped by file.
+ * @returns An observable that emits match events.
  */
-async function search(
-  directory: string,
-  regex: string,
-  onFileMatchesUpdate: ?UpdateFileMatchesCallback,
-  caseSensitive: boolean,
-  subdirs: Array<string>
-  ): Promise<Array<search$FileResult>> {
+export default function search(directory: string, regex: RegExp, subdirs: Array<string>):
+    Observable<search$FileResult> {
   // Matches are stored in a Map of filename => Array<Match>.
   var matchesByFile: Map<string, Array<search$Match>> = new Map();
 
-  if(!subdirs || subdirs.length === 0) {
+  if (!subdirs || subdirs.length === 0) {
     // Since no subdirs were specified, run search on the root directory.
-    await searchInSubdir(matchesByFile, directory, '.', regex,
-      onFileMatchesUpdate, caseSensitive);
+    return searchInSubdir(matchesByFile, directory, '.', regex);
   } else {
     // Run the search on each subdirectory that exists.
-    await Promise.all(subdirs.map(async subdir => {
+    return Observable.from(subdirs).concatMap(async subdir => {
       try {
         var stat = await fsPromise.lstat(path.join(directory, subdir));
-      } catch(e) {
-        return;
+        if (stat.isDirectory()) {
+          return searchInSubdir(matchesByFile, directory, subdir, regex);
+        }
+      } catch (e) {
+        return Observable.empty();
       }
-
-      if (!stat.isDirectory()) {
-        return;
-      }
-
-      return searchInSubdir(matchesByFile, directory, subdir, regex,
-        onFileMatchesUpdate, caseSensitive);
-    }));
+    }).mergeAll();
   }
-
-  // Return final results.
-  var results = [];
-  matchesByFile.forEach((matches, filePath) => { results.push({matches, filePath}) });
-  return results;
 }
 
 // Helper function that runs the search command on the given directory
-// `subdir`, relative to `directory`. The function returns a promise
-// that resolves when the command is done.
-function searchInSubdir(
-  matchesByFile: Map<string, Array<search$Match>>,
-  directory: string,
-  subdir: string,
-  regex: string,
-  onFileMatchesUpdate: ?UpdateFileMatchesCallback,
-  caseSensitive: boolean) {
+// `subdir`, relative to `directory`. The function returns an Observable that emits
+// search$FileResult objects.
+function searchInSubdir(matchesByFile: Map<string, Array<search$Match>>, directory: string,
+  subdir: string, regex: RexExp) : Observable<search$FileResult> {
 
-  // Callback invoked on each output line from the grep process.
-  var onLine = line => {
+  // Try running search commands, falling through to the next if there is an error.
+  var vcsargs = (regex.ignoreCase ? ['-i'] : []).concat(['-n', regex.source]);
+  var grepargs = (regex.ignoreCase ? ['-i'] : []).concat(['-rHn', '-e', regex.source, '.']);
+  var cmdDir = path.join(directory, subdir);
+  var linesSource = Observable.catch(
+    getLinesFromCommand('hg', ['wgrep'].concat(vcsargs), cmdDir),
+    getLinesFromCommand('git', ['grep'].concat(vcsargs), cmdDir),
+    getLinesFromCommand('grep', grepargs, cmdDir),
+    Observable.throw(new Error('Failed to execute a grep search.'))
+  );
+
+  // Transform lines into file matches.
+  return linesSource.map(line => {
     // Try to parse the output of grep.
     var grepMatchResult = line.match(GREP_PARSE_PATTERN);
     if (!grepMatchResult) {
@@ -95,7 +79,7 @@ function searchInSubdir(
     var filePath = path.join(subdir, grepMatchResult[1]);
 
     // Try to extract the actual "matched" text.
-    var matchTextResult = new RegExp(regex, caseSensitive ? '' : 'i').exec(lineText);
+    var matchTextResult = regex.exec(lineText);
     if (!matchTextResult) {
       return;
     }
@@ -114,56 +98,52 @@ function searchInSubdir(
     });
 
     // If a callback was provided, invoke it with the newest update.
-    if (onFileMatchesUpdate) {
-      onFileMatchesUpdate({
-        matches: matchesByFile.get(filePath),
-        filePath,
-      });
-    }
-  };
-
-  // Try running search commands, falling through to the next if there is an error.
-  var vcsargs = (caseSensitive ? [] : ['-i']).concat(['-n', regex]);
-  var grepargs = (caseSensitive ? [] :  ['-i']).concat(['-rHn', '-e', regex, '.']);
-
-  var cmdDir = path.join(directory, subdir);
-  return getLinesFromCommand('hg', ['wgrep'].concat(vcsargs), cmdDir, onLine)
-    .catch(() => getLinesFromCommand('git', ['grep'].concat(vcsargs), cmdDir, onLine))
-    .catch(() => getLinesFromCommand('grep', grepargs, cmdDir, onLine))
-    .catch(() => { throw new Error('Failed to execute a grep search.')});
+    return {matches: matchesByFile.get(filePath), filePath};
+  }).filter(Boolean); // Filters out the falsey events.
 }
+
 
 // Helper function that runs a command in a given directory, invoking a callback
 // as each line is written to stdout.
-function getLinesFromCommand(command: string,
-  args: Array<string>,
-  localDirectoryPath: string,
-  onLine: ?(line: string) => void): Promise {
+function getLinesFromCommand(command: string, args: Array<string>, localDirectoryPath: string):
+    Observable<string> {
+  return Observable.create(observer => {
+    var proc: ?child_process$ChildProcess = null;
+    var exited = false;
 
-  return new Promise(async (resolve, reject) => {
     // Spawn the search command in the given directory.
-    var proc = await safeSpawn(command, args, { cwd: localDirectoryPath });
+    safeSpawn(command, args, {cwd: localDirectoryPath}).then((child: child_process$ChildProcess) => {
+      proc = child;
 
-    proc.on('error', reject); // Reject on error.
-    proc.stdout.pipe(split()).on('data', onLine); // Call the callback on each line.
+      proc.on('error', observer.onError.bind(observer)); // Reject on error.
+      proc.stdout.pipe(split()).on('data', observer.onNext.bind(observer)); // Call the callback on each line.
 
-    // Keep a running string of stderr, in case we need to throw an error.
-    var stderr = '';
-    proc.stderr.on('data', data => {
-      stderr += data;
+      // Keep a running string of stderr, in case we need to throw an error.
+      var stderr = '';
+      proc.stderr.on('data', data => {
+        stderr += data;
+      });
+
+      // Resolve promise if error code is 0 (found matches) or 1 (found no matches). Otherwise reject.
+      // However, if a process was killed with a signal, don't reject, since this was likely to
+      // cancel the search.
+      proc.on('close', (code, signal) => {
+        exited = true;
+        if (signal || code <= 1) {
+          observer.onCompleted();
+        } else {
+          observer.onError(new Error(stderr));
+        }
+      });
+    }).catch(error => {
+      observer.onError(error);
     });
 
-    // Resolve promise if error code is 0 (found matches) or 1 (found no matches). Otherwise reject.
-    proc.on('close', code => {
-      if (code > 1) {
-        reject(new Error(stderr));
-      } else {
-        resolve();
+    // Kill the search process on dispose.
+    return () => {
+      if (!exited) {
+        proc && proc.kill();
       }
-    });
+    };
   });
 }
-
-module.exports = {
-  search,
-};

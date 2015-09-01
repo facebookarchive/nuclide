@@ -9,11 +9,17 @@
  * the root directory of this source tree.
  */
 
+import {Observable, ReplaySubject} from 'rx';
 var {RemoteDirectory} = require('nuclide-remote-connection');
 
 type SearchResult = {
   filePath: string;
-  matches: Array<{lineText: string; lineTextOffset: number; matchText: string; range: Array<Array<number>>}>;
+  matches: Array<{
+    lineText: string;
+    lineTextOffset: number;
+    matchText: string;
+    range: Array<Array<number>>
+  }>;
 };
 
 type DirectorySearchDelegate = {
@@ -41,64 +47,42 @@ class RemoteDirectorySearcher {
   }
 
   search(directories: Array<RemoteDirectory>, regex: RegExp, options: Object): RemoteDirectorySearch {
-    var isCancelled = false;
-    var promise = new Promise((resolve, reject) => {
-      var seenFiles = new Set(); // The files that we have seen updates for.
-      var onUpdate = (requestId, update) => {
-        // Ensure that this update is for one of our current requests.
-        if (myRequests && myRequests.indexOf(requestId) === -1) {
-          return;
-        }
+    // Track the files that we have seen updates for.
+    var seenFiles = new Set();
 
-        options.didMatch(update);
+    // Get the remote service that corresponds to each remote directory.
+    var services = directories.map(dir => this._serviceProvider(dir));
 
-        // Call didSearchPaths with the number of unique files we have seen matches in. This is
-        // not technically correct, as didSearchPaths is also supposed to count files for which
-        // no matches were found. However, we currently have no way of obtaining this information.
-        seenFiles.add(update.filePath);
-        options.didSearchPaths(seenFiles.size);
-      };
+    // Start the search in each directory, and merge the resulting streams.
+    var searchStream = Observable.merge(directories.map((dir, index) =>
+      services[index].findInProjectSearch(dir.getPath(), regex, options.inclusions)));
 
-      var myRequests = null; // We don't yet know what our search ids are.
-      var completedRequests = new Set(); // Keep track of completed search ids.
-      var onCompleted = requestId => {
-        completedRequests.add(requestId);
+    // Create a subject that we can use to track search completion.
+    var searchCompletion = new ReplaySubject();
+    searchCompletion.onNext();
 
-        // Check if we've recieved our search id's, and that every search id is completed.
-        var complete = myRequests && myRequests.every(request => completedRequests.has(request));
-        if (complete) { // If all searches are complete.
-          // Unsubscribe from events.
-          updateDisposables.forEach(disposable => disposable.dispose());
-          completionDisposables.forEach(disposable => disposable.dispose());
+    var subscription = searchStream.subscribe(next => {
+      options.didMatch(next);
 
-          // Reject the promise if the search was cancelled, otherwise resolve.
-          (isCancelled ? reject : resolve)(null);
-        }
-      };
-
-      // Get the remote service that corresponds to each remote directory.
-      var services = directories.map(dir => this._serviceProvider(dir));
-
-      // Subscribe to file update and search completion update.
-      var updateDisposables = services.map(service => service.onMatchesUpdate(onUpdate));
-      var completionDisposables = services.map(service => service.onSearchCompleted(onCompleted));
-
-      // Start the search in each given directory, getting a list of requestIds.
-      var searchIdPromises = directories.map((dir, index) =>
-        services[index].search(dir.getPath(), regex.source, !regex.ignoreCase, options.inclusions));
-
-      // Resolve all of the searchIds, and then wait for their completion.
-      Promise.all(searchIdPromises).then(searchIds => {
-        myRequests = searchIds; // Store our search Ids.
-      });
+      // Call didSearchPaths with the number of unique files we have seen matches in. This is
+      // not technically correct, as didSearchPaths is also supposed to count files for which
+      // no matches were found. However, we currently have no way of obtaining this information.
+      seenFiles.add(next.filePath);
+      options.didSearchPaths(seenFiles.size);
+    }, error => {
+      searchCompletion.onError(error);
+    }, () => {
+      searchCompletion.onCompleted();
     });
 
-    // Return a thenable object with a 'cancel' function that can end a search.
+    // Return a promise that resolves on search completion.
+    var completionPromise = searchCompletion.toPromise();
     return {
-      then: promise.then.bind(promise),
+      then: completionPromise.then.bind(completionPromise),
       cancel() {
-        isCancelled = true;
-      }
+        // Cancel the subscription, which should also kill the grep process.
+        subscription.dispose();
+      },
     };
   }
 }

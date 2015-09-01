@@ -3,5 +3,10 @@
     "name": "InfoService",
     "definition": "lib/services/InfoService.def",
     "implementation": "lib/services/InfoService.js"
+  },
+  {
+    "definition": "nuclide-remote-search/lib/FindInProjectService.def",
+    "implementation": "nuclide-remote-search/lib/FindInProjectService.js",
+    "name": "FindInProjectService"
   }
 ]

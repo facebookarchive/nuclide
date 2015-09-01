@@ -9,34 +9,14 @@
  * the root directory of this source tree.
  */
 
-class FindInProjectService {
-  // Create a search request.
-  search(directory: NuclideUri, regex: string, caseSensitive: bool, subdirs: Array<string>): Promise<Number> {
-    return Promise.reject('Not implemented');
-  }
+import search from './scanhandler';
+import path from 'path';
+import {Observable} from 'rx';
 
-  // Subscribe to the completion of searches.
-  onSearchCompleted(callback: (requestId: number) => void): Disposable {
-    return Promise.reject('Not implemented');
-  }
-
-  // Subscribe to an event triggered whenever new matches are found in a file.
-  onMatchesUpdate(
-    callback: (
-      requestId: number,
-      fileResult: {
-        filePath: NuclideUri;
-        matches: Array<{
-          lineText: string;
-          lineTextOffset: number;
-          matchText: string;
-          range: Array<Array<number>>
-        }>
-      }
-    ) => void
-  ): Disposable {
-    return Promise.reject('Not implemented');
-  }
+export function findInProjectSearch(directory: NuclideUri, regex: RegExp, subdirs: Array<string>):
+    Observable<search$FileResult> {
+  return search(directory, regex, subdirs).map(update => {
+    // Transform filePath's to absolute paths.
+    return {filePath: path.join(directory, update.filePath), matches: update.matches};
+  });
 }
-
-module.exports = FindInProjectService;

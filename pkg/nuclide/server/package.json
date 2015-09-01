@@ -34,6 +34,7 @@
     "nuclide-service-parser": "0.0.0",
     "nuclide-service-transformer": "0.0.0",
     "nuclide-source-control-helpers": "0.0.0",
+    "nuclide-test-helpers": "0.0.0",
     "nuclide-version": "0.0.0",
     "nuclide-watchman-helpers": "0.0.0",
     "request": "2.53.0",

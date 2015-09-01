@@ -34,7 +34,7 @@ export default class ServiceTestHelper {
 
     var port = this._server._webServer.address().port;
     this._client = new NuclideClient('test',
-      new NuclideRemoteEventbus(`nuclide://localhost:${port}`));
+      new NuclideRemoteEventbus(`http://localhost:${port}`));
     this._connection = new _RemoteConnectionMock(this._client, port);
   }
 
@@ -45,6 +45,10 @@ export default class ServiceTestHelper {
 
   getRemoteService(serviceDefinitionFile: string): any {
     return getProxy(serviceDefinitionFile, this._connection.getClient());
+  }
+
+  getRemoteConnection(): _RemoteConnectionMock {
+    return this._connection;
   }
 }
 

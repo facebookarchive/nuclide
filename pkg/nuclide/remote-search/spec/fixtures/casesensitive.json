@@ -1,46 +1,22 @@
-{
-  "results": [
-    {
-      "matches": [
-        {
-          "lineText": "        console.error(\"hello world!\");",
-          "lineTextOffset": 0,
-          "matchText": "hello world",
-          "range": [
-            [
-              3,
-              23
-            ],
-            [
-              3,
-              34
-            ]
+[
+  {
+    "matches": [
+      {
+        "lineText": "        console.error(\"hello world!\");",
+        "lineTextOffset": 0,
+        "matchText": "hello world",
+        "range": [
+          [
+            3,
+            23
+          ],
+          [
+            3,
+            34
           ]
-        }
-      ],
-      "filePath": "file1.js"
-    }
-  ],
-  "updates": [
-    {
-      "matches": [
-        {
-          "lineText": "        console.error(\"hello world!\");",
-          "lineTextOffset": 0,
-          "matchText": "hello world",
-          "range": [
-            [
-              3,
-              23
-            ],
-            [
-              3,
-              34
-            ]
-          ]
-        }
-      ],
-      "filePath": "file1.js"
-    }
-  ]
-}
+        ]
+      }
+    ],
+    "filePath": "file1.js"
+  }
+]

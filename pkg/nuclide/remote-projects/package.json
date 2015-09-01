@@ -38,7 +38,8 @@
     "nuclide-remote-connection": "0.0.0",
     "nuclide-remote-uri": "0.0.0",
     "nuclide-ssh-dialog": "0.0.0",
-    "react-for-atom": "0.13.6"
+    "react-for-atom": "0.13.6",
+    "rx": "3.1.1"
   },
   "devDependencies": {
     "nuclide-external-interfaces": "0.0.0"

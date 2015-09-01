@@ -15,8 +15,9 @@ var {asyncExecute} = require('nuclide-commons');
 var fs = require('fs');
 var {addMatchers} = require('nuclide-test-helpers');
 var path = require('path');
-var scanhandler = require('./../lib/scanhandler');
 var temp = require('temp').track();
+
+import search from './../lib/scanhandler';
 
 describe('Scan Handler Tests', () => {
   beforeEach(function() {
@@ -38,15 +39,12 @@ describe('Scan Handler Tests', () => {
         console.log("Hello World!");
         console.log(a);`);
 
-      var updates = [];
-      var results = await scanhandler.search(folder, 'hello world', update => { updates.push(update) }, false, []);
+      var results = await search(folder, /hello world/i, []).toArray().toPromise();
       var expected = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'basic.json')));
 
-      // Sort the list of matches by filename to normalize order.
-      sortResults(updates);
+      // Sort results by filename to normalize order.
       sortResults(results);
-
-      expect({results, updates}).diffJson(expected);
+      expect(results).diffJson(expected);
     });
   });
 
@@ -59,15 +57,12 @@ describe('Scan Handler Tests', () => {
         console.log(a);
         console.error("hello world!");`);
 
-      var updates = [];
-      var results = await scanhandler.search(folder, 'hello world', update => { updates.push(update) }, true, []);
+      var results = await search(folder, /hello world/, []).toArray().toPromise();
       var expected = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'casesensitive.json')));
 
       // Sort the list of matches by filename to normalize order.
-      sortResults(updates);
       sortResults(results);
-
-      expect({results, updates}).diffJson(expected);
+      expect(results).diffJson(expected);
     });
   });
 
@@ -83,15 +78,12 @@ describe('Scan Handler Tests', () => {
       fs.mkdirSync(path.join(folder, 'dir3'));
       fs.writeFileSync(path.join(folder, 'dir3', 'file.txt'), testCode);
 
-      var updates = [];
-      var results = await scanhandler.search(folder, 'hello world', update => { updates.push(update) }, false, ['dir2', 'dir3', 'nonexistantdir']);
+      var results = await search(folder, /hello world/i, ['dir2', 'dir3', 'nonexistantdir']).toArray().toPromise();
       var expected = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'subdirs.json')));
 
       // Sort the list of matches by filename to normalize order.
-      sortResults(updates);
       sortResults(results);
-
-      expect({results, updates}).diffJson(expected);
+      expect(results).diffJson(expected);
     });
   });
 
@@ -113,15 +105,12 @@ describe('Scan Handler Tests', () => {
       // Create a file that is untracked.
       fs.writeFileSync(path.join(folder, 'untracked.txt'), 'Hello World!');
 
-      var updates = [];
-      var results = await scanhandler.search(folder, 'hello world', update => { updates.push(update) }, false, []);
+      var results = await search(folder, /hello world/i, []).toArray().toPromise();
       var expected = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'repo.json')));
 
       // Sort the list of matches by filename to normalize order.
-      sortResults(updates);
       sortResults(results);
-
-      expect({updates, results}).diffJson(expected);
+      expect(results).diffJson(expected);
     });
   });
 
@@ -147,15 +136,12 @@ describe('Scan Handler Tests', () => {
 
       await asyncExecute('hg', ['commit', '-m', 'test commit'], {cwd: folder});
 
-      var updates = [];
-      var results = await scanhandler.search(folder, 'hello world', update => { updates.push(update) }, false, []);
+      var results = await search(folder, /hello world/i, []).toArray().toPromise();
       var expected = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'repo.json')));
 
       // Sort the list of matches by filename to normalize order.
-      sortResults(updates);
       sortResults(results);
-
-      expect({updates, results}).diffJson(expected);
+      expect(results).diffJson(expected);
     });
   });
 });

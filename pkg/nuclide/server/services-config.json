@@ -66,11 +66,5 @@
     "implementation": "nuclide-debugger-hhvm-proxy/lib/LocalHhvmDebuggerProxyService.js",
     "name": "HhvmDebuggerProxyService",
     "useServiceFramework": true
-  },
-  {
-    "definition": "nuclide-remote-search/lib/FindInProjectService.js",
-    "implementation": "nuclide-remote-search/lib/LocalFindInProjectService.js",
-    "name": "FindInProjectService",
-    "useServiceFramework": true
   }
 ]

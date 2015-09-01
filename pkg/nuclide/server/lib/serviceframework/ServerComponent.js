@@ -211,7 +211,7 @@ export default class ServerComponent {
         }
 
         // Ensure that the return value is a promise.
-        if (!(returnVal instanceof Promise)) {
+        if (!isThenable(returnVal)) {
           returnVal = Promise.reject(new Error('Expected a Promise, but the function returned something else.'));
         }
 
@@ -232,7 +232,7 @@ export default class ServerComponent {
             channel: 'service_framework3_rpc',
             type: 'ErrorMessage',
             requestId,
-            error,
+            error: formatError(error),
           };
           this._server._sendSocketMessage(client, errorMessage);
         });
@@ -244,7 +244,7 @@ export default class ServerComponent {
         }
 
         // Ensure that the return value is an observable.
-        if (!(returnVal instanceof Observable)) {
+        if (!isObservable(returnVal)) {
           returnVal = Observable.throw(new Error(
             'Expected an Observable, but the function returned something else.'));
         }
@@ -269,7 +269,7 @@ export default class ServerComponent {
             channel: 'service_framework3_rpc',
             type: 'ErrorMessage',
             requestId,
-            error,
+            error: formatError(error),
           };
           this._server._sendSocketMessage(client, errorMessage);
           this._subscriptions.delete(requestId);
@@ -303,4 +303,29 @@ function construct(classObject, args) {
   }
   F.prototype = classObject.prototype;
   return new F();
+}
+
+/**
+ * A helper function that checks if an object is thenable (Promise-like).
+ */
+function isThenable(object: any): boolean {
+  return Boolean(object && object.then);
+}
+
+/**
+ * A helper function that checks if an object is an Observable.
+ */
+function isObservable(object: any): boolean {
+  return Boolean(object && object.concatMap && object.subscribe);
+}
+
+/**
+ * Format the error before sending over the web socket.
+ */
+function formatError(error): string {
+  if (error) {
+    return error.stack || error.toString();
+  } else {
+    return 'Undefined Error.';
+  }
 }

@@ -10,6 +10,7 @@
   "dependencies": {
     "nuclide-commons": "0.0.0",
     "nuclide-logging": "0.0.0",
+    "rx": "3.1.1",
     "split": "0.3.2"
   },
   "devDependencies": {
