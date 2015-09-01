@@ -55,6 +55,7 @@ class BuckToolbar extends React.Component {
     super(props);
     this.state = {
       buttonsDisabled: !this.props.initialBuildTarget,
+      isBuilding: false,
       currentProgress: 0,
       maxProgress: 100,
     };
@@ -62,6 +63,7 @@ class BuckToolbar extends React.Component {
     this._build = this._build.bind(this);
     this._run = this._run.bind(this);
     this._debug = this._debug.bind(this);
+    this._withProgress = this._withProgress.bind(this);
   }
 
   setCurrentProgress(currentProgress: number) {
@@ -78,6 +80,15 @@ class BuckToolbar extends React.Component {
 
   render(): ReactElement {
     var disabled = this.state.buttonsDisabled;
+    var progressBar;
+    if (this.state.isBuilding) {
+      progressBar =
+        <progress
+          className="inline-block buck-toolbar-progress-bar"
+          value={this.state.currentProgress}
+          max={this.state.maxProgress}
+        />;
+    }
     return (
       <div className="buck-toolbar block">
         <AtomComboBox
@@ -99,12 +110,7 @@ class BuckToolbar extends React.Component {
           <button onClick={this._run} disabled={disabled} className="btn">Run</button>
           <button onClick={this._debug} disabled={disabled} className="btn">Debug</button>
         </div>
-        <progress
-          ref="progress-bar"
-          className="inline-block buck-toolbar-progress-bar"
-          value={this.state.currentProgress}
-          max={this.state.maxProgress}
-        />
+        {progressBar}
       </div>
     );
   }
@@ -121,16 +127,28 @@ class BuckToolbar extends React.Component {
     return this.refs['simulator-menu'].getSelectedSimulator();
   }
 
+  /**
+   * Displays the progress bar until this promise is settled, then removes it.
+   */
+  async _withProgress(promise: Promise): Promise<void> {
+    this.setState({isBuilding: true});
+    try {
+      await promise;
+    } finally {
+      this.setState({isBuilding: false});
+    }
+  }
+
   _build() {
-    this._doBuild(/* run */ false);
+    this._withProgress(this._doBuild(/* run */ false));
   }
 
   _run() {
-    this._buildAndLaunchApp(/* debug */ false);
+    this._withProgress(this._buildAndLaunchApp(/* debug */ false));
   }
 
   _debug() {
-    this._buildAndLaunchApp(/* debug */ true);
+    this._withProgress(this._buildAndLaunchApp(/* debug */ true));
   }
 
   async _buildAndLaunchApp(debug: boolean): Promise {
