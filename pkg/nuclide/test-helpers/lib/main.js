@@ -62,7 +62,7 @@ function uncachedRequire(require: Object, module: string): mixed {
  * - The getter returns a function (otherwise, it doesn't make sense to spy on
  *   it)
  */
-function spyOnGetterValue(object: Object, f: string) {
+function spyOnGetterValue(object: Object, f: string): JasmineSpy {
   var value = object[f];
   delete object[f];
   object[f] = value;
@@ -74,5 +74,5 @@ module.exports = {
   uncachedRequire,
   clearRequireCache,
   expectAsyncFailure,
-  matchers: require('./matchers'),
+  addMatchers: require('./matchers').addMatchers,
 };

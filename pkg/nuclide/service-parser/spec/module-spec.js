@@ -10,11 +10,11 @@
  */
 
 import {getProxy, __test__} from '../lib/main';
-import {matchers} from 'nuclide-test-helpers';
+import {addMatchers} from 'nuclide-test-helpers';
 
 describe('Module public API.', () => {
   beforeEach(function() {
-    this.addMatchers(matchers);
+    addMatchers(this);
   });
 
   it('Creates a remote proxy for a module, caching the intermediate results.', () => {

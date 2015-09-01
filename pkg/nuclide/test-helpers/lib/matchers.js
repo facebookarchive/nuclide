@@ -9,9 +9,24 @@
  * the root directory of this source tree.
  */
 
-/* This file contains a set of custom matchers for jasmine testing, which can be used
- * to get more detailed / useful diffs on various reults.
+/*
+ * This file contains a set of custom matchers for jasmine testing, which can be used
+ * to get more detailed / useful diffs on various reults. These can be used in a test by doing:
+ *
+ * var {addMatchers} = require('nuclide-test-helpers');
+ *
+ * And then in a `beforeEach()`:
+ *
+ * ```
+ * beforeEach(() => {
+ *   addMatchers(this);
+ * }
+ * ```
  */
+
+// We have to create an invariant function that is a lie because using invariant() with an
+// instanceof check is the only way to convince Flow of the type of an unbound `this`.
+var invariant = (condition: boolean) => {};
 
 var chalk = require('chalk');
 var diff = require('diff');
@@ -32,6 +47,7 @@ type Change = {
 function diffJson(expected: Object): boolean {
   var parts = diff.diffJson(expected, this.actual);
   var {message, changes} = formatMessage(parts);
+  invariant(this instanceof jasmine.Matchers);
   this.message = () => message;
   return changes === 0;
 }
@@ -43,9 +59,10 @@ function diffJson(expected: Object): boolean {
  * @this A JasmineMatcher object.
  * @returns True if the strings are identical.
  */
-function diffLines(expected: Object): boolean {
+function diffLines(expected: string): boolean {
   var parts = diff.diffLines(expected, this.actual);
   var {message, changes} = formatMessage(parts);
+  invariant(this instanceof jasmine.Matchers);
   this.message = () => message;
   return changes === 0;
 }
@@ -70,4 +87,16 @@ function formatMessage(parts: Array<Change>): {changes: number, message: string}
   return {changes, message};
 }
 
-module.exports = {diffJson, diffLines};
+function addMatchers(spec: JasmineSpec) {
+  var matchersPrototype = {
+    diffJson,
+    diffLines,
+  };
+  spec.addMatchers(matchersPrototype);
+}
+
+module.exports = {
+  addMatchers,
+  diffJson,
+  diffLines,
+};

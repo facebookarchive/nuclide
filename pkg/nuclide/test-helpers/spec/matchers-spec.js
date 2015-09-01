@@ -10,11 +10,12 @@
  */
 
 var chalk = require('chalk');
-var matchers = require('../lib/matchers.js');
+var invariant = require('assert');
+var {addMatchers, diffJson, diffLines} = require('../lib/matchers.js');
 
 describe('matchers', () => {
   beforeEach(function () {
-    this.addMatchers(matchers);
+    addMatchers(this);
   });
 
   describe('matchers.diffJson', () => {
@@ -32,7 +33,7 @@ describe('matchers', () => {
 
     it('colors diff output.', () => {
       var match = {actual : {a: 1, b: 2}};
-      var isMatch = matchers.diffJson.bind(match)({b: 2, c: 3});
+      var isMatch = diffJson.bind(match)({b: 2, c: 3});
 
       var expected = chalk.gray('{\n')
           + chalk.green('  "a": 1,\n')
@@ -41,6 +42,7 @@ describe('matchers', () => {
           + chalk.gray('}');
 
       expect(isMatch).toBe(false);
+      invariant(typeof match.message === 'function');
       expect(match.message()).toEqual(expected);
     });
   });
@@ -60,13 +62,14 @@ describe('matchers', () => {
 
     it('colors diff output.', () => {
       var match = { actual: 'line1\nline2\nline3' };
-      var isMatch = matchers.diffJson.bind(match)('line1\nline3');
+      var isMatch = diffLines.bind(match)('line1\nline3');
 
       var expected = chalk.gray('line1\n')
           + chalk.green('line2\n')
           + chalk.gray('line3');
 
       expect(isMatch).toBe(false);
+      invariant(typeof match.message === 'function');
       expect(match.message()).toEqual(expected);
     });
   });

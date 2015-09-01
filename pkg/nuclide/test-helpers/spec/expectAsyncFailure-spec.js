@@ -13,7 +13,7 @@ var {expectAsyncFailure} = require('../lib/main');
 
 describe('expectAsyncFailure', () => {
   it('fails when provided Promise succeeds', () => {
-    var verify = jasmine.createSpy();
+    var verify: any = jasmine.createSpy();
     waitsForPromise({shouldReject: true}, () => {
       return expectAsyncFailure(
           Promise.resolve('resolved, not rejected!'),

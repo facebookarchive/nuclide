@@ -13,14 +13,14 @@ import type {search$FileResult} from '../lib/types';
 
 var {asyncExecute} = require('nuclide-commons');
 var fs = require('fs');
-var {matchers} = require('nuclide-test-helpers');
+var {addMatchers} = require('nuclide-test-helpers');
 var path = require('path');
 var scanhandler = require('./../lib/scanhandler');
 var temp = require('temp').track();
 
 describe('Scan Handler Tests', () => {
   beforeEach(function() {
-    this.addMatchers(matchers);
+    addMatchers(this);
   });
 
   /* UNIX GREP TESTS */

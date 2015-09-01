@@ -13,7 +13,7 @@ import * as babel from 'babel-core';
 import fs from 'fs';
 import generate from 'babel-core/lib/generation';
 import generateProxy from '../lib/proxy-generator';
-import {matchers} from 'nuclide-test-helpers';
+import {addMatchers} from 'nuclide-test-helpers';
 import parseServiceDefinition from '../lib/service-parser';
 import path from 'path';
 import {__test__} from '../lib/proxy-generator';
@@ -24,7 +24,7 @@ var t = babel.types;
 
 describe('Proxy generator test suite.', () => {
   beforeEach(function() {
-    this.addMatchers(matchers);
+    addMatchers(this);
   });
 
   for (let file of fs.readdirSync(path.join(__dirname, 'fixtures'))) {
@@ -53,7 +53,7 @@ var ArrayOfArrayOfNuclideUri: Type = {
 
 describe('generateTransformStatement helper function', function () {
   beforeEach(function() {
-    this.addMatchers(matchers);
+    addMatchers(this);
   });
 
   it('Generates a marshal statement.', () => {

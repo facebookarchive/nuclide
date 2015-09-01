@@ -87,9 +87,18 @@ type JasmineEnvironment = {
   };
 };
 
+type JasmineSpec = {
+  addMatchers(matchersPrototype: {[methodName: string]: (expected: any) => boolean}): void;
+}
+
+type JasmineMatchers = {
+  message: () => string;
+}
+
 // Jasmine global
 declare var jasmine: {
   Clock: JasmineMockClock;
+  Matchers: JasmineMatchers;
   any(expected: string | Object): mixed;
   createSpy(name?: string): JasmineSpy;
   createSpyObj(name: string, spyNames: Array<string>): mixed;

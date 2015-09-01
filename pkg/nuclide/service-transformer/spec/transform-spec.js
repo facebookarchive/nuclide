@@ -10,7 +10,7 @@
  */
 
 var fs = require('fs');
-var {matchers} = require('nuclide-test-helpers');
+var {addMatchers} = require('nuclide-test-helpers');
 var path = require('path');
 var {requireRemoteServiceSync} = require('../lib/main');
 
@@ -39,7 +39,7 @@ function testGenerateRemoteService(serviceName: string, sourceFilePath: string, 
 
 describe('Nuclide service transformer test suite.', function() {
   beforeEach(function() {
-    this.addMatchers(matchers);
+    addMatchers(this);
   });
 
   describe('test requireRemoteServiceSync() generate and load remote service', function() {

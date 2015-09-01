@@ -99,9 +99,9 @@ global.advanceClock = advanceClock;
 global.useRealClock = useRealClock;
 global.unspy = unspy;
 global.now = unspy;
-Object.defineProperty(global, 'now', {
-  get() { return now; }
-});
+var attributes = {};
+attributes['get'] = function() { return now; };
+Object.defineProperty(global, 'now', attributes);
 
 /**
  * This hook is a the first initialization code that happens before any jasmine test case is executed.

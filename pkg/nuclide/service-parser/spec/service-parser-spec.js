@@ -10,13 +10,13 @@
  */
 
 import fs from 'fs';
-import {matchers} from 'nuclide-test-helpers';
+import {addMatchers} from 'nuclide-test-helpers';
 import parseServiceDefinition from '../lib/service-parser';
 import path from 'path';
 
 describe('Nuclide service parser test suite.', () => {
   beforeEach(function() {
-    this.addMatchers(matchers);
+    addMatchers(this);
   });
 
   for (let file of fs.readdirSync(path.join(__dirname, 'fixtures'))) {
