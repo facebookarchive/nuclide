@@ -11,31 +11,6 @@
 
 var buckServicePromise = require('nuclide-service-hub-plus').consumeFirstProvider('buck.service');
 
-async function getCurrentBuckProject(): Promise<?BuckProject> {
-  var activeEditor = atom.workspace.getActiveTextEditor();
-  if (!activeEditor) {
-    return null;
-  }
-
-  var fileName = activeEditor.getPath();
-  if (!fileName) {
-    return null;
-  }
-
-  var buckService = await buckServicePromise;
-  var buckProject = await buckService.buckProjectRootForPath(fileName);
-  return buckProject;
-}
-
-async function requestOptions(inputText: string) {
-  var buckProject = await getCurrentBuckProject();
-  if (!buckProject) {
-    return [];
-  }
-
-  return buckProject.listAliases();
-}
-
 var logger;
 function getLogger() {
   if (!logger) {
@@ -44,12 +19,27 @@ function getLogger() {
   return logger;
 }
 
+var {TextEditor} = require('atom');
 var AtomComboBox = require('nuclide-ui-atom-combo-box');
 var React = require('react-for-atom');
 var {PropTypes} = React;
 var SimulatorDropdown = require('./SimulatorDropdown');
 
 class BuckToolbar extends React.Component {
+
+  /**
+   * The toolbar makes an effort to keep track of which BuckProject to act on, based on the last
+   * TextEditor that had focus that corresponded to a BuckProject. This means that if a user opens
+   * an editor for a file in a Buck project, types in a build target, focuses an editor for a file
+   * that is not part of a Buck project, and hits "Build," the toolbar will build the target in the
+   * project that corresponds to the editor that previously had focus.
+   *
+   * Ultimately, we should have a dropdown to let the user specify the Buck project when it is
+   * ambiguous.
+   */
+  _mostRecentBuckProject: ?BuckProject;
+  _textEditorToBuckProject: WeakMap<TextEditor, BuckProject>;
+  _activePaneItemSubscription: atom$Disposable;
 
   constructor(props: mixed) {
     super(props);
@@ -60,10 +50,22 @@ class BuckToolbar extends React.Component {
       maxProgress: 100,
     };
     this._handleBuildTargetChange = this._handleBuildTargetChange.bind(this);
+    this._requestOptions = this._requestOptions.bind(this);
     this._build = this._build.bind(this);
     this._run = this._run.bind(this);
     this._debug = this._debug.bind(this);
     this._withProgress = this._withProgress.bind(this);
+
+    this._textEditorToBuckProject = new WeakMap();
+
+    this._mostRecentBuckProject = null;
+    this._onActivePaneItemChanged(atom.workspace.getActivePaneItem());
+    this._activePaneItemSubscription = atom.workspace.onDidChangeActivePaneItem(
+      this._onActivePaneItemChanged.bind(this));
+  }
+
+  componentWillUnmount() {
+    this._activePaneItemSubscription.dispose();
   }
 
   setCurrentProgress(currentProgress: number) {
@@ -76,6 +78,46 @@ class BuckToolbar extends React.Component {
 
   setCurrentProgressToMaxProgress() {
     this.setCurrentProgress(this.state.maxProgress);
+  }
+
+  async _onActivePaneItemChanged(item: mixed): Promise<void> {
+    if (!(item instanceof TextEditor)) {
+      return;
+    }
+
+    var textEditor: TextEditor = item;
+    var nuclideUri = textEditor.getPath();
+    if (!nuclideUri) {
+      return;
+    }
+
+    var buckProject = this._textEditorToBuckProject.get(textEditor);
+    if (buckProject) {
+      this._mostRecentBuckProject = buckProject;
+      return;
+    }
+
+    // Asynchronously find the BuckProject for the NuclideUri. If, by the time the BuckProject is
+    // found, TextEditor is still the active editor (or this._mostRecentBuckProject has not been set
+    // yet), then update this._mostRecentBuckProject.
+    var buckService = await buckServicePromise;
+    buckProject = await buckService.buckProjectRootForPath(nuclideUri);
+    if (buckProject) {
+      this._textEditorToBuckProject.set(textEditor, buckProject);
+      var activeEditor = atom.workspace.getActiveTextEditor();
+      if (activeEditor === textEditor || this._mostRecentBuckProject == null) {
+        this._mostRecentBuckProject = buckProject;
+      }
+    }
+  }
+
+  async _requestOptions(inputText: string): Promise<Array<string>> {
+    var buckProject = this._mostRecentBuckProject;
+    if (!buckProject) {
+      return [];
+    }
+
+    return buckProject.listAliases();
   }
 
   render(): ReactElement {
@@ -94,7 +136,7 @@ class BuckToolbar extends React.Component {
         <AtomComboBox
           className="inline-block"
           ref="buildTarget"
-          requestOptions={requestOptions}
+          requestOptions={this._requestOptions}
           size="sm"
           initialTextInput={this.props.initialBuildTarget}
           onChange={this._handleBuildTargetChange}
@@ -188,7 +230,7 @@ class BuckToolbar extends React.Component {
       return;
     }
 
-    var buckProject = await getCurrentBuckProject();
+    var buckProject = this._mostRecentBuckProject;
     if (!buckProject) {
       var activeEditor = atom.workspace.getActiveTextEditor();
       if (!activeEditor) {
