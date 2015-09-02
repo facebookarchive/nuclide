@@ -23,7 +23,11 @@ export type InvokeRemoteMethodParams = {
  * under the Babel transpiler, so long as they have the `'use babel'` pragma
  * used in Atom.
  */
-class Task {
+class _Task {
+  _id: number;
+  _emitter: EventEmitter;
+  _child: child_process$ChildProcess;
+
   constructor() {
     this._id = 0;
     this._emitter = new EventEmitter();
@@ -107,8 +111,10 @@ class Task {
   }
 }
 
+export type Task = _Task;
+
 function createTask(): Task {
-  return new Task();
+  return new _Task();
 }
 
 module.exports = {
