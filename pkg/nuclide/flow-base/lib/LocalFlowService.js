@@ -75,7 +75,7 @@ class LocalFlowService extends FlowService {
         if (i >= maxTries) {
           throw e;
         }
-        if (e.stderr.match('There is no flow server running')) {
+        if (/There is no [fF]low server running/.test(e.stderr)) {
           // `flow server` will start a server in the foreground. asyncExecute
           // will not resolve the promise until the process exits, which in this
           // case is never. We need to use spawn directly to get access to the
