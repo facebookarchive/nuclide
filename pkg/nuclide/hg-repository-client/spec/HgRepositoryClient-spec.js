@@ -398,7 +398,7 @@ describe('HgRepositoryClient', () => {
       });
     });
 
-    it('is updated when the active pane item changes to an editor, if the editor file is in the project.', () => {
+    xit('is updated when the active pane item changes to an editor, if the editor file is in the project.', () => {
       spyOn(repo, '_updateDiffInfo');
       var file = temp.openSync({dir: projectDirectory.getPath()});
       waitsForPromise(async () => {

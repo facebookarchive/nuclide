@@ -103,9 +103,8 @@ class HgRepositoryClient {
         return;
       }
 
-      // Get initial diff stats for this editor, and refresh this information
-      // whenever the content of the editor changes.
-      this._updateDiffInfo(filePath);
+      // TODO (t8227570) Get initial diff stats for this editor, and refresh
+      // this information whenever the content of the editor changes.
 
       this._disposables[filePath] = new CompositeDisposable();
       this._disposables[filePath].add(editor.onDidSave((event) => {
