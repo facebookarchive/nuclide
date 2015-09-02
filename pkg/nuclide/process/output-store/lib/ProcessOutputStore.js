@@ -9,35 +9,25 @@
  * the root directory of this source tree.
  */
 
-export type BufferedProcessError = {error: Object, handle: mixed};
-
+import type {KillableProcess, RunProcessWithHandlers} from './types';
 import {CompositeDisposable, Disposable, Emitter} from 'atom';
-var {createScriptBufferedProcessWithEnv} = require('./script-buffered-process');
 
 /**
- * This class creates and stores the output of a ScriptBufferedProcess and can
- * push updates to listeners.
+ * This class creates and stores the output of a process and can push updates
+ * to listeners.
  */
-class ScriptBufferedProcessStore {
-  _command: string;
-  _args: Array<string>;
-  _commandOptions: Object;
-
+class ProcessOutputStore {
+  _runProcess: RunProcessWithHandlers;
+  _process: ?KillableProcess;
   _emitter: Emitter;
-  _process: ?atom$BufferedProcess;
+  /* $FlowFixMe - 'null This type is incompatible with Promise' */
   _processPromise: ?Promise<number>;
   _stdout: ?string;
   _stderr: ?string;
   _listenerSubscriptions: CompositeDisposable;
 
-  constructor(
-    command: string,
-    args: Array<string>,
-    commandOptions?: Object = {},
-  ) {
-    this._command = command;
-    this._args = args.slice();
-    this._commandOptions = {...commandOptions};
+  constructor(runProcess: RunProcessWithHandlers) {
+    this._runProcess = runProcess;
     this._emitter = new Emitter();
     this._listenerSubscriptions = new CompositeDisposable();
   }
@@ -59,19 +49,16 @@ class ScriptBufferedProcessStore {
       return this._processPromise;
     }
     var options = {
-      command: this._command,
-      args: this._args,
-      options: this._commandOptions,
       stdout: (data) => this._receiveStdout(data),
       stderr: (data) => this._receiveStderr(data),
+      error: (error) => this._handleProcessError(error),
       exit: (code) => this._handleProcessExit(code),
     };
     this._processPromise = new Promise((resolve, reject) => {
       // this._handleProcessExit() will emit this.
       this._emitter.on('_exit', resolve);
     });
-    this._process = await createScriptBufferedProcessWithEnv(options);
-    this._process.onWillThrowError(() => this._handleProcessError);
+    this._process = await this._runProcess(options);
     return this._processPromise;
   }
 
@@ -86,7 +73,7 @@ class ScriptBufferedProcessStore {
    * The owner of the BufferedProcessStore should subscribe to this and handle
    * any errors.
    */
-  onWillThrowError(callback: (errorObject: BufferedProcessError) => mixed): Disposable {
+  onWillThrowError(callback: (error: Error) => mixed): Disposable {
     var listenerSubscription = this._emitter.on('will-throw-error', callback);
     this._listenerSubscriptions.add(listenerSubscription);
     return listenerSubscription;
@@ -107,8 +94,8 @@ class ScriptBufferedProcessStore {
     this._listenerSubscriptions.dispose();
   }
 
-  _handleProcessError(errorObject: BufferedProcessError) {
-    this._emitter.emit('will-throw-error', errorObject);
+  _handleProcessError(error: Error) {
+    this._emitter.emit('will-throw-error', error);
   }
 
   /**
@@ -158,4 +145,4 @@ class ScriptBufferedProcessStore {
   }
 }
 
-module.exports = ScriptBufferedProcessStore;
+module.exports = ProcessOutputStore;

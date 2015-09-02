@@ -10,5 +10,7 @@
  */
 
 module.exports = {
-  // TODO(jessicalin): Add export code here.
+  get ProcessOutputStore() {
+    return require('./ProcessOutputStore');
+  },
 };
