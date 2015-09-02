@@ -5,6 +5,7 @@
   "version": "0.0.0",
   "description": "Utility to load an Atom package that is packaged as a Node package",
   "nuclide": {
+    "flowCheck": true,
     "packageType": "Node",
     "testRunner": "apm"
   },

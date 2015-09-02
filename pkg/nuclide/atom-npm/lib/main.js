@@ -51,18 +51,21 @@ function loadGrammarsSync(packagePath: string) {
 
 module.exports = {
   load(libPath: string, mainFilename: string): any {
-    if (!atom.nuclide) {
-      atom.nuclide = {};
+    // $FlowFixMe Non-Atom expando property 'nuclide' for our own private purposes.
+    var nuclide = atom.nuclide;
+    if (!nuclide) {
+      // $FlowFixMe atom.nuclide expando-property.
+      atom.nuclide = nuclide = {};
     }
 
-    if (!atom.nuclide[mainFilename]) {
-      atom.nuclide[mainFilename] = require(path.join(libPath, mainFilename));
+    if (!nuclide[mainFilename]) {
+      nuclide[mainFilename] = require(path.join(libPath, mainFilename));
 
       var packagePath = path.dirname(libPath);
       loadStyles(path.join(packagePath, 'styles'));
 
       loadGrammarsSync(packagePath);
     }
-    return atom.nuclide[mainFilename];
+    return nuclide[mainFilename];
   },
 };

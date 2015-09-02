@@ -243,6 +243,39 @@ declare class atom$Range {
   serialize(): Array<Array<number>>;
 }
 
+declare class atom$ThemeManager {
+  // Event Subscription
+  /**
+   * As recent as Atom 1.0.10, the implementation of this method was:
+   *
+   * ```
+   * onDidChangeActiveThemes: (callback) ->
+   *   @emitter.on 'did-change-active-themes', callback
+   *   @emitter.on 'did-reload-all', callback # TODO: Remove once deprecated pre-1.0 APIs are gone
+   * ```
+   *
+   * Due to the nature of CoffeeScript, onDidChangeActiveThemes returns a Disposable even though it
+   * is not documented as doing so. However, the Disposable that it does return removes the
+   * subscription on the 'did-reload-all' event (which is supposed to be deprecated) rather than the
+   * 'did-change-active-themes' one.
+   */
+  onDidChangeActiveThemes(callback: () => mixed): atom$Disposable;
+
+  // Accessing Loaded Themes
+  getLoadedThemeNames(): Array<string>;
+  getLoadedThemes(): Array<mixed>; // TODO: Define undocumented ThemePackage class.
+
+  // Accessing Active Themes
+  getActiveThemeNames(): Array<string>;
+  getActiveThemes(): Array<mixed>; // TODO: Define undocumented ThemePackage class.
+
+  // Managing Enabled Themes
+  getEnabledThemeNames(): Array<string>;
+
+  // Private
+  requireStylesheet(stylesheetPath: string): atom$Disposable;
+}
+
 declare class atom$TooltipManager {
   add(
     target: HTMLElement,
@@ -658,6 +691,7 @@ type AtomGlobal = {
   grammars: atom$GrammarRegistry;
   notifications: atom$NotificationManager;
   packages: atom$PackageManager;
+  themes: atom$ThemeManager;
   tooltips: atom$TooltipManager;
   views: atom$ViewRegistry;
   workspace: atom$Workspace;
