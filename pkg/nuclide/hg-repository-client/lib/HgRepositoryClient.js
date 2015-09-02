@@ -488,7 +488,15 @@ class HgRepositoryClient {
         }
       });
     } else if (hasOptions && (options.hgStatusOption === HgStatusOption.ALL_STATUSES)) {
-      // No action needs to be taken for the HgStatusOption.ALL_STATUSES case.
+      // If HgStatusOption.ALL_STATUSES was passed and a file does not appear in
+      // the results, it must mean the file was removed from the filesystem.
+      queriedFiles.forEach((filePath) => {
+        var cachedStatusId = this._hgStatusCache[filePath];
+        delete this._hgStatusCache[filePath];
+        if (cachedStatusId === StatusCodeId.MODIFIED) {
+          this._removeAllParentDirectoriesFromCache(filePath);
+        }
+      });
     } else {
       queriedFiles.forEach((filePath) => {
         var cachedStatusId = this._hgStatusCache[filePath];
