@@ -66,7 +66,7 @@ class LocalFlowService extends FlowService {
     }
     args.push('--no-auto-start');
     args.push('--from', 'nuclide');
-    var pathToFlow = await getPathToFlow();
+    var pathToFlow = getPathToFlow();
     for (var i = 0; ; i++) {
       try {
         var result = await asyncExecute(pathToFlow, args, localOptions);

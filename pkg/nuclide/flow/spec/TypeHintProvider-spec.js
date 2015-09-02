@@ -28,13 +28,12 @@ describe('TypeHintProvider.js', () => {
     // we assume here that runWith is called in every spec -- otherwise these
     // will not be spies
     jasmine.unspy(require('nuclide-atom-helpers'), 'extractWordAtPosition');
-    jasmine.unspy(require('nuclide-commons'), 'getConfigValueAsync');
+    jasmine.unspy(atom.config, 'get');
     jasmine.unspy(require('nuclide-client'), 'getServiceByNuclideUri');
   });
 
   async function runWith(enabled, type, word) {
-    spyOn(require('nuclide-commons'), 'getConfigValueAsync')
-      .andReturn(() => Promise.resolve(enabled));
+    spyOn(atom.config, 'get').andReturn(enabled);
     spyOn(require('nuclide-client'), 'getServiceByNuclideUri').andReturn({
       getType() { return Promise.resolve(type); },
     });

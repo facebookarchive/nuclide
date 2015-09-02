@@ -12,14 +12,13 @@
 var {extractWordAtPosition} = require('nuclide-atom-helpers');
 var {getServiceByNuclideUri} = require('nuclide-client');
 var {Range} = require('atom');
-var {getConfigValueAsync} = require('nuclide-commons');
 
 const JAVASCRIPT_WORD_REGEX = /[a-zA-Z0-9_$]+/g;
 
 module.exports = class TypeHintProvider {
 
   async typeHint(editor: TextEditor, position: Point): Promise<?TypeHint> {
-    var enabled = await getConfigValueAsync('nuclide-flow.enableTypeHints')();
+    var enabled = atom.config.get('nuclide-flow.enableTypeHints');
     if (!enabled) {
       return null;
     }

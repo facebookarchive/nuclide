@@ -14,7 +14,6 @@ import type {NuclideUri} from 'nuclide-remote-uri';
 var {
   checkOutput,
   findNearestFile,
-  getConfigValueAsync,
   safeSpawn,
 } = require('nuclide-commons');
 
@@ -23,11 +22,16 @@ var logger = require('nuclide-logging').getLogger();
 var MerlinService = require('./MerlinService');
 var MerlinProcess = require('./MerlinProcess');
 
-function getPathToMerlin(): Promise<string> {
+/**
+ * @return The path to ocamlmerlin on the user's machine. It is recommended not to cache the result
+ *   of this function in case the user updates his or her preferences in Atom, in which case the
+ *   return value will be stale.
+ */
+function getPathToMerlin(): string {
   if (global.atom) {
-    return getConfigValueAsync('nuclide-ocaml.pathToMerlin')();
+    return atom.config.get('nuclide-ocaml.pathToMerlin');
   } else {
-    return Promise.resolve('ocamlmerlin');
+    return 'ocamlmerlin';
   }
 }
 
@@ -51,7 +55,7 @@ class LocalMerlinService extends MerlinService {
       return this._merlinProcessInstance;
     }
 
-    var merlinPath = await getPathToMerlin();
+    var merlinPath = getPathToMerlin();
 
     if (!await isInstalled(merlinPath)) {
       return null;

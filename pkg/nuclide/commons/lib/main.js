@@ -15,10 +15,6 @@ module.exports = {
     return require('./promises').asyncFind(items, test, thisArg);
   },
 
-  getConfigValueAsync(key: string): () => Promise {
-    return require('./config').getConfigValueAsync(key);
-  },
-
   asyncExecute(command: string, args: Array<string>, options: any): Promise {
     return require('./process').asyncExecute(command, args, options);
   },

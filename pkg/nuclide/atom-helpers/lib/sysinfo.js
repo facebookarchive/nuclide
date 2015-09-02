@@ -13,7 +13,7 @@
 // console.error in this file instead of nuclide-logging.
 /*eslint-disable no-console */
 
-var {asyncExecute, getConfigValueAsync} = require('nuclide-commons');
+var {asyncExecute} = require('nuclide-commons');
 var path = require('path');
 var atomMeta = require(path.join(atom.getLoadSettings().resourcePath, 'package.json'));
 
@@ -84,15 +84,19 @@ function getFlowVersion(): Promise<string> {
 }
 
 async function determineFlowVersion(): Promise<string> {
-  var flowVersion;
-  try {
-    var pathToFlow = await getConfigValueAsync('nuclide-flow.pathToFlow')();
-    var result = await asyncExecute(pathToFlow, ['--version'], {});
-    flowVersion = result.stdout.trim();
-  } catch (e) {
-    flowVersion = '';
+  var pathToFlow = ((atom.config.get('nuclide-flow.pathToFlow'): any): ?string);
+  if (!pathToFlow) {
+    // Note that nuclide-flow.pathToFlow should never be null or the empty string because it has a
+    // default value, but we include this check to be defensive.
+    return '';
+  } else {
+    try {
+      var result = await asyncExecute(pathToFlow, ['--version'], {});
+      return result.stdout.trim();
+    } catch (e) {
+      return '';
+    }
   }
-  return flowVersion;
 }
 
 type SystemInfo = {

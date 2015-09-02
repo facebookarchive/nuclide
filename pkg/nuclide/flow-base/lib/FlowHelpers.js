@@ -10,7 +10,7 @@
  */
 
 var path = require('path');
-var {asyncExecute, findNearestFile, getConfigValueAsync} = require('nuclide-commons');
+var {asyncExecute, findNearestFile} = require('nuclide-commons');
 
 function insertAutocompleteToken(contents: string, line: number, col: number): string {
   var lines = contents.split('\n');
@@ -24,7 +24,7 @@ async function isFlowInstalled(): Promise<boolean> {
   var os = require('os');
   var platform = os.platform();
   if (platform === 'linux' || platform === 'darwin') {
-    var flowPath = await getPathToFlow();
+    var flowPath = getPathToFlow();
     try {
       await asyncExecute('which', [flowPath]);
       return true;
@@ -37,11 +37,16 @@ async function isFlowInstalled(): Promise<boolean> {
   }
 }
 
-function getPathToFlow(): Promise<string> {
+/**
+ * @return The path to Flow on the user's machine. It is recommended not to cache the result of this
+ *   function in case the user updates his or her preferences in Atom, in which case the return
+ *   value will be stale.
+ */
+function getPathToFlow(): string {
   if (global.atom) {
-    return getConfigValueAsync('nuclide-flow.pathToFlow')();
+    return atom.config.get('nuclide-flow.pathToFlow');
   } else {
-    return Promise.resolve('flow');
+    return 'flow';
   }
 }
 
