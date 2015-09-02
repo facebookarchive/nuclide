@@ -240,6 +240,7 @@ class LocalFlowService extends FlowService {
           return {
             text: item['name'],
             rightLabel: item['type'],
+            description: item['type'],
             replacementPrefix,
           };
         });
