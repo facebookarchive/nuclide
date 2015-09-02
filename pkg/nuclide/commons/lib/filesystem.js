@@ -93,6 +93,7 @@ function exists(filePath: string): Promise<boolean> {
  * directories were created for some prefix of the given path.
  * @return true if the path was created; false if it already existed.
  */
+// $FlowIssue: #8216189
 async function mkdirp(filePath: string): Promise<boolean> {
   var isExistingDirectory = await exists(filePath);
   if (isExistingDirectory) {
@@ -125,31 +126,13 @@ async function rmdir(filePath: string): Promise {
   });
 }
 
-var asyncFs = {
-  exists,
-  findNearestFile,
-  isRoot,
-  mkdirp,
-  rmdir,
-  tempdir,
-  tempfile,
-};
-
-[
-  'chmod',
-  'lstat',
-  'mkdir',
-  'readdir',
-  'readFile',
-  'readlink',
-  'realpath',
-  'rename',
-  'stat',
-  'symlink',
-  'unlink',
-  'writeFile',
-].forEach((methodName) => {
-  asyncFs[methodName] = function(...args) {
+/**
+ * Takes a method from Node's fs module and returns a "denodeified" equivalent, i.e., an adapter
+ * with the same functionality, but returns a Promise rather than taking a callback. This isn't
+ * quite as efficient as Q's implementation of denodeify, but it's considerably less code.
+ */
+function denodeifyFsMethod(methodName: string): () => Promise {
+  return function(...args): Promise {
     var method = fs[methodName];
     return new Promise((resolve, reject) => {
       method.apply(fs, args.concat([
@@ -157,6 +140,26 @@ var asyncFs = {
       ]));
     });
   };
-});
+}
 
-module.exports = asyncFs;
+module.exports = {
+  chmod: denodeifyFsMethod('chmod'),
+  exists,
+  findNearestFile,
+  isRoot,
+  lstat: denodeifyFsMethod('lstat'),
+  mkdir: denodeifyFsMethod('mkdir'),
+  mkdirp,
+  readdir: denodeifyFsMethod('readdir'),
+  readFile: denodeifyFsMethod('readFile'),
+  readlink: denodeifyFsMethod('readlink'),
+  realpath: denodeifyFsMethod('realpath'),
+  rename: denodeifyFsMethod('rename'),
+  rmdir,
+  stat: denodeifyFsMethod('stat'),
+  symlink: denodeifyFsMethod('symlink'),
+  tempdir,
+  tempfile,
+  unlink: denodeifyFsMethod('unlink'),
+  writeFile: denodeifyFsMethod('writeFile'),
+};

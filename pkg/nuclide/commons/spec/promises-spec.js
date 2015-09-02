@@ -280,9 +280,9 @@ describe('promises::asyncSome()', () => {
 });
 
 async function captureParallelismHistory(
-    asyncFunction: () => Promise<any>,
-    args: Array<any>
-  ): Promise<{result: any, parallelismHistory: Array<number>}> {
+    asyncFunction: (...args: Array<any>) => Promise<mixed>,
+    args: Array<mixed>
+  ): Promise<{result: mixed, parallelismHistory: Array<number>}> {
 
   var parallelismHistory = [];
   var parralelism = 0;

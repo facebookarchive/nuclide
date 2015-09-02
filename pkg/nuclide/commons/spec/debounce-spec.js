@@ -13,7 +13,7 @@ var {debounce} = require('../lib/main');
 
 describe('debounce()', () => {
   it('only calls function once after time advances', () => {
-    var timerCallback = jasmine.createSpy('timerCallback');
+    var timerCallback: any = jasmine.createSpy('timerCallback');
     var debouncedFunc = debounce(timerCallback, 100, false);
 
     debouncedFunc();

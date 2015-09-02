@@ -17,9 +17,9 @@ var {findNearestFile} = require('../lib/main');
 describe('filesystem test suite', () => {
 
   describe('findNearestFile()', () => {
-    var dirPath;
-    var nestedDirPath;
-    var fileName;
+    var dirPath: any;
+    var nestedDirPath: any;
+    var fileName: any;
     var filePath;
 
     beforeEach(() => {

@@ -9,14 +9,10 @@
  * the root directory of this source tree.
  */
 
-var extend = require('util')._extend;
+import {assign} from './object';
 
-function immutableExtend(...args: Array<mixed>) {
-  var object = {};
-  for (var i = 0; i < args.length; i++) {
-    object = extend(object, args[i]);
-  }
-  return object;
+function immutableExtend(...args: Array<Object>) {
+  return assign({}, ...args);
 }
 
 module.exports = {

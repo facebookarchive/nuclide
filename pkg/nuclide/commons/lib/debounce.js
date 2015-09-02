@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-// Take from: https://github.com/jashkenas/underscore/blob/b10b2e6d72/underscore.js#L815
 function debounce(func: () => void, wait: number, immediate: boolean): () => void {
+  // Taken from: https://github.com/jashkenas/underscore/blob/b10b2e6d72/underscore.js#L815.
   var timeout, args: any, context, timestamp = 0, result;
 
   var later = function() {
@@ -30,7 +30,7 @@ function debounce(func: () => void, wait: number, immediate: boolean): () => voi
   };
 
   return function() {
-    context = this;
+    context = this; // eslint-disable-line consistent-this
     args = arguments;
     timestamp = Date.now();
     var callNow = immediate && !timeout;

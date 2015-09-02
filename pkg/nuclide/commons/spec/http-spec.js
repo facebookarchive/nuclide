@@ -8,16 +8,19 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
+import type {Server} from 'http';
 
+var invariant = require('assert');
 var fs = require('fs');
 var {fsPromise, httpPromise} = require('../lib/main');
 var http = require('http');
 var path = require('path');
-var server;
+var server: ?Server;
 var port;
 
 
-function createSimpleServer() {
+function createSimpleServer(): Server {
+  // $FlowIssue
   server = http.createServer((req, res) => {
     var fileName = path.basename(req.url);
     var filePath = path.join(__dirname, 'fixtures', fileName);
@@ -43,9 +46,11 @@ function createSimpleServer() {
   });
 
   server.destroy = (cb) => {
+    invariant(server);
     server.close(cb);
-    for (var key in connections)
+    for (var key in connections) {
       connections[key].destroy();
+    }
   };
 
   return server;
@@ -97,7 +102,10 @@ describe('Async http get/download test suite', () => {
     port = server.address().port;
   });
 
-  afterEach(() => server.destroy());
+  afterEach(() => {
+    invariant(server);
+    server.close();
+  });
 
   it('returns a Promise that resolves to the content from a valid endpoint', () => {
     waitsForPromise(async () => {

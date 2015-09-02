@@ -8,8 +8,11 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-
 var es6Array = require('../lib/array.js');
+
+// We have to create an invariant function that is a lie because using invariant() with an
+// instanceof check is the only way to convince Flow of the type of an unbound `this`.
+var invariant = (condition: boolean) => {};
 
 describe('Array.from()', () => {
   it('produces an Array from Set', () => {
@@ -19,16 +22,19 @@ describe('Array.from()', () => {
 
   it('produces an Array from Set.keys()', () => {
     var set = new Set(['foo', 'bar', 'baz']);
+    // $FlowIssue
     expect(es6Array.from(set.keys())).toEqual(['foo', 'bar', 'baz']);
   });
 
   it('produces an Array from Set.values()', () => {
     var set = new Set(['foo', 'bar', 'baz']);
+    // $FlowIssue
     expect(es6Array.from(set.values())).toEqual(['foo', 'bar', 'baz']);
   });
 
   it('produces an Array from Set.entries()', () => {
     var set = new Set(['foo', 'bar', 'baz']);
+    // $FlowIssue
     expect(es6Array.from(set.entries())).toEqual(
         [['foo', 'foo'], ['bar', 'bar'], ['baz', 'baz']]);
   });
@@ -83,6 +89,7 @@ describe('Array.from()', () => {
   });
 
   it('rejects an arg that is not an array-like or iterable object', () => {
+    // $FlowFixMe
     var tryIt = () => es6Array.from({});
     expect(tryIt).toThrow();
   });
@@ -107,6 +114,7 @@ describe('Array.from()', () => {
     var set = new Set(['foo', 'bar', 'baz']);
     var f = function(arg) { return this.prefix + arg; };
     var thisArg = {prefix: 'p-'};
+    // $FlowFixMe
     expect(es6Array.from(set, f, thisArg)).toEqual(['p-foo', 'p-bar', 'p-baz']);
   });
 
@@ -119,6 +127,7 @@ describe('Array.from()', () => {
 
     var f = function(arg) { return this.prefix + arg; };
     var thisArg = {prefix: 'p-'};
+    // $FlowFixMe
     expect(es6Array.from(arrayLike, f, thisArg)).toEqual(['p-foo', 'p-bar', 'p-baz']);
   });
 });
@@ -143,7 +152,11 @@ describe('Array.prototype.find()', () => {
   it('honors thisArg', () => {
     var array = ['foo', 'baz', 'biz'];
     var count = 0;
-    var test = function(item: string) { count++; return item.startsWith(this); };
+    var test = function(item: string) {
+      count++;
+      invariant(typeof this === 'string');
+      return item.startsWith(this);
+    };
     expect(es6Array.find(array, test, 'f')).toBe('foo');
     expect(count).toBe(1);
     expect(es6Array.find(array, test, 'bi')).toBe('biz');
@@ -209,7 +222,11 @@ describe('Array.prototype.findIndex()', () => {
   it('honors thisArg', () => {
     var array = ['foo', 'baz', 'biz'];
     var count = 0;
-    var test = function(item) { count++; return item.startsWith(this); };
+    var test = function(item) {
+      count++;
+      invariant(typeof this === 'string');
+      return item.startsWith(this);
+    };
     expect(es6Array.findIndex(array, test, 'f')).toBe(0);
     expect(count).toBe(1);
     expect(es6Array.findIndex(array, test, 'bi')).toBe(2);
@@ -256,9 +273,9 @@ describe('Array.prototype.findIndex()', () => {
 });
 
 describe('Array.remove', () => {
-  var a;
-  var empty;
-  var single;
+  var a: any;
+  var empty: any;
+  var single: any;
 
   beforeEach(() => {
     a = ['a', 'b', 'c'];

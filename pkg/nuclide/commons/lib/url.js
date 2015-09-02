@@ -28,6 +28,7 @@ type ParsedUrl = {
 module.exports = {
   parse(uri: string): ParsedUrl {
     // url.parse seems to apply encodeURI to the uri. We typically don't want this behavior.
+    // $FlowIssue
     var parsedUri = require('url').parse(uri);
     parsedUri.href = decodeURI(parsedUri.href);
 

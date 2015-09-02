@@ -16,6 +16,7 @@
  * @param mapFn Map function to call on every element of the array.
  * @param thisArg Value to use as `this` when executing `mapFn`.
  */
+// $FlowIssue
 function from<T, U>(
   arrayLike: Iterable | {length: number},
   mapFn?: (original: T) => U,
@@ -44,6 +45,7 @@ function from<T, U>(
     return Array.prototype.map.call(arrayLike, mapFn, thisArg);
   } else if (arrayLike instanceof Set) {
     // Backup logic to handle the es6-collections case.
+    // $FlowIssue: https://github.com/facebook/flow/issues/755.
     return from(arrayLike.values(), mapFn, thisArg);
   } else if (arrayLike instanceof Map) {
     // Backup logic to handle the es6-collections case.
@@ -86,6 +88,7 @@ function findIndex<T>(
     callback: (element: T, index: number, array: Array<T>) => mixed,
     thisArg?: mixed): number {
   var result = -1;
+  // $FlowIssue
   array.some(function(element: T, index: number, arr: Array<T>) {
     if (callback.call(thisArg, element, index, arr)) {
       result = index;

@@ -68,7 +68,7 @@ describe('process.asyncExecute', () => {
     it('checkOutput throws an error if the process cannot be started', () => {
       waitsForPromise(async () => {
           try {
-            await processLib.checkOutput('non_existing_command');
+            await processLib.checkOutput('non_existing_command', /* args */ []);
           } catch(error) {
             // `exit` with a non-zero error code should reject the Promise and return the generic
             // ENOENT (End Of ENTity) exit code.

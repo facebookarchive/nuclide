@@ -111,6 +111,7 @@ function logError(...args) {
 
 function monitorStreamErrors(process: child_process$ChildProcess, command, args, options): void {
   STREAM_NAMES.forEach(streamName => {
+    // $FlowIssue
     process[streamName].on('error', error => {
       // This can happen without the full execution of the command to fail, but we want to learn about it.
       logError('stream error with command:', command, args, options, 'error:', error);
@@ -240,7 +241,7 @@ function checkOutput(
     }
   };
 
-  function makePromise() {
+  function makePromise(): Promise<process$asyncExecuteRet> {
     if (localOptions.queueName === undefined) {
       return new Promise(executor);
     } else {
@@ -269,9 +270,8 @@ async function asyncExecute(
     options: ?Object = {}): Promise<process$asyncExecuteRet> {
   var result = await checkOutput(command, args, options);
   if (result.exitCode !== 0) {
-    // Duck typing Error.
-    result['message'] =
-        `exitCode: ${result.exitCode}, stderr: ${result.stderr}, stdout: ${result.stdout}.`;
+    // TODO(t8215539): Add properties such as "message" and "toString()" so that if the caller
+    // catches this as if it were an error, it will print nicely rather than "[object Object]".
     throw result;
   }
   return result;
