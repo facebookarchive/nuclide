@@ -12,6 +12,7 @@
 import type {ExportStoreData} from './FileTreeStore';
 
 var {CompositeDisposable} = require('atom');
+var FileSystemActions = require('./FileSystemActions');
 var FileTree = require('../components/FileTree');
 var FileTreeActions = require('./FileTreeActions');
 var {EVENT_HANDLER_SELECTOR} = require('./FileTreeConstants');
@@ -77,9 +78,10 @@ class FileTreeController {
     );
     this._subscriptions.add(
       atom.commands.add(EVENT_HANDLER_SELECTOR, {
+        'nuclide-file-tree-deux:add-folder': () => FileSystemActions.openAddFolderDialog(),
+        'nuclide-file-tree-deux:copy-full-path': this._copyFullPath.bind(this),
         'nuclide-file-tree-deux:remove-project-folder-selection': this._removeRootFolderSelection.bind(this),
         'nuclide-file-tree-deux:search-in-directory': this._searchInDirectory.bind(this),
-        'nuclide-file-tree-deux:copy-full-path': this._copyFullPath.bind(this),
       })
     );
     if (state && state.tree) {
