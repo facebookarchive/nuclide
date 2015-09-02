@@ -10,10 +10,6 @@
  */
 
 module.exports = {
-  get ScriptBufferedProcessStore() {
-    return require('./ScriptBufferedProcessStore');
-  },
-
   get atomEventDebounce() {
     return require('./atom-event-debounce');
   },
