@@ -13,9 +13,7 @@ var React = require('react-for-atom');
 
 var {PropTypes} = React;
 
-var {
-  array
-} = require('nuclide-commons');
+var {array} = require('nuclide-commons');
 var cx = require('react-classset');
 
 var NuclideTabs = React.createClass({
@@ -26,7 +24,7 @@ var NuclideTabs = React.createClass({
       tabContent: PropTypes.node.isRequired,
     })).isRequired,
     activeTabName: PropTypes.string.isRequired,
-    onActiveTabChange: PropTypes.func,
+    onActiveTabChange: PropTypes.func.isRequired,
     triggeringEvent: PropTypes.string.isRequired,
   },
 
@@ -74,7 +72,7 @@ var NuclideTabs = React.createClass({
       <div className="nuclide-tabs">
         {this._renderTabMenu()}
       </div>
-    )
+    );
   },
 });
 

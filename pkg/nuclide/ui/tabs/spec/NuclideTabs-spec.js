@@ -60,7 +60,7 @@ describe('NuclideCheckbox', () => {
       'title'
     )[1];
 
-    // `Simulate` does not currently support mouseEnter: https://github.com/facebook/react/issues/1297
+    // `Simulate` does not currently support mouseEnter: https://github.com/facebook/react/issues/1297.
     SimulateNative.mouseOver(React.findDOMNode(node));
 
     expect(onChange).toHaveBeenCalledWith(props.tabs[1]);

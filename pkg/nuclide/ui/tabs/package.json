@@ -5,6 +5,7 @@
   "version": "0.0.0",
   "description": "Provides a static tab-bar react component based on the native Atom tab styles",
   "nuclide": {
+    "flowCheck": true,
     "packageType": "Node",
     "testRunner": "apm"
   },
