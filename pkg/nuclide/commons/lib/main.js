@@ -130,4 +130,8 @@ module.exports = {
   get systemInfo() {
     return require('./systemInfo');
   },
+
+  get runtimeInfo() {
+    return require('./runtimeInfo');
+  },
 };
