@@ -614,7 +614,8 @@ class FileTreeController {
           // Accumulate all the ancestor keys from the file up to the root.
           var directory = file.getParent();
           var ancestorKeys = [];
-          while (rootDirectory.getPath() !== directory.getPath()) {
+          while (rootDirectory.getPath() !== directory.getPath() &&
+              directory.getPath() !== directory.getParent().getPath()) {
             ancestorKeys.push(new LazyFileTreeNode(directory).getKey());
             directory = directory.getParent();
           }
