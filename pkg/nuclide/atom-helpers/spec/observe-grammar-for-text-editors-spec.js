@@ -22,7 +22,7 @@ describe('observeGrammarForTextEditors', () => {
     waitsForPromise(async () => {
       var textEditor = await atom.workspace.open('file.m');
 
-      var fn = jasmine.createSpy('fn');
+      var fn: any = jasmine.createSpy('fn');
       var subscription = observeGrammarForTextEditors(fn);
       expect(fn).toHaveBeenCalledWith(textEditor, objcGrammar);
       expect(fn.callCount).toBe(1);
@@ -33,7 +33,7 @@ describe('observeGrammarForTextEditors', () => {
 
   it('calls for new text editors', () => {
     waitsForPromise(async () => {
-      var fn = jasmine.createSpy('fn');
+      var fn: any = jasmine.createSpy('fn');
       var subscription = observeGrammarForTextEditors(fn);
       var textEditor = await atom.workspace.open('file.m');
 
@@ -46,8 +46,9 @@ describe('observeGrammarForTextEditors', () => {
 
   it('calls when a text editor changes grammars', () => {
     waitsForPromise(async () => {
-      var fn = jasmine.createSpy('fn');
+      var fn: any = jasmine.createSpy('fn');
       var subscription = observeGrammarForTextEditors(fn);
+      // $FlowIssue
       var textEditor = await atom.workspace.open('file.m');
       textEditor.setGrammar(jsGrammar);
 
@@ -61,7 +62,7 @@ describe('observeGrammarForTextEditors', () => {
 
   it('does not call after the return value is disposed', () => {
     waitsForPromise(async () => {
-      var fn = jasmine.createSpy('fn');
+      var fn: any = jasmine.createSpy('fn');
       var subscription = observeGrammarForTextEditors(fn);
       var textEditor = await atom.workspace.open('file.m');
 
@@ -77,9 +78,9 @@ describe('observeGrammarForTextEditors', () => {
 
   it('calls for other clients after another listener is disposed', () => {
     waitsForPromise(async () => {
-      var fn = jasmine.createSpy('fn');
+      var fn: any = jasmine.createSpy('fn');
       var subscription = observeGrammarForTextEditors(fn);
-      var fn2 = jasmine.createSpy('fn2');
+      var fn2: any = jasmine.createSpy('fn2');
       var subscription2 = observeGrammarForTextEditors(fn2);
       var textEditor = await atom.workspace.open('file.m');
 

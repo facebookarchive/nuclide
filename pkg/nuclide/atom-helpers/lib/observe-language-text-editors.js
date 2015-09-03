@@ -22,6 +22,12 @@ var STOP_OBSERVING_TEXT_EDITOR_EVENT = 'stop-observing-text-editor';
  * multiple callers observe on text editors with the same grammar scopes.
  */
 class LanguageTextEditorsListener {
+  _grammarScopes: Set<string>;
+  _emitter: EventEmitter;
+  _observedTextEditors: Set<TextEditor>;
+  _destroySubscriptionsMap: Map<TextEditor, atom$Disposable>;
+  _grammarSubscription: atom$IDisposable;
+
   constructor(grammarScopes: Set<string>) {
     this._grammarScopes = grammarScopes;
 
@@ -96,7 +102,7 @@ module.exports =
 function observeLanguageTextEditors(
     grammarScopes: Array<string>,
     fn: (textEditor: TextEditor) => void,
-    cleanupFn?: (textEditor: TextEditor) => void): Disposable {
+    cleanupFn?: (textEditor: TextEditor) => void): atom$IDisposable {
   var subscriptions = new CompositeDisposable();
   var listener = new LanguageTextEditorsListener(new Set(grammarScopes));
   subscriptions.add(listener);

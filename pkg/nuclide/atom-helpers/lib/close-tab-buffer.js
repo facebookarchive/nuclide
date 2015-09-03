@@ -8,11 +8,11 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-
-function closeTabForBuffer(buffer: TextBuffer) {
+function closeTabForBuffer(buffer: atom$TextBuffer) {
   atom.workspace.getPanes().forEach((pane) => {
     pane.getItems().forEach((item) => {
       if (item.buffer === buffer) {
+        // $FlowFixMe: Not a public method in Atom.
         pane.removeItem(item);
       }
     });

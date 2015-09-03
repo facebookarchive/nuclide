@@ -18,6 +18,11 @@ var GRAMMAR_CHANGE_EVENT = 'grammar-change';
  * A singleton that listens to grammar changes in all text editors.
  */
 class GrammarForTextEditorsListener {
+  _emitter: EventEmitter;
+  _grammarSubscriptionsMap: Map<TextEditor, atom$Disposable>;
+  _destroySubscriptionsMap: Map<TextEditor, atom$Disposable>;
+  _textEditorsSubscription: atom$Disposable;
+
   constructor() {
     this._emitter = new EventEmitter();
     this._grammarSubscriptionsMap = new Map();
@@ -42,7 +47,9 @@ class GrammarForTextEditorsListener {
     });
   }
 
-  observeGrammarForTextEditors(fn: (textEditor: TextEditor, grammar: Grammar) => void): Disposable {
+  observeGrammarForTextEditors(
+    fn: (textEditor: TextEditor, grammar: atom$Grammar) => void,
+  ): Disposable {
     function fnWithGrammar(textEditor) {
       fn(textEditor, textEditor.getGrammar());
     }
@@ -66,7 +73,7 @@ class GrammarForTextEditorsListener {
   }
 }
 
-var listeners = new WeakMap();
+var listeners: WeakMap<atom$Workspace, GrammarForTextEditorsListener> = new WeakMap();
 
 module.exports =
 /**
@@ -75,7 +82,9 @@ module.exports =
  * @param fn This is called once for every text editor, and then again every
  * time it changes to a grammar.
  */
-function observeGrammarForTextEditors(fn: (textEditor: TextEditor) => void): Disposable {
+function observeGrammarForTextEditors(
+  fn: (textEditor: TextEditor, grammar: atom$Grammar) => void,
+): atom$IDisposable {
   // The listener should be a global singleton but workspaces are destroyed
   // between each test run so we need to reinstantiate the listener to attach
   // to the current workspace.

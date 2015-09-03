@@ -8,7 +8,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-
+var invariant = require('assert');
 var {withLoadingNotification} = require('../lib/main');
 
 describe('withLoadingNotification', () => {
@@ -35,6 +35,7 @@ describe('withLoadingNotification', () => {
       );
       expect(result).toEqual(testValue);
       expect(atom.notifications.addInfo).toHaveBeenCalled();
+      invariant(mockNotif);
       expect(mockNotif.dismiss).toHaveBeenCalled();
     });
   });
@@ -52,6 +53,7 @@ describe('withLoadingNotification', () => {
         );
       } catch (e) {}
       expect(atom.notifications.addInfo).toHaveBeenCalled();
+      invariant(mockNotif);
       expect(mockNotif.dismiss).toHaveBeenCalled();
     });
   });
@@ -69,6 +71,7 @@ describe('withLoadingNotification', () => {
       );
       expect(result).toEqual(testValue);
       expect(atom.notifications.addInfo.calls.length).toEqual(0);
+      invariant(mockNotif);
       expect(mockNotif.dismiss.calls.length).toEqual(0);
     });
   });

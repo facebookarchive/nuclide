@@ -8,10 +8,19 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
+var invariant = require('assert');
 
-function debounce(func: () => void, wait: number, immediate: boolean): () => void {
+function debounce(
+  func: (...varargs: Array<any>) => void,
+  wait: number,
+  immediate: boolean,
+): () => void {
   // Taken from: https://github.com/jashkenas/underscore/blob/b10b2e6d72/underscore.js#L815.
-  var timeout, args: any, context, timestamp = 0, result;
+  var timeout;
+  var args: ?Array<any>;
+  var context;
+  var timestamp = 0;
+  var result;
 
   var later = function() {
     var last = Date.now() - timestamp;
@@ -21,6 +30,7 @@ function debounce(func: () => void, wait: number, immediate: boolean): () => voi
     } else {
       timeout = null;
       if (!immediate) {
+        invariant(args);
         result = func.apply(context, args);
         if (!timeout) {
           context = args = null;

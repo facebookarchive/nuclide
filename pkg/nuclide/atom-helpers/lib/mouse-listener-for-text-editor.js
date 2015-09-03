@@ -8,7 +8,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-
+var invariant = require('assert');
 var {CompositeDisposable, Disposable, Emitter, Point} = require('atom');
 
 type PositionChangeEvent = {
@@ -19,6 +19,11 @@ type PositionChangeEvent = {
 var DEBOUNCE_TIME = 200;
 
 class WindowMouseListener {
+  _subscriptions: CompositeDisposable;
+  _mouseMoveListener: Disposable;
+  _textEditorMouseListenersMap: Map<TextEditor, TextEditorMouseListener>;
+  _textEditorMouseListenersCountMap: Map<TextEditor, number>;
+
   constructor() {
     this._subscriptions = new CompositeDisposable();
 
@@ -67,7 +72,6 @@ class WindowMouseListener {
         this._textEditorMouseListenersMap.delete(textEditor);
         this._textEditorMouseListenersCountMap.delete(textEditor);
         destroySubscription.dispose();
-        destroySubscription = null;
       });
     }
     return mouseListener;
@@ -87,6 +91,13 @@ class WindowMouseListener {
 }
 
 class TextEditorMouseListener {
+  _textEditor: TextEditor;
+  _textEditorView: atom$TextEditorElement;
+  _shouldDispose: () => boolean;
+  _subscriptions: CompositeDisposable;
+  _emitter: Emitter;
+  _lastPosition: atom$Point;
+
   constructor(textEditor: TextEditor, shouldDispose: () => boolean) {
     this._textEditor = textEditor;
     this._textEditorView = atom.views.getView(this._textEditor);
@@ -117,7 +128,9 @@ class TextEditorMouseListener {
   }
 
   screenPositionForMouseEvent(event: MouseEvent): Point {
-    return this._textEditorView.component.screenPositionForMouseEvent(event);
+    var component = this._textEditorView.component;
+    invariant(component);
+    return component.screenPositionForMouseEvent(event);
   }
 
   _handleMouseMove(event: MouseEvent): void {
@@ -146,6 +159,7 @@ module.exports =
  * to the last position on each line.
  */
 function mouseListenerForTextEditor(textEditor: TextEditor): TextEditorMouseListener {
+  // $FlowFixMe
   atom.nuclide = atom.nuclide || {};
   atom.nuclide.windowMouseListener = atom.nuclide.windowMouseListener || new WindowMouseListener();
   return atom.nuclide.windowMouseListener.mouseListenerForTextEditor(textEditor);

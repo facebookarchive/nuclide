@@ -71,6 +71,15 @@ declare class atom$Config {
       scope?: Object;
     }
   ): mixed;
+
+  set(
+    keyPath: string,
+    value: ?mixed,
+    options?: {
+      scopeSelector?: string,
+      source?: string,
+    },
+  ): boolean;
 }
 
 declare class atom$Cursor {
@@ -145,7 +154,10 @@ declare class atom$Marker {
 
 declare class atom$ServiceHub {
   provide<T>(keyPath: string, version: string, service: T): atom$Disposable;
-  consume<T>(keyPath: string, versionRange: string, callback: (provider: T) => mixed): atom$Disposable;
+  consume<T>(
+    keyPath: string, versionRange: string,
+    callback: (provider: T) => mixed,
+  ): atom$Disposable;
 }
 
 declare class atom$PackageManager {
@@ -188,6 +200,9 @@ type atom$PaneSplitParams = {
 };
 
 declare class atom$Pane {
+  // Items
+  getItems(): Array<mixed>;
+
   // Lifecycle
   activate(): void;
 
@@ -220,6 +235,11 @@ declare class atom$Point {
   column: number;
   copy(): atom$Point;
   negate(): atom$Point;
+
+  // Comparison
+  min(point1: atom$Point, point2: atom$Point): atom$Point;
+  // TODO(t8220399): Change this to: `-1 | 0 | 1`.
+  compare(other: atom$Point): number;
 
   // Operations
   translate(other: atom$Point): atom$Point;
@@ -326,8 +346,9 @@ declare class atom$TextEditor extends atom$Model {
   onDidChange(callback: () => void): atom$Disposable;
   onDidStopChanging(callback: () => void): atom$Disposable;
   onDidDestroy(callback: () => void): atom$Disposable;
-  onWillInsertText(callback: (event: {cancel: () => void; text: string;}) => void): atom$Disposable;
   getBuffer(): atom$TextBuffer;
+  observeGrammar(callback: (grammar: atom$Grammar) => mixed): atom$Disposable;
+  onWillInsertText(callback: (event: {cancel: () => void; text: string;}) => void): atom$Disposable;
 
   // File Details
   getTitle(): string;
@@ -425,12 +446,34 @@ declare class atom$TextEditor extends atom$Model {
   setPlaceholderText(placeholderText: string): void;
 }
 
+/**
+ * This is not part of the official Atom 1.0 API. Nevertheless, we need to reach into this object
+ * via `atom$TextEditorElement` to do some things that we have no other way to do.
+ */
+declare class atom$TextEditorComponent {
+  domNode: HTMLElement;
+  screenPositionForMouseEvent(event: MouseEvent): atom$Point;
+}
+
+/**
+ * This is not part of the official Atom 1.0 API, but it really should be. This is the element that
+ * is returned when you run `atom.views.getView(<TextEditor>)`.
+ */
+declare class atom$TextEditorElement extends HTMLElement {
+  component: ?atom$TextEditorComponent;
+  pixelPositionForScreenPosition(screenPosition: atom$Point): {
+    left: number;
+    top: number;
+  };
+}
+
 declare class atom$ViewRegistry {
   // Methods
   addViewProvider(
     modelConstructor: any,
     createView?: (...args: any[]) => ?HTMLElement
   ): atom$Disposable;
+  getView(textEditor: atom$TextEditor): atom$TextEditorElement;
   getView(object: Object): HTMLElement;
 }
 
@@ -441,13 +484,16 @@ declare class atom$Workspace {
   observeActivePaneItem(callback: (item: mixed) => mixed): atom$Disposable;
 
   // Opening
-  open(uri: string, options?: {
-    initialLine?: number;
-    initialColumn?: number;
-    split?: string;
-    activePane?: boolean;
-    searchAllPanes?: boolean;
-  }): Promise<atom$TextEditor>;
+  open(
+    uri?: string,
+    options?: {
+      initialLine?: number;
+      initialColumn?: number;
+      split?: string;
+      activePane?: boolean;
+      searchAllPanes?: boolean;
+    }
+  ): Promise<atom$TextEditor>;
   reopenItem(): Promise<?atom$TextEditor>;
   addOpener(callback: (uri: string) => any): atom$Disposable;
 
@@ -458,6 +504,7 @@ declare class atom$Workspace {
   getActiveTextEditor(): ?atom$TextEditor;
 
   // Panes
+  getPanes(): Array<atom$Pane>;
   getActivePane(): atom$Pane;
 
   // Panels
@@ -750,6 +797,14 @@ type AtomGlobal = {
   // Event Subscription
   onWillThrowError(callback: (event: atom$UnhandledErrorEvent) => mixed): atom$Disposable;
   onDidThrowError(callback: (event: atom$UnhandledErrorEvent) => mixed): atom$Disposable;
+
+  // Atom Details
+  inDevMode(): boolean;
+  inSafeMode(): boolean;
+  inSpecMode(): boolean;
+  getVersion(): string;
+  isReleasedVersion(): boolean;
+  getWindowLoadTime(): number;
 
   // Messaging the User
   confirm(options: {

@@ -8,15 +8,17 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-
+var invariant = require('assert');
 var path = require('path');
 var {observeLanguageTextEditors} = require('../lib/main');
 
 describe('observeLanguageTextEditors', () => {
   atom.grammars.loadGrammarSync(path.join(__dirname, 'grammars/objective-c.cson'));
   var objcGrammar = atom.grammars.grammarForScopeName('source.objc');
+  invariant(objcGrammar);
   atom.grammars.loadGrammarSync(path.join(__dirname, 'grammars/java.cson'));
   var javaGrammar = atom.grammars.grammarForScopeName('source.java');
+  invariant(javaGrammar);
   atom.grammars.loadGrammarSync(path.join(__dirname, 'grammars/javascript.cson'));
   var jsGrammar = atom.grammars.grammarForScopeName('source.js');
   var nullGrammar = atom.grammars.grammarForScopeName('text.plain.null-grammar');
@@ -31,7 +33,7 @@ describe('observeLanguageTextEditors', () => {
       waitsForPromise(async () => {
         var textEditor = await atom.workspace.open('file.m');
 
-        var fn = jasmine.createSpy('fn');
+        var fn: any = jasmine.createSpy('fn');
         var subscription = observeLanguageTextEditors(grammarScopes, fn);
 
         expect(fn).toHaveBeenCalledWith(textEditor);
@@ -43,7 +45,7 @@ describe('observeLanguageTextEditors', () => {
 
     it('calls for new text editors that already match the grammars', () => {
       waitsForPromise(async () => {
-        var fn = jasmine.createSpy('fn');
+        var fn: any = jasmine.createSpy('fn');
         var subscription = observeLanguageTextEditors(grammarScopes, fn);
 
         var textEditor = await atom.workspace.open('file.m');
@@ -57,9 +59,10 @@ describe('observeLanguageTextEditors', () => {
 
     it('calls for new text editors that change to match the grammars', () => {
       waitsForPromise(async () => {
-        var fn = jasmine.createSpy('fn');
+        var fn: any = jasmine.createSpy('fn');
         var subscription = observeLanguageTextEditors(grammarScopes, fn);
 
+        // $FlowIssue
         var textEditor = await atom.workspace.open();
         textEditor.setGrammar(objcGrammar);
 
@@ -72,9 +75,10 @@ describe('observeLanguageTextEditors', () => {
 
     it('does not call for new text editors that change and still don\'t match the grammars', () => {
       waitsForPromise(async () => {
-        var fn = jasmine.createSpy('fn');
+        var fn: any = jasmine.createSpy('fn');
         var subscription = observeLanguageTextEditors(grammarScopes, fn);
 
+        // $FlowIssue
         var textEditor = await atom.workspace.open();
         textEditor.setGrammar(jsGrammar);
 
@@ -86,9 +90,10 @@ describe('observeLanguageTextEditors', () => {
 
     it('does not call for text editors whose matching grammar changes but still matches', () => {
       waitsForPromise(async () => {
-        var fn = jasmine.createSpy('fn');
+        var fn: any = jasmine.createSpy('fn');
         var subscription = observeLanguageTextEditors(grammarScopes, fn);
 
+        // $FlowIssue
         var textEditor = await atom.workspace.open('file.m');
         textEditor.setGrammar(javaGrammar);
 
@@ -101,7 +106,7 @@ describe('observeLanguageTextEditors', () => {
 
     it('stops listening to grammar changes on text editors that are destroyed', () => {
       waitsForPromise(async () => {
-        var fn = jasmine.createSpy('fn');
+        var fn: any = jasmine.createSpy('fn');
         var subscription = observeLanguageTextEditors(grammarScopes, fn);
 
         var textEditor = await atom.workspace.open('file.m');
@@ -117,8 +122,8 @@ describe('observeLanguageTextEditors', () => {
       waitsForPromise(async () => {
         await atom.workspace.open();
 
-        var fn = jasmine.createSpy('fn');
-        var cleanupFn = jasmine.createSpy('cleanupFn');
+        var fn: any = jasmine.createSpy('fn');
+        var cleanupFn: any = jasmine.createSpy('cleanupFn');
         var subscription = observeLanguageTextEditors(grammarScopes, fn, cleanupFn);
 
         expect(cleanupFn.callCount).toBe(0);
@@ -129,10 +134,11 @@ describe('observeLanguageTextEditors', () => {
 
     it('does not call for new text editors that never matched the grammars', () => {
       waitsForPromise(async () => {
-        var fn = jasmine.createSpy('fn');
-        var cleanupFn = jasmine.createSpy('cleanupFn');
+        var fn: any = jasmine.createSpy('fn');
+        var cleanupFn: any = jasmine.createSpy('cleanupFn');
         var subscription = observeLanguageTextEditors(grammarScopes, fn, cleanupFn);
 
+        // $FlowIssue
         var textEditor = await atom.workspace.open('file.js');
         textEditor.setGrammar(nullGrammar);
 
@@ -144,8 +150,8 @@ describe('observeLanguageTextEditors', () => {
 
     it('calls for new text editors that stop matching the grammars', () => {
       waitsForPromise(async () => {
-        var fn = jasmine.createSpy('fn');
-        var cleanupFn = jasmine.createSpy('cleanupFn');
+        var fn: any = jasmine.createSpy('fn');
+        var cleanupFn: any = jasmine.createSpy('cleanupFn');
         var subscription = observeLanguageTextEditors(grammarScopes, fn, cleanupFn);
 
         var textEditor = await atom.workspace.open('file.m');
@@ -160,8 +166,8 @@ describe('observeLanguageTextEditors', () => {
 
     it('does not call when new text editors that do not match the grammars are destroyed', () => {
       waitsForPromise(async () => {
-        var fn = jasmine.createSpy('fn');
-        var cleanupFn = jasmine.createSpy('cleanupFn');
+        var fn: any = jasmine.createSpy('fn');
+        var cleanupFn: any = jasmine.createSpy('cleanupFn');
         var subscription = observeLanguageTextEditors(grammarScopes, fn, cleanupFn);
 
         var textEditor = await atom.workspace.open('file.js');
@@ -175,8 +181,8 @@ describe('observeLanguageTextEditors', () => {
 
     it('calls when new text editors matching the grammars are destroyed', () => {
       waitsForPromise(async () => {
-        var fn = jasmine.createSpy('fn');
-        var cleanupFn = jasmine.createSpy('cleanupFn');
+        var fn: any = jasmine.createSpy('fn');
+        var cleanupFn: any = jasmine.createSpy('cleanupFn');
         var subscription = observeLanguageTextEditors(grammarScopes, fn, cleanupFn);
 
         var textEditor = await atom.workspace.open('file.m');

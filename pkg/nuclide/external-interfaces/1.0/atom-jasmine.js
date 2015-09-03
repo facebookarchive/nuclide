@@ -16,3 +16,8 @@ declare function waitsForPromise(
   optionsOrFunc: {timeout?: number, shouldReject?: boolean} | () => Promise<mixed>,
   func?: () => Promise<mixed>
 ): void;
+
+/**
+ * deltaInMilliseconds defaults to 1.
+ */
+declare function advanceClock(deltaInMilliseconds?: number): void;

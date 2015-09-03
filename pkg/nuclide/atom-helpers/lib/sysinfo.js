@@ -124,7 +124,7 @@ async function determineAllSystemInfo(): Promise<SystemInfo> {
     userID,
     localOsVersion,
     localClangVersion,
-    flowVersion
+    flowVersion,
   ] = await Promise.all([
     getUnixname(),
     getOSVersion(),

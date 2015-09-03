@@ -100,6 +100,13 @@ declare var jasmine: {
   Clock: JasmineMockClock;
   Matchers: JasmineMatchers;
   any(expected: string | Object): mixed;
+
+  /**
+   * This is a non-standard method that Atom adds to Jasmine via spec-helper.coffee.
+   * Ideally, we would declare this in atom-jasmine.js, but we can't extend this global here.
+   */
+  attachToDOM(element: HTMLElement): ?HTMLElement;
+
   createSpy(name?: string): JasmineSpy;
   createSpyObj(name: string, spyNames: Array<string>): mixed;
   getEnv(): JasmineEnvironment;

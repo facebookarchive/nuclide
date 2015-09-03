@@ -30,7 +30,7 @@ function onWorkspaceDidStopChangingActivePaneItem(
     callback: (item: mixed) => any,
     debounceInterval: number
   ): atom$Disposable {
-  var debouncedFunction = debounce(callback, debounceInterval);
+  var debouncedFunction = debounce(callback, debounceInterval, /* immediate */ false);
   return atom.workspace.onDidChangeActivePaneItem(debouncedFunction);
 }
 
