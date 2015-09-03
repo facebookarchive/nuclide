@@ -5,6 +5,7 @@
   "version": "0.0.0",
   "description": "Provides a standard API for packages to send analytics to arbitrary providers.",
   "nuclide": {
+    "customDeps": "lib/fb/package.json",
     "packageType": "Node",
     "testRunner": "npm"
   },
