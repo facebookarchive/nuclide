@@ -8,7 +8,11 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-var {Directory} = require('atom');
+
+var {
+  Directory,
+  File,
+} = require('atom');
 var FileTreeHelpers = require('../lib/FileTreeHelpers');
 
 describe('FileTreeHelpers', () => {
@@ -41,7 +45,7 @@ describe('FileTreeHelpers', () => {
     expect(FileTreeHelpers.isDirKey('nuclide://host:456/a/b/')).toBe(true);
   });
 
-  it('should instantiate a directory from a key', () => {
+  it('should instantiate a local directory from a key', () => {
     expect(FileTreeHelpers.getDirectoryByKey('/a/') instanceof Directory).toBe(true);
   });
 
@@ -50,5 +54,15 @@ describe('FileTreeHelpers', () => {
     expect(FileTreeHelpers.isValidDirectory(validDir)).toBe(true);
     var badDir = new Directory('nuclide://host:123/a/b/c');
     expect(FileTreeHelpers.isValidDirectory(badDir)).toBe(false);
+  });
+
+  describe('getFileByKey', () => {
+    it('instantiates a local file from a key', () => {
+      expect(FileTreeHelpers.getFileByKey('/a.md') instanceof File).toBe(true);
+    });
+
+    it('instantiates a local directory from a key', () => {
+      expect(FileTreeHelpers.getFileByKey('/a/') instanceof Directory).toBe(true);
+    });
   });
 });

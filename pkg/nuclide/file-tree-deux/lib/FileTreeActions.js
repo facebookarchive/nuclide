@@ -69,6 +69,10 @@ class FileTreeActions {
     });
   }
 
+  deleteSelectedNodes(): void {
+    this._dispatcher.dispatch({actionType: ActionType.DELETE_SELECTED_NODES});
+  }
+
   // Makes sure a specific child exists for a given node. If it does not exist, temporarily
   // create it and initiate a fetch. This feature is exclusively for expanding to a node deep
   // in a tree.

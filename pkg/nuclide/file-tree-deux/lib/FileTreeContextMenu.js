@@ -95,7 +95,7 @@ class FileTreeContextMenu {
         label: 'Delete',
         command: 'nuclide-file-tree-deux:delete-selection',
         shouldDisplay: () => {
-          var nodes = this._getSelectedNodes();
+          var nodes = this._store.getSelectedNodes();
           // We can delete multiple nodes as long as no root node is selected
           return nodes.length > 0 && nodes.every(node => !node.isRoot);
         },
@@ -127,20 +127,11 @@ class FileTreeContextMenu {
         label: 'Search in Directory',
         command: 'nuclide-file-tree-deux:search-in-directory',
         shouldDisplay: () => {
-          var nodes = this._getSelectedNodes();
+          var nodes = this._store.getSelectedNodes();
           return nodes.length > 0 && nodes.every(node => node.isContainer);
         },
       },
     ]);
-  }
-
-  _getSelectedNodes(): Array<FileTreeNode> {
-    var rootKey = this._store.getFocusedRootKey();
-    if (!rootKey) {
-      return [];
-    }
-    var selectedKeys: Array<string> = this._store.getSelectedKeys(rootKey).toArray();
-    return selectedKeys.map(nodeKey => this._store.getNode(rootKey, nodeKey));
   }
 
   _getSingleSelectedNode(): ?FileTreeNode {

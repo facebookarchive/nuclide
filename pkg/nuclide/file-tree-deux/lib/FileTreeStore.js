@@ -9,6 +9,11 @@
  * the root directory of this source tree.
  */
 
+ import type {
+   RemoteDirectory,
+   RemoteFile,
+ } from 'nuclide-remote-connection';
+
 var {ActionType} = require('./FileTreeConstants');
 var {Disposable, Emitter} = require('atom');
 var FileTreeDispatcher = require('./FileTreeDispatcher');
@@ -18,6 +23,7 @@ var Immutable = require('immutable');
 var Logging = require('nuclide-logging');
 
 var {array} = require('nuclide-commons');
+var shell = require('shell');
 
 // Used to ensure the version we serialized is the same version we are deserializing.
 var VERSION = 1;
@@ -138,6 +144,9 @@ class FileTreeStore {
 
   _onDispatch(payload: ActionPayload): void {
     switch (payload.actionType) {
+      case ActionType.DELETE_SELECTED_NODES:
+        this._deleteSelectedNodes();
+        break;
       case ActionType.SET_ROOT_KEYS:
         this._setRootKeys(payload.rootKeys);
         break;
@@ -219,6 +228,15 @@ class FileTreeStore {
     return this._data.selectedKeysByRoot[rootKey] || new Immutable.Set();
   }
 
+  getSelectedNodes(): Array<FileTreeNode> {
+    var rootKey = this.getFocusedRootKey();
+    if (!rootKey) {
+      return [];
+    }
+    var selectedKeys = this.getSelectedKeys(rootKey).toArray();
+    return selectedKeys.map(nodeKey => this.getNode(rootKey, nodeKey));
+  }
+
   getRootNode(rootKey: string): FileTreeNode {
     return this.getNode(rootKey, rootKey);
   }
@@ -257,6 +275,22 @@ class FileTreeStore {
 
   _clearLoading(nodeKey: string): void {
     this._set('isLoadingMap', deleteProperty(this._data.isLoadingMap, nodeKey));
+  }
+
+  _deleteSelectedNodes(): void {
+    var selectedNodes = this.getSelectedNodes();
+    selectedNodes.forEach(node => {
+      var file = FileTreeHelpers.getFileByKey(node.nodeKey);
+      if (file != null) {
+        if (FileTreeHelpers.isLocalFile(file)) {
+          // TODO: This special-case can be eliminated once `delete()` is added to `Directory`
+          // and `File`.
+          shell.moveItemToTrash(node.nodePath);
+        } else {
+          (file: (RemoteDirectory | RemoteFile)).delete();
+        }
+      }
+    });
   }
 
   _expandNode(rootKey: string, nodeKey: string): void {

@@ -22,6 +22,7 @@ var FileTreeStore = require('./FileTreeStore');
 var {PanelComponent} = require('nuclide-panel');
 var React = require('react-for-atom');
 
+var os = require('os');
 var pathUtil = require('path');
 
 export type FileTreeControllerState = {
@@ -80,6 +81,7 @@ class FileTreeController {
       atom.commands.add(EVENT_HANDLER_SELECTOR, {
         'nuclide-file-tree-deux:add-folder': () => FileSystemActions.openAddFolderDialog(),
         'nuclide-file-tree-deux:copy-full-path': this._copyFullPath.bind(this),
+        'nuclide-file-tree-deux:delete-selection': this._deleteSelection.bind(this),
         'nuclide-file-tree-deux:remove-project-folder-selection': this._removeRootFolderSelection.bind(this),
         'nuclide-file-tree-deux:search-in-directory': this._searchInDirectory.bind(this),
       })
@@ -156,6 +158,25 @@ class FileTreeController {
       this._actions.expandNode(rootKey, parentKey);
     });
     this._actions.selectSingleNode(rootKey, nodeKey);
+  }
+
+  _deleteSelection(): void {
+    var nodes = this._store.getSelectedNodes();
+    if (nodes.length === 0) {
+      return;
+    }
+
+    var selectedPaths = nodes.map(node => node.nodePath);
+    var message = 'Are you sure you want to delete the following ' +
+        (nodes.length > 1 ? 'items?' : 'item?');
+    atom.confirm({
+      buttons: {
+        'Delete': () => { this._actions.deleteSelectedNodes(); },
+        'Cancel': () => {},
+      },
+      detailedMessage: `You are deleting:${os.EOL}${selectedPaths.join(os.EOL)}`,
+      message,
+    });
   }
 
   _removeRootFolderSelection(): void {

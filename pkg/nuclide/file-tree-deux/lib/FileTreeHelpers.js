@@ -93,6 +93,20 @@ function getDirectoryByKey(key: string): ?Directory {
   }
 }
 
+// TODO: cache these instantiated entries (also expose a way to purge)
+function getFileByKey(key: string): ?(Directory | File) {
+  var path = keyToPath(key);
+  if (RemoteUri.isRemote(path)) {
+    var connection = RemoteConnection.getForUri(path);
+    if (!connection) {
+      return;
+    }
+    return isDirKey(key) ? new RemoteDirectory(connection, path) : new RemoteFile(connection, path);
+  } else {
+    return isDirKey(key) ? new LocalDirectory(path) : new LocalFile(path);
+  }
+}
+
 // Sometimes remote directories are instantiated as local directories but with invalid paths.
 function isValidDirectory(directory: Directory): boolean {
   return (!isLocalFile(directory) || isFullyQualifiedLocalPath(directory.getPath()));
@@ -122,6 +136,7 @@ module.exports = {
   getParentKey,
   fetchChildren,
   getDirectoryByKey,
+  getFileByKey,
   isValidDirectory,
   isLocalFile,
   isFullyQualifiedLocalPath,
