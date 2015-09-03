@@ -10,15 +10,20 @@
  */
 
 var {CompositeDisposable} = require('atom');
-var uiProviders = [];
-var uriComponentMap = {};
+
+var activeDiffView: ?{
+  model: DiffViewModel;
+  component: ReactComponent;
+  element: HTMLElement;
+}  = null;
 
 // This url style is the one Atom uses for the welcome and settings pages.
-const NUCLIDE_DIFF_VIEW_URI = 'atom://nuclide/diff-view';
+var NUCLIDE_DIFF_VIEW_URI = 'atom://nuclide/diff-view';
 
 var subscriptions: ?CompositeDisposable = null;
 
 var logger = null;
+var uiProviders = [];
 
 function getLogger() {
   return logger || (logger = require('nuclide-logging').getLogger());
@@ -26,16 +31,38 @@ function getLogger() {
 
 // To add a view as a tab, we can either extend {View} from space-pen-views
 // and carry over the jQuery overhead or extend HTMLElement, like Atom's text-editor-element.
-function createView (uri): HTMLElement {
+function createView(uri: string): HTMLElement {
   var filePath = uri.slice(NUCLIDE_DIFF_VIEW_URI.length);
+  if (activeDiffView) {
+    activeDiffView.model.activateFile(filePath);
+    return activeDiffView.element;
+  }
+
   var React = require('react-for-atom');
   var DiffViewElement = require('./DiffViewElement');
   var DiffViewComponent = require('./DiffViewComponent');
+  var DiffViewModel = require('./DiffViewModel');
 
-  var hostElement = new DiffViewElement().initialize(uri);
-  var component = React.render(<DiffViewComponent filePath={filePath} uiProviders={uiProviders}/>, hostElement);
-  uriComponentMap[uri] = component;
-  // TODO(most): unmount component on tab close.
+  var diffModel = new DiffViewModel(filePath, uiProviders);
+  var hostElement = new DiffViewElement().initialize(diffModel, NUCLIDE_DIFF_VIEW_URI);
+  var component = React.render(
+    <DiffViewComponent diffModel={diffModel} initialFilePath={filePath}/>,
+    hostElement,
+  );
+  activeDiffView = {
+    model: diffModel,
+    component,
+    element: hostElement,
+  };
+
+  var destroySubscription = diffModel.onDidDestroy(() => {
+    React.unmountComponentAtNode(hostElement);
+    destroySubscription.dispose();
+    subscriptions.remove(destroySubscription);
+    activeDiffView = null;
+  });
+
+  subscriptions.add(destroySubscription);
 
   var {track} = require('nuclide-analytics');
   track('diff-view-open');
@@ -74,7 +101,6 @@ module.exports = {
 
   deactivate(): void {
     uiProviders.splice(0);
-    uriComponentMap = {};
     if (subscriptions) {
       subscriptions.dispose();
       subscriptions = null;

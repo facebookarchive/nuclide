@@ -540,9 +540,6 @@ declare class atom$Directory {
 declare class atom$File {
   symlink: boolean;
 
-  // Event Subscription
-  onDidChange(callback: () => mixed): atom$Disposable;
-
   // File Metadata
   isFile(): boolean;
   isDirectory(): boolean;
@@ -550,6 +547,7 @@ declare class atom$File {
   // Event Subscription
   onDidRename(callback: () => void): atom$Disposable;
   onDidDelete(callback: () => void): atom$Disposable;
+  onDidChange(callback: () => void): atom$Disposable;
 
   // Managing Paths
   getPath(): string;

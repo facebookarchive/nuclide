@@ -13,16 +13,7 @@ var {Range}  = require('atom');
 var {buildLineRangesWithOffsets} = require('./editor-utils');
 var React = require('react-for-atom');
 
-type InlineComponent = {
-  node: ReactElement;
-  bufferRow: number;
-}
-
-type RenderedComponent = {
-  container: HTMLElement;
-  component: ReactComponent;
-  bufferRow: number;
-}
+import type {InlineComponent, RenderedComponent} from './types';
 
 /**
  * The DiffViewEditor manages the lifecycle of the two editors used in the diff view,
@@ -153,7 +144,10 @@ module.exports = class DiffViewEditor {
     // This isn't a public API, but came from a discussion on the Atom public channel.
     // Needed Atom API: Request a full re-render from an editor.
     this._editor.displayBuffer.updateAllScreenLines();
-    this._editorElement.component.presenter.updateState();
+    var component = this._editorElement.component;
+    if (component && component.presenter) {
+      component.presenter.updateState();
+    }
   }
 
   _buildScreenLinesWithOffsets(startBufferRow: number, endBufferRow: number): LineRangesWithOffsets {

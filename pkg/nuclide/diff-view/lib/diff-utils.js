@@ -9,64 +9,23 @@
  * the root directory of this source tree.
  */
 
-import type {HgRepositoryClient} from 'nuclide-hg-repository-client';
+import type {TextDiff} from './types';
 
-type DiffViewState = {
-  oldText: string;
-  newText: string;
-};
-
-type TextDiff = {
-  addedLines: Array<number>;
-  removedLines: Array<number>;
-  oldLineOffsets: {[lineNumber: string]: number};
-  newLineOffsets: {[lineNumber: string]: number};
+type ChunkPiece = {
+  added: number;
+  removed: number;
+  value: string;
+  count: number;
+  offset: number;
 };
 
 type DiffChunk = {
   addedLines: Array<number>;
   removedLines: Array<number>;
-  chunks: Array<any>;
+  chunks: Array<ChunkPiece>;
 };
 
-async function fetchHgDiff(filePath: string): Promise<DiffViewState> {
-  // Calling atom.project.repositoryForDirectory gets the real path of the directory,
-  // which is another round-trip and calls the repository providers to get an existing repository.
-  // Instead, the first match of the filtering here is the only possible match.
-  var {repositoryForPath} = require('nuclide-hg-git-bridge');
-  var repository: HgRepositoryClient = repositoryForPath(filePath);
-
-  if (!repository || repository.getType() !== 'hg') {
-    var type = repository ? repository.getType() : 'no repository';
-    throw new Error(`Diff view only supports hg repositories right now: found ${type}` );
-  }
-  var committedContents = await repository.fetchFileContentAtRevision(filePath);
-
-  var {getClient} = require('nuclide-client');
-  var {getPath} = require('nuclide-remote-uri');
-
-  var client = getClient(filePath);
-  if (!client) {
-    throw new Error('Nuclide client not found.');
-  }
-  var localFilePath = getPath(filePath);
-  var filesystemContents = await client.readFile(localFilePath, 'utf8');
-
-  return {
-    oldText: committedContents,
-    newText: filesystemContents,
-  };
-}
-
-async function fetchInlineComponents(uiProviders: Array<Object>, filePath: string): Promise<Array<Object>> {
-  var uiElementPromises = uiProviders.map(provider => provider.composeUiElements(filePath));
-  var uiComponentLists = await Promise.all(uiElementPromises);
-  // Flatten uiComponentLists from list of lists of components to a list of components.
-  var uiComponents = [].concat.apply([], uiComponentLists);
-  return uiComponents;
-}
-
-function computeDiff(oldText: string, newText: string): TextDiff {
+export function computeDiff(oldText: string, newText: string): TextDiff {
   var {addedLines, removedLines, chunks} = _computeDiffChunks(oldText, newText);
   var {oldLineOffsets, newLineOffsets} = _computeOffsets(chunks);
 
@@ -145,7 +104,7 @@ function _computeOffsets(diffChunks: Array<any>): {oldLineOffsets: any; newLineO
         // and is thus equal in both versions of the document.
         // Sign of offset indicates which version of document requires the offset
         // (negative -> old version, positive -> new version).
-        // Magnitude of offset indicates the number of lines of offset required for respective version.
+        // Magnitude of offset indicates the number of offset lines required for version.
         newLineOffsets[newLineCount] = offset * -1;
       } else if (offset > 0) {
         oldLineOffsets[oldLineCount] = offset;
@@ -160,9 +119,3 @@ function _computeOffsets(diffChunks: Array<any>): {oldLineOffsets: any; newLineO
     newLineOffsets,
   };
 }
-
-module.exports = {
-  fetchHgDiff,
-  fetchInlineComponents,
-  computeDiff,
-};

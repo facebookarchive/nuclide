@@ -10,9 +10,11 @@
  */
 
 class DiffViewElement extends HTMLElement {
-  _uri: string;
+  _uri: ?string;
+  _diffModel: ?DiffViewModel;
 
-  initialize(uri: string) {
+  initialize(diffModel: DiffViewModel, uri: string): HTMLElement {
+    this._diffModel = diffModel;
     this._uri = uri;
     return this;
   }
@@ -30,6 +32,20 @@ class DiffViewElement extends HTMLElement {
    */
   getURI(): string {
     return this._uri;
+  }
+
+  /**
+   * Saves the edited file in the editable right text editor.
+   */
+  save(): void {
+    this._diffModel.saveActiveFile();
+  }
+
+  /**
+   * Destroys the diff view model, disposes subscriptions and unmount components.
+   */
+  destroy(): void {
+    this._diffModel.destroy();
   }
 
 }

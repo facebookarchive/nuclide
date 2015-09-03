@@ -9,10 +9,7 @@
  * the root directory of this source tree.
  */
 
- type LineRangesWithOffsets = {
-  regions: Array<{bufferRows: number; screenRows: number}>;
-  screenLines: Array<any>;
- };
+import type {LineRangesWithOffsets} from './types';
 
 /*
  * @param screenLines The original screen lines before adding offsets.
@@ -21,7 +18,7 @@
  * @param endBufferRow The buffer row at which the next range of screen lines is ended.
  * @param emptyLineFactory A custom function to create a new empty line, representing an offset screen line.
  */
-function buildLineRangesWithOffsets(
+export function buildLineRangesWithOffsets(
     screenLines: Array<any>,
     lineOffsets: any,
     startBufferRow: number,
@@ -81,7 +78,3 @@ function buildLineRangesWithOffsets(
 
   return {regions: newRegions, screenLines: newScreenLines};
 }
-
-module.exports = {
-  buildLineRangesWithOffsets,
-};

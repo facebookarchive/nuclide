@@ -9,18 +9,19 @@
  * the root directory of this source tree.
  */
 
+import type {FileChangeState} from './types';
+
 var {CompositeDisposable} = require('atom');
 var React = require('react-for-atom');
 var {PropTypes} = React;
 var DiffViewEditorPane = require('./DiffViewEditorPane');
-var DiffViewController = require('./DiffViewController');
+var {assign} = require('nuclide-commons').object;
 
 class DiffViewComponent extends React.Component {
   _subscriptions: ?CompositeDisposable;
+
   _boundHandleNewOffsets: Function;
-  // TODO(most): move async code out of the view and deprecate the usage of `_isMounted`.
-  // All view changes should be pushed from the model/store through subscriptions.
-  _isMounted: boolean;
+  _boundUpdateLineDiffState: Function;
 
   constructor(props: Object) {
     super(props);
@@ -43,15 +44,30 @@ class DiffViewComponent extends React.Component {
       inlineElements: [],
     };
     this.state = {
+      filePath: props.initialFilePath,
       oldEditorState,
       newEditorState,
     };
     this._boundHandleNewOffsets = this._handleNewOffsets.bind(this);
+    this._boundUpdateLineDiffState = this._updateLineDiffState.bind(this);
+    this._boundOnChangeNewTextEditor = this._onChangeNewTextEditor.bind(this);
   }
 
   componentDidMount(): void {
-    this._isMounted = true;
-    this._updateEditorPane();
+    var diffModel = this.props.diffModel;
+    var subscriptions = this._subscriptions = new CompositeDisposable();
+    subscriptions.add(diffModel.onActiveFileUpdates(this._boundUpdateLineDiffState));
+    var oldTextEditor = this.refs['old-editor'].getEditorModel();
+    var newTextEditor = this.refs['new-editor'].getEditorModel();
+
+    var SyncScroll = require('./SyncScroll');
+    subscriptions.add(new SyncScroll(
+        oldTextEditor,
+        newTextEditor,
+      )
+    );
+
+    this._updateLineDiffState(diffModel.getActiveFileState());
   }
 
   componentWillUnmount(): void {
@@ -59,12 +75,10 @@ class DiffViewComponent extends React.Component {
       this._subscriptions.dispose();
       this._subscriptions = null;
     }
-    this._isMounted = false;
   }
 
   render(): ReactElement {
-    var oldState = this.state.oldEditorState;
-    var newState = this.state.newEditorState;
+    var {filePath, oldEditorState: oldState, newEditorState: newState} = this.state;
     return (
       <div className="diff-view-component">
         <div className="split-pane">
@@ -73,12 +87,13 @@ class DiffViewComponent extends React.Component {
           </div>
           <DiffViewEditorPane
             ref="old-editor"
-            filePath={this.props.filePath}
+            filePath={filePath}
             offsets={oldState.offsets}
             highlightedLines={oldState.highlightedLines}
-            textContent={oldState.text}
+            initialTextContent={oldState.text}
             inlineElements={oldState.inlineElements}
             handleNewOffsets={this._boundHandleNewOffsets}
+            readOnly={true}
           />
         </div>
         <div className="split-pane">
@@ -87,12 +102,14 @@ class DiffViewComponent extends React.Component {
           </div>
           <DiffViewEditorPane
             ref="new-editor"
-            filePath={this.props.filePath}
+            filePath={filePath}
             offsets={newState.offsets}
             highlightedLines={newState.highlightedLines}
-            textContent={newState.text}
+            initialTextContent={newState.text}
             inlineElements={newState.inlineElements}
             handleNewOffsets={this._boundHandleNewOffsets}
+            readOnly={false}
+            onChange={this._boundOnChangeNewTextEditor}
           />
         </div>
       </div>
@@ -100,77 +117,64 @@ class DiffViewComponent extends React.Component {
   }
 
   _handleNewOffsets(offsetsFromComponents: Map): void {
-    var oldLineOffsets = {...this.state.oldEditorState.offsets};
-    var newLineOffsets = {...this.state.newEditorState.offsets};
+    var oldLineOffsets = assign({}, this.state.oldEditorState.offsets);
+    var newLineOffsets = assign({}, this.state.newEditorState.offsets);
     offsetsFromComponents.forEach((offsetAmount, row) => {
       newLineOffsets[row] = (newLineOffsets[row] || 0) + offsetAmount;
       oldLineOffsets[row] = (oldLineOffsets[row] || 0) + offsetAmount;
     });
-    var oldEditorState = {...this.state.oldEditorState, offsets: oldLineOffsets};
-    var newEditorState = {...this.state.newEditorState, offsets: newLineOffsets};
+    var oldEditorState = assign({}, this.state.oldEditorState, {offsets: oldLineOffsets});
+    var newEditorState = assign({}, this.state.newEditorState, {offsets: newLineOffsets});
     this.setState({
+      filePath: this.state.filePath,
       oldEditorState,
       newEditorState,
     });
   }
 
-  async _updateEditorPane(): Promise {
-    this._subscriptions = new CompositeDisposable();
+  _onChangeNewTextEditor(newContents: string): void {
+    this.props.diffModel.setNewContents(newContents);
+  }
 
-    var contents = await DiffViewController.fetchHgDiff(this.props.filePath);
-    if (!this._isMounted) {
-      return;
-    }
+  /**
+   * Updates the line diff state on active file state change.
+   */
+  _updateLineDiffState(fileState: FileChangeState): void {
+    var {oldContents, newContents, filePath, inlineComponents} = fileState;
 
+    var {computeDiff} = require('./diff-utils');
     var {addedLines, removedLines, oldLineOffsets, newLineOffsets} =
-      DiffViewController.computeDiff(contents.oldText, contents.newText);
+      computeDiff(oldContents, newContents);
+
     var oldEditorState = {
-      text: contents.oldText,
+      text: oldContents,
       offsets: oldLineOffsets,
       highlightedLines: {
         added: [],
         removed: removedLines,
       },
-      inlineElements: this.state.oldEditorState.inlineElements,
+      inlineElements: inlineComponents || [],
     };
     var newEditorState = {
-      text: contents.newText,
+      text: newContents,
       offsets: newLineOffsets,
       highlightedLines: {
         added: addedLines,
         removed: [],
       },
-      inlineElements: this.state.newEditorState.inlineElements,
+      inlineElements: [],
     };
-
     this.setState({
+      filePath,
       oldEditorState,
-      newEditorState,
-    });
-
-    var SyncScroll = require('./SyncScroll');
-    this._subscriptions.add(new SyncScroll(
-        this.refs['old-editor'].getEditorModel(),
-        this.refs['new-editor'].getEditorModel()
-      )
-    );
-
-    var uiComponents = await DiffViewController.fetchInlineComponents(this.props.uiProviders, this.props.filePath);
-    if (!this._isMounted) {
-      return;
-    }
-
-    var oldEditorStateUpdated = {...this.state.oldEditorState, inlineElements: uiComponents};
-    this.setState({
-      oldEditorState: oldEditorStateUpdated,
       newEditorState,
     });
   }
 }
 
 DiffViewComponent.propTypes = {
-  filePath: PropTypes.string.isRequired,
-  uiProviders: PropTypes.arrayOf(PropTypes.object).isRequired,
+  diffModel: PropTypes.object.isRequired,
+  initialFilePath: PropTypes.string,
 };
 
 module.exports = DiffViewComponent;

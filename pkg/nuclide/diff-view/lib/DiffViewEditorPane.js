@@ -9,49 +9,59 @@
  * the root directory of this source tree.
  */
 
+var {CompositeDisposable} = require('atom');
 var React = require('react-for-atom');
 var {PropTypes} = React;
 var DiffViewEditor = require('./DiffViewEditor');
 
-type HighlightedLines = {
-  added: Array<number>;
-  removed: Array<number>;
-}
+import type {HighlightedLines} from './types';
 
 class DiffViewEditorPane extends React.Component {
 
   _diffViewEditor: ?DiffViewEditor;
+  _subscriptions: ?CompositeDisposable;
   // TODO(most): move async code out of the view and deprecate the usage of `_isMounted`.
   // All view changes should be pushed from the model/store through subscriptions.
   _isMounted: boolean;
 
   constructor(props: Object) {
     super(props);
+    this.state = {
+      textContent: this.props.initialTextContent,
+    };
     this._isMounted = false;
   }
 
   componentDidMount(): void {
     this._isMounted = true;
+    this._subscriptions = new CompositeDisposable();
     var diffViewEditor = this._diffViewEditor = new DiffViewEditor(
       React.findDOMNode(this.refs['editor'])
     );
-
-    // The first version of the diff view will have both editors readonly.
-    // But later on, the right editor will be editable and savable.
-    diffViewEditor.setReadOnly();
-    this._updateDiffView({}, this.props);
-  }
-
-  componentWillReceiveProps(nextProps: Object): void {
-    this._updateDiffView(this.props, nextProps);
+    if (this.props.readOnly) {
+      diffViewEditor.setReadOnly();
+    }
+    var textEditor = this.getEditorModel();
+    this._subscriptions.add(textEditor.onDidChange(() => {
+      var newContents = textEditor.getText();
+      this.setState({textContent: newContents});
+      if (this.props.onChange) {
+        this.props.onChange(newContents);
+      }
+    }));
+    this._updateDiffView(this.props, this.state);
   }
 
   componentWillUnmount(): void {
+    if (this._subscriptions) {
+      this._subscriptions.dispose();
+      this._subscriptions = null;
+    }
     this._diffViewEditor = null;
     this._isMounted = false;
   }
 
-  shouldComponentUpdate(): boolean {
+  shouldComponentUpdate(nextProps: Object, nextState: Object): boolean {
     return false;
   }
 
@@ -61,9 +71,20 @@ class DiffViewEditorPane extends React.Component {
     );
   }
 
-  _updateDiffView(oldProps: Object, newProps: Object) {
-    if (oldProps.textContent !== newProps.textContent) {
-      this._setTextContent(newProps.textContent);
+  componentWillReceiveProps(newProps: Object): void {
+    var newState = this.state;
+    if (newProps.initialTextContent !== this.state.textContent) {
+      newState = {textContent: newProps.initialTextContent};
+      this.setState(newState);
+      this._setTextContent(newState.textContent);
+    }
+    this._updateDiffView(newProps, newState);
+  }
+
+  _updateDiffView(newProps: Object, newState: Object): void {
+    var oldProps = this.props;
+    if (oldProps.filePath !== newProps.filePath) {
+      this._setTextContent(newState.textContent);
     }
     if (oldProps.highlightedLines !== newProps.highlightedLines) {
       this._setHighlightedLines(newProps.highlightedLines);
@@ -143,9 +164,11 @@ DiffViewEditorPane.propTypes = {
     added: PropTypes.arrayOf(PropTypes.number),
     removed: PropTypes.arrayOf(PropTypes.number),
   }).isRequired,
-  textContent: PropTypes.string.isRequired,
+  initialTextContent: PropTypes.string.isRequired,
   inlineElements: PropTypes.arrayOf(PropTypes.object).isRequired,
   handleNewOffsets: PropTypes.func.isRequired,
+  readOnly: PropTypes.bool.isRequired,
+  onChange: PropTypes.func,
 };
 
 module.exports = DiffViewEditorPane;

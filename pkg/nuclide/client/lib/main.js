@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {NuclideUri} from 'nuclide-remote-uri';
+
 var {getService, getServiceByNuclideUri} = require('./service-manager');
 var localClients: {[rootPath: string]: NuclideClient} = {};
 var {RemoteConnection} = require('nuclide-remote-connection');
@@ -23,7 +25,7 @@ module.exports = {
    *     RemoteConnection has not been created yet. This is likely to happen if getClient() is
    *     called early in the startup process and we are trying to restore a remote project root.
    */
-  getClient(path: string): ?NuclideClient {
+  getClient(path: NuclideUri): ?NuclideClient {
     if (isRemote(path)) {
       var connection = RemoteConnection.getForUri(path);
       return connection ? connection.getClient() : null;
@@ -59,4 +61,17 @@ module.exports = {
   },
   getService,
   getServiceByNuclideUri,
+
+  getFileForPath(filePath: NuclideUri): ?(File | RemoteFile) {
+    if (isRemote(filePath)) {
+      var connection = RemoteConnection.getForUri(filePath);
+      if (!connection) {
+        return null;
+      }
+      return connection.createFile(filePath);
+    } else {
+      var {File} = require('atom');
+      return new File(filePath);
+    }
+  },
 };
