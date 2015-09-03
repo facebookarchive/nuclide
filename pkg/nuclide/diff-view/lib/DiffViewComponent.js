@@ -15,6 +15,7 @@ var {CompositeDisposable} = require('atom');
 var React = require('react-for-atom');
 var {PropTypes} = React;
 var DiffViewEditorPane = require('./DiffViewEditorPane');
+var DiffViewTree = require('./DiffViewTree');
 var {assign} = require('nuclide-commons').object;
 
 class DiffViewComponent extends React.Component {
@@ -78,39 +79,45 @@ class DiffViewComponent extends React.Component {
   }
 
   render(): ReactElement {
+    var diffModel = this.props.diffModel;
     var {filePath, oldEditorState: oldState, newEditorState: newState} = this.state;
     return (
       <div className="diff-view-component">
-        <div className="split-pane">
-          <div className="title">
-            <p>Original</p>
+        <div className="diff-view-editors-container">
+          <div className="split-pane">
+            <div className="title">
+              <p>Original</p>
+            </div>
+            <DiffViewEditorPane
+              ref="old-editor"
+              filePath={filePath}
+              offsets={oldState.offsets}
+              highlightedLines={oldState.highlightedLines}
+              initialTextContent={oldState.text}
+              inlineElements={oldState.inlineElements}
+              handleNewOffsets={this._boundHandleNewOffsets}
+              readOnly={true}
+            />
           </div>
-          <DiffViewEditorPane
-            ref="old-editor"
-            filePath={filePath}
-            offsets={oldState.offsets}
-            highlightedLines={oldState.highlightedLines}
-            initialTextContent={oldState.text}
-            inlineElements={oldState.inlineElements}
-            handleNewOffsets={this._boundHandleNewOffsets}
-            readOnly={true}
-          />
+          <div className="split-pane">
+            <div className="title">
+              <p>Changed</p>
+            </div>
+            <DiffViewEditorPane
+              ref="new-editor"
+              filePath={filePath}
+              offsets={newState.offsets}
+              highlightedLines={newState.highlightedLines}
+              initialTextContent={newState.text}
+              inlineElements={newState.inlineElements}
+              handleNewOffsets={this._boundHandleNewOffsets}
+              readOnly={false}
+              onChange={this._boundOnChangeNewTextEditor}
+            />
+          </div>
         </div>
-        <div className="split-pane">
-          <div className="title">
-            <p>Changed</p>
-          </div>
-          <DiffViewEditorPane
-            ref="new-editor"
-            filePath={filePath}
-            offsets={newState.offsets}
-            highlightedLines={newState.highlightedLines}
-            initialTextContent={newState.text}
-            inlineElements={newState.inlineElements}
-            handleNewOffsets={this._boundHandleNewOffsets}
-            readOnly={false}
-            onChange={this._boundOnChangeNewTextEditor}
-          />
+        <div className="diff-view-tree-container">
+          <DiffViewTree ref="tree" diffModel={diffModel} />
         </div>
       </div>
     );

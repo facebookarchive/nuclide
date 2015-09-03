@@ -29,7 +29,16 @@ var HgStatusToFileChangeStatus : {[key: HgStatusCodeNumber]: FileChangeStatus} =
   [HgStatusCodeNumber.UNTRACKED]: FileChangeStatus.UNTRACKED,
 };
 
+var FileChangeStatusToPrefix: {[key: FileChangeStatusValue]: string} = {
+  [FileChangeStatus.ADDED]: '[A] ',
+  [FileChangeStatus.MODIFIED]: '[M] ',
+  [FileChangeStatus.MISSING]: '[!] ',
+  [FileChangeStatus.REMOVED]: '[D] ',
+  [FileChangeStatus.UNTRACKED]: '[?] ',
+};
+
 module.exports = {
   FileChangeStatus,
   HgStatusToFileChangeStatus,
+  FileChangeStatusToPrefix,
 };

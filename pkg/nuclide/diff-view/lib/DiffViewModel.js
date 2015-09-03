@@ -201,4 +201,3 @@ class DiffViewModel {
 }
 
 module.exports = DiffViewModel;
-
