@@ -79,6 +79,7 @@ class FileTreeController {
     );
     this._subscriptions.add(
       atom.commands.add(EVENT_HANDLER_SELECTOR, {
+        'nuclide-file-tree-deux:add-file': () => FileSystemActions.openAddFileDialog(),
         'nuclide-file-tree-deux:add-folder': () => FileSystemActions.openAddFolderDialog(),
         'nuclide-file-tree-deux:copy-full-path': this._copyFullPath.bind(this),
         'nuclide-file-tree-deux:delete-selection': this._deleteSelection.bind(this),

@@ -47,6 +47,30 @@ var FileSystemActions = {
     });
   },
 
+  openAddFileDialog(): void {
+    var node = this._getSelectedContainerNode();
+    if (!node) {
+      return;
+    }
+    this._openAddDialog('file', node.getLocalPath() + '/', async (filePath: string) => {
+      // Prevent submission of a blank field from creating a file.
+      if (filePath === '') {
+        return;
+      }
+
+      // TODO: check if filePath is in rootKey and if not, find the rootKey it belongs to.
+      var directory = FileTreeHelpers.getDirectoryByKey(node.nodeKey);
+      if (directory == null) {
+        return;
+      }
+
+      var created = await directory.getFile(filePath).create();
+      if (!created) {
+        atom.notifications.addError(`'${filePath}' already exists.`);
+      }
+    });
+  },
+
   _getSelectedContainerNode() {
     var store = FileTreeStore.getInstance();
     var rootKey = store.getFocusedRootKey();
@@ -60,7 +84,7 @@ var FileSystemActions = {
 
   _openAddDialog(entryType: string, path: string, onConfirm: (filePath: string) => mixed) {
     this._openDialog({
-      iconClassName: 'icon-arrow-right',
+      iconClassName: 'icon-file-add',
       initialValue: path,
       message: <span>Enter the path for the new {entryType} in the root:<br />{path}</span>,
       onConfirm,
