@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import {trackTiming} from 'nuclide-analytics';
+
 var {extractWordAtPosition} = require('nuclide-atom-helpers');
 var {getServiceByNuclideUri} = require('nuclide-client');
 var {Range} = require('atom');
@@ -16,7 +18,7 @@ var {Range} = require('atom');
 const JAVASCRIPT_WORD_REGEX = /[a-zA-Z0-9_$]+/g;
 
 module.exports = class TypeHintProvider {
-
+  @trackTiming('flow.typehint')
   async typeHint(editor: TextEditor, position: Point): Promise<?TypeHint> {
     var enabled = atom.config.get('nuclide-flow.enableTypeHints');
     if (!enabled) {

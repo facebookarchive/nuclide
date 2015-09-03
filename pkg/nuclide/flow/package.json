@@ -34,6 +34,7 @@
     "atom": ">0.188.0"
   },
   "dependencies": {
+    "nuclide-analytics": "0.0.0",
     "nuclide-atom-helpers": "0.0.0",
     "nuclide-client": "0.0.0",
     "nuclide-commons": "0.0.0",

@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import {trackTiming} from 'nuclide-analytics';
+
 var {getServiceByNuclideUri} = require('nuclide-client');
 var {RequestSerializer} = require('nuclide-commons').promises;
 var {DiagnosticsProviderBase} = require('nuclide-diagnostics-provider-base');
@@ -111,6 +113,7 @@ class FlowDiagnosticsProvider {
     this._flowRootToFilePaths = new Map();
   }
 
+  @trackTiming('flow.run-diagnostics')
   async _runDiagnostics(textEditor: TextEditor): Promise<void> {
     var file = textEditor.getPath();
     if (!file) {
