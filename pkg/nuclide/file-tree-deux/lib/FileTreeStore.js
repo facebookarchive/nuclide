@@ -408,10 +408,15 @@ class FileTreeStore {
     this._set('rootKeys', rootKeys);
   }
 
-  // This sets a single child node. It's useful when expanding to a deeply nested node.
+  /**
+   * Sets a single child node. It's useful when expanding to a deeply nested node.
+   */
   _createChild(nodeKey: string, childKey: string): void {
     this._setChildKeys(nodeKey, [childKey]);
-    this._set('isDirtyMap', deleteProperty(this._data.isDirtyMap, nodeKey));
+    /*
+     * Mark the node as dirty so its ancestors are fetched again on reload of the tree.
+     */
+    this._set('isDirtyMap', setProperty(this._data.isDirtyMap, nodeKey, true));
   }
 
   _setChildKeys(nodeKey: string, childKeys: Array<string>): void {
