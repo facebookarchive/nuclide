@@ -76,10 +76,6 @@ function getAllFiles(localDirectory: string): Promise<Object<string, boolean>> {
 
 /**
  * Creates a `PathSet` with the contents of the specified directory.
- *
- * TODO(6950762) The PathSet returned by this function needs to be instrumented
- * with the ability to update its contents as files are created/deleted under
- * the specified localDirectory.
  */
 async function createPathSet(localDirectory: string): Promise<PathSet> {
   // Attempts to get a list of files relative to `localDirectory`, hopefully from a fast source control index.
