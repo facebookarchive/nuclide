@@ -122,4 +122,8 @@ module.exports = {
   get COMMON_BINARY_PATHS() {
     return require('./process').COMMON_BINARY_PATHS;
   },
+
+  get clientInfo() {
+    return require('./clientInfo');
+  },
 };
