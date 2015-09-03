@@ -15,15 +15,15 @@ var {PropTypes} = React;
 var DiffViewEditorPane = require('./DiffViewEditorPane');
 var DiffViewController = require('./DiffViewController');
 
-var DiffViewComponent = React.createClass({
-  propTypes: {
-    filePath: PropTypes.string.isRequired,
-    uiProviders: PropTypes.arrayOf(PropTypes.object).isRequired,
-  },
+class DiffViewComponent extends React.Component {
+  _subscriptions: ?CompositeDisposable;
+  _boundHandleNewOffsets: Function;
+  // TODO(most): move async code out of the view and deprecate the usage of `_isMounted`.
+  // All view changes should be pushed from the model/store through subscriptions.
+  _isMounted: boolean;
 
-  _subscriptions: (null: ?CompositeDisposable),
-
-  getInitialState(): Object {
+  constructor(props: Object) {
+    super(props);
     var oldEditorState = {
       text: '',
       offsets: {},
@@ -42,22 +42,25 @@ var DiffViewComponent = React.createClass({
       },
       inlineElements: [],
     };
-    return {
+    this.state = {
       oldEditorState,
       newEditorState,
     };
-  },
+    this._boundHandleNewOffsets = this._handleNewOffsets.bind(this);
+  }
 
   componentDidMount(): void {
+    this._isMounted = true;
     this._updateEditorPane();
-  },
+  }
 
   componentWillUnmount(): void {
     if (this._subscriptions) {
       this._subscriptions.dispose();
       this._subscriptions = null;
     }
-  },
+    this._isMounted = false;
+  }
 
   render(): ReactElement {
     var oldState = this.state.oldEditorState;
@@ -75,7 +78,7 @@ var DiffViewComponent = React.createClass({
             highlightedLines={oldState.highlightedLines}
             textContent={oldState.text}
             inlineElements={oldState.inlineElements}
-            handleNewOffsets={this._handleNewOffsets}
+            handleNewOffsets={this._boundHandleNewOffsets}
           />
         </div>
         <div className="split-pane">
@@ -89,12 +92,12 @@ var DiffViewComponent = React.createClass({
             highlightedLines={newState.highlightedLines}
             textContent={newState.text}
             inlineElements={newState.inlineElements}
-            handleNewOffsets={this._handleNewOffsets}
+            handleNewOffsets={this._boundHandleNewOffsets}
           />
         </div>
       </div>
     );
-  },
+  }
 
   _handleNewOffsets(offsetsFromComponents: Map): void {
     var oldLineOffsets = {...this.state.oldEditorState.offsets};
@@ -109,13 +112,13 @@ var DiffViewComponent = React.createClass({
       oldEditorState,
       newEditorState,
     });
-  },
+  }
 
   async _updateEditorPane(): Promise {
     this._subscriptions = new CompositeDisposable();
 
     var contents = await DiffViewController.fetchHgDiff(this.props.filePath);
-    if (!this.isMounted()) {
+    if (!this._isMounted) {
       return;
     }
 
@@ -153,7 +156,7 @@ var DiffViewComponent = React.createClass({
     );
 
     var uiComponents = await DiffViewController.fetchInlineComponents(this.props.uiProviders, this.props.filePath);
-    if (!this.isMounted()) {
+    if (!this._isMounted) {
       return;
     }
 
@@ -162,9 +165,12 @@ var DiffViewComponent = React.createClass({
       oldEditorState: oldEditorStateUpdated,
       newEditorState,
     });
-  },
+  }
+}
 
-
-});
+DiffViewComponent.propTypes = {
+  filePath: PropTypes.string.isRequired,
+  uiProviders: PropTypes.arrayOf(PropTypes.object).isRequired,
+};
 
 module.exports = DiffViewComponent;

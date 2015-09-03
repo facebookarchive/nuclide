@@ -18,47 +18,48 @@ type HighlightedLines = {
   removed: Array<number>;
 }
 
-var DiffViewEditorPane = React.createClass({
-  propTypes: {
-    filePath: PropTypes.string.isRequired,
-    offsets: PropTypes.objectOf(PropTypes.number).isRequired,
-    highlightedLines: PropTypes.shape({
-      added: PropTypes.arrayOf(PropTypes.number),
-      removed: PropTypes.arrayOf(PropTypes.number),
-    }).isRequired,
-    textContent: PropTypes.string.isRequired,
-    inlineElements: PropTypes.arrayOf(PropTypes.object).isRequired,
-    handleNewOffsets: PropTypes.func.isRequired,
-  },
+class DiffViewEditorPane extends React.Component {
 
-  _diffViewEditor: ({}: Object),
+  _diffViewEditor: ?DiffViewEditor;
+  // TODO(most): move async code out of the view and deprecate the usage of `_isMounted`.
+  // All view changes should be pushed from the model/store through subscriptions.
+  _isMounted: boolean;
+
+  constructor(props: Object) {
+    super(props);
+    this._isMounted = false;
+  }
 
   componentDidMount(): void {
-    this._diffViewEditor = new DiffViewEditor(React.findDOMNode(this.refs['editor']));
+    this._isMounted = true;
+    var diffViewEditor = this._diffViewEditor = new DiffViewEditor(
+      React.findDOMNode(this.refs['editor'])
+    );
 
     // The first version of the diff view will have both editors readonly.
     // But later on, the right editor will be editable and savable.
-    this._diffViewEditor.setReadOnly();
+    diffViewEditor.setReadOnly();
     this._updateDiffView({}, this.props);
-  },
+  }
 
   componentWillReceiveProps(nextProps: Object): void {
     this._updateDiffView(this.props, nextProps);
-  },
+  }
 
   componentWillUnmount(): void {
     this._diffViewEditor = null;
-  },
+    this._isMounted = false;
+  }
 
   shouldComponentUpdate(): boolean {
     return false;
-  },
+  }
 
   render(): ReactElement {
     return (
       <atom-text-editor ref="editor" style={{height: '100%', overflow: 'hidden'}} />
     );
-  },
+  }
 
   _updateDiffView(oldProps: Object, newProps: Object) {
     if (oldProps.textContent !== newProps.textContent) {
@@ -73,23 +74,23 @@ var DiffViewEditorPane = React.createClass({
     if (oldProps.inlineElements !== newProps.inlineElements) {
       this._renderComponentsInline(newProps.inlineElements);
     }
-  },
+  }
 
   _setTextContent(text: string): void {
     this._diffViewEditor.setFileContents(this.props.filePath, text);
-  },
+  }
 
   _setHighlightedLines(highlightedLines: HighlightedLines): void {
     this._diffViewEditor.setHighlightedLines(highlightedLines.added, highlightedLines.removed);
-  },
+  }
 
   _setOffsets(offsets: { [key: string]: number }): void {
     this._diffViewEditor.setOffsets(offsets);
-  },
+  }
 
   async _renderComponentsInline(elements: Array<Object>): Promise {
     var components = await this._diffViewEditor.renderInlineComponents(elements);
-    if (!this.isMounted()) {
+    if (!this._isMounted) {
       return;
     }
 
@@ -102,7 +103,7 @@ var DiffViewEditorPane = React.createClass({
     // (see DiffViewEditor.attachInlineComponents)
     // There's no easy way to listen for this event, so just wait 0.5s per component.
     setTimeout(() => {
-      if (!this.isMounted()) {
+      if (!this._isMounted) {
         return;
       }
       var editorWidth = React.findDOMNode(this.refs['editor']).clientWidth;
@@ -128,12 +129,23 @@ var DiffViewEditorPane = React.createClass({
       });
       this.props.handleNewOffsets(offsetsFromComponents);
     }, components.length * 500);
-  },
+  }
 
   getEditorModel(): Object {
     return this._diffViewEditor.getModel();
-  },
+  }
+}
 
-});
+DiffViewEditorPane.propTypes = {
+  filePath: PropTypes.string.isRequired,
+  offsets: PropTypes.objectOf(PropTypes.number).isRequired,
+  highlightedLines: PropTypes.shape({
+    added: PropTypes.arrayOf(PropTypes.number),
+    removed: PropTypes.arrayOf(PropTypes.number),
+  }).isRequired,
+  textContent: PropTypes.string.isRequired,
+  inlineElements: PropTypes.arrayOf(PropTypes.object).isRequired,
+  handleNewOffsets: PropTypes.func.isRequired,
+};
 
 module.exports = DiffViewEditorPane;
