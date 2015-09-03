@@ -28,6 +28,18 @@ class BuckProject {
   }
 
   /**
+   * Reads the configuration file for the Buck project and returns the requested property.
+   *
+   * @param section Section in the configuration file.
+   * @param property Configuration option within the section.
+   *
+   * @return Promise that resolves to the value, if it is set, else `null`.
+   */
+  getConfig(section: string, property: string): Promise<?string> {
+    return Promise.reject('Not implemented');
+  }
+
+  /**
    * Runs `buck build --keep-going --build-report <tempfile>` with the specified targets. Regardless
    * whether the build is successful, this returns the parsed version of the JSON report
    * produced by the {@code --build-report} option:

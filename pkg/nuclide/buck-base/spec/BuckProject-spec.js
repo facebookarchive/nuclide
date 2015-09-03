@@ -181,4 +181,37 @@ describe('BuckProject', () => {
       });
     });
   });
+
+  describe('getBuckConfig()', () => {
+    it('returns the correct value if present', () => {
+      var projectDir = copyProject('buckconfig-project');
+      var buckProject = new BuckProject({rootPath: projectDir});
+
+      waitsForPromise({timeout: TIMEOUT}, async () => {
+        var value = await buckProject.getBuckConfig('cache', 'dir');
+        expect(value).toBe('buck-cache');
+      });
+    });
+
+    it('returns null if property is not set', () => {
+      var projectDir = copyProject('buckconfig-project');
+      var buckProject = new BuckProject({rootPath: projectDir});
+
+      waitsForPromise({timeout: TIMEOUT}, async () => {
+        var value = await buckProject.getBuckConfig('cache', 'http_timeout');
+        expect(value).toBe(null);
+      });
+    });
+
+    it('returns null if section is not present', () => {
+      var projectDir = copyProject('buckconfig-project');
+      var buckProject = new BuckProject({rootPath: projectDir});
+
+      waitsForPromise({timeout: TIMEOUT}, async () => {
+        var value = await buckProject.getBuckConfig('android', 'target');
+        expect(value).toBe(null);
+      });
+    });
+
+  });
 });

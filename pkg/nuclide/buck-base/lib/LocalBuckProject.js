@@ -15,6 +15,8 @@ var logger = require('nuclide-logging').getLogger();
 var path = require('path');
 var BuckProject = require('./BuckProject');
 
+type BuckConfig = Object;
+
 /**
  * As defined in com.facebook.buck.cli.Command, some of Buck's subcommands are
  * read-only. The read-only commands can be executed in parallel, but the rest
@@ -33,6 +35,7 @@ class LocalBuckProject extends BuckProject {
 
   _rootPath: string;
   _serialQueueName: string;
+  _buckConfig: ?BuckConfig;
 
   /**
    * @param options.rootPath Absolute path to the directory that contains the
@@ -55,7 +58,7 @@ class LocalBuckProject extends BuckProject {
    * @param args Do not include 'buck' as the first argument: it will be added
    *     automatically.
    */
-  async _runBuckCommandFromProjectRoot(args: array<string>
+  async _runBuckCommandFromProjectRoot(args: Array<string>
       ): Promise<{stdout: string; stderr: string; exitCode: number}> {
     if (global.atom) {
       var pathToBuck = atom.config.get('buck.pathToBuck');
@@ -76,6 +79,32 @@ class LocalBuckProject extends BuckProject {
     var stdout = result.stdout;
     var targets = stdout.trim().split('\n');
     return targets;
+  }
+
+  async getBuckConfig(section: string, property: string): Promise<?string> {
+    var buckConfig = this._buckConfig;
+    if (!buckConfig) {
+      buckConfig = this._buckConfig = await this._loadBuckConfig();
+    }
+    if (!buckConfig.hasOwnProperty(section)) {
+      return null;
+    }
+    var sectionConfig = buckConfig[section];
+    if (!sectionConfig.hasOwnProperty(property)) {
+      return null;
+    }
+    return sectionConfig[property];
+  }
+
+  /**
+   * TODO(natthu): Also load .buckconfig.local. Consider loading .buckconfig from the home directory
+   * and ~/.buckconfig.d/ directory.
+   */
+  async _loadBuckConfig(): Promise<BuckConfig> {
+    var ini = require('ini');
+    var header = 'scope = global\n';
+    var buckConfigContent = await fsPromise.readFile(path.join(this._rootPath, '.buckconfig'));
+    return ini.parse(header + buckConfigContent);
   }
 
   build(buildTargets: Array<string> | string): Promise<any> {
