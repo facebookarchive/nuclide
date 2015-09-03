@@ -577,6 +577,56 @@ declare class atom$GrammarRegistry {
   selectGrammar(filePath: string, fileContents: string): atom$Grammar;
 }
 
+type atom$KeyBinding = Object;
+
+declare class atom$KeymapManager {
+
+  // Event Subscription
+  onDidMatchBinding(callback: (event: {
+    keystrokes: string;
+    binding: atom$KeyBinding;
+    keyboardEventTarget: HTMLElement;
+  }) => mixed): atom$Disposable;
+
+  onDidPartiallyMatchBinding(callback: (event: {
+    keystrokes: string;
+    partiallyMatchedBindings: atom$KeyBinding;
+    keyboardEventTarget: HTMLElement;
+  }) => mixed): atom$Disposable;
+
+  onDidFailToMatchBinding(callback: (event: {
+    keystrokes: string;
+    partiallyMatchedBindings: atom$KeyBinding;
+    keyboardEventTarget: HTMLElement;
+  }) => mixed): atom$Disposable;
+
+  onDidFailToReadFile(callback: (error: {
+    message: string;
+    stack: string;
+  }) => mixed): atom$Disposable;
+
+  // Adding and Removing Bindings
+  add(source: string, bindings: Object): void;
+
+  // Accessing Bindings
+  getKeyBindings(): Array<atom$KeyBinding>;
+  findKeyBindings(params: {
+    keystrokes?: string;
+    command: string;
+    target?: HTMLElement;
+  }): Array<atom$KeyBinding>;
+
+  // Managing Keymap Files
+  loadKeymap(path: string, options: {watch: boolean}): void;
+  watchKeymap(path: string): void;
+
+  // Managing Keyboard Events
+  handleKeyboardEvent(event: Event): void;
+  keystrokeForKeyboardEvent(event: Event): string;
+  getPartialMatchTimeout(): number;
+
+}
+
 declare class atom$Project {
   // Event Subscription
   onDidChangePaths(callback: (projectPaths: Array<string>) => mixed): atom$Disposable;
@@ -687,6 +737,7 @@ type AtomGlobal = {
   config: atom$Config;
   contextMenu: atom$ContextMenuManager;
   grammars: atom$GrammarRegistry;
+  keymaps: atom$KeymapManager;
   notifications: atom$NotificationManager;
   packages: atom$PackageManager;
   themes: atom$ThemeManager;
