@@ -25,9 +25,4 @@ module.exports = {
   trackTiming(eventName=null: ?string): any {
     return (target: any, name: string, descriptor: any) => {};
   },
-
-  /**
-   * A no-op used used to set the sysinfo paramaters of a machine.
-   */
-  setSysInfo(sysInfo: Object): void {},
 };

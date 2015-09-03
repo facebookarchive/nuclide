@@ -50,10 +50,6 @@ module.exports = {
     return require('./register-grammar-for-file-extension');
   },
 
-  get sysinfo() {
-    return require('./sysinfo');
-  },
-
   get withLoadingNotification() {
     return require('./with-loading-notification');
   },
