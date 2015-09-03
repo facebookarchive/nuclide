@@ -1,0 +1,34 @@
+{
+  "name": "nuclide-hack-symbol-provider",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "Provides quick-open search results based on Hack symbols",
+  "nuclide": {
+    "packageType": "Atom",
+    "testRunner": "apm"
+  },
+  "dependencies": {
+    "nuclide-client": "0.0.0",
+    "nuclide-remote-uri": "0.0.0",
+    "react-for-atom": "0.13.6"
+  },
+  "devDependencies": {
+    "nuclide-external-interfaces": "0.0.0"
+  },
+  "providedServices": {
+    "nuclide-quick-open-register-provider": {
+      "description": "Register ourselves with the quick-open package",
+      "versions": {
+        "0.0.0": "registerProvider"
+      }
+    }
+  },
+  "consumedServices": {
+    "nuclide-quick-open-register-store": {
+      "versions": {
+        "0.0.0": "registerStore"
+      }
+    }
+  }
+}
