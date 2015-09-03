@@ -102,6 +102,18 @@ describe('LinterAdapter', () => {
     }, 'It should call the callback', 100);
   });
 
+  it('should work when the linter is synchronous', () => {
+    linterReturn = [{type: 'Error', filePath: 'foo'}];
+    var message = null;
+    linterAdapter.onMessageUpdate(m => {
+      message = m;
+    });
+    eventCallback(fakeEditor);
+    waitsFor(() => {
+      return message && message.filePathToMessages.has('foo');
+    }, 'The adapter should publish a message');
+  });
+
   it('should not reorder results', () => {
     waitsForPromise(async () => {
       var numMessages = 0;
