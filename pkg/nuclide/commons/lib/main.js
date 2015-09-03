@@ -126,4 +126,8 @@ module.exports = {
   get clientInfo() {
     return require('./clientInfo');
   },
+
+  get systemInfo() {
+    return require('./systemInfo');
+  },
 };
