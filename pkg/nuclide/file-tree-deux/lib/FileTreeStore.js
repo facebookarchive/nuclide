@@ -237,6 +237,19 @@ class FileTreeStore {
     return selectedKeys.map(nodeKey => this.getNode(rootKey, nodeKey));
   }
 
+  getSingleSelectedNode(): ?FileTreeNode {
+    var rootKey = this.getFocusedRootKey();
+    if (!rootKey) {
+      return null;
+    }
+    var selectedKeys = this.getSelectedKeys(rootKey);
+    /*
+     * Note: This does not call `getSelectedNodes` to prevent creating nodes that would be thrown
+     * away if there is more than 1 selected node.
+     */
+    return (selectedKeys.size === 1) ? this.getNode(rootKey, selectedKeys.first()) : null;
+  }
+
   getRootNode(rootKey: string): FileTreeNode {
     return this.getNode(rootKey, rootKey);
   }

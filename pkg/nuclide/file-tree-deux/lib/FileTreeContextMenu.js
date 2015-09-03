@@ -13,8 +13,6 @@ var {EVENT_HANDLER_SELECTOR} = require('./FileTreeConstants');
 var {isFullyQualifiedLocalPath} = require('./FileTreeHelpers');
 var FileTreeStore = require('./FileTreeStore');
 
-import type FileTreeNode from './FileTreeNode';
-
 type MenuItemSingle = {
   label: string;
   command: string;
@@ -33,7 +31,7 @@ type MenuItemSeparator = {
 
 type MenuItemDefinition = MenuItemSingle | MenuItemGroup | MenuItemSeparator;
 
-var instance: ?FileTreeContextMenu;
+var instance: ?Object;
 
 class FileTreeContextMenu {
   _store: FileTreeStore;
@@ -68,7 +66,7 @@ class FileTreeContextMenu {
         label: 'Remove Project Folder',
         command: 'nuclide-file-tree-deux:remove-project-folder-selection',
         shouldDisplay: () => {
-          var node = this._getSingleSelectedNode();
+          var node = this._store.getSingleSelectedNode();
           return node != null && node.isRoot;
         },
       },
@@ -78,7 +76,7 @@ class FileTreeContextMenu {
         label: 'Rename',
         command: 'nuclide-file-tree-deux:rename-selection',
         shouldDisplay: () => {
-          var node = this._getSingleSelectedNode();
+          var node = this._store.getSingleSelectedNode();
           // For now, rename does not apply to root nodes.
           return node != null && !node.isRoot;
         },
@@ -87,7 +85,7 @@ class FileTreeContextMenu {
         label: 'Duplicate',
         command: 'nuclide-file-tree-deux:duplicate-selection',
         shouldDisplay: () => {
-          var node = this._getSingleSelectedNode();
+          var node = this._store.getSingleSelectedNode();
           return node != null && !node.isContainer;
         },
       },
@@ -106,22 +104,24 @@ class FileTreeContextMenu {
         label: 'Copy Full Path',
         command: 'nuclide-file-tree-deux:copy-full-path',
         shouldDisplay: () => {
-          var node = this._getSingleSelectedNode();
+          var node = this._store.getSingleSelectedNode();
           return node != null;
         },
       },
       {
-        label: 'Show in Finder',
+        label: 'Show in Finder', // Mac OS X
         command: 'nuclide-file-tree-deux:show-in-file-manager',
-        shouldDisplay: () => {
-          var node = this._getSingleSelectedNode();
-          // For now, this only works for local files on OS X.
-          return (
-            node != null &&
-            !isFullyQualifiedLocalPath(node.nodePath) &&
-            process.platform === 'darwin'
-          );
-        },
+        shouldDisplay: this._shouldDisplayShowInFileManager.bind(this, 'darwin'),
+      },
+      {
+        label: 'Show in Explorer', // Windows
+        command: 'nuclide-file-tree-deux:show-in-file-manager',
+        shouldDisplay: this._shouldDisplayShowInFileManager.bind(this, 'win32'),
+      },
+      {
+        label: 'Show in File Manager', // Linux
+        command: 'nuclide-file-tree-deux:show-in-file-manager',
+        shouldDisplay: this._shouldDisplayShowInFileManager.bind(this, 'linux'),
       },
       {
         label: 'Search in Directory',
@@ -134,15 +134,6 @@ class FileTreeContextMenu {
     ]);
   }
 
-  _getSingleSelectedNode(): ?FileTreeNode {
-    var rootKey = this._store.getFocusedRootKey();
-    if (!rootKey) {
-      return null;
-    }
-    var selectedKeys: Array<string> = this._store.getSelectedKeys(rootKey).toArray();
-    return (selectedKeys.length === 1) ? this._store.getNode(rootKey, selectedKeys[0]) : null;
-  }
-
   _addContextMenuItemGroup(menuItems: Array<MenuItemDefinition>): void {
     // Atom is smart about only displaying a separator when there are items to
     // separate, so there will never be a dangling separator at the end.
@@ -151,6 +142,19 @@ class FileTreeContextMenu {
     var contextMenu = {};
     contextMenu[EVENT_HANDLER_SELECTOR] = menuItems;
     atom.contextMenu.add(contextMenu);
+  }
+
+  /**
+   * @return A {boolean} whether the "Show in File Manager" context menu item should be displayed
+   * for the current selection and the given `platform`.
+   */
+  _shouldDisplayShowInFileManager(platform: string): boolean {
+    var node = this._store.getSingleSelectedNode();
+    return (
+      node != null &&
+      isFullyQualifiedLocalPath(node.nodePath) &&
+      process.platform === platform
+    );
   }
 
   static initialize(): FileTreeContextMenu {

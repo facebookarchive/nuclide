@@ -7,8 +7,16 @@
  */
 
 /**
- * {@link http://electron.atom.io/docs/v0.31.0/api/shell/}
+ * The `shell` module provides functions related to desktop integration.
+ *
+ * {@link http://electron.atom.io/docs/latest/api/shell/}
  */
 declare module 'shell' {
+  /**
+   * Show the given file in a file manager. If possible, select the file.
+   *
+   * {@link http://electron.atom.io/docs/latest/api/shell/#shell-showiteminfolder-fullpath}
+   */
+  declare function showItemInFolder(fullPath: string): void;
   declare function moveItemToTrash(fullPath: string): boolean;
 }

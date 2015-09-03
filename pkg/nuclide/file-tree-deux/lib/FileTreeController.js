@@ -24,6 +24,7 @@ var React = require('react-for-atom');
 
 var os = require('os');
 var pathUtil = require('path');
+var shell = require('shell');
 
 export type FileTreeControllerState = {
   panel: {
@@ -85,6 +86,7 @@ class FileTreeController {
         'nuclide-file-tree-deux:delete-selection': this._deleteSelection.bind(this),
         'nuclide-file-tree-deux:remove-project-folder-selection': this._removeRootFolderSelection.bind(this),
         'nuclide-file-tree-deux:search-in-directory': this._searchInDirectory.bind(this),
+        'nuclide-file-tree-deux:show-in-file-manager': this._showInFileManager.bind(this),
       })
     );
     if (state && state.tree) {
@@ -192,6 +194,15 @@ class FileTreeController {
     // Dispatch a command to show the `ProjectFindView`. This opens the view and focuses the search
     // box.
     atom.commands.dispatch((event.target: HTMLElement), 'project-find:show-in-current-directory');
+  }
+
+  _showInFileManager(): void {
+    var node = this._store.getSingleSelectedNode();
+    if (node == null) {
+      // Only allow revealing a single directory/file at a time. Return otherwise.
+      return;
+    }
+    shell.showItemInFolder(node.nodePath);
   }
 
   _copyFullPath(): void {
