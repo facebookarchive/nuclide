@@ -83,8 +83,10 @@ describe('nuclide-uri', () => {
     expect(() => nuclideUri.relative(localUri, remoteUri)).toThrow();
     expect(nuclideUri.relative(nuclideUri.dirname(remoteUri), remoteUri)).toBe('local');
     expect(nuclideUri.relative(remoteUri, nuclideUri.dirname(remoteUri))).toBe('..');
-    expect(nuclideUri.relative(nuclideUri.dirname(remoteUriWithSpaces), remoteUriWithSpaces)).toBe('c d');
-    expect(nuclideUri.relative(remoteUriWithSpaces, nuclideUri.dirname(remoteUriWithSpaces))).toBe('..');
+    expect(nuclideUri.relative(nuclideUri.dirname(remoteUriWithSpaces), remoteUriWithSpaces))
+      .toBe('c d');
+    expect(nuclideUri.relative(remoteUriWithSpaces, nuclideUri.dirname(remoteUriWithSpaces)))
+      .toBe('..');
     expect(nuclideUri.relative(nuclideUri.dirname(localUri), localUri)).toBe('file');
     expect(nuclideUri.relative(localUri, nuclideUri.dirname(localUri))).toBe('..');
   });

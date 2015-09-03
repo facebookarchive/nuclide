@@ -32,6 +32,7 @@ function createRemoteUri(hostname: string, remotePort: number, remotePath: strin
   return `nuclide://${hostname}:${remotePort}${remotePath}`;
 }
 
+// $FlowIssue: We also had to tag parse() in nuclide-commons with $FlowIssue.
 function parse(uri: NuclideUri): { hostname: ?string; port: ?string; path: string; } {
   return require('nuclide-commons').url.parse(uri);
 }

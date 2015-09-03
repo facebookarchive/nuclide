@@ -5,6 +5,7 @@
   "version": "0.0.0",
   "description": "RemoteUri - provides local and remote nuclide file path functions.",
   "nuclide": {
+    "flowCheck": true,
     "packageType": "Node",
     "testRunner": "npm"
   },
@@ -12,6 +13,7 @@
     "nuclide-commons": "0.0.0"
   },
   "devDependencies": {
+    "nuclide-external-interfaces": "0.0.0",
     "nuclide-jasmine": "0.0.0"
   },
   "scripts": {
