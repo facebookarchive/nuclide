@@ -142,7 +142,9 @@ class LocalHhvmDebuggerProxyService extends HhvmDebuggerProxyService {
   dispose(): void {
     log('Proxy: Ending session');
     this._emitter.emit(SESSION_END_EVENT)
-    this._emitter.removeAllListeners(SESSION_END_EVENT)
+    // TODO[jeffreytan]: hack to workaround the server framework issue per Chen Shen.
+    // This should be reenabled after the service framework issue(t8244333) is fixed.
+    // this._emitter.removeAllListeners(SESSION_END_EVENT)
 
     if (this._translator) {
       this._translator.dispose();

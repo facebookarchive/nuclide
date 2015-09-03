@@ -7,12 +7,13 @@
  */
 
 type nuclide_debugger$DebuggerInstance = {
-  dispose: () => void;
-  getWebsocketAddress: () => Promise<string>;
+  dispose(): void;
+  getWebsocketAddress(): Promise<string>;
+  onSessionEnd(callback: () => void): Disposable;
 };
 
-type nuclide_debugger$DebuggerProcessInfo = {
-  constructor(serviceName: string);
+declare class nuclide_debugger$DebuggerProcessInfo {
+  constructor(serviceName: string): void;
 
   toString(): string;
 
@@ -25,7 +26,7 @@ type nuclide_debugger$DebuggerProcessInfo = {
   compareDetails(other:DebuggerProcessInfo): number;
 
   attach(): nuclide_debugger$DebuggerInstance;
-};
+}
 
 type nuclide_debugger$Service = {
   name: string;
