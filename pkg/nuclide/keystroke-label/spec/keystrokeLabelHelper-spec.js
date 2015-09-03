@@ -72,7 +72,9 @@ describe('nuclide-keystroke-label', () => {
     });
 
     it('handles junk input', () => {
+      // $FlowFixMe: Deliberately testing invalid input.
       expect(humanizeKeystroke()).toEqual(undefined);
+      // $FlowFixMe: Deliberately testing invalid input.
       expect(humanizeKeystroke(null)).toEqual(null);
       expect(humanizeKeystroke('')).toEqual('');
     });

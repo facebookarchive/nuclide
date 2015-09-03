@@ -59,15 +59,16 @@ var SHIFT_KEYMAP = {
 
 var FN_KEY_RE = /f[0-9]{1,2}/;
 
-function flatten(arr: Array): Array {
+// $FlowIssue
+function flatten<T>(arr: Array<T | Array<T>>): Array<T> {
   var flattened = [];
-  arr.forEach(el => {
+  for (var el of arr) {
     if (Array.isArray(el)) {
       flattened = flattened.concat(flatten(el));
     } else {
       flattened.push(el);
     }
-  });
+  }
   return flattened;
 }
 
