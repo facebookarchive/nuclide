@@ -35,9 +35,7 @@ class DiffViewEditorPane extends React.Component {
   componentDidMount(): void {
     this._isMounted = true;
     this._subscriptions = new CompositeDisposable();
-    var diffViewEditor = this._diffViewEditor = new DiffViewEditor(
-      React.findDOMNode(this.refs['editor'])
-    );
+    var diffViewEditor = this._diffViewEditor = new DiffViewEditor(this.getEditorDomElement());
     if (this.props.readOnly) {
       diffViewEditor.setReadOnly();
     }
@@ -57,7 +55,11 @@ class DiffViewEditorPane extends React.Component {
       this._subscriptions.dispose();
       this._subscriptions = null;
     }
-    this._diffViewEditor = null;
+    if (this._diffViewEditor) {
+      var textEditor = this.getEditorModel();
+      textEditor.destroy();
+      this._diffViewEditor = null;
+    }
     this._isMounted = false;
   }
 
@@ -127,7 +129,7 @@ class DiffViewEditorPane extends React.Component {
       if (!this._isMounted) {
         return;
       }
-      var editorWidth = React.findDOMNode(this.refs['editor']).clientWidth;
+      var editorWidth = this.getEditorDomElement().clientWidth;
       components.forEach(element => {
         var domNode = React.findDOMNode(element.component);
         // get the height of the component after it has been rendered in the DOM
@@ -154,6 +156,10 @@ class DiffViewEditorPane extends React.Component {
 
   getEditorModel(): Object {
     return this._diffViewEditor.getModel();
+  }
+
+  getEditorDomElement(): HTMLElement {
+    return React.findDOMNode(this.refs['editor']);
   }
 }
 
