@@ -65,7 +65,7 @@ function getService(serviceName: string, hostname: ?string, serviceOptions: ?any
       var remoteConnection = RemoteConnection.getByHostnameAndPath(hostname, null);
       return getProxy(serviceConfig.definition, remoteConnection.getClient());
     } else {
-      return require(config.implementation);
+      return require(serviceConfig.implementation);
     }
   }
 
