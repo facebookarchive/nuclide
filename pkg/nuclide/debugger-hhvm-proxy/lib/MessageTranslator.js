@@ -17,7 +17,7 @@ var PageHandler = require('./PageHandler');
 var ConsoleHandler = require('./ConsoleHandler');
 var {RuntimeHandler} = require('./RuntimeHandler');
 var {ConnectionMultiplexer} = require('./ConnectionMultiplexer');
-import type {ConnectionConfig} from './connect';
+import type {ConnectionConfig} from './DbgpConnector';
 
 import type Handler from './Handler';
 

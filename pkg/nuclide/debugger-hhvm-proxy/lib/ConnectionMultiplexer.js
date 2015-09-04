@@ -18,8 +18,8 @@ import type PropertyDescriptor from './DataCache';
 import type RemoteObjectId from './DataCache';
 import type {Disposable} from 'nuclide-commons';
 var {BreakpointStore} = require('./BreakpointStore');
-var {DbgpConnector} = require('./connect');
-import type {ConnectionConfig} from './connect';
+var {DbgpConnector} = require('./DbgpConnector');
+import type {ConnectionConfig} from './DbgpConnector';
 var {
   STATUS_STARTING,
   STATUS_STOPPING,

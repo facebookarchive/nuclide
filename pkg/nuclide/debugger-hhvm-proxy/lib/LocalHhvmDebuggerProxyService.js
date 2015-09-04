@@ -11,7 +11,6 @@
 
 
 const {log, logError} = require('./utils');
-const {DbgpConnector} = require('./connect');
 
 // Connection states
 const INITIAL = 'initial';
@@ -25,7 +24,7 @@ const NOTIFY_EVENT = 'notify';
 const SESSION_END_EVENT = 'session-end';
 
 var {MessageTranslator} = require('./MessageTranslator');
-import type {ConnectionConfig} from './connect';
+import type {ConnectionConfig} from './DbgpConnector';
 import type {Disposable} from 'nuclide-commons';
 var {EventEmitter} = require("events");
 

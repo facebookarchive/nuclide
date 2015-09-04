@@ -12,7 +12,7 @@
 
 var net = require('net');
 var {makeDbgpMessage} = require('../lib/utils');
-var {DbgpConnector} = require('../lib/connect');
+var {DbgpConnector} = require('../lib/DbgpConnector');
 var {EventEmitter} = require('events');
 var {uncachedRequire, clearRequireCache} = require('nuclide-test-helpers');
 
@@ -80,12 +80,12 @@ describe('debugger-hhvm-proxy connect', () => {
       socket = createSocketSpy();
 
       spyOn(net, 'createServer').andReturn(server);
-      uncachedRequire(require, '../lib/connect');
+      uncachedRequire(require, '../lib/DbgpConnector');
     });
 
     afterEach(() => {
       unspy(net, 'createServer');
-      clearRequireCache(require, '../lib/connect');
+      clearRequireCache(require, '../lib/DbgpConnector');
     });
 
     it('no filtering', () => {

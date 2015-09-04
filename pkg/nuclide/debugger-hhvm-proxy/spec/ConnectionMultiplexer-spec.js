@@ -31,7 +31,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
         'attach',
         'dispose',
       ]);
-    DbgpConnector = spyOn(require('../lib/connect'), 'DbgpConnector').andReturn(connector);
+    DbgpConnector = spyOn(require('../lib/DbgpConnector'), 'DbgpConnector').andReturn(connector);
 
     connection = jasmine.createSpyObj('connection', [
         'onStatus',
@@ -59,7 +59,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
   });
 
   afterEach(() => {
-    unspy(require('../lib/connect'), 'DbgpConnector');
+    unspy(require('../lib/DbgpConnector'), 'DbgpConnector');
     unspy(require('../lib/Connection'), 'Connection');
     unspy(require('../lib/BreakpointStore'), 'BreakpointStore');
     clearRequireCache(require, '../lib/ConnectionMultiplexer');
