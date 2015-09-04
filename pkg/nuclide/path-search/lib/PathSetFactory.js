@@ -61,6 +61,40 @@ function getTrackedHgFiles(localDirectory: string): Promise<Object<string, boole
       filePath => filePath.slice(localDirectory.length + 1));
 }
 
+/**
+ * 'Untracked' files are files that haven't been added to the repo, but haven't
+ * been explicitly hg-ignored.
+ */
+function getUntrackedHgFiles(localDirectory: string): Promise<Object<string, boolean>> {
+  return getFilesFromCommand(
+    'hg',
+    // Calling 'hg status' with a path has two side-effects:
+    // 1. It returns the status of only files under the given path. In this case,
+    //    we only want the untracked files under the given localDirectory.
+    // 2. It returns the paths relative to the directory in which this command is
+    //    run. This is hard-coded to 'localDirectory' in `getFilesFromCommand`,
+    //    which is what we want.
+    ['status', '--unknown', '--no-status' /* No status code. */, localDirectory],
+    localDirectory,
+  );
+}
+
+/**
+ * @param localDirectory The full path to a directory.
+ * @return If localDirectory is within an Hg repo, returns an Object where the
+ *   keys are file paths (relative to the 'localDirectory') of tracked and untracked
+ *   files within that directory, but not including ignored files. All values
+ *   are 'true'. If localDirectory is not within an Hg repo, the Promise rejects.
+ */
+function getFilesFromHg(localDirectory: string): Promise<Object<string, boolean>> {
+  return Promise.all([getTrackedHgFiles(localDirectory), getUntrackedHgFiles(localDirectory)]).then(
+    (returnedFiles) => {
+      var [trackedFiles, untrackedFiles] = returnedFiles;
+      return {...trackedFiles, ...untrackedFiles};
+    }
+  );
+}
+
 function getTrackedGitFiles(localDirectory: string): Promise<Object<string, boolean>> {
   return getFilesFromCommand('git', ['ls-files'], localDirectory);
 }
@@ -80,7 +114,7 @@ function getAllFiles(localDirectory: string): Promise<Object<string, boolean>> {
 async function createPathSet(localDirectory: string): Promise<PathSet> {
   // Attempts to get a list of files relative to `localDirectory`, hopefully from a fast source control index.
   // TODO (williamsc) once ``{HG|Git}Repository` is working in nuclide-server, use those instead to determine VCS.
-  var paths = await getTrackedHgFiles(localDirectory)
+  var paths = await getFilesFromHg(localDirectory)
       .catch(() => getTrackedGitFiles(localDirectory))
       .catch(() => getAllFiles(localDirectory))
       .catch(() => { throw new Error(`Failed to populate FileSearch for ${localDirectory}`) });
@@ -89,4 +123,7 @@ async function createPathSet(localDirectory: string): Promise<PathSet> {
 
 module.exports = {
   createPathSet,
+  __test__: {
+    getFilesFromHg,
+  },
 };

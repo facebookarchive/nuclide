@@ -158,9 +158,11 @@ async function hgTestFolder(): string {
   await asyncExecute('hg', ['init'], {cwd: folder});
   await asyncExecute('hg', ['addremove'], {cwd: folder});
 
-  // After adding the existing files to hg, add an untracked file to
+  // After adding the existing files to hg, add an ignored file to
   // prove we're using hg to populate the list.
-  fs.writeFileSync(path.join(folder, 'untracked'));
+  var ignoredFile = 'ignored';
+  fs.writeFileSync(path.join(folder, ignoredFile));
+  fs.writeFileSync(path.join(folder, '.hgignore'), `.hgignore\n${ignoredFile}`);
 
   return folder;
 }
