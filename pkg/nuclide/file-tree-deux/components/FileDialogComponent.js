@@ -44,7 +44,7 @@ class FileDialogComponent extends React.Component {
     var path = this.props.initialValue;
     input.focus();
     if (this.props.selectBasename) {
-      var {name, dir} = pathModule.parse(path);
+      var {dir, name} = pathModule.parse(path);
       var selectionStart = dir ? dir.length + 1 : 0;
       var selectionEnd = selectionStart + name.length;
       input.getTextEditor().setSelectedBufferRange([[0, selectionStart], [0, selectionEnd]]);
@@ -64,7 +64,11 @@ class FileDialogComponent extends React.Component {
     return (
       <atom-panel className="modal from-top" key="add-dialog">
         <label className={labelClassName}>{this.props.message}</label>
-        <AtomInput ref="input" onBlur={this._close} />
+        <AtomInput
+          initialValue={this.props.initialValue}
+          onBlur={this._close}
+          ref="input"
+        />
       </atom-panel>
     );
   }
@@ -84,7 +88,7 @@ class FileDialogComponent extends React.Component {
 
 FileDialogComponent.propTypes = {
   iconClassName: PropTypes.string,
-  initialValue: PropTypes.string.isRequired,
+  initialValue: PropTypes.string,
   // Message is displayed above the input.
   message: PropTypes.element.isRequired,
   // Will be called (before `onClose`) if the user confirms.

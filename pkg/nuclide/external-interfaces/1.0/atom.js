@@ -155,8 +155,9 @@ declare class atom$Marker {
 declare class atom$ServiceHub {
   provide<T>(keyPath: string, version: string, service: T): atom$Disposable;
   consume<T>(
-    keyPath: string, versionRange: string,
-    callback: (provider: T) => mixed,
+    keyPath: string,
+    versionRange: string,
+    callback: (provider: T) => mixed
   ): atom$Disposable;
 }
 
@@ -562,6 +563,9 @@ declare class atom$ContextMenuManager {
 declare class atom$Directory {
   symlink: boolean;
 
+  // Construction
+  create(mode?: number): Promise<boolean>;
+
   // Event Subscription
   onDidChange(callback: () => mixed): atom$Disposable;
 
@@ -580,12 +584,20 @@ declare class atom$Directory {
 
   // Traversing
   getParent(): atom$Directory;
+  getFile(filename: string): atom$File;
+  getSubdirectory(dirname: string): atom$Directory;
   getEntries(callback: (error: ?Error, entries: Array<atom$Directory | atom$File>) => mixed): void;
   contains(path: string): boolean;
 }
 
 declare class atom$File {
   symlink: boolean;
+
+  // Construction
+  create(): Promise<boolean>;
+
+  // Event Subscription
+  onDidChange(callback: () => mixed): atom$Disposable;
 
   // File Metadata
   isFile(): boolean;

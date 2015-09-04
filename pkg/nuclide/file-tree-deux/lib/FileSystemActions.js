@@ -9,11 +9,17 @@
  * the root directory of this source tree.
  */
 
+import type {
+  RemoteDirectory,
+  RemoteFile,
+} from 'nuclide-remote-connection';
+
 var FileTreeHelpers = require('./FileTreeHelpers');
 var FileTreeStore = require('./FileTreeStore');
 var FileDialogComponent = require('../components/FileDialogComponent');
 var React = require('react-for-atom');
 
+var fs = require('fs');
 var pathModule = require('path');
 var {url} = require('nuclide-commons');
 
@@ -71,6 +77,48 @@ var FileSystemActions = {
     });
   },
 
+  openRenameDialog(): void {
+    var store = FileTreeStore.getInstance();
+    var selectedNodes = store.getSelectedNodes();
+    if (selectedNodes.length !== 1) {
+      // Can only rename one entry at a time.
+      return;
+    }
+
+    var node = selectedNodes[0];
+    var nodePath = node.getLocalPath();
+    this._openDialog({
+      iconClassName: 'icon-arrow-right',
+      initialValue: pathModule.basename(nodePath),
+      message: node.isContainer
+        ? <span>Enter the new path for the directory.</span>
+        : <span>Enter the new path for the file.</span>,
+      onConfirm: (newBasename: string) => {
+        var file = FileTreeHelpers.getFileByKey(node.nodeKey);
+        if (file == null) {
+          // TODO: Connection could have been lost for remote file.
+          return;
+        }
+
+        /*
+         * Use `resolve` to strip trailing slashes because renaming a file to a name with a
+         * trailing slash is an error.
+         */
+        var newPath = pathModule.resolve(
+          // Trim leading and trailing whitespace to prevent bad filenames.
+          pathModule.join(pathModule.dirname(nodePath), newBasename.trim())
+        );
+        if (FileTreeHelpers.isLocalFile(file)) {
+          fs.rename(nodePath, newPath);
+        } else {
+          (file: (RemoteDirectory | RemoteFile)).rename(newPath);
+        }
+      },
+      onClose: this._closeDialog,
+      selectBasename: true,
+    });
+  },
+
   _getSelectedContainerNode() {
     var store = FileTreeStore.getInstance();
     var rootKey = store.getFocusedRootKey();
@@ -85,7 +133,6 @@ var FileSystemActions = {
   _openAddDialog(entryType: string, path: string, onConfirm: (filePath: string) => mixed) {
     this._openDialog({
       iconClassName: 'icon-file-add',
-      initialValue: path,
       message: <span>Enter the path for the new {entryType} in the root:<br />{path}</span>,
       onConfirm,
       onClose: this._closeDialog,

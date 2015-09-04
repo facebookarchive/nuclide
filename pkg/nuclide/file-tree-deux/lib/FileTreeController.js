@@ -85,6 +85,7 @@ class FileTreeController {
         'nuclide-file-tree-deux:copy-full-path': this._copyFullPath.bind(this),
         'nuclide-file-tree-deux:delete-selection': this._deleteSelection.bind(this),
         'nuclide-file-tree-deux:remove-project-folder-selection': this._removeRootFolderSelection.bind(this),
+        'nuclide-file-tree-deux:rename-selection': () => FileSystemActions.openRenameDialog(),
         'nuclide-file-tree-deux:search-in-directory': this._searchInDirectory.bind(this),
         'nuclide-file-tree-deux:show-in-file-manager': this._showInFileManager.bind(this),
       })
