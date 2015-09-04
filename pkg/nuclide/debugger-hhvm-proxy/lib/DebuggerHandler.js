@@ -63,7 +63,7 @@ export class DebuggerHandler extends Handler {
 
     // TODO: Add Console (aka logging) support
     case 'enable':
-      await this._debuggerEnable(id);
+      this._debuggerEnable(id);
       break;
 
     case 'pause':
@@ -146,7 +146,7 @@ export class DebuggerHandler extends Handler {
     this.replyToCommand(id, {id: breakpointId});
   }
 
-  async _debuggerEnable(id: number): Promise {
+  _debuggerEnable(id: number): void {
     this._connectionMultiplexer.enable();
     this.replyToCommand(id, {});
   }

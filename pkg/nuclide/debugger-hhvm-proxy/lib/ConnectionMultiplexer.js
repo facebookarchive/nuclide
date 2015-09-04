@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-var {log, logErrorAndThrow, uriToPath} = require('./utils');
+var {log, logError, logErrorAndThrow, uriToPath} = require('./utils');
 var {Connection} = require('./Connection');
 
 import type {Socket} from 'net';
@@ -36,34 +36,58 @@ var {EventEmitter} = require('events');
 var CONNECTION_MUX_STATUS_EVENT = 'connection-mux-status';
 
 export class ConnectionMultiplexer {
-  _config: ConnectionConfig;
   _breakpointStore: BreakpointStore;
   _emitter: EventEmitter;
   _status: string;
   _connection: ?Connection;
   _connectionOnStatusDisposable: ?Disposable;
+  _connector: ?DbgpConnector;
 
   constructor(config: ConnectionConfig) {
-    this._config = config;
     this._status = STATUS_STARTING;
     this._emitter = new EventEmitter();
     this._connection = null;
     this._connectionOnStatusDisposable = null;
 
     this._breakpointStore = new BreakpointStore();
+
+    this._connector = new DbgpConnector(config);
+
+    this._connector.onAttach(this._onAttach.bind(this));
+    this._connector.onClose(this._disposeConnector.bind(this));
   }
 
-  async enable(): Promise {
-    var connector = new DbgpConnector(this._config);
-    try {
-      var connection = new Connection(await connector.attach());
+  enable(): void {
+    this._connector.listen();
+  }
+
+  async _onAttach(socket: Socket): Promise {
+    if (!this._connection) {
+      // Currently limit to a single connection
+      this._disposeConnector();
+
+      var connection = new Connection(socket);
       this._connection = connection;
       this._breakpointStore.addConnection(connection);
 
       this._connectionOnStatusDisposable = connection.onStatus(
         this._connectionOnStatus.bind(this));
-      this._connectionOnStatus(await connection.getStatus());
-    } finally {
+      var status;
+      try {
+        status = await connection.getStatus();
+      } catch (e) {
+        logError('Error getting initial connection status: ' + e.message);
+        status = STATUS_ERROR;
+      }
+      this._connectionOnStatus(status);
+    }
+  }
+
+  _disposeConnector(): void {
+    // Avoid recursion with connector's onClose event.
+    var connector = this._connector;
+    if (connector) {
+      this._connector = null;
       connector.dispose();
     }
   }
@@ -162,6 +186,7 @@ export class ConnectionMultiplexer {
       this._connection.dispose();
       this._connection = null;
     }
+    this._disposeConnector();
     this._status = STATUS_END;
   }
 

@@ -53,7 +53,9 @@ describe('debugger-hhvm-proxy RuntimeHandler', () => {
     });
 
     it('unknown', () => {
-      handler.handleMethod(4, 'unknown');
-      expect(callback.replyWithError).toHaveBeenCalledWith(4, jasmine.any(String));
+      waitsForPromise(async () => {
+        await handler.handleMethod(4, 'unknown');
+        expect(callback.replyWithError).toHaveBeenCalledWith(4, jasmine.any(String));
+      });
     });
 });

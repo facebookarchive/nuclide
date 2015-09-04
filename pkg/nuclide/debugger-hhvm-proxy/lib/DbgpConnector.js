@@ -16,6 +16,10 @@ var {
   uriToPath,
 } = require('./utils');
 
+var {Emitter} = require('event-kit');
+
+import type {Socket, Server} from 'net';
+
 /**
  * xdebugPort is the port to listen for dbgp connections on.
  *
@@ -34,6 +38,9 @@ export type ConnectionConfig = {
   idekeyRegex?: string;
 };
 
+var ATTACH_EVENT = 'dbgp-attach-event';
+var CLOSE_EVENT = 'dbgp-close-event';
+
 /**
  * Connect to requested dbgp debuggee on given port.
  *
@@ -48,42 +55,50 @@ export type ConnectionConfig = {
 export class DbgpConnector {
   _config: ConnectionConfig;
   _server: ?Server;
-  _connected: boolean;
+  _emitter: Emitter;
 
   constructor(config: ConnectionConfig) {
     this._config = config;
     this._server = null;
-    this._connected = false;
+    this._emitter = new Emitter();
   }
 
-  attach(): Promise<Socket> {
+  onAttach(callback: (socket: Socket) => void): Disposable {
+    return this._emitter.on(ATTACH_EVENT, callback);
+  }
+
+  onClose(callback: () => void): Disposable {
+    return this._emitter.on(CLOSE_EVENT, callback);
+  }
+
+  listen(): void {
     var port = this._config.xdebugPort;
 
     log('Creating debug server on port ' + port);
 
     var server = require('net').createServer();
-    this._server = server;
+
     server.on('close', socket => log('Closing port ' + port));
     server.listen(port, () => log('Listening on port ' + port));
 
-    return new Promise((resolve, reject) => {
-      server.on('error', error => this._onServerError(error, reject));
-      server.on('connection', socket => this._onSocketConnection(socket, resolve));
-      server.on('close', () => {reject('Connection aborted.')});
-    });
+    server.on('error', error => this._onServerError(error));
+    server.on('connection', socket => this._onSocketConnection(socket));
+    server.on('close', () => { log('DBGP Server closed.'); });
+
+    this._server = server;
   }
 
-  _onSocketConnection(socket: Socket, accept: (socket: Socket) => void) {
+  _onSocketConnection(socket: Socket) {
     var port = this._config.xdebugPort;
 
     log('Connection on port ' + port);
-    if (this._checkForExistingConnection(socket, 'Connection')) {
+    if (!this._checkListening(socket, 'Connection')) {
       return;
     }
-    socket.once('data', data => this._onSocketData(socket, data, accept));
+    socket.once('data', data => this._onSocketData(socket, data));
   }
 
-  _onServerError(error: Object, reject: (reason: Object) => void): void {
+  _onServerError(error: Object): void {
     var port = this._config.xdebugPort;
 
     if (error.code === 'EADDRINUSE') {
@@ -91,12 +106,12 @@ export class DbgpConnector {
     } else {
       log('Unknown socket error ' + error.code);
     }
-    this._server.close();
-    reject(error);
+
+    this.dispose();
   }
 
-  _onSocketData(socket: Socket, data: Buffer | string, accept: (socket: Socket) => void): void {
-    if (this._checkForExistingConnection(socket, 'Data')) {
+  _onSocketData(socket: Socket, data: Buffer | string): void {
+    if (!this._checkListening(socket, 'Data')) {
       return;
     }
 
@@ -121,28 +136,22 @@ export class DbgpConnector {
 
     var message = messages[0];
     if (this._isCorrectConnection(message)) {
-      this._connected = true;
-      accept(socket);
-
-      this._server.close();
-      this._server = null;
+      this._emitter.emit(ATTACH_EVENT, socket);
     } else {
       failConnection('Discarding connection ' + JSON.stringify(message));
     }
   }
 
   /**
-   * Checks if a connection already exists. If it does, then close the new socket.
+   * Checks if listening for connections. If not then close the new socket.
    */
-  _checkForExistingConnection(socket: Socket, message: string): void {
-    var port = this._config.xdebugPort;
-
-    if (this._connected) {
-      log('Ignoring ' + message + ' on port ' + port + ' after successful connection.');
-      socket.end();
-      socket.destroy();
+  _checkListening(socket: Socket, message: string): boolean {
+    if (!this.isListening()) {
+      var port = this._config.xdebugPort;
+      log('Ignoring ' + message + ' on port ' + port + ' after stopped connection.');
+      return false;
     }
-    return this._connected;
+    return true;
   }
 
   _isCorrectConnection(message: Object): boolean {
@@ -172,9 +181,15 @@ export class DbgpConnector {
       (!scriptRegex || new RegExp(scriptRegex).test(uriToPath(attributes.fileuri)));
   }
 
+  isListening(): boolean {
+    return !!this._server;
+  }
+
   dispose() {
     if (this._server) {
       this._server.close();
+      this._emitter.emit(CLOSE_EVENT);
+      this._server = null;
     }
   }
 }
