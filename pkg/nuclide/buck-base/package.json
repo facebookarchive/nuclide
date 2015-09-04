@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "description": "Provides API to work with Buck",
   "nuclide": {
+    "excludeTestsFromContinuousIntegration": true,
     "packageType": "Node",
     "testRunner": "npm"
   },

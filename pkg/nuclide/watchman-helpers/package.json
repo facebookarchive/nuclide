@@ -5,6 +5,7 @@
   "version": "0.0.0",
   "description": "Helper methods for interacting with fb-watchman",
   "nuclide": {
+    "excludeTestsFromContinuousIntegration": true,
     "packageType": "Node",
     "testRunner": "npm"
   },
