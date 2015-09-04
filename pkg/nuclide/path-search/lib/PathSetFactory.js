@@ -99,6 +99,32 @@ function getTrackedGitFiles(localDirectory: string): Promise<Object<string, bool
   return getFilesFromCommand('git', ['ls-files'], localDirectory);
 }
 
+/**
+ * 'Untracked' files are files that haven't been added to the repo, but haven't
+ * been explicitly git-ignored.
+ */
+function getUntrackedGitFiles(localDirectory: string): Promise<Object<string, boolean>> {
+  // '--others' means untracked files, and '--exclude-standard' excludes ignored files.
+  return getFilesFromCommand('git', ['ls-files', '--exclude-standard', '--others'], localDirectory);
+}
+
+/**
+ * @param localDirectory The full path to a directory.
+ * @return If localDirectory is within a Git repo, returns an Object where the
+ *   keys are file paths (relative to the 'localDirectory') of tracked and untracked
+ *   files within that directory, but not including ignored files. All values
+ *   are 'true'. If localDirectory is not within a Git repo, the Promise rejects.
+ */
+function getFilesFromGit(localDirectory: string): Promise<Object<string, boolean>> {
+  return Promise.all(
+      [getTrackedGitFiles(localDirectory), getUntrackedGitFiles(localDirectory)]).then(
+    (returnedFiles) => {
+      var [trackedFiles, untrackedFiles] = returnedFiles;
+      return {...trackedFiles, ...untrackedFiles};
+    }
+  );
+}
+
 function getAllFiles(localDirectory: string): Promise<Object<string, boolean>> {
   return getFilesFromCommand(
       'find',
@@ -112,10 +138,12 @@ function getAllFiles(localDirectory: string): Promise<Object<string, boolean>> {
  * Creates a `PathSet` with the contents of the specified directory.
  */
 async function createPathSet(localDirectory: string): Promise<PathSet> {
-  // Attempts to get a list of files relative to `localDirectory`, hopefully from a fast source control index.
-  // TODO (williamsc) once ``{HG|Git}Repository` is working in nuclide-server, use those instead to determine VCS.
+  // Attempts to get a list of files relative to `localDirectory`, hopefully from
+  // a fast source control index.
+  // TODO (williamsc) once ``{HG|Git}Repository` is working in nuclide-server,
+  // use those instead to determine VCS.
   var paths = await getFilesFromHg(localDirectory)
-      .catch(() => getTrackedGitFiles(localDirectory))
+      .catch(() => getFilesFromGit(localDirectory))
       .catch(() => getAllFiles(localDirectory))
       .catch(() => { throw new Error(`Failed to populate FileSearch for ${localDirectory}`) });
   return new PathSet({paths});
@@ -124,6 +152,7 @@ async function createPathSet(localDirectory: string): Promise<PathSet> {
 module.exports = {
   createPathSet,
   __test__: {
+    getFilesFromGit,
     getFilesFromHg,
   },
 };

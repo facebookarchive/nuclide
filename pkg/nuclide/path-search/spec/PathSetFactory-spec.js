@@ -11,7 +11,7 @@
 
 var fs = require('fs');
 var {asyncExecute} = require('nuclide-commons');
-var {getFilesFromHg} = require('../lib/PathSetFactory')['__test__'];
+var {getFilesFromGit, getFilesFromHg} = require('../lib/PathSetFactory')['__test__'];
 var path = require('path');
 var temp = require('temp').track();
 
@@ -30,6 +30,30 @@ describe('PathSetFactory', () => {
     trackedFile = path.join(testDir, TRACKED_FILE_BASE);
     untrackedFile = path.join(testDir, UNTRACKED_FILE_BASE);
     ignoredFile = path.join(testDir, IGNORED_FILE_BASE);
+  });
+
+  describe('getFilesFromGit()', () => {
+    var setUpGitRepo = async () => {
+      // Add a tracked file, ignored file, and untracked file.
+      await asyncExecute('git', ['init'], {cwd: testDir});
+      fs.writeFileSync(trackedFile);
+      fs.writeFileSync(path.join(testDir, '.gitignore'), `.gitignore\n${IGNORED_FILE_BASE}`);
+      fs.writeFileSync(ignoredFile);
+      await asyncExecute('git', ['add', '*'], {cwd: testDir});
+      fs.writeFileSync(untrackedFile);
+    };
+
+    it('returns tracked and untracked files, but not ignored files.', () => {
+      waitsForPromise(async () => {
+        await setUpGitRepo();
+        var expectedOutput = {
+          [TRACKED_FILE_BASE]: true,
+          [UNTRACKED_FILE_BASE]: true,
+        };
+        var fetchedFiles = await getFilesFromGit(testDir);
+        expect(fetchedFiles).toEqual(expectedOutput);
+      });
+    });
   });
 
   describe('getFilesFromHg()', () => {

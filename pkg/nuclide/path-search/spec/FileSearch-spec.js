@@ -173,9 +173,11 @@ async function gitTestFolder(): string {
   await asyncExecute('git', ['init'], {cwd: folder});
   await asyncExecute('git', ['add', '*'], {cwd: folder});
 
-  // After adding the existing files to git, add an untracked file to
+  // After adding the existing files to git, add an ignored file to
   // prove we're using git to populate the list.
-  fs.writeFileSync(path.join(folder, 'untracked'));
+  var ignoredFile = 'ignored';
+  fs.writeFileSync(path.join(folder, ignoredFile));
+  fs.writeFileSync(path.join(folder, '.gitignore'), `.gitignore\n${ignoredFile}`);
 
   return folder;
 }
