@@ -13,10 +13,17 @@ declare module 'module' {
   declare function _resolveFilename(filename: string, module: any): string;
 }
 
+/**
+ * `Definitions` encodes all of the information in a service defintion file that is required to
+ * generate a remote proxy.
+ */
 export type Definitions = {
-    functions: Map<string, FunctionType>;
-    interfaces: Map<string, InterfaceDefinition>;
-    aliases: Map<string, Type>;
+  // Encodes all of the module level functions in a file.
+  functions: Map<string, FunctionType>;
+  // Encodes all of the remote classes that can be instantiated.
+  interfaces: Map<string, InterfaceDefinition>;
+  // Encodes all of the type aliases in this definition file.
+  aliases: Map<string, Type>;
 };
 
 export type InterfaceDefinition = {
@@ -46,7 +53,7 @@ export type StringType = { kind: 'string' };
 export type BooleanType = { kind: 'boolean' };
 export type NumberType = { kind: 'number' };
 
-// Possible Return formats
+// Possible Return formats.
 export type VoidType = { kind: 'void' };
 export type PromiseType = { kind: 'promise', type: Type };
 export type ObservableType = { kind: 'observable', type: Type };

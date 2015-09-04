@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+// Encodes the structure of messages that can be sent from the client to the server.
 export type RequestMessage = CallRemoteFunctionMessage | CreateRemoteObjectMessage |
   CallRemoteMethodMessage | DisposeRemoteObjectMessage;
 
@@ -52,7 +53,8 @@ export type DisposeObservableMessage = {
   requestId: number;
 }
 
-export type ResponseMethod = PromiseResponseMessage | ErrorResponseMessage | ObservableResponseMessage;
+// Encodes the structure of messages that can be sent from the server to the client.
+export type ResponseMessage = PromiseResponseMessage | ErrorResponseMessage | ObservableResponseMessage;
 
 export type ErrorResponseMessage = {
   channel: 'service_framework3_rpc';
