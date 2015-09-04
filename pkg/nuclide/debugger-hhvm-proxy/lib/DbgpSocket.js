@@ -31,6 +31,7 @@ const COMMAND_STEP_INTO = 'step_into';
 const COMMAND_STEP_OVER = 'step_over';
 const COMMAND_STEP_OUT = 'step_out';
 const COMMAND_STOP = 'stop';
+const COMMAND_DETACH = 'detach';
 
 const DBGP_SOCKET_STATUS_EVENT = 'dbgp-socket-status';
 
@@ -74,17 +75,19 @@ type EvaluationResult = {
  * Dbgp documentation can be found at http://xdebug.org/docs-dbgp.php
  */
 class DbgpSocket {
-  _socket: Socket;
+  _socket: ?Socket;
   _transactionId: number;
   // Maps from transactionId -> call
   _calls: Map<number, {command: string; complete: (results: Object) => void}>;
   _emitter: EventEmitter;
+  _isClosed: boolean;
 
   constructor(socket: Socket) {
     this._socket = socket;
     this._transactionId = 0;
     this._calls = new Map();
     this._emitter = new EventEmitter();
+    this._isClosed = false;
 
     this._socket.on('end', this._onEnd.bind(this));
     this._socket.on('error', this._onError.bind(this));
@@ -96,11 +99,15 @@ class DbgpSocket {
   }
 
   _onError(error: Error): void {
+    // Not sure if hhvm is alive or not
+    // do not set _isClosed flag so that detach will be sent before dispose().
     logError('socket error ' + error.code);
     this._emitStatus(STATUS_ERROR);
   }
 
   _onEnd(): void {
+    this._isClosed = true;
+    this.dispose();
     this._emitStatus(STATUS_END);
   }
 
@@ -266,12 +273,18 @@ class DbgpSocket {
   }
 
   dispose(): void {
+    if (!this._isClosed) {
+      // TODO[jeffreytan]: workaround a crash(t8181538) in hhvm
+      this.sendContinuationCommand(COMMAND_DETACH);
+    }
+
     if (this._socket) {
       // end - Sends the FIN packet and closes writing.
       // destroy - closes for reading and writing.
       this._socket.end();
       this._socket.destroy();
       this._socket = null;
+      this._isClosed = true;
     }
   }
 }
@@ -290,4 +303,5 @@ module.exports = {
   COMMAND_STEP_OVER,
   COMMAND_STEP_OUT,
   COMMAND_STOP,
+  COMMAND_DETACH,
 };
