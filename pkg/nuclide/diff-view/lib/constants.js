@@ -41,4 +41,5 @@ module.exports = {
   FileChangeStatus,
   HgStatusToFileChangeStatus,
   FileChangeStatusToPrefix,
+  HgStatusCodeNumber,
 };

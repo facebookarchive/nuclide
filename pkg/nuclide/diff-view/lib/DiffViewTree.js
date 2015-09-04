@@ -81,7 +81,7 @@ class DiffViewTree extends React.Component {
   componentDidMount(): void {
     var diffModel = this.props.diffModel;
     var subscriptions = this._subscriptions = new CompositeDisposable();
-    subscriptions.add(diffModel.onDidChangeStatus((fileChanges: Array<FileChange>) => {
+    subscriptions.add(diffModel.onDidChangeStatus((fileChanges: Map<string, number>) => {
       this.setState({fileChanges, selectedFilePath: this.state.selectedFilePath});
     }));
     subscriptions.add(diffModel.onActiveFileUpdates((fileState: FileChangeState) => {
@@ -94,8 +94,10 @@ class DiffViewTree extends React.Component {
 
   componentDidUpdate(): void {
     var noChildrenFetcher = async () => Immutable.List.of();
-    var roots = this.state.fileChanges.map(
-        fileChange => new DiffViewTreeNode(fileChange, null, noChildrenFetcher));
+    var roots = [];
+    this.state.fileChanges.forEach((statusCode, filePath) => {
+      roots.push(new DiffViewTreeNode({filePath, statusCode}, null, noChildrenFetcher));
+    });
     var treeRoot = this.refs['tree'];
     treeRoot.setRoots(roots).then(() => {}, () => {});
     treeRoot.selectNodeKey(this.state.selectedFilePath).then(() => {}, () => {});

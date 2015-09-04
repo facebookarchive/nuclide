@@ -367,6 +367,14 @@ class HgRepositoryClient {
     return StatusCodeNumber.CLEAN;
   }
 
+  getAllPathStatuses(): {[filePath: string]: StatusCodeNumber} {
+    var pathStatuses = Object.create(null);
+    for (var filePath in this._hgStatusCache) {
+      pathStatuses[filePath] = StatusCodeIdToNumber[this._hgStatusCache[filePath]];
+    }
+    return pathStatuses;
+  }
+
   isStatusModified(status: number): boolean {
     return (
       status === StatusCodeNumber.MODIFIED ||

@@ -10,7 +10,7 @@
  */
 
 import type {HgRepositoryClient} from 'nuclide-hg-repository-client';
-import type {FileChange, FileChangeState} from './types';
+import type {FileChangeState} from './types';
 
 var {CompositeDisposable, Emitter} = require('atom');
 var {repositoryForPath} = require('nuclide-hg-git-bridge');
@@ -26,7 +26,7 @@ class DiffViewModel {
   _activeSubscriptions: ?CompositeDisposable;
   _activeFileState: FileChangeState;
   _newEditor: ?TextEditor;
-  _fileChanges: Array<FileChange>;
+  _fileChanges: Map<string, number>;
   _uiProviders: Array<Object>;
 
   constructor(filePath: string, uiProviders: Array<Object>) {
@@ -34,30 +34,24 @@ class DiffViewModel {
     var repository: HgRepositoryClient = repositoryForPath(filePath);
     var hgStatusCode = repository.getPathStatus(filePath);
     var statusCode = HgStatusToFileChangeStatus[hgStatusCode] || FileChangeStatus.MODIFIED;
-    this._fileChanges = [{
-      filePath,
-      statusCode,
-    }];
+    this._fileChanges = new Map();
     this._emitter = new Emitter();
     this._subscriptions = new CompositeDisposable();
-    this.activateFile(filePath);
     this._subscriptions.add(repository.onDidChangeStatuses(() => {
-      // TODO(most): update on changed repo status.
-      // this._updateChangedStatus();
+      this._updateChangedStatus(repository.getAllPathStatuses());
     }));
-
-    this._updateChangedStatus();
+    this._updateChangedStatus(repository.getAllPathStatuses());
+    this.activateFile(filePath);
   }
 
-  async _updateChangedStatus(): Promise<void> {
-    var repository: HgRepositoryClient = repositoryForPath(this._activeFileState.filePath);
-    var statuses = await repository.getStatuses([repository.getProjectDirectory()]);
-    this._fileChanges = Object.keys(statuses).map(filePath => {
-      return {
-        filePath,
-        statusCode: HgStatusToFileChangeStatus[statuses[filePath]],
-      };
-    });
+  _updateChangedStatus(statuses: {[path: string]: HgStatusCodeNumber}): void {
+    this._fileChanges.clear();
+    for (var filePath in statuses) {
+      var changeStatus = HgStatusToFileChangeStatus[statuses[filePath]];
+      if (changeStatus != null) {
+        this._fileChanges.set(filePath, changeStatus);
+      }
+    }
     this._emitter.emit('did-change-status', this._fileChanges);
   }
 
@@ -127,7 +121,9 @@ class DiffViewModel {
       var type = repository ? repository.getType() : 'no repository';
       throw new Error(`Diff view only supports hg repositories right now: found ${type}` );
     }
-    var committedContentsPromise = repository.fetchFileContentAtRevision(filePath);
+    var committedContentsPromise = repository.fetchFileContentAtRevision(filePath)
+      // If the file didn't exist on the previous revision, return empty contents.
+      .then(contents => contents || '', err => '');
 
     var {getClient} = require('nuclide-client');
     var {getPath} = require('nuclide-remote-uri');
@@ -137,7 +133,9 @@ class DiffViewModel {
       throw new Error('Nuclide client not found.');
     }
     var localFilePath = getPath(filePath);
-    var filesystemContentsPromise = client.readFile(localFilePath, 'utf8');
+    var filesystemContentsPromise = client.readFile(localFilePath, 'utf8')
+      // If the file was removed, return empty contents.
+      .then(contents => contents || '', err => '');
 
     var [
       committedContents,
@@ -175,7 +173,7 @@ class DiffViewModel {
     return uiComponents;
   }
 
-  getFileChanges(): Array<FileChange> {
+  getFileChanges(): Map<string, number> {
     return this._fileChanges;
   }
 
