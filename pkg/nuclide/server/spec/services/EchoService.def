@@ -17,10 +17,11 @@ export function echoSet(arg: Set<string>): Promise<Set<string>> {}
 export function echoMap(arg: Map<string, Date>): Promise<Map<string, Date>> {}
 export function echoTuple(arg: [number, string]): Promise<[number, string]> {}
 
-// Value Types
+// Types Aliases.
+export type BufferAlias = Buffer;
 export type ValueTypeA = {
   a: Date;
-  b: Buffer;
+  b: BufferAlias;
   c?: number; // Note that as of 5.8.14, there is a bug with parsing optional props in Babel.
 };
 export function echoValueType(arg: ValueTypeA): Promise<ValueTypeA> {}

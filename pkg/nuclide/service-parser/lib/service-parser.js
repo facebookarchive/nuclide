@@ -92,8 +92,7 @@ function parseFunctionDeclaration(declaration: any): {name: string, type: Functi
  * along with the type that it refers to.
  */
 function parseTypeAlias(declaration: any): {name: string, type: Type} {
-  assert(declaration.right.type === 'ObjectTypeAnnotation',
-    'The type alias maps to an object type annotation.');
+  assert(declaration.type === 'TypeAlias', 'parseTypeAlias accepts a TypeAlias node.');
   return {
     name: declaration.id.name,
     type: parseTypeAnnotation(declaration.right),
