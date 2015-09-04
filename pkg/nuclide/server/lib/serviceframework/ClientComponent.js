@@ -45,17 +45,17 @@ export default class ClientComponent {
     // Setup services.
     var services = config.loadServicesConfig();
     for (var service of services) {
-      logger.info(`Registering 3.0 service ${service.name}...`);
+      logger.debug(`Registering 3.0 service ${service.name}...`);
       try {
         var defs = getDefinitions(service.definition);
         var proxy = getProxy(service.definition, this);
 
         defs.aliases.forEach((type, name) => {
-          logger.info(`Registering type alias ${name}...`);
+          logger.debug(`Registering type alias ${name}...`);
           this._typeRegistry.registerAlias(name, type);
         });
         defs.interfaces.forEach((interfaceDef, name) => {
-          logger.info(`Registering interface ${name}.`);
+          logger.debug(`Registering interface ${name}.`);
           this._typeRegistry.registerType(name, async object => {
             return await object._idPromise;
           }, async objectId => {
