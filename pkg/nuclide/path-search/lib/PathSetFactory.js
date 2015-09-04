@@ -9,6 +9,12 @@
  * the root directory of this source tree.
  */
 
+/**
+ * An Object where the keys are file paths (relative to a certain directory),
+ * and the values are booleans. In practice, all the values are 'true'.
+ */
+type FilePathsPseudoSet = {[key: string]: boolean};
+
 var PathSet = require('./PathSet');
 
 var {spawn} = require('child_process');
@@ -19,7 +25,7 @@ function getFilesFromCommand(
     command: string,
     args: Array<string>,
     localDirectory: string,
-    transform?: (path: string) => string): Promise<Object<string, boolean>> {
+    transform?: (path: string) => string): Promise<FilePathsPseudoSet> {
   return new Promise((resolve, reject) => {
     // Use `spawn` here to process the, possibly huge, output of the file listing.
 
@@ -53,7 +59,7 @@ function getFilesFromCommand(
   });
 }
 
-function getTrackedHgFiles(localDirectory: string): Promise<Object<string, boolean>> {
+function getTrackedHgFiles(localDirectory: string): Promise<FilePathsPseudoSet> {
   return getFilesFromCommand(
       'hg',
       ['locate', '--fullpath', '--include', '.'],
@@ -65,7 +71,7 @@ function getTrackedHgFiles(localDirectory: string): Promise<Object<string, boole
  * 'Untracked' files are files that haven't been added to the repo, but haven't
  * been explicitly hg-ignored.
  */
-function getUntrackedHgFiles(localDirectory: string): Promise<Object<string, boolean>> {
+function getUntrackedHgFiles(localDirectory: string): Promise<FilePathsPseudoSet> {
   return getFilesFromCommand(
     'hg',
     // Calling 'hg status' with a path has two side-effects:
@@ -86,7 +92,7 @@ function getUntrackedHgFiles(localDirectory: string): Promise<Object<string, boo
  *   files within that directory, but not including ignored files. All values
  *   are 'true'. If localDirectory is not within an Hg repo, the Promise rejects.
  */
-function getFilesFromHg(localDirectory: string): Promise<Object<string, boolean>> {
+function getFilesFromHg(localDirectory: string): Promise<FilePathsPseudoSet> {
   return Promise.all([getTrackedHgFiles(localDirectory), getUntrackedHgFiles(localDirectory)]).then(
     (returnedFiles) => {
       var [trackedFiles, untrackedFiles] = returnedFiles;
@@ -95,7 +101,7 @@ function getFilesFromHg(localDirectory: string): Promise<Object<string, boolean>
   );
 }
 
-function getTrackedGitFiles(localDirectory: string): Promise<Object<string, boolean>> {
+function getTrackedGitFiles(localDirectory: string): Promise<FilePathsPseudoSet> {
   return getFilesFromCommand('git', ['ls-files'], localDirectory);
 }
 
@@ -103,7 +109,7 @@ function getTrackedGitFiles(localDirectory: string): Promise<Object<string, bool
  * 'Untracked' files are files that haven't been added to the repo, but haven't
  * been explicitly git-ignored.
  */
-function getUntrackedGitFiles(localDirectory: string): Promise<Object<string, boolean>> {
+function getUntrackedGitFiles(localDirectory: string): Promise<FilePathsPseudoSet> {
   // '--others' means untracked files, and '--exclude-standard' excludes ignored files.
   return getFilesFromCommand('git', ['ls-files', '--exclude-standard', '--others'], localDirectory);
 }
@@ -115,7 +121,7 @@ function getUntrackedGitFiles(localDirectory: string): Promise<Object<string, bo
  *   files within that directory, but not including ignored files. All values
  *   are 'true'. If localDirectory is not within a Git repo, the Promise rejects.
  */
-function getFilesFromGit(localDirectory: string): Promise<Object<string, boolean>> {
+function getFilesFromGit(localDirectory: string): Promise<FilePathsPseudoSet> {
   return Promise.all(
       [getTrackedGitFiles(localDirectory), getUntrackedGitFiles(localDirectory)]).then(
     (returnedFiles) => {
@@ -125,7 +131,7 @@ function getFilesFromGit(localDirectory: string): Promise<Object<string, boolean
   );
 }
 
-function getAllFiles(localDirectory: string): Promise<Object<string, boolean>> {
+function getAllFiles(localDirectory: string): Promise<FilePathsPseudoSet> {
   return getFilesFromCommand(
       'find',
       ['.', '-type', 'f'],
@@ -145,7 +151,7 @@ async function createPathSet(localDirectory: string): Promise<PathSet> {
   var paths = await getFilesFromHg(localDirectory)
       .catch(() => getFilesFromGit(localDirectory))
       .catch(() => getAllFiles(localDirectory))
-      .catch(() => { throw new Error(`Failed to populate FileSearch for ${localDirectory}`) });
+      .catch(() => { throw new Error(`Failed to populate FileSearch for ${localDirectory}`); });
   return new PathSet({paths});
 }
 
