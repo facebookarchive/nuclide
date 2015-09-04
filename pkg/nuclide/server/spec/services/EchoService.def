@@ -15,6 +15,7 @@ export function echoArrayOfArrayOfDate(arg: Array<Array<Date>>): Promise<Array<A
 export function echoObject(arg: {a: ?string; b: Buffer}): Promise<{a: ?string; b: Buffer}> {}
 export function echoSet(arg: Set<string>): Promise<Set<string>> {}
 export function echoMap(arg: Map<string, Date>): Promise<Map<string, Date>> {}
+export function echoTuple(arg: [number, string]): Promise<[number, string]> {}
 
 // Value Types
 export type ValueTypeA = {

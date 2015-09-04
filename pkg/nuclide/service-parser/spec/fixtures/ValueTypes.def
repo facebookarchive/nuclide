@@ -5,6 +5,7 @@ export type ValueTypeA = {
 };
 
 export type ValueTypeB = {
+  valueA: [number, string];
   valueC: string;
 };
 

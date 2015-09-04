@@ -264,5 +264,24 @@ export default class TypeRegistry {
       );
       return new Map(entries);
     });
+
+    // Serialize / Deserialize Tuples.
+    this.registerType('tuple', async (value: any, type: TupleType) => {
+      // Assert the length of the array.
+      assert(Array.isArray(value), 'Expected an object of type Array.');
+      assert(value.length === type.types.length, `Expected tuple of length ${type.types.length}.`);
+
+      // Convert all of the elements through the correct marshaller.
+      return await Promise.all(value.map((elem, i) =>
+        this.marshal(elem, type.types[i])));
+    }, async (value: any, type: ArrayType) => {
+      // Assert the length of the array.
+      assert(Array.isArray(value), 'Expected an object of type Array.');
+      assert(value.length === type.types.length, `Expected tuple of length ${type.types.length}.`);
+
+      // Convert all of the elements through the correct unmarshaller.
+      return await Promise.all(value.map((elem, i) =>
+        this.unmarshal(elem, type.types[i])));
+    });
   }
 }

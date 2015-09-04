@@ -52,6 +52,9 @@ export async function echoSet(arg: Set<string>): Promise<Set<string>> {
 export async function echoMap(arg: Map<string, Date>): Promise<Map<string, Date>> {
   return arg;
 }
+export async function echoTuple(arg: [number, string]): Promise<[number, string]> {
+  return arg;
+}
 
 // Value Type
 export async function echoValueType(arg: ValueTypeA): ValueTypeA {

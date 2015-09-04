@@ -97,6 +97,21 @@
     "ValueTypeB": {
       "fields": [
         {
+          "name": "valueA",
+          "optional": false,
+          "type": {
+            "kind": "tuple",
+            "types": [
+              {
+                "kind": "number"
+              },
+              {
+                "kind": "string"
+              }
+            ]
+          }
+        },
+        {
           "name": "valueC",
           "optional": false,
           "type": {

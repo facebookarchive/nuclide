@@ -123,6 +123,15 @@ describe('EchoServer', () => {
       expect(results.has('c')).toBeFalsy();
     });
   });
+  it('Echoes a Tuple.', () => {
+    var original = [3, 'hello'];
+    waitsForPromise(async () => {
+      var results = await service.echoTuple(original);
+      expect(results.length).toBe(original.length);
+      expect(results[0]).toBe(original[0]);
+      expect(results[1]).toBe(original[1]);
+    });
+  });
 
   // Echo value types.
   it('Echoes a value type (struct).', () => {

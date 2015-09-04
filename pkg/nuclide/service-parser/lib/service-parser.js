@@ -178,35 +178,37 @@ function parseMethodDefinition(definition: any): {name: string, type: FunctionTy
  */
 function parseTypeAnnotation(typeAnnotation: Object): Type {
   switch (typeAnnotation.type) {
-    case 'StringTypeAnnotation':
-      return {kind: 'string'};
-    case 'NumberTypeAnnotation':
-      return {kind: 'number'};
-    case 'BooleanTypeAnnotation':
-      return {kind: 'boolean'};
-    case 'NullableTypeAnnotation':
-      return {
-        kind: 'nullable',
-        type: parseTypeAnnotation(typeAnnotation.typeAnnotation),
-      };
-    case 'ObjectTypeAnnotation':
-      return {
-        kind: 'object',
-        fields: typeAnnotation.properties.map(prop => {
-          assert(prop.type === 'ObjectTypeProperty');
-          return {
-            name: prop.key.name,
-            type: parseTypeAnnotation(prop.value),
-            optional: prop.optional,
-          };
-        }),
-      };
-    case 'VoidTypeAnnotation':
-      return {kind: 'void'};
-    case 'GenericTypeAnnotation':
-      return parseGenericTypeAnnotation(typeAnnotation);
-    default:
-      throw new Error(`Unkown type annotation ${typeAnnotation.type}.`);
+  case 'StringTypeAnnotation':
+    return {kind: 'string'};
+  case 'NumberTypeAnnotation':
+    return {kind: 'number'};
+  case 'BooleanTypeAnnotation':
+    return {kind: 'boolean'};
+  case 'NullableTypeAnnotation':
+    return {
+      kind: 'nullable',
+      type: parseTypeAnnotation(typeAnnotation.typeAnnotation),
+    };
+  case 'ObjectTypeAnnotation':
+    return {
+      kind: 'object',
+      fields: typeAnnotation.properties.map(prop => {
+        assert(prop.type === 'ObjectTypeProperty');
+        return {
+          name: prop.key.name,
+          type: parseTypeAnnotation(prop.value),
+          optional: prop.optional,
+        };
+      }),
+    };
+  case 'VoidTypeAnnotation':
+    return {kind: 'void'};
+  case 'TupleTypeAnnotation':
+    return {kind: 'tuple', types: typeAnnotation.types.map(parseTypeAnnotation)};
+  case 'GenericTypeAnnotation':
+    return parseGenericTypeAnnotation(typeAnnotation);
+  default:
+    throw new Error(`Unkown type annotation ${typeAnnotation.type}.`);
   }
 }
 

@@ -61,6 +61,7 @@ export type ObjectField = {
   type: Type;
   optional: boolean;
 };
+export type TupleType = { kind: 'tuple'; types: Array<Type>; };
 
 // Represents a named, custom type.
 export type NamedType = { kind: 'named', name: string };
