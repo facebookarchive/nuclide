@@ -35,7 +35,15 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
 
     beforeEach(() => {
       callback = jasmine.createSpyObj('callback', ['replyToCommand', 'replyWithError', 'sendMethod']);
-      connectionMultiplexer = jasmine.createSpyObj('connectionMultiplexer', ['onStatus', 'getStatus', 'getStackFrames', 'sendContinuationCommand', 'sendBreakCommand', 'getScopesForFrame']);
+      connectionMultiplexer = jasmine.createSpyObj('connectionMultiplexer', [
+        'onStatus',
+        'enable',
+        'getStatus',
+        'getStackFrames',
+        'sendContinuationCommand',
+        'sendBreakCommand',
+        'getScopesForFrame',
+      ]);
       onStatusSubscription = jasmine.createSpyObj('onStatusSubscription', ['dispose']);
       connectionMultiplexer.onStatus = jasmine.createSpy('onStatus').
         andCallFake(callback => {
@@ -47,12 +55,9 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
 
     it('enable', () => {
       waitsForPromise(async () => {
-        connectionMultiplexer.getStatus = jasmine.createSpy('getStatus').andReturn(Promise.resolve(STATUS_STARTING));
-
         await handler.handleMethod(1, 'enable');
         expect(callback.replyToCommand).toHaveBeenCalledWith(1, {}, undefined);
-        expect(connectionMultiplexer.sendContinuationCommand).toHaveBeenCalledWith('step_into');
-        expect(connectionMultiplexer.getStatus).toHaveBeenCalledWith();
+        expect(connectionMultiplexer.enable).toHaveBeenCalledWith();
       });
     });
 
@@ -187,13 +192,18 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
 
     it('stopping', () => {
       waitsForPromise(async () => {
+        await onStatus(STATUS_STOPPING);
+        expect(connectionMultiplexer.sendContinuationCommand).not.toHaveBeenCalled();
+      });
+    });
+
+    it('stopped', () => {
+      waitsForPromise(async () => {
         var onSessionEnd = jasmine.createSpy('onSessionEnd');
         handler.onSessionEnd(onSessionEnd);
 
-        await onStatus(STATUS_STOPPING);
-        expect(connectionMultiplexer.sendContinuationCommand).toHaveBeenCalledWith('run');
-
         await onStatus(STATUS_STOPPED);
+
         expect(onSessionEnd).toHaveBeenCalledWith();
         expect(onStatusSubscription.dispose).toHaveBeenCalledWith();
       });

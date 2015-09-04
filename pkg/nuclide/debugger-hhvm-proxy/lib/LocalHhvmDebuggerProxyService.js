@@ -24,6 +24,11 @@ const HhvmDebuggerProxyService = require('./HhvmDebuggerProxyService');
 const NOTIFY_EVENT = 'notify';
 const SESSION_END_EVENT = 'session-end';
 
+var {MessageTranslator} = require('./MessageTranslator');
+import type {ConnectionConfig} from './connect';
+import type {Disposable} from 'nuclide-commons';
+var {EventEmitter} = require("events");
+
 /**
  * Proxy for converting between Chrome dev tools debugger
  * and HHVM Dbgp debuggee.
@@ -46,15 +51,12 @@ class LocalHhvmDebuggerProxyService extends HhvmDebuggerProxyService {
   _state: string;
   _emitter: EventEmitter;
   _translator: ?MessageTranslator;
-  _connector: ?DbgpConnector;
 
   constructor() {
     super();
 
     this._state = INITIAL;
-    this._connector = null;
     this._translator = null;
-    var {EventEmitter} = require("events");
     this._emitter = new EventEmitter();
   }
 
@@ -75,18 +77,9 @@ class LocalHhvmDebuggerProxyService extends HhvmDebuggerProxyService {
 
     this._setState(CONNECTING);
 
-    var connector =  new DbgpConnector(config);
-    this._connector = connector;
-    var socket = await connector.attach();
-
-    var {MessageTranslator} = require('./MessageTranslator');
-    var {Connection} = require('./Connection');
-    var connection = new Connection(socket);
-    var {ConnectionMultiplexer} = require('./ConnectionMultiplexer');
-    var connectionMultiplexer = new ConnectionMultiplexer(connection);
     this._translator = new MessageTranslator(
-      connectionMultiplexer, message => this._emitter.emit(NOTIFY_EVENT, message));
-    this._translator.onSessionEnd(this._onEnd.bind(this));
+      config, message => { this._emitter.emit(NOTIFY_EVENT, message); });
+    this._translator.onSessionEnd(() => { this._onEnd(); });
 
     this._setState(CONNECTED);
 
@@ -149,10 +142,6 @@ class LocalHhvmDebuggerProxyService extends HhvmDebuggerProxyService {
     if (this._translator) {
       this._translator.dispose();
       this._translator = null;
-    }
-    if (this._connector) {
-      this._connector.dispose();
-      this._connector = null;
     }
   }
 }

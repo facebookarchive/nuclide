@@ -10,20 +10,39 @@
  */
 
 
+var {uncachedRequire, clearRequireCache} = require('nuclide-test-helpers');
 var {MessageTranslator} = require('../lib/MessageTranslator');
 
 describe('debugger-hhvm-proxy MessageTranslator', () => {
     var callback;
     var connectionMultiplexer;
+    var ConnectionMultiplexer;
     var translater;
+
+    var config = {
+      xdebugPort: 9000,
+      pid: null,
+      idekeyRegex: null,
+      scriptRegex: null,
+    };
 
     beforeEach(() => {
       callback = jasmine.createSpy('callback');
       connectionMultiplexer = jasmine.createSpyObj('connectionMultiplexer', ['dispose', 'onStatus']);
-      translater = new MessageTranslator(connectionMultiplexer, callback);
+      ConnectionMultiplexer = spyOn(require('../lib/ConnectionMultiplexer'), 'ConnectionMultiplexer')
+        .andReturn(connectionMultiplexer);
+
+      MessageTranslator = uncachedRequire(require, '../lib/MessageTranslator').MessageTranslator;
+      translater = new MessageTranslator(config, callback);
+    });
+
+    afterEach(() => {
+      unspy(require('../lib/ConnectionMultiplexer'), 'ConnectionMultiplexer');
+      clearRequireCache(require, '../lib/MessageTranslator');
     });
 
     it('constructor', () => {
+      expect(ConnectionMultiplexer).toHaveBeenCalledWith(config);
       expect(connectionMultiplexer.onStatus).toHaveBeenCalled();
     });
 

@@ -127,21 +127,17 @@ export class DebuggerHandler extends Handler {
       return;
     }
 
-    try {
-      var path = uriToPath(url);
-      this._files.registerFile(path);
-      var breakpointId = await this._connectionMultiplexer.setBreakpoint(path, lineNumber + 1);
-      this.replyToCommand(id, {
-        breakpointId: breakpointId,
-        locations: [
-          {
-            lineNumber,
-            scriptId: path,
-          },
-        ]});
-      } catch (e) {
-        this.replyWithError(id, e.message);
-      }
+    var path = uriToPath(url);
+    this._files.registerFile(path);
+    var breakpointId = await this._connectionMultiplexer.setBreakpoint(path, lineNumber + 1);
+    this.replyToCommand(id, {
+      breakpointId: breakpointId,
+      locations: [
+        {
+          lineNumber,
+          scriptId: path,
+        },
+      ]});
   }
 
   async _removeBreakpoint(id: number, params: Object): Promise {
@@ -151,8 +147,8 @@ export class DebuggerHandler extends Handler {
   }
 
   async _debuggerEnable(id: number): Promise {
+    this._connectionMultiplexer.enable();
     this.replyToCommand(id, {});
-    this._onStatusChanged(await this._getStatus());
   }
 
   async _getStackFrames(): Promise<Array<Object>> {
@@ -163,25 +159,20 @@ export class DebuggerHandler extends Handler {
 
   async _convertFrame(frame: Object, frameIndex: number): Promise<Object> {
     log('Converting frame: ' + JSON.stringify(frame));
-    try {
-      var {
-        idOfFrame,
-        functionOfFrame,
-        fileOfFrame,
-        locationOfFrame,
-      } = require('./frame');
+    var {
+      idOfFrame,
+      functionOfFrame,
+      fileOfFrame,
+      locationOfFrame,
+    } = require('./frame');
 
-      this._files.registerFile(fileOfFrame(frame));
-      return {
-        callFrameId: idOfFrame(frame),
-        functionName: functionOfFrame(frame),
-        location: locationOfFrame(frame),
-        scopeChain: await this._connectionMultiplexer.getScopesForFrame(frameIndex),
-      };
-    } catch (e) {
-      logErrorAndThrow('Exception converting frame: ' + e + ' ' + e.stack);
-      throw e;  // silence flow error.
-    }
+    this._files.registerFile(fileOfFrame(frame));
+    return {
+      callFrameId: idOfFrame(frame),
+      functionName: functionOfFrame(frame),
+      location: locationOfFrame(frame),
+      scopeChain: await this._connectionMultiplexer.getScopesForFrame(frameIndex),
+    };
   }
 
   // Returns one of:
@@ -205,25 +196,20 @@ export class DebuggerHandler extends Handler {
   async _onStatusChanged(status: string): Promise {
     log('Sending status: ' + status);
     switch (status) {
-    case STATUS_STARTING:
-      // Starting status has no stack.
-      // step before reporting initial status to get to the first instruction.
-      this._sendContinuationCommand(COMMAND_STEP_INTO);
-      break;
     case STATUS_BREAK:
       await this._sendPausedMessage();
       break;
     case STATUS_RUNNING:
       this.sendMethod('Debugger.resumed');
       break;
-    case STATUS_STOPPING:
-      // TODO: May want to enable post-mortem features?
-      this._sendContinuationCommand(COMMAND_RUN);
-      break;
     case STATUS_STOPPED:
     case STATUS_ERROR:
     case STATUS_END:
       this._endSession();
+      break;
+    case STATUS_STARTING:
+    case STATUS_STOPPING:
+      // These two should be hidden by the ConnectionMultiplexer
       break;
     default:
       logErrorAndThrow('Unexpected status: ' + status);

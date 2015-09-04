@@ -12,13 +12,27 @@
 
 var {uncachedRequire, clearRequireCache} = require('nuclide-test-helpers');
 
-describe('debugger-hhvm-proxy Connection', () => {
+describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
   var socket;
   var dbgpSocket;
   var dataCache;
   var connection;
 
+  var config = {
+    xdebugPort: 9000,
+    pid: null,
+    idekeyRegex: null,
+    scriptRegex: null,
+  };
+
   beforeEach(() => {
+    socket = jasmine.createSpyObj('socket', ['on']);
+    connector = jasmine.createSpyObj('connector', [
+        'attach',
+        'dispose',
+      ]);
+    DbgpConnector = spyOn(require('../lib/connect'), 'DbgpConnector').andReturn(connector);
+
     connection = jasmine.createSpyObj('connection', [
         'onStatus',
         'setBreakpoint',
@@ -29,6 +43,7 @@ describe('debugger-hhvm-proxy Connection', () => {
         'sendBreakCommand',
         'dispose',
       ]);
+    Connection = spyOn(require('../lib/Connection'), 'Connection').andReturn(connection);
 
     breakpointStore = jasmine.createSpyObj('breakpointStore', [
       'addConnection',
@@ -40,17 +55,34 @@ describe('debugger-hhvm-proxy Connection', () => {
 
     var {ConnectionMultiplexer} =
       uncachedRequire(require, '../lib/ConnectionMultiplexer');
-    connectionMultiplexer = new ConnectionMultiplexer(connection);
+    connectionMultiplexer = new ConnectionMultiplexer(config);
   });
 
   afterEach(() => {
+    unspy(require('../lib/connect'), 'DbgpConnector');
+    unspy(require('../lib/Connection'), 'Connection');
     unspy(require('../lib/BreakpointStore'), 'BreakpointStore');
     clearRequireCache(require, '../lib/ConnectionMultiplexer');
   });
 
   it('constructor', () => {
     expect(BreakpointStore).toHaveBeenCalledWith();
-    expect(breakpointStore.addConnection).toHaveBeenCalledWith(connection);
+  });
+
+  it('enable', () => {
+    waitsForPromise(async () => {
+      connector.attach = jasmine.createSpy('attach').
+        andReturn(Promise.resolve(socket));
+
+      await connectionMultiplexer.enable();
+
+      expect(DbgpConnector).toHaveBeenCalledWith(config);
+      expect(connector.attach).toHaveBeenCalledWith();
+      expect(Connection).toHaveBeenCalledWith(socket);
+      expect(breakpointStore.addConnection).toHaveBeenCalledWith(connection);
+      expect(connection.onStatus).toHaveBeenCalledWith(jasmine.any(Function));
+      expect(connection.getStatus).toHaveBeenCalledWith();
+    });
   });
 
   it('setBreakpoint', () => {

@@ -17,25 +17,88 @@ import type Scope from './DataCache';
 import type PropertyDescriptor from './DataCache';
 import type RemoteObjectId from './DataCache';
 import type {Disposable} from 'nuclide-commons';
-import type {BreakpointStore} from './BreakpointStore';
+var {BreakpointStore} = require('./BreakpointStore');
+var {DbgpConnector} = require('./connect');
+import type {ConnectionConfig} from './connect';
+var {
+  STATUS_STARTING,
+  STATUS_STOPPING,
+  STATUS_STOPPED,
+  STATUS_RUNNING,
+  STATUS_BREAK,
+  STATUS_ERROR,
+  STATUS_END,
+  COMMAND_RUN,
+  COMMAND_STEP_INTO,
+} = require('./DbgpSocket');
+var {EventEmitter} = require('events');
+
+var CONNECTION_MUX_STATUS_EVENT = 'connection-mux-status';
 
 export class ConnectionMultiplexer {
-  _connection: Connection;
+  _config: ConnectionConfig;
   _breakpointStore: BreakpointStore;
+  _emitter: EventEmitter;
+  _status: string;
+  _connection: ?Connection;
+  _connectionOnStatusDisposable: ?Disposable;
 
-  constructor(connection: Connection) {
-    this._connection = connection;
-    var {BreakpointStore} = require('./BreakpointStore');
-    this._breakpointStore = new BreakpointStore;
-    this._breakpointStore.addConnection(connection);
+  constructor(config: ConnectionConfig) {
+    this._config = config;
+    this._status = STATUS_STARTING;
+    this._emitter = new EventEmitter();
+    this._connection = null;
+    this._connectionOnStatusDisposable = null;
+
+    this._breakpointStore = new BreakpointStore();
+  }
+
+  async enable(): Promise {
+    var connector = new DbgpConnector(this._config);
+    try {
+      var connection = new Connection(await connector.attach());
+      this._connection = connection;
+      this._breakpointStore.addConnection(connection);
+
+      this._connectionOnStatusDisposable = connection.onStatus(
+        this._connectionOnStatus.bind(this));
+      this._connectionOnStatus(await connection.getStatus());
+    } finally {
+      connector.dispose();
+    }
+  }
+
+  _connectionOnStatus(status: string): void {
+    switch (status) {
+    case STATUS_STARTING:
+      // Starting status has no stack.
+      // step before reporting initial status to get to the first instruction.
+      // TODO: Use loader breakpoint configuration to choose between step/run.
+      this.sendContinuationCommand(COMMAND_STEP_INTO);
+      break;
+    case STATUS_STOPPING:
+      // TODO: May want to enable post-mortem features?
+      this.sendContinuationCommand(COMMAND_RUN);
+      break;
+    default:
+      if (status !== this._status) {
+        this._status = status;
+        this._emitter.emit(CONNECTION_MUX_STATUS_EVENT, status);
+      }
+    }
   }
 
   onStatus(callback: (status: string) => mixed): Disposable {
-    return this._connection.onStatus(callback);
+    return require('nuclide-commons').event.attachEvent(this._emitter,
+      CONNECTION_MUX_STATUS_EVENT, callback);
   }
 
   evaluateOnCallFrame(frameIndex: number, expression: string): Promise<Object> {
-    return this._connection.evaluateOnCallFrame(frameIndex, expression);
+    if (this._connection) {
+      return this._connection.evaluateOnCallFrame(frameIndex, expression);
+    } else {
+      throw this._noConnectionError();
+    }
   }
 
   setBreakpoint(filename: string, lineNumber: number): Promise<string> {
@@ -47,30 +110,65 @@ export class ConnectionMultiplexer {
   }
 
   getStackFrames(): Promise<Array<Object>> {
-    return this._connection.getStackFrames();
+    if (this._connection) {
+      return this._connection.getStackFrames();
+    } else {
+      throw this._noConnectionError();
+    }
   }
 
   getScopesForFrame(frameIndex: number): Promise<Scope> {
-    return this._connection.getScopesForFrame(frameIndex);
+    if (this._connection) {
+      return this._connection.getScopesForFrame(frameIndex);
+    } else {
+      throw this._noConnectionError();
+    }
   }
 
-  getStatus(): Promise<string> {
-    return this._connection.getStatus();
+  getStatus(): string {
+    return this._status;
   }
 
-  sendContinuationCommand(command: string): Promise<string> {
-    return this._connection.sendContinuationCommand(command);
+  sendContinuationCommand(command: string): void {
+    if (this._connection) {
+      this._connection.sendContinuationCommand(command);
+    } else {
+      throw this._noConnectionError();
+    }
   }
 
   sendBreakCommand(): Promise<boolean> {
-    return this._connection.sendBreakCommand();
+    if (this._connection) {
+      return this._connection.sendBreakCommand();
+    } else {
+      return Promise.resolve(false);
+    }
   }
 
   getProperties(remoteId: RemoteObjectId): Promise<Array<PropertyDescriptor>> {
-    return this._connection.getProperties(remoteId);
+    if (this._connection) {
+      return this._connection.getProperties(remoteId);
+    } else {
+      throw this._noConnectionError();
+    }
   }
 
   dispose(): void {
-    this._connection.dispose();
+    if (this._connectionOnStatusDisposable) {
+      this._connectionOnStatusDisposable.dispose();
+      this._connectionOnStatusDisposable = null;
+    }
+    if (this._connection) {
+      this._connection.dispose();
+      this._connection = null;
+    }
+    this._status = STATUS_END;
+  }
+
+  _noConnectionError(): Error {
+    // This is an indication of a bug in the state machine.
+    // .. we are seeing a request in a state that should not generate
+    // that request.
+    return new Error('No connection');
   }
 }

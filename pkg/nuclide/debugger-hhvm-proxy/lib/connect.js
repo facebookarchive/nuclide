@@ -27,7 +27,7 @@ var {
  * and pid filters connections by process id (appid in the dbgp terminology).
  * Note that 0 pid also does not filter on process id.
  */
-type ConnectionConfig = {
+export type ConnectionConfig = {
   xdebugPort: number;
   pid?: number;
   scriptRegex?: string;
@@ -44,8 +44,6 @@ type ConnectionConfig = {
  * connections.
  * If the connection does not match the given pid/idekey/path
  * then close the connection and continue waiting for a match.
- *
- * TODO: Add timeout or cancel callback.
  */
 export class DbgpConnector {
   _config: ConnectionConfig;

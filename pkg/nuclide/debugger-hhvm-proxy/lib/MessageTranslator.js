@@ -10,13 +10,14 @@
  */
 
 
-var {log} = require('./utils');
+var {log, logError} = require('./utils');
 var ChromeCallback = require('./ChromeCallback');
 var {DebuggerHandler} = require('./DebuggerHandler');
 var PageHandler = require('./PageHandler');
 var ConsoleHandler = require('./ConsoleHandler');
 var {RuntimeHandler} = require('./RuntimeHandler');
 var {ConnectionMultiplexer} = require('./ConnectionMultiplexer');
+import type {ConnectionConfig} from './connect';
 
 import type Handler from './Handler';
 
@@ -32,12 +33,12 @@ export class MessageTranslator {
   _debuggerHandler: DebuggerHandler;
   _handlers: Map<string, Handler>;
 
-  constructor(connectionMultiplexer: ConnectionMultiplexer, callback: (message: string) => void) {
+  constructor(config: ConnectionConfig, callback: (message: string) => void) {
     this._isDisposed = false;
-    this._connectionMultiplexer = connectionMultiplexer;
+    this._connectionMultiplexer = new ConnectionMultiplexer(config);
     this._callback = new ChromeCallback(callback);
     this._handlers = new Map();
-    this._debuggerHandler = new DebuggerHandler(this._callback, connectionMultiplexer);
+    this._debuggerHandler = new DebuggerHandler(this._callback, this._connectionMultiplexer);
     this._addHandler(this._debuggerHandler);
     this._addHandler(new PageHandler(this._callback));
     this._addHandler(new ConsoleHandler(this._callback));
@@ -76,6 +77,7 @@ export class MessageTranslator {
     try {
       await this._handlers.get(domain).handleMethod(id, method, params);
     } catch (e) {
+      logError(`Exception handling command ${id}: ${e} ${e.stack}`);
       this._replyWithError(id, `Error handling command: ${e}\n ${e.stack}`);
     }
   }
