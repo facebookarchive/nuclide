@@ -29,6 +29,18 @@ describe('EchoServer', () => {
   });
 
   // Basic types.
+  it('Echoes an argument of type "any".', () => {
+    var number = 12345;
+    waitsForPromise(async() => {
+      var results = await service.echoAny(number);
+      expect(results).toBe(number);
+    });
+    var object = {hello: 'world', success: true};
+    waitsForPromise(async() => {
+      var results = await service.echoAny(object);
+      expect(results).toEqual(object);
+    });
+  });
   it('Echoes a string.', () => {
     var expected = 'Hello World.';
     waitsForPromise(async () => {

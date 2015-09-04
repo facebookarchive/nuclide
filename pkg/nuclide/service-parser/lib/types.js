@@ -33,7 +33,7 @@ export type InterfaceDefinition = {
 };
 
 export type Type = NullableType |
-  StringType | BooleanType | NumberType | // Primitive types.
+  AnyType | StringType | BooleanType | NumberType | // Primitive types.
   ObjectType | ArrayType | MapType | SetType | // Container types.
   VoidType | PromiseType | ObservableType | // Return types.
   NamedType; // Type aliases.
@@ -49,6 +49,7 @@ export type FunctionType = {
 }
 
 // Primitive types.
+export type AnyType = { kind: 'any' };
 export type StringType = { kind: 'string' };
 export type BooleanType = { kind: 'boolean' };
 export type NumberType = { kind: 'number' };

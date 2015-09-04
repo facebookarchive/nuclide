@@ -12,6 +12,9 @@
 import assert from 'assert';
 
 // Basic Primitives.
+export async function echoAny(arg: any): Promise<any> {
+  return arg;
+}
 export async function echoString(arg: string): Promise<string> {
   assert(typeof arg === 'string', `Argument to echoString must be a string, not ${typeof arg}.`);
   return arg;

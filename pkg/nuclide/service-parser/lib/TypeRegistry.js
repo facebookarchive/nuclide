@@ -141,11 +141,14 @@ export default class TypeRegistry {
       assert(typeof arg === 'boolean', 'Expected a boolean argument');
       return arg;
     };
+    // We assume an 'any' type requires no marshalling.
+    var anyTransformer = async arg => arg;
 
     // Register these transformers
     this.registerType('string', stringTransformer, stringTransformer);
     this.registerType('number', numberTransformer, numberTransformer);
     this.registerType('boolean', booleanTransformer, booleanTransformer);
+    this.registerType('any', anyTransformer, anyTransformer);
   }
 
   _registerSpecialTypes(): void {

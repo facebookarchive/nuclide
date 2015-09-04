@@ -177,6 +177,8 @@ function parseMethodDefinition(definition: any): {name: string, type: FunctionTy
  */
 function parseTypeAnnotation(typeAnnotation: Object): Type {
   switch (typeAnnotation.type) {
+  case 'AnyTypeAnnotation':
+    return {kind: 'any'};
   case 'StringTypeAnnotation':
     return {kind: 'string'};
   case 'NumberTypeAnnotation':

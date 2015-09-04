@@ -2,6 +2,7 @@ export type ValueTypeA = {
   valueA: string;
   valueB: ?ValueTypeB;
   valueC?: boolean;
+  valueD: any;
 };
 
 export type ValueTypeB = {

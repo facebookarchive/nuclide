@@ -1,6 +1,7 @@
 // Contains services that let us test marshalling by simply sending the arguments back.
 
 // Basic Primitives
+export function echoAny(arg: any): Promise<any> {}
 export function echoString(arg: string): Promise<string> {}
 export function echoNumber(arg: number): Promise<number> {}
 export function echoBoolean(arg: boolean): Promise<boolean> {}

@@ -90,6 +90,13 @@
           "type": {
             "kind": "boolean"
           }
+        },
+        {
+          "name": "valueD",
+          "optional": false,
+          "type": {
+            "kind": "any"
+          }
         }
       ],
       "kind": "object"
