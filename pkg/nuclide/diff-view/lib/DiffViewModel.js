@@ -15,6 +15,7 @@ import type {FileChangeState} from './types';
 var {CompositeDisposable, Emitter} = require('atom');
 var {repositoryForPath} = require('nuclide-hg-git-bridge');
 var {HgStatusToFileChangeStatus, FileChangeStatus} = require('./constants');
+var {track} = require('nuclide-analytics');
 
 var {getFileForPath} = require('nuclide-client');
 var logger = require('nuclide-logging').getLogger();
@@ -70,6 +71,7 @@ class DiffViewModel {
       activeSubscriptions.add(file.onDidChange(() => this._updateActiveDiffState(filePath)));
     }
     this._updateActiveDiffState(filePath);
+    track('diff-view-open-file', {filePath});
   }
 
   setNewContents(newContents: string): void {
@@ -149,6 +151,7 @@ class DiffViewModel {
 
   async saveActiveFile(): Promise<void> {
     var {filePath, newContents} = this._activeFileState;
+    track('diff-view-save-file', {filePath});
     var activeFile = getFileForPath(filePath);
     if (!activeFile) {
       return logger.error('No diff file to save:', filePath);
