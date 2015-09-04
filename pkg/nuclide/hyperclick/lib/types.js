@@ -12,7 +12,7 @@
 export type HyperclickProvider = {
   // Use this to provide a suggestion for single-word matches.
   // Optionally set `wordRegExp` to adjust word-matching.
-  getSuggestionForWord?: (textEditor: TextEditor, text: string, range: Range) =>
+  getSuggestionForWord?: (textEditor: TextEditor, text: string, range: atom$Range) =>
       ?Promise<HyperclickSuggestion>;
   wordRegExp?: RegExp;
 
@@ -26,7 +26,7 @@ export type HyperclickProvider = {
 
 export type HyperclickSuggestion = {
   // The range(s) to underline to provide as a visual cue for clicking.
-  range: ?Range | ?Array<Range>;
+  range: ?atom$Range | ?Array<atom$Range>;
 
   // The function to call when the underlined text is clicked.
   callback: () => void | Array<{title: string; callback: () => {}}>;
