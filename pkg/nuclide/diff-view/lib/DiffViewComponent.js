@@ -17,9 +17,16 @@ var {PropTypes} = React;
 var DiffViewEditorPane = require('./DiffViewEditorPane');
 var DiffViewTree = require('./DiffViewTree');
 var {assign} = require('nuclide-commons').object;
+var {createPaneContainer} = require('nuclide-atom-helpers');
 
 class DiffViewComponent extends React.Component {
   _subscriptions: ?CompositeDisposable;
+  _oldEditorPane: ?atom$Pane;
+  _oldEditorComponent: ?ReactComponent;
+  _newEditorPane: ?atom$Pane;
+  _newEditorComponent: ?ReactComponent;
+  _treePane: ?atom$Pane;
+  _treeComponent: ?ReactComponent;
 
   _boundHandleNewOffsets: Function;
   _boundUpdateLineDiffState: Function;
@@ -58,8 +65,32 @@ class DiffViewComponent extends React.Component {
     var diffModel = this.props.diffModel;
     var subscriptions = this._subscriptions = new CompositeDisposable();
     subscriptions.add(diffModel.onActiveFileUpdates(this._boundUpdateLineDiffState));
-    var oldTextEditor = this.refs['old-editor'].getEditorModel();
-    var newTextEditor = this.refs['new-editor'].getEditorModel();
+
+    this._paneContainer = createPaneContainer();
+    // The diff status tree takes 1/5 of the width and lives on the right most.
+    this._treePane = this._paneContainer.getActivePane();
+    this._oldEditorPane = this._treePane.splitLeft({
+      // Prevent Atom from cloning children on splitting; this panel wants an empty container.
+      copyActiveItem: false,
+      // The old contents left editor pane takes 2/5 the width.
+      flexScale: 2,
+    });
+    this._newEditorPane = this._treePane.splitLeft({
+      // Prevent Atom from cloning children on splitting; this panel wants an empty container.
+      copyActiveItem: false,
+      // The new contents right editor pane takes 2/5 the width.
+      flexScale: 2,
+    });
+
+    this._renderTree();
+    this._renderEditors();
+
+    React.findDOMNode(this.refs['paneContainer']).appendChild(
+      atom.views.getView(this._paneContainer)
+    );
+
+    var oldTextEditor = this._oldEditorComponent.getEditorModel();
+    var newTextEditor = this._newEditorComponent.getEditorModel();
 
     var SyncScroll = require('./SyncScroll');
     subscriptions.add(new SyncScroll(
@@ -71,55 +102,78 @@ class DiffViewComponent extends React.Component {
     this._updateLineDiffState(diffModel.getActiveFileState());
   }
 
+  componentDidUpdate(): void {
+    this._renderTree();
+    this._renderEditors();
+  }
+
+  _renderTree(): void {
+    this._treeComponent = React.render(
+      (
+        <div className={"nuclide-diff-view-tree"}>
+          <DiffViewTree diffModel={this.props.diffModel} />
+        </div>
+      ),
+      this._getPaneElement(this._treePane),
+    );
+  }
+
+  _renderEditors(): void {
+    var {filePath, oldEditorState: oldState, newEditorState: newState} = this.state;
+    this._oldEditorComponent = React.render(
+        <DiffViewEditorPane
+          filePath={filePath}
+          offsets={oldState.offsets}
+          highlightedLines={oldState.highlightedLines}
+          initialTextContent={oldState.text}
+          inlineElements={oldState.inlineElements}
+          handleNewOffsets={this._boundHandleNewOffsets}
+          readOnly={true}/>,
+        this._getPaneElement(this._oldEditorPane),
+    );
+    this._newEditorComponent = React.render(
+        <DiffViewEditorPane
+          filePath={filePath}
+          offsets={newState.offsets}
+          highlightedLines={newState.highlightedLines}
+          initialTextContent={newState.text}
+          inlineElements={newState.inlineElements}
+          handleNewOffsets={this._boundHandleNewOffsets}
+          readOnly={false}
+          onChange={this._boundOnChangeNewTextEditor}/>,
+        this._getPaneElement(this._newEditorPane),
+    );
+  }
+
+  _getPaneElement(pane: atom$Pane): HTMLElement {
+    return atom.views.getView(pane).querySelector('.item-views');
+  }
+
   componentWillUnmount(): void {
     if (this._subscriptions) {
       this._subscriptions.dispose();
       this._subscriptions = null;
     }
+    if (this._oldEditorPane) {
+      React.unmountComponentAtNode(this._getPaneElement(this._oldEditorPane));
+      this._oldEditorPane = null;
+      this._oldEditorComponent = null;
+    }
+    if (this._newEditorPane) {
+      React.unmountComponentAtNode(this._getPaneElement(this._newEditorPane));
+      this._newEditorPane = null;
+      this._newEditorComponent = null;
+    }
+    if (this._treePane) {
+      React.unmountComponentAtNode(this._getPaneElement(this._treePane));
+      this._treePane = null;
+      this._treeComponent = null;
+    }
   }
 
   render(): ReactElement {
-    var diffModel = this.props.diffModel;
-    var {filePath, oldEditorState: oldState, newEditorState: newState} = this.state;
     return (
-      <div className="diff-view-component">
-        <div className="diff-view-editors-container">
-          <div className="split-pane">
-            <div className="title">
-              <p>Original</p>
-            </div>
-            <DiffViewEditorPane
-              ref="old-editor"
-              filePath={filePath}
-              offsets={oldState.offsets}
-              highlightedLines={oldState.highlightedLines}
-              initialTextContent={oldState.text}
-              inlineElements={oldState.inlineElements}
-              handleNewOffsets={this._boundHandleNewOffsets}
-              readOnly={true}
-            />
-          </div>
-          <div className="split-pane">
-            <div className="title">
-              <p>Changed</p>
-            </div>
-            <DiffViewEditorPane
-              ref="new-editor"
-              filePath={filePath}
-              offsets={newState.offsets}
-              highlightedLines={newState.highlightedLines}
-              initialTextContent={newState.text}
-              inlineElements={newState.inlineElements}
-              handleNewOffsets={this._boundHandleNewOffsets}
-              readOnly={false}
-              onChange={this._boundOnChangeNewTextEditor}
-            />
-          </div>
-        </div>
-        <div className="diff-view-tree-container">
-          <DiffViewTree ref="tree" diffModel={diffModel} />
-        </div>
-      </div>
+      <div className="nuclide-diff-view-component" ref="paneContainer" />
     );
   }
 

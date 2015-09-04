@@ -18,6 +18,10 @@ module.exports = {
     return require('./script-buffered-process').createScriptBufferedProcessWithEnv;
   },
 
+  get createPaneContainer() {
+    return require('./create-pane-container');
+  },
+
   get fileTypeClass() {
     return require('./file-type-class');
   },

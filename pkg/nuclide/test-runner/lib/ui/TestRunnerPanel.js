@@ -12,6 +12,7 @@
 var Console = require('./Console');
 var NuclideUiDropdown = require('nuclide-ui-dropdown');
 var {PanelComponent} = require('nuclide-panel');
+var {createPaneContainer} = require('nuclide-atom-helpers');
 var React = require('react-for-atom');
 var TestClassTree = require('./TestClassTree');
 
@@ -19,16 +20,6 @@ var {array} = require('nuclide-commons');
 var pathUtil = require('path');
 
 var {PropTypes} = React;
-
-var paneContainerClass: ?Object;
-function createPaneContainer(): Object {
-  if (!paneContainerClass) {
-    paneContainerClass = array.find(atom.views.providers, provider =>
-      provider.modelConstructor.name === 'PaneContainer'
-    ).modelConstructor;
-  }
-  return new paneContainerClass();
-}
 
 function runStopButtonClassName(icon: string, className: string): string {
   return `btn btn-sm icon inline-block icon-${icon} ${className}`;

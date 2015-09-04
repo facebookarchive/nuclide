@@ -468,6 +468,10 @@ declare class atom$TextEditorElement extends HTMLElement {
   };
 }
 
+declare class atom$ViewProvider {
+  modelConstructor: Function;
+}
+
 declare class atom$ViewRegistry {
   // Methods
   addViewProvider(
@@ -476,6 +480,7 @@ declare class atom$ViewRegistry {
   ): atom$Disposable;
   getView(textEditor: atom$TextEditor): atom$TextEditorElement;
   getView(object: Object): HTMLElement;
+  providers: Array<atom$ViewProvider>;
 }
 
 declare class atom$Workspace {
