@@ -107,18 +107,15 @@ class LocalBuckProject extends BuckProject {
     return ini.parse(header + buckConfigContent);
   }
 
-  build(buildTargets: Array<string> | string): Promise<any> {
+  build(buildTargets: Array<string>): Promise<any> {
     return this._build(buildTargets, {install: false, run: false, debug: false});
   }
 
-  install(buildTargets: Array<string> | string, run: boolean, debug: boolean, simulator: ?string): Promise<any> {
+  install(buildTargets: Array<string>, run: boolean, debug: boolean, simulator: ?string): Promise<any> {
     return this._build(buildTargets, {install: true, run, debug, simulator});
   }
 
-  async _build(buildTargets: Array<string> | string, options: any): Promise<any> {
-    if (typeof buildTargets === 'string') {
-      buildTargets = [buildTargets];
-    }
+  async _build(buildTargets: Array<string>, options: any): Promise<any> {
     var {
       install,
       run,

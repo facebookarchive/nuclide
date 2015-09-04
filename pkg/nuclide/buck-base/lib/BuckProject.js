@@ -48,7 +48,7 @@ class BuckProject {
    * An error should be thrown only if the specified targets are invalid.
    * @return Promise that resolves to a build report.
    */
-  build(buildTargets: Array<string> | string): Promise<any> {
+  build(buildTargets: Array<string>): Promise<any> {
     return Promise.reject('Not implemented');
   }
 
@@ -63,7 +63,7 @@ class BuckProject {
    * @param simulator The UDID of the simulator to install the binary on.
    * @return Promise that resolves to a build report.
    */
-  install(buildTargets: Array<string> | string, run: boolean, debug: boolean, simulator: ?string): Promise<any> {
+  install(buildTargets: Array<string>, run: boolean, debug: boolean, simulator: ?string): Promise<any> {
     return Promise.reject('Not implemented');
   }
 

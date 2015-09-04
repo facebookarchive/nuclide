@@ -308,9 +308,9 @@ class BuckToolbar extends React.Component {
 
     var buildReport;
     if (run) {
-      buildReport = await buckProject.install(buildTarget, true, debug, this.getSimulator());
+      buildReport = await buckProject.install([buildTarget], true, debug, this.getSimulator());
     } else {
-      buildReport = await buckProject.build(buildTarget);
+      buildReport = await buckProject.build([buildTarget]);
     }
 
     if (!buildReport['success']) {
