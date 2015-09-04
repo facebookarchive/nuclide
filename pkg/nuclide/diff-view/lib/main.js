@@ -70,6 +70,22 @@ function createView(uri: string): HTMLElement {
   return hostElement;
 }
 
+function projectsContainPath(checkPath: string): boolean {
+  var {isRemote} = require('nuclide-remote-uri');
+  var {Directory} = require('atom');
+  return atom.project.getDirectories().some(directory => {
+    var directoryPath = directory.getPath();
+    if (!checkPath.startsWith(directoryPath)) {
+      return false;
+    }
+    // If the remote directory hasn't yet loaded.
+    if (isRemote(checkPath) && directory instanceof Directory) {
+      return false;
+    }
+    return true;
+  });
+}
+
 module.exports = {
 
   activate(state: ?any): void {
@@ -93,10 +109,46 @@ module.exports = {
         return createView(uri);
       }
     }));
+
+    if (!state || !state.activeFilePath) {
+      return;
+    }
+
+    // Wait for all source control providers to register.
+    subscriptions.add(atom.packages.onDidActivateInitialPackages(() => {
+      var {activeFilePath} = state;
+
+      // If it's a local directory, it must be loaded with packages activation.
+      if (projectsContainPath(activeFilePath)) {
+        atom.workspace.open(NUCLIDE_DIFF_VIEW_URI + activeFilePath);
+        return;
+      }
+      // If it's a remote directory, it should come on a path change event.
+      var changePathsSubscription = atom.project.onDidChangePaths(() => {
+        // try/catch here because in case of any error, Atom stops dispatching events to the
+        // rest of the listeners, which can stop the remote editing from being functional.
+        try {
+          if (projectsContainPath(activeFilePath)) {
+            atom.workspace.open(NUCLIDE_DIFF_VIEW_URI + activeFilePath);
+            changePathsSubscription.dispose();
+            subscriptions.remove(changePathsSubscription);
+          }
+        } catch (e) {
+          getLogger().error('DiffView restore error', e);
+        }
+      });
+      subscriptions.add(changePathsSubscription);
+    }));
   },
 
-  serialize(): ?any {
-    // TODO(most): Return the state of the diff view here, so, we can restore it on reload or restart.
+  serialize(): ?Object {
+    if (!activeDiffView) {
+      return {};
+    }
+    var {filePath} = activeDiffView.model.getActiveFileState();
+    return {
+      activeFilePath: filePath,
+    };
   },
 
   deactivate(): void {
@@ -105,6 +157,7 @@ module.exports = {
       subscriptions.dispose();
       subscriptions = null;
     }
+    activeDiffView = null;
   },
 
   /** The diff-view package can consume providers that return React components to
