@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {ScriptBufferedProcessStore} from 'nuclide-atom-helpers';
+import type {ProcessOutputStore} from 'nuclide-process-output-store';
 import type ProcessOutputHandler from './types';
 
 var {CompositeDisposable, TextBuffer} = require('atom');
@@ -19,14 +19,14 @@ var React = require('react-for-atom');
 var PROCESS_OUTPUT_PATH = 'nuclide-process-output.ansi';
 
 class ProcessOutputView extends React.Component {
-  _processOutputStore: ScriptBufferedProcessStore;
+  _processOutputStore: ProcessOutputStore;
   _textBuffer: atom$TextBuffer;
   _disposables: atom$CompositeDisposable;
   _outputHandler: ?ProcessOutputHandler;
 
   /**
-   * @param props.processOutputStore The ScriptBufferedProcessStore that provides
-   *   the output to display in this view.
+   * @param props.processOutputStore The ProcessOutputStore that provides the
+   *   output to display in this view.
    * @param props.processOutputHandler (optional) A function that acts on the
    *   output of the process. If not provided, the default action is to simply
    *   append the output of the process to the view.
