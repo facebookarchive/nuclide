@@ -9,8 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type BufferedProcessError from 'nuclide-atom-helpers/ScriptBufferedProcessStore';
-import type {ScriptBufferedProcessStore} from 'nuclide-atom-helpers';
+import type {ProcessOutputStore} from 'nuclide-process-output-store';
 import type ProcessOutputHandler from './types';
 export type RunCommandFunctionAndCleanup = {
   runCommandInNewPane: (command: string, args: Array<string>, options?: Object) => void;
@@ -22,13 +21,15 @@ import invariant from 'assert';
 
 var NUCLIDE_PROCESS_OUTPUT_VIEW_URI = 'atom://nuclide/process-output/';
 var PROCESS_OUTPUT_HANDLER_KEY = 'nuclide-processOutputHandler';
+var PROCESS_OUTPUT_STORE_KEY = 'nuclide-processOutputStore';
 type CreateProcessOutputViewOptions = {
-  // Using the PROCESS_OUTPUT_HANDLER_KEY constant here results in a syntax error.
+  // Using the constants here results in a syntax error.
   'nuclide-processOutputHandler': ?ProcessOutputHandler;
+  'nuclide-processOutputStore': ProcessOutputStore;
 };
 
 var subscriptions: ?CompositeDisposable;
-var processToDisposables: ?Map<ScriptBufferedProcessStore, CompositeDisposable>;
+var processToDisposables: ?Map<ProcessOutputStore, CompositeDisposable>;
 var logger;
 
 function getLogger() {
@@ -40,74 +41,60 @@ function getLogger() {
 
 /**
  * @param uri A String consisting of NUCLIDE_PROCESS_OUTPUT_VIEW_URI plus a
- * a stringify'd JSON object of the form:
- *   - command
- *   - args
- *   - options
- * where each field corresponds to the arguments to Node's `spawn`.
+ *   tabTitle for the new pane.
  * @param options The same as the `options` passed to the atom.workspace.open()
  *   call that triggered this function. In this case, it should contain special
  *   Nuclide arguments (see `runCommandInNewPane`).
  */
-function createProcessOutputView(uri: string, openOptions: CreateProcessOutputViewOptions): HTMLElement {
-  var ProcessOutputWrapper = require('./ProcessOutputWrapper');
-  var {ScriptBufferedProcessStore} = require('nuclide-atom-helpers');
-
-  var commandInfo = uri.slice(NUCLIDE_PROCESS_OUTPUT_VIEW_URI.length);
-  var {command, args, options} = JSON.parse(commandInfo);
+function createProcessOutputView(
+  uri: string,
+  openOptions: CreateProcessOutputViewOptions
+): HTMLElement {
+  var processOutputStore = openOptions[PROCESS_OUTPUT_STORE_KEY];
   var processOutputHandler = openOptions[PROCESS_OUTPUT_HANDLER_KEY];
+  var tabTitle = uri.slice(NUCLIDE_PROCESS_OUTPUT_VIEW_URI.length);
 
-  var processOutputStore = new ScriptBufferedProcessStore(command, args, options);
+  var ProcessOutputWrapper = require('./ProcessOutputWrapper');
   var hostElement = new ProcessOutputWrapper();
-  hostElement.initialize(processOutputStore, {title: command, processOutputHandler});
+  hostElement.initialize(processOutputStore, {title: tabTitle, processOutputHandler});
 
   var processSubscriptions = new CompositeDisposable();
   invariant(processToDisposables);
   processToDisposables.set(processOutputStore, processSubscriptions);
 
-  // We want to handle errors from the process by logging them.
-  processSubscriptions.add(
-    processOutputStore.onWillThrowError((errorObject: BufferedProcessError) => {
-      var joinedArgs = args.join(' ');
-      getLogger().error(`ScriptBufferedProcess encountered an error running: ${command} ${joinedArgs}`, errorObject.error);
-      errorObject.handle();
-    })
-  );
   // When the process exits, we want to remove the reference to the process.
   var handleProcessExit = () => {
     if (processToDisposables) {
       processToDisposables.delete(processOutputStore);
     }
   };
+  var handleProcessExitWithError = (error: Error) => {
+    getLogger().error(`ScriptBufferedProcess encountered an error running: ${tabTitle}`, error);
+    handleProcessExit();
+  };
 
-  processOutputStore.startProcess().then(handleProcessExit, handleProcessExit);
+  processOutputStore.startProcess().then(handleProcessExit, handleProcessExitWithError);
   return hostElement;
 }
 
 /**
- * @param command Same as the `command` argument to Node's ChildProcess.spawn().
- * @param args Same as the `args` argument to Node's ChildProcess.spawn().
- * @param commandOptions Same as the `options` argument to Node's ChildProcess.spawn().
+ * @param tabTitle A title for tne tab of the newly opened pane.
+ * @param processOutputStore The ProcessOutputStore that provides the data to display.
  * @param processOutputHandler An optional ProcessOutputHandler that is appropriate
  *   for the expected output. See the constructor of ProcessOutputView for more information.
  */
 function runCommandInNewPane(
-  command: string,
-  args: Array<string>,
-  options?: Object = {},
+  tabTitle: string,
+  processOutputStore: ProcessOutputStore,
   processOutputHandler?: ProcessOutputHandler,
 ): Promise<atom$TextEditor> {
-  var commandInfo = JSON.stringify({
-    command,
-    args,
-    options,
-  });
   var openOptions = {
     [PROCESS_OUTPUT_HANDLER_KEY]: processOutputHandler,
+    [PROCESS_OUTPUT_STORE_KEY]: processOutputStore,
   };
   // Not documented: the 'options' passed to atom.workspace.open() are passed to the opener.
   // There's no other great way for a consumer of this service to specify a ProcessOutputHandler.
-  atom.workspace.open(NUCLIDE_PROCESS_OUTPUT_VIEW_URI + commandInfo, openOptions);
+  atom.workspace.open(NUCLIDE_PROCESS_OUTPUT_VIEW_URI + tabTitle, openOptions);
 }
 
 /**
