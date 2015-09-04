@@ -9,10 +9,11 @@
  * the root directory of this source tree.
  */
 
-var cx = require('react-classset');
 var FileTreeActions = require('../lib/FileTreeActions');
 var React = require('react-for-atom');
 
+var cx = require('react-classset');
+var {fileTypeClass} = require('nuclide-atom-helpers');
 var {isContextClick} = require('../lib/FileTreeHelpers');
 
 var {
@@ -53,11 +54,13 @@ class NodeComponent extends React.Component {
       'entry list-item nuclide-tree-component-item': true,
       'nuclide-tree-component-selected': this.props.isSelected,
     });
-    var innerClassName = cx({
-      'icon name': true,
-      'icon-file-directory': this.props.isContainer,
-      'icon-file-text': !this.props.isContainer,
-    });
+    // TODO: Consider symlinks when it's possible to determine whether this is a symlink.
+    var innerClassName;
+    if (this.props.isContainer) {
+      innerClassName = 'icon-file-directory';
+    } else {
+      innerClassName = fileTypeClass(this.props.nodeName);
+    }
     var icon: ?ReactElement;
     if (this.props.isLoading) {
       icon = <span className="nuclide-tree-component-item-arrow-spinner">{SPINNER}</span>;
@@ -74,7 +77,7 @@ class NodeComponent extends React.Component {
         onDoubleClick={this._onDoubleClick}>
         <span ref="arrow" className="nuclide-tree-component-item-arrow">{icon}</span>
         <span
-          className={innerClassName}
+          className={`icon name ${innerClassName}`}
           data-name={this.props.nodeName}
           data-path={this.props.nodePath}>
           {this.props.nodeName}
