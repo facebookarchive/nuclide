@@ -173,6 +173,12 @@ module.exports = class DiffViewEditor {
     // Filed an issue: https://github.com/atom/atom/issues/6880
     this._editorElement.removeAttribute('tabindex');
     this._editor.getDecorations({class: 'cursor-line', type: 'line'})[0].destroy();
+    // Cancel insert events to prevent typing in the text editor and disallow editing (read-only).
+    this._editor.onWillInsertText(event => event.cancel());
+    // Swallow paste texts.
+    this._editor.pasteText = () => {};
+    // Swallow delete calls on its buffer.
+    this._editor.getBuffer().delete = () => {};
   }
 
   _scrollToRow(row: number): void {
