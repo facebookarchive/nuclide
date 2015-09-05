@@ -40,6 +40,7 @@ var {
 } = require('atom');
 var {
   array,
+  debounce,
 } = require('nuclide-commons');
 
 var logger;
@@ -73,6 +74,11 @@ var OMNISEARCH_PROVIDER = {
   prompt: 'Search for anything...',
   title: 'OmniSearch',
 };
+// Number of elements in the cache before periodic cleanup kicks in. Includes partial query strings.
+var MAX_CACHED_QUERIES = 100;
+var CACHE_CLEAN_DEBOUNCE_DELAY = 5000;
+var GLOBAL_KEY = 'global';
+var DIRECTORY_KEY = 'directory';
 
 function isValidProvider(provider): boolean {
   return (
@@ -93,24 +99,29 @@ class SearchResultManager {
   _providersByDirectory: Map;
   _directories: Array<Object>;
   _cachedResults: Object;
+  // List of most recently used query strings, used for pruning the result cache.
+  // Makes use of `Map`'s insertion ordering, so values are irrelevant and always set to `null`.
+  _queryLruQueue: Map<string, ?Number>;
+  _debouncedCleanCache: Function;
   _emitter: Emitter;
   _subscriptions: CompositeDisposable;
-  _registeredProviders: {directory: Map<string, quickopen$Provider>; global: Map<string, quickopen$Provider>;};
+  _registeredProviders: {[key: string]: Map<string, quickopen$Provider>;};
   _activeProviderName: string;
 
   constructor() {
     this.RESULTS_CHANGED = RESULTS_CHANGED_EVENT;
     this.PROVIDERS_CHANGED = PROVIDERS_CHANGED;
-    this._registeredProviders = {
-      directory: new Map(),
-      global: new Map(),
-    };
+    this._registeredProviders = {};
+    this._registeredProviders[DIRECTORY_KEY] = new Map();
+    this._registeredProviders[GLOBAL_KEY] = new Map();
     this._directories = [];
     this._cachedResults = {};
+    this._debouncedCleanCache = debounce(() => this._cleanCache(), CACHE_CLEAN_DEBOUNCE_DELAY);
+    this._queryLruQueue = new Map();
     this._emitter = new Emitter();
     this._subscriptions = new CompositeDisposable();
     this._dispatcher = QuickSelectionDispatcher;
-    // Check is required for testing
+    // Check is required for testing.
     if (atom.project) {
       this._subscriptions.add(atom.project.onDidChangePaths(this._updateDirectories.bind(this)));
       this._updateDirectories();
@@ -153,7 +164,7 @@ class SearchResultManager {
     this._directories = atom.project.getDirectories();
     this._providersByDirectory = new Map();
     this._directories.forEach(directory => {
-      for (var provider of this._registeredProviders.directory.values()) {
+      for (var provider of this._registeredProviders[DIRECTORY_KEY].values()) {
         if (provider.isEligibleForDirectory(directory)) {
           var providersForDir = this._providersByDirectory.get(directory) || [];
           providersForDir.push(provider);
@@ -177,8 +188,8 @@ class SearchResultManager {
     }
     var isGlobalProvider = service.getProviderType() === 'GLOBAL';
     var targetRegistry = isGlobalProvider
-      ? this._registeredProviders.global
-      : this._registeredProviders.directory;
+      ? this._registeredProviders[GLOBAL_KEY]
+      : this._registeredProviders[DIRECTORY_KEY];
     targetRegistry.set(service.constructor.name, service);
     if (!isGlobalProvider) {
       this._updateDirectories();
@@ -201,48 +212,85 @@ class SearchResultManager {
     QuickSelectionActions.changeActiveProvider(service.constructor.name);
   }
 
-  cacheResult(query: string, result: Object, directory: string, provider: Object, queryTimestamp: number): void {
-    var providerName = provider.constructor.name;
+  setCacheResult(
+    providerName: string,
+    directory: string,
+    query: string,
+    result: Object,
+    loading: ?boolean = false,
+    error: ?Object = null): void {
+    this.ensureCacheEntry(providerName, directory);
     this._cachedResults[providerName][directory][query] = {
       result,
-      loading: false,
-      queryTimestamp,
+      loading,
+      error,
     };
-    setImmediate(() => this._cleanCache());
+    // Refresh the usage for the current query.
+    this._queryLruQueue.delete(query);
+    this._queryLruQueue.set(query, null);
+    setImmediate(this._debouncedCleanCache);
   }
 
-  _setLoading(query: string, directory: string, provider: Object, queryTimestamp: number): void {
-    var providerName = provider.constructor.name;
+  ensureCacheEntry(providerName: string, directory: string): void {
     if (!this._cachedResults[providerName]) {
       this._cachedResults[providerName] = {};
     }
     if (!this._cachedResults[providerName][directory]) {
       this._cachedResults[providerName][directory] = {};
     }
+  }
+
+  cacheResult(query: string, result: Object, directory: string, provider: Object): void {
+    var providerName = provider.constructor.name;
+    this.setCacheResult(providerName, directory, query, result, false, null);
+  }
+
+  _setLoading(query: string, directory: string, provider: Object): void {
+    var providerName = provider.constructor.name;
+    this.ensureCacheEntry(providerName, directory);
     var previousResult = this._cachedResults[providerName][directory][query];
-    if (previousResult) {
-      previousResult.loading = true;
-    } else {
+    if (!previousResult) {
       this._cachedResults[providerName][directory][query] = {
         result: [],
         error: null,
         loading: true,
-        queryTimestamp,
       };
     }
   }
 
-  // release cached results older than <n> MS
+  /**
+   * Release the oldest cached results once the cache is full.
+   */
   _cleanCache() {
-    // TODO
+    var queueSize = this._queryLruQueue.size;
+    if (queueSize <= MAX_CACHED_QUERIES) {
+      return;
+    }
+    // Figure out least recently used queries, and pop them off of the `_queryLruQueue` Map.
+    var expiredQueries = [];
+    var keyIterator = this._queryLruQueue.keys();
+    var entriesToRemove = queueSize - MAX_CACHED_QUERIES;
+    for (var i = 0; i < entriesToRemove; i++) {
+      var firstEntryKey = keyIterator.next().value;
+      expiredQueries.push(firstEntryKey);
+      this._queryLruQueue.delete(firstEntryKey);
+    }
+
+    // For each (provider|directory) pair, remove results for all expired queries from the cache.
+    for (var providerName in this._cachedResults) {
+      for (var directory in this._cachedResults[providerName]) {
+        var queryResults = this._cachedResults[providerName][directory];
+        expiredQueries.forEach(query => delete queryResults[query]);
+      }
+    }
+    this._emitter.emit(RESULTS_CHANGED_EVENT);
   }
 
   processResult(
     query: string,
     result: FileResult,
     directory: string,
-    provider: Object,
-    queryTimestamp: number
+    provider: Object
   ): void {
     this.cacheResult(...arguments);
     this._emitter.emit(RESULTS_CHANGED_EVENT);
@@ -254,36 +302,33 @@ class SearchResultManager {
 
   async executeQuery(query: string): Promise<void> {
     var query = this.sanitizeQuery(query);
-    // Keep track of query timestamp, so we can resolve race conditions.
-    var timestamp = Date.now();
-    var globalProvider;
-    for (globalProvider of this._registeredProviders.global.values()) {
+    for (var globalProvider of this._registeredProviders[GLOBAL_KEY].values()) {
       globalProvider.executeQuery(query).then(result => {
-        this.processResult(query, result, 'global', globalProvider, timestamp);
+        this.processResult(query, result, GLOBAL_KEY, globalProvider);
       });
-      this._setLoading(query, 'global', globalProvider, timestamp);
+      this._setLoading(query, GLOBAL_KEY, globalProvider);
     }
     this._directories.forEach(directory => {
       var path = directory.getPath();
-      for (var provider of this._providersByDirectory.get(directory)) {
-        provider.executeQuery(query, directory).then(((boundProvider, result) => {
-          this.processResult(query, result, path, boundProvider, timestamp);
-        }).bind(this, provider));
-        this._setLoading(query, path, provider, timestamp);
+      for (var directoryProvider of this._providersByDirectory.get(directory)) {
+        directoryProvider.executeQuery(query, directory).then(((boundProvider, result) => {
+          this.processResult(query, result, path, boundProvider);
+        }).bind(this, directoryProvider));
+        this._setLoading(query, path, directoryProvider);
       }
     });
     this._emitter.emit(RESULTS_CHANGED_EVENT);
   }
 
   _isGlobalProvider(providerName: string): boolean {
-    return this._registeredProviders.global.has(providerName);
+    return this._registeredProviders[GLOBAL_KEY].has(providerName);
   }
 
   _getProviderByName(providerName: string): quickopen$Provider {
     if (this._isGlobalProvider(providerName)) {
-      return this._registeredProviders.global.get(providerName);
+      return this._registeredProviders[GLOBAL_KEY].get(providerName);
     }
-    var dirProvider = this._registeredProviders.directory.get(providerName);
+    var dirProvider = this._registeredProviders[DIRECTORY_KEY].get(providerName);
     assert(
       dirProvider != null,
       `Provider ${providerName} is not registered with quick-open.`
@@ -293,7 +338,7 @@ class SearchResultManager {
 
   _getResultsForProvider(query: string, providerName: string): Object {
     var providerPaths = this._isGlobalProvider(providerName)
-      ? ['global']
+      ? [GLOBAL_KEY]
       : this._directories.map(d => d.getPath());
     var provider = this._getProviderByName(providerName);
     return {
@@ -323,7 +368,7 @@ class SearchResultManager {
       var omniSearchResults = [];
       for (var providerName in this._cachedResults) {
         var resultForProvider = this._getResultsForProvider(query, providerName);
-        // TODO replace this with a ranking algorithm
+        // TODO replace this with a ranking algorithm.
         for (var dir in resultForProvider.results) {
           resultForProvider.results[dir].results =
             resultForProvider.results[dir].results.slice(0, MAX_OMNI_RESULTS_PER_SERVICE);
@@ -356,14 +401,15 @@ class SearchResultManager {
       action: provider.getAction && provider.getAction() || '',
       debounceDelay: provider.getDebounceDelay && provider.getDebounceDelay() || 200,
       name: provider.constructor.name,
-      prompt: provider.getPromptText && provider.getPromptText() || 'Search ' + provider.constructor.name,
+      prompt: provider.getPromptText && provider.getPromptText() ||
+        'Search ' + provider.constructor.name,
       title: provider.getTabTitle && provider.getTabTitle() || provider.constructor.name,
     };
   }
 
   getRenderableProviders(): Array<ProviderSpec> {
-    var tabs = array.from(this._registeredProviders.global.values(), this._bakeProvider)
-      .concat(array.from(this._registeredProviders.directory.values(), this._bakeProvider))
+    var tabs = array.from(this._registeredProviders[GLOBAL_KEY].values(), this._bakeProvider)
+      .concat(array.from(this._registeredProviders[DIRECTORY_KEY].values(), this._bakeProvider))
       .sort((p1, p2) => p1.name.localeCompare(p2.name));
     tabs.unshift(OMNISEARCH_PROVIDER);
     return tabs;
