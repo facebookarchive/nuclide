@@ -11,16 +11,24 @@
 
 import type {
   quickopen$DirectoryName,
-  quickopen$FileResult,
   quickopen$GroupedResult,
-  quickopen$ServiceName,
-  quickopen$TabInfo,
+  quickopen$ProviderSpec,
+  quickopen$ServiceName
 } from './types';
+
+type ResultContext = {
+  nonEmptyResults: quickopen$GroupedResult;
+  serviceNames: Array<quickopen$ServiceName>;
+  currentServiceIndex: number;
+  currentService: Object;
+  directoryNames: Array<quickopen$DirectoryName>;
+  currentDirectoryIndex: number;
+  currentDirectory: Object;
+};
 
 var AtomInput = require('nuclide-ui-atom-input');
 var {CompositeDisposable, Disposable, Emitter} = require('atom');
 var {
-  array,
   debounce,
   object,
 } = require('nuclide-commons');
@@ -32,16 +40,11 @@ var cx = require('react-classset');
 
 var {
   filterEmptyResults,
-  flattenResults,
 } = require('./searchResultHelpers');
 
 var {PropTypes} = React;
 
 var cx = require('react-classset');
-
-function sanitizeQuery(query: string): string {
-  return query.trim();
-}
 
 /**
  * Determine what the applicable shortcut for a given action is within this component's context.
@@ -57,17 +60,6 @@ function _findKeybindingForAction(action: string, target: HTMLElement): string {
   return humanizeKeystroke(keystroke);
 }
 
-
-type ResultsByService = {
-  [key: quickopen$ServiceName]: {
-    [key: quickopen$DirectoryName]: {
-      items: Array<quickopen$FileResult>,
-      waiting: boolean,
-      error: ?string,
-    }
-  }
-};
-
 class QuickSelectionComponent extends React.Component {
   _emitter: Emitter;
   _subscriptions: CompositeDisposable;
@@ -75,14 +67,14 @@ class QuickSelectionComponent extends React.Component {
   _modalNode: HTMLElement;
   _debouncedQueryHandler: () => void;
   _boundSelect: () => void;
-  _boundHandleTabChange: (tab: quickopen$TabInfo) => void;
+  _boundHandleTabChange: (tab: quickopen$ProviderSpec) => void;
 
   constructor(props: Object) {
     super(props);
     this._emitter = new Emitter();
     this._subscriptions = new CompositeDisposable();
     this._boundSelect = () => this.select();
-    this._boundHandleTabChange = (tab: quickopen$TabInfo) => this._handleTabChange(tab);
+    this._boundHandleTabChange = (tab: quickopen$ProviderSpec) => this._handleTabChange(tab);
     this.state = {
       activeTab: props.initialActiveTab,
       // treated as immutable
@@ -158,9 +150,16 @@ class QuickSelectionComponent extends React.Component {
         this._scheduledCancel = setTimeout(this.cancel.bind(this), 100);
       }
     });
-
-    searchResultManager.on(searchResultManager.PROVIDERS_CHANGED, this.handleProvidersChangeBound);
-    searchResultManager.on(searchResultManager.RESULTS_CHANGED, this.handleResultsChangeBound);
+    this._subscriptions.add(
+      searchResultManager.on(
+        searchResultManager.PROVIDERS_CHANGED,
+        this.handleProvidersChangeBound
+      ),
+      searchResultManager.on(
+        searchResultManager.RESULTS_CHANGED,
+        this.handleResultsChangeBound
+      ),
+    );
 
     this._updateQueryHandler();
     inputTextEditor.model.onDidChange(() => this._handleTextInputChange());
@@ -169,8 +168,6 @@ class QuickSelectionComponent extends React.Component {
 
   componentWillUnmount() {
     this._emitter.dispose();
-    searchResultManager.off(searchResultManager.PROVIDERS_CHANGED, this.handleProvidersChangeBound);
-    searchResultManager.off(searchResultManager.RESULTS_CHANGED, this.handleResultsChangeBound);
     this._subscriptions.dispose();
   }
 
@@ -193,7 +190,8 @@ class QuickSelectionComponent extends React.Component {
   _updateQueryHandler(): void {
     this._debouncedQueryHandler = debounce(
       () => this.setQuery(this.getInputTextEditor().model.getText()),
-      this.getProvider().debounceDelay
+      this.getProvider().debounceDelay,
+      false
     );
   }
 
@@ -201,7 +199,7 @@ class QuickSelectionComponent extends React.Component {
     this._debouncedQueryHandler();
   }
 
-  handleResultsChange() {
+  handleResultsChange(): void {
     var updatedResults = searchResultManager.getResults(
       this.refs.queryInput.getText(),
       this.props.activeProvider.name
@@ -211,7 +209,7 @@ class QuickSelectionComponent extends React.Component {
     });
   }
 
-  handleProvidersChange() {
+  handleProvidersChange(): void {
     var renderableProviders = searchResultManager.getRenderableProviders();
     var activeProviderName = searchResultManager.getActiveProviderName();
     this.setState({
@@ -220,7 +218,7 @@ class QuickSelectionComponent extends React.Component {
     });
   }
 
-  select() {
+  select(): void {
     var selectedItem = this.getSelectedItem();
     if (!selectedItem) {
       this.cancel();
@@ -229,15 +227,15 @@ class QuickSelectionComponent extends React.Component {
     }
   }
 
-  cancel() {
+    cancel(): void {
     this._emitter.emit('canceled');
   }
 
-  clearSelection() {
+  clearSelection(): void {
     this.setSelectedIndex('', '', -1);
   }
 
-  _getCurrentResultContext(): mixed {
+  _getCurrentResultContext(): ?ResultContext {
     var nonEmptyResults = filterEmptyResults(this.state.resultsByService);
     var serviceNames = Object.keys(nonEmptyResults);
     var currentServiceIndex = serviceNames.indexOf(this.state.selectedService);
@@ -266,7 +264,7 @@ class QuickSelectionComponent extends React.Component {
     };
   }
 
-  moveSelectionDown() {
+  moveSelectionDown(): void {
     var context = this._getCurrentResultContext();
     if (!context) {
       this.moveSelectionToTop();
@@ -468,10 +466,10 @@ class QuickSelectionComponent extends React.Component {
   }
 
   /**
-   * @param newTab is actually a TabInfo plus the `name` and `tabContent` properties added by
+   * @param newTab is actually a ProviderSpec plus the `name` and `tabContent` properties added by
    *     _renderTabs(), which created the tab object in the first place.
    */
-  _handleTabChange(newTab: quickopen$TabInfo) {
+  _handleTabChange(newTab: quickopen$ProviderSpec): void {
     clearTimeout(this._scheduledCancel);
     var providerName = newTab.name;
     if (providerName !== this.props.activeProvider.name) {
@@ -496,7 +494,7 @@ class QuickSelectionComponent extends React.Component {
       return {
         ...tab,
         name: tab.name,
-        tabContent: <span>{tab.title}{keyBinding}</span>
+        tabContent: <span>{tab.title}{keyBinding}</span>,
       };
     });
     return (
@@ -648,10 +646,6 @@ var TabInfoPropType = PropTypes.shape({
 });
 
 QuickSelectionComponent.propTypes = {
-  // TODO jxg: check which ones are actually needed anymore
-  // old
-  initialActiveTab: PropTypes.shape(TabInfoPropType).isRequired,
-  // new
   activeProvider: PropTypes.shape({
     action: PropTypes.string.isRequired,
     debounceDelay: PropTypes.number.isRequired,
@@ -659,6 +653,7 @@ QuickSelectionComponent.propTypes = {
     prompt: PropTypes.string.isRequired,
     title: PropTypes.string.isRequired,
   }).isRequired,
+  initialActiveTab: PropTypes.shape(TabInfoPropType).isRequired,
   onProviderChange: PropTypes.func,
 };
 

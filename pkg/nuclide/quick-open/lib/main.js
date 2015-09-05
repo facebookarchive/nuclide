@@ -14,7 +14,7 @@ import type {
 } from './QuickSelectionComponent';
 
 import type {
-  QuickSelectionProvider,
+  quickopen$Provider,
 } from './types';
 
 import type {quickopen$TabManager} from './TabManager';
@@ -337,7 +337,7 @@ module.exports = {
     listeners.add(atom.project.onDidChangePaths(initSearch));
   },
 
-  registerProvider(service: Provider): atom$Disposable {
+  registerProvider(service: quickopen$Provider ): atom$Disposable {
     return getSearchResultManager().registerProvider(service);
   },
 
@@ -354,5 +354,5 @@ module.exports = {
       listeners.dispose();
       listeners = null;
     }
-  }
+  },
 };

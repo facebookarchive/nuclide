@@ -9,29 +9,17 @@
  * the root directory of this source tree.
  */
 
-import type {FileResult} from './types';
+import type {
+  quickopen$Dispatcher,
+  quickopen$FileResult,
+  quickopen$Provider,
+  quickopen$ProviderResult,
+  quickopen$ProviderSpec
+} from './types';
 
-type QueryResult = {
- error: ?Object;
- loading: boolean;
- result: Array<FileResult>;
-}
-
-type ResultRenderer = (item: FileResult) => ReactElement;
-
-type ProviderSpec = {
-  action: string;
-  debounceDelay: number;
-  name: string;
-  prompt: string;
-  title: string;
-}
+type ResultRenderer = (item: quickopen$FileResult) => ReactElement;
 
 var assert = require('assert');
-
-import type {
-  quickopen$Provider
-} from 'types';
 
 var {
   CompositeDisposable,
@@ -51,7 +39,7 @@ function getLogger() {
   return logger;
 }
 
-function getDefaultResult(): QueryResult {
+function getDefaultResult(): quickopen$ProviderResult {
   return {
     error: null,
     loading: false,
@@ -95,7 +83,7 @@ class SearchResultManager {
   _dispatcherToken: string;
   RESULTS_CHANGED: string;
   PROVIDERS_CHANGED: string;
-  _dispatcher: QuickSelectionDispatcher;
+  _dispatcher: quickopen$Dispatcher;
   _providersByDirectory: Map;
   _directories: Array<Object>;
   _cachedResults: Object;
@@ -116,11 +104,15 @@ class SearchResultManager {
     this._registeredProviders[GLOBAL_KEY] = new Map();
     this._directories = [];
     this._cachedResults = {};
-    this._debouncedCleanCache = debounce(() => this._cleanCache(), CACHE_CLEAN_DEBOUNCE_DELAY);
+    this._debouncedCleanCache = debounce(
+      () => this._cleanCache(),
+      CACHE_CLEAN_DEBOUNCE_DELAY,
+      false
+    );
     this._queryLruQueue = new Map();
     this._emitter = new Emitter();
     this._subscriptions = new CompositeDisposable();
-    this._dispatcher = QuickSelectionDispatcher;
+    this._dispatcher = QuickSelectionDispatcher.getInstance();
     // Check is required for testing.
     if (atom.project) {
       this._subscriptions.add(atom.project.onDidChangePaths(this._updateDirectories.bind(this)));
@@ -131,7 +123,7 @@ class SearchResultManager {
   }
 
   _setUpFlux(): void {
-    this._dispatcherToken = QuickSelectionDispatcher.getInstance().register(action => {
+    this._dispatcherToken = this._dispatcher.register(action => {
       switch (action.actionType) {
         case QuickSelectionDispatcher.ActionTypes.QUERY:
           this.executeQuery(action.query);
@@ -174,12 +166,8 @@ class SearchResultManager {
     });
   }
 
-  on() {
-    this._emitter.on(...arguments);
-  }
-
-  off() {
-    this._emitter.off(...arguments);
+  on(): atom$Disposable {
+    return this._emitter.on(...arguments);
   }
 
   registerProvider(service: quickopen$Provider): Disposable {
@@ -288,7 +276,7 @@ class SearchResultManager {
 
   processResult(
     query: string,
-    result: FileResult,
+    result: quickopen$FileResult,
     directory: string,
     provider: Object
   ): void {
@@ -396,7 +384,7 @@ class SearchResultManager {
   /**
    * Turn a Provider into a plain "spec" object consumed by QuickSelectionComponent.
    */
-  _bakeProvider(provider: quickopen$Provider): ProviderSpec {
+  _bakeProvider(provider: quickopen$Provider): quickopen$ProviderSpec {
     return {
       action: provider.getAction && provider.getAction() || '',
       debounceDelay: provider.getDebounceDelay && provider.getDebounceDelay() || 200,
@@ -407,7 +395,7 @@ class SearchResultManager {
     };
   }
 
-  getRenderableProviders(): Array<ProviderSpec> {
+  getRenderableProviders(): Array<quickopen$ProviderSpec> {
     var tabs = array.from(this._registeredProviders[GLOBAL_KEY].values(), this._bakeProvider)
       .concat(array.from(this._registeredProviders[DIRECTORY_KEY].values(), this._bakeProvider))
       .sort((p1, p2) => p1.name.localeCompare(p2.name));

@@ -23,8 +23,10 @@ class FileResultComponent {
     var filePath = item.path;
 
     var filenameStart = filePath.lastIndexOf(path.sep);
-    var importantIndexes = [filenameStart, filePath.length].concat(item.matchIndexes)
-                                                           .sort((index1, index2) => index1 - index2);
+    var matchIndexes = item.matchIndexes || [];
+    var importantIndexes = [filenameStart, filePath.length]
+      .concat(matchIndexes)
+      .sort((index1, index2) => index1 - index2);
 
     var folderComponents = [];
     var filenameComponents = [];

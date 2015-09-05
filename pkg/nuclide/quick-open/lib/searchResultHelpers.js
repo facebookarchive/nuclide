@@ -9,13 +9,18 @@
  * the root directory of this source tree.
  */
 
-type GroupedResults = {[key: string]: {[key: string]: {results: Array<any>}}};
+import type {
+  quickopen$FileResult,
+  quickopen$GroupedResult,
+} from './types';
 
 var {
-  isEmpty
+  isEmpty,
 } = require('nuclide-commons').object;
 
-function filterEmptyResults(resultsGroupedByService: GroupedResults) : GroupedResults {
+function filterEmptyResults(
+  resultsGroupedByService: quickopen$GroupedResult
+): quickopen$GroupedResult {
   var filteredTree = {};
 
   for (var serviceName in resultsGroupedByService) {
@@ -33,7 +38,9 @@ function filterEmptyResults(resultsGroupedByService: GroupedResults) : GroupedRe
   return filteredTree;
 }
 
-function flattenResults(resultsGroupedByService: GroupedResults): Array<any> {
+function flattenResults(
+  resultsGroupedByService: quickopen$GroupedResult
+): Array<quickopen$FileResult> {
   var items = [];
   for (var serviceName in resultsGroupedByService) {
     for (var dirName in resultsGroupedByService[serviceName].results) {

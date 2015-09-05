@@ -13,8 +13,14 @@
 // should be a disjoint union of all known search result types.
 export type quickopen$FileResult = {
   path: string;
-  matchIndexes: ?Array<number>;
-  score: ?number;
+  matchIndexes?: Array<number>;
+  score?: number;
+};
+
+export type quickopen$ProviderResult = {
+  error: ?Object;
+  loading: boolean;
+  result: Array<quickopen$FileResult>;
 };
 
 export type quickopen$DirectoryName = string;
@@ -22,11 +28,7 @@ export type quickopen$ServiceName = string;
 
 export type quickopen$GroupedResult = {
   [key: quickopen$DirectoryName]: {
-    [key: quickopen$ServiceName]: {
-      results: Array<quickopen$FileResult>;
-      error: ?Object;
-      loading: boolean;
-    }
+    [key: quickopen$ServiceName]: quickopen$ProviderResult
   }
 };
 
@@ -36,12 +38,15 @@ export type quickopen$Provider = {
   getTabTitle: Function;
 };
 
-export type quickopen$TabInfo = {
-  providerName: string;
-  title: string;
+export type quickopen$ProviderSpec = {
   action: string;
-};
+  debounceDelay: number;
+  name: string;
+  prompt: string;
+  title: string;
+}
 
-var QuickSelectionProvider = require('./QuickSelectionProvider');
-export type QuickSelectionProvider = QuickSelectionProvider;
 export type quickopen$GroupedResultPromise = Promise<quickopen$GroupedResult>;
+
+import type {Dispatcher} from 'flux';
+export type quickopen$Dispatcher = Dispatcher;

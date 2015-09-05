@@ -12,10 +12,10 @@
 var {Dispatcher} = require('flux');
 
 var quickopenDispatcher;
-
 class QuickSelectionDispatcher {
+  static ActionTypes: {[key:string]: string};
 
-  static getInstance() {
+  static getInstance(): Dispatcher {
     if (!quickopenDispatcher) {
       quickopenDispatcher = new Dispatcher();
     }
