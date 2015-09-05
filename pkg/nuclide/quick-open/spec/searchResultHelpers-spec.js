@@ -16,27 +16,33 @@ var {
 
 var SEARCH_RESULTS_FIXTURE = {
   searchService: {
-    shouldNotAppearInOutputFolder: {
-      items: []
-    },
-    folderB: {
-      items: [1, 2, 3]
+    results: {
+      shouldNotAppearInOutputFolder: {
+	results: [],
+      },
+      folderB: {
+	results: [1, 2, 3],
+      },
     },
   },
   symbolService: {
-    folderA: {
-      items: [4, 5, 6],
-    },
-    shouldNotAppearInOutputFolder: {
-      items: [],
+    results : {
+      folderA: {
+        results: [4, 5, 6],
+      },
+      shouldNotAppearInOutputFolder: {
+        results: [],
+      },
     },
   },
   shouldNotAppearInOutputService: {
-    folderA: {
-      items: [],
-    },
-    folderB: {
-      items: [],
+    results: {
+      folderA: {
+        results: [],
+      },
+      folderB: {
+        results: [],
+      },
     },
   }
 };
@@ -48,13 +54,17 @@ describe('searchResultHelper', () => {
 
       expect(filteredResults).toEqual({
         searchService: {
-          folderB: {
-            items: [1, 2, 3],
+          results: {
+            folderB: {
+              results: [1, 2, 3],
+            },
           },
         },
         symbolService: {
-          folderA: {
-            items: [4, 5, 6],
+          results: {
+            folderA: {
+              results: [4, 5, 6],
+            },
           },
         },
       });

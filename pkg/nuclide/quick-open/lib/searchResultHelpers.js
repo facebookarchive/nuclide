@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-type GroupedResults = {string: {string: {items: Array<any>}}};
+type GroupedResults = {[key: string]: {[key: string]: {results: Array<any>}}};
 
 var {
   isEmpty
@@ -19,15 +19,15 @@ function filterEmptyResults(resultsGroupedByService: GroupedResults) : GroupedRe
   var filteredTree = {};
 
   for (var serviceName in resultsGroupedByService) {
-    var directories = resultsGroupedByService[serviceName];
+    var directories = resultsGroupedByService[serviceName].results;
     var nonEmptyDirectories = {};
     for (var dirName in directories) {
-      if (directories[dirName].items.length) {
+      if (directories[dirName].results.length) {
         nonEmptyDirectories[dirName] = directories[dirName];
       }
     }
     if (!isEmpty(nonEmptyDirectories)) {
-      filteredTree[serviceName] = nonEmptyDirectories;
+      filteredTree[serviceName] = {results: nonEmptyDirectories};
     }
   }
   return filteredTree;
@@ -36,8 +36,8 @@ function filterEmptyResults(resultsGroupedByService: GroupedResults) : GroupedRe
 function flattenResults(resultsGroupedByService: GroupedResults): Array<any> {
   var items = [];
   for (var serviceName in resultsGroupedByService) {
-    for (var dirName in resultsGroupedByService[serviceName]) {
-      items.push(resultsGroupedByService[serviceName][dirName].items);
+    for (var dirName in resultsGroupedByService[serviceName].results) {
+      items.push(resultsGroupedByService[serviceName].results[dirName].results);
     }
   }
   return Array.prototype.concat.apply([], items);
