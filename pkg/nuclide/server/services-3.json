@@ -1,7 +1,7 @@
 [
   {
     "definition": "nuclide-buck-base/lib/BuckProject.def",
-    "implementation": "nuclide-buck-base/lib/LocalBuckProject.js",
+    "implementation": "nuclide-buck-base/lib/BuckProject.js",
     "name": "BuckProject"
   },
   {

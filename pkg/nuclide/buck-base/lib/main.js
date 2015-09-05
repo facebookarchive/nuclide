@@ -10,7 +10,7 @@
  */
 
 module.exports = {
-  get LocalBuckProject() {
-    return require('./LocalBuckProject');
+  get BuckProject() {
+    return require('./BuckProject');
   },
 };

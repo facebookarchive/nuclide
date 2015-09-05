@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-var BuckProject = require('../lib/LocalBuckProject').BuckProject;
+var BuckProject = require('../lib/BuckProject').BuckProject;
 var fs = require('fs-plus');
 var path = require('path');
 var temp = require('temp').track();
