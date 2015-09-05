@@ -19,7 +19,6 @@ import type {
 
 var AtomInput = require('nuclide-ui-atom-input');
 var {CompositeDisposable, Disposable, Emitter} = require('atom');
-var QuickSelectionProvider = require('./QuickSelectionProvider');
 var {
   array,
   debounce,
@@ -91,8 +90,8 @@ class QuickSelectionComponent extends React.Component {
         /* EXAMPLE:
         providerName: {
           directoryName: {
-            items: [Array<FileResult>],
-            waiting: true,
+            results: [Array<{path: string}>],
+            loading: true,
             error: null,
           },
         },
@@ -104,12 +103,13 @@ class QuickSelectionComponent extends React.Component {
       renderableProviders: searchResultManager.getRenderableProviders(),
     };
     this.handleProvidersChangeBound = this.handleProvidersChange.bind(this);
+    this.handleResultsChangeBound = this.handleResultsChange.bind(this);
   }
 
   componentWillReceiveProps(nextProps: any) {
     if (nextProps.activeProvider !== this.props.activeProvider) {
-      if (nextProps.provider) {
-        this._getTextEditor().setPlaceholderText(nextProps.provider.getPromptText());
+      if (nextProps.activeProvider) {
+        this._getTextEditor().setPlaceholderText(nextProps.activeProvider.prompt);
         var newResults = {};
         this.setState(
           {
@@ -160,6 +160,7 @@ class QuickSelectionComponent extends React.Component {
     });
 
     searchResultManager.on(searchResultManager.PROVIDERS_CHANGED, this.handleProvidersChangeBound);
+    searchResultManager.on(searchResultManager.RESULTS_CHANGED, this.handleResultsChangeBound);
 
     this._updateQueryHandler();
     inputTextEditor.model.onDidChange(() => this._handleTextInputChange());
@@ -169,6 +170,7 @@ class QuickSelectionComponent extends React.Component {
   componentWillUnmount() {
     this._emitter.dispose();
     searchResultManager.off(searchResultManager.PROVIDERS_CHANGED, this.handleProvidersChangeBound);
+    searchResultManager.off(searchResultManager.RESULTS_CHANGED, this.handleResultsChangeBound);
     this._subscriptions.dispose();
   }
 
@@ -197,6 +199,16 @@ class QuickSelectionComponent extends React.Component {
 
   _handleTextInputChange(): void {
     this._debouncedQueryHandler();
+  }
+
+  handleResultsChange() {
+    var updatedResults = searchResultManager.getResults(
+      this.refs.queryInput.getText(),
+      this.props.activeProvider.name
+    );
+    this.setState({
+      resultsByService: updatedResults,
+    });
   }
 
   handleProvidersChange() {
@@ -235,11 +247,11 @@ class QuickSelectionComponent extends React.Component {
       return null;
     }
 
-    var directoryNames = Object.keys(currentService);
+    var directoryNames = Object.keys(currentService.results);
     var currentDirectoryIndex = directoryNames.indexOf(this.state.selectedDirectory);
-    var currentDirectory = currentService[this.state.selectedDirectory];
+    var currentDirectory = currentService.results[this.state.selectedDirectory];
 
-    if (!currentDirectory || !currentDirectory.items) {
+    if (!currentDirectory || !currentDirectory.results) {
       return null;
     }
 
@@ -261,7 +273,7 @@ class QuickSelectionComponent extends React.Component {
       return;
     }
 
-    if (this.state.selectedItemIndex < context.currentDirectory.items.length - 1) {
+    if (this.state.selectedItemIndex < context.currentDirectory.results.length - 1) {
       // only bump the index if remaining in current directory
       this.setSelectedIndex(
         this.state.selectedService,
@@ -280,7 +292,8 @@ class QuickSelectionComponent extends React.Component {
         // ...or the next service...
         if (context.currentServiceIndex < context.serviceNames.length - 1) {
           var newServiceName = context.serviceNames[context.currentServiceIndex + 1];
-          var newDirectoryName = Object.keys(context.nonEmptyResults[newServiceName]).shift();
+          var newDirectoryName =
+            Object.keys(context.nonEmptyResults[newServiceName].results).shift();
           this.setSelectedIndex(newServiceName, newDirectoryName, 0);
         } else {
           // ...or wrap around to the very top
@@ -310,17 +323,17 @@ class QuickSelectionComponent extends React.Component {
         this.setSelectedIndex(
           this.state.selectedService,
           context.directoryNames[context.currentDirectoryIndex - 1],
-          context.currentService[context.directoryNames[context.currentDirectoryIndex - 1]].items.length - 1
+          context.currentService.results[context.directoryNames[context.currentDirectoryIndex - 1]].results.length - 1
         );
       } else {
         // ...or the previous service...
         if (context.currentServiceIndex > 0) {
           var newServiceName = context.serviceNames[context.currentServiceIndex - 1];
-          var newDirectoryName = Object.keys(context.nonEmptyResults[newServiceName]).pop();
+          var newDirectoryName = Object.keys(context.nonEmptyResults[newServiceName].results).pop();
           this.setSelectedIndex(
             newServiceName,
             newDirectoryName,
-            context.nonEmptyResults[newServiceName][newDirectoryName].items.length - 1
+            context.nonEmptyResults[newServiceName].results[newDirectoryName].results.length - 1
           );
         } else {
           // ...or wrap around to the very bottom
@@ -367,11 +380,11 @@ class QuickSelectionComponent extends React.Component {
       return null;
     }
     var service = nonEmptyResults[serviceName];
-    var directoryName = arrayOperation.call(Object.keys(service));
+    var directoryName = arrayOperation.call(Object.keys(service.results));
     return {
       serviceName,
       directoryName,
-      results: nonEmptyResults[serviceName][directoryName].items,
+      results: nonEmptyResults[serviceName].results[directoryName].results,
     };
   }
 
@@ -387,12 +400,12 @@ class QuickSelectionComponent extends React.Component {
     if (
       itemIndex === -1 ||
       !this.state.resultsByService[serviceName] ||
-      !this.state.resultsByService[serviceName][directory] ||
-      !this.state.resultsByService[serviceName][directory].items[itemIndex]
+      !this.state.resultsByService[serviceName].results[directory] ||
+      !this.state.resultsByService[serviceName].results[directory].results[itemIndex]
     ) {
       return null;
     }
-    return this.state.resultsByService[serviceName][directory].items[itemIndex];
+    return this.state.resultsByService[serviceName].results[directory].results[itemIndex];
   }
 
   componentForItem(item: any, serviceName: string): ReactElement {
@@ -413,38 +426,6 @@ class QuickSelectionComponent extends React.Component {
       selectedDirectory: directory,
       selectedItemIndex: itemIndex,
     }, () => this._emitter.emit('selection-changed', this.getSelectedIndex()));
-  }
-
-  _setResult(serviceName: string, dirName: string, results: Array<mixed>) {
-    var updatedResultsByDirectory = {...this.state.resultsByService[serviceName]};
-    updatedResultsByDirectory[dirName] = results;
-
-    var updatedResultsByService = {...this.state.resultsByService};
-    updatedResultsByService[serviceName] = updatedResultsByDirectory;
-
-    this.setState({
-      resultsByService: updatedResultsByService,
-    }, () => {
-      this._emitter.emit('items-changed', updatedResultsByService);
-    });
-  }
-
-  _subscribeToResult(serviceName: string, directory:string, resultPromise: Promise<{results: Array<FileResult>}>) {
-    resultPromise.then(items => {
-      var updatedItems = {
-        waiting: false,
-        error: null,
-        items: items.results,
-      };
-      this._setResult(serviceName, directory, updatedItems);
-    }).catch(error => {
-      var updatedItems = {
-        waiting: false,
-        error: 'an error occurred: ' + error,
-        items: [],
-      };
-      this._setResult(serviceName, directory, updatedItems);
-    });
   }
 
   setQuery(query: string) {
@@ -542,7 +523,7 @@ class QuickSelectionComponent extends React.Component {
       var service = this.state.resultsByService[serviceName];
       for (var dirName in service) {
         var results = service[dirName];
-        if (!results.waiting && results.items.length > 0) {
+        if (!results.loading && results.results.length > 0) {
           return false;
         }
       }
@@ -554,13 +535,13 @@ class QuickSelectionComponent extends React.Component {
     var itemsRendered = 0;
     var serviceNames = Object.keys(this.state.resultsByService);
     var services = serviceNames.map(serviceName => {
-      var directories = this.state.resultsByService[serviceName];
+      var directories = this.state.resultsByService[serviceName].results;
       var serviceTitle = this.state.resultsByService[serviceName].title;
       var directoryNames = Object.keys(directories);
       var directoriesForService = directoryNames.map(dirName => {
         var resultsForDirectory = directories[dirName];
         var message = null;
-        if (resultsForDirectory.waiting) {
+        if (resultsForDirectory.loading) {
           itemsRendered++;
           message = (
             <span>
@@ -575,7 +556,7 @@ class QuickSelectionComponent extends React.Component {
               Error: <pre>{resultsForDirectory.error}</pre>
             </span>
           );
-        } else if (resultsForDirectory.items.length === 0) {
+        } else if (resultsForDirectory.results.length === 0) {
           message = (
             <span>
               <span className="icon icon-x" />
@@ -583,7 +564,7 @@ class QuickSelectionComponent extends React.Component {
             </span>
           );
         }
-        var itemComponents = resultsForDirectory.items.map((item, itemIndex) => {
+        var itemComponents = resultsForDirectory.results.map((item, itemIndex) => {
             var isSelected = (
               serviceName === this.state.selectedService &&
               dirName === this.state.selectedDirectory &&
@@ -668,8 +649,6 @@ var TabInfoPropType = PropTypes.shape({
 QuickSelectionComponent.propTypes = {
   // TODO jxg: check which ones are actually needed anymore
   // old
-  provider: PropTypes.instanceOf(QuickSelectionProvider).isRequired,
-  tabs: PropTypes.arrayOf(TabInfoPropType).isRequired,
   initialActiveTab: PropTypes.shape(TabInfoPropType).isRequired,
   // new
   activeProvider: PropTypes.shape({
