@@ -31,7 +31,7 @@ class TestQuickSelectionProvider extends QuickSelectionProvider {
   }
 }
 
-describe('QuickSelectionComponent', () => {
+xdescribe('QuickSelectionComponent', () => {
   var componentRoot: Node;
   var component: QuickSelectionComponent;
   var tabManager: TabManager;
@@ -85,7 +85,7 @@ describe('QuickSelectionComponent', () => {
     );
   }
 
-  describe('Confirmation', () => {
+  xdescribe('Confirmation', () => {
     it('should return the selected item on selection', () => {
       withItemsSetTo({testDirectory: {testProvider: Promise.resolve({results: [1, 2, 3]})}}, () => {
 
