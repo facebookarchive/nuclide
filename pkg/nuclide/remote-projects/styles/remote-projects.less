@@ -1,3 +1,11 @@
-.nuclide-remote-projects-status-icon::before {
+@import 'ui-variables';
+
+.nuclide-remote-projects-status-icon {
   cursor: pointer;
+  &.cloud-upload {
+    color: @text-color-success;
+  }
+  &.icon-alert {
+    color: @text-color-error;
+  }
 }
