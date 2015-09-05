@@ -511,7 +511,6 @@ class QuickSelectionComponent extends React.Component {
           tabs={tabs}
           activeTabName={this.state.activeTab.name}
           onActiveTabChange={this._boundHandleTabChange}
-          triggeringEvent="onMouseEnter"
         />
       </div>
     );
