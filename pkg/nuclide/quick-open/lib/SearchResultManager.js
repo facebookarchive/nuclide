@@ -9,6 +9,10 @@
  * the root directory of this source tree.
  */
 
+var {
+  CompositeDisposable,
+  Emitter,
+} = require('atom');
 var QuickSelectionProvider = require('./QuickSelectionProvider');
 
 function _loadProvider(providerName: string) {
@@ -28,8 +32,45 @@ function _loadProvider(providerName: string) {
  * A singleton cache for search providers and results.
  */
 class SearchResultManager {
+  _providersByDirectory: Map;
+  _directories: Array;
+  _cachedResults: Object;
+  _registeredProviders: {directory: Array<Provider>; global: Array<Provider>;};
+  _emitter: Emitter;
+  _subscriptions: CompositeDisposable;
   constructor() {
     this._cachedProviders = {};
+    this._registeredProviders = {
+      directory: [],
+      global: [],
+    };
+    this._directories = [];
+    this._cachedResults = {};
+    this._emitter = new Emitter();
+    this._subscriptions = new CompositeDisposable();
+    // Check is required for testing
+    if (atom.project) {
+      this._subscriptions.add(atom.project.onDidChangePaths(this._updateDirectories.bind(this)));
+      this._updateDirectories();
+    }
+  }
+
+  destroy(): void {
+    this._subscriptions.dispose();
+  }
+
+  _updateDirectories(): void {
+    this._directories = atom.project.getDirectories();
+    this._providersByDirectory = new Map();
+    this._directories.forEach(directory => {
+      this._registeredProviders.directory.forEach(provider => {
+        if (provider.isEligibleForDirectory(directory)) {
+          var providersForDir = this._providersByDirectory.get(directory) || [];
+          providersForDir.push(provider);
+          this._providersByDirectory.set(directory, providersForDir);
+        }
+      });
+    });
   }
 
   /**
@@ -44,6 +85,14 @@ class SearchResultManager {
       this._cachedProviders[providerName] = new LazyProvider();
     }
     return this._cachedProviders[providerName];
+  }
+
+  on() {
+    this._emitter.on(...arguments);
+  }
+
+  off() {
+    this._emitter.off(...arguments);
   }
 
 }

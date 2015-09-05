@@ -81,7 +81,6 @@ class QuickSelectionComponent extends React.Component {
     this._subscriptions = new CompositeDisposable();
     this._boundSelect = () => this.select();
     this._boundHandleTabChange = (tab: TabInfo) => this._handleTabChange(tab);
-
     this.state = {
       activeTab: props.initialActiveTab,
       // treated as immutable
@@ -109,7 +108,7 @@ class QuickSelectionComponent extends React.Component {
         var newResults = {};
         this.setState(
           {
-            activeTab: nextProps.provider.constructor.name || this.state.activeTab,
+            activeTab: nextProps.activeProvider || this.state.activeTab,
             resultsByService: newResults,
           },
           () => {
@@ -534,7 +533,7 @@ class QuickSelectionComponent extends React.Component {
       <div className="omnisearch-tabs">
         <NuclideTabs
           tabs={tabs}
-          activeTabName={this.state.activeTab}
+          activeTabName={this.state.activeTab.name}
           onActiveTabChange={this._boundHandleTabChange}
           triggeringEvent="onMouseEnter"
         />
