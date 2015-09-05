@@ -33,7 +33,6 @@ var {
   Disposable,
   Emitter,
 } = require('atom');
-var QuickSelectionProvider = require('./QuickSelectionProvider');
 var {
   array,
 } = require('nuclide-commons');
@@ -54,22 +53,13 @@ function getDefaultResult(): QueryResult {
   };
 }
 
-function _loadProvider(providerName: string) {
-  var provider = null;
-  try {
-    // For now, assume that providers are stored in quick-open/lib.
-    provider = require('./' + providerName);
-  } catch (e) {
-    var message = `Provider "${providerName}" not found. `;
-    e.message = message + e.message;
-    throw e;
-  }
-  return provider;
-}
+var QuickSelectionDispatcher = require('./QuickSelectionDispatcher');
+var QuickSelectionActions = require('./QuickSelectionActions');
 
 var assign = Object.assign || require('object-assign');
 
 var RESULTS_CHANGED_EVENT = 'results_changed';
+var PROVIDERS_CHANGED = 'providers_changed';
 var MAX_OMNI_RESULTS_PER_SERVICE = 5;
 var OMNISEARCH_PROVIDER = {
   action: 'nuclide-quick-open:toggle-omni-search',
@@ -91,7 +81,10 @@ function isValidProvider(provider): boolean {
  * A singleton cache for search providers and results.
  */
 class SearchResultManager {
+  _dispatcherToken: string;
   RESULTS_CHANGED: string;
+  PROVIDERS_CHANGED: string;
+  _dispatcher: QuickSelectionDispatcher;
   _providersByDirectory: Map;
   _directories: Array;
   _cachedResults: Object;
@@ -101,8 +94,8 @@ class SearchResultManager {
   _activeProviderName: string;
 
   constructor() {
-    this._cachedProviders = {};
     this.RESULTS_CHANGED = RESULTS_CHANGED_EVENT;
+    this.PROVIDERS_CHANGED = PROVIDERS_CHANGED;
     this._registeredProviders = {
       directory: new Map(),
       global: new Map(),
@@ -111,12 +104,28 @@ class SearchResultManager {
     this._cachedResults = {};
     this._emitter = new Emitter();
     this._subscriptions = new CompositeDisposable();
+    this._dispatcher = QuickSelectionDispatcher;
     // Check is required for testing
     if (atom.project) {
       this._subscriptions.add(atom.project.onDidChangePaths(this._updateDirectories.bind(this)));
       this._updateDirectories();
     }
+    this._setUpFlux();
     this._activeProviderName = OMNISEARCH_PROVIDER.name;
+  }
+
+  _setUpFlux(): void {
+    this._dispatcherToken = QuickSelectionDispatcher.getInstance().register(action => {
+      switch (action.actionType) {
+        case QuickSelectionDispatcher.ActionTypes.QUERY:
+          this.executeQuery(action.query);
+          break;
+        case QuickSelectionDispatcher.ActionTypes.ACTIVE_PROVIDER_CHANGED:
+          this._activeProviderName = action.providerName;
+          this._emitter.emit(PROVIDERS_CHANGED);
+          break;
+      }
+    });
   }
 
   getActiveProviderName(): string {
@@ -149,20 +158,6 @@ class SearchResultManager {
     });
   }
 
-  /**
-   * Returns a lazily loaded, cached instance of the search provider with the given name.
-   *
-   * @param providerName Name of the provider to be `require()`d, instantiated and returned.
-   * @return cached provider instance.
-   */
-  getProvider(providerName: string) : QuickSelectionProvider {
-    if (!this._cachedProviders[providerName]) {
-      var LazyProvider = _loadProvider(providerName);
-      this._cachedProviders[providerName] = new LazyProvider();
-    }
-    return this._cachedProviders[providerName];
-  }
-
   on() {
     this._emitter.on(...arguments);
   }
@@ -170,6 +165,7 @@ class SearchResultManager {
   off() {
     this._emitter.off(...arguments);
   }
+
 
   registerProvider(service: Provider): Disposable {
     if (!isValidProvider(service)) {
@@ -198,7 +194,7 @@ class SearchResultManager {
    * Create a `toggle-provider` action on behalf of a provider.
    */
   toggleProvider(service: Provider): void {
-    // TODO
+    QuickSelectionActions.changeActiveProvider(service.constructor.name);
   }
 
   cacheResult(query: string, result: Object, directory: string, provider: Object, queryTimestamp: number): void {
@@ -248,19 +244,24 @@ class SearchResultManager {
     this._emitter.emit(RESULTS_CHANGED_EVENT);
   }
 
+  sanitizeQuery(query: string): string {
+    return query.trim();
+  }
+
   async executeQuery(query: string): Promise<void> {
+    var query = this.sanitizeQuery(query);
     // Keep track of query timestamp, so we can resolve race conditions.
     var timestamp = Date.now();
-    var provider;
-    for (provider of this._registeredProviders.global.values()) {
-      provider.executeQuery(query).then(result => {
-        this.processResult(query, result, 'global', provider, timestamp);
+    var globalProvider;
+    for (globalProvider of this._registeredProviders.global.values()) {
+      globalProvider.executeQuery(query).then(result => {
+        this.processResult(query, result, 'global', globalProvider, timestamp);
       });
-      this._setLoading(query, 'global', provider, timestamp);
+      this._setLoading(query, 'global', globalProvider, timestamp);
     }
     this._directories.forEach(directory => {
       var path = directory.getPath();
-      for (provider of this._providersByDirectory.get(directory)) {
+      for (var provider of this._providersByDirectory.get(directory)) {
         provider.executeQuery(query, directory).then(((boundProvider, result) => {
           this.processResult(query, result, path, boundProvider, timestamp);
         }).bind(this, provider));

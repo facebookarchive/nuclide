@@ -36,7 +36,7 @@ function getSearchResultManager() {
   return searchResultManager || (searchResultManager = require('./SearchResultManager'));
 };
 
-var DEFAULT_PROVIDER = 'FileListProvider';
+var DEFAULT_PROVIDER = 'OmniSearchResultProvider';
 var MAX_MODAL_WIDTH = 800;
 // don't pre-fill search input if selection is longer than this
 var MAX_SELECTION_LENGTH = 1000;
@@ -74,8 +74,19 @@ function getReactLazily() {
   return _react;
 }
 
+var trackProviderChange = debounce(providerName => {
+  analyticsSessionId = analyticsSessionId || Date.now().toString();
+  track(
+    AnalyticsEvents.CHANGE_TAB,
+    {
+      'quickopen-provider': providerName,
+      'quickopen-session': analyticsSessionId,
+    }
+  );
+}, AnalyticsDebounceDelays.CHANGE_TAB);
+
 class Activation {
-  _currentProvider: QuickSelectionProvider;
+  _currentProvider: Object;
   _previousFocus: ?Element;
   _reactDiv: Element;
   _searchComponent: QuickSelectionComponent;
@@ -89,8 +100,14 @@ class Activation {
 
     var {CompositeDisposable} = require('atom');
     this._subscriptions = new CompositeDisposable();
-
-    this._currentProvider = getSearchResultManager().getProvider(DEFAULT_PROVIDER);
+    this._currentProvider = getSearchResultManager().getProviderByName(DEFAULT_PROVIDER);
+    var QuickSelectionDispatcher = require('./QuickSelectionDispatcher');
+    QuickSelectionDispatcher.getInstance().register(action => {
+      if (action.actionType === QuickSelectionDispatcher.ActionTypes.ACTIVE_PROVIDER_CHANGED) {
+        this.toggleProvider(action.providerName);
+        this._render();
+      }
+    });
     this._reactDiv = document.createElement('div');
     this._searchPanel = atom.workspace.addModalPanel({item: this._reactDiv, visible: false});
     this._debouncedUpdateModalPosition = debounce(this._updateModalPosition.bind(this), 200);
@@ -131,22 +148,10 @@ class Activation {
     });
 
     this._searchComponent.onCancellation(() => this.closeSearchPanel());
-    this._searchComponent.onTabChange(debounce(providerName => {
-      analyticsSessionId = analyticsSessionId || Date.now().toString();
-      track(
-        AnalyticsEvents.CHANGE_TAB,
-        {
-          'quickopen-provider': providerName,
-          'quickopen-session': analyticsSessionId,
-        }
-      );
-      this.toggleProvider(providerName);
-    }, AnalyticsDebounceDelays.CHANGE_TAB));
     this._searchComponent.onSelectionChanged(debounce((selection: any) => {
       track(
         AnalyticsEvents.CHANGE_SELECTION,
         {
-
           'quickopen-selected-index': selection.selectedItemIndex.toString(),
           'quickopen-selected-service': Number.prototype.toString.call(selection.selectedItemIndex),
           'quickopen-selected-directory': selection.selectedDirectory,
@@ -170,12 +175,23 @@ class Activation {
     var React = getReactLazily();
     return React.render(
       <QuickSelectionComponent
-        provider={this._currentProvider}
         tabs={this._tabManager.getTabs()}
         initialActiveTab={this._tabManager.getDefaultTab()}
+        activeProvider={this._currentProvider}
+        onProviderChange={this.handleActiveProviderChange.bind(this)}
       />,
       this._reactDiv
     );
+  }
+
+  handleActiveProviderChange(newProviderName: string): void {
+    trackProviderChange(newProviderName);
+    this._currentProvider = getSearchResultManager().getProviderByName(newProviderName);
+    this._render();
+  }
+
+  toggleOmniSearchProvider(): void {
+    require('./QuickSelectionActions').changeActiveProvider('OmniSearchResultProvider');
   }
 
   toggleProvider(providerName: string) {
@@ -187,12 +203,12 @@ class Activation {
         'quickopen-session': analyticsSessionId,
       }
     );
-    var provider = getSearchResultManager().getProvider(providerName);
+    var provider = getSearchResultManager().getProviderByName(providerName);
     // "toggle" behavior
     if (
       this._searchPanel !== null &&
       this._searchPanel.isVisible() &&
-      provider === this._currentProvider
+      providerName === this._currentProvider.name
     ) {
       this.closeSearchPanel();
       return;
@@ -310,23 +326,7 @@ module.exports = {
       atom.commands.add('atom-workspace', {
         'nuclide-quick-open:toggle-omni-search': () => {
           activateSearchUI();
-          activation.toggleProvider('OmniSearchResultProvider');
-        },
-        'nuclide-quick-open:toggle-quick-open': () => {
-          activateSearchUI();
-          activation.toggleProvider('FileListProvider');
-        },
-        'nuclide-quick-open:toggle-symbol-search': () => {
-          activateSearchUI();
-          activation.toggleProvider('SymbolListProvider');
-        },
-        'nuclide-quick-open:toggle-biggrep-search': () => {
-          activateSearchUI();
-          activation.toggleProvider('BigGrepListProvider');
-        },
-        'nuclide-quick-open:toggle-openfilename-search': () => {
-          activateSearchUI();
-          activation.toggleProvider('OpenFileListProvider');
+          activation.toggleOmniSearchProvider();
         },
       })
     );

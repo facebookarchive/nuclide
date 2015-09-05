@@ -26,7 +26,10 @@ var {
   object,
 } = require('nuclide-commons');
 var React = require('react-for-atom');
+var searchResultManager = require('./SearchResultManager');
 var NuclideTabs = require('nuclide-ui-tabs');
+var {PropTypes} = React;
+var cx = require('react-classset');
 
 var {
   filterEmptyResults,
@@ -98,11 +101,13 @@ class QuickSelectionComponent extends React.Component {
       selectedDirectory: '',
       selectedService: '',
       selectedItemIndex: -1,
+      renderableProviders: searchResultManager.getRenderableProviders(),
     };
+    this.handleProvidersChangeBound = this.handleProvidersChange.bind(this);
   }
 
   componentWillReceiveProps(nextProps: any) {
-    if (nextProps.provider !== this.props.provider) {
+    if (nextProps.activeProvider !== this.props.activeProvider) {
       if (nextProps.provider) {
         this._getTextEditor().setPlaceholderText(nextProps.provider.getPromptText());
         var newResults = {};
@@ -112,7 +117,7 @@ class QuickSelectionComponent extends React.Component {
             resultsByService: newResults,
           },
           () => {
-            this.setQuery(this.refs['queryInput'].getText());
+            setImmediate(() => this.setQuery(this.refs['queryInput'].getText()));
             this._updateQueryHandler();
             this._emitter.emit('items-changed', newResults);
           }
@@ -154,6 +159,8 @@ class QuickSelectionComponent extends React.Component {
       }
     });
 
+    searchResultManager.on(searchResultManager.PROVIDERS_CHANGED, this.handleProvidersChangeBound);
+
     this._updateQueryHandler();
     inputTextEditor.model.onDidChange(() => this._handleTextInputChange());
     this.clear();
@@ -161,6 +168,7 @@ class QuickSelectionComponent extends React.Component {
 
   componentWillUnmount() {
     this._emitter.dispose();
+    searchResultManager.off(searchResultManager.PROVIDERS_CHANGED, this.handleProvidersChangeBound);
     this._subscriptions.dispose();
   }
 
@@ -180,19 +188,24 @@ class QuickSelectionComponent extends React.Component {
     return this._emitter.on('items-changed', callback);
   }
 
-  onTabChange(callback: (providerName: string) => void): Disposable {
-    return this._emitter.on('active-provider-changed', callback);
-  }
-
   _updateQueryHandler(): void {
     this._debouncedQueryHandler = debounce(
       () => this.setQuery(this.getInputTextEditor().model.getText()),
-      this.getProvider().getDebounceDelay()
+      this.getProvider().debounceDelay
     );
   }
 
   _handleTextInputChange(): void {
     this._debouncedQueryHandler();
+  }
+
+  handleProvidersChange() {
+    var renderableProviders = searchResultManager.getRenderableProviders();
+    var activeProviderName = searchResultManager.getActiveProviderName();
+    this.setState({
+      renderableProviders,
+      activeProviderName,
+    });
   }
 
   select() {
@@ -383,7 +396,7 @@ class QuickSelectionComponent extends React.Component {
   }
 
   componentForItem(item: any, serviceName: string): ReactElement {
-    return this.getProvider().getComponentForItem(item, serviceName);
+    return searchResultManager.getRendererForProvider(serviceName)(item, serviceName);
   }
 
   getSelectedIndex(): any {
@@ -435,35 +448,11 @@ class QuickSelectionComponent extends React.Component {
   }
 
   setQuery(query: string) {
-    var provider = this.getProvider();
-    if (!provider) {
-      return;
-    }
-
-    var newItems = provider.executeQuery(sanitizeQuery(query));
-    newItems.then((requestsByDirectory: GroupedResult) => {
-      var groupedByService: ResultsByService = {};
-      for (var dirName in requestsByDirectory) {
-        var servicesForDirectory = requestsByDirectory[dirName];
-        for (var serviceName in servicesForDirectory) {
-          var promise = servicesForDirectory[serviceName];
-          this._subscribeToResult(serviceName, dirName, promise);
-          if (groupedByService[serviceName] === undefined) {
-            groupedByService[serviceName] = {};
-          }
-          groupedByService[serviceName][dirName] = {
-            items: [],
-            waiting: true,
-            error: null,
-          };
-        }
-      }
-      this.setState({resultsByService: groupedByService});
-    });
+    require('./QuickSelectionActions').query(query);
   }
 
   getProvider(): QuickSelectionProvider {
-    return this.props.provider;
+    return this.props.activeProvider;
   }
 
   // TODO: We need a type that corresponds to <atom-text-editor> that is more specific than
@@ -503,18 +492,17 @@ class QuickSelectionComponent extends React.Component {
    */
   _handleTabChange(newTab: TabInfo) {
     clearTimeout(this._scheduledCancel);
-    var providerName = newTab.providerName;
-    if (providerName !== this.state.activeTab) {
-      this.setState({
-        activeTab: providerName,
-      }, () => {
-        this._emitter.emit('active-provider-changed', newTab.providerName);
-      });
+    var providerName = newTab.name;
+    if (providerName !== this.props.activeProvider.name) {
+      if (this.props.onProviderChange) {
+        this.props.onProviderChange(providerName);
+      }
+      this._emitter.emit('active-provider-changed', providerName);
     }
   }
 
   _renderTabs(): ReactElement {
-    var tabs = this.props.tabs.map(tab => {
+    var tabs = this.state.renderableProviders.map(tab => {
       var keyBinding = null;
       if (tab.action) {
         keyBinding = (
@@ -525,7 +513,7 @@ class QuickSelectionComponent extends React.Component {
       }
       return {
         ...tab,
-        name: tab.providerName,
+        name: tab.name,
         tabContent: <span>{tab.title}{keyBinding}</span>
       };
     });
@@ -567,6 +555,7 @@ class QuickSelectionComponent extends React.Component {
     var serviceNames = Object.keys(this.state.resultsByService);
     var services = serviceNames.map(serviceName => {
       var directories = this.state.resultsByService[serviceName];
+      var serviceTitle = this.state.resultsByService[serviceName].title;
       var directoryNames = Object.keys(directories);
       var directoriesForService = directoryNames.map(dirName => {
         var resultsForDirectory = directories[dirName];
@@ -637,7 +626,7 @@ class QuickSelectionComponent extends React.Component {
       return (
         <li className="list-nested-item" key={serviceName}>
           <div className="list-item">
-            <span className="icon icon-gear">{serviceName}</span>
+            <span className="icon icon-gear">{serviceTitle}</span>
           </div>
           <ul className="list-tree" ref="selectionList">
             {directoriesForService}
@@ -652,7 +641,7 @@ class QuickSelectionComponent extends React.Component {
       noResultsMessage = this._renderEmptyMessage(<span>¯\_(ツ)_/¯<br/>No results</span>);
     }
     var currentProvider = this.getProvider();
-    var promptText = (currentProvider && currentProvider.getPromptText()) || '';
+    var promptText = (currentProvider && currentProvider.prompt) || '';
     return (
       <div className="select-list omnisearch-modal" ref="modal">
         <AtomInput ref="queryInput" placeholderText={promptText} />
@@ -677,9 +666,20 @@ var TabInfoPropType = PropTypes.shape({
 });
 
 QuickSelectionComponent.propTypes = {
+  // TODO jxg: check which ones are actually needed anymore
+  // old
   provider: PropTypes.instanceOf(QuickSelectionProvider).isRequired,
   tabs: PropTypes.arrayOf(TabInfoPropType).isRequired,
   initialActiveTab: PropTypes.shape(TabInfoPropType).isRequired,
+  // new
+  activeProvider: PropTypes.shape({
+    action: PropTypes.string.isRequired,
+    debounceDelay: PropTypes.number.isRequired,
+    name: PropTypes.string.isRequired,
+    prompt: PropTypes.string.isRequired,
+    title: PropTypes.string.isRequired,
+  }).isRequired,
+  onProviderChange: PropTypes.func,
 };
 
 module.exports = QuickSelectionComponent;
