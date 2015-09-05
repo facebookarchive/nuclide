@@ -10,8 +10,8 @@
  */
 
 import type {
-  quickopen$FileResult
-} from './types';
+  FileResult,
+} from 'nuclide-quick-open-interfaces';
 
 var React = require('react-for-atom');
 var {fileTypeClass} = require('nuclide-atom-helpers');
@@ -19,7 +19,7 @@ var path = require('path');
 
 class FileResultComponent {
 
-  static getComponentForItem(item: quickopen$FileResult): ReactElement {
+  static getComponentForItem(item: FileResult): ReactElement {
     var filePath = item.path;
 
     var filenameStart = filePath.lastIndexOf(path.sep);

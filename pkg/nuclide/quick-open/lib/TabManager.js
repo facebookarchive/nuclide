@@ -9,40 +9,40 @@
  * the root directory of this source tree.
  */
 import type {Directory, Disposable} from 'atom';
-import type {TabInfo} from './types';
+import type {quickopen$ProviderSpec} from './types';
 
 import {array} from 'nuclide-commons';
 import {Emitter} from 'atom';
 
 // Keep `action` in sync with listeners in main.js.
-var DEFAULT_TABS: Array<TabInfo> = [
+var DEFAULT_TABS: Array<quickopen$ProviderSpec> = [
   {
-   providerName: 'OmniSearchResultProvider',
-   title: 'All Results',
-   action: 'nuclide-quick-open:toggle-omni-search',
+    providerName: 'OmniSearchResultProvider',
+    title: 'All Results',
+    action: 'nuclide-quick-open:toggle-omni-search',
   },
   {
-   providerName: 'FileListProvider',
-   title: 'Filenames',
-   action: 'nuclide-quick-open:toggle-quick-open',
+    providerName: 'FileListProvider',
+    title: 'Filenames',
+    action: 'nuclide-quick-open:toggle-quick-open',
   },
   {
-   providerName: 'OpenFileListProvider',
-   title: 'Open Files',
-   action: 'nuclide-quick-open:toggle-openfilename-search',
+    providerName: 'OpenFileListProvider',
+    title: 'Open Files',
+    action: 'nuclide-quick-open:toggle-openfilename-search',
   },
 ];
 
-var DYNAMIC_TABS: {[key: string]: TabInfo} = {
+var DYNAMIC_TABS: {[key: string]: quickopen$ProviderSpec} = {
   biggrep: {
-   providerName: 'BigGrepListProvider',
-   title: 'BigGrep',
-   action: 'nuclide-quick-open:toggle-biggrep-search',
+    providerName: 'BigGrepListProvider',
+    title: 'BigGrep',
+    action: 'nuclide-quick-open:toggle-biggrep-search',
   },
   hack: {
-   providerName: 'SymbolListProvider',
-   title: 'Symbols',
-   action: 'nuclide-quick-open:toggle-symbol-search',
+    providerName: 'SymbolListProvider',
+    title: 'Symbols',
+    action: 'nuclide-quick-open:toggle-symbol-search',
   },
 };
 
@@ -76,7 +76,9 @@ class TabManager {
   _emitter: Emitter;
   _subscription: Disposable;
 
-  constructor(getEligibleServicesFn: () => Promise<Array<Array<{name:string}>>> = getEligibleServices) {
+  constructor(
+    getEligibleServicesFn: () => Promise<Array<Array<{name:string}>>> = getEligibleServices
+  ) {
     this._tabsToRender = DEFAULT_TABS.slice();
     this._getEligibleServices = getEligibleServicesFn;
     this._emitter = new Emitter();
@@ -87,15 +89,15 @@ class TabManager {
   /**
    * Gets the last known list of tabs to render synchronously.
    * @return an array that should not be modified by the client. We would declare the return type
-   *     to be `Iterable<TabInfo>` to underscore this point, but that would be inconvenient because
-   *     then the return value would not have its own `.map()` method.
+   *     to be `Iterable<quickopen$ProviderSpec>` to underscore this point, but that would be
+   *     inconvenient because then the return value would not have its own `.map()` method.
    */
-  getTabs(): Array<TabInfo> {
+  getTabs(): Array<quickopen$ProviderSpec> {
     return this._tabsToRender;
   }
 
   /** @return the tab that should have focus, by default. */
-  getDefaultTab(): TabInfo {
+  getDefaultTab(): quickopen$ProviderSpec {
     return this._tabsToRender[0];
   }
 
@@ -104,7 +106,7 @@ class TabManager {
    * @param callback The return value will be ignored.
    * @return Disposable that can be used to remove this subscription.
    */
-  onDidChangeTabs(callback: (newTabs: Array<TabInfo>) => mixed): Disposable {
+  onDidChangeTabs(callback: (newTabs: Array<quickopen$ProviderSpec>) => mixed): Disposable {
     return this._emitter.on(DID_CHANGE_TABS_EVENT, callback);
   }
 
@@ -128,7 +130,7 @@ class TabManager {
   }
 
   /** @return  */
-  _isNewListOfTabs(tabsToRender: Array<TabInfo>): boolean {
+  _isNewListOfTabs(tabsToRender: Array<quickopen$ProviderSpec>): boolean {
     var existingTabs = this._tabsToRender;
     if (existingTabs.length !== tabsToRender.length) {
       return true;
@@ -136,7 +138,7 @@ class TabManager {
 
     var mismatchedTab = array.find(
       existingTabs,
-      (oldTab: TabInfo, index: number) => {
+      (oldTab: quickopen$ProviderSpec, index: number) => {
         var newTab = tabsToRender[index];
         if (oldTab.providerName !== newTab.providerName) {
           return newTab;

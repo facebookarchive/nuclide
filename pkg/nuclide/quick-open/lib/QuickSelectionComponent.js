@@ -10,18 +10,21 @@
  */
 
 import type {
-  quickopen$DirectoryName,
-  quickopen$GroupedResult,
   quickopen$ProviderSpec,
-  quickopen$ServiceName
 } from './types';
 
+import type {
+  DirectoryName,
+  GroupedResult,
+  ServiceName
+} from 'nuclide-quick-open-interfaces';
+
 type ResultContext = {
-  nonEmptyResults: quickopen$GroupedResult;
-  serviceNames: Array<quickopen$ServiceName>;
+  nonEmptyResults: GroupedResult;
+  serviceNames: Array<ServiceName>;
   currentServiceIndex: number;
   currentService: Object;
-  directoryNames: Array<quickopen$DirectoryName>;
+  directoryNames: Array<DirectoryName>;
   currentDirectoryIndex: number;
   currentDirectory: Object;
 };
@@ -183,7 +186,7 @@ class QuickSelectionComponent extends React.Component {
     return this._emitter.on('selection-changed', callback);
   }
 
-  onItemsChanged(callback: (newItems: quickopen$GroupedResult) => void): Disposable {
+  onItemsChanged(callback: (newItems: GroupedResult) => void): Disposable {
     return this._emitter.on('items-changed', callback);
   }
 
@@ -200,9 +203,13 @@ class QuickSelectionComponent extends React.Component {
   }
 
   handleResultsChange(): void {
+    this._updateResults(this.props.activeProvider.name);
+  }
+
+  _updateResults(activeProviderName: string): void {
     var updatedResults = searchResultManager.getResults(
       this.refs.queryInput.getText(),
-      this.props.activeProvider.name
+      activeProviderName
     );
     this.setState({
       resultsByService: updatedResults,
@@ -216,6 +223,7 @@ class QuickSelectionComponent extends React.Component {
       renderableProviders,
       activeProviderName,
     });
+    this._updateResults(activeProviderName);
   }
 
   select(): void {

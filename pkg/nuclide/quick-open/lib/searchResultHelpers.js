@@ -10,17 +10,15 @@
  */
 
 import type {
-  quickopen$FileResult,
-  quickopen$GroupedResult,
-} from './types';
+  FileResult,
+  GroupedResult,
+} from 'nuclide-quick-open-interfaces';
 
 var {
   isEmpty,
 } = require('nuclide-commons').object;
 
-function filterEmptyResults(
-  resultsGroupedByService: quickopen$GroupedResult
-): quickopen$GroupedResult {
+function filterEmptyResults(resultsGroupedByService: GroupedResult): GroupedResult {
   var filteredTree = {};
 
   for (var serviceName in resultsGroupedByService) {
@@ -38,9 +36,7 @@ function filterEmptyResults(
   return filteredTree;
 }
 
-function flattenResults(
-  resultsGroupedByService: quickopen$GroupedResult
-): Array<quickopen$FileResult> {
+function flattenResults(resultsGroupedByService: GroupedResult): Array<FileResult> {
   var items = [];
   for (var serviceName in resultsGroupedByService) {
     for (var dirName in resultsGroupedByService[serviceName].results) {

@@ -14,8 +14,8 @@ import type {
 } from './QuickSelectionComponent';
 
 import type {
-  quickopen$Provider,
-} from './types';
+  Provider,
+} from 'nuclide-quick-open-interfaces';
 
 import type {quickopen$TabManager} from './TabManager';
 
@@ -134,7 +134,7 @@ class Activation {
       });
 
       var query = this._searchComponent.getInputTextEditor().textContent;
-      var providerName = this._currentProvider.constructor.name;
+      var providerName = this._currentProvider.name;
       track(
         AnalyticsEvents.SELECT_FILE,
         {
@@ -164,7 +164,7 @@ class Activation {
   _updateModalPosition() {
     // Customize modal element
     var modalElement = this._searchPanel.getItem().parentNode;
-    var {width, height} = document.documentElement.getBoundingClientRect();
+    var {width} = document.documentElement.getBoundingClientRect();
     var modalWidth = Math.min(MAX_MODAL_WIDTH, width);
     modalElement.style.setProperty('width', modalWidth + 'px');
     modalElement.style.setProperty('margin-left', (-modalWidth / 2) + 'px');
@@ -337,7 +337,7 @@ module.exports = {
     listeners.add(atom.project.onDidChangePaths(initSearch));
   },
 
-  registerProvider(service: quickopen$Provider ): atom$Disposable {
+  registerProvider(service: Provider ): atom$Disposable {
     return getSearchResultManager().registerProvider(service);
   },
 
