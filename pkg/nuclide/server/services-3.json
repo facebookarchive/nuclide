@@ -1,5 +1,10 @@
 [
   {
+    "definition": "nuclide-buck-base/lib/BuckProject.def",
+    "implementation": "nuclide-buck-base/lib/LocalBuckProject.js",
+    "name": "BuckProject"
+  },
+  {
     "name": "InfoService",
     "definition": "lib/services/InfoService.def",
     "implementation": "lib/services/InfoService.js"

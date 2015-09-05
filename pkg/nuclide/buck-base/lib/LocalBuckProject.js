@@ -13,7 +13,6 @@ var {asyncExecute} = require('nuclide-commons');
 var {fsPromise} = require('nuclide-commons');
 var logger = require('nuclide-logging').getLogger();
 var path = require('path');
-var BuckProject = require('./BuckProject');
 
 type BuckConfig = Object;
 
@@ -31,7 +30,7 @@ var BLOCKING_BUCK_COMMAND_QUEUE_PREFIX = 'buck';
  * Represents a Buck project on disk. All Buck commands for a project should be
  * done through an instance of this class.
  */
-class LocalBuckProject extends BuckProject {
+export class BuckProject {
 
   _rootPath: string;
   _serialQueueName: string;
@@ -42,9 +41,12 @@ class LocalBuckProject extends BuckProject {
    *     .buckconfig file to configure the project.
    */
   constructor(options: {rootPath: string}) {
-    super();
     this._rootPath = options.rootPath;
     this._serialQueueName = BLOCKING_BUCK_COMMAND_QUEUE_PREFIX + this._rootPath;
+  }
+
+  dispose() {
+    // This method is required by the service framework.
   }
 
   getPath() {
@@ -266,5 +268,3 @@ class LocalBuckProject extends BuckProject {
     return json;
   }
 }
-
-module.exports = LocalBuckProject;
