@@ -12,13 +12,11 @@
 var React = require('react-for-atom');
 var {TabManager} = require('../lib/TabManager');
 var QuickSelectionComponent = require('../lib/QuickSelectionComponent');
-var QuickSelectionProvider = require('../lib/QuickSelectionProvider');
 
-class TestQuickSelectionProvider extends QuickSelectionProvider {
+class TestQuickSelectionProvider {
   _items: {string: {string: Promise<FileResult>}};
 
   constructor(items: {string: {string: Promise<FileResult>}}) {
-    super();
     this._items = items;
   }
 
