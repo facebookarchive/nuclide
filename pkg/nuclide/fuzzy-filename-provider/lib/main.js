@@ -9,14 +9,28 @@
  * the root directory of this source tree.
  */
 
+import type {
+  Provider,
+  Store,
+} from 'nuclide-quick-open-interfaces';
+
 var {
   CompositeDisposable,
   Disposable,
 } = require('atom');
 
+var providerInstance: ?Provider;
+function getProviderInstance(): Provider {
+  if (providerInstance == null) {
+    var FuzzyFileNameProvider = require('./FuzzyFileNameProvider');
+    providerInstance = {...FuzzyFileNameProvider};
+  }
+  return providerInstance;
+}
+
 class Activation {
   _disposables: CompositeDisposable;
-  _store: ?Object;
+  _store: ?Store;
 
   constructor(state: ?Object) {
     this._disposables = new CompositeDisposable();
@@ -27,14 +41,14 @@ class Activation {
       atom.commands.add('atom-workspace', {
         'nuclide-fuzzy-filename-provider:toggle-provider': () => {
           if (this._store) {
-            this._store.toggleProvider(require('./FuzzyFileNameProvider'));
+            this._store.toggleProvider(getProviderInstance());
           }
         },
       })
     );
   }
 
-  setStore(store): void {
+  setStore(store: Store): void {
     this._store = store;
   }
 
@@ -45,25 +59,27 @@ class Activation {
 }
 
 var activation: ?Activation = null;
+function getActivation() {
+  if (activation == null) {
+    activation = new Activation();
+    activation.activate();
+  }
+  return activation;
+}
+
 module.exports = {
 
-  registerProvider() {
-    return require('./FuzzyFileNameProvider');
+  registerProvider(): Provider {
+    return getProviderInstance();
   },
 
-  registerStore(store: Object): atom$Disposable {
-    if (activation === null) {
-      this.activate();
-    }
-    activation.setStore(store);
-    return new Disposable(() => this.setStore(null));
+  registerStore(store: Store): atom$Disposable {
+    getActivation().setStore(store);
+    return new Disposable(() => getActivation().dispose());
   },
 
   activate(state: ?Object) {
-    if (!activation) {
-      activation = new Activation(state);
-      activation.activate();
-    }
+    getActivation();
   },
 
   deactivate() {
