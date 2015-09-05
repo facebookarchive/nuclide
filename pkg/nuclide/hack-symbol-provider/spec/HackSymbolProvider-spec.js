@@ -20,7 +20,7 @@ var provider;
 
 describe('HackSymbolProvider', () => {
   beforeEach(() => {
-    provider = new HackSymbolProvider();
+    provider = {...HackSymbolProvider};
   });
 
   describe('executeQuery', () => {

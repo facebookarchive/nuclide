@@ -9,10 +9,11 @@
  * the root directory of this source tree.
  */
 
-type FileResult = {
-  path: string;
-  name: string;
-};
+import type {
+  FileResult,
+  Provider,
+  ProviderType,
+} from 'nuclide-quick-open-interfaces';
 
 var path = require('path');
 var React = require('react-for-atom');
@@ -33,44 +34,48 @@ var ICONS = {
   'unknown': 'icon-squirrel',
 };
 
-function bestIconForItem(item) {
+function bestIconForItem(item: FileResult): string {
   if (!item.additionalInfo) {
-   return ICONS.default;
+    return ICONS.default;
   }
   // Look for exact match.
   if (ICONS[item.additionalInfo]) {
-   return ICONS[item.additionalInfo];
+    return ICONS[item.additionalInfo];
   }
   // Look for presence match, e.g. in 'static method in FooBarClass'.
   for (var keyword in ICONS) {
-   if (item.additionalInfo.indexOf(keyword) !== -1) {
-     return ICONS[keyword];
-   }
+    if (item.additionalInfo.indexOf(keyword) !== -1) {
+      return ICONS[keyword];
+    }
   }
   return ICONS.unknown;
 }
 
-class HackSymbolProvider {
+var HackSymbolProvider: Provider = {
 
-  getProviderType(): string {
+  getName(): string {
+    return 'HackSymbolProvider';
+  },
+
+  getProviderType(): ProviderType {
     return 'DIRECTORY';
-  }
+  },
 
   getAction(): string {
     return 'nuclide-hack-symbol-provider:toggle-provider';
-  }
+  },
 
   getPromptText(): string {
     return 'Search Hack symbols. Available prefixes: @function %constant #class';
-  }
+  },
 
   getTabTitle(): string {
     return 'Hack Symbols';
-  }
+  },
 
   isEligibleForDirectory(directory: atom$Directory): boolean {
     return true;
-  }
+  },
 
   async executeQuery(query: string, directory: atom$Directory): Promise<Array<FileResult>> {
     if (query.length === 0) {
@@ -97,12 +102,12 @@ class HackSymbolProvider {
       }));
     }
     return request.results;
-  }
+  },
 
   getComponentForItem(item: FileResult): ReactElement {
     var filePath = item.path;
     var filename = path.basename(filePath);
-    var name = item.name;
+    var name = item.name || '';
 
     var icon = bestIconForItem(item);
     var symbolClasses = `file icon ${icon}`;
@@ -112,7 +117,7 @@ class HackSymbolProvider {
         <span className="omnisearch-symbol-result-filename">{filename}</span>
       </div>
     );
-  }
-}
+  },
+};
 
 module.exports = HackSymbolProvider;

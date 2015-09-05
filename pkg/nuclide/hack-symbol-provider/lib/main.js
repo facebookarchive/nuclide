@@ -9,27 +9,28 @@
  * the root directory of this source tree.
  */
 
-type ResultsStore = {
-  toggleProvider: Function;
-};
+import type {
+  Provider,
+  Store,
+} from 'nuclide-quick-open-interfaces';
 
 var {
   CompositeDisposable,
   Disposable,
 } = require('atom');
 
-var providerInstance;
-function getProviderInstance() {
+var providerInstance: ?Provider;
+function getProviderInstance(): Provider {
   if (providerInstance == null) {
     var HackSymbolProvider = require('./HackSymbolProvider');
-    providerInstance = new HackSymbolProvider();
+    providerInstance = {...HackSymbolProvider};
   }
   return providerInstance;
 }
 
 class Activation {
   _disposables: CompositeDisposable;
-  _store: ?ResultsStore;
+  _store: ?Store;
 
   constructor(state: ?Object) {
     this._disposables = new CompositeDisposable();
@@ -47,7 +48,7 @@ class Activation {
     );
   }
 
-  setStore(store): void {
+  setStore(store: Store): void {
     this._store = store;
   }
 
@@ -68,13 +69,13 @@ function getActivation() {
 
 module.exports = {
 
-  registerProvider() {
+  registerProvider(): Provider {
     return getProviderInstance();
   },
 
-  registerStore(store: ResultsStore): atom$Disposable {
+  registerStore(store: Store): atom$Disposable {
     getActivation().setStore(store);
-    return new Disposable(() => this.setStore(null));
+    return new Disposable(() => getActivation().dispose());
   },
 
   activate(state: ?Object) {
