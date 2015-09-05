@@ -19,10 +19,9 @@ import type {
 function getOpenTabsMatching(query: string): Array<FileResult> {
   var queryRegExp = new RegExp(query, 'i');
   return atom.workspace.getTextEditors()
-   .sort((a, b) => b.lastOpened - a.lastOpened)
-   .map(editor => editor.getPath())
-   .filter(path => !query.length || queryRegExp.test(path))
-   .map(file => ({path: file, matchIndexes: []}));
+    .map(editor => editor.getPath())
+    .filter(path => path != null && (!query.length || queryRegExp.test(path)))
+    .map(file => ({path: file, matchIndexes: []}));
 }
 
 var OpenFileListProvider: Provider = {
