@@ -9,42 +9,72 @@
  * the root directory of this source tree.
  */
 
+import type {
+  FileResult,
+  Provider,
+  ProviderType,
+} from 'nuclide-quick-open-interfaces';
+
 var FIXTURE = ['ac', 'accumsan', 'adipiscing', 'amet', 'auctor', 'consectetur', 'dictum', 'dolor', 'efficitur', 'eget', 'elit', 'enim', 'eros', 'eu', 'Fusce', 'imperdiet', 'in', 'ipsum', 'lacus', 'leo', 'libero', 'lorem', 'Lorem', 'luctus', 'mattis', 'maximus', 'mi', 'Morbi', 'Nam', 'nec', 'non', 'Nulla', 'Nullam', 'odio', 'placerat', 'quis', 'sagittis', 'sapien', 'scelerisque', 'Sed', 'semper', 'sit', 'tellus', 'tempus', 'tincidunt', 'turpis', 'ultricies', 'Ut', 'vel', 'venenatis', 'vestibulum', 'Vestibulum', 'vitae'];
 
-class ExampleProvider {
+var ExampleProvider: Provider = {
 
-  // One of 'GLOBAL', 'DIRECTORY'.
-  // DIRECTORY providers work in the context of a mounted directory (e.g. Hack symbol search).
-  // GLOBAL providers work regardless of mounted directories (e.g. open tabs search; web requests).
-  getProviderType(): string {
+  /**
+   * A unique name, used internally by quick-open to store cached results.
+   */
+  getName(): string {
+    return 'ExampleProvider';
+  },
+
+  /**
+   * One of 'GLOBAL', 'DIRECTORY'.
+   * DIRECTORY providers work in the context of a mounted directory (e.g. Hack symbol search).
+   * GLOBAL providers work regardless of mounted directories (e.g. open tabs search; web requests).
+   */
+  getProviderType(): ProviderType {
     return 'DIRECTORY';
-  }
+  },
 
   /**
    * Returns the Atom action for toggling this provider. Used to render the associated keybinding.
    */
   getAction(): string {
     return 'sample-quickopen-provider-example:toggle-provider';
-  }
+  },
 
+  /**
+   * Optional: return a specific delay (in ms) used to debounce queries to this provider.
+   * Default: 200ms. Useful for e.g. reducing the delay for cheap queries (e.g. opened files).
+   */
   getDebounceDelay(): number {
     return 0;
-  }
+  },
 
+  /**
+   * Shown as a placeholder in the query input.
+   */
   getPromptText(): string {
     return 'Search Lorem Ipsum';
-  }
+  },
 
+  /**
+   * The title of the quick-open tab that exclusively contains results from this provider.
+   */
   getTabTitle(): string {
     return 'IpsumSearch';
-  }
+  },
 
-  // Only required if providerType === 'DIRECTORY'
+  /**
+   * Only required if providerType === 'DIRECTORY'.
+   */
   isEligibleForDirectory(directory: atom$Directory): boolean {
     return true;
-  }
+  },
 
-  executeQuery(query: string, directory?: atom$Directory): Promise<Array<{path: string;}>> {
+  /**
+   * Return the actual search results.
+   */
+  executeQuery(query: string, directory?: atom$Directory): Promise<Array<FileResult>> {
     if (!query.length) {
       return Promise.resolve([]);
     }
@@ -56,7 +86,7 @@ class ExampleProvider {
     return new Promise((resolve, reject) => {
       setTimeout(() => { resolve(results); }, 1000);
     });
-  }
+  },
 
   /**
    * getComponentForItem Optional function that returns a React Element.
@@ -76,6 +106,6 @@ class ExampleProvider {
     );
   };
   */
-}
+};
 
-module.exports = new ExampleProvider();
+module.exports = ExampleProvider;

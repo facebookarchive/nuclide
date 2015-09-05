@@ -5,7 +5,8 @@
   "version": "0.0.0",
   "description": "An example provider for the nuclide-quick-open package",
   "devDependencies": {
-    "nuclide-external-interfaces": "0.0.24"
+    "nuclide-external-interfaces": "0.0.24",
+    "nuclide-quick-open-interfaces": "0.0.0"
   },
   "providedServices": {
     "nuclide-quick-open-register-provider": {

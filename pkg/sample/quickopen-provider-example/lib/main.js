@@ -9,18 +9,27 @@
  * the root directory of this source tree.
  */
 
+import type {Store} from 'nuclide-quick-open-interfaces';
+
 var {
   CompositeDisposable,
   Disposable,
 } = require('atom');
 
+var providerInstance;
+function getProviderInstance() {
+  if (providerInstance == null) {
+    var ExampleProvider = require('./ExampleProvider');
+    providerInstance = {...ExampleProvider};
+  }
+  return providerInstance;
+}
+
 class Activation {
   _disposables: CompositeDisposable;
-  store: ?Object;
+  store: ?Store;
 
   constructor(state: ?Object) {
-     // Assign all fields here so they are non-nullable for
-     // the lifetime of Activation.
      this._disposables = new CompositeDisposable();
   }
 
@@ -29,43 +38,46 @@ class Activation {
       atom.commands.add('atom-workspace', {
         'sample-quickopen-provider-example:toggle-provider': () => {
           if (this.store) {
-            this.store.toggleProvider(require('./ExampleProvider'));
+            this.store.toggleProvider(getProviderInstance());
           }
         },
       })
     );
   }
 
-  setStore(store) {
+  setStore(store: Store): void {
     this.store = store;
   }
 
   dispose() {
-     this._disposables.dispose();
+    this.store = null;
+    this._disposables.dispose();
   }
 }
 
 var activation: ?Activation = null;
+function getActivation() {
+  if (activation == null) {
+    activation = new Activation();
+    activation.activate();
+  }
+  return activation;
+}
+
 module.exports = {
 
   registerProvider() {
-    return require('./ExampleProvider');
+    return getProviderInstance();
   },
 
-  registerStore(store: Provider): atom$Disposable {
-    if (!activation) {
-      this.activate();
-    }
-    // Keep a reference to ResultsStore, so that the example provider can set itself as active.
-    activation.setStore(store);
-    return new Disposable(() => this.setStore(null));
+  registerStore(store: Store): atom$Disposable {
+    // Keep a reference to Store, so that the example provider can set itself as active.
+    getActivation().setStore(store);
+    return new Disposable(() => getActivation().dispose());
   },
 
   activate(state: ?Object) {
-    if (!activation) {
-      activation = new Activation(state);
-      activation.activate();
-    }
+    getActivation();
   },
 
   deactivate() {
