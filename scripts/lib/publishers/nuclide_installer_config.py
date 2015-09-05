@@ -17,11 +17,6 @@ PACKAGES_TO_EXCLUDE = set([
 ])
 
 def generate_config(semver_version, apm_package_names):
-    # TODO(mbolin): Consider adding an entry for linter@0.12.1. The problems are:
-    # (1) It seems like linter is being deprecated in favor of linter-plus.
-    # (2) We probably do not want to override the user's version of linter if it
-    #     is already installed. We need some way to annotate this special behavior
-    #     in the config.
     packages = []
 
     for name in apm_package_names:
