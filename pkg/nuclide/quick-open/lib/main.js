@@ -337,6 +337,14 @@ module.exports = {
     listeners.add(atom.project.onDidChangePaths(initSearch));
   },
 
+  registerProvider(service: Provider): atom$Disposable {
+    return getSearchResultManager().registerProvider(service);
+  },
+
+  registerStore() {
+    return getSearchResultManager();
+  },
+
   deactivate(): void {
     if (activation) {
       activation.dispose();

@@ -27,6 +27,22 @@
     "react-for-atom": "0.13.6"
   },
   "devDependencies": {
-    "nuclide-external-interfaces": "0.0.0"
+    "nuclide-external-interfaces": "0.0.0",
+    "nuclide-logging": "0.0.0"
+  },
+  "consumedServices": {
+    "nuclide-quick-open-register-provider": {
+      "versions": {
+        "0.0.0": "registerProvider"
+      }
+    }
+  },
+  "providedServices": {
+    "nuclide-quick-open-register-store": {
+      "description": "A store that allows actions such as toggling the currently active provider",
+      "versions": {
+        "0.0.0": "registerStore"
+      }
+    }
   }
 }
