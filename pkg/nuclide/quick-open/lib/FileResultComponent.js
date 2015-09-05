@@ -9,7 +9,9 @@
  * the root directory of this source tree.
  */
 
-import type {FileResult} from './types';
+import type {
+  quickopen$FileResult
+} from './types';
 
 var React = require('react-for-atom');
 var {fileTypeClass} = require('nuclide-atom-helpers');
@@ -17,7 +19,7 @@ var path = require('path');
 
 class FileResultComponent {
 
-  static getComponentForItem(item: FileResult): ReactElement {
+  static getComponentForItem(item: quickopen$FileResult): ReactElement {
     var filePath = item.path;
 
     var filenameStart = filePath.lastIndexOf(path.sep);
@@ -64,7 +66,7 @@ class FileResultComponent {
         <span className={folderClasses}>{folderComponents}</span>
       </div>
     );
-  };
+  }
 }
 
 module.exports = FileResultComponent;

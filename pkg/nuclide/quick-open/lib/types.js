@@ -11,31 +11,37 @@
 
 // TODO(7865619): Currently, this hardcodes the structure of file name search results, but this
 // should be a disjoint union of all known search result types.
-export type FileResult = {
-  matchIndexes: Array<number>;
+export type quickopen$FileResult = {
   path: string;
-  score: number;
+  matchIndexes: ?Array<number>;
+  score: ?number;
 };
 
-export type DirectoryName = string;
-export type ServiceName = string;
+export type quickopen$DirectoryName = string;
+export type quickopen$ServiceName = string;
 
-export type GroupedResult = {
-  [key: DirectoryName]: {
-    [key: ServiceName]: {
-      items: Promise<Array<FileResult>>;
+export type quickopen$GroupedResult = {
+  [key: quickopen$DirectoryName]: {
+    [key: quickopen$ServiceName]: {
+      results: Array<quickopen$FileResult>;
+      error: ?Object;
+      loading: boolean;
     }
   }
 };
 
-export type GroupedResultPromise = Promise<GroupedResult>;
+export type quickopen$Provider = {
+  getProviderType: Function;
+  executeQuery: Function;
+  getTabTitle: Function;
+};
 
-export type TabInfo = {
+export type quickopen$TabInfo = {
   providerName: string;
   title: string;
   action: string;
 };
 
-
 var QuickSelectionProvider = require('./QuickSelectionProvider');
 export type QuickSelectionProvider = QuickSelectionProvider;
+export type quickopen$GroupedResultPromise = Promise<quickopen$GroupedResult>;

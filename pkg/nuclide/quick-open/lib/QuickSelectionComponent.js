@@ -10,11 +10,11 @@
  */
 
 import type {
-  DirectoryName,
-  FileResult,
-  GroupedResult,
-  ServiceName,
-  TabInfo,
+  quickopen$DirectoryName,
+  quickopen$FileResult,
+  quickopen$GroupedResult,
+  quickopen$ServiceName,
+  quickopen$TabInfo,
 } from './types';
 
 var AtomInput = require('nuclide-ui-atom-input');
@@ -59,9 +59,9 @@ function _findKeybindingForAction(action: string, target: HTMLElement): string {
 
 
 type ResultsByService = {
-  [key: ServiceName]: {
-    [key: DirectoryName]: {
-      items: Array<FileResult>,
+  [key: quickopen$ServiceName]: {
+    [key: quickopen$DirectoryName]: {
+      items: Array<quickopen$FileResult>,
       waiting: boolean,
       error: ?string,
     }
@@ -75,14 +75,14 @@ class QuickSelectionComponent extends React.Component {
   _modalNode: HTMLElement;
   _debouncedQueryHandler: () => void;
   _boundSelect: () => void;
-  _boundHandleTabChange: (tab: TabInfo) => void;
+  _boundHandleTabChange: (tab: quickopen$TabInfo) => void;
 
   constructor(props: Object) {
     super(props);
     this._emitter = new Emitter();
     this._subscriptions = new CompositeDisposable();
     this._boundSelect = () => this.select();
-    this._boundHandleTabChange = (tab: TabInfo) => this._handleTabChange(tab);
+    this._boundHandleTabChange = (tab: quickopen$TabInfo) => this._handleTabChange(tab);
     this.state = {
       activeTab: props.initialActiveTab,
       // treated as immutable
@@ -186,7 +186,7 @@ class QuickSelectionComponent extends React.Component {
     return this._emitter.on('selection-changed', callback);
   }
 
-  onItemsChanged(callback: (newItems: GroupedResult) => void): Disposable {
+  onItemsChanged(callback: (newItems: quickopen$GroupedResult) => void): Disposable {
     return this._emitter.on('items-changed', callback);
   }
 
@@ -471,7 +471,7 @@ class QuickSelectionComponent extends React.Component {
    * @param newTab is actually a TabInfo plus the `name` and `tabContent` properties added by
    *     _renderTabs(), which created the tab object in the first place.
    */
-  _handleTabChange(newTab: TabInfo) {
+  _handleTabChange(newTab: quickopen$TabInfo) {
     clearTimeout(this._scheduledCancel);
     var providerName = newTab.name;
     if (providerName !== this.props.activeProvider.name) {

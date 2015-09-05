@@ -17,7 +17,7 @@ import type {
   QuickSelectionProvider,
 } from './types';
 
-import type {TabManager} from './TabManager';
+import type {quickopen$TabManager} from './TabManager';
 
 var trackFunction;
 function track(...args) {
@@ -29,12 +29,12 @@ var debounceFunction = null;
 function debounce(...args) {
   var debounceFunc = debounceFunction || (debounceFunction = require('nuclide-commons').debounce);
   return debounceFunc.apply(null, args);
-};
+}
 
 var searchResultManager = null;
 function getSearchResultManager() {
   return searchResultManager || (searchResultManager = require('./SearchResultManager'));
-};
+}
 
 var DEFAULT_PROVIDER = 'OmniSearchResultProvider';
 var MAX_MODAL_WIDTH = 800;
@@ -92,7 +92,7 @@ class Activation {
   _searchComponent: QuickSelectionComponent;
   _searchPanel: atom$Panel;
   _subscriptions: atom$CompositeDisposable;
-  _tabManager: TabManager;
+  _tabManager: quickopen$TabManager;
   _debouncedUpdateModalPosition: () => void;
 
   constructor() {

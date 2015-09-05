@@ -28,6 +28,11 @@ type ProviderSpec = {
 }
 
 var assert = require('assert');
+
+import type {
+  quickopen$Provider
+} from 'types';
+
 var {
   CompositeDisposable,
   Disposable,
@@ -86,11 +91,11 @@ class SearchResultManager {
   PROVIDERS_CHANGED: string;
   _dispatcher: QuickSelectionDispatcher;
   _providersByDirectory: Map;
-  _directories: Array;
+  _directories: Array<Object>;
   _cachedResults: Object;
-  _registeredProviders: {directory: Map<string, Provider>; global: Map<string, Provider>;};
   _emitter: Emitter;
   _subscriptions: CompositeDisposable;
+  _registeredProviders: {directory: Map<string, quickopen$Provider>; global: Map<string, quickopen$Provider>;};
   _activeProviderName: string;
 
   constructor() {
@@ -166,8 +171,7 @@ class SearchResultManager {
     this._emitter.off(...arguments);
   }
 
-
-  registerProvider(service: Provider): Disposable {
+  registerProvider(service: quickopen$Provider): Disposable {
     if (!isValidProvider(service)) {
       getLogger().error(`Quick-open provider ${service.constructor.name} is not a valid provider`);
     }
@@ -193,7 +197,7 @@ class SearchResultManager {
   /**
    * Create a `toggle-provider` action on behalf of a provider.
    */
-  toggleProvider(service: Provider): void {
+  toggleProvider(service: quickopen$Provider): void {
     QuickSelectionActions.changeActiveProvider(service.constructor.name);
   }
 
@@ -275,7 +279,7 @@ class SearchResultManager {
     return this._registeredProviders.global.has(providerName);
   }
 
-  _getProviderByName(providerName: string): Provider {
+  _getProviderByName(providerName: string): quickopen$Provider {
     if (this._isGlobalProvider(providerName)) {
       return this._registeredProviders.global.get(providerName);
     }
@@ -337,7 +341,7 @@ class SearchResultManager {
     return partial;
   }
 
-  getProviderByName(providerName: string): Provider {
+  getProviderByName(providerName: string): quickopen$Provider {
     if (providerName === OMNISEARCH_PROVIDER.name) {
       return {...OMNISEARCH_PROVIDER};
     }
@@ -347,7 +351,7 @@ class SearchResultManager {
   /**
    * Turn a Provider into a plain "spec" object consumed by QuickSelectionComponent.
    */
-  _bakeProvider(provider: Provider): ProviderSpec {
+  _bakeProvider(provider: quickopen$Provider): ProviderSpec {
     return {
       action: provider.getAction && provider.getAction() || '',
       debounceDelay: provider.getDebounceDelay && provider.getDebounceDelay() || 200,
