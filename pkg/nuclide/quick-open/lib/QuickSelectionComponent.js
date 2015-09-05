@@ -485,10 +485,11 @@ class QuickSelectionComponent extends React.Component {
   _renderTabs(): ReactElement {
     var tabs = this.state.renderableProviders.map(tab => {
       var keyBinding = null;
-      if (tab.action) {
+      var humanizedKeybinding = _findKeybindingForAction(tab.action || '', this._modalNode);
+      if (humanizedKeybinding !== '') {
         keyBinding = (
           <kbd className="key-binding">
-            {_findKeybindingForAction(tab.action, this._modalNode)}
+            {humanizedKeybinding}
           </kbd>
         );
       }
