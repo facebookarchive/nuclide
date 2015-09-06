@@ -703,6 +703,20 @@ declare class atom$Project {
   relativizePath(): Array<string>; // [projectPath: ?string, relativePath: string]
 }
 
+declare class atom$StatusBarTile {
+  constructor(item: HTMLElement, priority: number, collection: Array<atom$StatusBarTile>): void;
+  getItem(): HTMLElement;
+  getPriority(): number;
+  destroy(): void;
+}
+
+declare class atom$StatusBarView {
+  addLeftTile(options: mixed): atom$StatusBarTile;
+  addRightTile(options: mixed): atom$StatusBarTile;
+  getLeftTiles(): Array<atom$StatusBarTile>;
+  getRightTiles(): Array<atom$StatusBarTile>;
+}
+
 declare class atom$TextBuffer {
   file: ?atom$File;
 
