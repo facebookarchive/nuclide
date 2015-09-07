@@ -12,6 +12,7 @@ import invariant from 'assert';
 import {CompositeDisposable} from 'atom';
 
 import type DiagnosticsPanel from './DiagnosticsPanel';
+import type StatusBarTile from './StatusBarTile';
 
 var DEFAULT_HIDE_DIAGNOSTICS_PANEL = true;
 var DEFAULT_TABLE_HEIGHT = 200;
@@ -20,7 +21,7 @@ var DEFAULT_FILTER_BY_ACTIVE_EDITOR = false;
 var subscriptions: ?CompositeDisposable = null;
 var bottomPanel: ?atom$Panel = null;
 var getDiagnosticsPanel: ?(() => ?DiagnosticsPanel);
-
+var statusBarTile: ?StatusBarTile;
 
 type ActivationState = {
   hideDiagnosticsPanel: boolean;
@@ -52,6 +53,13 @@ function createPanel(diagnosticUpdater: DiagnosticUpdater, disposables: Composit
     activationState.hideDiagnosticsPanel = !visible;
   });
   disposables.add(onDidChangeVisibleSubscription);
+}
+
+function getStatusBarTile(): StatusBarTile {
+  if (!statusBarTile) {
+    statusBarTile = new (require('./StatusBarTile'))();
+  }
+  return statusBarTile;
 }
 
 function tryRecordActivationState(): void {
@@ -91,10 +99,11 @@ module.exports = {
   },
 
   consumeDiagnosticUpdates(diagnosticUpdater: DiagnosticUpdater): void {
-    invariant(subscriptions);
+    getStatusBarTile().consumeDiagnosticUpdates(diagnosticUpdater);
 
     var {applyUpdateToEditor} = require('./gutter');
 
+    invariant(subscriptions);
     subscriptions.add(atom.workspace.observeTextEditors((editor: TextEditor) => {
       var filePath = editor.getPath();
       if (!filePath) {
@@ -141,6 +150,10 @@ module.exports = {
     }
   },
 
+  consumeStatusBar(statusBar: atom$StatusBar): void {
+    getStatusBarTile().consumeStatusBar(statusBar);
+  },
+
   deactivate(): void {
     if (subscriptions) {
       subscriptions.dispose();
@@ -150,6 +163,11 @@ module.exports = {
     if (bottomPanel) {
       bottomPanel.destroy();
       bottomPanel = null;
+    }
+
+    if (statusBarTile) {
+      statusBarTile.dispose();
+      statusBarTile = null;
     }
 
     diagnosticUpdaterForTable = null;

@@ -264,6 +264,27 @@ declare class atom$Range {
   serialize(): Array<Array<number>>;
 }
 
+type RawStatusBarTile = {
+  item: HTMLElement;
+  priority: number;
+}
+
+type atom$StatusBarTile = {
+  getPriority(): number;
+  getItem(): HTMLElement;
+  destroy(): void;
+}
+
+/**
+ * This API is defined at https://github.com/atom/status-bar.
+ */
+declare class atom$StatusBar {
+  addLeftTile(tile: RawStatusBarTile): atom$StatusBarTile;
+  addRightTile(tile: RawStatusBarTile): atom$StatusBarTile;
+  getLeftTiles(): Array<atom$StatusBarTile>;
+  getRightTiles(): Array<atom$StatusBarTile>;
+}
+
 declare class atom$ThemeManager {
   // Event Subscription
   /**
@@ -701,20 +722,6 @@ declare class atom$Project {
   removePath(projectPath: string): void;
   getDirectories(): Array<atom$Directory>;
   relativizePath(): Array<string>; // [projectPath: ?string, relativePath: string]
-}
-
-declare class atom$StatusBarTile {
-  constructor(item: HTMLElement, priority: number, collection: Array<atom$StatusBarTile>): void;
-  getItem(): HTMLElement;
-  getPriority(): number;
-  destroy(): void;
-}
-
-declare class atom$StatusBarView {
-  addLeftTile(options: mixed): atom$StatusBarTile;
-  addRightTile(options: mixed): atom$StatusBarTile;
-  getLeftTiles(): Array<atom$StatusBarTile>;
-  getRightTiles(): Array<atom$StatusBarTile>;
 }
 
 declare class atom$TextBuffer {

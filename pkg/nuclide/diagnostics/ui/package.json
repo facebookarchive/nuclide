@@ -13,6 +13,11 @@
       "versions": {
         "0.0.0": "consumeDiagnosticUpdates"
       }
+    },
+    "status-bar": {
+      "versions": {
+        "^1.0.0": "consumeStatusBar"
+      }
     }
   },
   "dependencies": {
