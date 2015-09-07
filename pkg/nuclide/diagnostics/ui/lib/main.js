@@ -13,7 +13,7 @@ import {CompositeDisposable} from 'atom';
 
 import type DiagnosticsPanel from './DiagnosticsPanel';
 
-var DEFAULT_HIDE_DIAGNOSTICS_PANEL = false;
+var DEFAULT_HIDE_DIAGNOSTICS_PANEL = true;
 var DEFAULT_TABLE_HEIGHT = 200;
 var DEFAULT_FILTER_BY_ACTIVE_EDITOR = false;
 
