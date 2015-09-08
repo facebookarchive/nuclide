@@ -261,7 +261,7 @@ class HyperclickForTextEditor {
    */
   _isHyperclickEvent(event: SyntheticKeyboardEvent | SyntheticMouseEvent): boolean {
     // If the user is pressing either the meta key or the alt key.
-    return event.metaKey !== event.altKey;
+    return process.platform === 'darwin' ? event.metaKey : event.ctrlKey;
   }
 
   dispose() {
