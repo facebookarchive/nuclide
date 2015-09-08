@@ -60,7 +60,7 @@ export class BuckProject {
    * @param args Do not include 'buck' as the first argument: it will be added
    *     automatically.
    */
-  async _runBuckCommandFromProjectRoot(args: Array<string>
+  _runBuckCommandFromProjectRoot(args: Array<string>
       ): Promise<{stdout: string; stderr: string; exitCode: number}> {
     if (global.atom) {
       var pathToBuck = atom.config.get('buck.pathToBuck');
