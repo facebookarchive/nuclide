@@ -28,7 +28,6 @@
   },
   "devDependencies": {
     "nuclide-external-interfaces": "0.0.0",
-    "nuclide-logging": "0.0.0",
     "nuclide-quick-open-interfaces": "0.0.0"
   },
   "consumedServices": {
