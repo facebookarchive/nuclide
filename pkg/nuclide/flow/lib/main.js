@@ -59,17 +59,9 @@ module.exports = {
 
   /** Provider for autocomplete service. */
   createAutocompleteProvider(): atom$AutocompleteProvider {
-    var getSuggestions = request => {
-      var {editor, prefix} = request;
-      var file = editor.getPath();
-      var contents = editor.getText();
-      var cursor = editor.getLastCursor();
-      var line = cursor.getBufferRow();
-      var col = cursor.getBufferColumn();
-      return getServiceByNuclideUri('FlowService', file)
-        .getAutocompleteSuggestions(file, contents, line, col, prefix);
-    };
-
+    var AutocompleteProvider = require('./FlowAutocompleteProvider');
+    var autocompleteProvider = new AutocompleteProvider();
+    var getSuggestions = autocompleteProvider.getSuggestions.bind(autocompleteProvider);
     return {
       selector: JS_GRAMMARS.map(grammar => '.' + grammar).join(', '),
       disableForSelector: '.source.js .comment',
