@@ -56,7 +56,7 @@ class ProcessOutputStore {
     };
     this._processPromise = new Promise((resolve, reject) => {
       // this._handleProcessExit() will emit this.
-      this._emitter.on('_exit', resolve);
+      this._emitter.on('exit', resolve);
     });
     this._process = await this._runProcess(options);
     return this._processPromise;
@@ -79,6 +79,15 @@ class ProcessOutputStore {
     return listenerSubscription;
   }
 
+  /**
+   * Get notified when the process exits.
+   */
+  onProcessExit(callback: (exitCode: number) => mixed): Disposable {
+    var listenerSubscription = this._emitter.on('exit', callback);
+    this._listenerSubscriptions.add(listenerSubscription);
+    return listenerSubscription;
+  }
+
   _receiveStdout(data: string) {
     this._stdout = this._stdout ? this._stdout.concat(data) : data;
     this._emitter.emit('stdout', data);
@@ -90,7 +99,7 @@ class ProcessOutputStore {
   }
 
   _handleProcessExit(code: number) {
-    this._emitter.emit('_exit', code);
+    this._emitter.emit('exit', code);
     this._listenerSubscriptions.dispose();
   }
 
