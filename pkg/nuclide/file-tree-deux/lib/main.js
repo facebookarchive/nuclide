@@ -70,6 +70,7 @@ class Activation {
     if (!this._fileTreeController) {
       var FileTreeController = require('./FileTreeController');
       this._fileTreeController = new FileTreeController(this._packageState);
+      require('nuclide-analytics').track('filetreedeux-enable');
     }
   }
 
