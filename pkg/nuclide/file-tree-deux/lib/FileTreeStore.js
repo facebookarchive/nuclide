@@ -334,6 +334,12 @@ class FileTreeStore {
         // Unselect each child.
         if (selectedKeys && selectedKeys.has(childKey)) {
           selectedKeys = selectedKeys.delete(childKey);
+          /*
+           * Set the selected keys *before* the recursive `_collapseNode` call so each call stores
+           * its changes and isn't wiped out by the next call by keeping an outdated `selectedKeys`
+           * in the call stack.
+           */
+          this._setSelectedKeys(rootKey, selectedKeys);
         }
         // Collapse each child directory.
         if (FileTreeHelpers.isDirKey(childKey)) {
@@ -356,7 +362,6 @@ class FileTreeStore {
       'previouslyExpanded',
       setProperty(this._data.previouslyExpanded, rootKey, previouslyExpanded)
     );
-    this._setSelectedKeys(rootKey, selectedKeys);
     this._setExpandedKeys(rootKey, this._getExpandedKeys(rootKey).delete(nodeKey));
     this._removeSubscription(rootKey, nodeKey);
   }
