@@ -29,14 +29,16 @@ VERSION_BLACKLIST = {
   'fb-nuclide-installer': 'The installer needs to be versioned.',
 }
 PACKAGES_WITHOUT_TESTS = [
-  'nuclide-debugger-interfaces', # contains no code, so no tests.
-  'nuclide-external-interfaces', # contains no code, so no tests.
-  # nuclide-node-transpiler is a dependency of nuclide-jasmine, so it cannot
-  # use nuclide-jasmine as a test runner. As it stands, it has no tests.
-  'nuclide-node-transpiler',
+    'hyperclick-interfaces',
+    'nuclide-debugger-interfaces', # contains no code, so no tests.
+    'nuclide-external-interfaces', # contains no code, so no tests.
+    # nuclide-node-transpiler is a dependency of nuclide-jasmine, so it cannot
+    # use nuclide-jasmine as a test runner. As it stands, it has no tests.
+    'nuclide-node-transpiler',
 ]
 PACKAGE_NAME_WHITELIST = [
     'hyperclick', # we want to upstream this to atom, so do not require nuclide- prefix
+    'hyperclick-interfaces',
 ]
 PATH_TO_FORMAT_PACKAGE_JSON_SCRIPT = 'fbobjc/Tools/Nuclide/scripts/dev/fix-package-json-files'
 

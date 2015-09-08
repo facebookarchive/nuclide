@@ -3,6 +3,7 @@
 [ignore]
 
 [libs]
+./node_modules/hyperclick-interfaces/lib/
 ./node_modules/nuclide-external-interfaces/1.0/
 
 [options]
