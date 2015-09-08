@@ -69,7 +69,7 @@ function createProcessOutputView(
     }
   };
   var handleProcessExitWithError = (error: Error) => {
-    getLogger().error(`ScriptBufferedProcess encountered an error running: ${tabTitle}`, error);
+    getLogger().error(`runCommandInNewPane encountered an error running: ${tabTitle}`, error);
     handleProcessExit();
   };
 
@@ -94,7 +94,7 @@ function runCommandInNewPane(
   };
   // Not documented: the 'options' passed to atom.workspace.open() are passed to the opener.
   // There's no other great way for a consumer of this service to specify a ProcessOutputHandler.
-  atom.workspace.open(NUCLIDE_PROCESS_OUTPUT_VIEW_URI + tabTitle, openOptions);
+  return atom.workspace.open(NUCLIDE_PROCESS_OUTPUT_VIEW_URI + tabTitle, openOptions);
 }
 
 /**
