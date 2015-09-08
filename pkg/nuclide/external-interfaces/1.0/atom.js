@@ -912,3 +912,26 @@ declare class Repository {
   checkoutHead: (aPath: string) => boolean;
   checkoutReference: (reference: string, create: boolean) => boolean;
 }
+
+// One of text or snippet is required.
+type atom$AutocompleteSuggestion = {
+  text: ?string;
+  snippet: ?string;
+  replacementPrefix: ?string;
+  rightLabel: ?string;
+  rightLabelHTML: ?string;
+  className: ?string;
+}
+
+type atom$AutocompleteRequest = {
+  editor: TextEditor;
+  prefix: string;
+}
+
+type atom$AutocompleteProvider = {
+  selector: string;
+  disableForSelector: string;
+  inclusionPriority: number;
+  getSuggestions:
+      (request: atom$AutocompleteRequest) => Promise<Array<atom$AutocompleteSuggestion>>;
+}

@@ -21,28 +21,6 @@ function getServiceByNuclideUri(service, file?) {
   return require('nuclide-client').getServiceByNuclideUri(service, file);
 }
 
-// One of text or snippet is required.
-type Suggestion = {
-  text: ?string;
-  snippet: ?string;
-  replacementPrefix: ?string;
-  rightLabel: ?string;
-  rightLabelHTML: ?string;
-  className: ?string;
-}
-
-type Request = {
-  editor: TextEditor;
-  prefix: string;
-}
-
-type Autocomplete = {
-  selector: string;
-  disableForSelector: string;
-  inclusionPriority: number;
-  getSuggestions: (request: Request) => Promise<Array<Suggestion>>;
-}
-
 var flowDiagnosticsProvider;
 
 var disposables;
@@ -80,7 +58,7 @@ module.exports = {
   },
 
   /** Provider for autocomplete service. */
-  createAutocompleteProvider(): Autocomplete {
+  createAutocompleteProvider(): atom$AutocompleteProvider {
     var getSuggestions = request => {
       var {editor, prefix} = request;
       var file = editor.getPath();
