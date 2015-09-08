@@ -41,7 +41,7 @@ async function getServerLogAppenderConfig(): Promise<?Object> {
 }
 
 module.exports = {
-  async getDefaultConfig(): Promise<any> {
+  async getDefaultConfig(): Promise<mixed> {
 
     if (!logDirectoryInitialized) {
       await fsPromise.mkdirp(logDirectory);

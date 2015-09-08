@@ -17,12 +17,15 @@
  * to `global` object.
  */
 import addPrepareStackTraceHook from './stacktrace';
+import invariant from 'assert';
 
-const LOGGER_CATEGORY = 'nuclide';
-const LOGGER_LEVELS = ['trace', 'debug', 'info', 'warn', 'error', 'fatal'];
-const LOG4JS_INSTANCE_KEY = '_nuclide_log4js_logger';
+import type {Logger} from './types';
 
-var lazyLogger;
+/* Listed in order of severity. */
+type Level = 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal';
+
+var LOGGER_CATEGORY = 'nuclide';
+var LOG4JS_INSTANCE_KEY = '_nuclide_log4js_logger';
 
 /**
  * Create the log4js logger. Note we could call this function more than once to update the config.
@@ -41,15 +44,14 @@ export function updateConfig(config: any, options: any): void {
         () => configLog4jsLogger(config, options));
 }
 
-// Create a lazy logger, who won't initialize log4js logger until `lazyLogger.$level(...)` is called.
-// In this way other package could depends on this upon activate without worrying initialization of
-// logger taking too much time.
-function createLazyLogger(): any {
-  lazyLogger = {};
+// Create a lazy logger that will not initialize the underlying log4js logger until
+// `lazyLogger.$level(...)` is called. This way, another package could require nuclide-logging
+// during activation without worrying about introducing a significant startup cost.
+function createLazyLogger(): Logger {
   var defaultConfigPromise;
 
-  LOGGER_LEVELS.forEach((level) => {
-    lazyLogger[level] = async (...args: Array<any>) => {
+  function createLazyLoggerMethod(level: Level): (...args: Array<any>) => mixed {
+    return async function(...args: Array<any>) {
       if (!defaultConfigPromise) {
         defaultConfigPromise = require('./config').getDefaultConfig();
       }
@@ -58,14 +60,24 @@ function createLazyLogger(): any {
         LOG4JS_INSTANCE_KEY,
         () => configLog4jsLogger(defaultConfig),
       );
+      invariant(logger);
       logger[level].apply(logger, args);
     };
-  });
+  }
 
-  return lazyLogger;
+  return {
+    debug: createLazyLoggerMethod('debug'),
+    error: createLazyLoggerMethod('error'),
+    fatal: createLazyLoggerMethod('fatal'),
+    info: createLazyLoggerMethod('info'),
+    trace: createLazyLoggerMethod('trace'),
+    warn: createLazyLoggerMethod('warn'),
+  };
 }
 
-export function getLogger() {
+var lazyLogger: ?Logger;
+
+export function getLogger(): Logger {
   addPrepareStackTraceHook();
-  return lazyLogger ? lazyLogger : createLazyLogger();
+  return lazyLogger ? lazyLogger : (lazyLogger = createLazyLogger());
 }

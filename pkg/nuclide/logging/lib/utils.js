@@ -10,7 +10,6 @@
  */
 
 import log4js from 'log4js';
-import {object} from 'nuclide-commons';
 
 import type {LoggingEvent} from './types';
 
@@ -23,7 +22,7 @@ import type {LoggingEvent} from './types';
  * logview.
  */
 export function patchErrorsOfLoggingEvent(loggingEvent: LoggingEvent): LoggingEvent {
-  var loggingEventCopy = object.assign({}, loggingEvent);
+  var loggingEventCopy = {...loggingEvent};
   loggingEventCopy.data = (loggingEventCopy.data || []).slice();
 
   if (!loggingEventCopy.data.some(item => item instanceof Error)) {
@@ -36,6 +35,7 @@ export function patchErrorsOfLoggingEvent(loggingEvent: LoggingEvent): LoggingEv
         name: item.name,
         message: item.message,
         stack: item.stack,
+        // $FlowIssue
         stackTrace: item.stackTrace,
       };
     }
@@ -59,9 +59,10 @@ export function serializeLoggingEvent(loggingEvent: mixed): string {
  * by `nomiddlename` (https://github.com/nomiddlename/log4js-node/blob/master/lib/appenders/multiprocess.js)
  *
  * Apparently, node.js serializes everything to strings when using `process.send()`,
- * so we need smart deserialization that will recreate log date and level for further processing by log4js internals.
+ * so we need smart deserialization that will recreate log date and level for further processing by
+ * log4js internals.
  */
-export function deserializeLoggingEvent(loggingEventString: string): mixed {
+export function deserializeLoggingEvent(loggingEventString: string): LoggingEvent {
   var loggingEvent;
   try {
     loggingEvent = JSON.parse(loggingEventString);

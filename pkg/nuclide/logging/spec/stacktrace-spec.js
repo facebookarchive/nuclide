@@ -18,7 +18,9 @@ var STACK_FRAME_PROPERTIES = [
 ];
 
 function validateStructuredStackTraceCreated(e: Error): void {
+  // $FlowIssue
   expect(e.stackTrace instanceof Array).toBe(true);
+  // $FlowIssue
   e.stackTrace.forEach(frame => {
     var keys = Object.keys(frame);
     STACK_FRAME_PROPERTIES.forEach(property => {
@@ -29,6 +31,7 @@ function validateStructuredStackTraceCreated(e: Error): void {
 
 describe('stacktrace hook', () => {
   afterEach(() => {
+    // $FlowFixMe
     delete Error['prepareStackTrace'];
     __test__.resetPrepareStackTraceHooked();
   });
@@ -57,6 +60,7 @@ describe('stacktrace hook', () => {
     addPrepareStackTraceHook();
     var e = new Error();
     // e.stackTrace won't be availabe until e.stack is called.
+    // $FlowIssue
     expect(e.stackTrace).toBe(undefined);
     expect(typeof e.stack).toBe('string');
     validateStructuredStackTraceCreated(e);
@@ -65,6 +69,7 @@ describe('stacktrace hook', () => {
   it('doesn\'t screw up previous customization', () => {
 
     var customizedStack = 'There is no spoon';
+    // $FlowFixMe
     Error.prepareStackTrace = (_, frames) => {
       return customizedStack;
     };
@@ -72,11 +77,13 @@ describe('stacktrace hook', () => {
     var e = new Error();
     // e.stack is customized.
     expect(e.stack).toBe(customizedStack);
+    // $FlowIssue
     expect(e.stackTrace).toBe(undefined);
 
     addPrepareStackTraceHook();
 
     e = new Error();
+    // $FlowIssue
     expect(e.stackTrace).toBe(undefined);
     // e.stack is still customized.
     expect(e.stack).toBe(customizedStack);
@@ -87,14 +94,17 @@ describe('stacktrace hook', () => {
     addPrepareStackTraceHook();
 
     var e = new Error();
+    // $FlowIssue
     expect(e.stackTrace).toBe(undefined);
     expect(typeof e.stack).toBe('string');
     validateStructuredStackTraceCreated(e);
 
+    // $FlowFixMe
     var originalPrepareStackTrace = Error.prepareStackTrace;
 
     // Add customization and verify it works.
     var customizedStack = 'There is no spoon';
+    // $FlowFixMe
     Error.prepareStackTrace = (_, frames) => {
       return customizedStack;
     };
@@ -104,8 +114,10 @@ describe('stacktrace hook', () => {
     validateStructuredStackTraceCreated(e);
 
     // Revert the customization and verify it has been reverted.
+    // $FlowFixMe
     Error.prepareStackTrace = originalPrepareStackTrace;
     e = new Error();
+    // $FlowIssue
     expect(e.stackTrace).toBe(undefined);
     expect(e.stack !== customizedStack).toBe(true);
     validateStructuredStackTraceCreated(e);

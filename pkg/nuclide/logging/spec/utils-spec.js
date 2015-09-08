@@ -9,7 +9,11 @@
  * the root directory of this source tree.
  */
 
-import {patchErrorsOfLoggingEvent, serializeLoggingEvent, deserializeLoggingEvent} from '../lib/utils';
+import {
+  deserializeLoggingEvent,
+  patchErrorsOfLoggingEvent,
+  serializeLoggingEvent,
+} from '../lib/utils';
 import addPrepareStackTraceHook from '../lib/stacktrace';
 
 import type {LoggingEvent} from '../lib/types';
