@@ -17,7 +17,7 @@ var {Range} = require('atom');
 
 const JAVASCRIPT_WORD_REGEX = /[a-zA-Z0-9_$]+/g;
 
-module.exports = class TypeHintProvider {
+module.exports = class FlowTypeHintProvider {
   @trackTiming('flow.typehint')
   async typeHint(editor: TextEditor, position: Point): Promise<?TypeHint> {
     var enabled = atom.config.get('nuclide-flow.enableTypeHints');

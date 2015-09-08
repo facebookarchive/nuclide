@@ -12,9 +12,9 @@
 var {uncachedRequire, spyOnGetterValue} = require('nuclide-test-helpers');
 var {Range} = require('atom');
 
-const TYPE_HINT_PROVIDER = '../lib/TypeHintProvider';
+const TYPE_HINT_PROVIDER = '../lib/FlowTypeHintProvider';
 
-describe('TypeHintProvider.js', () => {
+describe('FlowTypeHintProvider', () => {
   var editor = {
     getPath() { return ''; },
     getText() { return ''; },

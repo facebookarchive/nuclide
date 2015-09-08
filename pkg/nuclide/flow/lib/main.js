@@ -120,16 +120,14 @@ module.exports = {
     return flowDiagnosticsProvider;
   },
 
-  createTypeHintProvider(): any {
-    var TypeHintProvider = require('./TypeHintProvider');
-    var typeHintProvider = new TypeHintProvider();
-
+  createTypeHintProvider(): Object {
+    var FlowTypeHintProvider = require('./FlowTypeHintProvider');
+    var flowTypeHintProvider = new FlowTypeHintProvider();
+    var typeHint = flowTypeHintProvider.typeHint.bind(flowTypeHintProvider);
     return {
       selector: GRAMMARS_STRING,
       inclusionPriority: 1,
-      typeHint(editor: TextEditor, position: Point): Promise<any> {
-        return typeHintProvider.typeHint(editor, position);
-      },
+      typeHint,
     };
   },
 
