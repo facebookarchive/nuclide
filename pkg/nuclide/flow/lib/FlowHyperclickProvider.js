@@ -9,15 +9,17 @@
  * the root directory of this source tree.
  */
 
-var invariant = require('assert');
+import invariant from 'assert';
 
-var {getServiceByNuclideUri} = require('nuclide-client');
-var {goToLocation} = require('nuclide-atom-helpers');
+import {trackTiming} from 'nuclide-analytics';
+import {getServiceByNuclideUri} from 'nuclide-client';
+import {goToLocation} from 'nuclide-atom-helpers';
 
-var {JS_GRAMMARS} = require('./constants.js');
+import {JS_GRAMMARS} from './constants.js';
 var JS_GRAMMARS_SET = new Set(JS_GRAMMARS);
 
 class FlowHyperclickProvider {
+  @trackTiming('flow.find-definition')
   async getSuggestionForWord(textEditor: TextEditor, text: string, range: atom$Range):
       Promise<?HyperclickSuggestion> {
     if (!JS_GRAMMARS_SET.has(textEditor.getGrammar().scopeName)) {

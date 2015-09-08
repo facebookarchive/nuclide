@@ -9,9 +9,12 @@
  * the root directory of this source tree.
  */
 
-var invariant = require('assert');
+import invariant from 'assert';
+
+import {trackTiming} from 'nuclide-analytics';
 
 class FlowAutocompleteProvider {
+  @trackTiming('flow.autocomplete')
   getSuggestions(request: atom$AutocompleteRequest): Promise<atom$AutocompleteSuggestion> {
     var {editor, prefix} = request;
     var file = editor.getPath();
