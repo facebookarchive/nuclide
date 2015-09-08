@@ -72,8 +72,15 @@ module.exports = {
     };
   },
 
-  getHyperclickProvider() {
-    return require('./HyperclickProvider');
+  getHyperclickProvider(): HyperclickProvider {
+    var FlowHyperclickProvider = require('./FlowHyperclickProvider');
+    var flowHyperclickProvider = new FlowHyperclickProvider();
+    var getSuggestionForWord =
+        flowHyperclickProvider.getSuggestionForWord.bind(flowHyperclickProvider);
+    return {
+      priority: 20,
+      getSuggestionForWord,
+    };
   },
 
   provideDiagnostics() {
