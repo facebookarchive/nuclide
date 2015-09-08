@@ -19,14 +19,22 @@ import type PropertyDescriptor from './DataCache';
 import type RemoteObjectId from './DataCache';
 import type {Disposable} from 'nuclide-commons';
 
+var connectionCount = 1;
+
 export class Connection {
   _socket: DbgpSocket;
   _dataCache: DataCache;
+  _id: number;
 
   constructor(socket: Socket) {
     var dbgpSocket = new DbgpSocket(socket);
     this._socket = dbgpSocket;
     this._dataCache = new DataCache(dbgpSocket);
+    this._id = connectionCount++;
+  }
+
+  getId(): number {
+    return this._id;
   }
 
   onStatus(callback: (status: string) => mixed): Disposable {

@@ -37,7 +37,7 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
       callback = jasmine.createSpyObj('callback', ['replyToCommand', 'replyWithError', 'sendMethod']);
       connectionMultiplexer = jasmine.createSpyObj('connectionMultiplexer', [
         'onStatus',
-        'enable',
+        'listen',
         'getStatus',
         'getStackFrames',
         'sendContinuationCommand',
@@ -57,7 +57,14 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
       waitsForPromise(async () => {
         await handler.handleMethod(1, 'enable');
         expect(callback.replyToCommand).toHaveBeenCalledWith(1, {}, undefined);
-        expect(connectionMultiplexer.enable).toHaveBeenCalledWith();
+        expect(connectionMultiplexer.listen).not.toHaveBeenCalledWith();
+        expect(callback.sendMethod).toHaveBeenCalledWith(
+          'Debugger.paused',
+          {
+            callFrames: [],
+            reason: 'breakpoint',
+            data: {},
+          });
       });
     });
 
@@ -149,9 +156,21 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
       });
     });
 
+    it('continue from fake loader bp', () => {
+      waitsForPromise(async () => {
+        await handler.handleMethod(1, 'resume');
+        expect(connectionMultiplexer.listen).toHaveBeenCalledWith();
+      });
+    });
+
     function testContinuationCommand(chromeCommand, dbgpCommand) {
       return async () => {
         expect(connectionMultiplexer.onStatus).toHaveBeenCalled();
+
+        // Fake the run from loader bp
+        await handler.handleMethod(1, 'resume');
+        expect(connectionMultiplexer.listen).toHaveBeenCalledWith();
+        expect(connectionMultiplexer.sendContinuationCommand).not.toHaveBeenCalled();
 
         connectionMultiplexer.getStackFrames = jasmine.createSpy('getStackFrames').andReturn(Promise.resolve({stack: []}));
 

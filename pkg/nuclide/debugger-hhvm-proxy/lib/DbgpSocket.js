@@ -269,6 +269,7 @@ class DbgpSocket {
   }
 
   _emitStatus(status: string): void {
+    log('Emitting status: ' + status);
     this._emitter.emit(DBGP_SOCKET_STATUS_EVENT, status);
   }
 

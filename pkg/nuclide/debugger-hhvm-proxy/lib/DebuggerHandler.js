@@ -40,10 +40,12 @@ export class DebuggerHandler extends Handler {
   _files: FileCache;
   _emitter: EventEmitter;
   _statusSubscription: ?Disposable;
+  _hadFirstContinuationCommand: boolean;
 
   constructor(callback: ChromeCallback, connectionMultiplexer: ConnectionMultiplexer) {
     super('Debugger', callback);
 
+    this._hadFirstContinuationCommand = false;
     this._connectionMultiplexer = connectionMultiplexer;
     var FileCache = require('./FileCache');
     this._files = new FileCache(callback);
@@ -147,8 +149,8 @@ export class DebuggerHandler extends Handler {
   }
 
   _debuggerEnable(id: number): void {
-    this._connectionMultiplexer.enable();
     this.replyToCommand(id, {});
+    this._sendFakeLoaderBreakpoint();
   }
 
   async _getStackFrames(): Promise<Array<Object>> {
@@ -182,6 +184,11 @@ export class DebuggerHandler extends Handler {
   }
 
   _sendContinuationCommand(command: string): void {
+    if (!this._hadFirstContinuationCommand) {
+      this._hadFirstContinuationCommand = true;
+      this._connectionMultiplexer.listen();
+      return;
+    }
     log('Sending continuation command: ' + command);
     this._connectionMultiplexer.sendContinuationCommand(command);
   }
@@ -222,6 +229,16 @@ export class DebuggerHandler extends Handler {
       'Debugger.paused',
       {
         callFrames: await this._getStackFrames(),
+        reason: 'breakpoint', // TODO: better reason?
+        data: {},
+      });
+  }
+
+  _sendFakeLoaderBreakpoint(): void {
+    this.sendMethod(
+      'Debugger.paused',
+      {
+        callFrames: [],
         reason: 'breakpoint', // TODO: better reason?
         data: {},
       });
