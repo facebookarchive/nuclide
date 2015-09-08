@@ -15,6 +15,17 @@ var logger = require('nuclide-logging').getLogger();
 var path = require('path');
 
 type BuckConfig = Object;
+type BaseBuckBuildOptions = {
+  install: boolean;
+  run: boolean;
+  debug: boolean;
+  simulator?: ?string;
+};
+type FullBuckBuildOptions = {
+  baseOptions: BaseBuckBuildOptions;
+  pathToBuildReport?: string;
+  buildTargets: Array<string>;
+};
 
 /**
  * As defined in com.facebook.buck.cli.Command, some of Buck's subcommands are
@@ -117,30 +128,13 @@ export class BuckProject {
     return this._build(buildTargets, {install: true, run, debug, simulator});
   }
 
-  async _build(buildTargets: Array<string>, options: any): Promise<any> {
-    var {
-      install,
-      run,
-      debug,
-      simulator
-    } = options;
-
+  async _build(buildTargets: Array<string>, options: BaseBuckBuildOptions): Promise<any> {
     var report = await fsPromise.tempfile({suffix: '.json'});
-    var args = install ? ['install'] : ['build'];
-    args = args.concat(['--keep-going', '--build-report', report]);
-    if (install) {
-      if (run) {
-        args.push('--run');
-      }
-      if (debug) {
-        args.push('--wait-for-debugger');
-      }
-      if (simulator) {
-        args.push('--udid');
-        args.push(simulator);
-      }
-    }
-    buildTargets.forEach(target => args.push(target));
+    var args = this._translateOptionsToBuckBuildArgs({
+      baseOptions: {...options},
+      pathToBuildReport: report,
+      buildTargets,
+    });
 
     try {
       await this._runBuckCommandFromProjectRoot(args);
@@ -169,6 +163,45 @@ export class BuckProject {
     } finally {
       fsPromise.unlink(report);
     }
+  }
+
+  /**
+   * @param options An object describing the desired buck build operation.
+   * @return An array of strings that can be passed as `args` to spawn a
+   *   process to run the `buck` command.
+   */
+  _translateOptionsToBuckBuildArgs(options: FullBuckBuildOptions): Array<string> {
+    var {
+      baseOptions,
+      pathToBuildReport,
+      buildTargets,
+    } = options;
+    var {
+      install,
+      run,
+      debug,
+      simulator,
+    } = baseOptions;
+
+    var args = install ? ['install'] : ['build'];
+    args.push('--keep-going');
+    if (pathToBuildReport) {
+      args = args.concat(['--build-report', pathToBuildReport]);
+    }
+    if (install) {
+      if (run) {
+        args.push('--run');
+      }
+      if (debug) {
+        args.push('--wait-for-debugger');
+      }
+      if (simulator) {
+        args.push('--udid');
+        args.push(simulator);
+      }
+    }
+    args = args.concat(buildTargets);
+    return args;
   }
 
   /**
