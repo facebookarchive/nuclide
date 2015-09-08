@@ -156,6 +156,9 @@ def install_package(name, version, dest_directory, npm_directory):
         shutil.move(os.path.join(temp_dir, tar_folder), dest_directory)
         shutil.rmtree(temp_dir)
 
+    # Make sure files in the package are readable to all users.
+    subprocess.check_call(['chmod', '-R', 'a+r', dest_directory])
+
 
 def find_available_versions(name, npm_directory):
     return os.listdir(os.path.join(npm_directory, name))
