@@ -92,11 +92,9 @@ class QuickSelectionComponent extends React.Component {
         },
         */
       },
-      selectedDirectory: '',
-      selectedService: '',
-      selectedItemIndex: -1,
       renderableProviders: searchResultManager.getRenderableProviders(),
     };
+    this.resetSelection();
     this.handleProvidersChangeBound = this.handleProvidersChange.bind(this);
     this.handleResultsChangeBound = this.handleResultsChange.bind(this);
   }
@@ -138,13 +136,14 @@ class QuickSelectionComponent extends React.Component {
   componentDidMount() {
     this._modalNode = React.findDOMNode(this);
     this._subscriptions.add(
-      atom.commands.add(this._modalNode, 'core:move-up', this.moveSelectionUp.bind(this)),
-      atom.commands.add(this._modalNode, 'core:move-down', this.moveSelectionDown.bind(this)),
-      atom.commands.add(this._modalNode, 'core:move-to-top', this.moveSelectionToTop.bind(this)),
       atom.commands.add(
-        this._modalNode, 'core:move-to-bottom',
-        this.moveSelectionToBottom.bind(this)
+        this._modalNode,
+        'core:move-to-bottom',
+        this.handleMoveToBottom.bind(this)
       ),
+      atom.commands.add(this._modalNode, 'core:move-to-top', this.handleMoveToTop.bind(this)),
+      atom.commands.add(this._modalNode, 'core:move-down', this.handleMoveDown.bind(this)),
+      atom.commands.add(this._modalNode, 'core:move-up', this.handleMoveUp.bind(this)),
       atom.commands.add(this._modalNode, 'core:confirm', this.select.bind(this)),
       atom.commands.add(this._modalNode, 'core:cancel', this.cancel.bind(this))
     );
@@ -177,6 +176,26 @@ class QuickSelectionComponent extends React.Component {
     this._subscriptions.dispose();
   }
 
+  handleMoveToBottom(): void {
+    this.moveSelectionToBottom();
+    this.onUserDidChangeSelection();
+  }
+
+  handleMoveToTop(): void {
+    this.moveSelectionToTop();
+    this.onUserDidChangeSelection();
+  }
+
+  handleMoveDown(): void {
+    this.moveSelectionDown();
+    this.onUserDidChangeSelection();
+  }
+
+  handleMoveUp(): void {
+    this.moveSelectionUp();
+    this.onUserDidChangeSelection();
+  }
+
   onCancellation(callback: () => void): Disposable {
     return this._emitter.on('canceled', callback);
   }
@@ -195,7 +214,7 @@ class QuickSelectionComponent extends React.Component {
 
   _updateQueryHandler(): void {
     this._debouncedQueryHandler = debounce(
-      () => this.setQuery(this.getInputTextEditor().model.getText()),
+      () => this.setKeyboardQuery(this.getInputTextEditor().model.getText()),
       this.getProvider().debounceDelay,
       false
     );
@@ -216,6 +235,10 @@ class QuickSelectionComponent extends React.Component {
     );
     this.setState({
       resultsByService: updatedResults,
+    }, () => {
+      if (!this.state.hasUserSelection) {
+        this.moveSelectionToTop();
+      }
     });
   }
 
@@ -236,6 +259,12 @@ class QuickSelectionComponent extends React.Component {
     } else {
       this._emitter.emit('selected', selectedItem);
     }
+  }
+
+  onUserDidChangeSelection() {
+    this.setState({
+      hasUserSelection: true,
+    });
   }
 
   cancel(): void {
@@ -437,7 +466,24 @@ class QuickSelectionComponent extends React.Component {
       selectedService: service,
       selectedDirectory: directory,
       selectedItemIndex: itemIndex,
-    }, () => this._emitter.emit('selection-changed', this.getSelectedIndex()));
+    }, () => {
+      this._emitter.emit('selection-changed', this.getSelectedIndex());
+      this.onUserDidChangeSelection();
+    });
+  }
+
+  resetSelection() {
+    this.setState({
+      selectedService: '',
+      selectedDirectory: '',
+      selectedItemIndex: -1,
+      hasUserSelection: false,
+    });
+  }
+
+  setKeyboardQuery(query: string) {
+    this.resetSelection();
+    this.setQuery(query);
   }
 
   setQuery(query: string) {
