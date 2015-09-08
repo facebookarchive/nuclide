@@ -22,7 +22,7 @@ module.exports = {
   /**
    * A no-op decorator factory (https://github.com/wycats/javascript-decorators).
    */
-  trackTiming(eventName=null: ?string): any {
+  trackTiming(eventName: ?string = null): any {
     return (target: any, name: string, descriptor: any) => {};
   },
 };

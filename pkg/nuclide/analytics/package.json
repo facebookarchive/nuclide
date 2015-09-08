@@ -7,6 +7,7 @@
   "nuclide": {
     "customDeps": "lib/fb/package.json",
     "excludeTestsFromContinuousIntegration": true,
+    "flowCheck": true,
     "packageType": "Node",
     "testRunner": "npm"
   },
@@ -16,6 +17,7 @@
     "parse": "1.3.0"
   },
   "devDependencies": {
+    "nuclide-external-interfaces": "0.0.0",
     "nuclide-jasmine": "0.0.0"
   },
   "scripts": {

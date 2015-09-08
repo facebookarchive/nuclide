@@ -1,5 +1,5 @@
 'use babel';
-/* @flow */
+/* @noflow */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
