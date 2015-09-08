@@ -147,15 +147,18 @@ class Activation {
 
     this._searchComponent.onCancellation(() => this.closeSearchPanel());
     this._searchComponent.onSelectionChanged(debounce((selection: any) => {
-      track(
-        AnalyticsEvents.CHANGE_SELECTION,
-        {
-          'quickopen-selected-index': selection.selectedItemIndex.toString(),
-          'quickopen-selected-service': Number.prototype.toString.call(selection.selectedItemIndex),
-          'quickopen-selected-directory': selection.selectedDirectory,
-          'quickopen-session': analyticsSessionId,
-        }
-      );
+      // Only track user-initiated selection-change events.
+      if (analyticsSessionId != null) {
+        track(
+          AnalyticsEvents.CHANGE_SELECTION,
+          {
+            'quickopen-selected-index': selection.selectedItemIndex.toString(),
+            'quickopen-selected-service': selection.selectedService,
+            'quickopen-selected-directory': selection.selectedDirectory,
+            'quickopen-session': analyticsSessionId,
+          }
+        );
+      }
     }, AnalyticsDebounceDelays.CHANGE_SELECTION));
   }
 
