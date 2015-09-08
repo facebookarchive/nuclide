@@ -18,10 +18,10 @@ var SEARCH_RESULTS_FIXTURE = {
   searchService: {
     results: {
       shouldNotAppearInOutputFolder: {
-	results: [],
+        results: [],
       },
       folderB: {
-	results: [1, 2, 3],
+        results: [1, 2, 3],
       },
     },
   },
@@ -44,7 +44,7 @@ var SEARCH_RESULTS_FIXTURE = {
         results: [],
       },
     },
-  }
+  },
 };
 
 describe('searchResultHelper', () => {

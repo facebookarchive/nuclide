@@ -71,7 +71,7 @@ function getEligibleServices(): Promise<Array<Array<{name:string}>>> {
 var DID_CHANGE_TABS_EVENT = 'did-change-tabs';
 
 class TabManager {
-  _tabsToRender: Array<TabInfo>;
+  _tabsToRender: Array<quickopen$ProviderSpec>;
   _getEligibleServices: () => Promise<Array<Array<{name:string}>>>;
   _emitter: Emitter;
   _subscription: Disposable;

@@ -9,9 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {
-  QuickSelectionComponent,
-} from './QuickSelectionComponent';
+import type * as QuickSelectionComponentType from './QuickSelectionComponent';
 
 import type {
   Provider,
@@ -58,7 +56,7 @@ var AnalyticsDebounceDelays = {
   CHANGE_SELECTION: 100,
 };
 
-var _quickSelectionComponent: ?QuickSelectionComponent = null;
+var _quickSelectionComponent: ?QuickSelectionComponentType = null;
 function getQuickSelectionComponentLazily() {
   if (!_quickSelectionComponent) {
     _quickSelectionComponent = require('./QuickSelectionComponent');
@@ -89,7 +87,7 @@ class Activation {
   _currentProvider: Object;
   _previousFocus: ?Element;
   _reactDiv: Element;
-  _searchComponent: QuickSelectionComponent;
+  _searchComponent: QuickSelectionComponentType;
   _searchPanel: atom$Panel;
   _subscriptions: atom$CompositeDisposable;
   _tabManager: quickopen$TabManager;

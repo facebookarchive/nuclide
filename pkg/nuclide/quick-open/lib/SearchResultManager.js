@@ -129,13 +129,13 @@ class SearchResultManager {
   _setUpFlux(): void {
     this._dispatcherToken = this._dispatcher.register(action => {
       switch (action.actionType) {
-        case QuickSelectionDispatcher.ActionTypes.QUERY:
-          this.executeQuery(action.query);
-          break;
-        case QuickSelectionDispatcher.ActionTypes.ACTIVE_PROVIDER_CHANGED:
-          this._activeProviderName = action.providerName;
-          this._emitter.emit(PROVIDERS_CHANGED);
-          break;
+      case QuickSelectionDispatcher.ActionTypes.QUERY:
+        this.executeQuery(action.query);
+        break;
+      case QuickSelectionDispatcher.ActionTypes.ACTIVE_PROVIDER_CHANGED:
+        this._activeProviderName = action.providerName;
+        this._emitter.emit(PROVIDERS_CHANGED);
+        break;
       }
     });
   }

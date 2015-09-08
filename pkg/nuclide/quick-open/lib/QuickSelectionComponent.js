@@ -141,7 +141,10 @@ class QuickSelectionComponent extends React.Component {
       atom.commands.add(this._modalNode, 'core:move-up', this.moveSelectionUp.bind(this)),
       atom.commands.add(this._modalNode, 'core:move-down', this.moveSelectionDown.bind(this)),
       atom.commands.add(this._modalNode, 'core:move-to-top', this.moveSelectionToTop.bind(this)),
-      atom.commands.add(this._modalNode, 'core:move-to-bottom', this.moveSelectionToBottom.bind(this)),
+      atom.commands.add(
+        this._modalNode, 'core:move-to-bottom',
+        this.moveSelectionToBottom.bind(this)
+      ),
       atom.commands.add(this._modalNode, 'core:confirm', this.select.bind(this)),
       atom.commands.add(this._modalNode, 'core:cancel', this.cancel.bind(this))
     );
@@ -235,7 +238,7 @@ class QuickSelectionComponent extends React.Component {
     }
   }
 
-    cancel(): void {
+  cancel(): void {
     this._emitter.emit('canceled');
   }
 
@@ -329,7 +332,8 @@ class QuickSelectionComponent extends React.Component {
         this.setSelectedIndex(
           this.state.selectedService,
           context.directoryNames[context.currentDirectoryIndex - 1],
-          context.currentService.results[context.directoryNames[context.currentDirectoryIndex - 1]].results.length - 1
+          context.currentService
+            .results[context.directoryNames[context.currentDirectoryIndex - 1]].results.length - 1
         );
       } else {
         // ...or the previous service...
@@ -357,7 +361,8 @@ class QuickSelectionComponent extends React.Component {
     var listNode =  React.findDOMNode(this.refs.selectionList);
     var selectedNode = listNode.getElementsByClassName('selected')[0];
     // false is passed for @centerIfNeeded parameter, which defaults to true.
-    // Passing false causes the minimum necessary scroll to occur, so the selection sticks to the top/bottom
+    // Passing false causes the minimum necessary scroll to occur, so the selection sticks to the
+    // top/bottom.
     if (selectedNode) {
       selectedNode.scrollIntoViewIfNeeded(false);
     }
@@ -379,7 +384,8 @@ class QuickSelectionComponent extends React.Component {
     this.setSelectedIndex(top.serviceName, top.directoryName, 0);
   }
 
-  _getOuterResults(arrayOperation: Function): ?{serviceName: string; directoryName: string; results: Array<mixed>} {
+  _getOuterResults(arrayOperation: Function):
+    ?{serviceName: string; directoryName: string; results: Array<mixed>} {
     var nonEmptyResults = filterEmptyResults(this.state.resultsByService);
     var serviceName = arrayOperation.call(Object.keys(nonEmptyResults));
     if (!serviceName) {
@@ -571,25 +577,25 @@ class QuickSelectionComponent extends React.Component {
           );
         }
         var itemComponents = resultsForDirectory.results.map((item, itemIndex) => {
-            var isSelected = (
-              serviceName === this.state.selectedService &&
-              dirName === this.state.selectedDirectory &&
-              itemIndex === this.state.selectedItemIndex
-            );
-            itemsRendered++;
-            return (
-              <li
-                className={cx({
-                  'quick-open-result-item': true,
-                  'list-item': true,
-                  selected: isSelected,
-                })}
-                key={serviceName + dirName + itemIndex}
-                onMouseDown={this._boundSelect}
-                onMouseEnter={this.setSelectedIndex.bind(this, serviceName, dirName, itemIndex)}>
-                {this.componentForItem(item, serviceName)}
-              </li>
-            );
+          var isSelected = (
+            serviceName === this.state.selectedService &&
+            dirName === this.state.selectedDirectory &&
+            itemIndex === this.state.selectedItemIndex
+          );
+          itemsRendered++;
+          return (
+            <li
+              className={cx({
+                'quick-open-result-item': true,
+                'list-item': true,
+                selected: isSelected,
+              })}
+              key={serviceName + dirName + itemIndex}
+              onMouseDown={this._boundSelect}
+              onMouseEnter={this.setSelectedIndex.bind(this, serviceName, dirName, itemIndex)}>
+              {this.componentForItem(item, serviceName)}
+            </li>
+          );
         });
         //hide folders if only 1 level would be shown
         var showDirectories = directoryNames.length > 1;

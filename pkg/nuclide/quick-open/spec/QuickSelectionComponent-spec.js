@@ -61,7 +61,9 @@ xdescribe('QuickSelectionComponent', () => {
 
   // Updates the component to be using a TestQuickSelectionProvider that will serve @items, then
   // executes @callback after the component has completely updated to be using the new provider.
-  function withItemsSetTo(items: {string: {string: Promise<FileResult>}}, callback: (component: QuickSelectionComponent) => void) {
+  function withItemsSetTo(
+    items: {string: {string: Promise<FileResult>}},
+    callback: (component: QuickSelectionComponent) => void) {
     waitsForPromise(() => new Promise((resolve, reject) => {
 
       component.onItemsChanged((newItems) => {
@@ -79,8 +81,7 @@ xdescribe('QuickSelectionComponent', () => {
 
       component.clear();
 
-      }).then(callback)
-    );
+    }).then(callback));
   }
 
   xdescribe('Confirmation', () => {
@@ -93,14 +94,14 @@ xdescribe('QuickSelectionComponent', () => {
         expect(selectedItemIndex.selectedItemIndex).toBe(-1);
 
         waitsForPromise(() => new Promise((resolve, reject) => {
-            component.onSelection((item) => {
-              expect(item).toBe(1);
-              resolve();
-            });
+          component.onSelection((item) => {
+            expect(item).toBe(1);
+            resolve();
+          });
 
-            component.moveSelectionDown();
-            component.select();
-          }));
+          component.moveSelectionDown();
+          component.select();
+        }));
       });
     });
 
@@ -114,14 +115,14 @@ xdescribe('QuickSelectionComponent', () => {
         expect(selectedItemIndex.selectedItemIndex).toBe(-1);
 
         waitsForPromise(() => new Promise((resolve, reject) => {
-            component.onSelection((item) => {
-              expect(item).toBe(1);
-              resolve();
-            });
+          component.onSelection((item) => {
+            expect(item).toBe(1);
+            resolve();
+          });
 
-            component.moveSelectionDown();
-            atom.commands.dispatch(componentNode, 'core:confirm');
-          }));
+          component.moveSelectionDown();
+          atom.commands.dispatch(componentNode, 'core:confirm');
+        }));
       });
 
     });
@@ -129,12 +130,12 @@ xdescribe('QuickSelectionComponent', () => {
     it('should cancel instead of selecting when there are no items', () => {
       withItemsSetTo({}, () => {
         waitsForPromise(() => new Promise((resolve, reject) => {
-            component.onCancellation((item) => {
-              resolve();
-            });
+          component.onCancellation((item) => {
+            resolve();
+          });
 
-            component.select();
-          }));
+          component.select();
+        }));
       });
     });
   });
@@ -145,12 +146,12 @@ xdescribe('QuickSelectionComponent', () => {
         var componentNode = React.findDOMNode(component);
 
         waitsForPromise(() => new Promise((resolve, reject) => {
-            component.onCancellation((item) => {
-              resolve();
-            });
+          component.onCancellation((item) => {
+            resolve();
+          });
 
-            atom.commands.dispatch(componentNode, 'core:cancel');
-          }));
+          atom.commands.dispatch(componentNode, 'core:cancel');
+        }));
       });
     });
   });
@@ -289,9 +290,12 @@ xdescribe('QuickSelectionComponent', () => {
           expect(newIndex.selectedItemIndex).toBe(0);
         }));
 
-        withItemsSetTo({testDirectory: {testProvider: Promise.resolve({results: [5, 6, 7]})}}, () => {
-          expect(component.getSelectedIndex().selectedItemIndex).toBe(-1);
-        });
+        withItemsSetTo(
+          {testDirectory: {testProvider: Promise.resolve({results: [5, 6, 7]})}},
+          () => {
+            expect(component.getSelectedIndex().selectedItemIndex).toBe(-1);
+          }
+        );
       });
     });
 
