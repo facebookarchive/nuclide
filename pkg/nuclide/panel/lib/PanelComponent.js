@@ -101,7 +101,7 @@ var PanelComponent = React.createClass({
   },
 
   focus(): void {
-    this.refs.child.getDOMNode().focus();
+    React.findDOMNode(this.refs['child']).focus();
   },
 
   getChildComponent(): void {
@@ -125,7 +125,7 @@ var PanelComponent = React.createClass({
   },
 
   _handleMouseMove(event: SyntheticMouseEvent): void {
-    var containerEl = this.refs['container'].getDOMNode();
+    var containerEl = React.findDOMNode(this.refs['container']);
     var length = 0;
     if (this.props.dock === 'left') {
       length = event.pageX - containerEl.getBoundingClientRect().left;
@@ -153,8 +153,8 @@ var PanelComponent = React.createClass({
     this.setState({length: 0});
     this.forceUpdate(() => {
       var length = 0;
-      var childNode = this.refs.child.getDOMNode();
-      var handle = this.refs.handle.getDOMNode();
+      var childNode = React.findDOMNode(this.refs['child']);
+      var handle = React.findDOMNode(this.refs['handle']);
       if (this.props.dock === 'left' || this.props.dock === 'right') {
         length = childNode.offsetWidth + handle.offsetWidth;
       } else if (this.props.dock === 'bottom') {
