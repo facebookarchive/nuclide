@@ -9,10 +9,11 @@
  * the root directory of this source tree.
  */
 
-var {asyncExecute} = require('nuclide-commons');
+var {asyncExecute, scriptSafeSpawn} = require('nuclide-commons');
 var {fsPromise} = require('nuclide-commons');
 var logger = require('nuclide-logging').getLogger();
 var path = require('path');
+var {Observable} = require('rx');
 
 type BuckConfig = Object;
 type BaseBuckBuildOptions = {
@@ -26,6 +27,14 @@ type FullBuckBuildOptions = {
   pathToBuildReport?: string;
   buildTargets: Array<string>;
 };
+type BuckCommandAndOptions = {
+  pathToBuck: string;
+  buckCommandOptions: {
+    cwd: string;
+    queueName: string;
+  };
+};
+import type {Observer} from 'rx';
 
 /**
  * As defined in com.facebook.buck.cli.Command, some of Buck's subcommands are
@@ -73,17 +82,25 @@ export class BuckProject {
    */
   _runBuckCommandFromProjectRoot(args: Array<string>
       ): Promise<{stdout: string; stderr: string; exitCode: number}> {
+    var {pathToBuck, buckCommandOptions: options} = this._getBuckCommandAndOptions();
+    logger.debug('Buck command:', pathToBuck, args, options);
+    return asyncExecute(pathToBuck, args, options);
+  }
+
+  /**
+   * @return The path to buck and set of options to be used to run a `buck` command.
+   */
+  _getBuckCommandAndOptions(): BuckCommandAndOptions {
     if (global.atom) {
       var pathToBuck = atom.config.get('buck.pathToBuck');
     } else {
       var pathToBuck = 'buck';
     }
-    var options = {
+    var buckCommandOptions = {
       cwd: this._rootPath,
       queueName: this._serialQueueName,
     };
-    logger.debug('Buck command:', pathToBuck, args, options);
-    return asyncExecute(pathToBuck, args, options);
+    return {pathToBuck, buckCommandOptions};
   }
 
   async getOwner(filePath: string): Promise<Array<string>> {
@@ -163,6 +180,69 @@ export class BuckProject {
     } finally {
       fsPromise.unlink(report);
     }
+  }
+
+  buildWithOutput(buildTargets: Array<string>): Promise<Observable> {
+    return this._buildWithOutput(buildTargets, {install: false, run: false, debug: false});
+  }
+
+  installWithOutput(
+    buildTargets: Array<string>,
+    run: boolean,
+    debug: boolean,
+    simulator: ?string,
+  ): Promise<Observable> {
+    return this._buildWithOutput(buildTargets, {install: true, run, debug, simulator});
+  }
+
+  /**
+   * Does a build/install.
+   * @return An Observable that returns output from buck, as described by the
+   *   docblocks for `buildWithOutput` and `installWithOutput`.
+   */
+  async _buildWithOutput(
+    buildTargets: Array<string>,
+    options: BaseBuckBuildOptions,
+  ): Promise<Observable> {
+    var args = this._translateOptionsToBuckBuildArgs({
+      baseOptions: {...options},
+      buildTargets,
+    });
+    var {pathToBuck, buckCommandOptions: options} = this._getBuckCommandAndOptions();
+
+    var observable = Observable.create((observer: Observer) => {
+      var childProcess;
+      scriptSafeSpawn(pathToBuck, args, options).then(proc => {
+        childProcess = proc;
+
+        childProcess.stdout.on('data', (data) => {
+          observer.onNext({stdout: data.toString()});
+        });
+
+        var stderr = '';
+        childProcess.stderr.on('data', (data) => {
+          stderr += data;
+          observer.onNext({stderr: data.toString()});
+        });
+
+        childProcess.on('exit', (exitCode: number) => {
+          if (exitCode !== 0) {
+            observer.onError(stderr);
+          } else {
+            observer.onCompleted();
+          }
+          childProcess = null;
+        });
+      });
+
+      return () => {
+        if (childProcess) {
+          childProcess.kill();
+        }
+      };
+    });
+
+    return observable;
   }
 
   /**

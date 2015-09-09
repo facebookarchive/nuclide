@@ -42,6 +42,17 @@ export class BuckProject {
   build(buildTargets: Array<string>): Promise<any> {}
 
   /**
+   * Same as `build`, but returns additional output via an Observable.
+   * @return An Observable with the following implementations:
+   *   onNext: Calls the Observer with successive strings from stdout and stderr.
+   *     Each update will be of the form: {stdout: string;} | {stderr: string;}
+   *   onError: If the build fails, calls the Observer with the string output
+   *     from stderr.
+   *   onCompleted: Only called if the build completes successfully.
+   */
+  buildWithOutput(buildTargets: Array<string>): Promise<Observable> {}
+
+  /**
    * Runs `buck install --keep-going --build-report <tempfile>` with the specified targets.
    *
    * @param run If set to 'true', appends the buck invocation with '--run' to run the
@@ -53,6 +64,17 @@ export class BuckProject {
    * @return Promise that resolves to a build report.
    */
   install(buildTargets: Array<string>, run: boolean, debug: boolean, simulator: ?string): Promise<any> {}
+
+  /**
+   * Same as `install`, but returns additional output via an Observable.
+   * @return An Observable with the following implementations:
+   *   onNext: Calls the Observer with successive strings from stdout and stderr.
+   *     Each update will be of the form: {stdout: string;} | {stderr: string;}
+   *   onError: If the install fails, calls the Observer with the string output
+   *     from stderr.
+   *   onCompleted: Only called if the install completes successfully.
+   */
+  installWithOutput(buildTargets: Array<string>, run: boolean, debug: boolean, simulator: ?string): Promise<any> {}
 
   findTargetsWithReferencedFile(filePath: NuclideUri, options: any): Promise<{json: any; targets: Array<any>}> {}
 
