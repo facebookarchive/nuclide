@@ -1,0 +1,18 @@
+{
+  "name": "nuclide-buck-commons",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "Utilities that build on top of Buck services",
+  "nuclide": {
+    "packageType": "Node",
+    "testRunner": "apm"
+  },
+  "dependencies": {
+    "nuclide-client": "0.0.0",
+    "nuclide-remote-uri": "0.0.0"
+  },
+  "devDependencies": {
+    "nuclide-external-interfaces": "0.0.0"
+  }
+}

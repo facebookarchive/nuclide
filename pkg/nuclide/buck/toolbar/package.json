@@ -13,6 +13,7 @@
   "description": "Provides a toolbar in Nuclide to build projects with Buck",
   "dependencies": {
     "nuclide-atom-npm": "0.0.0",
+    "nuclide-buck-commons": "0.0.0",
     "nuclide-commons": "0.0.0",
     "nuclide-logging": "0.0.0",
     "nuclide-process-output": "0.0.0",

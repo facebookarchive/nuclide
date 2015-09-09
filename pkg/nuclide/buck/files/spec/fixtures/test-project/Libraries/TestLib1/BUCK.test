@@ -1,0 +1,30 @@
+ios_library(
+  name = 'target_with_no_trailling_comma'
+)
+
+ios_library(
+  name = 'lib_target1',
+  deps = [
+    ':target_with_no_trailling_comma',
+  ],
+)
+
+ios_library(
+  name = 'lib_target-test',
+  deps = [
+    ':lib_target1',
+    "//Libraries/TestLib1:lib_target-test",
+    '//Libraries/TestLib1/test-ios-sdk/sdk-v.1.2.3:target',
+    '//Libraries/TestLib1/test-ios-sdk/sdk-v.1.2.3:target-v.1',
+  ],
+  visibility = ['PUBLIC']
+)
+
+ios_test(
+  name = 'TestsTarget',
+  srcs = [],
+  deps = [
+    '//Apps/TestApp:TestsTarget',
+    '//Apps:test_target123',
+  ],
+)

@@ -1,0 +1,31 @@
+{
+  "name": "nuclide-buck-files",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "Adds special handling for BUCK files",
+  "nuclide": {
+    "packageType": "Atom",
+    "testRunner": "apm"
+  },
+  "providedServices": {
+    "hyperclick.provider": {
+      "versions": {
+        "0.0.0": "getHyperclickProvider"
+      }
+    }
+  },
+  "engines": {
+    "atom": ">=1.0.9"
+  },
+  "dependencies": {
+    "nuclide-atom-helpers": "0.0.0",
+    "nuclide-buck-base": "0.0.0",
+    "nuclide-buck-commons": "0.0.0",
+    "nuclide-commons": "0.0.0",
+    "nuclide-remote-uri": "0.0.0"
+  },
+  "devDependencies": {
+    "nuclide-external-interfaces": "0.0.0"
+  }
+}

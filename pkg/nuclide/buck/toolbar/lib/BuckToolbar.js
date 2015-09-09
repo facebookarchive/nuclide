@@ -8,8 +8,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-
-var buckServicePromise = require('nuclide-service-hub-plus').consumeFirstProvider('buck.service');
+var {buckProjectRootForPath} = require('nuclide-buck-commons');
 
 var logger;
 function getLogger() {
@@ -108,8 +107,7 @@ class BuckToolbar extends React.Component {
     // Asynchronously find the BuckProject for the NuclideUri. If, by the time the BuckProject is
     // found, TextEditor is still the active editor (or this._mostRecentBuckProject has not been set
     // yet), then update this._mostRecentBuckProject.
-    var buckService = await buckServicePromise;
-    buckProject = await buckService.buckProjectRootForPath(nuclideUri);
+    buckProject = await buckProjectRootForPath(nuclideUri);
     if (buckProject) {
       this._textEditorToBuckProject.set(textEditor, buckProject);
       var activeEditor = atom.workspace.getActiveTextEditor();

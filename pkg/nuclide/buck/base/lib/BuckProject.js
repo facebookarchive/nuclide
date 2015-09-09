@@ -91,10 +91,11 @@ export class BuckProject {
    * @return The path to buck and set of options to be used to run a `buck` command.
    */
   _getBuckCommandAndOptions(): BuckCommandAndOptions {
+    var pathToBuck;
     if (global.atom) {
-      var pathToBuck = atom.config.get('buck.pathToBuck');
+      pathToBuck = global.atom.config.get('nuclide-buck-files.pathToBuck');
     } else {
-      var pathToBuck = 'buck';
+      pathToBuck = 'buck';
     }
     var buckCommandOptions = {
       cwd: this._rootPath,
