@@ -7,7 +7,6 @@
 import json
 
 from json_helpers import json_load
-from nuclide_config import NUCLIDE_CONFIG
 
 # These Atom packages will be excluded from installation.
 PACKAGES_TO_EXCLUDE = set([
