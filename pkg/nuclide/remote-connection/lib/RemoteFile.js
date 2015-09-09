@@ -252,7 +252,7 @@ class RemoteFile {
     await this._handleNativeRenameEvent(newPath);
   }
 
-  async read(flushCache: boolean): Promise<string> {
+  async read(flushCache?: boolean): Promise<string> {
     // TODO: return cachedContents if exists and !flushCache
     // This involves the reload scenario, where the same instance of the file is read(),
     // but the file contents should reload.
@@ -268,7 +268,7 @@ class RemoteFile {
     throw new Error('readSync is not supported in RemoteFile');
   }
 
-  async write(text: string): Promise {
+  async write(text: string): Promise<void> {
     var previouslyExisted = await this.exists();
     await this._remote.getClient().writeFile(this._localPath, text);
     this._cachedContents = text;

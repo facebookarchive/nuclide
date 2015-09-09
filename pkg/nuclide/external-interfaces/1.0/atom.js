@@ -504,6 +504,12 @@ declare class atom$ViewRegistry {
   providers: Array<atom$ViewProvider>;
 }
 
+type atom$WorkspaceAddPanelOptions = {
+  item: Object;
+  visible?: boolean;
+  priority?: number;
+};
+
 declare class atom$Workspace {
   // Event Subscription
   observeTextEditors(callback: (editor: atom$TextEditor) => mixed): atom$Disposable;
@@ -536,22 +542,16 @@ declare class atom$Workspace {
 
   // Panels
   getBottomPanels(): Array<atom$Panel>;
-  addBottomPanel(options: {
-    item: Object;
-    visible?: boolean;
-    priority?: number;
-  }): atom$Panel;
-  addTopPanel(options: {
-    item: Object;
-    visible?: boolean;
-    priority?: number;
-  }): atom$Panel;
+  addBottomPanel(options: atom$WorkspaceAddPanelOptions): atom$Panel;
+  getLeftPanels(): Array<atom$Panel>;
+  addLeftPanel(options: atom$WorkspaceAddPanelOptions): atom$Panel;
+  getRightPanels(): Array<atom$Panel>;
+  addRightPanel(options: atom$WorkspaceAddPanelOptions): atom$Panel;
+  getTopPanels(): Array<atom$Panel>;
+  addTopPanel(options: atom$WorkspaceAddPanelOptions): atom$Panel;
+  getModalPanels(): Array<atom$Panel>;
+  addModalPanel(options: atom$WorkspaceAddPanelOptions): atom$Panel;
 
-  addModalPanel(options: {
-    item: HTMLElement;
-    visible?: boolean;
-    priority?: number;
-  }): atom$Panel;
   // Searching and Replacing
 
   destroyActivePaneItemOrEmptyPane(): void;
@@ -643,6 +643,8 @@ declare class atom$File {
 
   // Reading and Writing
   read(flushCache?: boolean): Promise<string>;
+  write(text: string): Promise<void>;
+  writeSync(text: string): void;
 }
 
 declare class atom$GitRepository {
@@ -702,7 +704,7 @@ declare class atom$KeymapManager {
   }): Array<atom$KeyBinding>;
 
   // Managing Keymap Files
-  loadKeymap(path: string, options: {watch: boolean}): void;
+  loadKeymap(path: string, options?: {watch: boolean}): void;
   watchKeymap(path: string): void;
 
   // Managing Keyboard Events
