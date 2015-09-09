@@ -13,4 +13,11 @@ module.exports = {
   get BuckProject() {
     return require('./BuckProject');
   },
+
+  isBuckFile: function(filePath: string): boolean {
+    // TODO(mbolin): Buck does have an option where the user can customize the
+    // name of the build file: https://github.com/facebook/buck/issues/238.
+    // This function will not work for those who use that option.
+    return require('path').basename(filePath) === 'BUCK';
+  },
 };
