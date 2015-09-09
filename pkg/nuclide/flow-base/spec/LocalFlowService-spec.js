@@ -120,6 +120,26 @@ describe('LocalFlowService', () => {
     });
   });
 
+  describe('findDefinition', () => {
+    function runWith(location) {
+      mockExec(JSON.stringify(location));
+      return flowService.findDefinition(file, currentContents, line, column);
+    }
+
+    it('should return the location', () => {
+      waitsForPromise(async () => {
+        // Flow uses 1-based indexing, Atom uses 0-based.
+        expect(await runWith({path: file, line: 5, start: 8})).toEqual({file, line: 4, column: 7});
+      });
+    });
+
+    it('should return null if no location is found', () => {
+      waitsForPromise(async () => {
+        expect(await runWith({})).toBe(null);
+      });
+    });
+  });
+
   describe('findDiagnostics', () => {
     function runWith(errors, filePath, contents) {
       mockExec(JSON.stringify({errors}));
