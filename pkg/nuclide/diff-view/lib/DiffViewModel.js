@@ -29,28 +29,47 @@ class DiffViewModel {
   _newEditor: ?TextEditor;
   _fileChanges: Map<string, number>;
   _uiProviders: Array<Object>;
+  _repositorySubscriptions: ?Map<HgRepositoryClient, Disposable>;
 
-  constructor(filePath: string, uiProviders: Array<Object>) {
+  constructor(uiProviders: Array<Object>) {
     this._uiProviders = uiProviders;
-    var repository: HgRepositoryClient = repositoryForPath(filePath);
-    var hgStatusCode = repository.getPathStatus(filePath);
-    var statusCode = HgStatusToFileChangeStatus[hgStatusCode] || FileChangeStatus.MODIFIED;
     this._fileChanges = new Map();
     this._emitter = new Emitter();
-    this._subscriptions = new CompositeDisposable();
-    this._subscriptions.add(repository.onDidChangeStatuses(() => {
-      this._updateChangedStatus(repository.getAllPathStatuses());
-    }));
-    this._updateChangedStatus(repository.getAllPathStatuses());
-    this.activateFile(filePath);
+    var subscriptions = this._subscriptions = new CompositeDisposable();
+    this._repositorySubscriptions = new Map();
+    this._updateRepositories();
+    subscriptions.add(atom.project.onDidChangePaths(this._updateRepositories.bind(this)));
+    this._setActiveFileState({
+      filePath: '',
+      oldContents: '',
+      newContents: '',
+    });
   }
 
-  _updateChangedStatus(statuses: {[path: string]: HgStatusCodeNumber}): void {
+  _updateRepositories(): void {
+    for (var subscription of this._repositorySubscriptions.values()) {
+      subscription.dispose();
+    }
+    this._repositorySubscriptions.clear();
+    atom.project.getRepositories()
+      .filter(repository => repository.getType() === 'hg')
+      .forEach(repository => {
+        this._repositorySubscriptions.set(
+          repository, repository.onDidChangeStatuses(this._updateChangedStatus.bind(this))
+        );
+      });
+    this._updateChangedStatus();
+  }
+
+  _updateChangedStatus(): void {
     this._fileChanges.clear();
-    for (var filePath in statuses) {
-      var changeStatus = HgStatusToFileChangeStatus[statuses[filePath]];
-      if (changeStatus != null) {
-        this._fileChanges.set(filePath, changeStatus);
+    for (var repository of this._repositorySubscriptions.keys()) {
+      var statuses = repository.getAllPathStatuses();
+      for (var filePath in statuses) {
+        var changeStatus = HgStatusToFileChangeStatus[statuses[filePath]];
+        if (changeStatus != null) {
+          this._fileChanges.set(filePath, changeStatus);
+        }
       }
     }
     this._emitter.emit('did-change-status', this._fileChanges);
@@ -193,6 +212,13 @@ class DiffViewModel {
     if (this._subscriptions) {
       this._subscriptions.dispose();
       this._subscriptions = null;
+    }
+    if (this._repositorySubscriptions) {
+      for (var subscription of this._repositorySubscriptions.values()) {
+        subscription.dispose();
+      }
+      this._repositorySubscriptions.clear();
+      this._repositorySubscriptions = null;
     }
     if (this._activeSubscriptions) {
       this._activeSubscriptions.dispose();

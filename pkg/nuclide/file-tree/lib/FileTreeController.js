@@ -284,6 +284,10 @@ class FileTreeController {
         shouldDisplayIfTreeIsEmpty: true,
       },
       {
+        label: 'Open Diff View',
+        command: 'nuclide-diff-view:open',
+      },
+      {
         label: 'Remove Project Folder',
         command: 'nuclide-file-tree:remove-project-folder-selection',
         shouldDisplayForSelectedNodes(nodes) {

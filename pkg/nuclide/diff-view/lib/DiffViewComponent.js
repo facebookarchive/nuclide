@@ -52,7 +52,7 @@ class DiffViewComponent extends React.Component {
       inlineElements: [],
     };
     this.state = {
-      filePath: props.initialFilePath,
+      filePath: '',
       oldEditorState,
       newEditorState,
     };
@@ -235,7 +235,6 @@ class DiffViewComponent extends React.Component {
 
 DiffViewComponent.propTypes = {
   diffModel: PropTypes.object.isRequired,
-  initialFilePath: PropTypes.string,
 };
 
 module.exports = DiffViewComponent;

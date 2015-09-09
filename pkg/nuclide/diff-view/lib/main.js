@@ -29,12 +29,11 @@ function getLogger() {
   return logger || (logger = require('nuclide-logging').getLogger());
 }
 
-// To add a view as a tab, we can either extend {View} from space-pen-views
-// and carry over the jQuery overhead or extend HTMLElement, like Atom's text-editor-element.
-function createView(uri: string): HTMLElement {
-  var filePath = uri.slice(NUCLIDE_DIFF_VIEW_URI.length);
+// To add a View as an Atom workspace pane, we return `DiffViewElement` which extends `HTMLElement`.
+// This pattetn is also followed with atom's TextEditor.
+function createView(entryPath: string): HTMLElement {
   if (activeDiffView) {
-    activeDiffView.model.activateFile(filePath);
+    activateFilePath(entryPath);
     return activeDiffView.element;
   }
 
@@ -43,10 +42,10 @@ function createView(uri: string): HTMLElement {
   var DiffViewComponent = require('./DiffViewComponent');
   var DiffViewModel = require('./DiffViewModel');
 
-  var diffModel = new DiffViewModel(filePath, uiProviders);
+  var diffModel = new DiffViewModel(uiProviders);
   var hostElement = new DiffViewElement().initialize(diffModel, NUCLIDE_DIFF_VIEW_URI);
   var component = React.render(
-    <DiffViewComponent diffModel={diffModel} initialFilePath={filePath}/>,
+    <DiffViewComponent diffModel={diffModel}/>,
     hostElement,
   );
   activeDiffView = {
@@ -54,6 +53,7 @@ function createView(uri: string): HTMLElement {
     component,
     element: hostElement,
   };
+  activateFilePath(entryPath);
 
   var destroySubscription = diffModel.onDidDestroy(() => {
     React.unmountComponentAtNode(hostElement);
@@ -68,6 +68,36 @@ function createView(uri: string): HTMLElement {
   track('diff-view-open');
 
   return hostElement;
+}
+
+function activateFilePath(filePath: string): void {
+  if (!filePath.length) {
+    // The Diff View could be opened with no path at all.
+    return;
+  }
+  var {getClient} = require('nuclide-client');
+  var client = getClient(filePath);
+  if (!client) {
+    // If the root directory was removed from the project,
+    // there is no client or repository attached to such file path.
+    return;
+  }
+  var {getPath} = require('nuclide-remote-uri');
+  var localFilePath = getPath(filePath);
+  client.lstat(localFilePath).then(stats => {
+    if (!stats || !stats.isFile() || !activeDiffView) {
+      // If the Diff View is closed or it's opened with a directory path,
+      // there is no file to activate the diff viewer on.
+      return;
+    }
+    activeDiffView.model.activateFile(filePath);
+  }, (err) => {
+    /*
+     * The file could be removed from the filesystem in the current dirty revision.
+     * Defer to the Diff View.
+     */
+    getLogger().info(`Diff View: lstat error ${filePath} ${err.toString()}`);
+  });
 }
 
 function projectsContainPath(checkPath: string): boolean {
@@ -90,7 +120,13 @@ module.exports = {
 
   activate(state: ?any): void {
     subscriptions = new CompositeDisposable();
-
+    // Listen for menu item workspace diff view open command.
+    subscriptions.add(atom.commands.add(
+      'atom-workspace',
+      'nuclide-diff-view:open',
+      () => atom.workspace.open(NUCLIDE_DIFF_VIEW_URI)
+    ));
+    // Listen for in-editor context menu item diff view open command.
     subscriptions.add(atom.commands.add(
       'atom-text-editor',
       'nuclide-diff-view:open',
@@ -103,10 +139,60 @@ module.exports = {
       }
     ));
 
+    function getTargetFromEvent(event) {
+      return event.currentTarget.classList.contains('name')
+        ? event.currentTarget
+        : event.currentTarget.querySelector('.name');
+    }
+
+    // Listen for file tree context menu file item events to open the diff view.
+    subscriptions.add(atom.commands.add(
+      '.entry.file.list-item',
+      'nuclide-diff-view:open',
+      (event) => {
+        var target = getTargetFromEvent(event);
+        // In nuclide-file-tree, even though it's a file item selector,
+        // this can actually be a folder path.
+        atom.workspace.open(NUCLIDE_DIFF_VIEW_URI + (target.dataset.path || ''));
+      }
+    ));
+    subscriptions.add(atom.contextMenu.add({
+      '.entry.file.list-item': [
+        {type: 'separator'},
+        {
+          label: 'Open in Diff View',
+          command: 'nuclide-diff-view:open',
+        },
+        {type: 'separator'},
+      ],
+    }));
+
+    // Listen for file tree context menu directory item events to open the diff view.
+    subscriptions.add(atom.commands.add(
+      '.entry.directory.list-item',
+      'nuclide-diff-view:open',
+      (event) => {
+        var target = getTargetFromEvent(event);
+        // In nuclide-file-tree, even though it's a file item selector,
+        // this can actually be a folder path.
+        atom.workspace.open(NUCLIDE_DIFF_VIEW_URI + (target.dataset.path || ''));
+      }
+    ));
+    subscriptions.add(atom.contextMenu.add({
+      '.entry.directory.list-item': [
+        {type: 'separator'},
+        {
+          label: 'Open in Diff View',
+          command: 'nuclide-diff-view:open',
+        },
+        {type: 'separator'},
+      ],
+    }));
+
     // The Diff View will open its main UI in a tab, like Atom's preferences and welcome pages.
     subscriptions.add(atom.workspace.addOpener(uri => {
       if (uri.startsWith(NUCLIDE_DIFF_VIEW_URI)) {
-        return createView(uri);
+        return createView(uri.slice(NUCLIDE_DIFF_VIEW_URI.length));
       }
     }));
 

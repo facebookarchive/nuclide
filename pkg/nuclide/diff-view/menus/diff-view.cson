@@ -1,3 +1,15 @@
 'context-menu':
   'atom-text-editor':
     [{label: 'Open in Diff View', command: 'nuclide-diff-view:open'}]
+
+'menu': [
+  {
+    'label': 'Packages'
+    'submenu': [
+      {
+        'label': 'Open Diff View',
+        'command': 'nuclide-diff-view:open',
+      }
+    ]
+  }
+]
