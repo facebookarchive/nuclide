@@ -122,7 +122,7 @@ function monitorStreamErrors(process: child_process$ChildProcess, command, args,
 /** Basically like spawn, except it handles and logs errors instead of crashing
   * the process. This is much lower-level than asyncExecute. Unless you have a
   * specific reason you should use asyncExecute instead. */
-async function safeSpawn(command: string, args: Array<string> = [], options: Object = {}): Promise<child_process$ChildProcess> {
+async function safeSpawn(command: string, args?: Array<string> = [], options?: Object = {}): Promise<child_process$ChildProcess> {
   options.env = await createExecEnvironment(options.env || process.env, COMMON_BINARY_PATHS);
   var child = spawn(command, args, options);
   monitorStreamErrors(child, command, args, options);
@@ -130,6 +130,19 @@ async function safeSpawn(command: string, args: Array<string> = [], options: Obj
     logError('error with command:', command, args, options, 'error:', error);
   });
   return child;
+}
+
+/**
+ * Basically like safeSpawn, but runs the command with the `script` command.
+ * `script` ensures terminal-like environment and commands we run give colored output.
+ */
+function scriptSafeSpawn(
+  command: string,
+  args?: Array<string> = [],
+  options?: Object = {},
+): Promise<child_process$ChildProcess> {
+  var newArgs = ['-q', '/dev/null', command].concat(args);
+  return safeSpawn('script', newArgs, options);
 }
 
 type process$asyncExecuteRet = {
@@ -281,6 +294,7 @@ module.exports = {
   asyncExecute,
   checkOutput,
   safeSpawn,
+  scriptSafeSpawn,
   createExecEnvironment,
   COMMON_BINARY_PATHS,
   __test__: {

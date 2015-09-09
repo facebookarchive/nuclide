@@ -144,4 +144,14 @@ describe('nuclide-commons/process', () => {
       });
     });
   });
+
+  describe('process.scriptSafeSpawn', () => {
+    it('should not crash the process on an error.', () => {
+      waitsForPromise(async () => {
+        var child = await processLib.scriptSafeSpawn('fakeCommand');
+        expect(child).not.toBe(null);
+        expect(child.listeners('error').length).toBeGreaterThan(0);
+      });
+    });
+  });
 });

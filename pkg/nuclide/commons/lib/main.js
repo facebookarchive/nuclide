@@ -31,8 +31,16 @@ module.exports = {
     return require('./promises').denodeify(f);
   },
 
-  safeSpawn(command: string, args: Array<string>, options?: Object = {}): Promise<child_process$ChildProcess> {
+  safeSpawn(command: string, args?: Array<string>, options?: Object = {}): Promise<child_process$ChildProcess> {
     return require('./process').safeSpawn(command, args, options);
+  },
+
+  scriptSafeSpawn(
+    command: string,
+    args?: Array<string> = [],
+    options?: Object = {},
+  ): Promise<child_process$ChildProcess> {
+    return require('./process').scriptSafeSpawn(command, args, options);
   },
 
   readFile(filePath: string, options?: any): Promise<string | Buffer> {
