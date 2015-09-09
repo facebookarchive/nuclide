@@ -8,6 +8,8 @@
 
 export class BuckProject {
 
+  constructor(options: {rootPath: string}) {}
+
   getPath(): Promise<NuclideUri> {}
 
   /**
