@@ -347,10 +347,15 @@ export class BuckProject {
    * Currently, if `aliasOrTarget` contains a flavor, this will fail.
    */
   async buildRuleTypeFor(aliasOrTarget: string): Promise<string> {
-    var args = ['targets', '--json', aliasOrTarget];
+    var args = ['query', aliasOrTarget, '--json', '--output-attributes', 'buck.type'];
     var result = await this._runBuckCommandFromProjectRoot(args);
-    var json: Array<Object> = JSON.parse(result.stdout.trim());
-    return json[0]['buck.type'];
+    var json: {[target: string]: Object} = JSON.parse(result.stdout);
+    // If aliasOrTarget is an alias, targets[0] will be the fully qualified build target.
+    var targets = Object.keys(json);
+    if (!targets || targets.length !== 1) {
+      throw new Error(`Error determining rule type of '${aliasOrTarget}'.`);
+    }
+    return json[targets[0]]['buck.type'];
   }
 
   async getServerPort(): Promise<number> {
