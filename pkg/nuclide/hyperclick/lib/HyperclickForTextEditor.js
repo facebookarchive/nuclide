@@ -22,6 +22,7 @@ class HyperclickForTextEditor {
   _textEditorView: HTMLElement;
   _hyperclick: Hyperclick;
   _lastMouseEvent: ?SyntheticMouseEvent;
+  _lastPosition: ?atom$Point;
   _lastSuggestionAtMousePromise: ?Promise<HyperclickSuggestion>;
   _lastSuggestionAtMouse: ?HyperclickSuggestion;
   _navigationMarkers: ?Array<atom$Marker>;
@@ -41,6 +42,7 @@ class HyperclickForTextEditor {
     this._hyperclick = hyperclick;
 
     this._lastMouseEvent = null;
+    this._lastPosition = null;
     // We store the original promise that we use to retrieve the last suggestion
     // so callers can also await it to know when it's available.
     this._lastSuggestionAtMousePromise = null;
@@ -163,9 +165,16 @@ class HyperclickForTextEditor {
         return;
       }
     }
+    // this._lastSuggestionAtMouse will only be set if hyperclick returned a promise that
+    // resolved to a non-null value. So, in order to not ask hyperclick for the same thing
+    // again and again which will be anyway null, we check if the mouse position has changed.
+    if (this._lastPosition && position.compare(this._lastPosition) === 0) {
+      return;
+    }
 
     this._hyperclickLoading = true;
 
+    this._lastPosition = position;
     this._lastSuggestionAtMousePromise = this._hyperclick.getSuggestion(this._textEditor, position);
     this._lastSuggestionAtMouse = await this._lastSuggestionAtMousePromise;
     if (this._isDestroyed) {
