@@ -19,11 +19,19 @@ function getLogger() {
   return logger;
 }
 
+var invariant = require('assert');
 var {TextEditor} = require('atom');
 var AtomComboBox = require('nuclide-ui-atom-combo-box');
 var React = require('react-for-atom');
 var {PropTypes} = React;
 var SimulatorDropdown = require('./SimulatorDropdown');
+
+type BuckRunDetails = {
+  pid?: number;
+};
+import type {ProcessOutputDataHandlers} from 'nuclide-process-output-store/types';
+
+var BUCK_PROCESS_ID_REGEX = /lldb -p ([0-9]+)/;
 
 class BuckToolbar extends React.Component {
 
@@ -248,7 +256,6 @@ class BuckToolbar extends React.Component {
     var command = `buck ${run ? 'install' : 'build'} ${buildTarget}`;
     atom.notifications.addInfo(`${command} started.`);
     this.setMaxProgressAndResetProgress(0);
-    var pid;
     var httpPort = await buckProject.getServerPort();
     if (httpPort > 0) {
       var uri = `ws://localhost:${httpPort}/ws/build`;
@@ -291,9 +298,6 @@ class BuckToolbar extends React.Component {
             ws.close();
           }
         } else if (type === 'InstallFinished') {
-          if (message['success']) {
-            pid = message['pid'];
-          }
           ws.close();
         }
       };
@@ -306,22 +310,92 @@ class BuckToolbar extends React.Component {
       };
     }
 
-    var buildReport;
-    if (run) {
-      buildReport = await buckProject.install([buildTarget], true, debug, this.getSimulator());
-    } else {
-      buildReport = await buckProject.build([buildTarget]);
-    }
-
-    if (!buildReport['success']) {
-      // TODO(natthu): Update Buck to include build errors in the report and
-      // display them here.
-      atom.notifications.addError(`${buildTarget} failed to build.`);
-      return;
-    }
-
-    atom.notifications.addSuccess(`${command} succeeded.`);
+    var {pid} = await this._runBuckCommandInNewPane(
+        {buckProject, buildTarget, run, debug, command});
     return {buckProject, buildTarget, pid};
+  }
+
+  /**
+   * @return An Object with some details about the output of the command:
+   *   pid: The process id of the running app, if 'run' was true.
+   */
+  async _runBuckCommandInNewPane(buckParams: {
+    buckProject: BuckProject,
+    buildTarget: string,
+    run: boolean,
+    debug: boolean,
+    command: string,
+  }): Promise<BuckRunDetails> {
+    var {buckProject, buildTarget, run, debug, command} = buckParams;
+
+    var getRunCommandInNewPane = require('nuclide-process-output');
+    var {runCommandInNewPane, disposable} = getRunCommandInNewPane();
+
+    var runProcessWithHandlers = async (dataHandlerOptions: ProcessOutputDataHandlers) => {
+      var {stdout, stderr, error, exit} = dataHandlerOptions;
+      var observable;
+      invariant(buckProject);
+      if (run) {
+        observable = await buckProject.installWithOutput(
+            [buildTarget], true, debug, this.getSimulator());
+      } else {
+        observable = await buckProject.buildWithOutput([buildTarget]);
+      }
+      var onNext = (data: {stdout: string} | {stderr: string}) => {
+        if (data.stdout) {
+          stdout(data.stdout);
+        } else {
+          stderr(data.stderr);
+        }
+      };
+      var onError = (data: string) => {
+        error(data);
+        exit(1);
+        atom.notifications.addError(`${buildTarget} failed to build.`);
+        disposable.dispose();
+      };
+      var onExit = () => {
+        // onExit will only be called if the process completes successfully,
+        // i.e. with exit code 0. Unfortunately an Observable cannot pass an
+        // argument (e.g. an exit code) on completion.
+        exit(0);
+        atom.notifications.addSuccess(`${command} succeeded.`);
+        disposable.dispose();
+      };
+      var subscription = observable.subscribe(onNext, onError, onExit);
+
+      return {
+        kill() {
+          subscription.dispose();
+          disposable.dispose();
+        },
+      };
+    };
+
+    var buckRunPromise: Promise<BuckRunDetails> = new Promise(function (resolve, reject) {
+      var {ProcessOutputStore} = require('nuclide-process-output-store');
+      var processOutputStore = new ProcessOutputStore(runProcessWithHandlers);
+      var {handleBuckAnsiOutput} = require('nuclide-process-output-handler');
+
+      var exitSubscription = processOutputStore.onProcessExit((exitCode: number) => {
+        if (exitCode === 0 && run) {
+          // Get the process ID.
+          var allBuildOutput = processOutputStore.getStdout() || '';
+          var pidMatch = allBuildOutput.match(BUCK_PROCESS_ID_REGEX);
+          if (pidMatch) {
+            // Index 1 is the captured pid.
+            resolve({pid: parseInt(pidMatch[1], 10)});
+          }
+        } else {
+          resolve({});
+        }
+        exitSubscription.dispose();
+      });
+
+      runCommandInNewPane('buck', processOutputStore, handleBuckAnsiOutput);
+    });
+
+    return await buckRunPromise;
   }
 }
 
