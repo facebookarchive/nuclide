@@ -1,0 +1,3 @@
+'atom-text-editor:not(.mini).editor-objc':
+  'ctrl-cmd-up': 'autocomplete-plus-clang:jump-to-next-related-file'
+  'ctrl-cmd-down': 'autocomplete-plus-clang:jump-to-previous-related-file'

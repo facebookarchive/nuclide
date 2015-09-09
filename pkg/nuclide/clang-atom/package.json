@@ -1,0 +1,44 @@
+{
+  "name": "nuclide-clang-atom",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "engines": {
+    "atom": ">=0.192.0"
+  },
+  "description": "Exposes features from nuclide-clang in Atom",
+  "nuclide": {
+    "packageType": "Atom",
+    "testRunner": "apm"
+  },
+  "providedServices": {
+    "autocomplete.provider": {
+      "versions": {
+        "2.0.0": "createAutocompleteProvider"
+      }
+    },
+    "hyperclick.provider": {
+      "versions": {
+        "0.0.0": "getHyperclickProvider"
+      }
+    },
+    "linter": {
+      "versions": {
+        "1.0.4": "provideLinter"
+      }
+    }
+  },
+  "dependencies": {
+    "fs-plus": "2.8.0",
+    "nuclide-atom-helpers": "0.0.0",
+    "nuclide-client": "0.0.0",
+    "nuclide-commons": "0.0.0",
+    "nuclide-logging": "0.0.0",
+    "nuclide-remote-connection": "0.0.0",
+    "nuclide-service-hub-plus": "0.0.0"
+  },
+  "devDependencies": {
+    "nuclide-atom-test-helpers": "0.0.0",
+    "nuclide-external-interfaces": "0.0.0"
+  }
+}
