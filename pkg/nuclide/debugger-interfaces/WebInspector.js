@@ -158,6 +158,12 @@ declare class WebInspector$Setting {
   set(value: any): void;
 }
 
+declare class WebInspector$UILocation {
+  linkText(): string;
+  id(): string;
+  toUIString(): string;
+}
+
 declare class WebInspector$DebuggerWorkspaceBinding {
   rawLocationToUILocation(rawLocation: WebInspector$DebuggerModel$Location): WebInspector$UILocation;
 }

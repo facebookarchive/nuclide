@@ -18,7 +18,7 @@ class DebuggerProcessInfo {
   }
 
   toString(): string {
-    return this._serviceName + " : " + this.displayString();
+    return `${this._serviceName} : ${this.displayString()}`;
   }
 
   displayString(): string {
@@ -29,15 +29,7 @@ class DebuggerProcessInfo {
     return this._serviceName;
   }
 
-  static compare(value: DebuggerProcessInfo, other: DebuggerProcessInfo): number {
-    if (value._serviceName === other._serviceName) {
-      return value.compareDetails(other);
-    } else {
-      return value._serviceName < other._serviceName ? -1 : 1;
-    }
-  }
-
-  compareDetails(other:DebuggerProcessInfo): number {
+  compareDetails(other: nuclide_debugger$DebuggerProcessInfo): number {
     throw new Error('abstract method');
   }
 

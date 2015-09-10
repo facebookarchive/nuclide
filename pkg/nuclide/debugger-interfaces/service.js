@@ -6,29 +6,27 @@
  * the root directory of this source tree.
  */
 
-type nuclide_debugger$DebuggerInstance = {
+export type nuclide_debugger$DebuggerInstance = {
   dispose(): void;
   getWebsocketAddress(): Promise<string>;
-  onSessionEnd(callback: () => void): Disposable;
+  onSessionEnd(callback: () => void): {
+    dispose(): void;
+  };
 };
 
-declare class nuclide_debugger$DebuggerProcessInfo {
-  constructor(serviceName: string): void;
-
+export type nuclide_debugger$DebuggerProcessInfo = {
   toString(): string;
 
   displayString(): string;
 
   getServiceName(): string;
 
-  static compare(value: DebuggerProcessInfo, other: DebuggerProcessInfo): number;
-
-  compareDetails(other:DebuggerProcessInfo): number;
+  compareDetails(other: nuclide_debugger$DebuggerProcessInfo): number;
 
   attach(): nuclide_debugger$DebuggerInstance;
-}
+};
 
-type nuclide_debugger$Service = {
+export type nuclide_debugger$Service = {
   name: string;
   getProcessInfoList(): Promise<Array<nuclide_debugger$DebuggerProcessInfo>>;
 };
