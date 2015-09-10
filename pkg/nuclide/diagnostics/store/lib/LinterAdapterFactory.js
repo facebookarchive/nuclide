@@ -15,7 +15,10 @@ import type {LinterProvider} from './LinterAdapter';
 var {DiagnosticsProviderBase} = require('nuclide-diagnostics-provider-base');
 var LinterAdapter = require('./LinterAdapter');
 
-function createSingleAdapter(provider: LinterProvider, ProviderBase?: typeof DiagnosticsProviderBase): ?LinterAdapter {
+function createSingleAdapter(
+  provider: LinterProvider,
+  ProviderBase?: typeof DiagnosticsProviderBase,
+): ?LinterAdapter {
   if (provider.disabledForNuclide) {
     return;
   }
@@ -32,14 +35,21 @@ function createSingleAdapter(provider: LinterProvider, ProviderBase?: typeof Dia
   }
 }
 
-function addSingleAdapter(adapters: Set<LinterAdapter>, provider: LinterProvider, ProviderBase?: typeof DiagnosticsProviderBase): void {
+function addSingleAdapter(
+  adapters: Set<LinterAdapter>,
+  provider: LinterProvider,
+  ProviderBase?: typeof DiagnosticsProviderBase,
+): void {
   var adapter: ?LinterAdapter = createSingleAdapter(provider);
   if (adapter) {
     adapters.add(adapter);
   }
 }
 
-function createAdapters(providers: LinterProvider | Array<LinterProvider>, ProviderBase?: typeof DiagnosticsProviderBase): Set<LinterAdapter> {
+function createAdapters(
+  providers: LinterProvider | Array<LinterProvider>,
+  ProviderBase?: typeof DiagnosticsProviderBase,
+): Set<LinterAdapter> {
   var adapters = new Set();
   if (Array.isArray(providers)) {
     for (var provider of providers) {
@@ -60,17 +70,26 @@ function validateLinter(provider: LinterProvider): Array<string> {
     validate(Array.isArray(provider.grammarScopes), 'grammarScopes must be an Array', errors);
     if (errors.length === 0) {
       for (var grammar of provider.grammarScopes) {
-        validate(typeof grammar === 'string', `Each grammarScope entry must be a string: ${grammar}`, errors);
+        validate(
+          typeof grammar === 'string',
+          `Each grammarScope entry must be a string: ${grammar}`,
+          errors,
+        );
       }
     }
 
     validate(
       provider.scope === 'file' || provider.scope === 'project',
       `Scope must be 'file' or 'project'; found '${provider.scope}'`,
-      errors);
+      errors,
+    );
 
     if (provider.scope === 'project') {
-      validate(!provider.lintOnFly, "lintOnFly must be false for a linter with 'project' scope", errors);
+      validate(
+        !provider.lintOnFly,
+        "lintOnFly must be false for a linter with 'project' scope",
+        errors,
+      );
     }
 
     validate(provider.lint, 'lint function must be specified', errors);

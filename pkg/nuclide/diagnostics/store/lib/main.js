@@ -14,9 +14,9 @@ import type {LinterProvider} from './LinterAdapter';
 
 var {Disposable, CompositeDisposable} = require('atom');
 
-const legacyLinterSetting = 'nuclide-diagnostics-store.consumeLegacyLinters';
+var legacyLinterSetting = 'nuclide-diagnostics-store.consumeLegacyLinters';
 
-const legacyLintOnTheFlySetting = 'nuclide-diagnostics-store.legacyLintOnTheFly';
+var legacyLintOnTheFlySetting = 'nuclide-diagnostics-store.legacyLintOnTheFly';
 
 var disposables = null;
 var diagnosticStore = null;
@@ -33,8 +33,7 @@ function addDisposable(disposable: atom$IDisposable) {
 
 function getDiagnosticStore(): DiagnosticStore {
   if (!diagnosticStore) {
-    var {DiagnosticStore} = require('nuclide-diagnostics-base');
-    diagnosticStore = new DiagnosticStore();
+    diagnosticStore = new (require('nuclide-diagnostics-base').DiagnosticStore)();
   }
   return diagnosticStore;
 }
@@ -76,7 +75,8 @@ module.exports = {
       disposables = new CompositeDisposable();
     }
 
-    consumeLegacyLinters = ((atom.config.get(legacyLinterSetting): any): boolean);  // returns mixed so a cast is necessary
+    // Returns mixed so a cast is necessary.
+    consumeLegacyLinters = ((atom.config.get(legacyLinterSetting): any): boolean);
     atom.config.observe(legacyLinterSetting, newValue => {
       // To make this really solid, we should also probably trigger the linter
       // for the active text editor. Possibly more trouble than it's worth,
@@ -147,5 +147,5 @@ module.exports = {
       diagnosticStore = null;
     }
     diagnosticUpdater = null;
-  }
+  },
 };

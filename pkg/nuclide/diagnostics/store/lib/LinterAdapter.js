@@ -29,13 +29,14 @@ type LinterMessage = {
 };
 
 export type LinterProvider = {
-  // providerName is an extension to the current linter api
+  /** providerName is an extension to the current linter api. */
   providerName?: string;
-  // an extension allowing package authors to provide both the linter and
-  // diagnostics services, and have Nuclide ignore the linter one.
+  /** An extension allowing package authors to provide both the linter and
+    * diagnostics services, and have Nuclide ignore the linter one. */
   disabledForNuclide?: boolean;
   grammarScopes: Array<string>;
-  // extension to the linter API. overrides grammarScopes if true, to trigger the linter on all grammar scopes
+  /** Extension to the linter API. Overrides grammarScopes if true, to trigger the linter on all
+    * grammar scopes. */
   allGrammarScopes?: boolean;
   scope: 'file' | 'project';
   lintOnFly: bool;
@@ -46,7 +47,10 @@ var {DiagnosticsProviderBase} = require('nuclide-diagnostics-provider-base');
 
 var {RequestSerializer} = require('nuclide-commons').promises;
 
-function linterMessageToDiagnosticMessage(msg: LinterMessage, providerName: string): DiagnosticMessage {
+function linterMessageToDiagnosticMessage(
+  msg: LinterMessage,
+  providerName: string,
+): DiagnosticMessage {
   if (msg.filePath) {
     return {
       scope: 'file',
@@ -71,7 +75,11 @@ function linterMessageToDiagnosticMessage(msg: LinterMessage, providerName: stri
   }
 }
 
-function linterMessagesToDiagnosticUpdate(currentPath: ?NuclideUri, msgs: Array<LinterMessage>, providerName?: string = 'Unnamed Linter'): DiagnosticProviderUpdate {
+function linterMessagesToDiagnosticUpdate(
+  currentPath: ?NuclideUri,
+  msgs: Array<LinterMessage>,
+  providerName?: string = 'Unnamed Linter',
+): DiagnosticProviderUpdate {
   var filePathToMessages = new Map();
   if (currentPath) {
     // Make sure we invalidate the messages for the current path. We may want to
@@ -88,7 +96,7 @@ function linterMessagesToDiagnosticUpdate(currentPath: ?NuclideUri, msgs: Array<
         filePathToMessages.set(path, []);
       }
       filePathToMessages.get(path).push(diagnosticMessage);
-    } else { // project scope
+    } else { // Project scope.
       projectMessages.push(diagnosticMessage);
     }
   }
@@ -118,7 +126,10 @@ class LinterAdapter {
 
   _providerUtils: DiagnosticsProviderBase;
 
-  constructor(provider: LinterProvider, ProviderBase?: typeof DiagnosticsProviderBase = DiagnosticsProviderBase) {
+  constructor(
+    provider: LinterProvider,
+    ProviderBase?: typeof DiagnosticsProviderBase = DiagnosticsProviderBase,
+  ) {
     var utilsOptions = {
       grammarScopes: new Set(provider.grammarScopes),
       enableForAllGrammars: provider.allGrammarScopes,
@@ -137,7 +148,10 @@ class LinterAdapter {
       var result = await this._requestSerializer.run(this._provider.lint(editor));
       if (result.status === 'success') {
         var linterMessages = result.result;
-        var diagnosticUpdate = linterMessagesToDiagnosticUpdate(editor.getPath(), linterMessages, this._provider.providerName);
+        var diagnosticUpdate = linterMessagesToDiagnosticUpdate(
+          editor.getPath(),
+          linterMessages, this._provider.providerName
+        );
         this._providerUtils.publishMessageUpdate(diagnosticUpdate);
       }
     }
@@ -146,7 +160,8 @@ class LinterAdapter {
   _newUpdateSubscriber(callback: MessageUpdateCallback): void {
     var activeTextEditor = atom.workspace.getActiveTextEditor();
     if (activeTextEditor) {
-      var matchesGrammar = this._provider.grammarScopes.indexOf(activeTextEditor.getGrammar().scopeName) !== -1;
+      var matchesGrammar =
+        this._provider.grammarScopes.indexOf(activeTextEditor.getGrammar().scopeName) !== -1;
       if (!this._lintInProgress() && matchesGrammar) {
         this._runLint(activeTextEditor);
       }

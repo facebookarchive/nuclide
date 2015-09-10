@@ -122,7 +122,7 @@ describe('LinterAdapter', () => {
         numMessages++;
         lastMessage = message;
       });
-      // dispatch two linter requests
+      // Dispatch two linter requests.
       linterReturn = makePromise([{type: 'Error', filePath: 'bar'}], 50);
       eventCallback(fakeEditor);
       linterReturn = makePromise([{type: 'Error', filePath: 'baz'}], 10);
@@ -132,7 +132,7 @@ describe('LinterAdapter', () => {
       window.advanceClock(30);
       window.advanceClock(30);
       waitsFor(() => {
-        return numMessages === 1 && lastMessage.filePathToMessages.has('baz');
+        return numMessages === 1 && lastMessage && lastMessage.filePathToMessages.has('baz');
       }, 'There should be only the latest message', 100);
     });
   });
