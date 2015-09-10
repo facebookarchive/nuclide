@@ -40,16 +40,19 @@ var TESTS = [
   'demote-requires',
   'ignore-arbitrary-new-lines',
   'ignore-array-pattern-elements',
+  'ignore-comments-with-no-requires',
   'ignore-declared-jsx',
   'ignore-function-params',
   'ignore-react-when-using-jsx',
   'ignore-requires-in-blocks',
+  'keep-header-comments',
   'promote-types',
   'remove-unused-array-patterns',
   'remove-unused-requires',
   'remove-unused-types',
   'sort-requires',
   'sort-strange-require-expressions',
+  'split-multiple-leading-comments',
 ];
 
 var SOURCE_OPTIONS = {

@@ -1,0 +1,12 @@
+/**
+ * Header comment
+ */
+
+var one = require('one');
+
+/**
+ * Function description.
+ */
+function foo() {
+  one();
+}

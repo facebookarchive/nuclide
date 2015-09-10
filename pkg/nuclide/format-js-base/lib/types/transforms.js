@@ -13,6 +13,7 @@
  * These are all of the transforms that may be run via `transform`.
  */
 export type TransformKey =
+  'requires.transferComments' |
   'requires.removeUnusedRequires' |
   'requires.addMissingRequires' |
   'requires.removeUnusedTypes' |

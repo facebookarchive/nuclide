@@ -1,0 +1,8 @@
+/* @flow */
+/**
+ * Header comment
+ */
+
+var one = require('one');
+
+one();

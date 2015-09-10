@@ -13,9 +13,11 @@ import type {Collection} from '../types/ast';
 import type {SourceOptions} from '../options/SourceOptions';
 import type {TransformKey} from '../types/transforms';
 
+var addLeadingComments = require('./addLeadingComments');
 var addMissingRequires = require('./addMissingRequires');
 var addMissingTypes = require('./addMissingTypes');
 var formatRequires = require('./formatRequires');
+var removeLeadingComments = require('./removeLeadingComments');
 var removeUnusedRequires = require('./removeUnusedRequires');
 var removeUnusedTypes = require('./removeUnusedTypes');
 
@@ -24,6 +26,9 @@ var removeUnusedTypes = require('./removeUnusedTypes');
  */
 function transform(root: Collection, options: SourceOptions): void {
   var blacklist: Set<TransformKey> = options.blacklist || new Set();
+  if (!blacklist.has('requires.transferComments')) {
+    var comments = removeLeadingComments(root);
+  }
   if (!blacklist.has('requires.removeUnusedRequires')) {
     removeUnusedRequires(root, options);
   }
@@ -38,6 +43,9 @@ function transform(root: Collection, options: SourceOptions): void {
   }
   if (!blacklist.has('requires.formatRequires')) {
     formatRequires(root);
+  }
+  if (!blacklist.has('requires.transferComments')) {
+    addLeadingComments(root, comments);
   }
 }
 
