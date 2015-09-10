@@ -224,15 +224,19 @@ function parseGenericTypeAnnotation(typeAnnotation) {
     case 'Set':
     case 'Promise':
     case 'Observable':
-      assert(typeAnnotation.typeParameters.params.length === 1,
-        `${typeAnnotation.id.name} has exactly one type parameter.`);
+      assert(
+        typeAnnotation.typeParameters != null && typeAnnotation.typeParameters.params.length === 1,
+        `${typeAnnotation.id.name} has exactly one type parameter.`
+      );
       return {
         kind: typeAnnotation.id.name.toLowerCase(),
         type: parseTypeAnnotation(typeAnnotation.typeParameters.params[0]),
       };
     case 'Map':
-      assert(typeAnnotation.typeParameters.params.length === 2,
-        `${typeAnnotation.id.name} takes exactly two type parameters.`);
+      assert(
+        typeAnnotation.typeParameters != null && typeAnnotation.typeParameters.params.length === 2,
+        `${typeAnnotation.id.name} takes exactly two type parameters.`
+      );
       return {
         kind: 'map',
         keyType: parseTypeAnnotation(typeAnnotation.typeParameters.params[0]),

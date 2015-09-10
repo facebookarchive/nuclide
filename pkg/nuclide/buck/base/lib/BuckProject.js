@@ -183,7 +183,9 @@ export class BuckProject {
     }
   }
 
-  buildWithOutput(buildTargets: Array<string>): Promise<Observable> {
+  buildWithOutput(
+    buildTargets: Array<string>
+  ): Observable<{stderr?: string; stdout?: string;}> {
     return this._buildWithOutput(buildTargets, {install: false, run: false, debug: false});
   }
 
@@ -192,7 +194,7 @@ export class BuckProject {
     run: boolean,
     debug: boolean,
     simulator: ?string,
-  ): Promise<Observable> {
+  ): Observable<{stderr?: string; stdout?: string;}> {
     return this._buildWithOutput(buildTargets, {install: true, run, debug, simulator});
   }
 
@@ -201,10 +203,10 @@ export class BuckProject {
    * @return An Observable that returns output from buck, as described by the
    *   docblocks for `buildWithOutput` and `installWithOutput`.
    */
-  async _buildWithOutput(
+  _buildWithOutput(
     buildTargets: Array<string>,
     options: BaseBuckBuildOptions,
-  ): Promise<Observable> {
+  ): Observable<{stderr?: string; stdout?: string;}> {
     var args = this._translateOptionsToBuckBuildArgs({
       baseOptions: {...options},
       buildTargets,
