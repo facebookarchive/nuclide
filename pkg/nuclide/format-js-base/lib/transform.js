@@ -14,6 +14,7 @@ import type {SourceOptions} from './options/SourceOptions';
 var Options = require('./options/Options');
 
 var jscs = require('jscodeshift');
+var nuclideTransform = require('./nuclide/transform');
 var printRoot = require('./utils/printRoot');
 var requiresTransform = require('./requires/transform');
 
@@ -29,7 +30,12 @@ function transform(source: string, options: SourceOptions): string {
   // Requires
   requiresTransform(root, options);
 
-  return printRoot(root);
+  var output = printRoot(root);
+
+  // Transform that operates on the raw string output.
+  output = nuclideTransform(output, options);
+
+  return output;
 }
 
 module.exports = transform;

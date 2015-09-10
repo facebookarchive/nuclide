@@ -13,6 +13,7 @@
  * These are all of the transforms that may be run via `transform`.
  */
 export type TransformKey =
+  'nuclide.fixHeader' |
   'requires.transferComments' |
   'requires.removeUnusedRequires' |
   'requires.addMissingRequires' |

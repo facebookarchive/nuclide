@@ -108,6 +108,14 @@ module.exports = {
       },
     },
     // Enumerate the possible blacklist options so people know what they are.
+    nuclideFixHeader: {
+      title: 'Nuclide: Fix Header',
+      description:
+        'This is used to fix the header when developing on Nuclide source ' +
+        'code. This should rarely affect anything outside of Nuclide source.',
+      type: 'boolean',
+      default: true,
+    },
     requiresTransferComments: {
       title: 'Requires: Transfer Comments',
       type: 'boolean',

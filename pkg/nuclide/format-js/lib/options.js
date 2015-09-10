@@ -94,6 +94,9 @@ function fixAliases(aliases: ?Array<string>): Array<[string, string]> {
  */
 function getBlacklist(): Set<string> {
   var blacklist = new Set();
+  if (!atom.config.get('nuclide-format-js.nuclideFixHeader')) {
+    blacklist.add('nuclide.fixHeader');
+  }
   if (!atom.config.get('nuclide-format-js.requiresTransferComments')) {
     blacklist.add('requires.transferComments');
   }
