@@ -9,13 +9,36 @@
  * the root directory of this source tree.
  */
 
-import type {ExternalOptions} from 'nuclide-format-js-base/lib/types/options';
+var {
+  createModuleMap,
+  defaultAliases,
+  defaultBuiltIns,
+  defaultBuiltInTypes,
+} = require('nuclide-format-js-base');
 
+// Sets up the default module map.
+var moduleMap = createModuleMap({
+  paths: [],
+  pathsToRelativize: [],
+  aliases: defaultAliases,
+  aliasesToRelativize: new Map(),
+  builtIns: defaultBuiltIns,
+  builtInTypes: defaultBuiltInTypes,
+});
+
+/**
+ * Small getter function to expose the saved module map.
+ */
+function getModuleMap(): Object {
+  return moduleMap;
+}
+
+/**
+ * Whenever the options change we need to update the module map.
+ */
 function refreshOptions(): void {
-  var {buildOptions} = require('nuclide-format-js-base');
-  // TODO: For now we just apply these options globally to the root directory,
-  // eventually we should scope options correctly per project.
-  buildOptions('/', {
+  // Get all the options from atom config.
+  var options = {
     builtIns: atom.config.get('nuclide-format-js.builtIns'),
     builtInBlacklist: atom.config.get('nuclide-format-js.builtInBlacklist'),
     builtInTypes: atom.config.get('nuclide-format-js.builtInTypes'),
@@ -25,6 +48,43 @@ function refreshOptions(): void {
     commonAliases: fixCommonAliases(
       (atom.config.get('nuclide-format-js.commonAliases'): any)
     ),
+  };
+
+  // Construct the aliases.
+  var aliases = new Map(options.commonAliases);
+  for (var entry of defaultAliases) {
+    var [key, value] = entry;
+    if (!aliases.has(key)) {
+      aliases.set(key, value);
+    }
+  }
+
+  // Construct the built ins.
+  var builtIns = new Set(defaultBuiltIns);
+  for (var builtIn of options.builtIns) {
+    builtIns.add(builtIn);
+  }
+  for (var badBuiltIn of options.builtInBlacklist) {
+    builtIns.delete(badBuiltIn);
+  }
+
+  // Construct built in types.
+  var builtInTypes = new Set(defaultBuiltInTypes);
+  for (var builtInType of options.builtInTypes) {
+    builtInTypes.add(builtInType);
+  }
+  for (var badBuiltInType of options.builtInTypeBlacklist) {
+    builtInTypes.delete(badBuiltInType);
+  }
+
+  // And then update the module map.
+  moduleMap = createModuleMap({
+    paths: [],
+    pathsToRelativize: [],
+    aliases,
+    aliasesToRelativize: new Map(),
+    builtIns,
+    builtInTypes,
   });
 }
 
@@ -41,4 +101,4 @@ function fixCommonAliases(aliases: ?Array<string>): Array<[string, string]> {
   return pairs;
 }
 
-module.exports = {refreshOptions};
+module.exports = {getModuleMap, refreshOptions};
