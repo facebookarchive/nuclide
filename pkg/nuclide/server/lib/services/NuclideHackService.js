@@ -81,7 +81,7 @@ async function _callHHClient(
 }
 
 /**
- * Gets the hh_client diagnistics for all files open
+ * Gets the hh_client diagnostics for all files open
  */
 function getDiagnostics(options = {}): Promise<Array<any>> {
   return _callHHClient(

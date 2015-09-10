@@ -19,9 +19,9 @@
         "0.0.0": "getHyperclickProvider"
       }
     },
-    "linter": {
+    "nuclide-diagnostics-provider": {
       "versions": {
-        "1.0.4": "provideLinter"
+        "0.0.0": "provideDiagnostics"
       }
     },
     "nuclide-code-format.provider": {
@@ -44,14 +44,18 @@
     "atom": ">=0.196.0"
   },
   "dependencies": {
+    "nuclide-analytics": "0.0.0",
     "nuclide-atom-helpers": "0.0.0",
     "nuclide-client": "0.0.0",
     "nuclide-commons": "0.0.0",
+    "nuclide-diagnostics-provider-base": "0.0.0",
     "nuclide-hack-common": "0.0.0",
     "nuclide-logging": "0.0.0",
-    "nuclide-remote-uri": "0.0.0"
+    "nuclide-remote-uri": "0.0.0",
+    "nuclide-text-event-dispatcher": "0.0.0"
   },
   "devDependencies": {
+    "nuclide-diagnostics-base": "0.0.0",
     "nuclide-external-interfaces": "0.0.0"
   }
 }

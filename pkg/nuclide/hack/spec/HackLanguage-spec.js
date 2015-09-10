@@ -33,10 +33,12 @@ describe('HackLanguage', () => {
         var errors = await hackLanguage.getDiagnostics(filePath, fileContents);
 
         expect(errors.length).toBe(1);
-        expect(errors[0].type).toBe('Error');
-        expect(errors[0].text).toMatch(/await.*async/);
-        expect(errors[0].filePath).toBe(filePath);
-        expect(errors[0].range.start).toEqual({ row : 14, column : 11 });
+        var diagnostics = errors[0].message;
+        expect(diagnostics[0].descr).toMatch(/await.*async/);
+        expect(diagnostics[0].path).toBe(filePath);
+        expect(diagnostics[0].start).toBe(12);
+        expect(diagnostics[0].end).toBe(36);
+        expect(diagnostics[0].line).toBe(15);
       });
     });
   });

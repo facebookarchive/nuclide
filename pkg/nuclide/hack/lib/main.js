@@ -25,6 +25,7 @@ type Suggestion = {
 }
 
 var subscriptions: ?CompositeDisposable = null;
+var hackDiagnosticsProvider;
 
 module.exports = {
 
@@ -89,14 +90,22 @@ module.exports = {
     };
   },
 
-  provideLinter() {
-    return require('./HackLinter');
+  provideDiagnostics() {
+    if (!hackDiagnosticsProvider) {
+      var HackDiagnosticsProvider = require('./HackDiagnosticsProvider');
+      hackDiagnosticsProvider = new HackDiagnosticsProvider();
+    }
+    return hackDiagnosticsProvider;
   },
 
   deactivate(): void {
     if (subscriptions) {
       subscriptions.dispose();
       subscriptions = null;
+    }
+    if (hackDiagnosticsProvider) {
+      hackDiagnosticsProvider.dispose();
+      hackDiagnosticsProvider = null;
     }
   }
 };

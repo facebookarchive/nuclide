@@ -10,6 +10,7 @@
  */
 
 import type {HackReference} from 'nuclide-hack-common';
+import type {HackDiagnosticItem} from './types';
 
 var invariant = require('assert');
 var {getClient} = require('nuclide-client');
@@ -34,7 +35,9 @@ var HH_DIAGNOSTICS_DELAY_MS = 3000;
 
 module.exports = {
 
-  async findDiagnostics(editor: TextEditor): Promise<Array<any>> {
+  async findDiagnostics(
+    editor: TextEditor
+  ): Promise<Array<HackDiagnosticItem>> {
     var buffer = editor.getBuffer();
     var hackLanguage = await getHackLanguageForBuffer(buffer);
     if (!hackLanguage) {
@@ -48,7 +51,7 @@ module.exports = {
     // if a `check` call is made before 3 seconds of a file being saved.
     await awaitMilliSeconds(HH_DIAGNOSTICS_DELAY_MS);
 
-    var diagnostics = [];
+    var diagnostics;
     if (hackLanguage.isHackClientAvailable()) {
       diagnostics = await hackLanguage.getServerDiagnostics();
     } else {
@@ -207,6 +210,8 @@ module.exports = {
     var hackLanguage = await getHackLanguageForBuffer(editor.getBuffer());
     return hackLanguage.onFinishedLoadingDependencies(callback);
   },
+
+  getHackLanguageForBuffer,
 };
 
 function getFilePath(filePath: string, protocol: ?string, host: ?string): string {

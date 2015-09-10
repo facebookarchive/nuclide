@@ -181,17 +181,17 @@ module.exports = class HackLanguage {
     }
     await this.updateFile(path, contents);
     var webWorkerMessage = {cmd: 'hh_check_file', args: [path]};
-    var response = await this._hackWorker.runWorkerTask(webWorkerMessage);
-    return parseErrorsFromResponse(response);
+    var {errors} = await this._hackWorker.runWorkerTask(webWorkerMessage);
+    return errors;
   }
 
   async getServerDiagnostics(): Promise<Array<any>> {
-    var response = await this._callHackService(
+    var {errors} = await this._callHackService(
       /*serviceName*/ 'getHackDiagnostics',
       /*serviceArgs*/ [],
       /*defaultValue*/ {errors: []},
     );
-    return parseErrorsFromResponse(response);
+    return errors;
   }
 
   async getDefinition(
@@ -491,34 +491,6 @@ function getSymbolType(input: string) {
     symbolType = SymbolType.METHOD;
   }
   return symbolType;
-}
-
-function parseErrorsFromResponse(response: {errors: Array<Object>}): Array<Object> {
-  var errors = response.errors.map(error => {
-    var rootCause = null;
-    var errorParts = error.message;
-    return errorParts.map(errorPart => {
-      if (!rootCause) {
-        var {start, end, line, path} = errorPart;
-        start--;
-        line--;
-        rootCause = {
-          range: new Range([line, start], [line, end]),
-          path,
-          start,
-          line,
-        };
-      }
-      return {
-        type: 'Error',
-        text: errorPart.descr,
-        filePath: rootCause.path,
-        range: rootCause.range,
-      };
-    });
-  });
-  // flatten the arrays
-  return [].concat.apply([], errors);
 }
 
 var serverCompletionTypes = new Set([
