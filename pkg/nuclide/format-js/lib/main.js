@@ -36,13 +36,8 @@ module.exports = {
 
     // Observe changes to the config and remove them when they change.
     atom.config.observe('nuclide-format-js.builtIns', refreshOptions);
-    atom.config.observe('nuclide-format-js.builtInBlacklist', refreshOptions);
     atom.config.observe('nuclide-format-js.builtInTypes', refreshOptions);
-    atom.config.observe(
-      'nuclide-format-js.builtInTypeBlacklist',
-      refreshOptions
-    );
-    atom.config.observe('nuclide-format-js.commonAliases', refreshOptions);
+    atom.config.observe('nuclide-format-js.aliases', refreshOptions);
 
     // Set up run-on-save based on atom config.
     var runOnSave = atom.config.get('nuclide-format-js.runOnSave');
@@ -69,6 +64,9 @@ module.exports = {
   config: {
     runOnSave: {
       title: 'Run on save',
+      description:
+        'This setting is not recommended yet. See the readme for how to set ' +
+        'up a keyboard shortcut.',
       type: 'boolean',
       default: false,
     },
@@ -78,23 +76,18 @@ module.exports = {
       type: 'boolean',
       default: false,
     },
-    builtIns: {
-      title: 'Built-ins',
-      description:
-        'Module names here will be ignored if undeclared. Defaults in here ' +
-        'are hard-coded, use the blacklist to override the defaults.',
+    transformBlacklist: {
+      title: 'Transform Blacklist',
       type: 'array',
-      default: ['Array', 'Object'],
+      default: [],
       items: {
         type: 'string',
       },
     },
-    builtInBlacklist: {
-      title: 'Built-in Blacklist',
+    builtIns: {
+      title: 'Built-ins',
       description:
-        'Module names here will be be removed from the default list of built-' +
-        'ins. For example adding "Object" here will cause "Object" to be ' +
-        'required when it is used.',
+        'Requires will not be added for identifiers in this list.',
       type: 'array',
       default: [],
       items: {
@@ -103,29 +96,21 @@ module.exports = {
     },
     builtInTypes: {
       title: 'Built-in Types',
-      description: 'Similar to "Built-ins" but applies to Flow types.',
-      type: 'array',
-      default: ['FBID'],
-      items: {
-        type: 'string',
-      },
-    },
-    builtInTypeBlacklist: {
-      title: 'Built-in Types Blacklist',
-      description: 'Similar to "Built-in Blacklist" but applies to Flow types.',
+      description:
+        'Type imports will not be added for identifiers in this list.',
       type: 'array',
       default: [],
       items: {
         type: 'string',
       },
     },
-    commonAliases: {
-      title: 'Common Aliases',
+    aliases: {
+      title: 'Aliases',
       description:
         'This is used to specify common aliases that you use. Each pair of ' +
         'entries should be in the format "variableName, moduleName".',
       type: 'array',
-      default: ['Immutable', 'immutable'],
+      default: ['Immutable', 'immutable', 'fbt', 'fbt'],
       items: {
         type: 'string',
       },

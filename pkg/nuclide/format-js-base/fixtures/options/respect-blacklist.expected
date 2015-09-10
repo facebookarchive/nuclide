@@ -1,0 +1,6 @@
+'use strict';
+
+var three = require('three');
+var two = require('two');
+
+var one = two;

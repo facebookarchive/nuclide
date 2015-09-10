@@ -18,8 +18,8 @@ transforms:
 
 + Always have a `'use strict';` and keep requires immediately after it.
 + Don't shadow require names anywhere in the file. The transform is very minimally aware of scope.
-+ Don't alias requires (unless you specify the alias in the common-aliases setting).
-+ Destructure in a line separate from the require
++ Don't alias requires (unless you specify the alias in the aliases setting).
++ Destructure in a line separate from the require.
 
 ```js
 var React = require('react');
@@ -44,4 +44,5 @@ keyboard shortcut, to do so add this to your `~/.atom/keymap.cson` file:
 
 Make sure to verify the requires that are added by this plugin and report any issues. If anything
 is getting in your way when using this plugin you can generally work around it by modifying the
-plugin's settings. It's possible to adjust things like built-ins and common aliases there.
+plugin's settings. It's possible to adjust things like built-ins, aliases, and even blacklist
+particular transforms there.

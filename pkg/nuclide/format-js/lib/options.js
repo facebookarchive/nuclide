@@ -39,19 +39,13 @@ function getModuleMap(): Object {
 function refreshOptions(): void {
   // Get all the options from atom config.
   var options = {
+    aliases: fixAliases((atom.config.get('nuclide-format-js.aliases'): any)),
     builtIns: atom.config.get('nuclide-format-js.builtIns'),
-    builtInBlacklist: atom.config.get('nuclide-format-js.builtInBlacklist'),
     builtInTypes: atom.config.get('nuclide-format-js.builtInTypes'),
-    builtInTypeBlacklist: atom.config.get(
-      'nuclide-format-js.builtInTypeBlacklist'
-    ),
-    commonAliases: fixCommonAliases(
-      (atom.config.get('nuclide-format-js.commonAliases'): any)
-    ),
   };
 
   // Construct the aliases.
-  var aliases = new Map(options.commonAliases);
+  var aliases = new Map(options.aliases);
   for (var entry of defaultAliases) {
     var [key, value] = entry;
     if (!aliases.has(key)) {
@@ -64,17 +58,11 @@ function refreshOptions(): void {
   for (var builtIn of options.builtIns) {
     builtIns.add(builtIn);
   }
-  for (var badBuiltIn of options.builtInBlacklist) {
-    builtIns.delete(badBuiltIn);
-  }
 
   // Construct built in types.
   var builtInTypes = new Set(defaultBuiltInTypes);
   for (var builtInType of options.builtInTypes) {
     builtInTypes.add(builtInType);
-  }
-  for (var badBuiltInType of options.builtInTypeBlacklist) {
-    builtInTypes.delete(badBuiltInType);
   }
 
   // And then update the module map.
@@ -92,7 +80,7 @@ function refreshOptions(): void {
  * Nuclide can't handle nested arrays well in settings, so we save it in a
  * flat array and fix up each pair or entries before using it in the transform
  */
-function fixCommonAliases(aliases: ?Array<string>): Array<[string, string]> {
+function fixAliases(aliases: ?Array<string>): Array<[string, string]> {
   aliases = aliases || [];
   var pairs = [];
   for (var i = 0; i < aliases.length - 1; i += 2) {

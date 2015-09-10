@@ -28,6 +28,7 @@ async function formatCode(editor: ?TextEditor): Promise<void> {
   var newSource = transform(oldSource, {
     moduleMap: getModuleMap(),
     sourcePath: editor.getPath(),
+    blacklist: new Set(atom.config.get('nuclide-format-js.transformBlacklist')),
   });
 
   if (newSource === oldSource) {

@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-var ModuleMap = require('../lib/state/ModuleMap');
+var DefaultModuleMap = require('../lib/state/DefaultModuleMap');
 
 var jscodeshift = require('jscodeshift');
 var printRoot = require('../lib/utils/printRoot');
@@ -43,17 +43,8 @@ var TESTS = [
   'sort-requires',
 ];
 
-var MODULE_MAP = new ModuleMap({
-  paths: [],
-  pathsToRelativize: [],
-  aliases: require('../lib/constants/commonAliases'),
-  aliasesToRelativize: new Map(),
-  builtIns: require('../lib/constants/builtIns'),
-  builtInTypes: require('../lib/constants/builtInTypes'),
-});
-
 var SOURCE_OPTIONS = {
-  moduleMap: MODULE_MAP,
+  moduleMap: DefaultModuleMap,
 };
 
 describe('requiresTransform', () => {
@@ -70,7 +61,7 @@ describe('requiresTransform', () => {
         var actual = printRoot(root);
 
         var expected = await readFile(expectedPath, 'utf8');
-        expect(actual).toEqual(expected);
+        expect(actual).toBe(expected);
       });
     });
   });

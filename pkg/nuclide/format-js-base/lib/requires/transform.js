@@ -11,6 +11,7 @@
 
 import type {Collection} from '../types/ast';
 import type {SourceOptions} from '../options/SourceOptions';
+import type {TransformKey} from '../types/transforms';
 
 var addMissingRequires = require('./addMissingRequires');
 var addMissingTypes = require('./addMissingTypes');
@@ -22,11 +23,22 @@ var removeUnusedTypes = require('./removeUnusedTypes');
  * This is the collection of transforms that affect requires.
  */
 function transform(root: Collection, options: SourceOptions): void {
-  removeUnusedRequires(root, options);
-  addMissingRequires(root, options);
-  removeUnusedTypes(root, options);
-  addMissingTypes(root, options);
-  formatRequires(root);
+  var blacklist: Set<TransformKey> = options.blacklist || new Set();
+  if (!blacklist.has('requires.removeUnusedRequires')) {
+    removeUnusedRequires(root, options);
+  }
+  if (!blacklist.has('requires.addMissingRequires')) {
+    addMissingRequires(root, options);
+  }
+  if (!blacklist.has('requires.removeUnusedTypes')) {
+    removeUnusedTypes(root, options);
+  }
+  if (!blacklist.has('requires.addMissingTypes')) {
+    addMissingTypes(root, options);
+  }
+  if (!blacklist.has('requires.formatRequires')) {
+    formatRequires(root);
+  }
 }
 
 module.exports = transform;
