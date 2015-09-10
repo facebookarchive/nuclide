@@ -29,6 +29,7 @@ var shell = require('shell');
 export type FileTreeControllerState = {
   panel: {
     isVisible: ?boolean;
+    width: number;
   };
   tree: ExportStoreData;
 };
@@ -36,7 +37,8 @@ export type FileTreeControllerState = {
 class FileTreeController {
   _actions: FileTreeActions;
   _isVisible: boolean;
-  _panel: PanelComponent;
+  _panel: atom$Panel;
+  _panelComponent: PanelComponent;
   _panelElement: HTMLElement;
   _store: FileTreeStore;
   _subscriptions: CompositeDisposable;
@@ -56,7 +58,7 @@ class FileTreeController {
     );
     this._initializePanel();
     // Initial render
-    this._render();
+    this._render(panel.width);
     // Subsequent renders happen on changes to data store
     this._subscriptions.add(
       this._store.subscribe(() => this._render())
@@ -84,7 +86,8 @@ class FileTreeController {
         'nuclide-file-tree-deux:add-folder': () => FileSystemActions.openAddFolderDialog(),
         'nuclide-file-tree-deux:copy-full-path': this._copyFullPath.bind(this),
         'nuclide-file-tree-deux:delete-selection': this._deleteSelection.bind(this),
-        'nuclide-file-tree-deux:remove-project-folder-selection': this._removeRootFolderSelection.bind(this),
+        'nuclide-file-tree-deux:remove-project-folder-selection':
+          this._removeRootFolderSelection.bind(this),
         'nuclide-file-tree-deux:rename-selection': () => FileSystemActions.openRenameDialog(),
         'nuclide-file-tree-deux:search-in-directory': this._searchInDirectory.bind(this),
         'nuclide-file-tree-deux:show-in-file-manager': this._showInFileManager.bind(this),
@@ -105,9 +108,13 @@ class FileTreeController {
     });
   }
 
-  _render(): void {
-    React.render(
-      <PanelComponent dock="left"><FileTree /></PanelComponent>,
+  _render(initialWidth?: ?number): void {
+    this._panelComponent = React.render(
+      <PanelComponent
+        dock="left"
+        initialLength={initialWidth}>
+        <FileTree />
+      </PanelComponent>,
       this._panelElement
     );
   }
@@ -226,6 +233,7 @@ class FileTreeController {
     return {
       panel: {
         isVisible: this._isVisible,
+        width: this._panelComponent.getLength(),
       },
       tree: this._store.exportData(),
     };
