@@ -9,30 +9,29 @@
  * the root directory of this source tree.
  */
 
-import type {AbsolutePath} from '../types/common';
 import type {Collection} from '../types/ast';
+import type {SourceOptions} from '../options/SourceOptions';
 
 var jscs = require('jscodeshift');
 
 var getFirstNodePath = require('../utils/getFirstNodePath');
 var getUndeclaredTypes = require('../utils/getUndeclaredTypes');
-var {findModuleMap} = require('../options');
 
 var {statement} = jscs.template;
 
-function addMissingTypes(root: Collection, sourcePath: AbsolutePath): void {
+function addMissingTypes(root: Collection, options: SourceOptions): void {
   var first = getFirstNodePath(root);
   if (!first) {
     return;
   }
 
-  var moduleMap = findModuleMap(sourcePath);
+  var {moduleMap} = options;
   var requireOptions = {
-    path: sourcePath,
+    path: options.sourcePath,
     typeImport: true,
   };
 
-  getUndeclaredTypes(root, sourcePath).forEach(name => {
+  getUndeclaredTypes(root, options).forEach(name => {
     var node = moduleMap.getRequire(name, requireOptions);
     first.insertAfter(node);
   });

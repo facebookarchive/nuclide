@@ -9,34 +9,33 @@
  * the root directory of this source tree.
  */
 
-import type {AbsolutePath} from '../types/common';
 import type {Collection} from '../types/ast';
+import type {SourceOptions} from '../options/SourceOptions';
 
 var jscs = require('jscodeshift');
 
 var getFirstNodePath = require('../utils/getFirstNodePath');
 var getUndeclaredIdentifiers = require('../utils/getUndeclaredIdentifiers');
 var getUndeclaredJSXIdentifiers = require('../utils/getUndeclaredJSXIdentifiers');
-var {findModuleMap} = require('../options');
 
-function addMissingRequires(root: Collection, sourcePath: AbsolutePath): void {
+function addMissingRequires(root: Collection, options: SourceOptions): void {
   var first = getFirstNodePath(root);
   if (!first) {
     return;
   }
 
-  var moduleMap = findModuleMap(sourcePath);
+  var {moduleMap} = options;
 
   // Add the missing requires.
-  getUndeclaredIdentifiers(root, sourcePath).forEach(name => {
-    var node = moduleMap.getRequire(name, {path: sourcePath});
+  getUndeclaredIdentifiers(root, options).forEach(name => {
+    var node = moduleMap.getRequire(name, {path: options.sourcePath});
     first.insertAfter(node);
   });
 
   // Add missing JSX requires.
-  getUndeclaredJSXIdentifiers(root, sourcePath).forEach(name => {
+  getUndeclaredJSXIdentifiers(root, options).forEach(name => {
     var node = moduleMap.getRequire(name, {
-      path: sourcePath,
+      path: options.sourcePath,
       jsxIdentifier: true,
     });
     first.insertAfter(node);

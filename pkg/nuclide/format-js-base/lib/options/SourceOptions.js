@@ -9,7 +9,10 @@
  * the root directory of this source tree.
  */
 
-export type AbsolutePath = string;
-export type Identifier = string;
-export type Literal = string;
-export type RelativePath = string;
+import type {AbsolutePath} from '../types/common';
+import type ModuleMap from '../state/ModuleMap';
+
+export type SourceOptions = {
+  moduleMap: ModuleMap,
+  sourcePath?: AbsolutePath,
+};

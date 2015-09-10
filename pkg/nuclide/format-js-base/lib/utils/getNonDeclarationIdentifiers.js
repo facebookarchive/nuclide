@@ -9,7 +9,6 @@
  * the root directory of this source tree.
  */
 
-import type {AbsolutePath} from '../types/common';
 import type {Collection, Node, NodePath} from '../types/ast';
 
 var jscs = require('jscodeshift');
@@ -179,10 +178,7 @@ var CONFIG: Array<ConfigEntry> = [
  * NOTE: this can get identifiers that are declared, if you want access to
  * identifiers that are access but undeclared see getUndeclaredIdentifiers
  */
-function getNonDeclarationIdentifiers(
-  root: Collection,
-  sourcePath: AbsolutePath
-): Set<string> {
+function getNonDeclarationIdentifiers(root: Collection): Set<string> {
   var ids = new Set();
   CONFIG.forEach(config => {
     root

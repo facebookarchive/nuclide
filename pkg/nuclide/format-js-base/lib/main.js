@@ -9,16 +9,27 @@
  * the root directory of this source tree.
  */
 
+import type ModuleMap from './state/ModuleMap';
+import type {ModuleMapOptions} from './options/ModuleMapOptions';
+
 module.exports = {
   get transform() {
     return require('./transform');
   },
 
-  get buildModuleMap() {
-    return require('./options').buildModuleMap;
+  createModuleMap(options: ModuleMapOptions): ModuleMap {
+    var ModuleMapClass = require('./state/ModuleMap');
+    return new ModuleMapClass(options);
   },
 
-  get buildOptions() {
-    return require('./options').buildOptions;
+  // Some easy to use defaults to construct ModuleMapOptions with.
+  get defaultBuiltIns() {
+    return require('./constants/builtIns');
+  },
+  get defaultBuiltInTypes() {
+    return require('./constants/builtInTypes');
+  },
+  get defaultAliases() {
+    return require('./constants/commonAliases');
   },
 };

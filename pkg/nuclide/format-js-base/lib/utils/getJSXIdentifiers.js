@@ -9,7 +9,6 @@
  * the root directory of this source tree.
  */
 
-import type {AbsolutePath} from '../types/common';
 import type {Collection} from '../types/ast';
 
 var jscs = require('jscodeshift');
@@ -23,10 +22,7 @@ var LOWER_CASE_WHITE_LIST = new Set(['fbt']);
 /**
  * This will get a list of identifiers for JSXElements in the AST
  */
-function getJSXIdentifiers(
-  root: Collection,
-  sourcePath: AbsolutePath
-): Set<string> {
+function getJSXIdentifiers(root: Collection): Set<string> {
   var ids = new Set();
   root
     // There should be an opening element for every single closing element so

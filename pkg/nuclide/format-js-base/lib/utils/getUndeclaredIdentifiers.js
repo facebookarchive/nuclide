@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-import type {AbsolutePath} from '../types/common';
 import type {Collection} from '../types/ast';
+import type {SourceOptions} from '../options/SourceOptions';
 
 var getDeclaredIdentifiers = require('./getDeclaredIdentifiers');
 var getNonDeclarationIdentifiers = require('./getNonDeclarationIdentifiers');
@@ -20,10 +20,10 @@ var getNonDeclarationIdentifiers = require('./getNonDeclarationIdentifiers');
  */
 function getUndeclaredIdentifiers(
   root: Collection,
-  sourcePath: AbsolutePath
+  options: SourceOptions
 ): Set<string> {
-  var declared = getDeclaredIdentifiers(root, sourcePath);
-  var undeclared = getNonDeclarationIdentifiers(root, sourcePath);
+  var declared = getDeclaredIdentifiers(root, options);
+  var undeclared = getNonDeclarationIdentifiers(root);
   // now remove anything that was declared
   for (var name of declared) {
     undeclared.delete(name);

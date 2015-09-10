@@ -9,6 +9,13 @@
  * the root directory of this source tree.
  */
 
+function capitalize(word: string): string {
+  if (word.length === 0) {
+    return word;
+  }
+  return word.charAt(0).toUpperCase() + word.slice(1);
+}
+
 /**
  * This is pulled out into its own function rather than using localeCompare
  * directly in case we every choose another sorting algorithm. Such as some
@@ -31,4 +38,4 @@ function isLowerCase(name: string): boolean {
   return name.toLowerCase() === name;
 }
 
-module.exports = {compareStrings, isCapitalized, isLowerCase};
+module.exports = {capitalize, compareStrings, isCapitalized, isLowerCase};

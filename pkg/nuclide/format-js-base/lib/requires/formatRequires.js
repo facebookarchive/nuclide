@@ -9,7 +9,6 @@
  * the root directory of this source tree.
  */
 
-import type {AbsolutePath} from '../types/common';
 import type {Collection, Node, NodePath} from '../types/ast';
 
 var jscs = require('jscodeshift');
@@ -98,7 +97,7 @@ var CONFIG: Array<ConfigEntry> = [
   },
 ];
 
-function formatRequires(root: Collection, sourcePath: AbsolutePath): void {
+function formatRequires(root: Collection): void {
   var first = getFirstNodePath(root);
   if (!first) {
     return;

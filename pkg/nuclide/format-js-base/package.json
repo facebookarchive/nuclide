@@ -9,7 +9,8 @@
     "testRunner": "npm"
   },
   "dependencies": {
-    "jscodeshift": "0.3.5"
+    "jscodeshift": "0.3.5",
+    "nuclide-remote-uri": "0.0.0"
   },
   "devDependencies": {
     "nuclide-commons": "0.0.0",

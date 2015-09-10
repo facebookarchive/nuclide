@@ -9,84 +9,90 @@
  * the root directory of this source tree.
  */
 
-import type {AbsolutePath, RootPath} from '../types/common';
-import type {Node} from '../types/ast';
-import type {Options} from '../types/options';
+import type {AbsolutePath, Identifier, Literal} from '../types/common';
+import type {ModuleMapOptions} from '../options/ModuleMapOptions';
+import type {RequireOptions} from '../options/RequireOptions';
+
+var ModuleMapUtils = require('../utils/ModuleMapUtils');
+var Options = require('../options/Options');
 
 var jscs = require('jscodeshift');
 var oneLineObjectPattern = require('../utils/oneLineObjectPattern');
-var path = require('path');
 
 var {statement} = jscs.template;
 
-// Define some type aliases to make the purpose of different things more clear.
-// Opaque types would be nice to have at some point.
-export type Identifier = string;
-/**
- * A NormalizedIdentifier is used to get an identifier for potentially unsafe
- * modules, it converts to lowercase, and removed non-word characters that
- * cannot be used as a javascript identifier (like a "-").
- */
-type NormalizedIdentifier = string;
-type Literal = string;
-export type ModuleEntry = {
-  id: NormalizedIdentifier,
-  moduleName: Literal,
-  modulePath: ?AbsolutePath,
-  destructure: boolean,
-  relativize: boolean,
-};
-export type RequireOptions = {
-  path?: ?AbsolutePath,
-  typeImport?: ?boolean,
-  jsxIdentifier?: ?boolean,
-};
-
 class ModuleMap {
-  _root: ?AbsolutePath;
-  _map: Map<NormalizedIdentifier, Array<ModuleEntry>>;
+  // Note: These fields are ordered by precendence.
 
-  constructor(
-    root: ?RootPath,
-    filePaths: ?Array<AbsolutePath>,
-    options: Options
-  ) {
-    this._root = root;
-    this._map = new Map();
+  /**
+   * Identifiers that should be ignored when not a type.
+   */
+  _builtIns: Set<Identifier>;
+  /**
+   * Identifiers that should be ignored when they are a type.
+   */
+  _builtInTypes: Set<Identifier>;
+  /**
+   * Identifiers that have an exact alias to use.
+   */
+  _aliases: Map<Identifier, Literal>;
+  /**
+   * Identifiers that have an exact path to use.
+   */
+  _aliasesToRelativize: Map<Identifier, AbsolutePath>;
+  /**
+   * Identifiers that might correspond to the default export of a particular
+   * literal.
+   */
+  _defaults: Map<Identifier, Set<Literal>>;
+  /**
+   * Identifiers that might correspond to the default export of a particular
+   * absolute path.
+   */
+  _defaultsToRelativize: Map<Identifier, Set<AbsolutePath>>;
 
-    // Construct the map of module entries from the given file paths.
-    if (filePaths) {
-      for (var filePath of filePaths) {
-        if (!filePath.endsWith('.js')) {
-          continue;
+  constructor(options: ModuleMapOptions) {
+    Options.validateModuleMapOptions(options);
+
+    // Note: If someone maintains a reference to the structure within options
+    // they could mutate the ModuleMap's behavior. We could make shallow copies
+    // here but are opting not to for performance.
+    this._builtIns = options.builtIns;
+    this._builtInTypes = options.builtInTypes;
+    this._aliases = options.aliases;
+    this._aliasesToRelativize = options.aliasesToRelativize;
+
+    // TODO: Use let for proper scoping.
+    var id;
+    var ids;
+    var filePath;
+    var set;
+
+    this._defaults = new Map();
+    for (filePath of options.paths) {
+      ids = ModuleMapUtils.getIdentifiersFromPath(filePath);
+      var literal = ModuleMapUtils.getLiteralFromPath(filePath);
+      for (id of ids) {
+        set = this._defaults.get(id);
+        if (!set) {
+          set = new Set();
+          this._defaults.set(id, set);
         }
-
-        var basename = path.basename(filePath);
-        var id = normalizeID(basename.split('.')[0]);
-        var entry = {
-          id,
-          moduleName: basename.slice(0, -3), // Get rid of .js extension.
-          modulePath: filePath,
-          destructure: false, // TODO: Parse files and pull out named exports.
-          relativize: !!options.relativeRequires,
-        };
-
-        if (!this._map.has(id)) {
-          this._map.set(id, []);
-        }
-        this._map.get(id).push(entry);
+        set.add(literal);
       }
     }
 
-    // Add common aliases from options. Aliases override any existing entries.
-    for (var entry of options.commonAliases) {
-      var [key, value] = entry;
-      this._map.set(normalizeID(key), [{
-        id: normalizeID(key),
-        moduleName: value,
-        destructure: false,
-        relativize: false, // TODO: We still may want to relativize aliases.
-      }]);
+    this._defaultsToRelativize = new Map();
+    for (filePath of options.pathsToRelativize) {
+      ids = ModuleMapUtils.getIdentifiersFromPath(filePath);
+      for (id of ids) {
+        set = this._defaultsToRelativize.get(id);
+        if (!set) {
+          set = new Set();
+          this._defaultsToRelativize.set(id, set);
+        }
+        set.add(filePath);
+      }
     }
   }
 
@@ -97,58 +103,87 @@ class ModuleMap {
    * TODO: add a getRequires() that consolidates automatically, or add a
    * specific consolidate step as part of the transform.
    */
-  getRequire(id: Identifier, options?: ?RequireOptions): ?Node {
-    // Make a copy of options and validate the the given path is absolute.
-    options = options ? {...options} : {};
-    if (options.path && !path.isAbsolute(options.path)) {
-      // TODO: warn that options.path is not absolute?
-      delete options.path;
-    }
+  getRequire(id: Identifier, options: RequireOptions): ?Node {
+    Options.validateRequireOptions(options);
 
-    var entry = this._getEntry(id, options);
-    if (!entry) {
-      return null;
-    }
-
-    // Figure out the literal string we need to import. We don't need to check
-    // for common aliases because that should be accounted for in buildMap().
-    var literal;
-    if (entry.relativize && options.path && entry.modulePath) {
-      var relativePath = path.relative(
-        path.dirname(options.path),
-        entry.modulePath
-      );
-      // TODO: What's the correct way to ensure we start with "./"?
-      var normalizedPath = !relativePath.startsWith('.')
-        ? '.' + path.sep + relativePath
-        : relativePath;
-      literal = normalizedPath.slice(0, -3); // Remove '.js'.
+    // Don't import built ins.
+    if (!options.typeImport) {
+      if (this._builtIns.has(id)) {
+        return null;
+      }
     } else {
-      literal = entry.moduleName;
+      if (this._builtInTypes.has(id)) {
+        return null;
+      }
+    }
+
+    // TODO: Use let for proper scoping.
+    var literal;
+    var tmp;
+
+    if (this._aliases.has(id)) {
+      literal = this._aliases.get(id);
+    } else if (options.sourcePath && this._aliasesToRelativize.has(id)) {
+      literal = ModuleMapUtils.relativizeForRequire(
+        options.sourcePath,
+        this._aliasesToRelativize.get(id)
+      );
+    } else if (
+      this._defaults.has(id) &&
+      this._defaults.get(id).size === 1
+    ) {
+      // TODO: What's the best way to get the single thing out of a one element
+      // Set?
+      for (tmp of this._defaults.get(id)) {
+        literal = tmp;
+        break;
+      }
+    } else if (
+      options.sourcePath &&
+      this._defaultsToRelativize.has(id) &&
+      this._defaultsToRelativize.get(id).size === 1
+    ) {
+      var nonNullSourcePath = options.sourcePath;
+      // TODO: What's the best way to get the single thing out of a one element
+      // Set?
+      for (var filePath of this._defaultsToRelativize.get(id)) {
+        literal = ModuleMapUtils.relativizeForRequire(
+          nonNullSourcePath,
+          filePath
+        );
+        break;
+      }
+    } else if (options.jsxIdentifier) {
+      // TODO: Make this configurable so that the suffix for JSX can be changed.
+      literal = id + '.react';
+    } else {
+      // TODO: Make this configurable so that it's possible to only add known
+      // requires and ignore unknown modules.
+      literal = id;
     }
 
     // Create common nodes for printing.
     var idNode = jscs.identifier(id);
     var literalNode = jscs.literal(literal);
 
-    // TODO: Can I use let yet?
-    var tmp;
+    // TODO: Support exports and destructuring.
+    var destructure = false;
 
-    if (entry.destructure && options.typeImport) {
+    if (destructure && options.typeImport) {
       // import type {foo} from 'foo';
       tmp = statement`import type {_} from '_'`;
       tmp.specifiers[0].imported = idNode;
       tmp.specifiers[0].local = idNode;
       tmp.source = literalNode;
       return tmp;
-    } else if (!entry.destructure && options.typeImport) {
+    } else if (!destructure && options.typeImport) {
       // import type foo from 'foo';
       tmp = statement`import type _ from '_'`;
       tmp.specifiers[0].id = idNode;
       tmp.specifiers[0].local = idNode;
       tmp.source = literalNode;
       return tmp;
-    } else if (entry.destructure && !options.typeImport) {
+    } else if (destructure && !options.typeImport) {
       // var {foo} = require('foo');
       var property = jscs.property('init', idNode, idNode);
       property.shorthand = true;
@@ -162,7 +197,7 @@ class ModuleMap {
           )
         )]
       );
-    } else if (!entry.destructure && !options.typeImport) {
+    } else if (!destructure && !options.typeImport) {
       // var foo = require('foo');
       return jscs.variableDeclaration(
         'var',
@@ -176,43 +211,17 @@ class ModuleMap {
       );
     }
 
-    // TODO: Handle import syntax, not just require syntax.
-
     // Can't handle this type of require yet.
     return null;
   }
 
-  _getEntry(id: Identifier, options: RequireOptions): ?ModuleEntry {
-    // Normalize the identifier we are importing so we can find it reliably.
-    var normalizedID = normalizeID(id);
-
-    // Check if the map of entries has a single unique entry for this ID.
-    if (this._map.has(normalizedID)) {
-      var entries = this._map.get(normalizedID);
-      if (entries.length === 1) {
-        return entries[0];
-      }
-      // TODO: Be smarter about ambiguous imports.
-    }
-
-    // Root being null is our proxy for a fake module map in which case we can
-    // create a fake entry for this identifier.
-    if (!this._root) {
-      return {
-        id,
-        moduleName: options.jsxIdentifier ? id + '.react' : id,
-        modulePath: null,
-        destructure: false,
-        relativize: false,
-      };
-    }
-
-    return null;
+  getBuiltIns(): Set<Identifier> {
+    return this._builtIns;
   }
-}
 
-function normalizeID(id: Identifier): NormalizedIdentifier {
-  return id.toLowerCase();
+  getBuiltInTypes(): Set<Identifier> {
+    return this._builtInTypes;
+  }
 }
 
 module.exports = ModuleMap;

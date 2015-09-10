@@ -9,18 +9,18 @@
  * the root directory of this source tree.
  */
 
-import type {AbsolutePath} from '../types/common';
 import type {Collection} from '../types/ast';
+import type {SourceOptions} from '../options/SourceOptions';
 
 var getDeclaredIdentifiers = require('./getDeclaredIdentifiers');
 var getJSXIdentifiers = require('./getJSXIdentifiers');
 
 function getUndeclaredJSXIdentifiers(
   root: Collection,
-  sourcePath: AbsolutePath
+  options: SourceOptions
 ): Set<string> {
-  var declaredIdentifiers = getDeclaredIdentifiers(root, sourcePath);
-  var jsxIdentifiers = getJSXIdentifiers(root, sourcePath);
+  var declaredIdentifiers = getDeclaredIdentifiers(root, options);
+  var jsxIdentifiers = getJSXIdentifiers(root);
   var undeclared = new Set();
   for (var id of jsxIdentifiers) {
     if (!declaredIdentifiers.has(id)) {

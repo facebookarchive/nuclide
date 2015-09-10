@@ -9,10 +9,11 @@
  * the root directory of this source tree.
  */
 
-var jscodeshift = require('jscodeshift');
-var {readFile} = require('nuclide-commons').fsPromise;
+var ModuleMap = require('../lib/state/ModuleMap');
 
+var jscodeshift = require('jscodeshift');
 var printRoot = require('../lib/utils/printRoot');
+var {readFile} = require('nuclide-commons').fsPromise;
 var requiresTransform = require('../lib/requires/transform');
 
 var TESTS = [
@@ -41,6 +42,19 @@ var TESTS = [
   'sort-requires',
 ];
 
+var MODULE_MAP = new ModuleMap({
+  paths: [],
+  pathsToRelativize: [],
+  aliases: require('../lib/constants/commonAliases'),
+  aliasesToRelativize: new Map(),
+  builtIns: require('../lib/constants/builtIns'),
+  builtInTypes: require('../lib/constants/builtInTypes'),
+});
+
+var SOURCE_OPTIONS = {
+  moduleMap: MODULE_MAP,
+};
+
 describe('requiresTransform', () => {
   TESTS.forEach(name => {
     it(`should ${name}`, () => {
@@ -51,7 +65,7 @@ describe('requiresTransform', () => {
         var test = await readFile(testPath, 'utf8');
 
         var root = jscodeshift(test);
-        requiresTransform(root, '/test-path.js');
+        requiresTransform(root, SOURCE_OPTIONS);
         var actual = printRoot(root);
 
         var expected = await readFile(expectedPath, 'utf8');

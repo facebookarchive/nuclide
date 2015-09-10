@@ -9,7 +9,6 @@
  * the root directory of this source tree.
  */
 
-import type {AbsolutePath} from '../types/common';
 import type {Collection, Node} from '../types/ast';
 
 var jscs = require('jscodeshift');
@@ -20,10 +19,7 @@ var jscs = require('jscodeshift');
  * NOTE: this can get types that are declared, if you want access to
  * types that are used but undeclared see getUndeclaredTypes
  */
-function getNonDeclarationTypes(
-  root: Collection,
-  sourcePath: AbsolutePath
-): Set<string> {
+function getNonDeclarationTypes(root: Collection): Set<string> {
   var ids = new Set();
 
   // Pull out the logic to handle a generic type annotation, we have to iterate

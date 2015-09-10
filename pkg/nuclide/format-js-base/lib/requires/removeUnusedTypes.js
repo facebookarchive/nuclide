@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-import type {AbsolutePath} from '../types/common';
 import type {Collection, Node, NodePath} from '../types/ast';
+import type {SourceOptions} from '../options/SourceOptions';
 
 var jscs = require('jscodeshift');
 
@@ -37,9 +37,9 @@ var CONFIG: Array<ConfigEntry> = [
   },
 ];
 
-function removeUnusedTypes(root: Collection, sourcePath: AbsolutePath): void {
-  var declared = getDeclaredIdentifiers(root, sourcePath);
-  var used = getNonDeclarationTypes(root, sourcePath);
+function removeUnusedTypes(root: Collection, options: SourceOptions): void {
+  var declared = getDeclaredIdentifiers(root, options);
+  var used = getNonDeclarationTypes(root, options);
   // Remove things based on the config.
   CONFIG.forEach(config => {
     root

@@ -9,10 +9,9 @@
  * the root directory of this source tree.
  */
 
-import type {AbsolutePath} from '../types/common';
 import type {Collection, Node, NodePath} from '../types/ast';
+import type {SourceOptions} from '../options/SourceOptions';
 
-var {findOptions} = require('../options');
 var jscs = require('jscodeshift');
 
 type ConfigEntry = {
@@ -60,11 +59,11 @@ var CONFIG: Array<ConfigEntry> = [
  */
 function getDeclaredTypes(
   root: Collection,
-  sourcePath: AbsolutePath
+  options: SourceOptions
 ): Set<string> {
   // Start with the built in types that are always declared.
-  var options = findOptions(sourcePath);
-  var ids = new Set(options.builtInTypes);
+  var {moduleMap} = options;
+  var ids = new Set(moduleMap.getBuiltInTypes());
   CONFIG.forEach(config => {
     root
       .find(config.searchTerms[0], config.searchTerms[1])
