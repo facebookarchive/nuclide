@@ -65,8 +65,8 @@ module.exports = {
     runOnSave: {
       title: 'Run on save',
       description:
-        'This setting is not recommended yet. See the readme for how to set ' +
-        'up a keyboard shortcut.',
+        'This setting is not recommended yet. Instead use the default ' +
+        'keyboard shortcut, `cmd-shift-i`.',
       type: 'boolean',
       default: false,
     },

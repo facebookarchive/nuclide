@@ -4,6 +4,10 @@ This package is a collection of codemods that automatically clean up different a
 that you do not have to worry about every little formatting detail. Right now all of the codemods
 live in the `nuclide-format-js-base` package.
 
+## usage
+
+The default keyboard shortcut for `nuclide-format-js:format` is `cmd-shift-i`.
+
 ## codemods
 
 ### requires
@@ -33,13 +37,8 @@ There are also a few things that are not supported yet that would be nice to sup
 information from Flow.
 + Allow per-directory configurations.
 
-Right now the recommended set up is to not run-on-save and instead map the format command to a
-keyboard shortcut, to do so add this to your `~/.atom/keymap.cson` file:
-
-```
-'atom-text-editor:not([mini])':
-  'cmd-shift-i': 'nuclide-format-js:format'
-```
+Right now the recommended set up is to not run-on-save and instead use the default
+keyboard shortcut.
 
 Make sure to verify the requires that are added by this plugin and report any issues. If anything
 is getting in your way when using this plugin you can generally work around it by modifying the
