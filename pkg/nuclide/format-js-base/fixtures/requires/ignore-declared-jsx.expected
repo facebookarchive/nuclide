@@ -1,6 +1,7 @@
 'use strict';
 
 var Components = require('Components');
+var React = require('React');
 
 var {A, B} = Components;
 

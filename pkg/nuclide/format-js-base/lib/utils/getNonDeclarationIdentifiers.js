@@ -18,6 +18,8 @@ type ConfigEntry = {
   getNodes: (path: NodePath) => Array<Node>,
 };
 
+var REACT_NODE = jscs.identifier('React');
+
 /**
  * These are the ways in which one might access an undeclared identifier. This
  * should only apply to actual code, not accessing undeclared types.
@@ -169,6 +171,12 @@ var CONFIG: Array<ConfigEntry> = [
   {
     searchTerms: [jscs.ArrayExpression],
     getNodes: path => path.node.elements,
+  },
+
+  // Special case. Any JSX elements will get transpiled to use React.
+  {
+    searchTerms: [jscs.JSXOpeningElement],
+    getNodes: path => [REACT_NODE],
   },
 ];
 
