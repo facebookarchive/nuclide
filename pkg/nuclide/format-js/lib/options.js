@@ -89,4 +89,30 @@ function fixAliases(aliases: ?Array<string>): Array<[string, string]> {
   return pairs;
 }
 
-module.exports = {getModuleMap, refreshOptions};
+/**
+ * Construct the blacklist from the settings.
+ */
+function getBlacklist(): Set<string> {
+  var blacklist = new Set();
+  if (!atom.config.get('nuclide-format-js.requiresTransferComments')) {
+    blacklist.add('requires.transferComments');
+  }
+  if (!atom.config.get('nuclide-format-js.requiresRemoveUnusedRequires')) {
+    blacklist.add('requires.removeUnusedRequires');
+  }
+  if (!atom.config.get('nuclide-format-js.requiresAddMissingRequires')) {
+    blacklist.add('requires.addMissingRequires');
+  }
+  if (!atom.config.get('nuclide-format-js.requiresRemoveUnusedTypes')) {
+    blacklist.add('requires.removeUnusedTypes');
+  }
+  if (!atom.config.get('nuclide-format-js.requiresAddMissingTypes')) {
+    blacklist.add('requires.addMissingTypes');
+  }
+  if (!atom.config.get('nuclide-format-js.requiresFormatRequires')) {
+    blacklist.add('requires.formatRequires');
+  }
+  return blacklist;
+}
+
+module.exports = {getModuleMap, getBlacklist, refreshOptions};

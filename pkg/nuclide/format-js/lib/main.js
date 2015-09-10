@@ -76,14 +76,6 @@ module.exports = {
       type: 'boolean',
       default: false,
     },
-    transformBlacklist: {
-      title: 'Transform Blacklist',
-      type: 'array',
-      default: [],
-      items: {
-        type: 'string',
-      },
-    },
     builtIns: {
       title: 'Built-ins',
       description:
@@ -114,6 +106,37 @@ module.exports = {
       items: {
         type: 'string',
       },
+    },
+    // Enumerate the possible blacklist options so people know what they are.
+    requiresTransferComments: {
+      title: 'Requires: Transfer Comments',
+      type: 'boolean',
+      default: true,
+    },
+    requiresRemoveUnusedRequires: {
+      title: 'Requires: Remove Unused Requires',
+      type: 'boolean',
+      default: true,
+    },
+    requiresAddMissingRequires: {
+      title: 'Requires: Add Missing Requires',
+      type: 'boolean',
+      default: true,
+    },
+    requiresRemoveUnusedTypes: {
+      title: 'Requires: Remove Unused Types',
+      type: 'boolean',
+      default: true,
+    },
+    requiresAddMissingTypes: {
+      title: 'Requires: Add Missing Types',
+      type: 'boolean',
+      default: true,
+    },
+    requiresFormatRequires: {
+      title: 'Requires: Format Requires',
+      type: 'boolean',
+      default: true,
     },
   },
 

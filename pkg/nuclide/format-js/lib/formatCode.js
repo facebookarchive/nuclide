@@ -24,11 +24,11 @@ async function formatCode(editor: ?TextEditor): Promise<void> {
   // TODO: Add a limit so the transform is not run on files over a certain
   // length, or at least this will be nice when we run on save/stop change.
   var {transform} = require('nuclide-format-js-base');
-  var {getModuleMap} = require('./options');
+  var {getModuleMap, getBlacklist} = require('./options');
   var newSource = transform(oldSource, {
     moduleMap: getModuleMap(),
     sourcePath: editor.getPath(),
-    blacklist: new Set(atom.config.get('nuclide-format-js.transformBlacklist')),
+    blacklist: getBlacklist(),
   });
 
   if (newSource === oldSource) {
