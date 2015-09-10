@@ -46,6 +46,9 @@ class Activation {
         },
       })
     );
+    // Do search preprocessing for all existing and future root directories.
+    initSearch(atom.project.getPaths());
+    this._disposables.add(atom.project.onDidChangePaths(initSearch));
   }
 
   setStore(store: Store): void {
@@ -65,6 +68,29 @@ function getActivation() {
     activation.activate();
   }
   return activation;
+}
+var projectRoots: Set<string> = new Set();
+
+/**
+ * @param projectPaths All the root directories in the Atom workspace.
+ */
+function initSearch(projectPaths: Array<string>): void {
+  var {getClient} = require('nuclide-client');
+  var newProjectRoots = new Set();
+  projectPaths.forEach((projectPath) => {
+    newProjectRoots.add(projectPath);
+    if (projectRoots.has(projectPath)) {
+      return;
+    }
+    var client = getClient(projectPath);
+    if (client) {
+      // It doesn't matter what the search term is. Empirically, doing an initial
+      // search speeds up the next search much more than simply doing the setup
+      // kicked off by 'fileSearchForDirectory'.
+      client.searchDirectory(projectPath, 'a');
+    }
+  });
+  projectRoots = newProjectRoots;
 }
 
 module.exports = {

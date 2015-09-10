@@ -281,34 +281,11 @@ var {CompositeDisposable} = require('atom');
 
 var activation: ?Activation = null;
 var listeners: ?CompositeDisposable = null;
-var projectRoots: ?Set = null;
 
 function activateSearchUI(): void {
   if (!activation) {
     activation = new Activation();
   }
-}
-
-/**
- * @param projectPaths All the root directories in the Atom workspace.
- */
-function initSearch(projectPaths: Array<string>): void {
-  var {getClient} = require('nuclide-client');
-  var newProjectRoots = new Set();
-  projectPaths.forEach((projectPath) => {
-    newProjectRoots.add(projectPath);
-    if (projectRoots.has(projectPath)) {
-      return;
-    }
-    var client = getClient(projectPath);
-    if (client) {
-      // It doesn't matter what the search term is. Empirically, doing an initial
-      // search speeds up the next search much more than simply doing the setup
-      // kicked off by 'fileSearchForDirectory'.
-      client.searchDirectory(projectPath, 'a');
-    }
-  });
-  projectRoots = newProjectRoots;
 }
 
 module.exports = {
@@ -331,11 +308,6 @@ module.exports = {
         },
       })
     );
-
-    // Do search preprocessing for all existing and future root directories.
-    projectRoots = new Set();
-    initSearch(atom.project.getPaths());
-    listeners.add(atom.project.onDidChangePaths(initSearch));
   },
 
   registerProvider(service: Provider ): atom$Disposable {
