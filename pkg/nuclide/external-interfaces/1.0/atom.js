@@ -165,6 +165,8 @@ declare class atom$PackageManager {
   // Event Subscription
   onDidLoadInitialPackages(callback: () => void): atom$Disposable;
   onDidActivateInitialPackages(callback: () => void): atom$Disposable;
+  onDidActivatePackage(callback: (pkg: atom$Package) => mixed): atom$Disposable;
+  onDidDeactivatePackage(callback: (pkg: atom$Package) => mixed): atom$Disposable;
 
   // Package system data
   getApmPath(): string;
@@ -181,6 +183,7 @@ declare class atom$PackageManager {
 
   // Accessing active packages
   getActivePackage(name: string): ?atom$Package;
+  isPackageActive(name: string): boolean;
 
   // Activating and deactivating packages
   activatePackage(name: string): Promise<atom$Package>;

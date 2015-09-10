@@ -17,6 +17,7 @@ import type StatusBarTile from './StatusBarTile';
 var DEFAULT_HIDE_DIAGNOSTICS_PANEL = true;
 var DEFAULT_TABLE_HEIGHT = 200;
 var DEFAULT_FILTER_BY_ACTIVE_EDITOR = false;
+var LINTER_PACKAGE = 'linter';
 
 var subscriptions: ?CompositeDisposable = null;
 var bottomPanel: ?atom$Panel = null;
@@ -38,10 +39,12 @@ function createPanel(diagnosticUpdater: DiagnosticUpdater, disposables: Composit
   var {
     atomPanel: panel,
     getDiagnosticsPanel: getDiagnosticsPanelFn,
+    setWarnAboutLinter,
   } = require('./createPanel').createDiagnosticsPanel(
     diagnosticUpdater,
     activationState.diagnosticsPanelHeight,
-    activationState.filterByActiveTextEditor);
+    activationState.filterByActiveTextEditor,
+    disableLinter);
   logPanelIsDisplayed();
   bottomPanel = panel;
   getDiagnosticsPanel = getDiagnosticsPanelFn;
@@ -53,6 +56,30 @@ function createPanel(diagnosticUpdater: DiagnosticUpdater, disposables: Composit
     activationState.hideDiagnosticsPanel = !visible;
   });
   disposables.add(onDidChangeVisibleSubscription);
+
+  watchForLinter(setWarnAboutLinter, disposables);
+}
+
+function disableLinter() {
+  atom.packages.disablePackage(LINTER_PACKAGE);
+}
+
+function watchForLinter(
+    setWarnAboutLinter: (warn: boolean) => void,
+    disposables: CompositeDisposable): void {
+  if (atom.packages.isPackageActive(LINTER_PACKAGE)) {
+    setWarnAboutLinter(true);
+  }
+  disposables.add(atom.packages.onDidActivatePackage(pkg => {
+    if (pkg.name === LINTER_PACKAGE) {
+      setWarnAboutLinter(true);
+    }
+  }));
+  disposables.add(atom.packages.onDidDeactivatePackage(pkg => {
+    if (pkg.name === LINTER_PACKAGE) {
+      setWarnAboutLinter(false);
+    }
+  }));
 }
 
 function getStatusBarTile(): StatusBarTile {

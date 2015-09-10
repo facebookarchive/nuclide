@@ -81,6 +81,18 @@ class DiagnosticsPanel extends React.Component {
       );
     }
 
+    var linterWarning = null;
+    if (this.props.warnAboutLinter) {
+      linterWarning = (
+        <div className="nuclide-diagnostics-pane-nav-center">
+          <span>
+            nuclide-diagnostics is not compatible with the linter package. We recommend that
+            you <a onClick={this.props.disableLinter}>disable the linter package</a>.
+          </span>
+        </div>
+      );
+    }
+
     var errorSpanClassName = `inline-block ${errorCount > 0 ? 'text-error' : ''}`;
     var warningSpanClassName = `inline-block ${warningCount > 0 ? 'text-warning' : ''}`;
 
@@ -114,6 +126,7 @@ class DiagnosticsPanel extends React.Component {
                 </label>
               </span>
             </div>
+            {linterWarning}
             <div className="nuclide-diagnostics-pane-nav-right">
               {shortcutSpan}
               <button
@@ -150,6 +163,8 @@ DiagnosticsPanel.propTypes = {
   pathToActiveTextEditor: PropTypes.string,
   filterByActiveTextEditor: PropTypes.bool.isRequired,
   onFilterByActiveTextEditorChange: PropTypes.func.isRequired,
+  warnAboutLinter: PropTypes.bool.isRequired,
+  disableLinter: PropTypes.func.isRequired,
 };
 
 module.exports = DiagnosticsPanel;

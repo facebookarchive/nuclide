@@ -26,13 +26,20 @@ type PanelProps = {
   pathToActiveTextEditor: ?string;
   filterByActiveTextEditor: boolean;
   onFilterByActiveTextEditorChange: (isChecked: boolean) => void;
+  warnAboutLinter: boolean;
+  disableLinter: () => void;
 }
 
 function createDiagnosticsPanel(
   diagnosticUpdater: DiagnosticUpdater,
   initialHeight: number,
   initialfilterByActiveTextEditor: boolean,
-): {atomPanel: atom$Panel; getDiagnosticsPanel: () => ?DiagnosticsPanel} {
+  disableLinter: () => void,
+): {
+  atomPanel: atom$Panel;
+  getDiagnosticsPanel: () => ?DiagnosticsPanel;
+  setWarnAboutLinter: (warn: boolean) => void;
+ } {
   var diagnosticsPanel: ?DiagnosticsPanel = null;
   var bottomPanel: ?atom$Panel = null;
   var diagnosticsNeedSorting = false;
@@ -60,6 +67,8 @@ function createDiagnosticsPanel(
       props.filterByActiveTextEditor = isChecked;
       render();
     },
+    warnAboutLinter: false,
+    disableLinter,
   };
 
   var item = document.createElement('div');
@@ -94,6 +103,11 @@ function createDiagnosticsPanel(
       render();
     }
   );
+
+  function setWarnAboutLinter(warn: boolean) {
+    props.warnAboutLinter = warn;
+    render();
+  }
 
   // A FixedDataTable must specify its own width. We always want it to match that of the bottom
   // panel. Unfortunately, there is no way to register for resize events on a DOM element: it is
@@ -142,6 +156,7 @@ function createDiagnosticsPanel(
     getDiagnosticsPanel(): ?DiagnosticsPanel {
       return diagnosticsPanel;
     },
+    setWarnAboutLinter,
   };
 }
 
