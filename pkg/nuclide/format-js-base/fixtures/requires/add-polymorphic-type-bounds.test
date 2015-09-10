@@ -1,0 +1,3 @@
+'use strict';
+
+type foo<T: bar> = (arg: T) => void;

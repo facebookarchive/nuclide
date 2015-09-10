@@ -28,6 +28,7 @@ var TESTS = [
   'add-jsx-elements',
   'add-loops',
   'add-object-properties',
+  'add-polymorphic-type-bounds',
   'add-polymorphic-types',
   'add-react-when-using-jsx',
   'add-returns',
