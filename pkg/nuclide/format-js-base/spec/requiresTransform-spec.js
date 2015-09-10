@@ -36,6 +36,7 @@ var TESTS = [
   'demote-requires',
   'ignore-declared-jsx',
   'ignore-function-params',
+  'ignore-requires-in-blocks',
   'promote-types',
   'remove-unused-requires',
   'remove-unused-types',

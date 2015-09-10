@@ -12,13 +12,10 @@
 import type {NodePath} from '../types/ast';
 
 /**
- * Tests if a NodePath is in the global scope
- *
- * TODO: This doesn't quite do what I expect, e.g. if (x) { var foo = 4; }; will
- * cause foo to be in the global scope due to hoisting.
+ * Tests if a NodePath is a direct child of the Program node.
  */
 function isGlobal(path: NodePath): boolean {
-  return !!path.scope.isGlobal;
+  return path.parent && path.parent.node.type === 'Program';
 }
 
 module.exports = isGlobal;

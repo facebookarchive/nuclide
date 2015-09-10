@@ -1,0 +1,11 @@
+'use strict';
+
+var a = require('a');
+var c = require('c');
+
+if (true) {
+  var b = require('b');
+}
+
+a();
+c();

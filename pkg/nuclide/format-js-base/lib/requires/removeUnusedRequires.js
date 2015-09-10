@@ -28,64 +28,74 @@ var CONFIG: Array<ConfigEntry> = [
   // var foo = require('foo');
   {
     searchTerms: [
-      jscs.VariableDeclarator,
+      jscs.VariableDeclaration,
       {
-        id: {type: 'Identifier'},
-        init: {callee: {name: 'require'}},
+        declarations: [{
+          id: {type: 'Identifier'},
+          init: {callee: {name: 'require'}},
+        }],
       },
     ],
     filters: [
       isGlobal,
     ],
-    getNames: node => [node.id.name],
+    getNames: node => [node.declarations[0].id.name],
   },
 
   // var foo = require('foo')();
   {
     searchTerms: [
-      jscs.VariableDeclarator,
+      jscs.VariableDeclaration,
       {
-        id: {type: 'Identifier'},
-        init: {callee: {callee: {name: 'require'}}},
+        declarations: [{
+          id: {type: 'Identifier'},
+          init: {callee: {callee: {name: 'require'}}},
+        }],
       },
     ],
     filters: [
       isGlobal,
     ],
-    getNames: node => [node.id.name],
+    getNames: node => [node.declarations[0].id.name],
   },
 
   // var alias = require('foo').alias;
   {
     searchTerms: [
-      jscs.VariableDeclarator,
+      jscs.VariableDeclaration,
       {
-        id: {type: 'Identifier'},
-        init: {object: {callee: {name: 'require'}}},
+        declarations: [{
+          id: {type: 'Identifier'},
+          init: {object: {callee: {name: 'require'}}},
+        }],
       },
     ],
     filters: [
       isGlobal,
     ],
-    getNames: node => [node.id.name],
+    getNames: node => [node.declarations[0].id.name],
   },
 
   // var {alias} = require('foo');
   {
     searchTerms: [
-      jscs.VariableDeclarator,
+      jscs.VariableDeclaration,
       {
-        id: {type: 'ObjectPattern'},
-        init: {callee: {name: 'require'}},
+        declarations: [{
+          id: {type: 'ObjectPattern'},
+          init: {callee: {name: 'require'}},
+        }],
       },
     ],
     filters: [
       isGlobal,
-      path => path.node.id.properties.every(
+      path => path.node.declarations[0].id.properties.every(
         prop => prop.shorthand && jscs.Identifier.check(prop.key)
       ),
     ],
-    getNames: node => node.id.properties.map(prop => prop.key.name),
+    getNames: node => {
+      return node.declarations[0].id.properties.map(prop => prop.key.name);
+    },
   },
 ];
 
