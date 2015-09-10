@@ -11,6 +11,7 @@
 
 import type {Collection, NodePath} from '../types/ast';
 
+var getRootIdentifierInExpression = require('./getRootIdentifierInExpression');
 var isGlobal = require('./isGlobal');
 var jscs = require('jscodeshift');
 
@@ -24,21 +25,30 @@ var FirstNode = {
    * then there isn't ever code that would result in a require being changed.
    */
   get(root: Collection): ?NodePath {
-    return root
+    var first;
+    root
       .find(jscs.Node)
       .filter(path => isGlobal(path))
-      .filter(path => FirstNode.isValidFirstNode(path))
-      .paths()[0];
+      .forEach(path => {
+        if (!first && FirstNode.isValidFirstNode(path)) {
+          first = path;
+        }
+      });
+    return first;
   },
 
   /**
    * Filter to see if a node is a valid first node.
    */
   isValidFirstNode(path: NodePath): boolean {
-    if (!match(path, {expression: {type: 'Literal'}})) {
-      return true;
+    if (match(path, {expression: {type: 'Literal'}})) {
+      return false;
     }
-    return false;
+    var firstObject = getRootIdentifierInExpression(path.node);
+    if (firstObject && match(firstObject, {name: 'jest'})) {
+      return false;
+    }
+    return true;
   },
 };
 

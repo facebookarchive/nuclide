@@ -31,6 +31,7 @@ var TESTS = [
   'add-polymorphic-type-bounds',
   'add-polymorphic-types',
   'add-react-when-using-jsx',
+  'add-requires-after-jest',
   'add-requires-after-use-strict',
   'add-returns',
   'add-switches',

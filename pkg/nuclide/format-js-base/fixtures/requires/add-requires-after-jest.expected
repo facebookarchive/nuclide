@@ -1,0 +1,17 @@
+/**
+ * Header comment.
+ */
+
+jest
+  .dontMock('foo')
+  .dontMock('bar')
+  .dontMock('baz');
+
+var one = require('one');
+var two = require('two');
+
+describe('foo-bar-baz', () => {
+  it('should work', () => {
+    expect(one()).toEqual(two());
+  });
+});
