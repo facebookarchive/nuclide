@@ -161,9 +161,12 @@ function showPopupFor(
   var children = messages.map(message => {
     var contents;
     if (message.html) {
-      contents = <span dangerouslySetInnerHTML={{__html: message.html}} />;
+      contents =
+        <span>
+          {message.providerName}: <span dangerouslySetInnerHTML={{__html: message.html}} />
+        </span>;
     } else if (message.text) {
-      contents = <span>{`${message.providerName}: ${message.text}`}</span>;
+      contents = <span>{message.providerName}: {message.text}</span>;
     } else {
       contents = <span>Diagnostic lacks message.</span>;
     }
