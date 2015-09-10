@@ -295,7 +295,7 @@ function activateSearchUI(): void {
 function initSearch(projectPaths: Array<string>): void {
   var {getClient} = require('nuclide-client');
   var newProjectRoots = new Set();
-  projectRoots.forEach((projectPath) => {
+  projectPaths.forEach((projectPath) => {
     newProjectRoots.add(projectPath);
     if (projectRoots.has(projectPath)) {
       return;
@@ -334,7 +334,7 @@ module.exports = {
 
     // Do search preprocessing for all existing and future root directories.
     projectRoots = new Set();
-    atom.project.getPaths(initSearch);
+    initSearch(atom.project.getPaths());
     listeners.add(atom.project.onDidChangePaths(initSearch));
   },
 
