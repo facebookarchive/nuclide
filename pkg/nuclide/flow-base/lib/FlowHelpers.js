@@ -11,6 +11,12 @@
 
 var path = require('path');
 var {asyncExecute, findNearestFile} = require('nuclide-commons');
+var LRU = require('lru-cache');
+var flowConfigDirCache = LRU({
+  max: 10,
+  length: function (n) { return n.length; },
+  maxAge: 1000 * 30, //30 seconds
+});
 
 function insertAutocompleteToken(contents: string, line: number, col: number): string {
   var lines = contents.split('\n');
@@ -51,7 +57,10 @@ function getPathToFlow(): string {
 }
 
 function findFlowConfigDir(localFile: string): Promise<?string> {
-  return findNearestFile('.flowconfig', path.dirname(localFile));
+  if (!flowConfigDirCache.has(localFile)) {
+    flowConfigDirCache.set(localFile, findNearestFile('.flowconfig', path.dirname(localFile)));
+  }
+  return flowConfigDirCache.get(localFile);
 }
 
 /**
