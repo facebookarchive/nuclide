@@ -14,16 +14,28 @@ import type {Node} from '../types/ast';
 var {compareStrings} = require('./StringUtils');
 var jscs = require('jscodeshift');
 var oneLineObjectPattern = require('./oneLineObjectPattern');
+var reprintComment = require('./reprintComment');
+
+var {statement} = jscs.template;
+
+/**
+ * Thin wrapper to reprint requires, it's wrapped in a new function in order to
+ * easily attach comments to the node.
+ */
+function reprintRequire(node: Node): Node {
+  var comments = node.comments;
+  var newNode = reprintRequireHelper(node);
+  if (comments) {
+    newNode.comments = comments.map(comment => reprintComment(comment));
+  }
+  return newNode;
+}
 
 /**
  * This takes in a require node and reprints it. This should remove whitespace
  * and allow us to have a consistent formatting of all requires.
- *
- * TODO: This trashes comments on requires, fix that!
  */
- function reprintRequire(node: Node): Node {
-   var {statement} = jscs.template;
-
+function reprintRequireHelper(node: Node): Node {
    if (jscs.ExpressionStatement.check(node)) {
      return statement`${node.expression}`;
    }
@@ -50,21 +62,14 @@ var oneLineObjectPattern = require('./oneLineObjectPattern');
    }
 
    if (jscs.ImportDeclaration.check(node) && node.importKind === 'type') {
-     // We only handle re-printing default specifier for now
-     // TODO: handle namespace, and standard specifiers
-     if (
-       node.specifiers.length === 1 &&
-       jscs.ImportDefaultSpecifier.check(node.specifiers[0])
-     ) {
-       var specifier = node.specifiers[0];
-       var tmp = statement`import type _ from '_'`;
-       tmp.specifiers[0].id = jscs.identifier(specifier.local.name);
-       tmp.specifiers[0].local = jscs.identifier(specifier.local.name);
-       tmp.source = jscs.literal(node.source.value);
-       return tmp;
-     }
+     // Sort the specifiers.
+     node.specifiers.sort((one, two) => compareStrings(
+       one.local.name,
+       two.local.name
+     ));
+     // TODO: Properly remove new lines from the node.
+     return node;
    }
-
    return node;
  }
 

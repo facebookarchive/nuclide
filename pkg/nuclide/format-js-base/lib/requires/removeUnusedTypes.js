@@ -12,11 +12,13 @@
 import type {Collection, Node, NodePath} from '../types/ast';
 import type {SourceOptions} from '../options/SourceOptions';
 
-var jscs = require('jscodeshift');
-
 var getDeclaredIdentifiers = require('../utils/getDeclaredIdentifiers');
+var getDeclaredTypes = require('../utils/getDeclaredTypes');
 var getNonDeclarationTypes = require('../utils/getNonDeclarationTypes');
 var isGlobal = require('../utils/isGlobal');
+var jscs = require('jscodeshift');
+
+var {match} = jscs;
 
 type ConfigEntry = {
   searchTerms: [any, Object],
@@ -40,15 +42,27 @@ var CONFIG: Array<ConfigEntry> = [
 function removeUnusedTypes(root: Collection, options: SourceOptions): void {
   var declared = getDeclaredIdentifiers(root, options);
   var used = getNonDeclarationTypes(root, options);
+  var nonTypeImport = getDeclaredTypes(
+    root,
+    options,
+    [path => !isTypeImportDeclaration(path.node)]
+  );
   // Remove things based on the config.
   CONFIG.forEach(config => {
     root
       .find(config.searchTerms[0], config.searchTerms[1])
       .filter(path => config.filters.every(filter => filter(path)))
       .filter(path => config.getNames(path.node).every(
-        name => !used.has(name) || declared.has(name)
+        name => !used.has(name) || declared.has(name) || nonTypeImport.has(name)
       ))
       .remove();
+  });
+}
+
+function isTypeImportDeclaration(node: NodePath): boolean {
+  return match(node, {
+    type: 'ImportDeclaration',
+    importKind: 'type',
   });
 }
 

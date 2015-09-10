@@ -12,6 +12,7 @@
 import type {Collection, Node, NodePath} from '../types/ast';
 import type {SourceOptions} from '../options/SourceOptions';
 
+var getDeclaredIdentifiers = require('../utils/getDeclaredIdentifiers');
 var getNonDeclarationIdentifiers = require('../utils/getNonDeclarationIdentifiers');
 var hasOneRequireDeclaration = require('../utils/hasOneRequireDeclaration');
 var isGlobal = require('../utils/isGlobal');
@@ -92,12 +93,19 @@ function removeUnusedRequires(
   options: SourceOptions,
 ): void {
   var used = getNonDeclarationIdentifiers(root, options);
+  var nonRequires = getDeclaredIdentifiers(
+    root,
+    options,
+    [path => !hasOneRequireDeclaration(path.node)]
+  );
   // Remove things based on the config.
   CONFIG.forEach(config => {
     root
       .find(config.searchTerms[0], config.searchTerms[1])
       .filter(path => config.filters.every(filter => filter(path)))
-      .filter(path => config.getNames(path.node).every(name => !used.has(name)))
+      .filter(path => config.getNames(path.node).every(name => {
+        return !used.has(name) || nonRequires.has(name);
+      }))
       .remove();
   });
 }

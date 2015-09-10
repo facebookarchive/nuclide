@@ -67,7 +67,8 @@ var CONFIG: Array<ConfigEntry> = [
  */
 function getDeclaredIdentifiers(
   root: Collection,
-  options: SourceOptions
+  options: SourceOptions,
+  filters?: ?Array<(path: NodePath) => boolean>
 ): Set<string> {
   // Start with the globals since they are always "declared" and safe to use.
   var {moduleMap} = options;
@@ -75,6 +76,7 @@ function getDeclaredIdentifiers(
   CONFIG.forEach(config => {
     root
       .find(config.searchTerms[0], config.searchTerms[1])
+      .filter(path => filters ? filters.every(filter => filter(path)) : true)
       .forEach(path => {
         var nodes = config.getNodes(path);
         nodes.forEach(node => {

@@ -59,7 +59,8 @@ var CONFIG: Array<ConfigEntry> = [
  */
 function getDeclaredTypes(
   root: Collection,
-  options: SourceOptions
+  options: SourceOptions,
+  filters?: ?Array<(path: NodePath) => boolean>
 ): Set<string> {
   // Start with the built in types that are always declared.
   var {moduleMap} = options;
@@ -67,6 +68,7 @@ function getDeclaredTypes(
   CONFIG.forEach(config => {
     root
       .find(config.searchTerms[0], config.searchTerms[1])
+      .filter(path => filters ? filters.every(filter => filter(path)) : true)
       .filter(path => config.filters.every(filter => filter(path)))
       .forEach(path => {
         var nodes = config.getNodes(path);
