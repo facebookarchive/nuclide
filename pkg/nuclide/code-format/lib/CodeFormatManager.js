@@ -10,7 +10,6 @@
  */
 
 var {CompositeDisposable} = require('atom');
-var logger;
 
 type CodeFormatProvider = {
   formatCode(editor: TextEditor, range: Range): Promise<string>;
@@ -32,14 +31,16 @@ class CodeFormatManager {
   async _formatCodeInActiveTextEditor(): Promise {
     var editor = atom.workspace.getActiveTextEditor();
     if (!editor) {
-      return getLogger().info('No active text editor to format its code!');
+      atom.notifications.addError('No active text editor to format its code!');
+      return;
     }
 
     var {scopeName} = editor.getGrammar();
     var matchingProviders = this._getMatchingProvidersForScopeName(scopeName);
 
     if (!matchingProviders.length) {
-      return getLogger().info('No code format providers registered for scopeName:', scopeName);
+      atom.notifications.addError('No Code-Format providers registered for scope: ' + scopeName);
+      return;
     }
 
     var buffer = editor.getBuffer();
@@ -83,10 +84,6 @@ class CodeFormatManager {
       this._subscriptions = null;
     }
   }
-}
-
-function getLogger() {
-  return logger || (logger = require('nuclide-logging').getLogger());
 }
 
 module.exports = CodeFormatManager;
