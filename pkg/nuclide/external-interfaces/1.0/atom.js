@@ -205,10 +205,16 @@ type atom$PaneSplitParams = {
 
 declare class atom$Pane {
   // Items
-  getItems(): Array<mixed>;
+  getItems(): Array<Object>;
+  getActiveItem(): ?Object;
+  itemAtIndex(index: number): ?Object;
+  getActiveItemIndex(): number;
+  moveItemToPane(item: Object, pane: atom$Pane, index: number): void;
 
   // Lifecycle
+  isActive(): boolean;
   activate(): void;
+  destroy(): void;
 
   // Splitting
   splitLeft(params?: atom$PaneSplitParams): atom$Pane;

@@ -1,0 +1,26 @@
+{
+  "name": "nuclide-splits",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "Keyboard shortcuts for moving the current tab to a new pane.",
+  "nuclide": {
+    "flowCheck": true,
+    "packageType": "Atom",
+    "testRunner": "apm"
+  },
+  "activationCommands": {
+    "atom-text-editor:not(.mini)": [
+      "nuclide-splits:move-tab-to-new-pane-up",
+      "nuclide-splits:move-tab-to-new-pane-down",
+      "nuclide-splits:move-tab-to-new-pane-left",
+      "nuclide-splits:move-tab-to-new-pane-right"
+    ]
+  },
+  "engines": {
+    "atom": ">=1.0.9"
+  },
+  "devDependencies": {
+    "nuclide-external-interfaces": "0.0.0"
+  }
+}
