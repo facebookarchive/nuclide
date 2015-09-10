@@ -11,6 +11,8 @@
 
 import type {Collection, NodePath} from '../types/ast';
 
+var NewLine = require('./NewLine');
+
 var getRootIdentifierInExpression = require('./getRootIdentifierInExpression');
 var isGlobal = require('./isGlobal');
 var jscs = require('jscodeshift');
@@ -41,6 +43,11 @@ var FirstNode = {
    * Filter to see if a node is a valid first node.
    */
   isValidFirstNode(path: NodePath): boolean {
+    // A new line literal is okay.
+    if (match(path, {expression: {value: NewLine.literal}})) {
+      return true;
+    }
+    // Any other literal is not.
     if (match(path, {expression: {type: 'Literal'}})) {
       return false;
     }

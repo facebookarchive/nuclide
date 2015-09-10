@@ -48,6 +48,7 @@ var TESTS = [
   'ignore-requires-in-blocks',
   'keep-header-comments',
   'promote-types',
+  'remove-extra-new-lines',
   'remove-nested-object-pattern',
   'remove-shadowed-requires',
   'remove-shadowed-types',

@@ -15,6 +15,7 @@ var jscs = require('jscodeshift');
  * This module helps support a hack to easily introduce new lines into the AST.
  */
 var NewLine = {
+  literal: '$$newline$$',
   replace(input: string): string {
     /**
      * This regex functions by matching:
@@ -30,7 +31,9 @@ var NewLine = {
      */
     return input.replace(/(\n*[^\n]*\$\$newline\$\$[^\n]*\n*){1,}/g, '\n\n');
   },
-  statement: jscs.expressionStatement(jscs.literal('$$newline$$')),
+  get statement() {
+    return jscs.expressionStatement(jscs.literal(NewLine.literal));
+  },
 };
 
 module.exports = NewLine;

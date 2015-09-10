@@ -1,0 +1,18 @@
+/**
+ * Header comment.
+ */
+
+var a = require('a');
+
+var b = require('b');
+
+var c = require('c');
+
+var D = require('D');
+
+var E = require('E');
+
+var F = require('F');
+
+
+a(b, c, D, E, F);
