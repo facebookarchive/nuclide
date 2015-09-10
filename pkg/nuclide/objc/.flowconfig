@@ -1,0 +1,12 @@
+[include]
+
+[ignore]
+.*/spec/.*
+
+[libs]
+./node_modules/nuclide-external-interfaces/1.0/
+
+[options]
+unsafe.enable_getters_and_setters=true
+suppress_comment=.*\\$FlowFixMe.*
+suppress_comment=.*\\$FlowIssue.*

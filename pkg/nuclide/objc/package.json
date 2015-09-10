@@ -1,0 +1,21 @@
+{
+  "name": "nuclide-objc",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "Provides support for Objective-C in Nuclide",
+  "nuclide": {
+    "flowCheck": true,
+    "packageType": "Atom",
+    "testRunner": "apm"
+  },
+  "engines": {
+    "atom": ">=1.0.9"
+  },
+  "dependencies": {
+    "nuclide-atom-helpers": "0.0.0"
+  },
+  "devDependencies": {
+    "nuclide-external-interfaces": "0.0.0"
+  }
+}
