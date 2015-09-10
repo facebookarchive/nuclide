@@ -13,80 +13,11 @@ import type {Collection, Node, NodePath} from '../types/ast';
 import type {SourceOptions} from '../options/SourceOptions';
 
 var getDeclaredIdentifiers = require('../utils/getDeclaredIdentifiers');
+var getNamesFromID = require('../utils/getNamesFromID');
 var getNonDeclarationIdentifiers = require('../utils/getNonDeclarationIdentifiers');
 var hasOneRequireDeclaration = require('../utils/hasOneRequireDeclaration');
 var isGlobal = require('../utils/isGlobal');
 var jscs = require('jscodeshift');
-
-type ConfigEntry = {
-  searchTerms: [any, Object],
-  filters: Array<(path: NodePath) => boolean>,
-  getNames: (node: Node) => Array<string>,
-};
-
-// These are the things we should try to remove.
-var CONFIG: Array<ConfigEntry> = [
-  // var foo = require('foo');
-  {
-    searchTerms: [
-      jscs.VariableDeclaration,
-      {
-        declarations: [{
-          id: {type: 'Identifier'},
-        }],
-      },
-    ],
-    filters: [
-      isGlobal,
-      path => hasOneRequireDeclaration(path.node),
-    ],
-    getNames: node => [node.declarations[0].id.name],
-  },
-
-  // var {alias} = require('foo');
-  {
-    searchTerms: [
-      jscs.VariableDeclaration,
-      {
-        declarations: [{
-          id: {type: 'ObjectPattern'},
-        }],
-      },
-    ],
-    filters: [
-      isGlobal,
-      path => hasOneRequireDeclaration(path.node),
-      path => path.node.declarations[0].id.properties.every(
-        prop => prop.shorthand && jscs.Identifier.check(prop.key)
-      ),
-    ],
-    getNames: node => {
-      return node.declarations[0].id.properties.map(prop => prop.key.name);
-    },
-  },
-
-  // var [alias] = require('foo');
-  {
-    searchTerms: [
-      jscs.VariableDeclaration,
-      {
-        declarations: [{
-          id: {type: 'ArrayPattern'},
-        }],
-      },
-    ],
-    filters: [
-      isGlobal,
-      path => hasOneRequireDeclaration(path.node),
-      path => path.node.declarations[0].id.elements.every(
-        element => jscs.Identifier.check(element)
-      ),
-    ],
-    getNames: node => {
-      return node.declarations[0].id.elements.map(element => element.name);
-    },
-  },
-];
 
 function removeUnusedRequires(
   root: Collection,
@@ -98,16 +29,23 @@ function removeUnusedRequires(
     options,
     [path => !hasOneRequireDeclaration(path.node)]
   );
-  // Remove things based on the config.
-  CONFIG.forEach(config => {
-    root
-      .find(config.searchTerms[0], config.searchTerms[1])
-      .filter(path => config.filters.every(filter => filter(path)))
-      .filter(path => config.getNames(path.node).every(name => {
-        return !used.has(name) || nonRequires.has(name);
-      }))
-      .remove();
-  });
+
+  // Remove unused requires.
+  root
+    .find(jscs.VariableDeclaration)
+    .filter(path => isGlobal(path))
+    .filter(path => hasOneRequireDeclaration(path.node))
+    .filter(path => {
+      var id = path.node.declarations[0].id;
+      var names = getNamesFromID(id);
+      for (var name of names) {
+        if (used.has(name) && !nonRequires.has(name)) {
+          return false;
+        }
+      }
+      return true;
+    })
+    .remove();
 }
 
 module.exports = removeUnusedRequires;

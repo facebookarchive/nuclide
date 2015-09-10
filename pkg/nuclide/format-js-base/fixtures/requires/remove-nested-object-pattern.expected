@@ -1,0 +1,4 @@
+var four = require('four');
+var one = require('one');
+
+one(four);
