@@ -15,7 +15,9 @@ var FirstNode = require('../utils/FirstNode');
 var NewLine = require('../utils/NewLine');
 
 var {compareStrings, isCapitalized} = require('../utils/StringUtils');
+var hasOneRequireDeclaration = require('../utils/hasOneRequireDeclaration');
 var isGlobal = require('../utils/isGlobal');
+var isRequireExpression = require('../utils/isRequireExpression');
 var jscs = require('jscodeshift');
 var reprintRequire = require('../utils/reprintRequire');
 
@@ -46,12 +48,10 @@ var CONFIG: Array<ConfigEntry> = [
 
   // Handle side effects, e.g: `require('monkey-patches');`
   {
-    searchTerms: [
-      jscs.ExpressionStatement,
-      {expression: {callee: {name: 'require'}}},
-    ],
+    searchTerms: [jscs.ExpressionStatement],
     filters: [
       isGlobal,
+      path => isRequireExpression(path.node),
     ],
     comparator: (node1, node2) => compareStrings(
       node1.expression.arguments[0].value,
@@ -62,13 +62,10 @@ var CONFIG: Array<ConfigEntry> = [
 
   // Handle UpperCase requires, e.g: `require('UpperCase');`
   {
-    searchTerms: [
-      jscs.VariableDeclaration,
-      {declarations: [{init: {callee: {name: 'require'}}}]},
-    ],
+    searchTerms: [jscs.VariableDeclaration],
     filters: [
       isGlobal,
-      isSafeVariableDeclaration,
+      path => isValidRequireDeclaration(path.node),
       path => isCapitalized(getDeclarationName(path.node)),
     ],
     comparator: (node1, node2) => compareStrings(
@@ -80,13 +77,10 @@ var CONFIG: Array<ConfigEntry> = [
 
   // Handle lowerCase requires, e.g: `require('lowerCase');`
   {
-    searchTerms: [
-      jscs.VariableDeclaration,
-      {declarations: [{init: {callee: {name: 'require'}}}]},
-    ],
+    searchTerms: [jscs.VariableDeclaration],
     filters: [
       isGlobal,
-      isSafeVariableDeclaration,
+      path => isValidRequireDeclaration(path.node),
       path => !isCapitalized(getDeclarationName(path.node)),
     ],
     comparator: (node1, node2) => compareStrings(
@@ -97,6 +91,21 @@ var CONFIG: Array<ConfigEntry> = [
   },
 ];
 
+/**
+ * This formats requires based on the left hand side of the require, unless it
+ * is a simple require expression in which case there is no left hand side.
+ *
+ * The groups are:
+ *
+ *   - import types: import type Foo from 'anything';
+ *   - require expressions: require('anything');
+ *   - capitalized requires: var Foo = require('anything');
+ *   - non-capitalized requires: var foo = require('anything');
+ *
+ * Array and object destructures are also valid left hand sides. Object patterns
+ * are sorted and then the first identifier in each of patterns is used for
+ * sorting.
+ */
 function formatRequires(root: Collection): void {
   var first = FirstNode.get(root);
   if (!first) {
@@ -123,13 +132,14 @@ function formatRequires(root: Collection): void {
   nodesToInsert.reverse().forEach(node => _first.insertBefore(node));
 }
 
-// Helper functions that need api access
-
-function isSafeVariableDeclaration(path: NodePath): boolean {
-  if (path.node.declarations.length !== 1) {
+/**
+ * Tests if a variable declaration is a valid require declaration.
+ */
+function isValidRequireDeclaration(node: Node): boolean {
+  if (!hasOneRequireDeclaration(node)) {
     return false;
   }
-  var declaration = path.node.declarations[0];
+  var declaration = node.declarations[0];
   if (jscs.Identifier.check(declaration.id)) {
     return true;
   }

@@ -49,6 +49,7 @@ var TESTS = [
   'remove-unused-requires',
   'remove-unused-types',
   'sort-requires',
+  'sort-strange-require-expressions',
 ];
 
 var SOURCE_OPTIONS = {

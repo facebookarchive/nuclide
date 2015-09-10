@@ -12,10 +12,10 @@
 import type {Collection, Node, NodePath} from '../types/ast';
 import type {SourceOptions} from '../options/SourceOptions';
 
-var jscs = require('jscodeshift');
-
 var getNonDeclarationIdentifiers = require('../utils/getNonDeclarationIdentifiers');
+var hasOneRequireDeclaration = require('../utils/hasOneRequireDeclaration');
 var isGlobal = require('../utils/isGlobal');
+var jscs = require('jscodeshift');
 
 type ConfigEntry = {
   searchTerms: [any, Object],
@@ -32,46 +32,12 @@ var CONFIG: Array<ConfigEntry> = [
       {
         declarations: [{
           id: {type: 'Identifier'},
-          init: {callee: {name: 'require'}},
         }],
       },
     ],
     filters: [
       isGlobal,
-    ],
-    getNames: node => [node.declarations[0].id.name],
-  },
-
-  // var foo = require('foo')();
-  {
-    searchTerms: [
-      jscs.VariableDeclaration,
-      {
-        declarations: [{
-          id: {type: 'Identifier'},
-          init: {callee: {callee: {name: 'require'}}},
-        }],
-      },
-    ],
-    filters: [
-      isGlobal,
-    ],
-    getNames: node => [node.declarations[0].id.name],
-  },
-
-  // var alias = require('foo').alias;
-  {
-    searchTerms: [
-      jscs.VariableDeclaration,
-      {
-        declarations: [{
-          id: {type: 'Identifier'},
-          init: {object: {callee: {name: 'require'}}},
-        }],
-      },
-    ],
-    filters: [
-      isGlobal,
+      path => hasOneRequireDeclaration(path.node),
     ],
     getNames: node => [node.declarations[0].id.name],
   },
@@ -83,12 +49,12 @@ var CONFIG: Array<ConfigEntry> = [
       {
         declarations: [{
           id: {type: 'ObjectPattern'},
-          init: {callee: {name: 'require'}},
         }],
       },
     ],
     filters: [
       isGlobal,
+      path => hasOneRequireDeclaration(path.node),
       path => path.node.declarations[0].id.properties.every(
         prop => prop.shorthand && jscs.Identifier.check(prop.key)
       ),
@@ -105,12 +71,12 @@ var CONFIG: Array<ConfigEntry> = [
       {
         declarations: [{
           id: {type: 'ArrayPattern'},
-          init: {callee: {name: 'require'}},
         }],
       },
     ],
     filters: [
       isGlobal,
+      path => hasOneRequireDeclaration(path.node),
       path => path.node.declarations[0].id.elements.every(
         element => jscs.Identifier.check(element)
       ),
