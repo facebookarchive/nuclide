@@ -240,6 +240,7 @@ declare class atom$Panel {
 }
 
 declare class atom$Point {
+  static fromObject(object: atom$Point | [number, number], copy:? boolean): atom$Point;
   constructor(row: number, column: number): void;
   row: number;
   column: number;
@@ -252,7 +253,7 @@ declare class atom$Point {
   compare(other: atom$Point): number;
 
   // Operations
-  translate(other: atom$Point): atom$Point;
+  translate(other: atom$Point | [number, number]): atom$Point;
 
   // Conversion
   serialize(): Array<number>;
@@ -265,6 +266,10 @@ type RangeConstructorArg =
   [number, number];
 
 declare class atom$Range {
+  static fromObject(
+    object: atom$Range | [atom$Point | number, atom$Point | number],
+    copy?: boolean,
+  ): atom$Range;
   constructor(pointA: RangeConstructorArg, pointB: RangeConstructorArg): void;
   start: atom$Point;
   end: atom$Point;
@@ -282,6 +287,11 @@ type atom$StatusBarTile = {
   getPriority(): number;
   getItem(): HTMLElement;
   destroy(): void;
+}
+
+declare class atom$ScopeDescriptor {
+  constructor(object: {scopes: Array<string>}): void;
+  getScopesArray(): Array<string>;
 }
 
 /**
@@ -380,6 +390,8 @@ declare class atom$TextEditor extends atom$Model {
   getBuffer(): atom$TextBuffer;
   observeGrammar(callback: (grammar: atom$Grammar) => mixed): atom$Disposable;
   onWillInsertText(callback: (event: {cancel: () => void; text: string;}) => void): atom$Disposable;
+  // Note that the range property of the event is undocumented.
+  onDidInsertText(callback: (event: {text: string; range: atom$Range}) => mixed): atom$Disposable;
 
   // File Details
   getTitle(): string;
@@ -406,6 +418,14 @@ declare class atom$TextEditor extends atom$Model {
 
   // Mutating Text
   setText(text: string, options?: InsertTextOptions): void;
+  setTextInBufferRange(
+    range: atom$Range,
+    text: string,
+    options?: {
+      normalizeLineEndings?: boolean;
+      undo?: string;
+    },
+  ): atom$Range;
   insertText(text: string): atom$Range | boolean;
 
   // History
@@ -458,6 +478,11 @@ declare class atom$TextEditor extends atom$Model {
 
   // Clipboard Operations
   pasteText(options?: Object): void;
+
+  // Managing Syntax Scopes
+  scopeDescriptorForBufferPosition(
+    bufferPosition: atom$Point | [number, number],
+  ): atom$ScopeDescriptor;
 
   // Gutter
   addGutter(options: {
@@ -735,6 +760,14 @@ declare class atom$Project {
   relativizePath(): Array<string>; // [projectPath: ?string, relativePath: string]
 }
 
+type TextBufferScanIterator = (arg: {
+  match: Array<string>;
+  matchText: string;
+  range: atom$Range;
+  stop(): void;
+  replace(replacement: string): void;
+}) => void;
+
 declare class atom$TextBuffer {
   file: ?atom$File;
 
@@ -746,6 +779,7 @@ declare class atom$TextBuffer {
   // Reading Text
   isEmpty(): boolean;
   getText(): string;
+  getTextInRange(range: atom$Range): string;
   getLines(): Array<string>;
   getLastLine(): string;
   lineForRow(row: number): string;
@@ -757,6 +791,14 @@ declare class atom$TextBuffer {
 
   // Mutating Text
   setText(text: string): atom$Range;
+  insert(
+    position: atom$Point,
+    text: string,
+    options?: {
+      normalizeLineEndings?: boolean;
+      undo?: string;
+    },
+  ): atom$Range;
   append(text: string, options: ?{
     normalizeLineEndings?: boolean;
     undo?: string;
@@ -765,11 +807,12 @@ declare class atom$TextBuffer {
   deleteRows(startRow: number, endRow: number): atom$Range;
 
   // Search And Replace
-  scanInRange(regex: RegExp, range: Range, iterator: (data: Object) => void): void;
+  scanInRange(regex: RegExp, range: atom$Range, iterator: TextBufferScanIterator): void;
+  backwardsScanInRange(regex: RegExp, range: atom$Range, iterator: TextBufferScanIterator): void;
 
   // Buffer Range Details
   getLastRow(): number;
-  rangeForRow(row: number, includeNewLine?: boolean): Range;
+  rangeForRow(row: number, includeNewLine?: boolean): atom$Range;
 }
 
 declare class atom$Notification {
