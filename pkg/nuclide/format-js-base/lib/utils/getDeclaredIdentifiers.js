@@ -78,15 +78,22 @@ function getDeclaredIdentifiers(
       .forEach(path => {
         var nodes = config.getNodes(path);
         nodes.forEach(node => {
-          // Each node can generally be an Identifier or ObjectPattern,
-          // sometimes an ObjectPattern will never be present but it shouldn't
-          // hurt to always test for it
+          // Each node can generally be an Identifier, ObjectPattern, or
+          // ArrayPattern. Sometimes an ObjectPattern or ArrayPattern should
+          // not be allowed in a location, but it shouldn't hurt to always test
+          // for it.
           if (jscs.Identifier.check(node)) {
             ids.add(node.name);
           } else if (jscs.ObjectPattern.check(node)) {
             node.properties.forEach(prop => {
               if (jscs.Identifier.check(prop.key)) {
                 ids.add(prop.key.name);
+              }
+            });
+          } else if (jscs.ArrayPattern.check(node)) {
+            node.elements.forEach(element => {
+              if (jscs.Identifier.check(element)) {
+                ids.add(element.name);
               }
             });
           }

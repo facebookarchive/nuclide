@@ -137,6 +137,11 @@ function isSafeVariableDeclaration(path: NodePath): boolean {
       prop => prop.shorthand && jscs.Identifier.check(prop.key)
     );
   }
+  if (jscs.ArrayPattern.check(declaration.id)) {
+    return declaration.id.elements.every(
+      element => jscs.Identifier.check(element)
+    );
+  }
   return false;
 }
 
@@ -145,9 +150,13 @@ function getDeclarationName(node: Node): string {
   if (jscs.Identifier.check(declaration.id)) {
     return declaration.id.name;
   }
-  // Order by the first property name in the object pattern
+  // Order by the first property name in the object pattern.
   if (jscs.ObjectPattern.check(declaration.id)) {
     return declaration.id.properties[0].key.name;
+  }
+  // Order by the first element name in the array pattern.
+  if (jscs.ArrayPattern.check(declaration.id)) {
+    return declaration.id.elements[0].name;
   }
   return '';
 }

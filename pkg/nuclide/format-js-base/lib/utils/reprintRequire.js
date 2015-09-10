@@ -11,8 +11,8 @@
 
 import type {Node} from '../types/ast';
 
+var {compareStrings} = require('./StringUtils');
 var jscs = require('jscodeshift');
-
 var oneLineObjectPattern = require('./oneLineObjectPattern');
 
 /**
@@ -32,25 +32,20 @@ var oneLineObjectPattern = require('./oneLineObjectPattern');
      var declaration = node.declarations[0];
      if (jscs.Identifier.check(declaration.id)) {
        return statement`var ${declaration.id} = ${declaration.init};`;
-     }
-     if (jscs.ObjectPattern.check(declaration.id)) {
-       // create a temporary node
+     } else if (jscs.ObjectPattern.check(declaration.id)) {
+       // Create a temporary node.
        var tmp = statement`var _ = ${declaration.init};`;
 
-       // sort the properties
+       // Sort the properties.
        declaration.id.properties.sort((prop1, prop2) => {
-         if (prop1.key.name < prop2.key.name) {
-           return -1;
-         } else if (prop1.key.name > prop2.key.name) {
-           return 1;
-         } else {
-           return 0;
-         }
+         return compareStrings(prop1.key.name, prop2.key.name);
        });
 
-       // make the object pattern one line and update tmp with it
+       // Make the object pattern one line and update tmp with it.
        tmp.declarations[0].id = oneLineObjectPattern(declaration.id);
        return tmp;
+     } else if (jscs.ArrayPattern.check(declaration.id)) {
+       return statement`var ${declaration.id} = ${declaration.init}`;
      }
    }
 

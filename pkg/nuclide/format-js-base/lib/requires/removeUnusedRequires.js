@@ -97,6 +97,28 @@ var CONFIG: Array<ConfigEntry> = [
       return node.declarations[0].id.properties.map(prop => prop.key.name);
     },
   },
+
+  // var [alias] = require('foo');
+  {
+    searchTerms: [
+      jscs.VariableDeclaration,
+      {
+        declarations: [{
+          id: {type: 'ArrayPattern'},
+          init: {callee: {name: 'require'}},
+        }],
+      },
+    ],
+    filters: [
+      isGlobal,
+      path => path.node.declarations[0].id.elements.every(
+        element => jscs.Identifier.check(element)
+      ),
+    ],
+    getNames: node => {
+      return node.declarations[0].id.elements.map(element => element.name);
+    },
+  },
 ];
 
 function removeUnusedRequires(

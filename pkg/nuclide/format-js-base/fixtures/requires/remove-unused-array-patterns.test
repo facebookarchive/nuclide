@@ -1,0 +1,11 @@
+'use strict';
+
+var x = require('x');
+
+var [a, b] = require('foo');
+var [e, f] = require('baz');
+var [c, d] = require('bar');
+
+e(f);
+c(d);
+x();
