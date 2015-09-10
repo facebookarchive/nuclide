@@ -176,8 +176,11 @@ def read_file(filename):
         return None
 
 def write_file(filename, contents):
-    with open(filename, 'w') as file:
-        file.write(contents)
+    try:
+        with open(filename, 'w') as file:
+            file.write(contents)
+    except IOError:
+        logging.info('Failed to write to file %s', filename)
 
 # If a node module has 'bin' field configured in 'package.json', we should create
 # a symlink from the executable file configured in 'bin' field to current package's
