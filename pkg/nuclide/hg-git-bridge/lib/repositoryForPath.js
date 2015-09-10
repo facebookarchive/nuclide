@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {NuclideUri} from 'nuclide-remote-uri';
+
 /**
  * @param aPath The NuclideUri of a file or directory for which you want to find
  *   a Repository it belongs to.

@@ -12,13 +12,15 @@
 var {Directory} = require('atom');
 var path = require('path');
 
+import type {NuclideUri} from 'nuclide-remote-uri';
+
 /**
  * @param repository Either a GitRepository or HgRepositoryClient.
  * @param filePath The absolute file path of interest.
  * @return boolean Whether the file path exists within the working directory
  *   (aka root directory) of the repository, or is the working directory.
  */
-function repositoryContainsPath(repository: Repository, filePath: string): boolean {
+function repositoryContainsPath(repository: Repository, filePath: NuclideUri): boolean {
   var workingDirectoryPath = repository.getWorkingDirectory();
   if (pathsAreEqual(workingDirectoryPath, filePath)) {
     return true;
