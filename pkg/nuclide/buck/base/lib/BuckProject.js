@@ -285,31 +285,6 @@ export class BuckProject {
     return args;
   }
 
-  /**
-   * @param filePath absolute path.
-   */
-  async findTargetsWithReferencedFile(filePath: string, options: any): Promise {
-    var args = ['targets', '--referenced_file', filePath];
-
-    var type = options['type'];
-    if (type) {
-      args.push('--type');
-      type.forEach((buildRuleType) => args.push(buildRuleType));
-    }
-
-    args.push('--json');
-
-    var result = await this._runBuckCommandFromProjectRoot(args);
-
-    result.json = JSON.parse(result.stdout || '[]');
-    // TODO(mbolin): The target should be a field in the JSON.
-    result.targets = result.json.map((targetData) => {
-      return '//' + targetData['buck.base_path'] + ':' + targetData['name'];
-    });
-
-    return result;
-  }
-
   async listAliases(): Promise<Array<string>> {
     var args = ['audit', 'alias', '--list'];
     var result = await this._runBuckCommandFromProjectRoot(args);
