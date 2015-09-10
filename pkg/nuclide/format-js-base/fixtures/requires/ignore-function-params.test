@@ -1,5 +1,3 @@
-'use strict';
-
 function one(two, {three}) {
   two();
   three();

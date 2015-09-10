@@ -1,5 +1,3 @@
-'use strict';
-
 var eight = require('eight');
 var five = require('five');
 var four = require('four');

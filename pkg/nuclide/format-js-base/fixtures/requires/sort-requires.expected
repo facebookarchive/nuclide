@@ -1,5 +1,3 @@
-'use strict';
-
 require('aaa-side-effect');
 require('bbb-side-effect');
 require('ccc-side-effect');

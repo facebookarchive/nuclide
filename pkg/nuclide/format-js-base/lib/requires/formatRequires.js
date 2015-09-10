@@ -11,12 +11,12 @@
 
 import type {Collection, Node, NodePath} from '../types/ast';
 
-var jscs = require('jscodeshift');
+var FirstNode = require('../utils/FirstNode');
+var NewLine = require('../utils/NewLine');
 
-var getFirstNodePath = require('../utils/getFirstNodePath');
 var {compareStrings, isCapitalized} = require('../utils/StringUtils');
 var isGlobal = require('../utils/isGlobal');
-var newLine = require('../constants/newLine');
+var jscs = require('jscodeshift');
 var reprintRequire = require('../utils/reprintRequire');
 
 type ConfigEntry = {
@@ -98,10 +98,11 @@ var CONFIG: Array<ConfigEntry> = [
 ];
 
 function formatRequires(root: Collection): void {
-  var first = getFirstNodePath(root);
+  var first = FirstNode.get(root);
   if (!first) {
     return;
   }
+  var _first = first; // For flow.
 
   // Create groups of requires from each config
   var nodeGroups = CONFIG.map(config => {
@@ -116,10 +117,10 @@ function formatRequires(root: Collection): void {
   });
 
   // Build all the nodes we want to insert, then add them
-  var allGroups = [[newLine.statement]];
-  nodeGroups.forEach(group => allGroups.push(group, [newLine.statement]));
+  var allGroups = [[NewLine.statement]];
+  nodeGroups.forEach(group => allGroups.push(group, [NewLine.statement]));
   var nodesToInsert = Array.prototype.concat.apply([], allGroups);
-  nodesToInsert.reverse().forEach(node => first.insertAfter(node));
+  nodesToInsert.reverse().forEach(node => _first.insertBefore(node));
 }
 
 // Helper functions that need api access

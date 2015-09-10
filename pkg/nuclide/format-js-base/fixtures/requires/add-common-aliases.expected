@@ -1,5 +1,3 @@
-'use strict';
-
 var Immutable = require('immutable');
 
 Immutable.List();

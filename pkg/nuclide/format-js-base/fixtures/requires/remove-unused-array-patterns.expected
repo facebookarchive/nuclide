@@ -1,5 +1,3 @@
-'use strict';
-
 var [c, d] = require('bar');
 var [e, f] = require('baz');
 var x = require('x');

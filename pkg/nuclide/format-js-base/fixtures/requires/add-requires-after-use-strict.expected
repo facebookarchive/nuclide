@@ -1,3 +1,5 @@
+'use strict';
+
 var one = require('one');
 
-var two: ?one = new one();
+one();

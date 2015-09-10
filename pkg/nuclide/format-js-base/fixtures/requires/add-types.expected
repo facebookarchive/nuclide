@@ -1,5 +1,3 @@
-'use strict';
-
 import type five from 'five';
 import type six from 'six';
 import type two from 'two';

@@ -1,3 +1,1 @@
-'use strict';
-
 var paragraph = <p>lorem ipsum</p>;

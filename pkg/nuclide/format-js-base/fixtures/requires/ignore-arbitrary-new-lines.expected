@@ -1,5 +1,7 @@
 var one = require('one');
-var three = require('three');
 var two = require('two');
 
-new one(two, {three});
+one();
+
+
+two();

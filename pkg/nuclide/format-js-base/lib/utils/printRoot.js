@@ -11,19 +11,19 @@
 
 import type {Collection} from '../types/ast';
 
-var newLine = require('../constants/newLine');
+var NewLine = require('./NewLine');
 
 function printRoot(root: Collection): string {
-  // Print the new source
+  // Print the new source.
   var output = root.toSource({quote: 'single', trailingComma: true});
 
-  // This is a hack to easily add new lines within a transform
-  output = output.replace(newLine.regex, '\n');
+  // This is a hack to easily add new lines within a transform.
+  output = NewLine.replace(output);
 
-  // Also remove places with more than 2 new lines
-  output = output.replace(/\n{3,}/g, '\n\n');
+  // Remove new lines at the start.
+  output = output.replace(/^\n{1,}/, '');
 
-  // Make sure there is a new line at the end
+  // Make sure there is a new line at the end.
   if (!/^[\w\W]*\n$/.test(output)) {
     output = output + '\n';
   }

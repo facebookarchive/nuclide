@@ -12,24 +12,25 @@
 import type {Collection} from '../types/ast';
 import type {SourceOptions} from '../options/SourceOptions';
 
-var jscs = require('jscodeshift');
+var FirstNode = require('../utils/FirstNode');
 
-var getFirstNodePath = require('../utils/getFirstNodePath');
 var getUndeclaredIdentifiers = require('../utils/getUndeclaredIdentifiers');
 var getUndeclaredJSXIdentifiers = require('../utils/getUndeclaredJSXIdentifiers');
+var jscs = require('jscodeshift');
 
 function addMissingRequires(root: Collection, options: SourceOptions): void {
-  var first = getFirstNodePath(root);
+  var first = FirstNode.get(root);
   if (!first) {
     return;
   }
+  var _first = first; // For flow.
 
   var {moduleMap} = options;
 
   // Add the missing requires.
   getUndeclaredIdentifiers(root, options).forEach(name => {
     var node = moduleMap.getRequire(name, {path: options.sourcePath});
-    first.insertAfter(node);
+    _first.insertBefore(node);
   });
 
   // Add missing JSX requires.
@@ -38,7 +39,7 @@ function addMissingRequires(root: Collection, options: SourceOptions): void {
       path: options.sourcePath,
       jsxIdentifier: true,
     });
-    first.insertAfter(node);
+    _first.insertBefore(node);
   });
 }
 

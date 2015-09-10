@@ -1,5 +1,3 @@
-'use strict';
-
 var {Component, PropTypes} = React;
 
 var Foo = React.createClass({

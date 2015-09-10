@@ -1,5 +1,3 @@
-'use strict';
-
 import type C from 'C';
 import type F from 'F';
 import type G from 'G';

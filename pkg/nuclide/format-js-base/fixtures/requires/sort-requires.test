@@ -1,5 +1,3 @@
-'use strict';
-
 require('ccc-side-effect');
 var AAA = require('AAA');
 var bbb = require('bbb');

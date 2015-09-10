@@ -1,5 +1,3 @@
-'use strict';
-
 var Image = require('Image.react');
 var MyConstants = require('MyConstants');
 var React = require('React');

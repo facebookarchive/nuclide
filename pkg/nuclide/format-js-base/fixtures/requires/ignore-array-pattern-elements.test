@@ -1,4 +1,2 @@
-'use strict';
-
 var [a, b] = foo;
 function bar([c, d]) {}

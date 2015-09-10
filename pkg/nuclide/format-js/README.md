@@ -16,7 +16,6 @@ type imports when appropriate.
 There are a few best practices that you should follow in order to get the most benefit out of these
 transforms:
 
-+ Always have a `'use strict';` and keep requires immediately after it.
 + Don't shadow require names anywhere in the file. The transform is very minimally aware of scope.
 + Don't alias requires (unless you specify the alias in the aliases setting).
 + Destructure in a line separate from the require.

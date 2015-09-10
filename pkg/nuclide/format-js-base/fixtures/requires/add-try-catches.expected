@@ -1,5 +1,3 @@
-'use strict';
-
 try {
   // Nothing.
 } catch (e) {

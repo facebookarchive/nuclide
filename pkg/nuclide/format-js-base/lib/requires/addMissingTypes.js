@@ -12,18 +12,19 @@
 import type {Collection} from '../types/ast';
 import type {SourceOptions} from '../options/SourceOptions';
 
-var jscs = require('jscodeshift');
+var FirstNode = require('../utils/FirstNode');
 
-var getFirstNodePath = require('../utils/getFirstNodePath');
 var getUndeclaredTypes = require('../utils/getUndeclaredTypes');
+var jscs = require('jscodeshift');
 
 var {statement} = jscs.template;
 
 function addMissingTypes(root: Collection, options: SourceOptions): void {
-  var first = getFirstNodePath(root);
+  var first = FirstNode.get(root);
   if (!first) {
     return;
   }
+  var _first = first; // For flow.
 
   var {moduleMap} = options;
   var requireOptions = {
@@ -33,7 +34,7 @@ function addMissingTypes(root: Collection, options: SourceOptions): void {
 
   getUndeclaredTypes(root, options).forEach(name => {
     var node = moduleMap.getRequire(name, requireOptions);
-    first.insertAfter(node);
+    _first.insertBefore(node);
   });
 }
 
