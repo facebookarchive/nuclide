@@ -29,14 +29,14 @@ function addMissingRequires(root: Collection, options: SourceOptions): void {
 
   // Add the missing requires.
   getUndeclaredIdentifiers(root, options).forEach(name => {
-    var node = moduleMap.getRequire(name, {path: options.sourcePath});
+    var node = moduleMap.getRequire(name, {sourcePath: options.sourcePath});
     _first.insertBefore(node);
   });
 
   // Add missing JSX requires.
   getUndeclaredJSXIdentifiers(root, options).forEach(name => {
     var node = moduleMap.getRequire(name, {
-      path: options.sourcePath,
+      sourcePath: options.sourcePath,
       jsxIdentifier: true,
     });
     _first.insertBefore(node);

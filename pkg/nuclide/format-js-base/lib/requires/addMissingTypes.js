@@ -28,7 +28,7 @@ function addMissingTypes(root: Collection, options: SourceOptions): void {
 
   var {moduleMap} = options;
   var requireOptions = {
-    path: options.sourcePath,
+    sourcePath: options.sourcePath,
     typeImport: true,
   };
 

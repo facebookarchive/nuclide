@@ -29,16 +29,6 @@ module.exports = {
       () => process.nextTick(() => formatCode())
     ));
 
-    var {refreshOptions} = require('./options');
-
-    // Set the initial options.
-    refreshOptions();
-
-    // Observe changes to the config and remove them when they change.
-    atom.config.observe('nuclide-format-js.builtIns', refreshOptions);
-    atom.config.observe('nuclide-format-js.builtInTypes', refreshOptions);
-    atom.config.observe('nuclide-format-js.aliases', refreshOptions);
-
     // Set up run-on-save based on atom config.
     var runOnSave = atom.config.get('nuclide-format-js.runOnSave');
     atom.config.observe('nuclide-format-js.runOnSave', newValue => {

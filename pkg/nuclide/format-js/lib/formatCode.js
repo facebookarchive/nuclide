@@ -24,13 +24,9 @@ async function formatCode(editor: ?TextEditor): Promise<void> {
   // TODO: Add a limit so the transform is not run on files over a certain
   // length, or at least this will be nice when we run on save/stop change.
   var {transform} = require('nuclide-format-js-base');
-  var {getModuleMap, getBlacklist} = require('./options');
-  var newSource = transform(oldSource, {
-    moduleMap: getModuleMap(),
-    sourcePath: editor.getPath(),
-    blacklist: getBlacklist(),
-  });
-
+  var {getOptions} = require('./options');
+  var path = editor.getPath();
+  var newSource = transform(oldSource, await getOptions(path));
   if (newSource === oldSource) {
     return;
   }

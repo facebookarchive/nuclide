@@ -15,6 +15,7 @@
     "atom": ">=1.0.3"
   },
   "dependencies": {
+    "nuclide-commons": "0.0.0",
     "nuclide-format-js-base": "0.0.0",
     "nuclide-logging": "0.0.0"
   },
