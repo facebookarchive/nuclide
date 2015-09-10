@@ -52,13 +52,16 @@ var SimulatorDropdown = React.createClass({
   },
 
   render(): ReactElement {
+    if (this.state.menuItems.length === 0) {
+      return <span />;
+    }
+
     return (
       <NuclideDropdown
         className={this.props.className}
         selectedIndex={this.state.selectedIndex}
         menuItems={this.state.menuItems}
         onSelectedChange={this._handleSelection}
-        ref="dropdown"
         size="sm"
         title={this.props.title}
       />

@@ -9,8 +9,7 @@
  * the root directory of this source tree.
  */
 
-var {array} = require('nuclide-commons');
-var {asyncExecute} = require('nuclide-commons');
+var {array, asyncExecute} = require('nuclide-commons');
 
 export type Device = {
   name: string;
@@ -26,19 +25,6 @@ var DeviceState = {
   Shutdown: 'Shutdown',
   Booted: 'Booted',
 };
-
-/**
- * Executes a command and returns stdout if exit code is 0, otherwise reject
- * with a message and stderr.
- */
-async function checkStdout(cmd: string, args: Array<string>, options: ?Object = {}): Promise<string> {
-  try {
-    var {stdout} = await asyncExecute(cmd, args, options);
-    return stdout;
-  } catch(e) {
-    throw new Error(`Process exited with non-zero exit code (${e.exitCode}). stderr: ${e.stderr}`);
-  }
-}
 
 function parseDevicesFromSimctlOutput(output: string): Device[] {
   var devices = [];
@@ -67,8 +53,15 @@ function parseDevicesFromSimctlOutput(output: string): Device[] {
 }
 
 async function getDevices(): Promise<Device[]> {
-  var stdout = await checkStdout('xcrun', ['simctl', 'list', 'devices']);
-  return parseDevicesFromSimctlOutput(stdout);
+  var xcrunOutput;
+  try {
+    var {stdout} = await asyncExecute('xcrun', ['simctl', 'list', 'devices']);
+    xcrunOutput = stdout;
+  } catch (e) {
+    // Users may not have xcrun installed, particularly if they are using Buck for non-iOS projects.
+    return [];
+  }
+  return parseDevicesFromSimctlOutput(xcrunOutput);
 }
 
 function selectDevice(devices: Device[]): number {
