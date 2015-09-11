@@ -8,7 +8,9 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-var ProjectStore = require('./ProjectStore');
+
+import type NuclideToolbarType from './NuclideToolbar';
+import type ProjectStoreType from './ProjectStore';
 
 class Activation {
 
@@ -16,14 +18,15 @@ class Activation {
   _initialBuildTarget: string;
   _item: ?HTMLElement;
   _panel: Object;
-  _projectStore: ProjectStore;
-  _nuclideToolbar: ?NuclideToolbar;
+  _projectStore: ProjectStoreType;
+  _nuclideToolbar: ?NuclideToolbarType;
 
   // Functions to be used as callbacks.
   _handleBuildTargetChange: Function;
 
   constructor(state: ?Object) {
     var {CompositeDisposable} = require('atom');
+    var ProjectStore = require('./ProjectStore');
 
     // Bind functions used as callbacks to ensure correct context when called.
     this._handleBuildTargetChange = this._handleBuildTargetChange.bind(this);
