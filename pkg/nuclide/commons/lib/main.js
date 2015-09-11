@@ -23,6 +23,10 @@ module.exports = {
     return require('./process').checkOutput(command, args, options);
   },
 
+  createArgsForScriptCommand(command: string, args?: Array<string> = []): Array<string> {
+    return require('./process').createArgsForScriptCommand(command, args);
+  },
+
   createExecEnvironment(originalEnv: Object, commonBinaryPaths: Array<string>): Promise<Object> {
     return require('./process').createExecEnvironment(originalEnv, commonBinaryPaths);
   },

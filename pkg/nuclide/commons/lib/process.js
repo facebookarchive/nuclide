@@ -132,6 +132,26 @@ async function safeSpawn(command: string, args?: Array<string> = [], options?: O
   return child;
 }
 
+var isOsX = process.platform === 'darwin';
+
+/**
+ * Takes the command and args that you would normally pass to `spawn()` and returns `newArgs` such
+ * that you should call it with `spawn('script', newArgs)` to run the original command/args pair
+ * under `script`.
+ */
+function createArgsForScriptCommand(command: string, args?: Array<string> = []): Array<string> {
+  if (isOsX) {
+    // On OS X, script takes the program to run and its arguments as varargs at the end.
+    return ['-q', '/dev/null', command].concat(args);
+  } else {
+    // On Linux, script takes the command to run as the -c parameter.
+    // TODO: Shell escape every element in allArgs.
+    var allArgs = [command].concat(args);
+    var commandAsItsOwnArg = allArgs.join(' ');
+    return ['-q', '/dev/null', '-c', commandAsItsOwnArg];
+  }
+}
+
 /**
  * Basically like safeSpawn, but runs the command with the `script` command.
  * `script` ensures terminal-like environment and commands we run give colored output.
@@ -141,7 +161,7 @@ function scriptSafeSpawn(
   args?: Array<string> = [],
   options?: Object = {},
 ): Promise<child_process$ChildProcess> {
-  var newArgs = ['-q', '/dev/null', command].concat(args);
+  var newArgs = createArgsForScriptCommand(command, args);
   return safeSpawn('script', newArgs, options);
 }
 
@@ -292,6 +312,7 @@ async function asyncExecute(
 
 module.exports = {
   asyncExecute,
+  createArgsForScriptCommand,
   checkOutput,
   safeSpawn,
   scriptSafeSpawn,

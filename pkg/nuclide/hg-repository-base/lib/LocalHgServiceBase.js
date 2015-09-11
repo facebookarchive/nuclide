@@ -17,13 +17,11 @@ var {parseHgBlameOutput, parseHgDiffUnifiedOutput} = require('./hg-output-helper
 var {fetchCommonAncestorOfHeadAndRevision,
     fetchRevisionNumbersBetweenRevisions} = require('./hg-revision-expression-helpers');
 var {fetchFileContentAtRevision, fetchFilesChangedAtRevision} = require('./hg-revision-state-helpers');
-var {asyncExecute} = require('nuclide-commons');
+var {asyncExecute, createArgsForScriptCommand} = require('nuclide-commons');
 var path = require('path');
 
 import type {DiffInfo, RevisionFileChanges, StatusCodeIdValue} from './hg-constants';
 import type LocalHgServiceOptions from './hg-types';
-
-var isOsX = require('os').platform() === 'darwin';
 
 var logger;
 function getLogger() {
@@ -189,14 +187,7 @@ class LocalHgServiceBase extends HgService {
     var cmd;
     if (options['TTY_OUTPUT']) {
       cmd = 'script';
-      if (isOsX) {
-        // On OS X, script takes the program to run and its arguments as varargs at the end.
-        args = ['-q', '/dev/null', 'hg'].concat(args);
-      } else {
-        // On Linux, script takes the command to run as the -c parameter.
-        var hgCommand = ['hg'].concat(args).join(' ');
-        args = ['-q', '/dev/null', '-c', hgCommand];
-      }
+      args = createArgsForScriptCommand('hg', args);
     } else {
       cmd = 'hg';
     }

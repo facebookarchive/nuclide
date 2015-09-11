@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 var {BufferedProcess} = require('atom');
+var {createArgsForScriptCommand} = require('nuclide-commons');
 
 /**
  * Wrapper around BufferedProcess that runs the command using unix `script`
@@ -19,10 +20,7 @@ var {BufferedProcess} = require('atom');
 class ScriptBufferedProcess extends BufferedProcess {
   constructor(options) {
     var localOptions = {...options};
-    if (localOptions.args == null) {
-      localOptions.args = [];
-    }
-    localOptions.args = ['-q', '/dev/null', localOptions.command].concat(localOptions.args);
+    localOptions.args = createArgsForScriptCommand(localOptions.command, localOptions.args);
     localOptions.command = 'script';
     super(localOptions);
   }
