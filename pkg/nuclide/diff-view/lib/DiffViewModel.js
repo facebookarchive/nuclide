@@ -52,7 +52,7 @@ class DiffViewModel {
     }
     this._repositorySubscriptions.clear();
     atom.project.getRepositories()
-      .filter(repository => repository.getType() === 'hg')
+      .filter(repository => repository && repository.getType() === 'hg')
       .forEach(repository => {
         this._repositorySubscriptions.set(
           repository, repository.onDidChangeStatuses(this._updateChangedStatus.bind(this))
