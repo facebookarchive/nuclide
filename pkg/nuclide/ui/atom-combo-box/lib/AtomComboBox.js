@@ -106,6 +106,8 @@ var AtomComboBox = React.createClass({
       optionsVisible: false,
     }, didRenderCallback);
     this.props.onSelect(newValue);
+    // Selecting a value in the dropdown changes the text as well. Call the callback accordingly.
+    this.props.onChange(newValue);
   },
 
   getText(): string {

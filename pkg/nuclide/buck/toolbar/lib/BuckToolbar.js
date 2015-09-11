@@ -164,6 +164,7 @@ class BuckToolbar extends React.Component {
   }
 
   _handleBuildTargetChange(value: string) {
+    this.props.onBuildTargetChange(value);
     this.setState({buttonsDisabled: !value});
   }
 
@@ -399,6 +400,7 @@ class BuckToolbar extends React.Component {
 
 BuckToolbar.propTypes = {
   initialBuildTarget: PropTypes.string,
+  onBuildTargetChange: PropTypes.func.isRequired,
 };
 
 module.exports = BuckToolbar;

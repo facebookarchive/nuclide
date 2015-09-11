@@ -28,10 +28,6 @@ class NuclideToolbar extends React.Component {
     this._updateStateFromStore = this._updateStateFromStore.bind(this);
   }
 
-  getBuildTarget(): string {
-    return this.refs['buckToolbar'].getBuildTarget();
-  }
-
   componentWillMount() {
     this._disposable = this.props.projectStore.onChange(this._updateStateFromStore);
   }
@@ -67,8 +63,8 @@ class NuclideToolbar extends React.Component {
       return (
           <div className="tool-panel padded nuclide-toolbar">
             <BuckToolbar
-              ref="buckToolbar"
               initialBuildTarget={this.props.initialBuildTarget}
+              onBuildTargetChange={this.props.onBuildTargetChange}
             />
           </div>
         );
@@ -81,6 +77,7 @@ class NuclideToolbar extends React.Component {
 
 NuclideToolbar.propTypes = {
   initialBuildTarget: PropTypes.string.isRequired,
+  onBuildTargetChange: PropTypes.func.isRequired,
   projectStore: React.PropTypes.instanceOf(ProjectStore).isRequired,
 };
 

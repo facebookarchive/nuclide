@@ -19,8 +19,15 @@ class Activation {
   _projectStore: ProjectStore;
   _nuclideToolbar: ?NuclideToolbar;
 
+  // Functions to be used as callbacks.
+  _handleBuildTargetChange: Function;
+
   constructor(state: ?Object) {
     var {CompositeDisposable} = require('atom');
+
+    // Bind functions used as callbacks to ensure correct context when called.
+    this._handleBuildTargetChange = this._handleBuildTargetChange.bind(this);
+
     this._disposables = new CompositeDisposable();
     this._initialBuildTarget = (state && state.initialBuildTarget) || '';
     this._projectStore = new ProjectStore();
@@ -36,8 +43,9 @@ class Activation {
     this._nuclideToolbar = React.render(
       <NuclideToolbar
         initialBuildTarget={this._initialBuildTarget}
+        onBuildTargetChange={this._handleBuildTargetChange}
         projectStore={this._projectStore}
-        />,
+      />,
       item
     );
 
@@ -48,22 +56,18 @@ class Activation {
     this._panel = panel;
   }
 
+  _handleBuildTargetChange(buildTarget: string) {
+    this._initialBuildTarget = buildTarget;
+  }
+
   serialize(): Object {
-    var state = {};
-    // TODO(mbolin): If the toolbar has since been hidden/removed, should
-    // serialize the last value that was displayed in it, or failing that,
-    // this._initialBuildTarget, so it is available the next time the toolbar is
-    // displayed.
-    if (this._nuclideToolbar) {
-      state.initialBuildTarget = this._nuclideToolbar.getBuildTarget();
-    }
-    return state;
+    return {initialBuildTarget: this._initialBuildTarget};
   }
 
   dispose() {
     if (this._nuclideToolbar) {
-      require('react-for-atom').unmountComponentAtNode(
-          this._nuclideToolbar.getDOMNode().parentNode);
+      var React = require('react-for-atom');
+      React.unmountComponentAtNode(React.findDOMNode(this._nuclideToolbar).parentNode);
     }
     this._projectStore.dispose();
     this._disposables.dispose();
