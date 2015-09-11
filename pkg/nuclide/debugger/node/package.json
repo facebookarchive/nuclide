@@ -1,0 +1,37 @@
+{
+  "name": "nuclide-debugger-node",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "Allows debugging of node processes.",
+  "nuclide": {
+    "packageType": "Atom",
+    "testRunner": "apm"
+  },
+  "dependencies": {
+    "async": "0.9.2",
+    "debug": "2.2.0",
+    "glob": "5.0.5",
+    "nuclide-client": "0.0.0",
+    "nuclide-commons": "0.0.0",
+    "nuclide-debugger-utils": "0.0.0",
+    "path-is-absolute": "1.0.0",
+    "semver": "4.3.4",
+    "strong-data-uri": "1.0.0",
+    "v8-debug": "0.5.2",
+    "v8-profiler": "5.2.11",
+    "ws": "0.7.1"
+  },
+  "devDependencies": {
+    "nuclide-debugger-interfaces": "0.0.0",
+    "nuclide-external-interfaces": "0.0.0"
+  },
+  "providedServices": {
+    "nuclide-debugger-node-service": {
+      "description": "Debugger backend for node processes.",
+      "versions": {
+        "0.0.0": "provideNuclideDebuggerNode"
+      }
+    }
+  }
+}
