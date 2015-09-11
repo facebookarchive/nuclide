@@ -38,15 +38,32 @@ def update_package_json_versions(package_name, package, nuclide_npm_dependencies
     return package
 
 
-def rewrite_shrinkwrap_file(package_dir, package_name, dependent_packages, new_version):
+def rewrite_shrinkwrap_file(package_dir, package, dependent_packages, new_version):
+    package_name = package['name']
     shrinkwrap_file = os.path.join(package_dir, 'npm-shrinkwrap.json')
     # TODO(peterhal): Remove this test once we have shrinkwraps in place for all packages
     if os.path.isfile(shrinkwrap_file):
         shrinkwrap = json_load(shrinkwrap_file)
         shrinkwrap = update_shrinkwrap_json_versions(package_name, shrinkwrap,
             dependent_packages, new_version)
+        shrinkwrap = filter_shrinkwrap_dependencies(shrinkwrap, package)
         # Write the adjusted shrinkwrap file back to the temporary directory and publish it.
         json_dump(shrinkwrap, shrinkwrap_file)
+
+
+# Remove any dependencies from shrinkwrap files which are dev only
+def filter_shrinkwrap_dependencies(shrinkwrap, package):
+    if 'dependencies' not in shrinkwrap:
+        # If there's no dependencies to filter, then we're done.
+        return shrinkwrap
+    deps = set()
+    for dependency_key in DEPENDENCIES_KEYS:
+        if dependency_key != 'devDependencies' and dependency_key in package:
+            deps = deps.union(package[dependency_key].keys())
+    for dependent_name in shrinkwrap['dependencies'].keys():
+        if dependent_name not in deps:
+            shrinkwrap['dependencies'].pop(dependent_name, None)
+    return shrinkwrap
 
 
 def update_shrinkwrap_json_versions(package_name, shrinkwrap, dependent_packages, new_version):
