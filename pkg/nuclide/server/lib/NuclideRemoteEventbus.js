@@ -30,7 +30,7 @@ export type NuclideRemoteEventbusOptions = {
 };
 
 class NuclideRemoteEventbus {
-  socket: NuclideSocket;
+  socket: ?NuclideSocket;
   eventbus: EventEmitter;
 
   _rpcRequestId: number;
@@ -128,6 +128,11 @@ class NuclideRemoteEventbus {
       methodArgs: ?Array<any>,
       extraOptions: ?any
     ): Promise<any> {
+    if (!this.socket) {
+      logger.error('RemoteEventBus closed - callMethod:', serviceName, methodName);
+      // Error condition that should never happen, return `undefined`.
+      return;
+    }
     var {args, argTypes} = serializeArgs(methodArgs || []);
     try {
       return await this.socket.xhrRequest(object.assign({
@@ -249,6 +254,7 @@ class NuclideRemoteEventbus {
 
   close(): void {
     this.socket.close();
+    this.socket = null;
   }
 }
 

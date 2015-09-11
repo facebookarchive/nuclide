@@ -15,6 +15,7 @@ var {CompositeDisposable, TextEditor} = require('atom');
 
 var subscriptions: ?CompositeDisposable = null;
 var controller: ?RemoteProjectsController = null;
+var CLOSE_PROJECT_DELAY_MS = 100;
 
 var pendingFiles = {};
 
@@ -53,7 +54,17 @@ function addRemoteFolderToProject(connection: RemoteConnection) {
 
   atom.project.addPath(workingDirectoryUri);
 
-  var subscription = atom.project.onDidChangePaths(paths => {
+  var subscription = atom.project.onDidChangePaths(() => {
+    // Delay closing the underlying socket connection until registered subscriptions have closed.
+    // We should never depend on the order of registration of the `onDidChangePaths` event,
+    // which also dispose consumed service's resources.
+    setTimeout(checkClosedProject, CLOSE_PROJECT_DELAY_MS);
+  });
+
+  function checkClosedProject() {
+    // The project paths may have changed during the delay time.
+    // Hence, the latest project paths are fetched here.
+    var paths = atom.project.getPaths();
     if (paths.indexOf(workingDirectoryUri) !== -1) {
       return;
     }
@@ -79,7 +90,7 @@ function addRemoteFolderToProject(connection: RemoteConnection) {
       connection.getClient().shutdownServer();
       return connection.close();
     }
-  });
+  }
 }
 
 function closeOpenFilesForRemoteProject(remoteProjectConfig: RemoteConnectionConfiguration): Array<string> {
