@@ -590,9 +590,12 @@ class QuickSelectionComponent extends React.Component {
   }
 
   render(): ReactElement {
-    var itemsRendered = 0;
+    var numTotalResultsRendered = 0;
+    var isOmniSearchActive = this.state.activeTab.name === 'OmniSearchResultProvider';
+    var numQueriesOutstanding = 0;
     var serviceNames = Object.keys(this.state.resultsByService);
     var services = serviceNames.map(serviceName => {
+      var numResultsForService = 0;
       var directories = this.state.resultsByService[serviceName].results;
       var serviceTitle = this.state.resultsByService[serviceName].title;
       var directoryNames = Object.keys(directories);
@@ -600,21 +603,24 @@ class QuickSelectionComponent extends React.Component {
         var resultsForDirectory = directories[dirName];
         var message = null;
         if (resultsForDirectory.loading) {
-          itemsRendered++;
-          message = (
-            <span>
-              <span className="loading loading-spinner-tiny inline-block" />
-              Loading...
-            </span>
-          );
-        } else if (resultsForDirectory.error) {
+          numQueriesOutstanding++;
+          if (!isOmniSearchActive) {
+            numTotalResultsRendered++;
+            message = (
+              <span>
+                <span className="loading loading-spinner-tiny inline-block" />
+                Loading...
+              </span>
+            );
+          }
+        } else if (resultsForDirectory.error && !isOmniSearchActive) {
           message = (
             <span>
               <span className="icon icon-circle-slash" />
               Error: <pre>{resultsForDirectory.error}</pre>
             </span>
           );
-        } else if (resultsForDirectory.results.length === 0) {
+        } else if (resultsForDirectory.results.length === 0 && !isOmniSearchActive) {
           message = (
             <span>
               <span className="icon icon-x" />
@@ -623,12 +629,13 @@ class QuickSelectionComponent extends React.Component {
           );
         }
         var itemComponents = resultsForDirectory.results.map((item, itemIndex) => {
+          numResultsForService++;
+          numTotalResultsRendered++;
           var isSelected = (
             serviceName === this.state.selectedService &&
             dirName === this.state.selectedDirectory &&
             itemIndex === this.state.selectedItemIndex
           );
-          itemsRendered++;
           return (
             <li
               className={cx({
@@ -643,15 +650,17 @@ class QuickSelectionComponent extends React.Component {
             </li>
           );
         });
-        //hide folders if only 1 level would be shown
-        var showDirectories = directoryNames.length > 1;
-        var directoryLabel = showDirectories
-          ? (
+        var directoryLabel = null;
+        //hide folders if only 1 level would be shown, or if no results were found
+        var showDirectories = directoryNames.length > 1 &&
+          (!isOmniSearchActive || resultsForDirectory.results.length > 0);
+        if (showDirectories) {
+          directoryLabel = (
             <div className="list-item">
               <span className="icon icon-file-directory">{dirName}</span>
             </div>
-          )
-          : null;
+          );
+        }
         return (
           <li className={cx({'list-nested-item': showDirectories})} key={dirName}>
             {directoryLabel}
@@ -662,25 +671,41 @@ class QuickSelectionComponent extends React.Component {
           </li>
         );
       });
-      return (
-        <li className="list-nested-item" key={serviceName}>
+      var serviceLabel = null;
+      if (isOmniSearchActive && numResultsForService > 0) {
+        serviceLabel = (
           <div className="list-item">
             <span className="icon icon-gear">{serviceTitle}</span>
           </div>
-          <ul className="list-tree" ref="selectionList">
-            {directoriesForService}
-          </ul>
-        </li>
-      );
+        );
+        return (
+          <li className="list-nested-item" key={serviceName}>
+            {serviceLabel}
+            <ul className="list-tree" ref="selectionList">
+              {directoriesForService}
+            </ul>
+          </li>
+        );
+      }
+      return directoriesForService;
     });
     var noResultsMessage = null;
     if (object.isEmpty(this.state.resultsByService)) {
       noResultsMessage = this._renderEmptyMessage('Search away!');
-    } else if (itemsRendered === 0) {
+    } else if (numTotalResultsRendered === 0) {
       noResultsMessage = this._renderEmptyMessage(<span>¯\_(ツ)_/¯<br/>No results</span>);
     }
     var currentProvider = this.getProvider();
     var promptText = (currentProvider && currentProvider.prompt) || '';
+    var omniSearchStatus = null;
+    if (isOmniSearchActive && numQueriesOutstanding > 0) {
+      omniSearchStatus = (
+        <span>
+          <span className="loading loading-spinner-tiny inline-block" />
+          {`Loading...`}
+        </span>
+      );
+    }
     return (
       <div className="select-list omnisearch-modal" ref="modal">
         <AtomInput ref="queryInput" placeholderText={promptText} />
@@ -690,6 +715,7 @@ class QuickSelectionComponent extends React.Component {
           <div className="omnisearch-pane">
             <ul className="list-tree">
               {services}
+              {omniSearchStatus}
             </ul>
           </div>
         </div>
