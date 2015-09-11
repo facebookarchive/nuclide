@@ -26,6 +26,42 @@ function insertAutocompleteToken(contents: string, line: number, col: number): s
   return lines.join('\n');
 }
 
+/**
+ * Takes an autocomplete item from Flow and returns a valid autocomplete-plus
+ * response, as documented here:
+ * https://github.com/atom/autocomplete-plus/wiki/Provider-API
+ */
+function processAutocompleteItem(replacementPrefix: string, flowItem: Object): Object {
+  var result = {
+    description: flowItem['type'],
+    displayText: flowItem['name'],
+    replacementPrefix,
+  };
+  var funcDetails = flowItem['func_details'];
+  if (funcDetails) {
+    // The parameters turned into snippet strings.
+    var snippetParamStrings = funcDetails['params']
+      .map((param, i) => `\${${i + 1}:${param['name']}}`);
+    // The parameters in human-readable form for use on the right label.
+    var rightParamStrings = funcDetails['params']
+      .map(param => `${param['name']}: ${param['type']}`);
+    result = {
+      ...result,
+      leftLabel: funcDetails['return_type'],
+      rightLabel: `(${rightParamStrings.join(', ')})`,
+      snippet: `${flowItem['name']}(${snippetParamStrings.join(', ')})`,
+      type: 'function',
+    };
+  } else {
+    result = {
+      ...result,
+      rightLabel: flowItem['type'],
+      text: flowItem['name'],
+    };
+  }
+  return result;
+}
+
 async function isFlowInstalled(): Promise<boolean> {
   var os = require('os');
   var platform = os.platform();
@@ -79,9 +115,10 @@ async function getFlowExecOptions(localFile: string): Promise<?Object> {
 }
 
 module.exports = {
+  findFlowConfigDir,
+  getFlowExecOptions,
+  getPathToFlow,
   insertAutocompleteToken,
   isFlowInstalled,
-  getPathToFlow,
-  getFlowExecOptions,
-  findFlowConfigDir,
+  processAutocompleteItem,
 };

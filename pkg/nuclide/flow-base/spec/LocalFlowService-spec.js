@@ -242,22 +242,26 @@ describe('LocalFlowService', () => {
       });
     });
 
-    it('should expose function arguments as a snippet', () => {
+    it('should expose extra information about a function', () => {
       waitsForPromise(async () => {
         var result = await runWith([
           {
             name: 'foo',
             func_details: {
               params: [
-                { name: 'param1' },
-                { name: 'param2' },
+                { name: 'param1', type: 'type1' },
+                { name: 'param2', type: 'type2' },
               ],
+              return_type: 'ret',
             },
           },
         ]);
         var fooResult = result[0];
         expect(fooResult.displayText).toEqual('foo');
         expect(fooResult.snippet).toEqual('foo(${1:param1}, ${2:param2})');
+        expect(fooResult.type).toEqual('function');
+        expect(fooResult.leftLabel).toEqual('ret');
+        expect(fooResult.rightLabel).toEqual('(param1: type1, param2: type2)');
       });
     });
   });

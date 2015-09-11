@@ -24,7 +24,13 @@ var {asyncExecute, safeSpawn} = require('nuclide-commons');
 var {assign} = require('nuclide-commons').object;
 var logger = require('nuclide-logging').getLogger();
 var FlowService = require('./FlowService');
-var {getPathToFlow, getFlowExecOptions, insertAutocompleteToken, findFlowConfigDir} = require('./FlowHelpers.js');
+import {
+  getPathToFlow,
+  getFlowExecOptions,
+  insertAutocompleteToken,
+  processAutocompleteItem,
+  findFlowConfigDir,
+} from './FlowHelpers.js';
 
 class LocalFlowService extends FlowService {
   // The set of Flow server processes we have started, so we can kill them on
@@ -236,24 +242,7 @@ class LocalFlowService extends FlowService {
         // If it is just whitespace and punctuation, ignore it (this keeps us
         // from eating leading dots).
         var replacementPrefix = /^[\s.]*$/.test(prefix) ? '' : prefix;
-        var candidates = json.map(item => {
-          var name = item['name'];
-          var snippet;
-          if (item['func_details']) {
-            var argStrings = item['func_details']['params']
-              .map((param, i) => `\${${i + 1}:${param.name}}`);
-            snippet = `${name}(${argStrings.join(', ')})`;
-          }
-          var text = snippet ? undefined : name;
-          return {
-            text,
-            snippet,
-            displayText: name,
-            rightLabel: item['type'],
-            description: item['type'],
-            replacementPrefix,
-          };
-        });
+        var candidates = json.map(item => processAutocompleteItem(replacementPrefix, item));
         return filter(candidates, replacementPrefix, { key: 'displayText' });
       } else {
         return [];
