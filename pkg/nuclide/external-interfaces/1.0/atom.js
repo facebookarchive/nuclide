@@ -251,6 +251,7 @@ declare class atom$Point {
   min(point1: atom$Point, point2: atom$Point): atom$Point;
   // TODO(t8220399): Change this to: `-1 | 0 | 1`.
   compare(other: atom$Point): number;
+  isEqual(otherRange: atom$Point): boolean;
 
   // Operations
   translate(other: atom$Point | [number, number]): atom$Point;
@@ -453,6 +454,7 @@ declare class atom$TextEditor extends atom$Model {
 
   // Selections
   selectAll(): void;
+  getSelectedBufferRange(): atom$Range;
 
   // Searching and Replacing
   scanInBufferRange(
@@ -812,6 +814,7 @@ declare class atom$TextBuffer {
 
   // Buffer Range Details
   getLastRow(): number;
+  getRange(): atom$Range;
   rangeForRow(row: number, includeNewLine?: boolean): atom$Range;
 }
 

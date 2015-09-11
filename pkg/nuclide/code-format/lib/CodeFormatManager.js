@@ -11,19 +11,20 @@
 
 var {CompositeDisposable} = require('atom');
 
-type CodeFormatProvider = {
-  formatCode(editor: TextEditor, range: Range): Promise<string>;
-};
+import type {CodeFormatProvider} from './types';
 
 class CodeFormatManager {
 
+  _subscriptions: ?CompositeDisposable;
+  _codeFormatProviders: Array<CodeFormatProvider>;
+
   constructor() {
-    this._subscriptions = new CompositeDisposable();
-    this._subscriptions.add(atom.commands.add(
+    var subscriptions = this._subscriptions = new CompositeDisposable();
+    subscriptions.add(atom.commands.add(
       'atom-text-editor',
       'nuclide-code-format:format-code',
       // Atom doesn't accept in-command modification of the text editor contents.
-      () => process.nextTick(() => this._formatCodeInActiveTextEditor(this._editor))
+      () => process.nextTick(this._formatCodeInActiveTextEditor.bind(this))
     ));
     this._codeFormatProviders = [];
   }
@@ -55,8 +56,8 @@ class CodeFormatManager {
       // and end at the end of the selection line.
       var {Range} = require('atom');
       formatRange = new Range(
-          {row: selectionStart.row, column: 0},
-          {row: selectionEnd.row, column: buffer.lineLengthForRow(selectionEnd.row)}
+          [selectionStart.row, 0],
+          [selectionEnd.row, buffer.lineLengthForRow(selectionEnd.row)]
       );
     }
 
@@ -66,10 +67,12 @@ class CodeFormatManager {
   }
 
   _getMatchingProvidersForScopeName(scopeName: string): Array<CodeFormatProvider> {
-    return this._codeFormatProviders.filter((provider: CodeFormatProvider) => {
+    var matchingProviders = this._codeFormatProviders.filter(provider => {
       var providerGrammars = provider.selector.split(/, ?/);
       return provider.inclusionPriority > 0 && providerGrammars.indexOf(scopeName) !== -1;
-    }).sort((providerA: CodeFormatProvider, providerB: CodeFormatProvider) => {
+    });
+    // $FlowIssue sort doesn't take custom comparator.
+    return matchingProviders.sort((providerA, providerB) => {
       return providerA.inclusionPriority < providerB.inclusionPriority;
     });
   }
@@ -83,6 +86,7 @@ class CodeFormatManager {
       this._subscriptions.dispose();
       this._subscriptions = null;
     }
+    this._codeFormatProviders = [];
   }
 }
 

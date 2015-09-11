@@ -9,6 +9,11 @@
  * the root directory of this source tree.
  */
 
+var invariant = require('assert');
+
+import type CodeFormatManager from './CodeFormatManager';
+import type {CodeFormatProvider} from './types';
+
 var codeFormatManager: ?CodeFormatManager = null;
 
 module.exports = {
@@ -19,6 +24,7 @@ module.exports = {
   },
 
   consumeProvider(provider: CodeFormatProvider) {
+    invariant(codeFormatManager);
     codeFormatManager.addProvider(provider);
   },
 
