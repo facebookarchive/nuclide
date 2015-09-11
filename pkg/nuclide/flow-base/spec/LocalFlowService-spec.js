@@ -241,6 +241,25 @@ describe('LocalFlowService', () => {
         expect(nameArray[0]).toEqual('BigLongNameOne');
       });
     });
+
+    it('should expose function arguments as a snippet', () => {
+      waitsForPromise(async () => {
+        var result = await runWith([
+          {
+            name: 'foo',
+            func_details: {
+              params: [
+                { name: 'param1' },
+                { name: 'param2' },
+              ],
+            },
+          },
+        ]);
+        var fooResult = result[0];
+        expect(fooResult.displayText).toEqual('foo');
+        expect(fooResult.snippet).toEqual('foo(${1:param1}, ${2:param2})');
+      });
+    });
   });
 
   describe('getType', () => {

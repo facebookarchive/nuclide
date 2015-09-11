@@ -237,14 +237,24 @@ class LocalFlowService extends FlowService {
         // from eating leading dots).
         var replacementPrefix = /^[\s.]*$/.test(prefix) ? '' : prefix;
         var candidates = json.map(item => {
+          var name = item['name'];
+          var snippet;
+          if (item['func_details']) {
+            var argStrings = item['func_details']['params']
+              .map((param, i) => `\${${i + 1}:${param.name}}`);
+            snippet = `${name}(${argStrings.join(', ')})`;
+          }
+          var text = snippet ? undefined : name;
           return {
-            text: item['name'],
+            text,
+            snippet,
+            displayText: name,
             rightLabel: item['type'],
             description: item['type'],
             replacementPrefix,
           };
         });
-        return filter(candidates, replacementPrefix, { key: 'text' });
+        return filter(candidates, replacementPrefix, { key: 'displayText' });
       } else {
         return [];
       }
