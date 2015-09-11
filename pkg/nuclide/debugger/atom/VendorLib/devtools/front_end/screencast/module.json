@@ -1,0 +1,25 @@
+{
+    "extensions": [
+        {
+            "type": "@WebInspector.AppProvider",
+            "className": "WebInspector.ScreencastAppProvider",
+            "order": 1
+        },
+        {
+            "type": "@WebInspector.StatusBarItem.Provider",
+            "className": "WebInspector.ScreencastApp.StatusBarButtonProvider",
+            "order": 1,
+            "location": "toolbar-left"
+        }
+    ],
+    "dependencies": [
+        "components"
+    ],
+    "scripts": [
+        "ScreencastApp.js",
+        "ScreencastView.js"
+    ],
+    "stylesheets": [
+        "screencastView.css"
+    ]
+}

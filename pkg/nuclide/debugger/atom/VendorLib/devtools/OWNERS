@@ -1,0 +1,6 @@
+dgozman@chromium.org
+pfeldman@chromium.org
+vsevik@chromium.org
+yurys@chromium.org
+per-file devtools.gyp*=sergeyv@chromium.org
+per-file BUILD.gn=sergeyv@chromium.org

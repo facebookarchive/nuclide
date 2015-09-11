@@ -1,0 +1,253 @@
+/*
+ * Copyright (C) 2006, 2007, 2008 Apple Inc.  All rights reserved.
+ * Copyright (C) 2009 Anthony Ricaud <rik@webkit.org>
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1.  Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions and the following disclaimer.
+ * 2.  Redistributions in binary form must reproduce the above copyright
+ *     notice, this list of conditions and the following disclaimer in the
+ *     documentation and/or other materials provided with the distribution.
+ * 3.  Neither the name of Apple Computer, Inc. ("Apple") nor the names of
+ *     its contributors may be used to endorse or promote products derived
+ *     from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY APPLE AND ITS CONTRIBUTORS "AS IS" AND ANY
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL APPLE OR ITS CONTRIBUTORS BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+.network-details-view {
+    background: rgb(203, 203, 203);
+}
+
+.network-close-button {
+    margin: auto -1px auto 4px;
+}
+
+.network-details-view .network-item-view::shadow .tabbed-pane-header {
+    flex: 0 0 23px;
+    padding-top: 0;
+    white-space: nowrap;
+}
+
+.network-details-view-tall-header .network-item-view::shadow .tabbed-pane-header {
+    flex-basis: 31px;
+    padding-top: 8px;
+}
+
+.network-item-view {
+    display: none;
+    background: white;
+}
+
+.network-item-view.visible {
+    display: flex;
+}
+
+.network-item-view::shadow .tabbed-pane-header {
+    border-bottom: 1px solid rgb(205, 205, 205);
+    background-color: transparent;
+}
+
+.resource-timing-view {
+    display: none;
+    margin: 6px;
+    color: rgb(30%, 30%, 30%);
+}
+
+/* Network timing is shared between popover and network item view pane */
+
+.network-timing-table {
+    width: 380px;
+    border-spacing: 0;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.network-timing-table-header td {
+    color: #bbb;
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+}
+
+.network-timing-table-header td:last-child {
+    text-align: right;
+}
+
+.network-timing-table col.labels {
+    width: 120px;
+}
+
+.network-timing-table col.duration {
+    width: 80px;
+}
+
+.network-timing-table td {
+    padding: 2px 0;
+}
+
+.network-timing-table td.caution {
+    font-weight: bold;
+    color: rgb(255, 128, 0);
+    padding: 2px 0;
+}
+
+.network-timing-footer td {
+    border-top: 8px solid transparent;
+}
+
+.network-timing-footer td:last-child {
+    font-weight: bold;
+    text-align: right;
+}
+
+.network-timing-row {
+    position: relative;
+    height: 15px;
+}
+
+.network-timing-bar {
+    position: absolute;
+    min-width: 1px;
+    top: 0;
+    bottom: 0;
+}
+
+.network-timing-bar-title {
+    color: #222;
+    white-space: nowrap;
+    text-align: right;
+}
+
+.network-timing-bar.total {
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.network-timing-bar.blocking {
+    background-color: #AAAAAA;
+}
+
+.network-timing-bar.proxy {
+    background-color: #A1887F;
+}
+
+.network-timing-bar.dns {
+    background-color: #009688;
+}
+
+.network-timing-bar.connecting,
+.network-timing-bar.serviceworker,
+.network-timing-bar.serviceworker-preparation {
+    background-color: #FF9800;
+}
+
+.network-timing-bar.ssl {
+    background-color: #9C27B0;
+}
+
+.network-timing-bar.sending {
+    background-color: #B0BEC5;
+}
+
+.network-timing-bar.waiting {
+    background-color: #00C853;
+}
+
+.network-timing-bar.receiving {
+    background-color: #03A9F4;
+}
+
+.network-timing-bar.proxy,
+.network-timing-bar.dns,
+.network-timing-bar.ssl,
+.network-timing-bar.connecting,
+.network-timing-bar.blocking {
+    height: 10px;
+    margin: auto;
+}
+
+.resource-timing-view.visible {
+    display: block;
+}
+
+.resource-timing-view .network-timing-table {
+    width: 100%;
+}
+
+.network-filters-header {
+    flex: 0 0 23px;
+    padding-right: 4px;
+}
+
+.network-filters-header .filter-text-filter {
+    flex-grow: 1;
+    max-width: 312px;
+}
+
+#network-overview-container {
+    overflow: hidden;
+    flex: auto;
+    display: flex;
+    position: relative;
+    border-bottom: 1px solid #CDCDCD;
+}
+
+.network-overview-canvas-container {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 200;
+}
+
+.network-overview-canvas-container canvas {
+    width: 100%;
+    height: 100%;
+}
+
+#network-overview-grid {
+    flex: auto;
+}
+
+.network-overview {
+    flex: 0 0 100px !important;
+}
+
+.network-overview .overview-grid-window,
+.network-overview .overview-grid-dividers-background {
+    height: 100%;
+}
+
+.network-overview .resources-dividers-label-bar {
+    background-color: rgba(255, 255, 255, 0.95);
+}
+
+.network-overview .resources-dividers-label-bar .resources-divider {
+    background-color: transparent;
+}
+
+.network-overview .resources-dividers {
+    z-index: 250;
+}
+
+.request-view.json {
+    padding: 5px;
+}
+
+.request-view.html iframe {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+}

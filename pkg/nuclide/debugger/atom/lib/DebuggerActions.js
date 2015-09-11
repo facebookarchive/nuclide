@@ -1,0 +1,142 @@
+'use babel';
+/* @flow */
+
+/*
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ */
+
+var Constants = require('./Constants');
+var {CompositeDisposable} = require('atom');
+
+import type {Dispatcher} from 'flux';
+import type * as DebuggerStore from './DebuggerStore';
+import type * as DebuggerProcessInfo from './DebuggerProcessInfo';
+import type * as Bridge from './Bridge';
+
+function track(...args) {
+  var trackFunc = require('nuclide-analytics').track;
+  trackFunc.apply(null, args);
+}
+
+var AnalyticsEvents = {
+  DEBUGGER_START:       'debugger-start',
+  DEBUGGER_START_FAIL:  'debugger-start-fail',
+};
+
+/**
+ * Flux style action creator for actions that affect the debugger.
+ */
+class DebuggerActions {
+  _disposables: CompositeDisposable;
+  _dispatcher: Dispatcher;
+  _store: DebuggerStore;
+  _bridge: Bridge;
+
+  constructor(dispatcher: Dispatcher, store: DebuggerStore) {
+    this._disposables = new CompositeDisposable();
+    this._dispatcher = dispatcher;
+    this._store = store;
+  }
+
+  attachToProcess(processInfo: DebuggerProcessInfo, launchTarget: ?string) {
+    track(AnalyticsEvents.DEBUGGER_START, {
+      serviceName: processInfo.getServiceName(),
+    });
+
+    this.killDebugger(); // Kill the existing session.
+    this.setError(null);
+
+    var process = null;
+    if (launchTarget) {
+      process = processInfo.launch(launchTarget);
+    } else {
+      process = processInfo.attach();
+    }
+    this._dispatcher.dispatch({
+      actionType: Constants.Actions.SET_DEBUGGER_PROCESS,
+      data: process,
+    });
+
+    // TODO[jeffreytan]: currently only HHVM debugger implements this method
+    // investigate if LLDB/Node needs to implement it.
+    if (process.onSessionEnd) {
+      this._disposables.add(process.onSessionEnd(this._handleSessionEnd.bind(this)));
+    }
+
+    process.getWebsocketAddress().then(
+      socketAddr => this._dispatcher.dispatch({
+        actionType: Constants.Actions.SET_PROCESS_SOCKET,
+        data: socketAddr,
+      }),
+      err => {
+        track(AnalyticsEvents.DEBUGGER_START_FAIL, {});
+        this.setError('Failed to start debugger process: ' + err);
+        this.killDebugger();
+      }
+    );
+  }
+
+  _handleSessionEnd(): void {
+    this.killDebugger();
+  }
+
+  killDebugger() {
+    var process = this._store.getDebuggerProcess();
+    if (process) {
+      process.dispose();
+      this._dispatcher.dispatch({
+        actionType: Constants.Actions.SET_DEBUGGER_PROCESS,
+        data: null,
+      });
+    }
+    this._dispatcher.dispatch({
+      actionType: Constants.Actions.SET_PROCESS_SOCKET,
+      data: null,
+    });
+  }
+
+  addService(service: nuclide_debugger$Service) {
+    this._dispatcher.dispatch({
+      actionType: Constants.Actions.ADD_SERVICE,
+      data: service,
+    });
+  }
+
+  removeService(service: nuclide_debugger$Service) {
+    this._dispatcher.dispatch({
+      actionType: Constants.Actions.REMOVE_SERVICE,
+      data: service,
+    });
+  }
+
+  setError(error: ?string) {
+    require('nuclide-logging').getLogger().error(error);
+    this._dispatcher.dispatch({
+      actionType: Constants.Actions.SET_ERROR,
+      data: error,
+    });
+  }
+
+  /**
+   * Utility for debugging.
+   *
+   * This can be used to set an existing socket, bypassing normal UI flow to
+   * improve iteration speed for development.
+   */
+  forceProcessSocket(socketAddr: ?string) {
+    this._dispatcher.dispatch({
+      actionType: Constants.Actions.SET_PROCESS_SOCKET,
+      data: socketAddr,
+    });
+  }
+
+  dispose() {
+    this._disposables.dispose();
+  }
+}
+
+module.exports = DebuggerActions;

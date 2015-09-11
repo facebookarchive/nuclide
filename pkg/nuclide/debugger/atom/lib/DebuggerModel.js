@@ -1,0 +1,71 @@
+'use babel';
+/* @flow */
+
+/*
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ */
+
+var BreakpointManager = require('./BreakpointManager');
+var BreakpointStore = require('./BreakpointStore');
+var DebuggerActions = require('./DebuggerActions');
+var DebuggerStore = require('./DebuggerStore');
+var Bridge = require('./Bridge');
+var {CompositeDisposable} = require('atom');
+var {Dispatcher} = require('flux');
+
+import type {SerializedState} from './main';
+
+/**
+ * Atom ViewProvider compatible model object.
+ */
+class DebuggerModel {
+  _disposables: CompositeDisposable;
+  _actions: DebuggerActions;
+  _breakpointManager: BreakpointManager;
+  _breakpointStore: BreakpointStore;
+  _dispatcher: Dispatcher;
+  _store: DebuggerStore;
+  _bridge: Bridge;
+
+  constructor(state: ?SerializedState) {
+    this._disposables = new CompositeDisposable();
+    this._dispatcher = new Dispatcher();
+    this._store = new DebuggerStore(this._dispatcher);
+    this._actions = new DebuggerActions(this._dispatcher, this._store);
+    this._breakpointStore = new BreakpointStore(state ? state.breakpoints : null);
+    this._breakpointManager = new BreakpointManager(this._breakpointStore);
+    this._bridge = new Bridge(this._breakpointStore);
+
+    this._disposables.add(this._store);
+    this._disposables.add(this._actions);
+    this._disposables.add(this._breakpointStore);
+    this._disposables.add(this._breakpointManager);
+    this._disposables.add(this._bridge);
+  }
+
+  dispose() {
+    this._disposables.dispose();
+  }
+
+  getActions(): DebuggerActions {
+    return this._actions;
+  }
+
+  getStore(): DebuggerStore {
+    return this._store;
+  }
+
+  getBreakpointStore(): BreakpointStore {
+    return this._breakpointStore;
+  }
+
+  getBridge(): Bridge {
+    return this._bridge;
+  }
+}
+
+module.exports = DebuggerModel;

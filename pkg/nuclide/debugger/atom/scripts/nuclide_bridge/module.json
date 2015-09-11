@@ -1,0 +1,17 @@
+{
+  "extensions": [
+    {
+      "type": "@WebInspector.AppProvider",
+      "className": "WebInspector.NuclideAppProvider",
+      "order": -1
+    }
+  ],
+  "dependencies": [
+    "bindings",
+    "common",
+    "main"
+  ],
+  "scripts": [
+    "Main.js"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+    "dependencies": [
+        "sdk",
+        "ui",
+        "ui_lazy"
+    ],
+    "scripts": [
+        "CookiesTable.js"
+    ],
+    "stylesheets": [
+    ]
+}

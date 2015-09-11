@@ -1,0 +1,9 @@
+:host {
+  display: inline;
+}
+
+.node-link {
+    text-decoration: underline;
+    cursor: pointer;
+    display: inline;
+}

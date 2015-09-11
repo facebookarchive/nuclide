@@ -1,0 +1,51 @@
+{
+  "name": "nuclide-debugger-atom",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "Allows debugging of various types of process from within Nuclide",
+  "nuclide": {
+    "packageType": "Atom",
+    "testRunner": "apm"
+  },
+  "dependencies": {
+    "flux": "2.0.3",
+    "nuclide-analytics": "0.0.0",
+    "nuclide-commons": "0.0.0",
+    "nuclide-logging": "0.0.0",
+    "nuclide-node-transpiler": "0.0.0",
+    "nuclide-panel": "0.0.0",
+    "nuclide-remote-uri": "0.0.0",
+    "react": "0.13.2",
+    "react-for-atom": "0.13.6"
+  },
+  "devDependencies": {
+    "nuclide-debugger-interfaces": "0.0.0",
+    "nuclide-external-interfaces": "0.0.0"
+  },
+  "providedServices": {
+    "nuclide-debugger.remote": {
+      "versions": {
+        "description": "Remote control for launching debugger.",
+        "0.0.0": "provideRemoteControlService"
+      }
+    }
+  },
+  "consumedServices": {
+    "nuclide-debugger-lldb-service": {
+      "versions": {
+        "0.0.0": "consumeNuclideDebugger"
+      }
+    },
+    "nuclide-debugger-hhvm-service": {
+      "versions": {
+        "0.0.0": "consumeNuclideDebugger"
+      }
+    },
+    "nuclide-debugger-node-service": {
+      "versions": {
+        "0.0.0": "consumeNuclideDebugger"
+      }
+    }
+  }
+}

@@ -1,0 +1,17 @@
+@import "octicon-mixins.less";
+@import "octicon-utf-codes.less";
+
+.nuclide-breakpoint-icon {
+  .octicon(primitive-dot, @size: 100%);
+  text-align: center;
+  display: block;
+  width: 1em;
+  color: red;
+}
+
+.nuclide-current-line-highlight {
+  background-color: fade(@background-color-info, 30%);
+  border-color: fade(@background-color-info, 80%);
+  border-style: solid;
+  border-width: 1px 0px;
+}
