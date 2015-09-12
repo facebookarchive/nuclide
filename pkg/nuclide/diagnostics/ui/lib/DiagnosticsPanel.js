@@ -84,7 +84,7 @@ class DiagnosticsPanel extends React.Component {
     var linterWarning = null;
     if (this.props.warnAboutLinter) {
       linterWarning = (
-        <div className="nuclide-diagnostics-pane-nav-center">
+        <div className="nuclide-diagnostics-pane-linter-warning">
           <span>
             nuclide-diagnostics is not compatible with the linter package. We recommend that
             you <a onClick={this.props.disableLinter}>disable the linter package</a>.
@@ -106,6 +106,7 @@ class DiagnosticsPanel extends React.Component {
         onResize={this.props.onResize}
         overflowX="hidden">
         <div>
+          {linterWarning}
           <div className="nuclide-diagnostics-pane-nav">
             <div className="nuclide-diagnostics-pane-nav-left">
               <span className={errorSpanClassName}>
@@ -126,7 +127,6 @@ class DiagnosticsPanel extends React.Component {
                 </label>
               </span>
             </div>
-            {linterWarning}
             <div className="nuclide-diagnostics-pane-nav-right">
               {shortcutSpan}
               <button
