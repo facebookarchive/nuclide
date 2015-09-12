@@ -88,7 +88,6 @@ function findIndex<T>(
     callback: (element: T, index: number, array: Array<T>) => mixed,
     thisArg?: mixed): number {
   var result = -1;
-  // $FlowIssue
   array.some(function(element: T, index: number, arr: Array<T>) {
     if (callback.call(thisArg, element, index, arr)) {
       result = index;

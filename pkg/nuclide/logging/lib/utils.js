@@ -35,7 +35,6 @@ export function patchErrorsOfLoggingEvent(loggingEvent: LoggingEvent): LoggingEv
         name: item.name,
         message: item.message,
         stack: item.stack,
-        // $FlowIssue
         stackTrace: item.stackTrace,
       };
     }

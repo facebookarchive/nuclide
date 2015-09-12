@@ -17,6 +17,7 @@ var {createArgsForScriptCommand} = require('nuclide-commons');
  * their stdout is terminal. `script` ensures terminal-like environment and
  * commands we run give colored output.
  */
+// $FlowIssue. New in Flow 0.15.0. Seems bizarre.
 class ScriptBufferedProcess extends BufferedProcess {
   constructor(options) {
     var localOptions = {...options};

@@ -150,7 +150,6 @@ var promises = module.exports = {
    * @param mappingFunction the async Promise function that could return a useful result.
    */
   asyncLimit<T, V>(array: Array<T>, limit: number, mappingFunction: (item: T) => Promise<V>): Promise<Array<V>> {
-    // $FlowIssue
     var result: Array<V> = new Array(array.length);
     var parallelPromises = 0;
     var index = 0;
@@ -204,7 +203,6 @@ var promises = module.exports = {
    */
   async asyncFilter<T>(array: Array<T>, filterFunction: (item: T) => Promise<boolean>, limit?: number): Promise<Array<T>> {
     var filteredList = [];
-    // $FlowIssue
     await promises.asyncLimit(array, limit || array.length, async (item: T) => {
       if (await filterFunction(item)) {
         filteredList.push(item);
@@ -235,7 +233,6 @@ var promises = module.exports = {
    */
   async asyncSome<T>(array: Array<T>, someFunction: (item: T) => Promise<boolean>, limit?: number): Promise<boolean> {
     var resolved = false;
-    // $FlowIssue
     await promises.asyncLimit(array, limit || array.length, async (item: T) => {
       if (resolved) {
         // We don't need to call the someFunction anymore or wait any longer.

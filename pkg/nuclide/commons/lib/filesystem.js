@@ -93,7 +93,6 @@ function exists(filePath: string): Promise<boolean> {
  * directories were created for some prefix of the given path.
  * @return true if the path was created; false if it already existed.
  */
-// $FlowIssue: #8216189
 async function mkdirp(filePath: string): Promise<boolean> {
   var isExistingDirectory = await exists(filePath);
   if (isExistingDirectory) {
