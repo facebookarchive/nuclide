@@ -87,7 +87,9 @@ class DiagnosticsPanel extends React.Component {
         <div className="nuclide-diagnostics-pane-linter-warning">
           <span>
             nuclide-diagnostics is not compatible with the linter package. We recommend that
-            you <a onClick={this.props.disableLinter}>disable the linter package</a>.
+            you <a onClick={this.props.disableLinter}>disable the linter package</a>.&nbsp;
+            <a href="https://github.com/facebook/nuclide/tree/master/pkg/nuclide/diagnostics">
+            Learn More</a>.
           </span>
         </div>
       );
