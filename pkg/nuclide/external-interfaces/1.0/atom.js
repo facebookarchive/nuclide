@@ -536,6 +536,7 @@ declare class atom$ViewRegistry {
     createView?: (...args: any[]) => ?HTMLElement
   ): atom$Disposable;
   getView(textEditor: atom$TextEditor): atom$TextEditorElement;
+  getView(notification: atom$Notification): HTMLElement;
   getView(object: Object): HTMLElement;
   providers: Array<atom$ViewProvider>;
 }
@@ -819,6 +820,11 @@ declare class atom$TextBuffer {
 }
 
 declare class atom$Notification {
+  // Event Subscription
+  onDidDismiss(callback: () => mixed): atom$Disposable;
+  onDidDisplay(callback: () => mixed): atom$Disposable;
+
+  // Methods
   getType(): string;
   getMessage(): string;
   dismiss(): void;
