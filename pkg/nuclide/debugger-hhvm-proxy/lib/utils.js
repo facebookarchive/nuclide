@@ -101,7 +101,8 @@ function pathToUri(path: string): string {
 
 function uriToPath(uri: string): string {
   var components = require('url').parse(uri);
-  if (components.protocol !== 'file:') {
+  // Some filename returned from hhvm does not have protocol.
+  if (components.protocol !== 'file:' && components.protocol !== null) {
     logErrorAndThrow('unexpected file protocol. Got: ' + components.protocol);
   }
   return components.pathname;

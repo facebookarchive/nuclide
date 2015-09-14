@@ -128,9 +128,9 @@ export class DebuggerHandler extends Handler {
       this.replyWithError(id, 'Invalid arguments to Debugger.setBreakpointByUrl: ' + JSON.stringify(params));
       return;
     }
+    this._files.registerFile(url);
 
     var path = uriToPath(url);
-    this._files.registerFile(path);
     var breakpointId = await this._connectionMultiplexer.setBreakpoint(path, lineNumber + 1);
     this.replyToCommand(id, {
       breakpointId: breakpointId,
@@ -164,11 +164,11 @@ export class DebuggerHandler extends Handler {
     var {
       idOfFrame,
       functionOfFrame,
-      fileOfFrame,
+      fileUrlOfFrame,
       locationOfFrame,
     } = require('./frame');
 
-    this._files.registerFile(fileOfFrame(frame));
+    this._files.registerFile(fileUrlOfFrame(frame));
     return {
       callFrameId: idOfFrame(frame),
       functionName: functionOfFrame(frame),

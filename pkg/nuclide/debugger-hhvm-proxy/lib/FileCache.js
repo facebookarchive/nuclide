@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import {uriToPath} from './utils';
 
 /**
  * Handles registering files encountered during debugging with the Chrome debugger
@@ -22,7 +23,8 @@ class FileCache {
     this._files = new Map();
   }
 
-  registerFile(filepath: string): File {
+  registerFile(fileUrl: string): File {
+    var filepath = uriToPath(fileUrl);
     if (!this._files.has(filepath)) {
       var File = require('./File');
       this._files.set(filepath, new File(filepath));
@@ -30,7 +32,7 @@ class FileCache {
         'Debugger.scriptParsed',
         {
           'scriptId': filepath,
-          'url': 'file://' + filepath,
+          'url': fileUrl,
           'startLine': 0,
           'startColumn': 0,
           'endLine': 0,

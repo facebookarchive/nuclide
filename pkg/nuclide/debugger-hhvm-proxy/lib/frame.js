@@ -45,7 +45,11 @@ function functionOfFrame(frame: DbgpStackFrame): string {
 
 // Returns an absolute path
 function fileOfFrame(frame: DbgpStackFrame): string {
-  return uriToPath(frame.$.filename);
+  return uriToPath(fileUrlOfFrame(frame));
+}
+
+function fileUrlOfFrame(frame: DbgpStackFrame): string {
+  return frame.$.filename;
 }
 
 function locationOfFrame(frame: DbgpStackFrame) {
@@ -60,5 +64,6 @@ module.exports = {
   idOfFrame,
   functionOfFrame,
   fileOfFrame,
+  fileUrlOfFrame,
   locationOfFrame,
 };

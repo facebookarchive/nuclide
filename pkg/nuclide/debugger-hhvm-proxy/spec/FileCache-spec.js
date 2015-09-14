@@ -25,14 +25,34 @@ describe('debugger-hhvm-proxy FileCache', () => {
     filepath = path.join(fixturesPath, 'test.php');
   });
 
-  it('registerFile', () => {
+  it('registerFile - source file path', () => {
     waitsForPromise(async () => {
-      cache.registerFile(filepath);
+      var sourceFileUrl = `file://${filepath}`;
+      cache.registerFile(sourceFileUrl);
       expect(callback.sendMethod).toHaveBeenCalledWith(
         'Debugger.scriptParsed',
         {
           'scriptId': filepath,
-          'url': 'file://' + filepath,
+          'url': sourceFileUrl,
+          'startLine': 0,
+          'startColumn': 0,
+          'endLine': 0,
+          'endColumn': 0,
+        });
+      var source = await cache.getFileSource(filepath);
+      expect(source).toBe('<?hh\n');
+    });
+  });
+
+  it('registerFile - no source file', () => {
+    waitsForPromise(async () => {
+      var noSourceFileUrl = filepath;
+      cache.registerFile(noSourceFileUrl);
+      expect(callback.sendMethod).toHaveBeenCalledWith(
+        'Debugger.scriptParsed',
+        {
+          'scriptId': filepath,
+          'url': noSourceFileUrl,
           'startLine': 0,
           'startColumn': 0,
           'endLine': 0,
