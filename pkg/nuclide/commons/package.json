@@ -15,15 +15,14 @@
   "dependencies": {
     "dequeue": "1.0.5",
     "mkdirp": "0.5.0",
-    "nuclide-test-helpers": "0.0.0",
     "rimraf": "2.2.8",
-    "shell-escape": "0.2.0",
     "temp": "0.8.1",
     "uuid": "2.0.1"
   },
   "devDependencies": {
     "nuclide-external-interfaces": "0.0.0",
-    "nuclide-jasmine": "0.0.0"
+    "nuclide-jasmine": "0.0.0",
+    "nuclide-test-helpers": "0.0.0"
   },
   "scripts": {
     "test": "node --harmony node_modules/.bin/jasmine-node-transpiled spec"
