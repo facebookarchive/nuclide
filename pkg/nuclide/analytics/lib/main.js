@@ -10,7 +10,7 @@
  */
 
 try {
-  module.exports = require('./fb/analytics');
+  module.exports = require('../fb/analytics');
 } catch (e) {
   module.exports = require('./analytics');
 }
