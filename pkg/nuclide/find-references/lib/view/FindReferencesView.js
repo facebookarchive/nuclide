@@ -56,7 +56,7 @@ var FindReferencesView = React.createClass({
   },
 
   _onScroll(evt: Event) {
-    var root = this.refs.root.getDOMNode();
+    var root = React.findDOMNode(this.refs.root);
     if (this.state.loading || root.clientHeight >= root.scrollHeight) {
       return;
     }

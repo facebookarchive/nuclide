@@ -36,7 +36,7 @@ describe('NuclideDropdown', () => {
 
     var select = scryRenderedDOMComponentsWithTag(component, 'select');
     expect(React.findDOMNode(select[0]).selectedIndex).toBe(1);
-    expect(select[0].getDOMNode().value).toBe('vbar');
+    expect(React.findDOMNode(select[0]).value).toBe('vbar');
   });
 
   it('calls the callback with the new index when a different menu item is selected', () => {
@@ -57,7 +57,7 @@ describe('NuclideDropdown', () => {
     );
 
     var select = scryRenderedDOMComponentsWithTag(component, 'select');
-    select[0].getDOMNode().selectedIndex = 1;
+    React.findDOMNode(select[0]).selectedIndex = 1;
     Simulate.change(React.findDOMNode(select[0]));
     expect(changedIndex).toBe(1);
   });

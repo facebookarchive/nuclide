@@ -62,7 +62,7 @@ var DebuggerInspector = React.createClass({
     webviewNode.classList.add('native-key-bindings'); // required to pass through certain key events
     webviewNode.classList.add('nuclide-debugger-webview');
     this._webviewNode = webviewNode;
-    var controlBarNode = this.refs.controlBar.getDOMNode();
+    var controlBarNode = React.findDOMNode(this.refs.controlBar);
     controlBarNode.parentNode.insertBefore(webviewNode, controlBarNode.nextSibling);
     this.props.bridge.setWebviewElement(webviewNode);
   },

@@ -133,7 +133,7 @@ var TreeRootComponent = React.createClass({
     if (!prevState || this.state.selectedKeys !== prevState.selectedKeys) {
       var firstSelectedDescendant = this.refs[FIRST_SELECTED_DESCENDANT_REF];
       if (firstSelectedDescendant !== undefined) {
-        firstSelectedDescendant.getDOMNode().scrollIntoViewIfNeeded(false);
+        React.findDOMNode(firstSelectedDescendant).scrollIntoViewIfNeeded(false);
       }
     }
 

@@ -23,7 +23,7 @@ describe('AtomInput', () => {
 
   afterEach(() => {
     if (reactElement) {
-      React.unmountComponentAtNode(reactElement.getDOMNode().parentNode);
+      React.unmountComponentAtNode(React.findDOMNode(reactElement).parentNode);
     }
     reactElement = null;
   });
@@ -71,7 +71,7 @@ describe('AtomInput', () => {
     textEditor.setText('the new text');
     expect(onDidChange.calls.length).toBe(1);
 
-    React.unmountComponentAtNode(reactElement.getDOMNode().parentNode);
+    React.unmountComponentAtNode(React.findDOMNode(reactElement).parentNode);
     reactElement = null;
 
     textEditor.setText('even more new text');
@@ -96,7 +96,7 @@ describe('AtomInput', () => {
     weakReferences.set(textEditorKey, reactElement.getTextEditor());
     expect(weakReferences.get(textEditorKey)).not.toBe(null);
 
-    React.unmountComponentAtNode(reactElement.getDOMNode().parentNode);
+    React.unmountComponentAtNode(React.findDOMNode(reactElement).parentNode);
     reactElement = null;
     expect(weakReferences.get(textEditorKey)).toBe(null);
   });

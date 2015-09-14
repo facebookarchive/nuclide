@@ -98,7 +98,7 @@ var TreeNodeComponent = React.createClass({
   },
 
   _onClick(event: SyntheticMouseEvent): void {
-    if (this.refs['arrow'].getDOMNode().contains(event.target)) {
+    if (React.findDOMNode(this.refs['arrow']).contains(event.target)) {
       this.props.onClickArrow(event, this.props.node);
     } else {
       this.props.onClick(event, this.props.node);

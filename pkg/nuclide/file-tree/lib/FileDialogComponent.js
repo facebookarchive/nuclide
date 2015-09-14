@@ -49,7 +49,7 @@ var FileDialogComponent = React.createClass({
     this._subscriptions = new CompositeDisposable();
 
     var component = this.refs['entryPath'];
-    var element = component.getDOMNode();
+    var element = React.findDOMNode(component);
     this._subscriptions.add(atom.commands.add(
         element,
         {

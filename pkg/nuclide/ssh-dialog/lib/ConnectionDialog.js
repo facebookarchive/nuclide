@@ -181,7 +181,7 @@ var ConnectionDetailsPrompt = React.createClass({
 
   componentDidMount() {
     this._disposables = new CompositeDisposable();
-    var root = this.refs['root'].getDOMNode();
+    var root = React.findDOMNode(this.refs['root']);
 
     // Hitting enter when this panel has focus should confirm the dialog.
     this._disposables.add(atom.commands.add(
@@ -268,7 +268,7 @@ var AuthenticationPrompt = React.createClass({
 
   componentDidMount() {
     this._disposables = new CompositeDisposable();
-    var root = this.refs['root'].getDOMNode();
+    var root = React.findDOMNode(this.refs['root']);
 
     // Hitting enter when this panel has focus should confirm the dialog.
     this._disposables.add(atom.commands.add(

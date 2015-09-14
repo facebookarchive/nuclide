@@ -70,7 +70,7 @@ var AtomComboBox = React.createClass({
 
   componentDidMount() {
     this._subscriptions = new CompositeDisposable();
-    var node = this.getDOMNode();
+    var node = React.findDOMNode(this);
 
     this._subscriptions.add(
       atom.commands.add(node, 'core:move-up', this._handleMoveUp),

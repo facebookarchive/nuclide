@@ -23,7 +23,7 @@ describe('NuclideCheckbox', () => {
 
   afterEach(() => {
     if (reactElement) {
-      React.unmountComponentAtNode(reactElement.getDOMNode().parentNode);
+      React.unmountComponentAtNode(React.findDOMNode(reactElement).parentNode);
     }
     reactElement = null;
   });
