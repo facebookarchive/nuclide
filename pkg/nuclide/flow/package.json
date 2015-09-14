@@ -21,7 +21,7 @@
     },
     "nuclide-diagnostics-provider": {
       "versions": {
-        "0.0.0": "provideDiagnostics"
+        "0.1.0": "provideDiagnostics"
       }
     },
     "nuclide-type-hint.provider": {
