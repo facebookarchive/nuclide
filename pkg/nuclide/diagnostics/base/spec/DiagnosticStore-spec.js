@@ -10,11 +10,11 @@
  */
 
 var DiagnosticStore = require('../lib/DiagnosticStore');
-
+var invariant = require('assert');
 
 // Test Constants
-var dummyProviderA = {};
-var dummyProviderB = {};
+var dummyProviderA: any = {};
+var dummyProviderB: any = {};
 
 var fileMessageA = {
   scope: 'file',
@@ -54,13 +54,13 @@ var projectMessageB = {
 
 describe('DiagnosticStore', () => {
   var diagnosticStore;
-  var spy_fileA;
+  var spy_fileA: any;
   var spy_fileA_subscription;
-  var spy_fileB;
+  var spy_fileB: any;
   var spy_fileB_subscription;
-  var spy_project;
+  var spy_project: any;
   var spy_project_subscription;
-  var spy_allMessages;
+  var spy_allMessages: any;
   var spy_allMessages_subscription;
 
   var disposeSpies = () => {
@@ -84,6 +84,7 @@ describe('DiagnosticStore', () => {
     spy_project = jasmine.createSpy();
     spy_allMessages = jasmine.createSpy();
 
+    invariant(diagnosticStore);
     spy_fileA_subscription = diagnosticStore.onFileMessagesDidUpdate(spy_fileA, 'fileA');
     spy_fileB_subscription = diagnosticStore.onFileMessagesDidUpdate(spy_fileB, 'fileB');
     spy_project_subscription = diagnosticStore.onProjectMessagesDidUpdate(spy_project);
@@ -95,6 +96,7 @@ describe('DiagnosticStore', () => {
       filePathToMessages: new Map([['fileA', [fileMessageA]]]),
       projectMessages: [projectMessageA],
     };
+    invariant(diagnosticStore);
     diagnosticStore.updateMessages(dummyProviderA, updateA);
   };
 
@@ -103,6 +105,7 @@ describe('DiagnosticStore', () => {
       filePathToMessages: new Map([['fileB', [fileMessageB]]]),
       projectMessages: [projectMessageB],
     };
+    invariant(diagnosticStore);
     diagnosticStore.updateMessages(dummyProviderB, updateB);
   };
 
@@ -111,6 +114,7 @@ describe('DiagnosticStore', () => {
       filePathToMessages: new Map([['fileA', [fileMessageA2]]]),
       projectMessages: [projectMessageA2],
     };
+    invariant(diagnosticStore);
     diagnosticStore.updateMessages(dummyProviderA, updateA2);
   };
 
@@ -119,6 +123,7 @@ describe('DiagnosticStore', () => {
   });
 
   afterEach(() => {
+    invariant(diagnosticStore);
     diagnosticStore.dispose();
     disposeSpies();
   });
@@ -152,6 +157,7 @@ describe('DiagnosticStore', () => {
     expect(spy_allMessages.mostRecentCall.args[0]).toContain(projectMessageA);
 
     // Expect the getter methods on DiagnosticStore to return correct info.
+    invariant(diagnosticStore);
     expect(diagnosticStore._getFileMessages('fileA')).toEqual([fileMessageA]);
     expect(diagnosticStore._getProjectMessages()).toEqual([projectMessageA]);
     var allMessages = diagnosticStore._getAllMessages();
@@ -207,6 +213,7 @@ describe('DiagnosticStore', () => {
     expect(spy_allMessages.mostRecentCall.args[0]).toContain(projectMessageB);
 
     // Expect the getter methods on DiagnosticStore to return correct data.
+    invariant(diagnosticStore);
     expect(diagnosticStore._getFileMessages('fileA')).toEqual([fileMessageA]);
     expect(diagnosticStore._getFileMessages('fileB')).toEqual([fileMessageB]);
     var projectMessages = diagnosticStore._getProjectMessages();
@@ -256,6 +263,7 @@ describe('DiagnosticStore', () => {
     expect(spy_allMessages.mostRecentCall.args[0]).toContain(projectMessageB);
 
     // Expect the getter methods on DiagnosticStore to return the correct info.
+    invariant(diagnosticStore);
     expect(diagnosticStore._getFileMessages('fileA')).toEqual([fileMessageA2]);
     expect(diagnosticStore._getFileMessages('fileB')).toEqual([fileMessageB]);
     var projectMessages = diagnosticStore._getProjectMessages();
@@ -282,6 +290,7 @@ describe('DiagnosticStore', () => {
 
       // Test 4A. Invalidate file messages from ProviderA.
       var fileInvalidationMessage = {scope: 'file', filePaths: ['fileA']};
+      invariant(diagnosticStore);
       diagnosticStore.invalidateMessages(dummyProviderA, fileInvalidationMessage);
 
       // Expect spy_fileA and spy_allMessages to have been called from the
@@ -321,6 +330,7 @@ describe('DiagnosticStore', () => {
       addUpdateB();
       addUpdateA2();
       var fileInvalidationMessage = {scope: 'file', filePaths: ['fileA']};
+      invariant(diagnosticStore);
       diagnosticStore.invalidateMessages(dummyProviderA, fileInvalidationMessage);
 
       // Register spies. All spies expect spy_fileA should be called immediately
@@ -329,6 +339,7 @@ describe('DiagnosticStore', () => {
 
       // Test 4B. Invalidate project messages from ProviderA.
       var projectInvalidationMessage = {scope: 'project'};
+      invariant(diagnosticStore);
       diagnosticStore.invalidateMessages(dummyProviderA, projectInvalidationMessage);
 
       // Expect spy_project and spy_allMessages to have been called from the
@@ -373,12 +384,16 @@ describe('DiagnosticStore', () => {
 
     // Test 5. Remove listeners, then invalidate all messages from ProviderB.
     // We don't need to remove spy_fileA_subscription -- it shouldn't be called anyway.
+    invariant(spy_fileB_subscription);
     spy_fileB_subscription.dispose();
+    invariant(spy_project_subscription);
     spy_project_subscription.dispose();
+    invariant(spy_allMessages_subscription);
     spy_allMessages_subscription.dispose();
 
     // All messages from ProviderB should be removed.
     var providerInvalidationMessage = {scope: 'all'};
+    invariant(diagnosticStore);
     diagnosticStore.invalidateMessages(dummyProviderB, providerInvalidationMessage);
 
     // There should have been no additional calls on the spies.

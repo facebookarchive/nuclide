@@ -5,6 +5,7 @@
   "version": "0.0.0",
   "description": "Core data structures for nuclide-diagnostics",
   "nuclide": {
+    "flowCheck": true,
     "packageType": "Node",
     "testRunner": "apm"
   },
