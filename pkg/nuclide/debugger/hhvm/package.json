@@ -1,0 +1,31 @@
+{
+  "name": "nuclide-debugger-hhvm",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "Allows Debugging of hhvm from Nuclide",
+  "nuclide": {
+    "packageType": "Atom",
+    "testRunner": "apm"
+  },
+  "dependencies": {
+    "nuclide-client": "0.0.0",
+    "nuclide-commons": "0.0.0",
+    "nuclide-debugger-utils": "0.0.0",
+    "nuclide-logging": "0.0.0",
+    "nuclide-remote-uri": "0.0.0",
+    "ws": "0.7.1"
+  },
+  "devDependencies": {
+    "nuclide-debugger-interfaces": "0.0.0",
+    "nuclide-external-interfaces": "0.0.0"
+  },
+  "providedServices": {
+    "nuclide-debugger-hhvm-service": {
+      "description": "Debugger backend for remote hhvm processes.",
+      "versions": {
+        "0.0.0": "provideNuclideDebuggerHhvm"
+      }
+    }
+  }
+}
