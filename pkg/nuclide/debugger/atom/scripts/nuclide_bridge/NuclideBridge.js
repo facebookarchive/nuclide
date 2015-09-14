@@ -112,11 +112,15 @@ class NuclideBridge {
   _handleOpenSourceLocation(event: WebInspector.Event) {
     if (this._debuggerPausedCount >= 2) {
       var eventData = event.data;
-      ipc.sendToHost('notification', 'OpenSourceLocation', {
-        sourceURL: eventData.url,
-        lineNumber: eventData.lineNumber,
-      });
+      this.sendOpenSourceLocation(eventData.url, eventData.lineNumber);
     }
+  }
+
+  sendOpenSourceLocation(sourceURL: string, line: number) {
+    ipc.sendToHost('notification', 'OpenSourceLocation', {
+      sourceURL: sourceURL,
+      lineNumber: line,
+    });
   }
 
   _handleDebuggerPaused(event: WebInspector$Event) {

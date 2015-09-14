@@ -33,7 +33,11 @@ var UnresolvedBreakpointsComponent = React.createClass({
       var longRep = `${pathname}:${breakpoint.line + 1}`;
       var shortRep = `${path.basename(pathname)}:${breakpoint.line + 1}`;
       return (
-        <li key={longRep} className="cursor-pointer source-text" title={longRep}>
+        <li
+          key={longRep}
+          className="cursor-pointer source-text"
+          onClick={this._onBreakpointClick.bind(this, breakpoint)}
+          title={longRep}>
           {shortRep}
         </li>
       );
@@ -47,6 +51,10 @@ var UnresolvedBreakpointsComponent = React.createClass({
         }
       </ol>
     );
+  },
+
+  _onBreakpointClick(breakpoint: {url: string, line: number}) {
+    NuclideBridge.sendOpenSourceLocation(breakpoint.url, breakpoint.line);
   },
 
   getInitialState() {
