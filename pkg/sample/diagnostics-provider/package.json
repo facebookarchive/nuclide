@@ -1,0 +1,21 @@
+{
+  "name": "sample-diagnostics-provider",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "An example provider for the nuclide-diagnostics package suite",
+  "providedServices": {
+    "nuclide-diagnostics-provider": {
+      "versions": {
+        "0.0.0": "provideDiagnostics"
+      }
+    }
+  },
+  "dependencies": {
+    "nuclide-diagnostics-provider-base": "0.0.0"
+  },
+  "devDependencies": {
+    "nuclide-diagnostics-base": "0.0.0",
+    "nuclide-external-interfaces": "0.0.0"
+  }
+}
