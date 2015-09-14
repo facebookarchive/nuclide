@@ -170,6 +170,7 @@ function findPackagesToInstall(
   installedPackages: {[key: PackageName]: PackageVersion}
   ): Array<string> {
   var packagesToInstall = [];
+  var semver = require('semver');
   config.packages.forEach(pkg => {
     var {name, version} = pkg;
     if (!name) {
@@ -178,7 +179,13 @@ function findPackagesToInstall(
     if (!version) {
       throw Error(`Entry without a version in ${JSON.stringify(config, null, 2)}`);
     }
-    if (installedPackages[name] !== version) {
+    if (installedPackages.hasOwnProperty(name)) {
+      // Only install the specified version if the current version is less than the requested
+      // version.
+      if (semver.lt(installedPackages[name], version)) {
+        packagesToInstall.push(`${name}@${version}`);
+      }
+    } else {
       packagesToInstall.push(`${name}@${version}`);
     }
   });

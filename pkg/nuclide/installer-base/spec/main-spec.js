@@ -17,30 +17,36 @@ describe('findPackagesToInstall', () => {
   it('installs only packages that are not installed with the requested version', () => {
     var installedPackages = {
       'nuclide-abc': '1.2.3',
-      'nuclide-xyz': '7.8.9',
+      'nuclide-def': '4.5.6',
+      'nuclide-ghi': '7.8.9',
     };
     var config = {
       packages: [
         {
-          // Already installed, but requested version does not match.
+          // Already installed, but requested version is older: nothing to install.
           name: 'nuclide-abc',
-          version: '4.5.6',
-        },
-        {
-          // Not installed with version specified: should use specified version.
-          name: 'nuclide-ghi',
-          version: '4.5.6',
+          version: '1.1.0',
         },
         {
           // Already installed with requested version: nothing to install.
+          name: 'nuclide-def',
+          version: '4.5.6',
+        },
+        {
+          // Already installed, but requested version is newer: should install with newer version.
+          name: 'nuclide-ghi',
+          version: '7.8.10',
+        },
+        {
+          // Package not installed already: should be installed with specified version.
           name: 'nuclide-xyz',
-          version: '7.8.9',
+          version: '1.0.0',
         },
       ],
     };
     expect(findPackagesToInstall(config, installedPackages)).toEqual([
-      'nuclide-abc@4.5.6',
-      'nuclide-ghi@4.5.6',
+      'nuclide-ghi@7.8.10',
+      'nuclide-xyz@1.0.0',
     ]);
   });
 });

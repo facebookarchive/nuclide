@@ -10,7 +10,8 @@
     "testRunner": "apm"
   },
   "dependencies": {
-    "nuclide-commons": "0.0.0"
+    "nuclide-commons": "0.0.0",
+    "semver": "4.3.4"
   },
   "devDependencies": {
     "nuclide-external-interfaces": "0.0.0"
