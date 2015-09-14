@@ -50,19 +50,19 @@ class Activation {
     this._subscriptions = new CompositeDisposable();
     this._subscriptions.add(
       atom.commands.add('atom-workspace',
-      'nuclide-splits:move-tab-to-new-pane-up', splitUp)
+      'nuclide-move-pane:move-tab-to-new-pane-up', splitUp)
     );
     this._subscriptions.add(
       atom.commands.add('atom-workspace',
-      'nuclide-splits:move-tab-to-new-pane-down', splitDown)
+      'nuclide-move-pane:move-tab-to-new-pane-down', splitDown)
     );
     this._subscriptions.add(
       atom.commands.add('atom-workspace',
-      'nuclide-splits:move-tab-to-new-pane-left', splitLeft)
+      'nuclide-move-pane:move-tab-to-new-pane-left', splitLeft)
     );
     this._subscriptions.add(
       atom.commands.add('atom-workspace',
-      'nuclide-splits:move-tab-to-new-pane-right', splitRight)
+      'nuclide-move-pane:move-tab-to-new-pane-right', splitRight)
     );
   }
 

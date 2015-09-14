@@ -1,5 +1,5 @@
 {
-  "name": "nuclide-splits",
+  "name": "nuclide-move-pane",
   "repository": "https://github.com/facebook/nuclide",
   "main": "./lib/main",
   "version": "0.0.0",
@@ -11,10 +11,10 @@
   },
   "activationCommands": {
     "atom-text-editor:not(.mini)": [
-      "nuclide-splits:move-tab-to-new-pane-up",
-      "nuclide-splits:move-tab-to-new-pane-down",
-      "nuclide-splits:move-tab-to-new-pane-left",
-      "nuclide-splits:move-tab-to-new-pane-right"
+      "nuclide-move-pane:move-tab-to-new-pane-up",
+      "nuclide-move-pane:move-tab-to-new-pane-down",
+      "nuclide-move-pane:move-tab-to-new-pane-left",
+      "nuclide-move-pane:move-tab-to-new-pane-right"
     ]
   },
   "engines": {

@@ -1,4 +1,4 @@
-# nuclide-splits
+# nuclide-move-pane
 
 Overrides the default behavior of `ctrl-k <arrow-key>` in Atom (`cmd-k` on OS X).
 
@@ -9,7 +9,7 @@ and this avoids the overhead of going back to the previous pane and
 closing the original editor to achieve this effect.
 
 **If you are a Nuclide user and you do not like this behavior**, then
-simply find the `nuclide-splits` package in Nuclide and disable it.
+simply find the `nuclide-move-pane` package in Nuclide and disable it.
 (If you uninstall the package, `nuclide-installer` will simply reinstall
 it the next time it runs.)
 
@@ -21,14 +21,14 @@ pressing the arrow to distinguish it from the default shortcut, add the followin
 
 ```coffee
 '.platform-darwin atom-workspace':
-  'cmd-k shift-up': 'nuclide-splits:move-tab-to-new-pane-up'
-  'cmd-k shift-down': 'nuclide-splits:move-tab-to-new-pane-down'
-  'cmd-k shift-left': 'nuclide-splits:move-tab-to-new-pane-left'
-  'cmd-k shift-right': 'nuclide-splits:move-tab-to-new-pane-right'
+  'cmd-k shift-up': 'nuclide-move-pane:move-tab-to-new-pane-up'
+  'cmd-k shift-down': 'nuclide-move-pane:move-tab-to-new-pane-down'
+  'cmd-k shift-left': 'nuclide-move-pane:move-tab-to-new-pane-left'
+  'cmd-k shift-right': 'nuclide-move-pane:move-tab-to-new-pane-right'
 
 '.platform-win32 atom-workspace, .platform-linux atom-workspace':
-  'ctrl-k shift-up': 'nuclide-splits:move-tab-to-new-pane-up'
-  'ctrl-k shift-down': 'nuclide-splits:move-tab-to-new-pane-down'
-  'ctrl-k shift-left': 'nuclide-splits:move-tab-to-new-pane-left'
-  'ctrl-k shift-right': 'nuclide-splits:move-tab-to-new-pane-right'
+  'ctrl-k shift-up': 'nuclide-move-pane:move-tab-to-new-pane-up'
+  'ctrl-k shift-down': 'nuclide-move-pane:move-tab-to-new-pane-down'
+  'ctrl-k shift-left': 'nuclide-move-pane:move-tab-to-new-pane-left'
+  'ctrl-k shift-right': 'nuclide-move-pane:move-tab-to-new-pane-right'
 ```

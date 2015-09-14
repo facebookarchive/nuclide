@@ -1,0 +1,11 @@
+'.platform-darwin atom-workspace':
+  'cmd-k up': 'nuclide-move-pane:move-tab-to-new-pane-up'
+  'cmd-k down': 'nuclide-move-pane:move-tab-to-new-pane-down'
+  'cmd-k left': 'nuclide-move-pane:move-tab-to-new-pane-left'
+  'cmd-k right': 'nuclide-move-pane:move-tab-to-new-pane-right'
+
+'.platform-win32 atom-workspace, .platform-linux atom-workspace':
+  'ctrl-k up': 'nuclide-move-pane:move-tab-to-new-pane-up'
+  'ctrl-k down': 'nuclide-move-pane:move-tab-to-new-pane-down'
+  'ctrl-k left': 'nuclide-move-pane:move-tab-to-new-pane-left'
+  'ctrl-k right': 'nuclide-move-pane:move-tab-to-new-pane-right'
