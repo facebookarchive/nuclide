@@ -1,5 +1,18 @@
 # Nuclide Changelog
 
+## 0.0.32
+
+* **Bug Fix**
+  * Exclude `nuclide-debugger-node` from `nuclide-installer` until we can fix the issue with
+  its native dependencies getting built properly. Fixes
+  [#193](https://github.com/facebook/nuclide/issues/193).
+  * Hack and Flow diagnostics are now removed appropriately when the corresponding project folder
+  is removed.
+
+* **Documentation**
+  * Added [README for `nuclide-diagnostics-store`](
+  https://github.com/facebook/nuclide/tree/master/pkg/nuclide/diagnostics/store#readme).
+
 ## 0.0.31
 
 * **New Feature**
