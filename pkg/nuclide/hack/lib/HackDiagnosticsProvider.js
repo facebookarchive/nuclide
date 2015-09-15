@@ -11,7 +11,7 @@
 
 import {trackTiming} from 'nuclide-analytics';
 
-var {findDiagnostics, getHackLanguageForUri} = require('./hack');
+var {findDiagnostics, getCachedHackLanguageForUri} = require('./hack');
 var {RequestSerializer} = require('nuclide-commons').promises;
 var {DiagnosticsProviderBase} = require('nuclide-diagnostics-provider-base');
 var {Range} = require('atom');
@@ -135,12 +135,11 @@ class HackDiagnosticsProvider {
     }
 
     var diagnostics = result;
-    var hackLanguage = await getHackLanguageForUri(textEditor.getPath());
+    var hackLanguage = await getCachedHackLanguageForUri(textEditor.getPath());
     invariant(hackLanguage);
-    var pathsToInvalidate = this._getPathsToInvalidate(filePath, hackLanguage);
-    /* TODO Consider optimizing for the common case of only a single hack root
-     * by invalidating all instead of enumerating the files. */
-    this._providerBase.publishMessageInvalidation({scope: 'file', filePaths: pathsToInvalidate});
+
+    this._providerBase.publishMessageInvalidation({scope: 'file', filePaths: [filePath]});
+    this.invalidatePathsForHackLanguage(hackLanguage);
 
     var pathsForHackLanguage = new Set();
     this._hackLanguageToFilePaths.set(hackLanguage, pathsForHackLanguage);
@@ -176,9 +175,9 @@ class HackDiagnosticsProvider {
     return { filePathToMessages };
   }
 
-  _getPathsToInvalidate(filePath: NuclideUri, hackLanguage: HackLanguage): Array<NuclideUri> {
+  _getPathsToInvalidate(hackLanguage: HackLanguage): Array<NuclideUri> {
     if (!hackLanguage.isHackClientAvailable()) {
-      return [filePath];
+      return [];
     }
     var filePaths = this._hackLanguageToFilePaths.get(hackLanguage);
     if (!filePaths) {
@@ -211,6 +210,16 @@ class HackDiagnosticsProvider {
 
   onMessageInvalidation(callback: MessageInvalidationCallback): atom$Disposable {
     return this._providerBase.onMessageInvalidation(callback);
+  }
+
+  invalidateProjectPath(projectPath: NuclideUri): void {
+    var hackLanguage = getCachedHackLanguageForUri(projectPath);
+    if (!hackLanguage) {
+      return;
+    }
+    var pathsToInvalidate = this._getPathsToInvalidate(hackLanguage);
+    this._providerBase.publishMessageInvalidation({scope: 'file', filePaths: pathsToInvalidate});
+    this._hackLanguageToFilePaths.delete(hackLanguage);
   }
 
   dispose() {

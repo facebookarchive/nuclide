@@ -212,6 +212,7 @@ module.exports = {
   },
 
   getHackLanguageForUri,
+  getCachedHackLanguageForUri,
 };
 
 function getFilePath(filePath: string, protocol: ?string, host: ?string): string {
@@ -228,6 +229,14 @@ function getClientId(buffer: TextBuffer): string {
   return client.getID();
 }
 
+function getCachedHackLanguageForUri(uri: NuclideUri): ?HackLanguage {
+  var client = getClient(uri);
+  if (!client) {
+    return null;
+  }
+  return clientToHackLanguage[client.getID()];
+}
+
 function getHackLanguageForUri(uri: NuclideUri): Promise<?HackLanguage> {
   var filePath = getPath(uri);
   // `getClient` can return null if a file path doesn't have a root directory in the tree.
@@ -237,7 +246,6 @@ function getHackLanguageForUri(uri: NuclideUri): Promise<?HackLanguage> {
     return null;
   }
   return createHackLanguageIfNotExisting(client, filePath);
-  // TODO(most): dispose the language/worker on project close.
 }
 
 async function createHackLanguageIfNotExisting(client: NuclideClient, filePath: string): Promise<HackLanguage> {

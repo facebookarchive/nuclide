@@ -22,7 +22,7 @@ type Suggestion = {
   rightLabel: ?string;
   rightLabelHTML: ?string;
   className: ?string;
-}
+};
 
 var subscriptions: ?CompositeDisposable = null;
 var hackDiagnosticsProvider;
@@ -30,8 +30,18 @@ var hackDiagnosticsProvider;
 module.exports = {
 
   activate() {
-    var hack = require('./hack');
+    var {getCachedHackLanguageForUri} = require('./hack');
+    var {projects} = require('nuclide-atom-helpers');
     subscriptions = new CompositeDisposable();
+    subscriptions.add(projects.onDidRemoveProjectPath(projectPath => {
+      var hackLanguage = getCachedHackLanguageForUri(projectPath);
+      if (hackLanguage) {
+        hackLanguage.dispose();
+      }
+      if (hackDiagnosticsProvider) {
+        hackDiagnosticsProvider.invalidateProjectPath(projectPath);
+      }
+    }));
   },
 
   /** Provider for autocomplete service. */
