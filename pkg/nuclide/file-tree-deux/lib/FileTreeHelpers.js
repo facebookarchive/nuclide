@@ -45,7 +45,7 @@ function keyToPath(key: string): string {
   return key.replace(/\/+$/, '');
 }
 
-function getParentKey(key: string): string {
+function getParentKey(key: string): ?string {
   var path = keyToPath(key);
   var parsed = parse(path);
   parsed.pathname = pathModule.join(parsed.pathname, '..');

@@ -77,4 +77,22 @@ describe('FileTreeStore', () => {
     expect(node1.isSelected()).toBe(false);
     expect(node2.isSelected()).toBe(true);
   });
+
+  describe('trackedNode', () => {
+    it('resets when there is a new selection', () => {
+      var dir1 = pathModule.join(__dirname, 'fixtures/dir1') + '/';
+      actions.setRootKeys([dir1]);
+      actions.setTrackedNode(dir1, dir1);
+
+      // Root is tracked after setting it.
+      var trackedNode = store.getTrackedNode();
+      expect(trackedNode && trackedNode.nodeKey).toBe(dir1);
+
+      actions.selectSingleNode(dir1, dir1);
+
+      // New selection, which happens on user interaction via select and collapse, resets the
+      // tracked node.
+      expect(store.getTrackedNode()).toBe(null);
+    })
+  });
 });

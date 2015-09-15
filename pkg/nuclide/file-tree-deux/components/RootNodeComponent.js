@@ -10,7 +10,6 @@
  */
 
 var FileTreeActions = require('../lib/FileTreeActions');
-var FileTreeStore = require('../lib/FileTreeStore');
 var NodeComponent = require('./NodeComponent');
 var React = require('react-for-atom');
 
@@ -20,8 +19,6 @@ import type FileTreeNode from '../lib/FileTreeNode';
 
 var {PropTypes} = React;
 var actions = FileTreeActions.getInstance();
-
-var getStore = FileTreeStore.getInstance;
 
 class RootNodeComponent extends React.Component {
   constructor() {
@@ -37,7 +34,7 @@ class RootNodeComponent extends React.Component {
         tabIndex={0}
         onFocus={this._onFocus}
         onMouseDown={this._onMouseDown}>
-        {this._renderNode(getStore().getRootNode(this.props.rootKey), 0)}
+        {this._renderNode(this.props.rootNode, 0)}
       </div>
     );
   }
@@ -54,6 +51,7 @@ class RootNodeComponent extends React.Component {
         nodeKey={node.nodeKey}
         nodeName={node.nodeName}
         nodePath={node.nodePath}
+        ref={node.nodeKey}
         rootKey={node.rootKey}
       />,
     ];
@@ -63,6 +61,13 @@ class RootNodeComponent extends React.Component {
       });
     }
     return elements;
+  }
+
+  scrollNodeIntoViewIfNeeded(nodeKey: string): void {
+    var node = this.refs[nodeKey];
+    if (node) {
+      React.findDOMNode(node).scrollIntoViewIfNeeded();
+    }
   }
 
   _onFocus() {
@@ -78,8 +83,8 @@ class RootNodeComponent extends React.Component {
 }
 
 RootNodeComponent.propTypes = {
+  rootNode: PropTypes.object.isRequired,
   rootKey: PropTypes.string.isRequired,
 };
 
 module.exports = RootNodeComponent;
-

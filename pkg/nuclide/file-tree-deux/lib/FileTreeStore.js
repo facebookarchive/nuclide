@@ -9,10 +9,10 @@
  * the root directory of this source tree.
  */
 
- import type {
-   RemoteDirectory,
-   RemoteFile,
- } from 'nuclide-remote-connection';
+import type {
+  RemoteDirectory,
+  RemoteFile,
+} from 'nuclide-remote-connection';
 
 var {ActionType} = require('./FileTreeConstants');
 var {Disposable, Emitter} = require('atom');
@@ -22,7 +22,10 @@ var FileTreeNode = require('./FileTreeNode');
 var Immutable = require('immutable');
 var Logging = require('nuclide-logging');
 
-var {array} = require('nuclide-commons');
+var {
+  array,
+  object: objectUtil,
+} = require('nuclide-commons');
 var shell = require('shell');
 
 // Used to ensure the version we serialized is the same version we are deserializing.
@@ -32,19 +35,26 @@ import type {Dispatcher} from 'flux';
 
 type ActionPayload = Object;
 type ChangeListener = () => mixed;
+type FileTreeNodeData = {
+  nodeKey: string;
+  rootKey: string;
+}
+
 type StoreData = {
   childKeyMap: { [key: string]: Array<string> };
   isDirtyMap: { [key: string]: boolean };
   expandedKeysByRoot: { [key: string]: Immutable.Set<string> };
+  trackedNode: ?FileTreeNodeData;
   // Saves a list of child nodes that should be expande when a given key is expanded.
-  // Looks like: { rootKey: { nodeKey: [childKey1, childKey2] } }
-  previouslyExpanded: { [key: string]: { [key: string]: Array<string> } };
+  // Looks like: { rootKey: { nodeKey: [childKey1, childKey2] } }.
+  previouslyExpanded: { [rootKey: string]: { [nodeKey: string]: Array<string> } };
   focusedRootKey: ?string;
   isLoadingMap: { [key: string]: ?Promise };
   rootKeys: Array<string>;
   selectedKeysByRoot: { [key: string]: Immutable.Set<string> };
   subscriptionMap: { [key: string]: Disposable };
 };
+
 export type ExportStoreData = {
   childKeyMap: { [key: string]: Array<string> };
   expandedKeysByRoot: { [key: string]: Array<string> };
@@ -54,7 +64,7 @@ export type ExportStoreData = {
 
 var instance: FileTreeStore;
 
-/*
+/**
  * Implements the Flux pattern for our file tree. All state for the file tree will be kept in
  * FileTreeStore and the only way to update the store is through methods on FileTreeActions. The
  * dispatcher is a mechanism through which FileTreeActions interfaces with FileTreeStore.
@@ -83,9 +93,12 @@ class FileTreeStore {
     this._logger = Logging.getLogger();
   }
 
-  // TODO: Move to a serialization class [1] and use the built-in versioning mechanism. This might
-  // need to be done one level higher within main.js.
-  // 1: https://atom.io/docs/latest/behind-atom-serialization-in-atom
+  /**
+   * TODO: Move to a [serialization class][1] and use the built-in versioning mechanism. This might
+   * need to be done one level higher within main.js.
+   *
+   * [1]: https://atom.io/docs/latest/behind-atom-serialization-in-atom
+   */
   exportData(): ExportStoreData {
     var data = this._data;
     // Grab the child keys of only the expanded nodes.
@@ -105,22 +118,22 @@ class FileTreeStore {
     };
   }
 
-  // This is used to import store data from a previous export
+  /**
+   * Imports store data from a previous export.
+   */
   loadData(data: ExportStoreData): void {
     // Ensure we are not trying to load data from an earlier version of this package.
     if (data.version !== VERSION) {
       return;
     }
     this._data = {
-      childKeyMap: data.childKeyMap,
-      isDirtyMap: {},
-      expandedKeysByRoot: mapValues(data.expandedKeysByRoot, (keys) => new Immutable.Set(keys)),
-      previouslyExpanded: {},
-      focusedRootKey: null,
-      isLoadingMap: {},
-      rootKeys: data.rootKeys,
-      selectedKeysByRoot: mapValues(data.selectedKeysByRoot, (keys) => new Immutable.Set(keys)),
-      subscriptionMap: {},
+      ...this._getDefaults(),
+      ...{
+        childKeyMap: data.childKeyMap,
+        expandedKeysByRoot: mapValues(data.expandedKeysByRoot, (keys) => new Immutable.Set(keys)),
+        rootKeys: data.rootKeys,
+        selectedKeysByRoot: mapValues(data.selectedKeysByRoot, (keys) => new Immutable.Set(keys)),
+      }
     };
     Object.keys(data.childKeyMap).forEach((nodeKey) => {
       this._addSubscription(nodeKey);
@@ -133,6 +146,7 @@ class FileTreeStore {
       childKeyMap: {},
       isDirtyMap: {},
       expandedKeysByRoot: {},
+      trackedNode: null,
       previouslyExpanded: {},
       focusedRootKey: null,
       isLoadingMap: {},
@@ -144,50 +158,64 @@ class FileTreeStore {
 
   _onDispatch(payload: ActionPayload): void {
     switch (payload.actionType) {
-      case ActionType.DELETE_SELECTED_NODES:
-        this._deleteSelectedNodes();
-        break;
-      case ActionType.SET_ROOT_KEYS:
-        this._setRootKeys(payload.rootKeys);
-        break;
-      case ActionType.SET_FOCUSED_ROOT:
-        this._set('focusedRootKey', payload.rootKey);
-        break;
-      case ActionType.EXPAND_NODE:
-        this._expandNode(payload.rootKey, payload.nodeKey);
-        break;
-      case ActionType.COLLAPSE_NODE:
-        this._collapseNode(payload.rootKey, payload.nodeKey);
-        break;
-      case ActionType.SET_SELECTED_NODES_FOR_ROOT:
-        this._setSelectedKeys(payload.rootKey, payload.nodeKeys);
-        break;
-      case ActionType.SET_SELECTED_NODES_FOR_TREE:
-        this._setSelectedKeysByRoot(payload.selectedKeysByRoot);
-        break;
-      case ActionType.CREATE_CHILD:
-        this._createChild(payload.nodeKey, payload.childKey);
-        break;
+    case ActionType.DELETE_SELECTED_NODES:
+      this._deleteSelectedNodes();
+      break;
+    case ActionType.SET_TRACKED_NODE:
+      this._setTrackedNode(payload.rootKey, payload.nodeKey);
+      break;
+    case ActionType.SET_ROOT_KEYS:
+      this._setRootKeys(payload.rootKeys);
+      break;
+    case ActionType.SET_FOCUSED_ROOT:
+      this._set('focusedRootKey', payload.rootKey);
+      break;
+    case ActionType.EXPAND_NODE:
+      this._expandNode(payload.rootKey, payload.nodeKey);
+      break;
+    case ActionType.COLLAPSE_NODE:
+      this._collapseNode(payload.rootKey, payload.nodeKey);
+      break;
+    case ActionType.SET_SELECTED_NODES_FOR_ROOT:
+      this._setSelectedKeys(payload.rootKey, payload.nodeKeys);
+      break;
+    case ActionType.SET_SELECTED_NODES_FOR_TREE:
+      this._setSelectedKeysByRoot(payload.selectedKeysByRoot);
+      break;
+    case ActionType.CREATE_CHILD:
+      this._createChild(payload.nodeKey, payload.childKey);
+      break;
     }
   }
 
-  // This is a private method because in Flux we should never externally write to the data store.
-  // Only by receiving actions (from dispatcher) should the data store be changed.
-  // Note: `_set` can be called multiple times within one iteration of an event loop without
-  // thrashing the UI because we are using setImmediate to batch change notifications, effectively
-  // letting our views re-render once for multiple consecutive writes.
-  _set(key: string, value: mixed): void {
+  /**
+   * This is a private method because in Flux we should never externally write to the data store.
+   * Only by receiving actions (from dispatcher) should the data store be changed.
+   * Note: `_set` can be called multiple times within one iteration of an event loop without
+   * thrashing the UI because we are using setImmediate to batch change notifications, effectively
+   * letting our views re-render once for multiple consecutive writes.
+   */
+  _set(key: string, value: mixed, flush: boolean = false): void {
     var oldData = this._data;
     // Immutability for the win!
     var newData = setProperty(this._data, key, value);
     if (newData !== oldData) {
       this._data = newData;
-      // de-bounce to prevent successive application updates in the same event loop
       clearImmediate(this._timer);
-      this._timer = setImmediate(() => {
+      if (flush) {
+        // If `flush` is true, emit the change immediately.
         this._emitter.emit('change');
-      });
+      } else {
+        // If not flushing, de-bounce to prevent successive updates in the same event loop.
+        this._timer = setImmediate(() => {
+          this._emitter.emit('change');
+        });
+      }
     }
+  }
+
+  getTrackedNode(): ?FileTreeNodeData {
+    return this._data.trackedNode;
   }
 
   getRootKeys(): Array<string> {
@@ -198,12 +226,16 @@ class FileTreeStore {
     return this._data.focusedRootKey || this._data.rootKeys[0];
   }
 
-  // Get the key of the *first* root node containing the given node.
+  /**
+   * Returns the key of the *first* root node containing the given node.
+   */
   getRootForKey(nodeKey: string): ?string {
     return array.find(this._data.rootKeys, rootKey => nodeKey.startsWith(rootKey));
   }
 
-  // Note: We actually don't need rootKey (implementation detail) but we take it for consistency.
+  /**
+   * Note: We actually don't need rootKey (implementation detail) but we take it for consistency.
+   */
   isLoading(rootKey: string, nodeKey: string): boolean {
     return !!this._getLoading(nodeKey);
   }
@@ -220,6 +252,13 @@ class FileTreeStore {
     var childKeys = this._data.childKeyMap[nodeKey];
     if (childKeys == null || this._data.isDirtyMap[nodeKey]) {
       this._fetchChildKeys(nodeKey);
+    } else {
+      /*
+       * If no data needs to be fetched, wipe out the scrolling state because subsequent updates
+       * should no longer scroll the tree. The node will have already been flushed to the view and
+       * scrolled to.
+       */
+      this._checkTrackedNode();
     }
     return childKeys || [];
   }
@@ -258,8 +297,10 @@ class FileTreeStore {
     return new FileTreeNode(this, rootKey, nodeKey);
   }
 
-  // If a fetch is not already in progress initiate a fetch now.
-  _fetchChildKeys(nodeKey: string): Promise {
+  /**
+   * If a fetch is not already in progress initiate a fetch now.
+   */
+  _fetchChildKeys(nodeKey: string): Promise<void> {
     var existingPromise = this._getLoading(nodeKey);
     if (existingPromise) {
       return existingPromise;
@@ -286,8 +327,30 @@ class FileTreeStore {
     this._set('isLoadingMap', setProperty(this._data.isLoadingMap, nodeKey, value));
   }
 
+  /**
+   * Resets the node to be kept in view if no more data is being awaited. Safe to call many times
+   * because it only changes state if a node is being tracked.
+   */
+  _checkTrackedNode(): void {
+    if (
+      this._data.trackedNode != null &&
+      /*
+       * The loading and dirty maps being empty is a heuristic for when loading has completed. It is
+       * inexact because the loading might be unrelated to the tracked node, however it is cheap and
+       * false positives will only last until loading is complete or until the user clicks another
+       * node in the tree.
+       */
+      objectUtil.isEmpty(this._data.isLoadingMap) &&
+      objectUtil.isEmpty(this._data.isDirtyMap)
+    ) {
+      // Loading has completed. Allow scrolling to proceed as usual.
+      this._set('trackedNode', null);
+    }
+  }
+
   _clearLoading(nodeKey: string): void {
     this._set('isLoadingMap', deleteProperty(this._data.isLoadingMap, nodeKey));
+    this._checkTrackedNode();
   }
 
   _deleteSelectedNodes(): void {
@@ -320,11 +383,12 @@ class FileTreeStore {
         'previouslyExpanded',
         setProperty(this._data.previouslyExpanded, rootKey, previouslyExpanded)
       );
-
     }
   }
 
-  // When we collapse a node we need to do some cleanup removing subscriptions and selection.
+  /**
+   * When we collapse a node we need to do some cleanup removing subscriptions and selection.
+   */
   _collapseNode(rootKey: string, nodeKey: string): void {
     var childKeys = this._data.childKeyMap[nodeKey];
     var selectedKeys = this._data.selectedKeysByRoot[rootKey];
@@ -350,8 +414,10 @@ class FileTreeStore {
         }
       });
     }
-    // Save the list of expanded child nodes so next time we expand this node we can expand these
-    // children.
+    /*
+     * Save the list of expanded child nodes so next time we expand this node we can expand these
+     * children.
+     */
     var previouslyExpanded = this._data.previouslyExpanded[rootKey] || {};
     if (expandedChildKeys.length !== 0) {
       previouslyExpanded = setProperty(previouslyExpanded, nodeKey, expandedChildKeys);
@@ -382,6 +448,12 @@ class FileTreeStore {
   }
 
   _setSelectedKeys(rootKey: string, selectedKeys: Immutable.Set<string>): void {
+    /*
+     * New selection means previous node should not be kept in view. Do this without de-bouncing
+     * because the previous state is irrelevant. If the user chose a new selection, the previous one
+     * should not be scrolled into view.
+     */
+    this._set('trackedNode', null);
     this._set(
       'selectedKeysByRoot',
       setProperty(this._data.selectedKeysByRoot, rootKey, selectedKeys)
@@ -429,7 +501,7 @@ class FileTreeStore {
     if (oldChildKeys) {
       var newChildKeySet = new Set(childKeys);
       oldChildKeys.forEach((childKey) => {
-        // if it's a directory and it doesn't exist in the new set of child keys
+        // If it's a directory and it doesn't exist in the new set of child keys.
         if (FileTreeHelpers.isDirKey(childKey) && !newChildKeySet.has(childKey)) {
           this._purgeDirectory(childKey);
         }
@@ -453,8 +525,7 @@ class FileTreeStore {
     }
     var subscription;
     try {
-      // this call might fail if we try to watch a non-existing directory, or if
-      // permission denied
+      // This call might fail if we try to watch a non-existing directory, or if permission denied.
       subscription = directory.onDidChange(() => {
         this._onDirectoryChange(nodeKey);
       });
@@ -543,6 +614,11 @@ class FileTreeStore {
       });
       this._set('childKeyMap', deleteProperty(this._data.childKeyMap, rootKey));
     }
+  }
+
+  _setTrackedNode(rootKey: string, nodeKey: string): void {
+    // Flush the value to ensure clients see the value at least once and scroll appropriately.
+    this._set('trackedNode', {nodeKey, rootKey}, true);
   }
 
   reset(): void {

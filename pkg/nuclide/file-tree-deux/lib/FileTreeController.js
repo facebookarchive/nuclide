@@ -113,7 +113,7 @@ class FileTreeController {
       <PanelComponent
         dock="left"
         initialLength={initialWidth}>
-        <FileTree />
+        <FileTree store={this._store} />
       </PanelComponent>,
       this._panelElement
     );
@@ -169,6 +169,7 @@ class FileTreeController {
       this._actions.expandNode(rootKey, parentKey);
     });
     this._actions.selectSingleNode(rootKey, nodeKey);
+    this._actions.setTrackedNode(rootKey, nodeKey);
   }
 
   _deleteSelection(): void {

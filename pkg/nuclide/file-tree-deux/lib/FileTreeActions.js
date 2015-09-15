@@ -19,7 +19,7 @@ import type {Dispatcher} from 'flux';
 
 var instance: FileTreeActions;
 
-/*
+/**
  * Implements the Flux pattern for our file tree. All state for the file tree will be kept in
  * FileTreeStore and the only way to update the store is through methods on FileTreeActions. The
  * dispatcher is a mechanism through which FileTreeActions interfaces with FileTreeStore.
@@ -110,6 +110,14 @@ class FileTreeActions {
     });
   }
 
+  setTrackedNode(rootKey: string, nodeKey: string): void {
+    this._dispatcher.dispatch({
+      actionType: ActionType.SET_TRACKED_NODE,
+      nodeKey,
+      rootKey,
+    });
+  }
+
   selectSingleNode(rootKey: string, nodeKey: string): void {
     var selectedKeysByRoot = {};
     selectedKeysByRoot[rootKey] = new Immutable.Set([nodeKey]);
@@ -127,8 +135,8 @@ class FileTreeActions {
         ActionType.EXPAND_NODE;
       this._dispatcher.dispatch({
         actionType: actionType,
-        rootKey,
         nodeKey,
+        rootKey,
       });
     } else {
       atom.workspace.open(
