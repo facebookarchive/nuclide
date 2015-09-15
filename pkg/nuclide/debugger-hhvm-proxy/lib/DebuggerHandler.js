@@ -89,7 +89,7 @@ export class DebuggerHandler extends Handler {
       break;
 
     case 'setPauseOnExceptions':
-      this.replyWithError(id, 'Not implemented');
+      await this._setPauseOnExceptions(id, params);
       break;
 
     case 'setAsyncCallStackDepth':
@@ -104,7 +104,7 @@ export class DebuggerHandler extends Handler {
       break;
 
     case 'setBreakpointByUrl':
-      await this._setBreakpointByUrl(id, params);
+      this._setBreakpointByUrl(id, params);
       break;
 
     case 'removeBreakpoint':
@@ -122,7 +122,13 @@ export class DebuggerHandler extends Handler {
     }
   }
 
-  async _setBreakpointByUrl(id: number, params: Object): Promise {
+  async _setPauseOnExceptions(id: number, params: Object): Promise {
+    var {state} = params;
+    await this._connectionMultiplexer.setPauseOnExceptions(state);
+    this.replyToCommand(id, {});
+  }
+
+  _setBreakpointByUrl(id: number, params: Object): void {
     var {lineNumber, url, columnNumber, condition} = params;
     if (!url || condition !== '' || columnNumber !== 0) {
       this.replyWithError(id, 'Invalid arguments to Debugger.setBreakpointByUrl: ' + JSON.stringify(params));
@@ -131,7 +137,7 @@ export class DebuggerHandler extends Handler {
     this._files.registerFile(url);
 
     var path = uriToPath(url);
-    var breakpointId = await this._connectionMultiplexer.setBreakpoint(path, lineNumber + 1);
+    var breakpointId = this._connectionMultiplexer.setBreakpoint(path, lineNumber + 1);
     this.replyToCommand(id, {
       breakpointId: breakpointId,
       locations: [

@@ -8,7 +8,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-
+import {log} from './utils';
 import type {Connection} from './Connection';
 
 type BreakpointId = string;
@@ -17,6 +17,10 @@ type Breakpoint = {
   filename: string;
   lineNumber: number;
 };
+type ExceptionState = 'none' | 'uncaught' | 'all';
+
+const PAUSE_ALL_EXCEPTION_NAME = '*';
+const EXCEPTION_PAUSE_STATE_ALL = 'all';
 
 var {
   STATUS_STOPPED,
@@ -39,11 +43,13 @@ export class BreakpointStore {
   // Promise of the Connection's Breakpoint Id.
   _connections: Map<Connection, Map<BreakpointId, Promise<BreakpointId>>>;
   _breakpoints: Map<BreakpointId, Breakpoint>;
+  _pauseAllExceptionBreakpointId: ?BreakpointId;
 
   constructor() {
     this._breakpointCount = 0;
     this._connections = new Map();
     this._breakpoints = new Map();
+    this._pauseAllExceptionBreakpointId = null;
   }
 
   setBreakpoint(filename: string, lineNumber: number): BreakpointId {
@@ -59,6 +65,46 @@ export class BreakpointStore {
 
   async removeBreakpoint(breakpointId: string): Promise {
     this._breakpoints.delete(breakpointId);
+    return await this._removeBreakpointFromConnections(breakpointId);
+  }
+
+  /**
+   * TODO[jeffreytan]: look into unhandled exception support.
+   * Dbgp protocol does not seem to support uncaught exception handling
+   * so we only support 'all' and treat all other states as 'none'.
+   */
+  async setPauseOnExceptions(state: ExceptionState): Promise {
+    if (state === EXCEPTION_PAUSE_STATE_ALL) {
+      this._breakpointCount++;
+      var breakpiontId = String(this._breakpointCount);
+      this._pauseAllExceptionBreakpointId = breakpiontId;
+
+      for (var entry of this._connections.entries()) {
+        var [connection, map] = entry;
+        map.set(
+          breakpiontId,
+          connection.setExceptionBreakpoint(PAUSE_ALL_EXCEPTION_NAME)
+        );
+      }
+    } else {
+      // Try to remove any existing exception breakpoint.
+      await this._removePauseAllExceptionBreakpointIfNeeded();
+    }
+  }
+
+  async _removePauseAllExceptionBreakpointIfNeeded(): Promise {
+    if (this._pauseAllExceptionBreakpointId !== null) {
+      var breakpointId = this._pauseAllExceptionBreakpointId;
+      this._pauseAllExceptionBreakpointId = null;
+      return await this._removeBreakpointFromConnections(breakpointId);
+    } else {
+      // This can happen if users switch between 'none' and 'uncaught' states.
+      log('No exception breakpoint to remove.');
+      return Promise.resolve();
+    }
+  }
+
+  async _removeBreakpointFromConnections(breakpointId: string): Promise {
     return Promise.all(require('nuclide-commons').array.from(this._connections.entries())
       .map(entry => {
         var [connection, map] = entry;
@@ -76,8 +122,18 @@ export class BreakpointStore {
   addConnection(connection: Connection): void {
     var map = new Map();
     this._breakpoints.forEach(breakpoint => {
-      map.set(breakpoint.storeId, connection.setBreakpoint(breakpoint.filename, breakpoint.lineNumber));
+      map.set(
+        breakpoint.storeId,
+        connection.setBreakpoint(breakpoint.filename, breakpoint.lineNumber)
+      );
     });
+    if (this._pauseAllExceptionBreakpointId) {
+      map.set(
+        this._pauseAllExceptionBreakpointId,
+        connection.setExceptionBreakpoint(PAUSE_ALL_EXCEPTION_NAME)
+      );
+    }
+
     this._connections.set(connection, map);
     connection.onStatus(status => {
       switch (status) {

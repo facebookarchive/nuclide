@@ -17,6 +17,7 @@ import type Scope from './DataCache';
 import type PropertyDescriptor from './DataCache';
 import type RemoteObjectId from './DataCache';
 import type {Disposable} from 'nuclide-commons';
+import type {ExceptionState} from './BreakpointStore';
 var {BreakpointStore} = require('./BreakpointStore');
 var {DbgpConnector} = require('./DbgpConnector');
 import type {ConnectionConfig} from './DbgpConnector';
@@ -209,7 +210,11 @@ export class ConnectionMultiplexer {
     }
   }
 
-  setBreakpoint(filename: string, lineNumber: number): Promise<string> {
+  setPauseOnExceptions(state: ExceptionState): Promise {
+    return this._breakpointStore.setPauseOnExceptions(state);
+  }
+
+  setBreakpoint(filename: string, lineNumber: number): string {
     return this._breakpointStore.setBreakpoint(filename, lineNumber);
   }
 

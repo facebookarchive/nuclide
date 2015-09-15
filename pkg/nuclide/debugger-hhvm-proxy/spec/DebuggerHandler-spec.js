@@ -253,9 +253,7 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
     it('setBreakpointByUrl', () => {
       waitsForPromise(async () => {
         connectionMultiplexer.setBreakpoint = jasmine.createSpy('setBreakpoint')
-          .andCallFake(async () => {
-            return 12;
-          });
+          .andReturn(12);
 
         await handler.handleMethod(1, 'setBreakpointByUrl', {
           lineNumber: 42,
@@ -300,9 +298,17 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
     });
 
     it('setPauseOnExceptions', () => {
-      handler.handleMethod(1, 'setPauseOnExceptions');
+      waitsForPromise(async () => {
+        connectionMultiplexer.setPauseOnExceptions =
+          jasmine.createSpy('setPauseOnExceptions').andCallFake(async () => {});
 
-      expect(callback.replyWithError).toHaveBeenCalledWith(1, jasmine.any(String));
+        await handler.handleMethod(1, 'setPauseOnExceptions', {
+          state: 'all',
+        });
+
+        expect(connectionMultiplexer.setPauseOnExceptions).toHaveBeenCalledWith('all');
+        expect(callback.replyToCommand).toHaveBeenCalledWith(1, {}, undefined);
+      });
     });
 
     it('setAsyncCallStackDepth', () => {

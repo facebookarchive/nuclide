@@ -219,6 +219,18 @@ class DbgpSocket {
   }
 
   /**
+   * Returns the exception breakpoint id.
+   */
+  async setExceptionBreakpoint(exceptionName: string): Promise<string> {
+    var response = await this._callDebugger('breakpoint_set', `-t exception -x ${exceptionName}`);
+    if (response.error) {
+      throw new Error('Error from setPausedOnExceptions: ' + JSON.stringify(response));
+    }
+    // TODO: Validate that response.$.state === 'enabled'
+    return response.$.id;
+  }
+
+  /**
    * Returns a breakpoint id
    */
   async setBreakpoint(filename: string, lineNumber: number): Promise<string> {

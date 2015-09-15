@@ -207,6 +207,22 @@ describe('debugger-hhvm-proxy DbgpSocket', () => {
       });
     });
 
+    it('setExceptionBreakpoint', () => {
+      waitsForPromise(async () => {
+        var call = dbgpSocket.setExceptionBreakpoint('exception_name');
+        testCallResult(
+          'breakpoint_set -i 1 -t exception -x exception_name',
+          {
+            command: 'breakpoint_set',
+            transaction_id: '1',
+            state: 'enabled',
+            id: '10',
+          });
+        var result = await call;
+        expect(result).toBe('10');
+      });
+    });
+
     it('setBreakpoint', () => {
       waitsForPromise(async () => {
         var call = dbgpSocket.setBreakpoint('/test.php', 42);

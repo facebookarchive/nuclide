@@ -115,6 +115,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
       'addConnection',
       'removeConnection',
       'setBreakpoint',
+      'setPauseOnExceptions',
       'removeBreakpoint',
     ]);
     BreakpointStore = spyOn(require('../lib/BreakpointStore'), 'BreakpointStore').andReturn(breakpointStore);
@@ -584,6 +585,11 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
     onClose();
 
     expect(connector.dispose).toHaveBeenCalledWith();
+  });
+
+  it('setPauseOnExceptions', () => {
+    connectionMultiplexer.setPauseOnExceptions('all');
+    expect(breakpointStore.setPauseOnExceptions).toHaveBeenCalledWith('all');
   });
 
   it('setBreakpoint', () => {

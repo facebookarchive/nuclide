@@ -45,6 +45,10 @@ export class Connection {
     return this._dataCache.evaluateOnCallFrame(frameIndex, expression);
   }
 
+  setExceptionBreakpoint(exceptionName: string): Promise<string> {
+    return this._socket.setExceptionBreakpoint(exceptionName);
+  }
+
   setBreakpoint(filename: string, lineNumber: number): Promise<string> {
     return this._socket.setBreakpoint(filename, lineNumber);
   }

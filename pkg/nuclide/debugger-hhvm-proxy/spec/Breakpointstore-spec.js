@@ -28,14 +28,26 @@ describe('debugger-hhvm-proxy BreakpointStore', () => {
 
   beforeEach(() => {
     store = new BreakpointStore();
-    connection1 = jasmine.createSpyObj('Connection1', ['setBreakpoint', 'removeBreakpoint', 'onStatus']);
+    var con1IdGenerator = createIdGenerator('con1prefix');
+    var con2IdGenerator = createIdGenerator('con2prefix');
+    connection1 = jasmine.createSpyObj(
+      'Connection1',
+      ['setBreakpoint', 'removeBreakpoint', 'setExceptionBreakpoint', 'onStatus']
+    );
     connection1.setBreakpoint = jasmine.createSpy('setBreakpoint1').
-        andCallFake(createIdGenerator('con1prefix'));
+        andCallFake(con1IdGenerator);
+    connection1.setExceptionBreakpoint = jasmine.createSpy('setExceptionBreakpoint1').
+        andCallFake(con1IdGenerator);
     connection1.onStatus = jasmine.createSpy('onStatus1').
       andCallFake(callback => { onStatus1 = callback; });
-    connection2 = jasmine.createSpyObj('Connection2', ['setBreakpoint', 'removeBreakpoint', 'onStatus']);
+    connection2 = jasmine.createSpyObj(
+      'Connection2',
+      ['setBreakpoint', 'removeBreakpoint', 'setExceptionBreakpoint', 'onStatus']
+    );
     connection2.setBreakpoint = jasmine.createSpy('setBreakpoint2').
-        andCallFake(createIdGenerator('con2prefix'));
+        andCallFake(con2IdGenerator);
+    connection2.setExceptionBreakpoint = jasmine.createSpy('setExceptionBreakpoint2').
+        andCallFake(con2IdGenerator);
     connection2.onStatus = jasmine.createSpy('onStatus2').
       andCallFake(callback => { onStatus2 = callback; });
   });
@@ -51,11 +63,18 @@ describe('debugger-hhvm-proxy BreakpointStore', () => {
       expect(connection1.setBreakpoint).toHaveBeenCalledWith('file1', 43);
       expect(id1).not.toEqual(id2);
 
+      var id3 = store.setPauseOnExceptions('all');
+      expect(connection1.setExceptionBreakpoint).toHaveBeenCalledWith('*');
+      expect(id3).not.toEqual(id2);
+
       await store.removeBreakpoint(id2);
       expect(connection1.removeBreakpoint).toHaveBeenCalledWith('con1prefix2');
 
       await store.removeBreakpoint(id1);
       expect(connection1.removeBreakpoint).toHaveBeenCalledWith('con1prefix1');
+
+      await store.setPauseOnExceptions('none');
+      expect(connection1.removeBreakpoint).toHaveBeenCalledWith('con1prefix3');
     });
   });
 
@@ -64,11 +83,14 @@ describe('debugger-hhvm-proxy BreakpointStore', () => {
 
       var id1 = store.setBreakpoint('file1', 42);
       var id2 = store.setBreakpoint('file1', 43);
+      var id3 = store.setPauseOnExceptions('all');
 
       store.addConnection(connection1);
       expect(connection1.setBreakpoint).toHaveBeenCalledWith('file1', 42);
       expect(connection1.setBreakpoint).toHaveBeenCalledWith('file1', 43);
+      expect(connection1.setExceptionBreakpoint).toHaveBeenCalledWith('*');
       expect(id1).not.toEqual(id2);
+      expect(id2).not.toEqual(id3);
 
       await store.removeBreakpoint(id2);
       expect(connection1.removeBreakpoint).toHaveBeenCalledWith('con1prefix2');
@@ -77,10 +99,15 @@ describe('debugger-hhvm-proxy BreakpointStore', () => {
 
       store.addConnection(connection2);
       expect(connection2.setBreakpoint).toHaveBeenCalledWith('file1', 42);
+      expect(connection2.setExceptionBreakpoint).toHaveBeenCalledWith('*');
 
       await store.removeBreakpoint(id1);
       expect(connection1.removeBreakpoint).not.toHaveBeenCalledWith('con1prefix1');
       expect(connection2.removeBreakpoint).toHaveBeenCalledWith('con2prefix1');
+
+      await store.setPauseOnExceptions('none');
+      expect(connection1.removeBreakpoint).not.toHaveBeenCalledWith('con1prefix3');
+      expect(connection2.removeBreakpoint).toHaveBeenCalledWith('con2prefix2');
     });
   });
 });

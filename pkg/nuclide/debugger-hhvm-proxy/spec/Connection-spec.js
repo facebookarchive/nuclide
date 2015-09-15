@@ -21,16 +21,17 @@ describe('debugger-hhvm-proxy Connection', () => {
   beforeEach(() => {
     socket = jasmine.createSpyObj('socket', ['write', 'end', 'destroy']);
 
-    dbgpSocket = jasmine.createSpyObj('dbgpSocket', [
-        'onStatus',
-        'setBreakpoint',
-        'removeBreakpoint',
-        'getStackFrames',
-        'getStatus',
-        'sendContinuationCommand',
-        'sendBreakCommand',
-        'dispose',
-      ]);
+    dbgpSocket = jasmine.createSpyObj('dbgpSocket',
+      ['onStatus',
+      'setBreakpoint',
+      'setExceptionBreakpoint',
+      'removeBreakpoint',
+      'getStackFrames',
+      'getStatus',
+      'sendContinuationCommand',
+      'sendBreakCommand',
+      'dispose']
+    );
     DbgpSocket = spyOn(require('../lib/DbgpSocket'), 'DbgpSocket').andReturn(dbgpSocket);
 
     dataCache = jasmine.createSpyObj('dataCache', [
@@ -77,6 +78,11 @@ describe('debugger-hhvm-proxy Connection', () => {
   it('getScopesForFrame', () => {
     connection.getScopesForFrame(42);
     expect(dataCache.getScopesForFrame).toHaveBeenCalledWith(42);
+  });
+
+  it('setExceptionBreakpoint', () => {
+    connection.setExceptionBreakpoint('exceptionName');
+    expect(dbgpSocket.setExceptionBreakpoint).toHaveBeenCalledWith('exceptionName');
   });
 
   it('setBreakpoint', () => {
