@@ -28,18 +28,25 @@ type LinterMessage = {
   trace?: Array<LinterTrace>,
 };
 
-export type LinterProvider = {
-  /** providerName is an extension to the current linter api. */
+type LinterProvider = {
+  /**
+   * Extension: Allows a provider to include a display name that will be shown with its messages.
+   */
   providerName?: string;
-  /** An extension allowing package authors to provide both the linter and
-    * diagnostics services, and have Nuclide ignore the linter one. */
+  /**
+   * Extension: Intended for developers who want to provide both interfaces to cater towards people
+   * who use only the `linter` package. This way you can provide both, but tell Nuclide to ignore
+   * the `linter` provider so that duplicate results do not appear.
+   */
   disabledForNuclide?: boolean;
   grammarScopes: Array<string>;
-  /** Extension to the linter API. Overrides grammarScopes if true, to trigger the linter on all
-    * grammar scopes. */
+  /**
+   * Extension: Overrides `grammarScopes` and triggers the linter on changes to any file, rather
+   * than just files with specific grammar scopes.
+   */
   allGrammarScopes?: boolean;
   scope: 'file' | 'project';
-  lintOnFly: bool;
+  lintOnFly: boolean;
   lint: (textEditor: TextEditor) => Promise<Array<LinterMessage>>;
 };
 
