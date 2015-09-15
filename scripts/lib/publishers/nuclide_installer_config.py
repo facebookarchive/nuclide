@@ -13,6 +13,11 @@ PACKAGES_TO_EXCLUDE = set([
     # Note that it is important to exclude the nuclide-installer from the list.
     # We don't want it to try to install itself!
     'nuclide-installer',
+
+    # Exclude nuclide-debugger-node from public release bundle until its native
+    # code is fixed to build reliably when installed.
+    # See https://github.com/facebook/nuclide/issues/193 for details.
+    'nuclide-debugger-node',
 ])
 
 def generate_config(semver_version, apm_package_names):
