@@ -55,7 +55,8 @@ class ProcessOutputView extends React.Component {
     if (this._outputHandler) {
       this._outputHandler(this._textBuffer, newText);
     } else {
-      this._textBuffer.append(newText);
+      // `{undo: 'skip'}` disables the TextEditor's "undo system".
+      this._textBuffer.append(newText, {undo: 'skip'});
     }
   }
 

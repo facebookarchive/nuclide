@@ -49,11 +49,13 @@ function handleBuckAnsiOutput(textBuffer: atom$TextBuffer, text: string) {
     // lines that result in a newline. Remove these.
     newText = newText.trim();
     // Append the processed text to a new line.
-    textBuffer.append(newText);
+    // `{undo: 'skip'}` disables the TextEditor's "undo system".
+    textBuffer.append(newText, {undo: 'skip'});
     if (lineNum !== (lines.length - 1)) {
       // Don't append a newline to the last line. (Since we split by \n, the
       // last segment should not end in a newline.)
-      textBuffer.append('\n');
+      // `{undo: 'skip'}` disables the TextEditor's "undo system".
+      textBuffer.append('\n', {undo: 'skip'});
     }
   }
 }
