@@ -39,6 +39,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
     pid: null,
     idekeyRegex: null,
     scriptRegex: null,
+    endDebugWhenNoRequests: false,
   };
 
   function sendConnectionStatus(connectionIndex, status): void {
@@ -80,7 +81,6 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
         ]);
       var id = connectionCount;
       connection.getId = () => id;
-
 
       if (haveStatusThrow) {
         connection.getStatus = jasmine.createSpy('getStatus').andCallFake(() => {
@@ -596,4 +596,21 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
     expect(breakpointStore.removeBreakpoint).toHaveBeenCalledWith('breakpointId');
   });
 
+  it('endDebugWhenNoRequests - true', () => {
+    waitsForPromise(async () => {
+      config.endDebugWhenNoRequests = true;
+      await doEnable();
+      sendConnectionStatus(0, STATUS_END);
+      expect(onStatus).toHaveBeenCalledWith(STATUS_END);
+    });
+  });
+
+  it('endDebugWhenNoRequests - false', () => {
+    waitsForPromise(async () => {
+      config.endDebugWhenNoRequests = false;
+      await doEnable();
+      sendConnectionStatus(0, STATUS_END);
+      expect(onStatus).not.toHaveBeenCalledWith(STATUS_END);
+    });
+  });
 });

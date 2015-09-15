@@ -298,7 +298,8 @@ export class ConnectionMultiplexer {
   }
 
   _checkForEnd(): void {
-    if (!this._connector && this._connections.size === 0) {
+    if (this._connections.size === 0 &&
+       (!this._connector || this._config.endDebugWhenNoRequests)) {
       this._setStatus(STATUS_END);
     }
   }

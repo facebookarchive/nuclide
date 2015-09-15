@@ -29,6 +29,12 @@ module.exports = {
       type: 'number',
       default: 9000,
       description: 'Port for DBGP connection to HHVM.'
+    },
+
+    endDebugWhenNoRequests: {
+      type: 'boolean',
+      default: false,
+      description: 'Whether or not to end debug session when there is no http requests.',
     }
   },
 

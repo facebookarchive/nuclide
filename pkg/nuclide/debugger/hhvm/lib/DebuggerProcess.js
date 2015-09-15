@@ -61,6 +61,10 @@ class DebuggerProcess {
       delete config.idekeyRegex;
     }
 
+    if (this._launchScriptPath) {
+      config.endDebugWhenNoRequests = true;
+    }
+
     var attachPromise = proxy.attach(config);
     if (this._launchScriptPath) {
       log('launchScript: ' + this._launchScriptPath);
