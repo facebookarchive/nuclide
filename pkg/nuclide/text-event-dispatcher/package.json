@@ -5,6 +5,7 @@
   "version": "0.0.0",
   "description": "Allows subscriptions to text editing events, at a higher level of abstraction than the included Atom events",
   "nuclide": {
+    "flowCheck": true,
     "packageType": "Node",
     "testRunner": "apm"
   },

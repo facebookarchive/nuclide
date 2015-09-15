@@ -9,9 +9,14 @@
  * the root directory of this source tree.
  */
 
-var {Disposable} = require('atom');
+import {Disposable} from 'atom';
 
-var {TextEventDispatcher, __TEST__: {TextCallbackContainer}} = require('../lib/TextEventDispatcher');
+import {
+  TextEventDispatcher,
+  __TEST__,
+} from '../lib/TextEventDispatcher';
+
+var {TextCallbackContainer} = __TEST__;
 
 var grammar = 'testgrammar';
 
@@ -97,7 +102,7 @@ describe('TextEventDispatcher', () => {
       // getPath is nice for debugging tests
       getPath() {
         return path;
-      }
+      },
     };
     return editor;
   }

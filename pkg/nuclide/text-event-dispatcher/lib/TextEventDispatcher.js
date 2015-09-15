@@ -59,7 +59,10 @@ class TextCallbackContainer<CallbackArg> {
     return this._callbacks.size === 0 && this._allGrammarCallbacks.size === 0;
   }
 
-  _getCallbacksFromEventMap(eventMap: Map<Event, Set<(arg: CallbackArg) => mixed>>, event: Event): Set<(arg: CallbackArg) => mixed> {
+  _getCallbacksFromEventMap(
+    eventMap: Map<Event, Set<(arg: CallbackArg) => mixed>>,
+    event: Event): Set<(arg: CallbackArg
+  ) => mixed> {
     if (!eventMap) {
       return new Set();
     }
@@ -175,6 +178,8 @@ class TextEventDispatcher {
     }
     // Sometimes these events get triggered several times in succession
     // (particularly on startup).
+    //
+    // $FlowFixMe: debounce does not preserve the type of the function it is passed (t8396266)
     var debouncedCallback = debounce(callback, 50, true);
     this._callbackContainer.addCallback(grammarScopes, events, debouncedCallback);
     var disposables = new Disposable(() => {
