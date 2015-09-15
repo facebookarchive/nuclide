@@ -12,6 +12,10 @@ import path from 'path';
 
 var SMALLEST_NUCLIDE_BUILD_NUMBER = 5394875;
 
+export function isRunningInTest(): boolean {
+  return process.env.NODE_ENV === 'test';
+}
+
 export function isRunningInClient(): boolean {
   return global.atom !== undefined;
 }
