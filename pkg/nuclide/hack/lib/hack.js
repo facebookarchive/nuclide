@@ -39,7 +39,7 @@ module.exports = {
     editor: TextEditor
   ): Promise<Array<HackDiagnosticItem>> {
     var buffer = editor.getBuffer();
-    var hackLanguage = await getHackLanguageForBuffer(buffer);
+    var hackLanguage = await getHackLanguageForUri(editor.getPath());
     if (!hackLanguage) {
       return [];
     }
@@ -68,7 +68,7 @@ module.exports = {
   },
 
   async fetchCompletionsForEditor(editor: TextEditor, prefix: string): Promise<Array<any>> {
-    var hackLanguage = await getHackLanguageForBuffer(editor.getBuffer());
+    var hackLanguage = await getHackLanguageForUri(editor.getPath());
     if (!hackLanguage) {
       return [];
     }
@@ -94,7 +94,7 @@ module.exports = {
 
   async formatSourceFromEditor(editor: TextEditor, range: Range): Promise<string> {
     var buffer = editor.getBuffer();
-    var hackLanguage = await getHackLanguageForBuffer(buffer);
+    var hackLanguage = await getHackLanguageForUri(editor.getPath());
     if (!hackLanguage) {
       return buffer.getTextInRange(range);
     }
@@ -105,7 +105,7 @@ module.exports = {
   },
 
   async typeHintFromEditor(editor: TextEditor, position: Point): Promise<?TypeHint> {
-    var hackLanguage = await getHackLanguageForBuffer(editor.getBuffer());
+    var hackLanguage = await getHackLanguageForUri(editor.getPath());
     if (!hackLanguage) {
       return null;
     }
@@ -134,7 +134,7 @@ module.exports = {
    * resolve to an object with these fields: file, line, column.
    */
   async findDefinition(editor: TextEditor, line: number, column: number): Promise<any> {
-    var hackLanguage = await getHackLanguageForBuffer(editor.getBuffer());
+    var hackLanguage = await getHackLanguageForUri(editor.getPath());
     if (!hackLanguage) {
       return null;
     }
@@ -170,7 +170,7 @@ module.exports = {
     line: number,
     column: number
   ): Promise<?{baseUri: string, symbolName: string; references: Array<HackReference>}> {
-    var hackLanguage = await getHackLanguageForBuffer(editor.getBuffer());
+    var hackLanguage = await getHackLanguageForUri(editor.getPath());
     if (!hackLanguage) {
       return null;
     }
@@ -199,7 +199,7 @@ module.exports = {
   },
 
   async isFinishedLoadingDependencies(editor: TextEditor): Promise<boolean> {
-    var hackLanguage = await getHackLanguageForBuffer(editor.getBuffer());
+    var hackLanguage = await getHackLanguageForUri(editor.getPath());
     return hackLanguage.isFinishedLoadingDependencies();
   },
 
@@ -207,11 +207,11 @@ module.exports = {
     editor: TextEditor,
     callback: (() => mixed),
   ): Promise<atom$Disposable> {
-    var hackLanguage = await getHackLanguageForBuffer(editor.getBuffer());
+    var hackLanguage = await getHackLanguageForUri(editor.getPath());
     return hackLanguage.onFinishedLoadingDependencies(callback);
   },
 
-  getHackLanguageForBuffer,
+  getHackLanguageForUri,
 };
 
 function getFilePath(filePath: string, protocol: ?string, host: ?string): string {
@@ -228,8 +228,7 @@ function getClientId(buffer: TextBuffer): string {
   return client.getID();
 }
 
-function getHackLanguageForBuffer(buffer: TextBuffer): Promise<?HackLanguage> {
-  var uri = buffer.getUri();
+function getHackLanguageForUri(uri: NuclideUri): Promise<?HackLanguage> {
   var filePath = getPath(uri);
   // `getClient` can return null if a file path doesn't have a root directory in the tree.
   // Also, returns null when reloading Atom with open files, while the RemoteConnection creation is pending.

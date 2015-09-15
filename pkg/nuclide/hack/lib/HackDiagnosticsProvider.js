@@ -11,7 +11,7 @@
 
 import {trackTiming} from 'nuclide-analytics';
 
-var {findDiagnostics, getHackLanguageForBuffer} = require('./hack');
+var {findDiagnostics, getHackLanguageForUri} = require('./hack');
 var {RequestSerializer} = require('nuclide-commons').promises;
 var {DiagnosticsProviderBase} = require('nuclide-diagnostics-provider-base');
 var {Range} = require('atom');
@@ -135,7 +135,7 @@ class HackDiagnosticsProvider {
     }
 
     var diagnostics = result;
-    var hackLanguage = await getHackLanguageForBuffer(textEditor.getBuffer());
+    var hackLanguage = await getHackLanguageForUri(textEditor.getPath());
     invariant(hackLanguage);
     var pathsToInvalidate = this._getPathsToInvalidate(filePath, hackLanguage);
     /* TODO Consider optimizing for the common case of only a single hack root
