@@ -757,6 +757,7 @@ declare class atom$Project {
 
   // Managing Paths
   getPaths(): Array<string>;
+  addPath(projectPath: string): void;
   setPaths(paths: Array<string>): void;
   removePath(projectPath: string): void;
   getDirectories(): Array<atom$Directory>;

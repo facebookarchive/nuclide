@@ -10,6 +10,10 @@
  */
 
 module.exports = {
+  get projects() {
+    return require('./projects');
+  },
+
   get atomEventDebounce() {
     return require('./atom-event-debounce');
   },
