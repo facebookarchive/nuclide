@@ -44,6 +44,7 @@ APM_FLOWCONFIG = """\
 
 [options]
 unsafe.enable_getters_and_setters=true
+esproposal.decorators=ignore
 """
 
 NPM_FLOWCONFIG = """\
@@ -55,6 +56,7 @@ NPM_FLOWCONFIG = """\
 
 [options]
 unsafe.enable_getters_and_setters=true
+esproposal.decorators=ignore
 """
 
 USERNAME = commands.getoutput("whoami")
