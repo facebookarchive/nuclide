@@ -93,6 +93,11 @@ module.exports = {
         invariant(flowDiagnosticsProvider);
         flowDiagnosticsProvider.setRunOnTheFly(newValue);
       }));
+      var {projects} = require('nuclide-atom-helpers');
+      disposables.add(projects.onDidRemoveProjectPath(projectPath => {
+        invariant(flowDiagnosticsProvider);
+        flowDiagnosticsProvider.invalidateProjectPath(projectPath);
+      }));
     }
     return flowDiagnosticsProvider;
   },

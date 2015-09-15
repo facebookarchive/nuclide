@@ -12,7 +12,8 @@
 import {trackTiming} from 'nuclide-analytics';
 
 var {getServiceByNuclideUri} = require('nuclide-client');
-var {RequestSerializer} = require('nuclide-commons').promises;
+var {promises, array} = require('nuclide-commons');
+var {RequestSerializer} = promises;
 var {DiagnosticsProviderBase} = require('nuclide-diagnostics-provider-base');
 var {Range} = require('atom');
 var invariant = require('assert');
@@ -157,7 +158,7 @@ class FlowDiagnosticsProvider {
     if (!filePaths) {
       return [];
     }
-    return require('nuclide-commons').array.from(filePaths);
+    return array.from(filePaths);
   }
 
   _receivedNewUpdateSubscriber(callback: MessageUpdateCallback): void {
@@ -208,6 +209,24 @@ class FlowDiagnosticsProvider {
     }
 
     return { filePathToMessages };
+  }
+
+  invalidateProjectPath(projectPath: string): void {
+    var pathsToInvalidate = new Set();
+    for (var flowRootEntry of this._flowRootToFilePaths) {
+      var [flowRoot, filePaths] = flowRootEntry;
+      if (!flowRoot.startsWith(projectPath)) {
+        continue;
+      }
+      for (var filePath of filePaths) {
+        pathsToInvalidate.add(filePath);
+      }
+      this._flowRootToFilePaths.delete(flowRoot);
+    }
+    this._providerBase.publishMessageInvalidation({
+      scope: 'file',
+      filePaths: array.from(pathsToInvalidate),
+    });
   }
 }
 
