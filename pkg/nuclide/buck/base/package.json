@@ -15,7 +15,7 @@
     "nuclide-commons": "0.0.0",
     "nuclide-logging": "0.0.0",
     "rx": "3.1.1",
-    "temp": "0.8.1"
+    "temp": "0.8.3"
   },
   "devDependencies": {
     "nuclide-jasmine": "0.0.0"

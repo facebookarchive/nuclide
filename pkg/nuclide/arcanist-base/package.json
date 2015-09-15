@@ -16,7 +16,7 @@
   "devDependencies": {
     "fs-plus": "2.8.0",
     "nuclide-jasmine": "0.0.0",
-    "temp": "0.8.1"
+    "temp": "0.8.3"
   },
   "scripts": {
     "test": "node --harmony node_modules/.bin/jasmine-node-transpiled spec"

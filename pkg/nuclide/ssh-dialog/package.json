@@ -24,6 +24,6 @@
   },
   "devDependencies": {
     "nuclide-external-interfaces": "0.0.0",
-    "temp": "0.8.1"
+    "temp": "0.8.3"
   }
 }

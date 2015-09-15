@@ -33,6 +33,6 @@
   "devDependencies": {
     "nuclide-external-interfaces": "0.0.0",
     "rimraf": "2.2.8",
-    "temp": "0.8.1"
+    "temp": "0.8.3"
   }
 }
