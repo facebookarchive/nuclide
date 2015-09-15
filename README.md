@@ -19,10 +19,6 @@ or run the following from the command line:
 apm install nuclide-installer
 ```
 
-It is also *strongly recommended* to install the [linter](https://atom.io/packages/linter) 
-package if you haven't got it already. It allows Nuclide to display messages about linting your code 
-(if you don't have it, you won't see messages from [Flow](/docs/flow/) for example).
-
 The first time you start Atom after installing the `nuclide-installer` package, you will have to wait
 a few seconds for the installer to determine which Nuclide packages it needs to install or update.
 To determine whether the installer worked, go to the **Settings** view in Atom and select the **Packages**
@@ -50,11 +46,6 @@ Note that this package is used in concert with [`nuclide-file-tree`](./pkg/nucli
 so that both local and remote files can be browsed from a familiar UI.
 * [`nuclide-quick-open`](./pkg/nuclide/quick-open/README.md) provides an advanced file search UI
 with segmented search results.
-
-Note that some Nuclide packages, such as `nuclide-flow` and `nuclide-hack`, work better when the
-[linter](https://atom.io/packages/linter) package is installed. Note that `linter` is
-separate from Nuclide. (There is evidence that the linter package
-[will eventually be bundled as part of Atom core](https://github.com/atom/atom/issues/7353).)
 
 ## Repository Organization
 
