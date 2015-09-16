@@ -279,7 +279,13 @@ class TestRunnerController {
         if (this._run) {
           this._run.stop();
         }
-        this._appendToBuffer(info.error.message);
+        if (info.error.code === 'ENOENT') {
+          this._appendToBuffer(
+            `${Ansi.YELLOW}Command '${info.error.path}' does not exist${Ansi.RESET}`);
+          this._appendToBuffer(`${Ansi.YELLOW}Are you trying to run remotely?${Ansi.RESET}`);
+          this._appendToBuffer(`${Ansi.YELLOW}Path: ${path}${Ansi.RESET}`);
+        }
+        this._appendToBuffer(`${Ansi.RED}Original Error: ${info.error.message}${Ansi.RESET}`);
         this._setExecutionState(TestRunnerPanel.ExecutionState.STOPPED);
         logger.error(`Error running tests: "${info.error.message}"`);
       })
