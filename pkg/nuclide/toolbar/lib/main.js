@@ -70,7 +70,11 @@ class Activation {
   dispose() {
     if (this._nuclideToolbar) {
       var React = require('react-for-atom');
-      React.unmountComponentAtNode(React.findDOMNode(this._nuclideToolbar).parentNode);
+      var toolbarNode = React.findDOMNode(this._nuclideToolbar);
+      // If the toolbar is currently hidden for some reason, then toolbarNode will be null.
+      if (toolbarNode) {
+        React.unmountComponentAtNode(toolbarNode.parentNode);
+      }
     }
     this._projectStore.dispose();
     this._disposables.dispose();
