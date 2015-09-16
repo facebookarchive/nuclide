@@ -69,17 +69,22 @@ class FileTreeController {
         'nuclide-file-tree-deux:reveal-active-file': this.revealActiveFile.bind(this),
       })
     );
-    // Load this package's keymap outside the normal activate/deactive lifecycle so its keymaps are
-    // loaded only when users enable this package via its config.
-    //
-    // TODO: Move to normal keymaps/ directory when 'nuclide-file-tree' is fully replaced.
-    atom.keymaps.loadKeymap(
-      pathUtil.join(
-        atom.packages.resolvePackagePath('nuclide-file-tree-deux'),
-        'config',
-        'keymap.cson'
-      )
+    this._subscriptions.add(
+      // TODO: Move to normal menu/ directory when 'nuclide-file-tree' is fully replaced.
+      atom.contextMenu.add({
+        'atom-pane[data-active-item-path] atom-text-editor': [
+          {command: 'nuclide-file-tree-deux:reveal-active-file', label: 'Reveal in File Tree'}
+        ]
+      })
     );
+    var packagePath = atom.packages.resolvePackagePath('nuclide-file-tree-deux');
+    if (packagePath != null) {
+      // Load this package's keymap outside the normal activate/deactive lifecycle so its keymaps
+      // are loaded only when users enable this package via its config.
+      //
+      // TODO: Move to normal keymaps/ directory when 'nuclide-file-tree' is fully replaced.
+      atom.keymaps.loadKeymap(pathUtil.join(packagePath, 'config', 'keymap.cson'));
+    }
     this._subscriptions.add(
       atom.commands.add(EVENT_HANDLER_SELECTOR, {
         'nuclide-file-tree-deux:add-file': () => FileSystemActions.openAddFileDialog(),
