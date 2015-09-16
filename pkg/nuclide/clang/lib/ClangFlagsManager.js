@@ -32,14 +32,6 @@ var clangArgs = from(CLANG_FLAGS_THAT_TAKE_PATHS, item => item.length === 2 ? it
     .filter(item => item !== null);
 var SINGLE_LETTER_CLANG_FLAGS_THAT_TAKE_PATHS = new Set(clangArgs);
 
-/**
-  * Implementation of `path.isAbsolute`.
-  * TODO(chenshen) use `path.isAbsolute` once we switch to node 0.12.x.
-  */
-function isAbsolutePath(filePath: string): boolean {
-  return path.resolve(filePath) === path.normalize(filePath);
-}
-
 
 class ClangFlagsManager {
   _buckUtils: BuckUtils;
@@ -164,13 +156,13 @@ class ClangFlagsManager {
       if (CLANG_FLAGS_THAT_TAKE_PATHS.has(arg)) {
         var nextIndex = argIndex + 1;
         var filePath = args[nextIndex];
-        if (!isAbsolutePath(filePath)) {
+        if (!path.isAbsolute(filePath)) {
           filePath = path.join(buckProjectRoot, filePath);
           args[nextIndex] = filePath;
         }
       } else if (SINGLE_LETTER_CLANG_FLAGS_THAT_TAKE_PATHS.has(arg.substring(0, 2))) {
         var filePath = arg.substring(2);
-        if (!isAbsolutePath(filePath)) {
+        if (!path.isAbsolute(filePath)) {
           filePath = path.join(buckProjectRoot, filePath);
           args[argIndex] = arg.substring(0, 2) + filePath;
         }
