@@ -12,8 +12,8 @@
 import type {LinterProvider} from './LinterAdapter';
 // Flow didn't like it when I tried import type here. This shouldn't affect
 // performance though, since LinterAdapter requires this anyway.
-var {DiagnosticsProviderBase} = require('nuclide-diagnostics-provider-base');
-var LinterAdapter = require('./LinterAdapter');
+import {DiagnosticsProviderBase} from 'nuclide-diagnostics-provider-base';
+import {LinterAdapter} from './LinterAdapter';
 
 function createSingleAdapter(
   provider: LinterProvider,

@@ -12,7 +12,7 @@
 import type {DiagnosticStore} from 'nuclide-diagnostics-base';
 import type {LinterProvider} from './LinterAdapter';
 
-var {Disposable, CompositeDisposable} = require('atom');
+import {Disposable, CompositeDisposable} from 'atom';
 
 var legacyLinterSetting = 'nuclide-diagnostics-store.consumeLegacyLinters';
 

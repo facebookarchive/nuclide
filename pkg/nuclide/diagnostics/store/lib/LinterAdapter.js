@@ -28,7 +28,7 @@ type LinterMessage = {
   trace?: Array<LinterTrace>,
 };
 
-type LinterProvider = {
+export type LinterProvider = {
   /**
    * Extension: Allows a provider to include a display name that will be shown with its messages.
    */
@@ -50,9 +50,11 @@ type LinterProvider = {
   lint: (textEditor: TextEditor) => Promise<Array<LinterMessage>>;
 };
 
-var {DiagnosticsProviderBase} = require('nuclide-diagnostics-provider-base');
+import {DiagnosticsProviderBase} from 'nuclide-diagnostics-provider-base';
 
-var {RequestSerializer} = require('nuclide-commons').promises;
+import {promises as commonsPromises} from 'nuclide-commons';
+
+var {RequestSerializer} = commonsPromises;
 
 function linterMessageToDiagnosticMessage(
   msg: LinterMessage,
@@ -124,7 +126,7 @@ function linterMessagesToDiagnosticUpdate(
  * optional additional field, providerName, to indicate the display name of the
  * linter.
  */
-class LinterAdapter {
+export class LinterAdapter {
   _provider: LinterProvider;
 
   _enabled: boolean;
@@ -199,5 +201,3 @@ class LinterAdapter {
     return this._providerUtils.onMessageInvalidation(callback);
   }
 }
-
-module.exports = LinterAdapter;

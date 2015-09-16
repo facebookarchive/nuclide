@@ -9,9 +9,9 @@
  * the root directory of this source tree.
  */
 
-var {Disposable} = require('atom');
+import {Disposable} from 'atom';
 
-var {createAdapters, validateLinter} = require('../lib/LinterAdapterFactory');
+import {createAdapters, validateLinter} from '../lib/LinterAdapterFactory';
 
 var grammar = 'testgrammar';
 
