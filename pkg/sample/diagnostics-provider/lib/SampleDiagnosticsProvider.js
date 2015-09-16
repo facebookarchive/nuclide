@@ -34,6 +34,11 @@ export default class SampleDiagnosticsProvider {
 
   _sendDiagnostics(editor: TextEditor): void {
     var filePath = editor.getPath();
+    // When a New file is created, it will be "untitled" and getPath() will return null.
+    if (filePath == null) {
+      return;
+    }
+
     var diagnostics: DiagnosticProviderUpdate = {
       filePathToMessages: new Map([[filePath, [
         {
