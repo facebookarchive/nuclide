@@ -159,6 +159,9 @@ class FileTreeController {
   }
 
   revealActiveFile(): void {
+    if (!this._isVisible) {
+      this._setVisibility(true);
+    }
     var editor = atom.workspace.getActiveTextEditor();
     var file = editor ? editor.getBuffer().file : null;
     if (!file) {
