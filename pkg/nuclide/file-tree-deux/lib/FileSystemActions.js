@@ -53,7 +53,7 @@ var FileSystemActions = {
     });
   },
 
-  openAddFileDialog(): void {
+  openAddFileDialog(onDidConfirm: (filePath: ?string) => mixed): void {
     var node = this._getSelectedContainerNode();
     if (!node) {
       return;
@@ -70,9 +70,13 @@ var FileSystemActions = {
         return;
       }
 
-      var created = await directory.getFile(filePath).create();
-      if (!created) {
+      var newFile = directory.getFile(filePath);
+      var created = await newFile.create();
+      if (created) {
+        onDidConfirm(newFile.getPath());
+      } else {
         atom.notifications.addError(`'${filePath}' already exists.`);
+        onDidConfirm(null);
       }
     });
   },

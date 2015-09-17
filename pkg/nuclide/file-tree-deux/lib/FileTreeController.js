@@ -87,7 +87,9 @@ class FileTreeController {
     }
     this._subscriptions.add(
       atom.commands.add(EVENT_HANDLER_SELECTOR, {
-        'nuclide-file-tree-deux:add-file': () => FileSystemActions.openAddFileDialog(),
+        'nuclide-file-tree-deux:add-file': () => {
+          FileSystemActions.openAddFileDialog(this._openAndRevealFilePath.bind(this));
+        },
         'nuclide-file-tree-deux:add-folder': () => FileSystemActions.openAddFolderDialog(),
         'nuclide-file-tree-deux:copy-full-path': this._copyFullPath.bind(this),
         'nuclide-file-tree-deux:delete-selection': this._deleteSelection.bind(this),
@@ -124,6 +126,13 @@ class FileTreeController {
     );
   }
 
+  _openAndRevealFilePath(filePath: ?string): void {
+    if (filePath != null) {
+      atom.workspace.open(filePath);
+      this.revealNodeKey(filePath);
+    }
+  }
+
   _updateRootDirectories(): void {
     // If the remote-projects package hasn't loaded yet remote directories will be instantiated as
     // local directories but with invalid paths. We need to exclude those.
@@ -155,7 +164,13 @@ class FileTreeController {
     if (!file) {
       return;
     }
-    var nodeKey: string = file.getPath();
+    this.revealNodeKey(file.getPath());
+  }
+
+  revealNodeKey(nodeKey: ?string): void {
+    if (!nodeKey) {
+      return;
+    }
     var rootKey: string = this._store.getRootForKey(nodeKey);
     if (!rootKey) {
       return;
