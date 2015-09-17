@@ -81,3 +81,7 @@ export function getLogger(): Logger {
   addPrepareStackTraceHook();
   return lazyLogger ? lazyLogger : (lazyLogger = createLazyLogger());
 }
+
+export function getPathToLogFileForToday(): string {
+  return require('./config').getPathToLogFileForToday();
+}

@@ -24,6 +24,8 @@ var logDirectory = path.dirname(LOG_FILE_PATH);
 var logDirectoryInitialized = false;
 var scribeAppenderPath = path.join(__dirname, '../fb/scribeAppender.js');
 
+var LOG4JS_DATE_FORMAT = '-yyyy-MM-dd';
+
 async function getServerLogAppenderConfig(): Promise<?Object> {
   // Skip if we are running in Atom or open source version of Nuclide.
   if (global.atom || !(await fsPromise.exists(scribeAppenderPath))) {
@@ -38,6 +40,21 @@ async function getServerLogAppenderConfig(): Promise<?Object> {
       scribeCategory: 'errorlog_arsenal',
     },
   };
+}
+
+/**
+ * @return The absolute path to the log file for the specified date.
+ */
+function getPathToLogFileForDate(targetDate: Date): string {
+  var log4jsFormatter = require('log4js/lib/date_format').asString;
+  return LOG_FILE_PATH + log4jsFormatter(LOG4JS_DATE_FORMAT, targetDate);
+}
+
+/**
+ * @return The absolute path to the log file for today.
+ */
+function getPathToLogFileForToday(): string {
+  return getPathToLogFileForDate(new Date());
 }
 
 module.exports = {
@@ -62,7 +79,7 @@ module.exports = {
           alwaysIncludePattern: true,
           absolute: true,
           filename: LOG_FILE_PATH,
-          pattern: '-yyyy-MM-dd',
+          pattern: LOG4JS_DATE_FORMAT,
         },
       ],
     };
@@ -74,6 +91,9 @@ module.exports = {
 
     return config;
   },
-
+  getPathToLogFileForToday,
   LOG_FILE_PATH,
+  __test__: {
+    getPathToLogFileForDate,
+  },
 };
