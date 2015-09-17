@@ -18,7 +18,7 @@ describe('FileTreeStore', () => {
   var actions: FileTreeActions = FileTreeActions.getInstance();
   var store: FileTreeStore = FileTreeStore.getInstance();
 
-  beforeEach(() => {
+  afterEach(() => {
     store.reset();
   });
 
@@ -93,6 +93,6 @@ describe('FileTreeStore', () => {
       // New selection, which happens on user interaction via select and collapse, resets the
       // tracked node.
       expect(store.getTrackedNode()).toBe(null);
-    })
+    });
   });
 });

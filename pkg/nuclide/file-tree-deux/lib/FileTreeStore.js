@@ -311,6 +311,11 @@ class FileTreeStore {
       // TODO: Notify the user and/or retry.
     });
     promise = promise.then(childKeys => {
+      // If this node's root went away while the Promise was resolving, do no more work. This node
+      // is no longer needed in the store.
+      if (this.getRootForKey(nodeKey) == null) {
+        return;
+      }
       this._setChildKeys(nodeKey, childKeys);
       this._addSubscription(nodeKey);
       this._clearLoading(nodeKey);
@@ -629,6 +634,7 @@ class FileTreeStore {
         subscription.dispose();
       }
     }
+
     // Reset data store.
     this._data = this._getDefaults();
   }
