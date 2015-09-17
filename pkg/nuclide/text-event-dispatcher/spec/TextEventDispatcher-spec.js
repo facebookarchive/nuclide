@@ -45,15 +45,23 @@ describe('TextCallbackContainer', () => {
   it('should return callback', () => {
     textCallbackContainer.addCallback([grammar], ['did-reload'], callback);
     var callbacks = textCallbackContainer.getCallbacks(grammar, 'did-reload');
-    expect(callbacks).toEqual(new Set().add(callback));
+    expect(callbacks).toEqual(new Set([callback]));
     checkInvariant();
   });
 
   it('should always return callbacks for all', () => {
     textCallbackContainer.addCallback('all', ['did-save'], callback);
     var callbacks = textCallbackContainer.getCallbacks('asdf', 'did-save');
-    expect(callbacks).toEqual(new Set().add(callback));
+    expect(callbacks).toEqual(new Set([callback]));
     checkInvariant();
+  });
+
+  it('should properly remove a callback', () => {
+    textCallbackContainer.addCallback([grammar], ['did-change'], callback);
+    expect(textCallbackContainer.getCallbacks(grammar, 'did-change')).toEqual(new Set([callback]));
+    checkInvariant();
+    textCallbackContainer.removeCallback([grammar], ['did-change'], callback);
+    expect(textCallbackContainer.getCallbacks(grammar, 'did-change')).toEqual(new Set());
   });
 });
 
@@ -83,7 +91,9 @@ describe('TextEventDispatcher', () => {
         textEventCallbacks.set(editor, set);
       }
       set.add(callback);
-      return new Disposable(() => {});
+      return new Disposable(() => {
+        set.delete(callback);
+      });
     };
     var buffer = {
       onDidStopChanging: registerCallback,
@@ -120,8 +130,7 @@ describe('TextEventDispatcher', () => {
     fakeTextEditor = makeFakeEditor('foo');
     fakeTextEditor2 = makeFakeEditor('bar');
     activeEditor = fakeTextEditor;
-    // weird Flow error here
-    (spyOn(atom.workspace, 'observeTextEditors'): any).andCallFake(fakeObserveEditors);
+    spyOn(atom.workspace, 'observeTextEditors').andCallFake(fakeObserveEditors);
     spyOn(atom.workspace, 'getActiveTextEditor').andCallFake(() => activeEditor);
     spyOn(atom.workspace, 'getTextEditors').andReturn([fakeTextEditor, fakeTextEditor2]);
     spyOn(atom.workspace, 'onDidChangeActivePaneItem').andCallFake(callback => {
@@ -173,5 +182,14 @@ describe('TextEventDispatcher', () => {
     textEventDispatcher.onAnyFileChange(callback);
     triggerAtomEvent(fakeTextEditor);
     expect(callback).toHaveBeenCalled();
+  });
+
+  it('should deregister from text editor events when it has no subscribers', () => {
+    expect(textEventCallbacks.get(fakeTextEditor)).toBe(undefined);
+    var callback = jasmine.createSpy();
+    var disposable = textEventDispatcher.onAnyFileChange(callback);
+    expect(textEventCallbacks.get(fakeTextEditor).size).toBeGreaterThan(0);
+    disposable.dispose();
+    expect(textEventCallbacks.get(fakeTextEditor).size).toBe(0);
   });
 });

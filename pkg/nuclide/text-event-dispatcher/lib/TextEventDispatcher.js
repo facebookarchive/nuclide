@@ -241,7 +241,7 @@ class TextEventDispatcher {
   }
 
   _deregisterEditorListeners() {
-    if (this._editorListenerDisposables) {
+    if (this._editorListenerDisposable) {
       this._getEditorListenerDisposable().dispose();
       this._editorListenerDisposable = null;
     }
