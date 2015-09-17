@@ -36,6 +36,7 @@ export type FileTreeControllerState = {
 
 class FileTreeController {
   _actions: FileTreeActions;
+  _contextMenu: FileTreeContextMenu;
   _isVisible: boolean;
   _panel: atom$Panel;
   _panelComponent: PanelComponent;
@@ -73,8 +74,8 @@ class FileTreeController {
       // TODO: Move to normal menu/ directory when 'nuclide-file-tree' is fully replaced.
       atom.contextMenu.add({
         'atom-pane[data-active-item-path] atom-text-editor': [
-          {command: 'nuclide-file-tree-deux:reveal-active-file', label: 'Reveal in File Tree'}
-        ]
+          {command: 'nuclide-file-tree-deux:reveal-active-file', label: 'Reveal in File Tree'},
+        ],
       })
     );
     var packagePath = atom.packages.resolvePackagePath('nuclide-file-tree-deux');
@@ -103,7 +104,7 @@ class FileTreeController {
     if (state && state.tree) {
       this._store.loadData(state.tree);
     }
-    FileTreeContextMenu.initialize();
+    this._contextMenu = new FileTreeContextMenu();
   }
 
   _initializePanel(): void {
@@ -251,6 +252,7 @@ class FileTreeController {
     this._store.reset();
     React.unmountComponentAtNode(this._panelElement);
     this._panel.destroy();
+    this._contextMenu.dispose();
   }
 
   serialize(): FileTreeControllerState {

@@ -9,9 +9,11 @@
  * the root directory of this source tree.
  */
 
+var {CompositeDisposable} = require('atom');
 var {EVENT_HANDLER_SELECTOR} = require('./FileTreeConstants');
-var {isFullyQualifiedLocalPath} = require('./FileTreeHelpers');
 var FileTreeStore = require('./FileTreeStore');
+
+var {isFullyQualifiedLocalPath} = require('./FileTreeHelpers');
 
 type MenuItemSingle = {
   label: string;
@@ -31,12 +33,12 @@ type MenuItemSeparator = {
 
 type MenuItemDefinition = MenuItemSingle | MenuItemGroup | MenuItemSeparator;
 
-var instance: ?Object;
-
 class FileTreeContextMenu {
   _store: FileTreeStore;
+  _subscriptions: CompositeDisposable;
 
   constructor() {
+    this._subscriptions = new CompositeDisposable();
     this._store = FileTreeStore.getInstance();
     this._addContextMenuItemGroup([
       {
@@ -134,6 +136,10 @@ class FileTreeContextMenu {
     ]);
   }
 
+  dispose(): void {
+    this._subscriptions.dispose();
+  }
+
   _addContextMenuItemGroup(menuItems: Array<MenuItemDefinition>): void {
     // Atom is smart about only displaying a separator when there are items to
     // separate, so there will never be a dangling separator at the end.
@@ -141,7 +147,7 @@ class FileTreeContextMenu {
     // TODO: Use a computed property when supported by Flow.
     var contextMenu = {};
     contextMenu[EVENT_HANDLER_SELECTOR] = menuItems;
-    atom.contextMenu.add(contextMenu);
+    this._subscriptions.add(atom.contextMenu.add(contextMenu));
   }
 
   /**
@@ -155,15 +161,6 @@ class FileTreeContextMenu {
       isFullyQualifiedLocalPath(node.nodePath) &&
       process.platform === platform
     );
-  }
-
-  static initialize(): FileTreeContextMenu {
-    // Ensure only one instance is ever created. This is important because if we call
-    // `atom.contextMenu.add()` multiple times we will get duplicates globally.
-    if (!instance) {
-      instance = new FileTreeContextMenu();
-    }
-    return instance;
   }
 }
 
