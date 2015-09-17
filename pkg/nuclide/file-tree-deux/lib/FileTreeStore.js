@@ -158,33 +158,33 @@ class FileTreeStore {
 
   _onDispatch(payload: ActionPayload): void {
     switch (payload.actionType) {
-    case ActionType.DELETE_SELECTED_NODES:
-      this._deleteSelectedNodes();
-      break;
-    case ActionType.SET_TRACKED_NODE:
-      this._setTrackedNode(payload.rootKey, payload.nodeKey);
-      break;
-    case ActionType.SET_ROOT_KEYS:
-      this._setRootKeys(payload.rootKeys);
-      break;
-    case ActionType.SET_FOCUSED_ROOT:
-      this._set('focusedRootKey', payload.rootKey);
-      break;
-    case ActionType.EXPAND_NODE:
-      this._expandNode(payload.rootKey, payload.nodeKey);
-      break;
-    case ActionType.COLLAPSE_NODE:
-      this._collapseNode(payload.rootKey, payload.nodeKey);
-      break;
-    case ActionType.SET_SELECTED_NODES_FOR_ROOT:
-      this._setSelectedKeys(payload.rootKey, payload.nodeKeys);
-      break;
-    case ActionType.SET_SELECTED_NODES_FOR_TREE:
-      this._setSelectedKeysByRoot(payload.selectedKeysByRoot);
-      break;
-    case ActionType.CREATE_CHILD:
-      this._createChild(payload.nodeKey, payload.childKey);
-      break;
+      case ActionType.DELETE_SELECTED_NODES:
+        this._deleteSelectedNodes();
+        break;
+      case ActionType.SET_TRACKED_NODE:
+        this._setTrackedNode(payload.rootKey, payload.nodeKey);
+        break;
+      case ActionType.SET_ROOT_KEYS:
+        this._setRootKeys(payload.rootKeys);
+        break;
+      case ActionType.SET_FOCUSED_ROOT:
+        this._set('focusedRootKey', payload.rootKey);
+        break;
+      case ActionType.EXPAND_NODE:
+        this._expandNode(payload.rootKey, payload.nodeKey);
+        break;
+      case ActionType.COLLAPSE_NODE:
+        this._collapseNode(payload.rootKey, payload.nodeKey);
+        break;
+      case ActionType.SET_SELECTED_NODES_FOR_ROOT:
+        this._setSelectedKeys(payload.rootKey, payload.nodeKeys);
+        break;
+      case ActionType.SET_SELECTED_NODES_FOR_TREE:
+        this._setSelectedKeysByRoot(payload.selectedKeysByRoot);
+        break;
+      case ActionType.CREATE_CHILD:
+        this._createChild(payload.nodeKey, payload.childKey);
+        break;
     }
   }
 
