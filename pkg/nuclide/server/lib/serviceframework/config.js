@@ -23,7 +23,24 @@ type ConfigEntry = {
  * Load service configs, and resolve all of the paths to absolute paths.
  */
 export function loadServicesConfig(): Array<ConfigEntry> {
-  return require('../../services-3.json').map(config => {
+  // $FlowIssue - This path is not recognized.
+  var publicServices = createServiceConfigObject(require('../../services-3.json'));
+  var privateServices = [];
+  try {
+    // $FlowIssue - This path is not recognized.
+    privateServices = createServiceConfigObject(require('../../fb/fb-services-3.json'));
+  } catch (e) {
+    // This file may not exist.
+  }
+  return publicServices.concat(privateServices);
+}
+
+/**
+ * Takes the contents of a service config JSON file, and formats each entry into
+ * a ConfigEntry.
+ */
+function createServiceConfigObject(jsonConfig: Array<Object>): Array<ConfigEntry> {
+  return jsonConfig.map(config => {
     return {
       name: config.name,
       definition: resolveServicePath(config.definition),
