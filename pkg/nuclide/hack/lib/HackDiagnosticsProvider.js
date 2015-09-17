@@ -139,7 +139,7 @@ class HackDiagnosticsProvider {
     invariant(hackLanguage);
 
     this._providerBase.publishMessageInvalidation({scope: 'file', filePaths: [filePath]});
-    this.invalidatePathsForHackLanguage(hackLanguage);
+    this._invalidatePathsForHackLanguage(hackLanguage);
 
     var pathsForHackLanguage = new Set();
     this._hackLanguageToFilePaths.set(hackLanguage, pathsForHackLanguage);
@@ -217,6 +217,10 @@ class HackDiagnosticsProvider {
     if (!hackLanguage) {
       return;
     }
+    this._invalidatePathsForHackLanguage(hackLanguage);
+  }
+
+  _invalidatePathsForHackLanguage(hackLanguage: HackLanguage): void {
     var pathsToInvalidate = this._getPathsToInvalidate(hackLanguage);
     this._providerBase.publishMessageInvalidation({scope: 'file', filePaths: pathsToInvalidate});
     this._hackLanguageToFilePaths.delete(hackLanguage);
