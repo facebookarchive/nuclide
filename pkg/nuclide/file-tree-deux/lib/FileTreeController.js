@@ -160,9 +160,9 @@ class FileTreeController {
   }
 
   revealActiveFile(): void {
-    if (!this._isVisible) {
-      this._setVisibility(true);
-    }
+    // Ensure the file tree is visible before trying to reveal a file in it.
+    this._setVisibility(true);
+
     var editor = atom.workspace.getActiveTextEditor();
     var file = editor ? editor.getBuffer().file : null;
     if (!file) {
