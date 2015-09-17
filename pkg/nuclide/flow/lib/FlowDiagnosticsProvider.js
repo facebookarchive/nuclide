@@ -192,12 +192,31 @@ class FlowDiagnosticsProvider {
     this._providerBase.dispose();
   }
 
-  _processDiagnostics(diagnostics: Array<FlowDiagnosticItem>, targetFile: string): DiagnosticProviderUpdate {
+  _processDiagnostics(
+    diagnostics: Array<FlowDiagnosticItem>,
+    currentFile: string
+  ): DiagnosticProviderUpdate {
 
     // convert array messages to Error Objects with Traces
     var fileDiagnostics = diagnostics.map(flowMessageToDiagnosticMessage);
 
     var filePathToMessages = new Map();
+
+    // This invalidates the errors in the current file. If Flow, when running in this root, has
+    // reported errors for this file, this invalidation is not necessary because the path will be
+    // explicitly invalidated. However, if Flow has reported an error in this root from another root
+    // (as sometimes happens when Flow roots contain symlinks to other Flow roots), and it also does
+    // not report that same error when running in this Flow root, then we want the error to
+    // disappear when this file is opened.
+    //
+    // This isn't a perfect solution, since it can still leave diagnostics up in other files, but
+    // this is a corner case and doing this is still better than doing nothing.
+    //
+    // I think that whenever this happens, it's a bug in Flow. It seems strange for Flow to report
+    // errors in one place when run from one root, and not report errors in that same place when run
+    // from another root. But such is life.
+    filePathToMessages.set(currentFile, []);
+
     for (var diagnostic of fileDiagnostics) {
       var path = diagnostic['filePath'];
       var diagnosticArray = filePathToMessages.get(path);

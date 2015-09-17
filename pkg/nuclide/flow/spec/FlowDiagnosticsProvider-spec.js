@@ -53,6 +53,12 @@ describe('FlowDiagnosticsProvider', () => {
       expect(message).toEqual(expectedOutput);
     });
 
+    it('should invalidate errors from the current file if Flow returns none', () => {
+      var diags = [];
+      var update = flowDiagnosticsProvider._processDiagnostics(diags, testPath);
+      expect(update.filePathToMessages.has(testPath)).toBe(true);
+    });
+
     it('should keep warnings as warnings', () => {
       var diags = [[
         {
@@ -98,7 +104,6 @@ describe('FlowDiagnosticsProvider', () => {
       var allMessages = flowDiagnosticsProvider
         ._processDiagnostics(diags, testPath)
         .filePathToMessages;
-      expect(allMessages.size).toBe(1);
       expect(allMessages.has('notMyPath')).toBe(true);
     });
 
