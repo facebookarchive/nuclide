@@ -57,7 +57,7 @@ async function _callHHClient(
       return;
     }
     var {stdout, stderr} = execResult;
-    if (stderr.contains(HH_SERVER_INIT_MESSAGE)) {
+    if (stderr.indexOf(HH_SERVER_INIT_MESSAGE) !== -1) {
       reject(new Error(`${HH_SERVER_INIT_MESSAGE}: try: \`arc build\` or try again later!`));
       return;
     } else if (stderr.startsWith(HH_SERVER_BUSY_MESSAGE)) {
