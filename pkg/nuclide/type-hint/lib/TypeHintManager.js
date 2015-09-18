@@ -13,7 +13,7 @@ var {CompositeDisposable, Disposable} = require('atom');
 
 var {remove} = require('nuclide-commons').array;
 
-const TYPEHINT_DELAY_MS = 200;
+var TYPEHINT_DELAY_MS = 200;
 
 type HintTree = {
   value: string;
@@ -30,14 +30,22 @@ type TypeHint = {
    * and it can be expanded to reveal its children.
    */
   hintTree?: HintTree;
-  range: Range;
+  range: atom$Range;
 };
 
-type TypeHintProvider = {
-  typeHint(editor: TextEditor, bufferPosition: Point): Promise<TypeHint>;
+export type TypeHintProvider = {
+  typeHint(editor: TextEditor, bufferPosition: atom$Point): Promise<TypeHint>;
+  inclusionPriority: number;
+  selector: string;
 };
 
 class TypeHintManager {
+
+  _subscriptions: atom$CompositeDisposable;
+  _marker: ?atom$Marker;
+  _typeHintTimer: ?number;
+  _typeHintToggle: boolean;
+  _typeHintElement: HTMLElement;
 
   _typeHintProviders: Array<TypeHintProvider>;
   /**
@@ -49,7 +57,6 @@ class TypeHintManager {
 
   constructor() {
     this._subscriptions = new CompositeDisposable();
-
     this._subscriptions.add(atom.commands.add(
       'atom-text-editor',
       'nuclide-type-hint:toggle',
@@ -100,14 +107,15 @@ class TypeHintManager {
     this._typeHintTimer = null;
   }
 
-  _delayedTypeHint(e: MouseEvent, editor: TextEditor, editorView: DOMNode) {
+  _delayedTypeHint(e: MouseEvent, editor: TextEditor, editorView: HTMLElement) {
     if (this._typeHintTimer) {
       this._clearTypeHintTimer();
     }
     this._typeHintTimer = setTimeout(() => {
       this._typeHintTimer = null;
       if (!editorView.component) {
-        // The editor was destroyed, but the destroy handler haven't yet been called to cancel the timer.
+        // The editor was destroyed, but the destroy handler haven't yet been called to cancel
+        // the timer.
         return;
       }
       // Delay a bit + Cancel and schedule another update if the mouse keeps moving.
@@ -117,7 +125,7 @@ class TypeHintManager {
     }, TYPEHINT_DELAY_MS);
   }
 
-  async _typeHintInEditor(editor: TextEditor, position: Point): Promise {
+  async _typeHintInEditor(editor: TextEditor, position: atom$Point): Promise {
     var {scopeName} = editor.getGrammar();
     var matchingProviders = this._getMatchingProvidersForScopeName(scopeName);
 
@@ -144,17 +152,21 @@ class TypeHintManager {
     });
 
     // Transform the matched element range to the hint range.
-    this._marker = editor.markBufferRange(range, {invalidate: 'never'});
+    var marker: atom$Marker = editor.markBufferRange(range, {invalidate: 'never'});
+    this._marker = marker;
 
     // This relative positioning is to work around the issue that `position: 'head'`
     // doesn't work for overlay decorators are rendered on the bottom right of the given range.
     // Atom issue: https://github.com/atom/atom/issues/6695
     var expressionLength = range.end.column - range.start.column;
-    this._typeHintElement.style.left = - (expressionLength * editor.getDefaultCharWidth()) +  'px';
-    this._typeHintElement.style.top = - (2 * editor.getLineHeightInPixels()) + 'px';
+    this._typeHintElement.style.left = -(expressionLength * editor.getDefaultCharWidth()) +  'px';
+    this._typeHintElement.style.top = -(2 * editor.getLineHeightInPixels()) + 'px';
     this._typeHintElement.textContent = hint;
     this._typeHintElement.style.display = 'block';
-    editor.decorateMarker(this._marker, {type: 'overlay', position: 'head', item: this._typeHintElement});
+    editor.decorateMarker(
+      marker,
+      {type: 'overlay', position: 'head', item: this._typeHintElement}
+    );
   }
 
   _getMatchingProvidersForScopeName(scopeName: string): Array<TypeHintProvider> {
@@ -162,7 +174,7 @@ class TypeHintManager {
       var providerGrammars = provider.selector.split(/, ?/);
       return provider.inclusionPriority > 0 && providerGrammars.indexOf(scopeName) !== -1;
     }).sort((providerA: TypeHintProvider, providerB: TypeHintProvider) => {
-      return providerA.inclusionPriority < providerB.inclusionPriority;
+      return providerA.inclusionPriority - providerB.inclusionPriority;
     });
   }
 
@@ -175,10 +187,7 @@ class TypeHintManager {
   }
 
   dispose() {
-    if (this._subscriptions) {
-      this._subscriptions.dispose();
-      this._subscriptions = null;
-    }
+    this._subscriptions.dispose();
   }
 }
 

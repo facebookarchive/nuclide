@@ -9,9 +9,15 @@
  * the root directory of this source tree.
  */
 
-var typeHintManager: ?TypeHintManager = null;
+import type {
+  TypeHintProvider,
+} from './TypeHintManager';
+
+import type TypeHintManager from './TypeHintManager';
 
 var {Disposable} = require('atom');
+
+var typeHintManager: ?TypeHintManager = null;
 
 module.exports = {
 
