@@ -61,6 +61,10 @@ var HackSymbolProvider: Provider = {
     return 'DIRECTORY';
   },
 
+  isRenderable(): boolean {
+    return true;
+  },
+
   getAction(): string {
     return 'nuclide-hack-symbol-provider:toggle-provider';
   },

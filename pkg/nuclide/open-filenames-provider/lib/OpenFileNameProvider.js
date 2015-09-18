@@ -38,6 +38,10 @@ var OpenFileListProvider: Provider = {
     return 0;
   },
 
+  isRenderable(): boolean {
+    return true;
+  },
+
   getAction(): string {
     return 'nuclide-open-filenames-provider:toggle-provider';
   },

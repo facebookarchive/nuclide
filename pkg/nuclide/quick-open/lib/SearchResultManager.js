@@ -74,9 +74,10 @@ var DIRECTORY_KEY = 'directory';
 function isValidProvider(provider): boolean {
   return (
     typeof provider.getProviderType === 'function' &&
+    typeof provider.getName === 'function' && typeof provider.getName() === 'string' &&
+    typeof provider.isRenderable === 'function' &&
     typeof provider.executeQuery === 'function' &&
-    typeof provider.getTabTitle === 'function' &&
-    typeof provider.getName === 'function' && typeof provider.getName() === 'string'
+    typeof provider.getTabTitle === 'function'
   );
 }
 
@@ -129,13 +130,13 @@ class SearchResultManager {
   _setUpFlux(): void {
     this._dispatcherToken = this._dispatcher.register(action => {
       switch (action.actionType) {
-      case QuickSelectionDispatcher.ActionTypes.QUERY:
-        this.executeQuery(action.query);
-        break;
-      case QuickSelectionDispatcher.ActionTypes.ACTIVE_PROVIDER_CHANGED:
-        this._activeProviderName = action.providerName;
-        this._emitter.emit(PROVIDERS_CHANGED);
-        break;
+        case QuickSelectionDispatcher.ActionTypes.QUERY:
+          this.executeQuery(action.query);
+          break;
+        case QuickSelectionDispatcher.ActionTypes.ACTIVE_PROVIDER_CHANGED:
+          this._activeProviderName = action.providerName;
+          this._emitter.emit(PROVIDERS_CHANGED);
+          break;
       }
     });
   }
@@ -179,6 +180,7 @@ class SearchResultManager {
       var providerName = service.getName && service.getName() || '<unknown>';
       getLogger().error(`Quick-open provider ${providerName} is not a valid provider`);
     }
+    var isRenderableProvider = typeof service.isRenderable === 'function' && service.isRenderable();
     var isGlobalProvider = service.getProviderType() === 'GLOBAL';
     var targetRegistry = isGlobalProvider
       ? this._registeredProviders[GLOBAL_KEY]
@@ -200,8 +202,8 @@ class SearchResultManager {
       this._removeResultsForProvider(serviceName);
       this._emitter.emit(PROVIDERS_CHANGED);
     }));
-    // If the provider specifies a keybinding, wire it up with the toggle command.
-    if (typeof service.getAction === 'function') {
+    // If the provider is renderable and specifies a keybinding, wire it up with the toggle command.
+    if (isRenderableProvider && typeof service.getAction === 'function') {
       var toggleAction: string = service.getAction();
       // TODO replace with computed property once Flow supports it.
       var actionSpec = {};
@@ -419,8 +421,10 @@ class SearchResultManager {
   }
 
   getRenderableProviders(): Array<quickopen$ProviderSpec> {
-    var tabs = array.from(this._registeredProviders[GLOBAL_KEY].values(), this._bakeProvider)
-      .concat(array.from(this._registeredProviders[DIRECTORY_KEY].values(), this._bakeProvider))
+    var tabs = array.from(this._registeredProviders[GLOBAL_KEY].values())
+      .concat(array.from(this._registeredProviders[DIRECTORY_KEY].values()))
+      .filter(provider => provider.isRenderable())
+      .map(this._bakeProvider)
       .sort((p1, p2) => p1.name.localeCompare(p2.name));
     tabs.unshift(OMNISEARCH_PROVIDER);
     return tabs;

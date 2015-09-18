@@ -27,6 +27,10 @@ var FuzzyFileNameProvider: Provider = {
     return 'DIRECTORY';
   },
 
+  isRenderable(): boolean {
+    return true;
+  },
+
   getDebounceDelay(): number {
     return 0;
   },

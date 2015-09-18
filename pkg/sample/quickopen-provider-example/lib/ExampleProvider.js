@@ -36,7 +36,18 @@ var ExampleProvider: Provider = {
   },
 
   /**
+   * Whether this provider can render in a dedicated tab. If returning `false`, results from the
+   * provider will only be shown in the OmniSearch result list.
+   * If returning `true`, the provider should also provide the `getPromptText` and `getTabTitle`
+   * methods.
+   */
+  isRenderable(): boolean {
+    return true;
+  },
+
+  /**
    * Returns the Atom action for toggling this provider. Used to render the associated keybinding.
+   * Only applies to renderable providers.
    */
   getAction(): string {
     return 'sample-quickopen-provider-example:toggle-provider';
@@ -52,6 +63,7 @@ var ExampleProvider: Provider = {
 
   /**
    * Shown as a placeholder in the query input.
+   * Only applies to renderable providers.
    */
   getPromptText(): string {
     return 'Search Lorem Ipsum';

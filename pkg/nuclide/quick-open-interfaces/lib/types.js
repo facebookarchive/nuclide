@@ -17,11 +17,12 @@ export type ProviderType = 'DIRECTORY' | 'GLOBAL';
 
 export type Provider = {
   executeQuery(query: string, directory?: atom$Directory): Promise<Array<FileResult>>;
-  getPromptText(): string;
   getProviderType(): ProviderType;
-  getTabTitle(): string;
   getName(): string;
+  isRenderable(): boolean;
+  getTabTitle(): string;
 
+  getPromptText?: () => string;
   getAction?: () => string;
   getDebounceDelay?: () => number;
   isEligibleForDirectory?: (directory: atom$Directory) => boolean;
