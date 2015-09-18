@@ -188,7 +188,7 @@ class WatchmanClient {
   async _watch(directoryPath: string): Promise {
     var response = await this._command('watch', directoryPath);
     if (response.warning) {
-      logger.log('watchman warning: ', response.warning);
+      logger.warn('watchman warning: ', response.warning);
     }
   }
 
@@ -199,7 +199,7 @@ class WatchmanClient {
     }
     var response = await this._command('watch-project', directoryPath);
     if (response.warning) {
-      logger.log('watchman warning: ', response.warning);
+      logger.warn('watchman warning: ', response.warning);
     }
     return response;
   }
