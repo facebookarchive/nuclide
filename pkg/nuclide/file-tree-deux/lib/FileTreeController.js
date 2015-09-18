@@ -88,6 +88,9 @@ class FileTreeController {
     }
     this._subscriptions.add(
       atom.commands.add(EVENT_HANDLER_SELECTOR, {
+        'core:move-left': this._collapseSelection.bind(this),
+        'core:move-right': this._expandSelection.bind(this),
+
         'nuclide-file-tree-deux:add-file': () => {
           FileSystemActions.openAddFileDialog(this._openAndRevealFilePath.bind(this));
         },
@@ -196,6 +199,36 @@ class FileTreeController {
     this._actions.setTrackedNode(rootKey, nodeKey);
   }
 
+  /**
+   * Collapses all selected directory nodes. If the selection is a single directory and it is
+   * already collapsed, the selection is set to the directory's parent.
+   */
+  _collapseSelection(): void {
+    var selectedNodes = this._store.getSelectedNodes();
+    if (selectedNodes.length === 1
+      && selectedNodes[0].isContainer
+      && !selectedNodes[0].isExpanded()
+      && !selectedNodes[0].isRoot) {
+      /*
+       * Select the parent of the selection if the following criteria are met:
+       *   * Only 1 node is selected
+       *   * The node is a directory
+       *   * The node is collapsed
+       *   * The node is not a root
+       */
+      this.revealNodeKey(FileTreeHelpers.getParentKey(selectedNodes[0].nodeKey));
+    } else {
+      selectedNodes.forEach(node => {
+        // Only directories can be expanded. Skip non-directory nodes.
+        if (!node.isContainer) {
+          return;
+        }
+
+        this._actions.collapseNode(node.rootKey, node.nodeKey);
+      });
+    }
+  }
+
   _deleteSelection(): void {
     var nodes = this._store.getSelectedNodes();
     if (nodes.length === 0) {
@@ -212,6 +245,20 @@ class FileTreeController {
       },
       detailedMessage: `You are deleting:${os.EOL}${selectedPaths.join(os.EOL)}`,
       message,
+    });
+  }
+
+  /**
+   * Expands all selected directory nodes.
+   */
+  _expandSelection(): void {
+    this._store.getSelectedNodes().forEach(node => {
+      // Only directories can be expanded. Skip non-directory nodes.
+      if (!node.isContainer) {
+        return;
+      }
+
+      this._actions.expandNode(node.rootKey, node.nodeKey);
     });
   }
 
