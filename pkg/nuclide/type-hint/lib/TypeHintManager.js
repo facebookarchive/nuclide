@@ -15,8 +15,21 @@ var {remove} = require('nuclide-commons').array;
 
 const TYPEHINT_DELAY_MS = 200;
 
+type HintTree = {
+  value: string;
+  children?: Array<HintTree>;
+}
+
 type TypeHint = {
-  hint: string;
+  /**
+   * A type hint string to display. One of hint and hintTree must be provided.
+   */
+  hint?: string;
+  /**
+   * A hint tree to display. If specified, overrides hint. The top-level value will be displayed,
+   * and it can be expanded to reveal its children.
+   */
+  hintTree?: HintTree;
   range: Range;
 };
 
