@@ -6,6 +6,7 @@
   "description": "Helper methods for interacting with fb-watchman",
   "nuclide": {
     "excludeTestsFromContinuousIntegration": true,
+    "flowCheck": true,
     "packageType": "Node",
     "testRunner": "npm"
   },
@@ -15,6 +16,7 @@
     "nuclide-logging": "0.0.0"
   },
   "devDependencies": {
+    "nuclide-external-interfaces": "0.0.0",
     "nuclide-jasmine": "0.0.0",
     "temp": "0.8.3"
   },

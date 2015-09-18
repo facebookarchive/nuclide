@@ -56,6 +56,7 @@ type JasmineSpy = {
   (...args: Array<any>): any;
   andCallFake(fake: (...args: Array<any>) => mixed): void;
   andCallThrough(): void;
+  argsForCall: Array<Array<mixed>>;
   andReturn<T>(value: T): T;
   callCount: number;
   calls: Array<JasmineSpyCall>;
@@ -82,6 +83,8 @@ type WaitsForArg = string | number | () => mixed;
 declare function waitsFor(
   latchFunction?: WaitsForArg, failureMessage?: WaitsForArg, timeout?: WaitsForArg): void;
 
+declare function waits(milliseconds: number): void;
+
 type JasmineEnvironment = {
   currentSpec: {
     fail(message: string): void;
@@ -98,6 +101,9 @@ type JasmineMatchers = {
 
 // Jasmine global
 declare var jasmine: {
+  // Default timeout.
+  DEFAULT_TIMEOUT_INTERVAL: number;
+
   Clock: JasmineMockClock;
   Matchers: JasmineMatchers;
   any(expected: string | Object): mixed;

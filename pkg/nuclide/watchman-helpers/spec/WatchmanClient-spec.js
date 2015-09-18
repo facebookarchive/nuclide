@@ -11,6 +11,7 @@
 
 var fs = require('fs');
 var path = require('path');
+var invariant = require('assert');
 var temp = require('temp').track();
 var WatchmanClient = require('../lib/WatchmanClient');
 
@@ -18,9 +19,9 @@ var FILE_MODE = 33188;
 
 describe('WatchmanClient test suite', () => {
 
-  var dirPath;
-  var client;
-  var filePath;
+  var dirPath: string = '';
+  var client: any;
+  var filePath: string = '';
 
   beforeEach(() => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -87,7 +88,7 @@ describe('WatchmanClient test suite', () => {
     it('We need version 3.1.0 or bigger', () => {
       waitsForPromise(async () => {
         var version = await client.version();
-        expect(version).toBeGreaterThan('3.0.999');
+        expect(version > '3.0.999').toBe(true);
       });
     });
   });
@@ -118,6 +119,7 @@ describe('WatchmanClient test suite', () => {
           watchVersionError = error;
         }
         expect(watchVersionError).toBeDefined();
+        invariant(watchVersionError);
         expect(watchVersionError.message).toMatch(/^Watchman version/);
       });
     });
