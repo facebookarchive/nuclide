@@ -47,6 +47,10 @@ class FileTreeNode {
     return this._store.isSelected(this.rootKey, this.nodeKey);
   }
 
+  getVcsStatusCode(): ?number {
+    return this._store.getVcsStatusCode(this.rootKey, this.nodeKey);
+  }
+
   getParentNode(): FileTreeNode {
     return this._store.getNode(this.rootKey, FileTreeHelpers.getParentKey(this.nodeKey));
   }

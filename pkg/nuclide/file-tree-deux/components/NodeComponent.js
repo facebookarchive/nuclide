@@ -11,6 +11,7 @@
 
 var FileTreeActions = require('../lib/FileTreeActions');
 var React = require('react-for-atom');
+var {StatusCodeNumber} = require('nuclide-hg-repository-base').hgConstants;
 
 var cx = require('react-classset');
 var {fileTypeClass} = require('nuclide-atom-helpers');
@@ -61,6 +62,15 @@ class NodeComponent extends React.Component {
     } else {
       innerClassName = fileTypeClass(this.props.nodeName);
     }
+    var statusClass;
+    var {vcsStatusCode} = this.props;
+    if (vcsStatusCode === StatusCodeNumber.MODIFIED) {
+      statusClass = 'status-modified';
+    } else if (vcsStatusCode === StatusCodeNumber.ADDED) {
+      statusClass = 'status-added';
+    } else {
+      statusClass = '';
+    }
     var icon: ?ReactElement;
     if (this.props.isLoading) {
       icon = <span className="nuclide-tree-component-item-arrow-spinner">{SPINNER}</span>;
@@ -77,7 +87,7 @@ class NodeComponent extends React.Component {
         onDoubleClick={this._onDoubleClick}>
         <span ref="arrow" className="nuclide-tree-component-item-arrow">{icon}</span>
         <span
-          className={`icon name ${innerClassName}`}
+          className={`icon name ${innerClassName} ${statusClass}`}
           data-name={this.props.nodeName}
           data-path={this.props.nodePath}>
           {this.props.nodeName}
@@ -132,6 +142,7 @@ NodeComponent.propTypes = {
   nodeName: PropTypes.string.isRequired,
   nodePath: PropTypes.string.isRequired,
   rootKey: PropTypes.string.isRequired,
+  vcsStatusCode: PropTypes.number,
 };
 
 module.exports = NodeComponent;

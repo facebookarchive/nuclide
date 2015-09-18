@@ -47,6 +47,7 @@ class RootNodeComponent extends React.Component {
         isExpanded={node.isExpanded()}
         isLoading={node.isLoading()}
         isSelected={node.isSelected()}
+        vcsStatusCode={node.getVcsStatusCode()}
         key={node.nodeKey}
         nodeKey={node.nodeKey}
         nodeName={node.nodeName}

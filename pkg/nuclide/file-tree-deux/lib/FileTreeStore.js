@@ -248,6 +248,11 @@ class FileTreeStore {
     return this.getSelectedKeys(rootKey).has(nodeKey);
   }
 
+  getVcsStatusCode(rootKey: string, nodeKey: string): ?number {
+    // TODO(mbolin): Deduce from this._data.
+    return null;
+  }
+
   getChildKeys(rootKey: string, nodeKey: string): Array<string> {
     var childKeys = this._data.childKeyMap[nodeKey];
     if (childKeys == null || this._data.isDirtyMap[nodeKey]) {

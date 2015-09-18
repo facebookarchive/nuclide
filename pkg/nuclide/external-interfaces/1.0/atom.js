@@ -755,6 +755,10 @@ declare class atom$Project {
   // Event Subscription
   onDidChangePaths(callback: (projectPaths: Array<string>) => mixed): atom$Disposable;
 
+  // Accessing the git repository
+  getRepositories(): Array<?Repository>;
+  repositoryForDirectory(directory: atom$Directory): Promise<?Repository>;
+
   // Managing Paths
   getPaths(): Array<string>;
   addPath(projectPath: string): void;
@@ -965,8 +969,8 @@ declare class Repository {
   getDirectoryStatus: (aPath: string) => number;
   getPathStatus: (aPath: string) => number;
   getCachedPathStatus: (aPath: string) => ?number;
-  isStatusModified: (aPath: string) => boolean;
-  isStatusNew: (aPath: string) => boolean;
+  isStatusModified: (status: number) => boolean;
+  isStatusNew: (status: number) => boolean;
 
   // Retrieving Diffs
   getDiffStats: (filePath: string) => {added: number; deleted: number;};
