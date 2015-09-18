@@ -1,0 +1,5 @@
+'.platform-darwin atom-workspace':
+  'alt-cmd-shift-d': 'nuclide-diff-view:open'
+
+'.platform-win32 atom-workspace, .platform-linux atom-workspace':
+  'alt-ctrl-shift-d': 'nuclide-diff-view:open'
