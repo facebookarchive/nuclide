@@ -187,7 +187,8 @@ class SearchResultManager {
     if (!isGlobalProvider) {
       this._updateDirectories();
     }
-    return new Disposable(() => {
+    var disposable = new CompositeDisposable();
+    disposable.add(new Disposable(() => {
       var serviceName = service.getName();
       targetRegistry.delete(serviceName);
       this._providersByDirectory.forEach((providers, dir) => {
@@ -198,7 +199,17 @@ class SearchResultManager {
       });
       this._removeResultsForProvider(serviceName);
       this._emitter.emit(PROVIDERS_CHANGED);
-    });
+    }));
+    // If the provider specifies a keybinding, wire it up with the toggle command.
+    if (typeof service.getAction === 'function') {
+      var toggleAction: string = service.getAction();
+      // TODO replace with computed property once Flow supports it.
+      var actionSpec = {};
+      actionSpec[toggleAction] =
+        () => QuickSelectionActions.changeActiveProvider(service.getName());
+      disposable.add(atom.commands.add('atom-workspace', actionSpec));
+    }
+    return disposable;
   }
 
   _removeResultsForProvider(providerName: string): void {
@@ -206,13 +217,6 @@ class SearchResultManager {
       delete this._cachedResults[providerName];
       this._emitter.emit(RESULTS_CHANGED);
     }
-  }
-
-  /**
-   * Create a `toggle-provider` action on behalf of a provider.
-   */
-  toggleProvider(service: Provider): void {
-    QuickSelectionActions.changeActiveProvider(service.getName());
   }
 
   setCacheResult(
@@ -310,6 +314,9 @@ class SearchResultManager {
         this.processResult(query, result, GLOBAL_KEY, globalProvider);
       });
       this._setLoading(query, GLOBAL_KEY, globalProvider);
+    }
+    if (this._providersByDirectory.size === 0) {
+      return;
     }
     this._directories.forEach(directory => {
       var path = directory.getPath();

@@ -308,6 +308,7 @@ module.exports = {
         },
       })
     );
+    activateSearchUI();
   },
 
   registerProvider(service: Provider ): atom$Disposable {

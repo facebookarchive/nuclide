@@ -11,13 +11,7 @@
 
 import type {
   Provider,
-  Store,
 } from 'nuclide-quick-open-interfaces';
-
-var {
-  CompositeDisposable,
-  Disposable,
-} = require('atom');
 
 var providerInstance: ?Provider;
 function getProviderInstance(): Provider {
@@ -28,64 +22,17 @@ function getProviderInstance(): Provider {
   return providerInstance;
 }
 
-class Activation {
-  _disposables: CompositeDisposable;
-  _store: ?Store;
-
-  constructor(state: ?Object) {
-    this._disposables = new CompositeDisposable();
-  }
-
-  activate() {
-    this._disposables.add(
-      atom.commands.add('atom-workspace', {
-        'nuclide-hack-symbol-provider:toggle-provider': () => {
-          if (this._store) {
-            this._store.toggleProvider(getProviderInstance());
-          }
-        },
-      })
-    );
-  }
-
-  setStore(store: Store): void {
-    this._store = store;
-  }
-
-  dispose() {
-    this._store = null;
-    this._disposables.dispose();
-  }
-}
-
-var activation: ?Activation = null;
-function getActivation() {
-  if (activation == null) {
-    activation = new Activation();
-    activation.activate();
-  }
-  return activation;
-}
-
 module.exports = {
 
   registerProvider(): Provider {
     return getProviderInstance();
   },
 
-  registerStore(store: Store): atom$Disposable {
-    getActivation().setStore(store);
-    return new Disposable(() => getActivation().dispose());
-  },
-
   activate(state: ?Object) {
-    getActivation();
+
   },
 
   deactivate() {
-    if (activation) {
-      activation.dispose();
-      activation = null;
-    }
+
   },
 };

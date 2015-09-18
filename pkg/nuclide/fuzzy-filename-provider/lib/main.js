@@ -11,7 +11,6 @@
 
 import type {
   Provider,
-  Store,
 } from 'nuclide-quick-open-interfaces';
 
 var {
@@ -30,33 +29,18 @@ function getProviderInstance(): Provider {
 
 class Activation {
   _disposables: CompositeDisposable;
-  _store: ?Store;
 
   constructor(state: ?Object) {
     this._disposables = new CompositeDisposable();
   }
 
   activate() {
-    this._disposables.add(
-      atom.commands.add('atom-workspace', {
-        'nuclide-fuzzy-filename-provider:toggle-provider': () => {
-          if (this._store) {
-            this._store.toggleProvider(getProviderInstance());
-          }
-        },
-      })
-    );
     // Do search preprocessing for all existing and future root directories.
     initSearch(atom.project.getPaths());
     this._disposables.add(atom.project.onDidChangePaths(initSearch));
   }
 
-  setStore(store: Store): void {
-    this._store = store;
-  }
-
   dispose() {
-    this._store = null;
     this._disposables.dispose();
   }
 }
@@ -97,11 +81,6 @@ module.exports = {
 
   registerProvider(): Provider {
     return getProviderInstance();
-  },
-
-  registerStore(store: Store): atom$Disposable {
-    getActivation().setStore(store);
-    return new Disposable(() => getActivation().dispose());
   },
 
   activate(state: ?Object) {

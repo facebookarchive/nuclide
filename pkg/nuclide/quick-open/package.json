@@ -36,13 +36,5 @@
         "0.0.0": "registerProvider"
       }
     }
-  },
-  "providedServices": {
-    "nuclide-quick-open-register-store": {
-      "description": "A store that allows actions such as toggling the currently active provider",
-      "versions": {
-        "0.0.0": "registerStore"
-      }
-    }
   }
 }
