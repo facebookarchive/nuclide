@@ -387,6 +387,14 @@ declare class atom$TextEditor extends atom$Model {
   // Event Subscription
   onDidChange(callback: () => void): atom$Disposable;
   onDidStopChanging(callback: () => void): atom$Disposable;
+  onDidChangeCursorPosition(callback: (event: {
+    oldBufferPosition: atom$Point;
+    oldScreenPosition: atom$Point;
+    newBufferPosition: atom$Point;
+    newScreenPosition: atom$Point;
+    textChanged: boolean;
+    cursor: atom$Cursor;
+  }) => mixed): atom$Disposable;
   onDidDestroy(callback: () => void): atom$Disposable;
   getBuffer(): atom$TextBuffer;
   observeGrammar(callback: (grammar: atom$Grammar) => mixed): atom$Disposable;
@@ -431,12 +439,34 @@ declare class atom$TextEditor extends atom$Model {
 
   // History
   // TextEditor Coordinates
+  screenPositionForBufferPosition(
+    bufferPosition: Array<number> | atom$Point,
+    options?: {
+      wrapBeyondNewlines?: boolean;
+      wrapAtSoftNewlines?: boolean;
+      screenLine?: boolean;
+    },
+  ): atom$Point;
+  bufferPositionForScreenPosition(
+    bufferPosition: Array<number> | atom$Point,
+    options?: {
+      wrapBeyondNewlines?: boolean;
+      wrapAtSoftNewlines?: boolean;
+      screenLine?: boolean;
+    },
+  ): atom$Point;
+
   // Decorations
   decorateMarker(marker: atom$Marker, decorationParams: DecorateMarkerParams): atom$Decoration;
 
   // Markers
   markBufferPosition(position: atom$Point | Array<number>): atom$Marker;
-  markBufferRange(range: atom$Range | Array<Array<number>>): atom$Marker;
+  markBufferRange(range: atom$Range | Array<Array<number>>, properties: {
+    maintainHistory?: boolean;
+    reversed?: boolean;
+    persistent?: boolean;
+    invalidate?: string;
+  }): atom$Marker;
 
   // Cursors
   setCursorBufferPosition(
@@ -448,6 +478,8 @@ declare class atom$TextEditor extends atom$Model {
       screenLine?: boolean;
     }): void;
   getCursorBufferPosition(): atom$Point;
+  getCursorScreenPosition(): atom$Point;
+  getCursorScreenPositions(): Array<atom$Point>;
   getLastCursor(): atom$Cursor;
   moveToEndOfLine(): void;
   moveToBottom(): void;
