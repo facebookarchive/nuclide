@@ -133,7 +133,7 @@ class FileTreeStore {
         expandedKeysByRoot: mapValues(data.expandedKeysByRoot, (keys) => new Immutable.Set(keys)),
         rootKeys: data.rootKeys,
         selectedKeysByRoot: mapValues(data.selectedKeysByRoot, (keys) => new Immutable.Set(keys)),
-      }
+      },
     };
     Object.keys(data.childKeyMap).forEach((nodeKey) => {
       this._addSubscription(nodeKey);
@@ -529,10 +529,18 @@ class FileTreeStore {
     if (!directory) {
       return;
     }
+
+    /*
+     * Remove the directory's dirty marker regardless of whether a subscription already exists
+     * because there is nothing further making it dirty.
+     */
+    this._set('isDirtyMap', deleteProperty(this._data.isDirtyMap, nodeKey));
+
     // Don't create a new subscription if one already exists.
     if (this._data.subscriptionMap[nodeKey]) {
       return;
     }
+
     var subscription;
     try {
       // This call might fail if we try to watch a non-existing directory, or if permission denied.
@@ -545,7 +553,6 @@ class FileTreeStore {
       return;
     }
     this._set('subscriptionMap', setProperty(this._data.subscriptionMap, nodeKey, subscription));
-    this._set('isDirtyMap', deleteProperty(this._data.isDirtyMap, nodeKey));
   }
 
   _removeSubscription(rootKey: string, nodeKey: string): void {
