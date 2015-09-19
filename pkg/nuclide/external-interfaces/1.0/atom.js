@@ -655,6 +655,16 @@ declare class atom$ContextMenuManager {
   add(itemsBySelector: Object): atom$Disposable;
 }
 
+declare class atom$Deserializer {
+  name: string;
+  deserialize: (state: Object) => mixed;
+}
+
+declare class atom$DeserializerManager {
+  add(...deserializers: atom$Deserializer[]): atom$Disposable;
+  deserialize(state: Object, params: Object): mixed;
+}
+
 declare class atom$Directory {
   symlink: boolean;
 
@@ -921,6 +931,7 @@ type AtomGlobal = {
   commands: atom$CommandRegistry;
   config: atom$Config;
   contextMenu: atom$ContextMenuManager;
+  deserializers: atom$DeserializerManager;
   grammars: atom$GrammarRegistry;
   keymaps: atom$KeymapManager;
   notifications: atom$NotificationManager;
