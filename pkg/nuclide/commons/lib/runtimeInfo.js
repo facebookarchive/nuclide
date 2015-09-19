@@ -12,6 +12,7 @@
 import {assign} from './object';
 import {
   getAtomVersion,
+  getInstallerPackageBuildNumber,
   getNuclideBuildNumber,
   isRunningInClient,
   isRunningInNuclide,
@@ -50,10 +51,10 @@ function getCacheableRuntimeInformation(): RuntimeInformation {
     atomVersion: isRunningInClient() ? getAtomVersion() : '',
     isRunningInNuclide: isRunningInNuclide(),
     nuclideVersion: isRunningInNuclide() ? getNuclideBuildNumber() : 0 ,
-    // TODO (chenshen) fill following information.
     installerPackageVersion: 0,
-    isDevelopment: false,
+    // TODO (chenshen) fill following information.
     serverVersion: 0,
+    isDevelopment: false,
   };
 
   return cachedInformation;
@@ -63,5 +64,6 @@ export function getRuntimeInformation(): RuntimeInformation {
   var runtimeInformation = assign({}, getCacheableRuntimeInformation());
   runtimeInformation.sessionId = session.id;
   runtimeInformation.timestamp = Date.now();
+  runtimeInformation.installerPackageVersion = getInstallerPackageBuildNumber();
   return runtimeInformation;
 }

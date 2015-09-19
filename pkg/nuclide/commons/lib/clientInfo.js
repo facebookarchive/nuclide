@@ -8,9 +8,12 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
+
+import {get, reset} from './singleton';
 import path from 'path';
 
 var SMALLEST_NUCLIDE_BUILD_NUMBER = 5394875;
+var INSTALLER_BUILD_NUMBER_KEY = '_nuclide_installer_build_number_key';
 
 export function isRunningInTest(): boolean {
   return process.env.NODE_ENV === 'test';
@@ -61,8 +64,15 @@ export function getNuclideBuildNumber(): number {
   return atomConfig.buildNumber || 0;
 }
 
+export function getInstallerPackageBuildNumber(): number {
+  return get(INSTALLER_BUILD_NUMBER_KEY, () => 0);
+}
+
+export function setInstallerPackageBuildNumber(buildNumber: number): void {
+  reset(INSTALLER_BUILD_NUMBER_KEY, () => buildNumber);
+}
+
 // TODO(chenshen) implement isDevelopment.
-// TODO(chenshen) implement getInstallerPackageBuildNumber.
 
 export var __test__ = {
   SMALLEST_NUCLIDE_BUILD_NUMBER,
