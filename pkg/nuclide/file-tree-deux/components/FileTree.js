@@ -13,6 +13,7 @@ var {CompositeDisposable} = require('atom');
 var FileTreeStore = require('../lib/FileTreeStore');
 var React = require('react-for-atom');
 var RootNodeComponent = require('./RootNodeComponent');
+var EmptyComponent = require('./EmptyComponent');
 
 var {PropTypes} = React;
 
@@ -76,7 +77,7 @@ class FileTree extends React.Component {
   _renderChildren(): ReactElement | Array<ReactElement> {
     var rootKeys: Array<string> = this.props.store.getRootKeys();
     if (rootKeys.length === 0) {
-      return <div>No project root</div>;
+      return <EmptyComponent />;
     }
     return rootKeys.map((rootKey) => {
       return (
