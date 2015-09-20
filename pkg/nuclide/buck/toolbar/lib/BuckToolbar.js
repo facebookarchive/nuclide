@@ -8,29 +8,15 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-var {buckProjectRootForPath} = require('nuclide-buck-commons');
 
-var logger;
-function getLogger() {
-  if (!logger) {
-    logger = require('nuclide-logging').getLogger();
-  }
-  return logger;
-}
-
-var invariant = require('assert');
-var {TextEditor} = require('atom');
 var AtomComboBox = require('nuclide-ui-atom-combo-box');
+var {CompositeDisposable, TextEditor} = require('atom');
 var React = require('react-for-atom');
+var {Dispatcher} = require('flux');
 var {PropTypes} = React;
 var SimulatorDropdown = require('./SimulatorDropdown');
-
-type BuckRunDetails = {
-  pid?: number;
-};
-import type {ProcessOutputDataHandlers} from 'nuclide-process-output-store/types';
-
-var BUCK_PROCESS_ID_REGEX = /lldb -p ([0-9]+)/;
+var BuckToolbarActions = require('./BuckToolbarActions');
+var BuckToolbarStore = require('./BuckToolbarStore');
 
 class BuckToolbar extends React.Component {
 
@@ -44,9 +30,9 @@ class BuckToolbar extends React.Component {
    * Ultimately, we should have a dropdown to let the user specify the Buck project when it is
    * ambiguous.
    */
-  _mostRecentBuckProject: ?BuckProject;
-  _textEditorToBuckProject: WeakMap<TextEditor, BuckProject>;
-  _activePaneItemSubscription: atom$Disposable;
+  _disposables: CompositeDisposable;
+  _buckToolbarStore: BuckToolbarStore;
+  _buckToolbarActions: BuckToolbarActions;
 
   constructor(props: mixed) {
     super(props);
@@ -61,18 +47,39 @@ class BuckToolbar extends React.Component {
     this._build = this._build.bind(this);
     this._run = this._run.bind(this);
     this._debug = this._debug.bind(this);
-    this._withProgress = this._withProgress.bind(this);
 
-    this._textEditorToBuckProject = new WeakMap();
+    var dispatcher = new Dispatcher();
+    this._buckToolbarActions = new BuckToolbarActions(dispatcher);
+    this._buckToolbarStore = new BuckToolbarStore(dispatcher);
 
-    this._mostRecentBuckProject = null;
     this._onActivePaneItemChanged(atom.workspace.getActivePaneItem());
-    this._activePaneItemSubscription = atom.workspace.onDidChangeActivePaneItem(
-      this._onActivePaneItemChanged.bind(this));
+
+    this._disposables = new CompositeDisposable();
+    this._disposables.add(atom.workspace.onDidChangeActivePaneItem(
+      this._onActivePaneItemChanged.bind(this)));
+
+    this._disposables.add(this._buckToolbarStore.onResetToolbarProgress(
+      this._resetToolbarProgress.bind(this)));
+    this._disposables.add(this._buckToolbarStore.onRulesCountCalculated(
+      this.setMaxProgressAndResetProgress.bind(this)));
+    this._disposables.add(this._buckToolbarStore.onRulesCountChanged(
+      this.setCurrentProgress.bind(this)));
+    this._disposables.add(this._buckToolbarStore.onBuildFinished(
+      this.setCurrentProgressToMaxProgress.bind(this)));
+    this._disposables.add(this._buckToolbarStore.onBuckCommandFinished(
+      this._hideProgressBar.bind(this)));
   }
 
   componentWillUnmount() {
-    this._activePaneItemSubscription.dispose();
+    this._disposables.dispose();
+  }
+
+  _resetToolbarProgress() {
+    this.setMaxProgressAndResetProgress(0);
+  }
+
+  _hideProgressBar() {
+    this.setState({isBuilding: false});
   }
 
   setCurrentProgress(currentProgress: number) {
@@ -87,40 +94,19 @@ class BuckToolbar extends React.Component {
     this.setCurrentProgress(this.state.maxProgress);
   }
 
-  async _onActivePaneItemChanged(item: mixed): Promise<void> {
+  _onActivePaneItemChanged(item: mixed) {
     if (!(item instanceof TextEditor)) {
       return;
     }
 
     var textEditor: TextEditor = item;
-    var nuclideUri = textEditor.getPath();
-    if (!nuclideUri) {
-      return;
-    }
-
-    var buckProject = this._textEditorToBuckProject.get(textEditor);
-    if (buckProject) {
-      this._mostRecentBuckProject = buckProject;
-      return;
-    }
-
-    // Asynchronously find the BuckProject for the NuclideUri. If, by the time the BuckProject is
-    // found, TextEditor is still the active editor (or this._mostRecentBuckProject has not been set
-    // yet), then update this._mostRecentBuckProject.
-    buckProject = await buckProjectRootForPath(nuclideUri);
-    if (buckProject) {
-      this._textEditorToBuckProject.set(textEditor, buckProject);
-      var activeEditor = atom.workspace.getActiveTextEditor();
-      if (activeEditor === textEditor || this._mostRecentBuckProject == null) {
-        this._mostRecentBuckProject = buckProject;
-      }
-    }
+    this._buckToolbarActions.updateProjectFor(textEditor);
   }
 
-  async _requestOptions(inputText: string): Promise<Array<string>> {
-    var buckProject = this._mostRecentBuckProject;
+  _requestOptions(inputText: string): Promise<Array<string>> {
+    var buckProject = this._buckToolbarStore.getMostRecentBuckProject();
     if (!buckProject) {
-      return [];
+      return Promise.resolve([]);
     }
 
     return buckProject.listAliases();
@@ -176,225 +162,19 @@ class BuckToolbar extends React.Component {
     return this.refs['simulator-menu'].getSelectedSimulator();
   }
 
-  /**
-   * Displays the progress bar until this promise is settled, then removes it.
-   */
-  async _withProgress(promise: Promise): Promise<void> {
-    this.setState({isBuilding: true});
-    try {
-      await promise;
-    } finally {
-      this.setState({isBuilding: false});
-    }
-  }
-
   _build() {
-    this._withProgress(this._doBuild(/* run */ false));
+    this.setState({isBuilding: true});
+    this._buckToolbarActions.build(this.getBuildTarget());
   }
 
   _run() {
-    this._withProgress(this._buildAndLaunchApp(/* debug */ false));
+    this.setState({isBuilding: true});
+    this._buckToolbarActions.run(this.getBuildTarget(), this.getSimulator());
   }
 
   _debug() {
-    this._withProgress(this._buildAndLaunchApp(/* debug */ true));
-  }
-
-  async _buildAndLaunchApp(debug: boolean): Promise {
-    // TODO(natthu): Restore validation logic to make sure the target is installable.
-    // For now, let's leave that to Buck.
-
-    // Stop any existing debugging sessions, as install hangs if an existing
-    // app that's being overwritten is being debugged.
-    atom.commands.dispatch(
-      atom.views.getView(atom.workspace),
-      'nuclide-debugger:stop-debugging');
-
-    var installResult = await this._doBuild(/* run */ true, debug);
-    if (!installResult) {
-      return;
-    }
-    var {buckProject, pid} = installResult;
-
-    if (debug && pid) {
-      // Use commands here to trigger package activation.
-      atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:show');
-      var debuggerService = await require('nuclide-service-hub-plus')
-          .consumeFirstProvider('nuclide-debugger.remote');
-      var buckProjectPath = await buckProject.getPath();
-      debuggerService.debugLLDB(pid, buckProjectPath);
-    }
-  }
-
-  /**
-   * @return Promise which may resolve to null if either
-   *   (a) the active file in the editor is not part of a Buck project, or
-   *   (b) there are errors in the build.
-   */
-  async _doBuild(run: boolean, debug: boolean = false): Promise<?{buckProject: BuckProject; buildTarget: string, pid: ?number}> {
-    var buildTarget = this.getBuildTarget();
-    if (!buildTarget) {
-      return;
-    }
-
-    var buckProject = this._mostRecentBuckProject;
-    if (!buckProject) {
-      var activeEditor = atom.workspace.getActiveTextEditor();
-      if (!activeEditor) {
-        atom.notifications.addWarning(
-            `Could not build: must navigate to a file that is part of a Buck project.`);
-        return;
-      }
-
-      var fileName = activeEditor.getPath();
-      atom.notifications.addWarning(
-          `Could not build: file '${fileName}' is not part of a Buck project.`);
-      return;
-    }
-
-    var command = `buck ${run ? 'install' : 'build'} ${buildTarget}`;
-    atom.notifications.addInfo(`${command} started.`);
-    this.setMaxProgressAndResetProgress(0);
-    var httpPort = await buckProject.getServerPort();
-    if (httpPort > 0) {
-      var uri = `ws://localhost:${httpPort}/ws/build`;
-      var ws = new WebSocket(uri);
-      var buildId: ?string = null;
-      var ruleCount = 0;
-      var isFinished = false;
-
-      ws.onmessage = (e) => {
-        var message;
-        try {
-          message = JSON.parse(e.data);
-        } catch (err) {
-          getLogger().error(
-              `Buck was likely killed while building ${buildTarget}.`);
-          return;
-        }
-
-        var type = message['type'];
-        if (buildId === null) {
-          if (type === 'BuildStarted') {
-            buildId = message['buildId'];
-          } else {
-            return;
-          }
-        }
-
-        if (buildId !== message['buildId']) {
-          return;
-        }
-
-        if (type === 'RuleCountCalculated') {
-          this.setMaxProgressAndResetProgress(message['numRules']);
-        } else if (type === 'BuildRuleFinished') {
-          this.setCurrentProgress(++ruleCount);
-        } else if (type === 'BuildFinished') {
-          this.setCurrentProgressToMaxProgress();
-          isFinished = true;
-          if (!run) {
-            ws.close();
-          }
-        } else if (type === 'InstallFinished') {
-          ws.close();
-        }
-      };
-
-      ws.onclose = () => {
-        if (!isFinished) {
-          getLogger().error(
-              `WebSocket closed before ${buildTarget} finished building.`);
-        }
-      };
-    }
-
-    var {pid} = await this._runBuckCommandInNewPane(
-        {buckProject, buildTarget, run, debug, command});
-    return {buckProject, buildTarget, pid};
-  }
-
-  /**
-   * @return An Object with some details about the output of the command:
-   *   pid: The process id of the running app, if 'run' was true.
-   */
-  async _runBuckCommandInNewPane(buckParams: {
-    buckProject: BuckProject,
-    buildTarget: string,
-    run: boolean,
-    debug: boolean,
-    command: string,
-  }): Promise<BuckRunDetails> {
-    var {buckProject, buildTarget, run, debug, command} = buckParams;
-
-    var getRunCommandInNewPane = require('nuclide-process-output');
-    var {runCommandInNewPane, disposable} = getRunCommandInNewPane();
-
-    var runProcessWithHandlers = async (dataHandlerOptions: ProcessOutputDataHandlers) => {
-      var {stdout, stderr, error, exit} = dataHandlerOptions;
-      var observable;
-      invariant(buckProject);
-      if (run) {
-        observable = await buckProject.installWithOutput(
-            [buildTarget], true, debug, this.getSimulator());
-      } else {
-        observable = await buckProject.buildWithOutput([buildTarget]);
-      }
-      var onNext = (data: {stdout: string} | {stderr: string}) => {
-        if (data.stdout) {
-          stdout(data.stdout);
-        } else {
-          stderr(data.stderr);
-        }
-      };
-      var onError = (data: string) => {
-        error(data);
-        exit(1);
-        atom.notifications.addError(`${buildTarget} failed to build.`);
-        disposable.dispose();
-      };
-      var onExit = () => {
-        // onExit will only be called if the process completes successfully,
-        // i.e. with exit code 0. Unfortunately an Observable cannot pass an
-        // argument (e.g. an exit code) on completion.
-        exit(0);
-        atom.notifications.addSuccess(`${command} succeeded.`);
-        disposable.dispose();
-      };
-      var subscription = observable.subscribe(onNext, onError, onExit);
-
-      return {
-        kill() {
-          subscription.dispose();
-          disposable.dispose();
-        },
-      };
-    };
-
-    var buckRunPromise: Promise<BuckRunDetails> = new Promise(function (resolve, reject) {
-      var {ProcessOutputStore} = require('nuclide-process-output-store');
-      var processOutputStore = new ProcessOutputStore(runProcessWithHandlers);
-      var {handleBuckAnsiOutput} = require('nuclide-process-output-handler');
-
-      var exitSubscription = processOutputStore.onProcessExit((exitCode: number) => {
-        if (exitCode === 0 && run) {
-          // Get the process ID.
-          var allBuildOutput = processOutputStore.getStdout() || '';
-          var pidMatch = allBuildOutput.match(BUCK_PROCESS_ID_REGEX);
-          if (pidMatch) {
-            // Index 1 is the captured pid.
-            resolve({pid: parseInt(pidMatch[1], 10)});
-          }
-        } else {
-          resolve({});
-        }
-        exitSubscription.dispose();
-      });
-
-      runCommandInNewPane('buck', processOutputStore, handleBuckAnsiOutput);
-    });
-
-    return await buckRunPromise;
+    this.setState({isBuilding: true});
+    this._buckToolbarActions.debug(this.getBuildTarget(), this.getSimulator());
   }
 }
 
