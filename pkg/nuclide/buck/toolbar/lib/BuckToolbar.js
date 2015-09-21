@@ -43,6 +43,7 @@ class BuckToolbar extends React.Component {
       maxProgress: 100,
     };
     this._handleBuildTargetChange = this._handleBuildTargetChange.bind(this);
+    this._handleSimulatorChange = this._handleSimulatorChange.bind(this);
     this._requestOptions = this._requestOptions.bind(this);
     this._build = this._build.bind(this);
     this._run = this._run.bind(this);
@@ -136,8 +137,8 @@ class BuckToolbar extends React.Component {
         />
         <SimulatorDropdown
           className="inline-block"
-          ref="simulator-menu"
           title="Choose target device"
+          onSelectedSimulatorChange={this._handleSimulatorChange}
         />
         <div className="btn-group btn-group-sm inline-block">
           <button onClick={this._build} disabled={disabled} className="btn">Build</button>
@@ -154,8 +155,8 @@ class BuckToolbar extends React.Component {
     this.setState({buildTarget: value});
   }
 
-  getSimulator(): ?string {
-    return this.refs['simulator-menu'].getSelectedSimulator();
+  _handleSimulatorChange(simulator: string) {
+    this.setState({simulator});
   }
 
   _build() {
@@ -165,12 +166,12 @@ class BuckToolbar extends React.Component {
 
   _run() {
     this.setState({isBuilding: true});
-    this._buckToolbarActions.run(this.state.buildTarget, this.getSimulator());
+    this._buckToolbarActions.run(this.state.buildTarget, this.state.simulator);
   }
 
   _debug() {
     this.setState({isBuilding: true});
-    this._buckToolbarActions.debug(this.state.buildTarget, this.getSimulator());
+    this._buckToolbarActions.debug(this.state.buildTarget, this.state.simulator);
   }
 }
 

@@ -17,39 +17,30 @@ var {PropTypes} = React;
 
 import type {Device} from './IosSimulator';
 
-var SimulatorDropdown = React.createClass({
+class SimulatorDropdown extends React.Component {
 
-  propTypes: {
-    className: PropTypes.string.isRequired,
-    title: PropTypes.string.isRequired,
-  },
-
-  getDefaultProps(): {[key: string]: mixed} {
-    return {
-      className: '',
-      title: 'Choose a device',
-    };
-  },
-
-  getInitialState(): any {
-    return {
+  constructor(props: {[key: string]: mixed}) {
+    super(props);
+    this.state = {
       menuItems: [],
       selectedIndex: 0,
     };
-  },
+    this._buildMenuItems = this._buildMenuItems.bind(this);
+    this._handleSelection = this._handleSelection.bind(this);
+  }
 
   componentDidMount() {
-    IosSimulator.getDevices().then(this.buildMenuItems);
-  },
+    IosSimulator.getDevices().then(this._buildMenuItems);
+  }
 
-  buildMenuItems(devices: Array<Device>) {
+  _buildMenuItems(devices: Array<Device>) {
     var selectedIndex = IosSimulator.selectDevice(devices);
     var menuItems = devices.map(device => ({
       label: `${device.name} (${device.os})`,
       value: device.udid,
     }));
     this.setState({menuItems, selectedIndex});
-  },
+  }
 
   render(): ReactElement {
     if (this.state.menuItems.length === 0) {
@@ -66,16 +57,27 @@ var SimulatorDropdown = React.createClass({
         title={this.props.title}
       />
     );
-  },
+  }
 
   _handleSelection(newIndex: number) {
+    var selectedItem = this.state.menuItems[newIndex];
+    if (selectedItem) {
+      this.props.onSelectedSimulatorChange(selectedItem.value);
+    }
     this.setState({selectedIndex: newIndex});
-  },
+  }
+}
 
-  getSelectedSimulator(): ?string {
-    var selectedItem = this.state.menuItems[this.state.selectedIndex];
-    return selectedItem && selectedItem.value;
-  },
-});
+SimulatorDropdown.propTypes = {
+  className: PropTypes.string.isRequired,
+  title: PropTypes.string.isRequired,
+  onSelectedSimulatorChange: PropTypes.func.isRequired,
+};
+
+SimulatorDropdown.defaultProps = {
+  className: '',
+  title: 'Choose a device',
+  onSelectedSimulatorChange: () => {},
+};
 
 module.exports = SimulatorDropdown;
