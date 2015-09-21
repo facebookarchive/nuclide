@@ -20,6 +20,11 @@ var {track} = require('nuclide-analytics');
 var {getFileForPath} = require('nuclide-client');
 var logger = require('nuclide-logging').getLogger();
 
+type HgDiffState = {
+  committedContents: string;
+  filesystemContents: string;
+};
+
 class DiffViewModel {
 
   _emitter: Emitter;
@@ -109,11 +114,15 @@ class DiffViewModel {
     return this._activeFileState;
   }
 
-  async _updateActiveDiffState(filePath: string) {
+  async _updateActiveDiffState(filePath: string): Promise<void> {
+    var hgDiffState = await this._fetchHgDiff(filePath);
+    if (!hgDiffState) {
+      return;
+    }
     var {
       committedContents: oldContents,
       filesystemContents: newContents,
-    } = await this._fetchHgDiff(filePath);
+    } = hgDiffState;
     this._setActiveFileState({
       filePath,
       oldContents,
@@ -133,7 +142,7 @@ class DiffViewModel {
     this._emitter.emit('active-file-update', state);
   }
 
-  async _fetchHgDiff(filePath: string): Promise<void> {
+  async _fetchHgDiff(filePath: string): Promise<?HgDiffState> {
     // Calling atom.project.repositoryForDirectory gets the real path of the directory,
     // which is another round-trip and calls the repository providers to get an existing repository.
     // Instead, the first match of the filtering here is the only possible match.
@@ -167,7 +176,7 @@ class DiffViewModel {
       // The diff view is already open and showing all change statuses.
       // There is nothing to do if that was a directory.
       logger.info(`Diff View activated with a non-file path: ${filePath}`);
-      return;
+      return null;
     }
 
     var committedContentsPromise = repository.fetchFileContentAtRevision(filePath)
