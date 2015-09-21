@@ -89,8 +89,10 @@ class DiffViewModel {
     if (file) {
       activeSubscriptions.add(file.onDidChange(() => this._updateActiveDiffState(filePath)));
     }
-    this._updateActiveDiffState(filePath);
     track('diff-view-open-file', {filePath});
+    this._updateActiveDiffState(filePath).catch(error => {
+      atom.notifications.addError(`${error.message}`);
+    });
   }
 
   setNewContents(newContents: string): void {
@@ -140,20 +142,38 @@ class DiffViewModel {
     // TODO(most): move repo type check error handling up the stack before creating the the view.
     if (!repository || repository.getType() !== 'hg') {
       var type = repository ? repository.getType() : 'no repository';
-      throw new Error(`Diff view only supports hg repositories right now: found ${type}` );
+      throw new Error(`Diff view only supports \`Mercurial\` repositories, but found \`${type}\``);
     }
+
+    var {getClient} = require('nuclide-client');
+    var client = getClient(filePath);
+    if (!client) {
+      var errorMessage = `Diff View Internal client finding error for file: \`${filePath}\`.`;
+      logger.error(errorMessage);
+      throw new Error(errorMessage);
+    }
+
+    var {getPath} = require('nuclide-remote-uri');
+    var localFilePath = getPath(filePath);
+    var stats;
+    try {
+      stats = await client.lstat(localFilePath);
+    } catch (err) {
+      var errorMessage = `Diff View Internal lstat error for file: \`${filePath}\``;
+      logger.error(errorMessage);
+      throw new Error(`${errorMessage} - ${err.toString()}`);
+    }
+    if (!stats || !stats.isFile()) {
+      // The diff view is already open and showing all change statuses.
+      // There is nothing to do if that was a directory.
+      logger.info(`Diff View activated with a non-file path: ${filePath}`);
+      return;
+    }
+
     var committedContentsPromise = repository.fetchFileContentAtRevision(filePath)
       // If the file didn't exist on the previous revision, return empty contents.
       .then(contents => contents || '', err => '');
 
-    var {getClient} = require('nuclide-client');
-    var {getPath} = require('nuclide-remote-uri');
-
-    var client = getClient(filePath);
-    if (!client) {
-      throw new Error('Nuclide client not found.');
-    }
-    var localFilePath = getPath(filePath);
     var filesystemContentsPromise = client.readFile(localFilePath, 'utf8')
       // If the file was removed, return empty contents.
       .then(contents => contents || '', err => '');

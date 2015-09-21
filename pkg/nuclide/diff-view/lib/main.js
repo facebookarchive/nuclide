@@ -71,33 +71,11 @@ function createView(entryPath: string): HTMLElement {
 }
 
 function activateFilePath(filePath: string): void {
-  if (!filePath.length) {
+  if (!filePath.length || !activeDiffView) {
     // The Diff View could be opened with no path at all.
     return;
   }
-  var {getClient} = require('nuclide-client');
-  var client = getClient(filePath);
-  if (!client) {
-    // If the root directory was removed from the project,
-    // there is no client or repository attached to such file path.
-    return;
-  }
-  var {getPath} = require('nuclide-remote-uri');
-  var localFilePath = getPath(filePath);
-  client.lstat(localFilePath).then(stats => {
-    if (!stats || !stats.isFile() || !activeDiffView) {
-      // If the Diff View is closed or it's opened with a directory path,
-      // there is no file to activate the diff viewer on.
-      return;
-    }
-    activeDiffView.model.activateFile(filePath);
-  }, (err) => {
-    /*
-     * The file could be removed from the filesystem in the current dirty revision.
-     * Defer to the Diff View.
-     */
-    getLogger().info(`Diff View: lstat error ${filePath} ${err.toString()}`);
-  });
+  activeDiffView.model.activateFile(filePath);
 }
 
 function projectsContainPath(checkPath: string): boolean {
@@ -148,7 +126,7 @@ module.exports = {
     // Listen for file tree context menu file item events to open the diff view.
     subscriptions.add(atom.commands.add(
       '.entry.file.list-item',
-      'nuclide-diff-view:open',
+      'nuclide-diff-view:open-context',
       (event) => {
         var target = getTargetFromEvent(event);
         // In nuclide-file-tree, even though it's a file item selector,
@@ -161,7 +139,7 @@ module.exports = {
         {type: 'separator'},
         {
           label: 'Open in Diff View',
-          command: 'nuclide-diff-view:open',
+          command: 'nuclide-diff-view:open-context',
         },
         {type: 'separator'},
       ],
@@ -170,7 +148,7 @@ module.exports = {
     // Listen for file tree context menu directory item events to open the diff view.
     subscriptions.add(atom.commands.add(
       '.entry.directory.list-item',
-      'nuclide-diff-view:open',
+      'nuclide-diff-view:open-context',
       (event) => {
         var target = getTargetFromEvent(event);
         // In nuclide-file-tree, even though it's a file item selector,
@@ -183,7 +161,7 @@ module.exports = {
         {type: 'separator'},
         {
           label: 'Open in Diff View',
-          command: 'nuclide-diff-view:open',
+          command: 'nuclide-diff-view:open-context',
         },
         {type: 'separator'},
       ],
