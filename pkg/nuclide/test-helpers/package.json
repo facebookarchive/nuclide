@@ -11,7 +11,9 @@
   },
   "dependencies": {
     "chalk": "1.0.0",
-    "diff": "1.4.0"
+    "diff": "1.4.0",
+    "ncp": "2.0.0",
+    "temp": "0.8.3"
   },
   "devDependencies": {
     "nuclide-external-interfaces": "0.0.0",

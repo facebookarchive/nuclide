@@ -70,9 +70,12 @@ function spyOnGetterValue(object: Object, f: string): JasmineSpy {
 }
 
 module.exports = {
-  spyOnGetterValue,
-  uncachedRequire,
+  addMatchers: require('./matchers').addMatchers,
   clearRequireCache,
   expectAsyncFailure,
-  addMatchers: require('./matchers').addMatchers,
+  get fixtures() {
+    return require('./fixtures');
+  },
+  spyOnGetterValue,
+  uncachedRequire,
 };
