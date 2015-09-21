@@ -37,7 +37,7 @@ class BuckToolbar extends React.Component {
   constructor(props: mixed) {
     super(props);
     this.state = {
-      buttonsDisabled: !this.props.initialBuildTarget,
+      buildTarget: this.props.initialBuildTarget,
       isBuilding: false,
       currentProgress: 0,
       maxProgress: 100,
@@ -113,7 +113,7 @@ class BuckToolbar extends React.Component {
   }
 
   render(): ReactElement {
-    var disabled = this.state.buttonsDisabled;
+    var disabled = !this.state.buildTarget;
     var progressBar;
     if (this.state.isBuilding) {
       progressBar =
@@ -151,11 +151,7 @@ class BuckToolbar extends React.Component {
 
   _handleBuildTargetChange(value: string) {
     this.props.onBuildTargetChange(value);
-    this.setState({buttonsDisabled: !value});
-  }
-
-  getBuildTarget(): string {
-    return this.refs['buildTarget'].getText().trim();
+    this.setState({buildTarget: value});
   }
 
   getSimulator(): ?string {
@@ -164,17 +160,17 @@ class BuckToolbar extends React.Component {
 
   _build() {
     this.setState({isBuilding: true});
-    this._buckToolbarActions.build(this.getBuildTarget());
+    this._buckToolbarActions.build(this.state.buildTarget);
   }
 
   _run() {
     this.setState({isBuilding: true});
-    this._buckToolbarActions.run(this.getBuildTarget(), this.getSimulator());
+    this._buckToolbarActions.run(this.state.buildTarget, this.getSimulator());
   }
 
   _debug() {
     this.setState({isBuilding: true});
-    this._buckToolbarActions.debug(this.getBuildTarget(), this.getSimulator());
+    this._buckToolbarActions.debug(this.state.buildTarget, this.getSimulator());
   }
 }
 
