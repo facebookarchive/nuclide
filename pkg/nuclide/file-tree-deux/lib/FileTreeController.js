@@ -247,11 +247,12 @@ class FileTreeController {
    * already collapsed, the selection is set to the directory's parent.
    */
   _collapseSelection(): void {
-    var selectedNodes = this._store.getSelectedNodes();
-    if (selectedNodes.length === 1
-      && selectedNodes[0].isContainer
-      && !selectedNodes[0].isExpanded()
-      && !selectedNodes[0].isRoot) {
+    const selectedNodes = this._store.getSelectedNodes();
+    const firstSelectedNode = selectedNodes.first();
+    if (selectedNodes.size === 1
+      && firstSelectedNode.isContainer
+      && !firstSelectedNode.isExpanded()
+      && !firstSelectedNode.isRoot) {
       /*
        * Select the parent of the selection if the following criteria are met:
        *   * Only 1 node is selected
@@ -259,7 +260,7 @@ class FileTreeController {
        *   * The node is collapsed
        *   * The node is not a root
        */
-      this.revealNodeKey(FileTreeHelpers.getParentKey(selectedNodes[0].nodeKey));
+      this.revealNodeKey(FileTreeHelpers.getParentKey(firstSelectedNode.nodeKey));
     } else {
       selectedNodes.forEach(node => {
         // Only directories can be expanded. Skip non-directory nodes.
@@ -273,22 +274,38 @@ class FileTreeController {
   }
 
   _deleteSelection(): void {
-    var nodes = this._store.getSelectedNodes();
-    if (nodes.length === 0) {
+    const nodes = this._store.getSelectedNodes();
+    if (nodes.size === 0) {
       return;
     }
 
-    var selectedPaths = nodes.map(node => node.nodePath);
-    var message = 'Are you sure you want to delete the following ' +
-        (nodes.length > 1 ? 'items?' : 'item?');
-    atom.confirm({
-      buttons: {
-        'Delete': () => { this._actions.deleteSelectedNodes(); },
-        'Cancel': () => {},
-      },
-      detailedMessage: `You are deleting:${os.EOL}${selectedPaths.join(os.EOL)}`,
-      message,
-    });
+    const rootPaths = nodes.filter(node => node.isRoot);
+    if (rootPaths.size === 0) {
+      const selectedPaths = nodes.map(node => node.nodePath);
+      const message = 'Are you sure you want to delete the following ' +
+          (nodes.length > 1 ? 'items?' : 'item?');
+      atom.confirm({
+        buttons: {
+          'Delete': () => { this._actions.deleteSelectedNodes(); },
+          'Cancel': () => {},
+        },
+        detailedMessage: `You are deleting:${os.EOL}${selectedPaths.join(os.EOL)}`,
+        message,
+      });
+    } else {
+      let message;
+      if (rootPaths.size === 1) {
+        message = `The root directory '${rootPaths.first().nodeName}' can't be removed.`;
+      } else {
+        const rootPathNames = rootPaths.map(node => `'${node.nodeName}'`).join(', ');
+        message = `The root directories ${rootPathNames} can't be removed.`;
+      }
+
+      atom.confirm({
+        buttons: ['OK'],
+        message,
+      });
+    }
   }
 
   /**

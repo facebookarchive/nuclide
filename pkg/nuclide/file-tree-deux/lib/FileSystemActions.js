@@ -84,12 +84,12 @@ var FileSystemActions = {
   openRenameDialog(): void {
     var store = FileTreeStore.getInstance();
     var selectedNodes = store.getSelectedNodes();
-    if (selectedNodes.length !== 1) {
+    if (selectedNodes.size !== 1) {
       // Can only rename one entry at a time.
       return;
     }
 
-    var node = selectedNodes[0];
+    var node = selectedNodes.first();
     var nodePath = node.getLocalPath();
     this._openDialog({
       iconClassName: 'icon-arrow-right',

@@ -78,6 +78,29 @@ describe('FileTreeStore', () => {
     expect(node2.isSelected()).toBe(true);
   });
 
+  describe('getSelectedNodes', () => {
+    it('returns selected nodes from all roots', () => {
+      var dir1 = pathModule.join(__dirname, 'fixtures/dir1') + '/';
+      var dir2 = pathModule.join(__dirname, 'fixtures/dir2') + '/';
+      actions.setRootKeys([dir1, dir2]);
+      actions.toggleSelectNode(dir1, dir1);
+      actions.toggleSelectNode(dir2, dir2);
+
+      // Convert the `Immutable.Set` to a native `Array` for simpler use w/ Jasmine's `toContain`
+      // matcher.
+      var selectedNodes = store.getSelectedNodes().map(node => node.nodeKey).toArray();
+
+      // Use two `toContain` comparisons because Immutable.Set does not guarantee insertion order.
+      expect(selectedNodes).toContain(dir1);
+      expect(selectedNodes).toContain(dir2);
+    });
+
+    it('returns an empty Set when no nodes are selected', () => {
+      var selectedNodes = store.getSelectedNodes().map(node => node.nodeKey).toArray();
+      expect(selectedNodes).toEqual([]);
+    });
+  });
+
   describe('trackedNode', () => {
     it('resets when there is a new selection', () => {
       var dir1 = pathModule.join(__dirname, 'fixtures/dir1') + '/';

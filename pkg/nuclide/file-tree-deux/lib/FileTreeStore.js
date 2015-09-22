@@ -272,13 +272,17 @@ class FileTreeStore {
     return this._data.selectedKeysByRoot[rootKey] || new Immutable.Set();
   }
 
-  getSelectedNodes(): Array<FileTreeNode> {
-    var rootKey = this.getFocusedRootKey();
-    if (!rootKey) {
-      return [];
-    }
-    var selectedKeys = this.getSelectedKeys(rootKey).toArray();
-    return selectedKeys.map(nodeKey => this.getNode(rootKey, nodeKey));
+  /**
+   * Returns all selected nodes across all roots in the tree.
+   */
+  getSelectedNodes(): Immutable.Set<FileTreeNode> {
+    let selectedNodes = new Immutable.Set();
+    this._data.rootKeys.forEach(rootKey => {
+      this.getSelectedKeys(rootKey).forEach(nodeKey => {
+        selectedNodes = selectedNodes.add(this.getNode(rootKey, nodeKey));
+      });
+    });
+    return selectedNodes;
   }
 
   getSingleSelectedNode(): ?FileTreeNode {
