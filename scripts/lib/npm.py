@@ -17,7 +17,6 @@ from package_config import create_config_for_manifest
 DEPENDENCIES_KEYS = [
     'dependencies',
     'devDependencies',
-    'optionalDependencies',
 ]
 
 
@@ -74,7 +73,8 @@ class Npm (object):
         shutil.rmtree(dependencies_root)
 
     def _npm_install(self, package_root, include_dev_dependencies):
-        npm_command = ['npm', 'install']
+        # Use --no-optional to avoid native dependencies for the ws module.
+        npm_command = ['npm', 'install', '--no-optional']
         if not include_dev_dependencies:
             npm_command.append('--production')
         self._execute(npm_command, cwd=package_root)
