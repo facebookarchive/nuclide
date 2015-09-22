@@ -11,6 +11,8 @@
 
 import type {ExportStoreData} from './FileTreeStore';
 
+var INITIAL_WIDTH = 240;
+
 var {CompositeDisposable} = require('atom');
 var FileSystemActions = require('./FileSystemActions');
 var FileTree = require('../components/FileTree');
@@ -45,7 +47,11 @@ class FileTreeController {
   _subscriptions: CompositeDisposable;
 
   constructor(state: ?FileTreeControllerState) {
-    var panel = state && state.panel || {};
+    var {panel} = {
+      ...{panel: {width: INITIAL_WIDTH}},
+      ...state,
+    };
+
     // show the file tree by default
     this._isVisible = panel.isVisible != null ? panel.isVisible : true;
     this._actions = FileTreeActions.getInstance();
