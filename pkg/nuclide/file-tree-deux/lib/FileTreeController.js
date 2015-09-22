@@ -95,15 +95,14 @@ class FileTreeController {
     }
     this._subscriptions.add(
       atom.commands.add(EVENT_HANDLER_SELECTOR, {
-        'core:move-left': this._collapseSelection.bind(this),
-        'core:move-right': this._expandSelection.bind(this),
-
         'nuclide-file-tree-deux:add-file': () => {
           FileSystemActions.openAddFileDialog(this._openAndRevealFilePath.bind(this));
         },
         'nuclide-file-tree-deux:add-folder': () => FileSystemActions.openAddFolderDialog(),
+        'nuclide-file-tree-deux:collapse-directory': this._collapseSelection.bind(this),
         'nuclide-file-tree-deux:copy-full-path': this._copyFullPath.bind(this),
-        'nuclide-file-tree-deux:delete-selection': this._deleteSelection.bind(this),
+        'nuclide-file-tree-deux:expand-directory': this._expandSelection.bind(this),
+        'nuclide-file-tree-deux:remove': this._deleteSelection.bind(this),
         'nuclide-file-tree-deux:remove-project-folder-selection':
           this._removeRootFolderSelection.bind(this),
         'nuclide-file-tree-deux:rename-selection': () => FileSystemActions.openRenameDialog(),

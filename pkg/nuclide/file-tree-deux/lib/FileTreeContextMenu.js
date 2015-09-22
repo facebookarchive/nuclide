@@ -93,7 +93,7 @@ class FileTreeContextMenu {
       },
       {
         label: 'Delete',
-        command: 'nuclide-file-tree-deux:delete-selection',
+        command: 'nuclide-file-tree-deux:remove',
         shouldDisplay: () => {
           var nodes = this._store.getSelectedNodes();
           // We can delete multiple nodes as long as no root node is selected
