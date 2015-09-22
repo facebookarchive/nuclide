@@ -192,6 +192,7 @@ export class DebuggerHandler extends Handler {
   _sendContinuationCommand(command: string): void {
     if (!this._hadFirstContinuationCommand) {
       this._hadFirstContinuationCommand = true;
+      this.sendMethod('Debugger.resumed');
       this._connectionMultiplexer.listen();
       return;
     }

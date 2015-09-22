@@ -160,6 +160,7 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
       waitsForPromise(async () => {
         await handler.handleMethod(1, 'resume');
         expect(connectionMultiplexer.listen).toHaveBeenCalledWith();
+        expect(callback.sendMethod).toHaveBeenCalledWith('Debugger.resumed', undefined);
       });
     });
 
@@ -170,6 +171,7 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
         // Fake the run from loader bp
         await handler.handleMethod(1, 'resume');
         expect(connectionMultiplexer.listen).toHaveBeenCalledWith();
+        expect(callback.sendMethod).toHaveBeenCalledWith('Debugger.resumed', undefined);
         expect(connectionMultiplexer.sendContinuationCommand).not.toHaveBeenCalled();
 
         connectionMultiplexer.getStackFrames = jasmine.createSpy('getStackFrames').andReturn(Promise.resolve({stack: []}));
