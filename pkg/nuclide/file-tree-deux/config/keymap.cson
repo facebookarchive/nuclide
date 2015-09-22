@@ -2,7 +2,9 @@
 '.platform-darwin atom-workspace':
   'cmd-\\': 'nuclide-file-tree-deux:toggle'
   'cmd-|': 'nuclide-file-tree-deux:reveal-active-file'
+  'ctrl-0': 'nuclide-file-tree-deux:toggle-focus'
 
 '.platform-win32 atom-workspace, .platform-linux atom-workspace':
   'ctrl-\\': 'nuclide-file-tree-deux:toggle'
   'ctrl-|': 'nuclide-file-tree-deux:reveal-active-file'
+  'alt-\\': 'nuclide-file-tree-deux:toggle-focus'

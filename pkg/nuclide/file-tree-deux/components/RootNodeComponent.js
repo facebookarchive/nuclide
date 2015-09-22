@@ -31,7 +31,6 @@ class RootNodeComponent extends React.Component {
     return (
       <div
         className="nuclide-tree-root"
-        tabIndex={0}
         onFocus={this._onFocus}
         onMouseDown={this._onMouseDown}>
         {this._renderNode(this.props.rootNode, 0)}

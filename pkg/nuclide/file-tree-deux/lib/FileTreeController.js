@@ -72,8 +72,9 @@ class FileTreeController {
     );
     this._subscriptions.add(
       atom.commands.add('atom-workspace', {
-        'nuclide-file-tree-deux:toggle': this.toggleVisibility.bind(this),
         'nuclide-file-tree-deux:reveal-active-file': this.revealActiveFile.bind(this),
+        'nuclide-file-tree-deux:toggle': this.toggleVisibility.bind(this),
+        'nuclide-file-tree-deux:toggle-focus': this.toggleTreeFocus.bind(this),
       })
     );
     this._subscriptions.add(
@@ -158,10 +159,46 @@ class FileTreeController {
   _setVisibility(shouldBeVisible: boolean): void {
     if (shouldBeVisible) {
       this._panel.show();
+      this.focusTree();
     } else {
+      if (this._treeHasFocus()) {
+        // If the file tree has focus, blur it because it will be hidden when the panel is hidden.
+        this.blurTree();
+      }
       this._panel.hide();
     }
     this._isVisible = shouldBeVisible;
+  }
+
+  /**
+   * "Blurs" the tree, which is done by activating the active pane in
+   * [Atom's tree-view]{@link https://github.com/atom/tree-view/blob/v0.188.0/lib/tree-view.coffee#L187}.
+   */
+  blurTree(): void {
+    atom.workspace.getActivePane().activate();
+  }
+
+  focusTree(): void {
+    this._panelComponent.getChildComponent().focus();
+  }
+
+  /**
+   * Returns `true` if the file tree DOM node has focus, otherwise `false`.
+   */
+  _treeHasFocus(): boolean {
+    const panelChildComponent = this._panelComponent.getChildComponent();
+    return panelChildComponent.hasFocus();
+  }
+
+  /**
+   * Focuses the tree if it does not have focus, blurs the tree if it does have focus.
+   */
+  toggleTreeFocus(): void {
+    if (this._treeHasFocus()) {
+      this.blurTree();
+    } else {
+      this.focusTree();
+    }
   }
 
   toggleVisibility(): void {

@@ -66,9 +66,17 @@ class FileTree extends React.Component {
     this._subscriptions.dispose();
   }
 
+  focus(): void {
+    React.findDOMNode(this).focus();
+  }
+
+  hasFocus(): boolean {
+    return document.activeElement === React.findDOMNode(this);
+  }
+
   render(): ReactElement {
     return (
-      <div className="nuclide-file-tree-deux">
+      <div className="nuclide-file-tree-deux" tabIndex={0}>
         {this._renderChildren()}
       </div>
     );
