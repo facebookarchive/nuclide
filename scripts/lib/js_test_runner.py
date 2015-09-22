@@ -13,9 +13,11 @@ from multiprocessing import Pool, cpu_count
 
 
 class JsTestRunner(object):
-    def __init__(self, package_manager, include_apm=True):
+    def __init__(self, package_manager, include_apm=True, packages_to_test=[], verbose=False):
         self._package_manager = package_manager
         self._include_apm = include_apm
+        self._packages_to_test = packages_to_test
+        self._verbose = verbose
 
     def run_tests(self):
         apm_tests = []
@@ -32,12 +34,16 @@ class JsTestRunner(object):
 
             pkg_path = package_config['packageRootAbsolutePath']
             name = package_config['name']
+
+            if self._packages_to_test and name not in self._packages_to_test:
+                continue
+
             test_args = (test_runner, pkg_path, name)
             test_bucket = npm_tests if test_runner == 'npm' else apm_tests
             test_bucket.append(test_args)
 
             if package_config['flowCheck']:
-                flow_tests.append(('flow', pkg_path, name))
+                flow_tests.append(('flow', pkg_path, name, self._verbose))
 
         if platform_checker.is_windows():
             # We run all tests in serial on Windows because Python's multiprocessing library has issues:
@@ -64,9 +70,9 @@ class JsTestRunner(object):
             run_test(test_runner, pkg_path, name)
 
 
-def run_test(test_runner, pkg_path, name):
+def run_test(test_runner, pkg_path, name, verbose=False):
     if test_runner == 'flow':
-        run_flow_check(pkg_path, name)
+        run_flow_check(pkg_path, name, verbose)
     else:
         run_js_test(test_runner, pkg_path, name)
 
@@ -100,10 +106,12 @@ def run_js_test(test_runner, pkg_path, name):
     else:
         logging.info('TEST PASSED: %s', name)
 
-def run_flow_check(pkg_path, name):
+def run_flow_check(pkg_path, name, show_all):
     """Run a flow typecheck in the given pkg_path."""
     logging.info('Running `flow check` in %s...', pkg_path)
     test_args = ['flow', 'check']
+    if show_all:
+        test_args.append('--show-all-errors')
 
     proc = subprocess.Popen(
             test_args,
