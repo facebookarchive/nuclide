@@ -221,10 +221,7 @@ export default class ClientComponent {
           };
         });
 
-        // Timeout the observable.
-        return observable.timeout(SERVICE_FRAMEWORK_RPC_TIMEOUT_MS,  Observable.throw(
-          new Error(`Timeout after ${SERVICE_FRAMEWORK_RPC_TIMEOUT_MS} for requestId:` +
-          ` ${message.requestId}, ${timeoutMessage}.`)));
+        return observable;
       default:
         throw new Error(`Unkown return type: ${returnType}.`);
     }
