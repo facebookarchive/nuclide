@@ -20,15 +20,18 @@ class DiffViewTreeNode extends LazyTreeNode {
   constructor(
     entry: FileChange,
     parent: ?DiffViewTreeNode,
+    isContainer: boolean,
     fetchChildren: (node: DiffViewTreeNode) => Promise
   ) {
-    super(entry, parent, false, fetchChildren);
+    super(entry, parent, isContainer, fetchChildren);
   }
 
   getLabel(): string {
     var item: FileChange = this.getItem();
     var fileName = basename(item.filePath);
-    return (FileChangeStatusToPrefix[item.statusCode] || '') + fileName;
+    return (this.isContainer() || !item.statusCode)
+      ? fileName
+      : ((FileChangeStatusToPrefix[item.statusCode] || '') + fileName);
   }
 
   getKey(): string {

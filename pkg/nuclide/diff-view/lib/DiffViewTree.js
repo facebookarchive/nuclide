@@ -28,12 +28,11 @@ function labelClassNameForNode(node: LazyTreeNode): string {
     'name': true,
   };
 
-  classObj[
-    node.isContainer() ?
-    'icon-file-directory' :
-    fileTypeClass(node.getLabel())
-  ] = true;
-
+  if (node.isContainer()) {
+    classObj['icon-file-directory'] = true;
+  } else if (node.getItem().statusCode) {
+    classObj[fileTypeClass(node.getLabel())] = true;
+  }
   return addons.classSet(classObj);
 }
 
@@ -93,14 +92,43 @@ class DiffViewTree extends React.Component {
   }
 
   componentDidUpdate(): void {
-    var noChildrenFetcher = async () => Immutable.List.of();
-    var roots = [];
-    this.state.fileChanges.forEach((statusCode, filePath) => {
-      roots.push(new DiffViewTreeNode({filePath, statusCode}, null, noChildrenFetcher));
+    var roots = atom.project.getDirectories().map(directory => {
+      return new DiffViewTreeNode(
+        {filePath: directory.getPath()},
+        null, /* null parent for roots */
+        true, /* isContainer */
+        this._rootChildrenFetcher.bind(this), /* root children fetcher */
+      );
     });
     var treeRoot = this.refs['tree'];
-    treeRoot.setRoots(roots).then(() => {}, () => {});
-    treeRoot.selectNodeKey(this.state.selectedFilePath).then(() => {}, () => {});
+    var noOp = () => {};
+    var selectFileNode = () => {
+      treeRoot.selectNodeKey(this.state.selectedFilePath).then(noOp, noOp);
+    };
+    treeRoot.setRoots(roots).then(selectFileNode, selectFileNode);
+  }
+
+  async _rootChildrenFetcher(rootNode: LazyTreeNode): Promise<Immutable.List<LazyTreeNode>> {
+    var noChildrenFetcher = async () => Immutable.List.of();
+    var {filePath: rootPath} = rootNode.getItem();
+    var childNodes = [];
+    var {repositoryForPath} = require('nuclide-hg-git-bridge');
+    var repository = repositoryForPath(rootPath);
+    if (!repository || repository.getType() !== 'hg') {
+      var nodeName = `[X] Non-Mercurial Repository`;
+      childNodes.push(
+        new DiffViewTreeNode({filePath: nodeName}, rootNode, false, noChildrenFetcher)
+      );
+    } else {
+      this.state.fileChanges.forEach((statusCode, filePath) => {
+        if (filePath.startsWith(rootPath)) {
+          childNodes.push(
+            new DiffViewTreeNode({filePath, statusCode}, rootNode, false, noChildrenFetcher)
+          );
+        }
+      });
+    }
+    return Immutable.List(childNodes);
   }
 
   componentWillUnmount(): void {
@@ -126,7 +154,7 @@ class DiffViewTree extends React.Component {
 
   _onConfirmSelection(node: LazyTreeNode): void {
     var entry: FileChange = node.getItem();
-    if (entry.filePath === this.state.selectedFilePath) {
+    if (!entry.statusCode || entry.filePath === this.state.selectedFilePath) {
       return;
     }
     this.props.diffModel.activateFile(entry.filePath);

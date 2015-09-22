@@ -13,7 +13,7 @@ export type FileChangeStatusValue = 1 | 2 | 3 | 4 | 5;
 
 export type FileChange = {
   filePath: NuclideUri;
-  statusCode: FileChangeStatusValue;
+  statusCode?: FileChangeStatusValue;
 };
 
 export type FileChangeState = {
