@@ -37,16 +37,12 @@ class DebuggerProcess {
 
   getWebsocketAddress(): Promise<string> {
     log('Connecting to: ' + this._remoteDirectoryUri);
-    var {HhvmDebuggerProxyService} = require('nuclide-client').
+    var proxy = require('nuclide-client').
       getServiceByNuclideUri('HhvmDebuggerProxyService', this._remoteDirectoryUri);
-    var proxy = new HhvmDebuggerProxyService();
     this._proxy = proxy;
     this._disposables.add(proxy);
-    this._disposables.add(proxy.getNotificationObservable().subscribe(
-      this._handleServerMessage.bind(this),
-      this._handleServerError.bind(this),
-      this._handleSessionEnd.bind(this)
-    ));
+    this._disposables.add(proxy.onNotify(this._onServerMessage.bind(this)));
+    this._disposables.add(proxy.onSessionEnd(this._handleSessionEnd.bind(this)));
 
     var config = atom.config.get('nuclide-debugger-hhvm');
     log('Connection config: ' + JSON.stringify(config));
@@ -115,7 +111,7 @@ class DebuggerProcess {
     return (new Disposable(() => this._sessionEndCallback = null));
   }
 
-  _handleServerMessage(message: string): void {
+  _onServerMessage(message: string): void {
     log('Recieved server message: ' + message);
     if (this._webSocket) {
       this._webSocket.send(
@@ -126,8 +122,11 @@ class DebuggerProcess {
     }
   }
 
-  _handleServerError(error: message): void {
-    log('Received server error: ' + error);
+  _onSocketMessage(message: string): void {
+    log('Recieved webSocket message: ' + message);
+    if (this._proxy) {
+      this._proxy.sendCommand(translateMessageToServer(message));
+    }
   }
 
   _handleSessionEnd(): void {
@@ -136,13 +135,6 @@ class DebuggerProcess {
       this._sessionEndCallback();
     }
     this.dispose();
-  }
-
-  _onSocketMessage(message: string): void {
-    log('Recieved webSocket message: ' + message);
-    if (this._proxy) {
-      this._proxy.sendCommand(translateMessageToServer(message));
-    }
   }
 
   _onSocketError(error): void {

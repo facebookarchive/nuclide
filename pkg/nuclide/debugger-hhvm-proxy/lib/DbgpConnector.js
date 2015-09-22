@@ -36,7 +36,6 @@ export type ConnectionConfig = {
   pid?: number;
   scriptRegex?: string;
   idekeyRegex?: string;
-  endDebugWhenNoRequests: boolean;
 };
 
 var ATTACH_EVENT = 'dbgp-attach-event';
