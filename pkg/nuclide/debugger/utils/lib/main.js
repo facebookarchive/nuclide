@@ -8,7 +8,10 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-
+import type {
+  nuclide_debugger$DebuggerInstance,
+  nuclide_debugger$DebuggerProcessInfo,
+} from 'nuclide-debugger-interfaces/service';
 
 class DebuggerProcessInfo {
   _serviceName: string;

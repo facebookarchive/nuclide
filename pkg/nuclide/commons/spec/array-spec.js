@@ -114,7 +114,6 @@ describe('Array.from()', () => {
     var set = new Set(['foo', 'bar', 'baz']);
     var f = function(arg) { return this.prefix + arg; };
     var thisArg = {prefix: 'p-'};
-    // $FlowFixMe
     expect(es6Array.from(set, f, thisArg)).toEqual(['p-foo', 'p-bar', 'p-baz']);
   });
 
@@ -127,7 +126,6 @@ describe('Array.from()', () => {
 
     var f = function(arg) { return this.prefix + arg; };
     var thisArg = {prefix: 'p-'};
-    // $FlowFixMe
     expect(es6Array.from(arrayLike, f, thisArg)).toEqual(['p-foo', 'p-bar', 'p-baz']);
   });
 });

@@ -16,7 +16,6 @@ var logger = require('nuclide-logging').getLogger();
 var {getWatchmanBinaryPath} = require('./main');
 var path = require('path');
 
-// $FlowFixMe incompatible with Promise.
 import WatchmanSubscription from './WatchmanSubscription';
 import type {WatchmanSubscriptionOptions} from './WatchmanSubscription';
 
