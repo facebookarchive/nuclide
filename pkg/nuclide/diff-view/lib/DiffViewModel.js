@@ -59,6 +59,9 @@ class DiffViewModel {
     atom.project.getRepositories()
       .filter(repository => repository && repository.getType() === 'hg')
       .forEach(repository => {
+        // Get the initial project status, if it's not already there,
+        // triggered by another integration, like the file tree.
+        repository.getStatuses([repository.getProjectDirectory()]);
         this._repositorySubscriptions.set(
           repository, repository.onDidChangeStatuses(this._updateChangedStatus.bind(this))
         );
