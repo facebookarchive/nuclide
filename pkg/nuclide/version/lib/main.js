@@ -31,7 +31,7 @@ var version;
  * (new feature or whatever) that do not work with the older servers.
  * It also includes server changes that break older clients.
  */
-function getVersion(): string {
+export function getVersion(): string {
   if (!version) {
     try {
       // TODO: The reason we are using version.json file is for our Python
@@ -40,7 +40,9 @@ function getVersion(): string {
       // instead of reading from the json file.
       //
       // Cannot use require() who counts on extension (.json) for parsing file as json.
-      var json = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../version.json')));
+      var json = JSON.parse(
+        fs.readFileSync(path.resolve(__dirname, '../version.json')).toString()
+      );
       version = json.Version.toString();
     } catch (e) {
       version = TEST_VERSION;
@@ -48,8 +50,4 @@ function getVersion(): string {
     }
   }
   return version;
-}
-
-module.exports = {
-  getVersion,
 }
