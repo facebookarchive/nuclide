@@ -1,0 +1,61 @@
+'use babel';
+/* @flow */
+
+/*
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ */
+
+import {error} from 'nuclide-commons';
+import {track} from 'nuclide-analytics';
+
+import type {SshConnectionConfiguration} from './SshHandshake';
+
+var CONNECTION_EVENT = 'nuclide-remote-connection';
+
+export default class ConnectionTracker {
+
+  _config: SshConnectionConfiguration;
+  _connectionStartTime: number;
+  _expired: boolean;
+
+  constructor(config: SshConnectionConfiguration) {
+    this._config = config;
+    this._expired = false;
+    this._connectionStartTime = Date.now();
+  }
+
+  trackSuccess(): void {
+    this._trackConnectionResult(true);
+  }
+
+  trackFailure(e: Error): void {
+    this._trackConnectionResult(false, e);
+  }
+
+  _trackConnectionResult(succeed: boolean, e: ?Error): void {
+    if (this._expired) {
+      return;
+    }
+
+    track(
+      CONNECTION_EVENT,
+      {
+        error: succeed ? '0' : '1',
+        exception: e ? error.stringifyError(e) : '',
+        duration: (Date.now() - this._connectionStartTime).toString(),
+        host: this._config.host,
+        sshPort: this._config.sshPort.toString(),
+        username: this._config.username,
+        remoteServerCommand: this._config.remoteServerCommand,
+        cwd: this._config.cwd,
+        authMethod: this._config.authMethod,
+      },
+    );
+
+    this._expired = true;
+  }
+}

@@ -11,9 +11,10 @@
 var RemoteConnection = require('./RemoteConnection');
 var RemoteDirectory = require('./RemoteDirectory');
 var RemoteFile = require('./RemoteFile');
-var SshHandshake = require('./SshHandshake');
+var {SshHandshake, decorateSshConnectionDelegateWithTracking} = require('./SshHandshake');
 
 module.exports = {
+  decorateSshConnectionDelegateWithTracking,
   RemoteConnection,
   RemoteFile,
   RemoteDirectory,

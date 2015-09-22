@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+var ConnectionTracker = require('./ConnectionTracker');
 var SshConnection = require('ssh2').Client;
 var fs = require('fs-plus');
 var net = require('net');
@@ -23,7 +24,7 @@ var SYNC_WORD = 'SYNSYN';
 var STDOUT_REGEX = /SYNSYN[\s\S\n]*({.*})[\s\S\n]*SYNSYN/;
 var READY_TIMEOUT = 60000;
 
-type SshConnectionConfiguration = {
+export type SshConnectionConfiguration = {
   host: string; // host nuclide server is running on
   sshPort: number; // ssh port of host nuclide server is running on
   username: string; // username to authenticate as
@@ -53,23 +54,25 @@ var SupportedMethods = {
  *     array of strings and passed to finish when you are ready to continue. Note:
  *     It's possible for the server to come back and ask more questions.
  */
-type KeyboardInteractiveCallback = (
+export type KeyboardInteractiveCallback = (
   name: string,
   instructions: string,
   instructionsLang: string,
   prompts: Array<{prompt: string; echo: boolean;}>,
   finish: (answers: Array<string>) => void)  => void;
 
-type SshConnectionDelegate = {
+export type SshConnectionDelegate = {
   /** Invoked when server requests keyboard interaction */
   onKeyboardInteractive: KeyboardInteractiveCallback;
+  /** Invoked when trying to connect */
+  onWillConnect: (config: SshConnectionConfiguration) => void;
   /** Invoked when connection is sucessful */
-  onConnect: (connection: RemoteConnection) => void;
+  onDidConnect: (connection: RemoteConnection, config: SshConnectionConfiguration) => void;
   /** Invoked when connection is fails */
   onError: (error: Error, config: SshConnectionConfiguration) => void;
 }
 
-class SshHandshake {
+export class SshHandshake {
   _delegate: SshConnectionDelegate;
   _connection: SshConnection;
   _config: SshConnectionConfiguration;
@@ -90,9 +93,11 @@ class SshHandshake {
   }
 
   connect(config: SshConnectionConfiguration): void {
+    this._delegate.onWillConnect(config);
+
     var existingConnection = RemoteConnection.getByHostnameAndPath(config.host, config.cwd);
     if (existingConnection) {
-      this._delegate.onConnect(existingConnection, this._config);
+      this._delegate.onDidConnect(existingConnection, this._config);
       return;
     }
 
@@ -303,7 +308,7 @@ class SshHandshake {
         var error = new Error(`Failed to connect to Nuclide server on ${this._config.host}: ${e.message}`);
         this._delegate.onError(error, this._config);
       }
-      this._delegate.onConnect(connection, this._config);
+      this._delegate.onDidConnect(connection, this._config);
       // If we are secure then we don't need the ssh tunnel.
       if (this._isSecure()) {
         this._connection.end();
@@ -350,4 +355,28 @@ class SshHandshake {
 
 SshHandshake.SupportedMethods = SupportedMethods;
 
-module.exports = SshHandshake;
+export function decorateSshConnectionDelegateWithTracking(
+  delegate: SshConnectionDelegate,
+): SshConnectionDelegate {
+  var connectionTracker;
+
+  return {
+    onKeyboardInteractive: delegate.onKeyboardInteractive.bind(delegate),
+    onWillConnect: (config: SshConnectionConfiguration) => {
+      connectionTracker = new ConnectionTracker(config);
+      delegate.onWillConnect(config);
+    },
+    onDidConnect: (connection: RemoteConnection, config: SshConnectionConfiguration) => {
+      if (connectionTracker) {
+        connectionTracker.trackSuccess();
+      }
+      delegate.onDidConnect(connection, config);
+    },
+    onError: (error: Error, config: SshConnectionConfiguration) => {
+      if (connectionTracker) {
+        connectionTracker.trackFailure(error);
+      }
+      delegate.onError(error, config);
+    },
+  };
+}

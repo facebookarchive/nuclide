@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "fs-plus": "2.8.0",
+    "nuclide-analytics": "0.0.0",
     "nuclide-commons": "0.0.0",
     "nuclide-logging": "0.0.0",
     "nuclide-remote-uri": "0.0.0",

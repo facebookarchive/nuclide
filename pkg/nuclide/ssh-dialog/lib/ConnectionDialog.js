@@ -13,7 +13,10 @@ var AtomInput = require('nuclide-ui-atom-input');
 var RadioGroup = require('nuclide-ui-radiogroup');
 var {CompositeDisposable} = require('atom');
 var React = require('react-for-atom');
-var {SshHandshake} = require('nuclide-remote-connection');
+var {
+  SshHandshake,
+  decorateSshConnectionDelegateWithTracking,
+} = require('nuclide-remote-connection');
 var path = require('path');
 var logger = require('nuclide-logging').getLogger();
 
@@ -335,13 +338,15 @@ var ConnectionDialog = React.createClass({
   },
 
   getInitialState() {
-    var sshHandshake = new SshHandshake({
+    var sshHandshake = new SshHandshake(decorateSshConnectionDelegateWithTracking({
       onKeyboardInteractive: (name, instructions, instructionsLang, prompts, finish)  => {
         // TODO: Display all prompts, not just the first one.
         this.requestAuthentication(prompts[0], finish);
       },
 
-      onConnect: (connection: SshHandshake, config: SshConnectionConfiguration) => {
+      onWillConnect:() => {},
+
+      onDidConnect: (connection: SshHandshake, config: SshConnectionConfiguration) => {
         this.close(); // Close the dialog.
         this.props.onConnect(connection, config);
       },
@@ -352,7 +357,7 @@ var ConnectionDialog = React.createClass({
         this.props.onError(error, config);
         logger.debug(error);
       },
-    });
+    }));
 
     return {
       mode: REQUEST_CONNECTION_DETAILS,

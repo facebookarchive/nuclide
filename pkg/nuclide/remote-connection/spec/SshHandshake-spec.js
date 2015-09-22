@@ -13,7 +13,7 @@ var {EventEmitter} = require('events');
 var path = require('path');
 var pathToFakePk = path.join(__dirname, 'fakepk');
 var {clearRequireCache, uncachedRequire} = require('nuclide-test-helpers');
-var SshHandshake = require('../lib/SshHandshake');
+var {SshHandshake} = require('../lib/SshHandshake');
 
 describe('SshHandshake', () => {
   class MockSshConnection extends EventEmitter {
@@ -23,6 +23,7 @@ describe('SshHandshake', () => {
 
   var dns;
   var originalDnsLookup;
+  var handshakeDelegate;
 
   beforeEach(() => {
     dns = uncachedRequire(require, 'dns');
@@ -32,6 +33,10 @@ describe('SshHandshake', () => {
         callback(/* error */ null, /* address */ 'example.com');
       });
     };
+    handshakeDelegate = jasmine.createSpyObj(
+      'delegate',
+      ['onKeyboardInteractive', 'onWillConnect', 'onDidConnect', 'onError'],
+    );
   });
 
   afterEach(() => {
@@ -42,7 +47,6 @@ describe('SshHandshake', () => {
   describe('connect()', () => {
     it('calls delegates onError when ssh connection fails', () => {
       var mockError = new Error('mock error');
-      var handshakeDelegate = jasmine.createSpyObj('delegate', ['onError']);
       var sshConnection = new MockSshConnection();
       var sshHandshake = new SshHandshake(handshakeDelegate, sshConnection);
       var config = {pathToPrivateKey: pathToFakePk, authMethod: 'PRIVATE_KEY'};
@@ -50,13 +54,13 @@ describe('SshHandshake', () => {
       sshHandshake.connect(config);
       sshConnection.emit('error', mockError);
 
+      expect(handshakeDelegate.onWillConnect.callCount).toBe(1);
       expect(handshakeDelegate.onError.callCount).toBe(1);
       expect(handshakeDelegate.onError.calls[0].args[0]).toBe(mockError);
       expect(handshakeDelegate.onError.calls[0].args[1]).toBe(config);
     });
 
     it('calls delegates onError when private key does not exist', () => {
-      var handshakeDelegate = jasmine.createSpyObj('delegate', ['onError']);
       var sshConnection = new MockSshConnection();
       var sshHandshake = new SshHandshake(handshakeDelegate, sshConnection);
       var config = {pathToPrivateKey: pathToFakePk + '.oops', authMethod: 'PRIVATE_KEY'};
@@ -84,7 +88,7 @@ describe('SshHandshake', () => {
   describe('cancel()', () => {
     it('calls SshConnection.end()', () => {
       var sshConnection = new MockSshConnection();
-      var sshHandshake = new SshHandshake({}, sshConnection);
+      var sshHandshake = new SshHandshake(handshakeDelegate, sshConnection);
       var config = {pathToPrivateKey: pathToFakePk};
 
       spyOn(sshConnection, 'end');
