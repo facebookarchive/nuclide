@@ -40,7 +40,7 @@ describe('FileTreeController', () => {
 
   describe('toggleVisibility', () => {
     it('focuses the file tree element when going from hidden to visible', () => {
-      var domNode = React.findDOMNode(controller._panelComponent.getChildComponent());
+      var domNode = React.findDOMNode(controller._panelComponent.getFileTree());
       controller.toggleVisibility();
       expect(domNode).not.toMatchSelector(':focus');
       controller.toggleVisibility();
@@ -48,7 +48,7 @@ describe('FileTreeController', () => {
     });
 
     it('blurs the file tree element when going from visible to hidden', () => {
-      var domNode = React.findDOMNode(controller._panelComponent.getChildComponent());
+      var domNode = React.findDOMNode(controller._panelComponent.getFileTree());
       controller.focusTree();
       expect(domNode).toMatchSelector(':focus');
       controller.toggleVisibility();
@@ -58,7 +58,7 @@ describe('FileTreeController', () => {
 
   describe('focusTree', () => {
     it('focuses the expected element', () => {
-      var domNode = React.findDOMNode(controller._panelComponent.getChildComponent());
+      var domNode = React.findDOMNode(controller._panelComponent.getFileTree());
       expect(domNode).not.toMatchSelector(':focus');
       controller.focusTree();
       expect(domNode).toMatchSelector(':focus');
@@ -67,7 +67,7 @@ describe('FileTreeController', () => {
 
   describe('blurTree', () => {
     it('sends focus to the workspace element to match Atom\'s tree-view API', () => {
-      var domNode = React.findDOMNode(controller._panelComponent.getChildComponent());
+      var domNode = React.findDOMNode(controller._panelComponent.getFileTree());
       controller.focusTree();
       expect(domNode).toMatchSelector(':focus');
       controller.blurTree();

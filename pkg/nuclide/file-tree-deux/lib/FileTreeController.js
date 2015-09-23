@@ -127,12 +127,8 @@ class FileTreeController {
 
   _render(initialWidth?: ?number): void {
     this._panelComponent = React.render(
-      <PanelComponent
-        dock="left"
-        initialLength={initialWidth}>
-        <FileTree store={this._store} />
-      </PanelComponent>,
-      this._panelElement
+      <FileTreePanel store={this._store} initialWidth={initialWidth} />,
+      this._panelElement,
     );
   }
 
@@ -178,15 +174,15 @@ class FileTreeController {
   }
 
   focusTree(): void {
-    this._panelComponent.getChildComponent().focus();
+    this._panelComponent.getFileTree().focus();
   }
 
   /**
    * Returns `true` if the file tree DOM node has focus, otherwise `false`.
    */
   _treeHasFocus(): boolean {
-    const panelChildComponent = this._panelComponent.getChildComponent();
-    return panelChildComponent.hasFocus();
+    const fileTree = this._panelComponent.getFileTree();
+    return fileTree.hasFocus();
   }
 
   /**
@@ -371,5 +367,28 @@ class FileTreeController {
     };
   }
 }
+
+class FileTreePanel extends React.Component {
+  render() {
+    return (
+      <PanelComponent
+        dock="left"
+        initialLength={this.props.initialWidth}
+        ref="panel">
+        <FileTree store={this.props.store} />
+      </PanelComponent>
+    );
+  }
+
+  getFileTree(): FileTree {
+    return this.refs['panel'].getChildComponent();
+  }
+}
+
+var {PropTypes} = React;
+FileTreePanel.propTypes = {
+  initialWidth: PropTypes.number,
+  store: PropTypes.instanceOf(FileTreeStore).isRequired,
+};
 
 module.exports = FileTreeController;
