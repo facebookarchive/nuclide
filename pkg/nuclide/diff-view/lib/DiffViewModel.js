@@ -98,9 +98,13 @@ class DiffViewModel {
       activeSubscriptions.add(file.onDidChange(() => this._updateActiveDiffState(filePath)));
     }
     track('diff-view-open-file', {filePath});
-    this._updateActiveDiffState(filePath).catch(error => {
-      atom.notifications.addError(`${error.message}`);
-    });
+    this._updateActiveDiffState(filePath).catch(this._handleInternalError.bind(this));
+  }
+
+  _handleInternalError(error: Error): void {
+    var errorMessage = `Diff View Internal Error - ${error.message}`;
+    logger.error(errorMessage, error);
+    atom.notifications.addError(errorMessage);
   }
 
   setNewContents(newContents: string): void {
@@ -160,9 +164,7 @@ class DiffViewModel {
     var {getClient} = require('nuclide-client');
     var client = getClient(filePath);
     if (!client) {
-      var errorMessage = `Diff View Internal client finding error for file: \`${filePath}\`.`;
-      logger.error(errorMessage);
-      throw new Error(errorMessage);
+      throw new Error(`client find for file: \`${filePath}\`.`);
     }
 
     var {getPath} = require('nuclide-remote-uri');
@@ -171,9 +173,8 @@ class DiffViewModel {
     try {
       stats = await client.lstat(localFilePath);
     } catch (err) {
-      var errorMessage = `Diff View Internal lstat error for file: \`${filePath}\``;
-      logger.error(errorMessage);
-      throw new Error(`${errorMessage} - ${err.toString()}`);
+      var errorMessage = `lstat for file: \`${filePath}\` - ${err.toString()}`;
+      throw new Error(errorMessage);
     }
     if (!stats || !stats.isFile()) {
       // The diff view is already open and showing all change statuses.
@@ -203,11 +204,25 @@ class DiffViewModel {
   async saveActiveFile(): Promise<void> {
     var {filePath, newContents} = this._activeFileState;
     track('diff-view-save-file', {filePath});
-    var activeFile = getFileForPath(filePath);
-    if (!activeFile) {
-      return logger.error('No diff file to save:', filePath);
+    try {
+      await this._saveFile(filePath, newContents);
+    } catch(error) {
+      this._handleInternalError(error);
+      throw error;
     }
-    await activeFile.write(newContents);
+  }
+
+  async _saveFile(filePath: string, newContents: string) {
+    var client = require('nuclide-client').getClient(filePath);
+    var localFilePath = require('nuclide-remote-uri').getPath(filePath);
+    if (!client) {
+      throw new Error(`client find while saving: \`${filePath}\`.`);
+    }
+    try {
+      await client.writeFile(localFilePath, newContents);
+    } catch (err) {
+      throw new Error(`could not save file: \`${filePath}\` - ${err.toString()}`);
+    }
   }
 
   onDidChangeStatus(callback: () => void): atom$Disposable {
