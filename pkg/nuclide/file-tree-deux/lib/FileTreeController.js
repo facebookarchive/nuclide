@@ -21,6 +21,7 @@ var {EVENT_HANDLER_SELECTOR} = require('./FileTreeConstants');
 var FileTreeContextMenu = require('./FileTreeContextMenu');
 var FileTreeHelpers = require('./FileTreeHelpers');
 var FileTreeStore = require('./FileTreeStore');
+var NuclideCheckbox = require('nuclide-ui-checkbox');
 var {PanelComponent} = require('nuclide-panel');
 var React = require('react-for-atom');
 
@@ -40,6 +41,7 @@ class FileTreeController {
   _actions: FileTreeActions;
   _contextMenu: FileTreeContextMenu;
   _isVisible: boolean;
+  _onChangeExperimentalHgIntegration: Function;
   _panel: atom$Panel;
   _panelComponent: PanelComponent;
   _panelElement: HTMLElement;
@@ -57,6 +59,7 @@ class FileTreeController {
     this._actions = FileTreeActions.getInstance();
     this._store = FileTreeStore.getInstance();
     this._subscriptions = new CompositeDisposable();
+    this._onChangeExperimentalHgIntegration = this._onChangeExperimentalHgIntegration.bind(this);
     // Initial root directories
     this._updateRootDirectories();
     // Subsequent root directories updated on change
@@ -69,6 +72,11 @@ class FileTreeController {
     // Subsequent renders happen on changes to data store
     this._subscriptions.add(
       this._store.subscribe(() => this._render())
+    );
+    this._subscriptions.add(
+      atom.config.observe(
+        'nuclide-file-tree-deux.enableExperimentalVcsIntegration',
+        () => this._render())
     );
     this._subscriptions.add(
       atom.commands.add('atom-workspace', {
@@ -127,9 +135,17 @@ class FileTreeController {
 
   _render(initialWidth?: ?number): void {
     this._panelComponent = React.render(
-      <FileTreePanel store={this._store} initialWidth={initialWidth} />,
+      <FileTreePanel
+        initialWidth={initialWidth}
+        onChangeExperimentalHgIntegration={this._onChangeExperimentalHgIntegration}
+        store={this._store}
+      />,
       this._panelElement,
     );
+  }
+
+  _onChangeExperimentalHgIntegration(checked: boolean) {
+    atom.config.set('nuclide-file-tree-deux.enableExperimentalVcsIntegration', checked);
   }
 
   _openAndRevealFilePath(filePath: ?string): void {
@@ -371,12 +387,23 @@ class FileTreeController {
 class FileTreePanel extends React.Component {
   render() {
     return (
-      <PanelComponent
-        dock="left"
-        initialLength={this.props.initialWidth}
-        ref="panel">
-        <FileTree store={this.props.store} />
-      </PanelComponent>
+      <div className="nuclide-file-tree-deux-container">
+        <PanelComponent
+          dock="left"
+          initialLength={this.props.initialWidth}
+          ref="panel">
+          <FileTree store={this.props.store} />
+        </PanelComponent>
+
+        <div className="nuclide-file-tree-deux-footer">
+          <NuclideCheckbox
+            checked={atom.config.get('nuclide-file-tree-deux.enableExperimentalVcsIntegration')}
+            onChange={this.props.onChangeExperimentalHgIntegration}
+            >
+            &nbsp;Use experimental Hg integration
+          </NuclideCheckbox>
+        </div>
+      </div>
     );
   }
 
@@ -388,6 +415,7 @@ class FileTreePanel extends React.Component {
 var {PropTypes} = React;
 FileTreePanel.propTypes = {
   initialWidth: PropTypes.number,
+  onChangeExperimentalHgIntegration: PropTypes.func.isRequired,
   store: PropTypes.instanceOf(FileTreeStore).isRequired,
 };
 

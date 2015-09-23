@@ -92,6 +92,12 @@ module.exports = {
       default: false,
       description: 'Use new File Tree (experimental)',
     },
+    enableExperimentalVcsIntegration: {
+      type: 'boolean',
+      default: false,
+      description: 'We are still working out the performance problems with Hg integration, ' +
+        'so use at your own risk.',
+    },
   },
 
   activate(state: ?FileTreeControllerState): void {
