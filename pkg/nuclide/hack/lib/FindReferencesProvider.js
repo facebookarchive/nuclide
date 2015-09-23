@@ -13,12 +13,12 @@
 // import type {FindReferencesReturn} from 'nuclide-find-references';
 
 var {findReferences} = require('./hack');
-var {HACK_GRAMMAR} = require('nuclide-hack-common');
+var {HACK_GRAMMARS_SET} = require('nuclide-hack-common');
 
 module.exports = {
   async isEditorSupported(textEditor: TextEditor): Promise<boolean> {
     var fileUri = textEditor.getPath();
-    if (!fileUri || HACK_GRAMMAR !== textEditor.getGrammar().scopeName) {
+    if (!fileUri || !HACK_GRAMMARS_SET.has(textEditor.getGrammar().scopeName)) {
       return false;
     }
     return true;

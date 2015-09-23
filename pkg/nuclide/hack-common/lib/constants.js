@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+const HACK_GRAMMARS = ['text.html.hack', 'text.html.php'];
+
 export type HackReference = {
   name: string,
   filename: string,
@@ -51,5 +53,6 @@ module.exports = {
     TRAIT:          8,
   },
 
-  HACK_GRAMMAR: 'text.html.hack',
+  HACK_GRAMMARS,
+  HACK_GRAMMARS_SET: new Set(HACK_GRAMMARS),
 };

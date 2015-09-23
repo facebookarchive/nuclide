@@ -18,7 +18,7 @@ var {Range} = require('atom');
 var {parse, isRemote, createRemoteUri} = require('nuclide-remote-uri');
 import invariant from 'assert';
 
-var {HACK_GRAMMAR} = require('nuclide-hack-common/lib/constants');
+var {HACK_GRAMMARS_SET} = require('nuclide-hack-common/lib/constants');
 
 import type HackLanguage from './HackLanguage';
 import type {HackDiagnosticItem, HackError} from './types';
@@ -107,7 +107,7 @@ class HackDiagnosticsProvider {
     ProviderBase?: typeof DiagnosticsProviderBase = DiagnosticsProviderBase
   ) {
     var utilsOptions = {
-      grammarScopes: new Set([HACK_GRAMMAR]),
+      grammarScopes: HACK_GRAMMARS_SET,
       shouldRunOnTheFly,
       onTextEditorEvent: editor => this._runDiagnostics(editor),
       onNewUpdateSubscriber: callback => this._receivedNewUpdateSubscriber(callback),
@@ -194,7 +194,7 @@ class HackDiagnosticsProvider {
     // probably remove the activeTextEditor parameter.
     var activeTextEditor = atom.workspace.getActiveTextEditor();
     if (activeTextEditor) {
-      if (activeTextEditor.getGrammar().scopeName === HACK_GRAMMAR) {
+      if (HACK_GRAMMARS_SET.has(activeTextEditor.getGrammar().scopeName)) {
         this._runDiagnostics(activeTextEditor);
       }
     }

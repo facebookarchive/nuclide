@@ -12,12 +12,12 @@
 var {findDefinition} = require('./hack');
 var {goToLocation} = require('nuclide-atom-helpers');
 
-var {HACK_GRAMMAR} = require('nuclide-hack-common/lib/constants');
+var {HACK_GRAMMARS_SET} = require('nuclide-hack-common/lib/constants');
 
 module.exports = {
   priority: 20,
   async getSuggestionForWord(textEditor: TextEditor, text: string, range: Range) {
-    if (HACK_GRAMMAR !== textEditor.getGrammar().scopeName) {
+    if (!HACK_GRAMMARS_SET.has(textEditor.getGrammar().scopeName)) {
       return null;
     }
 

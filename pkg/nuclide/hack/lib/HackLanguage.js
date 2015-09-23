@@ -176,9 +176,6 @@ module.exports = class HackLanguage {
   }
 
   async getDiagnostics(path: string, contents: string): Promise<Array<any>> {
-    if (!isHackFile(contents)) {
-      return [];
-    }
     await this.updateFile(path, contents);
     var webWorkerMessage = {cmd: 'hh_check_file', args: [path]};
     var {errors} = await this._hackWorker.runWorkerTask(webWorkerMessage);
@@ -201,11 +198,6 @@ module.exports = class HackLanguage {
       column: number,
       lineText: string
     ): Promise<?Array<any>> {
-
-    if (!isHackFile(contents)) {
-      return null;
-    }
-
     var [clientSideResults, identifyMethodResults, stringParseResults] =
       await Promise.all([
         // First Stage. Ask Hack clientside for a result location.
@@ -390,7 +382,7 @@ module.exports = class HackLanguage {
     lineNumber: number,
     column: number,
   ): Promise<?string> {
-    if (!isHackFile(contents) || !expression.startsWith('$')) {
+    if (!expression.startsWith('$')) {
       return null;
     }
     await this.updateFile(path, contents);
@@ -400,9 +392,6 @@ module.exports = class HackLanguage {
   }
 
   async getReferences(contents: string, symbolName: string): Promise<?Array<HackReference>> {
-    if (!isHackFile(contents)) {
-      return null;
-    }
     return await this._callHackService(
       /*serviceName*/ 'getHackReferences',
       /*serviceArgs*/ [symbolName],
@@ -522,8 +511,4 @@ function processCompletions(completionsResponse: Array<any>): Array<any> {
       matchType: type,
     };
   });
-}
-
-function isHackFile(contents: string): boolean {
-  return Boolean(contents) && contents.startsWith('<?hh');
 }

@@ -12,7 +12,8 @@
 import type {Point} from 'atom';
 
 var {CompositeDisposable} = require('atom');
-var {HACK_GRAMMAR} = require('nuclide-hack-common/lib/constants');
+var {HACK_GRAMMARS} = require('nuclide-hack-common/lib/constants');
+var HACK_GRAMMARS_STRING = HACK_GRAMMARS.join(', ');
 
 // One of text or snippet is required.
 type Suggestion = {
@@ -50,7 +51,7 @@ module.exports = {
     var autocompleteProvider = new AutocompleteProvider();
 
     return {
-      selector: '.' + HACK_GRAMMAR,
+      selector: HACK_GRAMMARS.map(grammar => '.' + grammar).join(', '),
       inclusionPriority: 1,
       suggestionPriority: 3, // The context-sensitive hack autocompletions are more relevant than snippets.
       excludeLowerPriority: true,
@@ -73,7 +74,7 @@ module.exports = {
     var codeFormatProvider = new CodeFormatProvider();
 
     return {
-      selector: HACK_GRAMMAR,
+      selector: HACK_GRAMMARS_STRING,
       inclusionPriority: 1,
 
       formatCode(editor: TextEditor, range: Range): Promise<string> {
@@ -91,7 +92,7 @@ module.exports = {
     var typeHintProvider = new TypeHintProvider();
 
     return {
-      selector: HACK_GRAMMAR,
+      selector: HACK_GRAMMARS_STRING,
       inclusionPriority: 1,
 
       typeHint(editor: TextEditor, position: Point): Promise<string> {

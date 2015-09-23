@@ -10,14 +10,14 @@
  */
 
 var {Point} = require('atom');
-var {HACK_GRAMMAR} = require('nuclide-hack-common');
+var {HACK_GRAMMARS} = require('nuclide-hack-common');
 var hack = require('../lib/hack');
 
 describe('FindReferencesProvider', () => {
   // Create a fake editor
   var mockEditor = {
     getGrammar() {
-      return {scopeName: HACK_GRAMMAR};
+      return {scopeName: HACK_GRAMMARS[0]};
     },
     getPath() {
       return '/test/test.php';
