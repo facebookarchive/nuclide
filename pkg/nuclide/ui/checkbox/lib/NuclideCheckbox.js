@@ -9,58 +9,42 @@
  * the root directory of this source tree.
  */
 
-var React = require('react-for-atom');
-
-var {PropTypes} = React;
+import React from 'react-for-atom';
 
 /**
  * A checkbox component with an input checkbox and a label.
  */
-var NuclideCheckbox = React.createClass({
-
-  propTypes: {
-    labelText: PropTypes.string,
-    checked: PropTypes.bool,
-  },
-
-  getDefaultProps(): any {
-    return {
-      labelText: '',
-      checked: false,
-    };
-  },
-
-  getInitialState(): any {
-    return {
-      checked: this.props.checked,
-    };
-  },
+class NuclideCheckbox extends React.Component {
+  constructor(props: Object) {
+    super(props);
+    this._onChange = this._onChange.bind(this);
+  }
 
   render(): ReactElement {
     return (
-      <div className='nuclide-ui-checkbox'>
+      <label className="nuclide-ui-checkbox-label">
         <input
-          type='checkbox'
-          checked={this.isChecked()}
+          type="checkbox"
+          checked={this.props.checked}
           onChange={this._onChange}
         />
-        <label onClick={this._onChange}>
-          {this.props.labelText}
-        </label>
-      </div>
+        {this.props.children}
+      </label>
     );
-  },
+  }
 
-  _onChange() {
-    this.setState({
-      checked: !this.state.checked,
-    });
-  },
+  _onChange(event: SyntheticEvent) {
+    var isChecked = ((event.target: any): HTMLInputElement).checked;
+    this.props.onChange.call(null, isChecked);
+  }
+}
 
-  isChecked(): boolean {
-    return this.state.checked;
-  },
+var {PropTypes} = React;
 
-});
+NuclideCheckbox.propTypes = {
+  checked: PropTypes.bool.isRequired,
+  children: PropTypes.node,
+  onChange: PropTypes.func.isRequired,
+};
 
 module.exports = NuclideCheckbox;

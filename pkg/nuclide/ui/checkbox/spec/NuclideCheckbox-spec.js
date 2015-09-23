@@ -9,31 +9,42 @@
  * the root directory of this source tree.
  */
 
-var Checkbox = require('../lib/NuclideCheckbox');
+var NuclideCheckbox = require('../lib/NuclideCheckbox');
 var React = require('react-for-atom');
+var {TestUtils} = React.addons;
 
-var reactElement;
+var hostEl;
 
-function createWithProps(props: any) {
-  var hostEl = document.createElement('div');
-  return React.render(<Checkbox {...props} />, hostEl);
+function createWithProps(props: mixed) {
+  return React.render(<NuclideCheckbox {...props} />, hostEl);
 }
 
 describe('NuclideCheckbox', () => {
 
+  beforeEach(() => {
+    hostEl = document.createElement('div');
+  });
+
   afterEach(() => {
-    if (reactElement) {
-      React.unmountComponentAtNode(React.findDOMNode(reactElement).parentNode);
-    }
-    reactElement = null;
+    React.unmountComponentAtNode(hostEl);
+    hostEl = null;
   });
 
-  it('verifies initial checked state', () => {
-    reactElement = createWithProps({checked: true});
-    expect(reactElement.isChecked()).toBe(true);
-    reactElement = createWithProps({checked: false});
-    expect(reactElement.isChecked()).toBe(false);
-  });
+  it('onChange handler fires when change event dispatched from checkbox', () => {
+    var onChange = jasmine.createSpy();
+    var reactElement = createWithProps({
+      checked: false,
+      children: 'click me!',
+      onChange,
+    });
 
-  //TODO: more tests
+    var inputEl = TestUtils. findRenderedDOMComponentWithTag(reactElement, 'input');
+    // Unfortunately, TestUtils does not seem to turn a click into a change event for a checkbox.
+    TestUtils.Simulate.change(inputEl);
+    expect(onChange.callCount).toBe(1);
+
+    // Nor does it seem to change the state of the checkbox, as the following fails:
+    //   expect(inputEl.checked).toBe(true);
+    // Presumably this is because TestUtils deals only with synthetic events, not native ones.
+  });
 });
