@@ -159,14 +159,24 @@ function showPopupFor(
     item: HTMLElement
     ): HTMLElement {
   var children = messages.map(message => {
+    const providerClassName = message.type === 'Error'
+      ? 'highlight-error'
+      : 'highlight-warning';
+    const providerNameDiv =
+      <div className={`text-center ${providerClassName}`}>{message.providerName}</div>;
     var contents;
     if (message.html) {
       contents =
-        <span>
-          {message.providerName}: <span dangerouslySetInnerHTML={{__html: message.html}} />
-        </span>;
+        <div>
+          {providerNameDiv}
+          <div dangerouslySetInnerHTML={{__html: message.html}} />
+        </div>;
     } else if (message.text) {
-      contents = <span>{message.providerName}: {message.text}</span>;
+      contents =
+        <div>
+          {providerNameDiv}
+          <div>{message.text}</div>
+        </div>;
     } else {
       contents = <span>Diagnostic lacks message.</span>;
     }
