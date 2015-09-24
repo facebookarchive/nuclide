@@ -21,6 +21,22 @@ describe('FileTreeController', () => {
     // Attach the workspace to the DOM so focus can be determined in tests below.
     jasmine.attachToDOM(workspaceElement);
     controller = new FileTreeController(null);
+
+    // The controller uses the currently active file to decide when and what to reveal in the file
+    // tree when revealActiveFile is called. Importantly, it also short-circuits in some cases if
+    // the path is null or undefined. Here we mock it out so that we get normal behavior in our
+    // tests.
+    spyOn(atom.workspace, 'getActiveTextEditor').andReturn({
+      getBuffer() {
+        return {
+          file: {
+            getPath() {
+              return 'foo';
+            },
+          },
+        };
+      },
+    });
   });
 
   afterEach(() => {
@@ -28,13 +44,20 @@ describe('FileTreeController', () => {
   });
 
   describe('revealActiveFile', () => {
-    it('shows/unhides the controller\'s panel', () => {
+    beforeEach(() => {
       // Ensure the file tree's panel is hidden at first.
       controller.toggleVisibility();
       expect(controller._isVisible).toBe(false);
+    });
 
+    it('shows/unhides the controller\'s panel', () => {
       controller.revealActiveFile();
       expect(controller._isVisible).toBe(true);
+    });
+
+    it('does not show the panel if showIfHidden is false', () => {
+      controller.revealActiveFile(/* showIfHidden */ false);
+      expect(controller._isVisible).toBe(false);
     });
   });
 

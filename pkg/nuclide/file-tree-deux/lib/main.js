@@ -11,6 +11,8 @@
 
 var {CompositeDisposable} = require('atom');
 
+import type {Disposable} from 'atom';
+
 import type FileTreeControllerType from './FileTreeController';
 import type {FileTreeControllerState} from './FileTreeController';
 
@@ -34,6 +36,7 @@ class Activation {
   _fileTreeController: ?FileTreeControllerType;
   _packageState: ?FileTreeControllerState;
   _subscriptions: CompositeDisposable;
+  _paneItemSubscription: ?Disposable;
 
   constructor(state: ?FileTreeControllerState) {
     this._packageState = state;
@@ -70,7 +73,38 @@ class Activation {
     if (!this._fileTreeController) {
       var FileTreeController = require('./FileTreeController');
       this._fileTreeController = new FileTreeController(this._packageState);
+
+      const revealSetting = 'nuclide-file-tree-deux.revealFileOnSwitch';
+      // Flow does not know that this setting is a boolean, thus the cast.
+      this._setRevealOnFileSwitch(((atom.config.get(revealSetting): any): boolean));
+      this._subscriptions.add(
+        atom.config.observe(revealSetting, this._setRevealOnFileSwitch.bind(this))
+      );
+
       require('nuclide-analytics').track('filetreedeux-enable');
+    }
+  }
+
+  _setRevealOnFileSwitch(shouldReveal: boolean) {
+    if (shouldReveal) {
+      const reveal = () => {
+        if (this._fileTreeController) {
+          this._fileTreeController.revealActiveFile(/* showIfHidden */ false);
+        }
+      };
+      // Guard against this getting called multiple times
+      if (!this._paneItemSubscription) {
+        this._paneItemSubscription = atom.workspace.onDidChangeActivePaneItem(reveal);
+        this._subscriptions.add(this._paneItemSubscription);
+      }
+    } else {
+      // Use a local so Flow can refine the type.
+      const paneItemSubscription = this._paneItemSubscription;
+      if (paneItemSubscription) {
+        this._subscriptions.remove(paneItemSubscription);
+        paneItemSubscription.dispose();
+        this._paneItemSubscription = null;
+      }
     }
   }
 
@@ -92,11 +126,18 @@ module.exports = {
       default: false,
       description: 'Use new File Tree (experimental)',
     },
+
     enableExperimentalVcsIntegration: {
       type: 'boolean',
       default: false,
       description: 'We are still working out the performance problems with Hg integration, ' +
         'so use at your own risk.',
+    },
+
+    revealFileOnSwitch: {
+      type: 'boolean',
+      default: false,
+      description: 'Automatically reveal the current file when you switch tabs',
     },
   },
 

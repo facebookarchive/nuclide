@@ -46,6 +46,11 @@ class FileTreeController {
   _panelElement: HTMLElement;
   _store: FileTreeStore;
   _subscriptions: CompositeDisposable;
+  /**
+    * True if a reveal was requested while the file tree is hidden. If so, we should apply it when
+    * the tree is shown.
+    */
+  _revealActiveFilePending: boolean;
 
   // $FlowIssue t8486988
   static INITIAL_WIDTH = 240;
@@ -124,6 +129,8 @@ class FileTreeController {
       this._store.loadData(state.tree);
     }
     this._contextMenu = new FileTreeContextMenu();
+
+    this._revealActiveFilePending = false;
   }
 
   _initializePanel(): void {
@@ -215,19 +222,41 @@ class FileTreeController {
   }
 
   toggleVisibility(): void {
-    this._setVisibility(!this._isVisible);
+    const willBeVisible = !this._isVisible;
+    this._setVisibility(willBeVisible);
+    if (willBeVisible && this._revealActiveFilePending) {
+      this.revealActiveFile();
+      this._revealActiveFilePending = false;
+    }
   }
 
-  revealActiveFile(): void {
-    // Ensure the file tree is visible before trying to reveal a file in it.
-    this._setVisibility(true);
+  /**
+   * Reveal the file that currently has focus in the file tree. If showIfHidden is false,
+   * this will enqueue a pending reveal to be executed when the file tree is shown again.
+   */
+  revealActiveFile(showIfHidden?: boolean = true): void {
+    const editor = atom.workspace.getActiveTextEditor();
+    const file = editor ? editor.getBuffer().file : null;
+    const filePath = file ? file.getPath() : null;
 
-    var editor = atom.workspace.getActiveTextEditor();
-    var file = editor ? editor.getBuffer().file : null;
-    if (!file) {
+    if (showIfHidden) {
+      // Ensure the file tree is visible before trying to reveal a file in it. Even if the currently
+      // active pane is not an ordinary editor, we still at least want to show the tree.
+      this._setVisibility(true);
+    }
+
+    if (!filePath) {
       return;
     }
-    this.revealNodeKey(file.getPath());
+
+    // If we are not showing the tree as part of this action, and it is currently hidden, this
+    // reveal will take effect when the tree is shown.
+    if (!showIfHidden && !this._isVisible) {
+      this._revealActiveFilePending = true;
+      return;
+    }
+
+    this.revealNodeKey(filePath);
   }
 
   revealNodeKey(nodeKey: ?string): void {
