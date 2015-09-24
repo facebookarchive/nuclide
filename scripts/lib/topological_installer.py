@@ -151,7 +151,7 @@ def install_dependencies(package_config, npm, copy_local_dependencies=False):
     # the sum matches, we skip the call to `npm install`.
     sum_path = os.path.join(node_modules_path, 'package.json.sum')
     package_json_path = os.path.join(src_path, 'package.json')
-    package_json_sum = hashlib.sha1(read_file(package_json_path)).hexdigest()
+    package_json_sum = hashlib.sha1(read_file(package_json_path).encode('utf-8')).hexdigest()
     valid_sum = read_file(sum_path) == package_json_sum
     if valid_sum:
         logging.info('Dependencies for %s already installed', name)
