@@ -48,26 +48,24 @@ class NuclideToolbar extends React.Component {
 
   render(): ?ReactElement {
     if (this.state.projectType === 'Hhvm') {
-      // TODO[jeffreytan]: enable HhvmToolbar when hhvm multi-requests debugging is supported.
-      // var HhvmToolbar = require('nuclide-hhvm-toolbar');
-      // return (
-      //   <div className="tool-panel padded nuclide-toolbar">
-      //     <HhvmToolbar
-      //       ref="hhvmToolbar"
-      //       targetFilePath={this.state.currentFilePath}
-      //     />
-      //   </div>
-      // );
-      return null;
+      var HhvmToolbar = require('nuclide-hhvm-toolbar');
+      return (
+        <div className="tool-panel padded nuclide-toolbar">
+          <HhvmToolbar
+            ref="hhvmToolbar"
+            targetFilePath={this.state.currentFilePath}
+          />
+        </div>
+      );
     } else if (this.state.projectType === 'Buck') {
       return (
-          <div className="tool-panel padded nuclide-toolbar">
-            <BuckToolbar
-              initialBuildTarget={this.props.initialBuildTarget}
-              onBuildTargetChange={this.props.onBuildTargetChange}
-            />
-          </div>
-        );
+        <div className="tool-panel padded nuclide-toolbar">
+          <BuckToolbar
+            initialBuildTarget={this.props.initialBuildTarget}
+            onBuildTargetChange={this.props.onBuildTargetChange}
+          />
+        </div>
+      );
     } else {
       // Hide toolbar.
       return null;
