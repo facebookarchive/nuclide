@@ -243,7 +243,8 @@ class LocalHgServiceBase extends HgService {
     try {
       output = await this._hgAsyncExecute(args, execOptions);
     } catch (e) {
-      getLogger().error(`LocalHgServiceBase failed to fetch blame for file: ${filePath}`);
+      getLogger().error(
+          `LocalHgServiceBase failed to fetch blame for file: ${filePath}. Error: ${e.stderr}`);
       return new Map();
     }
     return parseHgBlameOutput(output.stdout);
