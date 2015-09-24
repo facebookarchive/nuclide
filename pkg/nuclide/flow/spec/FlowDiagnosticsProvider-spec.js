@@ -135,7 +135,7 @@ describe('FlowDiagnosticsProvider', () => {
         scope: 'file',
         providerName: 'Flow',
         type: 'Error',
-        text: 'message more message',
+        text: 'message',
         filePath: testPath,
         range: new Range([0, 2], [1, 4]),
         trace: [{

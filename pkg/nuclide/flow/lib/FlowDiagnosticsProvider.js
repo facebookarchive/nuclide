@@ -80,7 +80,7 @@ function flowMessageToDiagnosticMessage(flowMessages) {
     scope: 'file',
     providerName: 'Flow',
     type: flowMessage['level'] === 'error' ? 'Error' : 'Warning',
-    text: flowMessages.map(errObj => errObj['descr']).join(' '),
+    text: flowMessage['descr'],
     filePath: flowMessage['path'],
     range: extractRange(flowMessage),
   };
