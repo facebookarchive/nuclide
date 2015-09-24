@@ -57,13 +57,27 @@ function messageColumnCellDataGetter(
   cellDataKey: 'message',
   diagnostic: DiagnosticMessage
 ): textAndType {
-  if (diagnostic.html) {
-    return {text: diagnostic.html, isPlainText: false};
-  } else if (diagnostic.text) {
-    return {text: diagnostic.text, isPlainText: true};
-  } else {
-    throw new Error(`Neither text nor html property defined on: ${diagnostic}`);
+  let text = '';
+  let isPlainText = true;
+  const traces = diagnostic.trace || [];
+  // This works fine, and in fact Flow accepts it if I use a for...of and push onto the array,
+  // instead of using a spread operator.
+  // $FlowIssue
+  const allMessages: Array<{html?: string, text?: string}> = [diagnostic, ...traces];
+  for (const message of allMessages) {
+    if (message.html) {
+      text += message.html + ' ';
+      isPlainText = false;
+    } else if (message.text) {
+      text += message.text + ' ';
+    } else {
+      throw new Error(`Neither text nor html property defined on: ${message}`);
+    }
   }
+  return {
+    text: text.trim(),
+    isPlainText,
+  };
 }
 
 function messageColumnCellRenderer(message: textAndType): ReactElement {
