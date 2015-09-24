@@ -13,7 +13,7 @@ import addPrepareStackTraceHook from '../lib/stacktrace';
 import {__test__} from '../lib/stacktrace';
 
 var STACK_FRAME_PROPERTIES = [
-  'functionName', 'methodName', 'fileName', 'lineNumber', 'columnNumer', 'evalOrgin',
+  'functionName', 'methodName', 'fileName', 'lineNumber', 'columnNumber', 'evalOrigin',
   'isTopLevel', 'isEval', 'isNative', 'isConstructor',
 ];
 
