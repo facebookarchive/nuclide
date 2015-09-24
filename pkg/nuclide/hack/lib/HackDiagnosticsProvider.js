@@ -49,16 +49,12 @@ function extractRange(message: HackError): Range {
 }
 
 // A trace object is very similar to an error object.
-function hackMessageToTrace(
-  traceError: HackError,
-  causeFilePath: string,
-  causeRange: Range
-): Object {
+function hackMessageToTrace(traceError: HackError): Object {
   return {
     type: 'Trace',
     text: traceError['descr'],
-    filePath: causeFilePath,
-    range: causeRange,
+    filePath: traceError['path'],
+    range: extractRange(traceError),
   };
 }
 
@@ -68,25 +64,19 @@ function hackMessageToDiagnosticMessage(
   var {message: hackMessages} = hackDiagnostic;
 
   var causeMessage = hackMessages[0];
-  var filePath = causeMessage['path'];
-  var range = extractRange(causeMessage);
-
   var diagnosticMessage: FileDiagnosticMessage = {
     scope: 'file',
     providerName: 'Hack',
     type: 'Error',
-    // TODO(most): Revert to `text: causeMessage['descr']` when diagnostic traces are working.
-    html: hackMessages.map(message => message['descr']).join('<br/>'),
-    filePath,
-    range,
+    text: causeMessage['descr'],
+    filePath: causeMessage['path'],
+    range: extractRange(causeMessage),
   };
 
   // When the message is an array with multiple elements, the second element
   // onwards comprise the trace for the error.
   if (hackMessages.length > 1) {
-    diagnosticMessage.trace = hackMessages.slice(1).map(hackTraceMessage =>
-      hackMessageToTrace(hackTraceMessage, filePath, range)
-    );
+    diagnosticMessage.trace = hackMessages.slice(1).map(hackMessageToTrace);
   }
 
   return diagnosticMessage;

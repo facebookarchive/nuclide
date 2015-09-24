@@ -57,7 +57,7 @@ describe('HackDiagnosticsProvider', () => {
       var expectedOutput = {
         scope: 'file',
         providerName: 'Hack',
-        html: 'message',
+        text: 'message',
         type: 'Error',
         filePath: testPath,
         range: new Range([0, 2], [0, 4]),
@@ -117,14 +117,14 @@ describe('HackDiagnosticsProvider', () => {
         scope: 'file',
         providerName: 'Hack',
         type: 'Error',
-        html: 'message<br/>more message',
+        text: 'message',
         filePath: testPath,
         range: new Range([0, 2], [0, 4]),
         trace: [{
           type: 'Trace',
-          filePath: testPath,
+          filePath: 'otherPath',
           text: 'more message',
-          range: new Range([0, 2], [0, 4]),
+          range: new Range([4, 6], [4, 8]),
         }],
       };
 
