@@ -152,11 +152,20 @@ function createGutterItem(
       paneItemSubscription = null;
     }
   };
+  const goToLocation = (path: string, line: number) => {
+    // Before we jump to the location, we want to close the popup.
+    dispose();
+    const options = {
+      searchAllPanes: true,
+      initialLine: line,
+    };
+    atom.workspace.open(path, options);
+  };
   item.addEventListener('mouseenter', event => {
     // If there was somehow another popup for this gutter item, dispose it. This can happen if the
     // user manages to scroll and escape disposal.
     dispose();
-    popupElement = showPopupFor(messages, item);
+    popupElement = showPopupFor(messages, item, goToLocation);
     popupElement.addEventListener('mouseleave', dispose);
     // This makes sure that the popup disappears when you ctrl+tab to switch tabs.
     paneItemSubscription = atom.workspace.onDidChangeActivePaneItem(dispose);
@@ -169,10 +178,11 @@ function createGutterItem(
  */
 function showPopupFor(
     messages: Array<FileDiagnosticMessage>,
-    item: HTMLElement
+    item: HTMLElement,
+    goToLocation: (filePath: NuclideUri, line: number) => mixed,
     ): HTMLElement {
   var children = messages.map(message => {
-    const contents = createElementForMessage(message);
+    const contents = createElementForMessage(message, goToLocation);
     var diagnosticTypeClass = message.type === 'Error'
       ? 'nuclide-diagnostics-gutter-ui-popup-error'
       : 'nuclide-diagnostics-gutter-ui-popup-warning';
@@ -225,14 +235,17 @@ function showPopupFor(
   }
 }
 
-function createElementForMessage(message: FileDiagnosticMessage): HTMLElement {
+function createElementForMessage(
+  message: FileDiagnosticMessage,
+  goToLocation: (path: string, line: number) => mixed,
+): HTMLElement {
   const providerClassName = message.type === 'Error'
     ? 'highlight-error'
     : 'highlight-warning';
   const providerNameDiv =
       <div className={`text-center ${providerClassName}`}>{message.providerName}</div>;
   const traceElements = message.trace
-    ? message.trace.map(createElementForTrace)
+    ? message.trace.map(traceItem => createElementForTrace(traceItem, goToLocation))
     : null;
   return (
     <div>
@@ -243,18 +256,25 @@ function createElementForMessage(message: FileDiagnosticMessage): HTMLElement {
   );
 }
 
-function createElementForTrace(trace: Trace): HTMLElement {
-  let locString = null;
+function createElementForTrace(
+  trace: Trace,
+  goToLocation: (path: string, line: number) => mixed,
+): HTMLElement {
+  let locSpan = null;
   if (trace.filePath) {
-    locString = `: ${trace.filePath}`;
+    let locString = `${trace.filePath}`;
     if (trace.range) {
       locString += `:${trace.range.start.row + 1}`;
     }
+    const onClick = () => {
+      goToLocation(trace.filePath, Math.max(trace.range ? trace.range.start.row : 0, 0));
+    };
+    locSpan = <span>: <a href="#" onClick={onClick}>{locString}</a></span>;
   }
   return (
     <div>
       {createMessageSpan(trace)}
-      {locString}
+      {locSpan}
     </div>
   );
 }
