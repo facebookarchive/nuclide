@@ -150,6 +150,11 @@ class BlameGutter {
 
   // The BlameForEditor completely replaces any previous blame information.
   _updateBlame(blameForEditor: BlameForEditor): void {
+    if (blameForEditor.size === 0) {
+      atom.notifications.addInfo(
+          `Found no blame to display. Is this file empty or untracked?
+          If not, check for errors in the Nuclide logs local to your repo.`);
+    }
     var allPreviousBlamedLines = new Set(this._bufferLineToDecoration.keys());
 
     var longestBlame = 0;
