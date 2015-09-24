@@ -159,28 +159,7 @@ function showPopupFor(
     item: HTMLElement
     ): HTMLElement {
   var children = messages.map(message => {
-    const providerClassName = message.type === 'Error'
-      ? 'highlight-error'
-      : 'highlight-warning';
-    const providerNameDiv =
-      <div className={`text-center ${providerClassName}`}>{message.providerName}</div>;
-    var contents;
-    if (message.html) {
-      contents =
-        <div>
-          {providerNameDiv}
-          <div dangerouslySetInnerHTML={{__html: message.html}} />
-        </div>;
-    } else if (message.text) {
-      contents =
-        <div>
-          {providerNameDiv}
-          <div>{message.text}</div>
-        </div>;
-    } else {
-      contents = <span>Diagnostic lacks message.</span>;
-    }
-
+    const contents = createElementForMessage(message);
     var diagnosticTypeClass = message.type === 'Error'
       ? 'nuclide-diagnostics-gutter-ui-popup-error'
       : 'nuclide-diagnostics-gutter-ui-popup-warning';
@@ -228,6 +207,50 @@ function showPopupFor(
         'diagnostics-message': message.text || message.html,
       });
     });
+  }
+}
+
+function createElementForMessage(message: FileDiagnosticMessage): HTMLElement {
+  const providerClassName = message.type === 'Error'
+    ? 'highlight-error'
+    : 'highlight-warning';
+  const providerNameDiv =
+      <div className={`text-center ${providerClassName}`}>{message.providerName}</div>;
+  const traceElements = message.trace
+    ? message.trace.map(createElementForTrace)
+    : null;
+  return (
+    <div>
+      {providerNameDiv}
+      <div>{createMessageSpan(message)}</div>
+      {traceElements}
+    </div>
+  );
+}
+
+function createElementForTrace(trace: Trace): HTMLElement {
+  let locString = null;
+  if (trace.filePath) {
+    locString = `: ${trace.filePath}`;
+    if (trace.range) {
+      locString += `:${trace.range.start.row + 1}`;
+    }
+  }
+  return (
+    <div>
+      {createMessageSpan(trace)}
+      {locString}
+    </div>
+  );
+}
+
+function createMessageSpan(message: {html?: string, text?: string}): HTMLElement {
+  if (message.html) {
+    return <span dangerouslySetInnerHTML={{__html: message.html}} />;
+  } else if (message.text) {
+    return <span>{message.text}</span>;
+  } else {
+    return <span>Diagnostic lacks message.</span>;
   }
 }
 
