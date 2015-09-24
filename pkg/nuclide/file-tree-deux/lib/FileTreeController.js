@@ -11,7 +11,6 @@
 
 import type {ExportStoreData} from './FileTreeStore';
 
-var INITIAL_WIDTH = 240;
 
 var {CompositeDisposable} = require('atom');
 var FileSystemActions = require('./FileSystemActions');
@@ -43,14 +42,17 @@ class FileTreeController {
   _isVisible: boolean;
   _onChangeExperimentalHgIntegration: Function;
   _panel: atom$Panel;
-  _panelComponent: PanelComponent;
+  _fileTreePanel: FileTreePanel;
   _panelElement: HTMLElement;
   _store: FileTreeStore;
   _subscriptions: CompositeDisposable;
 
+  // $FlowIssue t8486988
+  static INITIAL_WIDTH = 240;
+
   constructor(state: ?FileTreeControllerState) {
     var {panel} = {
-      ...{panel: {width: INITIAL_WIDTH}},
+      ...{panel: {width: FileTreeController.INITIAL_WIDTH}},
       ...state,
     };
 
@@ -134,7 +136,7 @@ class FileTreeController {
   }
 
   _render(initialWidth?: ?number): void {
-    this._panelComponent = React.render(
+    this._fileTreePanel = React.render(
       <FileTreePanel
         initialWidth={initialWidth}
         onChangeExperimentalHgIntegration={this._onChangeExperimentalHgIntegration}
@@ -190,14 +192,14 @@ class FileTreeController {
   }
 
   focusTree(): void {
-    this._panelComponent.getFileTree().focus();
+    this._fileTreePanel.getFileTree().focus();
   }
 
   /**
    * Returns `true` if the file tree DOM node has focus, otherwise `false`.
    */
   _treeHasFocus(): boolean {
-    const fileTree = this._panelComponent.getFileTree();
+    const fileTree = this._fileTreePanel.getFileTree();
     return fileTree.hasFocus();
   }
 
@@ -377,14 +379,23 @@ class FileTreeController {
     return {
       panel: {
         isVisible: this._isVisible,
-        width: this._panelComponent.getLength(),
+        width: this._fileTreePanel.getLength(),
       },
       tree: this._store.exportData(),
     };
   }
 }
 
+var {PropTypes} = React;
+
 class FileTreePanel extends React.Component {
+  // $FlowIssue t8486988
+  static propTypes = {
+    initialWidth: PropTypes.number,
+    onChangeExperimentalHgIntegration: PropTypes.func.isRequired,
+    store: PropTypes.instanceOf(FileTreeStore).isRequired,
+  };
+
   render() {
     return (
       <div className="nuclide-file-tree-deux-container">
@@ -410,13 +421,10 @@ class FileTreePanel extends React.Component {
   getFileTree(): FileTree {
     return this.refs['panel'].getChildComponent();
   }
-}
 
-var {PropTypes} = React;
-FileTreePanel.propTypes = {
-  initialWidth: PropTypes.number,
-  onChangeExperimentalHgIntegration: PropTypes.func.isRequired,
-  store: PropTypes.instanceOf(FileTreeStore).isRequired,
-};
+  getLength(): number {
+    return this.refs['panel'].getLength();
+  }
+}
 
 module.exports = FileTreeController;
