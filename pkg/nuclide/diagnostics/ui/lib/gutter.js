@@ -262,7 +262,8 @@ function createElementForTrace(
 ): HTMLElement {
   let locSpan = null;
   if (trace.filePath) {
-    let locString = `${trace.filePath}`;
+    const [, relativePath] = atom.project.relativizePath(trace.filePath);
+    let locString = relativePath;
     if (trace.range) {
       locString += `:${trace.range.start.row + 1}`;
     }
