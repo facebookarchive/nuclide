@@ -186,13 +186,15 @@ function showPopupFor(
     var diagnosticTypeClass = message.type === 'Error'
       ? 'nuclide-diagnostics-gutter-ui-popup-error'
       : 'nuclide-diagnostics-gutter-ui-popup-warning';
+    // native-key-bindings and tabIndex=-1 are both needed to allow copying the text in the popup.
+    const classes =
+      `native-key-bindings nuclide-diagnostics-gutter-ui-popup-diagnostic ${diagnosticTypeClass}`;
     return (
-      <div className={`nuclide-diagnostics-gutter-ui-popup-diagnostic ${diagnosticTypeClass}`}>
+      <div tabIndex={-1} className={classes}>
         {contents}
       </div>
     );
   });
-
   // The popup will be an absolutely positioned child element of <atom-workspace> so that it appears
   // on top of everything.
   var workspaceElement = atom.views.getView(atom.workspace);
@@ -250,9 +252,12 @@ function createElementForMessage(
   const traceElements = message.trace
     ? message.trace.map(traceItem => createElementForTrace(traceItem, goToLocation))
     : null;
+  // Put providerNameSpan to the left of the messages, even though it is floated so it will appear
+  // on the right. This allows users to select and copy the entire message text without also getting
+  // the provider name.
   return (
     <div>
-      <div>{createMessageSpan(message)} {providerNameSpan}</div>
+      <div>{providerNameSpan}{createMessageSpan(message)}</div>
       {traceElements}
     </div>
   );
