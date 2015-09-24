@@ -13,6 +13,9 @@ var React = require('react-for-atom');
 
 var GUTTER_ID = 'nuclide-diagnostics-gutter';
 
+// Needs to be the same as glyph-height in gutter.atom-text-editor.less.
+const GLYPH_HEIGHT = 15; // px
+
 // TODO(mbolin): Make it so that when mousing over an element with this CSS class (or specifically,
 // the child element with the "region" CSS class), we also do a showPopupFor(). This seems to be
 // tricky given how the DOM of a TextEditor works today. There are div.tile elements, each of which
@@ -133,21 +136,31 @@ function createGutterItem(
   messages: Array<FileDiagnosticMessage>,
   gutterMarkerCssClass: string
 ): {item: HTMLElement; dispose: () => void} {
-  var item = window.document.createElement('span');
+  const item = window.document.createElement('span');
   item.innerText = '\u25B6'; // Unicode character for a right-pointing triangle.
   item.className = gutterMarkerCssClass;
-  var popupElement;
-  item.addEventListener('mouseover', event => {
-    popupElement = showPopupFor(messages, item);
-  });
-  var dispose = () => {
+  let popupElement = null;
+  let paneItemSubscription = null;
+  const dispose = () => {
     if (popupElement) {
       React.unmountComponentAtNode(popupElement);
       popupElement.parentNode.removeChild(popupElement);
       popupElement = null;
     }
+    if (paneItemSubscription) {
+      paneItemSubscription.dispose();
+      paneItemSubscription = null;
+    }
   };
-  item.addEventListener('mouseout', dispose);
+  item.addEventListener('mouseenter', event => {
+    // If there was somehow another popup for this gutter item, dispose it. This can happen if the
+    // user manages to scroll and escape disposal.
+    dispose();
+    popupElement = showPopupFor(messages, item);
+    popupElement.addEventListener('mouseleave', dispose);
+    // This makes sure that the popup disappears when you ctrl+tab to switch tabs.
+    paneItemSubscription = atom.workspace.onDidChangeActivePaneItem(dispose);
+  });
   return {item, dispose};
 }
 
@@ -178,7 +191,6 @@ function showPopupFor(
 
   // Move it down vertically so it does not end up under the mouse pointer.
   var {top, left} = item.getBoundingClientRect();
-  top += 15;
 
   React.render(
     <DiagnosticsPopup left={left} top={top}>
@@ -195,7 +207,10 @@ function showPopupFor(
   var popupHeight = hostElement.firstElementChild.clientHeight;
   if ((itemTop + itemHeight + popupHeight) > (editorTop + editorHeight)) {
     var popupElement = hostElement.firstElementChild;
-    popupElement.style.top = String(itemTop - popupHeight) + 'px';
+    // Shift the popup back down by GLYPH_HEIGHT, so that the bottom padding overlaps with the
+    // glyph. An additional 4 px is needed to make it look the same way it does when it shows up
+    // below. I don't know why.
+    popupElement.style.top = String(itemTop - popupHeight + GLYPH_HEIGHT + 4) + 'px';
   }
 
   try {

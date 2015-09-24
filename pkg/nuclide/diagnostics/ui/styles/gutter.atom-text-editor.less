@@ -1,5 +1,8 @@
 @import "ui-variables";
 
+// The height of the gutter glyph.
+@glyph-height: 15px;
+
 // Styles for gutter glyphs.
 
 .nuclide-diagnostics-gutter-ui-gutter-error {
@@ -14,6 +17,8 @@
 
 .nuclide-diagnostics-gutter-ui-popup {
   position: absolute;
+  padding-top: @glyph-height;
+  padding-bottom: @glyph-height;
 }
 
 .nuclide-diagnostics-gutter-ui-popup-diagnostic {
