@@ -213,13 +213,19 @@ class DiffViewModel {
   }
 
   async _saveFile(filePath: string, newContents: string) {
-    var client = require('nuclide-client').getClient(filePath);
-    var localFilePath = require('nuclide-remote-uri').getPath(filePath);
-    if (!client) {
-      throw new Error(`client find while saving: \`${filePath}\`.`);
-    }
+    var {isLocal, getPath} = require('nuclide-remote-uri');
     try {
-      await client.writeFile(localFilePath, newContents);
+      if (isLocal(filePath)) {
+        await getFileForPath(filePath).write(newContents);
+      } else {
+        // Remote files return the same instance everytime,
+        // which could have an invalid filesystem contents cache.
+        var client = require('nuclide-client').getClient(filePath);
+        if (!client) {
+          throw new Error(`client find while saving: \`${filePath}\`.`);
+        }
+        await client.writeFile(getPath(filePath), newContents);
+      }
     } catch (err) {
       throw new Error(`could not save file: \`${filePath}\` - ${err.toString()}`);
     }
