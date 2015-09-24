@@ -92,7 +92,8 @@ module.exports = class DiffViewEditor {
   }
 
   setFileContents(filePath: string, contents: string): void {
-    this._editor.setText(contents);
+    // The text is set via diffs to keep the cursor position.
+    this._editor.getBuffer().setTextViaDiff(contents);
     var grammar = atom.grammars.selectGrammar(filePath, contents);
     this._editor.setGrammar(grammar);
   }

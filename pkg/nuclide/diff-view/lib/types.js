@@ -20,6 +20,7 @@ export type FileChangeState = {
   filePath: string;
   oldContents: string;
   newContents: string;
+  savedContents?: string;
   inlineComponents?: Array<InlineComponent>;
 };
 

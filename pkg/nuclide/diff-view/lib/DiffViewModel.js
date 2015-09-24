@@ -40,6 +40,7 @@ class DiffViewModel {
     this._uiProviders = uiProviders;
     this._fileChanges = new Map();
     this._emitter = new Emitter();
+    this._boundHandleInternalError = this._handleInternalError.bind(this);
     var subscriptions = this._subscriptions = new CompositeDisposable();
     this._repositorySubscriptions = new Map();
     this._updateRepositories();
@@ -95,10 +96,24 @@ class DiffViewModel {
     });
     var file = getFileForPath(filePath);
     if (file) {
-      activeSubscriptions.add(file.onDidChange(() => this._updateActiveDiffState(filePath)));
+      activeSubscriptions.add(file.onDidChange(() => {
+        this._onDidFileChange(filePath).catch(this._boundHandleInternalError);
+      }));
     }
     track('diff-view-open-file', {filePath});
-    this._updateActiveDiffState(filePath).catch(this._handleInternalError.bind(this));
+    this._updateActiveDiffState(filePath).catch(this._boundHandleInternalError);
+  }
+
+  async _onDidFileChange(filePath: string): Promise<void> {
+    var client = require('nuclide-client').getClient(filePath);
+    if (!client) {
+      throw new Error(`client find for changed file: \`${filePath}\`.`);
+    }
+    var localFilePath = require('nuclide-remote-uri').getPath(filePath);
+    var filesystemContents = await client.readFile(localFilePath, 'utf8');
+    if (filesystemContents !== this._activeFileState.savedContents) {
+      this._updateActiveDiffState(filePath).catch(this._boundHandleInternalError);
+    }
   }
 
   _handleInternalError(error: Error): void {
@@ -108,11 +123,12 @@ class DiffViewModel {
   }
 
   setNewContents(newContents: string): void {
-    var {filePath, oldContents, inlineComponents} = this._activeFileState;
+    var {filePath, oldContents, savedContents, inlineComponents} = this._activeFileState;
     this._setActiveFileState({
       filePath,
       oldContents,
       newContents,
+      savedContents,
       inlineComponents,
     });
   }
@@ -206,6 +222,7 @@ class DiffViewModel {
     track('diff-view-save-file', {filePath});
     try {
       await this._saveFile(filePath, newContents);
+      this._activeFileState.savedContents = newContents;
     } catch(error) {
       this._handleInternalError(error);
       throw error;
