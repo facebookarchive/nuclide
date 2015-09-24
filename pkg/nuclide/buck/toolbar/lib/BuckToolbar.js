@@ -11,6 +11,7 @@
 
 var AtomComboBox = require('nuclide-ui-atom-combo-box');
 var {CompositeDisposable, TextEditor} = require('atom');
+var {debounce} = require('nuclide-commons');
 var React = require('react-for-atom');
 var {Dispatcher} = require('flux');
 var {PropTypes} = React;
@@ -42,7 +43,7 @@ class BuckToolbar extends React.Component {
       currentProgress: 0,
       maxProgress: 100,
     };
-    this._handleBuildTargetChange = this._handleBuildTargetChange.bind(this);
+    this._handleBuildTargetChange = debounce(this._handleBuildTargetChange.bind(this), 100, false);
     this._handleSimulatorChange = this._handleSimulatorChange.bind(this);
     this._requestOptions = this._requestOptions.bind(this);
     this._build = this._build.bind(this);
@@ -69,6 +70,8 @@ class BuckToolbar extends React.Component {
       this.setCurrentProgressToMaxProgress.bind(this)));
     this._disposables.add(this._buckToolbarStore.onBuckCommandFinished(
       this._hideProgressBar.bind(this)));
+    this._disposables.add(this._buckToolbarStore.onBuildTargetRuleTypeChanged(
+      this._handleRuleTypeChanged.bind(this)));
   }
 
   componentWillUnmount() {
@@ -104,6 +107,10 @@ class BuckToolbar extends React.Component {
     this._buckToolbarActions.updateProjectFor(textEditor);
   }
 
+  _handleRuleTypeChanged(ruleType: ?string) {
+    this.setState({ruleType});
+  }
+
   _requestOptions(inputText: string): Promise<Array<string>> {
     var buckProject = this._buckToolbarStore.getMostRecentBuckProject();
     if (!buckProject) {
@@ -137,6 +144,7 @@ class BuckToolbar extends React.Component {
         />
         <SimulatorDropdown
           className="inline-block"
+          disabled={this.state.ruleType !== 'apple_bundle'}
           title="Choose target device"
           onSelectedSimulatorChange={this._handleSimulatorChange}
         />
@@ -152,6 +160,7 @@ class BuckToolbar extends React.Component {
 
   _handleBuildTargetChange(value: string) {
     this.props.onBuildTargetChange(value);
+    this._buckToolbarActions.updateBuildTarget(value);
     this.setState({buildTarget: value});
   }
 

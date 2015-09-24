@@ -50,6 +50,7 @@ class SimulatorDropdown extends React.Component {
     return (
       <NuclideDropdown
         className={this.props.className}
+        disabled={this.props.disabled}
         selectedIndex={this.state.selectedIndex}
         menuItems={this.state.menuItems}
         onSelectedChange={this._handleSelection}
@@ -70,12 +71,14 @@ class SimulatorDropdown extends React.Component {
 
 SimulatorDropdown.propTypes = {
   className: PropTypes.string.isRequired,
+  disabled: PropTypes.bool.isRequired,
   title: PropTypes.string.isRequired,
   onSelectedSimulatorChange: PropTypes.func.isRequired,
 };
 
 SimulatorDropdown.defaultProps = {
   className: '',
+  disabled: false,
   title: 'Choose a device',
   onSelectedSimulatorChange: () => {},
 };

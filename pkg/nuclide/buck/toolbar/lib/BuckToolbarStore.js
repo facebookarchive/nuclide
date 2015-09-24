@@ -50,6 +50,9 @@ class BuckToolbarStore {
         case BuckToolbarActions.ActionType.UPDATE_PROJECT:
           this._updateProject(action.editor);
           break;
+        case BuckToolbarActions.ActionType.UPDATE_BUILD_TARGET:
+          this._updateBuildTarget(action.buildTarget);
+          break;
         case BuckToolbarActions.ActionType.BUILD:
           this._doBuild(action.buildTarget, null, false, false);
           break;
@@ -83,6 +86,10 @@ class BuckToolbarStore {
     return this._emitter.on('BUCK_COMMAND_FINISHED', callback);
   }
 
+  onBuildTargetRuleTypeChanged(callback: () => void): Disposable {
+    return this._emitter.on('BUILD_TARGET_RULE_TYPE_CHANGED', callback);
+  }
+
   async _updateProject(editor: TextEditor): Promise<void> {
     var nuclideUri = editor.getPath();
     if (!nuclideUri) {
@@ -97,6 +104,21 @@ class BuckToolbarStore {
       this._textEditorToBuckProject.set(editor, buckProject);
     }
     this._mostRecentBuckProject = buckProject;
+  }
+
+  async _updateBuildTarget(buildTarget: string): Promise<void> {
+    var buildRuleType;
+    var buckProject = this._mostRecentBuckProject;
+    buildTarget = buildTarget.trim();
+
+    if (buildTarget && buckProject) {
+      try {
+        buildRuleType = await buckProject.buildRuleTypeFor(buildTarget);
+      } catch (e) {
+        // Most likely, this is an invalid target, so do nothing.
+      }
+    }
+    this._emitter.emit('BUILD_TARGET_RULE_TYPE_CHANGED', buildRuleType);
   }
 
   getMostRecentBuckProject(): ?BuckProject {

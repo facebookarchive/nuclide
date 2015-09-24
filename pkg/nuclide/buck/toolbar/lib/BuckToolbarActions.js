@@ -29,6 +29,13 @@ class BuckToolbarActions {
     });
   }
 
+  updateBuildTarget(buildTarget: string): void {
+    this._dispatcher.dispatch({
+      actionType: BuckToolbarActions.ActionType.UPDATE_BUILD_TARGET,
+      buildTarget,
+    });
+  }
+
   build(buildTarget: string): void {
     this._dispatcher.dispatch({
       actionType: BuckToolbarActions.ActionType.BUILD,
@@ -55,6 +62,7 @@ class BuckToolbarActions {
 
 BuckToolbarActions.ActionType = {
   UPDATE_PROJECT: 'UPDATE_PROJECT',
+  UPDATE_BUILD_TARGET: 'UPDATE_BUILD_TARGET',
   BUILD: 'BUILD',
   RUN: 'RUN',
   DEBUG: 'DEBUG',
