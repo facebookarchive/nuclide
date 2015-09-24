@@ -365,10 +365,9 @@ class FileTreeController {
   }
 
   _removeRootFolderSelection(): void {
-    var rootKey = this._store.getFocusedRootKey();
-    if (rootKey) {
-      var rootPath = FileTreeHelpers.keyToPath(rootKey);
-      atom.project.removePath(rootPath);
+    var rootNode = this._store.getSingleSelectedNode();
+    if (rootNode != null && rootNode.isRoot) {
+      atom.project.removePath(rootNode.nodePath);
     }
   }
 
@@ -388,11 +387,9 @@ class FileTreeController {
   }
 
   _copyFullPath(): void {
-    var rootKey = this._store.getFocusedRootKey();
-    var nodeKey = rootKey ? this._store.getSelectedKeys(rootKey).first() : null;
-    if (rootKey != null && nodeKey != null) {
-      var node = this._store.getNode(rootKey, nodeKey);
-      atom.clipboard.write(node.getLocalPath());
+    var singleSelectedNode = this._store.getSingleSelectedNode();
+    if (singleSelectedNode != null) {
+      atom.clipboard.write(singleSelectedNode.getLocalPath());
     }
   }
 

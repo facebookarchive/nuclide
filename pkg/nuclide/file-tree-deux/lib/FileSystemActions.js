@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import type FileTreeNode from './FileTreeNode';
 import type {
   RemoteDirectory,
   RemoteFile,
@@ -123,14 +124,22 @@ var FileSystemActions = {
     });
   },
 
-  _getSelectedContainerNode() {
-    var store = FileTreeStore.getInstance();
-    var rootKey = store.getFocusedRootKey();
-    var nodeKey = rootKey ? store.getSelectedKeys(rootKey).first() : null;
-    if (rootKey == null || nodeKey == null) {
+  _getSelectedContainerNode(): ?FileTreeNode {
+    const store = FileTreeStore.getInstance();
+    /*
+     * TODO: Choosing the last selected key is inexact when there is more than 1 root. The Set of
+     * selected keys should be maintained as a flat list across all roots to maintain insertion
+     * order.
+     */
+    const nodeKey = store.getSelectedKeys().last();
+    if (nodeKey == null) {
       return null;
     }
-    var node = store.getNode(rootKey, nodeKey);
+    const rootKey = store.getRootForKey(nodeKey);
+    if (rootKey == null) {
+      return null;
+    }
+    const node = store.getNode(rootKey, nodeKey);
     return node.isContainer ? node : node.getParentNode();
   },
 

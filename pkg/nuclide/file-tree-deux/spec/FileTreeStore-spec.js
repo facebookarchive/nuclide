@@ -78,6 +78,35 @@ describe('FileTreeStore', () => {
     expect(node2.isSelected()).toBe(true);
   });
 
+  describe('getSelectedKeys', () => {
+    const dir1 = pathModule.join(__dirname, 'fixtures/dir1') + '/';
+    const dir2 = pathModule.join(__dirname, 'fixtures/dir2') + '/';
+
+    beforeEach(() => {
+      /*
+       * Create two roots and select them both. It'll look like the following:
+       *
+       *   → **dir1**
+       *   → **dir2**
+       */
+      actions.setRootKeys([dir1, dir2]);
+      actions.toggleSelectNode(dir1, dir1);
+      actions.toggleSelectNode(dir2, dir2);
+    });
+
+    it('returns selected nodes from all roots when no argument is given', () => {
+      // Convert the `Immutable.Set` to a native `Array` for simpler use w/ Jasmine.
+      var selectedNodes = store.getSelectedKeys().toArray();
+      expect(selectedNodes).toEqual([dir1, dir2]);
+    });
+
+    it('returns selected nodes from a specific root', () => {
+      // Convert the `Immutable.Set` to a native `Array` for simpler use w/ Jasmine.
+      var selectedNodes = store.getSelectedKeys(dir1).toArray();
+      expect(selectedNodes).toEqual([dir1]);
+    });
+  });
+
   describe('getSelectedNodes', () => {
     it('returns selected nodes from all roots', () => {
       var dir1 = pathModule.join(__dirname, 'fixtures/dir1') + '/';
@@ -86,18 +115,44 @@ describe('FileTreeStore', () => {
       actions.toggleSelectNode(dir1, dir1);
       actions.toggleSelectNode(dir2, dir2);
 
-      // Convert the `Immutable.Set` to a native `Array` for simpler use w/ Jasmine's `toContain`
-      // matcher.
+      // Convert the `Immutable.Set` to a native `Array` for simpler use w/ Jasmine.
       var selectedNodes = store.getSelectedNodes().map(node => node.nodeKey).toArray();
-
-      // Use two `toContain` comparisons because Immutable.Set does not guarantee insertion order.
-      expect(selectedNodes).toContain(dir1);
-      expect(selectedNodes).toContain(dir2);
+      expect(selectedNodes).toEqual([dir1, dir2]);
     });
 
     it('returns an empty Set when no nodes are selected', () => {
       var selectedNodes = store.getSelectedNodes().map(node => node.nodeKey).toArray();
       expect(selectedNodes).toEqual([]);
+    });
+  });
+
+  describe('getSingleSelectedNode', () => {
+    const dir1 = pathModule.join(__dirname, 'fixtures/dir1') + '/';
+    const dir2 = pathModule.join(__dirname, 'fixtures/dir2') + '/';
+
+    beforeEach(() => {
+      /*
+       * Create two roots. It'll look like the following:
+       *
+       *   → dir1
+       *   → dir2
+       */
+      actions.setRootKeys([dir1, dir2]);
+    });
+
+    it('returns null when no nodes are selected', () => {
+      expect(store.getSingleSelectedNode()).toBeNull();
+    });
+
+    it('returns null when more than 1 node is selected', () => {
+      actions.toggleSelectNode(dir1, dir1);
+      actions.toggleSelectNode(dir2, dir2);
+      expect(store.getSingleSelectedNode()).toBeNull();
+    });
+
+    it('returns a node when only 1 is selected', () => {
+      actions.toggleSelectNode(dir2, dir2);
+      expect(store.getSingleSelectedNode().nodeKey).toEqual(dir2);
     });
   });
 

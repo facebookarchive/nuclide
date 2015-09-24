@@ -48,10 +48,9 @@ type StoreData = {
   // Saves a list of child nodes that should be expande when a given key is expanded.
   // Looks like: { rootKey: { nodeKey: [childKey1, childKey2] } }.
   previouslyExpanded: { [rootKey: string]: { [nodeKey: string]: Array<string> } };
-  focusedRootKey: ?string;
   isLoadingMap: { [key: string]: ?Promise };
   rootKeys: Array<string>;
-  selectedKeysByRoot: { [key: string]: Immutable.Set<string> };
+  selectedKeysByRoot: { [key: string]: Immutable.OrderedSet<string> };
   subscriptionMap: { [key: string]: Disposable };
 };
 
@@ -132,7 +131,8 @@ class FileTreeStore {
         childKeyMap: data.childKeyMap,
         expandedKeysByRoot: mapValues(data.expandedKeysByRoot, (keys) => new Immutable.Set(keys)),
         rootKeys: data.rootKeys,
-        selectedKeysByRoot: mapValues(data.selectedKeysByRoot, (keys) => new Immutable.Set(keys)),
+        selectedKeysByRoot:
+          mapValues(data.selectedKeysByRoot, (keys) => new Immutable.OrderedSet(keys)),
       },
     };
     Object.keys(data.childKeyMap).forEach((nodeKey) => {
@@ -148,7 +148,6 @@ class FileTreeStore {
       expandedKeysByRoot: {},
       trackedNode: null,
       previouslyExpanded: {},
-      focusedRootKey: null,
       isLoadingMap: {},
       rootKeys: [],
       selectedKeysByRoot: {},
@@ -166,9 +165,6 @@ class FileTreeStore {
         break;
       case ActionType.SET_ROOT_KEYS:
         this._setRootKeys(payload.rootKeys);
-        break;
-      case ActionType.SET_FOCUSED_ROOT:
-        this._set('focusedRootKey', payload.rootKey);
         break;
       case ActionType.EXPAND_NODE:
         this._expandNode(payload.rootKey, payload.nodeKey);
@@ -222,10 +218,6 @@ class FileTreeStore {
     return this._data.rootKeys;
   }
 
-  getFocusedRootKey(): ?string {
-    return this._data.focusedRootKey || this._data.rootKeys[0];
-  }
-
   /**
    * Returns the key of the *first* root node containing the given node.
    */
@@ -268,15 +260,28 @@ class FileTreeStore {
     return childKeys || [];
   }
 
-  getSelectedKeys(rootKey: string): Immutable.Set<string> {
-    return this._data.selectedKeysByRoot[rootKey] || new Immutable.Set();
+  getSelectedKeys(rootKey?: string): Immutable.OrderedSet<string> {
+    let selectedKeys;
+    if (rootKey == null) {
+      selectedKeys = new Immutable.OrderedSet();
+      for (let root in this._data.selectedKeysByRoot) {
+        if (this._data.selectedKeysByRoot.hasOwnProperty(root)) {
+          selectedKeys = selectedKeys.merge(this._data.selectedKeysByRoot[root]);
+        }
+      }
+    } else {
+      // If the given `rootKey` has no selected keys, assign an empty set to maintain a non-null
+      // return value.
+      selectedKeys = this._data.selectedKeysByRoot[rootKey] || new Immutable.OrderedSet();
+    }
+    return selectedKeys;
   }
 
   /**
    * Returns all selected nodes across all roots in the tree.
    */
-  getSelectedNodes(): Immutable.Set<FileTreeNode> {
-    let selectedNodes = new Immutable.Set();
+  getSelectedNodes(): Immutable.OrderedSet<FileTreeNode> {
+    let selectedNodes = new Immutable.OrderedSet();
     this._data.rootKeys.forEach(rootKey => {
       this.getSelectedKeys(rootKey).forEach(nodeKey => {
         selectedNodes = selectedNodes.add(this.getNode(rootKey, nodeKey));
@@ -286,11 +291,13 @@ class FileTreeStore {
   }
 
   getSingleSelectedNode(): ?FileTreeNode {
-    var rootKey = this.getFocusedRootKey();
-    if (!rootKey) {
+    const selectedRoots = Object.keys(this._data.selectedKeysByRoot);
+    if (selectedRoots.length !== 1) {
+      // There is more than one root with selected nodes. No bueno.
       return null;
     }
-    var selectedKeys = this.getSelectedKeys(rootKey);
+    const rootKey = selectedRoots[0];
+    const selectedKeys = this.getSelectedKeys(rootKey);
     /*
      * Note: This does not call `getSelectedNodes` to prevent creating nodes that would be thrown
      * away if there is more than 1 selected node.
@@ -461,7 +468,7 @@ class FileTreeStore {
     this._set('selectedKeysByRoot', deleteProperty(this._data.selectedKeysByRoot, rootKey));
   }
 
-  _setSelectedKeys(rootKey: string, selectedKeys: Immutable.Set<string>): void {
+  _setSelectedKeys(rootKey: string, selectedKeys: Immutable.OrderedSet<string>): void {
     /*
      * New selection means previous node should not be kept in view. Do this without de-bouncing
      * because the previous state is irrelevant. If the user chose a new selection, the previous one
@@ -478,7 +485,7 @@ class FileTreeStore {
    * Sets the selected keys in all roots of the tree. The selected keys of root keys not in
    * `selectedKeysByRoot` are deleted (the root is left with no selection).
    */
-  _setSelectedKeysByRoot(selectedKeysByRoot: {[key: string]: Immutable.Set<string>}): void {
+  _setSelectedKeysByRoot(selectedKeysByRoot: {[key: string]: Immutable.OrderedSet<string>}): void {
     this.getRootKeys().forEach(rootKey => {
       if (selectedKeysByRoot.hasOwnProperty(rootKey)) {
         this._setSelectedKeys(rootKey, selectedKeysByRoot[rootKey]);
