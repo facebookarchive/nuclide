@@ -242,15 +242,17 @@ function createElementForMessage(
   const providerClassName = message.type === 'Error'
     ? 'highlight-error'
     : 'highlight-warning';
-  const providerNameDiv =
-      <div className={`text-center ${providerClassName}`}>{message.providerName}</div>;
+  const providerNameSpan = (
+    <span className="pull-right">&nbsp;
+      <span className={`${providerClassName}`}>{message.providerName}</span>
+    </span>
+  );
   const traceElements = message.trace
     ? message.trace.map(traceItem => createElementForTrace(traceItem, goToLocation))
     : null;
   return (
     <div>
-      {providerNameDiv}
-      <div>{createMessageSpan(message)}</div>
+      <div>{createMessageSpan(message)} {providerNameSpan}</div>
       {traceElements}
     </div>
   );
