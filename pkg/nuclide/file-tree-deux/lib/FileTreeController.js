@@ -11,7 +11,6 @@
 
 import type {ExportStoreData} from './FileTreeStore';
 
-
 var {CompositeDisposable} = require('atom');
 var FileSystemActions = require('./FileSystemActions');
 var FileTree = require('../components/FileTree');
@@ -27,6 +26,11 @@ var React = require('react-for-atom');
 var os = require('os');
 var pathUtil = require('path');
 var shell = require('shell');
+
+type FileTreeNodeData = {
+  nodeKey: string,
+  rootKey: string,
+};
 
 export type FileTreeControllerState = {
   panel: {
@@ -110,6 +114,7 @@ class FileTreeController {
     }
     this._subscriptions.add(
       atom.commands.add(EVENT_HANDLER_SELECTOR, {
+        'core:move-down': this._moveDown.bind(this),
         'core:move-up': this._moveUp.bind(this),
         'nuclide-file-tree-deux:add-file': () => {
           FileSystemActions.openAddFileDialog(this._openAndRevealFilePath.bind(this));
@@ -325,7 +330,7 @@ class FileTreeController {
     if (rootPaths.size === 0) {
       const selectedPaths = nodes.map(node => node.nodePath);
       const message = 'Are you sure you want to delete the following ' +
-          (nodes.length > 1 ? 'items?' : 'item?');
+          (nodes.size > 1 ? 'items?' : 'item?');
       atom.confirm({
         buttons: {
           'Delete': () => { this._actions.deleteSelectedNodes(); },
@@ -364,10 +369,17 @@ class FileTreeController {
     });
   }
 
-  _moveUp(): void {
+  _moveDown(): void {
+    const rootKeys = this._store.getRootKeys();
+    if (rootKeys.length === 0) {
+      // The store is empty. Nothing to do. Exit.
+      return;
+    }
+
     const lastSelectedKey = this._store.getSelectedKeys().last();
     if (lastSelectedKey == null) {
-      // If there is no selection, return because there's nothing to do.
+      // There is no selection yet, so start at the top of the tree. The top is the first root.
+      this._trackAndSelectNode(rootKeys[0], rootKeys[0]);
       return;
     }
 
@@ -378,7 +390,84 @@ class FileTreeController {
     if (isRoot) {
       rootKey = lastSelectedKey;
       // Other roots are this root's siblings
-      siblingKeys = this._store.getRootKeys();
+      siblingKeys = rootKeys;
+    } else {
+      parentKey = FileTreeHelpers.getParentKey(lastSelectedKey);
+      rootKey = this._store.getRootForKey(lastSelectedKey);
+      siblingKeys = this._store._data.childKeyMap[parentKey];
+    }
+
+    // If the root does not exist or if this is expected to have a parent but doesn't (roots do
+    // not have parents), nothing can be done. Exit.
+    if (rootKey == null || (!isRoot && parentKey == null)) {
+      return;
+    }
+
+    const children = this._store._data.childKeyMap[lastSelectedKey];
+    if (
+      FileTreeHelpers.isDirKey(lastSelectedKey) &&
+      this._store.isExpanded(rootKey, lastSelectedKey) &&
+      children.length > 0
+    ) {
+      // Directory is expanded and it has children. Select first child. Exit.
+      this._trackAndSelectNode(rootKey, children[0]);
+    } else {
+      const index = siblingKeys.indexOf(lastSelectedKey);
+      const maxIndex = siblingKeys.length - 1;
+
+      if (index < maxIndex) {
+        const nextSiblingKey = siblingKeys[index + 1];
+
+        if (isRoot) {
+          // If the next selected item is another root, set `rootKey` to it so trackAndSelect finds
+          // that [rootKey, rootKey] tuple.
+          rootKey = nextSiblingKey;
+        }
+
+        // This has a next sibling.
+        this._trackAndSelectNode(rootKey, siblingKeys[index + 1]);
+      } else {
+        const nearestAncestorSibling = this._findNearestAncestorSibling(rootKey, lastSelectedKey);
+
+        // If this is the bottommost node of the tree, there won't be anything to select.
+        // Void return signifies no next node was found.
+        if (nearestAncestorSibling != null) {
+          this._trackAndSelectNode(nearestAncestorSibling.rootKey, nearestAncestorSibling.nodeKey);
+        }
+      }
+    }
+  }
+
+  _moveUp(): void {
+    const rootKeys = this._store.getRootKeys();
+    if (rootKeys.length === 0) {
+      // The store is empty. Nothing to do. Exit.
+      return;
+    }
+
+    const lastSelectedKey = this._store.getSelectedKeys().last();
+    if (lastSelectedKey == null) {
+      // There is no selection. Select the lowermost descendant of the last root node. Exit.
+      const lastRootKey = rootKeys[rootKeys.length - 1];
+      if (this._store.isExpanded(lastRootKey, lastRootKey)) {
+        this._trackAndSelectNode(
+          lastRootKey,
+          this._findLowermostDescendantKey(lastRootKey, lastRootKey)
+        );
+      } else {
+        this._trackAndSelectNode(lastRootKey, lastRootKey);
+      }
+      return;
+    }
+
+    let parentKey;
+    let rootKey;
+    let siblingKeys;
+    const isRoot = this._store.isRootKey(lastSelectedKey);
+    if (isRoot) {
+      rootKey = lastSelectedKey;
+      // Other roots are this root's siblings
+      siblingKeys = rootKeys;
     } else {
       parentKey = FileTreeHelpers.getParentKey(lastSelectedKey);
       rootKey = this._store.getRootForKey(lastSelectedKey);
@@ -442,11 +531,59 @@ class FileTreeController {
    */
   _findLowermostDescendantKey(rootKey: string, nodeKey: string): string {
     const childKeys = this._store._data.childKeyMap[nodeKey];
+    if (childKeys == null || childKeys.length === 0) {
+      // If the directory has no children, the directory itself is the lowermost descendant.
+      return nodeKey;
+    }
+
     const lastChildKey = childKeys[childKeys.length - 1];
     if (FileTreeHelpers.isDirKey(lastChildKey) && this._store.isExpanded(rootKey, lastChildKey)) {
       return this._findLowermostDescendantKey(rootKey, lastChildKey);
     } else {
       return lastChildKey;
+    }
+  }
+
+  /*
+   * Returns the nearest "ancestor sibling" when considered in file system order with expandable
+   * directories. For example:
+   *
+   *   A >
+   *     B >
+   *       C >
+   *         E.txt
+   *   D.foo
+   *
+   *   > _findNearestAncestorSibling(E.txt)
+   *   D.foo
+   */
+  _findNearestAncestorSibling(rootKey: string, nodeKey: string): ?FileTreeNodeData {
+    let parentKey;
+    let siblingKeys;
+    const isRoot = rootKey === nodeKey;
+    if (isRoot) {
+      // `rootKey === nodeKey` means this has recursed to a root. `nodeKey` is a root key.
+      siblingKeys = this._store.getRootKeys();
+    } else {
+      parentKey = FileTreeHelpers.getParentKey(nodeKey);
+      siblingKeys = this._store._data.childKeyMap[parentKey];
+    }
+
+    const index = siblingKeys.indexOf(nodeKey);
+    if (index < (siblingKeys.length - 1)) {
+      const nextSibling = siblingKeys[index + 1];
+      // If traversing across roots, the next sibling is also the next root. Return it as the next
+      // root key as well as the next node key.
+      return isRoot
+        ? {nodeKey: nextSibling, rootKey: nextSibling}
+        : {nodeKey: nextSibling, rootKey};
+    } else if (parentKey != null) {
+      // There is a parent to recurse. Return its nearest ancestor sibling.
+      return this._findNearestAncestorSibling(rootKey, parentKey);
+    } else {
+      // If `parentKey` is null, nodeKey is a root and has more parents to recurse. Return `null` to
+      // signify no appropriate key was found.
+      return null;
     }
   }
 

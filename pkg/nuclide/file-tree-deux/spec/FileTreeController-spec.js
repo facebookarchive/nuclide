@@ -117,7 +117,7 @@ describe('FileTreeController', () => {
     });
   });
 
-  describe('_moveUp', () => {
+  describe('using the up/down arrow keys', () => {
     const rootKey = pathModule.join(__dirname, 'fixtures') + '/';
     const dir1Key = pathModule.join(__dirname, 'fixtures/dir1') + '/';
     const fooTxtKey = pathModule.join(__dirname, 'fixtures/dir1/foo.txt');
@@ -139,51 +139,122 @@ describe('FileTreeController', () => {
       });
     });
 
-    it('does nothing if the topmost root node is selected', () => {
-      actions.selectSingleNode(rootKey, rootKey);
-      expect(store.isSelected(rootKey, rootKey)).toEqual(true);
-      controller._moveUp();
-      expect(store.isSelected(rootKey, rootKey)).toEqual(true);
+    describe('with single nesting', () => {
+      describe('via _moveDown', () => {
+        it('selects the first root if there is no selection', () => {
+          expect(store.getSingleSelectedNode()).toBeNull();
+          controller._moveDown();
+          expect(store.isSelected(rootKey, rootKey)).toEqual(true);
+        });
+
+        it('does nothing if the bottommost node is selected', () => {
+          actions.selectSingleNode(rootKey, dir2Key);
+          expect(store.isSelected(rootKey, dir2Key)).toEqual(true);
+          controller._moveDown();
+          expect(store.isSelected(rootKey, dir2Key)).toEqual(true);
+        });
+
+        it('selects first child if parent is selected', () => {
+          actions.selectSingleNode(rootKey, rootKey);
+          expect(store.isSelected(rootKey, rootKey)).toEqual(true);
+          controller._moveDown();
+
+          // dir1 is the first child, should get selected
+          expect(store.isSelected(rootKey, dir1Key)).toEqual(true);
+        });
+
+        it('selects the next sibling when one exists', () => {
+          actions.selectSingleNode(rootKey, dir1Key);
+          expect(store.isSelected(rootKey, dir1Key)).toEqual(true);
+          controller._moveDown();
+
+          // dir2 is the next sibling, should get selected
+          expect(store.isSelected(rootKey, dir2Key)).toEqual(true);
+        });
+      });
+
+      describe('via _moveUp', () => {
+        it('selects the lowermost descendant if there is no selection', () => {
+          expect(store.getSingleSelectedNode()).toBeNull();
+          controller._moveUp();
+          expect(store.isSelected(rootKey, dir2Key)).toEqual(true);
+        });
+
+        it('does nothing if the topmost root node is selected', () => {
+          actions.selectSingleNode(rootKey, rootKey);
+          expect(store.isSelected(rootKey, rootKey)).toEqual(true);
+          controller._moveUp();
+          expect(store.isSelected(rootKey, rootKey)).toEqual(true);
+        });
+
+        it('selects parent if first child is selected', () => {
+          actions.selectSingleNode(rootKey, dir1Key);
+          expect(store.isSelected(rootKey, dir1Key)).toEqual(true);
+          controller._moveUp();
+
+          // dir1 is the first child, parent (root) should get selected
+          expect(store.isSelected(rootKey, rootKey)).toEqual(true);
+        });
+
+        it('selects the previous sibling if one exists', () => {
+          actions.selectSingleNode(rootKey, dir2Key);
+          expect(store.isSelected(rootKey, dir2Key)).toEqual(true);
+          controller._moveUp();
+
+          // dir2 is the second child, previous sibling (dir1) should be selected
+          expect(store.isSelected(rootKey, dir1Key)).toEqual(true);
+        });
+
+        it('selects the root after deselecting via collapsing', () => {
+          actions.selectSingleNode(rootKey, dir2Key);
+          expect(store.isSelected(rootKey, dir2Key)).toEqual(true);
+          actions.collapseNode(rootKey, rootKey);
+          expect(store.isSelected(rootKey, dir2Key)).toEqual(false);
+          controller._moveUp();
+
+          expect(store.isSelected(rootKey, rootKey)).toEqual(true);
+        });
+      });
     });
 
-    it('selects parent if first child is selected', () => {
-      actions.selectSingleNode(rootKey, dir1Key);
-      expect(store.isSelected(rootKey, dir1Key)).toEqual(true);
-      controller._moveUp();
+    describe('with double+ nesting', () => {
+      beforeEach(() => {
+        waitsForPromise(async () => {
+          /*
+           * ¯\_(ツ)_/¯
+           * Expand further with a view like the following:
+           *
+           *   ↓ fixtures
+           *     ↓ dir1
+           *       · foo.txt
+           *     → dir2
+           */
+          actions.expandNode(rootKey, dir1Key);
+          // Populate real files like real people again.
+          await store._fetchChildKeys(dir1Key);
+        });
+      });
 
-      // dir1 is the first child, parent (root) should get selected
-      expect(store.isSelected(rootKey, rootKey)).toEqual(true);
-    });
+      describe('via _moveDown', () => {
+        it('selects the previous nested descendant if one exists', () => {
+          actions.selectSingleNode(rootKey, fooTxtKey);
+          expect(store.isSelected(rootKey, fooTxtKey)).toEqual(true);
+          controller._moveDown();
 
-    it('selects the previous sibling if one exists', () => {
-      actions.selectSingleNode(rootKey, dir2Key);
-      expect(store.isSelected(rootKey, dir2Key)).toEqual(true);
-      controller._moveUp();
+          // foo.txt is the previous visible descendant to dir2
+          expect(store.isSelected(rootKey, dir2Key)).toEqual(true);
+        });
+      });
 
-      // dir2 is the second child, previous sibling (dir1) should be selected
-      expect(store.isSelected(rootKey, dir1Key)).toEqual(true);
-    });
+      describe('via _moveUp', () => {
+        it('selects the previous nested descendant if one exists', () => {
+          actions.selectSingleNode(rootKey, dir2Key);
+          expect(store.isSelected(rootKey, dir2Key)).toEqual(true);
+          controller._moveUp();
 
-    it('selects the previous nested descendant if one exists', () => {
-      waitsForPromise(async () => {
-        /*
-         * ¯\_(ツ)_/¯
-         * Create an expanded view like the following:
-         *
-         *   ↓ fixtures
-         *     ↓ dir1
-         *       · foo.txt
-         *     → dir2
-         */
-        actions.expandNode(rootKey, dir1Key);
-        await store._fetchChildKeys(dir1Key);
-
-        actions.selectSingleNode(rootKey, dir2Key);
-        expect(store.isSelected(rootKey, dir2Key)).toEqual(true);
-        controller._moveUp();
-
-        // foo.txt is the previous visible descendant to dir2
-        expect(store.isSelected(rootKey, fooTxtKey)).toEqual(true);
+          // foo.txt is the previous visible descendant to dir2
+          expect(store.isSelected(rootKey, fooTxtKey)).toEqual(true);
+        });
       });
     });
   });
