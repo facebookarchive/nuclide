@@ -78,7 +78,7 @@ class DiffViewEditorPane extends React.Component {
     if (newProps.initialTextContent !== this.state.textContent) {
       newState = {textContent: newProps.initialTextContent};
       this.setState(newState);
-      this._setTextContent(newState.textContent);
+      this._setTextContent(newState.textContent, false /*clearHistory*/);
     }
     this._updateDiffView(newProps, newState);
   }
@@ -86,7 +86,8 @@ class DiffViewEditorPane extends React.Component {
   _updateDiffView(newProps: Object, newState: Object): void {
     var oldProps = this.props;
     if (oldProps.filePath !== newProps.filePath) {
-      this._setTextContent(newState.textContent);
+      // Loading a new file should clear the undo history.
+      this._setTextContent(newState.textContent, true /*clearHistory*/);
     }
     if (oldProps.highlightedLines !== newProps.highlightedLines) {
       this._setHighlightedLines(newProps.highlightedLines);
@@ -99,8 +100,8 @@ class DiffViewEditorPane extends React.Component {
     }
   }
 
-  _setTextContent(text: string): void {
-    this._diffViewEditor.setFileContents(this.props.filePath, text);
+  _setTextContent(text: string, clearHistory: boolean): void {
+    this._diffViewEditor.setFileContents(this.props.filePath, text, clearHistory);
   }
 
   _setHighlightedLines(highlightedLines: HighlightedLines): void {

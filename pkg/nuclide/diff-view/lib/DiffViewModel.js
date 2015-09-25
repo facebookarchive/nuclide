@@ -90,7 +90,7 @@ class DiffViewModel {
     }
     var activeSubscriptions = this._activeSubscriptions = new CompositeDisposable();
     this._setActiveFileState({
-      filePath,
+      filePath: '',
       oldContents: '',
       newContents: '',
     });
