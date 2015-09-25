@@ -110,6 +110,7 @@ class FileTreeController {
     }
     this._subscriptions.add(
       atom.commands.add(EVENT_HANDLER_SELECTOR, {
+        'core:move-up': this._moveUp.bind(this),
         'nuclide-file-tree-deux:add-file': () => {
           FileSystemActions.openAddFileDialog(this._openAndRevealFilePath.bind(this));
         },
@@ -280,8 +281,7 @@ class FileTreeController {
       this._actions.ensureChildNode(rootKey, parentKey, childKey);
       this._actions.expandNode(rootKey, parentKey);
     });
-    this._actions.selectSingleNode(rootKey, nodeKey);
-    this._actions.setTrackedNode(rootKey, nodeKey);
+    this._trackAndSelectNode(rootKey, nodeKey);
   }
 
   /**
@@ -364,6 +364,92 @@ class FileTreeController {
     });
   }
 
+  _moveUp(): void {
+    const lastSelectedKey = this._store.getSelectedKeys().last();
+    if (lastSelectedKey == null) {
+      // If there is no selection, return because there's nothing to do.
+      return;
+    }
+
+    let parentKey;
+    let rootKey;
+    let siblingKeys;
+    const isRoot = this._store.isRootKey(lastSelectedKey);
+    if (isRoot) {
+      rootKey = lastSelectedKey;
+      // Other roots are this root's siblings
+      siblingKeys = this._store.getRootKeys();
+    } else {
+      parentKey = FileTreeHelpers.getParentKey(lastSelectedKey);
+      rootKey = this._store.getRootForKey(lastSelectedKey);
+      siblingKeys = this._store._data.childKeyMap[parentKey];
+    }
+
+    // If the root does not exist or if this is expected to have a parent but doesn't (roots do
+    // not have parents), nothing can be done. Exit.
+    if (rootKey == null || (!isRoot && parentKey == null)) {
+      return;
+    }
+
+    const index = siblingKeys.indexOf(lastSelectedKey);
+    if (index === 0) {
+      if (!isRoot && parentKey != null) {
+        // This is the first child. It has a parent. Select the parent.
+        this._trackAndSelectNode(rootKey, parentKey);
+      }
+      // This is the root and/or the top of the tree (has no parent). Nothing else to traverse.
+      // Exit.
+    } else {
+      const previousSiblingKey = siblingKeys[index - 1];
+
+      if (isRoot) {
+        // If traversing up to a different root, the rootKey must become that new root to check
+        // expanded keys in it.
+        rootKey = previousSiblingKey;
+      }
+
+      if (FileTreeHelpers.isDirKey(previousSiblingKey)) {
+        if (this._store.isExpanded(rootKey, previousSiblingKey)) {
+          // Dir is expanded. Select its lowermost descendant.
+          const lowermostKey = this._findLowermostDescendantKey(rootKey, previousSiblingKey);
+          this._trackAndSelectNode(rootKey, lowermostKey);
+        } else {
+          // Dir not expanded. No need to traverse. Select it.
+          this._trackAndSelectNode(rootKey, previousSiblingKey);
+        }
+      } else {
+        // Previous sibling is a file (it has no children). Nothing to traverse. Select it.
+        this._trackAndSelectNode(rootKey, previousSiblingKey);
+      }
+    }
+  }
+
+  /*
+   * Returns the lowermost descendant when considered in file system order with expandable
+   * directories. For example:
+   *
+   *   A >
+   *     B >
+   *     C >
+   *       E.txt
+   *     D.foo
+   *
+   *   > _findLowermostDescendantKey(A)
+   *   D.foo
+   *
+   * Though A has more deeply-nested descendants than D.foo, like E.txt, D.foo is lowermost when
+   * considered in file system order.
+   */
+  _findLowermostDescendantKey(rootKey: string, nodeKey: string): string {
+    const childKeys = this._store._data.childKeyMap[nodeKey];
+    const lastChildKey = childKeys[childKeys.length - 1];
+    if (FileTreeHelpers.isDirKey(lastChildKey) && this._store.isExpanded(rootKey, lastChildKey)) {
+      return this._findLowermostDescendantKey(rootKey, lastChildKey);
+    } else {
+      return lastChildKey;
+    }
+  }
+
   _removeRootFolderSelection(): void {
     var rootNode = this._store.getSingleSelectedNode();
     if (rootNode != null && rootNode.isRoot) {
@@ -384,6 +470,11 @@ class FileTreeController {
       return;
     }
     shell.showItemInFolder(node.nodePath);
+  }
+
+  _trackAndSelectNode(rootKey: string, nodeKey: string): void {
+    this._actions.setTrackedNode(rootKey, nodeKey);
+    this._actions.selectSingleNode(rootKey, nodeKey);
   }
 
   _copyFullPath(): void {

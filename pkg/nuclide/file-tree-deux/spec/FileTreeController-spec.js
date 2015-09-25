@@ -9,12 +9,19 @@
  * the root directory of this source tree.
  */
 
+var FileTreeActions = require('../lib/FileTreeActions');
 var FileTreeController = require('../lib/FileTreeController');
+var FileTreeStore = require('../lib/FileTreeStore');
 var React = require('react-for-atom');
 
+const pathModule = require('path');
+
 describe('FileTreeController', () => {
-  var controller: FileTreeController;
-  var workspaceElement;
+  const actions = FileTreeActions.getInstance();
+  const store = FileTreeStore.getInstance();
+
+  let controller: ?FileTreeController;
+  let workspaceElement;
 
   beforeEach(() => {
     workspaceElement = atom.views.getView(atom.workspace);
@@ -41,6 +48,7 @@ describe('FileTreeController', () => {
 
   afterEach(() => {
     controller.destroy();
+    store.reset();
   });
 
   describe('revealActiveFile', () => {
@@ -106,6 +114,77 @@ describe('FileTreeController', () => {
         width: FileTreeController.INITIAL_WIDTH,
       });
       expect(typeof serializedControllerData.panel).toBe('object');
+    });
+  });
+
+  describe('_moveUp', () => {
+    const rootKey = pathModule.join(__dirname, 'fixtures') + '/';
+    const dir1Key = pathModule.join(__dirname, 'fixtures/dir1') + '/';
+    const fooTxtKey = pathModule.join(__dirname, 'fixtures/dir1/foo.txt');
+    const dir2Key = pathModule.join(__dirname, 'fixtures/dir2') + '/';
+
+    beforeEach(() => {
+      /*
+       * ༼ つ ◕_◕ ༽つ
+       * Start with an expanded and fetched state that looks like the following:
+       *
+       *   ↓ fixtures
+       *     → dir1
+       *     → dir2
+       */
+      waitsForPromise(async () => {
+        actions.expandNode(rootKey, rootKey);
+        // Populate real files from real disk like real people.
+        await store._fetchChildKeys(rootKey);
+      });
+    });
+
+    it('does nothing if the topmost root node is selected', () => {
+      actions.selectSingleNode(rootKey, rootKey);
+      expect(store.isSelected(rootKey, rootKey)).toEqual(true);
+      controller._moveUp();
+      expect(store.isSelected(rootKey, rootKey)).toEqual(true);
+    });
+
+    it('selects parent if first child is selected', () => {
+      actions.selectSingleNode(rootKey, dir1Key);
+      expect(store.isSelected(rootKey, dir1Key)).toEqual(true);
+      controller._moveUp();
+
+      // dir1 is the first child, parent (root) should get selected
+      expect(store.isSelected(rootKey, rootKey)).toEqual(true);
+    });
+
+    it('selects the previous sibling if one exists', () => {
+      actions.selectSingleNode(rootKey, dir2Key);
+      expect(store.isSelected(rootKey, dir2Key)).toEqual(true);
+      controller._moveUp();
+
+      // dir2 is the second child, previous sibling (dir1) should be selected
+      expect(store.isSelected(rootKey, dir1Key)).toEqual(true);
+    });
+
+    it('selects the previous nested descendant if one exists', () => {
+      waitsForPromise(async () => {
+        /*
+         * ¯\_(ツ)_/¯
+         * Create an expanded view like the following:
+         *
+         *   ↓ fixtures
+         *     ↓ dir1
+         *       · foo.txt
+         *     → dir2
+         */
+        actions.expandNode(rootKey, dir1Key);
+        await store._fetchChildKeys(dir1Key);
+
+        actions.selectSingleNode(rootKey, dir2Key);
+        expect(store.isSelected(rootKey, dir2Key)).toEqual(true);
+        controller._moveUp();
+
+        // foo.txt is the previous visible descendant to dir2
+        expect(store.isSelected(rootKey, fooTxtKey)).toEqual(true);
+      });
     });
   });
 });

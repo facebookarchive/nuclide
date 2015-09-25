@@ -236,6 +236,10 @@ class FileTreeStore {
     return this._getExpandedKeys(rootKey).has(nodeKey);
   }
 
+  isRootKey(nodeKey: string): boolean {
+    return this._data.rootKeys.indexOf(nodeKey) !== -1;
+  }
+
   isSelected(rootKey: string, nodeKey: string): boolean {
     return this.getSelectedKeys(rootKey).has(nodeKey);
   }

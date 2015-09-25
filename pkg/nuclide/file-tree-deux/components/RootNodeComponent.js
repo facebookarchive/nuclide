@@ -9,7 +9,6 @@
  * the root directory of this source tree.
  */
 
-var FileTreeActions = require('../lib/FileTreeActions');
 var NodeComponent = require('./NodeComponent');
 var React = require('react-for-atom');
 
