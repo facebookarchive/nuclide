@@ -9,11 +9,10 @@
  * the root directory of this source tree.
  */
 
-var {asyncExecute, scriptSafeSpawn} = require('nuclide-commons');
+var {asyncExecute, scriptSafeSpawnAndObserveOutput} = require('nuclide-commons');
 var {fsPromise} = require('nuclide-commons');
 var logger = require('nuclide-logging').getLogger();
 var path = require('path');
-var {Observable} = require('rx');
 
 type BuckConfig = Object;
 type BaseBuckBuildOptions = {
@@ -34,7 +33,7 @@ type BuckCommandAndOptions = {
     queueName: string;
   };
 };
-import type {Observer} from 'rx';
+import type {Observable} from 'rx';
 
 /**
  * As defined in com.facebook.buck.cli.Command, some of Buck's subcommands are
@@ -213,39 +212,7 @@ export class BuckProject {
     });
     var {pathToBuck, buckCommandOptions: options} = this._getBuckCommandAndOptions();
 
-    var observable = Observable.create((observer: Observer) => {
-      var childProcess;
-      scriptSafeSpawn(pathToBuck, args, options).then(proc => {
-        childProcess = proc;
-
-        childProcess.stdout.on('data', (data) => {
-          observer.onNext({stdout: data.toString()});
-        });
-
-        var stderr = '';
-        childProcess.stderr.on('data', (data) => {
-          stderr += data;
-          observer.onNext({stderr: data.toString()});
-        });
-
-        childProcess.on('exit', (exitCode: number) => {
-          if (exitCode !== 0) {
-            observer.onError(stderr);
-          } else {
-            observer.onCompleted();
-          }
-          childProcess = null;
-        });
-      });
-
-      return () => {
-        if (childProcess) {
-          childProcess.kill();
-        }
-      };
-    });
-
-    return observable;
+    return scriptSafeSpawnAndObserveOutput(pathToBuck, args, options);
   }
 
   /**

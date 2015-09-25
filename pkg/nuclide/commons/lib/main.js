@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {Observable} from 'rx';
+
 module.exports = {
 
   asyncFind<T>(items: Array<T>, test: any, thisArg: any): Promise<?T> {
@@ -45,6 +47,14 @@ module.exports = {
     options?: Object = {},
   ): Promise<child_process$ChildProcess> {
     return require('./process').scriptSafeSpawn(command, args, options);
+  },
+
+  scriptSafeSpawnAndObserveOutput(
+    command: string,
+    args?: Array<string> = [],
+    options?: Object = {},
+  ): Observable<{stdout?: string; stderr?: string;}> {
+    return require('./process').scriptSafeSpawnAndObserveOutput(command, args, options);
   },
 
   readFile(filePath: string, options?: any): Promise<string | Buffer> {

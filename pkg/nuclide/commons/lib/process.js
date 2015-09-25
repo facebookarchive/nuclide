@@ -16,6 +16,8 @@ var {
 var path = require('path');
 var {PromiseQueue} = require('./PromiseExecutors');
 
+import type {Observable as ObservableType, Observer} from 'rx';
+
 var platformPathPromise: ?Promise<string>;
 
 var blockingQueues = {};
@@ -176,6 +178,49 @@ function scriptSafeSpawn(
   return safeSpawn('script', newArgs, options);
 }
 
+/**
+ * Wraps scriptSafeSpawn with an Observable that lets you listen to the stdout and
+ * stderr of the spawned process.
+ */
+function scriptSafeSpawnAndObserveOutput(
+  command: string,
+  args?: Array<string> = [],
+  options?: Object = {},
+): ObservableType<{stderr?: string; stdout?: string;}> {
+  var {Observable} = require('rx');
+  return Observable.create((observer: Observer) => {
+    var childProcess;
+    scriptSafeSpawn(command, args, options).then(proc => {
+      childProcess = proc;
+
+      childProcess.stdout.on('data', (data) => {
+        observer.onNext({stdout: data.toString()});
+      });
+
+      var stderr = '';
+      childProcess.stderr.on('data', (data) => {
+        stderr += data;
+        observer.onNext({stderr: data.toString()});
+      });
+
+      childProcess.on('exit', (exitCode: number) => {
+        if (exitCode !== 0) {
+          observer.onError(stderr);
+        } else {
+          observer.onCompleted();
+        }
+        childProcess = null;
+      });
+    });
+
+    return () => {
+      if (childProcess) {
+        childProcess.kill();
+      }
+    };
+  });
+}
+
 type process$asyncExecuteRet = {
   command?: string;
   errorMessage?: string;
@@ -327,6 +372,7 @@ module.exports = {
   checkOutput,
   safeSpawn,
   scriptSafeSpawn,
+  scriptSafeSpawnAndObserveOutput,
   createExecEnvironment,
   COMMON_BINARY_PATHS,
   __test__: {
