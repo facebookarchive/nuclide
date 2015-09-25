@@ -21,7 +21,8 @@ var platformPathPromise: ?Promise<string>;
 var blockingQueues = {};
 var COMMON_BINARY_PATHS = ['/usr/bin', '/bin', '/usr/sbin', '/sbin', '/usr/local/bin'];
 
-/* Captures the value of the PATH env variable returned by Darwin's (OS X) `path_helper` utility.
+/**
+ * Captures the value of the PATH env variable returned by Darwin's (OS X) `path_helper` utility.
  * `path_helper -s`'s return value looks like this:
  *
  *     PATH="/usr/bin"; export PATH;
@@ -75,7 +76,10 @@ function appendCommonBinaryPaths(env: Object, commonBinaryPaths: Array<string>):
  *    REPLACE the PATH.
  *  2) If step 1 failed or we are not running in OS X, APPEND commonBinaryPaths to current PATH.
  */
-async function createExecEnvironment(originalEnv: Object, commonBinaryPaths: Array<string>): Promise<Object> {
+async function createExecEnvironment(
+  originalEnv: Object,
+  commonBinaryPaths: Array<string>,
+): Promise<Object> {
   var execEnv = {...originalEnv};
 
   if (execEnv.PATH !== process.env.PATH) {
@@ -113,16 +117,23 @@ function monitorStreamErrors(process: child_process$ChildProcess, command, args,
   STREAM_NAMES.forEach(streamName => {
     // $FlowIssue
     process[streamName].on('error', error => {
-      // This can happen without the full execution of the command to fail, but we want to learn about it.
+      // This can happen without the full execution of the command to fail,
+      // but we want to learn about it.
       logError('stream error with command:', command, args, options, 'error:', error);
     });
   });
 }
 
-/** Basically like spawn, except it handles and logs errors instead of crashing
-  * the process. This is much lower-level than asyncExecute. Unless you have a
-  * specific reason you should use asyncExecute instead. */
-async function safeSpawn(command: string, args?: Array<string> = [], options?: Object = {}): Promise<child_process$ChildProcess> {
+/**
+ * Basically like spawn, except it handles and logs errors instead of crashing
+ * the process. This is much lower-level than asyncExecute. Unless you have a
+ * specific reason you should use asyncExecute instead.
+ */
+async function safeSpawn(
+  command: string,
+  args?: Array<string> = [],
+  options?: Object = {},
+): Promise<child_process$ChildProcess> {
   options.env = await createExecEnvironment(options.env || process.env, COMMON_BINARY_PATHS);
   var child = spawn(command, args, options);
   monitorStreamErrors(child, command, args, options);
