@@ -69,6 +69,26 @@ function spyOnGetterValue(object: Object, f: string): JasmineSpy {
   return spyOn(object, f);
 }
 
+/**
+ * Checks if the two objects have equal properties. This considers a property
+ * set to undefined to be equivalent to a property that was not set at all.
+ */
+function arePropertiesEqual(obj1: Object, obj2: Object): boolean {
+  var allProps = new Set();
+  function addAllProps(obj) {
+    for (var prop of Object.keys(obj)) {
+      allProps.add(prop);
+    }
+  }
+  [obj1, obj2].forEach(addAllProps);
+  for (var prop of allProps) {
+    if (obj1[prop] !== obj2[prop]) {
+      return false;
+    }
+  }
+  return true;
+}
+
 module.exports = {
   addMatchers: require('./matchers').addMatchers,
   clearRequireCache,
@@ -78,4 +98,5 @@ module.exports = {
   },
   spyOnGetterValue,
   uncachedRequire,
+  arePropertiesEqual,
 };
