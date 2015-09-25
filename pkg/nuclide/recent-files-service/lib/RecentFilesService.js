@@ -32,9 +32,9 @@ class RecentFilesService {
       }, null);
     }
     this._subscriptions = new CompositeDisposable();
-    this._subscriptions.add(atom.workspace.onDidChangeActivePaneItem((item: mixed) => {
+    this._subscriptions.add(atom.workspace.onDidChangeActivePaneItem((item: ?mixed) => {
       // Not all `item`s are instances of TextEditor (e.g. the diff view).
-      if (typeof item.getPath !== 'function') {
+      if (!item || typeof item.getPath !== 'function') {
         return;
       }
       let editorPath = item.getPath();
