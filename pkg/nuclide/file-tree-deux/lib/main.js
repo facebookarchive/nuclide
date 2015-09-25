@@ -16,6 +16,12 @@ import type {Disposable} from 'atom';
 import type FileTreeControllerType from './FileTreeController';
 import type {FileTreeControllerState} from './FileTreeController';
 
+/**
+ * Minimum interval (in ms) between onChangeActivePaneItem events before revealing the active pane
+ * item in the file tree.
+ */
+const ACTIVE_PANE_DEBOUNCE_INTERVAL_MS = 150;
+
 // Unload 'tree-view' so we can control whether it is activated or not.
 //
 // Running the code in the global scope here ensures that it's called before 'tree-view' is
@@ -86,6 +92,9 @@ class Activation {
   }
 
   _setRevealOnFileSwitch(shouldReveal: boolean) {
+    var {onWorkspaceDidStopChangingActivePaneItem} =
+      require('nuclide-atom-helpers').atomEventDebounce;
+
     if (shouldReveal) {
       const reveal = () => {
         if (this._fileTreeController) {
@@ -94,7 +103,12 @@ class Activation {
       };
       // Guard against this getting called multiple times
       if (!this._paneItemSubscription) {
-        this._paneItemSubscription = atom.workspace.onDidChangeActivePaneItem(reveal);
+        // Debounce tab change events to limit unneeded scrolling when changing or closing tabs
+        // in quick succession.
+        this._paneItemSubscription = onWorkspaceDidStopChangingActivePaneItem(
+          reveal,
+          ACTIVE_PANE_DEBOUNCE_INTERVAL_MS
+        );
         this._subscriptions.add(this._paneItemSubscription);
       }
     } else {
