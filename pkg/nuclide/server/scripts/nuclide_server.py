@@ -90,7 +90,6 @@ class NuclideServer(object):
             if len(procs) == 1:
                 self._proc = procs[0]
             elif len(procs) > 1:
-                print('Found more than one Nuclide servers on port %d.' % self.port, file=sys.stderr)
                 self.logger.warn('Found more than one Nuclide servers on port %d.' % self.port)
         return self._proc
 
@@ -155,7 +154,6 @@ class NuclideServer(object):
         try:
             ret = proc.stop()
             if ret == 0:
-                print('Stopped old Nuclide server on port %d.' % self.port, file=sys.stderr)
                 self.logger.info('Stopped old Nuclide server on port %d.' % self.port)
             return ret
         finally:
@@ -179,8 +177,7 @@ class NuclideServer(object):
                 if ret != 0:
                     return ret
             else:
-                print('Quit now. Existing Nuclide process running on port %d.' % self.port, file=sys.stderr)
-                self.logger.info('Quit now. Existing Nuclide process running on port %d.' % self.port)
+                self.logger.info('Found existing Nuclide process running on port %d.' % self.port)
                 return 1
 
         # Start Nuclide server.
@@ -213,8 +210,9 @@ class NuclideServer(object):
                     return 0
                 time.sleep(1)
 
-            print('Nuclide server failed to respond to version check on port %d.' % self.port, file=sys.stderr)
-            self.logger.error('Nuclide server failed to respond to version check on port %d.' % self.port)
+            timeoutMsg = 'Attempted to start Nuclide server on port %d, but timed out after %d seconds.' % (self.port, timeout)
+            print(timeoutMsg, file=sys.stderr)
+            self.logger.error(timeoutMsg)
         return 1
 
     @staticmethod

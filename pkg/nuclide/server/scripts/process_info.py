@@ -10,7 +10,6 @@ import logging
 import re
 import shlex
 import subprocess
-import sys
 import utils
 
 COLUMNS = ['pid', 'command']
@@ -67,7 +66,6 @@ class ProcessInfo(object):
             utils.check_output_silent(args)
             return 0
         except subprocess.CalledProcessError as e:
-            print('Failed to stop process %s: %s' % (pid, e.output), file=sys.stderr)
             self.logger.error('Failed to stop process %s: %s' % (pid, e.output))
             return e.returncode
 

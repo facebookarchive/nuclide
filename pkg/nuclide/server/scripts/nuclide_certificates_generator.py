@@ -96,7 +96,6 @@ class NuclideCertificatesGenerator(object):
                                % (self._expiration_days, self.ca_key, self.ca_cert))
             check_output_silent(args)
         except subprocess.CalledProcessError as e:
-            print('openssl failed: %s' % e.output, file=sys.stderr)
             self.logger.error('openssl failed: %s' % e.output)
             return False
         return True
@@ -109,7 +108,6 @@ class NuclideCertificatesGenerator(object):
                                % (key_file, csr_file, common_name, NuclideCertificatesGenerator.openssl_cnf))
             check_output_silent(args, env=self._env)
         except subprocess.CalledProcessError as e:
-            print('openssl failed: %s' % e.output, file=sys.stderr)
             self.logger.error('openssl failed: %s' % e.output)
             return False
         return True
@@ -125,7 +123,6 @@ class NuclideCertificatesGenerator(object):
                    NuclideCertificatesGenerator.openssl_cnf))
             check_output_silent(args, env=self._env)
         except subprocess.CalledProcessError as e:
-            print('openssl failed: %s' % e.output, file=sys.stderr)
             self.logger.error('openssl failed: %s' % e.output)
             return False
         return True

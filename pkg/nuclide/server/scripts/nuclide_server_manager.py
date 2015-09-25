@@ -80,10 +80,8 @@ class NuclideServerManager(object):
                 version_json = json.load(f)
             version = str(version_json['Version'])
         except IOError as e:
-            print('No version.json. Skip version verification.', file=sys.stderr)
             self.logger.error('No version.json. Skip version verification.')
         except (KeyError, ValueError) as e:
-            print('Corrupted version.json. Skip version verification.', file=sys.stderr)
             self.logger.error('Corrupted version.json. Skip version verification.')
         return version
 
@@ -110,7 +108,6 @@ class NuclideServerManager(object):
 
     def cleanup_certificates(self, days_to_keep):
         try:
-            print('Cleaning up old files...', file=sys.stderr)
             self.logger.info('Cleaning up old files...')
             certs_dir = self.options.certs_dir or self._ensure_certs_dir()
             current = time.time()
@@ -119,12 +116,10 @@ class NuclideServerManager(object):
                 if current - os.path.getmtime(file) > seconds_to_keep:
                     os.unlink(file)
         except Exception as e:
-            print('Error in cleaning up certificates: %s' % e)
             self.logger.error('Error in cleaning up certificates: %s' % e)
 
     # Clean up bad processes and old files.
     def cleanup(self):
-
         # TODO: Remove it after migration is complete.
         # For migration, stop the forever monitor processes of Nuclide server.
         # This does not stop existing Nuclide server processes themselves.
@@ -132,7 +127,6 @@ class NuclideServerManager(object):
         for proc in ProcessInfo.get_processes(getpass.getuser(),
                                               '%s.*%s' % (
                                               re.escape('forever/bin/monitor'), re.escape('nuclide-main.js'))):
-            print('Stopping %s' % proc, file=sys.stderr)
             self.logger.info('Stopping %s' % proc)
             proc.stop()
 
@@ -147,8 +141,6 @@ class NuclideServerManager(object):
             server_proc_map[port].append(proc)
         for port in server_proc_map:
             if len(server_proc_map[port]) > 1:
-                print('Multiple Nuclide processes on port %d. Something wrong. Clean them up...' % port,
-                      file=sys.stderr)
                 self.logger.warning('Multiple Nuclide processes on port %d. Something wrong. Clean them up...' % port)
                 for proc in server_proc_map[port]:
                     proc.stop()
@@ -168,7 +160,6 @@ class NuclideServerManager(object):
         # If no existing servers, find an open port.
         port = self._find_open_port()
         if port is None:
-            print('No ports available.', file=sys.stderr)
             self.logger.warn('No ports available.')
             return None
         else:
@@ -198,21 +189,18 @@ class NuclideServerManager(object):
             # If the common names don't match, we restart.
             if (version and version != running_version) or \
                     (self.options.common_name and server.get_common_name() != self.options.common_name):
-                print('Restarting Nuclide server on port %d' % port, file=sys.stderr)
                 self.logger.info('Restarting Nuclide server on port %d' % port)
                 server.stop()
                 return self.start_server(server)
                 # Don't use restart() here, so that we regenerate the certificates.
             else:
-                print('Nuclide already running on port %d. You may connect.' % port, file=sys.stderr)
-                self.logger.info('Nuclide already running on port %d. You may connect.' % port)
+                self.logger.info('Nuclide already running on port %d. User may connect.' % port)
                 server.print_json()
                 return 0
         else:
             return self.start_server(server)
 
     def start_server(self, server):
-        print('Starting Nuclide server...', file=sys.stderr)
         self.logger.info('Starting Nuclide server...')
         if self.options.insecure:
             # Use http.
