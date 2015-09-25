@@ -17,7 +17,7 @@
     "nuclide-server": "0.0.0",
     "nuclide-service-parser": "0.0.0",
     "nuclide-version": "0.0.0",
-    "ssh2": "0.4.2"
+    "ssh2": "0.4.11"
   },
   "devDependencies": {
     "nuclide-external-interfaces": "0.0.0",
