@@ -88,6 +88,7 @@ class PackageLinter(object):
 
         self.expect_field_in(package_name, package, 'packageType', ['Node', 'Atom'])
         self.expect_field_in(package_name, package, 'testRunner', ['npm', 'apm'])
+        self.validate_shrinkwrap_for_package(package)
         if package['testRunner'] == 'npm':
             self.verify_npm_package(package)
         else:
@@ -241,6 +242,42 @@ class PackageLinter(object):
         if not babel_options == expected_options:
             self.report_error('.babelrc file %s had options %s but expected %s' %
                 (babelrc_path, babel_options, expected_options))
+
+    def validate_shrinkwrap_for_package(self, package):
+        shrinkwrap_path = os.path.join(package['packageRootAbsolutePath'], 'npm-shrinkwrap.json')
+        if not os.path.isfile(shrinkwrap_path):
+            # TODO: Enable this once we have shrinkwraps for all packages
+            # self.report_error('Expected npm-shrinkwrap.json file at %s not found.', shrinkwrap_path)
+            None
+        else:
+            try:
+                shrinkwrap = json_load(shrinkwrap_path)
+            except:
+                self.report_error('Shrinkwrap file %s not valid JSON.', shrinkwrap_path)
+                return
+
+            # Shrinkwrap file must include all top level dependencies
+            # And versions of top level dependencies must match
+            all_deps = package['dependencies'].copy()
+            all_deps.update(package['devDependencies'])
+            for dependent_name in shrinkwrap['dependencies'].keys():
+                if dependent_name not in all_deps:
+                    self.report_error(
+                        'Shrinkwrap file %s contains dependency %s which is not in package.json.',
+                        shrinkwrap_path, dependent_name)
+                elif shrinkwrap['dependencies'][dependent_name]['version'] != all_deps[dependent_name]:
+                    self.report_error(
+                        'Mismatched version for package %s in shrinkwrap file %s. ' +
+                        'package.json contains version %s. Found %s in shrinkwrap file.',
+                        dependent_name, shrinkwrap_path, all_deps[dependent_name],
+                        shrinkwrap['dependencies'][dependent_name]['version'])
+
+            # All dependencies in the package.json must occur in the Shrinkwrap file.
+            for dependent_name in all_deps:
+                if dependent_name not in shrinkwrap['dependencies']:
+                    self.report_error(
+                        'Shrinkwrap file %s missing top level dependency for package %s',
+                        shrinkwrap_path, dependent_name)
 
     def validate_dependencies(self, package, field):
         if field not in package:
