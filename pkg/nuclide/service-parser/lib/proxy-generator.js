@@ -82,6 +82,9 @@ export default function generateProxy(defs: Definitions): string {
     t.importDeclaration([
       t.importSpecifier(t.identifier('Observable'), t.identifier('Observable'))],
       t.literal('rx')),
+    t.importDeclaration([
+      t.importSpecifier(t.identifier('trackTiming'), t.identifier('trackTiming'))],
+      t.literal('nuclide-analytics')),
     assignment,
   ]);
 
@@ -222,7 +225,21 @@ function generateInterfaceProxy(name: string, def: InterfaceDefinition): any {
 
   // Generate proxies for instance methods.
   def.instanceMethods.forEach((funcType, methodName) => {
-    methodDefinitions.push(generateRemoteDispatch(methodName, funcType));
+    var methodDefinition = generateRemoteDispatch(methodName, funcType);
+
+    // Add trackTiming decorator to instance method that returns a promise.
+    if (funcType.returnType.kind === 'promise') {
+      methodDefinition.decorators = [
+        t.decorator(
+          t.callExpression(
+            t.identifier('trackTiming'),
+            [t.literal(`${name}.${methodName}`)],
+          ),
+        ),
+      ];
+    }
+
+    methodDefinitions.push(methodDefinition);
   });
 
   // Generate the dispose method.
@@ -322,6 +339,7 @@ function generateRemoteDispatch(methodName: string, funcType: FunctionType) {
   var args = funcType.argumentTypes.map((arg, i) => t.identifier(`arg${i}`));
   var funcExpression = t.functionExpression(null, args, t.blockStatement([
     t.returnStatement(rpcCallExpression)]));
+
   return t.methodDefinition(t.identifier(methodName), funcExpression, 'method', false, false);
 }
 

@@ -1,5 +1,6 @@
 "use babel";
 import { Observable } from "rx";
+import { trackTiming } from "nuclide-analytics";
 
 module.exports = _client => {
   remoteModule = {}
@@ -30,6 +31,7 @@ module.exports = _client => {
         kind: "number"
       })]).then(args => _client.createRemoteObject("Vector2", args))
     }
+    @trackTiming("Vector2.len")
     len() {
       return Promise.all([]).then(args => this._idPromise.then(id => _client.callRemoteMethod(id, "len", "promise", args))).then(value => _client.unmarshal(value, {
         kind: "number"
