@@ -290,22 +290,20 @@ class FileTreeController {
   }
 
   /**
-   * Collapses all selected directory nodes. If the selection is a single directory and it is
-   * already collapsed, the selection is set to the directory's parent.
+   * Collapses all selected directory nodes. If the selection is a single file or a single collapsed
+   * directory, the selection is set to the directory's parent.
    */
   _collapseSelection(): void {
     const selectedNodes = this._store.getSelectedNodes();
     const firstSelectedNode = selectedNodes.first();
     if (selectedNodes.size === 1
-      && firstSelectedNode.isContainer
-      && !firstSelectedNode.isExpanded()
-      && !firstSelectedNode.isRoot) {
+      && !firstSelectedNode.isRoot
+      && !(firstSelectedNode.isContainer && firstSelectedNode.isExpanded())) {
       /*
        * Select the parent of the selection if the following criteria are met:
        *   * Only 1 node is selected
-       *   * The node is a directory
-       *   * The node is collapsed
        *   * The node is not a root
+       *   * The node is not an expanded directory
        */
       this.revealNodeKey(FileTreeHelpers.getParentKey(firstSelectedNode.nodeKey));
     } else {

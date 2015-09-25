@@ -117,29 +117,67 @@ describe('FileTreeController', () => {
     });
   });
 
-  describe('using the up/down arrow keys', () => {
+  describe('navigating with the arrow keys', () => {
     const rootKey = pathModule.join(__dirname, 'fixtures') + '/';
     const dir1Key = pathModule.join(__dirname, 'fixtures/dir1') + '/';
     const fooTxtKey = pathModule.join(__dirname, 'fixtures/dir1/foo.txt');
     const dir2Key = pathModule.join(__dirname, 'fixtures/dir2') + '/';
 
-    beforeEach(() => {
+    describe('with a collapsed root', () => {
       /*
-       * ༼ つ ◕_◕ ༽つ
-       * Start with an expanded and fetched state that looks like the following:
+       * Start with a simple structure that looks like the following:
        *
-       *   ↓ fixtures
-       *     → dir1
-       *     → dir2
+       *   → fixtures
        */
-      waitsForPromise(async () => {
-        actions.expandNode(rootKey, rootKey);
-        // Populate real files from real disk like real people.
-        await store._fetchChildKeys(rootKey);
+      describe('via _collapseSelection (left arrow)', () => {
+        it('does not modify the selection if the root is selected', () => {
+          actions.selectSingleNode(rootKey, rootKey);
+          expect(store.isSelected(rootKey, rootKey)).toEqual(true);
+          controller._collapseSelection();
+
+          // root was expanded, selection shouldn't change
+          expect(store.isSelected(rootKey, rootKey)).toEqual(true);
+        });
       });
     });
 
     describe('with single nesting', () => {
+      beforeEach(() => {
+        /*
+         * ༼ つ ◕_◕ ༽つ
+         * Start with an expanded and fetched state that looks like the following:
+         *
+         *   ↓ fixtures
+         *     → dir1
+         *     → dir2
+         */
+        waitsForPromise(async () => {
+          actions.expandNode(rootKey, rootKey);
+          // Populate real files from real disk like real people.
+          await store._fetchChildKeys(rootKey);
+        });
+      });
+
+      describe('via _collapseSelection (left arrow)', () => {
+        it('selects the parent if the selected node is a collapsed directory', () => {
+          actions.selectSingleNode(rootKey, dir2Key);
+          expect(store.isSelected(rootKey, dir2Key)).toEqual(true);
+          controller._collapseSelection();
+
+          // the root is dir2's parent
+          expect(store.isSelected(rootKey, rootKey)).toEqual(true);
+        });
+
+        it('does not modify the selection if selected node is an expanded directory', () => {
+          actions.selectSingleNode(rootKey, rootKey);
+          expect(store.isSelected(rootKey, rootKey)).toEqual(true);
+          controller._collapseSelection();
+
+          // root was expanded, selection shouldn't change
+          expect(store.isSelected(rootKey, rootKey)).toEqual(true);
+        });
+      });
+
       describe('via _moveDown', () => {
         it('selects the first root if there is no selection', () => {
           expect(store.getSingleSelectedNode()).toBeNull();
@@ -222,16 +260,28 @@ describe('FileTreeController', () => {
         waitsForPromise(async () => {
           /*
            * ¯\_(ツ)_/¯
-           * Expand further with a view like the following:
+           * Expand to a view like the following:
            *
            *   ↓ fixtures
            *     ↓ dir1
            *       · foo.txt
            *     → dir2
            */
+          actions.expandNode(rootKey, rootKey);
+          await store._fetchChildKeys(rootKey);
           actions.expandNode(rootKey, dir1Key);
-          // Populate real files like real people again.
           await store._fetchChildKeys(dir1Key);
+        });
+      });
+
+      describe('via _collapseSelection (left arrow)', () => {
+        it('selects the parent if the selected node is a file', () => {
+          actions.selectSingleNode(rootKey, fooTxtKey);
+          expect(store.isSelected(rootKey, fooTxtKey)).toEqual(true);
+          controller._collapseSelection();
+
+          // dir1 is foo.txt's parent
+          expect(store.isSelected(rootKey, dir1Key)).toEqual(true);
         });
       });
 
