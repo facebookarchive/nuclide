@@ -16,5 +16,6 @@
   'ctrl-]': 'nuclide-file-tree-deux:expand-directory'
   'left': 'nuclide-file-tree-deux:collapse-directory'
   'ctrl-[': 'nuclide-file-tree-deux:collapse-directory'
+  'enter': 'nuclide-file-tree-deux:open-selected-entry'
   'delete': 'nuclide-file-tree-deux:remove'
   'backspace': 'nuclide-file-tree-deux:remove'

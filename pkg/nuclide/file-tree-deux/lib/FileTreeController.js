@@ -123,6 +123,7 @@ class FileTreeController {
         'nuclide-file-tree-deux:collapse-directory': this._collapseSelection.bind(this),
         'nuclide-file-tree-deux:copy-full-path': this._copyFullPath.bind(this),
         'nuclide-file-tree-deux:expand-directory': this._expandSelection.bind(this),
+        'nuclide-file-tree-deux:open-selected-entry': this._openSelectedEntry.bind(this),
         'nuclide-file-tree-deux:remove': this._deleteSelection.bind(this),
         'nuclide-file-tree-deux:remove-project-folder-selection':
           this._removeRootFolderSelection.bind(this),
@@ -582,6 +583,14 @@ class FileTreeController {
       // If `parentKey` is null, nodeKey is a root and has more parents to recurse. Return `null` to
       // signify no appropriate key was found.
       return null;
+    }
+  }
+
+  _openSelectedEntry(): void {
+    const singleSelectedNode = this._store.getSingleSelectedNode();
+    // Only perform the default action if a single node is selected.
+    if (singleSelectedNode != null) {
+      this._actions.confirmNode(singleSelectedNode.rootKey, singleSelectedNode.nodeKey);
     }
   }
 
