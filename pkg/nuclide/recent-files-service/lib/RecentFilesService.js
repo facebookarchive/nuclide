@@ -1,0 +1,65 @@
+'use babel';
+/* @flow */
+
+/*
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ */
+
+export type FilePath = string;
+export type TimeStamp = number;
+export type FileList = Array<{path: FilePath, timestamp: TimeStamp}>;
+
+var {
+  CompositeDisposable,
+} = require('atom');
+var {array} = require('nuclide-commons');
+
+class RecentFilesService {
+  // Map uses `Map`'s insertion ordering to keep files in order.
+  _fileList: Map<FilePath, TimeStamp>;
+  _subscriptions: CompositeDisposable;
+
+  constructor(state: ?Object) {
+    this._fileList = new Map();
+    this._subscriptions = new CompositeDisposable();
+    this._subscriptions.add(atom.workspace.onDidChangeActivePaneItem((item: mixed) => {
+      // Not all `item`s are instances of TextEditor (e.g. the diff view).
+      if (typeof item.getPath !== 'function') {
+        return;
+      }
+      let editorPath = item.getPath();
+      if (editorPath != null) {
+        this.touchFile(editorPath);
+      }
+    }));
+  }
+
+  touchFile(path: string): void {
+    // Delete first to force a new insertion.
+    this._fileList.delete(path);
+    this._fileList.set(path, Date.now());
+  }
+
+  /**
+   * Returns a reverse-chronological list of recently opened files.
+   */
+  getRecentFiles(): FileList {
+    return array.from(this._fileList).reverse().map(pair =>
+      ({
+        path: pair[0],
+        timestamp: pair[1],
+      })
+    );
+  }
+
+  dispose() {
+    this._subscriptions.dispose();
+  }
+
+}
+
+module.exports = RecentFilesService;

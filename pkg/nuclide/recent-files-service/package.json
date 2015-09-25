@@ -1,0 +1,29 @@
+{
+  "name": "nuclide-recent-files-service",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "Provides a list of recently opened file paths in reverse chronological order.",
+  "nuclide": {
+    "packageType": "Atom",
+    "testRunner": "apm"
+  },
+  "activationCommands": {
+  },
+  "engines": {
+    "atom": ">=1.0.9"
+  },
+  "dependencies": {
+    "nuclide-commons": "0.0.0"
+  },
+  "devDependencies": {
+    "nuclide-external-interfaces": "0.0.0"
+  },
+  "providedServices": {
+    "nuclide-recent-files-service": {
+      "versions": {
+        "0.0.0": "provideRecentFilesService"
+      }
+    }
+  }
+}
