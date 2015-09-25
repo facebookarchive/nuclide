@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import invariant from 'assert';
+
 var {
   CompositeDisposable,
   Disposable,
@@ -23,7 +25,7 @@ class Activation {
   constructor(state: ?Object) {
     this._subscriptions = new CompositeDisposable();
     var RecentFilesService = require('./RecentFilesService');
-    this._service = new RecentFilesService();
+    this._service = new RecentFilesService(state);
     this._subscriptions.add(new Disposable(() => {
       this._service.dispose();
     }));
@@ -39,21 +41,25 @@ class Activation {
 }
 
 var activation: ?Activation = null;
-function getActivation() {
-  if (activation == null) {
-    activation = new Activation();
-  }
-  return activation;
-}
 
 module.exports = {
 
   activate(state: ?Object): void {
-    getActivation();
+    if (activation == null) {
+      activation = new Activation(state);
+    }
   },
 
   provideRecentFilesService(): RecentFilesServiceType {
-    return getActivation().getService();
+    invariant(activation);
+    return activation.getService();
+  },
+
+  serialize(): Object {
+    invariant(activation);
+    return {
+      filelist: activation.getService().getRecentFiles(),
+    };
   },
 
   deactivate(): void {

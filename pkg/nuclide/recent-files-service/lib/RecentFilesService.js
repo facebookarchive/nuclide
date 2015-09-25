@@ -23,8 +23,14 @@ class RecentFilesService {
   _fileList: Map<FilePath, TimeStamp>;
   _subscriptions: CompositeDisposable;
 
-  constructor(state: ?Object) {
+  constructor(state: ?{filelist?: FileList}) {
     this._fileList = new Map();
+    if (state != null && state.filelist != null) {
+      // Serialized state is in reverse chronological order. Reverse it to insert items correctly.
+      state.filelist.reduceRight((_, fileItem) => {
+        this._fileList.set(fileItem.path, fileItem.timestamp);
+      }, null);
+    }
     this._subscriptions = new CompositeDisposable();
     this._subscriptions.add(atom.workspace.onDidChangeActivePaneItem((item: mixed) => {
       // Not all `item`s are instances of TextEditor (e.g. the diff view).

@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import invariant from 'assert';
+
 var RecentFilesService = require('../lib/RecentFilesService');
 
 const FILE_PATH_1 = 'foo/bar/foo.js';
@@ -90,5 +92,24 @@ describe('RecentFilesService', () => {
         expect(mostRecentFiles[1].path.endsWith(FILE_PATH_1)).toBe(true);
       });
     });
+  });
+
+  describe('initialization and de-serialization', () => {
+    it('correctly restores itself from serialized state', () => {
+      var serializedState = {filelist: [
+        {path: FILE_PATH_1, timestamp: 100},
+        {path: FILE_PATH_2, timestamp: 200},
+        {path: FILE_PATH_3, timestamp: 300},
+      ]};
+      var restoredRecentFilesService = new RecentFilesService(serializedState);
+      var mostRecentFiles = restoredRecentFilesService.getRecentFiles();
+      expect(mostRecentFiles).toEqual(serializedState.filelist);
+    });
+
+    it('starts out empty if no serialized state is passed to the constructor', () => {
+      invariant(recentFilesService);
+      expect(recentFilesService.getRecentFiles().length).toEqual(0);
+    });
+
   });
 });
