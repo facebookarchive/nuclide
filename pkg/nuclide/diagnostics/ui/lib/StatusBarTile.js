@@ -131,14 +131,16 @@ class StatusBarTileComponent extends React.Component {
   }
 
   render() {
+    const errorColorClass = this.props.errorCount === 0 ? '' : 'text-error';
+    const warningColorClass = this.props.warningCount === 0 ? '' : 'text-warning';
     return (
       <span className="nuclide-diagnostics-status-bar" onClick={this._onClick}>
-        <span className="nuclide-diagnostics-status-bar-error text-error">
+        <span className={`nuclide-diagnostics-status-bar-error ${errorColorClass}`}>
           <span className="icon icon-stop" />
           &nbsp;
           {this.props.errorCount}
         </span>
-        <span className="nuclide-diagnostics-status-bar-warning text-warning">
+        <span className={`nuclide-diagnostics-status-bar-warning ${warningColorClass}`}>
           <span className="icon icon-alert" />
           &nbsp;
           {this.props.warningCount}
