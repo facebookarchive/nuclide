@@ -147,22 +147,33 @@ class NuclideServer(object):
     def stop(self):
         proc = self._get_proc_info()
         if proc is None:
-            print('You are not the owner of Nuclide server at port %d.' % self.port, file=sys.stderr)
-            self.logger.error('You are not the owner of Nuclide server at port %d.' % self.port)
+            print('Tried to stop NuclideServer at port %d, but you are not the owner.' % self.port, file=sys.stderr)
+            self.logger.error('Tried to stop NuclideServer at port %d, but you are not the owner.' % self.port)
             return 1
 
         try:
             ret = proc.stop()
             if ret == 0:
                 self.logger.info('Stopped old Nuclide server on port %d.' % self.port)
+            else:
+                self.logger.info('Error occurred when trying to stop old Nuclide server on port {0}.'.format(self.port))
             return ret
         finally:
             self._clear_states()
 
     def restart(self, timeout):
+        self.logger.info('NuclideServer is going to restart.')
         return self.start(timeout, force=True)
 
     def start(self, timeout, cert=None, key=None, ca=None, force=False, quiet=False, debug=False):
+        self.logger.info('NuclideServer start/restarting with the following arguments:\n \
+                          timeout: {0}\n \
+                          cert:    {1}\n \
+                          key:     {2}\n \
+                          ca:      {3}\n \
+                          force:   {4}\n \
+                          quiet:   {5}\n \
+                          debug:   {6}'.format(timeout, cert, key, ca, force, quiet, debug))
         # If one but not all certificate files are given.
         if (cert or key or ca) and not (cert and key and ca):
             print('Incomplete certificate files.', file=sys.stderr)
@@ -197,21 +208,23 @@ class NuclideServer(object):
             with open(os.devnull, "w") as f:
                 subprocess.Popen(args, stdout=f, stderr=subprocess.STDOUT)
         else:
+            self.logger.info('Opening node server subprocess.')
             p = subprocess.Popen('nohup node --harmony %s > %s 2>&1 &' % (js_cmd, LOG_FILE), shell=True)
 
         if not debug:
+            self.logger.info('Trying to ping the Nuclide server...')
             for i in range(0, timeout + 1):
                 # Wait for a sec and then ping endpoint for version.
                 running_version = self.get_version()
                 if running_version is not None:
-                    print('Nuclide started on port %d.' % self.port, file=sys.stderr)
-                    self.logger.info('Nuclide started on port %d.' % self.port)
+                    print('Verified Nuclide started on port %d.' % self.port, file=sys.stderr)
+                    self.logger.info('Verified Nuclide started on port %d.' % self.port)
                     self.print_json()
                     return 0
                 time.sleep(1)
 
             timeoutMsg = 'Attempted to start Nuclide server on port %d, but timed out after %d seconds.' % (self.port, timeout)
-            print(timeoutMsg, file=sys.stderr)
+            print(timeoutMsg + ' You may want to try a longer timeout (pass a -t option).', file=sys.stderr)
             self.logger.error(timeoutMsg)
         return 1
 
