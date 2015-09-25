@@ -8,16 +8,29 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-
 import React from 'react-for-atom';
 
+let {PropTypes, addons} = React;
+
 /**
- * A checkbox component with an input checkbox and a label.
+ * A checkbox component with an input checkbox and a label. We restrict the label to a string
+ * to ensure this component is pure.
  */
-class NuclideCheckbox extends React.Component {
+export default class NuclideCheckbox extends React.Component {
+  // $FlowIssue t8486988
+  static propTypes = {
+    checked: PropTypes.bool.isRequired,
+    label: PropTypes.string.isRequired,
+    onChange: PropTypes.func.isRequired,
+  };
+
   constructor(props: Object) {
     super(props);
     this._onChange = this._onChange.bind(this);
+  }
+
+  shouldComponentUpdate(nextProps: Object, nextState: Object) {
+    return addons.PureRenderMixin.shouldComponentUpdate.call(this, nextProps, nextState);
   }
 
   render(): ReactElement {
@@ -28,23 +41,13 @@ class NuclideCheckbox extends React.Component {
           checked={this.props.checked}
           onChange={this._onChange}
         />
-        {this.props.children}
+        {' '}{this.props.label}
       </label>
     );
   }
 
   _onChange(event: SyntheticEvent) {
-    var isChecked = ((event.target: any): HTMLInputElement).checked;
+    const isChecked = ((event.target: any): HTMLInputElement).checked;
     this.props.onChange.call(null, isChecked);
   }
 }
-
-var {PropTypes} = React;
-
-NuclideCheckbox.propTypes = {
-  checked: PropTypes.bool.isRequired,
-  children: PropTypes.node,
-  onChange: PropTypes.func.isRequired,
-};
-
-module.exports = NuclideCheckbox;

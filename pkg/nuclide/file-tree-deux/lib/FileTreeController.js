@@ -664,9 +664,8 @@ class FileTreePanel extends React.Component {
           <NuclideCheckbox
             checked={atom.config.get('nuclide-file-tree-deux.enableExperimentalVcsIntegration')}
             onChange={this.props.onChangeExperimentalHgIntegration}
-            >
-            &nbsp;Use experimental Hg integration
-          </NuclideCheckbox>
+            label={'Use experimental Hg integration'}
+          />
         </div>
       </div>
     );

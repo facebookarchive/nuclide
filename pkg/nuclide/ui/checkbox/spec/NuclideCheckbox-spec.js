@@ -9,11 +9,11 @@
  * the root directory of this source tree.
  */
 
-var NuclideCheckbox = require('../lib/NuclideCheckbox');
-var React = require('react-for-atom');
-var {TestUtils} = React.addons;
+import NuclideCheckbox from '../lib/NuclideCheckbox';
+import React from 'react-for-atom';
+let {TestUtils} = React.addons;
 
-var hostEl;
+let hostEl;
 
 function createWithProps(props: mixed) {
   return React.render(<NuclideCheckbox {...props} />, hostEl);
@@ -31,14 +31,14 @@ describe('NuclideCheckbox', () => {
   });
 
   it('onChange handler fires when change event dispatched from checkbox', () => {
-    var onChange = jasmine.createSpy();
-    var reactElement = createWithProps({
+    const onChange = jasmine.createSpy();
+    const reactElement = createWithProps({
       checked: false,
-      children: 'click me!',
+      label: 'click me!',
       onChange,
     });
 
-    var inputEl = TestUtils. findRenderedDOMComponentWithTag(reactElement, 'input');
+    const inputEl = TestUtils.findRenderedDOMComponentWithTag(reactElement, 'input');
     // Unfortunately, TestUtils does not seem to turn a click into a change event for a checkbox.
     TestUtils.Simulate.change(inputEl);
     expect(onChange.callCount).toBe(1);
