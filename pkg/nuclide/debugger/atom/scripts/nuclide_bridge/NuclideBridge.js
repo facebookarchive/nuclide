@@ -23,17 +23,21 @@ function formatBreakpointKey(url: string, line: number): string {
   return url + ':' + line;
 }
 
+type BreakpointNotificationType = 'BreakpointAdded' | 'BreakpointRemoved';
+
 class NuclideBridge {
   _allBreakpoints: {sourceURL: string; lineNumber: number}[];
   _unresolvedBreakpoints: Multimap<string, number>;
   _emitter: Emitter;
   _debuggerPausedCount: number;
+  _suppressBreakpointNotification: boolean;
 
   constructor() {
     this._allBreakpoints = [];
     this._unresolvedBreakpoints = new Multimap();
     this._emitter = new Emitter();
     this._debuggerPausedCount = 0;
+    this._suppressBreakpointNotification = false;
 
     ipc.on('command', this._handleIpcCommand.bind(this));
 
@@ -67,6 +71,16 @@ class NuclideBridge {
           this._handleOpenSourceLocation(event);
         }
       },
+      this);
+
+    WebInspector.breakpointManager.addEventListener(
+      WebInspector.BreakpointManager.Events.BreakpointAdded,
+      this._handleBreakpointAdded,
+      this);
+
+    WebInspector.breakpointManager.addEventListener(
+      WebInspector.BreakpointManager.Events.BreakpointRemoved,
+      this._handleBreakpointRemoved,
       this);
 
     window.runOnWindowLoad(this._handleWindowLoad.bind(this));
@@ -141,6 +155,25 @@ class NuclideBridge {
     ipc.sendToHost('notification', 'DebuggerResumed', {});
   }
 
+  _handleBreakpointAdded(event: WebInspector$Event) {
+    var location = event.data.uiLocation;
+    this._sendBreakpointNotification(location, 'BreakpointAdded');
+  }
+
+  _handleBreakpointRemoved(event: WebInspector$Event) {
+    var location = event.data.uiLocation;
+    this._sendBreakpointNotification(location, 'BreakpointRemoved');
+  }
+
+  _sendBreakpointNotification(location: WebInspector$UILocation, type: BreakpointNotificationType) {
+    if (!this._suppressBreakpointNotification) {
+      ipc.sendToHost('notification', type, {
+        sourceURL: location.uiSourceCode.uri(),
+        lineNumber: location.lineNumber,
+      });
+    }
+  }
+
   // TODO[jeffreytan]: this is a hack to enable hhvm debugger
   // setting breakpoints in non-parsed files.
   // Open issues:
@@ -167,44 +200,54 @@ class NuclideBridge {
 
   // Synchronizes nuclide BreakpointStore and BreakpointManager
   _syncBreakpoints() {
-    this._unresolvedBreakpoints = new Multimap();
+    try {
+      this._suppressBreakpointNotification = true;
+      this._unresolvedBreakpoints = new Multimap();
 
-    var newBreakpointSet = new Set(this._allBreakpoints.map(breakpoint =>
-      formatBreakpointKey(breakpoint.sourceURL, breakpoint.lineNumber)));
+      var newBreakpointSet = new Set(this._allBreakpoints.map(breakpoint =>
+        formatBreakpointKey(breakpoint.sourceURL, breakpoint.lineNumber)));
 
-    // Removing unlisted breakpoints and mark the ones that already exist.
-    var unchangedBreakpointSet = new Set();
-    var existingBreakpoints = WebInspector.breakpointManager.allBreakpoints();
-    existingBreakpoints.forEach(existingBreakpoint => {
-      var source = existingBreakpoint.uiSourceCode();
-      if (source) {
-        var key = formatBreakpointKey(source.uri(), existingBreakpoint.lineNumber());
-        if (newBreakpointSet.has(key)) {
-          unchangedBreakpointSet.add(key);
-          return;
-        }
-      }
-      existingBreakpoint.remove(false);
-    });
-
-    this._parseBreakpointSources();
-
-    // Add the ones that don't.
-    this._allBreakpoints.forEach(breakpoint => {
-      var key = formatBreakpointKey(breakpoint.sourceURL, breakpoint.lineNumber);
-      if (!unchangedBreakpointSet.has(key)) {
-        var source = WebInspector.workspace.uiSourceCodeForOriginURL(breakpoint.sourceURL);
+      // Removing unlisted breakpoints and mark the ones that already exist.
+      var unchangedBreakpointSet = new Set();
+      var existingBreakpoints = WebInspector.breakpointManager.allBreakpoints();
+      existingBreakpoints.forEach(existingBreakpoint => {
+        var source = existingBreakpoint.uiSourceCode();
         if (source) {
-          WebInspector.breakpointManager.setBreakpoint(source, breakpoint.lineNumber, 0, '', true);
-        } else {
-          // No API exists for adding breakpoints to source files that are not
-          // yet known, store it locally and try to add them later.
-          this._unresolvedBreakpoints.set(breakpoint.sourceURL, breakpoint.lineNumber);
+          var key = formatBreakpointKey(source.uri(), existingBreakpoint.lineNumber());
+          if (newBreakpointSet.has(key)) {
+            unchangedBreakpointSet.add(key);
+            return;
+          }
         }
-      }
-    });
+        existingBreakpoint.remove(false);
+      });
 
-    this._emitter.emit('unresolved-breakpoints-changed', null);
+      this._parseBreakpointSources();
+
+      // Add the ones that don't.
+      this._allBreakpoints.forEach(breakpoint => {
+        var key = formatBreakpointKey(breakpoint.sourceURL, breakpoint.lineNumber);
+        if (!unchangedBreakpointSet.has(key)) {
+          var source = WebInspector.workspace.uiSourceCodeForOriginURL(breakpoint.sourceURL);
+          if (source) {
+            WebInspector.breakpointManager.setBreakpoint(
+              source,
+              breakpoint.lineNumber,
+              0,
+              '',
+              true);
+          } else {
+            // No API exists for adding breakpoints to source files that are not
+            // yet known, store it locally and try to add them later.
+            this._unresolvedBreakpoints.set(breakpoint.sourceURL, breakpoint.lineNumber);
+          }
+        }
+      });
+
+      this._emitter.emit('unresolved-breakpoints-changed', null);
+    } finally {
+      this._suppressBreakpointNotification = false;
+    }
   }
 
   _continue(): void {

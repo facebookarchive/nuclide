@@ -148,11 +148,7 @@ class BreakpointDisplayController {
       markersToKeep.push(marker);
     });
 
-    if (markersToKeep.length > 0) {
-      gutter.show();
-    } else {
-      gutter.hide();
-    }
+    gutter.show();
     this._markers = markersToKeep;
   }
 

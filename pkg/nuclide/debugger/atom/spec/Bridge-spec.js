@@ -101,6 +101,8 @@ describe('Bridge', () => {
       mockWebview = new MockWebview();
       breakpointStore = new BreakpointStore();
       bridge = new Bridge(breakpointStore);
+      spyOn(breakpointStore, 'addBreakpoint').andCallThrough();
+      spyOn(breakpointStore, 'deleteBreakpoint').andCallThrough();
       bridge.setWebviewElement(mockWebview);
     });
     runs(() => {
@@ -195,5 +197,20 @@ describe('Bridge', () => {
     runs(() => {
       expect(editor.getCursorBufferPosition().row).toEqual(line);
     });
+  });
+
+  it('should change BreakpointStore when getting add/remove breakpoints notification', () => {
+    var line = 15;
+    sendIpcNotification('BreakpointAdded', {
+      sourceURL: 'file://' + path,
+      lineNumber: line,
+    });
+    expect(breakpointStore.addBreakpoint).toHaveBeenCalledWith(path, line);
+
+    sendIpcNotification('BreakpointRemoved', {
+      sourceURL: 'file://' + path,
+      lineNumber: line,
+    });
+    expect(breakpointStore.deleteBreakpoint).toHaveBeenCalledWith(path, line);
   });
 });

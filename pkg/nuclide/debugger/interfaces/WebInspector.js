@@ -62,6 +62,10 @@ declare class WebInspector$DebuggerModel {
 }
 
 declare class WebInspector$BreakpointManager {
+  static Events: {
+    BreakpointAdded: string,
+    BreakpointRemoved: string,
+  };
   allBreakpoints(): WebInspector$BreakpointManager$Breakpoint[];
   setBreakpoint(
     uiSourceCode: WebInspector$UISourceCode,
@@ -70,6 +74,10 @@ declare class WebInspector$BreakpointManager {
     condition: string,
     enabled: boolean
   ): WebInspector$BreakpointManager$Breakpoint;
+  addEventListener(
+    eventType: string,
+    listener: (event: WebInspector$Event) => void,
+    thisObject: Object): void;
 }
 
 declare class WebInspector$BreakpointManager$Breakpoint {
@@ -162,6 +170,8 @@ declare class WebInspector$UILocation {
   linkText(): string;
   id(): string;
   toUIString(): string;
+  uiSourceCode: WebInspector$UISourceCode;
+  lineNumber: number;
 }
 
 declare class WebInspector$DebuggerWorkspaceBinding {

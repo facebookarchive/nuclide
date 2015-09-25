@@ -22,12 +22,15 @@ class Bridge {
   _cleanupDisposables: CompositeDisposable;
   _selectedCallFrameMarker: ?atom$Marker;
   _webview: ?WebviewElement;
+  _suppressBreakpointSync: boolean;
 
   constructor(breakpointStore: BreakpointStore) {
     this._breakpointStore = breakpointStore;
     this._disposables = new CompositeDisposable();
     this._cleanupDisposables = new CompositeDisposable();
     this._selectedCallFrameMarker = null;
+    this._webview = null;
+    this._suppressBreakpointSync = false;
     this._disposables.add(
       breakpointStore.onChange(this._handleBreakpointStoreChange.bind(this)));
   }
@@ -92,6 +95,12 @@ class Bridge {
           case 'DebuggerResumed':
             this._setSelectedCallFrameLine(null);
             break;
+          case 'BreakpointAdded':
+            this._addBreakpoint(event.args[1]);
+            break;
+          case 'BreakpointRemoved':
+            this._removeBreakpoint(event.args[1]);
+            break;
         }
         break;
     }
@@ -137,6 +146,32 @@ class Bridge {
     this._selectedCallFrameMarker = marker;
   }
 
+  _addBreakpoint(location: {sourceURL: string; lineNumber: number}) {
+    var path = remoteUri.uriToNuclideUri(location.sourceURL);
+    // only handle real files for now.
+    if (path) {
+      try {
+        this._suppressBreakpointSync = true;
+        this._breakpointStore.addBreakpoint(path, location.lineNumber);
+      } finally {
+        this._suppressBreakpointSync = false;
+      }
+    }
+  }
+
+  _removeBreakpoint(location: {sourceURL: string; lineNumber: number}) {
+    var path = remoteUri.uriToNuclideUri(location.sourceURL);
+    // only handle real files for now.
+    if (path) {
+      try {
+        this._suppressBreakpointSync = true;
+        this._breakpointStore.deleteBreakpoint(path, location.lineNumber);
+      } finally {
+        this._suppressBreakpointSync = false;
+      }
+    }
+  }
+
   _clearSelectedCallFrameMarker() {
     if (this._selectedCallFrameMarker) {
       this._selectedCallFrameMarker.destroy();
@@ -150,16 +185,16 @@ class Bridge {
 
   _sendAllBreakpoints() {
     // Send an array of file/line objects.
-    var results = [];
-    this._breakpointStore.getAllBreakpoints().forEach((line, key) => {
-      results.push({
-        sourceURL: remoteUri.nuclideUriToUri(key),
-        lineNumber: line,
+    var webview = this._webview;
+    if (webview && !this._suppressBreakpointSync) {
+      var results = [];
+      this._breakpointStore.getAllBreakpoints().forEach((line, key) => {
+        results.push({
+          sourceURL: remoteUri.nuclideUriToUri(key),
+          lineNumber: line,
+        });
       });
-    });
-
-    if (this._webview) {
-      this._webview.send('command', 'SyncBreakpoints', results);
+      webview.send('command', 'SyncBreakpoints', results);
     }
   }
 }
