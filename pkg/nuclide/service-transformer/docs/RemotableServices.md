@@ -95,7 +95,7 @@ class File {
   async addOnChange(callback: (file: File): void): Promise<Disposable> {
     if (!this._watcher) {
       this._watcher = () => this._fireOnChange();
-      require('fs').watchfile(this._fileName, this._watcher);
+      require('fs').watchFile(this._fileName, this._watcher);
     }
     this._callbacks.push(callback);
     return { dispose: () => this._removeOnChange(callback) };
