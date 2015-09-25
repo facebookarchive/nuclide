@@ -98,11 +98,14 @@ class NodeComponent extends React.Component {
 
   _onClick(event: SyntheticMouseEvent) {
     if (React.findDOMNode(this.refs.arrow).contains(event.target)) {
-      return this._onArrowClick();
+      this._toggleNodeExpanded();
+      return;
     }
     var modifySelection = event.ctrlKey || event.metaKey;
     if (modifySelection) {
       getActions().toggleSelectNode(this.props.rootKey, this.props.nodeKey);
+    } else if (this.props.isSelected) {
+      this._toggleNodeExpanded();
     } else {
       getActions().selectSingleNode(this.props.rootKey, this.props.nodeKey);
     }
@@ -123,7 +126,7 @@ class NodeComponent extends React.Component {
     }
   }
 
-  _onArrowClick(): void {
+  _toggleNodeExpanded(): void {
     if (this.props.isExpanded) {
       getActions().collapseNode(this.props.rootKey, this.props.nodeKey);
     } else {
