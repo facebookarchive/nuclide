@@ -8,6 +8,7 @@ from __future__ import print_function
 
 import getpass
 import json
+import logging
 import os
 import re
 import shlex
@@ -31,6 +32,7 @@ class NuclideServer(object):
 
     # Pass in proc for an existing Nuclide server.
     def __init__(self, port, workspace=None, proc=None):
+        self.logger = logging.getLogger('NuclideServer')
         self._clear_states()
         self.port = port
         self._proc = proc
@@ -89,6 +91,7 @@ class NuclideServer(object):
                 self._proc = procs[0]
             elif len(procs) > 1:
                 print('Found more than one Nuclide servers on port %d.' % self.port, file=sys.stderr)
+                self.logger.warn('Found more than one Nuclide servers on port %d.' % self.port)
         return self._proc
 
     # Get cert, key and ca.
@@ -146,12 +149,14 @@ class NuclideServer(object):
         proc = self._get_proc_info()
         if proc is None:
             print('You are not the owner of Nuclide server at port %d.' % self.port, file=sys.stderr)
+            self.logger.error('You are not the owner of Nuclide server at port %d.' % self.port)
             return 1
 
         try:
             ret = proc.stop()
             if ret == 0:
                 print('Stopped old Nuclide server on port %d.' % self.port, file=sys.stderr)
+                self.logger.info('Stopped old Nuclide server on port %d.' % self.port)
             return ret
         finally:
             self._clear_states()
@@ -163,6 +168,7 @@ class NuclideServer(object):
         # If one but not all certificate files are given.
         if (cert or key or ca) and not (cert and key and ca):
             print('Incomplete certificate files.', file=sys.stderr)
+            self.logger.error('Incomplete certificate files.')
 
         if self.is_running():
             if force:
@@ -174,6 +180,7 @@ class NuclideServer(object):
                     return ret
             else:
                 print('Quit now. Existing Nuclide process running on port %d.' % self.port, file=sys.stderr)
+                self.logger.info('Quit now. Existing Nuclide process running on port %d.' % self.port)
                 return 1
 
         # Start Nuclide server.
@@ -201,11 +208,13 @@ class NuclideServer(object):
                 running_version = self.get_version()
                 if running_version is not None:
                     print('Nuclide started on port %d.' % self.port, file=sys.stderr)
+                    self.logger.info('Nuclide started on port %d.' % self.port)
                     self.print_json()
                     return 0
                 time.sleep(1)
 
             print('Nuclide server failed to respond to version check on port %d.' % self.port, file=sys.stderr)
+            self.logger.error('Nuclide server failed to respond to version check on port %d.' % self.port)
         return 1
 
     @staticmethod

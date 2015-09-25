@@ -11,6 +11,7 @@ from __future__ import print_function
 import getpass
 import glob
 import json
+import logging
 import optparse
 import os
 import re
@@ -21,6 +22,7 @@ import time
 
 from nuclide_server import LOG_FILE
 from nuclide_server import NuclideServer
+from nuclide_server_logger import configure_nuclide_logger
 from nuclide_certificates_generator import NuclideCertificatesGenerator
 from process_info import ProcessInfo
 
@@ -46,6 +48,7 @@ class NuclideServerManager(object):
 
     def __init__(self, options):
         self.options = options
+        self.logger = logging.getLogger('NuclideServerManager')
 
     def _is_port_open(self, port):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -78,8 +81,10 @@ class NuclideServerManager(object):
             version = str(version_json['Version'])
         except IOError as e:
             print('No version.json. Skip version verification.', file=sys.stderr)
+            self.logger.error('No version.json. Skip version verification.')
         except (KeyError, ValueError) as e:
             print('Corrupted version.json. Skip version verification.', file=sys.stderr)
+            self.logger.error('Corrupted version.json. Skip version verification.')
         return version
 
     def _ensure_certs_dir(self):
@@ -106,6 +111,7 @@ class NuclideServerManager(object):
     def cleanup_certificates(self, days_to_keep):
         try:
             print('Cleaning up old files...', file=sys.stderr)
+            self.logger.info('Cleaning up old files...')
             certs_dir = self.options.certs_dir or self._ensure_certs_dir()
             current = time.time()
             seconds_to_keep = 3600 * 24 * days_to_keep
@@ -114,6 +120,7 @@ class NuclideServerManager(object):
                     os.unlink(file)
         except Exception as e:
             print('Error in cleaning up certificates: %s' % e)
+            self.logger.error('Error in cleaning up certificates: %s' % e)
 
     # Clean up bad processes and old files.
     def cleanup(self):
@@ -126,6 +133,7 @@ class NuclideServerManager(object):
                                               '%s.*%s' % (
                                               re.escape('forever/bin/monitor'), re.escape('nuclide-main.js'))):
             print('Stopping %s' % proc, file=sys.stderr)
+            self.logger.info('Stopping %s' % proc)
             proc.stop()
 
         # Clean up multiple Nuclide processes on same port.
@@ -141,6 +149,7 @@ class NuclideServerManager(object):
             if len(server_proc_map[port]) > 1:
                 print('Multiple Nuclide processes on port %d. Something wrong. Clean them up...' % port,
                       file=sys.stderr)
+                self.logger.warning('Multiple Nuclide processes on port %d. Something wrong. Clean them up...' % port)
                 for proc in server_proc_map[port]:
                     proc.stop()
 
@@ -160,6 +169,7 @@ class NuclideServerManager(object):
         port = self._find_open_port()
         if port is None:
             print('No ports available.', file=sys.stderr)
+            self.logger.warn('No ports available.')
             return None
         else:
             return port
@@ -178,6 +188,7 @@ class NuclideServerManager(object):
         if not self._is_port_open(port) and not server.is_mine():
             print('You are not the owner of Nuclide server at port %d. Try a different port.' %
                   port, file=sys.stderr)
+            self.logger.error('You are not the owner of Nuclide server at port %d. Try a different port.' % port)
             return 1
 
         # At this moment, the port is either open, or we have an existing server running.
@@ -188,11 +199,13 @@ class NuclideServerManager(object):
             if (version and version != running_version) or \
                     (self.options.common_name and server.get_common_name() != self.options.common_name):
                 print('Restarting Nuclide server on port %d' % port, file=sys.stderr)
+                self.logger.info('Restarting Nuclide server on port %d' % port)
                 server.stop()
                 return self.start_server(server)
                 # Don't use restart() here, so that we regenerate the certificates.
             else:
                 print('Nuclide already running on port %d. You may connect.' % port, file=sys.stderr)
+                self.logger.info('Nuclide already running on port %d. You may connect.' % port)
                 server.print_json()
                 return 0
         else:
@@ -200,6 +213,7 @@ class NuclideServerManager(object):
 
     def start_server(self, server):
         print('Starting Nuclide server...', file=sys.stderr)
+        self.logger.info('Starting Nuclide server...')
         if self.options.insecure:
             # Use http.
             return server.start(self.options.timeout, quiet=self.options.quiet, debug=self.options.debug)
@@ -236,6 +250,10 @@ def get_option_parser():
 
 
 if __name__ == '__main__':
+    configure_nuclide_logger()
+    logger = logging.getLogger()
+    logger.info('Invoked nuclide_server_manager...')
+
     os.environ['PATH'] = os.pathsep.join(NODE_PATHS) + os.pathsep + os.environ.get('PATH', '')
     parser = get_option_parser()
     options, args = parser.parse_args(sys.argv[1:])
@@ -260,5 +278,6 @@ if __name__ == '__main__':
         ret = 0
     else:
         print('Unrecognized command: %s' % options.command, file=sys.stderr)
+        logger.error('Unrecognized command: %s' % options.command)
         ret = 1
     sys.exit(ret)

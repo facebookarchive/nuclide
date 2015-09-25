@@ -9,6 +9,7 @@
 from __future__ import print_function
 
 import json
+import logging
 import optparse
 import os
 import re
@@ -50,6 +51,8 @@ class NuclideCertificatesGenerator(object):
             return None
 
     def __init__(self, certs_dir, server_common_name, client_common_name, expiration_days=1):
+        self.logger = logging.getLogger('NuclideCertificatesGenerator')
+
         self._expiration_days = expiration_days
         self._server_common_name = server_common_name
         self._env = os.environ.copy()
@@ -94,6 +97,7 @@ class NuclideCertificatesGenerator(object):
             check_output_silent(args)
         except subprocess.CalledProcessError as e:
             print('openssl failed: %s' % e.output, file=sys.stderr)
+            self.logger.error('openssl failed: %s' % e.output)
             return False
         return True
 
@@ -106,6 +110,7 @@ class NuclideCertificatesGenerator(object):
             check_output_silent(args, env=self._env)
         except subprocess.CalledProcessError as e:
             print('openssl failed: %s' % e.output, file=sys.stderr)
+            self.logger.error('openssl failed: %s' % e.output)
             return False
         return True
 
@@ -121,6 +126,7 @@ class NuclideCertificatesGenerator(object):
             check_output_silent(args, env=self._env)
         except subprocess.CalledProcessError as e:
             print('openssl failed: %s' % e.output, file=sys.stderr)
+            self.logger.error('openssl failed: %s' % e.output)
             return False
         return True
 

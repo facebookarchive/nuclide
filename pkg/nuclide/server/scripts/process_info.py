@@ -6,6 +6,7 @@
 
 from __future__ import print_function
 
+import logging
 import re
 import shlex
 import subprocess
@@ -18,6 +19,8 @@ COLUMNS = ['pid', 'command']
 # TODO: Ideally, we want to use psutil, but it is not part of standard library.
 class ProcessInfo(object):
     def __init__(self, columns, line):
+        self.logger = logging.getLogger('ProcessInfo')
+
         # Split on whitespace
         tokens = line.strip().split()
         self._fields = {}
@@ -65,6 +68,7 @@ class ProcessInfo(object):
             return 0
         except subprocess.CalledProcessError as e:
             print('Failed to stop process %s: %s' % (pid, e.output), file=sys.stderr)
+            self.logger.error('Failed to stop process %s: %s' % (pid, e.output))
             return e.returncode
 
     # Use regex_filter to look for regex pattern in ps output.
