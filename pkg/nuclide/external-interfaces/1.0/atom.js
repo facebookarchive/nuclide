@@ -209,7 +209,10 @@ declare class atom$Pane {
   getActiveItem(): ?Object;
   itemAtIndex(index: number): ?Object;
   getActiveItemIndex(): number;
+  activateItem(item: Object): ?Object;
   moveItemToPane(item: Object, pane: atom$Pane, index: number): void;
+  destroyItem(item: Object): boolean;
+  itemForURI(uri: string): Object;
 
   // Lifecycle
   isActive(): boolean;
@@ -614,6 +617,10 @@ declare class atom$Workspace {
   // Panes
   getPanes(): Array<atom$Pane>;
   getActivePane(): atom$Pane;
+  activateNextPane(): boolean;
+  activatePreviousPane(): boolean;
+  paneForURI(uri: string): atom$Pane;
+  paneForItem(item: mixed): atom$Pane;
 
   // Panels
   getBottomPanels(): Array<atom$Panel>;
