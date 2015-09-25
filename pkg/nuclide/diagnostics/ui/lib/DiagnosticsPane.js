@@ -65,10 +65,10 @@ function messageColumnCellDataGetter(
   // $FlowIssue
   const allMessages: Array<{html?: string, text?: string}> = [diagnostic, ...traces];
   for (const message of allMessages) {
-    if (message.html) {
+    if (message.html != null) {
       text += message.html + ' ';
       isPlainText = false;
-    } else if (message.text) {
+    } else if (message.text != null) {
       text += message.text + ' ';
     } else {
       throw new Error(`Neither text nor html property defined on: ${message}`);

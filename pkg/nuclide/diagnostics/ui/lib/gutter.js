@@ -231,7 +231,7 @@ function showPopupFor(
     messages.forEach(message => {
       track('diagnostics-gutter-show-popup', {
         'diagnostics-provider': message.providerName,
-        'diagnostics-message': message.text || message.html,
+        'diagnostics-message': message.text || message.html || '',
       });
     });
   }
@@ -288,9 +288,9 @@ function createElementForTrace(
 }
 
 function createMessageSpan(message: {html?: string, text?: string}): HTMLElement {
-  if (message.html) {
+  if (message.html != null) {
     return <span dangerouslySetInnerHTML={{__html: message.html}} />;
-  } else if (message.text) {
+  } else if (message.text != null) {
     return <span>{message.text}</span>;
   } else {
     return <span>Diagnostic lacks message.</span>;
