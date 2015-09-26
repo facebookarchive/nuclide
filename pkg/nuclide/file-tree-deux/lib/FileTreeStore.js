@@ -249,6 +249,17 @@ class FileTreeStore {
     return null;
   }
 
+  /**
+   * Returns known child keys for the given `nodeKey` but does not queue a fetch for missing
+   * children like `::getChildKeys`.
+   */
+  getCachedChildKeys(rootKey: string, nodeKey: string): Array<string> {
+    return this._data.childKeyMap[nodeKey] || [];
+  }
+
+  /**
+   * Returns known child keys for the given `nodeKey` and queues a fetch if children are missing.
+   */
   getChildKeys(rootKey: string, nodeKey: string): Array<string> {
     var childKeys = this._data.childKeyMap[nodeKey];
     if (childKeys == null || this._data.isDirtyMap[nodeKey]) {

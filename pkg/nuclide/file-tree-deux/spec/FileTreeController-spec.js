@@ -307,5 +307,46 @@ describe('FileTreeController', () => {
         });
       });
     });
+
+    describe('with an expanded + loading directory', () => {
+      beforeEach(() => {
+        waitsForPromise(async () => {
+          /*
+           * Expand to a view like the following with a loading (indicated by ↻) dir1:
+           *
+           *   ↓ fixtures
+           *     ↻ dir1
+           *     → dir2
+           */
+          actions.expandNode(rootKey, rootKey);
+          await store._fetchChildKeys(rootKey);
+          actions.expandNode(rootKey, dir1Key);
+          // Do not fetch dir1's file keys. This mimics the loading state where `dir1` reports
+          // itself as expanded but has no children yet.
+        });
+      });
+
+      describe('via _moveDown', () => {
+        it('selects the next sibling', () => {
+          actions.selectSingleNode(rootKey, dir1Key);
+          expect(store.isSelected(rootKey, dir1Key)).toEqual(true);
+          controller._moveDown();
+
+          // dir2 is dir1's next sibling
+          expect(store.isSelected(rootKey, dir2Key)).toEqual(true);
+        });
+      });
+
+      describe('via _moveUp', () => {
+        it('selects the previous sibling', () => {
+          actions.selectSingleNode(rootKey, dir2Key);
+          expect(store.isSelected(rootKey, dir2Key)).toEqual(true);
+          controller._moveUp();
+
+          // dir1 is dir2's previous sibling
+          expect(store.isSelected(rootKey, dir1Key)).toEqual(true);
+        });
+      });
+    });
   });
 });

@@ -393,7 +393,7 @@ class FileTreeController {
     } else {
       parentKey = FileTreeHelpers.getParentKey(lastSelectedKey);
       rootKey = this._store.getRootForKey(lastSelectedKey);
-      siblingKeys = this._store._data.childKeyMap[parentKey];
+      siblingKeys = this._store.getCachedChildKeys(rootKey, parentKey);
     }
 
     // If the root does not exist or if this is expected to have a parent but doesn't (roots do
@@ -402,7 +402,7 @@ class FileTreeController {
       return;
     }
 
-    const children = this._store._data.childKeyMap[lastSelectedKey];
+    const children = this._store.getCachedChildKeys(rootKey, lastSelectedKey);
     if (
       FileTreeHelpers.isDirKey(lastSelectedKey) &&
       this._store.isExpanded(rootKey, lastSelectedKey) &&
@@ -470,7 +470,7 @@ class FileTreeController {
     } else {
       parentKey = FileTreeHelpers.getParentKey(lastSelectedKey);
       rootKey = this._store.getRootForKey(lastSelectedKey);
-      siblingKeys = this._store._data.childKeyMap[parentKey];
+      siblingKeys = this._store.getCachedChildKeys(rootKey, parentKey);
     }
 
     // If the root does not exist or if this is expected to have a parent but doesn't (roots do
@@ -529,7 +529,7 @@ class FileTreeController {
    * considered in file system order.
    */
   _findLowermostDescendantKey(rootKey: string, nodeKey: string): string {
-    const childKeys = this._store._data.childKeyMap[nodeKey];
+    const childKeys = this._store.getCachedChildKeys(rootKey, nodeKey);
     if (childKeys == null || childKeys.length === 0) {
       // If the directory has no children, the directory itself is the lowermost descendant.
       return nodeKey;
@@ -565,7 +565,7 @@ class FileTreeController {
       siblingKeys = this._store.getRootKeys();
     } else {
       parentKey = FileTreeHelpers.getParentKey(nodeKey);
-      siblingKeys = this._store._data.childKeyMap[parentKey];
+      siblingKeys = this._store.getCachedChildKeys(rootKey, parentKey);
     }
 
     const index = siblingKeys.indexOf(nodeKey);
