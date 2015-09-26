@@ -1,0 +1,5 @@
+import {default as Bar} from 'Foo';
+
+function test() {
+  Bar.bar();
+}

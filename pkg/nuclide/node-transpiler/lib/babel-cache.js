@@ -128,6 +128,12 @@ function createOptions(filePath) {
   return {
     filename: filePath,
     sourceMap: 'inline',
+    plugins: [
+      {
+        position: 'before',
+        transformer: require('nuclide-inline-imports'),
+      },
+    ],
     blacklist: [
       'es6.forOf',
       'useStrict',

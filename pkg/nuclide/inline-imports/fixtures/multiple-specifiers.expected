@@ -1,0 +1,11 @@
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _Foo2;
+function _Foo() {
+  return _Foo2 = _interopRequireDefault(require('Foo'))['default'];
+}
+
+function test() {
+  new (_Foo2 || _Foo())();
+  require('Foo').bar();
+}

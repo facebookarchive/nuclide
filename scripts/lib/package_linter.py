@@ -16,7 +16,11 @@ try:
 except ImportError:
     from configparser import ConfigParser, NoOptionError
 
-EXPECTED_NPM_TEST_COMMAND = 'node --harmony node_modules/.bin/jasmine-node-transpiled spec'
+DEFAULT_NPM_TEST_COMMAND = 'node --harmony node_modules/.bin/jasmine-node-transpiled spec'
+NPM_TEST_COMMANDS = {
+  'nuclide-inline-imports': 'node --harmony node_modules/.bin/jasmine-focused spec',
+  'nuclide-jasmine': 'node --harmony bin/jasmine-node-transpiled spec',
+}
 PATH_TO_ATOM_INTERFACES = './node_modules/nuclide-external-interfaces/1.0/'
 DEPENDENCY_BLACKLIST = {
   'lodash': 'it is a large dependency that we do not want to take on.',
@@ -164,12 +168,7 @@ class PackageLinter(object):
                 ('Package %s should have a "test" property in its "scripts" section ' +
                     'to define how its tests are run.'),
                 package_name)
-        elif package['scripts']['test'] != EXPECTED_NPM_TEST_COMMAND:
-            if package_name == 'nuclide-jasmine':
-                # nuclide-jasmine must have a slightly different test script than
-                # EXPECTED_NPM_TEST_COMMAND.
-                return
-
+        elif package['scripts']['test'] != NPM_TEST_COMMANDS.get(package_name, DEFAULT_NPM_TEST_COMMAND):
             self.report_error(
                 'Package %s should have a "test" property with the value: %s',
                 package_name,

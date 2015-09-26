@@ -1,0 +1,4 @@
+function test() {
+  var bar = function bar() {};
+  bar();
+}
