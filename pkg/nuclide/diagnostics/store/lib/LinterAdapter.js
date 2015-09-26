@@ -56,7 +56,8 @@ import {promises as commonsPromises} from 'nuclide-commons';
 
 var {RequestSerializer} = commonsPromises;
 
-function linterMessageToDiagnosticMessage(
+// Exported for testing.
+export function linterMessageToDiagnosticMessage(
   msg: LinterMessage,
   providerName: string,
 ): DiagnosticMessage {
@@ -84,7 +85,8 @@ function linterMessageToDiagnosticMessage(
   }
 }
 
-function linterMessagesToDiagnosticUpdate(
+// Exported for testing.
+export function linterMessagesToDiagnosticUpdate(
   currentPath: ?NuclideUri,
   msgs: Array<LinterMessage>,
   providerName?: string = 'Unnamed Linter',

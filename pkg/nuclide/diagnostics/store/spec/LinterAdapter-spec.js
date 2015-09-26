@@ -11,11 +11,19 @@
 
 import {Disposable} from 'atom';
 
-import {LinterAdapter} from '../lib/LinterAdapter';
+import invariant from 'assert';
+
+import {
+  LinterAdapter,
+  linterMessageToDiagnosticMessage,
+  linterMessagesToDiagnosticUpdate,
+} from '../lib/LinterAdapter';
 
 var grammar = 'testgrammar';
 
-function makePromise(ret: mixed, timeout: number) {
+import {arePropertiesEqual} from 'nuclide-test-helpers';
+
+function makePromise<T>(ret: T, timeout: number): Promise<T> {
   return new Promise(resolve => {
     setTimeout(() => {
       resolve(ret);
@@ -32,10 +40,12 @@ describe('LinterAdapter', () => {
   var subscribedToAny: any;
   var newUpdateSubscriber: any;
   var publishMessageUpdateSpy: any;
+  var fakeDiagnosticsProviderBase: any;
 
   class FakeDiagnosticsProviderBase {
     publishMessageUpdate: JasmineSpy;
     publishMessageInvalidation: JasmineSpy;
+    dispose: JasmineSpy;
     constructor(options) {
       eventCallback = options.onTextEditorEvent;
       subscribedToAny = options.enableForAllGrammars;
@@ -43,6 +53,8 @@ describe('LinterAdapter', () => {
       this.publishMessageUpdate = jasmine.createSpy();
       publishMessageUpdateSpy = this.publishMessageUpdate;
       this.publishMessageInvalidation = jasmine.createSpy();
+      this.dispose = jasmine.createSpy();
+      fakeDiagnosticsProviderBase = this;  // eslint-disable-line consistent-this
     }
     onMessageUpdate(callback) {
       this.publishMessageUpdate.andCallFake(callback);
@@ -134,6 +146,91 @@ describe('LinterAdapter', () => {
       waitsFor(() => {
         return numMessages === 1 && lastMessage && lastMessage.filePathToMessages.has('baz');
       }, 'There should be only the latest message', 100);
+    });
+  });
+
+  it('should delegate dispose', () => {
+    expect(fakeDiagnosticsProviderBase.dispose).not.toHaveBeenCalled();
+    linterAdapter.dispose();
+    expect(fakeDiagnosticsProviderBase.dispose).toHaveBeenCalled();
+  });
+});
+
+describe('message transformation functions', () => {
+  const fileMessage = {
+    type: 'Error',
+    text: 'Uh oh',
+    filePath: '/fu/bar',
+  };
+
+  const projectMessage = {
+    type: 'Warning',
+    text: 'Oh no!',
+  };
+
+  let providerName;
+  let currentPath;
+
+  beforeEach(() => {
+    providerName = 'provider';
+    currentPath = 'foo/bar';
+  });
+
+  describe('linterMessageToDiagnosticMessage', () => {
+    function checkMessage(linterMessage, expected) {
+      invariant(providerName);
+      const actual = linterMessageToDiagnosticMessage(linterMessage, providerName);
+      const areEqual = arePropertiesEqual(actual, expected);
+      expect(areEqual).toBe(true);
+    }
+
+    it('should turn a message with a filePath into a file scope diagnostic', () => {
+      checkMessage(fileMessage, {
+        scope: 'file',
+        providerName,
+        type: fileMessage.type,
+        filePath: fileMessage.filePath,
+        text: fileMessage.text,
+      });
+    });
+
+    it('should turn a message without a filePath into a project scope diagnostic', () => {
+      checkMessage(projectMessage, {
+        scope: 'project',
+        providerName,
+        type: projectMessage.type,
+        text: projectMessage.text,
+      });
+    });
+  });
+
+  describe('linterMessagesToDiagnosticUpdate', () => {
+    function runWith(linterMessages) {
+      return linterMessagesToDiagnosticUpdate(currentPath, linterMessages, providerName);
+    }
+
+    it('should invalidate diagnostics in the current file', () => {
+      const result = runWith([]);
+      invariant(result.filePathToMessages);
+      expect(result.filePathToMessages.get(currentPath)).toEqual([]);
+    });
+
+    it('should name linters that do not provide a name', () => {
+      providerName = undefined;
+      const result = runWith([fileMessage]);
+      invariant(result.filePathToMessages);
+      const resultMessage = result.filePathToMessages.get(fileMessage.filePath)[0];
+      expect(resultMessage.providerName).toEqual('Unnamed Linter');
+    });
+
+    it('should provide both project messages and file messages', () => {
+      const result = runWith([fileMessage, projectMessage]);
+      invariant(result.filePathToMessages);
+      // The actual message transformations are tested in the tests from
+      // linterMessageToDiagnosticMessage -- no need to duplicate them here.
+      expect(result.filePathToMessages.get(fileMessage.filePath).length).toEqual(1);
+      invariant(result.projectMessages);
+      expect(result.projectMessages.length).toEqual(1);
     });
   });
 });
