@@ -19,3 +19,5 @@
   'enter': 'nuclide-file-tree-deux:open-selected-entry'
   'delete': 'nuclide-file-tree-deux:remove'
   'backspace': 'nuclide-file-tree-deux:remove'
+  'home': 'core:move-to-top'
+  'end': 'core:move-to-bottom'

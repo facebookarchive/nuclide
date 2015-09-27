@@ -116,6 +116,8 @@ class FileTreeController {
       atom.commands.add(EVENT_HANDLER_SELECTOR, {
         'core:move-down': this._moveDown.bind(this),
         'core:move-up': this._moveUp.bind(this),
+        'core:move-to-top': this._moveToTop.bind(this),
+        'core:move-to-bottom': this._moveToBottom.bind(this),
         'nuclide-file-tree-deux:add-file': () => {
           FileSystemActions.openAddFileDialog(this._openAndRevealFilePath.bind(this));
         },
@@ -369,16 +371,14 @@ class FileTreeController {
   }
 
   _moveDown(): void {
-    const rootKeys = this._store.getRootKeys();
-    if (rootKeys.length === 0) {
-      // The store is empty. Nothing to do. Exit.
+    if (this._store.isEmpty()) {
       return;
     }
 
     const lastSelectedKey = this._store.getSelectedKeys().last();
     if (lastSelectedKey == null) {
-      // There is no selection yet, so start at the top of the tree. The top is the first root.
-      this._trackAndSelectNode(rootKeys[0], rootKeys[0]);
+      // There is no selection yet, so move to the top of the tree.
+      this._moveToTop();
       return;
     }
 
@@ -389,7 +389,7 @@ class FileTreeController {
     if (isRoot) {
       rootKey = lastSelectedKey;
       // Other roots are this root's siblings
-      siblingKeys = rootKeys;
+      siblingKeys = this._store.getRootKeys();
     } else {
       parentKey = FileTreeHelpers.getParentKey(lastSelectedKey);
       rootKey = this._store.getRootForKey(lastSelectedKey);
@@ -438,24 +438,14 @@ class FileTreeController {
   }
 
   _moveUp(): void {
-    const rootKeys = this._store.getRootKeys();
-    if (rootKeys.length === 0) {
-      // The store is empty. Nothing to do. Exit.
+    if (this._store.isEmpty()) {
       return;
     }
 
     const lastSelectedKey = this._store.getSelectedKeys().last();
     if (lastSelectedKey == null) {
-      // There is no selection. Select the lowermost descendant of the last root node. Exit.
-      const lastRootKey = rootKeys[rootKeys.length - 1];
-      if (this._store.isExpanded(lastRootKey, lastRootKey)) {
-        this._trackAndSelectNode(
-          lastRootKey,
-          this._findLowermostDescendantKey(lastRootKey, lastRootKey)
-        );
-      } else {
-        this._trackAndSelectNode(lastRootKey, lastRootKey);
-      }
+      // There is no selection. Move to the bottom of the tree.
+      this._moveToBottom();
       return;
     }
 
@@ -466,7 +456,7 @@ class FileTreeController {
     if (isRoot) {
       rootKey = lastSelectedKey;
       // Other roots are this root's siblings
-      siblingKeys = rootKeys;
+      siblingKeys = this._store.getRootKeys();
     } else {
       parentKey = FileTreeHelpers.getParentKey(lastSelectedKey);
       rootKey = this._store.getRootForKey(lastSelectedKey);
@@ -496,20 +486,34 @@ class FileTreeController {
         rootKey = previousSiblingKey;
       }
 
-      if (FileTreeHelpers.isDirKey(previousSiblingKey)) {
-        if (this._store.isExpanded(rootKey, previousSiblingKey)) {
-          // Dir is expanded. Select its lowermost descendant.
-          const lowermostKey = this._findLowermostDescendantKey(rootKey, previousSiblingKey);
-          this._trackAndSelectNode(rootKey, lowermostKey);
-        } else {
-          // Dir not expanded. No need to traverse. Select it.
-          this._trackAndSelectNode(rootKey, previousSiblingKey);
-        }
-      } else {
-        // Previous sibling is a file (it has no children). Nothing to traverse. Select it.
-        this._trackAndSelectNode(rootKey, previousSiblingKey);
-      }
+      this._trackAndSelectNode(
+        rootKey,
+        this._findLowermostDescendantKey(rootKey, previousSiblingKey)
+      );
     }
+  }
+
+  _moveToTop(): void {
+    if (this._store.isEmpty()) {
+      return;
+    }
+
+    const rootKeys = this._store.getRootKeys();
+    this._trackAndSelectNode(rootKeys[0], rootKeys[0]);
+  }
+
+  _moveToBottom(): void {
+    if (this._store.isEmpty()) {
+      return;
+    }
+
+    // Select the lowermost descendant of the last root node.
+    const rootKeys = this._store.getRootKeys();
+    const lastRootKey = rootKeys[rootKeys.length - 1];
+    this._trackAndSelectNode(
+      lastRootKey,
+      this._findLowermostDescendantKey(lastRootKey, lastRootKey)
+    );
   }
 
   /*
@@ -529,18 +533,20 @@ class FileTreeController {
    * considered in file system order.
    */
   _findLowermostDescendantKey(rootKey: string, nodeKey: string): string {
+    if (!(FileTreeHelpers.isDirKey(nodeKey) && this._store.isExpanded(rootKey, nodeKey))) {
+      // If `nodeKey` is not an expanded directory there are no more descendants to traverse. Return
+      // the `nodeKey`.
+      return nodeKey;
+    }
+
     const childKeys = this._store.getCachedChildKeys(rootKey, nodeKey);
-    if (childKeys == null || childKeys.length === 0) {
+    if (childKeys.length === 0) {
       // If the directory has no children, the directory itself is the lowermost descendant.
       return nodeKey;
     }
 
-    const lastChildKey = childKeys[childKeys.length - 1];
-    if (FileTreeHelpers.isDirKey(lastChildKey) && this._store.isExpanded(rootKey, lastChildKey)) {
-      return this._findLowermostDescendantKey(rootKey, lastChildKey);
-    } else {
-      return lastChildKey;
-    }
+    // There's at least one child. Recurse down the last child.
+    return this._findLowermostDescendantKey(rootKey, childKeys[childKeys.length - 1]);
   }
 
   /*

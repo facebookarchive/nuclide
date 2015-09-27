@@ -15,6 +15,9 @@ var FileTreeStore = require('../lib/FileTreeStore');
 var pathModule = require('path');
 
 describe('FileTreeStore', () => {
+  const dir1 = pathModule.join(__dirname, 'fixtures/dir1') + '/';
+  const dir2 = pathModule.join(__dirname, 'fixtures/dir2') + '/';
+
   var actions: FileTreeActions = FileTreeActions.getInstance();
   var store: FileTreeStore = FileTreeStore.getInstance();
 
@@ -28,9 +31,18 @@ describe('FileTreeStore', () => {
     expect(rootKeys.length).toBe(0);
   });
 
+  describe('isEmpty', () => {
+    it('returns true when the store is empty, has no roots', () => {
+      expect(store.isEmpty()).toBe(true);
+    });
+
+    it('returns false when the store has data, has roots', () => {
+      actions.setRootKeys([dir1]);
+      expect(store.isEmpty()).toBe(false);
+    });
+  });
+
   it('should update root keys via actions', () => {
-    var dir1 = pathModule.join(__dirname, 'fixtures/dir1') + '/';
-    var dir2 = pathModule.join(__dirname, 'fixtures/dir2') + '/';
     actions.setRootKeys([dir1, dir2]);
     var rootKeys = store.getRootKeys();
     expect(Array.isArray(rootKeys)).toBe(true);
@@ -51,7 +63,6 @@ describe('FileTreeStore', () => {
   });
 
   it('toggles selected items', () => {
-    var dir1 = pathModule.join(__dirname, 'fixtures/dir1') + '/';
     actions.setRootKeys([dir1]);
     actions.toggleSelectNode(dir1, dir1);
     var node = store.getNode(dir1, dir1);
@@ -61,8 +72,6 @@ describe('FileTreeStore', () => {
   });
 
   it('deselects items in other roots when a single node is selected', () => {
-    var dir1 = pathModule.join(__dirname, 'fixtures/dir1') + '/';
-    var dir2 = pathModule.join(__dirname, 'fixtures/dir2') + '/';
     actions.setRootKeys([dir1, dir2]);
     actions.toggleSelectNode(dir1, dir1);
     var node1 = store.getNode(dir1, dir1);
@@ -79,9 +88,6 @@ describe('FileTreeStore', () => {
   });
 
   describe('getSelectedKeys', () => {
-    const dir1 = pathModule.join(__dirname, 'fixtures/dir1') + '/';
-    const dir2 = pathModule.join(__dirname, 'fixtures/dir2') + '/';
-
     beforeEach(() => {
       /*
        * Create two roots and select them both. It'll look like the following:
@@ -109,8 +115,6 @@ describe('FileTreeStore', () => {
 
   describe('getSelectedNodes', () => {
     it('returns selected nodes from all roots', () => {
-      var dir1 = pathModule.join(__dirname, 'fixtures/dir1') + '/';
-      var dir2 = pathModule.join(__dirname, 'fixtures/dir2') + '/';
       actions.setRootKeys([dir1, dir2]);
       actions.toggleSelectNode(dir1, dir1);
       actions.toggleSelectNode(dir2, dir2);
@@ -127,9 +131,6 @@ describe('FileTreeStore', () => {
   });
 
   describe('getSingleSelectedNode', () => {
-    const dir1 = pathModule.join(__dirname, 'fixtures/dir1') + '/';
-    const dir2 = pathModule.join(__dirname, 'fixtures/dir2') + '/';
-
     beforeEach(() => {
       /*
        * Create two roots. It'll look like the following:
@@ -158,7 +159,6 @@ describe('FileTreeStore', () => {
 
   describe('trackedNode', () => {
     it('resets when there is a new selection', () => {
-      var dir1 = pathModule.join(__dirname, 'fixtures/dir1') + '/';
       actions.setRootKeys([dir1]);
       actions.setTrackedNode(dir1, dir1);
 

@@ -226,6 +226,13 @@ class FileTreeStore {
   }
 
   /**
+   * Returns true if the store has no data, i.e. no roots, no children.
+   */
+  isEmpty(): boolean {
+    return this.getRootKeys().length === 0;
+  }
+
+  /**
    * Note: We actually don't need rootKey (implementation detail) but we take it for consistency.
    */
   isLoading(rootKey: string, nodeKey: string): boolean {
