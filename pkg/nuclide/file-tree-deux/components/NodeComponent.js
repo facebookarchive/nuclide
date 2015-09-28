@@ -55,6 +55,7 @@ class NodeComponent extends React.Component {
       'entry list-item nuclide-tree-component-item': true,
       'nuclide-tree-component-selected': this.props.isSelected,
     });
+
     // TODO: Consider symlinks when it's possible to determine whether this is a symlink.
     var innerClassName;
     if (this.props.isContainer) {
@@ -62,6 +63,7 @@ class NodeComponent extends React.Component {
     } else {
       innerClassName = fileTypeClass(this.props.nodeName);
     }
+
     var statusClass;
     var {vcsStatusCode} = this.props;
     if (vcsStatusCode === StatusCodeNumber.MODIFIED) {
@@ -71,12 +73,19 @@ class NodeComponent extends React.Component {
     } else {
       statusClass = '';
     }
+
     var icon: ?ReactElement;
     if (this.props.isLoading) {
       icon = <span className="nuclide-tree-component-item-arrow-spinner">{SPINNER}</span>;
     } else if (this.props.isContainer) {
       icon = this.props.isExpanded ? <span>{DOWN_ARROW}</span> : <span>{RIGHT_ARROW}</span>;
     }
+
+    let arrow;
+    if (this.props.isContainer) {
+      arrow = <span ref="arrow" className="nuclide-tree-component-item-arrow">{icon}</span>;
+    }
+
     return (
       <div
         key={this.props.nodeKey}
@@ -85,7 +94,7 @@ class NodeComponent extends React.Component {
         onClick={this._onClick}
         onMouseDown={this._onMouseDown}
         onDoubleClick={this._onDoubleClick}>
-        <span ref="arrow" className="nuclide-tree-component-item-arrow">{icon}</span>
+        {arrow}
         <span
           className={`icon name ${innerClassName} ${statusClass}`}
           data-name={this.props.nodeName}
@@ -97,15 +106,19 @@ class NodeComponent extends React.Component {
   }
 
   _onClick(event: SyntheticMouseEvent) {
-    if (React.findDOMNode(this.refs.arrow).contains(event.target)) {
+    const arrow = this.refs['arrow'];
+    if (arrow != null && React.findDOMNode(arrow).contains(event.target)) {
       this._toggleNodeExpanded();
       return;
     }
+
     var modifySelection = event.ctrlKey || event.metaKey;
     if (modifySelection) {
       getActions().toggleSelectNode(this.props.rootKey, this.props.nodeKey);
     } else if (this.props.isSelected) {
-      this._toggleNodeExpanded();
+      if (this.props.isContainer) {
+        this._toggleNodeExpanded();
+      }
     } else {
       getActions().selectSingleNode(this.props.rootKey, this.props.nodeKey);
     }

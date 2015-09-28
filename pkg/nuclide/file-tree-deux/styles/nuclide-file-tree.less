@@ -25,6 +25,8 @@
   margin: 1em 0 0;
 }
 
+@ARROW_WIDTH: 16px;
+
 /*
  * Copied from nuclide-ui-tree/styles/tree-component.less. Because nuclide-file-tree-deux does not
  * use nuclide-ui-tree, deux must include these styles directly to ensure they're loaded and prevent
@@ -42,7 +44,7 @@
     .nuclide-tree-component-item-arrow {
       font-family: 'Octicons Regular';
       -webkit-font-smoothing: antialiased;
-      width: 16px;
+      width: @ARROW_WIDTH;
       display: inline-block;
       position: relative;
       top: -1px;
@@ -52,6 +54,10 @@
       position: relative;
       top: 1px;
     }
+  }
+
+  .nuclide-tree-component-item.file > .icon {
+    padding-left: @ARROW_WIDTH;
   }
 
   .nuclide-tree-component-selected {
