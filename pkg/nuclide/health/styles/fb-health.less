@@ -1,0 +1,34 @@
+status-bar .inline-block.nuclide-health {
+  max-width: inherit;
+}
+
+.nuclide-health-icon::before {
+  cursor: pointer;
+}
+
+.nuclide-health-stat {
+  margin: 0px 5px;
+}
+
+.nuclide-health-pane-item {
+  overflow: auto;
+}
+
+/* By default, .settings-view uses flex, which messes up table widths in the health pane. */
+.nuclide-health-pane-item-section {
+  margin-bottom: 3em;
+  .settings-view {
+    display: block;
+    .table {
+      margin-bottom: 3em;
+    }
+  }
+}
+
+.nuclide-health-handle-new {
+  color: @text-color-error;
+}
+
+.nuclide-health-handle-updated {
+  color: @text-color-warning;
+}

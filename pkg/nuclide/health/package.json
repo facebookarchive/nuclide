@@ -1,0 +1,28 @@
+{
+  "name": "nuclide-health",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main.js",
+  "version": "0.0.0",
+  "description": "Provides some simple process stats in the status bar",
+  "nuclide": {
+    "packageType": "Atom",
+    "testRunner": "apm"
+  },
+  "consumedServices": {
+    "status-bar": {
+      "versions": {
+        "^1.0.0": "consumeStatusBar"
+      }
+    }
+  },
+  "engines": {
+    "atom": ">=1.0.0"
+  },
+  "dependencies": {
+    "nuclide-analytics": "0.0.0",
+    "react-for-atom": "0.13.6"
+  },
+  "devDependencies": {
+    "nuclide-external-interfaces": "0.0.0"
+  }
+}
