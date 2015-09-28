@@ -141,6 +141,14 @@ class FileTreeActions {
       );
     }
   }
+
+  setVcsStatuses(rootKey: string, vcsStatuses: {[path: string]: number}): void {
+    this._dispatcher.dispatch({
+      actionType: ActionType.SET_VCS_STATUSES,
+      rootKey,
+      vcsStatuses,
+    });
+  }
 }
 
 module.exports = FileTreeActions;

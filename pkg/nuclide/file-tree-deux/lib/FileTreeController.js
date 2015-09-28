@@ -23,6 +23,7 @@ var NuclideCheckbox = require('nuclide-ui-checkbox');
 var {PanelComponent} = require('nuclide-panel');
 var React = require('react-for-atom');
 
+var {debounce} = require('nuclide-commons');
 var os = require('os');
 var pathUtil = require('path');
 var shell = require('shell');
@@ -48,12 +49,15 @@ class FileTreeController {
   _panel: atom$Panel;
   _fileTreePanel: FileTreePanel;
   _panelElement: HTMLElement;
+  _repositories: Set<Repository>;
+  _rootKeysForRepository: Map<Repository, Set<string>>;
   _store: FileTreeStore;
   _subscriptions: CompositeDisposable;
+  _subscriptionForRepository: Map<Repository, atom$Disposable>;
   /**
-    * True if a reveal was requested while the file tree is hidden. If so, we should apply it when
-    * the tree is shown.
-    */
+   * True if a reveal was requested while the file tree is hidden. If so, we should apply it when
+   * the tree is shown.
+   */
   _revealActiveFilePending: boolean;
 
   // $FlowIssue t8486988
@@ -69,6 +73,9 @@ class FileTreeController {
     this._isVisible = panel.isVisible != null ? panel.isVisible : true;
     this._actions = FileTreeActions.getInstance();
     this._store = FileTreeStore.getInstance();
+    this._repositories = new Set();
+    this._rootKeysForRepository = new Map();
+    this._subscriptionForRepository = new Map();
     this._subscriptions = new CompositeDisposable();
     this._onChangeExperimentalHgIntegration = this._onChangeExperimentalHgIntegration.bind(this);
     // Initial root directories
@@ -173,7 +180,7 @@ class FileTreeController {
     }
   }
 
-  _updateRootDirectories(): void {
+  _updateRootDirectories(): Promise<void> {
     // If the remote-projects package hasn't loaded yet remote directories will be instantiated as
     // local directories but with invalid paths. We need to exclude those.
     var rootDirectories = atom.project.getDirectories().filter(directory => (
@@ -183,6 +190,162 @@ class FileTreeController {
       directory => FileTreeHelpers.dirPathToKey(directory.getPath())
     );
     this._actions.setRootKeys(rootKeys);
+    return this._updateRepositories(rootKeys, rootDirectories);
+  }
+
+  /**
+   * Updates the root repositories to match the updates in _updateRootDirectories().
+   */
+  async _updateRepositories(
+    rootKeys: Array<string>,
+    rootDirectories: Array<atom$Directory>,
+  ): Promise<void> {
+    var nullableRepos: Array<?Repository> = await Promise.all(rootDirectories.map(
+      directory => atom.project.repositoryForDirectory(directory)
+    ));
+
+    var rootKeysForRepo: Map<Repository, Set<string>> = new Map();
+    var newRepos: Set<Repository> = new Set(
+      nullableRepos.filter((repo: ?Repository, index: number) => {
+        if (repo != null) {
+          var set = rootKeysForRepo.get(repo);
+          // t7114196: Given the current implementation of HgRepositoryClient, each root directory
+          // will always correspond to a unique instance of HgRepositoryClient. Ideally, if multiple
+          // subfolders of an Hg repo are used as project roots in Atom, only one HgRepositoryClient
+          // should be created.
+          if (!set) {
+            rootKeysForRepo.set(repo, (set = new Set()));
+          }
+          set.add(rootKeys[index]);
+          return true;
+        } else {
+          return false;
+        }
+      })
+    );
+    this._rootKeysForRepository = rootKeysForRepo;
+
+    var oldRepos = new Set();
+    for (var repo of this._repositories) {
+      if (newRepos.has(repo)) {
+        newRepos.delete(repo);
+      } else {
+        oldRepos.add(repo);
+      }
+    }
+
+    // Unsubscribe from oldRepos.
+    for (var repo of oldRepos) {
+      this._removeSubscriptionForOldRepository(repo);
+    }
+
+    // Create subscriptions for newRepos.
+    for (var repo of newRepos) {
+      this._addSubscriptionsForNewRepository(repo);
+    }
+  }
+
+  async _addSubscriptionsForNewRepository(repo: Repository): Promise<void> {
+    this._repositories.add(repo);
+    // For now, we only support HgRepository objects.
+    if (repo.getType() !== 'hg') {
+      return;
+    }
+
+    // At this point, we assume that repo is a Nuclide HgRepositoryClient.
+
+    // First, get the output of `hg status` for the repository.
+    var {hgConstants} = require('nuclide-hg-repository-base');
+    // TODO(mbolin): Verify that all of this is set up correctly for remote files.
+    var repoRoot = repo.getWorkingDirectory();
+    var statusCodeForPath = await repo.getStatuses([repoRoot], {
+      hgStatusOption: hgConstants.HgStatusOption.ONLY_NON_IGNORED,
+    });
+
+    // From the initial result of `hg status`, record the status code for every file in
+    // statusCodeForPath in the statusesToReport map. If the file is modified, also mark every
+    // parent directory (up to the repository root) of that file as modified, as well. For now, we
+    // mark only new files, but not new directories.
+    var statusesToReport = {};
+    for (var path in statusCodeForPath) {
+      var statusCode = statusCodeForPath[path];
+      if (repo.isStatusModified(statusCode)) {
+        statusesToReport[path] = statusCode;
+
+        // For modified files, every parent directory should also be flagged as modified.
+        var nodeKey = path;
+        var keyForRepoRoot = FileTreeHelpers.dirPathToKey(repoRoot);
+        do {
+          var parentKey = FileTreeHelpers.getParentKey(nodeKey);
+          if (parentKey == null) {
+            break;
+          }
+          nodeKey = parentKey;
+          if (statusesToReport.hasOwnProperty(nodeKey)) {
+            // If there is already an entry for this parent file in the statusesToReport map, then
+            // there is no reason to continue exploring ancestor directories.
+            break;
+          } else {
+            statusesToReport[nodeKey] = hgConstants.StatusCodeNumber.MODIFIED;
+          }
+        } while (nodeKey !== keyForRepoRoot);
+      } else if (statusCode === hgConstants.StatusCodeNumber.ADDED) {
+        statusesToReport[path] = statusCode;
+      }
+    }
+    for (var rootKeyForRepo of this._rootKeysForRepository.get(repo)) {
+      this._actions.setVcsStatuses(rootKeyForRepo, statusesToReport);
+    }
+
+    // TODO: Call getStatuses with <visible_nodes, hgConstants.HgStatusOption.ONLY_IGNORED>
+    // to determine which nodes in the tree need to be shown as ignored.
+
+    // Now that the initial VCS statuses are set, subscribe to changes to the Repository so that the
+    // VCS statuses are kept up to date.
+    var subscription = repo.onDidChangeStatuses(
+      // t8227570: If the user is a "nervous saver," many onDidChangeStatuses will get fired in
+      // succession. We should probably explore debouncing this in HgRepositoryClient itself.
+      debounce(
+        this._onDidChangeStatusesForRepository.bind(this, repo),
+        /* wait */ 1000,
+        /* immediate */ false,
+      )
+    );
+    this._subscriptionForRepository.set(repo, subscription);
+  }
+
+  _onDidChangeStatusesForRepository(repo: Repository) {
+    // This is the method we are concerned about being called too often, so we gate its execution
+    // on the state of the "Use experimental Hg integration" checkbox. Once we are confident that
+    // our Hg integration will not abuse the user's CPU, we will remove this option.
+    if (!atom.config.get('nuclide-file-tree-deux.enableExperimentalVcsIntegration')) {
+      return;
+    }
+
+    for (let rootKey of this._rootKeysForRepository.get(repo)) {
+      let statusForNodeKey = {};
+      for (let fileTreeNode of this._store.getVisibleNodes(rootKey)) {
+        let {nodeKey} = fileTreeNode;
+        statusForNodeKey[nodeKey] = fileTreeNode.isContainer
+          ? repo.getDirectoryStatus(nodeKey)
+          : statusForNodeKey[nodeKey] = repo.getCachedPathStatus(nodeKey);
+      }
+      this._actions.setVcsStatuses(rootKey, statusForNodeKey);
+    }
+  }
+
+  _removeSubscriptionForOldRepository(repo: Repository) {
+    this._repositories.delete(repo);
+    var disposable = this._subscriptionForRepository.get(repo);
+    if (!disposable) {
+      // There is a small chance that the add/remove of the Repository could happen so quickly that
+      // the entry for the repo in _subscriptionForRepository has not been set yet.
+      // TODO: Report a soft error for this.
+      return;
+    }
+
+    this._subscriptionForRepository.delete(repo);
+    disposable.dispose();
   }
 
   _setVisibility(shouldBeVisible: boolean): void {
@@ -636,6 +799,9 @@ class FileTreeController {
 
   destroy(): void {
     this._subscriptions.dispose();
+    for (let disposable of this._subscriptionForRepository.values()) {
+      disposable.dispose();
+    }
     this._store.reset();
     React.unmountComponentAtNode(this._panelElement);
     this._panel.destroy();

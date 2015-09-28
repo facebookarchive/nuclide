@@ -52,6 +52,7 @@ type StoreData = {
   rootKeys: Array<string>;
   selectedKeysByRoot: { [key: string]: Immutable.OrderedSet<string> };
   subscriptionMap: { [key: string]: Disposable };
+  vcsStatusesByRoot: { [key: string]: Immutable.Map<string, number> };
 };
 
 export type ExportStoreData = {
@@ -152,6 +153,7 @@ class FileTreeStore {
       rootKeys: [],
       selectedKeysByRoot: {},
       subscriptionMap: {},
+      vcsStatusesByRoot: {},
     };
   }
 
@@ -180,6 +182,9 @@ class FileTreeStore {
         break;
       case ActionType.CREATE_CHILD:
         this._createChild(payload.nodeKey, payload.childKey);
+        break;
+      case ActionType.SET_VCS_STATUSES:
+        this._setVcsStatuses(payload.rootKey, payload.vcsStatuses);
         break;
     }
   }
@@ -251,9 +256,23 @@ class FileTreeStore {
     return this.getSelectedKeys(rootKey).has(nodeKey);
   }
 
+  _setVcsStatuses(rootKey: string, vcsStatuses: {[path: string]: number}) {
+    var immutableVcsStatuses = new Immutable.Map(vcsStatuses);
+    if (!Immutable.is(immutableVcsStatuses, this._data.vcsStatusesByRoot[rootKey])) {
+      this._set(
+        'vcsStatusesByRoot',
+        setProperty(this._data.vcsStatusesByRoot, rootKey, immutableVcsStatuses)
+      );
+    }
+  }
+
   getVcsStatusCode(rootKey: string, nodeKey: string): ?number {
-    // TODO(mbolin): Deduce from this._data.
-    return null;
+    var map = this._data.vcsStatusesByRoot[rootKey];
+    if (map) {
+      return map.get(nodeKey);
+    } else {
+      return null;
+    }
   }
 
   /**
@@ -297,6 +316,49 @@ class FileTreeStore {
       selectedKeys = this._data.selectedKeysByRoot[rootKey] || new Immutable.OrderedSet();
     }
     return selectedKeys;
+  }
+
+  /**
+   * Returns a list of the nodes that are currently visible/expanded in the file tree.
+   *
+   * This method returns an array synchronously (rather than an iterator) to ensure the caller
+   * gets a consistent snapshot of the current state of the file tree.
+   */
+  getVisibleNodes(rootKey: string): Array<FileTreeNode> {
+    // Do some basic checks to ensure that rootKey corresponds to a root and is expanded. If not,
+    // return the appropriate array.
+    if (!this.isRootKey(rootKey)) {
+      return [];
+    }
+    if (!this.isExpanded(rootKey, rootKey)) {
+      return [this.getNode(rootKey, rootKey)];
+    }
+
+    // Note that we could cache the visibleNodes array so that we do not have to create it from
+    // scratch each time this is called, but it does not appear to be a bottleneck at present.
+    var visibleNodes = [];
+    var rootKeysForDirectoriesToExplore = [rootKey];
+    while (rootKeysForDirectoriesToExplore.length !== 0) {
+      const key = rootKeysForDirectoriesToExplore.pop();
+      visibleNodes.push(this.getNode(key, key));
+      var childKeys = this._data.childKeyMap[key];
+      if (childKeys == null || this._data.isDirtyMap[key]) {
+        // This is where getChildKeys() would fetch, but we do not want to do that.
+        // TODO: If key is in isDirtyMap, then retry when it is not dirty?
+        continue;
+      }
+
+      for (var childKey of childKeys) {
+        if (FileTreeHelpers.isDirKey(childKey)) {
+          if (this.isExpanded(rootKey, key)) {
+            rootKeysForDirectoriesToExplore.push(childKey);
+          }
+        } else {
+          visibleNodes.push(this.getNode(key, childKey));
+        }
+      }
+    }
+    return visibleNodes;
   }
 
   /**
@@ -664,6 +726,7 @@ class FileTreeStore {
       });
       this._set('childKeyMap', deleteProperty(this._data.childKeyMap, rootKey));
     }
+    this._set('vcsStatusesByRoot', deleteProperty(this._data.vcsStatusesByRoot, rootKey));
   }
 
   _setTrackedNode(rootKey: string, nodeKey: string): void {
