@@ -16,6 +16,8 @@ var GUTTER_ID = 'nuclide-diagnostics-gutter';
 // Needs to be the same as glyph-height in gutter.atom-text-editor.less.
 const GLYPH_HEIGHT = 15; // px
 
+const POPUP_DISPOSE_TIMEOUT = 100;
+
 // TODO(mbolin): Make it so that when mousing over an element with this CSS class (or specifically,
 // the child element with the "region" CSS class), we also do a showPopupFor(). This seems to be
 // tricky given how the DOM of a TextEditor works today. There are div.tile elements, each of which
@@ -141,6 +143,12 @@ function createGutterItem(
   item.className = gutterMarkerCssClass;
   let popupElement = null;
   let paneItemSubscription = null;
+  let disposeTimeout = null;
+  const clearDisposeTimeout = () => {
+    if (disposeTimeout) {
+      clearTimeout(disposeTimeout);
+    }
+  };
   const dispose = () => {
     if (popupElement) {
       React.unmountComponentAtNode(popupElement);
@@ -151,6 +159,7 @@ function createGutterItem(
       paneItemSubscription.dispose();
       paneItemSubscription = null;
     }
+    clearDisposeTimeout();
   };
   const goToLocation = (path: string, line: number) => {
     // Before we jump to the location, we want to close the popup.
@@ -167,8 +176,16 @@ function createGutterItem(
     dispose();
     popupElement = showPopupFor(messages, item, goToLocation);
     popupElement.addEventListener('mouseleave', dispose);
+    popupElement.addEventListener('mouseenter', clearDisposeTimeout);
     // This makes sure that the popup disappears when you ctrl+tab to switch tabs.
     paneItemSubscription = atom.workspace.onDidChangeActivePaneItem(dispose);
+  });
+  item.addEventListener('mouseleave', event => {
+    // When the popup is shown, we want to dispose it if the user manages to move the cursor off of
+    // the gutter glyph without moving it onto the popup. Even though the popup appears above (as in
+    // Z-index above) the gutter glyph, if you move the cursor such that it is only above the glyph
+    // for one frame you can cause the popup to appear without the mouse ever entering it.
+    disposeTimeout = setTimeout(dispose, POPUP_DISPOSE_TIMEOUT);
   });
   return {item, dispose};
 }
