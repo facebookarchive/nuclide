@@ -47,7 +47,9 @@ class HhvmToolbar extends React.Component {
   }
 
   componentWillReceiveProps(nextProps: Object) {
-    this.refs.debugTarget.setText(this._getDebugTarget(this.state.selectedIndex, nextProps.targetFilePath));
+    this.refs.debugTarget.setText(
+      this._getDebugTarget(this.state.selectedIndex, nextProps.targetFilePath)
+    );
   }
 
   render(): ReactElement {
