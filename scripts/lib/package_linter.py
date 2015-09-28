@@ -64,9 +64,11 @@ class PackageLinter(object):
         is_python_2_7_or_later = sys.version_info >= (2, 7)
         self._preserves_json_property_order = is_python_2_7_or_later
         self._supports_config_parser_allow_no_value = is_python_2_7_or_later
-        self._current_package_json = None
+        self._current_file_being_linted = None
 
     def validate_packages(self):
+        self.validate_all_packages()
+
         for package_name in self._package_map:
             if not self.is_whitelisted_package(package_name):
                 package = self._package_map[package_name]
@@ -76,10 +78,14 @@ class PackageLinter(object):
                 # a "global". However, that would make this class harder to subclass. Fortunately,
                 # this logic is very fast, so it doesn't seem like we'll have to make it
                 # multi-threaded any time soon, so we can get away with sharing this field.
-                self._current_package_json = os.path.join(
+                self._current_file_being_linted = os.path.join(
                         package['packageRootAbsolutePath'], 'package.json')
                 self.validate_package(package_name, package)
         return not self._had_error
+
+    def validate_all_packages(self):
+        '''This method can be overridden by subclasses.'''
+        pass
 
     def is_whitelisted_package(self, package_name):
         return False
@@ -374,5 +380,5 @@ class PackageLinter(object):
         return ['nuclide-', 'hyperclick']
 
     def report_error(self, message, *args):
-        logging.error('PACKAGE ERROR (' + self._current_package_json + '): ' + message, *args)
+        logging.error('PACKAGE ERROR (' + self._current_file_being_linted + '): ' + message, *args)
         self._had_error = True
