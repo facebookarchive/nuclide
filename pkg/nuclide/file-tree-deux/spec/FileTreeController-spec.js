@@ -117,7 +117,7 @@ describe('FileTreeController', () => {
     });
   });
 
-  describe('navigating with the arrow keys', () => {
+  describe('navigating with the keyboard', () => {
     const rootKey = pathModule.join(__dirname, 'fixtures') + '/';
     const dir1Key = pathModule.join(__dirname, 'fixtures/dir1') + '/';
     const fooTxtKey = pathModule.join(__dirname, 'fixtures/dir1/foo.txt');
@@ -286,7 +286,7 @@ describe('FileTreeController', () => {
       });
 
       describe('via _moveDown', () => {
-        it('selects the previous nested descendant if one exists', () => {
+        it('selects the previous nested descendant when one exists', () => {
           actions.selectSingleNode(rootKey, fooTxtKey);
           expect(store.isSelected(rootKey, fooTxtKey)).toEqual(true);
           controller._moveDown();
@@ -297,13 +297,35 @@ describe('FileTreeController', () => {
       });
 
       describe('via _moveUp', () => {
-        it('selects the previous nested descendant if one exists', () => {
+        it('selects the previous nested descendant when one exists', () => {
           actions.selectSingleNode(rootKey, dir2Key);
           expect(store.isSelected(rootKey, dir2Key)).toEqual(true);
           controller._moveUp();
 
           // foo.txt is the previous visible descendant to dir2
           expect(store.isSelected(rootKey, fooTxtKey)).toEqual(true);
+        });
+      });
+
+      describe('via _moveToTop', () => {
+        it('selects the root', () => {
+          actions.selectSingleNode(rootKey, dir2Key);
+          expect(store.isSelected(rootKey, dir2Key)).toEqual(true);
+          controller._moveToTop();
+
+          // the root is the topmost node
+          expect(store.isSelected(rootKey, rootKey)).toEqual(true);
+        });
+      });
+
+      describe('via _moveToBottom', () => {
+        it('selects the bottommost node', () => {
+          actions.selectSingleNode(rootKey, rootKey);
+          expect(store.isSelected(rootKey, rootKey)).toEqual(true);
+          controller._moveToBottom();
+
+          // dir2 is the bottommost node
+          expect(store.isSelected(rootKey, dir2Key)).toEqual(true);
         });
       });
     });

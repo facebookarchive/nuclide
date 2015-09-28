@@ -18,13 +18,13 @@ var {isFullyQualifiedLocalPath} = require('./FileTreeHelpers');
 type MenuItemSingle = {
   label: string;
   command: string;
-  shouldDisplay: ?() => boolean;
+  shouldDisplay?: () => boolean;
 };
 
 type MenuItemGroup = {
   label: string;
   submenu: Array<MenuItemDefinition>;
-  shouldDisplay: ?() => boolean;
+  shouldDisplay?: () => boolean;
 };
 
 type MenuItemSeparator = {
@@ -43,6 +43,9 @@ class FileTreeContextMenu {
     this._addContextMenuItemGroup([
       {
         label: 'New',
+        shouldDisplay: () => {
+          return this._store.getSelectedKeys().size > 0;
+        },
         submenu: [
           {
             label: 'File',
