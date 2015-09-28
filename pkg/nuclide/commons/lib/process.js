@@ -121,7 +121,14 @@ function monitorStreamErrors(process: child_process$ChildProcess, command, args,
     process[streamName].on('error', error => {
       // This can happen without the full execution of the command to fail,
       // but we want to learn about it.
-      logError('stream error with command:', command, args, options, 'error:', error);
+      logError(
+        `stream error on stream ${streamName} with command:`,
+        command,
+        args,
+        options,
+        'error:',
+        error,
+      );
     });
   });
 }
