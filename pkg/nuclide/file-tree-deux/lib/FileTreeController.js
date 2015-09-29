@@ -26,6 +26,7 @@ var React = require('react-for-atom');
 var {debounce} = require('nuclide-commons');
 var os = require('os');
 var pathUtil = require('path');
+var {repositoryForPath} = require('nuclide-hg-git-bridge');
 var shell = require('shell');
 
 type FileTreeNodeData = {
@@ -201,7 +202,7 @@ class FileTreeController {
     rootDirectories: Array<atom$Directory>,
   ): Promise<void> {
     var nullableRepos: Array<?Repository> = await Promise.all(rootDirectories.map(
-      directory => atom.project.repositoryForDirectory(directory)
+      directory => repositoryForPath(directory.getPath())
     ));
 
     var rootKeysForRepo: Map<Repository, Set<string>> = new Map();
