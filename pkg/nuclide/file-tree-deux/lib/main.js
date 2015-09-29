@@ -47,10 +47,6 @@ class Activation {
   constructor(state: ?FileTreeControllerState) {
     this._packageState = state;
     this._subscriptions = new CompositeDisposable();
-    this._subscriptions.add(
-      atom.config.observe('nuclide-file-tree-deux.enabled', () => this._update())
-    );
-    this._update();
   }
 
   dispose() {
@@ -61,16 +57,6 @@ class Activation {
   serialize(): ?FileTreeControllerState {
     if (this._fileTreeController) {
       return this._fileTreeController.serialize();
-    }
-  }
-
-  // This will activate or deactivate based on the config setting.
-  _update() {
-    var configEnabled = atom.config.get('nuclide-file-tree-deux.enabled');
-    if (configEnabled) {
-      this._activate();
-    } else {
-      this._deactivate();
     }
   }
 
@@ -135,12 +121,6 @@ var activation: ?Activation = null;
 
 module.exports = {
   config: {
-    enabled: {
-      type: 'boolean',
-      default: false,
-      description: 'Use new File Tree (experimental)',
-    },
-
     enableExperimentalVcsIntegration: {
       type: 'boolean',
       default: false,

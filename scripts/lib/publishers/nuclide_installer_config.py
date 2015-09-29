@@ -10,6 +10,12 @@ from json_helpers import json_load
 
 # These Atom packages will be excluded from installation.
 PACKAGES_TO_EXCLUDE = set([
+    # Until nuclide-file-tree-deux replaces nuclide-file-tree, users will be
+    # required to install nuclide-file-tree-deux on their own. This is intended
+    # to be a very short term change: ideally we will fix this before the next
+    # public release of Nuclide.
+    'nuclide-file-tree-deux',
+
     # Note that it is important to exclude the nuclide-installer from the list.
     # We don't want it to try to install itself!
     'nuclide-installer',
