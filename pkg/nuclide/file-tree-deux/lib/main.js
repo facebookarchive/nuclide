@@ -47,6 +47,18 @@ class Activation {
   constructor(state: ?FileTreeControllerState) {
     this._packageState = state;
     this._subscriptions = new CompositeDisposable();
+
+    var FileTreeController = require('./FileTreeController');
+    this._fileTreeController = new FileTreeController(this._packageState);
+
+    const revealSetting = 'nuclide-file-tree-deux.revealFileOnSwitch';
+    // Flow does not know that this setting is a boolean, thus the cast.
+    this._setRevealOnFileSwitch(((atom.config.get(revealSetting): any): boolean));
+    this._subscriptions.add(
+      atom.config.observe(revealSetting, this._setRevealOnFileSwitch.bind(this))
+    );
+
+    require('nuclide-analytics').track('filetreedeux-enable');
   }
 
   dispose() {
@@ -57,23 +69,6 @@ class Activation {
   serialize(): ?FileTreeControllerState {
     if (this._fileTreeController) {
       return this._fileTreeController.serialize();
-    }
-  }
-
-  _activate() {
-    // Guard against activate being called twice
-    if (!this._fileTreeController) {
-      var FileTreeController = require('./FileTreeController');
-      this._fileTreeController = new FileTreeController(this._packageState);
-
-      const revealSetting = 'nuclide-file-tree-deux.revealFileOnSwitch';
-      // Flow does not know that this setting is a boolean, thus the cast.
-      this._setRevealOnFileSwitch(((atom.config.get(revealSetting): any): boolean));
-      this._subscriptions.add(
-        atom.config.observe(revealSetting, this._setRevealOnFileSwitch.bind(this))
-      );
-
-      require('nuclide-analytics').track('filetreedeux-enable');
     }
   }
 
