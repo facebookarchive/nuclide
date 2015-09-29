@@ -20,6 +20,7 @@ var varArgs = process.argv.slice(2);
 var args = [
   '--harmony',
   runJasmineTests,
+  '--forceexit',
 ].concat(varArgs);
 
 var testInfo = 'cd ' + process.cwd() + ' && node ' + args.join(' ');
