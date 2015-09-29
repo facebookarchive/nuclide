@@ -74,8 +74,8 @@ class TextCallbackContainer<CallbackArg> {
   }
 
   addCallback(
-      grammarScopes: Array<string> | 'all',
-      events: Array<Event>,
+      grammarScopes: Iterable<string> | 'all',
+      events: Iterable<Event>,
       callback: (arg: CallbackArg) => mixed
       ): void {
     if (grammarScopes === 'all') {
@@ -95,8 +95,8 @@ class TextCallbackContainer<CallbackArg> {
   // remove the callbacks, maintaining the invariant that there should be no
   // empty maps or sets in this._callbacks
   removeCallback(
-      grammarScopes: Array<string> | 'all',
-      events: Array<Event>,
+      grammarScopes: Iterable<string> | 'all',
+      events: Iterable<Event>,
       callback: (arg: CallbackArg) => mixed
       ): void {
     if (grammarScopes === 'all') {
@@ -115,7 +115,7 @@ class TextCallbackContainer<CallbackArg> {
 
   _addToEventMap(
       eventMap: Map<Event, Set<(arg: CallbackArg) => mixed>>,
-      events: Array<Event>,
+      events: Iterable<Event>,
       callback: (arg: CallbackArg) => mixed): void {
     for (var event of events) {
       var callbackSet = eventMap.get(event);
@@ -129,7 +129,7 @@ class TextCallbackContainer<CallbackArg> {
 
   _removeFromEventMap(
       eventMap: Map<Event, Set<(arg: CallbackArg) => mixed>>,
-      events: Array<Event>,
+      events: Iterable<Event>,
       callback: (arg: CallbackArg) => mixed): void {
     for (var event of events) {
       var callbackSet = eventMap.get(event);
@@ -150,7 +150,7 @@ class TextCallbackContainer<CallbackArg> {
  * saved.
  *
  * Both methods take two arguments:
- * - An Array of grammars for which the DiagnosticProvider can provide
+ * - An Iterable of grammars for which the DiagnosticProvider can provide
  * diagnostics.
  * - The callback to be called on a text event.
  *
@@ -172,7 +172,11 @@ class TextEventDispatcher {
     this._pendingEvents = new WeakMap();
   }
 
-  _onEvents(grammarScopes: Array<string> | 'all', events: Array<Event>, callback: EventCallback) {
+  _onEvents(
+    grammarScopes: Iterable<string> | 'all',
+    events: Iterable<Event>,
+    callback: EventCallback,
+  ) {
     if (this._callbackContainer.isEmpty()) {
       this._registerEditorListeners();
     }
@@ -191,14 +195,14 @@ class TextEventDispatcher {
     return disposables;
   }
 
-  onFileChange(grammarScopes: Array<string>, callback: EventCallback): atom$Disposable {
+  onFileChange(grammarScopes: Iterable<string>, callback: EventCallback): atom$Disposable {
     return this._onEvents(grammarScopes, FILE_CHANGE_EVENTS, callback);
   }
   onAnyFileChange(callback: EventCallback): atom$Disposable {
     return this._onEvents('all', FILE_CHANGE_EVENTS, callback);
   }
 
-  onFileSave(grammarScopes: Array<string>, callback: EventCallback): atom$Disposable {
+  onFileSave(grammarScopes: Iterable<string>, callback: EventCallback): atom$Disposable {
     return this._onEvents(grammarScopes, FILE_SAVE_EVENTS, callback);
   }
 

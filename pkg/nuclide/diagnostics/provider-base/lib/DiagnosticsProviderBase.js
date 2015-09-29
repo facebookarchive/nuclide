@@ -66,7 +66,10 @@ class DiagnosticsProviderBase {
   _newUpdateSubscriberCallback: (callback: MessageUpdateCallback) => mixed;
   _newInvalidateSubscriberCallback: (callback: MessageInvalidationCallback) => mixed;
 
-  constructor(options: ProviderBaseOptions, textEventDispatcher?: TextEventDispatcher = getTextEventDispatcher()) {
+  constructor(
+    options: ProviderBaseOptions,
+    textEventDispatcher?: TextEventDispatcher = getTextEventDispatcher(),
+  ) {
     this._textEventDispatcher = textEventDispatcher;
     this._emitter = new Emitter();
     this._disposables = new CompositeDisposable();
