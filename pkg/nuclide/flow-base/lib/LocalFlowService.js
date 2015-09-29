@@ -264,7 +264,7 @@ class LocalFlowService extends FlowService {
 
     line = line + 1;
     column = column + 1;
-    var args = ['type-at-pos', '--json', line, column];
+    var args = ['type-at-pos', '--json', '--path', file, line, column];
 
     var output;
     try {
