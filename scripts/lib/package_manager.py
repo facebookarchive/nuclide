@@ -97,7 +97,7 @@ class PackageManager(object):
         all_deps = {}
         config = create_config_for_package(package_json)
         if not config:
-            # This must be a legacy package. Grr.
+            # config is None: this must be a transitive dependency of a Nuclide package.
             package = json_load(package_json)
             config = {
               'dependencies': package.get('dependencies', {}),
@@ -173,19 +173,10 @@ def load_package_configs():
     # Load packages under the pkg/ directory.
     for path in find_packages():
         config = create_config_for_package(path)
+        # config will be None for packages such as sample packages.
         if config:
             # Update the map now that the config is complete.
             package_map[config['name']] = config
-
-    # Special-case some legacy package-loading code.
-    include_legacy_packages = None
-    try:
-        from fb.legacy_config_loader import legacy_config_loader
-        include_legacy_packages = legacy_config_loader
-    except Exception as e:
-        pass
-    if include_legacy_packages:
-        include_legacy_packages(package_map)
 
     # Now that all of the packages have entries in the package_map, use the keys of the package_map
     # to populate the localDependencies array of each config.

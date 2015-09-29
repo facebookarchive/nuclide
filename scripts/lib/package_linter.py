@@ -130,7 +130,7 @@ class PackageLinter(object):
             if package_name.startswith(prefix):
                 has_valid_prefix = True
                 break
-        if not has_valid_prefix and not 'isLegacyPackage' in package:
+        if not has_valid_prefix:
             self.report_error('Package name %s must start with one of %s', package_name, prefixes)
 
         if not package['isNodePackage']:
