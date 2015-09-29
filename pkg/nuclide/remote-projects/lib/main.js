@@ -150,15 +150,22 @@ function getRemoteRootDirectories() {
  * for the same file, because Atom doesn't cache pending opener promises.
  */
 async function createEditorForNuclide(connection: RemoteConnection, uri: string): TextEditor {
-  var NuclideTextBuffer = require('./NuclideTextBuffer');
-
-  var buffer = new NuclideTextBuffer(connection, {filePath: uri});
-  buffer.setEncoding(atom.config.get('core.fileEncoding'));
-  try {
-    await buffer.load();
-  } catch(err) {
-    getLogger().warn('buffer load issue:', err);
-    throw err;
+  const existingEditor = atom.workspace.getTextEditors().filter(textEditor => {
+    return textEditor.getPath() === uri;
+  })[0];
+  let buffer = null;
+  if (existingEditor) {
+    buffer = existingEditor.getBuffer();
+  } else {
+    const NuclideTextBuffer = require('./NuclideTextBuffer');
+    buffer = new NuclideTextBuffer(connection, {filePath: uri});
+    buffer.setEncoding(atom.config.get('core.fileEncoding'));
+    try {
+      await buffer.load();
+    } catch(err) {
+      getLogger().warn('buffer load issue:', err);
+      throw err;
+    }
   }
   return new TextEditor(/*editorOptions*/ {buffer, registerEditor: true});
 }
