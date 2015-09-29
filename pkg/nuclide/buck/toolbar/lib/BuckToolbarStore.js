@@ -26,9 +26,11 @@ var BuckToolbarActions = require('./BuckToolbarActions');
 type BuckRunDetails = {
   pid?: number;
 };
-import type {ProcessOutputDataHandlers} from 'nuclide-process-output-store/types';
+import type {ProcessOutputDataHandlers} from 'nuclide-process-output-store/lib/types';
 
-var BUCK_PROCESS_ID_REGEX = /lldb -p ([0-9]+)/;
+const BUCK_PROCESS_ID_REGEX = /lldb -p ([0-9]+)/;
+const BUILD_PROGRESS_UPDATED = 'BUILD_PROGRESS_UPDATED';
+const PARSE_PROGRESS_UPDATED = 'PARSE_PROGRESS_UPDATED';
 
 class BuckToolbarStore {
 
@@ -70,12 +72,12 @@ class BuckToolbarStore {
     return this._emitter.on('RESET_TOOLBAR_PROGRESS', callback);
   }
 
-  onRulesCountCalculated(callback: () => void): Disposable {
-    return this._emitter.on('RULES_COUNT_CALCULATED', callback);
+  onParseProgressUpdated(callback: (percentage: number) => void): Disposable {
+    return this._emitter.on(PARSE_PROGRESS_UPDATED, callback);
   }
 
-  onRulesCountChanged(callback: () => void): Disposable {
-    return this._emitter.on('RULES_COUNT_CHANGED', callback);
+  onBuildProgressUpdated(callback: (percentage: number) => void): Disposable {
+    return this._emitter.on(BUILD_PROGRESS_UPDATED, callback);
   }
 
   onBuildFinished(callback: () => void): Disposable {
@@ -267,7 +269,6 @@ class BuckToolbarStore {
       var uri = `ws://localhost:${httpPort}/ws/build`;
       var ws = new WebSocket(uri);
       var buildId: ?string = null;
-      var ruleCount = 0;
       var isFinished = false;
 
       ws.onmessage = (e) => {
@@ -279,7 +280,6 @@ class BuckToolbarStore {
               `Buck was likely killed while building ${buildTarget}.`);
           return;
         }
-
         var type = message['type'];
         if (buildId === null) {
           if (type === 'BuildStarted') {
@@ -293,10 +293,10 @@ class BuckToolbarStore {
           return;
         }
 
-        if (type === 'RuleCountCalculated') {
-          this._emitter.emit('RULES_COUNT_CALCULATED', message['numRules']);
-        } else if (type === 'BuildRuleFinished') {
-          this._emitter.emit('RULES_COUNT_CHANGED', ++ruleCount);
+        if (type === 'BuildProgressUpdated') {
+          this._emitter.emit(BUILD_PROGRESS_UPDATED, message.progressValue);
+        } else if (type === 'ParsingProgressUpdated') {
+          this._emitter.emit(PARSE_PROGRESS_UPDATED, message.progressValue);
         } else if (type === 'BuildFinished') {
           this._emitter.emit('BUILD_FINISHED');
           isFinished = true;

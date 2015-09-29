@@ -41,7 +41,6 @@ class BuckToolbar extends React.Component {
       buildTarget: this.props.initialBuildTarget,
       isBuilding: false,
       currentProgress: 0,
-      maxProgress: 100,
     };
     this._handleBuildTargetChange = debounce(this._handleBuildTargetChange.bind(this), 100, false);
     this._handleSimulatorChange = this._handleSimulatorChange.bind(this);
@@ -62,12 +61,12 @@ class BuckToolbar extends React.Component {
 
     this._disposables.add(this._buckToolbarStore.onResetToolbarProgress(
       this._resetToolbarProgress.bind(this)));
-    this._disposables.add(this._buckToolbarStore.onRulesCountCalculated(
-      this.setMaxProgressAndResetProgress.bind(this)));
-    this._disposables.add(this._buckToolbarStore.onRulesCountChanged(
+    this._disposables.add(this._buckToolbarStore.onParseProgressUpdated(
+      this.setCurrentProgress.bind(this)));
+    this._disposables.add(this._buckToolbarStore.onBuildProgressUpdated(
       this.setCurrentProgress.bind(this)));
     this._disposables.add(this._buckToolbarStore.onBuildFinished(
-      this.setCurrentProgressToMaxProgress.bind(this)));
+      this.setCurrentProgress.bind(this, 1.0)));
     this._disposables.add(this._buckToolbarStore.onBuckCommandFinished(
       this._hideProgressBar.bind(this)));
     this._disposables.add(this._buckToolbarStore.onBuildTargetRuleTypeChanged(
@@ -79,7 +78,7 @@ class BuckToolbar extends React.Component {
   }
 
   _resetToolbarProgress() {
-    this.setMaxProgressAndResetProgress(0);
+    this.setCurrentProgress(0);
   }
 
   _hideProgressBar() {
@@ -88,14 +87,6 @@ class BuckToolbar extends React.Component {
 
   setCurrentProgress(currentProgress: number) {
     this.setState({currentProgress});
-  }
-
-  setMaxProgressAndResetProgress(maxProgress: number) {
-    this.setState({currentProgress: 0, maxProgress});
-  }
-
-  setCurrentProgressToMaxProgress() {
-    this.setCurrentProgress(this.state.maxProgress);
   }
 
   _onActivePaneItemChanged(item: mixed) {
@@ -128,7 +119,6 @@ class BuckToolbar extends React.Component {
         <progress
           className="inline-block buck-toolbar-progress-bar"
           value={this.state.currentProgress}
-          max={this.state.maxProgress}
         />;
     }
     return (
