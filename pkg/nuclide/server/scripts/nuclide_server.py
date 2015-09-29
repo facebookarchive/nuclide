@@ -37,10 +37,11 @@ class NuclideServer(object):
         self.port = port
         self._proc = proc
         # TODO: really support workspace.
-        if workspace is not None and os.path.exists(workspace):
+        self.workspace = None
+        if workspace is not None:
+          workspace = os.path.expanduser(workspace)
+          if os.path.exists(workspace):
             self.workspace = os.path.realpath(workspace)
-        else:
-            self.workspace = None
 
     # Get Nuclide server process info from ps.
     # Return a list of process info.
