@@ -11,6 +11,8 @@ import subprocess
 
 from multiprocessing import Pool, cpu_count
 
+APM_TEST_WRAPPER = os.path.realpath(os.path.join(os.path.dirname(__file__),
+                                                 'run-apm-test-with-timeout'))
 
 class JsTestRunner(object):
     def __init__(self, package_manager, include_apm=True, packages_to_test=[], verbose=False):
@@ -80,12 +82,10 @@ def run_js_test(test_runner, pkg_path, name):
     """Run `apm test` or `npm test` in the given pkg_path."""
 
     logging.info('Running `%s test` in %s...', test_runner, pkg_path)
-
-    # Add --one option to `apm test` to ensure no deprecated APIs are used:
-    # http://blog.atom.io/2015/05/01/removing-deprecated-apis.html.
-    test_args = [test_runner, 'test']
     if test_runner == 'apm':
-        test_args += ['--one']
+        test_args = ['node', '--harmony', APM_TEST_WRAPPER, pkg_path]
+    else:
+        test_args = ['npm', 'test']
 
     proc = subprocess.Popen(
             test_args,
