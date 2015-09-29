@@ -9,13 +9,11 @@
  * the root directory of this source tree.
  */
 
-var url = require('url');
-var path = require('path');
 var defaultConfig: ?any = null;
 
 var dialogPromiseQueue: ?PromiseQueue = null;
 
-function openConnectionDialog(props): Promise<?RemoteConnection> {
+export function openConnectionDialog(props): Promise<?RemoteConnection> {
   var {extend, PromiseQueue} = require('nuclide-commons');
   if (!dialogPromiseQueue) {
     dialogPromiseQueue = new PromiseQueue();
@@ -31,6 +29,8 @@ function openConnectionDialog(props): Promise<?RemoteConnection> {
     var defaultConnectionSettings = getDefaultConfig().getConnectionDialogDefaultSettings();
 
     function saveConfig(config: SshConnectionConfiguration) {
+      // Don't store user's password.
+      config = {...config, password: ''};
       atom.config.set('nuclide.lastConnectionDetails', {
         config,
         // Save last official command to detect upgrade.
@@ -82,5 +82,3 @@ function getDefaultConfig(): any {
   }
   return defaultConfig;
 }
-
-module.exports = {openConnectionDialog};
