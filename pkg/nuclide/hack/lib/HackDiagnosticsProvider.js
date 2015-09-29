@@ -11,7 +11,7 @@
 
 import {trackTiming} from 'nuclide-analytics';
 
-var {findDiagnostics, getCachedHackLanguageForUri} = require('./hack');
+var {findDiagnostics, getHackLanguageForUri, getCachedHackLanguageForUri} = require('./hack');
 var {RequestSerializer} = require('nuclide-commons').promises;
 var {DiagnosticsProviderBase} = require('nuclide-diagnostics-provider-base');
 var {Range} = require('atom');
@@ -125,8 +125,10 @@ class HackDiagnosticsProvider {
     }
 
     var diagnostics = result;
-    var hackLanguage = await getCachedHackLanguageForUri(textEditor.getPath());
-    invariant(hackLanguage);
+    var hackLanguage = await getHackLanguageForUri(textEditor.getPath());
+    if (!hackLanguage) {
+      return;
+    }
 
     this._providerBase.publishMessageInvalidation({scope: 'file', filePaths: [filePath]});
     this._invalidatePathsForHackLanguage(hackLanguage);
