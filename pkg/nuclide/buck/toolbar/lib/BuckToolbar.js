@@ -121,7 +121,7 @@ class BuckToolbar extends React.Component {
   }
 
   render(): ReactElement {
-    var disabled = !this.state.buildTarget;
+    var disabled = !this.state.buildTarget || this.state.isBuilding;
     var progressBar;
     if (this.state.isBuilding) {
       progressBar =
