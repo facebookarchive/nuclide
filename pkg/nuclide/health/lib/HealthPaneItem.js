@@ -50,6 +50,7 @@ class HealthPaneItem extends HTMLElement {
   }
 }
 
+// $FlowIssue t8493612
 module.exports = HealthPaneItem = document.registerElement('nuclide-health-item', {
   prototype: HealthPaneItem.prototype,
 });
