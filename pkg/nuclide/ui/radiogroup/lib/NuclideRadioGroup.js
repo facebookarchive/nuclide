@@ -51,7 +51,7 @@ var NuclideRadioGroup = React.createClass({
             checked={i === this.props.selectedIndex}
             name={'radiogroup-' + this.state.uid}
             id={id}
-            onChange={this.props.onSelectedChange.bind(this, i)}
+            onChange={this.props.onSelectedChange.bind(null, i)}
           />
           <label
             className="nuclide-ui-radiogroup-label"
