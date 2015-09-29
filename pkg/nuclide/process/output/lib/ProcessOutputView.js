@@ -66,13 +66,16 @@ class ProcessOutputView extends React.Component {
 
   render(): ReactElement {
     return (
-      <AtomTextEditor
-        ref="process-output-editor"
-        textBuffer={this._textBuffer}
-        gutterHidden={true}
-        readOnly={true}
-        path={PROCESS_OUTPUT_PATH}
-      />
+      <div>
+        {this.props.processOutputViewTopElement}
+        <AtomTextEditor
+          ref="process-output-editor"
+          textBuffer={this._textBuffer}
+          gutterHidden={true}
+          readOnly={true}
+          path={PROCESS_OUTPUT_PATH}
+        />
+      </div>
     );
   }
 }
@@ -80,6 +83,7 @@ class ProcessOutputView extends React.Component {
 ProcessOutputView.propTypes = {
   processOutputStore: React.PropTypes.object.isRequired,
   processOutputHandler: React.PropTypes.func,
+  processOutputViewTopElement: React.PropTypes.element,
 };
 
 module.exports = ProcessOutputView;

@@ -22,6 +22,7 @@ class ProcessOutputWrapper extends NuclideCustomPaneItem {
       <ProcessOutputView
         processOutputStore={options.initialProps.processOutputStore}
         processOutputHandler={options.initialProps.processOutputHandler}
+        processOutputViewTopElement={options.initialProps.processOutputViewTopElement}
       />
     );
   }

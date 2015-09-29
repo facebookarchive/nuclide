@@ -22,10 +22,11 @@ import invariant from 'assert';
 var NUCLIDE_PROCESS_OUTPUT_VIEW_URI = 'atom://nuclide/process-output/';
 var PROCESS_OUTPUT_HANDLER_KEY = 'nuclide-processOutputHandler';
 var PROCESS_OUTPUT_STORE_KEY = 'nuclide-processOutputStore';
+var PROCESS_OUTPUT_VIEW_TOP_ELEMENT = 'nuclide-processOutputViewTopElement';
 type CreateProcessOutputViewOptions = {
-  // Using the constants here results in a syntax error.
-  'nuclide-processOutputHandler': ?ProcessOutputHandler;
-  'nuclide-processOutputStore': ProcessOutputStore;
+  PROCESS_OUTPUT_HANDLER_KEY: ?ProcessOutputHandler;
+  PROCESS_OUTPUT_STORE_KEY: ProcessOutputStore;
+  PROCESS_OUTPUT_VIEW_TOP_ELEMENT: ?ReactElement;
 };
 
 var subscriptions: ?CompositeDisposable;
@@ -52,6 +53,7 @@ function createProcessOutputView(
 ): HTMLElement {
   var processOutputStore = openOptions[PROCESS_OUTPUT_STORE_KEY];
   var processOutputHandler = openOptions[PROCESS_OUTPUT_HANDLER_KEY];
+  var processOutputViewTopElement = openOptions[PROCESS_OUTPUT_VIEW_TOP_ELEMENT];
   var tabTitle = uri.slice(NUCLIDE_PROCESS_OUTPUT_VIEW_URI.length);
 
   var ProcessOutputWrapper = require('./ProcessOutputWrapper');
@@ -61,6 +63,7 @@ function createProcessOutputView(
     initialProps: {
       processOutputStore,
       processOutputHandler,
+      processOutputViewTopElement,
     },
   });
 
@@ -93,10 +96,12 @@ function runCommandInNewPane(
   tabTitle: string,
   processOutputStore: ProcessOutputStore,
   processOutputHandler?: ProcessOutputHandler,
+  processOutputViewTopElement?: ReactElement,
 ): Promise<atom$TextEditor> {
   var openOptions = {
     [PROCESS_OUTPUT_HANDLER_KEY]: processOutputHandler,
     [PROCESS_OUTPUT_STORE_KEY]: processOutputStore,
+    [PROCESS_OUTPUT_VIEW_TOP_ELEMENT]: processOutputViewTopElement,
   };
   // Not documented: the 'options' passed to atom.workspace.open() are passed to the opener.
   // There's no other great way for a consumer of this service to specify a ProcessOutputHandler.
