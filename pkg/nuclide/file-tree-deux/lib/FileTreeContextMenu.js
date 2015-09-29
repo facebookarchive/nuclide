@@ -87,14 +87,6 @@ class FileTreeContextMenu {
         },
       },
       {
-        label: 'Duplicate',
-        command: 'nuclide-file-tree-deux:duplicate-selection',
-        shouldDisplay: () => {
-          var node = this._store.getSingleSelectedNode();
-          return node != null && !node.isContainer;
-        },
-      },
-      {
         label: 'Delete',
         command: 'nuclide-file-tree-deux:remove',
         shouldDisplay: () => {
