@@ -6,6 +6,7 @@
   "description": "Provides the new file tree panel for Nuclide",
   "nuclide": {
     "packageType": "Atom",
+    "testsCannotBeRunInParallel": true,
     "testRunner": "apm"
   },
   "engines": {

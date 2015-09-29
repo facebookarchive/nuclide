@@ -24,6 +24,7 @@ class JsTestRunner(object):
     def run_tests(self):
         apm_tests = []
         npm_tests = []
+        serial_only_tests = []
         flow_tests = []
 
         for package_config in self._package_manager.get_configs():
@@ -41,7 +42,12 @@ class JsTestRunner(object):
                 continue
 
             test_args = (test_runner, pkg_path, name)
-            test_bucket = npm_tests if test_runner == 'npm' else apm_tests
+            if package_config['testsCannotBeRunInParallel']:
+              test_bucket = serial_only_tests
+            elif test_runner == 'npm':
+              test_bucket = npm_tests
+            else:
+              test_bucket = apm_tests
             test_bucket.append(test_args)
 
             if package_config['flowCheck']:
@@ -58,6 +64,7 @@ class JsTestRunner(object):
             # serially after all of the parallel tests have finished.
             parallel_tests = npm_tests + apm_tests + flow_tests
             serial_tests = []
+        serial_tests += serial_only_tests
 
         if parallel_tests:
             pool = Pool(processes=cpu_count())

@@ -6,6 +6,7 @@
   "description": "Remote connections and monitoring",
   "nuclide": {
     "packageType": "Node",
+    "testsCannotBeRunInParallel": true,
     "testRunner": "apm"
   },
   "dependencies": {

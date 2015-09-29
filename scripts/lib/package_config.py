@@ -56,6 +56,7 @@ def create_config_for_manifest(path, manifest):
     config['scripts'] = manifest.get('scripts', {})
     config['packageRootAbsolutePath'] = os.path.dirname(path)
     config['testRunner'] = test_runner
+    config['testsCannotBeRunInParallel'] = nuclide_config.get('testsCannotBeRunInParallel', False)
     config['excludeTestsFromContinuousIntegration'] = disableTests
 
     config['flowCheck'] = flowCheck
