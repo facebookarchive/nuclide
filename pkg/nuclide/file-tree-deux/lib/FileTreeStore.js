@@ -408,7 +408,12 @@ class FileTreeStore {
     var promise = FileTreeHelpers.fetchChildren(nodeKey);
     promise.catch((error) => {
       this._logger.error(`Error fetching children for "${nodeKey}"`, error);
-      // TODO: Notify the user and/or retry.
+      // Collapse the node and clear its loading state on error so the user can retry expanding it.
+      const rootKey = this.getRootForKey(nodeKey);
+      if (rootKey != null) {
+        this._collapseNode(rootKey, nodeKey);
+      }
+      this._clearLoading(nodeKey);
     });
     promise = promise.then(childKeys => {
       // If this node's root went away while the Promise was resolving, do no more work. This node

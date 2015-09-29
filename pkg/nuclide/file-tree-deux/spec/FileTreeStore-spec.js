@@ -9,17 +9,18 @@
  * the root directory of this source tree.
  */
 
-var FileTreeActions = require('../lib/FileTreeActions');
-var FileTreeStore = require('../lib/FileTreeStore');
+import FileTreeActions from '../lib/FileTreeActions';
+import FileTreeStore from '../lib/FileTreeStore';
 
-var pathModule = require('path');
+import pathModule from 'path';
 
 describe('FileTreeStore', () => {
-  const dir1 = pathModule.join(__dirname, 'fixtures/dir1') + '/';
-  const dir2 = pathModule.join(__dirname, 'fixtures/dir2') + '/';
+  const dir1 = pathModule.join(__dirname, 'fixtures', 'dir1') + '/';
+  const fooTxt = pathModule.join(__dirname, 'fixtures', 'dir1', 'foo.txt');
+  const dir2 = pathModule.join(__dirname, 'fixtures', 'dir2') + '/';
 
-  var actions: FileTreeActions = FileTreeActions.getInstance();
-  var store: FileTreeStore = FileTreeStore.getInstance();
+  const actions: FileTreeActions = FileTreeActions.getInstance();
+  const store: FileTreeStore = FileTreeStore.getInstance();
 
   afterEach(() => {
     store.reset();
@@ -171,6 +172,31 @@ describe('FileTreeStore', () => {
       // New selection, which happens on user interaction via select and collapse, resets the
       // tracked node.
       expect(store.getTrackedNode()).toBe(null);
+    });
+  });
+
+  describe('getChildKeys', () => {
+    it("clears loading and expanded states when there's an error fetching children", () => {
+      waitsForPromise(async () => {
+        actions.setRootKeys([dir1]);
+        actions.expandNode(dir1, fooTxt);
+        expect(store.isExpanded(dir1, fooTxt)).toBe(true);
+        store.getChildKeys(dir1, fooTxt);
+        expect(store.isLoading(dir1, fooTxt)).toBe(true);
+
+        try {
+          // Await **internal-only** API because the public `getChildKeys` API hides the fact that
+          // it queues an async fetch. The return value is not relevant to this test, only that its
+          // side effects be awaited.
+          await store._fetchChildKeys(fooTxt);
+        } catch (e) {
+          // This will always throw an exception, but that's irrelevant to this test. The side
+          // effects after this try/catch capture the purpose of this test.
+        }
+
+        expect(store.isExpanded(dir1, fooTxt)).toBe(false);
+        expect(store.isLoading(dir1, fooTxt)).toBe(false);
+      });
     });
   });
 });
