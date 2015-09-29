@@ -56,7 +56,13 @@ function createProcessOutputView(
 
   var ProcessOutputWrapper = require('./ProcessOutputWrapper');
   var hostElement = new ProcessOutputWrapper();
-  hostElement.initialize(processOutputStore, {title: tabTitle, processOutputHandler});
+  hostElement.initialize({
+    title: tabTitle,
+    initialProps: {
+      processOutputStore,
+      processOutputHandler,
+    },
+  });
 
   var processSubscriptions = new CompositeDisposable();
   invariant(processToDisposables);

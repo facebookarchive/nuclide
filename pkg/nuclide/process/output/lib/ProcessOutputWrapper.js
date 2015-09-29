@@ -9,44 +9,21 @@
  * the root directory of this source tree.
  */
 
-import type {ProcessOutputStore} from 'nuclide-process-output-store';
-import type ProcessOutputHandler from './types';
-type ProcessOutputWrapperOptions = {
-  title?: string;
-  processOutputHandler?: ProcessOutputHandler;
-};
-
+import NuclideCustomPaneItem from 'nuclide-ui-pane-item';
 import ProcessOutputView from './ProcessOutputView';
 import React from 'react-for-atom';
 
-class ProcessOutputWrapper extends HTMLElement {
-  _title: ?string;
-  _processOutputStore: ProcessOutputStore;
+import type {NuclideCustomPaneItemOptions} from 'nuclide-ui-pane-item/lib/types';
 
-  /**
-   * @param store The ProcessOutputStore that provides data to this view.
-   * @param options An Object of the form:
-   *   title: (optional) The title to display in the Atom tab that this view opens in.
-   *   processOutputHandler: (optional) A ProcessOutputHandler to pass to the ProcessOutputView.
-   */
-  initialize(store: ProcessOutputStore, options?: ProcessOutputWrapperOptions = {}) {
-    this._processOutputStore = store;
-    this._title = options.title || 'Process Output';
-    React.render(
+class ProcessOutputWrapper extends NuclideCustomPaneItem {
+
+  __renderPaneItem(options: NuclideCustomPaneItemOptions): ReactElement {
+    return (
       <ProcessOutputView
-        processOutputStore={this._processOutputStore}
-        processOutputHandler={options.processOutputHandler}
-      />,
-      this
+        processOutputStore={options.initialProps.processOutputStore}
+        processOutputHandler={options.initialProps.processOutputHandler}
+      />
     );
-  }
-
-  getTitle(): string {
-    return this._title;
-  }
-
-  detachedCallback() {
-    React.unmountComponentAtNode(this);
   }
 }
 
