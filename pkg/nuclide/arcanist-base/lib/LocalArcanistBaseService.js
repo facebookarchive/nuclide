@@ -73,19 +73,34 @@ class LocalArcanistBaseService extends ArcanistBaseService {
     var {asyncExecute} = require('nuclide-commons');
     var result = await asyncExecute('arc', args, options);
 
-    var json;
-    try {
-      json = JSON.parse(result.stdout);
-    } catch (error) {
-      logger.error('Error parsing `arc lint` JSON output', result.stdout);
-      return [];
+    const output: Map<string, Array<Object>> = new Map();
+    // Arc lint outputs multiple JSON objects on mutliple lines. Split them, then merge the
+    // results.
+    for (const line of result.stdout.trim().split('\n')) {
+      let json;
+      try {
+        json = JSON.parse(line);
+      } catch (error) {
+        logger.error('Error parsing `arc lint` JSON output', result.stdout);
+        return [];
+      }
+      for (const path of Object.keys(json)) {
+        const errorsToAdd = json[path];
+        if (!output.has(path)) {
+          output.set(path, []);
+        }
+        let errors = output.get(path);
+        for (const error of errorsToAdd) {
+          errors.push(error);
+        }
+      }
     }
 
     // json is an object where the keys are file paths that are relative to the
     // location of the .arcconfig file. There will be an entry in the map for
     // the file even if there were no lint errors.
     var key = require('path').relative(cwd, pathToFile);
-    var lints = json[key];
+    var lints = output.get(key);
 
     // TODO(7876450): For some reason, this does not work for particular values
     // of pathToFile.
