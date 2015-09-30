@@ -16,7 +16,6 @@ var {
   TextEditor,
 } = require('atom');
 var React = require('react-for-atom');
-var ReadOnlyTextBuffer = require('./ReadOnlyTextBuffer');
 var ReadOnlyTextEditor = require('./ReadOnlyTextEditor');
 
 var {PropTypes} = React;
@@ -26,23 +25,17 @@ class AtomTextEditor extends React.Component {
   _textBuffer: TextBuffer;
   _textEditorModel: TextEditor;
 
-  constructor(props: {[key: string]: mixed}) {
+  constructor(props: Object) {
     super(props);
 
-    var textBuffer = props.textBuffer;
-    if (textBuffer) {
-      this._textBuffer = textBuffer;
-    } else {
-      var TextBufferImpl = props.readOnly ? ReadOnlyTextBuffer : TextBuffer;
-      this._textBuffer = textBuffer = new TextBufferImpl();
-    }
+    this._textBuffer = props.textBuffer || new TextBuffer();
     if (props.path) {
       this._textBuffer.setPath(props.path);
     }
 
     var TextEditorImpl = props.readOnly ? ReadOnlyTextEditor : TextEditor;
     var textEditorModel = new TextEditorImpl({
-      buffer: textBuffer,
+      buffer: this._textBuffer,
       lineNumberGutterVisible: !this.props.gutterHidden,
     });
 

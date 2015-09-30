@@ -39,15 +39,6 @@ describe('nuclide-ui-atom-text-editor', () => {
   describe('when `readOnly`', () => {
 
     var element;
-    var originalClipboardContents;
-
-    beforeEach(() => {
-      originalClipboardContents = atom.clipboard.readWithMetadata();
-    });
-
-    afterEach(() => {
-      atom.clipboard.write(originalClipboardContents.text, originalClipboardContents.metadata);
-    });
 
     describe('is true', () => {
 
@@ -63,6 +54,13 @@ describe('nuclide-ui-atom-text-editor', () => {
         expect(atom.clipboard.read()).toEqual('fraggle');
       });
 
+      it('disallows inserting', () => {
+        var model = element.getModel();
+        model.setText('foobar');
+        model.insertNewline();
+        expect(model.getText()).toEqual('foobar');
+      });
+
       it('disallows pasting', () => {
         var model = element.getModel();
         atom.clipboard.write('foo bar baz');
@@ -76,6 +74,14 @@ describe('nuclide-ui-atom-text-editor', () => {
         model.selectAll();
         model.delete();
         expect(model.getText()).toEqual('balloon');
+      });
+
+      it('disallows backspace', () => {
+        var model = element.getModel();
+        model.setText('foobar');
+        model.moveToEndOfLine();
+        model.backspace();
+        expect(model.getText()).toEqual('foobar');
       });
 
     });
@@ -94,6 +100,13 @@ describe('nuclide-ui-atom-text-editor', () => {
         expect(atom.clipboard.read()).toEqual('fraggle');
       });
 
+      it('allows inserting', () => {
+        var model = element.getModel();
+        model.setText('foobar');
+        model.insertNewline();
+        expect(model.getText()).toEqual('foobar\n');
+      });
+
       it('allows pasting', () => {
         var model = element.getModel();
         atom.clipboard.write('foo bar baz');
@@ -107,6 +120,14 @@ describe('nuclide-ui-atom-text-editor', () => {
         model.selectAll();
         model.delete();
         expect(model.getText()).toEqual('');
+      });
+
+      it('allows backspace', () => {
+        var model = element.getModel();
+        model.setText('foobar');
+        model.moveToEndOfLine();
+        model.backspace();
+        expect(model.getText()).toEqual('fooba');
       });
 
     });

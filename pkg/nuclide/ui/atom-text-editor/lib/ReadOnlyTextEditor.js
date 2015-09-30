@@ -25,6 +25,12 @@ class ReadOnlyTextEditor extends TextEditor {
   // Make pasting in the text editor a no-op to disallow editing (read-only).
   pasteText() {}
 
+  // Make delete key presses in the text editor a no-op to disallow editing (read-only).
+  delete() {}
+
+  // Make backspace key presses in the text editor a no-op to disallow editing (read-only).
+  backspace() {
+  }
 }
 
 module.exports = ReadOnlyTextEditor;
