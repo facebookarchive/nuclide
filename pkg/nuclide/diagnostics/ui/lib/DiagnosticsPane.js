@@ -24,7 +24,7 @@ var TypeToHighlightClassName = {
 };
 
 function locationColumnCellDataGetter(cellDataKey: 'range', diagnostic: DiagnosticMessage): string {
-  return diagnostic.range ? 'Line ' + (diagnostic.range.start.row + 1) : '';
+  return diagnostic.range ? (diagnostic.range.start.row + 1).toString() : '';
 }
 
 function typeColumnCellDataGetter(cellDataKey: 'type', diagnostic: DiagnosticMessage): string {
@@ -173,8 +173,8 @@ class DiagnosticsPane extends React.Component {
           cellRenderer={plainTextColumnCellRenderer}
           dataKey="range"
           maxWidth={100}
-          label="Location"
-          width={75}
+          label="Line"
+          width={50}
         />
         <Column
           align="left"
