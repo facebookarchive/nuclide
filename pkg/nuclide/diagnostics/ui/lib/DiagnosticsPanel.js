@@ -139,6 +139,7 @@ class DiagnosticsPanel extends React.Component {
             </div>
           </div>
           <DiagnosticsPane
+            showFileName={!this.props.filterByActiveTextEditor}
             diagnostics={diagnostics}
             height={paneHeight}
             width={this.props.width}

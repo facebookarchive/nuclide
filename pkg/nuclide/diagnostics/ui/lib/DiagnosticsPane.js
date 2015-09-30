@@ -144,6 +144,21 @@ class DiagnosticsPane extends React.Component {
   render(): ReactElement {
     // TODO(ehzhang): Setting isResizable={true} on columns seems to break things pretty badly.
     // Perhaps this is because we are using react-for-atom instead of react?
+    var fileColumn = null;
+    if (this.props.showFileName) {
+      fileColumn = (
+        <Column
+          align="left"
+          cellDataGetter={fileColumnCellDataGetter}
+          cellRenderer={plainTextColumnCellRenderer}
+          dataKey="filePath"
+          flexGrow={2}
+          headerRenderer={this._renderHeader}
+          label="File"
+          width={100}
+        />
+      );
+    }
     return (
       <Table
         height={this.props.height}
@@ -157,25 +172,6 @@ class DiagnosticsPane extends React.Component {
         rowsCount={this.props.diagnostics.length}
         width={this.props.width}
         >
-        <Column
-          align="left"
-          cellDataGetter={fileColumnCellDataGetter}
-          cellRenderer={plainTextColumnCellRenderer}
-          dataKey="filePath"
-          flexGrow={2}
-          headerRenderer={this._renderHeader}
-          label="File"
-          width={100}
-        />
-        <Column
-          align="left"
-          cellDataGetter={locationColumnCellDataGetter}
-          cellRenderer={plainTextColumnCellRenderer}
-          dataKey="range"
-          maxWidth={100}
-          label="Line"
-          width={50}
-        />
         <Column
           align="left"
           cellDataGetter={typeColumnCellDataGetter}
@@ -202,6 +198,16 @@ class DiagnosticsPane extends React.Component {
           label="Description"
           width={100}
         />
+        {fileColumn}
+        <Column
+          align="left"
+          cellDataGetter={locationColumnCellDataGetter}
+          cellRenderer={plainTextColumnCellRenderer}
+          dataKey="range"
+          maxWidth={100}
+          label="Line"
+          width={50}
+        />
       </Table>
     );
   }
@@ -212,6 +218,7 @@ var {PropTypes} = React;
 DiagnosticsPane.propTypes = {
   height: PropTypes.number.isRequired,
   diagnostics: PropTypes.array.isRequired,
+  showFileName: PropTypes.boolean,
   width: PropTypes.number.isRequired,
 };
 
