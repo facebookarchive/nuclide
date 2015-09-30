@@ -68,6 +68,7 @@ var OMNISEARCH_PROVIDER = {
 // Number of elements in the cache before periodic cleanup kicks in. Includes partial query strings.
 var MAX_CACHED_QUERIES = 100;
 var CACHE_CLEAN_DEBOUNCE_DELAY = 5000;
+var UPDATE_DIRECTORIES_DEBOUNCE_DELAY = 100;
 var GLOBAL_KEY = 'global';
 var DIRECTORY_KEY = 'directory';
 
@@ -89,13 +90,14 @@ class SearchResultManager {
   RESULTS_CHANGED: string;
   PROVIDERS_CHANGED: string;
   _dispatcher: quickopen$Dispatcher;
-  _providersByDirectory: Map;
-  _directories: Array<Object>;
+  _providersByDirectory: Map<atom$directory, Set<Provider>>;
+  _directories: Array<atom$directory>;
   _cachedResults: Object;
   // List of most recently used query strings, used for pruning the result cache.
   // Makes use of `Map`'s insertion ordering, so values are irrelevant and always set to `null`.
   _queryLruQueue: Map<string, ?Number>;
   _debouncedCleanCache: Function;
+  _debouncedUpdateDirectories: Function;
   _emitter: Emitter;
   _subscriptions: CompositeDisposable;
   _registeredProviders: {[key: string]: Map<string, Provider>;};
@@ -107,12 +109,21 @@ class SearchResultManager {
     this._registeredProviders = {};
     this._registeredProviders[DIRECTORY_KEY] = new Map();
     this._registeredProviders[GLOBAL_KEY] = new Map();
+    this._providersByDirectory = new Map();
     this._directories = [];
     this._cachedResults = {};
     this._debouncedCleanCache = debounce(
       () => this._cleanCache(),
       CACHE_CLEAN_DEBOUNCE_DELAY,
-      false
+      /* immediate */false
+    );
+    // `updateDirectories` joins providers and directories, which don't know anything about each
+    // other. Debounce this call to reduce churn at startup, and when new providers get activated or
+    // a new directory gets mounted.
+    this._debouncedUpdateDirectories = debounce(
+      () => this._updateDirectories(),
+      UPDATE_DIRECTORIES_DEBOUNCE_DELAY,
+      /* immediate */false
     );
     this._queryLruQueue = new Map();
     this._emitter = new Emitter();
@@ -120,8 +131,10 @@ class SearchResultManager {
     this._dispatcher = QuickSelectionDispatcher.getInstance();
     // Check is required for testing.
     if (atom.project) {
-      this._subscriptions.add(atom.project.onDidChangePaths(this._updateDirectories.bind(this)));
-      this._updateDirectories();
+      this._subscriptions.add(atom.project.onDidChangePaths(
+        this._debouncedUpdateDirectories.bind(this))
+      );
+      this._debouncedUpdateDirectories();
     }
     this._setUpFlux();
     this._activeProviderName = OMNISEARCH_PROVIDER.name;
@@ -159,13 +172,23 @@ class SearchResultManager {
 
   _updateDirectories(): void {
     this._directories = atom.project.getDirectories();
-    this._providersByDirectory = new Map();
+    var directorySet = new Set(this._directories);
+    var directoriesToDelete = [];
+    for (var dir of this._providersByDirectory.keys()) {
+      if (!directorySet.has(dir)) {
+        directoriesToDelete.push(dir);
+      }
+    }
+    directoriesToDelete.forEach((directory: atom$directory) => {
+      this._providersByDirectory.delete(directory);
+    });
     this._directories.forEach(async directory => {
       for (var provider of this._registeredProviders[DIRECTORY_KEY].values()) {
+        var providersForDir = this._providersByDirectory.get(directory) || new Set();
+
         var isEligible = await provider.isEligibleForDirectory(directory);
         if (isEligible) {
-          var providersForDir = this._providersByDirectory.get(directory) || [];
-          providersForDir.push(provider);
+          providersForDir.add(provider);
           this._providersByDirectory.set(directory, providersForDir);
           this._emitter.emit(PROVIDERS_CHANGED);
         }
@@ -189,17 +212,14 @@ class SearchResultManager {
       : this._registeredProviders[DIRECTORY_KEY];
     targetRegistry.set(service.getName(), service);
     if (!isGlobalProvider) {
-      this._updateDirectories();
+      this._debouncedUpdateDirectories();
     }
     var disposable = new CompositeDisposable();
     disposable.add(new Disposable(() => {
       var serviceName = service.getName();
       targetRegistry.delete(serviceName);
       this._providersByDirectory.forEach((providers, dir) => {
-        var index = providers.indexOf(service);
-        if (index !== -1) {
-          providers.splice(index, 1);
-        }
+        providers.delete(service);
       });
       this._removeResultsForProvider(serviceName);
       this._emitter.emit(PROVIDERS_CHANGED);
@@ -423,8 +443,18 @@ class SearchResultManager {
   }
 
   getRenderableProviders(): Array<quickopen$ProviderSpec> {
+    // Only render tabs for providers that are eligible for at least one directory.
+    var eligibleDirectoryProviders = array.from(this._registeredProviders[DIRECTORY_KEY].values())
+      .filter(provider => {
+        for (var providers of this._providersByDirectory.values()) {
+          if (providers.has(provider)) {
+            return true;
+          }
+        }
+        return false;
+      });
     var tabs = array.from(this._registeredProviders[GLOBAL_KEY].values())
-      .concat(array.from(this._registeredProviders[DIRECTORY_KEY].values()))
+      .concat(eligibleDirectoryProviders)
       .filter(provider => provider.isRenderable())
       .map(this._bakeProvider)
       .sort((p1, p2) => p1.name.localeCompare(p2.name));
