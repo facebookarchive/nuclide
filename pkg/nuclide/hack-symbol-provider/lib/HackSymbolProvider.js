@@ -77,8 +77,20 @@ var HackSymbolProvider: Provider = {
     return 'Hack Symbols';
   },
 
-  isEligibleForDirectory(directory: atom$Directory): Promise<boolean> {
-    return Promise.resolve(true);
+  async isEligibleForDirectory(directory: atom$Directory): Promise<boolean> {
+    var directoryPath = directory.getPath();
+    var {getClient} = require('nuclide-client');
+    var client = getClient(directoryPath);
+    if (client == null) {
+      return false;
+    }
+    var remoteUri = require('nuclide-remote-uri');
+    var {path: rootDirectory} = remoteUri.parse(directoryPath);
+    var allProviders = await client.getSearchProviders(rootDirectory);
+    if (!allProviders.some(p => p.name === HACK_SEARCH_PROVIDER)) {
+      return false;
+    }
+    return true;
   },
 
   async executeQuery(query: string, directory: atom$Directory): Promise<Array<FileResult>> {
