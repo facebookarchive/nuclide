@@ -145,6 +145,14 @@ class Activation {
       this.closeSearchPanel();
     });
 
+    this._subscriptions.add(
+      atom.commands.add('body', 'core:cancel', () => {
+        if (this._searchPanel && this._searchPanel.isVisible()) {
+          this.closeSearchPanel();
+        }
+      })
+    );
+
     this._searchComponent.onCancellation(() => this.closeSearchPanel());
     this._searchComponent.onSelectionChanged(debounce((selection: any) => {
       // Only track user-initiated selection-change events.

@@ -145,7 +145,6 @@ class QuickSelectionComponent extends React.Component {
       atom.commands.add(this._modalNode, 'core:move-down', this.handleMoveDown.bind(this)),
       atom.commands.add(this._modalNode, 'core:move-up', this.handleMoveUp.bind(this)),
       atom.commands.add(this._modalNode, 'core:confirm', this.select.bind(this)),
-      atom.commands.add(this._modalNode, 'core:cancel', this.cancel.bind(this))
     );
 
     var inputTextEditor = this.getInputTextEditor();
