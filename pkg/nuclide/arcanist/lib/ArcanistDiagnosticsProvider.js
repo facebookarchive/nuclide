@@ -50,7 +50,7 @@ export class ArcanistDiagnosticsProvider {
         );
         return {
           scope: 'file',
-          providerName: 'Arc',
+          providerName: 'Arc' + (diagnostic.code ? `: ${diagnostic.code}` : ''),
           type: diagnostic.type,
           text: diagnostic.text,
           filePath: diagnostic.filePath,

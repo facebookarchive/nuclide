@@ -127,6 +127,7 @@ class LocalArcanistBaseService extends ArcanistBaseService {
         filePath: pathToFile,
         row,
         col,
+        code: lint['code'],
       };
     });
   }
