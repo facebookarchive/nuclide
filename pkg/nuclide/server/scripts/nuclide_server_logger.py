@@ -51,9 +51,9 @@ def configure_nuclide_logger(loggerName=None):
 
   logger = logging.getLogger(loggerName)
   logger.setLevel(logging.DEBUG)
-  handler = logging.handlers.TimedRotatingFileHandler(_get_log_file_path(),
-                                                      when='midnight',
-                                                      backupCount=7)
+  handler = logging.handlers.RotatingFileHandler(_get_log_file_path(),
+                                                 maxBytes=10000,
+                                                 backupCount=7)
   handler.setLevel(logging.DEBUG)
   formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
   handler.setFormatter(formatter)
