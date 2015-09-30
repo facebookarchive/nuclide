@@ -66,7 +66,6 @@ function _findKeybindingForAction(action: string, target: HTMLElement): string {
 class QuickSelectionComponent extends React.Component {
   _emitter: Emitter;
   _subscriptions: CompositeDisposable;
-  _scheduledCancel: number;
   _modalNode: HTMLElement;
   _debouncedQueryHandler: () => void;
   _boundSelect: () => void;
@@ -148,12 +147,6 @@ class QuickSelectionComponent extends React.Component {
     );
 
     var inputTextEditor = this.getInputTextEditor();
-    inputTextEditor.addEventListener('blur', (event) => {
-      if (event.relatedTarget !== null) {
-        // cancel can be interrupted by user interaction with the modal
-        this._scheduledCancel = setTimeout(this.cancel.bind(this), 100);
-      }
-    });
     this._subscriptions.add(
       searchResultManager.on(
         searchResultManager.PROVIDERS_CHANGED,
@@ -229,7 +222,7 @@ class QuickSelectionComponent extends React.Component {
 
   _updateResults(activeProviderName: string): void {
     var updatedResults = searchResultManager.getResults(
-      this.refs.queryInput.getText(),
+      this.refs['queryInput'].getText(),
       activeProviderName
     );
     this.setState({
@@ -383,10 +376,10 @@ class QuickSelectionComponent extends React.Component {
 
   // Update the scroll position of the list view to ensure the selected item is visible.
   _updateScrollPosition() {
-    if (!(this.refs && this.refs.selectionList)) {
+    if (!(this.refs && this.refs['selectionList'])) {
       return;
     }
-    var listNode =  React.findDOMNode(this.refs.selectionList);
+    var listNode =  React.findDOMNode(this.refs['selectionList']);
     var selectedNode = listNode.getElementsByClassName('selected')[0];
     // false is passed for @centerIfNeeded parameter, which defaults to true.
     // Passing false causes the minimum necessary scroll to occur, so the selection sticks to the
@@ -529,7 +522,6 @@ class QuickSelectionComponent extends React.Component {
    *     _renderTabs(), which created the tab object in the first place.
    */
   _handleTabChange(newTab: quickopen$ProviderSpec): void {
-    clearTimeout(this._scheduledCancel);
     var providerName = newTab.name;
     if (providerName !== this.props.activeProvider.name) {
       if (this.props.onProviderChange) {
@@ -537,6 +529,7 @@ class QuickSelectionComponent extends React.Component {
       }
       this._emitter.emit('active-provider-changed', providerName);
     }
+    this.refs['queryInput'].focus();
   }
 
   _renderTabs(): ReactElement {
