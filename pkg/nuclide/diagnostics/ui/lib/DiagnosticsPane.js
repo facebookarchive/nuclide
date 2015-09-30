@@ -190,9 +190,8 @@ class DiagnosticsPane extends React.Component {
           cellDataGetter={sourceColumnCellDataGetter}
           cellRenderer={plainTextColumnCellRenderer}
           dataKey="providerName"
-          maxWidth={100}
+          width={175}
           label="Source"
-          width={75}
         />
         <Column
           align="left"
