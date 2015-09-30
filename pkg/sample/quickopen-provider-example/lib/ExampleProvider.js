@@ -79,8 +79,8 @@ var ExampleProvider: Provider = {
   /**
    * Only required if providerType === 'DIRECTORY'.
    */
-  isEligibleForDirectory(directory: atom$Directory): boolean {
-    return true;
+  isEligibleForDirectory(directory: atom$Directory): Promise<boolean> {
+    return Promise.resolve(true);
   },
 
   /**

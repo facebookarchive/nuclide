@@ -25,7 +25,7 @@ export type Provider = {
   getPromptText?: () => string;
   getAction?: () => string;
   getDebounceDelay?: () => number;
-  isEligibleForDirectory?: (directory: atom$Directory) => boolean;
+  isEligibleForDirectory?: (directory: atom$Directory) => Promise<boolean>;
   getComponentForItem?: (item: FileResult) => ReactElement;
 };
 

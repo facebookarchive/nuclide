@@ -77,8 +77,8 @@ var HackSymbolProvider: Provider = {
     return 'Hack Symbols';
   },
 
-  isEligibleForDirectory(directory: atom$Directory): boolean {
-    return true;
+  isEligibleForDirectory(directory: atom$Directory): Promise<boolean> {
+    return Promise.resolve(true);
   },
 
   async executeQuery(query: string, directory: atom$Directory): Promise<Array<FileResult>> {

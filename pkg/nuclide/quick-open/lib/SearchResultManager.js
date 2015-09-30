@@ -160,12 +160,14 @@ class SearchResultManager {
   _updateDirectories(): void {
     this._directories = atom.project.getDirectories();
     this._providersByDirectory = new Map();
-    this._directories.forEach(directory => {
+    this._directories.forEach(async directory => {
       for (var provider of this._registeredProviders[DIRECTORY_KEY].values()) {
-        if (provider.isEligibleForDirectory(directory)) {
+        var isEligible = await provider.isEligibleForDirectory(directory);
+        if (isEligible) {
           var providersForDir = this._providersByDirectory.get(directory) || [];
           providersForDir.push(provider);
           this._providersByDirectory.set(directory, providersForDir);
+          this._emitter.emit(PROVIDERS_CHANGED);
         }
       }
     });
