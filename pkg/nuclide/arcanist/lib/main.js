@@ -31,8 +31,8 @@ module.exports = {
     }
   },
 
-  provideLinter() {
-    return require('./ArcanistLinter');
+  provideDiagnostics() {
+    const {ArcanistDiagnosticsProvider} = require('./ArcanistDiagnosticsProvider');
+    return new ArcanistDiagnosticsProvider();
   },
-
 };
