@@ -141,6 +141,10 @@ module.exports = {
     return require('./singleton');
   },
 
+  get CircularBuffer() {
+    return require('./CircularBuffer');
+  },
+
   get COMMON_BINARY_PATHS() {
     return require('./process').COMMON_BINARY_PATHS;
   },
