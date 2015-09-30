@@ -28,7 +28,7 @@ var dialogComponent: ?ReactComponent;
 var dialogHostElement: ?HTMLElement;
 
 var FileSystemActions = {
-  openAddFolderDialog(): void {
+  openAddFolderDialog(onDidConfirm: (filePath: ?string) => mixed): void {
     var node = this._getSelectedContainerNode();
     if (!node) {
       return;
@@ -47,9 +47,13 @@ var FileSystemActions = {
 
       var {pathname} = url.parse(filePath);
       var basename = pathModule.basename(pathname);
-      var created = await directory.getSubdirectory(basename).create();
+      var newDirectory = directory.getSubdirectory(basename);
+      var created = await newDirectory.create();
       if (!created) {
         atom.notifications.addError(`'${basename}' already exists.`);
+        onDidConfirm(null);
+      } else {
+        onDidConfirm(newDirectory.getPath());
       }
     });
   },

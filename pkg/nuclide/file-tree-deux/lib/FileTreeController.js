@@ -129,7 +129,9 @@ class FileTreeController {
         'nuclide-file-tree-deux:add-file': () => {
           FileSystemActions.openAddFileDialog(this._openAndRevealFilePath.bind(this));
         },
-        'nuclide-file-tree-deux:add-folder': () => FileSystemActions.openAddFolderDialog(),
+        'nuclide-file-tree-deux:add-folder': () => {
+          FileSystemActions.openAddFolderDialog(this._openAndRevealDirectoryPath.bind(this));
+        },
         'nuclide-file-tree-deux:collapse-directory': this._collapseSelection.bind(this),
         'nuclide-file-tree-deux:copy-full-path': this._copyFullPath.bind(this),
         'nuclide-file-tree-deux:expand-directory': this._expandSelection.bind(this),
@@ -178,6 +180,12 @@ class FileTreeController {
     if (filePath != null) {
       atom.workspace.open(filePath);
       this.revealNodeKey(filePath);
+    }
+  }
+
+  _openAndRevealDirectoryPath(path: ?string): void {
+    if (path != null) {
+      this.revealNodeKey(FileTreeHelpers.dirPathToKey(path));
     }
   }
 
