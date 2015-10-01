@@ -101,7 +101,7 @@ class Activation {
     this._currentProvider = getSearchResultManager().getProviderByName(DEFAULT_PROVIDER);
     var QuickSelectionDispatcher = require('./QuickSelectionDispatcher');
     QuickSelectionDispatcher.getInstance().register(action => {
-      if (action.actionType === QuickSelectionDispatcher.ActionTypes.ACTIVE_PROVIDER_CHANGED) {
+      if (action.actionType === QuickSelectionDispatcher.ActionType.ACTIVE_PROVIDER_CHANGED) {
         this.toggleProvider(action.providerName);
         this._render();
       }

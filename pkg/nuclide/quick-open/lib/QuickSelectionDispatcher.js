@@ -13,7 +13,7 @@ var {Dispatcher} = require('flux');
 
 var quickopenDispatcher;
 class QuickSelectionDispatcher {
-  static ActionTypes: {[key:string]: string};
+  static ActionType: {[key:string]: string};
 
   static getInstance(): Dispatcher {
     if (!quickopenDispatcher) {
@@ -23,7 +23,7 @@ class QuickSelectionDispatcher {
   }
 }
 
-QuickSelectionDispatcher.ActionTypes = {
+QuickSelectionDispatcher.ActionType = {
   ACTIVE_PROVIDER_CHANGED: 'ACTIVE_PROVIDER_CHANGED',
   QUERY: 'QUERY',
 };

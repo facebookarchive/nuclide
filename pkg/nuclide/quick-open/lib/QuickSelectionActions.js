@@ -10,20 +10,20 @@
  */
 
 var QuickSelectionDispatcher = require('./QuickSelectionDispatcher');
-var {ActionTypes} = QuickSelectionDispatcher;
+var {ActionType} = QuickSelectionDispatcher;
 
 var QuickSelectionActions = {
 
   query(query: string): void {
     QuickSelectionDispatcher.getInstance().dispatch({
-      actionType: ActionTypes.QUERY,
+      actionType: ActionType.QUERY,
       query,
     });
   },
 
   changeActiveProvider(providerName: string): void {
     QuickSelectionDispatcher.getInstance().dispatch({
-      actionType: ActionTypes.ACTIVE_PROVIDER_CHANGED,
+      actionType: ActionType.ACTIVE_PROVIDER_CHANGED,
       providerName,
     });
   },
