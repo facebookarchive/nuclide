@@ -58,9 +58,10 @@ var assign = Object.assign || require('object-assign');
 var RESULTS_CHANGED = 'results_changed';
 var PROVIDERS_CHANGED = 'providers_changed';
 var MAX_OMNI_RESULTS_PER_SERVICE = 5;
+var DEFAULT_QUERY_DEBOUNCE_DELAY = 200;
 var OMNISEARCH_PROVIDER = {
   action: 'nuclide-quick-open:toggle-omni-search',
-  debounceDelay: 0,
+  debounceDelay: DEFAULT_QUERY_DEBOUNCE_DELAY,
   name: 'OmniSearchResultProvider',
   prompt: 'Search for anything...',
   title: 'OmniSearch',
@@ -434,7 +435,9 @@ class SearchResultManager {
     var providerName = provider.getName();
     return {
       action: provider.getAction && provider.getAction() || '',
-      debounceDelay: provider.getDebounceDelay && provider.getDebounceDelay() || 200,
+      debounceDelay: (typeof provider.getDebounceDelay === 'function')
+        ? provider.getDebounceDelay()
+        : DEFAULT_QUERY_DEBOUNCE_DELAY,
       name: providerName,
       prompt: provider.getPromptText && provider.getPromptText() ||
         'Search ' + providerName,
