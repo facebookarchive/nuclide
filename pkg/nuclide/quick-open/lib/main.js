@@ -15,8 +15,6 @@ import type {
   Provider,
 } from 'nuclide-quick-open-interfaces';
 
-import type {quickopen$TabManager} from './TabManager';
-
 var trackFunction;
 function track(...args) {
   var trackFunc = trackFunction || (trackFunction = require('nuclide-analytics').track);
@@ -90,7 +88,6 @@ class Activation {
   _searchComponent: QuickSelectionComponentType;
   _searchPanel: atom$Panel;
   _subscriptions: atom$CompositeDisposable;
-  _tabManager: quickopen$TabManager;
   _debouncedUpdateModalPosition: () => void;
 
   constructor() {
@@ -112,11 +109,7 @@ class Activation {
     window.addEventListener('resize', this._debouncedUpdateModalPosition);
     this._updateModalPosition();
 
-    this._tabManager = require('./TabManager').getInstance();
     this._searchComponent = this._render();
-    this._subscriptions.add(
-      this._tabManager.onDidChangeTabs(() => this._render())
-    );
 
     this._searchComponent.onSelection((selection) => {
       var options = {};
@@ -184,8 +177,6 @@ class Activation {
     var React = getReactLazily();
     return React.render(
       <QuickSelectionComponent
-        tabs={this._tabManager.getTabs()}
-        initialActiveTab={this._tabManager.getDefaultTab()}
         activeProvider={this._currentProvider}
         onProviderChange={this.handleActiveProviderChange.bind(this)}
       />,

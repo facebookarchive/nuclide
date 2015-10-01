@@ -78,7 +78,7 @@ class QuickSelectionComponent extends React.Component {
     this._boundSelect = () => this.select();
     this._boundHandleTabChange = (tab: quickopen$ProviderSpec) => this._handleTabChange(tab);
     this.state = {
-      activeTab: props.initialActiveTab,
+      activeTab: searchResultManager.getProviderByName(searchResultManager.getActiveProviderName()),
       // treated as immutable
       resultsByService: {
         /* EXAMPLE:
