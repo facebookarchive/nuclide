@@ -5,7 +5,6 @@
   "version": "0.0.0",
   "description": "Proxies from chrome debug protocol to dbgp for hhvm debugging.",
   "nuclide": {
-    "excludeTestsFromContinuousIntegration": true,
     "packageType": "Node",
     "testRunner": "npm"
   },
