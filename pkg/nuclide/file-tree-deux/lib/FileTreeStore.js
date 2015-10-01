@@ -445,13 +445,12 @@ class FileTreeStore {
     if (
       this._data.trackedNode != null &&
       /*
-       * The loading and dirty maps being empty is a heuristic for when loading has completed. It is
-       * inexact because the loading might be unrelated to the tracked node, however it is cheap and
-       * false positives will only last until loading is complete or until the user clicks another
-       * node in the tree.
+       * The loading map being empty is a heuristic for when loading has completed. It is inexact
+       * because the loading might be unrelated to the tracked node, however it is cheap and false
+       * positives will only last until loading is complete or until the user clicks another node in
+       * the tree.
        */
-      objectUtil.isEmpty(this._data.isLoadingMap) &&
-      objectUtil.isEmpty(this._data.isDirtyMap)
+      objectUtil.isEmpty(this._data.isLoadingMap)
     ) {
       // Loading has completed. Allow scrolling to proceed as usual.
       this._set('trackedNode', null);

@@ -461,7 +461,7 @@ class FileTreeController {
       this._actions.ensureChildNode(rootKey, parentKey, childKey);
       this._actions.expandNode(rootKey, parentKey);
     });
-    this._trackAndSelectNode(rootKey, nodeKey);
+    this._selectAndTrackNode(rootKey, nodeKey);
   }
 
   /**
@@ -581,7 +581,7 @@ class FileTreeController {
       children.length > 0
     ) {
       // Directory is expanded and it has children. Select first child. Exit.
-      this._trackAndSelectNode(rootKey, children[0]);
+      this._selectAndTrackNode(rootKey, children[0]);
     } else {
       const index = siblingKeys.indexOf(lastSelectedKey);
       const maxIndex = siblingKeys.length - 1;
@@ -596,14 +596,14 @@ class FileTreeController {
         }
 
         // This has a next sibling.
-        this._trackAndSelectNode(rootKey, siblingKeys[index + 1]);
+        this._selectAndTrackNode(rootKey, siblingKeys[index + 1]);
       } else {
         const nearestAncestorSibling = this._findNearestAncestorSibling(rootKey, lastSelectedKey);
 
         // If this is the bottommost node of the tree, there won't be anything to select.
         // Void return signifies no next node was found.
         if (nearestAncestorSibling != null) {
-          this._trackAndSelectNode(nearestAncestorSibling.rootKey, nearestAncestorSibling.nodeKey);
+          this._selectAndTrackNode(nearestAncestorSibling.rootKey, nearestAncestorSibling.nodeKey);
         }
       }
     }
@@ -645,7 +645,7 @@ class FileTreeController {
     if (index === 0) {
       if (!isRoot && parentKey != null) {
         // This is the first child. It has a parent. Select the parent.
-        this._trackAndSelectNode(rootKey, parentKey);
+        this._selectAndTrackNode(rootKey, parentKey);
       }
       // This is the root and/or the top of the tree (has no parent). Nothing else to traverse.
       // Exit.
@@ -658,7 +658,7 @@ class FileTreeController {
         rootKey = previousSiblingKey;
       }
 
-      this._trackAndSelectNode(
+      this._selectAndTrackNode(
         rootKey,
         this._findLowermostDescendantKey(rootKey, previousSiblingKey)
       );
@@ -671,7 +671,7 @@ class FileTreeController {
     }
 
     const rootKeys = this._store.getRootKeys();
-    this._trackAndSelectNode(rootKeys[0], rootKeys[0]);
+    this._selectAndTrackNode(rootKeys[0], rootKeys[0]);
   }
 
   _moveToBottom(): void {
@@ -682,7 +682,7 @@ class FileTreeController {
     // Select the lowermost descendant of the last root node.
     const rootKeys = this._store.getRootKeys();
     const lastRootKey = rootKeys[rootKeys.length - 1];
-    this._trackAndSelectNode(
+    this._selectAndTrackNode(
       lastRootKey,
       this._findLowermostDescendantKey(lastRootKey, lastRootKey)
     );
@@ -794,9 +794,10 @@ class FileTreeController {
     shell.showItemInFolder(node.nodePath);
   }
 
-  _trackAndSelectNode(rootKey: string, nodeKey: string): void {
-    this._actions.setTrackedNode(rootKey, nodeKey);
+  _selectAndTrackNode(rootKey: string, nodeKey: string): void {
+    // Select the node before tracking it because setting a new selection clears the tracked node.
     this._actions.selectSingleNode(rootKey, nodeKey);
+    this._actions.setTrackedNode(rootKey, nodeKey);
   }
 
   _copyFullPath(): void {
