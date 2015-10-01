@@ -10,7 +10,7 @@
  */
 
 import type {
-  quickopen$ProviderSpec,
+  ProviderSpec,
 } from './types';
 
 import type {
@@ -430,7 +430,7 @@ class SearchResultManager {
   /**
    * Turn a Provider into a plain "spec" object consumed by QuickSelectionComponent.
    */
-  _bakeProvider(provider: Provider): quickopen$ProviderSpec {
+  _bakeProvider(provider: Provider): ProviderSpec {
     var providerName = provider.getName();
     return {
       action: provider.getAction && provider.getAction() || '',
@@ -444,7 +444,7 @@ class SearchResultManager {
     };
   }
 
-  getRenderableProviders(): Array<quickopen$ProviderSpec> {
+  getRenderableProviders(): Array<ProviderSpec> {
     // Only render tabs for providers that are eligible for at least one directory.
     var eligibleDirectoryProviders = array.from(this._registeredProviders[DIRECTORY_KEY].values())
       .filter(provider => {

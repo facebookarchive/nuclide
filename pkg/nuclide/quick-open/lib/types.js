@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-export type quickopen$ProviderSpec = {
+export type ProviderSpec = {
   action?: string;
   debounceDelay?: number;
   name: string;
