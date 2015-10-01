@@ -17,6 +17,10 @@ var flowConfigDirCache = LRU({
   length: function (n) { return n.length; },
   maxAge: 1000 * 30, //30 seconds
 });
+var flowPathCache = LRU({
+  max: 10,
+  maxAge: 1000 * 30, // 30 seconds
+});
 
 function insertAutocompleteToken(contents: string, line: number, col: number): string {
   var lines = contents.split('\n');
@@ -67,14 +71,22 @@ async function isFlowInstalled(): Promise<boolean> {
   var platform = os.platform();
   if (platform === 'linux' || platform === 'darwin') {
     var flowPath = getPathToFlow();
-    try {
-      await asyncExecute('which', [flowPath]);
-      return true;
-    } catch (e) {
-      return false;
+    if (!flowPathCache.has(flowPath)) {
+      flowPathCache.set(flowPath, await canFindFlow(flowPath));
     }
+
+    return flowPathCache.get(flowPath);
   } else {
     // Flow does not currently work in Windows.
+    return false;
+  }
+}
+
+async function canFindFlow(flowPath: string): Promise<boolean> {
+  try {
+    await asyncExecute('which', [flowPath]);
+    return true;
+  } catch (e) {
     return false;
   }
 }
