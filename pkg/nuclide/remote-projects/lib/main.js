@@ -274,6 +274,12 @@ module.exports = {
       addRemoteFolderToProject(connection);
     }));
 
+    subscriptions.add(atom.commands.add(
+        'atom-workspace',
+        'nuclide-remote-projects:connect',
+        () => require('nuclide-ssh-dialog').openConnectionDialog()
+    ));
+
     // Don't do require or any other expensive operations in activate().
     subscriptions.add(atom.packages.onDidActivateInitialPackages(() => {
       // Subscribe opener before restoring the remote projects.
@@ -293,11 +299,6 @@ module.exports = {
           }
         }
       }));
-    subscriptions.add(atom.commands.add(
-        'atom-workspace',
-        'nuclide-remote-projects:connect',
-        () => require('nuclide-ssh-dialog').openConnectionDialog()
-    ));
 
       // Remove remote projects added in case of reloads.
       // We already have their connection config stored.
