@@ -70,6 +70,11 @@ class QuickSelectionComponent extends React.Component {
   _debouncedQueryHandler: () => void;
   _boundSelect: () => void;
   _boundHandleTabChange: (tab: quickopen$ProviderSpec) => void;
+  _state: {
+    activeTab: quickopen$ProviderSpec,
+    resultsByService: GroupedResult,
+    renderableProviders: Array<quickopen$ProviderSpec>,
+  };
 
   constructor(props: Object) {
     super(props);
@@ -80,17 +85,7 @@ class QuickSelectionComponent extends React.Component {
     this.state = {
       activeTab: searchResultManager.getProviderByName(searchResultManager.getActiveProviderName()),
       // treated as immutable
-      resultsByService: {
-        /* EXAMPLE:
-        providerName: {
-          directoryName: {
-            results: [Array<{path: string}>],
-            loading: true,
-            error: null,
-          },
-        },
-        */
-      },
+      resultsByService: {},
       renderableProviders: searchResultManager.getRenderableProviders(),
     };
     this.resetSelection();
