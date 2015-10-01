@@ -132,10 +132,17 @@ class ClangFlagsManager {
     var compilationDatabaseJson = compilationDatabaseJsonBuffer.toString('utf8');
     var compilationDatabase = JSON.parse(compilationDatabaseJson);
     compilationDatabase.forEach((item) => {
-      var {file, args} = item;
+      var {file} = item;
+      // "args" is a non-standard property that we introduced in an older version of Buck.
+      // Fortunately, the clang folks have seen the light and have added support for an identical
+      // property that they happened to name "arguments":
+      // https://github.com/facebook/buck/issues/437
+      // For now, fall back to "args" until we get everyone to use a newer enough version of Buck
+      // and then we can remove the support for the old "args" property.
+      var command = item.arguments || item.args;
       this.pathToFlags[file] = ClangFlagsManager.sanitizeCommand(
           file,
-          args,
+          command,
           buckProjectRoot);
     });
 
