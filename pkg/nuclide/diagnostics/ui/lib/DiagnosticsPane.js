@@ -218,7 +218,7 @@ var {PropTypes} = React;
 DiagnosticsPane.propTypes = {
   height: PropTypes.number.isRequired,
   diagnostics: PropTypes.array.isRequired,
-  showFileName: PropTypes.boolean,
+  showFileName: PropTypes.bool,
   width: PropTypes.number.isRequired,
 };
 
