@@ -96,7 +96,10 @@ function getService(serviceName: string, hostname: ?string, serviceOptions: ?any
 
 function createRemoteService(serviceConfig: ServiceConfig, hostname: string, serviceOptions: any): any {
   var {requireRemoteServiceSync} = require('nuclide-service-transformer');
-  var remoteServiceClass = requireRemoteServiceSync(serviceConfig.definition, serviceConfig.name);
+  var remoteServiceClass = requireRemoteServiceSync(
+    serviceConfig.definition,
+    serviceConfig.name,
+    /* isDecorator */ false);
   var remoteConnection = RemoteConnection.getByHostnameAndPath(hostname, null);
   return new remoteServiceClass(remoteConnection, serviceOptions);
 }
@@ -104,6 +107,12 @@ function createRemoteService(serviceConfig: ServiceConfig, hostname: string, ser
 function createLocalService(serviceConfig: ServiceConfig, serviceOptions: any): any {
   var serviceClass = require(serviceConfig.implementation);
   return new serviceClass(serviceOptions);
+
+  // TODO: Create a decorator for the serviceImplementation and return it. The decorator can be used
+  // to intercept any requests to the service for logging purposes.
+  // var serviceImplementation = new serviceClass(serviceOptions);
+  // var decorator = requireRemoteServiceSync(serviceConfig.definition, serviceConfig.name, /* isDecorator */ true);
+  // return new decorator(serviceImplementation);
 }
 
 module.exports = {

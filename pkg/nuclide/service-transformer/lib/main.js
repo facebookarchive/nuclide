@@ -10,7 +10,7 @@
  */
 
 var babel = require('babel-core');
-var createRemoteServiceTransformer = require('./remote-service-transformer');
+import createRemoteServiceTransformer from './remote-service-transformer';
 var fs = require('fs');
 var mkdirp = require('mkdirp');
 var path = require('path');
@@ -21,7 +21,7 @@ var BABEL_HEADER = "'use babel';";
 
 var transpiledFilePaths = new Set();
 
-function transpile(sourceFilePath: string, destFilePath: string): void {
+function transpile(sourceFilePath: string, destFilePath: string, isDecorator: boolean): void {
   var sourceCode = fs.readFileSync(sourceFilePath, 'utf8');
 
   // While transpiling Flow import, babel might insert some code at the top of file so that the
@@ -37,7 +37,7 @@ function transpile(sourceFilePath: string, destFilePath: string): void {
   var code = babel.transform(sourceCode, {
     blacklist: ['es6.arrowFunctions', 'es6.classes', 'strict'],
     optional: ['es7.classProperties'],
-    plugins: [createRemoteServiceTransformer(sourceFilePath)],
+    plugins: [createRemoteServiceTransformer(sourceFilePath, isDecorator)],
   }).code;
 
   // Append `'use 6to5';` at beginning of code so it will be transpiled by babel.
@@ -57,11 +57,16 @@ function transpile(sourceFilePath: string, destFilePath: string): void {
  *     own file and require it from main.js, `module.parent` should be changed to
  *     `module.parent.parent` as there is another level of requirement.
  */
-function requireRemoteServiceSync(serviceDefinitionFilePath: string, serviceName: string): any {
+function requireRemoteServiceSync(
+  serviceDefinitionFilePath: string,
+  serviceName: string,
+  isDecorator: boolean,
+): any {
   // Resolve serviceDefinitionFilePath based on the caller's module, and fallback to
   // this file's module in case module.parent doesn't exist (we are using repl).
   // Note that `require('module')._resolveFilename(path, module)` is equivelent to
   // `require.resolve(path)` under the context of given module.
+  // $FlowFixMe
   var resolvedServiceDefinitionFilePath = require('module')._resolveFilename(
       serviceDefinitionFilePath,
       module.parent ? module.parent : module);
@@ -71,7 +76,7 @@ function requireRemoteServiceSync(serviceDefinitionFilePath: string, serviceName
       path.basename(resolvedServiceDefinitionFilePath));
 
   if (!transpiledFilePaths.has(resolvedServiceDefinitionFilePath)) {
-    transpile(resolvedServiceDefinitionFilePath, transpiledRemoteServiceFilePath);
+    transpile(resolvedServiceDefinitionFilePath, transpiledRemoteServiceFilePath, isDecorator);
     transpiledFilePaths.add(resolvedServiceDefinitionFilePath);
   }
 

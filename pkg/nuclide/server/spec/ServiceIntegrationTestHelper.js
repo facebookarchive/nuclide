@@ -91,7 +91,11 @@ class ServiceIntegrationTestHelper {
   }
 
   getRemoteService(serviceOptions={}: any): any {
-    var remoteServiceClass = requireRemoteServiceSync(this._definitionPath, this._className);
+    var remoteServiceClass = requireRemoteServiceSync(
+      this._definitionPath,
+      this._className,
+      /* isDecorator */ false,
+    );
     return new remoteServiceClass(this._connection, serviceOptions);
   }
 

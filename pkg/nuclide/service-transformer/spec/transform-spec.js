@@ -14,8 +14,14 @@ var {addMatchers} = require('nuclide-test-helpers');
 var path = require('path');
 var {requireRemoteServiceSync} = require('../lib/main');
 
-function testGenerateRemoteService(serviceName: string, sourceFilePath: string, expectedFilePath: string, testDesc: ?string): void {
-  it(testDesc || sourceFilePath, function() {
+function testGenerateRemoteService(
+  serviceName: string,
+  sourceFilePath: string,
+  expectedFilePath: string,
+  testDesc: string,
+  isDecorator: boolean = false,
+): void {
+  it(testDesc, () => {
     sourceFilePath = require.resolve(sourceFilePath);
     expectedFilePath = require.resolve(expectedFilePath);
 
@@ -28,7 +34,7 @@ function testGenerateRemoteService(serviceName: string, sourceFilePath: string, 
       fs.unlinkSync(transpiledFilePath);
     }
 
-    requireRemoteServiceSync(sourceFilePath, serviceName);
+    requireRemoteServiceSync(sourceFilePath, serviceName, isDecorator);
 
     var generatedCode = fs.readFileSync(transpiledFilePath, 'utf8');
     var expectedCode = fs.readFileSync(path.resolve(__dirname, expectedFilePath), 'utf8')

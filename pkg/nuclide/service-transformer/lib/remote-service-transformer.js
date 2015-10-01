@@ -143,7 +143,7 @@ function createAnalyticsRequireExpression(): any {
   );
 }
 
-function createRemoteClassDeclaration(classDeclaration: any): any {
+function createRemoteClassDeclaration(classDeclaration: any, isDecorator: boolean): any {
   var remoteMethodDefinitions = classDeclaration.body.body.map(bodyPart => {
     // Create remote method definition for each class method. The part type must be checked because
     // ES7 class properties are also part of the `body` array and have type `ClassProperty`.
@@ -454,7 +454,10 @@ function createRemoteEventMethodDefinition(classDeclaration: any, methodDefiniti
   );
 }
 
-function createRemoteServiceTransformer(baseClassFilePath: string): any {
+export default function createRemoteServiceTransformer(
+  baseClassFilePath: string,
+  isDecorator: boolean,
+): any {
   return new Transformer('remote-service', {
     ClassDeclaration: function (node, parent) {
       // Skip classes with `Remote` prefix as it's generated.
@@ -477,7 +480,7 @@ function createRemoteServiceTransformer(baseClassFilePath: string): any {
       //   ...
       // ```
       // which is not what we expect.
-      this.insertAfter(createRemoteClassDeclaration(node));
+      this.insertAfter(createRemoteClassDeclaration(node, isDecorator));
 
       // Require the analytics package.
       this.insertAfter(createAnalyticsRequireExpression());
@@ -525,5 +528,3 @@ function createRemoteServiceTransformer(baseClassFilePath: string): any {
     },
   });
 }
-
-module.exports = createRemoteServiceTransformer;
