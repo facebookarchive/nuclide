@@ -16,6 +16,3 @@ export type quickopen$ProviderSpec = {
   prompt?: string;
   title: string;
 }
-
-import type {Dispatcher} from 'flux';
-export type quickopen$Dispatcher = Dispatcher;

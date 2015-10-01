@@ -10,7 +10,6 @@
  */
 
 import type {
-  quickopen$Dispatcher,
   quickopen$ProviderSpec,
 } from './types';
 
@@ -90,7 +89,7 @@ class SearchResultManager {
   _dispatcherToken: string;
   RESULTS_CHANGED: string;
   PROVIDERS_CHANGED: string;
-  _dispatcher: quickopen$Dispatcher;
+  _dispatcher: QuickSelectionDispatcher;
   _providersByDirectory: Map<atom$directory, Set<Provider>>;
   _directories: Array<atom$directory>;
   _cachedResults: Object;
