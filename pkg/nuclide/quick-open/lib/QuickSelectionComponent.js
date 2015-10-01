@@ -716,12 +716,6 @@ class QuickSelectionComponent extends React.Component {
   }
 }
 
-var TabInfoPropType = PropTypes.shape({
-  providerName: React.PropTypes.string,
-  path: React.PropTypes.string,
-  score: React.PropTypes.number,
-});
-
 QuickSelectionComponent.propTypes = {
   activeProvider: PropTypes.shape({
     action: PropTypes.string.isRequired,
@@ -730,7 +724,6 @@ QuickSelectionComponent.propTypes = {
     prompt: PropTypes.string.isRequired,
     title: PropTypes.string.isRequired,
   }).isRequired,
-  initialActiveTab: PropTypes.shape(TabInfoPropType).isRequired,
   onProviderChange: PropTypes.func,
 };
 
