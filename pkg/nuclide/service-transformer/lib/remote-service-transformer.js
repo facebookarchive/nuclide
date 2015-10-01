@@ -91,6 +91,7 @@
  * module.exports = RemoteTestService;
  * ```
  */
+import {getClassPrefix, hasGeneratedClassPrefix} from './class-prefix';
 
 var {Transformer} = require('babel-core');
 var t = require('babel-core').types;
@@ -98,8 +99,6 @@ var {isEventMethodName} = require('./method-name-parser');
 var {isGenericFlowTypeAnnotation} = require('./flow-annotation');
 var {createGetUriOfRemotePathAssignmentExpression, createGetPathOfUriAssignmentExpression}
     = require('./nuclide-uri-transformer');
-
-var GENERATED_CLASS_PREFIX = 'Remote';
 
 /**
  * Create ast expression of `var $baseClassName = require('$baseClassFilePath')
@@ -148,18 +147,19 @@ function createRemoteClassDeclaration(classDeclaration: any, isDecorator: boolea
     // Create remote method definition for each class method. The part type must be checked because
     // ES7 class properties are also part of the `body` array and have type `ClassProperty`.
     if (bodyPart.type === 'MethodDefinition') {
-      if (isEventMethodName(bodyPart.key.name)) {
+      if (isEventMethodName(bodyPart.key.name) && !isDecorator) {
         return createRemoteEventMethodDefinition(classDeclaration, bodyPart);
       } else {
-        return createRemoteRpcMethodDefinition(classDeclaration, bodyPart);
+        return createRemoteRpcMethodDefinition(classDeclaration, bodyPart, isDecorator);
       }
     }
   });
 
+  var classPrefix = getClassPrefix(isDecorator);
   var remoteClassDeclaration = t.classDeclaration(
-    /* id */ t.identifier(GENERATED_CLASS_PREFIX + classDeclaration.id.name),
+    /* id */ t.identifier(classPrefix + classDeclaration.id.name),
     /* body */ t.classBody(
-      [createConstructorDefinition()].concat(remoteMethodDefinitions)
+      [createConstructorDefinition(isDecorator)].concat(remoteMethodDefinitions)
     ),
     /* superClass */ classDeclaration.id
   );
@@ -176,41 +176,79 @@ function createRemoteClassDeclaration(classDeclaration: any, isDecorator: boolea
   return remoteClassDeclaration;
 }
 
-function createConstructorDefinition(): any {
-  var constructorFunctionExpression = t.functionExpression(
-    /* id */ null,
-    /* params */ [t.identifier('connection'), t.identifier('options')],
-    /* body */ t.blockStatement(
-      [
-        // AST node of `super()`.
-        t.expressionStatement(
-          t.callExpression(/* callee */ t.super(), /* arguments */ [])
-        ),
-        // AST node of `this._connection = connection`.
-        t.expressionStatement(
-          t.assignmentExpression(
-            /* operator */ '=',
-            /* left */ t.memberExpression(
-              t.thisExpression(),
-              t.identifier('_connection')
-            ),
-            /* right */ t.identifier('connection')
-          )
-        ),
-        // AST node of `this._options = options`.
-        t.expressionStatement(
-          t.assignmentExpression(
-            /* operator */ '=',
-            /* left */ t.memberExpression(
-              t.thisExpression(),
-              t.identifier('_options')
-            ),
-            /* right */ t.identifier('options')
-          )
-        )
-      ]
-    )
-  );
+function createConstructorDefinition(isDecorator: boolean): any {
+  var constructorFunctionExpression;
+  if (isDecorator) {
+    constructorFunctionExpression = t.functionExpression(
+      /* id */ null,
+      /* params */ [t.identifier('delegate'), t.identifier('serviceLogger')],
+      /* body */ t.blockStatement(
+        [
+          // AST node of `super()`.
+          t.expressionStatement(
+            t.callExpression(/* callee */ t.super(), /* arguments */ [])
+          ),
+          // AST node of `this._delegate = delegate`.
+          t.expressionStatement(
+            t.assignmentExpression(
+              /* operator */ '=',
+              /* left */ t.memberExpression(
+                t.thisExpression(),
+                t.identifier('_delegate')
+              ),
+              /* right */ t.identifier('delegate')
+            )
+          ),
+          // AST node of `this._serviceLogger = serviceLogger`.
+          t.expressionStatement(
+            t.assignmentExpression(
+              /* operator */ '=',
+              /* left */ t.memberExpression(
+                t.thisExpression(),
+                t.identifier('_serviceLogger')
+              ),
+              /* right */ t.identifier('serviceLogger')
+            )
+          ),
+        ]
+      )
+    );
+  } else {
+    constructorFunctionExpression = t.functionExpression(
+      /* id */ null,
+      /* params */ [t.identifier('connection'), t.identifier('options')],
+      /* body */ t.blockStatement(
+        [
+          // AST node of `super()`.
+          t.expressionStatement(
+            t.callExpression(/* callee */ t.super(), /* arguments */ [])
+          ),
+          // AST node of `this._connection = connection`.
+          t.expressionStatement(
+            t.assignmentExpression(
+              /* operator */ '=',
+              /* left */ t.memberExpression(
+                t.thisExpression(),
+                t.identifier('_connection')
+              ),
+              /* right */ t.identifier('connection')
+            )
+          ),
+          // AST node of `this._options = options`.
+          t.expressionStatement(
+            t.assignmentExpression(
+              /* operator */ '=',
+              /* left */ t.memberExpression(
+                t.thisExpression(),
+                t.identifier('_options')
+              ),
+              /* right */ t.identifier('options')
+            )
+          ),
+        ]
+      )
+    );
+  }
 
   return t.methodDefinition(
     /* key */ t.identifier('constructor'),
@@ -255,68 +293,128 @@ function createGetUriFromPathPromiseExpression(
   );
 }
 
-function createRemoteRpcMethodDefinition(classDeclaration: any, methodDefinition: any): any {
-
+function createRemoteRpcMethodDefinition(
+  classDeclaration: any,
+  methodDefinition: any,
+  isDecorator: boolean,
+): any {
   // For each parameter of the method, check its flow type and create manipulation expression if
   // the flow type matches or contains `NuclideUri`.
   var parametersManipulationExpressions = [];
-
-  methodDefinition.value.params.forEach(param => {
-    var assignmentExpression = createGetPathOfUriAssignmentExpression(
-        param.typeAnnotation.typeAnnotation, param);
-    if (assignmentExpression) {
-      parametersManipulationExpressions.push(assignmentExpression);
-    }
-  });
-
-  // AST node of
-  // `this._connection.makeRpc(
-  //   '$className/$methodName',
-  //   [$methodParam0,
-  //    $methodParam1,
-  //    ....],
-  //   this._options);
-  // );`
-  var rpcCallExpression = t.callExpression(
-    /* callee */ t.memberExpression(
-      t.memberExpression(
-        t.thisExpression(),
-        t.identifier('_connection')
-      ),
-      t.identifier('makeRpc')
-    ),
-    /* arguments */ [
-      t.literal(classDeclaration.id.name + '/' + methodDefinition.key.name),
-      t.arrayExpression(methodDefinition.value.params),
-      t.memberExpression(t.thisExpression(), t.identifier('_options')),
-    ]
-  );
-
-  // If the method's return value is typed as Promise<..> and has nested `NuclideUri`, append
-  // manipulation code in `returnValue.then(...)` block.
-  var methodReturnType = methodDefinition.value.returnType;
-  if (methodReturnType !== undefined &&
-      isGenericFlowTypeAnnotation(methodReturnType.typeAnnotation, 'Promise')) {
-
-    var typeParameters = methodReturnType.typeAnnotation.typeParameters;
-
-    if (typeParameters && typeParameters.params.length === 1)  {
-      rpcCallExpression = createGetUriFromPathPromiseExpression(
-          rpcCallExpression, typeParameters.params[0]);
-    }
+  if (!isDecorator) {
+    methodDefinition.value.params.forEach(param => {
+      var assignmentExpression = createGetPathOfUriAssignmentExpression(
+          param.typeAnnotation.typeAnnotation, param);
+      if (assignmentExpression) {
+        parametersManipulationExpressions.push(assignmentExpression);
+      }
+    });
   }
 
-  var remoteFunctionExpression = t.functionExpression(
-    /* id */ null,
-    /* params */ methodDefinition.value.params,
-    /* body */ t.blockStatement(
-      parametersManipulationExpressions.concat(
-        [t.returnStatement(
-          rpcCallExpression,
-        )],
-      )
-    ),
-  );
+  var remoteFunctionExpression;
+  if (isDecorator) {
+    var argsAsIdentifiers = methodDefinition.value.params.map(param => t.identifier(param.name));
+
+    // AST node of
+    // `this._serviceLogger.logServiceCall(
+    //   '$className',
+    //   '$methodName',
+    //   true,
+    //   $methodParam0,
+    //   $methodParam1,
+    //   ...);
+    // );`
+    var logServiceCallExpression = t.callExpression(
+      /* callee */ t.memberExpression(
+        t.memberExpression(
+          t.thisExpression(),
+          t.identifier('_serviceLogger'),
+        ),
+        t.identifier('logServiceCall')
+      ),
+      /* arguments */ [
+        t.literal(classDeclaration.id.name),
+        t.literal(methodDefinition.key.name),
+        t.literal(true),
+      ].concat(argsAsIdentifiers),
+    );
+
+    // AST node of
+    // `this._delegate.$methodName(
+    //   $methodParam0,
+    //   $methodParam1,
+    //   ...);
+    // );`
+    var delegateExpression = t.callExpression(
+      /* callee */ t.memberExpression(
+        t.memberExpression(
+          t.thisExpression(),
+          t.identifier('_delegate'),
+        ),
+        t.identifier(methodDefinition.key.name)
+      ),
+      /* arguments */ argsAsIdentifiers,
+    );
+    remoteFunctionExpression = t.functionExpression(
+      /* id */ null,
+      /* params */ methodDefinition.value.params,
+      /* body */ t.blockStatement(
+        [
+          t.expressionStatement(logServiceCallExpression),
+          t.returnStatement(delegateExpression),
+        ],
+      ),
+    );
+  } else {
+    // AST node of
+    // `this._connection.makeRpc(
+    //   '$className/$methodName',
+    //   [$methodParam0,
+    //    $methodParam1,
+    //    ....],
+    //   this._options);
+    // );`
+    var rpcCallExpression = t.callExpression(
+      /* callee */ t.memberExpression(
+        t.memberExpression(
+          t.thisExpression(),
+          t.identifier('_connection')
+        ),
+        t.identifier('makeRpc')
+      ),
+      /* arguments */ [
+        t.literal(classDeclaration.id.name + '/' + methodDefinition.key.name),
+        t.arrayExpression(methodDefinition.value.params),
+        t.memberExpression(t.thisExpression(), t.identifier('_options')),
+      ],
+    );
+
+    // If the method's return value is typed as Promise<..> and has nested `NuclideUri`, append
+    // manipulation code in `returnValue.then(...)` block.
+    var methodReturnType = methodDefinition.value.returnType;
+    if (methodReturnType !== undefined &&
+        isGenericFlowTypeAnnotation(methodReturnType.typeAnnotation, 'Promise')) {
+
+      var typeParameters = methodReturnType.typeAnnotation.typeParameters;
+
+      if (typeParameters && typeParameters.params.length === 1)  {
+        rpcCallExpression = createGetUriFromPathPromiseExpression(
+            rpcCallExpression, typeParameters.params[0]);
+      }
+    }
+
+    remoteFunctionExpression = t.functionExpression(
+      /* id */ null,
+      /* params */ methodDefinition.value.params,
+      /* body */ t.blockStatement(
+        parametersManipulationExpressions.concat(
+          [t.returnStatement(
+            rpcCallExpression,
+          )],
+        )
+      ),
+    );
+  }
 
   // Create the method defintion AST node.
   var remoteMethodDefinition = t.methodDefinition(
@@ -325,18 +423,20 @@ function createRemoteRpcMethodDefinition(classDeclaration: any, methodDefinition
     /* kind */ 'method'
   );
 
-  // Annotate this node with the analytics.trackTiming decorator.
-  remoteMethodDefinition.decorators = [
-    t.decorator(
-      t.callExpression(
-        t.memberExpression(
-          t.identifier('analytics'),
-          t.identifier('trackTiming')
-        ),
-        []
-      )
-    )
-  ];
+  if (!isDecorator) {
+    // Annotate this node with the analytics.trackTiming decorator.
+    remoteMethodDefinition.decorators = [
+      t.decorator(
+        t.callExpression(
+          t.memberExpression(
+            t.identifier('analytics'),
+            t.identifier('trackTiming')
+          ),
+          []
+        )
+      ),
+    ];
+  }
 
   return remoteMethodDefinition;
 }
@@ -454,14 +554,15 @@ function createRemoteEventMethodDefinition(classDeclaration: any, methodDefiniti
   );
 }
 
-export default function createRemoteServiceTransformer(
+export default function createServiceTransformer(
   baseClassFilePath: string,
   isDecorator: boolean,
 ): any {
+  var classPrefix = getClassPrefix(isDecorator);
   return new Transformer('remote-service', {
     ClassDeclaration: function (node, parent) {
       // Skip classes with `Remote` prefix as it's generated.
-      if (node.id.name.lastIndexOf(GENERATED_CLASS_PREFIX) === 0) {
+      if (hasGeneratedClassPrefix(node.id.name)) {
         return;
       }
 
@@ -483,7 +584,9 @@ export default function createRemoteServiceTransformer(
       this.insertAfter(createRemoteClassDeclaration(node, isDecorator));
 
       // Require the analytics package.
-      this.insertAfter(createAnalyticsRequireExpression());
+      if (!isDecorator) {
+        this.insertAfter(createAnalyticsRequireExpression());
+      }
 
       return createBaseClassRequireExpression(node.id.name, baseClassFilePath);
     },
@@ -506,7 +609,7 @@ export default function createRemoteServiceTransformer(
       // only one class.
       if (t.isIdentifier(right)) {
         node.expression.right = t.identifier(
-          GENERATED_CLASS_PREFIX + node.expression.right.name);
+          classPrefix + node.expression.right.name);
         return;
       }
 
@@ -520,9 +623,9 @@ export default function createRemoteServiceTransformer(
         if (!identifiers) {
           return;
         }
-        // Prepend GENERATED_CLASS_PREFIX to every key and value.
+        // Prepend the class prefix to every key and value.
         right.properties.forEach(prop => {
-          prop.value = t.identifier(GENERATED_CLASS_PREFIX + prop.value.name);
+          prop.value = t.identifier(classPrefix + prop.value.name);
         });
       }
     },

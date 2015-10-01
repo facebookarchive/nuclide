@@ -8,9 +8,10 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
+import createServiceTransformer from './remote-service-transformer';
+import {getClassPrefix} from './class-prefix';
 
 var babel = require('babel-core');
-import createRemoteServiceTransformer from './remote-service-transformer';
 var fs = require('fs');
 var mkdirp = require('mkdirp');
 var path = require('path');
@@ -19,7 +20,8 @@ var parseServiceApiSync = require('./service-parser');
 var TRANSPILED_FILE_FOLDER = path.join(__dirname, '../gen/');
 var BABEL_HEADER = "'use babel';";
 
-var transpiledFilePaths = new Set();
+var transpiledFilePathsForDecorator = new Set();
+var transpiledFilePathsForRemote = new Set();
 
 function transpile(sourceFilePath: string, destFilePath: string, isDecorator: boolean): void {
   var sourceCode = fs.readFileSync(sourceFilePath, 'utf8');
@@ -37,7 +39,7 @@ function transpile(sourceFilePath: string, destFilePath: string, isDecorator: bo
   var code = babel.transform(sourceCode, {
     blacklist: ['es6.arrowFunctions', 'es6.classes', 'strict'],
     optional: ['es7.classProperties'],
-    plugins: [createRemoteServiceTransformer(sourceFilePath, isDecorator)],
+    plugins: [createServiceTransformer(sourceFilePath, isDecorator)],
   }).code;
 
   // Append `'use 6to5';` at beginning of code so it will be transpiled by babel.
@@ -73,8 +75,11 @@ function requireRemoteServiceSync(
 
   var transpiledRemoteServiceFilePath = path.join(
       TRANSPILED_FILE_FOLDER,
-      path.basename(resolvedServiceDefinitionFilePath));
+      getClassPrefix(isDecorator) + path.basename(resolvedServiceDefinitionFilePath));
 
+  var transpiledFilePaths = isDecorator
+    ? transpiledFilePathsForDecorator
+    : transpiledFilePathsForRemote;
   if (!transpiledFilePaths.has(resolvedServiceDefinitionFilePath)) {
     transpile(resolvedServiceDefinitionFilePath, transpiledRemoteServiceFilePath, isDecorator);
     transpiledFilePaths.add(resolvedServiceDefinitionFilePath);

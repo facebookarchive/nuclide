@@ -17,6 +17,7 @@ var {isRemote, getHostname} = require('nuclide-remote-uri');
 
 import {getProxy} from 'nuclide-service-parser';
 import ServiceFramework from 'nuclide-server/lib/serviceframework';
+import ServiceLogger from './ServiceLogger';
 
 var serviceConfigs = loadConfigsOfServiceWithServiceFramework();
 var newServices = ServiceFramework.loadServicesConfig();
@@ -106,16 +107,26 @@ function createRemoteService(serviceConfig: ServiceConfig, hostname: string, ser
 
 function createLocalService(serviceConfig: ServiceConfig, serviceOptions: any): any {
   var serviceClass = require(serviceConfig.implementation);
-  return new serviceClass(serviceOptions);
+  var serviceImplementation = new serviceClass(serviceOptions);
+  var {requireRemoteServiceSync} = require('nuclide-service-transformer');
+  var decorator = requireRemoteServiceSync(
+    serviceConfig.definition,
+    serviceConfig.name,
+    /* isDecorator */ true,
+  );
+  return new decorator(serviceImplementation, getServiceLogger());
+}
 
-  // TODO: Create a decorator for the serviceImplementation and return it. The decorator can be used
-  // to intercept any requests to the service for logging purposes.
-  // var serviceImplementation = new serviceClass(serviceOptions);
-  // var decorator = requireRemoteServiceSync(serviceConfig.definition, serviceConfig.name, /* isDecorator */ true);
-  // return new decorator(serviceImplementation);
+let serviceLogger: ?ServiceLogger;
+function getServiceLogger(): ServiceLogger {
+  if (!serviceLogger) {
+    serviceLogger = new ServiceLogger();
+  }
+  return serviceLogger;
 }
 
 module.exports = {
   getService,
   getServiceByNuclideUri,
+  getServiceLogger,
 };

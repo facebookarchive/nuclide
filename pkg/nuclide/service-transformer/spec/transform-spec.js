@@ -8,6 +8,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
+import {getClassPrefix} from '../lib/class-prefix';
 
 var fs = require('fs');
 var {addMatchers} = require('nuclide-test-helpers');
@@ -28,7 +29,7 @@ function testGenerateRemoteService(
     var transpiledFilePath = path.join(
         __dirname,
         '../gen/',
-        path.basename(sourceFilePath));
+        getClassPrefix(isDecorator) + path.basename(sourceFilePath));
 
     if (fs.existsSync(transpiledFilePath)) {
       fs.unlinkSync(transpiledFilePath);
@@ -49,21 +50,40 @@ describe('Nuclide service transformer test suite.', function() {
   });
 
   describe('test requireRemoteServiceSync() generate and load remote service', function() {
-    testGenerateRemoteService('TestService',
+    testGenerateRemoteService(
+      'TestService',
       './fixtures/TestService',
       './fixtures/TestService.js.expected',
       'transforms a service with basic types.');
-    testGenerateRemoteService('NuclideTypedTestService',
+    testGenerateRemoteService(
+      'NuclideTypedTestService',
       './fixtures/NuclideTypedTestService',
       './fixtures/NuclideTypedTestService.js.expected',
       'transforms a service with NuclideUri arguments / retuns.');
-    testGenerateRemoteService('NestedNuclideTypedTestService',
+    testGenerateRemoteService(
+      'NestedNuclideTypedTestService',
       './fixtures/NestedNuclideTypedTestService',
       './fixtures/NestedNuclideTypedTestService.js.expected',
       'transforms a service with nested NuclideUris');
-    testGenerateRemoteService('TestServiceA',
+    testGenerateRemoteService(
+      'TestServiceA',
       './fixtures/MultipleServiceDefinition',
       './fixtures/MultipleServiceDefinition.js.expected',
       'supports multiple service definitions in one file.');
+  });
+
+  describe('test requireRemoteServiceSync() generates appropriate decorator classes', () => {
+    testGenerateRemoteService(
+      'TestService',
+      './fixtures/TestService',
+      './fixtures/DecoratorTestService.expected.js',
+      'Creates a decorator service for a service with basic types.',
+      /* isDecorator */ true);
+    testGenerateRemoteService(
+      'NuclideTypedTestService',
+      './fixtures/NuclideTypedTestService',
+      './fixtures/DecoratorNuclideTypedTestService.expected.js',
+      'Creates a decorator service with NuclideUri arguments / retuns.',
+    /* isDecorator */ true);
   });
 });

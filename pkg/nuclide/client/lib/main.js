@@ -20,11 +20,13 @@
 import type {NuclideUri} from 'nuclide-remote-uri';
 import type NuclideClient from 'nuclide-server/lib/NuclideClient';
 import type RemoteFile from 'nuclide-remote-connection/lib/RemoteFile';
+import type ServiceLogger from './ServiceLogger';
 
 type NuclideClientExports = {
   getClient(path: NuclideUri): ?NuclideClient;
   getFileForPath(filePath: NuclideUri): ?(File | RemoteFile);
   getService(serviceName: string, hostname: ?string, serviceOptions: ?any): ?any;
+  getServiceLogger(): ServiceLogger;
   getServiceByNuclideUri(
     serviceName: string,
     nuclideUri?: ?NuclideUri,
