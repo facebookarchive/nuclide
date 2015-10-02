@@ -48,11 +48,19 @@ export class ArcanistDiagnosticsProvider {
           [diagnostic.row, diagnostic.col],
           [diagnostic.row, textEditor.getBuffer().lineLengthForRow(diagnostic.row)]
         );
+        let text;
+        if (Array.isArray(diagnostic.text)) {
+          // Sometimes `arc lint` returns an array of strings for the text, rather than just a
+          // string :(.
+          text = diagnostic.text.join(' ');
+        } else {
+          text = diagnostic.text;
+        }
         return {
           scope: 'file',
           providerName: 'Arc' + (diagnostic.code ? `: ${diagnostic.code}` : ''),
           type: diagnostic.type,
-          text: diagnostic.text,
+          text,
           filePath: diagnostic.filePath,
           range,
         };
