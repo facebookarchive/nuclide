@@ -8,6 +8,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
+import type Item from './ServiceLogger';
 
 var logger = require('nuclide-logging').getLogger();
 var {loadConfigsOfServiceWithServiceFramework} = require('nuclide-server/lib/config');
@@ -121,6 +122,11 @@ let serviceLogger: ?ServiceLogger;
 function getServiceLogger(): ServiceLogger {
   if (!serviceLogger) {
     serviceLogger = new ServiceLogger();
+    serviceLogger.onNewItem((item: Item) => {
+      // TODO: Log these to a separate file. Note that whatever file is used should also be included
+      // in bug reports.
+      logger.debug('Service call:', item.service, item.method, item.isLocal, item.argInfo);
+    });
   }
   return serviceLogger;
 }

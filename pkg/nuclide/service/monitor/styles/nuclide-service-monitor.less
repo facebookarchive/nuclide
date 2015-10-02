@@ -1,0 +1,49 @@
+@import "ui-variables";
+
+.nuclide-service-monitor-root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.nuclide-service-monitor-header {
+  display: flex;
+}
+
+.nuclide-service-monitor-left-header {
+  align-self: center;
+  flex: 1;
+}
+
+.nuclide-service-monitor-right-header {
+  flex: 1;
+  text-align: right;
+}
+
+.nuclide-service-monitor-filter-container {
+  display: inline-block;
+  min-width: 200px;
+  position: relative;
+  text-align: left;
+  width: 200px;
+}
+
+.nuclide-service-monitor-contents {
+  flex: 1;
+  height: 100%;
+  overflow-y: scroll;
+}
+
+// We cut the vertical padding in half to improve information density,
+// but use the standard horizontal padding so the columns don't run together.
+@cell-padding: (@component-padding / 2) @component-padding;
+
+.nuclide-service-monitor-header-cell {
+  padding: @cell-padding;
+}
+
+.nuclide-service-monitor-cell {
+  font-family: Menlo, Monaco, Consolas, monospace;
+  padding: @cell-padding;
+  white-space: nowrap; // AM/PM in time column wraps without this.
+}

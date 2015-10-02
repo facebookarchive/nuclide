@@ -25,6 +25,7 @@ var AtomInput = React.createClass({
     placeholderText: PropTypes.string,
     onFocus: PropTypes.func,
     onClick: PropTypes.func,
+    onDidChange: PropTypes.func,
     onBlur: PropTypes.func,
     size: PropTypes.oneOf(['xs', 'sm', 'lg']),
   },
@@ -35,6 +36,7 @@ var AtomInput = React.createClass({
       initialValue: '',
       placeholderText: null,
       onClick: () => {},
+      onDidChange: () => {},
       onFocus: () => {},
       onBlur: () => {},
     };
@@ -55,6 +57,7 @@ var AtomInput = React.createClass({
     var textEditor = this.getTextEditor();
     this._disposables.add(textEditor.onDidChange(() => {
       this.setState({value: textEditor.getText()});
+      this.props.onDidChange.call(null, textEditor.getText());
     }));
     var placeholderText = this.props.placeholderText;
     if (placeholderText !== null) {
