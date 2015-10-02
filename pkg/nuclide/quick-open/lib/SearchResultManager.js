@@ -102,8 +102,10 @@ class SearchResultManager {
   _subscriptions: CompositeDisposable;
   _registeredProviders: {[key: string]: Map<string, Provider>;};
   _activeProviderName: string;
+  _isDisposed: boolean;
 
   constructor() {
+    this._isDisposed = false;
     this.RESULTS_CHANGED = RESULTS_CHANGED;
     this.PROVIDERS_CHANGED = PROVIDERS_CHANGED;
     this._registeredProviders = {};
@@ -166,7 +168,8 @@ class SearchResultManager {
     return provider.getComponentForItem;
   }
 
-  destroy(): void {
+  dispose(): void {
+    this._isDisposed = true;
     this._subscriptions.dispose();
   }
 
@@ -216,6 +219,11 @@ class SearchResultManager {
     }
     var disposable = new CompositeDisposable();
     disposable.add(new Disposable(() => {
+      // This may be called after this package has been deactivated
+      // and the SearchResultManager has been disposed.
+      if (this._isDisposed) {
+        return;
+      }
       var serviceName = service.getName();
       targetRegistry.delete(serviceName);
       this._providersByDirectory.forEach((providers, dir) => {
