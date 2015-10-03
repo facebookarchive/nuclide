@@ -257,4 +257,11 @@ var promises = module.exports = {
   },
 
   RequestSerializer,
+
+  /**
+   * Check if an object is Promise by testing if it has a `then` function property.
+   */
+  isPromise(object: any): boolean {
+    return !!(object) && typeof object === 'object' && typeof object.then === 'function';
+  },
 };
