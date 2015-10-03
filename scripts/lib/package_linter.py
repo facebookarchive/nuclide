@@ -178,7 +178,7 @@ class PackageLinter(object):
             self.report_error(
                 'Package %s should have a "test" property with the value: %s',
                 package_name,
-                EXPECTED_NPM_TEST_COMMAND)
+                DEFAULT_NPM_TEST_COMMAND)
 
     def verify_apm_package(self, package):
         self.verify_apm_test_property(package)
