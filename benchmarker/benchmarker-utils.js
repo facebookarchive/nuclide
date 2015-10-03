@@ -9,12 +9,24 @@
  * the root directory of this source tree.
  */
 
-async function timedAsync<T>(promise: Promise<T>): Promise<{time: number, ret: T}> {
+async function timedAsync<T>(
+  promise: Promise<T>,
+  waitUntilNoRequests: bool = true,
+): Promise<{
+  time: number,
+  promiseTime: number,
+  promiseHandles: number,
+  ret: T,
+}> {
   var start = Date.now();
   var ret = await promise;
-  await sleepUntilNoRequests();
+  var promiseTime = Date.now() - start;
+  var promiseHandles = process._getActiveRequests().length;
+  if (waitUntilNoRequests) {
+    await sleepUntilNoRequests();
+  }
   var time = Date.now() - start;
-  return {time, ret};
+  return {time, promiseTime, promiseHandles, ret};
 }
 
 function timedSync<T>(func: () => T): {time: number, ret: T} {
@@ -38,10 +50,10 @@ function makeSizedFixture(location: string, size: number): void {
 }
 
 function sleep(milliseconds: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, milliseconds));
+  return new Promise(resolve => {setTimeout(resolve, milliseconds);}, () => {});
 }
 
-async function sleepUntilNoRequests(pollMilliseconds: number = 1) {
+async function sleepUntilNoRequests(pollMilliseconds: number = 1): Promise {
   while (process._getActiveRequests().length !== 0) {
     await sleep(pollMilliseconds);
   }
