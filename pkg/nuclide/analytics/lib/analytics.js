@@ -18,11 +18,4 @@ module.exports = {
    * @param values The object containing the data to track.
    */
   track(eventName: string, values: {[key: string]: string}) {},
-
-  /**
-   * A no-op decorator factory (https://github.com/wycats/javascript-decorators).
-   */
-  trackTiming(eventName: ?string = null): any {
-    return (target: any, name: string, descriptor: any) => {};
-  },
 };
