@@ -160,4 +160,8 @@ module.exports = {
   get runtimeInfo() {
     return require('./runtimeInfo');
   },
+
+  get ScribeProcess() {
+    return require('./ScribeProcess').ScribeProcess;
+  },
 };

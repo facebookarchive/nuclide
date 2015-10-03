@@ -1,0 +1,27 @@
+#!/usr/bin/env python
+
+# Copyright (c) 2015-present, Facebook, Inc.
+# All rights reserved.
+#
+# This source code is licensed under the license found in the LICENSE file in
+# the root directory of this source tree.
+
+'''A script simulate scribe_cat and save the stdin into os.environ[SCRIBE_MOCK_PATH]/$category_name file.
+    To simulate the crash, if the input line is "abort" (quote included), it crash itself with exit code 1.'''
+
+import optparse
+import os
+import sys
+
+parser = optparse.OptionParser(usage='usage: %prog [category_name]',
+                               description='Save stdin into $SCRIBE_MOCK_PATH/$categor_name')
+options, args = parser.parse_args(sys.argv[1:])
+category_name = args[0];
+
+with open(os.path.join(os.environ['SCRIBE_MOCK_PATH'], category_name), 'a') as f:
+    while True:
+        line = sys.stdin.readline()
+        if line.strip() == '"abort"':
+            sys.exit(1)
+        f.write(line)
+        f.flush();
