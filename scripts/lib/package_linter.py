@@ -26,6 +26,7 @@ DEPENDENCY_BLACKLIST = {
   'lodash': 'it is a large dependency that we do not want to take on.',
   'nuclide-debugger-interfaces': 'it should be in devDependencies',
   'nuclide-external-interfaces': 'it should be in devDependencies.',
+  'nuclide-home-interfaces': 'it should be in devDependencies.',
   'q': 'we should use real Promise objects.',
   'underscore': 'it is a large dependency that we do not want to take on.',
 }
@@ -36,6 +37,7 @@ PACKAGES_WITHOUT_TESTS = [
     'hyperclick-interfaces',
     'nuclide-debugger-interfaces', # contains no code, so no tests.
     'nuclide-external-interfaces', # contains no code, so no tests.
+    'nuclide-home-interfaces', # contains no code, so no tests.
     # nuclide-node-transpiler is a dependency of nuclide-jasmine, so it cannot
     # use nuclide-jasmine as a test runner. As it stands, it has no tests.
     'nuclide-node-transpiler',

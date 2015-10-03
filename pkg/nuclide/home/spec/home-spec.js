@@ -12,7 +12,7 @@
 var BASE_ITEM_URI = 'nuclide-home://';
 var CONFIG_KEY = 'nuclide-home.showHome';
 
-function findHealthPaneAndItem(): {pane: ?atom$Pane, item: ?Object} {
+function findHomePaneAndItem(): {pane: ?atom$Pane, item: ?Object} {
   var pane = atom.workspace.paneForURI(BASE_ITEM_URI);
   var item = pane ? pane.itemForURI(BASE_ITEM_URI) : null;
   return {pane, item};
@@ -29,13 +29,13 @@ describe('Home', () => {
 
   // TODO: Some of these tests will need to be inverted when we turn the home panel on by default.
   it('does not appear by default', () => {
-    expect(findHealthPaneAndItem().item).toBeFalsy();
+    expect(findHomePaneAndItem().item).toBeFalsy();
   });
 
   it('appears when opened by URI, persisting into config', () => {
     waitsForPromise(async () => {
       await atom.workspace.open(BASE_ITEM_URI);
-      var {item} = findHealthPaneAndItem();
+      var {item} = findHomePaneAndItem();
       expect(item).toBeTruthy();
       if (item) {
         expect(item.getTitle()).toEqual('Home');
@@ -48,12 +48,12 @@ describe('Home', () => {
   it('disappears when closed, persisting into config', () => {
     waitsForPromise(async () => {
       await atom.workspace.open(BASE_ITEM_URI);
-      var {pane, item} = findHealthPaneAndItem();
+      var {pane, item} = findHomePaneAndItem();
       expect(item).toBeTruthy();
       if (pane && item) {
         pane.activateItem(item);
         atom.commands.dispatch(atom.views.getView(atom.workspace), 'core:close');
-        expect(findHealthPaneAndItem().item).toBeFalsy();
+        expect(findHomePaneAndItem().item).toBeFalsy();
         expect(atom.config.get(CONFIG_KEY)).toBeFalsy();
       }
     });

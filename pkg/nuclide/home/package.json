@@ -3,10 +3,17 @@
   "repository": "https://github.com/facebook/nuclide",
   "main": "./lib/main.js",
   "version": "0.0.0",
-  "description": "Provides a welcome message and other useful links for first time users.",
+  "description": "Provides a welcome message and other links for first time users.",
   "nuclide": {
     "packageType": "Atom",
     "testRunner": "apm"
+  },
+  "consumedServices": {
+    "nuclide-home.homeFragments": {
+      "versions": {
+        "0.0.0": "setHomeFragments"
+      }
+    }
   },
   "engines": {
     "atom": ">=1.0.0"
@@ -15,6 +22,7 @@
     "react-for-atom": "0.13.6"
   },
   "devDependencies": {
-    "nuclide-external-interfaces": "0.0.0"
+    "nuclide-external-interfaces": "0.0.0",
+    "nuclide-home-interfaces": "0.0.0"
   }
 }

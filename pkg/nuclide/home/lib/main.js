@@ -9,14 +9,18 @@
  * the root directory of this source tree.
  */
 
+import type HomeFragments from 'nuclide-home-interfaces';
+import type HomePaneItemType from './HomePaneItem';
+
 var BASE_ITEM_URI = 'nuclide-home://';
 
-var {CompositeDisposable} = require('atom');
+var {CompositeDisposable, Disposable} = require('atom');
 
 var disposables: ?CompositeDisposable = null;
-var paneItem: ?HTMLElement;
+var paneItem: ?HomePaneItemType;
 
 var currentConfig = {};
+var allHomeFragments: Set<HomeFragments> = new Set();
 
 function activate(): void {
   disposables = new CompositeDisposable();
@@ -40,6 +44,19 @@ var config = {
   },
 };
 
+function setHomeFragments(homeFragments: HomeFragments): Disposable {
+  allHomeFragments.add(homeFragments);
+  if (paneItem) {
+    paneItem.setHomeFragments(allHomeFragments);
+  }
+  return new Disposable(() => {
+    allHomeFragments.delete(homeFragments);
+    if (paneItem) {
+      paneItem.setHomeFragments(allHomeFragments);
+    }
+  });
+}
+
 function togglePane() {
   atom.config.set('nuclide-home.showHome', !atom.config.get('nuclide-home.showHome'));
 }
@@ -60,12 +77,12 @@ function considerDisplayingHome() {
   }
 }
 
-function getHomePaneItem(uri: string): ?HTMLElement {
+function getHomePaneItem(uri: string): ?HomePaneItemType {
   if (!uri.startsWith(BASE_ITEM_URI)) {
     return;
   }
   var HomePaneItem = require('./HomePaneItem');
-  paneItem = new HomePaneItem().initialize(uri);
+  paneItem = new HomePaneItem().initialize(uri, allHomeFragments);
   return paneItem;
 }
 
@@ -84,6 +101,6 @@ atom.deserializers.add({
 module.exports = {
   activate,
   config,
-  togglePane,
+  setHomeFragments,
   deactivate,
 };

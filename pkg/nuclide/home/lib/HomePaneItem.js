@@ -9,42 +9,72 @@
  * the root directory of this source tree.
  */
 
+import type HomeFragments from 'nuclide-home-interfaces';
+
 var React = require('react-for-atom');
+
+var DEFAULT_WELCOME = (
+  <div>
+    <p>
+      Thanks for trying Nuclide, Facebook's
+      <br />
+      unified developer environment.
+    </p>
+    <p>
+      We would love your feedback and contributions to continue to make it better. Please
+      raise issues and pull-requests directly on
+      our <a href="https://github.com/facebook/nuclide">GitHub repo</a>.
+    </p>
+    <p>
+      Thank you!
+    </p>
+  </div>
+);
 
 class HomePaneItem extends HTMLElement {
 
   uri: string;
+  allHomeFragments: Set<HomeFragments>;
 
-  initialize(uri: string): HomePaneItem {
+  initialize(uri: string, allHomeFragments: Set<HomeFragments>): HomePaneItem {
     this.uri = uri;
+    this.allHomeFragments = allHomeFragments;
+
     // Re-use styles from the Atom welcome pane where possible.
     this.className = 'welcome pane-item padded';
     atom.config.set('nuclide-home.showHome', true);
+    this.render();
+    return this;
+  }
 
-    var home = (
+  setHomeFragments(allHomeFragments: Set<HomeFragments>): void {
+    this.allHomeFragments = allHomeFragments;
+    this.render();
+  }
+
+  render() {
+    var welcomes = [];
+    this.allHomeFragments.forEach(fragment => {
+      var {welcome} = fragment;
+      if (welcome) {
+        welcomes.push(<div key={welcomes.length}>{welcome}</div>);
+      }
+    });
+    if (welcomes.length === 0) {
+      welcomes = DEFAULT_WELCOME;
+    }
+
+    React.render((
       <div className="welcome-container">
-        <header className="welcome-header">
+        <section className="text-center">
           <div className="nuclide-home-logo" />
           <h1 className="welcome-title">Welcome to Nuclide</h1>
-        </header>
-
-        <section className="welcome-panel text-center">
-          <p>
-            Thanks for choosing and using Nuclide, Facebook's unified developer environment.
-            We hope you enjoy using it as much as we enjoy building it.
-          </p>
-
-          <p>
-            We would love your feedback and contributions to continue to make it better. Please
-            raise issues and pull-requests directly on
-            our <a href="https://github.com/facebook/nuclide">GitHub repo</a>. Thank you!
-          </p>
+        </section>
+        <section className="text-center">
+          {welcomes}
         </section>
       </div>
-    );
-
-    React.render(home, this);
-    return this;
+    ), this);
   }
 
   getTitle(): string {
