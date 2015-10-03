@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {safeSpawn} from './process';
+import {checkOutput, safeSpawn} from './process';
 
 var SCRIBE_CAT_COMMAND = 'scribe_cat';
 
@@ -28,6 +28,14 @@ export class ScribeProcess {
     this._scribeCategory = scribeCategory;
     this._childProcessRunning = new WeakMap();
     this._getOrCreateChildProcess();
+  }
+
+  /**
+   * Check if `scribe_cat` exists in PATH.
+   */
+  static async isScribeCatOnPath(): Promise<boolean> {
+    var {exitCode} = await checkOutput('which', [SCRIBE_CAT_COMMAND]);
+    return exitCode === 0;
   }
 
   /**

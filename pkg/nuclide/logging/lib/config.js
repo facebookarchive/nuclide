@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-var {clientInfo, fsPromise, systemInfo} = require('nuclide-commons');
+var {clientInfo, fsPromise, systemInfo, ScribeProcess} = require('nuclide-commons');
 var os = require('os');
 var path = require('path');
 var {USER} = require('nuclide-commons').env;
@@ -27,10 +27,15 @@ var scribeAppenderPath = path.join(__dirname, '../fb/scribeAppender.js');
 var LOG4JS_DATE_FORMAT = '-yyyy-MM-dd';
 
 async function getServerLogAppenderConfig(): Promise<?Object> {
-  // Skip if we are testing, running in Atom client or open source version of Nuclide.
+  // Skip config scribe_cat logger if
+  // 1) running in test environment
+  // 2) or running in Atom client
+  // 3) or running in open sourced version of nuclide
+  // 4) or the scribe_cat command is missing.
   if (clientInfo.isRunningInTest() ||
       clientInfo.isRunningInClient() ||
-      !(await fsPromise.exists(scribeAppenderPath))) {
+      !(await fsPromise.exists(scribeAppenderPath)) ||
+      !(await ScribeProcess.isScribeCatOnPath())) {
     return null;
   }
 
