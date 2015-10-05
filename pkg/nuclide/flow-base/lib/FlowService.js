@@ -18,9 +18,11 @@ export type Diagnostics = {
   messages: Array<Diagnostic>,
 };
 
-/* Each error or warning can consist of any number of different messages from
+/*
+ * Each error or warning can consist of any number of different messages from
  * Flow to help explain the problem and point to different locations that may be
- * of interest. */
+ * of interest.
+ */
 export type Diagnostic = Array<SingleMessage>;
 
 export type SingleMessage = {
@@ -63,9 +65,11 @@ class FlowService {
           end: number;
         }>>
     }>
-  /* Ideally, this would just be Promise<Diagnostics>, but the service
+  /*
+   * Ideally, this would just be Promise<Diagnostics>, but the service
    * framework doesn't pick up on NuclideUri if it's embedded in a type defined
-   * elsewhere. */
+   * elsewhere.
+   */
   {
     return Promise.reject('Not implemented');
   }

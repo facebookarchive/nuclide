@@ -98,7 +98,7 @@ async function canFindFlow(flowPath: string): Promise<boolean> {
  */
 function getPathToFlow(): string {
   if (global.atom) {
-    return atom.config.get('nuclide-flow.pathToFlow');
+    return global.atom.config.get('nuclide-flow.pathToFlow');
   } else {
     return 'flow';
   }

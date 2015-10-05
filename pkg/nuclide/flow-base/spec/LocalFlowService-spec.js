@@ -20,14 +20,16 @@ describe('LocalFlowService', () => {
   var flowService: any;
 
   function newFlowService() {
-    var localFlowService = '../lib/LocalFlowService';
+    const localFlowService = '../lib/LocalFlowService';
     // we have to invalidate the require cache in order to mock modules we
     // depend on
-    return new (uncachedRequire(require, localFlowService))();
+    const LocalFlowService = (uncachedRequire(require, localFlowService): any);
+    return new LocalFlowService();
   }
 
   beforeEach(() => {
-    spyOn(require('../lib/FlowHelpers'), 'getFlowExecOptions').andReturn({cwd: '/path/to/flow/root'});
+    spyOn(require('../lib/FlowHelpers'), 'getFlowExecOptions')
+      .andReturn({cwd: '/path/to/flow/root'});
     flowService = newFlowService();
   });
 
@@ -41,7 +43,7 @@ describe('LocalFlowService', () => {
   }
 
   describe('flow server creation and teardown', () => {
-    var childSpy;
+    var childSpy: any;
 
     function execFlow() {
       flowService._execFlow([], {}, '/path/to/flow/root/file.js');
@@ -75,7 +77,7 @@ describe('LocalFlowService', () => {
       // we have to create another flow service here since we've mocked modules
       // we depend on since the outer beforeEach ran.
       flowService = newFlowService();
-      waitsForPromise(async () => { await execFlow()});
+      waitsForPromise(async () => { await execFlow(); });
     });
 
     afterEach(() => {
@@ -104,8 +106,8 @@ describe('LocalFlowService', () => {
 
       it('should blacklist the root', () => {
         expect(event).toBe('exit');
-        require('nuclide-commons').safeSpawn.reset();
-        waitsForPromise(async () => { await execFlow()});
+        (require('nuclide-commons').safeSpawn: any).reset();
+        waitsForPromise(async () => { await execFlow(); });
         expect(require('nuclide-commons').safeSpawn).not.toHaveBeenCalled();
       });
     });
@@ -230,7 +232,12 @@ describe('LocalFlowService', () => {
     it('should filter suggestions by the prefix', () => {
       waitsForPromise(async () => {
         prefix = 'bln';
-        expect(hasEqualElements(await getNameSet(options), new Set(['BigLongNameOne', 'BigLongNameTwo']))).toBe(true);
+        expect(
+          hasEqualElements(
+            await getNameSet(options),
+            new Set(['BigLongNameOne', 'BigLongNameTwo'])
+          )
+        ).toBe(true);
       });
     });
 

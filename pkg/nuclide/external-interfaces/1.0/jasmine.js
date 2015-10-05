@@ -58,6 +58,7 @@ type JasmineSpy = {
   andCallThrough(): void;
   argsForCall: Array<Array<mixed>>;
   andReturn<T>(value: T): T;
+  andThrow(error: mixed): void;
   callCount: number;
   calls: Array<JasmineSpyCall>;
   identity: string;
