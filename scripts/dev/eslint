@@ -1,0 +1,22 @@
+#!/bin/bash
+
+set -e
+
+LIB_DIR=$(dirname "$0")/../lib/eslint
+SUMFILE=node_modules/package.json.sum
+
+cd $LIB_DIR
+
+set +e
+shasum -c $SUMFILE 2> /dev/null > /dev/null
+shacode=$?
+set -e
+
+if [[ $shacode -ne 0 ]] ; then
+  # Spews some warnings
+  npm install 2> /dev/null 1>&2
+
+  shasum package.json > $SUMFILE
+fi
+
+node $LIB_DIR/node_modules/.bin/eslint -c $LIB_DIR/.eslintrc --rulesdir $LIB_DIR/eslint_rules "$@"
