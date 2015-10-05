@@ -21,12 +21,12 @@ var nestedConfig = {
 };
 
 describe('nuclide-arcanist-base', () => {
-  var rootPath;
-  var dirPath;
-  var file1Path;
-  var file2Path;
-  var nestedPath;
-  var tempPath;
+  var rootPath: any;
+  var dirPath: any;
+  var file1Path: any;
+  var file2Path: any;
+  var nestedPath: any;
+  var tempPath: any;
 
   beforeEach(() => {
     waitsForPromise(async () => {

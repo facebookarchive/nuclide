@@ -39,13 +39,13 @@ class LocalArcanistBaseService extends ArcanistBaseService {
   async readArcConfig(fileName: NuclideUri): Promise<?Object> {
     var arcConfigDirectory = await this.findArcConfigDirectory(fileName);
     if (!arcConfigDirectory) {
-       return null;
+      return null;
     }
     if (!this._arcProjectMap.has(arcConfigDirectory)) {
       var path = require('path');
       var arcconfigFile = path.join(arcConfigDirectory, ARC_CONFIG_FILE_NAME);
-      var result = JSON.parse(
-        await require('nuclide-commons').readFile(arcconfigFile));
+      const fileContents = (await require('nuclide-commons').readFile(arcconfigFile)).toString();
+      const result = JSON.parse(fileContents);
       this._arcProjectMap.set(arcConfigDirectory, result);
     }
     return this._arcProjectMap.get(arcConfigDirectory);
@@ -64,7 +64,7 @@ class LocalArcanistBaseService extends ArcanistBaseService {
 
   async findDiagnostics(pathToFile: NuclideUri): Promise {
     var cwd = await this.findArcConfigDirectory(pathToFile);
-    if (cwd === null) {
+    if (cwd == null) {
       return [];
     }
 
@@ -76,7 +76,7 @@ class LocalArcanistBaseService extends ArcanistBaseService {
     const output: Map<string, Array<Object>> = new Map();
     // Arc lint outputs multiple JSON objects on mutliple lines. Split them, then merge the
     // results.
-    for (const line of result.stdout.trim().split('\n')) {
+    for (let line of result.stdout.trim().split('\n')) {
       let json;
       try {
         json = JSON.parse(line);
@@ -84,13 +84,13 @@ class LocalArcanistBaseService extends ArcanistBaseService {
         logger.error('Error parsing `arc lint` JSON output', result.stdout);
         return [];
       }
-      for (const path of Object.keys(json)) {
+      for (let path of Object.keys(json)) {
         const errorsToAdd = json[path];
         if (!output.has(path)) {
           output.set(path, []);
         }
         let errors = output.get(path);
-        for (const error of errorsToAdd) {
+        for (let error of errorsToAdd) {
           errors.push(error);
         }
       }
