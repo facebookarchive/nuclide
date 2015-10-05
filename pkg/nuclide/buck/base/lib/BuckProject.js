@@ -68,7 +68,7 @@ export class BuckProject {
     // This method is required by the service framework.
   }
 
-  getPath() {
+  getPath(): Promise<string> {
     return Promise.resolve(this._rootPath);
   }
 
@@ -141,7 +141,12 @@ export class BuckProject {
     return this._build(buildTargets, {install: false, run: false, debug: false});
   }
 
-  install(buildTargets: Array<string>, run: boolean, debug: boolean, simulator: ?string): Promise<any> {
+  install(
+    buildTargets: Array<string>,
+    run: boolean,
+    debug: boolean,
+    simulator: ?string,
+  ): Promise<any> {
     return this._build(buildTargets, {install: true, run, debug, simulator});
   }
 
@@ -210,9 +215,9 @@ export class BuckProject {
       baseOptions: {...options},
       buildTargets,
     });
-    var {pathToBuck, buckCommandOptions: options} = this._getBuckCommandAndOptions();
+    var {pathToBuck, buckCommandOptions} = this._getBuckCommandAndOptions();
 
-    return scriptSafeSpawnAndObserveOutput(pathToBuck, args, options);
+    return scriptSafeSpawnAndObserveOutput(pathToBuck, args, buckCommandOptions);
   }
 
   /**
@@ -316,7 +321,10 @@ export class BuckProject {
     return json;
   }
 
-  async queryWithArgs(query: string, args: Array<string>): Promise<{[aliasOrTarget: string]: Array<string>}> {
+  async queryWithArgs(
+    query: string,
+    args: Array<string>,
+  ): Promise<{[aliasOrTarget: string]: Array<string>}> {
     var completeArgs = ['query', '--json', query].concat(args);
     var result = await this._runBuckCommandFromProjectRoot(completeArgs);
     var json: {[aliasOrTarget: string]: Array<string>} = JSON.parse(result.stdout);

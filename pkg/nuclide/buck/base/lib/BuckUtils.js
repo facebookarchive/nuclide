@@ -9,11 +9,10 @@
  * the root directory of this source tree.
  */
 
-class BuckUtils {
+import type {NuclideUri} from 'nuclide-remote-uri';
+
+export default class BuckUtils {
   getBuckProjectRoot(filePath: NuclideUri): Promise<?NuclideUri> {
     return Promise.reject('Not implemented');
   }
 }
-
-
-module.exports = BuckUtils;
