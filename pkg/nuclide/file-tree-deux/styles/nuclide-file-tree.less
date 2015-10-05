@@ -67,23 +67,3 @@
   }
 
 }
-
-@FOOTER_HEIGHT: @component-line-height;
-
-// This root needs `heigh: 100%` just as this._panelElement does in
-// FileTreeController._initializePanel().
-.nuclide-file-tree-deux-container {
-  height: 100%;
-}
-
-.nuclide-file-tree-deux-container .nuclide-panel-component {
-  padding-bottom: @FOOTER_HEIGHT;
-}
-
-.nuclide-file-tree-deux-footer {
-  bottom: 0;
-  line-height: @FOOTER_HEIGHT;
-  padding-left: @component-padding;
-  position: absolute;
-  width: 100%;
-}

@@ -116,13 +116,6 @@ var activation: ?Activation = null;
 
 module.exports = {
   config: {
-    enableExperimentalVcsIntegration: {
-      type: 'boolean',
-      default: false,
-      description: 'We are still working out the performance problems with Hg integration, ' +
-        'so use at your own risk.',
-    },
-
     revealFileOnSwitch: {
       type: 'boolean',
       default: false,
