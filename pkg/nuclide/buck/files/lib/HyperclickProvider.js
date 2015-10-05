@@ -96,6 +96,7 @@ async function findTargetLocation(target: {path: string; name: string}): Promise
 
 module.exports = {
   priority: 50,
+  providerName: 'nuclide-buck-files',
   async getSuggestion(textEditor: TextEditor, position: Point): Promise<mixed> {
     var absolutePath = textEditor.getPath();
     if (!absolutePath) {

@@ -79,6 +79,7 @@ module.exports = {
         flowHyperclickProvider.getSuggestionForWord.bind(flowHyperclickProvider);
     return {
       priority: 20,
+      providerName: 'nuclide-flow',
       getSuggestionForWord,
     };
   },

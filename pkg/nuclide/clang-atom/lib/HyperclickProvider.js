@@ -30,6 +30,7 @@ module.exports = {
   // It is important that this has a lower priority than the handler from
   // fb-diffs-and-tasks.
   priority: 10,
+  providerName: 'nuclide-clang-atom',
   async getSuggestionForWord(textEditor: TextEditor, text: string, range: atom$Range) {
     if (!GRAMMARS.has(textEditor.getGrammar().scopeName)) {
       return null;

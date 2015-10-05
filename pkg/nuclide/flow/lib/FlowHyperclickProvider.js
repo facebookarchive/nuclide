@@ -11,7 +11,6 @@
 
 import invariant from 'assert';
 
-import {trackTiming} from 'nuclide-analytics';
 import {getServiceByNuclideUri} from 'nuclide-client';
 import {goToLocation} from 'nuclide-atom-helpers';
 
@@ -19,7 +18,6 @@ import {JS_GRAMMARS} from './constants.js';
 var JS_GRAMMARS_SET = new Set(JS_GRAMMARS);
 
 class FlowHyperclickProvider {
-  @trackTiming('flow.find-definition')
   async getSuggestionForWord(textEditor: TextEditor, text: string, range: atom$Range):
       Promise<?HyperclickSuggestion> {
     if (!JS_GRAMMARS_SET.has(textEditor.getGrammar().scopeName)) {

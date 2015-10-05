@@ -16,6 +16,7 @@ var {HACK_GRAMMARS_SET} = require('nuclide-hack-common/lib/constants');
 
 module.exports = {
   priority: 20,
+  providerName: 'nuclide-hack',
   async getSuggestionForWord(textEditor: TextEditor, text: string, range: Range) {
     if (!HACK_GRAMMARS_SET.has(textEditor.getGrammar().scopeName)) {
       return null;

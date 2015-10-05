@@ -22,6 +22,9 @@ export type HyperclickProvider = {
 
   // The higher this is, the more precedence the provider gets. Defaults to 0.
   priority?: number;
+
+  // Must be unique. Used for analytics.
+  providerName: string;
 };
 
 export type HyperclickSuggestion = {

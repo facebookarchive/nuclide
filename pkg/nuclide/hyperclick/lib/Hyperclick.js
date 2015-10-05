@@ -15,6 +15,7 @@ var SuggestionListElement = require('./SuggestionListElement');
 var getWordTextAndRange = require('./get-word-text-and-range');
 var {defaultWordRegExpForEditor} = require('./hyperclick-utils');
 var {remove} = require('nuclide-commons').array;
+import {trackOperationTiming} from 'nuclide-analytics';
 
 /**
  * Calls the given functions and returns the first non-null return value.
@@ -122,13 +123,17 @@ class Hyperclick {
     return findTruthyReturnValue(this._consumedProviders.map((provider: HyperclickProvider) => {
       if (provider.getSuggestion) {
         var getSuggestion = provider.getSuggestion.bind(provider);
-        return () => getSuggestion(textEditor, position);
+        return () => trackOperationTiming(
+            provider.providerName + '.getSuggestion',
+            () => getSuggestion(textEditor, position));
       } else if (provider.getSuggestionForWord) {
         var getSuggestionForWord = provider.getSuggestionForWord.bind(provider);
         return () => {
           var wordRegExp = provider.wordRegExp || defaultWordRegExp;
           var {text, range} = getWordTextAndRange(textEditor, position, wordRegExp);
-          return getSuggestionForWord(textEditor, text, range);
+          return trackOperationTiming(
+            provider.providerName + '.getSuggestionForWord',
+            () => getSuggestionForWord(textEditor, text, range));
         };
       }
 

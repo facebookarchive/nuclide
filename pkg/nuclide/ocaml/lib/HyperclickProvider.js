@@ -19,6 +19,7 @@ var EXTENSIONS = new Set([
 
 module.exports = {
   priority: 20,
+  providerName: 'nuclide-ocaml',
   async getSuggestionForWord(textEditor: TextEditor, text: string, range: atom$Range) {
     var {getServiceByNuclideUri} = require('nuclide-client');
 
