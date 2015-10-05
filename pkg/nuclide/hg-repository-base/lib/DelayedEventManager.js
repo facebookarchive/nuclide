@@ -14,6 +14,12 @@
  * This class manages creating and canceling delayed events.
  */
 class DelayedEventManager {
+
+  _setTimeoutFunction: (callback: any, delay: number) => any;
+  _clearTimeoutFunction: (identifier: any) => void;
+  _canAcceptEvents: boolean;
+  _ids: Set<number>;
+
   constructor(
     setTimeoutFunc: (callback: any, delay: number) => any,
     clearTimeoutFunc: (identifier: any) => void

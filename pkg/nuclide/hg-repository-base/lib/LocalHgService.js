@@ -12,7 +12,6 @@
 var {debounce} = require('nuclide-commons');
 var DelayedEventManager = require('./DelayedEventManager');
 var watchman = require('fb-watchman');
-var fs = require('fs');
 var LocalHgServiceBase = require('./LocalHgServiceBase');
 var logger = require('nuclide-logging').getLogger();
 var {getWatchmanBinaryPath} = require('nuclide-watchman-helpers');
@@ -55,6 +54,13 @@ function getPrimaryWatchmanSubscriptionRefinements(): Array<mixed> {
 // To make LocalHgServiceBase more easily testable, the watchman dependency is
 // broken out. We add the watchman dependency here.
 class LocalHgService extends LocalHgServiceBase {
+
+  _delayedEventManager: DelayedEventManager;
+  _lockFileHeld: boolean;
+  _shouldUseDirstate: boolean;
+  _watchmanClient: ?watchman.Client;
+  _allowEventsAgain: ?() => void;
+
   constructor(options: LocalHgServiceOptions) {
     super(options);
     this._delayedEventManager = new DelayedEventManager(setTimeout, clearTimeout);
@@ -73,11 +79,13 @@ class LocalHgService extends LocalHgServiceBase {
   }
 
   async _subscribeToWatchman(): Promise<void> {
-    this._watchmanClient = new watchman.Client({
+    // Using a local variable here to allow better type refinement.
+    const watchmanClient = new watchman.Client({
       watchmanBinaryPath: await getWatchmanBinaryPath(),
     });
+    this._watchmanClient = watchmanClient;
     var workingDirectory = this.getWorkingDirectory();
-    this._watchmanClient.command(['watch', workingDirectory], (watchError, watchResp) => {
+    watchmanClient.command(['watch', workingDirectory], (watchError, watchResp) => {
       if (watchError) {
         logger.error('Error initiating watchman watch: ' + watchError);
         return;
@@ -86,7 +94,7 @@ class LocalHgService extends LocalHgServiceBase {
       // first subscribe. We don't want this behavior, so we issue a `clock`
       // command to give a logical time constraint on the subscription.
       // This is recommended by https://www.npmjs.com/package/fb-watchman.
-      this._watchmanClient.command(['clock', workingDirectory], (clockError, clockResp) => {
+      watchmanClient.command(['clock', workingDirectory], (clockError, clockResp) => {
         if (clockError) {
           logger.error('Failed to query watchman clock: ', clockError);
           return;
@@ -107,10 +115,11 @@ class LocalHgService extends LocalHgServiceBase {
           // This line restricts this subscription to only return files.
           ['type', 'f'],
         ];
-        primarySubscriptionExpression = primarySubscriptionExpression.concat(getPrimaryWatchmanSubscriptionRefinements());
+        primarySubscriptionExpression =
+          primarySubscriptionExpression.concat(getPrimaryWatchmanSubscriptionRefinements());
 
         // Subscribe to changes to files unrelated to source control.
-        this._watchmanClient.command([
+        watchmanClient.command([
           'subscribe',
           workingDirectory,
           WATCHMAN_SUBSCRIPTION_NAME_PRIMARY,
@@ -131,7 +140,7 @@ class LocalHgService extends LocalHgServiceBase {
         });
 
         // Subscribe to changes to .hgignore files.
-        this._watchmanClient.command([
+        watchmanClient.command([
           'subscribe',
           workingDirectory,
           WATCHMAN_SUBSCRIPTION_NAME_HGIGNORE,
@@ -152,7 +161,7 @@ class LocalHgService extends LocalHgServiceBase {
         });
 
         // Subscribe to changes to the source control lock file.
-        this._watchmanClient.command([
+        watchmanClient.command([
           'subscribe',
           workingDirectory,
           WATCHMAN_SUBSCRIPTION_NAME_HGLOCK,
@@ -174,7 +183,7 @@ class LocalHgService extends LocalHgServiceBase {
         });
 
         // Subscribe to changes to the source control directory state file.
-        this._watchmanClient.command([
+        watchmanClient.command([
           'subscribe',
           workingDirectory,
           WATCHMAN_SUBSCRIPTION_NAME_HGDIRSTATE,
@@ -192,11 +201,13 @@ class LocalHgService extends LocalHgServiceBase {
             );
             return;
           }
-          logger.debug(`Watchman subscription ${WATCHMAN_SUBSCRIPTION_NAME_HGDIRSTATE} established.`);
+          logger.debug(
+            `Watchman subscription ${WATCHMAN_SUBSCRIPTION_NAME_HGDIRSTATE} established.`
+          );
         });
 
         // Subscribe to changes in the current Hg bookmark.
-        this._watchmanClient.command([
+        watchmanClient.command([
           'subscribe',
           workingDirectory,
           WATCHMAN_SUBSCRIPTION_NAME_HGBOOKMARK,
@@ -214,13 +225,15 @@ class LocalHgService extends LocalHgServiceBase {
             );
             return;
           }
-          logger.debug(`Watchman subscription ${WATCHMAN_SUBSCRIPTION_NAME_HGBOOKMARK} established.`);
+          logger.debug(
+            `Watchman subscription ${WATCHMAN_SUBSCRIPTION_NAME_HGBOOKMARK} established.`
+          );
         });
 
         // Subscribe to changes to a file that appears to be the 'arc build' lock file.
         var arcBuildLockFile = getArcBuildLockFile();
         if (arcBuildLockFile) {
-          this._watchmanClient.command([
+          watchmanClient.command([
             'subscribe',
             workingDirectory,
             WATCHMAN_SUBSCRIPTION_NAME_ARC_BUILD_LOCK,
@@ -232,12 +245,15 @@ class LocalHgService extends LocalHgServiceBase {
           ], (subscribeError, subscribeResp) => {
             if (subscribeError) {
               logger.error(
-                `Failed to subscribe to ${WATCHMAN_SUBSCRIPTION_NAME_ARC_BUILD_LOCK} with clock limit: `,
+                `Failed to subscribe to ${WATCHMAN_SUBSCRIPTION_NAME_ARC_BUILD_LOCK} ` +
+                  `with clock limit: `,
                 subscribeError
               );
               return;
             }
-            logger.debug(`Watchman subscription ${WATCHMAN_SUBSCRIPTION_NAME_ARC_BUILD_LOCK} established.`);
+            logger.debug(
+              `Watchman subscription ${WATCHMAN_SUBSCRIPTION_NAME_ARC_BUILD_LOCK} established.`
+            );
           });
         }
       });
@@ -267,7 +283,7 @@ class LocalHgService extends LocalHgServiceBase {
       // relevant files). The dirstate gets modified in the middle of an update
       // and at the end, but not the beginning. Therefore it's a bit noisier of
       // a signal, and is prone to both false positives and negatives.
-      this._watchmanClient.on('subscription', (update) => {
+      watchmanClient.on('subscription', (update) => {
         if (update.subscription === WATCHMAN_SUBSCRIPTION_NAME_PRIMARY) {
           this._delayedEventManager.addEvent(
             this._filesDidChange.bind(this, update),
@@ -325,17 +341,21 @@ class LocalHgService extends LocalHgServiceBase {
           this._shouldUseDirstate = true;
           this._delayedEventManager.setCanAcceptEvents(false);
           this._delayedEventManager.cancelAllEvents();
-          if (!this._allowEventsAgain) {
-            this._allowEventsAgain = debounce(() => {
-                if (this._shouldUseDirstate) {
-                  this._delayedEventManager.setCanAcceptEvents(true);
-                  this._hgDirstateDidChange();
-                }
-              },
-              EVENT_DELAY_IN_MS
-            );
+
+          // Using a local variable here to allow better type refinement.
+          var allowEventsAgain = this._allowEventsAgain;
+          if (!allowEventsAgain) {
+            allowEventsAgain = debounce(() => {
+              if (this._shouldUseDirstate) {
+                this._delayedEventManager.setCanAcceptEvents(true);
+                this._hgDirstateDidChange();
+              }
+            },
+            EVENT_DELAY_IN_MS,
+            /* immediate */ false);
+            this._allowEventsAgain = allowEventsAgain;
           }
-          this._allowEventsAgain();
+          allowEventsAgain();
         } else if (update.subscription === WATCHMAN_SUBSCRIPTION_NAME_HGBOOKMARK) {
           this._hgBookmarkDidChange();
         }
@@ -344,26 +364,37 @@ class LocalHgService extends LocalHgServiceBase {
   }
 
   _cleanUpWatchman(): void {
-    if (this._watchmanClient) {
-      this._watchmanClient.command(['unsubscribe', this.getWorkingDirectory(), WATCHMAN_SUBSCRIPTION_NAME_PRIMARY]);
-      this._watchmanClient.command(['unsubscribe', this.getWorkingDirectory(), WATCHMAN_SUBSCRIPTION_NAME_HGIGNORE]);
-      this._watchmanClient.command(['unsubscribe', this.getWorkingDirectory(), WATCHMAN_SUBSCRIPTION_NAME_HGLOCK]);
-      this._watchmanClient.command(['unsubscribe', this.getWorkingDirectory(), WATCHMAN_SUBSCRIPTION_NAME_HGDIRSTATE]);
-      this._watchmanClient.command(['unsubscribe', this.getWorkingDirectory(), WATCHMAN_SUBSCRIPTION_NAME_HGBOOKMARK]);
-      this._watchmanClient.end();
+    var watchmanClient = this._watchmanClient;
+    if (watchmanClient) {
+      watchmanClient.command(
+        ['unsubscribe', this.getWorkingDirectory(), WATCHMAN_SUBSCRIPTION_NAME_PRIMARY]
+      );
+      watchmanClient.command(
+        ['unsubscribe', this.getWorkingDirectory(), WATCHMAN_SUBSCRIPTION_NAME_HGIGNORE]
+      );
+      watchmanClient.command(
+        ['unsubscribe', this.getWorkingDirectory(), WATCHMAN_SUBSCRIPTION_NAME_HGLOCK]
+      );
+      watchmanClient.command(
+        ['unsubscribe', this.getWorkingDirectory(), WATCHMAN_SUBSCRIPTION_NAME_HGDIRSTATE]
+      );
+      watchmanClient.command(
+        ['unsubscribe', this.getWorkingDirectory(), WATCHMAN_SUBSCRIPTION_NAME_HGBOOKMARK]
+      );
+      watchmanClient.end();
     }
   }
 
   /**
    * @param update The latest watchman update.
    */
-  _filesDidChange(update: any): Promise<void> {
+  _filesDidChange(update: any): void {
     var workingDirectory = this.getWorkingDirectory();
     var changedFiles = update.files.map(file => path.join(workingDirectory, file.name));
     this._emitter.emit('files-changed', changedFiles);
   }
 
-  _hgIgnoreFileDidChange(): Promise<void> {
+  _hgIgnoreFileDidChange(): void {
     this._emitter.emit('hg-ignore-changed');
   }
 

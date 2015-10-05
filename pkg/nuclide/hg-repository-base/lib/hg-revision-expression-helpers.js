@@ -21,7 +21,7 @@ var logger = require('nuclide-logging').getLogger();
 
 // Section: Expression Formation
 
-var HG_CURRENT_WORKING_DIRECTORY_PARENT = ".";
+var HG_CURRENT_WORKING_DIRECTORY_PARENT = '.';
 
 /**
  * @param revisionExpression An expression that can be passed to hg as an argument
@@ -30,7 +30,10 @@ var HG_CURRENT_WORKING_DIRECTORY_PARENT = ".";
  * that you want a revision expression for. Passing 0 here will simply return 'revisionExpression'.
  * @return An expression for the 'numberOfRevsBefore'th revision before the given revision.
  */
-function expressionForRevisionsBefore(revisionExpression: string, numberOfRevsBefore: number): string {
+function expressionForRevisionsBefore(
+  revisionExpression: string,
+  numberOfRevsBefore: number,
+): string {
   if (numberOfRevsBefore === 0) {
     return revisionExpression;
   } else {
@@ -54,7 +57,10 @@ function expressionForRevisionsBeforeHead(numberOfRevsBefore: number): string {
  * @return An expression for the common ancestor of the revision of interest and
  * the current Hg head.
  */
-async function fetchCommonAncestorOfHeadAndRevision(revision: string, workingDirectory: string): Promise<string> {
+async function fetchCommonAncestorOfHeadAndRevision(
+  revision: string,
+  workingDirectory: string,
+): Promise<string> {
   var {asyncExecute} = require('nuclide-commons');
 
   var ancestorExpression = `ancestor(${revision}, ${HG_CURRENT_WORKING_DIRECTORY_PARENT})`;
@@ -62,7 +68,7 @@ async function fetchCommonAncestorOfHeadAndRevision(revision: string, workingDir
   ancestorExpression = ancestorExpression.toString();
 
   // shell-escape does not wrap '{rev}' in quotes unless it is double-quoted.
-  var args = ['log', '--template', "{rev}", '--rev', ancestorExpression];
+  var args = ['log', '--template', '{rev}', '--rev', ancestorExpression];
   var options = {
     cwd: workingDirectory,
   };
@@ -94,7 +100,7 @@ async function fetchRevisionNumbersBetweenRevisions(
   revisionExpression = revisionExpression.toString();
 
   // shell-escape does not wrap '{rev}' in quotes unless it is double-quoted.
-  var args = ['log', '--template', "{rev}\n", "--rev", revisionExpression];
+  var args = ['log', '--template', '{rev}\n', '--rev', revisionExpression];
   var options = {
     cwd: workingDirectory,
   };
@@ -104,7 +110,9 @@ async function fetchRevisionNumbersBetweenRevisions(
     return parseRevisionNumbersOutput(revisionNumbersString);
   } catch (e) {
     logger.warn('Failed to get revision numbers between two revisions: ', e.stderr, e.command);
-    throw new Error(`Could not fetch revision numbers between the revisions: ${revisionFrom}, ${revisionTo}`);
+    throw new Error(
+      `Could not fetch revision numbers between the revisions: ${revisionFrom}, ${revisionTo}`
+    );
   }
 }
 

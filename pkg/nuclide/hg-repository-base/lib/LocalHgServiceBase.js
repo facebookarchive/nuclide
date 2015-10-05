@@ -16,12 +16,14 @@ var {HgStatusOption} = require('./hg-constants');
 var {parseHgBlameOutput, parseHgDiffUnifiedOutput} = require('./hg-output-helpers');
 var {fetchCommonAncestorOfHeadAndRevision,
     fetchRevisionNumbersBetweenRevisions} = require('./hg-revision-expression-helpers');
-var {fetchFileContentAtRevision, fetchFilesChangedAtRevision} = require('./hg-revision-state-helpers');
+var {fetchFileContentAtRevision,
+    fetchFilesChangedAtRevision} = require('./hg-revision-state-helpers');
 var {asyncExecute, createArgsForScriptCommand} = require('nuclide-commons');
 var path = require('path');
 
 import type {DiffInfo, RevisionFileChanges, StatusCodeIdValue} from './hg-constants';
 import type LocalHgServiceOptions from './hg-types';
+import type {NuclideUri} from 'nuclide-remote-uri';
 
 var logger;
 function getLogger() {
@@ -230,12 +232,16 @@ class LocalHgServiceBase extends HgService {
     return fetchCommonAncestorOfHeadAndRevision(revision, this._workingDirectory);
   }
 
-  fetchRevisionNumbersBetweenRevisions(revisionFrom: string, revisionTo: string): Promise<Array<string>> {
+  fetchRevisionNumbersBetweenRevisions(
+    revisionFrom: string,
+    revisionTo: string,
+  ): Promise<Array<string>> {
     return fetchRevisionNumbersBetweenRevisions(revisionFrom, revisionTo, this._workingDirectory);
   }
 
   async getBlameAtHead(filePath: NuclideUri): Promise<{[key: string]: string}> {
-    var args = ['blame', '-r', 'wdir()', '-Tjson', '--changeset', '--user', '--line-number', filePath];
+    var args =
+      ['blame', '-r', 'wdir()', '-Tjson', '--changeset', '--user', '--line-number', filePath];
     var execOptions = {
       cwd: this.getWorkingDirectory(),
     };

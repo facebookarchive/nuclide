@@ -26,6 +26,7 @@ type DiffInfo = {
   lineDiffs: Array<LineDiff>;
 };
 
+import type {NuclideUri} from 'nuclide-remote-uri';
 
 /**
  * HgService:
@@ -48,7 +49,10 @@ class HgService {
    * @param options An Object with the following fields:
    *   * `hgStatusOption`: an HgStatusOption
    */
-  fetchStatuses(filePaths: Array<NuclideUri>, options: ?any): Promise<{[key: NuclideUri]: StatusCodeId}> {
+  fetchStatuses(
+    filePaths: Array<NuclideUri>,
+    options: ?any,
+  ): Promise<{[key: NuclideUri]: StatusCodeId}> {
     return Promise.reject(new Error('not implemented'));
   }
 
@@ -143,7 +147,10 @@ class HgService {
    *   are all 'true'. "Between" means that revisionFrom is an ancestor of, and
    *   revisionTo is a descendant of.
    */
-  fetchRevisionNumbersBetweenRevisions(revisionFrom: string, revisionTo: string): Promise<Array<string>> {
+  fetchRevisionNumbersBetweenRevisions(
+    revisionFrom: string,
+    revisionTo: string,
+  ): Promise<Array<string>> {
     return Promise.reject(new Error('not implemented'));
   }
 
