@@ -51,7 +51,7 @@ class HgService {
    */
   fetchStatuses(
     filePaths: Array<NuclideUri>,
-    options: ?any,
+    options: ?any
   ): Promise<{[key: NuclideUri]: StatusCodeId}> {
     return Promise.reject(new Error('not implemented'));
   }
@@ -149,7 +149,7 @@ class HgService {
    */
   fetchRevisionNumbersBetweenRevisions(
     revisionFrom: string,
-    revisionTo: string,
+    revisionTo: string
   ): Promise<Array<string>> {
     return Promise.reject(new Error('not implemented'));
   }
