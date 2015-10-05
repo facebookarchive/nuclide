@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "description": "Atom type declarations for use with the Flow type checker",
   "nuclide": {
+    "flowCheck": true,
     "packageType": "Node",
     "testRunner": "npm"
   }
