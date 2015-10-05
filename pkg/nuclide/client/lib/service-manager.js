@@ -123,8 +123,8 @@ function getServiceLogger(): ServiceLogger {
   if (!serviceLogger) {
     serviceLogger = new ServiceLogger();
     serviceLogger.onNewItem((item: Item) => {
-      // TODO: Log these to a separate file. Note that whatever file is used should also be included
-      // in bug reports.
+      // TODO(t8579744): Log these to a separate file. Note that whatever file is used should also
+      // be included in bug reports.
       logger.debug('Service call:', item.service, item.method, item.isLocal, item.argInfo);
     });
   }

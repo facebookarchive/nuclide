@@ -54,8 +54,8 @@ export default class ServiceMonitor extends React.Component {
     });
   }
 
-  // TODO(mbolin): Use FixedDataTable.
-  // TODO(mbolin): Make it possible to click on a row and console.dir() the arguments so that they
+  // TODO(t8579654): Use FixedDataTable.
+  // TODO(t8579695): Make it possible to click on a row and console.dir() the arguments so that they
   // can be inspected.
   render(): void {
     let rows = [];
