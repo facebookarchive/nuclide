@@ -11,13 +11,15 @@
 
 var AtomComboBox = require('nuclide-ui-atom-combo-box');
 var {CompositeDisposable, TextEditor} = require('atom');
-var {debounce} = require('nuclide-commons');
 var React = require('react-for-atom');
 var {Dispatcher} = require('flux');
 var {PropTypes} = React;
 var SimulatorDropdown = require('./SimulatorDropdown');
 var BuckToolbarActions = require('./BuckToolbarActions');
 var BuckToolbarStore = require('./BuckToolbarStore');
+
+var {debounce} = require('nuclide-commons');
+var {onWorkspaceDidStopChangingActivePaneItem} = require('nuclide-atom-helpers').atomEventDebounce;
 
 class BuckToolbar extends React.Component {
 
@@ -56,7 +58,7 @@ class BuckToolbar extends React.Component {
     this._onActivePaneItemChanged(atom.workspace.getActivePaneItem());
 
     this._disposables = new CompositeDisposable();
-    this._disposables.add(atom.workspace.onDidChangeActivePaneItem(
+    this._disposables.add(onWorkspaceDidStopChangingActivePaneItem(
       this._onActivePaneItemChanged.bind(this)));
 
     this._disposables.add(this._buckToolbarStore.onResetToolbarProgress(
@@ -93,7 +95,6 @@ class BuckToolbar extends React.Component {
     if (!(item instanceof TextEditor)) {
       return;
     }
-
     var textEditor: TextEditor = item;
     this._buckToolbarActions.updateProjectFor(textEditor);
   }

@@ -13,10 +13,10 @@ export type FilePath = string;
 export type TimeStamp = number;
 export type FileList = Array<{path: FilePath, timestamp: TimeStamp}>;
 
-var {
-  CompositeDisposable,
-} = require('atom');
+var {CompositeDisposable} = require('atom');
+
 var {array} = require('nuclide-commons');
+var {onWorkspaceDidStopChangingActivePaneItem} = require('nuclide-atom-helpers').atomEventDebounce;
 
 class RecentFilesService {
   // Map uses `Map`'s insertion ordering to keep files in order.
@@ -32,7 +32,7 @@ class RecentFilesService {
       }, null);
     }
     this._subscriptions = new CompositeDisposable();
-    this._subscriptions.add(atom.workspace.onDidChangeActivePaneItem((item: ?mixed) => {
+    this._subscriptions.add(onWorkspaceDidStopChangingActivePaneItem((item: ?mixed) => {
       // Not all `item`s are instances of TextEditor (e.g. the diff view).
       if (!item || typeof item.getPath !== 'function') {
         return;

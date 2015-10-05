@@ -15,25 +15,37 @@ var StatusBarTile = require('./ui/StatusBarTile');
 var remoteUri = require('nuclide-remote-uri');
 var ConnectionState = require('./ConnectionState');
 
+var {onWorkspaceDidStopChangingActivePaneItem} =
+  require('nuclide-atom-helpers').atomEventDebounce;
+
 class RemoteProjectsController {
+  _disposables: CompositeDisposable;
   _statusBarDiv: ?Element;
   _statusBarTile: ?Element;
-  _disposables: CompositeDisposable;
+  _statusSubscription: ?Disposable;
 
   constructor() {
     this._statusBarTile = null;
     this._disposables = new CompositeDisposable();
 
     this._statusSubscription = null;
-    this._disposables.add(atom.workspace.observeActivePaneItem(this._updateConnectionStatus.bind(this)));
+    this._disposables.add(
+      atom.workspace.onDidChangeActivePaneItem(this._disposeSubscription.bind(this)),
+      onWorkspaceDidStopChangingActivePaneItem(this._updateConnectionStatus.bind(this))
+    );
+  }
+
+  _disposeSubscription(): void {
+    const subscription = this._statusSubscription;
+    if (subscription) {
+      this._disposables.remove(subscription);
+      subscription.dispose();
+      this._statusSubscription = null;
+    }
   }
 
   _updateConnectionStatus(paneItem: Object): void {
-    if (this._statusSubscription) {
-      this._statusSubscription.dispose();
-      this._disposables.remove(this._statusSubscription);
-      this._statusSubscription = null;
-    }
+    this._disposeSubscription();
 
     // That may not be generically ideal to check `instanceof`.
     // However, that's the way `pane.coffee` checks in `getActiveEditor()`.

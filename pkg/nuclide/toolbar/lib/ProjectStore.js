@@ -13,7 +13,6 @@ var {CompositeDisposable, Disposable} = require('atom');
 var {EventEmitter} = require('events');
 var {buckProjectRootForPath} = require('nuclide-buck-commons');
 
-var PANE_SWITCH_BUFFER_MILLISECONDS = 0;
 var ARC_PROJECT_WWW = 'facebook-www';
 
 type ProjectType = 'Buck' | 'Hhvm' | 'Other';
@@ -38,10 +37,7 @@ class ProjectStore {
     var {onWorkspaceDidStopChangingActivePaneItem} =
         require('nuclide-atom-helpers').atomEventDebounce;
     var callback = this._onDidChangeActivePaneItem.bind(this);
-    this._disposables.add(onWorkspaceDidStopChangingActivePaneItem(
-      callback,
-      PANE_SWITCH_BUFFER_MILLISECONDS
-    ));
+    this._disposables.add(onWorkspaceDidStopChangingActivePaneItem(callback));
     callback();
   }
 

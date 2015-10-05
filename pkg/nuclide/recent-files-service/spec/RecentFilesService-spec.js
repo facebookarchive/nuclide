@@ -9,19 +9,35 @@
  * the root directory of this source tree.
  */
 
+import RecentFilesService from '../lib/RecentFilesService';
+
 import invariant from 'assert';
 
-var RecentFilesService = require('../lib/RecentFilesService');
-
+const ON_DID_CHANGE_ACTIVE_PANE_ITEM_DEBOUNCE_MS = 101;
 const FILE_PATH_1 = 'foo/bar/foo.js';
 const FILE_PATH_2 = 'foo/bar/bar.js';
 const FILE_PATH_3 = 'foo/bar/baz.js';
 
 describe('RecentFilesService', () => {
-  var recentFilesService;
+  let recentFilesService;
+  let origDateNow;
 
   beforeEach(() => {
+    origDateNow = Date.now;
+    /*
+     * `RecentFileService` listens for `onWorkspaceDidStopChangingActivePaneItem`, which debounces
+     * calls to `onDidChangeActivePaneItem`. `debounce` calls `Date.now` to determine whether to
+     * call callbacks.
+     *
+     * Mock `Date.now` to use the fake Jasmine clock so `advanceClock` can be called synchronously
+     * and call appropriate callbacks deterministically.
+     */
+    Date.now = () => window.now;
     recentFilesService = new RecentFilesService();
+  });
+
+  afterEach(() => {
+    Date.now = origDateNow;
   });
 
   describe('getRecentFiles', () => {
@@ -32,6 +48,7 @@ describe('RecentFilesService', () => {
         expect(recentFilesService.getRecentFiles().length).toEqual(0);
 
         await atom.workspace.open(FILE_PATH_1);
+        advanceClock(ON_DID_CHANGE_ACTIVE_PANE_ITEM_DEBOUNCE_MS);
         mostRecentFiles = recentFilesService.getRecentFiles();
         expect(mostRecentFiles.length).toEqual(1);
         expect(mostRecentFiles[0].path.endsWith(FILE_PATH_1)).toBe(true);
@@ -39,6 +56,7 @@ describe('RecentFilesService', () => {
         previousTimestamp = mostRecentFiles[0].timestamp;
 
         await atom.workspace.open(FILE_PATH_2);
+        advanceClock(ON_DID_CHANGE_ACTIVE_PANE_ITEM_DEBOUNCE_MS);
         mostRecentFiles = recentFilesService.getRecentFiles();
         expect(mostRecentFiles.length).toEqual(2);
         expect(mostRecentFiles[0].path.endsWith(FILE_PATH_2)).toBe(true);
@@ -46,6 +64,7 @@ describe('RecentFilesService', () => {
 
         previousTimestamp = mostRecentFiles[0].timestamp;
         await atom.workspace.open(FILE_PATH_3);
+        advanceClock(ON_DID_CHANGE_ACTIVE_PANE_ITEM_DEBOUNCE_MS);
         mostRecentFiles = recentFilesService.getRecentFiles();
         expect(mostRecentFiles.length).toEqual(3);
         expect(mostRecentFiles[0].path.endsWith(FILE_PATH_3)).toBe(true);
@@ -56,6 +75,7 @@ describe('RecentFilesService', () => {
     it('returns paths and timestamps of recently opened files', () => {
       waitsForPromise(async () => {
         await atom.workspace.open(FILE_PATH_1);
+        advanceClock(ON_DID_CHANGE_ACTIVE_PANE_ITEM_DEBOUNCE_MS);
         var recentFiles = recentFilesService.getRecentFiles();
         var mostRecentFile = recentFiles[0];
         expect(Object.keys(mostRecentFile).length).toEqual(2);
@@ -70,22 +90,26 @@ describe('RecentFilesService', () => {
         expect(recentFilesService.getRecentFiles().length).toEqual(0);
 
         await atom.workspace.open(FILE_PATH_1);
+        advanceClock(ON_DID_CHANGE_ACTIVE_PANE_ITEM_DEBOUNCE_MS);
         mostRecentFiles = recentFilesService.getRecentFiles();
         expect(mostRecentFiles.length).toEqual(1);
         expect(mostRecentFiles[0].path.endsWith(FILE_PATH_1)).toBe(true);
 
         await atom.workspace.open(FILE_PATH_2);
+        advanceClock(ON_DID_CHANGE_ACTIVE_PANE_ITEM_DEBOUNCE_MS);
         mostRecentFiles = recentFilesService.getRecentFiles();
         expect(mostRecentFiles.length).toEqual(2);
         expect(mostRecentFiles[0].path.endsWith(FILE_PATH_2)).toBe(true);
 
         await atom.workspace.open(FILE_PATH_1);
+        advanceClock(ON_DID_CHANGE_ACTIVE_PANE_ITEM_DEBOUNCE_MS);
         mostRecentFiles = recentFilesService.getRecentFiles();
         expect(mostRecentFiles.length).toEqual(2);
         expect(mostRecentFiles[0].path.endsWith(FILE_PATH_1)).toBe(true);
         expect(mostRecentFiles[1].path.endsWith(FILE_PATH_2)).toBe(true);
 
         await atom.workspace.open(FILE_PATH_2);
+        advanceClock(ON_DID_CHANGE_ACTIVE_PANE_ITEM_DEBOUNCE_MS);
         mostRecentFiles = recentFilesService.getRecentFiles();
         expect(mostRecentFiles.length).toEqual(2);
         expect(mostRecentFiles[0].path.endsWith(FILE_PATH_2)).toBe(true);

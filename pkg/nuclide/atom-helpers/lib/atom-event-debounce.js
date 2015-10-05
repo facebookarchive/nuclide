@@ -20,6 +20,8 @@
 
 var {debounce} = require('nuclide-commons');
 
+const DEFAULT_DEBOUNCE_INTERVAL_MS = 100;
+
 /**
  * Similar to Atom's Workspace::onDidChangeActivePaneItem
  * (https://atom.io/docs/api/v1.0.2/Workspace#instance-onDidChangeActivePaneItem),
@@ -28,7 +30,7 @@ var {debounce} = require('nuclide-commons');
  */
 function onWorkspaceDidStopChangingActivePaneItem(
     callback: (item: mixed) => any,
-    debounceInterval: number
+    debounceInterval: number = DEFAULT_DEBOUNCE_INTERVAL_MS
   ): atom$Disposable {
   var debouncedFunction = debounce(callback, debounceInterval, /* immediate */ false);
   return atom.workspace.onDidChangeActivePaneItem(debouncedFunction);

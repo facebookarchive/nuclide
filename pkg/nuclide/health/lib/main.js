@@ -32,8 +32,14 @@ type StatsViewProps = {
 
 var BASE_ITEM_URI = 'nuclide-health://';
 
+var {
+  CompositeDisposable,
+  Disposable,
+  TextEditor,
+} = require('atom');
+
+var {onWorkspaceDidStopChangingActivePaneItem} = require('nuclide-atom-helpers').atomEventDebounce;
 var os = require('os');
-var {CompositeDisposable, Disposable, TextEditor} = require('atom');
 
 var disposables: ?CompositeDisposable = null;
 
@@ -71,7 +77,8 @@ function activate(): void {
       updateViews();
       updateAnalytics();
     }),
-    atom.workspace.onDidChangeActivePaneItem(timeActiveEditorKeys),
+    atom.workspace.onDidChangeActivePaneItem(disposeActiveEditorDisposables),
+    onWorkspaceDidStopChangingActivePaneItem(timeActiveEditorKeys),
     atom.workspace.addOpener(getHealthPaneItem),
     atom.commands.add(
       'atom-workspace',
@@ -181,11 +188,16 @@ function consumeStatusBar(statusBar: any): void {
   }
 }
 
-function timeActiveEditorKeys(): void {
+function disposeActiveEditorDisposables(): void {
   // Clear out any events & timing data from previous text editor.
-  if (activeEditorDisposables) {
+  if (activeEditorDisposables != null) {
     activeEditorDisposables.dispose();
+    activeEditorDisposables = null;
   }
+}
+
+function timeActiveEditorKeys(): void {
+  disposeActiveEditorDisposables();
   activeEditorDisposables = new CompositeDisposable();
 
   // If option is enabled, start timing latency of keys on the new text editor.
