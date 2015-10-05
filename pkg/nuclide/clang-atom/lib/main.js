@@ -11,6 +11,8 @@
 
 import type {Point} from 'atom';
 
+import {trackOperationTiming} from 'nuclide-analytics';
+
 var libClangProcess = null;
 var editorSubscription = null;
 var jumpToRelatedFile = null;
@@ -55,7 +57,8 @@ module.exports = {
       getSuggestions(
           request: {editor: TextEditor; bufferPosition: Point; scopeDescriptor: any; prefix: string}
           ): Promise<Array<Suggestion>> {
-        return autocompleteProvider.getAutocompleteSuggestions(request);
+        return trackOperationTiming('nuclide-clang-atom:getAutocompleteSuggestions',
+          () => autocompleteProvider.getAutocompleteSuggestions(request));
       },
     };
   },

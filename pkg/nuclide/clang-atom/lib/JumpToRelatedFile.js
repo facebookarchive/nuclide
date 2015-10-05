@@ -16,6 +16,8 @@ var GRAMMARS = [
   'source.objcpp',
 ];
 
+import {trackOperationTiming} from 'nuclide-analytics';
+
 module.exports =
 /**
  * Sets up listeners so the user can jump to related files.
@@ -23,9 +25,11 @@ module.exports =
  * Clients must call `disable()` once they're done with an instance.
  */
 class JumpToRelatedFile {
+  _commandSubscriptionsMap: Map;
 
   constructor(relatedFileFinder: RelatedFileFinder) {
     this._relatedFileFinder = relatedFileFinder;
+    this._commandSubscriptionsMap = new Map();
   }
 
   enable(): void {
@@ -35,7 +39,6 @@ class JumpToRelatedFile {
     }
 
     // A map from TextEditor to Disposable.
-    this._commandSubscriptionsMap = new Map();
     var {observeLanguageTextEditors} = require('nuclide-atom-helpers');
     this._languageListener = observeLanguageTextEditors(
         GRAMMARS,
@@ -62,15 +65,19 @@ class JumpToRelatedFile {
     textEditorEl.classList.add('editor-objc');
 
     var commandSubscription = atom.commands.add(
-        textEditorEl,
-        {
-          'autocomplete-plus-clang:jump-to-next-related-file': () => {
-            this._open(this.getNextRelatedFile(textEditor.getPath()));
-          },
-          'autocomplete-plus-clang:jump-to-previous-related-file': () => {
-            this._open(this.getPreviousRelatedFile(textEditor.getPath()));
-          },
-        });
+      textEditorEl,
+      {
+        'autocomplete-plus-clang:jump-to-next-related-file': () => {
+          trackOperationTiming(
+            'autocomplete-plus-clang:jump-to-next-related-file',
+            () => this._open(this.getNextRelatedFile(textEditor.getPath())));
+        },
+        'autocomplete-plus-clang:jump-to-previous-related-file': () => {
+          trackOperationTiming(
+            'autocomplete-plus-clang:jump-to-previous-related-file',
+            () => this._open(this.getPreviousRelatedFile(textEditor.getPath())));
+        },
+      });
     this._commandSubscriptionsMap.set(textEditor, commandSubscription);
   }
 
