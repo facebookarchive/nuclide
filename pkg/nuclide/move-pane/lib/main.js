@@ -9,7 +9,16 @@
  * the root directory of this source tree.
  */
 
-var {CompositeDisposable} = require('atom');
+import {CompositeDisposable} from 'atom';
+import {trackOperationTiming} from 'nuclide-analytics';
+
+function trackSplit(
+    operation: string,
+    splitOperation: (pane: atom$Pane, params?: atom$PaneSplitParams) => atom$Pane) {
+  trackOperationTiming(
+    'nuclide-move-pane:move-tab-to-new-pane-' + operation,
+    () => { doSplit(splitOperation); });
+}
 
 function doSplit(
     splitOperation: (pane: atom$Pane, params?: atom$PaneSplitParams) => atom$Pane) {
@@ -28,19 +37,19 @@ function doSplit(
 }
 
 function splitUp() {
-  doSplit((pane, params) => pane.splitUp(params));
+  trackSplit('up', (pane, params) => pane.splitUp(params));
 }
 
 function splitDown() {
-  doSplit((pane, params) => pane.splitDown(params));
+  trackSplit('down', (pane, params) => pane.splitDown(params));
 }
 
 function splitRight() {
-  doSplit((pane, params) => pane.splitRight(params));
+  trackSplit('right', (pane, params) => pane.splitRight(params));
 }
 
 function splitLeft() {
-  doSplit((pane, params) => pane.splitLeft(params));
+  trackSplit('left', (pane, params) => pane.splitLeft(params));
 }
 
 class Activation {
