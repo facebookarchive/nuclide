@@ -12,65 +12,68 @@
 
 var {CompositeDisposable} = require('atom');
 var {getPath} = require('nuclide-remote-uri');
-var {track} = require('nuclide-analytics');
+var {trackOperationTiming} = require('nuclide-analytics');
 
 import type {NuclideUri} from 'nuclide-remote-uri';
 
 function copyAbsolutePath(): void {
-  trackOperation('copyAbsolutePath');
-
-  var uri = getCurrentNuclideUri();
-  if (!uri) {
-    return;
-  }
-  copyToClipboard('Copied absolute path', getPath(uri));
+  trackOperation('copyAbsolutePath', () => {
+    var uri = getCurrentNuclideUri();
+    if (!uri) {
+      return;
+    }
+    copyToClipboard('Copied absolute path', getPath(uri));
+  });
 }
 
 function copyProjectRelativePath(): void {
-  trackOperation('copyProjectRelativePath');
+  trackOperation('copyProjectRelativePath', () => {
+    var uri = getCurrentNuclideUri();
+    if (!uri) {
+      return;
+    }
 
-  var uri = getCurrentNuclideUri();
-  if (!uri) {
-    return;
-  }
-
-  var projectRelativePath = getAtomProjectRelativePath(uri);
-  if (projectRelativePath) {
-    copyToClipboard('Copied project relative path', projectRelativePath);
-  } else {
-    copyToClipboard('Path not contained in any open project.\nCopied absolute path', getPath(uri));
-  }
+    var projectRelativePath = getAtomProjectRelativePath(uri);
+    if (projectRelativePath) {
+      copyToClipboard('Copied project relative path', projectRelativePath);
+    } else {
+      copyToClipboard(
+        'Path not contained in any open project.\nCopied absolute path',
+        getPath(uri));
+    }
+  });
 }
 
-async function copyRepositoryRelativePath(): Promise {
-  trackOperation('copyRepositoryRelativePath');
+function copyRepositoryRelativePath(): Promise {
+  trackOperation('copyRepositoryRelativePath', async () => {
 
-  var uri = getCurrentNuclideUri();
-  if (!uri) {
-    return;
-  }
+    var uri = getCurrentNuclideUri();
+    if (!uri) {
+      return;
+    }
 
-  // First source control relative.
-  var repoRelativePath = getRepositoryRelativePath(uri);
-  if (repoRelativePath) {
-    copyToClipboard('Copied repository relative path', repoRelativePath);
-    return;
-  }
+    // First source control relative.
+    var repoRelativePath = getRepositoryRelativePath(uri);
+    if (repoRelativePath) {
+      copyToClipboard('Copied repository relative path', repoRelativePath);
+      return;
+    }
 
-  // Next try arcanist relative.
-  var arcRelativePath = await getArcanistRelativePath(uri);
-  if (arcRelativePath) {
-    copyToClipboard('Copied arc project relative path', arcRelativePath);
-    return;
-  }
+    // Next try arcanist relative.
+    var arcRelativePath = await getArcanistRelativePath(uri);
+    if (arcRelativePath) {
+      copyToClipboard('Copied arc project relative path', arcRelativePath);
+      return;
+    }
 
-  // Lastly, project and absolute.
-  var projectRelativePath = getAtomProjectRelativePath(uri);
-  if (projectRelativePath) {
-    copyToClipboard('Copied project relative path', projectRelativePath);
-  } else {
-    copyToClipboard('Path not contained in any repository.\nCopied absolute path', getPath(uri));
-  }
+    // Lastly, project and absolute.
+    var projectRelativePath = getAtomProjectRelativePath(uri);
+    if (projectRelativePath) {
+      copyToClipboard('Copied project relative path', projectRelativePath);
+    } else {
+      copyToClipboard('Path not contained in any repository.\nCopied absolute path', getPath(uri));
+    }
+  });
 }
 
 function getAtomProjectRelativePath(path: NuclideUri): ?string {
@@ -114,8 +117,8 @@ function getCurrentNuclideUri(): ?NuclideUri {
   return path;
 }
 
-function trackOperation(operation: string): void {
-  track('nuclide-clipboard-path:' + operation, {});
+function trackOperation(eventName: string, operation: () => void): void {
+  trackOperationTiming('nuclide-clipboard-path:' + eventName, operation);
 }
 
 function notify(message: string): void {
