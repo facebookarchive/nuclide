@@ -9,9 +9,13 @@
  * the root directory of this source tree.
  */
 
-import search from './scanhandler';
-import path from 'path';
+import type {NuclideUri} from 'nuclide-remote-uri';
+import type {search$FileResult} from './types';
+
 import {Observable} from 'rx';
+
+import path from 'path';
+import search from './scanhandler';
 
 export function findInProjectSearch(directory: NuclideUri, regex: RegExp, subdirs: Array<string>):
     Observable<search$FileResult> {

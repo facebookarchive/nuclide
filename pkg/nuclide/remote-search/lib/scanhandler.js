@@ -9,9 +9,18 @@
  * the root directory of this source tree.
  */
 
+import type {
+  search$FileResult,
+  search$Match,
+} from './types';
+
 import {Observable} from 'rx';
+
+import {
+  fsPromise,
+  safeSpawn,
+} from 'nuclide-commons';
 import path from 'path';
-import {safeSpawn, fsPromise} from 'nuclide-commons';
 import split from 'split';
 
 // This pattern is used for parsing the output of grep.
@@ -51,9 +60,12 @@ export default function search(directory: string, regex: RegExp, subdirs: Array<
 // Helper function that runs the search command on the given directory
 // `subdir`, relative to `directory`. The function returns an Observable that emits
 // search$FileResult objects.
-function searchInSubdir(matchesByFile: Map<string, Array<search$Match>>, directory: string,
-  subdir: string, regex: RexExp) : Observable<search$FileResult> {
-
+function searchInSubdir(
+  matchesByFile: Map<string, Array<search$Match>>,
+  directory: string,
+  subdir: string,
+  regex: RegExp
+): Observable<search$FileResult> {
   // Try running search commands, falling through to the next if there is an error.
   var vcsargs = (regex.ignoreCase ? ['-i'] : []).concat(['-n', regex.source]);
   var grepargs = (regex.ignoreCase ? ['-i'] : []).concat(['-rHn', '-e', regex.source, '.']);
@@ -112,11 +124,15 @@ function getLinesFromCommand(command: string, args: Array<string>, localDirector
     var exited = false;
 
     // Spawn the search command in the given directory.
-    safeSpawn(command, args, {cwd: localDirectoryPath}).then((child: child_process$ChildProcess) => {
+    safeSpawn(command, args, {cwd: localDirectoryPath}).then(child => {
       proc = child;
 
-      proc.on('error', observer.onError.bind(observer)); // Reject on error.
-      proc.stdout.pipe(split()).on('data', observer.onNext.bind(observer)); // Call the callback on each line.
+      // Reject on error.
+      proc.on('error', observer.onError.bind(observer));
+
+      // Call the callback on each line.
+      // $FlowFixMe: `pipe` bad ret value {@link https://github.com/facebook/flow/issues/906}
+      proc.stdout.pipe(split()).on('data', observer.onNext.bind(observer));
 
       // Keep a running string of stderr, in case we need to throw an error.
       var stderr = '';
@@ -124,9 +140,9 @@ function getLinesFromCommand(command: string, args: Array<string>, localDirector
         stderr += data;
       });
 
-      // Resolve promise if error code is 0 (found matches) or 1 (found no matches). Otherwise reject.
-      // However, if a process was killed with a signal, don't reject, since this was likely to
-      // cancel the search.
+      // Resolve promise if error code is 0 (found matches) or 1 (found no matches). Otherwise
+      // reject. However, if a process was killed with a signal, don't reject, since this was likely
+      // to cancel the search.
       proc.on('close', (code, signal) => {
         exited = true;
         if (signal || code <= 1) {

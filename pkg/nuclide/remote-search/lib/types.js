@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {NuclideUri} from 'nuclide-remote-uri';
+
 export type search$RangeIndexes = Array<Array<number>>;
 
 export type search$Match = {

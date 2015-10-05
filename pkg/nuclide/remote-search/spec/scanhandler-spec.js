@@ -40,7 +40,9 @@ describe('Scan Handler Tests', () => {
         console.log(a);`);
 
       var results = await search(folder, /hello world/i, []).toArray().toPromise();
-      var expected = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'basic.json')));
+      var expected = JSON.parse(
+        fs.readFileSync(path.join(__dirname, 'fixtures', 'basic.json'), 'utf-8')
+      );
 
       // Sort results by filename to normalize order.
       sortResults(results);
@@ -58,7 +60,9 @@ describe('Scan Handler Tests', () => {
         console.error("hello world!");`);
 
       var results = await search(folder, /hello world/, []).toArray().toPromise();
-      var expected = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'casesensitive.json')));
+      var expected = JSON.parse(
+        fs.readFileSync(path.join(__dirname, 'fixtures', 'casesensitive.json'))
+      );
 
       // Sort the list of matches by filename to normalize order.
       sortResults(results);
@@ -70,7 +74,7 @@ describe('Scan Handler Tests', () => {
     waitsForPromise(async () => {
       // Setup the test folder.
       var folder = temp.mkdirSync();
-      var testCode = 'console.log("Hello World!");'
+      var testCode = 'console.log("Hello World!");';
       fs.mkdirSync(path.join(folder, 'dir1'));
       fs.writeFileSync(path.join(folder, 'dir1', 'file.txt'), testCode);
       fs.mkdirSync(path.join(folder, 'dir2'));
@@ -78,7 +82,9 @@ describe('Scan Handler Tests', () => {
       fs.mkdirSync(path.join(folder, 'dir3'));
       fs.writeFileSync(path.join(folder, 'dir3', 'file.txt'), testCode);
 
-      var results = await search(folder, /hello world/i, ['dir2', 'dir3', 'nonexistantdir']).toArray().toPromise();
+      var results = await search(
+        folder, /hello world/i, ['dir2', 'dir3', 'nonexistantdir']
+      ).toArray().toPromise();
       var expected = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'subdirs.json')));
 
       // Sort the list of matches by filename to normalize order.

@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "description": "Execute project search on a remote directory.",
   "nuclide": {
+    "flowCheck": true,
     "packageType": "Node",
     "testRunner": "npm"
   },
@@ -16,6 +17,7 @@
   "devDependencies": {
     "nuclide-external-interfaces": "0.0.0",
     "nuclide-jasmine": "0.0.0",
+    "nuclide-remote-uri": "0.0.0",
     "nuclide-test-helpers": "0.0.0",
     "split": "0.3.2",
     "temp": "0.8.3"
