@@ -90,6 +90,7 @@ type JasmineEnvironment = {
   currentSpec: {
     fail(message: string): void;
   };
+  defaultTimeoutInterval: number;
 };
 
 type JasmineSpec = {
