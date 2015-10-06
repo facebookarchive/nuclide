@@ -17,5 +17,7 @@ module.exports = {
    * @param eventName Name of the event to be tracked.
    * @param values The object containing the data to track.
    */
-  track(eventName: string, values: {[key: string]: string}) {},
+  track(eventName: string, values: {[key: string]: string}): Promise {
+    return Promise.resolve();
+  },
 };

@@ -72,17 +72,17 @@ class TimingTracker {
     this._startTime = Date.now();
   }
 
-  onError(error: Error): void {
-    this._trackTimingEvent(error);
+  onError(error: Error): Promise {
+    return this._trackTimingEvent(error);
   }
 
-  onSuccess(): void {
-    this._trackTimingEvent(/* error */ null);
+  onSuccess(): Promise {
+    return this._trackTimingEvent(/* error */ null);
   }
 
-  _trackTimingEvent(exception: ?Error): void {
+  _trackTimingEvent(exception: ?Error): Promise {
     // Using module.exports.track to enable unit testing.
-    module.exports.track(PERFORMANCE_EVENT, {
+    return module.exports.track(PERFORMANCE_EVENT, {
       duration: (Date.now() - this._startTime).toString(),
       eventName: this._eventName,
       error: exception ? '1' : '0',
