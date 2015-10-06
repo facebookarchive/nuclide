@@ -12,14 +12,14 @@
 var {uncachedRequire} = require('nuclide-test-helpers');
 
 describe('LocalMerlinService', () => {
-  function getMockedMerlinService(callback): Promise<LocalMerlinService> {
-    var MerlinProcess = uncachedRequire(require, '../lib/MerlinProcess');
-    var merlinService = new (uncachedRequire(require, '../lib/LocalMerlinService'))();
+  function getMockedMerlinService(callback): Promise<any> {
+    var MerlinProcess: any = uncachedRequire(require, '../lib/MerlinProcess');
+    var merlinService = new (uncachedRequire(require, '../lib/LocalMerlinService'): any)();
 
     spyOn(merlinService, '_getInstance').andCallFake(() => {
-        var mockedProcess = new MerlinProcess({on: () => null});
-        spyOn(mockedProcess, 'runSingleCommand').andCallFake(callback);
-        return Promise.resolve(mockedProcess);
+      var mockedProcess = new MerlinProcess({on: () => null});
+      spyOn(mockedProcess, 'runSingleCommand').andCallFake(callback);
+      return Promise.resolve(mockedProcess);
     });
 
     return Promise.resolve(merlinService);
@@ -35,7 +35,8 @@ describe('LocalMerlinService', () => {
               return {cursor: {line: 1, col: 0}, marker: false};
             }
             return null;
-        });
+          }
+        );
 
         var result = await merlinService.pushDotMerlinPath(filename);
         expect(JSON.stringify(result)).toBe(
@@ -95,8 +96,9 @@ describe('LocalMerlinService', () => {
       waitsForPromise(async () => {
         var merlinService = await getMockedMerlinService(
           (command) => {
-              return {cursor: {line: 1 ,col: 0}, marker: false, file: 'notderp.ml'};
-        });
+            return {cursor: {line: 1 ,col: 0}, marker: false, file: 'notderp.ml'};
+          }
+        );
 
         var result = await merlinService.locate('yesderp.ml', 1, 1, 'ml');
 
@@ -113,7 +115,7 @@ describe('LocalMerlinService', () => {
       waitsForPromise(async () => {
         var expectedResult = [
             { desc: 'unit -> int', info: '', kind: 'Value', name: 'derp' },
-            { desc: 'int', info: '', kind: 'Value', name: 'also' }
+            { desc: 'int', info: '', kind: 'Value', name: 'also' },
         ];
 
         var merlinService = await getMockedMerlinService(
@@ -128,7 +130,8 @@ describe('LocalMerlinService', () => {
             }
 
             return null;
-        });
+          }
+        );
 
         var result = await merlinService.complete('derp.ml', 5, 2, 'FoodTest.');
 

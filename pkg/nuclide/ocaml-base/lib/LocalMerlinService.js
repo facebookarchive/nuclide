@@ -29,7 +29,7 @@ var MerlinProcess = require('./MerlinProcess');
  */
 function getPathToMerlin(): string {
   if (global.atom) {
-    return atom.config.get('nuclide-ocaml.pathToMerlin');
+    return global.atom.config.get('nuclide-ocaml.pathToMerlin');
   } else {
     return 'ocamlmerlin';
   }
@@ -90,9 +90,14 @@ class LocalMerlinService extends MerlinService {
     return instance ? instance.pushNewBuffer(name, content) : null;
   }
 
-  async locate(path: NuclideUri, line: number, col: number, kind: string): Promise<?{file: NuclideUri}> {
+  async locate(
+    path: NuclideUri,
+    line: number,
+    col: number,
+    kind: string
+  ): Promise<?{file: NuclideUri}> {
     var instance = await this._getInstance(path);
-    return instance ? instance.locate(path, line, col, kind) : null;
+    return instance ? await instance.locate(path, line, col, kind) : null;
   }
 
   async complete(path: NuclideUri, line: number ,col: number, prefix: string): Promise<mixed> {

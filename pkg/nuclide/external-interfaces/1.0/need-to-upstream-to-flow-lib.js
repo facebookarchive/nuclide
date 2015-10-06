@@ -10,9 +10,11 @@
  * APIs listed in this file are ones that should be built into Flow and need to be upstreamed.
  */
 
+/* eslint-disable no-unused-vars */
+
 // Add this to Flow: https://github.com/facebook/flow/issues/774.
 // API taken from https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent.
-declare class MouseEvent extends Event { // eslint-disable-line no-unused-vars
+declare class MouseEvent extends Event {
   altKey: boolean;
   // TODO: Include -1 when Flow fixes the bug where it does not support negative
   // numbers in union types.
@@ -39,4 +41,20 @@ declare class MouseEvent extends Event { // eslint-disable-line no-unused-vars
    * @return whether the specified modifier key is being held down.
    */
   getModifierState(keyArg: string): boolean;
+}
+
+type CreateInterfaceOptions = {
+  input: stream$Readable;
+  output?: stream$Writable;
+  completer?: (line: string) => [Array<string>, string];
+  terminal?: boolean;
+  historySize?: number;
+}
+
+declare module 'readline' {
+  declare class Interface {
+    on: (event: string, listener: Function) => void;
+    close: () => void;
+  }
+  declare function createInterface(options: CreateInterfaceOptions): Interface;
 }

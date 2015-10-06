@@ -70,7 +70,7 @@ class MerlinProcess {
    *
    * @return on success: a cursor position pointed at the end of the buffer
    */
-  async pushNewBuffer(name: NuclideUri, content): Promise<mixed> {
+  async pushNewBuffer(name: NuclideUri, content: string): Promise<mixed> {
     return await this._promiseQueue.submit(async (resolve, reject) => {
       await this.runSingleCommand([
         'reset',
@@ -96,9 +96,14 @@ class MerlinProcess {
    * @return null if nothing was found; a position of the form
    *   {"file": "somepath", "pos": {"line": 41, "col": 5}}.
    */
-  async locate(path: NuclideUri, line, col, kind): Promise<mixed> {
+  async locate(
+    path: NuclideUri,
+    line: number,
+    col: number,
+    kind: string,
+  ): Promise<?{file: string, pos: {line: number, column: number}}> {
     return await this._promiseQueue.submit(async (resolve, reject) => {
-      var location = await this.runSingleCommand([
+      var location: Object = await this.runSingleCommand([
         'locate',
         /* identifier name */ '',
         kind,
@@ -121,17 +126,17 @@ class MerlinProcess {
     });
   }
 
-  async complete(path: NuclideUri, line, col, prefix): Promise<mixed> {
+  async complete(path: NuclideUri, line: number, col: number, prefix: string): Promise<mixed> {
     return await this._promiseQueue.submit(async (resolve, reject) => {
-       var result = await this.runSingleCommand([
-          'complete',
-          'prefix',
-          prefix,
-          'at',
-          {line: line + 1, col: col + 1},
-       ]);
+      var result = await this.runSingleCommand([
+        'complete',
+        'prefix',
+        prefix,
+        'at',
+        {line: line + 1, col: col + 1},
+      ]);
 
-       resolve(result);
+      resolve(result);
     });
   }
 
@@ -144,13 +149,16 @@ class MerlinProcess {
   runSingleCommand(command: mixed): Promise<mixed> {
     var logger = require('nuclide-logging').getLogger();
 
-    var command = JSON.stringify(command);
+    var commandString = JSON.stringify(command);
     var stdin = this._proc.stdin;
     var stdout = this._proc.stdout;
 
     return new Promise((resolve, reject) => {
-      var readline = require('readline');
-      var reader = readline.createInterface({
+      // Flow claims that createInterface is not found, but it obviously can find it since the type
+      // hint for `reader` returns Interface, which is the return value of createInterface.
+      // $FlowIssue
+      var {createInterface} = require('readline');
+      var reader = createInterface({
         input: stdout,
         terminal: false,
       });
@@ -181,7 +189,7 @@ class MerlinProcess {
         resolve(content);
       });
 
-      stdin.write(command);
+      stdin.write(commandString);
     });
   }
 
