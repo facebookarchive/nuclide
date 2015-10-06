@@ -9,9 +9,18 @@
  * the root directory of this source tree.
  */
 
+import type {NuclideUri} from 'nuclide-remote-uri';
+import type {Disposable} from 'atom';
+
 class NestedNuclideTypedTestService {
+  // $FlowIssue t8486988
   static fake = 'reallyFake';
-  foo(a: ?NuclideUri, b: ?Array<NuclideUri>, c: {a: ?NuclideUri}, d: ?{a: ?NuclideUri}): Promise<?NuclideUri> {
+  foo(
+    a: ?NuclideUri,
+    b: ?Array<NuclideUri>,
+    c: {a: ?NuclideUri},
+    d: ?{a: ?NuclideUri}
+  ): Promise<?NuclideUri> {
     return Promise.reject('not implemented');
   }
   baz(a: {a:NuclideUri}, b: Array<NuclideUri>, c: number): Promise<Array<NuclideUri>> {

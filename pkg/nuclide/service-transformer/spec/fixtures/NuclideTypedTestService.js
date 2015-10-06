@@ -9,7 +9,11 @@
  * the root directory of this source tree.
  */
 
+import type {NuclideUri} from 'nuclide-remote-uri';
+import type {Disposable} from 'atom';
+
 class NuclideTypedTestService {
+  // $FlowIssue t8486988
   static fake = 'reallyFake';
 
   foo(arg0: NuclideUri, arg1: string): Promise<any> {

@@ -11,12 +11,10 @@
 
 type Identifier = any;
 type AssignmentExpression = any;
-type FlowTypeNode = any;
 
 var babel = require('babel-core');
-var fs = require('fs');
+var invariant = require('assert');
 var {isNuclideUriFlowTypeAnnotation} = require('../lib/flow-annotation');
-var path = require('path');
 var t = babel.types;
 var {ManipulationAssignmentExpressionCreator} = require('../lib/nuclide-uri-transformer');
 var Transformer = babel.Transformer;
@@ -70,16 +68,20 @@ function createOnetimeHelperPlugin(): any {
  * Test a object with given flow type could be transfomred to expected object.
  */
 function testTransformNuclideUri(stringFlowType: string, obj: any, expected: any): void {
-  var helperSourceCode = 'function foo(x: FLOWTYPE) {return x;}'.replace('FLOWTYPE', stringFlowType);
+  var helperSourceCode =
+    'function foo(x: FLOWTYPE) {return x;}'.replace('FLOWTYPE', stringFlowType);
 
   var transformedFunctionCode = babel.transform(helperSourceCode, {
     plugins: [createOnetimeHelperPlugin()],
     blacklist: ['strict'],
   }).code;
 
-  // Eval the transfomred source code to get the transformed foo ready to use.
+  // Eval the transformed source code to get the transformed foo ready to use.
+  var foo: ?<T: any> (x: T) => T;
+  /* eslint-disable no-eval */
   eval(transformedFunctionCode);
-
+  /* eslint-enable no-eval */
+  invariant(foo);
   expect(foo(obj)).toEqual(expected);
 }
 

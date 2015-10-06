@@ -23,5 +23,5 @@ class TestServiceB {
 
 module.exports = {
   TestServiceA,
-  TestServiceB
+  TestServiceB,
 };

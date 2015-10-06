@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-/**
+/*
  * Babel's plugin who auto generate remote service implementation based on service definition class.
  * If the method name starts with 'on' (assuming a camel-cased method), we will generate the event
  * registration method, otherwise, rpc call method will be generated.
@@ -19,8 +19,8 @@
  * In client a remote file's uri is in form of 'nuclide://$host:$port/$path', while in the server
  * we only need $path.
  *
- * To address this problem, we support flow type `NuclideUri` for parameter and `Promise<NuclideUri>`
- * for return value in RPC method definition:
+ * To address this problem, we support flow type `NuclideUri` for parameter and
+ * `Promise<NuclideUri>` for return value in RPC method definition:
  *   a) If a parameter is typed as `NuclideUri`, the generated method in remote service assumes
  *      the parameter is a remote file uri ('nuclide://$host:$post/$path'). So it parses the
  *      parameter and calls to rpc with the parsed path.
@@ -78,13 +78,18 @@
  *      return this._connection.makeRpc('TestService/getFileStatus', [fileUri], this._options);
  *    }
  *    getLastOpenedFile() {
- *      return this._connection.makeRpc('TestService/getLastOpenedFile', [], this._options).then(arg0 => {
+ *      return this._connection.makeRpc('TestService/getLastOpenedFile', [], this._options)
+ *        .then(arg0 => {
  *          arg0 = this._connection.getUriOfRemotePath(arg0);
  *          return arg0;
- *      });
+ *        });
  *    }
  *    onFileChanged(callback) {
- *      return this._connection.registerEventListener('TestService/onFileChanged', callback, this._options);
+ *      return this._connection.registerEventListener(
+ *        'TestService/onFileChanged',
+ *        callback,
+ *        this._options,
+ *      );
  *    }
  *  }
  *
@@ -170,7 +175,7 @@ function createRemoteClassDeclaration(classDeclaration: any, isDecorator: boolea
     {
       type: 'Line',
       value: ' Auto-generated: DO NOT MODIFY.',
-    }
+    },
   ];
 
   return remoteClassDeclaration;
@@ -464,8 +469,11 @@ function createManipulatedCallbackArrowFunction(callbackAstNode: any): ?any {
 
   callbackAstNode.typeAnnotation.typeAnnotation.params.forEach(callbackParameterFlowtypeNode => {
     var identifier = callbackParameterFlowtypeNode.name;
-    var manipulateCallbackParameterAssignmentExpression = createGetUriOfRemotePathAssignmentExpression(
-        callbackParameterFlowtypeNode.typeAnnotation, identifier);
+    var manipulateCallbackParameterAssignmentExpression =
+      createGetUriOfRemotePathAssignmentExpression(
+        callbackParameterFlowtypeNode.typeAnnotation,
+        identifier
+      );
     if (manipulateCallbackParameterAssignmentExpression) {
       parameterManipulateExpressions.push(manipulateCallbackParameterAssignmentExpression);
     }

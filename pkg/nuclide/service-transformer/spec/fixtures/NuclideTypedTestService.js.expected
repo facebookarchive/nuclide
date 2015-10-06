@@ -51,3 +51,5 @@ class RemoteNuclideTypedTestService extends NuclideTypedTestService {
 }
 
 module.exports = RemoteNuclideTypedTestService;
+
+// $FlowIssue t8486988

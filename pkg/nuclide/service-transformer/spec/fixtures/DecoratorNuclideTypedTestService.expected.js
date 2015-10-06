@@ -41,3 +41,5 @@ class DecoratorNuclideTypedTestService extends NuclideTypedTestService {
 }
 
 module.exports = DecoratorNuclideTypedTestService;
+
+// $FlowIssue t8486988

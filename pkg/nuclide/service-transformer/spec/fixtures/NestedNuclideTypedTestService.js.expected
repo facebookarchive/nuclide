@@ -126,3 +126,5 @@ class RemoteNestedNuclideTypedTestService extends NestedNuclideTypedTestService 
 }
 
 module.exports = RemoteNestedNuclideTypedTestService;
+
+// $FlowIssue t8486988

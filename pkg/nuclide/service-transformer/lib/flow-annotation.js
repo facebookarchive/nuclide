@@ -9,16 +9,16 @@
  * the root directory of this source tree.
  */
 
-type NuclideUri = string;
-
 var NUCLIDE_URI_FLOW_TYPE_NAME = 'NuclideUri';
 
 function isGenericFlowTypeAnnotation(typeAnnotation: ?any, annotationName: string): boolean {
-   return !!typeAnnotation &&
-      typeAnnotation.type === 'GenericTypeAnnotation' &&
-      !!typeAnnotation.id &&
-      typeAnnotation.id.type === 'Identifier' &&
-      typeAnnotation.id.name === annotationName;
+  return (
+    !!typeAnnotation &&
+    typeAnnotation.type === 'GenericTypeAnnotation' &&
+    !!typeAnnotation.id &&
+    typeAnnotation.id.type === 'Identifier' &&
+    typeAnnotation.id.name === annotationName
+  );
 }
 
 module.exports = {

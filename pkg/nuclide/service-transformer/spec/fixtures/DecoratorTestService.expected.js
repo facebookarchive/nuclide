@@ -48,3 +48,5 @@ class DecoratorTestService extends TestService {
 }
 
 module.exports = DecoratorTestService;
+
+// $FlowIssue t8486988

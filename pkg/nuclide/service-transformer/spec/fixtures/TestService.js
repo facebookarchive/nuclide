@@ -10,6 +10,8 @@
  */
 
 import type {Integer} from './types';
+import type {NuclideUri} from 'nuclide-remote-uri';
+import type {Disposable} from 'atom';
 
 export type Diagnostic = {
   message: Array<{
@@ -24,6 +26,7 @@ export type Diagnostic = {
 }
 
 class TestService {
+  // $FlowIssue t8486988
   static fake = 'reallyFake';
 
   foo(): Promise<any> {
@@ -38,11 +41,11 @@ class TestService {
     return Promise.reject('not implemented');
   }
 
-  onNorf(callback: (payload: any) => void): Disposable {
+  onNorf(callback: (payload: any) => void): Promise<Disposable> {
     return Promise.reject('not implemented');
   }
 
-  onetimeRegistration(arg0: string): void {
+  onetimeRegistration(arg0: string): Promise {
     return Promise.reject('not implemented');
   }
 }

@@ -29,7 +29,10 @@ function parseAst(sourceFilePath: string): any {
  * {className: $className, rpcMethodNames: [$methodName, ...], eventMethodNames: [$methodName, ..]}.
  * Keep it sync as it will be called from NuclideServer's constructor.
  */
-function parseServiceApiSync(absoluteServiceDefinitionClassFilePath: string, serviceName: string): any {
+function parseServiceApiSync(
+  absoluteServiceDefinitionClassFilePath: string,
+  serviceName: string,
+): any {
   if (cache.has(absoluteServiceDefinitionClassFilePath)) {
     return cache.get(absoluteServiceDefinitionClassFilePath);
   }

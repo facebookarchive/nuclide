@@ -44,3 +44,5 @@ class RemoteTestService extends TestService {
 }
 
 module.exports = RemoteTestService;
+
+// $FlowIssue t8486988
