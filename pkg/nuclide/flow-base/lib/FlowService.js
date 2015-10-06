@@ -88,8 +88,9 @@ class FlowService {
     file: NuclideUri,
     currentContents: string,
     line: number,
-    column: number
-  ): Promise<?string> {
+    column: number,
+    includeRawType: boolean
+  ): Promise<?{type: string, rawType?: string}> {
     return Promise.reject('Not implemented');
   }
 }

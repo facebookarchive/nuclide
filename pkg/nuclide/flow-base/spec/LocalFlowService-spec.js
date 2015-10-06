@@ -284,7 +284,7 @@ describe('LocalFlowService', () => {
 
     it('should return the type on success', () => {
       waitsForPromise(async () => {
-        expect(await runWith('thisIsAType')).toBe('thisIsAType');
+        expect(await runWith('thisIsAType')).toEqual({type: 'thisIsAType', rawType: undefined});
       });
     });
 

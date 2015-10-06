@@ -40,6 +40,13 @@ module.exports = {
       description: 'Display tooltips with Flow types',
     },
 
+    enableStructuredTypeHints: {
+      type: 'boolean',
+      default: false,
+      description:
+        'Show tree-structured type hints. Type hints must first be enabled. Requires Flow v0.17.0',
+    },
+
     diagnosticsOnFly: {
       type: 'boolean',
       default: false,
@@ -104,7 +111,7 @@ module.exports = {
   },
 
   createTypeHintProvider(): Object {
-    var FlowTypeHintProvider = require('./FlowTypeHintProvider');
+    var {FlowTypeHintProvider} = require('./FlowTypeHintProvider');
     var flowTypeHintProvider = new FlowTypeHintProvider();
     var typeHint = flowTypeHintProvider.typeHint.bind(flowTypeHintProvider);
     return {

@@ -256,8 +256,9 @@ class LocalFlowService extends FlowService {
     file: NuclideUri,
     currentContents: string,
     line: number,
-    column: number
-  ): Promise<?string> {
+    column: number,
+    includeRawType: boolean,
+  ): Promise<?{type: string, rawType?: string}> {
     var options = {};
 
     options.stdin = currentContents;
@@ -265,6 +266,9 @@ class LocalFlowService extends FlowService {
     line = line + 1;
     column = column + 1;
     var args = ['type-at-pos', '--json', '--path', file, line, column];
+    if (includeRawType) {
+      args.push('--raw');
+    }
 
     var output;
     try {
@@ -290,6 +294,7 @@ class LocalFlowService extends FlowService {
       return null;
     }
     var type = json['type'];
+    var rawType = json['raw_type'];
     if (!type || type === '(unknown)' || type === '') {
       if (type === '') {
         // This should not happen. The Flow team believes it's an error in Flow
@@ -300,7 +305,7 @@ class LocalFlowService extends FlowService {
       }
       return null;
     }
-    return type;
+    return {type, rawType};
   }
 }
 

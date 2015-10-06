@@ -39,7 +39,8 @@
     "nuclide-client": "0.0.0",
     "nuclide-commons": "0.0.0",
     "nuclide-diagnostics-provider-base": "0.0.0",
-    "nuclide-flow-base": "0.0.0"
+    "nuclide-flow-base": "0.0.0",
+    "nuclide-logging": "0.0.0"
   },
   "devDependencies": {
     "hyperclick-interfaces": "0.0.0",
