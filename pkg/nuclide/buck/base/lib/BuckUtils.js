@@ -11,8 +11,10 @@
 
 import type {NuclideUri} from 'nuclide-remote-uri';
 
-export default class BuckUtils {
+class BuckUtils {
   getBuckProjectRoot(filePath: NuclideUri): Promise<?NuclideUri> {
     return Promise.reject('Not implemented');
   }
 }
+
+module.exports = BuckUtils;
