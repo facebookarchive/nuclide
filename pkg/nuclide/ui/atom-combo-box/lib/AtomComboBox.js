@@ -30,11 +30,13 @@ var {PropTypes} = React;
  * TODO add public getter/setter for textInput
  * TODO use generic search provider
  * TODO move combobox to separate package.
- * TODO comprehensive Flow typing
  */
-var AtomComboBox = React.createClass({
+class AtomComboBox extends React.Component {
 
-  propTypes: {
+  _subscriptions: ?CompositeDisposable;
+
+  // $FlowIssue t8486988
+  static propTypes = {
     className: PropTypes.string.isRequired,
     initialTextInput: PropTypes.string,
     placeholderText: PropTypes.string,
@@ -47,32 +49,40 @@ var AtomComboBox = React.createClass({
      */
     requestOptions: PropTypes.func.isRequired,
     size: PropTypes.oneOf(['xs', 'sm', 'lg']),
-  },
+  };
 
-  getDefaultProps(): {[key: string]: mixed} {
-    return {
-      className: '',
-      maxOptionCount: 10,
-      onChange: emptyfunction,
-      onSelect: emptyfunction,
-    };
-  },
+  // $FlowIssue t8486988
+  static defaultProps = {
+    className: '',
+    maxOptionCount: 10,
+    onChange: emptyfunction,
+    onSelect: emptyfunction,
+  };
 
-  getInitialState(): {[key: string]: mixed} {
-    return {
+  constructor(props: Object) {
+    super(props);
+    this.state = {
       filteredOptions: [],
       options: [],
       optionsVisible: false,
       selectedIndex: -1,
-      textInput: this.props.initialTextInput,
+      textInput: props.initialTextInput,
     };
-  },
+    this.receiveUpdate = this.receiveUpdate.bind(this);
+    this._handleTextInputChange = this._handleTextInputChange.bind(this);
+    this._handleInputBlur = this._handleInputBlur.bind(this);
+    this._handleMoveDown = this._handleMoveDown.bind(this);
+    this._handleMoveUp = this._handleMoveUp.bind(this);
+    this._handleCancel = this._handleCancel.bind(this);
+    this._handleConfirm = this._handleConfirm.bind(this);
+    this._scrollSelectedOptionIntoViewIfNeeded =
+      this._scrollSelectedOptionIntoViewIfNeeded.bind(this);
+  }
 
   componentDidMount() {
-    this._subscriptions = new CompositeDisposable();
     var node = React.findDOMNode(this);
-
-    this._subscriptions.add(
+    var _subscriptions = this._subscriptions = new CompositeDisposable();
+    _subscriptions.add(
       atom.commands.add(node, 'core:move-up', this._handleMoveUp),
       atom.commands.add(node, 'core:move-down', this._handleMoveDown),
       atom.commands.add(node, 'core:cancel', this._handleCancel),
@@ -80,15 +90,17 @@ var AtomComboBox = React.createClass({
       this.refs['freeformInput'].onDidChange(this._handleTextInputChange)
     );
     this.requestUpdate();
-  },
+  }
 
   componentWillUnmount() {
-    this._subscriptions.dispose();
-  },
+    if (this._subscriptions) {
+      this._subscriptions.dispose();
+    }
+  }
 
   requestUpdate() {
     this.props.requestOptions(this.state.textInput).then(this.receiveUpdate);
-  },
+  }
 
   receiveUpdate(newOptions: Array<string>) {
     var filteredOptions = this._getFilteredOptions(newOptions, this.state.textInput);
@@ -96,7 +108,7 @@ var AtomComboBox = React.createClass({
       options: newOptions,
       filteredOptions: filteredOptions,
     });
-  },
+  }
 
   selectValue(newValue: string, didRenderCallback?: () => mixed) {
     this.refs['freeformInput'].setText(newValue);
@@ -108,11 +120,11 @@ var AtomComboBox = React.createClass({
     this.props.onSelect(newValue);
     // Selecting a value in the dropdown changes the text as well. Call the callback accordingly.
     this.props.onChange(newValue);
-  },
+  }
 
   getText(): string {
     return this.refs['freeformInput'].getText();
-  },
+  }
 
   // TODO use native (fuzzy/strict - configurable?) filter provider
   _getFilteredOptions(options: Array<string>, filterValue: string): Array<ComboboxOption> {
@@ -130,7 +142,7 @@ var AtomComboBox = React.createClass({
       ).filter(
         option => option.matchIndex !== -1
       ).slice(0, this.props.maxOptionCount);
-  },
+  }
 
   _handleTextInputChange(): void {
     var newText = this.refs.freeformInput.getText();
@@ -158,14 +170,14 @@ var AtomComboBox = React.createClass({
       selectedIndex,
     });
     this.props.onChange(newText);
-  },
+  }
 
   _handleInputBlur(): void {
     // Delay hiding the combobox long enough for a click inside the combobox to trigger on it in
     // case the blur was caused by a click inside the combobox. 150ms is empirically long enough to
     // let the stack clear from this blur event and for the click event to trigger.
     setTimeout(this._handleCancel, 150);
-  },
+  }
 
   _handleItemClick(selectedValue: string, event: any) {
     this.selectValue(selectedValue, () => {
@@ -176,50 +188,50 @@ var AtomComboBox = React.createClass({
         input.focus();
       }
     });
-  },
+  }
 
   _handleMoveDown() {
     this.setState({
       selectedIndex: Math.min(
         this.props.maxOptionCount - 1,
         this.state.selectedIndex + 1,
-        this.state.filteredOptions.length - 1
-      )
+        this.state.filteredOptions.length - 1,
+      ),
     }, this._scrollSelectedOptionIntoViewIfNeeded);
-  },
+  }
 
   _handleMoveUp() {
     this.setState({
       selectedIndex: Math.max(
         0,
-        this.state.selectedIndex - 1
-      )
+        this.state.selectedIndex - 1,
+      ),
     }, this._scrollSelectedOptionIntoViewIfNeeded);
-  },
+  }
 
   _handleCancel() {
     this.setState({
       optionsVisible: false,
     });
-  },
+  }
 
   _handleConfirm() {
     var option = this.state.filteredOptions[this.state.selectedIndex];
     if (option !== undefined) {
       this.selectValue(option.value);
     }
-  },
+  }
 
   _setSelectedIndex(selectedIndex: number) {
     this.setState({selectedIndex});
-  },
+  }
 
   _scrollSelectedOptionIntoViewIfNeeded(): void {
     var selectedOption = React.findDOMNode(this.refs['selectedOption']);
     if (selectedOption) {
       selectedOption.scrollIntoViewIfNeeded();
     }
-  },
+  }
 
   render(): ReactElement {
     var optionsContainer;
@@ -277,8 +289,8 @@ var AtomComboBox = React.createClass({
         {optionsContainer}
       </div>
     );
-  },
+  }
 
-});
+}
 
 module.exports = AtomComboBox;

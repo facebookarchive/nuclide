@@ -5,6 +5,7 @@
   "version": "0.0.0",
   "description": "Provides a flexible combo box for Nuclide user interfaces",
   "nuclide": {
+    "flowCheck": true,
     "packageType": "Node",
     "testRunner": "apm"
   },
