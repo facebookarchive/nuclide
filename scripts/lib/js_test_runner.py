@@ -28,15 +28,18 @@ class JsTestRunner(object):
         flow_tests = []
 
         for package_config in self._package_manager.get_configs():
+            # Even if the npm/apm tests are disabled, we should still honor the Flow check.
+            pkg_path = package_config['packageRootAbsolutePath']
+            name = package_config['name']
+            if package_config['flowCheck']:
+                flow_tests.append(('flow', pkg_path, name))
+
             if package_config['excludeTestsFromContinuousIntegration']:
                 continue
 
             test_runner = package_config['testRunner']
             if test_runner == 'apm' and not self._include_apm:
                 continue
-
-            pkg_path = package_config['packageRootAbsolutePath']
-            name = package_config['name']
 
             if self._packages_to_test and name not in self._packages_to_test:
                 continue
@@ -49,9 +52,6 @@ class JsTestRunner(object):
             else:
               test_bucket = apm_tests
             test_bucket.append(test_args)
-
-            if package_config['flowCheck']:
-                flow_tests.append(('flow', pkg_path, name, self._verbose))
 
         if platform_checker.is_windows():
             # We run all tests in serial on Windows because Python's multiprocessing library has issues:
