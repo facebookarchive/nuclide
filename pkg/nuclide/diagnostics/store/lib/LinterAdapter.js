@@ -34,6 +34,10 @@ export type LinterProvider = {
    */
   providerName?: string;
   /**
+   * In the official Linter API, the providerName is just "name".
+   */
+  name?: string;
+  /**
    * Extension: Intended for developers who want to provide both interfaces to cater towards people
    * who use only the `linter` package. This way you can provide both, but tell Nuclide to ignore
    * the `linter` provider so that duplicate results do not appear.
@@ -49,6 +53,8 @@ export type LinterProvider = {
   lintOnFly: boolean;
   lint: (textEditor: TextEditor) => Promise<Array<LinterMessage>>;
 };
+
+import {Range} from 'atom';
 
 import {DiagnosticsProviderBase} from 'nuclide-diagnostics-provider-base';
 
@@ -69,7 +75,7 @@ export function linterMessageToDiagnosticMessage(
       filePath: msg.filePath,
       text: msg.text,
       html: msg.html,
-      range: msg.range,
+      range: msg.range && Range.fromObject(msg.range),
       trace: msg.trace,
     };
   } else {
@@ -79,7 +85,7 @@ export function linterMessageToDiagnosticMessage(
       type: msg.type,
       text: msg.text,
       html: msg.html,
-      range: msg.range,
+      range: msg.range && Range.fromObject(msg.range),
       trace: msg.trace,
     };
   }
@@ -161,7 +167,7 @@ export class LinterAdapter {
         var linterMessages = result.result;
         var diagnosticUpdate = linterMessagesToDiagnosticUpdate(
           editor.getPath(),
-          linterMessages, this._provider.providerName
+          linterMessages, this._provider.providerName || this._provider.name
         );
         this._providerUtils.publishMessageUpdate(diagnosticUpdate);
       }
