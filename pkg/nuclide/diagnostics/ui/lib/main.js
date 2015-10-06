@@ -13,6 +13,7 @@ import {CompositeDisposable} from 'atom';
 
 import type DiagnosticsPanel from './DiagnosticsPanel';
 import type StatusBarTile from './StatusBarTile';
+import type {HomeFragments} from 'nuclide-home-interfaces';
 
 var DEFAULT_HIDE_DIAGNOSTICS_PANEL = true;
 var DEFAULT_TABLE_HEIGHT = 200;
@@ -205,6 +206,19 @@ module.exports = {
     invariant(activationState);
     return activationState;
   },
+
+  getHomeFragments(): HomeFragments {
+    return {
+      feature: {
+        title: 'Diagnostics',
+        icon: 'law',
+        description: 'Displays diagnostics, errors, and lint warnings for your files and projects.',
+        command: 'nuclide-diagnostics-ui:toggle-table',
+      },
+      priority: 4,
+    };
+  },
+
 };
 
 function logPanelIsDisplayed() {

@@ -11,6 +11,7 @@
 
 import type TestRunner from './TestRunner';
 import type TestRunnerControllerState from './TestRunnerController';
+import type {HomeFragments} from 'nuclide-home-interfaces';
 
 var {
   CompositeDisposable,
@@ -182,6 +183,18 @@ module.exports = {
     if (activation) {
       return activation.addTestRunner(testRunner);
     }
+  },
+
+  getHomeFragments(): HomeFragments {
+    return {
+      feature: {
+        title: 'Test Runner',
+        icon: 'checklist',
+        description: 'Run tests directly from Nuclide by right-mouse-clicking on the file.',
+        command: 'nuclide-test-runner:toggle-panel',
+      },
+      priority: 2,
+    };
   },
 
 };

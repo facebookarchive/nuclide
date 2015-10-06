@@ -18,13 +18,19 @@
   },
   "devDependencies": {
     "nuclide-debugger-interfaces": "0.0.0",
-    "nuclide-external-interfaces": "0.0.0"
+    "nuclide-external-interfaces": "0.0.0",
+    "nuclide-home-interfaces": "0.0.0"
   },
   "providedServices": {
     "nuclide-debugger-hhvm-service": {
       "description": "Debugger backend for remote hhvm processes.",
       "versions": {
         "0.0.0": "provideNuclideDebuggerHhvm"
+      }
+    },
+    "nuclide-home.homeFragments": {
+      "versions": {
+        "0.0.0": "getHomeFragments"
       }
     }
   }

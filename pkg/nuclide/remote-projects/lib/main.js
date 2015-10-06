@@ -10,6 +10,7 @@
  */
 
 import type RemoteProjectsController from './RemoteProjectsController';
+import type {HomeFragments} from 'nuclide-home-interfaces';
 
 var {CompositeDisposable, TextEditor} = require('atom');
 
@@ -346,4 +347,17 @@ module.exports = {
     return new RemoteDirectorySearcher((dir: RemoteDirectory) =>
       getServiceByNuclideUri('FindInProjectService', dir.getPath()));
   },
+
+  getHomeFragments(): HomeFragments {
+    return {
+      feature: {
+        title: 'Remote Connection',
+        icon: 'cloud-upload',
+        description: 'Connect to a remote server to edit files.',
+        command: 'nuclide-remote-projects:connect',
+      },
+      priority: 8,
+    };
+  },
+
 };

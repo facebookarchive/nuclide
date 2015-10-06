@@ -14,6 +14,7 @@ import type * as QuickSelectionComponentType from './QuickSelectionComponent';
 import type {
   Provider,
 } from 'nuclide-quick-open-interfaces';
+import type {HomeFragments} from 'nuclide-home-interfaces';
 
 var trackFunction;
 function track(...args) {
@@ -316,6 +317,18 @@ module.exports = {
 
   registerStore() {
     return getSearchResultManager();
+  },
+
+  getHomeFragments(): HomeFragments {
+    return {
+      feature: {
+        title: 'Quick Open',
+        icon: 'search',
+        description: 'A powerful search box to quickly find local and remote files and content.',
+        command: 'nuclide-quick-open:toggle-omni-search',
+      },
+      priority: 10,
+    };
   },
 
   deactivate(): void {

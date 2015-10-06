@@ -28,12 +28,20 @@
   },
   "devDependencies": {
     "nuclide-external-interfaces": "0.0.0",
+    "nuclide-home-interfaces": "0.0.0",
     "nuclide-quick-open-interfaces": "0.0.0"
   },
   "consumedServices": {
     "nuclide-quick-open-register-provider": {
       "versions": {
         "0.0.0": "registerProvider"
+      }
+    }
+  },
+  "providedServices": {
+    "nuclide-home.homeFragments": {
+      "versions": {
+        "0.0.0": "getHomeFragments"
       }
     }
   }
