@@ -36,33 +36,30 @@ class BuckToolbarActions {
     });
   }
 
-  build(buildTarget: string): void {
+  updateSimulator(simulator: string): void {
     this._dispatcher.dispatch({
-      actionType: BuckToolbarActions.ActionType.BUILD,
-      buildTarget,
-    });
-  }
-
-  run(buildTarget: string, simulator: ?string): void {
-    this._dispatcher.dispatch({
-      actionType: BuckToolbarActions.ActionType.RUN,
-      buildTarget,
+      actionType: BuckToolbarActions.ActionType.UPDATE_SIMULATOR,
       simulator,
     });
   }
 
-  debug(buildTarget: string, simulator: ?string): void {
-    this._dispatcher.dispatch({
-      actionType: BuckToolbarActions.ActionType.DEBUG,
-      buildTarget,
-      simulator,
-    });
+  build(): void {
+    this._dispatcher.dispatch({actionType: BuckToolbarActions.ActionType.BUILD});
+  }
+
+  run(): void {
+    this._dispatcher.dispatch({actionType: BuckToolbarActions.ActionType.RUN});
+  }
+
+  debug(): void {
+    this._dispatcher.dispatch({actionType: BuckToolbarActions.ActionType.DEBUG});
   }
 }
 
 BuckToolbarActions.ActionType = {
   UPDATE_PROJECT: 'UPDATE_PROJECT',
   UPDATE_BUILD_TARGET: 'UPDATE_BUILD_TARGET',
+  UPDATE_SIMULATOR: 'UPDATE_SIMULATOR',
   BUILD: 'BUILD',
   RUN: 'RUN',
   DEBUG: 'DEBUG',

@@ -39,11 +39,6 @@ class BuckToolbar extends React.Component {
 
   constructor(props: mixed) {
     super(props);
-    this.state = {
-      buildTarget: this.props.initialBuildTarget,
-      isBuilding: false,
-      currentProgress: 0,
-    };
     this._handleBuildTargetChange = debounce(this._handleBuildTargetChange.bind(this), 100, false);
     this._handleSimulatorChange = this._handleSimulatorChange.bind(this);
     this._requestOptions = this._requestOptions.bind(this);
@@ -56,39 +51,19 @@ class BuckToolbar extends React.Component {
     this._buckToolbarStore = new BuckToolbarStore(dispatcher);
 
     this._onActivePaneItemChanged(atom.workspace.getActivePaneItem());
+    this._handleBuildTargetChange(this.props.initialBuildTarget);
 
     this._disposables = new CompositeDisposable();
     this._disposables.add(onWorkspaceDidStopChangingActivePaneItem(
       this._onActivePaneItemChanged.bind(this)));
 
-    this._disposables.add(this._buckToolbarStore.onResetToolbarProgress(
-      this._resetToolbarProgress.bind(this)));
-    this._disposables.add(this._buckToolbarStore.onParseProgressUpdated(
-      this.setCurrentProgress.bind(this)));
-    this._disposables.add(this._buckToolbarStore.onBuildProgressUpdated(
-      this.setCurrentProgress.bind(this)));
-    this._disposables.add(this._buckToolbarStore.onBuildFinished(
-      this.setCurrentProgress.bind(this, 1.0)));
-    this._disposables.add(this._buckToolbarStore.onBuckCommandFinished(
-      this._hideProgressBar.bind(this)));
-    this._disposables.add(this._buckToolbarStore.onBuildTargetRuleTypeChanged(
-      this._handleRuleTypeChanged.bind(this)));
+    this._disposables.add(this._buckToolbarStore.subscribe(() => {
+      this.forceUpdate();
+    }));
   }
 
   componentWillUnmount() {
     this._disposables.dispose();
-  }
-
-  _resetToolbarProgress() {
-    this.setCurrentProgress(0);
-  }
-
-  _hideProgressBar() {
-    this.setState({isBuilding: false});
-  }
-
-  setCurrentProgress(currentProgress: number) {
-    this.setState({currentProgress});
   }
 
   _onActivePaneItemChanged(item: mixed) {
@@ -99,27 +74,19 @@ class BuckToolbar extends React.Component {
     this._buckToolbarActions.updateProjectFor(textEditor);
   }
 
-  _handleRuleTypeChanged(ruleType: ?string) {
-    this.setState({ruleType});
-  }
-
   _requestOptions(inputText: string): Promise<Array<string>> {
-    var buckProject = this._buckToolbarStore.getMostRecentBuckProject();
-    if (!buckProject) {
-      return Promise.resolve([]);
-    }
-
-    return buckProject.listAliases();
+    return this._buckToolbarStore.loadAliases();
   }
 
   render(): ReactElement {
-    var disabled = !this.state.buildTarget || this.state.isBuilding;
+    var buckToolbarStore = this._buckToolbarStore;
+    var disabled = !buckToolbarStore.getBuildTarget() || buckToolbarStore.isBuilding();
     var progressBar;
-    if (this.state.isBuilding) {
+    if (buckToolbarStore.isBuilding()) {
       progressBar =
         <progress
           className="inline-block buck-toolbar-progress-bar"
-          value={this.state.currentProgress}
+          value={buckToolbarStore.getBuildProgress()}
         />;
     }
     return (
@@ -135,7 +102,7 @@ class BuckToolbar extends React.Component {
         />
         <SimulatorDropdown
           className="inline-block"
-          disabled={this.state.ruleType !== 'apple_bundle'}
+          disabled={buckToolbarStore.getRuleType() !== 'apple_bundle'}
           title="Choose target device"
           onSelectedSimulatorChange={this._handleSimulatorChange}
         />
@@ -152,26 +119,22 @@ class BuckToolbar extends React.Component {
   _handleBuildTargetChange(value: string) {
     this.props.onBuildTargetChange(value);
     this._buckToolbarActions.updateBuildTarget(value);
-    this.setState({buildTarget: value});
   }
 
   _handleSimulatorChange(simulator: string) {
-    this.setState({simulator});
+    this._buckToolbarActions.updateSimulator(simulator);
   }
 
   _build() {
-    this.setState({isBuilding: true});
-    this._buckToolbarActions.build(this.state.buildTarget);
+    this._buckToolbarActions.build();
   }
 
   _run() {
-    this.setState({isBuilding: true});
-    this._buckToolbarActions.run(this.state.buildTarget, this.state.simulator);
+    this._buckToolbarActions.run();
   }
 
   _debug() {
-    this.setState({isBuilding: true});
-    this._buckToolbarActions.debug(this.state.buildTarget, this.state.simulator);
+    this._buckToolbarActions.debug();
   }
 }
 

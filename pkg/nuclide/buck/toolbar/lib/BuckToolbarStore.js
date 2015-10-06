@@ -27,10 +27,9 @@ type BuckRunDetails = {
   pid?: number;
 };
 import type {ProcessOutputDataHandlers} from 'nuclide-process-output-store/lib/types';
+import type {BuckProject} from 'nuclide-buck-base';
 
 const BUCK_PROCESS_ID_REGEX = /lldb -p ([0-9]+)/;
-const BUILD_PROGRESS_UPDATED = 'BUILD_PROGRESS_UPDATED';
-const PARSE_PROGRESS_UPDATED = 'PARSE_PROGRESS_UPDATED';
 
 class BuckToolbarStore {
 
@@ -38,12 +37,25 @@ class BuckToolbarStore {
   _emitter: Emitter;
   _mostRecentBuckProject: ?BuckProject;
   _textEditorToBuckProject: WeakMap<TextEditor, BuckProject>;
+  _isBuilding: boolean;
+  _buildTarget: string;
+  _buildProgress: number;
+  _buildRuleType: string;
+  _simulator: ?string;
 
   constructor(dispatcher: Dispatcher) {
     this._dispatcher = dispatcher;
     this._emitter = new Emitter();
     this._textEditorToBuckProject = new WeakMap();
+    this._initState();
     this._setupActions();
+  }
+
+  _initState() {
+    this._isBuilding = false;
+    this._buildTarget = '';
+    this._buildProgress = 0;
+    this._buildRuleType = '';
   }
 
   _setupActions() {
@@ -55,41 +67,53 @@ class BuckToolbarStore {
         case BuckToolbarActions.ActionType.UPDATE_BUILD_TARGET:
           this._updateBuildTarget(action.buildTarget);
           break;
+        case BuckToolbarActions.ActionType.UPDATE_SIMULATOR:
+          this._simulator = action.simulator;
+          break;
         case BuckToolbarActions.ActionType.BUILD:
-          this._doBuild(action.buildTarget, null, false, false);
+          this._doBuild(false, false);
           break;
         case BuckToolbarActions.ActionType.RUN:
-          this._doBuild(action.buildTarget, action.simulator, true, false);
+          this._doBuild(true, false);
           break;
         case BuckToolbarActions.ActionType.DEBUG:
-          this._doDebug(action.buildTarget, action.simulator);
+          this._doDebug();
           break;
       }
     });
   }
 
-  onResetToolbarProgress(callback: () => void): Disposable {
-    return this._emitter.on('RESET_TOOLBAR_PROGRESS', callback);
+  subscribe(callback: () => void): Disposable {
+    return this._emitter.on('change', callback);
   }
 
-  onParseProgressUpdated(callback: (percentage: number) => void): Disposable {
-    return this._emitter.on(PARSE_PROGRESS_UPDATED, callback);
+  emitChange(): void {
+    this._emitter.emit('change');
   }
 
-  onBuildProgressUpdated(callback: (percentage: number) => void): Disposable {
-    return this._emitter.on(BUILD_PROGRESS_UPDATED, callback);
+  getBuildTarget(): string {
+    return this._buildTarget;
   }
 
-  onBuildFinished(callback: () => void): Disposable {
-    return this._emitter.on('BUILD_FINISHED', callback);
+  isBuilding(): boolean {
+    return this._isBuilding;
   }
 
-  onBuckCommandFinished(callback: () => void): Disposable {
-    return this._emitter.on('BUCK_COMMAND_FINISHED', callback);
+  getRuleType(): string {
+    return this._buildRuleType;
   }
 
-  onBuildTargetRuleTypeChanged(callback: () => void): Disposable {
-    return this._emitter.on('BUILD_TARGET_RULE_TYPE_CHANGED', callback);
+  getBuildProgress(): number {
+    return this._buildProgress;
+  }
+
+  loadAliases(): Promise<Array<string>> {
+    var buckProject = this._mostRecentBuckProject;
+    if (!buckProject) {
+      return Promise.resolve([]);
+    }
+
+    return buckProject.listAliases();
   }
 
   async _updateProject(editor: TextEditor): Promise<void> {
@@ -109,9 +133,11 @@ class BuckToolbarStore {
   }
 
   async _updateBuildTarget(buildTarget: string): Promise<void> {
-    var buildRuleType;
-    var buckProject = this._mostRecentBuckProject;
     buildTarget = buildTarget.trim();
+    this._buildTarget = buildTarget;
+
+    var buckProject = this._mostRecentBuckProject;
+    var buildRuleType = '';
 
     if (buildTarget && buckProject) {
       try {
@@ -120,14 +146,11 @@ class BuckToolbarStore {
         // Most likely, this is an invalid target, so do nothing.
       }
     }
-    this._emitter.emit('BUILD_TARGET_RULE_TYPE_CHANGED', buildRuleType);
+    this._buildRuleType = buildRuleType;
+    this.emitChange();
   }
 
-  getMostRecentBuckProject(): ?BuckProject {
-    return this._mostRecentBuckProject;
-  }
-
-  async _doDebug(buildTarget: string, simulator: ?string): Promise<void> {
+  async _doDebug(): Promise<void> {
     // TODO(natthu): Restore validation logic to make sure the target is installable.
     // For now, let's leave that to Buck.
 
@@ -137,7 +160,7 @@ class BuckToolbarStore {
       atom.views.getView(atom.workspace),
       'nuclide-debugger:stop-debugging');
 
-    var installResult = await this._doBuild(buildTarget, simulator, true, true);
+    var installResult = await this._doBuild(true, true);
     if (!installResult) {
       return;
     }
@@ -154,15 +177,15 @@ class BuckToolbarStore {
   }
 
   async _doBuild(
-    buildTarget: string,
-    simulator: ?string,
     run: boolean,
     debug: boolean,
   ): Promise<?{buckProject: BuckProject, buildTarget: string, pid: ?number}> {
-    if (!buildTarget) {
+    var buildTarget = this._buildTarget;
+    var simulator = this._simulator;
+    var buckProject = this._mostRecentBuckProject;
+    if (!this._buildTarget) {
       return;
     }
-    var buckProject = this._mostRecentBuckProject;
     if (!buckProject) {
       this._notifyError();
       return;
@@ -170,12 +193,18 @@ class BuckToolbarStore {
 
     var command = `buck ${run ? 'install' : 'build'} ${buildTarget}`;
     atom.notifications.addInfo(`${command} started.`);
-    this._emitter.emit('RESET_TOOLBAR_PROGRESS');
     await this._setupWebSocket(buckProject, buildTarget);
+
+    this._buildProgress = 0;
+    this._isBuilding = true;
+    this.emitChange();
 
     var {pid} = await this._runBuckCommandInNewPane(
         {buckProject, buildTarget, simulator, run, debug, command});
-    this._emitter.emit('BUCK_COMMAND_FINISHED');
+
+    this._isBuilding = false;
+    this.emitChange();
+
     return {buckProject, buildTarget, pid};
   }
 
@@ -214,7 +243,7 @@ class BuckToolbarStore {
         }
       };
       var onError = (data: string) => {
-        error(data);
+        error(new Error(data));
         exit(1);
         atom.notifications.addError(`${buildTarget} failed to build.`);
         disposable.dispose();
@@ -293,12 +322,12 @@ class BuckToolbarStore {
           return;
         }
 
-        if (type === 'BuildProgressUpdated') {
-          this._emitter.emit(BUILD_PROGRESS_UPDATED, message.progressValue);
-        } else if (type === 'ParsingProgressUpdated') {
-          this._emitter.emit(PARSE_PROGRESS_UPDATED, message.progressValue);
+        if (type === 'BuildProgressUpdated' || type === 'ParsingProgressUpdated') {
+          this._buildProgress = message.progressValue;
+          this.emitChange();
         } else if (type === 'BuildFinished') {
-          this._emitter.emit('BUILD_FINISHED');
+          this._buildProgress = 1.0;
+          this.emitChange();
           isFinished = true;
           ws.close();
         }
