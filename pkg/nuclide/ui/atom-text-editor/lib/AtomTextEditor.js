@@ -9,12 +9,7 @@
  * the root directory of this source tree.
  */
 
-var {
-  CompositeDisposable,
-  Disposable,
-  TextBuffer,
-  TextEditor,
-} = require('atom');
+var {TextBuffer, TextEditor} = require('atom');
 var React = require('react-for-atom');
 var ReadOnlyTextEditor = require('./ReadOnlyTextEditor');
 
@@ -24,6 +19,21 @@ class AtomTextEditor extends React.Component {
 
   _textBuffer: TextBuffer;
   _textEditorModel: TextEditor;
+
+  // $FlowIssue t8486988
+  static propTypes = {
+    gutterHidden: PropTypes.bool.isRequired,
+    path: PropTypes.string,
+    readOnly: PropTypes.bool.isRequired,
+    textBuffer: PropTypes.instanceOf(TextBuffer),
+  };
+
+  // $FlowIssue t8486988
+  static defaultProps = {
+    gutterHidden: false,
+    lineNumberGutterVisible: true,
+    readOnly: false,
+  };
 
   constructor(props: Object) {
     super(props);
@@ -42,7 +52,7 @@ class AtomTextEditor extends React.Component {
     this._textEditorModel = textEditorModel;
   }
 
-  componentDidMount() {
+  componentDidMount(): void {
     var atomTextEditorElement = React.findDOMNode(this);
     atomTextEditorElement.setModel(this._textEditorModel);
 
@@ -51,10 +61,11 @@ class AtomTextEditor extends React.Component {
     // with the TextEditor that we create and adding a mapping for it in its private views map.
     // To workaround this, we reach into the internals of the ViewRegistry and update the entry in
     // the map manually. Filed as https://github.com/atom/atom/issues/7954.
+    // $FlowFixMe
     atom.views.views.set(this._textEditorModel, atomTextEditorElement);
   }
 
-  componentWillReceiveProps(nextProps: Object) {
+  componentWillReceiveProps(nextProps: Object): void {
     if (nextProps.path !== this.props.path) {
       this._textBuffer.setPath(nextProps.path);
     }
@@ -63,7 +74,7 @@ class AtomTextEditor extends React.Component {
     }
   }
 
-  componentWillUnmount() {
+  componentWillUnmount(): void {
     this._textEditorModel.destroy();
   }
 
@@ -88,18 +99,5 @@ class AtomTextEditor extends React.Component {
   }
 
 }
-
-AtomTextEditor.propTypes = {
-  gutterHidden: PropTypes.bool.isRequired,
-  path: PropTypes.string,
-  readOnly: PropTypes.bool.isRequired,
-  textBuffer: PropTypes.instanceOf(TextBuffer),
-};
-
-AtomTextEditor.defaultProps = {
-  gutterHidden: false,
-  lineNumberGutterVisible: true,
-  readOnly: false,
-};
 
 module.exports = AtomTextEditor;

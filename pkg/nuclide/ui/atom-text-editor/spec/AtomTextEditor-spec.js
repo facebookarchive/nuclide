@@ -11,6 +11,7 @@
 
 var AtomTextEditor = require('../lib/AtomTextEditor');
 var React = require('react-for-atom');
+var invariant = require('assert');
 
 var {TestUtils} = React.addons;
 
@@ -26,7 +27,9 @@ describe('nuclide-ui-atom-text-editor', () => {
     });
 
     afterEach(() => {
-      atom.grammars.removeGrammar(grammar);
+      if (grammar) {
+        atom.grammars.removeGrammarForScopeName(grammar.scopeName);
+      }
     });
 
     it('loads the desired `Grammar`', () => {
@@ -47,6 +50,7 @@ describe('nuclide-ui-atom-text-editor', () => {
       });
 
       it('allows copying', () => {
+        invariant(element);
         var model = element.getModel();
         model.setText('fraggle');
         model.selectAll();
@@ -55,6 +59,7 @@ describe('nuclide-ui-atom-text-editor', () => {
       });
 
       it('disallows inserting', () => {
+        invariant(element);
         var model = element.getModel();
         model.setText('foobar');
         model.insertNewline();
@@ -62,6 +67,7 @@ describe('nuclide-ui-atom-text-editor', () => {
       });
 
       it('disallows pasting', () => {
+        invariant(element);
         var model = element.getModel();
         atom.clipboard.write('foo bar baz');
         model.pasteText();
@@ -69,6 +75,7 @@ describe('nuclide-ui-atom-text-editor', () => {
       });
 
       it('disallows deleting text', () => {
+        invariant(element);
         var model = element.getModel();
         model.setText('balloon');
         model.selectAll();
@@ -77,6 +84,7 @@ describe('nuclide-ui-atom-text-editor', () => {
       });
 
       it('disallows backspace', () => {
+        invariant(element);
         var model = element.getModel();
         model.setText('foobar');
         model.moveToEndOfLine();
@@ -93,6 +101,7 @@ describe('nuclide-ui-atom-text-editor', () => {
       });
 
       it('allows copying', () => {
+        invariant(element);
         var model = element.getModel();
         model.setText('fraggle');
         model.selectAll();
@@ -101,6 +110,7 @@ describe('nuclide-ui-atom-text-editor', () => {
       });
 
       it('allows inserting', () => {
+        invariant(element);
         var model = element.getModel();
         model.setText('foobar');
         model.insertNewline();
@@ -108,6 +118,7 @@ describe('nuclide-ui-atom-text-editor', () => {
       });
 
       it('allows pasting', () => {
+        invariant(element);
         var model = element.getModel();
         atom.clipboard.write('foo bar baz');
         model.pasteText();
@@ -115,6 +126,7 @@ describe('nuclide-ui-atom-text-editor', () => {
       });
 
       it('allows deleting text', () => {
+        invariant(element);
         var model = element.getModel();
         model.setText('balloon');
         model.selectAll();
@@ -123,6 +135,7 @@ describe('nuclide-ui-atom-text-editor', () => {
       });
 
       it('allows backspace', () => {
+        invariant(element);
         var model = element.getModel();
         model.setText('foobar');
         model.moveToEndOfLine();

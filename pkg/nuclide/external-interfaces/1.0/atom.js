@@ -550,6 +550,9 @@ declare class atom$TextEditor extends atom$Model {
   // TextEditor Rendering
   getPlaceholderText(): string;
   setPlaceholderText(placeholderText: string): void;
+
+  // This is undocumented, but Nuclide uses it in the AtomTextEditor wrapper.
+  setLineNumberGutterVisible(lineNumberGutterVisible: boolean): void;
 }
 
 /**
@@ -765,6 +768,7 @@ declare class atom$GrammarRegistry {
 
   // Managing Grammars
   grammarForScopeName(scopeName: string): ?atom$Grammar;
+  removeGrammarForScopeName(scopeName: string): ?atom$Grammar;
   loadGrammarSync(grammarPath: string): atom$Grammar;
   selectGrammar(filePath: string, fileContents: string): atom$Grammar;
 }
@@ -851,6 +855,9 @@ declare class atom$TextBuffer {
   onDidStopChanging(callback: () => mixed): atom$Disposable;
   onDidSave(callback: () => mixed): atom$Disposable;
   onDidReload(callback: () => mixed): atom$Disposable;
+
+  // File Details
+  setPath(filePath: string): void;
 
   // Reading Text
   isEmpty(): boolean;

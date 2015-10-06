@@ -13,8 +13,8 @@ var {TextEditor} = require('atom');
 
 class ReadOnlyTextEditor extends TextEditor {
 
-  constructor(...args) {
-    super(...args);
+  constructor(props: Object) {
+    super(props);
 
     // Cancel insert events to prevent typing in the text editor and disallow editing (read-only).
     this.onWillInsertText(event => {
@@ -23,13 +23,13 @@ class ReadOnlyTextEditor extends TextEditor {
   }
 
   // Make pasting in the text editor a no-op to disallow editing (read-only).
-  pasteText() {}
+  pasteText(): void {}
 
   // Make delete key presses in the text editor a no-op to disallow editing (read-only).
-  delete() {}
+  delete(): void {}
 
   // Make backspace key presses in the text editor a no-op to disallow editing (read-only).
-  backspace() {
+  backspace(): void {
   }
 }
 
