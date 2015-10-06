@@ -145,10 +145,14 @@ module.exports = {
     // `nuclide-file-tree` is disabled, we should re-enable `tree-view` so they can still browse
     // files.
     //
-    // If the user only ever wants to use `nuclide-file-tree`, we still need to enable `tree-view`
-    // on shutdown. Otherwise, disabling `nuclide-file-tree` and reloading Atom would keep
-    // `tree-view` disabled.
-    atom.packages.enablePackage('tree-view');
+    // `deactivate` is called on all packages when a window is torn down. It's also called when a
+    // user clicks "Disable" in the settings view. For the latter, `isPackageDisabled` will be
+    // `true`, and so it is checked here to differentiate.
+    //
+    // @see t8570656
+    if (atom.packages.isPackageDisabled('nuclide-file-tree-deux')) {
+      atom.packages.enablePackage('tree-view');
+    }
   },
 
   serialize(): ?FileTreeControllerState {
