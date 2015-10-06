@@ -11,6 +11,7 @@
 
 import {DiagnosticsProviderBase} from 'nuclide-diagnostics-provider-base';
 
+import {trackTiming} from 'nuclide-analytics';
 import {promises} from 'nuclide-commons';
 const {RequestSerializer} = promises;
 
@@ -29,6 +30,7 @@ export class ArcanistDiagnosticsProvider {
     this._requestSerializer = new RequestSerializer();
   }
 
+  @trackTiming('nuclide-arcanist:lint')
   async _runLint(textEditor: TextEditor): Promise<void> {
     const filePath = textEditor.getPath();
     if (!filePath) {
