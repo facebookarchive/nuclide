@@ -25,7 +25,7 @@
     "nuclide-analytics": "0.0.0",
     "nuclide-commons": "0.0.0",
     "nuclide-keystroke-label": "0.0.0",
-    "nuclide-panel": "0.0.0",
+    "nuclide-ui-panel": "0.0.0",
     "react-for-atom": "0.13.6"
   },
   "devDependencies": {

@@ -24,9 +24,9 @@
     "nuclide-atom-helpers": "0.0.0",
     "nuclide-commons": "0.0.0",
     "nuclide-logging": "0.0.0",
-    "nuclide-panel": "0.0.0",
     "nuclide-ui-atom-text-editor": "0.0.0",
     "nuclide-ui-dropdown": "0.0.0",
+    "nuclide-ui-panel": "0.0.0",
     "nuclide-ui-tree": "0.0.0",
     "react-for-atom": "0.13.6"
   },

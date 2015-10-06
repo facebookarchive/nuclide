@@ -11,7 +11,7 @@
 
 var Console = require('./Console');
 var NuclideUiDropdown = require('nuclide-ui-dropdown');
-var {PanelComponent} = require('nuclide-panel');
+var {PanelComponent} = require('nuclide-ui-panel');
 var {createPaneContainer} = require('nuclide-atom-helpers');
 var React = require('react-for-atom');
 var TestClassTree = require('./TestClassTree');

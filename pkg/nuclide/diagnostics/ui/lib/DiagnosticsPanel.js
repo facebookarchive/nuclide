@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 var DiagnosticsPane = require('./DiagnosticsPane');
-var {PanelComponent} = require('nuclide-panel');
+var {PanelComponent} = require('nuclide-ui-panel');
 var React = require('react-for-atom');
 
 // This must match the value in diagnostics-table.less.

@@ -14,8 +14,8 @@
     "nuclide-commons": "0.0.0",
     "nuclide-logging": "0.0.0",
     "nuclide-node-transpiler": "0.0.0",
-    "nuclide-panel": "0.0.0",
     "nuclide-remote-uri": "0.0.0",
+    "nuclide-ui-panel": "0.0.0",
     "react": "0.13.2",
     "react-for-atom": "0.13.6"
   },

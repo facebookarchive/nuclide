@@ -14,7 +14,7 @@ var Bridge = require('./Bridge');
 var DebuggerActions = require('./DebuggerActions');
 var React = require('react-for-atom');
 var path = require('path');
-var {PanelComponent} = require('nuclide-panel');
+var {PanelComponent} = require('nuclide-ui-panel');
 
 /**
  * Wrapper for Chrome Devtools frontend view.

@@ -1,5 +1,5 @@
 {
-  "name": "nuclide-panel",
+  "name": "nuclide-ui-panel",
   "repository": "https://github.com/facebook/nuclide",
   "main": "./lib/main",
   "version": "0.0.0",

@@ -9,4 +9,4 @@
  * the root directory of this source tree.
  */
 
-module.exports = require('nuclide-atom-npm').load(__dirname, 'nuclide-panel');
+module.exports = require('nuclide-atom-npm').load(__dirname, 'nuclide-ui-panel');

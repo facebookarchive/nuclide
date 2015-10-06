@@ -19,7 +19,7 @@ var {EVENT_HANDLER_SELECTOR} = require('./FileTreeConstants');
 var FileTreeContextMenu = require('./FileTreeContextMenu');
 var FileTreeHelpers = require('./FileTreeHelpers');
 var FileTreeStore = require('./FileTreeStore');
-var {PanelComponent} = require('nuclide-panel');
+var {PanelComponent} = require('nuclide-ui-panel');
 var React = require('react-for-atom');
 
 var {debounce} = require('nuclide-commons');

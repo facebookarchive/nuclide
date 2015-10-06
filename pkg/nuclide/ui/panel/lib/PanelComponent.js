@@ -49,7 +49,8 @@ var PanelComponent = React.createClass({
     // is resizing the panel, even if their mouse leaves the handle.
     var resizeCursorOverlay = null;
     if (this.state.isResizing) {
-      resizeCursorOverlay = <div className={`nuclide-panel-component-resize-cursor-overlay ${this.props.dock}`} />;
+      resizeCursorOverlay =
+        <div className={`nuclide-ui-panel-component-resize-cursor-overlay ${this.props.dock}`} />;
     }
 
     var containerStyle;
@@ -75,14 +76,14 @@ var PanelComponent = React.createClass({
     }
 
     return (
-      <div className={`nuclide-panel-component ${this.props.dock}`}
+      <div className={`nuclide-ui-panel-component ${this.props.dock}`}
            ref="container"
            style={containerStyle}>
-        <div className={`nuclide-panel-component-resize-handle ${this.props.dock}`}
+        <div className={`nuclide-ui-panel-component-resize-handle ${this.props.dock}`}
              ref="handle"
              onMouseDown={this._handleMouseDown}
              onDoubleClick={this._handleDoubleClick} />
-        <div className="nuclide-panel-component-scroller" style={scrollerStyle}>
+        <div className="nuclide-ui-panel-component-scroller" style={scrollerStyle}>
           {content}
         </div>
         {resizeCursorOverlay}
