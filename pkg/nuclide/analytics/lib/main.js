@@ -8,6 +8,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
+import invariant from 'assert';
 
 var track;
 try {
@@ -103,7 +104,7 @@ function startTracking(eventName: string): TimingTracker {
  *
  * Returns (or throws) the result of the operation.
  */
-function trackOperationTiming(eventName: string, operation: () => any): any {
+function trackOperationTiming<T>(eventName: string, operation: () => T): T {
 
   const tracker = startTracking(eventName);
 
@@ -111,6 +112,7 @@ function trackOperationTiming(eventName: string, operation: () => any): any {
     const result = operation();
 
     if (require('nuclide-commons').promises.isPromise(result)) {
+      invariant(result instanceof Promise);
       // For the method returning a Promise, track the time after the promise is resolved/rejected.
       return result.then((value) => {
         tracker.onSuccess();
