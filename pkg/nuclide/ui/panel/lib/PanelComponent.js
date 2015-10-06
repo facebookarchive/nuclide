@@ -21,28 +21,38 @@ var emptyFunction = () => {};
  * A container for centralizing the logic for making panels scrollable,
  * resizeable, dockable, etc.
  */
-var PanelComponent = React.createClass({
-  propTypes: {
-    children: React.PropTypes.element.isRequired,
+class PanelComponent extends React.Component {
+
+  _resizeSubscriptions: CompositeDisposable;
+
+  // $FlowIssue t8486988
+  static propTypes = {
+    children: PropTypes.element.isRequired,
     dock: PropTypes.oneOf(['left', 'bottom', 'right']).isRequired,
     initialLength: PropTypes.number.isRequired,
     onResize: PropTypes.func.isRequired,
     overflowX: PropTypes.string,
-  },
+  };
 
-  getDefaultProps(): Object {
-    return {
-      initialLength: 200,
-      onResize: emptyFunction,
-    };
-  },
+  // $FlowIssue t8486988
+  static defaultProps = {
+    initialLength: 200,
+    onResize: emptyFunction,
+  };
 
-  getInitialState(): Object {
-    return {
+  constructor(props: Object) {
+    super(props);
+    this.state = {
       isResizing: false,
       length: this.props.initialLength,
     };
-  },
+
+    // Bind main events to this object. _updateSize is only ever bound within these.
+    this._handleDoubleClick = this._handleDoubleClick.bind(this);
+    this._handleMouseDown = this._handleMouseDown.bind(this);
+    this._handleMouseMove = this._handleMouseMove.bind(this);
+    this._handleMouseUp = this._handleMouseUp.bind(this);
+  }
 
   render(): ReactElement {
     // We create an overlay to always display the resize cursor while the user
@@ -89,7 +99,7 @@ var PanelComponent = React.createClass({
         {resizeCursorOverlay}
       </div>
     );
-  },
+  }
 
   /**
    * Returns the current resizable length.
@@ -99,31 +109,31 @@ var PanelComponent = React.createClass({
    */
   getLength(): number {
     return this.state.length;
-  },
+  }
 
   focus(): void {
     React.findDOMNode(this.refs['child']).focus();
-  },
+  }
 
-  getChildComponent(): void {
+  getChildComponent(): ReactComponent {
     return this.refs.child;
-  },
+  }
 
   _handleMouseDown(event: SyntheticMouseEvent): void {
     this._resizeSubscriptions = new CompositeDisposable();
 
     window.addEventListener('mousemove', this._handleMouseMove);
     this._resizeSubscriptions.add({
-      dispose: () => window.removeEventListener('mousemove', this._handleMouseMove)
+      dispose: () => window.removeEventListener('mousemove', this._handleMouseMove),
     });
 
     window.addEventListener('mouseup', this._handleMouseUp);
     this._resizeSubscriptions.add({
-      dispose: () => window.removeEventListener('mouseup', this._handleMouseUp)
+      dispose: () => window.removeEventListener('mouseup', this._handleMouseUp),
     });
 
     this.setState({isResizing: true});
-  },
+  }
 
   _handleMouseMove(event: SyntheticMouseEvent): void {
     var containerEl = React.findDOMNode(this.refs['container']);
@@ -136,14 +146,14 @@ var PanelComponent = React.createClass({
       length = containerEl.getBoundingClientRect().right - event.pageX;
     }
     this._updateSize(length);
-  },
+  }
 
   _handleMouseUp(event: SyntheticMouseEvent): void {
     if (this._resizeSubscriptions) {
       this._resizeSubscriptions.dispose();
     }
     this.setState({isResizing: false});
-  },
+  }
 
   /**
    * Resize the pane to fit its contents.
@@ -165,13 +175,13 @@ var PanelComponent = React.createClass({
       }
       this._updateSize(length);
     });
-  },
+  }
 
   // Whether this is width or height depends on the orientation of this panel.
-  _updateSize(newSize: number) {
+  _updateSize(newSize: number): void {
     this.setState({length: newSize});
     this.props.onResize.call(null, newSize);
-  },
-});
+  }
+}
 
 module.exports = PanelComponent;

@@ -10,6 +10,7 @@
  */
 
 var React = require('react-for-atom');
+var {assign} = require('nuclide-commons').object;
 
 var PanelComponent = require('./PanelComponent');
 
@@ -24,6 +25,7 @@ type PanelControllerState = {
  * support different sides in the future.
  */
 class PanelController {
+  _component: PanelComponent;
   _hostEl: HTMLElement;
   _panel: atom$Panel;
 
@@ -38,15 +40,15 @@ class PanelController {
     this._hostEl.style.height = '100%';
 
     var shouldBeVisible = false;
-    var initialLength = null;
+    var newProps = assign({}, props);
     if (state) {
-      props.initialLength = state.resizableLength;
+      newProps.initialLength = state.resizableLength;
       shouldBeVisible = state.isVisible;
     }
 
     this._component = React.render(
-        <PanelComponent {...props}>{childElement}</PanelComponent>,
-        this._hostEl);
+      <PanelComponent {...newProps}>{childElement}</PanelComponent>,
+      this._hostEl);
     this._panel = atom.workspace.addLeftPanel({item: this._hostEl, visible: shouldBeVisible});
   }
 
