@@ -25,7 +25,12 @@ module.exports = {
   },
 
   createAutocompleteProvider(): mixed {
-    var getSuggestions = require('./AutoComplete').getAutocompleteSuggestions;
+    var {trackOperationTiming} = require('nuclide-analytics');
+    var getSuggestions = request => {
+      return trackOperationTiming(
+        'nuclide-ocaml:getAutocompleteSuggestions',
+        () => require('./AutoComplete').getAutocompleteSuggestions(request));
+    };
     return {
       selector: '.source.ocaml',
       inclusionPriority: 1,
