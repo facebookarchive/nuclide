@@ -17,9 +17,12 @@ var {PropTypes} = React;
 /**
  * An input field rendered as an <atom-text-editor mini />.
  */
-var AtomInput = React.createClass({
+class AtomInput extends React.Component {
 
-  propTypes: {
+  _disposables: ?CompositeDisposable;
+
+  // $FlowIssue t8486988
+  static propTypes = {
     disabled: PropTypes.bool,
     initialValue: PropTypes.string.isRequired,
     placeholderText: PropTypes.string,
@@ -28,34 +31,35 @@ var AtomInput = React.createClass({
     onDidChange: PropTypes.func,
     onBlur: PropTypes.func,
     size: PropTypes.oneOf(['xs', 'sm', 'lg']),
-  },
+  };
 
-  getDefaultProps() {
-    return {
-      disabled: false,
-      initialValue: '',
-      placeholderText: null,
-      onClick: () => {},
-      onDidChange: () => {},
-      onFocus: () => {},
-      onBlur: () => {},
+  // $FlowIssue t8486988
+  static defaultProps = {
+    disabled: false,
+    initialValue: '',
+    placeholderText: null,
+    onClick: () => {},
+    onDidChange: () => {},
+    onFocus: () => {},
+    onBlur: () => {},
+  };
+
+  constructor(props: Object) {
+    super(props);
+    this.state = {
+      value: props.initialValue,
     };
-  },
+  }
 
-  getInitialState() {
-    return {
-      value: this.props.initialValue,
-    };
-  },
-
-  componentDidMount() {
-    this._disposables = new CompositeDisposable();
+  componentDidMount(): void {
+    var disposables = this._disposables = new CompositeDisposable();
 
     // There does not appear to be any sort of infinite loop where calling
     // setState({value}) in response to onDidChange() causes another change
     // event.
+
     var textEditor = this.getTextEditor();
-    this._disposables.add(textEditor.onDidChange(() => {
+    disposables.add(textEditor.onDidChange(() => {
       this.setState({value: textEditor.getText()});
       this.props.onDidChange.call(null, textEditor.getText());
     }));
@@ -66,15 +70,15 @@ var AtomInput = React.createClass({
     if (this.props.disabled) {
       this._updateDisabledState(true);
     }
-  },
+  }
 
-  componentWillReceiveProps(nextProps) {
+  componentWillReceiveProps(nextProps: Object): void {
     if (nextProps.disabled !== this.props.disabled) {
       this._updateDisabledState(nextProps.disabled);
     }
-  },
+  }
 
-  componentWillUnmount() {
+  componentWillUnmount(): void {
     // Note that destroy() is not part of TextEditor's public API.
     this.getTextEditor().destroy();
 
@@ -82,7 +86,7 @@ var AtomInput = React.createClass({
       this._disposables.dispose();
       this._disposables = null;
     }
-  },
+  }
 
   _updateDisabledState(isDisabled: boolean): void {
     // Hack to set TextEditor to read-only mode, per https://github.com/atom/atom/issues/6880
@@ -91,7 +95,7 @@ var AtomInput = React.createClass({
     } else {
       this._getTextEditorElement().setAttribute('tabindex', '-1');
     }
-  },
+  }
 
   render(): ReactElement {
     var className;
@@ -109,32 +113,32 @@ var AtomInput = React.createClass({
         {this.state.value}
       </atom-text-editor>
     );
-  },
+  }
 
   getText(): string {
     return this.state.value;
-  },
+  }
 
   setText(text: string) {
     this.getTextEditor().setText(text);
-  },
+  }
 
   getTextEditor(): TextEditor {
     return this._getTextEditorElement().getModel();
-  },
+  }
 
   onDidChange(callback: () => any): atom$Disposable {
     return this.getTextEditor().onDidChange(callback);
-  },
+  }
 
-  _getTextEditorElement(): Element {
+  _getTextEditorElement(): atom$TextEditorElement {
     return React.findDOMNode(this);
-  },
+  }
 
-  focus() {
+  focus(): void {
     this.getTextEditor().moveToEndOfLine();
     this._getTextEditorElement().focus();
-  },
-});
+  }
+}
 
 module.exports = AtomInput;

@@ -88,6 +88,7 @@ describe('AtomInput', () => {
 
   // This test is currently disabled because it appears that WeakMap may be
   // explicitly designed not to support this use case.
+  /*eslint-disable jasmine/no-disabled-tests*/
   xit('releases references after it is unmounted', () => {
     var initialValue = 'I am the text!';
     reactElement = createWithProps({initialValue});
@@ -100,4 +101,6 @@ describe('AtomInput', () => {
     reactElement = null;
     expect(weakReferences.get(textEditorKey)).toBe(null);
   });
+  /*eslint-enable jasmine/no-disabled-tests*/
+
 });

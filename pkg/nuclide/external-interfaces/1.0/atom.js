@@ -570,6 +570,7 @@ declare class atom$TextEditorComponent {
  */
 declare class atom$TextEditorElement extends HTMLElement {
   component: ?atom$TextEditorComponent;
+  getModel(): atom$TextEditor;
   pixelPositionForScreenPosition(screenPosition: atom$Point): {
     left: number;
     top: number;
