@@ -18,6 +18,7 @@
     "event-kit": "1.1.1",
     "fs-plus": "2.8.0",
     "mv": "2.1.1",
+    "nuclide-analytics": "0.0.0",
     "nuclide-arcanist-base": "0.0.0",
     "nuclide-buck-base": "0.0.0",
     "nuclide-clang": "0.0.0",

@@ -9,14 +9,18 @@
  * the root directory of this source tree.
  */
 
-var fs = require('fs');
-var logger = require('nuclide-logging').getLogger();
-var NuclideServer = require('./NuclideServer');
+import fs from 'fs';
+import {getLogger} from 'nuclide-logging';
+import {startTracking} from 'nuclide-analytics';
+import NuclideServer from './NuclideServer';
 
-var DEFAULT_PORT = 9090;
+const DEFAULT_PORT = 9090;
+
+var logger = getLogger();
 
 async function main(args) {
   try {
+    var serverStartTimer = startTracking('nuclide-server:start');
     var {port, key, cert, ca} = args;
     if (key && cert && ca) {
       key = fs.readFileSync(key);
@@ -31,8 +35,10 @@ async function main(args) {
       trackEventLoop: true,
     });
     await server.connect();
+    serverStartTimer.onSuccess();
     logger.info('NuclideServer started on port ' + port + '.');
   } catch (e) {
+    await serverStartTimer.onError(e);
     logger.error(e);
     process.exit(1);
   }
