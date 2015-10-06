@@ -352,7 +352,12 @@ class SearchResultManager {
     }
     this._directories.forEach(directory => {
       var path = directory.getPath();
-      for (var directoryProvider of this._providersByDirectory.get(directory)) {
+      var providers = this._providersByDirectory.get(directory);
+      if (!providers) {
+        // Special directories like "atom://about"
+        return;
+      }
+      for (var directoryProvider of providers) {
         directoryProvider.executeQuery(query, directory).then(((boundProvider, result) => {
           this.processResult(query, result, path, boundProvider);
         }).bind(this, directoryProvider));
