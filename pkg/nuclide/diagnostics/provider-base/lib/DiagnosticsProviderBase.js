@@ -9,6 +9,12 @@
  * the root directory of this source tree.
  */
 
+import type {
+  DiagnosticProviderUpdate,
+  InvalidationMessage,
+  MessageInvalidationCallback,
+  MessageUpdateCallback,
+} from 'nuclide-diagnostics-base/lib/types';
 import type {TextEventDispatcher} from 'nuclide-text-event-dispatcher';
 
 type ProviderBaseOptions = {

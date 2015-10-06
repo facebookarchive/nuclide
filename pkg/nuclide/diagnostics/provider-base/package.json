@@ -5,6 +5,7 @@
   "version": "0.0.0",
   "description": "Utilities to make implementing a diagnostics provider easier",
   "nuclide": {
+    "flowCheck": true,
     "packageType": "Node",
     "testRunner": "apm"
   },
