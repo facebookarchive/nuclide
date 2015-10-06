@@ -19,6 +19,7 @@
     "atom": ">=1.0.0"
   },
   "dependencies": {
+    "nuclide-commons": "0.0.0",
     "react-for-atom": "0.13.6"
   },
   "devDependencies": {

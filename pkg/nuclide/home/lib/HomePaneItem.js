@@ -12,6 +12,8 @@
 import type HomeFragments from 'nuclide-home-interfaces';
 
 var React = require('react-for-atom');
+var HomeFeatureComponent = require('./HomeFeatureComponent');
+var arrayFrom = require('nuclide-commons').array.from;
 
 var DEFAULT_WELCOME = (
   <div>
@@ -54,17 +56,24 @@ class HomePaneItem extends HTMLElement {
 
   render() {
     var welcomes = [];
-    this.allHomeFragments.forEach(fragment => {
-      var {welcome} = fragment;
+    var features = [];
+    var sortedHomeFragments = arrayFrom(this.allHomeFragments).sort(
+      (fragmentA, fragmentB) => (fragmentB.priority || 0) - (fragmentA.priority || 0)
+    );
+    sortedHomeFragments.forEach(fragment => {
+      var {welcome, feature} = fragment;
       if (welcome) {
         welcomes.push(<div key={welcomes.length}>{welcome}</div>);
+      }
+      if (feature) {
+        features.push(<HomeFeatureComponent key={features.length} {...feature} />);
       }
     });
     if (welcomes.length === 0) {
       welcomes = DEFAULT_WELCOME;
     }
 
-    React.render((
+    var containers = [
       <div className="welcome-container">
         <section className="text-center">
           <div className="nuclide-home-logo" />
@@ -73,8 +82,14 @@ class HomePaneItem extends HTMLElement {
         <section className="text-center">
           {welcomes}
         </section>
-      </div>
-    ), this);
+      </div>,
+    ];
+
+    if (features.length > 0) {
+      containers.push(<div className="welcome-container">{features}</div>);
+    }
+
+    React.render(<div className="nuclide-home-containers">{containers}</div>, this);
   }
 
   getTitle(): string {
