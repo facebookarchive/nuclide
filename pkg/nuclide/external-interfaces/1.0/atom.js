@@ -80,6 +80,17 @@ declare class atom$Config {
       source?: string,
     },
   ): boolean;
+
+  unset(
+    keyPath: string,
+    options?: {
+      scopeSelector?: string,
+      source?: string,
+    }
+  ): void;
+
+  // Undocumented Methods
+  save(): void;
 }
 
 declare class atom$Cursor {
@@ -195,7 +206,9 @@ declare class atom$PackageManager {
   getAvailablePackageNames(): Array<string>;
 
   // (Undocumented.)
+  loadPackage(name: string): void;
   serviceHub: atom$ServiceHub;
+  unloadPackage(name: string): void;
 }
 
 type atom$PaneSplitParams = {
