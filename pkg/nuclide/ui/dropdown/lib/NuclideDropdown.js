@@ -14,9 +14,10 @@ var emptyfunction = require('emptyfunction');
 
 var {PropTypes} = React;
 
-var NuclideDropdown = React.createClass({
+class NuclideDropdown extends React.Component {
 
-  propTypes: {
+  // $FlowIssue t8486988
+  static propTypes = {
     className: PropTypes.string.isRequired,
     disabled: PropTypes.bool.isRequired,
     menuItems: PropTypes.arrayOf(PropTypes.shape({
@@ -34,18 +35,22 @@ var NuclideDropdown = React.createClass({
      */
     size: PropTypes.oneOf(['xs', 'sm', 'lg']),
     title: PropTypes.string.isRequired,
-  },
+  };
 
-  getDefaultProps(): any {
-    return {
-      className: '',
-      disabled: false,
-      selectedIndex: 0,
-      menuItems: [],
-      onSelectedChange: emptyfunction,
-      title: '',
-    };
-  },
+  // $FlowIssue t8486988
+  static defaultProps = {
+    className: '',
+    disabled: false,
+    selectedIndex: 0,
+    menuItems: [],
+    onSelectedChange: emptyfunction,
+    title: '',
+  };
+
+  constructor(props: Object) {
+    super(props);
+    this._onChange = this._onChange.bind(this);
+  }
 
   render(): ReactElement {
     var options = this.props.menuItems.map(item =>
@@ -70,12 +75,14 @@ var NuclideDropdown = React.createClass({
         <i className="icon icon-triangle-down" />
       </div>
     );
-  },
+  }
 
-  _onChange(event: SyntheticMouseEvent) {
-    var selectedIndex = event.target.selectedIndex;
-    this.props.onSelectedChange(selectedIndex);
-  },
-});
+  _onChange(event: SyntheticMouseEvent): void {
+    if (event.target.hasOwnProperty('selectedIndex')) {
+      var selectedIndex = event.target.selectedIndex;
+      this.props.onSelectedChange(selectedIndex);
+    }
+  }
+}
 
 module.exports = NuclideDropdown;
