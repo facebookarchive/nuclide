@@ -10,6 +10,7 @@
  */
 
 var DelayedEventManager = require('../lib/DelayedEventManager');
+import invariant from 'assert';
 
 describe('DelayedEventManager', () => {
   var manager;
@@ -22,6 +23,8 @@ describe('DelayedEventManager', () => {
   });
 
   it('fires events after the delay period has passed.', () => {
+    invariant(manager);
+    // $FlowFixMe: callbackSpy is of type JasmineSpy, but expected type is `() => void`.
     var id = manager.addEvent(callbackSpy, EVENT_DELAY_IN_MS);
     expect(id).toBeDefined();
     window.advanceClock(EVENT_DELAY_IN_MS);
@@ -30,6 +33,7 @@ describe('DelayedEventManager', () => {
 
   describe('::setCanAcceptEvents', () => {
     it('determines whether the DelayedEventManager can accept new events.', () => {
+      invariant(manager);
       manager.setCanAcceptEvents(false);
       var id = manager.addEvent(callbackSpy, EVENT_DELAY_IN_MS);
       expect(id).toBeNull();
@@ -46,6 +50,7 @@ describe('DelayedEventManager', () => {
 
   describe('::cancelEvent', () => {
     it('cancels the event with the given identifier.', () => {
+      invariant(manager);
       var id = manager.addEvent(callbackSpy, EVENT_DELAY_IN_MS);
       expect(id).toBeDefined();
       var callbackSpy2 = jasmine.createSpy();
@@ -63,6 +68,7 @@ describe('DelayedEventManager', () => {
 
   describe('::cancelAllEvents', () => {
     it('cancels all pending events.', () => {
+      invariant(manager);
       var id = manager.addEvent(callbackSpy, EVENT_DELAY_IN_MS);
       expect(id).toBeDefined();
       var callbackSpy2 = jasmine.createSpy();
@@ -80,6 +86,7 @@ describe('DelayedEventManager', () => {
 
   describe('::dispose', () => {
     it('will cancel all pending events.', () => {
+      invariant(manager);
       var id = manager.addEvent(callbackSpy, EVENT_DELAY_IN_MS);
       expect(id).toBeDefined();
       var callbackSpy2 = jasmine.createSpy();

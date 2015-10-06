@@ -25,7 +25,7 @@ var WATCHMAN_SUBSCRIPTION_NAME_HGBOOKMARK = 'hg-repository-watchman-subscription
 var WATCHMAN_SUBSCRIPTION_NAME_ARC_BUILD_LOCK = 'arc-build-lock';
 var EVENT_DELAY_IN_MS = 1000;
 
-import type LocalHgServiceOptions from './hg-types';
+import type {LocalHgServiceOptions} from './hg-types';
 
 function getArcBuildLockFile(): ?string {
   var lockFile;

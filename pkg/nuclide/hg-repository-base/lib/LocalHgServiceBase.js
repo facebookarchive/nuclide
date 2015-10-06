@@ -22,8 +22,9 @@ var {asyncExecute, createArgsForScriptCommand} = require('nuclide-commons');
 var path = require('path');
 
 import type {DiffInfo, RevisionFileChanges, StatusCodeIdValue} from './hg-constants';
-import type LocalHgServiceOptions from './hg-types';
+import type {LocalHgServiceOptions} from './hg-types';
 import type {NuclideUri} from 'nuclide-remote-uri';
+import type {Disposable} from 'event-kit';
 
 var logger;
 function getLogger() {

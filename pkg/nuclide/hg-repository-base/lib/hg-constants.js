@@ -15,10 +15,10 @@ export type HgRepositoryOptions = {
   originURL: string;
 
   /** The working directory of this repository. */
-  workingDirectory: Directory;
+  workingDirectory: atom$Directory;
 
   /** The root directory that is opened in Atom, which this Repository serves. **/
-  projectRootDirectory: Directory;
+  projectRootDirectory: atom$Directory;
 };
 
 /**
@@ -56,12 +56,19 @@ var StatusCodeNumber: {[key: string]: StatusCodeNumberValue} = {
 };
 
 var StatusCodeIdToNumber: {[key: StatusCodeIdValue]: StatusCodeNumberValue} = {
+  // $FlowIssue (t6187050)
   [StatusCodeId.ADDED]: StatusCodeNumber.ADDED,
+  // $FlowIssue (t6187050)
   [StatusCodeId.CLEAN]: StatusCodeNumber.CLEAN,
+  // $FlowIssue (t6187050)
   [StatusCodeId.IGNORED]: StatusCodeNumber.IGNORED,
+  // $FlowIssue (t6187050)
   [StatusCodeId.MODIFIED]: StatusCodeNumber.MODIFIED,
+  // $FlowIssue (t6187050)
   [StatusCodeId.MISSING]: StatusCodeNumber.MISSING,
+  // $FlowIssue (t6187050)
   [StatusCodeId.REMOVED]: StatusCodeNumber.REMOVED,
+  // $FlowIssue (t6187050)
   [StatusCodeId.UNTRACKED]: StatusCodeNumber.UNTRACKED,
 };
 

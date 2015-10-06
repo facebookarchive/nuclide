@@ -9,24 +9,9 @@
  * the root directory of this source tree.
  */
 
-// TODO (jessicalin) Import these types from hg-constants.js when types can
-// be exported.
-type StatusCodeId = string;
-
-type LineDiff = {
-  oldStart: number;
-  oldLines: number;
-  newStart: number;
-  newLines: number;
-};
-
-type DiffInfo = {
-  added: number;
-  deleted: number;
-  lineDiffs: Array<LineDiff>;
-};
-
 import type {NuclideUri} from 'nuclide-remote-uri';
+import type {DiffInfo, RevisionFileChanges, StatusCodeIdValue} from './hg-constants';
+import type {Disposable} from 'event-kit';
 
 /**
  * HgService:
@@ -52,7 +37,7 @@ class HgService {
   fetchStatuses(
     filePaths: Array<NuclideUri>,
     options: ?any
-  ): Promise<{[key: NuclideUri]: StatusCodeId}> {
+  ): Promise<{[key: NuclideUri]: StatusCodeIdValue}> {
     return Promise.reject(new Error('not implemented'));
   }
 

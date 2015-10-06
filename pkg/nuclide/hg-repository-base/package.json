@@ -5,6 +5,7 @@
   "version": "0.0.0",
   "description": "Provides base support for Mercurial source control repositories",
   "nuclide": {
+    "flowCheck": true,
     "packageType": "Node",
     "testRunner": "npm"
   },
@@ -15,6 +16,8 @@
     "nuclide-watchman-helpers": "0.0.0"
   },
   "devDependencies": {
+    "event-kit": "1.1.1",
+    "nuclide-external-interfaces": "0.0.0",
     "nuclide-jasmine": "0.0.0",
     "nuclide-remote-uri": "0.0.0"
   },

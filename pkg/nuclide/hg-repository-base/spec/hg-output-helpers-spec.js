@@ -135,8 +135,8 @@ describe('hg-output-helpers', () => {
       });
     });
 
-    it('handles null or an empty string as input.', () => {
-      var diffInfoForNull = parseHgDiffUnifiedOutput();
+    it('handles empty string as input.', () => {
+      var diffInfoForNull = parseHgDiffUnifiedOutput('');
       var diffInfoForEmptyString = parseHgDiffUnifiedOutput('');
       expect(diffInfoForNull).toEqual({
         added: 0,

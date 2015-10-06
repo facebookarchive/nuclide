@@ -15,6 +15,7 @@ import type {NuclideUri} from 'nuclide-remote-uri';
 var {asyncExecute} = require('nuclide-commons');
 var logger = require('nuclide-logging').getLogger();
 var path = require('path');
+import invariant from 'assert';
 
 var ALL_FILES_LABEL = 'files:';
 var FILE_ADDS_LABEL = 'file-adds:';
@@ -109,12 +110,11 @@ function parseRevisionFileChangeOutput(
   // Parse the lines, now in the form: new_file (previous_file)
   copiedFiles = copiedFiles.map((filePathPair) => {
     var fileNameMatches = filePathPair.match(COPIED_FILE_PAIR_REGEX);
-    if (fileNameMatches) {
-      return {
-        from: absolutize(fileNameMatches[2], workingDirectory),
-        to: absolutize(fileNameMatches[1], workingDirectory),
-      };
-    }
+    invariant(fileNameMatches);
+    return {
+      from: absolutize(fileNameMatches[2], workingDirectory),
+      to: absolutize(fileNameMatches[1], workingDirectory),
+    };
   });
 
   var modifiedFiles = lines[4].slice(FILE_MODS_LABEL.length + 1).trim();

@@ -12,6 +12,7 @@
 var path = require('path');
 var LocalHgServiceBase = require('../lib/LocalHgServiceBase');
 var {HgStatusOption, StatusCodeId} = require('../lib/hg-constants');
+import invariant from 'assert';
 
 class TestHgService extends LocalHgServiceBase {
   // These tests target the non-watchman-dependent features of LocalHgService.
@@ -47,10 +48,12 @@ describe('LocalHgService', () => {
     };
 
     it('parses the "hg status" output and returns a Map of the results.', () => {
+      invariant(hgService);
       spyOn(hgService, '_hgAsyncExecute').andCallFake((args, execOptions) => {
         return Promise.resolve(testHgStatusOutput);
       });
       waitsForPromise(async () => {
+        invariant(hgService);
         var statusMap = await hgService.fetchStatuses(testPaths);
         expect(statusMap[PATH_1]).toBe(StatusCodeId.MODIFIED);
         expect(statusMap[PATH_2]).toBe(StatusCodeId.ADDED);
@@ -58,41 +61,49 @@ describe('LocalHgService', () => {
     });
     describe('when called with a hgStatusOption', () => {
       it('fetches only non-ignored status if no option is passed.', () => {
+        invariant(hgService);
         spyOn(hgService, '_hgAsyncExecute').andCallFake((args, execOptions) => {
           expect(args).toEqual(['status', '-Tjson'].concat(testPaths));
           return Promise.resolve(testHgStatusOutput);
         });
         waitsForPromise(async () => {
+          invariant(hgService);
           await hgService.fetchStatuses(testPaths);
         });
       });
 
       it('fetches only non-ignored status if the "ONLY_NON_IGNORED" option is passed.', () => {
+        invariant(hgService);
         spyOn(hgService, '_hgAsyncExecute').andCallFake((args, execOptions) => {
           expect(args).toEqual(['status', '-Tjson'].concat(testPaths));
           return Promise.resolve(testHgStatusOutput);
         });
         waitsForPromise(async () => {
+          invariant(hgService);
           await hgService.fetchStatuses(testPaths, {hgStatusOption: HgStatusOption.ONLY_NON_IGNORED});
         });
       });
 
       it('fetches only ignored status if the "ONLY_IGNORED" option is passed.', () => {
+        invariant(hgService);
         spyOn(hgService, '_hgAsyncExecute').andCallFake((args, execOptions) => {
           expect(args).toEqual(['status', '-Tjson', '--ignored'].concat(testPaths));
           return Promise.resolve(testHgStatusOutput);
         });
         waitsForPromise(async () => {
+          invariant(hgService);
           await hgService.fetchStatuses(testPaths, {hgStatusOption: HgStatusOption.ONLY_IGNORED});
         });
       });
 
       it('fetches all status if the "ALL_STATUSES" option is passed.', () => {
+        invariant(hgService);
         spyOn(hgService, '_hgAsyncExecute').andCallFake((args, execOptions) => {
           expect(args).toEqual(['status', '-Tjson', '--all'].concat(testPaths));
           return Promise.resolve(testHgStatusOutput);
         });
         waitsForPromise(async () => {
+          invariant(hgService);
           await hgService.fetchStatuses(testPaths, {hgStatusOption: HgStatusOption.ALL_STATUSES});
         });
       });
@@ -114,12 +125,14 @@ describe('LocalHgService', () => {
 
     it('fetches the unified diff output for the given path.', () => {
       // Test set up: mock out dependency on hg.
+      invariant(hgService);
       spyOn(hgService, '_hgAsyncExecute').andCallFake((args, options) => {
         expect(args.pop()).toBe(PATH_1);
         return Promise.resolve({stdout: mockHgDiffOutput});
       });
 
       waitsForPromise(async () => {
+        invariant(hgService);
         var diffInfo = await hgService.fetchDiffInfo(PATH_1);
         expect(diffInfo).toEqual(expectedDiffInfo);
       });
@@ -128,7 +141,7 @@ describe('LocalHgService', () => {
 
   describe('::destroy', () => {
     it('should do cleanup without throwing an exception.', () => {
-      hgService.destroy();
+      hgService && hgService.destroy();
     });
   });
 

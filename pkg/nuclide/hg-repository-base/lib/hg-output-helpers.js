@@ -24,19 +24,7 @@ var HUNK_NEW_INFO_REGEX = /\+([0-9]+)((?:,[0-9]+)?)/;
  */
 var CHANGE_SET_ID_PREFIX_LENGTH = 8;
 
-// TODO (jessicalin) Import these from hg-constants.js when types can be exported.
-type LineDiff = {
-  oldStart: number;
-  oldLines: number;
-  newStart: number;
-  newLines: number;
-};
-
-type DiffInfo = {
-  added: number;
-  deleted: number;
-  lineDiffs: Array<LineDiff>;
-};
+import type {DiffInfo} from './hg-constants';
 
 /**
  * Parses the output of `hg diff --unified 0`.
