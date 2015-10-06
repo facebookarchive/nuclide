@@ -15,6 +15,7 @@ var LazyTestTreeNode = require('./LazyTestTreeNode');
 var React = require('react-for-atom');
 var TreeNodeComponent = require('../lib/TreeNodeComponent');
 var TreeRootComponent = require('../lib/TreeRootComponent');
+var invariant = require('assert');
 
 var {TestUtils} = React.addons;
 
@@ -39,10 +40,10 @@ function getNodeComponents(component: TreeRootComponent): any {
 describe('TreeRootComponent', () => {
   // Use `renderComponent` in `beforeEach` to return the component so the test
   // methods have a chance to modify the default props.
-  var renderComponent: (props: any) => TreeRootComponent;
+  var renderComponent: ?(props: any) => TreeRootComponent;
   var props;
   var hostEl;
-  var nodes: {[key: string]: LazyTreeNode};
+  var nodes: {[key: string]: LazyTreeNode} = {};
 
   beforeEach(() => {
     nodes = {};
@@ -50,28 +51,52 @@ describe('TreeRootComponent', () => {
     //   A
     //  / \
     // B   C
-    nodes['A'] = new LazyTestTreeNode({label: 'A'}, /* parent */ null, true, async () => [nodes['B'], nodes['C']]);
-    nodes['B'] = new LazyTestTreeNode({label: 'B'}, /* parent */ nodes['A'], false, async () => null);
-    nodes['C'] = new LazyTestTreeNode({label: 'C'}, /* parent */ nodes['A'], false, async () => null);
+    nodes['A'] = new LazyTestTreeNode(
+      {label: 'A'}, /* parent */ null, true, async () => [nodes['B'], nodes['C']]
+    );
+    nodes['B'] = new LazyTestTreeNode(
+      {label: 'B'}, /* parent */ nodes['A'], false, async () => null
+    );
+    nodes['C'] = new LazyTestTreeNode(
+      {label: 'C'}, /* parent */ nodes['A'], false, async () => null
+    );
 
     //   D
     //  / \
     // E   F
-    nodes['D'] = new LazyTestTreeNode({label: 'D'}, /* parent */ null, true, async () => [nodes['E'], nodes['F']]);
-    nodes['E'] = new LazyTestTreeNode({label: 'E'}, /* parent */ nodes['D'], false, async () => null);
-    nodes['F'] = new LazyTestTreeNode({label: 'F'}, /* parent */ nodes['D'], false, async () => null);
+    nodes['D'] = new LazyTestTreeNode(
+      {label: 'D'}, /* parent */ null, true, async () => [nodes['E'], nodes['F']]
+    );
+    nodes['E'] = new LazyTestTreeNode(
+      {label: 'E'}, /* parent */ nodes['D'], false, async () => null
+    );
+    nodes['F'] = new LazyTestTreeNode(
+      {label: 'F'}, /* parent */ nodes['D'], false, async () => null
+    );
 
     //      G
     //     / \
     //    H   I
     //  /   /   \
     // J   K     H(2)
-    nodes['G'] = new LazyTestTreeNode({label: 'G'}, /* parent */ null, true, async () => [nodes['H'], nodes['I']]);
-    nodes['H'] = new LazyTestTreeNode({label: 'H'}, /* parent */ nodes['G'], true, async () => [nodes['J']]);
-    nodes['I'] = new LazyTestTreeNode({label: 'I'}, /* parent */ nodes['G'], true, async () => [nodes['K'], nodes['H2']]);
-    nodes['J'] = new LazyTestTreeNode({label: 'J'}, /* parent */ nodes['H'], false, async () => null);
-    nodes['K'] = new LazyTestTreeNode({label: 'K'}, /* parent */ nodes['I'], false, async () => null);
-    nodes['H2'] = new LazyTestTreeNode({label: 'H'}, /* parent */ nodes['I'], false, async () => null);
+    nodes['G'] = new LazyTestTreeNode(
+      {label: 'G'}, /* parent */ null, true, async () => [nodes['H'], nodes['I']]
+    );
+    nodes['H'] = new LazyTestTreeNode(
+      {label: 'H'}, /* parent */ nodes['G'], true, async () => [nodes['J']]
+    );
+    nodes['I'] = new LazyTestTreeNode(
+      {label: 'I'}, /* parent */ nodes['G'], true, async () => [nodes['K'], nodes['H2']]
+    );
+    nodes['J'] = new LazyTestTreeNode(
+      {label: 'J'}, /* parent */ nodes['H'], false, async () => null
+    );
+    nodes['K'] = new LazyTestTreeNode(
+      {label: 'K'}, /* parent */ nodes['I'], false, async () => null
+    );
+    nodes['H2'] = new LazyTestTreeNode(
+      {label: 'H'}, /* parent */ nodes['I'], false, async () => null
+    );
 
     hostEl = document.createElement('div');
     hostEl.className = 'test';
@@ -88,12 +113,14 @@ describe('TreeRootComponent', () => {
       labelClassNameForNode: (node) => node.getItem().label,
       onKeepSelection() {},
       rowClassNameForNode: (node) => '',
+      onConfirmSelection: () => {},
     };
   });
 
   describe('setRoots', () => {
     it('preserves state for reusable roots + removes state for non-reusable roots', () => {
       waitsForPromise(async () => {
+        invariant(renderComponent);
         var component = renderComponent(props);
         await component.setRoots([nodes['A']]);
         await component.setRoots([nodes['G'], nodes['A']]);
@@ -107,6 +134,7 @@ describe('TreeRootComponent', () => {
 
     it('returns a Promise that resolves after the children are rendered', () => {
       waitsForPromise(async () => {
+        invariant(renderComponent);
         var component = renderComponent(props);
 
         // The children should be in the tree if we `await` the promise.
@@ -124,6 +152,7 @@ describe('TreeRootComponent', () => {
 
     it('rejects outdated promises', () => {
       waitsForPromise(async () => {
+        invariant(renderComponent);
         var component = renderComponent(props);
 
         var setRootsPromise1 = component.setRoots([nodes['A']]);
@@ -146,6 +175,7 @@ describe('TreeRootComponent', () => {
   describe('invalidateCachedNodes', () => {
     it('invalidates the cached nodes', () => {
       waitsForPromise(async () => {
+        invariant(renderComponent);
         var component = renderComponent(props);
         await component.setRoots([nodes['G'], nodes['A']]);
 
@@ -163,20 +193,23 @@ describe('TreeRootComponent', () => {
   describe('handling core:move-left', () => {
     it('moves the selection to the parent when collapsing a non-container node', () => {
       waitsForPromise(async () => {
+        invariant(renderComponent);
         var component = renderComponent(props);
         await component.setRoots([nodes['A']]);
 
         clickNodeWithLabel(component, 'B');
         expect(component.getSelectedNodes()).toEqual([nodes['B']]);
 
+        invariant(hostEl);
         atom.commands.dispatch(hostEl, 'core:move-left');
         expect(component.getSelectedNodes()).toEqual([nodes['A']]);
         expect(component.getExpandedNodes()).toEqual([nodes['A']]);
       });
     });
 
-    it('moves the selection to the parent when collapsing an already-collapsed container node', () => {
+    it('moves selection to the parent when collapsing an already-collapsed container node', () => {
       waitsForPromise(async () => {
+        invariant(renderComponent);
         var component = renderComponent(props);
         await component.setRoots([nodes['G']]);
 
@@ -184,6 +217,7 @@ describe('TreeRootComponent', () => {
         expect(component.getSelectedNodes()).toEqual([nodes['H']]);
         expect(component.getExpandedNodes()).toEqual([nodes['G']]);
 
+        invariant(hostEl);
         atom.commands.dispatch(hostEl, 'core:move-left');
         expect(component.getSelectedNodes()).toEqual([nodes['G']]);
         expect(component.getExpandedNodes()).toEqual([nodes['G']]);
@@ -192,10 +226,12 @@ describe('TreeRootComponent', () => {
 
     it('collapses the selection when collapsing an expanded container node', () => {
       waitsForPromise(async () => {
+        invariant(renderComponent);
         var component = renderComponent(props);
         await component.setRoots([nodes['G']]);
 
         clickNodeWithLabel(component, 'H');
+        invariant(hostEl);
         atom.commands.dispatch(hostEl, 'core:move-right');
         expect(component.getSelectedNodes()).toEqual([nodes['H']]);
         expect(component.getExpandedNodes()).toEqual([nodes['G'], nodes['H']]);
@@ -208,11 +244,13 @@ describe('TreeRootComponent', () => {
 
     it('does nothing when collapsing an already-collapsed root element', () => {
       waitsForPromise(async () => {
+        invariant(renderComponent);
         var component = renderComponent(props);
         await component.setRoots([nodes['G']]);
 
         clickNodeWithLabel(component, 'G');
         expect(component.getSelectedNodes()).toEqual([nodes['G']]);
+        invariant(hostEl);
         atom.commands.dispatch(hostEl, 'core:move-left');
         expect(component.getExpandedNodes()).toEqual([]);
 
@@ -224,6 +262,7 @@ describe('TreeRootComponent', () => {
 
     it('collapses the selection when collapsing an expanded root element', () => {
       waitsForPromise(async () => {
+        invariant(renderComponent);
         var component = renderComponent(props);
         await component.setRoots([nodes['G']]);
 
@@ -231,6 +270,7 @@ describe('TreeRootComponent', () => {
         expect(component.getSelectedNodes()).toEqual([nodes['G']]);
         expect(component.getExpandedNodes()).toEqual([nodes['G']]);
 
+        invariant(hostEl);
         atom.commands.dispatch(hostEl, 'core:move-left');
         expect(component.getSelectedNodes()).toEqual([nodes['G']]);
         expect(component.getExpandedNodes()).toEqual([]);
@@ -241,6 +281,7 @@ describe('TreeRootComponent', () => {
   describe('selectNodeKey', () => {
     it('returns a Promise that resolves after the node is selected', () => {
       waitsForPromise(async () => {
+        invariant(renderComponent);
         var component = renderComponent(props);
         await component.setRoots([nodes['A']]);
 
@@ -251,6 +292,7 @@ describe('TreeRootComponent', () => {
 
     it('resolves promises even if they are about to be overridden by a parallel call', () => {
       waitsForPromise(async () => {
+        invariant(renderComponent);
         var component = renderComponent(props);
 
         await component.setRoots([nodes['A']]);
@@ -266,6 +308,7 @@ describe('TreeRootComponent', () => {
 
     it('rejects if the key does not exist', () => {
       waitsForPromise(async () => {
+        invariant(renderComponent);
         var component = renderComponent(props);
         await component.setRoots([nodes['A']]);
 
@@ -283,6 +326,7 @@ describe('TreeRootComponent', () => {
   describe('expandNodeKey', () => {
     it('returns a Promise that resolves after a container node is expanded', () => {
       waitsForPromise(async () => {
+        invariant(renderComponent);
         var component = renderComponent(props);
         await component.setRoots([nodes['G']]);
 
@@ -296,6 +340,7 @@ describe('TreeRootComponent', () => {
 
     it('does not expand a non-container node', () => {
       waitsForPromise(async () => {
+        invariant(renderComponent);
         var component = renderComponent(props);
         await component.setRoots([nodes['A']]);
 
@@ -307,6 +352,7 @@ describe('TreeRootComponent', () => {
 
     it('rejects older promises even though they will succeed', () => {
       waitsForPromise(async () => {
+        invariant(renderComponent);
         var component = renderComponent(props);
 
         await component.setRoots([nodes['G']]);
@@ -334,6 +380,7 @@ describe('TreeRootComponent', () => {
   describe('collapseNodeKey', () => {
     it('returns a Promise that resolves after the node is collapsed', () => {
       waitsForPromise(async () => {
+        invariant(renderComponent);
         var component = renderComponent(props);
         await component.setRoots([nodes['A']]);
         expect(component.getExpandedNodes()).toEqual([nodes['A']]);
@@ -345,6 +392,7 @@ describe('TreeRootComponent', () => {
 
     it('keeps a non-container node collapsed', () => {
       waitsForPromise(async () => {
+        invariant(renderComponent);
         var component = renderComponent(props);
         await component.setRoots([nodes['A']]);
 
@@ -356,6 +404,7 @@ describe('TreeRootComponent', () => {
 
     it('resolves promises even if they are about to be overridden by a parallel call', () => {
       waitsForPromise(async () => {
+        invariant(renderComponent);
         var component = renderComponent(props);
 
         await component.setRoots([nodes['G']]);
@@ -375,6 +424,7 @@ describe('TreeRootComponent', () => {
 
     it('rejects expandNodeKey and resolves collapseNodeKey when called in succession', () => {
       waitsForPromise(async () => {
+        invariant(renderComponent);
         var component = renderComponent(props);
 
         await component.setRoots([nodes['G']]);
@@ -398,6 +448,7 @@ describe('TreeRootComponent', () => {
 
     it('resolves collapseNodeKey and resolves expandNodeKey when called in succession', () => {
       waitsForPromise(async () => {
+        invariant(renderComponent);
         var component = renderComponent(props);
 
         await component.setRoots([nodes['G']]);
@@ -419,6 +470,7 @@ describe('TreeRootComponent', () => {
   describe('collapsing a node', () => {
     it('deselects descendants of the node', () => {
       waitsForPromise(async () => {
+        invariant(renderComponent);
         var component = renderComponent(props);
         await component.setRoots([nodes['G']]);
 
@@ -432,6 +484,7 @@ describe('TreeRootComponent', () => {
 
     it('does not deselect the node', () => {
       waitsForPromise(async () => {
+        invariant(renderComponent);
         var component = renderComponent(props);
         await component.setRoots([nodes['G']]);
 
@@ -445,16 +498,18 @@ describe('TreeRootComponent', () => {
   });
 
   describe('user interaction', () => {
-    var onConfirmSelection;
+    var onConfirmSelection: ?{callCount: number};
 
     beforeEach(() => {
       onConfirmSelection = jasmine.createSpy('onConfirmSelection');
+      invariant(props);
       props.onConfirmSelection = onConfirmSelection;
     });
 
     describe('clicking an arrow', () => {
       it('toggles whether the node is collapsed', () => {
         waitsForPromise(async () => {
+          invariant(renderComponent);
           var component = renderComponent(props);
           await component.setRoots([nodes['G']]);
 
@@ -464,12 +519,14 @@ describe('TreeRootComponent', () => {
           TestUtils.Simulate.click(React.findDOMNode(nodeComponents['G'].refs['arrow']));
 
           expect(component.getExpandedNodes()).toEqual([]);
+          invariant(onConfirmSelection);
           expect(onConfirmSelection.callCount).toBe(0);
         });
       });
 
       it('does not toggle whether node is selected', () => {
         waitsForPromise(async () => {
+          invariant(renderComponent);
           var component = renderComponent(props);
           await component.setRoots([nodes['G']]);
 
@@ -479,6 +536,7 @@ describe('TreeRootComponent', () => {
           TestUtils.Simulate.click(React.findDOMNode(nodeComponents['G'].refs['arrow']));
 
           expect(component.getSelectedNodes()).toEqual([]);
+          invariant(onConfirmSelection);
           expect(onConfirmSelection.callCount).toBe(0);
         });
       });
@@ -487,6 +545,7 @@ describe('TreeRootComponent', () => {
     describe('<enter> (i.e. `core:confirm`) on a selected node', () => {
       it('toggles whether the node is collapsed if it is a container', () => {
         waitsForPromise(async () => {
+          invariant(renderComponent);
           var component = renderComponent(props);
           await component.setRoots([nodes['G']]);
           await component.selectNodeKey(nodes['G'].getKey());
@@ -494,18 +553,21 @@ describe('TreeRootComponent', () => {
           expect(component.getSelectedNodes()).toEqual([nodes['G']]);
           expect(component.isNodeKeyExpanded(nodes['G'].getKey())).toBe(true);
 
+          invariant(hostEl);
           atom.commands.dispatch(hostEl, 'core:confirm');
           expect(component.isNodeKeyExpanded(nodes['G'].getKey())).toBe(false);
 
           atom.commands.dispatch(hostEl, 'core:confirm');
           expect(component.isNodeKeyExpanded(nodes['G'].getKey())).toBe(true);
 
+          invariant(onConfirmSelection);
           expect(onConfirmSelection.callCount).toBe(0);
         });
       });
 
       it('calls onConfirmSelection if the node is not a container', () => {
         waitsForPromise(async () => {
+          invariant(renderComponent);
           var component = renderComponent(props);
           await component.setRoots([nodes['G']]);
           await component.expandNodeKey(nodes['H'].getKey());
@@ -513,8 +575,10 @@ describe('TreeRootComponent', () => {
 
           expect(component.getSelectedNodes()).toEqual([nodes['J']]);
 
+          invariant(hostEl);
           atom.commands.dispatch(hostEl, 'core:confirm');
 
+          invariant(onConfirmSelection);
           expect(onConfirmSelection).toHaveBeenCalledWith(nodes['J']);
           expect(onConfirmSelection.callCount).toBe(1);
         });
@@ -524,6 +588,7 @@ describe('TreeRootComponent', () => {
     describe('clicking a selected node', () => {
       it('toggles whether the node is collapsed if it is a container', () => {
         waitsForPromise(async () => {
+          invariant(renderComponent);
           var component = renderComponent(props);
           await component.setRoots([nodes['G']]);
           await component.selectNodeKey(nodes['G'].getKey());
@@ -539,12 +604,14 @@ describe('TreeRootComponent', () => {
           TestUtils.Simulate.click(React.findDOMNode(nodeComponents['G']));
           expect(component.isNodeKeyExpanded(nodes['G'].getKey())).toBe(true);
 
+          invariant(onConfirmSelection);
           expect(onConfirmSelection.callCount).toBe(0);
         });
       });
 
       it('calls onConfirmSelection if the node is not a container', () => {
         waitsForPromise(async () => {
+          invariant(renderComponent);
           var component = renderComponent(props);
           await component.setRoots([nodes['G']]);
           await component.expandNodeKey(nodes['H'].getKey());
@@ -555,6 +622,7 @@ describe('TreeRootComponent', () => {
           var nodeComponents = getNodeComponents(component);
           TestUtils.Simulate.click(React.findDOMNode(nodeComponents['J']));
 
+          invariant(onConfirmSelection);
           expect(onConfirmSelection).toHaveBeenCalledWith(nodes['J']);
           expect(onConfirmSelection.callCount).toBe(1);
         });
@@ -564,6 +632,7 @@ describe('TreeRootComponent', () => {
     describe('clicking an unselected node', () => {
       it('selects the node if it is a container', () => {
         waitsForPromise(async () => {
+          invariant(renderComponent);
           var component = renderComponent(props);
           await component.setRoots([nodes['G']]);
 
@@ -576,12 +645,14 @@ describe('TreeRootComponent', () => {
           expect(component.getSelectedNodes()).toEqual([nodes['G']]);
           expect(component.isNodeKeyExpanded(nodes['G'].getKey())).toBe(true);
 
+          invariant(onConfirmSelection);
           expect(onConfirmSelection.callCount).toBe(0);
         });
       });
 
       it('selects the node if it is not a container', () => {
         waitsForPromise(async () => {
+          invariant(renderComponent);
           var component = renderComponent(props);
           await component.setRoots([nodes['G']]);
           await component.expandNodeKey(nodes['H'].getKey());
@@ -592,12 +663,14 @@ describe('TreeRootComponent', () => {
           TestUtils.Simulate.click(React.findDOMNode(nodeComponents['J']));
           expect(component.getSelectedNodes()).toEqual([nodes['J']]);
 
+          invariant(onConfirmSelection);
           expect(onConfirmSelection.callCount).toBe(0);
         });
       });
 
       it('selects node if right clicking or ctrl clicking for context menu', () => {
         waitsForPromise(async () => {
+          invariant(renderComponent);
           var component = renderComponent(props);
           await component.setRoots([nodes['G']]);
 
@@ -608,12 +681,16 @@ describe('TreeRootComponent', () => {
           TestUtils.Simulate.mouseDown(React.findDOMNode(nodeComponents['G']), {button: 2});
           expect(component.getSelectedNodes()).toEqual([nodeComponents['G'].props.node]);
 
-          TestUtils.Simulate.mouseDown(React.findDOMNode(nodeComponents['H']), {button: 0, ctrlKey: true});
+          TestUtils.Simulate.mouseDown(
+            React.findDOMNode(nodeComponents['H']),
+            {button: 0, ctrlKey: true}
+          );
           expect(component.getSelectedNodes()).toEqual([nodeComponents['H'].props.node]);
 
           TestUtils.Simulate.mouseDown(React.findDOMNode(nodeComponents['I']), {button: 0});
           expect(component.getSelectedNodes()).toEqual([nodeComponents['H'].props.node]);
 
+          invariant(onConfirmSelection);
           expect(onConfirmSelection.callCount).toBe(0);
         });
       });
@@ -624,6 +701,7 @@ describe('TreeRootComponent', () => {
 
     it('creates one node for each unique path', () => {
       waitsForPromise(async () => {
+        invariant(renderComponent);
         var component = renderComponent(props);
         await component.setRoots([nodes['G']]);
         // Ensure nodes with children are expanded so their subtrees render.
@@ -631,7 +709,7 @@ describe('TreeRootComponent', () => {
         await component.expandNodeKey(nodes['I'].getKey());
 
         var renderedNodes = TestUtils.scryRenderedComponentsWithType(component, TreeNodeComponent);
-        // 6 nodes should render: G, H, I, J, K, and H(2). The two 'H' nodes have the same label, but
+        // 6 nodes should render: G, H, I, J, K, and H(2). The two 'H' nodes have the same label but
         // both should render and be part of the length. If duplicate labels prevent the nodes from
         // rendering, this test will fail.
         expect(renderedNodes.length).toBe(6);

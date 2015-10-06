@@ -64,11 +64,11 @@ class LazyTreeNode {
     var pendingFetch = this._pendingFetch;
     if (!pendingFetch) {
       pendingFetch = this._fetchChildren(this).then((children) => {
-            // Store the children before returning them from the Promise.
-            this._children = children;
-            this._isCacheValid = true;
-            return children;
-          });
+        // Store the children before returning them from the Promise.
+        this._children = children;
+        this._isCacheValid = true;
+        return children;
+      });
       this._pendingFetch = pendingFetch;
 
       // Make sure that whether the fetch succeeds or fails, the _pendingFetch

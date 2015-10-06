@@ -12,6 +12,7 @@
 var LazyTestTreeNode = require('./LazyTestTreeNode');
 var React = require('react-for-atom');
 var TreeNodeComponent = require('../lib/TreeNodeComponent');
+var invariant = require('assert');
 
 var {TestUtils} = React.addons;
 
@@ -78,6 +79,7 @@ describe('TreeNodeComponent', () => {
       var domNode = React.findDOMNode(treeNodeComponent);
 
       TestUtils.Simulate.click(domNode);
+      invariant(props);
       expect(props.onClick).toHaveBeenCalled();
     });
 
@@ -92,6 +94,7 @@ describe('TreeNodeComponent', () => {
         );
 
       TestUtils.Simulate.click(arrow);
+      invariant(props);
       expect(props.onClick).not.toHaveBeenCalled();
       expect(props.onClickArrow).toHaveBeenCalled();
     });
@@ -104,6 +107,7 @@ describe('TreeNodeComponent', () => {
       var domNode = React.findDOMNode(treeNodeComponent);
 
       TestUtils.Simulate.doubleClick(domNode);
+      invariant(props);
       expect(props.onDoubleClick).toHaveBeenCalled();
     });
 

@@ -24,8 +24,10 @@ var SPINNER = '\uF087';
 /**
  * Represents one entry in a TreeComponent.
  */
-var TreeNodeComponent = React.createClass({
-  propTypes: {
+class TreeNodeComponent extends React.Component {
+
+  // $FlowIssue t8486988
+  static propTypes = {
     depth: PropTypes.number.isRequired,
     isContainer: PropTypes.bool.isRequired,
     isExpanded: PropTypes.bool.isRequired,
@@ -40,11 +42,18 @@ var TreeNodeComponent = React.createClass({
     onMouseDown: PropTypes.func.isRequired,
     path: PropTypes.string.isRequired,
     rowClassName: PropTypes.string,
-  },
+  };
 
-  mixins: [
-    addons.PureRenderMixin,
-  ],
+  constructor(props: Object) {
+    super(props);
+    this._onClick = this._onClick.bind(this);
+    this._onDoubleClick = this._onDoubleClick.bind(this);
+    this._onMouseDown = this._onMouseDown.bind(this);
+  }
+
+  shouldComponentUpdate(nextProps: Object, nextState: Object): boolean {
+    return addons.PureRenderMixin.shouldComponentUpdate.call(this, nextProps, nextState);
+  }
 
   render(): ReactElement {
     var rowClassNameObj: {[key: string]: boolean} = {
@@ -95,7 +104,7 @@ var TreeNodeComponent = React.createClass({
         </span>
       </div>
     );
-  },
+  }
 
   _onClick(event: SyntheticMouseEvent): void {
     if (React.findDOMNode(this.refs['arrow']).contains(event.target)) {
@@ -103,15 +112,15 @@ var TreeNodeComponent = React.createClass({
     } else {
       this.props.onClick(event, this.props.node);
     }
-  },
+  }
 
   _onDoubleClick(event: SyntheticMouseEvent): void {
     this.props.onDoubleClick(event, this.props.node);
-  },
+  }
 
   _onMouseDown(event: SyntheticMouseEvent): void {
     this.props.onMouseDown(event, this.props.node);
-  },
-});
+  }
+}
 
 module.exports = TreeNodeComponent;

@@ -12,6 +12,7 @@
 import type LazyTreeNode from '../lib/LazyTreeNode';
 
 var LazyTestTreeNode = require('./LazyTestTreeNode');
+var invariant = require('assert');
 
 describe('LazyTreeNode', () => {
   it('caches the fetched children', () => {
@@ -59,7 +60,9 @@ describe('LazyTreeNode', () => {
         }
         var node = new LazyTestTreeNode({label: 'A'}, /* parent */ null, true, fetchChildren);
         expect(await node.fetchChildren()).toEqual(children);
-        expect(node.getCachedChildren()[0].isRoot()).toBe(false);
+        var cachedChildren = node.getCachedChildren();
+        invariant(cachedChildren);
+        expect(cachedChildren[0].isRoot()).toBe(false);
       });
     });
   });

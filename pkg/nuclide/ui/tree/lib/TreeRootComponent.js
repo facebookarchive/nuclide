@@ -232,8 +232,9 @@ var TreeRootComponent = React.createClass({
         if (this.state.roots.length === 0 && !definition.shouldDisplayIfTreeIsEmpty) {
           return false;
         }
-        if (definition.shouldDisplayForSelectedNodes) {
-          return definition.shouldDisplayForSelectedNodes(this.getSelectedNodes());
+        var shouldDisplayForSelectedNodes = definition.shouldDisplayForSelectedNodes;
+        if (shouldDisplayForSelectedNodes) {
+          return shouldDisplayForSelectedNodes.call(definition, this.getSelectedNodes());
         }
         return true;
       };
@@ -356,18 +357,19 @@ var TreeRootComponent = React.createClass({
 
     var subscriptions = new CompositeDisposable();
     subscriptions.add(atom.commands.add(
-        this.props.eventHandlerSelector,
-        {
-          // Expand and collapse.
-          'core:move-right': () => this._expandSelection(),
-          'core:move-left': () => this._collapseSelection(),
+      this.props.eventHandlerSelector,
+      {
+        // Expand and collapse.
+        'core:move-right': () => this._expandSelection(),
+        'core:move-left': () => this._collapseSelection(),
 
-          // Move selection up and down.
-          'core:move-up': () => this._moveSelectionUp(),
-          'core:move-down': () => this._moveSelectionDown(),
+        // Move selection up and down.
+        'core:move-up': () => this._moveSelectionUp(),
+        'core:move-down': () => this._moveSelectionDown(),
 
-          'core:confirm': () => this._confirmSelection(),
-        }));
+        'core:confirm': () => this._confirmSelection(),
+      })
+    );
 
     this._allKeys = allKeys;
     this._emitter = new EventEmitter();
@@ -538,7 +540,8 @@ var TreeRootComponent = React.createClass({
 
     // We have to create the listener before setting the state so it can pick
     // up the changes from `setState`.
-    var promise = this._createDidUpdateListener(/* shouldResolve */ () => this.state.selectedKeys.has(nodeKey));
+    var promise =
+      this._createDidUpdateListener(/* shouldResolve */ () => this.state.selectedKeys.has(nodeKey));
     this.setState({selectedKeys: new Set([nodeKey])});
     return promise;
   },
@@ -564,8 +567,8 @@ var TreeRootComponent = React.createClass({
     if (node && node.isContainer()) {
       var promise = this._createDidUpdateListener(/* shouldResolve */ () => {
         var isExpanded = this.state.expandedKeys.has(nodeKey);
-        var node = this.getNodeForKey(nodeKey);
-        var isDoneFetching = (node && node.isContainer() && node.isCacheValid());
+        var nodeNow = this.getNodeForKey(nodeKey);
+        var isDoneFetching = (nodeNow && nodeNow.isContainer() && nodeNow.isCacheValid());
         return isExpanded && isDoneFetching;
       });
       this._toggleNodeExpanded(node, true /* forceExpanded */);
@@ -579,7 +582,9 @@ var TreeRootComponent = React.createClass({
     var node = this.getNodeForKey(nodeKey);
 
     if (node && node.isContainer()) {
-      var promise = this._createDidUpdateListener(/* shouldResolve */ () => !this.state.expandedKeys.has(nodeKey));
+      var promise = this._createDidUpdateListener(
+        /* shouldResolve */ () => !this.state.expandedKeys.has(nodeKey)
+      );
       this._toggleNodeExpanded(node, false /* forceExpanded */);
       return promise;
     }

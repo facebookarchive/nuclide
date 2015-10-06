@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type LazyTreeNode from './LazyTreeNode';
+
 module.exports = {
   /**
    * Call `callback` on every node in the subtree, including `rootNode`.
