@@ -74,7 +74,7 @@ class HomePaneItem extends HTMLElement {
     }
 
     var containers = [
-      <div className="welcome-container">
+      <div key="welcome" className="welcome-container">
         <section className="text-center">
           <div className="nuclide-home-logo" />
           <h1 className="welcome-title">Welcome to Nuclide</h1>
@@ -86,7 +86,7 @@ class HomePaneItem extends HTMLElement {
     ];
 
     if (features.length > 0) {
-      containers.push(<div className="welcome-container">{features}</div>);
+      containers.push(<div key="features" className="welcome-container">{features}</div>);
     }
 
     React.render(<div className="nuclide-home-containers">{containers}</div>, this);

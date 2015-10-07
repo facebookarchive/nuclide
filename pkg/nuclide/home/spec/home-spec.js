@@ -27,9 +27,8 @@ describe('Home', () => {
     });
   });
 
-  // TODO: Some of these tests will need to be inverted when we turn the home panel on by default.
   it('does not appear by default', () => {
-    expect(findHomePaneAndItem().item).toBeFalsy();
+    expect(findHomePaneAndItem().item).toBeTruthy();
   });
 
   it('appears when opened by URI, persisting into config', () => {

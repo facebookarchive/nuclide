@@ -39,7 +39,7 @@ function activate(): void {
 var config = {
   showHome: {
     type: 'boolean',
-    default: false,
+    default: true,
     description: 'Show the home pane (by default shown on first startup).',
   },
 };
