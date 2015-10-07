@@ -12,6 +12,7 @@
 var {CompositeDisposable, Disposable} = require('atom');
 var {EventEmitter} = require('events');
 var {buckProjectRootForPath} = require('nuclide-buck-commons');
+import {trackTiming} from 'nuclide-analytics';
 
 var ARC_PROJECT_WWW = 'facebook-www';
 
@@ -63,6 +64,7 @@ class ProjectStore {
     this._eventEmitter.emit('change');
   }
 
+  @trackTiming('toolbar.isFileHHVMProject')
   async _isFileHHVMProject(fileName: string): Promise<boolean> {
     var remoteUri = require('nuclide-remote-uri');
     var arcanist = require('nuclide-arcanist-client');
@@ -73,6 +75,7 @@ class ProjectStore {
       (fileName.endsWith('.php') || fileName.endsWith('.hh'));
   }
 
+  @trackTiming('toolbar.isFileBuckProject')
   async _isFileBuckProject(fileName: string): Promise<boolean> {
     var buckProject = await buckProjectRootForPath(fileName);
     return !!buckProject;
