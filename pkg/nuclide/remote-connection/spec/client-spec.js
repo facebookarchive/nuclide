@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-var {getFileForPath} = require('../lib/main');
-var {RemoteConnection, RemoteFile} = require('nuclide-remote-connection');
+var {getFileForPath} = require('../lib/client');
+var {RemoteConnection, RemoteFile} = require('../lib/main');
 var {File} = require('atom');
 
 describe('getFileForPath()', () => {

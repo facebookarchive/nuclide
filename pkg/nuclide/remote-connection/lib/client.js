@@ -13,7 +13,7 @@ import type {NuclideUri} from 'nuclide-remote-uri';
 
 var {getService, getServiceByNuclideUri, getServiceLogger} = require('./service-manager');
 var localClients: {[rootPath: string]: NuclideClient} = {};
-var {RemoteConnection} = require('nuclide-remote-connection');
+var RemoteConnection = require('./RemoteConnection');
 var localEventBus: ?NuclideLocalEventbus = null;
 var defaultLocalClient: ?NuclideClient = null;
 var {containsPathSync} = require('./utils');

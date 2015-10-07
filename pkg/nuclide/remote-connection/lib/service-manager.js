@@ -13,7 +13,7 @@ import type Item from './ServiceLogger';
 var logger = require('nuclide-logging').getLogger();
 var {loadConfigsOfServiceWithServiceFramework} = require('nuclide-server/lib/config');
 var {optionsToString} = require('nuclide-server/lib/service-manager');
-var {RemoteConnection} = require('nuclide-remote-connection');
+var RemoteConnection = require('./RemoteConnection');
 var {isRemote, getHostname} = require('nuclide-remote-uri');
 
 import {getProxy} from 'nuclide-service-parser';

@@ -9,17 +9,9 @@
     "testRunner": "apm"
   },
   "dependencies": {
-    "nuclide-atom-helpers": "0.0.0",
-    "nuclide-commons": "0.0.0",
-    "nuclide-logging": "0.0.0",
-    "nuclide-remote-connection": "0.0.0",
-    "nuclide-remote-uri": "0.0.0",
-    "nuclide-server": "0.0.0",
-    "nuclide-service-parser": "0.0.0",
-    "nuclide-service-transformer": "0.0.0"
+    "nuclide-remote-connection": "0.0.0"
   },
   "devDependencies": {
-    "nuclide-external-interfaces": "0.0.0",
-    "temp": "0.8.3"
+    "nuclide-external-interfaces": "0.0.0"
   }
 }
