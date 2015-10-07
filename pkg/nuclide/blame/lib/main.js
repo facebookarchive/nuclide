@@ -12,6 +12,7 @@
 var {CompositeDisposable, Disposable} = require('atom');
 
 import type {BlameProvider} from 'nuclide-blame-base/blame-types';
+import {trackTiming} from 'nuclide-analytics';
 
 var PACKAGES_MISSING_MESSAGE =
 `Could not open blame: the nuclide-blame package needs other Atom packages to provide:
@@ -119,11 +120,13 @@ class Activation {
    * Section: Managing Context Menus
    */
 
+   @trackTiming('blame.showBlame')
   _showBlame(event): void {
     var editor = atom.workspace.getActiveTextEditor();
     this._showBlameGutterForEditor(editor);
   }
 
+  @trackTiming('blame.hideBlame')
   _hideBlame(event): void {
     var editor = atom.workspace.getActiveTextEditor();
     this._removeBlameGutterForEditor(editor);
