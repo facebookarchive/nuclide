@@ -14,9 +14,10 @@ var {uncachedRequire, clearRequireCache} = require('nuclide-test-helpers');
 
 describe('debugger-hhvm-proxy proxy', () => {
   var MessageTranslator;
-  var LocalHhvmDebuggerProxyService;
+  var HhvmDebuggerProxyService;
   var translater;
   var onNotify;
+  var onError;
   var onSessionEnd;
   var notify;
 
@@ -28,17 +29,17 @@ describe('debugger-hhvm-proxy proxy', () => {
         return translater;
       });
 
-    LocalHhvmDebuggerProxyService =
-      uncachedRequire(require, '../lib/LocalHhvmDebuggerProxyService');
+    HhvmDebuggerProxyService =
+      uncachedRequire(require, '../lib/HhvmDebuggerProxyService').HhvmDebuggerProxyService;
 
     onNotify = jasmine.createSpy('onNotify');
+    onError = jasmine.createSpy('onError');
     onSessionEnd = jasmine.createSpy('onSessionEnd');
-
   });
 
   afterEach(() => {
     unspy(require('../lib/MessageTranslator'), 'MessageTranslator');
-    clearRequireCache(require, '../lib/LocalHhvmDebuggerProxyService');
+    clearRequireCache(require, '../lib/HhvmDebuggerProxyService');
   });
 
   it('attach', () => {
@@ -52,9 +53,12 @@ describe('debugger-hhvm-proxy proxy', () => {
     };
 
     waitsForPromise(async () => {
-      var proxy = new LocalHhvmDebuggerProxyService();
-      proxy.onSessionEnd(onSessionEnd);
-      proxy.onNotify(onNotify);
+      var proxy = new HhvmDebuggerProxyService();
+      proxy.getNotificationObservable().subscribe(
+        onNotify,
+        onError,
+        onSessionEnd,
+      );
       var connectionPromise = proxy.attach(config);
 
       var result = await connectionPromise;

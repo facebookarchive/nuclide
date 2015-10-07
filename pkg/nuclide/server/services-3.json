@@ -13,5 +13,10 @@
     "definition": "nuclide-remote-search/lib/FindInProjectService.def",
     "implementation": "nuclide-remote-search/lib/FindInProjectService.js",
     "name": "FindInProjectService"
+  },
+  {
+    "definition": "nuclide-debugger-hhvm-proxy/lib/HhvmDebuggerProxyService.def",
+    "implementation": "nuclide-debugger-hhvm-proxy/lib/HhvmDebuggerProxyService.js",
+    "name": "HhvmDebuggerProxyService"
   }
 ]
