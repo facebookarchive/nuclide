@@ -22,9 +22,10 @@ describe('Nuclide service parser test suite.', () => {
   for (let file of fs.readdirSync(path.join(__dirname, 'fixtures'))) {
     if (file.endsWith('.def')) {
       it(`Successfully parses ${file}`, () => {
-        var code = fs.readFileSync(path.join(__dirname, 'fixtures', file), 'utf8');
+        const fixturePath = path.join(__dirname, 'fixtures', file);
+        var code = fs.readFileSync(fixturePath, 'utf8');
         var expected = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', file) + '.json', 'utf8'));
-        var definitions = parseServiceDefinition(code);
+        var definitions = parseServiceDefinition(fixturePath, code);
 
         definitions.functions = mapToJSON(definitions.functions);
         definitions.aliases = mapToJSON(definitions.aliases);

@@ -34,7 +34,7 @@ export function getDefinitions(definitionPath: string): Definitions {
   // Cache definitions by the resolved file path they were loaded from.
   if (!definitionsCache.has(resolvedPath)) {
     definitionsCache.set(resolvedPath,
-      parseServiceDefinition(fs.readFileSync(resolvedPath, 'utf8')));
+      parseServiceDefinition(resolvedPath, fs.readFileSync(resolvedPath, 'utf8')));
   }
   return definitionsCache.get(resolvedPath);
 }

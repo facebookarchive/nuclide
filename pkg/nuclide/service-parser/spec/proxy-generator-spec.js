@@ -30,7 +30,8 @@ describe('Proxy generator test suite.', () => {
   for (let file of fs.readdirSync(path.join(__dirname, 'fixtures'))) {
     if (file.endsWith('.def')) {
       it(`Successfully generates proxy for ${file}`, () => {
-        var definitions =  parseServiceDefinition(fs.readFileSync(path.join(__dirname, 'fixtures', file), 'utf8'));
+        const fixturePath = path.join(__dirname, 'fixtures', file);
+        var definitions = parseServiceDefinition(fixturePath, fs.readFileSync(fixturePath, 'utf8'));
 
         var code = generateProxy(definitions);
         var expected = fs.readFileSync(path.join(__dirname, 'fixtures', file).replace('.def', '.proxy'), 'utf8');
