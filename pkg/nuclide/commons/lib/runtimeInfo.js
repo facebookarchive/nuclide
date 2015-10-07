@@ -33,6 +33,7 @@ export type RuntimeInformation = {
   nuclideVersion: number;
   installerPackageVersion: number;
   serverVersion: number;
+  uptime: number;
 };
 
 var cachedInformation = null;
@@ -52,6 +53,7 @@ function getCacheableRuntimeInformation(): RuntimeInformation {
     isRunningInNuclide: isRunningInNuclide(),
     nuclideVersion: isRunningInNuclide() ? getNuclideBuildNumber() : 0 ,
     installerPackageVersion: 0,
+    uptime: 0,
     // TODO (chenshen) fill following information.
     serverVersion: 0,
     isDevelopment: false,
@@ -65,5 +67,6 @@ export function getRuntimeInformation(): RuntimeInformation {
   runtimeInformation.sessionId = session.id;
   runtimeInformation.timestamp = Date.now();
   runtimeInformation.installerPackageVersion = getInstallerPackageBuildNumber();
+  runtimeInformation.uptime = Math.floor(process.uptime() * 1000);
   return runtimeInformation;
 }
