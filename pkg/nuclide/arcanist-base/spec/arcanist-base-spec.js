@@ -8,7 +8,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-var arcanist = require('../lib/main');
+var arcanist = require('../lib/ArcanistBaseService');
 var path = require('path');
 var fs = require('fs-plus');
 var temp = require('temp').track();
