@@ -66,7 +66,7 @@ var NuclideRadioGroup = React.createClass({
         {checkboxes}
       </div>
     );
-  }
+  },
 });
 
 module.exports = NuclideRadioGroup;
