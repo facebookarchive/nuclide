@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 import {hgRepositoryForEditor} from './common';
+import {trackOperationTiming} from 'nuclide-analytics';
 
 import type {BlameForEditor} from 'nuclide-blame-base/blame-types';
 
@@ -30,7 +31,14 @@ function canProvideBlameForEditor(editor: TextEditor): boolean {
   return !!repo;
 }
 
-async function getBlameForEditor(editor: TextEditor): Promise<BlameForEditor> {
+function getBlameForEditor(editor: TextEditor): Promise<BlameForEditor> {
+  return trackOperationTiming(
+    'blame-provider-hg:getBlameForEditor',
+    () => doGetBlameForEditor(editor)
+  );
+}
+
+async function doGetBlameForEditor(editor: TextEditor): Promise<BlameForEditor> {
   var path = editor.getPath();
   if (!path) {
     return Promise.resolve(new Map());

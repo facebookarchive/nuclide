@@ -19,6 +19,7 @@
     "atom": ">=1.0.5"
   },
   "dependencies": {
+    "nuclide-analytics": "0.0.0",
     "nuclide-hg-git-bridge": "0.0.0",
     "nuclide-logging": "0.0.0"
   },
