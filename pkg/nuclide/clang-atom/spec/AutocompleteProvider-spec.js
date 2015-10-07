@@ -8,15 +8,13 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-var AutocompleteProvider = require('../lib/AutocompleteProvider');
+
+var {
+  getCompletionBodyInline,
+  getCompletionBodyMultiLine,
+} = require('../lib/AutocompleteProvider').__test__;
 
 describe('AutocompleteProvider', () => {
-  var delegate = null;
-
-  beforeEach(() => {
-    delegate = new AutocompleteProvider();
-  });
-
 
   describe('@getCompletionBodyMultiLine', () => {
     it('converts method call with first argument being longest', () => {
@@ -56,7 +54,7 @@ describe('AutocompleteProvider', () => {
         },
       ];
 
-      var body = delegate.getCompletionBodyMultiLine(
+      var body = getCompletionBodyMultiLine(
           completion,
           /* columnOffset */ 10,
           /* indentation */ 2);
@@ -113,11 +111,11 @@ describe('AutocompleteProvider', () => {
         },
         {
           spelling: 'this_is_a_test_placeholder',
-          isPlaceHolder: true
+          isPlaceHolder: true,
         },
       ];
 
-      var body = delegate.getCompletionBodyMultiLine(
+      var body = getCompletionBodyMultiLine(
           completion,
           /* columnOffset */ 10,
           /* indentation */ 3);
@@ -151,7 +149,7 @@ describe('AutocompleteProvider', () => {
         },
       ];
 
-      var body = delegate.getCompletionBodyMultiLine(
+      var body = getCompletionBodyMultiLine(
           completion,
           /* columnOffset */ 10,
           /* indentation */ 3);
@@ -184,7 +182,7 @@ describe('AutocompleteProvider', () => {
         },
       ];
 
-      var body = delegate.getCompletionBodyMultiLine(
+      var body = getCompletionBodyMultiLine(
           completion,
           /* columnOffset */ 10,
           /* indentation */ 3);
@@ -217,7 +215,7 @@ describe('AutocompleteProvider', () => {
         },
       ];
 
-      var body = delegate.getCompletionBodyMultiLine(
+      var body = getCompletionBodyMultiLine(
           completion,
           /* columnOffset */ 10,
           /* indentation */ 3);
@@ -252,7 +250,7 @@ describe('AutocompleteProvider', () => {
         },
       ];
 
-      var body = delegate.getCompletionBodyInline(completion);
+      var body = getCompletionBodyInline(completion);
       expect(body).toBe('ArgumentOne:${1:arg1} arg2:${2:argTwo}');
     });
 
@@ -265,7 +263,7 @@ describe('AutocompleteProvider', () => {
         },
       ];
 
-      var body = delegate.getCompletionBodyInline(completion);
+      var body = getCompletionBodyInline(completion);
       expect(body).toBe('self');
     });
   });

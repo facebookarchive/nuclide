@@ -47,7 +47,7 @@ module.exports = {
 
   /** Provider for autocomplete service. */
   createAutocompleteProvider(): mixed {
-    var AutocompleteProvider = require('./AutocompleteProvider');
+    var {AutocompleteProvider} = require('./AutocompleteProvider');
     var autocompleteProvider = new AutocompleteProvider(libClangProcess);
 
     return {
