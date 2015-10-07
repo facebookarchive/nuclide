@@ -15,7 +15,6 @@ import type {
 
 var {
   CompositeDisposable,
-  Disposable,
 } = require('atom');
 
 var providerInstance: ?Provider;
