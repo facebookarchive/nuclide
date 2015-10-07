@@ -10,6 +10,8 @@
  */
 
 import type Hyperclick from './Hyperclick';
+import {trackTiming, startTracking} from 'nuclide-analytics';
+import type {TimingTracker} from 'nuclide-analytics';
 
 var getWordTextAndRange = require('./get-word-text-and-range');
 
@@ -33,7 +35,7 @@ class HyperclickForTextEditor {
   _onKeyUp: (event: SyntheticKeyboardEvent) => void;
   _commandSubscription: atom$Disposable;
   _isDestroyed: boolean;
-  _hyperclickLoading: boolean;
+  _loadingTracker: ?TimingTracker;
 
   constructor(textEditor: TextEditor, hyperclick: Hyperclick) {
     this._textEditor = textEditor;
@@ -67,7 +69,7 @@ class HyperclickForTextEditor {
     });
 
     this._isDestroyed = false;
-    this._hyperclickLoading = false;
+    this._loadingTracker = null;
   }
 
   _confirmSuggestion(suggestion: HyperclickSuggestion): void {
@@ -79,7 +81,7 @@ class HyperclickForTextEditor {
   }
 
   _onMouseMove(event: SyntheticMouseEvent): ?Promise {
-    if (this._hyperclickLoading) {
+    if (this._isLoading()) {
       // Show the loading cursor.
       this._textEditorView.classList.add('hyperclick-loading');
     }
@@ -172,24 +174,31 @@ class HyperclickForTextEditor {
       return;
     }
 
-    this._hyperclickLoading = true;
+    this._loadingTracker = startTracking('hyperclick-loading');
 
-    this._lastPosition = position;
-    this._lastSuggestionAtMousePromise = this._hyperclick.getSuggestion(this._textEditor, position);
-    this._lastSuggestionAtMouse = await this._lastSuggestionAtMousePromise;
-    if (this._isDestroyed) {
-      return;
+    try {
+      this._lastPosition = position;
+      this._lastSuggestionAtMousePromise =
+          this._hyperclick.getSuggestion(this._textEditor, position);
+      this._lastSuggestionAtMouse = await this._lastSuggestionAtMousePromise;
+      if (this._isDestroyed) {
+        return;
+      }
+      if (this._lastSuggestionAtMouse && this._isMouseAtLastSuggestion()) {
+        // Add the hyperclick markers if there's a new suggestion and it's under the mouse.
+        this._updateNavigationMarkers(this._lastSuggestionAtMouse.range, /* loading */ false);
+      } else {
+        // Remove all the markers if we've finished loading and there's no suggestion.
+        this._updateNavigationMarkers(null);
+      }
+    } catch (e) {
+      if (this._loadingTracker) {
+        this._loadingTracker.onError(e);
+        this._loadingTracker = null;
+      }
+    } finally {
+      this._doneLoading();
     }
-    if (this._lastSuggestionAtMouse && this._isMouseAtLastSuggestion()) {
-      // Add the hyperclick markers if there's a new suggestion and it's under the mouse.
-      this._updateNavigationMarkers(this._lastSuggestionAtMouse.range, /* loading */ false);
-    } else {
-      // Remove all the markers if we've finished loading and there's no suggestion.
-      this._updateNavigationMarkers(null);
-    }
-
-    this._hyperclickLoading = false;
-    this._textEditorView.classList.remove('hyperclick-loading');
   }
 
   _getMousePositionAsBufferPosition(): atom$Point {
@@ -218,13 +227,13 @@ class HyperclickForTextEditor {
   }
 
   _clearSuggestion(): void {
-    this._hyperclickLoading = false;
-    this._textEditorView.classList.remove('hyperclick-loading');
+    this._doneLoading();
     this._lastSuggestionAtMousePromise = null;
     this._lastSuggestionAtMouse = null;
     this._updateNavigationMarkers(null);
   }
 
+  @trackTiming('hyperclick:confirm-cursor')
   async _confirmSuggestionAtCursor(): Promise<void> {
     var suggestion = await this._hyperclick.getSuggestion(
         this._textEditor,
@@ -269,6 +278,19 @@ class HyperclickForTextEditor {
     // If the user is pressing either the meta key or the alt key.
     return process.platform === 'darwin' ? event.metaKey : event.ctrlKey;
   }
+
+  _isLoading(): boolean {
+    return this._loadingTracker != null;
+  }
+
+  _doneLoading(): void {
+    if (this._loadingTracker) {
+      this._loadingTracker.onSuccess();
+      this._loadingTracker = null;
+    }
+    this._textEditorView.classList.remove('hyperclick-loading');
+  }
+
 
   dispose() {
     this._isDestroyed = true;
