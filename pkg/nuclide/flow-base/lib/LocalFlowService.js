@@ -216,7 +216,19 @@ class LocalFlowService extends FlowService {
 
     return {
       flowRoot,
-      messages: json['errors'].map(diagnostic => diagnostic['message']),
+      messages: json['errors'].map(diagnostic => {
+        const message = diagnostic['message'];
+        // `message` is a list of message components
+        message.forEach(component => {
+          if (!component.path) {
+            // Use a consistent 'falsy' value for the empty string, undefined, etc. Flow returns the
+            // empty string instead of null when there is no relevant path.
+            // TODO(t8644340) Remove this when Flow is fixed.
+            component.path = null;
+          }
+        });
+        return message;
+      }),
     };
   }
 

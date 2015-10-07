@@ -26,7 +26,7 @@ export type Diagnostics = {
 export type Diagnostic = Array<SingleMessage>;
 
 export type SingleMessage = {
-  path: NuclideUri;
+  path: ?NuclideUri;
   descr: string;
   code: number;
   line: number;
@@ -56,7 +56,7 @@ class FlowService {
       flowRoot: NuclideUri;
       messages:
         Array<Array<{
-          path: NuclideUri;
+          path: ?NuclideUri;
           descr: string;
           code: number;
           line: number;

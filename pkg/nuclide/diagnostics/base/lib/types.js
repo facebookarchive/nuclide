@@ -49,7 +49,7 @@ export type Trace = {
   type: 'Trace';
   text?: string;
   html?: string;
-  filePath: string;
+  filePath?: NuclideUri;
   range?: atom$Range;
 };
 
