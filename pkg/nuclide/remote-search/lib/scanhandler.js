@@ -131,7 +131,6 @@ function getLinesFromCommand(command: string, args: Array<string>, localDirector
       proc.on('error', observer.onError.bind(observer));
 
       // Call the callback on each line.
-      // $FlowFixMe: `pipe` bad ret value {@link https://github.com/facebook/flow/issues/906}
       proc.stdout.pipe(split()).on('data', observer.onNext.bind(observer));
 
       // Keep a running string of stderr, in case we need to throw an error.

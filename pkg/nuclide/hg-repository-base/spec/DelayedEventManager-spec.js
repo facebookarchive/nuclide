@@ -14,7 +14,7 @@ import invariant from 'assert';
 
 describe('DelayedEventManager', () => {
   var manager;
-  var callbackSpy;
+  var callbackSpy: any;
   var EVENT_DELAY_IN_MS = 10;
 
   beforeEach(() => {
@@ -24,7 +24,6 @@ describe('DelayedEventManager', () => {
 
   it('fires events after the delay period has passed.', () => {
     invariant(manager);
-    // $FlowFixMe: callbackSpy is of type JasmineSpy, but expected type is `() => void`.
     var id = manager.addEvent(callbackSpy, EVENT_DELAY_IN_MS);
     expect(id).toBeDefined();
     window.advanceClock(EVENT_DELAY_IN_MS);

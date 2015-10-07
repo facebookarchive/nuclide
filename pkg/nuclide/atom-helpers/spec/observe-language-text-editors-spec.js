@@ -154,6 +154,7 @@ describe('observeLanguageTextEditors', () => {
         var cleanupFn: any = jasmine.createSpy('cleanupFn');
         var subscription = observeLanguageTextEditors(grammarScopes, fn, cleanupFn);
 
+        // $FlowIssue
         var textEditor = await atom.workspace.open('file.m');
         textEditor.setGrammar(nullGrammar);
 

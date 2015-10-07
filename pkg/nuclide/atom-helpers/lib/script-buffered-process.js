@@ -17,7 +17,6 @@ var {createArgsForScriptCommand} = require('nuclide-commons');
  * their stdout is terminal. `script` ensures terminal-like environment and
  * commands we run give colored output.
  */
-// $FlowIssue. New in Flow 0.15.0. Seems bizarre.
 class ScriptBufferedProcess extends BufferedProcess {
   constructor(options) {
     var localOptions = {...options};
@@ -37,7 +36,9 @@ async function createScriptBufferedProcessWithEnv(options: Object): Promise<Buff
   var localOptions = {...options};
   localOptions.env = await createExecEnvironment(localOptions.env ||  process.env,
     COMMON_BINARY_PATHS);
-  return new ScriptBufferedProcess(localOptions);
+  // Flow infers Promise<ScriptBufferedProcess> and believes that to be incompatible with
+  // Promise<BufferedProcess> so we need to cast.
+  return (new ScriptBufferedProcess(localOptions): BufferedProcess);
 }
 
 module.exports = {

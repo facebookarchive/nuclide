@@ -29,7 +29,6 @@ export default class CircularBuffer<T> {
    *   integer greater than zero.
    */
   constructor(capacity: number) {
-    // $FlowIssue
     if (!Number.isInteger(capacity)) {
       throw new Error(`capacity must be an integer, but was ${capacity}.`);
     }

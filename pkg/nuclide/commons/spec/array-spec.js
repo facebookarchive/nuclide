@@ -22,19 +22,16 @@ describe('Array.from()', () => {
 
   it('produces an Array from Set.keys()', () => {
     var set = new Set(['foo', 'bar', 'baz']);
-    // $FlowIssue
     expect(es6Array.from(set.keys())).toEqual(['foo', 'bar', 'baz']);
   });
 
   it('produces an Array from Set.values()', () => {
     var set = new Set(['foo', 'bar', 'baz']);
-    // $FlowIssue
     expect(es6Array.from(set.values())).toEqual(['foo', 'bar', 'baz']);
   });
 
   it('produces an Array from Set.entries()', () => {
     var set = new Set(['foo', 'bar', 'baz']);
-    // $FlowIssue
     expect(es6Array.from(set.entries())).toEqual(
         [['foo', 'foo'], ['bar', 'bar'], ['baz', 'baz']]);
   });

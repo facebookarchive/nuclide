@@ -31,6 +31,7 @@ function from<T, U>(
       typeof arrayLike === 'object' &&
       typeof arrayLike[Symbol.iterator] === 'function') {
     var array = [];
+    // $FlowIssue: property @@iterator not found
     for (var value of arrayLike) {
       array.push(mapFn.call(thisArg, value));
     }
@@ -45,7 +46,6 @@ function from<T, U>(
     return Array.prototype.map.call(arrayLike, mapFn, thisArg);
   } else if (arrayLike instanceof Set) {
     // Backup logic to handle the es6-collections case.
-    // $FlowIssue: https://github.com/facebook/flow/issues/755.
     return from(arrayLike.values(), mapFn, thisArg);
   } else if (arrayLike instanceof Map) {
     // Backup logic to handle the es6-collections case.

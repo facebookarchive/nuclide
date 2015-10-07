@@ -41,7 +41,7 @@ describe('Scan Handler Tests', () => {
 
       var results = await search(folder, /hello world/i, []).toArray().toPromise();
       var expected = JSON.parse(
-        fs.readFileSync(path.join(__dirname, 'fixtures', 'basic.json'), 'utf-8')
+        fs.readFileSync(path.join(__dirname, 'fixtures', 'basic.json'), 'utf8')
       );
 
       // Sort results by filename to normalize order.
@@ -61,7 +61,7 @@ describe('Scan Handler Tests', () => {
 
       var results = await search(folder, /hello world/, []).toArray().toPromise();
       var expected = JSON.parse(
-        fs.readFileSync(path.join(__dirname, 'fixtures', 'casesensitive.json'))
+        fs.readFileSync(path.join(__dirname, 'fixtures', 'casesensitive.json'), 'utf8')
       );
 
       // Sort the list of matches by filename to normalize order.
@@ -85,7 +85,9 @@ describe('Scan Handler Tests', () => {
       var results = await search(
         folder, /hello world/i, ['dir2', 'dir3', 'nonexistantdir']
       ).toArray().toPromise();
-      var expected = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'subdirs.json')));
+      var expected = JSON.parse(
+        fs.readFileSync(path.join(__dirname, 'fixtures', 'subdirs.json'), 'utf8')
+      );
 
       // Sort the list of matches by filename to normalize order.
       sortResults(results);
@@ -112,7 +114,9 @@ describe('Scan Handler Tests', () => {
       fs.writeFileSync(path.join(folder, 'untracked.txt'), 'Hello World!');
 
       var results = await search(folder, /hello world/i, []).toArray().toPromise();
-      var expected = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'repo.json')));
+      var expected = JSON.parse(
+        fs.readFileSync(path.join(__dirname, 'fixtures', 'repo.json'), 'utf8')
+      );
 
       // Sort the list of matches by filename to normalize order.
       sortResults(results);
@@ -143,7 +147,9 @@ describe('Scan Handler Tests', () => {
       await asyncExecute('hg', ['commit', '-m', 'test commit'], {cwd: folder});
 
       var results = await search(folder, /hello world/i, []).toArray().toPromise();
-      var expected = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'repo.json')));
+      var expected = JSON.parse(
+        fs.readFileSync(path.join(__dirname, 'fixtures', 'repo.json'), 'utf8')
+      );
 
       // Sort the list of matches by filename to normalize order.
       sortResults(results);

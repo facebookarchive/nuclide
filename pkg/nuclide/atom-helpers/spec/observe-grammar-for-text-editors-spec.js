@@ -64,6 +64,7 @@ describe('observeGrammarForTextEditors', () => {
     waitsForPromise(async () => {
       var fn: any = jasmine.createSpy('fn');
       var subscription = observeGrammarForTextEditors(fn);
+      // $FlowIssue
       var textEditor = await atom.workspace.open('file.m');
 
       subscription.dispose();
@@ -82,6 +83,7 @@ describe('observeGrammarForTextEditors', () => {
       var subscription = observeGrammarForTextEditors(fn);
       var fn2: any = jasmine.createSpy('fn2');
       var subscription2 = observeGrammarForTextEditors(fn2);
+      // $FlowIssue
       var textEditor = await atom.workspace.open('file.m');
 
       subscription.dispose();
