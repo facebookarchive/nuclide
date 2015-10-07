@@ -21,7 +21,7 @@ function getOpenTabsMatching(query: string): Array<FileResult> {
   return atom.workspace.getTextEditors()
     .map(editor => editor.getPath())
     .filter(path => path != null && (!query.length || queryRegExp.test(path)))
-    .map(file => ({path: file, matchIndexes: []}));
+    .map(file => ({path: (file == null) ? '' : file, matchIndexes: []}));
 }
 
 var OpenFileListProvider: Provider = {
