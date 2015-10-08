@@ -5,6 +5,7 @@
   "version": "0.0.0",
   "description": "Provides a list of recently opened file paths in reverse chronological order.",
   "nuclide": {
+    "flowCheck": true,
     "packageType": "Atom",
     "testRunner": "apm"
   },

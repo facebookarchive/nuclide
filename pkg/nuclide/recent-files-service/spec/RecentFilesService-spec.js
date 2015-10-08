@@ -19,8 +19,8 @@ const FILE_PATH_2 = 'foo/bar/bar.js';
 const FILE_PATH_3 = 'foo/bar/baz.js';
 
 describe('RecentFilesService', () => {
-  let recentFilesService;
-  let origDateNow;
+  let recentFilesService: any;
+  let origDateNow: any;
 
   beforeEach(() => {
     origDateNow = Date.now;
@@ -32,11 +32,13 @@ describe('RecentFilesService', () => {
      * Mock `Date.now` to use the fake Jasmine clock so `advanceClock` can be called synchronously
      * and call appropriate callbacks deterministically.
      */
+    // $FlowFixMe
     Date.now = () => window.now;
     recentFilesService = new RecentFilesService();
   });
 
   afterEach(() => {
+    // $FlowFixMe
     Date.now = origDateNow;
   });
 
