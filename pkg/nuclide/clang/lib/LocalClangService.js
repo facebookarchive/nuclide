@@ -18,8 +18,94 @@ var split = require('split');
 var {EventEmitter} = require('events');
 var ClangFlagsManager = require('./ClangFlagsManager');
 var ClangService = require('./ClangService');
-/* $FlowFixMe - module paths aren't supported */
 var LocalBuckUtils = require('nuclide-buck-base/lib/LocalBuckUtils');
+
+
+async function _findClangServerArgs(): Promise<{
+  ldLibraryPathEnv: ?string;
+  pythonExecutable: string;
+  pythonPathEnv: ?string;
+}> {
+  var findClangServerArgs;
+  try {
+    findClangServerArgs = require('./fb/find-clang-server-args');
+  } catch (e) {
+    // Ignore.
+  }
+
+  var ldLibraryPathEnv;
+  if (process.platform === 'darwin') {
+    var result = await checkOutput('xcode-select', ['--print-path']);
+    if (result.exitCode === 0) {
+      ldLibraryPathEnv = result.stdout.trim() + '/Toolchains/XcodeDefault.xctoolchain/usr/lib/';
+    }
+  }
+
+  var clangServerArgs = {
+    ldLibraryPathEnv,
+    pythonExecutable: 'python',
+    pythonPathEnv: path.join(__dirname, '../pythonpath'),
+  };
+  if (typeof findClangServerArgs === 'function') {
+    var clangServerArgsOverrides = await findClangServerArgs();
+    return {...clangServerArgs, ...clangServerArgsOverrides};
+  } else {
+    return clangServerArgs;
+  }
+}
+
+type Connection = {
+  readableStream: any,
+  writableStream: any,
+}
+
+async function createAsyncConnection(pathToLibClangServer: string): Promise<Connection> {
+  // $FlowIssue D2268946
+  return await new Promise(async (resolve, reject) => {
+    var {ldLibraryPathEnv, pythonPathEnv, pythonExecutable} = await _findClangServerArgs();
+    var options = {
+      cwd: path.dirname(pathToLibClangServer),
+      // The process should use its ordinary stderr for errors.
+      stdio: ['pipe', null, 'pipe', 'pipe'],
+      detached: false, // When Atom is killed, clang_server.py should be killed, too.
+      env: {
+        LD_LIBRARY_PATH: ldLibraryPathEnv,
+        PYTHONPATH: pythonPathEnv,
+      },
+    };
+
+    // Note that safeSpawn() often overrides options.env.PATH, but that only happens when
+    // options.env is undefined (which is not the case here). This will only be an issue if the
+    // system cannot find `pythonExecutable`.
+    var child = await safeSpawn(pythonExecutable, /* args */ [pathToLibClangServer], options);
+    child.on('close', function(exitCode) {
+      logger.error('%s exited with code %s', pathToLibClangServer, exitCode);
+    });
+    child.stderr.on('data', function(error) {
+      if (error instanceof Buffer) {
+        error = error.toString('utf8');
+      }
+      logger.error('Error receiving data', error);
+    });
+    /* $FlowFixMe - update Flow defs for ChildProcess */
+    var writableStream = child.stdio[3];
+
+    // Make sure the bidirectional communication channel is set up before
+    // resolving this Promise.
+    child.stdout.once('data', function(data: Buffer) {
+      if (data.toString() === 'ack\n') {
+        var result = {
+          readableStream: child.stdout,
+          writableStream: writableStream,
+        };
+        resolve(result);
+      } else {
+        reject(data);
+      }
+    });
+    writableStream.write('init\n');
+  });
+}
 
 /**
  * Nuclide runs clang in its own process. For simplicity, it is run as a Python
@@ -28,8 +114,8 @@ var LocalBuckUtils = require('nuclide-buck-base/lib/LocalBuckUtils');
 class LocalClangService extends ClangService {
   _asyncConnection: ?Promise<void>;
   _clangFlagsManager: ClangFlagsManager;
-  _readableStream: any /*?stream$Readable*/;
-  _writableStream: any /*?stream$Writable*/;
+  _readableStream: ?stream$Readable;
+  _writableStream: ?stream$Writable;
   _nextRequestId: number;
   _pathToLibClangServer: string;
   _emitter: EventEmitter;
@@ -46,65 +132,28 @@ class LocalClangService extends ClangService {
   }
 
   _connect(): Promise<void> {
-    if (this._asyncConnection) {
-      return this._asyncConnection;
-    }
-
-    var pathToLibClangServer = this._pathToLibClangServer;
-    this._asyncConnection = new Promise(async (resolve, reject) => {
-      var {ldLibraryPathEnv, pythonPathEnv, pythonExecutable} = await this._findClangServerArgs();
-      var options = {
-        cwd: path.dirname(pathToLibClangServer),
-        // The process should use its ordinary stderr for errors.
-        stdio: ['pipe', null, 'pipe', 'pipe'],
-        detached: false, // When Atom is killed, clang_server.py should be killed, too.
-        env: {
-          LD_LIBRARY_PATH: ldLibraryPathEnv,
-          PYTHONPATH: pythonPathEnv,
+    let asyncConnection = this._asyncConnection;
+    if (asyncConnection == null) {
+      asyncConnection = createAsyncConnection(this._pathToLibClangServer).then(
+        (connection: Connection) => {
+          var {readableStream, writableStream} = connection;
+          this._readableStream = readableStream;
+          this._writableStream = writableStream;
+          readableStream.pipe(split(JSON.parse)).on('data', (response) => {
+            var id = response['reqid'];
+            this._emitter.emit(id, response);
+          });
         },
-      };
-
-      // Note that safeSpawn() often overrides options.env.PATH, but that only happens when
-      // options.env is undefined (which is not the case here). This will only be an issue if the
-      // system cannot find `pythonExecutable`.
-      var child = await safeSpawn(pythonExecutable, /* args */ [pathToLibClangServer], options);
-      child.on('close', function(exitCode) {
-        logger.error('%s exited with code %s', pathToLibClangServer, exitCode);
-        this._asyncConnection = null;
-      });
-      child.stderr.on('data', function(error) {
-        if (error instanceof Buffer) {
-          error = error.toString('utf8');
+        error => {
+          // If an error occurs, clear out `this._asyncConnection`, so that if `_connect()` is
+          // called again, we make a new attempt to create a connection,
+          // rather than holding onto a rejected Promise indefinitely.
+          this._asyncConnection = null;
         }
-        logger.error('Error receiving data', error);
-      });
-      /* $FlowFixMe - update Flow defs for ChildProcess */
-      var writableStream = child.stdio[3];
-
-      // Make sure the bidirectional communication channel is set up before
-      // resolving this Promise.
-      child.stdout.once('data', function(data: Buffer) {
-        if (data.toString() === 'ack\n') {
-          var result = {
-            readableStream: child.stdout,
-            writableStream: writableStream,
-          };
-          resolve(result);
-        } else {
-          reject(data);
-        }
-      });
-      writableStream.write('init\n');
-    }).then((result) => {
-      this._readableStream = result.readableStream;
-      this._writableStream = result.writableStream;
-      this._readableStream.pipe(split(JSON.parse)).on('data', (response) => {
-        var id = response['reqid'];
-        this._emitter.emit(id, response);
-      });
-    });
-
-    return this._asyncConnection;
+      );
+    }
+    this._asyncConnection = asyncConnection;
+    return asyncConnection;
   }
 
   async _makeRequest(request: Object): Promise {
@@ -120,11 +169,14 @@ class LocalClangService extends ClangService {
       }
     });
     logger.debug('LibClang request: ' + logData);
-
+    let writableStream = this._writableStream;
+    if (writableStream == null) {
+      return;
+    }
     // Because Node uses an event-loop, we do not have to worry about a call to
     // write() coming in from another thread between our two calls here.
-    this._writableStream.write(JSON.stringify(request));
-    this._writableStream.write('\n');
+    writableStream.write(JSON.stringify(request));
+    writableStream.write('\n');
 
     return new Promise((resolve, reject) => {
       this._emitter.once(id, (response) => {
@@ -137,39 +189,6 @@ class LocalClangService extends ClangService {
         (isError ? reject : resolve)(response);
       });
     });
-  }
-
-  async _findClangServerArgs(): Promise<{
-    ldLibraryPathEnv: ?string;
-    pythonExecutable: string;
-    pythonPathEnv: ?string;
-  }> {
-    var findClangServerArgs;
-    try {
-      findClangServerArgs = require('./fb/find-clang-server-args');
-    } catch (e) {
-      // Ignore.
-    }
-
-    var ldLibraryPathEnv;
-    if (process.platform === 'darwin') {
-      var result = await checkOutput('xcode-select', ['--print-path']);
-      if (result.exitCode === 0) {
-        ldLibraryPathEnv = result.stdout.trim() + '/Toolchains/XcodeDefault.xctoolchain/usr/lib/';
-      }
-    }
-
-    var clangServerArgs = {
-      ldLibraryPathEnv,
-      pythonExecutable: 'python',
-      pythonPathEnv: path.join(__dirname, '../pythonpath'),
-    };
-    if (typeof findClangServerArgs === 'function') {
-      var clangServerArgsOverrides = await findClangServerArgs();
-      return {...clangServerArgs, ...clangServerArgsOverrides};
-    } else {
-      return clangServerArgs;
-    }
   }
 
   _getNextRequestId(): string {
