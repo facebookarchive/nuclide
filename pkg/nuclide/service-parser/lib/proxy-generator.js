@@ -353,18 +353,23 @@ function generateRemoteDispatch(methodName: string, funcType: FunctionType) {
 
 /**
  * Helper method that generates the dispose method for a class. The dispose method
- * replaces `this._idPromise` with a Promise that rejects immediately, as well as calls
- * `_client.disposeRemoteObject` with the object's id as a parameter.
+ * replaces `this._idPromise` with a thenable object that throws error when used,
+ * as well as calls `_client.disposeRemoteObject` with the object's id as a parameter.
  * @returns A MethodDefinition node that can be attached to a class body.
  */
 function generateDisposeMethod() {
   var id = t.identifier('id');
 
-  // Replace `idPromise`.
-  var disposedError = t.newExpression(t.identifier('Error'),
+  // Replace `idPromise` with thenable object that throws error.
+  const disposedError = t.newExpression(t.identifier('Error'),
     [t.literal('This Remote Object has been disposed.')]);
-  var replaceIdPromise = t.expressionStatement(t.assignmentExpression('=',
-    thisDotIdPromiseExpression, t.callExpression(promiseDotRejectExpression, [disposedError])));
+  const throwErrorFunction = t.functionExpression(null, [], t.blockStatement([
+    t.throwStatement(disposedError),
+  ]));
+  const thenableErrorObject =
+    t.objectExpression([t.Property('init', t.identifier('then'), throwErrorFunction)]);
+  const replaceIdPromise = t.expressionStatement(t.assignmentExpression('=',
+    thisDotIdPromiseExpression, thenableErrorObject));
 
   // Call `_client.disposeRemoteObject`.
   var rpcCallExpression = t.callExpression(disposeRemoteObjectExpression, [id]);
