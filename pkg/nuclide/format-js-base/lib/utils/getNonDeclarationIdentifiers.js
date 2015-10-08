@@ -178,6 +178,12 @@ var CONFIG: Array<ConfigEntry> = [
     searchTerms: [jscs.JSXOpeningElement],
     getNodes: path => [REACT_NODE],
   },
+
+  // foo`something`
+  {
+    searchTerms: [jscs.TaggedTemplateExpression],
+    getNodes: path => [path.node.tag],
+  },
 ];
 
 /**

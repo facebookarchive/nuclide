@@ -35,6 +35,7 @@ var TESTS = [
   'add-requires-after-use-strict',
   'add-returns',
   'add-switches',
+  'add-tagged-template-expressions',
   'add-template-expressions',
   'add-try-catches',
   'add-types',
