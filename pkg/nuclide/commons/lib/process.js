@@ -34,11 +34,14 @@ var DARWIN_PATH_HELPER_REGEXP = /PATH=\"([^\"]+)\"/;
 var STREAM_NAMES = ['stdin', 'stdout', 'stderr'];
 
 function getPlatformPath(): Promise<string> {
-  if (platformPathPromise) {
+  // Do not return the cached value if we are executing under the test runner.
+  if (platformPathPromise && process.env.NODE_ENV !== 'test') {
     // Path is being fetched, await the Promise that's in flight.
     return platformPathPromise;
   }
 
+  // We do not cache the result of this check because we have unit tests that temporarily redefine
+  // the value of process.platform.
   if (process.platform === 'darwin') {
     // OS X apps don't inherit PATH when not launched from the CLI, so reconstruct it. This is a
     // bug, filed against Atom Linter here: https://github.com/AtomLinter/Linter/issues/150
