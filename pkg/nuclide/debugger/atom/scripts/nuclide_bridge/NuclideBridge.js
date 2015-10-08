@@ -112,22 +112,18 @@ class NuclideBridge {
   }
 
   _handleCallFrameSelected(event: WebInspector.Event) {
-    if (this._debuggerPausedCount >= 2) {
-      var frame: WebInspector$CallFrame = event.data;
-      var uiLocation =
-        WebInspector.debuggerWorkspaceBinding.rawLocationToUILocation(frame.location());
-      ipc.sendToHost('notification', 'CallFrameSelected', {
-        sourceURL: uiLocation.uiSourceCode.uri(),
-        lineNumber: uiLocation.lineNumber,
-      });
-    }
+    var frame: WebInspector$CallFrame = event.data;
+    var uiLocation =
+      WebInspector.debuggerWorkspaceBinding.rawLocationToUILocation(frame.location());
+    ipc.sendToHost('notification', 'CallFrameSelected', {
+      sourceURL: uiLocation.uiSourceCode.uri(),
+      lineNumber: uiLocation.lineNumber,
+    });
   }
 
   _handleOpenSourceLocation(event: WebInspector.Event) {
-    if (this._debuggerPausedCount >= 2) {
-      var eventData = event.data;
-      this.sendOpenSourceLocation(eventData.url, eventData.lineNumber);
-    }
+    var eventData = event.data;
+    this.sendOpenSourceLocation(eventData.url, eventData.lineNumber);
   }
 
   sendOpenSourceLocation(sourceURL: string, line: number) {
