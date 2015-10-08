@@ -341,7 +341,7 @@ class SearchResultManager {
 
   async executeQuery(query: string): Promise<void> {
     var query = this.sanitizeQuery(query);
-    for (var globalProvider of this._registeredProviders[GLOBAL_KEY].values()) {
+    for (let globalProvider of this._registeredProviders[GLOBAL_KEY].values()) {
       globalProvider.executeQuery(query).then(result => {
         this.processResult(query, result, GLOBAL_KEY, globalProvider);
       });
@@ -357,10 +357,10 @@ class SearchResultManager {
         // Special directories like "atom://about"
         return;
       }
-      for (var directoryProvider of providers) {
-        directoryProvider.executeQuery(query, directory).then(((boundProvider, result) => {
-          this.processResult(query, result, path, boundProvider);
-        }).bind(this, directoryProvider));
+      for (let directoryProvider of providers) {
+        directoryProvider.executeQuery(query, directory).then(result => {
+          this.processResult(query, result, path, directoryProvider);
+        });
         this._setLoading(query, path, directoryProvider);
       }
     });
