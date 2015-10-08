@@ -23,6 +23,7 @@ class RemoteDirectory {
   }
 
   _watchSubscription: ?FsWatcher;
+  _remote: RemoteConnection;
 
   /**
    * @param uri should be of the form "nuclide://example.com:9090/path/to/directory".
@@ -242,6 +243,10 @@ class RemoteDirectory {
   // A workaround before Atom 2.0: see ::getHgRepoInfo of main.js.
   getHgRepositoryDescription() {
     return this._hgRepositoryDescription;
+  }
+
+  _getService(serviceName: string): any {
+    return this._remote.getService(serviceName);
   }
 }
 

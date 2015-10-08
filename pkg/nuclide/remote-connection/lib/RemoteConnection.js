@@ -385,7 +385,7 @@ class RemoteConnection {
     return this._config.cwd;
   }
 
-  getConfig(): RemoteConnectionConfiguration{
+  getConfig(): RemoteConnectionConfiguration {
     return this._config;
   }
 
@@ -424,6 +424,14 @@ class RemoteConnection {
 
   static getByHostname(hostname: string): Array<RemoteConnection> {
     return _connections.filter(connection => connection.getRemoteHostname() === hostname);
+  }
+
+  // TODO(peterhal): The implementation should move from service-manager to here
+  // however we should wait until we remove the event-bus and v2 rpc framework
+  // before making that change.
+  getService(serviceName: string, serviceOptions: ?any): any {
+    var {getService} = require('./main');
+    return getService(serviceName, this.getRemoteHostname(), serviceOptions);
   }
 }
 

@@ -282,6 +282,10 @@ class RemoteFile {
     var directoryPath = protocol + '//' + host + pathUtil.dirname(localPath);
     return this._remote.createDirectory(directoryPath);
   }
+
+  _getService(serviceName: string): any {
+    return this._remote.getService(serviceName);
+  }
 }
 
 module.exports = RemoteFile;
