@@ -20,6 +20,7 @@ class Activation {
   _panel: Object;
   _projectStore: ProjectStoreType;
   _nuclideToolbar: ?NuclideToolbarType;
+  _state: Object;
 
   // Functions to be used as callbacks.
   _handleBuildTargetChange: Function;
@@ -28,13 +29,28 @@ class Activation {
     var {CompositeDisposable} = require('atom');
     var ProjectStore = require('./ProjectStore');
 
+    this._state = {
+      panelVisible: state != null && state.panelVisible != null ? state.panelVisible : true,
+    };
+
     // Bind functions used as callbacks to ensure correct context when called.
     this._handleBuildTargetChange = this._handleBuildTargetChange.bind(this);
 
     this._disposables = new CompositeDisposable();
     this._initialBuildTarget = (state && state.initialBuildTarget) || '';
     this._projectStore = new ProjectStore();
+    this._addCommands();
     this._createToolbar();
+  }
+
+  _addCommands(): void {
+    this._disposables.add(
+      atom.commands.add(
+        'body',
+        'nuclide-toolbar:toggle',
+        () => { this.togglePanel(); },
+      )
+    );
   }
 
   _createToolbar() {
@@ -57,14 +73,34 @@ class Activation {
     });
     this._disposables.add(new Disposable(() => panel.destroy()));
     this._panel = panel;
+    this._updatePanelVisibility();
   }
 
   _handleBuildTargetChange(buildTarget: string) {
     this._initialBuildTarget = buildTarget;
   }
 
+  /**
+   * Show or hide the panel, if necessary, to match the current state.
+   */
+  _updatePanelVisibility(): void {
+    if (!this._panel) {
+      return;
+    }
+    if (this._state.panelVisible !== this._panel.visible) {
+      if (this._state.panelVisible) {
+        this._panel.show();
+      } else {
+        this._panel.hide();
+      }
+    }
+  }
+
   serialize(): Object {
-    return {initialBuildTarget: this._initialBuildTarget};
+    return {
+      initialBuildTarget: this._initialBuildTarget,
+      panelVisible: this._state.panelVisible,
+    };
   }
 
   dispose() {
@@ -78,6 +114,11 @@ class Activation {
     }
     this._projectStore.dispose();
     this._disposables.dispose();
+  }
+
+  togglePanel():void {
+    this._state.panelVisible = !this._state.panelVisible;
+    this._updatePanelVisibility();
   }
 }
 
