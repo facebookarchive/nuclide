@@ -19,7 +19,7 @@ async function formatCode(editor: ?TextEditor): Promise<void> {
     return;
   }
 
-  track('format-js-formatCode', {});
+  track('format-js-formatCode');
 
   var buffer = editor.getBuffer();
   var oldSource = buffer.getText();

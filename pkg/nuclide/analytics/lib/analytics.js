@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+const cachedResultForTrack = Promise.resolve();
+
 // This is a stubbed implementation that other packages use to record analytics data & performance.
 module.exports = {
 
@@ -17,7 +19,7 @@ module.exports = {
    * @param eventName Name of the event to be tracked.
    * @param values The object containing the data to track.
    */
-  track(eventName: string, values: {[key: string]: string}): Promise {
-    return Promise.resolve();
+  track(eventName: string, values?: {[key: string]: string}): Promise<mixed> {
+    return cachedResultForTrack;
   },
 };
