@@ -10,6 +10,7 @@
  */
 
 var {CompositeDisposable, Disposable} = require('atom');
+import {trackTiming} from 'nuclide-analytics';
 
 import type RemoteControlService from './RemoteControlService';
 import type DebuggerModel from './DebuggerModel';
@@ -137,6 +138,7 @@ class Activation {
     this._model.getBridge().stepOut();
   }
 
+  @trackTiming('nuclide-debugger-atom:toggleBreakpoint')
   _toggleBreakpoint() {
     var editor = atom.workspace.getActiveTextEditor();
     if (editor && editor.getPath()) {

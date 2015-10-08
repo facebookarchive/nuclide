@@ -9,8 +9,9 @@
  * the root directory of this source tree.
  */
 
-var Constants = require('./Constants');
-var {CompositeDisposable} = require('atom');
+const Constants = require('./Constants');
+const {CompositeDisposable} = require('atom');
+import {beginTimerTracking, failTimerTracking, endTimerTracking} from './AnalyticsHelper';
 
 import type {Dispatcher} from 'flux';
 import type * as DebuggerStore from './DebuggerStore';
@@ -22,9 +23,10 @@ function track(...args) {
   trackFunc.apply(null, args);
 }
 
-var AnalyticsEvents = {
+const AnalyticsEvents = {
   DEBUGGER_START:       'debugger-start',
   DEBUGGER_START_FAIL:  'debugger-start-fail',
+  DEBUGGER_STOP:        'debugger-stop',
 };
 
 /**
@@ -46,6 +48,7 @@ class DebuggerActions {
     track(AnalyticsEvents.DEBUGGER_START, {
       serviceName: processInfo.getServiceName(),
     });
+    beginTimerTracking('nuclide-debugger-atom:attachToProcess');
 
     this.killDebugger(); // Kill the existing session.
     this.setError(null);
@@ -68,11 +71,15 @@ class DebuggerActions {
     }
 
     process.getWebsocketAddress().then(
-      socketAddr => this._dispatcher.dispatch({
-        actionType: Constants.Actions.SET_PROCESS_SOCKET,
-        data: socketAddr,
-      }),
+      socketAddr => {
+        endTimerTracking();
+        this._dispatcher.dispatch({
+          actionType: Constants.Actions.SET_PROCESS_SOCKET,
+          data: socketAddr,
+        });
+      },
       err => {
+        failTimerTracking(err);
         track(AnalyticsEvents.DEBUGGER_START_FAIL, {});
         this.setError('Failed to start debugger process: ' + err);
         this.killDebugger();
@@ -85,6 +92,8 @@ class DebuggerActions {
   }
 
   killDebugger() {
+    track(AnalyticsEvents.DEBUGGER_STOP);
+    endTimerTracking();
     var process = this._store.getDebuggerProcess();
     if (process) {
       process.dispose();
@@ -135,6 +144,7 @@ class DebuggerActions {
   }
 
   dispose() {
+    endTimerTracking();
     this._disposables.dispose();
   }
 }

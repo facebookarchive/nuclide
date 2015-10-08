@@ -12,6 +12,7 @@
 var Emitter = require('./Emitter');
 var Multimap = require('../../lib/Multimap');
 var ipc = require('ipc');
+import {beginTimerTracking, endTimerTracking} from '../../lib/AnalyticsHelper';
 
 var WebInspector: typeof WebInspector = window.WebInspector;
 
@@ -134,6 +135,7 @@ class NuclideBridge {
   }
 
   _handleDebuggerPaused(event: WebInspector$Event) {
+    endTimerTracking();
     ++this._debuggerPausedCount;
     if (this._debuggerPausedCount === 1) {
       this._handleLoaderBreakpoint();
@@ -249,6 +251,7 @@ class NuclideBridge {
   _continue(): void {
     var target = WebInspector.targetManager.mainTarget();
     if (target) {
+      beginTimerTracking('nuclide-debugger-atom:continue');
       target.debuggerModel.resume();
     }
   }
@@ -256,6 +259,7 @@ class NuclideBridge {
   _stepOver(): void {
     var target = WebInspector.targetManager.mainTarget();
     if (target) {
+      beginTimerTracking('nuclide-debugger-atom:stepOver');
       target.debuggerModel.stepOver();
     }
   }
@@ -263,6 +267,7 @@ class NuclideBridge {
   _stepInto(): void {
     var target = WebInspector.targetManager.mainTarget();
     if (target) {
+      beginTimerTracking('nuclide-debugger-atom:stepInto');
       target.debuggerModel.stepInto();
     }
   }
@@ -270,6 +275,7 @@ class NuclideBridge {
   _stepOut(): void {
     var target = WebInspector.targetManager.mainTarget();
     if (target) {
+      beginTimerTracking('nuclide-debugger-atom:stepOut');
       target.debuggerModel.stepOut();
     }
   }
