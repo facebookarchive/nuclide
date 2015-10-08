@@ -34,7 +34,7 @@ export type InterfaceDefinition = {
 
 export type Type = NullableType |
   AnyType | StringType | BooleanType | NumberType | // Primitive types.
-  ObjectType | ArrayType | MapType | SetType | // Container types.
+  ObjectType | ArrayType | MapType | SetType | TupleType | // Container types.
   VoidType | PromiseType | ObservableType | // Return types.
   NamedType; // Type aliases.
 

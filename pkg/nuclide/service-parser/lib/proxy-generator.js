@@ -20,21 +20,25 @@ var promiseDotAllExpression = t.memberExpression(t.identifier('Promise'), t.iden
 var thenIdent = t.identifier('then');
 
 var observableIdentifier = t.identifier('Observable');
-var observableFromPromise = promiseExpression => t.callExpression(
-  t.memberExpression(observableIdentifier, t.identifier('fromPromise')), [promiseExpression]);
 
-var moduleDotExportsExpression = t.memberExpression(t.identifier('module'), t.identifier('exports'));
+var moduleDotExportsExpression =
+  t.memberExpression(t.identifier('module'), t.identifier('exports'));
 var clientIdentifier = t.identifier('_client');
 
 // Functions that are implemented at the connection layer.
-var callRemoteFunctionExpression = t.memberExpression(clientIdentifier, t.identifier('callRemoteFunction'));
-var callRemoteMethodExpression = t.memberExpression(clientIdentifier, t.identifier('callRemoteMethod'));
-var createRemoteObjectExpression = t.memberExpression(clientIdentifier, t.identifier('createRemoteObject'));
-var disposeRemoteObjectExpression = t.memberExpression(clientIdentifier, t.identifier('disposeRemoteObject'));
+var callRemoteFunctionExpression =
+  t.memberExpression(clientIdentifier, t.identifier('callRemoteFunction'));
+var callRemoteMethodExpression =
+  t.memberExpression(clientIdentifier, t.identifier('callRemoteMethod'));
+var createRemoteObjectExpression =
+  t.memberExpression(clientIdentifier, t.identifier('createRemoteObject'));
+var disposeRemoteObjectExpression =
+  t.memberExpression(clientIdentifier, t.identifier('disposeRemoteObject'));
 
 var thisDotIdPromiseExpression = t.memberExpression(t.thisExpression(), t.identifier('_idPromise'));
 
-var promiseDotRejectExpression = t.memberExpression(t.identifier('Promise'), t.identifier('reject'));
+var promiseDotRejectExpression =
+  t.memberExpression(t.identifier('Promise'), t.identifier('reject'));
 
 var remoteModule = t.identifier('remoteModule');
 var emptyObject = t.objectExpression([]);
@@ -74,7 +78,8 @@ export default function generateProxy(defs: Definitions): string {
   // Return the remote module.
   statements.push(t.returnStatement(remoteModule));
 
-  // Wrap the remoteModule construction in a function that takes a NuclideClient object as an argument.
+  // Wrap the remoteModule construction in a function that takes a NuclideClient object as
+  // an argument.
   var func = t.arrowFunctionExpression([clientIdentifier], t.blockStatement(statements));
   var assignment = t.assignmentExpression('=', moduleDotExportsExpression, func);
   var program = t.program([
@@ -114,7 +119,8 @@ function generateFunctionProxy(name: string, funcType: FunctionType): any {
     t.identifier('args'),
   ]);
 
-  switch (funcType.returnType.kind) {
+  var returnType = funcType.returnType;
+  switch (returnType.kind) {
     case 'void':
       rpcCallExpression = thenPromise(argumentsPromise, t.arrowFunctionExpression(
         [t.identifier('args')],
@@ -128,7 +134,7 @@ function generateFunctionProxy(name: string, funcType: FunctionType): any {
       ));
 
       var value = t.identifier('value');
-      var type = funcType.returnType.type;
+      var type = returnType.type;
       var transformer = t.arrowFunctionExpression([value],
         generateTransformStatement(value, type, false));
 
@@ -148,14 +154,14 @@ function generateFunctionProxy(name: string, funcType: FunctionType): any {
       // We then map the incoming events through the appropriate marshaller. We use concatMap
       // instead of flatMap, since concatMap ensures that the order of the events doesn't change.
       var value = t.identifier('value');
-      var type = funcType.returnType.type;
+      var type = returnType.type;
       var transformer = t.arrowFunctionExpression([value],
         generateTransformStatement(value, type, false));
       rpcCallExpression = t.callExpression(
         t.memberExpression(rpcCallExpression, t.identifier('concatMap')), [transformer]);
       break;
     default:
-      throw new Error(`Unkown return type ${funcType.returnType.kind}.`);
+      throw new Error(`Unkown return type ${returnType.kind}.`);
   }
 
   proxyStatments.push(t.returnStatement(rpcCallExpression));
@@ -192,7 +198,8 @@ function generateArgumentConversionObservable(argumentTypes: Array<Type>): Array
   // the marshalling promises. Concatenation takes multiple streams (Promises in this case), and
   // returns one stream where all the elements of the input streams are emitted. Concat preserves
   // order, ensuring that all of stream's elements are emitted before the next stream's can emit.
-  var argumentsObservable = t.callExpression(t.memberExpression(observableIdentifier, t.identifier('concat')),
+  var argumentsObservable = t.callExpression(
+      t.memberExpression(observableIdentifier, t.identifier('concat')),
       args.map((arg, i) => generateTransformStatement(arg, argumentTypes[i], true)));
 
   // Once we have a stream of the arguments, we can use toArray(), which returns an observable that
@@ -298,12 +305,13 @@ function generateRemoteDispatch(methodName: string, funcType: FunctionType) {
     rpcCallExpression,
   ));
 
-  switch (funcType.returnType.kind) {
+  var returnType = funcType.returnType;
+  switch (returnType.kind) {
     case 'void':
       break;
     case 'promise':
       var transformer = t.arrowFunctionExpression([value],
-        generateTransformStatement(value, funcType.returnType.type, false));
+        generateTransformStatement(value, returnType.type, false));
       rpcCallExpression = thenPromise(rpcCallExpression, transformer);
       break;
     case 'observable':
@@ -315,8 +323,8 @@ function generateRemoteDispatch(methodName: string, funcType: FunctionType) {
       var idAndArgumentsObservable = t.callExpression(t.memberExpression(observableIdentifier,
         t.identifier('forkJoin')), [thisDotIdPromiseExpression, argumentsObservable]);
 
-      // Once we resolve both the id and the transformed arguments, we can map them to then RPC call,
-      // which then returns the observable of data that we actually want to return.
+      // Once we resolve both the id and the transformed arguments, we can map them to then RPC
+      // call, which then returns the observable of data that we actually want to return.
       rpcCallExpression = t.callExpression(
         t.memberExpression(idAndArgumentsObservable, t.identifier('concatMap')),
         [t.arrowFunctionExpression([
@@ -328,12 +336,12 @@ function generateRemoteDispatch(methodName: string, funcType: FunctionType) {
       // flatMap to ensure that the order doesn't change, in case one event takes especially long
       // to marshal.
       var transformer = t.arrowFunctionExpression([value],
-        generateTransformStatement(value, funcType.returnType.type, false));
+        generateTransformStatement(value, returnType.type, false));
       rpcCallExpression = t.callExpression(
         t.memberExpression(rpcCallExpression, t.identifier('concatMap')), [transformer]);
       break;
     default:
-      throw new Error(`Unkown return type ${funcType.returnType.kind}.`);
+      throw new Error(`Unkown return type ${returnType.kind}.`);
   }
 
   var args = funcType.argumentTypes.map((arg, i) => t.identifier(`arg${i}`));

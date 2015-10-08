@@ -60,6 +60,7 @@ export function getProxy(definitionPath: string, clientObject: any): any {
 
     // Load the module direcly from a string.
     var m = new module.constructor();
+  // $FlowIssue
     m.paths = module.paths;
     m._compile(transpiled, filename);
 
@@ -85,6 +86,7 @@ export function getProxy(definitionPath: string, clientObject: any): any {
  * `require.resolve(path)` under the context of given module.
  */
 function resolvePath(definitionPath: string): string {
+  // $FlowIssue
   return require('module')._resolveFilename(definitionPath, module.parent ? module.parent : module);
 }
 

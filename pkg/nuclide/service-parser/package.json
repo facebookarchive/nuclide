@@ -5,6 +5,7 @@
   "version": "0.0.0",
   "description": "Provides support for developing services between Nuclide server and client",
   "nuclide": {
+    "flowCheck": true,
     "packageType": "Node",
     "testRunner": "npm"
   },

@@ -11,8 +11,14 @@
 
 import * as babel from 'babel-core';
 import assert from 'assert';
+import invariant from 'assert';
 
-import type {Definitions, Type, FunctionType, InterfaceDefinition} from './types';
+import type {
+  Definitions,
+  FunctionType,
+  InterfaceDefinition,
+  Type,
+} from './types';
 
 
 /**
@@ -105,6 +111,9 @@ class ServiceParser {
           returnType.kind === 'observable',
       'The return type of a function must be of type Void, Promise, or Observable');
 
+    invariant(returnType.kind === 'void' ||
+      returnType.kind === 'promise' ||
+      returnType.kind === 'observable');
     return {
       name: declaration.id.name,
       type: {
@@ -140,8 +149,9 @@ class ServiceParser {
    * @returns A record containing the name of the class, along with an InterfaceDefinition
    *   object that describes it's method.
    */
-  _parseClassDeclaration(declaration: Object): {name: string,
-      interfaceDefinition: InterfaceDefinition} {
+  _parseClassDeclaration(
+    declaration: Object,
+  ): {name: string, interfaceDefinition: InterfaceDefinition} {
     var def: InterfaceDefinition = {
       constructorArgs: [],
       staticMethods: new Map(),
@@ -251,7 +261,7 @@ class ServiceParser {
       case 'GenericTypeAnnotation':
         return this._parseGenericTypeAnnotation(typeAnnotation);
       default:
-        throw this._error(typeAnnotatoin, `Unknown type annotation ${typeAnnotation.type}.`);
+        throw this._error(typeAnnotation, `Unknown type annotation ${typeAnnotation.type}.`);
     }
   }
 

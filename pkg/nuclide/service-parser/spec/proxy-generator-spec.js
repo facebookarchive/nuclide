@@ -34,7 +34,8 @@ describe('Proxy generator test suite.', () => {
         var definitions = parseServiceDefinition(fixturePath, fs.readFileSync(fixturePath, 'utf8'));
 
         var code = generateProxy(definitions);
-        var expected = fs.readFileSync(path.join(__dirname, 'fixtures', file).replace('.def', '.proxy'), 'utf8');
+        var expected = fs.readFileSync(
+          path.join(__dirname, 'fixtures', file).replace('.def', '.proxy'), 'utf8');
         expect(code.trim()).diffLines(expected.trim());
       });
     }
@@ -43,9 +44,9 @@ describe('Proxy generator test suite.', () => {
 
 var ArrayOfArrayOfNuclideUri: Type = {
   kind: 'array',
-  elementType: {
+  type: {
     kind: 'array',
-    elementType: {
+    type: {
       kind: 'named',
       name: 'NuclideUri',
     },
@@ -72,9 +73,9 @@ describe('generateTransformStatement helper function', function () {
 
 var marshalText = `_client.marshal(value, {
   kind: "array",
-  elementType: {
+  type: {
     kind: "array",
-    elementType: {
+    type: {
       kind: "named",
       name: "NuclideUri"
     }
@@ -83,9 +84,9 @@ var marshalText = `_client.marshal(value, {
 
 var unmarshalText = `_client.unmarshal(value, {
   kind: "array",
-  elementType: {
+  type: {
     kind: "array",
-    elementType: {
+    type: {
       kind: "named",
       name: "NuclideUri"
     }

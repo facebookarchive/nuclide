@@ -10,18 +10,19 @@
  */
 
 import assert from 'assert';
+import invariant from 'assert';
 import vm from 'vm';
 
-import type {Type, NullableType, ArrayType, ObjectType} from './types';
+import type {Type} from './types';
 
 /*
- * This type represents a Transfomer function, which takes in a value, and either serializes
+ * This type represents a Transformer function, which takes in a value, and either serializes
  * or deserializes it. Transformer's are added to a registry and indexed by the name of
  * the type they handle (eg: 'Date'). The second argument is the actual type object that represent
  * the value. Parameterized types like Array, or Object can use this to recursively call other
  * transformers.
  */
-export type Transfomer = (value: any, type: Type) => Promise<any>;
+export type Transformer = (value: any, type: Type) => Promise<any>;
 
 /*
  * The TypeRegistry is a centralized place to register functions that serialize and deserialize
@@ -32,8 +33,8 @@ export type Transfomer = (value: any, type: Type) => Promise<any>;
  */
 export default class TypeRegistry {
   /** Store marhsallers and and unmarshallers, index by the name of the type. */
-  _marshallers: Map<string, Transfomer>;
-  _unmarshallers: Map<string, Transfomer>;
+  _marshallers: Map<string, Transformer>;
+  _unmarshallers: Map<string, Transformer>;
 
   constructor() {
     this._marshallers = new Map();
@@ -44,25 +45,32 @@ export default class TypeRegistry {
     this._registerContainers();
 
     // Register NullableType and NamedType
-    this.registerType('nullable', async (value: any, type: NullableType) => {
-      if (value === null || value === undefined) {
+    this.registerType('nullable', async (value: any, type: Type) => {
+      if (value === null || value === undefined || type.kind !== 'nullable') {
         return null;
       }
       return await this.marshal(value, type.type);
-    }, async (value: any, type: NullableType) => {
-      if (value === null || value === undefined) {
+    }, async (value: any, type: Type) => {
+      if (value === null || value === undefined || type.kind !== 'nullable') {
         return null;
       }
       return await this.unmarshal(value, type.type);
     });
 
-    this.registerType('named', async (value: any, type: NamedType) => {
-      return await this.marshal(value, { kind: type.name });
-    }, async (value: any, type: NullableType) => {
-      return await this.unmarshal(value, { kind: type.name });
+    this.registerType('named', async (value: any, type: Type) => {
+      invariant(type.kind === 'named');
+      // $FlowFixMe - figure out how to represent custom types as `Type`.
+      return await this.marshal(value, {kind: type.name});
+    }, async (value: any, type: Type) => {
+      invariant(type.kind === 'named');
+      // $FlowFixMe - figure out how to represent custom types as `Type`.
+      return await this.unmarshal(value, {kind: type.name});
     });
 
-    this.registerType('void', value => null, value => null);
+    this.registerType(
+      'void',
+      (value, type) => Promise.resolve(null),
+      (value, type) => Promise.resolve(null));
   }
 
   /**
@@ -173,6 +181,7 @@ export default class TypeRegistry {
       regStr = (regStr instanceof String) ? regStr.valueOf() : regStr;
 
       assert(typeof regStr === 'string', 'Expected a string argument.');
+      // $FlowIssue - flesh out the vm module.
       return vm.runInThisContext(regStr);
     });
 
@@ -184,24 +193,31 @@ export default class TypeRegistry {
       // Unbox argument.
       base64string = (base64string instanceof String) ? base64string.valueOf() : base64string;
 
-      assert(typeof base64string === 'string', `Expected a base64 string. Not ${typeof base64string}`);
+      assert(
+        typeof base64string === 'string',
+        `Expected a base64 string. Not ${typeof base64string}`);
       return new Buffer(base64string, 'base64');
     });
   }
 
   _registerContainers(): void {
     // Serialize / Deserialize Arrays.
-    this.registerType('array', async (value: any, type: ArrayType) => {
+    this.registerType('array', async (value: any, type: Type) => {
       assert(value instanceof Array, 'Expected an object of type Array.');
-      return await Promise.all(value.map(elem => this.marshal(elem, type.type)));
-    }, async (value: any, type: ArrayType) => {
+      invariant(type.kind === 'array');
+      var elemType = type.type;
+      return await Promise.all(value.map(elem => this.marshal(elem, elemType)));
+    }, async (value: any, type: Type) => {
       assert(value instanceof Array, 'Expected an object of type Array.');
-      return await Promise.all(value.map(elem => this.unmarshal(elem, type.type)));
+      invariant(type.kind === 'array');
+      var elemType = type.type;
+      return await Promise.all(value.map(elem => this.unmarshal(elem, elemType)));
     });
 
     // Serialize and Deserialize Objects.
-    this.registerType('object', async (obj: any, type: ObjectType) => {
+    this.registerType('object', async (obj: any, type: Type) => {
       assert(typeof obj === 'object', 'Expected an argument of type object.');
+      invariant(type.kind === 'object');
       var newObj = {}; // Create a new object so we don't mutate the original one.
       await Promise.all(type.fields.map(async prop => {
         // Check if the source object has this key.
@@ -215,8 +231,9 @@ export default class TypeRegistry {
         }
       }));
       return newObj;
-    }, async (obj: any, type: ObjectType) => {
+    }, async (obj: any, type: Type) => {
       assert(typeof obj === 'object', 'Expected an argument of type object.');
+      invariant(type.kind === 'object');
       var newObj = {}; // Create a new object so we don't mutate the original one.
       await Promise.all(type.fields.map(async prop => {
         // Check if the source object has this key.
@@ -233,22 +250,26 @@ export default class TypeRegistry {
     });
 
     // Serialize / Deserialize Sets.
-    this.registerType('set', async (value: any, type: SetType) => {
+    this.registerType('set', async (value: any, type: Type) => {
+      invariant(type.kind === 'set');
       assert(value instanceof Set, 'Expected an object of type Set.');
       var serializePromises = [];
       for (var elem of value) {
         serializePromises.push(this.marshal(elem, type.type));
       }
       return await Promise.all(serializePromises);
-    }, async (value: any, type: SetType) => {
+    }, async (value: any, type: Type) => {
       assert(value instanceof Array, 'Expected an object of type Array.');
-      var elements = await Promise.all(value.map(elem => this.unmarshal(elem, type.type)));
+      invariant(type.kind === 'set');
+      var elemType = type.type;
+      var elements = await Promise.all(value.map(elem => this.unmarshal(elem, elemType)));
       return new Set(elements);
     });
 
     // Serialize / Deserialize Maps.
-    this.registerType('map', async (map: Map, type: MapType) => {
+    this.registerType('map', async (map: Map, type: Type) => {
       assert(map instanceof Map, 'Expected an object of type Set.');
+      invariant(type.kind === 'map');
       var serializePromises = [];
       for (var [key, value] of map) {
         serializePromises.push(Promise.all([
@@ -257,34 +278,41 @@ export default class TypeRegistry {
         ]));
       }
       return await Promise.all(serializePromises);
-    }, async (serialized: any, type: MapType) => {
+    }, async (serialized: any, type: Type) => {
       assert(serialized instanceof Array, 'Expected an object of type Array.');
+      invariant(type.kind === 'map');
+      var keyType = type.keyType;
+      var valueType = type.valueType;
       var entries = await Promise.all(
         serialized.map(entry => Promise.all([
-          this.unmarshal(entry[0], type.keyType),
-          this.unmarshal(entry[1], type.valueType),
+          this.unmarshal(entry[0], keyType),
+          this.unmarshal(entry[1], valueType),
         ]))
       );
       return new Map(entries);
     });
 
     // Serialize / Deserialize Tuples.
-    this.registerType('tuple', async (value: any, type: TupleType) => {
+    this.registerType('tuple', async (value: any, type: Type) => {
       // Assert the length of the array.
       assert(Array.isArray(value), 'Expected an object of type Array.');
-      assert(value.length === type.types.length, `Expected tuple of length ${type.types.length}.`);
+      invariant(type.kind === 'tuple');
+      var types = type.types;
+      assert(value.length === types.length, `Expected tuple of length ${types.length}.`);
 
       // Convert all of the elements through the correct marshaller.
       return await Promise.all(value.map((elem, i) =>
-        this.marshal(elem, type.types[i])));
-    }, async (value: any, type: ArrayType) => {
+        this.marshal(elem, types[i])));
+    }, async (value: any, type: Type) => {
       // Assert the length of the array.
       assert(Array.isArray(value), 'Expected an object of type Array.');
-      assert(value.length === type.types.length, `Expected tuple of length ${type.types.length}.`);
+      invariant(type.kind === 'tuple');
+      var types = type.types;
+      assert(value.length === types.length, `Expected tuple of length ${types.length}.`);
 
       // Convert all of the elements through the correct unmarshaller.
       return await Promise.all(value.map((elem, i) =>
-        this.unmarshal(elem, type.types[i])));
+        this.unmarshal(elem, types[i])));
     });
   }
 }

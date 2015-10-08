@@ -24,17 +24,26 @@ describe('Nuclide service parser test suite.', () => {
       it(`Successfully parses ${file}`, () => {
         const fixturePath = path.join(__dirname, 'fixtures', file);
         var code = fs.readFileSync(fixturePath, 'utf8');
-        var expected = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', file) + '.json', 'utf8'));
+        var expected = JSON.parse(
+          fs.readFileSync(path.join(__dirname, 'fixtures', file) + '.json', 'utf8'));
         var definitions = parseServiceDefinition(fixturePath, code);
 
-        definitions.functions = mapToJSON(definitions.functions);
-        definitions.aliases = mapToJSON(definitions.aliases);
+        var interfaces = new Map();
+        for (var key of definitions.interfaces.keys()) {
+          var def = definitions.interfaces.get(key);
+          var newDef = {
+            constructorArgs: def.constructorArgs,
+            instanceMethods: mapToJSON(def.instanceMethods),
+            staticMethods: mapToJSON(def.staticMethods),
+          };
+          interfaces.set(key, newDef);
+        }
 
-        definitions.interfaces.forEach(def => {
-          def.staticMethods = mapToJSON(def.staticMethods);
-          def.instanceMethods = mapToJSON(def.instanceMethods);
-        });
-        definitions.interfaces = mapToJSON(definitions.interfaces);
+        var definitions = {
+          functions: mapToJSON(definitions.functions),
+          interfaces: mapToJSON(interfaces),
+          aliases: mapToJSON(definitions.aliases),
+        };
 
         expect(definitions).diffJson(expected);
       });

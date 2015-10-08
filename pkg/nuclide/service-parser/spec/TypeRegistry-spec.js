@@ -25,17 +25,24 @@ describe('TypeRegistry', () => {
       invariant(typeRegistry);
 
       var expected = 'Hello World';
-      var str = await typeRegistry.unmarshal(await typeRegistry.marshal(expected, {kind: 'string'}), {kind: 'string'});
+      var str = await typeRegistry.unmarshal(
+        await typeRegistry.marshal(expected, {kind: 'string'}),
+        {kind: 'string'},
+      );
       expect(str).toBe(expected);
 
       var expected = 312213;
-      var num = await typeRegistry.unmarshal(await typeRegistry.marshal(expected, {kind: 'number'}),
-      {kind: 'number'});
+      var num = await typeRegistry.unmarshal(
+        await typeRegistry.marshal(expected, {kind: 'number'}),
+        {kind: 'number'},
+      );
       expect(num).toBe(expected);
 
       var expected = false;
-      var bool = await typeRegistry.unmarshal(await typeRegistry.marshal(expected, {kind: 'boolean'}),
-      {kind: 'boolean'});
+      var bool = await typeRegistry.unmarshal(
+        await typeRegistry.marshal(expected, {kind: 'boolean'}),
+        {kind: 'boolean'},
+      );
       expect(bool).toBe(expected);
     });
   });
@@ -56,7 +63,8 @@ describe('TypeRegistry', () => {
 
       var expected = new Buffer('test buffer data.');
       var type: NamedType = {kind: 'named', name: 'Buffer'};
-      var buf: Buffer = await typeRegistry.unmarshal(await typeRegistry.marshal(expected, type), type);
+      var buf: Buffer = await typeRegistry.unmarshal(
+        await typeRegistry.marshal(expected, type), type);
       expect(expected.equals(buf)).toBeTruthy();
     });
   });
@@ -80,7 +88,7 @@ describe('TypeRegistry', () => {
       expect(result[1].equals(expected[1])).toBeTruthy();
 
       // Object with a a nullable property and a buffer property.
-      var type: ObjectType = {
+      var objectType: ObjectType = {
         kind: 'object',
         fields: [
           // A nullable string property.
@@ -91,7 +99,7 @@ describe('TypeRegistry', () => {
           },
           // A non-nullable buffer property.
           {
-            type: { kind: 'Buffer' },
+            type: { kind: 'named', name: 'Buffer'},
             name: 'b',
             optional: false,
           },
@@ -104,7 +112,10 @@ describe('TypeRegistry', () => {
         ],
       };
       var expected = { a: null, b: new Buffer('test') };
-      var result = await typeRegistry.unmarshal(await typeRegistry.marshal(expected, type), type);
+      var result = await typeRegistry.unmarshal(
+        await typeRegistry.marshal(expected, objectType),
+        objectType
+      );
       expect(result.a).toBeNull();
       expect(result.b.equals(expected.b)).toBeTruthy();
     });
