@@ -11,6 +11,7 @@
 
 import type {Collection, Node, NodePath} from '../types/ast';
 
+var getNamesFromID = require('./getNamesFromID');
 var jscs = require('jscodeshift');
 
 type ConfigEntry = {
@@ -70,7 +71,8 @@ var CONFIG: Array<ConfigEntry> = [
   // {declared: foo}
   {
     searchTerms: [jscs.ObjectExpression],
-    getNodes: path => path.node.properties.map(prop => prop.value),
+    // Generally props have a value, if it is a spread property it doesn't.
+    getNodes: path => path.node.properties.map(prop => prop.value || prop),
   },
 
   // return foo;
@@ -200,8 +202,9 @@ function getNonDeclarationIdentifiers(root: Collection): Set<string> {
       .forEach(path => {
         var nodes = config.getNodes(path);
         nodes.forEach(node => {
-          if (jscs.Identifier.check(node)) {
-            ids.add(node.name);
+          var names = getNamesFromID(node);
+          for (var name of names) {
+            ids.add(name);
           }
         });
       });

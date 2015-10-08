@@ -17,16 +17,24 @@ function getNamesFromID(node: Node): Set<string> {
   var ids = new Set();
   if (jscs.Identifier.check(node)) {
     ids.add(node.name);
+  } else if (
+    jscs.RestElement.check(node) ||
+    jscs.SpreadElement.check(node) ||
+    jscs.SpreadProperty.check(node)
+  ) {
+    for (var id of getNamesFromID(node.argument)) {
+      ids.add(id);
+    }
   } else if (jscs.ObjectPattern.check(node)) {
     node.properties.forEach(prop => {
-      for (var id of getNamesFromID(prop.value)) {
+      // Generally props have a value, if it is a spread property it doesn't.
+      for (var id of getNamesFromID(prop.value || prop)) {
         ids.add(id);
       }
     });
   } else if (jscs.ArrayPattern.check(node)) {
     node.elements.forEach(element => {
-      var arrayIDs = getNamesFromID(element);
-      for (var id of arrayIDs) {
+      for (var id of getNamesFromID(element)) {
         ids.add(id);
       }
     });

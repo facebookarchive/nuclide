@@ -1,0 +1,11 @@
+var b = require('b');
+var d = require('d');
+var g = require('g');
+var j = require('j');
+
+var a = {...b};
+var c = [...d];
+var {e, ...f} = g;
+var [h, ...i] = j;
+f;
+i;

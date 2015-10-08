@@ -26,16 +26,16 @@ type ConfigEntry = {
  * been declared.
  */
 var CONFIG: Array<ConfigEntry> = [
-  // function foo() {}
+  // function foo(...rest) {}
   {
     searchTerms: [jscs.FunctionDeclaration],
-    getNodes: path => [path.node.id].concat(path.node.params),
+    getNodes: path => [path.node.id, path.node.rest].concat(path.node.params),
   },
 
-  // foo() {}, in a class body for example
+  // foo(...rest) {}, in a class body for example
   {
     searchTerms: [jscs.FunctionExpression],
-    getNodes: path => path.node.params,
+    getNodes: path => [path.node.rest].concat(path.node.params),
   },
 
   // var foo;
@@ -50,10 +50,10 @@ var CONFIG: Array<ConfigEntry> = [
     getNodes: path => [path.node.id],
   },
 
-  // (foo) => {}
+  // (foo, ...rest) => {}
   {
     searchTerms: [jscs.ArrowFunctionExpression],
-    getNodes: path => path.node.params,
+    getNodes: path => [path.node.rest].concat(path.node.params),
   },
 
   // try {} catch (foo) {}
