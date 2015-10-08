@@ -41,8 +41,8 @@ class HhvmToolbar extends React.Component {
   _getMenuItems(): any {
     var options = Object.keys(DebugOption);
     return options.map( option => ({
-        label: option,
-        value: DebugOption[option],
+      label: option,
+      value: DebugOption[option],
     }));
   }
 
@@ -66,10 +66,18 @@ class HhvmToolbar extends React.Component {
           size="sm"
         />
         <div className="inline-block" style={{width: '500px'}}>
-          <AtomInput ref="debugTarget" initialValue={debugTarget} disabled={!isDebugScript} size="sm"/>
+          <AtomInput
+            ref="debugTarget"
+            initialValue={debugTarget}
+            disabled={!isDebugScript}
+            size="sm"/>
         </div>
         <div className="btn-group btn-group-sm inline-block">
-          <button onClick={this._debug} className="btn">{isDebugScript ? 'Launch' : 'Attach'}</button>
+          <button
+            onClick={this._debug}
+            className="btn">
+            {isDebugScript ? 'Launch' : 'Attach'}
+          </button>
         </div>
       </div>
     );
