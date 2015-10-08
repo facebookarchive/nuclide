@@ -16,6 +16,7 @@
  * should only be for declared types that are not actual modules.
  */
 module.exports = new Set([
+  '$jsx',
   'AdAccountID',
   'FBID',
   'Fbt',
@@ -23,5 +24,6 @@ module.exports = new Set([
   'HTMLElement',
   'Iterable',
   'Map',
+  'ReactElement',
   'Set',
 ]);

@@ -24,19 +24,32 @@ module.exports = new Set([
   'RegExp',
   'String',
   'Symbol',
-
-  '__DEV__',
-  'console',
-  'describe',
-  'document',
-  'expect',
-  'exports',
+  'arguments',
   'global',
-  'it',
-  'jest',
+  'parseFloat',
+  'parseInt',
+  'undefined',
+  'console',
+
+  // Browser built ins.
+  'document',
   'location',
+  'window',
+
+  // Module built ins.
+  'exports',
   'module',
   'require',
-  'undefined',
-  'window',
+
+  // Common dev flag.
+  '__DEV__',
+
+  // Jest/Jasmine build ins.
+  'afterEach',
+  'beforeEach',
+  'describe',
+  'expect',
+  'it',
+  'jest',
+  'waitsForPromise',
 ]);
