@@ -10,6 +10,7 @@
  */
 
 var logger = require('nuclide-logging').getLogger();
+var {track} = require('nuclide-analytics');
 
 async function formatCode(editor: ?TextEditor): Promise<void> {
   editor = editor || atom.workspace.getActiveTextEditor();
@@ -17,6 +18,8 @@ async function formatCode(editor: ?TextEditor): Promise<void> {
     logger.info('- format-js: No active text editor');
     return;
   }
+
+  track('format-js-formatCode', {});
 
   var buffer = editor.getBuffer();
   var oldSource = buffer.getText();
