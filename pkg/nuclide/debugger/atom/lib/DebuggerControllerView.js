@@ -74,18 +74,36 @@ var DebuggerControllerView = React.createClass({
           actions={this.props.actions}
           bridge={this.props.bridge}
           breakpointStore={this.props.breakpointStore}
-          socket={this.state.processSocket} />
+          socket={this.state.processSocket}
+        />
       );
-    } else if (this.state.hasDebuggerProcess) {
+    }
+    const closeButton = (
+      <button
+        title="Close"
+        className="icon icon-x nuclide-debugger-root-close-button"
+        onClick={this._handleClickClose}
+      />
+    );
+    if (this.state.hasDebuggerProcess) {
       return (
         <div className="padded">
+          {closeButton}
           <p>Starting Debugger</p>
           <progress className="starting"></progress>
         </div>
       );
-    } else {
-      return <DebuggerSessionSelector store={this.props.store} actions={this.props.actions}/>;
     }
+    return (
+      <div>
+        {closeButton}
+        <DebuggerSessionSelector store={this.props.store} actions={this.props.actions} />
+      </div>
+    );
+  },
+
+  _handleClickClose() {
+    atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:toggle');
   },
 
   _updateStateFromStore(store?: DebuggerStore) {

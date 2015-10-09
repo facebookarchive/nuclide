@@ -32,6 +32,16 @@
   }
 }
 
+.nuclide-debugger-root-close-button {
+  background: transparent;
+  border: none;
+  padding: 0;
+  position: absolute;
+  top: 2.5em;
+  right: 0.5em;
+  z-index: 1;
+}
+
 .nuclide-debugger-root .inspector {
   display: flex;
   position: absolute;
@@ -41,7 +51,7 @@
   min-width: @min-width;
 }
 
-/* 
+/*
 Hack for flexbox + vertical scaling with webview shadow dom.
 Use flexbox cross-axis stretch to fill the vertical space.
 */
