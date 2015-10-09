@@ -173,6 +173,9 @@ class TestRunnerController {
 
   stopTests(): void {
     if (this._run && this._run.testRunner) {
+      track('testrunner-stop-tests', {
+        testRunner: this._run.testRunner.label,
+      });
       try {
         this._run.testRunner.stop(this._run.id);
       } catch (e) {
@@ -192,6 +195,7 @@ class TestRunnerController {
   }
 
   showPanel(didRender?: () => mixed): void {
+    track('testrunner-show-panel');
     this._state.panelVisible = true;
     this._renderPanel(didRender);
     if (this._panel) {
@@ -200,6 +204,7 @@ class TestRunnerController {
   }
 
   togglePanel(): void {
+    track('testrunner-hide-panel');
     if (this._state.panelVisible) {
       this.hidePanel();
     } else {
