@@ -103,6 +103,8 @@ function tryRecordActivationState(): void {
   }
 }
 
+var toolBar: ?any = null;
+
 module.exports = {
   activate(state: ?Object): void {
     if (subscriptions) {
@@ -182,6 +184,16 @@ module.exports = {
     getStatusBarTile().consumeStatusBar(statusBar);
   },
 
+  consumeToolBar(getToolBar: (group: string) => Object): void {
+    toolBar = getToolBar('nuclide-diagnostics-ui');
+    toolBar.addButton({
+      icon: 'law',
+      callback: 'nuclide-diagnostics-ui:toggle-table',
+      tooltip: 'Toggle Diagnostics Table',
+      priority: 300,
+    });
+  },
+
   deactivate(): void {
     if (subscriptions) {
       subscriptions.dispose();
@@ -196,6 +208,10 @@ module.exports = {
     if (statusBarTile) {
       statusBarTile.dispose();
       statusBarTile = null;
+    }
+
+    if (toolBar) {
+      toolBar.removeItems();
     }
 
     diagnosticUpdaterForTable = null;

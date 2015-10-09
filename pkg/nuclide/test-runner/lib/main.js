@@ -160,6 +160,8 @@ class Activation {
 }
 
 var activation: ?Activation;
+var toolBar: ?any = null;
+
 module.exports = {
 
   activate(state: ?Object): void {
@@ -173,6 +175,9 @@ module.exports = {
       activation.dispose();
       activation = null;
     }
+    if (toolBar) {
+      toolBar.removeItems();
+    }
   },
 
   serialize(): Object {
@@ -183,6 +188,16 @@ module.exports = {
     if (activation) {
       return activation.addTestRunner(testRunner);
     }
+  },
+
+  consumeToolBar(getToolBar: (group: string) => Object): void {
+    toolBar = getToolBar('nuclide-test-runner');
+    toolBar.addButton({
+      icon: 'checklist',
+      callback: 'nuclide-test-runner:toggle-panel',
+      tooltip: 'Toggle Test Runner',
+      priority: 200,
+    });
   },
 
   getHomeFragments(): HomeFragments {

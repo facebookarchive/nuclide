@@ -47,6 +47,11 @@
       "versions": {
         "0.0.0": "consumeNuclideDebugger"
       }
+    },
+    "tool-bar": {
+      "versions": {
+        "^0.1.0": "consumeToolBar"
+      }
     }
   }
 }

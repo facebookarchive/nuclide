@@ -169,6 +169,7 @@ class Activation {
 }
 
 var activation = null;
+var toolBar: ?any = null;
 
 module.exports = {
   activate(state: ?SerializedState) {
@@ -192,6 +193,9 @@ module.exports = {
       activation.dispose();
       activation = null;
     }
+    if (toolBar) {
+      toolBar.removeItems();
+    }
   },
 
   consumeNuclideDebugger(service: nuclide_debugger$Service): Disposable {
@@ -205,6 +209,16 @@ module.exports = {
     });
   },
   DebuggerProcessInfo: require('./DebuggerProcessInfo'),
+
+  consumeToolBar(getToolBar: (group: string) => Object): void {
+    toolBar = getToolBar('nuclide-debugger');
+    toolBar.addButton({
+      icon: 'plug',
+      callback: 'nuclide-debugger:toggle',
+      tooltip: 'Toggle Debugger',
+      priority: 100,
+    });
+  },
 
   provideRemoteControlService(): RemoteControlService {
     return new RemoteControlService(() => activation ? activation.getModel() : null);

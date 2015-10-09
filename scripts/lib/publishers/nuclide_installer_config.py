@@ -20,17 +20,18 @@ PACKAGES_TO_EXCLUDE = set([
     'nuclide-debugger-node',
 ])
 
-def generate_config(semver_version, apm_package_names):
-    packages = []
+THIRD_PARTY_PACKAGES = {
+    'tool-bar': '0.1.9',
+}
 
-    for name in apm_package_names:
-        if not name in PACKAGES_TO_EXCLUDE:
-            packages.append(name)
-    packages.sort()
+def generate_config(semver_version, apm_package_names):
+    packages = dict((name, semver_version) for name in apm_package_names
+                    if name not in PACKAGES_TO_EXCLUDE)
+    packages.update(THIRD_PARTY_PACKAGES)
 
     # Create the JSON data for the config.
     config_json = {
-      'packages': map(lambda package_name: {'name': package_name, 'version': semver_version}, packages),
+      'packages': [{'name': package_name, 'version': packages[package_name]} for package_name in sorted(packages.keys())],
     }
 
     # Return the serialized JSON in a form that it is ready to be written to a file.

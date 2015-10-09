@@ -123,6 +123,8 @@ class Activation {
 }
 
 var activation: ?Activation = null;
+var toolBar: ?any = null;
+
 module.exports = {
   activate(state: ?Object) {
     if (!activation) {
@@ -130,10 +132,24 @@ module.exports = {
     }
   },
 
+  consumeToolBar(getToolBar: (group: string) => Object): void {
+    toolBar = getToolBar('nuclide-toolbar');
+    toolBar.addButton({
+      icon: 'hammer',
+      callback: 'nuclide-toolbar:toggle',
+      tooltip: 'Toggle Build Toolbar',
+      iconset: 'ion',
+      priority: 400,
+    });
+  },
+
   deactivate() {
     if (activation) {
       activation.dispose();
       activation = null;
+    }
+    if (toolBar) {
+      toolBar.removeItems();
     }
   },
 

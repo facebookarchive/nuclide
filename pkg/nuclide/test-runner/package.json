@@ -16,6 +16,11 @@
       "versions": {
         "0.0.0": "consumeTestRunner"
       }
+    },
+    "tool-bar": {
+      "versions": {
+        "^0.1.0": "consumeToolBar"
+      }
     }
   },
   "providedServices": {
