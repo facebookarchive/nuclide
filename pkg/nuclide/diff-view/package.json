@@ -27,12 +27,20 @@
   },
   "devDependencies": {
     "nuclide-external-interfaces": "0.0.0",
-    "nuclide-hg-repository-client": "0.0.0"
+    "nuclide-hg-repository-client": "0.0.0",
+    "nuclide-home-interfaces": "0.0.0"
   },
   "consumedServices": {
     "phabricator-comments-ui.provider": {
       "versions": {
         "0.0.0": "consumeProvider"
+      }
+    }
+  },
+  "providedServices": {
+    "nuclide-home.homeFragments": {
+      "versions": {
+        "0.0.0": "getHomeFragments"
       }
     }
   }

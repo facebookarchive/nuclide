@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {HomeFragments} from 'nuclide-home-interfaces';
+
 var {CompositeDisposable} = require('atom');
 
 var activeDiffView: ?{
@@ -199,6 +201,24 @@ module.exports = {
       });
       subscriptions.add(changePathsSubscription);
     }));
+  },
+
+  getHomeFragments(): HomeFragments {
+    var React = require('react-for-atom');
+    return {
+      feature: {
+        title: 'Diff View',
+        icon: 'git-branch',
+        description: (
+          <span>
+            Launches an editable side-by-side view of the output of the Mercurial
+            <code>hg diff</code> command, showing pending changes to be committed.
+          </span>
+        ),
+        command: 'nuclide-diff-view:open',
+      },
+      priority: 3,
+    };
   },
 
   serialize(): ?Object {
