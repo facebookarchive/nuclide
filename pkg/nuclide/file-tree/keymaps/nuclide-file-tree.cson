@@ -1,4 +1,3 @@
-# We try to make this more specific so it overrides the keybinding for the built-in tree-view.
 '.platform-darwin atom-workspace':
   'cmd-\\': 'nuclide-file-tree:toggle'
   'cmd-k cmd-b': 'nuclide-file-tree:toggle'

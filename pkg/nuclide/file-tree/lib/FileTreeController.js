@@ -97,22 +97,6 @@ class FileTreeController {
       })
     );
     this._subscriptions.add(
-      // TODO: Move to normal menu/ directory when 'nuclide-file-tree' is fully replaced.
-      atom.contextMenu.add({
-        'atom-pane[data-active-item-path] atom-text-editor': [
-          {command: 'nuclide-file-tree:reveal-active-file', label: 'Reveal in File Tree'},
-        ],
-      })
-    );
-    var packagePath = atom.packages.resolvePackagePath('nuclide-file-tree');
-    if (packagePath != null) {
-      // Load this package's keymap outside the normal activate/deactive lifecycle so its keymaps
-      // are loaded only when users enable this package via its config.
-      //
-      // TODO: Move to normal keymaps/ directory when 'nuclide-file-tree' is fully replaced.
-      atom.keymaps.loadKeymap(pathUtil.join(packagePath, 'config', 'keymap.cson'));
-    }
-    this._subscriptions.add(
       atom.commands.add(EVENT_HANDLER_SELECTOR, {
         'core:move-down': this._moveDown.bind(this),
         'core:move-up': this._moveUp.bind(this),
