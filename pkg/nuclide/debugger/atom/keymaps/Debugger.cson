@@ -6,5 +6,5 @@
   "f7": "nuclide-debugger:step-into"
   "f8": "nuclide-debugger:step-out"
   # Xcode uses "cmd-\" to toggle-breakpoint which is already used by
-  # nuclide-file-tree:toggle so use F9 instead
+  # nuclide-file-tree-deux:toggle so use F9 instead
   "f9": "nuclide-debugger:toggle-breakpoint"

@@ -129,8 +129,6 @@ module.exports = {
       'nuclide-diff-view:open-context',
       (event) => {
         var target = getTargetFromEvent(event);
-        // In nuclide-file-tree, even though it's a file item selector,
-        // this can actually be a folder path.
         atom.workspace.open(NUCLIDE_DIFF_VIEW_URI + (target.dataset.path || ''));
       }
     ));
@@ -151,8 +149,6 @@ module.exports = {
       'nuclide-diff-view:open-context',
       (event) => {
         var target = getTargetFromEvent(event);
-        // In nuclide-file-tree, even though it's a file item selector,
-        // this can actually be a folder path.
         atom.workspace.open(NUCLIDE_DIFF_VIEW_URI + (target.dataset.path || ''));
       }
     ));

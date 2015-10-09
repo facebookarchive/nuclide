@@ -9,8 +9,9 @@ repositories.
 
 Specifically, `nuclide-hg-repository` enables the following features when you are
 working in a Mercurial-backed project in Atom:
-* The Nuclide file tree (via the [`nuclide-file-tree`](https://atom.io/packages/nuclide-file-tree) package)
-will highlight files that are modified, as well as the directories that contain them.
+* The Nuclide file tree (via the
+[`nuclide-file-tree-deux`](https://atom.io/packages/nuclide-file-tree-deux) package) will highlight
+files that are modified, as well as the directories that contain them.
 * The Atom [`git-diff`](https://github.com/atom/git-diff) package will highlight
 the gutter next to lines that have been modified.
 * The Atom [`status-bar`](https://github.com/atom/status-bar) will show the
@@ -77,7 +78,7 @@ may provide stale data. We have, however, added public asynchronous methods that
 provide up-to-date data:
   * `getStatuses` is the async version of `getPathStatus`.
   * `getDiffStatsForPath` is the async version of `getDiffStats`.
-  * `getLineDiffsForPath` is the async version of `getLineDiffs`.  
+  * `getLineDiffsForPath` is the async version of `getLineDiffs`.
 
 3. `HgRepositoryClient` updates line diff information on each editor "save" event,
 so the line highlighting provided by the `git-diff` package and the number of
