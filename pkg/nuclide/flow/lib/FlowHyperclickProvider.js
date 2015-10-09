@@ -29,7 +29,7 @@ class FlowHyperclickProvider {
     var flowService = getServiceByNuclideUri('FlowService', file);
     invariant(flowService);
     var location = await flowService
-        .findDefinition(file, textEditor.getText(), position.row + 1, position.column + 1);
+        .flowFindDefinition(file, textEditor.getText(), position.row + 1, position.column + 1);
     if (location) {
       return {
         range,

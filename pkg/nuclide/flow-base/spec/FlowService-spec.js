@@ -17,19 +17,24 @@ describe('LocalFlowService', () => {
   var line = 2;
   var column = 12;
 
-  var flowService: any;
+  let flowService: any;
+  let flowExecutor: any;
+
+  let fakeExecFlow: any;
 
   function newFlowService() {
-    const localFlowService = '../lib/LocalFlowService';
+    const flowServicePath = '../lib/FlowService';
     // we have to invalidate the require cache in order to mock modules we
     // depend on
-    const LocalFlowService = (uncachedRequire(require, localFlowService): any);
-    return new LocalFlowService();
+    return (uncachedRequire(require, flowServicePath): any);
   }
 
   beforeEach(() => {
     spyOn(require('../lib/FlowHelpers'), 'getFlowExecOptions')
       .andReturn({cwd: '/path/to/flow/root'});
+    flowExecutor = require('../lib/FlowExecutor');
+    spyOn(flowExecutor, 'execFlow')
+      .andCallFake(() => fakeExecFlow());
     flowService = newFlowService();
   });
 
@@ -39,93 +44,13 @@ describe('LocalFlowService', () => {
   });
 
   function mockExec(outputString) {
-    spyOn(flowService, '_execFlow').andReturn({stdout: outputString, exitCode: 0});
+    fakeExecFlow = () => ({stdout: outputString, exitCode: 0});
   }
 
-  describe('flow server creation and teardown', () => {
-    var childSpy: any;
-
-    function execFlow() {
-      flowService._execFlow([], {}, '/path/to/flow/root/file.js');
-    }
-
-    beforeEach(() => {
-      var called = false;
-      // we want asyncExecute to throw the first time, to mimic Flow not
-      // runinng. Then, it will spawn a new flow process, and we want that to be
-      // successful
-      spyOn(require('nuclide-commons'), 'asyncExecute').andCallFake(() => {
-        if (called) {
-          return {};
-        } else {
-          called = true;
-          throw {
-            stderr: 'There is no flow server running\n\'/path/to/flow/root\'',
-          };
-        }
-      });
-
-      childSpy = {
-        stdout: { on() {} },
-        stderr: { on() {} },
-        on() {},
-        kill() {},
-      };
-      spyOn(childSpy, 'kill');
-      spyOn(childSpy, 'on');
-      spyOn(require('nuclide-commons'), 'safeSpawn').andReturn(childSpy);
-      // we have to create another flow service here since we've mocked modules
-      // we depend on since the outer beforeEach ran.
-      flowService = newFlowService();
-      waitsForPromise(async () => { await execFlow(); });
-    });
-
-    afterEach(() => {
-      global.unspy(require('nuclide-commons'), 'asyncExecute');
-      global.unspy(require('nuclide-commons'), 'safeSpawn');
-    });
-
-    describe('_execFlow', () => {
-      it('should spawn a new Flow server', () => {
-        expect(require('nuclide-commons').safeSpawn).toHaveBeenCalledWith(
-          'flow',
-          ['server', '/path/to/flow/root']
-        );
-      });
-    });
-
-    describe('crashing Flow', () => {
-      var event;
-      var handler;
-
-      beforeEach(() => {
-        [event, handler] = childSpy.on.mostRecentCall.args;
-        // simulate a Flow crash
-        handler(2, null);
-      });
-
-      it('should blacklist the root', () => {
-        expect(event).toBe('exit');
-        (require('nuclide-commons').safeSpawn: any).reset();
-        waitsForPromise(async () => { await execFlow(); });
-        expect(require('nuclide-commons').safeSpawn).not.toHaveBeenCalled();
-      });
-    });
-
-    describe('dispose', () => {
-      it('should kill flow servers', () => {
-        waitsForPromise(async () => {
-          flowService.dispose();
-          expect(childSpy.kill).toHaveBeenCalledWith('SIGKILL');
-        });
-      });
-    });
-  });
-
-  describe('findDefinition', () => {
+  describe('flowFindDefinition', () => {
     function runWith(location) {
       mockExec(JSON.stringify(location));
-      return flowService.findDefinition(file, currentContents, line, column);
+      return flowService.flowFindDefinition(file, currentContents, line, column);
     }
 
     it('should return the location', () => {
@@ -142,16 +67,16 @@ describe('LocalFlowService', () => {
     });
   });
 
-  describe('findDiagnostics', () => {
+  describe('flowFindDiagnostics', () => {
     function runWith(errors, filePath, contents) {
       mockExec(JSON.stringify({errors}));
-      return flowService.findDiagnostics(filePath, contents);
+      return flowService.flowFindDiagnostics(filePath, contents);
     }
 
     it('should call flow status when currentContents is null', () => {
       waitsForPromise(async () => {
         await runWith([], file, null);
-        var flowArgs = flowService._execFlow.mostRecentCall.args[0];
+        var flowArgs = flowExecutor.execFlow.mostRecentCall.args[0];
         expect(flowArgs[0]).toBe('status');
       });
     });
@@ -159,7 +84,7 @@ describe('LocalFlowService', () => {
     it('should call flow check-contents with currentContents when it is not null', () => {
       waitsForPromise(async () => {
         await runWith([], file, currentContents);
-        var execArgs = flowService._execFlow.mostRecentCall.args;
+        var execArgs = flowExecutor.execFlow.mostRecentCall.args;
         var flowArgs = execArgs[0];
         var stdin = execArgs[1].stdin;
         expect(flowArgs[0]).toBe('check-contents');
@@ -168,14 +93,14 @@ describe('LocalFlowService', () => {
     });
   });
 
-  describe('getAutocompleteSuggestions', () => {
+  describe('flowGetAutocompleteSuggestions', () => {
     var prefix: any;
     var optionNames: any;
     var options: any;
 
     function runWith(results) {
       mockExec(JSON.stringify(results));
-      return flowService.getAutocompleteSuggestions(
+      return flowService.flowGetAutocompleteSuggestions(
         file,
         currentContents,
         line,
@@ -273,10 +198,10 @@ describe('LocalFlowService', () => {
     });
   });
 
-  describe('getType', () => {
+  describe('flowGetType', () => {
     function runWithString(outputString) {
       mockExec(outputString);
-      return flowService.getType(file, currentContents, line, column);
+      return flowService.flowGetType(file, currentContents, line, column);
     }
     function runWith(outputType) {
       return runWithString(JSON.stringify({type: outputType}));
@@ -308,10 +233,10 @@ describe('LocalFlowService', () => {
 
     it('should return null if the flow process fails', () => {
       waitsForPromise(async () => {
-        spyOn(flowService, '_execFlow').andThrow('error');
+        fakeExecFlow = () => { throw 'error'; };
         // this causes some errors to get logged, but I don't think it's a big
         // deal and I don't know how to mock a module
-        expect(await flowService.getType(file, currentContents, line, column)).toBe(null);
+        expect(await flowService.flowGetType(file, currentContents, line, column)).toBe(null);
       });
     });
   });

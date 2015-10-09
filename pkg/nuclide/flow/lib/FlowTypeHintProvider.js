@@ -29,7 +29,7 @@ export class FlowTypeHintProvider {
     invariant(flowService);
 
     const enableStructuredTypeHints = atom.config.get('nuclide-flow.enableStructuredTypeHints');
-    const getTypeResult = await flowService.getType(
+    const getTypeResult = await flowService.flowGetType(
       filePath,
       contents,
       position.row,

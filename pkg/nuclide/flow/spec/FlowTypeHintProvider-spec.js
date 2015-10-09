@@ -41,7 +41,7 @@ describe('FlowTypeHintProvider', () => {
       }
     });
     spyOn(require('nuclide-client'), 'getServiceByNuclideUri').andReturn({
-      getType() { return Promise.resolve(result); },
+      flowGetType() { return Promise.resolve(result); },
     });
     spyOnGetterValue(require('nuclide-atom-helpers'), 'extractWordAtPosition')
       .andReturn(word);

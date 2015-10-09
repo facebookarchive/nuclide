@@ -9,10 +9,8 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from 'nuclide-remote-uri';
-
 // Diagnostic information, returned from findDiagnostics.
-export type Diagnostics = {
+type Diagnostics = {
   // The location of the .flowconfig where these messages came from.
   flowRoot: NuclideUri,
   messages: Array<Diagnostic>,
@@ -23,76 +21,242 @@ export type Diagnostics = {
  * Flow to help explain the problem and point to different locations that may be
  * of interest.
  */
-export type Diagnostic = Array<SingleMessage>;
+type Diagnostic = Array<SingleMessage>;
 
-export type SingleMessage = {
+type SingleMessage = {
   path: ?NuclideUri;
   descr: string;
-  code: number;
   line: number;
   endline: number;
   start: number;
   end: number;
 }
 
-class FlowService {
+import type {NuclideUri} from 'nuclide-remote-uri';
 
-  findDefinition(
-    file: NuclideUri,
-    currentContents: string,
-    line: number,
-    column: number
-  ): Promise<?{file:NuclideUri; line:number; column:number}> {
-    return Promise.reject('Not implemented');
-  }
-  dispose(): Promise<void> {
-    return Promise.reject('Not implemented');
-  }
+type Loc = {
+  file: NuclideUri;
+  line: number;
+  column: number;
+}
 
-  findDiagnostics(
-    file: NuclideUri,
-    currentContents: ?string
-  ): Promise<?{
-      flowRoot: NuclideUri;
-      messages:
-        Array<Array<{
-          path: ?NuclideUri;
-          descr: string;
-          code: number;
-          line: number;
-          endline: number;
-          start: number;
-          end: number;
-        }>>
-    }>
-  /*
-   * Ideally, this would just be Promise<Diagnostics>, but the service
-   * framework doesn't pick up on NuclideUri if it's embedded in a type defined
-   * elsewhere.
-   */
-  {
-    return Promise.reject('Not implemented');
-  }
+import {filter} from 'fuzzaldrin';
 
-  getAutocompleteSuggestions(
-    file: NuclideUri,
-    currentContents: string,
-    line: number,
-    column: number,
-    prefix: string
-  ): Promise<any> {
-    return Promise.reject('Not implemented');
-  }
+var logger = require('nuclide-logging').getLogger();
+import {
+  insertAutocompleteToken,
+  processAutocompleteItem,
+  findFlowConfigDir,
+} from './FlowHelpers.js';
 
-  getType(
-    file: NuclideUri,
-    currentContents: string,
-    line: number,
-    column: number,
-    includeRawType: boolean
-  ): Promise<?{type: string, rawType?: string}> {
-    return Promise.reject('Not implemented');
+import {execFlow, dispose as disposeExecutor} from './FlowExecutor';
+
+export function dispose() {
+  disposeExecutor();
+}
+
+export async function flowFindDefinition(
+  file: NuclideUri,
+  currentContents: string,
+  line: number,
+  column: number
+): Promise<?Loc> {
+  var options = {};
+  // We pass the current contents of the buffer to Flow via stdin.
+  // This makes it possible for get-def to operate on the unsaved content in
+  // the user's editor rather than what is saved on disk. It would be annoying
+  // if the user had to save before using the jump-to-definition feature to
+  // ensure he or she got accurate results.
+  options.stdin = currentContents;
+
+  var args = ['get-def', '--json', '--path', file, line, column];
+  try {
+    var result = await execFlow(args, options, file);
+    if (!result) {
+      return null;
+    }
+    if (result.exitCode === 0) {
+      var json = JSON.parse(result.stdout);
+      if (json['path']) {
+        return {
+          file: json['path'],
+          line: json['line'] - 1,
+          column: json['start'] - 1,
+        };
+      } else {
+        return null;
+      }
+    } else {
+      logger.error(result.stderr);
+      return null;
+    }
+  } catch(e) {
+    logger.error(e.stderr);
+    return null;
   }
 }
 
-module.exports = FlowService;
+/**
+ * If currentContents is null, it means that the file has not changed since
+ * it has been saved, so we can avoid piping the whole contents to the Flow
+ * process.
+ */
+export async function flowFindDiagnostics(
+  file: NuclideUri,
+  currentContents: ?string
+): Promise<?Diagnostics> {
+  var options = {};
+
+  var args;
+  if (currentContents) {
+    options.stdin = currentContents;
+
+    // Currently, `flow check-contents` returns all of the errors in the
+    // project. It would be nice if it would use the path for filtering, as
+    // currently the client has to do the filtering.
+    args = ['check-contents', '--json', file];
+  } else {
+    // We can just use `flow status` if the contents are unchanged.
+    args = ['status', '--json', file];
+  }
+
+  var result;
+
+  // Dispatch both of these requests so they happen in parallel.
+  var flowResultPromise = execFlow(args, options, file);
+  var flowRootPromise = findFlowConfigDir(file);
+  try {
+    result = await flowResultPromise;
+    if (!result) {
+      return null;
+    }
+  } catch (e) {
+    // This codepath will be exercised when Flow finds type errors as the
+    // exit code will be non-zero. Note this codepath could also be exercised
+    // due to a logical error in Nuclide, so we try to differentiate.
+    if (e.exitCode !== undefined) {
+      result = e;
+    } else {
+      logger.error(e);
+      return null;
+    }
+  }
+  var flowRoot = await flowRootPromise;
+  if (!flowRoot) {
+    logger.error('Got a Flow result but did not find a flow config path');
+    return null;
+  }
+
+  var json;
+  try {
+    json = JSON.parse(result.stdout);
+  } catch (e) {
+    logger.error(e);
+    return null;
+  }
+
+  return {
+    flowRoot,
+    messages: json['errors'].map(diagnostic => {
+      const message = diagnostic['message'];
+      // `message` is a list of message components
+      message.forEach(component => {
+        if (!component.path) {
+          // Use a consistent 'falsy' value for the empty string, undefined, etc. Flow returns the
+          // empty string instead of null when there is no relevant path.
+          // TODO(t8644340) Remove this when Flow is fixed.
+          component.path = null;
+        }
+      });
+      return message;
+    }),
+  };
+}
+
+export async function flowGetAutocompleteSuggestions(
+  file: NuclideUri,
+  currentContents: string,
+  line: number,
+  column: number,
+  prefix: string
+): Promise<any> {
+  var options = {};
+
+  var args = ['autocomplete', '--json', file];
+
+  options.stdin = insertAutocompleteToken(currentContents, line, column);
+  try {
+    var result = await execFlow(args, options, file);
+    if (!result) {
+      return [];
+    }
+    if (result.exitCode === 0) {
+      var json = JSON.parse(result.stdout);
+      // If it is just whitespace and punctuation, ignore it (this keeps us
+      // from eating leading dots).
+      var replacementPrefix = /^[\s.]*$/.test(prefix) ? '' : prefix;
+      var candidates = json.map(item => processAutocompleteItem(replacementPrefix, item));
+      return filter(candidates, replacementPrefix, { key: 'displayText' });
+    } else {
+      return [];
+    }
+  } catch (_) {
+    return [];
+  }
+}
+
+export async function flowGetType(
+  file: NuclideUri,
+  currentContents: string,
+  line: number,
+  column: number,
+  includeRawType: boolean,
+): Promise<?{type: string, rawType?: string}> {
+  var options = {};
+
+  options.stdin = currentContents;
+
+  line = line + 1;
+  column = column + 1;
+  var args = ['type-at-pos', '--json', '--path', file, line, column];
+  if (includeRawType) {
+    args.push('--raw');
+  }
+
+  var output;
+  try {
+    var result = await execFlow(args, options, file);
+    if (!result) {
+      return null;
+    }
+    output = result.stdout;
+    if (output === '') {
+      // if there is a syntax error, Flow returns the JSON on stderr while
+      // still returning a 0 exit code (t8018595)
+      output = result.stderr;
+    }
+  } catch (e) {
+    logger.error('flow type-at-pos failed: ' + file + ':' + line + ':' + column, e);
+    return null;
+  }
+  var json;
+  try {
+    json = JSON.parse(output);
+  } catch (e) {
+    logger.error('invalid JSON from flow type-at-pos: ' + e);
+    return null;
+  }
+  var type = json['type'];
+  var rawType = json['raw_type'];
+  if (!type || type === '(unknown)' || type === '') {
+    if (type === '') {
+      // This should not happen. The Flow team believes it's an error in Flow
+      // if it does. I'm leaving the condition here because it used to happen
+      // before the switch to JSON and I'd rather log something than have the
+      // user experience regress in case I'm wrong.
+      logger.error('Received empty type hint from `flow type-at-pos`');
+    }
+    return null;
+  }
+  return {type, rawType};
+}

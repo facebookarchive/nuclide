@@ -125,7 +125,9 @@ class FlowDiagnosticsProvider {
 
     var flowService = getServiceByNuclideUri('FlowService', file);
     invariant(flowService);
-    var result = await this._requestSerializer.run(flowService.findDiagnostics(file, currentContents));
+    var result = await this._requestSerializer.run(
+      flowService.flowFindDiagnostics(file, currentContents)
+    );
     if (result.status === 'outdated') {
       return;
     }

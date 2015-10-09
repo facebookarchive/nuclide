@@ -10,6 +10,11 @@
     "name": "BuckProject"
   },
   {
+    "definition": "nuclide-flow-base/lib/FlowService.def",
+    "implementation": "nuclide-flow-base/lib/FlowService.js",
+    "name": "FlowService"
+  },
+  {
     "name": "InfoService",
     "definition": "lib/services/InfoService.def",
     "implementation": "lib/services/InfoService.js"

@@ -25,7 +25,7 @@ class FlowAutocompleteProvider {
 
     var flowService = require('nuclide-client').getServiceByNuclideUri('FlowService', file);
     invariant(flowService);
-    return flowService.getAutocompleteSuggestions(file, contents, line, col, prefix);
+    return flowService.flowGetAutocompleteSuggestions(file, contents, line, col, prefix);
   }
 }
 
