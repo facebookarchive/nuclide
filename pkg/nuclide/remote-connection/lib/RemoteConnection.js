@@ -30,7 +30,7 @@ type HeartbeatNotification = {
   code: string;
 }
 
-type RemoteConnectionConfiguration = {
+export type RemoteConnectionConfiguration = {
   host: string; // host nuclide server is running on.
   port: number; // port to connect to.
   cwd: string; // Path to remote directory user should start in upon connection.

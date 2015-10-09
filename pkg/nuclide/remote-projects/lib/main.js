@@ -11,10 +11,26 @@
 
 import type RemoteProjectsController from './RemoteProjectsController';
 import type {HomeFragments} from 'nuclide-home-interfaces';
+import type {RemoteConnectionConfiguration} from 'nuclide-remote-connection/lib/RemoteConnection';
+
+import invariant from 'assert';
+
+/**
+ * Version of RemoteConnectionConfiguration that uses string instead of Buffer for fields so it can
+ * be translated directly to/from JSON.
+ */
+type SerializableRemoteConnectionConfiguration = {
+  host: string;
+  port: number;
+  cwd: string;
+  certificateAuthorityCertificate?: string;
+  clientCertificate?: string;
+  clientKey?: string;
+}
 
 var {CompositeDisposable, TextEditor} = require('atom');
 
-var subscriptions: ?CompositeDisposable = null;
+var packageSubscriptions: ?CompositeDisposable = null;
 var controller: ?RemoteProjectsController = null;
 var CLOSE_PROJECT_DELAY_MS = 100;
 
@@ -26,11 +42,14 @@ function getLogger() {
 }
 
 var RemoteConnection = null;
-function getRemoteConnection(): RemoteConnection {
-  return RemoteConnection || (RemoteConnection = require('nuclide-remote-connection').RemoteConnection);
+function getRemoteConnection() {
+  return RemoteConnection ||
+    (RemoteConnection = require('nuclide-remote-connection').RemoteConnection);
 }
 
-async function createRemoteConnection(remoteProjectConfig: RemoteConnectionConfiguration): Promise<?RemoteConnection> {
+async function createRemoteConnection(
+  remoteProjectConfig: SerializableRemoteConnectionConfiguration,
+): Promise<?RemoteConnection> {
   var RemoteConnection = getRemoteConnection();
 
   try {
@@ -49,8 +68,9 @@ async function createRemoteConnection(remoteProjectConfig: RemoteConnectionConfi
 
 function addRemoteFolderToProject(connection: RemoteConnection) {
   var workingDirectoryUri = connection.getUriForInitialWorkingDirectory();
-  // If restoring state, then the project already exists with local directory and wrong repo instances.
-  // Hence, we remove it here, if existing, and add the new path for which we added a workspace opener handler.
+  // If restoring state, then the project already exists with local directory and wrong repo
+  // instances. Hence, we remove it here, if existing, and add the new path for which we added a
+  // workspace opener handler.
   atom.project.removePath(workingDirectoryUri);
 
   atom.project.addPath(workingDirectoryUri);
@@ -81,7 +101,8 @@ function addRemoteFolderToProject(connection: RemoteConnection) {
     }
 
     var choice = atom.confirm({
-      message: 'No more remote projects on the host: \'' + hostname + '\'. Would you like to shutdown Nuclide server there?',
+      message: 'No more remote projects on the host: \'' + hostname +
+        '\'. Would you like to shutdown Nuclide server there?',
       buttons: ['Shutdown', 'Keep It'],
     });
     if (choice === 1) {
@@ -94,14 +115,16 @@ function addRemoteFolderToProject(connection: RemoteConnection) {
   }
 }
 
-function closeOpenFilesForRemoteProject(remoteProjectConfig: RemoteConnectionConfiguration): Array<string> {
+function closeOpenFilesForRemoteProject(
+  remoteProjectConfig: {host: string, cwd: string},
+): Array<string> {
   var {closeTabForBuffer} = require('nuclide-atom-helpers');
   var {sanitizeNuclideUri} = require('./utils');
 
   var {host: projectHostname, cwd: projectDirectory} = remoteProjectConfig;
   var closedUris = [];
   atom.workspace.getTextEditors().forEach(editor => {
-    var rawUrl = editor.getURI();
+    var rawUrl = editor.getPath();
     if (!rawUrl) {
       return;
     }
@@ -120,37 +143,44 @@ function closeOpenFilesForRemoteProject(remoteProjectConfig: RemoteConnectionCon
 /**
  * Restore a nuclide project state from a serialized state of the remote connection config.
  */
-async function restoreNuclideProjectState(remoteProjectConfig: RemoteConnectionConfiguration) {
+async function restoreNuclideProjectState(
+  remoteProjectConfig: SerializableRemoteConnectionConfiguration,
+) {
   // TODO use the rest of the config for the connection dialog.
   var {host: projectHostname, cwd: projectDirectory} = remoteProjectConfig;
   // try to re-connect, then, add the project to atom.project and the tree.
   var connection = await createRemoteConnection(remoteProjectConfig);
   if (!connection) {
-    getLogger().info('No RemoteConnection returned on restore state trial:', projectHostname, projectDirectory);
+    getLogger().info(
+      'No RemoteConnection returned on restore state trial:',
+      projectHostname,
+      projectDirectory,
+    );
   }
   // Reload the project files that have empty text editors/buffers open.
   var closedUris = closeOpenFilesForRemoteProject(remoteProjectConfig);
-  // On Atom restart, it tries to open the uri path as a file tab because it's not a local directory.
-  // Hence, we close it in the cleanup, because we have the needed connection config saved
-  // with the last opened files in the package state.
+  // On Atom restart, it tries to open the uri path as a file tab because it's not a local
+  // directory. Hence, we close it in the cleanup, because we have the needed connection config
+  // saved with the last opened files in the package state.
   if (connection) {
     closedUris.forEach(uri => atom.workspace.open(uri));
   }
 }
 
-function cleanupRemoteNuclideProjects() {
-  getRemoteRootDirectories().forEach(directory => atom.project.removePath(directory.getPath()));
-}
-
-function getRemoteRootDirectories() {
-  return atom.project.getDirectories().filter(directory => directory.getPath().startsWith('nuclide:'));
+function getRemoteRootDirectories(): Array<atom$Directory> {
+  // TODO: Use nuclide-remote-uri instead.
+  return atom.project.getDirectories().filter(
+    directory => directory.getPath().startsWith('nuclide:'));
 }
 
 /**
  * The same TextEditor must be returned to prevent Atom from creating multiple tabs
  * for the same file, because Atom doesn't cache pending opener promises.
  */
-async function createEditorForNuclide(connection: RemoteConnection, uri: string): TextEditor {
+async function createEditorForNuclide(
+  connection: RemoteConnection,
+  uri: string,
+): Promise<TextEditor> {
   const existingEditor = atom.workspace.getTextEditors().filter(textEditor => {
     return textEditor.getPath() === uri;
   })[0];
@@ -176,28 +206,43 @@ async function createEditorForNuclide(connection: RemoteConnection, uri: string)
  * @param remoteProjectConfig - The config with the clientKey we want encrypted.
  * @return returns the passed in config with the clientKey encrypted.
  */
-function protectClientKey(remoteProjectConfig: RemoteConnectionConfiguration): RemoteConnectionConfiguration {
-  var {replacePassword} = require('nuclide-keytar-wrapper');
-  var crypto = require('crypto');
+function protectClientKey(
+  remoteProjectConfig: RemoteConnectionConfiguration,
+): SerializableRemoteConnectionConfiguration {
+  let {replacePassword} = require('nuclide-keytar-wrapper');
+  let crypto = require('crypto');
 
-  var sha1 = crypto.createHash('sha1');
+  let sha1 = crypto.createHash('sha1');
   sha1.update(`${remoteProjectConfig.host}:${remoteProjectConfig.port}`);
-  var sha1sum = sha1.digest('hex');
+  let sha1sum = sha1.digest('hex');
 
-  var {salt, password, encryptedString} = encryptString(remoteProjectConfig.clientKey);
-  replacePassword('nuclide.remoteProjectConfig', sha1sum, `${password}`);
+  let {certificateAuthorityCertificate, clientCertificate, clientKey} = remoteProjectConfig;
+  invariant(clientKey);
+  let realClientKey = clientKey.toString(); // Convert from Buffer to string.
+  let {salt, password, encryptedString} = encryptString(realClientKey);
+  replacePassword('nuclide.remoteProjectConfig', sha1sum, password);
 
-  remoteProjectConfig.clientKey = encryptedString + '.' + salt;
+  let clientKeyWithSalt = encryptedString + '.' + salt;
 
-  return remoteProjectConfig;
+  invariant(certificateAuthorityCertificate);
+  invariant(clientCertificate);
+  let buffersAsStrings = {
+    certificateAuthorityCertificate: certificateAuthorityCertificate.toString(),
+    clientCertificate: clientCertificate.toString(),
+    clientKey: clientKeyWithSalt,
+  };
+
+  return {...remoteProjectConfig, ...buffersAsStrings};
 }
 
 /**
- * Decrypts the clientKey of a RemoteConnectionConfiguration.
+ * Decrypts the clientKey of a SerializableRemoteConnectionConfiguration.
  * @param remoteProjectConfig - The config with the clientKey we want encrypted.
  * @return returns the passed in config with the clientKey encrypted.
  */
-function restoreClientKey(remoteProjectConfig: RemoteConnectionConfiguration): RemoteConnectionConfiguration {
+function restoreClientKey(
+  remoteProjectConfig: SerializableRemoteConnectionConfiguration,
+): RemoteConnectionConfiguration {
   var {getPassword} = require('nuclide-keytar-wrapper');
   var crypto = require('crypto');
 
@@ -211,18 +256,29 @@ function restoreClientKey(remoteProjectConfig: RemoteConnectionConfiguration): R
     throw new Error('Cannot find password for encrypted client key');
   }
 
-  var salt;
-  var clientKey;
+  let {certificateAuthorityCertificate, clientCertificate, clientKey} = remoteProjectConfig;
+  invariant(clientKey);
+  let [encryptedString, salt] = clientKey.split('.');
 
-  [clientKey, salt] = remoteProjectConfig.clientKey.split('.');
-
-  if (!clientKey || !salt) {
+  if (!encryptedString || !salt) {
     throw new Error('Cannot decrypt client key');
   }
 
-  remoteProjectConfig.clientKey = decryptString(clientKey, password, salt);
+  let restoredClientKey = decryptString(encryptedString, password, salt);
+  if (!restoredClientKey.startsWith('-----BEGIN RSA PRIVATE KEY-----')) {
+    getLogger().error(
+      `decrypted client key did not start with expected header: ${restoredClientKey}`);
+  }
 
-  return remoteProjectConfig;
+  invariant(certificateAuthorityCertificate);
+  invariant(clientCertificate);
+  let stringsAsBuffers = {
+    certificateAuthorityCertificate: new Buffer(certificateAuthorityCertificate),
+    clientCertificate: new Buffer(clientCertificate),
+    clientKey: new Buffer(restoredClientKey),
+  };
+
+  return {...remoteProjectConfig, ...stringsAsBuffers};
 }
 
 function decryptString(text: string, password: string, salt: string): string {
@@ -239,9 +295,11 @@ function decryptString(text: string, password: string, salt: string): string {
   return decryptedString;
 }
 
-function encryptString(text: string): any {
+function encryptString(text: string): {password: string, salt: string, encryptedString: string} {
   var crypto = require('crypto');
+  // $FlowIssue
   var password = crypto.randomBytes(16).toString('base64');
+  // $FlowIssue
   var salt = crypto.randomBytes(16).toString('base64');
 
   var cipher = crypto.createCipheriv(
@@ -249,7 +307,11 @@ function encryptString(text: string): any {
     new Buffer(password, 'base64'),
     new Buffer(salt, 'base64'));
 
-  var encryptedString = cipher.update(text, 'utf8', 'base64');
+  var encryptedString = cipher.update(
+    text,
+    /* input_encoding */ 'utf8',
+    /* output_encoding */ 'base64',
+  );
   encryptedString += cipher.final('base64');
 
   return {
@@ -265,8 +327,8 @@ module.exports = {
     encryptString,
   },
 
-  activate(state: ?any): void {
-    subscriptions = new CompositeDisposable();
+  activate(state: ?{remoteProjectsConfig: SerializableRemoteConnectionConfiguration[]}): void {
+    let subscriptions = new CompositeDisposable();
 
     var RemoteProjectsController = require('./RemoteProjectsController');
     controller = new RemoteProjectsController();
@@ -287,8 +349,8 @@ module.exports = {
       subscriptions.add(atom.workspace.addOpener((uri = '') => {
         if (uri.startsWith('nuclide:')) {
           var connection = getRemoteConnection().getForUri(uri);
-          // On Atom restart, it tries to open the uri path as a file tab because it's not a local directory.
-          // We can't let that create a file with the initial working directory path.
+          // On Atom restart, it tries to open the uri path as a file tab because it's not a local
+          // directory. We can't let that create a file with the initial working directory path.
           if (connection && uri !== connection.getUriForInitialWorkingDirectory()) {
             if (pendingFiles[uri]) {
               return pendingFiles[uri];
@@ -303,11 +365,14 @@ module.exports = {
 
       // Remove remote projects added in case of reloads.
       // We already have their connection config stored.
-      var remoteProjectsConfig = (state && state.remoteProjectsConfig) || [];
-      remoteProjectsConfig.forEach(restoreNuclideProjectState);
+      let remoteProjectsConfigAsDeserializedJson: SerializableRemoteConnectionConfiguration[] =
+        (state && state.remoteProjectsConfig) || [];
+      remoteProjectsConfigAsDeserializedJson.forEach(restoreNuclideProjectState);
       // Clear obsolete config.
       atom.config.set('nuclide.remoteProjectsConfig', []);
     }));
+
+    packageSubscriptions = subscriptions;
   },
 
   consumeStatusBar(statusBar: Element): void {
@@ -316,12 +381,16 @@ module.exports = {
     }
   },
 
-  serialize(): any {
-    var remoteProjectsConfig = getRemoteRootDirectories()
-        .map(directory => {
-          var connection = getRemoteConnection().getForUri(directory.getPath());
-          return connection && protectClientKey(connection.getConfig());
-        }).filter(config => !!config);
+  // TODO: All of the elements of the array are non-null, but it does not seem possible to convince
+  // Flow of that.
+  serialize(): {remoteProjectsConfig: Array<?SerializableRemoteConnectionConfiguration>} {
+    let remoteProjectsConfig: Array<?SerializableRemoteConnectionConfiguration> =
+      getRemoteRootDirectories()
+        .map((directory: atom$Directory): ?SerializableRemoteConnectionConfiguration => {
+          let connection = getRemoteConnection().getForUri(directory.getPath());
+          return connection ? protectClientKey(connection.getConfig()) : null;
+        })
+        .filter((config: ?SerializableRemoteConnectionConfiguration) => config != null);
     return {
       remoteProjectsConfig,
     };
@@ -329,9 +398,9 @@ module.exports = {
 
   deactivate(): void {
     // This should always be true here, but we do this to appease Flow.
-    if (subscriptions) {
-      subscriptions.dispose();
-      subscriptions = null;
+    if (packageSubscriptions) {
+      packageSubscriptions.dispose();
+      packageSubscriptions = null;
     }
   },
 
