@@ -18,7 +18,7 @@ import type * as DebuggerStore from './DebuggerStore';
 import type * as DebuggerProcessInfo from './DebuggerProcessInfo';
 import type * as Bridge from './Bridge';
 
-function track(...args) {
+function track(...args: any) {
   var trackFunc = require('nuclide-analytics').track;
   trackFunc.apply(null, args);
 }

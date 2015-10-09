@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-var {CompositeDisposable, TextEditor} = require('atom');
+var {CompositeDisposable} = require('atom');
 var BreakpointDisplayController = require('./BreakpointDisplayController.js');
 /* eslint-disable no-unused-vars */
 var BreakpointStore = require('./BreakpointStore');
@@ -37,7 +37,7 @@ class BreakpointManager {
   /**
    * Used for testing.
    */
-  getDisplayControllers(): Set<BreakpointDisplayController> {
+  getDisplayControllers(): Map<atom$TextEditor, BreakpointDisplayController> {
     return this._displayControllers;
   }
 
@@ -51,6 +51,9 @@ class BreakpointManager {
 
   _handleTextEditor(editor: atom$TextEditor) {
     if (!this._displayControllers.has(editor)) {
+      // TODO[jeffreytan]: flow does not seem to accept delegate typing,
+      // need to ask flow team if this is a known issue.
+      // $FlowFixMe
       var controller = new BreakpointDisplayController(this, this._breakpointStore, editor);
       this._displayControllers.set(editor, controller);
     }

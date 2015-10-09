@@ -12,8 +12,8 @@
 var {CompositeDisposable, Disposable} = require('atom');
 import {trackTiming} from 'nuclide-analytics';
 
-import type RemoteControlService from './RemoteControlService';
-import type DebuggerModel from './DebuggerModel';
+import RemoteControlService from './RemoteControlService';
+import DebuggerModel from './DebuggerModel';
 import type {SerializedBreakpoint} from './BreakpointStore';
 
 export type SerializedState = {
@@ -42,7 +42,7 @@ class Activation {
   _panel: ?Object;
 
   constructor(state: ?SerializedState) {
-    var DebuggerModel = require('./DebuggerModel');
+
     this._disposables = new CompositeDisposable();
 
     this._disposables.add(
@@ -181,7 +181,9 @@ module.exports = {
     if (activation) {
       return activation.serialize();
     } else {
-      return {};
+      return {
+        breakpoints: null,
+      };
     }
   },
 
@@ -205,7 +207,6 @@ module.exports = {
   DebuggerProcessInfo: require('./DebuggerProcessInfo'),
 
   provideRemoteControlService(): RemoteControlService {
-    var RemoteControlService = require('./RemoteControlService');
     return new RemoteControlService(() => activation ? activation.getModel() : null);
   },
 };

@@ -23,7 +23,7 @@ class DebuggerProcessInfo {
   }
 
   toString(): string {
-    return this._serviceName + " : " + this.displayString();
+    return this._serviceName + ' : ' + this.displayString();
   }
 
   displayString(): string {
@@ -45,6 +45,10 @@ class DebuggerProcessInfo {
   launch(launchTarget: string): nuclide_debugger$DebuggerInstance {
     throw new Error('abstract method');
   }
+
+  // For debugLLDB().
+  pid: ?number;
+  basepath: ?string;
 }
 
 module.exports = DebuggerProcessInfo;

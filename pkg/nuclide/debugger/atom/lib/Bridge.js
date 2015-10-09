@@ -79,7 +79,7 @@ class Bridge {
     }
   }
 
-  _handleIpcMessage(event: Event & {channel: string; args: any[]}) {
+  _handleIpcMessage(event: {channel: string; args: any[]}) {
     switch (event.channel) {
       case 'notification':
         switch (event.args[0]) {

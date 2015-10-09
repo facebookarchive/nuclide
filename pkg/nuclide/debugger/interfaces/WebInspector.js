@@ -12,6 +12,8 @@
  * These are defined only for code executing in the chrome devtools webview.
  */
 
+/* eslint-disable no-unused-vars */
+
 declare class WebInspector$Object {
   // Hack to call super constructor in WebInspector classes.
   static call(...args?: any[]): void;
@@ -59,6 +61,8 @@ declare class WebInspector$DebuggerModel {
   stepOver(): void;
   stepInto(): void;
   stepOut(): void;
+
+  _parsedScriptSource(sourceUrl: string, sourceUrl: string): void;
 }
 
 declare class WebInspector$BreakpointManager {
@@ -175,7 +179,9 @@ declare class WebInspector$UILocation {
 }
 
 declare class WebInspector$DebuggerWorkspaceBinding {
-  rawLocationToUILocation(rawLocation: WebInspector$DebuggerModel$Location): WebInspector$UILocation;
+  rawLocationToUILocation(
+    rawLocation: WebInspector$DebuggerModel$Location
+  ): WebInspector$UILocation;
 }
 
 declare class WebInspector$UserMetrics {
@@ -187,6 +193,10 @@ declare class WebInspector$NotificationService {
     eventType: string,
     listener: (event: WebInspector$Event) => void,
     thisObject: Object): void;
+}
+
+declare class WebInspector$Streams {
+  static streamWrite(streamId: number, chunk: string): void;
 }
 
 declare var WebInspector: {
@@ -201,6 +211,8 @@ declare var WebInspector: {
   SidebarPane: typeof WebInspector$SidebarPane;
   UserMetrics: typeof WebInspector$UserMetrics;
   Workspace: typeof WebInspector$Workspace;
+  BreakpointManager: typeof WebInspector$BreakpointManager;
+  Streams: typeof WebInspector$Streams;
 
   breakpointManager: WebInspector$BreakpointManager;
   debuggerWorkspaceBinding: WebInspector$DebuggerWorkspaceBinding;

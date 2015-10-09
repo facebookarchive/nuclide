@@ -14,12 +14,6 @@ var DebuggerProcessInfo = require('./DebuggerProcessInfo');
 var DebuggerStore = require('./DebuggerStore');
 var React = require('react-for-atom');
 
-type ProcessInfo = {
-  pid: number;
-  name: string;
-  command: string;
-};
-
 type State = {
   selectedProcess: ?DebuggerProcessInfo;
   processes: Array<DebuggerProcessInfo>;
@@ -120,8 +114,8 @@ var DebuggerSessionSelector = React.createClass({
 });
 
 function compareDebuggerProcessInfo(
-  value: nuclide_debugger$DebuggerProcessInfo,
-  other: nuclide_debugger$DebuggerProcessInfo,
+  value: DebuggerProcessInfo,
+  other: DebuggerProcessInfo,
 ): number {
   var cmp = value.getServiceName().localeCompare(other.getServiceName());
   if (cmp === 0) {

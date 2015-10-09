@@ -180,6 +180,7 @@ class BreakpointDisplayController {
       return;
     }
     // Beware, screenPositionForMouseEvent is not a public api and may change in future versions.
+    // $FlowIssue
     var screenPos = atom.views.getView(this._editor).component.screenPositionForMouseEvent(event);
     var bufferPos = this._editor.bufferPositionForScreenPosition(screenPos);
     this._breakpointStore.toggleBreakpoint(path, bufferPos.row);

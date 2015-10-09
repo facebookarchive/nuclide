@@ -10,10 +10,7 @@
  */
 
 var {array} = require('nuclide-commons');
-
-import type DebuggerActions from './DebuggerActions';
 import type DebuggerModel from './DebuggerModel';
-import type DebuggerStore from './DebuggerStore';
 
 class RemoteControlService {
   _getModel: () => ?DebuggerModel;
@@ -41,7 +38,7 @@ class RemoteControlService {
     var model = modelNullable;
     return model.getStore().getProcessInfoList('lldb')
       .then(processes => {
-        var process = array.find(processes, process => process.pid === pid);
+        var process = array.find(processes, p => p.pid === pid);
         if (process) {
           process.basepath = basepath;
           model.getActions().attachToProcess(process);

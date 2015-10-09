@@ -13,6 +13,7 @@ var NuclideBridge = require('./NuclideBridge');
 var React = require('react');
 var path = require('path');
 var url = require('url');
+import invariant from 'assert';
 
 var WebInspector: typeof WebInspector = window.WebInspector;
 
@@ -30,6 +31,7 @@ var UnresolvedBreakpointsComponent = React.createClass({
   render() {
     var children = this.state.breakpoints.map(breakpoint => {
       var {pathname} = url.parse(breakpoint.url);
+      invariant(pathname);
       var longRep = `${pathname}:${breakpoint.line + 1}`;
       var shortRep = `${path.basename(pathname)}:${breakpoint.line + 1}`;
       return (
@@ -44,11 +46,9 @@ var UnresolvedBreakpointsComponent = React.createClass({
     });
     return (
       <ol className="breakpoint-list">
-        {
-          this.state.breakpoints.length > 0
-            ? children
-            : <div className="info">None</div>
-        }
+        {this.state.breakpoints.length > 0
+          ? children
+          : <div className="info">None</div>}
       </ol>
     );
   },

@@ -1013,6 +1013,7 @@ declare module 'ipc' {
 declare class WebviewElement extends HTMLElement {
   src: string;
   nodeintegration: boolean;
+  disablewebsecurity: boolean;
 
   getTitle(): string;
   send(): void;
