@@ -41,14 +41,15 @@ CERTS_DIR = os.path.join(os.path.expanduser('~'), '.certs')
 CERTS_EXPIRATION_DAYS = 7
 NODE_PATHS = EXTRA_NODE_PATHS + ['/opt/local/bin', '/usr/local/bin']
 
+configure_nuclide_logger()
 
 # This class manages Nuclide servers.
 class NuclideServerManager(object):
     version_file = os.path.join(os.path.dirname(__file__), '../node_modules/nuclide-version/version.json')
+    logger = logging.getLogger('NuclideServerManager')
 
     def __init__(self, options):
         self.options = options
-        self.logger = logging.getLogger('NuclideServerManager')
         self.logger.info('NuclideServerManager was created with these options: {0}'.format(options))
 
     def _is_port_open(self, port):
@@ -81,9 +82,9 @@ class NuclideServerManager(object):
                 version_json = json.load(f)
             version = str(version_json['Version'])
         except IOError as e:
-            self.logger.error('No version.json. Skip version verification.')
+            NuclideServerManager.logger.error('No version.json. Skip version verification.')
         except (KeyError, ValueError) as e:
-            self.logger.error('Corrupted version.json. Skip version verification.')
+            NuclideServerManager.logger.error('Corrupted version.json. Skip version verification.')
         return version
 
     def _ensure_certs_dir(self):
@@ -256,7 +257,6 @@ def get_option_parser():
 
 
 if __name__ == '__main__':
-    configure_nuclide_logger()
     logger = logging.getLogger()
     logger.info('Invoked nuclide_server_manager...')
 
