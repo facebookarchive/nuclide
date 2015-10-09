@@ -17,6 +17,7 @@ var {CompositeDisposable} = require('atom');
 
 var {array} = require('nuclide-commons');
 var {onWorkspaceDidStopChangingActivePaneItem} = require('nuclide-atom-helpers').atomEventDebounce;
+import {trackTiming} from 'nuclide-analytics';
 
 class RecentFilesService {
   // Map uses `Map`'s insertion ordering to keep files in order.
@@ -53,6 +54,7 @@ class RecentFilesService {
   /**
    * Returns a reverse-chronological list of recently opened files.
    */
+  @trackTiming()
   getRecentFiles(): FileList {
     return array.from(this._fileList).reverse().map(pair =>
       ({
