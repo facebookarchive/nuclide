@@ -8,7 +8,6 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-
 var url = require('url');
 var {asyncRequest} = require('./utils');
 var WebSocket = require('ws');
@@ -31,6 +30,21 @@ const MAX_HEARTBEAT_AWAY_RECONNECT_MS = 60000;
 class NuclideSocket extends EventEmitter {
   id: string;
 
+  _serverUri: string;
+  _options: ?NuclideSocketOptions;
+  _reconnectTime: number;
+  _reconnectTimer: ?number; // ID from a setTimeout() call.
+  _connected: boolean;
+  _closed: boolean;
+  _previouslyConnected: boolean;
+  _cachedMessages: Array<{data: any}>;
+  _websocketUri: string;
+  _websocket: ?WebSocket;
+  _heartbeatConnectedOnce: boolean;
+  _lastHeartbeat: ?('here' | 'away');
+  _lastHeartbeatTime: ?number;
+  _heartbeatInterval: ?number;
+
   constructor(serverUri: string, options: ?NuclideSocketOptions) {
     super();
     this._serverUri = serverUri;
@@ -44,8 +58,7 @@ class NuclideSocket extends EventEmitter {
     this._cachedMessages = [];
 
     var {protocol, host} = url.parse(serverUri);
-    var websocketUri = 'ws' + ((protocol === 'https:') ? 's' : '') + '://' + host;
-    this._websocketUri = websocketUri;
+    this._websocketUri = `ws${protocol === 'https:' ? 's' : ''}://${host}`;
 
     this._heartbeatConnectedOnce = false;
     this._lastHeartbeat = null;
@@ -91,7 +104,7 @@ class NuclideSocket extends EventEmitter {
         this._previouslyConnected = true;
         this._cachedMessages.splice(0).forEach(message => this.send(message.data));
       });
-    }
+    };
     websocket.on('open', onSocketOpen);
 
     var onSocketClose = () => {
@@ -127,7 +140,8 @@ class NuclideSocket extends EventEmitter {
 
     websocket.on('message', onSocketMessage);
     // WebSocket inherits from EventEmitter, and doesn't dispose the listeners on close.
-    // Here, I added an expando property function to allow disposing those listeners on the created instance.
+    // Here, I added an expando property function to allow disposing those listeners on the created
+    // instance.
     websocket.dispose = () => {
       websocket.removeListener('open', onSocketOpen);
       websocket.removeListener('close', onSocketClose);
@@ -143,9 +157,10 @@ class NuclideSocket extends EventEmitter {
   }
 
   _cleanWebSocket() {
-    if (this._websocket) {
-      this._websocket.dispose();
-      this._websocket.close();
+    let websocket = this._websocket;
+    if (websocket != null) {
+      websocket.dispose();
+      websocket.close();
       this._websocket = null;
     }
   }
@@ -174,13 +189,19 @@ class NuclideSocket extends EventEmitter {
 
   send(data: any): void {
     // Wrap the data in an object, because if `data` is a primitive data type,
-    // finding it in an array would return the first matching item, not necessarily the same inserted item.
+    // finding it in an array would return the first matching item, not necessarily the same
+    // inserted item.
     var message = {data};
     this._cachedMessages.push(message);
-    if (!this._connected || !this._websocket) {
+    if (!this._connected) {
       return;
     }
-    this._websocket.send(JSON.stringify(data), (err) => {
+
+    let websocket = this._websocket;
+    if (websocket == null) {
+      return;
+    }
+    websocket.send(JSON.stringify(data), (err) => {
       if (err) {
         logger.warn('WebSocket error, but caching the message:', err);
       } else {
@@ -227,12 +248,12 @@ class NuclideSocket extends EventEmitter {
         this._cleanWebSocket();
         this._scheduleReconnect();
       }
-      this._lastHeartbeat  = 'here';
+      this._lastHeartbeat = 'here';
       this._lastHeartbeatTime = now;
       this.emit('heartbeat');
     } catch (err) {
       this._disconnect();
-      this._lastHeartbeat  = 'away';
+      this._lastHeartbeat = 'away';
       // Error code could could be one of:
       // ['ENOTFOUND', 'ECONNREFUSED', 'ECONNRESET', 'ETIMEDOUT']
       // A heuristic mapping is done between the xhr error code to the state of server connection.
@@ -285,7 +306,9 @@ class NuclideSocket extends EventEmitter {
     this._cleanWebSocket();
     this._cachedMessages = [];
     this._reconnectTime = INITIAL_RECONNECT_TIME_MS;
-    clearInterval(this._heartbeatInterval);
+    if (this._heartbeatInterval != null) {
+      clearInterval(this._heartbeatInterval);
+    }
   }
 
   isConnected(): boolean {
