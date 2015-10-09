@@ -23,5 +23,10 @@
     "definition": "nuclide-debugger-hhvm-proxy/lib/HhvmDebuggerProxyService.def",
     "implementation": "nuclide-debugger-hhvm-proxy/lib/HhvmDebuggerProxyService.js",
     "name": "HhvmDebuggerProxyService"
+  },
+  {
+    "definition": "lib/services/SourceControlService.def",
+    "implementation": "lib/services/SourceControlService.js",
+    "name": "SourceControlService"
   }
 ]

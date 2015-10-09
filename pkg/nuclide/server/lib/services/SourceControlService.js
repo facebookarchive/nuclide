@@ -14,13 +14,9 @@
  * See t6913624.
  */
 
-function getHgRepository(directoryPath: string): HgRepositoryDescription {
-  var {findHgRepository} = require('nuclide-source-control-helpers');
-  return findHgRepository(directoryPath);
-}
+import type {HgRepositoryDescription} from 'nuclide-source-control-helpers/lib/hg-repository';
 
-module.exports = {
-  services: {
-    '/sourceControl/getHgRepository': {handler: getHgRepository, method: 'post'},
-  }
-};
+export function getHgRepository(directoryPath: string): Promise<HgRepositoryDescription> {
+  var {findHgRepository} = require('nuclide-source-control-helpers');
+  return Promise.resolve(findHgRepository(directoryPath));
+}

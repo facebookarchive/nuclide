@@ -69,14 +69,9 @@ class RemoteConnection {
   // ::repositoryForDirectorySync, so we need the repo information to already be
   // available when the new path is added. t6913624 tracks cleanup of this.
   async _setHgRepoInfo(): Promise<void> {
-    var eventBus = this.getClient().eventbus;
     var remotePath = this.getPathForInitialWorkingDirectory();
-    var hgRepoDescription = await eventBus.callMethod(
-      /*serviceName*/ 'sourceControl',
-      /*methodName*/ 'getHgRepository',
-      /*methodArgs*/ [remotePath],
-      /*extraOptions*/ {method: 'POST', json: true}
-    );
+    var {getHgRepository} = this.getService('SourceControlService');
+    var hgRepoDescription = await getHgRepository(remotePath);
     this._setHgRepositoryDescription(hgRepoDescription);
   }
 
@@ -429,9 +424,9 @@ class RemoteConnection {
   // TODO(peterhal): The implementation should move from service-manager to here
   // however we should wait until we remove the event-bus and v2 rpc framework
   // before making that change.
-  getService(serviceName: string, serviceOptions: ?any): any {
-    var {getService} = require('./main');
-    return getService(serviceName, this.getRemoteHostname(), serviceOptions);
+  getService(serviceName: string): any {
+    var {getRemoteServiceByRemoteConnection} = require('./main');
+    return getRemoteServiceByRemoteConnection(serviceName, this);
   }
 }
 

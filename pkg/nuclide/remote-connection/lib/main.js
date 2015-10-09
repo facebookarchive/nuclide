@@ -30,6 +30,7 @@ const nuclideClientExports: NuclideClientExports = require('nuclide-commons').si
       getService,
       getServiceLogger,
       getServiceByNuclideUri,
+      getRemoteServiceByRemoteConnection,
     } = require('./client');
     return {
       getClient,
@@ -37,6 +38,7 @@ const nuclideClientExports: NuclideClientExports = require('nuclide-commons').si
       getService,
       getServiceLogger,
       getServiceByNuclideUri,
+      getRemoteServiceByRemoteConnection,
     };
   },
 );
@@ -52,4 +54,5 @@ module.exports = {
   getService: nuclideClientExports.getService,
   getServiceLogger: nuclideClientExports.getServiceLogger,
   getServiceByNuclideUri: nuclideClientExports.getServiceByNuclideUri,
+  getRemoteServiceByRemoteConnection: nuclideClientExports.getRemoteServiceByRemoteConnection,
 };

@@ -37,6 +37,22 @@ RemoteConnection.onDidCloseRemoteConnection((connection: RemoteConnection) => {
 });
 
 /**
+ * Get a remote v3 service by service name and remote connection.
+ */
+function getRemoteServiceByRemoteConnection(
+  serviceName: string,
+  connection: RemoteConnection,
+): ?any {
+  var [serviceConfig] = newServices.filter(config => config.name === serviceName);
+  if (serviceConfig) {
+    return getProxy(serviceConfig.definition, connection.getClient());
+  } else {
+    logger.error('Service %s undefined.', serviceName);
+    return null;
+  }
+}
+
+/**
  * Create or get a cached service with given serviceOptions.
  * @param nuclideUri It could either be either a local path or a remote path in form of
  *    `nuclide:$host:$port/$path`. The function will use the $host from remote path to
@@ -135,4 +151,5 @@ module.exports = {
   getService,
   getServiceByNuclideUri,
   getServiceLogger,
+  getRemoteServiceByRemoteConnection,
 };

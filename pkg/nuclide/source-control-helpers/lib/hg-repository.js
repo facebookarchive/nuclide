@@ -11,7 +11,7 @@
 
 var path = require('path');
 
-type HgRepositoryDescription = {
+export type HgRepositoryDescription = {
   repoPath: ?string;
   originURL: ?string;
   workingDirectoryPath: string;
