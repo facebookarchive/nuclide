@@ -94,6 +94,7 @@ module.exports = {
     return {
       selector: HACK_GRAMMARS_STRING,
       inclusionPriority: 1,
+      providerName: 'nuclide-hack',
 
       typeHint(editor: TextEditor, position: Point): Promise<string> {
         return typeHintProvider.typeHint(editor, position);

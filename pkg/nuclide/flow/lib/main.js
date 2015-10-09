@@ -17,6 +17,8 @@ var {JS_GRAMMARS} = require('./constants.js');
 var GRAMMARS_STRING = JS_GRAMMARS.join(', ');
 var diagnosticsOnFlySetting = 'nuclide-flow.diagnosticsOnFly';
 
+const PACKAGE_NAME = 'nuclide-flow';
+
 function getServiceByNuclideUri(service, file?) {
   return require('nuclide-client').getServiceByNuclideUri(service, file);
 }
@@ -86,7 +88,7 @@ module.exports = {
         flowHyperclickProvider.getSuggestionForWord.bind(flowHyperclickProvider);
     return {
       priority: 20,
-      providerName: 'nuclide-flow',
+      providerName: PACKAGE_NAME,
       getSuggestionForWord,
     };
   },
@@ -116,6 +118,7 @@ module.exports = {
     var typeHint = flowTypeHintProvider.typeHint.bind(flowTypeHintProvider);
     return {
       selector: GRAMMARS_STRING,
+      providerName: PACKAGE_NAME,
       inclusionPriority: 1,
       typeHint,
     };

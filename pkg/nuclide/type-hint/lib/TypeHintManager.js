@@ -13,6 +13,8 @@ var {CompositeDisposable, Disposable} = require('atom');
 
 var {remove} = require('nuclide-commons').array;
 
+import {track, trackOperationTiming} from 'nuclide-analytics';
+
 var TYPEHINT_DELAY_MS = 200;
 
 type HintTree = {
@@ -37,6 +39,9 @@ export type TypeHintProvider = {
   typeHint(editor: TextEditor, bufferPosition: atom$Point): Promise<TypeHint>;
   inclusionPriority: number;
   selector: string;
+  // A unique name for the provider to be used for analytics. It is recommended that it be the name
+  // of the provider's package.
+  providerName: string;
 };
 
 class TypeHintManager {
@@ -138,14 +143,28 @@ class TypeHintManager {
       return;
     }
 
-    var typeHint = await matchingProviders[0].typeHint(editor, position);
+    const provider = matchingProviders[0];
+    let name;
+    if (provider.providerName != null) {
+      name = provider.providerName;
+    } else {
+      name = 'unknown';
+      const logger = require('nuclide-logging').getLogger();
+      logger.error('Type hint provider has no name', provider);
+    }
+
+    // $FlowFixMe
+    const typeHint = await trackOperationTiming(
+      name + '.typeHint',
+      () => provider.typeHint(editor, position),
+    );
     if (!typeHint || this._marker) {
       return;
     }
 
     var {hint, range} = typeHint;
 
-    var {track} = require('nuclide-analytics');
+    // We track the timing above, but we still want to know the number of popups that are shown.
     track('type-hint-popup', {
       'scope': scopeName,
       'message': hint,
