@@ -10,7 +10,7 @@ repositories.
 Specifically, `nuclide-hg-repository` enables the following features when you are
 working in a Mercurial-backed project in Atom:
 * The Nuclide file tree (via the
-[`nuclide-file-tree-deux`](https://atom.io/packages/nuclide-file-tree-deux) package) will highlight
+[`nuclide-file-tree`](https://atom.io/packages/nuclide-file-tree) package) will highlight
 files that are modified, as well as the directories that contain them.
 * The Atom [`git-diff`](https://github.com/atom/git-diff) package will highlight
 the gutter next to lines that have been modified.

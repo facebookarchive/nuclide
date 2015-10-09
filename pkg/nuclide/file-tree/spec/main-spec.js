@@ -15,7 +15,7 @@ describe('main', () => {
   it("disables Atom's builtin tree-view package on activation", () => {
     waitsForPromise(async () => {
       expect(atom.packages.isPackageDisabled('tree-view')).toBe(false);
-      await atom.packages.activatePackage('nuclide-file-tree-deux');
+      await atom.packages.activatePackage('nuclide-file-tree');
       expect(atom.packages.isPackageDisabled('tree-view')).toBe(true);
     });
   });
@@ -24,8 +24,8 @@ describe('main', () => {
   it("keeps Atom's builtin tree-view package disabled on deactivation", () => {
     waitsForPromise(async () => {
       expect(atom.packages.isPackageDisabled('tree-view')).toBe(false);
-      await atom.packages.activatePackage('nuclide-file-tree-deux');
-      atom.packages.deactivatePackage('nuclide-file-tree-deux');
+      await atom.packages.activatePackage('nuclide-file-tree');
+      atom.packages.deactivatePackage('nuclide-file-tree');
       expect(atom.packages.isPackageDisabled('tree-view')).toBe(true);
     });
   });
@@ -33,9 +33,9 @@ describe('main', () => {
   it("re-enables Atom's builtin tree-view package on disable", () => {
     waitsForPromise(async () => {
       expect(atom.packages.isPackageDisabled('tree-view')).toBe(false);
-      await atom.packages.activatePackage('nuclide-file-tree-deux');
-      atom.packages.disablePackage('nuclide-file-tree-deux');
-      atom.packages.deactivatePackage('nuclide-file-tree-deux');
+      await atom.packages.activatePackage('nuclide-file-tree');
+      atom.packages.disablePackage('nuclide-file-tree');
+      atom.packages.deactivatePackage('nuclide-file-tree');
       expect(atom.packages.isPackageDisabled('tree-view')).toBe(false);
     });
   });

@@ -91,20 +91,20 @@ class FileTreeController {
     );
     this._subscriptions.add(
       atom.commands.add('atom-workspace', {
-        'nuclide-file-tree-deux:reveal-active-file': this.revealActiveFile.bind(this),
-        'nuclide-file-tree-deux:toggle': this.toggleVisibility.bind(this),
-        'nuclide-file-tree-deux:toggle-focus': this.toggleTreeFocus.bind(this),
+        'nuclide-file-tree:reveal-active-file': this.revealActiveFile.bind(this),
+        'nuclide-file-tree:toggle': this.toggleVisibility.bind(this),
+        'nuclide-file-tree:toggle-focus': this.toggleTreeFocus.bind(this),
       })
     );
     this._subscriptions.add(
       // TODO: Move to normal menu/ directory when 'nuclide-file-tree' is fully replaced.
       atom.contextMenu.add({
         'atom-pane[data-active-item-path] atom-text-editor': [
-          {command: 'nuclide-file-tree-deux:reveal-active-file', label: 'Reveal in File Tree'},
+          {command: 'nuclide-file-tree:reveal-active-file', label: 'Reveal in File Tree'},
         ],
       })
     );
-    var packagePath = atom.packages.resolvePackagePath('nuclide-file-tree-deux');
+    var packagePath = atom.packages.resolvePackagePath('nuclide-file-tree');
     if (packagePath != null) {
       // Load this package's keymap outside the normal activate/deactive lifecycle so its keymaps
       // are loaded only when users enable this package via its config.
@@ -118,22 +118,22 @@ class FileTreeController {
         'core:move-up': this._moveUp.bind(this),
         'core:move-to-top': this._moveToTop.bind(this),
         'core:move-to-bottom': this._moveToBottom.bind(this),
-        'nuclide-file-tree-deux:add-file': () => {
+        'nuclide-file-tree:add-file': () => {
           FileSystemActions.openAddFileDialog(this._openAndRevealFilePath.bind(this));
         },
-        'nuclide-file-tree-deux:add-folder': () => {
+        'nuclide-file-tree:add-folder': () => {
           FileSystemActions.openAddFolderDialog(this._openAndRevealDirectoryPath.bind(this));
         },
-        'nuclide-file-tree-deux:collapse-directory': this._collapseSelection.bind(this),
-        'nuclide-file-tree-deux:copy-full-path': this._copyFullPath.bind(this),
-        'nuclide-file-tree-deux:expand-directory': this._expandSelection.bind(this),
-        'nuclide-file-tree-deux:open-selected-entry': this._openSelectedEntry.bind(this),
-        'nuclide-file-tree-deux:remove': this._deleteSelection.bind(this),
-        'nuclide-file-tree-deux:remove-project-folder-selection':
+        'nuclide-file-tree:collapse-directory': this._collapseSelection.bind(this),
+        'nuclide-file-tree:copy-full-path': this._copyFullPath.bind(this),
+        'nuclide-file-tree:expand-directory': this._expandSelection.bind(this),
+        'nuclide-file-tree:open-selected-entry': this._openSelectedEntry.bind(this),
+        'nuclide-file-tree:remove': this._deleteSelection.bind(this),
+        'nuclide-file-tree:remove-project-folder-selection':
           this._removeRootFolderSelection.bind(this),
-        'nuclide-file-tree-deux:rename-selection': () => FileSystemActions.openRenameDialog(),
-        'nuclide-file-tree-deux:search-in-directory': this._searchInDirectory.bind(this),
-        'nuclide-file-tree-deux:show-in-file-manager': this._showInFileManager.bind(this),
+        'nuclide-file-tree:rename-selection': () => FileSystemActions.openRenameDialog(),
+        'nuclide-file-tree:search-in-directory': this._searchInDirectory.bind(this),
+        'nuclide-file-tree:show-in-file-manager': this._showInFileManager.bind(this),
       })
     );
     if (state && state.tree) {

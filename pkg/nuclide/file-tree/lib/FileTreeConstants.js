@@ -21,4 +21,4 @@ exports.ActionType = {
   SET_VCS_STATUSES: 'SET_VCS_STATUSES', // VCS = version control system
 };
 
-exports.EVENT_HANDLER_SELECTOR = '.nuclide-file-tree-deux';
+exports.EVENT_HANDLER_SELECTOR = '.nuclide-file-tree';

@@ -51,7 +51,7 @@ class Activation {
     var FileTreeController = require('./FileTreeController');
     this._fileTreeController = new FileTreeController(this._packageState);
 
-    const revealSetting = 'nuclide-file-tree-deux.revealFileOnSwitch';
+    const revealSetting = 'nuclide-file-tree.revealFileOnSwitch';
     // Flow does not know that this setting is a boolean, thus the cast.
     this._setRevealOnFileSwitch(((atom.config.get(revealSetting): any): boolean));
     this._subscriptions.add(
@@ -150,7 +150,7 @@ module.exports = {
     // `true`, and so it is checked here to differentiate.
     //
     // @see t8570656
-    if (atom.packages.isPackageDisabled('nuclide-file-tree-deux')) {
+    if (atom.packages.isPackageDisabled('nuclide-file-tree')) {
       atom.packages.enablePackage('tree-view');
     }
   },

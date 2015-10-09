@@ -49,11 +49,11 @@ class FileTreeContextMenu {
         submenu: [
           {
             label: 'File',
-            command: 'nuclide-file-tree-deux:add-file',
+            command: 'nuclide-file-tree:add-file',
           },
           {
             label: 'Folder',
-            command: 'nuclide-file-tree-deux:add-folder',
+            command: 'nuclide-file-tree:add-folder',
           },
         ],
       },
@@ -69,7 +69,7 @@ class FileTreeContextMenu {
       },
       {
         label: 'Remove Project Folder',
-        command: 'nuclide-file-tree-deux:remove-project-folder-selection',
+        command: 'nuclide-file-tree:remove-project-folder-selection',
         shouldDisplay: () => {
           var node = this._store.getSingleSelectedNode();
           return node != null && node.isRoot;
@@ -79,7 +79,7 @@ class FileTreeContextMenu {
     this._addContextMenuItemGroup([
       {
         label: 'Rename',
-        command: 'nuclide-file-tree-deux:rename-selection',
+        command: 'nuclide-file-tree:rename-selection',
         shouldDisplay: () => {
           var node = this._store.getSingleSelectedNode();
           // For now, rename does not apply to root nodes.
@@ -88,7 +88,7 @@ class FileTreeContextMenu {
       },
       {
         label: 'Delete',
-        command: 'nuclide-file-tree-deux:remove',
+        command: 'nuclide-file-tree:remove',
         shouldDisplay: () => {
           var nodes = this._store.getSelectedNodes();
           // We can delete multiple nodes as long as no root node is selected
@@ -99,7 +99,7 @@ class FileTreeContextMenu {
     this._addContextMenuItemGroup([
       {
         label: 'Copy Full Path',
-        command: 'nuclide-file-tree-deux:copy-full-path',
+        command: 'nuclide-file-tree:copy-full-path',
         shouldDisplay: () => {
           var node = this._store.getSingleSelectedNode();
           return node != null;
@@ -107,22 +107,22 @@ class FileTreeContextMenu {
       },
       {
         label: 'Show in Finder', // Mac OS X
-        command: 'nuclide-file-tree-deux:show-in-file-manager',
+        command: 'nuclide-file-tree:show-in-file-manager',
         shouldDisplay: this._shouldDisplayShowInFileManager.bind(this, 'darwin'),
       },
       {
         label: 'Show in Explorer', // Windows
-        command: 'nuclide-file-tree-deux:show-in-file-manager',
+        command: 'nuclide-file-tree:show-in-file-manager',
         shouldDisplay: this._shouldDisplayShowInFileManager.bind(this, 'win32'),
       },
       {
         label: 'Show in File Manager', // Linux
-        command: 'nuclide-file-tree-deux:show-in-file-manager',
+        command: 'nuclide-file-tree:show-in-file-manager',
         shouldDisplay: this._shouldDisplayShowInFileManager.bind(this, 'linux'),
       },
       {
         label: 'Search in Directory',
-        command: 'nuclide-file-tree-deux:search-in-directory',
+        command: 'nuclide-file-tree:search-in-directory',
         shouldDisplay: () => {
           var nodes = this._store.getSelectedNodes();
           return nodes.size > 0 && nodes.every(node => node.isContainer);

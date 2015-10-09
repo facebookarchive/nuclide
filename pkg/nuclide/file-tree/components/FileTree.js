@@ -76,7 +76,7 @@ class FileTree extends React.Component {
 
   render(): ReactElement {
     return (
-      <div className="nuclide-file-tree-deux" tabIndex={0}>
+      <div className="nuclide-file-tree" tabIndex={0}>
         {this._renderChildren()}
       </div>
     );

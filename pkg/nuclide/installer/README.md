@@ -16,7 +16,7 @@ Flow, Hack, or Mercurial. Currently, some Atom packages
 have interdependencies that make this tricky.
 
 For example, both `nuclide-hg-repository` and `nuclide-remote-projects`
-need `nuclide-file-tree-deux` to provide their full set of features.
+need `nuclide-file-tree` to provide their full set of features.
 Because only one version of an Atom package can be installed at a time,
 it is critical that all three packages are compatible if they are
 installed together. Installing the full suite of Nuclide packages ensures this
