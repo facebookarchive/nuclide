@@ -10,6 +10,7 @@
  */
 
 var {Directory} = require('atom');
+import {trackTiming} from 'nuclide-analytics';
 
 var logger = null;
 function getLogger() {
@@ -66,11 +67,12 @@ function getRepositoryDescription(directory: Directory): ?mixed {
   }
 }
 
-module.exports = class HgRepositoryProvider {
+export default class HgRepositoryProvider {
   repositoryForDirectory(directory: Directory) {
     return Promise.resolve(this.repositoryForDirectorySync(directory));
   }
 
+  @trackTiming('hg-repository.repositoryForDirectorySync')
   repositoryForDirectorySync(directory: Directory): ?HgRepository {
     try {
       var repositoryDescription = getRepositoryDescription(directory);
