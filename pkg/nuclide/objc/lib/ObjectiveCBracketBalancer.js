@@ -10,6 +10,7 @@
  */
 
 var {Point, Range} = require('atom');
+import {trackOperationTiming} from 'nuclide-analytics';
 
 var GRAMMARS = [
   'source.objc',
@@ -52,15 +53,17 @@ class ObjectiveCBracketBalancer {
 
   _enableInTextEditor(textEditor: TextEditor): void {
     var insertTextSubscription = textEditor.onDidInsertText((event) => {
-      var {range, text} = event;
-      if (text === ']') {
-        var buffer = textEditor.getBuffer();
-        var leftBracketInsertPosition = ObjectiveCBracketBalancer
-          .getOpenBracketInsertPosition(buffer, range.start);
-        if (leftBracketInsertPosition) {
-          buffer.insert(leftBracketInsertPosition, '[');
+      trackOperationTiming('objc:balance-bracket', () => {
+        var {range, text} = event;
+        if (text === ']') {
+          var buffer = textEditor.getBuffer();
+          var leftBracketInsertPosition = ObjectiveCBracketBalancer
+            .getOpenBracketInsertPosition(buffer, range.start);
+          if (leftBracketInsertPosition) {
+            buffer.insert(leftBracketInsertPosition, '[');
+          }
         }
-      }
+      });
     });
     this._editingSubscriptionsMap.set(textEditor, insertTextSubscription);
   }

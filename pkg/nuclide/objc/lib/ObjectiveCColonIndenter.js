@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 var {CompositeDisposable, Range} = require('atom');
+import {trackOperationTiming} from 'nuclide-analytics';
 
 var GRAMMARS = [
   'source.objc',
@@ -55,51 +56,57 @@ class ObjectiveCColonIndenter {
 
   _enableInTextEditor(textEditor: TextEditor): void {
     this._insertTextSubscriptionsMap.set(textEditor, textEditor.onDidInsertText((event) => {
-      var {range, text} = event;
+      trackOperationTiming(
+        'objc:indent-colon',
+        () => {
+          var {range, text} = event;
 
-      // Ignore the inserted text if the user is typing in a string or comment.
-      //
-      // The scope descriptor marks the text with semantic information,
-      // generally used for syntax highlighting.
-      var isNonCodeText = textEditor.scopeDescriptorForBufferPosition(range.start).getScopesArray()
-          .some(scope => scope.startsWith('string') || scope.startsWith('comment'));
-      if (text !== ':' || isNonCodeText) {
-        return;
-      }
+          // Ignore the inserted text if the user is typing in a string or comment.
+          //
+          // The scope descriptor marks the text with semantic information,
+          // generally used for syntax highlighting.
+          var isNonCodeText = textEditor.scopeDescriptorForBufferPosition(range.start)
+            .getScopesArray()
+            .some(scope => scope.startsWith('string') || scope.startsWith('comment'));
+          if (text !== ':' || isNonCodeText) {
+            return;
+          }
 
-      var buffer = textEditor.getBuffer();
+          var buffer = textEditor.getBuffer();
 
-      var currentColonPosition = range.start;
-      var colonColumn =
+          var currentColonPosition = range.start;
+          var colonColumn =
           ObjectiveCColonIndenter.getIndentedColonColumn(buffer, currentColonPosition);
-      if (!colonColumn) {
-        return;
-      }
+          if (!colonColumn) {
+            return;
+          }
 
-      // Fully replace the current line with the properly-indented line.
-      //
-      // 1. Get the current line and strip all the indentation.
-      var line = buffer.lineForRow(currentColonPosition.row);
-      // $FlowIssue This needs to be added to lib/core.js.
-      var unindentedLine = line.trimLeft();
-      // 2. Calculate the amount of indentation the line should end up with.
-      var numberOfIndentCharacters = line.length - unindentedLine.length;
-      var unindentedCurrentColonColumn = currentColonPosition.column - numberOfIndentCharacters;
-      var totalIndentAmount = unindentedCurrentColonColumn >= colonColumn
-          ? 0
-          : colonColumn - unindentedCurrentColonColumn;
-      // 3. Replace the current line with the properly-indented line.
-      textEditor.setTextInBufferRange(
-          buffer.rangeForRow(currentColonPosition.row, /* includeNewline */ false),
-          ' '.repeat(totalIndentAmount) + unindentedLine);
+          // Fully replace the current line with the properly-indented line.
+          //
+          // 1. Get the current line and strip all the indentation.
+          var line = buffer.lineForRow(currentColonPosition.row);
+          // $FlowIssue This needs to be added to lib/core.js.
+          var unindentedLine = line.trimLeft();
+          // 2. Calculate the amount of indentation the line should end up with.
+          var numberOfIndentCharacters = line.length - unindentedLine.length;
+          var unindentedCurrentColonColumn = currentColonPosition.column - numberOfIndentCharacters;
+          var totalIndentAmount = unindentedCurrentColonColumn >= colonColumn
+            ? 0
+            : colonColumn - unindentedCurrentColonColumn;
+          // 3. Replace the current line with the properly-indented line.
+          textEditor.setTextInBufferRange(
+            buffer.rangeForRow(currentColonPosition.row, /* includeNewline */ false),
+            ' '.repeat(totalIndentAmount) + unindentedLine);
 
-      // Move the cursor to right after the inserted colon.
-      var newCursorPosition = [
-        currentColonPosition.row,
-        totalIndentAmount + unindentedCurrentColonColumn + 1,
-      ];
-      textEditor.setCursorBufferPosition(newCursorPosition);
-      textEditor.scrollToBufferPosition(newCursorPosition);
+          // Move the cursor to right after the inserted colon.
+          var newCursorPosition = [
+            currentColonPosition.row,
+            totalIndentAmount + unindentedCurrentColonColumn + 1,
+          ];
+          textEditor.setCursorBufferPosition(newCursorPosition);
+          textEditor.scrollToBufferPosition(newCursorPosition);
+        }
+      );
     }));
   }
 
