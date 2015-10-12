@@ -14,6 +14,18 @@ var subscriptions: ?CompositeDisposable = null;
 
 module.exports = {
 
+  config: {
+    blacklistedLinters: {
+      type: 'array',
+      description: 'Comma-separated list of linter names that should not be displayed',
+      // Flow wants this annotated.
+      default: ([]: Array<string>),
+      items: {
+        type: 'string',
+      },
+    },
+  },
+
   activate(): void {
     if (subscriptions) {
       return;

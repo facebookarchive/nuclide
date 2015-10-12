@@ -45,7 +45,11 @@ export class ArcanistDiagnosticsProvider {
         return;
       }
       const diagnostics = result.result;
-      const fileDiagnostics = diagnostics.map(diagnostic => {
+      const blackListedLinters = new Set(atom.config.get('nuclide-arcanist.blacklistedLinters'));
+      const filteredDiagnostics = diagnostics.filter(diagnostic => {
+        return !blackListedLinters.has(diagnostic.code);
+      });
+      const fileDiagnostics = filteredDiagnostics.map(diagnostic => {
         var range = new Range(
           [diagnostic.row, diagnostic.col],
           [diagnostic.row, textEditor.getBuffer().lineLengthForRow(diagnostic.row)]
