@@ -15,6 +15,7 @@ import type {
 } from 'nuclide-blame-base/lib/blame-types';
 
 var {BLAME_DECORATION_CLASS} = require('./constants');
+import {track, trackTiming} from 'nuclide-analytics';
 var BLAME_GUTTER_DEFAULT_WIDTH = 50;
 var LOADING_SPINNER_ID = 'blame-loading-spinner';
 var MS_TO_WAIT_BEFORE_SPINNER = 2000;
@@ -87,7 +88,6 @@ class BlameGutter {
       atom.notifications.addWarning(`No URL found for ${changeset}.`, {dismissable: true});
     }
 
-    var {track} = require('nuclide-analytics');
     track('blame-gutter-click-revision', {
       editorPath: this._editor.getPath(),
       url,
@@ -149,6 +149,7 @@ class BlameGutter {
   }
 
   // The BlameForEditor completely replaces any previous blame information.
+  @trackTiming('blame-ui.blame-gutter.updateBlame')
   _updateBlame(blameForEditor: BlameForEditor): void {
     if (blameForEditor.size === 0) {
       atom.notifications.addInfo(
