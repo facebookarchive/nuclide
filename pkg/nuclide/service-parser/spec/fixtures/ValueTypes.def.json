@@ -60,6 +60,18 @@
           "kind": "object"
         }
       }
+    },
+    "QualifiedTypeNameTest": {
+      "argumentTypes": [
+        {
+          "kind": "named",
+          "name": "fs.Stats"
+        }
+      ],
+      "kind": "function",
+      "returnType": {
+        "kind": "void"
+      }
     }
   },
   "interfaces": {},

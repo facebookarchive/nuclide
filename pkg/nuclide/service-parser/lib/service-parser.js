@@ -269,35 +269,71 @@ class ServiceParser {
    * Helper function that parses annotations of type 'GenericTypeAnnotation'. Meant to be called
    * from parseTypeAnnotation.
    */
-  _parseGenericTypeAnnotation(typeAnnotation) {
+  _parseGenericTypeAnnotation(typeAnnotation): Type {
     assert(typeAnnotation.type === 'GenericTypeAnnotation');
-    switch (typeAnnotation.id.name) {
+    const id = this._parseTypeName(typeAnnotation.id);
+    switch (id) {
       case 'Array':
-      case 'Set':
-      case 'Promise':
-      case 'Observable':
-        this._assert(
-          typeAnnotation,
-          typeAnnotation.typeParameters != null &&
-          typeAnnotation.typeParameters.params.length === 1,
-          `${typeAnnotation.id.name} has exactly one type parameter.`);
         return {
-          kind: typeAnnotation.id.name.toLowerCase(),
-          type: this._parseTypeAnnotation(typeAnnotation.typeParameters.params[0]),
+          kind: 'array',
+          type: this._parseGenericTypeParameterOfKnownType(id, typeAnnotation),
+        };
+      case 'Set':
+        return {
+          kind: 'set',
+          type: this._parseGenericTypeParameterOfKnownType(id, typeAnnotation),
+        };
+      case 'Promise':
+        return {
+          kind: 'promise',
+          type: this._parseGenericTypeParameterOfKnownType(id, typeAnnotation),
+        };
+      case 'Observable':
+        return {
+          kind: 'observable',
+          type: this._parseGenericTypeParameterOfKnownType(id, typeAnnotation),
         };
       case 'Map':
         this._assert(
           typeAnnotation,
           typeAnnotation.typeParameters != null &&
           typeAnnotation.typeParameters.params.length === 2,
-          `${typeAnnotation.id.name} takes exactly two type parameters.`);
+          `${id} takes exactly two type parameters.`);
         return {
           kind: 'map',
           keyType: this._parseTypeAnnotation(typeAnnotation.typeParameters.params[0]),
           valueType: this._parseTypeAnnotation(typeAnnotation.typeParameters.params[1]),
         };
       default:
-        return {kind: 'named', name: typeAnnotation.id.name};
+        // Named types are represented as Generic types with no type parameters.
+        this._assert(typeAnnotation, typeAnnotation.typeParameters == null,
+            `Unknown generic type ${id}.`);
+        return {kind: 'named', name: id};
+    }
+  }
+
+  _parseGenericTypeParameterOfKnownType(id: string, typeAnnotation: Object): Type {
+    this._assert(
+      typeAnnotation,
+      typeAnnotation.typeParameters != null &&
+      typeAnnotation.typeParameters.params.length === 1,
+      `${id} has exactly one type parameter.`);
+    return this._parseTypeAnnotation(typeAnnotation.typeParameters.params[0]);
+  }
+
+  /**
+   * Type names may either be simple Identifiers, or they may be
+   * qualified identifiers.
+   */
+  _parseTypeName(type: Object): string {
+    switch (type.type) {
+      case 'Identifier':
+        return type.name;
+      case 'QualifiedTypeIdentifier':
+        assert(type.id.type === 'Identifier');
+        return `${this._parseTypeName(type.qualification)}.${type.id.name}`;
+      default:
+        throw this._error(type, `Expected named type. Found ${type.type}`);
     }
   }
 }

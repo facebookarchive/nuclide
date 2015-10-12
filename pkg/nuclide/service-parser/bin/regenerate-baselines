@@ -1,0 +1,30 @@
+#!/usr/bin/env node --harmony
+
+/*
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ */
+
+// Regenerates the .proxy baseline files in the spec/fixtures directory.
+
+require('nuclide-node-transpiler');
+
+var parseServiceDefinition = require('../lib/service-parser');
+var generateProxy = require('../lib/proxy-generator').default;
+
+var fs = require('fs');
+var path = require('path');
+
+var dir = path.join(__dirname, '../spec/fixtures');
+for (var file of fs.readdirSync(dir)) {
+  if (file.endsWith('.def')) {
+    var definitions = parseServiceDefinition(file, fs.readFileSync(path.join(dir, file), 'utf8'));
+
+    var code = generateProxy(definitions);
+    fs.writeFileSync(
+      path.join(dir, file).replace('.def', '.proxy'), code, 'utf8');
+  }
+}

@@ -77,7 +77,7 @@ export default class TypeRegistry {
    * Register a type by providing both a marshaller and an unmarshaller. The marshaller
    * will be called to transform the type before sending it out onto the network, while the
    * unmarshaller will be called on values incoming from the network.
-   * @param typeName - The string name of the type that the provided marshaller / unmarshaller convert.
+   * @param typeName - The string name of the type that the provided marshallers convert.
    * @param marshaller - Serialize the type.
    * @param unmarshaller - Deserialize the type.
    */

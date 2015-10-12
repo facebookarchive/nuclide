@@ -49,5 +49,12 @@ module.exports = _client => {
     }));
   }
 
+  remoteModule.QualifiedTypeNameTest = function (arg0) {
+    return Promise.all([_client.marshal(arg0, {
+      kind: "named",
+      name: "fs.Stats"
+    })]).then(args => _client.callRemoteFunction("QualifiedTypeNameTest", "void", args));
+  }
+
   return remoteModule;
 }

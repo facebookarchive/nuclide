@@ -17,3 +17,5 @@ export function ValueTypeTestB(arg0: ValueTypeA, arg1: Array<ValueTypeB>):
     field1: string;
     field2: string;
   }> {}
+
+export function QualifiedTypeNameTest(arg0: fs.Stats): void {}
