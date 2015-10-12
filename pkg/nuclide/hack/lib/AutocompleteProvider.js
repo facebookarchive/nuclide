@@ -10,12 +10,14 @@
  */
 
 var {Point, Range} = require('atom');
+import {trackTiming} from 'nuclide-analytics';
 
 var FIELD_ACCESSORS = ['->', '::'];
 var PREFIX_LOOKBACK = Math.max.apply(null, FIELD_ACCESSORS.map(prefix => prefix.length));
 
 class AutocompleteProvider {
 
+  @trackTiming('hack.getAutocompleteSuggestions')
   async getAutocompleteSuggestions(
       request: {editor: TextEditor; bufferPosition: Point; scopeDescriptor: any; prefix: string}):
       Promise<Array<{snippet: string; rightLabel: string}>> {

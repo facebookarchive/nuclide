@@ -10,9 +10,11 @@
  */
 
 var hack = require('./hack');
+import {trackTiming} from 'nuclide-analytics';
 
 class CodeFormatProvider {
 
+  @trackTiming('hack.formatCode')
   formatCode(editor: TextEditor, range: Range): Promise<string> {
     return hack.formatSourceFromEditor(editor, range);
   }

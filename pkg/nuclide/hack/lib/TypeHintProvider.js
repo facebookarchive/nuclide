@@ -10,9 +10,11 @@
  */
 
 var hack = require('./hack');
+import {trackTiming} from 'nuclide-analytics';
 
 module.exports = class TypeHintProvider {
 
+  @trackTiming('hack.typeHint')
   typeHint(editor: TextEditor, position: Point): Promise<TypeHint> {
     return hack.typeHintFromEditor(editor, position);
   }
