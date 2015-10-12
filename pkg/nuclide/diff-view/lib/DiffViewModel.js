@@ -15,7 +15,7 @@ import type {FileChangeState} from './types';
 var {CompositeDisposable, Emitter} = require('atom');
 var {repositoryForPath} = require('nuclide-hg-git-bridge');
 var {HgStatusToFileChangeStatus, FileChangeStatus} = require('./constants');
-var {track} = require('nuclide-analytics');
+var {track, trackTiming} = require('nuclide-analytics');
 
 var {getFileForPath} = require('nuclide-client');
 var logger = require('nuclide-logging').getLogger();
@@ -104,6 +104,7 @@ class DiffViewModel {
     this._updateActiveDiffState(filePath).catch(this._boundHandleInternalError);
   }
 
+  @trackTiming('diff-view.file-change-update')
   async _onDidFileChange(filePath: string): Promise<void> {
     var client = require('nuclide-client').getClient(filePath);
     if (!client) {
@@ -165,6 +166,7 @@ class DiffViewModel {
     this._emitter.emit('active-file-update', state);
   }
 
+  @trackTiming('diff-view.hg-state-update')
   async _fetchHgDiff(filePath: string): Promise<?HgDiffState> {
     // Calling atom.project.repositoryForDirectory gets the real path of the directory,
     // which is another round-trip and calls the repository providers to get an existing repository.
@@ -217,6 +219,7 @@ class DiffViewModel {
     };
   }
 
+  @trackTiming('diff-view.save-file')
   async saveActiveFile(): Promise<void> {
     var {filePath, newContents} = this._activeFileState;
     track('diff-view-save-file', {filePath});
@@ -256,6 +259,7 @@ class DiffViewModel {
     return this._emitter.on('active-file-update', callback);
   }
 
+  @trackTiming('diff-view.fetch-comments')
   async _fetchInlineComponents(): Promise<Array<Object>> {
     var {filePath} = this._activeFileState;
     var uiElementPromises = this._uiProviders.map(provider => provider.composeUiElements(filePath));
