@@ -19,6 +19,11 @@
   position: absolute;
   padding-top: @glyph-height;
   padding-bottom: @glyph-height;
+
+  // Many themes set the editor's scrollbars to z-index: 3. We wish to appear
+  // above the scrollbars because we appear at the atom-workspace's root, which
+  // means we may span multiple panes and hence overlap the leftmost scrollbar.
+  z-index: 4;
 }
 
 .nuclide-diagnostics-gutter-ui-popup-diagnostic {
