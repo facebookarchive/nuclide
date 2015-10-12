@@ -112,9 +112,11 @@ function trackOperationTiming<T>(eventName: string, operation: () => T): T {
     const result = operation();
 
     if (require('nuclide-commons').promises.isPromise(result)) {
-      invariant(result instanceof Promise);
+      // Atom uses a different Promise implementation than Nuclide, so the following is not true:
+      // invariant(result instanceof Promise);
+
       // For the method returning a Promise, track the time after the promise is resolved/rejected.
-      return result.then((value) => {
+      return (result: any).then((value) => {
         tracker.onSuccess();
         return value;
       }, (reason) => {
