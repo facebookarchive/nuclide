@@ -20,4 +20,5 @@ export function findDiagnostics(fileName: NuclideUri): Promise<Array<{
       filePath: NuclideUri,
       row: number,
       col: number,
+      code: ?string,
     }>> {}
