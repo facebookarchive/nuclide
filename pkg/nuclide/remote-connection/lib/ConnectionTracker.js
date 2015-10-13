@@ -20,12 +20,24 @@ export default class ConnectionTracker {
 
   _config: SshConnectionConfiguration;
   _connectionStartTime: number;
+  _promptYubikeyTime: number;
+  _finishYubikeyTime: number;
   _expired: boolean;
 
   constructor(config: SshConnectionConfiguration) {
     this._config = config;
     this._expired = false;
     this._connectionStartTime = Date.now();
+    this._promptYubikeyTime = 0;
+    this._finishYubikeyTime = 0;
+  }
+
+  trackPromptYubikeyInput(): void {
+    this._promptYubikeyTime = Date.now();
+  }
+
+  trackFinishYubikeyInput(): void {
+    this._finishYubikeyTime = Date.now();
   }
 
   trackSuccess(): void {
@@ -41,12 +53,22 @@ export default class ConnectionTracker {
       return;
     }
 
+    const preYubikeyDuration =
+      this._promptYubikeyTime > 0 ? (this._promptYubikeyTime - this._connectionStartTime) : 0;
+    const postYubikeyDuration =
+      this._finishYubikeyTime > 0 ? (Date.now() - this._finishYubikeyTime) : 0;
+    const realDuration = (preYubikeyDuration > 0 && postYubikeyDuration > 0) ?
+      (preYubikeyDuration + postYubikeyDuration) : 0;
+
     track(
       CONNECTION_EVENT,
       {
         error: succeed ? '0' : '1',
         exception: e ? error.stringifyError(e) : '',
         duration: (Date.now() - this._connectionStartTime).toString(),
+        preYubikeyDuration: preYubikeyDuration.toString(),
+        postYubikeyDuration: postYubikeyDuration.toString(),
+        realDuration: realDuration.toString(),
         host: this._config.host,
         sshPort: this._config.sshPort.toString(),
         username: this._config.username,

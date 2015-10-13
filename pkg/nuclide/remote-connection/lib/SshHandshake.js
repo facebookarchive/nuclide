@@ -361,21 +361,39 @@ export function decorateSshConnectionDelegateWithTracking(
   var connectionTracker;
 
   return {
-    onKeyboardInteractive: delegate.onKeyboardInteractive.bind(delegate),
+    onKeyboardInteractive: (
+      name: string,
+      instructions: string,
+      instructionsLang: string,
+      prompts: Array<{prompt: string; echo: boolean;}>,
+      finish: (answers: Array<string>) => void,
+    ) => {
+      invariant(connectionTracker);
+      connectionTracker.trackPromptYubikeyInput();
+      delegate.onKeyboardInteractive(
+        name,
+        instructions,
+        instructionsLang,
+        prompts,
+        (answers) => {
+          invariant(connectionTracker);
+          connectionTracker.trackFinishYubikeyInput();
+          finish(answers);
+        },
+      );
+    },
     onWillConnect: (config: SshConnectionConfiguration) => {
       connectionTracker = new ConnectionTracker(config);
       delegate.onWillConnect(config);
     },
     onDidConnect: (connection: RemoteConnection, config: SshConnectionConfiguration) => {
-      if (connectionTracker) {
-        connectionTracker.trackSuccess();
-      }
+      invariant(connectionTracker);
+      connectionTracker.trackSuccess();
       delegate.onDidConnect(connection, config);
     },
     onError: (error: Error, config: SshConnectionConfiguration) => {
-      if (connectionTracker) {
-        connectionTracker.trackFailure(error);
-      }
+      invariant(connectionTracker);
+      connectionTracker.trackFailure(error);
       delegate.onError(error, config);
     },
   };
