@@ -89,13 +89,13 @@ class DiffViewComponent extends React.Component {
       atom.views.getView(this._paneContainer)
     );
 
-    var oldTextEditor = this._oldEditorComponent.getEditorModel();
-    var newTextEditor = this._newEditorComponent.getEditorModel();
+    var oldTextEditorElement = this._oldEditorComponent.getEditorDomElement();
+    var newTextEditorElement = this._newEditorComponent.getEditorDomElement();
 
     var SyncScroll = require('./SyncScroll');
     subscriptions.add(new SyncScroll(
-        oldTextEditor,
-        newTextEditor,
+        oldTextEditorElement,
+        newTextEditorElement,
       )
     );
 

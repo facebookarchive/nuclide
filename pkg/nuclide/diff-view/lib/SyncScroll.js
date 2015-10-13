@@ -13,19 +13,30 @@ var {CompositeDisposable} = require('atom');
 
 class SyncScroll {
 
-  constructor(editor1: TextEditor, editor2: TextEditor) {
+  constructor(editor1Element: HTMLElement, editor2Element: HTMLElement) {
+    // Atom master and releases after v1.0.18 will change the scroll logic to the editor element.
+    var editor1ScrollElement = editor1Element;
+    var editor2ScrollElement = editor2Element;
+    if (editor1Element.onDidChangeScrollTop === undefined) {
+      // As of Atom v1.0.18 and lower, the `TextEditor` is the controller
+      // of the scroll functionality.
+      editor1ScrollElement = editor1Element.getModel();
+      editor2ScrollElement = editor2Element.getModel();
+    }
     this._subscriptions = new CompositeDisposable();
     this._syncInfo = [{
-      editor: editor1,
+      scrollElement: editor1ScrollElement,
       scrolling: false,
     }, {
-      editor: editor2,
+      scrollElement: editor2ScrollElement,
       scrolling: false,
     }];
 
     this._syncInfo.forEach((editorInfo, i) => {
       // Note that `onDidChangeScrollTop` isn't technically in the public API.
-      this._subscriptions.add(editorInfo.editor.onDidChangeScrollTop(() => this._scrollPositionChanged(i)));
+      this._subscriptions.add(editorInfo.scrollElement.onDidChangeScrollTop(
+        () => this._scrollPositionChanged(i))
+      );
     });
   }
 
@@ -35,10 +46,10 @@ class SyncScroll {
     if (thisInfo.scrolling) {
       return;
     }
-    var {editor: thisEditor} = thisInfo;
-    var {editor: otherEditor} = otherInfo;
+    var {scrollElement: thisElement} = thisInfo;
+    var {scrollElement: otherElement} = otherInfo;
     otherInfo.scrolling = true;
-    otherEditor.setScrollTop(thisEditor.getScrollTop());
+    otherElement.setScrollTop(thisElement.getScrollTop());
     otherInfo.scrolling = false;
   }
 

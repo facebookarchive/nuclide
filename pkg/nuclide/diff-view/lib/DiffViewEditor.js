@@ -12,6 +12,7 @@
 var {Range}  = require('atom');
 var {buildLineRangesWithOffsets} = require('./editor-utils');
 var React = require('react-for-atom');
+var logger = require('nuclide-logging').getLogger();
 
 import type {InlineComponent, RenderedComponent} from './types';
 
@@ -147,12 +148,20 @@ module.exports = class DiffViewEditor {
     // When the diff view is editable: upon edits in the new editor, the old editor needs to update its
     // rendering state to show the offset wrapped lines.
     // This isn't a public API, but came from a discussion on the Atom public channel.
-    // Needed Atom API: Request a full re-render from an editor.
     this._editor.displayBuffer.updateAllScreenLines();
-    var component = this._editorElement.component;
-    if (component && component.presenter) {
-      component.presenter.updateState();
+    const component = this._editorElement.component || {};
+    const {presenter} = component;
+    if (!presenter) {
+      logger.error('No text editor presenter is wired up to the Diff View text editor!');
+      return;
     }
+    if (typeof presenter.updateState === 'function') {
+      // Atom until v1.0.18 has updateState to force re-rendering of editor state.
+      // This is needed to request a full re-render from the editor.
+      presenter.updateState();
+    }
+    // Atom master after v1.0.18 has will know when it has changed lines or decorations,
+    // and will auto-update.
   }
 
   _buildScreenLinesWithOffsets(startBufferRow: number, endBufferRow: number): LineRangesWithOffsets {
