@@ -117,7 +117,7 @@ declare var jasmine: {
   attachToDOM(element: HTMLElement): ?HTMLElement;
 
   createSpy(name?: string): JasmineSpy;
-  createSpyObj(name: string, spyNames: Array<string>): mixed;
+  createSpyObj(name: string, spyNames: Array<string>): {[key: string]: JasmineSpy};
   getEnv(): JasmineEnvironment;
   pp(value: mixed): string;
   unspy(obj: Object, prop: string): void;
