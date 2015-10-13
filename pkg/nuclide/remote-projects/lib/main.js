@@ -14,6 +14,8 @@ import type {HomeFragments} from 'nuclide-home-interfaces';
 import type {RemoteConnectionConfiguration} from 'nuclide-remote-connection/lib/RemoteConnection';
 
 import invariant from 'assert';
+import {getOpenFileEditorForRemoteProject} from './utils';
+import {CompositeDisposable, TextEditor} from 'atom';
 
 /**
  * Version of RemoteConnectionConfiguration that uses string instead of Buffer for fields so it can
@@ -28,13 +30,11 @@ type SerializableRemoteConnectionConfiguration = {
   clientKey?: string;
 }
 
-var {CompositeDisposable, TextEditor} = require('atom');
-
 var packageSubscriptions: ?CompositeDisposable = null;
 var controller: ?RemoteProjectsController = null;
-var CLOSE_PROJECT_DELAY_MS = 100;
 
-var pendingFiles = {};
+const CLOSE_PROJECT_DELAY_MS = 100;
+const pendingFiles = {};
 
 var logger = null;
 function getLogger() {
@@ -115,29 +115,16 @@ function addRemoteFolderToProject(connection: RemoteConnection) {
   }
 }
 
-function closeOpenFilesForRemoteProject(
-  remoteProjectConfig: {host: string, cwd: string},
-): Array<string> {
-  var {closeTabForBuffer} = require('nuclide-atom-helpers');
-  var {sanitizeNuclideUri} = require('./utils');
-
-  var {host: projectHostname, cwd: projectDirectory} = remoteProjectConfig;
-  var closedUris = [];
-  atom.workspace.getTextEditors().forEach(editor => {
-    var rawUrl = editor.getPath();
-    if (!rawUrl) {
-      return;
-    }
-    var uri = sanitizeNuclideUri(rawUrl);
-    var {hostname: fileHostname, path: filePath} = require('nuclide-remote-uri').parse(uri);
-    if (fileHostname === projectHostname && filePath.startsWith(projectDirectory)) {
-      closeTabForBuffer(editor.getBuffer());
-      if (filePath !== projectDirectory) {
-        closedUris.push(uri);
-      }
-    }
-  });
-  return closedUris;
+function closeOpenFilesForRemoteProject(remoteProjectConfig: RemoteConnectionConfiguration): void {
+  const {host: projectHostname, cwd: projectDirectory} = remoteProjectConfig;
+  var openInstances = getOpenFileEditorForRemoteProject(
+    projectHostname,
+    projectDirectory,
+  );
+  for (const openInstance of openInstances) {
+    const {editor, pane} = openInstance;
+    pane.removeItem(editor);
+  }
 }
 
 /**
@@ -147,9 +134,9 @@ async function restoreNuclideProjectState(
   remoteProjectConfig: SerializableRemoteConnectionConfiguration,
 ) {
   // TODO use the rest of the config for the connection dialog.
-  var {host: projectHostname, cwd: projectDirectory} = remoteProjectConfig;
+  const {host: projectHostname, cwd: projectDirectory} = remoteProjectConfig;
   // try to re-connect, then, add the project to atom.project and the tree.
-  var connection = await createRemoteConnection(remoteProjectConfig);
+  const connection = await createRemoteConnection(remoteProjectConfig);
   if (!connection) {
     getLogger().info(
       'No RemoteConnection returned on restore state trial:',
@@ -157,13 +144,30 @@ async function restoreNuclideProjectState(
       projectDirectory,
     );
   }
-  // Reload the project files that have empty text editors/buffers open.
-  var closedUris = closeOpenFilesForRemoteProject(remoteProjectConfig);
-  // On Atom restart, it tries to open the uri path as a file tab because it's not a local
-  // directory. Hence, we close it in the cleanup, because we have the needed connection config
-  // saved with the last opened files in the package state.
-  if (connection) {
-    closedUris.forEach(uri => atom.workspace.open(uri));
+
+  // On Atom restart, it tries to open uri paths as local `TextEditor` pane items.
+  // Here, Nuclide reloads the remote project files that have empty text editors open.
+  var openInstances = getOpenFileEditorForRemoteProject(
+    projectHostname,
+    projectDirectory,
+  );
+  for (const openInstance of openInstances) {
+    // Keep the original open editor item with a unique name until the remote buffer is loaded,
+    // Then, we are ready to replace it with the remote tab in the same pane.
+    const {pane, editor, uri, filePath} = openInstance;
+    // Here, a unique uri is picked to the pending open pane item to maintain the pane layout.
+    // Otherwise, the open won't be completed because there exists a pane item with the same uri.
+    editor.getBuffer().file.path = `${uri}.to-close`;
+    // Cleanup the old pane item on successful opening or when no connection could be established.
+    const cleanupBuffer = () => pane.removeItem(editor);
+    if (!connection || filePath === projectDirectory) {
+      cleanupBuffer();
+    } else {
+      // If we clean up the buffer before the `openUriInPane` finishes,
+      // the pane will be closed, because it could have no other items.
+      // So we must clean up after.
+      atom.workspace.openURIInPane(uri, pane).then(cleanupBuffer, cleanupBuffer);
+    }
   }
 }
 

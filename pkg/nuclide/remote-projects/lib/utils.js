@@ -12,12 +12,21 @@
 const NUCLIDE_PROTOCOL_PREFIX = 'nuclide:/';
 const NUCLIDE_PROTOCOL_PREFIX_LENGTH = NUCLIDE_PROTOCOL_PREFIX.length;
 
+export type OpenFileEditorInstance = {
+  pane: atom$Pane;
+  editor: atom$TextEditor;
+  uri: NuclideUri;
+  filePath: string;
+};
+
+import {TextEditor} from 'atom';
+
 /**
  * Clean a nuclide URI from the prepended absolute path prefixes and fix
  * the broken uri, in the sense that it's nuclide:/server:897/path/to/dir instead of
  * nuclide://server:897/path/to/dir because Atom called path.normalize() on the directory uri.
  */
-function sanitizeNuclideUri(uri: string): string {
+export function sanitizeNuclideUri(uri: string): string {
   // Remove the leading absolute path prepended to the file paths
   // between atom reloads.
   var protocolIndex = uri.indexOf(NUCLIDE_PROTOCOL_PREFIX);
@@ -34,6 +43,27 @@ function sanitizeNuclideUri(uri: string): string {
   return uri;
 }
 
-module.exports = {
-  sanitizeNuclideUri,
-};
+export function* getOpenFileEditorForRemoteProject(
+  projectHostname: string,
+  projectDirectory: string,
+): Iterator<OpenFileEditorInstance> {
+  for (const pane of atom.workspace.getPanes()) {
+    const paneItems = pane.getItems();
+    for (const paneItem of paneItems) {
+      if (!(paneItem instanceof TextEditor) || !paneItem.getURI()) {
+        // Ignore nn-text editors and new editors with empty uris / paths.
+        continue;
+      }
+      const uri = sanitizeNuclideUri(paneItem.getURI());
+      const {hostname: fileHostname, path: filePath} = require('nuclide-remote-uri').parse(uri);
+      if (fileHostname === projectHostname && filePath.startsWith(projectDirectory)) {
+        yield {
+          pane,
+          editor: paneItem,
+          uri,
+          filePath,
+        };
+      }
+    }
+  }
+}
