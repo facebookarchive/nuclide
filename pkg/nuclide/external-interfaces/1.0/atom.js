@@ -89,6 +89,8 @@ declare class atom$Config {
     }
   ): void;
 
+  getUserConfigPath(): string;
+
   // Undocumented Methods
   save(): void;
 }
