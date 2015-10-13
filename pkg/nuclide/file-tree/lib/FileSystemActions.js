@@ -19,10 +19,10 @@ var FileTreeHelpers = require('./FileTreeHelpers');
 var FileTreeStore = require('./FileTreeStore');
 var FileDialogComponent = require('../components/FileDialogComponent');
 var React = require('react-for-atom');
+var RemoteUri = require('nuclide-remote-uri');
 
 var fs = require('fs');
 var pathModule = require('path');
-var {url} = require('nuclide-commons');
 
 var dialogComponent: ?ReactComponent;
 var dialogHostElement: ?HTMLElement;
@@ -45,7 +45,7 @@ var FileSystemActions = {
         return;
       }
 
-      var {pathname} = url.parse(filePath);
+      var {pathname} = RemoteUri.parse(filePath);
       var basename = pathModule.basename(pathname);
       var newDirectory = directory.getSubdirectory(basename);
       var created = await newDirectory.create();

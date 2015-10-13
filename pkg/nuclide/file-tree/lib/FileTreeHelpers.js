@@ -20,7 +20,6 @@ var {
 } = require('nuclide-remote-connection');
 var RemoteUri = require('nuclide-remote-uri');
 
-var {parse} = require('nuclide-commons').url;
 var pathModule = require('path');
 var url = require('url');
 
@@ -47,7 +46,7 @@ function keyToPath(key: string): string {
 
 function getParentKey(key: string): ?string {
   var path = keyToPath(key);
-  var parsed = parse(path);
+  var parsed = RemoteUri.parse(path);
   parsed.pathname = pathModule.join(parsed.pathname, '..');
   var parentPath = url.format(parsed);
   return dirPathToKey(parentPath);

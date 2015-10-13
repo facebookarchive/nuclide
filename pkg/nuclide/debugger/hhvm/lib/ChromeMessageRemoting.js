@@ -54,7 +54,7 @@ function translateField(obj: Object, field: string, translateUri: (uri: string) 
 }
 
 function translateUriFromServer(hostname: string, port: number, uri: string): string {
-  var components = require('nuclide-commons').url.parse(uri);
+  var components = remoteUri.parse(uri);
   if (components.protocol === 'file:') {
     var result = remoteUri.createRemoteUri(hostname, port, components.pathname);
     log(`Translated URI from ${uri} to ${result}`);

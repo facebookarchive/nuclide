@@ -16,9 +16,27 @@
 
 export type NuclideUri = string;
 
-var REMOTE_PATH_URI_PREFIX = 'nuclide://';
+type ParsedUrl = {
+  auth: ?string;
+  hash: ?string;
+  href: string;
+  host: ?string;
+  // $FlowFixMe
+  hostname: ?string;
+  path: string;
+  pathname: string;
+  // $FlowFixMe
+  port: ?string;
+  protocol: ?string;
+  query: ?any;
+  search: ?string;
+  slashes: ?boolean;
+};
 
-var pathPackage = require('path');
+import invariant from 'assert';
+import pathPackage from 'path';
+
+var REMOTE_PATH_URI_PREFIX = 'nuclide://';
 
 function isRemote(uri: NuclideUri): boolean {
   return uri.startsWith(REMOTE_PATH_URI_PREFIX);
@@ -32,9 +50,24 @@ function createRemoteUri(hostname: string, remotePort: number, remotePath: strin
   return `nuclide://${hostname}:${remotePort}${remotePath}`;
 }
 
-// $FlowIssue: We also had to tag parse() in nuclide-commons with $FlowIssue.
-function parse(uri: NuclideUri): { hostname: ?string; port: ?string; path: string; } {
-  return require('nuclide-commons').url.parse(uri);
+/**
+ * Parses `uri` with Node's `url.parse` and calls `decodeURI` on `href`, `path`, and `pathname` of
+ * the parsed URL object.
+ *
+ * `url.parse` seems to apply encodeURI to the URL, and we typically don't want this behavior.
+ */
+function parse(uri: NuclideUri): ParsedUrl {
+  // $FlowFixMe
+  var parsedUri = require('url').parse(uri);
+  parsedUri.href = decodeURI(parsedUri.href);
+
+  invariant(parsedUri.path);
+  parsedUri.path = decodeURI(parsedUri.path);
+
+  invariant(parsedUri.pathname);
+  parsedUri.pathname = decodeURI(parsedUri.pathname);
+
+  return parsedUri;
 }
 
 function parseRemoteUri(remoteUri: NuclideUri): { hostname: string; port: string; path: string; } {
@@ -148,7 +181,6 @@ function nuclideUriToUri(uri: NuclideUri): string {
     return 'file://' + uri;
   }
 }
-
 
 module.exports = {
   basename,
