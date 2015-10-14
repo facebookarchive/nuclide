@@ -45,6 +45,8 @@ APM_FLOWCONFIG = """\
 [options]
 unsafe.enable_getters_and_setters=true
 esproposal.decorators=ignore
+suppress_comment=.*\\$FlowFixMe.*
+suppress_comment=.*\\$FlowIssue.*
 """
 
 NPM_FLOWCONFIG = """\
@@ -53,10 +55,14 @@ NPM_FLOWCONFIG = """\
 [ignore]
 
 [libs]
+./node_modules/nuclide-external-interfaces/1.0/atom-jasmine.js
+./node_modules/nuclide-external-interfaces/1.0/jasmine.js
 
 [options]
 unsafe.enable_getters_and_setters=true
 esproposal.decorators=ignore
+suppress_comment=.*\\$FlowFixMe.*
+suppress_comment=.*\\$FlowIssue.*
 """
 
 USERNAME = commands.getoutput("whoami")
@@ -104,6 +110,7 @@ ATOM_APM_PACKAGE_JSON_TEMPLATE = """\
   "version": "0.0.0",
   "description": "",
   "nuclide": {
+    "flowCheck": true,
     "packageType": "Atom",
     "testRunner": "apm"
   },
@@ -126,6 +133,7 @@ NODE_APM_PACKAGE_JSON_TEMPLATE = """\
   "version": "0.0.0",
   "description": "",
   "nuclide": {
+    "flowCheck": true,
     "packageType": "Node",
     "testRunner": "apm"
   },
@@ -143,10 +151,12 @@ NODE_NPM_PACKAGE_JSON_TEMPLATE = """\
   "version": "0.0.0",
   "description": "",
   "nuclide": {
+    "flowCheck": true,
     "packageType": "Node",
     "testRunner": "npm"
   },
   "devDependencies": {
+    "nuclide-external-interfaces": "0.0.0",
     "nuclide-jasmine": "0.0.0"
   },
   "scripts": {
