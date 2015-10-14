@@ -103,12 +103,12 @@ function addRemoteFolderToProject(connection: RemoteConnection) {
     var choice = atom.confirm({
       message: 'No more remote projects on the host: \'' + hostname +
         '\'. Would you like to shutdown Nuclide server there?',
-      buttons: ['Shutdown', 'Keep It'],
+      buttons: ['Keep It', 'Shutdown'],
     });
-    if (choice === 1) {
+    if (choice === 0) {
       return connection.close();
     }
-    if (choice === 0) {
+    if (choice === 1) {
       connection.getClient().shutdownServer();
       return connection.close();
     }
