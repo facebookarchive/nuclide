@@ -72,8 +72,8 @@ class NuclideRemoteEventbus {
     }
 
     if (channel === SERVICE_FRAMEWORK3_CHANNEL) {
-      var {requestId, error, result} = message;
-      this._serviceFramework3Emitter.emit(requestId.toString(), error, result);
+      var {requestId, hadError, error, result} = message;
+      this._serviceFramework3Emitter.emit(requestId.toString(), hadError, error, result);
       return;
     }
 

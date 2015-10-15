@@ -226,12 +226,12 @@ class NuclideServer {
 
     this._serviceWithoutServiceFrameworkConfigs.forEach((config: string) => {
       this._registerServiceWithoutServiceFramework(config);
-      logger.info(`Registered service ${config} without ServiceFramework.`);
+      logger.debug(`Registered service ${config} without ServiceFramework.`);
     });
 
     this._serviceWithServiceFrameworkConfigs.forEach(config => {
       this._registerServiceWithServiceFramework(config);
-      logger.info(`Registered service ${config.name} with ServiceFramework.`);
+      logger.debug(`Registered service ${config.name} with ServiceFramework.`);
     });
 
     // Setup error handler.
@@ -434,7 +434,7 @@ class NuclideServer {
   }
 
   _onConnection(socket: WebSocket): void {
-    logger.info('WebSocket connecting');
+    logger.debug('WebSocket connecting');
 
     var subscriptions = {};
     var client = null;

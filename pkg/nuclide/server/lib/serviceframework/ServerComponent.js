@@ -60,20 +60,20 @@ export default class ServerComponent {
 
     var services = loadServicesConfig();
     for (var service of services) {
-      logger.info(`Registering 3.0 service ${service.name}...`);
+      logger.debug(`Registering 3.0 service ${service.name}...`);
       try {
         var defs = getDefinitions(service.definition);
         var localImpl = require(service.implementation);
 
         // Register type aliases.
         defs.aliases.forEach((type, name) => {
-          logger.info(`Registering type alias ${name}...`);
+          logger.debug(`Registering type alias ${name}...`);
           this._typeRegistry.registerAlias(name, type);
         });
 
         // Register module-level functions.
         defs.functions.forEach((type, name) => {
-          logger.info(`Registering function ${name}...`);
+          logger.debug(`Registering function ${name}...`);
           this._functionsByName.set(name,  {
             localImplementation: localImpl[name],
             type: type,
@@ -82,7 +82,7 @@ export default class ServerComponent {
 
         // Register interfaces.
         defs.interfaces.forEach((def, name) => {
-          logger.info(`Registering interface ${name}...`);
+          logger.debug(`Registering interface ${name}...`);
           this._classesByName.set(name,  {
             localImplementation: localImpl[name],
             definition: def,
@@ -106,7 +106,7 @@ export default class ServerComponent {
 
           // Register all of the static methods as remote functions.
           def.staticMethods.forEach((funcType, funcName) => {
-            logger.info(`Registering function ${name}/${funcName}...`);
+            logger.debug(`Registering function ${name}/${funcName}...`);
             this._functionsByName.set(`${name}/${funcName}`,  {
               localImplementation: localImpl[name][funcName],
               type: funcType,
@@ -121,10 +121,12 @@ export default class ServerComponent {
   }
 
   async handleMessage(client: SocketClient, message: RequestMessage): Promise<void> {
-    var requestId = message.requestId;
+    let requestId = message.requestId;
 
-    var returnVal: ?Promise = null;
-    var returnType: PromiseType | ObservableType | VoidType = { kind: 'void' };
+    let returnVal: ?Promise = null;
+    let returnType: PromiseType | ObservableType | VoidType = { kind: 'void' };
+    let callError;
+    let hadError = false;
 
     try {
       switch (message.type) {
@@ -136,8 +138,8 @@ export default class ServerComponent {
           );
 
           // Invoke function and return the results.
-          returnVal = localImplementation.apply(this, transfomedArgs);
           returnType = type.returnType;
+          returnVal = localImplementation.apply(this, transfomedArgs);
           break;
         case 'MethodCall':
           // Get the object.
@@ -153,8 +155,8 @@ export default class ServerComponent {
           );
 
           // Invoke message.
-          returnVal = object[message.method].apply(object, transfomedArgs);
           returnType = type.returnType;
+          returnVal = object[message.method].apply(object, transfomedArgs);
           break;
         case 'NewObject':
           var {localImplementation, definition} = this._classesByName.get(message.interface);
@@ -168,8 +170,8 @@ export default class ServerComponent {
 
           // Return the object, which will automatically be converted to an id through the
           // marshalling system.
-          returnVal = Promise.resolve(object);
           returnType = {kind: 'promise', type: { kind: 'named', name: message.interface }};
+          returnVal = Promise.resolve(object);
           break;
         case 'DisposeObject':
           // Get the object.
@@ -180,11 +182,11 @@ export default class ServerComponent {
           this._objectRegistry.delete(message.objectId);
 
           // Call the object's local dispose function.
+          returnType = {kind: 'promise', type: { kind: 'void'}};
           await object.dispose();
 
           // Return a void Promise
           returnVal = Promise.resolve();
-          returnType = {kind: 'promise', type: { kind: 'void'}};
           break;
         case 'DisposeObservable':
           // Dispose an in-progress observable, before it has naturally completed.
@@ -197,8 +199,9 @@ export default class ServerComponent {
           throw new Error(`Unkown message type ${message.type}`);
       }
     } catch (e) {
-      logger.error(e.message);
-      var callError = e;
+      logger.error(e != null ? e.message : e);
+      callError = e;
+      hadError = true;
     }
 
     switch (returnType.kind) {
@@ -206,7 +209,7 @@ export default class ServerComponent {
         break; // No need to send anything back to the user.
       case 'promise':
         // If there was an error executing the command, we send that back as a rejected promise.
-        if (callError != null) {
+        if (hadError) {
           returnVal = Promise.reject(callError);
         }
 
@@ -225,6 +228,7 @@ export default class ServerComponent {
             type: 'PromiseMessage',
             requestId,
             result,
+            hadError: false,
           };
           this._server._sendSocketMessage(client, resultMessage);
         }, error => {
@@ -232,6 +236,7 @@ export default class ServerComponent {
             channel: 'service_framework3_rpc',
             type: 'ErrorMessage',
             requestId,
+            hadError: true,
             error: formatError(error),
           };
           this._server._sendSocketMessage(client, errorMessage);
@@ -239,7 +244,7 @@ export default class ServerComponent {
         break;
       case 'observable':
         // If there was an error executing the command, we send that back as an error Observable.
-        if (callError != null) {
+        if (hadError) {
           returnVal = Observable.throw(callError);
         }
 
@@ -258,6 +263,7 @@ export default class ServerComponent {
             channel: 'service_framework3_rpc',
             type: 'ObservableMessage',
             requestId,
+            hadError: false,
             result: {
               type: 'next',
               data: data,
@@ -269,6 +275,7 @@ export default class ServerComponent {
             channel: 'service_framework3_rpc',
             type: 'ErrorMessage',
             requestId,
+            hadError: true,
             error: formatError(error),
           };
           this._server._sendSocketMessage(client, errorMessage);
@@ -278,6 +285,7 @@ export default class ServerComponent {
             channel: 'service_framework3_rpc',
             type: 'ObservableMessage',
             requestId,
+            hadError: false,
             result: { type: 'completed' },
           };
           this._server._sendSocketMessage(client, eventMessage);
@@ -321,11 +329,20 @@ function isObservable(object: any): boolean {
 
 /**
  * Format the error before sending over the web socket.
+ * TODO: This should be a custom marshaller registered in the TypeRegistry
  */
-function formatError(error): string {
-  if (error) {
-    return error.stack || error.toString();
+function formatError(error): ?(Object | string) {
+  if (error instanceof Error) {
+    return {
+      message: error.message,
+      code: error.code,
+      stack: error.stack,
+    };
+  } else if (typeof error === 'string') {
+    return error.toString();
+  } else if (error === undefined) {
+    return undefined;
   } else {
-    return 'Undefined Error.';
+    return `Unknown Error: ${error.toString()}`;
   }
 }

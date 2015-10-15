@@ -178,8 +178,8 @@ export default class ClientComponent {
         // Listen for a single message, and resolve or reject a promise on that message.
         return new Promise((resolve, reject) => {
           this._socket.send(message);
-          this._emitter.once(message.requestId.toString(), (error, result) => {
-            error ? reject(error) : resolve(result);
+          this._emitter.once(message.requestId.toString(), (hadError, error, result) => {
+            hadError ? reject(decodeError(error)) : resolve(result);
           });
 
           setTimeout(() => {
@@ -192,18 +192,20 @@ export default class ClientComponent {
           this._socket.send(message);
 
           // Listen for 'next', 'error', and 'completed' events.
-          this._emitter.on(message.requestId.toString(), (error: ?Error, result: ?ObservableResult) => {
-            if (error) {
-              observer.onError(error);
-            } else {
-              invariant(result);
-              if (result.type === 'completed') {
-                observer.onCompleted();
-              } else if (result.type === 'next') {
-                observer.onNext(result.data);
+          this._emitter.on(
+            message.requestId.toString(),
+            (hadError: boolean, error: ?Error, result: ?ObservableResult) => {
+              if (hadError) {
+                observer.onError(decodeError(error));
+              } else {
+                invariant(result);
+                if (result.type === 'completed') {
+                  observer.onCompleted();
+                } else if (result.type === 'next') {
+                  observer.onNext(result.data);
+                }
               }
-            }
-          });
+            });
 
           // Observable dispose function, which is called on subscription dipsose, on stream
           // completion, and on stream error.
@@ -225,5 +227,19 @@ export default class ClientComponent {
       default:
         throw new Error(`Unkown return type: ${returnType}.`);
     }
+  }
+}
+
+// TODO: This should be a custom marshaller registered in the TypeRegistry
+function decodeError(encodedError: ?(Object | string)): ?(Error | string) {
+  if (encodedError != null && typeof encodedError === 'object') {
+    const resultError = new Error();
+    resultError.message = encodedError.message;
+    // $FlowIssue - some Errors (notably file operations) have a code.
+    resultError.code = encodedError.code;
+    resultError.stack = encodedError.stack;
+    return resultError;
+  } else {
+    return encodedError;
   }
 }
