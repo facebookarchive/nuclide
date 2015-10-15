@@ -80,12 +80,15 @@ class TestClassTree extends React.Component {
         // Green/success if all tests passed without skipping any.
         return 'status-added';
       }
+    } else if (!this.props.isRunning) {
+      return 'status-ignored';
     }
   }
 
 }
 
 TestClassTree.propTypes = {
+  isRunning: PropTypes.bool.isRequired,
   testSuiteModel: PropTypes.object,
 };
 

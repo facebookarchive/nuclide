@@ -17,17 +17,17 @@ export type TestClassSummary = {
 };
 
 export type TestRunInfo = {
-  details: string;
+  details?: string;
   durationSecs: number;
-  endedTime: number;
+  endedTime?: number;
   name: string;
   numAssertions: number;
   numFailures: number;
   numMethods: number;
   numSkipped: number;
   status: number;
-  summary: string;
-  test_json: TestClassSummary;
+  summary?: string;
+  test_json?: TestClassSummary;
 };
 
 class TestSuiteModel {
@@ -42,7 +42,9 @@ class TestSuiteModel {
   }
 
   addTestRun(testRun: TestRunInfo): void {
-    this.testRuns.set(testRun.test_json.id, testRun);
+    if (testRun.hasOwnProperty('test_json')) {
+      this.testRuns.set(testRun.test_json.id, testRun);
+    }
   }
 
   /**

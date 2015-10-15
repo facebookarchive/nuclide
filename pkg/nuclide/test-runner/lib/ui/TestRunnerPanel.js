@@ -16,7 +16,6 @@ var {createPaneContainer} = require('nuclide-atom-helpers');
 var React = require('react-for-atom');
 var TestClassTree = require('./TestClassTree');
 
-var {array} = require('nuclide-commons');
 var pathUtil = require('path');
 
 var {PropTypes} = React;
@@ -210,7 +209,10 @@ class TestRunnerPanel extends React.Component {
 
   renderTree() {
     this._tree = React.render(
-      <TestClassTree testSuiteModel={this.props.testSuiteModel} />,
+      <TestClassTree
+        isRunning={this.props.executionState === TestRunnerPanel.ExecutionState.RUNNING}
+        testSuiteModel={this.props.testSuiteModel}
+      />,
       atom.views.getView(this._leftPane).querySelector('.item-views')
     );
   }

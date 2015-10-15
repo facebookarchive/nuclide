@@ -12,15 +12,27 @@
 var TestSuiteModel = require('../lib/TestSuiteModel');
 
 describe('TestSuiteModel', () => {
-
-  var testClassSummaries = [
+  const testClassSummaries = [
     {id: 1, fileName: 'foo', className: 'foo', name: 'foo'},
     {id: 2, fileName: 'bar', className: 'bar', name: 'bar'},
   ];
-  var testRun = {
+
+  const badTestRun = {
+    duration: 0.1,
+    name: 'foo',
     numAssertions: 1,
     numFailures: 0,
     numSkipped: 0,
+    status: 3,
+  };
+
+  const goodTestRun = {
+    duration: 1.1,
+    name: 'foo',
+    numAssertions: 1,
+    numFailures: 0,
+    numSkipped: 0,
+    status: 2,
     test_json: testClassSummaries[0],
   };
 
@@ -32,8 +44,15 @@ describe('TestSuiteModel', () => {
 
   it('calculates progress percent', () => {
     var model = new TestSuiteModel(testClassSummaries);
-    model.addTestRun(testRun);
+    model.addTestRun(goodTestRun);
     expect(model.progressPercent()).toBe(50);
   });
 
+  it('handles bad test runs (invalid syntax in test file, for example)', () => {
+    var model = new TestSuiteModel(testClassSummaries);
+    expect(model.addTestRun.bind(model, badTestRun)).not.toThrow();
+
+    // The bad test run has no ID and so is not added to the TestSuiteModel's summary.
+    expect(model.testRuns.size).toBe(0);
+  });
 });
