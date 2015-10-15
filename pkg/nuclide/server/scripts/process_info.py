@@ -7,8 +7,8 @@
 from __future__ import print_function
 
 import logging
+import os
 import re
-import shlex
 import subprocess
 import utils
 
@@ -60,7 +60,9 @@ class ProcessInfo(object):
 
     def stop(self):
         pid = self.get_pid()
-        args = shlex.split('kill %s' % pid)
+        pgid = os.getpgid(int(pid))
+        # Use KILL signal to force the process group to quit.
+        args = ['kill', '-9', '-%s' % pgid]
         try:
             # Stop existing Nuclide server.
             utils.check_output_silent(args)
