@@ -12,6 +12,8 @@ var DiagnosticsPane = require('./DiagnosticsPane');
 var {PanelComponent} = require('nuclide-ui-panel');
 var React = require('react-for-atom');
 
+import {track} from 'nuclide-analytics';
+
 // This must match the value in diagnostics-table.less.
 var PANEL_HEADER_HEIGHT_IN_PX = 28;
 
@@ -150,7 +152,8 @@ class DiagnosticsPanel extends React.Component {
   }
 
   _onFilterByActiveTextEditorChange(event: SyntheticEvent) {
-    var isChecked = ((event.target: any): HTMLInputElement).checked;
+    const isChecked = ((event.target: any): HTMLInputElement).checked;
+    track('diagnostics-panel-toggle-current-file', {isChecked: isChecked.toString()});
     this.props.onFilterByActiveTextEditorChange.call(null, isChecked);
   }
 }

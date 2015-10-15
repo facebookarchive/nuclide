@@ -10,6 +10,9 @@
  */
 var {Column, Table} = require('fixed-data-table-for-atom');
 var React = require('react-for-atom');
+
+import {track} from 'nuclide-analytics';
+
 var {fileColumnCellDataGetter} = require('./paneUtils');
 
 type textAndType = {text: string, isPlainText: boolean};
@@ -96,6 +99,8 @@ function onRowClick(
   if (rowData.filePath == null) {
     return;
   }
+
+  track('diagnostics-panel-goto-location');
 
   var uri = rowData.filePath;
   var options = {

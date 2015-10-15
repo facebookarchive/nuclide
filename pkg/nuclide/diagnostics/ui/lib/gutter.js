@@ -292,6 +292,7 @@ function createElementForTrace(
       locString += `:${trace.range.start.row + 1}`;
     }
     const onClick = () => {
+      track('diagnostics-gutter-goto-location');
       goToLocation(trace.filePath, Math.max(trace.range ? trace.range.start.row : 0, 0));
     };
     locSpan = <span>: <a href="#" onClick={onClick}>{locString}</a></span>;
