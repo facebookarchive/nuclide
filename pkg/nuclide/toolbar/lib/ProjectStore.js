@@ -70,9 +70,7 @@ class ProjectStore {
     var arcanist = require('nuclide-arcanist-client');
     var arcProjectId = await arcanist.findArcProjectIdOfPath(fileName);
 
-    return remoteUri.isRemote(fileName) &&
-      arcProjectId === ARC_PROJECT_WWW &&
-      (fileName.endsWith('.php') || fileName.endsWith('.hh'));
+    return remoteUri.isRemote(fileName) && arcProjectId === ARC_PROJECT_WWW;
   }
 
   @trackTiming('toolbar.isFileBuckProject')

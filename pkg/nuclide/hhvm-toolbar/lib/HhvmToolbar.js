@@ -14,10 +14,18 @@ var NuclideDropdown = require('nuclide-ui-dropdown');
 var React = require('react-for-atom');
 var {PropTypes} = React;
 
-var DebugOption = {
-  WebServer : 0,
-  Script : 1,
-};
+const WEB_SERVER_OPTION = {label: 'WebServer', value: 0};
+const SCRIPT_OPTION = {label: 'Script', value: 1};
+const DEFAULT_OPTION_INDEX = WEB_SERVER_OPTION.value;
+
+const DEBUG_OPTIONS = [
+  WEB_SERVER_OPTION,
+  SCRIPT_OPTION,
+];
+
+const NO_LAUNCH_DEBUG_OPTIONS = [
+  WEB_SERVER_OPTION,
+];
 
 async function callDebugService(scriptTarget: ?string): Promise {
   // Use commands here to trigger package activation.
@@ -31,25 +39,32 @@ class HhvmToolbar extends React.Component {
   constructor(props: mixed) {
     super(props);
     this.state = {
-      selectedIndex: 0,
-      menuItems: this._getMenuItems(),
+      selectedIndex: DEFAULT_OPTION_INDEX,
     };
     this._debug = this._debug.bind(this);
     this._handleDropdownChange = this._handleDropdownChange.bind(this);
   }
 
-  _getMenuItems(): any {
-    var options = Object.keys(DebugOption);
-    return options.map( option => ({
-      label: option,
-      value: DebugOption[option],
-    }));
+  _getMenuItems(): Array<{label: string, value: number}> {
+    return this._isTargetLaunchable(this.props.targetFilePath)
+      ? DEBUG_OPTIONS
+      : NO_LAUNCH_DEBUG_OPTIONS;
+  }
+
+  _isTargetLaunchable(targetFilePath: string): boolean {
+    return targetFilePath.endsWith('.php') ||
+      targetFilePath.endsWith('.hh');
   }
 
   componentWillReceiveProps(nextProps: Object) {
-    this.refs.debugTarget.setText(
-      this._getDebugTarget(this.state.selectedIndex, nextProps.targetFilePath)
-    );
+    var selectedIndex = this.state.selectedIndex;
+    // Reset selected item to DEFAULT_OPTION_INDEX if target is not launchable anymore.
+    // TODO[jeffreytan]: this is ugly, refactor to make it more elegant.
+    if (!this._isTargetLaunchable(nextProps.targetFilePath)) {
+      selectedIndex = DEFAULT_OPTION_INDEX;
+      this.setState({selectedIndex: selectedIndex});
+    }
+    this.refs.debugTarget.setText(this._getDebugTarget(selectedIndex, nextProps.targetFilePath));
   }
 
   render(): ReactElement {
@@ -59,7 +74,7 @@ class HhvmToolbar extends React.Component {
       <div className="buck-toolbar block">
         <NuclideDropdown
           className="inline-block"
-          menuItems={this.state.menuItems}
+          menuItems={this._getMenuItems()}
           selectedIndex={this.state.selectedIndex}
           onSelectedChange={this._handleDropdownChange}
           ref="dropdown"
@@ -84,7 +99,7 @@ class HhvmToolbar extends React.Component {
   }
 
   _isDebugScript(index: number): bool {
-    return index === DebugOption.Script;
+    return index === SCRIPT_OPTION.value;
   }
 
   _getDebugTarget(index: number, targetFilePath: string): string {
