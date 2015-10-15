@@ -38,22 +38,6 @@ describe('NuclideLocalEventBus test suite', () => {
     eventBus.close();
   });
 
-  describe('Can call NuclideFsService methods', () => {
-    it('calls readFile', () => {
-      waitsForPromise(async () => {
-        var contents = await client.readFile(filePath, 'utf8');
-        expect(contents).toBe(fileContents);
-      });
-    });
-
-    it('calls exists', () => {
-      waitsForPromise(async () => {
-        var exists = await client.exists(filePath);
-        expect(exists).toBe(true);
-      });
-    });
-  });
-
   describe('Can call NuclideWatcherService methods', () => {
     it('calls watchFile()', () => {
       waitsForPromise(async () => {

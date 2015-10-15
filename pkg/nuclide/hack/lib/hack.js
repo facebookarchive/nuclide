@@ -13,7 +13,7 @@ import type {HackReference} from 'nuclide-hack-common';
 import type {HackDiagnosticItem} from './types';
 
 var invariant = require('assert');
-var {getClient} = require('nuclide-client');
+var {getClient, getFileSystemServiceByNuclideUri} = require('nuclide-client');
 var {extractWordAtPosition} = require('nuclide-atom-helpers');
 var HackLanguage = require('./HackLanguage');
 var logger = require('nuclide-logging').getLogger();
@@ -245,10 +245,11 @@ function getHackLanguageForUri(uri: NuclideUri): Promise<?HackLanguage> {
   if (!client) {
     return null;
   }
-  return createHackLanguageIfNotExisting(client, filePath);
+  return createHackLanguageIfNotExisting(uri, client, filePath);
 }
 
-async function createHackLanguageIfNotExisting(client: NuclideClient, filePath: string): Promise<HackLanguage> {
+async function createHackLanguageIfNotExisting(uri: NuclideUri, client: NuclideClient,
+      filePath: string): Promise<HackLanguage> {
   var clientId = client.getID();
   if (clientToHackLanguage[clientId]) {
     return clientToHackLanguage[clientId];
@@ -256,7 +257,7 @@ async function createHackLanguageIfNotExisting(client: NuclideClient, filePath: 
   var hackClient;
   var [isHackClientAvailable, nearestPath] = await Promise.all([
     client.isHackClientAvailable(),
-    client.findNearestFile('.hhconfig', pathUtil.dirname(filePath)),
+    getFileSystemServiceByNuclideUri(uri).findNearestFile('.hhconfig', pathUtil.dirname(filePath)),
   ]);
   // If multiple calls, were done asynchronously, make sure to return the single-created HackLanguage.
   if (clientToHackLanguage[clientId]) {

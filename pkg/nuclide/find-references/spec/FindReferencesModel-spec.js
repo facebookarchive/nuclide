@@ -23,7 +23,7 @@ describe('FindReferencesModel', () => {
   beforeEach(() => {
     spyOn(atom.grammars, 'selectGrammar').andReturn(fakeGrammar);
     // Create fake file contents.
-    spyOn(nuclideClient, 'getClient').andReturn({
+    spyOn(nuclideClient, 'getFileSystemServiceByNuclideUri').andReturn({
       readFile: async (fileName) => {
         if (fileName === 'bad') {
           throw 'bad file';

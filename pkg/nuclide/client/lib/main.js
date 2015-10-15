@@ -9,14 +9,19 @@
  * the root directory of this source tree.
  */
 
+import type {NuclideUri} from 'nuclide-remote-uri';
+import type {FileSystemService} from 'nuclide-server/lib/services/FileSystemServiceType';
+
+const FILE_SYSTEM_SERVICE = 'FileSystemService';
+
 // TODO: Remove this once all services have been moved to framework v3.
-var {
+import {
   getClient,
   getFileForPath,
   getService,
   getServiceLogger,
   getServiceByNuclideUri,
-} = require('nuclide-remote-connection');
+} from 'nuclide-remote-connection';
 
 module.exports = {
   getClient,
@@ -24,4 +29,8 @@ module.exports = {
   getService,
   getServiceLogger,
   getServiceByNuclideUri,
+
+  getFileSystemServiceByNuclideUri(uri: NuclideUri): FileSystemService {
+    return getServiceByNuclideUri(FILE_SYSTEM_SERVICE, uri);
+  },
 };

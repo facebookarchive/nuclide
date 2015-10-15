@@ -11,6 +11,7 @@
 
 import type RemoteConnection from './RemoteConnection';
 import type RemoteDirectory from './RemoteDirectory';
+import type {FileSystemService} from 'nuclide-server/lib/services/FileSystemServiceType';
 
 var pathUtil = require('path');
 var crypto = require('crypto');
@@ -168,7 +169,7 @@ class RemoteFile {
   }
 
   exists(): Promise<boolean> {
-    return this._remote.getClient().exists(this._localPath);
+    return this._getFileSystemService().exists(this._localPath);
   }
 
   existsSync(): boolean {
@@ -218,7 +219,7 @@ class RemoteFile {
   async getRealPath(): Promise<string> {
     var realpath = this._realpath;
     if (!realpath) {
-      var realpath = await this._remote.getClient().realpath(this._localPath);
+      var realpath = await this._getFileSystemService().realpath(this._localPath);
       this._realpath = realpath;
     }
     return realpath;
@@ -229,7 +230,7 @@ class RemoteFile {
   }
 
   async create(): Promise<boolean> {
-    var wasCreated = await this._remote.getClient().newFile(this._localPath);
+    var wasCreated = await this._getFileSystemService().newFile(this._localPath);
     if (this._subscriptionCount > 0) {
       this._subscribeToNativeChangeEvents();
     }
@@ -238,7 +239,7 @@ class RemoteFile {
 
   async delete(): Promise {
     try {
-      await this._remote.getClient().unlink(this._localPath);
+      await this._getFileSystemService().unlink(this._localPath);
       this._handleNativeDeleteEvent();
     } catch (error) {
       if (error.code !== 'ENOENT') {
@@ -248,7 +249,7 @@ class RemoteFile {
   }
 
   async rename(newPath: string): Promise {
-    await this._remote.getClient().rename(this._localPath, newPath);
+    await this._getFileSystemService().rename(this._localPath, newPath);
     await this._handleNativeRenameEvent(newPath);
   }
 
@@ -256,7 +257,7 @@ class RemoteFile {
     // TODO: return cachedContents if exists and !flushCache
     // This involves the reload scenario, where the same instance of the file is read(),
     // but the file contents should reload.
-    var data = await this._remote.getClient().readFile(this._localPath);
+    var data = await this._getFileSystemService().readFile(this._localPath);
     var contents = data.toString();
     this._setDigest(contents);
     this._cachedContents = contents;
@@ -270,7 +271,7 @@ class RemoteFile {
 
   async write(text: string): Promise<void> {
     var previouslyExisted = await this.exists();
-    await this._remote.getClient().writeFile(this._localPath, text);
+    await this._getFileSystemService().writeFile(this._localPath, text);
     this._cachedContents = text;
     if (!previouslyExisted && this._subscriptionCount > 0) {
       await this._subscribeToNativeChangeEvents();
@@ -281,6 +282,10 @@ class RemoteFile {
     var {path: localPath, protocol, host} = remoteUri.parse(this._path);
     var directoryPath = protocol + '//' + host + pathUtil.dirname(localPath);
     return this._remote.createDirectory(directoryPath);
+  }
+
+  _getFileSystemService(): FileSystemService {
+    return this._getService('FileSystemService');
   }
 
   _getService(serviceName: string): any {

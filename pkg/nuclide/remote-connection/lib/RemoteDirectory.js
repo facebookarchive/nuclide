@@ -9,6 +9,9 @@
  * the root directory of this source tree.
  */
 
+import type {FileSystemService} from 'nuclide-server/lib/services/FileSystemServiceType';
+import type RemoteConnection from './RemoteConnection';
+
 var path = require('path');
 var {Disposable, Emitter} = require('atom');
 var logger = require('nuclide-logging').getLogger();
@@ -167,7 +170,7 @@ class RemoteDirectory {
   }
 
   async create(): Promise<boolean> {
-    var created = await this._remote.getClient().mkdirp(this._localPath);
+    var created = await this._getFileSystemService().mkdirp(this._localPath);
     if (this._subscriptionCount > 0) {
       this._subscribeToNativeChangeEvents();
     }
@@ -175,7 +178,7 @@ class RemoteDirectory {
   }
 
   async delete(): Promise {
-    await this._remote.getClient().rmdir(this._localPath);
+    await this._getFileSystemService().rmdir(this._localPath);
     this._unsubscribeFromNativeChangeEvents();
   }
 
@@ -183,7 +186,7 @@ class RemoteDirectory {
    * Renames this directory to the given absolute path.
    */
   async rename(newPath: string): Promise {
-    await this._remote.getClient().rename(this._localPath, newPath);
+    await this._getFileSystemService().rename(this._localPath, newPath);
 
     // Unsubscribe from the old `this._localPath`. This must be done before
     // setting the new `this._localPath`.
@@ -205,7 +208,7 @@ class RemoteDirectory {
   }
 
   async getEntries(callback) {
-    var entries = await this._remote.getClient().readdir(this._localPath);
+    var entries = await this._getFileSystemService().readdir(this._localPath);
     var directories = [];
     var files = [];
     entries.sort((a, b) => {
@@ -243,6 +246,10 @@ class RemoteDirectory {
   // A workaround before Atom 2.0: see ::getHgRepoInfo of main.js.
   getHgRepositoryDescription() {
     return this._hgRepositoryDescription;
+  }
+
+  _getFileSystemService(): FileSystemService {
+    return this._getService('FileSystemService');
   }
 
   _getService(serviceName: string): any {

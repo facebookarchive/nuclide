@@ -61,17 +61,12 @@ class FileWatcher {
       return;
     }
 
-    var {getClient} = require('nuclide-client');
-
-    var client = getClient(filePath);
-    if (!client) {
-      getLogger().error('[file-watcher]: No client found for path:', filePath);
-      return;
-    }
+    var {getFileSystemServiceByNuclideUri} = require('nuclide-client');
 
     // Load the file contents locally or remotely.
     var localFilePath = getPath(filePath);
-    var filesystemContents = await client.readFile(localFilePath, encoding);
+    var filesystemContents = (await getFileSystemServiceByNuclideUri(filePath).
+      readFile(localFilePath)).toString(encoding);
 
     // Open a right split pane to compare the contents.
     // TODO: We can use the diff-view here when ready.

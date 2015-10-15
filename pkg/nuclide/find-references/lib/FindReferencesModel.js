@@ -23,7 +23,7 @@ type FindReferencesOptions = {
 };
 
 var {getLogger} = require('nuclide-logging');
-var {getClient} = require('nuclide-client');
+var {getFileSystemServiceByNuclideUri} = require('nuclide-client');
 var {getPath} = require('nuclide-remote-uri');
 
 var FRAGMENT_GRAMMARS = {
@@ -44,14 +44,10 @@ function compareReference(x: Reference, y: Reference): number {
 }
 
 async function readFileContents(uri: NuclideUri): Promise<?string> {
-  var client = getClient(uri);
-  if (!client) {
-    getLogger().error('find-references: could not load client for ' + uri);
-    return null;
-  }
   var localPath = getPath(uri);
   try {
-    var contents = await client.readFile(localPath, 'utf8');
+    var contents =
+        (await getFileSystemServiceByNuclideUri(uri).readFile(localPath)).toString('utf8');
   } catch (e) {
     getLogger().error(`find-references: could not load file ${uri}`, e);
     return null;

@@ -63,4 +63,11 @@ fsPromise.unwatchDirectoryRecursive = unwatchDirectoryRecursive.handler;
 
 module.exports = {
   getClient: () => fsPromise,
+  getService: (serviceName: string) => {
+    if (serviceName === 'FileSystemService') {
+      return fsPromise;
+    } else {
+      throw new Error(`TODO: missing mock ${serviceName}`);
+    }
+  },
 };

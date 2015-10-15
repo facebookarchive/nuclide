@@ -1,10 +1,6 @@
 [
   {
     "useServiceFramework": false,
-    "path": "lib/services/NuclideFsService.js"
-  },
-  {
-    "useServiceFramework": false,
     "path": "lib/services/NuclideSearchService.js"
   },
   {

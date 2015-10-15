@@ -12,12 +12,14 @@
 import type {HgRepositoryClient} from 'nuclide-hg-repository-client';
 import type {FileChangeState} from './types';
 
+import invariant from 'assert';
+
 var {CompositeDisposable, Emitter} = require('atom');
 var {repositoryForPath} = require('nuclide-hg-git-bridge');
 var {HgStatusToFileChangeStatus, FileChangeStatus} = require('./constants');
 var {track, trackTiming} = require('nuclide-analytics');
 
-var {getFileForPath} = require('nuclide-client');
+var {getFileForPath, getFileSystemServiceByNuclideUri} = require('nuclide-client');
 var logger = require('nuclide-logging').getLogger();
 
 type HgDiffState = {
@@ -106,12 +108,9 @@ class DiffViewModel {
 
   @trackTiming('diff-view.file-change-update')
   async _onDidFileChange(filePath: string): Promise<void> {
-    var client = require('nuclide-client').getClient(filePath);
-    if (!client) {
-      throw new Error(`client find for changed file: \`${filePath}\`.`);
-    }
     var localFilePath = require('nuclide-remote-uri').getPath(filePath);
-    var filesystemContents = await client.readFile(localFilePath, 'utf8');
+    var filesystemContents = (await getFileSystemServiceByNuclideUri(filePath).
+        readFile(localFilePath)).toString('utf8');
     if (filesystemContents !== this._activeFileState.savedContents) {
       this._updateActiveDiffState(filePath).catch(this._boundHandleInternalError);
     }
@@ -179,17 +178,14 @@ class DiffViewModel {
       throw new Error(`Diff view only supports \`Mercurial\` repositories, but found \`${type}\``);
     }
 
-    var {getClient} = require('nuclide-client');
-    var client = getClient(filePath);
-    if (!client) {
-      throw new Error(`client find for file: \`${filePath}\`.`);
-    }
+    var fileSystemService = getFileSystemServiceByNuclideUri(filePath);
+    invariant(fileSystemService);
 
     var {getPath} = require('nuclide-remote-uri');
     var localFilePath = getPath(filePath);
     var stats;
     try {
-      stats = await client.lstat(localFilePath);
+      stats = await fileSystemService.lstat(localFilePath);
     } catch (err) {
       var errorMessage = `lstat for file: \`${filePath}\` - ${err.toString()}`;
       throw new Error(errorMessage);
@@ -205,9 +201,9 @@ class DiffViewModel {
       // If the file didn't exist on the previous revision, return empty contents.
       .then(contents => contents || '', err => '');
 
-    var filesystemContentsPromise = client.readFile(localFilePath, 'utf8')
+    var filesystemContentsPromise = fileSystemService.readFile(localFilePath)
       // If the file was removed, return empty contents.
-      .then(contents => contents || '', err => '');
+      .then(contents => contents.toString('utf8') || '', err => '');
 
     var [
       committedContents,
@@ -240,11 +236,7 @@ class DiffViewModel {
       } else {
         // Remote files return the same instance everytime,
         // which could have an invalid filesystem contents cache.
-        var client = require('nuclide-client').getClient(filePath);
-        if (!client) {
-          throw new Error(`client find while saving: \`${filePath}\`.`);
-        }
-        await client.writeFile(getPath(filePath), newContents);
+        await getFileSystemServiceByNuclideUri(filePath).writeFile(getPath(filePath), newContents);
       }
     } catch (err) {
       throw new Error(`could not save file: \`${filePath}\` - ${err.toString()}`);
