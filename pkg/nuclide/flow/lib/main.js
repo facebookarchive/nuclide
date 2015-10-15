@@ -13,6 +13,8 @@ var invariant = require('assert');
 
 var {CompositeDisposable} = require('atom');
 
+import {track} from 'nuclide-analytics';
+
 var {JS_GRAMMARS} = require('./constants.js');
 var GRAMMARS_STRING = JS_GRAMMARS.join(', ');
 var diagnosticsOnFlySetting = 'nuclide-flow.diagnosticsOnFly';
@@ -77,6 +79,9 @@ module.exports = {
       inclusionPriority: 1,
       // We want to get ranked higher than the snippets provider.
       suggestionPriority: 5,
+      onDidInsertSuggestion: () => {
+        track('nuclide-flow.autocomplete-chosen');
+      },
       getSuggestions,
     };
   },
