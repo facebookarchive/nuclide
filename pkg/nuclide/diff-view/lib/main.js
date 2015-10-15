@@ -150,8 +150,7 @@ module.exports = {
       '.entry.directory.list-item',
       'nuclide-diff-view:open-context',
       (event) => {
-        var target = getTargetFromEvent(event);
-        atom.workspace.open(NUCLIDE_DIFF_VIEW_URI + (target.dataset.path || ''));
+        atom.workspace.open(NUCLIDE_DIFF_VIEW_URI);
       }
     ));
     subscriptions.add(atom.contextMenu.add({
