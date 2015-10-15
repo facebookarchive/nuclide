@@ -320,6 +320,9 @@ class Server:
 
 
 if __name__ == '__main__':
+  lib_clang_file = os.environ.get('LIB_CLANG_DYLIB_FILE')
+  if lib_clang_file:
+    Config.set_library_file(lib_clang_file)
   set_up_logging()
   input_stream, output_stream = wait_for_init()
   Server(input_stream, output_stream).run()

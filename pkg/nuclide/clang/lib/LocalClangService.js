@@ -69,7 +69,12 @@ async function createAsyncConnection(pathToLibClangServer: string): Promise<Conn
       stdio: ['pipe', null, 'pipe', 'pipe'],
       detached: false, // When Atom is killed, clang_server.py should be killed, too.
       env: {
-        LD_LIBRARY_PATH: ldLibraryPathEnv,
+        // On Mac OSX El Capitan, bash seems to wipe out the `LD_LIBRARY_PATH` and
+        // `DYLD_LIBRARY_PATH` environment variables. So, set this env var which is read by
+        // clang_server.py to explicitly set the file path to load.
+        LIB_CLANG_DYLIB_FILE: ldLibraryPathEnv
+          ? path.join(ldLibraryPathEnv, 'libclang.dylib')
+          : null,
         PYTHONPATH: pythonPathEnv,
       },
     };
