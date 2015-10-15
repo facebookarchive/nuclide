@@ -163,7 +163,13 @@ module.exports = class DiffViewEditor {
   }
 
   _buildScreenLinesWithOffsets(startBufferRow: number, endBufferRow: number): LineRangesWithOffsets {
-    var {regions, screenLines} = this._originalBuildScreenLines.apply(this._editor.displayBuffer, arguments);
+    // HACK! Enabling `softWrapped` lines would greatly complicate the offset screen line mapping
+    // needed to render the offset lines for the Diff View.
+    // Hence, we need to disable the original screen line from returning soft-wrapped lines.
+    const {displayBuffer} = this._editor;
+    displayBuffer.softWrapped = false;
+    const {regions, screenLines} = this._originalBuildScreenLines.apply(displayBuffer, arguments);
+    displayBuffer.softWrapped = true;
     if (!Object.keys(this._lineOffsets).length) {
       return {regions, screenLines};
     }
