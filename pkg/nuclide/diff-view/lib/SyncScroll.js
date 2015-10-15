@@ -34,9 +34,10 @@ class SyncScroll {
 
     this._syncInfo.forEach((editorInfo, i) => {
       // Note that `onDidChangeScrollTop` isn't technically in the public API.
-      this._subscriptions.add(editorInfo.scrollElement.onDidChangeScrollTop(
-        () => this._scrollPositionChanged(i))
-      );
+      const {scrollElement} = editorInfo;
+      const updateScrollPosition = () => this._scrollPositionChanged(i);
+      this._subscriptions.add(scrollElement.onDidChangeScrollTop(updateScrollPosition));
+      this._subscriptions.add(scrollElement.onDidChangeScrollLeft(updateScrollPosition));
     });
   }
 
@@ -50,6 +51,7 @@ class SyncScroll {
     var {scrollElement: otherElement} = otherInfo;
     otherInfo.scrolling = true;
     otherElement.setScrollTop(thisElement.getScrollTop());
+    otherElement.setScrollLeft(thisElement.getScrollLeft());
     otherInfo.scrolling = false;
   }
 
