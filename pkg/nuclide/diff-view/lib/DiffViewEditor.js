@@ -137,9 +137,7 @@ module.exports = class DiffViewEditor {
         // {row: screenPosition.row + 1, column: 0}
     );
     var marker = this._editor.markScreenRange(range, {invalidate: 'never'});
-    var klass = 'diff-view-' + type;
-    this._editor.decorateMarker(marker, {type: 'line-number', class: klass});
-    this._editor.decorateMarker(marker, {type: 'highlight', class: klass});
+    this._editor.decorateMarker(marker, {type: 'highlight', class: `diff-view-${type}`});
     return marker;
   }
 
