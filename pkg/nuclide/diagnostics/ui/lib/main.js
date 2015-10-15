@@ -190,7 +190,7 @@ module.exports = {
       icon: 'law',
       callback: 'nuclide-diagnostics-ui:toggle-table',
       tooltip: 'Toggle Diagnostics Table',
-      priority: 300,
+      priority: 200,
     });
   },
 

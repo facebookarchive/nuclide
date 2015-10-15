@@ -196,7 +196,7 @@ module.exports = {
       icon: 'checklist',
       callback: 'nuclide-test-runner:toggle-panel',
       tooltip: 'Toggle Test Runner',
-      priority: 200,
+      priority: 400,
     });
   },
 

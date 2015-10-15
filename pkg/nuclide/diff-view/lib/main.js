@@ -26,6 +26,7 @@ var subscriptions: ?CompositeDisposable = null;
 
 var logger = null;
 var uiProviders = [];
+var toolBar: ?any = null;
 
 function getLogger() {
   return logger || (logger = require('nuclide-logging').getLogger());
@@ -202,6 +203,16 @@ module.exports = {
     }));
   },
 
+  consumeToolBar(getToolBar: (group: string) => Object): void {
+    toolBar = getToolBar('nuclide-diff-view');
+    toolBar.addButton({
+      icon: 'git-branch',
+      callback: 'nuclide-diff-view:open',
+      tooltip: 'Toggle Diff View',
+      priority: 300,
+    });
+  },
+
   getHomeFragments(): HomeFragments {
     var React = require('react-for-atom');
     return {
@@ -237,6 +248,10 @@ module.exports = {
       subscriptions = null;
     }
     activeDiffView = null;
+    if (toolBar) {
+      toolBar.removeItems();
+      toolBar = null;
+    }
   },
 
   /** The diff-view package can consume providers that return React components to

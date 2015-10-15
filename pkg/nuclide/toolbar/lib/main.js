@@ -139,7 +139,7 @@ module.exports = {
       callback: 'nuclide-toolbar:toggle',
       tooltip: 'Toggle Build Toolbar',
       iconset: 'ion',
-      priority: 400,
+      priority: 500,
     });
   },
 
