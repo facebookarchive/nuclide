@@ -15,7 +15,6 @@ var {findDiagnostics, getHackLanguageForUri, getCachedHackLanguageForUri} = requ
 var {RequestSerializer} = require('nuclide-commons').promises;
 var {DiagnosticsProviderBase} = require('nuclide-diagnostics-provider-base');
 var {Range} = require('atom');
-var {parse, isRemote, createRemoteUri} = require('nuclide-remote-uri');
 import invariant from 'assert';
 
 var {HACK_GRAMMARS_SET} = require('nuclide-hack-common/lib/constants');
@@ -114,8 +113,6 @@ class HackDiagnosticsProvider {
       return;
     }
 
-    var {hostname, port} = parse(filePath);
-
     // `hh_client` doesn't currently support `onTheFly` diagnosis.
     // So, currently, it would only work if there is no `hh_client` or `.hhconfig` where
     // the `HackWorker` model will diagnose with the updated editor contents.
@@ -139,9 +136,6 @@ class HackDiagnosticsProvider {
       /* Each message consists of several different components, each with its
        * own text and path. */
       for (var diagnosticMessage of diagnostic.message) {
-        if (isRemote(filePath)) {
-          diagnosticMessage.path = createRemoteUri(hostname, port, diagnosticMessage.path);
-        }
         pathsForHackLanguage.add(diagnosticMessage.path);
       }
     }

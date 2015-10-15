@@ -81,32 +81,6 @@ async function _callHHClient(
 }
 
 /**
- * Gets the hh_client diagnostics for all files open
- */
-function getDiagnostics(options = {}): Promise<Array<any>> {
-  return _callHHClient(
-    /*args*/ [],
-    /*errorStream*/ true,
-    /*outputJson*/ true,
-    /*processInput*/ null,
-    /*cwd*/ options.cwd,
-  );
-}
-
-/**
- * Gets the hh_client autocompletions for the passed query string (file contents with a marker).
- */
-function getCompletions(query: string, options): Promise<Array<any>> {
-  return _callHHClient(
-    /*args*/ ['--auto-complete'],
-    /*errorStream*/ false,
-    /*outputJson*/ true,
-    /*processInput*/ query,
-    /*cwd*/ options.cwd,
-  );
-}
-
-/**
  * Gets the hh_client definition of the query with a given symbol type.
  */
 async function getDefinition(
@@ -351,8 +325,6 @@ async function isClientAvailable(): Promise<boolean> {
 
 module.exports = {
   services: {
-    '/hack/getDiagnostics': {handler: getDiagnostics, method: 'post'},
-    '/hack/getCompletions': {handler: getCompletions, method: 'post'},
     '/hack/getDefinition': {handler: getDefinition, method: 'post'},
     '/hack/getDependencies': {handler: getDependencies, method: 'post'},
     '/hack/getIdentifierDefinition': {handler: getIdentifierDefinition, method: 'post'},

@@ -38,52 +38,46 @@ module.exports = {
   async findDiagnostics(
     editor: TextEditor
   ): Promise<Array<HackDiagnosticItem>> {
-    var buffer = editor.getBuffer();
-    var hackLanguage = await getHackLanguageForUri(editor.getPath());
-    if (!hackLanguage) {
+    const filePath = editor.getPath();
+    const hackLanguage = await getHackLanguageForUri(filePath);
+    if (!hackLanguage || !filePath) {
       return [];
     }
 
-    var {path, protocol, host} = parse(editor.getPath());
-    var contents = editor.getText();
+    invariant(filePath);
+    const localPath = getPath(filePath);
+    const contents = editor.getText();
 
-    // Work around `hh_client` returns server busy error, and fails retrying (when enabled),
-    // if a `check` call is made before 3 seconds of a file being saved.
-    await awaitMilliSeconds(HH_DIAGNOSTICS_DELAY_MS);
-
-    var diagnostics;
+    let diagnostics;
     if (hackLanguage.isHackClientAvailable()) {
-      diagnostics = await hackLanguage.getServerDiagnostics();
+      // Work around `hh_client` returns server busy error, and fails retrying (when enabled),
+      // if a `check` call is made before 3 seconds of a file being saved.
+      await awaitMilliSeconds(HH_DIAGNOSTICS_DELAY_MS);
+      diagnostics = await hackLanguage.getServerDiagnostics(filePath);
     } else {
-      diagnostics = await hackLanguage.getDiagnostics(path, contents);
+      diagnostics = await hackLanguage.getDiagnostics(localPath, contents);
     }
-
-    diagnostics.forEach(diagnostic => {
-      // Preserve original Nuclide URI so remote files return with a "nuclide://" prefix and are
-      // associated with the correct TextEditor and tab.
-      diagnostic.filePath = getFilePath(diagnostic.filePath, protocol, host);
-    });
-
     return diagnostics;
   },
 
   async fetchCompletionsForEditor(editor: TextEditor, prefix: string): Promise<Array<any>> {
     var hackLanguage = await getHackLanguageForUri(editor.getPath());
-    if (!hackLanguage) {
+    var filePath = editor.getPath();
+    if (!hackLanguage || !filePath) {
       return [];
     }
 
-    var path = getPath(editor.getPath());
-    var contents = editor.getText();
-    var cursor = editor.getLastCursor();
-    var offset = editor.getBuffer().characterIndexForPosition(cursor.getBufferPosition());
+    invariant(filePath);
+    const contents = editor.getText();
+    const cursor = editor.getLastCursor();
+    const offset = editor.getBuffer().characterIndexForPosition(cursor.getBufferPosition());
     // The returned completions may have unrelated results, even though the offset is set on the end of the prefix.
-    var completions = await hackLanguage.getCompletions(path, contents, offset);
+    const completions = await hackLanguage.getCompletions(filePath, contents, offset);
     // Filter out the completions that do not contain the prefix as a token in the match text case insentively.
-    var tokenLowerCase = prefix.toLowerCase();
+    const tokenLowerCase = prefix.toLowerCase();
 
-    var {compareHackCompletions} = require('./utils');
-    var hackCompletionsCompartor = compareHackCompletions(prefix);
+    const {compareHackCompletions} = require('./utils');
+    const hackCompletionsCompartor = compareHackCompletions(prefix);
 
     return completions
       .filter(completion => completion.matchText.toLowerCase().indexOf(tokenLowerCase) >= 0)

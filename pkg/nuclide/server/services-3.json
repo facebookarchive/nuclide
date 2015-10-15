@@ -38,5 +38,10 @@
     "definition": "lib/services/SourceControlService.def",
     "implementation": "lib/services/SourceControlService.js",
     "name": "SourceControlService"
+  },
+  {
+    "definition": "nuclide-hack-base/lib/HackService.def",
+    "implementation": "nuclide-hack-base/lib/HackService.js",
+    "name": "HackService"
   }
 ]

@@ -56,6 +56,7 @@
   },
   "devDependencies": {
     "nuclide-diagnostics-base": "0.0.0",
-    "nuclide-external-interfaces": "0.0.0"
+    "nuclide-external-interfaces": "0.0.0",
+    "nuclide-hack-base": "0.0.0"
   }
 }

@@ -9,9 +9,19 @@
  * the root directory of this source tree.
  */
 
+import type {NuclideUri} from 'nuclide-remote-uri';
 import type {HackReference} from 'nuclide-hack-common';
-/* $FlowFixMe - relative requires not supported */
+import type {
+  HackCompletionsResult,
+  HackCompletion,
+  HackDiagnosticsResult,
+  HackDiagnostic
+} from 'nuclide-hack-base/lib/types';
 import type NuclideClient from 'nuclide-server/lib/NuclideClient';
+
+import {getServiceByNuclideUri} from 'nuclide-client';
+import {getPath} from 'nuclide-remote-uri';
+import invariant from 'assert';
 
 var {Range, Emitter} = require('atom');
 var HackWorker = require('./HackWorker');
@@ -26,6 +36,14 @@ var XHP_LINE_TEXT_REGEX = /<([a-z][a-z0-9_.:-]*)[^>]*\/?>/gi;
 const UPDATE_DEPENDENCIES_INTERVAL_MS = 10000;
 const DEPENDENCIES_LOADED_EVENT = 'dependencies-loaded';
 const MAX_HACK_WORKER_TEXT_SIZE = 10000;
+
+const HACK_SERVICE_NAME = 'HackService';
+
+function getHackService(filePath: NuclideUri): Object {
+  const hackRegisteredService = getServiceByNuclideUri(HACK_SERVICE_NAME, filePath);
+  invariant(hackRegisteredService);
+  return hackRegisteredService;
+}
 
 /**
  * The HackLanguage is the controller that servers language requests by trying to get worker results
@@ -80,22 +98,27 @@ module.exports = class HackLanguage {
     clearInterval(this._updateDependenciesInterval);
   }
 
-  async getCompletions(path: string, contents: string, offset: number): Promise<Array<any>> {
+  async getCompletions(
+    filePath: NuclideUri,
+    contents: string,
+    offset: number
+  ): Promise<Array<any>> {
     // Calculate the offset of the cursor from the beginning of the file.
     // Then insert AUTO332 in at this offset. (Hack uses this as a marker.)
-    var markedContents = contents.substring(0, offset) +
+    const markedContents = contents.substring(0, offset) +
         'AUTO332' + contents.substring(offset, contents.length);
-    await this.updateFile(path, markedContents);
-    var webWorkerMessage = {cmd: 'hh_auto_complete', args: [path]};
-    var response = await this._hackWorker.runWorkerTask(webWorkerMessage);
-    var completionType = getCompletionType(response.completion_type);
-    var completions = response.completions;
+    const localPath = getPath(filePath);
+    await this.updateFile(localPath, markedContents);
+    const webWorkerMessage = {cmd: 'hh_auto_complete', args: [localPath]};
+    const response = await this._hackWorker.runWorkerTask(webWorkerMessage);
+    const completionType = getCompletionType(response.completion_type);
+    let {completions} = response;
     if (shouldDoServerCompletion(completionType) || !completions.length) {
-      completions = await this._callHackService(
-        /*serviceName*/ 'getHackCompletions',
-        /*serviceArgs*/ [markedContents],
-        /*defaultValue*/ [],
-      );
+      const {getCompletions} = getHackService(filePath);
+      const completionsResult = await getCompletions(filePath, markedContents);
+      if (completionsResult) {
+        completions = ((completionsResult: any): HackCompletionsResult).completions;
+      }
     }
     return processCompletions(completions);
   }
@@ -176,20 +199,22 @@ module.exports = class HackLanguage {
     }
   }
 
-  async getDiagnostics(path: string, contents: string): Promise<Array<any>> {
+  async getDiagnostics(path: string, contents: string): Promise<Array<HackDiagnostic>> {
     await this.updateFile(path, contents);
     var webWorkerMessage = {cmd: 'hh_check_file', args: [path]};
     var {errors} = await this._hackWorker.runWorkerTask(webWorkerMessage);
     return errors;
   }
 
-  async getServerDiagnostics(): Promise<Array<any>> {
-    var {errors} = await this._callHackService(
-      /*serviceName*/ 'getHackDiagnostics',
-      /*serviceArgs*/ [],
-      /*defaultValue*/ {errors: []},
-    );
-    return errors;
+  async getServerDiagnostics(filePath: NuclideUri): Promise<Array<HackDiagnostic>> {
+    const {getDiagnostics} = getHackService(filePath);
+    const diagnosticResult = await getDiagnostics(filePath, '');
+    if (!diagnosticResult) {
+      return [];
+    } else {
+      var hackDiagnostics = ((diagnosticResult: any): HackDiagnosticsResult);
+      return hackDiagnostics.messages;
+    }
   }
 
   async getDefinition(
@@ -507,7 +532,7 @@ function shouldDoServerCompletion(type: number): boolean {
   return serverCompletionTypes.has(type);
 }
 
-function processCompletions(completionsResponse: Array<any>): Array<any> {
+function processCompletions(completionsResponse: Array<HackCompletion>): Array<any> {
   return completionsResponse.map(completion => {
     var {name, type, func_details: functionDetails} = completion;
     if (type && type.indexOf('(') === 0 && type.lastIndexOf(')') === type.length - 1) {
