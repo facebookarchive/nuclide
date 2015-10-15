@@ -27,7 +27,7 @@ export async function findArcConfigDirectory(fileName: NuclideUri): Promise<?Nuc
   return arcConfigDirectoryMap.get(fileName);
 }
 
-export async function readArcConfig(fileName: NuclideUri): Promise<?Object> {
+export async function readArcConfig(fileName: NuclideUri): Promise<?any> {
   const arcConfigDirectory = await findArcConfigDirectory(fileName);
   if (!arcConfigDirectory) {
     return null;

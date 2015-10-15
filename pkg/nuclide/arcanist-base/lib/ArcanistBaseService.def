@@ -8,7 +8,7 @@
 
 export function findArcConfigDirectory(fileName: NuclideUri): Promise<?NuclideUri> {}
 
-export function readArcConfig(fileName: NuclideUri): Promise<?Object> {}
+export function readArcConfig(fileName: NuclideUri): Promise<?any> {}
 
 export function findArcProjectIdOfPath(fileName: NuclideUri): Promise<?string> {}
 
