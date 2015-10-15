@@ -109,18 +109,54 @@ function getCompletions(query: string, options): Promise<Array<any>> {
 /**
  * Gets the hh_client definition of the query with a given symbol type.
  */
-async function getDefinition(query: string, symbolType: SymbolType, options = {}): Promise<Array<any>> {
-  var searchTypes = symbolTypeToSearchTypes(symbolType);
-  var searchResults = await getSearchResults(query, searchTypes, undefined, options);
-  return searchResults.filter(result => {
+async function getDefinition(
+  query: string,
+  symbolType: SymbolType,
+  options = {}
+): Promise<?Object> {
+  const searchTypes = symbolTypeToSearchTypes(symbolType);
+  const searchResults = await getSearchResults(query, searchTypes, undefined, options);
+  return selectDefinitionSearchResult(searchResults, query);
+}
+
+async function getIdentifierDefinition(
+  contents: string,
+  line: number,
+  column: number,
+  options = {}
+): Promise<?Object> {
+  const {cwd} = options;
+  let identifier = await _callHHClient(
+    /*args*/ ['--identify-function', `${line}:${column}`],
+    /*errorStream*/ false,
+    /*outputJson*/ false,
+    /*processInput*/ contents,
+    /*cwd*/ cwd,
+  );
+
+  identifier = identifier.trim();
+  if (!identifier) {
+    return null;
+  }
+  const searchResults = await getSearchResults(identifier, null, null, {cwd});
+  return selectDefinitionSearchResult(searchResults, identifier);
+}
+
+function selectDefinitionSearchResult(searchResults: Array<Object>, query: string): ?Object {
+  const matchingResults = searchResults.filter(result => {
     // If the request had a :: in it, it's a full name, so we should compare to
     // the name of the result in that format.
-    var fullName = result.name;
+    let fullName = result.name;
     if (query.indexOf('::') !== -1 && result.scope) {
       fullName = result.scope + '::' + fullName;
     }
     return fullName === query;
   });
+  if (matchingResults.length === 1) {
+    return matchingResults[0];
+  } else {
+    return null;
+  }
 }
 
 /**
@@ -319,6 +355,7 @@ module.exports = {
     '/hack/getCompletions': {handler: getCompletions, method: 'post'},
     '/hack/getDefinition': {handler: getDefinition, method: 'post'},
     '/hack/getDependencies': {handler: getDependencies, method: 'post'},
+    '/hack/getIdentifierDefinition': {handler: getIdentifierDefinition, method: 'post'},
     '/hack/getSearchResults': {handler: getSearchResults, method: 'post'},
     '/hack/getReferences': {handler: getReferences, method: 'post'},
     '/hack/isClientAvailable': {handler: isClientAvailable, method: 'post'},

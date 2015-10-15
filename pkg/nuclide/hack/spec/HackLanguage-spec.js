@@ -107,10 +107,10 @@ class HackClass {}
         var column = 26;
         var lineText = fileContents.split(/\r\n|\n/)[lineNumber - 1];
 
-        var definitions = await hackLanguage.getDefinition(filePath, fileContents, lineNumber, column, lineText);
-
-        expect(definitions.length).toBe(1);
-        expect(definitions[0]).toEqual({
+        var definition = await hackLanguage.getDefinition(
+          filePath, fileContents, lineNumber, column, lineText
+        );
+        expect(definition).toEqual({
           path: filePath,
           line: 7,
           column: 6,

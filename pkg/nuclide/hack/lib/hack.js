@@ -134,27 +134,26 @@ module.exports = {
    * resolve to an object with these fields: file, line, column.
    */
   async findDefinition(editor: TextEditor, line: number, column: number): Promise<any> {
-    var hackLanguage = await getHackLanguageForUri(editor.getPath());
+    const hackLanguage = await getHackLanguageForUri(editor.getPath());
     if (!hackLanguage) {
       return null;
     }
 
-    var {path, protocol, host} = parse(editor.getPath());
+    const {path, protocol, host} = parse(editor.getPath());
 
-    var contents = editor.getText();
-    var buffer = editor.getBuffer();
-    var lineText = buffer.lineForRow(line);
-    var result = await hackLanguage.getDefinition(path, contents, line + 1, column + 1, lineText);
-    if (!result || !result.length) {
+    const contents = editor.getText();
+    const buffer = editor.getBuffer();
+    const lineText = buffer.lineForRow(line);
+    const pos = await hackLanguage.getDefinition(path, contents, line + 1, column + 1, lineText);
+    if (!pos) {
       return null;
     }
-    var pos = result[0];
-    var range = null;
+    let range = null;
     // If the search string was expanded to include more than a valid regex php word.
     // e.g. in case of XHP tags, the start and end column are provided to underline the full range
     // to visit its definition.
     if (pos.searchStartColumn && pos.searchEndColumn) {
-      var {Range} = require('atom');
+      const {Range} = require('atom');
       range = new Range([line, pos.searchStartColumn], [line, pos.searchEndColumn]);
     }
     return {

@@ -229,6 +229,17 @@ class NuclideClient {
     );
   }
 
+
+  getHackIdentifierDefinition(contents: string, line: number, column: number): Promise {
+    const {cwd} = this._options;
+    return this.eventbus.callMethod(
+      /*serviceName*/ 'hack',
+      /*methodName*/ 'getIdentifierDefinition',
+      /*methodArgs*/ [contents, line, column, {cwd}],
+      /*extraOptions*/ {method: 'POST', json: true}
+    );
+  }
+
   getHackDependencies(dependenciesInfo: Array<{name: string; type: string}>): Promise<any> {
     var {cwd} = this._options;
     return this.eventbus.callMethod(

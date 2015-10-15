@@ -23,8 +23,9 @@ var wordCharRegex = /[\w\\]/;
 var xhpCharRegex = /[\w:-]/;
 var XHP_LINE_TEXT_REGEX = /<([a-z][a-z0-9_.:-]*)[^>]*\/?>/gi;
 
-var /*const*/ UPDATE_DEPENDENCIES_INTERVAL_MS = 10000;
-var /*const*/ DEPENDENCIES_LOADED_EVENT = 'dependencies-loaded';
+const UPDATE_DEPENDENCIES_INTERVAL_MS = 10000;
+const DEPENDENCIES_LOADED_EVENT = 'dependencies-loaded';
+const MAX_HACK_WORKER_TEXT_SIZE = 10000;
 
 /**
  * The HackLanguage is the controller that servers language requests by trying to get worker results
@@ -197,32 +198,26 @@ module.exports = class HackLanguage {
       lineNumber: number,
       column: number,
       lineText: string
-    ): Promise<?Array<any>> {
-    var [clientSideResults, identifyMethodResults, stringParseResults] =
+    ): Promise<?Object> {
+    const [identifierResult, symbolSearchResult, stringParseResult, clientSideResult] =
       await Promise.all([
-        // First Stage. Ask Hack clientside for a result location.
-        this._getDefinitionLocationAtPosition(path, contents, lineNumber, column),
-        // Second stage. Ask Hack clientside for the name of the symbol we're on. If we get a name,
-        // ask the server for the location of this name
-        this._getDefinitionFromIdentifyMethod(path, contents, lineNumber, column),
-        // Third stage, do simple string parsing of the file to get a string to search the server for.
-        // Then ask the server for the location of that string.
+        // Ask the `hh_server` to parse, indentiy the position,
+        // and lookup that identifier for a location match.
+        this._getDefinitionFromIdentifier(contents, lineNumber, column),
+        // Ask the `hh_server` for a symbol name search location.
+        this._getDefinitionFromSymbolName(path, contents, lineNumber, column),
+        // Ask the `hh_server` for a search of the string parsed.
         this._getDefinitionFromStringParse(lineText, column),
+        // Ask Hack client side for a result location.
+        this._getDefinitionLocationAtPosition(path, contents, lineNumber, column),
       ]);
     // We now have results from all 3 sources. Chose the best results to show to the user.
-    if (identifyMethodResults.length === 1) {
-      return identifyMethodResults;
-    } else if (stringParseResults.length === 1) {
-      return stringParseResults;
-    } else if (clientSideResults.length === 1) {
-      return clientSideResults;
-    } else if (identifyMethodResults.length > 0) {
-      return identifyMethodResults;
-    } else if (stringParseResults.length > 0) {
-      return stringParseResults;
-    } else {
-      return clientSideResults;
-    }
+    return identifierResult
+      || symbolSearchResult
+      || stringParseResult
+      || clientSideResult
+      || null
+    ;
   }
 
   async getSymbolNameAtPosition(
@@ -230,7 +225,7 @@ module.exports = class HackLanguage {
       contents: string,
       lineNumber: number,
       column: number
-    ): Promise<any> {
+    ): Promise<?Object> {
 
     await this.updateFile(path, contents);
     var webWorkerMessage = {cmd: 'hh_get_method_name', args: [path, lineNumber, column]};
@@ -267,73 +262,93 @@ module.exports = class HackLanguage {
     );
   }
 
+  async _getDefinitionFromSymbolName(
+    path: string,
+    contents: string,
+    lineNumber: number,
+    column: number
+  ): Promise<?Object> {
+    let symbol = null;
+    if (contents.length > MAX_HACK_WORKER_TEXT_SIZE) {
+      // Avoid Poor Worker Performance for large files.
+      return null;
+    }
+    try {
+      symbol = await this.getSymbolNameAtPosition(path, contents, lineNumber, column);
+    } catch (err) {
+      // Ignore the error.
+      logger.warn('_getDefinitionFromIdentifyMethod error:', err);
+      return null;
+    }
+    if (!symbol || !symbol.name) {
+      return null;
+    }
+    return await this._callHackService(
+      /*serviceName*/ 'getHackDefinition',
+      /*serviceArgs*/ [symbol.name, symbol.type],
+      /*defaultValue*/ null,
+    );
+  }
+
+
   async _getDefinitionLocationAtPosition(
       path: string,
       contents: string,
       lineNumber: number,
       column: number
-    ): Promise<Array<any>> {
-
+    ): Promise<?Object> {
+    if (contents.length > MAX_HACK_WORKER_TEXT_SIZE) {
+      // Avoid Poor Worker Performance for large files.
+      return null;
+    }
     await this.updateFile(path, contents);
     var webWorkerMessage = {cmd: 'hh_infer_pos', args: [path, lineNumber, column]};
     var response = await this._hackWorker.runWorkerTask(webWorkerMessage);
     var position = response.pos || {};
     if (position.filename) {
-      return [{
+      return {
         path: position.filename,
         line: position.line - 1,
         column: position.char_start - 1,
         length: position.char_end - position.char_start + 1,
-      }];
+      };
     } else {
-      return [];
+      return null;
     }
   }
 
-  async _getDefinitionFromIdentifyMethod(
-      path: string,
+  _getDefinitionFromIdentifier(
       contents: string,
       lineNumber: number,
       column: number
-    ): Promise<Array<any>> {
-
-    try {
-      var symbol = await this.getSymbolNameAtPosition(path, contents, lineNumber, column);
-      var defs = [];
-      if (symbol && symbol.name) {
-        defs = await this._callHackService(
-          /*serviceName*/ 'getHackDefinition',
-          /*serviceArgs*/ [symbol.name, symbol.type],
-          /*defaultValue*/ [],
-        );
-      }
-      return defs;
-    } catch (err) {
-      // ignore the error
-      logger.warn('_getDefinitionFromIdentifyMethod error:', err);
-      return [];
-    }
+    ): Promise<?Object> {
+    return this._callHackService(
+      /*serviceName*/ 'getHackIdentifierDefinition',
+      /*serviceArgs*/ [contents, lineNumber, column],
+      /*defaultValue*/ null,
+    );
   }
 
-  async _getDefinitionFromStringParse(lineText: string, column: number): Promise<Array<any>> {
-    var {search, start, end} = this._parseStringForExpression(lineText, column);
+  async _getDefinitionFromStringParse(lineText: string, column: number): Promise<?Object> {
+    const {search, start, end} = this._parseStringForExpression(lineText, column);
     if (!search) {
-      return [];
+      return null;
     }
-    var defs = await this._callHackService(
+    const definition = await this._callHackService(
       /*serviceName*/ 'getHackDefinition',
       /*serviceArgs*/ [search, SymbolType.UNKNOWN],
-      /*defaultValue*/ [],
+      /*defaultValue*/ null,
     );
-    return defs.map(definition => {
-      return {
-        path: definition.path,
-        line: definition.line,
-        column: definition.column,
-        searchStartColumn: start,
-        searchEndColumn: end,
-      };
-    });
+    if (!definition) {
+      return null;
+    }
+    return {
+      path: definition.path,
+      line: definition.line,
+      column: definition.column,
+      searchStartColumn: start,
+      searchEndColumn: end,
+    };
   }
 
   _parseStringForExpression(
