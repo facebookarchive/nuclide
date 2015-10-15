@@ -9,21 +9,26 @@
  * the root directory of this source tree.
  */
 
-var fs = require('fs');
-var {asyncExecute} = require('nuclide-commons');
-var {getFilesFromGit, getFilesFromHg} = require('../lib/PathSetFactory')['__test__'];
-var path = require('path');
-var temp = require('temp').track();
+import invariant from 'assert';
+import fs from 'fs';
+import path from 'path';
+import {track} from 'temp';
+const temp = track();
+
+import {asyncExecute} from 'nuclide-commons';
+
+import {__test__} from '../lib/PathSetFactory';
+const {getFilesFromGit, getFilesFromHg} = __test__;
 
 describe('PathSetFactory', () => {
-  var TRACKED_FILE_BASE = 'tracked.js';
-  var UNTRACKED_FILE_BASE = 'untracked.js';
-  var IGNORED_FILE_BASE = 'ignored.js';
+  const TRACKED_FILE_BASE = 'tracked.js';
+  const UNTRACKED_FILE_BASE = 'untracked.js';
+  const IGNORED_FILE_BASE = 'ignored.js';
 
-  var testDir;
-  var trackedFile;
-  var untrackedFile;
-  var ignoredFile;
+  let testDir: ?string;
+  let trackedFile: ?string;
+  let untrackedFile: ?string;
+  let ignoredFile: ?string;
   beforeEach(() => {
     testDir = temp.mkdirSync();
     testDir = fs.realpathSync(testDir);
@@ -33,48 +38,62 @@ describe('PathSetFactory', () => {
   });
 
   describe('getFilesFromGit()', () => {
-    var setUpGitRepo = async () => {
+    const setUpGitRepo = async () => {
       // Add a tracked file, ignored file, and untracked file.
       await asyncExecute('git', ['init'], {cwd: testDir});
-      fs.writeFileSync(trackedFile);
+      invariant(testDir);
+      invariant(trackedFile);
+      invariant(ignoredFile);
+      invariant(untrackedFile);
+      fs.writeFileSync(trackedFile, '');
       fs.writeFileSync(path.join(testDir, '.gitignore'), `.gitignore\n${IGNORED_FILE_BASE}`);
-      fs.writeFileSync(ignoredFile);
+      fs.writeFileSync(ignoredFile, '');
       await asyncExecute('git', ['add', '*'], {cwd: testDir});
-      fs.writeFileSync(untrackedFile);
+      fs.writeFileSync(untrackedFile, '');
     };
 
     it('returns tracked and untracked files, but not ignored files.', () => {
       waitsForPromise(async () => {
         await setUpGitRepo();
-        var expectedOutput = {
+        const expectedOutput = {
+          // $FlowIssue https://github.com/facebook/flow/issues/252
           [TRACKED_FILE_BASE]: true,
+          // $FlowIssue https://github.com/facebook/flow/issues/252
           [UNTRACKED_FILE_BASE]: true,
         };
-        var fetchedFiles = await getFilesFromGit(testDir);
+        invariant(testDir);
+        const fetchedFiles = await getFilesFromGit(testDir);
         expect(fetchedFiles).toEqual(expectedOutput);
       });
     });
   });
 
   describe('getFilesFromHg()', () => {
-    var setUpHgRepo = async () => {
+    const setUpHgRepo = async () => {
       // Add a tracked file, ignored file, and untracked file.
       await asyncExecute('hg', ['init'], {cwd: testDir});
-      fs.writeFileSync(trackedFile);
+      invariant(testDir);
+      invariant(trackedFile);
+      invariant(ignoredFile);
+      invariant(untrackedFile);
+      fs.writeFileSync(trackedFile, '');
       fs.writeFileSync(path.join(testDir, '.hgignore'), `.hgignore\n${IGNORED_FILE_BASE}`);
-      fs.writeFileSync(ignoredFile);
+      fs.writeFileSync(ignoredFile, '');
       await asyncExecute('hg', ['addremove'], {cwd: testDir});
-      fs.writeFileSync(untrackedFile);
+      fs.writeFileSync(untrackedFile, '');
     };
 
     it('returns tracked and untracked files, but not ignored files.', () => {
       waitsForPromise(async () => {
         await setUpHgRepo();
-        var expectedOutput = {
+        const expectedOutput = {
+          // $FlowIssue https://github.com/facebook/flow/issues/252
           [TRACKED_FILE_BASE]: true,
+          // $FlowIssue https://github.com/facebook/flow/issues/252
           [UNTRACKED_FILE_BASE]: true,
         };
-        var fetchedFiles = await getFilesFromHg(testDir);
+        invariant(testDir);
+        const fetchedFiles = await getFilesFromHg(testDir);
         expect(fetchedFiles).toEqual(expectedOutput);
       });
     });

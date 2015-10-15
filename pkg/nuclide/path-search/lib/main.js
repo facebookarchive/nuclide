@@ -9,18 +9,23 @@
  * the root directory of this source tree.
  */
 
+import type {Task} from 'nuclide-task';
+import type {FileSearchResult} from './FileSearch';
+
 type DirectoryUri = string;
 type FileSearch = {
   query: (query: string) => Promise<Array<FileSearchResult>>;
   dispose: () => void;
 };
-var fileSearchForDirectoryUri: {[key: DirectoryUri]: Promise<MainProcessFileSearch>} = {};
 
 /**
  * This is an object that lives in the main process that delegates calls to the
  * FileSearch in the forked process.
  */
 class MainProcessFileSearch {
+  _task: Task;
+  _directoryUri: DirectoryUri;
+
   constructor(task: Task, directoryUri: DirectoryUri) {
     this._task = task;
     this._directoryUri = directoryUri;
@@ -42,9 +47,11 @@ class MainProcessFileSearch {
   }
 }
 
+const fileSearchForDirectoryUri: {[key: DirectoryUri]: Promise<MainProcessFileSearch>} = {};
+
 async function newFileSearch(directoryUri: string): Promise<MainProcessFileSearch> {
-  var {createTask} = require('nuclide-task');
-  var task = createTask();
+  const {createTask} = require('nuclide-task');
+  const task = createTask();
   await task.invokeRemoteMethod({
     file: require.resolve('./FileSearch'),
     method: 'initFileSearchForDirectory',
@@ -59,16 +66,12 @@ async function newFileSearch(directoryUri: string): Promise<MainProcessFileSearc
  *
  * TODO(mbolin): Caller should also invoke dispose(), as appropriate.
  */
-function fileSearchForDirectory(directoryUri: string): Promise<FileSearch> {
+export function fileSearchForDirectory(directoryUri: string): Promise<FileSearch> {
   if (directoryUri in fileSearchForDirectoryUri) {
     return fileSearchForDirectoryUri[directoryUri];
   }
 
-  var promise = newFileSearch(directoryUri);
+  const promise = newFileSearch(directoryUri);
   fileSearchForDirectoryUri[directoryUri] = promise;
   return promise;
 }
-
-module.exports = {
-  fileSearchForDirectory,
-};

@@ -9,21 +9,23 @@
  * the root directory of this source tree.
  */
 
-var QueryItem = require('./QueryItem');
+import type {QueryScore} from './QueryScore';
+import QueryItem from './QueryItem';
+import PathSet from './PathSet';
+import TopScores from './TopScores';
 
 type ResultSet = {
   query: string;
   results: Array<QueryScore>;
 };
 
-var PathSet;
-var PATH_SEARCH_TIMEOUT_MS = 60 * 1000;
+const PATH_SEARCH_TIMEOUT_MS = 60 * 1000;
 
 /**
  * Manages multiple simultaneous queries against a PathSet. The PathSearch is
  * responsible for deciding which queries to cancel based on newer queries.
  */
-class PathSearch {
+export default class PathSearch {
   _pathSet: PathSet;
   _activeQueries: {[key: string]: Promise<ResultSet>};
   _queryItemForPath: {[key: string]: QueryItem};
@@ -48,7 +50,7 @@ class PathSearch {
     // in the underlying PathSet will be returned. This may not be desirable.
 
     // See if a request for this query is already in flight.
-    var activeQuery = this._activeQueries[query];
+    const activeQuery = this._activeQueries[query];
     if (activeQuery) {
       return activeQuery;
     }
@@ -56,8 +58,8 @@ class PathSearch {
     // If any of the existing queries are a prefix of this new query, cancel
     // them. Here, we are assuming this is used to power a typeahead, so the
     // results of the old queries will no longer be of interest.
-    var keysToRemove = [];
-    for (var key in this._activeQueries) {
+    const keysToRemove = [];
+    for (const key in this._activeQueries) {
       if (query.startsWith(key)) {
         keysToRemove.push(key);
       }
@@ -68,6 +70,7 @@ class PathSearch {
     // this._activeQueries in the for/in loop above because that could interfere
     // with the iteration.
     if (keysToRemove.length) {
+      // $FlowFixMe: Remove the cancelJob expando off the promise.
       keysToRemove.forEach(key => this._activeQueries[key].cancelJob());
     }
 
@@ -75,11 +78,10 @@ class PathSearch {
     // for the new processor to start by filtering what the prefix query had
     // already found thus far.
 
-    var TopScores = require('./TopScores');
-    var topScores = new TopScores(/* capacity */ 50);
+    const topScores = new TopScores(/* capacity */ 50);
 
-    var processor = (path: string) => {
-      var queryItem = this._queryItemForPath[path];
+    const processor = (path: string) => {
+      let queryItem = this._queryItemForPath[path];
       if (!queryItem) {
         queryItem = new QueryItem(path);
         // Currently, nothing is ever removed from _queryItemForPath. It's
@@ -87,8 +89,8 @@ class PathSearch {
         // merit the memory savings.
         this._queryItemForPath[path] = queryItem;
       }
-      var score = queryItem.score(query);
-      if (score !== null) {
+      const score = queryItem.score(query);
+      if (score != null) {
         topScores.insert(score);
       }
     };
@@ -96,11 +98,11 @@ class PathSearch {
     // This is helpful for debugging.
     processor.toString = () => query;
 
-    var promise = this._pathSet.submit(processor);
+    const promise = this._pathSet.submit(processor);
 
-    var promiseForQuery;
-    var removePromise = () => {
-      var entry = this._activeQueries[query];
+    let promiseForQuery;
+    const removePromise = () => {
+      const entry = this._activeQueries[query];
       // Remove the entry only if it has not been replaced by a more recent one.
       if (entry === promiseForQuery) {
         delete this._activeQueries[query];
@@ -108,14 +110,14 @@ class PathSearch {
     };
 
     promiseForQuery = promise.then(() => {
-      var results = topScores.getTopScores();
+      const results = topScores.getTopScores();
       // Do the deletion in a timeout in case the user types backspace,
       // effectively asking for the previous results again.
       setTimeout(removePromise, PATH_SEARCH_TIMEOUT_MS);
-      return {query, results};
+      const result: ResultSet = {query, results};
+      return result;
     }, (error: Error) => {
       removePromise();
-      PathSet = PathSet || require('./PathSet');
       if (error.errorCode === PathSet.ERROR_CODE_CANCELED) {
         // This request was canceled: resolve to an empty ResultSet.
         return {
@@ -126,10 +128,9 @@ class PathSearch {
         throw error;
       }
     });
+    // $FlowFixMe: Remove the cancelJob expando off the promise.
     promiseForQuery.cancelJob = promise.cancelJob;
     this._activeQueries[query] = promiseForQuery;
     return promiseForQuery;
   }
 }
-
-module.exports = PathSearch;

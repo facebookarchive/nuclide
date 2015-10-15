@@ -9,10 +9,7 @@
  * the root directory of this source tree.
  */
 
-var {
-  scoreComparator,
-  valueComparator,
-} = require('../lib/utils');
+import {scoreComparator, valueComparator} from '../lib/utils';
 
 describe('utils', () => {
   describe('scoreComparator', () => {

@@ -9,18 +9,18 @@
  * the root directory of this source tree.
  */
 
-var TopScores = require('../lib/TopScores');
+import TopScores from '../lib/TopScores';
 
 describe('TopScores', () => {
   it('.getTopScores() returns the top scores', () => {
-    var topScores = new TopScores(3);
+    const topScores = new TopScores(3);
 
-    var one = {score: 1, value: 'one'};
-    var two = {score: 2, value: 'two'};
-    var three = {score: 3, value: 'three'};
-    var four = {score: 4, value: 'four'};
-    var five = {score: 5, value: 'five'};
-    var six = {score: 6, value: 'six'};
+    const one = {score: 1, value: 'one'};
+    const two = {score: 2, value: 'two'};
+    const three = {score: 3, value: 'three'};
+    const four = {score: 4, value: 'four'};
+    const five = {score: 5, value: 'five'};
+    const six = {score: 6, value: 'six'};
 
     topScores.insert(six);
     topScores.insert(four);
@@ -33,7 +33,7 @@ describe('TopScores', () => {
   });
 
   it('getTopScores() uses Score.value as a tiebreaker', () => {
-    var scores = [
+    const scores = [
       {score: 1, value: 'Cat'},
       {score: 1, value: 'apple'},
       {score: 1, value: 'Apple'},
@@ -44,18 +44,18 @@ describe('TopScores', () => {
       {score: 1, value: 'cat'},
       {score: 1, value: 'CAT'},
     ];
-    var topScores = new TopScores(scores.length);
+    const topScores = new TopScores(scores.length);
     scores.forEach(score => topScores.insert(score));
     expect(topScores.getTopScores().map(score => score.value)).toEqual([
-        'ball',
-        'Z',
-        '',
-        'Apple',
-        'apple',
-        'CAT',
-        'Cat',
-        'cAt',
-        'cat',
+      'ball',
+      'Z',
+      '',
+      'Apple',
+      'apple',
+      'CAT',
+      'Cat',
+      'cAt',
+      'cat',
     ]);
   });
 });

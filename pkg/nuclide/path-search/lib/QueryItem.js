@@ -9,25 +9,21 @@
  * the root directory of this source tree.
  */
 
+import {sep as DEFAULT_PATH_SEPARATOR} from 'path';
+
+import type {QueryScore} from './QueryScore';
+
 function isAlphanumeric(character): boolean {
   return /[\w]/.test(character);
 }
 
-type QueryScore = {
-  value: string;
-  score: number;
-  matchIndexes: Array<number>;
-}
-
-var DEFAULT_PATH_SEPARATOR = require('path').sep;
-
-class QueryItem {
+export default class QueryItem {
   _lastPathSeparatorIndex: number;
   _skipLocations: Array<number>;
   _string: string;
   _uppercaseString: string;
 
-  constructor(string: string, pathSeparator = DEFAULT_PATH_SEPARATOR: ?string) {
+  constructor(string: string, pathSeparator: ?string = DEFAULT_PATH_SEPARATOR) {
     // If the thing we're querying is a path, assume the filename from the path is more important.
     this._lastPathSeparatorIndex = pathSeparator == null ? -1 : string.lastIndexOf(pathSeparator);
     this._string = string;
@@ -41,9 +37,9 @@ class QueryItem {
      *   2. Characters following a non-alphanumeric character (path separators/dashes/spaces)
      */
     this._skipLocations = [];
-    for (var i = this._lastPathSeparatorIndex + 1; i < string.length; i++) {
-      var char = string.charAt(i);
-      var isUppercase = (char === this._uppercaseString.charAt(i));
+    for (let i = this._lastPathSeparatorIndex + 1; i < string.length; i++) {
+      const char = string.charAt(i);
+      const isUppercase = (char === this._uppercaseString.charAt(i));
       if (isUppercase || (isAlphanumeric(char) && !isAlphanumeric(string.charAt(i - 1)))) {
         this._skipLocations.push(i);
       }
@@ -65,20 +61,21 @@ class QueryItem {
    * Returns `null` on no match.
    */
   score(query: string): ?QueryScore {
-    var uppercaseQuery = query.toUpperCase();
-    var matches = this._findSkipMatches(uppercaseQuery) || this._findSubstringMatches(uppercaseQuery);
+    const uppercaseQuery = query.toUpperCase();
+    const matches =
+      this._findSkipMatches(uppercaseQuery) || this._findSubstringMatches(uppercaseQuery);
 
     if (matches == null || matches[matches.length - 1] < this._lastPathSeparatorIndex) {
       return null;
     }
 
-    var score = 1;
-    var lastMatch = -1;
-    for (var i = 0; i < matches.length; i++) {
-      var match = matches[i];
+    let score = 1;
+    let lastMatch = -1;
+    for (let i = 0; i < matches.length; i++) {
+      const match = matches[i];
 
-      var matchScore = 0;
-      var skipLocation = this._skipLocations.indexOf(match);
+      let matchScore = 0;
+      const skipLocation = this._skipLocations.indexOf(match);
       if (skipLocation !== -1) {
         if (skipLocation === 0) {
           matchScore += 22;
@@ -111,20 +108,20 @@ class QueryItem {
    *
    * Returns the indexes of each charater matched in the string.
    */
-   _findSkipMatches(query: string): ?Array<number> {
-    var matches = [];
-    var lastHit = -1;
+  _findSkipMatches(query: string): ?Array<number> {
+    const matches = [];
+    let lastHit = -1;
 
     /*
      * This seems like an ideal place for a for..of loop.  -It is not-, because
      * V8 will bail on optimizing this code, making its performace excruciating.
      */
-    for (var i = 0; i < query.length; i++) {
-      var queryChar = query.charAt(i);
-      var foundSkip = false;
-      for (var j = 0; j < this._skipLocations.length; j++) {
-        var skipLocation = this._skipLocations[j];
-        if (skipLocation > lastHit && this._uppercaseString.charAt(skipLocation) == queryChar) {
+    for (let i = 0; i < query.length; i++) {
+      const queryChar = query.charAt(i);
+      let foundSkip = false;
+      for (let j = 0; j < this._skipLocations.length; j++) {
+        const skipLocation = this._skipLocations[j];
+        if (skipLocation > lastHit && this._uppercaseString.charAt(skipLocation) === queryChar) {
           matches.push(skipLocation);
           lastHit = skipLocation;
           foundSkip = true;
@@ -133,7 +130,7 @@ class QueryItem {
       }
 
       if (foundSkip === false) {
-        var startIndex = Math.max(lastHit + 1, this._lastPathSeparatorIndex);
+        const startIndex = Math.max(lastHit + 1, this._lastPathSeparatorIndex);
         lastHit = this._uppercaseString.indexOf(queryChar, startIndex);
         if (lastHit === -1) {
           return null;
@@ -153,15 +150,15 @@ class QueryItem {
    * Returns the indexes of each charater matched in the string.
    */
   _findSubstringMatches(query: string): ?Array<number> {
-    var matches = new Array(query.length);
-    var lastHit = this._uppercaseString.length;
+    const matches = new Array(query.length);
+    let lastHit = this._uppercaseString.length;
 
     /*
      * This seems like an ideal place for a for..of loop.  -It is not-, because
      * V8 will bail on optimizing this code, making its performace excruciating.
      */
-    for (var i = query.length - 1; i >= 0; i--) {
-      var queryChar = query.charAt(i);
+    for (let i = query.length - 1; i >= 0; i--) {
+      const queryChar = query.charAt(i);
       lastHit = this._uppercaseString.lastIndexOf(queryChar, lastHit - 1);
       if (lastHit === -1) {
         return null;
@@ -172,5 +169,3 @@ class QueryItem {
     return matches;
   }
 }
-
-module.exports = QueryItem;

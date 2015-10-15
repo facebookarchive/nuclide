@@ -15,11 +15,10 @@
  */
 type FilePathsPseudoSet = {[key: string]: boolean};
 
-var PathSet = require('./PathSet');
+import {spawn} from 'child_process';
+import split from 'split';
 
-var {spawn} = require('child_process');
-var split = require('split');
-
+import PathSet from './PathSet';
 
 function getFilesFromCommand(
     command: string,
@@ -29,11 +28,11 @@ function getFilesFromCommand(
   return new Promise((resolve, reject) => {
     // Use `spawn` here to process the, possibly huge, output of the file listing.
 
-    var proc = spawn(command, args, {cwd: localDirectory});
+    const proc = spawn(command, args, {cwd: localDirectory});
 
     proc.on('error', reject);
 
-    var filePaths = {};
+    const filePaths = {};
     proc.stdout.pipe(split()).on('data', (filePath) => {
       if (transform) {
         filePath = transform(filePath);
@@ -44,7 +43,7 @@ function getFilesFromCommand(
       }
     });
 
-    var errorString = '';
+    let errorString = '';
     proc.stderr.on('data', (data) => {
       errorString += data;
     });
@@ -61,10 +60,11 @@ function getFilesFromCommand(
 
 function getTrackedHgFiles(localDirectory: string): Promise<FilePathsPseudoSet> {
   return getFilesFromCommand(
-      'hg',
-      ['locate', '--fullpath', '--include', '.'],
-      localDirectory,
-      filePath => filePath.slice(localDirectory.length + 1));
+    'hg',
+    ['locate', '--fullpath', '--include', '.'],
+    localDirectory,
+    filePath => filePath.slice(localDirectory.length + 1)
+  );
 }
 
 /**
@@ -95,7 +95,7 @@ function getUntrackedHgFiles(localDirectory: string): Promise<FilePathsPseudoSet
 function getFilesFromHg(localDirectory: string): Promise<FilePathsPseudoSet> {
   return Promise.all([getTrackedHgFiles(localDirectory), getUntrackedHgFiles(localDirectory)]).then(
     (returnedFiles) => {
-      var [trackedFiles, untrackedFiles] = returnedFiles;
+      const [trackedFiles, untrackedFiles] = returnedFiles;
       return {...trackedFiles, ...untrackedFiles};
     }
   );
@@ -125,7 +125,7 @@ function getFilesFromGit(localDirectory: string): Promise<FilePathsPseudoSet> {
   return Promise.all(
       [getTrackedGitFiles(localDirectory), getUntrackedGitFiles(localDirectory)]).then(
     (returnedFiles) => {
-      var [trackedFiles, untrackedFiles] = returnedFiles;
+      const [trackedFiles, untrackedFiles] = returnedFiles;
       return {...trackedFiles, ...untrackedFiles};
     }
   );
@@ -143,22 +143,19 @@ function getAllFiles(localDirectory: string): Promise<FilePathsPseudoSet> {
 /**
  * Creates a `PathSet` with the contents of the specified directory.
  */
-async function createPathSet(localDirectory: string): Promise<PathSet> {
+export async function createPathSet(localDirectory: string): Promise<PathSet> {
   // Attempts to get a list of files relative to `localDirectory`, hopefully from
   // a fast source control index.
   // TODO (williamsc) once ``{HG|Git}Repository` is working in nuclide-server,
   // use those instead to determine VCS.
-  var paths = await getFilesFromHg(localDirectory)
+  const paths = await getFilesFromHg(localDirectory)
       .catch(() => getFilesFromGit(localDirectory))
       .catch(() => getAllFiles(localDirectory))
       .catch(() => { throw new Error(`Failed to populate FileSearch for ${localDirectory}`); });
   return new PathSet({paths});
 }
 
-module.exports = {
-  createPathSet,
-  __test__: {
-    getFilesFromGit,
-    getFilesFromHg,
-  },
+export const __test__ = {
+  getFilesFromGit,
+  getFilesFromHg,
 };

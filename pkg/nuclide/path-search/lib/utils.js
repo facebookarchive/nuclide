@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {Score} from './Score';
+import type {QueryScore} from './QueryScore';
 
 /**
  * String comparator that lists the capitalized verson of a string before the lowercase version.
@@ -25,19 +25,19 @@ import type {Score} from './Score';
  *
  * @return <0 if a should appear before b in a list; >0 if b should appear before a in a list
  */
-function valueComparator(a: string, b: string): number {
-  var len = Math.min(a.length, b.length);
-  for (var i = 0; i < len; i++) {
-    var charA = a.charAt(i);
-    var charB = b.charAt(i);
+export function valueComparator(a: string, b: string): number {
+  const len = Math.min(a.length, b.length);
+  for (let i = 0; i < len; i++) {
+    const charA = a.charAt(i);
+    const charB = b.charAt(i);
     if (charA === charB) {
       continue;
     }
 
-    var aUpper = charA.toUpperCase();
-    var bUpper = charB.toUpperCase();
+    const aUpper = charA.toUpperCase();
+    const bUpper = charB.toUpperCase();
 
-    var caseInsensitiveCompare = aUpper.localeCompare(bUpper);
+    const caseInsensitiveCompare = aUpper.localeCompare(bUpper);
     if (caseInsensitiveCompare !== 0) {
       return caseInsensitiveCompare;
     }
@@ -51,10 +51,10 @@ function valueComparator(a: string, b: string): number {
 }
 
 /**
- * @return >0 if a is the greater Score; <0 if b is the greater Score.
+ * @return >0 if a is the greater QueryScore; <0 if b is the greater QueryScore.
  */
-function scoreComparator(a: Score, b: Score): number {
-  var cmp = a.score - b.score;
+export function scoreComparator(a: QueryScore, b: QueryScore): number {
+  const cmp = a.score - b.score;
   if (cmp !== 0) {
     return cmp;
   } else {
@@ -63,14 +63,8 @@ function scoreComparator(a: Score, b: Score): number {
 }
 
 /**
- * @return <0 if a is the greater Score; >0 if b is the greater Score.
+ * @return <0 if a is the greater QueryScore; >0 if b is the greater QueryScore.
  */
-function inverseScoreComparator(a: Score, b: Score): number {
+export function inverseScoreComparator(a: QueryScore, b: QueryScore): number {
   return -scoreComparator(a, b);
 }
-
-module.exports = {
-  scoreComparator,
-  inverseScoreComparator,
-  valueComparator,
-};

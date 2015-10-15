@@ -10,19 +10,19 @@
  */
 
 module.exports = {
-  throwsErrorSynchronously() {
+  throwsErrorSynchronously(): void {
     // TODO(mbolin): If throws a string rather than an Error, the unit test
     // fails.
     throw Error('All I do is fail.');
   },
 
-  returnsRejectedPromise() {
+  returnsRejectedPromise(): Promise {
     // TODO(mbolin): If this passes a string rather than an Error, the unit test
     // fails.
     return Promise.reject(Error('Explicit fail with rejected Promise.'));
   },
 
-  async asyncFunctionThatThrows() {
+  async asyncFunctionThatThrows(): Promise<void> {
     // TODO(mbolin): If throws a string rather than an Error, the unit test
     // fails.
     throw Error('All I do is fail *asynchronously*.');

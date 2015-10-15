@@ -16,22 +16,22 @@ type ProcessorJob = {
   paths: {[key: string]: boolean};
   canceled: boolean;
   startTime: number;
-  chunkSize: number;
+  chunkSize?: number;
   chunkCount: number;
 };
 
 type ForEachCallback = (key: string, value: string, set: PathSet) => void;
 
-var INITIAL_CHUNK_SIZE = 200;
+const INITIAL_CHUNK_SIZE = 200;
 
 /**
  * Value of the `.errorCode` property on the `Error` for a rejected Promise
  * returned by `PathSet.submit()`.
  */
-var ERROR_CODE_CANCELED = 21;
+const ERROR_CODE_CANCELED = 21;
 
 // TODO(mikeo): Replace this with nuclide-logging once #6378527 is fixed.
-var logger = {
+const logger = {
   debug(...args) {
     // Uncomment for debugging.
     // console.log.apply(console, args);
@@ -48,13 +48,16 @@ var logger = {
  * taken to ensure that each Processor sees a consistent view of the contents
  * of the set.
  */
-class PathSet {
+export default class PathSet {
   _initialChunkSize: number;
   _paths: {[key: string]: boolean};
   _latestPaths: ?{[key: string]: boolean};
   _jobs: Array<ProcessorJob>;
 
-  constructor(options = {}) {
+  // $FlowIssue t8486988
+  static ERROR_CODE_CANCELED = ERROR_CODE_CANCELED;
+
+  constructor(options: Object = {}) {
     // An ordinary JavaScript object is used instead of an ES6 Map or Set
     // because this code may also be run on Node 0.10.x, which would require the
     // use of an ES6 polyfill, which may not be performant enough for an
@@ -104,8 +107,8 @@ class PathSet {
       paths.forEach(path => { this._paths[path] = true; });
     } else {
       // Otherwise, add a new head to the this._latestPaths chain.
-      var proto = this._latestPaths || this._paths;
-      var props = {};
+      const proto = this._latestPaths || this._paths;
+      const props = {};
       paths.forEach(path => { props[path] = {value: true, enumerable: true}; });
       this._latestPaths = Object.freeze(Object.create(proto, props));
     }
@@ -117,8 +120,8 @@ class PathSet {
       paths.forEach(path => { delete this._paths[path]; });
     } else {
       // Otherwise, add a new head to the this._latestPaths chain.
-      var proto = this._latestPaths || this._paths;
-      var props = {};
+      const proto = this._latestPaths || this._paths;
+      const props = {};
       paths.forEach(path => { props[path] = {value: false, enumerable: true}; });
       this._latestPaths = Object.freeze(Object.create(proto, props));
     }
@@ -129,7 +132,7 @@ class PathSet {
    * Compatible with https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set/forEach.
    */
   forEach(callback: ForEachCallback): void {
-    for(var path in this._paths) {
+    for (const path in this._paths) {
       callback(path, path, this);
     }
   }
@@ -138,8 +141,8 @@ class PathSet {
    * Helper function to obtain a list of all of the paths in this set.
    */
   values(): Array<string> {
-    var values = [];
-    for(var path in this._paths) {
+    const values = [];
+    for (const path in this._paths) {
       values.push(path);
     }
     return values;
@@ -157,7 +160,7 @@ class PathSet {
   submit(processor: Processor): Promise<void> {
     // Because the paths for the job is iterated via for/in, it is imperative
     // that the paths object is not modified while it is being iterated.
-    var job = {
+    const job = {
       processor,
       paths: this._latestPaths || this._paths,
       canceled: false,
@@ -165,7 +168,8 @@ class PathSet {
       chunkCount: 0,
     };
     this._jobs.push(job);
-    var promise = this._runJob(job);
+    const promise = this._runJob(job);
+    // $FlowFixMe: Remove the cancelJob expando off the promise.
     promise.cancelJob = () => {
       job.canceled = true;
     };
@@ -173,17 +177,17 @@ class PathSet {
   }
 
   _runJob(job: ProcessorJob): Promise<void> {
-    var {paths, processor} = job;
-    var count = 0;
-    var chunkSize = this._initialChunkSize;
+    const {paths, processor} = job;
+    let count = 0;
+    let chunkSize = this._initialChunkSize;
 
-    var doCleanup = (err: ?Error) => {
+    const doCleanup = (err: ?Error) => {
       logger.debug(
           `${err ? 'Canceled ' : ''}ProcessorJob for ${processor} ` +
           `processed ${job.chunkCount} items in ${Date.now() - job.startTime}ms.`);
 
       // Now that the Promise has been determined, remove the job from the list.
-      var index = this._jobs.indexOf(job);
+      const index = this._jobs.indexOf(job);
       this._jobs.splice(index, 1);
 
       // Clean up the modification history to this PathSet, if appropriate.
@@ -192,12 +196,12 @@ class PathSet {
       if (err) {
         throw err;
       }
-    }
+    };
 
     return new Promise((resolve, reject) => {
-      var generator;
+      let generator;
       function* run() {
-        for (var path in paths) {
+        for (const path in paths) {
           // Make sure the entry for `path` corresponds to `true`, as the
           // original entry could be shadowed by a nearer property in the
           // prototype chain whose value corresponds to `false`.
@@ -209,14 +213,19 @@ class PathSet {
           if (count === chunkSize) {
             job.chunkCount += chunkSize;
             process.nextTick(function() {
-              generator.next();
+              if (generator) {
+                generator.next();
+              }
             });
-            yield;
+
+            // TODO: fix with https://github.com/facebook/flow/issues/912
+            yield undefined;
 
             // Upon resuming, check whether this job has been canceled.
             if (job.canceled) {
               logger.debug(`canceling ${processor}`);
-              var error = Error(`canceled ${processor}`);
+              const error = Error(`canceled ${processor}`);
+              // $FlowFixMe: Remove the errorCode expando off the error.
               error.errorCode = ERROR_CODE_CANCELED;
               reject(error);
               return;
@@ -244,14 +253,14 @@ class PathSet {
   }
 
   _squashHistory() {
-    // If the job list is now empty, collapse this._latestPaths, if non-null.
-    if (this._latestPaths === null || this._jobs.length !== 0) {
+    // If the job list is now empty, collapse this._latestPaths, if not null or undefined.
+    if (this._latestPaths == null || this._jobs.length !== 0) {
       return;
     }
 
-    var chain = findPrototypeChain(this._paths, this._latestPaths);
+    const chain = findPrototypeChain(this._paths, this._latestPaths);
     chain.forEach(link => {
-      for (var path in link) {
+      for (const path in link) {
         if (link[path] === true) {
           this._paths[path] = true;
         } else {
@@ -263,8 +272,6 @@ class PathSet {
   }
 }
 
-PathSet.ERROR_CODE_CANCELED = ERROR_CODE_CANCELED;
-
 /**
  * Given two objects where one is a descendant of the other in the prototype
  * chain, return an array that corresponds to the chain of prototype objects.
@@ -272,13 +279,11 @@ PathSet.ERROR_CODE_CANCELED = ERROR_CODE_CANCELED;
  * @return an Array ordered by "distance in the prototype chain from ancestor"
  *     in ascending order. The ancestor argument will not be in the Array.
  */
-function findPrototypeChain(ancestor, descendant): Array {
-  var chain = [];
+function findPrototypeChain(ancestor: Object, descendant: Object): Array<Object> {
+  const chain = [];
   while (ancestor !== descendant) {
     chain.push(descendant);
     descendant = Object.getPrototypeOf(descendant);
   }
   return chain.reverse();
 }
-
-module.exports = PathSet;

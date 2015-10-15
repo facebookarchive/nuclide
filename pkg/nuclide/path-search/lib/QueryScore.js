@@ -9,7 +9,8 @@
  * the root directory of this source tree.
  */
 
-export type Score = {
+export type QueryScore = {
   value: string;
   score: number;
+  matchIndexes?: Array<number>;
 };

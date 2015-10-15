@@ -9,17 +9,21 @@
  * the root directory of this source tree.
  */
 
-var {asyncExecute} = require('nuclide-commons');
-var fs = require('fs');
-var path = require('path');
-var temp = require('temp').track();
-var url = require('url');
+import invariant from 'assert';
+import fs from 'fs';
+import path from 'path';
+import {track} from 'temp';
+const temp = track();
+import url from 'url';
 
-var {fileSearchForDirectory} = require('../lib/FileSearch');
+import {asyncExecute} from 'nuclide-commons';
+
+import {fileSearchForDirectory} from '../lib/FileSearch';
+
 
 function aFileSearchShould(typename) {
   describe(`A ${typename} folder`, () => {
-    var dirPath, dirPathFn, search, deeperSearch, uriSearch;
+    let dirPath, dirPathFn, search, deeperSearch, uriSearch;
 
     if (typename === 'Mercurial') {
       dirPathFn = hgTestFolder;
@@ -34,46 +38,61 @@ function aFileSearchShould(typename) {
     beforeEach(() => {
       waitsForPromise(async () => {
         // Don't create a real PathSearchUpdater that relies on watchman.
-        var mockPathSetUpdater = {
+        const mockPathSetUpdater: Object = {
           startUpdatingPathSet: () => Promise.resolve({dispose: () => {}}),
         };
 
+        invariant(dirPathFn);
         dirPath = await dirPathFn();
+        invariant(fileSearchForDirectory);
         search = await fileSearchForDirectory(dirPath, mockPathSetUpdater);
-        deeperSearch = await fileSearchForDirectory(path.join(dirPath, 'deeper'), mockPathSetUpdater);
-        uriSearch = await fileSearchForDirectory(url.format({protocol: 'http',
-                                                             host: 'somehost.fb.com',
-                                                             pathname: dirPath}),
-                                                 mockPathSetUpdater);
+        deeperSearch =
+          await fileSearchForDirectory(path.join(dirPath, 'deeper'), mockPathSetUpdater);
+        uriSearch = await fileSearchForDirectory(
+          url.format({protocol: 'http', host: 'somehost.fb.com', pathname: dirPath}),
+          mockPathSetUpdater,
+        );
       });
     });
 
     describe('a FileSearch at the root of a project', () => {
       function correctIndexes(indexes): Array<number> {
-        return indexes.map((index) => index + dirPath.length + 1);
+        return indexes.map((index) => {
+          invariant(dirPath);
+          return index + dirPath.length + 1;
+        });
       }
 
       it('should return an easy match in the root directory', () => {
         waitsForPromise(async () => {
-          var results = await search.query('test');
-          expect(results).toEqual([{score: 171,
-                                    path: path.join(dirPath, 'test'),
-                                    matchIndexes: correctIndexes([0, 1, 2, 3])}]);
+          invariant(search);
+          invariant(dirPath);
+          const results = await search.query('test');
+          expect(results).toEqual([{
+            score: 171,
+            path: path.join(dirPath, 'test'),
+            matchIndexes: correctIndexes([0, 1, 2, 3]),
+          }]);
         });
       });
 
       it('should return an easy match in the deeper directory', () => {
         waitsForPromise(async () => {
-          var results = await search.query('deeper');
-          expect(results).toEqual([{score: 208.75,
-                                    path: path.join(dirPath, 'deeper/deeper'),
-                                    matchIndexes: correctIndexes([7, 8, 9, 10, 11, 12])}]);
+          invariant(search);
+          invariant(dirPath);
+          const results = await search.query('deeper');
+          expect(results).toEqual([{
+            score: 208.75,
+            path: path.join(dirPath, 'deeper/deeper'),
+            matchIndexes: correctIndexes([7, 8, 9, 10, 11, 12]),
+          }]);
         });
       });
 
       it('should only contain two file entries', () => {
         waitsForPromise(async () => {
-          var results = await search.query('');
+          invariant(search);
+          const results = await search.query('');
           expect(results.length).toEqual(2);
         });
       });
@@ -81,28 +100,37 @@ function aFileSearchShould(typename) {
 
     describe('a subdirectory FileSearch', () => {
       function correctIndexes(indexes): Array<number> {
-        return indexes.map((index) => index + uriSearch.getLocalDirectory().length);
+        return indexes.map((index) => {
+          invariant(uriSearch);
+          return index + uriSearch.getLocalDirectory().length;
+        });
       }
 
       it('should return results relative to the deeper path', () => {
         waitsForPromise(async () => {
-          var results = await deeperSearch.query('deeper');
-          expect(results).toEqual([{score: 235,
-                                    path: path.join(dirPath, 'deeper/deeper'),
-                                    matchIndexes: correctIndexes([0, 1, 2, 3, 4, 5])}]);
+          invariant(deeperSearch);
+          invariant(dirPath);
+          const results = await deeperSearch.query('deeper');
+          expect(results).toEqual([{
+            score: 235,
+            path: path.join(dirPath, 'deeper/deeper'),
+            matchIndexes: correctIndexes([0, 1, 2, 3, 4, 5]),
+          }]);
         });
       });
 
-      it ('should not return results in a subdirectory', () => {
+      it('should not return results in a subdirectory', () => {
         waitsForPromise(async () => {
-          var results = await deeperSearch.query('test');
+          invariant(deeperSearch);
+          const results = await deeperSearch.query('test');
           expect(results).toEqual([]);
         });
       });
 
       it('should only contain one file', () => {
         waitsForPromise(async () => {
-          var results = await deeperSearch.query('');
+          invariant(deeperSearch);
+          const results = await deeperSearch.query('');
           expect(results.length).toEqual(1);
         });
       });
@@ -110,30 +138,40 @@ function aFileSearchShould(typename) {
 
     describe('a FileSearch with a hostname', () => {
       function correctIndexes(indexes): Array<number> {
-        return indexes.map((index) => index + uriSearch.getFullBaseUri().length + 1);
+        return indexes.map((index) => {
+          invariant(uriSearch);
+          return index + uriSearch.getFullBaseUri().length + 1;
+        });
       }
 
       it('should return an easy match in the root directory', () => {
         waitsForPromise(async () => {
-          var results = await uriSearch.query('test');
-          expect(results).toEqual([{score: 171,
-                                    path: `http://somehost.fb.com${dirPath}/test`,
-                                    matchIndexes: correctIndexes([0, 1, 2, 3])}]);
+          invariant(uriSearch);
+          const results = await uriSearch.query('test');
+          expect(results).toEqual([{
+            score: 171,
+            path: `http://somehost.fb.com${dirPath}/test`,
+            matchIndexes: correctIndexes([0, 1, 2, 3]),
+          }]);
         });
       });
 
       it('should return an easy match in the deeper directory', () => {
         waitsForPromise(async () => {
-          var results = await uriSearch.query('deeper');
-          expect(results).toEqual([{score: 208.75,
-                                    path: `http://somehost.fb.com${dirPath}/deeper/deeper`,
-                                    matchIndexes: correctIndexes([7, 8, 9, 10, 11, 12])}]);
+          invariant(uriSearch);
+          const results = await uriSearch.query('deeper');
+          expect(results).toEqual([{
+            score: 208.75,
+            path: `http://somehost.fb.com${dirPath}/deeper/deeper`,
+            matchIndexes: correctIndexes([7, 8, 9, 10, 11, 12]),
+          }]);
         });
       });
 
       it('should only contain two file entries', () => {
         waitsForPromise(async () => {
-          var results = await uriSearch.query('');
+          invariant(uriSearch);
+          const results = await uriSearch.query('');
           expect(results.length).toEqual(2);
         });
       });
@@ -142,41 +180,41 @@ function aFileSearchShould(typename) {
 }
 
 function createTestFolder(): string {
-  var folder = temp.mkdirSync();
+  const folder = temp.mkdirSync();
 
-  fs.writeFileSync(path.join(folder, 'test'));
+  fs.writeFileSync(path.join(folder, 'test'), '');
 
   fs.mkdirSync(path.join(folder, 'deeper'));
-  fs.writeFileSync(path.join(folder, 'deeper', 'deeper'));
+  fs.writeFileSync(path.join(folder, 'deeper', 'deeper'), '');
 
   return folder;
 }
 
-async function hgTestFolder(): string {
-  var folder = createTestFolder();
+async function hgTestFolder(): Promise<string> {
+  const folder = createTestFolder();
 
   await asyncExecute('hg', ['init'], {cwd: folder});
   await asyncExecute('hg', ['addremove'], {cwd: folder});
 
   // After adding the existing files to hg, add an ignored file to
   // prove we're using hg to populate the list.
-  var ignoredFile = 'ignored';
-  fs.writeFileSync(path.join(folder, ignoredFile));
+  const ignoredFile = 'ignored';
+  fs.writeFileSync(path.join(folder, ignoredFile), '');
   fs.writeFileSync(path.join(folder, '.hgignore'), `.hgignore\n${ignoredFile}`);
 
   return folder;
 }
 
-async function gitTestFolder(): string {
-  var folder = createTestFolder();
+async function gitTestFolder(): Promise<string> {
+  const folder = createTestFolder();
 
   await asyncExecute('git', ['init'], {cwd: folder});
   await asyncExecute('git', ['add', '*'], {cwd: folder});
 
   // After adding the existing files to git, add an ignored file to
   // prove we're using git to populate the list.
-  var ignoredFile = 'ignored';
-  fs.writeFileSync(path.join(folder, ignoredFile));
+  const ignoredFile = 'ignored';
+  fs.writeFileSync(path.join(folder, ignoredFile), '');
   fs.writeFileSync(path.join(folder, '.gitignore'), `.gitignore\n${ignoredFile}`);
 
   return folder;

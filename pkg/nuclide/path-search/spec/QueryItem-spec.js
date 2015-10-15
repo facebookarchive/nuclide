@@ -9,15 +9,18 @@
  * the root directory of this source tree.
  */
 
-var QueryItem = require('../lib/QueryItem');
+import invariant from 'assert';
+import QueryItem from '../lib/QueryItem';
 
 describe('QueryItem', () => {
   describe('"Hello"', () => {
-    var item = new QueryItem('Hello');
+    const item = new QueryItem('Hello');
 
     it('should return a score of 1 on no query', () => {
-      expect(item.score('').score).toBe(1);
-      expect(item.score('').matchIndexes).toEqual([]);
+      const score = item.score('');
+      invariant(score);
+      expect(score.score).toBe(1);
+      expect(score.matchIndexes).toEqual([]);
     });
 
     it('should return null on no match', () => {
@@ -29,20 +32,32 @@ describe('QueryItem', () => {
     });
 
     it('should ignore query case', () => {
-      expect(item.score('He').score).toEqual(item.score('he').score);
+      const score1 = item.score('He');
+      const score2 = item.score('he');
+      invariant(score1);
+      invariant(score2);
+      expect(score1.score).toEqual(score2.score);
     });
 
     it('should prefer matches where the letters are closer together', () => {
-      expect(item.score('he').score).toBeGreaterThan(item.score('hl').score);
-      expect(item.score('hl').score).toBeGreaterThan(item.score('ho').score);
+      const score1 = item.score('he');
+      const score2 = item.score('hl');
+      const score3 = item.score('ho');
+      invariant(score1);
+      invariant(score2);
+      invariant(score3);
+      expect(score1.score).toBeGreaterThan(score2.score);
+      expect(score2.score).toBeGreaterThan(score3.score);
     });
   });
 
   describe('Path Separator', () => {
-    var item = new QueryItem('He/y/Hello', '/');
+    const item = new QueryItem('He/y/Hello', '/');
 
     it('should prefer matches after the last path separator', () => {
-      expect(item.score('h').matchIndexes).toEqual([5]);
+      const score = item.score('h');
+      invariant(score);
+      expect(score.matchIndexes).toEqual([5]);
     });
 
     it('should return null if no matches appeared after the last path separator', () => {
@@ -56,13 +71,14 @@ describe('QueryItem', () => {
 
   describe('Misc', () => {
     it('should prefer matches with an initialism', () => {
-      var item = new QueryItem('AbBa');
-
-      expect(item.score('ab').matchIndexes).toEqual([0, 2]);
+      const item = new QueryItem('AbBa');
+      const score = item.score('ab');
+      invariant(score);
+      expect(score.matchIndexes).toEqual([0, 2]);
     });
 
     it('should be able to fall back to substring match when an initialism skip fails', () => {
-      var item = new QueryItem('AbBa');
+      const item = new QueryItem('AbBa');
 
       // If the query could initially trigger a skip then fail, still treturn a result.
       expect(item.score('bb')).not.toBe(null);

@@ -9,14 +9,10 @@
  * the root directory of this source tree.
  */
 
-var Heap = require('heap');
+import Heap from 'heap';
 
-import type {Score} from './Score';
-
-var {
-  scoreComparator,
-  inverseScoreComparator,
-} = require('./utils');
+import type {QueryScore} from './QueryScore';
+import {scoreComparator, inverseScoreComparator} from './utils';
 
 /**
  * This data structure is designed to hold the top K scores from a collection of
@@ -29,10 +25,11 @@ var {
  * Therefore, finding the top K scores from a collection of N elements should be
  * O(N lg K).
  */
-class TopScores {
+export default class TopScores {
   _capacity: number;
   _full: boolean;
-  _min: ?Score;
+  _heap: Heap;
+  _min: ?QueryScore;
 
   constructor(capacity: number) {
     this._capacity = capacity;
@@ -41,9 +38,9 @@ class TopScores {
     this._min = null;
   }
 
-  insert(score: Score) {
-    if (this._full) {
-      var cmp = scoreComparator(score, this._min);
+  insert(score: QueryScore) {
+    if (this._full && this._min) {
+      const cmp = scoreComparator(score, this._min);
       if (cmp > 0) {
         this._doInsert(score);
       }
@@ -52,7 +49,7 @@ class TopScores {
     }
   }
 
-  _doInsert(score: Score) {
+  _doInsert(score: QueryScore) {
     if (this._full) {
       this._heap.replace(score);
     } else {
@@ -65,11 +62,9 @@ class TopScores {
   /**
    * @return an Array where Scores will be sorted in descending order.
    */
-  getTopScores(): Array<Score> {
-    var array = this._heap.toArray();
+  getTopScores(): Array<QueryScore> {
+    const array = this._heap.toArray();
     array.sort(inverseScoreComparator);
     return array;
   }
 }
-
-module.exports = TopScores;

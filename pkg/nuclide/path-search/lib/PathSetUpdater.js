@@ -9,7 +9,13 @@
  * the root directory of this source tree.
  */
 
-var path = require('path');
+import type PathSet from './PathSet';
+import type {WatchmanSubscription} from 'nuclide-watchman-helpers';
+
+import {Disposable} from 'event-kit';
+import invariant from 'assert';
+
+import {WatchmanClient} from 'nuclide-watchman-helpers';
 
 /**
  * This class keeps the PathSets passed to it up to date by using file system
@@ -17,7 +23,10 @@ var path = require('path');
  * This class currently relies on the Nuclide WatchmanClient, which requires fb-watchman.
  */
 // TODO (t7298196) Investigate falling back to Node watchers.
-class PathSetUpdater {
+export default class PathSetUpdater {
+  _pathSetToSubscription: Map<PathSet, WatchmanSubscription>;
+  _watchmanClient: ?WatchmanClient;
+
   constructor() {
     this._pathSetToSubscription = new Map();
   }
@@ -28,7 +37,6 @@ class PathSetUpdater {
     }
   }
 
-
   // Section: Add/Remove PathSets
 
   /**
@@ -38,19 +46,21 @@ class PathSetUpdater {
    * was created from.
    * @return Disposable that can be disposed to stop updating the PathSet.
    */
-  async startUpdatingPathSet(pathSet: PathSet, localDirectory: string): Promise<Disposable> {
-    var subscription = await this._addWatchmanSubscription(localDirectory);
+  async startUpdatingPathSet(
+    pathSet: PathSet,
+    localDirectory: string
+  ): Promise<Disposable> {
+    const subscription = await this._addWatchmanSubscription(localDirectory);
     this._pathSetToSubscription.set(pathSet, subscription);
 
-    subscription.on('change',
-        (files) => this._processWatchmanUpdate(subscription.pathFromSubscriptionRootToSubscriptionPath, pathSet, files));
-
-    var {Disposable} = require('event-kit');
+    subscription.on('change', (files) => this._processWatchmanUpdate(
+      subscription.pathFromSubscriptionRootToSubscriptionPath, pathSet, files
+    ));
     return new Disposable(() => this._stopUpdatingPathSet(pathSet));
   }
 
   _stopUpdatingPathSet(pathSet: PathSet) {
-    var subscription = this._pathSetToSubscription.get(pathSet);
+    const subscription = this._pathSetToSubscription.get(pathSet);
     if (subscription) {
       this._pathSetToSubscription.delete(pathSet);
       this._removeWatchmanSubscription(subscription);
@@ -64,7 +74,6 @@ class PathSetUpdater {
     if (this._watchmanClient) {
       return;
     }
-    var {WatchmanClient} = require('nuclide-watchman-helpers');
     this._watchmanClient = new WatchmanClient();
   }
 
@@ -72,12 +81,11 @@ class PathSetUpdater {
     if (!this._watchmanClient) {
       this._setupWatcherService();
     }
-
-    var subscription = await this._watchmanClient.watchDirectoryRecursive(localDirectory);
-    return subscription;
+    invariant(this._watchmanClient);
+    return await this._watchmanClient.watchDirectoryRecursive(localDirectory);
   }
 
-  _removeWatchmanSubscription(subscription: WatchmanSubscription) {
+  _removeWatchmanSubscription(subscription: WatchmanSubscription): void {
     if (!this._watchmanClient) {
       return;
     }
@@ -99,17 +107,23 @@ class PathSetUpdater {
    * @param files The `files` field of an fb-watchman update. Each file in the
    *   update is expected to contain fields for `name`, `new`, and `exists`.
    */
-  _processWatchmanUpdate(pathFromSubscriptionRootToDir: ?string, pathSet: PathSet, files: any): void {
-    var newPaths = [];
-    var deletedPaths = [];
+  _processWatchmanUpdate(
+    pathFromSubscriptionRootToDir: ?string,
+    pathSet: PathSet,
+    files: any,
+  ): void {
+    const newPaths = [];
+    const deletedPaths = [];
 
     files.forEach(file => {
-      var fileName = file.name;
+      const fileName = file.name;
       // Watchman returns paths relative to the subscription root, which may be
       // different from (i.e. a parent directory of) the localDirectory passed into
       // PathSetUpdater::startUpdatingPathSet. But the PathSet expects paths
       // relative to the localDirectory. Thus we need to do this adjustment.
-      var adjustedPath = pathFromSubscriptionRootToDir ? fileName.slice(pathFromSubscriptionRootToDir.length + 1) : fileName;
+      const adjustedPath = pathFromSubscriptionRootToDir ?
+        fileName.slice(pathFromSubscriptionRootToDir.length + 1) :
+        fileName;
       if (file.new) {
         newPaths.push(adjustedPath);
       } else if (!file.exists) {
@@ -126,5 +140,3 @@ class PathSetUpdater {
   }
 
 }
-
-module.exports = PathSetUpdater;
