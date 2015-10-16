@@ -100,18 +100,29 @@ function addRemoteFolderToProject(connection: RemoteConnection) {
       return connection.close();
     }
 
+    const buttons = ['Keep It', 'Shutdown'];
+    const buttonToActions = new Map();
+
+    buttonToActions.set(buttons[0], () => connection.close());
+    buttonToActions.set(buttons[1], () => {
+      connection.getClient().shutdownServer();
+      return connection.close();
+    });
+
+    if (atom.config.get(
+      'nuclide-remote-projects.shutdownServerAfterDisconnection',
+    )) {
+      // Atom takes the first button in the list as default option.
+      buttons.reverse();
+    }
+
     var choice = atom.confirm({
       message: 'No more remote projects on the host: \'' + hostname +
         '\'. Would you like to shutdown Nuclide server there?',
-      buttons: ['Keep It', 'Shutdown'],
+      buttons,
     });
-    if (choice === 0) {
-      return connection.close();
-    }
-    if (choice === 1) {
-      connection.getClient().shutdownServer();
-      return connection.close();
-    }
+
+    return buttonToActions.get(buttons[choice])();
   }
 }
 
@@ -329,6 +340,14 @@ module.exports = {
   __test__: {
     decryptString,
     encryptString,
+  },
+
+  config: {
+    shutdownServerAfterDisconnection: {
+      type: 'boolean',
+      description: 'Shutdown nuclide server after all remote projects are disconnected',
+      default: true,
+    },
   },
 
   activate(state: ?{remoteProjectsConfig: SerializableRemoteConnectionConfiguration[]}): void {
