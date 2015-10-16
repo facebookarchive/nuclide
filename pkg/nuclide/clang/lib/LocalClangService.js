@@ -22,7 +22,7 @@ var LocalBuckUtils = require('nuclide-buck-base/lib/LocalBuckUtils');
 
 
 async function _findClangServerArgs(): Promise<{
-  ldLibraryPathEnv: ?string;
+  libClangLibraryFile: ?string;
   pythonExecutable: string;
   pythonPathEnv: ?string;
 }> {
@@ -33,16 +33,17 @@ async function _findClangServerArgs(): Promise<{
     // Ignore.
   }
 
-  var ldLibraryPathEnv;
+  var libClangLibraryFile;
   if (process.platform === 'darwin') {
     var result = await checkOutput('xcode-select', ['--print-path']);
     if (result.exitCode === 0) {
-      ldLibraryPathEnv = result.stdout.trim() + '/Toolchains/XcodeDefault.xctoolchain/usr/lib/';
+      libClangLibraryFile = result.stdout.trim() +
+        '/Toolchains/XcodeDefault.xctoolchain/usr/lib/libclang.dylib';
     }
   }
 
   var clangServerArgs = {
-    ldLibraryPathEnv,
+    libClangLibraryFile,
     pythonExecutable: 'python',
     pythonPathEnv: path.join(__dirname, '../pythonpath'),
   };
@@ -62,7 +63,7 @@ type Connection = {
 async function createAsyncConnection(pathToLibClangServer: string): Promise<Connection> {
   // $FlowIssue D2268946
   return await new Promise(async (resolve, reject) => {
-    var {ldLibraryPathEnv, pythonPathEnv, pythonExecutable} = await _findClangServerArgs();
+    var {libClangLibraryFile, pythonPathEnv, pythonExecutable} = await _findClangServerArgs();
     var options = {
       cwd: path.dirname(pathToLibClangServer),
       // The process should use its ordinary stderr for errors.
@@ -72,9 +73,7 @@ async function createAsyncConnection(pathToLibClangServer: string): Promise<Conn
         // On Mac OSX El Capitan, bash seems to wipe out the `LD_LIBRARY_PATH` and
         // `DYLD_LIBRARY_PATH` environment variables. So, set this env var which is read by
         // clang_server.py to explicitly set the file path to load.
-        LIB_CLANG_DYLIB_FILE: ldLibraryPathEnv
-          ? path.join(ldLibraryPathEnv, 'libclang.dylib')
-          : null,
+        LIB_CLANG_LIBRARY_FILE: libClangLibraryFile,
         PYTHONPATH: pythonPathEnv,
       },
     };
