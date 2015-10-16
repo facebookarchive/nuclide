@@ -23,8 +23,11 @@ export default class DiffCountComponent extends React.Component {
     count: PropTypes.number.isRequired,
   };
 
-  render(): ReactElement {
+  render(): ?ReactElement {
     const {count} = this.props;
+    if (count === 0) {
+      return null;
+    }
     return (
       <span>
         {count > 99 ? '+99' : count}
