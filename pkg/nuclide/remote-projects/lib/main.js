@@ -366,26 +366,26 @@ module.exports = {
         () => require('nuclide-ssh-dialog').openConnectionDialog()
     ));
 
+    // Subscribe opener before restoring the remote projects.
+    subscriptions.add(atom.workspace.addOpener((uri = '') => {
+      if (uri.startsWith('nuclide:')) {
+        var connection = getRemoteConnection().getForUri(uri);
+        // On Atom restart, it tries to open the uri path as a file tab because it's not a local
+        // directory. We can't let that create a file with the initial working directory path.
+        if (connection && uri !== connection.getUriForInitialWorkingDirectory()) {
+          if (pendingFiles[uri]) {
+            return pendingFiles[uri];
+          }
+          var textEditorPromise = pendingFiles[uri] = createEditorForNuclide(connection, uri);
+          var removeFromCache = () => delete pendingFiles[uri];
+          textEditorPromise.then(removeFromCache, removeFromCache);
+          return textEditorPromise;
+        }
+      }
+    }));
+
     // Don't do require or any other expensive operations in activate().
     subscriptions.add(atom.packages.onDidActivateInitialPackages(() => {
-      // Subscribe opener before restoring the remote projects.
-      subscriptions.add(atom.workspace.addOpener((uri = '') => {
-        if (uri.startsWith('nuclide:')) {
-          var connection = getRemoteConnection().getForUri(uri);
-          // On Atom restart, it tries to open the uri path as a file tab because it's not a local
-          // directory. We can't let that create a file with the initial working directory path.
-          if (connection && uri !== connection.getUriForInitialWorkingDirectory()) {
-            if (pendingFiles[uri]) {
-              return pendingFiles[uri];
-            }
-            var textEditorPromise = pendingFiles[uri] = createEditorForNuclide(connection, uri);
-            var removeFromCache = () => delete pendingFiles[uri];
-            textEditorPromise.then(removeFromCache, removeFromCache);
-            return textEditorPromise;
-          }
-        }
-      }));
-
       // Remove remote projects added in case of reloads.
       // We already have their connection config stored.
       let remoteProjectsConfigAsDeserializedJson: SerializableRemoteConnectionConfiguration[] =
