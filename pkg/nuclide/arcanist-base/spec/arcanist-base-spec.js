@@ -119,9 +119,33 @@ describe('nuclide-arcanist-base', () => {
     let arcResult: any;
     let execArgs: any;
     let arcanistBaseService: any;
+    const fakeLint = {
+      'description' : 'Trailing spaces not allowed. (no-trailing-spaces)',
+      'severity' : 'warning',
+      'original' : null,
+      'line' : 78,
+      'bypassChangedLineFiltering' : null,
+      'name' : 'ESLint reported a warning.',
+      'granularity' : 1,
+      'locations' : [],
+      'replacement' : null,
+      'code' : 'FBNUCLIDELINT1',
+      'char' : 2,
+      'context' : 'this usually contains some nearby code',
+    };
+    const fakeLintResult = {
+      type: 'Warning',
+      text: 'Trailing spaces not allowed. (no-trailing-spaces)',
+      filePath: '/fake/path/one/path1',
+      row: 77,
+      col: 1,
+      code: 'FBNUCLIDELINT1',
+    };
 
-    function setResult(result) {
-      arcResult = {stdout: JSON.stringify(result)};
+    function setResult(...results) {
+      // This mimics the output that `arc lint` can provide. Sometimes it provides results as valid
+      // JSON objects separated by a newline. The result is not valid JSON but it's what we get.
+      arcResult = {stdout: results.map(result => JSON.stringify(result)).join('\n')};
     }
 
     beforeEach(() => {
@@ -175,34 +199,19 @@ describe('nuclide-arcanist-base', () => {
     it('should return the lints', () => {
       waitsForPromise(async () => {
         setResult({
-          'path1': [
-            {
-              'description' : 'Trailing spaces not allowed. (no-trailing-spaces)',
-              'severity' : 'warning',
-              'original' : null,
-              'line' : 78,
-              'bypassChangedLineFiltering' : null,
-              'name' : 'ESLint reported a warning.',
-              'granularity' : 1,
-              'locations' : [],
-              'replacement' : null,
-              'code' : 'FBNUCLIDELINT1',
-              'char' : 2,
-              'context' : 'this usually contains some nearby code',
-            },
-          ],
+          'path1': [fakeLint],
         });
         const lints = await arcanistBaseService.findDiagnostics(['/fake/path/one/path1']);
-        expect(lints).toEqual([
-          {
-            type: 'Warning',
-            text: 'Trailing spaces not allowed. (no-trailing-spaces)',
-            filePath: '/fake/path/one/path1',
-            row: 77,
-            col: 1,
-            code: 'FBNUCLIDELINT1',
-          },
-        ]);
+        expect(lints).toEqual([fakeLintResult]);
+      });
+    });
+
+    it('should return the lints even when they are in separate JSON objects', () => {
+      waitsForPromise(async () => {
+        const fakeArcResult = {'path1': [fakeLint]};
+        setResult(fakeArcResult, fakeArcResult);
+        const lints = await arcanistBaseService.findDiagnostics(['/fake/path/one/path1']);
+        expect(lints).toEqual([fakeLintResult, fakeLintResult]);
       });
     });
   });
