@@ -27,7 +27,7 @@ type BuckRunDetails = {
   pid?: number;
 };
 import type {ProcessOutputDataHandlers} from 'nuclide-process-output-store/lib/types';
-import type {BuckProject} from 'nuclide-buck-base';
+import type {BuckProject} from 'nuclide-buck-base/lib/BuckProject';
 
 const BUCK_PROCESS_ID_REGEX = /lldb -p ([0-9]+)/;
 
