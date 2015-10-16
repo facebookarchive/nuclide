@@ -217,6 +217,7 @@
     "no-plusplus": 0,                 // disallow use of unary operators, ++ and -- (off by default)
 
   // Custom
-    "comment-style": 1
+    "comment-style": 1,
+    "no-await-in-loop": 1
   }
 }
