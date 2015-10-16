@@ -81,4 +81,17 @@ describe('RemoteConnection', () => {
       expect(conn).toBe(testConnection);
     });
   });
+
+  describe('getReloadKeystrokeLabel', () => {
+    const getReloadKeystrokeLabel = RemoteConnection.test.getReloadKeystrokeLabel;
+    it('returns the correct keystroke to reload the window', () => {
+      const keystroke = getReloadKeystrokeLabel();
+      if (process.platform === 'darwin') {
+        expect(keystroke).toEqual('⌃⌥⌘L');
+      } else if (process.platform === 'linux') {
+        expect(keystroke).toEqual('Ctrl+Alt+Cmd+L');
+      }
+    });
+  });
+
 });

@@ -18,7 +18,6 @@ var RemoteFile = require('./RemoteFile');
 var RemoteDirectory = require('./RemoteDirectory');
 var NuclideClient = require('nuclide-server/lib/NuclideClient');
 var NuclideRemoteEventbus = require('nuclide-server/lib/NuclideRemoteEventbus');
-var {fsPromise} = require('nuclide-commons');
 var {getVersion} = require('nuclide-version');
 
 const HEARTBEAT_AWAY_REPORT_COUNT = 3;
@@ -37,6 +36,15 @@ export type RemoteConnectionConfiguration = {
   certificateAuthorityCertificate?: Buffer; // certificate of certificate authority.
   clientCertificate?: Buffer; // client certificate for https connection.
   clientKey?: Buffer; // key for https connection.
+}
+
+function getReloadKeystrokeLabel(): ?string {
+  const binding = atom.keymaps.findKeyBindings({command: 'window:reload'});
+  if (!binding || !binding[0]) {
+    return null;
+  }
+  const {humanizeKeystroke} = require('nuclide-keystroke-label');
+  return humanizeKeystroke(binding[0].keystrokes);
 }
 
 var _connections: Array<RemoteConnection> = [];
@@ -133,6 +141,8 @@ class RemoteConnection {
     };
 
     var onHeartbeatError = (error: any) => {
+      const reloadkeystroke = getReloadKeystrokeLabel();
+      const reloadKeystrokeLabel = reloadkeystroke ? ` : (${reloadkeystroke})` : '';
       var {code, message, originalCode} = error;
       logger.info('Heartbeat network error:', code, originalCode, message);
       switch (code) {
@@ -145,7 +155,8 @@ class RemoteConnection {
             // Notify the server was there, but now gone.
             addHeartbeatNotification(HEARTBEAT_NOTIFICATION_ERROR, code,
                 'Nuclide server crashed!<br/>' +
-                'Please reload Nuclide to restore your remote project connection! : (⌃-⌥-⌘-L)',
+                'Please reload Nuclide to restore your remote project connection!' +
+                reloadKeystrokeLabel,
                 /*dismissable*/ true);
             // TODO(most) reconnect RemoteConnection, restore the current project state,
             // and finally change dismissable to false and type to 'WARNING'.
@@ -161,7 +172,8 @@ class RemoteConnection {
             // Notify the client certificate is not accepted by nuclide server (certificate mismatch).
             addHeartbeatNotification(HEARTBEAT_NOTIFICATION_ERROR, code,
                 'Connection Reset Error!!<br/>This could be caused by the client certificate mismatching the server certificate.<br/>' +
-                'Please reload Nuclide to restore your remote project connection! : (⌃-⌥-⌘-L)',
+                'Please reload Nuclide to restore your remote project connection!' +
+                reloadKeystrokeLabel,
                 /*dismissable*/ true);
             // TODO(most): reconnect RemoteConnection, restore the current project state.
             // and finally change dismissable to false and type to 'WARNING'.
@@ -433,6 +445,7 @@ class RemoteConnection {
 // Expose local variables for testability.
 RemoteConnection.test = {
   connections: _connections,
+  getReloadKeystrokeLabel,
 };
 
 module.exports = RemoteConnection;

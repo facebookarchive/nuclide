@@ -14,6 +14,7 @@
     "nuclide-analytics": "0.0.0",
     "nuclide-atom-helpers": "0.0.0",
     "nuclide-commons": "0.0.0",
+    "nuclide-keystroke-label": "0.0.0",
     "nuclide-logging": "0.0.0",
     "nuclide-remote-uri": "0.0.0",
     "nuclide-server": "0.0.0",
