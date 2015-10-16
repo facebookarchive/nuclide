@@ -15,7 +15,8 @@ const logger = require('nuclide-logging').getLogger();
 
 const ARC_CONFIG_FILE_NAME = '.arcconfig';
 
-const arcConfigDirectoryMap: Map<NuclideUri, ?NuclideUri> = new Map();
+// Exported for testing
+export const arcConfigDirectoryMap: Map<NuclideUri, ?NuclideUri> = new Map();
 const arcProjectMap: Map<?NuclideUri, ?Object> = new Map();
 
 export async function findArcConfigDirectory(fileName: NuclideUri): Promise<?NuclideUri> {
@@ -54,13 +55,33 @@ export async function getProjectRelativePath(fileName: NuclideUri): Promise<?str
   return arcPath && fileName ? path.relative(arcPath, fileName) : null;
 }
 
-export async function findDiagnostics(pathToFile: NuclideUri): Promise {
-  const cwd = await findArcConfigDirectory(pathToFile);
-  if (cwd == null) {
-    return [];
+export async function findDiagnostics(pathToFiles: Array<NuclideUri>): Promise {
+  const arcConfigDirToFiles: Map<string, Array<string>> = new Map();
+  await Promise.all(
+    pathToFiles.map(async path => {
+      const arcConfigDir = await findArcConfigDirectory(path);
+      if (arcConfigDir) {
+        if (!arcConfigDirToFiles.has(arcConfigDir)) {
+          arcConfigDirToFiles.set(arcConfigDir, []);
+        }
+        const files = arcConfigDirToFiles.get(arcConfigDir);
+        files.push(path);
+      }
+    })
+  );
+
+  // Kick off all the arc execs at once, then await later so they all happen in parallel.
+  const results: Array<Promise<Array<Object>>> = [];
+  for (const [arcDir, files] of arcConfigDirToFiles) {
+    results.push(execArcLint(arcDir, files));
   }
 
-  var args = ['lint', '--output', 'json', pathToFile];
+  // Flatten the resulting array
+  return [].concat(...(await Promise.all(results)));
+}
+
+async function execArcLint(cwd: string, filePaths: Array<NuclideUri>): Promise<Array<Object>> {
+  const args: Array<string> = ['lint', '--output', 'json', ...filePaths];
   var options = {'cwd': cwd};
   var {asyncExecute} = require('nuclide-commons');
   var result = await asyncExecute('arc', args, options);
@@ -88,20 +109,39 @@ export async function findDiagnostics(pathToFile: NuclideUri): Promise {
     }
   }
 
-  // json is an object where the keys are file paths that are relative to the
-  // location of the .arcconfig file. There will be an entry in the map for
-  // the file even if there were no lint errors.
-  var key = require('path').relative(cwd, pathToFile);
-  var lints = output.get(key);
-
-  // TODO(7876450): For some reason, this does not work for particular values
-  // of pathToFile.
-  //
-  // For now, we defend against this by returning the empty array.
-  if (!lints) {
-    return [];
+  const lints = [];
+  const {relative} = require('path');
+  for (const path of filePaths) {
+    // TODO(7876450): For some reason, this does not work for particular values of pathToFile.
+    // Depending on the location of .arcconfig, we may get a key that is different from what `arc
+    // lint` actually returns, and end up without any lints for this path.
+    const key = relative(cwd, path);
+    const rawLints = output.get(key);
+    if (rawLints) {
+      for (const lint of convertLints(path, rawLints)) {
+        lints.push(lint);
+      }
+    }
   }
+  return lints;
+}
 
+function convertLints(
+  pathToFile: string,
+  lints: Array<{
+    severity: string,
+    line: number,
+    char: number,
+    code: string,
+    description: string,
+  }>,
+): Array<{
+  type: 'Error' | 'Warning',
+  text: string,
+  row: number,
+  col: number,
+  code: string,
+}> {
   return lints.map((lint) => {
     // Choose an appropriate level based on lint['severity'].
     var severity = lint['severity'];

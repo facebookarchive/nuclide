@@ -39,7 +39,7 @@ export class ArcanistDiagnosticsProvider {
     const {Range} = require('atom');
     try {
       const result = await this._requestSerializer.run(
-        require('nuclide-arcanist-client').findDiagnostics(textEditor.getPath())
+        require('nuclide-arcanist-client').findDiagnostics([textEditor.getPath()])
       );
       if (result.status === 'outdated') {
         return;

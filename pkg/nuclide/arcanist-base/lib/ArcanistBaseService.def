@@ -14,7 +14,7 @@ export function findArcProjectIdOfPath(fileName: NuclideUri): Promise<?string> {
 
 export function getProjectRelativePath(fileName: NuclideUri): Promise<?string> {}
 
-export function findDiagnostics(fileName: NuclideUri): Promise<Array<{
+export function findDiagnostics(fileNames: Array<NuclideUri>): Promise<Array<{
       type: string,
       text: string,
       filePath: NuclideUri,

@@ -32,8 +32,22 @@ function getProjectRelativePath(fileName: NuclideUri): Promise<?string> {
   return getService(fileName).getProjectRelativePath(fileName);
 }
 
-function findDiagnostics(fileName: NuclideUri) {
-  return getService(fileName).findDiagnostics(fileName);
+async function findDiagnostics(fileNames: Iterable<NuclideUri>): Promise<Array<Object>> {
+  const serviceToFileNames: Map<ArcanistBaseService, Array<NuclideUri>> = new Map();
+  for (const file of fileNames) {
+    const service = getService(file);
+    if (!serviceToFileNames.has(service)) {
+      serviceToFileNames.set(service, []);
+    }
+    const files = serviceToFileNames.get(service);
+    files.push(file);
+  }
+  const results: Array<Promise<Array<Object>>> = [];
+  for (const [service, files] of serviceToFileNames) {
+    results.push(service.findDiagnostics(files));
+  }
+
+  return [].concat(...(await Promise.all(results)));
 }
 
 module.exports = {
