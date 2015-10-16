@@ -33,6 +33,31 @@
   }
 }
 
+.diff-view-count {
+  color: @text-color;
+  font-size: 0.8em;
+  min-width: 2em;
+  position: absolute;
+  right: 0;
+  top: 13px;
+  text-shadow: 0 0px 2px @base-border-color;
+  text-align: center;
+}
+
+.tool-bar-btn.icon-git-branch {
+  position: relative;
+
+  &.positive-count {
+    color: @text-color-warning;
+    &:hover {
+      color: @text-color-warning;
+    }
+    .diff-view-count {
+      color: @text-color-warning;
+    }
+  }
+}
+
 atom-text-editor, atom-text-editor::shadow {
 
   .diff-view-insert .region {

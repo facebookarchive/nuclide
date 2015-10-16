@@ -11,22 +11,23 @@
 
 import type {HomeFragments} from 'nuclide-home-interfaces';
 
-var {CompositeDisposable} = require('atom');
+import {CompositeDisposable} from 'atom';
+import invariant from 'assert';
 
-var activeDiffView: ?{
-  model: DiffViewModel;
+let diffViewModel: ?DiffViewModel = null;
+let activeDiffView: ?{
   component: ReactComponent;
   element: HTMLElement;
 }  = null;
 
 // This url style is the one Atom uses for the welcome and settings pages.
-var NUCLIDE_DIFF_VIEW_URI = 'atom://nuclide/diff-view';
+const NUCLIDE_DIFF_VIEW_URI = 'atom://nuclide/diff-view';
+const uiProviders = [];
 
-var subscriptions: ?CompositeDisposable = null;
-
-var logger = null;
-var uiProviders = [];
-var toolBar: ?any = null;
+let subscriptions: ?CompositeDisposable = null;
+let toolBar: ?any = null;
+let changeCountElement: ?HTMLElement = null;
+let logger = null;
 
 function getLogger() {
   return logger || (logger = require('nuclide-logging').getLogger());
@@ -40,52 +41,60 @@ function createView(entryPath: string): HTMLElement {
     return activeDiffView.element;
   }
 
-  var React = require('react-for-atom');
-  var DiffViewElement = require('./DiffViewElement');
-  var DiffViewComponent = require('./DiffViewComponent');
-  var DiffViewModel = require('./DiffViewModel');
+  const React = require('react-for-atom');
+  const DiffViewElement = require('./DiffViewElement');
+  const DiffViewComponent = require('./DiffViewComponent');
 
-  var diffModel = new DiffViewModel(uiProviders);
-  var hostElement = new DiffViewElement().initialize(diffModel, NUCLIDE_DIFF_VIEW_URI);
-  var component = React.render(
+  const diffModel = getDiffViewModel();
+  const hostElement = new DiffViewElement().initialize(diffModel, NUCLIDE_DIFF_VIEW_URI);
+  const component = React.render(
     <DiffViewComponent diffModel={diffModel}/>,
     hostElement,
   );
   activeDiffView = {
-    model: diffModel,
     component,
     element: hostElement,
   };
   activateFilePath(entryPath);
 
-  var destroySubscription = diffModel.onDidDestroy(() => {
+  const destroySubscription = diffModel.onDidDestroy(() => {
     React.unmountComponentAtNode(hostElement);
     destroySubscription.dispose();
+    invariant(subscriptions);
     subscriptions.remove(destroySubscription);
     activeDiffView = null;
   });
 
+  invariant(subscriptions);
   subscriptions.add(destroySubscription);
 
-  var {track} = require('nuclide-analytics');
+  const {track} = require('nuclide-analytics');
   track('diff-view-open');
 
   return hostElement;
 }
 
+function getDiffViewModel(): DiffViewModel {
+  if (!diffViewModel) {
+    const DiffViewModel = require('./DiffViewModel');
+    diffViewModel = new DiffViewModel(uiProviders);
+  }
+  return diffViewModel;
+}
+
 function activateFilePath(filePath: string): void {
-  if (!filePath.length || !activeDiffView) {
+  if (!filePath.length || !diffViewModel) {
     // The Diff View could be opened with no path at all.
     return;
   }
-  activeDiffView.model.activateFile(filePath);
+  diffViewModel.activateFile(filePath);
 }
 
 function projectsContainPath(checkPath: string): boolean {
-  var {isRemote} = require('nuclide-remote-uri');
-  var {Directory} = require('atom');
+  const {isRemote} = require('nuclide-remote-uri');
+  const {Directory} = require('atom');
   return atom.project.getDirectories().some(directory => {
-    var directoryPath = directory.getPath();
+    const directoryPath = directory.getPath();
     if (!checkPath.startsWith(directoryPath)) {
       return false;
     }
@@ -95,6 +104,22 @@ function projectsContainPath(checkPath: string): boolean {
     }
     return true;
   });
+}
+
+function updateToolbarCount(diffViewButton: HTMLElement, count: number): void {
+  if (!changeCountElement) {
+    changeCountElement = document.createElement('span');
+    changeCountElement.className = 'diff-view-count';
+    diffViewButton.appendChild(changeCountElement);
+  }
+  if (count > 0) {
+    diffViewButton.classList.add('positive-count');
+  } else {
+    diffViewButton.classList.remove('positive-count');
+  }
+  const React = require('react-for-atom');
+  const DiffCountComponent = require('./DiffCountComponent');
+  React.render(<DiffCountComponent count={count}/>, changeCountElement);
 }
 
 module.exports = {
@@ -112,7 +137,7 @@ module.exports = {
       'atom-text-editor',
       'nuclide-diff-view:open',
       () => {
-        var editor = atom.workspace.getActiveTextEditor();
+        const editor = atom.workspace.getActiveTextEditor();
         if (!editor) {
           return getLogger().warn('No active text editor for diff view!');
         }
@@ -131,7 +156,7 @@ module.exports = {
       '.nuclide-file-tree .entry.file.list-item',
       'nuclide-diff-view:open-context',
       (event) => {
-        var target = getTargetFromEvent(event);
+        const target = getTargetFromEvent(event);
         atom.workspace.open(NUCLIDE_DIFF_VIEW_URI + (target.dataset.path || ''));
       }
     ));
@@ -178,7 +203,8 @@ module.exports = {
 
     // Wait for all source control providers to register.
     subscriptions.add(atom.packages.onDidActivateInitialPackages(() => {
-      var {activeFilePath} = state;
+      invariant(state);
+      const {activeFilePath} = state;
 
       // If it's a local directory, it must be loaded with packages activation.
       if (projectsContainPath(activeFilePath)) {
@@ -186,35 +212,43 @@ module.exports = {
         return;
       }
       // If it's a remote directory, it should come on a path change event.
-      var changePathsSubscription = atom.project.onDidChangePaths(() => {
+      const changePathsSubscription = atom.project.onDidChangePaths(() => {
         // try/catch here because in case of any error, Atom stops dispatching events to the
         // rest of the listeners, which can stop the remote editing from being functional.
         try {
           if (projectsContainPath(activeFilePath)) {
             atom.workspace.open(NUCLIDE_DIFF_VIEW_URI + activeFilePath);
             changePathsSubscription.dispose();
+            invariant(subscriptions);
             subscriptions.remove(changePathsSubscription);
           }
         } catch (e) {
           getLogger().error('DiffView restore error', e);
         }
       });
+      invariant(subscriptions);
       subscriptions.add(changePathsSubscription);
     }));
   },
 
   consumeToolBar(getToolBar: (group: string) => Object): void {
     toolBar = getToolBar('nuclide-diff-view');
-    toolBar.addButton({
+    const button = toolBar.addButton({
       icon: 'git-branch',
       callback: 'nuclide-diff-view:open',
       tooltip: 'Toggle Diff View',
       priority: 300,
-    });
+    })[0];
+    const diffModel = getDiffViewModel();
+    updateToolbarCount(button, diffModel.getFileChanges().size);
+    invariant(subscriptions);
+    subscriptions.add(diffModel.onDidChangeStatus(fileChanges => {
+      updateToolbarCount(button, fileChanges.size);
+    }));
   },
 
   getHomeFragments(): HomeFragments {
-    var React = require('react-for-atom');
+    const React = require('react-for-atom');
     return {
       feature: {
         title: 'Diff View',
@@ -232,10 +266,10 @@ module.exports = {
   },
 
   serialize(): ?Object {
-    if (!activeDiffView) {
+    if (!activeDiffView || !diffViewModel) {
       return {};
     }
-    var {filePath} = activeDiffView.model.getActiveFileState();
+    const {filePath} = diffViewModel.getActiveFileState();
     return {
       activeFilePath: filePath,
     };
@@ -243,12 +277,16 @@ module.exports = {
 
   deactivate(): void {
     uiProviders.splice(0);
-    if (subscriptions) {
+    if (subscriptions != null) {
       subscriptions.dispose();
       subscriptions = null;
     }
+    if (diffViewModel != null) {
+      diffViewModel.destroy();
+      diffViewModel = null;
+    }
     activeDiffView = null;
-    if (toolBar) {
+    if (toolBar != null) {
       toolBar.removeItems();
       toolBar = null;
     }
