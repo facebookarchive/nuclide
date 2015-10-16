@@ -84,7 +84,63 @@ class NuclideBridge {
       this._handleBreakpointRemoved,
       this);
 
+    this._customizeWebInspector();
     window.runOnWindowLoad(this._handleWindowLoad.bind(this));
+  }
+
+  /**
+   * Override and customize some functionalities of WebInspector.
+   * Deliberately suppress any flow errors in this method.
+   */
+  _customizeWebInspector() {
+    // $FlowFixMe.
+    WebInspector.ObjectPropertyTreeElement._populate =
+      function(treeElement, value, skipProto, emptyPlaceholder) {
+        /**
+         * @param {?Array.<!WebInspector.RemoteObjectProperty>} properties
+         * @param {?Array.<!WebInspector.RemoteObjectProperty>} internalProperties
+         */
+        function callback(properties, internalProperties)
+        {
+          treeElement.removeChildren();
+          if (!properties) {
+            return;
+          }
+          // $FlowFixMe.
+          WebInspector.ObjectPropertyTreeElement.populateWithProperties(
+            treeElement,
+            properties,
+            internalProperties,
+            skipProto,
+            value,
+            emptyPlaceholder
+          );
+        }
+        // $FlowFixMe.
+        WebInspector.RemoteObject.loadFromObjectPerProto(value, callback);
+      };
+
+    // $FlowFixMe.
+    WebInspector.ObjectPropertiesSection.prototype.update =
+      function() {
+        /**
+         * @param {?Array.<!WebInspector.RemoteObjectProperty>} properties
+         * @param {?Array.<!WebInspector.RemoteObjectProperty>} internalProperties
+         * @this {WebInspector.ObjectPropertiesSection}
+         */
+        function callback(properties, internalProperties) {
+          if (!properties) {
+            return;
+          }
+          this.updateProperties(properties, internalProperties);
+        }
+        // $FlowFixMe.
+        WebInspector.RemoteObject.loadFromObject(
+          this.object,
+          !!this.ignoreHasOwnProperty,
+          callback.bind(this)
+        );
+      };
   }
 
   _handleWindowLoad() {
