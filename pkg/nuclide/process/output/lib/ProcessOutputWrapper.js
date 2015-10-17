@@ -17,9 +17,16 @@ import type {NuclideCustomPaneItemOptions} from 'nuclide-ui-pane-item/lib/types'
 
 class ProcessOutputWrapper extends NuclideCustomPaneItem {
 
+  _scrollToBottom() {
+    // TODO(natthu): Consider scrolling conditionally i.e. don't scroll if user has scrolled up the
+    // output pane.
+    this.scrollTop = this.scrollHeight;
+  }
+
   __renderPaneItem(options: NuclideCustomPaneItemOptions): ReactElement {
     return (
       <ProcessOutputView
+        onDidBufferChange={this._scrollToBottom.bind(this)}
         processOutputStore={options.initialProps.processOutputStore}
         processOutputHandler={options.initialProps.processOutputHandler}
         processOutputViewTopElement={options.initialProps.processOutputViewTopElement}

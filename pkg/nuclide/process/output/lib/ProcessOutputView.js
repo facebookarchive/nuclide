@@ -40,6 +40,7 @@ class ProcessOutputView extends React.Component {
       text: '',
     });
     this._disposables = new CompositeDisposable();
+    this._disposables.add(this._textBuffer.onDidChange(this.props.onDidBufferChange));
   }
 
   componentDidMount() {
@@ -81,6 +82,7 @@ class ProcessOutputView extends React.Component {
 }
 
 ProcessOutputView.propTypes = {
+  onDidBufferChange: React.PropTypes.func.isRequired,
   processOutputStore: React.PropTypes.object.isRequired,
   processOutputHandler: React.PropTypes.func,
   processOutputViewTopElement: React.PropTypes.element,
