@@ -1000,6 +1000,9 @@ type AtomGlobal = {
   }): ?number;
 
   reload(): void;
+
+  // Undocumented Methods
+  getConfigDirPath(): string;
 }
 
 declare var atom: AtomGlobal;

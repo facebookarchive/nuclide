@@ -34,6 +34,10 @@ module.exports = {
     return require('./go-to-location');
   },
 
+  get getPathToWorkspaceState() {
+    return require('./workspace').getPathToWorkspaceState;
+  },
+
   get closeTabForBuffer() {
     return require('./close-tab-buffer');
   },
