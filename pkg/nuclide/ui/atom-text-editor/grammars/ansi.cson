@@ -58,6 +58,32 @@
         ]
       }
       {
+        'begin': '(?<=\u001B\\[|\\d;)(22;)'
+        'beginCaptures':
+          '1':
+            'name': 'hidden.ansi-escape-code.ansi-colored'
+        'contentName': 'terminal.ansi.reset.ansi-colored'
+        'end': '(?=\u001B\\[((?!\\d+;)\\d+;)*\\d+(;\\d+)*m)'
+        'patterns': [
+          {
+            'include': '#ansiFormats'
+          }
+        ]
+      }
+      {
+        'begin': '(?<=\u001B\\[|\\d;)(22m)'
+        'beginCaptures':
+          '1':
+            'name': 'hidden.ansi-escape-code.ansi-colored'
+        'contentName': 'terminal.ansi.reset.ansi-colored'
+        'end': '(?=\u001B\\[((?!\\d+;)\\d+;)*\\d+(;\\d+)*m)'
+        'patterns': [
+          {
+            'include': '#mainPatterns'
+          }
+        ]
+      }
+      {
         'begin': '(?<=\u001B\\[|\\d;)(30;)'
         'beginCaptures':
           '1':
@@ -310,6 +336,32 @@
           '1':
             'name': 'hidden.ansi-escape-code.ansi-colored'
         'contentName': 'terminal.ansi.intensive.ansi-colored'
+        'end': '(?=\u001B\\[((?!(?:0|2|21|22);)\\d+;)*(?:0|2|21|22)(;\\d+)*m)'
+        'patterns': [
+          {
+            'include': '#mainPatterns'
+          }
+        ]
+      }
+      {
+        'begin': '(?<=\u001B\\[|\\d;)(2;)'
+        'beginCaptures':
+          '1':
+            'name': 'hidden.ansi-escape-code.ansi-colored'
+        'contentName': 'terminal.ansi.reset.ansi-colored'
+        'end': '(?=\u001B\\[((?!(?:0|2|21|22);)\\d+;)*(?:0|2|21|22)(;\\d+)*m)'
+        'patterns': [
+          {
+            'include': '#ansiFormats'
+          }
+        ]
+      }
+      {
+        'begin': '(?<=\u001B\\[|\\d;)(2m)'
+        'beginCaptures':
+          '1':
+            'name': 'hidden.ansi-escape-code.ansi-colored'
+        'contentName': 'terminal.ansi.reset.ansi-colored'
         'end': '(?=\u001B\\[((?!(?:0|2|21|22);)\\d+;)*(?:0|2|21|22)(;\\d+)*m)'
         'patterns': [
           {
