@@ -30,69 +30,38 @@ type StatsViewProps = {
   activeRequests?: number;
 };
 
-var BASE_ITEM_URI = 'nuclide-health://';
+const BASE_ITEM_URI = 'nuclide-health://';
 
-var {
-  CompositeDisposable,
-  Disposable,
-  TextEditor,
-} = require('atom');
+// Imports from non-Nuclide modules.
+import {CompositeDisposable, Disposable, TextEditor} from 'atom';
+import os from 'os';
+import React from 'react-for-atom';
 
-var {onWorkspaceDidStopChangingActivePaneItem} = require('nuclide-atom-helpers').atomEventDebounce;
-var os = require('os');
+// Imports from other Nuclide packages.
+import {track} from 'nuclide-analytics';
+import {atomEventDebounce} from 'nuclide-atom-helpers';
 
-var disposables: ?CompositeDisposable = null;
+// Imports from within this Nuclide package.
+import HealthPaneItem from './HealthPaneItem';
+import HealthPaneItemComponent from './ui/HealthPaneItemComponent';
+import HealthStatusBarComponent from './ui/HealthStatusBarComponent';
 
-var statusBarItem: ?Element;
-var paneItem: ?HTMLElement;
-
-var viewTimeout: ?number = null;
-var analyticsTimeout: ?number = null;
-
-var analyticsBuffer: Array<HealthStats> = [];
+// We may as well declare these outside of Activation because most of them really are nullable.
+let currentConfig = {};
+let statusBarItem: ?Element;
+let paneItem: ?HTMLElement;
+let viewTimeout: ?number = null;
+let analyticsTimeout: ?number = null;
+let analyticsBuffer: Array<HealthStats> = [];
 
 // Variables for tracking where and when a key was pressed, and the time before it had an effect.
-var activeEditorDisposables: ?CompositeDisposable = null;
-var keyEditorId = 0;
-var keyDownTime = 0;
-var keyLatency = 0;
-var lastKeyLatency = 0;
+let activeEditorDisposables: ?CompositeDisposable = null;
+let keyEditorId = 0;
+let keyDownTime = 0;
+let keyLatency = 0;
+let lastKeyLatency = 0;
 
-var currentConfig = {};
-
-var React;
-function getReact() {
-  if (!React) {
-    React = require('react-for-atom');
-  }
-  return React;
-}
-
-function activate(): void {
-  disposables = new CompositeDisposable();
-  disposables.add(
-    atom.config.onDidChange('nuclide-health', (event) => {
-      currentConfig = event.newValue;
-      // If user changes any config, update the health - and reset the polling cycles.
-      updateViews();
-      updateAnalytics();
-    }),
-    atom.workspace.onDidChangeActivePaneItem(disposeActiveEditorDisposables),
-    onWorkspaceDidStopChangingActivePaneItem(timeActiveEditorKeys),
-    atom.workspace.addOpener(getHealthPaneItem),
-    atom.commands.add(
-      'atom-workspace',
-      'nuclide-health:open-pane',
-      () => atom.workspace.open(BASE_ITEM_URI, {searchAllPanes: true})
-    ),
-  );
-  currentConfig = atom.config.get('nuclide-health');
-  timeActiveEditorKeys();
-  updateViews();
-  updateAnalytics();
-}
-
-var config = {
+export const config = {
   analyticsTimeout: {
     order: 0,
     type: 'integer',
@@ -151,24 +120,78 @@ var config = {
   },
 };
 
-function getHealthPaneItem(uri: string): ?HTMLElement {
-  if (!uri.startsWith(BASE_ITEM_URI)) {
-    return;
+class Activation {
+  disposables: CompositeDisposable;
+
+  constructor(state: ?Object) {
+    this.disposables = new CompositeDisposable();
   }
-  var HealthPaneItem = require('./HealthPaneItem');
-  paneItem = new HealthPaneItem().initialize(uri);
-  return paneItem;
+
+  activate() {
+    this.disposables.add(
+      atom.config.onDidChange('nuclide-health', (event) => {
+        currentConfig = event.newValue;
+        // If user changes any config, update the health - and reset the polling cycles.
+        updateViews();
+        updateAnalytics();
+      }),
+      atom.workspace.onDidChangeActivePaneItem(disposeActiveEditorDisposables),
+      atomEventDebounce.onWorkspaceDidStopChangingActivePaneItem(timeActiveEditorKeys),
+      atom.workspace.addOpener(getHealthPaneItem),
+      atom.commands.add(
+        'atom-workspace',
+        'nuclide-health:open-pane',
+        () => atom.workspace.open(BASE_ITEM_URI, {searchAllPanes: true}),
+      ),
+    );
+    currentConfig = atom.config.get('nuclide-health');
+    timeActiveEditorKeys();
+    updateViews();
+    updateAnalytics();
+  }
+
+  dispose() {
+    this.disposables.dispose();
+    if (viewTimeout !== null) {
+      clearTimeout(viewTimeout);
+      viewTimeout = null;
+    }
+    if (analyticsTimeout !== null) {
+      clearTimeout(analyticsTimeout);
+      analyticsTimeout = null;
+    }
+    if (activeEditorDisposables) {
+      activeEditorDisposables.dispose();
+      activeEditorDisposables = null;
+    }
+  }
 }
 
-function consumeStatusBar(statusBar: any): void {
+let activation: ?Activation = null;
+
+export function activate(state: ?Object) {
+  if (!activation) {
+    activation = new Activation(state);
+    activation.activate();
+  }
+}
+
+export function deactivate() {
+  if (activation) {
+    activation.dispose();
+    activation = null;
+  }
+}
+
+export function consumeStatusBar(statusBar: any): void {
   statusBarItem = document.createElement('div');
   statusBarItem.className = 'inline-block nuclide-health';
-  var tile = statusBar.addRightTile({
+  const tile = statusBar.addRightTile({
     item: statusBarItem,
     priority: -99, // Quite far right.
   });
-  if (disposables) {
-    disposables.add(
+  if (activation) {
+    activation.disposables.add(
       atom.tooltips.add(
         statusBarItem,
         {title: 'Click the icon to display and configure Nuclide health stats.'}
@@ -176,16 +199,24 @@ function consumeStatusBar(statusBar: any): void {
       new Disposable(() => {
         tile.destroy();
         if (statusBarItem) {
-          var parentNode = statusBarItem.parentNode;
+          const parentNode = statusBarItem.parentNode;
           if (parentNode) {
             parentNode.removeChild(statusBarItem);
           }
-          getReact().unmountComponentAtNode(statusBarItem);
+          React.unmountComponentAtNode(statusBarItem);
           statusBarItem = null;
         }
       })
     );
   }
+}
+
+function getHealthPaneItem(uri: string): ?HTMLElement {
+  if (!uri.startsWith(BASE_ITEM_URI)) {
+    return;
+  }
+  paneItem = new HealthPaneItem().initialize(uri);
+  return paneItem;
 }
 
 function disposeActiveEditorDisposables(): void {
@@ -206,17 +237,17 @@ function timeActiveEditorKeys(): void {
   }
 
   // Ensure the editor is valid and there is a view to attatch the keypress timing to.
-  var editor: ?TextEditor = atom.workspace.getActiveTextEditor();
+  const editor: ?TextEditor = atom.workspace.getActiveTextEditor();
   if (!editor) {
     return;
   }
-  var view = atom.views.getView(editor);
+  const view = atom.views.getView(editor);
   if (!view) {
     return;
   }
 
   // Start the clock when a key is pressed. Function is named so it can be disposed well.
-  var startKeyClock = () => {
+  const startKeyClock = () => {
     if (editor) {
       keyEditorId = editor.id;
       keyDownTime = Date.now();
@@ -224,7 +255,7 @@ function timeActiveEditorKeys(): void {
   };
 
   // Stop the clock when the (same) editor has changed content.
-  var stopKeyClock = () => {
+  const stopKeyClock = () => {
     if (editor && editor.id && keyEditorId === editor.id && keyDownTime) {
       keyLatency = Date.now() - keyDownTime;
       // Reset so that subsequent non-key-initiated buffer updates don't produce silly big numbers.
@@ -246,7 +277,7 @@ function timeActiveEditorKeys(): void {
 }
 
 function updateViews(): void {
-  var stats = getHealthStats();
+  const stats = getHealthStats();
   analyticsBuffer.push(stats);
   updateStatusBar(stats);
   updatePaneItem(stats);
@@ -262,7 +293,7 @@ function updateStatusBar(stats: HealthStats): void {
   if (!statusBarItem) {
     return;
   }
-  var props: StatsViewProps = {};
+  const props: StatsViewProps = {};
   if (currentConfig.showCpu) {
     props.cpuPercentage = stats.cpuPercentage;
   }
@@ -282,8 +313,7 @@ function updateStatusBar(stats: HealthStats): void {
     props.activeRequests = stats.activeRequests;
   }
 
-  var HealthStatusBarComponent = require('./ui/HealthStatusBarComponent');
-  getReact().render(
+  React.render(
     <HealthStatusBarComponent
       {...props}
       onClickIcon={openHealthPane}
@@ -302,10 +332,9 @@ function updatePaneItem(stats: HealthStats): void {
   }
 
   // We need to send the actual handles down to the component to render.
-  var activeHandleObjects = getActiveHandles();
+  const activeHandleObjects = getActiveHandles();
 
-  var HealthPaneItemComponent = require('./ui/HealthPaneItemComponent');
-  getReact().render(
+  React.render(
     <HealthPaneItemComponent
       cpuPercentage={stats.cpuPercentage}
       heapPercentage={stats.heapPercentage}
@@ -322,7 +351,7 @@ function updatePaneItem(stats: HealthStats): void {
 function updateAnalytics(): void {
   if (analyticsBuffer.length > 0) {
     // Aggregates the buffered stats up by suffixing avg, min, max to their names.
-    var aggregateStats = {};
+    const aggregateStats = {};
 
     // All analyticsBuffer entries have the same keys; we use the first entry to know what they are.
     Object.keys(analyticsBuffer[0]).forEach(statsKey => {
@@ -331,18 +360,18 @@ function updateAnalytics(): void {
         // This field is only used to for a sticky value in the status bar, and is not to be sent.
       }
 
-      var aggregates = aggregate(
+      const aggregates = aggregate(
         analyticsBuffer.map(stats => stats[statsKey]),
         (statsKey === 'keyLatency'), // skipZeros: Don't use empty key latency values in aggregates.
       );
       Object.keys(aggregates).forEach(aggregatesKey => {
-        var value = aggregates[aggregatesKey];
+        const value = aggregates[aggregatesKey];
         if (value !== null && value !== undefined) {
           aggregateStats[`${statsKey}_${aggregatesKey}`] = value.toFixed(2);
         }
       });
     });
-    require('nuclide-analytics').track('nuclide-health', aggregateStats);
+    track('nuclide-health', aggregateStats);
     analyticsBuffer = [];
   }
 
@@ -365,16 +394,16 @@ function aggregate(
       return {avg: null, min: null, max: null};
     }
   }
-  var avg = values.reduce((prevValue, currValue, index) => {
+  const avg = values.reduce((prevValue, currValue, index) => {
     return prevValue + (currValue - prevValue) / (index + 1);
   }, 0);
-  var min = Math.min(...values);
-  var max = Math.max(...values);
+  const min = Math.min(...values);
+  const max = Math.max(...values);
   return {avg, min, max};
 }
 
 function getHealthStats(): HealthStats {
-  var stats = process.memoryUsage();                                 // RSS, heap and usage.
+  const stats = process.memoryUsage();                               // RSS, heap and usage.
   stats.heapPercentage = (100 * stats.heapUsed / stats.heapTotal);   // Just for convenience.
   stats.cpuPercentage = os.loadavg()[0];                             // 1 minute CPU average.
 
@@ -406,33 +435,7 @@ function getActiveRequests(): Array<Object> {
   return [];
 }
 
-function deactivate(): void {
-  if (viewTimeout !== null) {
-    clearTimeout(viewTimeout);
-    viewTimeout = null;
-  }
-  if (analyticsTimeout !== null) {
-    clearTimeout(analyticsTimeout);
-    analyticsTimeout = null;
-  }
-  if (disposables) {
-    disposables.dispose();
-    disposables = null;
-  }
-  if (activeEditorDisposables) {
-    activeEditorDisposables.dispose();
-    activeEditorDisposables = null;
-  }
-}
-
 atom.deserializers.add({
   name: 'HealthPaneItem',
   deserialize: state => getHealthPaneItem(state.uri),
 });
-
-module.exports = {
-  activate,
-  config,
-  consumeStatusBar,
-  deactivate,
-};

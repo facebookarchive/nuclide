@@ -9,12 +9,23 @@
  * the root directory of this source tree.
  */
 
-var React = require('react-for-atom');
+import React from 'react-for-atom';
+const {PropTypes} = React;
 
-class BasicStatsSectionComponent extends React.Component {
+export default class BasicStatsSectionComponent extends React.Component {
+
+  // $FlowIssue https://github.com/facebook/flow/issues/850
+  static propTypes = {
+    cpuPercentage: PropTypes.number.isRequired,
+    memory: PropTypes.number.isRequired,
+    heapPercentage: PropTypes.number.isRequired,
+    lastKeyLatency: PropTypes.number.isRequired,
+    activeHandles: PropTypes.number.isRequired,
+    activeRequests: PropTypes.number.isRequired,
+  };
 
   render(): ReactElement {
-    var stats = [
+    const stats = [
       {
         name: 'CPU',
         value: `${this.props.cpuPercentage.toFixed(0)}%`,
@@ -56,14 +67,3 @@ class BasicStatsSectionComponent extends React.Component {
     );
   }
 }
-
-BasicStatsSectionComponent.propTypes = {
-  cpuPercentage: React.PropTypes.number.isRequired,
-  memory: React.PropTypes.number.isRequired,
-  heapPercentage: React.PropTypes.number.isRequired,
-  lastKeyLatency: React.PropTypes.number.isRequired,
-  activeHandles: React.PropTypes.number.isRequired,
-  activeRequests: React.PropTypes.number.isRequired,
-};
-
-module.exports = BasicStatsSectionComponent;

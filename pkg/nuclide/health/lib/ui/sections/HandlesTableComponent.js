@@ -9,9 +9,18 @@
  * the root directory of this source tree.
  */
 
-var React = require('react-for-atom');
+import React from 'react-for-atom';
+const {PropTypes} = React;
 
-class HandlesTableComponent extends React.Component {
+export default class HandlesTableComponent extends React.Component {
+
+  // $FlowIssue https://github.com/facebook/flow/issues/850
+  static propTypes = {
+    title: PropTypes.string,
+    handles: PropTypes.arrayOf(PropTypes.object),
+    keyed: PropTypes.func.isRequired,
+    columns: PropTypes.arrayOf(PropTypes.object).isRequired,
+  };
 
   previousHandleSummaries: Object;
 
@@ -21,9 +30,9 @@ class HandlesTableComponent extends React.Component {
   }
 
   getHandleSummaries(handles: Array<Object>): Object {
-    var handleSummaries = {};
+    const handleSummaries = {};
     handles.forEach((handle, h) => {
-      var summarizedHandle = {};
+      const summarizedHandle = {};
       this.props.columns.forEach((column, c) => {
         summarizedHandle[c] = column.value(handle, h);
       });
@@ -37,8 +46,8 @@ class HandlesTableComponent extends React.Component {
       return <div />;
     }
 
-    var handleSummaries = this.getHandleSummaries(this.props.handles);
-    var component = (
+    const handleSummaries = this.getHandleSummaries(this.props.handles);
+    const component = (
       <div>
         <h3>{this.props.title}</h3>
         <table className="table">
@@ -50,13 +59,13 @@ class HandlesTableComponent extends React.Component {
           </thead>
           <tbody>
             {Object.keys(handleSummaries).map(key => {
-              var handleSummary = handleSummaries[key];
-              var previousHandle = this.previousHandleSummaries[key];
+              const handleSummary = handleSummaries[key];
+              const previousHandle = this.previousHandleSummaries[key];
               return (
                 <tr key={key} className={previousHandle ? '' : 'nuclide-health-handle-new'}>
                   <th>{key}</th>
                   {this.props.columns.map((column, c) => {
-                    var className = '';
+                    let className = '';
                     if (previousHandle && previousHandle[c] !== handleSummary[c]) {
                       className = 'nuclide-health-handle-updated';
                     }
@@ -74,12 +83,3 @@ class HandlesTableComponent extends React.Component {
   }
 
 }
-
-HandlesTableComponent.propTypes = {
-  title: React.PropTypes.string,
-  handles: React.PropTypes.arrayOf(React.PropTypes.object),
-  keyed: React.PropTypes.func.isRequired,
-  columns: React.PropTypes.arrayOf(React.PropTypes.object).isRequired,
-};
-
-module.exports = HandlesTableComponent;

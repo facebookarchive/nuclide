@@ -9,16 +9,28 @@
  * the root directory of this source tree.
  */
 
-var React = require('react-for-atom');
+import React from 'react-for-atom';
+const {PropTypes} = React;
 
-class HealthPaneItemComponent extends React.Component {
+import BasicStatsSectionComponent from './sections/BasicStatsSectionComponent';
+import ActiveHandlesSectionComponent from './sections/ActiveHandlesSectionComponent';
+
+export default class HealthPaneItemComponent extends React.Component {
+
+  // $FlowIssue https://github.com/facebook/flow/issues/850
+  static propTypes = {
+    cpuPercentage: PropTypes.number.isRequired,
+    memory: PropTypes.number.isRequired,
+    heapPercentage: PropTypes.number.isRequired,
+    lastKeyLatency: PropTypes.number.isRequired,
+    activeHandles: PropTypes.number.isRequired,
+    activeRequests: PropTypes.number.isRequired,
+    activeHandleObjects: PropTypes.arrayOf(PropTypes.object).isRequired,
+  };
 
   render(): ReactElement {
 
-    var BasicStatsSectionComponent = require('./sections/BasicStatsSectionComponent');
-    var ActiveHandlesSectionComponent = require('./sections/ActiveHandlesSectionComponent');
-
-    var sections = {
+    const sections = {
       'Stats':
         <BasicStatsSectionComponent {...this.props} />,
       'Handles':
@@ -45,16 +57,3 @@ class HealthPaneItemComponent extends React.Component {
     );
   }
 }
-
-HealthPaneItemComponent.propTypes = {
-  cpuPercentage: React.PropTypes.number.isRequired,
-  memory: React.PropTypes.number.isRequired,
-  heapPercentage: React.PropTypes.number.isRequired,
-  lastKeyLatency: React.PropTypes.number.isRequired,
-  activeHandles: React.PropTypes.number.isRequired,
-  activeRequests: React.PropTypes.number.isRequired,
-
-  activeHandleObjects: React.PropTypes.arrayOf(React.PropTypes.object).isRequired,
-};
-
-module.exports = HealthPaneItemComponent;

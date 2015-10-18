@@ -9,11 +9,11 @@
  * the root directory of this source tree.
  */
 
-var BASE_ITEM_URI = 'nuclide-health://';
+const BASE_ITEM_URI = 'nuclide-health://';
 
 function findHealthPaneAndItem(): {pane: ?atom$Pane, item: ?Object} {
-  var pane = atom.workspace.paneForURI(BASE_ITEM_URI);
-  var item = pane ? pane.itemForURI(BASE_ITEM_URI) : null;
+  const pane = atom.workspace.paneForURI(BASE_ITEM_URI);
+  const item = pane ? pane.itemForURI(BASE_ITEM_URI) : null;
   return {pane, item};
 }
 
@@ -35,11 +35,11 @@ describe('Health', () => {
   it('appears when opened by URI and contains stats after its first refresh', () => {
     waitsForPromise(async () => {
       await atom.workspace.open(BASE_ITEM_URI);
-      var {item} = findHealthPaneAndItem();
+      const {item} = findHealthPaneAndItem();
       expect(item).toBeTruthy();
       if (item) {
         expect(item.getTitle()).toEqual('Health');
-        var interval = atom.config.get('nuclide-health.viewTimeout');
+        const interval = atom.config.get('nuclide-health.viewTimeout');
         expect(typeof interval).toEqual('number');
 
         if (typeof interval === 'number') {
@@ -61,7 +61,7 @@ describe('Health', () => {
   it('disappears when closed', () => {
     waitsForPromise(async () => {
       await atom.workspace.open(BASE_ITEM_URI);
-      var {pane, item} = findHealthPaneAndItem();
+      const {pane, item} = findHealthPaneAndItem();
       expect(item).toBeTruthy();
       if (pane && item) {
         pane.activateItem(item);

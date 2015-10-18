@@ -9,15 +9,23 @@
  * the root directory of this source tree.
  */
 
-var React = require('react-for-atom');
-var path = require('path');
+import path from 'path';
+import React from 'react-for-atom';
+const {PropTypes} = React;
 
-class ActiveHandlesSectionComponent extends React.Component {
+import HandlesTableComponent from './HandlesTableComponent';
+
+export default class ActiveHandlesSectionComponent extends React.Component {
+
+  // $FlowIssue https://github.com/facebook/flow/issues/850
+  static propTypes = {
+    activeHandleObjects: PropTypes.arrayOf(React.PropTypes.object).isRequired,
+  };
 
   // Returns a list of handles which are not children of others (i.e. sockets as process pipes).
   static getTopLevelHandles(handles: Array<Object>): Set<Object> {
-    var topLevelHandles: Set<Object> = new Set();
-    var seen: Set<Object> = new Set();
+    const topLevelHandles: Set<Object> = new Set();
+    const seen: Set<Object> = new Set();
     handles.forEach(handle => {
       if (seen.has(handle)) {
         return;
@@ -41,10 +49,10 @@ class ActiveHandlesSectionComponent extends React.Component {
       return <div />;
     }
 
-    var handlesByType = {};
+    const handlesByType = {};
     ActiveHandlesSectionComponent.getTopLevelHandles(this.props.activeHandleObjects).forEach(
       handle => {
-        var type = handle.constructor.name.toLowerCase();
+        let type = handle.constructor.name.toLowerCase();
         if (type !== 'childprocess' && type !== 'tlssocket') {
           type = 'other';
         }
@@ -55,7 +63,6 @@ class ActiveHandlesSectionComponent extends React.Component {
       }
     );
 
-    var HandlesTableComponent = require('./HandlesTableComponent');
     return (
       <div>
         <HandlesTableComponent
@@ -107,9 +114,3 @@ class ActiveHandlesSectionComponent extends React.Component {
     );
   }
 }
-
-ActiveHandlesSectionComponent.propTypes = {
-  activeHandleObjects: React.PropTypes.arrayOf(React.PropTypes.object).isRequired,
-};
-
-module.exports = ActiveHandlesSectionComponent;

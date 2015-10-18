@@ -9,12 +9,24 @@
  * the root directory of this source tree.
  */
 
-var React = require('react-for-atom');
+import React from 'react-for-atom';
+const {PropTypes} = React;
 
-class HealthStatusBarComponent extends React.Component {
+export default class HealthStatusBarComponent extends React.Component {
+
+  // $FlowIssue https://github.com/facebook/flow/issues/850
+  static propTypes = {
+    onClickIcon: PropTypes.func.isRequired,
+    cpuPercentage: PropTypes.number,
+    memory: PropTypes.number,
+    heapPercentage: PropTypes.number,
+    lastKeyLatency: PropTypes.number,
+    activeHandles: PropTypes.number,
+    activeRequests: PropTypes.number,
+  };
 
   render(): void {
-    var stats = [];
+    const stats = [];
 
     if (this.props.hasOwnProperty('cpuPercentage')) {
       stats.push(`CPU: ${this.props.cpuPercentage.toFixed(0)}%`);
@@ -53,15 +65,3 @@ class HealthStatusBarComponent extends React.Component {
     );
   }
 }
-
-HealthStatusBarComponent.propTypes = {
-  onClickIcon: React.PropTypes.func.isRequired,
-  cpuPercentage: React.PropTypes.number,
-  memory: React.PropTypes.number,
-  heapPercentage: React.PropTypes.number,
-  lastKeyLatency: React.PropTypes.number,
-  activeHandles: React.PropTypes.number,
-  activeRequests: React.PropTypes.number,
-};
-
-module.exports = HealthStatusBarComponent;

@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-var React = require('react-for-atom');
+import React from 'react-for-atom';
 
 class HealthPaneItem extends HTMLElement {
 
@@ -34,7 +34,7 @@ class HealthPaneItem extends HTMLElement {
   }
 
   // Return false to prevent the tab getting split (since we only update a singleton health pane).
-  copy() {
+  copy(): boolean {
     return false;
   }
 
@@ -42,7 +42,7 @@ class HealthPaneItem extends HTMLElement {
     React.unmountComponentAtNode(this);
   }
 
-  serialize() {
+  serialize(): Object {
     return {
       deserializer: 'HealthPaneItem',
       uri: this.getURI(),
@@ -50,6 +50,6 @@ class HealthPaneItem extends HTMLElement {
   }
 }
 
-module.exports = HealthPaneItem = document.registerElement('nuclide-health-item', {
+export default (document.registerElement('nuclide-health-item', {
   prototype: HealthPaneItem.prototype,
-});
+}));
