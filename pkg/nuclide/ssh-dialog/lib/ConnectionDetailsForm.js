@@ -25,7 +25,20 @@ var authMethods = [
 ];
 
 /** Component to prompt the user for connection details. */
-class ConnectionDetailsPrompt extends React.Component {
+export default class ConnectionDetailsForm extends React.Component {
+  // $FlowIssue t8486988
+  static propTypes = {
+    initialUsername: PropTypes.string,
+    initialServer: PropTypes.string,
+    initialCwd: PropTypes.string,
+    initialRemoteServerCommand: PropTypes.string,
+    initialSshPort: PropTypes.string,
+    initialPathToPrivateKey: PropTypes.string,
+    initialAuthMethod: PropTypes.shape(Object.keys(SupportedMethods)),
+    onConfirm: PropTypes.func.isRequired,
+    onCancel: PropTypes.func.isRequired,
+  };
+
   _disposables: ?CompositeDisposable;
 
   constructor(props: any) {
@@ -211,17 +224,3 @@ class ConnectionDetailsPrompt extends React.Component {
     return (this.refs.password && React.findDOMNode(this.refs.password).value) || '';
   }
 }
-
-ConnectionDetailsPrompt.propTypes = {
-  initialUsername: PropTypes.string,
-  initialServer: PropTypes.string,
-  initialCwd: PropTypes.string,
-  initialRemoteServerCommand: PropTypes.string,
-  initialSshPort: PropTypes.string,
-  initialPathToPrivateKey: PropTypes.string,
-  initialAuthMethod: PropTypes.shape(Object.keys(SupportedMethods)),
-  onConfirm: PropTypes.func.isRequired,
-  onCancel: PropTypes.func.isRequired,
-};
-
-module.exports = ConnectionDetailsPrompt;

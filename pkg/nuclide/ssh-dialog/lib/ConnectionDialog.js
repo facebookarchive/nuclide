@@ -10,7 +10,7 @@
  */
 
 var {CompositeDisposable} = require('atom');
-var ConnectionDetailsPrompt = require('./ConnectionDetailsPrompt');
+import ConnectionDetailsForm from './ConnectionDetailsForm';
 var React = require('react-for-atom');
 var {
   SshHandshake,
@@ -174,7 +174,7 @@ var ConnectionDialog = React.createClass({
       // Note React.__spread() is not available in the Atom React fork, so we
       // pass the props explicitly.
       content = (
-        <ConnectionDetailsPrompt
+        <ConnectionDetailsForm
           ref='connection-details'
           initialUsername={this.props.initialUsername}
           initialServer={this.props.initialServer}
@@ -251,15 +251,15 @@ var ConnectionDialog = React.createClass({
 
     if (mode === REQUEST_CONNECTION_DETAILS) {
       // User is trying to submit connection details.
-      var connectionDetailsPrompt = this.refs['connection-details'];
-      var pathToPrivateKey = connectionDetailsPrompt.getText('pathToPrivateKey');
-      var username = connectionDetailsPrompt.getText('username');
-      var server = connectionDetailsPrompt.getText('server');
-      var cwd = connectionDetailsPrompt.getText('cwd');
-      var sshPort = connectionDetailsPrompt.getText('sshPort');
-      var remoteServerCommand = connectionDetailsPrompt.getText('remoteServerCommand');
-      var authMethod = connectionDetailsPrompt.getAuthMethod();
-      var password = connectionDetailsPrompt.getPassword();
+      var connectionDetailsForm = this.refs['connection-details'];
+      var pathToPrivateKey = connectionDetailsForm.getText('pathToPrivateKey');
+      var username = connectionDetailsForm.getText('username');
+      var server = connectionDetailsForm.getText('server');
+      var cwd = connectionDetailsForm.getText('cwd');
+      var sshPort = connectionDetailsForm.getText('sshPort');
+      var remoteServerCommand = connectionDetailsForm.getText('remoteServerCommand');
+      var authMethod = connectionDetailsForm.getAuthMethod();
+      var password = connectionDetailsForm.getPassword();
       if (username && server && cwd && remoteServerCommand) {
         this.setState({mode: WAITING_FOR_CONNECTION});
         this.state.sshHandshake.connect({
