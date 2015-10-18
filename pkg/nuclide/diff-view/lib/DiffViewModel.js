@@ -181,26 +181,11 @@ class DiffViewModel {
     var fileSystemService = getFileSystemServiceByNuclideUri(filePath);
     invariant(fileSystemService);
 
-    var {getPath} = require('nuclide-remote-uri');
-    var localFilePath = getPath(filePath);
-    var stats;
-    try {
-      stats = await fileSystemService.lstat(localFilePath);
-    } catch (err) {
-      var errorMessage = `lstat for file: \`${filePath}\` - ${err.toString()}`;
-      throw new Error(errorMessage);
-    }
-    if (!stats || !stats.isFile()) {
-      // The diff view is already open and showing all change statuses.
-      // There is nothing to do if that was a directory.
-      logger.info(`Diff View activated with a non-file path: ${filePath}`);
-      return null;
-    }
-
     var committedContentsPromise = repository.fetchFileContentAtRevision(filePath)
       // If the file didn't exist on the previous revision, return empty contents.
       .then(contents => contents || '', err => '');
 
+    var localFilePath = require('nuclide-remote-uri').getPath(filePath);
     var filesystemContentsPromise = fileSystemService.readFile(localFilePath)
       // If the file was removed, return empty contents.
       .then(contents => contents.toString('utf8') || '', err => '');
