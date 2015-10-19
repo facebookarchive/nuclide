@@ -9,6 +9,4 @@
  * the root directory of this source tree.
  */
 
-module.exports = {
-  // TODO(jessicalin): Add export code here.
-};
+module.exports = require('nuclide-atom-npm').load(__dirname, 'NuclideMutableListSelector');

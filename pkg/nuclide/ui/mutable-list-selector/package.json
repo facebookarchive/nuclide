@@ -8,6 +8,10 @@
     "packageType": "Node",
     "testRunner": "apm"
   },
+  "dependencies": {
+    "nuclide-atom-npm": "0.0.0",
+    "react-for-atom": "0.13.6"
+  },
   "devDependencies": {
     "nuclide-external-interfaces": "0.0.0"
   }
