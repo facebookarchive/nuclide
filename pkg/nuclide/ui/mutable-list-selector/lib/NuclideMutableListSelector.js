@@ -10,11 +10,29 @@
  */
 
 var React = require('react-for-atom');
-var {PropTypes} = React;
 
 type NuclideListSelectorItem = {
   id: string;
   displayTitle: string;
+};
+
+type DefaultProps = {};
+type Props = {
+  items: Array<{id: string; displayTitle: string;}>;
+  // If null, no item is initially selected.
+  idOfInitiallySelectedItem: ?string;
+  onItemClicked: (idOfClickedItem: string) => mixed;
+  // Function that is called when the "+" button on the list is clicked.
+  // The user's intent is to create a new item for the list.
+  onAddButtonClicked: () => mixed;
+  // Function that is called when the "-" button on the list is clicked.
+  // The user's intent is to delete the currently-selected item.
+  // If the `idOfCurrentlySelectedItem` is null, this means there is
+  // no item selected.
+  onDeleteButtonClicked: (idOfCurrentlySelectedItem: ?string) => mixed;
+};
+type State = {
+  idOfSelectedItem: ?string;
 };
 
 /**
@@ -32,23 +50,12 @@ type NuclideListSelectorItem = {
  *  | +  |  - |
  *   ---------
  */
-export default class NuclideMutableListSelector extends React.Component {
-  // $FlowIssue t8486988
-  static propTypes = {
-    items: PropTypes.arrayOf(PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      displayTitle: PropTypes.string.isRequired,
-    })).isRequired,
-    idOfInitiallySelectedItem: PropTypes.string,      // If null, no item is initially selected.
-    onItemClicked: PropTypes.func.isRequired,         // (idOfClickedItem: string) => mixed
-    onAddButtonClicked: PropTypes.func.isRequired,    // () => mixed
-    onDeleteButtonClicked: PropTypes.func.isRequired, // (idOfCurrentlySelectedItem: ?string) => mixed
-  };
-
+export default class NuclideMutableListSelector
+    extends React.Component<DefaultProps, Props, State> {
   _boundOnAddButtonClicked: mixed;
   _boundOnDeleteButtonClicked: mixed;
 
-  constructor(props: any) {
+  constructor(props: Props) {
     super(props);
     this.state = {
       idOfSelectedItem: props.idOfInitiallySelectedItem,
