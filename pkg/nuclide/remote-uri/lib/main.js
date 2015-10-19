@@ -21,12 +21,25 @@ type ParsedUrl = {
   hash: ?string;
   href: string;
   host: ?string;
-  // $FlowFixMe
   hostname: ?string;
   path: string;
   pathname: string;
-  // $FlowFixMe
   port: ?string;
+  protocol: ?string;
+  query: ?any;
+  search: ?string;
+  slashes: ?boolean;
+};
+
+type ParsedRemoteUrl = {
+  auth: ?string;
+  hash: ?string;
+  href: string;
+  host: ?string;
+  hostname: string;
+  path: string;
+  pathname: string;
+  port: string;
   protocol: ?string;
   query: ?any;
   search: ?string;
@@ -57,24 +70,67 @@ function createRemoteUri(hostname: string, remotePort: number, remotePath: strin
  * `url.parse` seems to apply encodeURI to the URL, and we typically don't want this behavior.
  */
 function parse(uri: NuclideUri): ParsedUrl {
-  // $FlowFixMe
-  var parsedUri = require('url').parse(uri);
-  parsedUri.href = decodeURI(parsedUri.href);
+  const parsedUri = require('url').parse(uri);
 
-  invariant(parsedUri.path);
-  parsedUri.path = decodeURI(parsedUri.path);
+  const href = decodeURI(parsedUri.href);
 
-  invariant(parsedUri.pathname);
-  parsedUri.pathname = decodeURI(parsedUri.pathname);
+  invariant(parsedUri.path, `Nuclide URIs must contain paths, '${parsedUri.path}' found.`);
+  const path = decodeURI(parsedUri.path);
 
-  return parsedUri;
+  invariant(
+    parsedUri.pathname,
+    `Nuclide URIs must contain pathnamess, '${parsedUri.pathname}' found.`
+  );
+  const pathname = decodeURI(parsedUri.pathname);
+
+  // Explicitly copying object properties appeases Flow's "maybe" type handling. Using the `...`
+  // operator causes null/undefined errors, and `Object.assign` bypasses type checking.
+  return {
+    auth: parsedUri.auth,
+    hash: parsedUri.hash,
+    host: parsedUri.host,
+    hostname: parsedUri.hostname,
+    href,
+    path,
+    pathname,
+    port: parsedUri.port,
+    protocol: parsedUri.protocol,
+    query: parsedUri.query,
+    search: parsedUri.search,
+    slashes: parsedUri.slashes,
+  };
 }
 
-function parseRemoteUri(remoteUri: NuclideUri): { hostname: string; port: string; path: string; } {
+function parseRemoteUri(remoteUri: NuclideUri): ParsedRemoteUrl {
   if (!isRemote(remoteUri)) {
     throw new Error('Expected remote uri. Got ' + remoteUri);
   }
-  return parse(remoteUri);
+  const parsedUri = parse(remoteUri);
+  invariant(
+    parsedUri.hostname,
+    `Remote Nuclide URIs must contain hostnames, '${parsedUri.hostname}' found.`
+  );
+  invariant(
+    parsedUri.port,
+    `Remote Nuclide URIs must have port numbers, '${parsedUri.port}' found.`
+  );
+
+  // Explicitly copying object properties appeases Flow's "maybe" type handling. Using the `...`
+  // operator causes null/undefined errors, and `Object.assign` bypasses type checking.
+  return {
+    auth: parsedUri.auth,
+    hash: parsedUri.hash,
+    host: parsedUri.host,
+    hostname: parsedUri.hostname,
+    href: parsedUri.href,
+    path: parsedUri.path,
+    pathname: parsedUri.pathname,
+    port: parsedUri.port,
+    protocol: parsedUri.protocol,
+    query: parsedUri.query,
+    search: parsedUri.search,
+    slashes: parsedUri.slashes,
+  };
 }
 
 function getPath(uri: NuclideUri): string {
@@ -89,7 +145,7 @@ function getPort(remoteUri: NuclideUri): number {
   return Number(parseRemoteUri(remoteUri).port);
 }
 
-function join(uri: NuclideUri, ...relativePath: Array<string>) {
+function join(uri: NuclideUri, ...relativePath: Array<string>): NuclideUri {
   if (isRemote(uri)) {
     var {hostname, port, path} = parseRemoteUri(uri);
     relativePath.splice(0, 0, path);
@@ -109,7 +165,8 @@ function normalize(uri: NuclideUri): NuclideUri {
     return createRemoteUri(
       hostname,
       Number(port),
-      pathPackage.normalize(path));
+      pathPackage.normalize(path)
+    );
   } else {
     return pathPackage.normalize(uri);
   }
@@ -148,7 +205,8 @@ function dirname(uri: NuclideUri): NuclideUri {
     return createRemoteUri(
       hostname,
       Number(port),
-      pathPackage.dirname(path));
+      pathPackage.dirname(path)
+    );
   } else {
     return pathPackage.dirname(uri);
   }

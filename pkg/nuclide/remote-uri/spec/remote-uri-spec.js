@@ -13,6 +13,8 @@ var nuclideUri = require('../lib/main');
 
 describe('nuclide-uri', () => {
   var localUri = '/usr/local/file';
+  var badRemoteUriNoPort = 'nuclide://fb.com/un/deux';
+  var badRemoteUriNoPath = 'nuclide://fb.com:8000';
   var remoteUri = nuclideUri.createRemoteUri('fb.com', 8000, '/usr/local');
   var remoteUriWithSpaces = nuclideUri.createRemoteUri('fb.com', 8000, '/a b/c d');
 
@@ -32,6 +34,7 @@ describe('nuclide-uri', () => {
   });
 
   it('join', () => {
+    expect(nuclideUri.join.bind(null, badRemoteUriNoPath, '../foo')).toThrow();
     expect(nuclideUri.join('/usr/local', 'bin')).toBe('/usr/local/bin');
     expect(nuclideUri.join(remoteUri, 'bin')).toBe('nuclide://fb.com:8000/usr/local/bin');
     expect(nuclideUri.join('/usr/local', '..')).toBe('/usr');
@@ -63,6 +66,7 @@ describe('nuclide-uri', () => {
   it('dirname', () => {
     expect(nuclideUri.dirname(localUri)).toBe('/usr/local');
     expect(nuclideUri.dirname(remoteUri)).toBe('nuclide://fb.com:8000/usr');
+    expect(nuclideUri.dirname.bind(null, badRemoteUriNoPort)).toThrow();
     expect(nuclideUri.dirname(remoteUriWithSpaces)).toBe('nuclide://fb.com:8000/a b');
   });
 
@@ -74,6 +78,7 @@ describe('nuclide-uri', () => {
   it('normalize', () => {
     expect(nuclideUri.normalize(localUri)).toBe(localUri);
     expect(nuclideUri.normalize(remoteUri)).toBe(remoteUri);
+    expect(nuclideUri.normalize.bind(null, badRemoteUriNoPath)).toThrow();
     expect(nuclideUri.normalize('/usr/local/..')).toBe('/usr');
     expect(nuclideUri.normalize('nuclide://fb.com:8000/usr/local/..')).toBe('nuclide://fb.com:8000/usr');
     expect(nuclideUri.normalize('/a b/c d/..')).toBe('/a b');
