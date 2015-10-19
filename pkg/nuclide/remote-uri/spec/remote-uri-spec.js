@@ -17,6 +17,7 @@ describe('nuclide-uri', () => {
   var badRemoteUriNoPath = 'nuclide://fb.com:8000';
   var remoteUri = nuclideUri.createRemoteUri('fb.com', 8000, '/usr/local');
   var remoteUriWithSpaces = nuclideUri.createRemoteUri('fb.com', 8000, '/a b/c d');
+  var remoteUriWithHashes = nuclideUri.createRemoteUri('fb.co.uk', 8000, '/ab/#c.d  #');
 
   it('isRemote', () => {
     expect(nuclideUri.isRemote('/')).toBe(false);
@@ -41,14 +42,25 @@ describe('nuclide-uri', () => {
     expect(nuclideUri.join(remoteUri, '..')).toBe('nuclide://fb.com:8000/usr');
   });
 
-  it('parsing remote', () => {
-    expect(nuclideUri.getHostname(remoteUri)).toBe('fb.com');
-    expect(nuclideUri.getPort(remoteUri)).toBe(8000);
-    expect(nuclideUri.getPath(remoteUri)).toBe('/usr/local');
+  describe('parsing remote', () => {
+    it('handles simple paths', () => {
+      expect(nuclideUri.getHostname(remoteUri)).toBe('fb.com');
+      expect(nuclideUri.getPort(remoteUri)).toBe(8000);
+      expect(nuclideUri.getPath(remoteUri)).toBe('/usr/local');
+    });
 
-    expect(nuclideUri.getHostname(remoteUriWithSpaces)).toBe('fb.com');
-    expect(nuclideUri.getPort(remoteUriWithSpaces)).toBe(8000);
-    expect(nuclideUri.getPath(remoteUriWithSpaces)).toBe('/a b/c d');
+    it('does not encode space characters', () => {
+      expect(nuclideUri.getHostname(remoteUriWithSpaces)).toBe('fb.com');
+      expect(nuclideUri.getPort(remoteUriWithSpaces)).toBe(8000);
+      expect(nuclideUri.getPath(remoteUriWithSpaces)).toBe('/a b/c d');
+    });
+
+    it('treats hash symbols as literals, part of the path', () => {
+      const parsedUri = nuclideUri.parse(remoteUriWithHashes);
+      expect(parsedUri.hostname).toBe('fb.co.uk');
+      expect(parsedUri.port).toBe('8000');
+      expect(parsedUri.pathname).toBe('/ab/#c.d  #');
+    });
   });
 
   it('parsing local', () => {

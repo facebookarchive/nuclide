@@ -18,7 +18,6 @@ export type NuclideUri = string;
 
 type ParsedUrl = {
   auth: ?string;
-  hash: ?string;
   href: string;
   host: ?string;
   hostname: ?string;
@@ -33,7 +32,6 @@ type ParsedUrl = {
 
 type ParsedRemoteUrl = {
   auth: ?string;
-  hash: ?string;
   href: string;
   host: ?string;
   hostname: string;
@@ -67,32 +65,51 @@ function createRemoteUri(hostname: string, remotePort: number, remotePath: strin
  * Parses `uri` with Node's `url.parse` and calls `decodeURI` on `href`, `path`, and `pathname` of
  * the parsed URL object.
  *
- * `url.parse` seems to apply encodeURI to the URL, and we typically don't want this behavior.
+ * * `url.parse` seems to apply encodeURI to the URL, and we typically don't want this behavior.
+ * * Nuclide URIs disallow use of the `hash` attribute, and any hash characters are interpreted as
+ *   as literal hashes.
+ *
+ *   For example:
+ *
+ *       parse('nuclide://f.co:123/path/to/#foo.txt#')
+ *       >
+ *         {
+ *           ...
+ *           path: '/path/to/#foo.txt#',
+ *           ...
+ *         }
  */
 function parse(uri: NuclideUri): ParsedUrl {
   const parsedUri = require('url').parse(uri);
 
-  const href = decodeURI(parsedUri.href);
-
   invariant(parsedUri.path, `Nuclide URIs must contain paths, '${parsedUri.path}' found.`);
-  const path = decodeURI(parsedUri.path);
+  let path = parsedUri.path;
+  // `url.parse` treates the first '#' character as the beginning of the `hash` attribute. That
+  // feature is not used in Nuclide and is instead treated as part of the path.
+  if (parsedUri.hash != null) {
+    path += parsedUri.hash;
+  }
 
   invariant(
     parsedUri.pathname,
     `Nuclide URIs must contain pathnamess, '${parsedUri.pathname}' found.`
   );
-  const pathname = decodeURI(parsedUri.pathname);
+  let pathname = parsedUri.pathname;
+  // `url.parse` treates the first '#' character as the beginning of the `hash` attribute. That
+  // feature is not used in Nuclide and is instead treated as part of the pathname.
+  if (parsedUri.hash != null) {
+    pathname += parsedUri.hash;
+  }
 
   // Explicitly copying object properties appeases Flow's "maybe" type handling. Using the `...`
   // operator causes null/undefined errors, and `Object.assign` bypasses type checking.
   return {
     auth: parsedUri.auth,
-    hash: parsedUri.hash,
     host: parsedUri.host,
     hostname: parsedUri.hostname,
-    href,
-    path,
-    pathname,
+    href: decodeURI(parsedUri.href),
+    path: decodeURI(path),
+    pathname: decodeURI(pathname),
     port: parsedUri.port,
     protocol: parsedUri.protocol,
     query: parsedUri.query,
@@ -119,7 +136,6 @@ function parseRemoteUri(remoteUri: NuclideUri): ParsedRemoteUrl {
   // operator causes null/undefined errors, and `Object.assign` bypasses type checking.
   return {
     auth: parsedUri.auth,
-    hash: parsedUri.hash,
     host: parsedUri.host,
     hostname: parsedUri.hostname,
     href: parsedUri.href,
