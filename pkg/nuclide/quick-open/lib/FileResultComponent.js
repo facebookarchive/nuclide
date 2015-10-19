@@ -19,11 +19,20 @@ var path = require('path');
 
 class FileResultComponent {
 
-  static getComponentForItem(item: FileResult): ReactElement {
-    var filePath = item.path;
+  static getComponentForItem(
+    item: FileResult,
+    serviceName: string,
+    dirName: string
+  ): ReactElement {
+    // Trim the `dirName` off the `filePath` since that's shown by the group
+    const filePath = item.path.startsWith(dirName)
+      ? '.' + item.path.slice(dirName.length)
+      : item.path;
+    const matchIndexes = item.matchIndexes && item.path.startsWith(dirName)
+      ? item.matchIndexes.map(i => i - (dirName.length - 1))
+      : [];
 
     var filenameStart = filePath.lastIndexOf(path.sep);
-    var matchIndexes = item.matchIndexes || [];
     var importantIndexes = [filenameStart, filePath.length]
       .concat(matchIndexes)
       .sort((index1, index2) => index1 - index2);

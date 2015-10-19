@@ -436,8 +436,12 @@ class QuickSelectionComponent extends React.Component {
     return this.state.resultsByService[serviceName].results[directory].results[itemIndex];
   }
 
-  componentForItem(item: any, serviceName: string): ReactElement {
-    return searchResultManager.getRendererForProvider(serviceName)(item, serviceName);
+  componentForItem(item: any, serviceName: string, dirName: string): ReactElement {
+    return searchResultManager.getRendererForProvider(serviceName)(
+      item,
+      serviceName,
+      dirName,
+    );
   }
 
   getSelectedIndex(): any {
@@ -633,7 +637,7 @@ class QuickSelectionComponent extends React.Component {
               key={serviceName + dirName + itemIndex}
               onMouseDown={this._boundSelect}
               onMouseEnter={this.setSelectedIndex.bind(this, serviceName, dirName, itemIndex)}>
-              {this.componentForItem(item, serviceName)}
+              {this.componentForItem(item, serviceName, dirName)}
             </li>
           );
         });
