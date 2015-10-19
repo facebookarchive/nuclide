@@ -8,13 +8,46 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-import invariant from 'assert';
 
-var track;
-try {
-  track = require('../fb/analytics').track;
-} catch (e) {
-  track = require('./analytics').track;
+import invariant from 'assert';
+import {singleton} from 'nuclide-commons';
+import {AnalyticsBatcher} from './AnalyticsBatcher';
+import {track as rawTrack} from './track';
+
+const ANALYTICS_BATCHER = 'analytics-batcher';
+
+function getBatcher(): AnalyticsBatcher {
+  return singleton.get(
+    ANALYTICS_BATCHER, () => {
+      invariant(rawTrack);
+      return new AnalyticsBatcher(rawTrack);
+    });
+}
+
+function resetBatcher(): void {
+  getBatcher().dispose();
+  return singleton.clear(ANALYTICS_BATCHER);
+}
+
+let batching = false;
+
+function setBatching(newBatching: boolean): void {
+  if (batching !== newBatching) {
+    batching = newBatching;
+    if (!batching) {
+      resetBatcher();
+    }
+  }
+}
+
+function track(eventName: string, values?: {[key: string]: string}): Promise<mixed> {
+  invariant(rawTrack);
+  if (!batching) {
+    return rawTrack(eventName, values || {});
+  } else {
+    getBatcher().track(eventName, values || {});
+    return Promise.resolve();
+  }
 }
 
 /**
@@ -61,7 +94,7 @@ function trackTiming(eventName: ?string = null): any {
   };
 }
 
-var PERFORMANCE_EVENT = 'performance';
+const PERFORMANCE_EVENT = 'performance';
 
 class TimingTracker {
   _eventName: string;
@@ -81,8 +114,7 @@ class TimingTracker {
   }
 
   _trackTimingEvent(exception: ?Error): Promise {
-    // Using module.exports.track to enable unit testing.
-    return module.exports.track(PERFORMANCE_EVENT, {
+    return track(PERFORMANCE_EVENT, {
       duration: (Date.now() - this._startTime).toString(),
       eventName: this._eventName,
       error: exception ? '1' : '0',
@@ -139,4 +171,5 @@ module.exports = {
   startTracking,
   TimingTracker,
   trackTiming,
+  setBatching,
 };

@@ -10,6 +10,7 @@
  */
 
 var main = require('../lib/main');
+var track = require('../lib/track');
 var trackTiming = main.trackTiming;
 
 class TestClass {
@@ -38,7 +39,7 @@ describe('The @trackTiming decorator', () => {
     useRealClock(); // Make setTimeout work as expected.
 
     // Intercept Parse API call.
-    spyOn(main, 'track').andCallFake((key, values) => {
+    spyOn(track, 'track').andCallFake((key, values) => {
       trackKey = key;
       trackValues = values;
       return Promise.resolve();

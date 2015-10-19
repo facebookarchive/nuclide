@@ -160,4 +160,8 @@ module.exports = {
   get ScribeProcess() {
     return require('./ScribeProcess').ScribeProcess;
   },
+
+  get BatchProcessedQueue() {
+    return require('./BatchProcessedQueue').BatchProcessedQueue;
+  },
 };

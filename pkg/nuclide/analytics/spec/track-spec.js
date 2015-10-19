@@ -10,9 +10,10 @@
  */
 
 var main = require('../lib/main');
+var track = require('../lib/track');
 var startTracking = main.startTracking;
 
-describe('The @trackTiming decorator', () => {
+describe('startTracking', () => {
   var trackKey, trackValues;
 
   beforeEach(() => {
@@ -21,7 +22,7 @@ describe('The @trackTiming decorator', () => {
     trackValues = null;
 
     // Intercept Parse API call.
-    spyOn(main, 'track').andCallFake((key, values) => {
+    spyOn(track, 'track').andCallFake((key, values) => {
       trackKey = key;
       trackValues = values;
       return Promise.resolve();
@@ -32,7 +33,7 @@ describe('The @trackTiming decorator', () => {
     const timer = startTracking('st-success');
     advanceClock(10);
     timer.onSuccess();
-    expect(main.track).toHaveBeenCalled();
+    expect(track.track).toHaveBeenCalled();
     expect(trackKey).toBe('performance');
     expect(trackValues.duration).toBe('10');
     expect(trackValues.eventName).toBe('st-success');
@@ -44,11 +45,48 @@ describe('The @trackTiming decorator', () => {
     const timer = startTracking('st-error');
     advanceClock(11);
     timer.onError(new Error());
-    expect(main.track).toHaveBeenCalled();
+    expect(track.track).toHaveBeenCalled();
     expect(trackKey).toBe('performance');
     expect(trackValues.duration).toBe('11');
     expect(trackValues.eventName).toBe('st-error');
     expect(trackValues.error).toBe('1');
     expect(trackValues.exception).toBe('Error');
+  });
+
+  it('batching', () => {
+    main.setBatching(true);
+
+    const timer = startTracking('st-error');
+    advanceClock(11);
+    timer.onSuccess();
+
+    expect(track.track).not.toHaveBeenCalled();
+    advanceClock(1000);
+
+    expect(track.track).toHaveBeenCalledWith(
+      'batch',
+      {
+        events : '[{"key":"performance",' +
+            '"values":{"duration":"11","eventName":"st-error","error":"0","exception":""}}]',
+      });
+    main.setBatching(false);
+  });
+
+  it('batching toggle', () => {
+    main.setBatching(true);
+
+    const timer = startTracking('st-error');
+    advanceClock(11);
+    timer.onSuccess();
+
+    expect(track.track).not.toHaveBeenCalled();
+    main.setBatching(false);
+
+    expect(track.track).toHaveBeenCalledWith(
+      'batch',
+      {
+        events : '[{"key":"performance",' +
+            '"values":{"duration":"11","eventName":"st-error","error":"0","exception":""}}]',
+      });
   });
 });
