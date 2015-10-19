@@ -17,5 +17,5 @@ module.exports = function createPaneContainer(): Object {
       provider.modelConstructor.name === 'PaneContainer'
     )[0].modelConstructor;
   }
-  return new paneContainerClass();
+  return new paneContainerClass({});
 };
