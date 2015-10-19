@@ -20,6 +20,11 @@
     "name": "FlowService"
   },
   {
+    "definition": "nuclide-buck-base/lib/BuckUtils.def",
+    "implementation": "nuclide-buck-base/lib/BuckUtils.js",
+    "name": "BuckUtils"
+  },
+  {
     "name": "InfoService",
     "definition": "lib/services/InfoService.def",
     "implementation": "lib/services/InfoService.js"

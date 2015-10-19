@@ -18,7 +18,7 @@ var split = require('split');
 var {EventEmitter} = require('events');
 var ClangFlagsManager = require('./ClangFlagsManager');
 var ClangService = require('./ClangService');
-var LocalBuckUtils = require('nuclide-buck-base/lib/LocalBuckUtils');
+import {BuckUtils} from 'nuclide-buck-base/lib/BuckUtils';
 
 
 async function _findClangServerArgs(): Promise<{
@@ -127,7 +127,7 @@ class LocalClangService extends ClangService {
   constructor() {
     super();
     this._asyncConnection = null;
-    this._clangFlagsManager = new ClangFlagsManager(new LocalBuckUtils());
+    this._clangFlagsManager = new ClangFlagsManager(new BuckUtils());
     this._readableStream = null;
     this._writableStream = null;
     this._nextRequestId = 1;

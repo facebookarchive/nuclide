@@ -8,7 +8,9 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-var {getServiceByNuclideUri} = require('nuclide-client');
+
+import {getServiceByNuclideUri} from 'nuclide-client';
+import type {BuckProject} from 'nuclide-buck-base/lib/BuckProject';
 var {getPath} = require('nuclide-remote-uri');
 
 var buckProjectForBuckProjectDirectory: {[key: string]: mixed} = {};
@@ -18,8 +20,9 @@ var buckProjectForBuckProjectDirectory: {[key: string]: mixed} = {};
  *     specified filePath is not part of a Buck project.
  */
 async function buckProjectRootForPath(filePath: string): Promise<?BuckProject> {
-  var buckUtils = getServiceByNuclideUri('BuckUtils', filePath, null);
-  var directory = await buckUtils.getBuckProjectRoot(filePath);
+  const service = getServiceByNuclideUri('BuckUtils', filePath);
+  const buckUtils = new service.BuckUtils();
+  let directory = await buckUtils.getBuckProjectRoot(filePath);
 
   if (!directory) {
     return null;

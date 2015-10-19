@@ -22,11 +22,5 @@
     "implementation": "nuclide-clang/lib/LocalClangService.js",
     "name": "ClangService",
     "useServiceFramework": true
-  },
-  {
-    "definition": "nuclide-buck-base/lib/BuckUtils.js",
-    "implementation": "nuclide-buck-base/lib/LocalBuckUtils.js",
-    "name": "BuckUtils",
-    "useServiceFramework": true
   }
 ]

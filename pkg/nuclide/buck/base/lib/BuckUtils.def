@@ -1,0 +1,16 @@
+/*
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ */
+
+export class BuckUtils {
+
+  /**
+   * Given a file path, returns path to the Buck project root i.e. the directory containing
+   * '.buckconfig' file.
+   */
+  getBuckProjectRoot(filePath: NuclideUri): Promise<?NuclideUri> {}
+}
