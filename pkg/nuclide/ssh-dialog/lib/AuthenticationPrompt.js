@@ -9,18 +9,22 @@
  * the root directory of this source tree.
  */
 
-var {CompositeDisposable} = require('atom');
-var React = require('react-for-atom');
-var {PropTypes} = React;
+import {CompositeDisposable} from 'atom';
+import React from 'react-for-atom';
 
+type DefaultProps = {};
+type Props = {
+  instructions: string;
+  onConfirm: () => mixed;
+  onCancel: () => mixed;
+};
+type State = {};
 
 /** Component to prompt the user for authentication information. */
-var AuthenticationPrompt = React.createClass({
-  propTypes: {
-    instructions: PropTypes.string.isRequired,
-    onConfirm: PropTypes.func.isRequired,
-    onCancel: PropTypes.func.isRequired,
-  },
+export default class AuthenticationPrompt extends React.Component<DefaultProps, Props, State> {
+  constructor(props: Props) {
+    super(props);
+  }
 
   render() {
     // Instructions may contain newlines that need to be converted to <br> tags.
@@ -33,29 +37,32 @@ var AuthenticationPrompt = React.createClass({
     // We need native-key-bindings so that delete works and we need
     // _onKeyUp so that escape and enter work
     return (
-      <div ref='root' className='password-prompt-container'>
-        <div className='block'
-             style={{whiteSpace: 'pre'}}
-             dangerouslySetInnerHTML={{__html: safeHtml}}
+      <div ref="root" className="password-prompt-container">
+        <div
+          className="block"
+          style={{whiteSpace: 'pre'}}
+          dangerouslySetInnerHTML={{__html: safeHtml}}
         />
 
-        <input type='password'
-               className='nuclide-password native-key-bindings'
-               ref='password'
-               onKeyUp={this._onKeyUp}/>
+        <input
+          type="password"
+          className="nuclide-password native-key-bindings"
+          ref="password"
+          onKeyUp={this._onKeyUp.bind(this)}
+        />
       </div>
     );
-  },
+  }
 
   _onKeyUp(e) {
-    if(e.key === 'Enter'){
+    if (e.key === 'Enter') {
       this.props.onConfirm();
     }
 
-    if(e.key === 'Escape'){
+    if (e.key === 'Escape') {
       this.props.onCancel();
     }
-  },
+  }
 
   componentDidMount() {
     this._disposables = new CompositeDisposable();
@@ -74,18 +81,16 @@ var AuthenticationPrompt = React.createClass({
         (event) => this.props.onCancel()));
 
     React.findDOMNode(this.refs.password).focus();
-  },
+  }
 
   componentWillUnmount() {
     if (this._disposables) {
       this._disposables.dispose();
       this._disposables = null;
     }
-  },
+  }
 
   getPassword() {
     return React.findDOMNode(this.refs.password).value;
-  },
-});
-
-module.exports = AuthenticationPrompt;
+  }
+}
