@@ -109,7 +109,7 @@ function clearProviders() {
 
 function initialize(server) {
   var HackProvider = require('./search/HackProvider');
-  addProvider('hack', new HackProvider(server));
+  addProvider('hack', new HackProvider());
 
   var BigGrepProvider;
   try {

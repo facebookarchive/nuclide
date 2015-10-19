@@ -9,10 +9,11 @@
  * the root directory of this source tree.
  */
 
+var commons = require('nuclide-commons');
 var {addProvider, clearProviders, services} = require('../lib/services/NuclideSearchService');
 var HackProvider = require('../lib/services/search/HackProvider');
 var NuclideLocalEventBus = require('../lib/NuclideLocalEventbus');
-var commons = require('nuclide-commons');
+var HackHelpers = require('nuclide-hack-base/lib/HackHelpers');
 
 var mockResults = [{
   line: 0,
@@ -48,14 +49,6 @@ describe('NuclideHackSearchService test suite', () => {
     nuclideServer = jasmine.createSpyObj('NuclideServer', ['callService']);
     clearProviders();
     addProvider('hack', new HackProvider(nuclideServer));
-    nuclideServer.callService.andCallFake(function(name: string, args) {
-      switch (name) {
-        case '/hack/getSearchResults':
-          return mockResults;
-        default:
-          throw new Error('not implemented');
-      }
-    });
   });
 
   afterEach(() => {
@@ -65,7 +58,7 @@ describe('NuclideHackSearchService test suite', () => {
   describe('info()', () => {
     it('returns provider info', () => {
       waitsForPromise(async () => {
-        spyOn(commons, 'asyncExecute').andReturn({stdout: '/path/to/hhclient'});
+        spyOn(commons, 'checkOutput').andReturn({stdout: '/path/to/hhclient'});
         spyOn(commons.fsPromise, 'findNearestFile').andReturn('/path/to/.hhclient');
         var res = await services['/search/listProviders'].handler('/cwd');
         expect(res.length).toEqual(1);
@@ -75,16 +68,7 @@ describe('NuclideHackSearchService test suite', () => {
 
     it('does not return provider info if isValid returns false', () => {
       waitsForPromise(async () => {
-        spyOn(commons, 'asyncExecute').andReturn({stdout: '/path/to/hhclient'});
-        spyOn(commons.fsPromise, 'findNearestFile').andReturn(undefined);
-        var res = await services['/search/listProviders'].handler('/badcwd');
-        expect(res.length).toEqual(0);
-      });
-    });
-
-    it('does not return provider info if asyncExecute throws', () => {
-      waitsForPromise(async () => {
-        spyOn(commons, 'asyncExecute').andCallFake(() => {throw new Error();});
+        spyOn(commons, 'checkOutput').andReturn({stdout: '/path/to/hhclient'});
         spyOn(commons.fsPromise, 'findNearestFile').andReturn(undefined);
         var res = await services['/search/listProviders'].handler('/badcwd');
         expect(res.length).toEqual(0);
@@ -93,60 +77,48 @@ describe('NuclideHackSearchService test suite', () => {
   });
 
   describe('hack provider', () => {
+    beforeEach(() => {
+      spyOn(HackHelpers, 'getSearchResults').andReturn({result: mockResults});
+    });
+
     describe('query()', () => {
       it('passes thru query with no prefix', () => {
         waitsForPromise(async () => {
           var res = await services['/search/query'].handler('/cwd', 'hack', 'asdf');
-
           expect(res.results).toEqual(mockResults);
-          expect(nuclideServer.callService.calls[0].args[0]).toEqual('/hack/getSearchResults');
-          var args = nuclideServer.callService.calls[0].args[1];
-          expect(args[0]).toEqual('asdf');
-          expect(args[1]).toEqual(undefined);
-          expect(args[2]).toEqual(undefined);
-          expect(args[3]).toEqual({cwd: '/cwd'});
+          expect(HackHelpers.getSearchResults).toHaveBeenCalledWith(
+            '/cwd', 'asdf', undefined, undefined
+          );
         });
       });
 
       it('adds -class if query prefixed by "#"', () => {
         waitsForPromise(async () => {
           var res = await services['/search/query'].handler('/cwd', 'hack', '#asdf');
-
           expect(res.results).toEqual(mockResults);
-          expect(nuclideServer.callService.calls[0].args[0]).toEqual('/hack/getSearchResults');
-          var args = nuclideServer.callService.calls[0].args[1];
-          expect(args[0]).toEqual('asdf');
-          expect(args[1]).toEqual(undefined);
-          expect(args[2]).toEqual('-class');
-          expect(args[3]).toEqual({cwd: '/cwd'});
+          expect(HackHelpers.getSearchResults).toHaveBeenCalledWith(
+            '/cwd', 'asdf', undefined, '-class'
+          );
         });
       });
 
       it('adds -constant if query prefixed by "%"', () => {
         waitsForPromise(async () => {
           var res = await services['/search/query'].handler('/cwd', 'hack', '%asdf');
-
           expect(res.results).toEqual(mockResults);
-          expect(nuclideServer.callService.calls[0].args[0]).toEqual('/hack/getSearchResults');
-          var args = nuclideServer.callService.calls[0].args[1];
-          expect(args[0]).toEqual('asdf');
-          expect(args[1]).toEqual(undefined);
-          expect(args[2]).toEqual('-constant');
-          expect(args[3]).toEqual({cwd: '/cwd'});
+          expect(HackHelpers.getSearchResults).toHaveBeenCalledWith(
+            '/cwd', 'asdf', undefined, '-constant'
+          );
         });
       });
 
       it('adds -constant if query prefixed by "@"', () => {
         waitsForPromise(async () => {
           var res = await services['/search/query'].handler('/cwd', 'hack', '@asdf');
-
           expect(res.results).toEqual(mockResults);
-          expect(nuclideServer.callService.calls[0].args[0]).toEqual('/hack/getSearchResults');
-          var args = nuclideServer.callService.calls[0].args[1];
-          expect(args[0]).toEqual('asdf');
-          expect(args[1]).toEqual(undefined);
-          expect(args[2]).toEqual('-function');
-          expect(args[3]).toEqual({cwd: '/cwd'});
+          expect(HackHelpers.getSearchResults).toHaveBeenCalledWith(
+            '/cwd', 'asdf', undefined, '-function'
+          );
         });
       });
     });

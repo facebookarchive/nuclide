@@ -11,13 +11,9 @@
 
 const HACK_GRAMMARS = ['text.html.hack', 'text.html.php'];
 
-export type HackReference = {
-  name: string,
-  filename: string,
-  line: number,
-  char_start: number,
-  char_end: number,
-};
+export type CompletionTypeValue = 0 | 1 | 2 | 3 | 4 | 5;
+export type SymbolTypeValue = 0| 1 | 2 | 3 | 4;
+export type SearchResultTypeValue = 0| 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 
 /**
  * Constants here represent enums with the same values got from hh_client and the Hack web worker.

@@ -17,7 +17,7 @@ describe('HackLanguage', () => {
   var hackLanguage, hackClient;
   beforeEach(() => {
     hackClient = {dispose: () => {}};
-    hackLanguage = new HackLanguage(hackClient);
+    hackLanguage = new HackLanguage(hackClient, '', '');
   });
 
   afterEach(() => {
@@ -107,8 +107,8 @@ class HackClass {}
         var column = 26;
         var lineText = fileContents.split(/\r\n|\n/)[lineNumber - 1];
 
-        var definition = await hackLanguage.getDefinition(
-          filePath, fileContents, lineNumber, column, lineText
+        var definition = await hackLanguage._getDefinitionLocationAtPosition(
+          filePath, fileContents, lineNumber, column
         );
         expect(definition).toEqual({
           path: filePath,

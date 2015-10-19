@@ -10,17 +10,19 @@
  */
 
 import type {NuclideUri} from 'nuclide-remote-uri';
-import type {HackReference} from 'nuclide-hack-common';
 import type {
   HackCompletionsResult,
   HackCompletion,
   HackDiagnosticsResult,
-  HackDiagnostic
+  HackDiagnostic,
+  HackDefinitionResult,
+  HackSearchPosition,
+  HackReferencesResult,
 } from 'nuclide-hack-base/lib/types';
 import type NuclideClient from 'nuclide-server/lib/NuclideClient';
 
 import {getServiceByNuclideUri} from 'nuclide-client';
-import {getPath} from 'nuclide-remote-uri';
+import {parse, createRemoteUri, getPath} from 'nuclide-remote-uri';
 import invariant from 'assert';
 
 var {Range, Emitter} = require('atom');
@@ -54,8 +56,9 @@ module.exports = class HackLanguage {
 
   _hackWorker: HackWorker;
   _client: ?NuclideClient;
-  _pathContentsMap: {[path: string]: string};
+  _pathContentsMap: Map<string, string>;
   _basePath: ?string;
+  _initialFileUri: NuclideUri;
   _isFinishedLoadingDependencies: boolean;
   _emitter: Emitter;
   _updateDependenciesInterval: number;
@@ -64,15 +67,18 @@ module.exports = class HackLanguage {
    * `basePath` should be the directory where the .hhconfig file is located.
    * It should only be null if client is null.
    */
-  constructor(client: ?NuclideClient, basePath: ?string) {
+  constructor(client: ?NuclideClient, basePath: ?string, initialFileUri: NuclideUri) {
     this._hackWorker = new HackWorker();
     this._client = client;
-    this._pathContentsMap = {};
+    this._pathContentsMap = new Map();
     this._basePath = basePath;
+    this._initialFileUri = initialFileUri;
     this._isFinishedLoadingDependencies = true;
     this._emitter = new Emitter();
 
-    this._setupUpdateDependenciesInterval();
+    if (this._client) {
+      this._setupUpdateDependenciesInterval();
+    }
   }
 
   _setupUpdateDependenciesInterval() {
@@ -124,8 +130,8 @@ module.exports = class HackLanguage {
   }
 
   async updateFile(path: string, contents: string): Promise {
-    if (contents !== this._pathContentsMap[path]) {
-      this._pathContentsMap[path] = contents;
+    if (contents !== this._pathContentsMap.get(path)) {
+      this._pathContentsMap.set(path, contents);
       var webWorkerMessage = {cmd: 'hh_add_file', args: [path, contents]};
       this._isFinishedLoadingDependencies = false;
       return await this._hackWorker.runWorkerTask(webWorkerMessage);
@@ -133,8 +139,8 @@ module.exports = class HackLanguage {
   }
 
   async updateDependencies(): Promise {
-    var webWorkerMessage = {cmd: 'hh_get_deps', args: []};
-    var response = await this._hackWorker.runWorkerTask(webWorkerMessage);
+    const webWorkerMessage = {cmd: 'hh_get_deps', args: []};
+    const response = await this._hackWorker.runWorkerTask(webWorkerMessage);
     if (!response.deps.length) {
       if (!this._isFinishedLoadingDependencies) {
         this._emitter.emit(DEPENDENCIES_LOADED_EVENT);
@@ -144,19 +150,24 @@ module.exports = class HackLanguage {
     }
 
     this._isFinishedLoadingDependencies = false;
-    var dependencies = await this._callHackService(
-      /*serviceName*/ 'getHackDependencies',
-      /*serviceArgs*/ [response.deps],
-      /*defaultValue*/ {},
+    const {getDependencies} = getHackService(this._initialFileUri);
+    const dependenciesResult = await getDependencies(
+      this._initialFileUri, response.deps
     );
-    // Serially update depednecies not to block the worker from serving other feature requests.
-    for (var path in dependencies) {
-      await this.updateDependency(path, dependencies[path]);
+    if (!dependenciesResult) {
+      return;
     }
+    let {dependencies} = dependenciesResult;
+    // Serially update depednecies not to block the worker from serving other feature requests.
+    /* eslint-disable no-await-in-loop */
+    for (const [filePath, contents] of dependencies) {
+      await this.updateDependency(filePath, contents);
+    }
+    /* eslint-enable no-await-in-loop */
   }
 
   async updateDependency(path: string, contents: string): Promise {
-    if (contents !== this._pathContentsMap[path]) {
+    if (contents !== this._pathContentsMap.get(path)) {
       var webWorkerMessage = {cmd: 'hh_add_dep', args: [path, contents]};
       await this._hackWorker.runWorkerTask(webWorkerMessage, {isDependency: true});
     }
@@ -218,23 +229,23 @@ module.exports = class HackLanguage {
   }
 
   async getDefinition(
-      path: string,
+      filePath: NuclideUri,
       contents: string,
       lineNumber: number,
       column: number,
       lineText: string
     ): Promise<?Object> {
-    const [identifierResult, symbolSearchResult, stringParseResult, clientSideResult] =
+    let [identifierResult, symbolSearchResult, stringParseResult, clientSideResult] =
       await Promise.all([
         // Ask the `hh_server` to parse, indentiy the position,
         // and lookup that identifier for a location match.
-        this._getDefinitionFromIdentifier(contents, lineNumber, column),
+        this._getDefinitionFromIdentifier(filePath, contents, lineNumber, column),
         // Ask the `hh_server` for a symbol name search location.
-        this._getDefinitionFromSymbolName(path, contents, lineNumber, column),
+        this._getDefinitionFromSymbolName(filePath, contents, lineNumber, column),
         // Ask the `hh_server` for a search of the string parsed.
-        this._getDefinitionFromStringParse(lineText, column),
+        this._getDefinitionFromStringParse(filePath, lineText, column),
         // Ask Hack client side for a result location.
-        this._getDefinitionLocationAtPosition(path, contents, lineNumber, column),
+        this._getDefinitionLocationAtPosition(filePath, contents, lineNumber, column),
       ]);
     // We now have results from all 3 sources. Chose the best results to show to the user.
     return identifierResult
@@ -288,51 +299,53 @@ module.exports = class HackLanguage {
   }
 
   async _getDefinitionFromSymbolName(
-    path: string,
+    filePath: NuclideUri,
     contents: string,
     lineNumber: number,
     column: number
-  ): Promise<?Object> {
+  ): Promise<?HackSearchPosition> {
     let symbol = null;
     if (contents.length > MAX_HACK_WORKER_TEXT_SIZE) {
       // Avoid Poor Worker Performance for large files.
       return null;
     }
     try {
-      symbol = await this.getSymbolNameAtPosition(path, contents, lineNumber, column);
+      symbol = await this.getSymbolNameAtPosition(getPath(filePath), contents, lineNumber, column);
     } catch (err) {
       // Ignore the error.
-      logger.warn('_getDefinitionFromIdentifyMethod error:', err);
+      logger.warn('_getDefinitionFromSymbolName error:', err);
       return null;
     }
     if (!symbol || !symbol.name) {
       return null;
     }
-    return await this._callHackService(
-      /*serviceName*/ 'getHackDefinition',
-      /*serviceArgs*/ [symbol.name, symbol.type],
-      /*defaultValue*/ null,
-    );
+    const {getDefinition} = getHackService(filePath);
+    const definitionResult = await getDefinition(filePath, symbol.name, symbol.type);
+    if (!definitionResult) {
+      return null;
+    }
+    return ((definitionResult: any): HackDefinitionResult).definition;
   }
 
 
   async _getDefinitionLocationAtPosition(
-      path: string,
+      filePath: NuclideUri,
       contents: string,
       lineNumber: number,
       column: number
-    ): Promise<?Object> {
-    if (contents.length > MAX_HACK_WORKER_TEXT_SIZE) {
+    ): Promise<?HackSearchPosition> {
+    if (!filePath || contents.length > MAX_HACK_WORKER_TEXT_SIZE) {
       // Avoid Poor Worker Performance for large files.
       return null;
     }
-    await this.updateFile(path, contents);
-    var webWorkerMessage = {cmd: 'hh_infer_pos', args: [path, lineNumber, column]};
-    var response = await this._hackWorker.runWorkerTask(webWorkerMessage);
-    var position = response.pos || {};
+    let {hostname, port, path: localPath} = parse(filePath);
+    await this.updateFile(localPath, contents);
+    const webWorkerMessage = {cmd: 'hh_infer_pos', args: [localPath, lineNumber, column]};
+    const response = await this._hackWorker.runWorkerTask(webWorkerMessage);
+    const position = response.pos || {};
     if (position.filename) {
       return {
-        path: position.filename,
+        path: hostname ? createRemoteUri(hostname, port, position.filename) : position.filename,
         line: position.line - 1,
         column: position.char_start - 1,
         length: position.char_end - position.char_start + 1,
@@ -342,31 +355,37 @@ module.exports = class HackLanguage {
     }
   }
 
-  _getDefinitionFromIdentifier(
+  async _getDefinitionFromIdentifier(
+      filePath: NuclideUri,
       contents: string,
       lineNumber: number,
       column: number
-    ): Promise<?Object> {
-    return this._callHackService(
-      /*serviceName*/ 'getHackIdentifierDefinition',
-      /*serviceArgs*/ [contents, lineNumber, column],
-      /*defaultValue*/ null,
+    ): Promise<?HackSearchPosition> {
+    const {getIdentifierDefinition} = getHackService(filePath);
+    const definitionResult = await getIdentifierDefinition(
+      filePath, contents, lineNumber, column
     );
+    if (!definitionResult) {
+      return null;
+    }
+    return ((definitionResult: any): HackDefinitionResult).definition;
   }
 
-  async _getDefinitionFromStringParse(lineText: string, column: number): Promise<?Object> {
-    const {search, start, end} = this._parseStringForExpression(lineText, column);
+  async _getDefinitionFromStringParse(
+    filePath: NuclideUri,
+    lineText: string,
+    column: number
+  ): Promise<?HackSearchPosition> {
+    var {search, start, end} = this._parseStringForExpression(lineText, column);
     if (!search) {
       return null;
     }
-    const definition = await this._callHackService(
-      /*serviceName*/ 'getHackDefinition',
-      /*serviceArgs*/ [search, SymbolType.UNKNOWN],
-      /*defaultValue*/ null,
-    );
-    if (!definition) {
+    const {getDefinition} = getHackService(filePath);
+    const definitionResult = await getDefinition(filePath, search, SymbolType.UNKNOWN);
+    if (!definitionResult) {
       return null;
     }
+    const definition = ((definitionResult: any): HackDefinitionResult).definition;
     return {
       path: definition.path,
       line: definition.line,
@@ -431,12 +450,14 @@ module.exports = class HackLanguage {
     return type;
   }
 
-  async getReferences(contents: string, symbolName: string): Promise<?Array<HackReference>> {
-    return await this._callHackService(
-      /*serviceName*/ 'getHackReferences',
-      /*serviceArgs*/ [symbolName],
-      /*defaultValue*/ null,
-    );
+  async getReferences(
+    filePath: NuclideUri,
+    contents: string,
+    symbolName: string
+  ): Promise<?HackReferencesResult> {
+    const {getReferences} = getHackService(filePath);
+    const referencesResult = await getReferences(filePath, symbolName);
+    return ((referencesResult: any): HackReferencesResult);
   }
 
   getBasePath(): ?string {
@@ -445,20 +466,6 @@ module.exports = class HackLanguage {
 
   isHackClientAvailable(): boolean {
     return !!this._client;
-  }
-
-  async _callHackService(serviceName: string, serviceArgs: Array<any>, defaultValue: any): Promise<any> {
-    if (!this._client || !this._client.eventbus) {
-      // hh_client isn't available on the host machine, or the remote connection has been closed.
-      // No service calls can be done, default values are returned.
-      return defaultValue;
-    }
-    try {
-      return await this._client[serviceName].apply(this._client, serviceArgs);
-    } catch (error) {
-      logger.error(`HACK: service call ${serviceName} failed with args:`, serviceArgs, error);
-      return defaultValue;
-    }
   }
 
   /**

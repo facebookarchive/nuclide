@@ -55,3 +55,46 @@ export type HackCompletionsResult = {
   hackRoot: NuclideUri;
   completions: Array<HackCompletion>;
 };
+
+export type HackDefinitionResult = {
+  hackRoot: NuclideUri;
+  definition: HackSearchPosition;
+};
+
+export type HackReferencesResult = {
+  hackRoot: NuclideUri;
+  references: Array<HackReference>;
+};
+
+export type HackSearchPosition = {
+  path: NuclideUri;
+  line: number;
+  column: number;
+  name: string;
+  length: number;
+  scope: string;
+  additionalInfo: string;
+};
+
+export type HackReference = {
+  name: string;
+  filename: NuclideUri;
+  line: number;
+  char_start: number;
+  char_end: number;
+};
+
+export type HHSearchPosition = {
+  filename: string;
+  line: number;
+  char_start: number;
+  char_end: number;
+  scope: string;
+  name: string;
+  desc: string;
+};
+
+export type HackSearchResult = {
+  hackRoot: NuclideUri,
+  result: Array<HackSearchPosition>;
+};

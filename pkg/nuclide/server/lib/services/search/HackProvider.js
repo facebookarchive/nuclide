@@ -9,17 +9,14 @@
  * the root directory of this source tree.
  */
 
-var AbstractProvider = require('./AbstractProvider');
+import AbstractProvider from './AbstractProvider';
+import type {HackSearchPosition} from 'nuclide-hack-base/lib/types';
+import {getHackExecOptions, getSearchResults} from 'nuclide-hack-base/lib/HackHelpers';
 
 class HackProvider extends AbstractProvider {
-  constructor(server) {
-    super();
-    this._server = server;
-  }
 
-  async query(cwd: string, queryString: string) {
+  async query(cwd: string, queryString: string): Promise<Array<HackSearchPosition>> {
     var searchPostfix;
-
     switch (queryString[0]) {
       case '@':
         searchPostfix = '-function';
@@ -34,28 +31,17 @@ class HackProvider extends AbstractProvider {
         queryString = queryString.substring(1);
         break;
     }
-
-    // TODO: ideally we can use some sort of client object here.
-    return this._server.callService('/hack/getSearchResults', [queryString, undefined, searchPostfix, {cwd}]);
+    var searchResponse = await getSearchResults(cwd, queryString, undefined, searchPostfix);
+    if (!searchResponse) {
+      return [];
+    } else {
+      return searchResponse.result;
+    }
   }
 
   async isAvailable(cwd: string): Promise<boolean> {
-    var {asyncExecute, fsPromise} = require('nuclide-commons');
-
-    //TODO(most): when asyncExecute stops throwing on non-zero exit revisit this try
-    try {
-      var [{stdout}, nearestPath] = await Promise.all([
-        asyncExecute('which', ['hh_client']),
-        fsPromise.findNearestFile('.hhconfig', cwd),
-      ]);
-      if (stdout.trim() && nearestPath) {
-        return true;
-      }
-    } catch (e) {
-      return false;
-    }
-
-    return false;
+    var hackOptions = await getHackExecOptions(cwd);
+    return hackOptions != null;
   }
 }
 

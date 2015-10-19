@@ -45,6 +45,33 @@ export type HackCompletionsResult = {
   completions: Array<HackCompletion>;
 };
 
+export type HackSearchPosition = {
+  path: NuclideUri;
+  line: number;
+  column: number;
+  name: string;
+  length: number;
+  scope: string;
+  additionalInfo: string;
+};
+
+export type HackDefinitionResult = {
+  hackRoot: NuclideUri;
+  definition: HackSearchPosition;
+};
+
+export type HackReference = {
+  name: string;
+  filename: NuclideUri;
+  line: number;
+  char_start: number;
+  char_end: number;
+};
+
+export type HackReferencesResult = {
+  hackRoot: NuclideUri;
+  references: Array<HackReference>;
+};
 
 export async function getDiagnostics(
   file: NuclideUri,
@@ -55,3 +82,36 @@ export async function getCompletions(
   file: NuclideUri,
   markedContents: string
 ): Promise<?HackCompletionsResult> {}
+
+/**
+ * Fetches the dependencies needed by the hack worker to cache for faster hack features response times.
+ * Returns a map of file paths to file contents.
+ */
+export async function getDependencies(
+  filePath: NuclideUri,
+  dependenciesInfo: Array<{name: string; type: string}>,
+): Promise<?{
+  hackRoot: NuclideUri;
+  dependencies: Map<string, string>;
+}> {}
+
+/**
+ * Gets the hh_client definition of the query with a given symbol type.
+ */
+export async function getDefinition(
+  file: NuclideUri,
+  query: string,
+  symbolType: number,
+): Promise<?HackDefinitionResult> {}
+
+export async function getIdentifierDefinition(
+  file: NuclideUri,
+  contents: string,
+  line: number,
+  column: number,
+): Promise<?HackDefinitionResult> {}
+
+export async function getReferences(
+  filePath: NuclideUri,
+  symbolName: string,
+): Promise<?HackReferencesResult> {}

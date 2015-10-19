@@ -100,6 +100,7 @@ declare class atom$Cursor {
   // Managing Cursor Position
   getBufferRow(): number;
   getBufferColumn(): number;
+  getBufferPosition(): atom$Point;
 
   // Cursor Position Details
   // Moving the Cursor
@@ -861,6 +862,7 @@ declare class atom$TextBuffer {
 
   // File Details
   setPath(filePath: string): void;
+  getUri(): string;
 
   // Reading Text
   isEmpty(): boolean;
@@ -901,6 +903,9 @@ declare class atom$TextBuffer {
   getLastRow(): number;
   getRange(): atom$Range;
   rangeForRow(row: number, includeNewLine?: boolean): atom$Range;
+
+  // Position/Index mapping
+  characterIndexForPosition(position: atom$Point): number;
 }
 
 declare class atom$Notification {
