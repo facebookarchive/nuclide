@@ -179,6 +179,7 @@ describe('LocalFlowService', () => {
         var result = await runWith([
           {
             name: 'foo',
+            type: '(param1: type1, param2: type2) => ret',
             func_details: {
               params: [
                 { name: 'param1', type: 'type1' },
