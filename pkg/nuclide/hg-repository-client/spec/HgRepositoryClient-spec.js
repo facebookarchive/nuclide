@@ -72,9 +72,9 @@ describe('HgRepositoryClient', () => {
       // Test setup: Mock out the dependency on HgRepository::_updateStatuses, and set up the cache state.
       var mockFetchedStatuses = {[PATH_1]: StatusCodeId.ADDED};
       spyOn(repo, '_updateStatuses').andCallFake((paths, options) => {
-        var statuses = {};
+        var statuses = new Map();
         paths.forEach((filePath) => {
-          statuses[filePath] = mockFetchedStatuses[filePath];
+          statuses.set(filePath, mockFetchedStatuses[filePath]);
         });
         return Promise.resolve(statuses);
       });
@@ -89,10 +89,10 @@ describe('HgRepositoryClient', () => {
       waitsForPromise(async () => {
         var statusMap = await repo.getStatuses([PATH_1, PATH_2], hgStatusOptions);
         expect(repo._updateStatuses).toHaveBeenCalledWith([PATH_1], hgStatusOptions);
-        expect(statusMap).toEqual({
-          [PATH_1]: StatusCodeNumber.ADDED,
-          [PATH_2]: StatusCodeNumber.IGNORED,
-        });
+        expect(statusMap).toEqual(new Map([
+          [PATH_1, StatusCodeNumber.ADDED],
+          [PATH_2, StatusCodeNumber.IGNORED],
+        ]));
       });
     });
 
@@ -100,17 +100,17 @@ describe('HgRepositoryClient', () => {
       waitsForPromise(async () => {
         var statusMap = await repo.getStatuses([PATH_2, PATH_3], {hgStatusOption: HgStatusOption.ONLY_NON_IGNORED});
         expect(repo._updateStatuses).not.toHaveBeenCalled();
-        expect(statusMap).toEqual({
-          [PATH_3]: StatusCodeNumber.MODIFIED,
-        });
+        expect(statusMap).toEqual(new Map([
+          [PATH_3, StatusCodeNumber.MODIFIED],
+        ]));
       });
 
       waitsForPromise(async () => {
         var statusMap = await repo.getStatuses([PATH_2, PATH_3], {hgStatusOption: HgStatusOption.ONLY_IGNORED});
         expect(repo._updateStatuses).not.toHaveBeenCalled();
-        expect(statusMap).toEqual({
-          [PATH_2]: StatusCodeNumber.IGNORED,
-        });
+        expect(statusMap).toEqual(new Map([
+          [PATH_2, StatusCodeNumber.IGNORED],
+        ]));
       });
     });
   });
@@ -137,11 +137,11 @@ describe('HgRepositoryClient', () => {
       };
 
       spyOn(repo._service, 'fetchStatuses').andCallFake((paths, options) => {
-        var statusMap = {};
+        var statusMap = new Map();
         paths.forEach((filePath) => {
           var fetchedStatus = mockHgStatusFetchData.get(filePath);
           if (fetchedStatus) {
-            statusMap[filePath] = fetchedStatus;
+            statusMap.set(filePath, fetchedStatus);
           }
         });
         return Promise.resolve(statusMap);
@@ -161,10 +161,10 @@ describe('HgRepositoryClient', () => {
       waitsForPromise(async () => {
         var output = await repo._updateStatuses(paths, nonIgnoredOption);
         expect(repo._service.fetchStatuses).toHaveBeenCalledWith(paths, nonIgnoredOption);
-        var expectedStatus = {
-          [PATH_1]: mockHgStatusFetchData.get(PATH_1),
-          [PATH_2]: mockHgStatusFetchData.get(PATH_2),
-        };
+        var expectedStatus = new Map([
+          [PATH_1, mockHgStatusFetchData.get(PATH_1)],
+          [PATH_2, mockHgStatusFetchData.get(PATH_2)],
+        ]);
         expect(output).toEqual(expectedStatus);
       });
     });

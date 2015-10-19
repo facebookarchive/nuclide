@@ -247,8 +247,7 @@ class FileTreeController {
     // parent directory (up to the repository root) of that file as modified, as well. For now, we
     // mark only new files, but not new directories.
     var statusesToReport = {};
-    for (var path in statusCodeForPath) {
-      var statusCode = statusCodeForPath[path];
+    statusCodeForPath.forEach((statusCode, path) => {
       if (repo.isStatusModified(statusCode)) {
         statusesToReport[path] = statusCode;
 
@@ -272,7 +271,7 @@ class FileTreeController {
       } else if (statusCode === hgConstants.StatusCodeNumber.ADDED) {
         statusesToReport[path] = statusCode;
       }
-    }
+    });
     for (var rootKeyForRepo of this._rootKeysForRepository.get(repo)) {
       this._actions.setVcsStatuses(rootKeyForRepo, statusesToReport);
     }

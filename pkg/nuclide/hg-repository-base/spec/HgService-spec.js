@@ -10,15 +10,15 @@
  */
 
 var path = require('path');
-var LocalHgServiceBase = require('../lib/LocalHgServiceBase');
+var HgServiceBase = require('../lib/HgServiceBase');
 var {HgStatusOption, StatusCodeId} = require('../lib/hg-constants');
 import invariant from 'assert';
 
-class TestHgService extends LocalHgServiceBase {
+class TestHgService extends HgServiceBase {
   // These tests target the non-watchman-dependent features of LocalHgService.
 }
 
-describe('LocalHgService', () => {
+describe('HgService', () => {
   var hgService;
   var TEST_WORKING_DIRECTORY = '/Test/Working/Directory/';
   var PATH_1 = path.join(TEST_WORKING_DIRECTORY, 'test1.js');
@@ -28,7 +28,7 @@ describe('LocalHgService', () => {
   }
 
   beforeEach(() => {
-    hgService = new TestHgService({workingDirectory: TEST_WORKING_DIRECTORY});
+    hgService = new TestHgService(TEST_WORKING_DIRECTORY);
   });
 
   describe('::_fetchStatuses', () => {
@@ -55,8 +55,8 @@ describe('LocalHgService', () => {
       waitsForPromise(async () => {
         invariant(hgService);
         var statusMap = await hgService.fetchStatuses(testPaths);
-        expect(statusMap[PATH_1]).toBe(StatusCodeId.MODIFIED);
-        expect(statusMap[PATH_2]).toBe(StatusCodeId.ADDED);
+        expect(statusMap.get(PATH_1)).toBe(StatusCodeId.MODIFIED);
+        expect(statusMap.get(PATH_2)).toBe(StatusCodeId.ADDED);
       });
     });
     describe('when called with a hgStatusOption', () => {
@@ -141,7 +141,7 @@ describe('LocalHgService', () => {
 
   describe('::destroy', () => {
     it('should do cleanup without throwing an exception.', () => {
-      hgService && hgService.destroy();
+      hgService && hgService.dispose();
     });
   });
 

@@ -18,12 +18,6 @@
     "useServiceFramework": true
   },
   {
-    "definition": "nuclide-hg-repository-base/lib/HgService.js",
-    "implementation": "nuclide-hg-repository-base/lib/LocalHgService.js",
-    "name": "HgService",
-    "useServiceFramework": true
-  },
-  {
     "definition": "nuclide-clang/lib/ClangService.js",
     "implementation": "nuclide-clang/lib/LocalClangService.js",
     "name": "ClangService",

@@ -9,30 +9,29 @@
  * the root directory of this source tree.
  */
 
-import {Disposable} from 'event-kit';
+import {Observable, Subject} from 'rx';
 import type {DiffInfo, StatusCodeIdValue} from '../lib/hg-constants';
 import type {NuclideUri} from 'nuclide-remote-uri';
-var HgService = require('../lib/HgService');
 
 // This class is meant to be stubbed out.
-class MockHgService extends HgService {
+class MockHgService {
   fetchStatuses(
     filePaths: Array<NuclideUri>,
     options: ?any
-  ): Promise<{[key: string]: StatusCodeIdValue}> {
-    return Promise.resolve({});
+  ): Promise<Map<string,StatusCodeIdValue>> {
+    return Promise.resolve(new Map());
   }
 
-  onFilesDidChange(callback: (changedPaths: Array<NuclideUri>) => void): Disposable {
-    return new Disposable();
+  observeFilesDidChange(): Observable<Array<NuclideUri>> {
+    return new Subject();
   }
 
-  onHgIgnoreFileDidChange(callback: () => void): Disposable {
-    return new Disposable();
+  observeHgIgnoreFileDidChange(): Observable<void> {
+    return new Subject();
   }
 
-  onHgRepoStateDidChange(callback: () => void): Disposable {
-    return new Disposable();
+  observeHgRepoStateDidChange(): Observable<void> {
+    return new Subject();
   }
 
   fetchDiffInfo(filePath: NuclideUri): Promise<?DiffInfo> {
@@ -43,8 +42,12 @@ class MockHgService extends HgService {
     return Promise.resolve('');
   }
 
-  onHgBookmarkDidChange(): Disposable {
-    return new Disposable();
+  observeHgBookmarkDidChange(): Observable<void> {
+    return new Subject();
+  }
+
+  dispose(): Promise<void> {
+    return Promise.resolve();
   }
 }
 

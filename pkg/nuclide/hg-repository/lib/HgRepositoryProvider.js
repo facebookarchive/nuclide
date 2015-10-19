@@ -83,13 +83,10 @@ export default class HgRepositoryProvider {
       var {originURL, repoPath, workingDirectory, workingDirectoryLocalPath} = repositoryDescription;
 
       var {getServiceByNuclideUri} = require('nuclide-client');
-      var service = getServiceByNuclideUri(
-        'HgService',
-        directory.getPath(),
-        {workingDirectory: workingDirectoryLocalPath}
-      );
+      var {HgService} = getServiceByNuclideUri('HgService', directory.getPath());
+      var hgService = new HgService(workingDirectoryLocalPath);
       var {HgRepositoryClient} = require('nuclide-hg-repository-client');
-      return new HgRepositoryClient(repoPath, service, {
+      return new HgRepositoryClient(repoPath, hgService, {
         workingDirectory,
         projectRootDirectory: directory,
         originURL,

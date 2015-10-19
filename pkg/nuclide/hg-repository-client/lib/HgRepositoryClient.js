@@ -126,19 +126,13 @@ class HgRepositoryClient {
     }));
 
     // Get updates that tell the HgRepositoryClient when to clear its caches.
-    this._compositeDisposable = new CompositeDisposable();
-    this._compositeDisposable.add(this._service.onFilesDidChange(
-      this._filesDidChange.bind(this)
-    ));
-    this._compositeDisposable.add(this._service.onHgIgnoreFileDidChange(
-      this._refreshStatusesOfAllFilesInCache.bind(this)
-    ));
-    this._compositeDisposable.add(this._service.onHgRepoStateDidChange(
-      this._refreshStatusesOfAllFilesInCache.bind(this)
-    ));
-    this._compositeDisposable.add(this._service.onHgBookmarkDidChange(
-      this.fetchCurrentBookmark.bind(this)
-    ));
+    this._service.observeFilesDidChange().subscribe(this._filesDidChange.bind(this));
+    this._service.observeHgIgnoreFileDidChange()
+      .subscribe(this._refreshStatusesOfAllFilesInCache.bind(this));
+    this._service.observeHgRepoStateDidChange()
+      .subscribe(this._refreshStatusesOfAllFilesInCache.bind(this));
+    this._service.observeHgBookmarkDidChange()
+      .subscribe(this.fetchCurrentBookmark.bind(this));
   }
 
   destroy() {
@@ -148,7 +142,7 @@ class HgRepositoryClient {
     Object.keys(this._disposables).forEach((key) => {
       this._disposables[key].dispose();
     });
-    this._compositeDisposable.dispose();
+    this._service.dispose();
   }
 
   /**
@@ -403,8 +397,11 @@ class HgRepositoryClient {
    *   project, it will be ignored.
    * See HgService::getStatuses for more information.
    */
-  async getStatuses(paths: Array<string>, options: ?any): Promise<{[key: string]: StatusCodeNumber}> {
-    var statusMap = {};
+  async getStatuses(
+    paths: Array<string>,
+    options: ?any,
+  ): Promise<Map<NuclideUri, StatusCodeNumber>> {
+    var statusMap = new Map();
     var isRelavantStatus = this._getPredicateForRelevantStatuses(options);
 
     // Check the cache.
@@ -416,7 +413,7 @@ class HgRepositoryClient {
         if (!isRelavantStatus(statusId)) {
           return;
         }
-        statusMap[filePath] = StatusCodeIdToNumber[statusId];
+        statusMap.set(filePath, StatusCodeIdToNumber[statusId]);
       } else {
         pathsWithCacheMiss.push(filePath);
       }
@@ -425,8 +422,8 @@ class HgRepositoryClient {
     // Fetch any uncached statuses.
     if (pathsWithCacheMiss.length) {
       var newStatusInfo = await this._updateStatuses(pathsWithCacheMiss, options);
-      Object.keys(newStatusInfo).forEach((filePath) => {
-        statusMap[filePath] = StatusCodeIdToNumber[newStatusInfo[filePath]];
+      newStatusInfo.forEach((status, filePath) => {
+        statusMap.set(filePath, StatusCodeIdToNumber[status]);
       });
     }
     return statusMap;
@@ -438,27 +435,18 @@ class HgRepositoryClient {
    * @param filePaths An array of file paths to update the status for. If a path
    *   is not in the project, it will be ignored.
    */
-  async _updateStatuses(filePaths: Array<string>, options: ?any): Promise<{[key: string]: StatusCodeId}> {
+  async _updateStatuses(
+    filePaths: Array<string>,
+    options: ?any,
+  ): Promise<Map<NuclideUri, StatussCodeIdValue>> {
     var pathsInRepo = filePaths.filter((filePath) => {
       return this._isPathRelevant(filePath);
     });
     var statusMapPathToStatusId = await this._service.fetchStatuses(pathsInRepo, options);
-    // Until the service framework can do this transformation, we do this manual
-    // adjustment for remote paths.
-    if (isRemote(this._workingDirectory.getPath())) {
-      var remote = this._workingDirectory._remote;
-      Object.keys(statusMapPathToStatusId).forEach((filePath) => {
-        var localPath = remote.getPathOfUri(filePath);
-        var adjustedFilePath = remote.getUriOfRemotePath(localPath);
-        statusMapPathToStatusId[adjustedFilePath] = statusMapPathToStatusId[filePath];
-        delete statusMapPathToStatusId[filePath];
-      });
-    }
 
     var queriedFiles = new Set(pathsInRepo);
     var statusChangeEvents = [];
-    Object.keys(statusMapPathToStatusId).forEach((filePath) => {
-      var newStatusId = statusMapPathToStatusId[filePath];
+    statusMapPathToStatusId.forEach((newStatusId, filePath) => {
 
       var oldStatus = this._hgStatusCache[filePath];
       if (oldStatus && (oldStatus !== newStatusId) ||
@@ -804,7 +792,7 @@ class HgRepositoryClient {
   }
 
   // See HgService.getBlameAtHead.
-  getBlameAtHead(filePath: NuclideUri): Promise<{[key: string]: string}> {
+  getBlameAtHead(filePath: NuclideUri): Promise<Map<string, string>> {
     return this._service.getBlameAtHead(filePath);
   }
 

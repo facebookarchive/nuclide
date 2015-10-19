@@ -43,5 +43,10 @@
     "definition": "nuclide-hack-base/lib/HackService.def",
     "implementation": "nuclide-hack-base/lib/HackService.js",
     "name": "HackService"
+  },
+  {
+    "definition": "nuclide-hg-repository-base/lib/HgService.def",
+    "implementation": "nuclide-hg-repository-base/lib/HgService2.js",
+    "name": "HgService"
   }
 ]

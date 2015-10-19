@@ -12,7 +12,7 @@
 var {debounce} = require('nuclide-commons');
 var DelayedEventManager = require('./DelayedEventManager');
 var watchman = require('fb-watchman');
-var LocalHgServiceBase = require('./LocalHgServiceBase');
+var HgServiceBase = require('./HgServiceBase');
 var logger = require('nuclide-logging').getLogger();
 var {getWatchmanBinaryPath} = require('nuclide-watchman-helpers');
 var path = require('path');
@@ -24,8 +24,6 @@ var WATCHMAN_SUBSCRIPTION_NAME_HGDIRSTATE = 'hg-repository-watchman-subscription
 var WATCHMAN_SUBSCRIPTION_NAME_HGBOOKMARK = 'hg-repository-watchman-subscription-hgbookmark';
 var WATCHMAN_SUBSCRIPTION_NAME_ARC_BUILD_LOCK = 'arc-build-lock';
 var EVENT_DELAY_IN_MS = 1000;
-
-import type {LocalHgServiceOptions} from './hg-types';
 
 function getArcBuildLockFile(): ?string {
   var lockFile;
@@ -51,9 +49,9 @@ function getPrimaryWatchmanSubscriptionRefinements(): Array<mixed> {
   return refinements;
 }
 
-// To make LocalHgServiceBase more easily testable, the watchman dependency is
+// To make HgServiceBase more easily testable, the watchman dependency is
 // broken out. We add the watchman dependency here.
-class LocalHgService extends LocalHgServiceBase {
+export class HgService extends HgServiceBase {
 
   _delayedEventManager: DelayedEventManager;
   _lockFileHeld: boolean;
@@ -61,21 +59,21 @@ class LocalHgService extends LocalHgServiceBase {
   _watchmanClient: ?watchman.Client;
   _allowEventsAgain: ?() => void;
 
-  constructor(options: LocalHgServiceOptions) {
-    super(options);
+  constructor(workingDirectory: string) {
+    super(workingDirectory);
     this._delayedEventManager = new DelayedEventManager(setTimeout, clearTimeout);
     this._lockFileHeld = false;
     this._shouldUseDirstate = true;
     this._subscribeToWatchman();
   }
 
-  destroy() {
+  async dispose(): Promise<void> {
     this._cleanUpWatchman();
     this._delayedEventManager.dispose();
     if (this._dirstateDelayedEventManager) {
       this._dirstateDelayedEventManager.dispose();
     }
-    super.destroy();
+    return super.dispose();
   }
 
   async _subscribeToWatchman(): Promise<void> {
@@ -391,11 +389,11 @@ class LocalHgService extends LocalHgServiceBase {
   _filesDidChange(update: any): void {
     var workingDirectory = this.getWorkingDirectory();
     var changedFiles = update.files.map(file => path.join(workingDirectory, file.name));
-    this._emitter.emit('files-changed', changedFiles);
+    this._filesDidChangeObserver.onNext(changedFiles);
   }
 
   _hgIgnoreFileDidChange(): void {
-    this._emitter.emit('hg-ignore-changed');
+    this._hgIgnoreFileDidChangeObserver.onNext();
   }
 
   _hgLockDidChange(lockExists: boolean): void {
@@ -409,16 +407,11 @@ class LocalHgService extends LocalHgServiceBase {
   }
 
   _emitHgRepoStateChanged() {
-    // Currently there is no use case for alerting clients of the beginning of
-    // the state change, so this event only alerts them of the end.
-    this._emitter.emit('hg-repo-state-changed');
+    this._hgRepoStateDidChangeObserver.onNext();
   }
 
   _hgBookmarkDidChange(): void {
-    this._emitter.emit('hg-bookmark-changed');
+    this._hgBookmarkDidChangeObserver.onNext();
   }
 
 }
-
-
-module.exports = LocalHgService;

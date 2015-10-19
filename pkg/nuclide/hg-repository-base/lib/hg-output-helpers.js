@@ -65,17 +65,14 @@ var HG_BLAME_ERROR_MESSAGE_START = '[abort: ';
 
 /**
  * Parses the output of `hg blame -r "wdir()" -T json --changeset --user --line-number <filename>`.
- * @return An object that maps line numbers (0-indexed) to the blame info for the line.
+ * @return A Map that maps line numbers (0-indexed) to the blame info for the line.
  *   The blame info is of the form: "Firstname Lastname <username@email.com> ChangeSetID".
  *   (The Firstname Lastname may not appear sometimes.)
  *   The ChangeSetID will not be the full 40 digit hexadecimal number, but a prefix whose length is
  *   determined by CHANGE_SET_ID_PREFIX_LENGTH.
- *   TODO(t8045823): Once the service framework supports non-trivial types, return this
- *   information via structured data rather than encoding both the name and ChangeSetID in one
- *   string.
  */
-function parseHgBlameOutput(output: string): {[key: string]: string} {
-  var results = {};
+function parseHgBlameOutput(output: string): Map<string, string> {
+  var results = new Map();
 
   if (output.startsWith(HG_BLAME_ERROR_MESSAGE_START)) {
     return results;
@@ -92,7 +89,7 @@ function parseHgBlameOutput(output: string): {[key: string]: string} {
     if (changeSetId != null) {
       changeSetId = changeSetId.substring(0, CHANGE_SET_ID_PREFIX_LENGTH);
     }
-    results[index] = `${lineDescription['user']} ${changeSetId}`;
+    results.set(index.toString(), `${lineDescription['user']} ${changeSetId}`);
   });
 
   return results;

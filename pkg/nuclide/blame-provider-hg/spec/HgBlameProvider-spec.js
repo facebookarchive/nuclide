@@ -14,13 +14,13 @@ var {formatBlameInfo} = require('../lib/HgBlameProvider').__test__;
 describe('HgBlameProvider', () => {
   describe('formatBlameInfo', () => {
     it('Returns the front part of an email address, iff an email is present.', () => {
-      var originalBlame = {
-        '1': 'Foo Bar <foo@bar.com> faceb00c',
-        '2': 'A B <a.b@c.org> faceb00c',
-        '3': 'alice@bob.com null',
-        '4': '<alice@bob.com> faceb00c',
-        '5': 'No Email Here faceb00c',
-      };
+      var originalBlame = new Map([
+        ['1', 'Foo Bar <foo@bar.com> faceb00c'],
+        ['2', 'A B <a.b@c.org> faceb00c'],
+        ['3', 'alice@bob.com null'],
+        ['4', '<alice@bob.com> faceb00c'],
+        ['5', 'No Email Here faceb00c'],
+      ]);
       var expectedShortenedBlame = new Map([
         [1, {author: 'foo', changeset: 'faceb00c'}],
         [2, {author: 'a.b', changeset: 'faceb00c'}],

@@ -66,14 +66,13 @@ async function doGetBlameForEditor(editor: TextEditor): Promise<BlameForEditor> 
  * author portion will contain only the username.
  */
 function formatBlameInfo(
-  rawBlameData: {[key: string]: string},
+  rawBlameData: Map<string, string>,
   useShortName: boolean
 ): BlameForEditor {
   var extractAuthor = useShortName ? shortenBlameName : identity;
 
   var blameForEditor = new Map();
-  for (var serializedLineNumber in rawBlameData) {
-    var blameName = rawBlameData[serializedLineNumber];
+  rawBlameData.forEach((blameName, serializedLineNumber) => {
     var lineNumber = parseInt(serializedLineNumber, 10);
     var index = blameName.lastIndexOf(' ');
     var changeSetId = blameName.substring(index + 1);
@@ -85,7 +84,7 @@ function formatBlameInfo(
       changeset: changeSetId !== 'null' ? changeSetId : null,
     };
     blameForEditor.set(lineNumber, blameInfo);
-  }
+  });
   return blameForEditor;
 }
 

@@ -10,9 +10,8 @@
  */
 /* @providesModule LocalHgServiceBase */
 
-var {EventEmitter} = require('events');
-var HgService = require('./HgService');
 var {HgStatusOption} = require('./hg-constants');
+var {Observable, Subject} = require('rx');
 var {parseHgBlameOutput, parseHgDiffUnifiedOutput} = require('./hg-output-helpers');
 var {fetchCommonAncestorOfHeadAndRevision,
     fetchRevisionNumbersBetweenRevisions} = require('./hg-revision-expression-helpers');
@@ -22,9 +21,7 @@ var {asyncExecute, createArgsForScriptCommand} = require('nuclide-commons');
 var path = require('path');
 
 import type {DiffInfo, RevisionFileChanges, StatusCodeIdValue} from './hg-constants';
-import type {LocalHgServiceOptions} from './hg-types';
 import type {NuclideUri} from 'nuclide-remote-uri';
-import type {Disposable} from 'event-kit';
 
 var logger;
 function getLogger() {
@@ -34,18 +31,26 @@ function getLogger() {
   return logger;
 }
 
-class LocalHgServiceBase extends HgService {
-  _emitter: EventEmitter;
+class HgServiceBase {
   _workingDirectory: string;
+  _filesDidChangeObserver: Subject;
+  _hgIgnoreFileDidChangeObserver: Subject;
+  _hgRepoStateDidChangeObserver: Subject;
+  _hgBookmarkDidChangeObserver: Subject;
 
-  constructor(options: LocalHgServiceOptions) {
-    super();
-    this._emitter = new EventEmitter();
-    this._workingDirectory = options.workingDirectory;
+  constructor(workingDirectory: string) {
+    this._workingDirectory = workingDirectory;
+    this._filesDidChangeObserver = new Subject();
+    this._hgIgnoreFileDidChangeObserver = new Subject();
+    this._hgRepoStateDidChangeObserver = new Subject();
+    this._hgBookmarkDidChangeObserver = new Subject();
   }
 
-  destroy() {
-    this._emitter.removeAllListeners();
+  async dispose(): Promise<void> {
+    this._filesDidChangeObserver.onCompleted();
+    this._hgIgnoreFileDidChangeObserver.onCompleted();
+    this._hgRepoStateDidChangeObserver.onCompleted();
+    this._hgBookmarkDidChangeObserver.onCompleted();
   }
 
   getWorkingDirectory(): string {
@@ -58,8 +63,8 @@ class LocalHgServiceBase extends HgService {
   async fetchStatuses(
     filePaths: Array<string>,
     options: ?any
-  ): Promise<{[key: string]: StatusCodeIdValue}> {
-    var statusMap = {};
+  ): Promise<Map<string, StatusCodeIdValue>> {
+    var statusMap = new Map();
 
     var args = ['status', '-Tjson'];
     if (options && ('hgStatusOption' in options)) {
@@ -81,7 +86,7 @@ class LocalHgServiceBase extends HgService {
 
     var statuses = JSON.parse(output.stdout);
     statuses.forEach((status) => {
-      statusMap[this._absolutize(status.path)] = status.status;
+      statusMap.set(this._absolutize(status.path), status.status);
     });
     return statusMap;
   }
@@ -94,66 +99,28 @@ class LocalHgServiceBase extends HgService {
   }
 
   /**
-   * See HgService::onFilesDidChange for details.
+   * See HgService.def::observeFilesDidChange for details.
    */
-  onFilesDidChange(callback: (changedFilePaths: Array<string>) => void): Disposable {
-    this._emitter.on('files-changed', callback);
-    return {
-      dispose: () => {
-        this._removeOnFilesDidChangeListener(callback);
-      },
-    };
+  observeFilesDidChange(): Observable<Array<NuclideUri>> {
+    return this._filesDidChangeObserver;
   }
 
   /**
-   * Removes a listener that was registered on ::onFilesDidChange.
-   * Note: Does not fire on changes to .hgignore files. Use ::onHgIgnoreFileDidChange
-   * if you need to observe changes on these types of files.
+   * See HgService.def::observeHgIgnoreFileDidChange for details.
    */
-  _removeOnFilesDidChangeListener(callback: (changedFilePaths: Array<string>) => void): void {
-    this._emitter.removeListener('files-changed', callback);
+  observeHgIgnoreFileDidChange(): Observable<void> {
+    return this._hgIgnoreFileDidChangeObserver;
   }
 
   /**
-   * See HgService::onHgIgnoreFileDidChange for details.
+   * See HgService.def::observeHgRepoStateDidChange for details.
    */
-  onHgIgnoreFileDidChange(callback: () => void): Disposable {
-    this._emitter.on('hg-ignore-changed', callback);
-    return {
-      dispose: () => {
-        this._removeOnHgIgnoreFileDidChangeListener(callback);
-      },
-    };
+  observeHgRepoStateDidChange(): Observable<void> {
+    return this._hgRepoStateDidChangeObserver;
   }
 
   /**
-   * Removes a listener that was registered on ::onHgIgnoreFileDidChange.
-   */
-  _removeOnHgIgnoreFileDidChangeListener(callback: () => void): void {
-    this._emitter.removeListener('hg-ignore-changed', callback);
-  }
-
-  /**
-   * See HgService::onHgRepoStateDidChange for details.
-   */
-  onHgRepoStateDidChange(callback: () => void): Disposable {
-    this._emitter.on('hg-repo-state-changed', callback);
-    return {
-      dispose: () => {
-        this._removeOnHgRepoStateDidChangeListener(callback);
-      },
-    };
-  }
-
-  /**
-   * Removes a listener that was registered on ::onHgRepoStateDidChange.
-   */
-  _removeOnHgRepoStateDidChangeListener(callback: () => void): void {
-    this._emitter.removeListener('hg-repo-state-changed', callback);
-  }
-
-  /**
-   * See HgService::fetchDiffInfo for details.
+   * See HgService.def::fetchDiffInfo for details.
    */
   async fetchDiffInfo(filePath: string): Promise<?DiffInfo> {
     var args = ['diff', '--unified', '0', filePath];
@@ -203,19 +170,11 @@ class LocalHgServiceBase extends HgService {
   }
 
   /**
-   * See HgService::onHgBookmarkDidChange for details.
+   * See HgService:.def:observeHgBookmarkDidChange for details.
    */
-  onHgBookmarkDidChange(callback: () => void): Disposable {
-    this._emitter.on('hg-bookmark-changed', callback);
-    return {
-      dispose: this._removeOnHgBookmarkDidChangeListener.bind(this, callback),
-    };
+  observeHgBookmarkDidChange(): Observable<void> {
+    return this._hgBookmarkDidChangeObserver;
   }
-
-  _removeOnHgBookmarkDidChangeListener(callback: () => void): void {
-    this._emitter.removeListener('hg-bookmark-changed', callback);
-  }
-
 
   /**
    * Section: Repository State at Specific Revisions
@@ -240,7 +199,7 @@ class LocalHgServiceBase extends HgService {
     return fetchRevisionNumbersBetweenRevisions(revisionFrom, revisionTo, this._workingDirectory);
   }
 
-  async getBlameAtHead(filePath: NuclideUri): Promise<{[key: string]: string}> {
+  async getBlameAtHead(filePath: NuclideUri): Promise<Map<string, string>> {
     var args =
       ['blame', '-r', 'wdir()', '-Tjson', '--changeset', '--user', '--line-number', filePath];
     var execOptions = {
@@ -303,4 +262,4 @@ class LocalHgServiceBase extends HgService {
 }
 
 
-module.exports = LocalHgServiceBase;
+module.exports = HgServiceBase;

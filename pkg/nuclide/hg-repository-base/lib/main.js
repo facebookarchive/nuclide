@@ -15,11 +15,7 @@ module.exports = {
   },
 
   get HgService() {
-    return require('./HgService');
-  },
-
-  get LocalHgService() {
-    return require('./LocalHgService');
+    return require('./HgService2');
   },
 
   // Exposed for testing
