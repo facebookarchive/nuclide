@@ -36,8 +36,12 @@ function insertAutocompleteToken(contents: string, line: number, col: number): s
  * https://github.com/atom/autocomplete-plus/wiki/Provider-API
  */
 function processAutocompleteItem(replacementPrefix: string, flowItem: Object): Object {
+  // Truncate long types for readability
+  var description = flowItem['type'].length < 80
+    ? flowItem['type']
+    : flowItem['type'].substring(0,80) + ' ...';
   var result = {
-    description: flowItem['type'],
+    description: description,
     displayText: flowItem['name'],
     replacementPrefix,
   };
