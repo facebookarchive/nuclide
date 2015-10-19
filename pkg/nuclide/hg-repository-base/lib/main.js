@@ -15,7 +15,7 @@ module.exports = {
   },
 
   get HgService() {
-    return require('./HgService2');
+    return require('./HgService');
   },
 
   // Exposed for testing
