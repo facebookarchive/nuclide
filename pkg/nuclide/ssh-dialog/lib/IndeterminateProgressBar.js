@@ -9,20 +9,18 @@
  * the root directory of this source tree.
  */
 
-var React = require('react-for-atom');
+import React from 'react-for-atom';
 
 /**
  * Component to entertain the user while he is waiting to hear back from the
  * server.
  */
-var IndeterminateProgressBar = React.createClass({
+export default class IndeterminateProgressBar extends React.Component {
   render() {
     return (
-      <div className='block'>
-        <span className='loading loading-spinner-medium inline-block'></span>
+      <div className="block">
+        <span className="loading loading-spinner-medium inline-block"></span>
       </div>
     );
-  },
-});
-
-module.exports = IndeterminateProgressBar;
+  }
+}
