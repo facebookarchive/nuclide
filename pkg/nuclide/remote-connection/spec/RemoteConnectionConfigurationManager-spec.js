@@ -9,9 +9,10 @@
  * the root directory of this source tree.
  */
 
-var {encryptString, decryptString} = require('../lib/main').__test__;
+var {encryptString, decryptString} =
+  require('../lib/RemoteConnectionConfigurationManager.js').__test__;
 
-describe('Nuclide Remote Projects', () => {
+describe('RemoteConnectionConfigurationManager', () => {
   describe('encryptString and decryptString', () => {
     it('can encrypt and dycrypt strings', () => {
       var text = 'This little piggy went to market';
