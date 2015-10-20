@@ -82,20 +82,28 @@ function objectToStats(jsonStats: Object): fs.Stats {
  * be recursive, calling other marshalling functions, ending at the primitives.
  */
 export default class TypeRegistry {
+  /** Store marhsallers and and unmarshallers, index by the kind of the type. */
+  _kindMarshallers: Map<string, {
+      marshaller: Transformer;
+      unmarshaller: Transformer;
+    }>;
+
   /** Store marhsallers and and unmarshallers, index by the name of the type. */
-  _marshallers: Map<string, Transformer>;
-  _unmarshallers: Map<string, Transformer>;
+  _namedMarshallers: Map<string, {
+      marshaller: (value: any) => Promise<any>;
+      unmarshaller: (value: any) => Promise<any>;
+    }>;
 
   constructor() {
-    this._marshallers = new Map();
-    this._unmarshallers = new Map();
+    this._kindMarshallers = new Map();
+    this._namedMarshallers = new Map();
 
     this._registerPrimitives();
     this._registerSpecialTypes();
     this._registerContainers();
 
     // Register NullableType and NamedType
-    this.registerType('nullable', async (value: any, type: Type) => {
+    this._registerKind('nullable', async (value: any, type: Type) => {
       if (value === null || value === undefined || type.kind !== 'nullable') {
         return null;
       }
@@ -107,20 +115,29 @@ export default class TypeRegistry {
       return await this.unmarshal(value, type.type);
     });
 
-    this.registerType('named', async (value: any, type: Type) => {
+    this._registerKind('named', async (value: any, type: Type) => {
       invariant(type.kind === 'named');
-      // $FlowFixMe - figure out how to represent custom types as `Type`.
-      return await this.marshal(value, {kind: type.name});
+      if (!this._namedMarshallers.has(type.name)) {
+        throw new Error(`No marshaller found for named type ${type.name}.`);
+      }
+      return await this._namedMarshallers.get(type.name).marshaller(value);
     }, async (value: any, type: Type) => {
       invariant(type.kind === 'named');
-      // $FlowFixMe - figure out how to represent custom types as `Type`.
-      return await this.unmarshal(value, {kind: type.name});
+      if (!this._namedMarshallers.get(type.name)) {
+        throw new Error(`No marshaller found for named type ${type.name}.`);
+      }
+      return await this._namedMarshallers.get(type.name).unmarshaller(value);
     });
 
-    this.registerType(
+    this._registerKind(
       'void',
       (value, type) => Promise.resolve(null),
       (value, type) => Promise.resolve(null));
+  }
+
+  _registerKind(kind: string, marshaller: Transformer, unmarshaller: Transformer): void {
+    invariant(!this._kindMarshallers.has(kind));
+    this._kindMarshallers.set(kind, {marshaller, unmarshaller});
   }
 
   /**
@@ -131,12 +148,12 @@ export default class TypeRegistry {
    * @param marshaller - Serialize the type.
    * @param unmarshaller - Deserialize the type.
    */
-  registerType(typeName: string, marshaller: Transformer, unmarshaller: Transformer): void {
-    if (this._marshallers.has(typeName) || this._unmarshallers.has(typeName)) {
+  registerType(typeName: string, marshaller: (value: any) => Promise<any>,
+      unmarshaller: (value: any) => Promise<any>): void {
+    if (this._namedMarshallers.has(typeName)) {
       throw new Error(`A type by the name ${typeName} has already been registered.`);
     }
-    this._marshallers.set(typeName, marshaller);
-    this._unmarshallers.set(typeName, unmarshaller);
+    this._namedMarshallers.set(typeName, {marshaller, unmarshaller});
   }
 
   /**
@@ -155,10 +172,10 @@ export default class TypeRegistry {
    * @param type - The type object (used to find the appropriate function).
    */
   marshal(value: any, type: Type): Promise<any> {
-    if (!this._marshallers.has(type.kind)) {
-      throw new Error(`No marshaller found for type ${type.kind}.`);
+    if (!this._kindMarshallers.has(type.kind)) {
+      throw new Error(`No marshaller found for type kind ${type.kind}.`);
     }
-    return this._marshallers.get(type.kind)(value, type);
+    return this._kindMarshallers.get(type.kind).marshaller(value, type);
   }
 
   /**
@@ -167,10 +184,10 @@ export default class TypeRegistry {
    * @param type - The type object (used to find the appropriate function).
    */
   unmarshal(value: any, type: Type): Promise<any> {
-    if (!this._unmarshallers.has(type.kind)) {
-      throw new Error(`No unmarshaller found for type ${type.kind}.`);
+    if (!this._kindMarshallers.has(type.kind)) {
+      throw new Error(`No unmarshaller found for type kind ${type.kind}.`);
     }
-    return this._unmarshallers.get(type.kind)(value, type);
+    return this._kindMarshallers.get(type.kind).unmarshaller(value, type);
   }
 
   _registerPrimitives(): void {
@@ -203,10 +220,10 @@ export default class TypeRegistry {
     var anyTransformer = async arg => arg;
 
     // Register these transformers
-    this.registerType('string', stringTransformer, stringTransformer);
-    this.registerType('number', numberTransformer, numberTransformer);
-    this.registerType('boolean', booleanTransformer, booleanTransformer);
-    this.registerType('any', anyTransformer, anyTransformer);
+    this._registerKind('string', stringTransformer, stringTransformer);
+    this._registerKind('number', numberTransformer, numberTransformer);
+    this._registerKind('boolean', booleanTransformer, booleanTransformer);
+    this._registerKind('any', anyTransformer, anyTransformer);
   }
 
   _registerSpecialTypes(): void {
@@ -261,7 +278,7 @@ export default class TypeRegistry {
 
   _registerContainers(): void {
     // Serialize / Deserialize Arrays.
-    this.registerType('array', async (value: any, type: Type) => {
+    this._registerKind('array', async (value: any, type: Type) => {
       assert(value instanceof Array, 'Expected an object of type Array.');
       invariant(type.kind === 'array');
       var elemType = type.type;
@@ -274,7 +291,7 @@ export default class TypeRegistry {
     });
 
     // Serialize and Deserialize Objects.
-    this.registerType('object', async (obj: any, type: Type) => {
+    this._registerKind('object', async (obj: any, type: Type) => {
       assert(typeof obj === 'object', 'Expected an argument of type object.');
       invariant(type.kind === 'object');
       var newObj = {}; // Create a new object so we don't mutate the original one.
@@ -309,7 +326,7 @@ export default class TypeRegistry {
     });
 
     // Serialize / Deserialize Sets.
-    this.registerType('set', async (value: any, type: Type) => {
+    this._registerKind('set', async (value: any, type: Type) => {
       invariant(type.kind === 'set');
       assert(value instanceof Set, 'Expected an object of type Set.');
       var serializePromises = [];
@@ -326,7 +343,7 @@ export default class TypeRegistry {
     });
 
     // Serialize / Deserialize Maps.
-    this.registerType('map', async (map: Map, type: Type) => {
+    this._registerKind('map', async (map: Map, type: Type) => {
       assert(map instanceof Map, 'Expected an object of type Set.');
       invariant(type.kind === 'map');
       var serializePromises = [];
@@ -352,7 +369,7 @@ export default class TypeRegistry {
     });
 
     // Serialize / Deserialize Tuples.
-    this.registerType('tuple', async (value: any, type: Type) => {
+    this._registerKind('tuple', async (value: any, type: Type) => {
       // Assert the length of the array.
       assert(Array.isArray(value), 'Expected an object of type Array.');
       invariant(type.kind === 'tuple');

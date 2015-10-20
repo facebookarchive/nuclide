@@ -12,7 +12,7 @@
 import TypeRegistry from '../lib/TypeRegistry';
 import invariant from 'assert';
 
-import type {NamedType, ArrayType, ObjectType} from '../lib/types';
+import type {NamedType, ArrayType, ObjectType, NullableType} from '../lib/types';
 
 describe('TypeRegistry', () => {
   var typeRegistry;
@@ -132,6 +132,18 @@ describe('TypeRegistry', () => {
       expect(result.valueA).toBe(data.valueA);
       expect(result.valueB).toBeNull();
       expect(result.hasOwnProperty('valueC')).toBeFalsy();
+    });
+  });
+
+  it('Can serialize / deserialize named types with same name as type kinds.', () => {
+    waitsForPromise(async () => {
+      invariant(typeRegistry);
+      typeRegistry.registerAlias('nullable', {kind: 'number' });
+
+      var data = null;
+      var type: NullableType = {kind: 'nullable', type: {kind: 'string'}};
+      var result = await typeRegistry.unmarshal(await typeRegistry.marshal(data, type), type);
+      expect(result).toBe(null);
     });
   });
 });
