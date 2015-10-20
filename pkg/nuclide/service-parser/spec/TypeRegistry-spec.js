@@ -13,6 +13,14 @@ import TypeRegistry from '../lib/TypeRegistry';
 import invariant from 'assert';
 
 import type {NamedType, ArrayType, ObjectType, NullableType} from '../lib/types';
+import {
+  numberType,
+  stringType,
+  booleanType,
+  dateType,
+  regExpType,
+  bufferType,
+} from '../lib/builtin-types';
 
 describe('TypeRegistry', () => {
   var typeRegistry;
@@ -26,22 +34,22 @@ describe('TypeRegistry', () => {
 
       var expected = 'Hello World';
       var str = await typeRegistry.unmarshal(
-        await typeRegistry.marshal(expected, {kind: 'string'}),
-        {kind: 'string'},
+        await typeRegistry.marshal(expected, stringType),
+        stringType,
       );
       expect(str).toBe(expected);
 
       var expected = 312213;
       var num = await typeRegistry.unmarshal(
-        await typeRegistry.marshal(expected, {kind: 'number'}),
-        {kind: 'number'},
+        await typeRegistry.marshal(expected, numberType),
+        numberType,
       );
       expect(num).toBe(expected);
 
       var expected = false;
       var bool = await typeRegistry.unmarshal(
-        await typeRegistry.marshal(expected, {kind: 'boolean'}),
-        {kind: 'boolean'},
+        await typeRegistry.marshal(expected, booleanType),
+        booleanType,
       );
       expect(bool).toBe(expected);
     });
@@ -52,19 +60,18 @@ describe('TypeRegistry', () => {
       invariant(typeRegistry);
 
       var expected = new Date();
-      var type: NamedType = {kind: 'named', name: 'Date'};
-      var date = await typeRegistry.unmarshal(await typeRegistry.marshal(expected, type), type);
+      var date = await typeRegistry.unmarshal(
+          await typeRegistry.marshal(expected, dateType), dateType);
       expect(date.getTime()).toBe(expected.getTime());
 
       var expected = /nuclide/ig;
-      var type: NamedType = {kind: 'named', name: 'RegExp'};
-      var regex = await typeRegistry.unmarshal(await typeRegistry.marshal(expected, type), type);
+      var regex = await typeRegistry.unmarshal(
+          await typeRegistry.marshal(expected, regExpType), regExpType);
       expect(regex.source).toBe(expected.source);
 
       var expected = new Buffer('test buffer data.');
-      var type: NamedType = {kind: 'named', name: 'Buffer'};
       var buf: Buffer = await typeRegistry.unmarshal(
-        await typeRegistry.marshal(expected, type), type);
+        await typeRegistry.marshal(expected, bufferType), bufferType);
       expect(expected.equals(buf)).toBeTruthy();
     });
   });
@@ -77,10 +84,7 @@ describe('TypeRegistry', () => {
       var expected = [new Buffer('testdas'), new Buffer('test')];
       var type: ArrayType = {
         kind: 'array',
-        type: {
-          kind: 'named',
-          name: 'Buffer',
-        },
+        type: bufferType,
       };
       var result = await typeRegistry.unmarshal(await typeRegistry.marshal(expected, type), type);
       expect(result.length).toBe(2);
@@ -93,19 +97,22 @@ describe('TypeRegistry', () => {
         fields: [
           // A nullable string property.
           {
-            type: { kind: 'nullable', type: { kind: 'string' } },
+            type: {
+              kind: 'nullable',
+              type: stringType,
+            },
             name: 'a',
             optional: false,
           },
           // A non-nullable buffer property.
           {
-            type: { kind: 'named', name: 'Buffer'},
+            type: bufferType,
             name: 'b',
             optional: false,
           },
           // An optional number property.
           {
-            type: { kind: 'number' },
+            type: numberType,
             name: 'c',
             optional: true,
           },
@@ -127,7 +134,10 @@ describe('TypeRegistry', () => {
       typeRegistry.registerAlias('ValueTypeA', ValueTypeA);
 
       var data = {valueA: 'Hello World.', valueB: null};
-      var type: NamedType = {kind: 'named', name: 'ValueTypeA'};
+      var type: NamedType = {
+        kind: 'named',
+        name: 'ValueTypeA',
+      };
       var result = await typeRegistry.unmarshal(await typeRegistry.marshal(data, type), type);
       expect(result.valueA).toBe(data.valueA);
       expect(result.valueB).toBeNull();
@@ -138,24 +148,25 @@ describe('TypeRegistry', () => {
   it('Can serialize / deserialize named types with same name as type kinds.', () => {
     waitsForPromise(async () => {
       invariant(typeRegistry);
-      typeRegistry.registerAlias('nullable', {kind: 'number' });
+      typeRegistry.registerAlias('nullable', numberType);
 
       var data = null;
-      var type: NullableType = {kind: 'nullable', type: {kind: 'string'}};
+      var type: NullableType = {
+        kind: 'nullable',
+        type: stringType,
+      };
       var result = await typeRegistry.unmarshal(await typeRegistry.marshal(data, type), type);
       expect(result).toBe(null);
     });
   });
 });
 
-var ValueTypeA = {
+const ValueTypeA = {
   fields: [
     {
       name: 'valueA',
       optional: false,
-      type: {
-        kind: 'string',
-      },
+      type: stringType,
     },
     {
       name: 'valueB',
@@ -171,9 +182,7 @@ var ValueTypeA = {
     {
       name: 'valueC',
       optional: true,
-      type: {
-        kind: 'boolean',
-      },
+      type: booleanType,
     },
   ],
   kind: 'object',

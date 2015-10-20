@@ -15,6 +15,8 @@ import vm from 'vm';
 import fs from 'fs';
 
 import type {Type} from './types';
+import {dateType, regExpType, bufferType, fsStatsType} from './builtin-types';
+
 
 /*
  * This type represents a Transformer function, which takes in a value, and either serializes
@@ -228,7 +230,7 @@ export default class TypeRegistry {
 
   _registerSpecialTypes(): void {
     // Serialize / Deserialize Javascript Date objects
-    this.registerType('Date', async date => {
+    this.registerType(dateType.name, async date => {
       assert(date instanceof Date, 'Expected date argument.');
       return date.toJSON();
     }, async dateStr => {
@@ -240,7 +242,7 @@ export default class TypeRegistry {
     });
 
     // Serialize / Deserialize RegExp objects
-    this.registerType('RegExp', async regexp => {
+    this.registerType(regExpType.name, async regexp => {
       assert(regexp instanceof RegExp, 'Expected a RegExp object as an argument');
       return regexp.toString();
     }, async regStr => {
@@ -253,7 +255,7 @@ export default class TypeRegistry {
     });
 
     // Serialize / Deserialize Buffer objects through Base64 strings
-    this.registerType('Buffer', async buffer => {
+    this.registerType(bufferType.name, async buffer => {
       assert(buffer instanceof Buffer, 'Expected a buffer argument.');
       return buffer.toString('base64');
     }, async base64string => {
@@ -267,7 +269,7 @@ export default class TypeRegistry {
     });
 
     // fs.Stats
-    this.registerType('fs.Stats', async stats => {
+    this.registerType(fsStatsType.name, async stats => {
       assert(stats instanceof fs.Stats);
       return JSON.stringify(statsToObject(stats));
     }, async json => {
