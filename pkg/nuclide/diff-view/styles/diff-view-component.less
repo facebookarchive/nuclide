@@ -1,4 +1,5 @@
 @import 'ui-variables';
+@import 'syntax-variables';
 @import 'octicon-utf-codes';
 
 .nuclide-diff-view-component {
@@ -58,12 +59,40 @@
   }
 }
 
+// Default colors for themes that do not specify any.
+@success-color: #0c0;
+@success-color: @text-color-success;
+
+@error-color: #c00;
+@error-color: @text-color-error;
+
+@backgroundLuma: luma(@syntax-background-color);
+@lumaThreshold: 50%;
+@blendAmount: 40%;
+
 atom-text-editor, atom-text-editor::shadow {
 
+  // `screen` works well for dark themes,
+  // `multiply` works well for light themes
+
   .diff-view-insert .region {
-    background-color: @background-color-success;
+    @success-color-faded: fade(@success-color, @blendAmount);
+    & when (@backgroundLuma <= @lumaThreshold) {
+      background-color: screen(@syntax-background-color, @success-color-faded);
+    }
+    & when (@backgroundLuma > @lumaThreshold) {
+      background-color: multiply(@syntax-background-color, @success-color-faded);
+    }
   }
+
   .diff-view-delete .region {
-    background-color: @background-color-error;
+    @error-color-faded: fade(@error-color, @blendAmount);
+    & when (@backgroundLuma <= @lumaThreshold) {
+      background-color: screen(@syntax-background-color, @error-color-faded);
+    }
+    & when (@backgroundLuma > @lumaThreshold) {
+      background-color: multiply(@syntax-background-color, @error-color-faded);
+    }
   }
+
 }
