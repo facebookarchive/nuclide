@@ -12,6 +12,7 @@
 import assert from 'assert';
 import invariant from 'assert';
 import vm from 'vm';
+import fs from 'fs';
 
 import type {Type} from './types';
 
@@ -23,6 +24,55 @@ import type {Type} from './types';
  * transformers.
  */
 export type Transformer = (value: any, type: Type) => Promise<any>;
+
+function statsToObject(stats: fs.Stats): Object {
+  const result = {
+    dev: stats.dev,
+    mode: stats.mode,
+    nlink: stats.nlink,
+    uid: stats.uid,
+    gid: stats.gid,
+    rdev: stats.rdev,
+    blksize: stats.blksize,
+    ino: stats.ino,
+    size: stats.size,
+    blocks: stats.blocks,
+    atime: stats.atime.toJSON(),
+    mtime: stats.mtime.toJSON(),
+    ctime: stats.ctime.toJSON(),
+  };
+
+  if (stats.birthtime) {
+    return {...result, birthtime: stats.birthtime.toJSON() };
+  }
+
+  return result;
+}
+
+function objectToStats(jsonStats: Object): fs.Stats {
+  var stats = new fs.Stats();
+
+  stats.dev = jsonStats.dev;
+  stats.mode = jsonStats.mode;
+  stats.nlink = jsonStats.nlink;
+  stats.uid = jsonStats.uid;
+  stats.gid = jsonStats.gid;
+  stats.rdev = jsonStats.rdev;
+  stats.blksize = jsonStats.blksize;
+  stats.ino = jsonStats.ino;
+  stats.size = jsonStats.size;
+  stats.blocks = jsonStats.blocks;
+  stats.atime = new Date(jsonStats.atime);
+  stats.mtime = new Date(jsonStats.mtime);
+  stats.ctime = new Date(jsonStats.ctime);
+
+  if (jsonStats.birthtime) {
+    // $FlowIssue
+    stats.birthtime = new Date(jsonStats.birthtime);
+  }
+
+  return stats;
+}
 
 /*
  * The TypeRegistry is a centralized place to register functions that serialize and deserialize
@@ -197,6 +247,15 @@ export default class TypeRegistry {
         typeof base64string === 'string',
         `Expected a base64 string. Not ${typeof base64string}`);
       return new Buffer(base64string, 'base64');
+    });
+
+    // fs.Stats
+    this.registerType('fs.Stats', async stats => {
+      assert(stats instanceof fs.Stats);
+      return JSON.stringify(statsToObject(stats));
+    }, async json => {
+      assert(typeof json === 'string');
+      return objectToStats(JSON.parse(json));
     });
   }
 
