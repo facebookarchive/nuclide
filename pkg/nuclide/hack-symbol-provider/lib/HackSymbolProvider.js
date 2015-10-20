@@ -103,18 +103,17 @@ var HackSymbolProvider: Provider = {
     if (client == null) {
       return [];
     }
-    var remoteUri = require('nuclide-remote-uri');
-    var {protocol, hostname, path: rootDirectory} = remoteUri.parse(directoryPath);
+    const {parse, isRemote, createRemoteUri} = require('nuclide-remote-uri');
+    const {hostname, port, path: rootDirectory} = parse(directoryPath);
     var allProviders = await client.getSearchProviders(rootDirectory);
     if (!allProviders.some(p => p.name === HACK_SEARCH_PROVIDER)) {
       return [];
     }
     var request = await client.doSearchQuery(rootDirectory, HACK_SEARCH_PROVIDER, query);
-    var shouldPrependBasePath = !!(protocol && hostname);
-    if (shouldPrependBasePath) {
+    if (isRemote(directoryPath)) {
       return request.results.map(result => ({
         ...result,
-        path: `${protocol}//${hostname}${result.path}`,
+        path: createRemoteUri(hostname, port, result.path),
       }));
     }
     return request.results;

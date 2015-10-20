@@ -67,7 +67,7 @@ describe('HackSymbolProvider', () => {
           expect(mockClient.doSearchQuery).toHaveBeenCalledWith('/some/remote/path', 'hack', 'asdf');
 
           expect(Object.keys(queries[0])).toEqual(['path']);
-          expect(queries[0].path).toEqual('nuclide://some.host/some/path');
+          expect(queries[0].path).toEqual('nuclide://some.host:1234/some/path');
         });
       });
     });
