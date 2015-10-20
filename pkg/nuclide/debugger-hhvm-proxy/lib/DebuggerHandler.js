@@ -27,8 +27,9 @@ var {
   COMMAND_STOP,
 } = require('./DbgpSocket');
 
-import type {ConnectionMulitplexer} from './ConnectionMultiplexer';
+import type {ConnectionMultiplexer} from './ConnectionMultiplexer';
 import type ChromeCallback from './ChromeCallback';
+import type {NotificationCallback} from './NotificationCallback';
 import type FileCache from './FileCache';
 import type {EventEmitter} from 'events';
 
@@ -40,18 +41,28 @@ export class DebuggerHandler extends Handler {
   _files: FileCache;
   _emitter: EventEmitter;
   _statusSubscription: ?Disposable;
+  _connectionErrorDisposible: ?Disposable;
   _hadFirstContinuationCommand: boolean;
 
-  constructor(callback: ChromeCallback, connectionMultiplexer: ConnectionMultiplexer) {
-    super('Debugger', callback);
+  constructor(
+    chromeCallback: ChromeCallback,
+    notificationCallback: NotificationCallback,
+    connectionMultiplexer: ConnectionMultiplexer
+  ) {
+    super('Debugger', chromeCallback, notificationCallback);
 
     this._hadFirstContinuationCommand = false;
     this._connectionMultiplexer = connectionMultiplexer;
     var FileCache = require('./FileCache');
-    this._files = new FileCache(callback);
+    this._files = new FileCache(chromeCallback);
     var {EventEmitter} = require('events');
     this._emitter = new EventEmitter();
-    this._statusSubscription = this._connectionMultiplexer.onStatus(this._onStatusChanged.bind(this));
+    this._statusSubscription = this._connectionMultiplexer.onStatus(
+      this._onStatusChanged.bind(this)
+    );
+    this._connectionErrorDisposible = this._connectionMultiplexer.onConnectionError(
+      error => this.sendNotification('error', error)
+    );
   }
 
   onSessionEnd(callback: () => void): void {
@@ -256,6 +267,10 @@ export class DebuggerHandler extends Handler {
     if (this._statusSubscription) {
       this._statusSubscription.dispose();
       this._statusSubscription = null;
+    }
+    if (this._connectionErrorDisposible) {
+      this._connectionErrorDisposible.dispose();
+      this._connectionErrorDisposible = null;
     }
     this._emitter.emit(SESSION_END_EVENT);
   }

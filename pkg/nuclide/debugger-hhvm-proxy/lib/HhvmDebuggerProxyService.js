@@ -43,16 +43,22 @@ import type {ConnectionConfig} from './DbgpConnector';
 export class HhvmDebuggerProxyService {
   _state: string;
   _translator: ?MessageTranslator;
-  _notifyChanges: Subject;
+  _serverMessageObservable: Subject;  // For server messages.
+  _notificationObservable: Subject;   // For atom UI notifications.
 
   constructor() {
     this._state = INITIAL;
     this._translator = null;
-    this._notifyChanges = new Subject();
+    this._serverMessageObservable = new Subject();
+    this._notificationObservable = new Subject();
   }
 
-  getNotificationObservable(): Observable<string> {
-    return this._notifyChanges;
+  getNotificationObservable(): Observable<NotificationMessage> {
+    return this._notificationObservable;
+  }
+
+  getServerMessageObservable(): Observable<string> {
+    return this._serverMessageObservable;
   }
 
   async attach(config: ConnectionConfig): Promise<string> {
@@ -61,7 +67,10 @@ export class HhvmDebuggerProxyService {
     this._setState(CONNECTING);
 
     this._translator = new MessageTranslator(
-      config, message => { this._notifyChanges.onNext(message); });
+      config,
+      message => { this._serverMessageObservable.onNext(message); },
+      this._notificationObservable,
+    );
     this._translator.onSessionEnd(() => { this._onEnd(); });
 
     this._setState(CONNECTED);
@@ -117,9 +126,13 @@ export class HhvmDebuggerProxyService {
 
   async dispose(): Promise<void> {
     log('Proxy: Ending session');
-    if (this._notifyChanges) {
-      this._notifyChanges.onCompleted();
-      this._notifyChanges = null;
+    if (this._notificationObservable) {
+      this._notificationObservable.onCompleted();
+      this._notificationObservable = null;
+    }
+    if (this._serverMessageObservable) {
+      this._serverMessageObservable.onCompleted();
+      this._serverMessageObservable = null;
     }
     if (this._translator) {
       this._translator.dispose();

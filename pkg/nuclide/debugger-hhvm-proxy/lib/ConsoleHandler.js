@@ -12,26 +12,32 @@
 
 var Handler = require('./Handler');
 
+import type ChromeCallback from './ChromeCallback';
+import type {NotificationCallback} from './NotificationCallback';
+
 // Handles all 'Console.*' Chrome dev tools messages
 class ConsoleHandler extends Handler {
-  constructor(callback: ChromeCallback) {
-    super('Console', callback);
+  constructor(
+    chromeCallback: ChromeCallback,
+    notificationCallback: NotificationCallback
+  ) {
+    super('Console', chromeCallback, notificationCallback);
   }
 
   async handleMethod(id: number, method: string, params: ?Object): Promise {
     switch (method) {
-    case 'enable':
-    case 'disable':
-      this.replyToCommand(id, {});
-      break;
+      case 'enable':
+      case 'disable':
+        this.replyToCommand(id, {});
+        break;
 
-    case 'clearMessages':
-      this.sendMethod('Console.messagesCleared');
-      break;
+      case 'clearMessages':
+        this.sendMethod('Console.messagesCleared');
+        break;
 
-    default:
-      this.unknownMethod(id, method, params);
-      break;
+      default:
+        this.unknownMethod(id, method, params);
+        break;
     }
   }
 }

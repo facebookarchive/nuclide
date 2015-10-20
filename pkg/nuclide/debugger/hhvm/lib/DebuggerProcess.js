@@ -15,6 +15,11 @@ var {translateMessageFromServer, translateMessageToServer} = require('./ChromeMe
 var remoteUri = require('nuclide-remote-uri');
 var {Disposable} = require('atom');
 
+type NotificationMessage = {
+  type: 'info' | 'warning' | 'error' | 'fatalError';
+  message: string;
+};
+
 class DebuggerProcess {
   _remoteDirectoryUri: NuclideUri;
   _proxy: ?HhvmDebuggerProxyService;
@@ -43,9 +48,14 @@ class DebuggerProcess {
     this._proxy = proxy;
     this._disposables.add(proxy);
     this._disposables.add(proxy.getNotificationObservable().subscribe(
+      this._handleNotificationMessage.bind(this),
+      this._handleNotificationError.bind(this),
+      this._handleNotificationEnd.bind(this),
+    ));
+    this._disposables.add(proxy.getServerMessageObservable().subscribe(
       this._handleServerMessage.bind(this),
       this._handleServerError.bind(this),
-      this._handleSessionEnd.bind(this)
+      this._handleServerEnd.bind(this)
     ));
 
     var config = atom.config.get('nuclide-debugger-hhvm');
@@ -126,11 +136,56 @@ class DebuggerProcess {
     }
   }
 
-  _handleServerError(error: message): void {
-    log('Received server error: ' + error);
+  _handleServerError(error: string): void {
+    logError('Received server error: ' + error);
   }
 
-  _handleSessionEnd(): void {
+  _handleServerEnd(): void {
+    log('Server observerable ends.');
+  }
+
+  _handleNotificationMessage(message: NotificationMessage): void {
+    switch (message.type) {
+      case 'info':
+        log('Notification observerable info: ' + message.message);
+        atom.notifications.addInfo(message.message);
+        break;
+
+      case 'warning':
+        log('Notification observerable warning: ' + message.message);
+        atom.notifications.addWarning(message.message);
+        break;
+
+      case 'error':
+        logError('Notification observerable error: ' + message.message);
+        atom.notifications.addError(message.message);
+        break;
+
+      case 'fatalError':
+        logError('Notification observerable fatal error: ' + message.message);
+        atom.notifications.addFatalError(message.message);
+        break;
+
+      default:
+        logError('Unknown message: ' + JSON.stringify(message));
+        break;
+    }
+  }
+
+  _handleNotificationError(error: string): void {
+    logError('Notification observerable error: ' + error);
+  }
+
+  /**
+   * _endSession() must be called from _handleNotificationEnd()
+   * so that we can guarantee all notifications have been processed.
+   */
+  _handleNotificationEnd(): void {
+    log('Notification observerable ends.');
+    this._endSession();
+  }
+
+  _endSession(): void {
     log('Ending Session');
     if (this._sessionEndCallback) {
       this._sessionEndCallback();

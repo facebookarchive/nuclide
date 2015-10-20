@@ -14,9 +14,15 @@ export type ConnectionConfig = {
   endDebugWhenNoRequests: boolean;
 };
 
+export type NotificationMessage = {
+  type: string;
+  message: string;
+};
+
 export class HhvmDebuggerProxyService {
   constructor() {}
-  getNotificationObservable(): Observable<string> {}
+  getNotificationObservable(): Observable<NotificationMessage> {}
+  getServerMessageObservable(): Observable<string> {}
   attach(config: ConnectionConfig): Promise<string> {}
   launchScript(scriptPath: string): Promise<string> {}
   sendCommand(message: string): Promise<void> {}

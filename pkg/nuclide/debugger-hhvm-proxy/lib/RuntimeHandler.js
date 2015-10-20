@@ -15,13 +15,18 @@ var Handler = require('./Handler');
 
 import type {ConnectionMultiplexer} from './ConnectionMultiplexer';
 import type ChromeCallback from './ChromeCallback';
+import type {NotificationCallback} from './NotificationCallback';
 
 // Handles all 'Runtime.*' Chrome dev tools messages
 export class RuntimeHandler extends Handler {
   _connectionMultiplexer: ConnectionMultiplexer;
 
-  constructor(callback: ChromeCallback, connectionMultiplexer: ConnectionMultiplexer) {
-    super('Runtime', callback);
+  constructor(
+    chromeCallback: ChromeCallback,
+    notificationCallback: NotificationCallback,
+    connectionMultiplexer: ConnectionMultiplexer
+  ) {
+    super('Runtime', chromeCallback, notificationCallback);
 
     this._connectionMultiplexer = connectionMultiplexer;
   }

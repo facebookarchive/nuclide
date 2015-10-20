@@ -13,10 +13,16 @@
 var {DUMMY_FRAME_ID} = require('./utils');
 var Handler = require('./Handler');
 
+import type ChromeCallback from './ChromeCallback';
+import type {NotificationCallback} from './NotificationCallback';
+
 // Handles all 'Page.*' Chrome dev tools messages
 class PageHandler extends Handler {
-  constructor(callback: ChromeCallback) {
-    super('Page', callback);
+  constructor(
+    chromeCallback: ChromeCallback,
+    notificationCallback: NotificationCallback
+  ) {
+    super('Page', chromeCallback, notificationCallback);
   }
 
   async handleMethod(id: number, method: string, params: ?Object): Promise {

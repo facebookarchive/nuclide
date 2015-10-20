@@ -12,6 +12,7 @@
 
 var {
   log,
+  logError,
   parseDbgpMessages,
   uriToPath,
 } = require('./utils');
@@ -39,8 +40,9 @@ export type ConnectionConfig = {
   endDebugWhenNoRequests: boolean;
 };
 
-var ATTACH_EVENT = 'dbgp-attach-event';
-var CLOSE_EVENT = 'dbgp-close-event';
+const DBGP_ATTACH_EVENT = 'dbgp-attach-event';
+const DBGP_CLOSE_EVENT = 'dbgp-close-event';
+const DBGP_ERROR_EVENT = 'dbgp-error-event';
 
 /**
  * Connect to requested dbgp debuggee on given port.
@@ -65,11 +67,15 @@ export class DbgpConnector {
   }
 
   onAttach(callback: (socket: Socket) => void): Disposable {
-    return this._emitter.on(ATTACH_EVENT, callback);
+    return this._emitter.on(DBGP_ATTACH_EVENT, callback);
   }
 
   onClose(callback: () => void): Disposable {
-    return this._emitter.on(CLOSE_EVENT, callback);
+    return this._emitter.on(DBGP_CLOSE_EVENT, callback);
+  }
+
+  onError(callback: () => void): Disposable {
+    return this._emitter.on(DBGP_ERROR_EVENT, callback);
   }
 
   listen(): void {
@@ -102,11 +108,16 @@ export class DbgpConnector {
   _onServerError(error: Object): void {
     var port = this._config.xdebugPort;
 
+    let errorMessage;
     if (error.code === 'EADDRINUSE') {
-      log('Port in use ' + port);
+      errorMessage = `Can't start debugging because port ${port} is being used by another process. `
+        + `Try running 'killall node' on your devserver and then restarting Nuclide.`;
     } else {
-      log('Unknown socket error ' + error.code);
+      errorMessage = `Unknown debugger socket error: ${error.code}.`;
     }
+
+    logError(errorMessage);
+    this._emitter.emit(DBGP_ERROR_EVENT, errorMessage);
 
     this.dispose();
   }
@@ -137,7 +148,7 @@ export class DbgpConnector {
 
     var message = messages[0];
     if (this._isCorrectConnection(message)) {
-      this._emitter.emit(ATTACH_EVENT, socket);
+      this._emitter.emit(DBGP_ATTACH_EVENT, socket);
     } else {
       failConnection('Discarding connection ' + JSON.stringify(message));
     }
@@ -189,7 +200,7 @@ export class DbgpConnector {
   dispose() {
     if (this._server) {
       this._server.close();
-      this._emitter.emit(CLOSE_EVENT);
+      this._emitter.emit(DBGP_CLOSE_EVENT);
       this._server = null;
     }
   }

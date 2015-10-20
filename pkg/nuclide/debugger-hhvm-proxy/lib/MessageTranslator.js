@@ -17,8 +17,10 @@ var PageHandler = require('./PageHandler');
 var ConsoleHandler = require('./ConsoleHandler');
 var {RuntimeHandler} = require('./RuntimeHandler');
 var {ConnectionMultiplexer} = require('./ConnectionMultiplexer');
-import type {ConnectionConfig} from './DbgpConnector';
+import {NotificationCallback} from './NotificationCallback';
 
+import type {ConnectionConfig} from './DbgpConnector';
+import type {Subject} from 'rx';
 import type Handler from './Handler';
 
 /**
@@ -29,20 +31,33 @@ import type Handler from './Handler';
 export class MessageTranslator {
   _isDisposed: boolean;
   _connectionMultiplexer: ConnectionMultiplexer;
-  _callback: ChromeCallback;
+  _chromeCallback: ChromeCallback;
   _debuggerHandler: DebuggerHandler;
   _handlers: Map<string, Handler>;
 
-  constructor(config: ConnectionConfig, callback: (message: string) => void) {
+  constructor(
+    config: ConnectionConfig,
+    callback: (message: string) => void,
+    notificationObservable: Subject,
+  ) {
     this._isDisposed = false;
     this._connectionMultiplexer = new ConnectionMultiplexer(config);
-    this._callback = new ChromeCallback(callback);
+    this._chromeCallback = new ChromeCallback(callback);
+    const notificationCallback = new NotificationCallback(notificationObservable);
     this._handlers = new Map();
-    this._debuggerHandler = new DebuggerHandler(this._callback, this._connectionMultiplexer);
+    this._debuggerHandler = new DebuggerHandler(
+      this._chromeCallback,
+      notificationCallback,
+      this._connectionMultiplexer
+    );
     this._addHandler(this._debuggerHandler);
-    this._addHandler(new PageHandler(this._callback));
-    this._addHandler(new ConsoleHandler(this._callback));
-    this._addHandler(new RuntimeHandler(this._callback, this._connectionMultiplexer));
+    this._addHandler(new PageHandler(this._chromeCallback, notificationCallback));
+    this._addHandler(new ConsoleHandler(this._chromeCallback, notificationCallback));
+    this._addHandler(new RuntimeHandler(
+      this._chromeCallback,
+      notificationCallback,
+      this._connectionMultiplexer
+    ));
   }
 
   _addHandler(handler: Handler): void {
@@ -84,7 +99,7 @@ export class MessageTranslator {
 
   _replyWithError(id: number, error: string): void {
     log(error);
-    this._callback.replyWithError(id, error);
+    this._chromeCallback.replyWithError(id, error);
   }
 
   dispose(): void {

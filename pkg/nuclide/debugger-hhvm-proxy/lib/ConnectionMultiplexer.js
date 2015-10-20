@@ -34,7 +34,8 @@ var {
 } = require('./DbgpSocket');
 var {EventEmitter} = require('events');
 
-var CONNECTION_MUX_STATUS_EVENT = 'connection-mux-status';
+const CONNECTION_MUX_STATUS_EVENT = 'connection-mux-status';
+const CONNECTION_ERROR_EVENT = 'connection-error';
 
 type ConnectionInfo = {
   connection: Connection;
@@ -95,10 +96,16 @@ export class ConnectionMultiplexer {
       CONNECTION_MUX_STATUS_EVENT, callback);
   }
 
+  onConnectionError(callback: (status: string) => mixed): Disposable {
+    return require('nuclide-commons').event.attachEvent(this._emitter,
+      CONNECTION_ERROR_EVENT, callback);
+  }
+
   listen(): void {
     var connector = new DbgpConnector(this._config);
     connector.onAttach(this._onAttach.bind(this));
     connector.onClose(this._disposeConnector.bind(this));
+    connector.onError(this._emitConnectionError.bind(this));
     this._connector = connector;
     this._status = STATUS_RUNNING;
 
@@ -196,6 +203,10 @@ export class ConnectionMultiplexer {
       this._status = status;
       this._emitStatus(status);
     }
+  }
+
+  _emitConnectionError(error: string): void {
+    this._emitter.emit(CONNECTION_ERROR_EVENT, error);
   }
 
   _emitStatus(status: string): void {

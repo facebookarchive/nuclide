@@ -16,7 +16,7 @@ var {log, logError} = require('./utils');
 // The Chrome dev tools protocol is detailed at:
 //   https://developer.chrome.com/devtools/docs/protocol/1.1/index
 class ChromeCallback {
-  _callback: ?(message: string) => void;
+  _callback: (message: string) => void;
 
   constructor(callback: (message: string) => void) {
     this._callback = callback;

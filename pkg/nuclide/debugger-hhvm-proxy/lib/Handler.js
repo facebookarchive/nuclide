@@ -10,15 +10,24 @@
  */
 
 
-var {log} = require('./utils');
+import {log} from './utils';
+import ChromeCallback from './ChromeCallback';
+import {NotificationCallback} from './NotificationCallback';
+import type {NotificationType} from './NotificationCallback';
 
 class Handler {
-  _callback: ChromeCallback;
   _domain: string;
+  _chromeCallback: ChromeCallback;
+  _notificationCallback: NotificationCallback;
 
-  constructor(domain: string, callback: ChromeCallback) {
+  constructor(
+    domain: string,
+    chromeCallback: ChromeCallback,
+    notificationCallback: NotificationCallback,
+  ) {
     this._domain = domain;
-    this._callback = callback;
+    this._chromeCallback = chromeCallback;
+    this._notificationCallback = notificationCallback;
   }
 
   getDomain(): string {
@@ -36,15 +45,19 @@ class Handler {
   }
 
   replyWithError(id: number, error: string): void {
-    this._callback.replyWithError(id, error);
+    this._chromeCallback.replyWithError(id, error);
   }
 
   replyToCommand(id: number, result: Object, error: ?string): void {
-    this._callback.replyToCommand(id, result, error);
+    this._chromeCallback.replyToCommand(id, result, error);
   }
 
   sendMethod(method: string, params: ?Object): void {
-    this._callback.sendMethod(method, params);
+    this._chromeCallback.sendMethod(method, params);
+  }
+
+  sendNotification(type: NotificationType, message: string): void {
+    this._notificationCallback.sendMessage(type, message);
   }
 }
 

@@ -13,39 +13,48 @@
 var ConsoleHandler = require('../lib/ConsoleHandler');
 
 describe('debugger-hhvm-proxy ConsoleHandler', () => {
-    var callback;
-    var handler;
+  var chromeCallback;
+  var notificationCallback;
+  var handler;
 
-    beforeEach(() => {
-      callback = jasmine.createSpyObj('callback', ['replyToCommand', 'replyWithError', 'sendMethod']);
-      handler = new ConsoleHandler(callback);
-    });
+  beforeEach(() => {
+    chromeCallback = jasmine.createSpyObj(
+      'chromeCallback',
+      ['replyToCommand', 'replyWithError', 'sendMethod']
+    );
+    notificationCallback = jasmine.createSpyObj(
+      'notificationCallback',
+      ['sendInfo', 'sendWarning', 'sendError', 'sendFatalError']
+    );
 
-    it('enable', () => {
-      waitsForPromise(async () => {
-        await handler.handleMethod(1, 'enable');
-        expect(callback.replyToCommand).toHaveBeenCalledWith(1, {}, undefined);
-      });
-    });
+    handler = new ConsoleHandler(chromeCallback, notificationCallback);
+  });
 
-    it('disable', () => {
-      waitsForPromise(async () => {
-        await handler.handleMethod(2, 'disable');
-        expect(callback.replyToCommand).toHaveBeenCalledWith(2, {}, undefined);
-      });
+  it('enable', () => {
+    waitsForPromise(async () => {
+      await handler.handleMethod(1, 'enable');
+      expect(chromeCallback.replyToCommand).toHaveBeenCalledWith(1, {}, undefined);
     });
+  });
 
-    it('clearMessages', () => {
-      waitsForPromise(async () => {
-        await handler.handleMethod(3, 'clearMessages');
-        expect(callback.sendMethod).toHaveBeenCalledWith('Console.messagesCleared', undefined);
-      });
+  it('disable', () => {
+    waitsForPromise(async () => {
+      await handler.handleMethod(2, 'disable');
+      expect(chromeCallback.replyToCommand).toHaveBeenCalledWith(2, {}, undefined);
     });
+  });
 
-    it('unknown', () => {
-      waitsForPromise(async () => {
-        await handler.handleMethod(4, 'unknown');
-        expect(callback.replyWithError).toHaveBeenCalledWith(4, jasmine.any(String));
-      });
+  it('clearMessages', () => {
+    waitsForPromise(async () => {
+      await handler.handleMethod(3, 'clearMessages');
+      expect(chromeCallback.sendMethod).toHaveBeenCalledWith('Console.messagesCleared', undefined);
     });
+  });
+
+  it('unknown', () => {
+    waitsForPromise(async () => {
+      await handler.handleMethod(4, 'unknown');
+      expect(chromeCallback.replyWithError).toHaveBeenCalledWith(4, jasmine.any(String));
+    });
+  });
 });

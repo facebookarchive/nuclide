@@ -29,10 +29,12 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
   var connectionCount;
   var connections;
   var connectionSpys;
-  var onAttach;
-  var onClose;
+  var onDbgpConnectorAttach;
+  var onDbgpConnectorClose;
+  var onDbgpConnectorError;
   var onStatus;
   var haveStatusThrow;
+  let connectionMultiplexer;
 
   var config = {
     xdebugPort: 9000,
@@ -58,8 +60,15 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
         'onClose',
         'dispose',
       ]);
-    connector.onAttach = jasmine.createSpy('onAttach').andCallFake(callback => { onAttach = callback; });
-    connector.onClose = jasmine.createSpy('onClose').andCallFake(callback => { onClose = callback; });
+    connector.onAttach = jasmine.createSpy('onAttach').andCallFake(
+      callback => { onDbgpConnectorAttach = callback; }
+    );
+    connector.onClose = jasmine.createSpy('onClose').andCallFake(
+      callback => { onDbgpConnectorClose = callback; }
+    );
+    connector.onError = jasmine.createSpy('onError').andCallFake(
+      callback => { onDbgpConnectorError = callback; }
+    );
     DbgpConnector = spyOn(require('../lib/DbgpConnector'), 'DbgpConnector').andReturn(connector);
 
     connectionSpys = [];
@@ -135,8 +144,8 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
 
   function expectListen() {
     expect(DbgpConnector).toHaveBeenCalledWith(config);
-    expect(connector.onAttach).toHaveBeenCalledWith(onAttach);
-    expect(connector.onClose).toHaveBeenCalledWith(onClose);
+    expect(connector.onAttach).toHaveBeenCalledWith(onDbgpConnectorAttach);
+    expect(connector.onClose).toHaveBeenCalledWith(onDbgpConnectorClose);
     expect(connectionMultiplexer.getStatus()).toBe(STATUS_RUNNING);
   }
 
@@ -159,7 +168,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
     expectListen();
 
     expect(connectionCount).toBe(0);
-    await onAttach(socket);
+    await onDbgpConnectorAttach(socket);
     expect(connectionCount).toBe(1);
 
     expect(connector.dispose).not.toHaveBeenCalledWith();
@@ -214,7 +223,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
 
       haveStatusThrow = true;
       expect(connectionCount).toBe(0);
-      await onAttach(socket);
+      await onDbgpConnectorAttach(socket);
       expect(connectionCount).toBe(1);
 
       expect(connector.dispose).not.toHaveBeenCalledWith();
@@ -271,10 +280,10 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
   async function gotoFFT(): Promise {
     await doAttach();
     expect(connectionSpys[0]).not.toBe(undefined);
-    await onAttach(socket);
+    await onDbgpConnectorAttach(socket);
     expect(connectionCount).toBe(2);
     expect(connectionSpys[1]).not.toBe(undefined);
-    await onAttach(socket);
+    await onDbgpConnectorAttach(socket);
     expect(connectionCount).toBe(3);
     expect(connectionSpys[2]).not.toBe(undefined);
     expect(connectionMultiplexer.getStatus()).toBe(STATUS_RUNNING);
@@ -582,7 +591,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
   it('onClose', () => {
     connectionMultiplexer.listen();
 
-    onClose();
+    onDbgpConnectorClose();
 
     expect(connector.dispose).toHaveBeenCalledWith();
   });
@@ -617,6 +626,19 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
       await doEnable();
       sendConnectionStatus(0, STATUS_END);
       expect(onStatus).not.toHaveBeenCalledWith(STATUS_END);
+    });
+  });
+
+  it('onConnectionError', () => {
+    waitsForPromise(async () => {
+      let onConnectionError = jasmine.createSpy('onConnectionError');
+      connectionMultiplexer.listen();
+      connectionMultiplexer.onConnectionError(onConnectionError);
+
+      let errorMessage = 'error message';
+      onDbgpConnectorError(errorMessage);
+
+      expect(onConnectionError).toHaveBeenCalledWith(errorMessage);
     });
   });
 });
