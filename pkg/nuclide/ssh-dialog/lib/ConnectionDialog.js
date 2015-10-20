@@ -12,15 +12,32 @@
 import AuthenticationPrompt from './AuthenticationPrompt';
 import ConnectionDetailsForm from './ConnectionDetailsForm';
 import IndeterminateProgressBar from './IndeterminateProgressBar';
-var React = require('react-for-atom');
-var {
+import React from 'react-for-atom';
+import {
   SshHandshake,
   decorateSshConnectionDelegateWithTracking,
-} = require('nuclide-remote-connection');
+} from 'nuclide-remote-connection';
 var logger = require('nuclide-logging').getLogger();
 
-var {PropTypes} = React;
-
+type DefaultProps = {};
+type Props = {
+  initialUsername: ?string;
+  initialServer: ?string;
+  initialRemoteServerCommand: ?string;
+  initialCwd: ?string;
+  initialSshPort: ?string;
+  initialPathToPrivateKey: ?string;
+  onConnect: () => mixed;
+  onError: () => mixed;
+  onCancel: () => mixed;
+  onClosed: ?() => mixed;
+};
+type State = {
+  mode: number;
+  instructions: string;
+  sshHandshake: SshHandshake;
+  finish: (answers: Array<string>) => mixed;
+};
 
 var REQUEST_CONNECTION_DETAILS = 1;
 var WAITING_FOR_CONNECTION = 2;
@@ -31,21 +48,18 @@ var WAITING_FOR_AUTHENTICATION = 4;
  * Component that manages the state transitions as the user connects to a
  * server.
  */
-var ConnectionDialog = React.createClass({
-  propTypes: {
-    initialUsername: PropTypes.string,
-    initialServer: PropTypes.string,
-    initialRemoteServerCommand: PropTypes.string,
-    initialCwd: PropTypes.string,
-    initialSshPort: PropTypes.string,
-    initialPathToPrivateKey: PropTypes.string,
-    onConnect: PropTypes.func.isRequired,
-    onError: PropTypes.func.isRequired,
-    onCancel: PropTypes.func.isRequired,
-    onClosed: PropTypes.func,
-  },
+export default class ConnectionDialog extends React.Component<DefaultProps, Props, State> {
+  _boundOk: () => void;
+  _boundCancel: () => void;
 
-  getInitialState() {
+  constructor(props: Props) {
+    super(props);
+    this.state = this._createInitialState();
+    this._boundOk = this.ok.bind(this);
+    this._boundCancel = this.cancel.bind(this);
+  }
+
+  _createInitialState() {
     var sshHandshake = new SshHandshake(decorateSshConnectionDelegateWithTracking({
       onKeyboardInteractive: (name, instructions, instructionsLang, prompts, finish)  => {
         // TODO: Display all prompts, not just the first one.
@@ -73,14 +87,10 @@ var ConnectionDialog = React.createClass({
       sshHandshake: sshHandshake,
       finish: (answers) => {},
     };
-  },
-
-  _getMode(): string {
-    return this.state['mode'];
-  },
+  }
 
   render() {
-    var mode = this._getMode();
+    var mode = this.state.mode;
     var content;
     var isOkDisabled;
     if (mode === REQUEST_CONNECTION_DETAILS) {
@@ -88,7 +98,7 @@ var ConnectionDialog = React.createClass({
       // pass the props explicitly.
       content = (
         <ConnectionDetailsForm
-          ref='connection-details'
+          ref="connection-details"
           initialUsername={this.props.initialUsername}
           initialServer={this.props.initialServer}
           initialRemoteServerCommand={this.props.initialRemoteServerCommand}
@@ -96,8 +106,8 @@ var ConnectionDialog = React.createClass({
           initialSshPort={this.props.initialSshPort}
           initialPathToPrivateKey={this.props.initialPathToPrivateKey}
           initialAuthMethod={this.props.initialAuthMethod}
-          onConfirm={this.ok}
-          onCancel={this.cancel}
+          onConfirm={this._boundOk}
+          onCancel={this._boundCancel}
         />
       );
       isOkDisabled = false;
@@ -106,10 +116,10 @@ var ConnectionDialog = React.createClass({
       isOkDisabled = true;
     } else {
       content = (
-        <AuthenticationPrompt ref='authentication'
-                              instructions={this.state['instructions']}
-                              onConfirm={this.ok}
-                              onCancel={this.cancel}
+        <AuthenticationPrompt ref="authentication"
+                              instructions={this.state.instructions}
+                              onConfirm={this._boundOk}
+                              onCancel={this._boundCancel}
       />);
       isOkDisabled = false;
     }
@@ -118,23 +128,23 @@ var ConnectionDialog = React.createClass({
     // <div> as the root. Ideally, the <atom-panel> would be the root.
     return (
       <div>
-        <atom-panel className='modal from-top' key='connect-dialog'>
+        <atom-panel className="modal from-top" key="connect-dialog">
           {content}
-          <div className='block nuclide-ok-cancel'>
-            <button className='btn' onClick={this.cancel}>
+          <div className="block nuclide-ok-cancel">
+            <button className="btn" onClick={this._boundCancel}>
               Cancel
             </button>
-            <button className='btn btn-primary' onClick={this.ok} disabled={isOkDisabled}>
+            <button className="btn btn-primary" onClick={this._boundOk} disabled={isOkDisabled}>
               OK
             </button>
           </div>
         </atom-panel>
       </div>
     );
-  },
+  }
 
   cancel() {
-    var mode = this._getMode();
+    var mode = this.state.mode;
 
     // It is safe to call cancel even if no connection is started
     this.state.sshHandshake.cancel();
@@ -147,7 +157,7 @@ var ConnectionDialog = React.createClass({
       this.props.onCancel();
       this.close();
     }
-  },
+  }
 
   close() {
     if (this.props.onClosed) {
@@ -157,10 +167,10 @@ var ConnectionDialog = React.createClass({
     if (domNode) {
       React.unmountComponentAtNode(domNode.parentNode);
     }
-  },
+  }
 
   ok() {
-    var mode = this._getMode();
+    var mode = this.state.mode;
 
     if (mode === REQUEST_CONNECTION_DETAILS) {
       // User is trying to submit connection details.
@@ -196,15 +206,16 @@ var ConnectionDialog = React.createClass({
 
       this.setState({mode: WAITING_FOR_AUTHENTICATION});
     }
-  },
+  }
 
-  requestAuthentication(instructions: {echo: boolean; prompt: string}, finish: (answers: Array<string>) => void) {
+  requestAuthentication(
+    instructions: {echo: boolean; prompt: string},
+    finish: (answers: Array<string>) => void
+  ) {
     this.setState({
       mode: REQUEST_AUTHENTICATION_DETAILS,
       instructions: instructions.prompt,
       finish,
     });
-  },
-});
-
-module.exports = ConnectionDialog;
+  }
+}
