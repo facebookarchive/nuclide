@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-var {debounce} = require('nuclide-commons');
+var {debounce, denodeify} = require('nuclide-commons');
 var DelayedEventManager = require('./DelayedEventManager');
 var watchman = require('fb-watchman');
 var HgServiceBase = require('./HgServiceBase');
@@ -68,12 +68,20 @@ export class HgService extends HgServiceBase {
   }
 
   async dispose(): Promise<void> {
-    this._cleanUpWatchman();
+    await this._cleanUpWatchman();
     this._delayedEventManager.dispose();
     if (this._dirstateDelayedEventManager) {
       this._dirstateDelayedEventManager.dispose();
     }
     return super.dispose();
+  }
+
+  _asyncExecuteWatchmanCommand(args: Array<mixed>): Promise<Object> {
+    const watchmanClient = this._watchmanClient;
+    if (watchmanClient == null) {
+      throw Error('Watchman Client is not intialized.');
+    }
+    return denodeify(watchmanClient.command.bind(watchmanClient))(args);
   }
 
   async _subscribeToWatchman(): Promise<void> {
@@ -361,24 +369,26 @@ export class HgService extends HgServiceBase {
     });
   }
 
-  _cleanUpWatchman(): void {
+  async _cleanUpWatchman(): Promise<void> {
     var watchmanClient = this._watchmanClient;
     if (watchmanClient) {
-      watchmanClient.command(
-        ['unsubscribe', this.getWorkingDirectory(), WATCHMAN_SUBSCRIPTION_NAME_PRIMARY]
-      );
-      watchmanClient.command(
-        ['unsubscribe', this.getWorkingDirectory(), WATCHMAN_SUBSCRIPTION_NAME_HGIGNORE]
-      );
-      watchmanClient.command(
-        ['unsubscribe', this.getWorkingDirectory(), WATCHMAN_SUBSCRIPTION_NAME_HGLOCK]
-      );
-      watchmanClient.command(
-        ['unsubscribe', this.getWorkingDirectory(), WATCHMAN_SUBSCRIPTION_NAME_HGDIRSTATE]
-      );
-      watchmanClient.command(
-        ['unsubscribe', this.getWorkingDirectory(), WATCHMAN_SUBSCRIPTION_NAME_HGBOOKMARK]
-      );
+      await Promise.all([
+        this._asyncExecuteWatchmanCommand(
+          ['unsubscribe', this.getWorkingDirectory(), WATCHMAN_SUBSCRIPTION_NAME_PRIMARY]
+        ),
+        this._asyncExecuteWatchmanCommand(
+          ['unsubscribe', this.getWorkingDirectory(), WATCHMAN_SUBSCRIPTION_NAME_HGIGNORE]
+        ),
+        this._asyncExecuteWatchmanCommand(
+          ['unsubscribe', this.getWorkingDirectory(), WATCHMAN_SUBSCRIPTION_NAME_HGLOCK]
+        ),
+        this._asyncExecuteWatchmanCommand(
+          ['unsubscribe', this.getWorkingDirectory(), WATCHMAN_SUBSCRIPTION_NAME_HGDIRSTATE]
+        ),
+        await this._asyncExecuteWatchmanCommand(
+          ['unsubscribe', this.getWorkingDirectory(), WATCHMAN_SUBSCRIPTION_NAME_HGBOOKMARK]
+        ),
+      ]);
       watchmanClient.end();
     }
   }
