@@ -54,11 +54,11 @@ type JasmineSpyCall = {
 
 type JasmineSpy = {
   (...args: Array<any>): any;
-  andCallFake(fake: (...args: Array<any>) => mixed): void;
-  andCallThrough(): void;
+  andCallFake(fake: (...args: Array<any>) => mixed): JasmineSpy;
+  andCallThrough(): JasmineSpy;
   argsForCall: Array<Array<mixed>>;
-  andReturn<T>(value: T): T;
-  andThrow(error: mixed): void;
+  andReturn<T>(value: T): JasmineSpy;
+  andThrow(error: mixed): JasmineSpy;
   callCount: number;
   calls: Array<JasmineSpyCall>;
   identity: string;
