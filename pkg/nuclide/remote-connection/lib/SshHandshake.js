@@ -92,20 +92,31 @@ export class SshHandshake {
     this._connection.on('keyboard-interactive', this._onKeyboardInteractive.bind(this));
   }
 
-  connect(config: SshConnectionConfiguration): void {
-    this._delegate.onWillConnect(config);
+  async connect(config: SshConnectionConfiguration): Promise<void> {
+    this._config = config;
 
-    var existingConnection = RemoteConnection.getByHostnameAndPath(config.host, config.cwd);
+    this._delegate.onWillConnect(this._config);
+
+    var existingConnection = RemoteConnection
+      .getByHostnameAndPath(this._config.host, this._config.cwd);
+
     if (existingConnection) {
       this._delegate.onDidConnect(existingConnection, this._config);
       return;
     }
 
-    this._config = config;
+    const connection = await RemoteConnection.createConnectionBySavedConfig(
+      this._config.host,
+      this._config.cwd,
+    );
+
+    if (connection) {
+      this._delegate.onDidConnect(connection, this._config);
+      return;
+    }
 
     var {lookupPreferIpv6} = require('nuclide-commons').dnsUtils;
-
-    lookupPreferIpv6(config.host).then((address) => {
+    return lookupPreferIpv6(config.host).then((address) => {
       if (config.authMethod === SupportedMethods.SSL_AGENT) {
         // Point to ssh-agent's socket for ssh-agent-based authentication.
         var agent = process.env['SSH_AUTH_SOCK'];

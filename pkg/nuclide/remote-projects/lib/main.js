@@ -13,21 +13,15 @@ import type RemoteProjectsController from './RemoteProjectsController';
 import type {HomeFragments} from 'nuclide-home-interfaces';
 import type {RemoteConnectionConfiguration} from 'nuclide-remote-connection/lib/RemoteConnection';
 
-import invariant from 'assert';
 import {getOpenFileEditorForRemoteProject} from './utils';
 import {CompositeDisposable, TextEditor} from 'atom';
 
 /**
- * Version of RemoteConnectionConfiguration that uses string instead of Buffer for fields so it can
- * be translated directly to/from JSON.
+ * Stores the host and cwd of a remote connection.
  */
 type SerializableRemoteConnectionConfiguration = {
   host: string;
-  port: number;
   cwd: string;
-  certificateAuthorityCertificate?: string;
-  clientCertificate?: string;
-  clientKey?: string;
 }
 
 var packageSubscriptions: ?CompositeDisposable = null;
@@ -47,23 +41,35 @@ function getRemoteConnection() {
     (RemoteConnection = require('nuclide-remote-connection').RemoteConnection);
 }
 
+function createSerializableRemoteConnectionConfiguration(
+  config: RemoteConnectionConfiguration,
+): SerializableRemoteConnectionConfiguration {
+  return {
+    host: config.host,
+    cwd: config.cwd,
+  };
+}
+
 async function createRemoteConnection(
   remoteProjectConfig: SerializableRemoteConnectionConfiguration,
 ): Promise<?RemoteConnection> {
   var RemoteConnection = getRemoteConnection();
 
-  try {
-    var connection = new RemoteConnection(restoreClientKey(remoteProjectConfig));
-    await connection.initialize();
+  const connection = await RemoteConnection.createConnectionBySavedConfig(
+    remoteProjectConfig.host,
+    remoteProjectConfig.cwd,
+  );
+
+  if (connection) {
     return connection;
-  } catch (e) {
-    // If connection fails using saved config, open connect dialog.
-    var {openConnectionDialog} = require('nuclide-ssh-dialog');
-    return openConnectionDialog({
-      initialServer: remoteProjectConfig.host,
-      initialCwd: remoteProjectConfig.cwd,
-    });
   }
+
+  // If connection fails using saved config, open connect dialog.
+  var {openConnectionDialog} = require('nuclide-ssh-dialog');
+  return openConnectionDialog({
+    initialServer: remoteProjectConfig.host,
+    initialCwd: remoteProjectConfig.cwd,
+  });
 }
 
 function addRemoteFolderToProject(connection: RemoteConnection) {
@@ -216,131 +222,7 @@ async function createEditorForNuclide(
   return new TextEditor(/*editorOptions*/ {buffer, registerEditor: true});
 }
 
-/**
- * Encrypts the clientKey of a RemoteConnectionConfiguration.
- * @param remoteProjectConfig - The config with the clientKey we want encrypted.
- * @return returns the passed in config with the clientKey encrypted.
- */
-function protectClientKey(
-  remoteProjectConfig: RemoteConnectionConfiguration,
-): SerializableRemoteConnectionConfiguration {
-  let {replacePassword} = require('nuclide-keytar-wrapper');
-  let crypto = require('crypto');
-
-  let sha1 = crypto.createHash('sha1');
-  sha1.update(`${remoteProjectConfig.host}:${remoteProjectConfig.port}`);
-  let sha1sum = sha1.digest('hex');
-
-  let {certificateAuthorityCertificate, clientCertificate, clientKey} = remoteProjectConfig;
-  invariant(clientKey);
-  let realClientKey = clientKey.toString(); // Convert from Buffer to string.
-  let {salt, password, encryptedString} = encryptString(realClientKey);
-  replacePassword('nuclide.remoteProjectConfig', sha1sum, password);
-
-  let clientKeyWithSalt = encryptedString + '.' + salt;
-
-  invariant(certificateAuthorityCertificate);
-  invariant(clientCertificate);
-  let buffersAsStrings = {
-    certificateAuthorityCertificate: certificateAuthorityCertificate.toString(),
-    clientCertificate: clientCertificate.toString(),
-    clientKey: clientKeyWithSalt,
-  };
-
-  return {...remoteProjectConfig, ...buffersAsStrings};
-}
-
-/**
- * Decrypts the clientKey of a SerializableRemoteConnectionConfiguration.
- * @param remoteProjectConfig - The config with the clientKey we want encrypted.
- * @return returns the passed in config with the clientKey encrypted.
- */
-function restoreClientKey(
-  remoteProjectConfig: SerializableRemoteConnectionConfiguration,
-): RemoteConnectionConfiguration {
-  var {getPassword} = require('nuclide-keytar-wrapper');
-  var crypto = require('crypto');
-
-  var sha1 = crypto.createHash('sha1');
-  sha1.update(`${remoteProjectConfig.host}:${remoteProjectConfig.port}`);
-  var sha1sum = sha1.digest('hex');
-
-  var password = getPassword('nuclide.remoteProjectConfig', sha1sum);
-
-  if (!password) {
-    throw new Error('Cannot find password for encrypted client key');
-  }
-
-  let {certificateAuthorityCertificate, clientCertificate, clientKey} = remoteProjectConfig;
-  invariant(clientKey);
-  let [encryptedString, salt] = clientKey.split('.');
-
-  if (!encryptedString || !salt) {
-    throw new Error('Cannot decrypt client key');
-  }
-
-  let restoredClientKey = decryptString(encryptedString, password, salt);
-  if (!restoredClientKey.startsWith('-----BEGIN RSA PRIVATE KEY-----')) {
-    getLogger().error(
-      `decrypted client key did not start with expected header: ${restoredClientKey}`);
-  }
-
-  invariant(certificateAuthorityCertificate);
-  invariant(clientCertificate);
-  let stringsAsBuffers = {
-    certificateAuthorityCertificate: new Buffer(certificateAuthorityCertificate),
-    clientCertificate: new Buffer(clientCertificate),
-    clientKey: new Buffer(restoredClientKey),
-  };
-
-  return {...remoteProjectConfig, ...stringsAsBuffers};
-}
-
-function decryptString(text: string, password: string, salt: string): string {
-  var crypto = require('crypto');
-
-  var decipher = crypto.createDecipheriv(
-      'aes-128-cbc',
-      new Buffer(password, 'base64'),
-      new Buffer(salt, 'base64'));
-
-  var decryptedString = decipher.update(text, 'base64', 'utf8');
-  decryptedString += decipher.final('utf8');
-
-  return decryptedString;
-}
-
-function encryptString(text: string): {password: string, salt: string, encryptedString: string} {
-  var crypto = require('crypto');
-  // $FlowIssue
-  var password = crypto.randomBytes(16).toString('base64');
-  // $FlowIssue
-  var salt = crypto.randomBytes(16).toString('base64');
-
-  var cipher = crypto.createCipheriv(
-    'aes-128-cbc',
-    new Buffer(password, 'base64'),
-    new Buffer(salt, 'base64'));
-
-  var encryptedString = cipher.update(
-    text,
-    /* input_encoding */ 'utf8',
-    /* output_encoding */ 'base64',
-  );
-  encryptedString += cipher.final('base64');
-
-  return {
-    password,
-    salt,
-    encryptedString,
-  };
-}
-
 module.exports = {
-  __test__: {
-    decryptString,
-    encryptString,
-  },
 
   config: {
     shutdownServerAfterDisconnection: {
@@ -411,7 +293,8 @@ module.exports = {
       getRemoteRootDirectories()
         .map((directory: atom$Directory): ?SerializableRemoteConnectionConfiguration => {
           let connection = getRemoteConnection().getForUri(directory.getPath());
-          return connection ? protectClientKey(connection.getConfig()) : null;
+          return connection ?
+            createSerializableRemoteConnectionConfiguration(connection.getConfig()) : null;
         })
         .filter((config: ?SerializableRemoteConnectionConfiguration) => config != null);
     return {

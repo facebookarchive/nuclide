@@ -18,6 +18,7 @@ var RemoteFile = require('./RemoteFile');
 var RemoteDirectory = require('./RemoteDirectory');
 var NuclideClient = require('nuclide-server/lib/NuclideClient');
 var NuclideRemoteEventbus = require('nuclide-server/lib/NuclideRemoteEventbus');
+var {getConnectionConfig, setConnectionConfig} = require('./RemoteConnectionConfigurationManager');
 var {getVersion} = require('nuclide-version');
 
 const HEARTBEAT_AWAY_REPORT_COUNT = 3;
@@ -71,6 +72,30 @@ class RemoteConnection {
 
   dispose(): void {
     this._subscriptions.dispose();
+  }
+
+  /**
+   * Create a connection by reusing the configuration of last successful connection associated with
+   * given host. If the server's certs has been updated or there is no previous successful
+   * connection, null (resolved by promise) is returned.
+   */
+  static async createConnectionBySavedConfig(
+    host: string,
+    cwd: string,
+  ): Promise<?RemoteConnection> {
+    const connectionConfig = getConnectionConfig(host);
+    if (!connectionConfig) {
+      return;
+    }
+    try {
+      const config = {...connectionConfig, cwd};
+      const connection = new RemoteConnection(config);
+      await connection.initialize();
+      return connection;
+    } catch (e) {
+      logger.warn(`Failed to reuse connectionConfiguration for ${host}`, e);
+      return null;
+    }
   }
 
   // A workaround before Atom 2.0: Atom's Project::setPaths currently uses
@@ -281,6 +306,10 @@ class RemoteConnection {
         throw new Error(`Version mismatch. Client at ${clientVersion} while server at ${serverVersion}.`);
       }
       this._initialized = true;
+
+      // Store the configuration for future usage.
+      setConnectionConfig(this._config);
+
       this._monitorConnectionHeartbeat();
 
       // Start watching the project for changes.
