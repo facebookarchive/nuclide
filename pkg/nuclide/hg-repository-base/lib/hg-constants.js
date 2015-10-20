@@ -92,6 +92,13 @@ export type DiffInfo = {
   lineDiffs: Array<LineDiff>;
 };
 
+export type RevisionInfo = {
+  id: number;
+  title: string;
+  author: string;
+  date: string;
+};
+
 type RevisionFileCopy = {
   from: string;
   to: string;

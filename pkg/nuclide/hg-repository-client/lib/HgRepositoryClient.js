@@ -9,6 +9,11 @@
  * the root directory of this source tree.
  */
 
+import type {
+  RevisionInfo,
+  RevisionFileChanges,
+} from 'nuclide-hg-repository-base/lib/hg-constants';
+
 var {CompositeDisposable, Emitter, TextEditor} = require('atom');
 var {StatusCodeId, StatusCodeIdToNumber, StatusCodeNumber, HgStatusOption} =
     require('nuclide-hg-repository-base').hgConstants;
@@ -775,20 +780,8 @@ class HgRepositoryClient {
     return this._service.fetchFilesChangedAtRevision(revision);
   }
 
-  fetchCommonAncestorOfHeadAndRevision(revision: string): Promise<string> {
-    return this._service.fetchCommonAncestorOfHeadAndRevision(revision);
-  }
-
-  fetchRevisionNumbersBetweenRevisions(revisionFrom: string, revisionTo: string): Promise<Array<string>> {
-    return this._service.fetchRevisionNumbersBetweenRevisions(revisionFrom, revisionTo);
-  }
-
-  /**
-   * A convenience method wrapping `fetchRevisionNumbersBetweenRevisions`.
-   */
-  fetchRevisionNumbersBetweenRevisionAndHead(revision: string): Promise<Array<string>> {
-    var {expressionForRevisionsBeforeHead} = require('nuclide-hg-repository-base').revisions;
-    return this.fetchRevisionNumbersBetweenRevisions(revision, expressionForRevisionsBeforeHead(0));
+  fetchRevisionInfoBetweenHeadAndBase(): Promise<?Array<RevisionInfo>> {
+    return this._service.fetchRevisionInfoBetweenHeadAndBase();
   }
 
   // See HgService.getBlameAtHead.

@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {RevisionInfo} from './hg-constants';
+
 var logger = require('nuclide-logging').getLogger();
 
 /**
@@ -22,6 +24,18 @@ var logger = require('nuclide-logging').getLogger();
 // Section: Expression Formation
 
 var HG_CURRENT_WORKING_DIRECTORY_PARENT = '.';
+
+const INFO_REVISION_PREFIX = 'revision:';
+const INFO_TITLE_PREFIX = 'title:';
+const INFO_AUTHOR_PREFIX = 'author:';
+const INFO_DATE_PREFIX = 'date:';
+
+const REVISION_INFO_TEMPLATE = `${INFO_REVISION_PREFIX}{rev}
+${INFO_TITLE_PREFIX}{desc|firstline}
+${INFO_AUTHOR_PREFIX}{author|person}
+${INFO_DATE_PREFIX}{date|isodate}
+
+`;
 
 /**
  * @param revisionExpression An expression that can be passed to hg as an argument
@@ -41,13 +55,12 @@ function expressionForRevisionsBefore(
   }
 }
 
-function expressionForRevisionsBeforeHead(numberOfRevsBefore: number): string {
+export function expressionForRevisionsBeforeHead(numberOfRevsBefore: number): string {
   if (numberOfRevsBefore < 0) {
     numberOfRevsBefore = 0;
   }
   return expressionForRevisionsBefore(HG_CURRENT_WORKING_DIRECTORY_PARENT, numberOfRevsBefore);
 }
-
 
 // Section: Revision Sets
 
@@ -57,7 +70,7 @@ function expressionForRevisionsBeforeHead(numberOfRevsBefore: number): string {
  * @return An expression for the common ancestor of the revision of interest and
  * the current Hg head.
  */
-async function fetchCommonAncestorOfHeadAndRevision(
+export async function fetchCommonAncestorOfHeadAndRevision(
   revision: string,
   workingDirectory: string,
 ): Promise<string> {
@@ -86,30 +99,32 @@ async function fetchCommonAncestorOfHeadAndRevision(
  * @param revisionFrom The revision expression of the "start" (older) revision.
  * @param revisionTo The revision expression of the "end" (newer) revision.
  * @param workingDirectory The working directory of the Hg repository.
- * @return An array of revision numbers that are between revisionFrom and
- *   revisionTo, plus revisionFrom and revisionTo; and the values
- *   are all 'true'. "Between" means that revisionFrom is an ancestor of, and
+ * @return An array of revision info between revisionFrom and
+ *   revisionTo, plus revisionFrom and revisionTo;
+ * "Between" means that revisionFrom is an ancestor of, and
  *   revisionTo is a descendant of.
  */
-async function fetchRevisionNumbersBetweenRevisions(
-    revisionFrom: string, revisionTo: string, workingDirectory: string): Promise<Array<string>> {
+export async function fetchRevisionInfoBetweenRevisions(
+  revisionFrom: string,
+  revisionTo: string,
+  workingDirectory: string,
+): Promise<Array<RevisionInfo>> {
   var {asyncExecute} = require('nuclide-commons');
 
   var revisionExpression = `${revisionFrom}::${revisionTo}`;
   // shell-escape does not wrap revisionExpression in quotes without this toString conversion.
   revisionExpression = revisionExpression.toString();
 
-  // shell-escape does not wrap '{rev}' in quotes unless it is double-quoted.
-  var args = ['log', '--template', '{rev}\n', '--rev', revisionExpression];
+  var args = ['log', '--template', REVISION_INFO_TEMPLATE, '--rev', revisionExpression];
   var options = {
     cwd: workingDirectory,
   };
 
   try {
-    var {stdout: revisionNumbersString} = await asyncExecute('hg', args, options);
-    return parseRevisionNumbersOutput(revisionNumbersString);
+    var {stdout: revisionsInfoString} = await asyncExecute('hg', args, options);
+    return parseRevisionInfoOutput(revisionsInfoString);
   } catch (e) {
-    logger.warn('Failed to get revision numbers between two revisions: ', e.stderr, e.command);
+    logger.warn('Failed to get revision info between two revisions: ', e.stderr || e, e.command);
     throw new Error(
       `Could not fetch revision numbers between the revisions: ${revisionFrom}, ${revisionTo}`
     );
@@ -117,23 +132,22 @@ async function fetchRevisionNumbersBetweenRevisions(
 }
 
 /**
- * Helper function to `fetchRevisionsNumbersBetweenRevisions`.
+ * Helper function to `fetchRevisionInfoBetweenRevisions`.
  */
-function parseRevisionNumbersOutput(revisionNumbersOutput): Array<string> {
-  var numbers = revisionNumbersOutput.split('\n');
-  var result = [];
-  numbers.forEach(numberString => {
-    var trimmedNumber = numberString.trim();
-    if (trimmedNumber.length) {
-      result.push(trimmedNumber);
+export function parseRevisionInfoOutput(revisionsInfoOutput: string): Array<RevisionInfo> {
+  const revisions = revisionsInfoOutput.split('\n\n');
+  const revisionInfo = [];
+  for (const chunk of revisions) {
+    const revisionLines = chunk.trim().split('\n');
+    if (revisionLines.length !== 4) {
+      continue;
     }
-  });
-  return result;
+    revisionInfo.push({
+      id: parseInt(revisionLines[0].slice(INFO_REVISION_PREFIX.length), 10),
+      title: revisionLines[1].slice(INFO_TITLE_PREFIX.length),
+      author: revisionLines[2].slice(INFO_AUTHOR_PREFIX.length),
+      date: revisionLines[3].slice(INFO_DATE_PREFIX.length),
+    });
+  }
+  return revisionInfo;
 }
-
-
-module.exports = {
-  fetchCommonAncestorOfHeadAndRevision,
-  fetchRevisionNumbersBetweenRevisions,
-  expressionForRevisionsBeforeHead,
-};

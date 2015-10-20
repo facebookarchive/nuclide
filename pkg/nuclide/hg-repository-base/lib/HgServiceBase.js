@@ -13,15 +13,20 @@
 var {HgStatusOption} = require('./hg-constants');
 var {Observable, Subject} = require('rx');
 var {parseHgBlameOutput, parseHgDiffUnifiedOutput} = require('./hg-output-helpers');
-var {fetchCommonAncestorOfHeadAndRevision,
-    fetchRevisionNumbersBetweenRevisions} = require('./hg-revision-expression-helpers');
+import {
+  fetchCommonAncestorOfHeadAndRevision,
+  expressionForRevisionsBeforeHead,
+  fetchRevisionInfoBetweenRevisions,
+} from './hg-revision-expression-helpers';
 var {fetchFileContentAtRevision,
     fetchFilesChangedAtRevision} = require('./hg-revision-state-helpers');
 var {asyncExecute, createArgsForScriptCommand} = require('nuclide-commons');
 var path = require('path');
 
-import type {DiffInfo, RevisionFileChanges, StatusCodeIdValue} from './hg-constants';
+import type {DiffInfo, RevisionFileChanges, StatusCodeIdValue, RevisionInfo} from './hg-constants';
 import type {NuclideUri} from 'nuclide-remote-uri';
+
+const FORK_BASE_BOOKMARK_NAME = 'remote/master';
 
 var logger;
 function getLogger() {
@@ -188,15 +193,22 @@ class HgServiceBase {
     return fetchFilesChangedAtRevision(revision, this._workingDirectory);
   }
 
-  fetchCommonAncestorOfHeadAndRevision(revision: string): Promise<string> {
-    return fetchCommonAncestorOfHeadAndRevision(revision, this._workingDirectory);
-  }
-
-  fetchRevisionNumbersBetweenRevisions(
-    revisionFrom: string,
-    revisionTo: string,
-  ): Promise<Array<string>> {
-    return fetchRevisionNumbersBetweenRevisions(revisionFrom, revisionTo, this._workingDirectory);
+  async fetchRevisionInfoBetweenHeadAndBase(): Promise<?Array<RevisionInfo>> {
+    const commonAncestorRevision = await fetchCommonAncestorOfHeadAndRevision(
+      // TODO(most): Better way to specify the fork/base that works with `fbsource`
+      // and other mercurial configurations. t8769378
+      FORK_BASE_BOOKMARK_NAME,
+      this._workingDirectory,
+    );
+    if (!commonAncestorRevision) {
+      return null;
+    }
+    const revisionsInfo = await fetchRevisionInfoBetweenRevisions(
+      commonAncestorRevision,
+      expressionForRevisionsBeforeHead(0),
+      this._workingDirectory,
+    );
+    return revisionsInfo;
   }
 
   async getBlameAtHead(filePath: NuclideUri): Promise<Map<string, string>> {
