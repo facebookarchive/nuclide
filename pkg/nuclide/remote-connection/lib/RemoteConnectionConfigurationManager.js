@@ -10,7 +10,10 @@
  */
 
 import invariant from 'assert';
+import {getLogger} from 'nuclide-logging';
 import type {RemoteConnectionConfiguration} from './RemoteConnection';
+
+var logger = getLogger();
 
 /**
  * Version of RemoteConnectionConfiguration that uses string instead of Buffer for fields so it can
@@ -33,11 +36,20 @@ export function getConnectionConfig(host: string): ?RemoteConnectionConfiguratio
   if (!storedConfig) {
     return null;
   }
-  return decryptConfig(storedConfig);
+  try {
+    return decryptConfig(storedConfig);
+  } catch (e) {
+    logger.error(`The configuration file for ${host} is corrupted.`, e);
+    return null;
+  }
 }
 
 export function setConnectionConfig(config: RemoteConnectionConfiguration): void {
-  atom.config.set(getAtomConfigKey(config.host), encryptConfig(config));
+  try {
+    atom.config.set(getAtomConfigKey(config.host), encryptConfig(config));
+  } catch (e) {
+    logger.error(`Failed to store configuration file for ${config.host}.`, e);
+  }
 }
 
 function getAtomConfigKey(host: string): string {
