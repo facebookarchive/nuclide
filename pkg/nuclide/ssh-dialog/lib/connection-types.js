@@ -33,3 +33,8 @@ export type NuclideRemoteConnectionProfile = {
   displayTitle: string;
   params: NuclideRemoteConnectionParams;
 };
+
+export type NuclideSavedConnectionDialogConfig = {
+  config: NuclideRemoteConnectionParams;
+  lastOfficialRemoteServerCommand: string;
+};
