@@ -9,6 +9,9 @@
  * the root directory of this source tree.
  */
 
+import {parse, createRemoteUri} from 'nuclide-remote-uri';
+import type {RemoteConnectionConfiguration} from 'nuclide-remote-connection/lib/RemoteConnection';
+
 const NUCLIDE_PROTOCOL_PREFIX = 'nuclide:/';
 const NUCLIDE_PROTOCOL_PREFIX_LENGTH = NUCLIDE_PROTOCOL_PREFIX.length;
 
@@ -44,8 +47,7 @@ export function sanitizeNuclideUri(uri: string): string {
 }
 
 export function* getOpenFileEditorForRemoteProject(
-  projectHostname: string,
-  projectDirectory: string,
+  connectionConfig: RemoteConnectionConfiguration,
 ): Iterator<OpenFileEditorInstance> {
   for (const pane of atom.workspace.getPanes()) {
     const paneItems = pane.getItems();
@@ -55,12 +57,15 @@ export function* getOpenFileEditorForRemoteProject(
         continue;
       }
       const uri = sanitizeNuclideUri(paneItem.getURI());
-      const {hostname: fileHostname, path: filePath} = require('nuclide-remote-uri').parse(uri);
-      if (fileHostname === projectHostname && filePath.startsWith(projectDirectory)) {
+      const {hostname: fileHostname, path: filePath} = parse(uri);
+      if (fileHostname === connectionConfig.host && filePath.startsWith(connectionConfig.cwd)) {
         yield {
           pane,
           editor: paneItem,
-          uri,
+          // While restore opened files, the remote port might have been changed if the server
+          // restarted after upgrade or user killed it. So we need to create a new uri using
+          // the right port.
+          uri: createRemoteUri(fileHostname, connectionConfig.port, filePath),
           filePath,
         };
       }

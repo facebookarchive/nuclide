@@ -134,11 +134,7 @@ function addRemoteFolderToProject(connection: RemoteConnection) {
 }
 
 function closeOpenFilesForRemoteProject(remoteProjectConfig: RemoteConnectionConfiguration): void {
-  const {host: projectHostname, cwd: projectDirectory} = remoteProjectConfig;
-  var openInstances = getOpenFileEditorForRemoteProject(
-    projectHostname,
-    projectDirectory,
-  );
+  var openInstances = getOpenFileEditorForRemoteProject(remoteProjectConfig);
   for (const openInstance of openInstances) {
     const {editor, pane} = openInstance;
     pane.removeItem(editor);
@@ -151,24 +147,19 @@ function closeOpenFilesForRemoteProject(remoteProjectConfig: RemoteConnectionCon
 async function restoreNuclideProjectState(
   remoteProjectConfig: SerializableRemoteConnectionConfiguration,
 ) {
-  // TODO use the rest of the config for the connection dialog.
-  const {host: projectHostname, cwd: projectDirectory} = remoteProjectConfig;
   // try to re-connect, then, add the project to atom.project and the tree.
   const connection = await createRemoteConnection(remoteProjectConfig);
   if (!connection) {
     getLogger().info(
       'No RemoteConnection returned on restore state trial:',
-      projectHostname,
-      projectDirectory,
+      remoteProjectConfig.host,
+      remoteProjectConfig.cwd,
     );
   }
 
   // On Atom restart, it tries to open uri paths as local `TextEditor` pane items.
   // Here, Nuclide reloads the remote project files that have empty text editors open.
-  var openInstances = getOpenFileEditorForRemoteProject(
-    projectHostname,
-    projectDirectory,
-  );
+  var openInstances = getOpenFileEditorForRemoteProject(connection.getConfig());
   for (const openInstance of openInstances) {
     // Keep the original open editor item with a unique name until the remote buffer is loaded,
     // Then, we are ready to replace it with the remote tab in the same pane.
@@ -178,7 +169,7 @@ async function restoreNuclideProjectState(
     editor.getBuffer().file.path = `${uri}.to-close`;
     // Cleanup the old pane item on successful opening or when no connection could be established.
     const cleanupBuffer = () => pane.removeItem(editor);
-    if (!connection || filePath === projectDirectory) {
+    if (!connection || filePath === remoteProjectConfig.cwd) {
       cleanupBuffer();
     } else {
       // If we clean up the buffer before the `openUriInPane` finishes,
