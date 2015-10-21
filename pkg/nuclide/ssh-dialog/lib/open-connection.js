@@ -9,8 +9,6 @@
  * the root directory of this source tree.
  */
 
-var defaultConfig: ?any = null;
-
 var dialogPromiseQueue: ?PromiseQueue = null;
 
 export function openConnectionDialog(props): Promise<?RemoteConnection> {
@@ -26,7 +24,7 @@ export function openConnectionDialog(props): Promise<?RemoteConnection> {
 
     var ConnectionDialog = require('./ConnectionDialog');
 
-    var defaultConnectionSettings = getDefaultConfig().getConnectionDialogDefaultSettings();
+    var defaultConnectionSettings = getDefaultConfig();
 
     function saveConfig(config: SshConnectionConfiguration) {
       // Don't store user's password.
@@ -50,7 +48,7 @@ export function openConnectionDialog(props): Promise<?RemoteConnection> {
 
     var dialogProps = extend.immutableExtend({
       initialUsername: rememberedDialogSettings.username,
-      initialServer: rememberedDialogSettings.host,
+      initialServer: rememberedDialogSettings.server,
       initialRemoteServerCommand: remoteServerCommand,
       initialCwd: rememberedDialogSettings.cwd,
       initialSshPort: String(rememberedDialogSettings.sshPort),
@@ -71,14 +69,21 @@ export function openConnectionDialog(props): Promise<?RemoteConnection> {
   });
 }
 
+var defaultConfig: ?any = null;
+/**
+ * This fetches the 'default' connection configuration supplied to the user
+ * regardless of any connection profiles they might have saved.
+ */
 function getDefaultConfig(): any {
   if (defaultConfig) {
     return defaultConfig;
   }
+  var defaultConfigGetter;
   try {
-    defaultConfig = require('./fb/config');
+    defaultConfigGetter = require('./fb/config');
   } catch (e) {
-    defaultConfig = require('./config');
+    defaultConfigGetter = require('./config');
   }
+  defaultConfig = defaultConfigGetter.getConnectionDialogDefaultSettings();
   return defaultConfig;
 }

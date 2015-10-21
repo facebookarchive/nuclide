@@ -12,9 +12,12 @@
 var path = require('path');
 var {USER, HOME} = require('nuclide-commons').env;
 
-function getConnectionDialogDefaultSettings(): any {
+import type {NuclideRemoteConnectionParams} from './connection-types';
+
+
+function getConnectionDialogDefaultSettings(): NuclideRemoteConnectionParams {
   return {
-    host: '',
+    server: '',
     username: USER,
     // Do not use path.join() because we assume that the remote machine is *nix,
     // so we always want to use `/` as the path separator for cwd, even if Atom
