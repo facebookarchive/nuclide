@@ -36,6 +36,7 @@ export type FileResult = {
   // The original query that prompted this result, e.g. to highlight it in the UI.
   query?: string;
   context?: string;
+  timestamp?: number;
 };
 
 export type ProviderResult = {

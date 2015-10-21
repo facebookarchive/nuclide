@@ -1,0 +1,31 @@
+{
+  "name": "nuclide-recent-files-provider",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "Search recently opened files via nuclide-quick-open",
+  "nuclide": {
+    "flowCheck": true,
+    "packageType": "Atom",
+    "testRunner": "apm"
+  },
+  "devDependencies": {
+    "nuclide-external-interfaces": "0.0.0",
+    "nuclide-quick-open-interfaces": "0.0.0"
+  },
+  "consumedServices": {
+    "nuclide-recent-files-service": {
+      "versions": {
+        "0.0.0": "consumeRecentFilesService"
+      }
+    }
+  },
+  "providedServices": {
+    "nuclide-quick-open-register-provider": {
+      "description": "Register ourselves with the quick-open package",
+      "versions": {
+        "0.0.0": "registerProvider"
+      }
+    }
+  }
+}
