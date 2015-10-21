@@ -34,4 +34,5 @@ export type ProcessOutputDataHandlers = {
  * @return A Promise that resolves to an object on which 'kill' can be called to
  *   kill the process.
  */
-export type RunProcessWithHandlers = (options: ProcessOutputDataHandlers) => Promise<KillableProcess>;
+export type RunProcessWithHandlers =
+  (options: ProcessOutputDataHandlers) => Promise<KillableProcess>;

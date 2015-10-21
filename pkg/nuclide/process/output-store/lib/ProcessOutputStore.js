@@ -20,7 +20,6 @@ class ProcessOutputStore {
   _runProcess: RunProcessWithHandlers;
   _process: ?KillableProcess;
   _emitter: Emitter;
-  /* $FlowFixMe - 'null This type is incompatible with Promise' */
   _processPromise: ?Promise<number>;
   _stdout: ?string;
   _stderr: ?string;
@@ -44,7 +43,7 @@ class ProcessOutputStore {
    * take effect on the first call.
    * @return A Promise that resolves to the exit code when the process exits.
    */
-  async startProcess(): Promise<number> {
+  async startProcess(): Promise<?number> {
     if (this._processPromise) {
       return this._processPromise;
     }

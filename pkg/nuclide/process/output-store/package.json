@@ -5,6 +5,7 @@
   "version": "0.0.0",
   "description": "Utilities for storing the output of a process.",
   "nuclide": {
+    "flowCheck": true,
     "packageType": "Node",
     "testRunner": "apm"
   },

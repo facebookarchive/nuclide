@@ -6,6 +6,7 @@
 ./node_modules/nuclide-external-interfaces/1.0/
 
 [options]
-suppress_comment=.*\\$FlowFixMe.*
 unsafe.enable_getters_and_setters=true
 esproposal.decorators=ignore
+suppress_comment=.*\\$FlowFixMe.*
+suppress_comment=.*\\$FlowIssue.*
