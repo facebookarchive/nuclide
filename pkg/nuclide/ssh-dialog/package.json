@@ -18,6 +18,7 @@
     "nuclide-logging": "0.0.0",
     "nuclide-remote-connection": "0.0.0",
     "nuclide-ui-atom-input": "0.0.0",
+    "nuclide-ui-mutable-list-selector": "0.0.0",
     "nuclide-ui-radiogroup": "0.0.0",
     "nuclide-version": "0.0.0",
     "react-for-atom": "0.13.6"
