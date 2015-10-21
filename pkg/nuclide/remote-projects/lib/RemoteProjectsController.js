@@ -48,8 +48,6 @@ class RemoteProjectsController {
   _updateConnectionStatus(paneItem: Object): void {
     this._disposeSubscription();
 
-    // That may not be generically ideal to check `instanceof`.
-    // However, that's the way `pane.coffee` checks in `getActiveEditor()`.
     if (!isTextEditor(paneItem)) {
       this._renderStatusBar(ConnectionState.NONE);
       return;
