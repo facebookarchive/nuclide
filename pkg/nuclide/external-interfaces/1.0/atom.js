@@ -455,6 +455,8 @@ declare class atom$TextEditor extends atom$Model {
     },
   ): atom$Range;
   insertText(text: string): atom$Range | boolean;
+  delete: () => void;
+  backspace: () => void;
 
   // History
   // TextEditor Coordinates
@@ -530,7 +532,7 @@ declare class atom$TextEditor extends atom$Model {
   setGrammar(grammar: atom$Grammar): void;
 
   // Clipboard Operations
-  pasteText(options?: Object): void;
+  pasteText: (options?: Object) => void;
 
   // Managing Syntax Scopes
   scopeDescriptorForBufferPosition(
@@ -602,6 +604,11 @@ type atom$WorkspaceAddPanelOptions = {
   priority?: number;
 };
 
+type atom$TextEditorParams = {
+  buffer?: atom$TextBuffer,
+  lineNumberGutterVisible?: boolean,
+};
+
 declare class atom$Workspace {
   // Event Subscription
   observeTextEditors(callback: (editor: atom$TextEditor) => mixed): atom$Disposable;
@@ -625,6 +632,8 @@ declare class atom$Workspace {
       searchAllPanes?: boolean;
     }
   ): Promise<atom$TextEditor>;
+  /* Optional method because this was added post-1.0. */
+  buildTextEditor?: ((params: atom$TextEditorParams) => atom$TextEditor);
   reopenItem(): Promise<?atom$TextEditor>;
   addOpener(callback: (uri: string) => any): atom$Disposable;
 
