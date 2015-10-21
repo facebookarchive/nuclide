@@ -26,6 +26,10 @@ module.exports = {
     return require('./create-pane-container');
   },
 
+  get createTextEditor() {
+    return require('./text-editor').createTextEditor;
+  },
+
   get fileTypeClass() {
     return require('./file-type-class');
   },
@@ -39,7 +43,7 @@ module.exports = {
   },
 
   get isTextEditor() {
-    return require('./is-text-editor').isTextEditor;
+    return require('./text-editor').isTextEditor;
   },
 
   get closeTabForBuffer() {

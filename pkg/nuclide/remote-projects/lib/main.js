@@ -13,8 +13,9 @@ import type RemoteProjectsController from './RemoteProjectsController';
 import type {HomeFragments} from 'nuclide-home-interfaces';
 import type {RemoteConnectionConfiguration} from 'nuclide-remote-connection/lib/RemoteConnection';
 
+import {createTextEditor} from 'nuclide-atom-helpers';
 import {getOpenFileEditorForRemoteProject} from './utils';
-import {CompositeDisposable, TextEditor} from 'atom';
+import {CompositeDisposable} from 'atom';
 
 /**
  * Stores the host and cwd of a remote connection.
@@ -219,7 +220,9 @@ async function createEditorForNuclide(
       throw err;
     }
   }
-  return new TextEditor(/*editorOptions*/ {buffer, registerEditor: true});
+
+  let textEditorParams = {buffer};
+  return createTextEditor(textEditorParams);
 }
 
 module.exports = {

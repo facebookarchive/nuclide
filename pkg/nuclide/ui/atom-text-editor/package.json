@@ -10,6 +10,7 @@
     "testRunner": "apm"
   },
   "dependencies": {
+    "nuclide-atom-helpers": "0.0.0",
     "nuclide-atom-npm": "0.0.0",
     "react-for-atom": "0.13.6"
   },

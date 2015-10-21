@@ -24,3 +24,15 @@ export function isTextEditor(item: any): boolean {
     return item instanceof TextEditor;
   }
 }
+
+export function createTextEditor(textEditorParams: atom$TextEditorParams): TextEditor {
+  // Note that atom.workspace.buildTextEditor was introduced after the release of Atom 1.0.19.
+  // As of this change, calling the constructor of TextEditor directly is deprecated. Therefore,
+  // we must choose the appropriate code path based on which API is available.
+  if (atom.workspace.buildTextEditor) {
+    return atom.workspace.buildTextEditor(textEditorParams);
+  } else {
+    const {TextEditor} = require('atom');
+    return new TextEditor(textEditorParams);
+  }
+}

@@ -11,6 +11,7 @@
 
 import React from 'react-for-atom';
 import {TextBuffer} from 'atom';
+import {createTextEditor} from 'nuclide-atom-helpers';
 
 const {PropTypes} = React;
 
@@ -42,21 +43,11 @@ class AtomTextEditor extends React.Component {
       this._textBuffer.setPath(props.path);
     }
 
-    let textEditor;
     const textEditorParams = {
       buffer: this._textBuffer,
       lineNumberGutterVisible: !this.props.gutterHidden,
     };
-
-    // Note that atom.workspace.buildTextEditor was introduced after the release of Atom 1.0.19.
-    // As of this change, calling the constructor of TextEditor directly is deprecated. Therefore,
-    // we must choose the appropriate code path based on which API is available.
-    if (atom.workspace.buildTextEditor) {
-      textEditor = atom.workspace.buildTextEditor(textEditorParams);
-    } else {
-      const {TextEditor} = require('atom');
-      textEditor = new TextEditor(textEditorParams);
-    }
+    const textEditor = createTextEditor(textEditorParams);
 
     // As of the introduction of atom.workspace.buildTextEditor(), it is no longer possible to
     // subclass TextEditor to create a ReadOnlyTextEditor. Instead, the way to achieve this effect
