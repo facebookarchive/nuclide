@@ -48,7 +48,8 @@ export function flowGetAutocompleteSuggestions(
   currentContents: string,
   line: number,
   column: number,
-  prefix: string
+  prefix: string,
+  activatedManually: boolean,
 ): Promise<any> {}
 
 export function flowGetType(

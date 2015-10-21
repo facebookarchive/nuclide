@@ -1083,6 +1083,7 @@ type atom$AutocompleteSuggestion = {
 type atom$AutocompleteRequest = {
   editor: TextEditor;
   prefix: string;
+  activatedManually: boolean;
 }
 
 type atom$AutocompleteProvider = {

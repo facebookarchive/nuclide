@@ -97,6 +97,7 @@ describe('LocalFlowService', () => {
     var prefix: any;
     var optionNames: any;
     var options: any;
+    let activatedManually: boolean = (undefined: any);
 
     function runWith(results) {
       mockExec(JSON.stringify(results));
@@ -106,6 +107,7 @@ describe('LocalFlowService', () => {
         line,
         column,
         prefix,
+        activatedManually,
       );
     }
 
@@ -131,6 +133,7 @@ describe('LocalFlowService', () => {
 
     beforeEach(() => {
       prefix = '';
+      activatedManually = false;
       optionNames = [
         'Foo',
         'foo',
@@ -141,7 +144,21 @@ describe('LocalFlowService', () => {
       options = optionNames.map(name => ({name, type: 'foo'}));
     });
 
-    it('should provide suggestions', () => {
+    it('should not provide suggestions when no characters have been typed', () => {
+      waitsForPromise(async () => {
+        expect(hasEqualElements(await getNameSet(options), new Set())).toBe(true);
+      });
+    });
+
+    it('should always provide suggestions when activated manually', () => {
+      activatedManually = true;
+      waitsForPromise(async () => {
+        expect(hasEqualElements(await getNameSet(options), new Set(optionNames))).toBe(true);
+      });
+    });
+
+    it('should always provide suggestions when the prefix contains .', () => {
+      prefix = '   .   ';
       waitsForPromise(async () => {
         expect(hasEqualElements(await getNameSet(options), new Set(optionNames))).toBe(true);
       });
@@ -175,6 +192,7 @@ describe('LocalFlowService', () => {
     });
 
     it('should expose extra information about a function', () => {
+      prefix = 'f';
       waitsForPromise(async () => {
         var result = await runWith([
           {

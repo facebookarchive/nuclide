@@ -178,8 +178,30 @@ export async function flowGetAutocompleteSuggestions(
   currentContents: string,
   line: number,
   column: number,
-  prefix: string
+  prefix: string,
+  activatedManually: boolean,
 ): Promise<any> {
+  // We may want to make this configurable, but if it is ever higher than one we need to make sure
+  // it works properly when the user manually activates it (e.g. with ctrl+space). See
+  // https://github.com/atom/autocomplete-plus/issues/597
+  //
+  // If this is made configurable, consider using autocomplete-plus' minimumWordLength setting, as
+  // per https://github.com/atom/autocomplete-plus/issues/594
+  const minimumPrefixLength = 1;
+
+  // Allows completions to immediately appear when we are completing off of object properties. This
+  // also needs to be changed if minimumPrefixLength goes above 1, since after you type a single
+  // alphanumeric character, autocomplete-plus no longer includes the dot in the prefix.
+  const prefixHasDot = prefix.indexOf('.') !== -1;
+
+  // If it is just whitespace and punctuation, ignore it (this keeps us
+  // from eating leading dots).
+  const replacementPrefix = /^[\s.]*$/.test(prefix) ? '' : prefix;
+
+  if (!activatedManually && !prefixHasDot && replacementPrefix.length < minimumPrefixLength) {
+    return [];
+  }
+
   var options = {};
 
   var args = ['autocomplete', '--json', file];
@@ -192,9 +214,6 @@ export async function flowGetAutocompleteSuggestions(
     }
     if (result.exitCode === 0) {
       var json = JSON.parse(result.stdout);
-      // If it is just whitespace and punctuation, ignore it (this keeps us
-      // from eating leading dots).
-      var replacementPrefix = /^[\s.]*$/.test(prefix) ? '' : prefix;
       var candidates = json.map(item => processAutocompleteItem(replacementPrefix, item));
       return filter(candidates, replacementPrefix, { key: 'displayText' });
     } else {

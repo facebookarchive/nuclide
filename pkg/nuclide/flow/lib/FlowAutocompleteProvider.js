@@ -15,8 +15,8 @@ import {trackTiming} from 'nuclide-analytics';
 
 class FlowAutocompleteProvider {
   @trackTiming('flow.autocomplete')
-  getSuggestions(request: atom$AutocompleteRequest): Promise<atom$AutocompleteSuggestion> {
-    var {editor, prefix} = request;
+  getSuggestions(request: atom$AutocompleteRequest): Promise<Array<atom$AutocompleteSuggestion>> {
+    const {editor, prefix, activatedManually} = request;
     var file = editor.getPath();
     var contents = editor.getText();
     var cursor = editor.getLastCursor();
@@ -25,7 +25,15 @@ class FlowAutocompleteProvider {
 
     var flowService = require('nuclide-client').getServiceByNuclideUri('FlowService', file);
     invariant(flowService);
-    return flowService.flowGetAutocompleteSuggestions(file, contents, line, col, prefix);
+    return flowService.flowGetAutocompleteSuggestions(
+      file,
+      contents,
+      line,
+      col,
+      prefix,
+      // Needs to be a boolean, but autocomplete-plus gives us undefined instead of false.
+      !!activatedManually,
+    );
   }
 }
 
