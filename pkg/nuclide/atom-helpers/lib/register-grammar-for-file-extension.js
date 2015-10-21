@@ -10,8 +10,6 @@
  */
 import {CompositeDisposable} from 'atom';
 
-import type {TextEditor} from 'atom';
-
 /**
  * Utility to make it easier to register a file extension with a grammar. For example, it makes
  * sense to associate ".flowconfig" or ".buckconfig" with "source.ini", or "BUCK" with

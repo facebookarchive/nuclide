@@ -10,7 +10,6 @@
  */
 
 var {Dispatcher} = require('flux');
-var {TextEditor} = require('atom');
 
 class BuckToolbarActions {
 

@@ -33,7 +33,7 @@ type StatsViewProps = {
 const BASE_ITEM_URI = 'nuclide-health://';
 
 // Imports from non-Nuclide modules.
-import {CompositeDisposable, Disposable, TextEditor} from 'atom';
+import {CompositeDisposable, Disposable} from 'atom';
 import os from 'os';
 import React from 'react-for-atom';
 

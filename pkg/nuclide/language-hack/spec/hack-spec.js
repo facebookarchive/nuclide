@@ -1,8 +1,6 @@
 'use babel';
 /* @flow */
 
-var {TextEditor} = require('atom');
-
 describe('PHP grammar', () => {
   var grammar = null;
 

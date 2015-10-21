@@ -18,7 +18,7 @@ function getLogger() {
 }
 
 var invariant = require('assert');
-var {Disposable, Emitter, TextEditor} = require('atom');
+var {Disposable, Emitter} = require('atom');
 var {Dispatcher} = require('flux');
 var {buckProjectRootForPath} = require('nuclide-buck-commons');
 var BuckToolbarActions = require('./BuckToolbarActions');

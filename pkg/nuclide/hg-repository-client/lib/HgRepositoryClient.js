@@ -14,7 +14,7 @@ import type {
   RevisionFileChanges,
 } from 'nuclide-hg-repository-base/lib/hg-constants';
 
-var {CompositeDisposable, Emitter, TextEditor} = require('atom');
+var {CompositeDisposable, Emitter} = require('atom');
 var {StatusCodeId, StatusCodeIdToNumber, StatusCodeNumber, HgStatusOption} =
     require('nuclide-hg-repository-base').hgConstants;
 var {ensureTrailingSeparator} = require('nuclide-commons').paths;
