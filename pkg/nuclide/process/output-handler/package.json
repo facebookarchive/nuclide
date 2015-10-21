@@ -5,6 +5,7 @@
   "version": "0.0.0",
   "description": "A library of ProcessOutputHandler implementations, for use with the nuclide-process-output package.",
   "nuclide": {
+    "flowCheck": true,
     "packageType": "Node",
     "testRunner": "apm"
   },

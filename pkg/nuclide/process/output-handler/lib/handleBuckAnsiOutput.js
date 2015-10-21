@@ -37,8 +37,10 @@ function handleBuckAnsiOutput(textBuffer: atom$TextBuffer, text: string) {
     var erasePreviousLineMatches = newText.match(ERASE_PREVIOUS_LINE_REGEX);
     if (erasePreviousLineMatches) {
       var numberOfLinesToRemove = erasePreviousLineMatches.length;
-      var endRemove = textBuffer.getLastRow() - 1; // This represents 'moving the cursor to previous line'.
-      var startRemove = endRemove - numberOfLinesToRemove + 1; // TextBuffer::deleteRows is inclusive.
+      // This represents 'moving the cursor to previous line':
+      var endRemove = textBuffer.getLastRow() - 1;
+      // TextBuffer::deleteRows is inclusive:
+      var startRemove = endRemove - numberOfLinesToRemove + 1;
       textBuffer.deleteRows(startRemove, endRemove);
 
       // Remove these escape sequences.
