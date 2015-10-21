@@ -9,9 +9,9 @@
  * the root directory of this source tree.
  */
 var invariant = require('assert');
-var {TextEditor} = require('atom');
 var {debounce} = require('nuclide-commons');
 var {compareMessagesByFile} = require('./paneUtils');
+var {isTextEditor} = require('nuclide-atom-helpers');
 var React = require('react-for-atom');
 var DiagnosticsPanel = require('./DiagnosticsPanel');
 
@@ -88,7 +88,7 @@ function createDiagnosticsPanel(
   }
 
   var activePaneItemSubscription = atom.workspace.onDidChangeActivePaneItem(paneItem => {
-    if (paneItem instanceof TextEditor) {
+    if (isTextEditor(paneItem)) {
       props.pathToActiveTextEditor = paneItem ? paneItem.getPath() : null;
       if (props.filterByActiveTextEditor) {
         render();

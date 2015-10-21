@@ -12,14 +12,14 @@
 const NUCLIDE_PROTOCOL_PREFIX = 'nuclide:/';
 const NUCLIDE_PROTOCOL_PREFIX_LENGTH = NUCLIDE_PROTOCOL_PREFIX.length;
 
+import {isTextEditor} from 'nuclide-atom-helpers';
+
 export type OpenFileEditorInstance = {
   pane: atom$Pane;
   editor: atom$TextEditor;
   uri: NuclideUri;
   filePath: string;
 };
-
-import {TextEditor} from 'atom';
 
 /**
  * Clean a nuclide URI from the prepended absolute path prefixes and fix
@@ -50,8 +50,8 @@ export function* getOpenFileEditorForRemoteProject(
   for (const pane of atom.workspace.getPanes()) {
     const paneItems = pane.getItems();
     for (const paneItem of paneItems) {
-      if (!(paneItem instanceof TextEditor) || !paneItem.getURI()) {
-        // Ignore nn-text editors and new editors with empty uris / paths.
+      if (!isTextEditor(paneItem) || !paneItem.getURI()) {
+        // Ignore non-text editors and new editors with empty uris / paths.
         continue;
       }
       const uri = sanitizeNuclideUri(paneItem.getURI());

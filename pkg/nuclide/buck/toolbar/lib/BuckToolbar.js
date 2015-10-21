@@ -10,7 +10,7 @@
  */
 
 var AtomComboBox = require('nuclide-ui-atom-combo-box');
-var {CompositeDisposable, TextEditor} = require('atom');
+var {CompositeDisposable} = require('atom');
 var React = require('react-for-atom');
 var {Dispatcher} = require('flux');
 var {PropTypes} = React;
@@ -19,7 +19,11 @@ var BuckToolbarActions = require('./BuckToolbarActions');
 var BuckToolbarStore = require('./BuckToolbarStore');
 
 var {debounce} = require('nuclide-commons');
-var {onWorkspaceDidStopChangingActivePaneItem} = require('nuclide-atom-helpers').atomEventDebounce;
+var {
+  atomEventDebounce,
+  isTextEditor,
+} = require('nuclide-atom-helpers');
+var {onWorkspaceDidStopChangingActivePaneItem} = atomEventDebounce;
 
 class BuckToolbar extends React.Component {
 
@@ -67,7 +71,7 @@ class BuckToolbar extends React.Component {
   }
 
   _onActivePaneItemChanged(item: mixed) {
-    if (!(item instanceof TextEditor)) {
+    if (!isTextEditor(item)) {
       return;
     }
     var textEditor: TextEditor = item;

@@ -38,6 +38,10 @@ module.exports = {
     return require('./workspace').getPathToWorkspaceState;
   },
 
+  get isTextEditor() {
+    return require('./is-text-editor').isTextEditor;
+  },
+
   get closeTabForBuffer() {
     return require('./close-tab-buffer');
   },

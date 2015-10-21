@@ -10,8 +10,9 @@
  */
 
 var React = require('react-for-atom');
-var {CompositeDisposable, Disposable, TextEditor} = require('atom');
+var {CompositeDisposable, Disposable} = require('atom');
 var StatusBarTile = require('./ui/StatusBarTile');
+var {isTextEditor} = require('nuclide-atom-helpers');
 var remoteUri = require('nuclide-remote-uri');
 var ConnectionState = require('./ConnectionState');
 
@@ -49,7 +50,7 @@ class RemoteProjectsController {
 
     // That may not be generically ideal to check `instanceof`.
     // However, that's the way `pane.coffee` checks in `getActiveEditor()`.
-    if (!(paneItem instanceof TextEditor)) {
+    if (!isTextEditor(paneItem)) {
       this._renderStatusBar(ConnectionState.NONE);
       return;
     }
