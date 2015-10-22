@@ -53,8 +53,10 @@ export default class HandlesTableComponent extends React.Component {
         <table className="table">
           <thead>
             <tr>
-              <th>ID</th>
-              {this.props.columns.map((column, c) => <th key={c}>{column.title}</th>)}
+              <th width="10%">ID</th>
+              {this.props.columns.map((column, c) =>
+                <th key={c} width={`${column.widthPercentage}%`}>{column.title}</th>
+              )}
             </tr>
           </thead>
           <tbody>

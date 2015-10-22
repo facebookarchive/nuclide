@@ -63,6 +63,7 @@ export default class ActiveHandlesSectionComponent extends React.Component {
       }
     );
 
+    // Note that widthPercentage properties should add up to 90 since the ID column always adds 10.
     return (
       <div>
         <HandlesTableComponent
@@ -73,15 +74,27 @@ export default class ActiveHandlesSectionComponent extends React.Component {
           columns={[{
             title: 'Name',
             value: process => path.basename(process.spawnfile),
+            widthPercentage: 15,
           }, {
             title: 'In',
             value: process => process.stdin && process.stdin.bytesWritten,
+            widthPercentage: 5,
           }, {
             title: 'Out',
             value: process => process.stdout && process.stdout.bytesRead,
+            widthPercentage: 5,
           }, {
             title: 'Err',
             value: process => process.stderr && process.stderr.bytesRead,
+            widthPercentage: 5,
+          }, {
+            title: 'Args',
+            value: process => {
+              if (process.spawnargs && process.spawnargs.length > 1) {
+                return process.spawnargs.splice(1).join(' ');
+              }
+            },
+            widthPercentage: 60,
           }]}
         />
         <HandlesTableComponent
@@ -92,12 +105,15 @@ export default class ActiveHandlesSectionComponent extends React.Component {
           columns={[{
             title: 'Host',
             value: socket => socket._host || socket.remoteAddress,
+            widthPercentage: 70,
           }, {
             title: 'Read',
             value: socket => socket.bytesRead,
+            widthPercentage: 10,
           }, {
             title: 'Written',
             value: socket => socket.bytesWritten,
+            widthPercentage: 10,
           }]}
         />
         <HandlesTableComponent
@@ -108,6 +124,7 @@ export default class ActiveHandlesSectionComponent extends React.Component {
           columns={[{
             title: 'Type',
             value: handle => handle.constructor.name,
+            widthPercentage: 90,
           }]}
         />
       </div>
