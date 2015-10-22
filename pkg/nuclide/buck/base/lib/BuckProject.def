@@ -65,9 +65,15 @@ export class BuckProject {
    *   telling the launched application to stop at the loader breakpoint
    *   waiting for debugger to connect
    * @param simulator The UDID of the simulator to install the binary on.
+   * @param appArgs If 'run' is set to 'true', these are passed as the command line arguments to
+   *   the application being run.
    * @return Promise that resolves to a build report.
    */
-  install(buildTargets: Array<string>, run: boolean, debug: boolean, simulator: ?string): Promise<any> {}
+  install(
+    buildTargets: Array<string>,
+    simulator: ?string,
+    runOptions: ?BuckRunOptions
+  ): Promise<any> {}
 
   /**
    * Same as `install`, but returns additional output via an Observable.
@@ -81,7 +87,9 @@ export class BuckProject {
    *   onCompleted: Only called if the install completes successfully.
    */
   installWithOutput(
-    buildTargets: Array<string>, run: boolean, debug: boolean, simulator: ?string
+    buildTargets: Array<string>,
+    simulator: ?string,
+    runOptions: ?BuckRunOptions
   ): Observable<{stderr?: string; stdout?: string;}> {}
 
   findTargetsWithReferencedFile(filePath: NuclideUri, options: any): Promise<{json: any; targets: Array<any>}> {}

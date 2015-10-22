@@ -231,7 +231,7 @@ class BuckToolbarStore {
       invariant(buckProject);
       if (run) {
         observable = await buckProject.installWithOutput(
-            [buildTarget], true, debug, simulator);
+            [buildTarget], simulator, {run, debug, appArgs: []});
       } else {
         observable = await buckProject.buildWithOutput([buildTarget]);
       }

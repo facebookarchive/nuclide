@@ -14,12 +14,23 @@ var {fsPromise} = require('nuclide-commons');
 var logger = require('nuclide-logging').getLogger();
 var path = require('path');
 
+type dontRunOptions = {
+  run: false;
+};
+
+type doRunOptions = {
+  run: true;
+  debug: boolean;
+  appArgs: Array<string>;
+}
+
+type BuckRunOptions = dontRunOptions | doRunOptions;
+
 type BuckConfig = Object;
 type BaseBuckBuildOptions = {
   install: boolean;
-  run: boolean;
-  debug: boolean;
   simulator?: ?string;
+  runOptions?: ?BuckRunOptions;
 };
 type FullBuckBuildOptions = {
   baseOptions: BaseBuckBuildOptions;
@@ -138,21 +149,20 @@ export class BuckProject {
   }
 
   build(buildTargets: Array<string>): Promise<any> {
-    return this._build(buildTargets, {install: false, run: false, debug: false});
+    return this._build(buildTargets, {install: false});
   }
 
   install(
     buildTargets: Array<string>,
-    run: boolean,
-    debug: boolean,
     simulator: ?string,
+    runOptions: ?BuckRunOptions,
   ): Promise<any> {
-    return this._build(buildTargets, {install: true, run, debug, simulator});
+    return this._build(buildTargets, {install: true, simulator, runOptions});
   }
 
   async _build(buildTargets: Array<string>, options: BaseBuckBuildOptions): Promise<any> {
-    var report = await fsPromise.tempfile({suffix: '.json'});
-    var args = this._translateOptionsToBuckBuildArgs({
+    const report = await fsPromise.tempfile({suffix: '.json'});
+    const args = this._translateOptionsToBuckBuildArgs({
       baseOptions: {...options},
       pathToBuildReport: report,
       buildTargets,
@@ -164,14 +174,14 @@ export class BuckProject {
       // The build failed. However, because --keep-going was specified, the
       // build report should have still been written unless any of the target
       // args were invalid. We check the existence of the report file to be sure.
-      var fileWasWritten = await fsPromise.exists(report);
+      const fileWasWritten = await fsPromise.exists(report);
       if (!fileWasWritten) {
         throw e;
       }
     }
 
     try {
-      var json: string = await fsPromise.readFile(report, {encoding: 'UTF-8'});
+      const json: string = await fsPromise.readFile(report, {encoding: 'UTF-8'});
       if (!json) {
         throw Error(`Report file ${report} for ${buildTargets} was opened, ` +
             `but nothing was written.`);
@@ -190,16 +200,15 @@ export class BuckProject {
   buildWithOutput(
     buildTargets: Array<string>
   ): Observable<{stderr?: string; stdout?: string;}> {
-    return this._buildWithOutput(buildTargets, {install: false, run: false, debug: false});
+    return this._buildWithOutput(buildTargets, {install: false});
   }
 
   installWithOutput(
     buildTargets: Array<string>,
-    run: boolean,
-    debug: boolean,
     simulator: ?string,
+    runOptions: ?BuckRunOptions,
   ): Observable<{stderr?: string; stdout?: string;}> {
-    return this._buildWithOutput(buildTargets, {install: true, run, debug, simulator});
+    return this._buildWithOutput(buildTargets, {install: true, simulator, runOptions});
   }
 
   /**
@@ -226,36 +235,42 @@ export class BuckProject {
    *   process to run the `buck` command.
    */
   _translateOptionsToBuckBuildArgs(options: FullBuckBuildOptions): Array<string> {
-    var {
+    const {
       baseOptions,
       pathToBuildReport,
       buildTargets,
     } = options;
-    var {
+    const {
       install,
-      run,
-      debug,
       simulator,
     } = baseOptions;
+    const runOptions = baseOptions.runOptions || {run: false};
 
-    var args = install ? ['install'] : ['build'];
+    let args = install ? ['install'] : ['build'];
+    args = args.concat(buildTargets);
+
     args.push('--keep-going');
     if (pathToBuildReport) {
       args = args.concat(['--build-report', pathToBuildReport]);
     }
     if (install) {
-      if (run) {
-        args.push('--run');
-      }
-      if (debug) {
-        args.push('--wait-for-debugger');
-      }
       if (simulator) {
         args.push('--udid');
         args.push(simulator);
       }
+
+      if (runOptions.run) {
+        args.push('--run');
+        if (runOptions.debug) {
+          args.push('--wait-for-debugger');
+        }
+        if (runOptions.appArgs) {
+          args.push('--');
+          // $FlowIssue runOptions.run == true => appArgs must be set.
+          args = args.concat(runOptions.appArgs);
+        }
+      }
     }
-    args = args.concat(buildTargets);
     return args;
   }
 
