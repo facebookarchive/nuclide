@@ -18,7 +18,7 @@ var {
   isEmpty,
 } = require('nuclide-commons').object;
 
-function filterEmptyResults(resultsGroupedByService: GroupedResult): GroupedResult {
+export function filterEmptyResults(resultsGroupedByService: GroupedResult): GroupedResult {
   var filteredTree = {};
 
   for (var serviceName in resultsGroupedByService) {
@@ -36,7 +36,7 @@ function filterEmptyResults(resultsGroupedByService: GroupedResult): GroupedResu
   return filteredTree;
 }
 
-function flattenResults(resultsGroupedByService: GroupedResult): Array<FileResult> {
+export function flattenResults(resultsGroupedByService: GroupedResult): Array<FileResult> {
   var items = [];
   for (var serviceName in resultsGroupedByService) {
     for (var dirName in resultsGroupedByService[serviceName].results) {
@@ -45,8 +45,3 @@ function flattenResults(resultsGroupedByService: GroupedResult): Array<FileResul
   }
   return Array.prototype.concat.apply([], items);
 }
-
-module.exports = {
-  filterEmptyResults,
-  flattenResults,
-};

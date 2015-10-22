@@ -9,6 +9,10 @@
  * the root directory of this source tree.
  */
 
+import type {
+  FileResult,
+} from 'nuclide-quick-open-interfaces';
+
 var React = require('react-for-atom');
 var QuickSelectionComponent = require('../lib/QuickSelectionComponent');
 

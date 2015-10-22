@@ -3,7 +3,7 @@
   "repository": "https://github.com/facebook/nuclide",
   "main": "./lib/types",
   "version": "0.0.0",
-  "description": "Flow types for the public quick-open provider interface. This is a dev-only package. It does not contain executable code.",
+  "description": "Flow types for the public quick-open provider interface. This is a dev-only package. It does not contain executable code!",
   "nuclide": {
     "packageType": "Node",
     "testRunner": "npm"

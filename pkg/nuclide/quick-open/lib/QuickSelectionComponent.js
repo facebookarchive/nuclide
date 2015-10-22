@@ -63,7 +63,7 @@ function _findKeybindingForAction(action: string, target: HTMLElement): string {
   return humanizeKeystroke(keystroke);
 }
 
-class QuickSelectionComponent extends React.Component {
+export default class QuickSelectionComponent extends React.Component {
   _emitter: Emitter;
   _subscriptions: CompositeDisposable;
   _modalNode: HTMLElement;
@@ -725,5 +725,3 @@ QuickSelectionComponent.propTypes = {
   }).isRequired,
   onProviderChange: PropTypes.func,
 };
-
-module.exports = QuickSelectionComponent;

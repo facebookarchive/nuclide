@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type * as QuickSelectionComponentType from './QuickSelectionComponent';
+import type QuickSelectionComponent from './QuickSelectionComponent';
 
 import type {
   Provider,
@@ -55,7 +55,7 @@ var AnalyticsDebounceDelays = {
   CHANGE_SELECTION: 100,
 };
 
-var _quickSelectionComponent: ?QuickSelectionComponentType = null;
+var _quickSelectionComponent: ?QuickSelectionComponent = null;
 function getQuickSelectionComponentLazily() {
   if (!_quickSelectionComponent) {
     _quickSelectionComponent = require('./QuickSelectionComponent');
@@ -86,7 +86,7 @@ class Activation {
   _currentProvider: Object;
   _previousFocus: ?Element;
   _reactDiv: Element;
-  _searchComponent: QuickSelectionComponentType;
+  _searchComponent: QuickSelectionComponent;
   _searchPanel: atom$Panel;
   _subscriptions: atom$CompositeDisposable;
   _debouncedUpdateModalPosition: () => void;
@@ -174,10 +174,11 @@ class Activation {
   }
 
   _render() {
-    var QuickSelectionComponent = getQuickSelectionComponentLazily();
+    // Abbreviate to avoid shadowing flow type.
+    var QSComponent = getQuickSelectionComponentLazily();
     var React = getReactLazily();
     return React.render(
-      <QuickSelectionComponent
+      <QSComponent
         activeProvider={this._currentProvider}
         onProviderChange={this.handleActiveProviderChange.bind(this)}
       />,
