@@ -89,9 +89,31 @@ describe('QueryItem', () => {
 
 import {__test__} from '../lib/QueryItem';
 const {
+  checkIfMatchesCamelCaseLetters,
   isLetterImportant,
   importantCharactersForString,
 } = __test__;
+
+describe('checkIfMatchesCamelCaseLetters', () => {
+
+  it('matches when all letters in `needle` are present as uppercase letters in `haystack`', () => {
+    expect(checkIfMatchesCamelCaseLetters('fbide', 'fbide')).toBe(false);
+    expect(checkIfMatchesCamelCaseLetters('fbide', 'FBIDE')).toBe(true);
+    expect(
+      checkIfMatchesCamelCaseLetters(
+        'fbide',
+        'FaceBookIntegratedDevelopmentEnvironment'
+      )
+    ).toBe(true);
+    expect(checkIfMatchesCamelCaseLetters('fb', 'FooBar.js')).toBe(true);
+    expect(checkIfMatchesCamelCaseLetters('fb', 'FooBarBaz.js')).toBe(false);
+  });
+
+  it('is indifferent about the case of only the first characted in `haystack`', () => {
+    expect(checkIfMatchesCamelCaseLetters('fbide', 'fBIDE')).toBe(true);
+    expect(checkIfMatchesCamelCaseLetters('fbide', 'fbIDE')).toBe(false);
+  });
+});
 
 describe('isLetterImportant', () => {
   it('considers the first two letters important', () => {

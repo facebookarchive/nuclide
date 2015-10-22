@@ -17,6 +17,18 @@ function isAlphanumeric(character): boolean {
   return /[\w]/.test(character);
 }
 
+const NOT_CAPITAL_LETTERS_REGEXP = /[^A-Z]/g;
+/**
+ * Checks if `needle` matches exactly the first character followed by all uppercase letters in
+ * `haystack`.  E.g. 'fbide' matches 'FaceBookIntegratedDevelopmentEnvironment' and
+ *                                   'faceBookIntegratedDevelopmentEnvironment'.
+ */
+function checkIfMatchesCamelCaseLetters(needle: string, haystack: string): boolean {
+  const uppercase = haystack.substring(0, 1) +
+    haystack.substring(1).replace(NOT_CAPITAL_LETTERS_REGEXP, '');
+  return needle.toLowerCase() === uppercase.toLowerCase();
+}
+
 const CAPITAL_LETTERS_REGEXP = /[A-Z]/;
 const IMPORTANT_DELIMITERS_REGEXP = /[_\-.]/;
 function isLetterImportant(index: number, name: string): boolean {
@@ -53,6 +65,7 @@ function importantCharactersForString(str: string): Set<string> {
 }
 
 export let __test__ = {
+  checkIfMatchesCamelCaseLetters,
   isLetterImportant,
   importantCharactersForString,
 };
