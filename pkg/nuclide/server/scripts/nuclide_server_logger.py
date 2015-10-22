@@ -13,25 +13,20 @@ import logging.handlers
 import os
 import tempfile
 
-LOG_DIR_TEMPLATE = 'nuclide-{0}-logs/server-start/'
+LOG_FILE_DIR = os.path.join(tempfile.gettempdir(), 'nuclide-{0}-logs/server-start/'.format(getpass.getuser()))
 LOG_FILE_TEMPLATE = 'nuclide.log'
 LOG_DIR_ERROR_MSG = 'An error occurred while creating the Nuclide server-start log directory. \
                      Nuclide server-start logs will not be written.'
 
 
-def _get_log_file_dir():
-  return os.path.join(tempfile.gettempdir(), LOG_DIR_TEMPLATE.format(getpass.getuser()))
-
-
 def _get_log_file_path():
-  return os.path.join(_get_log_file_dir(), LOG_FILE_TEMPLATE)
+  return os.path.join(LOG_FILE_DIR, LOG_FILE_TEMPLATE)
 
 
 # Returns a boolean of whether the log directory exists or was successfully created.
 def _make_log_dir():
-  logFileDir = _get_log_file_dir()
   try:
-    os.mkdir(logFileDir)
+    os.makedirs(LOG_FILE_DIR)
   except OSError as e:
     if e.errno == errno.EEXIST:
       # The log directory exists

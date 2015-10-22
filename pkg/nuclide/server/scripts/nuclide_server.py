@@ -18,10 +18,10 @@ import time
 
 import utils
 from nuclide_certificates_generator import NuclideCertificatesGenerator
+from nuclide_server_logger import LOG_FILE_DIR
 from process_info import ProcessInfo
 
-
-LOG_FILE = '~/nuclide.nohup.out'
+LOG_FILE = os.path.join(LOG_FILE_DIR, 'nuclide.nohup.out')
 
 
 # This class represents a Nuclide server process on a port.
