@@ -21,6 +21,9 @@ import type {
   FunctionType,
   InterfaceDefinition,
   Type,
+  Location,
+  SourceLocation,
+  Babel$Node,
 } from './types';
 
 
@@ -41,12 +44,20 @@ class ServiceParser {
     this._fileName = fileName;
   }
 
-  _nodeLocation(node): string {
+  _locationOfNode(node: any): SourceLocation {
+    return {
+      type: 'source',
+      fileName: this._fileName,
+      line: node.loc.start.line,
+    };
+  }
+
+  _nodeLocationString(node: Babel$Node): string {
     return `${this._fileName}(${node.loc.start.line})`;
   }
 
-  _error(node, message): Error {
-    return new Error(`${this._nodeLocation(node)}:${message}`);
+  _error(node: Babel$Node, message: string): Error {
+    return new Error(`${this._nodeLocationString(node)}:${message}`);
   }
 
   _assert(node, condition, message): void {
@@ -121,7 +132,9 @@ class ServiceParser {
     return {
       kind: 'function',
       name: declaration.id.name,
+      location: this._locationOfNode(declaration),
       type: {
+        location: this._locationOfNode(declaration),
         kind: 'function',
         argumentTypes: declaration.params.map(param => {
           if (!param.typeAnnotation) {
@@ -144,6 +157,7 @@ class ServiceParser {
         'parseTypeAlias accepts a TypeAlias node.');
     return {
       kind: 'alias',
+      location: this._locationOfNode(declaration),
       name: declaration.id.name,
       definition: this._parseTypeAnnotation(declaration.right),
     };
@@ -157,6 +171,7 @@ class ServiceParser {
     var def: InterfaceDefinition = {
       kind: 'interface',
       name: declaration.id.name,
+      location: this._locationOfNode(declaration),
       constructorArgs: [],
       staticMethods: new Map(),
       instanceMethods: new Map(),
@@ -207,8 +222,10 @@ class ServiceParser {
     invariant(returnType.kind === 'void' || returnType.kind === 'promise' ||
         returnType.kind === 'observable');
     return {
+      location: this._locationOfNode(definition.key),
       name: definition.key.name,
       type: {
+        location: this._locationOfNode(definition.value),
         kind: 'function',
         argumentTypes: definition.value.params.map(param => {
           if (!param.typeAnnotation) {
@@ -227,26 +244,30 @@ class ServiceParser {
    * @returns {Type} A representation of the type.
    */
   _parseTypeAnnotation(typeAnnotation: Object): Type {
+    const location = this._locationOfNode(typeAnnotation);
     switch (typeAnnotation.type) {
       case 'AnyTypeAnnotation':
-        return {kind: 'any'};
+        return {location, kind: 'any'};
       case 'StringTypeAnnotation':
-        return {kind: 'string'};
+        return {location, kind: 'string'};
       case 'NumberTypeAnnotation':
-        return {kind: 'number'};
+        return {location, kind: 'number'};
       case 'BooleanTypeAnnotation':
-        return {kind: 'boolean'};
+        return {location, kind: 'boolean'};
       case 'NullableTypeAnnotation':
         return {
+          location,
           kind: 'nullable',
           type: this._parseTypeAnnotation(typeAnnotation.typeAnnotation),
         };
       case 'ObjectTypeAnnotation':
         return {
+          location,
           kind: 'object',
           fields: typeAnnotation.properties.map(prop => {
             assert(prop.type === 'ObjectTypeProperty');
             return {
+              location: this._locationOfNode(prop),
               name: prop.key.name,
               type: this._parseTypeAnnotation(prop.value),
               optional: prop.optional,
@@ -254,9 +275,10 @@ class ServiceParser {
           }),
         };
       case 'VoidTypeAnnotation':
-        return {kind: 'void'};
+        return {location, kind: 'void'};
       case 'TupleTypeAnnotation':
         return {
+          location,
           kind: 'tuple',
           types: typeAnnotation.types.map(this._parseTypeAnnotation.bind(this)),
         };
@@ -274,24 +296,29 @@ class ServiceParser {
   _parseGenericTypeAnnotation(typeAnnotation): Type {
     assert(typeAnnotation.type === 'GenericTypeAnnotation');
     const id = this._parseTypeName(typeAnnotation.id);
+    const location: Location = this._locationOfNode(typeAnnotation);
     switch (id) {
       case 'Array':
         return {
+          location,
           kind: 'array',
           type: this._parseGenericTypeParameterOfKnownType(id, typeAnnotation),
         };
       case 'Set':
         return {
+          location,
           kind: 'set',
           type: this._parseGenericTypeParameterOfKnownType(id, typeAnnotation),
         };
       case 'Promise':
         return {
+          location,
           kind: 'promise',
           type: this._parseGenericTypeParameterOfKnownType(id, typeAnnotation),
         };
       case 'Observable':
         return {
+          location,
           kind: 'observable',
           type: this._parseGenericTypeParameterOfKnownType(id, typeAnnotation),
         };
@@ -302,6 +329,7 @@ class ServiceParser {
           typeAnnotation.typeParameters.params.length === 2,
           `${id} takes exactly two type parameters.`);
         return {
+          location,
           kind: 'map',
           keyType: this._parseTypeAnnotation(typeAnnotation.typeParameters.params[0]),
           valueType: this._parseTypeAnnotation(typeAnnotation.typeParameters.params[1]),
@@ -310,7 +338,7 @@ class ServiceParser {
         // Named types are represented as Generic types with no type parameters.
         this._assert(typeAnnotation, typeAnnotation.typeParameters == null,
             `Unknown generic type ${id}.`);
-        return {kind: 'named', name: id};
+        return {location, kind: 'named', name: id};
     }
   }
 

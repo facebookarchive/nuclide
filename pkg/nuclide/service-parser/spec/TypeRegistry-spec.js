@@ -20,6 +20,7 @@ import type {
 } from '../lib/types';
 
 import {
+  builtinLocation,
   numberType,
   stringType,
   booleanType,
@@ -89,6 +90,7 @@ describe('TypeRegistry', () => {
       // An array of buffers.
       var expected = [new Buffer('testdas'), new Buffer('test')];
       var type: ArrayType = {
+        location: builtinLocation,
         kind: 'array',
         type: bufferType,
       };
@@ -99,11 +101,14 @@ describe('TypeRegistry', () => {
 
       // Object with a a nullable property and a buffer property.
       var objectType: ObjectType = {
+        location: builtinLocation,
         kind: 'object',
         fields: [
           // A nullable string property.
           {
+            location: builtinLocation,
             type: {
+              location: builtinLocation,
               kind: 'nullable',
               type: stringType,
             },
@@ -112,12 +117,14 @@ describe('TypeRegistry', () => {
           },
           // A non-nullable buffer property.
           {
+            location: builtinLocation,
             type: bufferType,
             name: 'b',
             optional: false,
           },
           // An optional number property.
           {
+            location: builtinLocation,
             type: numberType,
             name: 'c',
             optional: true,
@@ -141,6 +148,7 @@ describe('TypeRegistry', () => {
 
       var data = {valueA: 'Hello World.', valueB: null};
       var type: NamedType = {
+        location: builtinLocation,
         kind: 'named',
         name: 'ValueTypeA',
       };
@@ -158,6 +166,7 @@ describe('TypeRegistry', () => {
 
       var data = null;
       var type: NullableType = {
+        location: builtinLocation,
         kind: 'nullable',
         type: stringType,
       };
@@ -167,29 +176,35 @@ describe('TypeRegistry', () => {
   });
 });
 
-const ValueTypeA = {
+const ValueTypeA: ObjectType = {
+  location: builtinLocation,
+  kind: 'object',
   fields: [
     {
+      location: builtinLocation,
       name: 'valueA',
       optional: false,
       type: stringType,
     },
     {
+      location: builtinLocation,
       name: 'valueB',
       optional: false,
       type: {
+        location: builtinLocation,
         kind: 'nullable',
         type: {
+          location: builtinLocation,
           kind: 'named',
           name: 'ValueTypeB',
         },
       },
     },
     {
+      location: builtinLocation,
       name: 'valueC',
       optional: true,
       type: booleanType,
     },
   ],
-  kind: 'object',
 };

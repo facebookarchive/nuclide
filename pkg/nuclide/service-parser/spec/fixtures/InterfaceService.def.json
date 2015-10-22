@@ -2,29 +2,69 @@
     "Vector2": {
         "constructorArgs": [
             {
+                "location": {
+                    "type": "source",
+                    "fileName": "InterfaceService.def",
+                    "line": 2
+                },
                 "kind": "number"
             },
             {
+                "location": {
+                    "type": "source",
+                    "fileName": "InterfaceService.def",
+                    "line": 2
+                },
                 "kind": "number"
             }
         ],
         "instanceMethods": {
             "len": {
+                "location": {
+                    "type": "source",
+                    "fileName": "InterfaceService.def",
+                    "line": 4
+                },
                 "kind": "function",
                 "argumentTypes": [],
                 "returnType": {
+                    "location": {
+                        "type": "source",
+                        "fileName": "InterfaceService.def",
+                        "line": 4
+                    },
                     "kind": "promise",
                     "type": {
+                        "location": {
+                            "type": "source",
+                            "fileName": "InterfaceService.def",
+                            "line": 4
+                        },
                         "kind": "number"
                     }
                 }
             },
             "watchChanges": {
+                "location": {
+                    "type": "source",
+                    "fileName": "InterfaceService.def",
+                    "line": 6
+                },
                 "kind": "function",
                 "argumentTypes": [],
                 "returnType": {
+                    "location": {
+                        "type": "source",
+                        "fileName": "InterfaceService.def",
+                        "line": 6
+                    },
                     "kind": "observable",
                     "type": {
+                        "location": {
+                            "type": "source",
+                            "fileName": "InterfaceService.def",
+                            "line": 6
+                        },
                         "kind": "number"
                     }
                 }
@@ -32,20 +72,45 @@
         },
         "staticMethods": {
             "distance": {
+                "location": {
+                    "type": "source",
+                    "fileName": "InterfaceService.def",
+                    "line": 3
+                },
                 "kind": "function",
                 "argumentTypes": [
                     {
+                        "location": {
+                            "type": "source",
+                            "fileName": "InterfaceService.def",
+                            "line": 3
+                        },
                         "kind": "named",
                         "name": "Vector2"
                     },
                     {
+                        "location": {
+                            "type": "source",
+                            "fileName": "InterfaceService.def",
+                            "line": 3
+                        },
                         "kind": "named",
                         "name": "Vector2"
                     }
                 ],
                 "returnType": {
+                    "location": {
+                        "type": "source",
+                        "fileName": "InterfaceService.def",
+                        "line": 3
+                    },
                     "kind": "promise",
                     "type": {
+                        "location": {
+                            "type": "source",
+                            "fileName": "InterfaceService.def",
+                            "line": 3
+                        },
                         "kind": "number"
                     }
                 }
@@ -55,12 +120,32 @@
     "getCurrentDirection": {
         "kind": "function",
         "name": "getCurrentDirection",
+        "location": {
+            "type": "source",
+            "fileName": "InterfaceService.def",
+            "line": 9
+        },
         "type": {
+            "location": {
+                "type": "source",
+                "fileName": "InterfaceService.def",
+                "line": 9
+            },
             "kind": "function",
             "argumentTypes": [],
             "returnType": {
+                "location": {
+                    "type": "source",
+                    "fileName": "InterfaceService.def",
+                    "line": 9
+                },
                 "kind": "promise",
                 "type": {
+                    "location": {
+                        "type": "source",
+                        "fileName": "InterfaceService.def",
+                        "line": 9
+                    },
                     "kind": "named",
                     "name": "Vector2"
                 }

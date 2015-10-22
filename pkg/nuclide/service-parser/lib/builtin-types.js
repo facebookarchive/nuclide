@@ -10,6 +10,7 @@
  */
 
 import type {
+  BuiltinLocation,
   StringType,
   NumberType,
   BooleanType,
@@ -17,38 +18,50 @@ import type {
   NamedType,
 } from './types';
 
+export const builtinLocation: BuiltinLocation = {
+  type: 'builtin',
+};
+
 export const anyType: AnyType = {
+  location: builtinLocation,
   kind: 'any',
 };
 
 export const stringType: StringType = {
+  location: builtinLocation,
   kind: 'string',
 };
 
 export const booleanType: BooleanType = {
+  location: builtinLocation,
   kind: 'boolean',
 };
 
 export const numberType: NumberType = {
+  location: builtinLocation,
   kind: 'number',
 };
 
 export const dateType: NamedType = {
+  location: builtinLocation,
   kind: 'named',
   name: 'Date',
 };
 
 export const regExpType: NamedType = {
+  location: builtinLocation,
   kind: 'named',
   name: 'RegExp',
 };
 
 export const bufferType: NamedType = {
+  location: builtinLocation,
   kind: 'named',
   name: 'Buffer',
 };
 
 export const fsStatsType: NamedType = {
+  location: builtinLocation,
   kind: 'named',
   name: 'fs.Stats',
 };

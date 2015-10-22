@@ -20,6 +20,8 @@ import {__test__} from '../lib/proxy-generator';
 
 import {Type} from '../lib/types';
 
+import {builtinLocation} from '../lib/builtin-types';
+
 var t = babel.types;
 
 describe('Proxy generator test suite.', () => {
@@ -27,14 +29,14 @@ describe('Proxy generator test suite.', () => {
     addMatchers(this);
   });
 
-  for (let file of fs.readdirSync(path.join(__dirname, 'fixtures'))) {
+  for (const file of fs.readdirSync(path.join(__dirname, 'fixtures'))) {
     if (file.endsWith('.def')) {
       it(`Successfully generates proxy for ${file}`, () => {
         const fixturePath = path.join(__dirname, 'fixtures', file);
-        var definitions = parseServiceDefinition(fixturePath, fs.readFileSync(fixturePath, 'utf8'));
+        const definitions = parseServiceDefinition(file, fs.readFileSync(fixturePath, 'utf8'));
 
-        var code = generateProxy(definitions);
-        var expected = fs.readFileSync(
+        const code = generateProxy(definitions);
+        const expected = fs.readFileSync(
           path.join(__dirname, 'fixtures', file).replace('.def', '.proxy'), 'utf8');
         expect(code.trim()).diffLines(expected.trim());
       });
@@ -43,10 +45,13 @@ describe('Proxy generator test suite.', () => {
 });
 
 var ArrayOfArrayOfNuclideUri: Type = {
+  location: builtinLocation,
   kind: 'array',
   type: {
+    location: builtinLocation,
     kind: 'array',
     type: {
+      location: builtinLocation,
       kind: 'named',
       name: 'NuclideUri',
     },
@@ -65,6 +70,8 @@ describe('generateTransformStatement helper function', function () {
   });
 
   it('Generates an unmarshal statement.', () => {
+
+    // $FlowIssue
     var code = generate(__test__.generateTransformStatement(t.identifier('value'),
         ArrayOfArrayOfNuclideUri, false)).code;
     expect(code).diffLines(unmarshalText);
@@ -72,10 +79,19 @@ describe('generateTransformStatement helper function', function () {
 });
 
 var marshalText = `_client.marshal(value, {
+  location: {
+    type: "builtin"
+  },
   kind: "array",
   type: {
+    location: {
+      type: "builtin"
+    },
     kind: "array",
     type: {
+      location: {
+        type: "builtin"
+      },
       kind: "named",
       name: "NuclideUri"
     }
@@ -83,10 +99,19 @@ var marshalText = `_client.marshal(value, {
 })`;
 
 var unmarshalText = `_client.unmarshal(value, {
+  location: {
+    type: "builtin"
+  },
   kind: "array",
   type: {
+    location: {
+      type: "builtin"
+    },
     kind: "array",
     type: {
+      location: {
+        type: "builtin"
+      },
       kind: "named",
       name: "NuclideUri"
     }
