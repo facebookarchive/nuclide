@@ -1,144 +1,159 @@
 {
-  "functions": {
-    "ValueTypeTestA": {
-      "argumentTypes": [
-        {
-          "kind": "named",
-          "name": "ValueTypeA"
-        },
-        {
-          "kind": "nullable",
-          "type": {
-            "kind": "named",
-            "name": "ValueTypeB"
-          }
-        }
-      ],
-      "kind": "function",
-      "returnType": {
-        "kind": "promise",
-        "type": {
-          "kind": "named",
-          "name": "ValueTypeA"
-        }
-      }
-    },
-    "ValueTypeTestB": {
-      "argumentTypes": [
-        {
-          "kind": "named",
-          "name": "ValueTypeA"
-        },
-        {
-          "type": {
-            "kind": "named",
-            "name": "ValueTypeB"
-          },
-          "kind": "array"
-        }
-      ],
-      "kind": "function",
-      "returnType": {
-        "kind": "promise",
-        "type": {
-          "fields": [
-            {
-              "name": "field1",
-              "optional": false,
-              "type": {
-                "kind": "string"
-              }
-            },
-            {
-              "name": "field2",
-              "optional": false,
-              "type": {
-                "kind": "string"
-              }
-            }
-          ],
-          "kind": "object"
-        }
-      }
-    },
-    "QualifiedTypeNameTest": {
-      "argumentTypes": [
-        {
-          "kind": "named",
-          "name": "fs.Stats"
-        }
-      ],
-      "kind": "function",
-      "returnType": {
-        "kind": "void"
-      }
-    }
-  },
-  "interfaces": {},
-  "aliases": {
     "ValueTypeA": {
-      "fields": [
-        {
-          "name": "valueA",
-          "optional": false,
-          "type": {
-            "kind": "string"
-          }
-        },
-        {
-          "name": "valueB",
-          "optional": false,
-          "type": {
-            "kind": "nullable",
-            "type": {
-              "kind": "named",
-              "name": "ValueTypeB"
-            }
-          }
-        },
-        {
-          "name": "valueC",
-          "optional": true,
-          "type": {
-            "kind": "boolean"
-          }
-        },
-        {
-          "name": "valueD",
-          "optional": false,
-          "type": {
-            "kind": "any"
-          }
+        "kind": "alias",
+        "name": "ValueTypeA",
+        "definition": {
+            "kind": "object",
+            "fields": [
+                {
+                    "name": "valueA",
+                    "type": {
+                        "kind": "string"
+                    },
+                    "optional": false
+                },
+                {
+                    "name": "valueB",
+                    "type": {
+                        "kind": "nullable",
+                        "type": {
+                            "kind": "named",
+                            "name": "ValueTypeB"
+                        }
+                    },
+                    "optional": false
+                },
+                {
+                    "name": "valueC",
+                    "type": {
+                        "kind": "boolean"
+                    },
+                    "optional": true
+                },
+                {
+                    "name": "valueD",
+                    "type": {
+                        "kind": "any"
+                    },
+                    "optional": false
+                }
+            ]
         }
-      ],
-      "kind": "object"
     },
     "ValueTypeB": {
-      "fields": [
-        {
-          "name": "valueA",
-          "optional": false,
-          "type": {
-            "kind": "tuple",
-            "types": [
-              {
-                "kind": "number"
-              },
-              {
-                "kind": "string"
-              }
+        "kind": "alias",
+        "name": "ValueTypeB",
+        "definition": {
+            "kind": "object",
+            "fields": [
+                {
+                    "name": "valueA",
+                    "type": {
+                        "kind": "tuple",
+                        "types": [
+                            {
+                                "kind": "number"
+                            },
+                            {
+                                "kind": "string"
+                            }
+                        ]
+                    },
+                    "optional": false
+                },
+                {
+                    "name": "valueC",
+                    "type": {
+                        "kind": "string"
+                    },
+                    "optional": false
+                }
             ]
-          }
-        },
-        {
-          "name": "valueC",
-          "optional": false,
-          "type": {
-            "kind": "string"
-          }
         }
-      ],
-      "kind": "object"
+    },
+    "ValueTypeTestA": {
+        "kind": "function",
+        "name": "ValueTypeTestA",
+        "type": {
+            "kind": "function",
+            "argumentTypes": [
+                {
+                    "kind": "named",
+                    "name": "ValueTypeA"
+                },
+                {
+                    "kind": "nullable",
+                    "type": {
+                        "kind": "named",
+                        "name": "ValueTypeB"
+                    }
+                }
+            ],
+            "returnType": {
+                "kind": "promise",
+                "type": {
+                    "kind": "named",
+                    "name": "ValueTypeA"
+                }
+            }
+        }
+    },
+    "ValueTypeTestB": {
+        "kind": "function",
+        "name": "ValueTypeTestB",
+        "type": {
+            "kind": "function",
+            "argumentTypes": [
+                {
+                    "kind": "named",
+                    "name": "ValueTypeA"
+                },
+                {
+                    "kind": "array",
+                    "type": {
+                        "kind": "named",
+                        "name": "ValueTypeB"
+                    }
+                }
+            ],
+            "returnType": {
+                "kind": "promise",
+                "type": {
+                    "kind": "object",
+                    "fields": [
+                        {
+                            "name": "field1",
+                            "type": {
+                                "kind": "string"
+                            },
+                            "optional": false
+                        },
+                        {
+                            "name": "field2",
+                            "type": {
+                                "kind": "string"
+                            },
+                            "optional": false
+                        }
+                    ]
+                }
+            }
+        }
+    },
+    "QualifiedTypeNameTest": {
+        "kind": "function",
+        "name": "QualifiedTypeNameTest",
+        "type": {
+            "kind": "function",
+            "argumentTypes": [
+                {
+                    "kind": "named",
+                    "name": "fs.Stats"
+                }
+            ],
+            "returnType": {
+                "kind": "void"
+            }
+        }
     }
-  }
 }

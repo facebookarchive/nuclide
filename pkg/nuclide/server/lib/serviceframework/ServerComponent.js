@@ -66,53 +66,57 @@ export default class ServerComponent {
         var localImpl = require(service.implementation);
 
         // Register type aliases.
-        defs.aliases.forEach((type, name) => {
-          logger.debug(`Registering type alias ${name}...`);
-          this._typeRegistry.registerAlias(name, type);
+        defs.forEach(definition => {
+          const name = definition.name;
+          switch (definition.kind) {
+            case 'alias':
+              logger.debug(`Registering type alias ${name}...`);
+              this._typeRegistry.registerAlias(name, definition.definition);
+              break;
+            case 'function':
+              // Register module-level functions.
+              logger.debug(`Registering function ${name}...`);
+              this._functionsByName.set(name,  {
+                localImplementation: localImpl[name],
+                type: definition.type,
+              });
+              break;
+            case 'interface':
+              // Register interfaces.
+              logger.debug(`Registering interface ${name}...`);
+              this._classesByName.set(name,  {
+                localImplementation: localImpl[name],
+                definition,
+              });
+
+              this._typeRegistry.registerType(name, async object => {
+                // If the object has already been assigned an id, return that id.
+                if (object._remoteId) {
+                  return object._remoteId;
+                }
+
+                // Put the object in the registry.
+                object._interface = name;
+                const objectId = this._nextObjectId;
+                this._objectRegistry.set(objectId, object);
+                object._remoteId = objectId;
+                this._nextObjectId++;
+
+                return objectId;
+              }, async objectId => this._objectRegistry.get(objectId));
+
+              // Register all of the static methods as remote functions.
+              definition.staticMethods.forEach((funcType, funcName) => {
+                logger.debug(`Registering function ${name}/${funcName}...`);
+                this._functionsByName.set(`${name}/${funcName}`,  {
+                  localImplementation: localImpl[name][funcName],
+                  type: funcType,
+                });
+              });
+              break;
+          }
         });
 
-        // Register module-level functions.
-        defs.functions.forEach((type, name) => {
-          logger.debug(`Registering function ${name}...`);
-          this._functionsByName.set(name,  {
-            localImplementation: localImpl[name],
-            type: type,
-          });
-        });
-
-        // Register interfaces.
-        defs.interfaces.forEach((def, name) => {
-          logger.debug(`Registering interface ${name}...`);
-          this._classesByName.set(name,  {
-            localImplementation: localImpl[name],
-            definition: def,
-          });
-
-          this._typeRegistry.registerType(name, async object => {
-            // If the object has already been assigned an id, return that id.
-            if (object._remoteId) {
-              return object._remoteId;
-            }
-
-            // Put the object in the registry.
-            object._interface = name;
-            var objectId = this._nextObjectId;
-            this._objectRegistry.set(objectId, object);
-            object._remoteId = objectId;
-            this._nextObjectId++;
-
-            return objectId;
-          }, async objectId => this._objectRegistry.get(objectId));
-
-          // Register all of the static methods as remote functions.
-          def.staticMethods.forEach((funcType, funcName) => {
-            logger.debug(`Registering function ${name}/${funcName}...`);
-            this._functionsByName.set(`${name}/${funcName}`,  {
-              localImplementation: localImpl[name][funcName],
-              type: funcType,
-            });
-          });
-        });
       } catch(e) {
         logger.error(`Failed to load service ${service.name}. Stack Trace:\n${e.stack}`);
         continue;

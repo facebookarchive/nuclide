@@ -14,6 +14,9 @@ import assert from 'assert';
 import invariant from 'assert';
 
 import type {
+  Definition,
+  FunctionDefinition,
+  AliasDefinition,
   Definitions,
   FunctionType,
   InterfaceDefinition,
@@ -53,37 +56,37 @@ class ServiceParser {
   }
 
   parseService(source: string): Definitions {
-    var defs: Definitions = {functions: new Map(), interfaces: new Map(), aliases: new Map()};
-    var program = babel.parse(source);
+    const defs: Map<string, Definition> = new Map();
+    const program = babel.parse(source);
     assert(program && program.type === 'Program', 'The result of parsing is a Program node.');
 
     // Iterate through each node in the program body.
-    for (var node of program.body) {
+    for (const node of program.body) {
       // We're specifically looking for exports.
       if (node.type === 'ExportNamedDeclaration') {
-        var declaration = node.declaration;
+        const declaration = node.declaration;
+        let definition;
         switch (declaration.type) {
           // An exported function that can be directly called by a client.
           case 'FunctionDeclaration':
-            var {name, type} = this._parseFunctionDeclaration(declaration);
-            defs.functions.set(name, type);
+            definition = this._parseFunctionDeclaration(declaration);
             break;
           // An exported type alias.
           case 'TypeAlias':
-            var {name, type} = this._parseTypeAlias(declaration);
-            defs.aliases.set(name, type);
+            definition = this._parseTypeAlias(declaration);
             break;
           // TODO: Parse classes as remotable interfaces.
           case 'ClassDeclaration':
-            var {name, interfaceDefinition} = this._parseClassDeclaration(declaration);
-            defs.interfaces.set(name, interfaceDefinition);
+            definition = this._parseClassDeclaration(declaration);
             break;
-          // Unkown export declaration.
+          // Unknown export declaration.
           default:
             throw this._error(
               declaration,
               `Unknown declaration type ${declaration.type} in definition body.`);
         }
+        invariant(definition != null);
+        defs.set(definition.name, definition);
       } else {
         throw this._error(node, `Unknown node type ${node.type} in definition body.`);
       }
@@ -95,13 +98,14 @@ class ServiceParser {
    * Helper function that parses an exported function declaration, and returns the function name,
    * along with a FunctionType object that encodes the argument and return types of the function.
    */
-  _parseFunctionDeclaration(declaration: any): {name: string, type: FunctionType} {
+  _parseFunctionDeclaration(declaration: any): FunctionDefinition {
     this._assert(
       declaration,
       declaration.id && declaration.id.type === 'Identifier',
       'This function declaration has an identifier.');
     this._assert(
       declaration,
+      declaration.returnType != null &&
       declaration.returnType.type === 'TypeAnnotation',
       'The function is annotated with a return type.');
 
@@ -115,6 +119,7 @@ class ServiceParser {
       returnType.kind === 'promise' ||
       returnType.kind === 'observable');
     return {
+      kind: 'function',
       name: declaration.id.name,
       type: {
         kind: 'function',
@@ -134,25 +139,24 @@ class ServiceParser {
    * Helper function that parses an exported type alias, and returns the name of the alias,
    * along with the type that it refers to.
    */
-  _parseTypeAlias(declaration: any): {name: string, type: Type} {
+  _parseTypeAlias(declaration: any): AliasDefinition {
     this._assert(declaration, declaration.type === 'TypeAlias',
         'parseTypeAlias accepts a TypeAlias node.');
     return {
+      kind: 'alias',
       name: declaration.id.name,
-      type: this._parseTypeAnnotation(declaration.right),
+      definition: this._parseTypeAnnotation(declaration.right),
     };
   }
 
   /**
    * Parse a ClassDeclaration AST Node.
    * @param declaration - The AST node.
-   * @returns A record containing the name of the class, along with an InterfaceDefinition
-   *   object that describes it's method.
    */
-  _parseClassDeclaration(
-    declaration: Object,
-  ): {name: string, interfaceDefinition: InterfaceDefinition} {
+  _parseClassDeclaration(declaration: Object): InterfaceDefinition {
     var def: InterfaceDefinition = {
+      kind: 'interface',
+      name: declaration.id.name,
       constructorArgs: [],
       staticMethods: new Map(),
       instanceMethods: new Map(),
@@ -170,17 +174,14 @@ class ServiceParser {
         });
       } else {
         var {name, type} = this._parseMethodDefinition(method);
-        if (method.static) {
-          def.staticMethods.set(name, type);
-        } else {
-          def.instanceMethods.set(name, type);
-        }
+        this._defineMethod(name, type, method.static ? def.staticMethods : def.instanceMethods);
       }
     }
-    return {
-      name: declaration.id.name,
-      interfaceDefinition: def,
-    };
+    return def;
+  }
+
+  _defineMethod(name: string, type: FunctionType, peers: Map<string, FunctionType>): void {
+    peers.set(name, type);
   }
 
   /**
@@ -203,7 +204,8 @@ class ServiceParser {
       returnType.kind === 'void' || returnType.kind === 'promise' ||
           returnType.kind === 'observable',
       'The return type of a function must be of type Void, Promise, or Observable');
-
+    invariant(returnType.kind === 'void' || returnType.kind === 'promise' ||
+        returnType.kind === 'observable');
     return {
       name: definition.key.name,
       type: {

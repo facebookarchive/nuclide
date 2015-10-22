@@ -17,19 +17,31 @@ declare module 'module' {
  * `Definitions` encodes all of the information in a service defintion file that is required to
  * generate a remote proxy.
  */
-export type Definitions = {
-  // Encodes all of the module level functions in a file.
-  functions: Map<string, FunctionType>;
-  // Encodes all of the remote classes that can be instantiated.
-  interfaces: Map<string, InterfaceDefinition>;
-  // Encodes all of the type aliases in this definition file.
-  aliases: Map<string, Type>;
+export type Definitions = Map<string, Definition>;
+
+export type Definition = FunctionDefinition | InterfaceDefinition | AliasDefinition;
+
+// A top level function.
+export type FunctionDefinition = {
+  kind: 'function';
+  name: string;
+  type: FunctionType;
 };
 
+// An interface class.
 export type InterfaceDefinition = {
+  kind: 'interface';
+  name: string;
   constructorArgs: Array<Type>;
   instanceMethods: Map<string, FunctionType>;
   staticMethods: Map<string, FunctionType>;
+};
+
+// A type alias.
+export type AliasDefinition = {
+  kind: 'alias';
+  name: string;
+  definition: Type;
 };
 
 export type Type = NullableType |

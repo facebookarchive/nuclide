@@ -50,27 +50,32 @@ export default class ClientComponent {
         var defs = getDefinitions(service.definition);
         var proxy = getProxy(service.definition, this);
 
-        defs.aliases.forEach((type, name) => {
-          logger.debug(`Registering type alias ${name}...`);
-          this._typeRegistry.registerAlias(name, type);
-        });
-        defs.interfaces.forEach((interfaceDef, name) => {
-          logger.debug(`Registering interface ${name}.`);
-          this._typeRegistry.registerType(name, async object => {
-            return await object._idPromise;
-          }, async objectId => {
-            // Return a cached proxy, if one already exists, for this object.
-            if (this._objectRegistry.has(objectId)) {
-              return this._objectRegistry.get(objectId);
-            }
+        defs.forEach(definition => {
+          const name = definition.name;
+          switch (definition.kind) {
+            case 'alias':
+              logger.debug(`Registering type alias ${name}...`);
+              this._typeRegistry.registerAlias(name, definition.definition);
+              break;
+            case 'interface':
+              logger.debug(`Registering interface ${name}.`);
+              this._typeRegistry.registerType(name, async object => {
+                return await object._idPromise;
+              }, async objectId => {
+                // Return a cached proxy, if one already exists, for this object.
+                if (this._objectRegistry.has(objectId)) {
+                  return this._objectRegistry.get(objectId);
+                }
 
-            // Generate the proxy by manually setting the prototype of the object to be the prototype
-            // of the remote proxy constructor.
-            var object = { _idPromise: Promise.resolve(objectId) };
-            Object.setPrototypeOf(object, proxy[name].prototype);
-            this._objectRegistry.set(objectId, object);
-            return object;
-          });
+                // Generate the proxy by manually setting the prototype of the object to be the
+                // prototype of the remote proxy constructor.
+                const object = { _idPromise: Promise.resolve(objectId) };
+                Object.setPrototypeOf(object, proxy[name].prototype);
+                this._objectRegistry.set(objectId, object);
+                return object;
+              });
+              break;
+          }
         });
       } catch(e) {
         logger.error(`Failed to load service ${service.name}. Stack Trace:\n${e.stack}`);

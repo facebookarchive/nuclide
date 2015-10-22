@@ -1,43 +1,51 @@
 {
-  "functions": {
     "TestFunctionA": {
-      "argumentTypes": [
-        {
-          "kind": "string"
-        },
-        {
-          "kind": "boolean"
-        }
-      ],
-      "kind": "function",
-      "returnType": {
-        "kind": "promise",
+        "kind": "function",
+        "name": "TestFunctionA",
         "type": {
-          "type": {
-            "kind": "string"
-          },
-          "kind": "array"
+            "kind": "function",
+            "argumentTypes": [
+                {
+                    "kind": "string"
+                },
+                {
+                    "kind": "boolean"
+                }
+            ],
+            "returnType": {
+                "kind": "promise",
+                "type": {
+                    "kind": "array",
+                    "type": {
+                        "kind": "string"
+                    }
+                }
+            }
         }
-      }
     },
     "TestFunctionB": {
-      "argumentTypes": [],
-      "kind": "function",
-      "returnType": {
-        "kind": "observable",
+        "kind": "function",
+        "name": "TestFunctionB",
         "type": {
-          "kind": "number"
+            "kind": "function",
+            "argumentTypes": [],
+            "returnType": {
+                "kind": "observable",
+                "type": {
+                    "kind": "number"
+                }
+            }
         }
-      }
     },
     "TestFunctionC": {
-      "argumentTypes": [],
-      "kind": "function",
-      "returnType": {
-        "kind": "void"
-      }
+        "kind": "function",
+        "name": "TestFunctionC",
+        "type": {
+            "kind": "function",
+            "argumentTypes": [],
+            "returnType": {
+                "kind": "void"
+            }
+        }
     }
-  },
-  "interfaces": {},
-  "aliases": {}
 }

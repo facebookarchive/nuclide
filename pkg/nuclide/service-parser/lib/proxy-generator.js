@@ -12,7 +12,12 @@
 import * as babel from 'babel-core';
 import generate from 'babel-core/lib/generation';
 
-import type {Definitions, FunctionType, Type, InterfaceDefinition} from './types';
+import type {
+  Definitions,
+  FunctionType,
+  Type,
+  InterfaceDefinition,
+} from './types';
 
 var t = babel.types;
 
@@ -37,9 +42,6 @@ var disposeRemoteObjectExpression =
 
 var thisDotIdPromiseExpression = t.memberExpression(t.thisExpression(), t.identifier('_idPromise'));
 
-var promiseDotRejectExpression =
-  t.memberExpression(t.identifier('Promise'), t.identifier('reject'));
-
 var remoteModule = t.identifier('remoteModule');
 var emptyObject = t.objectExpression([]);
 
@@ -61,18 +63,25 @@ export default function generateProxy(defs: Definitions): string {
   // Initialized remoteModule to empty object.
   var statements = [t.assignmentExpression('=', remoteModule, emptyObject)];
 
-  // Generate a remote proxy for each module-level function.
-  defs.functions.forEach((func, name) => {
-    var proxy = generateFunctionProxy(name, func);
-    statements.push(t.assignmentExpression('=',
-      t.memberExpression(remoteModule, t.identifier(name)), proxy));
-  });
-
-  // Generate a remote proxy for each remotable interface.
-  defs.interfaces.forEach((def, name) => {
-    var proxy = generateInterfaceProxy(name, def);
-    statements.push(t.assignmentExpression('=',
-      t.memberExpression(remoteModule, t.identifier(name)), proxy));
+  defs.forEach(definition => {
+    const name = definition.name;
+    switch (definition.kind) {
+      case 'function':
+        // Generate a remote proxy for each module-level function.
+        statements.push(t.assignmentExpression('=',
+          t.memberExpression(remoteModule, t.identifier(name)),
+          generateFunctionProxy(name, definition.type)));
+        break;
+      case 'interface':
+        // Generate a remote proxy for each remotable interface.
+        statements.push(t.assignmentExpression('=',
+          t.memberExpression(remoteModule, t.identifier(name)),
+          generateInterfaceProxy(definition)));
+        break;
+      case 'alias':
+        // nothing
+        break;
+    }
   });
 
   // Return the remote module.
@@ -213,8 +222,9 @@ function generateArgumentConversionObservable(argumentTypes: Array<Type>): Array
  * @param def - The InterfaceDefinition object that encodes all if the interface's operations.
  * @returns An anonymous ClassExpression node that can be assigned to a module property.
  */
-function generateInterfaceProxy(name: string, def: InterfaceDefinition): any {
-  var methodDefinitions = [];
+function generateInterfaceProxy(def: InterfaceDefinition): any {
+  const name = def.name;
+  const methodDefinitions = [];
 
   // Generate proxies for static methods.
   def.staticMethods.forEach((funcType, methodName) => {

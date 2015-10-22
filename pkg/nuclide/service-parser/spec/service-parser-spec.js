@@ -13,48 +13,52 @@ import fs from 'fs';
 import {addMatchers} from 'nuclide-test-helpers';
 import parseServiceDefinition from '../lib/service-parser';
 import path from 'path';
+import type {Definition} from '../lib/types.js';
 
 describe('Nuclide service parser test suite.', () => {
   beforeEach(function() {
     addMatchers(this);
   });
 
-  for (let file of fs.readdirSync(path.join(__dirname, 'fixtures'))) {
+  for (const file of fs.readdirSync(path.join(__dirname, 'fixtures'))) {
     if (file.endsWith('.def')) {
       it(`Successfully parses ${file}`, () => {
         const fixturePath = path.join(__dirname, 'fixtures', file);
-        var code = fs.readFileSync(fixturePath, 'utf8');
-        var expected = JSON.parse(
+        const code = fs.readFileSync(fixturePath, 'utf8');
+        const expected = JSON.parse(
           fs.readFileSync(path.join(__dirname, 'fixtures', file) + '.json', 'utf8'));
-        var definitions = parseServiceDefinition(fixturePath, code);
-
-        var interfaces = new Map();
-        for (var key of definitions.interfaces.keys()) {
-          var def = definitions.interfaces.get(key);
-          var newDef = {
-            constructorArgs: def.constructorArgs,
-            instanceMethods: mapToJSON(def.instanceMethods),
-            staticMethods: mapToJSON(def.staticMethods),
-          };
-          interfaces.set(key, newDef);
-        }
-
-        var definitions = {
-          functions: mapToJSON(definitions.functions),
-          interfaces: mapToJSON(interfaces),
-          aliases: mapToJSON(definitions.aliases),
-        };
-
-        expect(definitions).diffJson(expected);
+        const definitions = parseServiceDefinition(file, code);
+        expect(mapDefinitions(definitions)).diffJson(expected);
       });
     }
   }
 });
 
-function mapToJSON<T>(map: Map<string, T>): { [key: string]: T } {
-  var obj = {};
-  for (var it of map.entries()) {
-    obj[it[0]] = it[1];
+function mapDefinitions(map: Map<string, Definition>): { [key: string]: Object } {
+  const obj = {};
+  for (const it of map.values()) {
+    let value;
+    switch (it.kind) {
+      case 'interface':
+        value = {
+          constructorArgs: it.constructorArgs,
+          instanceMethods: mapToJSON(it.instanceMethods),
+          staticMethods: mapToJSON(it.staticMethods),
+        };
+        break;
+      default:
+        value = it;
+        break;
+    }
+    obj[it.name] = value;
   }
   return obj;
+}
+
+function mapToJSON(map: Map): Object {
+  const result = {};
+  for (const it of map.entries()) {
+    result[it[0]] = it[1];
+  }
+  return result;
 }

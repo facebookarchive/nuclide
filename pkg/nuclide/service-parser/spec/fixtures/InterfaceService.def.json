@@ -1,71 +1,70 @@
 {
-  "aliases": {},
-  "functions": {
-    "getCurrentDirection": {
-      "argumentTypes": [],
-      "kind": "function",
-      "returnType": {
-        "kind": "promise",
-        "type": {
-          "kind": "named",
-          "name": "Vector2"
-        }
-      }
-    }
-  },
-  "interfaces": {
     "Vector2": {
-      "constructorArgs": [
-        {
-          "kind": "number"
-        },
-        {
-          "kind": "number"
-        }
-      ],
-      "instanceMethods": {
-        "watchChanges": {
-          "argumentTypes": [],
-          "kind": "function",
-          "returnType": {
-            "kind": "observable",
-            "type": {
-              "kind": "number"
-            }
-          }
-        },
-        "len": {
-          "argumentTypes": [],
-          "kind": "function",
-          "returnType": {
-            "kind": "promise",
-            "type": {
-              "kind": "number"
-            }
-          }
-        }
-      },
-      "staticMethods": {
-        "distance": {
-          "argumentTypes": [
+        "constructorArgs": [
             {
-              "kind": "named",
-              "name": "Vector2"
+                "kind": "number"
             },
             {
-              "kind": "named",
-              "name": "Vector2"
+                "kind": "number"
             }
-          ],
-          "kind": "function",
-          "returnType": {
-            "kind": "promise",
-            "type": {
-              "kind": "number"
+        ],
+        "instanceMethods": {
+            "len": {
+                "kind": "function",
+                "argumentTypes": [],
+                "returnType": {
+                    "kind": "promise",
+                    "type": {
+                        "kind": "number"
+                    }
+                }
+            },
+            "watchChanges": {
+                "kind": "function",
+                "argumentTypes": [],
+                "returnType": {
+                    "kind": "observable",
+                    "type": {
+                        "kind": "number"
+                    }
+                }
             }
-          }
+        },
+        "staticMethods": {
+            "distance": {
+                "kind": "function",
+                "argumentTypes": [
+                    {
+                        "kind": "named",
+                        "name": "Vector2"
+                    },
+                    {
+                        "kind": "named",
+                        "name": "Vector2"
+                    }
+                ],
+                "returnType": {
+                    "kind": "promise",
+                    "type": {
+                        "kind": "number"
+                    }
+                }
+            }
         }
-      }
+    },
+    "getCurrentDirection": {
+        "kind": "function",
+        "name": "getCurrentDirection",
+        "type": {
+            "kind": "function",
+            "argumentTypes": [],
+            "returnType": {
+                "kind": "promise",
+                "type": {
+                    "kind": "named",
+                    "name": "Vector2"
+                }
+            }
+        }
     }
-  }
 }

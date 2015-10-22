@@ -12,7 +12,13 @@
 import TypeRegistry from '../lib/TypeRegistry';
 import invariant from 'assert';
 
-import type {NamedType, ArrayType, ObjectType, NullableType} from '../lib/types';
+import type {
+  NamedType,
+  ArrayType,
+  ObjectType,
+  NullableType,
+} from '../lib/types';
+
 import {
   numberType,
   stringType,
@@ -23,7 +29,7 @@ import {
 } from '../lib/builtin-types';
 
 describe('TypeRegistry', () => {
-  var typeRegistry;
+  let typeRegistry: any;
   beforeEach(() => {
     typeRegistry = new TypeRegistry();
   });

@@ -4,14 +4,6 @@ import { trackTiming } from "nuclide-analytics";
 
 module.exports = _client => {
   remoteModule = {}
-
-  remoteModule.getCurrentDirection = function () {
-    return Promise.all([]).then(args => _client.callRemoteFunction("getCurrentDirection", "promise", args)).then(value => _client.unmarshal(value, {
-      kind: "named",
-      name: "Vector2"
-    }));
-  }
-
   remoteModule.Vector2 = class {
     static distance(arg0, arg1) {
       return Promise.all([_client.marshal(arg0, {
@@ -53,5 +45,13 @@ module.exports = _client => {
       });
     }
   }
+
+  remoteModule.getCurrentDirection = function () {
+    return Promise.all([]).then(args => _client.callRemoteFunction("getCurrentDirection", "promise", args)).then(value => _client.unmarshal(value, {
+      kind: "named",
+      name: "Vector2"
+    }));
+  }
+
   return remoteModule;
 }
