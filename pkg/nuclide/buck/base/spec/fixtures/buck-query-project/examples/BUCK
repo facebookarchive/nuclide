@@ -1,0 +1,43 @@
+java_library(
+  name = 'one',
+  deps = [
+    ':three',
+    ':two',
+  ],
+)
+
+java_library(
+  name = 'two',
+  deps = [
+    ':four',
+  ],
+)
+
+java_library(
+  name = 'three',
+  deps = [
+    ':five',
+    ':four',
+  ],
+)
+
+java_library(
+  name = 'four',
+  deps = [
+    ':five',
+  ]
+)
+
+java_library(
+  name = 'five',
+)
+
+java_test(
+  name = 'two-tests',
+  deps = [ ':two' ],
+)
+
+java_test(
+  name = 'three-tests',
+  deps = [ ':three' ],
+)

@@ -9,4 +9,4 @@
  * the root directory of this source tree.
  */
 
-module.exports = () => Promise.resolve('#winning');
+module.exports = (): Promise => Promise.resolve('#winning');
