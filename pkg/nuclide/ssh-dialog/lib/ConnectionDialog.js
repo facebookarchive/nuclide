@@ -17,7 +17,7 @@ import {
   SshHandshake,
   decorateSshConnectionDelegateWithTracking,
 } from 'nuclide-remote-connection';
-var logger = require('nuclide-logging').getLogger();
+const logger = require('nuclide-logging').getLogger();
 
 type DefaultProps = {};
 type Props = {
@@ -39,10 +39,10 @@ type State = {
   finish: (answers: Array<string>) => mixed;
 };
 
-var REQUEST_CONNECTION_DETAILS = 1;
-var WAITING_FOR_CONNECTION = 2;
-var REQUEST_AUTHENTICATION_DETAILS = 3;
-var WAITING_FOR_AUTHENTICATION = 4;
+const REQUEST_CONNECTION_DETAILS = 1;
+const WAITING_FOR_CONNECTION = 2;
+const REQUEST_AUTHENTICATION_DETAILS = 3;
+const WAITING_FOR_AUTHENTICATION = 4;
 
 /**
  * Component that manages the state transitions as the user connects to a
@@ -91,9 +91,9 @@ export default class ConnectionDialog extends React.Component<DefaultProps, Prop
   }
 
   render() {
-    var mode = this.state.mode;
-    var content;
-    var isOkDisabled;
+    const mode = this.state.mode;
+    let content;
+    let isOkDisabled;
     if (mode === REQUEST_CONNECTION_DETAILS) {
       // Note React.__spread() is not available in the Atom React fork, so we
       // pass the props explicitly.
@@ -145,7 +145,7 @@ export default class ConnectionDialog extends React.Component<DefaultProps, Prop
   }
 
   cancel() {
-    var mode = this.state.mode;
+    const mode = this.state.mode;
 
     // It is safe to call cancel even if no connection is started
     this.state.sshHandshake.cancel();
@@ -164,26 +164,26 @@ export default class ConnectionDialog extends React.Component<DefaultProps, Prop
     if (this.props.onClosed) {
       this.props.onClosed();
     }
-    var domNode = React.findDOMNode(this);
+    const domNode = React.findDOMNode(this);
     if (domNode) {
       React.unmountComponentAtNode(domNode.parentNode);
     }
   }
 
   ok() {
-    var mode = this.state.mode;
+    const mode = this.state.mode;
 
     if (mode === REQUEST_CONNECTION_DETAILS) {
       // User is trying to submit connection details.
-      var connectionDetailsForm = this.refs['connection-details'];
-      var pathToPrivateKey = connectionDetailsForm.getText('pathToPrivateKey');
-      var username = connectionDetailsForm.getText('username');
-      var server = connectionDetailsForm.getText('server');
-      var cwd = connectionDetailsForm.getText('cwd');
-      var sshPort = connectionDetailsForm.getText('sshPort');
-      var remoteServerCommand = connectionDetailsForm.getText('remoteServerCommand');
-      var authMethod = connectionDetailsForm.getAuthMethod();
-      var password = connectionDetailsForm.getPassword();
+      const connectionDetailsForm = this.refs['connection-details'];
+      const pathToPrivateKey = connectionDetailsForm.getText('pathToPrivateKey');
+      const username = connectionDetailsForm.getText('username');
+      const server = connectionDetailsForm.getText('server');
+      const cwd = connectionDetailsForm.getText('cwd');
+      const sshPort = connectionDetailsForm.getText('sshPort');
+      const remoteServerCommand = connectionDetailsForm.getText('remoteServerCommand');
+      const authMethod = connectionDetailsForm.getAuthMethod();
+      const password = connectionDetailsForm.getPassword();
       if (username && server && cwd && remoteServerCommand) {
         this.setState({mode: WAITING_FOR_CONNECTION});
         this.state.sshHandshake.connect({
@@ -200,8 +200,8 @@ export default class ConnectionDialog extends React.Component<DefaultProps, Prop
         // TODO(mbolin): Tell user to fill out all of the fields.
       }
     } else if (mode === REQUEST_AUTHENTICATION_DETAILS) {
-      var authenticationPrompt = this.refs['authentication'];
-      var password = authenticationPrompt.getPassword();
+      const authenticationPrompt = this.refs['authentication'];
+      const password = authenticationPrompt.getPassword();
 
       this.state.finish([password]);
 
