@@ -15,6 +15,7 @@
   "dependencies": {
     "flux": "2.0.3",
     "immutable": "3.7.4",
+    "minimatch": "3.0.0",
     "nuclide-analytics": "0.0.0",
     "nuclide-atom-helpers": "0.0.0",
     "nuclide-commons": "0.0.0",

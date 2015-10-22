@@ -22,6 +22,8 @@ var FileTreeNode = require('./FileTreeNode');
 var Immutable = require('immutable');
 var Logging = require('nuclide-logging');
 
+import {Minimatch} from 'minimatch';
+
 var {
   array,
   object: objectUtil,
@@ -53,6 +55,8 @@ type StoreData = {
   selectedKeysByRoot: { [key: string]: Immutable.OrderedSet<string> };
   subscriptionMap: { [key: string]: Disposable };
   vcsStatusesByRoot: { [key: string]: Immutable.Map<string, number> };
+  ignoredPatterns: Immutable.Set<Minimatch>;
+  hideIgnoredNames: bool;
 };
 
 export type ExportStoreData = {
@@ -142,6 +146,34 @@ class FileTreeStore {
     });
   }
 
+  _setHideIgnoredNames(hideIgnoredNames: bool): void {
+    this._set('hideIgnoredNames', hideIgnoredNames);
+  }
+
+  /**
+   * Given a list of names to ignore, compile them into minimatch patterns and
+   * update the store with them.
+   */
+  _setIgnoredNames(ignoredNames: Array<string>) {
+    const ignoredPatterns = Immutable.Set(ignoredNames)
+      .map(ignoredName => {
+        if (ignoredName === '') {
+          return null;
+        }
+        try {
+          return new Minimatch(ignoredName, {matchBase: true, dot: true});
+        } catch (error) {
+          atom.notifications.addWarning(
+            `Error parsing pattern '${ignoredName}' from "Settings" > "Ignored Names"`,
+            {detail: error.message},
+          );
+          return null;
+        }
+      })
+      .filter(pattern => pattern != null);
+    this._set('ignoredPatterns', ignoredPatterns);
+  }
+
   _getDefaults(): StoreData {
     return {
       childKeyMap: {},
@@ -154,6 +186,8 @@ class FileTreeStore {
       selectedKeysByRoot: {},
       subscriptionMap: {},
       vcsStatusesByRoot: {},
+      ignoredPatterns: Immutable.Set(),
+      hideIgnoredNames: true,
     };
   }
 
@@ -173,6 +207,12 @@ class FileTreeStore {
         break;
       case ActionType.COLLAPSE_NODE:
         this._collapseNode(payload.rootKey, payload.nodeKey);
+        break;
+      case ActionType.SET_HIDE_IGNORED_NAMES:
+        this._setHideIgnoredNames(payload.hideIgnoredNames);
+        break;
+      case ActionType.SET_IGNORED_NAMES:
+        this._setIgnoredNames(payload.ignoredNames);
         break;
       case ActionType.SET_SELECTED_NODES_FOR_ROOT:
         this._setSelectedKeys(payload.rootKey, payload.nodeKeys);
@@ -280,7 +320,7 @@ class FileTreeStore {
    * children like `::getChildKeys`.
    */
   getCachedChildKeys(rootKey: string, nodeKey: string): Array<string> {
-    return this._data.childKeyMap[nodeKey] || [];
+    return this._omitHiddenPaths(this._data.childKeyMap[nodeKey] || []);
   }
 
   /**
@@ -298,7 +338,7 @@ class FileTreeStore {
        */
       this._checkTrackedNode();
     }
-    return childKeys || [];
+    return this._omitHiddenPaths(childKeys || []);
   }
 
   getSelectedKeys(rootKey?: string): Immutable.OrderedSet<string> {
@@ -738,6 +778,13 @@ class FileTreeStore {
     this._set('trackedNode', {nodeKey, rootKey}, true);
   }
 
+  _omitHiddenPaths(keys: Array<string>): Array<string> {
+    if (!this._data.hideIgnoredNames) {
+      return keys;
+    }
+    return omitMatches(keys, this._data.ignoredPatterns);
+  }
+
   reset(): void {
     var subscriptionMap = this._data.subscriptionMap;
     for (var nodeKey of Object.keys(subscriptionMap)) {
@@ -785,6 +832,13 @@ function mapValues(object: Object, fn: Function): Object {
     newObject[key] = fn(object[key], key);
   });
   return newObject;
+}
+
+// Filter all elements from a list that match any of the provided patterns.
+function omitMatches(keys: Array<string>, patterns: Immutable.Set<Minimatch>) {
+  return keys.filter(key =>
+    !patterns.some(pattern => pattern.match(key))
+  );
 }
 
 module.exports = FileTreeStore;

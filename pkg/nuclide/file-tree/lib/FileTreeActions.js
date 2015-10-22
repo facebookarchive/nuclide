@@ -103,6 +103,20 @@ class FileTreeActions {
     });
   }
 
+  setHideIgnoredNames(hideIgnoredNames: bool): void {
+    this._dispatcher.dispatch({
+      actionType: ActionType.SET_HIDE_IGNORED_NAMES,
+      hideIgnoredNames,
+    });
+  }
+
+  setIgnoredNames(ignoredNames: Array<string>): void {
+    this._dispatcher.dispatch({
+      actionType: ActionType.SET_IGNORED_NAMES,
+      ignoredNames,
+    });
+  }
+
   setTrackedNode(rootKey: string, nodeKey: string): void {
     this._dispatcher.dispatch({
       actionType: ActionType.SET_TRACKED_NODE,

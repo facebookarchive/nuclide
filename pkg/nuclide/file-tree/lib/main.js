@@ -54,8 +54,17 @@ class Activation {
     const revealSetting = 'nuclide-file-tree.revealFileOnSwitch';
     // Flow does not know that this setting is a boolean, thus the cast.
     this._setRevealOnFileSwitch(((atom.config.get(revealSetting): any): boolean));
+
+    const ignoredNamesSetting = 'core.ignoredNames';
+    this._setIgnoredNames(((atom.config.get(ignoredNamesSetting): any): string | Array<string>));
+
+    const hideIgnoredNamesSetting = 'nuclide-file-tree.hideIgnoredNames';
+    this._setRevealOnFileSwitch(((atom.config.get(hideIgnoredNamesSetting): any): boolean));
+
     this._subscriptions.add(
-      atom.config.observe(revealSetting, this._setRevealOnFileSwitch.bind(this))
+      atom.config.observe(revealSetting, this._setRevealOnFileSwitch.bind(this)),
+      atom.config.observe(ignoredNamesSetting, this._setIgnoredNames.bind(this)),
+      atom.config.observe(hideIgnoredNamesSetting, this._setHideIgnoredNames.bind(this)),
     );
 
     require('nuclide-analytics').track('filetreedeux-enable');
@@ -70,6 +79,28 @@ class Activation {
     if (this._fileTreeController) {
       return this._fileTreeController.serialize();
     }
+  }
+
+  _setHideIgnoredNames(hideIgnoredNames: bool): void {
+    if (!this._fileTreeController) {
+      return;
+    }
+    this._fileTreeController.setHideIgnoredNames(hideIgnoredNames);
+  }
+
+  _setIgnoredNames(ignoredNames: string|Array<string>) {
+    if (!this._fileTreeController) {
+      return;
+    }
+    let normalizedIgnoredNames;
+    if (ignoredNames === '') {
+      normalizedIgnoredNames = [];
+    } else if (typeof ignoredNames === 'string') {
+      normalizedIgnoredNames = [ignoredNames];
+    } else {
+      normalizedIgnoredNames = ignoredNames;
+    }
+    this._fileTreeController.setIgnoredNames(normalizedIgnoredNames);
   }
 
   _setRevealOnFileSwitch(shouldReveal: boolean) {
@@ -120,6 +151,11 @@ module.exports = {
       type: 'boolean',
       default: false,
       description: 'Automatically reveal the current file when you switch tabs',
+    },
+    hideIgnoredNames: {
+      type: 'boolean',
+      default: true,
+      description: 'Hide paths that match the "Ignored Names" under "Settings > Core Settings"',
     },
   },
 

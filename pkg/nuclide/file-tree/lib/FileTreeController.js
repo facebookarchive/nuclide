@@ -427,6 +427,14 @@ class FileTreeController {
     this._selectAndTrackNode(rootKey, nodeKey);
   }
 
+  setHideIgnoredNames(hideIgnoredNames: bool): void {
+    this._actions.setHideIgnoredNames(hideIgnoredNames);
+  }
+
+  setIgnoredNames(ignoredNames: Array<string>): void {
+    this._actions.setIgnoredNames(ignoredNames);
+  }
+
   /**
    * Collapses all selected directory nodes. If the selection is a single file or a single collapsed
    * directory, the selection is set to the directory's parent.

@@ -199,4 +199,53 @@ describe('FileTreeStore', () => {
       });
     });
   });
+
+  it('omits hidden nodes', () => {
+    waitsForPromise(async () => {
+      actions.setRootKeys([dir1]);
+      actions.expandNode(dir1, fooTxt);
+      actions.setIgnoredNames(['foo.*']);
+
+      // Await **internal-only** API because the public `getChildKeys` API hides the fact that
+      // it queues an async fetch. The return value is not relevant to this test, only that its
+      // side effects be awaited.
+      await store._fetchChildKeys(dir1);
+
+      expect(store.getChildKeys(dir1, dir1).length).toBe(0);
+    });
+  });
+
+  it('shows nodes if the pattern changes to no longer match', () => {
+    waitsForPromise(async () => {
+      actions.setRootKeys([dir1]);
+      actions.expandNode(dir1, fooTxt);
+      actions.setIgnoredNames(['foo.*']);
+
+      // Await **internal-only** API because the public `getChildKeys` API hides the fact that
+      // it queues an async fetch. The return value is not relevant to this test, only that its
+      // side effects be awaited.
+      await store._fetchChildKeys(dir1);
+
+      actions.setIgnoredNames(['bar.*']);
+
+      expect(store.getChildKeys(dir1, dir1).length).toBe(1);
+    });
+  });
+
+  it('obeys the hideIgnoredNames setting', () => {
+    waitsForPromise(async () => {
+      actions.setRootKeys([dir1]);
+      actions.expandNode(dir1, fooTxt);
+      actions.setIgnoredNames(['foo.*']);
+      actions.setHideIgnoredNames(false);
+
+      // Await **internal-only** API because the public `getChildKeys` API hides the fact that
+      // it queues an async fetch. The return value is not relevant to this test, only that its
+      // side effects be awaited.
+      await store._fetchChildKeys(dir1);
+
+      expect(store.getChildKeys(dir1, dir1).length).toBe(1);
+    });
+  });
+
 });
