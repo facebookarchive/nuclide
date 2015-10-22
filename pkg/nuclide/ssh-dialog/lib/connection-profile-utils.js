@@ -10,10 +10,17 @@
  */
 
 import type {Disposable} from 'atom';
-import type {NuclideRemoteConnectionProfile} from './connection-types';
+import type {
+  NuclideRemoteConnectionProfile,
+  NuclideSavedConnectionDialogConfig,
+} from './connection-types';
 
 const CONNECTION_PROFILES_KEY = 'nuclide.connectionProfiles';
+const LAST_USED_CONNECTION_KEY = 'nuclide.lastConnectionDetails';
 
+/**
+ * Section: User-created Connection Profiles
+ */
 
 /**
  * Returns an array of saved connection profiles.
@@ -48,4 +55,54 @@ export function onSavedConnectionProfilesDidChange(
     CONNECTION_PROFILES_KEY,
     (event: ConnectionProfileChange) => callback(event.newValue)
   );
+}
+
+
+/**
+ * Section: Default/Last-Used Connection Profiles
+ */
+
+/**
+ * Gets the NuclideSavedConnectionDialogConfig representing the user's last
+ * connection.
+ */
+export function getSavedConnectionConfig(): ?NuclideSavedConnectionDialogConfig {
+  const savedConfig = atom.config.get(LAST_USED_CONNECTION_KEY);
+  (savedConfig : ?NuclideSavedConnectionDialogConfig);
+  return savedConfig;
+}
+
+/**
+ * Saves a connection configuration along with the last official server command.
+ */
+export function saveConnectionConfig(
+  config: SshConnectionConfiguration,
+  lastOfficialRemoteServerCommand: string
+): void {
+  // Don't store user's password.
+  config = {...config, password: ''};
+  atom.config.set(LAST_USED_CONNECTION_KEY, {
+    config,
+    // Save last official command to detect upgrade.
+    lastOfficialRemoteServerCommand,
+  });
+}
+
+let defaultConfig: ?any = null;
+/**
+ * This fetches the 'default' connection configuration supplied to the user
+ * regardless of any connection profiles they might have saved.
+ */
+export function getDefaultConfig(): any {
+  if (defaultConfig) {
+    return defaultConfig;
+  }
+  let defaultConfigGetter;
+  try {
+    defaultConfigGetter = require('./fb/config');
+  } catch (e) {
+    defaultConfigGetter = require('./config');
+  }
+  defaultConfig = defaultConfigGetter.getConnectionDialogDefaultSettings();
+  return defaultConfig;
 }

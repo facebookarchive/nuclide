@@ -9,6 +9,12 @@
  * the root directory of this source tree.
  */
 
+import {
+  getDefaultConfig,
+  getSavedConnectionConfig,
+  saveConnectionConfig,
+} from './connection-profile-utils';
+
 import type {RemoteConnection} from 'nuclide-remote-connection';
 import type {NuclideSavedConnectionDialogConfig} from './connection-types';
 
@@ -71,49 +77,4 @@ export function openConnectionDialog(props): Promise<?RemoteConnection> {
 
     React.render(<ConnectionDialog {...dialogProps} />, hostEl);
   });
-}
-
-/**
- * Gets the NuclideSavedConnectionDialogConfig representing the user's last
- * connection.
- */
-function getSavedConnectionConfig(): ?NuclideSavedConnectionDialogConfig {
-  var savedConfig = atom.config.get('nuclide.lastConnectionDetails');
-  (savedConfig : ?NuclideSavedConnectionDialogConfig);
-  return savedConfig;
-}
-
-/**
- * Saves a connection configuration along with the last official server command.
- */
-function saveConnectionConfig(
-  config: SshConnectionConfiguration,
-  lastOfficialRemoteServerCommand: string
-): void {
-  // Don't store user's password.
-  config = {...config, password: ''};
-  atom.config.set('nuclide.lastConnectionDetails', {
-    config,
-    // Save last official command to detect upgrade.
-    lastOfficialRemoteServerCommand,
-  });
-}
-
-var defaultConfig: ?any = null;
-/**
- * This fetches the 'default' connection configuration supplied to the user
- * regardless of any connection profiles they might have saved.
- */
-function getDefaultConfig(): any {
-  if (defaultConfig) {
-    return defaultConfig;
-  }
-  var defaultConfigGetter;
-  try {
-    defaultConfigGetter = require('./fb/config');
-  } catch (e) {
-    defaultConfigGetter = require('./config');
-  }
-  defaultConfig = defaultConfigGetter.getConnectionDialogDefaultSettings();
-  return defaultConfig;
 }
