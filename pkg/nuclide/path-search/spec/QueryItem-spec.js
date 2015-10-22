@@ -86,3 +86,61 @@ describe('QueryItem', () => {
   });
 
 });
+
+import {__test__} from '../lib/QueryItem';
+const {
+  isLetterImportant,
+  importantCharactersForString,
+} = __test__;
+
+describe('isLetterImportant', () => {
+  it('considers the first two letters important', () => {
+    expect(isLetterImportant(0, 'foobar')).toBe(true);
+    expect(isLetterImportant(1, 'foobar')).toBe(true);
+    expect(isLetterImportant(2, 'foobar')).toBe(false);
+  });
+
+  it('considers capital letters important', () => {
+    expect(isLetterImportant(3, 'fooBarBaz')).toBe(true);
+    expect(isLetterImportant(4, 'fooBarBaz')).toBe(false);
+    expect(isLetterImportant(5, 'fooBarBaz')).toBe(false);
+    expect(isLetterImportant(6, 'fooBarBaz')).toBe(true);
+    expect(isLetterImportant(7, 'fooBarBaz')).toBe(false);
+  });
+
+  it('considers letters following delimiting characters important', () => {
+    expect(isLetterImportant(2, 'iam_a-delimited.file')).toBe(false);
+    expect(isLetterImportant(3, 'iam_a-delimited.file')).toBe(false);
+    expect(isLetterImportant(4, 'iam_a-delimited.file')).toBe(true);
+    expect(isLetterImportant(5, 'iam_a-delimited.file')).toBe(false);
+    expect(isLetterImportant(6, 'iam_a-delimited.file')).toBe(true);
+    expect(isLetterImportant(16, 'iam_a-delimited.file')).toBe(true);
+  });
+});
+
+import {areSetsEqual} from 'nuclide-test-helpers';
+
+describe('importantCharactersForString', () => {
+  it('returns the set of important characters for a given string', () => {
+    expect(areSetsEqual(
+      importantCharactersForString('foobar'),
+      new Set(['f', 'o'])
+    )).toBe(true);
+
+    expect(areSetsEqual(
+      importantCharactersForString('fooBar'),
+      new Set(['f', 'o', 'B'])
+    )).toBe(true);
+
+    expect(areSetsEqual(
+      importantCharactersForString('foo.bar'),
+      new Set(['f', 'o', 'b'])
+    )).toBe(true);
+
+    expect(areSetsEqual(
+      importantCharactersForString('foobar'),
+      new Set(['f', 'o'])
+    )).toBe(true);
+
+  });
+});

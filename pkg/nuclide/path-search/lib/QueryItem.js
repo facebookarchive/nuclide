@@ -17,6 +17,46 @@ function isAlphanumeric(character): boolean {
   return /[\w]/.test(character);
 }
 
+const CAPITAL_LETTERS_REGEXP = /[A-Z]/;
+const IMPORTANT_DELIMITERS_REGEXP = /[_\-.]/;
+function isLetterImportant(index: number, name: string): boolean {
+  if (index <= 1) {
+    return true;
+  }
+  if (CAPITAL_LETTERS_REGEXP.test(name[index])) {
+    return true;
+  }
+  const previousCharacter = name[index - 1];
+  if (IMPORTANT_DELIMITERS_REGEXP.test(previousCharacter)) {
+    return true;
+  }
+  return false;
+}
+/**
+ * FBIDE indexes each filepath by important characters it contains.
+ * This is a temporary workaround that allow calculating important characters on the fly rather
+ * than relying on the index. Once the index is implemented, consumers of this need to be updated.
+ */
+// TODO(jxg): replace with "important characters" index.
+function importantCharactersForString(str: string): Set<string> {
+  const importantCharacters = new Set();
+  for (let index = 0; index < str.length; index++) {
+    const char = str[index];
+    if (
+      !importantCharacters.has(char) &&
+      isLetterImportant(index, str)
+    ) {
+      importantCharacters.add(char);
+    }
+  }
+  return importantCharacters;
+}
+
+export let __test__ = {
+  isLetterImportant,
+  importantCharactersForString,
+};
+
 export default class QueryItem {
   _lastPathSeparatorIndex: number;
   _skipLocations: Array<number>;
