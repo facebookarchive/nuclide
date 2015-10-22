@@ -176,14 +176,16 @@ export default class ConnectionDialog extends React.Component<DefaultProps, Prop
     if (mode === REQUEST_CONNECTION_DETAILS) {
       // User is trying to submit connection details.
       const connectionDetailsForm = this.refs['connection-details'];
-      const pathToPrivateKey = connectionDetailsForm.getText('pathToPrivateKey');
-      const username = connectionDetailsForm.getText('username');
-      const server = connectionDetailsForm.getText('server');
-      const cwd = connectionDetailsForm.getText('cwd');
-      const sshPort = connectionDetailsForm.getText('sshPort');
-      const remoteServerCommand = connectionDetailsForm.getText('remoteServerCommand');
-      const authMethod = connectionDetailsForm.getAuthMethod();
-      const password = connectionDetailsForm.getPassword();
+      const {
+        username,
+        server,
+        cwd,
+        remoteServerCommand,
+        sshPort,
+        pathToPrivateKey,
+        authMethod,
+        password,
+      } = connectionDetailsForm.getFormFields();
       if (username && server && cwd && remoteServerCommand) {
         this.setState({mode: WAITING_FOR_CONNECTION});
         this.state.sshHandshake.connect({

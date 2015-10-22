@@ -24,6 +24,9 @@ var authMethods = [
   SupportedMethods.PRIVATE_KEY,
 ];
 
+import type {NuclideRemoteConnectionParamsWithPassword} from './connection-types';
+
+
 /** Component to prompt the user for connection details. */
 export default class ConnectionDetailsForm extends React.Component {
   // $FlowIssue t8486988
@@ -208,11 +211,24 @@ export default class ConnectionDetailsForm extends React.Component {
     }
   }
 
-  getText(fieldName: string): string {
+  getFormFields(): NuclideRemoteConnectionParamsWithPassword {
+    return {
+      username: this._getText('username'),
+      server: this._getText('server'),
+      cwd: this._getText('cwd'),
+      remoteServerCommand: this._getText('remoteServerCommand'),
+      sshPort: this._getText('sshPort'),
+      pathToPrivateKey: this._getText('pathToPrivateKey'),
+      authMethod: this._getAuthMethod(),
+      password: this._getPassword(),
+    };
+  }
+
+  _getText(fieldName: string): string {
     return (this.refs[fieldName] && this.refs[fieldName].getText().trim()) || '';
   }
 
-  getAuthMethod(): string {
+  _getAuthMethod(): string {
     return authMethods[this.state.selectedAuthMethodIndex];
   }
 
@@ -220,7 +236,7 @@ export default class ConnectionDetailsForm extends React.Component {
     return this.state.selectedAuthMethodIndex;
   }
 
-  getPassword(): string {
+  _getPassword(): string {
     return (this.refs.password && React.findDOMNode(this.refs.password).value) || '';
   }
 }

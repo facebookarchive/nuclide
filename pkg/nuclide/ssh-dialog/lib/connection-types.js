@@ -38,3 +38,15 @@ export type NuclideSavedConnectionDialogConfig = {
   config: NuclideRemoteConnectionParams;
   lastOfficialRemoteServerCommand: string;
 };
+
+// This type should not be saved -- it contains the user's password.
+export type NuclideRemoteConnectionParamsWithPassword = {
+  username: string;
+  server: string;
+  cwd: string;
+  remoteServerCommand: string;
+  sshPort: string;
+  pathToPrivateKey: string;
+  authMethod: NuclideRemoteAuthMethods;
+  password: string;
+};
