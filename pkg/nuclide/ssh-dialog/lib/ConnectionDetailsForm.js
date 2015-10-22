@@ -9,16 +9,16 @@
  * the root directory of this source tree.
  */
 
-var AtomInput = require('nuclide-ui-atom-input');
-var {CompositeDisposable} = require('atom');
-var RadioGroup = require('nuclide-ui-radiogroup');
-var React = require('react-for-atom');
-var {PropTypes} = React;
-var {SshHandshake} = require('nuclide-remote-connection');
+const AtomInput = require('nuclide-ui-atom-input');
+const {CompositeDisposable} = require('atom');
+const RadioGroup = require('nuclide-ui-radiogroup');
+const React = require('react-for-atom');
+const {PropTypes} = React;
+const {SshHandshake} = require('nuclide-remote-connection');
 
 // $FlowFixMe: Flow can't find the PASSWORD, etc. properties on SupportedMethods.
-var {SupportedMethods} = SshHandshake;
-var authMethods = [
+const {SupportedMethods} = SshHandshake;
+const authMethods = [
   SupportedMethods.PASSWORD,
   SupportedMethods.SSL_AGENT,
   SupportedMethods.PRIVATE_KEY,
@@ -74,7 +74,7 @@ export default class ConnectionDetailsForm extends React.Component {
   }
 
   _handlePasswordInputClick(event) {
-    var passwordAuthMethodIndex = authMethods.indexOf(SupportedMethods.PASSWORD);
+    const passwordAuthMethodIndex = authMethods.indexOf(SupportedMethods.PASSWORD);
     this.setState(
       {
         selectedAuthMethodIndex: passwordAuthMethodIndex,
@@ -86,7 +86,7 @@ export default class ConnectionDetailsForm extends React.Component {
   }
 
   _handleKeyFileInputClick(event) {
-    var privateKeyAuthMethodIndex = authMethods.indexOf(SupportedMethods.PRIVATE_KEY);
+    const privateKeyAuthMethodIndex = authMethods.indexOf(SupportedMethods.PRIVATE_KEY);
     this.setState(
       {
         selectedAuthMethodIndex: privateKeyAuthMethodIndex,
@@ -101,10 +101,10 @@ export default class ConnectionDetailsForm extends React.Component {
   }
 
   render() {
-    var activeAuthMethod = authMethods[this.state.selectedAuthMethodIndex];
+    const activeAuthMethod = authMethods[this.state.selectedAuthMethodIndex];
     // We need native-key-bindings so that delete works and we need
     // _onKeyUp so that escape and enter work
-    var passwordLabel = (
+    const passwordLabel = (
       <div className="nuclide-auth-method">
         <div className="nuclide-auth-method-label">
           Password:
@@ -120,7 +120,7 @@ export default class ConnectionDetailsForm extends React.Component {
         </div>
       </div>
     );
-    var privateKeyLabel = (
+    const privateKeyLabel = (
       <div className="nuclide-auth-method">
         <div className="nuclide-auth-method-label">
           Private Key File:
@@ -136,7 +136,7 @@ export default class ConnectionDetailsForm extends React.Component {
         </div>
       </div>
     );
-    var sshAgentLabel = (
+    const sshAgentLabel = (
       <div className="nuclide-auth-method">
         Use ssh-agent
       </div>
@@ -185,9 +185,9 @@ export default class ConnectionDetailsForm extends React.Component {
   }
 
   componentDidMount() {
-    var disposables = new CompositeDisposable();
+    const disposables = new CompositeDisposable();
     this._disposables = disposables;
-    var root = React.findDOMNode(this.refs['root']);
+    const root = React.findDOMNode(this.refs['root']);
 
     // Hitting enter when this panel has focus should confirm the dialog.
     disposables.add(atom.commands.add(
@@ -230,10 +230,6 @@ export default class ConnectionDetailsForm extends React.Component {
 
   _getAuthMethod(): string {
     return authMethods[this.state.selectedAuthMethodIndex];
-  }
-
-  getAuthMethodIndex(): number {
-    return this.state.selectedAuthMethodIndex;
   }
 
   _getPassword(): string {
