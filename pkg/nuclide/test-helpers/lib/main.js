@@ -89,6 +89,23 @@ function arePropertiesEqual(obj1: Object, obj2: Object): boolean {
   return true;
 }
 
+/**
+ * Checks if the contents of two sets are identical
+ */
+function areSetsEqual(set1: Set, set2: Set): boolean {
+  for (const v1 of set1) {
+    if (!set2.has(v1)) {
+      return false;
+    }
+  }
+  for (const v2 of set2) {
+    if (!set1.has(v2)) {
+      return false;
+    }
+  }
+  return true;
+}
+
 module.exports = {
   addMatchers: require('./matchers').addMatchers,
   clearRequireCache,
@@ -99,4 +116,5 @@ module.exports = {
   spyOnGetterValue,
   uncachedRequire,
   arePropertiesEqual,
+  areSetsEqual,
 };
