@@ -614,6 +614,9 @@ declare class atom$Workspace {
   observeTextEditors(callback: (editor: atom$TextEditor) => mixed): atom$Disposable;
   onDidChangeActivePaneItem(callback: (item: mixed) => mixed): atom$Disposable;
   observeActivePaneItem(callback: (item: mixed) => mixed): atom$Disposable;
+  onWillDestroyPaneItem(
+    callback: (event: {item: mixed, pane: mixed, index: number}) => mixed
+  ): atom$Disposable;
   onDidOpen(callback: (event: {
     uri: string,
     item: mixed,

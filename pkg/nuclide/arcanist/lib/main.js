@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 import {CompositeDisposable} from 'atom';
+import invariant from 'assert';
 
 var subscriptions: ?CompositeDisposable = null;
 
@@ -45,6 +46,9 @@ module.exports = {
 
   provideDiagnostics() {
     const {ArcanistDiagnosticsProvider} = require('./ArcanistDiagnosticsProvider');
-    return new ArcanistDiagnosticsProvider();
+    const provider = new ArcanistDiagnosticsProvider();
+    invariant(subscriptions != null);
+    subscriptions.add(provider);
+    return provider;
   },
 };

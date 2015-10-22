@@ -9,17 +9,22 @@
  * the root directory of this source tree.
  */
 
+import {CompositeDisposable} from 'atom';
+
 import {DiagnosticsProviderBase} from 'nuclide-diagnostics-provider-base';
 
 import {trackTiming} from 'nuclide-analytics';
 import {promises} from 'nuclide-commons';
+import invariant from 'assert';
 const {RequestSerializer} = promises;
 
 export class ArcanistDiagnosticsProvider {
   _providerBase: DiagnosticsProviderBase;
   _requestSerializer: RequestSerializer;
+  _subscriptions: atom$CompositeDisposable;
 
   constructor() {
+    this._subscriptions = new CompositeDisposable();
     const baseOptions = {
       enableForAllGrammars: true,
       shouldRunOnTheFly: false,
@@ -28,6 +33,26 @@ export class ArcanistDiagnosticsProvider {
     };
     this._providerBase = new DiagnosticsProviderBase(baseOptions);
     this._requestSerializer = new RequestSerializer();
+    this._subscriptions.add(atom.workspace.onWillDestroyPaneItem(({item}) => {
+      if (typeof item.getPath === 'function') {
+        const path: ?string = item.getPath();
+        if (!path) {
+          return;
+        }
+        const openBufferCount = this._getOpenBufferCount(path);
+        invariant(
+          openBufferCount !== 0,
+          'The file that is about to be closed should still be open.'
+        );
+        if (openBufferCount === 1) {
+          this._providerBase.publishMessageInvalidation({scope: 'file', filePaths: [path]});
+        }
+      }
+    }));
+  }
+
+  dispose(): void {
+    this._subscriptions.dispose();
   }
 
   @trackTiming('nuclide-arcanist:lint')
@@ -95,5 +120,11 @@ export class ArcanistDiagnosticsProvider {
 
   onMessageInvalidation(callback: MessageInvalidationCallback): atom$Disposable {
     return this._providerBase.onMessageInvalidation(callback);
+  }
+
+  _getOpenBufferCount(path: string): number {
+    return atom.workspace.getTextEditors()
+      .filter(editor => editor.getPath() === path)
+      .length;
   }
 }
