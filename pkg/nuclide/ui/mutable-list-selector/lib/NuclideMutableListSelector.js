@@ -50,6 +50,7 @@ type State = {
  *  | +  |  - |
  *   ---------
  */
+/* eslint-disable react/prop-types */
 export default class NuclideMutableListSelector
     extends React.Component<DefaultProps, Props, State> {
   _boundOnAddButtonClicked: mixed;
@@ -112,3 +113,4 @@ export default class NuclideMutableListSelector
     );
   }
 }
+/* eslint-enable react/prop-types */

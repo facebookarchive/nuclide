@@ -21,6 +21,7 @@ type Props = {
 type State = {};
 
 /** Component to prompt the user for authentication information. */
+/* eslint-disable react/prop-types */
 export default class AuthenticationPrompt extends React.Component<DefaultProps, Props, State> {
   constructor(props: Props) {
     super(props);
@@ -94,3 +95,4 @@ export default class AuthenticationPrompt extends React.Component<DefaultProps, 
     return React.findDOMNode(this.refs.password).value;
   }
 }
+/* eslint-enable react/prop-types */

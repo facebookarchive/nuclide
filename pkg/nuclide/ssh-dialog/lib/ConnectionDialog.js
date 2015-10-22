@@ -48,6 +48,7 @@ var WAITING_FOR_AUTHENTICATION = 4;
  * Component that manages the state transitions as the user connects to a
  * server.
  */
+/* eslint-disable react/prop-types */
 export default class ConnectionDialog extends React.Component<DefaultProps, Props, State> {
   _boundOk: () => void;
   _boundCancel: () => void;
@@ -219,3 +220,4 @@ export default class ConnectionDialog extends React.Component<DefaultProps, Prop
     });
   }
 }
+/* eslint-enable react/prop-types */

@@ -49,6 +49,7 @@ type State = {
  * 'profiles'. Clicking on a 'profile' in the NuclideListSelector auto-fills
  * the form with the information associated with that profile.
  */
+/* eslint-disable react/prop-types */
 export default class ConnectionDetailsPrompt
     extends React.Component<DefaultProps, Props, State> {
   _idToConnectionProfile: ?Map<string, NuclideRemoteConnectionProfile>;
@@ -127,3 +128,4 @@ export default class ConnectionDetailsPrompt
     this.props.onDeleteProfileClicked(parseInt(profileId, 10));
   }
 }
+/* eslint-enable react/prop-types */
