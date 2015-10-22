@@ -56,6 +56,25 @@ class ServiceParser {
     return `${this._fileName}(${node.loc.start.line})`;
   }
 
+  _locationToString(location: Location): string {
+    switch (location.type) {
+      case 'source':
+        return `${location.fileName}(${location.line})`;
+      case 'builtin':
+        return '<builtin>';
+      default:
+        return '<unknown>';
+    }
+  }
+
+  _errorLocations(locations: Array<Location>, message: string): Error {
+    let fullMessage = `${this._locationToString(locations[0])}:${message}`;
+    fullMessage = fullMessage.concat(
+      ... (locations.slice(1).map(location =>
+        `\n${this._locationToString(location)}: Related location`)));
+    return new Error(fullMessage);
+  }
+
   _error(node: Babel$Node, message: string): Error {
     return new Error(`${this._nodeLocationString(node)}:${message}`);
   }
@@ -97,7 +116,12 @@ class ServiceParser {
               `Unknown declaration type ${declaration.type} in definition body.`);
         }
         invariant(definition != null);
-        defs.set(definition.name, definition);
+        if (defs.has(definition.name)) {
+          throw this._errorLocations([definition.location, defs.get(definition.name).location],
+            `Duplicate definition for ${definition.name}`);
+        } else {
+          defs.set(definition.name, definition);
+        }
       } else {
         throw this._error(node, `Unknown node type ${node.type} in definition body.`);
       }
@@ -196,7 +220,13 @@ class ServiceParser {
   }
 
   _defineMethod(name: string, type: FunctionType, peers: Map<string, FunctionType>): void {
-    peers.set(name, type);
+    if (peers.has(name)) {
+      const relatedLocation: SourceLocation = (peers.get(name).location: any);
+      throw this._errorLocations([(type.location: any), relatedLocation],
+        `Duplicate method definition ${name}`);
+    } else {
+      peers.set(name, type);
+    }
   }
 
   /**

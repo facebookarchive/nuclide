@@ -32,6 +32,28 @@ describe('Nuclide service parser test suite.', () => {
       });
     }
   }
+
+  it('duplicate global definitions throw', () => {
+    const code = `
+      export function f(): void {}
+      export class f {
+        m(): void {}
+      }`;
+    expect(() => {
+      parseServiceDefinition('fileName', code);
+    }).toThrow();
+  });
+
+  it('duplicate member definitions throw', () => {
+    const code = `
+      export class f {
+        m(): void {}
+        m(): void {}
+      }`;
+    expect(() => {
+      parseServiceDefinition('fileName', code);
+    }).toThrow();
+  });
 });
 
 function mapDefinitions(map: Map<string, Definition>): { [key: string]: Object } {
