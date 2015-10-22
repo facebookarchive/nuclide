@@ -19,6 +19,37 @@ const CONNECTION_PROFILES_KEY = 'nuclide.connectionProfiles';
 const LAST_USED_CONNECTION_KEY = 'nuclide.lastConnectionDetails';
 
 /**
+ * Section: Default Connection Profile
+ */
+
+/**
+ * A default connection profile is a combination of the user's last inputs to
+ * the connection dialog and the default settings, plus the update logic we use
+ * to change the remote server command.
+ */
+export function getDefaultConnectionProfile(): NuclideRemoteConnectionProfile {
+  const defaultConnectionSettings = getDefaultConfig();
+  const currentOfficialRSC = defaultConnectionSettings.remoteServerCommand;
+
+  const lastConnectionDetails = getSavedConnectionConfig() || {};
+  const lastConfig = lastConnectionDetails.config || {};
+
+  // Only use the user's last saved remote server command if there has been no
+  // change (upgrade) in the official remote server command.
+  let remoteServerCommand = currentOfficialRSC;
+  if (lastConnectionDetails.lastOfficialRemoteServerCommand === currentOfficialRSC
+      && lastConfig.remoteServerCommand) {
+    remoteServerCommand = lastConfig.remoteServerCommand;
+  }
+  const dialogSettings = {...defaultConnectionSettings, ...lastConfig, remoteServerCommand};
+  return {
+    displayTitle: '(default)',
+    params: dialogSettings,
+  };
+}
+
+
+/**
  * Section: User-created Connection Profiles
  */
 
@@ -105,4 +136,8 @@ export function getDefaultConfig(): any {
   }
   defaultConfig = defaultConfigGetter.getConnectionDialogDefaultSettings();
   return defaultConfig;
+}
+
+export function getOfficialRemoteServerCommand(): string {
+  return getDefaultConfig().remoteServerCommand;
 }

@@ -10,15 +10,15 @@
  */
 
 import {
-  getDefaultConfig,
-  getSavedConnectionConfig,
+  getDefaultConnectionProfile,
+  getOfficialRemoteServerCommand,
   saveConnectionConfig,
 } from './connection-profile-utils';
 
 import type {RemoteConnection} from 'nuclide-remote-connection';
-import type {NuclideSavedConnectionDialogConfig} from './connection-types';
+import type {NuclideRemoteConnectionProfile} from './connection-types';
 
-var dialogPromiseQueue: ?PromiseQueue = null;
+let dialogPromiseQueue: ?PromiseQueue = null;
 
 /**
  * Opens the remote connection dialog flow, which includes asking the user
@@ -26,53 +26,39 @@ var dialogPromiseQueue: ?PromiseQueue = null;
  * asking for additional (e.g. 2-fac) authentication.
  */
 export function openConnectionDialog(props): Promise<?RemoteConnection> {
-  var {extend, PromiseQueue} = require('nuclide-commons');
+  const {extend, PromiseQueue} = require('nuclide-commons');
   if (!dialogPromiseQueue) {
     dialogPromiseQueue = new PromiseQueue();
   }
 
   return dialogPromiseQueue.submit((resolve, reject) => {
-    // Prefill the dialog by combining the user's last inputs to this dialog
-    // with the default settings.
-    var defaultConnectionSettings = getDefaultConfig();
-    const currentOfficialRSC = defaultConnectionSettings.remoteServerCommand;
+    const defaultConnectionProfile: NuclideRemoteConnectionProfile = getDefaultConnectionProfile();
+    const dialogSettings = defaultConnectionProfile.params;
 
-    var lastConnectionDetails = getSavedConnectionConfig() || {};
-    var lastConfig = lastConnectionDetails.config || {};
-
-    // Only use the user's last saved remote server command if there has been no
-    // change (upgrade) in the official remote server command.
-    var remoteServerCommand = currentOfficialRSC;
-    if (lastConnectionDetails.lastOfficialRemoteServerCommand === currentOfficialRSC
-        && lastConfig.remoteServerCommand) {
-      remoteServerCommand = lastConfig.remoteServerCommand;
-    }
-    var dialogSettings = {...defaultConnectionSettings, ...lastConfig};
-
-    var dialogProps = extend.immutableExtend({
+    const dialogProps = extend.immutableExtend({
       initialUsername: dialogSettings.username,
       initialServer: dialogSettings.server,
-      initialRemoteServerCommand: remoteServerCommand,
+      initialRemoteServerCommand: dialogSettings.remoteServerCommand,
       initialCwd: dialogSettings.cwd,
       initialSshPort: String(dialogSettings.sshPort),
       initialPathToPrivateKey: dialogSettings.pathToPrivateKey,
       initialAuthMethod: dialogSettings.authMethod,
       onConnect: async (connection, config) => {
         resolve(connection);
-        saveConnectionConfig(config, currentOfficialRSC);
+        saveConnectionConfig(config, getOfficialRemoteServerCommand());
       },
       onError: (err, config) => {
         resolve(/*connection*/ null);
-        saveConnectionConfig(config, currentOfficialRSC);
+        saveConnectionConfig(config, getOfficialRemoteServerCommand());
       },
       onCancel: () => resolve(/*connection*/ null),
     }, props);
 
-    var React = require('react-for-atom');
-    var ConnectionDialog = require('./ConnectionDialog');
+    const React = require('react-for-atom');
+    const ConnectionDialog = require('./ConnectionDialog');
 
-    var workspaceEl = atom.views.getView(atom.workspace);
-    var hostEl = document.createElement('div');
+    const workspaceEl = atom.views.getView(atom.workspace);
+    const hostEl = document.createElement('div');
     workspaceEl.appendChild(hostEl);
 
     React.render(<ConnectionDialog {...dialogProps} />, hostEl);
