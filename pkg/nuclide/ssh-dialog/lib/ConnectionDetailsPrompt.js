@@ -13,7 +13,10 @@ import ConnectionDetailsForm from './ConnectionDetailsForm';
 import NuclideMutableListSelector from 'nuclide-ui-mutable-list-selector';
 import React from 'react-for-atom';
 
-import type {NuclideRemoteConnectionProfile} from './connection-types';
+import type {
+  NuclideRemoteConnectionParamsWithPassword,
+  NuclideRemoteConnectionProfile,
+} from './connection-types';
 
 type DefaultProps = {};
 type Props = {
@@ -65,6 +68,10 @@ export default class ConnectionDetailsPrompt
     };
   }
 
+  getFormFields(): NuclideRemoteConnectionParamsWithPassword {
+    return this.refs['connection-details-form'].getFormFields();
+  }
+
   render() {
     // If there are profiles, pre-fill the form with the information from the
     // specified default profile.
@@ -91,6 +98,7 @@ export default class ConnectionDetailsPrompt
       <div className="nuclide-connection-details-prompt">
         <div className="left-column">
           <ConnectionDetailsForm
+            ref="connection-details-form"
             initialUsername={initialConnectionParams.username}
             initialServer={initialConnectionParams.server}
             initialRemoteServerCommand={initialConnectionParams.remoteServerCommand}
