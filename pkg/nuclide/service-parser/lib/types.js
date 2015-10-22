@@ -53,7 +53,7 @@ export type Type = NullableType |
   AnyType | StringType | BooleanType | NumberType | // Primitive types.
   ObjectType | ArrayType | MapType | SetType | TupleType | // Container types.
   VoidType | PromiseType | ObservableType | // Return types.
-  NamedType; // Type aliases.
+  NamedType | FunctionType; // Type aliases.
 
 // Nullable type.
 export type NullableType = { location: Location; kind: 'nullable'; type: Type };

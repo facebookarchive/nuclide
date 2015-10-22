@@ -54,6 +54,48 @@ describe('Nuclide service parser test suite.', () => {
       parseServiceDefinition('fileName', code);
     }).toThrow();
   });
+
+  it('Missing type definitions throw', () => {
+    const code = `
+      export class f {
+        m(): Promise<MissingType> {}
+      }`;
+    expect(() => {
+      parseServiceDefinition('fileName', code);
+    }).toThrow();
+  });
+
+  it('More missing type definitions throw', () => {
+    const code = `
+      export class f {
+        static m(): Observable<Map<string, {f: [string, ?Set<Array<MissingType>>]}>> {}
+      }`;
+    expect(() => {
+      parseServiceDefinition('fileName', code);
+    }).toThrow();
+  });
+
+  it('Missing types in functions throw', () => {
+    const code = `
+      export type UsesMissingType = {
+        f: MissingType;
+      };
+      export function f(p: UsesMissingType): void {}
+      `;
+    expect(() => {
+      parseServiceDefinition('fileName', code);
+    }).toThrow();
+  });
+
+  it('Missing types in ctor args throw', () => {
+    const code = `
+      export class C {
+        constructor(p: MissingType) {}
+      }`;
+    expect(() => {
+      parseServiceDefinition('fileName', code);
+    }).toThrow();
+  });
 });
 
 function mapDefinitions(map: Map<string, Definition>): { [key: string]: Object } {

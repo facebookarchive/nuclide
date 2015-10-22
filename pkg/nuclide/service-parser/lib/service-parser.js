@@ -26,6 +26,8 @@ import type {
   Babel$Node,
 } from './types';
 
+import {locationToString} from './builtin-types';
+import {validateDefinitions} from './DefinitionValidator';
 
 /**
  * Parse a definition file, returning an intermediate representation that has all of the
@@ -56,22 +58,11 @@ class ServiceParser {
     return `${this._fileName}(${node.loc.start.line})`;
   }
 
-  _locationToString(location: Location): string {
-    switch (location.type) {
-      case 'source':
-        return `${location.fileName}(${location.line})`;
-      case 'builtin':
-        return '<builtin>';
-      default:
-        return '<unknown>';
-    }
-  }
-
   _errorLocations(locations: Array<Location>, message: string): Error {
-    let fullMessage = `${this._locationToString(locations[0])}:${message}`;
+    let fullMessage = `${locationToString(locations[0])}:${message}`;
     fullMessage = fullMessage.concat(
       ... (locations.slice(1).map(location =>
-        `\n${this._locationToString(location)}: Related location`)));
+        `\n${locationToString(location)}: Related location`)));
     return new Error(fullMessage);
   }
 
@@ -126,6 +117,9 @@ class ServiceParser {
         throw this._error(node, `Unknown node type ${node.type} in definition body.`);
       }
     }
+
+    validateDefinitions(defs);
+
     return defs;
   }
 

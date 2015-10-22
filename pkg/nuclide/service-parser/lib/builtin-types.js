@@ -10,6 +10,7 @@
  */
 
 import type {
+  Location,
   BuiltinLocation,
   StringType,
   NumberType,
@@ -21,6 +22,17 @@ import type {
 export const builtinLocation: BuiltinLocation = {
   type: 'builtin',
 };
+
+export function locationToString(location: Location): string {
+  switch (location.type) {
+    case 'source':
+      return `${location.fileName}(${location.line})`;
+    case 'builtin':
+      return '<builtin>';
+    default:
+      throw new Error('Bad location type');
+  }
+}
 
 export const anyType: AnyType = {
   location: builtinLocation,
@@ -65,3 +77,10 @@ export const fsStatsType: NamedType = {
   kind: 'named',
   name: 'fs.Stats',
 };
+
+export const namedBuiltinTypes: Set<string> = new Set();
+
+namedBuiltinTypes.add(dateType.name);
+namedBuiltinTypes.add(regExpType.name);
+namedBuiltinTypes.add(bufferType.name);
+namedBuiltinTypes.add(fsStatsType.name);
