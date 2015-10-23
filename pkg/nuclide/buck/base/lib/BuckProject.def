@@ -6,6 +6,12 @@
  * the root directory of this source tree.
  */
 
+export type BuckRunOptions = {
+  run: boolean;
+  debug?: boolean;
+  appArgs?: Array<string>;
+};
+
 export class BuckProject {
 
   constructor(options: {rootPath: string}) {}
