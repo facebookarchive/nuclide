@@ -12,6 +12,7 @@ export type ConnectionConfig = {
   scriptRegex?: string;
   idekeyRegex?: string;
   endDebugWhenNoRequests: boolean;
+  logLevel: string;
 };
 
 export type NotificationMessage = {

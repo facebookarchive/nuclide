@@ -10,18 +10,17 @@
  */
 
 
-var {makeMessage} = require('../lib/utils');
-var {
+import {makeMessage} from '../lib/helpers';
+import {
   DbgpSocket,
-  COMMAND_RUN,
   COMMAND_STEP_OVER,
   STATUS_RUNNING,
   STATUS_BREAK,
   STATUS_STOPPING,
   STATUS_ERROR,
   STATUS_END,
-} = require('../lib/DbgpSocket');
-var {idOfFrame, functionOfFrame, fileOfFrame, locationOfFrame} = require('../lib/frame');
+} from '../lib/DbgpSocket';
+import {idOfFrame, functionOfFrame, fileOfFrame, locationOfFrame} from '../lib/frame';
 
 describe('debugger-hhvm-proxy DbgpSocket', () => {
     var socket;

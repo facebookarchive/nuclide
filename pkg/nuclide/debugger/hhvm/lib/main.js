@@ -36,7 +36,14 @@ module.exports = {
       type: 'boolean',
       default: false,
       description: 'Whether or not to end debug session when there is no http requests.',
-    }
+    },
+
+    logLevel: {
+      type: 'string',
+      default: 'INFO',
+      description: 'Specify that level of logging from debugger, ' +
+        'supported values: ALL | TRACE | DEBUG | INFO | WARN | ERROR | FATAL | OFF.',
+    },
   },
 
   activate(state: mixed): void {

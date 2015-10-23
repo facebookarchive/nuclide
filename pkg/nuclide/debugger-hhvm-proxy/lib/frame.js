@@ -10,7 +10,7 @@
  */
 
 
-var {uriToPath} = require('./utils');
+import {uriToPath} from './helpers';
 
 /**
  * A dbgp Frame after it is converted from XML to JSON:

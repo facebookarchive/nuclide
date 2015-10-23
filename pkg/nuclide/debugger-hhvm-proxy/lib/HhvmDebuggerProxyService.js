@@ -10,7 +10,7 @@
  */
 
 
-const {log} = require('./utils');
+const {log, logInfo, setLogLevel} = require('./utils');
 import {Observable, Subject} from 'rx';
 
 // Connection states
@@ -62,8 +62,9 @@ export class HhvmDebuggerProxyService {
   }
 
   async attach(config: ConnectionConfig): Promise<string> {
-    log('Connecting config: ' + JSON.stringify(config));
+    logInfo('Connecting config: ' + JSON.stringify(config));
 
+    setLogLevel(config.logLevel);
     this._setState(CONNECTING);
 
     this._translator = new MessageTranslator(
@@ -79,7 +80,7 @@ export class HhvmDebuggerProxyService {
   }
 
   async launchScript(scriptPath: string): Promise<string> {
-    log('launchScript: ' + scriptPath);
+    logInfo('launchScript: ' + scriptPath);
     var child_process = require('child_process');
     var args = ['-c', 'xdebug.ini', scriptPath];
     // TODO[jeffreytan]: make hhvm path configurable so that it will
@@ -104,7 +105,7 @@ export class HhvmDebuggerProxyService {
   }
 
   async sendCommand(message: string): Promise<void> {
-    log('Recieved command: ' + message);
+    logInfo('Recieved command: ' + message);
     if (this._translator) {
       this._translator.handleCommand(message);
     }
@@ -125,7 +126,7 @@ export class HhvmDebuggerProxyService {
   }
 
   async dispose(): Promise<void> {
-    log('Proxy: Ending session');
+    logInfo('Proxy: Ending session');
     if (this._notificationObservable) {
       this._notificationObservable.onCompleted();
       this._notificationObservable = null;

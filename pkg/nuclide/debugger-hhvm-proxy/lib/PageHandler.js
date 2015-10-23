@@ -10,8 +10,8 @@
  */
 
 
-var {DUMMY_FRAME_ID} = require('./utils');
-var Handler = require('./Handler');
+import {DUMMY_FRAME_ID} from './helpers';
+import Handler from './Handler';
 
 import type ChromeCallback from './ChromeCallback';
 import type {NotificationCallback} from './NotificationCallback';

@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {uriToPath} from './utils';
+import {uriToPath} from './helpers';
 
 /**
  * Handles registering files encountered during debugging with the Chrome debugger

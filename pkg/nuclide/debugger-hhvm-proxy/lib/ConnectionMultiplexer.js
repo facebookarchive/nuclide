@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-var {log, logError, logErrorAndThrow, uriToPath} = require('./utils');
-var {Connection} = require('./Connection');
+import {log, logError} from './utils';
+import {Connection} from './Connection';
 
 import type {Socket} from 'net';
 import type Scope from './DataCache';

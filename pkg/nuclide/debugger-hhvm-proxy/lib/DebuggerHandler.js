@@ -10,9 +10,10 @@
  */
 
 
-var {log, logErrorAndThrow, uriToPath} = require('./utils');
-var Handler = require('./Handler');
-var {
+import {log, logErrorAndThrow} from './utils';
+import {uriToPath} from './helpers';
+import Handler from './Handler';
+import {
   STATUS_STARTING,
   STATUS_STOPPING,
   STATUS_STOPPED,
@@ -24,8 +25,7 @@ var {
   COMMAND_STEP_INTO,
   COMMAND_STEP_OVER,
   COMMAND_STEP_OUT,
-  COMMAND_STOP,
-} = require('./DbgpSocket');
+} from './DbgpSocket';
 
 import type {ConnectionMultiplexer} from './ConnectionMultiplexer';
 import type ChromeCallback from './ChromeCallback';
@@ -33,7 +33,7 @@ import type {NotificationCallback} from './NotificationCallback';
 import type FileCache from './FileCache';
 import type {EventEmitter} from 'events';
 
-var /* const */ SESSION_END_EVENT = 'session-end-event';
+const SESSION_END_EVENT = 'session-end-event';
 
 // Handles all 'Debug.*' Chrome dev tools messages
 export class DebuggerHandler extends Handler {

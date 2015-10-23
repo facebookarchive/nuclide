@@ -8,7 +8,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-import {makeMessage, makeDbgpMessage} from '../lib/utils';
+import {makeMessage, makeDbgpMessage} from '../lib/helpers';
 import {getDbgpMessageHandlerInstance} from '../lib/DbgpMessageHandler';
 
 const payload = '<?xml version="1.0" encoding="iso-8859-1"?>' +

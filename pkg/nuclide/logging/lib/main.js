@@ -24,45 +24,51 @@ import type {Logger} from './types';
 /* Listed in order of severity. */
 type Level = 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal';
 
-var LOGGER_CATEGORY = 'nuclide';
-var LOG4JS_INSTANCE_KEY = '_nuclide_log4js_logger';
+const DEFAULT_LOGGER_CATEGORY = 'nuclide';
+const INITIAL_UPDATE_CONFIG_KEY = '_initial_update_config_key_';
+
+function getCategory(category: ?string): string {
+  return category ? category : DEFAULT_LOGGER_CATEGORY;
+}
 
 /**
- * Create the log4js logger. Note we could call this function more than once to update the config.
- * params `config` and `options` are configurations used by log4js, refer
- * https://www.npmjs.com/package/log4js#configuration for more information.
+ * Get log4js logger instance which is also singleton per category.
+ * log4js.getLogger() API internally should already provide singleton per category guarantee
+ * see https://github.com/nomiddlename/log4js-node/blob/master/lib/log4js.js#L120 for details.
  */
-function configLog4jsLogger(config: any, options: any): void {
-  var log4js = require('log4js');
-  log4js.configure(config, options);
-  return log4js.getLogger(LOGGER_CATEGORY);
+function getLog4jsLogger(category: string): Object {
+  const log4js = require('log4js');
+  return log4js.getLogger(category);
 }
 
 export function updateConfig(config: any, options: any): void {
-  require('nuclide-commons').singleton.reset(
-        LOG4JS_INSTANCE_KEY,
-        () => configLog4jsLogger(config, options));
+  // update config takes affect global to all existing and future loggers.
+  const log4js = require('log4js');
+  log4js.configure(config, options);
 }
 
 // Create a lazy logger that will not initialize the underlying log4js logger until
 // `lazyLogger.$level(...)` is called. This way, another package could require nuclide-logging
 // during activation without worrying about introducing a significant startup cost.
-function createLazyLogger(): Logger {
-  var defaultConfigPromise;
-
+function createLazyLogger(category: string): Logger {
   function createLazyLoggerMethod(level: Level): (...args: Array<any>) => mixed {
-    return async function(...args: Array<any>) {
-      if (!defaultConfigPromise) {
-        defaultConfigPromise = require('./config').getDefaultConfig();
-      }
-      var defaultConfig = await defaultConfigPromise;
-      var logger = require('nuclide-commons').singleton.get(
-        LOG4JS_INSTANCE_KEY,
-        () => configLog4jsLogger(defaultConfig),
-      );
+    return function(...args: Array<any>) {
+      const logger = getLog4jsLogger(category);
       invariant(logger);
       logger[level].apply(logger, args);
     };
+  }
+
+  function setLoggerLevelHelper(level: string): void {
+    const logger = getLog4jsLogger(category);
+    invariant(logger);
+    logger.setLevel(level);
+  }
+
+  function isLevelEnabledHelper(level: string): void {
+    const logger = getLog4jsLogger(category);
+    invariant(logger);
+    return logger.isLevelEnabled(level);
   }
 
   return {
@@ -72,14 +78,82 @@ function createLazyLogger(): Logger {
     info: createLazyLoggerMethod('info'),
     trace: createLazyLoggerMethod('trace'),
     warn: createLazyLoggerMethod('warn'),
+    isLevelEnabled: isLevelEnabledHelper,
+    setLevel: setLoggerLevelHelper,
   };
 }
 
-var lazyLogger: ?Logger;
+/**
+ * Push initial default config to log4js.
+ * Execute only once.
+ */
+function initialUpdateConfig(): void {
+  let defaultConfigPromise;
+  require('nuclide-commons').singleton.get(
+    INITIAL_UPDATE_CONFIG_KEY,
+    async () => {
+      if (!defaultConfigPromise) {
+        defaultConfigPromise = require('./config').getDefaultConfig();
+      }
+      const defaultConfig = await defaultConfigPromise;
+      updateConfig(defaultConfig);
+    });
+}
 
-export function getLogger(): Logger {
+// Get Logger instance which is singleton per logger category.
+export function getLogger(category: ?string): Logger {
   addPrepareStackTraceHook();
-  return lazyLogger ? lazyLogger : (lazyLogger = createLazyLogger());
+  initialUpdateConfig();
+
+  const loggerCategory = getCategory(category);
+  return require('nuclide-commons').singleton.get(
+    loggerCategory,
+    () => {
+      return createLazyLogger(loggerCategory);
+    },
+  );
+}
+
+// Utility function that returns a wrapper logger for input category.
+export function getCategoryLogger(category: string): Object {
+  function setLogLevel(level: string): void {
+    getLogger(category).setLevel(level);
+  }
+
+  function logHelper(level: string, message: string): void {
+    const logger = getLogger(category);
+    // isLevelEnabled() is required to reduce the amount of logging to
+    // log4js which greatly improves performance.
+    if (logger.isLevelEnabled(level)) {
+      logger[level](message);
+    }
+  }
+
+  function log(message: string): void {
+    logHelper('debug', message);
+  }
+
+  function logInfo(message: string): void {
+    logHelper('info', message);
+  }
+
+  function logError(message: string): void {
+    logHelper('error', message);
+  }
+
+  function logErrorAndThrow(message: string): void {
+    logError(message);
+    logError(new Error().stack);
+    throw new Error(message);
+  }
+
+  return {
+    log,
+    logInfo,
+    logError,
+    logErrorAndThrow,
+    setLogLevel,
+  };
 }
 
 export function getPathToLogFileForToday(): string {

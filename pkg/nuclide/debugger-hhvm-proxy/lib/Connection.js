@@ -9,9 +9,8 @@
  * the root directory of this source tree.
  */
 
-var {log, logErrorAndThrow, uriToPath} = require('./utils');
-var {DbgpSocket} = require('./DbgpSocket');
-var {DataCache} = require('./DataCache');
+import {DbgpSocket} from './DbgpSocket';
+import {DataCache} from './DataCache';
 
 import type {Socket} from 'net';
 import type Scope from './DataCache';

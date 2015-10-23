@@ -10,14 +10,10 @@
  */
 
 
-var {
-  log,
-  logError,
-  parseDbgpMessages,
-  uriToPath,
-} = require('./utils');
+import {log, logError} from './utils';
+import {uriToPath} from './helpers';
 
-var {Emitter} = require('event-kit');
+const {Emitter} = require('event-kit');
 import {DbgpMessageHandler, getDbgpMessageHandlerInstance} from './DbgpMessageHandler';
 
 import type {Socket, Server} from 'net';
@@ -39,6 +35,7 @@ export type ConnectionConfig = {
   scriptRegex?: string;
   idekeyRegex?: string;
   endDebugWhenNoRequests: boolean;
+  logLevel: string;
 };
 
 const DBGP_ATTACH_EVENT = 'dbgp-attach-event';

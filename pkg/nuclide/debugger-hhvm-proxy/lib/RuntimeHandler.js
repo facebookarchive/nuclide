@@ -10,8 +10,8 @@
  */
 
 
-var {DUMMY_FRAME_ID} = require('./utils');
-var Handler = require('./Handler');
+import {DUMMY_FRAME_ID} from './helpers';
+import Handler from './Handler';
 
 import type {ConnectionMultiplexer} from './ConnectionMultiplexer';
 import type ChromeCallback from './ChromeCallback';
@@ -33,29 +33,29 @@ export class RuntimeHandler extends Handler {
 
   async handleMethod(id: number, method: string, params: Object): Promise {
     switch (method) {
-    case 'enable':
-      this._notifyExecutionContext(id);
-      break;
+      case 'enable':
+        this._notifyExecutionContext(id);
+        break;
 
-    case 'getProperties':
-      await this._getProperties(id, params);
-      break;
+      case 'getProperties':
+        await this._getProperties(id, params);
+        break;
 
-    default:
-      this.unknownMethod(id, method, params);
-      break;
+      default:
+        this.unknownMethod(id, method, params);
+        break;
     }
   }
 
   _notifyExecutionContext(id: number): void {
     this.sendMethod('Runtime.executionContextCreated',
-    {
-      'context': {
-        'id': 1,
-        'frameId': DUMMY_FRAME_ID,
-        'name': 'hhvm: TODO: mangle in pid, idekey, script from connection',
-      }
-    });
+      {
+        'context': {
+          'id': 1,
+          'frameId': DUMMY_FRAME_ID,
+          'name': 'hhvm: TODO: mangle in pid, idekey, script from connection',
+        },
+      });
     this.replyToCommand(id, {});
   }
 

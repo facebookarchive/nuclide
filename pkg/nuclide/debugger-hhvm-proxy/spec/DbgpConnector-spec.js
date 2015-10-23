@@ -10,13 +10,13 @@
  */
 
 
-var net = require('net');
-var {makeDbgpMessage} = require('../lib/utils');
-var {DbgpConnector} = require('../lib/DbgpConnector');
-var {EventEmitter} = require('events');
-var {uncachedRequire, clearRequireCache} = require('nuclide-test-helpers');
+import net from 'net';
+import {makeDbgpMessage} from '../lib/helpers';
+import {DbgpConnector} from '../lib/DbgpConnector';
+import {EventEmitter} from 'events';
+import {uncachedRequire, clearRequireCache} from 'nuclide-test-helpers';
 
-var payload1 =
+const payload1 =
 `<init
   xmlns="urn:debugger_protocol_v1"
   xmlns:xdebug="http://xdebug.org/dbgp/xdebug"
@@ -38,7 +38,7 @@ var payload1 =
   </copyright>
 </init>`;
 
-var payload2 =
+const payload2 =
 `<init
   xmlns="urn:debugger_protocol_v1"
   xmlns:xdebug="http://xdebug.org/dbgp/xdebug"

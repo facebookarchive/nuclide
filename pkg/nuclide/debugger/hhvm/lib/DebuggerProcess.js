@@ -10,7 +10,7 @@
  */
 
 
-var {log, logError} = require('./utils');
+const {log, logInfo, logError, setLogLevel} = require('./utils');
 var {translateMessageFromServer, translateMessageToServer} = require('./ChromeMessageRemoting');
 var remoteUri = require('nuclide-remote-uri');
 var {Disposable} = require('atom');
@@ -38,10 +38,12 @@ class DebuggerProcess {
     var {CompositeDisposable} = require('atom');
     this._disposables = new CompositeDisposable();
     this._sessionEndCallback = null;
+
+    setLogLevel(atom.config.get('nuclide-debugger-hhvm').logLevel);
   }
 
   getWebsocketAddress(): Promise<string> {
-    log('Connecting to: ' + this._remoteDirectoryUri);
+    logInfo('Connecting to: ' + this._remoteDirectoryUri);
     var {HhvmDebuggerProxyService} = require('nuclide-client').
       getServiceByNuclideUri('HhvmDebuggerProxyService', this._remoteDirectoryUri);
     var proxy = new HhvmDebuggerProxyService();
@@ -59,7 +61,7 @@ class DebuggerProcess {
     ));
 
     var config = atom.config.get('nuclide-debugger-hhvm');
-    log('Connection config: ' + JSON.stringify(config));
+    logInfo('Connection config: ' + JSON.stringify(config));
 
     if (!isValidRegex(config.scriptRegex)) {
       // TODO: User facing error message?
@@ -81,13 +83,13 @@ class DebuggerProcess {
 
     var attachPromise = proxy.attach(config);
     if (this._launchScriptPath) {
-      log('launchScript: ' + this._launchScriptPath);
+      logInfo('launchScript: ' + this._launchScriptPath);
       proxy.launchScript(this._launchScriptPath);
     }
 
     return attachPromise.then(attachResult => {
 
-      log('Attached to process. Attach message: ' + attachResult);
+      logInfo('Attached to process. Attach message: ' + attachResult);
 
       // setup web socket
       // TODO: Assign random port rather than using fixed port.
@@ -213,12 +215,12 @@ class DebuggerProcess {
   dispose() {
     this._disposables.dispose();
     if (this._webSocket) {
-      log('closing webSocket');
+      logInfo('closing webSocket');
       this._webSocket.close();
       this._webSocket = null;
     }
     if (this._server) {
-      log('closing server');
+      logInfo('closing server');
       this._server.close();
       this._server = null;
     }

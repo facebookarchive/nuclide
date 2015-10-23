@@ -30,6 +30,8 @@ export type Logger = {
   info(...args: Array<any>): mixed;
   trace(...args: Array<any>): mixed;
   warn(...args: Array<any>): mixed;
+  isLevelEnabled(level: string): mixed;
+  setLevel(level: string): mixed;
 }
 
 export type LoggingEvent = {

@@ -10,37 +10,36 @@
  */
 
 
-var {log, base64Decode} = require('./utils');
-var {
+import {log} from './utils';
+import {base64Decode} from './helpers.js';
+import {
   remoteObjectIdOfObjectId,
   pagedObjectId,
   singlePageObjectId,
-} = require('./ObjectId');
-
-
+} from './ObjectId';
 
 /**
  * Converts a dbgp value to a Chrome RemoteObject.
  */
 function convertValue(contextId: ObjectId, dbgpProperty: DbgpProperty): RemoteObject {
   switch (dbgpProperty.$.type) {
-  case 'string':
-    return convertStringValue(dbgpProperty);
-  case 'int':
-    return convertIntValue(dbgpProperty);
-  case 'float':
-    return convertFloatValue(dbgpProperty);
-  case 'bool':
-    return convertBoolValue(dbgpProperty);
-  case 'null':
-    return convertNullValue(dbgpProperty);
-  case 'array':
-    return convertArrayValue(contextId, dbgpProperty);
-  case 'object':
-    return convertObjectValue(contextId, dbgpProperty);
-  default:
-    // TODO: Remaining property types - closure, hashmap, ...
-    return convertUnknownValue(dbgpProperty);
+    case 'string':
+      return convertStringValue(dbgpProperty);
+    case 'int':
+      return convertIntValue(dbgpProperty);
+    case 'float':
+      return convertFloatValue(dbgpProperty);
+    case 'bool':
+      return convertBoolValue(dbgpProperty);
+    case 'null':
+      return convertNullValue(dbgpProperty);
+    case 'array':
+      return convertArrayValue(contextId, dbgpProperty);
+    case 'object':
+      return convertObjectValue(contextId, dbgpProperty);
+    default:
+      // TODO: Remaining property types - closure, hashmap, ...
+      return convertUnknownValue(dbgpProperty);
   }
 }
 

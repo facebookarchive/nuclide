@@ -9,17 +9,5 @@
  * the root directory of this source tree.
  */
 
-function log(message: string): void {
-  var logger = require('nuclide-logging').getLogger();
-  logger.info('hhvm debugger: ' + message);
-}
-
-function logError(message: string): void {
-  var logger = require('nuclide-logging').getLogger();
-  logger.error('hhvm debugger: ' + message);
-}
-
-module.exports = {
-  log,
-  logError,
-};
+const DEBUGGER_LOGGER_CATEGORY = 'nuclide-hhvm-debugger';
+export default require('nuclide-logging').getCategoryLogger(DEBUGGER_LOGGER_CATEGORY);
