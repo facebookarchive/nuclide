@@ -67,6 +67,11 @@ export function realpath(path: string): Promise<string> {}
 export function rename(sourcePath: string, destinationPath: string): Promise<void> {}
 
 /**
+ * Runs the equivalent of `cp sourcePath destinationPath`.
+ */
+export async function copy(sourcePath: string, destinationPath: string): Promise<boolean> {}
+
+/**
  * Removes directories even if they are non-empty. Does not fail if the directory doesn't exist.
  */
 export function rmdir(path: string): Promise<void> {}

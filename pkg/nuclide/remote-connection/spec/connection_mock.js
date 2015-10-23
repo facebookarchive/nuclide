@@ -20,7 +20,7 @@ var {
   '/watcher/unwatchDirectory': unwatchDirectory,
   '/watcher/unwatchDirectoryRecursive': unwatchDirectoryRecursive
 } = watcherServices;
-
+var fsPlus = require('fs-plus');
 /*
  * Match the signature of `NuclideClient::newFile`:
  *
@@ -29,6 +29,16 @@ var {
 fsPromise.newFile = async function(path) {
   return true;
 };
+
+fsPromise.copy = async function(src, dst) {
+  await new Promise((resolve, reject) => {
+    fsPlus.copy(src, dst, error => {
+      error ? reject(error) : resolve();
+    });
+  });
+  return true;
+};
+
 
 var eventbus = new EventEmitter();
 var eventEmitter;

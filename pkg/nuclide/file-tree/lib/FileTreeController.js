@@ -116,6 +116,9 @@ class FileTreeController {
         'nuclide-file-tree:remove-project-folder-selection':
           this._removeRootFolderSelection.bind(this),
         'nuclide-file-tree:rename-selection': () => FileSystemActions.openRenameDialog(),
+        'nuclide-file-tree:duplicate-selection': () => {
+          FileSystemActions.openDuplicateDialog(this.revealNodeKey.bind(this));
+        },
         'nuclide-file-tree:search-in-directory': this._searchInDirectory.bind(this),
         'nuclide-file-tree:show-in-file-manager': this._showInFileManager.bind(this),
       })

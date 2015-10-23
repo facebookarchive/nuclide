@@ -21,7 +21,7 @@ var FileDialogComponent = require('../components/FileDialogComponent');
 var React = require('react-for-atom');
 var RemoteUri = require('nuclide-remote-uri');
 
-var fs = require('fs');
+var fs = require('fs-plus');
 var pathModule = require('path');
 
 var dialogComponent: ?ReactComponent;
@@ -121,6 +121,55 @@ var FileSystemActions = {
           fs.rename(nodePath, newPath);
         } else {
           (file: (RemoteDirectory | RemoteFile)).rename(newPath);
+        }
+      },
+      onClose: this._closeDialog,
+      selectBasename: true,
+    });
+  },
+
+  openDuplicateDialog(onDidConfirm: (filePath: ?string) => mixed): void {
+    var store = FileTreeStore.getInstance();
+    var selectedNodes = store.getSelectedNodes();
+    if (selectedNodes.size !== 1) {
+      // Can only copy one entry at a time.
+      return;
+    }
+
+    var node = selectedNodes.first();
+    var nodePath = node.getLocalPath();
+    var initialValue = pathModule.basename(nodePath);
+    var ext = pathModule.extname(nodePath);
+    initialValue = initialValue.substr(0, initialValue.length - ext.length) + '-copy' + ext;
+    this._openDialog({
+      iconClassName: 'icon-arrow-right',
+      initialValue: initialValue,
+      message: <span>Enter the new path for the duplicate.</span>,
+      onConfirm: async (newBasename: string) => {
+        var file = FileTreeHelpers.getFileByKey(node.nodeKey);
+        if (file == null) {
+          // TODO: Connection could have been lost for remote file.
+          return;
+        }
+        var directory = file.getParent();
+        var newFile = directory.getFile(newBasename.trim());
+        var newPath = newFile.getPath();
+        if (FileTreeHelpers.isLocalFile(file)) {
+          fs.exists(newPath, function(exists) {
+            if (!exists) {
+              fs.copy(nodePath, newPath);
+            } else {
+              atom.notifications.addError(`'${newPath}' already exists.`);
+            }
+          });
+        } else {
+          var wasCopied = await (file: (RemoteDirectory | RemoteFile)).copy(newFile.getLocalPath());
+          if (!wasCopied) {
+            atom.notifications.addError(`'${newPath}' already exists.`);
+            onDidConfirm(null);
+          } else {
+            onDidConfirm(newPath);
+          }
         }
       },
       onClose: this._closeDialog,

@@ -253,6 +253,12 @@ class RemoteFile {
     await this._handleNativeRenameEvent(newPath);
   }
 
+  async copy(newPath: string): Promise<boolean> {
+    var wasCopied = await this._getFileSystemService().copy(this._localPath, newPath);
+    this._subscribeToNativeChangeEvents();
+    return wasCopied;
+  }
+
   async read(flushCache?: boolean): Promise<string> {
     // TODO: return cachedContents if exists and !flushCache
     // This involves the reload scenario, where the same instance of the file is read(),

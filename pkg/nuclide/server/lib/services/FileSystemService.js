@@ -139,6 +139,23 @@ export function rename(sourcePath: string, destinationPath: string): Promise {
 }
 
 /**
+ * Runs the equivalent of `cp sourcePath destinationPath`.
+ */
+export async function copy(sourcePath: string, destinationPath: string): Promise<boolean> {
+  var isExistingFile = await fsPromise.exists(destinationPath);
+  if (isExistingFile) {
+    return false;
+  }
+  await new Promise((resolve, reject) => {
+    var fsPlus = require('fs-plus');
+    fsPlus.copy(sourcePath, destinationPath, error => {
+      error ? reject(error) : resolve();
+    });
+  });
+  return true;
+}
+
+/**
  * Removes directories even if they are non-empty. Does not fail if the directory doesn't exist.
  */
 export function rmdir(path: string): Promise<void> {

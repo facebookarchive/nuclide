@@ -18,6 +18,9 @@ var connectionMock = require('./connection_mock');
 
 describe('RemoteFile', () => {
 
+  var computeDigest = (contents) => crypto.createHash('sha1')
+    .update(contents || '').digest('hex');
+
   describe('getRealPath() & getRealPathSync()', () => {
     var filePath;
     var symlinkedFilePath;
@@ -126,6 +129,36 @@ describe('RemoteFile', () => {
         expect(fs.existsSync(filePath)).toBe(false);
         expect(fs.existsSync(newFilePath)).toBe(true);
         expect(file.getLocalPath()).toEqual(newFilePath);
+      });
+    });
+  });
+
+  describe('copy()', () => {
+    var tempDir;
+
+    beforeEach(() => {
+      tempDir = temp.mkdirSync('copy_test');
+    });
+
+    // We only do this simple test to make sure it's delegating to the connection.
+    // Adding the other cases is misleading and incorrect since it's actually
+    // delegating to `fsPromise` here.
+    it('copying existing files', () => {
+      waitsForPromise(async () => {
+        var filePath = path.join(tempDir, 'file_to_copy');
+        var fileContents = 'copy me!';
+        fs.writeFileSync(filePath, fileContents);
+        var newFilePath = path.join(tempDir, 'copied_file');
+        expect(fs.existsSync(filePath)).toBe(true);
+        expect(fs.existsSync(newFilePath)).toBe(false);
+
+        var file = new RemoteFile(connectionMock, filePath);
+        var result = await file.copy(newFilePath);
+        var newFile = new RemoteFile(connectionMock, newFilePath);
+        var digest = await newFile.getDigest();
+        expect(result).toBe(true);
+        expect(fs.existsSync(newFilePath)).toBe(true);
+        expect(digest).toBe(computeDigest(fileContents));
       });
     });
   });
@@ -269,7 +302,6 @@ describe('RemoteFile', () => {
     var filePath;
     var file;
     var fileContents;
-    var computeDigest = (contents) => crypto.createHash('sha1').update(contents || '').digest('hex');
 
     beforeEach(() => {
       tempDir = temp.mkdirSync('on_did_change_test');
