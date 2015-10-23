@@ -17,6 +17,7 @@ var {PropTypes} = React;
 var SimulatorDropdown = require('./SimulatorDropdown');
 var BuckToolbarActions = require('./BuckToolbarActions');
 var BuckToolbarStore = require('./BuckToolbarStore');
+import NuclideCheckbox from 'nuclide-ui-checkbox';
 
 var {debounce} = require('nuclide-commons');
 var {
@@ -45,6 +46,7 @@ class BuckToolbar extends React.Component {
     super(props);
     this._handleBuildTargetChange = debounce(this._handleBuildTargetChange.bind(this), 100, false);
     this._handleSimulatorChange = this._handleSimulatorChange.bind(this);
+    this._handleReactNativeServerModeChanged = this._handleReactNativeServerModeChanged.bind(this);
     this._requestOptions = this._requestOptions.bind(this);
     this._build = this._build.bind(this);
     this._run = this._run.bind(this);
@@ -58,6 +60,7 @@ class BuckToolbar extends React.Component {
     this._handleBuildTargetChange(this.props.initialBuildTarget);
 
     this._disposables = new CompositeDisposable();
+    this._disposables.add(this._buckToolbarStore);
     this._disposables.add(onWorkspaceDidStopChangingActivePaneItem(
       this._onActivePaneItemChanged.bind(this)));
 
@@ -85,6 +88,17 @@ class BuckToolbar extends React.Component {
   render(): ReactElement {
     var buckToolbarStore = this._buckToolbarStore;
     var disabled = !buckToolbarStore.getBuildTarget() || buckToolbarStore.isBuilding();
+    var serverModeCheckbox;
+    if (buckToolbarStore.isReactNativeApp()) {
+      serverModeCheckbox =
+        <div className="inline-block">
+          <NuclideCheckbox
+            checked={buckToolbarStore.isReactNativeServerMode()}
+            onChange={this._handleReactNativeServerModeChanged}
+            label={'RN Server Mode'}
+          />
+        </div>;
+    }
     var progressBar;
     if (buckToolbarStore.isBuilding()) {
       progressBar =
@@ -115,6 +129,7 @@ class BuckToolbar extends React.Component {
           <button onClick={this._run} disabled={disabled} className="btn">Run</button>
           <button onClick={this._debug} disabled={disabled} className="btn">Debug</button>
         </div>
+        {serverModeCheckbox}
         {progressBar}
       </div>
     );
@@ -127,6 +142,10 @@ class BuckToolbar extends React.Component {
 
   _handleSimulatorChange(simulator: string) {
     this._buckToolbarActions.updateSimulator(simulator);
+  }
+
+  _handleReactNativeServerModeChanged(checked: boolean) {
+    this._buckToolbarActions.updateReactNativeServerMode(checked);
   }
 
   _build() {

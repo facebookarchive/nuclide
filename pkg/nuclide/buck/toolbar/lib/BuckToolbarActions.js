@@ -42,6 +42,13 @@ class BuckToolbarActions {
     });
   }
 
+  updateReactNativeServerMode(serverMode: boolean): void {
+    this._dispatcher.dispatch({
+      actionType: BuckToolbarActions.ActionType.UPDATE_REACT_NATIVE_SERVER_MODE,
+      serverMode,
+    });
+  }
+
   build(): void {
     this._dispatcher.dispatch({actionType: BuckToolbarActions.ActionType.BUILD});
   }
@@ -56,12 +63,13 @@ class BuckToolbarActions {
 }
 
 BuckToolbarActions.ActionType = {
-  UPDATE_PROJECT: 'UPDATE_PROJECT',
-  UPDATE_BUILD_TARGET: 'UPDATE_BUILD_TARGET',
-  UPDATE_SIMULATOR: 'UPDATE_SIMULATOR',
   BUILD: 'BUILD',
-  RUN: 'RUN',
   DEBUG: 'DEBUG',
+  RUN: 'RUN',
+  UPDATE_BUILD_TARGET: 'UPDATE_BUILD_TARGET',
+  UPDATE_PROJECT: 'UPDATE_PROJECT',
+  UPDATE_REACT_NATIVE_SERVER_MODE: 'UPDATE_REACT_NATIVE_SERVER_MODE',
+  UPDATE_SIMULATOR: 'UPDATE_SIMULATOR',
 };
 
 module.exports = BuckToolbarActions;

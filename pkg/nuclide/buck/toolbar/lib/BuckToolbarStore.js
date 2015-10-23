@@ -19,6 +19,7 @@ function getLogger() {
 
 var invariant = require('assert');
 var {Disposable, Emitter} = require('atom');
+var path = require('path');
 var {Dispatcher} = require('flux');
 var {buckProjectRootForPath} = require('nuclide-buck-commons');
 var BuckToolbarActions = require('./BuckToolbarActions');
@@ -28,6 +29,8 @@ type BuckRunDetails = {
 };
 import type {ProcessOutputDataHandlers} from 'nuclide-process-output-store/lib/types';
 import type {BuckProject} from 'nuclide-buck-base/lib/BuckProject';
+import ReactNativeServerManager from './ReactNativeServerManager';
+import ReactNativeServerActions from './ReactNativeServerActions';
 
 const BUCK_PROCESS_ID_REGEX = /lldb -p ([0-9]+)/;
 
@@ -35,6 +38,8 @@ class BuckToolbarStore {
 
   _dispatcher: Dispatcher;
   _emitter: Emitter;
+  _reactNativeServerActions: ReactNativeServerActions;
+  _reactNativeServerManager: ReactNativeServerManager;
   _mostRecentBuckProject: ?BuckProject;
   _textEditorToBuckProject: WeakMap<TextEditor, BuckProject>;
   _isBuilding: boolean;
@@ -42,9 +47,16 @@ class BuckToolbarStore {
   _buildProgress: number;
   _buildRuleType: string;
   _simulator: ?string;
+  _isReactNativeApp: boolean;
+  _isReactNativeServerMode: boolean;
 
   constructor(dispatcher: Dispatcher) {
     this._dispatcher = dispatcher;
+    this._reactNativeServerActions = new ReactNativeServerActions(dispatcher);
+    this._reactNativeServerManager = new ReactNativeServerManager(
+      dispatcher,
+      this._reactNativeServerActions,
+    );
     this._emitter = new Emitter();
     this._textEditorToBuckProject = new WeakMap();
     this._initState();
@@ -56,6 +68,8 @@ class BuckToolbarStore {
     this._buildTarget = '';
     this._buildProgress = 0;
     this._buildRuleType = '';
+    this._isReactNativeApp = false;
+    this._isReactNativeServerMode = false;
   }
 
   _setupActions() {
@@ -70,6 +84,10 @@ class BuckToolbarStore {
         case BuckToolbarActions.ActionType.UPDATE_SIMULATOR:
           this._simulator = action.simulator;
           break;
+        case BuckToolbarActions.ActionType.UPDATE_REACT_NATIVE_SERVER_MODE:
+          this._isReactNativeServerMode = action.serverMode;
+          this.emitChange();
+          break;
         case BuckToolbarActions.ActionType.BUILD:
           this._doBuild(false, false);
           break;
@@ -81,6 +99,10 @@ class BuckToolbarStore {
           break;
       }
     });
+  }
+
+  dispose() {
+    this._reactNativeServerManager.dispose();
   }
 
   subscribe(callback: () => void): Disposable {
@@ -107,6 +129,14 @@ class BuckToolbarStore {
     return this._buildProgress;
   }
 
+  isReactNativeApp(): boolean {
+    return this._isReactNativeApp;
+  }
+
+  isReactNativeServerMode(): boolean {
+    return this.isReactNativeApp() && this._isReactNativeServerMode;
+  }
+
   loadAliases(): Promise<Array<string>> {
     var buckProject = this._mostRecentBuckProject;
     if (!buckProject) {
@@ -114,6 +144,16 @@ class BuckToolbarStore {
     }
 
     return buckProject.listAliases();
+  }
+
+  async _getReactNativeServerCommand(): Promise<?string> {
+    var buckProject = this._mostRecentBuckProject;
+    if (!buckProject) {
+      return null;
+    }
+    var serverCommand = await buckProject.getBuckConfig('react-native', 'server');
+    var repoRoot = await buckProject.getPath();
+    return path.join(repoRoot, serverCommand);
   }
 
   async _updateProject(editor: TextEditor): Promise<void> {
@@ -136,9 +176,17 @@ class BuckToolbarStore {
     buildTarget = buildTarget.trim();
     this._buildTarget = buildTarget;
 
-    var buckProject = this._mostRecentBuckProject;
-    var buildRuleType = '';
+    this._buildRuleType = await this._findRuleType();
+    this.emitChange();
+    this._isReactNativeApp = await this._findIsReactNativeApp();
+    this.emitChange();
+  }
 
+  async _findRuleType(): Promise<string> {
+    var buckProject = this._mostRecentBuckProject;
+    var buildTarget = this._buildTarget;
+
+    var buildRuleType = '';
     if (buildTarget && buckProject) {
       try {
         buildRuleType = await buckProject.buildRuleTypeFor(buildTarget);
@@ -146,8 +194,29 @@ class BuckToolbarStore {
         // Most likely, this is an invalid target, so do nothing.
       }
     }
-    this._buildRuleType = buildRuleType;
-    this.emitChange();
+    return buildRuleType;
+  }
+
+  async _findIsReactNativeApp(): Promise<boolean> {
+    var buildRuleType = this._buildRuleType;
+    if (buildRuleType !== 'apple_bundle' && buildRuleType !== 'android_binary') {
+      return false;
+    }
+    var buckProject = this._mostRecentBuckProject;
+    if (!buckProject) {
+      return false;
+    }
+
+    var reactNativeRule = buildRuleType === 'apple_bundle'
+    ? 'ios_react_native_library'
+    : 'android_react_native_library';
+
+    var buildTarget = this._buildTarget;
+    var matches = await buckProject.queryWithArgs(
+      `kind('${reactNativeRule}', deps('%s'))`,
+      [buildTarget],
+    );
+    return matches[buildTarget].length > 0;
   }
 
   async _doDebug(): Promise<void> {
@@ -189,6 +258,13 @@ class BuckToolbarStore {
     if (!buckProject) {
       this._notifyError();
       return;
+    }
+
+    if (run && this.isReactNativeServerMode()) {
+      var serverCommand = await this._getReactNativeServerCommand();
+      if (serverCommand) {
+        this._reactNativeServerActions.startServer(serverCommand);
+      }
     }
 
     var command = `buck ${run ? 'install' : 'build'} ${buildTarget}`;
