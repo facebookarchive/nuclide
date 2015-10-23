@@ -33,6 +33,7 @@ import ReactNativeServerManager from './ReactNativeServerManager';
 import ReactNativeServerActions from './ReactNativeServerActions';
 
 const BUCK_PROCESS_ID_REGEX = /lldb -p ([0-9]+)/;
+const REACT_NATIVE_APP_LOGGING_FLAG = '--react-log-to-file';
 
 class BuckToolbarStore {
 
@@ -260,10 +261,12 @@ class BuckToolbarStore {
       return;
     }
 
+    const appArgs = [];
     if (run && this.isReactNativeServerMode()) {
       var serverCommand = await this._getReactNativeServerCommand();
       if (serverCommand) {
         this._reactNativeServerActions.startServer(serverCommand);
+        appArgs.push(REACT_NATIVE_APP_LOGGING_FLAG);
       }
     }
 
@@ -276,7 +279,7 @@ class BuckToolbarStore {
     this.emitChange();
 
     var {pid} = await this._runBuckCommandInNewPane(
-        {buckProject, buildTarget, simulator, run, debug, command});
+        {buckProject, buildTarget, simulator, run, debug, command, appArgs});
 
     this._isBuilding = false;
     this.emitChange();
@@ -295,8 +298,9 @@ class BuckToolbarStore {
     run: boolean,
     debug: boolean,
     command: string,
+    appArgs: Array<string>,
   }): Promise<BuckRunDetails> {
-    var {buckProject, buildTarget, simulator, run, debug, command} = buckParams;
+    const {buckProject, buildTarget, simulator, run, debug, command, appArgs} = buckParams;
 
     var getRunCommandInNewPane = require('nuclide-process-output');
     var {runCommandInNewPane, disposable} = getRunCommandInNewPane();
@@ -307,7 +311,7 @@ class BuckToolbarStore {
       invariant(buckProject);
       if (run) {
         observable = await buckProject.installWithOutput(
-            [buildTarget], simulator, {run, debug, appArgs: []});
+            [buildTarget], simulator, {run, debug, appArgs});
       } else {
         observable = await buckProject.buildWithOutput([buildTarget]);
       }
