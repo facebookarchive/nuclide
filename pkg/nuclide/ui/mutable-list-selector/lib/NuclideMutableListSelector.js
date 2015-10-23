@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-var React = require('react-for-atom');
+const React = require('react-for-atom');
 
 type NuclideListSelectorItem = {
   id: string;
@@ -75,10 +75,10 @@ export default class NuclideMutableListSelector
   }
 
   render() {
-    var listItems = [];
-    for (let item of this.props.items) {
+    const listItems = [];
+    for (const item of this.props.items) {
       (item : NuclideListSelectorItem);
-      var classes = 'nuclide-list-selector list-item';
+      let classes = 'nuclide-list-selector list-item';
       if (item.id === this.state.idOfSelectedItem) {
         classes += ' selected';
       }
