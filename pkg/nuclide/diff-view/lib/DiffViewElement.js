@@ -9,13 +9,21 @@
  * the root directory of this source tree.
  */
 
+import type DiffViewModel from './DiffViewModel';
+
+import {Emitter} from 'atom';
+
+const DID_DESTROY_EVENT_NAME = 'did-destroy';
+
 class DiffViewElement extends HTMLElement {
-  _uri: ?string;
-  _diffModel: ?DiffViewModel;
+  _uri: string;
+  _diffModel: DiffViewModel;
+  _emitter: atom$Emitter;
 
   initialize(diffModel: DiffViewModel, uri: string): HTMLElement {
     this._diffModel = diffModel;
     this._uri = uri;
+    this._emitter = new Emitter();
     return this;
   }
 
@@ -42,10 +50,15 @@ class DiffViewElement extends HTMLElement {
   }
 
   /**
-   * Destroys the diff view model, disposes subscriptions and unmount components.
+   * Emits a destroy event that's used to unmount the attached React component
+   * and invalidate the cached view instance of the Diff View.
    */
   destroy(): void {
-    this._diffModel.destroy();
+    this._emitter.emit('did-destroy');
+  }
+
+  onDidDestroy(callback: () => void): atom$Disposable {
+    return this._emitter.on(DID_DESTROY_EVENT_NAME, callback);
   }
 
 }

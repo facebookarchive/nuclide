@@ -57,7 +57,7 @@ function createView(entryPath: string): HTMLElement {
   };
   activateFilePath(entryPath);
 
-  const destroySubscription = diffModel.onDidDestroy(() => {
+  const destroySubscription = hostElement.onDidDestroy(() => {
     React.unmountComponentAtNode(hostElement);
     destroySubscription.dispose();
     invariant(subscriptions);
@@ -78,6 +78,8 @@ function getDiffViewModel(): DiffViewModel {
   if (!diffViewModel) {
     const DiffViewModel = require('./DiffViewModel');
     diffViewModel = new DiffViewModel(uiProviders);
+    invariant(subscriptions);
+    subscriptions.add(diffViewModel);
   }
   return diffViewModel;
 }

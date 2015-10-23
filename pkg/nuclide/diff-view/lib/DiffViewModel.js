@@ -250,16 +250,7 @@ class DiffViewModel {
     return this._fileChanges;
   }
 
-  onDidDestroy(callback: () => void): atom$Disposable {
-    return this._emitter.on('did-destroy', callback);
-  }
-
-  destroy(): void {
-    this._dispose();
-    this._emitter.emit('did-destroy');
-  }
-
-  _dispose(): void {
+  dispose(): void {
     if (this._subscriptions) {
       this._subscriptions.dispose();
       this._subscriptions = null;
