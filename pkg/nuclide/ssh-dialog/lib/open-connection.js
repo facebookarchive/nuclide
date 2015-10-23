@@ -33,16 +33,15 @@ export function openConnectionDialog(props): Promise<?RemoteConnection> {
 
   return dialogPromiseQueue.submit((resolve, reject) => {
     const defaultConnectionProfile: NuclideRemoteConnectionProfile = getDefaultConnectionProfile();
-    const dialogSettings = defaultConnectionProfile.params;
 
     const dialogProps = extend.immutableExtend({
-      initialUsername: dialogSettings.username,
-      initialServer: dialogSettings.server,
-      initialRemoteServerCommand: dialogSettings.remoteServerCommand,
-      initialCwd: dialogSettings.cwd,
-      initialSshPort: String(dialogSettings.sshPort),
-      initialPathToPrivateKey: dialogSettings.pathToPrivateKey,
-      initialAuthMethod: dialogSettings.authMethod,
+      connectionProfiles: [defaultConnectionProfile],
+      // Select the default connection profile, which should always be index 0.
+      indexOfInitiallySelectedConnectionProfile: 0,
+      // TODO jessicalin This will be filled in and used later in this stack.
+      onAddProfileClicked: () => {},
+      // TODO jessicalin This will be filled in and used later in this stack.
+      onDeleteProfileClicked: () => {},
       onConnect: async (connection, config) => {
         resolve(connection);
         saveConnectionConfig(config, getOfficialRemoteServerCommand());

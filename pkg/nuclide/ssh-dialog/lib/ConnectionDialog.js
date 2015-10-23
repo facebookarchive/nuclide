@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {NuclideRemoteConnectionProfile} from './connection-types';
+
 import AuthenticationPrompt from './AuthenticationPrompt';
 import ConnectionDetailsForm from './ConnectionDetailsForm';
 import IndeterminateProgressBar from './IndeterminateProgressBar';
@@ -21,12 +23,18 @@ const logger = require('nuclide-logging').getLogger();
 
 type DefaultProps = {};
 type Props = {
-  initialUsername: ?string;
-  initialServer: ?string;
-  initialRemoteServerCommand: ?string;
-  initialCwd: ?string;
-  initialSshPort: ?string;
-  initialPathToPrivateKey: ?string;
+  // The list of connection profiles that will be displayed.
+  connectionProfiles: ?Array<NuclideRemoteConnectionProfile>;
+  // If there is >= 1 connection profile, this index indicates the initial
+  // profile to use.
+  indexOfInitiallySelectedConnectionProfile: ?number;
+  // Function that is called when the "+" button on the profiles list is clicked.
+  // The user's intent is to create a new profile.
+  onAddProfileClicked: () => mixed;
+  // Function that is called when the "-" button on the profiles list is clicked
+  // ** while a profile is selected **.
+  // The user's intent is to delete the currently-selected profile.
+  onDeleteProfileClicked: (indexOfSelectedConnectionProfile: number) => mixed;
   onConnect: () => mixed;
   onError: () => mixed;
   onCancel: () => mixed;
@@ -95,18 +103,27 @@ export default class ConnectionDialog extends React.Component<DefaultProps, Prop
     let content;
     let isOkDisabled;
     if (mode === REQUEST_CONNECTION_DETAILS) {
-      // Note React.__spread() is not available in the Atom React fork, so we
-      // pass the props explicitly.
+      // This is a temporary conversion. It will be removed when ConnectionDetailsForm
+      // is replaced with ConnectionDetailsPrompt later in this stack of diffs.
+      let initialConnectionParams = {};
+      if (this.props.connectionProfiles &&
+          this.props.connectionProfiles.length &&
+          this.props.indexOfInitiallySelectedConnectionProfile != null) {
+        const initialProfile =
+            this.props.connectionProfiles[this.props.indexOfInitiallySelectedConnectionProfile];
+        initialConnectionParams = initialProfile.params;
+      }
+
       content = (
         <ConnectionDetailsForm
           ref="connection-details"
-          initialUsername={this.props.initialUsername}
-          initialServer={this.props.initialServer}
-          initialRemoteServerCommand={this.props.initialRemoteServerCommand}
-          initialCwd={this.props.initialCwd}
-          initialSshPort={this.props.initialSshPort}
-          initialPathToPrivateKey={this.props.initialPathToPrivateKey}
-          initialAuthMethod={this.props.initialAuthMethod}
+          initialUsername={initialConnectionParams.username}
+          initialServer={initialConnectionParams.server}
+          initialRemoteServerCommand={initialConnectionParams.remoteServerCommand}
+          initialCwd={initialConnectionParams.cwd}
+          initialSshPort={initialConnectionParams.sshPort}
+          initialPathToPrivateKey={initialConnectionParams.pathToPrivateKey}
+          initialAuthMethod={initialConnectionParams.authMethod}
           onConfirm={this._boundOk}
           onCancel={this._boundCancel}
         />
