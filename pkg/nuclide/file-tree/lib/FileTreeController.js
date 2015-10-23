@@ -11,22 +11,23 @@
 
 import type {ExportStoreData} from './FileTreeStore';
 
-var {CompositeDisposable} = require('atom');
-var FileSystemActions = require('./FileSystemActions');
-var FileTree = require('../components/FileTree');
-var FileTreeActions = require('./FileTreeActions');
-var {EVENT_HANDLER_SELECTOR} = require('./FileTreeConstants');
-var FileTreeContextMenu = require('./FileTreeContextMenu');
-var FileTreeHelpers = require('./FileTreeHelpers');
-var FileTreeStore = require('./FileTreeStore');
-var {PanelComponent} = require('nuclide-ui-panel');
-var React = require('react-for-atom');
+import {CompositeDisposable} from 'atom';
+import {EVENT_HANDLER_SELECTOR}  from './FileTreeConstants';
+import FileSystemActions from './FileSystemActions';
+import FileTree from '../components/FileTree';
+import FileTreeActions from './FileTreeActions';
+import FileTreeContextMenu from './FileTreeContextMenu';
+import FileTreeHelpers from './FileTreeHelpers';
+import FileTreeStore from './FileTreeStore';
+import {PanelComponent} from 'nuclide-ui-panel';
+import React from 'react-for-atom';
 
-var {debounce} = require('nuclide-commons');
-var os = require('os');
-var pathUtil = require('path');
-var {repositoryForPath} = require('nuclide-hg-git-bridge');
-var shell = require('shell');
+import {debounce} from 'nuclide-commons';
+import os from 'os';
+import {repositoryForPath} from 'nuclide-hg-git-bridge';
+import shell from 'shell';
+
+const {PropTypes} = React;
 
 type FileTreeNodeData = {
   nodeKey: string,
@@ -802,8 +803,6 @@ class FileTreeController {
     };
   }
 }
-
-var {PropTypes} = React;
 
 class FileTreePanel extends React.Component {
   // $FlowIssue t8486988
