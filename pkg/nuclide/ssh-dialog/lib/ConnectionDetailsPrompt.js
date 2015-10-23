@@ -90,9 +90,11 @@ export default class ConnectionDetailsPrompt
       this.props.connectionProfiles.forEach((profile, index) => {
         // Use the index of each profile as its id. This is safe because the
         // items are immutable (within this React component).
-        listSelectorItems.push({id: index, displayTitle: profile.displayTitle});
+        listSelectorItems.push({id: String(index), displayTitle: profile.displayTitle});
       });
     }
+    const idOfSelectedItem = (this.state.indexOfSelectedConnectionProfile != null) ?
+      String(this.state.indexOfSelectedConnectionProfile) : null;
 
     return (
       <div className="nuclide-connection-details-prompt">
@@ -114,6 +116,7 @@ export default class ConnectionDetailsPrompt
           <title>Profiles</title>
           <NuclideMutableListSelector
             items={listSelectorItems}
+            idOfInitiallySelectedItem={idOfSelectedItem}
             onItemClicked={this._boundOnProfileClicked}
             onAddButtonClicked={this.props.onAddProfileClicked}
             onDeleteButtonClicked={this._boundOnDeleteProfileClicked}
