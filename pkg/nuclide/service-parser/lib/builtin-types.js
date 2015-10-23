@@ -60,6 +60,12 @@ export const numberType: NumberType = {
   kind: 'number',
 };
 
+export const objectType: NamedType = {
+  location: builtinLocation,
+  kind: 'named',
+  name: 'Object',
+};
+
 export const dateType: NamedType = {
   location: builtinLocation,
   kind: 'named',
@@ -86,6 +92,7 @@ export const fsStatsType: NamedType = {
 
 export const namedBuiltinTypes: Set<string> = new Set();
 
+namedBuiltinTypes.add(objectType.name);
 namedBuiltinTypes.add(dateType.name);
 namedBuiltinTypes.add(regExpType.name);
 namedBuiltinTypes.add(bufferType.name);

@@ -4,6 +4,7 @@ export type ValueTypeA = {
   valueC?: boolean;
   valueD: any;
   valueE: mixed;
+  valueF: Object;
 };
 
 export type ValueTypeB = {

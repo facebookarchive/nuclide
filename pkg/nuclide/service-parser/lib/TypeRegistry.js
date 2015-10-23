@@ -15,7 +15,7 @@ import vm from 'vm';
 import fs from 'fs';
 
 import type {Type} from './types';
-import {dateType, regExpType, bufferType, fsStatsType} from './builtin-types';
+import {objectType, dateType, regExpType, bufferType, fsStatsType} from './builtin-types';
 
 
 /*
@@ -230,6 +230,15 @@ export default class TypeRegistry {
   }
 
   _registerSpecialTypes(): void {
+    // Serialize / Deserialize any Object type
+    this.registerType(objectType.name, async object => {
+      assert(object != null && typeof object === 'object', 'Expected Object argument.');
+      return object;
+    }, async object => {
+      assert(object != null && typeof object === 'object', 'Expected Object argument.');
+      return object;
+    });
+
     // Serialize / Deserialize Javascript Date objects
     this.registerType(dateType.name, async date => {
       assert(date instanceof Date, 'Expected date argument.');

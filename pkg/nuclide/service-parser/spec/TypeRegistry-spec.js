@@ -29,6 +29,7 @@ import {
   bufferType,
   anyType,
   mixedType,
+  objectType,
 } from '../lib/builtin-types';
 
 describe('TypeRegistry', () => {
@@ -82,20 +83,25 @@ describe('TypeRegistry', () => {
     waitsForPromise(async () => {
       invariant(typeRegistry);
 
-      var expected = new Date();
-      var date = await typeRegistry.unmarshal(
-          await typeRegistry.marshal(expected, dateType), dateType);
-      expect(date.getTime()).toBe(expected.getTime());
+      const expected1 = { a: 42, b: { c: 'str' }};
+      const object1 = await typeRegistry.unmarshal(
+          await typeRegistry.marshal(expected1, objectType), objectType);
+      expect(object1).toBe(expected1);
 
-      var expected = /nuclide/ig;
-      var regex = await typeRegistry.unmarshal(
-          await typeRegistry.marshal(expected, regExpType), regExpType);
-      expect(regex.source).toBe(expected.source);
+      const expected2 = new Date();
+      const date2 = await typeRegistry.unmarshal(
+          await typeRegistry.marshal(expected2, dateType), dateType);
+      expect(date2.getTime()).toBe(expected2.getTime());
 
-      var expected = new Buffer('test buffer data.');
-      var buf: Buffer = await typeRegistry.unmarshal(
-        await typeRegistry.marshal(expected, bufferType), bufferType);
-      expect(expected.equals(buf)).toBeTruthy();
+      const expected3 = /nuclide/ig;
+      const regex3 = await typeRegistry.unmarshal(
+          await typeRegistry.marshal(expected3, regExpType), regExpType);
+      expect(regex3.source).toBe(expected3.source);
+
+      const expected4 = new Buffer('test buffer data.');
+      const buf4: Buffer = await typeRegistry.unmarshal(
+        await typeRegistry.marshal(expected4, bufferType), bufferType);
+      expect(expected4.equals(buf4)).toBeTruthy();
     });
   });
 
@@ -104,19 +110,19 @@ describe('TypeRegistry', () => {
       invariant(typeRegistry);
 
       // An array of buffers.
-      var expected = [new Buffer('testdas'), new Buffer('test')];
-      var type: ArrayType = {
+      const expected = [new Buffer('testdas'), new Buffer('test')];
+      const type: ArrayType = {
         location: builtinLocation,
         kind: 'array',
         type: bufferType,
       };
-      var result = await typeRegistry.unmarshal(await typeRegistry.marshal(expected, type), type);
+      const result = await typeRegistry.unmarshal(await typeRegistry.marshal(expected, type), type);
       expect(result.length).toBe(2);
       expect(result[0].equals(expected[0])).toBeTruthy();
       expect(result[1].equals(expected[1])).toBeTruthy();
 
       // Object with a a nullable property and a buffer property.
-      var objectType: ObjectType = {
+      const customObjectType: ObjectType = {
         location: builtinLocation,
         kind: 'object',
         fields: [
@@ -147,13 +153,13 @@ describe('TypeRegistry', () => {
           },
         ],
       };
-      var expected = { a: null, b: new Buffer('test') };
-      var result = await typeRegistry.unmarshal(
-        await typeRegistry.marshal(expected, objectType),
-        objectType
+      const expected2 = { a: null, b: new Buffer('test') };
+      const result2 = await typeRegistry.unmarshal(
+        await typeRegistry.marshal(expected2, customObjectType),
+        customObjectType
       );
-      expect(result.a).toBeNull();
-      expect(result.b.equals(expected.b)).toBeTruthy();
+      expect(result2.a).toBeNull();
+      expect(result2.b.equals(expected2.b)).toBeTruthy();
     });
   });
 
