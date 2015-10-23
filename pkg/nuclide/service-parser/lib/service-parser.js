@@ -45,9 +45,11 @@ export default function parseServiceDefinition(fileName: string, source: string)
 
 class ServiceParser {
   _fileName: string;
+  _defs: Map<string, Definition>;
 
   constructor(fileName: string) {
     this._fileName = fileName;
+    this._defs = new Map();
   }
 
   _locationOfNode(node: any): SourceLocation {
@@ -81,7 +83,6 @@ class ServiceParser {
   }
 
   parseService(source: string): Definitions {
-    const defs: Map<string, Definition> = new Map();
     const program = babel.parse(source);
     assert(program && program.type === 'Program', 'The result of parsing is a Program node.');
 
@@ -90,19 +91,21 @@ class ServiceParser {
       // We're specifically looking for exports.
       if (node.type === 'ExportNamedDeclaration') {
         const declaration = node.declaration;
-        let definition;
         switch (declaration.type) {
           // An exported function that can be directly called by a client.
           case 'FunctionDeclaration':
-            definition = this._parseFunctionDeclaration(declaration);
+            this._add(this._parseFunctionDeclaration(declaration));
             break;
           // An exported type alias.
           case 'TypeAlias':
-            definition = this._parseTypeAlias(declaration);
+            this._add(this._parseTypeAlias(declaration));
             break;
-          // TODO: Parse classes as remotable interfaces.
+          // Parse classes as remotable interfaces.
           case 'ClassDeclaration':
-            definition = this._parseClassDeclaration(declaration);
+            this._add(this._parseClassDeclaration(declaration));
+            break;
+          case 'VariableDeclaration':
+            // Ignore exported variables.
             break;
           // Unknown export declaration.
           default:
@@ -110,21 +113,24 @@ class ServiceParser {
               declaration,
               `Unknown declaration type ${declaration.type} in definition body.`);
         }
-        invariant(definition != null);
-        if (defs.has(definition.name)) {
-          throw this._errorLocations([definition.location, defs.get(definition.name).location],
-            `Duplicate definition for ${definition.name}`);
-        } else {
-          defs.set(definition.name, definition);
-        }
       } else {
-        throw this._error(node, `Unknown node type ${node.type} in definition body.`);
+        // Ignore all non-export top level program elements including:
+        // imports, statements, variable declarations, function declarations
       }
     }
 
-    validateDefinitions(defs);
+    validateDefinitions(this._defs);
 
-    return defs;
+    return this._defs;
+  }
+
+  _add(definition: Definition): void {
+    if (this._defs.has(definition.name)) {
+      throw this._errorLocations([definition.location, this._defs.get(definition.name).location],
+        `Duplicate definition for ${definition.name}`);
+    } else {
+      this._defs.set(definition.name, definition);
+    }
   }
 
   /**
@@ -135,18 +141,18 @@ class ServiceParser {
     this._assert(
       declaration,
       declaration.id && declaration.id.type === 'Identifier',
-      'This function declaration has an identifier.');
+      'Remote function declarations must have an identifier.');
     this._assert(
       declaration,
       declaration.returnType != null &&
       declaration.returnType.type === 'TypeAnnotation',
-      'The function is annotated with a return type.');
+      'Remote functions must be annotated with a return type.');
 
     var returnType = this._parseTypeAnnotation(declaration.returnType.typeAnnotation);
     this._assert(declaration.returnType.typeAnnotation,
       returnType.kind === 'void' || returnType.kind === 'promise' ||
           returnType.kind === 'observable',
-      'The return type of a function must be of type Void, Promise, or Observable');
+      'The return type of a remote function must be of type Void, Promise, or Observable');
 
     invariant(returnType.kind === 'void' ||
       returnType.kind === 'promise' ||
@@ -234,7 +240,8 @@ class ServiceParser {
         'This is a MethodDefinition object.');
     this._assert(definition, definition.key && definition.key.type === 'Identifier',
       'This method defintion has an key (a name).');
-    this._assert(definition, definition.value.returnType.type === 'TypeAnnotation',
+    this._assert(definition, definition.value.returnType &&
+      definition.value.returnType.type === 'TypeAnnotation',
       `${definition.key.name} missing a return type annotation.`);
 
     var returnType = this._parseTypeAnnotation(definition.value.returnType.typeAnnotation);
@@ -242,7 +249,7 @@ class ServiceParser {
       definition.value.returnType.typeAnnotation,
       returnType.kind === 'void' || returnType.kind === 'promise' ||
           returnType.kind === 'observable',
-      'The return type of a function must be of type Void, Promise, or Observable');
+      'The return type of a remote function must be Void, Promise, or Observable');
     invariant(returnType.kind === 'void' || returnType.kind === 'promise' ||
         returnType.kind === 'observable');
     return {
