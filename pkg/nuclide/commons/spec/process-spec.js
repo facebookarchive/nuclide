@@ -9,8 +9,9 @@
  * the root directory of this source tree.
  */
 
-var processLib = require('../lib/process.js');
-var path = require('path');
+import invariant from 'assert';
+import path from 'path';
+import processLib from '../lib/process.js';
 
 var {
   DARWIN_PATH_HELPER_REGEXP,
@@ -51,9 +52,10 @@ describe('nuclide-commons/process', () => {
 
   describe('OS X path_helper regexp', () => {
     it('matches and captures valid PATH', () => {
-      expect(
-        'PATH=\"/usr/bin:/usr/local/bin\"; export PATH; echo \"\"'.match(DARWIN_PATH_HELPER_REGEXP)[1]
-      ).toEqual('/usr/bin:/usr/local/bin');
+      const matches = 'PATH=\"/usr/bin:/usr/local/bin\"; export PATH; echo \"\"'
+        .match(DARWIN_PATH_HELPER_REGEXP);
+      invariant(matches);
+      expect(matches[1]).toEqual('/usr/bin:/usr/local/bin');
     });
   });
 
