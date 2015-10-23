@@ -53,5 +53,41 @@ module.exports = _client => {
     return Promise.all([]).then(args => _client.callRemoteFunction("TestFunctionC", "void", args));
   }
 
+  remoteModule.TestFunctionD = function (arg0, arg1) {
+    return Promise.all([_client.marshal(arg0, {
+      location: {
+        type: "source",
+        fileName: "FunctionService.def",
+        line: 7
+      },
+      kind: "nullable",
+      type: {
+        location: {
+          type: "source",
+          fileName: "FunctionService.def",
+          line: 7
+        },
+        kind: "named",
+        name: "Object"
+      }
+    }), _client.marshal(arg1, {
+      location: {
+        type: "source",
+        fileName: "FunctionService.def",
+        line: 7
+      },
+      kind: "nullable",
+      type: {
+        location: {
+          type: "source",
+          fileName: "FunctionService.def",
+          line: 7
+        },
+        kind: "named",
+        name: "Object"
+      }
+    })]).then(args => _client.callRemoteFunction("TestFunctionD", "void", args));
+  }
+
   return remoteModule;
 }

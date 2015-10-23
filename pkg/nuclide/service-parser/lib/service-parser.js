@@ -158,13 +158,7 @@ class ServiceParser {
       type: {
         location: this._locationOfNode(declaration),
         kind: 'function',
-        argumentTypes: declaration.params.map(param => {
-          if (!param.typeAnnotation) {
-            throw this._error(param, `Parameter ${param.name} doesn't have type annotation.`);
-          } else {
-            return this._parseTypeAnnotation(param.typeAnnotation.typeAnnotation);
-          }
-        }),
+        argumentTypes: declaration.params.map(param => this._parseParameter(param)),
         returnType,
       },
     };
@@ -257,16 +251,27 @@ class ServiceParser {
       type: {
         location: this._locationOfNode(definition.value),
         kind: 'function',
-        argumentTypes: definition.value.params.map(param => {
-          if (!param.typeAnnotation) {
-            throw this._error(param, `Parameter ${param.name} doesn't have type annotation.`);
-          } else {
-            return this._parseTypeAnnotation(param.typeAnnotation.typeAnnotation);
-          }
-        }),
+        argumentTypes: definition.value.params.map(param => this._parseParameter(param)),
         returnType,
       },
     };
+  }
+
+  _parseParameter(param: Object): Type {
+    if (!param.typeAnnotation) {
+      throw this._error(param, `Parameter ${param.name} doesn't have type annotation.`);
+    } else {
+      const type = this._parseTypeAnnotation(param.typeAnnotation.typeAnnotation);
+      if (param.optional && type.kind !== 'nullable') {
+        return {
+          location: this._locationOfNode(param),
+          kind: 'nullable',
+          type,
+        };
+      } else {
+        return type;
+      }
+    }
   }
 
   /**

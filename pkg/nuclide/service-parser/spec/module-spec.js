@@ -24,7 +24,8 @@ describe('Module public API.', () => {
     expect(__test__.definitionsCache.size).toBe(0);
 
     var proxy = getProxy(defFile, fakeClient);
-    expect(Object.keys(proxy)).diffJson(['TestFunctionA', 'TestFunctionB', 'TestFunctionC']);
+    expect(Object.keys(proxy)).diffJson([
+      'TestFunctionA', 'TestFunctionB', 'TestFunctionC', 'TestFunctionD']);
 
     // Expect that getProxy added files to the cache.
     expect(__test__.definitionsCache.size).toBe(1);

@@ -117,5 +117,66 @@
                 "kind": "void"
             }
         }
+    },
+    "TestFunctionD": {
+        "kind": "function",
+        "name": "TestFunctionD",
+        "location": {
+            "type": "source",
+            "fileName": "FunctionService.def",
+            "line": 7
+        },
+        "type": {
+            "location": {
+                "type": "source",
+                "fileName": "FunctionService.def",
+                "line": 7
+            },
+            "kind": "function",
+            "argumentTypes": [
+                {
+                    "location": {
+                        "type": "source",
+                        "fileName": "FunctionService.def",
+                        "line": 7
+                    },
+                    "kind": "nullable",
+                    "type": {
+                        "location": {
+                            "type": "source",
+                            "fileName": "FunctionService.def",
+                            "line": 7
+                        },
+                        "kind": "named",
+                        "name": "Object"
+                    }
+                },
+                {
+                    "location": {
+                        "type": "source",
+                        "fileName": "FunctionService.def",
+                        "line": 7
+                    },
+                    "kind": "nullable",
+                    "type": {
+                        "location": {
+                            "type": "source",
+                            "fileName": "FunctionService.def",
+                            "line": 7
+                        },
+                        "kind": "named",
+                        "name": "Object"
+                    }
+                }
+            ],
+            "returnType": {
+                "location": {
+                    "type": "source",
+                    "fileName": "FunctionService.def",
+                    "line": 7
+                },
+                "kind": "void"
+            }
+        }
     }
 }
