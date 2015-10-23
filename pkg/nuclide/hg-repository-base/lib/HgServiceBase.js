@@ -146,7 +146,7 @@ class HgServiceBase {
    *   - NO_HGPLAIN set if the $HGPLAIN environment variable should not be used.
    *   - TTY_OUTPUT set if the command should be run as if it were attached to a tty.
    */
-  _hgAsyncExecute(args: Array<string>, options: any): Promise<any> {
+  async _hgAsyncExecute(args: Array<string>, options: any): Promise<any> {
     if (!options['NO_HGPLAIN']) {
       // Setting HGPLAIN=1 overrides any custom aliases a user has defined.
       if (options.env) {
@@ -166,7 +166,13 @@ class HgServiceBase {
     } else {
       cmd = 'hg';
     }
-    return asyncExecute(cmd, args, options);
+    try {
+      return await asyncExecute(cmd, args, options);
+    } catch (e) {
+      getLogger().error(`Error executing hg command: ${JSON.stringify(args)} ` +
+          `options: ${JSON.stringify(options)} ${JSON.stringify(e)}`);
+      throw e;
+    }
   }
 
   fetchCurrentBookmark(): Promise<string> {
