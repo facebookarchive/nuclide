@@ -181,7 +181,7 @@ class DiffViewModel {
     var fileSystemService = getFileSystemServiceByNuclideUri(filePath);
     invariant(fileSystemService);
 
-    var committedContentsPromise = repository.fetchFileContentAtRevision(filePath)
+    const committedContentsPromise = repository.fetchFileContentAtRevision(filePath, null)
       // If the file didn't exist on the previous revision, return empty contents.
       .then(contents => contents || '', err => '');
 

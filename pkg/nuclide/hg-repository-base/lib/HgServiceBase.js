@@ -191,7 +191,7 @@ class HgServiceBase {
    * Section: Repository State at Specific Revisions
    */
 
-  fetchFileContentAtRevision(filePath: NuclideUri, revision: string): Promise<?string> {
+  fetchFileContentAtRevision(filePath: NuclideUri, revision: ?string): Promise<?string> {
     return fetchFileContentAtRevision(filePath, revision, this._workingDirectory);
   }
 
