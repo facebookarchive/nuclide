@@ -74,14 +74,14 @@ export default class ConnectionDetailsPrompt
 
   render() {
     // If there are profiles, pre-fill the form with the information from the
-    // specified default profile.
-    let initialConnectionParams = {};
+    // specified selected profile.
+    let prefilledConnectionParams = {};
     if (this.props.connectionProfiles &&
         this.props.connectionProfiles.length &&
         this.state.indexOfSelectedConnectionProfile != null) {
-      const initialProfile =
+      const selectedProfile =
           this.props.connectionProfiles[this.state.indexOfSelectedConnectionProfile];
-      initialConnectionParams = initialProfile.params;
+      prefilledConnectionParams = selectedProfile.params;
     }
 
     // Create helper data structures.
@@ -99,13 +99,13 @@ export default class ConnectionDetailsPrompt
         <div className="left-column">
           <ConnectionDetailsForm
             ref="connection-details-form"
-            initialUsername={initialConnectionParams.username}
-            initialServer={initialConnectionParams.server}
-            initialRemoteServerCommand={initialConnectionParams.remoteServerCommand}
-            initialCwd={initialConnectionParams.cwd}
-            initialSshPort={initialConnectionParams.sshPort}
-            initialPathToPrivateKey={initialConnectionParams.pathToPrivateKey}
-            initialAuthMethod={initialConnectionParams.authMethod}
+            initialUsername={prefilledConnectionParams.username}
+            initialServer={prefilledConnectionParams.server}
+            initialRemoteServerCommand={prefilledConnectionParams.remoteServerCommand}
+            initialCwd={prefilledConnectionParams.cwd}
+            initialSshPort={prefilledConnectionParams.sshPort}
+            initialPathToPrivateKey={prefilledConnectionParams.pathToPrivateKey}
+            initialAuthMethod={prefilledConnectionParams.authMethod}
             onConfirm={this.props.onConfirm}
             onCancel={this.props.onCancel}
           />
