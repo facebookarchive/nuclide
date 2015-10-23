@@ -86,7 +86,7 @@ module.exports = _client => {
       location: {
         type: "source",
         fileName: "InterfaceService.def",
-        line: 9
+        line: 12
       },
       kind: "named",
       name: "Vector2"

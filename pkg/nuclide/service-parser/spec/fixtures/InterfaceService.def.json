@@ -123,13 +123,13 @@
         "location": {
             "type": "source",
             "fileName": "InterfaceService.def",
-            "line": 9
+            "line": 12
         },
         "type": {
             "location": {
                 "type": "source",
                 "fileName": "InterfaceService.def",
-                "line": 9
+                "line": 12
             },
             "kind": "function",
             "argumentTypes": [],
@@ -137,14 +137,14 @@
                 "location": {
                     "type": "source",
                     "fileName": "InterfaceService.def",
-                    "line": 9
+                    "line": 12
                 },
                 "kind": "promise",
                 "type": {
                     "location": {
                         "type": "source",
                         "fileName": "InterfaceService.def",
-                        "line": 9
+                        "line": 12
                     },
                     "kind": "named",
                     "name": "Vector2"

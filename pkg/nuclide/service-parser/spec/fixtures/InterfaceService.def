@@ -4,6 +4,9 @@ export class Vector2 {
   len(): Promise<number> {}
 
   watchChanges(): Observable<number> {}
+
+  // Private members do NOT require marshallable signatures.
+  _privateMember(): number {}
 }
 
 export function getCurrentDirection(): Promise<Vector2> {}

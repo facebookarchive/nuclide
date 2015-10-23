@@ -29,6 +29,10 @@ import type {
 import {locationToString} from './builtin-types';
 import {validateDefinitions} from './DefinitionValidator';
 
+function isPrivateMemberName(name: string): boolean {
+  return name.startsWith('_');
+}
+
 /**
  * Parse a definition file, returning an intermediate representation that has all of the
  * information required to generate the remote proxy, as well as marshal and unmarshal the
@@ -186,7 +190,7 @@ class ServiceParser {
    * @param declaration - The AST node.
    */
   _parseClassDeclaration(declaration: Object): InterfaceDefinition {
-    var def: InterfaceDefinition = {
+    const def: InterfaceDefinition = {
       kind: 'interface',
       name: declaration.id.name,
       location: this._locationOfNode(declaration),
@@ -195,8 +199,8 @@ class ServiceParser {
       instanceMethods: new Map(),
     };
 
-    var classBody = declaration.body;
-    for (var method of classBody.body) {
+    const classBody = declaration.body;
+    for (const method of classBody.body) {
       if (method.kind === 'constructor') {
         def.constructorArgs = method.value.params.map(param => {
           if (!param.typeAnnotation) {
@@ -206,8 +210,10 @@ class ServiceParser {
           }
         });
       } else {
-        var {name, type} = this._parseMethodDefinition(method);
-        this._defineMethod(name, type, method.static ? def.staticMethods : def.instanceMethods);
+        if (!isPrivateMemberName(method.key.name)) {
+          const {name, type} = this._parseMethodDefinition(method);
+          this._defineMethod(name, type, method.static ? def.staticMethods : def.instanceMethods);
+        }
       }
     }
     return def;
