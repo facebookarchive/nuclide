@@ -45,5 +45,10 @@
     "nuclide-diagnostics-base": "0.0.0",
     "nuclide-external-interfaces": "0.0.0",
     "nuclide-home-interfaces": "0.0.0"
+  },
+  "_atomModuleCache": {
+    "extensions": {
+      ".node": []
+    }
   }
 }

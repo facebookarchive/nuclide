@@ -26,5 +26,10 @@
   "devDependencies": {
     "nuclide-blame-base": "0.0.0",
     "nuclide-external-interfaces": "0.0.0"
+  },
+  "_atomModuleCache": {
+    "extensions": {
+      ".node": []
+    }
   }
 }

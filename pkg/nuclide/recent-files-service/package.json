@@ -28,5 +28,10 @@
         "0.0.0": "provideRecentFilesService"
       }
     }
+  },
+  "_atomModuleCache": {
+    "extensions": {
+      ".node": []
+    }
   }
 }
