@@ -56,15 +56,15 @@ type State = {
 export default class ConnectionDetailsPrompt
     extends React.Component<DefaultProps, Props, State> {
   _idToConnectionProfile: ?Map<string, NuclideRemoteConnectionProfile>;
-  _boundOnItemClicked: (profileId: string) => void;
+  _boundOnProfileClicked: (profileId: string) => void;
   _boundOnDeleteProfileClicked: (profileId: ?string) => void;
 
   constructor(props: Props) {
     super(props);
-    this._boundOnItemClicked = this._onItemClicked.bind(this);
+    this._boundOnProfileClicked = this._onProfileClicked.bind(this);
     this._boundOnDeleteProfileClicked = this._onDeleteProfileClicked.bind(this);
     this.state = {
-      indexOfSelectedConnectionProfile: this.props.indexOfSelectedConnectionProfile,
+      indexOfSelectedConnectionProfile: this.props.indexOfInitiallySelectedConnectionProfile,
     };
   }
 
@@ -78,9 +78,9 @@ export default class ConnectionDetailsPrompt
     let initialConnectionParams = {};
     if (this.props.connectionProfiles &&
         this.props.connectionProfiles.length &&
-        this.state.indexOfInitiallySelectedConnectionProfile != null) {
+        this.state.indexOfSelectedConnectionProfile != null) {
       const initialProfile =
-          this.props.connectionProfiles[this.state.indexOfInitiallySelectedConnectionProfile];
+          this.props.connectionProfiles[this.state.indexOfSelectedConnectionProfile];
       initialConnectionParams = initialProfile.params;
     }
 
@@ -115,8 +115,8 @@ export default class ConnectionDetailsPrompt
           <NuclideMutableListSelector
             items={listSelectorItems}
             onItemClicked={this._boundOnProfileClicked}
-            onAddItemClicked={this.props.onAddProfileClicked}
-            onDeleteItemClicked={this._boundOnDeleteProfileClicked}
+            onAddButtonClicked={this.props.onAddProfileClicked}
+            onDeleteButtonClicked={this._boundOnDeleteProfileClicked}
           />
         </div>
       </div>
