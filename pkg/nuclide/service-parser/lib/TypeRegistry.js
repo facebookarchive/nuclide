@@ -196,13 +196,13 @@ export default class TypeRegistry {
     // Since string, number, and boolean are JSON primitives,
     // they require no marshalling. Instead, simply create wrapped transformers
     // that assert the type of their argument.
-    var stringTransformer = async arg => {
+    const stringTransformer = async arg => {
       // Unbox argument.
       arg = (arg instanceof String) ? arg.valueOf() : arg;
       assert(typeof arg === 'string', 'Expected a string argument');
       return arg;
     };
-    var numberTransformer = async arg => {
+    const numberTransformer = async arg => {
       // Unbox argument.
       if (arg instanceof Number) {
         arg = arg.valueOf();
@@ -210,7 +210,7 @@ export default class TypeRegistry {
       assert(typeof arg === 'number', 'Expected a number argument');
       return arg;
     };
-    var booleanTransformer = async arg => {
+    const booleanTransformer = async arg => {
       // Unbox argument
       if (arg instanceof Boolean) {
         arg = arg.valueOf();
@@ -218,14 +218,15 @@ export default class TypeRegistry {
       assert(typeof arg === 'boolean', 'Expected a boolean argument');
       return arg;
     };
-    // We assume an 'any' type requires no marshalling.
-    var anyTransformer = async arg => arg;
+    // We assume an 'any' and 'mixed' types require no marshalling.
+    const identityTransformer = async arg => arg;
 
     // Register these transformers
     this._registerKind('string', stringTransformer, stringTransformer);
     this._registerKind('number', numberTransformer, numberTransformer);
     this._registerKind('boolean', booleanTransformer, booleanTransformer);
-    this._registerKind('any', anyTransformer, anyTransformer);
+    this._registerKind('any', identityTransformer, identityTransformer);
+    this._registerKind('mixed', identityTransformer, identityTransformer);
   }
 
   _registerSpecialTypes(): void {

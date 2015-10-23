@@ -62,6 +62,7 @@ export function validateDefinitions(definitions: Definitions): void {
   function validateType(type: Type): void {
     switch (type.kind) {
       case 'any':
+      case 'mixed':
       case 'string':
       case 'boolean':
       case 'number':

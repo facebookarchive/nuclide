@@ -91,6 +91,23 @@
                         "kind": "any"
                     },
                     "optional": false
+                },
+                {
+                    "location": {
+                        "type": "source",
+                        "fileName": "ValueTypes.def",
+                        "line": 6
+                    },
+                    "name": "valueE",
+                    "type": {
+                        "location": {
+                            "type": "source",
+                            "fileName": "ValueTypes.def",
+                            "line": 6
+                        },
+                        "kind": "mixed"
+                    },
+                    "optional": false
                 }
             ]
         }
@@ -100,14 +117,14 @@
         "location": {
             "type": "source",
             "fileName": "ValueTypes.def",
-            "line": 8
+            "line": 9
         },
         "name": "ValueTypeB",
         "definition": {
             "location": {
                 "type": "source",
                 "fileName": "ValueTypes.def",
-                "line": 8
+                "line": 9
             },
             "kind": "object",
             "fields": [
@@ -115,14 +132,14 @@
                     "location": {
                         "type": "source",
                         "fileName": "ValueTypes.def",
-                        "line": 9
+                        "line": 10
                     },
                     "name": "valueA",
                     "type": {
                         "location": {
                             "type": "source",
                             "fileName": "ValueTypes.def",
-                            "line": 9
+                            "line": 10
                         },
                         "kind": "tuple",
                         "types": [
@@ -130,7 +147,7 @@
                                 "location": {
                                     "type": "source",
                                     "fileName": "ValueTypes.def",
-                                    "line": 9
+                                    "line": 10
                                 },
                                 "kind": "number"
                             },
@@ -138,7 +155,7 @@
                                 "location": {
                                     "type": "source",
                                     "fileName": "ValueTypes.def",
-                                    "line": 9
+                                    "line": 10
                                 },
                                 "kind": "string"
                             }
@@ -150,14 +167,14 @@
                     "location": {
                         "type": "source",
                         "fileName": "ValueTypes.def",
-                        "line": 10
+                        "line": 11
                     },
                     "name": "valueC",
                     "type": {
                         "location": {
                             "type": "source",
                             "fileName": "ValueTypes.def",
-                            "line": 10
+                            "line": 11
                         },
                         "kind": "string"
                     },
@@ -172,13 +189,13 @@
         "location": {
             "type": "source",
             "fileName": "ValueTypes.def",
-            "line": 13
+            "line": 14
         },
         "type": {
             "location": {
                 "type": "source",
                 "fileName": "ValueTypes.def",
-                "line": 13
+                "line": 14
             },
             "kind": "function",
             "argumentTypes": [
@@ -186,7 +203,7 @@
                     "location": {
                         "type": "source",
                         "fileName": "ValueTypes.def",
-                        "line": 13
+                        "line": 14
                     },
                     "kind": "named",
                     "name": "ValueTypeA"
@@ -195,14 +212,14 @@
                     "location": {
                         "type": "source",
                         "fileName": "ValueTypes.def",
-                        "line": 13
+                        "line": 14
                     },
                     "kind": "nullable",
                     "type": {
                         "location": {
                             "type": "source",
                             "fileName": "ValueTypes.def",
-                            "line": 13
+                            "line": 14
                         },
                         "kind": "named",
                         "name": "ValueTypeB"
@@ -213,14 +230,14 @@
                 "location": {
                     "type": "source",
                     "fileName": "ValueTypes.def",
-                    "line": 13
+                    "line": 14
                 },
                 "kind": "promise",
                 "type": {
                     "location": {
                         "type": "source",
                         "fileName": "ValueTypes.def",
-                        "line": 13
+                        "line": 14
                     },
                     "kind": "named",
                     "name": "ValueTypeA"
@@ -234,13 +251,13 @@
         "location": {
             "type": "source",
             "fileName": "ValueTypes.def",
-            "line": 15
+            "line": 16
         },
         "type": {
             "location": {
                 "type": "source",
                 "fileName": "ValueTypes.def",
-                "line": 15
+                "line": 16
             },
             "kind": "function",
             "argumentTypes": [
@@ -248,7 +265,7 @@
                     "location": {
                         "type": "source",
                         "fileName": "ValueTypes.def",
-                        "line": 15
+                        "line": 16
                     },
                     "kind": "named",
                     "name": "ValueTypeA"
@@ -257,14 +274,14 @@
                     "location": {
                         "type": "source",
                         "fileName": "ValueTypes.def",
-                        "line": 15
+                        "line": 16
                     },
                     "kind": "array",
                     "type": {
                         "location": {
                             "type": "source",
                             "fileName": "ValueTypes.def",
-                            "line": 15
+                            "line": 16
                         },
                         "kind": "named",
                         "name": "ValueTypeB"
@@ -275,14 +292,14 @@
                 "location": {
                     "type": "source",
                     "fileName": "ValueTypes.def",
-                    "line": 16
+                    "line": 17
                 },
                 "kind": "promise",
                 "type": {
                     "location": {
                         "type": "source",
                         "fileName": "ValueTypes.def",
-                        "line": 16
+                        "line": 17
                     },
                     "kind": "object",
                     "fields": [
@@ -290,14 +307,14 @@
                             "location": {
                                 "type": "source",
                                 "fileName": "ValueTypes.def",
-                                "line": 17
+                                "line": 18
                             },
                             "name": "field1",
                             "type": {
                                 "location": {
                                     "type": "source",
                                     "fileName": "ValueTypes.def",
-                                    "line": 17
+                                    "line": 18
                                 },
                                 "kind": "string"
                             },
@@ -307,14 +324,14 @@
                             "location": {
                                 "type": "source",
                                 "fileName": "ValueTypes.def",
-                                "line": 18
+                                "line": 19
                             },
                             "name": "field2",
                             "type": {
                                 "location": {
                                     "type": "source",
                                     "fileName": "ValueTypes.def",
-                                    "line": 18
+                                    "line": 19
                                 },
                                 "kind": "string"
                             },
@@ -331,13 +348,13 @@
         "location": {
             "type": "source",
             "fileName": "ValueTypes.def",
-            "line": 21
+            "line": 22
         },
         "type": {
             "location": {
                 "type": "source",
                 "fileName": "ValueTypes.def",
-                "line": 21
+                "line": 22
             },
             "kind": "function",
             "argumentTypes": [
@@ -345,7 +362,7 @@
                     "location": {
                         "type": "source",
                         "fileName": "ValueTypes.def",
-                        "line": 21
+                        "line": 22
                     },
                     "kind": "named",
                     "name": "fs.Stats"
@@ -355,7 +372,7 @@
                 "location": {
                     "type": "source",
                     "fileName": "ValueTypes.def",
-                    "line": 21
+                    "line": 22
                 },
                 "kind": "void"
             }

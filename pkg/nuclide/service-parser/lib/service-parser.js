@@ -272,6 +272,8 @@ class ServiceParser {
     switch (typeAnnotation.type) {
       case 'AnyTypeAnnotation':
         return {location, kind: 'any'};
+      case 'MixedTypeAnnotation':
+        return {location, kind: 'mixed'};
       case 'StringTypeAnnotation':
         return {location, kind: 'string'};
       case 'NumberTypeAnnotation':

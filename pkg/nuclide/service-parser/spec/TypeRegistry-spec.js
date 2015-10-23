@@ -27,6 +27,8 @@ import {
   dateType,
   regExpType,
   bufferType,
+  anyType,
+  mixedType,
 } from '../lib/builtin-types';
 
 describe('TypeRegistry', () => {
@@ -39,26 +41,40 @@ describe('TypeRegistry', () => {
     waitsForPromise(async () => {
       invariant(typeRegistry);
 
-      var expected = 'Hello World';
-      var str = await typeRegistry.unmarshal(
-        await typeRegistry.marshal(expected, stringType),
+      const expected1 = 'Hello World';
+      const str1 = await typeRegistry.unmarshal(
+        await typeRegistry.marshal(expected1, stringType),
         stringType,
       );
-      expect(str).toBe(expected);
+      expect(str1).toBe(expected1);
 
-      var expected = 312213;
-      var num = await typeRegistry.unmarshal(
-        await typeRegistry.marshal(expected, numberType),
+      const expected2 = 312213;
+      const num2 = await typeRegistry.unmarshal(
+        await typeRegistry.marshal(expected2, numberType),
         numberType,
       );
-      expect(num).toBe(expected);
+      expect(num2).toBe(expected2);
 
-      var expected = false;
-      var bool = await typeRegistry.unmarshal(
-        await typeRegistry.marshal(expected, booleanType),
+      const expected3 = false;
+      const bool3 = await typeRegistry.unmarshal(
+        await typeRegistry.marshal(expected3, booleanType),
         booleanType,
       );
-      expect(bool).toBe(expected);
+      expect(bool3).toBe(expected3);
+
+      const expected4 = false;
+      const bool4 = await typeRegistry.unmarshal(
+        await typeRegistry.marshal(expected4, anyType),
+        anyType,
+      );
+      expect(bool4).toBe(expected4);
+
+      const expected5 = 42;
+      const num5 = await typeRegistry.unmarshal(
+        await typeRegistry.marshal(expected5, mixedType),
+        mixedType,
+      );
+      expect(num5).toBe(expected5);
     });
   });
 

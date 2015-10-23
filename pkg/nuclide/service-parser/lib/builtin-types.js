@@ -16,6 +16,7 @@ import type {
   NumberType,
   BooleanType,
   AnyType,
+  MixedType,
   NamedType,
 } from './types';
 
@@ -37,6 +38,11 @@ export function locationToString(location: Location): string {
 export const anyType: AnyType = {
   location: builtinLocation,
   kind: 'any',
+};
+
+export const mixedType: MixedType = {
+  location: builtinLocation,
+  kind: 'mixed',
 };
 
 export const stringType: StringType = {

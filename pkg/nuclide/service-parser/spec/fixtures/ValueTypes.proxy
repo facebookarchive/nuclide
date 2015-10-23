@@ -10,7 +10,7 @@ module.exports = _client => {
       location: {
         type: "source",
         fileName: "ValueTypes.def",
-        line: 13
+        line: 14
       },
       kind: "named",
       name: "ValueTypeA"
@@ -18,14 +18,14 @@ module.exports = _client => {
       location: {
         type: "source",
         fileName: "ValueTypes.def",
-        line: 13
+        line: 14
       },
       kind: "nullable",
       type: {
         location: {
           type: "source",
           fileName: "ValueTypes.def",
-          line: 13
+          line: 14
         },
         kind: "named",
         name: "ValueTypeB"
@@ -34,7 +34,7 @@ module.exports = _client => {
       location: {
         type: "source",
         fileName: "ValueTypes.def",
-        line: 13
+        line: 14
       },
       kind: "named",
       name: "ValueTypeA"
@@ -46,7 +46,7 @@ module.exports = _client => {
       location: {
         type: "source",
         fileName: "ValueTypes.def",
-        line: 15
+        line: 16
       },
       kind: "named",
       name: "ValueTypeA"
@@ -54,14 +54,14 @@ module.exports = _client => {
       location: {
         type: "source",
         fileName: "ValueTypes.def",
-        line: 15
+        line: 16
       },
       kind: "array",
       type: {
         location: {
           type: "source",
           fileName: "ValueTypes.def",
-          line: 15
+          line: 16
         },
         kind: "named",
         name: "ValueTypeB"
@@ -70,21 +70,21 @@ module.exports = _client => {
       location: {
         type: "source",
         fileName: "ValueTypes.def",
-        line: 16
+        line: 17
       },
       kind: "object",
       fields: [{
         location: {
           type: "source",
           fileName: "ValueTypes.def",
-          line: 17
+          line: 18
         },
         name: "field1",
         type: {
           location: {
             type: "source",
             fileName: "ValueTypes.def",
-            line: 17
+            line: 18
           },
           kind: "string"
         },
@@ -93,14 +93,14 @@ module.exports = _client => {
         location: {
           type: "source",
           fileName: "ValueTypes.def",
-          line: 18
+          line: 19
         },
         name: "field2",
         type: {
           location: {
             type: "source",
             fileName: "ValueTypes.def",
-            line: 18
+            line: 19
           },
           kind: "string"
         },
@@ -114,7 +114,7 @@ module.exports = _client => {
       location: {
         type: "source",
         fileName: "ValueTypes.def",
-        line: 21
+        line: 22
       },
       kind: "named",
       name: "fs.Stats"

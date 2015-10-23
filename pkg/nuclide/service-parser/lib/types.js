@@ -49,7 +49,7 @@ export type AliasDefinition = {
 };
 
 // $FlowIssue
-export type Type = NullableType |
+export type Type = NullableType | MixedType |
   AnyType | StringType | BooleanType | NumberType | // Primitive types.
   ObjectType | ArrayType | MapType | SetType | TupleType | // Container types.
   VoidType | PromiseType | ObservableType | // Return types.
@@ -68,6 +68,7 @@ export type FunctionType = {
 
 // Primitive types.
 export type AnyType = { location: Location; kind: 'any' };
+export type MixedType = { location: Location; kind: 'mixed' };
 export type StringType = { location: Location; kind: 'string' };
 export type BooleanType = { location: Location; kind: 'boolean' };
 export type NumberType = { location: Location; kind: 'number' };
