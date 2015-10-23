@@ -1,0 +1,20 @@
+{
+  "name": "nuclide-busy-signal-interfaces",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/types",
+  "version": "0.0.0",
+  "description": "Flow types for nuclide-busy-signal",
+  "nuclide": {
+    "flowCheck": true,
+    "packageType": "Node",
+    "testRunner": "npm"
+  },
+  "devDependencies": {
+    "nuclide-external-interfaces": "0.0.0",
+    "nuclide-jasmine": "0.0.0",
+    "rx": "3.1.1"
+  },
+  "scripts": {
+    "test": "node --harmony node_modules/.bin/jasmine-node-transpiled spec"
+  }
+}

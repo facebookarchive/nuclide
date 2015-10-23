@@ -1,0 +1,27 @@
+'use babel';
+/* @flow */
+
+/*
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ */
+
+import type {Observable} from 'rx';
+
+export type BusySignalMessage = {
+  status: 'busy',
+  // Must be unique to the provider. Used to cancel the message later.
+  id: number,
+  message: string,
+} | {
+  status: 'done',
+  // Cancel the busy signal with this identifier.
+  id: number,
+}
+
+export type BusySignalProvider = {
+  messages: Observable<BusySignalMessage>,
+}
