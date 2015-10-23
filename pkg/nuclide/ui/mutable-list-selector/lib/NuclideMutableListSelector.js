@@ -53,7 +53,6 @@ type State = {
 /* eslint-disable react/prop-types */
 export default class NuclideMutableListSelector
     extends React.Component<DefaultProps, Props, State> {
-  _boundOnAddButtonClicked: mixed;
   _boundOnDeleteButtonClicked: mixed;
 
   constructor(props: Props) {
@@ -61,11 +60,10 @@ export default class NuclideMutableListSelector
     this.state = {
       idOfSelectedItem: props.idOfInitiallySelectedItem,
     };
-    this._boundOnAddButtonClicked = props.onAddButtonClicked.bind(this);
     this._boundOnDeleteButtonClicked = this._onDeleteButtonClicked.bind(this);
   }
 
-  _onDeleteItemClicked() {
+  _onDeleteButtonClicked() {
     this.props.onDeleteButtonClicked(this.state.idOfSelectedItem);
   }
 
@@ -100,7 +98,7 @@ export default class NuclideMutableListSelector
         <div className="nuclide-list-selector button-container">
           <button
             className="nuclide-list-selector button"
-            onClick={this._boundOnAddButtonClicked}>
+            onClick={this.props.onAddButtonClicked}>
             +
           </button>
           <button
