@@ -121,6 +121,11 @@ ATOM_APM_PACKAGE_JSON_TEMPLATE = """\
   },
   "devDependencies": {
     "nuclide-external-interfaces": "0.0.0"
+  },
+  "_atomModuleCache": {
+    "extensions": {
+      ".node": []
+    }
   }
 }
 """
