@@ -15,6 +15,15 @@ const logger = require('nuclide-logging').getLogger();
 
 const ARC_CONFIG_FILE_NAME = '.arcconfig';
 
+export type ArcDiagnostic = {
+  type: string,
+  text: string,
+  filePath: NuclideUri,
+  row: number,
+  col: number,
+  code: ?string,
+};
+
 // Exported for testing
 export const arcConfigDirectoryMap: Map<NuclideUri, ?NuclideUri> = new Map();
 const arcProjectMap: Map<?NuclideUri, ?Object> = new Map();
@@ -55,7 +64,8 @@ export async function getProjectRelativePath(fileName: NuclideUri): Promise<?str
   return arcPath && fileName ? path.relative(arcPath, fileName) : null;
 }
 
-export async function findDiagnostics(pathToFiles: Array<NuclideUri>): Promise {
+export async function findDiagnostics(pathToFiles: Array<NuclideUri>):
+    Promise<Array<ArcDiagnostic>> {
   const arcConfigDirToFiles: Map<string, Array<string>> = new Map();
   await Promise.all(
     pathToFiles.map(async path => {
@@ -71,7 +81,7 @@ export async function findDiagnostics(pathToFiles: Array<NuclideUri>): Promise {
   );
 
   // Kick off all the arc execs at once, then await later so they all happen in parallel.
-  const results: Array<Promise<Array<Object>>> = [];
+  const results: Array<Promise<Array<ArcDiagnostic>>> = [];
   for (const [arcDir, files] of arcConfigDirToFiles) {
     results.push(execArcLint(arcDir, files));
   }
@@ -80,7 +90,8 @@ export async function findDiagnostics(pathToFiles: Array<NuclideUri>): Promise {
   return [].concat(...(await Promise.all(results)));
 }
 
-async function execArcLint(cwd: string, filePaths: Array<NuclideUri>): Promise<Array<Object>> {
+async function execArcLint(cwd: string, filePaths: Array<NuclideUri>):
+    Promise<Array<ArcDiagnostic>> {
   const args: Array<string> = ['lint', '--output', 'json', ...filePaths];
   var options = {'cwd': cwd};
   var {asyncExecute} = require('nuclide-commons');
@@ -135,13 +146,7 @@ function convertLints(
     code: string,
     description: string,
   }>,
-): Array<{
-  type: 'Error' | 'Warning',
-  text: string,
-  row: number,
-  col: number,
-  code: string,
-}> {
+): Array<ArcDiagnostic> {
   return lints.map((lint) => {
     // Choose an appropriate level based on lint['severity'].
     var severity = lint['severity'];

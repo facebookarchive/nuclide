@@ -1,6 +1,5 @@
 [
   {
-    "definition": "nuclide-arcanist-base/lib/ArcanistBaseService.def",
     "implementation": "nuclide-arcanist-base/lib/ArcanistBaseService.js",
     "name": "ArcanistBaseService"
   },
