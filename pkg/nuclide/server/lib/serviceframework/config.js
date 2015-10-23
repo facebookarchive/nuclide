@@ -41,6 +41,10 @@ export function loadServicesConfig(): Array<ConfigEntry> {
  */
 function createServiceConfigObject(jsonConfig: Array<Object>): Array<ConfigEntry> {
   return jsonConfig.map(config => {
+    // TODO(peterhal): Remove this once all services have had their def files removed.
+    if (config.definition == null) {
+      config.definition = config.implementation;
+    }
     return {
       name: config.name,
       definition: resolveServicePath(config.definition),
