@@ -93,14 +93,6 @@ class NuclideServer {
     this._clients = {};
     this._eventSubscriptions = new Map();
 
-    var eventbus = this.eventbus = new EventEmitter();
-    // Any service can use the eventbus API like: `this.publish(eventName, {})`.
-    this.publish = this.broadcast = eventbus.emit.bind(eventbus);
-    this.subscribe = eventbus.on.bind(eventbus);
-    this.subscribeOnce = eventbus.once.bind(eventbus);
-    this.unsubscribe = eventbus.removeListener.bind(eventbus);
-    this._eventEmitters = {};
-
     this._setupServices(); // Setup 1.0 and 2.0 services.
 
     if (trackEventLoop) {
@@ -219,7 +211,6 @@ class NuclideServer {
     this._setupStatsHandler();
     this._setupVersionHandler();
     this._setupShutdownHandler();
-    this._setupSubscriptionHandler();
     this._setupServiceFrameworkSubscriptionHandler();
     this._serviceWithoutServiceFrameworkConfigs = loadConfigsOfServiceWithoutServiceFramework();
     this._serviceWithServiceFrameworkConfigs = loadConfigsOfServiceWithServiceFramework();
@@ -278,24 +269,6 @@ class NuclideServer {
       logger.info('Server received a shutdown request - terminating!');
       // Shutdown after timeout to give a chance to reply success to the shutdown request.
       setTimeout(shutdownServer, SERVER_SHUTDOWN_TIMEOUT_MS);
-    }, 'post');
-  }
-
-  _setupSubscriptionHandler() {
-    this._registerService('/eventbus/subscribe', (clientId: string, channel: string, options: any) => {
-      var client = this._clients[clientId];
-      if (!client) {
-        return logger.error('Client with clientId: %s not found!', clientId);
-      } else if (client.subscriptions[channel]) {
-        return logger.warn('Client %s already subscribed to channel: %s', clientId, channel);
-      } else {
-        var subscibeHandler = client.subscriptions[channel] = (event) =>
-            this._sendSocketMessage(client, {channel, event});
-        this.subscribe(channel, subscibeHandler);
-      }
-      if (options.eventEmitterId) {
-        this._consumeEventEmitter(options.eventEmitterId, channel, options.eventNames);
-      }
     }, 'post');
   }
 
@@ -502,52 +475,6 @@ class NuclideServer {
       result,
       error,
     });
-  }
-
-  /**
-   * This could be used by services to wrap a stream or an event emitter to an id that
-   * a client can subscribe to on the eventbus.
-   */
-  registerEventEmitter(eventEmitter: EventEmitter): number {
-    var id = ++idIncrement;
-    this._eventEmitters[id] = eventEmitter;
-    return id;
-  }
-
-  /**
-   * Starts consuming an event emitter by listening on the requested event names
-   * and publish them on the eventbus for subscribed clients to consume as part of thier services.
-   */
-  _consumeEventEmitter(
-      id: number,
-      channel: string,
-      eventNames: Array<string>) {
-    var eventEmitter = this._eventEmitters[id];
-    if (eventEmitter.consumed) {
-      return;
-    }
-
-    eventNames.forEach((eventName) => {
-      // listen to every event and publish it on the event bus.
-      eventEmitter.on(eventName, (...args) => {
-        this.publish(channel, {
-          eventEmitterId: id,
-          type: eventName,
-          args: args.map((arg) => {
-            // The arguments needs to be json serializable.
-            if (Buffer.isBuffer(arg)) {
-              // e.g. node streams emit 'data' buffers.
-              return arg.toString();
-            } else {
-              // string, number, object, null, boolean, ..etc.
-              return arg;
-            }
-          }),
-        });
-      });
-    });
-
-    eventEmitter.consumed = true;
   }
 
   _sendSocketMessage(client: SocketClient, data: any) {

@@ -18,12 +18,6 @@ var idIncrement = 0;
 class NuclideLocalEventbus extends EventEmitter {
   constructor(options = {}) {
     super();
-    // Servces can use the eventbus API like: `this.publish(eventName, {})`.
-    this.publish = this.broadcast = this.emit;
-    this.subscribe = this.on;
-    this.subscribeOnce = this.once;
-    this.unsubscribe = this.removeListener;
-    this._eventEmitters = {};
     this._options = options;
     this._services = {};
 
@@ -73,32 +67,6 @@ class NuclideLocalEventbus extends EventEmitter {
       throw Error('No service registered with name: ' + serviceName);
     }
     return serviceFunction.handler.apply(this, args);
-  }
-
-  async subscribeToChannel(channel: string, handler: (event: ?any) => void): Promise<Disposable> {
-    this.on(channel, handler);
-    return {
-      dispose: () => this.removeListener(channel, handler),
-    };
-  }
-
-  consumeStream(streamId: number): Promise<Stream> {
-    var streamEvents = ['data', 'error', 'close', 'end'];
-    return this.consumeEventEmitter(streamId, streamEvents, ['end']);
-  }
-
-  consumeEventEmitter(id: number): Promise<EventEmitter> {
-   return Promise.resolve(this.getEventEmitter(id));
-  }
-
-  registerEventEmitter(eventEmitter: EventEmitter): number {
-    var id = ++idIncrement;
-    this._eventEmitters[id] = eventEmitter;
-    return id;
-  }
-
-  getEventEmitter(id: number): EventEmitter {
-    return this._eventEmitters[id];
   }
 
   close(): void {

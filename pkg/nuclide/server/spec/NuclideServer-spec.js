@@ -53,32 +53,6 @@ describe('Nuclide Server test suite', () => {
     waitsFor(() => opened);
   });
 
-  describe('eventbus API', () => {
-    it('can publish and subscribe', () => {
-      var event = null;
-      server.subscribe('foo', (_event) => {
-        event = _event;
-      });
-
-      waitsFor(() => !!event);
-      server.publish('foo', 'bar');
-      expect(event).toBe('bar');
-    });
-
-    it('can wrap and consume an event emitter', () => {
-      var eventEmitter = new EventEmitter();
-      var eventEmitterId = server.registerEventEmitter(eventEmitter);
-      server._consumeEventEmitter(eventEmitterId, 'foo/bar', ['change']);
-
-      var eventHandler = jasmine.createSpy();
-      server.eventbus.on('foo/bar', eventHandler);
-      eventEmitter.emit('change', 'def');
-      eventEmitter.emit('other', 'abc');
-      expect(eventHandler.callCount).toBe(1);
-      expect(eventHandler.argsForCall[0][0]).toEqual({eventEmitterId, type: 'change', args: ['def']});
-    });
-  });
-
   xdescribe('reconnect websocket flow', () => {
     it('server sent messages, while disconnected will still be delievered', () => {
       // Here is the initial message.

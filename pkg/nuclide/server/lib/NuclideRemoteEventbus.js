@@ -31,26 +31,21 @@ export type NuclideRemoteEventbusOptions = {
 
 class NuclideRemoteEventbus {
   socket: ?NuclideSocket;
-  eventbus: EventEmitter;
 
   _rpcRequestId: number;
   serviceFrameworkEventEmitter: EventEmitter;
   _serviceFrameworkRpcEmitter: EventEmitter;
   _serviceFramework3Emitter: EventEmitter;
 
-  _eventEmitters: { [key: number]: EventEmitter };
-
   _clientComponent: ServiceFramework.ClientComponent;
 
   constructor(serverUri: string, options: ?NuclideRemoteEventbusOptions = {}) {
     this.socket = new NuclideSocket(serverUri, options);
     this.socket.on('message', (message) => this._handleSocketMessage(message));
-    this.eventbus = new EventEmitter();
     this.serviceFrameworkEventEmitter = new EventEmitter();
     this._rpcRequestId = 1;
     this._serviceFrameworkRpcEmitter = new EventEmitter();
     this._serviceFramework3Emitter = new EventEmitter();
-    this._eventEmitters = {};
 
     this._clientComponent = new ServiceFramework.ClientComponent(this._serviceFramework3Emitter,
       this.socket, () => this._rpcRequestId++);
@@ -76,16 +71,6 @@ class NuclideRemoteEventbus {
       this._serviceFramework3Emitter.emit(requestId.toString(), hadError, error, result);
       return;
     }
-
-    if (event && event.eventEmitterId) {
-      var {eventEmitterId, type, args} = event;
-      var eventEmitter = this._eventEmitters[eventEmitterId];
-      if (!eventEmitter) {
-        return logger.error('eventEmitter not found: %d', eventEmitterId, type, args);
-      }
-      eventEmitter.emit.apply(eventEmitter, [type].concat(args));
-    }
-    this.eventbus.emit(channel, event);
   }
 
   _subscribeEventOnServer(serviceName: string, methodName: string, serviceOptions: any): Promise<any> {
@@ -204,62 +189,10 @@ class NuclideRemoteEventbus {
     return this._clientComponent.registerType(...args);
   }
 
-  async subscribeToChannel(channel: string, handler: (event: ?any) => void): Promise<Disposable> {
-    await this._callSubscribe(channel);
-    this.eventbus.on(channel, handler);
-    return {
-      dispose: () => this.removeListener(channel, handler),
-    };
-  }
-
-  async _callSubscribe(channel: string, options: ?any = {}): Promise<any> {
-    // Wait for the client to connect, for the server to find a medium to send the events to.
-    await this.socket.waitForConnect();
-    await this.callMethod(
-      /*serviceName*/ 'eventbus',
-      /*methodName*/ 'subscribe',
-      /*methodArgs*/ [this.socket.id, channel, options],
-      /*extraOptions*/ {method: 'POST', json: true}
-    );
-  }
-
-  consumeStream(streamId: number): Promise<EventEmitter> {
-    var streamEvents = ['data', 'error', 'close', 'end'];
-    return this.consumeEventEmitter(streamId, streamEvents, ['end']);
-  }
-
-  /**
-   * Subscribe to an event emitter or stream of events happening on the server.
-   * Will mainly be used for consumption by streaming services:
-   * e.g. like process tailing and watcher service.
-   */
-  async consumeEventEmitter(
-      eventEmitterId: number,
-      eventNames: Array<string>,
-      disposeEventNames: ?Array<string>
-    ): Promise<EventEmitter> {
-
-    var eventEmitter = new EventEmitter();
-    this._eventEmitters[eventEmitterId] = eventEmitter;
-    (disposeEventNames || []).forEach((disposeEventName) =>
-      eventEmitter.once(disposeEventName, () =>  delete this._eventEmitters[eventEmitterId])
-    );
-
-    await this._callSubscribe(eventEmitterChannel(eventEmitterId), {
-      eventEmitterId,
-      eventNames,
-    });
-    return eventEmitter;
-  }
-
   close(): void {
     this.socket.close();
     this.socket = null;
   }
-}
-
-function eventEmitterChannel(id: number) {
-  return 'event_emitter/' + id;
 }
 
 module.exports = NuclideRemoteEventbus;
