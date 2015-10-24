@@ -106,7 +106,7 @@ describe('RemoteFile', () => {
     });
   });
 
-  describe('RemoteDirectory::rename()', () => {
+  describe('RemoteFile::rename()', () => {
     var tempDir;
 
     beforeEach(() => {
@@ -118,12 +118,13 @@ describe('RemoteFile', () => {
     // delegating to `fsPromise` here.
     it('renames existing files', () => {
       waitsForPromise(async () => {
-        var filePath = path.join(tempDir, 'file_to_rename');
+        const filePath = path.join(tempDir, 'file_to_rename');
         fs.writeFileSync(filePath, '');
-        var newFilePath = path.join(tempDir, 'new_file_name');
+        const newFilePath = path.join(tempDir, 'new_file_name');
         expect(fs.existsSync(filePath)).toBe(true);
 
-        var file = new RemoteFile(connectionMock, filePath);
+        const file = new RemoteFile(connectionMock, `nuclide://host123:1234${filePath}`);
+        file._subscribeToNativeChangeEvents = () => {};
         await file.rename(newFilePath);
 
         expect(fs.existsSync(filePath)).toBe(false);
@@ -153,6 +154,7 @@ describe('RemoteFile', () => {
         expect(fs.existsSync(newFilePath)).toBe(false);
 
         var file = new RemoteFile(connectionMock, filePath);
+        file._subscribeToNativeChangeEvents = () => {};
         var result = await file.copy(newFilePath);
         var newFile = new RemoteFile(connectionMock, newFilePath);
         var digest = await newFile.getDigest();

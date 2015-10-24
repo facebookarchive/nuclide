@@ -38,26 +38,4 @@ describe('NuclideLocalEventBus test suite', () => {
     eventBus.close();
   });
 
-  describe('Can call NuclideWatcherService methods', () => {
-    it('calls watchFile()', () => {
-      waitsForPromise(async () => {
-        waits(1010); // Wait for the watchman to settle.
-        var directoryChangeHandler = jasmine.createSpy();
-        var fileChangeHandler = jasmine.createSpy();
-        // Start the project watcher.
-        await client.watchDirectoryRecursive(dirPath, directoryChangeHandler);
-        var watcher = await client.watchFile(filePath, 'utf8');
-        watcher.on('change', fileChangeHandler);
-        expect(watcher instanceof EventEmitter).toBe(true);
-        waits(10);
-        runs(() => fs.writeFileSync(filePath, 'changed contents'));
-        waitsFor(() => fileChangeHandler.callCount > 0);
-        runs(() => {
-          expect(fileChangeHandler.callCount).toBe(1);
-          expect(directoryChangeHandler.callCount).toBe(1);
-          client.unwatchDirectoryRecursive(dirPath);
-        });
-      });
-    });
-  });
 });

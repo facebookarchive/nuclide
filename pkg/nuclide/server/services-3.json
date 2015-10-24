@@ -39,6 +39,11 @@
     "name": "HhvmDebuggerProxyService"
   },
   {
+    "definition": "nuclide-filewatcher-base/lib/FileWatcherService.def",
+    "implementation": "nuclide-filewatcher-base/lib/FileWatcherService.js",
+    "name": "FileWatcherService"
+  },
+  {
     "definition": "lib/services/SourceControlService.def",
     "implementation": "lib/services/SourceControlService.js",
     "name": "SourceControlService"

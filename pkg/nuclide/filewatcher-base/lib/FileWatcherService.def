@@ -1,0 +1,16 @@
+export type watcher$WatchResult = {
+  path: NuclideUri;
+  type: string;
+};
+
+export function watchFile(
+  filePath: NuclideUri
+): Observable<watcher$WatchResult> {}
+
+export function watchDirectory(
+  directoryPath: NuclideUri,
+): Observable<watcher$WatchResult> {}
+
+export function watchDirectoryRecursive(
+  directoryPath: NuclideUri,
+): Observable<string> {}

@@ -1,0 +1,25 @@
+{
+  "name": "nuclide-filewatcher-base",
+  "repository": "https://github.com/facebook/nuclide",
+  "version": "0.0.0",
+  "description": "Watches files and directories on a remote directory using watchman.",
+  "nuclide": {
+    "flowCheck": true,
+    "packageType": "Node",
+    "testRunner": "npm"
+  },
+  "dependencies": {
+    "nuclide-commons": "0.0.0",
+    "nuclide-logging": "0.0.0",
+    "nuclide-watchman-helpers": "0.0.0",
+    "rx": "3.1.1"
+  },
+  "devDependencies": {
+    "nuclide-external-interfaces": "0.0.0",
+    "nuclide-jasmine": "0.0.0",
+    "nuclide-remote-uri": "0.0.0"
+  },
+  "scripts": {
+    "test": "node --harmony node_modules/.bin/jasmine-node-transpiled spec"
+  }
+}

@@ -115,64 +115,6 @@ class NuclideClient {
     );
   }
 
-  async watchFile(filePath: string): Promise<FsWatcher> {
-    var watcherId = await this.eventbus.callMethod(
-      /*serviceName*/ 'watcher',
-      /*methodName*/ 'watchFile',
-      /*methodArgs*/ [filePath],
-      /*extraOptions*/ {method: 'POST', json: true}
-    );
-    return await this.eventbus.consumeEventEmitter(watcherId, ['change', 'rename', 'delete']);
-  }
-
-  async watchDirectory(directoryPath: string): Promise<FsWatcher> {
-    var watcherId = await this.eventbus.callMethod(
-      /*serviceName*/ 'watcher',
-      /*methodName*/ 'watchDirectory',
-      /*methodArgs*/ [directoryPath],
-      /*extraOptions*/ {method: 'POST', json: true}
-    );
-    return await this.eventbus.consumeEventEmitter(watcherId, ['change']);
-  }
-
-  async watchDirectoryRecursive(directoryPath: string, handler: (numberOfChanges: number) => void) {
-    var watchChannel = watchDirectoryChannel(directoryPath);
-    await this.eventbus.subscribeToChannel(watchChannel, handler);
-    await this.eventbus.callMethod(
-      /*serviceName*/ 'watcher',
-      /*methodName*/ 'watchDirectoryRecursive',
-      /*methodArgs*/ [directoryPath, watchChannel],
-      /*extraOptions*/ {method: 'POST', json: true}
-    );
-  }
-
-  unwatchFile(filePath: string): Promise {
-    return this.eventbus.callMethod(
-      /*serviceName*/ 'watcher',
-      /*methodName*/ 'unwatchFile',
-      /*methodArgs*/ [filePath],
-      /*extraOptions*/ {method: 'POST', json: true}
-    );
-  }
-
-  unwatchDirectory(directoryPath: string): Promise {
-    return this.eventbus.callMethod(
-      /*serviceName*/ 'watcher',
-      /*methodName*/ 'unwatchDirectory',
-      /*methodArgs*/ [directoryPath],
-      /*extraOptions*/ {method: 'POST', json: true}
-    );
-  }
-
-  unwatchDirectoryRecursive(directoryPath: string): Promise {
-    return this.eventbus.callMethod(
-      /*serviceName*/ 'watcher',
-      /*methodName*/ 'unwatchDirectoryRecursive',
-      /*methodArgs*/ [directoryPath],
-      /*extraOptions*/ {method: 'POST', json: true}
-    );
-  }
-
   doSearchQuery(rootDirectory:string, provider: string, query: string): Promise {
     return this.eventbus.callMethod(
       /*serviceName*/ 'search',
@@ -291,7 +233,3 @@ class NuclideClient {
 }
 
 module.exports = NuclideClient;
-
-function watchDirectoryChannel(directoryPath: string) {
-  return 'watch' + directoryPath;
-}

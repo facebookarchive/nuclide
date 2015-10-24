@@ -5,10 +5,6 @@
   },
   {
     "useServiceFramework": false,
-    "path": "lib/services/NuclideWatcherService.js"
-  },
-  {
-    "useServiceFramework": false,
     "path": "lib/services/NuclideHackService.js"
   },
   {

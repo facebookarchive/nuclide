@@ -11,22 +11,33 @@
 
 import type {FileSystemService} from 'nuclide-server/lib/services/FileSystemServiceType';
 import type RemoteConnection from './RemoteConnection';
+import type RemoteFile from './RemoteFile';
 
-var path = require('path');
-var {Disposable, Emitter} = require('atom');
-var logger = require('nuclide-logging').getLogger();
-var remoteUri = require('nuclide-remote-uri');
+import invariant from 'assert';
+import path from 'path';
+import {Disposable, Emitter} from 'atom';
+import {getLogger} from 'nuclide-logging';
+import remoteUri from 'nuclide-remote-uri';
 
-var MARKER_PROPERTY_FOR_REMOTE_DIRECTORY = '__nuclide_remote_directory__';
+const logger = getLogger();
+
+const MARKER_PROPERTY_FOR_REMOTE_DIRECTORY = '__nuclide_remote_directory__';
 
 /* Mostly implements https://atom.io/docs/api/latest/Directory */
 class RemoteDirectory {
-  static isRemoteDirectory(directory: Directory | RemoteDirectory): boolean {
+  static isRemoteDirectory(directory: atom$Directory | RemoteDirectory): boolean {
     return directory[MARKER_PROPERTY_FOR_REMOTE_DIRECTORY] === true;
   }
 
-  _watchSubscription: ?FsWatcher;
+  _watchSubscription: ?atom$Disposable;
   _remote: RemoteConnection;
+  _uri: string;
+  _emitter: atom$Emitter;
+  _subscriptionCount: number;
+  _host: string;
+  _localPath: string;
+  _hgRepositoryDescription: ?string;
+  _watchSubscription: Observable;
 
   /**
    * @param uri should be of the form "nuclide://example.com:9090/path/to/directory".
@@ -37,7 +48,9 @@ class RemoteDirectory {
     this._uri = uri;
     this._emitter = new Emitter();
     this._subscriptionCount = 0;
-    var {path: directoryPath, protocol, host} = remoteUri.parse(uri);
+    const {path: directoryPath, protocol, host} = remoteUri.parse(uri);
+    invariant(protocol);
+    invariant(host);
     /** In the example, this would be "nuclide://example.com:9090". */
     this._host = protocol + '//' + host;
     /** In the example, this would be "/path/to/directory". */
@@ -46,55 +59,60 @@ class RemoteDirectory {
     this._hgRepositoryDescription = options ? options.hgRepositoryDescription : null;
   }
 
-  onDidChange(callback): Disposable {
+  onDidChange(callback: () => any): atom$Disposable {
     this._willAddSubscription();
     return this._trackUnsubscription(this._emitter.on('did-change', callback));
   }
 
-  async _willAddSubscription(): Promise {
+  _willAddSubscription(): void {
     this._subscriptionCount++;
-    if (this._pendingSubscription) {
-      return;
-    }
-    this._pendingSubscription = true;
     try {
-      await this._subscribeToNativeChangeEvents();
+      this._subscribeToNativeChangeEvents();
     } catch (err) {
       logger.error('Failed to subscribe RemoteDirectory:', this._localPath, err);
-    } finally {
-      this._pendingSubscription = false;
     }
   }
 
-  async _subscribeToNativeChangeEvents(): Promise {
+  _subscribeToNativeChangeEvents(): void {
     if (this._watchSubscription) {
       return;
     }
-    this._watchSubscription = await this._remote.getClient().watchDirectory(this._localPath);
-    this._watchSubscription.on('change', (change) => this._handleNativeChangeEvent(change));
+    const {watchDirectory} = this._getService('FileWatcherService');
+    const watchStream = watchDirectory(this._uri);
+    this._watchSubscription = watchStream.subscribe(watchUpdate => {
+      logger.debug(`watchDirectory update:`, watchUpdate);
+      if (watchUpdate.type === 'change') {
+        return this._handleNativeChangeEvent();
+      }
+    }, error => {
+      logger.error('Failed to subscribe RemoteDirectory:', this._uri, error);
+    }, () => {
+      // Nothing needs to be done if the root directory watch has ended.
+      logger.debug(`watchDirectory ended: ${this._uri}`);
+    });
   }
 
-  _handleNativeChangeEvent(changes: Array<FileChange>) {
-    this._emitter.emit('did-change', changes);
+  _handleNativeChangeEvent(): void {
+    this._emitter.emit('did-change');
   }
 
-  _trackUnsubscription(subscription): Disposable {
+  _trackUnsubscription(subscription: atom$Disposable): atom$Disposable {
     return new Disposable(() => {
       subscription.dispose();
       this._didRemoveSubscription();
     });
   }
 
-  _didRemoveSubscription(): Promise {
+  _didRemoveSubscription(): void {
     this._subscriptionCount--;
     if (this._subscriptionCount === 0) {
       return this._unsubscribeFromNativeChangeEvents();
     }
   }
 
-  async _unsubscribeFromNativeChangeEvents(): Promise {
+  _unsubscribeFromNativeChangeEvents(): void {
     if (this._watchSubscription) {
-      await this._remote.getClient().unwatchDirectory(this._localPath);
+      this._watchSubscription.dispose();
       this._watchSubscription = null;
     }
   }
@@ -111,13 +129,13 @@ class RemoteDirectory {
     return this._isRoot(this._localPath);
   }
 
-  existsSync() {
+  existsSync(): boolean {
     return false;
   }
 
-  _isRoot(filePath) {
+  _isRoot(filePath): boolean {
     filePath = path.normalize(filePath);
-    var parts = path.parse(filePath);
+    const parts = path.parse(filePath);
     return parts.root === filePath;
   }
 
@@ -146,7 +164,7 @@ class RemoteDirectory {
       return uri;
     }
     // Note: host of uri must match this._host.
-    var subpath = remoteUri.parse(uri).path;
+    const subpath = remoteUri.parse(uri).path;
     return path.relative(this._localPath, subpath);
   }
 
@@ -154,23 +172,23 @@ class RemoteDirectory {
     if (this.isRoot()) {
       return this;
     } else {
-      var uri = this._host + path.normalize(path.join(this._localPath, '..'));
+      const uri = this._host + path.normalize(path.join(this._localPath, '..'));
       return this._remote.createDirectory(uri);
     }
   }
 
   getFile(filename: string): RemoteFile {
-    var uri = this._host + path.join(this._localPath, filename);
+    const uri = this._host + path.join(this._localPath, filename);
     return this._remote.createFile(uri);
   }
 
-  getSubdirectory(dirname: string): string {
-    var uri = this._host + path.join(this._localPath, dirname);
+  getSubdirectory(dirname: string): RemoteDirectory {
+    const uri = this._host + path.join(this._localPath, dirname);
     return this._remote.createDirectory(uri);
   }
 
   async create(): Promise<boolean> {
-    var created = await this._getFileSystemService().mkdirp(this._localPath);
+    const created = await this._getFileSystemService().mkdirp(this._localPath);
     if (this._subscriptionCount > 0) {
       this._subscribeToNativeChangeEvents();
     }
@@ -190,31 +208,35 @@ class RemoteDirectory {
 
     // Unsubscribe from the old `this._localPath`. This must be done before
     // setting the new `this._localPath`.
-    await this._unsubscribeFromNativeChangeEvents();
+    this._unsubscribeFromNativeChangeEvents();
 
-    var {protocol, host} = remoteUri.parse(this._uri);
+    const {protocol, host} = remoteUri.parse(this._uri);
     this._localPath = newPath;
+    invariant(protocol);
+    invariant(host);
     this._uri = protocol + '//' + host + this._localPath;
 
     // Subscribe to changes for the new `this._localPath`. This must be done
     // after setting the new `this._localPath`.
     if (this._subscriptionCount > 0) {
-      await this._subscribeToNativeChangeEvents();
+      this._subscribeToNativeChangeEvents();
     }
   }
 
-  getEntriesSync() {
+  getEntriesSync(): Array<RemoteFile | RemoteDirectory> {
     throw new Error('not implemented');
   }
 
-  async getEntries(callback) {
-    var entries = await this._getFileSystemService().readdir(this._localPath);
-    var directories = [];
-    var files = [];
+  async getEntries(
+    callback: (error: ?Error, entries: ?Array<RemoteFile | RemoteDirectory>) => any,
+  ): Promise<void> {
+    const entries = await this._getFileSystemService().readdir(this._localPath);
+    const directories = [];
+    const files = [];
     entries.sort((a, b) => {
       return a.file.toLowerCase().localeCompare(b.file.toLowerCase());
     }).forEach((entry) => {
-      var uri = this._host + path.join(this._localPath, entry.file);
+      const uri = this._host + path.join(this._localPath, entry.file);
       if (entry.stats.isFile()) {
         files.push(this._remote.createFile(uri));
       } else {

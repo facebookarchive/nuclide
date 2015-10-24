@@ -83,24 +83,19 @@ describe('RemoteDirectory::relativize()', () => {
 
 describe('RemoteDirectory::getEntries()', () => {
   it('sorts directories then files alphabetically case insensitive', () => {
-    var remote = jasmine.createSpyObj('RemoteConnection', ['getClient', 'createDirectory', 'createFile']);
-    var client = jasmine.createSpyObj('NuclideClient', ['readdir']);
+    connectionMock.createDirectory = (uri) => {
+      return new RemoteDirectory(connectionMock, uri);
+    };
 
-    remote.getClient.andReturn(client);
-
-    remote.createDirectory.andCallFake((uri) => {
-      return new RemoteDirectory(remote, uri);
-    });
-
-    remote.createFile.andCallFake((uri) => {
-      return new RemoteFile(remote, uri);
-    });
+    connectionMock.createFile = (uri) => {
+      return new RemoteFile(connectionMock, uri);
+    };
 
     var fileStats = {isFile() {return true;}};
     var directoryStats = {isFile() {return false;}};
 
     // Directories should sort first, then files, and case should be ignored
-    client.readdir.andReturn([
+    spyOn(connectionMock.getClient(), 'readdir').andReturn([
       {file: 'Aa', stats: fileStats},
       {file: 'a', stats: fileStats},
       {file: 'Bb', stats: directoryStats},
@@ -108,11 +103,11 @@ describe('RemoteDirectory::getEntries()', () => {
     ]);
 
     var path = 'nuclide://example.com:9090/';
-    var remoteDirectory = new RemoteDirectory(remote, path);
+    const remoteDirectory = new RemoteDirectory(connectionMock, path);
 
     remoteDirectory.getEntries((err, entries) => {
       expect(err).toBe(null);
-      var sortedEntries = entries.map((entry) => entry.getBaseName());
+      const sortedEntries = entries.map((entry) => entry.getBaseName());
       expect(sortedEntries).toEqual(['b', 'Bb', 'a', 'Aa']);
     });
   });
@@ -188,10 +183,10 @@ describe('RemoteDirectory::delete()', () => {
 
   it('deletes the existing directory', () => {
     waitsForPromise(async () => {
-      var directoryPath = path.join(tempDir, 'directory_to_delete');
+      const directoryPath = path.join(tempDir, 'directory_to_delete');
       fs.mkdirSync(directoryPath);
       fs.mkdirSync(path.join(directoryPath, 'subdir'));
-      var directory = new RemoteDirectory(connectionMock, directoryPath);
+      const directory = new RemoteDirectory(connectionMock, `nuclide://host13:1234${directoryPath}`);
       expect(fs.existsSync(directoryPath)).toBe(true);
       await directory.delete();
       expect(fs.existsSync(directoryPath)).toBe(false);
@@ -200,8 +195,8 @@ describe('RemoteDirectory::delete()', () => {
 
   it('deletes the non-existent directory', () => {
     waitsForPromise(async () => {
-      var directoryPath = path.join(tempDir, 'directory_to_delete');
-      var directory = new RemoteDirectory(connectionMock, directoryPath);
+      const directoryPath = path.join(tempDir, 'directory_to_delete');
+      const directory = new RemoteDirectory(connectionMock, `nuclide://host13:1234${directoryPath}`);
       await directory.delete();
       expect(fs.existsSync(directoryPath)).toBe(false);
     });
@@ -220,12 +215,12 @@ describe('RemoteDirectory::rename()', () => {
   // delegating to `fsPromise` here.
   it('renames existing directories', () => {
     waitsForPromise(async () => {
-      var directoryPath = path.join(tempDir, 'directory_to_rename');
+      const directoryPath = path.join(tempDir, 'directory_to_rename');
       fs.mkdirSync(directoryPath);
-      var newDirectoryPath = path.join(tempDir, 'new_directory_name');
+      const newDirectoryPath = path.join(tempDir, 'new_directory_name');
       expect(fs.existsSync(directoryPath)).toBe(true);
 
-      var directory = new RemoteDirectory(connectionMock, directoryPath);
+      const directory = new RemoteDirectory(connectionMock, `nuclide://host13:1234${directoryPath}`);
       await directory.rename(newDirectoryPath);
 
       expect(fs.existsSync(directoryPath)).toBe(false);
@@ -247,7 +242,8 @@ xdescribe('RemoteDirectory::onDidChange()', () => {
     filePath = path.join(directoryPath, 'sample_file.txt');
     fs.writeFileSync(filePath, 'sample contents!');
     waitsForPromise(() => connectionMock.getClient().watchDirectoryRecursive(directoryPath));
-    waits(WATCHMAN_SETTLE_TIME_MS + /* buffer */ 10); // wait for the watchman to settle on the created directory and file.
+    // wait for the watchman to settle on the created directory and file.
+    waits(WATCHMAN_SETTLE_TIME_MS + /* buffer */ 10);
   });
 
   afterEach(() => {

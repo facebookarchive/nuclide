@@ -21,6 +21,8 @@ describe('NuclideTextBuffer', () => {
   beforeEach(() => {
     connection = new RemoteConnection({});
     connection._config = {host: 'most.fb.com', port:9090};
+    // Mock watcher service handlers registry.
+    connection._addHandlersForEntry = () => {};
     buffer = new NuclideTextBuffer(connection, {});
     // Disable file watch subscriptions, not needed here.
     buffer.subscribeToFile = () => {};

@@ -226,7 +226,7 @@ class RemoteConnection {
     return remoteUri.parse(uri).path;
   }
 
-  createDirectory(uri: string): ?RemoteDirectory {
+  createDirectory(uri: string): RemoteDirectory {
     var {path} = remoteUri.parse(uri);
     path = require('path').normalize(path);
 
@@ -257,7 +257,7 @@ class RemoteConnection {
     this._hgRepositoryDescription = hgRepositoryDescription;
   }
 
-  createFile(uri: string): ?RemoteFile {
+  createFile(uri: string): RemoteFile {
     var {path} = remoteUri.parse(uri);
     path = require('path').normalize(path);
 
@@ -274,7 +274,7 @@ class RemoteConnection {
     return entry;
   }
 
-  _addHandlersForEntry(entry: atom$File | atom$Directory): void {
+  _addHandlersForEntry(entry: RemoteFile | RemoteDirectory): void {
     var oldPath = entry.getLocalPath();
     var renameSubscription = entry.onDidRename(() => {
       delete this._entries[oldPath];
@@ -312,14 +312,6 @@ class RemoteConnection {
 
       this._monitorConnectionHeartbeat();
 
-      // Start watching the project for changes.
-      client.watchDirectoryRecursive(this._config.cwd, /* do nothing on change */() => {}).catch(err => {
-        var warningMessage = 'Watcher failed to start - watcher features disabled!<br/>' +
-            (err.message ? ('DETAILS: ' + err.message) : '');
-        // Add a persistent warning message to make sure the user sees it and intentionally dismissing it.
-        atom.notifications.addWarning(warningMessage, {dismissable: true});
-      });
-
       // A workaround before Atom 2.0: see ::getHgRepoInfo.
       await this._setHgRepoInfo();
 
@@ -329,12 +321,39 @@ class RemoteConnection {
 
       // Save to cache.
       this._addConnection();
+      this._watchRootProjectDirectory();
     }
   }
 
   _addConnection() {
     _connections.push(this);
     _emitter.emit('did-add', this);
+  }
+
+  _watchRootProjectDirectory(): void {
+    // TODO(peterhal): move singleton from main.js to client.js
+    const {getServiceByNuclideUri} = require('./main');
+    const rootDirectoryUri = this.getUriForInitialWorkingDirectory();
+    const {watchDirectoryRecursive} = getServiceByNuclideUri(
+      'FileWatcherService', rootDirectoryUri
+    );
+    // Start watching the project for changes and initialize the root watcher
+    // for next calls to `watchFile` and `watchDirectory`.
+    const watchStream = watchDirectoryRecursive(rootDirectoryUri);
+    const subscription = watchStream.subscribe(watchUpdate => {
+      // Nothing needs to be done if the root directory was watched correctly.
+      // Let's just console log it anyway.
+      logger.info(`Watcher Features Initialized for project: ${rootDirectoryUri}`, watchUpdate);
+    }, error => {
+      const warningMessage = 'Watcher failed to start - watcher features disabled!<br/>' +
+          'DETAILS: ' + (error.message || error);
+      // Add a persistent warning message to make sure the user sees it before dismissing.
+      atom.notifications.addWarning(warningMessage, {dismissable: true});
+    }, () => {
+      // Nothing needs to be done if the root directory watch has ended.
+      logger.info(`Watcher Features Ended for project: ${rootDirectoryUri}`);
+    });
+    this._subscriptions.add(subscription);
   }
 
   close(): void {

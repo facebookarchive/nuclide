@@ -25,7 +25,7 @@ type WatchmanSubscriptionResponse = {
   files: Array<FileChange>;
 };
 
-type FileChange = {
+export type FileChange = {
   name: string;
   new: boolean;
   exists: boolean;
