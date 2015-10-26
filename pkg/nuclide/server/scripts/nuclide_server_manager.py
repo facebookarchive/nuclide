@@ -28,16 +28,18 @@ from process_info import ProcessInfo
 
 
 try:
-    from fb.nuclide_config import EXTRA_NODE_PATHS, OPEN_PORTS
+    from fb.nuclide_config import EXTRA_NODE_PATHS, OPEN_PORTS, HOME_FOLDER
 except ImportError as e:
     # Default extra $PATH elements for Node v0.12.
     EXTRA_NODE_PATHS = []
     # Default open ports.
     OPEN_PORTS = [9090, 9091, 9092, 9093]
+    # Default home folder.
+    HOME_FOLDER = os.path.expanduser('~')
     pass
 
 # Certificates store is ~/.certs
-CERTS_DIR = os.path.join(os.path.expanduser('~'), '.certs')
+CERTS_DIR = os.path.join(HOME_FOLDER, '.certs')
 CERTS_EXPIRATION_DAYS = 7
 NODE_PATHS = EXTRA_NODE_PATHS + ['/opt/local/bin', '/usr/local/bin']
 
