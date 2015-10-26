@@ -15,7 +15,7 @@ var {CompositeDisposable} = require('atom');
 
 import {track} from 'nuclide-analytics';
 
-var {JS_GRAMMARS} = require('./constants.js');
+import {JS_GRAMMARS, JAVASCRIPT_WORD_REGEX} from './constants.js';
 var GRAMMARS_STRING = JS_GRAMMARS.join(', ');
 var diagnosticsOnFlySetting = 'nuclide-flow.diagnosticsOnFly';
 
@@ -92,6 +92,7 @@ module.exports = {
     var getSuggestionForWord =
         flowHyperclickProvider.getSuggestionForWord.bind(flowHyperclickProvider);
     return {
+      wordRegExp: JAVASCRIPT_WORD_REGEX,
       priority: 20,
       providerName: PACKAGE_NAME,
       getSuggestionForWord,

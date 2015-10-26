@@ -9,6 +9,6 @@
  * the root directory of this source tree.
  */
 
-module.exports = {
-  JS_GRAMMARS: ['source.js', 'source.js.jsx'],
-};
+export const JS_GRAMMARS = Object.freeze(['source.js', 'source.js.jsx']);
+
+export const JAVASCRIPT_WORD_REGEX = /[a-zA-Z0-9_$]+/g;

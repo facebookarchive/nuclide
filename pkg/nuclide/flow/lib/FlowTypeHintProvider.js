@@ -15,7 +15,7 @@ var {extractWordAtPosition} = require('nuclide-atom-helpers');
 var {getServiceByNuclideUri} = require('nuclide-client');
 var {Range} = require('atom');
 
-const JAVASCRIPT_WORD_REGEX = /[a-zA-Z0-9_$]+/g;
+import {JAVASCRIPT_WORD_REGEX} from './constants';
 
 export class FlowTypeHintProvider {
   async typeHint(editor: TextEditor, position: atom$Point): Promise<?TypeHint> {
