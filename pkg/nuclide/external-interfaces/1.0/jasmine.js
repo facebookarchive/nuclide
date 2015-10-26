@@ -66,6 +66,7 @@ type JasmineSpy = {
 };
 
 declare function spyOn(object: Object, method: string): JasmineSpy;
+declare function unspy(obj: Object, prop: string): void;
 
 // Mocking the JavaScript Clock
 // https://jasmine.github.io/1.3/introduction.html#section-Mocking_the_JavaScript_Clock

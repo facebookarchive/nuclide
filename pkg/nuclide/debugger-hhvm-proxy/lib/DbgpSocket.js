@@ -10,8 +10,9 @@
  */
 
 
-var {log, logError, parseDbgpMessages} = require('./utils');
+var {log, logError} = require('./utils');
 var {EventEmitter} = require('events');
+import {DbgpMessageHandler, getDbgpMessageHandlerInstance} from './DbgpMessageHandler';
 import type {Disposable} from 'nuclide-commons';
 import type {Socket} from 'net';
 
@@ -81,6 +82,7 @@ class DbgpSocket {
   _calls: Map<number, {command: string; complete: (results: Object) => void}>;
   _emitter: EventEmitter;
   _isClosed: boolean;
+  _messageHandler: DbgpMessageHandler;
 
   constructor(socket: Socket) {
     this._socket = socket;
@@ -88,6 +90,7 @@ class DbgpSocket {
     this._calls = new Map();
     this._emitter = new EventEmitter();
     this._isClosed = false;
+    this._messageHandler = getDbgpMessageHandlerInstance();
 
     this._socket.on('end', this._onEnd.bind(this));
     this._socket.on('error', this._onError.bind(this));
@@ -114,7 +117,7 @@ class DbgpSocket {
   _onData(data: Buffer | string): void {
     var message = data.toString();
     log('Recieved data: ' + message);
-    var responses = parseDbgpMessages(message);
+    var responses = this._messageHandler.parseMessages(message);
     responses.forEach(r => {
       var response = r.response;
       if (response) {

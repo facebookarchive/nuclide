@@ -10,7 +10,7 @@
  */
 
 
-var {makeDbgpMessage} = require('../lib/utils');
+var {makeMessage} = require('../lib/utils');
 var {
   DbgpSocket,
   COMMAND_RUN,
@@ -22,16 +22,6 @@ var {
   STATUS_END,
 } = require('../lib/DbgpSocket');
 var {idOfFrame, functionOfFrame, fileOfFrame, locationOfFrame} = require('../lib/frame');
-
-function makeMessage(obj, body) {
-  body = body || '';
-  var result = '<?xml version="1.0" encoding="iso-8859-1"?><response xmlns="urn:debugger_protocol_v1" xmlns:xdebug="http://xdebug.org/dbgp/xdebug"';
-  for (var key in obj) {
-    result += ' ' + key + '="' + obj[key] + '"';
-  }
-  result += '>' + body + '</response>';
-  return makeDbgpMessage(result);
-}
 
 describe('debugger-hhvm-proxy DbgpSocket', () => {
     var socket;

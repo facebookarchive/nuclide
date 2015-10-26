@@ -18,6 +18,7 @@ var {
 } = require('./utils');
 
 var {Emitter} = require('event-kit');
+import {DbgpMessageHandler, getDbgpMessageHandlerInstance} from './DbgpMessageHandler';
 
 import type {Socket, Server} from 'net';
 
@@ -59,11 +60,13 @@ export class DbgpConnector {
   _config: ConnectionConfig;
   _server: ?Server;
   _emitter: Emitter;
+  _messageHandler: DbgpMessageHandler;
 
   constructor(config: ConnectionConfig) {
     this._config = config;
     this._server = null;
     this._emitter = new Emitter();
+    this._messageHandler = getDbgpMessageHandlerInstance();
   }
 
   onAttach(callback: (socket: Socket) => void): Disposable {
@@ -135,7 +138,7 @@ export class DbgpConnector {
 
     var messages;
     try {
-      messages = parseDbgpMessages(data.toString());
+      messages = this._messageHandler.parseMessages(data.toString());
     } catch (error) {
       failConnection('Non XML connection string: ' + data.toString() + '. Discarding connection.');
       return;
