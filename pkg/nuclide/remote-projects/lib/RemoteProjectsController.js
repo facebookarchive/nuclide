@@ -106,7 +106,10 @@ class RemoteProjectsController {
       tooltip.dispose();
     }));
 
-    this._updateConnectionStatus(atom.workspace.getActiveTextEditor());
+    const textEditor = atom.workspace.getActiveTextEditor();
+    if (textEditor != null) {
+      this._updateConnectionStatus(textEditor);
+    }
   }
 
   _renderStatusBar(connectionState: number, fileUri?: string): void {
