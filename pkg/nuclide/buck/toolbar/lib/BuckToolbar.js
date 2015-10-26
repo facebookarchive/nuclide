@@ -73,7 +73,7 @@ class BuckToolbar extends React.Component {
     this._disposables.dispose();
   }
 
-  _onActivePaneItemChanged(item: mixed) {
+  _onActivePaneItemChanged(item: ?Object) {
     if (!isTextEditor(item)) {
       return;
     }

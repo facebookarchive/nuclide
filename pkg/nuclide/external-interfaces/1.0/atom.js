@@ -643,7 +643,7 @@ declare class atom$Workspace {
 
   // Pane Items
   getPaneItems(): Array<Object>;
-  getActivePaneItem(): Object;
+  getActivePaneItem(): ?Object;
   getTextEditors(): Array<atom$TextEditor>;
   getActiveTextEditor(): ?atom$TextEditor;
 
