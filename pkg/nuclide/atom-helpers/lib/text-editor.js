@@ -9,8 +9,10 @@
  * the root directory of this source tree.
  */
 
-export function isTextEditor(item: any): boolean {
-  if (typeof atom.workspace.buildTextEditor === 'function') {
+export function isTextEditor(item: ?any): boolean {
+  if (item == null) {
+    return false;
+  } else if (typeof atom.workspace.buildTextEditor === 'function') {
     // If buildTextEditor is present, then accessing the TextEditor constructor will trigger a
     // deprecation warning. Atom recommends testing for the existence of the public method of
     // TextEditor that you are using as a proxy for whether the object is a TextEditor:
