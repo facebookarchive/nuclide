@@ -27,7 +27,8 @@ var BuckToolbarActions = require('./BuckToolbarActions');
 type BuckRunDetails = {
   pid?: number;
 };
-import type {ProcessOutputDataHandlers} from 'nuclide-process-output-store/lib/types';
+import type {ProcessOutputDataHandlers, ProcessOutputStore as ProcessOutputStoreType}
+  from 'nuclide-process-output-store/lib/types';
 import type {BuckProject} from 'nuclide-buck-base/lib/BuckProject';
 import ReactNativeServerManager from './ReactNativeServerManager';
 import ReactNativeServerActions from './ReactNativeServerActions';
@@ -50,6 +51,7 @@ class BuckToolbarStore {
   _simulator: ?string;
   _isReactNativeApp: boolean;
   _isReactNativeServerMode: boolean;
+  _buckProcessOutputStore: ?ProcessOutputStoreType;
 
   constructor(dispatcher: Dispatcher) {
     this._dispatcher = dispatcher;
@@ -104,6 +106,9 @@ class BuckToolbarStore {
 
   dispose() {
     this._reactNativeServerManager.dispose();
+    if (this._buckProcessOutputStore) {
+      this._buckProcessOutputStore.stopProcess();
+    }
   }
 
   subscribe(callback: () => void): Disposable {
@@ -346,16 +351,17 @@ class BuckToolbarStore {
       };
     };
 
-    var buckRunPromise: Promise<BuckRunDetails> = new Promise(function (resolve, reject) {
-      var {ProcessOutputStore} = require('nuclide-process-output-store');
-      var processOutputStore = new ProcessOutputStore(runProcessWithHandlers);
-      var {handleBuckAnsiOutput} = require('nuclide-process-output-handler');
+    const buckRunPromise: Promise<BuckRunDetails> = new Promise((resolve, reject) => {
+      const {ProcessOutputStore} = require('nuclide-process-output-store');
+      const processOutputStore = new ProcessOutputStore(runProcessWithHandlers);
+      const {handleBuckAnsiOutput} = require('nuclide-process-output-handler');
 
-      var exitSubscription = processOutputStore.onProcessExit((exitCode: number) => {
+      this._buckProcessOutputStore = processOutputStore;
+      const exitSubscription = processOutputStore.onProcessExit((exitCode: number) => {
         if (exitCode === 0 && run) {
           // Get the process ID.
-          var allBuildOutput = processOutputStore.getStdout() || '';
-          var pidMatch = allBuildOutput.match(BUCK_PROCESS_ID_REGEX);
+          const allBuildOutput = processOutputStore.getStdout() || '';
+          const pidMatch = allBuildOutput.match(BUCK_PROCESS_ID_REGEX);
           if (pidMatch) {
             // Index 1 is the captured pid.
             resolve({pid: parseInt(pidMatch[1], 10)});
@@ -364,6 +370,7 @@ class BuckToolbarStore {
           resolve({});
         }
         exitSubscription.dispose();
+        this._buckProcessOutputStore = null;
       });
 
       runCommandInNewPane('buck', processOutputStore, handleBuckAnsiOutput);
