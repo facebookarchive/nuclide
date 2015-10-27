@@ -1,0 +1,19 @@
+{
+  "name": "nuclide-busy-signal-provider-base",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "Utilities to help Atom packages implement the provider interface for nuclide-busy-signal.",
+  "nuclide": {
+    "packageType": "Node",
+    "testRunner": "apm"
+  },
+  "dependencies": {
+    "nuclide-commons": "0.0.0",
+    "rx": "3.1.1"
+  },
+  "devDependencies": {
+    "nuclide-busy-signal-interfaces": "0.0.0",
+    "nuclide-external-interfaces": "0.0.0"
+  }
+}
