@@ -114,8 +114,8 @@ export default class ConnectionDetailsForm extends React.Component {
             className="nuclide-password native-key-bindings"
             disabled={activeAuthMethod !== SupportedMethods.PASSWORD}
             ref="password"
-            onClick={this._handlePasswordInputClick}
-            onKeyUp={this._onKeyUp}
+            onClick={this._handlePasswordInputClick.bind(this)}
+            onKeyUp={this._onKeyUp.bind(this)}
           />
         </div>
       </div>
@@ -129,7 +129,7 @@ export default class ConnectionDetailsForm extends React.Component {
           <AtomInput
             ref="pathToPrivateKey"
             disabled={activeAuthMethod !== SupportedMethods.PRIVATE_KEY}
-            onClick={this._handleKeyFileInputClick}
+            onClick={this._handleKeyFileInputClick.bind(this)}
             placeholder="Path to private key"
             initialValue={this.state.pathToPrivateKey}
           />
@@ -165,7 +165,7 @@ export default class ConnectionDetailsForm extends React.Component {
               sshAgentLabel,
               privateKeyLabel,
             ]}
-            onSelectedChange={this.handleAuthMethodChange}
+            onSelectedChange={this.handleAuthMethodChange.bind(this)}
             selectedIndex={this.state.selectedAuthMethodIndex}
           />
         </div>
