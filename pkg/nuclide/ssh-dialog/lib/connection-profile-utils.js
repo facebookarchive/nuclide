@@ -42,6 +42,9 @@ export function getDefaultConnectionProfile(): NuclideRemoteConnectionProfile {
     remoteServerCommand = lastConfig.remoteServerCommand;
   }
   const dialogSettings = {...defaultConnectionSettings, ...lastConfig, remoteServerCommand};
+  // Due to a previous bug in the sshPort type, we may need to do this cast to
+  // correct bad state that was persisted in users' configs.
+  dialogSettings.sshPort = String(dialogSettings.sshPort);
   return {
     displayTitle: '(default)',
     params: dialogSettings,
@@ -112,6 +115,9 @@ export function saveConnectionConfig(
 ): void {
   // Don't store user's password.
   config = {...config, password: ''};
+  // SshConnectionConfiguration's sshPort type is 'number', but we want to save
+  // everything as strings.
+  config.sshPort = String(config.sshPort);
   atom.config.set(LAST_USED_CONNECTION_KEY, {
     config,
     // Save last official command to detect upgrade.
