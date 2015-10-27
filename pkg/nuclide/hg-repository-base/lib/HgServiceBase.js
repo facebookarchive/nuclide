@@ -254,7 +254,9 @@ class HgServiceBase {
     }
   }
 
-  async getSmartlog(ttyOutput: boolean, concise: boolean): Promise<string> {
+  // TODO (chenshen) The return type should be `AsyncExecuteRet` inf `HgService.def`, but flow
+  // doesn't allow importing `.def` file unless we merge `HgService.def` to this file.
+  async getSmartlog(ttyOutput: boolean, concise: boolean): Promise<Object> {
     // disable the pager extension so that 'hg sl' terminates. We can't just use
     // HGPLAIN because we have not found a way to get colored output when we do.
     var args = ['--config', 'extensions.pager=!', concise ? 'sl' : 'smartlog'];

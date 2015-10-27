@@ -27,6 +27,13 @@ export type RevisionInfo = {
   author: string;
   date: string;
 };
+export type AsyncExecuteRet = {
+  command?: string;
+  errorMessage?: string;
+  exitCode: number;
+  stderr: string;
+  stdout: string;
+};
 
 export class HgService {
 
@@ -134,7 +141,7 @@ export class HgService {
    * @param concise true to run `hg smartlog`; false to run `hg sl`.
    * @return The output from running the command.
    */
-  getSmartlog(ttyOutput: boolean, concise: boolean): Promise<string> {}
+  getSmartlog(ttyOutput: boolean, concise: boolean): Promise<AsyncExecuteRet> {}
 
   /**
    * @param revision This could be a changeset ID, name of a bookmark, revision number, etc.
