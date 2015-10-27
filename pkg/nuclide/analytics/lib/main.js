@@ -132,7 +132,7 @@ function startTracking(eventName: string): TimingTracker {
  *
  * Usage:
  *
- * analytics.trackOperationTiming('my-package:some-long-operation' () => doit());
+ * analytics.trackOperationTiming('my-package-some-long-operation' () => doit());
  *
  * Returns (or throws) the result of the operation.
  */
