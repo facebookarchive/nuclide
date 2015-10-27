@@ -2,3 +2,7 @@
   'atom-pane[data-active-item-path] atom-text-editor': [
     {'command': 'nuclide-file-tree:reveal-active-file', 'label': 'Reveal in File Tree'}
   ]
+
+  '[is="tabs-tab"]': [
+    {'command': 'nuclide-file-tree:reveal-tab-file', 'label': 'Reveal in File Tree'}
+  ]

@@ -124,6 +124,11 @@ class FileTreeController {
         'nuclide-file-tree:show-in-file-manager': this._showInFileManager.bind(this),
       })
     );
+    this._subscriptions.add(
+      atom.commands.add('[is="tabs-tab"]', {
+        'nuclide-file-tree:reveal-tab-file': this._revealTabFileOnClick.bind(this),
+      })
+    );
     if (state && state.tree) {
       this._store.loadData(state.tree);
     }
@@ -404,6 +409,23 @@ class FileTreeController {
       return;
     }
 
+    this.revealNodeKey(filePath);
+  }
+
+  /**
+   * Reveal the file of a given tab based on the path stored on the DOM.
+   * This method is meant to be triggered by the context-menu click.
+   */
+  _revealTabFileOnClick(event: Event): void {
+    const tab = event.currentTarget;
+    const title = tab.querySelector('.title[data-path]');
+    if (!title) {
+      // can only reveal it if we find the file path
+      return;
+    }
+
+    const filePath = title.dataset.path;
+    this._setVisibility(true);
     this.revealNodeKey(filePath);
   }
 
