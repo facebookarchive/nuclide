@@ -13,7 +13,11 @@ function goToLocation(
     file: string,
     line: number,
     column: number): Promise {
-  return atom.workspace.open(file, {initialLine: line, initialColumn: column});
+  return atom.workspace.open(file, {
+    initialLine: line,
+    initialColumn: column,
+    searchAllPanes: true,
+  });
 }
 
 module.exports = goToLocation;
