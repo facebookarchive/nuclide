@@ -22,11 +22,12 @@ export class StatusBarTile {
   _item: ?HTMLElement;
   _tile: ?atom$StatusBarTile;
   _tooltip: ?atom$IDisposable;
-
+  _isMouseOver: boolean;
   _messages: Array<string>;
 
   constructor() {
     this._messages = [];
+    this._isMouseOver = false;
   }
 
   dispose(): void {
@@ -39,11 +40,18 @@ export class StatusBarTile {
       this._tooltip.dispose();
       this._tooltip = null;
     }
+    this._isMouseOver = false;
   }
 
   consumeStatusBar(statusBar: atom$StatusBar): void {
     const item = this._item = document.createElement('div');
     item.className = 'inline-block';
+    item.addEventListener('mouseover', () => {
+      this._isMouseOver = true;
+    });
+    item.addEventListener('mouseout', () => {
+      this._isMouseOver = false;
+    });
     this._tile = statusBar.addLeftTile({
       item,
       priority: STATUS_BAR_PRIORITY,
@@ -75,6 +83,11 @@ export class StatusBarTile {
           title: this._messages.join('<br/>'),
           delay: 0,
         });
+        if (this._isMouseOver) {
+          // If the mouse is currently over the element, we want to trigger the new popup to appear.
+          const event = new MouseEvent('mouseover');
+          item.dispatchEvent(event);
+        }
       }
     }
   }
