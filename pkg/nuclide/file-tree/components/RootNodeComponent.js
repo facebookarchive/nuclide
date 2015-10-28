@@ -19,9 +19,9 @@ var {PropTypes} = React;
 class RootNodeComponent extends React.Component {
   render(): ReactElement {
     return (
-      <div className="nuclide-tree-root">
+      <ul className="list-tree">
         {this._renderNode(this.props.rootNode, 0)}
-      </div>
+      </ul>
     );
   }
 

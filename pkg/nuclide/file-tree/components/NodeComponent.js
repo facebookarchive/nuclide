@@ -53,7 +53,7 @@ class NodeComponent extends React.Component {
       'directory': this.props.isContainer,
       'file': !this.props.isContainer,
       'entry list-item nuclide-tree-component-item': true,
-      'nuclide-tree-component-selected': this.props.isSelected,
+      'selected': this.props.isSelected,
     });
 
     // TODO: Consider symlinks when it's possible to determine whether this is a symlink.
@@ -87,7 +87,7 @@ class NodeComponent extends React.Component {
     }
 
     return (
-      <div
+      <li
         key={this.props.nodeKey}
         className={outerClassName}
         style={outerStyle}
@@ -101,7 +101,7 @@ class NodeComponent extends React.Component {
           data-path={this.props.nodePath}>
           {this.props.nodeName}
         </span>
-      </div>
+      </li>
     );
   }
 
