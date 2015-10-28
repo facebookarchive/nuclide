@@ -155,6 +155,7 @@ export async function getDependencies(
       filter = [SearchResultType.FUNCTION];
     }
 
+    // $FlowIssue: The check below does not properly refine this result to be non-null
     const searchResponse = await getSearchResults(filePath, dependencyName, filter);
     if (!searchResponse) {
       continue;

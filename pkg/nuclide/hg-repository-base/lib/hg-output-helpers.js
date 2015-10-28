@@ -38,11 +38,14 @@ function parseHgDiffUnifiedOutput(output: string): DiffInfo {
   if (!output) {
     return diffInfo;
   }
+  // $FlowFixMe match may return null
   var diffHunks = output.match(HUNK_DIFF_REGEX);
   diffHunks.forEach((hunk) => {
     // `hunk` will look like: "@@ -a(,b) +c(,d) @@"
     var hunkParts = hunk.split(' ');
+    // $FlowFixMe match may return null
     var oldInfo = hunkParts[1].match(HUNK_OLD_INFO_REGEX);
+    // $FlowFixMe match may return null
     var newInfo = hunkParts[2].match(HUNK_NEW_INFO_REGEX);
 
     // `oldInfo`/`newInfo` will look like: ["a,b", "a", ",b"], or ["a", "a", ""].

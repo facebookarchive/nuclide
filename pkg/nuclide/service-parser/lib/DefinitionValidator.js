@@ -32,11 +32,16 @@ export function validateDefinitions(definitions: Definitions): void {
           validateType(definition.type);
           break;
         case 'alias':
+          // Figure out how to get Flow to recognize the disjoint union and refine the types.
+          // $FlowFixMe
           validateType(definition.definition);
           break;
         case 'interface':
+          // $FlowFixMe as above
           definition.constructorArgs.forEach(validateType);
+            // $FlowFixMe as above
           definition.instanceMethods.forEach(validateType);
+            // $FlowFixMe as above
           definition.staticMethods.forEach(validateType);
           break;
       }
