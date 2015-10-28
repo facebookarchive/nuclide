@@ -6,7 +6,6 @@
   "description": "Provides a standard API for packages to send analytics to arbitrary providers.",
   "nuclide": {
     "customDeps": "fb/package.json",
-    "excludeTestsFromContinuousIntegration": true,
     "flowCheck": true,
     "packageType": "Node",
     "testRunner": "npm"
