@@ -10,7 +10,7 @@
  */
 
 // Diagnostic information, returned from findDiagnostics.
-type Diagnostics = {
+export type Diagnostics = {
   // The location of the .flowconfig where these messages came from.
   flowRoot: NuclideUri,
   messages: Array<Diagnostic>,
@@ -21,9 +21,9 @@ type Diagnostics = {
  * Flow to help explain the problem and point to different locations that may be
  * of interest.
  */
-type Diagnostic = Array<SingleMessage>;
+export type Diagnostic = Array<SingleMessage>;
 
-type SingleMessage = {
+export type SingleMessage = {
   path: ?NuclideUri;
   descr: string;
   line: number;
@@ -34,7 +34,7 @@ type SingleMessage = {
 
 import type {NuclideUri} from 'nuclide-remote-uri';
 
-type Loc = {
+export type Loc = {
   file: NuclideUri;
   line: number;
   column: number;
@@ -51,7 +51,7 @@ import {
 
 import {execFlow, dispose as disposeExecutor} from './FlowExecutor';
 
-export function dispose() {
+export function dispose(): void {
   disposeExecutor();
 }
 

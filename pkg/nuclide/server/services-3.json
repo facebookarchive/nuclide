@@ -14,7 +14,6 @@
     "name": "FileSystemService"
   },
   {
-    "definition": "nuclide-flow-base/lib/FlowService.def",
     "implementation": "nuclide-flow-base/lib/FlowService.js",
     "name": "FlowService"
   },
