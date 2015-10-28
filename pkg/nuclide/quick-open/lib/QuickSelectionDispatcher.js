@@ -9,9 +9,9 @@
  * the root directory of this source tree.
  */
 
-var {Dispatcher} = require('flux');
+const {Dispatcher} = require('flux');
 
-var quickopenDispatcher;
+let quickopenDispatcher = null;
 class QuickSelectionDispatcher {
   static ActionType: {[key:string]: string};
 

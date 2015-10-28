@@ -13,8 +13,8 @@ import type {
   FileResult,
 } from 'nuclide-quick-open-interfaces';
 
-var React = require('react-for-atom');
-var QuickSelectionComponent = require('../lib/QuickSelectionComponent');
+const React = require('react-for-atom');
+const QuickSelectionComponent = require('../lib/QuickSelectionComponent');
 
 class TestQuickSelectionProvider {
   _items: {string: {string: Promise<FileResult>}};
@@ -33,8 +33,8 @@ class TestQuickSelectionProvider {
 }
 
 xdescribe('QuickSelectionComponent', () => {
-  var componentRoot: Node;
-  var component: QuickSelectionComponent;
+  let componentRoot: Node;
+  let component: QuickSelectionComponent;
 
   beforeEach(() => {
     spyOn(Date, 'now').andCallFake(() => window.now);
@@ -42,7 +42,7 @@ xdescribe('QuickSelectionComponent', () => {
     componentRoot = document.createElement('div');
     document.body.appendChild(componentRoot);
 
-    var testProvider = new TestQuickSelectionProvider({});
+    const testProvider = new TestQuickSelectionProvider({});
     component = React.render(
       <QuickSelectionComponent
         provider={testProvider}
@@ -83,7 +83,7 @@ xdescribe('QuickSelectionComponent', () => {
     it('should return the selected item on selection', () => {
       withItemsSetTo({testDirectory: {testProvider: Promise.resolve({results: [1, 2, 3]})}}, () => {
 
-        var selectedItemIndex = component.getSelectedIndex();
+        const selectedItemIndex = component.getSelectedIndex();
         expect(selectedItemIndex.selectedDirectory).toBe('');
         expect(selectedItemIndex.selectedService).toBe('');
         expect(selectedItemIndex.selectedItemIndex).toBe(-1);
@@ -102,9 +102,9 @@ xdescribe('QuickSelectionComponent', () => {
 
     it('should select on the core:confirm command (enter)', () => {
       withItemsSetTo({testDirectory: {testProvider: Promise.resolve({results: [1, 2, 3]})}}, () => {
-        var componentNode = React.findDOMNode(component);
+        const componentNode = React.findDOMNode(component);
 
-        var selectedItemIndex = component.getSelectedIndex();
+        const selectedItemIndex = component.getSelectedIndex();
         expect(selectedItemIndex.selectedDirectory).toBe('');
         expect(selectedItemIndex.selectedService).toBe('');
         expect(selectedItemIndex.selectedItemIndex).toBe(-1);
@@ -138,7 +138,7 @@ xdescribe('QuickSelectionComponent', () => {
   describe('Cancellation', () => {
     it('should cancel on the core:cancel command (esc)', () => {
       withItemsSetTo({testDirectory: {testProvider: Promise.resolve({results: [1, 2, 3]})}}, () => {
-        var componentNode = React.findDOMNode(component);
+        const componentNode = React.findDOMNode(component);
 
         waitsForPromise(() => new Promise((resolve, reject) => {
           component.onCancellation((item) => {
@@ -154,7 +154,7 @@ xdescribe('QuickSelectionComponent', () => {
   describe('Selection', () => {
     it('should start out without selection', () => {
       withItemsSetTo({testDirectory: {testProvider: Promise.resolve({results: [1, 2, 3]})}}, () => {
-        var selectedItemIndex = component.getSelectedIndex();
+        const selectedItemIndex = component.getSelectedIndex();
         expect(selectedItemIndex.selectedDirectory).toBe('');
         expect(selectedItemIndex.selectedService).toBe('');
         expect(selectedItemIndex.selectedItemIndex).toBe(-1);
@@ -242,9 +242,9 @@ xdescribe('QuickSelectionComponent', () => {
 
     it('should move the selection appropriately on core:move* commands', () => {
       withItemsSetTo({testDirectory: {testProvider: Promise.resolve({results: [1, 2, 3]})}}, () => {
-        var componentNode = React.findDOMNode(component);
+        const componentNode = React.findDOMNode(component);
 
-        var steps = [
+        const steps = [
           {expectedIndex: 0, nextCommand: 'core:move-up'},
           {expectedIndex: 2, nextCommand: 'core:move-down'},
           {expectedIndex: 0, nextCommand: 'core:move-down'},
@@ -252,7 +252,7 @@ xdescribe('QuickSelectionComponent', () => {
           {expectedIndex: 2, nextCommand: 'core:move-to-top'},
           {expectedIndex: 0, nextCommand: ''},
         ];
-        var index = 0;
+        let index = 0;
 
         expect(component.getSelectedIndex().selectedItemIndex).toBe(-1);
         waitsForPromise(() => new Promise((resolve, reject) => {
@@ -260,7 +260,7 @@ xdescribe('QuickSelectionComponent', () => {
             if (index === steps.length - 1) {
               resolve();
             } else {
-              var spec = steps[index];
+              const spec = steps[index];
               expect(newIndex.selectedItemIndex).toBe(spec.expectedIndex);
               atom.commands.dispatch(componentNode, spec.nextCommand);
               index++;
@@ -337,7 +337,7 @@ xdescribe('QuickSelectionComponent', () => {
 
     it('should allow input text to be set after mount', () => {
       component.setInputValue('foo');
-      var editor = component.getInputTextEditor().model;
+      const editor = component.getInputTextEditor().model;
       expect(editor.getText()).toBe('foo');
     });
 

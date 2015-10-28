@@ -29,37 +29,33 @@ type ResultContext = {
   currentDirectory: Object;
 };
 
-var AtomInput = require('nuclide-ui-atom-input');
-var {CompositeDisposable, Disposable, Emitter} = require('atom');
-var {
+const AtomInput = require('nuclide-ui-atom-input');
+const {CompositeDisposable, Disposable, Emitter} = require('atom');
+const {
   debounce,
   object,
 } = require('nuclide-commons');
-var React = require('react-for-atom');
-var searchResultManager = require('./SearchResultManager');
-var NuclideTabs = require('nuclide-ui-tabs');
-var {PropTypes} = React;
-var cx = require('react-classset');
+const React = require('react-for-atom');
+const searchResultManager = require('./SearchResultManager');
+const NuclideTabs = require('nuclide-ui-tabs');
+const {PropTypes} = React;
+const cx = require('react-classset');
 
-var {
+const {
   filterEmptyResults,
 } = require('./searchResultHelpers');
-
-var {PropTypes} = React;
-
-var cx = require('react-classset');
 
 /**
  * Determine what the applicable shortcut for a given action is within this component's context.
  * For example, this will return different keybindings on windows vs linux.
  */
 function _findKeybindingForAction(action: string, target: HTMLElement): string {
-  var {humanizeKeystroke} = require('nuclide-keystroke-label');
-  var matchingKeyBindings = atom.keymaps.findKeyBindings({
+  const {humanizeKeystroke} = require('nuclide-keystroke-label');
+  const matchingKeyBindings = atom.keymaps.findKeyBindings({
     command: action,
     target,
   });
-  var keystroke = (matchingKeyBindings.length && matchingKeyBindings[0].keystrokes) || '';
+  const keystroke = (matchingKeyBindings.length && matchingKeyBindings[0].keystrokes) || '';
   return humanizeKeystroke(keystroke);
 }
 
@@ -97,7 +93,7 @@ export default class QuickSelectionComponent extends React.Component {
     if (nextProps.activeProvider !== this.props.activeProvider) {
       if (nextProps.activeProvider) {
         this._getTextEditor().setPlaceholderText(nextProps.activeProvider.prompt);
-        var newResults = {};
+        const newResults = {};
         this.setState(
           {
             activeTab: nextProps.activeProvider || this.state.activeTab,
@@ -141,7 +137,7 @@ export default class QuickSelectionComponent extends React.Component {
       atom.commands.add(this._modalNode, 'core:confirm', this.select.bind(this)),
     );
 
-    var inputTextEditor = this.getInputTextEditor();
+    const inputTextEditor = this.getInputTextEditor();
     this._subscriptions.add(
       searchResultManager.on(
         searchResultManager.PROVIDERS_CHANGED,
@@ -216,7 +212,7 @@ export default class QuickSelectionComponent extends React.Component {
   }
 
   _updateResults(activeProviderName: string): void {
-    var updatedResults = searchResultManager.getResults(
+    const updatedResults = searchResultManager.getResults(
       this.refs['queryInput'].getText(),
       activeProviderName
     );
@@ -230,8 +226,8 @@ export default class QuickSelectionComponent extends React.Component {
   }
 
   handleProvidersChange(): void {
-    var renderableProviders = searchResultManager.getRenderableProviders();
-    var activeProviderName = searchResultManager.getActiveProviderName();
+    const renderableProviders = searchResultManager.getRenderableProviders();
+    const activeProviderName = searchResultManager.getActiveProviderName();
     this.setState({
       renderableProviders,
       activeProviderName,
@@ -240,7 +236,7 @@ export default class QuickSelectionComponent extends React.Component {
   }
 
   select(): void {
-    var selectedItem = this.getSelectedItem();
+    const selectedItem = this.getSelectedItem();
     if (!selectedItem) {
       this.cancel();
     } else {
@@ -263,18 +259,18 @@ export default class QuickSelectionComponent extends React.Component {
   }
 
   _getCurrentResultContext(): ?ResultContext {
-    var nonEmptyResults = filterEmptyResults(this.state.resultsByService);
-    var serviceNames = Object.keys(nonEmptyResults);
-    var currentServiceIndex = serviceNames.indexOf(this.state.selectedService);
-    var currentService = nonEmptyResults[this.state.selectedService];
+    const nonEmptyResults = filterEmptyResults(this.state.resultsByService);
+    const serviceNames = Object.keys(nonEmptyResults);
+    const currentServiceIndex = serviceNames.indexOf(this.state.selectedService);
+    const currentService = nonEmptyResults[this.state.selectedService];
 
     if (!currentService) {
       return null;
     }
 
-    var directoryNames = Object.keys(currentService.results);
-    var currentDirectoryIndex = directoryNames.indexOf(this.state.selectedDirectory);
-    var currentDirectory = currentService.results[this.state.selectedDirectory];
+    const directoryNames = Object.keys(currentService.results);
+    const currentDirectoryIndex = directoryNames.indexOf(this.state.selectedDirectory);
+    const currentDirectory = currentService.results[this.state.selectedDirectory];
 
     if (!currentDirectory || !currentDirectory.results) {
       return null;
@@ -292,7 +288,7 @@ export default class QuickSelectionComponent extends React.Component {
   }
 
   moveSelectionDown(): void {
-    var context = this._getCurrentResultContext();
+    const context = this._getCurrentResultContext();
     if (!context) {
       this.moveSelectionToTop();
       return;
@@ -316,8 +312,8 @@ export default class QuickSelectionComponent extends React.Component {
       } else {
         // ...or the next service...
         if (context.currentServiceIndex < context.serviceNames.length - 1) {
-          var newServiceName = context.serviceNames[context.currentServiceIndex + 1];
-          var newDirectoryName =
+          const newServiceName = context.serviceNames[context.currentServiceIndex + 1];
+          const newDirectoryName =
             Object.keys(context.nonEmptyResults[newServiceName].results).shift();
           this.setSelectedIndex(newServiceName, newDirectoryName, 0);
         } else {
@@ -329,7 +325,7 @@ export default class QuickSelectionComponent extends React.Component {
   }
 
   moveSelectionUp() {
-    var context = this._getCurrentResultContext();
+    const context = this._getCurrentResultContext();
     if (!context) {
       this.moveSelectionToBottom();
       return;
@@ -354,8 +350,9 @@ export default class QuickSelectionComponent extends React.Component {
       } else {
         // ...or the previous service...
         if (context.currentServiceIndex > 0) {
-          var newServiceName = context.serviceNames[context.currentServiceIndex - 1];
-          var newDirectoryName = Object.keys(context.nonEmptyResults[newServiceName].results).pop();
+          const newServiceName = context.serviceNames[context.currentServiceIndex - 1];
+          const newDirectoryName =
+            Object.keys(context.nonEmptyResults[newServiceName].results).pop();
           this.setSelectedIndex(
             newServiceName,
             newDirectoryName,
@@ -374,8 +371,8 @@ export default class QuickSelectionComponent extends React.Component {
     if (!(this.refs && this.refs['selectionList'])) {
       return;
     }
-    var listNode =  React.findDOMNode(this.refs['selectionList']);
-    var selectedNode = listNode.getElementsByClassName('selected')[0];
+    const listNode =  React.findDOMNode(this.refs['selectionList']);
+    const selectedNode = listNode.getElementsByClassName('selected')[0];
     // false is passed for @centerIfNeeded parameter, which defaults to true.
     // Passing false causes the minimum necessary scroll to occur, so the selection sticks to the
     // top/bottom.
@@ -385,7 +382,7 @@ export default class QuickSelectionComponent extends React.Component {
   }
 
   moveSelectionToBottom(): void {
-    var bottom = this._getOuterResults(Array.prototype.pop);
+    const bottom = this._getOuterResults(Array.prototype.pop);
     if (!bottom) {
       return;
     }
@@ -393,7 +390,7 @@ export default class QuickSelectionComponent extends React.Component {
   }
 
   moveSelectionToTop(): void {
-    var top = this._getOuterResults(Array.prototype.shift);
+    const top = this._getOuterResults(Array.prototype.shift);
     if (!top) {
       return;
     }
@@ -402,13 +399,13 @@ export default class QuickSelectionComponent extends React.Component {
 
   _getOuterResults(arrayOperation: Function):
     ?{serviceName: string; directoryName: string; results: Array<mixed>} {
-    var nonEmptyResults = filterEmptyResults(this.state.resultsByService);
-    var serviceName = arrayOperation.call(Object.keys(nonEmptyResults));
+    const nonEmptyResults = filterEmptyResults(this.state.resultsByService);
+    const serviceName = arrayOperation.call(Object.keys(nonEmptyResults));
     if (!serviceName) {
       return null;
     }
-    var service = nonEmptyResults[serviceName];
-    var directoryName = arrayOperation.call(Object.keys(service.results));
+    const service = nonEmptyResults[serviceName];
+    const directoryName = arrayOperation.call(Object.keys(service.results));
     return {
       serviceName,
       directoryName,
@@ -521,7 +518,7 @@ export default class QuickSelectionComponent extends React.Component {
    *     _renderTabs(), which created the tab object in the first place.
    */
   _handleTabChange(newTab: ProviderSpec): void {
-    var providerName = newTab.name;
+    const providerName = newTab.name;
     if (providerName !== this.props.activeProvider.name) {
       if (this.props.onProviderChange) {
         this.props.onProviderChange(providerName);
@@ -532,9 +529,9 @@ export default class QuickSelectionComponent extends React.Component {
   }
 
   _renderTabs(): ReactElement {
-    var tabs = this.state.renderableProviders.map(tab => {
-      var keyBinding = null;
-      var humanizedKeybinding = _findKeybindingForAction(tab.action || '', this._modalNode);
+    const tabs = this.state.renderableProviders.map(tab => {
+      let keyBinding = null;//TODO
+      const humanizedKeybinding = _findKeybindingForAction(tab.action || '', this._modalNode);
       if (humanizedKeybinding !== '') {
         keyBinding = (
           <kbd className="key-binding">
@@ -568,10 +565,10 @@ export default class QuickSelectionComponent extends React.Component {
   }
 
   _hasNoResults(): boolean {
-    for (var serviceName in this.state.resultsByService) {
-      var service = this.state.resultsByService[serviceName];
-      for (var dirName in service) {
-        var results = service[dirName];
+    for (const serviceName in this.state.resultsByService) {
+      const service = this.state.resultsByService[serviceName];
+      for (const dirName in service) {
+        const results = service[dirName];
         if (!results.loading && results.results.length > 0) {
           return false;
         }
@@ -581,18 +578,18 @@ export default class QuickSelectionComponent extends React.Component {
   }
 
   render(): ReactElement {
-    var numTotalResultsRendered = 0;
-    var isOmniSearchActive = this.state.activeTab.name === 'OmniSearchResultProvider';
-    var numQueriesOutstanding = 0;
-    var serviceNames = Object.keys(this.state.resultsByService);
-    var services = serviceNames.map(serviceName => {
-      var numResultsForService = 0;
-      var directories = this.state.resultsByService[serviceName].results;
-      var serviceTitle = this.state.resultsByService[serviceName].title;
-      var directoryNames = Object.keys(directories);
-      var directoriesForService = directoryNames.map(dirName => {
-        var resultsForDirectory = directories[dirName];
-        var message = null;
+    let numTotalResultsRendered = 0;
+    const isOmniSearchActive = this.state.activeTab.name === 'OmniSearchResultProvider';
+    let numQueriesOutstanding = 0;
+    const serviceNames = Object.keys(this.state.resultsByService);
+    const services = serviceNames.map(serviceName => {
+      let numResultsForService = 0;
+      const directories = this.state.resultsByService[serviceName].results;
+      const serviceTitle = this.state.resultsByService[serviceName].title;
+      const directoryNames = Object.keys(directories);
+      const directoriesForService = directoryNames.map(dirName => {
+        const resultsForDirectory = directories[dirName];
+        let message = null;
         if (resultsForDirectory.loading) {
           numQueriesOutstanding++;
           if (!isOmniSearchActive) {
@@ -619,10 +616,10 @@ export default class QuickSelectionComponent extends React.Component {
             </span>
           );
         }
-        var itemComponents = resultsForDirectory.results.map((item, itemIndex) => {
+        const itemComponents = resultsForDirectory.results.map((item, itemIndex) => {
           numResultsForService++;
           numTotalResultsRendered++;
-          var isSelected = (
+          const isSelected = (
             serviceName === this.state.selectedService &&
             dirName === this.state.selectedDirectory &&
             itemIndex === this.state.selectedItemIndex
@@ -641,9 +638,9 @@ export default class QuickSelectionComponent extends React.Component {
             </li>
           );
         });
-        var directoryLabel = null;
+        let directoryLabel = null;
         //hide folders if only 1 level would be shown, or if no results were found
-        var showDirectories = directoryNames.length > 1 &&
+        const showDirectories = directoryNames.length > 1 &&
           (!isOmniSearchActive || resultsForDirectory.results.length > 0);
         if (showDirectories) {
           directoryLabel = (
@@ -662,7 +659,7 @@ export default class QuickSelectionComponent extends React.Component {
           </li>
         );
       });
-      var serviceLabel = null;
+      let serviceLabel = null;
       if (isOmniSearchActive && numResultsForService > 0) {
         serviceLabel = (
           <div className="list-item">
@@ -680,15 +677,15 @@ export default class QuickSelectionComponent extends React.Component {
       }
       return directoriesForService;
     });
-    var noResultsMessage = null;
+    let noResultsMessage = null;
     if (object.isEmpty(this.state.resultsByService)) {
       noResultsMessage = this._renderEmptyMessage('Search away!');
     } else if (numTotalResultsRendered === 0) {
       noResultsMessage = this._renderEmptyMessage(<span>¯\_(ツ)_/¯<br/>No results</span>);
     }
-    var currentProvider = this.getProvider();
-    var promptText = (currentProvider && currentProvider.prompt) || '';
-    var omniSearchStatus = null;
+    const currentProvider = this.getProvider();
+    const promptText = (currentProvider && currentProvider.prompt) || '';
+    let omniSearchStatus = null;
     if (isOmniSearchActive && numQueriesOutstanding > 0) {
       omniSearchStatus = (
         <span>

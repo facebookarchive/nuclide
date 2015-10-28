@@ -16,46 +16,46 @@ import type {
 } from 'nuclide-quick-open-interfaces';
 import type {HomeFragments} from 'nuclide-home-interfaces';
 
-var trackFunction;
+let trackFunction;
 function track(...args) {
-  var trackFunc = trackFunction || (trackFunction = require('nuclide-analytics').track);
+  const trackFunc = trackFunction || (trackFunction = require('nuclide-analytics').track);
   trackFunc.apply(null, args);
 }
 
-var debounceFunction = null;
+let debounceFunction = null;
 function debounce(...args) {
-  var debounceFunc = debounceFunction || (debounceFunction = require('nuclide-commons').debounce);
+  const debounceFunc = debounceFunction || (debounceFunction = require('nuclide-commons').debounce);
   return debounceFunc.apply(null, args);
 }
 
-var searchResultManager = null;
+let searchResultManager = null;
 function getSearchResultManager() {
   return searchResultManager || (searchResultManager = require('./SearchResultManager'));
 }
 
-var DEFAULT_PROVIDER = 'OmniSearchResultProvider';
-var MAX_MODAL_WIDTH = 800;
+const DEFAULT_PROVIDER = 'OmniSearchResultProvider';
+const MAX_MODAL_WIDTH = 800;
 // don't pre-fill search input if selection is longer than this
-var MAX_SELECTION_LENGTH = 1000;
+const MAX_SELECTION_LENGTH = 1000;
 
 /**
  * A "session" for the purpose of analytics. It exists from the moment the quick-open UI becomes
  * visible until it gets closed, either via file selection or cancellation.
  */
-var analyticsSessionId = null;
-var AnalyticsEvents = {
+let analyticsSessionId = null;
+const AnalyticsEvents = {
   CHANGE_SELECTION: 'quickopen-change-selection',
   CHANGE_TAB:       'quickopen-change-tab',
   CLOSE_PANEL:      'quickopen-close-panel',
   OPEN_PANEL:       'quickopen-open-panel',
   SELECT_FILE:      'quickopen-select-file',
 };
-var AnalyticsDebounceDelays = {
+const AnalyticsDebounceDelays = {
   CHANGE_TAB: 100,
   CHANGE_SELECTION: 100,
 };
 
-var _quickSelectionComponent: ?QuickSelectionComponent = null;
+let _quickSelectionComponent: ?QuickSelectionComponent = null;
 function getQuickSelectionComponentLazily() {
   if (!_quickSelectionComponent) {
     _quickSelectionComponent = require('./QuickSelectionComponent');
@@ -63,7 +63,7 @@ function getQuickSelectionComponentLazily() {
   return _quickSelectionComponent;
 }
 
-var _react = null;
+let _react = null;
 function getReactLazily() {
   if (_react === null) {
     _react = require('react-for-atom');
@@ -71,7 +71,7 @@ function getReactLazily() {
   return _react;
 }
 
-var trackProviderChange = debounce(providerName => {
+const trackProviderChange = debounce(providerName => {
   analyticsSessionId = analyticsSessionId || Date.now().toString();
   track(
     AnalyticsEvents.CHANGE_TAB,
@@ -94,10 +94,10 @@ class Activation {
   constructor() {
     this._previousFocus = null;
 
-    var {CompositeDisposable} = require('atom');
+    const {CompositeDisposable} = require('atom');
     this._subscriptions = new CompositeDisposable();
     this._currentProvider = getSearchResultManager().getProviderByName(DEFAULT_PROVIDER);
-    var QuickSelectionDispatcher = require('./QuickSelectionDispatcher');
+    const QuickSelectionDispatcher = require('./QuickSelectionDispatcher');
     QuickSelectionDispatcher.getInstance().register(action => {
       if (action.actionType === QuickSelectionDispatcher.ActionType.ACTIVE_PROVIDER_CHANGED) {
         this.toggleProvider(action.providerName);
@@ -113,7 +113,7 @@ class Activation {
     this._searchComponent = this._render();
 
     this._searchComponent.onSelection((selection) => {
-      var options = {};
+      const options = {};
       if (selection.line) {
         options.initialLine = selection.line;
       }
@@ -125,8 +125,8 @@ class Activation {
         atom.commands.dispatch(atom.views.getView(textEditor), 'tabs:keep-preview-tab');
       });
 
-      var query = this._searchComponent.getInputTextEditor().textContent;
-      var providerName = this._currentProvider.name;
+      const query = this._searchComponent.getInputTextEditor().textContent;
+      const providerName = this._currentProvider.name;
       track(
         AnalyticsEvents.SELECT_FILE,
         {
@@ -166,17 +166,17 @@ class Activation {
 
   _updateModalPosition() {
     // Customize modal element
-    var modalElement = this._searchPanel.getItem().parentNode;
-    var {width} = document.documentElement.getBoundingClientRect();
-    var modalWidth = Math.min(MAX_MODAL_WIDTH, width);
+    const modalElement = this._searchPanel.getItem().parentNode;
+    const {width} = document.documentElement.getBoundingClientRect();
+    const modalWidth = Math.min(MAX_MODAL_WIDTH, width);
     modalElement.style.setProperty('width', modalWidth + 'px');
     modalElement.style.setProperty('margin-left', (-modalWidth / 2) + 'px');
   }
 
   _render() {
     // Abbreviate to avoid shadowing flow type.
-    var QSComponent = getQuickSelectionComponentLazily();
-    var React = getReactLazily();
+    const QSComponent = getQuickSelectionComponentLazily();
+    const React = getReactLazily();
     return React.render(
       <QSComponent
         activeProvider={this._currentProvider}
@@ -205,7 +205,7 @@ class Activation {
         'quickopen-session': analyticsSessionId,
       }
     );
-    var provider = getSearchResultManager().getProviderByName(providerName);
+    const provider = getSearchResultManager().getProviderByName(providerName);
     // "toggle" behavior
     if (
       this._searchPanel !== null &&
@@ -234,11 +234,11 @@ class Activation {
         }
       );
       // showSearchPanel gets called when changing providers even if it's already shown.
-      var isAlreadyVisible = this._searchPanel.isVisible();
+      const isAlreadyVisible = this._searchPanel.isVisible();
       this._searchPanel.show();
       this._searchComponent.focus();
       if (atom.config.get('nuclide-quick-open.useSelection') && !isAlreadyVisible) {
-        var selectedText = this._getFirstSelectionText();
+        const selectedText = this._getFirstSelectionText();
         if (selectedText && selectedText.length <= MAX_SELECTION_LENGTH) {
           this._searchComponent.setInputValue(selectedText.split('\n')[0]);
         }
@@ -267,7 +267,7 @@ class Activation {
   }
 
   _getFirstSelectionText(): ?string {
-    var editor = atom.workspace.getActiveTextEditor();
+    const editor = atom.workspace.getActiveTextEditor();
     if (editor) {
       return editor.getSelections()[0].getText();
     }
@@ -278,10 +278,10 @@ class Activation {
   }
 }
 
-var {CompositeDisposable} = require('atom');
+const {CompositeDisposable} = require('atom');
 
-var activation: ?Activation = null;
-var listeners: ?CompositeDisposable = null;
+let activation: ?Activation = null;
+let listeners: ?CompositeDisposable = null;
 
 function activateSearchUI(): void {
   if (!activation) {

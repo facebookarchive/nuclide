@@ -21,19 +21,19 @@ import type {
 
 type ResultRenderer = (item: FileResult) => ReactElement;
 
-var assert = require('assert');
+const assert = require('assert');
 
-var {
+const {
   CompositeDisposable,
   Disposable,
   Emitter,
 } = require('atom');
-var {
+const {
   array,
   debounce,
 } = require('nuclide-commons');
 
-var logger;
+let logger = null;
 function getLogger() {
   if (logger == null) {
     logger = require('nuclide-logging').getLogger();
@@ -49,16 +49,16 @@ function getDefaultResult(): ProviderResult {
   };
 }
 
-var QuickSelectionDispatcher = require('./QuickSelectionDispatcher');
-var QuickSelectionActions = require('./QuickSelectionActions');
+const QuickSelectionDispatcher = require('./QuickSelectionDispatcher');
+const QuickSelectionActions = require('./QuickSelectionActions');
 
-var assign = Object.assign || require('object-assign');
+const assign = Object.assign || require('object-assign');
 
-var RESULTS_CHANGED = 'results_changed';
-var PROVIDERS_CHANGED = 'providers_changed';
-var MAX_OMNI_RESULTS_PER_SERVICE = 5;
-var DEFAULT_QUERY_DEBOUNCE_DELAY = 200;
-var OMNISEARCH_PROVIDER = {
+const RESULTS_CHANGED = 'results_changed';
+const PROVIDERS_CHANGED = 'providers_changed';
+const MAX_OMNI_RESULTS_PER_SERVICE = 5;
+const DEFAULT_QUERY_DEBOUNCE_DELAY = 200;
+const OMNISEARCH_PROVIDER = {
   action: 'nuclide-quick-open:toggle-omni-search',
   debounceDelay: DEFAULT_QUERY_DEBOUNCE_DELAY,
   name: 'OmniSearchResultProvider',
@@ -66,11 +66,11 @@ var OMNISEARCH_PROVIDER = {
   title: 'OmniSearch',
 };
 // Number of elements in the cache before periodic cleanup kicks in. Includes partial query strings.
-var MAX_CACHED_QUERIES = 100;
-var CACHE_CLEAN_DEBOUNCE_DELAY = 5000;
-var UPDATE_DIRECTORIES_DEBOUNCE_DELAY = 100;
-var GLOBAL_KEY = 'global';
-var DIRECTORY_KEY = 'directory';
+const MAX_CACHED_QUERIES = 100;
+const CACHE_CLEAN_DEBOUNCE_DELAY = 5000;
+const UPDATE_DIRECTORIES_DEBOUNCE_DELAY = 100;
+const GLOBAL_KEY = 'global';
+const DIRECTORY_KEY = 'directory';
 
 function isValidProvider(provider): boolean {
   return (
@@ -161,7 +161,7 @@ class SearchResultManager {
   }
 
   getRendererForProvider(providerName: string): ResultRenderer {
-    var provider = this._getProviderByName(providerName);
+    const provider = this._getProviderByName(providerName);
     if (!provider || !provider.getComponentForItem) {
       return require('./FileResultComponent').getComponentForItem;
     }
@@ -175,9 +175,9 @@ class SearchResultManager {
 
   _updateDirectories(): void {
     this._directories = atom.project.getDirectories();
-    var directorySet = new Set(this._directories);
-    var directoriesToDelete = [];
-    for (var dir of this._providersByDirectory.keys()) {
+    const directorySet = new Set(this._directories);
+    const directoriesToDelete = [];
+    for (const dir of this._providersByDirectory.keys()) {
       if (!directorySet.has(dir)) {
         directoriesToDelete.push(dir);
       }
@@ -186,10 +186,10 @@ class SearchResultManager {
       this._providersByDirectory.delete(directory);
     });
     this._directories.forEach(async directory => {
-      for (var provider of this._registeredProviders[DIRECTORY_KEY].values()) {
-        var providersForDir = this._providersByDirectory.get(directory) || new Set();
+      for (const provider of this._registeredProviders[DIRECTORY_KEY].values()) {
+        const providersForDir = this._providersByDirectory.get(directory) || new Set();
 
-        var isEligible = await provider.isEligibleForDirectory(directory);
+        const isEligible = await provider.isEligibleForDirectory(directory);
         if (isEligible) {
           providersForDir.add(provider);
           this._providersByDirectory.set(directory, providersForDir);
@@ -205,26 +205,27 @@ class SearchResultManager {
 
   registerProvider(service: Provider): Disposable {
     if (!isValidProvider(service)) {
-      var providerName = service.getName && service.getName() || '<unknown>';
+      const providerName = service.getName && service.getName() || '<unknown>';
       getLogger().error(`Quick-open provider ${providerName} is not a valid provider`);
     }
-    var isRenderableProvider = typeof service.isRenderable === 'function' && service.isRenderable();
-    var isGlobalProvider = service.getProviderType() === 'GLOBAL';
-    var targetRegistry = isGlobalProvider
+    const isRenderableProvider =
+      typeof service.isRenderable === 'function' && service.isRenderable();
+    const isGlobalProvider = service.getProviderType() === 'GLOBAL';
+    const targetRegistry = isGlobalProvider
       ? this._registeredProviders[GLOBAL_KEY]
       : this._registeredProviders[DIRECTORY_KEY];
     targetRegistry.set(service.getName(), service);
     if (!isGlobalProvider) {
       this._debouncedUpdateDirectories();
     }
-    var disposable = new CompositeDisposable();
+    const disposable = new CompositeDisposable();
     disposable.add(new Disposable(() => {
       // This may be called after this package has been deactivated
       // and the SearchResultManager has been disposed.
       if (this._isDisposed) {
         return;
       }
-      var serviceName = service.getName();
+      const serviceName = service.getName();
       targetRegistry.delete(serviceName);
       this._providersByDirectory.forEach((providers, dir) => {
         providers.delete(service);
@@ -234,9 +235,9 @@ class SearchResultManager {
     }));
     // If the provider is renderable and specifies a keybinding, wire it up with the toggle command.
     if (isRenderableProvider && typeof service.getAction === 'function') {
-      var toggleAction: string = service.getAction();
+      const toggleAction: string = service.getAction();
       // TODO replace with computed property once Flow supports it.
-      var actionSpec = {};
+      const actionSpec = {};
       actionSpec[toggleAction] =
         () => QuickSelectionActions.changeActiveProvider(service.getName());
       disposable.add(atom.commands.add('atom-workspace', actionSpec));
@@ -280,14 +281,14 @@ class SearchResultManager {
   }
 
   cacheResult(query: string, result: Object, directory: string, provider: Object): void {
-    var providerName = provider.getName();
+    const providerName = provider.getName();
     this.setCacheResult(providerName, directory, query, result, false, null);
   }
 
   _setLoading(query: string, directory: string, provider: Object): void {
-    var providerName = provider.getName();
+    const providerName = provider.getName();
     this.ensureCacheEntry(providerName, directory);
-    var previousResult = this._cachedResults[providerName][directory][query];
+    const previousResult = this._cachedResults[providerName][directory][query];
     if (!previousResult) {
       this._cachedResults[providerName][directory][query] = {
         result: [],
@@ -301,24 +302,24 @@ class SearchResultManager {
    * Release the oldest cached results once the cache is full.
    */
   _cleanCache() {
-    var queueSize = this._queryLruQueue.size;
+    const queueSize = this._queryLruQueue.size;
     if (queueSize <= MAX_CACHED_QUERIES) {
       return;
     }
     // Figure out least recently used queries, and pop them off of the `_queryLruQueue` Map.
-    var expiredQueries = [];
-    var keyIterator = this._queryLruQueue.keys();
-    var entriesToRemove = queueSize - MAX_CACHED_QUERIES;
-    for (var i = 0; i < entriesToRemove; i++) {
-      var firstEntryKey = keyIterator.next().value;
+    const expiredQueries = [];
+    const keyIterator = this._queryLruQueue.keys();
+    const entriesToRemove = queueSize - MAX_CACHED_QUERIES;
+    for (let i = 0; i < entriesToRemove; i++) {
+      const firstEntryKey = keyIterator.next().value;
       expiredQueries.push(firstEntryKey);
       this._queryLruQueue.delete(firstEntryKey);
     }
 
     // For each (provider|directory) pair, remove results for all expired queries from the cache.
-    for (var providerName in this._cachedResults) {
-      for (var directory in this._cachedResults[providerName]) {
-        var queryResults = this._cachedResults[providerName][directory];
+    for (const providerName in this._cachedResults) {
+      for (const directory in this._cachedResults[providerName]) {
+        const queryResults = this._cachedResults[providerName][directory];
         expiredQueries.forEach(query => delete queryResults[query]);
       }
     }
@@ -339,9 +340,9 @@ class SearchResultManager {
     return query.trim();
   }
 
-  async executeQuery(query: string): Promise<void> {
-    var query = this.sanitizeQuery(query);
-    for (let globalProvider of this._registeredProviders[GLOBAL_KEY].values()) {
+  async executeQuery(rawQuery: string): Promise<void> {
+    const query = this.sanitizeQuery(rawQuery);
+    for (const globalProvider of this._registeredProviders[GLOBAL_KEY].values()) {
       globalProvider.executeQuery(query).then(result => {
         this.processResult(query, result, GLOBAL_KEY, globalProvider);
       });
@@ -351,13 +352,13 @@ class SearchResultManager {
       return;
     }
     this._directories.forEach(directory => {
-      var path = directory.getPath();
-      var providers = this._providersByDirectory.get(directory);
+      const path = directory.getPath();
+      const providers = this._providersByDirectory.get(directory);
       if (!providers) {
         // Special directories like "atom://about"
         return;
       }
-      for (let directoryProvider of providers) {
+      for (const directoryProvider of providers) {
         directoryProvider.executeQuery(query, directory).then(result => {
           this.processResult(query, result, path, directoryProvider);
         });
@@ -375,7 +376,7 @@ class SearchResultManager {
     if (this._isGlobalProvider(providerName)) {
       return this._registeredProviders[GLOBAL_KEY].get(providerName);
     }
-    var dirProvider = this._registeredProviders[DIRECTORY_KEY].get(providerName);
+    const dirProvider = this._registeredProviders[DIRECTORY_KEY].get(providerName);
     assert(
       dirProvider != null,
       `Provider ${providerName} is not registered with quick-open.`
@@ -384,14 +385,14 @@ class SearchResultManager {
   }
 
   _getResultsForProvider(query: string, providerName: string): Object {
-    var providerPaths = this._isGlobalProvider(providerName)
+    const providerPaths = this._isGlobalProvider(providerName)
       ? [GLOBAL_KEY]
       : this._directories.map(d => d.getPath());
-    var provider = this._getProviderByName(providerName);
+    const provider = this._getProviderByName(providerName);
     return {
       title: provider.getTabTitle(),
       results: providerPaths.reduce((results, path) => {
-        var cachedPaths, cachedQueries, cachedResult;
+        let cachedPaths, cachedQueries, cachedResult;
         if (!(
           (cachedPaths = this._cachedResults[providerName]) &&
           (cachedQueries = cachedPaths[path]) &&
@@ -399,7 +400,7 @@ class SearchResultManager {
         )) {
           cachedResult = {};
         }
-        var defaultResult = getDefaultResult();
+        const defaultResult = getDefaultResult();
         results[path] = {
           results: cachedResult.result || defaultResult.result,
           loading: cachedResult.loading || defaultResult.loading,
@@ -412,23 +413,23 @@ class SearchResultManager {
 
   getResults(query: string, activeProviderName: string): Object {
     if (activeProviderName === OMNISEARCH_PROVIDER.name) {
-      var omniSearchResults = [{}];
-      for (var providerName in this._cachedResults) {
-        var resultForProvider = this._getResultsForProvider(query, providerName);
+      const omniSearchResults = [{}];
+      for (const providerName in this._cachedResults) {
+        const resultForProvider = this._getResultsForProvider(query, providerName);
         // TODO replace this with a ranking algorithm.
-        for (var dir in resultForProvider.results) {
+        for (const dir in resultForProvider.results) {
           resultForProvider.results[dir].results =
             resultForProvider.results[dir].results.slice(0, MAX_OMNI_RESULTS_PER_SERVICE);
         }
         // TODO replace `partial` with computed property whenever Flow supports it.
-        var partial = {};
+        const partial = {};
         partial[providerName] = resultForProvider;
         omniSearchResults.push(partial);
       }
       return assign.apply({}, omniSearchResults);
     }
     // TODO replace `partial` with computed property whenever Flow supports it.
-    var partial = {};
+    const partial = {};
     partial[activeProviderName] = this._getResultsForProvider(query, activeProviderName);
     return partial;
   }
@@ -444,7 +445,7 @@ class SearchResultManager {
    * Turn a Provider into a plain "spec" object consumed by QuickSelectionComponent.
    */
   _bakeProvider(provider: Provider): ProviderSpec {
-    var providerName = provider.getName();
+    const providerName = provider.getName();
     return {
       action: provider.getAction && provider.getAction() || '',
       debounceDelay: (typeof provider.getDebounceDelay === 'function')
@@ -459,16 +460,16 @@ class SearchResultManager {
 
   getRenderableProviders(): Array<ProviderSpec> {
     // Only render tabs for providers that are eligible for at least one directory.
-    var eligibleDirectoryProviders = array.from(this._registeredProviders[DIRECTORY_KEY].values())
+    const eligibleDirectoryProviders = array.from(this._registeredProviders[DIRECTORY_KEY].values())
       .filter(provider => {
-        for (var providers of this._providersByDirectory.values()) {
+        for (const providers of this._providersByDirectory.values()) {
           if (providers.has(provider)) {
             return true;
           }
         }
         return false;
       });
-    var tabs = array.from(this._registeredProviders[GLOBAL_KEY].values())
+    const tabs = array.from(this._registeredProviders[GLOBAL_KEY].values())
       .concat(eligibleDirectoryProviders)
       .filter(provider => provider.isRenderable())
       .map(this._bakeProvider)

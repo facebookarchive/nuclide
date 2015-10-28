@@ -9,12 +9,12 @@
  * the root directory of this source tree.
  */
 
-var {
+const {
   filterEmptyResults,
   flattenResults,
 } = require('../lib/searchResultHelpers');
 
-var SEARCH_RESULTS_FIXTURE = {
+const SEARCH_RESULTS_FIXTURE = {
   searchService: {
     results: {
       shouldNotAppearInOutputFolder: {
@@ -50,7 +50,7 @@ var SEARCH_RESULTS_FIXTURE = {
 describe('searchResultHelper', () => {
   describe('emptyResults', () => {
     it('does not include empty folders', () => {
-      var filteredResults = filterEmptyResults(SEARCH_RESULTS_FIXTURE);
+      const filteredResults = filterEmptyResults(SEARCH_RESULTS_FIXTURE);
 
       expect(filteredResults).toEqual({
         searchService: {

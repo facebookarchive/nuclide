@@ -9,10 +9,10 @@
  * the root directory of this source tree.
  */
 
-var QuickSelectionDispatcher = require('./QuickSelectionDispatcher');
-var {ActionType} = QuickSelectionDispatcher;
+const QuickSelectionDispatcher = require('./QuickSelectionDispatcher');
+const {ActionType} = QuickSelectionDispatcher;
 
-var QuickSelectionActions = {
+const QuickSelectionActions = {
 
   query(query: string): void {
     QuickSelectionDispatcher.getInstance().dispatch({

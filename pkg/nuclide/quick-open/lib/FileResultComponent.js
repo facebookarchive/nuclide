@@ -13,9 +13,9 @@ import type {
   FileResult,
 } from 'nuclide-quick-open-interfaces';
 
-var React = require('react-for-atom');
-var {fileTypeClass} = require('nuclide-atom-helpers');
-var path = require('path');
+const React = require('react-for-atom');
+const {fileTypeClass} = require('nuclide-atom-helpers');
+const path = require('path');
 
 class FileResultComponent {
 
@@ -32,40 +32,40 @@ class FileResultComponent {
       ? item.matchIndexes.map(i => i - (dirName.length - 1))
       : [];
 
-    var filenameStart = filePath.lastIndexOf(path.sep);
-    var importantIndexes = [filenameStart, filePath.length]
+    const filenameStart = filePath.lastIndexOf(path.sep);
+    const importantIndexes = [filenameStart, filePath.length]
       .concat(matchIndexes)
       .sort((index1, index2) => index1 - index2);
 
-    var folderComponents = [];
-    var filenameComponents = [];
+    const folderComponents = [];
+    const filenameComponents = [];
 
-    var last = -1;
+    let last = -1;
     // Split the path into it's path and directory, with matching characters pulled out and
     //  highlighted.
     // When there's no matches, the ouptut is equivalent to just calling path.dirname/basename.
     importantIndexes.forEach((index) => {
       // If the index is after the filename start, push the new text elements
       // into `filenameComponents`, otherwise push them into `folderComponents`.
-      var target = index <= filenameStart ? folderComponents : filenameComponents;
+      const target = index <= filenameStart ? folderComponents : filenameComponents;
 
       // If there was text before the `index`, push it onto `target` unstyled.
-      var previousString = filePath.slice(last + 1, index);
+      const previousString = filePath.slice(last + 1, index);
       if (previousString.length !== 0) {
         target.push(<span key={index + 'prev'}>{previousString}</span>);
       }
 
       // Don't put the '/' between the folder path and the filename on either line.
       if (index !== filenameStart && index < filePath.length) {
-        var character = filePath.charAt(index);
+        const character = filePath.charAt(index);
         target.push(<span key={index} className="quick-open-file-search-match">{character}</span>);
       }
 
       last = index;
     });
 
-    var filenameClasses = ['file', 'icon', fileTypeClass(filePath)].join(' ');
-    var folderClasses = ['path', 'no-icon'].join(' ');
+    const filenameClasses = ['file', 'icon', fileTypeClass(filePath)].join(' ');
+    const folderClasses = ['path', 'no-icon'].join(' ');
 
     // `data-name` is support for the "file-icons" package.
     // See: https://atom.io/packages/file-icons

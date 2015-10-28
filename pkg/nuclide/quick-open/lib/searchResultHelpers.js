@@ -14,17 +14,17 @@ import type {
   GroupedResult,
 } from 'nuclide-quick-open-interfaces';
 
-var {
+const {
   isEmpty,
 } = require('nuclide-commons').object;
 
 export function filterEmptyResults(resultsGroupedByService: GroupedResult): GroupedResult {
-  var filteredTree = {};
+  const filteredTree = {};
 
-  for (var serviceName in resultsGroupedByService) {
-    var directories = resultsGroupedByService[serviceName].results;
-    var nonEmptyDirectories = {};
-    for (var dirName in directories) {
+  for (const serviceName in resultsGroupedByService) {
+    const directories = resultsGroupedByService[serviceName].results;
+    const nonEmptyDirectories = {};
+    for (const dirName in directories) {
       if (directories[dirName].results.length) {
         nonEmptyDirectories[dirName] = directories[dirName];
       }
@@ -37,9 +37,9 @@ export function filterEmptyResults(resultsGroupedByService: GroupedResult): Grou
 }
 
 export function flattenResults(resultsGroupedByService: GroupedResult): Array<FileResult> {
-  var items = [];
-  for (var serviceName in resultsGroupedByService) {
-    for (var dirName in resultsGroupedByService[serviceName].results) {
+  const items = [];
+  for (const serviceName in resultsGroupedByService) {
+    for (const dirName in resultsGroupedByService[serviceName].results) {
       items.push(resultsGroupedByService[serviceName].results[dirName].results);
     }
   }
