@@ -15,7 +15,7 @@ import {trackTiming} from 'nuclide-analytics';
 
 class FlowAutocompleteProvider {
   @trackTiming('flow.autocomplete')
-  getSuggestions(request: atom$AutocompleteRequest): Promise<Array<atom$AutocompleteSuggestion>> {
+  getSuggestions(request: atom$AutocompleteRequest): Promise<?Array<atom$AutocompleteSuggestion>> {
     const {editor, prefix, activatedManually} = request;
     var file = editor.getPath();
     var contents = editor.getText();

@@ -9,38 +9,33 @@
  * the root directory of this source tree.
  */
 
-var {uncachedRequire} = require('nuclide-test-helpers');
+import type {FlowInstance as FlowInstanceT} from '../lib/FlowInstance';
 
-describe('LocalFlowService', () => {
-  var file = 'test.js';
-  var currentContents = '/* @flow */\nvar x = "this_is_a_string"\nvar y;';
-  var line = 2;
-  var column = 12;
+import {uncachedRequire} from 'nuclide-test-helpers';
 
-  let flowService: any;
-  let flowExecutor: any;
+const flowInstancePath = '../lib/FlowInstance';
+
+describe('FlowInstance', () => {
+  const file = '/path/to/test.js';
+  const root = '/path/to';
+  const currentContents = '/* @flow */\nvar x = "this_is_a_string"\nvar y;';
+  const line = 2;
+  const column = 12;
+
+  let flowInstance: FlowInstanceT = (null: any);
 
   let fakeExecFlow: any;
 
   function newFlowService() {
-    const flowServicePath = '../lib/FlowService';
-    // we have to invalidate the require cache in order to mock modules we
-    // depend on
-    return (uncachedRequire(require, flowServicePath): any);
+    // We do a require here instead of just importing at the top of the file because the describe
+    // block below needs to mock things, and has to use uncachedRequire.
+    const {FlowInstance} = require(flowInstancePath);
+    return new FlowInstance(root);
   }
 
   beforeEach(() => {
-    spyOn(require('../lib/FlowHelpers'), 'getFlowExecOptions')
-      .andReturn({cwd: '/path/to/flow/root'});
-    flowExecutor = require('../lib/FlowExecutor');
-    spyOn(flowExecutor, 'execFlow')
-      .andCallFake(() => fakeExecFlow());
-    flowService = newFlowService();
-  });
-
-  afterEach(() => {
-    flowService = null;
-    global.unspy(require('../lib/FlowHelpers'), 'getFlowExecOptions');
+    flowInstance = newFlowService();
+    spyOn(flowInstance, '_execFlow').andCallFake(() => fakeExecFlow());
   });
 
   function mockExec(outputString) {
@@ -50,7 +45,7 @@ describe('LocalFlowService', () => {
   describe('flowFindDefinition', () => {
     function runWith(location) {
       mockExec(JSON.stringify(location));
-      return flowService.flowFindDefinition(file, currentContents, line, column);
+      return flowInstance.flowFindDefinition(file, currentContents, line, column);
     }
 
     it('should return the location', () => {
@@ -70,13 +65,13 @@ describe('LocalFlowService', () => {
   describe('flowFindDiagnostics', () => {
     function runWith(errors, filePath, contents) {
       mockExec(JSON.stringify({errors}));
-      return flowService.flowFindDiagnostics(filePath, contents);
+      return flowInstance.flowFindDiagnostics(filePath, contents);
     }
 
     it('should call flow status when currentContents is null', () => {
       waitsForPromise(async () => {
         await runWith([], file, null);
-        var flowArgs = flowExecutor.execFlow.mostRecentCall.args[0];
+        const flowArgs = flowInstance._execFlow.mostRecentCall.args[0];
         expect(flowArgs[0]).toBe('status');
       });
     });
@@ -84,9 +79,9 @@ describe('LocalFlowService', () => {
     it('should call flow check-contents with currentContents when it is not null', () => {
       waitsForPromise(async () => {
         await runWith([], file, currentContents);
-        var execArgs = flowExecutor.execFlow.mostRecentCall.args;
-        var flowArgs = execArgs[0];
-        var stdin = execArgs[1].stdin;
+        const execArgs = flowInstance._execFlow.mostRecentCall.args;
+        const flowArgs = execArgs[0];
+        const stdin = execArgs[1].stdin;
         expect(flowArgs[0]).toBe('check-contents');
         expect(stdin).toBe(currentContents);
       });
@@ -94,14 +89,14 @@ describe('LocalFlowService', () => {
   });
 
   describe('flowGetAutocompleteSuggestions', () => {
-    var prefix: any;
-    var optionNames: any;
-    var options: any;
+    let prefix: string = (null: any);
+    let optionNames: Array<string> = (null: any);
+    let options: any;
     let activatedManually: boolean = (undefined: any);
 
     function runWith(results) {
       mockExec(JSON.stringify(results));
-      return flowService.flowGetAutocompleteSuggestions(
+      return flowInstance.flowGetAutocompleteSuggestions(
         file,
         currentContents,
         line,
@@ -123,7 +118,7 @@ describe('LocalFlowService', () => {
       if (set1.size !== set2.size) {
         return false;
       }
-      for (var item of set1) {
+      for (const item of set1) {
         if (!set2.has(item)) {
           return false;
         }
@@ -186,7 +181,7 @@ describe('LocalFlowService', () => {
     it('should rank better matches higher', () => {
       waitsForPromise(async () => {
         prefix = 'one';
-        var nameArray = await getNameArray(options);
+        const nameArray = await getNameArray(options);
         expect(nameArray[0]).toEqual('BigLongNameOne');
       });
     });
@@ -194,7 +189,7 @@ describe('LocalFlowService', () => {
     it('should expose extra information about a function', () => {
       prefix = 'f';
       waitsForPromise(async () => {
-        var result = await runWith([
+        const result = await runWith([
           {
             name: 'foo',
             type: '(param1: type1, param2: type2) => ret',
@@ -207,7 +202,7 @@ describe('LocalFlowService', () => {
             },
           },
         ]);
-        var fooResult = result[0];
+        const fooResult = result[0];
         expect(fooResult.displayText).toEqual('foo');
         expect(fooResult.snippet).toEqual('foo(${1:param1}, ${2:param2})');
         expect(fooResult.type).toEqual('function');
@@ -220,7 +215,7 @@ describe('LocalFlowService', () => {
   describe('flowGetType', () => {
     function runWithString(outputString) {
       mockExec(outputString);
-      return flowService.flowGetType(file, currentContents, line, column);
+      return flowInstance.flowGetType(file, currentContents, line, column, false);
     }
     function runWith(outputType) {
       return runWithString(JSON.stringify({type: outputType}));
@@ -255,7 +250,98 @@ describe('LocalFlowService', () => {
         fakeExecFlow = () => { throw 'error'; };
         // this causes some errors to get logged, but I don't think it's a big
         // deal and I don't know how to mock a module
-        expect(await flowService.flowGetType(file, currentContents, line, column)).toBe(null);
+        expect(
+          await flowInstance.flowGetType(file, currentContents, line, column, false)
+        ).toBe(null);
+      });
+    });
+  });
+});
+
+// This is kept as a separate describe because it operates at a lower level of abstraction -- the
+// tests above mock out _execFlow, whereas this is actually testing _execFlow. Thus there is little
+// shared code or setup.
+describe('Server startup and teardown', () => {
+  let flowInstance: FlowInstanceT = (null: any);
+  // Mocked ChildProcess instance (not typed as such because the mock only implements a subset of
+  // methods).
+  let childSpy: any;
+
+  const root = '/path/to/flow/root';
+
+  function execFlow() {
+    return flowInstance._execFlow([], {}, '/path/to/flow/root/file.js');
+  }
+
+  beforeEach(() => {
+    let called = false;
+    // we want asyncExecute to throw the first time, to mimic Flow not
+    // runinng. Then, it will spawn a new flow process, and we want that to be
+    // successful
+    spyOn(require('nuclide-commons'), 'asyncExecute').andCallFake(() => {
+      if (called) {
+        return {};
+      } else {
+        called = true;
+        throw {
+          stderr: 'There is no flow server running\n\'/path/to/flow/root\'',
+        };
+      }
+    });
+
+    childSpy = {
+      stdout: { on() {} },
+      stderr: { on() {} },
+      on() {},
+      kill() {},
+    };
+    spyOn(childSpy, 'kill');
+    spyOn(childSpy, 'on');
+    spyOn(require('nuclide-commons'), 'safeSpawn').andReturn(childSpy);
+    // we have to create another flow service here since we've mocked modules
+    // we depend on since the outer beforeEach ran.
+    const {FlowInstance} = (uncachedRequire(require, flowInstancePath): any);
+    flowInstance = new FlowInstance(root);
+    waitsForPromise(async () => { await execFlow(); });
+  });
+
+  afterEach(() => {
+    global.unspy(require('nuclide-commons'), 'asyncExecute');
+    global.unspy(require('nuclide-commons'), 'safeSpawn');
+  });
+
+  describe('_execFlow', () => {
+    it('should spawn a new Flow server', () => {
+      expect(require('nuclide-commons').safeSpawn).toHaveBeenCalledWith(
+        'flow',
+        ['server', '/path/to/flow/root']
+      );
+    });
+  });
+
+  describe('crashing Flow', () => {
+    let event;
+    let handler;
+
+    beforeEach(() => {
+      [event, handler] = childSpy.on.mostRecentCall.args;
+      // simulate a Flow crash
+      handler(2, null);
+    });
+
+    it('should blacklist the root', () => {
+      expect(event).toBe('exit');
+      (require('nuclide-commons').safeSpawn: any).reset();
+      waitsForPromise(async () => { await execFlow(); });
+      expect(require('nuclide-commons').safeSpawn).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('dispose', () => {
+    it('should kill flow server', () => {
+      waitsForPromise(async () => {
+        flowInstance.dispose();
+        expect(childSpy.kill).toHaveBeenCalledWith('SIGKILL');
       });
     });
   });

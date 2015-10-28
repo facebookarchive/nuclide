@@ -115,24 +115,8 @@ function findFlowConfigDir(localFile: string): Promise<?string> {
   return flowConfigDirCache.get(localFile);
 }
 
-/**
-* If this returns null, then it is not safe to run flow.
-*/
-async function getFlowExecOptions(localFile: string): Promise<?Object> {
-  var flowConfigDirectory = await findFlowConfigDir(localFile);
-  var installed = await isFlowInstalled();
-  if (flowConfigDirectory && installed) {
-    return {
-      cwd: flowConfigDirectory,
-    };
-  } else {
-    return null;
-  }
-}
-
 module.exports = {
   findFlowConfigDir,
-  getFlowExecOptions,
   getPathToFlow,
   insertAutocompleteToken,
   isFlowInstalled,
