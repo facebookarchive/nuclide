@@ -63,11 +63,8 @@ DebuggerAgent.prototype = {
       //    We need to reallocate debug context - restart frame and step into.
       this._removeAllBreakpoints.bind(this),
       this._reloadScripts.bind(this),
-      // TODO(natthu): Disable these because they do not complete successfully, causing the last
-      // step to not run, which means the debugger UI does not get updated with the paused debugger
-      // status.
-      // this._tryConnectInjector.bind(this),
-      // this._restartFrameIfPaused.bind(this),
+      this._tryConnectInjector.bind(this),
+      this._restartFrameIfPaused.bind(this),
       this._sendBacktraceIfPaused.bind(this)
     ]);
   },
