@@ -11,17 +11,27 @@
 
 import type {Observable} from 'rx';
 
+export type process$asyncExecuteRet = {
+  command?: string;
+  errorMessage?: string;
+  exitCode: number;
+  stderr: string;
+  stdout: string;
+};
+
 module.exports = {
 
   asyncFind<T>(items: Array<T>, test: any, thisArg: any): Promise<?T> {
     return require('./promises').asyncFind(items, test, thisArg);
   },
 
-  asyncExecute(command: string, args: Array<string>, options: any): Promise {
+  asyncExecute(command: string, args: Array<string>, options: any):
+      Promise<process$asyncExecuteRet> {
     return require('./process').asyncExecute(command, args, options);
   },
 
-  checkOutput(command: string, args: Array<string>, options: ?Object): Promise {
+  checkOutput(command: string, args: Array<string>, options: ?Object):
+      Promise<process$asyncExecuteRet> {
     return require('./process').checkOutput(command, args, options);
   },
 
@@ -37,7 +47,8 @@ module.exports = {
     return require('./promises').denodeify(f);
   },
 
-  safeSpawn(command: string, args?: Array<string>, options?: Object = {}): Promise<child_process$ChildProcess> {
+  safeSpawn(command: string, args?: Array<string>, options?: Object = {}):
+      Promise<child_process$ChildProcess> {
     return require('./process').safeSpawn(command, args, options);
   },
 

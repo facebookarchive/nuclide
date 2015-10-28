@@ -9,19 +9,20 @@
  * the root directory of this source tree.
  */
 
-var {
+import {
   execFile,
   spawn,
-} = require('child_process');
-var path = require('path');
-var {PromiseQueue} = require('./PromiseExecutors');
+} from 'child_process';
+import path from 'path';
+import {PromiseQueue} from './PromiseExecutors';
 
 import type {Observable as ObservableType, Observer} from 'rx';
+import type {process$asyncExecuteRet} from './main';
 
-var platformPathPromise: ?Promise<string>;
+let platformPathPromise: ?Promise<string>;
 
-var blockingQueues = {};
-var COMMON_BINARY_PATHS = ['/usr/bin', '/bin', '/usr/sbin', '/sbin', '/usr/local/bin'];
+const blockingQueues = {};
+const COMMON_BINARY_PATHS = ['/usr/bin', '/bin', '/usr/sbin', '/sbin', '/usr/local/bin'];
 
 /**
  * Captures the value of the PATH env variable returned by Darwin's (OS X) `path_helper` utility.
@@ -29,9 +30,9 @@ var COMMON_BINARY_PATHS = ['/usr/bin', '/bin', '/usr/sbin', '/sbin', '/usr/local
  *
  *     PATH="/usr/bin"; export PATH;
  */
-var DARWIN_PATH_HELPER_REGEXP = /PATH=\"([^\"]+)\"/;
+const DARWIN_PATH_HELPER_REGEXP = /PATH=\"([^\"]+)\"/;
 
-var STREAM_NAMES = ['stdin', 'stdout', 'stderr'];
+const STREAM_NAMES = ['stdin', 'stdout', 'stderr'];
 
 function getPlatformPath(): Promise<string> {
   // Do not return the cached value if we are executing under the test runner.
@@ -51,7 +52,7 @@ function getPlatformPath(): Promise<string> {
         if (error) {
           reject(error);
         } else {
-          var match = stdout.match(DARWIN_PATH_HELPER_REGEXP);
+          const match = stdout.match(DARWIN_PATH_HELPER_REGEXP);
           resolve((match && match.length > 1) ? match[1] : '');
         }
       });
@@ -85,7 +86,7 @@ async function createExecEnvironment(
   originalEnv: Object,
   commonBinaryPaths: Array<string>,
 ): Promise<Object> {
-  var execEnv = {...originalEnv};
+  const execEnv = {...originalEnv};
 
   if (execEnv.PATH !== process.env.PATH) {
     return execEnv;
@@ -93,7 +94,7 @@ async function createExecEnvironment(
 
   execEnv.PATH = execEnv.PATH || '';
 
-  var platformPath = null;
+  let platformPath = null;
   try {
     platformPath = await getPlatformPath();
   } catch (error) {
@@ -147,7 +148,7 @@ async function safeSpawn(
   options?: Object = {},
 ): Promise<child_process$ChildProcess> {
   options.env = await createExecEnvironment(options.env || process.env, COMMON_BINARY_PATHS);
-  var child = spawn(command, args, options);
+  const child = spawn(command, args, options);
   monitorStreamErrors(child, command, args, options);
   child.on('error', error => {
     logError('error with command:', command, args, options, 'error:', error);
@@ -155,7 +156,7 @@ async function safeSpawn(
   return child;
 }
 
-var isOsX = process.platform === 'darwin';
+const isOsX = process.platform === 'darwin';
 
 /**
  * Takes the command and args that you would normally pass to `spawn()` and returns `newArgs` such
@@ -169,8 +170,8 @@ function createArgsForScriptCommand(command: string, args?: Array<string> = []):
   } else {
     // On Linux, script takes the command to run as the -c parameter.
     // TODO: Shell escape every element in allArgs.
-    var allArgs = [command].concat(args);
-    var commandAsItsOwnArg = allArgs.join(' ');
+    const allArgs = [command].concat(args);
+    const commandAsItsOwnArg = allArgs.join(' ');
     return ['-q', '/dev/null', '-c', commandAsItsOwnArg];
   }
 }
@@ -184,7 +185,7 @@ function scriptSafeSpawn(
   args?: Array<string> = [],
   options?: Object = {},
 ): Promise<child_process$ChildProcess> {
-  var newArgs = createArgsForScriptCommand(command, args);
+  const newArgs = createArgsForScriptCommand(command, args);
   return safeSpawn('script', newArgs, options);
 }
 
@@ -197,9 +198,9 @@ function scriptSafeSpawnAndObserveOutput(
   args?: Array<string> = [],
   options?: Object = {},
 ): ObservableType<{stderr?: string; stdout?: string;}> {
-  var {Observable} = require('rx');
+  const {Observable} = require('rx');
   return Observable.create((observer: Observer) => {
-    var childProcess;
+    let childProcess;
     scriptSafeSpawn(command, args, options).then(proc => {
       childProcess = proc;
 
@@ -207,7 +208,7 @@ function scriptSafeSpawnAndObserveOutput(
         observer.onNext({stdout: data.toString()});
       });
 
-      var stderr = '';
+      let stderr = '';
       childProcess.stderr.on('data', (data) => {
         stderr += data;
         observer.onNext({stderr: data.toString()});
@@ -231,14 +232,6 @@ function scriptSafeSpawnAndObserveOutput(
   });
 }
 
-type process$asyncExecuteRet = {
-  command?: string;
-  errorMessage?: string;
-  exitCode: number;
-  stderr: string;
-  stdout: string;
-};
-
 /**
  * Returns a promise that resolves to the result of executing a process.
  *
@@ -261,13 +254,13 @@ function checkOutput(
     args: Array<string>,
     options: ?Object = {}): Promise<process$asyncExecuteRet> {
   // Clone passed in options so this function doesn't modify an object it doesn't own.
-  var localOptions = {...options};
+  const localOptions = {...options};
 
-  var executor = (resolve, reject) => {
-    var firstChild;
-    var lastChild;
+  const executor = (resolve, reject) => {
+    let firstChild;
+    let lastChild;
 
-    var firstChildStderr;
+    let firstChildStderr;
     if (localOptions.pipedCommand) {
       // If a second command is given, pipe stdout of first to stdin of second. String output
       // returned in this function's Promise will be stderr/stdout of the second command.
@@ -299,8 +292,8 @@ function checkOutput(
       firstChild = lastChild;
     }
 
-    var stderr = '';
-    var stdout = '';
+    let stderr = '';
+    let stdout = '';
     lastChild.on('close', exitCode => {
       resolve({
         exitCode,
@@ -367,7 +360,7 @@ async function asyncExecute(
     command: string,
     args: Array<string>,
     options: ?Object = {}): Promise<process$asyncExecuteRet> {
-  var result = await checkOutput(command, args, options);
+  const result = await checkOutput(command, args, options);
   if (result.exitCode !== 0) {
     // TODO(t8215539): Add properties such as "message" and "toString()" so that if the caller
     // catches this as if it were an error, it will print nicely rather than "[object Object]".
