@@ -42,7 +42,7 @@ export type Loc = {
 
 import {filter} from 'fuzzaldrin';
 
-var logger = require('nuclide-logging').getLogger();
+const logger = require('nuclide-logging').getLogger();
 import {
   insertAutocompleteToken,
   processAutocompleteItem,
@@ -61,7 +61,7 @@ export async function flowFindDefinition(
   line: number,
   column: number
 ): Promise<?Loc> {
-  var options = {};
+  const options = {};
   // We pass the current contents of the buffer to Flow via stdin.
   // This makes it possible for get-def to operate on the unsaved content in
   // the user's editor rather than what is saved on disk. It would be annoying
@@ -69,29 +69,23 @@ export async function flowFindDefinition(
   // ensure he or she got accurate results.
   options.stdin = currentContents;
 
-  var args = ['get-def', '--json', '--path', file, line, column];
+  const args = ['get-def', '--json', '--path', file, line, column];
   try {
-    var result = await execFlow(args, options, file);
+    const result = await execFlow(args, options, file);
     if (!result) {
       return null;
     }
-    if (result.exitCode === 0) {
-      var json = JSON.parse(result.stdout);
-      if (json['path']) {
-        return {
-          file: json['path'],
-          line: json['line'] - 1,
-          column: json['start'] - 1,
-        };
-      } else {
-        return null;
-      }
+    const json = parseJSON(args, result.stdout);
+    if (json['path']) {
+      return {
+        file: json['path'],
+        line: json['line'] - 1,
+        column: json['start'] - 1,
+      };
     } else {
-      logger.error(result.stderr);
       return null;
     }
   } catch(e) {
-    logger.error(e.stderr);
     return null;
   }
 }
@@ -105,9 +99,9 @@ export async function flowFindDiagnostics(
   file: NuclideUri,
   currentContents: ?string
 ): Promise<?Diagnostics> {
-  var options = {};
+  const options = {};
 
-  var args;
+  let args;
   if (currentContents) {
     options.stdin = currentContents;
 
@@ -120,11 +114,11 @@ export async function flowFindDiagnostics(
     args = ['status', '--json', file];
   }
 
-  var result;
+  let result;
 
   // Dispatch both of these requests so they happen in parallel.
-  var flowResultPromise = execFlow(args, options, file);
-  var flowRootPromise = findFlowConfigDir(file);
+  const flowResultPromise = execFlow(args, options, file);
+  const flowRootPromise = findFlowConfigDir(file);
   try {
     result = await flowResultPromise;
     if (!result) {
@@ -141,17 +135,16 @@ export async function flowFindDiagnostics(
       return null;
     }
   }
-  var flowRoot = await flowRootPromise;
+  const flowRoot = await flowRootPromise;
   if (!flowRoot) {
     logger.error('Got a Flow result but did not find a flow config path');
     return null;
   }
 
-  var json;
+  let json;
   try {
-    json = JSON.parse(result.stdout);
+    json = parseJSON(args, result.stdout);
   } catch (e) {
-    logger.error(e);
     return null;
   }
 
@@ -202,24 +195,21 @@ export async function flowGetAutocompleteSuggestions(
     return [];
   }
 
-  var options = {};
+  const options = {};
 
-  var args = ['autocomplete', '--json', file];
+  const args = ['autocomplete', '--json', file];
 
   options.stdin = insertAutocompleteToken(currentContents, line, column);
   try {
-    var result = await execFlow(args, options, file);
+    const result = await execFlow(args, options, file);
     if (!result) {
       return [];
     }
-    if (result.exitCode === 0) {
-      var json = JSON.parse(result.stdout);
-      var candidates = json.map(item => processAutocompleteItem(replacementPrefix, item));
-      return filter(candidates, replacementPrefix, { key: 'displayText' });
-    } else {
-      return [];
-    }
-  } catch (_) {
+    const json = parseJSON(args, result.stdout);
+    const candidates = json.map(item => processAutocompleteItem(replacementPrefix, item));
+    return filter(candidates, replacementPrefix, { key: 'displayText' });
+  } catch (e) {
+    logger.error('flow flowGetAutocompleteSuggestions failed: ', e);
     return [];
   }
 }
@@ -231,20 +221,20 @@ export async function flowGetType(
   column: number,
   includeRawType: boolean,
 ): Promise<?{type: string, rawType?: string}> {
-  var options = {};
+  const options = {};
 
   options.stdin = currentContents;
 
   line = line + 1;
   column = column + 1;
-  var args = ['type-at-pos', '--json', '--path', file, line, column];
+  const args = ['type-at-pos', '--json', '--path', file, line, column];
   if (includeRawType) {
     args.push('--raw');
   }
 
-  var output;
+  let output;
   try {
-    var result = await execFlow(args, options, file);
+    const result = await execFlow(args, options, file);
     if (!result) {
       return null;
     }
@@ -255,18 +245,16 @@ export async function flowGetType(
       output = result.stderr;
     }
   } catch (e) {
-    logger.error('flow type-at-pos failed: ' + file + ':' + line + ':' + column, e);
     return null;
   }
-  var json;
+  let json;
   try {
-    json = JSON.parse(output);
+    json = parseJSON(args, output);
   } catch (e) {
-    logger.error('invalid JSON from flow type-at-pos: ' + e);
     return null;
   }
-  var type = json['type'];
-  var rawType = json['raw_type'];
+  const type = json['type'];
+  const rawType = json['raw_type'];
   if (!type || type === '(unknown)' || type === '') {
     if (type === '') {
       // This should not happen. The Flow team believes it's an error in Flow
@@ -278,4 +266,13 @@ export async function flowGetType(
     return null;
   }
   return {type, rawType};
+}
+
+function parseJSON(args: Array<any>, value: string): any {
+  try {
+    return JSON.parse(value);
+  } catch (e) {
+    logger.error(`Invalid JSON result from flow ${args.join(' ')}. JSON:\n'${value}'.`);
+    throw e;
+  }
 }

@@ -9,10 +9,12 @@
  * the root directory of this source tree.
  */
 
+import type {process$asyncExecuteRet} from 'nuclide-commons';
+
 import {asyncExecute, safeSpawn, object as commonsObject} from 'nuclide-commons';
 const {assign} = commonsObject;
 
-var logger = require('nuclide-logging').getLogger();
+const logger = require('nuclide-logging').getLogger();
 
 import {
   getPathToFlow,
@@ -29,7 +31,7 @@ const startedServers: Set<child_process$ChildProcess> = new Set();
 const failedRoots: Set<string> = new Set();
 
 export async function dispose(): Promise<void> {
-  for (var server of startedServers) {
+  for (const server of startedServers) {
     // The default, SIGTERM, does not reliably kill the flow servers.
     server.kill('SIGKILL');
   }
@@ -41,35 +43,35 @@ export async function dispose(): Promise<void> {
  * Returns null if it is unsafe to run Flow (i.e. if it is not installed or if
  * no .flowconfig file can be found).
  */
-export async function execFlow(args: Array<any>, options: Object, file: string): Promise<?Object> {
-  var maxTries = 5;
-  var flowOptions = await getFlowExecOptions(file);
+export async function execFlow(args: Array<any>, options: Object, file: string)
+    : Promise<?process$asyncExecuteRet> {
+  const maxTries = 5;
+  const flowOptions = await getFlowExecOptions(file);
   if (!flowOptions) {
     return null;
   }
-  var root = flowOptions.cwd;
-  var localOptions = assign({}, options, flowOptions);
+  const root = flowOptions.cwd;
+  const localOptions = assign({}, options, flowOptions);
   if (failedRoots.has(root)) {
     return null;
   }
   args.push('--no-auto-start');
   args.push('--from', 'nuclide');
-  var pathToFlow = getPathToFlow();
-  for (var i = 0; ; i++) {
+  const pathToFlow = getPathToFlow();
+  for (let i = 0; ; i++) {
     try {
-      var result = await asyncExecute(pathToFlow, args, localOptions);
+      const result =
+        await asyncExecute(pathToFlow, args, localOptions); // eslint-disable-line no-await-in-loop
       return result;
     } catch (e) {
-      if (i >= maxTries) {
-        throw e;
-      }
-      if (/There is no [fF]low server running/.test(e.stderr)) {
+      if (i < maxTries && /There is no [fF]low server running/.test(e.stderr)) {
         // `flow server` will start a server in the foreground. asyncExecute
         // will not resolve the promise until the process exits, which in this
         // case is never. We need to use spawn directly to get access to the
         // ChildProcess object.
-        var serverProcess = await safeSpawn(pathToFlow, ['server', root]);
-        var logIt = data => {
+        const serverProcess =
+          await safeSpawn(pathToFlow, ['server', root]); // eslint-disable-line no-await-in-loop
+        const logIt = data => {
           logger.debug('flow server: ' + data);
         };
         serverProcess.stdout.on('data', logIt);
@@ -90,11 +92,12 @@ export async function execFlow(args: Array<any>, options: Object, file: string):
         startedServers.add(serverProcess);
       } else {
         // not sure what happened, but we'll let the caller deal with it
+        logger.error(`Flow failed: flow ${args.join(' ')}. Error: ${JSON.stringify(e)}`);
         throw e;
       }
       // try again
     }
   }
   // otherwise flow complains
-  return {};
+  return null;
 }
