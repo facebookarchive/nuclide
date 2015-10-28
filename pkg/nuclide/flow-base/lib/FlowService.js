@@ -69,7 +69,7 @@ export async function flowFindDefinition(
   // ensure he or she got accurate results.
   options.stdin = currentContents;
 
-  const args = ['get-def', '--json', '--path', file, line, column];
+  const args = ['get-def', '--json', '--retry-if-init', 'false', '--path', file, line, column];
   try {
     const result = await execFlow(args, options, file);
     if (!result) {
@@ -227,7 +227,7 @@ export async function flowGetType(
 
   line = line + 1;
   column = column + 1;
-  const args = ['type-at-pos', '--json', '--path', file, line, column];
+  const args = ['type-at-pos', '--json', '--retry-if-init', 'false', '--path', file, line, column];
   if (includeRawType) {
     args.push('--raw');
   }
