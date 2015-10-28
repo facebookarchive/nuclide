@@ -1,3 +1,12 @@
+'menu': [
+  {
+    'label': 'View'
+    'submenu': [
+      {'command': 'nuclide-file-tree:toggle', 'label': 'Toggle Tree View'}
+    ]
+  }
+]
+
 'context-menu':
   'atom-pane[data-active-item-path] atom-text-editor': [
     {'command': 'nuclide-file-tree:reveal-active-file', 'label': 'Reveal in File Tree'}
