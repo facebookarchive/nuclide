@@ -401,8 +401,9 @@ class SearchResultManager {
           cachedResult = {};
         }
         const defaultResult = getDefaultResult();
+        const resultList = cachedResult.result || defaultResult.result;
         results[path] = {
-          results: cachedResult.result || defaultResult.result,
+          results: resultList.map(result => ({...result, sourceProvider: providerName})),
           loading: cachedResult.loading || defaultResult.loading,
           error: cachedResult.error || defaultResult.error,
         };

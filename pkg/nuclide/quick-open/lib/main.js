@@ -127,13 +127,17 @@ class Activation {
 
       const query = this._searchComponent.getInputTextEditor().textContent;
       const providerName = this._currentProvider.name;
+      // default to empty string because `track` enforces string-only values
+      const sourceProvider = selection.sourceProvider || '';
       track(
         AnalyticsEvents.SELECT_FILE,
         {
           'quickopen-filepath': selection.path,
           'quickopen-query': query,
-          'quickopen-provider': providerName,
+          'quickopen-provider': providerName, // The currently open "tab".
           'quickopen-session': analyticsSessionId,
+          // Because the `provider` is usually OmniSearch, also track the original provider.
+          'quickopen-provider-source': sourceProvider,
         }
       );
       this.closeSearchPanel();
