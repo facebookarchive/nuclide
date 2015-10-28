@@ -25,6 +25,10 @@ const HEARTBEAT_AWAY_REPORT_COUNT = 3;
 const HEARTBEAT_NOTIFICATION_ERROR = 1;
 const HEARTBEAT_NOTIFICATION_WARNING = 2;
 
+// Taken from the error message in
+// https://github.com/facebook/watchman/blob/99dde8ee3f13233be097c036147748b2d7f8bfa7/tests/integration/rootrestrict.php#L58
+const WATCHMAN_ERROR_MESSAGE_FOR_ENFORCE_ROOT_FILES_REGEX = /global config root_files/;
+
 type HeartbeatNotification = {
   notification: atom$Notification;
   code: string;
@@ -345,10 +349,23 @@ class RemoteConnection {
       // Let's just console log it anyway.
       logger.info(`Watcher Features Initialized for project: ${rootDirectoryUri}`, watchUpdate);
     }, error => {
-      const warningMessage = 'Watcher failed to start - watcher features disabled!<br/>' +
-          'DETAILS: ' + (error.message || error);
+      let warningMessageToUser = `You just connected to a remote project ` +
+        `(${rootDirectoryUri}), but we recommend you remove this directory now!` +
+        `<br/><br/> The directory you connected to could not be watched by watchman, ` +
+        `so crucial features like synced remote file editing, file search, ` +
+        `and Mercurial-related updates will not work.`;
+      const loggedErrorMessage = error.message || error;
+      if (loggedErrorMessage.match(WATCHMAN_ERROR_MESSAGE_FOR_ENFORCE_ROOT_FILES_REGEX)) {
+        warningMessageToUser += `<br/><br/>You need to connect to a different root directory, ` +
+        `because the watchman on the server you are connecting to is configured to not allow ` +
+        `you to watch ${rootDirectoryUri}. You may have luck connecting to a deeper ` +
+        `directory, because often watchman is configured to only allow watching ` +
+        `certain subdirectories (often roots or subdirectories of source control repositories).`;
+      }
       // Add a persistent warning message to make sure the user sees it before dismissing.
-      atom.notifications.addWarning(warningMessage, {dismissable: true});
+      atom.notifications.addWarning(warningMessageToUser, {dismissable: true});
+      logger.error(
+          `Watcher failed to start - watcher features disabled! Error: ${loggedErrorMessage}`);
     }, () => {
       // Nothing needs to be done if the root directory watch has ended.
       logger.info(`Watcher Features Ended for project: ${rootDirectoryUri}`);
