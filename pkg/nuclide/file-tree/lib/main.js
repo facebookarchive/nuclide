@@ -67,7 +67,6 @@ class Activation {
       atom.config.observe(hideIgnoredNamesSetting, this._setHideIgnoredNames.bind(this)),
     );
 
-    require('nuclide-analytics').track('filetreedeux-enable');
   }
 
   dispose() {

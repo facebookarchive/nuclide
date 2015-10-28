@@ -156,6 +156,14 @@ class FileTreeActions {
     }
   }
 
+  openSelectedEntrySplit(nodeKey: string, orientation: string, side: string): void {
+    const pane = atom.workspace.getActivePane();
+    atom.workspace.openURIInPane(
+      FileTreeHelpers.keyToPath(nodeKey),
+      pane.split(orientation, side)
+    );
+  }
+
   setVcsStatuses(rootKey: string, vcsStatuses: {[path: string]: number}): void {
     this._dispatcher.dispatch({
       actionType: ActionType.SET_VCS_STATUSES,

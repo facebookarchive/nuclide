@@ -42,6 +42,33 @@ class FileTreeContextMenu {
     this._store = FileTreeStore.getInstance();
     this._addContextMenuItemGroup([
       {
+        label: 'Split',
+        shouldDisplay: () => {
+          const node = this._store.getSingleSelectedNode();
+          return node != null && !node.isContainer;
+        },
+        submenu: [
+          {
+            'label': 'Up',
+            'command': 'nuclide-file-tree:open-selected-entry-up',
+          },
+          {
+            'label': 'Down',
+            'command': 'nuclide-file-tree:open-selected-entry-down',
+          },
+          {
+            'label': 'Left',
+            'command': 'nuclide-file-tree:open-selected-entry-left',
+          },
+          {
+            'label': 'Right',
+            'command': 'nuclide-file-tree:open-selected-entry-right',
+          },
+        ],
+      },
+    ]);
+    this._addContextMenuItemGroup([
+      {
         label: 'New',
         shouldDisplay: () => {
           return this._store.getSelectedKeys().size > 0;

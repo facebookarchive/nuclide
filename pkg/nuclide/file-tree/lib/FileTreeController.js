@@ -21,6 +21,7 @@ import FileTreeHelpers from './FileTreeHelpers';
 import FileTreeStore from './FileTreeStore';
 import {PanelComponent} from 'nuclide-ui-panel';
 import React from 'react-for-atom';
+import {track} from 'nuclide-analytics';
 
 import {debounce} from 'nuclide-commons';
 import os from 'os';
@@ -113,6 +114,14 @@ class FileTreeController {
         'nuclide-file-tree:copy-full-path': this._copyFullPath.bind(this),
         'nuclide-file-tree:expand-directory': this._expandSelection.bind(this),
         'nuclide-file-tree:open-selected-entry': this._openSelectedEntry.bind(this),
+        'nuclide-file-tree:open-selected-entry-up':
+          this._openSelectedEntrySplitUp.bind(this),
+        'nuclide-file-tree:open-selected-entry-down':
+          this._openSelectedEntrySplitDown.bind(this),
+        'nuclide-file-tree:open-selected-entry-left':
+          this._openSelectedEntrySplitLeft.bind(this),
+        'nuclide-file-tree:open-selected-entry-right':
+          this._openSelectedEntrySplitRight.bind(this),
         'nuclide-file-tree:remove': this._deleteSelection.bind(this),
         'nuclide-file-tree:remove-project-folder-selection':
           this._removeRootFolderSelection.bind(this),
@@ -767,6 +776,39 @@ class FileTreeController {
     if (singleSelectedNode != null) {
       this._actions.confirmNode(singleSelectedNode.rootKey, singleSelectedNode.nodeKey);
     }
+  }
+
+  _openSelectedEntrySplit(orientation: string, side: string): void {
+    const singleSelectedNode = this._store.getSingleSelectedNode();
+    // Only perform the default action if a single node is selected.
+    if (singleSelectedNode != null && !singleSelectedNode.isContainer) {
+      // for: is this feature used enough to justify uncollapsing?
+      track('filetree-split-file', {
+        orientation,
+        side,
+      });
+      this._actions.openSelectedEntrySplit(
+        singleSelectedNode.nodeKey,
+        orientation,
+        side,
+      );
+    }
+  }
+
+  _openSelectedEntrySplitUp(): void {
+    this._openSelectedEntrySplit('vertical', 'before');
+  }
+
+  _openSelectedEntrySplitDown(): void {
+    this._openSelectedEntrySplit('vertical', 'after');
+  }
+
+  _openSelectedEntrySplitLeft(): void {
+    this._openSelectedEntrySplit('horizontal', 'before');
+  }
+
+  _openSelectedEntrySplitRight(): void {
+    this._openSelectedEntrySplit('horizontal', 'after');
   }
 
   _removeRootFolderSelection(): void {
