@@ -4,7 +4,6 @@
   "version": "0.0.0",
   "description": "Provides base support for flow utilities.",
   "nuclide": {
-    "excludeTestsFromContinuousIntegration": true,
     "flowCheck": true,
     "packageType": "Node",
     "testRunner": "npm"
