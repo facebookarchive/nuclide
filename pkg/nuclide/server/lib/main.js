@@ -18,9 +18,18 @@ const DEFAULT_PORT = 9090;
 
 var logger = getLogger();
 
+function setupServer(): void {
+  try {
+    require('./fb/setup').setupServer();
+  } catch (e) {
+    // Swallow the error while runing in open sourced version.
+  }
+}
+
 async function main(args) {
   try {
     var serverStartTimer = startTracking('nuclide-server:start');
+    setupServer();
     var {port, key, cert, ca} = args;
     if (key && cert && ca) {
       key = fs.readFileSync(key);
