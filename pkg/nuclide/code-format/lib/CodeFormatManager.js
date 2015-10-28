@@ -53,11 +53,11 @@ class CodeFormatManager {
       formatRange = buffer.getRange();
     } else {
       // Format selections should start at the begining of the line,
-      // and end at the end of the selection line.
+      // and include the last selected line end.
       var {Range} = require('atom');
       formatRange = new Range(
           [selectionStart.row, 0],
-          [selectionEnd.row, buffer.lineLengthForRow(selectionEnd.row)]
+          [selectionEnd.row + 1, 0],
       );
     }
 
