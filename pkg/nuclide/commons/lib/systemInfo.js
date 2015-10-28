@@ -10,8 +10,9 @@
  */
 
 import os from 'os';
+import {asyncExecute} from './process';
 
-export var OS_TYPE = {
+export const OS_TYPE = {
   WIN32: 'win32',
   WIN64: 'win64',
   LINUX: 'linux',
@@ -24,4 +25,19 @@ export function getOsType(): string {
 
 export function isRunningInWindows(): boolean {
   return getOsType() === OS_TYPE.WIN32 || getOsType() === OS_TYPE.WIN64;
+}
+
+export function getOsVersion(): string {
+  return os.release();
+}
+
+export async function getFlowVersion(): Promise<string> {
+  const flowPath = global.atom ? global.atom.config.get('nuclide-flow.pathToFlow') : 'flow';
+  const {stdout} = await asyncExecute(flowPath, ['--version']);
+  return stdout.trim();
+}
+
+export async function getClangVersion(): Promise<string> {
+  const {stdout} = await asyncExecute('clang', ['--version']);
+  return stdout.trim();
 }
