@@ -25,6 +25,8 @@ function getServiceByNuclideUri(service, file?) {
   return require('nuclide-client').getServiceByNuclideUri(service, file);
 }
 
+let busySignalProvider;
+
 var flowDiagnosticsProvider;
 
 var disposables;
@@ -99,11 +101,20 @@ module.exports = {
     };
   },
 
+  provideBusySignal(): BusySignalProviderBase {
+    if (!busySignalProvider) {
+      const {BusySignalProviderBase} = require('nuclide-busy-signal-provider-base');
+      busySignalProvider = new BusySignalProviderBase();
+    }
+    return busySignalProvider;
+  },
+
   provideDiagnostics() {
     if (!flowDiagnosticsProvider) {
+      const busyProvider = this.provideBusySignal();
       var FlowDiagnosticsProvider = require('./FlowDiagnosticsProvider');
       var runOnTheFly = ((atom.config.get(diagnosticsOnFlySetting): any): boolean);
-      flowDiagnosticsProvider = new FlowDiagnosticsProvider(runOnTheFly);
+      flowDiagnosticsProvider = new FlowDiagnosticsProvider(runOnTheFly, busyProvider);
       invariant(disposables);
       disposables.add(atom.config.observe(diagnosticsOnFlySetting, newValue => {
         invariant(flowDiagnosticsProvider);

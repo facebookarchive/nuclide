@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {BusySignalProviderBase} from 'nuclide-busy-signal-provider-base';
+
 import {trackTiming} from 'nuclide-analytics';
 
 var {getServiceByNuclideUri} = require('nuclide-client');
@@ -96,13 +98,19 @@ function flowMessageToDiagnosticMessage(flowMessages) {
 
 class FlowDiagnosticsProvider {
   _providerBase: DiagnosticsProviderBase;
+  _busySignalProvider: BusySignalProviderBase;
   _requestSerializer: RequestSerializer;
 
   /** Maps flow root to the set of file paths under that root for which we have
     * ever reported diagnostics. */
   _flowRootToFilePaths: Map<NuclideUri, Set<NuclideUri>>;
 
-  constructor(shouldRunOnTheFly: boolean, ProviderBase?: typeof DiagnosticsProviderBase = DiagnosticsProviderBase) {
+  constructor(
+    shouldRunOnTheFly: boolean,
+    busySignalProvider: BusySignalProviderBase,
+    ProviderBase?: typeof DiagnosticsProviderBase = DiagnosticsProviderBase,
+  ) {
+    this._busySignalProvider = busySignalProvider;
     var utilsOptions = {
       grammarScopes: new Set(JS_GRAMMARS),
       shouldRunOnTheFly,
@@ -114,8 +122,15 @@ class FlowDiagnosticsProvider {
     this._flowRootToFilePaths = new Map();
   }
 
+  _runDiagnostics(textEditor: TextEditor): void {
+    this._busySignalProvider.reportBusy(
+      'Flow: Waiting for diagnostics',
+      () => this._runDiagnosticsImpl(textEditor),
+    );
+  }
+
   @trackTiming('flow.run-diagnostics')
-  async _runDiagnostics(textEditor: TextEditor): Promise<void> {
+  async _runDiagnosticsImpl(textEditor: TextEditor): Promise<void> {
     var file = textEditor.getPath();
     if (!file) {
       return;
