@@ -13,6 +13,18 @@
   "engines": {
     "atom": ">=1.0.9"
   },
+  "consumedServices": {
+    "nuclide-busy-signal": {
+      "versions": {
+        "0.1.0": "consumeBusySignalProvider"
+      }
+    },
+    "status-bar": {
+      "versions": {
+        "^1.0.0": "consumeStatusBar"
+      }
+    }
+  },
   "dependencies": {
     "react-for-atom": "0.13.6",
     "rx": "3.1.1"
