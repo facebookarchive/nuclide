@@ -57,7 +57,7 @@ export class HgService extends HgServiceBase {
   _lockFileHeld: boolean;
   _shouldUseDirstate: boolean;
   _watchmanClient: ?watchman.Client;
-  _allowEventsAgain: ?() => void;
+  _allowEventsAgain: ?() => ?void;
 
   constructor(workingDirectory: string) {
     super(workingDirectory);

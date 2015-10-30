@@ -182,8 +182,6 @@ class TextEventDispatcher {
     }
     // Sometimes these events get triggered several times in succession
     // (particularly on startup).
-    //
-    // $FlowFixMe: debounce does not preserve the type of the function it is passed (t8396266)
     var debouncedCallback = debounce(callback, 50, true);
     this._callbackContainer.addCallback(grammarScopes, events, debouncedCallback);
     var disposables = new Disposable(() => {
