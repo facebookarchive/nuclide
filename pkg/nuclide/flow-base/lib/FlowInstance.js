@@ -119,7 +119,9 @@ export class FlowInstance {
     let result;
 
     try {
-      result = await this._execFlow(args, options, file);
+      // Don't log errors if the command returns a nonzero exit code, because status returns nonzero
+      // if it is reporting any issues, even when it succeeds.
+      result = await this._execFlow(args, options, file, /* logErrors */ false);
       if (!result) {
         return null;
       }
@@ -270,6 +272,7 @@ export class FlowInstance {
     args: Array<any>,
     options: Object,
     file: string,
+    logErrors?: boolean = true,
   ): Promise<?process$asyncExecuteRet> {
     const maxTries = 5;
     if (this._failed) {
@@ -322,8 +325,10 @@ export class FlowInstance {
           });
           this._startedServer = serverProcess;
         } else {
-          // not sure what happened, but we'll let the caller deal with it
-          logger.error(`Flow failed: flow ${args.join(' ')}. Error: ${JSON.stringify(e)}`);
+          if (logErrors) {
+            // not sure what happened, but we'll let the caller deal with it
+            logger.error(`Flow failed: flow ${args.join(' ')}. Error: ${JSON.stringify(e)}`);
+          }
           throw e;
         }
         // try again
