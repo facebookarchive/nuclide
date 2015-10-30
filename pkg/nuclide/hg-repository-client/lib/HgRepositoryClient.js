@@ -10,17 +10,16 @@
  */
 
 import type {
+  HgRepositoryOptions,
   RevisionInfo,
   RevisionFileChanges,
 } from 'nuclide-hg-repository-base/lib/hg-constants';
 
-var {CompositeDisposable, Emitter} = require('atom');
-var {StatusCodeId, StatusCodeIdToNumber, StatusCodeNumber, HgStatusOption} =
+const {CompositeDisposable, Emitter} = require('atom');
+const {StatusCodeId, StatusCodeIdToNumber, StatusCodeNumber, HgStatusOption} =
     require('nuclide-hg-repository-base').hgConstants;
-var {ensureTrailingSeparator} = require('nuclide-commons').paths;
-var {isRemote} = require('nuclide-remote-uri');
-var path = require('path');
-var {addAllParentDirectoriesToCache, removeAllParentDirectoriesFromCache} = require('./utils');
+const {ensureTrailingSeparator} = require('nuclide-commons').paths;
+const {addAllParentDirectoriesToCache, removeAllParentDirectoriesFromCache} = require('./utils');
 
 /**
  *
@@ -28,18 +27,7 @@ var {addAllParentDirectoriesToCache, removeAllParentDirectoriesFromCache} = requ
  *
  */
 
-var EDITOR_SUBSCRIPTION_NAME = 'hg-repository-editor-subscription';
-
-// TODO (jessicalin) Export these types from hg-constants.js when types can be
-// exported.
-type HgRepositoryOptions = {
-  originURL: string;
-  workingDirectory: Directory;
-  projectRootDirectory: Directory;
-};
-type StatusCodeId = string;
-type StatusCodeNumber = number;
-type HgStatusOption = number;
+const EDITOR_SUBSCRIPTION_NAME = 'hg-repository-editor-subscription';
 
 function filterForOnlyNotIgnored(code: StatusCodeIf): boolean {
   return (code !== StatusCodeId.IGNORED);
@@ -101,7 +89,7 @@ class HgRepositoryClient {
         return;
       }
 
-      var filePath = editor.getPath();
+      const filePath = editor.getPath();
       // If this editor has been previously active, we will have already
       // initialized diff info and registered listeners on it.
       if (this._disposables[filePath]) {
@@ -280,7 +268,7 @@ class HgRepositoryClient {
     if (!filePath) {
       return false;
     }
-    var cachedPathStatus = this._hgStatusCache[filePath];
+    const cachedPathStatus = this._hgStatusCache[filePath];
     if (!cachedPathStatus) {
       return false;
     } else {
@@ -294,7 +282,7 @@ class HgRepositoryClient {
     if (!filePath) {
       return false;
     }
-    var cachedPathStatus = this._hgStatusCache[filePath];
+    const cachedPathStatus = this._hgStatusCache[filePath];
     if (!cachedPathStatus) {
       return false;
     } else {
@@ -343,7 +331,7 @@ class HgRepositoryClient {
     if (!directoryPath) {
       return StatusCodeNumber.CLEAN;
     }
-    var directoryPathWithSeparator = ensureTrailingSeparator(directoryPath);
+    const directoryPathWithSeparator = ensureTrailingSeparator(directoryPath);
     if (this._modifiedDirectoryCache.has(directoryPathWithSeparator)) {
       return StatusCodeNumber.MODIFIED;
     }
@@ -359,7 +347,7 @@ class HgRepositoryClient {
     if (!filePath) {
       return StatusCodeNumber.CLEAN;
     }
-    var cachedStatus = this._hgStatusCache[filePath];
+    const cachedStatus = this._hgStatusCache[filePath];
     if (cachedStatus) {
       return StatusCodeIdToNumber[cachedStatus];
     }
@@ -367,8 +355,8 @@ class HgRepositoryClient {
   }
 
   getAllPathStatuses(): {[filePath: string]: StatusCodeNumber} {
-    var pathStatuses = Object.create(null);
-    for (var filePath in this._hgStatusCache) {
+    const pathStatuses = Object.create(null);
+    for (const filePath in this._hgStatusCache) {
       pathStatuses[filePath] = StatusCodeIdToNumber[this._hgStatusCache[filePath]];
     }
     return pathStatuses;
@@ -406,14 +394,14 @@ class HgRepositoryClient {
     paths: Array<string>,
     options: ?any,
   ): Promise<Map<NuclideUri, StatusCodeNumber>> {
-    var statusMap = new Map();
-    var isRelavantStatus = this._getPredicateForRelevantStatuses(options);
+    const statusMap = new Map();
+    const isRelavantStatus = this._getPredicateForRelevantStatuses(options);
 
     // Check the cache.
     // Note: If paths is empty, a full `hg status` will be run, which follows the spec.
-    var pathsWithCacheMiss = [];
+    const pathsWithCacheMiss = [];
     paths.forEach((filePath) => {
-      var statusId = this._hgStatusCache[filePath];
+      const statusId = this._hgStatusCache[filePath];
       if (statusId) {
         if (!isRelavantStatus(statusId)) {
           return;
@@ -426,7 +414,7 @@ class HgRepositoryClient {
 
     // Fetch any uncached statuses.
     if (pathsWithCacheMiss.length) {
-      var newStatusInfo = await this._updateStatuses(pathsWithCacheMiss, options);
+      const newStatusInfo = await this._updateStatuses(pathsWithCacheMiss, options);
       newStatusInfo.forEach((status, filePath) => {
         statusMap.set(filePath, StatusCodeIdToNumber[status]);
       });
@@ -444,16 +432,16 @@ class HgRepositoryClient {
     filePaths: Array<string>,
     options: ?any,
   ): Promise<Map<NuclideUri, StatussCodeIdValue>> {
-    var pathsInRepo = filePaths.filter((filePath) => {
+    const pathsInRepo = filePaths.filter((filePath) => {
       return this._isPathRelevant(filePath);
     });
-    var statusMapPathToStatusId = await this._service.fetchStatuses(pathsInRepo, options);
+    const statusMapPathToStatusId = await this._service.fetchStatuses(pathsInRepo, options);
 
-    var queriedFiles = new Set(pathsInRepo);
-    var statusChangeEvents = [];
+    const queriedFiles = new Set(pathsInRepo);
+    const statusChangeEvents = [];
     statusMapPathToStatusId.forEach((newStatusId, filePath) => {
 
-      var oldStatus = this._hgStatusCache[filePath];
+      const oldStatus = this._hgStatusCache[filePath];
       if (oldStatus && (oldStatus !== newStatusId) ||
           !oldStatus && (newStatusId !== StatusCodeId.CLEAN)) {
         statusChangeEvents.push({
@@ -481,7 +469,7 @@ class HgRepositoryClient {
     // Note: we don't know the real updated status of the file, so don't send a change event.
     // TODO (jessicalin) Can we make the 'pathStatus' field in the change event optional?
     // Then we can send these events.
-    var hasOptions = options && ('hgStatusOption' in options);
+    const hasOptions = options && ('hgStatusOption' in options);
     if (hasOptions && (options.hgStatusOption === HgStatusOption.ONLY_IGNORED)) {
       queriedFiles.forEach((filePath) => {
         if (this._hgStatusCache[filePath] === StatusCodeId.IGNORED) {
@@ -492,7 +480,7 @@ class HgRepositoryClient {
       // If HgStatusOption.ALL_STATUSES was passed and a file does not appear in
       // the results, it must mean the file was removed from the filesystem.
       queriedFiles.forEach((filePath) => {
-        var cachedStatusId = this._hgStatusCache[filePath];
+        const cachedStatusId = this._hgStatusCache[filePath];
         delete this._hgStatusCache[filePath];
         if (cachedStatusId === StatusCodeId.MODIFIED) {
           this._removeAllParentDirectoriesFromCache(filePath);
@@ -500,7 +488,7 @@ class HgRepositoryClient {
       });
     } else {
       queriedFiles.forEach((filePath) => {
-        var cachedStatusId = this._hgStatusCache[filePath];
+        const cachedStatusId = this._hgStatusCache[filePath];
         if (cachedStatusId !== StatusCodeId.IGNORED) {
           delete this._hgStatusCache[filePath];
           if (cachedStatusId === StatusCodeId.MODIFIED) {
@@ -541,7 +529,7 @@ class HgRepositoryClient {
    * returned, given the passed-in options for ::getStatuses.
    */
   _getPredicateForRelevantStatuses(options: ?any): (code: StatusCodeId) => boolean {
-    var hasOptions = options && ('hgStatusOption' in options);
+    const hasOptions = options && ('hgStatusOption' in options);
 
     if (hasOptions && (options.hgStatusOption === HgStatusOption.ONLY_IGNORED)) {
       return filterForOnlyIgnored;
@@ -560,11 +548,11 @@ class HgRepositoryClient {
    */
 
   getDiffStats(filePath: string): {added: number; deleted: number;} {
-    var cleanStats = {added: 0, deleted: 0};
+    const cleanStats = {added: 0, deleted: 0};
     if (!filePath) {
       return cleanStats;
     }
-    var cachedData = this._hgDiffCache[filePath];
+    const cachedData = this._hgDiffCache[filePath];
     return cachedData ? {added: cachedData.added, deleted: cachedData.deleted} :
         cleanStats;
   }
@@ -582,7 +570,7 @@ class HgRepositoryClient {
     if (!filePath) {
       return [];
     }
-    var diffInfo = this._hgDiffCache[filePath];
+    const diffInfo = this._hgDiffCache[filePath];
     return diffInfo ? diffInfo.lineDiffs : [];
   }
 
@@ -599,19 +587,19 @@ class HgRepositoryClient {
    *   project, default "clean" stats will be returned.
    */
   async getDiffStatsForPath(filePath: string): Promise<{added: number; deleted: number;}> {
-    var cleanStats = {added: 0, deleted: 0};
+    const cleanStats = {added: 0, deleted: 0};
     if (!filePath) {
       return cleanStats;
     }
 
     // Check the cache.
-    var cachedDiffInfo = this._hgDiffCache[filePath];
+    const cachedDiffInfo = this._hgDiffCache[filePath];
     if (cachedDiffInfo) {
       return {added: cachedDiffInfo.added, deleted: cachedDiffInfo.deleted};
     }
 
     // Fall back to a fetch.
-    var fetchedDiffInfo = await this._updateDiffInfo(filePath);
+    const fetchedDiffInfo = await this._updateDiffInfo(filePath);
     if (fetchedDiffInfo) {
       return {added: fetchedDiffInfo.added, deleted: fetchedDiffInfo.deleted};
     }
@@ -625,19 +613,19 @@ class HgRepositoryClient {
    *   is not in the project, an empty Array will be returned.
    */
   async getLineDiffsForPath(filePath: string): Promise<Array<LineDiff>> {
-    var lineDiffs = [];
+    const lineDiffs = [];
     if (!filePath) {
       return lineDiffs;
     }
 
     // Check the cache.
-    var cachedDiffInfo = this._hgDiffCache[filePath];
+    const cachedDiffInfo = this._hgDiffCache[filePath];
     if (cachedDiffInfo) {
       return cachedDiffInfo.lineDiffs;
     }
 
     // Fall back to a fetch.
-    var fetchedDiffInfo = await this._updateDiffInfo(filePath);
+    const fetchedDiffInfo = await this._updateDiffInfo(filePath);
     if (fetchedDiffInfo) {
       return fetchedDiffInfo.lineDiffs;
     }
@@ -662,7 +650,7 @@ class HgRepositoryClient {
       this._hgDiffCacheFilesUpdating.add(filePath);
     }
 
-    var diffInfo = await this._service.fetchDiffInfo(filePath);
+    const diffInfo = await this._service.fetchDiffInfo(filePath);
     if (diffInfo) {
       this._hgDiffCache[filePath] = diffInfo;
     }
@@ -686,9 +674,9 @@ class HgRepositoryClient {
    *
    */
   async fetchCurrentBookmark(): Promise<string> {
-    var newlyFetchedBookmark = '';
+    let newlyFetchedBookmark = '';
     try {
-      var newlyFetchedBookmark = await this._service.fetchCurrentBookmark();
+      newlyFetchedBookmark = await this._service.fetchCurrentBookmark();
     } catch (e) {
       // Suppress the error. There are legitimate times when there may be no
       // current bookmark, such as during a rebase. In this case, we just want
@@ -739,7 +727,7 @@ class HgRepositoryClient {
    * @param update The changed file paths.
    */
   _filesDidChange(changedPaths: Array<string>): void {
-    var relevantChangedPaths = changedPaths.filter(this._isPathRelevant.bind(this));
+    const relevantChangedPaths = changedPaths.filter(this._isPathRelevant.bind(this));
     if (relevantChangedPaths.length) {
       this._updateStatuses(relevantChangedPaths, {hgStatusOption: HgStatusOption.ALL_STATUSES});
       relevantChangedPaths.forEach((filePath) => {
@@ -751,14 +739,14 @@ class HgRepositoryClient {
   }
 
   _refreshStatusesOfAllFilesInCache() {
-    var pathsInStatusCache = Object.keys(this._hgStatusCache);
+    const pathsInStatusCache = Object.keys(this._hgStatusCache);
     this._hgStatusCache = {};
     this._modifiedDirectoryCache = new Map();
     if (pathsInStatusCache.length) {
       this._updateStatuses(pathsInStatusCache, {hgStatusOption: HgStatusOption.ALL_STATUSES});
     }
 
-    var pathsInDiffCache = Object.keys(this._hgDiffCache);
+    const pathsInDiffCache = Object.keys(this._hgDiffCache);
     this._hgDiffCache = {};
     if (pathsInDiffCache.length) {
       pathsInDiffCache.forEach((filePath) => {
