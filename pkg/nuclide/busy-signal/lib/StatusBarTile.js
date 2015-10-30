@@ -15,8 +15,9 @@ import React from 'react-for-atom';
 
 import {StatusBarTileComponent} from './StatusBarTileComponent';
 
-// Put us to the left of the remote connection icon.
-const STATUS_BAR_PRIORITY = -100;
+// We want to be the furthest left on the right side of the status bar so as not to leave a
+// conspicuous gap (or cause jitter) when nothing is busy.
+const STATUS_BAR_PRIORITY = 1000;
 
 export class StatusBarTile {
   _item: ?HTMLElement;
@@ -52,7 +53,7 @@ export class StatusBarTile {
     item.addEventListener('mouseout', () => {
       this._isMouseOver = false;
     });
-    this._tile = statusBar.addLeftTile({
+    this._tile = statusBar.addRightTile({
       item,
       priority: STATUS_BAR_PRIORITY,
     });
