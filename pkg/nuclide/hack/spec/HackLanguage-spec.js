@@ -93,7 +93,7 @@ class HackClass {}
         var timeZoneType = await hackLanguage.getType(filePath, fileContents, '$timezone_id', 7, 27);
         expect(timeZoneType).toBe('TimeZoneTypeType');
         var groupedAdsType = await hackLanguage.getType(filePath, fileContents, '$grouped_ads', 9, 11);
-        expect(groupedAdsType).toBe('array<string, array>');
+        expect(groupedAdsType).toBe('[shape-like array]');
       });
     });
   });
