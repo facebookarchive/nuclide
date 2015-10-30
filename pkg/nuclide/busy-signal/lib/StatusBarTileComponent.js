@@ -25,10 +25,12 @@ export class StatusBarTileComponent extends React.Component {
     super(props);
   }
 
-  render() {
+  render(): void {
     const classes = ['nuclide-busy-signal-status-bar'];
     if (this.props.busy) {
       classes.push('nuclide-busy-signal-status-bar-busy');
+    } else {
+      classes.push('nuclide-busy-signal-status-bar-idle');
     }
     return (
       <div className={classes.join(' ')}>{SPINNER}</div>
