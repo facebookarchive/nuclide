@@ -10,9 +10,12 @@
  */
 
 import type {
+  HgStatusOptionValue,
   HgRepositoryOptions,
   RevisionInfo,
   RevisionFileChanges,
+  StatusCodeIdValue,
+  StatusCodeNumberValue,
 } from 'nuclide-hg-repository-base/lib/hg-constants';
 
 const {CompositeDisposable, Emitter} = require('atom');
@@ -27,13 +30,17 @@ const {addAllParentDirectoriesToCache, removeAllParentDirectoriesFromCache} = re
  *
  */
 
+type HgStatusCommandOptions = {
+  hgStatusOption: HgStatusOptionValue;
+};
+
 const EDITOR_SUBSCRIPTION_NAME = 'hg-repository-editor-subscription';
 
-function filterForOnlyNotIgnored(code: StatusCodeIf): boolean {
+function filterForOnlyNotIgnored(code: StatusCodeIdValue): boolean {
   return (code !== StatusCodeId.IGNORED);
 }
 
-function filterForOnlyIgnored(code: StatusCodeId): boolean {
+function filterForOnlyIgnored(code: StatusCodeIdValue): boolean {
   return (code === StatusCodeId.IGNORED);
 }
 
@@ -149,7 +156,7 @@ class HgRepositoryClient {
   }
 
   onDidChangeStatus(
-    callback: (event: {path: string; pathStatus: StatusCodeNumber}) => {}
+    callback: (event: {path: string; pathStatus: StatusCodeNumberValue}) => {}
   ): Disposable {
     return this._emitter.on('did-change-status', callback);
   }
@@ -327,7 +334,7 @@ class HgRepositoryClient {
   // Tracking directory status isn't straightforward, as Hg only tracks files.
   // http://mercurial.selenic.com/wiki/FAQ#FAQ.2FCommonProblems.I_tried_to_check_in_an_empty_directory_and_it_failed.21
   // TODO: Make this method reflect New and Ignored statuses.
-  getDirectoryStatus(directoryPath: ?string): StatusCodeNumber {
+  getDirectoryStatus(directoryPath: ?string): StatusCodeNumberValue {
     if (!directoryPath) {
       return StatusCodeNumber.CLEAN;
     }
@@ -339,11 +346,11 @@ class HgRepositoryClient {
   }
 
   // We don't want to do any synchronous 'hg status' calls. Just use cached values.
-  getPathStatus(filePath: string): StatusCodeNumber {
+  getPathStatus(filePath: string): StatusCodeNumberValue {
     return this.getCachedPathStatus(filePath);
   }
 
-  getCachedPathStatus(filePath: string): StatusCodeNumber {
+  getCachedPathStatus(filePath: string): StatusCodeNumberValue {
     if (!filePath) {
       return StatusCodeNumber.CLEAN;
     }
@@ -354,7 +361,7 @@ class HgRepositoryClient {
     return StatusCodeNumber.CLEAN;
   }
 
-  getAllPathStatuses(): {[filePath: string]: StatusCodeNumber} {
+  getAllPathStatuses(): {[filePath: string]: StatusCodeNumberValue} {
     const pathStatuses = Object.create(null);
     for (const filePath in this._hgStatusCache) {
       pathStatuses[filePath] = StatusCodeIdToNumber[this._hgStatusCache[filePath]];
@@ -392,7 +399,7 @@ class HgRepositoryClient {
    */
   async getStatuses(
     paths: Array<string>,
-    options: ?any,
+    options: HgStatusCommandOptions,
   ): Promise<Map<NuclideUri, StatusCodeNumber>> {
     const statusMap = new Map();
     const isRelavantStatus = this._getPredicateForRelevantStatuses(options);
@@ -430,7 +437,7 @@ class HgRepositoryClient {
    */
   async _updateStatuses(
     filePaths: Array<string>,
-    options: ?any,
+    options: HgStatusCommandOptions,
   ): Promise<Map<NuclideUri, StatussCodeIdValue>> {
     const pathsInRepo = filePaths.filter((filePath) => {
       return this._isPathRelevant(filePath);
@@ -528,7 +535,9 @@ class HgRepositoryClient {
    * Returns a filter for whether or not the given status code should be
    * returned, given the passed-in options for ::getStatuses.
    */
-  _getPredicateForRelevantStatuses(options: ?any): (code: StatusCodeId) => boolean {
+  _getPredicateForRelevantStatuses(
+    options: HgStatusCommandOptions
+  ): (code: StatusCodeIdValue) => boolean {
     const hasOptions = options && ('hgStatusOption' in options);
 
     if (hasOptions && (options.hgStatusOption === HgStatusOption.ONLY_IGNORED)) {
