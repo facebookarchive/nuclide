@@ -19,6 +19,7 @@
     "nuclide-commons": "0.0.0",
     "nuclide-format-js-base": "0.0.0",
     "nuclide-logging": "0.0.0",
+    "nuclide-reprint-js": "0.0.0",
     "nuclide-update-cursor": "0.0.0"
   },
   "devDependencies": {

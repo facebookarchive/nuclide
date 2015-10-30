@@ -1,0 +1,7 @@
+function foo<a, b>() {
+  meh();
+}
+
+(function<a, b>() {
+  meh();
+})();

@@ -1,0 +1,11 @@
+function* foo() {}
+
+(function*() {})();
+
+({*foo() {}});
+
+class foo {
+  static *foo() {}
+
+  *foo() {}
+}

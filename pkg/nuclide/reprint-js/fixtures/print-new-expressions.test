@@ -1,0 +1,7 @@
+new a(b,c);
+new a ( ) ;
+new a(
+  b,
+  ...c,
+);
+new a . b [ c ] ( d ) ;

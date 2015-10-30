@@ -1,0 +1,9 @@
+while (a) b;
+
+while (a) {
+  b;
+}
+
+do {
+  b;
+} while (a);

@@ -1,0 +1,3 @@
+// TODO: Fix this test.
+foo.aaaaaaaaaaaaaaaaaaaa().bbbbbbbbbbbbbbbbbbbb().cccccccccccccccccccc().dddddddddddddddddddd();
+foo.aaaaaaaaaaaaaaaaaaaa.bbbbbbbbbbbbbbbbbbbb.cccccccccccccccccccc.dddddddddddddddddddd;

@@ -1,0 +1,10 @@
+type foo = any;
+type foo = boolean;
+type foo = mixed;
+type foo = number;
+type foo = string;
+type foo = void;
+type foo<a, b> = void;
+type foo<a, b: c> = void;
+type foo = typeof bar;
+type foo = [string, number];

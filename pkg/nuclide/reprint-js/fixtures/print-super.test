@@ -1,0 +1,9 @@
+class foo extends bar {
+  constructor() {
+    super(1, 2);
+  }
+  
+  meh() {
+    super.meh(1, 2);
+  }
+}

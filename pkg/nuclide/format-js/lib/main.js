@@ -106,6 +106,11 @@ module.exports = {
       type: 'boolean',
       default: true,
     },
+    reprint: {
+      title: 'Reprint: Format all code',
+      type: 'boolean',
+      default: false,
+    },
     requiresTransferComments: {
       title: 'Requires: Transfer Comments',
       type: 'boolean',

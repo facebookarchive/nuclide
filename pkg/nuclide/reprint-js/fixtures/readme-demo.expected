@@ -1,0 +1,9 @@
+(function foo(
+  someLongArgument,
+  anotherLongArgument,
+  aThirdReallyLongArgumentNameThatCouldBreakThings,
+) {
+  dosomething();
+})(1, 2, 3);
+
+(function bar(a, b, c) {})();

@@ -1,0 +1,3 @@
+class foo<a, b> extends bar<a, b> {
+  meh() {}
+}

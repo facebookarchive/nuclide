@@ -1,0 +1,12 @@
+switch (foo) {
+  case a:
+    b;
+    break;
+
+  case c:
+  case d:
+    e;
+
+  default:
+    f;
+}

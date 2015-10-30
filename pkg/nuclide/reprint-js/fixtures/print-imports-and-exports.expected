@@ -1,0 +1,31 @@
+// import
+import foo from 'foo';
+import * as foo from 'foo';
+import foo, {foo} from 'foo';
+import {foo} from 'foo';
+import {foo as bar} from 'foo';
+
+// export
+export default foo;
+export {foo};
+export {foo as bar};
+export const foo = 7;
+
+// export from
+export default from 'foo';
+export {foo} from 'foo';
+export foo from 'foo';
+export * as foo from 'foo';
+export foo, {foo} from 'foo';
+
+// import types
+import type foo from 'foo';
+import type {foo, foo} from 'foo';
+
+// export types
+export type {foo};
+export type {foo} from 'foo';
+
+// TODO: Uncomment this when TypeAlias is added.
+// export type foo = 'foo';
+foo;

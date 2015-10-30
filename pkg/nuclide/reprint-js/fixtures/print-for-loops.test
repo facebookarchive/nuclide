@@ -1,0 +1,7 @@
+for(var a; b; c){d;}
+for(;a;){d;}
+for(;;){d;}
+for(var a in b){d;}
+for(a in b){d;}
+for(var a of b){}
+for(a of b){}

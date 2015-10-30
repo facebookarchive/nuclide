@@ -1,0 +1,16 @@
+var x = <div/>;
+var x = (<div/>);
+var x = <div onClick={onClick} id="foo" blah/>;
+var x = <div theseAttributes="are a bit" longerSoThat="the line will break" and="we can test things"/>;
+var y = <div></div>;
+var y = <div>Some Text</div>;
+var y = <div theseAttributes="are a bit" longerSoThat="the line will break" and="we can test things">Some Text
+
+Some more text</div>;
+var y = <div>Foo
+
+Bar</div>;
+var z = <a.b />;
+var z = <a.b></a.b>;
+var z = <a.b {...props} />;
+var z = <a.b {...this.state} />;

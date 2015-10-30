@@ -1,0 +1,3 @@
+// TODO: parse error, can't use with in strict mode
+// with(o){x;}
+x;

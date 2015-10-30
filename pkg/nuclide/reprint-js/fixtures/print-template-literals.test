@@ -1,0 +1,14 @@
+var x = (`foo
+
+
+bar`);
+var x = `foo${meh()}bar${meh()}baz`;
+var x = foo`foobar`;
+var x = `'"\n'"\t\`\${}
+`;
+var x = `${
+  meh
+}`;
+var x = `${meh}foo${meh}`;
+var x = `foo${meh}`;
+var x = `${thisTakesALotOfArguments(one, two, three, four,five,six,seven,eight)}`;

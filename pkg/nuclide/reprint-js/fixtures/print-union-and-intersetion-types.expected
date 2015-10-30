@@ -1,0 +1,27 @@
+type foo = string | number | boolean;
+type foo = string & number & boolean;
+type foo =
+  'string-one' |
+  'string-two' |
+  'string-three' |
+  'string-four' |
+  'string-five';
+type action =
+  {
+    type: 'some-namespace-for-the-action/thing-one',
+    foo: string,
+    bar: number,
+    baz: string,
+  } |
+  {
+    type: 'some-namespace-for-the-action/thing-two',
+    foo: string,
+    bar: number,
+    baz: string,
+  } |
+  {
+    type: 'some-namespace-for-the-action/thing-three',
+    foo: string,
+    bar: number,
+    baz: string,
+  };

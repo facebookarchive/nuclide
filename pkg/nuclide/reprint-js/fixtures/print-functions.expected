@@ -1,0 +1,15 @@
+function a() {
+  b;
+}
+
+function a(b, ...c) {
+  d;
+}
+
+(function(a, b) {
+  c;
+})(d, e);
+
+(function foo(a, b) {
+  c;
+})(f, g);

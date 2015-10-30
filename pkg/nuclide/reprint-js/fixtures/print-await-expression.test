@@ -1,0 +1,5 @@
+async function foo() {
+  await x;
+  await meh();
+  (await b)
+}

@@ -1,0 +1,8 @@
+type a = 'foo';
+type a = 'foo';
+type a = 'foo\'bar';
+type a = 1;
+
+// type a = -1;
+type a = true;
+type a = false;

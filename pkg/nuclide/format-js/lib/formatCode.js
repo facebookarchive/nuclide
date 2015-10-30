@@ -22,25 +22,41 @@ async function formatCode(editor: ?TextEditor): Promise<void> {
 
   track('format-js-formatCode');
 
-  var buffer = editor.getBuffer();
-  var oldSource = buffer.getText();
+  // Save things
+  const buffer = editor.getBuffer();
+  const oldSource = buffer.getText();
+  let source = oldSource;
 
-  // TODO: Add a limit so the transform is not run on files over a certain
-  // length, or at least this will be nice when we run on save/stop change.
-  var {transform} = require('nuclide-format-js-base');
-  var {getOptions} = require('./options');
-  var path = editor.getPath();
-  var newSource = transform(oldSource, await getOptions(path));
-  if (newSource === oldSource) {
+  // Reprint transform.
+  if (atom.config.get('nuclide-format-js.reprint')) {
+    const {reprint} = require('nuclide-reprint-js');
+    const reprintResult = reprint(source, {
+      maxLineLength: 80,
+      useSpaces: true,
+      tabWidth: 2,
+    });
+    source = reprintResult.source;
+  }
+
+  // Auto-require transform.
+  // TODO: Add a limit so the transform is not run on files over a certain size.
+  const {transform} = require('nuclide-format-js-base');
+  const {getOptions} = require('./options');
+  const path = editor.getPath();
+  source = transform(source, await getOptions(path));
+
+  // Update the source and position after all transforms are done. Do nothing
+  // if the source did not change at all.
+  if (source === oldSource) {
     return;
   }
 
-  var range = buffer.getRange(); // always format the entire file
-  var position = editor.getCursorBufferPosition(); // save cursor position
+  const range = buffer.getRange();
+  const position = editor.getCursorBufferPosition();
+  editor.setTextInBufferRange(range, source);
+  editor.setCursorBufferPosition(updateCursor(oldSource, position, source));
 
-  editor.setTextInBufferRange(range, newSource);
-  editor.setCursorBufferPosition(updateCursor(oldSource, position, newSource));
-
+  // Save the file if that option is specified.
   if (atom.config.get('nuclide-format-js.saveAfterRun')) {
     editor.save();
   }

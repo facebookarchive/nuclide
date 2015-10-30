@@ -1,0 +1,17 @@
+function foo(aaaaaaaaaaaaaaaaaaaaaaaaa, bbbbbbbbbbbbbbbbbbbbbbbbb, cccccccccc) {
+  meh();
+}
+
+function foo(aaaaaaaaaaaaaaaaaaaaaaaaa, bbbbbbbbbbbbbbbbbbbbbbbbb, ccccccccccc) {
+  meh();
+}
+
+function foo(aaaaaaaaaaaaaaaaaaaaaaaaa, bbbbbbbbbbbbbbbbbbbbbbbbb, ccccccccccc) {
+  function foo(aaaaaaaaaaaaaaaaaaaaaaaaa, bbbbbbbbbbbbbbbbbbbbbbbbb, cccccccc) {
+    meh();
+  }
+
+  function foo(aaaaaaaaaaaaaaaaaaaaaaaaa, bbbbbbbbbbbbbbbbbbbbbbbbb, ccccccccc) {
+    meh();
+  }
+}
