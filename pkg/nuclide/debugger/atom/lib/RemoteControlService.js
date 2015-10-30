@@ -66,6 +66,22 @@ class RemoteControlService {
         }
       });
   }
+
+  debugNode(pid: number): Promise {
+    const model = this._getModel();
+    if (!model) {
+      return Promise.reject(new Error('Package is not activated.'));
+    }
+    return model.getStore().getProcessInfoList('node')
+      .then(processes => {
+        const proc = array.find(processes, p => p.pid === pid);
+        if (proc) {
+          model.getActions().attachToProcess(proc);
+        } else {
+          Promise.reject('No node process to debug.');
+        }
+      });
+  }
 }
 
 module.exports = RemoteControlService;

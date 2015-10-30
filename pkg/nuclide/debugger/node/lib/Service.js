@@ -61,19 +61,19 @@ class DebuggerProcess {
 var {DebuggerProcessInfo} = require('nuclide-debugger-utils');
 
 class ProcessInfo extends DebuggerProcessInfo {
-  _pid: number;
+  pid: number;
   _command: string;
 
   constructor(pid: number, command: string) {
     super('node');
 
-    this._pid = pid;
+    this.pid = pid;
     this._command = command;
   }
 
   attach(): DebuggerProcess {
     // Enable debugging in the process.
-    process.kill(this._pid, 'SIGUSR1');
+    process.kill(this.pid, 'SIGUSR1');
 
     // This is the port that the V8 debugger usually listens on.
     // TODO(natthu): Provide a way to override this in the UI.
@@ -83,12 +83,12 @@ class ProcessInfo extends DebuggerProcessInfo {
 
   compareDetails(other: ProcessInfo): number {
     return this._command === other._command
-        ? (this._pid - other._pid)
+        ? (this.pid - other.pid)
         : (this._command < other._command) ? -1 : 1;
   }
 
   displayString(): string {
-    return this._command + '(' + this._pid + ')';
+    return this._command + '(' + this.pid + ')';
   }
 }
 
@@ -115,5 +115,6 @@ function getProcessInfoList(): Promise<Array<DebuggerProcessInfo>> {
 }
 
 module.exports = {
+  name: 'node',
   getProcessInfoList,
 };
