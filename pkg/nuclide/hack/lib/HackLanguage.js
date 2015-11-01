@@ -210,6 +210,23 @@ module.exports = class HackLanguage {
     }
   }
 
+  async highlightSource(
+    path: string,
+    contents: string,
+    line: number,
+    col: number,
+  ): Promise<Array<atom$Range>> {
+    await this.updateFile(path, contents);
+    const webWorkerMessage = {cmd: 'hh_find_lvar_refs', args: [path, line, col]};
+    const response = await this._hackWorker.runWorkerTask(webWorkerMessage);
+    return response.positions.map(
+      position => new Range(
+        [position.line - 1, position.char_start - 1],
+        [position.line - 1, position.char_end],
+      )
+    );
+  }
+
   async getDiagnostics(path: string, contents: string): Promise<Array<HackDiagnostic>> {
     await this.updateFile(path, contents);
     var webWorkerMessage = {cmd: 'hh_check_file', args: [path]};

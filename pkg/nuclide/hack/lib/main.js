@@ -10,6 +10,7 @@
  */
 
 import type {Point} from 'atom';
+import CodeHighlightProvider from './CodeHighlightProvider';
 
 var {CompositeDisposable} = require('atom');
 var {HACK_GRAMMARS} = require('nuclide-hack-common/lib/constants');
@@ -98,6 +99,18 @@ module.exports = {
 
       typeHint(editor: TextEditor, position: Point): Promise<string> {
         return typeHintProvider.typeHint(editor, position);
+      },
+    };
+  },
+
+  createCodeHighlightProvider(): any {
+    const codeHighlightProvider = new CodeHighlightProvider();
+
+    return {
+      selector: HACK_GRAMMARS_STRING,
+      inclusionPriority: 1,
+      highlight(editor: atom$TextEditor, position: atom$Point): Promise<Array<atom$Range>> {
+        return codeHighlightProvider.highlight(editor, position);
       },
     };
   },

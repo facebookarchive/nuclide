@@ -1,0 +1,26 @@
+{
+  "name": "nuclide-code-highlight",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "Provides a code-highlighting provider API",
+  "nuclide": {
+    "flowCheck": true,
+    "packageType": "Atom",
+    "testRunner": "apm"
+  },
+  "dependencies": {
+    "nuclide-commons": "0.0.0"
+  },
+  "devDependencies": {
+    "nuclide-external-interfaces": "0.0.0",
+    "nuclide-jasmine": "0.0.0"
+  },
+  "consumedServices": {
+    "nuclide-code-highlight.provider": {
+      "versions": {
+        "0.0.0": "consumeProvider"
+      }
+    }
+  }
+}

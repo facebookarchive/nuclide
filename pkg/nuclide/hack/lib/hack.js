@@ -98,6 +98,32 @@ module.exports = {
     return await hackLanguage.formatSource(buffer.getText(), startPosition + 1, endPosition + 1);
   },
 
+  async codeHighlightFromEditor(
+    editor: atom$TextEditor,
+    position: atom$Point,
+  ): Promise<Array<atom$Range>> {
+    const hackLanguage = await getHackLanguageForUri(editor.getPath());
+    if (!hackLanguage) {
+      return [];
+    }
+
+    const matchData = extractWordAtPosition(editor, position, HACK_WORD_REGEX);
+    if (
+      !matchData ||
+      !matchData.wordMatch.length ||
+      !matchData.wordMatch[0].startsWith('$')
+    ) {
+      return [];
+    }
+
+    return hackLanguage.highlightSource(
+      getPath(editor.getPath() || ''),
+      editor.getText(),
+      position.row + 1,
+      position.column,
+    );
+  },
+
   async typeHintFromEditor(editor: TextEditor, position: atom$Point): Promise<?TypeHint> {
     var filePath = editor.getPath();
     var hackLanguage = await getHackLanguageForUri(filePath);

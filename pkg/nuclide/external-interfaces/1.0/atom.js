@@ -148,6 +148,7 @@ declare class atom$Gutter {
 
 declare class atom$Marker {
   destroy(): void;
+  getBufferRange(): atom$Range;
   getStartBufferPosition(): atom$Point;
   onDidChange(callback: (event: {
     oldHeadScreenPosition: atom$Point;
