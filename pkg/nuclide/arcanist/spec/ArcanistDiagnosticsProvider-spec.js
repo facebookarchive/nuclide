@@ -9,43 +9,58 @@
  * the root directory of this source tree.
  */
 
-import {uncachedRequire} from 'nuclide-test-helpers';
+import {ArcanistDiagnosticsProvider} from '../lib/ArcanistDiagnosticsProvider';
+import fs from 'fs';
+import path from 'path';
+import {track} from 'temp';
+const temp = track();
 
 describe('ArcanistDiagnosticsProvider', () => {
   let provider: any;
-  let willDestroyCallbacks: Array<Function> = (null: any);
-  let fakeEditor: any;
-  let getTextEditorsReturn: any;
+  let tempFile : string;
 
   beforeEach(() => {
-    fakeEditor = { getPath() { return 'foo'; } };
-    willDestroyCallbacks = [];
-    getTextEditorsReturn = [fakeEditor];
-    spyOn(atom.workspace, 'onWillDestroyPaneItem').andCallFake(callback => {
-      willDestroyCallbacks.push(callback);
-    });
-    spyOn(atom.workspace, 'getTextEditors').andCallFake(() => getTextEditorsReturn);
-    require('nuclide-diagnostics-provider-base').DiagnosticsProviderBase = (class {
-      publishMessageInvalidation() {}
-    }: any);
-    const {ArcanistDiagnosticsProvider} =
-      (uncachedRequire(require, '../lib/ArcanistDiagnosticsProvider'): any);
+    const folder = temp.mkdirSync();
+    tempFile = path.join(folder, 'test');
+    fs.writeFileSync(tempFile, /* data */ '');
     provider = new ArcanistDiagnosticsProvider();
   });
 
   it('should invalidate the messages when a file is closed', () => {
     spyOn(provider._providerBase, 'publishMessageInvalidation');
-    willDestroyCallbacks.forEach(callback => callback({item: fakeEditor}));
-    expect(provider._providerBase.publishMessageInvalidation).toHaveBeenCalledWith({
-      scope: 'file',
-      filePaths: ['foo'],
+    waitsForPromise(async () => {
+      const editor = await atom.workspace.open(tempFile);
+
+      // The editor path may get changed (empiracally, prefixed with 'private/'),
+      // so we 'getPath()' here.
+      const filePath = editor.getPath();
+
+      // We have to destroy panes themselves, not merely the pane items, in order
+      // to trigger the callbacks that ArcanistDiagnosticsProvider registers on
+      // atom.workspace.onWillDestroyPaneItem.
+      const theOnlyPane = atom.workspace.getPanes()[0];
+      theOnlyPane.destroy();
+
+      expect(provider._providerBase.publishMessageInvalidation).toHaveBeenCalledWith({
+        scope: 'file',
+        filePaths: [filePath],
+      });
     });
   });
 
   it('should not invalidate the messages when there are multiple buffers with the file', () => {
-    getTextEditorsReturn = [fakeEditor, fakeEditor];
     spyOn(provider._providerBase, 'publishMessageInvalidation');
-    willDestroyCallbacks.forEach(callback => callback({item: fakeEditor}));
-    expect(provider._providerBase.publishMessageInvalidation).not.toHaveBeenCalled();
+    waitsForPromise(async () => {
+      await atom.workspace.open(tempFile);
+      // Open a second pane, containing a second editor with the same file.
+      const paneToSplit = atom.workspace.getPanes()[0];
+      paneToSplit.splitLeft({copyActiveItem: true});
+
+      // We have to destroy panes themselves, not merely the pane items, in order
+      // to trigger the callbacks that ArcanistDiagnosticsProvider registers on
+      // atom.workspace.onWillDestroyPaneItem.
+      paneToSplit.destroy();
+      expect(provider._providerBase.publishMessageInvalidation).not.toHaveBeenCalled();
+    });
   });
 });
