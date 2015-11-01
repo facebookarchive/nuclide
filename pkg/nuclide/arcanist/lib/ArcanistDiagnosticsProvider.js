@@ -14,6 +14,7 @@ import {CompositeDisposable} from 'atom';
 import {DiagnosticsProviderBase} from 'nuclide-diagnostics-provider-base';
 
 import {trackTiming} from 'nuclide-analytics';
+import {isTextEditor} from 'nuclide-atom-helpers';
 import {promises} from 'nuclide-commons';
 import invariant from 'assert';
 const {RequestSerializer} = promises;
@@ -34,7 +35,7 @@ export class ArcanistDiagnosticsProvider {
     this._providerBase = new DiagnosticsProviderBase(baseOptions);
     this._requestSerializer = new RequestSerializer();
     this._subscriptions.add(atom.workspace.onWillDestroyPaneItem(({item}) => {
-      if (typeof item.getPath === 'function') {
+      if (isTextEditor(item)) {
         const path: ?string = item.getPath();
         if (!path) {
           return;
