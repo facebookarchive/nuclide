@@ -37,6 +37,7 @@ type HgStatusCommandOptions = {
 
 const EDITOR_SUBSCRIPTION_NAME = 'hg-repository-editor-subscription';
 const DEBOUNCE_MILLISECONDS_FOR_REFRESH_ALL = 500;
+const MAX_INDIVIDUAL_CHANGED_PATHS = 25;
 
 function filterForOnlyNotIgnored(code: StatusCodeIdValue): boolean {
   return (code !== StatusCodeId.IGNORED);
@@ -741,13 +742,23 @@ class HgRepositoryClient {
    */
   _filesDidChange(changedPaths: Array<string>): void {
     const relevantChangedPaths = changedPaths.filter(this._isPathRelevant.bind(this));
-    if (relevantChangedPaths.length) {
+    if (relevantChangedPaths.length === 0) {
+      return;
+    } else if (relevantChangedPaths.length < MAX_INDIVIDUAL_CHANGED_PATHS) {
+      // Update the statuses individually.
       this._updateStatuses(relevantChangedPaths, {hgStatusOption: HgStatusOption.ALL_STATUSES});
       relevantChangedPaths.forEach((filePath) => {
         if (this._hgDiffCache[filePath]) {
           this._updateDiffInfo(filePath);
         }
       });
+    } else {
+      // This is a heuristic to improve performance. Many files being changed may
+      // be a sign that we are picking up changes that were created in an automated
+      // way -- so in addition, there may be many batches of changes in succession.
+      // _refreshStatusesOfAllFilesInCache debounces calls, so it is safe to call
+      // it multiple times in succession.
+      this._refreshStatusesOfAllFilesInCache();
     }
   }
 
