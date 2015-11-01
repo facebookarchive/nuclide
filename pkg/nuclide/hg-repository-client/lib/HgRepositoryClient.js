@@ -21,6 +21,7 @@ import type {
 const {CompositeDisposable, Emitter} = require('atom');
 const {StatusCodeId, StatusCodeIdToNumber, StatusCodeNumber, HgStatusOption} =
     require('nuclide-hg-repository-base').hgConstants;
+const {debounce} = require('nuclide-commons');
 const {ensureTrailingSeparator} = require('nuclide-commons').paths;
 const {addAllParentDirectoriesToCache, removeAllParentDirectoriesFromCache} = require('./utils');
 
@@ -35,6 +36,7 @@ type HgStatusCommandOptions = {
 };
 
 const EDITOR_SUBSCRIPTION_NAME = 'hg-repository-editor-subscription';
+const DEBOUNCE_MILLISECONDS_FOR_REFRESH_ALL = 500;
 
 function filterForOnlyNotIgnored(code: StatusCodeIdValue): boolean {
   return (code !== StatusCodeId.IGNORED);
@@ -67,6 +69,8 @@ class HgRepositoryClient {
   // Map of directory path to the number of modified files within that directory.
   _modifiedDirectoryCache: Map<string, number>;
   _service: HgService;
+  // A debounced function that eventually calls _doRefreshStatusesOfAllFilesInCache.
+  _debouncedRefreshAll: ?() => mixed;
 
   constructor(repoPath: string, hgService: HgService, options: HgRepositoryOptions) {
     this._path = repoPath;
@@ -747,22 +751,34 @@ class HgRepositoryClient {
     }
   }
 
-  _refreshStatusesOfAllFilesInCache() {
-    const pathsInStatusCache = Object.keys(this._hgStatusCache);
-    this._hgStatusCache = {};
-    this._modifiedDirectoryCache = new Map();
-    if (pathsInStatusCache.length) {
-      this._updateStatuses(pathsInStatusCache, {hgStatusOption: HgStatusOption.ALL_STATUSES});
-    }
+  _refreshStatusesOfAllFilesInCache(): void {
+    let debouncedRefreshAll = this._debouncedRefreshAll;
+    if (debouncedRefreshAll == null) {
+      const doRefresh = () => {
+        const pathsInStatusCache = Object.keys(this._hgStatusCache);
+        this._hgStatusCache = {};
+        this._modifiedDirectoryCache = new Map();
+        if (pathsInStatusCache.length) {
+          this._updateStatuses(pathsInStatusCache, {hgStatusOption: HgStatusOption.ALL_STATUSES});
+        }
 
-    const pathsInDiffCache = Object.keys(this._hgDiffCache);
-    this._hgDiffCache = {};
-    if (pathsInDiffCache.length) {
-      pathsInDiffCache.forEach((filePath) => {
-        this._updateDiffInfo(filePath);
-      });
+        const pathsInDiffCache = Object.keys(this._hgDiffCache);
+        this._hgDiffCache = {};
+        // This loop can be improved after t7006533.
+        for (const filePath of pathsInDiffCache) {
+          this._updateDiffInfo(filePath);
+        }
+      };
+      this._debouncedRefreshAll = debounce(
+        doRefresh,
+        DEBOUNCE_MILLISECONDS_FOR_REFRESH_ALL,
+        /* immediate */ false
+      );
+      debouncedRefreshAll = this._debouncedRefreshAll;
     }
+    debouncedRefreshAll();
   }
+
 
   /**
    *

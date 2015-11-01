@@ -255,7 +255,8 @@ describe('HgRepositoryClient', () => {
   });
 
   describe('_refreshStatusesOfAllFilesInCache', () => {
-    it('refreshes the status of all paths currently in the cache.', () => {
+    it('refreshes the status of all paths currently in the cache after a debounce ' +
+        'interval.', () => {
       // Test setup: force the state of the repo.
       var testRepoState = {
         [PATH_1]: StatusCodeId.IGNORED,
@@ -269,10 +270,12 @@ describe('HgRepositoryClient', () => {
       });
 
       repo._refreshStatusesOfAllFilesInCache();
-      expect(repo._updateStatuses).toHaveBeenCalledWith(
-        Object.keys(testRepoState),
-        {hgStatusOption: HgStatusOption.ALL_STATUSES}
-      );
+      setTimeout(() => {
+        expect(repo._updateStatuses).toHaveBeenCalledWith(
+          Object.keys(testRepoState),
+          {hgStatusOption: HgStatusOption.ALL_STATUSES}
+        );
+      }, 550);
     });
   });
 
