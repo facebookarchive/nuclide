@@ -687,26 +687,34 @@ class FileTreeStore {
         this._onDirectoryChange(nodeKey);
       });
     } catch (ex) {
-      // Log error but proceed un-interrupted because there's not much else we can do here.
+      /*
+       * Log error and mark the directory as dirty so the failed subscription will be attempted
+       * again next time the directory is expanded.
+       */
       this._logger.error(`Cannot subscribe to directory "${nodeKey}"`, ex);
+      this._set('isDirtyMap', setProperty(this._data.isDirtyMap, nodeKey));
       return;
     }
     this._set('subscriptionMap', setProperty(this._data.subscriptionMap, nodeKey, subscription));
   }
 
   _removeSubscription(rootKey: string, nodeKey: string): void {
-    var subscription = this._data.subscriptionMap[nodeKey];
-    if (!subscription) {
-      return;
+    let hasRemainingSubscribers;
+    const subscription = this._data.subscriptionMap[nodeKey];
+
+    if (subscription != null) {
+      hasRemainingSubscribers = this._data.rootKeys.some((otherRootKey) => (
+        otherRootKey !== rootKey && this.isExpanded(otherRootKey, nodeKey)
+      ));
+      if (!hasRemainingSubscribers) {
+        subscription.dispose();
+        this._set('subscriptionMap', deleteProperty(this._data.subscriptionMap, nodeKey));
+      }
     }
-    var hasRemainingSubscribers = this._data.rootKeys.some((otherRootKey) => (
-      otherRootKey !== rootKey && this.isExpanded(otherRootKey, nodeKey)
-    ));
-    if (!hasRemainingSubscribers) {
-      subscription.dispose();
-      this._set('subscriptionMap', deleteProperty(this._data.subscriptionMap, nodeKey));
-      // Since we're no longer getting notifications when the directory contents change, go ahead
-      // and assume our child list is dirty.
+
+    if (subscription == null || hasRemainingSubscribers === false) {
+      // Since we're no longer getting notifications when the directory contents change, assume the
+      // child list is dirty.
       this._set('isDirtyMap', setProperty(this._data.isDirtyMap, nodeKey, true));
     }
   }

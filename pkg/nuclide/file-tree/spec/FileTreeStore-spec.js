@@ -9,10 +9,13 @@
  * the root directory of this source tree.
  */
 
+import {Directory} from 'atom';
 import FileTreeActions from '../lib/FileTreeActions';
+import FileTreeHelpers from '../lib/FileTreeHelpers';
 import FileTreeStore from '../lib/FileTreeStore';
 
 import {fixtures} from 'nuclide-test-helpers';
+import fs from 'fs';
 import pathModule from 'path';
 
 describe('FileTreeStore', () => {
@@ -22,6 +25,16 @@ describe('FileTreeStore', () => {
 
   const actions: FileTreeActions = FileTreeActions.getInstance();
   const store: FileTreeStore = FileTreeStore.getInstance();
+
+  /*
+   * `getChildKeys` is the public API used by UIs. It queues Promises, which are stored in the
+   * `isLoading` map. Fetch via the public API and return the **internal-only** Promise to enable
+   * tests to await loading children.
+   */
+  function loadChildKeys(rootKey: string, nodeKey: string): Promise<void> {
+    store.getChildKeys(rootKey, nodeKey);
+    return Promise.resolve(store._getLoading(nodeKey));
+  }
 
   beforeEach(() => {
     waitsForPromise(async () => {
@@ -176,7 +189,6 @@ describe('FileTreeStore', () => {
       // Root is tracked after setting it.
       var trackedNode = store.getTrackedNode();
       expect(trackedNode && trackedNode.nodeKey).toBe(dir1);
-
       actions.selectSingleNode(dir1, dir1);
 
       // New selection, which happens on user interaction via select and collapse, resets the
@@ -195,10 +207,7 @@ describe('FileTreeStore', () => {
         expect(store.isLoading(dir1, fooTxt)).toBe(true);
 
         try {
-          // Await **internal-only** API because the public `getChildKeys` API hides the fact that
-          // it queues an async fetch. The return value is not relevant to this test, only that its
-          // side effects be awaited.
-          await store._fetchChildKeys(fooTxt);
+          await loadChildKeys(fooTxt, fooTxt);
         } catch (e) {
           // This will always throw an exception, but that's irrelevant to this test. The side
           // effects after this try/catch capture the purpose of this test.
@@ -216,10 +225,7 @@ describe('FileTreeStore', () => {
       actions.expandNode(dir1, fooTxt);
       actions.setIgnoredNames(['foo.*']);
 
-      // Await **internal-only** API because the public `getChildKeys` API hides the fact that
-      // it queues an async fetch. The return value is not relevant to this test, only that its
-      // side effects be awaited.
-      await store._fetchChildKeys(dir1);
+      await loadChildKeys(dir1, dir1);
 
       expect(store.getChildKeys(dir1, dir1).length).toBe(0);
     });
@@ -231,13 +237,9 @@ describe('FileTreeStore', () => {
       actions.expandNode(dir1, fooTxt);
       actions.setIgnoredNames(['foo.*']);
 
-      // Await **internal-only** API because the public `getChildKeys` API hides the fact that
-      // it queues an async fetch. The return value is not relevant to this test, only that its
-      // side effects be awaited.
-      await store._fetchChildKeys(dir1);
+      await loadChildKeys(dir1, dir1);
 
       actions.setIgnoredNames(['bar.*']);
-
       expect(store.getChildKeys(dir1, dir1).length).toBe(1);
     });
   });
@@ -249,13 +251,48 @@ describe('FileTreeStore', () => {
       actions.setIgnoredNames(['foo.*']);
       actions.setHideIgnoredNames(false);
 
-      // Await **internal-only** API because the public `getChildKeys` API hides the fact that
-      // it queues an async fetch. The return value is not relevant to this test, only that its
-      // side effects be awaited.
-      await store._fetchChildKeys(dir1);
+      await loadChildKeys(dir1, dir1);
 
       expect(store.getChildKeys(dir1, dir1).length).toBe(1);
     });
   });
 
+  describe('recovering from failed subscriptions', () => {
+    it('fetches children on re-expansion of failed directories', () => {
+      waitsForPromise(async () => {
+        const unsubscribeableDir = new Directory(dir1);
+        // Force subscription to fail to mimic network failure, etc.
+        spyOn(unsubscribeableDir, 'onDidChange').andCallFake(() => {
+          throw new Error('This error **should** be thrown.');
+        });
+
+        // Return the always-fail directory when it is expanded.
+        spyOn(FileTreeHelpers, 'getDirectoryByKey').andReturn(unsubscribeableDir);
+
+        actions.setRootKeys([dir1]);
+        actions.expandNode(dir1, dir1);
+        await loadChildKeys(dir1, dir1);
+
+        // Children should load but the subscription should fail.
+        expect(store.getCachedChildKeys(dir1, dir1)).toEqual([fooTxt]);
+
+        // Add a new file, 'bar.baz', for which the store will not get a notification because
+        // the subscription failed.
+        const barBaz = pathModule.join(dir1, 'bar.baz');
+        fs.writeFileSync(barBaz, '');
+        await loadChildKeys(dir1, dir1);
+        expect(store.getCachedChildKeys(dir1, dir1)).toEqual([fooTxt]);
+
+        // Collapsing and re-expanding a directory should forcibly fetch its children regardless of
+        // whether a subscription is possible.
+        actions.collapseNode(dir1, dir1);
+        actions.expandNode(dir1, dir1);
+        await loadChildKeys(dir1, dir1);
+
+        // The subscription should fail again, but the children should be refetched and match the
+        // changed structure (i.e. include the new 'bar.baz' file).
+        expect(store.getCachedChildKeys(dir1, dir1)).toEqual([barBaz, fooTxt]);
+      });
+    });
+  });
 });
