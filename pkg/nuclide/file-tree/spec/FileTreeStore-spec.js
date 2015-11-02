@@ -12,15 +12,25 @@
 import FileTreeActions from '../lib/FileTreeActions';
 import FileTreeStore from '../lib/FileTreeStore';
 
+import {fixtures} from 'nuclide-test-helpers';
 import pathModule from 'path';
 
 describe('FileTreeStore', () => {
-  const dir1 = pathModule.join(__dirname, 'fixtures', 'dir1') + '/';
-  const fooTxt = pathModule.join(__dirname, 'fixtures', 'dir1', 'foo.txt');
-  const dir2 = pathModule.join(__dirname, 'fixtures', 'dir2') + '/';
+  let dir1 = '';
+  let fooTxt = '';
+  let dir2 = '';
 
   const actions: FileTreeActions = FileTreeActions.getInstance();
   const store: FileTreeStore = FileTreeStore.getInstance();
+
+  beforeEach(() => {
+    waitsForPromise(async () => {
+      const tmpFixturesDir = await fixtures.copyFixture('.', __dirname);
+      dir1 = pathModule.join(tmpFixturesDir, 'dir1');
+      fooTxt = pathModule.join(dir1, 'foo.txt');
+      dir2 = pathModule.join(tmpFixturesDir, 'dir2');
+    });
+  });
 
   afterEach(() => {
     store.reset();
