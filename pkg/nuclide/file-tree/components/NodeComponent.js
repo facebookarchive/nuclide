@@ -89,14 +89,14 @@ class NodeComponent extends React.Component {
     return (
       <li
         key={this.props.nodeKey}
-        className={outerClassName}
+        className={`${outerClassName} ${statusClass}`}
         style={outerStyle}
         onClick={this._onClick}
         onMouseDown={this._onMouseDown}
         onDoubleClick={this._onDoubleClick}>
         {arrow}
         <span
-          className={`icon name ${innerClassName} ${statusClass}`}
+          className={`icon name ${innerClassName}`}
           data-name={this.props.nodeName}
           data-path={this.props.nodePath}>
           {this.props.nodeName}
