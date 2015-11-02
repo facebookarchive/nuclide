@@ -31,15 +31,20 @@ function getRecentFilesMatching(query: string): Array<FileResult> {
     return [];
   }
   const queryRegExp = new RegExp(query, 'i');
+  const projectPaths = atom.project.getPaths();
   return _recentFilesService.getRecentFiles()
-    .filter(result => !query.length || queryRegExp.test(result.path))
+    .filter(result =>
+      (!query.length || queryRegExp.test(result.path)) && (
+        projectPaths.some(projectPath => result.path.indexOf(projectPath) !== -1)
+      )
+    )
     .map(result => ({
       path: result.path,
       timestamp: result.timestamp,
     }));
 }
 
-export let RecentFilesProvider: Provider = {
+export const RecentFilesProvider: Provider = {
 
   getName(): string {
     return 'RecentFilesProvider';
