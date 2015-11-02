@@ -284,7 +284,7 @@ module.exports = {
       subscriptions = null;
     }
     if (diffViewModel != null) {
-      diffViewModel.destroy();
+      diffViewModel.dispose();
       diffViewModel = null;
     }
     activeDiffView = null;
