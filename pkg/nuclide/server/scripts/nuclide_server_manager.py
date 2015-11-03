@@ -90,10 +90,28 @@ class NuclideServerManager(object):
         return version
 
     def _ensure_certs_dir(self):
+        self.logger.info('Checking if certificate dir {0} exists.'.format(CERTS_DIR))
         if not os.path.exists(CERTS_DIR):
             self.logger.info('Creating certificates dir.')
             os.makedirs(CERTS_DIR)
         return CERTS_DIR
+
+    def _check_if_certs_files_exist(self, certs_generator):
+        server_cert_exists = os.path.exists(certs_generator.server_cert)
+        server_key_exists = os.path.exists(certs_generator.server_key)
+        ca_cert_exists = os.path.exists(certs_generator.ca_cert)
+        if server_cert_exists and server_key_exists and ca_cert_exists:
+            return True
+        else:
+            message = 'The expected generated certificate files do not exist:'
+            if not server_cert_exists:
+                message += '\n server cert: {0}'.format(certs_generator.server_cert)
+            if not server_key_exists:
+                message += '\n server key: {0}'.format(certs_generator.server_key)
+            if not ca_cert_exists:
+                message += '\n ca cert: {0}'.format(certs_generator.ca_cert)
+            self.logger.error(message)
+            return False
 
     # If port_filter is given, only list servers in that list.
     @staticmethod
@@ -237,6 +255,7 @@ class NuclideServerManager(object):
             certs_generator = NuclideCertificatesGenerator(certs_dir, common_name, 'nuclide',
                                                            expiration_days=CERTS_EXPIRATION_DAYS)
             self.logger.info('Initialized NuclideCertificatesGenerator with common_name: {0}'.format(common_name))
+            self._check_if_certs_files_exist(certs_generator)
             return server.start(self.options.timeout, cert=certs_generator.server_cert,
                                 key=certs_generator.server_key, ca=certs_generator.ca_cert, quiet=self.options.quiet,
                                 debug=self.options.debug)

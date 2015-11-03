@@ -98,6 +98,9 @@ class NuclideCertificatesGenerator(object):
         except subprocess.CalledProcessError as e:
             self.logger.error('openssl failed: %s' % e.output)
             return False
+        except Exception as e:
+            self.logger.error('openssl failed: {0}'.format(e.args))
+            return False
         return True
 
     # Generate a key pair and a certificate signing request.
@@ -109,6 +112,9 @@ class NuclideCertificatesGenerator(object):
             check_output_silent(args, env=self._env)
         except subprocess.CalledProcessError as e:
             self.logger.error('openssl failed: %s' % e.output)
+            return False
+        except Exception as e:
+            self.logger.error('openssl failed: {0}'.format(e.args))
             return False
         return True
 
@@ -124,6 +130,9 @@ class NuclideCertificatesGenerator(object):
             check_output_silent(args, env=self._env)
         except subprocess.CalledProcessError as e:
             self.logger.error('openssl failed: %s' % e.output)
+            return False
+        except Exception as e:
+            self.logger.error('openssl failed: {0}'.format(e.args))
             return False
         return True
 
