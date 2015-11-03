@@ -10,13 +10,19 @@
  */
 
 import type {
+  DiffInfo,
   HgStatusOptionValue,
   HgRepositoryOptions,
+  LineDiff,
   RevisionInfo,
   RevisionFileChanges,
   StatusCodeIdValue,
   StatusCodeNumberValue,
 } from 'nuclide-hg-repository-base/lib/hg-constants';
+
+import type {
+  HgService,
+} from 'nuclide-hg-repository-base/lib/HgService.js';
 
 const {CompositeDisposable, Emitter} = require('atom');
 const {StatusCodeId, StatusCodeIdToNumber, StatusCodeNumber, HgStatusOption} =
@@ -31,7 +37,7 @@ const {addAllParentDirectoriesToCache, removeAllParentDirectoriesFromCache} = re
  *
  */
 
-type HgStatusCommandOptions = {
+export type HgStatusCommandOptions = {
   hgStatusOption: HgStatusOptionValue;
 };
 
@@ -67,11 +73,25 @@ function filterForAllStatues() {
  */
 
 class HgRepositoryClient {
+  _path: string;
+  _workingDirectory: atom$Directory;
+  _projectDirectory: atom$Directory;
+  _originURL: string;
+  _service: HgService;
+  _emitter: Emitter;
+  // A map from a key (in most cases, a file path), to a related Disposable.
+  _disposables: {[key: string]: atom$Disposable};
+  _hgStatusCache: {[filePath: NuclideUri]: StatusCodeIdValue};
   // Map of directory path to the number of modified files within that directory.
   _modifiedDirectoryCache: Map<string, number>;
-  _service: HgService;
+  _hgDiffCache: {[filePath: NuclideUri]: DiffInfo};
+  _hgDiffCacheFilesUpdating: Set<NuclideUri>;
+  _hgDiffCacheFilesToClear: Set<NuclideUri>;
+
   // A debounced function that eventually calls _doRefreshStatusesOfAllFilesInCache.
   _debouncedRefreshAll: ?() => mixed;
+
+  _currentBookmark: ?string;
 
   constructor(repoPath: string, hgService: HgService, options: HgRepositoryOptions) {
     this._path = repoPath;
@@ -81,7 +101,6 @@ class HgRepositoryClient {
     this._service = hgService;
 
     this._emitter = new Emitter();
-    // A map from a key (in most cases, a file path), to a related Disposable.
     this._disposables = {};
 
     this._hgStatusCache = {};
@@ -91,7 +110,7 @@ class HgRepositoryClient {
     this._hgDiffCacheFilesUpdating = new Set();
     this._hgDiffCacheFilesToClear = new Set();
     this._disposables[EDITOR_SUBSCRIPTION_NAME] =
-        (atom.workspace.observeTextEditors((editor) => {
+        (atom.workspace.observeTextEditors((editor: atom$TextEditor) => {
       if (!editor.getPath()) {
         // TODO: observe for when this editor's path changes.
         return;
@@ -156,17 +175,17 @@ class HgRepositoryClient {
    *
    */
 
-  onDidDestroy(callback: () => {}): Disposable {
-    this._emitter.on('did-destroy', callback);
+  onDidDestroy(callback: () => {}): atom$Disposable {
+    return this._emitter.on('did-destroy', callback);
   }
 
   onDidChangeStatus(
     callback: (event: {path: string; pathStatus: StatusCodeNumberValue}) => {}
-  ): Disposable {
+  ): atom$Disposable {
     return this._emitter.on('did-change-status', callback);
   }
 
-  onDidChangeStatuses(callback: () => {}): Disposable {
+  onDidChangeStatuses(callback: () => {}): atom$Disposable {
     return this._emitter.on('did-change-statuses', callback);
   }
 
@@ -405,7 +424,7 @@ class HgRepositoryClient {
   async getStatuses(
     paths: Array<string>,
     options: HgStatusCommandOptions,
-  ): Promise<Map<NuclideUri, StatusCodeNumber>> {
+  ): Promise<Map<NuclideUri, StatusCodeNumberValue>> {
     const statusMap = new Map();
     const isRelavantStatus = this._getPredicateForRelevantStatuses(options);
 
@@ -443,7 +462,7 @@ class HgRepositoryClient {
   async _updateStatuses(
     filePaths: Array<string>,
     options: HgStatusCommandOptions,
-  ): Promise<Map<NuclideUri, StatussCodeIdValue>> {
+  ): Promise<Map<NuclideUri, StatusCodeIdValue>> {
     const pathsInRepo = filePaths.filter((filePath) => {
       return this._isPathRelevant(filePath);
     });

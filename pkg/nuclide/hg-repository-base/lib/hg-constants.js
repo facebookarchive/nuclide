@@ -44,7 +44,7 @@ var StatusCodeId: {[key: string]: StatusCodeIdValue} = {
  * The numbers themselves should not matter; they are meant to be passed
  * to ::isStatusNew/::isStatusModified to be interpreted.
  */
-type StatusCodeNumberValue = 1 | 2 | 3 | 4 | 5 | 6 | 7;
+export type StatusCodeNumberValue = 1 | 2 | 3 | 4 | 5 | 6 | 7;
 var StatusCodeNumber: {[key: string]: StatusCodeNumberValue} = {
   ADDED: 1,
   CLEAN: 2,
@@ -72,14 +72,14 @@ var StatusCodeIdToNumber: {[key: StatusCodeIdValue]: StatusCodeNumberValue} = {
   [StatusCodeId.UNTRACKED]: StatusCodeNumber.UNTRACKED,
 };
 
-type HgStatusOptionValue = 1 | 2 | 3;
+export type HgStatusOptionValue = 1 | 2 | 3;
 var HgStatusOption: {[key: string]: HgStatusOptionValue} = {
   ONLY_NON_IGNORED: 1,  // only the output of `hg status`
   ONLY_IGNORED: 2,      // only the output of `hg status --ignored`
   ALL_STATUSES: 3,      // the output of `hg status --all`
 };
 
-type LineDiff = {
+export type LineDiff = {
   oldStart: number;
   oldLines: number;
   newStart: number;
@@ -99,7 +99,7 @@ export type RevisionInfo = {
   date: string;
 };
 
-type RevisionFileCopy = {
+export type RevisionFileCopy = {
   from: string;
   to: string;
 };
