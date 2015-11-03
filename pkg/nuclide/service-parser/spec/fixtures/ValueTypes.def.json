@@ -437,5 +437,155 @@
                 "kind": "void"
             }
         }
+    },
+    "A": {
+        "kind": "alias",
+        "location": {
+            "type": "source",
+            "fileName": "ValueTypes.def",
+            "line": 26
+        },
+        "name": "A",
+        "definition": {
+            "location": {
+                "type": "source",
+                "fileName": "ValueTypes.def",
+                "line": 26
+            },
+            "kind": "object",
+            "fields": [
+                {
+                    "location": {
+                        "type": "source",
+                        "fileName": "ValueTypes.def",
+                        "line": 27
+                    },
+                    "name": "f",
+                    "type": {
+                        "location": {
+                            "type": "source",
+                            "fileName": "ValueTypes.def",
+                            "line": 27
+                        },
+                        "kind": "nullable",
+                        "type": {
+                            "location": {
+                                "type": "source",
+                                "fileName": "ValueTypes.def",
+                                "line": 27
+                            },
+                            "kind": "named",
+                            "name": "A"
+                        }
+                    },
+                    "optional": false
+                },
+                {
+                    "location": {
+                        "type": "source",
+                        "fileName": "ValueTypes.def",
+                        "line": 28
+                    },
+                    "name": "o",
+                    "type": {
+                        "location": {
+                            "type": "source",
+                            "fileName": "ValueTypes.def",
+                            "line": 28
+                        },
+                        "kind": "named",
+                        "name": "A"
+                    },
+                    "optional": true
+                },
+                {
+                    "location": {
+                        "type": "source",
+                        "fileName": "ValueTypes.def",
+                        "line": 29
+                    },
+                    "name": "a",
+                    "type": {
+                        "location": {
+                            "type": "source",
+                            "fileName": "ValueTypes.def",
+                            "line": 29
+                        },
+                        "kind": "array",
+                        "type": {
+                            "location": {
+                                "type": "source",
+                                "fileName": "ValueTypes.def",
+                                "line": 29
+                            },
+                            "kind": "named",
+                            "name": "A"
+                        }
+                    },
+                    "optional": false
+                },
+                {
+                    "location": {
+                        "type": "source",
+                        "fileName": "ValueTypes.def",
+                        "line": 30
+                    },
+                    "name": "m",
+                    "type": {
+                        "location": {
+                            "type": "source",
+                            "fileName": "ValueTypes.def",
+                            "line": 30
+                        },
+                        "kind": "map",
+                        "keyType": {
+                            "location": {
+                                "type": "source",
+                                "fileName": "ValueTypes.def",
+                                "line": 30
+                            },
+                            "kind": "named",
+                            "name": "A"
+                        },
+                        "valueType": {
+                            "location": {
+                                "type": "source",
+                                "fileName": "ValueTypes.def",
+                                "line": 30
+                            },
+                            "kind": "named",
+                            "name": "A"
+                        }
+                    },
+                    "optional": false
+                },
+                {
+                    "location": {
+                        "type": "source",
+                        "fileName": "ValueTypes.def",
+                        "line": 31
+                    },
+                    "name": "s",
+                    "type": {
+                        "location": {
+                            "type": "source",
+                            "fileName": "ValueTypes.def",
+                            "line": 31
+                        },
+                        "kind": "set",
+                        "type": {
+                            "location": {
+                                "type": "source",
+                                "fileName": "ValueTypes.def",
+                                "line": 31
+                            },
+                            "kind": "named",
+                            "name": "A"
+                        }
+                    },
+                    "optional": false
+                }
+            ]
+        }
     }
 }

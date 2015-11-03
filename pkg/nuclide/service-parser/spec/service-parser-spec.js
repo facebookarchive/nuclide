@@ -117,6 +117,44 @@ describe('Nuclide service parser test suite.', () => {
     }).toThrow();
   });
 
+  it('Aliases cannot be recursive', () => {
+    const code = `
+      export type R = R;
+    `;
+    expect(() => {
+      parseServiceDefinition('fileName', code);
+    }).toThrow();
+  });
+
+  it('Aliases cannot be recursive throw constructed types', () => {
+    const code = `
+      export type R = Promise<R>;
+    `;
+    expect(() => {
+      parseServiceDefinition('fileName', code);
+    }).toThrow();
+  });
+
+  it('Aliases cannot be mutually recursive', () => {
+    const code = `
+      export type A = B;
+      export type B = A;
+    `;
+    expect(() => {
+      parseServiceDefinition('fileName', code);
+    }).toThrow();
+  });
+
+  it('Complex Aliases cannot be mutually recursive', () => {
+    const code = `
+      export type A = Promise<T>;
+      export type T = [O];
+      export type O = {f: A};
+    `;
+    expect(() => {
+      parseServiceDefinition('fileName', code);
+    }).toThrow();
+  });
 });
 
 function mapDefinitions(map: Map<string, Definition>): { [key: string]: Object } {

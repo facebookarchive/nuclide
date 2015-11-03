@@ -10,9 +10,11 @@
  */
 
 import {locationToString} from './builtin-types';
+import invariant from 'assert';
 
 import type {
   Definitions,
+  Definition,
   AliasDefinition,
   InterfaceDefinition,
   Type,
@@ -28,23 +30,28 @@ export function validateDefinitions(definitions: Definitions): void {
   validate();
 
   function validate(): void {
+    findMissingTypeNames();
+    findRecursiveAliases();
+  }
+
+  function findMissingTypeNames() {
     for (const definition of definitions.values()) {
       switch (definition.kind) {
         case 'function':
-          validateType(definition.type);
+          checkTypeForMissingNames(definition.type);
           break;
         case 'alias':
           if (definition.definition != null) {
-            validateType(definition.definition);
+            checkTypeForMissingNames(definition.definition);
           }
           break;
         case 'interface':
-          // $FlowFixMe as above
-          definition.constructorArgs.forEach(validateType);
-            // $FlowFixMe as above
-          definition.instanceMethods.forEach(validateType);
-            // $FlowFixMe as above
-          definition.staticMethods.forEach(validateType);
+          // $FlowIssue
+          definition.constructorArgs.forEach(checkTypeForMissingNames);
+          // $FlowIssue
+          definition.instanceMethods.forEach(checkTypeForMissingNames);
+          // $FlowIssue
+          definition.staticMethods.forEach(checkTypeForMissingNames);
           break;
       }
     }
@@ -61,7 +68,7 @@ export function validateDefinitions(definitions: Definitions): void {
     }
   }
 
-  function validateType(type: Type): void {
+  function checkTypeForMissingNames(type: Type): void {
     switch (type.kind) {
       case 'any':
       case 'mixed':
@@ -71,43 +78,131 @@ export function validateDefinitions(definitions: Definitions): void {
       case 'void':
         break;
       case 'promise':
-        validateType(type.type);
+        checkTypeForMissingNames(type.type);
         break;
       case 'observable':
-        validateType(type.type);
+        checkTypeForMissingNames(type.type);
         break;
       case 'array':
-        validateType(type.type);
+        checkTypeForMissingNames(type.type);
         break;
       case 'set':
-        validateType(type.type);
+        checkTypeForMissingNames(type.type);
         break;
       case 'nullable':
-        validateType(type.type);
+        checkTypeForMissingNames(type.type);
         break;
       case 'map':
-        validateType(type.keyType);
-        validateType(type.valueType);
+        checkTypeForMissingNames(type.keyType);
+        checkTypeForMissingNames(type.valueType);
         break;
       case 'object':
-        type.fields.map(field => field.type).forEach(validateType);
+        type.fields.map(field => field.type).forEach(checkTypeForMissingNames);
         break;
       case 'tuple':
-        type.types.forEach(validateType);
+        type.types.forEach(checkTypeForMissingNames);
         break;
       case 'function':
-        type.argumentTypes.forEach(validateType);
-        validateType(type.returnType);
+        type.argumentTypes.forEach(checkTypeForMissingNames);
+        checkTypeForMissingNames(type.returnType);
         break;
       case 'named':
         const name = type.name;
         if (!namedTypes.has(name)) {
-          throw new Error(
-            `${locationToString(type.location)}: No definition for type ${name}.`);
+          throw error(type, `No definition for type ${name}.`);
         }
         break;
       default:
         throw new Error(JSON.stringify(type));
     }
+  }
+
+  function findRecursiveAliases() {
+    for (const definition of definitions.values()) {
+      switch (definition.kind) {
+        case 'alias':
+          checkAliasLayout(definition);
+          break;
+      }
+    }
+  }
+
+  function checkAliasLayout(alias: AliasDefinition): void {
+    if (alias.definition) {
+      validateLayoutRec([alias], alias.definition);
+    }
+  }
+
+  /**
+   * Validates that a type does not directly contain any types which are known to
+   * directly or indirectly contain it.
+   *
+   * If recursion is found the chain of types which recursively contain each other is reported.
+   */
+  function validateLayoutRec(containingDefinitions: Array<AliasDefinition>, type: Type): void {
+    function validateTypeRec(typeRec: Type): void {
+      validateLayoutRec(containingDefinitions, typeRec);
+    }
+
+    switch (type.kind) {
+      case 'any':
+      case 'mixed':
+      case 'string':
+      case 'boolean':
+      case 'number':
+      case 'void':
+        break;
+      case 'promise':
+      case 'observable':
+        validateTypeRec(type.type);
+        break;
+      case 'nullable':
+        // Nullable breaks the layout chain
+        break;
+      case 'map':
+      case 'array':
+      case 'set':
+        // Containers break the layout chain as they may be empty.
+        break;
+      case 'object':
+        type.fields.
+          filter(field => !field.optional).
+          map(field => field.type).
+          forEach(validateTypeRec);
+        break;
+      case 'tuple':
+        type.types.forEach(validateTypeRec);
+        break;
+      case 'function':
+        break;
+      case 'named':
+        const name = type.name;
+        const definition: AliasDefinition | InterfaceDefinition = namedTypes.get(name);
+        if (containingDefinitions.indexOf((definition: any)) !== -1) {
+          throw errorDefinitions(
+            (containingDefinitions.slice(containingDefinitions.indexOf((definition: any))): any),
+            `Type ${name} contains itself.`);
+        } else if (definition.kind === 'alias' && definition.definition != null) {
+          containingDefinitions.push(definition);
+          invariant(definition.definition);
+          validateLayoutRec(containingDefinitions, definition.definition);
+          containingDefinitions.pop();
+        }
+        break;
+      default:
+        throw new Error(JSON.stringify(type));
+    }
+  }
+
+  function error(type: Type, message: string) {
+    return new Error(`${locationToString(type.location)}: ${message}`);
+  }
+
+  function errorDefinitions(defs: Array<Definition>, message: string): Error {
+    let fullMessage = `${locationToString(defs[0].location)}:${message}`;
+    fullMessage = fullMessage.concat(
+      ... (defs.slice(1).map(definition =>
+        `\n${locationToString(definition.location)}: Related definition ${definition.name}`)));
+    return new Error(fullMessage);
   }
 }
