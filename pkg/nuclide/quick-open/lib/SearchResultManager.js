@@ -375,8 +375,8 @@ class SearchResultManager {
       globalProvider.executeQuery(query).then(result => {
         track(AnalyticsEvents.QUERY_SOURCE_PROVIDER, {
           'quickopen-source-provider': globalProvider.getName(),
-          'quickopen-query-duration': performance.now() - startTime,
-          'quickopen-result-count': result.length,
+          'quickopen-query-duration': (performance.now() - startTime).toString(),
+          'quickopen-result-count': (result.length).toString(),
         });
         this.processResult(query, result, GLOBAL_KEY, globalProvider);
       });
@@ -453,10 +453,11 @@ class SearchResultManager {
   }
 
   getResults(query: string, activeProviderName: string): Object {
+    const sanitizedQuery = this.sanitizeQuery(query);
     if (activeProviderName === OMNISEARCH_PROVIDER.name) {
       const omniSearchResults = [{}];
       for (const providerName in this._cachedResults) {
-        const resultForProvider = this._getResultsForProvider(query, providerName);
+        const resultForProvider = this._getResultsForProvider(sanitizedQuery, providerName);
         // TODO replace this with a ranking algorithm.
         for (const dir in resultForProvider.results) {
           resultForProvider.results[dir].results =
@@ -471,7 +472,7 @@ class SearchResultManager {
     }
     // TODO replace `partial` with computed property whenever Flow supports it.
     const partial = {};
-    partial[activeProviderName] = this._getResultsForProvider(query, activeProviderName);
+    partial[activeProviderName] = this._getResultsForProvider(sanitizedQuery, activeProviderName);
     return partial;
   }
 
