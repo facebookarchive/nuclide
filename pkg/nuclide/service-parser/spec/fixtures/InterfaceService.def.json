@@ -57,7 +57,15 @@
                     "fileName": "InterfaceService.def",
                     "line": 2
                 },
-                "kind": "number"
+                "kind": "nullable",
+                "type": {
+                    "location": {
+                        "type": "source",
+                        "fileName": "InterfaceService.def",
+                        "line": 2
+                    },
+                    "kind": "number"
+                }
             }
         ],
         "instanceMethods": {

@@ -1,5 +1,5 @@
 export class Vector2 {
-  constructor(x: number, y: number) {}
+  constructor(x: number, y?: number) {}
   static distance(a: Vector2, b: Vector2): Promise<number> {}
   len(): Promise<number> {}
 

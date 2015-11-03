@@ -214,13 +214,10 @@ class ServiceParser {
     const classBody = declaration.body;
     for (const method of classBody.body) {
       if (method.kind === 'constructor') {
-        def.constructorArgs = method.value.params.map(param => {
-          if (!param.typeAnnotation) {
-            throw this._error(param, `Parameter ${param.name} doesn't have type annotation.`);
-          } else {
-            return this._parseTypeAnnotation(param.typeAnnotation.typeAnnotation);
-          }
-        });
+        def.constructorArgs = method.value.params.map(param => this._parseParameter(param));
+        if (method.value.returnType) {
+          throw this._error(method, `constructors may not have return types`);
+        }
       } else {
         if (!isPrivateMemberName(method.key.name)) {
           const {name, type} = this._parseMethodDefinition(method);

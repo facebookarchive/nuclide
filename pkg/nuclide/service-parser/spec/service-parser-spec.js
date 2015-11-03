@@ -106,6 +106,17 @@ describe('Nuclide service parser test suite.', () => {
       parseServiceDefinition('fileName', code);
     }).toThrow();
   });
+
+  it('Constructors may not have return types', () => {
+    const code = `
+      export class C {
+        constructor(): Promise<void> {}
+      }`;
+    expect(() => {
+      parseServiceDefinition('fileName', code);
+    }).toThrow();
+  });
+
 });
 
 function mapDefinitions(map: Map<string, Definition>): { [key: string]: Object } {
