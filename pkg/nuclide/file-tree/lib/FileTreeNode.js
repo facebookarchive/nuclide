@@ -9,10 +9,10 @@
  * the root directory of this source tree.
  */
 
-var FileTreeHelpers = require('./FileTreeHelpers');
-var RemoteUri = require('nuclide-remote-uri');
-
 import type FileTreeStore from './FileTreeStore';
+
+import FileTreeHelpers from './FileTreeHelpers';
+import RemoteUri from 'nuclide-remote-uri';
 
 class FileTreeNode {
   _store: FileTreeStore;
@@ -58,7 +58,7 @@ class FileTreeNode {
   }
 
   getChildNodes(): Array<FileTreeNode> {
-    var childKeys = this._store.getChildKeys(this.rootKey, this.nodeKey);
+    const childKeys = this._store.getChildKeys(this.rootKey, this.nodeKey);
     return childKeys.map(childKey => this._store.getNode(this.rootKey, childKey));
   }
 
@@ -69,7 +69,7 @@ class FileTreeNode {
   // For remote files we want the local path instead of full path.
   // i.e, "/home/dir/file" vs "nuclide://hostname:123/home/dir/file"
   getLocalPath(): string {
-    var path = this.nodePath;
+    const path = this.nodePath;
     if (RemoteUri.isRemote(path)) {
       return RemoteUri.parse(path).pathname;
     } else {

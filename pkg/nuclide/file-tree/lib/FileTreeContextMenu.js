@@ -9,11 +9,11 @@
  * the root directory of this source tree.
  */
 
-var {CompositeDisposable} = require('atom');
-var {EVENT_HANDLER_SELECTOR} = require('./FileTreeConstants');
-var FileTreeStore = require('./FileTreeStore');
+import {CompositeDisposable} from 'atom';
+import {EVENT_HANDLER_SELECTOR} from './FileTreeConstants';
+import FileTreeStore from './FileTreeStore';
 
-var {isFullyQualifiedLocalPath} = require('./FileTreeHelpers');
+import {isFullyQualifiedLocalPath} from './FileTreeHelpers';
 
 type MenuItemSingle = {
   label: string;
@@ -98,7 +98,7 @@ class FileTreeContextMenu {
         label: 'Remove Project Folder',
         command: 'nuclide-file-tree:remove-project-folder-selection',
         shouldDisplay: () => {
-          var node = this._store.getSingleSelectedNode();
+          const node = this._store.getSingleSelectedNode();
           return node != null && node.isRoot;
         },
       },
@@ -108,7 +108,7 @@ class FileTreeContextMenu {
         label: 'Rename',
         command: 'nuclide-file-tree:rename-selection',
         shouldDisplay: () => {
-          var node = this._store.getSingleSelectedNode();
+          const node = this._store.getSingleSelectedNode();
           // For now, rename does not apply to root nodes.
           return node != null && !node.isRoot;
         },
@@ -117,7 +117,7 @@ class FileTreeContextMenu {
         label: 'Duplicate',
         command: 'nuclide-file-tree:duplicate-selection',
         shouldDisplay: () => {
-          var node = this._store.getSingleSelectedNode();
+          const node = this._store.getSingleSelectedNode();
           return node != null && !node.isContainer;
         },
       },
@@ -125,7 +125,7 @@ class FileTreeContextMenu {
         label: 'Delete',
         command: 'nuclide-file-tree:remove',
         shouldDisplay: () => {
-          var nodes = this._store.getSelectedNodes();
+          const nodes = this._store.getSelectedNodes();
           // We can delete multiple nodes as long as no root node is selected
           return nodes.size > 0 && nodes.every(node => !node.isRoot);
         },
@@ -136,7 +136,7 @@ class FileTreeContextMenu {
         label: 'Copy Full Path',
         command: 'nuclide-file-tree:copy-full-path',
         shouldDisplay: () => {
-          var node = this._store.getSingleSelectedNode();
+          const node = this._store.getSingleSelectedNode();
           return node != null;
         },
       },
@@ -159,7 +159,7 @@ class FileTreeContextMenu {
         label: 'Search in Directory',
         command: 'nuclide-file-tree:search-in-directory',
         shouldDisplay: () => {
-          var nodes = this._store.getSelectedNodes();
+          const nodes = this._store.getSelectedNodes();
           return nodes.size > 0 && nodes.every(node => node.isContainer);
         },
       },
@@ -175,7 +175,7 @@ class FileTreeContextMenu {
     // separate, so there will never be a dangling separator at the end.
     menuItems = menuItems.concat([{type: 'separator'}]);
     // TODO: Use a computed property when supported by Flow.
-    var contextMenu = {};
+    const contextMenu = {};
     contextMenu[EVENT_HANDLER_SELECTOR] = menuItems;
     this._subscriptions.add(atom.contextMenu.add(contextMenu));
   }
@@ -185,7 +185,7 @@ class FileTreeContextMenu {
    * for the current selection and the given `platform`.
    */
   _shouldDisplayShowInFileManager(platform: string): boolean {
-    var node = this._store.getSingleSelectedNode();
+    const node = this._store.getSingleSelectedNode();
     return (
       node != null &&
       isFullyQualifiedLocalPath(node.nodePath) &&

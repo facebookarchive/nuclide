@@ -15,21 +15,21 @@ import type {
   RemoteFile,
 } from 'nuclide-remote-connection';
 
-var FileTreeHelpers = require('./FileTreeHelpers');
-var FileTreeStore = require('./FileTreeStore');
-var FileDialogComponent = require('../components/FileDialogComponent');
-var React = require('react-for-atom');
-var RemoteUri = require('nuclide-remote-uri');
+import FileTreeHelpers from './FileTreeHelpers';
+import FileTreeStore from './FileTreeStore';
+import FileDialogComponent from '../components/FileDialogComponent';
+import React from 'react-for-atom';
+import RemoteUri from 'nuclide-remote-uri';
 
-var fs = require('fs-plus');
-var pathModule = require('path');
+import fs from 'fs-plus';
+import pathModule from 'path';
 
-var dialogComponent: ?ReactComponent;
-var dialogHostElement: ?HTMLElement;
+let dialogComponent: ?ReactComponent;
+let dialogHostElement: ?HTMLElement;
 
-var FileSystemActions = {
+const FileSystemActions = {
   openAddFolderDialog(onDidConfirm: (filePath: ?string) => mixed): void {
-    var node = this._getSelectedContainerNode();
+    const node = this._getSelectedContainerNode();
     if (!node) {
       return;
     }
@@ -40,7 +40,7 @@ var FileSystemActions = {
       }
 
       // TODO: check if filePath is in rootKey and if not, find the rootKey it belongs to.
-      var directory = FileTreeHelpers.getDirectoryByKey(node.nodeKey);
+      const directory = FileTreeHelpers.getDirectoryByKey(node.nodeKey);
       if (directory == null) {
         return;
       }

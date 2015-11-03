@@ -9,15 +9,15 @@
  * the root directory of this source tree.
  */
 
-var {ActionType} = require('./FileTreeConstants');
-var FileTreeDispatcher = require('./FileTreeDispatcher');
-var FileTreeHelpers = require('./FileTreeHelpers');
-var FileTreeStore = require('./FileTreeStore');
-var Immutable = require('immutable');
-
 import type {Dispatcher} from 'flux';
 
-var instance: FileTreeActions;
+import {ActionType} from './FileTreeConstants';
+import FileTreeDispatcher from './FileTreeDispatcher';
+import FileTreeHelpers from './FileTreeHelpers';
+import FileTreeStore from './FileTreeStore';
+import Immutable from 'immutable';
+
+let instance: ?Object;
 
 /**
  * Implements the Flux pattern for our file tree. All state for the file tree will be kept in
@@ -41,15 +41,15 @@ class FileTreeActions {
   }
 
   setRootKeys(rootKeys: Array<string>): void {
-    var existingRootKeySet: Set<string> = new Set(this._store.getRootKeys());
-    var addedRootKeys: Array<string> = rootKeys.filter(
+    const existingRootKeySet: Set<string> = new Set(this._store.getRootKeys());
+    const addedRootKeys: Array<string> = rootKeys.filter(
       key => !existingRootKeySet.has(key)
     );
     this._dispatcher.dispatch({
       actionType: ActionType.SET_ROOT_KEYS,
       rootKeys,
     });
-    for (var rootKey: string of addedRootKeys) {
+    for (const rootKey of addedRootKeys) {
       this.expandNode(rootKey, rootKey);
     }
   }
@@ -90,7 +90,7 @@ class FileTreeActions {
   }
 
   toggleSelectNode(rootKey: string, nodeKey: string): void {
-    var nodeKeys: Immutable.Set<string> = this._store.getSelectedKeys(rootKey);
+    let nodeKeys = this._store.getSelectedKeys(rootKey);
     if (nodeKeys.has(nodeKey)) {
       nodeKeys = nodeKeys.delete(nodeKey);
     } else {
@@ -133,7 +133,7 @@ class FileTreeActions {
   }
 
   selectSingleNode(rootKey: string, nodeKey: string): void {
-    var selectedKeysByRoot = {};
+    const selectedKeysByRoot = {};
     selectedKeysByRoot[rootKey] = new Immutable.Set([nodeKey]);
     this._dispatcher.dispatch({
       actionType: ActionType.SET_SELECTED_NODES_FOR_TREE,
@@ -142,9 +142,9 @@ class FileTreeActions {
   }
 
   confirmNode(rootKey: string, nodeKey: string): void {
-    var isDirectory = FileTreeHelpers.isDirKey(nodeKey);
+    const isDirectory = FileTreeHelpers.isDirKey(nodeKey);
     if (isDirectory) {
-      var actionType = this._store.isExpanded(rootKey, nodeKey) ?
+      const actionType = this._store.isExpanded(rootKey, nodeKey) ?
         ActionType.COLLAPSE_NODE :
         ActionType.EXPAND_NODE;
       this._dispatcher.dispatch({

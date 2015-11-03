@@ -9,12 +9,12 @@
  * the root directory of this source tree.
  */
 
-var FileTreeActions = require('../lib/FileTreeActions');
-var FileTreeController = require('../lib/FileTreeController');
-var FileTreeStore = require('../lib/FileTreeStore');
-var React = require('react-for-atom');
+import FileTreeActions from '../lib/FileTreeActions';
+import FileTreeController from '../lib/FileTreeController';
+import FileTreeStore from '../lib/FileTreeStore';
+import React from 'react-for-atom';
 
-const pathModule = require('path');
+import pathModule from 'path';
 
 describe('FileTreeController', () => {
   const actions = FileTreeActions.getInstance();
@@ -71,7 +71,7 @@ describe('FileTreeController', () => {
 
   describe('toggleVisibility', () => {
     it('focuses the file tree element when going from hidden to visible', () => {
-      var domNode = React.findDOMNode(controller._fileTreePanel.getFileTree());
+      const domNode = React.findDOMNode(controller._fileTreePanel.getFileTree());
       controller.toggleVisibility();
       expect(domNode).not.toMatchSelector(':focus');
       controller.toggleVisibility();
@@ -79,7 +79,7 @@ describe('FileTreeController', () => {
     });
 
     it('blurs the file tree element when going from visible to hidden', () => {
-      var domNode = React.findDOMNode(controller._fileTreePanel.getFileTree());
+      const domNode = React.findDOMNode(controller._fileTreePanel.getFileTree());
       controller.focusTree();
       expect(domNode).toMatchSelector(':focus');
       controller.toggleVisibility();
@@ -89,7 +89,7 @@ describe('FileTreeController', () => {
 
   describe('focusTree', () => {
     it('focuses the expected element', () => {
-      var domNode = React.findDOMNode(controller._fileTreePanel.getFileTree());
+      const domNode = React.findDOMNode(controller._fileTreePanel.getFileTree());
       expect(domNode).not.toMatchSelector(':focus');
       controller.focusTree();
       expect(domNode).toMatchSelector(':focus');
@@ -98,7 +98,7 @@ describe('FileTreeController', () => {
 
   describe('blurTree', () => {
     it('sends focus to the workspace element to match Atom\'s tree-view API', () => {
-      var domNode = React.findDOMNode(controller._fileTreePanel.getFileTree());
+      const domNode = React.findDOMNode(controller._fileTreePanel.getFileTree());
       controller.focusTree();
       expect(domNode).toMatchSelector(':focus');
       controller.blurTree();
@@ -108,7 +108,7 @@ describe('FileTreeController', () => {
 
   describe('serialize', () => {
     it('returns an object with valid values', () => {
-      var serializedControllerData = controller.serialize();
+      const serializedControllerData = controller.serialize();
       expect(serializedControllerData.panel).toEqual({
         isVisible: true,
         width: FileTreeController.INITIAL_WIDTH,

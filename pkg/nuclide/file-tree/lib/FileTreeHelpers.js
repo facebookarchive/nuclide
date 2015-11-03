@@ -9,19 +9,17 @@
  * the root directory of this source tree.
  */
 
-var {
-  Directory: LocalDirectory,
-  File: LocalFile,
-} = require('atom');
-var {
+import {Directory as LocalDirectory} from 'atom';
+import {File as LocalFile} from 'atom';
+import {
   RemoteConnection,
   RemoteDirectory,
   RemoteFile,
-} = require('nuclide-remote-connection');
-var RemoteUri = require('nuclide-remote-uri');
+} from 'nuclide-remote-connection';
+import RemoteUri from 'nuclide-remote-uri';
 
-var pathModule = require('path');
-var url = require('url');
+import pathModule from 'path';
+import url from 'url';
 
 type Directory = LocalDirectory | RemoteDirectory;
 type File = LocalFile | RemoteFile;
@@ -35,8 +33,8 @@ function isDirKey(key: string): boolean {
 }
 
 function keyToName(key: string): string {
-  var path = keyToPath(key);
-  var index = path.lastIndexOf('/');
+  const path = keyToPath(key);
+  const index = path.lastIndexOf('/');
   return (index === -1) ? path : path.slice(index + 1);
 }
 
@@ -45,16 +43,16 @@ function keyToPath(key: string): string {
 }
 
 function getParentKey(key: string): ?string {
-  var path = keyToPath(key);
-  var parsed = RemoteUri.parse(path);
+  const path = keyToPath(key);
+  const parsed = RemoteUri.parse(path);
   parsed.pathname = pathModule.join(parsed.pathname, '..');
-  var parentPath = url.format(parsed);
+  const parentPath = url.format(parsed);
   return dirPathToKey(parentPath);
 }
 
 // The array this resolves to contains the `nodeKey` of each child
 function fetchChildren(nodeKey: string): Promise<Array<string>> {
-  var directory = getDirectoryByKey(nodeKey);
+  const directory = getDirectoryByKey(nodeKey);
   return new Promise((resolve, reject) => {
     if (!directory) {
       // TODO: reject?
@@ -69,8 +67,8 @@ function fetchChildren(nodeKey: string): Promise<Array<string>> {
         return;
       }
       entries = entries || [];
-      var keys = entries.map(entry => {
-        var path = entry.getPath();
+      const keys = entries.map(entry => {
+        const path = entry.getPath();
         return entry.isDirectory() ? dirPathToKey(path) : path;
       });
       resolve(keys);
@@ -80,9 +78,9 @@ function fetchChildren(nodeKey: string): Promise<Array<string>> {
 
 // TODO: cache these instantiated directories (also expose a way to purge)
 function getDirectoryByKey(key: string): ?Directory {
-  var path = keyToPath(key);
+  const path = keyToPath(key);
   if (RemoteUri.isRemote(path)) {
-    var connection = RemoteConnection.getForUri(path);
+    const connection = RemoteConnection.getForUri(path);
     if (!connection) {
       return;
     }
@@ -94,9 +92,9 @@ function getDirectoryByKey(key: string): ?Directory {
 
 // TODO: cache these instantiated entries (also expose a way to purge)
 function getFileByKey(key: string): ?(Directory | File) {
-  var path = keyToPath(key);
+  const path = keyToPath(key);
   if (RemoteUri.isRemote(path)) {
-    var connection = RemoteConnection.getForUri(path);
+    const connection = RemoteConnection.getForUri(path);
     if (!connection) {
       return;
     }

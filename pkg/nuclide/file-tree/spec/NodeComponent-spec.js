@@ -13,7 +13,7 @@ import FileTreeActions from '../lib/FileTreeActions';
 import NodeComponent from '../components/NodeComponent';
 import React from 'react-for-atom';
 
-let {TestUtils} = React.addons;
+const {TestUtils} = React.addons;
 
 function renderNodeComponentIntoDocument(props: Object = {}) {
   const componentProps = {

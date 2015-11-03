@@ -14,25 +14,22 @@ import type {
   RemoteFile,
 } from 'nuclide-remote-connection';
 
-var {ActionType} = require('./FileTreeConstants');
-var {Disposable, Emitter} = require('atom');
-var FileTreeDispatcher = require('./FileTreeDispatcher');
-var FileTreeHelpers = require('./FileTreeHelpers');
-var FileTreeNode = require('./FileTreeNode');
-var Immutable = require('immutable');
-var Logging = require('nuclide-logging');
-
+import {ActionType} from './FileTreeConstants';
+import {Disposable, Emitter} from 'atom';
+import FileTreeDispatcher from './FileTreeDispatcher';
+import FileTreeHelpers from './FileTreeHelpers';
+import FileTreeNode from './FileTreeNode';
+import Immutable from 'immutable';
 import {Minimatch} from 'minimatch';
 import {repositoryForPath} from 'nuclide-hg-git-bridge';
 
-var {
-  array,
-  object: objectUtil,
-} = require('nuclide-commons');
-var shell = require('shell');
+import {array} from 'nuclide-commons';
+import {getLogger} from 'nuclide-logging';
+import {object as objectUtil} from 'nuclide-commons';
+import shell from 'shell';
 
 // Used to ensure the version we serialized is the same version we are deserializing.
-var VERSION = 1;
+const VERSION = 1;
 
 import type {Dispatcher} from 'flux';
 import type {NuclideUri} from 'nuclide-remote-uri';
@@ -69,7 +66,7 @@ export type ExportStoreData = {
   selectedKeysByRoot: { [key: string]: Array<string> };
 };
 
-var instance: FileTreeStore;
+let instance: ?Object;
 
 /**
  * Implements the Flux pattern for our file tree. All state for the file tree will be kept in
@@ -97,7 +94,7 @@ class FileTreeStore {
     this._dispatcher.register(
       payload => this._onDispatch(payload)
     );
-    this._logger = Logging.getLogger();
+    this._logger = getLogger();
   }
 
   /**
@@ -107,12 +104,12 @@ class FileTreeStore {
    * [1]: https://atom.io/docs/latest/behind-atom-serialization-in-atom
    */
   exportData(): ExportStoreData {
-    var data = this._data;
+    const data = this._data;
     // Grab the child keys of only the expanded nodes.
-    var childKeyMap = {};
+    const childKeyMap = {};
     Object.keys(data.expandedKeysByRoot).forEach((rootKey) => {
-      var expandedKeySet = data.expandedKeysByRoot[rootKey];
-      for (var nodeKey of expandedKeySet) {
+      const expandedKeySet = data.expandedKeysByRoot[rootKey];
+      for (const nodeKey of expandedKeySet) {
         childKeyMap[nodeKey] = data.childKeyMap[nodeKey];
       }
     });
@@ -248,9 +245,9 @@ class FileTreeStore {
    * letting our views re-render once for multiple consecutive writes.
    */
   _set(key: string, value: mixed, flush: boolean = false): void {
-    var oldData = this._data;
+    const oldData = this._data;
     // Immutability for the win!
-    var newData = setProperty(this._data, key, value);
+    const newData = setProperty(this._data, key, value);
     if (newData !== oldData) {
       this._data = newData;
       clearImmediate(this._timer);
@@ -308,7 +305,7 @@ class FileTreeStore {
   }
 
   _setVcsStatuses(rootKey: string, vcsStatuses: {[path: string]: number}) {
-    var immutableVcsStatuses = new Immutable.Map(vcsStatuses);
+    const immutableVcsStatuses = new Immutable.Map(vcsStatuses);
     if (!Immutable.is(immutableVcsStatuses, this._data.vcsStatusesByRoot[rootKey])) {
       this._set(
         'vcsStatusesByRoot',
@@ -318,7 +315,7 @@ class FileTreeStore {
   }
 
   getVcsStatusCode(rootKey: string, nodeKey: string): ?number {
-    var map = this._data.vcsStatusesByRoot[rootKey];
+    const map = this._data.vcsStatusesByRoot[rootKey];
     if (map) {
       return map.get(nodeKey);
     } else {
@@ -338,7 +335,7 @@ class FileTreeStore {
    * Returns known child keys for the given `nodeKey` and queues a fetch if children are missing.
    */
   getChildKeys(rootKey: string, nodeKey: string): Array<string> {
-    var childKeys = this._data.childKeyMap[nodeKey];
+    const childKeys = this._data.childKeyMap[nodeKey];
     if (childKeys == null || this._data.isDirtyMap[nodeKey]) {
       this._fetchChildKeys(nodeKey);
     } else {
@@ -356,7 +353,7 @@ class FileTreeStore {
     let selectedKeys;
     if (rootKey == null) {
       selectedKeys = new Immutable.OrderedSet();
-      for (let root in this._data.selectedKeysByRoot) {
+      for (const root in this._data.selectedKeysByRoot) {
         if (this._data.selectedKeysByRoot.hasOwnProperty(root)) {
           selectedKeys = selectedKeys.merge(this._data.selectedKeysByRoot[root]);
         }
@@ -387,19 +384,19 @@ class FileTreeStore {
 
     // Note that we could cache the visibleNodes array so that we do not have to create it from
     // scratch each time this is called, but it does not appear to be a bottleneck at present.
-    var visibleNodes = [];
-    var rootKeysForDirectoriesToExplore = [rootKey];
+    const visibleNodes = [];
+    const rootKeysForDirectoriesToExplore = [rootKey];
     while (rootKeysForDirectoriesToExplore.length !== 0) {
       const key = rootKeysForDirectoriesToExplore.pop();
       visibleNodes.push(this.getNode(key, key));
-      var childKeys = this._data.childKeyMap[key];
+      const childKeys = this._data.childKeyMap[key];
       if (childKeys == null || this._data.isDirtyMap[key]) {
         // This is where getChildKeys() would fetch, but we do not want to do that.
         // TODO: If key is in isDirtyMap, then retry when it is not dirty?
         continue;
       }
 
-      for (var childKey of childKeys) {
+      for (const childKey of childKeys) {
         if (FileTreeHelpers.isDirKey(childKey)) {
           if (this.isExpanded(rootKey, key)) {
             rootKeysForDirectoriesToExplore.push(childKey);
@@ -452,11 +449,11 @@ class FileTreeStore {
    * If a fetch is not already in progress initiate a fetch now.
    */
   _fetchChildKeys(nodeKey: string): Promise<void> {
-    var existingPromise = this._getLoading(nodeKey);
+    const existingPromise = this._getLoading(nodeKey);
     if (existingPromise) {
       return existingPromise;
     }
-    var promise = FileTreeHelpers.fetchChildren(nodeKey);
+    let promise = FileTreeHelpers.fetchChildren(nodeKey);
     promise.catch((error) => {
       this._logger.error(`Error fetching children for "${nodeKey}"`, error);
       // Collapse the node and clear its loading state on error so the user can retry expanding it.
@@ -514,9 +511,9 @@ class FileTreeStore {
   }
 
   _deleteSelectedNodes(): void {
-    var selectedNodes = this.getSelectedNodes();
+    const selectedNodes = this.getSelectedNodes();
     selectedNodes.forEach(node => {
-      var file = FileTreeHelpers.getFileByKey(node.nodeKey);
+      const file = FileTreeHelpers.getFileByKey(node.nodeKey);
       if (file != null) {
         if (FileTreeHelpers.isLocalFile(file)) {
           // TODO: This special-case can be eliminated once `delete()` is added to `Directory`
@@ -532,9 +529,9 @@ class FileTreeStore {
   _expandNode(rootKey: string, nodeKey: string): void {
     this._setExpandedKeys(rootKey, this._getExpandedKeys(rootKey).add(nodeKey));
     // If we have child nodes that should also be expanded, expand them now.
-    var previouslyExpanded = this._data.previouslyExpanded[rootKey] || {};
+    let previouslyExpanded = this._data.previouslyExpanded[rootKey] || {};
     if (previouslyExpanded[nodeKey]) {
-      for (var childKey of previouslyExpanded[nodeKey]) {
+      for (const childKey of previouslyExpanded[nodeKey]) {
         this._expandNode(rootKey, childKey);
       }
       // Clear the previouslyExpanded list since we're done with it.
@@ -550,9 +547,9 @@ class FileTreeStore {
    * When we collapse a node we need to do some cleanup removing subscriptions and selection.
    */
   _collapseNode(rootKey: string, nodeKey: string): void {
-    var childKeys = this._data.childKeyMap[nodeKey];
-    var selectedKeys = this._data.selectedKeysByRoot[rootKey];
-    var expandedChildKeys = [];
+    const childKeys = this._data.childKeyMap[nodeKey];
+    let selectedKeys = this._data.selectedKeysByRoot[rootKey];
+    const expandedChildKeys = [];
     if (childKeys) {
       childKeys.forEach((childKey) => {
         // Unselect each child.
@@ -578,7 +575,7 @@ class FileTreeStore {
      * Save the list of expanded child nodes so next time we expand this node we can expand these
      * children.
      */
-    var previouslyExpanded = this._data.previouslyExpanded[rootKey] || {};
+    let previouslyExpanded = this._data.previouslyExpanded[rootKey] || {};
     if (expandedChildKeys.length !== 0) {
       previouslyExpanded = setProperty(previouslyExpanded, nodeKey, expandedChildKeys);
     } else {
@@ -644,8 +641,8 @@ class FileTreeStore {
   }
 
   _setRootKeys(rootKeys: Array<string>): void {
-    var oldRootKeys = this._data.rootKeys;
-    var newRootKeySet = new Set(rootKeys);
+    const oldRootKeys = this._data.rootKeys;
+    const newRootKeySet = new Set(rootKeys);
     oldRootKeys.forEach((rootKey) => {
       if (!newRootKeySet.has(rootKey)) {
         this._purgeRoot(rootKey);
@@ -666,9 +663,9 @@ class FileTreeStore {
   }
 
   _setChildKeys(nodeKey: string, childKeys: Array<string>): void {
-    var oldChildKeys = this._data.childKeyMap[nodeKey];
+    const oldChildKeys = this._data.childKeyMap[nodeKey];
     if (oldChildKeys) {
-      var newChildKeySet = new Set(childKeys);
+      const newChildKeySet = new Set(childKeys);
       oldChildKeys.forEach((childKey) => {
         // If it's a directory and it doesn't exist in the new set of child keys.
         if (FileTreeHelpers.isDirKey(childKey) && !newChildKeySet.has(childKey)) {
@@ -684,7 +681,7 @@ class FileTreeStore {
   }
 
   _addSubscription(nodeKey: string): void {
-    var directory = FileTreeHelpers.getDirectoryByKey(nodeKey);
+    const directory = FileTreeHelpers.getDirectoryByKey(nodeKey);
     if (!directory) {
       return;
     }
@@ -700,7 +697,7 @@ class FileTreeStore {
       return;
     }
 
-    var subscription;
+    let subscription;
     try {
       // This call might fail if we try to watch a non-existing directory, or if permission denied.
       subscription = directory.onDidChange(() => {
@@ -740,7 +737,7 @@ class FileTreeStore {
   }
 
   _removeAllSubscriptions(nodeKey: string): void {
-    var subscription = this._data.subscriptionMap[nodeKey];
+    const subscription = this._data.subscriptionMap[nodeKey];
     if (subscription) {
       subscription.dispose();
       this._set('subscriptionMap', deleteProperty(this._data.subscriptionMap, nodeKey));
@@ -751,7 +748,7 @@ class FileTreeStore {
   // we need to purge it's child directories also. Purging removes stuff from the data store
   // including list of child nodes, subscriptions, expanded directories and selected directories.
   _purgeDirectory(nodeKey: string): void {
-    var childKeys = this._data.childKeyMap[nodeKey];
+    const childKeys = this._data.childKeyMap[nodeKey];
     if (childKeys) {
       childKeys.forEach((childKey) => {
         if (FileTreeHelpers.isDirKey(childKey)) {
@@ -761,16 +758,16 @@ class FileTreeStore {
       this._set('childKeyMap', deleteProperty(this._data.childKeyMap, nodeKey));
     }
     this._removeAllSubscriptions(nodeKey);
-    var expandedKeysByRoot = this._data.expandedKeysByRoot;
+    const expandedKeysByRoot = this._data.expandedKeysByRoot;
     Object.keys(expandedKeysByRoot).forEach((rootKey) => {
-      var expandedKeys = expandedKeysByRoot[rootKey];
+      const expandedKeys = expandedKeysByRoot[rootKey];
       if (expandedKeys.has(nodeKey)) {
         this._setExpandedKeys(rootKey, expandedKeys.delete(nodeKey));
       }
     });
-    var selectedKeysByRoot = this._data.selectedKeysByRoot;
+    const selectedKeysByRoot = this._data.selectedKeysByRoot;
     Object.keys(selectedKeysByRoot).forEach((rootKey) => {
-      var selectedKeys = selectedKeysByRoot[rootKey];
+      const selectedKeys = selectedKeysByRoot[rootKey];
       if (selectedKeys.has(nodeKey)) {
         this._setSelectedKeys(rootKey, selectedKeys.delete(nodeKey));
       }
@@ -780,7 +777,7 @@ class FileTreeStore {
   // TODO: Should we clean up isLoadingMap? It contains promises which cannot be cancelled, so this
   // might be tricky.
   _purgeRoot(rootKey: string): void {
-    var expandedKeys = this._data.expandedKeysByRoot[rootKey];
+    const expandedKeys = this._data.expandedKeysByRoot[rootKey];
     if (expandedKeys) {
       expandedKeys.forEach((nodeKey) => {
         this._removeSubscription(rootKey, nodeKey);
@@ -789,7 +786,7 @@ class FileTreeStore {
     }
     this._set('selectedKeysByRoot', deleteProperty(this._data.selectedKeysByRoot, rootKey));
     // Remove all child keys so that on re-addition of this root the children will be fetched again.
-    var childKeys = this._data.childKeyMap[rootKey];
+    const childKeys = this._data.childKeyMap[rootKey];
     if (childKeys) {
       childKeys.forEach((childKey) => {
         if (FileTreeHelpers.isDirKey(childKey)) {
@@ -826,9 +823,9 @@ class FileTreeStore {
   }
 
   reset(): void {
-    var subscriptionMap = this._data.subscriptionMap;
-    for (var nodeKey of Object.keys(subscriptionMap)) {
-      var subscription = subscriptionMap[nodeKey];
+    const subscriptionMap = this._data.subscriptionMap;
+    for (const nodeKey of Object.keys(subscriptionMap)) {
+      const subscription = subscriptionMap[nodeKey];
       if (subscription) {
         subscription.dispose();
       }
@@ -848,18 +845,18 @@ function deleteProperty(object: Object, key: string): Object {
   if (!object.hasOwnProperty(key)) {
     return object;
   }
-  var newObject = {...object};
+  const newObject = {...object};
   delete newObject[key];
   return newObject;
 }
 
 // A helper to set a property in an object using shallow copy rather than mutation
 function setProperty(object: Object, key: string, newValue: mixed): Object {
-  var oldValue = object[key];
+  const oldValue = object[key];
   if (oldValue === newValue) {
     return object;
   }
-  var newObject = {...object};
+  const newObject = {...object};
   newObject[key] = newValue;
   return newObject;
 }
@@ -867,7 +864,7 @@ function setProperty(object: Object, key: string, newValue: mixed): Object {
 // Create a new object by mapping over the properties of a given object, calling the given
 // function on each one.
 function mapValues(object: Object, fn: Function): Object {
-  var newObject = {};
+  const newObject = {};
   Object.keys(object).forEach((key) => {
     newObject[key] = fn(object[key], key);
   });

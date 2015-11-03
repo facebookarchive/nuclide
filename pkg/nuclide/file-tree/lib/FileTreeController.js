@@ -65,7 +65,7 @@ class FileTreeController {
   static INITIAL_WIDTH = 240;
 
   constructor(state: ?FileTreeControllerState) {
-    var {panel} = {
+    const {panel} = {
       ...{panel: {width: FileTreeController.INITIAL_WIDTH}},
       ...state,
     };
@@ -181,10 +181,10 @@ class FileTreeController {
   _updateRootDirectories(): Promise<void> {
     // If the remote-projects package hasn't loaded yet remote directories will be instantiated as
     // local directories but with invalid paths. We need to exclude those.
-    var rootDirectories = atom.project.getDirectories().filter(directory => (
+    const rootDirectories = atom.project.getDirectories().filter(directory => (
       FileTreeHelpers.isValidDirectory(directory)
     ));
-    var rootKeys = rootDirectories.map(
+    const rootKeys = rootDirectories.map(
       directory => FileTreeHelpers.dirPathToKey(directory.getPath())
     );
     this._actions.setRootKeys(rootKeys);
@@ -198,15 +198,15 @@ class FileTreeController {
     rootKeys: Array<string>,
     rootDirectories: Array<atom$Directory>,
   ): Promise<void> {
-    var nullableRepos: Array<?Repository> = await Promise.all(rootDirectories.map(
+    const nullableRepos: Array<?Repository> = await Promise.all(rootDirectories.map(
       directory => repositoryForPath(directory.getPath())
     ));
 
-    var rootKeysForRepo: Map<Repository, Set<string>> = new Map();
-    var newRepos: Set<Repository> = new Set(
+    const rootKeysForRepo: Map<Repository, Set<string>> = new Map();
+    const newRepos: Set<Repository> = new Set(
       nullableRepos.filter((repo: ?Repository, index: number) => {
         if (repo != null) {
-          var set = rootKeysForRepo.get(repo);
+          let set = rootKeysForRepo.get(repo);
           // t7114196: Given the current implementation of HgRepositoryClient, each root directory
           // will always correspond to a unique instance of HgRepositoryClient. Ideally, if multiple
           // subfolders of an Hg repo are used as project roots in Atom, only one HgRepositoryClient
@@ -223,8 +223,8 @@ class FileTreeController {
     );
     this._rootKeysForRepository = rootKeysForRepo;
 
-    var oldRepos = new Set();
-    for (var repo of this._repositories) {
+    const oldRepos = new Set();
+    for (const repo of this._repositories) {
       if (newRepos.has(repo)) {
         newRepos.delete(repo);
       } else {
@@ -233,12 +233,12 @@ class FileTreeController {
     }
 
     // Unsubscribe from oldRepos.
-    for (var repo of oldRepos) {
+    for (const repo of oldRepos) {
       this._removeSubscriptionForOldRepository(repo);
     }
 
     // Create subscriptions for newRepos.
-    for (var repo of newRepos) {
+    for (const repo of newRepos) {
       this._addSubscriptionsForNewRepository(repo);
     }
   }
@@ -253,10 +253,10 @@ class FileTreeController {
     // At this point, we assume that repo is a Nuclide HgRepositoryClient.
 
     // First, get the output of `hg status` for the repository.
-    var {hgConstants} = require('nuclide-hg-repository-base');
+    const {hgConstants} = require('nuclide-hg-repository-base');
     // TODO(mbolin): Verify that all of this is set up correctly for remote files.
-    var repoRoot = repo.getWorkingDirectory();
-    var statusCodeForPath = await repo.getStatuses([repoRoot], {
+    const repoRoot = repo.getWorkingDirectory();
+    const statusCodeForPath = await repo.getStatuses([repoRoot], {
       hgStatusOption: hgConstants.HgStatusOption.ONLY_NON_IGNORED,
     });
 
@@ -264,16 +264,16 @@ class FileTreeController {
     // statusCodeForPath in the statusesToReport map. If the file is modified, also mark every
     // parent directory (up to the repository root) of that file as modified, as well. For now, we
     // mark only new files, but not new directories.
-    var statusesToReport = {};
+    const statusesToReport = {};
     statusCodeForPath.forEach((statusCode, path) => {
       if (repo.isStatusModified(statusCode)) {
         statusesToReport[path] = statusCode;
 
         // For modified files, every parent directory should also be flagged as modified.
-        var nodeKey = path;
-        var keyForRepoRoot = FileTreeHelpers.dirPathToKey(repoRoot);
+        let nodeKey = path;
+        const keyForRepoRoot = FileTreeHelpers.dirPathToKey(repoRoot);
         do {
-          var parentKey = FileTreeHelpers.getParentKey(nodeKey);
+          const parentKey = FileTreeHelpers.getParentKey(nodeKey);
           if (parentKey == null) {
             break;
           }
@@ -290,7 +290,7 @@ class FileTreeController {
         statusesToReport[path] = statusCode;
       }
     });
-    for (var rootKeyForRepo of this._rootKeysForRepository.get(repo)) {
+    for (const rootKeyForRepo of this._rootKeysForRepository.get(repo)) {
       this._actions.setVcsStatuses(rootKeyForRepo, statusesToReport);
     }
 
@@ -299,7 +299,7 @@ class FileTreeController {
 
     // Now that the initial VCS statuses are set, subscribe to changes to the Repository so that the
     // VCS statuses are kept up to date.
-    var subscription = repo.onDidChangeStatuses(
+    const subscription = repo.onDidChangeStatuses(
       // t8227570: If the user is a "nervous saver," many onDidChangeStatuses will get fired in
       // succession. We should probably explore debouncing this in HgRepositoryClient itself.
       debounce(
@@ -312,10 +312,10 @@ class FileTreeController {
   }
 
   _onDidChangeStatusesForRepository(repo: Repository) {
-    for (let rootKey of this._rootKeysForRepository.get(repo)) {
-      let statusForNodeKey = {};
-      for (let fileTreeNode of this._store.getVisibleNodes(rootKey)) {
-        let {nodeKey} = fileTreeNode;
+    for (const rootKey of this._rootKeysForRepository.get(repo)) {
+      const statusForNodeKey = {};
+      for (const fileTreeNode of this._store.getVisibleNodes(rootKey)) {
+        const {nodeKey} = fileTreeNode;
         statusForNodeKey[nodeKey] = fileTreeNode.isContainer
           ? repo.getDirectoryStatus(nodeKey)
           : statusForNodeKey[nodeKey] = repo.getCachedPathStatus(nodeKey);
@@ -326,7 +326,7 @@ class FileTreeController {
 
   _removeSubscriptionForOldRepository(repo: Repository) {
     this._repositories.delete(repo);
-    var disposable = this._subscriptionForRepository.get(repo);
+    const disposable = this._subscriptionForRepository.get(repo);
     if (!disposable) {
       // There is a small chance that the add/remove of the Repository could happen so quickly that
       // the entry for the repo in _subscriptionForRepository has not been set yet.
@@ -442,12 +442,12 @@ class FileTreeController {
     if (!nodeKey) {
       return;
     }
-    var rootKey: string = this._store.getRootForKey(nodeKey);
+    const rootKey: string = this._store.getRootForKey(nodeKey);
     if (!rootKey) {
       return;
     }
-    var stack = [];
-    var key = nodeKey;
+    const stack = [];
+    let key = nodeKey;
     while (key !== rootKey) {
       stack.push(key);
       key = FileTreeHelpers.getParentKey(key);
@@ -455,7 +455,7 @@ class FileTreeController {
     // We want the stack to be [parentKey, ..., nodeKey].
     stack.reverse();
     stack.forEach((childKey, i) => {
-      var parentKey = (i === 0) ? rootKey : stack[i - 1];
+      const parentKey = (i === 0) ? rootKey : stack[i - 1];
       this._actions.ensureChildNode(rootKey, parentKey, childKey);
       this._actions.expandNode(rootKey, parentKey);
     });
@@ -816,7 +816,7 @@ class FileTreeController {
   }
 
   _removeRootFolderSelection(): void {
-    var rootNode = this._store.getSingleSelectedNode();
+    const rootNode = this._store.getSingleSelectedNode();
     if (rootNode != null && rootNode.isRoot) {
       atom.project.removePath(rootNode.nodePath);
     }
@@ -825,11 +825,11 @@ class FileTreeController {
   _searchInDirectory(event: Event): void {
     // Dispatch a command to show the `ProjectFindView`. This opens the view and focuses the search
     // box.
-    atom.commands.dispatch((event.target: HTMLElement), 'project-find:show-in-current-directory');
+    atom.commands.dispatch((event.target: Node), 'project-find:show-in-current-directory');
   }
 
   _showInFileManager(): void {
-    var node = this._store.getSingleSelectedNode();
+    const node = this._store.getSingleSelectedNode();
     if (node == null) {
       // Only allow revealing a single directory/file at a time. Return otherwise.
       return;
@@ -844,7 +844,7 @@ class FileTreeController {
   }
 
   _copyFullPath(): void {
-    var singleSelectedNode = this._store.getSingleSelectedNode();
+    const singleSelectedNode = this._store.getSingleSelectedNode();
     if (singleSelectedNode != null) {
       atom.clipboard.write(singleSelectedNode.getLocalPath());
     }
@@ -852,7 +852,7 @@ class FileTreeController {
 
   destroy(): void {
     this._subscriptions.dispose();
-    for (let disposable of this._subscriptionForRepository.values()) {
+    for (const disposable of this._subscriptionForRepository.values()) {
       disposable.dispose();
     }
     this._store.reset();

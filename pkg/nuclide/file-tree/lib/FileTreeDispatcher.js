@@ -9,9 +9,9 @@
  * the root directory of this source tree.
  */
 
-var {Dispatcher} = require('flux');
+import {Dispatcher} from 'flux';
 
-var instance: FileTreeDispatcher;
+let instance: ?Object;
 
 class FileTreeDispatcher extends Dispatcher {
   static getInstance(): FileTreeDispatcher {

@@ -59,7 +59,7 @@ describe('FileTreeStore', () => {
   });
 
   it('should be initialized with no root keys', () => {
-    var rootKeys = store.getRootKeys();
+    const rootKeys = store.getRootKeys();
     expect(Array.isArray(rootKeys)).toBe(true);
     expect(rootKeys.length).toBe(0);
   });
@@ -77,28 +77,28 @@ describe('FileTreeStore', () => {
 
   it('should update root keys via actions', () => {
     actions.setRootKeys([dir1, dir2]);
-    var rootKeys = store.getRootKeys();
+    const rootKeys = store.getRootKeys();
     expect(Array.isArray(rootKeys)).toBe(true);
     expect(rootKeys.join('|')).toBe(`${dir1}|${dir2}`);
   });
 
   it('should expand root keys as they are added', () => {
-    var rootKey = pathModule.join(__dirname, 'fixtures') + '/';
+    const rootKey = pathModule.join(__dirname, 'fixtures') + '/';
     actions.setRootKeys([rootKey]);
-    var node = store.getNode(rootKey, rootKey);
+    const node = store.getNode(rootKey, rootKey);
     expect(node.isExpanded()).toBe(true);
   });
 
   it('should consider non-existent keys collapsed', () => {
-    var rootKey = pathModule.join(__dirname, 'fixtures') + '/';
-    var node = store.getNode(rootKey, rootKey + 'asdf');
+    const rootKey = pathModule.join(__dirname, 'fixtures') + '/';
+    const node = store.getNode(rootKey, rootKey + 'asdf');
     expect(node.isExpanded()).toBe(false);
   });
 
   it('toggles selected items', () => {
     actions.setRootKeys([dir1]);
     actions.toggleSelectNode(dir1, dir1);
-    var node = store.getNode(dir1, dir1);
+    const node = store.getNode(dir1, dir1);
     expect(node.isSelected()).toBe(true);
     actions.toggleSelectNode(dir1, dir1);
     expect(node.isSelected()).toBe(false);
@@ -107,8 +107,8 @@ describe('FileTreeStore', () => {
   it('deselects items in other roots when a single node is selected', () => {
     actions.setRootKeys([dir1, dir2]);
     actions.toggleSelectNode(dir1, dir1);
-    var node1 = store.getNode(dir1, dir1);
-    var node2 = store.getNode(dir2, dir2);
+    const node1 = store.getNode(dir1, dir1);
+    const node2 = store.getNode(dir2, dir2);
 
     // Node 1 is selected, node 2 is not selected
     expect(node1.isSelected()).toBe(true);
@@ -135,13 +135,13 @@ describe('FileTreeStore', () => {
 
     it('returns selected nodes from all roots when no argument is given', () => {
       // Convert the `Immutable.Set` to a native `Array` for simpler use w/ Jasmine.
-      var selectedNodes = store.getSelectedKeys().toArray();
+      const selectedNodes = store.getSelectedKeys().toArray();
       expect(selectedNodes).toEqual([dir1, dir2]);
     });
 
     it('returns selected nodes from a specific root', () => {
       // Convert the `Immutable.Set` to a native `Array` for simpler use w/ Jasmine.
-      var selectedNodes = store.getSelectedKeys(dir1).toArray();
+      const selectedNodes = store.getSelectedKeys(dir1).toArray();
       expect(selectedNodes).toEqual([dir1]);
     });
   });
@@ -153,12 +153,12 @@ describe('FileTreeStore', () => {
       actions.toggleSelectNode(dir2, dir2);
 
       // Convert the `Immutable.Set` to a native `Array` for simpler use w/ Jasmine.
-      var selectedNodes = store.getSelectedNodes().map(node => node.nodeKey).toArray();
+      const selectedNodes = store.getSelectedNodes().map(node => node.nodeKey).toArray();
       expect(selectedNodes).toEqual([dir1, dir2]);
     });
 
     it('returns an empty Set when no nodes are selected', () => {
-      var selectedNodes = store.getSelectedNodes().map(node => node.nodeKey).toArray();
+      const selectedNodes = store.getSelectedNodes().map(node => node.nodeKey).toArray();
       expect(selectedNodes).toEqual([]);
     });
   });
@@ -196,7 +196,7 @@ describe('FileTreeStore', () => {
       actions.setTrackedNode(dir1, dir1);
 
       // Root is tracked after setting it.
-      var trackedNode = store.getTrackedNode();
+      const trackedNode = store.getTrackedNode();
       expect(trackedNode && trackedNode.nodeKey).toBe(dir1);
       actions.selectSingleNode(dir1, dir1);
 

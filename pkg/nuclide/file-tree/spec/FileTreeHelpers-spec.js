@@ -9,11 +9,11 @@
  * the root directory of this source tree.
  */
 
-var {
+import {
   Directory,
   File,
-} = require('atom');
-var FileTreeHelpers = require('../lib/FileTreeHelpers');
+} from 'atom';
+import FileTreeHelpers from '../lib/FileTreeHelpers';
 
 describe('FileTreeHelpers', () => {
   it('should convert key to path', () => {
@@ -50,9 +50,9 @@ describe('FileTreeHelpers', () => {
   });
 
   it('should validate directories', () => {
-    var validDir = new Directory('/a/b/c');
+    const validDir = new Directory('/a/b/c');
     expect(FileTreeHelpers.isValidDirectory(validDir)).toBe(true);
-    var badDir = new Directory('nuclide://host:123/a/b/c');
+    const badDir = new Directory('nuclide://host:123/a/b/c');
     expect(FileTreeHelpers.isValidDirectory(badDir)).toBe(false);
   });
 
