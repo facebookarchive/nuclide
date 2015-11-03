@@ -26,7 +26,7 @@ import type {
   Babel$Node,
 } from './types';
 
-import {locationToString} from './builtin-types';
+import {locationToString, namedBuiltinTypes} from './builtin-types';
 import {validateDefinitions} from './DefinitionValidator';
 
 function isPrivateMemberName(name: string): boolean {
@@ -50,6 +50,18 @@ class ServiceParser {
   constructor(fileName: string) {
     this._fileName = fileName;
     this._defs = new Map();
+
+    // Add all builtin types
+    const defineBuiltinType = name => {
+      this._defs.set(name, {
+        kind: 'alias',
+        name,
+        location: { type: 'builtin' },
+      });
+    };
+    namedBuiltinTypes.forEach(defineBuiltinType);
+    // TODO: Find a better place for this.
+    defineBuiltinType('NuclideUri');
   }
 
   _locationOfNode(node: any): SourceLocation {
@@ -148,7 +160,7 @@ class ServiceParser {
       declaration.returnType.type === 'TypeAnnotation',
       'Remote functions must be annotated with a return type.');
 
-    var returnType = this._parseTypeAnnotation(declaration.returnType.typeAnnotation);
+    const returnType = this._parseTypeAnnotation(declaration.returnType.typeAnnotation);
     this._assert(declaration.returnType.typeAnnotation,
       returnType.kind === 'void' || returnType.kind === 'promise' ||
           returnType.kind === 'observable',
@@ -244,7 +256,7 @@ class ServiceParser {
       definition.value.returnType.type === 'TypeAnnotation',
       `${definition.key.name} missing a return type annotation.`);
 
-    var returnType = this._parseTypeAnnotation(definition.value.returnType.typeAnnotation);
+    const returnType = this._parseTypeAnnotation(definition.value.returnType.typeAnnotation);
     this._assert(
       definition.value.returnType.typeAnnotation,
       returnType.kind === 'void' || returnType.kind === 'promise' ||

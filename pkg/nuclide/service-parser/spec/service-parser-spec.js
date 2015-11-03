@@ -96,6 +96,16 @@ describe('Nuclide service parser test suite.', () => {
       parseServiceDefinition('fileName', code);
     }).toThrow();
   });
+
+  it('User defined type conflicting with builtin', () => {
+    const code = `
+      export class Object {
+        constructor() {}
+      }`;
+    expect(() => {
+      parseServiceDefinition('fileName', code);
+    }).toThrow();
+  });
 });
 
 function mapDefinitions(map: Map<string, Definition>): { [key: string]: Object } {

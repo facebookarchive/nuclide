@@ -9,10 +9,12 @@
  * the root directory of this source tree.
  */
 
-import {locationToString, namedBuiltinTypes} from './builtin-types';
+import {locationToString} from './builtin-types';
 
 import type {
   Definitions,
+  AliasDefinition,
+  InterfaceDefinition,
   Type,
 } from './types';
 
@@ -21,7 +23,7 @@ import type {
  * The error message thrown is suitable for display to a human.
  */
 export function validateDefinitions(definitions: Definitions): void {
-  const knownNamedTypes = new Set();
+  const namedTypes: Map<string, AliasDefinition | InterfaceDefinition> = new Map();
   gatherKnownTypes();
   validate();
 
@@ -32,9 +34,9 @@ export function validateDefinitions(definitions: Definitions): void {
           validateType(definition.type);
           break;
         case 'alias':
-          // Figure out how to get Flow to recognize the disjoint union and refine the types.
-          // $FlowFixMe
-          validateType(definition.definition);
+          if (definition.definition != null) {
+            validateType(definition.definition);
+          }
           break;
         case 'interface':
           // $FlowFixMe as above
@@ -49,16 +51,11 @@ export function validateDefinitions(definitions: Definitions): void {
   }
 
   function gatherKnownTypes(): void {
-    namedBuiltinTypes.forEach(name => {
-      knownNamedTypes.add(name);
-    });
-    knownNamedTypes.add('NuclideUri');
-
     for (const definition of definitions.values()) {
       switch (definition.kind) {
         case 'alias':
         case 'interface':
-          knownNamedTypes.add(definition.name);
+          namedTypes.set(definition.name, definition);
           break;
       }
     }
@@ -104,7 +101,7 @@ export function validateDefinitions(definitions: Definitions): void {
         break;
       case 'named':
         const name = type.name;
-        if (!knownNamedTypes.has(name)) {
+        if (!namedTypes.has(name)) {
           throw new Error(
             `${locationToString(type.location)}: No definition for type ${name}.`);
         }

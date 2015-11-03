@@ -71,7 +71,9 @@ export default class ServerComponent {
           switch (definition.kind) {
             case 'alias':
               logger.debug(`Registering type alias ${name}...`);
-              this._typeRegistry.registerAlias(name, definition.definition);
+              if (definition.definition != null) {
+                this._typeRegistry.registerAlias(name, definition.definition);
+              }
               break;
             case 'function':
               // Register module-level functions.

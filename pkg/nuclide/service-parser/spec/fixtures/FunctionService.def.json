@@ -1,4 +1,46 @@
 {
+    "Object": {
+        "kind": "alias",
+        "name": "Object",
+        "location": {
+            "type": "builtin"
+        }
+    },
+    "Date": {
+        "kind": "alias",
+        "name": "Date",
+        "location": {
+            "type": "builtin"
+        }
+    },
+    "RegExp": {
+        "kind": "alias",
+        "name": "RegExp",
+        "location": {
+            "type": "builtin"
+        }
+    },
+    "Buffer": {
+        "kind": "alias",
+        "name": "Buffer",
+        "location": {
+            "type": "builtin"
+        }
+    },
+    "fs.Stats": {
+        "kind": "alias",
+        "name": "fs.Stats",
+        "location": {
+            "type": "builtin"
+        }
+    },
+    "NuclideUri": {
+        "kind": "alias",
+        "name": "NuclideUri",
+        "location": {
+            "type": "builtin"
+        }
+    },
     "TestFunctionA": {
         "kind": "function",
         "name": "TestFunctionA",

@@ -45,7 +45,7 @@ export type AliasDefinition = {
   kind: 'alias';
   name: string;
   location: Location;
-  definition: Type;
+  definition?: Type;
 };
 
 // $FlowIssue
