@@ -132,6 +132,10 @@ module.exports = {
     return require('./promises');
   },
 
+  get regexp() {
+    return require('./regexp');
+  },
+
   get error() {
     return require('./error');
   },
