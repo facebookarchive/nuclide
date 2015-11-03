@@ -59,17 +59,12 @@ describe('PromiseQueue', () => {
       // There is no toBeLessThanOrEqualTo matcher, and as you can see from
       // above, attempting to define our own matcher has failed.
 
-      // First, make sure that none of the executors overlapped.
+      // Make sure that none of the executors overlapped.
       expect(res1Start <= res1End).toBe(true);
       expect(res1End <= res2Start).toBe(true);
       expect(res2Start <= res2End).toBe(true);
       expect(res2End <= res3Start).toBe(true);
       expect(res3Start <= res3End).toBe(true);
-
-      // Make sure the executors took the expected duration.
-      expect(res2End - res1End >= 200).toBe(true);
-      expect(res3End - res2End >= 300).toBe(true);
-      expect(res3End - res1End >= 500).toBe(true);
     });
   });
 
