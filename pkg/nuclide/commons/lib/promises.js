@@ -72,6 +72,67 @@ class RequestSerializer {
   }
 }
 
+/*
+ * Returns a promise that will resolve after `milliSeconds` milli seconds.
+ * this can be used to pause execution asynchronously.
+ * e.g. await awaitMilliSeconds(1000), pauses the async flow execution for 1 second.
+ */
+function awaitMilliSeconds(milliSeconds: number): Promise {
+  return new Promise((resolve, reject) => {
+    setTimeout(resolve, milliSeconds);
+  });
+}
+
+/**
+ * Call an async function repeatedly with a maximum number of trials limit,
+ * until a valid result that's defined by a validation function.
+ * A failed call can result from an async thrown exception, or invalid result.
+ *
+ * @param `retryFunction` the async logic that's wanted to be retried.
+ * @param `validationFunction` the validation function that decides whether a response is valid.
+ * @param `maximumTries` the number of times the `retryFunction` can fail to get a valid
+ * response before the `retryLimit` is terminated reporting an error.
+ * @param `retryIntervalMs` optional, the number of milliseconds to wait between trials, if wanted.
+ *
+ * If an exception is encountered on the last trial, the exception is thrown.
+ * If no valid response is found, an exception is thrown.
+ */
+async function retryLimit<T>(
+  retryFunction: () => Promise<T>,
+  validationFunction: (result: T) => boolean,
+  maximumTries: number,
+  retryIntervalMs?: number = 0,
+): Promise<T> {
+  let result = null;
+  let tries = 0;
+  let lastError = null;
+  /* eslint-disable no-await-in-loop */
+  while (tries === 0 || tries < maximumTries) {
+    try {
+      result = await retryFunction();
+      lastError = null;
+      if (validationFunction(result)) {
+        return result;
+      }
+    } catch (error) {
+      lastError = error;
+      result = null;
+    }
+
+    if (++tries < maximumTries && retryIntervalMs !== 0) {
+      await awaitMilliSeconds(retryIntervalMs);
+    }
+  }
+  /* eslint-enable no-await-in-loop */
+  if (lastError != null) {
+    throw lastError;
+  } else if (tries === maximumTries) {
+    throw new Error('No valid response found!');
+  } else {
+    return ((result: any): T);
+  }
+}
+
 var promises = module.exports = {
 
   /**
@@ -245,16 +306,7 @@ var promises = module.exports = {
     return resolved;
   },
 
-  /*
-   * Returns a promise that will resolve after `milliSeconds` milli seconds.
-   * this can be used to pause execution asynchronously.
-   * e.g. await awaitMilliSeconds(1000), pauses the async flow execution for 1 second.
-   */
-  awaitMilliSeconds(milliSeconds: number): Promise {
-    return new Promise((resolve, reject) => {
-      setTimeout(resolve, milliSeconds);
-    });
-  },
+  awaitMilliSeconds,
 
   RequestSerializer,
 
@@ -264,4 +316,6 @@ var promises = module.exports = {
   isPromise(object: any): boolean {
     return !!(object) && typeof object === 'object' && typeof object.then === 'function';
   },
+
+  retryLimit,
 };

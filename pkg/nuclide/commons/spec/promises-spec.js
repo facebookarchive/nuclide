@@ -279,6 +279,102 @@ describe('promises::asyncSome()', () => {
   });
 });
 
+describe('promises::retryLimit()', () => {
+
+  beforeEach(() => window.useRealClock());
+
+  it('retries and fails 2 times before resolving to an acceptable result where limit = 5', () => {
+    waitsForPromise(async () => {
+      let succeedAfter = 2;
+      let calls = 0;
+      let validationCalls = 0;
+      const retrialsResult = await promises.retryLimit(() => {
+        return new Promise((resolve, reject) => {
+          calls++;
+          if (succeedAfter-- === 0) {
+            resolve('RESULT');
+          } else {
+            reject('ERROR');
+          }
+        });
+      }, (result) => {
+        validationCalls++;
+        return result === 'RESULT';
+      }, 5);
+      expect(calls).toBe(3);
+      expect(validationCalls).toBe(1);
+      expect(retrialsResult).toBe('RESULT');
+    });
+  });
+
+  it('retries and fails consistently', () => {
+    waitsForPromise(async () => {
+      let calls = 0;
+      let validationCalls = 0;
+      const failRetriesPromise = promises.retryLimit(
+        () => {
+          calls++;
+          return Promise.reject('ERROR');
+        },
+        (result) => {
+          validationCalls++;
+          return result != null;
+        },
+        2,
+      );
+      await expectAsyncFailure(failRetriesPromise, error => {
+        expect(error).toBe('ERROR');
+      });
+      expect(calls).toBe(2);
+      expect(validationCalls).toBe(0);
+    });
+  });
+
+  it('accepts a null response', () => {
+    waitsForPromise(async () => {
+      let succeedAfter = 2;
+      let calls = 0;
+      let validationCalls = 0;
+      const retryResult = await promises.retryLimit(
+        () => {
+          calls++;
+          if (succeedAfter-- === 0) {
+            return Promise.resolve(null);
+          } else {
+            return Promise.resolve('NOT_GOOD');
+          }
+        },
+        (result) => {
+          validationCalls++;
+          return result == null;
+        },
+        5,
+      );
+      expect(retryResult).toBe(null);
+      expect(calls).toBe(3);
+      expect(validationCalls).toBe(3);
+    });
+  });
+
+  it('no valid response is ever got', () => {
+    waitsForPromise(async () => {
+      const nonValidRetriesPromise = promises.retryLimit(
+        () => {
+          return Promise.resolve('A');
+        },
+        (result) => {
+          return result === 'B';
+        },
+        2,
+      );
+      await expectAsyncFailure(nonValidRetriesPromise, error => {
+        expect(error.message).toBe('No valid response found!');
+      });
+    });
+  });
+});
+
+
 async function captureParallelismHistory(
     asyncFunction: (...args: Array<any>) => Promise<mixed>,
     args: Array<mixed>
