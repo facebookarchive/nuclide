@@ -770,7 +770,18 @@ class HgRepositoryClient {
         this._hgStatusCache = {};
         this._modifiedDirectoryCache = new Map();
         if (pathsInStatusCache.length) {
-          this._updateStatuses(pathsInStatusCache, {hgStatusOption: HgStatusOption.ALL_STATUSES});
+          // We should get the modified status of all files in the repo that is
+          // under the HgRepositoryClient's project directory, because when Hg
+          // modifies the repo, it doesn't necessarily only modify files that were
+          // previously modified.
+          this._updateStatuses(
+              [this.getProjectDirectory()], {hgStatusOption: HgStatusOption.ONLY_NON_IGNORED});
+          // The logic is a bit different for ignored files, because the
+          // HgRepositoryClient always fetches ignored statuses lazily (as callers
+          // ask for them). So, we only fetch the ignored status of files already
+          // in the cache. (Note: if I ask Hg for the 'ignored' status of a list of
+          // files, and none of them are ignored, no statuses will be returned.)
+          this._updateStatuses(pathsInStatusCache, {hgStatusOption: HgStatusOption.ONLY_IGNORED});
         }
 
         const pathsInDiffCache = Object.keys(this._hgDiffCache);
