@@ -61,10 +61,19 @@ class Activation {
     const hideIgnoredNamesSetting = 'nuclide-file-tree.hideIgnoredNames';
     this._setRevealOnFileSwitch(((atom.config.get(hideIgnoredNamesSetting): any): boolean));
 
+    const excludeVcsIgnoredPathsSetting = 'core.excludeVcsIgnoredPaths';
+    this._setExcludeVcsIgnoredPaths(
+      ((atom.config.get(excludeVcsIgnoredPathsSetting): any): boolean)
+    );
+
     this._subscriptions.add(
       atom.config.observe(revealSetting, this._setRevealOnFileSwitch.bind(this)),
       atom.config.observe(ignoredNamesSetting, this._setIgnoredNames.bind(this)),
       atom.config.observe(hideIgnoredNamesSetting, this._setHideIgnoredNames.bind(this)),
+      atom.config.observe(
+        excludeVcsIgnoredPathsSetting,
+        this._setExcludeVcsIgnoredPaths.bind(this),
+      ),
     );
 
   }
@@ -80,7 +89,14 @@ class Activation {
     }
   }
 
-  _setHideIgnoredNames(hideIgnoredNames: bool): void {
+  _setExcludeVcsIgnoredPaths(excludeVcsIgnoredPaths: boolean): void {
+    if (!this._fileTreeController) {
+      return;
+    }
+    this._fileTreeController.setExcludeVcsIgnoredPaths(excludeVcsIgnoredPaths);
+  }
+
+  _setHideIgnoredNames(hideIgnoredNames: boolean): void {
     if (!this._fileTreeController) {
       return;
     }

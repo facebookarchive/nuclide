@@ -23,6 +23,7 @@ var Immutable = require('immutable');
 var Logging = require('nuclide-logging');
 
 import {Minimatch} from 'minimatch';
+import {repositoryForPath} from 'nuclide-hg-git-bridge';
 
 var {
   array,
@@ -34,6 +35,7 @@ var shell = require('shell');
 var VERSION = 1;
 
 import type {Dispatcher} from 'flux';
+import type {NuclideUri} from 'nuclide-remote-uri';
 
 type ActionPayload = Object;
 type ChangeListener = () => mixed;
@@ -56,7 +58,8 @@ type StoreData = {
   subscriptionMap: { [key: string]: Disposable };
   vcsStatusesByRoot: { [key: string]: Immutable.Map<string, number> };
   ignoredPatterns: Immutable.Set<Minimatch>;
-  hideIgnoredNames: bool;
+  hideIgnoredNames: boolean;
+  excludeVcsIgnoredPaths: boolean;
 };
 
 export type ExportStoreData = {
@@ -146,7 +149,11 @@ class FileTreeStore {
     });
   }
 
-  _setHideIgnoredNames(hideIgnoredNames: bool): void {
+  _setExcludeVcsIgnoredPaths(excludeVcsIgnoredPaths: boolean): void {
+    this._set('excludeVcsIgnoredPaths', excludeVcsIgnoredPaths);
+  }
+
+  _setHideIgnoredNames(hideIgnoredNames: boolean): void {
     this._set('hideIgnoredNames', hideIgnoredNames);
   }
 
@@ -188,6 +195,7 @@ class FileTreeStore {
       vcsStatusesByRoot: {},
       ignoredPatterns: Immutable.Set(),
       hideIgnoredNames: true,
+      excludeVcsIgnoredPaths: true,
     };
   }
 
@@ -207,6 +215,9 @@ class FileTreeStore {
         break;
       case ActionType.COLLAPSE_NODE:
         this._collapseNode(payload.rootKey, payload.nodeKey);
+        break;
+      case ActionType.SET_EXCLUDE_VCS_IGNORED_PATHS:
+        this._setExcludeVcsIgnoredPaths(payload.excludeVcsIgnoredPaths);
         break;
       case ActionType.SET_HIDE_IGNORED_NAMES:
         this._setHideIgnoredNames(payload.hideIgnoredNames);
@@ -585,6 +596,15 @@ class FileTreeStore {
     return this._data.expandedKeysByRoot[rootKey] || new Immutable.Set();
   }
 
+  /**
+   * This is just exposed so it can be mocked in the tests. Not ideal, but a lot less messy than the
+   * alternatives. For example, passing options when constructing an instance of a singleton would
+   * make future invocations of `getInstance` unpredictable.
+   */
+  _repositoryForPath(path: NuclideUri): ?Repository {
+    return repositoryForPath(path);
+  }
+
   _setExpandedKeys(rootKey: string, expandedKeys: Immutable.Set<string>): void {
     this._set(
       'expandedKeysByRoot',
@@ -786,11 +806,23 @@ class FileTreeStore {
     this._set('trackedNode', {nodeKey, rootKey}, true);
   }
 
-  _omitHiddenPaths(keys: Array<string>): Array<string> {
-    if (!this._data.hideIgnoredNames) {
-      return keys;
+  _omitHiddenPaths(nodeKeys: Array<string>): Array<string> {
+    if (!this._data.hideIgnoredNames && !this._data.excludeVcsIgnoredPaths) {
+      return nodeKeys;
     }
-    return omitMatches(keys, this._data.ignoredPatterns);
+
+    return nodeKeys.filter(nodeKey => !this._shouldHidePath(nodeKey));
+  }
+
+  _shouldHidePath(nodeKey: string): boolean {
+    const {hideIgnoredNames, excludeVcsIgnoredPaths, ignoredPatterns} = this._data;
+    if (hideIgnoredNames && matchesSome(nodeKey, ignoredPatterns)) {
+      return true;
+    }
+    if (excludeVcsIgnoredPaths && isVcsIgnored(nodeKey, this._repositoryForPath(nodeKey))) {
+      return true;
+    }
+    return false;
   }
 
   reset(): void {
@@ -842,11 +874,13 @@ function mapValues(object: Object, fn: Function): Object {
   return newObject;
 }
 
-// Filter all elements from a list that match any of the provided patterns.
-function omitMatches(keys: Array<string>, patterns: Immutable.Set<Minimatch>) {
-  return keys.filter(key =>
-    !patterns.some(pattern => pattern.match(key))
-  );
+// Determine whether the given string matches any of a set of patterns.
+function matchesSome(str: string, patterns: Immutable.Set<Minimatch>) {
+  return patterns.some(pattern => pattern.match(str));
+}
+
+function isVcsIgnored(nodeKey: string, repo: ?Repository) {
+  return repo && repo.isProjectAtRoot() && repo.isPathIgnored(nodeKey);
 }
 
 module.exports = FileTreeStore;

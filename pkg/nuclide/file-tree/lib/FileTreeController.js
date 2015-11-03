@@ -462,7 +462,11 @@ class FileTreeController {
     this._selectAndTrackNode(rootKey, nodeKey);
   }
 
-  setHideIgnoredNames(hideIgnoredNames: bool): void {
+  setExcludeVcsIgnoredPaths(excludeVcsIgnoredPaths: boolean): void {
+    this._actions.setExcludeVcsIgnoredPaths(excludeVcsIgnoredPaths);
+  }
+
+  setHideIgnoredNames(hideIgnoredNames: boolean): void {
     this._actions.setHideIgnoredNames(hideIgnoredNames);
   }
 

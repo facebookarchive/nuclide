@@ -18,6 +18,15 @@ import {fixtures} from 'nuclide-test-helpers';
 import fs from 'fs';
 import pathModule from 'path';
 
+class MockRepository {
+  isProjectAtRoot() {
+    return true;
+  }
+  isPathIgnored() {
+    return true;
+  }
+}
+
 describe('FileTreeStore', () => {
   let dir1 = '';
   let fooTxt = '';
@@ -295,4 +304,33 @@ describe('FileTreeStore', () => {
       });
     });
   });
+
+  it('omits vcs-excluded paths', () => {
+    waitsForPromise(async () => {
+      actions.setRootKeys([dir1]);
+      actions.expandNode(dir1, fooTxt);
+      actions.setExcludeVcsIgnoredPaths(true);
+
+      const mockRepo = new MockRepository();
+      spyOn(store, '_repositoryForPath').andReturn(mockRepo);
+
+      await loadChildKeys(dir1, dir1);
+      expect(store.getCachedChildKeys(dir1, dir1).length).toBe(0);
+    });
+  });
+
+  it('includes vcs-excluded paths when told to', () => {
+    waitsForPromise(async () => {
+      actions.setRootKeys([dir1]);
+      actions.expandNode(dir1, fooTxt);
+      actions.setExcludeVcsIgnoredPaths(false);
+
+      const mockRepo = new MockRepository();
+      spyOn(store, '_repositoryForPath').andReturn(mockRepo);
+
+      await loadChildKeys(dir1, dir1);
+      expect(store.getCachedChildKeys(dir1, dir1).length).toBe(1);
+    });
+  });
+
 });

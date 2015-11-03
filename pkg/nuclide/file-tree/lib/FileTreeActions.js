@@ -103,7 +103,14 @@ class FileTreeActions {
     });
   }
 
-  setHideIgnoredNames(hideIgnoredNames: bool): void {
+  setExcludeVcsIgnoredPaths(excludeVcsIgnoredPaths: boolean): void {
+    this._dispatcher.dispatch({
+      actionType: ActionType.SET_EXCLUDE_VCS_IGNORED_PATHS,
+      excludeVcsIgnoredPaths,
+    });
+  }
+
+  setHideIgnoredNames(hideIgnoredNames: boolean): void {
     this._dispatcher.dispatch({
       actionType: ActionType.SET_HIDE_IGNORED_NAMES,
       hideIgnoredNames,
