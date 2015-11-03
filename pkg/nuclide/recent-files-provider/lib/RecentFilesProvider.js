@@ -15,6 +15,9 @@ import type {
   ProviderType,
 } from 'nuclide-quick-open-interfaces';
 
+import {regexp} from 'nuclide-commons';
+const {safeRegExpFromString} = regexp;
+
 // Imported from nuclide-files-service, which is an apm package, preventing a direct import.
 type FilePath = string;
 type TimeStamp = number;
@@ -30,7 +33,7 @@ function getRecentFilesMatching(query: string): Array<FileResult> {
   if (_recentFilesService == null) {
     return [];
   }
-  const queryRegExp = new RegExp(query, 'i');
+  const queryRegExp = safeRegExpFromString(query);
   const projectPaths = atom.project.getPaths();
   return _recentFilesService.getRecentFiles()
     .filter(result =>

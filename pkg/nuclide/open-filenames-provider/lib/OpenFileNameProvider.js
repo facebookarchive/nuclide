@@ -15,16 +15,19 @@ import type {
   ProviderType,
 } from 'nuclide-quick-open-interfaces';
 
-// Returns the currently opened tabs, ordered from most recently opened to least recently opened.
+import {regexp} from 'nuclide-commons';
+const {safeRegExpFromString} = regexp;
+
+// Returns paths of currently opened editor tabs.
 function getOpenTabsMatching(query: string): Array<FileResult> {
-  var queryRegExp = new RegExp(query, 'i');
+  const queryRegExp = safeRegExpFromString(query);
   return atom.workspace.getTextEditors()
     .map(editor => editor.getPath())
     .filter(path => path != null && (!query.length || queryRegExp.test(path)))
     .map(file => ({path: (file == null) ? '' : file, matchIndexes: []}));
 }
 
-var OpenFileListProvider: Provider = {
+const OpenFileListProvider: Provider = {
 
   getName(): string {
     return 'OpenFileListProvider';

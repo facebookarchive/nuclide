@@ -13,10 +13,10 @@ import type {
   Provider,
 } from 'nuclide-quick-open-interfaces';
 
-var providerInstance: ?Provider;
+let providerInstance: ?Provider;
 function getProviderInstance(): Provider {
   if (providerInstance == null) {
-    var OpenFileNameProvider = require('./OpenFileNameProvider');
+    const OpenFileNameProvider = require('./OpenFileNameProvider');
     providerInstance = {...OpenFileNameProvider};
   }
   return providerInstance;
