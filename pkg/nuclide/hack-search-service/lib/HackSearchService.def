@@ -1,0 +1,37 @@
+/*
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ */
+
+/**
+ * The leading underscore is to distinguish this from the one that is listed in
+ * HackService.def. They are actually the same, but we don't have a good way
+ * to share types like this right now.
+ */
+export type _HackSearchPosition = {
+  path: NuclideUri;
+  line: number;
+  column: number;
+  name: string;
+  length: number;
+  scope: string;
+  additionalInfo: string;
+};
+
+/**
+ * Performs a Hack symbol search in the specified directory.
+ */
+export function query(
+  rootDirectory: NuclideUri,
+  queryString: string
+): Promise<Array<_HackSearchPosition>> {}
+
+/**
+ * @return whether this service can perform Hack symbol queries on the
+ *   specified directory. Not all directories on a host correspond to
+ *   repositories that contain Hack code.
+ */
+export function isAvailableForDirectory(rootDirectory: NuclideUri): Promise<boolean> {}

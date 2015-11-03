@@ -23,6 +23,7 @@ import type {SymbolTypeValue} from 'nuclide-hack-common/lib/constants';
 import type {NuclideUri} from 'nuclide-remote-uri';
 
 import {fsPromise} from 'nuclide-commons';
+import invariant from 'assert';
 import {SearchResultType} from 'nuclide-hack-common/lib/constants';
 import {
   callHHClient,
@@ -155,11 +156,11 @@ export async function getDependencies(
       filter = [SearchResultType.FUNCTION];
     }
 
-    // $FlowIssue: The check below does not properly refine this result to be non-null
     const searchResponse = await getSearchResults(filePath, dependencyName, filter);
-    if (!searchResponse) {
+    if (searchResponse == null) {
       continue;
     }
+    invariant(searchResponse);
     const {result: searchResults} = searchResponse;
     hackRoot = searchResponse.hackRoot;
     await Promise.all(searchResults.map(async (location) => {

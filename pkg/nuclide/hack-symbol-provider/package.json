@@ -10,12 +10,13 @@
   },
   "dependencies": {
     "nuclide-client": "0.0.0",
-    "nuclide-remote-uri": "0.0.0",
+    "nuclide-hack-search-service": "0.0.0",
     "react-for-atom": "0.13.6"
   },
   "devDependencies": {
     "nuclide-external-interfaces": "0.0.0",
-    "nuclide-quick-open-interfaces": "0.0.0"
+    "nuclide-quick-open-interfaces": "0.0.0",
+    "nuclide-test-helpers": "0.0.0"
   },
   "providedServices": {
     "nuclide-quick-open-register-provider": {

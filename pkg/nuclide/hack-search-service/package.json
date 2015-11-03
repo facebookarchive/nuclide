@@ -1,0 +1,25 @@
+{
+  "name": "nuclide-hack-search-service",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/HackSearchService",
+  "version": "0.0.0",
+  "description": "Business logic for Hack (symbol) search",
+  "nuclide": {
+    "flowCheck": true,
+    "packageType": "Node",
+    "testRunner": "npm"
+  },
+  "dependencies": {
+    "nuclide-hack-base": "0.0.0"
+  },
+  "devDependencies": {
+    "nuclide-external-interfaces": "0.0.0",
+    "nuclide-hack-common": "0.0.0",
+    "nuclide-jasmine": "0.0.0",
+    "nuclide-remote-uri": "0.0.0",
+    "nuclide-test-helpers": "0.0.0"
+  },
+  "scripts": {
+    "test": "node --harmony node_modules/.bin/jasmine-node-transpiled spec"
+  }
+}

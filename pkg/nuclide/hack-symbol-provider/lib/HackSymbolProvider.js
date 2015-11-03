@@ -14,13 +14,13 @@ import type {
   Provider,
   ProviderType,
 } from 'nuclide-quick-open-interfaces';
+import type {HackSearchPosition} from 'nuclide-hack-base/lib/types';
 
-var path = require('path');
-var React = require('react-for-atom');
+import {getHackSearchService} from './getHackSearchService';
+import path from 'path';
+import React from 'react-for-atom';
 
-var HACK_SEARCH_PROVIDER = 'hack';
-
-var ICONS = {
+const ICONS = {
   'interface': 'icon-puzzle',
   'function': 'icon-zap',
   'method': 'icon-zap',
@@ -43,7 +43,7 @@ function bestIconForItem(item: FileResult): string {
     return ICONS[item.additionalInfo];
   }
   // Look for presence match, e.g. in 'static method in FooBarClass'.
-  for (var keyword in ICONS) {
+  for (const keyword in ICONS) {
     if (item.additionalInfo.indexOf(keyword) !== -1) {
       return ICONS[keyword];
     }
@@ -51,7 +51,7 @@ function bestIconForItem(item: FileResult): string {
   return ICONS.unknown;
 }
 
-var HackSymbolProvider: Provider = {
+const HackSymbolProvider: Provider<HackSearchPosition> = {
 
   getName(): string {
     return 'HackSymbolProvider';
@@ -78,54 +78,31 @@ var HackSymbolProvider: Provider = {
   },
 
   async isEligibleForDirectory(directory: atom$Directory): Promise<boolean> {
-    var directoryPath = directory.getPath();
-    var {getClient} = require('nuclide-client');
-    var client = getClient(directoryPath);
-    if (client == null) {
-      return false;
-    }
-    var remoteUri = require('nuclide-remote-uri');
-    var {path: rootDirectory} = remoteUri.parse(directoryPath);
-    var allProviders = await client.getSearchProviders(rootDirectory);
-    if (!allProviders.some(p => p.name === HACK_SEARCH_PROVIDER)) {
-      return false;
-    }
-    return true;
+    const service = await getHackSearchService(directory);
+    return service != null;
   },
 
-  async executeQuery(query: string, directory: atom$Directory): Promise<Array<FileResult>> {
+  async executeQuery(query: string, directory: atom$Directory): Promise<Array<HackSearchPosition>> {
     if (query.length === 0) {
       return [];
     }
-    var directoryPath = directory.getPath();
-    var {getClient} = require('nuclide-client');
-    var client = getClient(directoryPath);
-    if (client == null) {
+
+    const service = await getHackSearchService(directory);
+    if (service == null) {
       return [];
     }
-    const {parse, isRemote, createRemoteUri} = require('nuclide-remote-uri');
-    const {hostname, port, path: rootDirectory} = parse(directoryPath);
-    var allProviders = await client.getSearchProviders(rootDirectory);
-    if (!allProviders.some(p => p.name === HACK_SEARCH_PROVIDER)) {
-      return [];
-    }
-    var request = await client.doSearchQuery(rootDirectory, HACK_SEARCH_PROVIDER, query);
-    if (isRemote(directoryPath)) {
-      return request.results.map(result => ({
-        ...result,
-        path: createRemoteUri(hostname, port, result.path),
-      }));
-    }
-    return request.results;
+
+    const directoryPath = directory.getPath();
+    return await service.query(directoryPath, query);
   },
 
-  getComponentForItem(item: FileResult): ReactElement {
-    var filePath = item.path;
-    var filename = path.basename(filePath);
-    var name = item.name || '';
+  getComponentForItem(item: HackSearchPosition): ReactElement {
+    const filePath = item.path;
+    const filename = path.basename(filePath);
+    const name = item.name || '';
 
-    var icon = bestIconForItem(item);
-    var symbolClasses = `file icon ${icon}`;
+    const icon = bestIconForItem(item);
+    const symbolClasses = `file icon ${icon}`;
     return (
       <div title={item.additionalInfo || ''}>
         <span className={symbolClasses}><code>{name}</code></span>

@@ -108,8 +108,6 @@ function clearProviders() {
 }
 
 function initialize(server) {
-  var HackProvider = require('./search/HackProvider');
-  addProvider('hack', new HackProvider(server));
 }
 
 function shutdown(server) {

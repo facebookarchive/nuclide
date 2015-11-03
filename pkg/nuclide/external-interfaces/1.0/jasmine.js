@@ -87,6 +87,8 @@ declare function waitsFor(
 
 declare function waits(milliseconds: number): void;
 
+declare function unspy(object: Object, methodName: string): void;
+
 type JasmineEnvironment = {
   currentSpec: {
     fail(message: string): void;

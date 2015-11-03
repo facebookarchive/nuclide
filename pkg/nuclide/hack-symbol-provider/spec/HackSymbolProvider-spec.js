@@ -9,82 +9,151 @@
  * the root directory of this source tree.
  */
 
-var HackSymbolProvider = require('../lib/HackSymbolProvider');
-var nuclideClient = require('nuclide-client');
-var React = require('react-for-atom');
-var {TestUtils} = React.addons;
-var mockClient;
-var mockDirectory;
-var provider;
+import type {HackSearchPosition} from 'nuclide-hack-base/lib/types';
+import type {HackSearchService} from 'nuclide-hack-search-service';
 
+import HackSymbolProvider from '../lib/HackSymbolProvider';
+import React from 'react-for-atom';
+import {clearRequireCache, uncachedRequire} from 'nuclide-test-helpers';
+import invariant from 'assert';
+
+const {TestUtils} = React.addons;
 
 describe('HackSymbolProvider', () => {
+  // These tests are set up so that calls to getHackSearchService() will delegate to this
+  // function, so make sure to define this function at the start of your test to mock out this
+  // behavior.
+  let getHackSearchService: ?((directory: atom$Directory) => Promise<?HackSearchService>);
+
   beforeEach(() => {
-    provider = {...HackSymbolProvider};
+    getHackSearchService = null;
+    spyOn(require('../lib/getHackSearchService'), 'getHackSearchService')
+      .andCallFake((directory: atom$Directory) => {
+        invariant(getHackSearchService);
+        return getHackSearchService(directory);
+      });
+    uncachedRequire(require, '../lib/HackSymbolProvider');
   });
 
-  describe('executeQuery', () => {
-    beforeEach(() => {
-      mockClient = jasmine.createSpyObj('NuclideClient', ['getSearchProviders', 'doSearchQuery']);
-      mockClient.doSearchQuery.andReturn(Promise.resolve({ results: [{path: '/some/path'}]}));
-      spyOn(nuclideClient, 'getClient').andReturn(mockClient);
-    });
+  afterEach(() => {
+    jasmine.unspy(require('../lib/getHackSearchService'), 'getHackSearchService');
+    clearRequireCache(require, '../lib/HackSymbolProvider');
+  });
 
-    describe('local search', () => {
-      beforeEach(() => {
-        mockDirectory = {
-          getPath: () => '/some/local/path',
-        };
-      });
+  describe('isEligibleForDirectory()', () => {
+    const mockDirectory = {
+      getPath() { return '/some/local/path'; },
+    };
 
-      it('returns local paths when searching local directories', () => {
+    it(
+      'isEligibleForDirectory() should return true when getHackSearchService() returns ' +
+        'an instance of HackSearchService',
+      () => {
+        const hackSearchService = createDummyHackSearchService();
+        getHackSearchService = jasmine.createSpy('getHackSearchService').andReturn(
+          hackSearchService);
+
         waitsForPromise(async () => {
-          mockClient.getSearchProviders.andReturn(Promise.resolve([{name: 'hack'}]));
-
-          var queries = await provider.executeQuery('asdf', mockDirectory);
-          expect(mockClient.getSearchProviders).toHaveBeenCalledWith('/some/local/path');
-          expect(mockClient.doSearchQuery).toHaveBeenCalledWith('/some/local/path', 'hack', 'asdf');
-
-          expect(Object.keys(queries[0])).toEqual(['path']);
-          expect(queries[0].path).toEqual('/some/path');
+          const isEligible = await HackSymbolProvider.isEligibleForDirectory(mockDirectory);
+          expect(isEligible).toBe(true);
+          expect(getHackSearchService).toHaveBeenCalledWith(mockDirectory);
         });
-      });
-    });
+      },
+    );
 
-    describe('remote search', () => {
-      beforeEach(() => {
-        mockDirectory = {
-          getPath: () => 'nuclide://some.host:1234/some/remote/path',
-        };
-      });
+    it(
+      'isEligibleForDirectory() should return false when getHackSearchService() returns ' +
+        'null',
+      () => {
+        getHackSearchService = jasmine.createSpy('getHackSearchService').andReturn(null);
 
-      it('returns remote paths when searching remote directories', () => {
         waitsForPromise(async () => {
-          mockClient.getSearchProviders.andReturn(Promise.resolve([{name: 'hack'}]));
-
-          var queries = await provider.executeQuery('asdf', mockDirectory);
-          expect(mockClient.getSearchProviders).toHaveBeenCalledWith('/some/remote/path');
-          expect(mockClient.doSearchQuery).toHaveBeenCalledWith('/some/remote/path', 'hack', 'asdf');
-
-          expect(Object.keys(queries[0])).toEqual(['path']);
-          expect(queries[0].path).toEqual('nuclide://some.host:1234/some/path');
+          const isEligible = await HackSymbolProvider.isEligibleForDirectory(mockDirectory);
+          expect(isEligible).toBe(false);
+          expect(getHackSearchService).toHaveBeenCalledWith(mockDirectory);
         });
+      },
+    );
+  });
+
+  describe('executeQuery()', () => {
+    const mockLocalDirectory = {
+      getPath() {
+        return '/some/local/path';
+      },
+    };
+
+    it('returns an empty array for an empty query', () => {
+      waitsForPromise(async () => {
+        const results = await HackSymbolProvider.executeQuery('', mockLocalDirectory);
+        expect(results).toEqual([]);
       });
     });
 
+    it('local search returns local paths when searching local directories', () => {
+      waitsForPromise(async () => {
+        // Set up the HackSearchService to return some canned results.
+        const cannedResults = [
+          {path: '/some/local/path/asdf.txt', line: 1, column: 42, context: 'aha'},
+        ];
+        const hackSearchService = createDummyHackSearchService();
+        const queryMethod = spyOn(hackSearchService, 'query').andReturn(cannedResults);
+        getHackSearchService = jasmine.createSpy('getHackSearchService').andReturn(
+          hackSearchService);
+
+        const query = 'asdf';
+        const results = await HackSymbolProvider.executeQuery(query, mockLocalDirectory);
+
+        // Verify the expected results were returned by delegating to the HackSearchService.
+        expect(results).toEqual(cannedResults);
+        expect(queryMethod.callCount).toBe(1);
+        expect(queryMethod.argsForCall[0]).toEqual([mockLocalDirectory.getPath(), query]);
+      });
+    });
+
+    it('remote search returns remote paths when searching remote directories', () => {
+      waitsForPromise(async () => {
+        // Set up the HackSearchService to return some canned results.
+        const mockRemoteDirectory = {
+          getPath() {
+            return 'nuclide://some.host:1234/some/remote/path';
+          },
+        };
+        const cannedResults = [
+          {
+            path: 'nuclide://some.host:1234/some/local/path/asdf.txt',
+            line: 1,
+            column: 42,
+            context: 'aha',
+          },
+        ];
+        const hackSearchService = createDummyHackSearchService();
+        const queryMethod = spyOn(hackSearchService, 'query').andReturn(cannedResults);
+        getHackSearchService = jasmine.createSpy('getHackSearchService').andReturn(
+          hackSearchService);
+
+        const query = 'asdf';
+        const results = await HackSymbolProvider.executeQuery(query, mockRemoteDirectory);
+
+        // Verify the expected results were returned by delegating to the HackSearchService,
+        // and that local file paths are converted to NuclideUris.
+        expect(results).toEqual(cannedResults);
+        expect(queryMethod.callCount).toBe(1);
+        expect(queryMethod.argsForCall[0]).toEqual([mockRemoteDirectory.getPath(), query]);
+      });
+    });
   });
 
   describe('Result rendering', () => {
     it('should work', () => {
-
-      var mockResult = {
+      const mockResult = {
         path: '/some/arbitrary/path',
         name: 'IExampleSymbolInterface',
         additionalInfo: 'interface',
       };
-      var reactElement = provider.getComponentForItem(mockResult);
+      const reactElement = HackSymbolProvider.getComponentForItem(mockResult);
       expect(reactElement.props.title).toBe('interface');
-      var renderedComponent = TestUtils.renderIntoDocument(reactElement);
+      const renderedComponent = TestUtils.renderIntoDocument(reactElement);
       TestUtils.findRenderedDOMComponentWithClass(renderedComponent, 'icon-puzzle');
       expect(
         TestUtils.scryRenderedDOMComponentsWithClass(
@@ -99,7 +168,20 @@ describe('HackSymbolProvider', () => {
         ).length
       ).toBe(1);
     });
-
   });
-
 });
+
+function createDummyHackSearchService(): HackSearchService {
+  return {
+    query(
+      rootDirectory: NuclideUri,
+      queryString: string
+    ): Promise<Array<HackSearchPosition>> {
+      throw new Error('replace with implementation for testing');
+    },
+
+    isAvailableForDirectory(rootDirectory: NuclideUri): Promise<boolean> {
+      throw new Error('replace with implementation for testing');
+    },
+  };
+}
