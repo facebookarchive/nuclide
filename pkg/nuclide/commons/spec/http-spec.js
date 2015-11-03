@@ -10,35 +10,39 @@
  */
 import type {Server} from 'http';
 
-var invariant = require('assert');
-var fs = require('fs');
-var {fsPromise, httpPromise} = require('../lib/main');
-var http = require('http');
-var path = require('path');
-var server: ?Server;
-var port;
+const invariant = require('assert');
+const fs = require('fs');
+const {fsPromise, httpPromise} = require('../lib/main');
+const http = require('http');
+const path = require('path');
+let server: ?Server;
+let port;
 
 
 function createSimpleServer(): Server {
   // $FlowIssue
   server = http.createServer((req, res) => {
-    var fileName = path.basename(req.url);
-    var filePath = path.join(__dirname, 'fixtures', fileName);
-    fs.readFile(filePath, {encoding: 'utf8'}, (err, contents) => {
-      if (err) {
-        res.statusCode = 404;
-        res.end('Not found', 'utf8');
-      } else {
-        res.setHeader('Content-Type', 'text/html;charset=utf8' );
-        res.end(contents, 'utf8');
-      }
-    });
+    const fileName = path.basename(req.url);
+    if (fileName === 'echo') { // A special path that just echoes back the request headers.
+      res.end(JSON.stringify(req.headers));
+    } else {
+      const filePath = path.join(__dirname, 'fixtures', fileName);
+      fs.readFile(filePath, {encoding: 'utf8'}, (err, contents) => {
+        if (err) {
+          res.statusCode = 404;
+          res.end('Not found', 'utf8');
+        } else {
+          res.setHeader('Content-Type', 'text/html;charset=utf8' );
+          res.end(contents, 'utf8');
+        }
+      });
+    }
   }).listen(0);
 
-  var connections = {};
+  const connections = {};
 
   server.on('connection', (conn) => {
-    var key = conn.remoteAddress + ':' + conn.remotePort;
+    const key = conn.remoteAddress + ':' + conn.remotePort;
     connections[key] = conn;
     conn.on('close', () => {
       delete connections[key];
@@ -48,7 +52,7 @@ function createSimpleServer(): Server {
   server.destroy = (cb) => {
     invariant(server);
     server.close(cb);
-    for (var key in connections) {
+    for (const key in connections) {
       connections[key].destroy();
     }
   };
@@ -58,14 +62,14 @@ function createSimpleServer(): Server {
 
 async function testGetStaticFile(fileName: string): Promise<void> {
 
-  var content = await httpPromise.get(`http://localhost:${port}/${fileName}`);
+  let content = await httpPromise.get(`http://localhost:${port}/${fileName}`);
 
-  var expected = await fsPromise.readFile(path.join(__dirname, 'fixtures', fileName),
+  let expected = await fsPromise.readFile(path.join(__dirname, 'fixtures', fileName),
       {encoding: 'utf8'});
 
   expect(content).toEqual(expected);
 
-  var tempfile = await fsPromise.tempfile();
+  const tempfile = await fsPromise.tempfile();
   await httpPromise.download(`http://localhost:${port}/${fileName}`,
       tempfile);
 
@@ -77,7 +81,7 @@ async function testGetStaticFile(fileName: string): Promise<void> {
 }
 
 async function testGetFailure(url: string): Promise<void> {
-  var error;
+  let error;
   try {
     await httpPromise.get(url);
   } catch (e) {
@@ -86,7 +90,7 @@ async function testGetFailure(url: string): Promise<void> {
   expect(!!(error)).toBe(true);
 
   error = null;
-  var tempfile = await fsPromise.tempfile();
+  const tempfile = await fsPromise.tempfile();
   try {
     await httpPromise.download(url, tempfile);
   } catch (e) {
@@ -110,6 +114,20 @@ describe('Async http get/download test suite', () => {
   it('returns a Promise that resolves to the content from a valid endpoint', () => {
     waitsForPromise(async () => {
       await testGetStaticFile('test');
+    });
+  });
+
+  it('returns a Promise that resolves to the content, echoing custom headers', () => {
+    waitsForPromise(async () => {
+      const requestHeaders = {
+        foo: 'bar',
+        baz: 'qux',
+      };
+      const content = await httpPromise.get(`http://localhost:${port}/echo`, requestHeaders);
+      const responseHeaders = JSON.parse(content);
+      Object.keys(requestHeaders).forEach(header => {
+        expect(responseHeaders[header]).toEqual(requestHeaders[header]);
+      });
     });
   });
 

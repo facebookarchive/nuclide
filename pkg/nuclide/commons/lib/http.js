@@ -9,17 +9,17 @@
  * the root directory of this source tree.
  */
 
-var fs = require('fs');
-var http = require('http');
-var https = require('https');
+const fs = require('fs');
+const http = require('http');
+const https = require('https');
 
 // Although rfc forbids the usage of white space in content type
 // (http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.7), it's still
 // a common practice to use that so we need to deal with it in regex.
-var contentTypeRe = /\s*\w+\/\w+\s*;\s*charset\s*=\s*([^\s]+)\s*/;
+const contentTypeRe = /\s*\w+\/\w+\s*;\s*charset\s*=\s*([^\s]+)\s*/;
 
 function getProtocolModule(url: string): any {
-  var {protocol} = require('url').parse(url);
+  const {protocol} = require('url').parse(url);
   if (protocol === 'http:') {
     return http;
   } else if (protocol === 'https:') {
@@ -30,11 +30,11 @@ function getProtocolModule(url: string): any {
 }
 
 function getResponseBodyCharset(response: any): ?string {
-  var contentType = response.headers['content-type'];
+  const contentType = response.headers['content-type'];
   if (!contentType) {
     return null;
   }
-  var match = contentTypeRe.exec(contentType);
+  const match = contentTypeRe.exec(contentType);
   return match ? match[1] : null;
 }
 
@@ -43,14 +43,21 @@ module.exports = {
   /**
    * Send Http(s) GET request to given url and return the body as string.
    */
-  get(url: string): Promise<string> {
+  get(url: string, headers: ?Object): Promise<string> {
     return new Promise((resolve, reject) => {
-      var body = '';
-      getProtocolModule(url).get(url, (response) => {
+      let body = '';
+      const options: Object = require('url').parse(url);
+      if (!options.hostname) {
+        reject(new Error(`Unable to determine the domain name of ${url}`));
+      }
+      if (headers) {
+        options.headers = headers;
+      }
+      getProtocolModule(url).get(options, (response) => {
         if (response.statusCode < 200 || response.statusCode >= 300) {
           reject(`Bad status ${response.statusCode}`);
         } else {
-          var charset = getResponseBodyCharset(response);
+          const charset = getResponseBodyCharset(response);
           if (charset) {
             response.setEncoding(charset);
           }
@@ -66,7 +73,7 @@ module.exports = {
    */
   download(url: string, dest: string): Promise<void> {
     return new Promise((resolve, reject) => {
-      var file = fs.createWriteStream(dest);
+      const file = fs.createWriteStream(dest);
       getProtocolModule(url).get(url, (response) => {
         if (response.statusCode < 200 || response.statusCode >= 300) {
           reject(`Bad status ${response.statusCode}`);
