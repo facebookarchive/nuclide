@@ -28,9 +28,8 @@ function debounce(...args) {
   return debounceFunc.apply(null, args);
 }
 
-let searchResultManager = null;
 function getSearchResultManager() {
-  return searchResultManager || (searchResultManager = require('./SearchResultManager'));
+  return require('./SearchResultManager').getInstance();
 }
 
 const DEFAULT_PROVIDER = 'OmniSearchResultProvider';

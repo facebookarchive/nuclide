@@ -36,7 +36,7 @@ const {
   object,
 } = require('nuclide-commons');
 const React = require('react-for-atom');
-const searchResultManager = require('./SearchResultManager');
+const searchResultManager = require('./SearchResultManager').getInstance();
 const NuclideTabs = require('nuclide-ui-tabs');
 const {PropTypes} = React;
 const cx = require('react-classset');

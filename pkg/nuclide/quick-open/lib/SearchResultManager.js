@@ -82,10 +82,11 @@ function isValidProvider(provider): boolean {
   );
 }
 
+let searchResultManagerInstance = null;
 /**
  * A singleton cache for search providers and results.
  */
-class SearchResultManager {
+export default class SearchResultManager {
   _dispatcherToken: string;
   RESULTS_CHANGED: string;
   PROVIDERS_CHANGED: string;
@@ -103,6 +104,13 @@ class SearchResultManager {
   _registeredProviders: {[key: string]: Map<string, Provider>;};
   _activeProviderName: string;
   _isDisposed: boolean;
+
+  static getInstance(): SearchResultManager {
+    if (!searchResultManagerInstance) {
+      searchResultManagerInstance = new SearchResultManager();
+    }
+    return searchResultManagerInstance;
+  }
 
   constructor() {
     this._isDisposed = false;
@@ -480,7 +488,3 @@ class SearchResultManager {
   }
 
 }
-
-export type Store = SearchResultManager;
-
-module.exports = new SearchResultManager();
