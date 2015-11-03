@@ -29,7 +29,7 @@ function debounce(...args) {
 }
 
 function getSearchResultManager() {
-  return require('./SearchResultManager').getInstance();
+  return require('./SearchResultManager').default.getInstance();
 }
 
 const DEFAULT_PROVIDER = 'OmniSearchResultProvider';

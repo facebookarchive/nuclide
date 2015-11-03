@@ -86,7 +86,7 @@ let searchResultManagerInstance = null;
 /**
  * A singleton cache for search providers and results.
  */
-export default class SearchResultManager {
+class SearchResultManager {
   _dispatcherToken: string;
   RESULTS_CHANGED: string;
   PROVIDERS_CHANGED: string;
@@ -488,3 +488,11 @@ export default class SearchResultManager {
   }
 
 }
+
+export default SearchResultManager;
+
+export const __test__ = {
+  _getOmniSearchProviderSpec(): ProviderSpec {
+    return OMNISEARCH_PROVIDER;
+  },
+};
