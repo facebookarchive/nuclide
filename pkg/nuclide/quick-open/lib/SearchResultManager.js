@@ -41,6 +41,12 @@ function getLogger() {
   return logger;
 }
 
+let trackFunction;
+function track(...args) {
+  const trackFunc = trackFunction || (trackFunction = require('nuclide-analytics').track);
+  trackFunc.apply(null, args);
+}
+
 function getDefaultResult(): ProviderResult {
   return {
     error: null,
@@ -53,6 +59,10 @@ const QuickSelectionDispatcher = require('./QuickSelectionDispatcher');
 const QuickSelectionActions = require('./QuickSelectionActions');
 
 const assign = Object.assign || require('object-assign');
+
+const AnalyticsEvents = {
+  QUERY_SOURCE_PROVIDER: 'quickopen-query-source-provider',
+};
 
 const RESULTS_CHANGED = 'results_changed';
 const PROVIDERS_CHANGED = 'providers_changed';
@@ -361,7 +371,13 @@ class SearchResultManager {
   async executeQuery(rawQuery: string): Promise<void> {
     const query = this.sanitizeQuery(rawQuery);
     for (const globalProvider of this._registeredProviders[GLOBAL_KEY].values()) {
+      const startTime = performance.now();
       globalProvider.executeQuery(query).then(result => {
+        track(AnalyticsEvents.QUERY_SOURCE_PROVIDER, {
+          'quickopen-source-provider': globalProvider.getName(),
+          'quickopen-query-duration': performance.now() - startTime,
+          'quickopen-result-count': result.length,
+        });
         this.processResult(query, result, GLOBAL_KEY, globalProvider);
       });
       this._setLoading(query, GLOBAL_KEY, globalProvider);
@@ -377,7 +393,13 @@ class SearchResultManager {
         return;
       }
       for (const directoryProvider of providers) {
+        const startTime = performance.now();
         directoryProvider.executeQuery(query, directory).then(result => {
+          track(AnalyticsEvents.QUERY_SOURCE_PROVIDER, {
+            'quickopen-source-provider': directoryProvider.getName(),
+            'quickopen-query-duration': performance.now() - startTime,
+            'quickopen-result-count': result.length,
+          });
           this.processResult(query, result, path, directoryProvider);
         });
         this._setLoading(query, path, directoryProvider);
