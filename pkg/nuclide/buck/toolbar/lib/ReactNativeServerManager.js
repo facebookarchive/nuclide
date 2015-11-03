@@ -138,8 +138,11 @@ export default class ReactNativeServerManager {
         if (isOutputPaneOpen) {
           return;
         }
-        let textEditor =
-          await runCommandInNewPane('React Native Server', processOutputStore, null, panel);
+        const textEditor = await runCommandInNewPane({
+          tabTitle: 'React Native Server',
+          processOutputStore,
+          processOutputViewTopElement: panel,
+        });
         isOutputPaneOpen = true;
 
         paneSubscription = atom.workspace.onDidDestroyPaneItem(event => {

@@ -30,6 +30,10 @@ module.exports = {
     return require('./text-editor').createTextEditor;
   },
 
+  get destroyPaneItemWithTitle() {
+    return require('./destroy-pane-item');
+  },
+
   get fileTypeClass() {
     return require('./file-type-class');
   },

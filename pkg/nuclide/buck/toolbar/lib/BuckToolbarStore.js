@@ -383,7 +383,12 @@ class BuckToolbarStore {
         this._buckProcessOutputStore = null;
       });
 
-      runCommandInNewPane('buck', processOutputStore, handleBuckAnsiOutput);
+      runCommandInNewPane({
+        tabTitle: 'buck',
+        processOutputStore,
+        processOutputHandler: handleBuckAnsiOutput,
+        destroyExistingPane: true,
+      });
     });
 
     return await buckRunPromise;

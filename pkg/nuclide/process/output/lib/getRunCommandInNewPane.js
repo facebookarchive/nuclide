@@ -11,6 +11,22 @@
 
 import type {ProcessOutputStore} from 'nuclide-process-output-store';
 import type ProcessOutputHandler from './types';
+
+export type RunCommandOptions = {
+  /* A title for the tab of the newly opened pane. */
+  tabTitle: string;
+  /* The ProcessOutputStore that provides the data to display. */
+  processOutputStore: ProcessOutputStore;
+  /**
+   * An optional ProcessOutputHandler that is appropriate for the expected output. See the
+   * constructor of ProcessOutputView for more information.
+   */
+  processOutputHandler?: ProcessOutputHandler;
+  /* An optional React component that will be placed at the top of the process output view. */
+  processOutputViewTopElement?: ReactElement;
+  /* If true, before opening the new tab, it will close any existing tab with the same title. */
+  destroyExistingPane?: boolean;
+};
 export type RunCommandFunctionAndCleanup = {
   runCommandInNewPane: (command: string, args: Array<string>, options?: Object) => void;
   disposable: atom$IDisposable;
@@ -18,6 +34,7 @@ export type RunCommandFunctionAndCleanup = {
 
 import {CompositeDisposable, Disposable} from 'atom';
 import invariant from 'assert';
+import {destroyPaneItemWithTitle} from 'nuclide-atom-helpers';
 
 var NUCLIDE_PROCESS_OUTPUT_VIEW_URI = 'atom://nuclide/process-output/';
 var PROCESS_OUTPUT_HANDLER_KEY = 'nuclide-processOutputHandler';
@@ -87,22 +104,19 @@ function createProcessOutputView(
 }
 
 /**
- * @param tabTitle A title for tne tab of the newly opened pane.
- * @param processOutputStore The ProcessOutputStore that provides the data to display.
- * @param processOutputHandler An optional ProcessOutputHandler that is appropriate
- *   for the expected output. See the constructor of ProcessOutputView for more information.
+ * @param options See definition of RunCommandOptions.
  */
-function runCommandInNewPane(
-  tabTitle: string,
-  processOutputStore: ProcessOutputStore,
-  processOutputHandler?: ProcessOutputHandler,
-  processOutputViewTopElement?: ReactElement,
-): Promise<atom$TextEditor> {
-  var openOptions = {
-    [PROCESS_OUTPUT_HANDLER_KEY]: processOutputHandler,
-    [PROCESS_OUTPUT_STORE_KEY]: processOutputStore,
-    [PROCESS_OUTPUT_VIEW_TOP_ELEMENT]: processOutputViewTopElement,
+async function runCommandInNewPane(options: RunCommandOptions): Promise<atom$TextEditor> {
+  const openOptions = {
+    [PROCESS_OUTPUT_HANDLER_KEY]: options.processOutputHandler,
+    [PROCESS_OUTPUT_STORE_KEY]: options.processOutputStore,
+    [PROCESS_OUTPUT_VIEW_TOP_ELEMENT]: options.processOutputViewTopElement,
   };
+
+  const tabTitle = options.tabTitle;
+  if (options.destroyExistingPane) {
+    destroyPaneItemWithTitle(tabTitle);
+  }
   // Not documented: the 'options' passed to atom.workspace.open() are passed to the opener.
   // There's no other great way for a consumer of this service to specify a ProcessOutputHandler.
   return atom.workspace.open(NUCLIDE_PROCESS_OUTPUT_VIEW_URI + tabTitle, openOptions);
