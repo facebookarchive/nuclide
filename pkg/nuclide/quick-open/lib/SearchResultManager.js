@@ -181,30 +181,40 @@ class SearchResultManager {
     this._subscriptions.dispose();
   }
 
-  _updateDirectories(): void {
-    this._directories = atom.project.getDirectories();
-    const directorySet = new Set(this._directories);
-    const directoriesToDelete = [];
-    for (const dir of this._providersByDirectory.keys()) {
-      if (!directorySet.has(dir)) {
-        directoriesToDelete.push(dir);
+  /**
+   * Renew the cached list of directories, as well as the cached map of eligible providers
+   * for every directory.
+   */
+  async _updateDirectories(): void {
+    const newDirectories = atom.project.getDirectories();
+    const newProvidersByDirectories = new Map();
+    const eligibilities = [];
+    newDirectories.forEach(directory => {
+      newProvidersByDirectories.set(directory, new Set());
+      for (const provider of this._registeredProviders[DIRECTORY_KEY].values()) {
+        eligibilities.push(
+          provider.isEligibleForDirectory(directory).then(isEligible => ({
+            isEligible,
+            provider,
+            directory,
+          }))
+        );
+      }
+    });
+    const resolvedEligibilities = await Promise.all(eligibilities);
+    for (const eligibility of resolvedEligibilities) {
+      const {
+        provider,
+        isEligible,
+        directory,
+      } = eligibility;
+      if (isEligible) {
+        newProvidersByDirectories.get(directory).add(provider);
       }
     }
-    directoriesToDelete.forEach((directory: atom$directory) => {
-      this._providersByDirectory.delete(directory);
-    });
-    this._directories.forEach(async directory => {
-      for (const provider of this._registeredProviders[DIRECTORY_KEY].values()) {
-        const providersForDir = this._providersByDirectory.get(directory) || new Set();
-
-        const isEligible = await provider.isEligibleForDirectory(directory);
-        if (isEligible) {
-          providersForDir.add(provider);
-          this._providersByDirectory.set(directory, providersForDir);
-          this._emitter.emit(PROVIDERS_CHANGED);
-        }
-      }
-    });
+    this._directories = newDirectories;
+    this._providersByDirectory = newProvidersByDirectories;
+    this._emitter.emit(PROVIDERS_CHANGED);
   }
 
   on(): atom$Disposable {
