@@ -93,7 +93,7 @@ const HackSymbolProvider: Provider<HackSearchPosition> = {
     }
 
     const directoryPath = directory.getPath();
-    return await service.query(directoryPath, query);
+    return await service.queryHack(directoryPath, query);
   },
 
   getComponentForItem(item: HackSearchPosition): ReactElement {

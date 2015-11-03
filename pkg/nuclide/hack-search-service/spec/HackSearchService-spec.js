@@ -14,9 +14,9 @@ import type {SearchResultTypeValue} from 'nuclide-hack-common/lib/constants';
 
 import {clearRequireCache, uncachedRequire} from 'nuclide-test-helpers';
 import invariant from 'assert';
-import {query} from '../lib/HackSearchService';
+import {queryHack} from '../lib/HackSearchService';
 
-describe('query()', () => {
+describe('queryHack()', () => {
   let getSearchResults: ?((
     filePath: string,
     search: string,
@@ -47,7 +47,7 @@ describe('query()', () => {
     getSearchResults = jasmine.createSpy('getSearchResults').andReturn(null);
 
     waitsForPromise(async () => {
-      const results = await query('/some/local/path', 'asdf');
+      const results = await queryHack('/some/local/path', 'asdf');
       expect(results).toEqual([]);
       expect(getSearchResults).toHaveBeenCalledWith(
         '/some/local/path', 'asdf', null, undefined,
@@ -63,7 +63,7 @@ describe('query()', () => {
     });
 
     waitsForPromise(async () => {
-      const results = await query('/some/local/path', 'asdf');
+      const results = await queryHack('/some/local/path', 'asdf');
       expect(results).toEqual([{path: '/some/local/path'}]);
       expect(getSearchResults).toHaveBeenCalledWith(
         '/some/local/path', 'asdf', null, undefined,
@@ -79,7 +79,7 @@ describe('query()', () => {
     });
 
     waitsForPromise(async () => {
-      const results = await query('/some/local/path', '@asdf');
+      const results = await queryHack('/some/local/path', '@asdf');
       expect(results).toEqual([{path: '/some/local/path'}]);
       expect(getSearchResults).toHaveBeenCalledWith(
         '/some/local/path', 'asdf', null, '-function',
@@ -95,7 +95,7 @@ describe('query()', () => {
     });
 
     waitsForPromise(async () => {
-      const results = await query('/some/local/path', '#asdf');
+      const results = await queryHack('/some/local/path', '#asdf');
       expect(results).toEqual([{path: '/some/local/path'}]);
       expect(getSearchResults).toHaveBeenCalledWith(
         '/some/local/path', 'asdf', null, '-class',
@@ -111,7 +111,7 @@ describe('query()', () => {
     });
 
     waitsForPromise(async () => {
-      const results = await query('/some/local/path', '%asdf');
+      const results = await queryHack('/some/local/path', '%asdf');
       expect(results).toEqual([{path: '/some/local/path'}]);
       expect(getSearchResults).toHaveBeenCalledWith(
         '/some/local/path', 'asdf', null, '-constant',

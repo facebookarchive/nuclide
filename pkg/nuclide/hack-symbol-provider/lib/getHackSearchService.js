@@ -28,7 +28,7 @@ export async function getHackSearchService(
   // directory has the HackSearchService registered: it does not guarantee that the specified
   // directory is searchable via Hack. As such, we have to perform a second check to make sure
   // that the specified directory belongs to a Hack project.
-  if (await service.isAvailableForDirectory(directoryPath)) {
+  if (await service.isAvailableForDirectoryHack(directoryPath)) {
     return service;
   } else {
     return null;

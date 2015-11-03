@@ -17,7 +17,7 @@ import {getHackExecOptions, getSearchResults} from 'nuclide-hack-base/lib/HackHe
 /**
  * Performs a Hack symbol search in the specified directory.
  */
-export async function query(
+export async function queryHack(
   rootDirectory: NuclideUri,
   queryString: string
 ): Promise<Array<HackSearchPosition>> {
@@ -53,7 +53,7 @@ export async function query(
  *   specified directory. Not all directories on a host correspond to
  *   repositories that contain Hack code.
  */
-export async function isAvailableForDirectory(rootDirectory: NuclideUri): Promise<boolean> {
+export async function isAvailableForDirectoryHack(rootDirectory: NuclideUri): Promise<boolean> {
   const hackOptions = await getHackExecOptions(rootDirectory);
   return hackOptions != null;
 }

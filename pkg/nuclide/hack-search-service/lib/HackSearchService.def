@@ -24,7 +24,7 @@ export type _HackSearchPosition = {
 /**
  * Performs a Hack symbol search in the specified directory.
  */
-export function query(
+export function queryHack(
   rootDirectory: NuclideUri,
   queryString: string
 ): Promise<Array<_HackSearchPosition>> {}
@@ -34,4 +34,4 @@ export function query(
  *   specified directory. Not all directories on a host correspond to
  *   repositories that contain Hack code.
  */
-export function isAvailableForDirectory(rootDirectory: NuclideUri): Promise<boolean> {}
+export function isAvailableForDirectoryHack(rootDirectory: NuclideUri): Promise<boolean> {}

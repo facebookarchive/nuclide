@@ -97,7 +97,7 @@ describe('HackSymbolProvider', () => {
           {path: '/some/local/path/asdf.txt', line: 1, column: 42, context: 'aha'},
         ];
         const hackSearchService = createDummyHackSearchService();
-        const queryMethod = spyOn(hackSearchService, 'query').andReturn(cannedResults);
+        const queryMethod = spyOn(hackSearchService, 'queryHack').andReturn(cannedResults);
         getHackSearchService = jasmine.createSpy('getHackSearchService').andReturn(
           hackSearchService);
 
@@ -128,7 +128,7 @@ describe('HackSymbolProvider', () => {
           },
         ];
         const hackSearchService = createDummyHackSearchService();
-        const queryMethod = spyOn(hackSearchService, 'query').andReturn(cannedResults);
+        const queryMethod = spyOn(hackSearchService, 'queryHack').andReturn(cannedResults);
         getHackSearchService = jasmine.createSpy('getHackSearchService').andReturn(
           hackSearchService);
 
@@ -173,14 +173,14 @@ describe('HackSymbolProvider', () => {
 
 function createDummyHackSearchService(): HackSearchService {
   return {
-    query(
+    queryHack(
       rootDirectory: NuclideUri,
       queryString: string
     ): Promise<Array<HackSearchPosition>> {
       throw new Error('replace with implementation for testing');
     },
 
-    isAvailableForDirectory(rootDirectory: NuclideUri): Promise<boolean> {
+    isAvailableForDirectoryHack(rootDirectory: NuclideUri): Promise<boolean> {
       throw new Error('replace with implementation for testing');
     },
   };
