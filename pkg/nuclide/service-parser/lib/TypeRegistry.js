@@ -104,6 +104,7 @@ export default class TypeRegistry {
     this._registerSpecialTypes();
     this._registerContainers();
     this._registerLiterals();
+    this._registerUnions();
 
     // Register NullableType and NamedType
     this._registerKind('nullable', async (value: any, type: Type) => {
@@ -240,6 +241,22 @@ export default class TypeRegistry {
     this._registerKind('string-literal', literalTransformer, literalTransformer);
     this._registerKind('number-literal', literalTransformer, literalTransformer);
     this._registerKind('boolean-literal', literalTransformer, literalTransformer);
+  }
+
+  _registerUnions(): void {
+    const unionTransformer = async (arg, type) => {
+      invariant(type.kind === 'union');
+      const alternate = type.types.find(element => {
+        // TODO: Handle unions of objects.
+        invariant(element.kind === 'string-literal' || element.kind === 'number-literal'
+            || element.kind === 'boolean-literal');
+        return (arg === element.value);
+      });
+      invariant(alternate);
+      // This is just the literal transformer inlined ...
+      return arg;
+    };
+    this._registerKind('union', unionTransformer, unionTransformer);
   }
 
   _registerSpecialTypes(): void {

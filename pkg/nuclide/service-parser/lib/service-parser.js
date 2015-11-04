@@ -326,6 +326,12 @@ class ServiceParser {
           kind: 'tuple',
           types: typeAnnotation.types.map(this._parseTypeAnnotation.bind(this)),
         };
+      case 'UnionTypeAnnotation':
+        return {
+          location,
+          kind: 'union',
+          types: typeAnnotation.types.map(this._parseTypeAnnotation.bind(this)),
+        };
       case 'GenericTypeAnnotation':
         return this._parseGenericTypeAnnotation(typeAnnotation);
       default:

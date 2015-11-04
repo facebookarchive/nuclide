@@ -1,0 +1,209 @@
+{
+    "Object": {
+        "kind": "alias",
+        "name": "Object",
+        "location": {
+            "type": "builtin"
+        }
+    },
+    "Date": {
+        "kind": "alias",
+        "name": "Date",
+        "location": {
+            "type": "builtin"
+        }
+    },
+    "RegExp": {
+        "kind": "alias",
+        "name": "RegExp",
+        "location": {
+            "type": "builtin"
+        }
+    },
+    "Buffer": {
+        "kind": "alias",
+        "name": "Buffer",
+        "location": {
+            "type": "builtin"
+        }
+    },
+    "fs.Stats": {
+        "kind": "alias",
+        "name": "fs.Stats",
+        "location": {
+            "type": "builtin"
+        }
+    },
+    "NuclideUri": {
+        "kind": "alias",
+        "name": "NuclideUri",
+        "location": {
+            "type": "builtin"
+        }
+    },
+    "SU": {
+        "kind": "alias",
+        "location": {
+            "type": "source",
+            "fileName": "UnionTypes.def",
+            "line": 1
+        },
+        "name": "SU",
+        "definition": {
+            "location": {
+                "type": "source",
+                "fileName": "UnionTypes.def",
+                "line": 1
+            },
+            "kind": "union",
+            "types": [
+                {
+                    "location": {
+                        "type": "source",
+                        "fileName": "UnionTypes.def",
+                        "line": 1
+                    },
+                    "kind": "string-literal",
+                    "value": "bork"
+                },
+                {
+                    "location": {
+                        "type": "source",
+                        "fileName": "UnionTypes.def",
+                        "line": 1
+                    },
+                    "kind": "string-literal",
+                    "value": "bork bork"
+                }
+            ]
+        }
+    },
+    "SSU": {
+        "kind": "alias",
+        "location": {
+            "type": "source",
+            "fileName": "UnionTypes.def",
+            "line": 2
+        },
+        "name": "SSU",
+        "definition": {
+            "location": {
+                "type": "source",
+                "fileName": "UnionTypes.def",
+                "line": 2
+            },
+            "kind": "union",
+            "types": [
+                {
+                    "location": {
+                        "type": "source",
+                        "fileName": "UnionTypes.def",
+                        "line": 1
+                    },
+                    "kind": "string-literal",
+                    "value": "bork"
+                },
+                {
+                    "location": {
+                        "type": "source",
+                        "fileName": "UnionTypes.def",
+                        "line": 1
+                    },
+                    "kind": "string-literal",
+                    "value": "bork bork"
+                },
+                {
+                    "location": {
+                        "type": "source",
+                        "fileName": "UnionTypes.def",
+                        "line": 2
+                    },
+                    "kind": "string-literal",
+                    "value": "bork!"
+                }
+            ]
+        }
+    },
+    "MixedUnion": {
+        "kind": "alias",
+        "location": {
+            "type": "source",
+            "fileName": "UnionTypes.def",
+            "line": 4
+        },
+        "name": "MixedUnion",
+        "definition": {
+            "location": {
+                "type": "source",
+                "fileName": "UnionTypes.def",
+                "line": 4
+            },
+            "kind": "union",
+            "types": [
+                {
+                    "location": {
+                        "type": "source",
+                        "fileName": "UnionTypes.def",
+                        "line": 4
+                    },
+                    "kind": "string-literal",
+                    "value": "bork"
+                },
+                {
+                    "location": {
+                        "type": "source",
+                        "fileName": "UnionTypes.def",
+                        "line": 4
+                    },
+                    "kind": "number-literal",
+                    "value": 42
+                }
+            ]
+        }
+    },
+    "UnionFunc": {
+        "kind": "function",
+        "name": "UnionFunc",
+        "location": {
+            "type": "source",
+            "fileName": "UnionTypes.def",
+            "line": 6
+        },
+        "type": {
+            "location": {
+                "type": "source",
+                "fileName": "UnionTypes.def",
+                "line": 6
+            },
+            "kind": "function",
+            "argumentTypes": [
+                {
+                    "location": {
+                        "type": "source",
+                        "fileName": "UnionTypes.def",
+                        "line": 6
+                    },
+                    "kind": "named",
+                    "name": "SSU"
+                },
+                {
+                    "location": {
+                        "type": "source",
+                        "fileName": "UnionTypes.def",
+                        "line": 6
+                    },
+                    "kind": "named",
+                    "name": "MixedUnion"
+                }
+            ],
+            "returnType": {
+                "location": {
+                    "type": "source",
+                    "fileName": "UnionTypes.def",
+                    "line": 6
+                },
+                "kind": "void"
+            }
+        }
+    }
+}

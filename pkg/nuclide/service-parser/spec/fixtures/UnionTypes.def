@@ -1,0 +1,6 @@
+export type SU = 'bork' | 'bork bork';
+export type SSU = SU | 'bork!';
+
+export type MixedUnion = 'bork' | 42;
+
+export function UnionFunc(s: SSU, m: MixedUnion): void {}

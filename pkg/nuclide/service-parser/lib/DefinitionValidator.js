@@ -20,6 +20,8 @@ import type {
   Type,
   FunctionType,
   NamedType,
+  UnionType,
+  Location,
 } from './types';
 
 /**
@@ -90,6 +92,9 @@ export function validateDefinitions(definitions: Definitions): void {
         type.fields.map(field => field.type).forEach(checkTypeForMissingNames);
         break;
       case 'tuple':
+        type.types.forEach(checkTypeForMissingNames);
+        break;
+      case 'union':
         type.types.forEach(checkTypeForMissingNames);
         break;
       case 'function':
@@ -164,6 +169,9 @@ export function validateDefinitions(definitions: Definitions): void {
           forEach(validateTypeRec);
         break;
       case 'tuple':
+        type.types.forEach(validateTypeRec);
+        break;
+      case 'union':
         type.types.forEach(validateTypeRec);
         break;
       case 'function':
@@ -252,6 +260,39 @@ export function validateDefinitions(definitions: Definitions): void {
     }
   }
 
+  function validateUnionType(type: UnionType): void {
+    const alternates = flattenUnionAlternates(type.types);
+    alternates.reduce((previousAlternates: Array<Type>, alternate: Type) => {
+      validateType(alternate);
+
+      // Ensure a valid alternate
+      switch (alternate.kind) {
+        case 'string-literal':
+        case 'number-literal':
+        case 'boolean-literal':
+          break;
+        default:
+          throw errorLocations([type.location, alternate.location],
+            `Union alternates may only be literal types.`);
+      }
+
+      // Ensure no duplicates
+      previousAlternates.forEach(previous => {
+        invariant(previous.kind === 'string-literal' || previous.kind === 'number-literal'
+            || previous.kind === 'boolean-literal');
+        invariant(alternate.kind === 'string-literal' || alternate.kind === 'number-literal'
+            || alternate.kind === 'boolean-literal');
+        if (previous.value === alternate.value) {
+          throw errorLocations([type.location, previous.location, alternate.location],
+            `Union alternates may not have the same value.`);
+        }
+      });
+
+      previousAlternates.push(alternate);
+      return previousAlternates;
+    }, []);
+  }
+
   // Validates a type which is not directly a return type.
   function validateType(type: Type): void {
     switch (type.kind) {
@@ -286,6 +327,9 @@ export function validateDefinitions(definitions: Definitions): void {
         break;
       case 'tuple':
         type.types.forEach(validateType);
+        break;
+      case 'union':
+        validateUnionType(type);
         break;
       case 'function':
         type.argumentTypes.forEach(validateType);
@@ -360,6 +404,10 @@ export function validateDefinitions(definitions: Definitions): void {
       case 'tuple':
         cannonicalizeTypeArray(type.types);
         break;
+      case 'union':
+        cannonicalizeTypeArray(type.types);
+        type.types = flattenUnionAlternates(type.types);
+        break;
       case 'function':
         cannonicalizeTypeArray(type.argumentTypes);
         type.returnType = resolvePossiblyNamedType(type.returnType);
@@ -380,6 +428,15 @@ export function validateDefinitions(definitions: Definitions): void {
     } else {
       return type;
     }
+  }
+
+  function flattenUnionAlternates(types: Array<Type>): Array<Type> {
+    return [].concat(... types.map(alternate => {
+      const resolvedAlternate = resolvePossiblyNamedType(alternate);
+      return resolvedAlternate.kind === 'union' ?
+          flattenUnionAlternates(resolvedAlternate.types) :
+          resolvedAlternate;
+    }));
   }
 
   // Returns the definition of a named type. If the type resolves to an alias it returns the
@@ -428,7 +485,15 @@ export function validateDefinitions(definitions: Definitions): void {
   }
 
   function error(type: Type, message: string) {
-    return new Error(`${locationToString(type.location)}: ${message}`);
+    return errorLocations([type.location], message);
+  }
+
+  function errorLocations(locations: Array<Location>, message: string): Error {
+    let fullMessage = `${locationToString(locations[0])}:${message}`;
+    fullMessage = fullMessage.concat(
+      ... (locations.slice(1).map(location =>
+        `\n${locationToString(location)}: Related location`)));
+    return new Error(fullMessage);
   }
 
   function errorDefinitions(defs: Array<Definition>, message: string): Error {

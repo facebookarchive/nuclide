@@ -219,13 +219,13 @@ describe('TypeRegistry', () => {
       invariant(typeRegistry);
       typeRegistry.registerAlias('ValueTypeA', ValueTypeA);
 
-      var data = {valueA: 'Hello World.', valueB: null};
-      var type: NamedType = {
+      const data = {valueA: 'Hello World.', valueB: null};
+      const type: NamedType = {
         location: builtinLocation,
         kind: 'named',
         name: 'ValueTypeA',
       };
-      var result = await typeRegistry.unmarshal(await typeRegistry.marshal(data, type), type);
+      const result = await typeRegistry.unmarshal(await typeRegistry.marshal(data, type), type);
       expect(result.valueA).toBe(data.valueA);
       expect(result.valueB).toBeNull();
       expect(result.hasOwnProperty('valueC')).toBeFalsy();
@@ -237,14 +237,62 @@ describe('TypeRegistry', () => {
       invariant(typeRegistry);
       typeRegistry.registerAlias('nullable', numberType);
 
-      var data = null;
-      var type: NullableType = {
+      const data = null;
+      const type: NullableType = {
         location: builtinLocation,
         kind: 'nullable',
         type: stringType,
       };
-      var result = await typeRegistry.unmarshal(await typeRegistry.marshal(data, type), type);
+      const result = await typeRegistry.unmarshal(await typeRegistry.marshal(data, type), type);
       expect(result).toBe(null);
+    });
+  });
+
+  it('Can serialize / deserialize union types.', () => {
+    waitsForPromise(async () => {
+      invariant(typeRegistry);
+
+      const a1 = {
+        location: builtinLocation,
+        kind: 'string-literal',
+        value: 'bork',
+      };
+      const a2 = {
+        location: builtinLocation,
+        kind: 'string-literal',
+        value: 'bork!',
+      };
+      const a3 = {
+        location: builtinLocation,
+        kind: 'number-literal',
+        value: 42,
+      };
+      const type = {
+        location: builtinLocation,
+        kind: 'union',
+        types: [a1, a2, a3],
+      };
+
+      const data1 = 'bork';
+      const result1 = await typeRegistry.unmarshal(await typeRegistry.marshal(data1, type), type);
+      expect(result1).toBe(data1);
+
+      const data2 = 'bork!';
+      const result2 = await typeRegistry.unmarshal(await typeRegistry.marshal(data2, type), type);
+      expect(result2).toBe(data2);
+
+      const data3 = 42;
+      const result3 = await typeRegistry.unmarshal(await typeRegistry.marshal(data3, type), type);
+      expect(result3).toBe(data3);
+
+      const data4 = 'not bork!';
+      let thrown = false;
+      try {
+        await typeRegistry.marshal(data4, type);
+      } catch (e) {
+        thrown = true;
+      }
+      expect(thrown).toBe(true);
     });
   });
 });

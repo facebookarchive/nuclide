@@ -54,7 +54,7 @@ export type Type = NullableType | MixedType |
   ObjectType | ArrayType | MapType | SetType | TupleType | // Container types.
   VoidType | PromiseType | ObservableType | // Return types.
   StringLiteralType | NumberLiteralType | BooleanLiteralType | // Literal types.
-  NamedType | FunctionType; // Type aliases.
+  NamedType | FunctionType | UnionType; // Type aliases.
 
 // Nullable type.
 export type NullableType = { location: Location; kind: 'nullable'; type: Type };
@@ -96,6 +96,8 @@ export type ObjectField = {
   optional: boolean;
 };
 export type TupleType = { location: Location; kind: 'tuple'; types: Array<Type>; };
+
+export type UnionType = { location: Location; kind: 'union'; types: Array<Type>; };
 
 // Represents a named, custom type.
 export type NamedType = { location: Location; kind: 'named'; name: string };

@@ -1,0 +1,29 @@
+"use babel";
+import { Observable } from "rx";
+import { trackTiming } from "nuclide-analytics";
+
+module.exports = _client => {
+  remoteModule = {}
+
+  remoteModule.UnionFunc = function (arg0, arg1) {
+    return Promise.all([_client.marshal(arg0, {
+      location: {
+        type: "source",
+        fileName: "UnionTypes.def",
+        line: 6
+      },
+      kind: "named",
+      name: "SSU"
+    }), _client.marshal(arg1, {
+      location: {
+        type: "source",
+        fileName: "UnionTypes.def",
+        line: 6
+      },
+      kind: "named",
+      name: "MixedUnion"
+    })]).then(args => _client.callRemoteFunction("UnionFunc", "void", args));
+  }
+
+  return remoteModule;
+}

@@ -195,6 +195,60 @@ describe('Nuclide service parser test suite.', () => {
       parseServiceDefinition('fileName', code);
     }).toThrow();
   });
+
+  it('Missing type in union throws', () => {
+    const code = `
+      export type A = B | 42;
+    `;
+    expect(() => {
+      parseServiceDefinition('fileName', code);
+    }).toThrow();
+  });
+
+  it('Recursion in union throws', () => {
+    const code = `
+      export type A = 42 | A;
+    `;
+    expect(() => {
+      parseServiceDefinition('fileName', code);
+    }).toThrow();
+  });
+
+  it('Promise in union throws', () => {
+    const code = `
+      export type A = 42 | Promise<42>;
+    `;
+    expect(() => {
+      parseServiceDefinition('fileName', code);
+    }).toThrow();
+  });
+
+  it('Promise in union throws', () => {
+    const code = `
+      export type A = 42 | Promise<42>;
+    `;
+    expect(() => {
+      parseServiceDefinition('fileName', code);
+    }).toThrow();
+  });
+
+  it('Non-literal in union throws', () => {
+    const code = `
+      export type A = 42 | number;
+    `;
+    expect(() => {
+      parseServiceDefinition('fileName', code);
+    }).toThrow();
+  });
+
+  it('Duplicate alternates in union throws', () => {
+    const code = `
+      export type A = 42 | 42;
+    `;
+    expect(() => {
+      parseServiceDefinition('fileName', code);
+    }).toThrow();
+  });
 });
 
 function mapDefinitions(map: Map<string, Definition>): { [key: string]: Object } {
