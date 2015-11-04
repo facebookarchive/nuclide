@@ -25,6 +25,8 @@ import type {
 /**
  * Throws if a named type referenced in an RPC interface is not defined.
  * The error message thrown is suitable for display to a human.
+ *
+ * NOTE: Will also mutate the incoming definitions in place to make them easier to marshal.
  */
 export function validateDefinitions(definitions: Definitions): void {
   const namedTypes: Map<string, AliasDefinition | InterfaceDefinition> = new Map();
@@ -35,6 +37,7 @@ export function validateDefinitions(definitions: Definitions): void {
     findMissingTypeNames();
     findRecursiveAliases();
     validateReturnTypes();
+    cannonicalize();
   }
 
   function findMissingTypeNames() {
@@ -208,6 +211,7 @@ export function validateDefinitions(definitions: Definitions): void {
   }
 
   // Validates a type which must be a return type.
+  // Caller must resolve named types.
   function validateReturnType(funcType: FunctionType, type: Type): void {
     function invalidReturnTypeError(): Error {
       return error(funcType,
@@ -221,26 +225,6 @@ export function validateDefinitions(definitions: Definitions): void {
       case 'observable':
         if (type.type.kind !== 'void') {
           validateType(type.type);
-        }
-        break;
-      case 'named':
-        const resolvedType = resolveNamedType(type);
-        if (resolvedType.kind !== 'named') {
-          validateReturnType(funcType, resolvedType);
-
-          // HACK ON
-          // The marshalling code expects returnType to be one of
-          // void/promise/observable, while it could be a named type which resolves to a return
-          // type.
-          //
-          // We mutate the function return type here to keep the marshaller happy.
-          //
-          // In a perfect world the service parser would return a clone of the rpc definition
-          // which had all non-predefined named types resolved to their underlying types.
-          funcType.returnType = resolvedType;
-          // HACK OFF
-        } else {
-          throw invalidReturnTypeError();
         }
         break;
       default:
@@ -305,7 +289,7 @@ export function validateDefinitions(definitions: Definitions): void {
         break;
       case 'function':
         type.argumentTypes.forEach(validateType);
-        validateReturnType(type, type.returnType);
+        validateReturnType(type, resolvePossiblyNamedType(type.returnType));
         break;
       case 'named':
         const resolvedType = resolveNamedType(type);
@@ -323,6 +307,78 @@ export function validateDefinitions(definitions: Definitions): void {
         break;
       default:
         throw new Error(JSON.stringify(type));
+    }
+  }
+
+  // Replaces all uses of type aliases in return types with their definition
+  // so that clients need not be aware of aliases.
+  // TODO: Should replace all aliases, however that will require rewriting marsalling.
+  function cannonicalize(): void {
+    visitAllTypes(cannonicalizeType);
+  }
+
+  function cannonicalizeTypeArray(types: Array<Type>): void {
+    types.forEach(cannonicalizeType);
+  }
+
+  function cannonicalizeType(type: Type): void {
+    switch (type.kind) {
+      case 'any':
+      case 'mixed':
+      case 'string':
+      case 'boolean':
+      case 'number':
+      case 'string-literal':
+      case 'boolean-literal':
+      case 'number-literal':
+      case 'void':
+        break;
+      case 'promise':
+        cannonicalizeType(type.type);
+        break;
+      case 'observable':
+        cannonicalizeType(type.type);
+        break;
+      case 'array':
+        cannonicalizeType(type.type);
+        break;
+      case 'set':
+        cannonicalizeType(type.type);
+        break;
+      case 'nullable':
+        cannonicalizeType(type.type);
+        break;
+      case 'map':
+        cannonicalizeType(type.keyType);
+        cannonicalizeType(type.valueType);
+        break;
+      case 'object':
+        type.fields.forEach(field => {
+          cannonicalizeType(field.type);
+        });
+        break;
+      case 'tuple':
+        cannonicalizeTypeArray(type.types);
+        break;
+      case 'function':
+        cannonicalizeTypeArray(type.argumentTypes);
+        type.returnType = resolvePossiblyNamedType(type.returnType);
+        cannonicalizeType(type.returnType);
+        break;
+      case 'named':
+        // Note that this does not recurse, so the algorithm will always terminate.
+        break;
+      default:
+        throw new Error(JSON.stringify(type));
+    }
+  }
+
+  // Will return a named type if and only if the alias resolves to a builtin type, or an interface.
+  function resolvePossiblyNamedType(type: Type): Type {
+    if (type.kind === 'named') {
+      return resolveNamedType(type);
+    } else {
+      return type;
     }
   }
 
