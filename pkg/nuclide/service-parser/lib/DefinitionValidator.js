@@ -11,6 +11,7 @@
 
 import {locationToString} from './builtin-types';
 import invariant from 'assert';
+import {array, set} from 'nuclide-commons';
 
 import type {
   Definitions,
@@ -21,6 +22,9 @@ import type {
   FunctionType,
   NamedType,
   UnionType,
+  ObjectType,
+  ObjectField,
+  LiteralType,
   Location,
 } from './types';
 
@@ -172,7 +176,9 @@ export function validateDefinitions(definitions: Definitions): void {
         type.types.forEach(validateTypeRec);
         break;
       case 'union':
-        type.types.forEach(validateTypeRec);
+        // Union types break the layout chain.
+        // TODO: Strictly we should detect alternates which directly contain their parent union,
+        // or if all alternates indirectly contain the parent union.
         break;
       case 'function':
         break;
@@ -260,20 +266,38 @@ export function validateDefinitions(definitions: Definitions): void {
     }
   }
 
+  function isLiteralType(type: Type): boolean {
+    switch (type.kind) {
+      case 'string-literal':
+      case 'number-literal':
+      case 'boolean-literal':
+        return true;
+      default:
+        return false;
+    }
+  }
+
   function validateUnionType(type: UnionType): void {
     const alternates = flattenUnionAlternates(type.types);
-    alternates.reduce((previousAlternates: Array<Type>, alternate: Type) => {
+
+    if (isLiteralType(alternates[0])) {
+      validateLiteralUnionType(type, alternates);
+    } else if (alternates[0].kind === 'object') {
+      validateObjectUnionType(type, alternates);
+    }  else {
+      throw errorLocations([type.location, alternates[0].location],
+        `Union alternates must be either be typed object or literal types.`);
+    }
+  }
+
+  function validateLiteralUnionType(type: UnionType, alternates: Array<Type>): void {
+    alternates.reduce((previousAlternates, alternate) => {
       validateType(alternate);
 
       // Ensure a valid alternate
-      switch (alternate.kind) {
-        case 'string-literal':
-        case 'number-literal':
-        case 'boolean-literal':
-          break;
-        default:
-          throw errorLocations([type.location, alternate.location],
-            `Union alternates may only be literal types.`);
+      if (!isLiteralType(alternate)) {
+        throw errorLocations([type.location, alternate.location],
+          `Union alternates may only be literal types.`);
       }
 
       // Ensure no duplicates
@@ -291,6 +315,76 @@ export function validateDefinitions(definitions: Definitions): void {
       previousAlternates.push(alternate);
       return previousAlternates;
     }, []);
+  }
+
+  function validateObjectUnionType(type: UnionType, alternates: Array<Type>): void {
+    alternates.forEach(alternate => {
+      validateType(alternate);
+
+      // Ensure alternates match
+      if (alternate.kind !== 'object') {
+        throw errorLocations([type.location, alternates[0].location, alternate.location],
+          `Union alternates must be of the same type.`);
+      }
+    });
+
+    type.discriminantField = findObjectUnionDiscriminant(type, (alternates: Array<any>));
+  }
+
+  function findObjectUnionDiscriminant(type: UnionType, alternates: Array<ObjectType>): string {
+    // Get set of fields which are literal types in al alternates.
+    invariant(alternates.length > 0);
+    // $FlowFixMe
+    const possibleFields: Set<string> = alternates.reduce(
+      (possibilities: ?Set<string>, alternate: ObjectType) => {
+        const alternatePossibilities = possibleDiscriminantFieldsOfUnionAlternate(alternate);
+        if (alternatePossibilities.size === 0) {
+          throw errorLocations([type.location, alternate.location],
+            `Object union alternative has no possible discriminant fields.`);
+        }
+        // Use null to represent the set containing everything.
+        if (possibilities == null) {
+          return alternatePossibilities;
+        } else {
+          return set.intersect(alternatePossibilities, possibilities);
+        }
+      }, null);
+
+    const validFields = array.from(possibleFields).
+        filter(fieldName => isValidDiscriminantField(alternates, fieldName));
+    if (validFields.length > 0) {
+      // If there are multiple valid discriminant fields, we just pick the first.
+      return validFields[0];
+    } else {
+      // TODO: Better error message why each possibleFields is invalid.
+      throw error(type, 'No valid discriminant field for union type.');
+    }
+  }
+
+  function isValidDiscriminantField(alternates: Array<ObjectType>,
+      candidateField: string): boolean {
+    // $FlowFixMe
+    const fieldTypes: Array<LiteralType> = alternates.map(
+      alternate => resolvePossiblyNamedType(getObjectFieldByName(alternate, candidateField).type));
+
+    // Fields in all alternates must have same type.
+    if (!fieldTypes.every(fieldType => fieldType.kind === fieldTypes[0].kind)) {
+      return false;
+    }
+
+    // Must not have duplicate values in any alternate.
+    // All alternates must be unique.
+    return (new Set(fieldTypes.map(fieldType => fieldType.value))).size === alternates.length;
+  }
+
+  function getObjectFieldByName(type: ObjectType, fieldName: string): ObjectField {
+    return type.fields.find(field => field.name === fieldName);
+  }
+
+  function possibleDiscriminantFieldsOfUnionAlternate(alternate: ObjectType): Set<string> {
+    return new Set(alternate.fields
+        .filter(field => isLiteralType(resolvePossiblyNamedType(field.type)))
+        .map(field => field.name));
   }
 
   // Validates a type which is not directly a return type.

@@ -248,25 +248,10 @@ describe('TypeRegistry', () => {
     });
   });
 
-  it('Can serialize / deserialize union types.', () => {
+  it('Can serialize / deserialize union literal types.', () => {
     waitsForPromise(async () => {
       invariant(typeRegistry);
 
-      const a1 = {
-        location: builtinLocation,
-        kind: 'string-literal',
-        value: 'bork',
-      };
-      const a2 = {
-        location: builtinLocation,
-        kind: 'string-literal',
-        value: 'bork!',
-      };
-      const a3 = {
-        location: builtinLocation,
-        kind: 'number-literal',
-        value: 42,
-      };
       const type = {
         location: builtinLocation,
         kind: 'union',
@@ -295,7 +280,122 @@ describe('TypeRegistry', () => {
       expect(thrown).toBe(true);
     });
   });
+
+  it('Can serialize / deserialize union object types.', () => {
+    waitsForPromise(async () => {
+      invariant(typeRegistry);
+
+      // {kind: 'bork'; n: number }
+      const o1: ObjectType = {
+        location: builtinLocation,
+        kind: 'object',
+        fields: [
+          {
+            location: builtinLocation,
+            type: a1,
+            name: 'kind',
+            optional: false,
+          },
+          {
+            location: builtinLocation,
+            type: numberType,
+            name: 'n',
+            optional: false,
+          },
+        ],
+      };
+
+      // {kind: 'bork!'; s: string }
+      const o2: ObjectType = {
+        location: builtinLocation,
+        kind: 'object',
+        fields: [
+          {
+            location: builtinLocation,
+            type: a2,
+            name: 'kind',
+            optional: false,
+          },
+          {
+            location: builtinLocation,
+            type: stringType,
+            name: 's',
+            optional: false,
+          },
+        ],
+      };
+
+      // {kind: 42; b: boolean }
+      const o3: ObjectType = {
+        location: builtinLocation,
+        kind: 'object',
+        fields: [
+          {
+            location: builtinLocation,
+            type: a3,
+            name: 'kind',
+            optional: false,
+          },
+          {
+            location: builtinLocation,
+            type: booleanType,
+            name: 'b',
+            optional: false,
+          },
+        ],
+      };
+
+      const type = {
+        location: builtinLocation,
+        kind: 'union',
+        types: [o1, o2, o3],
+        discriminantField: 'kind',
+      };
+
+      const data1 = {kind: 'bork', n: 42};
+      const result1 = await typeRegistry.unmarshal(await typeRegistry.marshal(data1, type), type);
+      expect(result1).toEqual(data1);
+
+      const data2 = {kind: 'bork!', s: 'hello'};
+      const result2 = await typeRegistry.unmarshal(await typeRegistry.marshal(data2, type), type);
+      expect(result2).toEqual(data2);
+
+      const data3 = {kind: 42, b: true};
+      const result3 = await typeRegistry.unmarshal(await typeRegistry.marshal(data3, type), type);
+      expect(result3).toEqual(data3);
+
+      // Ensure no extra fields are accidentally marshalled.
+      const data4 = {kind: 'bork', n: 42, s: 'hello', b: true};
+      const result4 = await typeRegistry.unmarshal(await typeRegistry.marshal(data4, type), type);
+      expect(result4).toEqual(data1);
+
+      const data5 = {kind: 'not bork!'};
+      let thrown = false;
+      try {
+        await typeRegistry.marshal(data5, type);
+      } catch (e) {
+        thrown = true;
+      }
+      expect(thrown).toBe(true);
+    });
+  });
 });
+
+const a1 = {
+  location: builtinLocation,
+  kind: 'string-literal',
+  value: 'bork',
+};
+const a2 = {
+  location: builtinLocation,
+  kind: 'string-literal',
+  value: 'bork!',
+};
+const a3 = {
+  location: builtinLocation,
+  kind: 'number-literal',
+  value: 42,
+};
 
 const ValueTypeA: ObjectType = {
   location: builtinLocation,

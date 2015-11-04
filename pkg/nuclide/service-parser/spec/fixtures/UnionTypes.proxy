@@ -25,5 +25,41 @@ module.exports = _client => {
     })]).then(args => _client.callRemoteFunction("UnionFunc", "void", args));
   }
 
+  remoteModule.ObjectUnionFunc = function (arg0) {
+    return Promise.all([_client.marshal(arg0, {
+      location: {
+        type: "source",
+        fileName: "UnionTypes.def",
+        line: 20
+      },
+      kind: "named",
+      name: "Location"
+    })]).then(args => _client.callRemoteFunction("ObjectUnionFunc", "void", args));
+  }
+
+  remoteModule.TypeFunc = function (arg0) {
+    return Promise.all([_client.marshal(arg0, {
+      location: {
+        type: "source",
+        fileName: "UnionTypes.def",
+        line: 111
+      },
+      kind: "named",
+      name: "Type"
+    })]).then(args => _client.callRemoteFunction("TypeFunc", "void", args));
+  }
+
+  remoteModule.MDUFunc = function (arg0) {
+    return Promise.all([_client.marshal(arg0, {
+      location: {
+        type: "source",
+        fileName: "UnionTypes.def",
+        line: 116
+      },
+      kind: "named",
+      name: "MultipleDiscriminantUnion"
+    })]).then(args => _client.callRemoteFunction("MDUFunc", "void", args));
+  }
+
   return remoteModule;
 }

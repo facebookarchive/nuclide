@@ -75,6 +75,7 @@ export type BooleanType = { location: Location; kind: 'boolean' };
 export type NumberType = { location: Location; kind: 'number' };
 
 // Literal types.
+export type LiteralType = StringLiteralType | NumberLiteralType | BooleanLiteralType;
 export type StringLiteralType = { location: Location; kind: 'string-literal'; value: string };
 export type NumberLiteralType = { location: Location; kind: 'number-literal'; value: number };
 export type BooleanLiteralType = { location: Location; kind: 'boolean-literal'; value: boolean };
@@ -97,7 +98,12 @@ export type ObjectField = {
 };
 export type TupleType = { location: Location; kind: 'tuple'; types: Array<Type>; };
 
-export type UnionType = { location: Location; kind: 'union'; types: Array<Type>; };
+export type UnionType = {
+  location: Location;
+  kind: 'union';
+  types: Array<Type>;
+  discriminantField?: string; // This is filled in for unions of object types during validation.
+};
 
 // Represents a named, custom type.
 export type NamedType = { location: Location; kind: 'named'; name: string };

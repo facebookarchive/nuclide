@@ -14,7 +14,12 @@ import invariant from 'assert';
 import vm from 'vm';
 import fs from 'fs';
 
-import type {Type} from './types';
+import type {
+  Type,
+  ObjectType,
+  ObjectField,
+  UnionType,
+} from './types';
 import {objectType, dateType, regExpType, bufferType, fsStatsType} from './builtin-types';
 
 
@@ -244,10 +249,9 @@ export default class TypeRegistry {
   }
 
   _registerUnions(): void {
-    const unionTransformer = async (arg, type) => {
+    const unionLiteralTransformer = async (arg, type) => {
       invariant(type.kind === 'union');
       const alternate = type.types.find(element => {
-        // TODO: Handle unions of objects.
         invariant(element.kind === 'string-literal' || element.kind === 'number-literal'
             || element.kind === 'boolean-literal');
         return (arg === element.value);
@@ -256,7 +260,31 @@ export default class TypeRegistry {
       // This is just the literal transformer inlined ...
       return arg;
     };
-    this._registerKind('union', unionTransformer, unionTransformer);
+    const unionObjectMarshaller = (arg, type) => {
+      invariant(type.kind === 'union');
+      return this.marshal(arg, findAlternate(arg, type));
+    };
+    const unionObjectUnmarshaller = (arg, type) => {
+      invariant(type.kind === 'union');
+      return this.unmarshal(arg, findAlternate(arg, type));
+    };
+    const unionMarshaller = (arg, type) => {
+      invariant(type.kind === 'union');
+      if (type.discriminantField != null) {
+        return unionObjectMarshaller(arg, type);
+      } else {
+        return unionLiteralTransformer(arg, type);
+      }
+    };
+    const unionUnmarshaller = (arg, type) => {
+      invariant(type.kind === 'union');
+      if (type.discriminantField != null) {
+        return unionObjectUnmarshaller(arg, type);
+      } else {
+        return unionLiteralTransformer(arg, type);
+      }
+    };
+    this._registerKind('union', unionMarshaller, unionUnmarshaller);
   }
 
   _registerSpecialTypes(): void {
@@ -433,4 +461,23 @@ export default class TypeRegistry {
         this.unmarshal(elem, types[i])));
     });
   }
+}
+
+function getObjectFieldByName(type: ObjectType, fieldName: string): ObjectField {
+  return type.fields.find(field => field.name === fieldName);
+}
+
+function findAlternate(arg: Object, type: UnionType): ObjectType {
+  const discriminantField = type.discriminantField;
+  invariant(discriminantField != null);
+  const discriminant = arg[discriminantField];
+  invariant(discriminant != null);
+  const alternates: Array<ObjectType> = (type.types: any);
+  return alternates.find(alternate => {
+    invariant(alternate.kind === 'object');
+    const alternateType = getObjectFieldByName(alternate, discriminantField).type;
+    invariant(alternateType.kind === 'string-literal' || alternateType.kind === 'number-literal'
+        || alternateType.kind === 'boolean-literal');
+    return alternateType.value === discriminant;
+  });
 }

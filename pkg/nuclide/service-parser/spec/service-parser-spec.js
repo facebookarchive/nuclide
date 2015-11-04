@@ -249,6 +249,42 @@ describe('Nuclide service parser test suite.', () => {
       parseServiceDefinition('fileName', code);
     }).toThrow();
   });
+
+  it('Mismatched alternates in object union throws', () => {
+    const code = `
+      export type A = {kind: 'foo'} | '42';
+    `;
+    expect(() => {
+      parseServiceDefinition('fileName', code);
+    }).toThrow();
+  });
+
+  it('No valid alternates in object union throws', () => {
+    const code = `
+      export type A = {kind: 'foo'} | {kind: string};
+    `;
+    expect(() => {
+      parseServiceDefinition('fileName', code);
+    }).toThrow();
+  });
+
+  it('No common discriminants in object union throws', () => {
+    const code = `
+      export type A = {kind1: 'foo'} | {kind2: 'bar'};
+    `;
+    expect(() => {
+      parseServiceDefinition('fileName', code);
+    }).toThrow();
+  });
+
+  it('Duplicate values in discriminant in object union throws', () => {
+    const code = `
+      export type A = {kind: 'foo'} | {kind: 'foo'};
+    `;
+    expect(() => {
+      parseServiceDefinition('fileName', code);
+    }).toThrow();
+  });
 });
 
 function mapDefinitions(map: Map<string, Definition>): { [key: string]: Object } {
