@@ -68,8 +68,12 @@ class Activation {
       item
     );
 
-    var panel = atom.workspace.addTopPanel({
+    const panel = atom.workspace.addTopPanel({
       item,
+      // Increase priority (default is 100) to ensure this toolbar comes after the 'tool-bar'
+      // package's toolbar. Hierarchically the controlling toolbar should be above, and practically
+      // this ensures the popover in this build toolbar stacks on top of other UI.
+      priority: 200,
     });
     this._disposables.add(new Disposable(() => panel.destroy()));
     this._panel = panel;
