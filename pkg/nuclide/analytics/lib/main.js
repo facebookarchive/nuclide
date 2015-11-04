@@ -77,13 +77,13 @@ function track(eventName: string, values?: {[key: string]: string}): Promise<mix
 function trackTiming(eventName: ?string = null): any {
 
   return (target: any, name: string, descriptor: any) => {
-    var originalMethod = descriptor.value;
+    const originalMethod = descriptor.value;
 
     // We can't use arrow function here as it will bind `this` to the context of enclosing function
     // which is trackTiming, whereas what needed is context of originalMethod.
     descriptor.value = function(...args) {
       if (!eventName) {
-        var constructorName = this.constructor ? this.constructor.name : undefined;
+        const constructorName = this.constructor ? this.constructor.name : undefined;
         eventName = `${constructorName}.${name}`;
       }
 
@@ -94,6 +94,26 @@ function trackTiming(eventName: ?string = null): any {
   };
 }
 
+/**
+ * Obtain a monotonically increasing timestamp in milliseconds, if possible.
+ * If `window.performance` is unavailable (e.g. in Node), use process.hrtime.
+ * Fall back to `Date.now` otherwise – note that `Date.now` does not guarantee timestamps to
+ * increase monotonically, and is thus subject to system clock updates.
+ *
+ * Wrapped in a function rather than a module constant to facilitate testing.
+ */
+const getTimestamp = (): number => {
+  const timingFunction = (window != null && window.performance != null)
+    ? () => Math.round(window.performance.now())
+    : (process != null && typeof process.hrtime === 'function')
+      ? () => {
+        const hr = process.hrtime();
+        return Math.round((hr[0] * 1e9 + hr[1]) / 1e6);
+      }
+      : Date.now;
+  return timingFunction();
+};
+
 const PERFORMANCE_EVENT = 'performance';
 
 class TimingTracker {
@@ -102,7 +122,7 @@ class TimingTracker {
 
   constructor(eventName: string) {
     this._eventName = eventName;
-    this._startTime = Date.now();
+    this._startTime = getTimestamp();
   }
 
   onError(error: Error): Promise {
@@ -115,7 +135,7 @@ class TimingTracker {
 
   _trackTimingEvent(exception: ?Error): Promise {
     return track(PERFORMANCE_EVENT, {
-      duration: (Date.now() - this._startTime).toString(),
+      duration: (getTimestamp() - this._startTime).toString(),
       eventName: this._eventName,
       error: exception ? '1' : '0',
       exception: exception ? exception.toString() : '',

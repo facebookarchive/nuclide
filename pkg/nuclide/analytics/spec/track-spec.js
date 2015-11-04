@@ -9,14 +9,23 @@
  * the root directory of this source tree.
  */
 
-var main = require('../lib/main');
-var track = require('../lib/track');
-var startTracking = main.startTracking;
-
+const main = require('../lib/main');
+const track = require('../lib/track');
+const startTracking = main.startTracking;
 describe('startTracking', () => {
-  var trackKey, trackValues;
+  let trackKey, trackValues;
+  let originalProcessHrTime = null;
+  let originalWindowPerformance = null;
 
   beforeEach(() => {
+    // `advanceClock` relies on Date.now exclusively. Ensure fallback to Date.now in tests.
+    originalProcessHrTime = process.hrtime;
+    process.hrtime = null;
+    if (window && window.performance) {
+      originalWindowPerformance = window.performance;
+      window.performance = null;
+    }
+
     // Clear intercepted tracking data.
     trackKey = null;
     trackValues = null;
@@ -27,6 +36,17 @@ describe('startTracking', () => {
       trackValues = values;
       return Promise.resolve();
     });
+
+  });
+
+  afterEach(() => {
+    process.hrtime = originalProcessHrTime;
+    if (originalWindowPerformance) {
+      window.performance = originalWindowPerformance;
+    }
+    // Reset for subsequent tests.
+    originalProcessHrTime = null;
+    originalWindowPerformance = null;
   });
 
   it('startTracking - success', () => {
