@@ -238,7 +238,7 @@ module.exports = {
     const button = toolBar.addButton({
       icon: 'git-branch',
       callback: 'nuclide-diff-view:open',
-      tooltip: 'Toggle Diff View',
+      tooltip: 'Open Diff View',
       priority: 300,
     })[0];
     const diffModel = getDiffViewModel();
