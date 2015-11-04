@@ -378,7 +378,9 @@ export function validateDefinitions(definitions: Definitions): void {
   }
 
   function getObjectFieldByName(type: ObjectType, fieldName: string): ObjectField {
-    return type.fields.find(field => field.name === fieldName);
+    const result = array.find(type.fields, field => field.name === fieldName);
+    invariant(result != null);
+    return result;
   }
 
   function possibleDiscriminantFieldsOfUnionAlternate(alternate: ObjectType): Set<string> {

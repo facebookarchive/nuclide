@@ -14,6 +14,8 @@ import invariant from 'assert';
 import vm from 'vm';
 import fs from 'fs';
 
+import {array} from 'nuclide-commons';
+
 import type {
   Type,
   ObjectType,
@@ -251,7 +253,7 @@ export default class TypeRegistry {
   _registerUnions(): void {
     const unionLiteralTransformer = async (arg, type) => {
       invariant(type.kind === 'union');
-      const alternate = type.types.find(element => {
+      const alternate = array.find(type.types, element => {
         invariant(element.kind === 'string-literal' || element.kind === 'number-literal'
             || element.kind === 'boolean-literal');
         return (arg === element.value);
@@ -464,7 +466,9 @@ export default class TypeRegistry {
 }
 
 function getObjectFieldByName(type: ObjectType, fieldName: string): ObjectField {
-  return type.fields.find(field => field.name === fieldName);
+  const result = array.find(type.fields, field => field.name === fieldName);
+  invariant(result != null);
+  return result;
 }
 
 function findAlternate(arg: Object, type: UnionType): ObjectType {
@@ -473,11 +477,13 @@ function findAlternate(arg: Object, type: UnionType): ObjectType {
   const discriminant = arg[discriminantField];
   invariant(discriminant != null);
   const alternates: Array<ObjectType> = (type.types: any);
-  return alternates.find(alternate => {
+  const result = array.find(alternates, alternate => {
     invariant(alternate.kind === 'object');
     const alternateType = getObjectFieldByName(alternate, discriminantField).type;
     invariant(alternateType.kind === 'string-literal' || alternateType.kind === 'number-literal'
         || alternateType.kind === 'boolean-literal');
     return alternateType.value === discriminant;
   });
+  invariant(result != null);
+  return result;
 }
