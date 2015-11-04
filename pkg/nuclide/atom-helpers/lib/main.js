@@ -18,6 +18,10 @@ module.exports = {
     return require('./atom-event-debounce');
   },
 
+  get browser() {
+    return require('./browser');
+  },
+
   get createScriptBufferedProcessWithEnv() {
     return require('./script-buffered-process').createScriptBufferedProcessWithEnv;
   },

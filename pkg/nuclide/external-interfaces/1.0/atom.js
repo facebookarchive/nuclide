@@ -1012,6 +1012,9 @@ type AtomGlobal = {
   isReleasedVersion(): boolean;
   getWindowLoadTime(): number;
 
+  // This is an undocumented way to reach the Electron BrowserWindow.
+  getCurrentWindow(): any;
+
   // Messaging the User
   confirm(options: {
     buttons?: Array<string> | {[buttonName: string]: () => void};
