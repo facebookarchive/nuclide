@@ -35,26 +35,7 @@ export function validateDefinitions(definitions: Definitions): void {
   }
 
   function findMissingTypeNames() {
-    for (const definition of definitions.values()) {
-      switch (definition.kind) {
-        case 'function':
-          checkTypeForMissingNames(definition.type);
-          break;
-        case 'alias':
-          if (definition.definition != null) {
-            checkTypeForMissingNames(definition.definition);
-          }
-          break;
-        case 'interface':
-          // $FlowIssue
-          definition.constructorArgs.forEach(checkTypeForMissingNames);
-          // $FlowIssue
-          definition.instanceMethods.forEach(checkTypeForMissingNames);
-          // $FlowIssue
-          definition.staticMethods.forEach(checkTypeForMissingNames);
-          break;
-      }
-    }
+    visitAllTypes(checkTypeForMissingNames);
   }
 
   function gatherKnownTypes(): void {
@@ -191,6 +172,29 @@ export function validateDefinitions(definitions: Definitions): void {
         break;
       default:
         throw new Error(JSON.stringify(type));
+    }
+  }
+
+  function visitAllTypes(operation: (type: Type) => void): void {
+    for (const definition of definitions.values()) {
+      switch (definition.kind) {
+        case 'function':
+          operation(definition.type);
+          break;
+        case 'alias':
+          if (definition.definition != null) {
+            operation(definition.definition);
+          }
+          break;
+        case 'interface':
+          // $FlowIssue
+          definition.constructorArgs.forEach(operation);
+          // $FlowIssue
+          definition.instanceMethods.forEach(operation);
+          // $FlowIssue
+          definition.staticMethods.forEach(operation);
+          break;
+      }
     }
   }
 
