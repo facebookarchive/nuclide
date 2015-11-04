@@ -25,7 +25,7 @@ describe('Module public API.', () => {
 
     var proxy = getProxy(defFile, fakeClient);
     expect(Object.keys(proxy)).diffJson([
-      'TestFunctionA', 'TestFunctionB', 'TestFunctionC', 'TestFunctionD']);
+      'TestFunctionA', 'TestFunctionB', 'TestFunctionC', 'TestFunctionD', 'ReturnAlias']);
 
     // Expect that getProxy added files to the cache.
     expect(__test__.definitionsCache.size).toBe(1);

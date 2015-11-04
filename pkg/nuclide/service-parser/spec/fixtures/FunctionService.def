@@ -5,3 +5,7 @@ export function TestFunctionB(): Observable<number> {}
 export function TestFunctionC(): void {}
 
 export function TestFunctionD(p1: ?Object, p2?: Object): void {}
+
+export type PN = Promise<number>;
+
+export function ReturnAlias(): PN {}

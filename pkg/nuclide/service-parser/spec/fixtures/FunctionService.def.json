@@ -220,5 +220,64 @@
                 "kind": "void"
             }
         }
+    },
+    "PN": {
+        "kind": "alias",
+        "location": {
+            "type": "source",
+            "fileName": "FunctionService.def",
+            "line": 9
+        },
+        "name": "PN",
+        "definition": {
+            "location": {
+                "type": "source",
+                "fileName": "FunctionService.def",
+                "line": 9
+            },
+            "kind": "promise",
+            "type": {
+                "location": {
+                    "type": "source",
+                    "fileName": "FunctionService.def",
+                    "line": 9
+                },
+                "kind": "number"
+            }
+        }
+    },
+    "ReturnAlias": {
+        "kind": "function",
+        "name": "ReturnAlias",
+        "location": {
+            "type": "source",
+            "fileName": "FunctionService.def",
+            "line": 11
+        },
+        "type": {
+            "location": {
+                "type": "source",
+                "fileName": "FunctionService.def",
+                "line": 11
+            },
+            "kind": "function",
+            "argumentTypes": [],
+            "returnType": {
+                "location": {
+                    "type": "source",
+                    "fileName": "FunctionService.def",
+                    "line": 9
+                },
+                "kind": "promise",
+                "type": {
+                    "location": {
+                        "type": "source",
+                        "fileName": "FunctionService.def",
+                        "line": 9
+                    },
+                    "kind": "number"
+                }
+            }
+        }
     }
 }

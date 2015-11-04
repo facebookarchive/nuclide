@@ -107,6 +107,36 @@ describe('Nuclide service parser test suite.', () => {
     }).toThrow();
   });
 
+  it('Promise may only be a return type', () => {
+    const code = `
+      export class C {
+        constructor(p: Promise<string>) {}
+      }`;
+    expect(() => {
+      parseServiceDefinition('fileName', code);
+    }).toThrow();
+  });
+
+  it('Observable may only be a return type', () => {
+    const code = `
+      export class C {
+        m(p: Array<Observable<number>>): void {}
+      }`;
+    expect(() => {
+      parseServiceDefinition('fileName', code);
+    }).toThrow();
+  });
+
+  it('void may only be a return type', () => {
+    const code = `
+      export class C {
+        m(p: void): void {}
+      }`;
+    expect(() => {
+      parseServiceDefinition('fileName', code);
+    }).toThrow();
+  });
+
   it('Constructors may not have return types', () => {
     const code = `
       export class C {
@@ -150,6 +180,16 @@ describe('Nuclide service parser test suite.', () => {
       export type A = Promise<T>;
       export type T = [O];
       export type O = {f: A};
+    `;
+    expect(() => {
+      parseServiceDefinition('fileName', code);
+    }).toThrow();
+  });
+
+  it('Return types must be promise/observable/void', () => {
+    const code = `
+      export type A = number;
+      export function f(): A {};
     `;
     expect(() => {
       parseServiceDefinition('fileName', code);

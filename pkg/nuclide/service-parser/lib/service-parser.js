@@ -11,7 +11,6 @@
 
 import * as babel from 'babel-core';
 import assert from 'assert';
-import invariant from 'assert';
 
 import type {
   Definition,
@@ -161,14 +160,7 @@ class ServiceParser {
       'Remote functions must be annotated with a return type.');
 
     const returnType = this._parseTypeAnnotation(declaration.returnType.typeAnnotation);
-    this._assert(declaration.returnType.typeAnnotation,
-      returnType.kind === 'void' || returnType.kind === 'promise' ||
-          returnType.kind === 'observable',
-      'The return type of a remote function must be of type Void, Promise, or Observable');
 
-    invariant(returnType.kind === 'void' ||
-      returnType.kind === 'promise' ||
-      returnType.kind === 'observable');
     return {
       kind: 'function',
       name: declaration.id.name,
@@ -254,13 +246,6 @@ class ServiceParser {
       `${definition.key.name} missing a return type annotation.`);
 
     const returnType = this._parseTypeAnnotation(definition.value.returnType.typeAnnotation);
-    this._assert(
-      definition.value.returnType.typeAnnotation,
-      returnType.kind === 'void' || returnType.kind === 'promise' ||
-          returnType.kind === 'observable',
-      'The return type of a remote function must be Void, Promise, or Observable');
-    invariant(returnType.kind === 'void' || returnType.kind === 'promise' ||
-        returnType.kind === 'observable');
     return {
       location: this._locationOfNode(definition.key),
       name: definition.key.name,

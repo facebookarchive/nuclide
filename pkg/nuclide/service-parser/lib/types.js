@@ -63,7 +63,7 @@ export type FunctionType = {
   location: Location;
   kind: 'function';
   argumentTypes: Array<Type>;
-  returnType: VoidType | PromiseType | ObservableType;
+  returnType: Type;
 }
 
 // Primitive types.
