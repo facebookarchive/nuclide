@@ -83,32 +83,62 @@ describe('RemoteDirectory::relativize()', () => {
 
 describe('RemoteDirectory::getEntries()', () => {
   it('sorts directories then files alphabetically case insensitive', () => {
-    connectionMock.createDirectory = (uri) => {
-      return new RemoteDirectory(connectionMock, uri);
-    };
+    let complete = false;
 
-    connectionMock.createFile = (uri) => {
-      return new RemoteFile(connectionMock, uri);
-    };
+    runs(() => {
+      connectionMock.createDirectory = (uri) => {
+        return new RemoteDirectory(connectionMock, uri);
+      };
 
-    var fileStats = {isFile() {return true;}};
-    var directoryStats = {isFile() {return false;}};
+      connectionMock.createFile = (uri) => {
+        return new RemoteFile(connectionMock, uri);
+      };
 
-    // Directories should sort first, then files, and case should be ignored
-    spyOn(connectionMock.getClient(), 'readdir').andReturn([
-      {file: 'Aa', stats: fileStats},
-      {file: 'a', stats: fileStats},
-      {file: 'Bb', stats: directoryStats},
-      {file: 'b', stats: directoryStats},
-    ]);
+      const fileStats = {isFile() { return true; }};
+      const directoryStats = {isFile() { return false; }};
 
-    var path = 'nuclide://example.com:9090/';
-    const remoteDirectory = new RemoteDirectory(connectionMock, path);
+      // Directories should sort first, then files, and case should be ignored
+      spyOn(connectionMock.getClient(), 'readdir').andReturn([
+        {file: 'Aa', stats: fileStats},
+        {file: 'a', stats: fileStats},
+        {file: 'Bb', stats: directoryStats},
+        {file: 'b', stats: directoryStats},
+      ]);
 
-    remoteDirectory.getEntries((err, entries) => {
-      expect(err).toBe(null);
-      const sortedEntries = entries.map((entry) => entry.getBaseName());
-      expect(sortedEntries).toEqual(['b', 'Bb', 'a', 'Aa']);
+      const remoteDirectory = new RemoteDirectory(connectionMock, 'nuclide://example.com:9090/');
+
+      remoteDirectory.getEntries((err, entries) => {
+        expect(err).toBe(null);
+        const sortedEntries = entries.map((entry) => entry.getBaseName());
+        expect(sortedEntries).toEqual(['b', 'Bb', 'a', 'Aa']);
+        complete = true;
+      });
+    });
+
+    waitsFor(() => {
+      return complete;
+    });
+  });
+
+  it("calls the given callback with an error on failure to match node-path-watcher's API", () => {
+    let complete = false;
+
+    runs(() => {
+      spyOn(connectionMock.getClient(), 'readdir').andCallFake(() => {
+        throw new Error('ENOENT');
+      });
+
+      const remoteDirectory = new RemoteDirectory(connectionMock, 'nuclide://example.com:9090/');
+
+      remoteDirectory.getEntries((err, entries) => {
+        expect(err).not.toBe(null);
+        expect(entries).toBe(null);
+        complete = true;
+      });
+    });
+
+    waitsFor(() => {
+      return complete;
     });
   });
 });

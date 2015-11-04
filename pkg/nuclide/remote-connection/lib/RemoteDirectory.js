@@ -227,10 +227,24 @@ class RemoteDirectory {
     throw new Error('not implemented');
   }
 
+  /*
+   * Calls `callback` with either an Array of entries or an Error if there was a problem fetching
+   * those entries.
+   *
+   * Note: Although this function is `async`, it never rejects. Check whether the `error` argument
+   * passed to `callback` is `null` to determine if there was an error.
+   */
   async getEntries(
     callback: (error: ?Error, entries: ?Array<RemoteFile | RemoteDirectory>) => any,
   ): Promise<void> {
-    const entries = await this._getFileSystemService().readdir(this._localPath);
+    let entries;
+    try {
+      entries = await this._getFileSystemService().readdir(this._localPath);
+    } catch(e) {
+      callback(e, null);
+      return;
+    }
+
     const directories = [];
     const files = [];
     entries.sort((a, b) => {
