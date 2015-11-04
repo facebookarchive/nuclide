@@ -80,6 +80,10 @@ module.exports = {
     return require('./array');
   },
 
+  get set() {
+    return require('./set');
+  },
+
   get object() {
     return require('./object');
   },
