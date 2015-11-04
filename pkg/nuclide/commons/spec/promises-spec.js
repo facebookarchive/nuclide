@@ -374,6 +374,55 @@ describe('promises::retryLimit()', () => {
   });
 });
 
+describe('promises::RequestSerializer()', () => {
+  const {RequestSerializer} = promises;
+  let requestSerializer: RequestSerializer = (null: any);
+
+  beforeEach(() => {
+    window.useRealClock();
+    requestSerializer = new RequestSerializer();
+  });
+
+  it('gets outdated result for old promises resolving after newer calls', () => {
+    waitsForPromise(async () => {
+      const oldPromise = requestSerializer.run(waitPromise(10, 'OLD'));
+      const newPromise = requestSerializer.run(waitPromise(5, 'NEW'));
+      const {status: oldStatus} = await oldPromise;
+      expect(oldStatus).toBe('outdated');
+      const newResult = await newPromise;
+      expect(newResult.status).toBe('success');
+      expect(newResult[`result`]).toBe('NEW');
+    });
+  });
+
+  it('waitForLatestResult: waits for the latest result', () => {
+    waitsForPromise(async () => {
+      requestSerializer.run(waitPromise(5, 'OLD'));
+      requestSerializer.run(waitPromise(10, 'NEW'));
+      const latestResult = await requestSerializer.waitForLatestResult();
+      expect(latestResult).toBe('NEW');
+    });
+  });
+
+  it('waitForLatestResult: waits even if the first run did not kick off', () => {
+    waitsForPromise(async () => {
+      const latestResultPromise = requestSerializer.waitForLatestResult();
+      requestSerializer.run(waitPromise(10, 'RESULT'));
+      const latestResult = await latestResultPromise;
+      expect(latestResult).toBe('RESULT');
+    });
+  });
+
+  it('waitForLatestResult: does not wait for the first, if the second resolves faster', () => {
+    waitsForPromise(async () => {
+      requestSerializer.run(waitPromise(1000000, 'OLD')); // This will never resolve.
+      requestSerializer.run(waitPromise(10, 'NEW'));
+      const latestResult = await requestSerializer.waitForLatestResult();
+      expect(latestResult).toBe('NEW');
+    });
+  });
+});
+
 
 async function captureParallelismHistory(
     asyncFunction: (...args: Array<any>) => Promise<mixed>,

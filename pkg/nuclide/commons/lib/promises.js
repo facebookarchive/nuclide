@@ -41,18 +41,25 @@ type RunReturn<T> = {
  * receive a 'success' status. If promise1 later resolved, the first callsite
  * would receive an 'outdated' status.
  */
-class RequestSerializer {
+class RequestSerializer<T> {
   _lastDispatchedOp: number;
   _lastFinishedOp: number;
+  _latestPromise: Promise<T>;
+  _waitResolve: Function;
 
   constructor() {
     this._lastDispatchedOp = 0;
     this._lastFinishedOp = 0;
+    this._latestPromise = new Promise((resolve, reject) => {
+      this._waitResolve = resolve;
+    });
   }
 
-  async run<T>(promise: Promise<T>): Promise<RunReturn<T>> {
+  async run(promise: Promise<T>): Promise<RunReturn<T>> {
     var thisOp = this._lastDispatchedOp + 1;
     this._lastDispatchedOp = thisOp;
+    this._latestPromise = promise;
+    this._waitResolve();
     var result = await promise;
     if (this._lastFinishedOp < thisOp) {
       this._lastFinishedOp = thisOp;
@@ -65,6 +72,26 @@ class RequestSerializer {
         status: 'outdated',
       };
     }
+  }
+
+  /**
+   * Returns a Promise that resolves to the last result of `run`,
+   * as soon as there are no more outstanding `run` calls.
+   */
+  async waitForLatestResult(): Promise<T> {
+    let lastPromise = null;
+    let result: any = null;
+    /* eslint-disable no-await-in-loop */
+    while (lastPromise !== this._latestPromise) {
+      lastPromise = this._latestPromise;
+      // Wait for the current last know promise to resolve, or a next run have started.
+      result = await new Promise((resolve, reject) => {
+        this._waitResolve = resolve;
+        this._latestPromise.then(resolve);
+      });
+    }
+    /* eslint-enable no-await-in-loop */
+    return (result: T);
   }
 
   isRunInProgress(): boolean {
