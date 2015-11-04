@@ -27,7 +27,7 @@ export type HackDiagnosticsResult = {
 export type HackDiagnostic = Array<SingleHackMessage>;
 
 export type SingleHackMessage = {
-  path: NuclideUri;
+  path: ?NuclideUri;
   descr: string;
   code: number;
   line: number;

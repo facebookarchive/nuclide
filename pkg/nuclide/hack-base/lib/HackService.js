@@ -52,6 +52,14 @@ export async function getDiagnostics(
   const messages = (
     (result: any): {errors: Array<{message: HackDiagnostic}>}
   ).errors;
+
+  // Use a consistent null 'falsy' value for the empty string, undefined, etc.
+  messages.forEach(error => {
+    error.message.forEach(component => {
+      component.path = component.path || null;
+    });
+  });
+
   return {
     hackRoot,
     messages,

@@ -7,7 +7,7 @@
  */
 
 export type SingleHackMessage = {
-  path: NuclideUri;
+  path: ?NuclideUri;
   descr: string;
   code: number;
   line: number;
