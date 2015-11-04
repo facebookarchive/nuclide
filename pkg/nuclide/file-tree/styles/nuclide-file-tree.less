@@ -1,22 +1,19 @@
-@import "ui-variables";
+.nuclide-file-tree.tree-view:before {
+  /*
+   * Override `fixed` position from `.tree-view:before` so the focus bar is relative to its
+   * container rather than the window. This enables, for example, a tool bar to be left of the tree
+   * view and the focus bar to stay within the tree view.
+   */
+  position: absolute;
+}
 
 .nuclide-file-tree {
-  background-color: @tree-view-background-color;
-
   // Fill horizontal and vertical space if tree is narrower or shorter than its containing panel.
   min-height: -webkit-min-content;
   min-width: -webkit-min-content;
 
   // Fill horizontal space if content is narrower than the containing panel.
   width: 100%;
-
-  &:focus {
-    background-color: contrast(
-        @text-color,
-        darken(@tree-view-background-color, 2%),
-        lighten(@tree-view-background-color, 5%),
-        25%);
-  }
 }
 
 @ARROW_WIDTH: 16px;
