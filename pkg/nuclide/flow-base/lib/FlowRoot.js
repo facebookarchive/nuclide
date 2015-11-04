@@ -10,7 +10,6 @@
  */
 
 import type {NuclideUri} from 'nuclide-remote-uri';
-import type {process$asyncExecuteRet} from 'nuclide-commons';
 
 import type {
   Diagnostics,
@@ -19,10 +18,6 @@ import type {
 
 import {filter} from 'fuzzaldrin';
 
-import {
-  asyncExecute,
-  safeSpawn,
-} from 'nuclide-commons';
 
 import {getLogger} from 'nuclide-logging';
 const logger = getLogger();
@@ -30,31 +25,23 @@ const logger = getLogger();
 import {
   insertAutocompleteToken,
   processAutocompleteItem,
-  isFlowInstalled,
-  getPathToFlow,
 } from './FlowHelpers.js';
 
+import {FlowProcess} from './FlowProcess';
+
 /** Encapsulates all of the state information we need about a specific Flow root */
-export class FlowInstance {
-  // If we had to start a Flow server, store the process here so we can kill it when we shut down.
-  _startedServer: ?child_process$ChildProcess;
-  // Whether we have observed a Flow crash in this root. If Flow crashes, we don't want to keep
-  // restarting Flow servers. We also don't want to disable Flow globally if only a specific Flow
-  // root in the project causes a crash.
-  _failed: boolean;
+export class FlowRoot {
   // The path to the directory where the .flowconfig is -- i.e. the root of the Flow project.
   _root: string;
+  _process: FlowProcess;
 
   constructor(root: string) {
-    this._failed = false;
     this._root = root;
+    this._process = new FlowProcess(root);
   }
 
   dispose(): void {
-    if (this._startedServer) {
-      // The default, SIGTERM, does not reliably kill the flow servers.
-      this._startedServer.kill('SIGKILL');
-    }
+    this._process.dispose();
   }
 
   async flowFindDefinition(
@@ -73,7 +60,7 @@ export class FlowInstance {
 
     const args = ['get-def', '--json', '--retry-if-init', 'false', '--path', file, line, column];
     try {
-      const result = await this._execFlow(args, options, file);
+      const result = await this._process.execFlow(args, options, file);
       if (!result) {
         return null;
       }
@@ -121,7 +108,7 @@ export class FlowInstance {
     try {
       // Don't log errors if the command returns a nonzero exit code, because status returns nonzero
       // if it is reporting any issues, even when it succeeds.
-      result = await this._execFlow(args, options, file, /* logErrors */ false);
+      result = await this._process.execFlow(args, options, file, /* logErrors */ false);
       if (!result) {
         return null;
       }
@@ -197,7 +184,7 @@ export class FlowInstance {
 
     options.stdin = insertAutocompleteToken(currentContents, line, column);
     try {
-      const result = await this._execFlow(args, options, file);
+      const result = await this._process.execFlow(args, options, file);
       if (!result) {
         return [];
       }
@@ -231,7 +218,7 @@ export class FlowInstance {
 
     let output;
     try {
-      const result = await this._execFlow(args, options, file);
+      const result = await this._process.execFlow(args, options, file);
       if (!result) {
         return null;
       }
@@ -263,93 +250,6 @@ export class FlowInstance {
       return null;
     }
     return {type, rawType};
-  }
-
-  /**
-   * Returns null if Flow cannot be found or if there is any other problem with execution.
-   */
-  async _execFlow(
-    args: Array<any>,
-    options: Object,
-    file: string,
-    logErrors?: boolean = true,
-  ): Promise<?process$asyncExecuteRet> {
-    const maxTries = 5;
-    if (this._failed) {
-      return null;
-    }
-    const flowOptions = await this._getFlowExecOptions();
-    if (!flowOptions) {
-      return null;
-    }
-
-    const localOptions = {...options, ...flowOptions};
-    args.push('--no-auto-start');
-    args.push('--from', 'nuclide');
-    const pathToFlow = getPathToFlow();
-    for (let i = 0; ; i++) {
-      try {
-        const result = await asyncExecute( // eslint-disable-line no-await-in-loop
-          pathToFlow,
-          args,
-          localOptions,
-        );
-        return result;
-      } catch (e) {
-        if (i < maxTries && /There is no [fF]low server running/.test(e.stderr)) {
-          // `flow server` will start a server in the foreground. asyncExecute
-          // will not resolve the promise until the process exits, which in this
-          // case is never. We need to use spawn directly to get access to the
-          // ChildProcess object.
-          const serverProcess = await safeSpawn( // eslint-disable-line no-await-in-loop
-            pathToFlow,
-            ['server', this._root],
-          );
-          const logIt = data => {
-            logger.debug('flow server: ' + data);
-          };
-          serverProcess.stdout.on('data', logIt);
-          serverProcess.stderr.on('data', logIt);
-          serverProcess.on('exit', (code, signal) => {
-            // We only want to blacklist this root if the Flow processes
-            // actually failed, rather than being killed manually. It seems that
-            // if they are killed, the code is null and the signal is 'SIGTERM'.
-            // In the Flow crashes I have observed, the code is 2 and the signal
-            // is null. So, let's blacklist conservatively for now and we can
-            // add cases later if we observe Flow crashes that do not fit this
-            // pattern.
-            if (code === 2 && signal === null) {
-              logger.error('Flow server unexpectedly exited', this._root);
-              this._failed = true;
-            }
-          });
-          this._startedServer = serverProcess;
-        } else {
-          if (logErrors) {
-            // not sure what happened, but we'll let the caller deal with it
-            logger.error(`Flow failed: flow ${args.join(' ')}. Error: ${JSON.stringify(e)}`);
-          }
-          throw e;
-        }
-        // try again
-      }
-    }
-    // otherwise flow complains
-    return null;
-  }
-
-  /**
-  * If this returns null, then it is not safe to run flow.
-  */
-  async _getFlowExecOptions(): Promise<?{cwd: string}> {
-    const installed = await isFlowInstalled();
-    if (installed) {
-      return {
-        cwd: this._root,
-      };
-    } else {
-      return null;
-    }
   }
 }
 

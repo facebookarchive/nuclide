@@ -11,7 +11,7 @@
 
 import type {NuclideUri} from 'nuclide-remote-uri';
 
-import type {FlowInstance as FlowInstanceT} from './FlowInstance';
+import type {FlowRoot as FlowRootT} from './FlowRoot';
 
 // Diagnostic information, returned from findDiagnostics.
 export type Diagnostics = {
@@ -46,26 +46,26 @@ import {findFlowConfigDir} from './FlowHelpers';
 
 // string rather than NuclideUri because this module will always execute at the location of the
 // file, so it will always be a real path and cannot be prefixed with nuclide://
-const flowInstances: Map<string, FlowInstanceT> = new Map();
+const flowRoots: Map<string, FlowRootT> = new Map();
 
-async function getInstance(file: string): Promise<?FlowInstanceT> {
+async function getInstance(file: string): Promise<?FlowRootT> {
   const root = await findFlowConfigDir(file);
   if (root == null) {
     return null;
   }
 
-  let instance = flowInstances.get(root);
+  let instance = flowRoots.get(root);
   if (!instance) {
-    const {FlowInstance} = require('./FlowInstance');
-    instance = new FlowInstance(root);
-    flowInstances.set(root, instance);
+    const {FlowRoot} = require('./FlowRoot');
+    instance = new FlowRoot(root);
+    flowRoots.set(root, instance);
   }
   return instance;
 }
 
 async function runWithInstance<T>(
   file: string,
-  f: (instance: FlowInstanceT) => Promise<T>
+  f: (instance: FlowRootT) => Promise<T>
 ): Promise<?T> {
   const instance = await getInstance(file);
   if (instance == null) {
@@ -76,8 +76,8 @@ async function runWithInstance<T>(
 }
 
 export function dispose(): void {
-  flowInstances.forEach(instance => instance.dispose());
-  flowInstances.clear();
+  flowRoots.forEach(instance => instance.dispose());
+  flowRoots.clear();
 }
 
 export function flowFindDefinition(
