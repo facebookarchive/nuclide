@@ -9,21 +9,21 @@
  * the root directory of this source tree.
  */
 
-var React = require('react-for-atom');
+const React = require('react-for-atom');
 
 class EmptyComponent extends React.Component {
 
   render(): ReactElement {
     return (
-      <div>
+      <div className="padded">
         <button
           onClick={() => this.runCommand('application:add-project-folder')}
-          className="btn btn-block icon icon-device-desktop nuclide-file-tree-action-button">
+          className="btn btn-block icon icon-device-desktop">
           Add Project Folder
         </button>
         <button
           onClick={() => this.runCommand('nuclide-remote-projects:connect')}
-          className="btn btn-block icon icon-cloud-upload nuclide-file-tree-action-button">
+          className="btn btn-block icon icon-cloud-upload">
           Add Remote Project Folder
         </button>
       </div>
