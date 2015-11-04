@@ -292,6 +292,12 @@ class ServiceParser {
         return {location, kind: 'number'};
       case 'BooleanTypeAnnotation':
         return {location, kind: 'boolean'};
+      case 'StringLiteralTypeAnnotation':
+        return {location, kind: 'string-literal', value: typeAnnotation.value};
+      case 'NumberLiteralTypeAnnotation':
+        return {location, kind: 'number-literal', value: typeAnnotation.value};
+      case 'BooleanLiteralTypeAnnotation':
+        return {location, kind: 'boolean-literal', value: typeAnnotation.value};
       case 'NullableTypeAnnotation':
         return {
           location,

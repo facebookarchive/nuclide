@@ -53,6 +53,7 @@ export type Type = NullableType | MixedType |
   AnyType | StringType | BooleanType | NumberType | // Primitive types.
   ObjectType | ArrayType | MapType | SetType | TupleType | // Container types.
   VoidType | PromiseType | ObservableType | // Return types.
+  StringLiteralType | NumberLiteralType | BooleanLiteralType | // Literal types.
   NamedType | FunctionType; // Type aliases.
 
 // Nullable type.
@@ -72,6 +73,11 @@ export type MixedType = { location: Location; kind: 'mixed' };
 export type StringType = { location: Location; kind: 'string' };
 export type BooleanType = { location: Location; kind: 'boolean' };
 export type NumberType = { location: Location; kind: 'number' };
+
+// Literal types.
+export type StringLiteralType = { location: Location; kind: 'string-literal'; value: string };
+export type NumberLiteralType = { location: Location; kind: 'number-literal'; value: number };
+export type BooleanLiteralType = { location: Location; kind: 'boolean-literal'; value: boolean };
 
 // Possible Return formats.
 export type VoidType = { location: Location; kind: 'void' };

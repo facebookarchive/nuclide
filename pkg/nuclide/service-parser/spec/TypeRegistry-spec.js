@@ -79,6 +79,57 @@ describe('TypeRegistry', () => {
     });
   });
 
+  it('Can serialize / deserialize literal types', () => {
+    waitsForPromise(async () => {
+      const stringLiteralType = {
+        location: builtinLocation,
+        kind: 'string-literal',
+        value: 'Hello World',
+      };
+      invariant(typeRegistry);
+
+      const expected1 = 'Hello World';
+      const str1 = await typeRegistry.unmarshal(
+        await typeRegistry.marshal(expected1, stringLiteralType),
+        stringLiteralType,
+      );
+      expect(str1).toBe(expected1);
+
+      const numberLiteralType = {
+        location: builtinLocation,
+        kind: 'number-literal',
+        value: 312213,
+      };
+      const expected2 = 312213;
+      const num2 = await typeRegistry.unmarshal(
+        await typeRegistry.marshal(expected2, numberLiteralType),
+        numberLiteralType,
+      );
+      expect(num2).toBe(expected2);
+
+      const falseLiteralType = {
+        location: builtinLocation,
+        kind: 'boolean-literal',
+        value: false,
+      };
+      const expected3 = false;
+      const bool3 = await typeRegistry.unmarshal(
+        await typeRegistry.marshal(expected3, falseLiteralType),
+        falseLiteralType,
+      );
+      expect(bool3).toBe(expected3);
+
+      // Marshalling an unexpected value throws.
+      let thrown = false;
+      try {
+        await typeRegistry.marshal(42, falseLiteralType);
+      } catch (e) {
+        thrown = true;
+      }
+      expect(thrown).toBe(true);
+    });
+  });
+
   it('Can serialize / deserialize complex types like Date, Regex and Buffer', () => {
     waitsForPromise(async () => {
       invariant(typeRegistry);

@@ -59,6 +59,9 @@ export function validateDefinitions(definitions: Definitions): void {
       case 'string':
       case 'boolean':
       case 'number':
+      case 'string-literal':
+      case 'boolean-literal':
+      case 'number-literal':
       case 'void':
         break;
       case 'promise':
@@ -134,6 +137,9 @@ export function validateDefinitions(definitions: Definitions): void {
       case 'string':
       case 'boolean':
       case 'number':
+      case 'string-literal':
+      case 'boolean-literal':
+      case 'number-literal':
       case 'void':
         break;
       case 'promise':
@@ -270,6 +276,9 @@ export function validateDefinitions(definitions: Definitions): void {
       case 'string':
       case 'boolean':
       case 'number':
+      case 'string-literal':
+      case 'boolean-literal':
+      case 'number-literal':
         break;
       case 'void':
       case 'promise':

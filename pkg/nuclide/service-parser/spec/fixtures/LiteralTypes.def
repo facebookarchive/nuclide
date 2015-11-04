@@ -1,0 +1,5 @@
+export type StringLiteralType = 'value';
+export type NumberLiteralType = 42;
+export type BooleanLiteralType = true;
+
+export function LiteralFunc(s: 'v', n: 42, b: true): void {}

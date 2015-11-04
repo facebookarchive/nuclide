@@ -103,6 +103,7 @@ export default class TypeRegistry {
     this._registerPrimitives();
     this._registerSpecialTypes();
     this._registerContainers();
+    this._registerLiterals();
 
     // Register NullableType and NamedType
     this._registerKind('nullable', async (value: any, type: Type) => {
@@ -227,6 +228,18 @@ export default class TypeRegistry {
     this._registerKind('boolean', booleanTransformer, booleanTransformer);
     this._registerKind('any', identityTransformer, identityTransformer);
     this._registerKind('mixed', identityTransformer, identityTransformer);
+  }
+
+  _registerLiterals(): void {
+    const literalTransformer = async (arg, type) => {
+      invariant(type.kind === 'string-literal' || type.kind === 'number-literal' ||
+          type.kind === 'boolean-literal');
+      invariant(arg === type.value);
+      return arg;
+    };
+    this._registerKind('string-literal', literalTransformer, literalTransformer);
+    this._registerKind('number-literal', literalTransformer, literalTransformer);
+    this._registerKind('boolean-literal', literalTransformer, literalTransformer);
   }
 
   _registerSpecialTypes(): void {
