@@ -42,6 +42,9 @@ export type Loc = {
   column: number;
 }
 
+export type ServerStatus =
+  'failed' |
+  'unknown';
 import {findFlowConfigDir} from './FlowHelpers';
 
 // string rather than NuclideUri because this module will always execute at the location of the

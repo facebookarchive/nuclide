@@ -11,6 +11,10 @@
 
 import type {process$asyncExecuteRet} from 'nuclide-commons';
 
+import type {ServerStatus} from './FlowService';
+
+import {BehaviorSubject} from 'rx';
+
 import {getLogger} from 'nuclide-logging';
 const logger = getLogger();
 
@@ -27,19 +31,18 @@ import {
 export class FlowProcess {
   // If we had to start a Flow server, store the process here so we can kill it when we shut down.
   _startedServer: ?child_process$ChildProcess;
-  // Whether we have observed a Flow crash in this root. If Flow crashes, we don't want to keep
-  // restarting Flow servers. We also don't want to disable Flow globally if only a specific Flow
-  // root in the project causes a crash.
-  _failed: boolean;
+  // The current state of the Flow server in this directory
+  _serverStatus: BehaviorSubject<ServerStatus>;
   // The path to the directory where the .flowconfig is -- i.e. the root of the Flow project.
   _root: string;
 
   constructor(root: string) {
-    this._failed = false;
+    this._serverStatus = new BehaviorSubject('unknown');
     this._root = root;
   }
 
   dispose(): void {
+    this._serverStatus.onCompleted();
     if (this._startedServer) {
       // The default, SIGTERM, does not reliably kill the flow servers.
       this._startedServer.kill('SIGKILL');
@@ -56,7 +59,7 @@ export class FlowProcess {
     logErrors?: boolean = true,
   ): Promise<?process$asyncExecuteRet> {
     const maxTries = 5;
-    if (this._failed) {
+    if (this._serverStatus.getValue() === 'failed') {
       return null;
     }
     for (let i = 0; ; i++) {
@@ -109,7 +112,8 @@ export class FlowProcess {
       // pattern.
       if (code === 2 && signal === null) {
         logger.error('Flow server unexpectedly exited', this._root);
-        this._failed = true;
+        this._serverStatus.onNext('failed');
+        this._serverStatus.onCompleted();
       }
     });
     this._startedServer = serverProcess;
