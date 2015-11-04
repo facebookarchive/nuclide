@@ -8,7 +8,11 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-import {PromisePool, PromiseQueue} from '../lib/PromiseExecutors';
+
+import {
+  PromisePool,
+  PromiseQueue,
+} from '../lib/PromiseExecutors';
 
 describe('PromiseQueue', () => {
 
@@ -16,27 +20,11 @@ describe('PromiseQueue', () => {
   // https://discuss.atom.io/t/solved-settimeout-not-working-firing-in-specs-tests/11427/17
   beforeEach(() => window.useRealClock());
 
-  // This also does not work even though the docs say that it should:
-  // https://discuss.atom.io/t/how-can-i-add-my-own-matchers-to-jasmine/12969/
-  // beforeEach(() => {
-  //   addMatchers({
-  //     toBeLessThanOrEqualTo: () => {
-  //       return {
-  //         compare: (actual, expected) => {
-  //           return {
-  //             pass: actual < expected,
-  //           };
-  //         },
-  //       };
-  //     },
-  //   });
-  // });
-
   it('Run three async operations serially and make sure they do not overlap.', () => {
-    var queue = new PromiseQueue();
-    var res1Start = 0, res1End = 0;
-    var res2Start = 0, res2End = 0;
-    var res3Start = 0, res3End = 0;
+    const queue = new PromiseQueue();
+    let res1Start = 0, res1End = 0;
+    let res2Start = 0, res2End = 0;
+    let res3Start = 0, res3End = 0;
 
     runs(() => {
       queue.submit((resolve, reject) => {
@@ -56,20 +44,15 @@ describe('PromiseQueue', () => {
     waitsFor(() => res1End && res2End && res3End, 700);
 
     runs(() => {
-      // There is no toBeLessThanOrEqualTo matcher, and as you can see from
-      // above, attempting to define our own matcher has failed.
-
       // Make sure that none of the executors overlapped.
-      expect(res1Start <= res1End).toBe(true);
-      expect(res1End <= res2Start).toBe(true);
-      expect(res2Start <= res2End).toBe(true);
-      expect(res2End <= res3Start).toBe(true);
-      expect(res3Start <= res3End).toBe(true);
+      expect(res1Start).not.toBeGreaterThan(res1End);
+      expect(res1End).not.toBeGreaterThan(res2Start);
+      expect(res2Start).not.toBeGreaterThan(res2End);
+      expect(res2End).not.toBeGreaterThan(res3Start);
+      expect(res3Start).not.toBeGreaterThan(res3End);
     });
   });
-
 });
-
 
 describe('PromisePool', () => {
   beforeEach(() => window.useRealClock());
@@ -102,5 +85,4 @@ describe('PromisePool', () => {
       expect(end - start < numDelayedExecutors * delayMs / (poolSize - 1));
     });
   });
-
 });
