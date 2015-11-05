@@ -9,26 +9,7 @@
  * the root directory of this source tree.
  */
 
-export type TestClassSummary = {
-  className: string;
-  fileName: string;
-  id: number;
-  name: string;
-};
-
-export type TestRunInfo = {
-  details?: string;
-  durationSecs: number;
-  endedTime?: number;
-  name: string;
-  numAssertions: number;
-  numFailures: number;
-  numMethods: number;
-  numSkipped: number;
-  status: number;
-  summary?: string;
-  test_json?: TestClassSummary;
-};
+import type {TestClassSummary, TestRunInfo} from './main';
 
 class TestSuiteModel {
 
