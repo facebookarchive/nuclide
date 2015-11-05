@@ -103,8 +103,8 @@ function trackTiming(eventName: ?string = null): any {
  * Wrapped in a function rather than a module constant to facilitate testing.
  */
 const getTimestamp = (): number => {
-  const timingFunction = (window != null && window.performance != null)
-    ? () => Math.round(window.performance.now())
+  const timingFunction = (global.performance != null)
+    ? () => Math.round(global.performance.now())
     : (process != null && typeof process.hrtime === 'function')
       ? () => {
         const hr = process.hrtime();
