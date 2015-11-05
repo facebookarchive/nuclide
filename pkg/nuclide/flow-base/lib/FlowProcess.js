@@ -13,6 +13,8 @@ import type {process$asyncExecuteRet} from 'nuclide-commons';
 
 import type {ServerStatus} from './FlowService';
 
+import invariant from 'assert';
+
 import {BehaviorSubject} from 'rx';
 
 import {getLogger} from 'nuclide-logging';
@@ -27,6 +29,18 @@ import {
   isFlowInstalled,
   getPathToFlow,
 } from './FlowHelpers.js';
+
+// Names modeled after https://github.com/facebook/flow/blob/master/src/common/flowExitStatus.ml
+export const FLOW_RETURN_CODES = {
+  ok: 0,
+  serverInitializing: 1,
+  typeError: 2,
+  noServerRunning: 6,
+  // This means that the server exists, but it is not responding, typically because it is busy doing
+  // other work.
+  outOfRetries: 7,
+  buildIdMismatch: 9,
+};
 
 export class FlowProcess {
   // If we had to start a Flow server, store the process here so we can kill it when we shut down.
@@ -132,7 +146,51 @@ export class FlowProcess {
       '--from', 'nuclide',
     ];
     const pathToFlow = getPathToFlow();
-    return await asyncExecute(pathToFlow, args, options);
+    try {
+      const result = await asyncExecute(pathToFlow, args, options);
+      this._updateServerStatus(result);
+      return result;
+    } catch (e) {
+      this._updateServerStatus(e);
+      throw e;
+    }
+  }
+
+  _updateServerStatus(result: ?process$asyncExecuteRet): void {
+    let status;
+    if (result == null) {
+      status = 'not installed';
+    } else {
+      switch (result.exitCode) {
+        case FLOW_RETURN_CODES.ok:
+          // falls through
+        case FLOW_RETURN_CODES.typeError:
+          status = 'ready';
+          break;
+        case FLOW_RETURN_CODES.serverInitializing:
+          status = 'init';
+          break;
+        case FLOW_RETURN_CODES.noServerRunning:
+          status = 'not running';
+          break;
+        case FLOW_RETURN_CODES.outOfRetries:
+          status = 'busy';
+          break;
+        case FLOW_RETURN_CODES.buildIdMismatch:
+          // If the version doesn't match, the server is automatically killed and the client
+          // returns 9.
+          logger.info('Killed flow server with incorrect version in', this._root);
+          status = 'not running';
+          break;
+        default:
+          logger.error('Unknown return code from Flow: ' + result.exitCode);
+          status = 'unknown';
+      }
+    }
+    invariant(status != null);
+    if (status !== this._serverStatus.getValue()) {
+      this._serverStatus.onNext(status);
+    }
   }
 
   /**
