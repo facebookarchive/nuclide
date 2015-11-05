@@ -84,7 +84,9 @@ export class FlowProcess {
         );
         return result;
       } catch (e) {
-        if (i < maxTries && /There is no [fF]low server running/.test(e.stderr)) {
+        const shouldRetry = ['not running', 'init', 'busy']
+          .indexOf(this._serverStatus.getValue()) !== -1;
+        if (i < maxTries && shouldRetry) {
           await this._startFlowServer(); // eslint-disable-line no-await-in-loop
         } else {
           if (logErrors) {
