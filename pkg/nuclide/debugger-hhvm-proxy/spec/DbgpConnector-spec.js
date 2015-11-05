@@ -38,28 +38,6 @@ const payload1 =
   </copyright>
 </init>`;
 
-const payload2 =
-`<init
-  xmlns="urn:debugger_protocol_v1"
-  xmlns:xdebug="http://xdebug.org/dbgp/xdebug"
-  fileuri="file:///test2.php"
-  language="PHP"
-  protocol_version="1.0"
-  appid="2"
-  idekey="username2">
-
-  <engine version=""><![CDATA[xdebug]]></engine>
-  <author>
-    <![CDATA[HHVM]]>
-  </author>
-  <url>
-    <![CDATA[http://hhvm.com/]]>
-  </url>
-  <copyright>
-    <![CDATA[Copyright (c) 2002-2013 by Derick Rethans]]>
-  </copyright>
-</init>`;
-
 describe('debugger-hhvm-proxy DbgpConnector', () => {
   var server;
   var socket;
@@ -88,7 +66,7 @@ describe('debugger-hhvm-proxy DbgpConnector', () => {
     clearRequireCache(require, '../lib/DbgpConnector');
   });
 
-  it('no filtering', () => {
+  it('connection attach', () => {
     var port = 7779;
 
     var config = {
@@ -99,9 +77,9 @@ describe('debugger-hhvm-proxy DbgpConnector', () => {
     };
 
     var onAttach = jasmine.createSpy('onAttach').andCallFake(
-      attachedSocket => {
+      params => {
+        const attachedSocket = params.socket;
         expect(socket.once).toHaveBeenCalledWith('data', jasmine.any(Function));
-
         expect(attachedSocket).toBe(socket);
 
         connector.dispose();
@@ -129,56 +107,6 @@ describe('debugger-hhvm-proxy DbgpConnector', () => {
 
     socket.emit('data', makeDbgpMessage(payload1));
 
-    expect(onAttach).toHaveBeenCalled();
-  });
-
-  it('filtering', () => {
-    var port = 7780;
-
-    var config = {
-      xdebugPort: port,
-      pid: null,
-      idekeyRegex: 'username2',
-      scriptRegex: 'test2.php',
-    };
-
-    var onClose = jasmine.createSpy('onClose');
-    var onAttach = jasmine.createSpy('onAttach').andCallFake(
-      attachedSocket => {
-        expect(attachedSocket).toBe(socket);
-      });
-
-    var connector = new DbgpConnector(config);
-    connector.listen();
-    connector.onClose(onClose);
-    connector.onAttach(onAttach);
-
-    expect(server.on).toHaveBeenCalledWith('close', jasmine.any(Function));
-    expect(server.listen).toHaveBeenCalledWith(port, jasmine.any(Function));
-    expect(server.on).toHaveBeenCalledWith('error', jasmine.any(Function));
-    expect(server.on).toHaveBeenCalledWith('connection', jasmine.any(Function));
-    expect(server.on).toHaveBeenCalledWith('close', jasmine.any(Function));
-
-    var socket1 = createSocketSpy();
-    socket1.end = jasmine.createSpy();
-    socket1.destroy = jasmine.createSpy();
-
-    var emitted = server.emit('connection', socket1);
-    expect(emitted).toBe(true);
-    expect(socket1.once).toHaveBeenCalledWith('data', jasmine.any(Function));
-
-    socket1.emit('data', makeDbgpMessage(payload1));
-    expect(socket1.end).toHaveBeenCalledWith();
-    expect(socket1.destroy).toHaveBeenCalledWith();
-    expect(onAttach).not.toHaveBeenCalled();
-
-    var emitted = server.emit('connection', socket);
-    expect(emitted).toBe(true);
-    expect(socket.once).toHaveBeenCalledWith('data', jasmine.any(Function));
-
-    expect(onAttach).not.toHaveBeenCalled();
-    expect(onClose).not.toHaveBeenCalled();
-    socket.emit('data', makeDbgpMessage(payload2));
     expect(onAttach).toHaveBeenCalled();
   });
 

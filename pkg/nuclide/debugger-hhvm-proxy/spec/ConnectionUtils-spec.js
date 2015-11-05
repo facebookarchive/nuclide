@@ -1,0 +1,98 @@
+'use babel';
+/* @flow */
+
+/*
+ * Copyright (c) 2015-present, Facebook, Inc.
+ * All rights reserved.
+ *
+ * This source code is licensed under the license found in the LICENSE file in
+ * the root directory of this source tree.
+ */
+
+import {
+  isCorrectConnection,
+} from '../lib/ConnectionUtils';
+import {makeDbgpMessage} from '../lib/helpers';
+import {getDbgpMessageHandlerInstance} from '../lib/DbgpMessageHandler';
+
+const payload1 =
+`<init
+  xmlns="urn:debugger_protocol_v1"
+  xmlns:xdebug="http://xdebug.org/dbgp/xdebug"
+  fileuri="file:///test1.php"
+  language="PHP"
+  protocol_version="1.0"
+  appid="1"
+  idekey="username1">
+
+  <engine version=""><![CDATA[xdebug]]></engine>
+  <author>
+    <![CDATA[HHVM]]>
+  </author>
+  <url>
+    <![CDATA[http://hhvm.com/]]>
+  </url>
+  <copyright>
+    <![CDATA[Copyright (c) 2002-2013 by Derick Rethans]]>
+  </copyright>
+</init>`;
+
+const payload2 =
+`<init
+  xmlns="urn:debugger_protocol_v1"
+  xmlns:xdebug="http://xdebug.org/dbgp/xdebug"
+  fileuri="file:///test2.php"
+  language="PHP"
+  protocol_version="1.0"
+  appid="2"
+  idekey="username2">
+
+  <engine version=""><![CDATA[xdebug]]></engine>
+  <author>
+    <![CDATA[HHVM]]>
+  </author>
+  <url>
+    <![CDATA[http://hhvm.com/]]>
+  </url>
+  <copyright>
+    <![CDATA[Copyright (c) 2002-2013 by Derick Rethans]]>
+  </copyright>
+</init>`;
+
+function convertMessageIntoJson(payload: string): Object {
+  return getDbgpMessageHandlerInstance().parseMessages(makeDbgpMessage(payload))[0];
+}
+
+describe('debugger-hhvm-proxy ConnectionUtils', () => {
+  beforeEach(() => {
+    spyOn(require('nuclide-commons').fsPromise, 'exists').andReturn(true);
+  });
+
+  afterEach(() => {
+    unspy(require('nuclide-commons').fsPromise, 'exists');
+  });
+
+  describe('isCorrectConnection', () => {
+    const config = {
+      xdebugPort: 1234,
+      pid: null,
+      idekeyRegex: 'username2',
+      scriptRegex: 'test2.php',
+      endDebugWhenNoRequests: true,
+      logLevel: 'info',
+      targetUri: 'target_uri',
+    };
+
+    it('reject', () => {
+      const message = convertMessageIntoJson(payload1);
+      const result = isCorrectConnection(config, message);
+      expect(result).toBe(false);
+    });
+
+    it('pass', () => {
+      const message = convertMessageIntoJson(payload2);
+      const result = isCorrectConnection(config, message);
+      expect(result).toBe(true);
+    });
+  });
+});

@@ -10,33 +10,31 @@
  */
 
 
-var {uncachedRequire, clearRequireCache} = require('nuclide-test-helpers');
+import {uncachedRequire, clearRequireCache} from 'nuclide-test-helpers';
 
-var {
+import {
   STATUS_STARTING,
-  STATUS_STOPPING,
-  STATUS_STOPPED,
   STATUS_RUNNING,
   STATUS_BREAK,
-  STATUS_ERROR,
   STATUS_END,
   COMMAND_RUN,
-  COMMAND_STEP_INTO,
-} = require('../lib/DbgpSocket');
+} from '../lib/DbgpSocket';
 
 describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
-  var socket;
-  var connectionCount;
-  var connections;
-  var connectionSpys;
-  var onDbgpConnectorAttach;
-  var onDbgpConnectorClose;
-  var onDbgpConnectorError;
-  var onStatus;
-  var haveStatusThrow;
-  let connectionMultiplexer;
+  let socket: any;
+  let connectionCount;
+  let connections;
+  let connectionSpys;
+  let onDbgpConnectorAttach;
+  let onDbgpConnectorClose;
+  let onDbgpConnectorError;
+  let onStatus;
+  let haveStatusThrow;
+  let connectionMultiplexer: any;
+  let isCorrectConnectionResult;
+  let ConnectionUtils: any;
 
-  var config = {
+  const config = {
     xdebugPort: 9000,
     pid: null,
     idekeyRegex: null,
@@ -53,13 +51,13 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
     connectionCount = 0;
     onStatus = jasmine.createSpy('onStatus');
 
-    socket = jasmine.createSpyObj('socket', ['on']);
+    socket = jasmine.createSpyObj('socket', ['on', 'end', 'destroy']);
     connector = jasmine.createSpyObj('connector', [
-        'listen',
-        'onAttach',
-        'onClose',
-        'dispose',
-      ]);
+      'listen',
+      'onAttach',
+      'onClose',
+      'dispose',
+    ]);
     connector.onAttach = jasmine.createSpy('onAttach').andCallFake(
       callback => { onDbgpConnectorAttach = callback; }
     );
@@ -76,18 +74,18 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
     function createConnectionSpy() {
       var result = {};
       var connection = jasmine.createSpyObj('connection' + connectionCount, [
-          'onStatus',
-          'evaluateOnCallFrame',
-          'getProperties',
-          'getScopesForFrame',
-          'setBreakpoint',
-          'removeBreakpoint',
-          'getStackFrames',
-          'getStatus',
-          'sendContinuationCommand',
-          'sendBreakCommand',
-          'dispose',
-        ]);
+        'onStatus',
+        'evaluateOnCallFrame',
+        'getProperties',
+        'getScopesForFrame',
+        'setBreakpoint',
+        'removeBreakpoint',
+        'getStackFrames',
+        'getStatus',
+        'sendContinuationCommand',
+        'sendBreakCommand',
+        'dispose',
+      ]);
       var id = connectionCount;
       connection.getId = () => id;
 
@@ -127,15 +125,29 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
       'setPauseOnExceptions',
       'removeBreakpoint',
     ]);
-    BreakpointStore = spyOn(require('../lib/BreakpointStore'), 'BreakpointStore').andReturn(breakpointStore);
+    BreakpointStore = spyOn(require('../lib/BreakpointStore'), 'BreakpointStore')
+      .andReturn(breakpointStore);
 
-    var {ConnectionMultiplexer} =
+    isCorrectConnectionResult = true;
+    const isCorrectConnection = spyOn(require('../lib/ConnectionUtils'), 'isCorrectConnection')
+      .andCallFake(() => isCorrectConnectionResult);
+    const failConnection = spyOn(require('../lib/ConnectionUtils'), 'failConnection');
+    ConnectionUtils = {
+      isCorrectConnection,
+      failConnection,
+    };
+
+    const {ConnectionMultiplexer} =
       uncachedRequire(require, '../lib/ConnectionMultiplexer');
     connectionMultiplexer = new ConnectionMultiplexer(config);
     connectionMultiplexer.onStatus(onStatus);
   });
 
   afterEach(() => {
+    config.idekeyRegex = null;
+    config.scriptRegex = null;
+    unspy(require('../lib/ConnectionUtils'), 'isCorrectConnection');
+    unspy(require('../lib/ConnectionUtils'), 'failConnection');
     unspy(require('../lib/DbgpConnector'), 'DbgpConnector');
     unspy(require('../lib/Connection'), 'Connection');
     unspy(require('../lib/BreakpointStore'), 'BreakpointStore');
@@ -168,7 +180,10 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
     expectListen();
 
     expect(connectionCount).toBe(0);
-    await onDbgpConnectorAttach(socket);
+    await onDbgpConnectorAttach({
+      socket,
+      message: 'normal connection',
+    });
     expect(connectionCount).toBe(1);
 
     expect(connector.dispose).not.toHaveBeenCalledWith();
@@ -223,7 +238,10 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
 
       haveStatusThrow = true;
       expect(connectionCount).toBe(0);
-      await onDbgpConnectorAttach(socket);
+      await onDbgpConnectorAttach({
+        socket,
+        message: 'normal connection',
+      });
       expect(connectionCount).toBe(1);
 
       expect(connector.dispose).not.toHaveBeenCalledWith();
@@ -233,6 +251,31 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
       expect(connections[0].getStatus).toHaveBeenCalledWith();
       expect(connections[0].sendContinuationCommand).not.toHaveBeenCalledWith(COMMAND_RUN);
       expect(connectionMultiplexer.getStatus()).toBe(STATUS_RUNNING);
+    });
+  });
+
+  it('attach - filter connection', () => {
+    waitsForPromise(async () => {
+      connectionMultiplexer.listen();
+      expectListen();
+
+      expect(connectionCount).toBe(0);
+      expect(ConnectionUtils.failConnection).not.toHaveBeenCalled();
+      await onDbgpConnectorAttach({
+        socket,
+        message: 'passed connection',
+      });
+      expect(connectionCount).toBe(1);
+      expect(ConnectionUtils.failConnection).not.toHaveBeenCalled();
+
+      // Test rejected connection.
+      isCorrectConnectionResult = false;
+      await onDbgpConnectorAttach({
+        socket,
+        message: 'rejected connection',
+      });
+      expect(connectionCount).toBe(1);
+      expect(ConnectionUtils.failConnection).toHaveBeenCalled();
     });
   });
 
@@ -280,10 +323,16 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
   async function gotoFFT(): Promise {
     await doAttach();
     expect(connectionSpys[0]).not.toBe(undefined);
-    await onDbgpConnectorAttach(socket);
+    await onDbgpConnectorAttach({
+      socket,
+      message: 'normal connection',
+    });
     expect(connectionCount).toBe(2);
     expect(connectionSpys[1]).not.toBe(undefined);
-    await onDbgpConnectorAttach(socket);
+    await onDbgpConnectorAttach({
+      socket,
+      message: 'normal connection',
+    });
     expect(connectionCount).toBe(3);
     expect(connectionSpys[2]).not.toBe(undefined);
     expect(connectionMultiplexer.getStatus()).toBe(STATUS_RUNNING);

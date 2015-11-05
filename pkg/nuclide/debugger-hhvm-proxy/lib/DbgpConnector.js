@@ -9,12 +9,10 @@
  * the root directory of this source tree.
  */
 
-
 import {log, logError} from './utils';
-import {uriToPath} from './helpers';
-
-const {Emitter} = require('event-kit');
+import {Emitter} from 'event-kit';
 import {DbgpMessageHandler, getDbgpMessageHandlerInstance} from './DbgpMessageHandler';
+import {failConnection} from './ConnectionUtils';
 
 import type {Socket, Server} from 'net';
 
@@ -31,11 +29,12 @@ import type {Socket, Server} from 'net';
  */
 export type ConnectionConfig = {
   xdebugPort: number;
-  pid?: number;
-  scriptRegex?: string;
-  idekeyRegex?: string;
+  pid: ?number;
+  scriptRegex: ?string;
+  idekeyRegex: ?string;
   endDebugWhenNoRequests: boolean;
   logLevel: string;
+  targetUri: string;
 };
 
 const DBGP_ATTACH_EVENT = 'dbgp-attach-event';
@@ -66,7 +65,7 @@ export class DbgpConnector {
     this._messageHandler = getDbgpMessageHandlerInstance();
   }
 
-  onAttach(callback: (socket: Socket) => void): Disposable {
+  onAttach(callback: (params: {socket: Socket, message: Object}) => Promise): Disposable {
     return this._emitter.on(DBGP_ATTACH_EVENT, callback);
   }
 
@@ -127,31 +126,23 @@ export class DbgpConnector {
       return;
     }
 
-    function failConnection(errorMessage: string): void {
-      log(errorMessage);
-      socket.end();
-      socket.destroy();
-    }
-
-    var messages;
+    let messages;
     try {
       messages = this._messageHandler.parseMessages(data.toString());
     } catch (error) {
-      failConnection('Non XML connection string: ' + data.toString() + '. Discarding connection.');
+      failConnection(
+        socket,
+        'Non XML connection string: ' + data.toString() + '. Discarding connection.');
       return;
     }
 
     if (messages.length !== 1) {
-      failConnection('Expected a single connection message. Got ' + messages.length);
+      failConnection(socket, 'Expected a single connection message. Got ' + messages.length);
       return;
     }
 
-    var message = messages[0];
-    if (this._isCorrectConnection(message)) {
-      this._emitter.emit(DBGP_ATTACH_EVENT, socket);
-    } else {
-      failConnection('Discarding connection ' + JSON.stringify(message));
-    }
+    const message = messages[0];
+    this._emitter.emit(DBGP_ATTACH_EVENT, {socket, message});
   }
 
   /**
@@ -164,33 +155,6 @@ export class DbgpConnector {
       return false;
     }
     return true;
-  }
-
-  _isCorrectConnection(message: Object): boolean {
-    var {pid, idekeyRegex, scriptRegex} = this._config;
-
-    if (!message || !message.init || !message.init.$) {
-      log('Incorrect init');
-      return false;
-    }
-
-    var init = message.init;
-    if (!init.engine || !init.engine || !init.engine[0] || init.engine[0]._ !== 'xdebug') {
-      log('Incorrect engine');
-      return false;
-    }
-
-    var attributes = init.$;
-    if (attributes.xmlns !== 'urn:debugger_protocol_v1'
-      || attributes['xmlns:xdebug'] !== 'http://xdebug.org/dbgp/xdebug'
-      || attributes.language !== 'PHP') {
-        log('Incorrect attributes');
-        return false;
-    }
-
-    return (!pid || attributes.appid === String(pid)) &&
-      (!idekeyRegex || new RegExp(idekeyRegex).test(attributes.idekey)) &&
-      (!scriptRegex || new RegExp(scriptRegex).test(uriToPath(attributes.fileuri)));
   }
 
   isListening(): boolean {
