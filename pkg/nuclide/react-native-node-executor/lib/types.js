@@ -9,6 +9,4 @@
  * the root directory of this source tree.
  */
 
-module.exports = {
-  // TODO(natthu): Add export code here.
-};
+export type ServerReplyCallback = (replyID: number, result?: Object) => void;

@@ -1,13 +1,17 @@
 {
   "name": "nuclide-react-native-node-executor",
   "repository": "https://github.com/facebook/nuclide",
-  "main": "./lib/main",
+  "main": "./lib/ExecutorServer",
   "version": "0.0.0",
   "description": "Executes React Native application javascript in a node process.",
   "nuclide": {
     "flowCheck": true,
     "packageType": "Node",
     "testRunner": "npm"
+  },
+  "dependencies": {
+    "nuclide-logging": "0.0.0",
+    "ws": "0.7.1"
   },
   "devDependencies": {
     "nuclide-external-interfaces": "0.0.0",
