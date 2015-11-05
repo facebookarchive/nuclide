@@ -43,11 +43,13 @@ def create_config_for_manifest(path, manifest):
     config['repository'] = manifest.get('repository')
     config['version'] = manifest.get('version')
     config['description'] = manifest.get('description')
+    config['main'] = manifest.get('main')
     config['packageType'] = package_type
     config['isNodePackage'] = package_type == 'Node'
     config['localDependencies'] = {}
     config['dependencies'] = manifest.get('dependencies', {})
     config['devDependencies'] = manifest.get('devDependencies', {})
+    config['private'] = manifest.get('private', False)
 
     # Apparently both spellings are acceptable:
     config['bundleDependencies'] = manifest.get('bundleDependencies', {})

@@ -97,6 +97,7 @@ class PackageLinter(object):
         logging.debug('Linting package %s', package_name)
 
         self.verify_package_name(package_name, package)
+        self.verify_main_property(package_name, package)
 
         self.expect_field_in(package_name, package, 'packageType', ['Node', 'Atom'])
         self.expect_field_in(package_name, package, 'testRunner', ['npm', 'apm'])
@@ -141,6 +142,9 @@ class PackageLinter(object):
         self.validate_dependencies(package, 'devDependencies')
         self.validate_babelrc(package)
 
+        if self.is_internal_name(package_name):
+            self.expect_field(package_name, package, 'private', True)
+
     def verify_package_name(self, package_name, package):
         if package_name in PACKAGE_NAME_WHITELIST:
             return
@@ -156,6 +160,20 @@ class PackageLinter(object):
                 expected_package_name = component + '-' + expected_package_name
         if package_name != expected_package_name:
             self.report_error('Expected package name %s found %s', expected_package_name, package_name)
+
+    def verify_main_property(self, package_name, package):
+        if package['main'] is None:
+            return
+        package_main = package['main'];
+        main_file = os.path.normpath(os.path.join(package['packageRootAbsolutePath'], package_main) + '.js')
+        if not package_main.startswith('./'):
+            # stylistic only - omitting the "./" works
+            self.report_error('Package %s should have a "main" file that starts with "./"', package_name)
+        if package_main.endswith('.js'):
+            # stylistic only - (like an import/require) adding the ".js" works
+            self.report_error('Package %s should have a "main" file without a ".js" extension', package_name)
+        if not os.path.isfile(main_file):
+            self.report_error('Package %s should have a "main" file that exits', package_name)
 
     def verify_npm_package(self, package):
         self.verify_npm_test_property(package)
@@ -327,7 +345,7 @@ class PackageLinter(object):
                 'Package %s depends directly on nuclide-jasmine, but should be in devDependencies.',
                 package['name'])
 
-        if not package['name'].startswith('fb-') and dependent_package_name.startswith('fb-'):
+        if not self.is_internal_name(package['name']) and self.is_internal_name(dependent_package_name):
             if ('baseDependencies' in package and package['baseDependencies'].has_key(dependent_package_name)):
                 self.report_error(
                     'Package %s cannot list internal package %s in its `%s`.',
@@ -377,6 +395,9 @@ class PackageLinter(object):
         elif not fieldValue in values:
             self.report_error('Incorrect "%s" for %s. Found %s',
                     field, package_name, fieldValue)
+
+    def is_internal_name(self, package_name):
+        return False
 
     def get_valid_package_prefixes(self):
         return ['nuclide-', 'hyperclick']
