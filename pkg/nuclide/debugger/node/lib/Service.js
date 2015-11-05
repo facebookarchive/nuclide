@@ -31,12 +31,15 @@ class DebuggerProcess {
 
   getWebsocketAddress(): Promise<string> {
     // TODO(natthu): Assign random port instead.
-    var wsPort = 8080;
+    const wsPort = 8080;
     if (!this._server) {
       this._server = new WebSocketServer({port: wsPort});
       this._server.on('connection', websocket => {
-        var config = {debugPort: this._debugPort};
-        var session = new Session(config, this._debugPort, websocket);
+        const config = {
+          debugPort: this._debugPort,
+          preload: false, // This makes the node inspector not load all the source files on startup.
+        };
+        const session = new Session(config, this._debugPort, websocket);
         session.on('close', this._handleSessionEnd.bind(this));
         return session;
       });
