@@ -47,7 +47,7 @@ type CreateProcessOutputViewOptions = {
 };
 
 var subscriptions: ?CompositeDisposable;
-var processToDisposables: ?Map<ProcessOutputStore, CompositeDisposable>;
+let processOutputStores: ?Set<ProcessOutputStore>;
 var logger;
 
 function getLogger() {
@@ -84,14 +84,13 @@ function createProcessOutputView(
     },
   });
 
-  var processSubscriptions = new CompositeDisposable();
-  invariant(processToDisposables);
-  processToDisposables.set(processOutputStore, processSubscriptions);
+  invariant(processOutputStores);
+  processOutputStores.add(processOutputStore);
 
   // When the process exits, we want to remove the reference to the process.
   var handleProcessExit = () => {
-    if (processToDisposables) {
-      processToDisposables.delete(processOutputStore);
+    if (processOutputStores) {
+      processOutputStores.delete(processOutputStore);
     }
   };
   var handleProcessExitWithError = (error: Error) => {
@@ -134,7 +133,7 @@ function activateModule(): void {
         return createProcessOutputView(uri, options);
       }
     }));
-    processToDisposables = new Map();
+    processOutputStores = new Set();
   }
 }
 
@@ -143,11 +142,11 @@ function disposeModule(): void {
     subscriptions.dispose();
     subscriptions = null;
   }
-  if (processToDisposables) {
-    for (var processStore of processToDisposables.keys()) {
+  if (processOutputStores) {
+    for (const processStore of processOutputStores) {
       processStore.dispose();
     }
-    processToDisposables = null;
+    processOutputStores = null;
   }
 }
 
