@@ -77,7 +77,7 @@ export default class DiffViewTree extends React.Component {
     const {diffModel} = props;
     const {filePath} = diffModel.getActiveFileState();
     this.state = {
-      fileChanges: diffModel.getFileChanges(),
+      fileChanges: diffModel.getDirtyFileChanges(),
       selectedFilePath: filePath,
     };
   }
@@ -85,7 +85,7 @@ export default class DiffViewTree extends React.Component {
   componentDidMount(): void {
     const {diffModel} = this.props;
     const subscriptions = this._subscriptions = new CompositeDisposable();
-    subscriptions.add(diffModel.onDidChangeStatus((fileChanges: Map<string, number>) => {
+    subscriptions.add(diffModel.onDidChangeDirtyStatus(fileChanges => {
       this.setState({fileChanges, selectedFilePath: this.state.selectedFilePath});
     }));
     subscriptions.add(diffModel.onActiveFileUpdates((fileState: FileChangeState) => {

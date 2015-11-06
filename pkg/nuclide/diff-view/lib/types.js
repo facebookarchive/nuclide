@@ -32,6 +32,11 @@ export type TextDiff = {
   newLineOffsets: {[lineNumber: string]: number};
 };
 
+export type HgDiffState = {
+  committedContents: string;
+  filesystemContents: string;
+};
+
 export type LineRangesWithOffsets = {
   regions: Array<{bufferRows: number; screenRows: number}>;
   screenLines: Array<any>;

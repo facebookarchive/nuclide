@@ -10,7 +10,7 @@
  */
 
 import type {HgRepositoryClient} from 'nuclide-hg-repository-client';
-import type {FileChangeState, FileChangeStatusValue} from './types';
+import type {FileChangeState, FileChangeStatusValue, HgDiffState} from './types';
 import type {NuclideUri} from 'nuclide-remote-uri';
 
 import invariant from 'assert';
@@ -20,15 +20,13 @@ import {HgStatusToFileChangeStatus} from './constants';
 import {track, trackTiming} from 'nuclide-analytics';
 import {getFileForPath, getFileSystemServiceByNuclideUri} from 'nuclide-client';
 import {getLogger} from 'nuclide-logging';
+import {array} from 'nuclide-commons';
+import RepositoryStack from './RepositoryStack';
+import {notifyInternalError} from './notifications';
 
 const logger = getLogger();
-const CHANGE_STATUS_EVENT = 'did-change-status';
+const CHANGE_DIRTY_STATUS_EVENT = 'did-change-dirty-status';
 const ACTIVE_FILE_UPDATE_EVENT = 'active-file-update';
-
-type HgDiffState = {
-  committedContents: string;
-  filesystemContents: string;
-};
 
 class DiffViewModel {
 
@@ -37,17 +35,17 @@ class DiffViewModel {
   _activeSubscriptions: ?CompositeDisposable;
   _activeFileState: FileChangeState;
   _newEditor: ?TextEditor;
-  _fileChanges: Map<NuclideUri, FileChangeStatusValue>;
+  _dirtyFileChanges: Map<NuclideUri, FileChangeStatusValue>;
   _uiProviders: Array<Object>;
-  _repositorySubscriptions: Map<HgRepositoryClient, atom$Disposable>;
-  _boundHandleInternalError: Function;
+  _repositoryStacks: Map<HgRepositoryClient, RepositoryStack>;
+  _repositorySubscriptions: Map<HgRepositoryClient, CompositeDisposable>;
 
   constructor(uiProviders: Array<Object>) {
     this._uiProviders = uiProviders;
-    this._fileChanges = new Map();
+    this._dirtyFileChanges = new Map();
     this._emitter = new Emitter();
-    this._boundHandleInternalError = this._handleInternalError.bind(this);
     this._subscriptions = new CompositeDisposable();
+    this._repositoryStacks = new Map();
     this._repositorySubscriptions = new Map();
     this._updateRepositories();
     this._subscriptions.add(atom.project.onDidChangePaths(this._updateRepositories.bind(this)));
@@ -59,36 +57,52 @@ class DiffViewModel {
   }
 
   _updateRepositories(): void {
-    for (const subscription of this._repositorySubscriptions.values()) {
-      subscription.dispose();
-    }
-    this._repositorySubscriptions.clear();
-    atom.project.getRepositories()
-      .filter(repository => repository != null && repository.getType() === 'hg')
+    const repositories = new Set(
+      atom.project.getRepositories().filter(
+        repository => repository != null && repository.getType() === 'hg'
+      )
+    );
+    // Dispose removed projects repositories.
+    array.from(this._repositoryStacks.keys())
+      .filter(repository => !repositories.has(repository))
       .forEach(repository => {
-        const hgRepository = ((repository: any): HgRepositoryClient);
-        // Get the initial project status, if it's not already there,
-        // triggered by another integration, like the file tree.
-        hgRepository.getStatuses([hgRepository.getProjectDirectory()]);
-        this._repositorySubscriptions.set(
-          hgRepository, hgRepository.onDidChangeStatuses(this._updateChangedStatus.bind(this))
-        );
+        this._repositoryStacks.get(repository).dispose();
+        this._repositoryStacks.delete(repository);
+        this._repositorySubscriptions.get(repository).dispose();
+        this._repositorySubscriptions.delete(repository);
       });
-    this._updateChangedStatus();
+
+    for (const repository of repositories) {
+      if (this._repositoryStacks.has(repository)) {
+        continue;
+      }
+      const hgRepository = ((repository: any): HgRepositoryClient);
+      this._createRepositoryStack(hgRepository);
+    }
+
+    this._updateDirtyChangedStatus();
   }
 
-  _updateChangedStatus(): void {
-    this._fileChanges.clear();
-    for (const repository of this._repositorySubscriptions.keys()) {
-      const statuses = repository.getAllPathStatuses();
-      for (const filePath in statuses) {
-        const changeStatus = HgStatusToFileChangeStatus[statuses[filePath]];
-        if (changeStatus != null) {
-          this._fileChanges.set(filePath, changeStatus);
-        }
+  _updateDirtyChangedStatus(): void {
+    this._dirtyFileChanges.clear();
+    for (const repositoryStack of this._repositoryStacks.values()) {
+      const dirtyStatuses = repositoryStack.getDirtyFileChanges();
+      for (const [filePath, changeStatus] of dirtyStatuses) {
+        this._dirtyFileChanges.set(filePath, changeStatus);
       }
     }
-    this._emitter.emit(CHANGE_STATUS_EVENT, this._fileChanges);
+    this._emitter.emit(CHANGE_DIRTY_STATUS_EVENT, this._dirtyFileChanges);
+  }
+
+  _createRepositoryStack(repository: HgRepositoryClient) {
+    const repositoryStack = new RepositoryStack(repository);
+    const subscriptions = new CompositeDisposable();
+    subscriptions.add(
+      repositoryStack.onDidChangeDirtyStatus(this._updateDirtyChangedStatus.bind(this)),
+    );
+    this._repositoryStacks.set(repository, repositoryStack);
+    this._repositorySubscriptions.set(repository, subscriptions);
+    return repositoryStack;
   }
 
   activateFile(filePath: NuclideUri): void {
@@ -104,11 +118,11 @@ class DiffViewModel {
     const file = getFileForPath(filePath);
     if (file) {
       activeSubscriptions.add(file.onDidChange(() => {
-        this._onDidFileChange(filePath).catch(this._boundHandleInternalError);
+        this._onDidFileChange(filePath).catch(notifyInternalError);
       }));
     }
     track('diff-view-open-file', {filePath});
-    this._updateActiveDiffState(filePath).catch(this._boundHandleInternalError);
+    this._updateActiveDiffState(filePath).catch(notifyInternalError);
   }
 
   @trackTiming('diff-view.file-change-update')
@@ -117,14 +131,8 @@ class DiffViewModel {
     const filesystemContents = (await getFileSystemServiceByNuclideUri(filePath).
         readFile(localFilePath)).toString('utf8');
     if (filesystemContents !== this._activeFileState.savedContents) {
-      this._updateActiveDiffState(filePath).catch(this._boundHandleInternalError);
+      this._updateActiveDiffState(filePath).catch(notifyInternalError);
     }
-  }
-
-  _handleInternalError(error: Error): void {
-    const errorMessage = `Diff View Internal Error - ${error.message}`;
-    logger.error(errorMessage, error);
-    atom.notifications.addError(errorMessage);
   }
 
   setNewContents(newContents: string): void {
@@ -144,9 +152,6 @@ class DiffViewModel {
 
   async _updateActiveDiffState(filePath: NuclideUri): Promise<void> {
     const hgDiffState = await this._fetchHgDiff(filePath);
-    if (!hgDiffState) {
-      return;
-    }
     const {
       committedContents: oldContents,
       filesystemContents: newContents,
@@ -171,38 +176,19 @@ class DiffViewModel {
   }
 
   @trackTiming('diff-view.hg-state-update')
-  async _fetchHgDiff(filePath: NuclideUri): Promise<?HgDiffState> {
+  _fetchHgDiff(filePath: NuclideUri): Promise<HgDiffState> {
     // Calling atom.project.repositoryForDirectory gets the real path of the directory,
     // which is another round-trip and calls the repository providers to get an existing repository.
     // Instead, the first match of the filtering here is the only possible match.
     const repository: HgRepositoryClient = repositoryForPath(filePath);
-
-    // TODO(most): move repo type check error handling up the stack before creating the the view.
-    if (!repository || repository.getType() !== 'hg') {
+    if (repository == null || repository.getType() !== 'hg') {
       const type = repository ? repository.getType() : 'no repository';
       throw new Error(`Diff view only supports \`Mercurial\` repositories, but found \`${type}\``);
     }
 
-    const fileSystemService = getFileSystemServiceByNuclideUri(filePath);
-    invariant(fileSystemService);
-
-    const committedContentsPromise = repository.fetchFileContentAtRevision(filePath, null)
-      // If the file didn't exist on the previous revision, return empty contents.
-      .then(contents => contents || '', err => '');
-
-    const localFilePath = require('nuclide-remote-uri').getPath(filePath);
-    const filesystemContentsPromise = fileSystemService.readFile(localFilePath)
-      // If the file was removed, return empty contents.
-      .then(contents => contents.toString('utf8') || '', err => '');
-
-    const [
-      committedContents,
-      filesystemContents,
-    ] = await Promise.all([committedContentsPromise, filesystemContentsPromise]);
-    return {
-      committedContents,
-      filesystemContents,
-    };
+    const repositoryStack = this._repositoryStacks.get(repository);
+    invariant(repositoryStack);
+    return repositoryStack.fetchHgDiff(filePath);
   }
 
   @trackTiming('diff-view.save-file')
@@ -213,8 +199,7 @@ class DiffViewModel {
       await this._saveFile(filePath, newContents);
       this._activeFileState.savedContents = newContents;
     } catch(error) {
-      this._handleInternalError(error);
-      throw error;
+      notifyInternalError(error);
     }
   }
 
@@ -233,8 +218,10 @@ class DiffViewModel {
     }
   }
 
-  onDidChangeStatus(callback: (fileChanges: Map<string, number>) => void): atom$Disposable {
-    return this._emitter.on(CHANGE_STATUS_EVENT, callback);
+  onDidChangeDirtyStatus(
+    callback: (dirtyFileChanges: Map<NuclideUri, FileChangeStatusValue>) => void
+  ): atom$Disposable {
+    return this._emitter.on(CHANGE_DIRTY_STATUS_EVENT, callback);
   }
 
   onActiveFileUpdates(callback: (state: FileChangeState) => void): atom$Disposable {
@@ -253,16 +240,21 @@ class DiffViewModel {
     return uiComponents;
   }
 
-  getFileChanges(): Map<NuclideUri, FileChangeStatusValue> {
-    return this._fileChanges;
+  getDirtyFileChanges(): Map<NuclideUri, FileChangeStatusValue> {
+    return this._dirtyFileChanges;
   }
 
   dispose(): void {
     this._subscriptions.dispose();
+    for (const repositoryStack of this._repositoryStacks.values()) {
+      repositoryStack.dispose();
+    }
+    this._repositoryStacks.clear();
     for (const subscription of this._repositorySubscriptions.values()) {
       subscription.dispose();
     }
     this._repositorySubscriptions.clear();
+    this._dirtyFileChanges.clear();
     if (this._activeSubscriptions != null) {
       this._activeSubscriptions.dispose();
       this._activeSubscriptions = null;
