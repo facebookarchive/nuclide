@@ -84,6 +84,10 @@ module.exports = {
     return require('./set');
   },
 
+  get map() {
+    return require('./map');
+  },
+
   get object() {
     return require('./object');
   },
