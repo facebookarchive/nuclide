@@ -19,7 +19,7 @@ import {repositoryForPath} from 'nuclide-hg-git-bridge';
 import {track, trackTiming} from 'nuclide-analytics';
 import {getFileSystemContents} from './utils';
 import {getFileForPath, getFileSystemServiceByNuclideUri} from 'nuclide-client';
-import {array, map} from 'nuclide-commons';
+import {array, map, debounce} from 'nuclide-commons';
 import RepositoryStack from './RepositoryStack';
 import {notifyInternalError} from './notifications';
 
@@ -27,6 +27,7 @@ const CHANGE_DIRTY_STATUS_EVENT = 'did-change-dirty-status';
 const CHANGE_COMPARE_STATUS_EVENT = 'did-change-compare-status';
 const ACTIVE_FILE_UPDATE_EVENT = 'active-file-update';
 const CHANGE_REVISIONS_EVENT = 'did-change-revisions';
+const FILE_CHANGE_DEBOUNCE_MS = 100;
 
 class DiffViewModel {
 
@@ -141,9 +142,9 @@ class DiffViewModel {
     });
     const file = getFileForPath(filePath);
     if (file) {
-      activeSubscriptions.add(file.onDidChange(() => {
+      activeSubscriptions.add(file.onDidChange(debounce(() => {
         this._onDidFileChange(filePath).catch(notifyInternalError);
-      }));
+      }, FILE_CHANGE_DEBOUNCE_MS, false)));
     }
     track('diff-view-open-file', {filePath});
     this._updateActiveDiffState(filePath).catch(notifyInternalError);
@@ -151,9 +152,20 @@ class DiffViewModel {
 
   @trackTiming('diff-view.file-change-update')
   async _onDidFileChange(filePath: NuclideUri): Promise<void> {
+    const {
+      savedContents,
+      oldContents: committedContents,
+      filePath: activeFilePath,
+    } = this._activeFileState;
+    if (activeFilePath !== filePath) {
+      return;
+    }
     const filesystemContents = await getFileSystemContents(filePath);
-    if (filesystemContents !== this._activeFileState.savedContents) {
-      this._updateActiveDiffState(filePath).catch(notifyInternalError);
+    if (filePath === this._activeFileState.filePath && filesystemContents !== savedContents) {
+      this._updateDiffState(filePath, {
+        committedContents,
+        filesystemContents,
+      }).catch(notifyInternalError);
     }
   }
 
@@ -174,6 +186,10 @@ class DiffViewModel {
 
   async _updateActiveDiffState(filePath: NuclideUri): Promise<void> {
     const hgDiffState = await this._fetchHgDiff(filePath);
+    await this._updateDiffState(filePath, hgDiffState);
+  }
+
+  async _updateDiffState(filePath: NuclideUri, hgDiffState: HgDiffState): Promise<void> {
     const {
       committedContents: oldContents,
       filesystemContents: newContents,
