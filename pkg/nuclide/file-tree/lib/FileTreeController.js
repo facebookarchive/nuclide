@@ -110,9 +110,11 @@ class FileTreeController {
         'nuclide-file-tree:add-folder': () => {
           FileSystemActions.openAddFolderDialog(this._openAndRevealDirectoryPath.bind(this));
         },
-        'nuclide-file-tree:collapse-directory': this._collapseSelection.bind(this),
+        'nuclide-file-tree:collapse-directory': this._collapseSelection.bind(this, /*deep*/ false),
+        'nuclide-file-tree:recursive-collapse-directory': this._collapseSelection.bind(this, true),
         'nuclide-file-tree:copy-full-path': this._copyFullPath.bind(this),
-        'nuclide-file-tree:expand-directory': this._expandSelection.bind(this),
+        'nuclide-file-tree:expand-directory': this._expandSelection.bind(this, /*deep*/ false),
+        'nuclide-file-tree:recursive-expand-directory': this._expandSelection.bind(this, true),
         'nuclide-file-tree:open-selected-entry': this._openSelectedEntry.bind(this),
         'nuclide-file-tree:open-selected-entry-up':
           this._openSelectedEntrySplitUp.bind(this),
@@ -478,7 +480,7 @@ class FileTreeController {
    * Collapses all selected directory nodes. If the selection is a single file or a single collapsed
    * directory, the selection is set to the directory's parent.
    */
-  _collapseSelection(): void {
+  _collapseSelection(deep: boolean): void {
     const selectedNodes = this._store.getSelectedNodes();
     const firstSelectedNode = selectedNodes.first();
     if (selectedNodes.size === 1
@@ -498,7 +500,11 @@ class FileTreeController {
           return;
         }
 
-        this._actions.collapseNode(node.rootKey, node.nodeKey);
+        if (deep) {
+          this._actions.collapseNodeDeep(node.rootKey, node.nodeKey);
+        } else {
+          this._actions.collapseNode(node.rootKey, node.nodeKey);
+        }
       });
     }
   }
@@ -541,14 +547,18 @@ class FileTreeController {
   /**
    * Expands all selected directory nodes.
    */
-  _expandSelection(): void {
+  _expandSelection(deep: boolean): void {
     this._store.getSelectedNodes().forEach(node => {
       // Only directories can be expanded. Skip non-directory nodes.
       if (!node.isContainer) {
         return;
       }
 
-      this._actions.expandNode(node.rootKey, node.nodeKey);
+      if (deep) {
+        this._actions.expandNodeDeep(node.rootKey, node.nodeKey);
+      } else {
+        this._actions.expandNode(node.rootKey, node.nodeKey);
+      }
     });
   }
 

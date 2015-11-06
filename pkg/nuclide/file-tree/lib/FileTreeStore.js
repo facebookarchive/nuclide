@@ -48,7 +48,7 @@ type StoreData = {
   trackedNode: ?FileTreeNodeData;
   // Saves a list of child nodes that should be expande when a given key is expanded.
   // Looks like: { rootKey: { nodeKey: [childKey1, childKey2] } }.
-  previouslyExpanded: { [rootKey: string]: { [nodeKey: string]: Array<string> } };
+  previouslyExpanded: { [rootKey: string]: Immutable.Map<string, Array<String>> };
   isLoadingMap: { [key: string]: ?Promise };
   rootKeys: Array<string>;
   selectedKeysByRoot: { [key: string]: Immutable.OrderedSet<string> };
@@ -210,11 +210,17 @@ class FileTreeStore {
       case ActionType.EXPAND_NODE:
         this._expandNode(payload.rootKey, payload.nodeKey);
         break;
+      case ActionType.EXPAND_NODE_DEEP:
+        this._expandNodeDeep(payload.rootKey, payload.nodeKey);
+        break;
       case ActionType.COLLAPSE_NODE:
         this._collapseNode(payload.rootKey, payload.nodeKey);
         break;
       case ActionType.SET_EXCLUDE_VCS_IGNORED_PATHS:
         this._setExcludeVcsIgnoredPaths(payload.excludeVcsIgnoredPaths);
+        break;
+      case ActionType.COLLAPSE_NODE_DEEP:
+        this._purgeDirectoryWithinARoot(payload.rootKey, payload.nodeKey, /* unselect */false);
         break;
       case ActionType.SET_HIDE_IGNORED_NAMES:
         this._setHideIgnoredNames(payload.hideIgnoredNames);
@@ -329,6 +335,22 @@ class FileTreeStore {
    */
   getCachedChildKeys(rootKey: string, nodeKey: string): Array<string> {
     return this._omitHiddenPaths(this._data.childKeyMap[nodeKey] || []);
+  }
+
+  /**
+   * The node child keys may either be  available immediately (cached), or
+   * require an async fetch. If all of the children are needed it's easier to
+   * return as promise, to make the caller oblivious to the way children were
+   * fetched.
+   */
+  promiseNodeChildKeys(rootKey: string, nodeKey: string): Promise {
+    const cachedChildKeys = this.getChildKeys(rootKey, nodeKey);
+    if (cachedChildKeys.length) {
+      return Promise.resolve(cachedChildKeys);
+    }
+
+    const promise = this._getLoading(nodeKey) || Promise.resolve();
+    return promise.then(() => this.getCachedChildKeys(rootKey, nodeKey));
   }
 
   /**
@@ -529,18 +551,50 @@ class FileTreeStore {
   _expandNode(rootKey: string, nodeKey: string): void {
     this._setExpandedKeys(rootKey, this._getExpandedKeys(rootKey).add(nodeKey));
     // If we have child nodes that should also be expanded, expand them now.
-    let previouslyExpanded = this._data.previouslyExpanded[rootKey] || {};
-    if (previouslyExpanded[nodeKey]) {
-      for (const childKey of previouslyExpanded[nodeKey]) {
+    let previouslyExpanded = this._getPreviouslyExpanded(rootKey);
+    if (previouslyExpanded.has(nodeKey)) {
+      for (const childKey of previouslyExpanded.get(nodeKey)) {
         this._expandNode(rootKey, childKey);
       }
       // Clear the previouslyExpanded list since we're done with it.
-      previouslyExpanded = deleteProperty(previouslyExpanded, nodeKey);
-      this._set(
-        'previouslyExpanded',
-        setProperty(this._data.previouslyExpanded, rootKey, previouslyExpanded)
-      );
+      previouslyExpanded = previouslyExpanded.delete(nodeKey);
+      this._setPreviouslyExpanded(rootKey, previouslyExpanded);
     }
+  }
+
+  /**
+   * Performes a deep BFS scanning expand of contained nodes.
+   * returns - a promise fulfilled when the expand operation is finished
+   */
+  _expandNodeDeep(rootKey: string, nodeKey: string): Promise<void> {
+    // Stop the traversal after 100 nodes were added to the tree
+    const itNodes = new FileTreeStoreBfsIterator(this, rootKey, nodeKey, /* limit*/ 100);
+    const promise = new Promise((resolve) => {
+      const expand = () => {
+        const traversedNodeKey = itNodes.traversedNode();
+        if (traversedNodeKey) {
+          this._setExpandedKeys(rootKey, this._getExpandedKeys(rootKey).add(traversedNodeKey));
+          /**
+           * Even if there were previously expanded nodes it doesn't matter as
+           * we'll expand all of the children.
+           */
+          let previouslyExpanded = this._getPreviouslyExpanded(rootKey);
+          previouslyExpanded = previouslyExpanded.delete(traversedNodeKey);
+          this._setPreviouslyExpanded(rootKey, previouslyExpanded);
+
+          const nextPromise = itNodes.next();
+          if (nextPromise) {
+            nextPromise.then(expand);
+          }
+        } else {
+          resolve();
+        }
+      };
+
+      expand();
+    });
+
+    return promise;
   }
 
   /**
@@ -575,18 +629,27 @@ class FileTreeStore {
      * Save the list of expanded child nodes so next time we expand this node we can expand these
      * children.
      */
-    let previouslyExpanded = this._data.previouslyExpanded[rootKey] || {};
+    let previouslyExpanded = this._getPreviouslyExpanded(rootKey);
     if (expandedChildKeys.length !== 0) {
-      previouslyExpanded = setProperty(previouslyExpanded, nodeKey, expandedChildKeys);
+      previouslyExpanded = previouslyExpanded.set(nodeKey, expandedChildKeys);
     } else {
-      previouslyExpanded = deleteProperty(previouslyExpanded, nodeKey);
+      previouslyExpanded = previouslyExpanded.delete(nodeKey);
     }
+    this._setPreviouslyExpanded(rootKey, previouslyExpanded);
+    this._setExpandedKeys(rootKey, this._getExpandedKeys(rootKey).delete(nodeKey));
+    this._removeSubscription(rootKey, nodeKey);
+  }
+
+  _getPreviouslyExpanded(rootKey: string): Immutable.Map<string, Array<string>> {
+    return this._data.previouslyExpanded[rootKey] || new Immutable.Map();
+  }
+
+  _setPreviouslyExpanded(rootKey: string,
+    previouslyExpanded: Immutable.Map<string, Array<string>>): void {
     this._set(
       'previouslyExpanded',
       setProperty(this._data.previouslyExpanded, rootKey, previouslyExpanded)
     );
-    this._setExpandedKeys(rootKey, this._getExpandedKeys(rootKey).delete(nodeKey));
-    this._removeSubscription(rootKey, nodeKey);
   }
 
   _getExpandedKeys(rootKey: string): Immutable.Set<string> {
@@ -744,6 +807,38 @@ class FileTreeStore {
     }
   }
 
+  _purgeNode(rootKey: string, nodeKey: string, unselect: boolean): void {
+    const expandedKeys = this._getExpandedKeys(rootKey);
+    if (expandedKeys.has(nodeKey)) {
+      this._setExpandedKeys(rootKey, expandedKeys.delete(nodeKey));
+    }
+
+    if (unselect) {
+      const selectedKeys = this.getSelectedKeys(rootKey);
+      if (selectedKeys.has(nodeKey)) {
+        this._setSelectedKeys(rootKey, selectedKeys.delete(nodeKey));
+      }
+    }
+
+    const previouslyExpanded = this._getPreviouslyExpanded(rootKey);
+    if (previouslyExpanded.has(nodeKey)) {
+      this._setPreviouslyExpanded(rootKey, previouslyExpanded.delete(nodeKey));
+    }
+  }
+
+  _purgeDirectoryWithinARoot(rootKey: string, nodeKey: string, unselect: boolean): void {
+    const childKeys = this._data.childKeyMap[nodeKey];
+    if (childKeys) {
+      childKeys.forEach((childKey) => {
+        if (FileTreeHelpers.isDirKey(childKey)) {
+          this._purgeDirectoryWithinARoot(rootKey, childKey, /* unselect */ true);
+        }
+      });
+    }
+    this._removeSubscription(rootKey, nodeKey);
+    this._purgeNode(rootKey, nodeKey, unselect);
+  }
+
   // This is called when a dirctory is physically removed from disk. When we purge a directory,
   // we need to purge it's child directories also. Purging removes stuff from the data store
   // including list of child nodes, subscriptions, expanded directories and selected directories.
@@ -757,20 +852,10 @@ class FileTreeStore {
       });
       this._set('childKeyMap', deleteProperty(this._data.childKeyMap, nodeKey));
     }
+
     this._removeAllSubscriptions(nodeKey);
-    const expandedKeysByRoot = this._data.expandedKeysByRoot;
-    Object.keys(expandedKeysByRoot).forEach((rootKey) => {
-      const expandedKeys = expandedKeysByRoot[rootKey];
-      if (expandedKeys.has(nodeKey)) {
-        this._setExpandedKeys(rootKey, expandedKeys.delete(nodeKey));
-      }
-    });
-    const selectedKeysByRoot = this._data.selectedKeysByRoot;
-    Object.keys(selectedKeysByRoot).forEach((rootKey) => {
-      const selectedKeys = selectedKeysByRoot[rootKey];
-      if (selectedKeys.has(nodeKey)) {
-        this._setSelectedKeys(rootKey, selectedKeys.delete(nodeKey));
-      }
+    this.getRootKeys().forEach(rootKey => {
+      this._purgeNode(rootKey, nodeKey, /* unselect */ true);
     });
   }
 
@@ -878,6 +963,73 @@ function matchesSome(str: string, patterns: Immutable.Set<Minimatch>) {
 
 function isVcsIgnored(nodeKey: string, repo: ?Repository) {
   return repo && repo.isProjectAtRoot() && repo.isPathIgnored(nodeKey);
+}
+
+
+/**
+ * Performs a breadth-first iteration over the directories of the tree starting
+ * with a given node. The iteration stops once a given limit of nodes (both directories
+ * and files) were traversed.
+ * The node being currently traversed can be obtained by calling .traversedNode()
+ * .next() returns a promise that is fulfilled when the traversal moves on to
+ * the next directory.
+ */
+class FileTreeStoreBfsIterator {
+  _fileTreeStore: FileTreeStore;
+  _rootKey: string;
+  _nodesToTraverse: Array<string>;
+  _currentlyTraversedNode: ?string;
+  _limit: number;
+  _numNodesTraversed: number;
+  _promise: ?Promise<void>;
+  _count: number;
+
+  constructor(
+      fileTreeStore: FileTreeStore,
+      rootKey: string,
+      nodeKey: string,
+      limit: number) {
+    this._fileTreeStore = fileTreeStore;
+    this._rootKey = rootKey;
+    this._nodesToTraverse = [];
+    this._currentlyTraversedNode = nodeKey;
+    this._limit = limit;
+    this._numNodesTraversed = 0;
+    this._promise = null;
+    this._count = 0;
+  }
+
+  _handlePromiseResolution(childrenKeys: Array<string>): void {
+    this._numNodesTraversed += childrenKeys.length;
+    if (this._numNodesTraversed < this._limit) {
+      const nextLevelNodes = childrenKeys.filter(childKey => FileTreeHelpers.isDirKey(childKey));
+      this._nodesToTraverse = this._nodesToTraverse.concat(nextLevelNodes);
+
+      this._currentlyTraversedNode = this._nodesToTraverse.splice(0, 1)[0];
+      this._promise = null;
+    }
+    else {
+      this._currentlyTraversedNode = null;
+      this._promise = null;
+    }
+
+    return;
+  }
+
+  next(): ?Promise<void> {
+    const currentlyTraversedNode = this._currentlyTraversedNode;
+    if (!this._promise && currentlyTraversedNode) {
+      this._promise = this._fileTreeStore.promiseNodeChildKeys(
+        this._rootKey,
+        currentlyTraversedNode)
+      .then(this._handlePromiseResolution.bind(this));
+    }
+    return this._promise;
+  }
+
+  traversedNode(): ?string {
+    return this._currentlyTraversedNode;
+  }
 }
 
 module.exports = FileTreeStore;

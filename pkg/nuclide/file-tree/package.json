@@ -32,7 +32,9 @@
   },
   "devDependencies": {
     "nuclide-external-interfaces": "0.0.0",
-    "nuclide-test-helpers": "0.0.0"
+    "nuclide-test-helpers": "0.0.0",
+    "temp": "0.8.3",
+    "touch": "0.0.3"
   },
   "_atomModuleCache": {
     "extensions": {

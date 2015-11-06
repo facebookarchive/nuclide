@@ -62,6 +62,14 @@ class FileTreeActions {
     });
   }
 
+  expandNodeDeep(rootKey: string, nodeKey: string): void {
+    this._dispatcher.dispatch({
+      actionType: ActionType.EXPAND_NODE_DEEP,
+      rootKey,
+      nodeKey,
+    });
+  }
+
   deleteSelectedNodes(): void {
     this._dispatcher.dispatch({actionType: ActionType.DELETE_SELECTED_NODES});
   }
@@ -84,6 +92,14 @@ class FileTreeActions {
   collapseNode(rootKey: string, nodeKey: string): void {
     this._dispatcher.dispatch({
       actionType: ActionType.COLLAPSE_NODE,
+      rootKey,
+      nodeKey,
+    });
+  }
+
+  collapseNodeDeep(rootKey: string, nodeKey: string): void {
+    this._dispatcher.dispatch({
+      actionType: ActionType.COLLAPSE_NODE_DEEP,
       rootKey,
       nodeKey,
     });

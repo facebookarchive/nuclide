@@ -106,9 +106,10 @@ class NodeComponent extends React.Component {
   }
 
   _onClick(event: SyntheticMouseEvent) {
+    const deep = event.altKey;
     const arrow = this.refs['arrow'];
     if (arrow != null && React.findDOMNode(arrow).contains(event.target)) {
-      this._toggleNodeExpanded();
+      this._toggleNodeExpanded(deep);
       return;
     }
 
@@ -117,7 +118,7 @@ class NodeComponent extends React.Component {
       getActions().toggleSelectNode(this.props.rootKey, this.props.nodeKey);
     } else if (this.props.isSelected) {
       if (this.props.isContainer) {
-        this._toggleNodeExpanded();
+        this._toggleNodeExpanded(deep);
       }
     } else {
       getActions().selectSingleNode(this.props.rootKey, this.props.nodeKey);
@@ -139,11 +140,19 @@ class NodeComponent extends React.Component {
     }
   }
 
-  _toggleNodeExpanded(): void {
+  _toggleNodeExpanded(deep): void {
     if (this.props.isExpanded) {
-      getActions().collapseNode(this.props.rootKey, this.props.nodeKey);
+      if (deep) {
+        getActions().collapseNodeDeep(this.props.rootKey, this.props.nodeKey);
+      } else {
+        getActions().collapseNode(this.props.rootKey, this.props.nodeKey);
+      }
     } else {
-      getActions().expandNode(this.props.rootKey, this.props.nodeKey);
+      if (deep) {
+        getActions().expandNodeDeep(this.props.rootKey, this.props.nodeKey);
+      } else {
+        getActions().expandNode(this.props.rootKey, this.props.nodeKey);
+      }
     }
   }
 }

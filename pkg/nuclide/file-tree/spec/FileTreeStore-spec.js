@@ -18,6 +18,19 @@ import {fixtures} from 'nuclide-test-helpers';
 import fs from 'fs';
 import pathModule from 'path';
 
+import {denodeify} from 'nuclide-commons';
+
+import tempModule from 'temp';
+tempModule.track();
+const tempMkDir = denodeify(tempModule.mkdir);
+const tempCleanup = denodeify(tempModule.cleanup);
+
+import {makeTree} from 'fs-plus';
+const mkdir = denodeify(makeTree);
+
+import touchModule from 'touch';
+const touch = denodeify(touchModule);
+
 class MockRepository {
   isProjectAtRoot() {
     return true;
@@ -25,6 +38,47 @@ class MockRepository {
   isPathIgnored() {
     return true;
   }
+}
+
+/**
+ * Builds a temporary folder tree structure. Receives a variargs array of leaf node names
+ * and creates the structure in a temporary folder.
+ * To create an empty directory as leaf pass a name with '/' suffix. E.g. '/dir1/dir2/'
+ * Returns a map that maps between the node names (without the '/' suffixes) and the actual
+ * paths on the file system.
+ * For a deep node passed such as 'dir1/dir2/foo.txt' each of the intermediate
+ * nodes 'dir1', 'dir1/dir2', 'dir1/dir2' and 'dir1/dir2/foo.txt' entries will be
+ * present in the returned map
+ */
+ /*eslint no-await-in-loop:0 */
+async function buildTempDirTree(...paths: Array<string>): Promise<Map<string, string>> {
+  const rootPath = await tempMkDir('/');
+  const fileMap = new Map();
+
+  for (let i = 0; i < paths.length; i++) {
+    const pathItem = paths[i];
+    const arrPathItemParts = pathItem.split(pathModule.sep);
+    const itemLocalDirPath = arrPathItemParts.slice(0, -1).join(pathModule.sep);
+    const itemGlobalDirPath = pathModule.join(rootPath, itemLocalDirPath);
+    const itemLocalFileName = arrPathItemParts[arrPathItemParts.length - 1];
+
+    await mkdir(itemGlobalDirPath);
+    if (itemLocalFileName) {
+      await touch(pathModule.join(itemGlobalDirPath, itemLocalFileName));
+    }
+
+    arrPathItemParts.forEach((val, j) => {
+      const pathPrefix = arrPathItemParts.slice(0, j + 1).join(pathModule.sep);
+      let prefixNodePath = pathModule.join(rootPath, pathPrefix);
+      if (j < arrPathItemParts.length - 1 || pathPrefix.endsWith('/')) {
+        prefixNodePath += '/';
+      }
+
+      fileMap.set(pathPrefix, prefixNodePath);
+    });
+  }
+
+  return fileMap;
 }
 
 describe('FileTreeStore', () => {
@@ -55,7 +109,10 @@ describe('FileTreeStore', () => {
   });
 
   afterEach(() => {
-    store.reset();
+    waitsForPromise(async () => {
+      store.reset();
+      await tempCleanup();
+    });
   });
 
   it('should be initialized with no root keys', () => {
@@ -333,4 +390,55 @@ describe('FileTreeStore', () => {
     });
   });
 
+  it('expands deep nested structure of the node', () => {
+    waitsForPromise( async () => {
+      const map = await buildTempDirTree('dir3/dir31/foo31.txt', 'dir3/dir32/bar32.txt');
+      const dir3 = map.get('dir3');
+      const dir31 = map.get('dir3/dir31');
+      actions.setRootKeys([dir3]);
+
+      // Await **internal-only** API because the public `expandNodeDeep` API does not
+      // return the promise that can be awaited on
+      await store._expandNodeDeep(dir3, dir3);
+      expect(store.getChildKeys(dir31, dir31).length).toBe(1);
+    });
+  });
+
+  it('collapses deep nested structore', () => {
+    waitsForPromise(async () => {
+      const map = await buildTempDirTree('dir3/dir31/foo31.txt', 'dir3/dir32/bar32.txt');
+      const dir3 = map.get('dir3');
+      const dir31 = map.get('dir3/dir31');
+      actions.setRootKeys([dir3]);
+
+      // Await **internal-only** API because the public `expandNodeDeep` API does not
+      // return the promise that can be awaited on
+      await store._expandNodeDeep(dir3, dir3);
+      expect(store.isExpanded(dir3, dir31)).toBe(true);
+      actions.collapseNodeDeep(dir3, dir3);
+      expect(store.isExpanded(dir3, dir31)).toBe(false);
+    });
+  });
+
+  it('stops expanding after adding 100 items to the tree in BFS order', () => {
+    waitsForPromise(async () => {
+      const arrFiles = [];
+      for (let i = 0; i < 100; i++) {
+        arrFiles.push(`dir3/dir31/foo${i}.txt`);
+      }
+      arrFiles.push('dir3/dir32/bar.txt');
+
+      const map = await buildTempDirTree(...arrFiles);
+      const dir3 = map.get('dir3');
+      const dir31 = map.get('dir3/dir31');
+      const dir32 = map.get('dir3/dir32');
+      actions.setRootKeys([dir3]);
+
+      // Await **internal-only** API because the public `expandNodeDeep` API does not
+      // return the promise that can be awaited on
+      await store._expandNodeDeep(dir3, dir3);
+      expect(store.isExpanded(dir3, dir31)).toBe(true);
+      expect(store.isExpanded(dir3, dir32)).toBe(false);
+    });
+  });
 });
