@@ -71,6 +71,7 @@ class AtomComboBox extends React.Component {
     this.receiveUpdate = this.receiveUpdate.bind(this);
     this._handleTextInputChange = this._handleTextInputChange.bind(this);
     this._handleInputBlur = this._handleInputBlur.bind(this);
+    this._handleInputFocus = this._handleInputFocus.bind(this);
     this._handleMoveDown = this._handleMoveDown.bind(this);
     this._handleMoveUp = this._handleMoveUp.bind(this);
     this._handleCancel = this._handleCancel.bind(this);
@@ -170,6 +171,11 @@ class AtomComboBox extends React.Component {
       selectedIndex,
     });
     this.props.onChange(newText);
+  }
+
+  _handleInputFocus(): void {
+    this.requestUpdate();
+    this.setState({optionsVisible: true});
   }
 
   _handleInputBlur(): void {
@@ -282,6 +288,7 @@ class AtomComboBox extends React.Component {
         <AtomInput
           initialValue={this.props.initialTextInput}
           onBlur={this._handleInputBlur}
+          onFocus={this._handleInputFocus}
           placeholderText={this.props.placeholderText}
           ref="freeformInput"
           size={this.props.size}
