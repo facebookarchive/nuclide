@@ -8,9 +8,13 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
+
 var LazyTreeNode = require('./LazyTreeNode');
 var React = require('react-for-atom');
-var {
+
+const cx = require('react-classset');
+
+const {
   addons,
   PropTypes,
 } = React;
@@ -86,7 +90,7 @@ class TreeNodeComponent extends React.Component {
 
     return (
       <div
-        className={addons.classSet(rowClassNameObj)}
+        className={cx(rowClassNameObj)}
         style={itemStyle}
         onClick={this._onClick}
         onDoubleClick={this._onDoubleClick}

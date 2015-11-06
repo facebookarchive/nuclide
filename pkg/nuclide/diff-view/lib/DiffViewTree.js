@@ -19,8 +19,10 @@ var {CompositeDisposable} = require('atom');
 import type LazyTreeNode from 'nuclide-ui-tree';
 import type {FileChange, FileChangeState} from './types';
 
-var React = require('react-for-atom');
-var {PropTypes, addons} = React;
+const React = require('react-for-atom');
+const cx = require('react-classset');
+
+const {PropTypes} = React;
 
 function labelClassNameForNode(node: LazyTreeNode): string {
   var classObj = {
@@ -33,12 +35,12 @@ function labelClassNameForNode(node: LazyTreeNode): string {
   } else if (node.getItem().statusCode) {
     classObj[fileTypeClass(node.getLabel())] = true;
   }
-  return addons.classSet(classObj);
+  return cx(classObj);
 }
 
 function rowClassNameForNode(node: LazyTreeNode) {
   var vcsClassName = vcsClassNameForEntry(node.getItem());
-  return addons.classSet({
+  return cx({
     [vcsClassName]: vcsClassName,
   });
 }
