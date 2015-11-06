@@ -351,7 +351,8 @@ class HgRepositoryClient {
    * defined as 'relevant' if it is within the project directory opened within the repo.
    */
   _isPathRelevant(filePath: string): boolean {
-    return this._projectDirectory.contains(filePath);
+    return this._projectDirectory.contains(filePath) ||
+           (this._projectDirectory.getPath() === filePath);
   }
 
   // For now, this method only reflects the status of "modified" directories.
