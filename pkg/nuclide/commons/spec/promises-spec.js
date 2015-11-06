@@ -158,6 +158,73 @@ describe('promises::denodeify()', () => {
   });
 });
 
+describe('promises::serializeAsyncCall()', () => {
+
+  it('Returns the same result when called after scheduled', () => {
+    let i = 0;
+    const asyncFunSpy = jasmine.createSpy('async');
+    const oneAsyncCallAtATime = promises.serializeAsyncCall(() => {
+      i++;
+      const resultPromise = waitPromise(10, i);
+      asyncFunSpy();
+      return resultPromise;
+    });
+    // Start an async, and resolve to 1 in 10 ms.
+    const result1Promise = oneAsyncCallAtATime();
+    // Schedule the next async, and resolve to 2 in 20 ms.
+    const result2Promise = oneAsyncCallAtATime();
+    // Reuse scheduled promise and resolve to 2 in 20 ms.
+    const result3Promise = oneAsyncCallAtATime();
+
+    window.advanceClock(11);
+    // Wait for the promise to call the next chain
+    // That isn't synchrnously guranteed because it happens on `process.nextTick`.
+    waitsFor(() => asyncFunSpy.callCount === 2);
+    waitsForPromise(async () => {
+      window.advanceClock(11);
+      const results = await Promise.all([
+        result1Promise, result2Promise, result3Promise,
+      ]);
+      expect(results).toEqual([1, 2, 2]);
+    });
+  });
+
+  it('Calls and returns (even if errors) the same number of times if serially called', () => {
+    waitsForPromise(async () => {
+      let i = 0;
+      const oneAsyncCallAtATime = promises.serializeAsyncCall(() => {
+        i++;
+        if (i === 4) {
+          return Promise.reject('ERROR');
+        }
+        return waitPromise(10, i);
+      });
+      const result1Promise = oneAsyncCallAtATime();
+      window.advanceClock(11);
+      const result1 = await result1Promise;
+
+      const result2Promise = oneAsyncCallAtATime();
+      window.advanceClock(11);
+      const result2 = await result2Promise;
+
+      const result3Promise = oneAsyncCallAtATime();
+      window.advanceClock(11);
+      const result3 = await result3Promise;
+
+      const errorPromoise = oneAsyncCallAtATime();
+      window.advanceClock(11);
+      await expectAsyncFailure(errorPromoise, error => {
+        expect(error).toBe('ERROR');
+      });
+
+      const result5Promise = oneAsyncCallAtATime();
+      window.advanceClock(11);
+      const result5 = await result5Promise;
+      expect([result1, result2, result3, result5]).toEqual([1, 2, 3, 5]);
+    });
+  });
+});
+
 describe('promises::asyncLimit()', () => {
 
   beforeEach(() => window.useRealClock());

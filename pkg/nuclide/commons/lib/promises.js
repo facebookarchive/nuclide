@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import invariant from 'assert';
+
 type RunReturn<T> = {
   status: 'success';
   result: T;
@@ -158,6 +160,57 @@ async function retryLimit<T>(
   } else {
     return ((result: any): T);
   }
+}
+
+/**
+ * Limits async function execution parallelism to only one at a time.
+ * Hence, if a call is already running, it will wait for it to finish,
+ * then start the next async execution, but if called again while not finished,
+ * it will return the scheduled execution promise.
+ *
+ * Sample Usage:
+ * ```
+ * let i = 1;
+ * const oneExecAtATime = oneParallelAsyncCall(() => {
+ *   return next Promise((resolve, reject) => {
+ *     setTimeout(200, () => resolve(i++));
+ *   });
+ * });
+ *
+ * const result1Promise = oneExecAtATime(); // Start an async, and resolve to 1 in 200 ms.
+ * const result2Promise = oneExecAtATime(); // Schedule the next async, and resolve to 2 in 400 ms.
+ * const result3Promise = oneExecAtATime(); // Reuse scheduled promise and resolve to 2 in 400 ms.
+ * ```
+ */
+function serializeAsyncCall<T>(asyncFun: () => Promise<T>): () => Promise<T> {
+  let scheduledCall = null;
+  let pendingCall = null;
+  const startAsyncCall = () => {
+    const resultPromise = asyncFun();
+    pendingCall = resultPromise.then(
+      () => pendingCall = null,
+      () => pendingCall = null,
+    );
+    return resultPromise;
+  };
+  const callNext = () => {
+    scheduledCall = null;
+    return startAsyncCall();
+  };
+  const scheduleNextCall = () => {
+    if (scheduledCall == null) {
+      invariant(pendingCall, 'pendingCall must not be null!');
+      scheduledCall = pendingCall.then(callNext, callNext);
+    }
+    return scheduledCall;
+  };
+  return () => {
+    if (pendingCall == null) {
+      return startAsyncCall();
+    } else {
+      return scheduleNextCall();
+    }
+  };
 }
 
 var promises = module.exports = {
@@ -345,4 +398,6 @@ var promises = module.exports = {
   },
 
   retryLimit,
+
+  serializeAsyncCall,
 };
