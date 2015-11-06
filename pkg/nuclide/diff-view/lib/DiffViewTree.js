@@ -16,11 +16,13 @@ import type DiffViewModel from './DiffViewModel';
 import {fileTypeClass} from 'nuclide-atom-helpers';
 import {TreeRootComponent} from 'nuclide-ui-tree';
 import DiffViewTreeNode from './DiffViewTreeNode';
+import remoteUri from 'nuclide-remote-uri';
 import Immutable from 'immutable';
 import {FileChangeStatus} from './constants';
 import {CompositeDisposable} from 'atom';
 import React from 'react-for-atom';
 import cx from 'react-classset';
+import {array} from 'nuclide-commons';
 
 function labelClassNameForNode(node: LazyTreeNode): string {
   const classObj = {
@@ -125,13 +127,21 @@ export default class DiffViewTree extends React.Component {
         new DiffViewTreeNode({filePath: nodeName}, rootNode, false, noChildrenFetcher)
       );
     } else {
-      this.state.fileChanges.forEach((statusCode, filePath) => {
+      const {fileChanges} = this.state;
+      const filePaths = array.from(fileChanges.keys())
+        .sort((filePath1, filePath2) =>
+          remoteUri.basename(filePath1).toLowerCase().localeCompare(
+            remoteUri.basename(filePath2).toLowerCase()
+          )
+        );
+      for (const filePath of filePaths) {
         if (filePath.startsWith(rootPath)) {
+          const statusCode = fileChanges.get(filePath);
           childNodes.push(
             new DiffViewTreeNode({filePath, statusCode}, rootNode, false, noChildrenFetcher)
           );
         }
-      });
+      }
     }
     return Immutable.List(childNodes);
   }
