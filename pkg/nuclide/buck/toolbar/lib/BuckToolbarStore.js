@@ -287,7 +287,7 @@ class BuckToolbarStore {
 
     var command = `buck ${run ? 'install' : 'build'} ${buildTarget}`;
     atom.notifications.addInfo(`${command} started.`);
-    await this._setupWebSocket(buckProject, buildTarget);
+    const ws = await this._setupWebSocket(buckProject, buildTarget);
 
     this._buildProgress = 0;
     this._isBuilding = true;
@@ -298,6 +298,9 @@ class BuckToolbarStore {
 
     this._isBuilding = false;
     this.emitChange();
+    if (ws) {
+      ws.close();
+    }
 
     return {buckProject, buildTarget, pid};
   }
@@ -394,54 +397,57 @@ class BuckToolbarStore {
     return await buckRunPromise;
   }
 
-  async _setupWebSocket(buckProject: BuckProject, buildTarget: string): Promise<void> {
-    var httpPort = await buckProject.getServerPort();
-    if (httpPort > 0) {
-      var uri = `ws://localhost:${httpPort}/ws/build`;
-      var ws = new WebSocket(uri);
-      var buildId: ?string = null;
-      var isFinished = false;
-
-      ws.onmessage = (e) => {
-        var message;
-        try {
-          message = JSON.parse(e.data);
-        } catch (err) {
-          getLogger().error(
-              `Buck was likely killed while building ${buildTarget}.`);
-          return;
-        }
-        var type = message['type'];
-        if (buildId === null) {
-          if (type === 'BuildStarted') {
-            buildId = message['buildId'];
-          } else {
-            return;
-          }
-        }
-
-        if (buildId !== message['buildId']) {
-          return;
-        }
-
-        if (type === 'BuildProgressUpdated' || type === 'ParsingProgressUpdated') {
-          this._buildProgress = message.progressValue;
-          this.emitChange();
-        } else if (type === 'BuildFinished') {
-          this._buildProgress = 1.0;
-          this.emitChange();
-          isFinished = true;
-          ws.close();
-        }
-      };
-
-      ws.onclose = () => {
-        if (!isFinished) {
-          getLogger().error(
-              `WebSocket closed before ${buildTarget} finished building.`);
-        }
-      };
+  async _setupWebSocket(buckProject: BuckProject, buildTarget: string): Promise<?WebSocket> {
+    const httpPort = await buckProject.getServerPort();
+    if (httpPort <= 0) {
+      return null;
     }
+
+    const uri = `ws://localhost:${httpPort}/ws/build`;
+    const ws = new WebSocket(uri);
+    let buildId: ?string = null;
+    let isFinished = false;
+
+    ws.onmessage = (e) => {
+      let message;
+      try {
+        message = JSON.parse(e.data);
+      } catch (err) {
+        getLogger().error(
+            `Buck was likely killed while building ${buildTarget}.`);
+        return;
+      }
+      const type = message['type'];
+      if (buildId === null) {
+        if (type === 'BuildStarted') {
+          buildId = message['buildId'];
+        } else {
+          return;
+        }
+      }
+
+      if (buildId !== message['buildId']) {
+        return;
+      }
+
+      if (type === 'BuildProgressUpdated' || type === 'ParsingProgressUpdated') {
+        this._buildProgress = message.progressValue;
+        this.emitChange();
+      } else if (type === 'BuildFinished') {
+        this._buildProgress = 1.0;
+        this.emitChange();
+        isFinished = true;
+        ws.close();
+      }
+    };
+
+    ws.onclose = () => {
+      if (!isFinished) {
+        getLogger().error(
+            `WebSocket closed before ${buildTarget} finished building.`);
+      }
+    };
+    return ws;
   }
 
   _notifyError() {
