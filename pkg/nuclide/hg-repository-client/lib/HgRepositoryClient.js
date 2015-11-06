@@ -467,6 +467,10 @@ class HgRepositoryClient {
     const pathsInRepo = filePaths.filter((filePath) => {
       return this._isPathRelevant(filePath);
     });
+    if (pathsInRepo.length === 0) {
+      return new Map();
+    }
+
     const statusMapPathToStatusId = await this._service.fetchStatuses(pathsInRepo, options);
 
     const queriedFiles = new Set(pathsInRepo);
