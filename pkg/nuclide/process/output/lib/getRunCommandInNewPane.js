@@ -28,7 +28,7 @@ export type RunCommandOptions = {
   destroyExistingPane?: boolean;
 };
 export type RunCommandFunctionAndCleanup = {
-  runCommandInNewPane: (command: string, args: Array<string>, options?: Object) => void;
+  runCommandInNewPane: (options: RunCommandOptions) => HTMLElement;
   disposable: atom$IDisposable;
 };
 
@@ -106,7 +106,7 @@ function createProcessOutputView(
 /**
  * @param options See definition of RunCommandOptions.
  */
-async function runCommandInNewPane(options: RunCommandOptions): Promise<atom$TextEditor> {
+async function runCommandInNewPane(options: RunCommandOptions): Promise<HTMLElement> {
   const openOptions = {
     [PROCESS_OUTPUT_HANDLER_KEY]: options.processOutputHandler,
     [PROCESS_OUTPUT_STORE_KEY]: options.processOutputStore,
