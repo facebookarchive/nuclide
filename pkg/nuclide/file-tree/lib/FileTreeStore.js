@@ -475,17 +475,17 @@ class FileTreeStore {
     if (existingPromise) {
       return existingPromise;
     }
-    let promise = FileTreeHelpers.fetchChildren(nodeKey);
-    promise.catch((error) => {
-      this._logger.error(`Error fetching children for "${nodeKey}"`, error);
+
+    const promise = FileTreeHelpers.fetchChildren(nodeKey).catch((error) => {
+      this._logger.error(`Unable to fetch children for "${nodeKey}".`);
+      this._logger.error('Original error: ', error);
       // Collapse the node and clear its loading state on error so the user can retry expanding it.
       const rootKey = this.getRootForKey(nodeKey);
       if (rootKey != null) {
         this._collapseNode(rootKey, nodeKey);
       }
       this._clearLoading(nodeKey);
-    });
-    promise = promise.then(childKeys => {
+    }).then(childKeys => {
       // If this node's root went away while the Promise was resolving, do no more work. This node
       // is no longer needed in the store.
       if (this.getRootForKey(nodeKey) == null) {
@@ -495,6 +495,7 @@ class FileTreeStore {
       this._addSubscription(nodeKey);
       this._clearLoading(nodeKey);
     });
+
     this._setLoading(nodeKey, promise);
     return promise;
   }

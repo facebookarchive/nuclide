@@ -53,12 +53,13 @@ function getParentKey(key: string): ?string {
 // The array this resolves to contains the `nodeKey` of each child
 function fetchChildren(nodeKey: string): Promise<Array<string>> {
   const directory = getDirectoryByKey(nodeKey);
+
   return new Promise((resolve, reject) => {
-    if (!directory) {
-      // TODO: reject?
-      resolve([]);
+    if (directory == null) {
+      reject(`Directory "${nodeKey}" not found or is inaccessible.`);
       return;
     }
+
     directory.getEntries((error, entries) => {
       // Resolve to an empty array if the directory deson't exist.
       // TODO: should we reject promise?
