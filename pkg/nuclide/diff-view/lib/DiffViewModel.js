@@ -17,6 +17,7 @@ import invariant from 'assert';
 import {CompositeDisposable, Emitter} from 'atom';
 import {repositoryForPath} from 'nuclide-hg-git-bridge';
 import {track, trackTiming} from 'nuclide-analytics';
+import {getFileSystemContents} from './utils';
 import {getFileForPath, getFileSystemServiceByNuclideUri} from 'nuclide-client';
 import {array, map} from 'nuclide-commons';
 import RepositoryStack from './RepositoryStack';
@@ -150,9 +151,7 @@ class DiffViewModel {
 
   @trackTiming('diff-view.file-change-update')
   async _onDidFileChange(filePath: NuclideUri): Promise<void> {
-    const localFilePath = require('nuclide-remote-uri').getPath(filePath);
-    const filesystemContents = (await getFileSystemServiceByNuclideUri(filePath).
-        readFile(localFilePath)).toString('utf8');
+    const filesystemContents = await getFileSystemContents(filePath);
     if (filesystemContents !== this._activeFileState.savedContents) {
       this._updateActiveDiffState(filePath).catch(notifyInternalError);
     }
@@ -236,15 +235,11 @@ class DiffViewModel {
   }
 
   async _saveFile(filePath: NuclideUri, newContents: string): Promise<void> {
-    const {isLocal, getPath} = require('nuclide-remote-uri');
+    const {getPath} = require('nuclide-remote-uri');
     try {
-      if (isLocal(filePath)) {
-        await getFileForPath(filePath).write(newContents);
-      } else {
-        // Remote files return the same instance everytime,
-        // which could have an invalid filesystem contents cache.
-        await getFileSystemServiceByNuclideUri(filePath).writeFile(getPath(filePath), newContents);
-      }
+      // We don't use files, because `getFileForPath` returns the same remote file
+      // instance everytime, which could have an invalid filesystem contents cache.
+      await getFileSystemServiceByNuclideUri(filePath).writeFile(getPath(filePath), newContents);
     } catch (err) {
       throw new Error(`could not save file: \`${filePath}\` - ${err.toString()}`);
     }

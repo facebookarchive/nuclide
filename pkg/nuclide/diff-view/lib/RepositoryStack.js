@@ -17,7 +17,7 @@ import type {NuclideUri} from 'nuclide-remote-uri';
 import invariant from 'assert';
 import {CompositeDisposable, Emitter} from 'atom';
 import {HgStatusToFileChangeStatus, FileChangeStatus} from './constants';
-import {getFileSystemServiceByNuclideUri} from 'nuclide-client';
+import {getFileSystemContents} from './utils';
 import {array, promises, debounce} from 'nuclide-commons';
 import {notifyInternalError} from './notifications';
 
@@ -240,19 +240,13 @@ export default class RepositoryStack {
   }
 
   async fetchHgDiff(filePath: NuclideUri): Promise<HgDiffState> {
-    const fileSystemService = getFileSystemServiceByNuclideUri(filePath);
-    invariant(fileSystemService);
-
     const {compareCommitId} = await this._revisionsStateRequests.waitForLatestResult();
     const committedContentsPromise = this._repository
       .fetchFileContentAtRevision(filePath, `${compareCommitId}`)
       // If the file didn't exist on the previous revision, return empty contents.
       .then(contents => contents || '', err => '');
 
-    const localFilePath = require('nuclide-remote-uri').getPath(filePath);
-    const filesystemContentsPromise = fileSystemService.readFile(localFilePath)
-      // If the file was removed, return empty contents.
-      .then(contents => contents.toString('utf8') || '', err => '');
+    const filesystemContentsPromise = getFileSystemContents(filePath);
 
     const [
       committedContents,
