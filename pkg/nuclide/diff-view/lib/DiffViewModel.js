@@ -10,23 +10,22 @@
  */
 
 import type {HgRepositoryClient} from 'nuclide-hg-repository-client';
-import type {FileChangeState, FileChangeStatusValue, HgDiffState} from './types';
+import type {FileChangeState, FileChangeStatusValue, HgDiffState, RevisionsState} from './types';
 import type {NuclideUri} from 'nuclide-remote-uri';
 
 import invariant from 'assert';
 import {CompositeDisposable, Emitter} from 'atom';
 import {repositoryForPath} from 'nuclide-hg-git-bridge';
-import {HgStatusToFileChangeStatus} from './constants';
 import {track, trackTiming} from 'nuclide-analytics';
 import {getFileForPath, getFileSystemServiceByNuclideUri} from 'nuclide-client';
-import {getLogger} from 'nuclide-logging';
-import {array} from 'nuclide-commons';
+import {array, map} from 'nuclide-commons';
 import RepositoryStack from './RepositoryStack';
 import {notifyInternalError} from './notifications';
 
-const logger = getLogger();
 const CHANGE_DIRTY_STATUS_EVENT = 'did-change-dirty-status';
+const CHANGE_COMPARE_STATUS_EVENT = 'did-change-compare-status';
 const ACTIVE_FILE_UPDATE_EVENT = 'active-file-update';
+const CHANGE_REVISIONS_EVENT = 'did-change-revisions';
 
 class DiffViewModel {
 
@@ -34,8 +33,10 @@ class DiffViewModel {
   _subscriptions: CompositeDisposable;
   _activeSubscriptions: ?CompositeDisposable;
   _activeFileState: FileChangeState;
+  _activeRepositoryStack: ?RepositoryStack;
   _newEditor: ?TextEditor;
   _dirtyFileChanges: Map<NuclideUri, FileChangeStatusValue>;
+  _compareFileChanges: Map<NuclideUri, FileChangeStatusValue>;
   _uiProviders: Array<Object>;
   _repositoryStacks: Map<HgRepositoryClient, RepositoryStack>;
   _repositorySubscriptions: Map<HgRepositoryClient, CompositeDisposable>;
@@ -43,6 +44,7 @@ class DiffViewModel {
   constructor(uiProviders: Array<Object>) {
     this._uiProviders = uiProviders;
     this._dirtyFileChanges = new Map();
+    this._compareFileChanges = new Map();
     this._emitter = new Emitter();
     this._subscriptions = new CompositeDisposable();
     this._repositoryStacks = new Map();
@@ -84,13 +86,10 @@ class DiffViewModel {
   }
 
   _updateDirtyChangedStatus(): void {
-    this._dirtyFileChanges.clear();
-    for (const repositoryStack of this._repositoryStacks.values()) {
-      const dirtyStatuses = repositoryStack.getDirtyFileChanges();
-      for (const [filePath, changeStatus] of dirtyStatuses) {
-        this._dirtyFileChanges.set(filePath, changeStatus);
-      }
-    }
+    this._dirtyFileChanges = this._compareFileChanges = map.union(...array
+      .from(this._repositoryStacks.values())
+      .map(repositoryStack => repositoryStack.getDirtyFileChanges())
+    );
     this._emitter.emit(CHANGE_DIRTY_STATUS_EVENT, this._dirtyFileChanges);
   }
 
@@ -99,10 +98,34 @@ class DiffViewModel {
     const subscriptions = new CompositeDisposable();
     subscriptions.add(
       repositoryStack.onDidChangeDirtyStatus(this._updateDirtyChangedStatus.bind(this)),
+      repositoryStack.onDidChangeCompareStatus(this._updateCompareChangedStatus.bind(this)),
+      repositoryStack.onDidChangeRevisions(
+        this._updateChangedRevisions.bind(this, repositoryStack)
+      ),
     );
     this._repositoryStacks.set(repository, repositoryStack);
     this._repositorySubscriptions.set(repository, subscriptions);
     return repositoryStack;
+  }
+
+  _updateCompareChangedStatus(): void {
+    this._compareFileChanges = map.union(...array
+      .from(this._repositoryStacks.values())
+      .map(repositoryStack => repositoryStack.getCompareFileChanges())
+    );
+    this._emitter.emit(CHANGE_COMPARE_STATUS_EVENT, this._compareFileChanges);
+  }
+
+  _updateChangedRevisions(repositoryStack: RepositoryStack): void {
+    if (repositoryStack === this._activeRepositoryStack) {
+      const revisionsState = repositoryStack.getRevisionsState();
+      invariant(revisionsState, 'revisionsState must exist to update changed revisions');
+      track('diff-view-update-timeline-revisions', {
+        revisionsCount: `${revisionsState.revisions.length}`,
+      });
+      this._emitter.emit(CHANGE_REVISIONS_EVENT, revisionsState);
+      this._updateActiveDiffState(this._activeFileState.filePath).catch(notifyInternalError);
+    }
   }
 
   activateFile(filePath: NuclideUri): void {
@@ -188,7 +211,16 @@ class DiffViewModel {
 
     const repositoryStack = this._repositoryStacks.get(repository);
     invariant(repositoryStack);
+    this._setActiveRepositoryStack(repositoryStack);
     return repositoryStack.fetchHgDiff(filePath);
+  }
+
+  _setActiveRepositoryStack(repositoryStack: RepositoryStack) {
+    if (this._activeRepositoryStack === repositoryStack) {
+      return;
+    }
+    this._activeRepositoryStack = repositoryStack;
+    this._emitter.emit(CHANGE_REVISIONS_EVENT, repositoryStack.getRevisionsState());
   }
 
   @trackTiming('diff-view.save-file')
@@ -224,6 +256,16 @@ class DiffViewModel {
     return this._emitter.on(CHANGE_DIRTY_STATUS_EVENT, callback);
   }
 
+  onDidChangeCompareStatus(
+    callback: (compareFileChanges: Map<NuclideUri, FileChangeStatusValue>) => void
+  ): atom$Disposable {
+    return this._emitter.on(CHANGE_COMPARE_STATUS_EVENT, callback);
+  }
+
+  onRevisionsUpdate(callback: (state: ?RevisionsState) => void): atom$Disposable {
+    return this._emitter.on(CHANGE_REVISIONS_EVENT, callback);
+  }
+
   onActiveFileUpdates(callback: (state: FileChangeState) => void): atom$Disposable {
     return this._emitter.on(ACTIVE_FILE_UPDATE_EVENT, callback);
   }
@@ -242,6 +284,17 @@ class DiffViewModel {
 
   getDirtyFileChanges(): Map<NuclideUri, FileChangeStatusValue> {
     return this._dirtyFileChanges;
+  }
+
+  getCompareFileChanges(): Map<NuclideUri, FileChangeStatusValue> {
+    return this._compareFileChanges;
+  }
+
+  getActiveRevisionsState(): ?RevisionsState {
+    if (this._activeRepositoryStack == null) {
+      return null;
+    }
+    return this._activeRepositoryStack.getRevisionsState();
   }
 
   dispose(): void {

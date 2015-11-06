@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 import type {NuclideUri} from 'nuclide-remote-uri';
+import type {RevisionInfo} from 'nuclide-hg-repository-base/lib/hg-constants';
 
 export type FileChangeStatusValue = 1 | 2 | 3 | 4 | 5;
 
@@ -23,6 +24,12 @@ export type FileChangeState = {
   newContents: string;
   savedContents?: string;
   inlineComponents?: Array<InlineComponent>;
+};
+
+export type RevisionsState = {
+  revisions: Array<RevisionInfo>;
+  compareCommitId: ?number;
+  commitId: number;
 };
 
 export type TextDiff = {

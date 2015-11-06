@@ -10,6 +10,8 @@
  */
 /* @providesModule HgConstants */
 
+import type {NuclideUri} from 'nuclide-remote-uri';
+
 export type HgRepositoryOptions = {
   /** The origin URL of this repository. */
   originURL: string;
@@ -103,16 +105,16 @@ export type RevisionInfo = {
 };
 
 export type RevisionFileCopy = {
-  from: string;
-  to: string;
+  from: NuclideUri;
+  to: NuclideUri;
 };
 
 export type RevisionFileChanges = {
-  all: Array<string>;
-  added: Array<string>;
-  deleted: Array<string>;
+  all: Array<NuclideUri>;
+  added: Array<NuclideUri>;
+  deleted: Array<NuclideUri>;
   copied: Array<RevisionFileCopy>;
-  modified: Array<string>;
+  modified: Array<NuclideUri>;
 };
 
 module.exports = {
