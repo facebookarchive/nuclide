@@ -187,6 +187,21 @@ function getRemoteRootDirectories(): Array<atom$Directory> {
 }
 
 /**
+ * Removes any Directory (not RemoteDirectory) objects that have Nuclide
+ * remote URIs.
+ */
+function deleteDummyRemoteRootDirectories() {
+  const {RemoteDirectory} = require('nuclide-remote-connection');
+  const {isRemote} = require('nuclide-remote-uri');
+  for (const directory of atom.project.getDirectories()) {
+    if (isRemote(directory.getPath()) &&
+        !(RemoteDirectory.isRemoteDirectory(directory))) {
+      atom.project.removePath(directory.getPath());
+    }
+  }
+}
+
+/**
  * The same TextEditor must be returned to prevent Atom from creating multiple tabs
  * for the same file, because Atom doesn't cache pending opener promises.
  */
@@ -262,6 +277,14 @@ module.exports = {
 
     // Don't do require or any other expensive operations in activate().
     subscriptions.add(atom.packages.onDidActivateInitialPackages(() => {
+      // RemoteDirectoryProvider will be called before this.
+      // If RemoteDirectoryProvider failed to provide a RemoteDirectory for a
+      // given URI, Atom will create a generic Directory to wrap that. We want
+      // to delete these instead, because those directories aren't valid/useful
+      // if they are not true RemoteDirectory objects (connected to a real
+      // real remote folder).
+      deleteDummyRemoteRootDirectories();
+
       // Remove remote projects added in case of reloads.
       // We already have their connection config stored.
       let remoteProjectsConfigAsDeserializedJson: SerializableRemoteConnectionConfiguration[] =

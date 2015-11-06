@@ -23,14 +23,13 @@ class RemoteDirectoryProvider {
     if (!uri.startsWith(REMOTE_PATH_URI_PREFIX)) {
       return null;
     }
-
     var connection = RemoteConnection.getForUri(uri);
     if (connection) {
       return connection.createDirectory(uri);
     } else {
-      // TODO: Handle case where connection is not yet established. This could
-      // happen when someone had a nuclide:// file open before and then s/he
-      // restarted the workspace and Atom tried to restore the state.
+      // Return null here. In response, Atom will create a generic Directory for
+      // this URI, and add it to the list of root project paths (atom.project.getPaths()).
+      // In remote-projects/main.js, we remove these generic directories.
       return null;
     }
   }
