@@ -9,31 +9,57 @@
  * the root directory of this source tree.
  */
 
-import type {FileChangeState} from './types';
+import type {FileChangeState, InlineComponent} from './types';
+import type DiffViewModel from './DiffViewModel';
 
-var {CompositeDisposable} = require('atom');
-var React = require('react-for-atom');
-var {PropTypes} = React;
-var DiffViewEditorPane = require('./DiffViewEditorPane');
-var DiffViewTree = require('./DiffViewTree');
-var {assign} = require('nuclide-commons').object;
-var {createPaneContainer} = require('nuclide-atom-helpers');
+import invariant from 'assert';
+import {CompositeDisposable} from 'atom';
+import React from 'react-for-atom';
+import DiffViewEditorPane from './DiffViewEditorPane';
+import DiffViewTree from './DiffViewTree';
+import SyncScroll from './SyncScroll';
+import {object} from 'nuclide-commons';
+import {createPaneContainer} from 'nuclide-atom-helpers';
 
+type Props = {
+  diffModel: DiffViewModel;
+};
+
+type EditorState = {
+  text: string;
+  offsets: Object;
+  highlightedLines: {
+    added: Array<number>;
+    removed: Array<number>;
+  };
+  inlineElements: Array<InlineComponent>;
+}
+
+type State = {
+  filePath: string,
+  oldEditorState: EditorState;
+  newEditorState: EditorState;
+};
+
+/* eslint-disable react/prop-types */
 class DiffViewComponent extends React.Component {
+  props: Props;
+  state: State;
+
   _subscriptions: ?CompositeDisposable;
   _oldEditorPane: ?atom$Pane;
-  _oldEditorComponent: ?ReactComponent;
+  _oldEditorComponent: ?DiffViewEditorPane;
   _newEditorPane: ?atom$Pane;
-  _newEditorComponent: ?ReactComponent;
+  _newEditorComponent: ?DiffViewEditorPane;
   _treePane: ?atom$Pane;
   _treeComponent: ?ReactComponent;
 
   _boundHandleNewOffsets: Function;
   _boundUpdateLineDiffState: Function;
 
-  constructor(props: Object) {
+  constructor(props: Props) {
     super(props);
-    var oldEditorState = {
+    const oldEditorState = {
       text: '',
       offsets: {},
       highlightedLines: {
@@ -42,7 +68,7 @@ class DiffViewComponent extends React.Component {
       },
       inlineElements: [],
     };
-    var newEditorState = {
+    const newEditorState = {
       text: '',
       offsets: {},
       highlightedLines: {
@@ -62,20 +88,20 @@ class DiffViewComponent extends React.Component {
   }
 
   componentDidMount(): void {
-    var diffModel = this.props.diffModel;
-    var subscriptions = this._subscriptions = new CompositeDisposable();
+    const diffModel = this.props.diffModel;
+    const subscriptions = this._subscriptions = new CompositeDisposable();
     subscriptions.add(diffModel.onActiveFileUpdates(this._boundUpdateLineDiffState));
 
     this._paneContainer = createPaneContainer();
     // The diff status tree takes 1/5 of the width and lives on the right most.
-    this._treePane = this._paneContainer.getActivePane();
-    this._oldEditorPane = this._treePane.splitLeft({
+    const treePane = this._treePane = this._paneContainer.getActivePane();
+    this._oldEditorPane = treePane.splitLeft({
       // Prevent Atom from cloning children on splitting; this panel wants an empty container.
       copyActiveItem: false,
       // The old contents left editor pane takes 2/5 the width.
       flexScale: 2,
     });
-    this._newEditorPane = this._treePane.splitLeft({
+    this._newEditorPane = treePane.splitLeft({
       // Prevent Atom from cloning children on splitting; this panel wants an empty container.
       copyActiveItem: false,
       // The new contents right editor pane takes 2/5 the width.
@@ -86,13 +112,14 @@ class DiffViewComponent extends React.Component {
     this._renderEditors();
 
     React.findDOMNode(this.refs['paneContainer']).appendChild(
-      atom.views.getView(this._paneContainer)
+      atom.views.getView(this._paneContainer),
     );
 
-    var oldTextEditorElement = this._oldEditorComponent.getEditorDomElement();
-    var newTextEditorElement = this._newEditorComponent.getEditorDomElement();
+    invariant(this._oldEditorComponent);
+    const oldTextEditorElement = this._oldEditorComponent.getEditorDomElement();
+    invariant(this._newEditorComponent);
+    const newTextEditorElement = this._newEditorComponent.getEditorDomElement();
 
-    var SyncScroll = require('./SyncScroll');
     subscriptions.add(new SyncScroll(
         oldTextEditorElement,
         newTextEditorElement,
@@ -108,6 +135,7 @@ class DiffViewComponent extends React.Component {
   }
 
   _renderTree(): void {
+    invariant(this._treePane);
     this._treeComponent = React.render(
       (
         <div className={"nuclide-diff-view-tree"}>
@@ -119,7 +147,8 @@ class DiffViewComponent extends React.Component {
   }
 
   _renderEditors(): void {
-    var {filePath, oldEditorState: oldState, newEditorState: newState} = this.state;
+    const {filePath, oldEditorState: oldState, newEditorState: newState} = this.state;
+    invariant(this._oldEditorPane);
     this._oldEditorComponent = React.render(
         <DiffViewEditorPane
           filePath={filePath}
@@ -131,6 +160,7 @@ class DiffViewComponent extends React.Component {
           readOnly={true}/>,
         this._getPaneElement(this._oldEditorPane),
     );
+    invariant(this._newEditorPane);
     this._newEditorComponent = React.render(
         <DiffViewEditorPane
           filePath={filePath}
@@ -178,14 +208,14 @@ class DiffViewComponent extends React.Component {
   }
 
   _handleNewOffsets(offsetsFromComponents: Map): void {
-    var oldLineOffsets = assign({}, this.state.oldEditorState.offsets);
-    var newLineOffsets = assign({}, this.state.newEditorState.offsets);
+    const oldLineOffsets = object.assign({}, this.state.oldEditorState.offsets);
+    const newLineOffsets = object.assign({}, this.state.newEditorState.offsets);
     offsetsFromComponents.forEach((offsetAmount, row) => {
       newLineOffsets[row] = (newLineOffsets[row] || 0) + offsetAmount;
       oldLineOffsets[row] = (oldLineOffsets[row] || 0) + offsetAmount;
     });
-    var oldEditorState = assign({}, this.state.oldEditorState, {offsets: oldLineOffsets});
-    var newEditorState = assign({}, this.state.newEditorState, {offsets: newLineOffsets});
+    const oldEditorState = object.assign({}, this.state.oldEditorState, {offsets: oldLineOffsets});
+    const newEditorState = object.assign({}, this.state.newEditorState, {offsets: newLineOffsets});
     this.setState({
       filePath: this.state.filePath,
       oldEditorState,
@@ -201,13 +231,13 @@ class DiffViewComponent extends React.Component {
    * Updates the line diff state on active file state change.
    */
   _updateLineDiffState(fileState: FileChangeState): void {
-    var {oldContents, newContents, filePath, inlineComponents} = fileState;
+    const {oldContents, newContents, filePath, inlineComponents} = fileState;
 
-    var {computeDiff} = require('./diff-utils');
-    var {addedLines, removedLines, oldLineOffsets, newLineOffsets} =
+    const {computeDiff} = require('./diff-utils');
+    const {addedLines, removedLines, oldLineOffsets, newLineOffsets} =
       computeDiff(oldContents, newContents);
 
-    var oldEditorState = {
+    const oldEditorState = {
       text: oldContents,
       offsets: oldLineOffsets,
       highlightedLines: {
@@ -216,7 +246,7 @@ class DiffViewComponent extends React.Component {
       },
       inlineElements: inlineComponents || [],
     };
-    var newEditorState = {
+    const newEditorState = {
       text: newContents,
       offsets: newLineOffsets,
       highlightedLines: {
@@ -232,9 +262,5 @@ class DiffViewComponent extends React.Component {
     });
   }
 }
-
-DiffViewComponent.propTypes = {
-  diffModel: PropTypes.object.isRequired,
-};
 
 module.exports = DiffViewComponent;

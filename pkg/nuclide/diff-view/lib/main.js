@@ -10,11 +10,12 @@
  */
 
 import type {HomeFragments} from 'nuclide-home-interfaces';
+import type DiffViewModelType from './DiffViewModel';
 
 import {CompositeDisposable} from 'atom';
 import invariant from 'assert';
 
-let diffViewModel: ?DiffViewModel = null;
+let diffViewModel: ?DiffViewModelType = null;
 let activeDiffView: ?{
   component: ReactComponent;
   element: HTMLElement;
@@ -74,7 +75,7 @@ function createView(entryPath: string): HTMLElement {
   return hostElement;
 }
 
-function getDiffViewModel(): DiffViewModel {
+function getDiffViewModel(): DiffViewModelType {
   if (!diffViewModel) {
     const DiffViewModel = require('./DiffViewModel');
     diffViewModel = new DiffViewModel(uiProviders);
@@ -143,7 +144,7 @@ module.exports = {
         if (!editor) {
           return getLogger().warn('No active text editor for diff view!');
         }
-        atom.workspace.open(NUCLIDE_DIFF_VIEW_URI + editor.getPath());
+        atom.workspace.open(NUCLIDE_DIFF_VIEW_URI + (editor.getPath() || ''));
       }
     ));
 
@@ -301,7 +302,7 @@ module.exports = {
    * @return An array of InlineComments (defined above) to be rendered into the
    *         diff view
    */
-  consumeProvider(provider) {
+  consumeProvider(provider: Object) {
     // TODO(most): Fix UI rendering and re-introduce: t8174332
     // uiProviders.push(provider);
     return;

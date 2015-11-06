@@ -26,17 +26,19 @@ export function buildLineRangesWithOffsets(
     emptyLineFactory: () => any
     ): LineRangesWithOffsets {
 
-  var offsetLineNumbers = Object.keys(lineOffsets).map(lineNumber => parseInt(lineNumber, 10)).sort((x, y) => x - y);
+  const offsetLineNumbers = Object.keys(lineOffsets)
+    .map(lineNumber => parseInt(lineNumber, 10))
+    .sort((x, y) => x - y);
 
-  var priorScreenLine = startBufferRow;
-  var newRegions = [];
-  var newScreenLines = [];
+  let priorScreenLine = startBufferRow;
+  const newRegions = [];
+  const newScreenLines = [];
 
-  var captureScreenLinesRegion = (toScreenLine: number) => {
+  const captureScreenLinesRegion = (toScreenLine: number) => {
     if (toScreenLine < priorScreenLine) {
       return;
     }
-    var numberOfRows = toScreenLine - priorScreenLine;
+    const numberOfRows = toScreenLine - priorScreenLine;
     if (numberOfRows > 0) {
       // Add the portion of the original screenLines until toScreenLine.
       newScreenLines.push.apply(newScreenLines, screenLines.slice(priorScreenLine - startBufferRow, toScreenLine - startBufferRow));
@@ -48,17 +50,17 @@ export function buildLineRangesWithOffsets(
 
   // Construct the new screen lines and regions, by adding empty lines at the offset lines
   // and returning ranges with screenRows = bufferRows + offsetLines.
-  for (var offsetLineNumber of offsetLineNumbers) {
+  for (const offsetLineNumber of offsetLineNumbers) {
     if (offsetLineNumber < priorScreenLine || offsetLineNumber >= endBufferRow) {
       continue;
     }
-    var offsetLines = lineOffsets[offsetLineNumber];
+    const offsetLines = lineOffsets[offsetLineNumber];
     captureScreenLinesRegion(offsetLineNumber - 1);
     // Add empty screen lines to represent offsets.
-    for (var i = 0; i < offsetLines; i++) {
+    for (let i = 0; i < offsetLines; i++) {
       newScreenLines.push(emptyLineFactory());
     }
-    var startOffsetBufferLineNumber = offsetLineNumber - startBufferRow - 1;
+    const startOffsetBufferLineNumber = offsetLineNumber - startBufferRow - 1;
     // TODO: fix when we have more control on the buffer to screen line mapping
     // Currently, if we have offsets at the begining of the file, the gutter numbering would be confusing
     // because it considers the first offset line is the line to be numbered.

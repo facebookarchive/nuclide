@@ -9,21 +9,27 @@
  * the root directory of this source tree.
  */
 
-var {CompositeDisposable} = require('atom');
+import {CompositeDisposable} from 'atom';
 
-class SyncScroll {
+export default class SyncScroll {
 
-  constructor(editor1Element: HTMLElement, editor2Element: HTMLElement) {
+  _subscriptions: ?CompositeDisposable;
+  _syncInfo: Array<{
+    scrollElement: atom$TextEditorElement | atom$TextEditor;
+    scrolling: boolean;
+  }>;
+
+  constructor(editor1Element: atom$TextEditorElement, editor2Element: atom$TextEditorElement) {
     // Atom master and releases after v1.0.18 will change the scroll logic to the editor element.
-    var editor1ScrollElement = editor1Element;
-    var editor2ScrollElement = editor2Element;
+    let editor1ScrollElement = editor1Element;
+    let editor2ScrollElement = editor2Element;
     if (editor1Element.onDidChangeScrollTop === undefined) {
       // As of Atom v1.0.18 and lower, the `TextEditor` is the controller
       // of the scroll functionality.
       editor1ScrollElement = editor1Element.getModel();
       editor2ScrollElement = editor2Element.getModel();
     }
-    this._subscriptions = new CompositeDisposable();
+    const subscriptions = this._subscriptions = new CompositeDisposable();
     this._syncInfo = [{
       scrollElement: editor1ScrollElement,
       scrolling: false,
@@ -36,21 +42,25 @@ class SyncScroll {
       // Note that `onDidChangeScrollTop` isn't technically in the public API.
       const {scrollElement} = editorInfo;
       const updateScrollPosition = () => this._scrollPositionChanged(i);
-      this._subscriptions.add(scrollElement.onDidChangeScrollTop(updateScrollPosition));
-      this._subscriptions.add(scrollElement.onDidChangeScrollLeft(updateScrollPosition));
+      // $FlowFixMe Atom API backword compatability.
+      subscriptions.add(scrollElement.onDidChangeScrollTop(updateScrollPosition));
+      // $FlowFixMe Atom API backword compatability.
+      subscriptions.add(scrollElement.onDidChangeScrollLeft(updateScrollPosition));
     });
   }
 
   _scrollPositionChanged(changeScrollIndex: number): void {
-    var thisInfo  = this._syncInfo[changeScrollIndex];
-    var otherInfo = this._syncInfo[1 - changeScrollIndex];
+    const thisInfo  = this._syncInfo[changeScrollIndex];
+    const otherInfo = this._syncInfo[1 - changeScrollIndex];
     if (thisInfo.scrolling) {
       return;
     }
-    var {scrollElement: thisElement} = thisInfo;
-    var {scrollElement: otherElement} = otherInfo;
+    const {scrollElement: thisElement} = thisInfo;
+    const {scrollElement: otherElement} = otherInfo;
     otherInfo.scrolling = true;
+    // $FlowFixMe Atom API backword compatability.
     otherElement.setScrollTop(thisElement.getScrollTop());
+    // $FlowFixMe Atom API backword compatability.
     otherElement.setScrollLeft(thisElement.getScrollLeft());
     otherInfo.scrolling = false;
   }
@@ -62,5 +72,3 @@ class SyncScroll {
     }
   }
 }
-
-module.exports = SyncScroll;

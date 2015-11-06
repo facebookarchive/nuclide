@@ -8,7 +8,8 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-// adding a new line and saving
+import type {NuclideUri} from 'nuclide-remote-uri';
+
 export type FileChangeStatusValue = 1 | 2 | 3 | 4 | 5;
 
 export type FileChange = {
@@ -17,7 +18,7 @@ export type FileChange = {
 };
 
 export type FileChangeState = {
-  filePath: string;
+  filePath: NuclideUri;
   oldContents: string;
   newContents: string;
   savedContents?: string;

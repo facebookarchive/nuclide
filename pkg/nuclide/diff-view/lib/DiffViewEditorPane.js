@@ -9,17 +9,17 @@
  * the root directory of this source tree.
  */
 
-var {CompositeDisposable} = require('atom');
-var React = require('react-for-atom');
-var {PropTypes} = React;
-var DiffViewEditor = require('./DiffViewEditor');
+import {CompositeDisposable} from 'atom';
+import React, {PropTypes} from 'react-for-atom';
+import DiffViewEditor from './DiffViewEditor';
+import invariant from 'assert';
 
 import type {HighlightedLines} from './types';
 
-class DiffViewEditorPane extends React.Component {
+export default class DiffViewEditorPane extends React.Component {
 
   _diffViewEditor: ?DiffViewEditor;
-  _subscriptions: ?CompositeDisposable;
+  _subscriptions: CompositeDisposable;
   // TODO(most): move async code out of the view and deprecate the usage of `_isMounted`.
   // All view changes should be pushed from the model/store through subscriptions.
   _isMounted: boolean;
@@ -30,18 +30,18 @@ class DiffViewEditorPane extends React.Component {
       textContent: this.props.initialTextContent,
     };
     this._isMounted = false;
+    this._subscriptions = new CompositeDisposable();
   }
 
   componentDidMount(): void {
     this._isMounted = true;
-    this._subscriptions = new CompositeDisposable();
-    var diffViewEditor = this._diffViewEditor = new DiffViewEditor(this.getEditorDomElement());
+    const diffViewEditor = this._diffViewEditor = new DiffViewEditor(this.getEditorDomElement());
     if (this.props.readOnly) {
       diffViewEditor.setReadOnly();
     }
-    var textEditor = this.getEditorModel();
+    const textEditor = this.getEditorModel();
     this._subscriptions.add(textEditor.onDidChange(() => {
-      var newContents = textEditor.getText();
+      const newContents = textEditor.getText();
       this.setState({textContent: newContents});
       if (this.props.onChange) {
         this.props.onChange(newContents);
@@ -53,7 +53,6 @@ class DiffViewEditorPane extends React.Component {
   componentWillUnmount(): void {
     if (this._subscriptions) {
       this._subscriptions.dispose();
-      this._subscriptions = null;
     }
     if (this._diffViewEditor) {
       var textEditor = this.getEditorModel();
@@ -101,25 +100,30 @@ class DiffViewEditorPane extends React.Component {
   }
 
   _setTextContent(filePath: string, text: string, clearHistory: boolean): void {
+    invariant(this._diffViewEditor);
     this._diffViewEditor.setFileContents(filePath, text, clearHistory);
   }
 
   _setHighlightedLines(highlightedLines: HighlightedLines): void {
+    invariant(this._diffViewEditor);
     this._diffViewEditor.setHighlightedLines(highlightedLines.added, highlightedLines.removed);
   }
 
   _setOffsets(offsets: { [key: string]: number }): void {
+    invariant(this._diffViewEditor);
     this._diffViewEditor.setOffsets(offsets);
   }
 
   async _renderComponentsInline(elements: Array<Object>): Promise {
-    var components = await this._diffViewEditor.renderInlineComponents(elements);
+    const diffViewEditor = this._diffViewEditor;
+    invariant(diffViewEditor);
+    const components = await diffViewEditor.renderInlineComponents(elements);
     if (!this._isMounted) {
       return;
     }
 
-    this._diffViewEditor.attachInlineComponents(components);
-    var offsetsFromComponents = new Map();
+    diffViewEditor.attachInlineComponents(components);
+    const offsetsFromComponents = new Map();
 
     // TODO(gendron):
     // The React components aren't actually rendered in the DOM until the
@@ -130,12 +134,12 @@ class DiffViewEditorPane extends React.Component {
       if (!this._isMounted) {
         return;
       }
-      var editorWidth = this.getEditorDomElement().clientWidth;
+      const editorWidth = this.getEditorDomElement().clientWidth;
       components.forEach(element => {
-        var domNode = React.findDOMNode(element.component);
+        const domNode = React.findDOMNode(element.component);
         // get the height of the component after it has been rendered in the DOM
-        var componentHeight = domNode.clientHeight;
-        var lineHeight = this._diffViewEditor.getLineHeightInPixels();
+        const componentHeight = domNode.clientHeight;
+        const lineHeight = diffViewEditor.getLineHeightInPixels();
 
         // TODO(gendron):
         // Set the width of the overlay so that it won't resize when we
@@ -144,8 +148,8 @@ class DiffViewEditorPane extends React.Component {
 
         // calculate the number of lines we need to insert in the buffer to make room
         // for the component to be displayed
-        var offset = Math.ceil(componentHeight / lineHeight);
-        var offsetRow = element.bufferRow;
+        const offset = Math.ceil(componentHeight / lineHeight);
+        const offsetRow = element.bufferRow;
         offsetsFromComponents.set(offsetRow, offset);
 
         // PhabricatorCommentsList is rendered with visibility: hidden.
@@ -155,11 +159,12 @@ class DiffViewEditorPane extends React.Component {
     }, components.length * 500);
   }
 
-  getEditorModel(): Object {
+  getEditorModel(): atom$TextEditor {
+    invariant(this._diffViewEditor);
     return this._diffViewEditor.getModel();
   }
 
-  getEditorDomElement(): HTMLElement {
+  getEditorDomElement(): atom$TextEditorElement {
     return React.findDOMNode(this.refs['editor']);
   }
 }
@@ -177,5 +182,3 @@ DiffViewEditorPane.propTypes = {
   readOnly: PropTypes.bool.isRequired,
   onChange: PropTypes.func,
 };
-
-module.exports = DiffViewEditorPane;

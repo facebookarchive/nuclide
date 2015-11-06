@@ -9,13 +9,13 @@
  * the root directory of this source tree.
  */
 
-var {LazyTreeNode} = require('nuclide-ui-tree');
-var {basename} = require('nuclide-remote-uri');
-var {FileChangeStatusToPrefix} = require('./constants');
+import {LazyTreeNode} from 'nuclide-ui-tree';
+import {basename} from 'nuclide-remote-uri';
+import {FileChangeStatusToPrefix} from './constants';
 
 import type {FileChange} from './types';
 
-class DiffViewTreeNode extends LazyTreeNode {
+export default class DiffViewTreeNode extends LazyTreeNode {
 
   constructor(
     entry: FileChange,
@@ -27,8 +27,8 @@ class DiffViewTreeNode extends LazyTreeNode {
   }
 
   getLabel(): string {
-    var item: FileChange = this.getItem();
-    var fileName = basename(item.filePath);
+    const item: FileChange = this.getItem();
+    const fileName = basename(item.filePath);
     return (this.isContainer() || !item.statusCode)
       ? fileName
       : ((FileChangeStatusToPrefix[item.statusCode] || '') + fileName);
@@ -39,5 +39,3 @@ class DiffViewTreeNode extends LazyTreeNode {
   }
 
 }
-
-module.exports = DiffViewTreeNode;

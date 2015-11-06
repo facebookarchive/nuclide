@@ -20,7 +20,7 @@ import type {InlineComponent, RenderedComponent} from './types';
  * The DiffViewEditor manages the lifecycle of the two editors used in the diff view,
  * and controls its rendering of highlights and offsets.
  */
-module.exports = class DiffViewEditor {
+export default class DiffViewEditor {
   _editor: Object;
   _editorElement: Object;
   _markers: Array<atom$Marker>;

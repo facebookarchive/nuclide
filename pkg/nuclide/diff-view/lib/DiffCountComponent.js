@@ -10,18 +10,17 @@
  */
 
 import React from 'react-for-atom';
-const {PropTypes} = React;
 
-export default class DiffCountComponent extends React.Component {
+type Props = {
+  count: number;
+};
 
-  constructor(props: Object) {
+/* eslint-disable react/prop-types */
+class DiffCountComponent extends React.Component {
+
+  constructor(props: Props) {
     super(props);
   }
-
-  // $FlowIssue t8486988
-  static propTypes = {
-    count: PropTypes.number.isRequired,
-  };
 
   render(): ?ReactElement {
     const {count} = this.props;
@@ -35,3 +34,5 @@ export default class DiffCountComponent extends React.Component {
     );
   }
 }
+
+module.exports = DiffCountComponent;

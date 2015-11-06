@@ -10,17 +10,20 @@
  */
 
 import type {HgRepositoryClient} from 'nuclide-hg-repository-client';
-import type {FileChangeState} from './types';
+import type {FileChangeState, FileChangeStatusValue} from './types';
+import type {NuclideUri} from 'nuclide-remote-uri';
 
 import invariant from 'assert';
+import {CompositeDisposable, Emitter} from 'atom';
+import {repositoryForPath} from 'nuclide-hg-git-bridge';
+import {HgStatusToFileChangeStatus} from './constants';
+import {track, trackTiming} from 'nuclide-analytics';
+import {getFileForPath, getFileSystemServiceByNuclideUri} from 'nuclide-client';
+import {getLogger} from 'nuclide-logging';
 
-var {CompositeDisposable, Emitter} = require('atom');
-var {repositoryForPath} = require('nuclide-hg-git-bridge');
-var {HgStatusToFileChangeStatus, FileChangeStatus} = require('./constants');
-var {track, trackTiming} = require('nuclide-analytics');
-
-var {getFileForPath, getFileSystemServiceByNuclideUri} = require('nuclide-client');
-var logger = require('nuclide-logging').getLogger();
+const logger = getLogger();
+const CHANGE_STATUS_EVENT = 'did-change-status';
+const ACTIVE_FILE_UPDATE_EVENT = 'active-file-update';
 
 type HgDiffState = {
   committedContents: string;
@@ -30,23 +33,24 @@ type HgDiffState = {
 class DiffViewModel {
 
   _emitter: Emitter;
-  _subscriptions: ?CompositeDisposable;
+  _subscriptions: CompositeDisposable;
   _activeSubscriptions: ?CompositeDisposable;
   _activeFileState: FileChangeState;
   _newEditor: ?TextEditor;
-  _fileChanges: Map<string, number>;
+  _fileChanges: Map<NuclideUri, FileChangeStatusValue>;
   _uiProviders: Array<Object>;
-  _repositorySubscriptions: ?Map<HgRepositoryClient, Disposable>;
+  _repositorySubscriptions: Map<HgRepositoryClient, atom$Disposable>;
+  _boundHandleInternalError: Function;
 
   constructor(uiProviders: Array<Object>) {
     this._uiProviders = uiProviders;
     this._fileChanges = new Map();
     this._emitter = new Emitter();
     this._boundHandleInternalError = this._handleInternalError.bind(this);
-    var subscriptions = this._subscriptions = new CompositeDisposable();
+    this._subscriptions = new CompositeDisposable();
     this._repositorySubscriptions = new Map();
     this._updateRepositories();
-    subscriptions.add(atom.project.onDidChangePaths(this._updateRepositories.bind(this)));
+    this._subscriptions.add(atom.project.onDidChangePaths(this._updateRepositories.bind(this)));
     this._setActiveFileState({
       filePath: '',
       oldContents: '',
@@ -55,18 +59,19 @@ class DiffViewModel {
   }
 
   _updateRepositories(): void {
-    for (var subscription of this._repositorySubscriptions.values()) {
+    for (const subscription of this._repositorySubscriptions.values()) {
       subscription.dispose();
     }
     this._repositorySubscriptions.clear();
     atom.project.getRepositories()
-      .filter(repository => repository && repository.getType() === 'hg')
+      .filter(repository => repository != null && repository.getType() === 'hg')
       .forEach(repository => {
+        const hgRepository = ((repository: any): HgRepositoryClient);
         // Get the initial project status, if it's not already there,
         // triggered by another integration, like the file tree.
-        repository.getStatuses([repository.getProjectDirectory()]);
+        hgRepository.getStatuses([hgRepository.getProjectDirectory()]);
         this._repositorySubscriptions.set(
-          repository, repository.onDidChangeStatuses(this._updateChangedStatus.bind(this))
+          hgRepository, hgRepository.onDidChangeStatuses(this._updateChangedStatus.bind(this))
         );
       });
     this._updateChangedStatus();
@@ -74,29 +79,29 @@ class DiffViewModel {
 
   _updateChangedStatus(): void {
     this._fileChanges.clear();
-    for (var repository of this._repositorySubscriptions.keys()) {
-      var statuses = repository.getAllPathStatuses();
-      for (var filePath in statuses) {
-        var changeStatus = HgStatusToFileChangeStatus[statuses[filePath]];
+    for (const repository of this._repositorySubscriptions.keys()) {
+      const statuses = repository.getAllPathStatuses();
+      for (const filePath in statuses) {
+        const changeStatus = HgStatusToFileChangeStatus[statuses[filePath]];
         if (changeStatus != null) {
           this._fileChanges.set(filePath, changeStatus);
         }
       }
     }
-    this._emitter.emit('did-change-status', this._fileChanges);
+    this._emitter.emit(CHANGE_STATUS_EVENT, this._fileChanges);
   }
 
-  activateFile(filePath: string): void {
+  activateFile(filePath: NuclideUri): void {
     if (this._activeSubscriptions) {
       this._activeSubscriptions.dispose();
     }
-    var activeSubscriptions = this._activeSubscriptions = new CompositeDisposable();
+    const activeSubscriptions = this._activeSubscriptions = new CompositeDisposable();
     this._setActiveFileState({
       filePath: '',
       oldContents: '',
       newContents: '',
     });
-    var file = getFileForPath(filePath);
+    const file = getFileForPath(filePath);
     if (file) {
       activeSubscriptions.add(file.onDidChange(() => {
         this._onDidFileChange(filePath).catch(this._boundHandleInternalError);
@@ -107,9 +112,9 @@ class DiffViewModel {
   }
 
   @trackTiming('diff-view.file-change-update')
-  async _onDidFileChange(filePath: string): Promise<void> {
-    var localFilePath = require('nuclide-remote-uri').getPath(filePath);
-    var filesystemContents = (await getFileSystemServiceByNuclideUri(filePath).
+  async _onDidFileChange(filePath: NuclideUri): Promise<void> {
+    const localFilePath = require('nuclide-remote-uri').getPath(filePath);
+    const filesystemContents = (await getFileSystemServiceByNuclideUri(filePath).
         readFile(localFilePath)).toString('utf8');
     if (filesystemContents !== this._activeFileState.savedContents) {
       this._updateActiveDiffState(filePath).catch(this._boundHandleInternalError);
@@ -117,13 +122,13 @@ class DiffViewModel {
   }
 
   _handleInternalError(error: Error): void {
-    var errorMessage = `Diff View Internal Error - ${error.message}`;
+    const errorMessage = `Diff View Internal Error - ${error.message}`;
     logger.error(errorMessage, error);
     atom.notifications.addError(errorMessage);
   }
 
   setNewContents(newContents: string): void {
-    var {filePath, oldContents, savedContents, inlineComponents} = this._activeFileState;
+    const {filePath, oldContents, savedContents, inlineComponents} = this._activeFileState;
     this._setActiveFileState({
       filePath,
       oldContents,
@@ -137,12 +142,12 @@ class DiffViewModel {
     return this._activeFileState;
   }
 
-  async _updateActiveDiffState(filePath: string): Promise<void> {
-    var hgDiffState = await this._fetchHgDiff(filePath);
+  async _updateActiveDiffState(filePath: NuclideUri): Promise<void> {
+    const hgDiffState = await this._fetchHgDiff(filePath);
     if (!hgDiffState) {
       return;
     }
-    var {
+    const {
       committedContents: oldContents,
       filesystemContents: newContents,
     } = hgDiffState;
@@ -151,7 +156,7 @@ class DiffViewModel {
       oldContents,
       newContents,
     });
-    var inlineComponents = await this._fetchInlineComponents();
+    const inlineComponents = await this._fetchInlineComponents();
     this._setActiveFileState({
       filePath,
       oldContents,
@@ -162,35 +167,35 @@ class DiffViewModel {
 
   _setActiveFileState(state: FileChangeState): void {
     this._activeFileState = state;
-    this._emitter.emit('active-file-update', state);
+    this._emitter.emit(ACTIVE_FILE_UPDATE_EVENT, state);
   }
 
   @trackTiming('diff-view.hg-state-update')
-  async _fetchHgDiff(filePath: string): Promise<?HgDiffState> {
+  async _fetchHgDiff(filePath: NuclideUri): Promise<?HgDiffState> {
     // Calling atom.project.repositoryForDirectory gets the real path of the directory,
     // which is another round-trip and calls the repository providers to get an existing repository.
     // Instead, the first match of the filtering here is the only possible match.
-    var repository: HgRepositoryClient = repositoryForPath(filePath);
+    const repository: HgRepositoryClient = repositoryForPath(filePath);
 
     // TODO(most): move repo type check error handling up the stack before creating the the view.
     if (!repository || repository.getType() !== 'hg') {
-      var type = repository ? repository.getType() : 'no repository';
+      const type = repository ? repository.getType() : 'no repository';
       throw new Error(`Diff view only supports \`Mercurial\` repositories, but found \`${type}\``);
     }
 
-    var fileSystemService = getFileSystemServiceByNuclideUri(filePath);
+    const fileSystemService = getFileSystemServiceByNuclideUri(filePath);
     invariant(fileSystemService);
 
     const committedContentsPromise = repository.fetchFileContentAtRevision(filePath, null)
       // If the file didn't exist on the previous revision, return empty contents.
       .then(contents => contents || '', err => '');
 
-    var localFilePath = require('nuclide-remote-uri').getPath(filePath);
-    var filesystemContentsPromise = fileSystemService.readFile(localFilePath)
+    const localFilePath = require('nuclide-remote-uri').getPath(filePath);
+    const filesystemContentsPromise = fileSystemService.readFile(localFilePath)
       // If the file was removed, return empty contents.
       .then(contents => contents.toString('utf8') || '', err => '');
 
-    var [
+    const [
       committedContents,
       filesystemContents,
     ] = await Promise.all([committedContentsPromise, filesystemContentsPromise]);
@@ -202,7 +207,7 @@ class DiffViewModel {
 
   @trackTiming('diff-view.save-file')
   async saveActiveFile(): Promise<void> {
-    var {filePath, newContents} = this._activeFileState;
+    const {filePath, newContents} = this._activeFileState;
     track('diff-view-save-file', {filePath});
     try {
       await this._saveFile(filePath, newContents);
@@ -213,8 +218,8 @@ class DiffViewModel {
     }
   }
 
-  async _saveFile(filePath: string, newContents: string) {
-    var {isLocal, getPath} = require('nuclide-remote-uri');
+  async _saveFile(filePath: NuclideUri, newContents: string): Promise<void> {
+    const {isLocal, getPath} = require('nuclide-remote-uri');
     try {
       if (isLocal(filePath)) {
         await getFileForPath(filePath).write(newContents);
@@ -228,41 +233,37 @@ class DiffViewModel {
     }
   }
 
-  onDidChangeStatus(callback: () => void): atom$Disposable {
-    return this._emitter.on('did-change-status', callback);
+  onDidChangeStatus(callback: (fileChanges: Map<string, number>) => void): atom$Disposable {
+    return this._emitter.on(CHANGE_STATUS_EVENT, callback);
   }
 
-  onActiveFileUpdates(callback: () => void): atom$Disposable {
-    return this._emitter.on('active-file-update', callback);
+  onActiveFileUpdates(callback: (state: FileChangeState) => void): atom$Disposable {
+    return this._emitter.on(ACTIVE_FILE_UPDATE_EVENT, callback);
   }
 
   @trackTiming('diff-view.fetch-comments')
   async _fetchInlineComponents(): Promise<Array<Object>> {
-    var {filePath} = this._activeFileState;
-    var uiElementPromises = this._uiProviders.map(provider => provider.composeUiElements(filePath));
-    var uiComponentLists = await Promise.all(uiElementPromises);
+    const {filePath} = this._activeFileState;
+    const uiElementPromises = this._uiProviders.map(
+      provider => provider.composeUiElements(filePath)
+    );
+    const uiComponentLists = await Promise.all(uiElementPromises);
     // Flatten uiComponentLists from list of lists of components to a list of components.
-    var uiComponents = [].concat.apply([], uiComponentLists);
+    const uiComponents = [].concat.apply([], uiComponentLists);
     return uiComponents;
   }
 
-  getFileChanges(): Map<string, number> {
+  getFileChanges(): Map<NuclideUri, FileChangeStatusValue> {
     return this._fileChanges;
   }
 
   dispose(): void {
-    if (this._subscriptions) {
-      this._subscriptions.dispose();
-      this._subscriptions = null;
+    this._subscriptions.dispose();
+    for (const subscription of this._repositorySubscriptions.values()) {
+      subscription.dispose();
     }
-    if (this._repositorySubscriptions) {
-      for (var subscription of this._repositorySubscriptions.values()) {
-        subscription.dispose();
-      }
-      this._repositorySubscriptions.clear();
-      this._repositorySubscriptions = null;
-    }
-    if (this._activeSubscriptions) {
+    this._repositorySubscriptions.clear();
+    if (this._activeSubscriptions != null) {
       this._activeSubscriptions.dispose();
       this._activeSubscriptions = null;
     }
