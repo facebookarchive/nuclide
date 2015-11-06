@@ -72,12 +72,12 @@ module.exports = {
       logDirectoryInitialized = true;
     }
 
-    var config = {
+    const config = {
       appenders: [
         {
-          'type': 'logLevelFilter',
-          'level': 'INFO',
-          'appender': {
+          type: 'logLevelFilter',
+          level: 'INFO',
+          appender: {
             type: path.join(__dirname, './consoleAppender'),
           },
         },
@@ -87,6 +87,12 @@ module.exports = {
           absolute: true,
           filename: LOG_FILE_PATH,
           pattern: LOG4JS_DATE_FORMAT,
+          layout: {
+            type: 'pattern',
+            // Format log in following pattern:
+            // yyyy-MM-dd HH:mm:ss.mil $Level (pid:$pid) $categroy - $message.
+            pattern: `%d{ISO8601} %p (pid:${process.pid}) %c - %m`,
+          },
         },
       ],
     };
