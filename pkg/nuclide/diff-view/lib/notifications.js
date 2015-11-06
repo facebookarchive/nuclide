@@ -17,3 +17,12 @@ export function notifyInternalError(error: Error) {
   logger.error(errorMessage, error);
   atom.notifications.addError(errorMessage);
 }
+
+export function notifyFilesystemOverrideUserEdits(filePath: NuclideUri) {
+  const message = `Diff View Override<br/>
+The filesystem contents of the active file have changed, overriding user changes for file:<br/>
+\`${filePath}\`
+`;
+  logger.warn(message);
+  atom.notifications.addWarning(message);
+}

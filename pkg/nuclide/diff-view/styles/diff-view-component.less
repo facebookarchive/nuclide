@@ -1,6 +1,7 @@
 @import 'ui-variables';
 @import 'syntax-variables';
-@import 'octicon-utf-codes';
+
+@revisionBubbleDiameter: 10px;
 
 .nuclide-diff-view-component {
   -webkit-user-select: none;
@@ -31,6 +32,116 @@
         darken(@tree-view-background-color, 2%),
         lighten(@tree-view-background-color, 5%),
         25%);
+    }
+  }
+
+  .diff-timeline {
+    width: 100%;
+    color: @text-color;
+
+    .revision-timeline-wrap {
+      height: 100%;
+      overflow: auto;
+    }
+
+    .timeline-header {
+      margin: 0.3em 1em 1em 1em;
+      border: 1px @text-color solid;
+      border-radius: @component-border-radius;
+      padding: 0.5em;
+    }
+
+    .revision-selector  {
+      // TODO Use a standard Atom font-family https://github.com/atom/atom/issues/8800
+      font-family: Menlo, Consolas, monospace;
+      font-size: 12px;
+      width: 100%;
+      white-space: nowrap;
+      display: flex;
+    }
+
+    .revisions {
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .revision {
+      cursor: pointer;
+      margin: auto 1em;
+      position: relative;
+      z-index: 0;
+    }
+
+    .revision:hover .revision-label {
+      color: @text-color-info;
+    }
+
+    .revision:hover .revision-bubble {
+      background-color: @text-color-info;
+      box-shadow: 0 0 0 2px @text-color-info;
+    }
+
+    .revision-bubble {
+      background-color: @text-color-info;
+      border-radius: @revisionBubbleDiameter;
+      display: inline-block;
+      height: @revisionBubbleDiameter;
+      width: @revisionBubbleDiameter;
+      position: absolute;
+    }
+
+    .revision-bubble::after {
+      content: " ";
+      display: block;
+      width: 1px;
+      background-color: @text-color-info;
+      height: 2em;
+      margin-left: 5px;
+      margin-top: 5px;
+      position: absolute;
+      z-index: -1;
+    }
+
+    .selected-revision-inrange .revision-bubble {
+      background-color: @text-color-info;
+    }
+
+    .selected-revision-inrange .revision-bubble::after {
+      content: " ";
+      width: 10px;
+      height: 2.2em;
+      background: @text-color-info;
+      display: block;
+      margin-top: 5px;
+      margin-left: 0;
+    }
+
+    .selected-revision-last .revision-bubble::after {
+      display: none;
+    }
+
+    .revision-label {
+      margin-bottom: 10px;
+      margin-left: 20px;
+      display: inline-block;
+    }
+
+
+    .selected-revision-start,
+    .selected-revision-end {
+      font-weight: bold;
+    }
+
+    .selected-revision-inrange, .selected-revision-end {
+      .revision-label {
+        color: @text-color-info;
+      }
+    }
+
+    .selected-revision-start .revision-bubble,
+    .selected-revision-end .revision-bubble {
+       box-shadow: 0 0 0 4px fade(@text-color-info, 25%);
     }
   }
 }

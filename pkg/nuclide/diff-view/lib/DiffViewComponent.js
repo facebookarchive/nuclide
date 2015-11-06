@@ -11,6 +11,7 @@
 
 import type {FileChangeState, InlineComponent} from './types';
 import type DiffViewModel from './DiffViewModel';
+import type {RevisionInfo} from 'nuclide-hg-repository-base/lib/hg-constants';
 
 import invariant from 'assert';
 import {CompositeDisposable} from 'atom';
@@ -18,6 +19,7 @@ import React from 'react-for-atom';
 import DiffViewEditorPane from './DiffViewEditorPane';
 import DiffViewTree from './DiffViewTree';
 import SyncScroll from './SyncScroll';
+import DiffTimelineView from './DiffTimelineView';
 import {object} from 'nuclide-commons';
 import {createPaneContainer} from 'nuclide-atom-helpers';
 
@@ -51,6 +53,8 @@ class DiffViewComponent extends React.Component {
   _oldEditorComponent: ?DiffViewEditorPane;
   _newEditorPane: ?atom$Pane;
   _newEditorComponent: ?DiffViewEditorPane;
+  _timelinePane: ?atom$Pane;
+  _timelineComponent: ?DiffTimelineView;
   _treePane: ?atom$Pane;
   _treeComponent: ?ReactComponent;
 
@@ -85,6 +89,7 @@ class DiffViewComponent extends React.Component {
     this._boundHandleNewOffsets = this._handleNewOffsets.bind(this);
     this._boundUpdateLineDiffState = this._updateLineDiffState.bind(this);
     this._boundOnChangeNewTextEditor = this._onChangeNewTextEditor.bind(this);
+    this._boundOnTimelineChangeRevision = this._onTimelineChangeRevision.bind(this);
   }
 
   componentDidMount(): void {
@@ -93,23 +98,25 @@ class DiffViewComponent extends React.Component {
     subscriptions.add(diffModel.onActiveFileUpdates(this._boundUpdateLineDiffState));
 
     this._paneContainer = createPaneContainer();
-    // The diff status tree takes 1/5 of the width and lives on the right most.
+    // The changed files status tree takes 1/5 of the width and lives on the right most,
+    // while being vertically splt with the revision timeline stack pane.
     const treePane = this._treePane = this._paneContainer.getActivePane();
     this._oldEditorPane = treePane.splitLeft({
-      // Prevent Atom from cloning children on splitting; this panel wants an empty container.
       copyActiveItem: false,
-      // The old contents left editor pane takes 2/5 the width.
       flexScale: 2,
     });
     this._newEditorPane = treePane.splitLeft({
-      // Prevent Atom from cloning children on splitting; this panel wants an empty container.
       copyActiveItem: false,
-      // The new contents right editor pane takes 2/5 the width.
       flexScale: 2,
+    });
+    this._timelinePane = treePane.splitDown({
+      copyActiveItem: false,
+      flexScale: 1,
     });
 
     this._renderTree();
     this._renderEditors();
+    this._renderTimeline();
 
     React.findDOMNode(this.refs['paneContainer']).appendChild(
       atom.views.getView(this._paneContainer),
@@ -132,6 +139,7 @@ class DiffViewComponent extends React.Component {
   componentDidUpdate(): void {
     this._renderTree();
     this._renderEditors();
+    this._renderTimeline();
   }
 
   _renderTree(): void {
@@ -175,6 +183,16 @@ class DiffViewComponent extends React.Component {
     );
   }
 
+  _renderTimeline(): void {
+    invariant(this._timelinePane);
+    this._timelineComponent = React.render(
+      <DiffTimelineView
+        diffModel={this.props.diffModel}
+        onSelectionChange={this._boundOnTimelineChangeRevision}/>,
+      this._getPaneElement(this._timelinePane),
+    );
+  }
+
   _getPaneElement(pane: atom$Pane): HTMLElement {
     return atom.views.getView(pane).querySelector('.item-views');
   }
@@ -198,6 +216,11 @@ class DiffViewComponent extends React.Component {
       React.unmountComponentAtNode(this._getPaneElement(this._treePane));
       this._treePane = null;
       this._treeComponent = null;
+    }
+    if (this._timelinePane) {
+      React.unmountComponentAtNode(this._getPaneElement(this._timelinePane));
+      this._timelinePane = null;
+      this._timelineComponent = null;
     }
   }
 
@@ -225,6 +248,10 @@ class DiffViewComponent extends React.Component {
 
   _onChangeNewTextEditor(newContents: string): void {
     this.props.diffModel.setNewContents(newContents);
+  }
+
+  _onTimelineChangeRevision(revision: RevisionInfo): void {
+    this.props.diffModel.setRevision(revision);
   }
 
   /**

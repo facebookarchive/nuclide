@@ -13,12 +13,14 @@ import type {HgRepositoryClient} from 'nuclide-hg-repository-client';
 import type {FileChangeStatusValue, HgDiffState, RevisionsState} from './types';
 import type {RevisionFileChanges} from 'nuclide-hg-repository-base/lib/hg-constants';
 import type {NuclideUri} from 'nuclide-remote-uri';
+import type {RevisionInfo} from 'nuclide-hg-repository-base/lib/hg-constants';
 
 import invariant from 'assert';
 import {CompositeDisposable, Emitter} from 'atom';
 import {HgStatusToFileChangeStatus, FileChangeStatus} from './constants';
 import {getFileSystemContents} from './utils';
 import {array, promises, debounce} from 'nuclide-commons';
+import {trackTiming} from 'nuclide-analytics';
 import {notifyInternalError} from './notifications';
 
 const {RequestSerializer, serializeAsyncCall} = promises;
@@ -45,6 +47,7 @@ export default class RepositoryStack {
   _revisionsState: ?RevisionsState;
   _revisionsStateRequests: RequestSerializer;
   _revisionsFileHistory: ?RevisionsFileHistory;
+  _revisionsHistoryRequests: RequestSerializer;
 
   constructor(repository: HgRepositoryClient) {
     this._repository = repository;
@@ -53,6 +56,7 @@ export default class RepositoryStack {
     this._compareFileChanges = new Map();
     this._dirtyFileChanges = new Map();
     this._revisionsStateRequests = new RequestSerializer();
+    this._revisionsHistoryRequests = new RequestSerializer();
     const debouncedBoundUpdateStatus = debounce(
       serializeAsyncCall(() => this._updateChangedStatus()),
       UPDATE_STATUS_DEBOUNCE_MS,
@@ -67,6 +71,7 @@ export default class RepositoryStack {
     );
   }
 
+  @trackTiming('diff-view.update-change-status')
   async _updateChangedStatus(): Promise<void> {
     try {
       this._updateDirtyFileChanges();
@@ -100,21 +105,25 @@ export default class RepositoryStack {
    * and `hg log --rev ${revId}` for every commit.
    */
   async _updateCompareFileChanges(): Promise<void> {
-    const {status, result} = await this._revisionsStateRequests.run(this._fetchRevisionsState());
-    if (status === 'outdated') {
+    const {status: revisionsStatus, result: revisionsResult} = await this._revisionsStateRequests
+      .run(this._fetchRevisionsState());
+    if (revisionsStatus === 'outdated') {
       return;
     }
-    this._revisionsState = result;
+    this._revisionsState = revisionsResult;
     this._emitter.emit(CHANGE_REVISIONS_EVENT, this._revisionsState);
-    const {
-      revisionsHistory,
-      compareChanges,
-    } = await this._fetchCompareAndHistoryChanges();
-    this._revisionsFileHistory = revisionsHistory;
-    this._compareFileChanges = compareChanges;
+
+    const {status: revisionsHistoryStatus, result: revisionsHistoryResult} =
+      await this._revisionsHistoryRequests.run(this._fetchRevisionsFileHistory());
+    if (revisionsHistoryStatus === 'outdated') {
+      return;
+    }
+    this._revisionsFileHistory = revisionsHistoryResult;
+    this._compareFileChanges = this._computeCompareChangesFromHistory();
     this._emitter.emit(CHANGE_COMPARE_STATUS_EVENT, this._compareFileChanges);
   }
 
+  @trackTiming('diff-view.fetch-revisions-state')
   async _fetchRevisionsState(): Promise<RevisionsState> {
     // While rebasing, the common ancestor of `HEAD` and `BASE`
     // may be not applicable, but that's defined once the rebase is done.
@@ -153,13 +162,10 @@ export default class RepositoryStack {
     };
   }
 
-  async _fetchCompareAndHistoryChanges()
-  : Promise<{
-    revisionsHistory: RevisionsFileHistory;
-    compareChanges: Map<NuclideUri, FileChangeStatusValue>;
-  }> {
-    invariant(this._revisionsState);
-    const {revisions, commitId, compareCommitId} = this._revisionsState;
+  @trackTiming('diff-view.fetch-revisions-change-history')
+  async _fetchRevisionsFileHistory(): Promise<RevisionsFileHistory> {
+    invariant(this._revisionsState, 'revisionsState must be defined to fetch compare changes');
+    const {revisions} = this._revisionsState;
 
     const revisionsFileHistory = await Promise.all(revisions
       .slice(1) // Exclude the BASE revision.
@@ -170,11 +176,18 @@ export default class RepositoryStack {
       })
     );
 
+    return revisionsFileHistory;
+  }
+
+  _computeCompareChangesFromHistory(): Map<NuclideUri, FileChangeStatusValue> {
+    invariant(this._revisionsState, 'revisionsState must exist to fetch compute changes');
+    const {commitId, compareCommitId} = this._revisionsState;
     // The status is fetched by merging the changes right after the `compareCommitId` if specified,
     // or `HEAD` if not.
     const startCommitId = compareCommitId ? (compareCommitId + 1) : commitId;
     // Get the revision changes that's newer than or is the current commit id.
-    const compareRevisionsFileChanges = revisionsFileHistory
+    invariant(this._revisionsFileHistory, 'revisionsFileHistory must exist to compute changes!');
+    const compareRevisionsFileChanges = this._revisionsFileHistory
       .filter(revision => revision.id >= startCommitId)
       .map(revision => revision.changes);
 
@@ -183,10 +196,7 @@ export default class RepositoryStack {
       this._dirtyFileChanges,
       compareRevisionsFileChanges,
     );
-    return {
-      revisionsHistory: revisionsFileHistory,
-      compareChanges: mergedFileStatuses,
-    };
+    return mergedFileStatuses;
   }
 
   /**
@@ -256,6 +266,19 @@ export default class RepositoryStack {
       committedContents,
       filesystemContents,
     };
+  }
+
+  async setRevision(revision: RevisionInfo): Promise<void> {
+    invariant(this._revisionsState, 'The active repository stack must have an active state!');
+    const {revisions} = this._revisionsState;
+    if (revisions && revisions.indexOf(revision) !== -1) {
+      this._revisionsState.compareCommitId = revision.id;
+      await this._revisionsHistoryRequests.waitForLatestResult();
+      this._compareFileChanges = this._computeCompareChangesFromHistory();
+      this._emitter.emit(CHANGE_COMPARE_STATUS_EVENT, this._compareFileChanges);
+    } else {
+      throw new Error('Diff Viw Timeline: non-applicable selected revision');
+    }
   }
 
   onDidChangeDirtyStatus(

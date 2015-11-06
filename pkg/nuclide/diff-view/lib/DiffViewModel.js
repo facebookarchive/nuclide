@@ -10,7 +10,8 @@
  */
 
 import type {HgRepositoryClient} from 'nuclide-hg-repository-client';
-import type {FileChangeState, FileChangeStatusValue, HgDiffState, RevisionsState} from './types';
+import type {FileChangeState, RevisionsState, FileChangeStatusValue, HgDiffState} from './types';
+import type {RevisionInfo} from 'nuclide-hg-repository-base/lib/hg-constants';
 import type {NuclideUri} from 'nuclide-remote-uri';
 
 import invariant from 'assert';
@@ -21,7 +22,10 @@ import {getFileSystemContents} from './utils';
 import {getFileForPath, getFileSystemServiceByNuclideUri} from 'nuclide-client';
 import {array, map, debounce} from 'nuclide-commons';
 import RepositoryStack from './RepositoryStack';
-import {notifyInternalError} from './notifications';
+import {
+  notifyInternalError,
+  notifyFilesystemOverrideUserEdits,
+} from './notifications';
 
 const CHANGE_DIRTY_STATUS_EVENT = 'did-change-dirty-status';
 const CHANGE_COMPARE_STATUS_EVENT = 'did-change-compare-status';
@@ -102,7 +106,7 @@ class DiffViewModel {
       repositoryStack.onDidChangeDirtyStatus(this._updateDirtyChangedStatus.bind(this)),
       repositoryStack.onDidChangeCompareStatus(this._updateCompareChangedStatus.bind(this)),
       repositoryStack.onDidChangeRevisions(
-        this._updateChangedRevisions.bind(this, repositoryStack)
+        () => this._updateChangedRevisions(repositoryStack).catch(notifyInternalError)
       ),
     );
     this._repositoryStacks.set(repository, repositoryStack);
@@ -118,7 +122,7 @@ class DiffViewModel {
     this._emitter.emit(CHANGE_COMPARE_STATUS_EVENT, this._compareFileChanges);
   }
 
-  _updateChangedRevisions(repositoryStack: RepositoryStack): void {
+  async _updateChangedRevisions(repositoryStack: RepositoryStack): Promise<void> {
     if (repositoryStack === this._activeRepositoryStack) {
       const revisionsState = repositoryStack.getRevisionsState();
       invariant(revisionsState, 'revisionsState must exist to update changed revisions');
@@ -126,7 +130,15 @@ class DiffViewModel {
         revisionsCount: `${revisionsState.revisions.length}`,
       });
       this._emitter.emit(CHANGE_REVISIONS_EVENT, revisionsState);
-      this._updateActiveDiffState(this._activeFileState.filePath).catch(notifyInternalError);
+
+      // Update the active file, if changed.
+      const {filePath} = this._activeFileState;
+      const {committedContents, filesystemContents} = await this._fetchHgDiff(filePath);
+      await this._updateDiffStateIfChanged(
+        filePath,
+        committedContents,
+        filesystemContents,
+      );
     }
   }
 
@@ -142,9 +154,11 @@ class DiffViewModel {
     });
     const file = getFileForPath(filePath);
     if (file) {
-      activeSubscriptions.add(file.onDidChange(debounce(() => {
-        this._onDidFileChange(filePath).catch(notifyInternalError);
-      }, FILE_CHANGE_DEBOUNCE_MS, false)));
+      activeSubscriptions.add(file.onDidChange(debounce(
+        () => this._onDidFileChange(filePath).catch(notifyInternalError),
+        FILE_CHANGE_DEBOUNCE_MS,
+        false,
+      )));
     }
     track('diff-view-open-file', {filePath});
     this._updateActiveDiffState(filePath).catch(notifyInternalError);
@@ -152,20 +166,51 @@ class DiffViewModel {
 
   @trackTiming('diff-view.file-change-update')
   async _onDidFileChange(filePath: NuclideUri): Promise<void> {
+    if (this._activeFileState.filePath !== filePath) {
+      return;
+    }
+    const filesystemContents = await getFileSystemContents(filePath);
     const {
       savedContents,
       oldContents: committedContents,
       filePath: activeFilePath,
     } = this._activeFileState;
-    if (activeFilePath !== filePath) {
-      return;
+    await this._updateDiffStateIfChanged(
+      filePath,
+      committedContents,
+      filesystemContents,
+    );
+  }
+
+  _updateDiffStateIfChanged(
+    filePath: NuclideUri,
+    committedContents: string,
+    filesystemContents: string,
+  ): Promise<void> {
+    const {filePath: activeFilePath, newContents, savedContents} = this._activeFileState;
+    if (filePath !== activeFilePath) {
+      return Promise.resolve();
     }
-    const filesystemContents = await getFileSystemContents(filePath);
-    if (filePath === this._activeFileState.filePath && filesystemContents !== savedContents) {
-      this._updateDiffState(filePath, {
+    if (savedContents === newContents) {
+      return this._updateDiffState(filePath, {
         committedContents,
         filesystemContents,
-      }).catch(notifyInternalError);
+      });
+    }
+    // The user have edited since the last update.
+    if (filesystemContents === savedContents) {
+      // The changes haven't touched the filesystem, keep user edits.
+      return this._updateDiffState(filePath, {
+        committedContents,
+        filesystemContents: newContents,
+      });
+    } else {
+      // The committed and filesystem state have changed, notify of override.
+      notifyFilesystemOverrideUserEdits(filePath);
+      return this._updateDiffState(filePath, {
+        committedContents,
+        filesystemContents,
+      });
     }
   }
 
@@ -180,11 +225,22 @@ class DiffViewModel {
     });
   }
 
+  setRevision(revision: RevisionInfo): void {
+    track('diff-view-set-revision');
+    const repositoryStack = this._activeRepositoryStack;
+    invariant(repositoryStack, 'There must be an active repository stack!');
+    repositoryStack.setRevision(revision).catch(notifyInternalError);
+    this._updateActiveDiffState(this._activeFileState.filePath).catch(notifyInternalError);
+  }
+
   getActiveFileState(): FileChangeState {
     return this._activeFileState;
   }
 
   async _updateActiveDiffState(filePath: NuclideUri): Promise<void> {
+    if (!filePath) {
+      return;
+    }
     const hgDiffState = await this._fetchHgDiff(filePath);
     await this._updateDiffState(filePath, hgDiffState);
   }
@@ -198,12 +254,14 @@ class DiffViewModel {
       filePath,
       oldContents,
       newContents,
+      savedContents: newContents,
     });
     const inlineComponents = await this._fetchInlineComponents();
     this._setActiveFileState({
       filePath,
       oldContents,
       newContents,
+      savedContents: newContents,
       inlineComponents,
     });
   }
