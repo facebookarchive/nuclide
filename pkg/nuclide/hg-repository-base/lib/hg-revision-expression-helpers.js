@@ -11,7 +11,7 @@
 
 import type {RevisionInfo} from './hg-constants';
 
-var logger = require('nuclide-logging').getLogger();
+const logger = require('nuclide-logging').getLogger();
 
 /**
  * This file contains utilities for getting an expression to specify a certain
@@ -23,17 +23,19 @@ var logger = require('nuclide-logging').getLogger();
 
 // Section: Expression Formation
 
-var HG_CURRENT_WORKING_DIRECTORY_PARENT = '.';
+const HG_CURRENT_WORKING_DIRECTORY_PARENT = '.';
 
-const INFO_REVISION_PREFIX = 'revision:';
+const INFO_ID_PREFIX = 'id:';
+const INFO_HASH_PREFIX = 'hash:';
 const INFO_TITLE_PREFIX = 'title:';
 const INFO_AUTHOR_PREFIX = 'author:';
 const INFO_DATE_PREFIX = 'date:';
 
-const REVISION_INFO_TEMPLATE = `${INFO_REVISION_PREFIX}{rev}
+const REVISION_INFO_TEMPLATE = `${INFO_ID_PREFIX}{rev}
 ${INFO_TITLE_PREFIX}{desc|firstline}
-${INFO_AUTHOR_PREFIX}{author|person}
+${INFO_AUTHOR_PREFIX}{author}
 ${INFO_DATE_PREFIX}{date|isodate}
+${INFO_HASH_PREFIX}{node|short}
 
 `;
 
@@ -103,26 +105,37 @@ export async function fetchCommonAncestorOfHeadAndRevision(
  *   revisionTo, plus revisionFrom and revisionTo;
  * "Between" means that revisionFrom is an ancestor of, and
  *   revisionTo is a descendant of.
+ * For each RevisionInfo, the `bookmarks` field will contain the list
+ * of bookmark names applied to that revision.
  */
 export async function fetchRevisionInfoBetweenRevisions(
   revisionFrom: string,
   revisionTo: string,
   workingDirectory: string,
 ): Promise<Array<RevisionInfo>> {
-  var {asyncExecute} = require('nuclide-commons');
+  const {asyncExecute} = require('nuclide-commons');
 
-  var revisionExpression = `${revisionFrom}::${revisionTo}`;
-  // shell-escape does not wrap revisionExpression in quotes without this toString conversion.
-  revisionExpression = revisionExpression.toString();
-
-  var args = ['log', '--template', REVISION_INFO_TEMPLATE, '--rev', revisionExpression];
-  var options = {
+  const revisionExpression = `${revisionFrom}::${revisionTo}`;
+  const revisionLogArgs = [
+    'log', '--template', REVISION_INFO_TEMPLATE,
+    '--rev', revisionExpression,
+  ];
+  const bookmarksArgs = ['bookmarks'];
+  const options = {
     cwd: workingDirectory,
   };
 
   try {
-    var {stdout: revisionsInfoString} = await asyncExecute('hg', args, options);
-    return parseRevisionInfoOutput(revisionsInfoString);
+    const [revisionsResult, bookmarksResult] = await Promise.all([
+      asyncExecute('hg', revisionLogArgs, options),
+      asyncExecute('hg', bookmarksArgs, options),
+    ]);
+    const revisionsInfo = parseRevisionInfoOutput(revisionsResult.stdout);
+    const bookmarksInfo = parseBookmarksOutput(bookmarksResult.stdout);
+    for (const revisionInfo of revisionsInfo) {
+      revisionInfo.bookmarks = bookmarksInfo.get(revisionInfo.id) || [];
+    }
+    return revisionsInfo;
   } catch (e) {
     logger.warn('Failed to get revision info between two revisions: ', e.stderr || e, e.command);
     throw new Error(
@@ -139,15 +152,43 @@ export function parseRevisionInfoOutput(revisionsInfoOutput: string): Array<Revi
   const revisionInfo = [];
   for (const chunk of revisions) {
     const revisionLines = chunk.trim().split('\n');
-    if (revisionLines.length !== 4) {
+    if (revisionLines.length !== 5) {
       continue;
     }
     revisionInfo.push({
-      id: parseInt(revisionLines[0].slice(INFO_REVISION_PREFIX.length), 10),
+      id: parseInt(revisionLines[0].slice(INFO_ID_PREFIX.length), 10),
       title: revisionLines[1].slice(INFO_TITLE_PREFIX.length),
       author: revisionLines[2].slice(INFO_AUTHOR_PREFIX.length),
-      date: revisionLines[3].slice(INFO_DATE_PREFIX.length),
+      date: new Date(revisionLines[3].slice(INFO_DATE_PREFIX.length)),
+      hash: revisionLines[4].slice(INFO_HASH_PREFIX.length),
+      bookmarks: [],
     });
   }
   return revisionInfo;
+}
+
+// Capture the local commit id and bookmark name from the `hg bookmarks` output.
+const BOOKMARK_MATCH_REGEX = /^ . ([^ ]+)\s+(\d+):([0-9a-f]+)$/;
+
+/**
+ * Parse the result of `hg bookmarks` into a `Map` from
+ * revision id to a array of bookmark names applied to revision.
+ */
+export function parseBookmarksOutput(bookmarksOutput: string): Map<number, Array<string>> {
+  const bookmarksLines = bookmarksOutput.split('\n');
+  const commitsToBookmarks = new Map();
+  for (const bookmarkLine of bookmarksLines) {
+    const match = BOOKMARK_MATCH_REGEX.exec(bookmarkLine);
+    if (match == null) {
+      continue;
+    }
+    const [, bookmarkString, commitIdString] = match;
+    const commitId = parseInt(commitIdString, 10);
+    if (!commitsToBookmarks.has(commitId)) {
+      commitsToBookmarks.set(commitId, []);
+    }
+    const bookmarks = commitsToBookmarks.get(commitId);
+    bookmarks.push(bookmarkString);
+  }
+  return commitsToBookmarks;
 }

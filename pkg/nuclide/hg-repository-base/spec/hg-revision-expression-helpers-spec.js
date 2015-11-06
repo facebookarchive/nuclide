@@ -12,6 +12,7 @@
 import {
   expressionForRevisionsBeforeHead,
   parseRevisionInfoOutput,
+  parseBookmarksOutput,
 } from '../lib/hg-revision-expression-helpers';
 
 describe('hg-revision-expression-helpers', () => {
@@ -28,15 +29,18 @@ describe('hg-revision-expression-helpers', () => {
 
   describe('parseRevisionInfoOutput', () => {
     it('returns the parsed revision info if is valid.', () => {
-      const revisionsString = `revision:124
+      const revisionsString =
+`id:124
 title:Commit 1 'title'.
 author:Author Name<auth_2_alias@domain.com>
 date:2015-10-15 16:03 -0700
+hash:a343fb3
 
-revision:123
+id:123
 title:Commit 2 'title'.
 author:Author Name<auth_2_alias@domain.com>
 date:2015-10-15 16:02 -0700
+hash:a343fb2
 `;
       expect(parseRevisionInfoOutput(revisionsString)).toEqual([
         {
@@ -44,18 +48,40 @@ date:2015-10-15 16:02 -0700
           title: `Commit 1 'title'.`,
           author: 'Author Name<auth_2_alias@domain.com>',
           date: '2015-10-15 16:03 -0700',
+          hash: 'a343fb3',
+          bookmarks: [],
+          date: new Date('2015-10-15 16:03 -0700'),
         },
         {
           id: 123,
           title: `Commit 2 'title'.`,
           author: 'Author Name<auth_2_alias@domain.com>',
           date: '2015-10-15 16:02 -0700',
+          hash: 'a343fb2',
+          bookmarks: [],
+          date: new Date('2015-10-15 16:02 -0700'),
         },
       ]);
     });
 
     it('skips an entry if invalid - should never happen', () => {
       expect(parseRevisionInfoOutput(`revision:123`)).toEqual([]);
+    });
+  });
+
+  describe('parseBookmarksOutput', () => {
+    it('returns the parsed revision info if is valid.', () => {
+      const bookmarksString =
+`invalid bookmark line (never happens)
+   dv-ws            849619:a7211db98af0
+ * dv-timeline            849620:a7211db98af1
+   dv-timeline-2            849620:a7211db98af1
+`;
+
+      const commitsToBookmarks = parseBookmarksOutput(bookmarksString);
+      expect(commitsToBookmarks.size).toBe(2);
+      expect(commitsToBookmarks.get(849619)).toEqual(['dv-ws']);
+      expect(commitsToBookmarks.get(849620)).toEqual(['dv-timeline', 'dv-timeline-2']);
     });
   });
 });

@@ -94,9 +94,12 @@ export type DiffInfo = {
 
 export type RevisionInfo = {
   id: number;
+  hash: string;
   title: string;
   author: string;
-  date: string;
+  date: Date;
+  // List of bookmarks at this revision.
+  bookmarks: Array<string>;
 };
 
 export type RevisionFileCopy = {

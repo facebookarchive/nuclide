@@ -23,9 +23,11 @@ export type RevisionFileChanges = {
 };
 export type RevisionInfo = {
   id: number;
+  hash: string;
   title: string;
   author: string;
-  date: string;
+  date: Date;
+  bookmarks: Array<string>;
 };
 export type AsyncExecuteRet = {
   command?: string;
