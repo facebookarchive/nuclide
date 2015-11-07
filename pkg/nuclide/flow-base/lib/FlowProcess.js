@@ -42,6 +42,8 @@ export const FLOW_RETURN_CODES = {
   buildIdMismatch: 9,
 };
 
+const SERVER_READY_TIMEOUT_MS = 10 * 1000;
+
 export class FlowProcess {
   // If we had to start a Flow server, store the process here so we can kill it when we shut down.
   _startedServer: ?child_process$ChildProcess;
@@ -95,7 +97,8 @@ export class FlowProcess {
         const shouldRetry = ['not running', 'init', 'busy']
           .indexOf(this._serverStatus.getValue()) !== -1;
         if (i < maxTries && shouldRetry) {
-          // Try again.
+          await this._serverIsReady(); // eslint-disable-line no-await-in-loop
+          // Then try again.
         } else {
           if (logErrors) {
             // not sure what happened, but we'll let the caller deal with it
@@ -217,6 +220,22 @@ export class FlowProcess {
       await Observable.just(null).delay(1000).toPromise();
       /* eslint-enable no-await-in-loop */
     }
+  }
+
+  /**
+   * Resolves when the server is ready or the request times out, as indicated by the result of the
+   * returned Promise.
+   */
+  _serverIsReady(): Promise<boolean> {
+    return this._serverStatus
+      .filter(x => x === 'ready')
+      .map(() => true)
+      .timeout(
+        SERVER_READY_TIMEOUT_MS,
+        Observable.just(false),
+      )
+      .first()
+      .toPromise();
   }
 
   /**
