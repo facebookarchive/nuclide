@@ -9,12 +9,12 @@
  * the root directory of this source tree.
  */
 
-var NodeComponent = require('./NodeComponent');
-var React = require('react-for-atom');
+const NodeComponent = require('./NodeComponent');
+const React = require('react-for-atom');
 
 import type FileTreeNode from '../lib/FileTreeNode';
 
-var {PropTypes} = React;
+const {PropTypes} = React;
 
 class RootNodeComponent extends React.Component {
   render(): ReactElement {
@@ -26,7 +26,7 @@ class RootNodeComponent extends React.Component {
   }
 
   _renderNode(node: FileTreeNode, indentLevel: number): Array<ReactElement> {
-    var elements = [
+    let elements = [
       <NodeComponent
         indentLevel={indentLevel}
         isContainer={node.isContainer}
@@ -51,7 +51,7 @@ class RootNodeComponent extends React.Component {
   }
 
   scrollNodeIntoViewIfNeeded(nodeKey: string): void {
-    var node = this.refs[nodeKey];
+    const node = this.refs[nodeKey];
     if (node) {
       React.findDOMNode(node).scrollIntoViewIfNeeded();
     }

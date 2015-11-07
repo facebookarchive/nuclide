@@ -45,10 +45,10 @@ const FileSystemActions = {
         return;
       }
 
-      var {pathname} = RemoteUri.parse(filePath);
-      var basename = pathModule.basename(pathname);
-      var newDirectory = directory.getSubdirectory(basename);
-      var created = await newDirectory.create();
+      const {pathname} = RemoteUri.parse(filePath);
+      const basename = pathModule.basename(pathname);
+      const newDirectory = directory.getSubdirectory(basename);
+      const created = await newDirectory.create();
       if (!created) {
         atom.notifications.addError(`'${basename}' already exists.`);
         onDidConfirm(null);
@@ -59,7 +59,7 @@ const FileSystemActions = {
   },
 
   openAddFileDialog(onDidConfirm: (filePath: ?string) => mixed): void {
-    var node = this._getSelectedContainerNode();
+    const node = this._getSelectedContainerNode();
     if (!node) {
       return;
     }
@@ -70,13 +70,13 @@ const FileSystemActions = {
       }
 
       // TODO: check if filePath is in rootKey and if not, find the rootKey it belongs to.
-      var directory = FileTreeHelpers.getDirectoryByKey(node.nodeKey);
+      const directory = FileTreeHelpers.getDirectoryByKey(node.nodeKey);
       if (directory == null) {
         return;
       }
 
-      var newFile = directory.getFile(filePath);
-      var created = await newFile.create();
+      const newFile = directory.getFile(filePath);
+      const created = await newFile.create();
       if (created) {
         onDidConfirm(newFile.getPath());
       } else {
@@ -87,15 +87,15 @@ const FileSystemActions = {
   },
 
   openRenameDialog(): void {
-    var store = FileTreeStore.getInstance();
-    var selectedNodes = store.getSelectedNodes();
+    const store = FileTreeStore.getInstance();
+    const selectedNodes = store.getSelectedNodes();
     if (selectedNodes.size !== 1) {
       // Can only rename one entry at a time.
       return;
     }
 
-    var node = selectedNodes.first();
-    var nodePath = node.getLocalPath();
+    const node = selectedNodes.first();
+    const nodePath = node.getLocalPath();
     this._openDialog({
       iconClassName: 'icon-arrow-right',
       initialValue: pathModule.basename(nodePath),
@@ -103,7 +103,7 @@ const FileSystemActions = {
         ? <span>Enter the new path for the directory.</span>
         : <span>Enter the new path for the file.</span>,
       onConfirm: (newBasename: string) => {
-        var file = FileTreeHelpers.getFileByKey(node.nodeKey);
+        const file = FileTreeHelpers.getFileByKey(node.nodeKey);
         if (file == null) {
           // TODO: Connection could have been lost for remote file.
           return;
@@ -113,7 +113,7 @@ const FileSystemActions = {
          * Use `resolve` to strip trailing slashes because renaming a file to a name with a
          * trailing slash is an error.
          */
-        var newPath = pathModule.resolve(
+        const newPath = pathModule.resolve(
           // Trim leading and trailing whitespace to prevent bad filenames.
           pathModule.join(pathModule.dirname(nodePath), newBasename.trim())
         );
@@ -129,31 +129,31 @@ const FileSystemActions = {
   },
 
   openDuplicateDialog(onDidConfirm: (filePath: ?string) => mixed): void {
-    var store = FileTreeStore.getInstance();
-    var selectedNodes = store.getSelectedNodes();
+    const store = FileTreeStore.getInstance();
+    const selectedNodes = store.getSelectedNodes();
     if (selectedNodes.size !== 1) {
       // Can only copy one entry at a time.
       return;
     }
 
-    var node = selectedNodes.first();
-    var nodePath = node.getLocalPath();
-    var initialValue = pathModule.basename(nodePath);
-    var ext = pathModule.extname(nodePath);
+    const node = selectedNodes.first();
+    const nodePath = node.getLocalPath();
+    let initialValue = pathModule.basename(nodePath);
+    const ext = pathModule.extname(nodePath);
     initialValue = initialValue.substr(0, initialValue.length - ext.length) + '-copy' + ext;
     this._openDialog({
       iconClassName: 'icon-arrow-right',
       initialValue: initialValue,
       message: <span>Enter the new path for the duplicate.</span>,
       onConfirm: async (newBasename: string) => {
-        var file = FileTreeHelpers.getFileByKey(node.nodeKey);
+        const file = FileTreeHelpers.getFileByKey(node.nodeKey);
         if (file == null) {
           // TODO: Connection could have been lost for remote file.
           return;
         }
-        var directory = file.getParent();
-        var newFile = directory.getFile(newBasename.trim());
-        var newPath = newFile.getPath();
+        const directory = file.getParent();
+        const newFile = directory.getFile(newBasename.trim());
+        const newPath = newFile.getPath();
         if (FileTreeHelpers.isLocalFile(file)) {
           fs.exists(newPath, function(exists) {
             if (!exists) {
@@ -163,7 +163,8 @@ const FileSystemActions = {
             }
           });
         } else {
-          var wasCopied = await (file: (RemoteDirectory | RemoteFile)).copy(newFile.getLocalPath());
+          const wasCopied =
+            await (file: (RemoteDirectory | RemoteFile)).copy(newFile.getLocalPath());
           if (!wasCopied) {
             atom.notifications.addError(`'${newPath}' already exists.`);
             onDidConfirm(null);

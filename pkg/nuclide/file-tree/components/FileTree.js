@@ -9,13 +9,13 @@
  * the root directory of this source tree.
  */
 
-var {CompositeDisposable} = require('atom');
-var FileTreeStore = require('../lib/FileTreeStore');
-var React = require('react-for-atom');
-var RootNodeComponent = require('./RootNodeComponent');
-var EmptyComponent = require('./EmptyComponent');
+import {CompositeDisposable} from 'atom';
+import FileTreeStore from '../lib/FileTreeStore';
+import React from 'react-for-atom';
+import RootNodeComponent from './RootNodeComponent';
+import EmptyComponent from './EmptyComponent';
 
-var {PropTypes} = React;
+const {PropTypes} = React;
 
 class FileTree extends React.Component {
   _subscriptions: CompositeDisposable;
@@ -31,7 +31,7 @@ class FileTree extends React.Component {
   componentDidMount(): void {
     this._subscriptions.add(
       this.props.store.subscribe(() => {
-        var nodeToKeepInView = this.props.store.getTrackedNode();
+        const nodeToKeepInView = this.props.store.getTrackedNode();
         if (nodeToKeepInView !== this.state.nodeToKeepInView) {
           /*
            * Store a copy of `nodeToKeepInView` so the Store can update during this component's
@@ -55,7 +55,7 @@ class FileTree extends React.Component {
        * complete before scrolling. Because the node is in `prevState`, check for its existence
        * before scrolling it.
        */
-      var refNode = this.refs[prevState.nodeToKeepInView.rootKey];
+      const refNode = this.refs[prevState.nodeToKeepInView.rootKey];
       if (refNode != null) {
         refNode.scrollNodeIntoViewIfNeeded(prevState.nodeToKeepInView.nodeKey);
       }
@@ -83,7 +83,7 @@ class FileTree extends React.Component {
   }
 
   _renderChildren(): ReactElement | Array<ReactElement> {
-    var rootKeys: Array<string> = this.props.store.getRootKeys();
+    const rootKeys: Array<string> = this.props.store.getRootKeys();
     if (rootKeys.length === 0) {
       return <EmptyComponent />;
     }

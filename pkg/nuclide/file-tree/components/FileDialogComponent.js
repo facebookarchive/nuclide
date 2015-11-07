@@ -9,13 +9,13 @@
  * the root directory of this source tree.
  */
 
-var AtomInput = require('nuclide-ui-atom-input');
-var {CompositeDisposable} = require('atom');
-var React = require('react-for-atom');
+import AtomInput from 'nuclide-ui-atom-input';
+import {CompositeDisposable} from 'atom';
+import React from 'react-for-atom';
 
-var pathModule = require('path');
+import pathModule from 'path';
 
-var {PropTypes} = React;
+const {PropTypes} = React;
 
 /**
  * Component that displays UI to create a new file.
@@ -33,7 +33,7 @@ class FileDialogComponent extends React.Component {
   }
 
   componentDidMount(): void {
-    var input = this.refs.input;
+    const input = this.refs.input;
     this._subscriptions.add(atom.commands.add(
       React.findDOMNode(input),
       {
@@ -41,12 +41,12 @@ class FileDialogComponent extends React.Component {
         'core:cancel': this._close,
       }
     ));
-    var path = this.props.initialValue;
+    const path = this.props.initialValue;
     input.focus();
     if (this.props.selectBasename) {
-      var {dir, name} = pathModule.parse(path);
-      var selectionStart = dir ? dir.length + 1 : 0;
-      var selectionEnd = selectionStart + name.length;
+      const {dir, name} = pathModule.parse(path);
+      const selectionStart = dir ? dir.length + 1 : 0;
+      const selectionEnd = selectionStart + name.length;
       input.getTextEditor().setSelectedBufferRange([[0, selectionStart], [0, selectionEnd]]);
     }
   }
@@ -56,7 +56,7 @@ class FileDialogComponent extends React.Component {
   }
 
   render(): ReactElement {
-    var labelClassName;
+    let labelClassName;
     if (this.props.iconClassName != null) {
       labelClassName = `icon ${this.props.iconClassName}`;
     }

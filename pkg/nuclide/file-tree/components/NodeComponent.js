@@ -9,28 +9,28 @@
  * the root directory of this source tree.
  */
 
-var FileTreeActions = require('../lib/FileTreeActions');
-var React = require('react-for-atom');
-var {StatusCodeNumber} = require('nuclide-hg-repository-base').hgConstants;
+const FileTreeActions = require('../lib/FileTreeActions');
+const React = require('react-for-atom');
+const {StatusCodeNumber} = require('nuclide-hg-repository-base').hgConstants;
 
-var cx = require('react-classset');
-var {fileTypeClass} = require('nuclide-atom-helpers');
-var {isContextClick} = require('../lib/FileTreeHelpers');
+const cx = require('react-classset');
+const {fileTypeClass} = require('nuclide-atom-helpers');
+const {isContextClick} = require('../lib/FileTreeHelpers');
 
-var {
+const {
   addons,
   PropTypes,
 } = React;
 
-var getActions = FileTreeActions.getInstance;
+const getActions = FileTreeActions.getInstance;
 
 // Leading indent for each tree node
-var INDENT_IN_PX = 10;
+const INDENT_IN_PX = 10;
 // Additional indent for nested tree nodes
-var INDENT_PER_LEVEL = 15;
-var DOWN_ARROW = '\uF0A3';
-var RIGHT_ARROW = '\uF078';
-var SPINNER = '\uF087';
+const INDENT_PER_LEVEL = 15;
+const DOWN_ARROW = '\uF0A3';
+const RIGHT_ARROW = '\uF078';
+const SPINNER = '\uF087';
 
 class NodeComponent extends React.Component {
   constructor(props: Object) {
@@ -45,11 +45,11 @@ class NodeComponent extends React.Component {
   }
 
   render(): ReactElement {
-    var indentLevel = this.props.indentLevel;
-    var outerStyle = {
+    const indentLevel = this.props.indentLevel;
+    const outerStyle = {
       paddingLeft: INDENT_IN_PX + indentLevel * INDENT_PER_LEVEL,
     };
-    var outerClassName = cx({
+    const outerClassName = cx({
       'directory': this.props.isContainer,
       'file': !this.props.isContainer,
       'entry list-item nuclide-tree-component-item': true,
@@ -57,15 +57,15 @@ class NodeComponent extends React.Component {
     });
 
     // TODO: Consider symlinks when it's possible to determine whether this is a symlink.
-    var innerClassName;
+    let innerClassName;
     if (this.props.isContainer) {
       innerClassName = 'icon-file-directory';
     } else {
       innerClassName = fileTypeClass(this.props.nodeName);
     }
 
-    var statusClass;
-    var {vcsStatusCode} = this.props;
+    let statusClass;
+    const {vcsStatusCode} = this.props;
     if (vcsStatusCode === StatusCodeNumber.MODIFIED) {
       statusClass = 'status-modified';
     } else if (vcsStatusCode === StatusCodeNumber.ADDED) {
@@ -74,7 +74,7 @@ class NodeComponent extends React.Component {
       statusClass = '';
     }
 
-    var icon: ?ReactElement;
+    let icon: ?ReactElement;
     if (this.props.isLoading) {
       icon = <span className="nuclide-tree-component-item-arrow-spinner">{SPINNER}</span>;
     } else if (this.props.isContainer) {
@@ -113,7 +113,7 @@ class NodeComponent extends React.Component {
       return;
     }
 
-    var modifySelection = event.ctrlKey || event.metaKey;
+    const modifySelection = event.ctrlKey || event.metaKey;
     if (modifySelection) {
       getActions().toggleSelectNode(this.props.rootKey, this.props.nodeKey);
     } else if (this.props.isSelected) {
