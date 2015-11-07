@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {Observable} from 'rx';
+
 import type {FlowProcess as FlowProcessT} from '../lib/FlowProcess';
 import {FLOW_RETURN_CODES} from '../lib/FlowProcess';
 
@@ -121,10 +123,12 @@ describe('FlowProcess', () => {
   describe('server state updates', () => {
     let currentStatus: string = (null: any);
     let subscription: atom$Disposable = (null: any);
+    let statusUpdates: Observable<string> = (null: any);
 
     beforeEach(() => {
       currentStatus = (null: any);
-      subscription = flowProcess._serverStatus.subscribe(status => {
+      statusUpdates = flowProcess.getServerStatusUpdates();
+      subscription = statusUpdates.subscribe(status => {
         currentStatus = status;
       });
     });
@@ -158,7 +162,7 @@ describe('FlowProcess', () => {
 
     it('should ping the server after it is started', () => {
       waitsForPromise(async () => {
-        const states = flowProcess._serverStatus.take(4).toArray().toPromise();
+        const states = statusUpdates.take(4).toArray().toPromise();
         fakeAsyncExec = () => {
           switch (currentStatus) {
             case 'unknown':

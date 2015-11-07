@@ -73,6 +73,10 @@ export class FlowProcess {
     }
   }
 
+  getServerStatusUpdates(): Observable<ServerStatus> {
+    return this._serverStatus.asObservable();
+  }
+
   /**
    * Returns null if Flow cannot be found.
    */
