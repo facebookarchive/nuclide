@@ -21,6 +21,12 @@ export default class ReactNativeServerActions {
     this._dispatcher = dispatcher;
   }
 
+  startNodeExecutorServer() {
+    this._dispatcher.dispatch({
+      actionType: ReactNativeServerActions.ActionType.START_NODE_EXECUTOR_SERVER,
+    });
+  }
+
   startServer(serverCommand: string) {
     this._dispatcher.dispatch({
       actionType: ReactNativeServerActions.ActionType.START_SERVER,
@@ -41,6 +47,7 @@ export default class ReactNativeServerActions {
 }
 
 ReactNativeServerActions.ActionType = {
+  START_NODE_EXECUTOR_SERVER: 'START_NODE_EXECUTOR_SERVER',
   START_SERVER: 'START_SERVER',
   STOP_SERVER: 'STOP_SERVER',
   RESTART_SERVER: 'RESTART_SERVER',

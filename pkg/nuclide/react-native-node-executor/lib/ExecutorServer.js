@@ -11,24 +11,29 @@
 
 import invariant from 'assert';
 import {Server as WebSocketServer} from 'ws';
+import {EventEmitter} from 'events';
 import http from 'http';
 import ChildManager from './ChildManager';
-
-import type {WebSocket} from 'ws';
 
 const REACT_NATIVE_LAUNCH_DEVTOOLS_URL = '/launch-chrome-devtools';
 const REACT_NATIVE_DEBUGGER_PROXY_URL = '/debugger-proxy';
 
 export default class ExecutorServer {
 
+  _children: Set<ChildManager>;
+  _emitter: EventEmitter;
   _webServer: http.Server;
   _webSocketServer: WebSocketServer;
-  _children: Map<WebSocket, ChildManager>;
 
   constructor(port: number) {
     this._initWebServer(port);
     this._initWebSocketServer();
-    this._children = new Map();
+    this._children = new Set();
+    this._emitter = new EventEmitter();
+  }
+
+  onDidEvalApplicationScript(callback: (pid: number) => void | Promise<void>) {
+    this._emitter.on('eval_application_script', callback);
   }
 
   _initWebServer(port: number) {
@@ -49,13 +54,13 @@ export default class ExecutorServer {
       let onReply = (replyID, result) => {
         ws.send(JSON.stringify({replyID, result}));
       };
-      let childManager = new ChildManager(onReply);
-      this._children.set(ws, childManager);
+      let childManager = new ChildManager(onReply, this._emitter);
+      this._children.add(childManager);
 
       const cleanup = () => {
         if (childManager) {
           childManager.killChild();
-          this._children.delete(ws);
+          this._children.delete(childManager);
           childManager = null;
           onReply = null;
         }
@@ -78,7 +83,7 @@ export default class ExecutorServer {
   }
 
   close() {
-    for (const cm of this._children.values()) {
+    for (const cm of this._children) {
       cm.killChild();
     }
     this._webSocketServer.close();

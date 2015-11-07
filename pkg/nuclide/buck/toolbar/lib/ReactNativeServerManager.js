@@ -13,6 +13,7 @@ import invariant from 'assert';
 import type {ProcessOutputDataHandlers} from 'nuclide-process-output-store/lib/types';
 import type {Dispatcher} from 'flux';
 import {scriptSafeSpawnAndObserveOutput} from 'nuclide-commons';
+import ExecutorServer from 'nuclide-react-native-node-executor';
 import {Emitter} from 'atom';
 import type {Disposable} from 'atom';
 import React from 'react-for-atom';
@@ -25,6 +26,7 @@ export default class ReactNativeServerManager {
   _dispatcher: Dispatcher;
   _emitter: Emitter;
   _processRunner: ?Object;
+  _nodeExecutorServer: ?ExecutorServer;
 
   constructor(dispatcher: Dispatcher, actions: ReactNativeServerActions) {
     this._actions = actions;
@@ -35,6 +37,9 @@ export default class ReactNativeServerManager {
 
   dispose() {
     this._stopServer();
+    if (this._nodeExecutorServer) {
+      this._nodeExecutorServer.close();
+    }
   }
 
   subscribe(callback: () => void): Disposable {
@@ -48,6 +53,9 @@ export default class ReactNativeServerManager {
   _setupActions() {
     this._dispatcher.register(action => {
       switch (action.actionType) {
+        case ReactNativeServerActions.ActionType.START_NODE_EXECUTOR_SERVER:
+          this._startNodeExecutorServer();
+          break;
         case ReactNativeServerActions.ActionType.START_SERVER:
           this._startServer(action.serverCommand);
           break;
@@ -160,5 +168,19 @@ export default class ReactNativeServerManager {
         paneSubscription && paneSubscription.dispose();
       },
     };
+  }
+
+  async _attachNodeDebugger(pid: number): Promise<void> {
+    atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:show');
+    const debuggerService = await require('nuclide-service-hub-plus')
+      .consumeFirstProvider('nuclide-debugger.remote');
+    debuggerService.debugNode(pid);
+  }
+
+  _startNodeExecutorServer() {
+    if (!this._nodeExecutorServer) {
+      this._nodeExecutorServer = new ExecutorServer(8090);
+      this._nodeExecutorServer.onDidEvalApplicationScript(this._attachNodeDebugger.bind(this));
+    }
   }
 }

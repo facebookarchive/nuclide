@@ -34,7 +34,11 @@ import ReactNativeServerManager from './ReactNativeServerManager';
 import ReactNativeServerActions from './ReactNativeServerActions';
 
 const BUCK_PROCESS_ID_REGEX = /lldb -p ([0-9]+)/;
-const REACT_NATIVE_APP_LOGGING_FLAG = '--react-log-to-file';
+const REACT_NATIVE_APP_FLAGS = [
+  '-executor-override', 'RCTWebSocketExecutor',
+  '-websocket-executor-name', 'Nuclide',
+  '-websocket-executor-port', '8090',
+];
 
 class BuckToolbarStore {
 
@@ -276,12 +280,13 @@ class BuckToolbarStore {
       return;
     }
 
-    const appArgs = [];
+    let appArgs = [];
     if (run && this.isReactNativeServerMode()) {
       var serverCommand = await this._getReactNativeServerCommand();
       if (serverCommand) {
         this._reactNativeServerActions.startServer(serverCommand);
-        appArgs.push(REACT_NATIVE_APP_LOGGING_FLAG);
+        appArgs = REACT_NATIVE_APP_FLAGS;
+        this._reactNativeServerActions.startNodeExecutorServer();
       }
     }
 

@@ -15,6 +15,7 @@ import url from 'url';
 
 import Child from './Child';
 import type {ServerReplyCallback} from './types';
+import type {EventEmitter} from 'events';
 
 let logger;
 function getLogger() {
@@ -28,14 +29,16 @@ export default class ChildManager {
 
   _child: ?Child;
   _onReply: ServerReplyCallback;
+  _emitter: EventEmitter;
 
-  constructor(onReply: ServerReplyCallback) {
+  constructor(onReply: ServerReplyCallback, emitter: EventEmitter) {
     this._onReply = onReply;
+    this._emitter = emitter;
   }
 
   async createChild(): Promise<void> {
     await this.killChild();
-    this._child = new Child(this._onReply);
+    this._child = new Child(this._onReply, this._emitter);
   }
 
   async killChild(): Promise<void> {
