@@ -42,7 +42,9 @@ export type Loc = {
   column: number;
 }
 
-export type ServerStatus =
+// If types are added here, make sure to also add them to FlowConstants.js. This needs to be the
+// canonical type definition so that we can use these in the service framework.
+export type ServerStatusType =
   'failed' |
   'unknown' |
   'not running' |

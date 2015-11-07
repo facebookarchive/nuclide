@@ -11,7 +11,7 @@
 
 import type {process$asyncExecuteRet} from 'nuclide-commons';
 
-import type {ServerStatus} from './FlowService';
+import type {ServerStatusType} from './FlowService';
 
 import invariant from 'assert';
 
@@ -29,6 +29,8 @@ import {
   isFlowInstalled,
   getPathToFlow,
 } from './FlowHelpers.js';
+
+import {ServerStatus} from './FlowConstants';
 
 // Names modeled after https://github.com/facebook/flow/blob/master/src/common/flowExitStatus.ml
 export const FLOW_RETURN_CODES = {
@@ -48,19 +50,22 @@ export class FlowProcess {
   // If we had to start a Flow server, store the process here so we can kill it when we shut down.
   _startedServer: ?child_process$ChildProcess;
   // The current state of the Flow server in this directory
-  _serverStatus: BehaviorSubject<ServerStatus>;
+  _serverStatus: BehaviorSubject<ServerStatusType>;
   // The path to the directory where the .flowconfig is -- i.e. the root of the Flow project.
   _root: string;
 
   constructor(root: string) {
-    this._serverStatus = new BehaviorSubject('unknown');
+    this._serverStatus = new BehaviorSubject(ServerStatus.UNKNOWN);
     this._root = root;
 
-    this._serverStatus.filter(x => x === 'not running').subscribe(() => {
+    this._serverStatus.filter(x => x === ServerStatus.NOT_RUNNING).subscribe(() => {
       this._startFlowServer();
       this._pingServer();
     });
-    this._serverStatus.filter(x => x === 'busy' || x === 'init').subscribe(() => {
+    function isBusyOrInit(status: ServerStatusType): boolean {
+      return status === ServerStatus.BUSY || status === ServerStatus.INIT;
+    }
+    this._serverStatus.filter(isBusyOrInit).subscribe(() => {
       this._pingServer();
     });
   }
@@ -73,7 +78,7 @@ export class FlowProcess {
     }
   }
 
-  getServerStatusUpdates(): Observable<ServerStatus> {
+  getServerStatusUpdates(): Observable<ServerStatusType> {
     return this._serverStatus.asObservable();
   }
 
@@ -87,7 +92,7 @@ export class FlowProcess {
     logErrors?: boolean = true,
   ): Promise<?process$asyncExecuteRet> {
     const maxTries = 5;
-    if (this._serverStatus.getValue() === 'failed') {
+    if (this._serverStatus.getValue() === ServerStatus.failed) {
       return null;
     }
     for (let i = 0; ; i++) {
@@ -98,7 +103,7 @@ export class FlowProcess {
         );
         return result;
       } catch (e) {
-        const shouldRetry = ['not running', 'init', 'busy']
+        const shouldRetry = [ServerStatus.NOT_RUNNING, ServerStatus.INIT, ServerStatus.BUSY]
           .indexOf(this._serverStatus.getValue()) !== -1;
         if (i < maxTries && shouldRetry) {
           await this._serverIsReady(); // eslint-disable-line no-await-in-loop
@@ -143,7 +148,7 @@ export class FlowProcess {
       // pattern.
       if (code === 2 && signal === null) {
         logger.error('Flow server unexpectedly exited', this._root);
-        this._serverStatus.onNext('failed');
+        this._serverStatus.onNext(ServerStatus.FAILED);
         this._serverStatus.onCompleted();
       }
     });
@@ -176,32 +181,32 @@ export class FlowProcess {
   _updateServerStatus(result: ?process$asyncExecuteRet): void {
     let status;
     if (result == null) {
-      status = 'not installed';
+      status = ServerStatus.NOT_INSTALLED;
     } else {
       switch (result.exitCode) {
         case FLOW_RETURN_CODES.ok:
           // falls through
         case FLOW_RETURN_CODES.typeError:
-          status = 'ready';
+          status = ServerStatus.READY;
           break;
         case FLOW_RETURN_CODES.serverInitializing:
-          status = 'init';
+          status = ServerStatus.INIT;
           break;
         case FLOW_RETURN_CODES.noServerRunning:
-          status = 'not running';
+          status = ServerStatus.NOT_RUNNING;
           break;
         case FLOW_RETURN_CODES.outOfRetries:
-          status = 'busy';
+          status = ServerStatus.BUSY;
           break;
         case FLOW_RETURN_CODES.buildIdMismatch:
           // If the version doesn't match, the server is automatically killed and the client
           // returns 9.
           logger.info('Killed flow server with incorrect version in', this._root);
-          status = 'not running';
+          status = ServerStatus.NOT_RUNNING;
           break;
         default:
           logger.error('Unknown return code from Flow: ' + result.exitCode);
-          status = 'unknown';
+          status = ServerStatus.UNKNOWN;
       }
     }
     invariant(status != null);
@@ -232,7 +237,7 @@ export class FlowProcess {
    */
   _serverIsReady(): Promise<boolean> {
     return this._serverStatus
-      .filter(x => x === 'ready')
+      .filter(x => x === ServerStatus.READY)
       .map(() => true)
       .timeout(
         SERVER_READY_TIMEOUT_MS,
