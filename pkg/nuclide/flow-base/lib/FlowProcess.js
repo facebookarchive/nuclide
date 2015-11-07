@@ -15,7 +15,7 @@ import type {ServerStatus} from './FlowService';
 
 import invariant from 'assert';
 
-import {BehaviorSubject} from 'rx';
+import {BehaviorSubject, Observable} from 'rx';
 
 import {getLogger} from 'nuclide-logging';
 const logger = getLogger();
@@ -56,6 +56,10 @@ export class FlowProcess {
 
     this._serverStatus.filter(x => x === 'not running').subscribe(() => {
       this._startFlowServer();
+      this._pingServer();
+    });
+    this._serverStatus.filter(x => x === 'busy' || x === 'init').subscribe(() => {
+      this._pingServer();
     });
   }
 
@@ -196,6 +200,22 @@ export class FlowProcess {
     invariant(status != null);
     if (status !== this._serverStatus.getValue()) {
       this._serverStatus.onNext(status);
+    }
+  }
+
+  /** Ping the server until it leaves the current state */
+  async _pingServer(tries?: number = 5): Promise<void> {
+    const fromState = this._serverStatus.getValue();
+    let stateChanged = false;
+    this._serverStatus.filter(newState => newState !== fromState).first().subscribe(() => {
+      stateChanged = true;
+    });
+    for (let i = 0; !stateChanged && i < tries; i++) {
+      /* eslint-disable no-await-in-loop */
+      await this._rawExecFlow(['status']).catch(() => null);
+      // Wait 1 second
+      await Observable.just(null).delay(1000).toPromise();
+      /* eslint-enable no-await-in-loop */
     }
   }
 

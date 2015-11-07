@@ -155,5 +155,25 @@ describe('FlowProcess', () => {
         });
       });
     });
+
+    it('should ping the server after it is started', () => {
+      waitsForPromise(async () => {
+        const states = flowProcess._serverStatus.take(4).toArray().toPromise();
+        fakeAsyncExec = () => {
+          switch (currentStatus) {
+            case 'unknown':
+              return {exitCode: FLOW_RETURN_CODES.noServerRunning};
+            case 'not running':
+              return {exitCode: FLOW_RETURN_CODES.serverInitializing};
+            case 'init':
+              return {exitCode: FLOW_RETURN_CODES.ok};
+            default:
+              throw new Error('should not happen');
+          }
+        };
+        await execFlow();
+        expect(await states).toEqual(['unknown', 'not running', 'init', 'ready']);
+      });
+    });
   });
 });
