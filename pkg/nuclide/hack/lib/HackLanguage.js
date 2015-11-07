@@ -159,11 +159,11 @@ module.exports = class HackLanguage {
     }
     let {dependencies} = dependenciesResult;
     // Serially update depednecies not to block the worker from serving other feature requests.
-    /* eslint-disable no-await-in-loop */
+    /* eslint-disable babel/no-await-in-loop */
     for (const [filePath, contents] of dependencies) {
       await this.updateDependency(filePath, contents);
     }
-    /* eslint-enable no-await-in-loop */
+    /* eslint-enable babel/no-await-in-loop */
   }
 
   async updateDependency(path: string, contents: string): Promise {

@@ -50,7 +50,7 @@ class MockRepository {
  * nodes 'dir1', 'dir1/dir2', 'dir1/dir2' and 'dir1/dir2/foo.txt' entries will be
  * present in the returned map
  */
- /*eslint no-await-in-loop:0 */
+ /*eslint babel/no-await-in-loop:0 */
 async function buildTempDirTree(...paths: Array<string>): Promise<Map<string, string>> {
   const rootPath = await tempMkDir('/');
   const fileMap = new Map();

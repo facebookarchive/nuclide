@@ -145,7 +145,7 @@ export async function getDependencies(
   // hh_server currently is single threaded and processes one request at a time.
   // Hence, we fetch the dependencies one-by-one, without Promise.all for the hack search
   // to unblock user-requested hack language features and failry treat other usages of hh_client.
-  /* eslint-disable no-await-in-loop */
+  /* eslint-disable babel/no-await-in-loop */
   for (const dependency of dependenciesInfo) {
     let {name: dependencyName, type: dependencyType} = dependency;
     if (dependencyName.startsWith('\\')) {
@@ -191,7 +191,7 @@ export async function getDependencies(
       dependencies.set(path, contents);
     }));
   }
-  /* eslint-enable no-await-in-loop */
+  /* eslint-enable babel/no-await-in-loop */
   return {
     hackRoot,
     dependencies,

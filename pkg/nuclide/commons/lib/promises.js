@@ -83,7 +83,7 @@ class RequestSerializer<T> {
   async waitForLatestResult(): Promise<T> {
     let lastPromise = null;
     let result: any = null;
-    /* eslint-disable no-await-in-loop */
+    /* eslint-disable babel/no-await-in-loop */
     while (lastPromise !== this._latestPromise) {
       lastPromise = this._latestPromise;
       // Wait for the current last know promise to resolve, or a next run have started.
@@ -92,7 +92,7 @@ class RequestSerializer<T> {
         this._latestPromise.then(resolve);
       });
     }
-    /* eslint-enable no-await-in-loop */
+    /* eslint-enable babel/no-await-in-loop */
     return (result: T);
   }
 
@@ -135,7 +135,7 @@ async function retryLimit<T>(
   let result = null;
   let tries = 0;
   let lastError = null;
-  /* eslint-disable no-await-in-loop */
+  /* eslint-disable babel/no-await-in-loop */
   while (tries === 0 || tries < maximumTries) {
     try {
       result = await retryFunction();
@@ -152,7 +152,7 @@ async function retryLimit<T>(
       await awaitMilliSeconds(retryIntervalMs);
     }
   }
-  /* eslint-enable no-await-in-loop */
+  /* eslint-enable babel/no-await-in-loop */
   if (lastError != null) {
     throw lastError;
   } else if (tries === maximumTries) {

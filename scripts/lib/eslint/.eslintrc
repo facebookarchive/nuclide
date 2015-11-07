@@ -44,6 +44,7 @@
   },
 
   "plugins": [
+    "babel",
     "jasmine",
     "react",
   ],
@@ -237,6 +238,6 @@
 
   // Custom
     "comment-style": 1,
-    "no-await-in-loop": 1
+    "babel/no-await-in-loop": 1
   }
 }

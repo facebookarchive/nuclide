@@ -97,7 +97,7 @@ export class FlowProcess {
     }
     for (let i = 0; ; i++) {
       try {
-        const result = await this._rawExecFlow( // eslint-disable-line no-await-in-loop
+        const result = await this._rawExecFlow( // eslint-disable-line babel/no-await-in-loop
           args,
           options,
         );
@@ -106,7 +106,7 @@ export class FlowProcess {
         const shouldRetry = [ServerStatus.NOT_RUNNING, ServerStatus.INIT, ServerStatus.BUSY]
           .indexOf(this._serverStatus.getValue()) !== -1;
         if (i < maxTries && shouldRetry) {
-          await this._serverIsReady(); // eslint-disable-line no-await-in-loop
+          await this._serverIsReady(); // eslint-disable-line babel/no-await-in-loop
           // Then try again.
         } else {
           if (logErrors) {
@@ -129,7 +129,7 @@ export class FlowProcess {
     // will not resolve the promise until the process exits, which in this
     // case is never. We need to use spawn directly to get access to the
     // ChildProcess object.
-    const serverProcess = await safeSpawn( // eslint-disable-line no-await-in-loop
+    const serverProcess = await safeSpawn( // eslint-disable-line babel/no-await-in-loop
       pathToFlow,
       ['server', this._root],
     );
@@ -223,11 +223,11 @@ export class FlowProcess {
       stateChanged = true;
     });
     for (let i = 0; !stateChanged && i < tries; i++) {
-      /* eslint-disable no-await-in-loop */
+      /* eslint-disable babel/no-await-in-loop */
       await this._rawExecFlow(['status']).catch(() => null);
       // Wait 1 second
       await Observable.just(null).delay(1000).toPromise();
-      /* eslint-enable no-await-in-loop */
+      /* eslint-enable babel/no-await-in-loop */
     }
   }
 
