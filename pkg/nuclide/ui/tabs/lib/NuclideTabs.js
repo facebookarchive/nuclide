@@ -14,7 +14,7 @@ var React = require('react-for-atom');
 var {PropTypes} = React;
 
 var {array} = require('nuclide-commons');
-var cx = require('react-classset');
+const classnames = require('classnames');
 
 var NuclideTabs = React.createClass({
 
@@ -48,7 +48,7 @@ var NuclideTabs = React.createClass({
       handler[this.props.triggeringEvent] = this._handleTabChange.bind(this, tab.name);
       return (
         <li
-          className={cx({
+          className={classnames({
             tab: true,
             active: this.props.activeTabName === tab.name,
           })}

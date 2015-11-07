@@ -13,7 +13,7 @@ const FileTreeActions = require('../lib/FileTreeActions');
 const React = require('react-for-atom');
 const {StatusCodeNumber} = require('nuclide-hg-repository-base').hgConstants;
 
-const cx = require('react-classset');
+const classnames = require('classnames');
 const {fileTypeClass} = require('nuclide-atom-helpers');
 const {isContextClick} = require('../lib/FileTreeHelpers');
 
@@ -49,7 +49,7 @@ class NodeComponent extends React.Component {
     const outerStyle = {
       paddingLeft: INDENT_IN_PX + indentLevel * INDENT_PER_LEVEL,
     };
-    const outerClassName = cx({
+    const outerClassName = classnames({
       'directory': this.props.isContainer,
       'file': !this.props.isContainer,
       'entry list-item nuclide-tree-component-item': true,

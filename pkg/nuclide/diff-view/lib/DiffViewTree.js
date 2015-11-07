@@ -21,8 +21,9 @@ import Immutable from 'immutable';
 import {FileChangeStatus} from './constants';
 import {CompositeDisposable} from 'atom';
 import React from 'react-for-atom';
-import cx from 'react-classset';
+
 import {array} from 'nuclide-commons';
+import classnames from 'classnames';
 
 function labelClassNameForNode(node: LazyTreeNode): string {
   const classObj = {
@@ -35,12 +36,12 @@ function labelClassNameForNode(node: LazyTreeNode): string {
   } else if (node.getItem().statusCode) {
     classObj[fileTypeClass(node.getLabel())] = true;
   }
-  return cx(classObj);
+  return classnames(classObj);
 }
 
 function rowClassNameForNode(node: LazyTreeNode) {
   var vcsClassName = vcsClassNameForEntry(node.getItem());
-  return cx({
+  return classnames({
     [vcsClassName]: vcsClassName,
   });
 }

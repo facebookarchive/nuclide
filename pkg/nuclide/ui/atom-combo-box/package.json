@@ -10,10 +10,10 @@
     "testRunner": "apm"
   },
   "dependencies": {
+    "classnames": "2.2.0",
     "emptyfunction": "0.0.0",
     "nuclide-atom-npm": "0.0.0",
     "nuclide-ui-atom-input": "0.0.0",
-    "react-classset": "0.0.2",
     "react-for-atom": "0.13.6"
   },
   "devDependencies": {

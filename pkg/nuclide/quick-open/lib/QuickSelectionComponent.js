@@ -41,7 +41,7 @@ import SearchResultManager from './SearchResultManager';
 const searchResultManager = SearchResultManager.getInstance();
 const NuclideTabs = require('nuclide-ui-tabs');
 const {PropTypes} = React;
-const cx = require('react-classset');
+const classnames = require('classnames');
 
 const {
   filterEmptyResults,
@@ -628,7 +628,7 @@ export default class QuickSelectionComponent extends React.Component {
           );
           return (
             <li
-              className={cx({
+              className={classnames({
                 'quick-open-result-item': true,
                 'list-item': true,
                 selected: isSelected,
@@ -652,7 +652,7 @@ export default class QuickSelectionComponent extends React.Component {
           );
         }
         return (
-          <li className={cx({'list-nested-item': showDirectories})} key={dirName}>
+          <li className={classnames({'list-nested-item': showDirectories})} key={dirName}>
             {directoryLabel}
             {message}
             <ul className="list-tree">

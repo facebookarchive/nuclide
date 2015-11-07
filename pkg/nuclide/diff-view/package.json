@@ -12,6 +12,7 @@
     "atom": ">=0.199.0"
   },
   "dependencies": {
+    "classnames": "2.2.0",
     "diff": "1.4.0",
     "immutable": "3.6.2",
     "nuclide-analytics": "0.0.0",
@@ -23,7 +24,6 @@
     "nuclide-logging": "0.0.0",
     "nuclide-remote-uri": "0.0.0",
     "nuclide-ui-tree": "0.0.0",
-    "react-classset": "0.0.2",
     "react-for-atom": "0.13.6"
   },
   "devDependencies": {

@@ -12,7 +12,7 @@
 var LazyTreeNode = require('./LazyTreeNode');
 var React = require('react-for-atom');
 
-const cx = require('react-classset');
+const classnames = require('classnames');
 
 const {
   addons,
@@ -90,7 +90,7 @@ class TreeNodeComponent extends React.Component {
 
     return (
       <div
-        className={cx(rowClassNameObj)}
+        className={classnames(rowClassNameObj)}
         style={itemStyle}
         onClick={this._onClick}
         onDoubleClick={this._onDoubleClick}
