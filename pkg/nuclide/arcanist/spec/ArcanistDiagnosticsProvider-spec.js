@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import {BusySignalProviderBase} from 'nuclide-busy-signal-provider-base';
 import {ArcanistDiagnosticsProvider} from '../lib/ArcanistDiagnosticsProvider';
 import fs from 'fs';
 import path from 'path';
@@ -23,7 +24,7 @@ describe('ArcanistDiagnosticsProvider', () => {
     const folder = temp.mkdirSync();
     tempFile = path.join(folder, 'test');
     fs.writeFileSync(tempFile, /* data */ '');
-    provider = new ArcanistDiagnosticsProvider();
+    provider = new ArcanistDiagnosticsProvider(new BusySignalProviderBase());
   });
 
   it('should invalidate the messages when a file is closed', () => {

@@ -5,6 +5,7 @@
 [libs]
 ./node_modules/nuclide-external-interfaces/1.0/
 ./node_modules/nuclide-diagnostics-base/lib/types.js
+./node_modules/nuclide-busy-signal-interfaces/lib/types.js
 
 [options]
 unsafe.enable_getters_and_setters=true

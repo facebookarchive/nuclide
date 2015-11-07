@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {BusySignalProviderBase} from 'nuclide-busy-signal-provider-base';
+
 import {CompositeDisposable} from 'atom';
 
 import {DiagnosticsProviderBase} from 'nuclide-diagnostics-provider-base';
@@ -23,13 +25,15 @@ export class ArcanistDiagnosticsProvider {
   _providerBase: DiagnosticsProviderBase;
   _requestSerializer: RequestSerializer;
   _subscriptions: atom$CompositeDisposable;
+  _busySignalProvider: BusySignalProviderBase;
 
-  constructor() {
+  constructor(busySignalProvider: BusySignalProviderBase) {
+    this._busySignalProvider = busySignalProvider;
     this._subscriptions = new CompositeDisposable();
     const baseOptions = {
       enableForAllGrammars: true,
       shouldRunOnTheFly: false,
-      onTextEditorEvent: this._runLint.bind(this),
+      onTextEditorEvent: this._runLintWithBusyMessage.bind(this),
       onNewUpdateSubscriber: this._receivedNewUpdateSubscriber.bind(this),
     };
     this._providerBase = new DiagnosticsProviderBase(baseOptions);
@@ -56,12 +60,23 @@ export class ArcanistDiagnosticsProvider {
     this._subscriptions.dispose();
   }
 
+  /** The returned Promise will resolve when results have been published. */
+  _runLintWithBusyMessage(textEditor: TextEditor): Promise<void> {
+    const path = textEditor.getPath();
+    if (path == null) {
+      return Promise.resolve();
+    }
+    return this._busySignalProvider.reportBusy(
+      `Waiting for arc lint results for \`${textEditor.getTitle()}\``,
+      () => this._runLint(textEditor),
+    );
+  }
+
+  /** Do not call this directly -- call _runLintWithBusyMessage */
   @trackTiming('nuclide-arcanist:lint')
   async _runLint(textEditor: TextEditor): Promise<void> {
     const filePath = textEditor.getPath();
-    if (!filePath) {
-      return;
-    }
+    invariant(filePath);
     const {Range} = require('atom');
     try {
       const result = await this._requestSerializer.run(
@@ -111,7 +126,7 @@ export class ArcanistDiagnosticsProvider {
   _receivedNewUpdateSubscriber(): void {
     const activeTextEditor = atom.workspace.getActiveTextEditor();
     if (activeTextEditor) {
-      this._runLint(activeTextEditor);
+      this._runLintWithBusyMessage(activeTextEditor);
     }
   }
 

@@ -15,6 +15,11 @@
       "versions": {
         "0.1.0": "provideDiagnostics"
       }
+    },
+    "nuclide-busy-signal": {
+      "versions": {
+        "0.1.0": "provideBusySignal"
+      }
     }
   },
   "engines": {
@@ -24,12 +29,14 @@
     "nuclide-analytics": "0.0.0",
     "nuclide-arcanist-client": "0.0.0",
     "nuclide-atom-helpers": "0.0.0",
+    "nuclide-busy-signal-provider-base": "0.0.0",
     "nuclide-commons": "0.0.0",
     "nuclide-diagnostics-provider-base": "0.0.0",
     "nuclide-logging": "0.0.0",
     "nuclide-remote-uri": "0.0.0"
   },
   "devDependencies": {
+    "nuclide-busy-signal-interfaces": "0.0.0",
     "nuclide-diagnostics-base": "0.0.0",
     "nuclide-external-interfaces": "0.0.0",
     "nuclide-test-helpers": "0.0.0",
