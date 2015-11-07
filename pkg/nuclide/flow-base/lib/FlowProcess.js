@@ -53,6 +53,10 @@ export class FlowProcess {
   constructor(root: string) {
     this._serverStatus = new BehaviorSubject('unknown');
     this._root = root;
+
+    this._serverStatus.filter(x => x === 'not running').subscribe(() => {
+      this._startFlowServer();
+    });
   }
 
   dispose(): void {
@@ -87,7 +91,7 @@ export class FlowProcess {
         const shouldRetry = ['not running', 'init', 'busy']
           .indexOf(this._serverStatus.getValue()) !== -1;
         if (i < maxTries && shouldRetry) {
-          await this._startFlowServer(); // eslint-disable-line no-await-in-loop
+          // Try again.
         } else {
           if (logErrors) {
             // not sure what happened, but we'll let the caller deal with it
