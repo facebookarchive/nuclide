@@ -34,6 +34,9 @@ const PATHS_FIXTURE = {
   'spec/QueryItem-spec.js': true,
   'spec/TopScores-spec.js': true,
   'spec/utils-spec.js': true,
+  'some/path/test.js': true,
+  'some/longer/path/test.js': true,
+  'some/even/longer/path/test.js': true,
 };
 
 let pathsearch: any = null;
@@ -56,9 +59,15 @@ describe('PathSearch', () => {
 
   it('ignores non-alphanumeric characters in the query.', () => {
     waitsForPromise(async () => {
-      const query1 = await pathsearch.doQuery('spec');
-      const query2 = await pathsearch.doQuery('spec---');
-      const query3 = await pathsearch.doQuery('__s!p$e%c&---');
+      const [
+        query1,
+        query2,
+        query3,
+      ] = await Promise.all([
+        pathsearch.doQuery('spec'),
+        pathsearch.doQuery('spec---'),
+        pathsearch.doQuery('__s!p$e%c&---'),
+      ]);
       expect(query1.results).toEqual(query2.results);
       expect(query1.results).toEqual(query3.results);
     });
@@ -66,11 +75,54 @@ describe('PathSearch', () => {
 
   it('treats uppercase and lowercase characters in the query equally.', () => {
     waitsForPromise(async () => {
-      const query1 = await pathsearch.doQuery('spec');
-      const query2 = await pathsearch.doQuery('SPEC');
-      const query3 = await pathsearch.doQuery('sPeC');
+      const [
+        query1,
+        query2,
+        query3,
+      ] = await Promise.all([
+        pathsearch.doQuery('spec'),
+        pathsearch.doQuery('SPEC'),
+        pathsearch.doQuery('sPeC'),
+      ]);
       expect(query1.results).toEqual(query2.results);
       expect(query1.results).toEqual(query3.results);
+    });
+  });
+
+  it('matches paths directly when queries contain a slash', () => {
+    waitsForPromise(async () => {
+      const [
+        query1,
+        query2,
+        query3,
+      ] = await Promise.all([
+        pathsearch.doQuery('some/'),
+        pathsearch.doQuery('longer/path'),
+        pathsearch.doQuery('even/longer/path'),
+      ]);
+      expect(query1.results.length).toEqual(3);
+      expect(query2.results.length).toEqual(2);
+      expect(query3.results.length).toEqual(1);
+    });
+  });
+
+  it('matches subpaths in the query until results are found', () => {
+    waitsForPromise(async () => {
+      const [
+        query1,
+        query2,
+        query3,
+        query4,
+      ] = await Promise.all([
+        pathsearch.doQuery('/Users/test/some/even/longer/path'),
+        pathsearch.doQuery('test/some/even/longer/path'),
+        pathsearch.doQuery('/some/even/longer/path'),
+        pathsearch.doQuery('some/even/longer/path'),
+      ]);
+
+      expect(query1.results).toEqual(query2.results);
+      expect(query2.results).toEqual(query3.results);
+      expect(query3.results).toEqual(query4.results);
     });
   });
 

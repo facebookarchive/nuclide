@@ -41,6 +41,51 @@ export default class PathSearch {
     this._queryItemForPath = {}; // It might be more efficient to store this in PathSet.
   }
 
+  _doFuzzyFilenameSearch(query: string, topScores: TopScores): Promise<void> {
+    const processor = (path: string) => {
+      let queryItem = this._queryItemForPath[path];
+      if (!queryItem) {
+        queryItem = new QueryItem(path);
+        // Currently, nothing is ever removed from _queryItemForPath. It's
+        // unclear if the additional complexity in bookkeeping effort would
+        // merit the memory savings.
+        this._queryItemForPath[path] = queryItem;
+      }
+      const alphanumericQuery = query.replace(/[^a-z0-9/]/g, '');
+      const scoredItem = queryItem.score(alphanumericQuery);
+      if (scoredItem != null) {
+        topScores.insert(scoredItem);
+      }
+    };
+    return this._pathSet.submit(processor);
+  }
+
+  // `query` is assumed to be a lower-case string.
+  _doPathSearch(query: string, topScores: TopScores): Promise<void> {
+    const processor = (path: string) => {
+      if (topScores.getSize() < MAX_RESULTS_COUNT && path.toLowerCase().indexOf(query) !== -1) {
+        topScores.insert({
+          matchIndexes: [],
+          score: 0,
+          value: path,
+        });
+      }
+    };
+    const pathSetJob = this._pathSet.submit(processor);
+    const nextJob = pathSetJob.then(() => {
+      if (topScores.getSize() === 0 && query.indexOf('/') !== -1) {
+        return this._doPathSearch(query.substring(query.indexOf('/') + 1), topScores);
+      }
+      return pathSetJob;
+    });
+    // The cancelJob expando property needs to be forwarded manually.
+    // This is also the reason we cannot use `await` in this logic, since it's not possible to pass
+    // cancelJob to the resulting auto-boxed Promise.
+    // $FlowFixMe: Remove the cancelJob expando off the promise.
+    nextJob.cancelJob = pathSetJob.cancelJob;
+    return nextJob;
+  }
+
   /**
    * @param query Is expected to be what the user has typed in a path-matching
    *     typeahead UI.
@@ -77,32 +122,15 @@ export default class PathSearch {
       keysToRemove.forEach(key => this._activeQueries[key].cancelJob());
     }
 
-    // TODO(mbolin): It would be more complicated, but not completely insane,
-    // for the new processor to start by filtering what the prefix query had
-    // already found thus far.
 
     const topScores = new TopScores(/* capacity */ MAX_RESULTS_COUNT);
 
-    const processor = (path: string) => {
-      let queryItem = this._queryItemForPath[path];
-      if (!queryItem) {
-        queryItem = new QueryItem(path);
-        // Currently, nothing is ever removed from _queryItemForPath. It's
-        // unclear if the additional complexity in bookkeeping effort would
-        // merit the memory savings.
-        this._queryItemForPath[path] = queryItem;
-      }
-      const alphanumericQuery = query.replace(/[^a-z0-9/]/g, '');
-      const scoredItem = queryItem.score(alphanumericQuery);
-      if (scoredItem != null) {
-        topScores.insert(scoredItem);
-      }
-    };
-
-    // This is helpful for debugging.
-    processor.toString = () => query;
-
-    const promise = this._pathSet.submit(processor);
+    // If there is a slash in the query, we assume we're searching paths instead of filenames
+    // and therefore we won't remove special characters, and won't use the fuzzy search logic
+    const shouldSearchPaths = query.indexOf('/') !== -1;
+    const promise = shouldSearchPaths
+      ? this._doPathSearch(query, topScores)
+      : this._doFuzzyFilenameSearch(query, topScores);
 
     let promiseForQuery;
     const removePromise = () => {
@@ -137,4 +165,5 @@ export default class PathSearch {
     this._activeQueries[query] = promiseForQuery;
     return promiseForQuery;
   }
+
 }
