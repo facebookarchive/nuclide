@@ -29,7 +29,7 @@ describe('TopScores', () => {
     topScores.insert(one);
     topScores.insert(five);
 
-    expect(topScores.getTopScores()).toEqual([six, five, four]);
+    expect(topScores.getTopScores()).toEqual([four, five, six]);
   });
 
   it('getTopScores() uses Score.value as a tiebreaker', () => {
@@ -47,15 +47,15 @@ describe('TopScores', () => {
     const topScores = new TopScores(scores.length);
     scores.forEach(score => topScores.insert(score));
     expect(topScores.getTopScores().map(score => score.value)).toEqual([
-      'ball',
-      'Z',
-      '',
-      'Apple',
-      'apple',
-      'CAT',
-      'Cat',
-      'cAt',
       'cat',
+      'cAt',
+      'Cat',
+      'CAT',
+      'apple',
+      'Apple',
+      '',
+      'Z',
+      'ball',
     ]);
   });
 });

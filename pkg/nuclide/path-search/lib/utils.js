@@ -61,10 +61,3 @@ export function scoreComparator(a: QueryScore, b: QueryScore): number {
     return valueComparator(b.value, a.value);
   }
 }
-
-/**
- * @return <0 if a is the greater QueryScore; >0 if b is the greater QueryScore.
- */
-export function inverseScoreComparator(a: QueryScore, b: QueryScore): number {
-  return -scoreComparator(a, b);
-}

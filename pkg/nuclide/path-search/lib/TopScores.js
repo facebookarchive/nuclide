@@ -12,7 +12,7 @@
 import Heap from 'heap';
 
 import type {QueryScore} from './QueryScore';
-import {scoreComparator, inverseScoreComparator} from './utils';
+import {scoreComparator} from './utils';
 
 /**
  * This data structure is designed to hold the top K scores from a collection of
@@ -60,11 +60,11 @@ export default class TopScores {
   }
 
   /**
-   * @return an Array where Scores will be sorted in descending order.
+   * @return an Array where Scores will be sorted in ascending order.
    */
   getTopScores(): Array<QueryScore> {
     const array = this._heap.toArray();
-    array.sort(inverseScoreComparator);
+    array.sort(scoreComparator);
     return array;
   }
 }
