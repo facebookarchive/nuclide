@@ -92,9 +92,10 @@ export default class PathSearch {
         // merit the memory savings.
         this._queryItemForPath[path] = queryItem;
       }
-      const score = queryItem.score(query);
-      if (score != null) {
-        topScores.insert(score);
+      const alphanumericQuery = query.replace(/[^a-z0-9/]/g, '');
+      const scoredItem = queryItem.score(alphanumericQuery);
+      if (scoredItem != null) {
+        topScores.insert(scoredItem);
       }
     };
 
