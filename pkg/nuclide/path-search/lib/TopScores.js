@@ -62,6 +62,10 @@ export default class TopScores {
     this._min = this._heap.peek();
   }
 
+  getSize(): number {
+    return this._heap.size();
+  }
+
   /**
    * @return an Array where Scores will be sorted in ascending order.
    */

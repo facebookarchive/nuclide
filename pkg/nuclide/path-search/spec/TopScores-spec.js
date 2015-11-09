@@ -58,4 +58,28 @@ describe('TopScores', () => {
       'ball',
     ]);
   });
+
+  it('.getSize() returns the size of the heap', () => {
+    const topScores = new TopScores(3);
+    expect(topScores.getSize()).toEqual(0);
+
+    const one   = {score: 1, value: 'one'};
+    const two   = {score: 2, value: 'two'};
+    const three = {score: 3, value: 'three'};
+    const four  = {score: 4, value: 'four'};
+    const five  = {score: 5, value: 'five'};
+
+    topScores.insert(five);
+    expect(topScores.getSize()).toEqual(1);
+    topScores.insert(four);
+    expect(topScores.getSize()).toEqual(2);
+    topScores.insert(two);
+    expect(topScores.getSize()).toEqual(3);
+    topScores.insert(three);
+    expect(topScores.getSize()).toEqual(3);
+    topScores.insert(one);
+    expect(topScores.getSize()).toEqual(3);
+
+  });
+
 });
