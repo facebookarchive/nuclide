@@ -112,6 +112,7 @@ class FileTreeController {
         },
         'nuclide-file-tree:collapse-directory': this._collapseSelection.bind(this, /*deep*/ false),
         'nuclide-file-tree:recursive-collapse-directory': this._collapseSelection.bind(this, true),
+        'nuclide-file-tree:recursive-collapse-all': this._collapseAll.bind(this),
         'nuclide-file-tree:copy-full-path': this._copyFullPath.bind(this),
         'nuclide-file-tree:expand-directory': this._expandSelection.bind(this, /*deep*/ false),
         'nuclide-file-tree:recursive-expand-directory': this._expandSelection.bind(this, true),
@@ -507,6 +508,11 @@ class FileTreeController {
         }
       });
     }
+  }
+
+  _collapseAll(): void {
+    const rootKeys = this._store.getRootKeys();
+    rootKeys.forEach(rootKey => this._actions.collapseNodeDeep(rootKey, rootKey));
   }
 
   _deleteSelection(): void {

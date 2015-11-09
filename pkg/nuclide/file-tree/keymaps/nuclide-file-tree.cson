@@ -19,6 +19,7 @@
   'alt-right': 'nuclide-file-tree:recursive-expand-directory'
   'alt-ctrl-[': 'nuclide-file-tree:recursive-collapse-directory'
   'alt-left': 'nuclide-file-tree:recursive-collapse-directory'
+  'ctrl-{': 'nuclide-file-tree:recursive-collapse-all'
   'enter': 'nuclide-file-tree:open-selected-entry'
   'delete': 'nuclide-file-tree:remove'
   'backspace': 'nuclide-file-tree:remove'

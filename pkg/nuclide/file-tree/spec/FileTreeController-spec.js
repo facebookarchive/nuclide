@@ -274,6 +274,14 @@ describe('FileTreeController', () => {
         });
       });
 
+      describe('via _collapseAll ( cmd+{ )', () => {
+        it('collapses all visible nodes', () => {
+          controller._collapseAll();
+          expect(store.isExpanded(rootKey, rootKey)).toBe(false);
+          expect(store.isExpanded(rootKey, dir1Key)).toBe(false);
+        });
+      });
+
       describe('via _collapseSelection (left arrow)', () => {
         it('selects the parent if the selected node is a file', () => {
           actions.selectSingleNode(rootKey, fooTxtKey);
