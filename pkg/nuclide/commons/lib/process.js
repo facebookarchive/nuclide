@@ -360,10 +360,13 @@ async function asyncExecute(
     command: string,
     args: Array<string>,
     options: ?Object = {}): Promise<process$asyncExecuteRet> {
+  /* $FlowIssue (t8216189) */
   const result = await checkOutput(command, args, options);
   if (result.exitCode !== 0) {
-    // TODO(t8215539): Add properties such as "message" and "toString()" so that if the caller
-    // catches this as if it were an error, it will print nicely rather than "[object Object]".
+    // Duck typing Error.
+    result['name'] = 'Async Execution Error';
+    result['message'] =
+        `exitCode: ${result.exitCode}, stderr: ${result.stderr}, stdout: ${result.stdout}.`;
     throw result;
   }
   return result;
