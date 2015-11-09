@@ -344,9 +344,6 @@ module.exports = {
       listeners.dispose();
       listeners = null;
     }
-    if (searchResultManager) {
-      searchResultManager.dispose();
-      searchResultManager = null;
-    }
+    getSearchResultManager().dispose();
   },
 };
