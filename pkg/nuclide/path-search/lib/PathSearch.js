@@ -47,6 +47,8 @@ export default class PathSearch {
    * @return Promise that resolves to an empty ResultSet if it is canceled.
    */
   doQuery(query: string): Promise<ResultSet> {
+    query = query.toLowerCase();
+
     // Note that currently, if the query is the empty string, all of the files
     // in the underlying PathSet will be returned. This may not be desirable.
 
