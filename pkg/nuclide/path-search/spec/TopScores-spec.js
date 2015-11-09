@@ -15,12 +15,12 @@ describe('TopScores', () => {
   it('.getTopScores() returns the top scores', () => {
     const topScores = new TopScores(3);
 
-    const one = {score: 1, value: 'one'};
-    const two = {score: 2, value: 'two'};
+    const one   = {score: 1, value: 'one'};
+    const two   = {score: 2, value: 'two'};
     const three = {score: 3, value: 'three'};
-    const four = {score: 4, value: 'four'};
-    const five = {score: 5, value: 'five'};
-    const six = {score: 6, value: 'six'};
+    const four  = {score: 4, value: 'four'};
+    const five  = {score: 5, value: 'five'};
+    const six   = {score: 6, value: 'six'};
 
     topScores.insert(six);
     topScores.insert(four);
@@ -29,7 +29,7 @@ describe('TopScores', () => {
     topScores.insert(one);
     topScores.insert(five);
 
-    expect(topScores.getTopScores()).toEqual([four, five, six]);
+    expect(topScores.getTopScores()).toEqual([one, two, three]);
   });
 
   it('getTopScores() uses Score.value as a tiebreaker', () => {

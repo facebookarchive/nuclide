@@ -61,3 +61,7 @@ export function scoreComparator(a: QueryScore, b: QueryScore): number {
     return valueComparator(b.value, a.value);
   }
 }
+
+export function inverseScoreComparator(a: QueryScore, b: QueryScore): number {
+  return scoreComparator(b, a);
+}

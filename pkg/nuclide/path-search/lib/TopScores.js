@@ -12,7 +12,10 @@
 import Heap from 'heap';
 
 import type {QueryScore} from './QueryScore';
-import {scoreComparator} from './utils';
+import {
+  scoreComparator,
+  inverseScoreComparator,
+} from './utils';
 
 /**
  * This data structure is designed to hold the top K scores from a collection of
@@ -34,14 +37,14 @@ export default class TopScores {
   constructor(capacity: number) {
     this._capacity = capacity;
     this._full = false;
-    this._heap = new Heap(scoreComparator);
+    this._heap = new Heap(inverseScoreComparator);
     this._min = null;
   }
 
   insert(score: QueryScore) {
     if (this._full && this._min) {
       const cmp = scoreComparator(score, this._min);
-      if (cmp > 0) {
+      if (cmp < 0) {
         this._doInsert(score);
       }
     } else {
