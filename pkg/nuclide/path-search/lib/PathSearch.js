@@ -20,6 +20,7 @@ type ResultSet = {
 };
 
 const PATH_SEARCH_TIMEOUT_MS = 60 * 1000;
+const MAX_RESULTS_COUNT = 50;
 
 /**
  * Manages multiple simultaneous queries against a PathSet. The PathSearch is
@@ -78,7 +79,7 @@ export default class PathSearch {
     // for the new processor to start by filtering what the prefix query had
     // already found thus far.
 
-    const topScores = new TopScores(/* capacity */ 50);
+    const topScores = new TopScores(/* capacity */ MAX_RESULTS_COUNT);
 
     const processor = (path: string) => {
       let queryItem = this._queryItemForPath[path];
