@@ -133,6 +133,9 @@ class DiffViewModel {
 
       // Update the active file, if changed.
       const {filePath} = this._activeFileState;
+      if (!filePath) {
+        return;
+      }
       const {committedContents, filesystemContents} = await this._fetchHgDiff(filePath);
       await this._updateDiffStateIfChanged(
         filePath,
