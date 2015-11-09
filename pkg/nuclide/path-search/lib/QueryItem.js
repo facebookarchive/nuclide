@@ -17,6 +17,41 @@ function isAlphanumeric(character): boolean {
   return /[\w]/.test(character);
 }
 
+const NON_UPPERCASE_CHARS_REGEXP = /[^a-z0-9]/g;
+/**
+ * Returns the score of the common subsequence between `needle` and `haystack` or -1 if there is
+ * no common subsequence.
+ * A lower number means `needle` is more relevant to `haystack`.
+ */
+function scoreCommonSubsequence(needle: string, haystack: string): number {
+  haystack = haystack.toLowerCase();
+  haystack = haystack.replace(NON_UPPERCASE_CHARS_REGEXP, '');
+  if (needle.length === haystack.length) {
+    return needle === haystack ? 0 : -1;
+  }
+
+  let needleIndex: number = 0;
+  let haystackIndex: number = 0;
+  let score: number = 0;
+  let inGap: boolean = false;
+
+  while (needleIndex < needle.length && haystackIndex < haystack.length) {
+    if (needle[needleIndex] === haystack[haystackIndex]) {
+      needleIndex++;
+      haystackIndex++;
+      inGap = false;
+    } else {
+      haystackIndex++;
+      score += (inGap ? 2 : 20);
+      inGap = true;
+    }
+  }
+  if (needleIndex >= needle.length) {
+    return score + haystack.length + haystackIndex;
+  }
+  return -1;
+}
+
 const NOT_CAPITAL_LETTERS_REGEXP = /[^A-Z]/g;
 /**
  * Checks if `needle` matches exactly the first character followed by all uppercase letters in
@@ -68,6 +103,7 @@ export let __test__ = {
   checkIfMatchesCamelCaseLetters,
   isLetterImportant,
   importantCharactersForString,
+  scoreCommonSubsequence,
 };
 
 export default class QueryItem {

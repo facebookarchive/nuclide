@@ -92,6 +92,7 @@ const {
   checkIfMatchesCamelCaseLetters,
   isLetterImportant,
   importantCharactersForString,
+  scoreCommonSubsequence,
 } = __test__;
 
 describe('checkIfMatchesCamelCaseLetters', () => {
@@ -112,6 +113,47 @@ describe('checkIfMatchesCamelCaseLetters', () => {
   it('is indifferent about the case of only the first characted in `haystack`', () => {
     expect(checkIfMatchesCamelCaseLetters('fbide', 'fBIDE')).toBe(true);
     expect(checkIfMatchesCamelCaseLetters('fbide', 'fbIDE')).toBe(false);
+  });
+});
+
+describe('scoreCommonSubsequence', () => {
+  it('returns -1 if there is no common subsequence', () => {
+    expect(scoreCommonSubsequence('nuclide', 'noclide')).toEqual(-1);
+    expect(scoreCommonSubsequence('nuclide', 'nucl')).toEqual(-1);
+    expect(scoreCommonSubsequence('nuclide', '')).toEqual(-1);
+  });
+
+  it('returns a score of 0 for exact matches', () => {
+    expect(scoreCommonSubsequence('nuclide', 'nuclide')).toEqual(0);
+  });
+
+  it('ignores the case of characters in `needle`, but not vice-versa', () => {
+    expect(scoreCommonSubsequence('nuclide', 'NuclIDE')).toEqual(0);
+    expect(scoreCommonSubsequence('NuclIDE', 'nuclide')).toEqual(-1);
+  });
+
+  it('ignores non-alphanumeric characters in `haystack`', () => {
+    expect(scoreCommonSubsequence('nuclide', 'n u c l i d e')).toEqual(0);
+    expect(scoreCommonSubsequence('nuclide', 'n_u-c.l?i!d@e')).toEqual(0);
+  });
+
+  it('returns the correct relevance score for a given needle in a simple haystack', () => {
+    expect(scoreCommonSubsequence('nuclid', 'nuclide')).toEqual(13);
+    expect(scoreCommonSubsequence('nucli', 'nuclide')).toEqual(12);
+    expect(scoreCommonSubsequence('nucl', 'nuclide')).toEqual(11);
+    expect(scoreCommonSubsequence('nuc', 'nuclide')).toEqual(10);
+    expect(scoreCommonSubsequence('nu', 'nuclide')).toEqual(9);
+    expect(scoreCommonSubsequence('n', 'nuclide')).toEqual(8);
+    expect(scoreCommonSubsequence('', 'nuclide')).toEqual(7);
+  });
+
+  it('returns the correct relevance score for a given needle in a complex haystack', () => {
+    expect(scoreCommonSubsequence('needle', 'needles')).toEqual(13);
+    expect(scoreCommonSubsequence('needle', 'aneedle')).toEqual(34);
+    expect(scoreCommonSubsequence('needle', 'aBunchOfNeedles')).toEqual(81);
+    // TODO this shows that clustering can be improved, as the following scores should be identical:
+    expect(scoreCommonSubsequence('needle', 'twoneedle')).toEqual(42);
+    expect(scoreCommonSubsequence('needle', 'oneneedle')).toEqual(78);
   });
 });
 
