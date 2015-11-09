@@ -10,7 +10,7 @@
     "testRunner": "apm"
   },
   "dependencies": {
-    "fs-plus": "2.8.0",
+    "fs-plus": "2.8.1",
     "nuclide-commons": "0.0.0",
     "nuclide-remote-uri": "0.0.0"
   },

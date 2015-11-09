@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "nuclide-commons": "0.0.0",
-    "semver": "4.3.4"
+    "semver": "5.0.3"
   },
   "devDependencies": {
     "nuclide-external-interfaces": "0.0.0"

@@ -29,7 +29,7 @@
     }
   },
   "dependencies": {
-    "fs-plus": "2.8.0",
+    "fs-plus": "2.8.1",
     "nuclide-analytics": "0.0.0",
     "nuclide-atom-helpers": "0.0.0",
     "nuclide-client": "0.0.0",

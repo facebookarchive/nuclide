@@ -13,7 +13,7 @@
     "test": "node --harmony node_modules/.bin/jasmine-node-transpiled spec"
   },
   "dependencies": {
-    "babel-core": "5.8.25",
+    "babel-core": "5.8.21",
     "immutable": "3.7.5"
   },
   "devDependencies": {

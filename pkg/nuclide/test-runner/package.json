@@ -31,7 +31,7 @@
     }
   },
   "dependencies": {
-    "immutable": "3.6.2",
+    "immutable": "3.7.5",
     "nuclide-analytics": "0.0.0",
     "nuclide-atom-helpers": "0.0.0",
     "nuclide-commons": "0.0.0",

@@ -19,7 +19,7 @@
     "react-for-atom": "0.13.6"
   },
   "devDependencies": {
-    "immutable": "3.6.2",
+    "immutable": "3.7.5",
     "nuclide-external-interfaces": "0.0.0"
   }
 }
