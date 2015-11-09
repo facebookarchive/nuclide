@@ -89,13 +89,6 @@ function aFileSearchShould(typename) {
         });
       });
 
-      it('should only contain two file entries', () => {
-        waitsForPromise(async () => {
-          invariant(search);
-          const results = await search.query('');
-          expect(results.length).toEqual(2);
-        });
-      });
     });
 
     describe('a subdirectory FileSearch', () => {
@@ -127,13 +120,6 @@ function aFileSearchShould(typename) {
         });
       });
 
-      it('should only contain one file', () => {
-        waitsForPromise(async () => {
-          invariant(deeperSearch);
-          const results = await deeperSearch.query('');
-          expect(results.length).toEqual(1);
-        });
-      });
     });
 
     describe('a FileSearch with a hostname', () => {
@@ -168,13 +154,6 @@ function aFileSearchShould(typename) {
         });
       });
 
-      it('should only contain two file entries', () => {
-        waitsForPromise(async () => {
-          invariant(uriSearch);
-          const results = await uriSearch.query('');
-          expect(results.length).toEqual(2);
-        });
-      });
     });
   });
 }

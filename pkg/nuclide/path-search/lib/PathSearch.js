@@ -48,9 +48,9 @@ export default class PathSearch {
    */
   doQuery(query: string): Promise<ResultSet> {
     query = query.toLowerCase();
-
-    // Note that currently, if the query is the empty string, all of the files
-    // in the underlying PathSet will be returned. This may not be desirable.
+    if (query.length === 0) {
+      return Promise.resolve({query: '', results: []});
+    }
 
     // See if a request for this query is already in flight.
     const activeQuery = this._activeQueries[query];

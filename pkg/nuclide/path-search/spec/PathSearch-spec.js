@@ -47,6 +47,13 @@ describe('PathSearch', () => {
     );
   });
 
+  it('returns no results for empty queries.', () => {
+    waitsForPromise(async () => {
+      const query = await pathsearch.doQuery('');
+      expect(query.results.length).toEqual(0);
+    });
+  });
+
   it('ignores non-alphanumeric characters in the query.', () => {
     waitsForPromise(async () => {
       const query1 = await pathsearch.doQuery('spec');
