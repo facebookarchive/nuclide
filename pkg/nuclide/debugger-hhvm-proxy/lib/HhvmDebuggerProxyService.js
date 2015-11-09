@@ -9,8 +9,9 @@
  * the root directory of this source tree.
  */
 
-
-const {log, logInfo, setLogLevel} = require('./utils');
+import {log, logInfo, setLogLevel} from './utils';
+import {launchPhpScriptWithXDebugEnabled} from './helpers';
+import {setRootDirectoryUri} from './ConnectionUtils';
 import {Observable, Subject} from 'rx';
 
 // Connection states
@@ -64,6 +65,7 @@ export class HhvmDebuggerProxyService {
   async attach(config: ConnectionConfig): Promise<string> {
     logInfo('Connecting config: ' + JSON.stringify(config));
 
+    await setRootDirectoryUri(config.targetUri);
     setLogLevel(config.logLevel);
     this._setState(CONNECTING);
 
@@ -80,27 +82,8 @@ export class HhvmDebuggerProxyService {
   }
 
   async launchScript(scriptPath: string): Promise<string> {
-    logInfo('launchScript: ' + scriptPath);
-    var child_process = require('child_process');
-    var args = ['-c', 'xdebug.ini', scriptPath];
-    // TODO[jeffreytan]: make hhvm path configurable so that it will
-    // work for non-FB environment.
-    var proc = child_process.spawn('/usr/local/hphpi/bin/hhvm', args);
-
-    proc.stdout.on('data', chunk => {
-      // stdout should hopefully be set to line-buffering, in which case the
-      // string would come on one line.
-      var block: string = chunk.toString();
-      var output = `child_process stdout: ${block}`;
-      log(output);
-    });
-    proc.on('error', err => {
-      log('child_process error: ' + err);
-    });
-    proc.on('exit', code => {
-      log('child_process exit: ' + code);
-    });
-
+    log('launchScript: ' + scriptPath);
+    launchPhpScriptWithXDebugEnabled(scriptPath);
     return 'Script launched';
   }
 

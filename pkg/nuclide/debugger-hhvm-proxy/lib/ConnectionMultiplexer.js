@@ -12,6 +12,8 @@
 import {log, logError} from './utils';
 import {Connection} from './Connection';
 import {
+  isDummyConnection,
+  sendDummyRequest,
   isCorrectConnection,
   failConnection,
 } from './ConnectionUtils';
@@ -36,6 +38,7 @@ import {
   COMMAND_RUN,
 } from './DbgpSocket';
 import {EventEmitter} from 'events';
+import {ChildProcess} from 'child_process';
 
 const CONNECTION_MUX_STATUS_EVENT = 'connection-mux-status';
 const CONNECTION_ERROR_EVENT = 'connection-error';
@@ -81,15 +84,20 @@ export class ConnectionMultiplexer {
   _emitter: EventEmitter;
   _status: string;
   _enabledConnection: ?Connection;
+  _dummyConnection: ?Connection;
   _connections: Map<Connection, ConnectionInfo>;
   _connector: ?DbgpConnector;
+  _dummyRequestProcess: ?ChildProcess;
 
   constructor(config: ConnectionConfig) {
     this._config = config;
     this._status = STATUS_STARTING;
     this._emitter = new EventEmitter();
     this._enabledConnection = null;
+    this._dummyConnection = null;
     this._connections = new Map();
+    this._connector = null;
+    this._dummyRequestProcess = null;
 
     this._breakpointStore = new BreakpointStore();
   }
@@ -113,6 +121,22 @@ export class ConnectionMultiplexer {
     this._status = STATUS_RUNNING;
 
     connector.listen();
+
+    this._dummyRequestProcess = sendDummyRequest();
+  }
+
+  async _handleDummyConnection(socket: Socket): Promise<void> {
+    log('ConnectionMultiplexer successfully got dummy connection.');
+    const dummyConnection = new Connection(socket);
+    // Continue from loader breakpoint to hit xdebug_break()
+    // which will load whole www repo for evaluation if possible.
+    await dummyConnection.sendContinuationCommand(COMMAND_RUN);
+    this._dummyConnection = dummyConnection;
+  }
+
+  // For testing purpose.
+  getDummyConnection(): ?Connection {
+    return this._dummyConnection;
   }
 
   async _onAttach(params: {socket: Socket, message: Object}): Promise {
@@ -122,26 +146,30 @@ export class ConnectionMultiplexer {
       return;
     }
 
-    const connection = new Connection(socket);
-    this._breakpointStore.addConnection(connection);
+    if (isDummyConnection(message)) {
+      this._handleDummyConnection(socket);
+    } else {
+      const connection = new Connection(socket);
+      this._breakpointStore.addConnection(connection);
 
-    const info = {
-      connection,
-      onStatusDisposable: connection.onStatus(status => {
-        this._connectionOnStatus(connection, status);
-      }),
-      status: STATUS_STARTING,
-    };
-    this._connections.set(connection, info);
+      const info = {
+        connection,
+        onStatusDisposable: connection.onStatus(status => {
+          this._connectionOnStatus(connection, status);
+        }),
+        status: STATUS_STARTING,
+      };
+      this._connections.set(connection, info);
 
-    let status;
-    try {
-      status = await connection.getStatus();
-    } catch (e) {
-      logError('Error getting initial connection status: ' + e.message);
-      status = STATUS_ERROR;
+      let status;
+      try {
+        status = await connection.getStatus();
+      } catch (e) {
+        logError('Error getting initial connection status: ' + e.message);
+        status = STATUS_ERROR;
+      }
+      this._connectionOnStatus(connection, status);
     }
-    this._connectionOnStatus(connection, status);
   }
 
   _connectionOnStatus(connection: Connection, status: string): void {
@@ -222,6 +250,17 @@ export class ConnectionMultiplexer {
     this._emitter.emit(CONNECTION_MUX_STATUS_EVENT, status);
   }
 
+  runtimeEvaluate(expression: string): Promise<Object> {
+    log(`runtimeEvaluate() on dummy connection for: ${expression}`);
+    if (this._dummyConnection) {
+      // Global runtime evaluation on dummy connection does not care about
+      // which frame it is being evaluated on so choose top frame here.
+      return this._dummyConnection.evaluateOnCallFrame(0, expression);
+    } else {
+      throw this._noConnectionError();
+    }
+  }
+
   evaluateOnCallFrame(frameIndex: number, expression: string): Promise<Object> {
     if (this._enabledConnection) {
       return this._enabledConnection.evaluateOnCallFrame(frameIndex, expression);
@@ -280,8 +319,10 @@ export class ConnectionMultiplexer {
   }
 
   getProperties(remoteId: RemoteObjectId): Promise<Array<PropertyDescriptor>> {
-    if (this._enabledConnection) {
+    if (this._enabledConnection && this._status === STATUS_BREAK) {
       return this._enabledConnection.getProperties(remoteId);
+    } else if (this._dummyConnection) {
+      return this._dummyConnection.getProperties(remoteId);
     } else {
       throw this._noConnectionError();
     }
@@ -290,6 +331,9 @@ export class ConnectionMultiplexer {
   dispose(): void {
     for (const connection of this._connections.keys()) {
       this._removeConnection(connection);
+    }
+    if (this._dummyRequestProcess) {
+      this._dummyRequestProcess.kill('SIGKILL');
     }
     this._disposeConnector();
   }

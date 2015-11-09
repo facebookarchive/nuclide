@@ -22,16 +22,22 @@ import {
 
 describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
   let socket: any;
-  let connectionCount;
-  let connections;
-  let connectionSpys;
-  let onDbgpConnectorAttach;
-  let onDbgpConnectorClose;
-  let onDbgpConnectorError;
-  let onStatus;
+  let connectionCount = 0;
+  let connections: any;
+  let connectionSpys: any;
+  let onDbgpConnectorAttach: any;
+  let onDbgpConnectorClose: any;
+  let onDbgpConnectorError: any;
+  let BreakpointStore: any;
+  let breakpointStore: any;
+  let DbgpConnector: any;
+  let connector: any;
+  let Connection: any;
+  let onStatus: any;
   let haveStatusThrow;
   let connectionMultiplexer: any;
   let isCorrectConnectionResult;
+  let isDummyConnectionResult;
   let ConnectionUtils: any;
 
   const config = {
@@ -72,9 +78,10 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
     connectionSpys = [];
     connections = [];
     function createConnectionSpy() {
-      var result = {};
-      var connection = jasmine.createSpyObj('connection' + connectionCount, [
+      const result = {};
+      const connection = jasmine.createSpyObj('connection' + connectionCount, [
         'onStatus',
+        'runtimeEvaluate',
         'evaluateOnCallFrame',
         'getProperties',
         'getScopesForFrame',
@@ -86,7 +93,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
         'sendBreakCommand',
         'dispose',
       ]);
-      var id = connectionCount;
+      const id = connectionCount;
       connection.getId = () => id;
 
       if (haveStatusThrow) {
@@ -97,7 +104,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
         connection.getStatus = jasmine.createSpy('getStatus').andReturn(STATUS_STARTING);
       }
 
-      var statusDispose = jasmine.createSpy('connection.onStatus.dispose' + connectionCount);
+      const statusDispose = jasmine.createSpy('connection.onStatus.dispose' + connectionCount);
       connection.onStatus = jasmine.createSpy('onStatus').andCallFake(callback => {
         result.onStatus = callback;
         return {dispose: statusDispose};
@@ -131,9 +138,15 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
     isCorrectConnectionResult = true;
     const isCorrectConnection = spyOn(require('../lib/ConnectionUtils'), 'isCorrectConnection')
       .andCallFake(() => isCorrectConnectionResult);
+    isDummyConnectionResult = false;
+    const isDummyConnection = spyOn(require('../lib/ConnectionUtils'), 'isDummyConnection')
+      .andCallFake(() => isDummyConnectionResult);
+    const sendDummyRequest = spyOn(require('../lib/ConnectionUtils'), 'sendDummyRequest');
     const failConnection = spyOn(require('../lib/ConnectionUtils'), 'failConnection');
     ConnectionUtils = {
       isCorrectConnection,
+      isDummyConnection,
+      sendDummyRequest,
       failConnection,
     };
 
@@ -146,6 +159,8 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
   afterEach(() => {
     config.idekeyRegex = null;
     config.scriptRegex = null;
+    unspy(require('../lib/ConnectionUtils'), 'sendDummyRequest');
+    unspy(require('../lib/ConnectionUtils'), 'isDummyConnection');
     unspy(require('../lib/ConnectionUtils'), 'isCorrectConnection');
     unspy(require('../lib/ConnectionUtils'), 'failConnection');
     unspy(require('../lib/DbgpConnector'), 'DbgpConnector');
@@ -159,6 +174,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
     expect(connector.onAttach).toHaveBeenCalledWith(onDbgpConnectorAttach);
     expect(connector.onClose).toHaveBeenCalledWith(onDbgpConnectorClose);
     expect(connectionMultiplexer.getStatus()).toBe(STATUS_RUNNING);
+    expect(ConnectionUtils.sendDummyRequest).toHaveBeenCalled();
   }
 
   function expectDetached(connectionIndex): void {
@@ -198,7 +214,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
     waitsForPromise(doAttach);
   });
 
-  var enabledIndex = 0;
+  let enabledIndex = 0;
   function expectEnabled(connectionIndex): void {
     expect(connectionMultiplexer.getStatus()).toBe(STATUS_BREAK);
     connectionMultiplexer.getProperties(enabledIndex);
@@ -276,6 +292,24 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
       });
       expect(connectionCount).toBe(1);
       expect(ConnectionUtils.failConnection).toHaveBeenCalled();
+    });
+  });
+
+  it('attach - dummy connection', () => {
+    waitsForPromise(async () => {
+      isDummyConnectionResult = true;
+
+      connectionMultiplexer.listen();
+      expectListen();
+
+      expect(connectionCount).toBe(0);
+      expect(connectionMultiplexer.getDummyConnection()).toBeNull();
+      await onDbgpConnectorAttach({
+        socket,
+        message: 'dummy connection',
+      });
+      expect(connectionCount).toBe(1);
+      expect(connectionMultiplexer.getDummyConnection()).not.toBeNull();
     });
   });
 
@@ -583,6 +617,29 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
     });
   });
 
+  it('runtimeEvaluate', () => {
+    waitsForPromise(async () => {
+      await doEnable();
+
+      const expression = 'runtime expression';
+      expect(() => {
+        connectionMultiplexer.runtimeEvaluate(expression);
+      }).toThrow();
+
+      isDummyConnectionResult = true;
+      await onDbgpConnectorAttach({
+        socket,
+        message: 'dummy connection',
+      });
+
+      const dummyConnection = connectionMultiplexer.getDummyConnection();
+      expect(dummyConnection).not.toBeNull();
+
+      connectionMultiplexer.runtimeEvaluate(expression);
+      expect(dummyConnection.evaluateOnCallFrame).toHaveBeenCalledWith(0, expression);
+    });
+  });
+
   it('evaluateOnCallFrame', () => {
     waitsForPromise(async () => {
       await doEnable();
@@ -680,11 +737,11 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
 
   it('onConnectionError', () => {
     waitsForPromise(async () => {
-      let onConnectionError = jasmine.createSpy('onConnectionError');
+      const onConnectionError = jasmine.createSpy('onConnectionError');
       connectionMultiplexer.listen();
       connectionMultiplexer.onConnectionError(onConnectionError);
 
-      let errorMessage = 'error message';
+      const errorMessage = 'error message';
       onDbgpConnectorError(errorMessage);
 
       expect(onConnectionError).toHaveBeenCalledWith(errorMessage);

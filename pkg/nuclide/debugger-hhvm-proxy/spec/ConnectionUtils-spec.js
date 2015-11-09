@@ -11,6 +11,8 @@
 
 import {
   isCorrectConnection,
+  isDummyConnection,
+  setRootDirectoryUri,
 } from '../lib/ConnectionUtils';
 import {makeDbgpMessage} from '../lib/helpers';
 import {getDbgpMessageHandlerInstance} from '../lib/DbgpMessageHandler';
@@ -59,6 +61,28 @@ const payload2 =
   </copyright>
 </init>`;
 
+const dummyPayload =
+`<init
+  xmlns="urn:debugger_protocol_v1"
+  xmlns:xdebug="http://xdebug.org/dbgp/xdebug"
+  fileuri="file://foo/scripts/xdebug_includes.php"
+  language="PHP"
+  protocol_version="1.0"
+  appid="2"
+  idekey="dummy_user">
+
+  <engine version=""><![CDATA[xdebug]]></engine>
+  <author>
+    <![CDATA[HHVM]]>
+  </author>
+  <url>
+    <![CDATA[http://hhvm.com/]]>
+  </url>
+  <copyright>
+    <![CDATA[Copyright (c) 2002-2013 by Derick Rethans]]>
+  </copyright>
+</init>`;
+
 function convertMessageIntoJson(payload: string): Object {
   return getDbgpMessageHandlerInstance().parseMessages(makeDbgpMessage(payload))[0];
 }
@@ -93,6 +117,28 @@ describe('debugger-hhvm-proxy ConnectionUtils', () => {
       const message = convertMessageIntoJson(payload2);
       const result = isCorrectConnection(config, message);
       expect(result).toBe(true);
+    });
+  });
+
+  describe('isDummyConnection', () => {
+    beforeEach(async () => {
+      await setRootDirectoryUri('foo');
+    });
+
+    it('false', () => {
+      waitsForPromise(async () => {
+        const message = convertMessageIntoJson(payload1);
+        const result = isDummyConnection(message);
+        expect(result).toBe(false);
+      });
+    });
+
+    it('true', () => {
+      waitsForPromise(async () => {
+        const message = convertMessageIntoJson(dummyPayload);
+        const result = isDummyConnection(message);
+        expect(result).toBe(true);
+      });
     });
   });
 });

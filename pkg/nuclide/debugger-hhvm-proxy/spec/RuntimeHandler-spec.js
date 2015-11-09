@@ -10,16 +10,19 @@
  */
 
 
-var {RuntimeHandler} = require('../lib/RuntimeHandler');
+const {RuntimeHandler} = require('../lib/RuntimeHandler');
 
 describe('debugger-hhvm-proxy RuntimeHandler', () => {
-  let chromeCallback;
+  let chromeCallback: any;
   let notificationCallback;
-  let connectionMultiplexer;
-  let handler;
+  let connectionMultiplexer: any;
+  let handler: any;
 
   beforeEach(() => {
-    connectionMultiplexer = jasmine.createSpyObj('connectionMultiplexer', ['getProperties']);
+    connectionMultiplexer = jasmine.createSpyObj('connectionMultiplexer', [
+      'getProperties',
+      'runtimeEvaluate',
+    ]);
     chromeCallback = jasmine.createSpyObj(
       'chromeCallback',
       ['replyToCommand', 'replyWithError', 'sendMethod']
@@ -49,16 +52,36 @@ describe('debugger-hhvm-proxy RuntimeHandler', () => {
       connectionMultiplexer.getProperties = jasmine.createSpy('getProperties').
         andReturn(Promise.resolve('the-result'));
 
-      var objectId = 'object-id';
-      var ownProperties = false;
-      var generatePreview = false;
-      var accessorPropertiesOnly = false;
+      const objectId = 'object-id';
+      const ownProperties = false;
+      const generatePreview = false;
+      const accessorPropertiesOnly = false;
       await handler.handleMethod(1, 'getProperties',
         {objectId, ownProperties, accessorPropertiesOnly, generatePreview});
       expect(connectionMultiplexer.getProperties).toHaveBeenCalledWith(objectId);
       expect(chromeCallback.replyToCommand).toHaveBeenCalledWith(
         1,
         {result: 'the-result'}, undefined
+      );
+    });
+  });
+
+  it('evaluate', () => {
+    waitsForPromise(async () => {
+      connectionMultiplexer.runtimeEvaluate = jasmine.createSpy('runtimeEvaluate').
+        andReturn(Promise.resolve('the-result'));
+
+      const expression = 'evaluate-expression';
+      await handler.handleMethod(
+        1,
+        'evaluate',
+        {expression}
+      );
+      expect(connectionMultiplexer.runtimeEvaluate).toHaveBeenCalledWith(expression);
+      expect(chromeCallback.replyToCommand).toHaveBeenCalledWith(
+        1,
+        'the-result',
+        undefined
       );
     });
   });

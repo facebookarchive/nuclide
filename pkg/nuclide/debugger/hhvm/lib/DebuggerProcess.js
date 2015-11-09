@@ -60,7 +60,8 @@ class DebuggerProcess {
       this._handleServerEnd.bind(this)
     ));
 
-    var config = atom.config.get('nuclide-debugger-hhvm');
+    const config = atom.config.get('nuclide-debugger-hhvm');
+    config.targetUri = remoteUri.getPath(this._remoteDirectoryUri);
     logInfo('Connection config: ' + JSON.stringify(config));
 
     if (!isValidRegex(config.scriptRegex)) {

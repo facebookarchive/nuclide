@@ -41,6 +41,10 @@ export class RuntimeHandler extends Handler {
         await this._getProperties(id, params);
         break;
 
+      case 'evaluate':
+        await this._evaluate(id, params);
+        break;
+
       default:
         this.unknownMethod(id, method, params);
         break;
@@ -63,8 +67,8 @@ export class RuntimeHandler extends Handler {
     // params also has properties:
     //    ownProperties
     //    generatePreview
-    var {objectId, accessorPropertiesOnly} = params;
-    var result;
+    const {objectId, accessorPropertiesOnly} = params;
+    let result;
     if (!accessorPropertiesOnly) {
       result = await this._connectionMultiplexer.getProperties(objectId);
     } else {
@@ -72,5 +76,10 @@ export class RuntimeHandler extends Handler {
       result = [];
     }
     this.replyToCommand(id, {result});
+  }
+
+  async _evaluate(id: number, params: Object): Promise {
+    const result = await this._connectionMultiplexer.runtimeEvaluate(params.expression);
+    this.replyToCommand(id, result);
   }
 }

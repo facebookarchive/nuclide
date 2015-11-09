@@ -48,6 +48,7 @@ describe('debugger-hhvm-proxy proxy', () => {
       pid: null,
       idekeyRegex: null,
       scriptRegex: null,
+      targetUri: '/tmp/foo.php',
     };
 
     waitsForPromise(async () => {

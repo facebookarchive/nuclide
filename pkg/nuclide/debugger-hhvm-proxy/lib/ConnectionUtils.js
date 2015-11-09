@@ -9,10 +9,42 @@
  * the root directory of this source tree.
  */
 import {log, logError} from './utils';
-import {uriToPath} from './helpers';
+import {launchPhpScriptWithXDebugEnabled, uriToPath} from './helpers';
+import {fsPromise, findNearestFile} from 'nuclide-commons';
 
 import type {Socket} from 'net';
 import type {ConnectionConfig} from './DbgpConnector';
+
+let dummyRequestFilePath = 'php_only_xdebug_request.php';
+
+async function getHackRoot(filePath: string): Promise<?string> {
+  return await findNearestFile('.hhconfig', filePath);
+}
+
+export async function setRootDirectoryUri(directoryUri: string): Promise {
+  const hackRootDirectory = await getHackRoot(directoryUri);
+  log(`setRootDirectoryUri: from ${directoryUri} to ${hackRootDirectory}`);
+  const path = require('path');
+  // TODO: make xdebug_includes.php path configurable from hhconfig.
+  const hackDummyRequestFilePath = path.join(
+    (hackRootDirectory ? hackRootDirectory : ''),
+    '/scripts/xdebug_includes.php'
+  );
+
+  // Use hackDummyRequestFilePath if possible.
+  if (await fsPromise.exists(hackDummyRequestFilePath)) {
+    dummyRequestFilePath = hackDummyRequestFilePath;
+  }
+}
+
+export function sendDummyRequest(): ChildProcess {
+  return launchPhpScriptWithXDebugEnabled(dummyRequestFilePath);
+}
+
+export function isDummyConnection(message: Object): boolean {
+  const attributes = message.init.$;
+  return attributes.fileuri.endsWith(dummyRequestFilePath);
+}
 
 export function failConnection(socket: Socket, errorMessage: string): void {
   log(errorMessage);

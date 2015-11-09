@@ -13,6 +13,7 @@ export type ConnectionConfig = {
   idekeyRegex?: string;
   endDebugWhenNoRequests: boolean;
   logLevel: string;
+  targetUri: string;
 };
 
 export type NotificationMessage = {
