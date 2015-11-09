@@ -9,13 +9,9 @@
  * the root directory of this source tree.
  */
 
-import {sep as DEFAULT_PATH_SEPARATOR} from 'path';
+import {basename} from 'path';
 
 import type {QueryScore} from './QueryScore';
-
-function isAlphanumeric(character): boolean {
-  return /[\w]/.test(character);
-}
 
 const NON_UPPERCASE_CHARS_REGEXP = /[^a-z0-9]/g;
 /**
@@ -107,154 +103,84 @@ export let __test__ = {
 };
 
 export default class QueryItem {
-  _lastPathSeparatorIndex: number;
-  _skipLocations: Array<number>;
-  _string: string;
-  _uppercaseString: string;
+  _filepath: string;
+  _filepathLowercase: string;
+  _filename: string;
+  _importantCharacters: Set<string>;
 
-  constructor(string: string, pathSeparator: ?string = DEFAULT_PATH_SEPARATOR) {
-    // If the thing we're querying is a path, assume the filename from the path is more important.
-    this._lastPathSeparatorIndex = pathSeparator == null ? -1 : string.lastIndexOf(pathSeparator);
-    this._string = string;
-    this._uppercaseString = string.toUpperCase();
-
-    /*
-     * Caches locations in the string that should yield higher scores if a match overlaps with them.
-     *
-     * Specifically:
-     *   1. Uppercase characters
-     *   2. Characters following a non-alphanumeric character (path separators/dashes/spaces)
-     */
-    this._skipLocations = [];
-    for (let i = this._lastPathSeparatorIndex + 1; i < string.length; i++) {
-      const char = string.charAt(i);
-      const isUppercase = (char === this._uppercaseString.charAt(i));
-      if (isUppercase || (isAlphanumeric(char) && !isAlphanumeric(string.charAt(i - 1)))) {
-        this._skipLocations.push(i);
-      }
-    }
+  constructor(filepath: string) {
+    this._filepath = filepath;
+    this._filepathLowercase = filepath.toLowerCase();
+    this._filename = basename(this._filepathLowercase);
+    this._importantCharacters = importantCharactersForString(this._filename);
   }
 
   /**
    * Scores this object's string against the query given.
    *
-   * Essentally a quick interpretation of:
-   * https://github.com/makoConstruct/CleverMatcher
-   *
-   * The main (minor) changes are adjustments preferring clustered letters,
-   * preferring characters appearing in filenames, and making the code less insane to read.
-   *
-   * No attempt was made to move away from cargo-culting Sublime's
-   * nonsense score values or be smarter about recovering in skipMatch.
-   *
-   * Returns `null` on no match.
+   * To search:
+   * a.) Cut the first letter off the query
+   * b.) Lookup the list of terms which contain that letter (we indexed it earlier)
+   * c.) Compare our query against each term in that list
+   * d.) If our query is a common subsequence of one of the terms, add it to the results list
+   * e.) While we compare our query, we keep track of a score:
+   *     i.) The more gaps there are between matching characters, the higher the score
+   *     ii.) The more letters which are the incorrect case, the higher the score
+   *     iii.) Direct matches have a score of 0.
+   *     iv.) The later we find out that we've matched, the higher the score
+   *     v.) Longer terms have higher scores
+   *     - The more your query is spreads out across the result,
+   *       the less likely it is what you're looking for.
+   *     - The shorter the result, the closer the length is to what you searched for,
+   *       so it's more likely.
+   *     - The earlier we find the match, the more likely it is to be what you're looking for.
+   *     - The more cases of the characters that match, the more likely it is to be what you want.
+   * f.) Sort the results by the score
    */
   score(query: string): ?QueryScore {
-    const uppercaseQuery = query.toUpperCase();
-    const matches =
-      this._findSkipMatches(uppercaseQuery) || this._findSubstringMatches(uppercaseQuery);
+    const score = this._getScoreFor(query);
+    return score == null ? null : {score, value: this._filepath, matchIndexes: []};
+  }
 
-    if (matches == null || matches[matches.length - 1] < this._lastPathSeparatorIndex) {
+  _getScoreFor(query: string): ?number {
+    // Purely defensive, as query is guaranteed to be non-empty.
+    if (query.length === 0) {
       return null;
     }
-
-    let score = 1;
-    let lastMatch = -1;
-    for (let i = 0; i < matches.length; i++) {
-      const match = matches[i];
-
-      let matchScore = 0;
-      const skipLocation = this._skipLocations.indexOf(match);
-      if (skipLocation !== -1) {
-        if (skipLocation === 0) {
-          matchScore += 22;
-        } else {
-          matchScore += 15;
-        }
+    // Check if this a "possible result".
+    // TODO consider building a directory-level index from important_character -> QueryItem,
+    // akin to FBIDE's implementation.
+    const firstChar = query[0].toLowerCase();
+    if (!this._importantCharacters.has(firstChar)) {
+      return null;
+    }
+    if (query.length >= 3 && checkIfMatchesCamelCaseLetters(query, this._filename)) {
+      // If we match the uppercase characters of the filename, we should be ranked the highest
+      return 0;
+    } else {
+      const sub = this._filepathLowercase.indexOf(query.toLowerCase());
+      if (sub !== -1 && query.length < this._filename.length) {
+        /**
+         * We add the length of the term so we can be ranked alongside the
+         * scores generated by `scoreCommonSubsequence` which also factors in the
+         * length.
+         * This way when you search for `EdisonController`,
+         * EdisonController scores 0
+         * EdixxsonController scores 40 (from `scoreCommonSubsequence` scoring)
+         * SomethingBlahBlahEdisonController scores 50 from substring scoring
+         * WebDecisionController scores 52 (from `scoreCommonSubsequence` scoring)
+         */
+        return sub + this._filename.length;
       } else {
-        matchScore = 1;
-      }
-
-      // Apply a bonus based on how close this match was to the last match.
-      matchScore += 15 / (match - lastMatch);
-
-      if (match > this._lastPathSeparatorIndex) {
-        matchScore *= 2;
-      }
-
-      score += matchScore;
-      lastMatch = match;
-    }
-
-    return {score, value: this._string, matchIndexes: matches};
-  }
-
-  /**
-   * Attempts to match using _skipLocations as a shortcut to quickly
-   * match locations in the string that should score well.
-   *
-   * Currently fails if it ever doesn't find a match after skipping and makes no attempt to recover.
-   *
-   * Returns the indexes of each charater matched in the string.
-   */
-  _findSkipMatches(query: string): ?Array<number> {
-    const matches = [];
-    let lastHit = -1;
-
-    /*
-     * This seems like an ideal place for a for..of loop.  -It is not-, because
-     * V8 will bail on optimizing this code, making its performace excruciating.
-     */
-    for (let i = 0; i < query.length; i++) {
-      const queryChar = query.charAt(i);
-      let foundSkip = false;
-      for (let j = 0; j < this._skipLocations.length; j++) {
-        const skipLocation = this._skipLocations[j];
-        if (skipLocation > lastHit && this._uppercaseString.charAt(skipLocation) === queryChar) {
-          matches.push(skipLocation);
-          lastHit = skipLocation;
-          foundSkip = true;
-          break;
+        // TODO(jxg): Investigate extending scoreCommonSubsequence to consider subsequences
+        // bidirectionally, or use (some proxy for) edit distance.
+        const score = scoreCommonSubsequence(query, this._filename);
+        if (score !== -1) {
+          return score;
         }
       }
-
-      if (foundSkip === false) {
-        const startIndex = Math.max(lastHit + 1, this._lastPathSeparatorIndex);
-        lastHit = this._uppercaseString.indexOf(queryChar, startIndex);
-        if (lastHit === -1) {
-          return null;
-        }
-        matches.push(lastHit);
-      }
     }
-
-    return matches;
+    return null;
   }
 
-  /**
-   * Dumb matching that just checks that all characters are present in the string.
-   *
-   * Goes in reverse to attempt to get as many characters in the filename as possible.
-   *
-   * Returns the indexes of each charater matched in the string.
-   */
-  _findSubstringMatches(query: string): ?Array<number> {
-    const matches = new Array(query.length);
-    let lastHit = this._uppercaseString.length;
-
-    /*
-     * This seems like an ideal place for a for..of loop.  -It is not-, because
-     * V8 will bail on optimizing this code, making its performace excruciating.
-     */
-    for (let i = query.length - 1; i >= 0; i--) {
-      const queryChar = query.charAt(i);
-      lastHit = this._uppercaseString.lastIndexOf(queryChar, lastHit - 1);
-      if (lastHit === -1) {
-        return null;
-      }
-      matches[i] = lastHit;
-    }
-
-    return matches;
-  }
 }

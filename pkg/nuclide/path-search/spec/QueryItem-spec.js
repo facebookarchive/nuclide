@@ -16,11 +16,8 @@ describe('QueryItem', () => {
   describe('"Hello"', () => {
     const item = new QueryItem('Hello');
 
-    it('should return a score of 1 on no query', () => {
-      const score = item.score('');
-      invariant(score);
-      expect(score.score).toBe(1);
-      expect(score.matchIndexes).toEqual([]);
+    it('should return null for empty queries', () => {
+      expect(item.score('')).toBe(null);
     });
 
     it('should return null on no match', () => {
@@ -46,15 +43,16 @@ describe('QueryItem', () => {
       invariant(score1);
       invariant(score2);
       invariant(score3);
-      expect(score1.score).toBeGreaterThan(score2.score);
-      expect(score2.score).toBeGreaterThan(score3.score);
+      expect(score1.score).toBeLessThan(score2.score);
+      expect(score2.score).toBeLessThan(score3.score);
     });
   });
 
   describe('Path Separator', () => {
     const item = new QueryItem('He/y/Hello', '/');
 
-    it('should prefer matches after the last path separator', () => {
+    // TODO match indices not yet implemented. These are not provided by the FBIDE algorithm.
+    xit('should prefer matches after the last path separator', () => {
       const score = item.score('h');
       invariant(score);
       expect(score.matchIndexes).toEqual([5]);
@@ -64,13 +62,14 @@ describe('QueryItem', () => {
       expect(item.score('hey')).toBe(null);
     });
 
-    it('should still be able to match characters before the separator', () => {
-      expect(item.score('heyh')).not.toBe(null);
+    it('should not be able to match characters before the separator', () => {
+      expect(item.score('heyh')).toBe(null);
     });
   });
 
   describe('Misc', () => {
-    it('should prefer matches with an initialism', () => {
+    // TODO match indices not yet implemented. These are not provided by the FBIDE algorithm.
+    xit('should prefer matches with an initialism', () => {
       const item = new QueryItem('AbBa');
       const score = item.score('ab');
       invariant(score);
