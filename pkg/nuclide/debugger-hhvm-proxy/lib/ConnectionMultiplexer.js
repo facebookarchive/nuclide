@@ -39,9 +39,9 @@ import {
 } from './DbgpSocket';
 import {EventEmitter} from 'events';
 import {ChildProcess} from 'child_process';
+import {ClientCallback} from './ClientCallback';
 
 const CONNECTION_MUX_STATUS_EVENT = 'connection-mux-status';
-const CONNECTION_ERROR_EVENT = 'connection-error';
 
 type ConnectionInfo = {
   connection: Connection;
@@ -80,6 +80,7 @@ type ConnectionInfo = {
 // close if HHVM crashes or is stopped.
 export class ConnectionMultiplexer {
   _config: ConnectionConfig;
+  _clientCallback: ClientCallback;
   _breakpointStore: BreakpointStore;
   _emitter: EventEmitter;
   _status: string;
@@ -89,8 +90,9 @@ export class ConnectionMultiplexer {
   _connector: ?DbgpConnector;
   _dummyRequestProcess: ?ChildProcess;
 
-  constructor(config: ConnectionConfig) {
+  constructor(config: ConnectionConfig, clientCallback: ClientCallback) {
     this._config = config;
+    this._clientCallback = clientCallback;
     this._status = STATUS_STARTING;
     this._emitter = new EventEmitter();
     this._enabledConnection = null;
@@ -107,16 +109,11 @@ export class ConnectionMultiplexer {
       CONNECTION_MUX_STATUS_EVENT, callback);
   }
 
-  onConnectionError(callback: (status: string) => mixed): Disposable {
-    return require('nuclide-commons').event.attachEvent(this._emitter,
-      CONNECTION_ERROR_EVENT, callback);
-  }
-
   listen(): void {
     const connector = new DbgpConnector(this._config);
     connector.onAttach(this._onAttach.bind(this));
     connector.onClose(this._disposeConnector.bind(this));
-    connector.onError(this._emitConnectionError.bind(this));
+    connector.onError(this._handleAttachError.bind(this));
     this._connector = connector;
     this._status = STATUS_RUNNING;
 
@@ -242,8 +239,11 @@ export class ConnectionMultiplexer {
     }
   }
 
-  _emitConnectionError(error: string): void {
-    this._emitter.emit(CONNECTION_ERROR_EVENT, error);
+  _handleAttachError(error: string): void {
+    this._clientCallback.sendUserMessage('notification', {
+      type: 'error',
+      message: error,
+    });
   }
 
   _emitStatus(status: string): void {

@@ -38,7 +38,7 @@ export class MessageTranslator {
     clientCallback: ClientCallback,
   ) {
     this._isDisposed = false;
-    this._connectionMultiplexer = new ConnectionMultiplexer(config);
+    this._connectionMultiplexer = new ConnectionMultiplexer(config, clientCallback);
     this._handlers = new Map();
     this._clientCallback = clientCallback;
     this._debuggerHandler = new DebuggerHandler(

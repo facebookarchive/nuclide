@@ -39,6 +39,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
   let isCorrectConnectionResult;
   let isDummyConnectionResult;
   let ConnectionUtils: any;
+  let clientCallback: any;
 
   const config = {
     xdebugPort: 9000,
@@ -150,9 +151,13 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
       failConnection,
     };
 
+    clientCallback = jasmine.createSpyObj('clientCallback', [
+      'sendUserMessage',
+    ]);
+
     const {ConnectionMultiplexer} =
       uncachedRequire(require, '../lib/ConnectionMultiplexer');
-    connectionMultiplexer = new ConnectionMultiplexer(config);
+    connectionMultiplexer = new ConnectionMultiplexer(config, clientCallback);
     connectionMultiplexer.onStatus(onStatus);
   });
 
@@ -737,14 +742,15 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
 
   it('onConnectionError', () => {
     waitsForPromise(async () => {
-      const onConnectionError = jasmine.createSpy('onConnectionError');
       connectionMultiplexer.listen();
-      connectionMultiplexer.onConnectionError(onConnectionError);
 
       const errorMessage = 'error message';
       onDbgpConnectorError(errorMessage);
 
-      expect(onConnectionError).toHaveBeenCalledWith(errorMessage);
+      expect(clientCallback.sendUserMessage).toHaveBeenCalledWith('notification', {
+        type: 'error',
+        message: errorMessage,
+      });
     });
   });
 });

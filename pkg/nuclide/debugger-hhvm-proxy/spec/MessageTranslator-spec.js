@@ -46,7 +46,7 @@ describe('debugger-hhvm-proxy MessageTranslator', () => {
   });
 
   it('constructor', () => {
-    expect(ConnectionMultiplexer).toHaveBeenCalledWith(config);
+    expect(ConnectionMultiplexer).toHaveBeenCalledWith(config, clientCallback);
     expect(connectionMultiplexer.onStatus).toHaveBeenCalled();
   });
 

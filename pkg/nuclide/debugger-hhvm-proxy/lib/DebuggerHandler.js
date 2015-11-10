@@ -40,7 +40,6 @@ export class DebuggerHandler extends Handler {
   _files: FileCache;
   _emitter: EventEmitter;
   _statusSubscription: ?Disposable;
-  _connectionErrorDisposible: ?Disposable;
   _hadFirstContinuationCommand: boolean;
 
   constructor(
@@ -57,12 +56,6 @@ export class DebuggerHandler extends Handler {
     this._emitter = new EventEmitter();
     this._statusSubscription = this._connectionMultiplexer.onStatus(
       this._onStatusChanged.bind(this)
-    );
-    this._connectionErrorDisposible = this._connectionMultiplexer.onConnectionError(
-      error => this.sendUserMessage('notification', {
-        type: 'error',
-        message: error,
-      })
     );
   }
 
@@ -271,10 +264,6 @@ export class DebuggerHandler extends Handler {
     if (this._statusSubscription) {
       this._statusSubscription.dispose();
       this._statusSubscription = null;
-    }
-    if (this._connectionErrorDisposible) {
-      this._connectionErrorDisposible.dispose();
-      this._connectionErrorDisposible = null;
     }
     this._emitter.emit(SESSION_END_EVENT);
   }

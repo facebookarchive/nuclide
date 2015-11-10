@@ -34,7 +34,6 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
     );
     connectionMultiplexer = jasmine.createSpyObj('connectionMultiplexer', [
       'onStatus',
-      'onConnectionError',
       'listen',
       'getStatus',
       'getStackFrames',
