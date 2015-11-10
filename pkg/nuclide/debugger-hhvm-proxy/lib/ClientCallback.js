@@ -47,15 +47,18 @@ export class ClientCallback {
   }
 
   sendUserMessage(type: UserMessageType, message: Object): void {
+    log(`sendUserMessage(${type}): ${JSON.stringify(message)}`);
     if (type === 'notification') {
       this._notificationObservable.onNext({
         type: message.type,
         message: message.message,
       });
     } else if (type === 'console') {
-      // TODO
+      this.sendMethod('Console.messageAdded', {
+        message,
+      });
     } else {
-      logError('TODO');
+      logError(`Unknown UserMessageType: ${type}`);
     }
   }
 

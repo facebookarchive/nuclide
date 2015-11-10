@@ -119,6 +119,10 @@ export class ConnectionMultiplexer {
 
     connector.listen();
 
+    this._clientCallback.sendUserMessage('console', {
+      level: 'warning',
+      text: 'Pre-loading, please wait...',
+    });
     this._dummyRequestProcess = sendDummyRequest();
   }
 
@@ -129,6 +133,11 @@ export class ConnectionMultiplexer {
     // which will load whole www repo for evaluation if possible.
     await dummyConnection.sendContinuationCommand(COMMAND_RUN);
     this._dummyConnection = dummyConnection;
+
+    this._clientCallback.sendUserMessage('console', {
+      level: 'warning',
+      text: 'Pre-loading is done. You can use console window now.',
+    });
   }
 
   // For testing purpose.
