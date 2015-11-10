@@ -50,6 +50,12 @@ class _Task {
       action: 'bootstrap',
       transpiler: require.resolve('nuclide-node-transpiler'),
     });
+
+    const onExitCallback = () => child.kill();
+    process.on('exit', onExitCallback);
+    child.on('exit', () => {
+      process.removeListener('exit', onExitCallback);
+    });
   }
 
   /**
