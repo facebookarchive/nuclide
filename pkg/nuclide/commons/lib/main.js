@@ -154,6 +154,10 @@ module.exports = {
     return require('./debounce');
   },
 
+  get once() {
+    return require('./once');
+  },
+
   get vcs() {
     return require('./vcs');
   },

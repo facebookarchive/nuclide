@@ -14,11 +14,29 @@ import FileTreeStore from '../lib/FileTreeStore';
 import React from 'react-for-atom';
 import RootNodeComponent from './RootNodeComponent';
 import EmptyComponent from './EmptyComponent';
+import {track} from 'nuclide-analytics';
+import {once} from 'nuclide-commons';
 
 const {PropTypes} = React;
 
 class FileTree extends React.Component {
   _subscriptions: CompositeDisposable;
+
+  static trackFirstRender = once(instance => {
+    const rootKeysLength = instance.props.store.getRootKeys().length;
+    // Wait using `setTimeout` and not `process.nextTick` or `setImmediate`
+    // because those queue tasks in the current and next turn of the event loop
+    // respectively. Since `setTimeout` gets preempted by them, it works great
+    // for a more realistic "first render". Note: The scheduler for promises
+    // (`Promise.resolve().then`) runs on the same queue as `process.nextTick`
+    // but with a higher priority.
+    setTimeout(() => {
+      track('filetree-first-render', {
+        'time-to-render': String(process.uptime() * 1000),
+        'root-keys': String(rootKeysLength),
+      });
+    });
+  })
 
   constructor(props: Object) {
     super(props);
@@ -46,6 +64,7 @@ class FileTree extends React.Component {
         }
       })
     );
+    FileTree.trackFirstRender(this);
   }
 
   componentDidUpdate(prevProps: Object, prevState: Object): void {
