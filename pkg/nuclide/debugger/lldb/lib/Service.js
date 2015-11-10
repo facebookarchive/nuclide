@@ -12,13 +12,15 @@ import type {
   nuclide_debugger$DebuggerProcessInfo,
 } from 'nuclide-debugger-interfaces/service';
 
-var {DebuggerProcessInfo} = require('nuclide-debugger-utils');
-// import {DebuggerProcessInfo} from 'nuclide-debugger-utils';
+import {DebuggerProcessInfo} from 'nuclide-debugger-utils';
 import {Emitter} from 'atom';
+import {getLogger} from 'nuclide-logging';
 
 import child_process from 'child_process';
 import invariant from 'assert';
 import path from 'path';
+
+const logger = getLogger();
 
 class DebuggerProcess {
   _emitter: Emitter;
@@ -37,13 +39,17 @@ class DebuggerProcess {
       proc.stdout.on('data', chunk => {
         // stdout should hopefully be set to line-buffering, in which case the
         // string would come on one line.
-        var block: string = chunk.toString();
-        var result = /Port: (\d+)\n/.exec(block);
+        const block: string = chunk.toString();
+        logger.debug(`child process(${proc.pid}) stdout: ${block}`);
+        const result = /Port: (\d+)\n/.exec(block);
         if (result != null) {
           // $FlowFixMe
           proc.stdout.removeAllListeners(['data', 'error', 'exit']);
           resolve('ws=localhost:' + result[1] + '/');
         }
+      });
+      proc.stderr.on('data', chunk => {
+        logger.error(`child process(${proc.pid}) stderr: ${chunk.toString()}`);
       });
       proc.on('error', () => {
         reject('child_process error');
