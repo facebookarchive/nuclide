@@ -12,14 +12,15 @@
 import invariant from 'assert';
 import path from 'path';
 import processLib from '../lib/process.js';
+import {spawn} from 'child_process';
 
-var {
+const {
   DARWIN_PATH_HELPER_REGEXP,
 } = processLib.__test__;
 
 describe('nuclide-commons/process', () => {
 
-  var origPlatform;
+  let origPlatform;
 
   beforeEach(() => {
     origPlatform = process.platform;
@@ -63,7 +64,7 @@ describe('nuclide-commons/process', () => {
     if (origPlatform !== 'win32') {
       it('returns stdout of the running process', () => {
         waitsForPromise(async () => {
-          var val = await processLib.asyncExecute('echo', ['-n', 'foo'], {env: process.env});
+          const val = await processLib.asyncExecute('echo', ['-n', 'foo'], {env: process.env});
           expect(val.stdout).toEqual('foo');
         });
       });
@@ -83,7 +84,7 @@ describe('nuclide-commons/process', () => {
       });
       it('pipes stdout to stdin of `pipedCommand`', () => {
         waitsForPromise(async () => {
-          var val = await processLib.asyncExecute(
+          const val = await processLib.asyncExecute(
               'seq',
               ['1', '100'],
               {env: process.env, pipedCommand: 'head', pipedArgs: ['-10']});
@@ -130,7 +131,8 @@ describe('nuclide-commons/process', () => {
       });
       it('checkOutput does not throw an error if the exit code !== 0', () => {
         waitsForPromise(async () => {
-          var {exitCode} = await processLib.checkOutput(process.execPath, ['-e', 'process.exit(1)']);
+          const {exitCode} =
+              await processLib.checkOutput(process.execPath, ['-e', 'process.exit(1)']);
           expect(exitCode).toBe(1);
         });
       });
@@ -140,7 +142,7 @@ describe('nuclide-commons/process', () => {
   describe('process.safeSpawn', () => {
     it('should not crash the process on an error', () => {
       waitsForPromise(async () => {
-        var child = await processLib.safeSpawn('fakeCommand');
+        const child = await processLib.safeSpawn('fakeCommand');
         expect(child).not.toBe(null);
         expect(child.listeners('error').length).toBeGreaterThan(0);
       });
@@ -150,9 +152,57 @@ describe('nuclide-commons/process', () => {
   describe('process.scriptSafeSpawn', () => {
     it('should not crash the process on an error.', () => {
       waitsForPromise(async () => {
-        var child = await processLib.scriptSafeSpawn('fakeCommand');
+        const child = await processLib.scriptSafeSpawn('fakeCommand');
         expect(child).not.toBe(null);
         expect(child.listeners('error').length).toBeGreaterThan(0);
+      });
+    });
+  });
+
+  describe('process.observeProcessExit', () => {
+    it('exitCode', () => {
+      waitsForPromise(async () => {
+        const child = () => spawn(process.execPath, ['-e', 'process.exit(1)']);
+        const exitCode = await processLib.observeProcessExit(child).toPromise();
+        expect(exitCode).toBe(1);
+      });
+    });
+
+    it('stdout exitCode', () => {
+      waitsForPromise(async () => {
+        const child = () => spawn(process.execPath,
+          ['-e', 'console.log("stdout1\\nstdout2\\n\\n\\n"); process.exit(1);']);
+        const results = await processLib.observeProcess(child).toArray().toPromise();
+        expect(results).toEqual([
+          {kind: 'stdout', data: 'stdout1\n'},
+          {kind: 'stdout', data: 'stdout2\n'},
+          {kind: 'stdout', data: '\n'},
+          {kind: 'stdout', data: '\n'},
+          {kind: 'stdout', data: '\n'},
+          {kind: 'exit', exitCode: 1}]);
+      });
+    });
+
+    it('stderr exitCode', () => {
+      waitsForPromise(async () => {
+        const child = () => spawn(process.execPath,
+          ['-e', 'console.error("stderr"); process.exit(42);']);
+        const results = await processLib.observeProcess(child).toArray().toPromise();
+        expect(results).toEqual([{kind: 'stderr', data: 'stderr\n'},
+          {kind: 'exit', exitCode: 42}]);
+      });
+    });
+
+    it('stdout, stderr and exitCode', () => {
+      waitsForPromise(async () => {
+        const child = () => spawn(process.execPath,
+          ['-e', 'console.error("stderr"); console.log("std out"); process.exit(42);']);
+        const results = await processLib.observeProcess(child).toArray().toPromise();
+        expect(results).toEqual([
+          {kind: 'stderr', data: 'stderr\n'},
+          {kind: 'stdout', data: 'std out\n'},
+          {kind: 'exit', exitCode: 42},
+        ]);
       });
     });
   });

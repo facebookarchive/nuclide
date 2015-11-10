@@ -19,6 +19,24 @@ export type process$asyncExecuteRet = {
   stdout: string;
 };
 
+export type ProcessMessage = StdoutMessage | StderrMessage | ExitMessage | ErrorMessage;
+export type StdoutMessage = {
+  kind: 'stdout';
+  data: string;
+};
+export type StderrMessage = {
+  kind: 'stdout';
+  data: string;
+};
+export type ExitMessage = {
+  kind: 'exit';
+  exitCode: number;
+};
+export type ErrorMessage = {
+  kind: 'error';
+  error: Object;
+};
+
 module.exports = {
 
   asyncFind<T>(items: Array<T>, test: any, thisArg: any): Promise<?T> {
@@ -66,6 +84,18 @@ module.exports = {
     options?: Object = {},
   ): Observable<{stdout?: string; stderr?: string;}> {
     return require('./process').scriptSafeSpawnAndObserveOutput(command, args, options);
+  },
+
+  observeStream(process: stream$Readable): Observable<string> {
+    return require('./process').observeStream(process);
+  },
+
+  observeProcessExit(createProcess: () => child_process$ChildProcess): Observable<number> {
+    return require('./process').observeProcessExit(createProcess);
+  },
+
+  observeProcess(createProcess: () => child_process$ChildProcess): Observable<ProcessMessage> {
+    return require('./process').observeProcess(createProcess);
   },
 
   readFile(filePath: string, options?: any): Promise<string | Buffer> {

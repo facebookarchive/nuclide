@@ -106,6 +106,29 @@ function areSetsEqual(set1: Set, set2: Set): boolean {
   return true;
 }
 
+import type {Observer} from 'rx';
+
+/**
+ * Logs an observable to the console.
+ * Useful for debugging observable code.
+ * Usage:
+ *     observable = observable.do(loggingObserver('My Prefix'));
+ */
+function loggingObserver(message: string): Observer {
+  const Rx = require('rx');
+  return Rx.Observer.create(
+    value => {
+      console.log(`${message}: ${JSON.stringify(value)}`); // eslint-disable-line no-console
+    },
+    error => {
+      console.log(`Error ${message}: ${error.toString()}`); // eslint-disable-line no-console
+    },
+    () => {
+      console.log('Completed: ' + message); // eslint-disable-line no-console
+    }
+  );
+}
+
 module.exports = {
   addMatchers: require('./matchers').addMatchers,
   clearRequireCache,
@@ -117,4 +140,5 @@ module.exports = {
   uncachedRequire,
   arePropertiesEqual,
   areSetsEqual,
+  loggingObserver,
 };

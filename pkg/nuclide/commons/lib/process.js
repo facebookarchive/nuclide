@@ -17,7 +17,7 @@ import path from 'path';
 import {PromiseQueue} from './PromiseExecutors';
 
 import type {Observable as ObservableType, Observer} from 'rx';
-import type {process$asyncExecuteRet} from './main';
+import type {ProcessMessage, process$asyncExecuteRet} from './main';
 
 let platformPathPromise: ?Promise<string>;
 
@@ -232,6 +232,100 @@ function scriptSafeSpawnAndObserveOutput(
   });
 }
 
+import {Observable} from 'rx';
+
+/**
+ * Observe a stream like stdout or stderr.
+ */
+function observeStream(stream: stream$Readable): ObservableType<string> {
+  const error = Observable.fromEvent(stream, 'error').flatMap(Observable.throwError);
+  return Observable.fromEvent(stream, 'data').map(data => data.toString()).
+    merge(error).
+    takeUntil(Observable.fromEvent(stream, 'end').amb(error));
+}
+
+/**
+ * Splits a stream of strings on newlines.
+ * Includes the newlines in the resulting stream.
+ * Sends any non-newline terminated data before closing.
+ * Never sends an empty string.
+ */
+function splitStream(input: ObservableType<string>): ObservableType<string> {
+  return Observable.create(observer => {
+    let current: string = '';
+
+    function onEnd() {
+      if (current !== '') {
+        observer.onNext(current);
+        current = '';
+      }
+    }
+
+    return input.subscribe(
+      value => {
+        const lines = (current + value).split('\n');
+        current = lines.pop();
+        lines.forEach(line => observer.onNext(line + '\n'));
+      },
+      error => { onEnd(); observer.onError(error); },
+      () => { onEnd(); observer.onCompleted(); },
+    );
+  });
+}
+
+class Process {
+  process: ?child_process$ChildProcess;
+  constructor(process: child_process$ChildProcess) {
+    this.process = process;
+    Observable.fromEvent(process, 'exit').
+      take(1).
+      doOnNext(() => { this.process = null; });
+  }
+  dispose() {
+    if (this.process) {
+      this.process.kill();
+      this.process = null;
+    }
+  }
+}
+
+/**
+ * Observe the stdout, stderr and exit code of a process.
+ * stdout and stderr are split by newlines.
+ */
+function observeProcessExit(createProcess: () => child_process$ChildProcess):
+    ObservableType<number> {
+  return Observable.using(
+    () => new Process(createProcess()),
+    process => {
+      return Observable.fromEvent(process.process, 'exit').take(1);
+    });
+}
+
+/**
+ * Observe the stdout, stderr and exit code of a process.
+ */
+function observeProcess(createProcess: () => child_process$ChildProcess):
+    ObservableType<ProcessMessage> {
+  return Observable.using(
+    () => new Process(createProcess()),
+    process => {
+      // Use replay/connect on exit for the final concat.
+      // By default concat defers subscription until after the LHS completes.
+      const exit = Observable.fromEvent(process.process, 'exit').take(1).
+          map(exitCode => ({kind: 'exit', exitCode})).replay();
+      exit.connect();
+      const error = Observable.fromEvent(process.process, 'error').
+          takeUntil(exit).
+          map(errorObj => ({kind: 'error', error: errorObj}));
+      const stdout = splitStream(observeStream(process.process.stdout)).
+          map(data => ({kind: 'stdout', data}));
+      const stderr = splitStream(observeStream(process.process.stderr)).
+          map(data => ({kind: 'stderr', data}));
+      return stdout.merge(stderr).merge(error).concat(exit);
+    });
+}
+
 /**
  * Returns a promise that resolves to the result of executing a process.
  *
@@ -380,6 +474,9 @@ module.exports = {
   scriptSafeSpawn,
   scriptSafeSpawnAndObserveOutput,
   createExecEnvironment,
+  observeStream,
+  observeProcessExit,
+  observeProcess,
   COMMON_BINARY_PATHS,
   __test__: {
     DARWIN_PATH_HELPER_REGEXP,
