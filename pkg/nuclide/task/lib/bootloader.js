@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-var {EventEmitter} = require('events');
+import {EventEmitter} from 'events';
 
 export type InvokeRemoteMethodParams = {
   file: string;
@@ -31,18 +31,18 @@ class _Task {
   constructor() {
     this._id = 0;
     this._emitter = new EventEmitter();
-    var options = {silent: true}; // Needed so stdout/stderr are available.
-    var child = this._child = require('child_process')
+    const options = {silent: true}; // Needed so stdout/stderr are available.
+    const child = this._child = require('child_process')
         .fork(require('path').join(__dirname, '/bootstrap.js'), options);
     /*eslint-disable no-console*/
-    var log = buffer => console.log(`TASK(${child.pid}): ${buffer}`);
+    const log = buffer => console.log(`TASK(${child.pid}): ${buffer}`);
     /*eslint-enable no-console*/
     child.stdout.on('data', log);
     child.stderr.on('data', log);
     // The Flow error on the following line is due to a bug in Flow:
     // https://github.com/facebook/flow/issues/428.
     child.on('message', response => {
-      var id = response['id'];
+      const id = response['id'];
       this._emitter.emit(id, response);
     });
     child.on('error', log);
@@ -76,8 +76,8 @@ class _Task {
    *     instead.
    */
   invokeRemoteMethod(params: InvokeRemoteMethodParams): Promise<any> {
-    var requestId = (++this._id).toString(16);
-    var request = {
+    const requestId = (++this._id).toString(16);
+    const request = {
       id: requestId,
       action: 'request',
       file: params.file,
@@ -88,12 +88,12 @@ class _Task {
     return new Promise((resolve, reject) => {
       // Ensure the response listener is set up before the request is sent.
       this._emitter.once(requestId, response => {
-        var err = response['error'];
+        const err = response['error'];
         if (!err) {
           resolve(response['result']);
         } else {
           // Need to synthesize an Error object from its JSON representation.
-          var error = new Error();
+          const error = new Error();
           error.message = err.message;
           error.stack = err.stack;
           reject(error);
@@ -113,10 +113,6 @@ class _Task {
 
 export type Task = _Task;
 
-function createTask(): Task {
+export function createTask(): Task {
   return new _Task();
 }
-
-module.exports = {
-  createTask,
-};
