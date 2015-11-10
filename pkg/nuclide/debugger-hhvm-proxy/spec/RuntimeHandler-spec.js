@@ -13,8 +13,7 @@
 const {RuntimeHandler} = require('../lib/RuntimeHandler');
 
 describe('debugger-hhvm-proxy RuntimeHandler', () => {
-  let chromeCallback: any;
-  let notificationCallback;
+  let clientCallback: any;
   let connectionMultiplexer: any;
   let handler: any;
 
@@ -23,20 +22,16 @@ describe('debugger-hhvm-proxy RuntimeHandler', () => {
       'getProperties',
       'runtimeEvaluate',
     ]);
-    chromeCallback = jasmine.createSpyObj(
-      'chromeCallback',
+    clientCallback = jasmine.createSpyObj(
+      'clientCallback',
       ['replyToCommand', 'replyWithError', 'sendMethod']
     );
-    notificationCallback = jasmine.createSpyObj(
-      'notificationCallback',
-      ['sendInfo', 'sendWarning', 'sendError', 'sendFatalError']
-    );
-    handler = new RuntimeHandler(chromeCallback, notificationCallback, connectionMultiplexer);
+    handler = new RuntimeHandler(clientCallback, connectionMultiplexer);
   });
 
   it('enable', () => {
     handler.handleMethod(1, 'enable');
-    expect(chromeCallback.sendMethod).toHaveBeenCalledWith(
+    expect(clientCallback.sendMethod).toHaveBeenCalledWith(
       'Runtime.executionContextCreated',
       {
         'context': {
@@ -59,7 +54,7 @@ describe('debugger-hhvm-proxy RuntimeHandler', () => {
       await handler.handleMethod(1, 'getProperties',
         {objectId, ownProperties, accessorPropertiesOnly, generatePreview});
       expect(connectionMultiplexer.getProperties).toHaveBeenCalledWith(objectId);
-      expect(chromeCallback.replyToCommand).toHaveBeenCalledWith(
+      expect(clientCallback.replyToCommand).toHaveBeenCalledWith(
         1,
         {result: 'the-result'}, undefined
       );
@@ -78,7 +73,7 @@ describe('debugger-hhvm-proxy RuntimeHandler', () => {
         {expression}
       );
       expect(connectionMultiplexer.runtimeEvaluate).toHaveBeenCalledWith(expression);
-      expect(chromeCallback.replyToCommand).toHaveBeenCalledWith(
+      expect(clientCallback.replyToCommand).toHaveBeenCalledWith(
         1,
         'the-result',
         undefined
@@ -89,7 +84,7 @@ describe('debugger-hhvm-proxy RuntimeHandler', () => {
   it('unknown', () => {
     waitsForPromise(async () => {
       await handler.handleMethod(4, 'unknown');
-      expect(chromeCallback.replyWithError).toHaveBeenCalledWith(4, jasmine.any(String));
+      expect(clientCallback.replyWithError).toHaveBeenCalledWith(4, jasmine.any(String));
     });
   });
 });

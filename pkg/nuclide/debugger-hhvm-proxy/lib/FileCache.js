@@ -10,23 +10,24 @@
  */
 
 import {uriToPath} from './helpers';
+import {ClientCallback} from './ClientCallback';
 
 /**
  * Handles registering files encountered during debugging with the Chrome debugger
  */
 class FileCache {
-  _callback: ChromeCallback;
+  _callback: ClientCallback;
   _files: Map<string, File>;
 
-  constructor(callback: ChromeCallback) {
+  constructor(callback: ClientCallback) {
     this._callback = callback;
     this._files = new Map();
   }
 
   registerFile(fileUrl: string): File {
-    var filepath = uriToPath(fileUrl);
+    const filepath = uriToPath(fileUrl);
     if (!this._files.has(filepath)) {
-      var File = require('./File');
+      const File = require('./File');
       this._files.set(filepath, new File(filepath));
       this._callback.sendMethod(
         'Debugger.scriptParsed',

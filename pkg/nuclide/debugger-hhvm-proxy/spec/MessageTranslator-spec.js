@@ -10,17 +10,15 @@
  */
 
 
-var {uncachedRequire, clearRequireCache} = require('nuclide-test-helpers');
-var {MessageTranslator} = require('../lib/MessageTranslator');
+import {uncachedRequire, clearRequireCache} from 'nuclide-test-helpers';
 
 describe('debugger-hhvm-proxy MessageTranslator', () => {
-  var callback;
-  var connectionMultiplexer;
-  var ConnectionMultiplexer;
-  var translater;
-  let notificationObservable;
+  let connectionMultiplexer: any;
+  let ConnectionMultiplexer: any;
+  let translater: any;
+  let clientCallback: any;
 
-  var config = {
+  const config = {
     xdebugPort: 9000,
     pid: null,
     idekeyRegex: null,
@@ -28,20 +26,18 @@ describe('debugger-hhvm-proxy MessageTranslator', () => {
   };
 
   beforeEach(() => {
-    callback = jasmine.createSpy('callback');
     connectionMultiplexer = jasmine.createSpyObj(
       'connectionMultiplexer',
       ['dispose', 'onStatus', 'onConnectionError']
     );
     ConnectionMultiplexer = spyOn(require('../lib/ConnectionMultiplexer'), 'ConnectionMultiplexer')
       .andReturn(connectionMultiplexer);
-    notificationObservable = jasmine.createSpy(
-      'notificationObservable',
-      ['onNext', 'onError', 'onCompleted'],
+    clientCallback = jasmine.createSpyObj(
+      'clientCallback',
+      ['replyWithError', 'replyToCommand'],
     );
-
-    MessageTranslator = uncachedRequire(require, '../lib/MessageTranslator').MessageTranslator;
-    translater = new MessageTranslator(config, callback, notificationObservable);
+    const {MessageTranslator} = uncachedRequire(require, '../lib/MessageTranslator');
+    translater = new MessageTranslator(config, clientCallback);
   });
 
   afterEach(() => {
@@ -57,16 +53,16 @@ describe('debugger-hhvm-proxy MessageTranslator', () => {
   it('handleCommand', () => {
     waitsForPromise(async () => {
       await translater.handleCommand('{"id": 1, "method": "Page.enable"}');
-      expect(callback).toHaveBeenCalledWith('{"id":1,"result":{}}');
+      expect(clientCallback.replyToCommand).toHaveBeenCalledWith(1, {}, undefined);
     });
   });
 
   it('handleCommand - bad domain', () => {
     waitsForPromise(async () => {
       await translater.handleCommand('{"id": 1, "method": "foo.enable"}');
-      expect(callback).toHaveBeenCalledWith(
-        '{"id":1,"result":{},"error":' +
-        '"Unknown domain: {\\\"id\\\": 1, \\\"method\\\": \\\"foo.enable\\\"}"}'
+      expect(clientCallback.replyWithError).toHaveBeenCalledWith(
+        1,
+        'Unknown domain: {"id": 1, "method": "foo.enable"}'
       );
     });
   });

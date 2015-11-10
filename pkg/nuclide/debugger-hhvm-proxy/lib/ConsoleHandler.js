@@ -10,18 +10,15 @@
  */
 
 
-var Handler = require('./Handler');
-
-import type ChromeCallback from './ChromeCallback';
-import type {NotificationCallback} from './NotificationCallback';
+import Handler from './Handler';
+import type {ClientCallback} from './ClientCallback';
 
 // Handles all 'Console.*' Chrome dev tools messages
 class ConsoleHandler extends Handler {
   constructor(
-    chromeCallback: ChromeCallback,
-    notificationCallback: NotificationCallback
+    clientCallback: ClientCallback,
   ) {
-    super('Console', chromeCallback, notificationCallback);
+    super('Console', clientCallback);
   }
 
   async handleMethod(id: number, method: string, params: ?Object): Promise {

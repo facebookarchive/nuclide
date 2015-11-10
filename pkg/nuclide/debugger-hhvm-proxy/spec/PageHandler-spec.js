@@ -10,38 +10,33 @@
  */
 
 
-var PageHandler = require('../lib/PageHandler');
+import PageHandler from '../lib/PageHandler';
 
 describe('debugger-hhvm-proxy PageHandler', () => {
-  let chromeCallback;
-  let notificationCallback;
-  let handler;
+  let clientCallback: any;
+  let handler: any;
 
   beforeEach(() => {
-    chromeCallback = jasmine.createSpyObj(
-      'chromeCallback',
+    clientCallback = jasmine.createSpyObj(
+      'clientCallback',
       ['replyToCommand', 'replyWithError', 'sendMethod']
     );
-    notificationCallback = jasmine.createSpyObj(
-      'notificationCallback',
-      ['sendInfo', 'sendWarning', 'sendError', 'sendFatalError']
-    );
-    handler = new PageHandler(chromeCallback, notificationCallback);
+    handler = new PageHandler(clientCallback);
   });
 
   it('enable', () => {
     handler.handleMethod(1, 'enable');
-    expect(chromeCallback.replyToCommand).toHaveBeenCalledWith(1, {}, undefined);
+    expect(clientCallback.replyToCommand).toHaveBeenCalledWith(1, {}, undefined);
   });
 
   it('canScreencast', () => {
     handler.handleMethod(2, 'canScreencast');
-    expect(chromeCallback.replyToCommand).toHaveBeenCalledWith(2, {result: false}, undefined);
+    expect(clientCallback.replyToCommand).toHaveBeenCalledWith(2, {result: false}, undefined);
   });
 
   it('getResourceTree', () => {
     handler.handleMethod(3, 'getResourceTree');
-    expect(chromeCallback.replyToCommand).toHaveBeenCalledWith(3, {
+    expect(clientCallback.replyToCommand).toHaveBeenCalledWith(3, {
       'frameTree': {
         'childFrames': [],
         'resources': [],
@@ -59,6 +54,6 @@ describe('debugger-hhvm-proxy PageHandler', () => {
 
   it('unknown', () => {
     handler.handleMethod(4, 'unknown');
-    expect(chromeCallback.replyWithError).toHaveBeenCalledWith(4, jasmine.any(String));
+    expect(clientCallback.replyWithError).toHaveBeenCalledWith(4, jasmine.any(String));
   });
 });

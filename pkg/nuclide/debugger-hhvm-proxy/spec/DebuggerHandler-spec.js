@@ -10,37 +10,27 @@
  */
 
 
-var {
-  STATUS_STARTING,
+import {
   STATUS_STOPPING,
   STATUS_STOPPED,
   STATUS_RUNNING,
   STATUS_BREAK,
   STATUS_ERROR,
   STATUS_END,
-  COMMAND_RUN,
-  COMMAND_STEP_INTO,
-  COMMAND_STEP_OVER,
-  COMMAND_STEP_OUT,
-  COMMAND_STOP,
-} = require('../lib/DbgpSocket');
-var {DebuggerHandler} = require('../lib/DebuggerHandler');
+} from '../lib/DbgpSocket';
+import {DebuggerHandler} from '../lib/DebuggerHandler';
 
 describe('debugger-hhvm-proxy DebuggerHandler', () => {
-  var chromeCallback;
-  var connectionMultiplexer;
-  var handler;
-  var onStatus;
-  var onStatusSubscription;
+  let clientCallback: any;
+  let connectionMultiplexer: any;
+  let handler: any;
+  let onStatus: any;
+  let onStatusSubscription: any;
 
   beforeEach(() => {
-    chromeCallback = jasmine.createSpyObj(
-      'chromeCallback',
+    clientCallback = jasmine.createSpyObj(
+      'clientCallback',
       ['replyToCommand', 'replyWithError', 'sendMethod']
-    );
-    notificationCallback = jasmine.createSpyObj(
-      'notificationCallback',
-      ['sendInfo', 'sendWarning', 'sendError', 'sendFatalError']
     );
     connectionMultiplexer = jasmine.createSpyObj('connectionMultiplexer', [
       'onStatus',
@@ -58,15 +48,15 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
         onStatus = callback;
         return onStatusSubscription;
       });
-    handler = new DebuggerHandler(chromeCallback, notificationCallback, connectionMultiplexer);
+    handler = new DebuggerHandler(clientCallback, connectionMultiplexer);
   });
 
   it('enable', () => {
     waitsForPromise(async () => {
       await handler.handleMethod(1, 'enable');
-      expect(chromeCallback.replyToCommand).toHaveBeenCalledWith(1, {}, undefined);
+      expect(clientCallback.replyToCommand).toHaveBeenCalledWith(1, {}, undefined);
       expect(connectionMultiplexer.listen).not.toHaveBeenCalledWith();
-      expect(chromeCallback.sendMethod).toHaveBeenCalledWith(
+      expect(clientCallback.sendMethod).toHaveBeenCalledWith(
         'Debugger.paused',
         {
           callFrames: [],
@@ -108,7 +98,7 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
       expect(connectionMultiplexer.getStackFrames).toHaveBeenCalledWith();
       expect(connectionMultiplexer.getScopesForFrame).toHaveBeenCalledWith(0);
       expect(connectionMultiplexer.getScopesForFrame).toHaveBeenCalledWith(1);
-      expect(chromeCallback.sendMethod).toHaveBeenCalledWith(
+      expect(clientCallback.sendMethod).toHaveBeenCalledWith(
         'Debugger.scriptParsed',
         {
           scriptId: '/usr/test.php',
@@ -118,7 +108,7 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
           endLine: 0,
           endColumn: 0 ,
         });
-      expect(chromeCallback.sendMethod).toHaveBeenCalledWith(
+      expect(clientCallback.sendMethod).toHaveBeenCalledWith(
         'Debugger.paused',
         {
           callFrames: [
@@ -162,7 +152,7 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
       await handler.handleMethod(1, 'pause');
 
       expect(connectionMultiplexer.sendBreakCommand).toHaveBeenCalledWith();
-      expect(chromeCallback.replyWithError).toHaveBeenCalledWith(1, jasmine.any(String));
+      expect(clientCallback.replyWithError).toHaveBeenCalledWith(1, jasmine.any(String));
     });
   });
 
@@ -170,7 +160,7 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
     waitsForPromise(async () => {
       await handler.handleMethod(1, 'resume');
       expect(connectionMultiplexer.listen).toHaveBeenCalledWith();
-      expect(chromeCallback.sendMethod).toHaveBeenCalledWith('Debugger.resumed', undefined);
+      expect(clientCallback.sendMethod).toHaveBeenCalledWith('Debugger.resumed', undefined);
     });
   });
 
@@ -181,7 +171,7 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
       // Fake the run from loader bp
       await handler.handleMethod(1, 'resume');
       expect(connectionMultiplexer.listen).toHaveBeenCalledWith();
-      expect(chromeCallback.sendMethod).toHaveBeenCalledWith('Debugger.resumed', undefined);
+      expect(clientCallback.sendMethod).toHaveBeenCalledWith('Debugger.resumed', undefined);
       expect(connectionMultiplexer.sendContinuationCommand).not.toHaveBeenCalled();
 
       connectionMultiplexer.getStackFrames = jasmine.createSpy('getStackFrames').andReturn(
@@ -193,11 +183,11 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
       expect(connectionMultiplexer.sendContinuationCommand).toHaveBeenCalledWith(dbgpCommand);
 
       await onStatus(STATUS_RUNNING);
-      expect(chromeCallback.sendMethod).toHaveBeenCalledWith('Debugger.resumed', undefined);
+      expect(clientCallback.sendMethod).toHaveBeenCalledWith('Debugger.resumed', undefined);
 
       await onStatus(STATUS_BREAK);
       expect(connectionMultiplexer.getStackFrames).toHaveBeenCalledWith();
-      expect(chromeCallback.sendMethod).toHaveBeenCalledWith(
+      expect(clientCallback.sendMethod).toHaveBeenCalledWith(
         'Debugger.paused',
         {
           callFrames: [],
@@ -232,7 +222,7 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
 
   it('stopped', () => {
     waitsForPromise(async () => {
-      var onSessionEnd = jasmine.createSpy('onSessionEnd');
+      const onSessionEnd = jasmine.createSpy('onSessionEnd');
       handler.onSessionEnd(onSessionEnd);
 
       await onStatus(STATUS_STOPPED);
@@ -244,7 +234,7 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
 
   it('error', () => {
     waitsForPromise(async () => {
-      var onSessionEnd = jasmine.createSpy('onSessionEnd');
+      const onSessionEnd = jasmine.createSpy('onSessionEnd');
       handler.onSessionEnd(onSessionEnd);
 
       await onStatus(STATUS_ERROR);
@@ -255,7 +245,7 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
 
   it('end', () => {
     waitsForPromise(async () => {
-      var onSessionEnd = jasmine.createSpy('onSessionEnd');
+      const onSessionEnd = jasmine.createSpy('onSessionEnd');
       handler.onSessionEnd(onSessionEnd);
 
       await onStatus(STATUS_END);
@@ -277,7 +267,7 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
       });
 
       expect(connectionMultiplexer.setBreakpoint).toHaveBeenCalledWith('/test.php', 43);
-      expect(chromeCallback.replyToCommand).toHaveBeenCalledWith(
+      expect(clientCallback.replyToCommand).toHaveBeenCalledWith(
         1,
         {
           breakpointId : 12,
@@ -302,7 +292,7 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
       });
 
       expect(connectionMultiplexer.removeBreakpoint).toHaveBeenCalledWith(42);
-      expect(chromeCallback.replyToCommand).toHaveBeenCalledWith(
+      expect(clientCallback.replyToCommand).toHaveBeenCalledWith(
         1,
         {
           id: 42,
@@ -321,24 +311,24 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
       });
 
       expect(connectionMultiplexer.setPauseOnExceptions).toHaveBeenCalledWith('all');
-      expect(chromeCallback.replyToCommand).toHaveBeenCalledWith(1, {}, undefined);
+      expect(clientCallback.replyToCommand).toHaveBeenCalledWith(1, {}, undefined);
     });
   });
 
   it('setAsyncCallStackDepth', () => {
     handler.handleMethod(1, 'setAsyncCallStackDepth');
 
-    expect(chromeCallback.replyWithError).toHaveBeenCalledWith(1, jasmine.any(String));
+    expect(clientCallback.replyWithError).toHaveBeenCalledWith(1, jasmine.any(String));
   });
 
   it('skipStackFrames', () => {
     handler.handleMethod(1, 'skipStackFrames');
 
-    expect(chromeCallback.replyWithError).toHaveBeenCalledWith(1, jasmine.any(String));
+    expect(clientCallback.replyWithError).toHaveBeenCalledWith(1, jasmine.any(String));
   });
 
   it('unknown', () => {
     handler.handleMethod(4, 'unknown');
-    expect(chromeCallback.replyWithError).toHaveBeenCalledWith(4, jasmine.any(String));
+    expect(clientCallback.replyWithError).toHaveBeenCalledWith(4, jasmine.any(String));
   });
 });

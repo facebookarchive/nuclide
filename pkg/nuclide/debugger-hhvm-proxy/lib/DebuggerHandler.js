@@ -28,8 +28,7 @@ import {
 } from './DbgpSocket';
 
 import type {ConnectionMultiplexer} from './ConnectionMultiplexer';
-import type ChromeCallback from './ChromeCallback';
-import type {NotificationCallback} from './NotificationCallback';
+import type {ClientCallback} from './ClientCallback';
 import type FileCache from './FileCache';
 import type {EventEmitter} from 'events';
 
@@ -45,23 +44,25 @@ export class DebuggerHandler extends Handler {
   _hadFirstContinuationCommand: boolean;
 
   constructor(
-    chromeCallback: ChromeCallback,
-    notificationCallback: NotificationCallback,
+    clientCallback: ClientCallback,
     connectionMultiplexer: ConnectionMultiplexer
   ) {
-    super('Debugger', chromeCallback, notificationCallback);
+    super('Debugger', clientCallback);
 
     this._hadFirstContinuationCommand = false;
     this._connectionMultiplexer = connectionMultiplexer;
     var FileCache = require('./FileCache');
-    this._files = new FileCache(chromeCallback);
+    this._files = new FileCache(clientCallback);
     var {EventEmitter} = require('events');
     this._emitter = new EventEmitter();
     this._statusSubscription = this._connectionMultiplexer.onStatus(
       this._onStatusChanged.bind(this)
     );
     this._connectionErrorDisposible = this._connectionMultiplexer.onConnectionError(
-      error => this.sendNotification('error', error)
+      error => this.sendUserMessage('notification', {
+        type: 'error',
+        message: error,
+      })
     );
   }
 
@@ -74,62 +75,65 @@ export class DebuggerHandler extends Handler {
 
     switch (method) {
 
-    // TODO: Add Console (aka logging) support
-    case 'enable':
-      this._debuggerEnable(id);
-      break;
+      // TODO: Add Console (aka logging) support
+      case 'enable':
+        this._debuggerEnable(id);
+        break;
 
-    case 'pause':
-      await this._sendBreakCommand(id);
-      break;
+      case 'pause':
+        await this._sendBreakCommand(id);
+        break;
 
-    case 'stepInto':
-      this._sendContinuationCommand(COMMAND_STEP_INTO);
-      break;
+      case 'stepInto':
+        this._sendContinuationCommand(COMMAND_STEP_INTO);
+        break;
 
-    case 'stepOut':
-      this._sendContinuationCommand(COMMAND_STEP_OUT);
-      break;
+      case 'stepOut':
+        this._sendContinuationCommand(COMMAND_STEP_OUT);
+        break;
 
-    case 'stepOver':
-      this._sendContinuationCommand(COMMAND_STEP_OVER);
-      break;
+      case 'stepOver':
+        this._sendContinuationCommand(COMMAND_STEP_OVER);
+        break;
 
-    case 'resume':
-      this._sendContinuationCommand(COMMAND_RUN);
-      break;
+      case 'resume':
+        this._sendContinuationCommand(COMMAND_RUN);
+        break;
 
-    case 'setPauseOnExceptions':
-      await this._setPauseOnExceptions(id, params);
-      break;
+      case 'setPauseOnExceptions':
+        await this._setPauseOnExceptions(id, params);
+        break;
 
-    case 'setAsyncCallStackDepth':
-    case 'skipStackFrames':
-      this.replyWithError(id, 'Not implemented');
-      break;
+      case 'setAsyncCallStackDepth':
+      case 'skipStackFrames':
+        this.replyWithError(id, 'Not implemented');
+        break;
 
-    case 'getScriptSource':
-      // TODO: Handle file read errors.
-      // TODO: Handle non-file scriptIds
-      this.replyToCommand(id, { scriptSource: await this._files.getFileSource(params.scriptId) });
-      break;
+      case 'getScriptSource':
+        // TODO: Handle file read errors.
+        // TODO: Handle non-file scriptIds
+        this.replyToCommand(id, { scriptSource: await this._files.getFileSource(params.scriptId) });
+        break;
 
-    case 'setBreakpointByUrl':
-      this._setBreakpointByUrl(id, params);
-      break;
+      case 'setBreakpointByUrl':
+        this._setBreakpointByUrl(id, params);
+        break;
 
-    case 'removeBreakpoint':
-      await this._removeBreakpoint(id, params);
-      break;
+      case 'removeBreakpoint':
+        await this._removeBreakpoint(id, params);
+        break;
 
-    case 'evaluateOnCallFrame':
-      var result = await this._connectionMultiplexer.evaluateOnCallFrame(Number(params.callFrameId), params.expression);
-      this.replyToCommand(id, result);
-      break;
+      case 'evaluateOnCallFrame':
+        const result = await this._connectionMultiplexer.evaluateOnCallFrame(
+          Number(params.callFrameId),
+          params.expression
+        );
+        this.replyToCommand(id, result);
+        break;
 
-    default:
-      this.unknownMethod(id, method, params);
-      break;
+      default:
+        this.unknownMethod(id, method, params);
+        break;
     }
   }
 
@@ -221,23 +225,23 @@ export class DebuggerHandler extends Handler {
   async _onStatusChanged(status: string): Promise {
     log('Sending status: ' + status);
     switch (status) {
-    case STATUS_BREAK:
-      await this._sendPausedMessage();
-      break;
-    case STATUS_RUNNING:
-      this.sendMethod('Debugger.resumed');
-      break;
-    case STATUS_STOPPED:
-    case STATUS_ERROR:
-    case STATUS_END:
-      this._endSession();
-      break;
-    case STATUS_STARTING:
-    case STATUS_STOPPING:
-      // These two should be hidden by the ConnectionMultiplexer
-      break;
-    default:
-      logErrorAndThrow('Unexpected status: ' + status);
+      case STATUS_BREAK:
+        await this._sendPausedMessage();
+        break;
+      case STATUS_RUNNING:
+        this.sendMethod('Debugger.resumed');
+        break;
+      case STATUS_STOPPED:
+      case STATUS_ERROR:
+      case STATUS_END:
+        this._endSession();
+        break;
+      case STATUS_STARTING:
+      case STATUS_STOPPING:
+        // These two should be hidden by the ConnectionMultiplexer
+        break;
+      default:
+        logErrorAndThrow('Unexpected status: ' + status);
     }
   }
 

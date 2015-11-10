@@ -13,51 +13,49 @@
 import {DUMMY_FRAME_ID} from './helpers';
 import Handler from './Handler';
 
-import type ChromeCallback from './ChromeCallback';
-import type {NotificationCallback} from './NotificationCallback';
+import type {ClientCallback} from './ClientCallback';
 
 // Handles all 'Page.*' Chrome dev tools messages
 class PageHandler extends Handler {
   constructor(
-    chromeCallback: ChromeCallback,
-    notificationCallback: NotificationCallback
+    clientCallback: ClientCallback
   ) {
-    super('Page', chromeCallback, notificationCallback);
+    super('Page', clientCallback);
   }
 
   async handleMethod(id: number, method: string, params: ?Object): Promise {
     switch (method) {
-    case 'canScreencast':
-      this.replyToCommand(id, {result: false});
-      break;
+      case 'canScreencast':
+        this.replyToCommand(id, {result: false});
+        break;
 
-    case 'enable':
-      this.replyToCommand(id, {});
-      break;
+      case 'enable':
+        this.replyToCommand(id, {});
+        break;
 
-    case 'getResourceTree':
-      this.replyToCommand(id,
-        // For now, return a dummy resource tree so various initializations in
-        // client happens.
-        {
-          'frameTree': {
-            'childFrames': [],
-            'resources': [],
-            'frame': {
-              'id': DUMMY_FRAME_ID,
-              'loaderId': 'Loader.0',
-              'mimeType': '',
-              'name': 'HHVM',
-              'securityOrigin': '',
-              'url': 'hhvm:///',
+      case 'getResourceTree':
+        this.replyToCommand(id,
+          // For now, return a dummy resource tree so various initializations in
+          // client happens.
+          {
+            'frameTree': {
+              'childFrames': [],
+              'resources': [],
+              'frame': {
+                'id': DUMMY_FRAME_ID,
+                'loaderId': 'Loader.0',
+                'mimeType': '',
+                'name': 'HHVM',
+                'securityOrigin': '',
+                'url': 'hhvm:///',
+              },
             },
-          },
-        });
-      break;
+          });
+        break;
 
-    default:
-      this.unknownMethod(id, method, params);
-      break;
+      default:
+        this.unknownMethod(id, method, params);
+        break;
     }
   }
 }

@@ -10,14 +10,13 @@
  */
 
 
-var {uncachedRequire, clearRequireCache} = require('nuclide-test-helpers');
+import {uncachedRequire, clearRequireCache} from 'nuclide-test-helpers';
 
 describe('debugger-hhvm-proxy proxy', () => {
-  let MessageTranslator;
-  let HhvmDebuggerProxyService;
-  let translater;
-  let serverMessageCallback;
-  let notificationObservable;
+  let MessageTranslator: any;
+  let HhvmDebuggerProxyService: any;
+  let translater: any;
+  let clientCallback: any;
 
   beforeEach(() => {
     translater = jasmine.createSpyObj(
@@ -25,9 +24,8 @@ describe('debugger-hhvm-proxy proxy', () => {
       ['onSessionEnd', 'dispose', 'handleCommand']
     );
     MessageTranslator = spyOn(require('../lib/MessageTranslator'), 'MessageTranslator').andCallFake(
-      (socketArg, handler, observable) => {
-        serverMessageCallback = handler;
-        notificationObservable = observable;
+      (socketArg, callback) => {
+        clientCallback = callback;
         return translater;
       });
 
@@ -41,9 +39,9 @@ describe('debugger-hhvm-proxy proxy', () => {
   });
 
   it('attach', () => {
-    var port = 7782;
+    const port = 7782;
 
-    var config = {
+    const config = {
       xdebugPort: port,
       pid: null,
       idekeyRegex: null,
@@ -52,7 +50,7 @@ describe('debugger-hhvm-proxy proxy', () => {
     };
 
     waitsForPromise(async () => {
-      var proxy = new HhvmDebuggerProxyService();
+      const proxy = new HhvmDebuggerProxyService();
 
       const onServerMessageNotify = jasmine.createSpy('onServerMessageNotify');
       const onServerMessageError = jasmine.createSpy('onServerMessageError');
@@ -72,35 +70,24 @@ describe('debugger-hhvm-proxy proxy', () => {
         onNotificationEnd,
       );
 
-      var connectionPromise = proxy.attach(config);
+      const connectionPromise = proxy.attach(config);
 
-      var result = await connectionPromise;
+      const result = await connectionPromise;
 
       expect(MessageTranslator).toHaveBeenCalledWith(
         config,
-        jasmine.any(Function),
-        jasmine.any(Object)
+        clientCallback
       );
       expect(translater.onSessionEnd).toHaveBeenCalledWith(jasmine.any(Function));
 
       expect(result).toBe('HHVM connected');
 
-      var command = {command: 42};
+      const command = {command: 42};
       proxy.sendCommand(command);
       expect(translater.handleCommand).toHaveBeenCalledWith(command);
 
-      var message = {message: 43};
-      serverMessageCallback(message);
-      expect(onServerMessageNotify).toHaveBeenCalledWith(message);
-
-      const notificationMessage = {
-        type: 'info',
-        message: 'info message',
-      };
-      notificationObservable.onNext(notificationMessage);
-      expect(onNotificationMessage).toHaveBeenCalledWith(notificationMessage);
-      notificationObservable.onCompleted(notificationMessage);
-      expect(onNotificationEnd).toHaveBeenCalledWith();
+      clientCallback.replyToCommand(43, 'reply message');
+      expect(onServerMessageNotify).toHaveBeenCalledWith('{"id":43,"result":"reply message"}');
 
       proxy.dispose();
       expect(onSessionEnd).toHaveBeenCalledWith();

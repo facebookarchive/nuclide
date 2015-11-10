@@ -9,25 +9,20 @@
  * the root directory of this source tree.
  */
 
-
 import {log} from './utils';
-import ChromeCallback from './ChromeCallback';
-import {NotificationCallback} from './NotificationCallback';
-import type {NotificationType} from './NotificationCallback';
+import {ClientCallback} from './ClientCallback';
+import type {UserMessageType} from './ClientCallback';
 
 class Handler {
   _domain: string;
-  _chromeCallback: ChromeCallback;
-  _notificationCallback: NotificationCallback;
+  _clientCallback: ClientCallback;
 
   constructor(
     domain: string,
-    chromeCallback: ChromeCallback,
-    notificationCallback: NotificationCallback,
+    clientCallback: ClientCallback
   ) {
     this._domain = domain;
-    this._chromeCallback = chromeCallback;
-    this._notificationCallback = notificationCallback;
+    this._clientCallback = clientCallback;
   }
 
   getDomain(): string {
@@ -39,25 +34,25 @@ class Handler {
   }
 
   unknownMethod(id: number, method: string, params: ?Object): void {
-    var message = 'Unknown chrome dev tools method: ' + this.getDomain() + '.' + method;
+    const message = 'Unknown chrome dev tools method: ' + this.getDomain() + '.' + method;
     log(message);
     this.replyWithError(id, message);
   }
 
   replyWithError(id: number, error: string): void {
-    this._chromeCallback.replyWithError(id, error);
+    this._clientCallback.replyWithError(id, error);
   }
 
   replyToCommand(id: number, result: Object, error: ?string): void {
-    this._chromeCallback.replyToCommand(id, result, error);
+    this._clientCallback.replyToCommand(id, result, error);
   }
 
   sendMethod(method: string, params: ?Object): void {
-    this._chromeCallback.sendMethod(method, params);
+    this._clientCallback.sendMethod(method, params);
   }
 
-  sendNotification(type: NotificationType, message: string): void {
-    this._notificationCallback.sendMessage(type, message);
+  sendUserMessage(type: UserMessageType, message: Object): void {
+    this._clientCallback.sendUserMessage(type, message);
   }
 }
 

@@ -12,7 +12,6 @@
 import {log, logInfo, setLogLevel} from './utils';
 import {launchPhpScriptWithXDebugEnabled} from './helpers';
 import {setRootDirectoryUri} from './ConnectionUtils';
-import {Observable, Subject} from 'rx';
 
 // Connection states
 const INITIAL = 'initial';
@@ -20,7 +19,7 @@ const CONNECTING = 'connecting';
 const CONNECTED = 'connected';
 const CLOSED = 'closed';
 
-var {MessageTranslator} = require('./MessageTranslator');
+import {MessageTranslator} from './MessageTranslator';
 import type {ConnectionConfig} from './DbgpConnector';
 
 /**
@@ -41,25 +40,25 @@ import type {ConnectionConfig} from './DbgpConnector';
  *    to send Chrome Commands, and be prepared to receive notifications on the
  *    callback registered with onNotify().
  */
+import {ClientCallback} from './ClientCallback';
+
 export class HhvmDebuggerProxyService {
   _state: string;
   _translator: ?MessageTranslator;
-  _serverMessageObservable: Subject;  // For server messages.
-  _notificationObservable: Subject;   // For atom UI notifications.
+  _clientCallback: ClientCallback;
 
   constructor() {
     this._state = INITIAL;
     this._translator = null;
-    this._serverMessageObservable = new Subject();
-    this._notificationObservable = new Subject();
+    this._clientCallback = new ClientCallback();
   }
 
   getNotificationObservable(): Observable<NotificationMessage> {
-    return this._notificationObservable;
+    return this._clientCallback.getNotificationObservable();
   }
 
   getServerMessageObservable(): Observable<string> {
-    return this._serverMessageObservable;
+    return this._clientCallback.getServerMessageObservable();
   }
 
   async attach(config: ConnectionConfig): Promise<string> {
@@ -69,11 +68,7 @@ export class HhvmDebuggerProxyService {
     setLogLevel(config.logLevel);
     this._setState(CONNECTING);
 
-    this._translator = new MessageTranslator(
-      config,
-      message => { this._serverMessageObservable.onNext(message); },
-      this._notificationObservable,
-    );
+    this._translator = new MessageTranslator(config, this._clientCallback);
     this._translator.onSessionEnd(() => { this._onEnd(); });
 
     this._setState(CONNECTED);
@@ -110,14 +105,7 @@ export class HhvmDebuggerProxyService {
 
   async dispose(): Promise<void> {
     logInfo('Proxy: Ending session');
-    if (this._notificationObservable) {
-      this._notificationObservable.onCompleted();
-      this._notificationObservable = null;
-    }
-    if (this._serverMessageObservable) {
-      this._serverMessageObservable.onCompleted();
-      this._serverMessageObservable = null;
-    }
+    this._clientCallback.dispose();
     if (this._translator) {
       this._translator.dispose();
       this._translator = null;

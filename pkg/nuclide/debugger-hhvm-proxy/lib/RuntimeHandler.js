@@ -14,20 +14,17 @@ import {DUMMY_FRAME_ID} from './helpers';
 import Handler from './Handler';
 
 import type {ConnectionMultiplexer} from './ConnectionMultiplexer';
-import type ChromeCallback from './ChromeCallback';
-import type {NotificationCallback} from './NotificationCallback';
+import type {ClientCallback} from './ClientCallback';
 
 // Handles all 'Runtime.*' Chrome dev tools messages
 export class RuntimeHandler extends Handler {
   _connectionMultiplexer: ConnectionMultiplexer;
 
   constructor(
-    chromeCallback: ChromeCallback,
-    notificationCallback: NotificationCallback,
+    clientCallback: ClientCallback,
     connectionMultiplexer: ConnectionMultiplexer
   ) {
-    super('Runtime', chromeCallback, notificationCallback);
-
+    super('Runtime', clientCallback);
     this._connectionMultiplexer = connectionMultiplexer;
   }
 
