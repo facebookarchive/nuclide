@@ -21,6 +21,7 @@ import type {
 } from 'nuclide-hack-base/lib/types';
 import type NuclideClient from 'nuclide-server/lib/NuclideClient';
 
+import {trackTiming} from 'nuclide-analytics';
 import {getServiceByNuclideUri} from 'nuclide-client';
 import {parse, createRemoteUri, getPath} from 'nuclide-remote-uri';
 import invariant from 'assert';
@@ -245,6 +246,7 @@ module.exports = class HackLanguage {
     }
   }
 
+  @trackTiming('hack.get-definition')
   async getDefinition(
       filePath: NuclideUri,
       contents: string,
@@ -252,11 +254,19 @@ module.exports = class HackLanguage {
       column: number,
       lineText: string
     ): Promise<?Object> {
-    let [identifierResult, symbolSearchResult, stringParseResult, clientSideResult] =
+    // Ask the `hh_server` to parse, indentiy the position,
+    // and lookup that identifier for a location match.
+    const identifierResult = await this._getDefinitionFromIdentifier(
+      filePath,
+      contents,
+      lineNumber,
+      column,
+    );
+    if (identifierResult != null) {
+      return identifierResult;
+    }
+    const [symbolSearchResult, stringParseResult, clientSideResult] =
       await Promise.all([
-        // Ask the `hh_server` to parse, indentiy the position,
-        // and lookup that identifier for a location match.
-        this._getDefinitionFromIdentifier(filePath, contents, lineNumber, column),
         // Ask the `hh_server` for a symbol name search location.
         this._getDefinitionFromSymbolName(filePath, contents, lineNumber, column),
         // Ask the `hh_server` for a search of the string parsed.
@@ -265,8 +275,7 @@ module.exports = class HackLanguage {
         this._getDefinitionLocationAtPosition(filePath, contents, lineNumber, column),
       ]);
     // We now have results from all 3 sources. Chose the best results to show to the user.
-    return identifierResult
-      || symbolSearchResult
+    return symbolSearchResult
       || stringParseResult
       || clientSideResult
       || null
