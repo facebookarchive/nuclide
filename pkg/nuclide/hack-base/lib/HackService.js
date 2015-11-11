@@ -24,7 +24,7 @@ import type {NuclideUri} from 'nuclide-remote-uri';
 
 import {fsPromise} from 'nuclide-commons';
 import invariant from 'assert';
-import {SearchResultType} from 'nuclide-hack-common/lib/constants';
+import {SymbolType, SearchResultType} from 'nuclide-hack-common/lib/constants';
 import {
   callHHClient,
   symbolTypeToSearchTypes,
@@ -201,9 +201,14 @@ export async function getDependencies(
 export async function getReferences(
   filePath: NuclideUri,
   symbolName: string,
+  symbolType?: SymbolTypeValue,
 ): Promise<?HackReferencesResult> {
-  var hhResult = await callHHClient(
-    /*args*/ ['--find-refs', symbolName],
+  let cmd = '--find-refs';
+  if (symbolType === SymbolType.CLASS) {
+    cmd = '--find-class-refs';
+  }
+  const hhResult = await callHHClient(
+    /*args*/ [cmd, symbolName],
     /*errorStream*/ false,
     /*outputJson*/ true,
     /*processInput*/ null,
@@ -212,8 +217,8 @@ export async function getReferences(
   if (!hhResult) {
     return null;
   }
-  var {hackRoot, result} = hhResult;
-  var references = ((result: any): Array<HackReference>);
+  const {hackRoot, result} = hhResult;
+  const references = ((result: any): Array<HackReference>);
   return {
     hackRoot,
     references,

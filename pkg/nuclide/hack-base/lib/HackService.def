@@ -114,4 +114,5 @@ export async function getIdentifierDefinition(
 export async function getReferences(
   filePath: NuclideUri,
   symbolName: string,
+  symbolType?: number,
 ): Promise<?HackReferencesResult> {}
