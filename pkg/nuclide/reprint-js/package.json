@@ -18,7 +18,7 @@
   },
   "devDependencies": {
     "ast-types-flow": "0.0.6",
-    "nuclide-commons": "0.0.32",
+    "nuclide-commons": "0.0.0",
     "nuclide-external-interfaces": "0.0.0",
     "nuclide-jasmine": "0.0.0"
   }
