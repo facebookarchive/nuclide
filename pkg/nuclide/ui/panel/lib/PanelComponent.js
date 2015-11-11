@@ -8,14 +8,14 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-var {CompositeDisposable} = require('atom');
-var React = require('react-for-atom');
+const {CompositeDisposable} = require('atom');
+const React = require('react-for-atom');
 
-var {PropTypes} = React;
+const {PropTypes} = React;
 
-var MINIMUM_LENGTH = 100;
+const MINIMUM_LENGTH = 100;
 
-var emptyFunction = () => {};
+const emptyFunction = () => {};
 
 /**
  * A container for centralizing the logic for making panels scrollable,
@@ -57,13 +57,13 @@ class PanelComponent extends React.Component {
   render(): ReactElement {
     // We create an overlay to always display the resize cursor while the user
     // is resizing the panel, even if their mouse leaves the handle.
-    var resizeCursorOverlay = null;
+    let resizeCursorOverlay = null;
     if (this.state.isResizing) {
       resizeCursorOverlay =
         <div className={`nuclide-ui-panel-component-resize-cursor-overlay ${this.props.dock}`} />;
     }
 
-    var containerStyle;
+    let containerStyle;
     if (this.props.dock === 'left' || this.props.dock === 'right') {
       containerStyle = {
         width: this.state.length,
@@ -76,23 +76,25 @@ class PanelComponent extends React.Component {
       };
     }
 
-    var content = React.cloneElement(
+    const content = React.cloneElement(
       React.Children.only(this.props.children),
       {ref: 'child'});
 
-    var scrollerStyle = {};
+    const scrollerStyle = {};
     if (this.props.overflowX) {
       scrollerStyle.overflowX = this.props.overflowX;
     }
 
     return (
-      <div className={`nuclide-ui-panel-component ${this.props.dock}`}
-           ref="container"
-           style={containerStyle}>
+      <div
+        className={`nuclide-ui-panel-component ${this.props.dock}`}
+        ref="container"
+        style={containerStyle}>
         <div className={`nuclide-ui-panel-component-resize-handle ${this.props.dock}`}
-             ref="handle"
-             onMouseDown={this._handleMouseDown}
-             onDoubleClick={this._handleDoubleClick} />
+          ref="handle"
+          onMouseDown={this._handleMouseDown}
+          onDoubleClick={this._handleDoubleClick}
+        />
         <div className="nuclide-ui-panel-component-scroller" style={scrollerStyle}>
           {content}
         </div>
@@ -136,8 +138,8 @@ class PanelComponent extends React.Component {
   }
 
   _handleMouseMove(event: SyntheticMouseEvent): void {
-    var containerEl = React.findDOMNode(this.refs['container']);
-    var length = 0;
+    const containerEl = React.findDOMNode(this.refs['container']);
+    let length = 0;
     if (this.props.dock === 'left') {
       length = event.pageX - containerEl.getBoundingClientRect().left;
     } else if (this.props.dock === 'bottom') {
@@ -163,9 +165,9 @@ class PanelComponent extends React.Component {
     // to determine the size to scale to.
     this.setState({length: 0});
     this.forceUpdate(() => {
-      var length = 0;
-      var childNode = React.findDOMNode(this.refs['child']);
-      var handle = React.findDOMNode(this.refs['handle']);
+      let length = 0;
+      const childNode = React.findDOMNode(this.refs['child']);
+      const handle = React.findDOMNode(this.refs['handle']);
       if (this.props.dock === 'left' || this.props.dock === 'right') {
         length = childNode.offsetWidth + handle.offsetWidth;
       } else if (this.props.dock === 'bottom') {

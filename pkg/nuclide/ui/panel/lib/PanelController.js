@@ -9,10 +9,10 @@
  * the root directory of this source tree.
  */
 
-var React = require('react-for-atom');
-var {assign} = require('nuclide-commons').object;
+const React = require('react-for-atom');
+const {assign} = require('nuclide-commons').object;
 
-var PanelComponent = require('./PanelComponent');
+const PanelComponent = require('./PanelComponent');
 
 type PanelControllerState = {
   isVisible: boolean;
@@ -39,8 +39,8 @@ class PanelController {
     // up the entire panel.
     this._hostEl.style.height = '100%';
 
-    var shouldBeVisible = false;
-    var newProps = assign({}, props);
+    let shouldBeVisible = false;
+    const newProps = assign({}, props);
     if (state) {
       newProps.initialLength = state.resizableLength;
       shouldBeVisible = state.isVisible;
