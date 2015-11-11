@@ -89,7 +89,6 @@ export class FlowProcess {
     args: Array<any>,
     options: Object,
     file: string,
-    logErrors?: boolean = true,
   ): Promise<?process$asyncExecuteRet> {
     const maxTries = 5;
     if (this._serverStatus.getValue() === ServerStatus.failed) {
@@ -109,10 +108,8 @@ export class FlowProcess {
           await this._serverIsReady(); // eslint-disable-line babel/no-await-in-loop
           // Then try again.
         } else {
-          if (logErrors) {
-            // not sure what happened, but we'll let the caller deal with it
-            logger.error(`Flow failed: flow ${args.join(' ')}. Error: ${JSON.stringify(e)}`);
-          }
+          // not sure what happened, but we'll let the caller deal with it
+          logger.error(`Flow failed: flow ${args.join(' ')}. Error: ${JSON.stringify(e)}`);
           throw e;
         }
         // try again
@@ -174,7 +171,11 @@ export class FlowProcess {
       return result;
     } catch (e) {
       this._updateServerStatus(e);
-      throw e;
+      if (e.exitCode === FLOW_RETURN_CODES.typeError) {
+        return e;
+      } else {
+        throw e;
+      }
     }
   }
 
