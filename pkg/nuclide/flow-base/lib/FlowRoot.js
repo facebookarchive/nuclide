@@ -192,7 +192,6 @@ export class FlowRoot {
       const candidates = json.map(item => processAutocompleteItem(replacementPrefix, item));
       return filter(candidates, replacementPrefix, { key: 'displayText' });
     } catch (e) {
-      logger.error('flow flowGetAutocompleteSuggestions failed: ', e);
       return [];
     }
   }

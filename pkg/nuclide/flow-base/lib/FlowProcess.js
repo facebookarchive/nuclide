@@ -105,14 +105,18 @@ export class FlowProcess {
         );
         return result;
       } catch (e) {
-        const shouldRetry = [ServerStatus.NOT_RUNNING, ServerStatus.INIT, ServerStatus.BUSY]
+        const couldRetry = [ServerStatus.NOT_RUNNING, ServerStatus.INIT, ServerStatus.BUSY]
           .indexOf(this._serverStatus.getValue()) !== -1;
-        if (i < maxRetries && shouldRetry) {
+        if (i < maxRetries && couldRetry) {
           await this._serverIsReady(); // eslint-disable-line babel/no-await-in-loop
           // Then try again.
         } else {
-          // not sure what happened, but we'll let the caller deal with it
-          logger.error(`Flow failed: flow ${args.join(' ')}. Error: ${JSON.stringify(e)}`);
+          // If it couldn't retry, it means there was a legitimate error. If it could retry, we
+          // don't want to log because it just means the server is busy and we don't want to wait.
+          if (!couldRetry) {
+            // not sure what happened, but we'll let the caller deal with it
+            logger.error(`Flow failed: flow ${args.join(' ')}. Error: ${JSON.stringify(e)}`);
+          }
           throw e;
         }
         // try again
