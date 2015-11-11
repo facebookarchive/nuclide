@@ -91,7 +91,7 @@ export default class ActiveHandlesSectionComponent extends React.Component {
             title: 'Args',
             value: process => {
               if (process.spawnargs && process.spawnargs.length > 1) {
-                return process.spawnargs.splice(1).join(' ');
+                return process.spawnargs.slice(1).join(' ');
               }
             },
             widthPercentage: 60,
