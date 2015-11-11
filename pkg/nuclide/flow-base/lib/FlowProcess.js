@@ -46,6 +46,8 @@ export const FLOW_RETURN_CODES = {
 
 const SERVER_READY_TIMEOUT_MS = 10 * 1000;
 
+const EXEC_FLOW_RETRIES = 5;
+
 export class FlowProcess {
   // If we had to start a Flow server, store the process here so we can kill it when we shut down.
   _startedServer: ?child_process$ChildProcess;
@@ -89,8 +91,9 @@ export class FlowProcess {
     args: Array<any>,
     options: Object,
     file: string,
+    waitForServer?: boolean = false,
   ): Promise<?process$asyncExecuteRet> {
-    const maxTries = 5;
+    const maxRetries = waitForServer ? EXEC_FLOW_RETRIES : 0;
     if (this._serverStatus.getValue() === ServerStatus.failed) {
       return null;
     }
@@ -104,7 +107,7 @@ export class FlowProcess {
       } catch (e) {
         const shouldRetry = [ServerStatus.NOT_RUNNING, ServerStatus.INIT, ServerStatus.BUSY]
           .indexOf(this._serverStatus.getValue()) !== -1;
-        if (i < maxTries && shouldRetry) {
+        if (i < maxRetries && shouldRetry) {
           await this._serverIsReady(); // eslint-disable-line babel/no-await-in-loop
           // Then try again.
         } else {
@@ -161,6 +164,8 @@ export class FlowProcess {
     options = {...flowOptions, ...options};
     args = [
       ...args,
+      '--retry-if-init', 'false',
+      '--retries', '0',
       '--no-auto-start',
       '--from', 'nuclide',
     ];

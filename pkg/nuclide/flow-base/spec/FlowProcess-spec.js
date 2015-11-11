@@ -30,7 +30,7 @@ describe('FlowProcess', () => {
   const root = '/path/to/flow/root';
 
   function execFlow() {
-    return flowProcess.execFlow([], {}, '/path/to/flow/root/file.js');
+    return flowProcess.execFlow([], {}, '/path/to/flow/root/file.js', /* waitForServer */ true);
   }
 
   beforeEach(() => {

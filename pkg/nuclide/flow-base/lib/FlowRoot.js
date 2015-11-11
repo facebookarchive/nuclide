@@ -58,7 +58,7 @@ export class FlowRoot {
     // ensure he or she got accurate results.
     options.stdin = currentContents;
 
-    const args = ['get-def', '--json', '--retry-if-init', 'false', '--path', file, line, column];
+    const args = ['get-def', '--json', '--path', file, line, column];
     try {
       const result = await this._process.execFlow(args, options, file);
       if (!result) {
@@ -108,7 +108,7 @@ export class FlowRoot {
     try {
       // Don't log errors if the command returns a nonzero exit code, because status returns nonzero
       // if it is reporting any issues, even when it succeeds.
-      result = await this._process.execFlow(args, options, file);
+      result = await this._process.execFlow(args, options, file, /* waitForServer */ true);
       if (!result) {
         return null;
       }
@@ -211,7 +211,7 @@ export class FlowRoot {
     line = line + 1;
     column = column + 1;
     const args =
-      ['type-at-pos', '--json', '--retry-if-init', 'false', '--path', file, line, column];
+      ['type-at-pos', '--json', '--path', file, line, column];
     if (includeRawType) {
       args.push('--raw');
     }
