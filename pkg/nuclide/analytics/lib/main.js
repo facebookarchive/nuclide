@@ -64,7 +64,7 @@ function track(eventName: string, values?: {[key: string]: string}): Promise<mix
  *   bar(...): Promise {...}
  * }
  *
- * var obj = {
+ * const obj = {
  *   @trackTiming('fooEvent')
  *   foo(...) {...}
  * }

@@ -9,9 +9,9 @@
  * the root directory of this source tree.
  */
 
-var main = require('../lib/main');
-var track = require('../lib/track');
-var trackTiming = main.trackTiming;
+const main = require('../lib/main');
+const track = require('../lib/track');
+const trackTiming = main.trackTiming;
 
 class TestClass {
   constructor(methodBodyToBeTracked: any) {
@@ -25,12 +25,12 @@ class TestClass {
 }
 
 function createTestClassAndCallTrackedMethod(methodBodyToBeTracked: any): any {
-  var test = new TestClass(methodBodyToBeTracked);
+  const test = new TestClass(methodBodyToBeTracked);
   return test.foo();
 }
 
 describe('The @trackTiming decorator', () => {
-  var trackKey, trackValues;
+  let trackKey, trackValues;
   beforeEach(() => {
     // Clear intercepted tracking data.
     trackKey = null;
@@ -47,7 +47,7 @@ describe('The @trackTiming decorator', () => {
   });
 
   it('tracks timing on a successful sync function call', () => {
-    var ret;
+    let ret;
 
     runs(() => {
       ret = createTestClassAndCallTrackedMethod(() => 1 );
@@ -65,8 +65,8 @@ describe('The @trackTiming decorator', () => {
   });
 
   it('tracks timing on a failed sync function call', () => {
-    var errCatched;
-    var errToThrow = Error();
+    let errCaught;
+    const errToThrow = Error();
 
     runs(() => {
       try {
@@ -74,14 +74,14 @@ describe('The @trackTiming decorator', () => {
           throw errToThrow;
         });
       } catch (err) {
-        errCatched = err;
+        errCaught = err;
       }
     });
 
     waitsFor(() => trackKey, 10);
 
     runs(() => {
-      expect(errCatched).toEqual(errToThrow);
+      expect(errCaught).toEqual(errToThrow);
       expect(trackKey).toEqual('performance');
       expect(trackValues.eventName).toEqual('TestClass.foo');
       expect(trackValues.error).toEqual('1');
@@ -90,7 +90,7 @@ describe('The @trackTiming decorator', () => {
   });
   it('tracks timing on a successful async function call', () => {
     waitsForPromise(async () => {
-      var ret = await createTestClassAndCallTrackedMethod(() => {
+      const ret = await createTestClassAndCallTrackedMethod(() => {
         return new Promise((resolve, reject) => {
           setTimeout(() => {
             resolve(1);
@@ -109,8 +109,8 @@ describe('The @trackTiming decorator', () => {
 
   it('tracks timing on a failed async function call', () => {
     waitsForPromise(async () => {
-      var rejectReason = 'a rejection';
-      var rejectionCatched;
+      const rejectReason = 'a rejection';
+      let rejectionCaught;
 
       try {
         await createTestClassAndCallTrackedMethod(() => {
@@ -121,10 +121,10 @@ describe('The @trackTiming decorator', () => {
           });
         });
       } catch (e) {
-        rejectionCatched = e;
+        rejectionCaught = e;
       }
 
-      expect(rejectionCatched).toEqual(rejectReason);
+      expect(rejectionCaught).toEqual(rejectReason);
       expect(trackKey).toEqual('performance');
       expect(trackValues.eventName).toEqual('TestClass.foo');
       expect(trackValues.error).toEqual('1');

@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-var {trackTiming} = require('../lib/main');
+const {trackTiming} = require('../lib/main');
 
 class Test {
 
@@ -27,13 +27,13 @@ class Test {
 describe('Default analytics implementation', () => {
 
   it('correctly executes a sync function call', () => {
-    var result = (new Test()).foo();
+    const result = (new Test()).foo();
     expect(result).toBe(1);
   });
 
   it('correctly executes an async function call', () => {
     waitsForPromise(async () => {
-      var result = await (new Test()).bar();
+      const result = await (new Test()).bar();
       expect(result).toBe(1);
     });
   });
