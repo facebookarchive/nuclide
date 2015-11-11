@@ -15,6 +15,7 @@ import type {
 
 var {
   CompositeDisposable,
+  Disposable,
 } = require('atom');
 
 var providerInstance: ?Provider;
@@ -71,6 +72,7 @@ function initSearch(projectPaths: Array<string>): void {
       // search speeds up the next search much more than simply doing the setup
       // kicked off by 'fileSearchForDirectory'.
       client.searchDirectory(projectPath, 'a');
+      getActivation()._disposables.add(new Disposable(() => client.close()));
     }
   });
   projectRoots = newProjectRoots;
