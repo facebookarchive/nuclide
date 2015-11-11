@@ -9,10 +9,23 @@
  * the root directory of this source tree.
  */
 
-import type {HackSearchPosition} from 'nuclide-hack-base/lib/types';
 import type {NuclideUri} from 'nuclide-remote-uri';
-
 import {getHackExecOptions, getSearchResults} from 'nuclide-hack-base/lib/HackHelpers';
+
+/**
+ * The trailing underscore is to distinguish this from the one that is listed in
+ * HackService.def. They are actually the same, but we don't have a good way
+ * to share types like this right now.
+ */
+export type HackSearchPosition_ = {
+  path: NuclideUri;
+  line: number;
+  column: number;
+  name: string;
+  length: number;
+  scope: string;
+  additionalInfo: string;
+};
 
 /**
  * Performs a Hack symbol search in the specified directory.
@@ -20,7 +33,7 @@ import {getHackExecOptions, getSearchResults} from 'nuclide-hack-base/lib/HackHe
 export async function queryHack(
   rootDirectory: NuclideUri,
   queryString: string
-): Promise<Array<HackSearchPosition>> {
+): Promise<Array<HackSearchPosition_>> {
   let searchPostfix;
   switch (queryString[0]) {
     case '@':

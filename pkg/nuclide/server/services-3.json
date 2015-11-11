@@ -23,7 +23,6 @@
     "name": "BuckUtils"
   },
   {
-    "definition": "nuclide-hack-search-service/lib/HackSearchService.def",
     "implementation": "nuclide-hack-search-service/lib/HackSearchService.js",
     "name": "HackSearchService"
   },
