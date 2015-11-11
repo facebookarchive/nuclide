@@ -121,8 +121,10 @@ describe('debugger-hhvm-proxy ConnectionUtils', () => {
   });
 
   describe('isDummyConnection', () => {
-    beforeEach(async () => {
-      await setRootDirectoryUri('foo');
+    beforeEach(() => {
+      waitsForPromise(async () => {
+        await setRootDirectoryUri('foo');
+      });
     });
 
     it('false', () => {
