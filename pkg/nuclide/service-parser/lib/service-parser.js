@@ -105,11 +105,15 @@ class ServiceParser {
         switch (declaration.type) {
           // An exported function that can be directly called by a client.
           case 'FunctionDeclaration':
-            this._add(this._parseFunctionDeclaration(declaration));
+            if (!isPrivateMemberName(declaration.id.name)) {
+              this._add(this._parseFunctionDeclaration(declaration));
+            }
             break;
           // An exported type alias.
           case 'TypeAlias':
-            this._add(this._parseTypeAlias(declaration));
+            if (!isPrivateMemberName(declaration.id.name)) {
+              this._add(this._parseTypeAlias(declaration));
+            }
             break;
           // Parse classes as remotable interfaces.
           case 'ClassDeclaration':

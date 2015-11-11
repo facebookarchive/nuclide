@@ -30,3 +30,9 @@ export type A = {
   m: Map<A, A>;
   s: Set<A>;
 };
+
+// Private types are not remotable.
+export type _PrivateType = {
+   a: unknownType;
+   q: Promise<number>;
+};
