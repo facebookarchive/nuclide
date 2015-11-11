@@ -10,11 +10,13 @@
  */
 
 import {CompositeDisposable} from 'atom';
+import {debounce} from 'nuclide-commons';
 import React, {PropTypes} from 'react-for-atom';
 import DiffViewEditor from './DiffViewEditor';
 import invariant from 'assert';
 
 import type {HighlightedLines} from './types';
+const CHANGE_DEBOUNCE_DELAY_MS = 100;
 
 export default class DiffViewEditorPane extends React.Component {
 
@@ -36,17 +38,22 @@ export default class DiffViewEditorPane extends React.Component {
   componentDidMount(): void {
     this._isMounted = true;
     const diffViewEditor = this._diffViewEditor = new DiffViewEditor(this.getEditorDomElement());
+    const textEditor = this.getEditorModel();
+    const debouncedOnChange = debounce(
+      () => {
+        const textContent = textEditor.getText();
+        this.setState({textContent});
+        if (this.props.onChange) {
+          this.props.onChange(textContent);
+        }
+      },
+      CHANGE_DEBOUNCE_DELAY_MS,
+      false,
+    );
     if (this.props.readOnly) {
       diffViewEditor.setReadOnly();
     }
-    const textEditor = this.getEditorModel();
-    this._subscriptions.add(textEditor.onDidChange(() => {
-      const newContents = textEditor.getText();
-      this.setState({textContent: newContents});
-      if (this.props.onChange) {
-        this.props.onChange(newContents);
-      }
-    }));
+    this._subscriptions.add(textEditor.onDidChange(debouncedOnChange));
     this._updateDiffView(this.props, this.state);
   }
 
