@@ -9,12 +9,12 @@
  * the root directory of this source tree.
  */
 
-var fs = require('fs-plus');
-var path = require('path');
+const fs = require('fs-plus');
+const path = require('path');
 
 function fileTypeClass(filename: string): string {
-  var typeClass;
-  var ext = path.extname(filename);
+  let typeClass;
+  const ext = path.extname(filename);
 
   if (fs.isReadmePath(filename)) {
     typeClass = 'icon-book';

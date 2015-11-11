@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-var paneContainerClass: ?Function;
+let paneContainerClass: ?Function;
 
 module.exports = function createPaneContainer(): Object {
   if (!paneContainerClass) {

@@ -19,8 +19,8 @@ async function withLoadingNotification<T>(
   delayMs: number = 100,
   options: Object = {},
 ): Promise<T> {
-  var notif = null;
-  var timeout = setTimeout(() => {
+  let notif = null;
+  const timeout = setTimeout(() => {
     notif = atom.notifications.addInfo(message, {
       dismissable: true,
       ...options,

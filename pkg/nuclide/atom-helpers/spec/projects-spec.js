@@ -8,13 +8,13 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-var {singleton} = require('nuclide-commons');
-var projects = require('../lib/projects');
-var {PROJECT_PATH_WATCHER_INSTANCE_KEY} = projects.__test__;
+const {singleton} = require('nuclide-commons');
+const projects = require('../lib/projects');
+const {PROJECT_PATH_WATCHER_INSTANCE_KEY} = projects.__test__;
 
 describe('projects', () => {
 
-  var firstProjectPath = '/absolute/project/path';
+  const firstProjectPath = '/absolute/project/path';
 
   beforeEach(() => {
     singleton.clear(PROJECT_PATH_WATCHER_INSTANCE_KEY);
@@ -23,7 +23,7 @@ describe('projects', () => {
 
   describe('observeProjectPaths()', () => {
     it('observes existing projects and future added projects', () => {
-      var projectPaths: Array<string> = [];
+      const projectPaths: Array<string> = [];
       projects.observeProjectPaths(projectPath => { projectPaths.push(projectPath); });
       expect(projectPaths).toEqual([firstProjectPath]);
       atom.project.addPath('/absolute/other/path');
@@ -33,7 +33,7 @@ describe('projects', () => {
 
   describe('onDidAddProjectPath()', () => {
     it('listens only to newly added project paths', () => {
-      var addedProjectPaths: Array<string> = [];
+      const addedProjectPaths: Array<string> = [];
       projects.onDidAddProjectPath(projectPath => { addedProjectPaths.push(projectPath); });
       expect(addedProjectPaths.length).toBe(0);
       atom.project.addPath('/absolute/other/path');
@@ -43,7 +43,7 @@ describe('projects', () => {
 
   describe('onDidRemoveProjectPath()', () => {
     it('listens to removed project paths', () => {
-      var removedProjectPaths: Array<string> = [];
+      const removedProjectPaths: Array<string> = [];
       projects.onDidRemoveProjectPath(projectPath => { removedProjectPaths.push(projectPath); });
       expect(removedProjectPaths.length).toBe(0);
       atom.project.removePath(firstProjectPath);

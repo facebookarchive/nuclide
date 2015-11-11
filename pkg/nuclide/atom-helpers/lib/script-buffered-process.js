@@ -8,8 +8,8 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-var {BufferedProcess} = require('atom');
-var {createArgsForScriptCommand} = require('nuclide-commons');
+const {BufferedProcess} = require('atom');
+const {createArgsForScriptCommand} = require('nuclide-commons');
 
 /**
  * Wrapper around BufferedProcess that runs the command using unix `script`
@@ -19,7 +19,7 @@ var {createArgsForScriptCommand} = require('nuclide-commons');
  */
 class ScriptBufferedProcess extends BufferedProcess {
   constructor(options) {
-    var localOptions = {...options};
+    const localOptions = {...options};
     localOptions.args = createArgsForScriptCommand(localOptions.command, localOptions.args);
     localOptions.command = 'script';
     super(localOptions);
@@ -31,9 +31,9 @@ class ScriptBufferedProcess extends BufferedProcess {
  * @return A ScriptBufferedProcess with common binary paths added to `options.env`.
  */
 async function createScriptBufferedProcessWithEnv(options: Object): Promise<BufferedProcess> {
-  var {createExecEnvironment, COMMON_BINARY_PATHS} = require('nuclide-commons');
+  const {createExecEnvironment, COMMON_BINARY_PATHS} = require('nuclide-commons');
 
-  var localOptions = {...options};
+  const localOptions = {...options};
   localOptions.env = await createExecEnvironment(localOptions.env ||  process.env,
     COMMON_BINARY_PATHS);
   // Flow infers Promise<ScriptBufferedProcess> and believes that to be incompatible with

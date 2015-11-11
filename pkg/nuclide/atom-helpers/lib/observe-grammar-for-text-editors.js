@@ -9,10 +9,10 @@
  * the root directory of this source tree.
  */
 
-var {Disposable} = require('atom');
-var {EventEmitter} = require('events');
+const {Disposable} = require('atom');
+const {EventEmitter} = require('events');
 
-var GRAMMAR_CHANGE_EVENT = 'grammar-change';
+const GRAMMAR_CHANGE_EVENT = 'grammar-change';
 
 /**
  * A singleton that listens to grammar changes in all text editors.
@@ -28,13 +28,13 @@ class GrammarForTextEditorsListener {
     this._grammarSubscriptionsMap = new Map();
     this._destroySubscriptionsMap = new Map();
     this._textEditorsSubscription = atom.workspace.observeTextEditors(textEditor => {
-      var grammarSubscription = textEditor.observeGrammar(grammar => {
+      const grammarSubscription = textEditor.observeGrammar(grammar => {
         this._emitter.emit(GRAMMAR_CHANGE_EVENT, textEditor);
       });
       this._grammarSubscriptionsMap.set(textEditor, grammarSubscription);
 
-      var destroySubscription = textEditor.onDidDestroy(() => {
-        var subscription = this._grammarSubscriptionsMap.get(textEditor);
+      const destroySubscription = textEditor.onDidDestroy(() => {
+        const subscription = this._grammarSubscriptionsMap.get(textEditor);
         if (subscription) {
           subscription.dispose();
           this._grammarSubscriptionsMap.delete(textEditor);
@@ -73,7 +73,7 @@ class GrammarForTextEditorsListener {
   }
 }
 
-var listeners: WeakMap<atom$Workspace, GrammarForTextEditorsListener> = new WeakMap();
+const listeners: WeakMap<atom$Workspace, GrammarForTextEditorsListener> = new WeakMap();
 
 module.exports =
 /**
@@ -88,7 +88,7 @@ function observeGrammarForTextEditors(
   // The listener should be a global singleton but workspaces are destroyed
   // between each test run so we need to reinstantiate the listener to attach
   // to the current workspace.
-  var listener = listeners.get(atom.workspace);
+  let listener = listeners.get(atom.workspace);
   if (!listener) {
     listener = new GrammarForTextEditorsListener();
     listeners.set(atom.workspace, listener);

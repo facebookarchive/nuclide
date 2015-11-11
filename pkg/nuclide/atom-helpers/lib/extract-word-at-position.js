@@ -16,13 +16,13 @@ function extractWordAtPosition(
   if (!wordRegex) {
     wordRegex = editor.getLastCursor().wordRegExp();
   }
-  var buffer = editor.getBuffer();
-  var {row, column} = position;
-  var rowRange = buffer.rangeForRow(row);
-  var matchData;
+  const buffer = editor.getBuffer();
+  const {row, column} = position;
+  const rowRange = buffer.rangeForRow(row);
+  let matchData;
   // Extract the expression from the row text.
   buffer.scanInRange(wordRegex, rowRange, (data) => {
-    var {range} = data;
+    const {range} = data;
     if (range.containsPoint(position)) {
       matchData = data;
     }

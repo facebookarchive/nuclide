@@ -8,11 +8,11 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-var invariant = require('assert');
-var {withLoadingNotification} = require('../lib/main');
+const invariant = require('assert');
+const {withLoadingNotification} = require('../lib/main');
 
 describe('withLoadingNotification', () => {
-  var mockNotif;
+  let mockNotif;
   beforeEach(() => {
     mockNotif = {
       dismiss: jasmine.createSpy('dismiss'),
@@ -24,11 +24,11 @@ describe('withLoadingNotification', () => {
 
   it('displays and closes a loading notification', () => {
     waitsForPromise(async () => {
-      var testValue = 1;
-      var promise = new Promise((resolve, reject) => {
+      const testValue = 1;
+      const promise = new Promise((resolve, reject) => {
         setTimeout(() => resolve(testValue), 10);
       });
-      var result = await withLoadingNotification(
+      const result = await withLoadingNotification(
         promise,
         'test message',
         /* delayMs */ 0,
@@ -42,7 +42,7 @@ describe('withLoadingNotification', () => {
 
   it('displays and closes a loading notification for errors', () => {
     waitsForPromise(async () => {
-      var promise = new Promise((resolve, reject) => {
+      const promise = new Promise((resolve, reject) => {
         setTimeout(() => reject(), 10);
       });
       try {
@@ -60,11 +60,11 @@ describe('withLoadingNotification', () => {
 
   it('does nothing for fast promises', () => {
     waitsForPromise(async () => {
-      var testValue = 1;
-      var promise = new Promise((resolve, reject) => {
+      const testValue = 1;
+      const promise = new Promise((resolve, reject) => {
         setTimeout(() => resolve(testValue), 0);
       });
-      var result = await withLoadingNotification(
+      const result = await withLoadingNotification(
         promise,
         'test message',
         /* delayMs */ 10,

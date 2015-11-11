@@ -8,18 +8,18 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-var invariant = require('assert');
-var {Point} = require('atom');
-var mouseListenerForTextEditor = require('../lib/mouse-listener-for-text-editor');
+const invariant = require('assert');
+const {Point} = require('atom');
+const mouseListenerForTextEditor = require('../lib/mouse-listener-for-text-editor');
 
 // Make this a bit more than the actual debounce time. Even though the tests use the mocked clock,
 // it still seems to occasionally flake out.
-var DEBOUNCE_TIME = 210;
+const DEBOUNCE_TIME = 210;
 
 describe('mouseListenerForTextEditor', () => {
-  var textEditor: ?atom$TextEditor;
-  var textEditorView: ?atom$TextEditorElement;
-  var mouseListener;
+  let textEditor: ?atom$TextEditor;
+  let textEditorView: ?atom$TextEditorElement;
+  let mouseListener;
   beforeEach(() => waitsForPromise(async () => {
     textEditor = await atom.workspace.open('mouse-listener-for-text-editor/meow.txt');
     textEditorView = atom.views.getView(textEditor);
@@ -54,17 +54,17 @@ describe('mouseListenerForTextEditor', () => {
     screenPosition: Point
   ): {clientX: number; clientY: number} {
     invariant(textEditorView);
-    var positionOffset = textEditorView.pixelPositionForScreenPosition(screenPosition);
-    var component = textEditorView.component;
+    const positionOffset = textEditorView.pixelPositionForScreenPosition(screenPosition);
+    const component = textEditorView.component;
     invariant(component);
-    var scrollViewClientRect = component.domNode
+    const scrollViewClientRect = component.domNode
         .querySelector('.scroll-view')
         .getBoundingClientRect();
     invariant(textEditor);
     // $FlowFixMe: Use of private method.
-    var clientX = scrollViewClientRect.left + positionOffset.left - textEditor.getScrollLeft();
+    const clientX = scrollViewClientRect.left + positionOffset.left - textEditor.getScrollLeft();
     // $FlowFixMe: Use of private method.
-    var clientY = scrollViewClientRect.top + positionOffset.top - textEditor.getScrollTop();
+    const clientY = scrollViewClientRect.top + positionOffset.top - textEditor.getScrollTop();
     return {clientX, clientY};
   }
 
@@ -77,13 +77,13 @@ describe('mouseListenerForTextEditor', () => {
 
   describe('onDidPositionChange', () => {
     it('calls the callbacks for onDidPositionChange and updates the last position', () => {
-      var position = new Point(0, 1);
+      const position = new Point(0, 1);
 
-      var fn: any = jasmine.createSpy('fn');
+      const fn: any = jasmine.createSpy('fn');
       invariant(mouseListener);
-      var subscription = mouseListener.onDidPositionChange(fn);
+      const subscription = mouseListener.onDidPositionChange(fn);
 
-      var event = new MouseEvent('mousemove', clientCoordinatesForScreenPosition(position));
+      const event = new MouseEvent('mousemove', clientCoordinatesForScreenPosition(position));
       window.dispatchEvent(event);
 
       expect(fn).toHaveBeenCalledWith({nativeEvent: event, position});
@@ -94,11 +94,11 @@ describe('mouseListenerForTextEditor', () => {
     });
 
     it('truncates to the position of the last character on a line', () => {
-      var fn: any = jasmine.createSpy('fn');
+      const fn: any = jasmine.createSpy('fn');
       invariant(mouseListener);
-      var subscription = mouseListener.onDidPositionChange(fn);
+      const subscription = mouseListener.onDidPositionChange(fn);
 
-      var event = new MouseEvent(
+      const event = new MouseEvent(
         'mousemove',
         clientCoordinatesForScreenPosition(new Point(0, 100)));
       window.dispatchEvent(event);
@@ -109,22 +109,22 @@ describe('mouseListenerForTextEditor', () => {
     });
 
     it('debounces the events', () => {
-      var fn: any = jasmine.createSpy('fn');
+      const fn: any = jasmine.createSpy('fn');
       invariant(mouseListener);
-      var subscription = mouseListener.onDidPositionChange(fn);
+      const subscription = mouseListener.onDidPositionChange(fn);
 
-      var position1 = new Point(0, 1);
-      var event1 = new MouseEvent('mousemove', clientCoordinatesForScreenPosition(position1));
+      const position1 = new Point(0, 1);
+      const event1 = new MouseEvent('mousemove', clientCoordinatesForScreenPosition(position1));
       window.dispatchEvent(event1);
 
-      var position2 = new Point(0, 2);
-      var event2 = new MouseEvent('mousemove', clientCoordinatesForScreenPosition(position2));
+      const position2 = new Point(0, 2);
+      const event2 = new MouseEvent('mousemove', clientCoordinatesForScreenPosition(position2));
       window.dispatchEvent(event2);
 
       advanceClock(DEBOUNCE_TIME);
 
-      var position3 = new Point(0, 3);
-      var event3 = new MouseEvent('mousemove', clientCoordinatesForScreenPosition(position3));
+      const position3 = new Point(0, 3);
+      const event3 = new MouseEvent('mousemove', clientCoordinatesForScreenPosition(position3));
       window.dispatchEvent(event3);
 
       expect(fn).toHaveBeenCalledWith({nativeEvent: event1, position: position1});
@@ -135,14 +135,14 @@ describe('mouseListenerForTextEditor', () => {
     });
 
     it('works even if the text editor is opened in multiple panes', () => {
-      var fn: any = jasmine.createSpy('fn');
+      const fn: any = jasmine.createSpy('fn');
       invariant(mouseListener);
-      var subscription = mouseListener.onDidPositionChange(fn);
+      const subscription = mouseListener.onDidPositionChange(fn);
 
       atom.workspace.getActivePane().splitUp({copyActiveItem: true});
 
-      var position1 = new Point(0, 1);
-      var event1 = new MouseEvent('mousemove', clientCoordinatesForScreenPosition(position1));
+      const position1 = new Point(0, 1);
+      const event1 = new MouseEvent('mousemove', clientCoordinatesForScreenPosition(position1));
       window.dispatchEvent(event1);
 
       expect(fn).toHaveBeenCalledWith({nativeEvent: event1, position: position1});
@@ -153,19 +153,19 @@ describe('mouseListenerForTextEditor', () => {
 
     it('does not call if the mouse moved pixels but did ' +
     'not change text editor screen positions', () => {
-      var fn: any = jasmine.createSpy('fn');
+      const fn: any = jasmine.createSpy('fn');
       invariant(mouseListener);
-      var subscription = mouseListener.onDidPositionChange(fn);
+      const subscription = mouseListener.onDidPositionChange(fn);
 
-      var position1 = new Point(0, 1);
-      var event1 = new MouseEvent('mousemove', clientCoordinatesForScreenPosition(position1));
+      const position1 = new Point(0, 1);
+      const event1 = new MouseEvent('mousemove', clientCoordinatesForScreenPosition(position1));
       window.dispatchEvent(event1);
 
       advanceClock(DEBOUNCE_TIME);
 
-      var coordinates2 = clientCoordinatesForScreenPosition(position1);
+      const coordinates2 = clientCoordinatesForScreenPosition(position1);
       coordinates2.clientX++;
-      var event2 = new MouseEvent('mousemove', coordinates2);
+      const event2 = new MouseEvent('mousemove', coordinates2);
       window.dispatchEvent(event2);
 
       expect(fn).toHaveBeenCalledWith({nativeEvent: event1, position: position1});
@@ -176,20 +176,20 @@ describe('mouseListenerForTextEditor', () => {
 
     describe('dispose', () => {
       it('stops calling after the return value is disposed', () => {
-        var fn: any = jasmine.createSpy('fn');
+        const fn: any = jasmine.createSpy('fn');
         invariant(mouseListener);
-        var subscription = mouseListener.onDidPositionChange(fn);
+        const subscription = mouseListener.onDidPositionChange(fn);
 
-        var position1 = new Point(0, 1);
-        var event1 = new MouseEvent('mousemove', clientCoordinatesForScreenPosition(position1));
+        const position1 = new Point(0, 1);
+        const event1 = new MouseEvent('mousemove', clientCoordinatesForScreenPosition(position1));
         window.dispatchEvent(event1);
 
         advanceClock(DEBOUNCE_TIME);
 
         subscription.dispose();
 
-        var position2 = new Point(0, 2);
-        var event2 = new MouseEvent('mousemove', clientCoordinatesForScreenPosition(position2));
+        const position2 = new Point(0, 2);
+        const event2 = new MouseEvent('mousemove', clientCoordinatesForScreenPosition(position2));
         window.dispatchEvent(event2);
 
         expect(fn).toHaveBeenCalledWith({nativeEvent: event1, position: position1});
@@ -198,16 +198,16 @@ describe('mouseListenerForTextEditor', () => {
 
       it('calls after dispose if another client is still using the listener', () => {
         invariant(textEditor);
-        var mouseListener2 = mouseListenerForTextEditor(textEditor);
+        const mouseListener2 = mouseListenerForTextEditor(textEditor);
         expect(mouseListener2).toBe(mouseListener);
         mouseListener2.dispose();
 
-        var fn: any = jasmine.createSpy('fn');
+        const fn: any = jasmine.createSpy('fn');
         invariant(mouseListener);
-        var subscription = mouseListener.onDidPositionChange(fn);
+        const subscription = mouseListener.onDidPositionChange(fn);
 
-        var position = new Point(0, 1);
-        var event = new MouseEvent('mousemove', clientCoordinatesForScreenPosition(position));
+        const position = new Point(0, 1);
+        const event = new MouseEvent('mousemove', clientCoordinatesForScreenPosition(position));
         window.dispatchEvent(event);
 
         expect(fn).toHaveBeenCalledWith({nativeEvent: event, position});
@@ -221,14 +221,14 @@ describe('mouseListenerForTextEditor', () => {
         mouseListener.dispose();
 
         invariant(textEditor);
-        var mouseListener2 = mouseListenerForTextEditor(textEditor);
+        const mouseListener2 = mouseListenerForTextEditor(textEditor);
         expect(mouseListener2).not.toBe(mouseListener);
 
-        var fn: any = jasmine.createSpy('fn');
-        var subscription = mouseListener2.onDidPositionChange(fn);
+        const fn: any = jasmine.createSpy('fn');
+        const subscription = mouseListener2.onDidPositionChange(fn);
 
-        var position = new Point(0, 1);
-        var event = new MouseEvent('mousemove', clientCoordinatesForScreenPosition(position));
+        const position = new Point(0, 1);
+        const event = new MouseEvent('mousemove', clientCoordinatesForScreenPosition(position));
         window.dispatchEvent(event);
 
         expect(fn).toHaveBeenCalledWith({nativeEvent: event, position});
@@ -240,16 +240,16 @@ describe('mouseListenerForTextEditor', () => {
 
       it('still calls after another client of mouse listener disposes it', () => {
         invariant(textEditor);
-        var mouseListener2 = mouseListenerForTextEditor(textEditor);
+        const mouseListener2 = mouseListenerForTextEditor(textEditor);
         expect(mouseListener2).toBe(mouseListener);
         mouseListener2.dispose();
 
-        var fn: any = jasmine.createSpy('fn');
+        const fn: any = jasmine.createSpy('fn');
         invariant(mouseListener);
-        var subscription = mouseListener.onDidPositionChange(fn);
+        const subscription = mouseListener.onDidPositionChange(fn);
 
-        var position = new Point(0, 1);
-        var event = new MouseEvent('mousemove', clientCoordinatesForScreenPosition(position));
+        const position = new Point(0, 1);
+        const event = new MouseEvent('mousemove', clientCoordinatesForScreenPosition(position));
         window.dispatchEvent(event);
 
         expect(fn).toHaveBeenCalledWith({nativeEvent: event, position});
@@ -259,12 +259,12 @@ describe('mouseListenerForTextEditor', () => {
       });
 
       it('stops calling after the mouse listener is disposed', () => {
-        var fn: any = jasmine.createSpy('fn');
+        const fn: any = jasmine.createSpy('fn');
         invariant(mouseListener);
-        var subscription = mouseListener.onDidPositionChange(fn);
+        const subscription = mouseListener.onDidPositionChange(fn);
 
-        var position1 = new Point(0, 1);
-        var event1 = new MouseEvent('mousemove', clientCoordinatesForScreenPosition(position1));
+        const position1 = new Point(0, 1);
+        const event1 = new MouseEvent('mousemove', clientCoordinatesForScreenPosition(position1));
         window.dispatchEvent(event1);
 
         advanceClock(DEBOUNCE_TIME);
@@ -272,8 +272,8 @@ describe('mouseListenerForTextEditor', () => {
         invariant(mouseListener);
         mouseListener.dispose();
 
-        var position2 = new Point(0, 2);
-        var event2 = new MouseEvent('mousemove', clientCoordinatesForScreenPosition(position2));
+        const position2 = new Point(0, 2);
+        const event2 = new MouseEvent('mousemove', clientCoordinatesForScreenPosition(position2));
         window.dispatchEvent(event2);
 
         expect(fn).toHaveBeenCalledWith({nativeEvent: event1, position: position1});
@@ -283,19 +283,19 @@ describe('mouseListenerForTextEditor', () => {
       });
 
       it('stops calling after the text editor is destroyed', () => {
-        var fn: any = jasmine.createSpy('fn');
+        const fn: any = jasmine.createSpy('fn');
         invariant(mouseListener);
-        var subscription = mouseListener.onDidPositionChange(fn);
+        const subscription = mouseListener.onDidPositionChange(fn);
 
-        var position1 = new Point(0, 1);
-        var event1 = new MouseEvent('mousemove', clientCoordinatesForScreenPosition(position1));
+        const position1 = new Point(0, 1);
+        const event1 = new MouseEvent('mousemove', clientCoordinatesForScreenPosition(position1));
         window.dispatchEvent(event1);
 
         advanceClock(DEBOUNCE_TIME);
 
         // We have to set these values before destroying the text editor because they depend on it.
-        var position2 = new Point(0, 2);
-        var event2 = new MouseEvent('mousemove', clientCoordinatesForScreenPosition(position2));
+        const position2 = new Point(0, 2);
+        const event2 = new MouseEvent('mousemove', clientCoordinatesForScreenPosition(position2));
 
         invariant(textEditor);
         textEditor.destroy();

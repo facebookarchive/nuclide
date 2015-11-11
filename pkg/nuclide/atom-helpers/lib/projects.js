@@ -9,13 +9,13 @@
  * the root directory of this source tree.
  */
 
-var {Emitter, Directory} = require('atom');
-var {isRemote} = require('nuclide-remote-uri');
-var {singleton} = require('nuclide-commons');
+const {Emitter, Directory} = require('atom');
+const {isRemote} = require('nuclide-remote-uri');
+const {singleton} = require('nuclide-commons');
 
-var REMOVE_PROJECT_EVENT = 'did-remove-project';
-var ADD_PROJECT_EVENT = 'did-add-project';
-var PROJECT_PATH_WATCHER_INSTANCE_KEY = '_nuclide_project_path_watcher';
+const REMOVE_PROJECT_EVENT = 'did-remove-project';
+const ADD_PROJECT_EVENT = 'did-add-project';
+const PROJECT_PATH_WATCHER_INSTANCE_KEY = '_nuclide_project_path_watcher';
 
 function getValidProjectPaths(): Array<string> {
   return atom.project.getDirectories().filter(directory => {
@@ -40,14 +40,14 @@ class ProjectManager {
   }
 
   _updateProjectPaths(newProjectPaths: Array<string>): void {
-    var oldProjectPathSet = this._projectPaths;
-    var newProjectPathSet = new Set(getValidProjectPaths());
-    for (var oldProjectPath of oldProjectPathSet) {
+    const oldProjectPathSet = this._projectPaths;
+    const newProjectPathSet = new Set(getValidProjectPaths());
+    for (const oldProjectPath of oldProjectPathSet) {
       if (!newProjectPathSet.has(oldProjectPath)) {
         this._emitter.emit(REMOVE_PROJECT_EVENT, oldProjectPath);
       }
     }
-    for (var newProjectPath of newProjectPathSet) {
+    for (const newProjectPath of newProjectPathSet) {
       if (!oldProjectPathSet.has(newProjectPath)) {
         this._emitter.emit(ADD_PROJECT_EVENT, newProjectPath);
       }
@@ -56,7 +56,7 @@ class ProjectManager {
   }
 
   observeProjectPaths(callback: (projectPath: string) => void): atom$Disposable {
-    for (var projectPath of this._projectPaths) {
+    for (const projectPath of this._projectPaths) {
       callback(projectPath);
     }
     return this._emitter.on(ADD_PROJECT_EVENT, callback);

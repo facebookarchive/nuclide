@@ -19,16 +19,16 @@ import {CompositeDisposable} from 'atom';
  *   to match that of the specified scopeName, if the grammar is available.
  */
 function registerGrammarForFileExtension(scopeName: string, extension: string): atom$IDisposable {
-  var subscriptions = new CompositeDisposable();
+  const subscriptions = new CompositeDisposable();
 
   // If the grammar that corresponds to the scopeName is already registered, then start monitoring
   // TextEditors right away. If not, wait for the grammar to be registered before monitoring
   // TextEditors.
-  var registeredGrammar = atom.grammars.grammarForScopeName(scopeName);
+  const registeredGrammar = atom.grammars.grammarForScopeName(scopeName);
   if (registeredGrammar) {
     setEditorObservations(registeredGrammar);
   } else {
-    var grammarObserver = atom.grammars.onDidAddGrammar((grammar: atom$Grammar) => {
+    const grammarObserver = atom.grammars.onDidAddGrammar((grammar: atom$Grammar) => {
       if (grammar.scopeName === scopeName) {
         setEditorObservations(grammar);
         subscriptions.remove(grammarObserver);
@@ -39,8 +39,8 @@ function registerGrammarForFileExtension(scopeName: string, extension: string): 
   }
 
   function setEditorObservations(grammar: atom$Grammar) {
-    var subscription = atom.workspace.observeTextEditors((editor: TextEditor) => {
-      var path = editor.getPath();
+    const subscription = atom.workspace.observeTextEditors((editor: TextEditor) => {
+      const path = editor.getPath();
       if (path && path.endsWith(extension)) {
         editor.setGrammar(grammar);
       }

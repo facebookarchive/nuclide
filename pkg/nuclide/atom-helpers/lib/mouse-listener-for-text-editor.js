@@ -8,15 +8,15 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-var invariant = require('assert');
-var {CompositeDisposable, Disposable, Emitter, Point} = require('atom');
+const invariant = require('assert');
+const {CompositeDisposable, Disposable, Emitter, Point} = require('atom');
 
 type PositionChangeEvent = {
   nativeEvent: MouseEvent;
   position: Point;
 };
 
-var DEBOUNCE_TIME = 200;
+const DEBOUNCE_TIME = 200;
 
 class WindowMouseListener {
   _subscriptions: CompositeDisposable;
@@ -27,8 +27,8 @@ class WindowMouseListener {
   constructor() {
     this._subscriptions = new CompositeDisposable();
 
-    var {debounce} = require('nuclide-commons');
-    var handler = debounce(
+    const {debounce} = require('nuclide-commons');
+    const handler = debounce(
         event => this._handleMouseMove(event),
         DEBOUNCE_TIME,
         /* immediate */ true);
@@ -49,13 +49,13 @@ class WindowMouseListener {
   mouseListenerForTextEditor(textEditor: TextEditor): TextEditorMouseListener {
     // Keep track of how many mouse listeners were returned for the text editor
     // so we know when it's safe to actually dispose it.
-    var count = this._textEditorMouseListenersCountMap.get(textEditor) || 0;
+    const count = this._textEditorMouseListenersCountMap.get(textEditor) || 0;
     this._textEditorMouseListenersCountMap.set(textEditor, count + 1);
 
-    var mouseListener = this._textEditorMouseListenersMap.get(textEditor);
+    let mouseListener = this._textEditorMouseListenersMap.get(textEditor);
     if (!mouseListener) {
       mouseListener = new TextEditorMouseListener(textEditor, /* shouldDispose */ () => {
-        var currentCount = this._textEditorMouseListenersCountMap.get(textEditor) || 0;
+        const currentCount = this._textEditorMouseListenersCountMap.get(textEditor) || 0;
         if (currentCount === 1) {
           this._textEditorMouseListenersCountMap.delete(textEditor);
           this._textEditorMouseListenersMap.delete(textEditor);
@@ -67,7 +67,7 @@ class WindowMouseListener {
       });
       this._textEditorMouseListenersMap.set(textEditor, mouseListener);
 
-      var destroySubscription = textEditor.onDidDestroy(() => {
+      const destroySubscription = textEditor.onDidDestroy(() => {
         mouseListener.dispose();
         this._textEditorMouseListenersMap.delete(textEditor);
         this._textEditorMouseListenersCountMap.delete(textEditor);
@@ -128,13 +128,13 @@ class TextEditorMouseListener {
   }
 
   screenPositionForMouseEvent(event: MouseEvent): Point {
-    var component = this._textEditorView.component;
+    const component = this._textEditorView.component;
     invariant(component);
     return component.screenPositionForMouseEvent(event);
   }
 
   _handleMouseMove(event: MouseEvent): void {
-    var position = this.screenPositionForMouseEvent(event);
+    const position = this.screenPositionForMouseEvent(event);
     if (position.compare(this._lastPosition) !== 0) {
       this._lastPosition = position;
       this._emitter.emit('did-position-change', {

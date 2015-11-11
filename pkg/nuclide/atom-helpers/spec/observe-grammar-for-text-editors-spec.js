@@ -9,21 +9,21 @@
  * the root directory of this source tree.
  */
 
-var path = require('path');
-var {observeGrammarForTextEditors} = require('../lib/main');
+const path = require('path');
+const {observeGrammarForTextEditors} = require('../lib/main');
 
 describe('observeGrammarForTextEditors', () => {
   atom.grammars.loadGrammarSync(path.join(__dirname, 'grammars/objective-c.cson'));
-  var objcGrammar = atom.grammars.grammarForScopeName('source.objc');
+  const objcGrammar = atom.grammars.grammarForScopeName('source.objc');
   atom.grammars.loadGrammarSync(path.join(__dirname, 'grammars/javascript.cson'));
-  var jsGrammar = atom.grammars.grammarForScopeName('source.js');
+  const jsGrammar = atom.grammars.grammarForScopeName('source.js');
 
   it('calls for existing text editors', () => {
     waitsForPromise(async () => {
-      var textEditor = await atom.workspace.open('file.m');
+      const textEditor = await atom.workspace.open('file.m');
 
-      var fn: any = jasmine.createSpy('fn');
-      var subscription = observeGrammarForTextEditors(fn);
+      const fn: any = jasmine.createSpy('fn');
+      const subscription = observeGrammarForTextEditors(fn);
       expect(fn).toHaveBeenCalledWith(textEditor, objcGrammar);
       expect(fn.callCount).toBe(1);
 
@@ -33,9 +33,9 @@ describe('observeGrammarForTextEditors', () => {
 
   it('calls for new text editors', () => {
     waitsForPromise(async () => {
-      var fn: any = jasmine.createSpy('fn');
-      var subscription = observeGrammarForTextEditors(fn);
-      var textEditor = await atom.workspace.open('file.m');
+      const fn: any = jasmine.createSpy('fn');
+      const subscription = observeGrammarForTextEditors(fn);
+      const textEditor = await atom.workspace.open('file.m');
 
       expect(fn).toHaveBeenCalledWith(textEditor, objcGrammar);
       expect(fn.callCount).toBe(1);
@@ -46,10 +46,10 @@ describe('observeGrammarForTextEditors', () => {
 
   it('calls when a text editor changes grammars', () => {
     waitsForPromise(async () => {
-      var fn: any = jasmine.createSpy('fn');
-      var subscription = observeGrammarForTextEditors(fn);
+      const fn: any = jasmine.createSpy('fn');
+      const subscription = observeGrammarForTextEditors(fn);
       // $FlowIssue
-      var textEditor = await atom.workspace.open('file.m');
+      const textEditor = await atom.workspace.open('file.m');
       textEditor.setGrammar(jsGrammar);
 
       expect(fn).toHaveBeenCalledWith(textEditor, objcGrammar);
@@ -62,10 +62,10 @@ describe('observeGrammarForTextEditors', () => {
 
   it('does not call after the return value is disposed', () => {
     waitsForPromise(async () => {
-      var fn: any = jasmine.createSpy('fn');
-      var subscription = observeGrammarForTextEditors(fn);
+      const fn: any = jasmine.createSpy('fn');
+      const subscription = observeGrammarForTextEditors(fn);
       // $FlowIssue
-      var textEditor = await atom.workspace.open('file.m');
+      const textEditor = await atom.workspace.open('file.m');
 
       subscription.dispose();
       textEditor.setGrammar(jsGrammar);
@@ -79,12 +79,12 @@ describe('observeGrammarForTextEditors', () => {
 
   it('calls for other clients after another listener is disposed', () => {
     waitsForPromise(async () => {
-      var fn: any = jasmine.createSpy('fn');
-      var subscription = observeGrammarForTextEditors(fn);
-      var fn2: any = jasmine.createSpy('fn2');
-      var subscription2 = observeGrammarForTextEditors(fn2);
+      const fn: any = jasmine.createSpy('fn');
+      const subscription = observeGrammarForTextEditors(fn);
+      const fn2: any = jasmine.createSpy('fn2');
+      const subscription2 = observeGrammarForTextEditors(fn2);
       // $FlowIssue
-      var textEditor = await atom.workspace.open('file.m');
+      const textEditor = await atom.workspace.open('file.m');
 
       subscription.dispose();
 
