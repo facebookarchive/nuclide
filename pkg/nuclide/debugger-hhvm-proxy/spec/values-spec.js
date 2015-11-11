@@ -25,8 +25,8 @@ describe('debugger-hhvm-proxy convertValue', () => {
           address: '140735826684480',
           type: 'string',
           size: '15',
-          encoding: 'base64'
-        }
+          encoding: 'base64',
+        },
       }
     )).toEqual({
       type: 'string',
@@ -43,12 +43,30 @@ describe('debugger-hhvm-proxy convertValue', () => {
           name: '$argc',
           fullname: '$argc',
           address: '140735826684880',
-          type: 'int'
-        }
+          type: 'int',
+        },
       }
     )).toEqual({
       type: 'number',
-      value: 1,
+      value: '1',
+    });
+  });
+
+  it('64bit int', () => {
+    expect(convertValue(
+      {},
+      {
+        _: '-5560108255872548864',
+        $: {
+          name: '$bitInt',
+          fullname: '$bitInt',
+          address: '140735826684880',
+          type: 'int',
+        },
+      }
+    )).toEqual({
+      type: 'number',
+      value: '-5560108255872548864',
     });
   });
 
@@ -61,12 +79,12 @@ describe('debugger-hhvm-proxy convertValue', () => {
           name: '$arg',
           fullname: '$arg',
           address: '140735826684880',
-          type: 'float'
-        }
+          type: 'float',
+        },
       }
     )).toEqual({
       type: 'number',
-      value: 42.5,
+      value: '42.5',
     });
   });
 
@@ -79,8 +97,8 @@ describe('debugger-hhvm-proxy convertValue', () => {
           name: '$arg',
           fullname: '$arg',
           address: '140735826684880',
-          type: 'bool'
-        }
+          type: 'bool',
+        },
       }
     )).toEqual({
       type: 'boolean',
@@ -96,8 +114,8 @@ describe('debugger-hhvm-proxy convertValue', () => {
           name: '$HTTP_RAW_POST_DATA',
           fullname: '$HTTP_RAW_POST_DATA',
           address: '140735826684880',
-          type: 'null'
-        }
+          type: 'null',
+        },
       }
     )).toEqual({
       type: 'undefined',
@@ -118,7 +136,7 @@ describe('debugger-hhvm-proxy convertValue', () => {
           children: '1',
           numchildren: '1',
           page: '0',
-          pagesize: '32'
+          pagesize: '32',
         },
         property:[
           {
@@ -129,10 +147,10 @@ describe('debugger-hhvm-proxy convertValue', () => {
               address: '140735826684480',
               type: 'string',
               size: '15',
-              encoding: 'base64'
-            }
-          }
-        ]
+              encoding: 'base64',
+            },
+          },
+        ],
       }
     )).toEqual({
       description: 'Array[1]',

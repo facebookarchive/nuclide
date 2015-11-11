@@ -80,7 +80,7 @@ describe('debugger-hhvm-proxy properties', () => {
         name: '1',
         value: {
           type: 'number',
-          value: 42,
+          value: '42',
         },
       },
     ]);
