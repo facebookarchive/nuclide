@@ -8,34 +8,34 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-var arcanist = require('../lib/ArcanistBaseService');
-var path = require('path');
-var fs = require('fs-plus');
-var temp = require('temp').track();
+const arcanist = require('../lib/ArcanistBaseService');
+const path = require('path');
+const fs = require('fs-plus');
+const temp = require('temp').track();
 
 import {uncachedRequire} from 'nuclide-test-helpers';
 
-var rootConfig = {
+const rootConfig = {
   'project_id': 'project1',
 };
-var nestedConfig = {
+const nestedConfig = {
   'project_id': 'project-nested',
 };
 
 describe('nuclide-arcanist-base', () => {
-  var rootPath: any;
-  var dirPath: any;
-  var file1Path: any;
-  var file2Path: any;
-  var nestedPath: any;
-  var tempPath: any;
+  let rootPath: any;
+  let dirPath: any;
+  let file1Path: any;
+  let file2Path: any;
+  let nestedPath: any;
+  let tempPath: any;
 
   beforeEach(() => {
     waitsForPromise(async () => {
       // Copy the contents of 'fixtures' into a temp directory
       // ... and rename any .arcconfig.test -> .arcconfig
       tempPath = fs.absolute(temp.mkdirSync());
-      var fixturesPath = path.join(__dirname, 'fixtures');
+      const fixturesPath = path.join(__dirname, 'fixtures');
       fs.copySync(fixturesPath, tempPath);
 
       function adjustArcConfig(dir: string) {

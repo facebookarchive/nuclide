@@ -16,7 +16,7 @@ import type {
 import {CompositeDisposable} from 'atom';
 import invariant from 'assert';
 
-var subscriptions: ?CompositeDisposable = null;
+let subscriptions: ?CompositeDisposable = null;
 
 let busySignalProvider: ?BusySignalProviderBaseT = null;
 
@@ -47,7 +47,7 @@ module.exports = {
       return;
     }
 
-    var {registerGrammarForFileExtension} = require('nuclide-atom-helpers');
+    const {registerGrammarForFileExtension} = require('nuclide-atom-helpers');
     subscriptions = new CompositeDisposable();
     subscriptions.add(registerGrammarForFileExtension('source.json', '.arcconfig'));
   },

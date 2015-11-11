@@ -91,7 +91,7 @@ export class ArcanistDiagnosticsProvider {
         return !blackListedLinters.has(diagnostic.code);
       });
       const fileDiagnostics = filteredDiagnostics.map(diagnostic => {
-        var range = new Range(
+        const range = new Range(
           [diagnostic.row, diagnostic.col],
           [diagnostic.row, textEditor.getBuffer().lineLengthForRow(diagnostic.row)]
         );

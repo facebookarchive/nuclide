@@ -30,8 +30,8 @@ const arcProjectMap: Map<?NuclideUri, ?Object> = new Map();
 
 export async function findArcConfigDirectory(fileName: NuclideUri): Promise<?NuclideUri> {
   if (!arcConfigDirectoryMap.has(fileName)) {
-    var findNearestFile = require('nuclide-commons').findNearestFile;
-    var result = await findNearestFile(ARC_CONFIG_FILE_NAME, fileName);
+    const findNearestFile = require('nuclide-commons').findNearestFile;
+    const result = await findNearestFile(ARC_CONFIG_FILE_NAME, fileName);
     arcConfigDirectoryMap.set(fileName, result);
   }
   return arcConfigDirectoryMap.get(fileName);
@@ -54,13 +54,13 @@ export async function readArcConfig(fileName: NuclideUri): Promise<?any> {
 }
 
 export async function findArcProjectIdOfPath(fileName: NuclideUri): Promise<?string> {
-  var project = await readArcConfig(fileName);
+  const project = await readArcConfig(fileName);
   return project ? project['project_id'] : null;
 }
 
 export async function getProjectRelativePath(fileName: NuclideUri): Promise<?string> {
-  var arcPath = await findArcConfigDirectory(fileName);
-  var path = require('path');
+  const arcPath = await findArcConfigDirectory(fileName);
+  const path = require('path');
   return arcPath && fileName ? path.relative(arcPath, fileName) : null;
 }
 
@@ -93,14 +93,14 @@ export async function findDiagnostics(pathToFiles: Array<NuclideUri>):
 async function execArcLint(cwd: string, filePaths: Array<NuclideUri>):
     Promise<Array<ArcDiagnostic>> {
   const args: Array<string> = ['lint', '--output', 'json', ...filePaths];
-  var options = {'cwd': cwd};
-  var {asyncExecute} = require('nuclide-commons');
-  var result = await asyncExecute('arc', args, options);
+  const options = {'cwd': cwd};
+  const {asyncExecute} = require('nuclide-commons');
+  const result = await asyncExecute('arc', args, options);
 
   const output: Map<string, Array<Object>> = new Map();
   // Arc lint outputs multiple JSON objects on mutliple lines. Split them, then merge the
   // results.
-  for (let line of result.stdout.trim().split('\n')) {
+  for (const line of result.stdout.trim().split('\n')) {
     let json;
     try {
       json = JSON.parse(line);
@@ -108,13 +108,13 @@ async function execArcLint(cwd: string, filePaths: Array<NuclideUri>):
       logger.error('Error parsing `arc lint` JSON output', result.stdout);
       return [];
     }
-    for (let path of Object.keys(json)) {
+    for (const path of Object.keys(json)) {
       const errorsToAdd = json[path];
       if (!output.has(path)) {
         output.set(path, []);
       }
-      let errors = output.get(path);
-      for (let error of errorsToAdd) {
+      const errors = output.get(path);
+      for (const error of errorsToAdd) {
         errors.push(error);
       }
     }
@@ -149,14 +149,14 @@ function convertLints(
 ): Array<ArcDiagnostic> {
   return lints.map((lint) => {
     // Choose an appropriate level based on lint['severity'].
-    var severity = lint['severity'];
-    var level = severity === 'error' ? 'Error' : 'Warning';
+    const severity = lint['severity'];
+    const level = severity === 'error' ? 'Error' : 'Warning';
 
-    var line = lint['line'];
+    const line = lint['line'];
     // Sometimes the linter puts in global errors on line 0, which will result
     // in a negative index. We offset those back to the first line.
-    var col = Math.max(0, lint['char'] - 1);
-    var row = Math.max(0, line - 1);
+    const col = Math.max(0, lint['char'] - 1);
+    const row = Math.max(0, line - 1);
 
     return {
       type: level,
