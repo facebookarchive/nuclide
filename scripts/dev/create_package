@@ -82,14 +82,42 @@ ATOM_MAIN_JS = """\
 
 %s
 
-module.exports = {
+import {CompositeDisposable} from 'atom';
 
-  activate(state: ?Object): void {
+class Activation {
+  _disposables: CompositeDisposable;
+
+  constructor(state: ?Object) {
+    // TODO(%s): Assign all fields here so they are
+    // non-nullable for the lifetime of Activation.
+    this._disposables = new CompositeDisposable();
+  }
+
+  activate() {
     // TODO(%s): Add activation code here.
-  },
+  }
 
-};
-""" % (COPYRIGHT_BLOCK, USERNAME)
+  dispose() {
+    this._disposables.dispose();
+  }
+}
+
+let activation: ?Activation = null;
+
+export function activate(state: ?Object) {
+  if (!activation) {
+    activation = new Activation(state);
+    activation.activate();
+  }
+}
+
+export function deactivate() {
+  if (activation) {
+    activation.dispose();
+    activation = null;
+  }
+}
+""" % (COPYRIGHT_BLOCK, USERNAME, USERNAME)
 
 NODE_MAIN_JS = """\
 'use babel';
