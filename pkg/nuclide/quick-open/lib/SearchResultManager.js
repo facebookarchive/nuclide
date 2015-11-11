@@ -397,8 +397,8 @@ class SearchResultManager {
         directoryProvider.executeQuery(query, directory).then(result => {
           track(AnalyticsEvents.QUERY_SOURCE_PROVIDER, {
             'quickopen-source-provider': directoryProvider.getName(),
-            'quickopen-query-duration': performance.now() - startTime,
-            'quickopen-result-count': result.length,
+            'quickopen-query-duration': (performance.now() - startTime).toString(),
+            'quickopen-result-count': (result.length).toString(),
           });
           this.processResult(query, result, path, directoryProvider);
         });
