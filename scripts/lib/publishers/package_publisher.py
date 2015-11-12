@@ -21,7 +21,7 @@ from transpiler import Transpiler
 class PackagePublisher(object):
 
     @staticmethod
-    def create_package_publisher(path_to_nuclide_repo, master_tmpdir, github_access_token):
+    def create_package_publisher(path_to_nuclide_repo, master_tmpdir, github_access_token, npm_only):
         def get_list_of_packages(package_type):
             stdout = fs.cross_platform_check_output(
                     ['./scripts/dev/packages', '--package-type', package_type],
@@ -83,7 +83,8 @@ class PackagePublisher(object):
         # Note that the resulting publishers array will be organized such that all
         # Node packages appear in topologically sorted order followed by all Atom packages.
         process_packages(node_packages, is_npm=True)
-        process_packages(atom_packages, is_npm=False)
+        if not npm_only:
+            process_packages(atom_packages, is_npm=False)
         return PackagePublisher(publishers)
 
     def __init__(self, publishers):
