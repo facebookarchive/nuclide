@@ -33,7 +33,7 @@ def update_package_json_versions(package_name, package, nuclide_npm_dependencies
                 continue
             if version != NIL_SEMVER:
                 raise AssertionError('Local dependency %s in package %s was not at version 0.0.0' %
-                                     dependency, package_name)
+                                     (dependency, package_name))
             package[dependency_key][dependency] = new_semver(new_version)
     return package
 
