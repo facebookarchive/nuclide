@@ -19,7 +19,7 @@
     "nuclide-commons": "0.0.0",
     "nuclide-ui-pane-item": "0.0.0",
     "react-for-atom": "0.13.6",
-    "ws": "0.8.0"
+    "ws": "0.7.1"
   },
   "devDependencies": {
     "nuclide-external-interfaces": "0.0.0"
