@@ -37,37 +37,46 @@ export type ErrorMessage = {
   error: Object;
 };
 
+// It's impactful to memoize our requires here since these commons are so often used.
+const requireCache: {[id: string]: any} = {};
+function requireFromCache(id: string): any {
+  if (!requireCache.hasOwnProperty(id)) {
+    requireCache[id] = require(id);
+  }
+  return requireCache[id];
+}
+
 module.exports = {
 
   asyncFind<T>(items: Array<T>, test: any, thisArg: any): Promise<?T> {
-    return require('./promises').asyncFind(items, test, thisArg);
+    return requireFromCache('./promises').asyncFind(items, test, thisArg);
   },
 
   asyncExecute(command: string, args: Array<string>, options: any):
       Promise<process$asyncExecuteRet> {
-    return require('./process').asyncExecute(command, args, options);
+    return requireFromCache('./process').asyncExecute(command, args, options);
   },
 
   checkOutput(command: string, args: Array<string>, options: ?Object):
       Promise<process$asyncExecuteRet> {
-    return require('./process').checkOutput(command, args, options);
+    return requireFromCache('./process').checkOutput(command, args, options);
   },
 
   createArgsForScriptCommand(command: string, args?: Array<string> = []): Array<string> {
-    return require('./process').createArgsForScriptCommand(command, args);
+    return requireFromCache('./process').createArgsForScriptCommand(command, args);
   },
 
   createExecEnvironment(originalEnv: Object, commonBinaryPaths: Array<string>): Promise<Object> {
-    return require('./process').createExecEnvironment(originalEnv, commonBinaryPaths);
+    return requireFromCache('./process').createExecEnvironment(originalEnv, commonBinaryPaths);
   },
 
   denodeify(f: (...args: Array<any>) => any): (...args: Array<any>) => Promise<any> {
-    return require('./promises').denodeify(f);
+    return requireFromCache('./promises').denodeify(f);
   },
 
   safeSpawn(command: string, args?: Array<string>, options?: Object = {}):
       Promise<child_process$ChildProcess> {
-    return require('./process').safeSpawn(command, args, options);
+    return requireFromCache('./process').safeSpawn(command, args, options);
   },
 
   scriptSafeSpawn(
@@ -75,7 +84,7 @@ module.exports = {
     args?: Array<string> = [],
     options?: Object = {},
   ): Promise<child_process$ChildProcess> {
-    return require('./process').scriptSafeSpawn(command, args, options);
+    return requireFromCache('./process').scriptSafeSpawn(command, args, options);
   },
 
   scriptSafeSpawnAndObserveOutput(
@@ -83,146 +92,146 @@ module.exports = {
     args?: Array<string> = [],
     options?: Object = {},
   ): Observable<{stdout?: string; stderr?: string;}> {
-    return require('./process').scriptSafeSpawnAndObserveOutput(command, args, options);
+    return requireFromCache('./process').scriptSafeSpawnAndObserveOutput(command, args, options);
   },
 
   observeStream(process: stream$Readable): Observable<string> {
-    return require('./process').observeStream(process);
+    return requireFromCache('./process').observeStream(process);
   },
 
   observeProcessExit(createProcess: () => child_process$ChildProcess): Observable<number> {
-    return require('./process').observeProcessExit(createProcess);
+    return requireFromCache('./process').observeProcessExit(createProcess);
   },
 
   observeProcess(createProcess: () => child_process$ChildProcess): Observable<ProcessMessage> {
-    return require('./process').observeProcess(createProcess);
+    return requireFromCache('./process').observeProcess(createProcess);
   },
 
   readFile(filePath: string, options?: any): Promise<string | Buffer> {
-    return require('./filesystem').readFile(filePath, options);
+    return requireFromCache('./filesystem').readFile(filePath, options);
   },
 
-  toJsString(str: string) {
-    return require('./toJsString')(str);
+  toJsString(str: string): string {
+    return requireFromCache('./toJsString')(str);
   },
 
   findNearestFile(fileName: string, pathToDirectory: string): Promise<?string> {
-    return require('./filesystem').findNearestFile(fileName, pathToDirectory);
+    return requireFromCache('./filesystem').findNearestFile(fileName, pathToDirectory);
   },
 
   get array() {
-    return require('./array');
+    return requireFromCache('./array');
   },
 
   get set() {
-    return require('./set');
+    return requireFromCache('./set');
   },
 
   get map() {
-    return require('./map');
+    return requireFromCache('./map');
   },
 
   get object() {
-    return require('./object');
+    return requireFromCache('./object');
   },
 
   get fsPromise() {
-    return require('./filesystem');
+    return requireFromCache('./filesystem');
   },
 
   get httpPromise() {
-    return require('./http');
+    return requireFromCache('./http');
   },
 
   get strings() {
-    return require('./strings');
+    return requireFromCache('./strings');
   },
 
   get paths() {
-    return require('./paths');
+    return requireFromCache('./paths');
   },
 
   get PromisePool() {
-    return require('./PromiseExecutors').PromisePool;
+    return requireFromCache('./PromiseExecutors').PromisePool;
   },
 
   get PromiseQueue() {
-    return require('./PromiseExecutors').PromiseQueue;
+    return requireFromCache('./PromiseExecutors').PromiseQueue;
   },
 
   get extend() {
-    return require('./extend');
+    return requireFromCache('./extend');
   },
 
   get debounce() {
-    return require('./debounce');
+    return requireFromCache('./debounce');
   },
 
   get once() {
-    return require('./once');
+    return requireFromCache('./once');
   },
 
   get vcs() {
-    return require('./vcs');
+    return requireFromCache('./vcs');
   },
 
   get dnsUtils() {
-    return require('./dns_utils');
+    return requireFromCache('./dns_utils');
   },
 
   get env() {
-    return require('./environment');
+    return requireFromCache('./environment');
   },
 
   get promises() {
-    return require('./promises');
+    return requireFromCache('./promises');
   },
 
   get regexp() {
-    return require('./regexp');
+    return requireFromCache('./regexp');
   },
 
   get error() {
-    return require('./error');
+    return requireFromCache('./error');
   },
 
   get event() {
-    return require('./event');
+    return requireFromCache('./event');
   },
 
   get session() {
-    return require('./session');
+    return requireFromCache('./session');
   },
 
   get singleton() {
-    return require('./singleton');
+    return requireFromCache('./singleton');
   },
 
   get CircularBuffer() {
-    return require('./CircularBuffer');
+    return requireFromCache('./CircularBuffer');
   },
 
   get COMMON_BINARY_PATHS() {
-    return require('./process').COMMON_BINARY_PATHS;
+    return requireFromCache('./process').COMMON_BINARY_PATHS;
   },
 
   get clientInfo() {
-    return require('./clientInfo');
+    return requireFromCache('./clientInfo');
   },
 
   get systemInfo() {
-    return require('./systemInfo');
+    return requireFromCache('./systemInfo');
   },
 
   get runtimeInfo() {
-    return require('./runtimeInfo');
+    return requireFromCache('./runtimeInfo');
   },
 
   get ScribeProcess() {
-    return require('./ScribeProcess').ScribeProcess;
+    return requireFromCache('./ScribeProcess').ScribeProcess;
   },
 
   get BatchProcessedQueue() {
-    return require('./BatchProcessedQueue').BatchProcessedQueue;
+    return requireFromCache('./BatchProcessedQueue').BatchProcessedQueue;
   },
 };

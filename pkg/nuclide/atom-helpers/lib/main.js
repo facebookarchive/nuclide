@@ -9,76 +9,85 @@
  * the root directory of this source tree.
  */
 
+// It's impactful to memoize our requires here since these commons are so often used.
+const requireCache: {[id: string]: any} = {};
+function requireFromCache(id: string): any {
+  if (!requireCache.hasOwnProperty(id)) {
+    requireCache[id] = require(id);
+  }
+  return requireCache[id];
+}
+
 module.exports = {
   get projects() {
-    return require('./projects');
+    return requireFromCache('./projects');
   },
 
   get atomEventDebounce() {
-    return require('./atom-event-debounce');
+    return requireFromCache('./atom-event-debounce');
   },
 
   get browser() {
-    return require('./browser');
+    return requireFromCache('./browser');
   },
 
   get createScriptBufferedProcessWithEnv() {
-    return require('./script-buffered-process').createScriptBufferedProcessWithEnv;
+    return requireFromCache('./script-buffered-process').createScriptBufferedProcessWithEnv;
   },
 
   get createPaneContainer() {
-    return require('./create-pane-container');
+    return requireFromCache('./create-pane-container');
   },
 
   get createTextEditor() {
-    return require('./text-editor').createTextEditor;
+    return requireFromCache('./text-editor').createTextEditor;
   },
 
   get destroyPaneItemWithTitle() {
-    return require('./destroy-pane-item');
+    return requireFromCache('./destroy-pane-item');
   },
 
   get fileTypeClass() {
-    return require('./file-type-class');
+    return requireFromCache('./file-type-class');
   },
 
   get goToLocation() {
-    return require('./go-to-location');
+    return requireFromCache('./go-to-location');
   },
 
   get getPathToWorkspaceState() {
-    return require('./workspace').getPathToWorkspaceState;
+    return requireFromCache('./workspace').getPathToWorkspaceState;
   },
 
   get isTextEditor() {
-    return require('./text-editor').isTextEditor;
+    return requireFromCache('./text-editor').isTextEditor;
   },
 
   get closeTabForBuffer() {
-    return require('./close-tab-buffer');
+    return requireFromCache('./close-tab-buffer');
   },
 
   get extractWordAtPosition() {
-    return require('./extract-word-at-position');
+    return requireFromCache('./extract-word-at-position');
   },
 
   get mouseListenerForTextEditor() {
-    return require('./mouse-listener-for-text-editor');
+    return requireFromCache('./mouse-listener-for-text-editor');
   },
 
   get observeLanguageTextEditors() {
-    return require('./observe-language-text-editors');
+    return requireFromCache('./observe-language-text-editors');
   },
 
   get observeGrammarForTextEditors() {
-    return require('./observe-grammar-for-text-editors');
+    return requireFromCache('./observe-grammar-for-text-editors');
   },
 
   get registerGrammarForFileExtension() {
-    return require('./register-grammar-for-file-extension');
+    return requireFromCache('./register-grammar-for-file-extension');
   },
 
   get withLoadingNotification() {
-    return require('./with-loading-notification');
+    return requireFromCache('./with-loading-notification');
   },
 };
