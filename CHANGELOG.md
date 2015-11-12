@@ -1,5 +1,14 @@
 # Nuclide Changelog
 
+## 0.0.34
+
+npm-only release. Our Node packages were released so that external packages could consume them, but
+we did not update any Atom packages.
+
+## 0.0.33
+
+This was tagged but not released due to an issue.
+
 ## 0.0.32
 
 * **Bug Fix**
