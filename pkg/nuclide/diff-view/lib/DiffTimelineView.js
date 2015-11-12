@@ -99,20 +99,21 @@ class RevisionsTimelineComponent extends React.Component {
       revision => revision.id === compareRevisionId
     );
 
-    const renderedRevisions = latestToOldestRevisions.map((revision, i) =>
-      <RevisionTimelineNode
-        index={i}
-        selectedIndex={selectedIndex}
-        revision={revision}
-        revisionsCount={revisions.length}
-        onSelectionChange={this.props.onSelectionChange}/>
-    );
     return (
       <div className="revision-timeline-wrap">
         <h3 className="block text-center timeline-header">Revision Timeline</h3>
         <div className="revision-selector">
           <div className="revisions">
-            {renderedRevisions}
+            {latestToOldestRevisions.map((revision, i) =>
+              <RevisionTimelineNode
+                index={i}
+                key={revision.hash}
+                selectedIndex={selectedIndex}
+                revision={revision}
+                revisionsCount={revisions.length}
+                onSelectionChange={this.props.onSelectionChange}
+              />
+            )}
           </div>
         </div>
       </div>
