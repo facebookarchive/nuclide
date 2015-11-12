@@ -350,9 +350,11 @@ describe('FileTreeController', () => {
            */
           actions.expandNode(rootKey, rootKey);
           await store._fetchChildKeys(rootKey);
-          actions.expandNode(rootKey, dir1Key);
-          // Do not fetch dir1's file keys. This mimics the loading state where `dir1` reports
-          // itself as expanded but has no children yet.
+          // Mimic the loading state where `dir1` reports itself as expanded but has no children
+          // yet. Don't use `actions.expandNode` because it causes a re-render, which queues a real
+          // fetch and might populate the children of `dir1`. We don't want that.
+          store._setLoading(dir1Key, Promise.resolve());
+          store._setExpandedKeys(rootKey, store._getExpandedKeys(rootKey).add(dir1Key));
         });
       });
 
@@ -361,7 +363,6 @@ describe('FileTreeController', () => {
           actions.selectSingleNode(rootKey, dir1Key);
           expect(store.isSelected(rootKey, dir1Key)).toEqual(true);
           controller._moveDown();
-
           // dir2 is dir1's next sibling
           expect(store.isSelected(rootKey, dir2Key)).toEqual(true);
         });
