@@ -13,9 +13,11 @@ import type DiffViewModel from './DiffViewModel';
 import type {RevisionsState} from './types';
 import type {RevisionInfo} from 'nuclide-hg-repository-base/lib/hg-constants';
 
-import React, {addons} from 'react-for-atom';
 import {CompositeDisposable} from 'atom';
+import React from 'react-for-atom';
+
 import {array} from 'nuclide-commons';
+import classnames from 'classnames';
 
 type DiffTimelineViewProps = {
   diffModel: DiffViewModel;
@@ -132,7 +134,7 @@ class RevisionTimelineNode extends React.Component {
   render(): ReactElement {
     const {revision, index, selectedIndex, revisionsCount} = this.props;
     const {bookmarks, title, author, hash, date} = revision;
-    const revisionClassName = addons.classSet({
+    const revisionClassName = classnames({
       revision: true,
       'selected-revision-inrange': index < selectedIndex,
       'selected-revision-start': index === 0,
