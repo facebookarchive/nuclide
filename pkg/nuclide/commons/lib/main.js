@@ -102,6 +102,10 @@ module.exports = {
     return require('./filesystem').readFile(filePath, options);
   },
 
+  toJsString(str: string) {
+    return require('./toJsString')(str);
+  },
+
   findNearestFile(fileName: string, pathToDirectory: string): Promise<?string> {
     return require('./filesystem').findNearestFile(fileName, pathToDirectory);
   },

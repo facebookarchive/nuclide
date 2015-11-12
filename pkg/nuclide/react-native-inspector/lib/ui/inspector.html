@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset=utf8>
+    <style>
+      html {
+        display: flex;
+        font-family: sans-serif;
+      }
+      body {
+        display: flex;
+        flex: 1;
+        margin: 0;
+        padding: 0;
+      }
+      #container {
+        background-color: white;
+        bottom: 0;
+        display: flex;
+        left: 0;
+        position: fixed;
+        right: 0;
+        top: 0;
+      }
+      #logs {
+        left: 0;
+        position: fixed;
+        top: 0;
+        white-space: pre;
+      }
+      #waiting {
+        color: #aaa;
+        flex: 1;
+        font-family: sans-serif;
+        padding: 30px;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="container">
+      <h2 id="waiting">Waiting for a connection from React Native</h2>
+    </div>
+    <script>
+      function initializeElementInspector(packageDirectory, requirePaths) {
+        const path = require('path');
+
+        // The paths used by Atom webviews' `require` aren't what you expect (i.e. they're not
+        // based on the file location. Because of this, we pass the paths we want to use from the
+        // JS host and patch it. That way, the standalone script will be able to find its
+        // dependencies (the "ws" module).
+        // See https://github.com/atom/electron/issues/2631 for explanation.
+        require.cache[__filename].paths = requirePaths;
+
+        // Start the element inspector.
+        require(path.join(packageDirectory, 'lib/vendor/dev-tools/standalone.js'))
+          .setContentDOMNode(document.getElementById('container'))
+          .startServer();
+      }
+    </script>
+  </body>
+</html>

@@ -1043,6 +1043,7 @@ declare class WebviewElement extends HTMLElement {
   nodeintegration: boolean;
   disablewebsecurity: boolean;
 
+  executeJavaScript(code: string, userGesture: ?boolean): void;
   getTitle(): string;
   send(): void;
 }
