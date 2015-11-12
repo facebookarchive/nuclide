@@ -19,10 +19,18 @@ import HackLanguage from './HackLanguage';
 import {getPath} from 'nuclide-remote-uri';
 import {Range} from 'atom';
 import pathUtil from 'path';
+import {SymbolType} from 'nuclide-hack-common';
 
 const {awaitMilliSeconds} = require('nuclide-commons').promises;
 
 const HACK_WORD_REGEX = /[a-zA-Z0-9_$]+/g;
+
+// Symbol types we can get references for.
+const SYMBOL_TYPES_WITH_REFERENCES = new Set([
+  SymbolType.CLASS,
+  SymbolType.FUNCTION,
+  SymbolType.METHOD,
+]);
 
 /**
  * This is responsible for managing (creating/disposing) multiple HackLanguage instances,
@@ -203,10 +211,10 @@ module.exports = {
       line + 1,
       column + 1
     );
-    if (!symbol) {
+    if (!symbol || !SYMBOL_TYPES_WITH_REFERENCES.has(symbol.type)) {
       return null;
     }
-    const referencesResult = await hackLanguage.getReferences(filePath, contents, symbol.name);
+    const referencesResult = await hackLanguage.getReferences(filePath, contents, symbol);
     if (!referencesResult) {
       return null;
     }

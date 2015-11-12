@@ -17,6 +17,7 @@ import type {
   HackDiagnostic,
   HackDefinitionResult,
   HackSearchPosition,
+  HackSymbolNameResult,
   HackReferencesResult,
 } from 'nuclide-hack-base/lib/types';
 import type NuclideClient from 'nuclide-server/lib/NuclideClient';
@@ -283,11 +284,11 @@ module.exports = class HackLanguage {
   }
 
   async getSymbolNameAtPosition(
-      path: string,
-      contents: string,
-      lineNumber: number,
-      column: number
-    ): Promise<?Object> {
+    path: string,
+    contents: string,
+    lineNumber: number,
+    column: number
+  ): Promise<?HackSymbolNameResult> {
 
     await this.updateFile(path, contents);
     var webWorkerMessage = {cmd: 'hh_get_method_name', args: [path, lineNumber, column]};
@@ -316,7 +317,7 @@ module.exports = class HackLanguage {
     lineNumber: number,
     column: number,
     timeout: ?number,
-  ): Promise<any> {
+  ): Promise<?HackSymbolNameResult> {
     return this._waitForDependencies(
       () => this.getSymbolNameAtPosition(path, contents, lineNumber, column),
       x => x != null,
@@ -479,10 +480,10 @@ module.exports = class HackLanguage {
   async getReferences(
     filePath: NuclideUri,
     contents: string,
-    symbolName: string
+    symbol: HackSymbolNameResult,
   ): Promise<?HackReferencesResult> {
     const {getReferences} = getHackService(filePath);
-    const referencesResult = await getReferences(filePath, symbolName);
+    const referencesResult = await getReferences(filePath, symbol.name, symbol.type);
     return ((referencesResult: any): HackReferencesResult);
   }
 

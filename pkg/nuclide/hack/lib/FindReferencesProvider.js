@@ -27,7 +27,7 @@ async function doFindReferences(
     'Loading references from Hack server...',
   );
   if (!result) {
-    return {type: 'error', message: 'Only functions/methods are currently supported.'};
+    return {type: 'error', message: 'Only classes/functions/methods are supported.'};
   }
 
   var {baseUri, symbolName, references} = result;
