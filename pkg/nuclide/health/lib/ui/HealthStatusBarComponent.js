@@ -64,4 +64,9 @@ export default class HealthStatusBarComponent extends React.Component {
       </div>
     );
   }
+
+  shouldComponentUpdate(nextProps: Object, nextState: Object): boolean {
+    return React.addons.PureRenderMixin.shouldComponentUpdate.call(this, nextProps, nextState);
+  }
+
 }
