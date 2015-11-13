@@ -19,6 +19,7 @@
     }
   },
   "dependencies": {
+    "nuclide-analytics": "0.0.0",
     "nuclide-client": "0.0.0",
     "nuclide-logging": "0.0.0",
     "nuclide-remote-uri": "0.0.0",

@@ -11,7 +11,8 @@
 
 import type {Reference} from './types';
 
-var {CompositeDisposable} = require('atom');
+import {track} from 'nuclide-analytics';
+import {CompositeDisposable} from 'atom';
 
 export type FindReferencesData = {
   type: 'data',
@@ -36,27 +37,32 @@ export type FindReferencesProvider = {
   findReferences(editor: TextEditor, position: atom$Point): Promise<?FindReferencesReturn>;
 };
 
-var FIND_REFERENCES_URI = 'atom://nuclide/find-references/';
-var subscriptions: ?CompositeDisposable = null;
-var providers: Array<FindReferencesProvider> = [];
-var supportedProviders: Map<TextEditor, Array<FindReferencesProvider>> = new Map();
+const FIND_REFERENCES_URI = 'atom://nuclide/find-references/';
+
+let subscriptions: ?CompositeDisposable = null;
+let providers: Array<FindReferencesProvider> = [];
+const supportedProviders: Map<TextEditor, Array<FindReferencesProvider>> = new Map();
 
 async function getProviderData(): Promise<?FindReferencesReturn> {
-  // For some reason, Flow thinks atom.workspace is null here
-  var editor = (atom.workspace: any).getActiveTextEditor();
+  const editor = atom.workspace.getActiveTextEditor();
   if (!editor) {
     return null;
   }
-  var path = editor.getPath();
+  const path = editor.getPath();
   if (!path) {
     return null;
   }
-  var point = editor.getCursorBufferPosition();
-  var supported = supportedProviders.get(editor);
+  const point = editor.getCursorBufferPosition();
+  track('find-references:activate', {
+    path,
+    row: point.row.toString(),
+    column: point.column.toString(),
+  });
+  const supported = supportedProviders.get(editor);
   if (!supported) {
     return null;
   }
-  var providerData = await Promise.all(supported.map(
+  const providerData = await Promise.all(supported.map(
     provider => provider.findReferences(editor, point)
   ));
   return providerData.filter(x => !!x)[0];
@@ -68,35 +74,42 @@ function showError(message: string): void {
 
 async function tryCreateView(): Promise<?HTMLElement> {
   try {
-    var data = await getProviderData();
+    const data = await getProviderData();
     if (data == null) {
       showError('Symbol references are not available for this project.');
     } else if (data.type === 'error') {
+      track('find-references:error', {message: data.message});
       showError(data.message);
     } else if (!data.references.length) {
+      track('find-references:success', {resultCount: '0'});
       showError('No references found.');
     } else {
-      var {baseUri, referencedSymbolName, references} = data;
-      var FindReferencesModel = require('./FindReferencesModel');
-      var model = new FindReferencesModel(
+      const {baseUri, referencedSymbolName, references} = data;
+      track('find-references:success', {
+        baseUri,
+        referencedSymbolName,
+        resultCount: references.length.toString(),
+      });
+      const FindReferencesModel = require('./FindReferencesModel');
+      const model = new FindReferencesModel(
         baseUri,
         referencedSymbolName,
         references
       );
 
-      var FindReferencesElement = require('./FindReferencesElement');
+      const FindReferencesElement = require('./FindReferencesElement');
       return new FindReferencesElement().initialize(model);
     }
   } catch (e) {
     // TODO(peterhal): Remove this when unhandled rejections have a default handler.
-    var {getLogger} = require('nuclide-logging');
+    const {getLogger} = require('nuclide-logging');
     getLogger().error('Exception in nuclide-find-references', e);
     showError(e);
   }
 }
 
 function enableForEditor(editor: TextEditor): void {
-  var elem = atom.views.getView(editor);
+  const elem = atom.views.getView(editor);
   elem.classList.add('enable-nuclide-find-references');
 }
 
@@ -109,8 +122,8 @@ module.exports = {
       'nuclide-find-references:activate',
       () => {
         // Generate a unique identifier.
-        var crypto = require('crypto');
-        var id = (crypto.randomBytes(8) || '').toString('hex');
+        const crypto = require('crypto');
+        const id = (crypto.randomBytes(8) || '').toString('hex');
         atom.workspace.open(FIND_REFERENCES_URI + id);
       }
     ));
@@ -127,11 +140,10 @@ module.exports = {
     // Mark text editors with a working provider with a special CSS class.
     // This ensures the context menu option only appears in supported projects.
     subscriptions.add(atom.workspace.observeTextEditors(async (editor) => {
-      var path = editor.getPath();
+      const path = editor.getPath();
       if (!path || supportedProviders.get(editor)) {
         return;
       }
-      /* $FlowFixMe: need array compact function */
       var supported = await Promise.all(providers.map(
         async (provider) => {
           if (await provider.isEditorSupported(editor)) {
@@ -140,13 +152,14 @@ module.exports = {
           return null;
         },
       ));
+      /* $FlowFixMe: need array compact function */
       supported = supported.filter(x => x != null);
       if (supported.length) {
         enableForEditor(editor);
       }
       supportedProviders.set(editor, supported);
       if (subscriptions) {
-        var disposable = editor.onDidDestroy(() => {
+        const disposable = editor.onDidDestroy(() => {
           supportedProviders.delete(editor);
           if (subscriptions) {
             subscriptions.remove(disposable);
@@ -168,6 +181,7 @@ module.exports = {
   consumeProvider(provider: FindReferencesProvider): void {
     providers.push(provider);
     // Editors are often open before providers load, so update existing ones too.
+    /* $FlowFixMe: forEach callback should allow non-void */
     supportedProviders.forEach(async (supported, editor) => {
       if (await provider.isEditorSupported(editor)) {
         if (!supported.length) {

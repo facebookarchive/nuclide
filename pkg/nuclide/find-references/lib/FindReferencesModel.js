@@ -103,12 +103,12 @@ class FindReferencesModel {
     offset: number,
     limit: number
   ): Promise<Array<FileReferences>> {
-    /* $FlowFixMe - need array compact function */
     var fileReferences: Array<?FileReferences> = await Promise.all(
       this._references.slice(offset, offset + limit).map(
         this._makeFileReferences.bind(this)
       )
     );
+    /* $FlowFixMe - need array compact function */
     return fileReferences.filter(x => !!x);
   }
 
