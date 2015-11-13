@@ -17,6 +17,7 @@
     "flux": "2.0.3",
     "fs-plus": "2.8.1",
     "immutable": "3.7.5",
+    "lodash.memoize": "3.0.4",
     "minimatch": "3.0.0",
     "nuclide-analytics": "0.0.0",
     "nuclide-atom-helpers": "0.0.0",

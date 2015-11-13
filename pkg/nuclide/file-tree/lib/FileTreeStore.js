@@ -27,6 +27,7 @@ import {array} from 'nuclide-commons';
 import {getLogger} from 'nuclide-logging';
 import {object as objectUtil} from 'nuclide-commons';
 import shell from 'shell';
+import memoize from 'lodash.memoize';
 
 // Used to ensure the version we serialized is the same version we are deserializing.
 const VERSION = 1;
@@ -80,6 +81,7 @@ class FileTreeStore {
   _emitter: Emitter;
   _logger: any;
   _timer: ?Object;
+  _repositoryForPath: (path: NuclideUri) => ?Repository;
 
   static getInstance(): FileTreeStore {
     if (!instance) {
@@ -96,6 +98,7 @@ class FileTreeStore {
       payload => this._onDispatch(payload)
     );
     this._logger = getLogger();
+    this._repositoryForPath = memoize(this._repositoryForPath);
   }
 
   /**
@@ -895,6 +898,10 @@ class FileTreeStore {
 
   _setRepositories(repositories: Immutable.Set<Repository>): void {
     this._set('repositories', repositories);
+
+    // Whenever a new set of repositories comes in, invalidate our paths cache by resetting its
+    // `cache` property (created by lodash.memoize) to an empty map.
+    this._repositoryForPath.cache = new Map();
   }
 
   _omitHiddenPaths(nodeKeys: Array<string>): Array<string> {
