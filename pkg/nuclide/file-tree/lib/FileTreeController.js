@@ -201,13 +201,13 @@ class FileTreeController {
     rootKeys: Array<string>,
     rootDirectories: Array<atom$Directory>,
   ): Promise<void> {
-    const nullableRepos: Array<?Repository> = await Promise.all(rootDirectories.map(
+    const rootRepos: Array<?Repository> = await Promise.all(rootDirectories.map(
       directory => repositoryForPath(directory.getPath())
     ));
 
     const rootKeysForRepo: Map<Repository, Set<string>> = new Map();
-    const newRepos: Set<Repository> = new Set(
-      nullableRepos.filter((repo: ?Repository, index: number) => {
+    const nextRepos: Set<Repository> = new Set(
+      rootRepos.filter((repo: ?Repository, index: number) => {
         if (repo != null) {
           let set = rootKeysForRepo.get(repo);
           // t7114196: Given the current implementation of HgRepositoryClient, each root directory
@@ -226,28 +226,24 @@ class FileTreeController {
     );
     this._rootKeysForRepository = rootKeysForRepo;
 
-    const oldRepos = new Set();
-    for (const repo of this._repositories) {
-      if (newRepos.has(repo)) {
-        newRepos.delete(repo);
-      } else {
-        oldRepos.add(repo);
-      }
+    const prevRepos = this._repositories;
+    this._repositories = nextRepos;
+
+    const removedRepos = subtract(prevRepos, nextRepos);
+    const addedRepos = subtract(nextRepos, prevRepos);
+
+    // Unsubscribe from removedRepos.
+    for (const repo of removedRepos) {
+      this._repositoryRemoved(repo);
     }
 
-    // Unsubscribe from oldRepos.
-    for (const repo of oldRepos) {
-      this._removeSubscriptionForOldRepository(repo);
-    }
-
-    // Create subscriptions for newRepos.
-    for (const repo of newRepos) {
-      this._addSubscriptionsForNewRepository(repo);
+    // Create subscriptions for addedRepos.
+    for (const repo of addedRepos) {
+      this._repositoryAdded(repo);
     }
   }
 
-  async _addSubscriptionsForNewRepository(repo: Repository): Promise<void> {
-    this._repositories.add(repo);
+  async _repositoryAdded(repo: Repository): Promise<void> {
     // For now, we only support HgRepository objects.
     if (repo.getType() !== 'hg') {
       return;
@@ -327,8 +323,7 @@ class FileTreeController {
     }
   }
 
-  _removeSubscriptionForOldRepository(repo: Repository) {
-    this._repositories.delete(repo);
+  _repositoryRemoved(repo: Repository) {
     const disposable = this._subscriptionForRepository.get(repo);
     if (!disposable) {
       // There is a small chance that the add/remove of the Repository could happen so quickly that
@@ -913,6 +908,16 @@ class FileTreePanel extends React.Component {
   getLength(): number {
     return this.refs['panel'].getLength();
   }
+}
+
+function subtract(from: Set<any>, value: Set<any>): Set<any> {
+  const difference = new Set();
+  for (const item of from) {
+    if (!value.has(item)) {
+      difference.add(item);
+    }
+  }
+  return difference;
 }
 
 module.exports = FileTreeController;
