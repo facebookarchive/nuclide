@@ -21,7 +21,7 @@ import FileTreeHelpers from './FileTreeHelpers';
 import FileTreeNode from './FileTreeNode';
 import Immutable from 'immutable';
 import {Minimatch} from 'minimatch';
-import {repositoryForPath} from 'nuclide-hg-git-bridge';
+import {repositoryContainsPath} from 'nuclide-hg-git-bridge';
 
 import {array} from 'nuclide-commons';
 import {getLogger} from 'nuclide-logging';
@@ -672,7 +672,7 @@ class FileTreeStore {
    * make future invocations of `getInstance` unpredictable.
    */
   _repositoryForPath(path: NuclideUri): ?Repository {
-    return repositoryForPath(path);
+    return this.getRepositories().find(repo => repositoryContainsPath(repo, path));
   }
 
   _setExpandedKeys(rootKey: string, expandedKeys: Immutable.Set<string>): void {
