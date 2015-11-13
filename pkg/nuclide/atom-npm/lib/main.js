@@ -9,9 +9,9 @@
  * the root directory of this source tree.
  */
 
-var fs = require('fs-plus');
-var path = require('path');
-var {fsPromise} = require('nuclide-commons');
+const fs = require('fs-plus');
+const path = require('path');
+const {fsPromise} = require('nuclide-commons');
 
 async function loadStyles(stylesPath: string): Promise {
   // TODO(jjiaa): If possible, check that `stylesPath` is also a directory.
@@ -37,7 +37,7 @@ async function loadStyles(stylesPath: string): Promise {
  * synchronous so that it works as expected with require().
  */
 function loadGrammarsSync(packagePath: string) {
-  var grammarsDir = path.join(packagePath, 'grammars');
+  const grammarsDir = path.join(packagePath, 'grammars');
   if (!fs.isDirectorySync(grammarsDir)) {
     return;
   }
@@ -52,7 +52,7 @@ function loadGrammarsSync(packagePath: string) {
 module.exports = {
   load(libPath: string, mainFilename: string): any {
     // $FlowFixMe Non-Atom expando property 'nuclide' for our own private purposes.
-    var nuclide = atom.nuclide;
+    let nuclide = atom.nuclide;
     if (!nuclide) {
       // $FlowFixMe atom.nuclide expando-property.
       atom.nuclide = nuclide = {};
@@ -61,7 +61,7 @@ module.exports = {
     if (!nuclide[mainFilename]) {
       nuclide[mainFilename] = require(path.join(libPath, mainFilename));
 
-      var packagePath = path.dirname(libPath);
+      const packagePath = path.dirname(libPath);
       loadStyles(path.join(packagePath, 'styles'));
 
       loadGrammarsSync(packagePath);
