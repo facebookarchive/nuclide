@@ -57,6 +57,7 @@ type StoreData = {
   ignoredPatterns: Immutable.Set<Minimatch>;
   hideIgnoredNames: boolean;
   excludeVcsIgnoredPaths: boolean;
+  repositories: Immutable.Set<Repository>;
 };
 
 export type ExportStoreData = {
@@ -193,6 +194,7 @@ class FileTreeStore {
       ignoredPatterns: Immutable.Set(),
       hideIgnoredNames: true,
       excludeVcsIgnoredPaths: true,
+      repositories: Immutable.Set(),
     };
   }
 
@@ -240,6 +242,9 @@ class FileTreeStore {
       case ActionType.SET_VCS_STATUSES:
         this._setVcsStatuses(payload.rootKey, payload.vcsStatuses);
         break;
+      case ActionType.SET_REPOSITORIES:
+        this._setRepositories(payload.repositories);
+        break;
     }
   }
 
@@ -271,6 +276,10 @@ class FileTreeStore {
 
   getTrackedNode(): ?FileTreeNodeData {
     return this._data.trackedNode;
+  }
+
+  getRepositories(): Immutable.Set<Repository> {
+    return this._data.repositories;
   }
 
   getRootKeys(): Array<string> {
@@ -882,6 +891,10 @@ class FileTreeStore {
   _setTrackedNode(rootKey: string, nodeKey: string): void {
     // Flush the value to ensure clients see the value at least once and scroll appropriately.
     this._set('trackedNode', {nodeKey, rootKey}, true);
+  }
+
+  _setRepositories(repositories: Immutable.Set<Repository>): void {
+    this._set('repositories', repositories);
   }
 
   _omitHiddenPaths(nodeKeys: Array<string>): Array<string> {

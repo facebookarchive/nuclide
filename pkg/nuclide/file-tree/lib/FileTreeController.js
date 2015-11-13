@@ -24,9 +24,7 @@ import {PanelComponent} from 'nuclide-ui-panel';
 import React from 'react-for-atom';
 import {track} from 'nuclide-analytics';
 
-import {debounce} from 'nuclide-commons';
 import os from 'os';
-import {repositoryForPath} from 'nuclide-hg-git-bridge';
 import shell from 'shell';
 
 const {PropTypes} = React;
@@ -52,7 +50,6 @@ class FileTreeController {
   _fileTreePanel: FileTreePanel;
   _panelElement: HTMLElement;
   _repositories: Immutable.Set<Repository>;
-  _rootKeysForRepository: Immutable.Map<Repository, Immutable.Set<string>>;
   _store: FileTreeStore;
   _subscriptions: CompositeDisposable;
   _subscriptionForRepository: Immutable.Map<Repository, atom$Disposable>;
@@ -76,7 +73,6 @@ class FileTreeController {
     this._actions = FileTreeActions.getInstance();
     this._store = FileTreeStore.getInstance();
     this._repositories = new Immutable.Set();
-    this._rootKeysForRepository = new Immutable.Map();
     this._subscriptionForRepository = new Immutable.Map();
     this._subscriptions = new CompositeDisposable();
     // Initial root directories
@@ -192,144 +188,7 @@ class FileTreeController {
       directory => FileTreeHelpers.dirPathToKey(directory.getPath())
     );
     this._actions.setRootKeys(rootKeys);
-    return this._updateRepositories(rootKeys, rootDirectories);
-  }
-
-  /**
-   * Updates the root repositories to match the updates in _updateRootDirectories().
-   */
-  async _updateRepositories(
-    rootKeys: Array<string>,
-    rootDirectories: Array<atom$Directory>,
-  ): Promise<void> {
-    const rootRepos: Array<?Repository> = await Promise.all(rootDirectories.map(
-      directory => repositoryForPath(directory.getPath())
-    ));
-
-    // t7114196: Given the current implementation of HgRepositoryClient, each root directory will
-    // always correspond to a unique instance of HgRepositoryClient. Ideally, if multiple subfolders
-    // of an Hg repo are used as project roots in Atom, only one HgRepositoryClient should be
-    // created.
-
-    // Group all of the root keys by their repository, excluding any that don't belong to a
-    // repository.
-    this._rootKeysForRepository = Immutable.List(rootKeys)
-      .groupBy((rootKey, index) => rootRepos[index])
-      .filter((v, k) => k != null)
-      .map(v => new Immutable.Set(v));
-
-    const nextRepos: Immutable.Set<Repository> = new Immutable.Set(
-      this._rootKeysForRepository.keys()
-    );
-
-    const prevRepos = this._repositories;
-    this._repositories = nextRepos;
-
-    const removedRepos = prevRepos.subtract(nextRepos);
-    const addedRepos = nextRepos.subtract(prevRepos);
-
-    // Unsubscribe from removedRepos.
-    for (const repo of removedRepos) {
-      this._repositoryRemoved(repo);
-    }
-
-    // Create subscriptions for addedRepos.
-    for (const repo of addedRepos) {
-      this._repositoryAdded(repo);
-    }
-  }
-
-  async _repositoryAdded(repo: Repository): Promise<void> {
-    // For now, we only support HgRepository objects.
-    if (repo.getType() !== 'hg') {
-      return;
-    }
-
-    // At this point, we assume that repo is a Nuclide HgRepositoryClient.
-
-    // First, get the output of `hg status` for the repository.
-    const {hgConstants} = require('nuclide-hg-repository-base');
-    // TODO(mbolin): Verify that all of this is set up correctly for remote files.
-    const repoRoot = repo.getWorkingDirectory();
-    const statusCodeForPath = await repo.getStatuses([repoRoot], {
-      hgStatusOption: hgConstants.HgStatusOption.ONLY_NON_IGNORED,
-    });
-
-    // From the initial result of `hg status`, record the status code for every file in
-    // statusCodeForPath in the statusesToReport map. If the file is modified, also mark every
-    // parent directory (up to the repository root) of that file as modified, as well. For now, we
-    // mark only new files, but not new directories.
-    const statusesToReport = {};
-    statusCodeForPath.forEach((statusCode, path) => {
-      if (repo.isStatusModified(statusCode)) {
-        statusesToReport[path] = statusCode;
-
-        // For modified files, every parent directory should also be flagged as modified.
-        let nodeKey = path;
-        const keyForRepoRoot = FileTreeHelpers.dirPathToKey(repoRoot);
-        do {
-          const parentKey = FileTreeHelpers.getParentKey(nodeKey);
-          if (parentKey == null) {
-            break;
-          }
-          nodeKey = parentKey;
-          if (statusesToReport.hasOwnProperty(nodeKey)) {
-            // If there is already an entry for this parent file in the statusesToReport map, then
-            // there is no reason to continue exploring ancestor directories.
-            break;
-          } else {
-            statusesToReport[nodeKey] = hgConstants.StatusCodeNumber.MODIFIED;
-          }
-        } while (nodeKey !== keyForRepoRoot);
-      } else if (statusCode === hgConstants.StatusCodeNumber.ADDED) {
-        statusesToReport[path] = statusCode;
-      }
-    });
-    for (const rootKeyForRepo of this._rootKeysForRepository.get(repo)) {
-      this._actions.setVcsStatuses(rootKeyForRepo, statusesToReport);
-    }
-
-    // TODO: Call getStatuses with <visible_nodes, hgConstants.HgStatusOption.ONLY_IGNORED>
-    // to determine which nodes in the tree need to be shown as ignored.
-
-    // Now that the initial VCS statuses are set, subscribe to changes to the Repository so that the
-    // VCS statuses are kept up to date.
-    const subscription = repo.onDidChangeStatuses(
-      // t8227570: If the user is a "nervous saver," many onDidChangeStatuses will get fired in
-      // succession. We should probably explore debouncing this in HgRepositoryClient itself.
-      debounce(
-        this._onDidChangeStatusesForRepository.bind(this, repo),
-        /* wait */ 1000,
-        /* immediate */ false,
-      )
-    );
-    this._subscriptionForRepository = this._subscriptionForRepository.set(repo, subscription);
-  }
-
-  _onDidChangeStatusesForRepository(repo: Repository) {
-    for (const rootKey of this._rootKeysForRepository.get(repo)) {
-      const statusForNodeKey = {};
-      for (const fileTreeNode of this._store.getVisibleNodes(rootKey)) {
-        const {nodeKey} = fileTreeNode;
-        statusForNodeKey[nodeKey] = fileTreeNode.isContainer
-          ? repo.getDirectoryStatus(nodeKey)
-          : statusForNodeKey[nodeKey] = repo.getCachedPathStatus(nodeKey);
-      }
-      this._actions.setVcsStatuses(rootKey, statusForNodeKey);
-    }
-  }
-
-  _repositoryRemoved(repo: Repository) {
-    const disposable = this._subscriptionForRepository.get(repo);
-    if (!disposable) {
-      // There is a small chance that the add/remove of the Repository could happen so quickly that
-      // the entry for the repo in _subscriptionForRepository has not been set yet.
-      // TODO: Report a soft error for this.
-      return;
-    }
-
-    this._subscriptionForRepository = this._subscriptionForRepository.delete(repo);
-    disposable.dispose();
+    this._actions.updateRepositories(rootDirectories);
   }
 
   _setVisibility(shouldBeVisible: boolean): void {
