@@ -19,6 +19,7 @@ import FileTreeActions from './FileTreeActions';
 import FileTreeContextMenu from './FileTreeContextMenu';
 import FileTreeHelpers from './FileTreeHelpers';
 import FileTreeStore from './FileTreeStore';
+import Immutable from 'immutable';
 import {PanelComponent} from 'nuclide-ui-panel';
 import React from 'react-for-atom';
 import {track} from 'nuclide-analytics';
@@ -50,11 +51,11 @@ class FileTreeController {
   _panel: atom$Panel;
   _fileTreePanel: FileTreePanel;
   _panelElement: HTMLElement;
-  _repositories: Set<Repository>;
-  _rootKeysForRepository: Map<Repository, Set<string>>;
+  _repositories: Immutable.Set<Repository>;
+  _rootKeysForRepository: Immutable.Map<Repository, Immutable.Set<string>>;
   _store: FileTreeStore;
   _subscriptions: CompositeDisposable;
-  _subscriptionForRepository: Map<Repository, atom$Disposable>;
+  _subscriptionForRepository: Immutable.Map<Repository, atom$Disposable>;
   /**
    * True if a reveal was requested while the file tree is hidden. If so, we should apply it when
    * the tree is shown.
@@ -74,9 +75,9 @@ class FileTreeController {
     this._isVisible = panel.isVisible != null ? panel.isVisible : true;
     this._actions = FileTreeActions.getInstance();
     this._store = FileTreeStore.getInstance();
-    this._repositories = new Set();
-    this._rootKeysForRepository = new Map();
-    this._subscriptionForRepository = new Map();
+    this._repositories = new Immutable.Set();
+    this._rootKeysForRepository = new Immutable.Map();
+    this._subscriptionForRepository = new Immutable.Map();
     this._subscriptions = new CompositeDisposable();
     // Initial root directories
     this._updateRootDirectories();
@@ -205,32 +206,27 @@ class FileTreeController {
       directory => repositoryForPath(directory.getPath())
     ));
 
-    const rootKeysForRepo: Map<Repository, Set<string>> = new Map();
-    const nextRepos: Set<Repository> = new Set(
-      rootRepos.filter((repo: ?Repository, index: number) => {
-        if (repo != null) {
-          let set = rootKeysForRepo.get(repo);
-          // t7114196: Given the current implementation of HgRepositoryClient, each root directory
-          // will always correspond to a unique instance of HgRepositoryClient. Ideally, if multiple
-          // subfolders of an Hg repo are used as project roots in Atom, only one HgRepositoryClient
-          // should be created.
-          if (!set) {
-            rootKeysForRepo.set(repo, (set = new Set()));
-          }
-          set.add(rootKeys[index]);
-          return true;
-        } else {
-          return false;
-        }
-      })
+    // t7114196: Given the current implementation of HgRepositoryClient, each root directory will
+    // always correspond to a unique instance of HgRepositoryClient. Ideally, if multiple subfolders
+    // of an Hg repo are used as project roots in Atom, only one HgRepositoryClient should be
+    // created.
+
+    // Group all of the root keys by their repository, excluding any that don't belong to a
+    // repository.
+    this._rootKeysForRepository = Immutable.List(rootKeys)
+      .groupBy((rootKey, index) => rootRepos[index])
+      .filter((v, k) => k != null)
+      .map(v => new Immutable.Set(v));
+
+    const nextRepos: Immutable.Set<Repository> = new Immutable.Set(
+      this._rootKeysForRepository.keys()
     );
-    this._rootKeysForRepository = rootKeysForRepo;
 
     const prevRepos = this._repositories;
     this._repositories = nextRepos;
 
-    const removedRepos = subtract(prevRepos, nextRepos);
-    const addedRepos = subtract(nextRepos, prevRepos);
+    const removedRepos = prevRepos.subtract(nextRepos);
+    const addedRepos = nextRepos.subtract(prevRepos);
 
     // Unsubscribe from removedRepos.
     for (const repo of removedRepos) {
@@ -307,7 +303,7 @@ class FileTreeController {
         /* immediate */ false,
       )
     );
-    this._subscriptionForRepository.set(repo, subscription);
+    this._subscriptionForRepository = this._subscriptionForRepository.set(repo, subscription);
   }
 
   _onDidChangeStatusesForRepository(repo: Repository) {
@@ -332,7 +328,7 @@ class FileTreeController {
       return;
     }
 
-    this._subscriptionForRepository.delete(repo);
+    this._subscriptionForRepository = this._subscriptionForRepository.delete(repo);
     disposable.dispose();
   }
 
@@ -908,16 +904,6 @@ class FileTreePanel extends React.Component {
   getLength(): number {
     return this.refs['panel'].getLength();
   }
-}
-
-function subtract(from: Set<any>, value: Set<any>): Set<any> {
-  const difference = new Set();
-  for (const item of from) {
-    if (!value.has(item)) {
-      difference.add(item);
-    }
-  }
-  return difference;
 }
 
 module.exports = FileTreeController;

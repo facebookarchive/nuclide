@@ -706,12 +706,9 @@ class FileTreeStore {
 
   _setRootKeys(rootKeys: Array<string>): void {
     const oldRootKeys = this._data.rootKeys;
-    const newRootKeySet = new Set(rootKeys);
-    oldRootKeys.forEach((rootKey) => {
-      if (!newRootKeySet.has(rootKey)) {
-        this._purgeRoot(rootKey);
-      }
-    });
+    const newRootKeys = new Immutable.Set(rootKeys);
+    const removedRootKeys = new Immutable.Set(oldRootKeys).subtract(newRootKeys);
+    removedRootKeys.forEach(this._purgeRoot.bind(this));
     this._set('rootKeys', rootKeys);
   }
 
@@ -729,13 +726,11 @@ class FileTreeStore {
   _setChildKeys(nodeKey: string, childKeys: Array<string>): void {
     const oldChildKeys = this._data.childKeyMap[nodeKey];
     if (oldChildKeys) {
-      const newChildKeySet = new Set(childKeys);
-      oldChildKeys.forEach((childKey) => {
-        // If it's a directory and it doesn't exist in the new set of child keys.
-        if (FileTreeHelpers.isDirKey(childKey) && !newChildKeySet.has(childKey)) {
-          this._purgeDirectory(childKey);
-        }
-      });
+      const newChildKeys = new Immutable.Set(childKeys);
+      const removedDirectoryKeys = new Immutable.Set(oldChildKeys)
+        .subtract(newChildKeys)
+        .filter(FileTreeHelpers.isDirKey);
+      removedDirectoryKeys.forEach(this._purgeDirectory.bind(this));
     }
     this._set('childKeyMap', setProperty(this._data.childKeyMap, nodeKey, childKeys));
   }
