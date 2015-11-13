@@ -148,7 +148,7 @@ export async function flowGetType(
   line: number,
   column: number,
   includeRawType: boolean,
-): Promise<?{type: string, rawType?: string}> {
+): Promise<?{type: string, rawType: ?string}> {
   return runWithInstance(
     file,
     instance => instance.flowGetType(
