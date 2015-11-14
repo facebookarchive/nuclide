@@ -215,15 +215,6 @@ class NuclideClient {
     );
   }
 
-  isHackClientAvailable(): Promise<boolean> {
-    return this.eventbus.callMethod(
-      /*serviceName*/ 'hack',
-      /*methodName*/ 'isClientAvailable',
-      /*methodArgs*/ [],
-      /*extraOptions*/ {method: 'POST', json: true}
-    );
-  }
-
   close() : void {
     if (this.eventbus) {
       this.eventbus.close();

@@ -116,3 +116,7 @@ export async function getReferences(
   symbolName: string,
   symbolType?: number,
 ): Promise<?HackReferencesResult> {}
+
+export function getHackEnvironmentDetails(
+  filePath: NuclideUri,
+): Promise<?{hackRoot: NuclideUri, hackCommand: string}> {}

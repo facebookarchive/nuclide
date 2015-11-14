@@ -29,6 +29,7 @@ import {
   callHHClient,
   symbolTypeToSearchTypes,
   getSearchResults,
+  getHackExecOptions,
 } from './HackHelpers';
 
 const HH_NEWLINE = '<?hh\n';
@@ -223,6 +224,12 @@ export async function getReferences(
     hackRoot,
     references,
   };
+}
+
+export function getHackEnvironmentDetails(
+  localFile: string,
+): Promise<?{hackRoot: string, hackCommand: string}> {
+  return getHackExecOptions(localFile);
 }
 
 function selectDefinitionSearchResult(

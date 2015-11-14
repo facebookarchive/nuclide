@@ -9,12 +9,16 @@
  * the root directory of this source tree.
  */
 
+import {getServiceByNuclideUri} from 'nuclide-client';
+import invariant from 'assert';
+
 const MATCH_PREFIX_CASE_SENSITIVE_SCORE = 6;
 const MATCH_PREFIX_CASE_INSENSITIVE_SCORE = 4;
 const MATCH_TOKEN_CASE_SENSITIVE_SCORE = 2;
 const MATCH_TOKEN_CASE_INSENSITIVE_SCORE = 0;
 const MATCH_PRIVATE_FUNCTION_PENALTY = -4;
 const MATCH_APLHABETICAL_SCORE = 1;
+const HACK_SERVICE_NAME = 'HackService';
 
 function compareHackCompletions(token: string): (matchText1: string, matchText2: string) => number {
   var tokenLowerCase = token.toLowerCase();
@@ -55,6 +59,14 @@ function compareHackCompletions(token: string): (matchText1: string, matchText2:
   };
 }
 
+function getHackService(filePath: NuclideUri): Object {
+  const hackRegisteredService = getServiceByNuclideUri(HACK_SERVICE_NAME, filePath);
+  invariant(hackRegisteredService);
+  return hackRegisteredService;
+}
+
+
 module.exports = {
   compareHackCompletions,
+  getHackService,
 };

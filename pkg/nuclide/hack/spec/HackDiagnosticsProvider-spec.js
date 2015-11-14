@@ -21,7 +21,7 @@ describe('HackDiagnosticsProvider', () => {
   function createFakeHackLanguage(uri: string) {
     return {
       _uri: uri,
-      isHackClientAvailable: () => true,
+      isHackAvailable: () => true,
     };
   }
 

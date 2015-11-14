@@ -23,9 +23,8 @@ import type {
 import type NuclideClient from 'nuclide-server/lib/NuclideClient';
 
 import {trackTiming} from 'nuclide-analytics';
-import {getServiceByNuclideUri} from 'nuclide-client';
 import {parse, createRemoteUri, getPath} from 'nuclide-remote-uri';
-import invariant from 'assert';
+import {getHackService} from './utils';
 
 var {Range, Emitter} = require('atom');
 var HackWorker = require('./HackWorker');
@@ -41,14 +40,6 @@ const UPDATE_DEPENDENCIES_INTERVAL_MS = 10000;
 const DEPENDENCIES_LOADED_EVENT = 'dependencies-loaded';
 const MAX_HACK_WORKER_TEXT_SIZE = 10000;
 
-const HACK_SERVICE_NAME = 'HackService';
-
-function getHackService(filePath: NuclideUri): Object {
-  const hackRegisteredService = getServiceByNuclideUri(HACK_SERVICE_NAME, filePath);
-  invariant(hackRegisteredService);
-  return hackRegisteredService;
-}
-
 /**
  * The HackLanguage is the controller that servers language requests by trying to get worker results
  * and/or results from HackService (which would be executing hh_client on a supporting server)
@@ -56,6 +47,7 @@ function getHackService(filePath: NuclideUri): Object {
  */
 module.exports = class HackLanguage {
 
+  _hhAvailable: boolean;
   _hackWorker: HackWorker;
   _client: ?NuclideClient;
   _pathContentsMap: Map<string, string>;
@@ -69,16 +61,16 @@ module.exports = class HackLanguage {
    * `basePath` should be the directory where the .hhconfig file is located.
    * It should only be null if client is null.
    */
-  constructor(client: ?NuclideClient, basePath: ?string, initialFileUri: NuclideUri) {
+  constructor(hhAvailable: boolean, basePath: ?string, initialFileUri: NuclideUri) {
+    this._hhAvailable = hhAvailable;
     this._hackWorker = new HackWorker();
-    this._client = client;
     this._pathContentsMap = new Map();
     this._basePath = basePath;
     this._initialFileUri = initialFileUri;
     this._isFinishedLoadingDependencies = true;
     this._emitter = new Emitter();
 
-    if (this._client) {
+    if (this._hhAvailable) {
       this._setupUpdateDependenciesInterval();
     }
   }
@@ -491,8 +483,8 @@ module.exports = class HackLanguage {
     return this._basePath;
   }
 
-  isHackClientAvailable(): boolean {
-    return !!this._client;
+  isHackAvailable(): boolean {
+    return this._hhAvailable;
   }
 
   /**

@@ -4,10 +4,6 @@
     "path": "lib/services/NuclideSearchService.js"
   },
   {
-    "useServiceFramework": false,
-    "path": "lib/services/NuclideHackService.js"
-  },
-  {
     "definition": "nuclide-ocaml-base/lib/MerlinService.js",
     "implementation": "nuclide-ocaml-base/lib/LocalMerlinService.js",
     "name": "MerlinService",

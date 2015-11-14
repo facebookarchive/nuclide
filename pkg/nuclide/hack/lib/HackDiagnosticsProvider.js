@@ -162,7 +162,7 @@ class HackDiagnosticsProvider {
   }
 
   _getPathsToInvalidate(hackLanguage: HackLanguage): Array<NuclideUri> {
-    if (!hackLanguage.isHackClientAvailable()) {
+    if (!hackLanguage.isHackAvailable()) {
       return [];
     }
     var filePaths = this._hackLanguageToFilePaths.get(hackLanguage);
@@ -199,7 +199,7 @@ class HackDiagnosticsProvider {
   }
 
   invalidateProjectPath(projectPath: NuclideUri): void {
-    var hackLanguage = getCachedHackLanguageForUri(projectPath);
+    const hackLanguage = getCachedHackLanguageForUri(projectPath);
     if (!hackLanguage) {
       return;
     }
@@ -207,8 +207,10 @@ class HackDiagnosticsProvider {
   }
 
   _invalidatePathsForHackLanguage(hackLanguage: HackLanguage): void {
-    var pathsToInvalidate = this._getPathsToInvalidate(hackLanguage);
-    this._providerBase.publishMessageInvalidation({scope: 'file', filePaths: pathsToInvalidate});
+    const pathsToInvalidate = this._getPathsToInvalidate(hackLanguage);
+    this._providerBase.publishMessageInvalidation(
+      {scope: 'file', filePaths: pathsToInvalidate},
+    );
     this._hackLanguageToFilePaths.delete(hackLanguage);
   }
 

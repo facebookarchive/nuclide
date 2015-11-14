@@ -14,10 +14,9 @@ var fs = require('fs');
 var HackLanguage = require('../lib/HackLanguage');
 
 describe('HackLanguage', () => {
-  var hackLanguage, hackClient;
+  let hackLanguage;
   beforeEach(() => {
-    hackClient = {dispose: () => {}};
-    hackLanguage = new HackLanguage(hackClient, '', '');
+    hackLanguage = new HackLanguage(false, '', '');
   });
 
   afterEach(() => {

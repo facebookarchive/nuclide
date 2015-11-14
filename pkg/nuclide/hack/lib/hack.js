@@ -20,6 +20,7 @@ import {getPath} from 'nuclide-remote-uri';
 import {Range} from 'atom';
 import pathUtil from 'path';
 import {SymbolType} from 'nuclide-hack-common';
+import {getHackService} from './utils';
 
 const {awaitMilliSeconds} = require('nuclide-commons').promises;
 
@@ -56,7 +57,7 @@ module.exports = {
     const contents = editor.getText();
 
     let diagnostics;
-    if (hackLanguage.isHackClientAvailable()) {
+    if (hackLanguage.isHackAvailable()) {
       // Work around `hh_client` returns server busy error, and fails retrying (when enabled),
       // if a `check` call is made before 3 seconds of a file being saved.
       await awaitMilliSeconds(HH_DIAGNOSTICS_DELAY_MS);
@@ -261,26 +262,19 @@ async function createHackLanguageIfNotExisting(
   client: NuclideClient,
   fileUri: NuclideUri,
 ): Promise<HackLanguage> {
-  var clientId = client.getID();
+  const clientId = client.getID();
   if (clientToHackLanguage[clientId]) {
     return clientToHackLanguage[clientId];
   }
-  var filePath = getPath(fileUri);
-  var hackClient;
-  var [isHackClientAvailable, nearestPath] = await Promise.all([
-    client.isHackClientAvailable(),
-    getFileSystemServiceByNuclideUri(fileUri)
-      .findNearestFile('.hhconfig', pathUtil.dirname(filePath)),
-  ]);
-  // If multiple calls, were done asynchronously, make sure to return the single-created HackLanguage.
+
+  const hackEnvironment = await getHackService(fileUri).getHackEnvironmentDetails(fileUri);
+  const isHHAvailable = hackEnvironment != null;
+  const {hackRoot} = hackEnvironment || {};
+
+  // If multiple calls were done asynchronously, then return the single-created HackLanguage.
   if (clientToHackLanguage[clientId]) {
     return clientToHackLanguage[clientId];
   }
-  if (isHackClientAvailable && nearestPath) {
-    hackClient = client;
-  } else {
-    hackClient = null;
-  }
-  clientToHackLanguage[clientId] = new HackLanguage(hackClient, nearestPath, fileUri);
+  clientToHackLanguage[clientId] = new HackLanguage(isHHAvailable, hackRoot, fileUri);
   return clientToHackLanguage[clientId];
 }
