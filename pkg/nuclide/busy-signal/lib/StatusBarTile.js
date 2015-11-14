@@ -47,10 +47,10 @@ export class StatusBarTile {
   consumeStatusBar(statusBar: atom$StatusBar): void {
     const item = this._item = document.createElement('div');
     item.className = 'inline-block';
-    item.addEventListener('mouseover', () => {
+    item.addEventListener('mouseenter', () => {
       this._isMouseOver = true;
     });
-    item.addEventListener('mouseout', () => {
+    item.addEventListener('mouseleave', () => {
       this._isMouseOver = false;
     });
     this._tile = statusBar.addRightTile({
@@ -86,7 +86,7 @@ export class StatusBarTile {
         });
         if (this._isMouseOver) {
           // If the mouse is currently over the element, we want to trigger the new popup to appear.
-          const event = new MouseEvent('mouseover');
+          const event = new MouseEvent('mouseenter');
           item.dispatchEvent(event);
         }
       }
