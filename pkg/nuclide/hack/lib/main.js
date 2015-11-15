@@ -28,6 +28,7 @@ type Suggestion = {
 
 var subscriptions: ?CompositeDisposable = null;
 var hackDiagnosticsProvider;
+let busySignalProvider;
 
 module.exports = {
 
@@ -115,10 +116,19 @@ module.exports = {
     };
   },
 
+  provideBusySignal(): BusySignalProviderBase {
+    if (busySignalProvider == null) {
+      const {BusySignalProviderBase} = require('nuclide-busy-signal-provider-base');
+      busySignalProvider = new BusySignalProviderBase();
+    }
+    return busySignalProvider;
+  },
+
   provideDiagnostics() {
     if (!hackDiagnosticsProvider) {
       var HackDiagnosticsProvider = require('./HackDiagnosticsProvider');
-      hackDiagnosticsProvider = new HackDiagnosticsProvider();
+      const busyProvider = this.provideBusySignal();
+      hackDiagnosticsProvider = new HackDiagnosticsProvider(false, busyProvider);
     }
     return hackDiagnosticsProvider;
   },

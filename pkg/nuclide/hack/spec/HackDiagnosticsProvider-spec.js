@@ -33,8 +33,11 @@ describe('HackDiagnosticsProvider', () => {
     require('../lib/hack').getCachedHackLanguageForUri = (uri) =>
       fakeHackLanguages.filter(fakeLanguage => uri.startsWith(fakeLanguage._uri))[0];
     class FakeProviderBase { }
-    var HackDiagnosticsProvider = require('../lib/HackDiagnosticsProvider');
-    hackDiagnosticsProvider = new HackDiagnosticsProvider(false, (FakeProviderBase: any));
+    const HackDiagnosticsProvider = require('../lib/HackDiagnosticsProvider');
+    hackDiagnosticsProvider = new HackDiagnosticsProvider(
+      false,
+      (FakeProviderBase: any),
+    );
   });
 
   describe('processDiagnostics', () => {

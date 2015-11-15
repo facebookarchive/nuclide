@@ -19,6 +19,11 @@
         "0.0.0": "getHyperclickProvider"
       }
     },
+    "nuclide-busy-signal": {
+      "versions": {
+        "0.1.0": "provideBusySignal"
+      }
+    },
     "nuclide-diagnostics-provider": {
       "versions": {
         "0.1.0": "provideDiagnostics"
@@ -51,6 +56,7 @@
   "dependencies": {
     "nuclide-analytics": "0.0.0",
     "nuclide-atom-helpers": "0.0.0",
+    "nuclide-busy-signal-provider-base": "0.0.0",
     "nuclide-client": "0.0.0",
     "nuclide-commons": "0.0.0",
     "nuclide-diagnostics-provider-base": "0.0.0",
@@ -60,6 +66,7 @@
     "nuclide-text-event-dispatcher": "0.0.0"
   },
   "devDependencies": {
+    "nuclide-busy-signal-interfaces": "0.0.0",
     "nuclide-diagnostics-base": "0.0.0",
     "nuclide-external-interfaces": "0.0.0",
     "nuclide-hack-base": "0.0.0"

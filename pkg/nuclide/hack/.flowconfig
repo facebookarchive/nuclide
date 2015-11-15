@@ -3,6 +3,7 @@
 [ignore]
 
 [libs]
+./node_modules/nuclide-busy-signal-interfaces/lib/types.js
 ./node_modules/nuclide-external-interfaces/1.0/
 ./node_modules/nuclide-diagnostics-base/lib/types.js
 ./node_modules/nuclide-hack-base/lib/types.js

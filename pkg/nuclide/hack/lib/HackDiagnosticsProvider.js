@@ -19,6 +19,7 @@ import invariant from 'assert';
 
 var {HACK_GRAMMARS_SET} = require('nuclide-hack-common/lib/constants');
 
+import type {BusySignalProviderBase} from 'nuclide-busy-signal-provider-base';
 import type HackLanguage from './HackLanguage';
 import type {HackDiagnosticItem, HackError} from './types';
 
@@ -82,6 +83,7 @@ function hackMessageToDiagnosticMessage(
 }
 
 class HackDiagnosticsProvider {
+  _busySignalProvider: BusySignalProviderBase;
   _providerBase: DiagnosticsProviderBase;
   _requestSerializer: RequestSerializer;
 
@@ -93,9 +95,11 @@ class HackDiagnosticsProvider {
 
   constructor(
     shouldRunOnTheFly: boolean,
-    ProviderBase?: typeof DiagnosticsProviderBase = DiagnosticsProviderBase
+    busySignalProvider: BusySignalProviderBase,
+    ProviderBase: typeof DiagnosticsProviderBase = DiagnosticsProviderBase,
   ) {
-    var utilsOptions = {
+    this._busySignalProvider = busySignalProvider;
+    const utilsOptions = {
       grammarScopes: HACK_GRAMMARS_SET,
       shouldRunOnTheFly,
       onTextEditorEvent: editor => this._runDiagnostics(editor),
@@ -106,8 +110,15 @@ class HackDiagnosticsProvider {
     this._hackLanguageToFilePaths = new Map();
   }
 
+  _runDiagnostics(textEditor: atom$TextEditor): void {
+    this._busySignalProvider.reportBusy(
+      'Hack: Waiting for diagnostics',
+      () => this._runDiagnosticsImpl(textEditor),
+    );
+  }
+
   @trackTiming('hack.run-diagnostics')
-  async _runDiagnostics(textEditor: TextEditor): Promise<void> {
+  async _runDiagnosticsImpl(textEditor: atom$TextEditor): Promise<void> {
     var filePath = textEditor.getPath();
     if (!filePath) {
       return;
