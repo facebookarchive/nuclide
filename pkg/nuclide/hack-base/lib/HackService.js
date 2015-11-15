@@ -22,7 +22,7 @@ import type {
 import type {SymbolTypeValue} from 'nuclide-hack-common/lib/constants';
 import type {NuclideUri} from 'nuclide-remote-uri';
 
-import {fsPromise} from 'nuclide-commons';
+import {fsPromise, promises} from 'nuclide-commons';
 import invariant from 'assert';
 import {SymbolType, SearchResultType} from 'nuclide-hack-common/lib/constants';
 import {
@@ -34,17 +34,24 @@ import {
 
 const HH_NEWLINE = '<?hh\n';
 const HH_STRICT_NEWLINE = '<?hh // strict\n';
+const HH_DIAGNOSTICS_DELAY_MS = 600;
+const HH_CLIENT_MAX_TRIES = 10;
 
 export async function getDiagnostics(
   file: NuclideUri,
   currentContents?: string
 ): Promise<?HackDiagnosticsResult> {
-  const hhResult = await callHHClient(
-    /*args*/ [],
-    /*errorStream*/ true,
-    /*outputJson*/ true,
-    /*processInput*/ null,
-    /*file*/ file,
+  const hhResult = await promises.retryLimit(
+    () => callHHClient(
+      /*args*/ [],
+      /*errorStream*/ true,
+      /*outputJson*/ true,
+      /*processInput*/ null,
+      /*file*/ file,
+    ),
+    result => result != null,
+    HH_CLIENT_MAX_TRIES,
+    HH_DIAGNOSTICS_DELAY_MS,
   );
   if (!hhResult) {
     return null;

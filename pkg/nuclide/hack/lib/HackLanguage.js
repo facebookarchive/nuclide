@@ -25,6 +25,7 @@ import type NuclideClient from 'nuclide-server/lib/NuclideClient';
 import {trackTiming} from 'nuclide-analytics';
 import {parse, createRemoteUri, getPath} from 'nuclide-remote-uri';
 import {getHackService} from './utils';
+import {getLogger} from 'nuclide-logging';
 
 var {Range, Emitter} = require('atom');
 var HackWorker = require('./HackWorker');
@@ -230,13 +231,19 @@ module.exports = class HackLanguage {
 
   async getServerDiagnostics(filePath: NuclideUri): Promise<Array<HackDiagnostic>> {
     const {getDiagnostics} = getHackService(filePath);
-    const diagnosticResult = await getDiagnostics(filePath, '');
-    if (!diagnosticResult) {
+    let diagnosticResult = null;
+    try {
+      diagnosticResult = await getDiagnostics(filePath, '');
+    } catch (err) {
+      getLogger().error(err);
       return [];
-    } else {
-      var hackDiagnostics = ((diagnosticResult: any): HackDiagnosticsResult);
-      return hackDiagnostics.messages;
     }
+    if (!diagnosticResult) {
+      getLogger().error('hh_client could not be reached');
+      return [];
+    }
+    const hackDiagnostics = ((diagnosticResult: any): HackDiagnosticsResult);
+    return hackDiagnostics.messages;
   }
 
   @trackTiming('hack.get-definition')

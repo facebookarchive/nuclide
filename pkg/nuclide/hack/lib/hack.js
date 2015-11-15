@@ -22,8 +22,6 @@ import pathUtil from 'path';
 import {SymbolType} from 'nuclide-hack-common';
 import {getHackService} from './utils';
 
-const {awaitMilliSeconds} = require('nuclide-commons').promises;
-
 const HACK_WORD_REGEX = /[a-zA-Z0-9_$]+/g;
 
 // Symbol types we can get references for.
@@ -39,7 +37,6 @@ const SYMBOL_TYPES_WITH_REFERENCES = new Set([
  * Also, it deelegates the language feature request to the correct HackLanguage instance.
  */
 var clientToHackLanguage: {[clientId: string]: HackLanguage} = {};
-var HH_DIAGNOSTICS_DELAY_MS = 3000;
 
 module.exports = {
 
@@ -58,9 +55,6 @@ module.exports = {
 
     let diagnostics;
     if (hackLanguage.isHackAvailable()) {
-      // Work around `hh_client` returns server busy error, and fails retrying (when enabled),
-      // if a `check` call is made before 3 seconds of a file being saved.
-      await awaitMilliSeconds(HH_DIAGNOSTICS_DELAY_MS);
       diagnostics = await hackLanguage.getServerDiagnostics(filePath);
     } else {
       diagnostics = await hackLanguage.getDiagnostics(localPath, contents);
