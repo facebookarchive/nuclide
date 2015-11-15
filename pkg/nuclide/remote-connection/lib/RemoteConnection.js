@@ -311,6 +311,9 @@ class RemoteConnection {
       }
       this._initialized = true;
 
+      const FileSystemService = this.getService('FileSystemService');
+      this._config.cwd = await FileSystemService.resolveRealPath(this._config.cwd);
+
       // Store the configuration for future usage.
       setConnectionConfig(this._config);
 

@@ -62,6 +62,12 @@ export async function readdir(path: string): Promise<Array<FileWithStats>> {}
 export function realpath(path: string): Promise<string> {}
 
 /**
+ * Gets the real path of a file path, while expanding telda paths
+ * like: ~/abc to its absolute path format.
+ */
+export function resolveRealPath(path: string): Promise<string> {}
+
+/**
  * Runs the equivalent of `mv sourcePath destinationPath`.
  */
 export function rename(sourcePath: string, destinationPath: string): Promise<void> {}

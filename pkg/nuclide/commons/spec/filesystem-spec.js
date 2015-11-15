@@ -12,7 +12,7 @@
 var path = require('path');
 var fs = require('fs');
 var temp = require('temp').track();
-var {findNearestFile} = require('../lib/main');
+import {findNearestFile, expandHomeDir} from '../lib/filesystem';
 
 describe('filesystem test suite', () => {
 
@@ -50,6 +50,20 @@ describe('filesystem test suite', () => {
         var foundPath = await findNearestFile('non-existent.txt', nestedDirPath);
         expect(foundPath).toBe(null);
       });
+    });
+  });
+
+  describe('expandHomeDir()', () => {
+    it('expands ~ to HOME', () => {
+      expect(expandHomeDir('~')).toBe(process.env.HOME);
+    });
+
+    it('expands ~/ to HOME', () => {
+      expect(expandHomeDir('~/abc')).toBe(path.join(process.env.HOME, 'abc'));
+    });
+
+    it('keeps ~def to ~def', () => {
+      expect(expandHomeDir('~def')).toBe('~def');
     });
   });
 

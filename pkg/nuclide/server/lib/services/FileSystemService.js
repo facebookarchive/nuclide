@@ -126,6 +126,10 @@ export function realpath(path: string): Promise<string> {
   return fsPromise.realpath(path);
 }
 
+export function resolveRealPath(path: string): Promise<string> {
+  return fsPromise.realpath(fsPromise.expandHomeDir(path));
+}
+
 /**
  * Runs the equivalent of `mv sourcePath destinationPath`.
  */

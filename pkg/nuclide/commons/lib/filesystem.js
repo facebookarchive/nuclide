@@ -125,6 +125,19 @@ async function rmdir(filePath: string): Promise {
   });
 }
 
+function expandHomeDir(filePath: string): string {
+  const {HOME} = process.env;
+  let resolvedPath = null;
+  if (filePath === '~') {
+    resolvedPath = HOME;
+  } else if (filePath.startsWith(`~${path.sep}`)) {
+    resolvedPath = `${HOME}${filePath.substr(1)}`;
+  } else {
+    resolvedPath = filePath;
+  }
+  return resolvedPath;
+}
+
 /**
  * Takes a method from Node's fs module and returns a "denodeified" equivalent, i.e., an adapter
  * with the same functionality, but returns a Promise rather than taking a callback. This isn't
@@ -161,4 +174,5 @@ module.exports = {
   tempfile,
   unlink: denodeifyFsMethod('unlink'),
   writeFile: denodeifyFsMethod('writeFile'),
+  expandHomeDir,
 };
