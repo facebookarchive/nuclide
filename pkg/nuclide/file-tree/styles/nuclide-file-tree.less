@@ -1,3 +1,5 @@
+@import "ui-variables";
+
 .nuclide-file-tree.tree-view:before {
   /*
    * Override `fixed` position from `.tree-view:before` so the focus bar is relative to its
@@ -7,31 +9,38 @@
   position: absolute;
 }
 
-.nuclide-file-tree {
-  // Fill horizontal and vertical space if tree is narrower or shorter than its containing panel.
-  min-height: -webkit-min-content;
+.list-tree.has-collapsable-children .list-nested-item > .list-item.loading:before {
+  content: "\f087"; // 'sync' icon, spinning arrows
+}
+
+/*
+ * Styles below taken from Atom's [tree-view][0] to ensure nuclide-file-tree looks exactly the same.
+ *
+ * [0] https://github.com/atom/tree-view
+ */
+.tree-view {
+  flex-grow: 1;
+  flex-shrink: 0;
   min-width: -webkit-min-content;
-
-  // Fill horizontal space if content is narrower than the containing panel.
+  min-height: -webkit-min-content; // Switched from tree-view's `100%` to fill height of scroller.
+  padding-left: @component-icon-padding;
+  padding-right: @component-padding;
+  position: relative;
   width: 100%;
-}
 
-@ARROW_WIDTH: 16px;
-
-.nuclide-tree-component-item {
-  padding-right: 5px;
-  position: relative;
-
-  &.file > .icon {
-    padding-left: @ARROW_WIDTH;
+  .header {
+    position: relative;
   }
-}
 
-.nuclide-tree-component-item-arrow {
-  font-family: 'Octicons Regular';
-  -webkit-font-smoothing: antialiased;
-  width: @ARROW_WIDTH;
-  display: inline-block;
-  position: relative;
-  top: -1px;
+  .list-tree {
+    position: static;
+  }
+
+  .entry {
+    // This fixes https://github.com/atom/tree-view/issues/110, see that issue for more details
+    &:before {
+      content: '';
+      position: absolute;
+    }
+  }
 }

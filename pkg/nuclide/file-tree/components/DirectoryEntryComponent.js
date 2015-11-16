@@ -23,13 +23,8 @@ const {
 
 const getActions = FileTreeActions.getInstance;
 
-// Leading indent for each tree node
-const INDENT_IN_PX = 10;
 // Additional indent for nested tree nodes
-const INDENT_PER_LEVEL = 15;
-const DOWN_ARROW = '\uF0A3';
-const RIGHT_ARROW = '\uF078';
-const SPINNER = '\uF087';
+const INDENT_PER_LEVEL = 17;
 
 class DirectoryEntryComponent extends React.Component {
   constructor(props: Object) {
@@ -43,13 +38,16 @@ class DirectoryEntryComponent extends React.Component {
   }
 
   render(): ReactElement {
-    const indentLevel = this.props.indentLevel;
-    const outerStyle = {
-      paddingLeft: INDENT_IN_PX + indentLevel * INDENT_PER_LEVEL,
-    };
     const outerClassName = classnames({
-      'directory entry list-item nuclide-tree-component-item': true,
+      'collapsed': !this.props.isExpanded,
+      'directory entry list-nested-item': true,
+      'project-root': this.props.isRoot,
       'selected': this.props.isSelected,
+    });
+    const listItemClassName = classnames({
+      'header': this.props.isRoot,
+      'list-item': true,
+      'loading': this.props.isLoading,
     });
 
     let statusClass;
@@ -62,35 +60,32 @@ class DirectoryEntryComponent extends React.Component {
       statusClass = '';
     }
 
-    let icon: ?ReactElement;
-    if (this.props.isLoading) {
-      icon = <span className="nuclide-tree-component-item-arrow-spinner">{SPINNER}</span>;
-    } else {
-      icon = this.props.isExpanded ? <span>{DOWN_ARROW}</span> : <span>{RIGHT_ARROW}</span>;
-    }
-
     return (
       <li
         key={this.props.nodeKey}
         className={`${outerClassName} ${statusClass}`}
-        style={outerStyle}
+        style={{paddingLeft: this.props.indentLevel * INDENT_PER_LEVEL}}
         onClick={this._onClick}
         onMouseDown={this._onMouseDown}>
-        <span ref="arrow" className="nuclide-tree-component-item-arrow">{icon}</span>
-        <span
-          className="icon name icon-file-directory"
-          data-name={this.props.nodeName}
-          data-path={this.props.nodePath}>
-          {this.props.nodeName}
-        </span>
+        <div className={listItemClassName} ref="arrowContainer">
+          <span
+            className="icon name icon-file-directory"
+            ref="pathContainer"
+            data-name={this.props.nodeName}
+            data-path={this.props.nodePath}>
+            {this.props.nodeName}
+          </span>
+        </div>
       </li>
     );
   }
 
   _onClick(event: SyntheticMouseEvent) {
     const deep = event.altKey;
-    const arrow = this.refs['arrow'];
-    if (arrow != null && React.findDOMNode(arrow).contains(event.target)) {
+    if (
+      React.findDOMNode(this.refs['arrowContainer']).contains(event.target)
+      && event.clientX < React.findDOMNode(this.refs['pathContainer']).getBoundingClientRect().left
+    ) {
       this._toggleNodeExpanded(deep);
       return;
     }
@@ -135,6 +130,7 @@ DirectoryEntryComponent.propTypes = {
   indentLevel: PropTypes.number.isRequired,
   isExpanded: PropTypes.bool.isRequired,
   isLoading: PropTypes.bool.isRequired,
+  isRoot: PropTypes.bool.isRequired,
   isSelected: PropTypes.bool.isRequired,
   nodeKey: PropTypes.string.isRequired,
   nodeName: PropTypes.string.isRequired,
@@ -144,3 +140,4 @@ DirectoryEntryComponent.propTypes = {
 };
 
 module.exports = DirectoryEntryComponent;
+

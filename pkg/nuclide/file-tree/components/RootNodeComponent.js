@@ -20,40 +20,39 @@ const {PropTypes} = React;
 class RootNodeComponent extends React.Component {
   render(): ReactElement {
     return (
-      <ul className="list-tree">
+      <ul className="list-tree has-collapsable-children">
         {this._renderNode(this.props.rootNode, 0)}
       </ul>
     );
   }
 
   _renderNode(node: FileTreeNode, indentLevel: number): Array<ReactElement> {
-    let elements = [
-      node.isContainer ?
-        <DirectoryEntryComponent
-          indentLevel={indentLevel}
-          isExpanded={node.isExpanded()}
-          isLoading={node.isLoading()}
-          isRoot={indentLevel === 0}
-          isSelected={node.isSelected()}
-          vcsStatusCode={node.getVcsStatusCode()}
-          key={node.nodeKey}
-          nodeKey={node.nodeKey}
-          nodeName={node.nodeName}
-          nodePath={node.nodePath}
-          ref={node.nodeKey}
-          rootKey={node.rootKey}
-        /> :
-        <FileEntryComponent
-          indentLevel={indentLevel}
-          isSelected={node.isSelected()}
-          vcsStatusCode={node.getVcsStatusCode()}
-          key={node.nodeKey}
-          nodeKey={node.nodeKey}
-          nodeName={node.nodeName}
-          nodePath={node.nodePath}
-          ref={node.nodeKey}
-          rootKey={node.rootKey}
-        />,
+    let elements = [node.isContainer ?
+      <DirectoryEntryComponent
+        indentLevel={indentLevel}
+        isExpanded={node.isExpanded()}
+        isLoading={node.isLoading()}
+        isRoot={indentLevel === 0}
+        isSelected={node.isSelected()}
+        vcsStatusCode={node.getVcsStatusCode()}
+        key={node.nodeKey}
+        nodeKey={node.nodeKey}
+        nodeName={node.nodeName}
+        nodePath={node.nodePath}
+        ref={node.nodeKey}
+        rootKey={node.rootKey}
+      /> :
+      <FileEntryComponent
+        indentLevel={indentLevel}
+        isSelected={node.isSelected()}
+        vcsStatusCode={node.getVcsStatusCode()}
+        key={node.nodeKey}
+        nodeKey={node.nodeKey}
+        nodeName={node.nodeName}
+        nodePath={node.nodePath}
+        ref={node.nodeKey}
+        rootKey={node.rootKey}
+      />,
     ];
     if (node.isExpanded()) {
       node.getChildNodes().forEach(childNode => {

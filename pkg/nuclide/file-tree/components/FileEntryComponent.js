@@ -24,10 +24,8 @@ const {
 
 const getActions = FileTreeActions.getInstance;
 
-// Leading indent for each tree node
-const INDENT_IN_PX = 10;
 // Additional indent for nested tree nodes
-const INDENT_PER_LEVEL = 15;
+const INDENT_PER_LEVEL = 17;
 
 class FileEntryComponent extends React.Component {
   constructor(props: Object) {
@@ -42,12 +40,8 @@ class FileEntryComponent extends React.Component {
   }
 
   render(): ReactElement {
-    const indentLevel = this.props.indentLevel;
-    const outerStyle = {
-      paddingLeft: INDENT_IN_PX + indentLevel * INDENT_PER_LEVEL,
-    };
     const outerClassName = classnames({
-      'entry file list-item nuclide-tree-component-item': true,
+      'entry file list-item': true,
       'selected': this.props.isSelected,
     });
 
@@ -65,7 +59,7 @@ class FileEntryComponent extends React.Component {
       <li
         key={this.props.nodeKey}
         className={`${outerClassName} ${statusClass}`}
-        style={outerStyle}
+        style={{paddingLeft: this.props.indentLevel * INDENT_PER_LEVEL}}
         onClick={this._onClick}
         onMouseDown={this._onMouseDown}
         onDoubleClick={this._onDoubleClick}>
@@ -113,3 +107,4 @@ FileEntryComponent.propTypes = {
 };
 
 module.exports = FileEntryComponent;
+
