@@ -10,12 +10,13 @@
  */
 
 import FileTreeActions from '../lib/FileTreeActions';
-import NodeComponent from '../components/NodeComponent';
+import DirectoryEntryComponent from '../components/DirectoryEntryComponent';
+import FileEntryComponent from '../components/FileEntryComponent';
 import React from 'react-for-atom';
 
 const {TestUtils} = React.addons;
 
-function renderNodeComponentIntoDocument(props: Object = {}) {
+function renderEntryComponentIntoDocument(componentKlass: Object, props: Object = {}) {
   const componentProps = {
     ...{
       indentLevel: 0,
@@ -30,10 +31,10 @@ function renderNodeComponentIntoDocument(props: Object = {}) {
     },
     ...props,
   };
-  return TestUtils.renderIntoDocument(<NodeComponent {...componentProps} />);
+  return TestUtils.renderIntoDocument(React.createElement(componentKlass, componentProps));
 }
 
-describe('NodeComponent', () => {
+describe('DirectoryEntryComponent', () => {
   const actions = FileTreeActions.getInstance();
 
   describe('when expanding/collapsing', () => {
@@ -41,21 +42,34 @@ describe('NodeComponent', () => {
       spyOn(actions, 'expandNode');
     });
 
-    it('expands on click when node is a selected container', () => {
-      const nodeComponent = renderNodeComponentIntoDocument({
-        isContainer: true,
-        isSelected: true,
-      });
+    it('expands on click when node is selected', () => {
+      const nodeComponent = renderEntryComponentIntoDocument(
+        DirectoryEntryComponent,
+        {
+          isRoot: false,
+          isSelected: true,
+        }
+      );
       const domNode = React.findDOMNode(nodeComponent);
       TestUtils.Simulate.click(domNode);
       expect(actions.expandNode).toHaveBeenCalled();
     });
+  });
+});
 
-    it('does not expand on click when node is a selected file (non-container)', () => {
-      const nodeComponent = renderNodeComponentIntoDocument({
-        isContainer: false,
-        isSelected: true,
-      });
+describe('FileEntryComponent', () => {
+  const actions = FileTreeActions.getInstance();
+
+  describe('when expanding/collapsing', () => {
+    beforeEach(() => {
+      spyOn(actions, 'expandNode');
+    });
+
+    it('does not expand on click when node is selected', () => {
+      const nodeComponent = renderEntryComponentIntoDocument(
+        FileEntryComponent,
+        {isSelected: true}
+      );
       const domNode = React.findDOMNode(nodeComponent);
       TestUtils.Simulate.click(domNode);
       expect(actions.expandNode).not.toHaveBeenCalled();

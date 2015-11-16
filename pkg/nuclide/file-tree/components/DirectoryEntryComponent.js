@@ -14,7 +14,6 @@ const React = require('react-for-atom');
 const {StatusCodeNumber} = require('nuclide-hg-repository-base').hgConstants;
 
 const classnames = require('classnames');
-const {fileTypeClass} = require('nuclide-atom-helpers');
 const {isContextClick} = require('../lib/FileTreeHelpers');
 
 const {
@@ -32,12 +31,11 @@ const DOWN_ARROW = '\uF0A3';
 const RIGHT_ARROW = '\uF078';
 const SPINNER = '\uF087';
 
-class NodeComponent extends React.Component {
+class DirectoryEntryComponent extends React.Component {
   constructor(props: Object) {
     super(props);
     this._onClick = this._onClick.bind(this);
     this._onMouseDown = this._onMouseDown.bind(this);
-    this._onDoubleClick = this._onDoubleClick.bind(this);
   }
 
   shouldComponentUpdate(nextProps: Object, nextState: Object) {
@@ -50,19 +48,9 @@ class NodeComponent extends React.Component {
       paddingLeft: INDENT_IN_PX + indentLevel * INDENT_PER_LEVEL,
     };
     const outerClassName = classnames({
-      'directory': this.props.isContainer,
-      'file': !this.props.isContainer,
-      'entry list-item nuclide-tree-component-item': true,
+      'directory entry list-item nuclide-tree-component-item': true,
       'selected': this.props.isSelected,
     });
-
-    // TODO: Consider symlinks when it's possible to determine whether this is a symlink.
-    let innerClassName;
-    if (this.props.isContainer) {
-      innerClassName = 'icon-file-directory';
-    } else {
-      innerClassName = fileTypeClass(this.props.nodeName);
-    }
 
     let statusClass;
     const {vcsStatusCode} = this.props;
@@ -77,13 +65,8 @@ class NodeComponent extends React.Component {
     let icon: ?ReactElement;
     if (this.props.isLoading) {
       icon = <span className="nuclide-tree-component-item-arrow-spinner">{SPINNER}</span>;
-    } else if (this.props.isContainer) {
+    } else {
       icon = this.props.isExpanded ? <span>{DOWN_ARROW}</span> : <span>{RIGHT_ARROW}</span>;
-    }
-
-    let arrow;
-    if (this.props.isContainer) {
-      arrow = <span ref="arrow" className="nuclide-tree-component-item-arrow">{icon}</span>;
     }
 
     return (
@@ -92,11 +75,10 @@ class NodeComponent extends React.Component {
         className={`${outerClassName} ${statusClass}`}
         style={outerStyle}
         onClick={this._onClick}
-        onMouseDown={this._onMouseDown}
-        onDoubleClick={this._onDoubleClick}>
-        {arrow}
+        onMouseDown={this._onMouseDown}>
+        <span ref="arrow" className="nuclide-tree-component-item-arrow">{icon}</span>
         <span
-          className={`icon name ${innerClassName}`}
+          className="icon name icon-file-directory"
           data-name={this.props.nodeName}
           data-path={this.props.nodePath}>
           {this.props.nodeName}
@@ -117,9 +99,7 @@ class NodeComponent extends React.Component {
     if (modifySelection) {
       getActions().toggleSelectNode(this.props.rootKey, this.props.nodeKey);
     } else if (this.props.isSelected) {
-      if (this.props.isContainer) {
-        this._toggleNodeExpanded(deep);
-      }
+      this._toggleNodeExpanded(deep);
     } else {
       getActions().selectSingleNode(this.props.rootKey, this.props.nodeKey);
     }
@@ -131,12 +111,6 @@ class NodeComponent extends React.Component {
       if (!this.props.isSelected) {
         getActions().selectSingleNode(this.props.rootKey, this.props.nodeKey);
       }
-    }
-  }
-
-  _onDoubleClick(): void {
-    if (!this.props.isContainer) {
-      getActions().confirmNode(this.props.rootKey, this.props.nodeKey);
     }
   }
 
@@ -157,9 +131,8 @@ class NodeComponent extends React.Component {
   }
 }
 
-NodeComponent.propTypes = {
+DirectoryEntryComponent.propTypes = {
   indentLevel: PropTypes.number.isRequired,
-  isContainer: PropTypes.bool.isRequired,
   isExpanded: PropTypes.bool.isRequired,
   isLoading: PropTypes.bool.isRequired,
   isSelected: PropTypes.bool.isRequired,
@@ -170,4 +143,4 @@ NodeComponent.propTypes = {
   vcsStatusCode: PropTypes.number,
 };
 
-module.exports = NodeComponent;
+module.exports = DirectoryEntryComponent;

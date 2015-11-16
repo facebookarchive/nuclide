@@ -9,7 +9,8 @@
  * the root directory of this source tree.
  */
 
-const NodeComponent = require('./NodeComponent');
+const DirectoryEntryComponent = require('./DirectoryEntryComponent');
+const FileEntryComponent = require('./FileEntryComponent');
 const React = require('react-for-atom');
 
 import type FileTreeNode from '../lib/FileTreeNode';
@@ -27,20 +28,32 @@ class RootNodeComponent extends React.Component {
 
   _renderNode(node: FileTreeNode, indentLevel: number): Array<ReactElement> {
     let elements = [
-      <NodeComponent
-        indentLevel={indentLevel}
-        isContainer={node.isContainer}
-        isExpanded={node.isExpanded()}
-        isLoading={node.isLoading()}
-        isSelected={node.isSelected()}
-        vcsStatusCode={node.getVcsStatusCode()}
-        key={node.nodeKey}
-        nodeKey={node.nodeKey}
-        nodeName={node.nodeName}
-        nodePath={node.nodePath}
-        ref={node.nodeKey}
-        rootKey={node.rootKey}
-      />,
+      node.isContainer ?
+        <DirectoryEntryComponent
+          indentLevel={indentLevel}
+          isExpanded={node.isExpanded()}
+          isLoading={node.isLoading()}
+          isRoot={indentLevel === 0}
+          isSelected={node.isSelected()}
+          vcsStatusCode={node.getVcsStatusCode()}
+          key={node.nodeKey}
+          nodeKey={node.nodeKey}
+          nodeName={node.nodeName}
+          nodePath={node.nodePath}
+          ref={node.nodeKey}
+          rootKey={node.rootKey}
+        /> :
+        <FileEntryComponent
+          indentLevel={indentLevel}
+          isSelected={node.isSelected()}
+          vcsStatusCode={node.getVcsStatusCode()}
+          key={node.nodeKey}
+          nodeKey={node.nodeKey}
+          nodeName={node.nodeName}
+          nodePath={node.nodePath}
+          ref={node.nodeKey}
+          rootKey={node.rootKey}
+        />,
     ];
     if (node.isExpanded()) {
       node.getChildNodes().forEach(childNode => {
