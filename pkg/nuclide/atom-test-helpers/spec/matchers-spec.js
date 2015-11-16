@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-var {Range} = require('atom');
-var {jasmineMatchers} = require('../lib/main');
+const {Range} = require('atom');
+const {jasmineMatchers} = require('../lib/main');
 
 describe('atom-test-helpers/matchers', () => {
   beforeEach(function() {
@@ -26,9 +26,9 @@ describe('atom-test-helpers/matchers', () => {
 
   describe('toEqualAtomRanges', () => {
     it('determines when two arrays of Ranges are equal.', () => {
-      var ranges = [new Range([0,0], [0,0]), new Range([1,1], [1,1])];
-      var sameRanges = [new Range([0,0], [0,0]), new Range([1,1], [1,1])];
-      var differentRanges = [new Range([0,0], [0,0]), new Range([2,2], [2,2])];
+      const ranges = [new Range([0,0], [0,0]), new Range([1,1], [1,1])];
+      const sameRanges = [new Range([0,0], [0,0]), new Range([1,1], [1,1])];
+      const differentRanges = [new Range([0,0], [0,0]), new Range([2,2], [2,2])];
       expect(ranges).toEqualAtomRanges(sameRanges);
       expect(ranges).not.toEqualAtomRanges(differentRanges);
     });

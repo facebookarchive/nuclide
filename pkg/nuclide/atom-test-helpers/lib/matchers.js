@@ -33,7 +33,7 @@ function toEqualAtomRange(expected: ?atom$Range): boolean {
  * @returns True if the array of Ranges are equal.
  */
 function toEqualAtomRanges(expected: ?Array<atom$Range>): boolean {
-  var allEqual = true;
+  let allEqual = true;
   if (!this.actual || !expected) {
     return false;
   }
