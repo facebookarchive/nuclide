@@ -22,7 +22,7 @@
     "nuclide-ui-mutable-list-selector": "0.0.0",
     "nuclide-ui-radiogroup": "0.0.0",
     "nuclide-version": "0.0.0",
-    "react-for-atom": "0.13.6"
+    "react-for-atom": "0.14.3"
   },
   "devDependencies": {
     "nuclide-external-interfaces": "0.0.0",

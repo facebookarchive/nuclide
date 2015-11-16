@@ -146,7 +146,7 @@ export default class ConnectionDialog extends React.Component<DefaultProps, Prop
     // <div> as the root. Ideally, the <atom-panel> would be the root.
     return (
       <div>
-        <atom-panel className="modal from-top" key="connect-dialog">
+        <atom-panel class="modal from-top" key="connect-dialog">
           {content}
           <div className="block nuclide-ok-cancel">
             <button className="btn" onClick={this._boundCancel}>

@@ -16,7 +16,7 @@
     "classnames": "2.2.0",
     "nuclide-atom-npm": "0.0.0",
     "nuclide-commons": "0.0.0",
-    "react-for-atom": "0.13.6"
+    "react-for-atom": "0.14.3"
   },
   "devDependencies": {
     "immutable": "3.7.5",

@@ -86,7 +86,7 @@ export default class ServiceMonitor extends React.Component {
     rows.reverse();
 
     return (
-      <atom-panel className="top nuclide-service-monitor-root">
+      <atom-panel class="top nuclide-service-monitor-root">
         <div className="panel-heading">
           <div className="nuclide-service-monitor-header">
             <div className="nuclide-service-monitor-left-header">

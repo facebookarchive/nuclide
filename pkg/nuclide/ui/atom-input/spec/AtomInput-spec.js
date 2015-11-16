@@ -78,29 +78,4 @@ describe('AtomInput', () => {
     expect(onDidChange.calls.length).toBe(1);
   });
 
-  it('.renderToStaticMarkup()', () => {
-    var initialValue = 'some text';
-    var props = {initialValue};
-    expect(React.renderToStaticMarkup(<AtomInput {...props} />)).toBe(
-      '<atom-text-editor mini>some text</atom-text-editor>'
-    );
-  });
-
-  // This test is currently disabled because it appears that WeakMap may be
-  // explicitly designed not to support this use case.
-  /*eslint-disable jasmine/no-disabled-tests*/
-  xit('releases references after it is unmounted', () => {
-    var initialValue = 'I am the text!';
-    reactElement = createWithProps({initialValue});
-    var weakReferences = new WeakMap();
-    var textEditorKey = {};
-    weakReferences.set(textEditorKey, reactElement.getTextEditor());
-    expect(weakReferences.get(textEditorKey)).not.toBe(null);
-
-    React.unmountComponentAtNode(React.findDOMNode(reactElement).parentNode);
-    reactElement = null;
-    expect(weakReferences.get(textEditorKey)).toBe(null);
-  });
-  /*eslint-enable jasmine/no-disabled-tests*/
-
 });

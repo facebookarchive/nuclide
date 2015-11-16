@@ -26,7 +26,7 @@
     "nuclide-buck-toolbar": "0.0.0",
     "nuclide-hhvm-toolbar": "0.0.0",
     "nuclide-remote-uri": "0.0.0",
-    "react-for-atom": "0.13.6"
+    "react-for-atom": "0.14.3"
   },
   "devDependencies": {
     "nuclide-external-interfaces": "0.0.0"

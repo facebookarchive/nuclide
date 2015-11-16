@@ -154,19 +154,10 @@ describe('HackSymbolProvider', () => {
       const reactElement = HackSymbolProvider.getComponentForItem(mockResult);
       expect(reactElement.props.title).toBe('interface');
       const renderedComponent = TestUtils.renderIntoDocument(reactElement);
-      TestUtils.findRenderedDOMComponentWithClass(renderedComponent, 'icon-puzzle');
-      expect(
-        TestUtils.scryRenderedDOMComponentsWithClass(
-          renderedComponent,
-          'omnisearch-symbol-result-filename'
-        ).length
-      ).toBe(1);
-      expect(
-        TestUtils.scryRenderedDOMComponentsWithClass(
-          renderedComponent,
-          'icon-puzzle'
-        ).length
-      ).toBe(1);
+      const renderedNode = React.findDOMNode(renderedComponent);
+
+      expect(renderedNode.querySelectorAll('.omnisearch-symbol-result-filename').length).toBe(1);
+      expect(renderedNode.querySelectorAll('.icon-puzzle').length).toBe(1);
     });
   });
 });

@@ -1,6 +1,7 @@
 [include]
 
 [ignore]
+.*react/node_modules/fbjs.*
 
 [libs]
 ./node_modules/nuclide-external-interfaces/1.0/

@@ -17,7 +17,7 @@
     "nuclide-logging": "0.0.0",
     "nuclide-ui-atom-text-editor": "0.0.0",
     "nuclide-ui-pane-item": "0.0.0",
-    "react-for-atom": "0.13.6"
+    "react-for-atom": "0.14.3"
   },
   "devDependencies": {
     "nuclide-atom-helpers": "0.0.0",

@@ -62,7 +62,7 @@ class FileDialogComponent extends React.Component {
     }
 
     return (
-      <atom-panel className="modal from-top" key="add-dialog">
+      <atom-panel class="modal from-top" key="add-dialog">
         <label className={labelClassName}>{this.props.message}</label>
         <AtomInput
           initialValue={this.props.initialValue}
