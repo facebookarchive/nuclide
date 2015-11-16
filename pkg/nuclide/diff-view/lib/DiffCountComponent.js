@@ -29,7 +29,7 @@ class DiffCountComponent extends React.Component {
     }
     return (
       <span>
-        {count > 99 ? '+99' : count}
+        {count > 99 ? '99+' : count}
       </span>
     );
   }
