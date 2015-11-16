@@ -179,16 +179,16 @@ class DbgpSocket {
 
   async evaluateOnCallFrame(frameIndex: number, expression: string): Promise<EvaluationResult> {
     // Escape any double quote in the expression.
-    var escapedExpression = expression.replace(/"/g, '\\"');
-    // Quote the input expression so that we can support expression with space in it(e.g. function evaluation).
-    var result = await this._callDebugger('property_value', `-d ${frameIndex} -n "${escapedExpression}"`);
+    const escapedExpression = expression.replace(/"/g, '\\"');
+    // Quote the input expression so that we can support expression with
+    // space in it(e.g. function evaluation).
+    const result = await this._callDebugger(
+      'property_value',
+      `-d ${frameIndex} -n "${escapedExpression}"`
+    );
     if (result.error && result.error.length > 0) {
       return {
-        // TODO: [jeffreytan] pass error message to UI.
-        // Currently, Chrome UI throws away any result if wasThown is true
-        // (see WebInspector.WatchExpression.prototype._createWatchExpression())
-        // so some modification to chrome code is required to support this.
-        result: null,
+        error: result.error[0],
         wasThrown: true,
       };
     }

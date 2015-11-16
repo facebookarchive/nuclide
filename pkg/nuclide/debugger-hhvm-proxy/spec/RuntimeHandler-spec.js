@@ -61,23 +61,46 @@ describe('debugger-hhvm-proxy RuntimeHandler', () => {
     });
   });
 
-  it('evaluate', () => {
-    waitsForPromise(async () => {
+  describe('evaluate', () => {
+    const expression = 'evaluate-expression';
+
+    beforeEach(() => {
       connectionMultiplexer.runtimeEvaluate = jasmine.createSpy('runtimeEvaluate').
         andReturn(Promise.resolve('the-result'));
+    });
 
-      const expression = 'evaluate-expression';
-      await handler.handleMethod(
-        1,
-        'evaluate',
-        {expression}
-      );
-      expect(connectionMultiplexer.runtimeEvaluate).toHaveBeenCalledWith(expression);
-      expect(clientCallback.replyToCommand).toHaveBeenCalledWith(
-        1,
-        'the-result',
-        undefined
-      );
+    it('console', () => {
+      waitsForPromise(async () => {
+        await handler.handleMethod(
+          1,
+          'evaluate',
+          {
+            expression,
+            objectGroup: 'console',
+          }
+        );
+        expect(connectionMultiplexer.runtimeEvaluate).toHaveBeenCalledWith(expression);
+        expect(clientCallback.replyToCommand).toHaveBeenCalledWith(
+          1,
+          'the-result',
+          undefined
+        );
+      });
+    });
+
+    it('non-console', () => {
+      waitsForPromise(async () => {
+        await handler.handleMethod(
+          1,
+          'evaluate',
+          {
+            expression,
+            objectGroup: 'other',
+          }
+        );
+        expect(connectionMultiplexer.runtimeEvaluate).not.toHaveBeenCalled();
+        expect(clientCallback.replyWithError).toHaveBeenCalledWith(1, jasmine.any(String));
+      });
     });
   });
 

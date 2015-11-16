@@ -41,12 +41,25 @@ import {EventEmitter} from 'events';
 import {ChildProcess} from 'child_process';
 import {ClientCallback} from './ClientCallback';
 
+
 const CONNECTION_MUX_STATUS_EVENT = 'connection-mux-status';
 
 type ConnectionInfo = {
   connection: Connection;
   onStatusDisposable: Disposable;
   status: string;
+};
+
+type DbgpError = {
+  $: {
+    code: number,
+  };
+  message: Array<string>;
+};
+
+type EvaluationFailureResult = {
+  error: DbgpError;
+  wasThrown: boolean;
 };
 
 // The ConnectionMultiplexer makes multiple debugger connections appear to be
@@ -259,22 +272,37 @@ export class ConnectionMultiplexer {
     this._emitter.emit(CONNECTION_MUX_STATUS_EVENT, status);
   }
 
-  runtimeEvaluate(expression: string): Promise<Object> {
+  async runtimeEvaluate(expression: string): Promise<Object> {
     log(`runtimeEvaluate() on dummy connection for: ${expression}`);
     if (this._dummyConnection) {
       // Global runtime evaluation on dummy connection does not care about
       // which frame it is being evaluated on so choose top frame here.
-      return this._dummyConnection.evaluateOnCallFrame(0, expression);
+      const result = await this._dummyConnection.evaluateOnCallFrame(0, expression);
+      this._reportEvaluationFailureIfNeeded(expression, result);
+      return result;
     } else {
       throw this._noConnectionError();
     }
   }
 
-  evaluateOnCallFrame(frameIndex: number, expression: string): Promise<Object> {
+  async evaluateOnCallFrame(frameIndex: number, expression: string): Promise<Object> {
     if (this._enabledConnection) {
-      return this._enabledConnection.evaluateOnCallFrame(frameIndex, expression);
+      const result = await this._enabledConnection.evaluateOnCallFrame(frameIndex, expression);
+      this._reportEvaluationFailureIfNeeded(expression, result);
+      return result;
     } else {
       throw this._noConnectionError();
+    }
+  }
+
+  _reportEvaluationFailureIfNeeded(expression: string, result: EvaluationFailureResult): void {
+    if (result.wasThrown) {
+      const message =
+        `Failed to evaluate "${expression}": (${result.error.$.code}) ${result.error.message[0]}`;
+      this._clientCallback.sendUserMessage('console', {
+        level: 'error',
+        text: message,
+      });
     }
   }
 

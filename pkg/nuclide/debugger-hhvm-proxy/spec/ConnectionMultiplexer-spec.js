@@ -104,6 +104,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
       } else {
         connection.getStatus = jasmine.createSpy('getStatus').andReturn(STATUS_STARTING);
       }
+      connection.evaluateOnCallFrame = jasmine.createSpy('evaluateOnCallFrame').andReturn({});
 
       const statusDispose = jasmine.createSpy('connection.onStatus.dispose' + connectionCount);
       connection.onStatus = jasmine.createSpy('onStatus').andCallFake(callback => {
@@ -626,10 +627,17 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
     waitsForPromise(async () => {
       await doEnable();
 
+      // Jasmine toThrow() does not support calling async function using await
+      // so manually checking exception instead.
+      let exceptionThrown = false;
       const expression = 'runtime expression';
-      expect(() => {
-        connectionMultiplexer.runtimeEvaluate(expression);
-      }).toThrow();
+      try {
+        await connectionMultiplexer.runtimeEvaluate(expression);
+      } catch (e) {
+        exceptionThrown = true;
+      }
+      expect(exceptionThrown).toBe(true);
+
 
       isDummyConnectionResult = true;
       await onDbgpConnectorAttach({
@@ -640,7 +648,7 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
       const dummyConnection = connectionMultiplexer.getDummyConnection();
       expect(dummyConnection).not.toBeNull();
 
-      connectionMultiplexer.runtimeEvaluate(expression);
+      await connectionMultiplexer.runtimeEvaluate(expression);
       expect(dummyConnection.evaluateOnCallFrame).toHaveBeenCalledWith(0, expression);
     });
   });

@@ -39,7 +39,13 @@ export class RuntimeHandler extends Handler {
         break;
 
       case 'evaluate':
-        await this._evaluate(id, params);
+        // Chrome may call 'evaluate' for other purposes like auto-completion etc..
+        // and we are only interested in console evaluation.
+        if (params.objectGroup === 'console') {
+          await this._evaluate(id, params);
+        } else {
+          this.unknownMethod(id, method, params);
+        }
         break;
 
       default:
