@@ -47,19 +47,19 @@ export function getDefinitions(definitionPath: string): Definitions {
  *   and unmarshal objects, as well as make RPC calls.
  * @returns - A proxy module that exports the API specified by the definition
  */
-export function getProxy(definitionPath: string, clientObject: any): any {
-  var resolvedPath = resolvePath(definitionPath);
-  var defs = getDefinitions(definitionPath);
+export function getProxy(serviceName: string, definitionPath: string, clientObject: any): any {
+  const resolvedPath = resolvePath(definitionPath);
+  const defs = getDefinitions(definitionPath);
 
   // Cache proxy factory functions by the resolved definition file path.
   if (!proxiesCache.has(resolvedPath)) {
     // Transpile this code (since it will use anonymous classes and arrow functions).
-    var code = generateProxy(defs);
-    var filename = path.parse(definitionPath).name + 'Proxy.js';
-    var transpiled = createOrFetchFromCache(code, filename);
+    const code = generateProxy(serviceName, defs);
+    const filename = path.parse(definitionPath).name + 'Proxy.js';
+    const transpiled = createOrFetchFromCache(code, filename);
 
     // Load the module direcly from a string.
-    var m = new module.constructor();
+    const m = new module.constructor();
   // $FlowIssue
     m.paths = module.paths;
     m._compile(transpiled, filename);
@@ -72,7 +72,7 @@ export function getProxy(definitionPath: string, clientObject: any): any {
   }
 
   // Cache remote proxy modules by the (definition path, client object) tuple.
-  var cache = proxiesCache.get(resolvedPath);
+  const cache = proxiesCache.get(resolvedPath);
   if (!cache.proxies.has(clientObject)) {
     cache.proxies.set(clientObject, cache.factory(clientObject));
   }

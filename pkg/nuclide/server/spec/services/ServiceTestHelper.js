@@ -43,8 +43,8 @@ export default class ServiceTestHelper {
     this._server.close();
   }
 
-  getRemoteService(serviceDefinitionFile: string): any {
-    return getProxy(serviceDefinitionFile, this._connection.getClient());
+  getRemoteService(serviceName: string, serviceDefinitionFile: string): any {
+    return getProxy(serviceName, serviceDefinitionFile, this._connection.getClient());
   }
 
   getRemoteConnection(): _RemoteConnectionMock {

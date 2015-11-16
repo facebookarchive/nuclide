@@ -14,7 +14,7 @@ import {getVersion} from 'nuclide-version';
 import invariant from 'assert';
 
 describe('InfoService', () => {
-  var testHelper;
+  let testHelper;
   beforeEach(() => {
     testHelper = new ServiceTestHelper();
     waitsForPromise(() => testHelper.start());
@@ -23,9 +23,9 @@ describe('InfoService', () => {
   it('Returns the correct version number', () => {
     waitsForPromise(async () => {
       invariant(testHelper);
-      var service = testHelper.getRemoteService('../services/InfoService.def');
+      const service = testHelper.getRemoteService('InfoService', '../services/InfoService.def');
 
-      var version = await service.getServerVersion();
+      const version = await service.getServerVersion();
       expect(version).toBe(getVersion());
     });
   });

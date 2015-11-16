@@ -18,19 +18,19 @@ describe('Module public API.', () => {
   });
 
   it('Creates a remote proxy for a module, caching the intermediate results.', () => {
-    var fakeClient = {};
-    var defFile = '../spec/fixtures/FunctionService.def';
+    const fakeClient = {};
+    const defFile = '../spec/fixtures/FunctionService.def';
 
     expect(__test__.definitionsCache.size).toBe(0);
 
-    var proxy = getProxy(defFile, fakeClient);
+    const proxy = getProxy('FunctionService', defFile, fakeClient);
     expect(Object.keys(proxy)).diffJson([
       'TestFunctionA', 'TestFunctionB', 'TestFunctionC', 'TestFunctionD', 'ReturnAlias']);
 
     // Expect that getProxy added files to the cache.
     expect(__test__.definitionsCache.size).toBe(1);
     expect(__test__.proxiesCache.size).toBe(1);
-    for (var entry of __test__.proxiesCache) {
+    for (const entry of __test__.proxiesCache) {
       // Check that the fake client has been cached.
       expect(entry[1].proxies.has(fakeClient)).toBe(true);
     }

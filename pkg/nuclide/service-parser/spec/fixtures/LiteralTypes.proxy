@@ -30,7 +30,7 @@ module.exports = _client => {
       },
       kind: "boolean-literal",
       value: true
-    })]).then(args => _client.callRemoteFunction("LiteralFunc", "void", args));
+    })]).then(args => _client.callRemoteFunction("LiteralTypes/LiteralFunc", "void", args));
   }
 
   return remoteModule;

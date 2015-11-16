@@ -20,7 +20,7 @@ module.exports = _client => {
         line: 1
       },
       kind: "boolean"
-    })]).then(args => _client.callRemoteFunction("TestFunctionA", "promise", args)).then(value => _client.unmarshal(value, {
+    })]).then(args => _client.callRemoteFunction("FunctionService/TestFunctionA", "promise", args)).then(value => _client.unmarshal(value, {
       location: {
         type: "source",
         fileName: "FunctionService.def",
@@ -39,7 +39,7 @@ module.exports = _client => {
   }
 
   remoteModule.TestFunctionB = function () {
-    return Observable.concat().toArray().concatMap(args => _client.callRemoteFunction("TestFunctionB", "observable", args)).concatMap(value => _client.unmarshal(value, {
+    return Observable.concat().toArray().concatMap(args => _client.callRemoteFunction("FunctionService/TestFunctionB", "observable", args)).concatMap(value => _client.unmarshal(value, {
       location: {
         type: "source",
         fileName: "FunctionService.def",
@@ -50,7 +50,7 @@ module.exports = _client => {
   }
 
   remoteModule.TestFunctionC = function () {
-    return Promise.all([]).then(args => _client.callRemoteFunction("TestFunctionC", "void", args));
+    return Promise.all([]).then(args => _client.callRemoteFunction("FunctionService/TestFunctionC", "void", args));
   }
 
   remoteModule.TestFunctionD = function (arg0, arg1) {
@@ -86,11 +86,11 @@ module.exports = _client => {
         kind: "named",
         name: "Object"
       }
-    })]).then(args => _client.callRemoteFunction("TestFunctionD", "void", args));
+    })]).then(args => _client.callRemoteFunction("FunctionService/TestFunctionD", "void", args));
   }
 
   remoteModule.ReturnAlias = function () {
-    return Promise.all([]).then(args => _client.callRemoteFunction("ReturnAlias", "promise", args)).then(value => _client.unmarshal(value, {
+    return Promise.all([]).then(args => _client.callRemoteFunction("FunctionService/ReturnAlias", "promise", args)).then(value => _client.unmarshal(value, {
       location: {
         type: "source",
         fileName: "FunctionService.def",

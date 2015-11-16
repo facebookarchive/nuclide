@@ -43,12 +43,12 @@ export default class ClientComponent {
     this._objectRegistry = new Map();
 
     // Setup services.
-    var services = config.loadServicesConfig();
-    for (var service of services) {
+    const services = config.loadServicesConfig();
+    for (const service of services) {
       logger.debug(`Registering 3.0 service ${service.name}...`);
       try {
-        var defs = getDefinitions(service.definition);
-        var proxy = getProxy(service.definition, this);
+        const defs = getDefinitions(service.definition);
+        const proxy = getProxy(service.name, service.definition, this);
 
         defs.forEach(definition => {
           const name = definition.name;

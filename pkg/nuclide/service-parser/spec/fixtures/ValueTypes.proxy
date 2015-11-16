@@ -30,7 +30,7 @@ module.exports = _client => {
         kind: "named",
         name: "ValueTypeB"
       }
-    })]).then(args => _client.callRemoteFunction("ValueTypeTestA", "promise", args)).then(value => _client.unmarshal(value, {
+    })]).then(args => _client.callRemoteFunction("ValueTypes/ValueTypeTestA", "promise", args)).then(value => _client.unmarshal(value, {
       location: {
         type: "source",
         fileName: "ValueTypes.def",
@@ -66,7 +66,7 @@ module.exports = _client => {
         kind: "named",
         name: "ValueTypeB"
       }
-    })]).then(args => _client.callRemoteFunction("ValueTypeTestB", "promise", args)).then(value => _client.unmarshal(value, {
+    })]).then(args => _client.callRemoteFunction("ValueTypes/ValueTypeTestB", "promise", args)).then(value => _client.unmarshal(value, {
       location: {
         type: "source",
         fileName: "ValueTypes.def",
@@ -118,7 +118,7 @@ module.exports = _client => {
       },
       kind: "named",
       name: "fs.Stats"
-    })]).then(args => _client.callRemoteFunction("QualifiedTypeNameTest", "void", args));
+    })]).then(args => _client.callRemoteFunction("ValueTypes/QualifiedTypeNameTest", "void", args));
   }
 
   return remoteModule;

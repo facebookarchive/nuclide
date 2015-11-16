@@ -39,6 +39,7 @@ describe('FindInProjectService-Integration', () => {
       }]);
 
       var remoteService = testHelper.getRemoteService(
+        'FindInProjectService',
         'nuclide-remote-search/lib/FindInProjectService.def');
 
       // Search in the fixtures/basic directory.

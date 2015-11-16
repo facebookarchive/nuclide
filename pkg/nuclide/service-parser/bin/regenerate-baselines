@@ -27,7 +27,7 @@ for (var file of fs.readdirSync(dir)) {
     fs.writeFileSync(
       path.join(dir, file).replace('.def', '.def.json'), JSON.stringify(json, null, 4), 'utf8');
 
-    var code = generateProxy(definitions);
+    var code = generateProxy(path.basename(file, '.def'), definitions);
     fs.writeFileSync(
       path.join(dir, file).replace('.def', '.proxy'), code, 'utf8');
   }

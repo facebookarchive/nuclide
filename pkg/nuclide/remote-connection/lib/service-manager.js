@@ -43,9 +43,9 @@ function getRemoteServiceByRemoteConnection(
   serviceName: string,
   connection: RemoteConnection,
 ): ?any {
-  var [serviceConfig] = newServices.filter(config => config.name === serviceName);
+  const [serviceConfig] = newServices.filter(config => config.name === serviceName);
   if (serviceConfig) {
-    return getProxy(serviceConfig.definition, connection.getClient());
+    return getProxy(serviceConfig.name, serviceConfig.definition, connection.getClient());
   } else {
     logger.error('Service %s undefined.', serviceName);
     return null;
@@ -77,11 +77,11 @@ function getServiceByNuclideUri(
  */
 function getService(serviceName: string, hostname: ?string, serviceOptions: ?any): ?any {
   /** First, try to find a 3.0 service */
-  var [serviceConfig] = newServices.filter(config => config.name === serviceName);
+  let [serviceConfig] = newServices.filter(config => config.name === serviceName);
   if (serviceConfig) {
     if (hostname) {
-      var remoteConnection = RemoteConnection.getByHostnameAndPath(hostname, null);
-      return getProxy(serviceConfig.definition, remoteConnection.getClient());
+      const remoteConnection = RemoteConnection.getByHostnameAndPath(hostname, null);
+      return getProxy(serviceConfig.name, serviceConfig.definition, remoteConnection.getClient());
     } else {
       return require(serviceConfig.implementation);
     }

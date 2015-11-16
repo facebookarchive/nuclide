@@ -77,11 +77,7 @@ export default class ServerComponent {
               break;
             case 'function':
               // Register module-level functions.
-              logger.debug(`Registering function ${name}...`);
-              this._functionsByName.set(name,  {
-                localImplementation: localImpl[name],
-                type: definition.type,
-              });
+              this._registerFunction(`${service.name}/${name}`, localImpl[name], definition.type);
               break;
             case 'interface':
               // Register interfaces.
@@ -109,11 +105,7 @@ export default class ServerComponent {
 
               // Register all of the static methods as remote functions.
               definition.staticMethods.forEach((funcType, funcName) => {
-                logger.debug(`Registering function ${name}/${funcName}...`);
-                this._functionsByName.set(`${name}/${funcName}`,  {
-                  localImplementation: localImpl[name][funcName],
-                  type: funcType,
-                });
+                this._registerFunction(`${name}/${funcName}`, localImpl[name][funcName], funcType);
               });
               break;
           }
@@ -125,6 +117,18 @@ export default class ServerComponent {
       }
     }
   }
+
+  _registerFunction(name: string, localImpl: Function, type: FunctionType): void {
+    logger.debug(`Registering function ${name}...`);
+    if (this._functionsByName.has(name)) {
+      throw new Error(`Duplicate RPC function: ${name}`);
+    }
+    this._functionsByName.set(name,  {
+      localImplementation: localImpl,
+      type,
+    });
+  }
+
 
   async handleMessage(client: SocketClient, message: RequestMessage): Promise<void> {
     let requestId = message.requestId;

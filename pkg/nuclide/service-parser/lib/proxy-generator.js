@@ -59,7 +59,7 @@ var unmarshalCall = (...args) => t.callExpression(clientDotUnmarshalExpression, 
  * @param defs - The result of parsing the definition file.
  * @returns The proxy factory method.
  */
-export default function generateProxy(defs: Definitions): string {
+export default function generateProxy(serviceName: string, defs: Definitions): string {
   // Initialized remoteModule to empty object.
   var statements = [t.assignmentExpression('=', remoteModule, emptyObject)];
 
@@ -70,7 +70,7 @@ export default function generateProxy(defs: Definitions): string {
         // Generate a remote proxy for each module-level function.
         statements.push(t.assignmentExpression('=',
           t.memberExpression(remoteModule, t.identifier(name)),
-          generateFunctionProxy(name, definition.type)));
+          generateFunctionProxy(`${serviceName}/${name}`, definition.type)));
         break;
       case 'interface':
         // Generate a remote proxy for each remotable interface.

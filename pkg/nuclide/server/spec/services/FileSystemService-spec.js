@@ -33,7 +33,8 @@ describe('FileSystemService', () => {
     waitsForPromise(async () => {
       testHelper = new ServiceTestHelper();
       await testHelper.start();
-      service = testHelper.getRemoteService('../services/FileSystemService.def');
+      service = testHelper.getRemoteService('FileSystemService',
+          '../services/FileSystemService.def');
     });
   });
 

@@ -15,8 +15,18 @@ require('nuclide-node-transpiler');
 var parseServiceDefinition = require('../lib/service-parser');
 var generateProxy = require('../lib/proxy-generator').default;
 
-if (process.argv.length !== 3) {
+if (process.argv.length < 3) {
   console.error('Missing service definition file argument.');
+  process.exit(1);
+}
+
+if (process.argv.length < 4) {
+  console.error('Missing service name argument.');
+  process.exit(1);
+}
+
+if (process.argv.length > 4) {
+  console.error('Too many arguments.');
   process.exit(1);
 }
 
@@ -24,7 +34,8 @@ var fs = require('fs');
 var path = require('path');
 
 var file = process.argv[2];
+var serviceName = process.argv[3];
 var definitions = parseServiceDefinition(file, fs.readFileSync(file, 'utf8'));
 
-var code = generateProxy(definitions);
+var code = generateProxy(serviceName, definitions);
 console.log(code);
