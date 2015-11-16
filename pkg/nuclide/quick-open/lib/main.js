@@ -33,7 +33,8 @@ function getSearchResultManager() {
 }
 
 const DEFAULT_PROVIDER = 'OmniSearchResultProvider';
-const MAX_MODAL_WIDTH = 800;
+const TOPBAR_APPROX_HEIGHT = 100; // A reasonable heuristic that prevents us from having to measure.
+const MODAL_MARGIN = 32;
 // don't pre-fill search input if selection is longer than this
 const MAX_SELECTION_LENGTH = 1000;
 
@@ -89,10 +90,11 @@ class Activation {
   _searchPanel: atom$Panel;
   _subscriptions: atom$CompositeDisposable;
   _debouncedUpdateModalPosition: () => void;
+  _maxScrollableAreaHeight: number;
 
   constructor() {
     this._previousFocus = null;
-
+    this._maxScrollableAreaHeight = 10000;
     const {CompositeDisposable} = require('atom');
     this._subscriptions = new CompositeDisposable();
     this._currentProvider = getSearchResultManager().getProviderByName(DEFAULT_PROVIDER);
@@ -105,9 +107,10 @@ class Activation {
     });
     this._reactDiv = document.createElement('div');
     this._searchPanel = atom.workspace.addModalPanel({item: this._reactDiv, visible: false});
-    this._debouncedUpdateModalPosition = debounce(this._updateModalPosition.bind(this), 200);
+    this._debouncedUpdateModalPosition = debounce(this._updateScrollableHeight.bind(this), 200);
     window.addEventListener('resize', this._debouncedUpdateModalPosition);
-    this._updateModalPosition();
+    this._customizeModalElement();
+    this._updateScrollableHeight();
 
     this._searchComponent = this._render();
 
@@ -167,13 +170,20 @@ class Activation {
     }, AnalyticsDebounceDelays.CHANGE_SELECTION));
   }
 
-  _updateModalPosition() {
-    // Customize modal element
+  // Customize the element containing the modal.
+  _customizeModalElement() {
     const modalElement = this._searchPanel.getItem().parentNode;
-    const {width} = document.documentElement.getBoundingClientRect();
-    const modalWidth = Math.min(MAX_MODAL_WIDTH, width);
-    modalElement.style.setProperty('width', modalWidth + 'px');
-    modalElement.style.setProperty('margin-left', (-modalWidth / 2) + 'px');
+    modalElement.style.setProperty('margin-left', 0);
+    modalElement.style.setProperty('width', 'auto');
+    modalElement.style.setProperty('left', MODAL_MARGIN + 'px');
+    modalElement.style.setProperty('right', MODAL_MARGIN + 'px');
+  }
+
+  _updateScrollableHeight() {
+    const {height} = document.documentElement.getBoundingClientRect();
+    this._maxScrollableAreaHeight = height - MODAL_MARGIN - TOPBAR_APPROX_HEIGHT;
+    // Force a re-render to update _maxScrollableAreaHeight.
+    this._searchComponent = this._render();
   }
 
   _render() {
@@ -184,6 +194,7 @@ class Activation {
       <QSComponent
         activeProvider={this._currentProvider}
         onProviderChange={this.handleActiveProviderChange.bind(this)}
+        maxScrollableAreaHeight={this._maxScrollableAreaHeight}
       />,
       this._reactDiv
     );
@@ -192,7 +203,7 @@ class Activation {
   handleActiveProviderChange(newProviderName: string): void {
     trackProviderChange(newProviderName);
     this._currentProvider = getSearchResultManager().getProviderByName(newProviderName);
-    this._render();
+    this._searchComponent = this._render();
   }
 
   toggleOmniSearchProvider(): void {

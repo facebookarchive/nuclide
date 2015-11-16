@@ -671,7 +671,7 @@ export default class QuickSelectionComponent extends React.Component {
         return (
           <li className="list-nested-item" key={serviceName}>
             {serviceLabel}
-            <ul className="list-tree" ref="selectionList">
+            <ul className="list-tree">
               {directoriesForService}
             </ul>
           </li>
@@ -700,10 +700,10 @@ export default class QuickSelectionComponent extends React.Component {
       <div className="select-list omnisearch-modal" ref="modal">
         <AtomInput ref="queryInput" placeholderText={promptText} />
         {this._renderTabs()}
-        <div className="omnisearch-results">
+        <div className="omnisearch-results" style={{maxHeight: this.props.maxScrollableAreaHeight}}>
           {noResultsMessage}
           <div className="omnisearch-pane">
-            <ul className="list-tree">
+            <ul className="list-tree" ref="selectionList">
               {services}
               {omniSearchStatus}
             </ul>
@@ -723,4 +723,5 @@ QuickSelectionComponent.propTypes = {
     title: PropTypes.string.isRequired,
   }).isRequired,
   onProviderChange: PropTypes.func,
+  maxScrollableAreaHeight: PropTypes.number,
 };
