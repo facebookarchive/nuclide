@@ -86,8 +86,9 @@ export class StatusBarTile {
         });
         if (this._isMouseOver) {
           // If the mouse is currently over the element, we want to trigger the new popup to appear.
-          const event = new MouseEvent('mouseenter');
-          item.dispatchEvent(event);
+          ['mouseover', 'mouseenter']
+            .map(name => new MouseEvent(name))
+            .forEach(event => item.dispatchEvent(event));
         }
       }
     }
