@@ -80,7 +80,7 @@ class HyperclickForTextEditor {
     }
   }
 
-  _onMouseMove(event: SyntheticMouseEvent): ?Promise {
+  _onMouseMove(event: SyntheticMouseEvent): void {
     if (this._isLoading()) {
       // Show the loading cursor.
       this._textEditorView.classList.add('hyperclick-loading');
@@ -186,15 +186,17 @@ class HyperclickForTextEditor {
       }
       if (this._lastSuggestionAtMouse && this._isMouseAtLastSuggestion()) {
         // Add the hyperclick markers if there's a new suggestion and it's under the mouse.
-        this._updateNavigationMarkers(this._lastSuggestionAtMouse.range, /* loading */ false);
+        this._updateNavigationMarkers(this._lastSuggestionAtMouse.range);
       } else {
         // Remove all the markers if we've finished loading and there's no suggestion.
         this._updateNavigationMarkers(null);
       }
+      if (this._loadingTracker != null) {
+        this._loadingTracker.onSuccess();
+      }
     } catch (e) {
-      if (this._loadingTracker) {
+      if (this._loadingTracker != null) {
         this._loadingTracker.onError(e);
-        this._loadingTracker = null;
       }
     } finally {
       this._doneLoading();
@@ -246,14 +248,14 @@ class HyperclickForTextEditor {
   /**
    * Add markers for the given range(s), or clears them if `ranges` is null.
    */
-  _updateNavigationMarkers(range: ?(Range | Array<Range>), loading?: boolean): void {
+  _updateNavigationMarkers(range: ?(Range | Array<Range>)): void {
     if (this._navigationMarkers) {
       this._navigationMarkers.forEach(marker => marker.destroy());
       this._navigationMarkers = null;
     }
 
     // Only change the cursor to a pointer if there is a suggestion ready.
-    if (range && !loading) {
+    if (range) {
       this._textEditorView.classList.add('hyperclick');
     } else {
       this._textEditorView.classList.remove('hyperclick');
@@ -284,10 +286,7 @@ class HyperclickForTextEditor {
   }
 
   _doneLoading(): void {
-    if (this._loadingTracker) {
-      this._loadingTracker.onSuccess();
-      this._loadingTracker = null;
-    }
+    this._loadingTracker = null;
     this._textEditorView.classList.remove('hyperclick-loading');
   }
 
