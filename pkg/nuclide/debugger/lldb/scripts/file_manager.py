@@ -88,12 +88,13 @@ class FileLike:
 
 
 class FunctionAssembly(FileLike):
-    def __init__(self, sbsymbol):
+    def __init__(self, target, sbsymbol):
+        self._target = target
         self.symbol = sbsymbol
 
     @property
     def script_id(self):
-        return '<ASM:' + hex(self.symbol.addr) + '>'
+        return '<ASM:' + hex(self.symbol.addr.GetLoadAddress(self._target)) + '>'
 
     @property
     def script_source(self):
@@ -114,9 +115,9 @@ class FunctionAssembly(FileLike):
     def get_line_for_pc(self, pc):
         """Get the instruction line of the current program counter."""
         line_number = 0
-        for inst in self.symbol.instructions:
+        for inst in self.symbol.GetInstructions(self._target):
             # Get the smallest addr not greater than the program counter.
-            if int(inst.GetAddress()) >= int(pc):
+            if inst.GetAddress().GetLoadAddress(self._target) >= pc.GetLoadAddress(self._target):
                 return line_number
             else:
                 line_number += 1

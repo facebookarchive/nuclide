@@ -71,12 +71,13 @@ class LocationSerializer:
         Returns file and line information if source is available. Otherwise,
         returns the location in the disassembled assembly listing.
         """
+        target = frame.GetThread().GetProcess().GetTarget()
         serialized = self.from_line_entry(frame.line_entry)
         if serialized is not None:
             return serialized
         elif frame.symbol.IsValid():
             func = self._file_manager.register_filelike(
-                file_manager.FunctionAssembly(frame.symbol))
+                file_manager.FunctionAssembly(target, frame.symbol))
             return {
                 'scriptId': func.script_id,
                 'columnNumber': 0,

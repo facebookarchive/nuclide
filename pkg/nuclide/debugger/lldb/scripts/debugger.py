@@ -126,9 +126,12 @@ class LLDBListenerThread(Thread):
                     variables,
                     self.remote_object_manager.get_add_object_func(CALL_STACK_OBJECT_GROUP)),
                 CALL_STACK_OBJECT_GROUP)
+            target = frame.GetThread().GetProcess().GetTarget()
+            offset = frame.GetPCAddress().GetLoadAddress(target) \
+                - frame.GetSymbol().GetStartAddress().GetLoadAddress(target)
             result.append({
                 'callFrameId': "%d.%d" % (frame.thread.idx, frame.idx),
-                'functionName': "%s +%x" % (frame.name, int(frame.GetPCAddress()) - int(frame.symbol.addr)),
+                'functionName': "%s +%x" % (frame.name, offset),
                 'location': self.location_serializer.get_frame_location(frame),
                 'scopeChain': [{
                     'object': local_variables.serialized_value,
