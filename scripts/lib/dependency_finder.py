@@ -20,12 +20,9 @@ class DependencyFinder(object):
 
     def write_dependencies(self, output_dir):
         package_to_version_set = {}
-        for config in self._package_manager.get_configs():
-            src_path = config['packageRootAbsolutePath']
-            package_json = os.path.join(src_path, 'package.json')
-            self._process_package_json(package_json,
-                                       package_to_version_set,
-                                       include_dev_dependencies=True)
+        configs = self._package_manager.get_configs()
+        for config in configs:
+            self._process_package(config, package_to_version_set)
 
         # Write deps based on package_to_version_set.
         # Leveraging semver from npm makes this fairly straightforward.
@@ -64,19 +61,36 @@ class DependencyFinder(object):
                         mkdirs(os.path.dirname(dest_dir))
                         shutil.copytree(src_dir, dest_dir)
 
+    def _process_package(self, config, package_to_version_set):
+        src_path = config['packageRootAbsolutePath']
+        logging.debug('Processing package: %s', config['name'])
+        self._process_package_dir(src_path, package_to_version_set, include_dev_dependencies=True)
+
+    def _process_package_dir(self, src_path, package_to_version_set, include_dev_dependencies):
+        shrinkwrap_file = os.path.join(src_path, 'npm-shrinkwrap.json')
+        if os.path.isfile(shrinkwrap_file):
+            shrinkwrap_json = json_load(shrinkwrap_file)
+            self._process_shrinkwrap_json(shrinkwrap_json, package_to_version_set)
+        else:
+            package_json = os.path.join(src_path, 'package.json')
+            self._process_package_json(package_json,
+                                       package_to_version_set,
+                                       include_dev_dependencies)
+
+    def _process_shrinkwrap_json(self, shrinkwrap_json, package_to_version_set):
+        for dep, version in deps_of_shrinkwrap(shrinkwrap_json):
+            # Must still process dependants of Nuclide packages, as the shrinkwraped
+            # version may pull in different versions than the non-shrinkwrapped version.
+            if not self._package_manager.is_local_dependency(dep):
+                addDep(package_to_version_set, dep, version)
+
     def _process_package_json(self,
                               package_json,
                               package_to_version_set,
                               include_dev_dependencies=False):
         all_deps = self._package_manager.get_deps(package_json, include_dev_dependencies)
         for dep, version in all_deps.items():
-            version_set = None
-            if dep in package_to_version_set:
-                version_set = package_to_version_set[dep]
-            else:
-                version_set = set()
-                package_to_version_set[dep] = version_set
-            version_set.add(version)
+            addDep(package_to_version_set, dep, version)
 
         # Recurse on keys of all_deps.
         node_modules = os.path.join(os.path.dirname(package_json), 'node_modules')
@@ -88,6 +102,25 @@ class DependencyFinder(object):
                 # library.
                 continue
 
-            dep_package_json = os.path.join(dep_directory, 'package.json')
             # Do not include devDependencies for transitive dependencies.
-            self._process_package_json(dep_package_json, package_to_version_set)
+            self._process_package_dir(
+                dep_directory,
+                package_to_version_set,
+                include_dev_dependencies=False)
+
+def deps_of_shrinkwrap(shrinkwrap_json):
+    if 'dependencies' in shrinkwrap_json:
+        for (dependent_name, dependent_package) in shrinkwrap_json['dependencies'].items():
+            yield (dependent_name, dependent_package['version'])
+            for item in deps_of_shrinkwrap(dependent_package):
+                yield item
+
+def addDep(package_to_version_set, dep, version):
+    logging.debug('Adding dependency: %s@%s', dep, version)
+    version_set = None
+    if dep in package_to_version_set:
+        version_set = package_to_version_set[dep]
+    else:
+        version_set = set()
+        package_to_version_set[dep] = version_set
+    version_set.add(version)

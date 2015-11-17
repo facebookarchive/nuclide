@@ -48,8 +48,13 @@ def create_config_for_manifest(path, manifest):
     config['isNodePackage'] = package_type == 'Node'
     config['localDependencies'] = {}
     config['dependencies'] = manifest.get('dependencies', {})
+    config['optionalDependencies'] = manifest.get('optionalDependencies', {})
     config['devDependencies'] = manifest.get('devDependencies', {})
     config['private'] = manifest.get('private', False)
+    # optionalDependencies override dependencies and do not get installed.
+    # So we remove them from dependencies.
+    for dep in config['optionalDependencies'].keys():
+        config['dependencies'].pop(dep, None)
 
     # Apparently both spellings are acceptable:
     config['bundleDependencies'] = manifest.get('bundleDependencies', {})

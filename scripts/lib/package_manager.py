@@ -104,7 +104,12 @@ class PackageManager(object):
               'devDependencies': package.get('devDependencies', {}),
               'bundleDependencies': package.get('bundleDependencies', {}),
               'bundledDependencies': package.get('bundledDependencies', {}),
+              'optionalDependencies': package.get('optionalDependencies', {}),
             }
+            # optionalDependencies override dependencies and do not get installed.
+            # So we remove them from dependencies.
+            for dep in config['optionalDependencies'].keys():
+                config['dependencies'].pop(dep, None)
 
         # Apparently both spellings are acceptable:
         bundleDependencies = config['bundleDependencies']
