@@ -4,7 +4,7 @@ atom-text-editor::shadow .editor-contents--private .highlight.hyperclick > .regi
   border-bottom: 1px solid @syntax-text-color;
 }
 
-atom-text-editor.hyperclick::shadow .editor-contents--private {
+atom-text-editor:not([mini]).hyperclick::shadow .editor-contents--private {
   /**
    * Unfortunately, this cannot be a property of `.hyperclick .region`:
    * https://discuss.atom.io/t/some-css-styles-not-honored-by-decorations/11662
@@ -12,7 +12,7 @@ atom-text-editor.hyperclick::shadow .editor-contents--private {
   cursor: pointer;
 }
 
-atom-text-editor.hyperclick-loading::shadow .editor-contents--private {
+atom-text-editor:not([mini]).hyperclick-loading::shadow .editor-contents--private {
   cursor: wait;
 }
 
