@@ -10,6 +10,7 @@
  */
 
 import type {NuclideUri} from 'nuclide-remote-uri';
+import {array} from 'nuclide-commons';
 
 /**
  * @param aPath The NuclideUri of a file or directory for which you want to find
@@ -21,7 +22,8 @@ function repositoryForPath(aPath: NuclideUri): ?Repository {
   // which requires a round-trip to the server for remote paths.
   // Instead, this function keeps filtering local.
   var repositoryContainsPath = require('./repositoryContainsPath');
-  return atom.project.getRepositories().filter(
+  return array.find(
+    atom.project.getRepositories(),
     (repo) => {
       try {
         return repositoryContainsPath(repo, aPath);
@@ -29,8 +31,8 @@ function repositoryForPath(aPath: NuclideUri): ?Repository {
         // The repo type is not supported.
         return false;
       }
-    }
-  )[0];
+    },
+  );
 }
 
 module.exports = repositoryForPath;
