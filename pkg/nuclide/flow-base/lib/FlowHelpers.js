@@ -12,6 +12,9 @@
 var path = require('path');
 var {asyncExecute, findNearestFile} = require('nuclide-commons');
 var LRU = require('lru-cache');
+
+import invariant from 'assert';
+
 var flowConfigDirCache = LRU({
   max: 10,
   length: function (n) { return n.length; },
@@ -47,17 +50,15 @@ function processAutocompleteItem(replacementPrefix: string, flowItem: Object): O
   };
   var funcDetails = flowItem['func_details'];
   if (funcDetails) {
-    // The parameters turned into snippet strings.
-    var snippetParamStrings = funcDetails['params']
-      .map((param, i) => `\${${i + 1}:${param['name']}}`);
     // The parameters in human-readable form for use on the right label.
-    var rightParamStrings = funcDetails['params']
+    const rightParamStrings = funcDetails['params']
       .map(param => `${param['name']}: ${param['type']}`);
+    const snippetString = getSnippetString(funcDetails['params'].map(param => param['name']));
     result = {
       ...result,
       leftLabel: funcDetails['return_type'],
       rightLabel: `(${rightParamStrings.join(', ')})`,
-      snippet: `${flowItem['name']}(${snippetParamStrings.join(', ')})`,
+      snippet: `${flowItem['name']}(${snippetString})`,
       type: 'function',
     };
   } else {
@@ -68,6 +69,56 @@ function processAutocompleteItem(replacementPrefix: string, flowItem: Object): O
     };
   }
   return result;
+}
+
+function getSnippetString(paramNames: Array<string>): string {
+  const groupedParams = groupParamNames(paramNames);
+  // The parameters turned into snippet strings.
+  const snippetParamStrings = groupedParams
+    .map(params => params.join(', '))
+    .map((param, i) => `\${${i + 1}:${param}}`);
+  return snippetParamStrings.join(', ');
+}
+
+/**
+ * Group the parameter names so that all of the trailing optional parameters are together with the
+ * last non-optional parameter. That makes it easy to ignore the optional parameters, since they
+ * will be selected along with the last non-optional parameter and you can just type to overwrite
+ * them.
+ */
+function groupParamNames(paramNames: Array<string>): Array<Array<string>> {
+  // Split the parameters into two groups -- all of the trailing optional paramaters, and the rest
+  // of the parameters. Trailing optional means all optional parameters that have only optional
+  // parameters after them.
+  const [ordinaryParams, trailingOptional] =
+    paramNames.reduceRight(([ordinary, optional], param) => {
+      // If there have only been optional params so far, and this one is optional, add it to the
+      // list of trailing optional params.
+      if (isOptional(param) && ordinary.length === 0) {
+        optional.unshift(param);
+      } else {
+        ordinary.unshift(param);
+      }
+      return [ordinary, optional];
+    },
+    [[], []]
+  );
+
+  const groupedParams = ordinaryParams.map(param => [param]);
+  const lastParam = groupedParams[groupedParams.length - 1];
+  if (lastParam != null) {
+    lastParam.push(...trailingOptional);
+  } else if (trailingOptional.length > 0) {
+    groupedParams.push(trailingOptional);
+  }
+
+  return groupedParams;
+}
+
+function isOptional(param: string): boolean {
+  invariant(param.length > 0);
+  const lastChar = param[param.length - 1];
+  return lastChar === '?';
 }
 
 async function isFlowInstalled(): Promise<boolean> {
@@ -121,4 +172,5 @@ module.exports = {
   insertAutocompleteToken,
   isFlowInstalled,
   processAutocompleteItem,
+  groupParamNames,
 };
