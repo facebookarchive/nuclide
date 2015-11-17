@@ -131,21 +131,31 @@ export class FlowRoot {
       return null;
     }
 
+    const messages = json['errors'].map(diagnostic => {
+      const message = diagnostic['message'];
+      // `message` is a list of message components
+      message.forEach(component => {
+        if (!component.path) {
+          // Use a consistent 'falsy' value for the empty string, undefined, etc. Flow returns the
+          // empty string instead of null when there is no relevant path.
+          // TODO(t8644340) Remove this when Flow is fixed.
+          component.path = null;
+        }
+      });
+      const operation = diagnostic['operation'];
+      if (operation != null) {
+        // The operation field provides additional context. I don't fully understand the motivation
+        // behind separating it out, but prepending it with 'See also: ' and adding it to the end of
+        // the messages is what the Flow team recommended.
+        operation['descr'] = 'See also: ' + operation['descr'];
+        message.push(operation);
+      }
+      return message;
+    });
+
     return {
       flowRoot: this._root,
-      messages: json['errors'].map(diagnostic => {
-        const message = diagnostic['message'];
-        // `message` is a list of message components
-        message.forEach(component => {
-          if (!component.path) {
-            // Use a consistent 'falsy' value for the empty string, undefined, etc. Flow returns the
-            // empty string instead of null when there is no relevant path.
-            // TODO(t8644340) Remove this when Flow is fixed.
-            component.path = null;
-          }
-        });
-        return message;
-      }),
+      messages: messages,
     };
   }
 
