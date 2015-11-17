@@ -261,6 +261,7 @@ module.exports = class HackLanguage {
       contents,
       lineNumber,
       column,
+      lineText,
     );
     if (identifierResult != null) {
       return identifierResult;
@@ -385,7 +386,8 @@ module.exports = class HackLanguage {
       filePath: NuclideUri,
       contents: string,
       lineNumber: number,
-      column: number
+      column: number,
+      lineText: string,
     ): Promise<?HackSearchPosition> {
     const {getIdentifierDefinition} = getHackService(filePath);
     const definitionResult = await getIdentifierDefinition(
@@ -394,7 +396,26 @@ module.exports = class HackLanguage {
     if (!definitionResult) {
       return null;
     }
-    return ((definitionResult: any): HackDefinitionResult).definition;
+    const {definition} = ((definitionResult: any): HackDefinitionResult);
+    let {name} = definition;
+    if (name.startsWith(':')) {
+      // XHP class name, usages omit the leading ':'.
+      name = name.substring(1);
+    }
+    const definitionIndex = lineText.indexOf(name);
+    if (
+      definitionIndex === -1 ||
+      definitionIndex >= column ||
+      !xhpCharRegex.test(lineText.substring(definitionIndex, column))
+    ) {
+      return definition;
+    } else {
+      return {
+        ...definition,
+        searchStartColumn: definitionIndex,
+        searchEndColumn: definitionIndex + definition.name.length,
+      };
+    }
   }
 
   async _getDefinitionFromStringParse(
@@ -413,9 +434,7 @@ module.exports = class HackLanguage {
     }
     const definition = ((definitionResult: any): HackDefinitionResult).definition;
     return {
-      path: definition.path,
-      line: definition.line,
-      column: definition.column,
+      ...definition,
       searchStartColumn: start,
       searchEndColumn: end,
     };
