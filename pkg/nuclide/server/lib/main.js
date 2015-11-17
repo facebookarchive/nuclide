@@ -51,7 +51,7 @@ async function main(args) {
     // Ensure logging is configured.
     await initialUpdateConfig();
     await serverStartTimer.onError(e);
-    logger.error(e);
+    logger.fatal(e);
     flushLogsAndExit(1);
   }
 }
@@ -63,7 +63,7 @@ process.stderr.on('error', (error) => {
 
 process.on('uncaughtException', (err) => {
   // Log the error and continue the server crash.
-  logger.error('uncaughtException:', err);
+  logger.fatal('uncaughtException:', err);
   // According to the docs, we need to close our server when this happens once we logged or
   // handled it: https://nodejs.org/api/process.html#process_event_uncaughtexception
   flushLogsAndExit(1);
