@@ -5,7 +5,6 @@
   "version": "0.0.0",
   "description": "Provides a dialog to allow Nuclide users to connect to remote servers",
   "nuclide": {
-    "customDeps": "fb/package.json",
     "packageType": "Node",
     "testRunner": "apm"
   },
