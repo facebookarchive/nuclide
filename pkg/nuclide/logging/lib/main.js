@@ -31,6 +31,11 @@ function getCategory(category: ?string): string {
   return category ? category : DEFAULT_LOGGER_CATEGORY;
 }
 
+export function flushLogsAndExit(exitCode: number): void {
+  const log4js = require('log4js');
+  log4js.shutdown(() => process.exit(exitCode));
+}
+
 /**
  * Get log4js logger instance which is also singleton per category.
  * log4js.getLogger() API internally should already provide singleton per category guarantee
@@ -87,15 +92,11 @@ function createLazyLogger(category: string): Logger {
  * Push initial default config to log4js.
  * Execute only once.
  */
-function initialUpdateConfig(): void {
-  let defaultConfigPromise;
-  require('nuclide-commons').singleton.get(
+export function initialUpdateConfig(): Promise<void> {
+  return require('nuclide-commons').singleton.get(
     INITIAL_UPDATE_CONFIG_KEY,
     async () => {
-      if (!defaultConfigPromise) {
-        defaultConfigPromise = require('./config').getDefaultConfig();
-      }
-      const defaultConfig = await defaultConfigPromise;
+      const defaultConfig = await require('./config').getDefaultConfig();
       updateConfig(defaultConfig);
     });
 }

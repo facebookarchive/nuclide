@@ -10,7 +10,7 @@
  */
 
 import fs from 'fs';
-import {getLogger} from 'nuclide-logging';
+import {getLogger, flushLogsAndExit, initialUpdateConfig} from 'nuclide-logging';
 import {startTracking} from 'nuclide-analytics';
 import NuclideServer from './NuclideServer';
 
@@ -27,16 +27,17 @@ function setupServer(): void {
 }
 
 async function main(args) {
+  const serverStartTimer = startTracking('nuclide-server:start');
   try {
-    var serverStartTimer = startTracking('nuclide-server:start');
     setupServer();
-    var {port, key, cert, ca} = args;
+    const {port} = args;
+    let {key, cert, ca} = args;
     if (key && cert && ca) {
       key = fs.readFileSync(key);
       cert = fs.readFileSync(cert);
       ca = fs.readFileSync(ca);
     }
-    var server = new NuclideServer({
+    const server = new NuclideServer({
       port,
       serverKey: key,
       serverCertificate: cert,
@@ -47,9 +48,11 @@ async function main(args) {
     serverStartTimer.onSuccess();
     logger.info('NuclideServer started on port ' + port + '.');
   } catch (e) {
+    // Ensure logging is configured.
+    await initialUpdateConfig();
     await serverStartTimer.onError(e);
     logger.error(e);
-    process.exit(1);
+    flushLogsAndExit(1);
   }
 }
 
@@ -61,9 +64,9 @@ process.stderr.on('error', (error) => {
 process.on('uncaughtException', (err) => {
   // Log the error and continue the server crash.
   logger.error('uncaughtException:', err);
-  // According to the docs, we need to close our server when this happens once we logged or handled it:
-  // https://nodejs.org/api/process.html#process_event_uncaughtexception
-  process.exit(1);
+  // According to the docs, we need to close our server when this happens once we logged or
+  // handled it: https://nodejs.org/api/process.html#process_event_uncaughtexception
+  flushLogsAndExit(1);
 });
 
 // This works in io.js as of v2.4.0 (possibly earlier versions, as well). Support for this was

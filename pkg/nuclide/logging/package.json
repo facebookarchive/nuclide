@@ -11,7 +11,7 @@
     "testRunner": "npm"
   },
   "dependencies": {
-    "log4js": "0.6.21",
+    "log4js": "0.6.27",
     "nuclide-commons": "0.0.0"
   },
   "devDependencies": {

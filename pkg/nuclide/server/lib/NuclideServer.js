@@ -27,7 +27,8 @@ var {getVersion} = require('nuclide-version');
 
 import ServiceFramework from './serviceframework';
 
-var logger = require('nuclide-logging').getLogger();
+import {getLogger, flushLogsAndExit} from 'nuclide-logging';
+const logger = getLogger();
 
 var SERVER_SHUTDOWN_TIMEOUT_MS = 1000;
 var STAT_BIN_SIZE_MS = 20;
@@ -255,14 +256,14 @@ class NuclideServer {
   }
 
   _setupShutdownHandler() {
-    var shutdownServer = () => {
+    const shutdownServer = () => {
       logger.info('Shutting down the server');
       try {
         this.close();
       } catch (e) {
         logger.error('Error while shutting down, but proceeding anyway:', e);
       } finally {
-        process.exit(0);
+        flushLogsAndExit(0);
       }
     };
     this._registerService('/server/shutdown', () => {
