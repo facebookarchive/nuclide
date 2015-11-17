@@ -159,7 +159,8 @@ async function restoreNuclideProjectState(
 
   // On Atom restart, it tries to open uri paths as local `TextEditor` pane items.
   // Here, Nuclide reloads the remote project files that have empty text editors open.
-  var openInstances = getOpenFileEditorForRemoteProject(connection.getConfig());
+  const config = connection == null ? {...remoteProjectConfig, port: 0} : connection.getConfig();
+  const openInstances = getOpenFileEditorForRemoteProject(config);
   for (const openInstance of openInstances) {
     // Keep the original open editor item with a unique name until the remote buffer is loaded,
     // Then, we are ready to replace it with the remote tab in the same pane.
