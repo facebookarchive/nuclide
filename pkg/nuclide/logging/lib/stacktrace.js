@@ -49,6 +49,17 @@ export default function addPrepareStackTraceHook(): void {
         enumerable: false,
         configurable: true,
       });
+
+      // TODO (chenshen) t8789330.
+      // Atom added getRawStack to Error.prototype to get Error's structured stacktrace
+      // (https://github.com/atom/grim/blob/master/src/grim.coffee#L43). However, this
+      // doesn't work well with our customization of stacktrace. So here we temporarily
+      // walk around this by following hack, until https://github.com/atom/atom/issues/9641
+      // get addressed.
+      /* eslint-disable no-extend-native */
+      /* $FlowFixMe */
+      Error.prototype.getRawStack = null;
+      /* eslint-enable no-extend-native */
       return true;
     },
   );
