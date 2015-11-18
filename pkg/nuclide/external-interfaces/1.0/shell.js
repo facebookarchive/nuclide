@@ -19,4 +19,5 @@ declare module 'shell' {
    */
   declare function showItemInFolder(fullPath: string): void;
   declare function moveItemToTrash(fullPath: string): boolean;
+  declare function openExternal(url: string): void;
 }

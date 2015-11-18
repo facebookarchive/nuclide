@@ -1,0 +1,33 @@
+{
+  "name": "nuclide-url-hyperclick",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "Uses hyperclick to open URLs in the browser",
+  "nuclide": {
+    "flowCheck": true,
+    "packageType": "Atom",
+    "testRunner": "apm"
+  },
+  "activationCommands": {
+  },
+  "engines": {
+    "atom": ">=1.1.0"
+  },
+  "providedServices": {
+    "hyperclick.provider": {
+      "versions": {
+        "0.0.0": "getHyperclickProvider"
+      }
+    }
+  },
+  "devDependencies": {
+    "hyperclick-interfaces": "0.0.0",
+    "nuclide-external-interfaces": "0.0.0"
+  },
+  "_atomModuleCache": {
+    "extensions": {
+      ".node": []
+    }
+  }
+}
