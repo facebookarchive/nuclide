@@ -105,14 +105,14 @@ class Activation {
 let activation: ?Activation = null;
 
 export function activate(state: ?Object) {
-  if (!activation) {
+  if (activation == null) {
     activation = new Activation(state);
     activation.activate();
   }
 }
 
 export function deactivate() {
-  if (activation) {
+  if (activation != null) {
     activation.dispose();
     activation = null;
   }
