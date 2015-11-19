@@ -90,6 +90,7 @@ class HgRepositoryClient {
 
   // A debounced function that eventually calls _doRefreshStatusesOfAllFilesInCache.
   _debouncedRefreshAll: ?() => mixed;
+  _isRefreshingAllFilesInCache: boolean;
 
   _currentBookmark: ?string;
 
@@ -157,6 +158,8 @@ class HgRepositoryClient {
       .subscribe(this._refreshStatusesOfAllFilesInCache.bind(this));
     this._service.observeHgBookmarkDidChange()
       .subscribe(this.fetchCurrentBookmark.bind(this));
+
+    this._isRefreshingAllFilesInCache = false;
   }
 
   destroy() {
@@ -789,7 +792,12 @@ class HgRepositoryClient {
   _refreshStatusesOfAllFilesInCache(): void {
     let debouncedRefreshAll = this._debouncedRefreshAll;
     if (debouncedRefreshAll == null) {
-      const doRefresh = () => {
+      const doRefresh = async () => {
+        if (this._isRefreshingAllFilesInCache) {
+          return;
+        }
+        this._isRefreshingAllFilesInCache = true;
+
         const pathsInStatusCache = Object.keys(this._hgStatusCache);
         this._hgStatusCache = {};
         this._modifiedDirectoryCache = new Map();
@@ -805,15 +813,18 @@ class HgRepositoryClient {
           // ask for them). So, we only fetch the ignored status of files already
           // in the cache. (Note: if I ask Hg for the 'ignored' status of a list of
           // files, and none of them are ignored, no statuses will be returned.)
-          this._updateStatuses(pathsInStatusCache, {hgStatusOption: HgStatusOption.ONLY_IGNORED});
+          await this._updateStatuses(
+              pathsInStatusCache, {hgStatusOption: HgStatusOption.ONLY_IGNORED});
         }
 
         const pathsInDiffCache = Object.keys(this._hgDiffCache);
         this._hgDiffCache = {};
         // This loop can be improved after t7006533.
         for (const filePath of pathsInDiffCache) {
-          this._updateDiffInfo(filePath);
+          await this._updateDiffInfo(filePath); // eslint-disable-line no-await-in-loop
         }
+
+        this._isRefreshingAllFilesInCache = false;
       };
       this._debouncedRefreshAll = debounce(
         doRefresh,
