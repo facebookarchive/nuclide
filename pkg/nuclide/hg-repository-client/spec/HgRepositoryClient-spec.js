@@ -9,25 +9,30 @@
  * the root directory of this source tree.
  */
 
-var {Directory} = require('atom');
+import {Directory} from 'atom';
 import
   HgRepositoryClient,
   {DEBOUNCE_MILLISECONDS_FOR_REFRESH_ALL, MAX_INDIVIDUAL_CHANGED_PATHS}
 from '../lib/HgRepositoryClient';
-var MockHgService = require('nuclide-hg-repository-base').MockHgService;
-var {HgStatusOption, StatusCodeId, StatusCodeNumber} = require('nuclide-hg-repository-base').hgConstants;
-var path = require('path');
-var temp = require('temp').track();
+import MockHgService from 'nuclide-hg-repository-base/spec/MockHgService';
+import {
+  HgStatusOption,
+  StatusCodeId,
+  StatusCodeNumber,
+} from 'nuclide-hg-repository-base/lib/hg-constants';
+import path from 'path';
+import temp from 'temp';
+const tempWithAutoCleanup = temp.track();
 
 
 describe('HgRepositoryClient', () => {
-  var tempDir = temp.mkdirSync('testproj');
-  var tempSubDir = temp.mkdirSync({dir: tempDir});
+  const tempDir = tempWithAutoCleanup.mkdirSync('testproj');
+  const tempSubDir = tempWithAutoCleanup.mkdirSync({dir: tempDir});
 
-  var repoPath = path.join(tempDir, '.hg');
-  var workingDirectory = new Directory(tempDir);
-  var projectDirectory = new Directory(tempSubDir);
-  var repoOptions = {
+  const repoPath = path.join(tempDir, '.hg');
+  const workingDirectory = new Directory(tempDir);
+  const projectDirectory = new Directory(tempSubDir);
+  const repoOptions = {
     originURL: 'http://test.com/testproj',
     workingDirectory,
     projectRootDirectory: projectDirectory,
@@ -35,23 +40,23 @@ describe('HgRepositoryClient', () => {
 
   // Manufactures the absolute path of a file that should pass as being
   // within the repo.
-  var createFilePath = (filename) => {
+  const createFilePath = (filename) => {
     return path.join(projectDirectory.getPath(), filename);
   };
 
   // Some test "absolute" paths.
-  var PATH_1 = createFilePath('test1.js');
-  var PATH_2 = createFilePath('test2.js');
-  var PATH_3 = createFilePath('test3.js');
-  var PATH_4 = createFilePath('test4.js');
-  var PATH_5 = createFilePath('test5.js');
-  var PATH_6 = createFilePath('test6.js');
-  var PATH_7 = createFilePath('test7.js');
-  var PATH_CALLED_NULL = createFilePath('null');
-  var PATH_CALLED_UNDEFINED = createFilePath('undefined');
+  const PATH_1 = createFilePath('test1.js');
+  const PATH_2 = createFilePath('test2.js');
+  const PATH_3 = createFilePath('test3.js');
+  const PATH_4 = createFilePath('test4.js');
+  const PATH_5 = createFilePath('test5.js');
+  const PATH_6 = createFilePath('test6.js');
+  const PATH_7 = createFilePath('test7.js');
+  const PATH_CALLED_NULL = createFilePath('null');
+  const PATH_CALLED_UNDEFINED = createFilePath('undefined');
 
-  var mockHgService;
-  var repo;
+  let mockHgService;
+  let repo;
 
   beforeEach(() => {
     mockHgService = new MockHgService();
@@ -73,9 +78,9 @@ describe('HgRepositoryClient', () => {
   describe('::getStatuses', () => {
     beforeEach(() => {
       // Test setup: Mock out the dependency on HgRepository::_updateStatuses, and set up the cache state.
-      var mockFetchedStatuses = {[PATH_1]: StatusCodeId.ADDED};
+      const mockFetchedStatuses = {[PATH_1]: StatusCodeId.ADDED};
       spyOn(repo, '_updateStatuses').andCallFake((paths, options) => {
-        var statuses = new Map();
+        const statuses = new Map();
         paths.forEach((filePath) => {
           statuses.set(filePath, mockFetchedStatuses[filePath]);
         });
@@ -88,9 +93,9 @@ describe('HgRepositoryClient', () => {
     });
 
     it('returns statuses from the cache when possible, and only fetches the status for cache misses.', () => {
-      var hgStatusOptions = {hgStatusOption: HgStatusOption.ALL_STATUSES};
+      const hgStatusOptions = {hgStatusOption: HgStatusOption.ALL_STATUSES};
       waitsForPromise(async () => {
-        var statusMap = await repo.getStatuses([PATH_1, PATH_2], hgStatusOptions);
+        const statusMap = await repo.getStatuses([PATH_1, PATH_2], hgStatusOptions);
         expect(repo._updateStatuses).toHaveBeenCalledWith([PATH_1], hgStatusOptions);
         expect(statusMap).toEqual(new Map([
           [PATH_1, StatusCodeNumber.ADDED],
@@ -101,7 +106,8 @@ describe('HgRepositoryClient', () => {
 
     it('when reading from the cache, it respects the hgStatusOption.', () => {
       waitsForPromise(async () => {
-        var statusMap = await repo.getStatuses([PATH_2, PATH_3], {hgStatusOption: HgStatusOption.ONLY_NON_IGNORED});
+        const statusMap = await repo.getStatuses(
+            [PATH_2, PATH_3], {hgStatusOption: HgStatusOption.ONLY_NON_IGNORED});
         expect(repo._updateStatuses).not.toHaveBeenCalled();
         expect(statusMap).toEqual(new Map([
           [PATH_3, StatusCodeNumber.MODIFIED],
@@ -109,7 +115,8 @@ describe('HgRepositoryClient', () => {
       });
 
       waitsForPromise(async () => {
-        var statusMap = await repo.getStatuses([PATH_2, PATH_3], {hgStatusOption: HgStatusOption.ONLY_IGNORED});
+        const statusMap = await repo.getStatuses(
+            [PATH_2, PATH_3], {hgStatusOption: HgStatusOption.ONLY_IGNORED});
         expect(repo._updateStatuses).not.toHaveBeenCalled();
         expect(statusMap).toEqual(new Map([
           [PATH_2, StatusCodeNumber.IGNORED],
@@ -119,16 +126,16 @@ describe('HgRepositoryClient', () => {
   });
 
   describe('::_updateStatuses', () => {
-    var nonIgnoredOption = {hgStatusOption: HgStatusOption.ONLY_NON_IGNORED};
-    var onlyIgnoredOption = {hgStatusOption: HgStatusOption.ONLY_IGNORED};
-    var mockHgStatusFetchData = new Map([
+    const nonIgnoredOption = {hgStatusOption: HgStatusOption.ONLY_NON_IGNORED};
+    const onlyIgnoredOption = {hgStatusOption: HgStatusOption.ONLY_IGNORED};
+    const mockHgStatusFetchData = new Map([
       [PATH_1, StatusCodeId.ADDED],
       [PATH_2, StatusCodeId.UNTRACKED],
       [PATH_3, StatusCodeId.CLEAN],
       [PATH_6, StatusCodeId.CLEAN],
       [PATH_7, StatusCodeId.MODIFIED],
     ]);
-    var mockOldCacheState;
+    let mockOldCacheState;
 
     beforeEach(() => {
       mockOldCacheState = {
@@ -140,9 +147,9 @@ describe('HgRepositoryClient', () => {
       };
 
       spyOn(repo._service, 'fetchStatuses').andCallFake((paths, options) => {
-        var statusMap = new Map();
+        const statusMap = new Map();
         paths.forEach((filePath) => {
-          var fetchedStatus = mockHgStatusFetchData.get(filePath);
+          const fetchedStatus = mockHgStatusFetchData.get(filePath);
           if (fetchedStatus) {
             statusMap.set(filePath, fetchedStatus);
           }
@@ -160,11 +167,11 @@ describe('HgRepositoryClient', () => {
     });
 
     it('does a fresh fetch for the hg status for all paths it is passed, and returns them.', () => {
-      var paths = [PATH_1, PATH_2];
+      const paths = [PATH_1, PATH_2];
       waitsForPromise(async () => {
-        var output = await repo._updateStatuses(paths, nonIgnoredOption);
+        const output = await repo._updateStatuses(paths, nonIgnoredOption);
         expect(repo._service.fetchStatuses).toHaveBeenCalledWith(paths, nonIgnoredOption);
-        var expectedStatus = new Map([
+        const expectedStatus = new Map([
           [PATH_1, mockHgStatusFetchData.get(PATH_1)],
           [PATH_2, mockHgStatusFetchData.get(PATH_2)],
         ]);
@@ -174,7 +181,7 @@ describe('HgRepositoryClient', () => {
 
     describe(`it removes a path from the cache if the fetch indicates its status is unknown but incorrect in the cache,
         as informed by the hgStatusOption passed in`, () => {
-      var pathsWithNoStatusReturned = [PATH_4, PATH_5];
+      const pathsWithNoStatusReturned = [PATH_4, PATH_5];
 
       it('Case 1: HgStatusOption.ONLY_NON_IGNORED', () => {
         waitsForPromise(async () => {
@@ -202,7 +209,7 @@ describe('HgRepositoryClient', () => {
     });
 
     it ('does not add "clean" files to the cache and removes them if they are in the cache.', () => {
-      var pathsWithCleanStatusReturned = [PATH_3, PATH_6];
+      const pathsWithCleanStatusReturned = [PATH_3, PATH_6];
       waitsForPromise(async () => {
         await repo._updateStatuses(pathsWithCleanStatusReturned, {hgStatusOption: HgStatusOption.ALL_STATUSES});
         // PATH_3 was previously in the cache. PATH_6 was never in the cache.
@@ -212,19 +219,19 @@ describe('HgRepositoryClient', () => {
     });
 
     it('triggers the callbacks registered through ::onDidChangeStatuses and ::onDidChangeStatus.', () => {
-      var callbackSpyForStatuses = jasmine.createSpy('::onDidChangeStatuses spy');
+      const callbackSpyForStatuses = jasmine.createSpy('::onDidChangeStatuses spy');
       repo.onDidChangeStatuses(callbackSpyForStatuses);
-      var callbackSpyForStatus = jasmine.createSpy('::onDidChangeStatus spy');
+      const callbackSpyForStatus = jasmine.createSpy('::onDidChangeStatus spy');
       repo.onDidChangeStatus(callbackSpyForStatus);
 
       // File existed in the cache, and its status changed.
-      var expectedChangeEvent1 = {
+      const expectedChangeEvent1 = {
         path: PATH_1,
         pathStatus: StatusCodeNumber.ADDED,
       };
 
       // File did not exist in the cache, and its status is modified.
-      var expectedChangeEvent2 = {
+      const expectedChangeEvent2 = {
         path: PATH_7,
         pathStatus: StatusCodeNumber.MODIFIED,
       };
@@ -313,7 +320,7 @@ describe('HgRepositoryClient', () => {
     it('refreshes the status of all paths currently in the cache after a debounce ' +
         'interval.', () => {
       // Test setup: force the state of the repo.
-      var testRepoState = {
+      const testRepoState = {
         [PATH_1]: StatusCodeId.IGNORED,
         [PATH_2]: StatusCodeId.MODIFIED,
         [PATH_3]: StatusCodeId.ADDED,
@@ -350,7 +357,7 @@ describe('HgRepositoryClient', () => {
 
     it('returns false if the path is not in the cache and is not the .hg directory.', () => {
       expect(repo.isPathIgnored('/A/Random/Path')).toBe(false);
-      var parsedPath = path.parse(repoPath);
+      const parsedPath = path.parse(repoPath);
       expect(repo.isPathIgnored(parsedPath.root)).toBe(false);
       expect(repo.isPathIgnored(parsedPath.dir)).toBe(false);
     });
@@ -406,13 +413,13 @@ describe('HgRepositoryClient', () => {
 
     it('retrieves cached hg status.', () => {
       // Force the state of the cache.
-      var status = repo.getCachedPathStatus(PATH_1);
+      const status = repo.getCachedPathStatus(PATH_1);
       expect(repo.isStatusModified(status)).toBe(true);
       expect(repo.isStatusNew(status)).toBe(false);
     });
 
     it ('retrieves cached hg ignore status.', () => {
-      var status = repo.getCachedPathStatus(PATH_2);
+      const status = repo.getCachedPathStatus(PATH_2);
       // The status codes have no meaning; just test the expected translated
       // meanings.
       expect(repo.isStatusModified(status)).toBe(false);
@@ -420,7 +427,7 @@ describe('HgRepositoryClient', () => {
     });
 
     it ('returns a clean status by default.', () => {
-      var status = repo.getCachedPathStatus('path-not-in-cache');
+      const status = repo.getCachedPathStatus('path-not-in-cache');
       // The status codes have no meaning; just test the expected translated
       // meanings.
       expect(repo.isStatusModified(status)).toBe(false);
@@ -435,21 +442,21 @@ describe('HgRepositoryClient', () => {
       // to it. Thus, the path returned from editor.getPath() (which is what is
       // used in HgRepository) would fail a real 'contains' method. So we override
       // this to the expected path.
-      var workingDirectoryClone = new Directory(tempDir);
+      const workingDirectoryClone = new Directory(tempDir);
       spyOn(workingDirectory, 'contains').andCallFake((filePath) => {
-        var prefix = '/private';
+        const prefix = '/private';
         if (filePath.startsWith(prefix)) {
-          var prefixRemovedPath = filePath.slice(prefix.length);
+          const prefixRemovedPath = filePath.slice(prefix.length);
           return workingDirectoryClone.contains(prefixRemovedPath);
         }
         return workingDirectoryClone.contains(filePath);
       });
 
-      var projectDirectoryClone = new Directory(tempSubDir);
+      const projectDirectoryClone = new Directory(tempSubDir);
       spyOn(projectDirectory, 'contains').andCallFake((filePath) => {
-        var prefix = '/private';
+        const prefix = '/private';
         if (filePath.startsWith(prefix)) {
-          var prefixRemovedPath = filePath.slice(prefix.length);
+          const prefixRemovedPath = filePath.slice(prefix.length);
           return projectDirectoryClone.contains(prefixRemovedPath);
         }
         return projectDirectoryClone.contains(filePath);
@@ -458,9 +465,9 @@ describe('HgRepositoryClient', () => {
 
     xit('is updated when the active pane item changes to an editor, if the editor file is in the project.', () => {
       spyOn(repo, '_updateDiffInfo');
-      var file = temp.openSync({dir: projectDirectory.getPath()});
+      const file = tempWithAutoCleanup.openSync({dir: projectDirectory.getPath()});
       waitsForPromise(async () => {
-        var editor = await atom.workspace.open(file.path);
+        const editor = await atom.workspace.open(file.path);
         expect(repo._updateDiffInfo.calls.length).toBe(1);
         expect(repo._updateDiffInfo).toHaveBeenCalledWith(editor.getPath());
       });
@@ -468,7 +475,7 @@ describe('HgRepositoryClient', () => {
 
     it('is not updated when the active pane item changes to an editor whose file is not in the repo.', () => {
       spyOn(repo, '_updateDiffInfo');
-      var file = temp.openSync();
+      const file = tempWithAutoCleanup.openSync();
       waitsForPromise(async () => {
         await atom.workspace.open(file.path);
         expect(repo._updateDiffInfo.calls.length).toBe(0);
@@ -477,21 +484,21 @@ describe('HgRepositoryClient', () => {
 
     it('marks a file to be removed from the cache after its editor is closed, if the file is in the project.', () => {
       spyOn(repo, '_updateDiffInfo');
-      var file = temp.openSync({dir: projectDirectory.getPath()});
+      const file = tempWithAutoCleanup.openSync({dir: projectDirectory.getPath()});
       waitsForPromise(async () => {
-        var editor = await atom.workspace.open(file.path);
+        const editor = await atom.workspace.open(file.path);
         expect(repo._hgDiffCacheFilesToClear.size).toBe(0);
         editor.destroy();
-        var expectedSet = new Set([editor.getPath()]);
+        const expectedSet = new Set([editor.getPath()]);
         expect(repo._hgDiffCacheFilesToClear).toEqual(expectedSet);
       });
     });
   });
 
   describe('Diff Info Getters', () => {
-    var mockDiffStats;
-    var mockLineDiffs;
-    var mockDiffInfo;
+    let mockDiffStats;
+    let mockLineDiffs;
+    let mockDiffInfo;
 
     beforeEach(() => {
       // Test setup: Mock out the dependency on HgRepository::_updateDiffInfo,
@@ -511,9 +518,9 @@ describe('HgRepositoryClient', () => {
         deleted: mockDiffStats.deleted,
         lineDiffs: mockLineDiffs,
       };
-      var mockFetchedDiffInfo = {[PATH_1]: mockDiffInfo};
+      const mockFetchedDiffInfo = {[PATH_1]: mockDiffInfo};
       spyOn(repo, '_updateDiffInfo').andCallFake((filePath, options) => {
-        var diffInfo = mockFetchedDiffInfo[filePath];
+        const diffInfo = mockFetchedDiffInfo[filePath];
         return Promise.resolve(diffInfo);
       });
       repo._hgDiffCache = {
@@ -524,10 +531,10 @@ describe('HgRepositoryClient', () => {
     describe('::getDiffStatsForPath', () => {
       it('returns diff stats from the cache when possible, and only fetches new diff info for cache misses.', () => {
         waitsForPromise(async () => {
-          var diffInfo_1 = await repo.getDiffStatsForPath(PATH_1);
+          const diffInfo_1 = await repo.getDiffStatsForPath(PATH_1);
           expect(repo._updateDiffInfo).toHaveBeenCalledWith(PATH_1);
           expect(diffInfo_1).toEqual(mockDiffStats);
-          var diffInfo_2 = await repo.getDiffStatsForPath(PATH_2);
+          const diffInfo_2 = await repo.getDiffStatsForPath(PATH_2);
           expect(repo._updateDiffInfo).not.toHaveBeenCalledWith(PATH_2);
           expect(diffInfo_2).toEqual(mockDiffStats);
         });
@@ -537,10 +544,10 @@ describe('HgRepositoryClient', () => {
     describe('::getLineDiffsForPath', () => {
       it('returns line diffs from the cache when possible, and only fetches new diff info for cache misses.', () => {
         waitsForPromise(async () => {
-          var diffInfo_1 = await repo.getLineDiffsForPath(PATH_1);
+          const diffInfo_1 = await repo.getLineDiffsForPath(PATH_1);
           expect(repo._updateDiffInfo).toHaveBeenCalledWith(PATH_1);
           expect(diffInfo_1).toEqual(mockLineDiffs);
-          var diffInfo_2 = await repo.getLineDiffsForPath(PATH_2);
+          const diffInfo_2 = await repo.getLineDiffsForPath(PATH_2);
           expect(repo._updateDiffInfo).not.toHaveBeenCalledWith(PATH_2);
           expect(diffInfo_2).toEqual(mockLineDiffs);
         });
@@ -549,7 +556,7 @@ describe('HgRepositoryClient', () => {
   });
 
   describe('::_updateDiffInfo', () => {
-    var mockDiffInfo = {
+    const mockDiffInfo = {
       added: 2,
       deleted: 11,
       lineDiffs: [{
@@ -590,8 +597,8 @@ describe('HgRepositoryClient', () => {
     it('removes paths that are marked for removal from the cache.', () => {
       // Set up some mock paths to be removed. One already exists in the cache,
       // the other is going to be attempted to be updated. Both should be removed.
-      var testPathToRemove1 = PATH_1;
-      var testPathToRemove2 = PATH_2;
+      const testPathToRemove1 = PATH_1;
+      const testPathToRemove2 = PATH_2;
       repo._hgDiffCache[testPathToRemove1] = 'fake data';
       repo._hgDiffCacheFilesToClear.add(testPathToRemove1);
       repo._hgDiffCacheFilesToClear.add(testPathToRemove2);
@@ -605,10 +612,10 @@ describe('HgRepositoryClient', () => {
   });
 
   describe('::getDirectoryStatus', () => {
-    var {ensureTrailingSeparator} = require('nuclide-commons').paths;
-    var testDir = createFilePath('subDirectory');
-    var subDirectory = path.join(testDir, 'dir1');
-    var subSubDirectory = path.join(subDirectory, 'dir2');
+    const {ensureTrailingSeparator} = require('nuclide-commons').paths;
+    const testDir = createFilePath('subDirectory');
+    const subDirectory = path.join(testDir, 'dir1');
+    const subSubDirectory = path.join(subDirectory, 'dir2');
 
     it('marks a directory as modified only if it is in the modified directories cache.', () => {
       // Force the state of the hgStatusCache.
@@ -622,8 +629,8 @@ describe('HgRepositoryClient', () => {
     });
 
     it('handles a null or undefined input "path" but handles paths with those names.', () => {
-      var dir_called_null = createFilePath('null');
-      var dir_called_undefined = createFilePath('undefined');
+      const dir_called_null = createFilePath('null');
+      const dir_called_undefined = createFilePath('undefined');
 
       // Force the state of the cache.
       repo._modifiedDirectoryCache = new Map();
@@ -667,7 +674,7 @@ describe('HgRepositoryClient', () => {
 
   describe('::getDiffStats', () => {
     it('returns clean stats if the path is null or undefined, but handles paths with those names.', () => {
-      var mockDiffInfo = {
+      const mockDiffInfo = {
         added: 1,
         deleted: 1,
         lineDiffs: [{
@@ -682,8 +689,8 @@ describe('HgRepositoryClient', () => {
         [PATH_CALLED_NULL]: mockDiffInfo,
         [PATH_CALLED_UNDEFINED]: mockDiffInfo,
       };
-      var cleanStats = {added: 0, deleted: 0};
-      var expectedChangeStats = {added: 1, deleted: 1};
+      const cleanStats = {added: 0, deleted: 0};
+      const expectedChangeStats = {added: 1, deleted: 1};
       expect(repo.getDiffStats(null)).toEqual(cleanStats);
       expect(repo.getDiffStats(undefined)).toEqual(cleanStats);
       expect(repo.getDiffStats(PATH_CALLED_NULL)).toEqual(expectedChangeStats);
@@ -693,7 +700,7 @@ describe('HgRepositoryClient', () => {
 
   describe('::getLineDiffs', () => {
     it('returns an empty array if the path is null or undefined, but handles paths with those names.', () => {
-      var mockDiffInfo = {
+      const mockDiffInfo = {
         added: 1,
         deleted: 1,
         lineDiffs: [{
@@ -718,7 +725,7 @@ describe('HgRepositoryClient', () => {
 
   describe('::destroy', () => {
     it('should do cleanup without throwing an exception.', () => {
-      var spy = jasmine.createSpy();
+      const spy = jasmine.createSpy();
       repo.onDidDestroy(spy);
       repo.destroy();
       expect(spy).toHaveBeenCalled();

@@ -24,12 +24,16 @@ import type {
   HgService,
 } from 'nuclide-hg-repository-base/lib/HgService.js';
 
-const {CompositeDisposable, Emitter} = require('atom');
-const {StatusCodeId, StatusCodeIdToNumber, StatusCodeNumber, HgStatusOption} =
-    require('nuclide-hg-repository-base').hgConstants;
-const {debounce} = require('nuclide-commons');
-const {ensureTrailingSeparator} = require('nuclide-commons').paths;
-const {addAllParentDirectoriesToCache, removeAllParentDirectoriesFromCache} = require('./utils');
+import {CompositeDisposable, Emitter} from 'atom';
+import {
+  StatusCodeId,
+  StatusCodeIdToNumber,
+  StatusCodeNumber,
+  HgStatusOption,
+} from 'nuclide-hg-repository-base/lib/hg-constants';
+import {debounce} from 'nuclide-commons';
+import {ensureTrailingSeparator} from 'nuclide-commons/lib/paths';
+import {addAllParentDirectoriesToCache, removeAllParentDirectoriesFromCache} from './utils';
 
 /**
  *
