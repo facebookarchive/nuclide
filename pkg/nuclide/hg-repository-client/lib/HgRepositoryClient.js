@@ -137,7 +137,7 @@ export default class HgRepositoryClient {
 
       this._disposables[filePath] = new CompositeDisposable();
       this._disposables[filePath].add(editor.onDidSave((event) => {
-        this._updateDiffInfo(event.path);
+        this._updateDiffInfo([event.path]);
       }));
       // Remove the file from the diff stats cache when the editor is closed.
       // This isn't strictly necessary, but keeps the cache as small as possible.
@@ -644,9 +644,10 @@ export default class HgRepositoryClient {
     }
 
     // Fall back to a fetch.
-    const fetchedDiffInfo = await this._updateDiffInfo(filePath);
-    if (fetchedDiffInfo) {
-      return {added: fetchedDiffInfo.added, deleted: fetchedDiffInfo.deleted};
+    const fetchedPathToDiffInfo = await this._updateDiffInfo([filePath]);
+    if (fetchedPathToDiffInfo && fetchedPathToDiffInfo.get(filePath)) {
+      const diffInfo = fetchedPathToDiffInfo.get(filePath);
+      return {added: diffInfo.added, deleted: diffInfo.deleted};
     }
 
     return cleanStats;
@@ -670,34 +671,47 @@ export default class HgRepositoryClient {
     }
 
     // Fall back to a fetch.
-    const fetchedDiffInfo = await this._updateDiffInfo(filePath);
-    if (fetchedDiffInfo) {
-      return fetchedDiffInfo.lineDiffs;
+    const fetchedPathToDiffInfo = await this._updateDiffInfo([filePath]);
+    if (fetchedPathToDiffInfo && fetchedPathToDiffInfo.get(filePath)) {
+      return fetchedPathToDiffInfo.get(filePath).lineDiffs;
     }
 
     return lineDiffs;
   }
 
   /**
-   * Updates the diff information for the given path, and updates the cache.
-   * This method may return `null` if the path is not in the project; the call to
-   * `hg diff` fails; or an update for this path is already in progress.
+   * Updates the diff information for the given paths, and updates the cache.
+   * @param An array of absolute file paths for which to update the diff info.
+   * @return A map of each path to its DiffInfo.
+   *   This method may return `null` if the call to `hg diff` fails.
+   *   A file path will not appear in the returned Map if it is not in the repo,
+   *   if it has no changes, or if there is a pending `hg diff` call for it already.
    */
-  async _updateDiffInfo(filePath: string): Promise<?DiffInfo> {
-    if (!this._isPathRelevant(filePath)) {
-      return null;
-    }
-    // Don't do another update if we are in the middle of running an update
-    // for this file.
-    if (this._hgDiffCacheFilesUpdating.has(filePath)) {
-      return null;
-    } else {
-      this._hgDiffCacheFilesUpdating.add(filePath);
+  async _updateDiffInfo(filePaths: Array<NuclideUri>): Promise<?Map<NuclideUri, DiffInfo>> {
+    const pathsToFetch = filePaths.filter((aPath) => {
+      // Don't try to fetch information for this path if it's not in the repo.
+      if (!this._isPathRelevant(aPath)) {
+        return false;
+      }
+      // Don't do another update for this path if we are in the middle of running an update.
+      if (this._hgDiffCacheFilesUpdating.has(aPath)) {
+        return false;
+      } else {
+        this._hgDiffCacheFilesUpdating.add(aPath);
+        return true;
+      }
+    });
+
+    if (pathsToFetch.length === 0) {
+      return new Map();
     }
 
-    const diffInfo = await this._service.fetchDiffInfo(filePath);
-    if (diffInfo) {
-      this._hgDiffCache[filePath] = diffInfo;
+    // Call the HgService and update our cache with the results.
+    const pathsToDiffInfo = await this._service.fetchDiffInfoForPaths(pathsToFetch);
+    if (pathsToDiffInfo) {
+      for (const [filePath, diffInfo] of pathsToDiffInfo) {
+        this._hgDiffCache[filePath] = diffInfo;
+      }
     }
 
     // Remove files marked for deletion.
@@ -706,10 +720,16 @@ export default class HgRepositoryClient {
     });
     this._hgDiffCacheFilesToClear.clear();
 
-    // This file can now be updated again.
-    this._hgDiffCacheFilesUpdating.delete(filePath);
+    // The fetched files can now be updated again.
+    for (const pathToFetch of pathsToFetch) {
+      this._hgDiffCacheFilesUpdating.delete(pathToFetch);
+    }
 
-    return diffInfo;
+    // TODO (t9113913) Ideally, we could send more targeted events that better
+    // describe what change has occurred. Right now, GitRepository dictates either
+    // 'did-change-status' or 'did-change-statuses'.
+    this._emitter.emit('did-change-statuses');
+    return pathsToDiffInfo;
   }
 
 
@@ -823,10 +843,7 @@ export default class HgRepositoryClient {
 
         const pathsInDiffCache = Object.keys(this._hgDiffCache);
         this._hgDiffCache = {};
-        // This loop can be improved after t7006533.
-        for (const filePath of pathsInDiffCache) {
-          await this._updateDiffInfo(filePath); // eslint-disable-line no-await-in-loop
-        }
+        await this._updateDiffInfo(pathsInDiffCache);
 
         this._isRefreshingAllFilesInCache = false;
       };

@@ -519,9 +519,12 @@ describe('HgRepositoryClient', () => {
         lineDiffs: mockLineDiffs,
       };
       const mockFetchedDiffInfo = {[PATH_1]: mockDiffInfo};
-      spyOn(repo, '_updateDiffInfo').andCallFake((filePath, options) => {
-        const diffInfo = mockFetchedDiffInfo[filePath];
-        return Promise.resolve(diffInfo);
+      spyOn(repo, '_updateDiffInfo').andCallFake((filePaths) => {
+        const mockFetchedPathToDiffInfo = new Map();
+        for (const filePath of filePaths) {
+          mockFetchedPathToDiffInfo.set(filePath, mockFetchedDiffInfo[filePath]);
+        }
+        return Promise.resolve(mockFetchedPathToDiffInfo);
       });
       repo._hgDiffCache = {
         [PATH_2]: mockDiffInfo,
@@ -532,10 +535,10 @@ describe('HgRepositoryClient', () => {
       it('returns diff stats from the cache when possible, and only fetches new diff info for cache misses.', () => {
         waitsForPromise(async () => {
           const diffInfo_1 = await repo.getDiffStatsForPath(PATH_1);
-          expect(repo._updateDiffInfo).toHaveBeenCalledWith(PATH_1);
+          expect(repo._updateDiffInfo).toHaveBeenCalledWith([PATH_1]);
           expect(diffInfo_1).toEqual(mockDiffStats);
           const diffInfo_2 = await repo.getDiffStatsForPath(PATH_2);
-          expect(repo._updateDiffInfo).not.toHaveBeenCalledWith(PATH_2);
+          expect(repo._updateDiffInfo).not.toHaveBeenCalledWith([PATH_2]);
           expect(diffInfo_2).toEqual(mockDiffStats);
         });
       });
@@ -545,10 +548,10 @@ describe('HgRepositoryClient', () => {
       it('returns line diffs from the cache when possible, and only fetches new diff info for cache misses.', () => {
         waitsForPromise(async () => {
           const diffInfo_1 = await repo.getLineDiffsForPath(PATH_1);
-          expect(repo._updateDiffInfo).toHaveBeenCalledWith(PATH_1);
+          expect(repo._updateDiffInfo).toHaveBeenCalledWith([PATH_1]);
           expect(diffInfo_1).toEqual(mockLineDiffs);
           const diffInfo_2 = await repo.getLineDiffsForPath(PATH_2);
-          expect(repo._updateDiffInfo).not.toHaveBeenCalledWith(PATH_2);
+          expect(repo._updateDiffInfo).not.toHaveBeenCalledWith([PATH_2]);
           expect(diffInfo_2).toEqual(mockLineDiffs);
         });
       });
@@ -568,8 +571,12 @@ describe('HgRepositoryClient', () => {
     };
 
     beforeEach(() => {
-      spyOn(repo._service, 'fetchDiffInfo').andCallFake((args, options) => {
-        return Promise.resolve(mockDiffInfo);
+      spyOn(repo._service, 'fetchDiffInfoForPaths').andCallFake((filePaths) => {
+        const mockFetchedPathToDiffInfo = new Map();
+        for (const filePath of filePaths) {
+          mockFetchedPathToDiffInfo.set(filePath, mockDiffInfo);
+        }
+        return Promise.resolve(mockFetchedPathToDiffInfo);
       });
       spyOn(workingDirectory, 'contains').andCallFake(() => {
         return true;
@@ -579,7 +586,7 @@ describe('HgRepositoryClient', () => {
     it('updates the cache when the path to update is not already being updated.', () => {
       waitsForPromise(async () => {
         expect(repo._hgDiffCache[PATH_1]).toBeUndefined();
-        await repo._updateDiffInfo(PATH_1);
+        await repo._updateDiffInfo([PATH_1]);
         expect(repo._hgDiffCache[PATH_1]).toEqual(mockDiffInfo);
       });
     });
@@ -589,8 +596,8 @@ describe('HgRepositoryClient', () => {
         repo._updateDiffInfo(PATH_1);
         // This second call should not kick off a second `hg diff` call, because
         // the first one should be still running.
-        repo._updateDiffInfo(PATH_1);
-        expect(repo._service.fetchDiffInfo.calls.length).toBe(1);
+        repo._updateDiffInfo([PATH_1]);
+        expect(repo._service.fetchDiffInfoForPaths.calls.length).toBe(1);
       });
     });
 
@@ -604,7 +611,7 @@ describe('HgRepositoryClient', () => {
       repo._hgDiffCacheFilesToClear.add(testPathToRemove2);
 
       waitsForPromise(async () => {
-        await repo._updateDiffInfo(testPathToRemove2);
+        await repo._updateDiffInfo([testPathToRemove2]);
         expect(repo._hgDiffCache[testPathToRemove1]).not.toBeDefined();
         expect(repo._hgDiffCache[testPathToRemove2]).not.toBeDefined();
       });
