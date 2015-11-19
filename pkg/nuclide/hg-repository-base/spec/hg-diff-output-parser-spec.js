@@ -9,7 +9,10 @@
  * the root directory of this source tree.
  */
 
-const {parseHgDiffUnifiedOutput} = require('../lib/hg-diff-output-parser');
+const {
+  parseHgDiffUnifiedOutput,
+  parseMultiFileHgDiffUnifiedOutput,
+} = require('../lib/hg-diff-output-parser');
 
 const MULTI_CHUNK_CHANGE_HG_DIFF_OUTPUT =
 `diff --git a/test-test/blah/blah.js b/test-test/blah/blah.js
@@ -25,6 +28,32 @@ diff --git a/test.xml b/test.xml
 +
 +test
 +test`;
+
+const MULTI_FILE_HG_DIFF_OUTPUT =
+`diff --git test-test/blah/blah.js test-test/blah/blah.js
+--- test-test/blah/blah.js
++++ test-test/blah/blah.js
+@@ -90,0 +91,1 @@
++  parseMultiFileHgDiffUnifiedOutput,
+diff --git test-test/foo/foo.js test-test/foo/foo.js
+--- test-test/foo/foo.js
++++ test-test/foo/foo.js
+@@ -12,1 +12,4 @@
+-const {parseHgDiffUnifiedOutput} = require('../lib/hg-diff-output-parser');
++const {
++  parseHgDiffUnifiedOutput,
++  parseMultiFileHgDiffUnifiedOutput,
++} = require('../lib/hg-diff-output-parser');
+@@ -28,0 +32,4 @@
++const MULTI_FILE_HG_DIFF_OUTPUT =
++'
++';
++
+@@ -123,0 +131,4 @@
++
++  describe('parseMultiFileHgDiffUnifiedOutput', () => {
++
++  });`;
 
 describe('hg-diff-output-parser', () => {
   describe('parseHgDiffUnifiedOutput', () => {
@@ -119,6 +148,50 @@ describe('hg-diff-output-parser', () => {
         lineDiffs: [],
       });
       expect(diffInfoForEmptyString).toEqual(diffInfoForNull);
+    });
+  });
+
+  describe('parseMultiFileHgDiffUnifiedOutput', () => {
+    it('parses the diff information correctly for each file.', () => {
+      const diffInfoForManyFiles =
+          parseMultiFileHgDiffUnifiedOutput(MULTI_FILE_HG_DIFF_OUTPUT);
+      expect(diffInfoForManyFiles.size).toBe(2);
+      expect(diffInfoForManyFiles.get('test-test/blah/blah.js')).toEqual({
+        added: 1,
+        deleted: 0,
+        lineDiffs: [
+          {
+            oldStart: 90,
+            oldLines: 0,
+            newStart: 91,
+            newLines: 1,
+          },
+        ],
+      });
+      expect(diffInfoForManyFiles.get('test-test/foo/foo.js')).toEqual({
+        added: 12,
+        deleted: 1,
+        lineDiffs: [
+          {
+            oldStart: 12,
+            oldLines: 1,
+            newStart: 12,
+            newLines: 4,
+          },
+          {
+            oldStart: 28,
+            oldLines: 0,
+            newStart: 32,
+            newLines: 4,
+          },
+          {
+            oldStart: 123,
+            oldLines: 0,
+            newStart: 131,
+            newLines: 4,
+          },
+        ],
+      });
     });
   });
 });
