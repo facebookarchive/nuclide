@@ -9,9 +9,9 @@
  * the root directory of this source tree.
  */
 
-var path = require('path');
-var HgServiceBase = require('../lib/HgServiceBase');
-var {HgStatusOption, StatusCodeId} = require('../lib/hg-constants');
+import path from 'path';
+import HgServiceBase from '../lib/HgServiceBase';
+import {HgStatusOption, StatusCodeId} from '../lib/hg-constants';
 import invariant from 'assert';
 
 class TestHgService extends HgServiceBase {
@@ -19,10 +19,10 @@ class TestHgService extends HgServiceBase {
 }
 
 describe('HgService', () => {
-  var hgService;
-  var TEST_WORKING_DIRECTORY = '/Test/Working/Directory/';
-  var PATH_1 = path.join(TEST_WORKING_DIRECTORY, 'test1.js');
-  var PATH_2 = path.join(TEST_WORKING_DIRECTORY, 'test2.js');
+  let hgService;
+  const TEST_WORKING_DIRECTORY = '/Test/Working/Directory/';
+  const PATH_1 = path.join(TEST_WORKING_DIRECTORY, 'test1.js');
+  const PATH_2 = path.join(TEST_WORKING_DIRECTORY, 'test2.js');
   function relativize(filePath: string): string {
     return path.relative(TEST_WORKING_DIRECTORY, filePath);
   }
@@ -32,9 +32,9 @@ describe('HgService', () => {
   });
 
   describe('::_fetchStatuses', () => {
-    var testPaths = [PATH_1, PATH_2];
+    const testPaths = [PATH_1, PATH_2];
     // We relativize the paths to mimic hg's behavior.
-    var testHgStatusOutput = {
+    const testHgStatusOutput = {
       stdout: JSON.stringify([
         {
           'path': relativize(PATH_1),
@@ -54,7 +54,7 @@ describe('HgService', () => {
       });
       waitsForPromise(async () => {
         invariant(hgService);
-        var statusMap = await hgService.fetchStatuses(testPaths);
+        const statusMap = await hgService.fetchStatuses(testPaths);
         expect(statusMap.get(PATH_1)).toBe(StatusCodeId.MODIFIED);
         expect(statusMap.get(PATH_2)).toBe(StatusCodeId.ADDED);
       });
@@ -80,7 +80,8 @@ describe('HgService', () => {
         });
         waitsForPromise(async () => {
           invariant(hgService);
-          await hgService.fetchStatuses(testPaths, {hgStatusOption: HgStatusOption.ONLY_NON_IGNORED});
+          await hgService.fetchStatuses(
+              testPaths, {hgStatusOption: HgStatusOption.ONLY_NON_IGNORED});
         });
       });
 
