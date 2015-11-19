@@ -1,4 +1,4 @@
-var five = require('five');
+const five = require('five');
 
 function foo({one: {two, three: [four]}}) {
   five(two, four);

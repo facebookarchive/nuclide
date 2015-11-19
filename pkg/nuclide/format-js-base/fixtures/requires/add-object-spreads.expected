@@ -1,7 +1,7 @@
-var b = require('b');
-var d = require('d');
-var g = require('g');
-var j = require('j');
+const b = require('b');
+const d = require('d');
+const g = require('g');
+const j = require('j');
 
 var a = {...b};
 var c = [...d];

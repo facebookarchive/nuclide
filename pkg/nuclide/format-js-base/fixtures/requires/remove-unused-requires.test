@@ -1,4 +1,4 @@
-var three = require('three');
-var two = require('two');
+const three = require('three');
+const two = require('two');
 
-var one = two;
+const one = two;

@@ -1,3 +1,3 @@
-var two = require('two');
+const two = require('two');
 
-var one = two;
+const one = two;

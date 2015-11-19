@@ -7,8 +7,8 @@ jest
   .dontMock('bar')
   .dontMock('baz');
 
-var one = require('one');
-var two = require('two');
+const one = require('one');
+const two = require('two');
 
 describe('foo-bar-baz', () => {
   it('should work', () => {

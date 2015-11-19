@@ -1,8 +1,8 @@
-var x = require('x');
+const x = require('x');
 
-var [a, b] = require('foo');
-var [e, f] = require('baz');
-var [c, d] = require('bar');
+const [a, b] = require('foo');
+const [e, f] = require('baz');
+const [c, d] = require('bar');
 
 e(f);
 c(d);

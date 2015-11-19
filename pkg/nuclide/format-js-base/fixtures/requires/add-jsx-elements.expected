@@ -1,11 +1,11 @@
-var Image = require('Image.react');
-var MyConstants = require('MyConstants');
-var React = require('React');
-var XUISingleSelector = require('XUISingleSelector.react');
-var XUISingleSelectorOption = require('XUISingleSelectorOption.react');
+const Image = require('Image.react');
+const MyConstants = require('MyConstants');
+const React = require('React');
+const XUISingleSelector = require('XUISingleSelector.react');
+const XUISingleSelectorOption = require('XUISingleSelectorOption.react');
 
-var emptyFunction = require('emptyFunction');
-var shallowCompare = require('shallowCompare');
+const emptyFunction = require('emptyFunction');
+const shallowCompare = require('shallowCompare');
 
 var {Component, PropTypes} = React;
 

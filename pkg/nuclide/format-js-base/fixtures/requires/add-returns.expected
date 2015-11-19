@@ -1,6 +1,6 @@
-var four = require('four');
-var six = require('six');
-var two = require('two');
+const four = require('four');
+const six = require('six');
+const two = require('two');
 
 function one() {
   return two;

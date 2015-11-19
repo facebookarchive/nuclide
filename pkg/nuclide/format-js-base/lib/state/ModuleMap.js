@@ -188,7 +188,7 @@ class ModuleMap {
       var property = jscs.property('init', idNode, idNode);
       property.shorthand = true;
       return jscs.variableDeclaration(
-        'var',
+        'const',
         [jscs.variableDeclarator(
           oneLineObjectPattern(jscs.objectPattern([property])),
           jscs.callExpression(
@@ -200,7 +200,7 @@ class ModuleMap {
     } else if (!destructure && !options.typeImport) {
       // var foo = require('foo');
       return jscs.variableDeclaration(
-        'var',
+        'const',
         [jscs.variableDeclarator(
           idNode,
           jscs.callExpression(

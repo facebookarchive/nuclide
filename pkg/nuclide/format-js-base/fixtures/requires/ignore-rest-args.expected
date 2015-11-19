@@ -1,6 +1,6 @@
-var b = require('b');
-var d = require('d');
-var f = require('f');
+const b = require('b');
+const d = require('d');
+const f = require('f');
 
 function foo(...a) {
   a;

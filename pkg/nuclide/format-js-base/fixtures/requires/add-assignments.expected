@@ -1,8 +1,8 @@
-var four = require('four');
-var nine = require('nine');
-var six = require('six');
-var three = require('three');
-var two = require('two');
+const four = require('four');
+const nine = require('nine');
+const six = require('six');
+const three = require('three');
+const two = require('two');
 
 var one = two;
 three = four;

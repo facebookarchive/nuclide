@@ -1,8 +1,8 @@
-var a = require('a');
-var c = require('c');
+const a = require('a');
+const c = require('c');
 
 if (true) {
-  var b = require('b');
+  const b = require('b');
 }
 
 a();

@@ -1,5 +1,5 @@
-var one = require('one');
-var two = require('two');
+const one = require('one');
+const two = require('two');
 
 function foo() {
   switch (one) {

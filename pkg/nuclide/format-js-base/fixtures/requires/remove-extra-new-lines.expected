@@ -2,12 +2,12 @@
  * Header comment.
  */
 
-var D = require('D');
-var E = require('E');
-var F = require('F');
+const D = require('D');
+const E = require('E');
+const F = require('F');
 
-var a = require('a');
-var b = require('b');
-var c = require('c');
+const a = require('a');
+const b = require('b');
+const c = require('c');
 
 a(b, c, D, E, F);

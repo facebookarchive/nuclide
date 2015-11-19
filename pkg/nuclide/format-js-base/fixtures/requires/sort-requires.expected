@@ -2,13 +2,13 @@ require('aaa-side-effect');
 require('bbb-side-effect');
 require('ccc-side-effect');
 
-var AAA = require('AAA');
-var BBB = require('BBB');
-var CCC = require('CCC');
+const AAA = require('AAA');
+const BBB = require('BBB');
+const CCC = require('CCC');
 
-var aaa = require('aaa');
-var bbb = require('bbb');
-var ccc = require('ccc');
+const aaa = require('aaa');
+const bbb = require('bbb');
+const ccc = require('ccc');
 
 // Make sure they are used.
 aaa(AAA);

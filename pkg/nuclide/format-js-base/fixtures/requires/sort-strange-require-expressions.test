@@ -1,5 +1,5 @@
-var a = require('a')()()().a().b.c[0];
+const a = require('a')()()().a().b.c[0];
 require('b')().x;
-var D = require('meh').a.b.c('123');
-var C = 'not'.a.require('meh');
+const D = require('meh').a.b.c('123');
+const C = 'not'.a.require('meh');
 a(D);

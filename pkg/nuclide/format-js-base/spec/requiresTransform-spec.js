@@ -60,6 +60,7 @@ var TESTS = [
   'remove-unused-array-patterns',
   'remove-unused-requires',
   'remove-unused-types',
+  'respect-declaration-kind',
   'sort-import-specifiers',
   'sort-requires',
   'sort-strange-require-expressions',

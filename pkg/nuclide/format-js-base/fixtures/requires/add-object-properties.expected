@@ -1,5 +1,5 @@
-var four = require('four');
-var three = require('three');
+const four = require('four');
+const three = require('three');
 
 var one = {
   two: three,

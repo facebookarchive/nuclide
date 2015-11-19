@@ -1,5 +1,5 @@
-var six = require('six');
-var three = require('three');
+const six = require('six');
+const three = require('three');
 
 class one {}
 class two extends three {}

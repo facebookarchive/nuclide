@@ -1,5 +1,5 @@
-var Components = require('Components');
-var React = require('React');
+const Components = require('Components');
+const React = require('React');
 
 var {A, B} = Components;
 

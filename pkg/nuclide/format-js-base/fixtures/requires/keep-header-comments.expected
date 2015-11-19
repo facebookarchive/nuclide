@@ -3,6 +3,6 @@
  * Header comment
  */
 
-var one = require('one');
+const one = require('one');
 
 one();

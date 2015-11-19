@@ -11,20 +11,20 @@
 
 import type {Node} from '../types/ast';
 
-var {compareStrings} = require('./StringUtils');
-var jscs = require('jscodeshift');
-var oneLineObjectPattern = require('./oneLineObjectPattern');
-var reprintComment = require('./reprintComment');
+const {compareStrings} = require('./StringUtils');
+const jscs = require('jscodeshift');
+const oneLineObjectPattern = require('./oneLineObjectPattern');
+const reprintComment = require('./reprintComment');
 
-var {statement} = jscs.template;
+const {statement} = jscs.template;
 
 /**
  * Thin wrapper to reprint requires, it's wrapped in a new function in order to
  * easily attach comments to the node.
  */
 function reprintRequire(node: Node): Node {
-  var comments = node.comments;
-  var newNode = reprintRequireHelper(node);
+  const comments = node.comments;
+  const newNode = reprintRequireHelper(node);
   if (comments) {
     newNode.comments = comments.map(comment => reprintComment(comment));
   }
@@ -36,41 +36,48 @@ function reprintRequire(node: Node): Node {
  * and allow us to have a consistent formatting of all requires.
  */
 function reprintRequireHelper(node: Node): Node {
-   if (jscs.ExpressionStatement.check(node)) {
-     return statement`${node.expression}`;
-   }
+  if (jscs.ExpressionStatement.check(node)) {
+    return statement`${node.expression}`;
+  }
 
-   if (jscs.VariableDeclaration.check(node)) {
-     var declaration = node.declarations[0];
-     if (jscs.Identifier.check(declaration.id)) {
-       return statement`var ${declaration.id} = ${declaration.init};`;
-     } else if (jscs.ObjectPattern.check(declaration.id)) {
-       // Create a temporary node.
-       var tmp = statement`var _ = ${declaration.init};`;
+  if (jscs.VariableDeclaration.check(node)) {
+    const kind = node.kind || 'const';
+    const declaration = node.declarations[0];
+    if (jscs.Identifier.check(declaration.id)) {
+      return jscs.variableDeclaration(
+        kind,
+        [jscs.variableDeclarator(declaration.id, declaration.init)],
+      );
+    } else if (jscs.ObjectPattern.check(declaration.id)) {
+      declaration.id.properties.sort((prop1, prop2) => {
+        return compareStrings(prop1.key.name, prop2.key.name);
+      });
+      return jscs.variableDeclaration(
+        kind,
+        [jscs.variableDeclarator(
+          oneLineObjectPattern(declaration.id),
+          declaration.init,
+        )],
+      );
+    } else if (jscs.ArrayPattern.check(declaration.id)) {
+      return jscs.variableDeclaration(
+        kind,
+        [jscs.variableDeclarator(declaration.id, declaration.init)],
+      );
+    }
+  }
 
-       // Sort the properties.
-       declaration.id.properties.sort((prop1, prop2) => {
-         return compareStrings(prop1.key.name, prop2.key.name);
-       });
+  if (jscs.ImportDeclaration.check(node) && node.importKind === 'type') {
+    // Sort the specifiers.
+    node.specifiers.sort((one, two) => compareStrings(
+      one.local.name,
+      two.local.name
+    ));
+    // TODO: Properly remove new lines from the node.
+    return node;
+  }
 
-       // Make the object pattern one line and update tmp with it.
-       tmp.declarations[0].id = oneLineObjectPattern(declaration.id);
-       return tmp;
-     } else if (jscs.ArrayPattern.check(declaration.id)) {
-       return statement`var ${declaration.id} = ${declaration.init}`;
-     }
-   }
-
-   if (jscs.ImportDeclaration.check(node) && node.importKind === 'type') {
-     // Sort the specifiers.
-     node.specifiers.sort((one, two) => compareStrings(
-       one.local.name,
-       two.local.name
-     ));
-     // TODO: Properly remove new lines from the node.
-     return node;
-   }
-   return node;
- }
+  return node;
+}
 
 module.exports = reprintRequire;

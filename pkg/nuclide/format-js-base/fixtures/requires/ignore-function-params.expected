@@ -1,6 +1,6 @@
-var five = require('five');
-var four = require('four');
-var nine = require('nine');
+const five = require('five');
+const four = require('four');
+const nine = require('nine');
 
 function one(two, {three}) {
   two();
