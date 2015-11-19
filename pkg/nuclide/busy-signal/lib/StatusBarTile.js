@@ -11,6 +11,8 @@
 
 import type {Observable} from 'rx';
 
+import type {BusySignalMessage} from 'nuclide-busy-signal-interfaces';
+
 import React from 'react-for-atom';
 
 import {StatusBarTileComponent} from './StatusBarTileComponent';
