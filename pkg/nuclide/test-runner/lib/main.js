@@ -14,27 +14,6 @@ import type TestRunnerControllerState from './TestRunnerController';
 import type {HomeFragments} from 'nuclide-home-interfaces';
 
 
-export type TestClassSummary = {
-  className: string;
-  fileName: string;
-  id: number;
-  name: string;
-};
-
-export type TestRunInfo = {
-  details?: string;
-  durationSecs: number;
-  endedTime?: number;
-  name: string;
-  numAssertions: number;
-  numFailures: number;
-  numMethods: number;
-  numSkipped: number;
-  status: number;
-  summary?: string;
-  test_json?: TestClassSummary;
-};
-
 var {
   CompositeDisposable,
   Disposable,

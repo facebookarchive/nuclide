@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type NuclideUri from 'nuclide-remote-uri';
+
 export type TestRunner = {
   getByUri: (path: NuclideUri) => Object;
   label: string;
