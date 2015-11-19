@@ -43,7 +43,7 @@ export type HgStatusCommandOptions = {
 
 const EDITOR_SUBSCRIPTION_NAME = 'hg-repository-editor-subscription';
 const DEBOUNCE_MILLISECONDS_FOR_REFRESH_ALL = 500;
-const MAX_INDIVIDUAL_CHANGED_PATHS = 25;
+const MAX_INDIVIDUAL_CHANGED_PATHS = 1;
 
 function filterForOnlyNotIgnored(code: StatusCodeIdValue): boolean {
   return (code !== StatusCodeId.IGNORED);
@@ -768,7 +768,7 @@ class HgRepositoryClient {
     const relevantChangedPaths = changedPaths.filter(this._isPathRelevant.bind(this));
     if (relevantChangedPaths.length === 0) {
       return;
-    } else if (relevantChangedPaths.length < MAX_INDIVIDUAL_CHANGED_PATHS) {
+    } else if (relevantChangedPaths.length <= MAX_INDIVIDUAL_CHANGED_PATHS) {
       // Update the statuses individually.
       this._updateStatuses(relevantChangedPaths, {hgStatusOption: HgStatusOption.ALL_STATUSES});
       relevantChangedPaths.forEach((filePath) => {
@@ -793,13 +793,13 @@ class HgRepositoryClient {
         const pathsInStatusCache = Object.keys(this._hgStatusCache);
         this._hgStatusCache = {};
         this._modifiedDirectoryCache = new Map();
+        // We should get the modified status of all files in the repo that is
+        // under the HgRepositoryClient's project directory, because when Hg
+        // modifies the repo, it doesn't necessarily only modify files that were
+        // previously modified.
+        this._updateStatuses(
+            [this.getProjectDirectory()], {hgStatusOption: HgStatusOption.ONLY_NON_IGNORED});
         if (pathsInStatusCache.length) {
-          // We should get the modified status of all files in the repo that is
-          // under the HgRepositoryClient's project directory, because when Hg
-          // modifies the repo, it doesn't necessarily only modify files that were
-          // previously modified.
-          this._updateStatuses(
-              [this.getProjectDirectory()], {hgStatusOption: HgStatusOption.ONLY_NON_IGNORED});
           // The logic is a bit different for ignored files, because the
           // HgRepositoryClient always fetches ignored statuses lazily (as callers
           // ask for them). So, we only fetch the ignored status of files already

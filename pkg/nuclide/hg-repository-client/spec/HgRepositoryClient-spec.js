@@ -240,18 +240,62 @@ describe('HgRepositoryClient', () => {
   });
 
   describe('::_filesDidChange', () => {
-    it('triggers an update to the status of a file listed in the update, iff that file is in the project directory.', () => {
-      var path_not_in_project = '/Random/Path';
+    it(
+      'triggers a full refresh of the state of the Hg statuses if there are more than ' +
+      'MAX_INDIVIDUAL_CHANGED_PATHS paths changed within the project directory.',
+      () => {
+        const mockUpdate = [PATH_1, PATH_2];
+        spyOn(repo, '_updateStatuses');
 
-      var mockUpdate = [PATH_1, path_not_in_project];
-      spyOn(repo, '_updateStatuses');
+        waitsForPromise(async () => {
+          await repo._filesDidChange(mockUpdate);
+          setTimeout(() => {
+            expect(repo._updateStatuses).toHaveBeenCalledWith(
+                [repo.getProjectDirectory()], {hgStatusOption: HgStatusOption.ONLY_NON_IGNORED});
+          }, 550);
+        });
+      }
+    );
 
-      waitsForPromise(async () => {
-        await repo._filesDidChange(mockUpdate);
-        expect(repo._updateStatuses).toHaveBeenCalledWith(
-            [PATH_1], {hgStatusOption: HgStatusOption.ALL_STATUSES});
-      });
-    });
+    it(
+      'triggers an update for the state of the Hg statuses of individual files if there ' +
+      'are <= MAX_INDIVIDUAL_CHANGED_PATHS paths changed within the project directory.',
+      () => {
+        const mockUpdate = [PATH_1];
+        spyOn(repo, '_updateStatuses');
+
+        waitsForPromise(async () => {
+          await repo._filesDidChange(mockUpdate);
+          setTimeout(() => {
+            expect(repo._updateStatuses).toHaveBeenCalled(
+              [PATH_1],
+              {hgStatusOption: HgStatusOption.ALL_STATUSES},
+            );
+            expect(repo._updateStatuses).not.toHaveBeenCalledWith(
+              [repo.getProjectDirectory()],
+              {hgStatusOption: HgStatusOption.ONLY_NON_IGNORED},
+            );
+          }, 550);
+        });
+      }
+    );
+
+    it(
+      'does not triggers a full refresh of the state of the Hg statuses if none of ' +
+      'the changed paths are within the project directory.', () => {
+        const path_not_in_project = '/Random/Path';
+        const mockUpdate = [path_not_in_project];
+        spyOn(repo, '_updateStatuses');
+
+        waitsForPromise(async () => {
+          await repo._filesDidChange(mockUpdate);
+          setTimeout(() => {
+            expect(repo._updateStatuses).not.toHaveBeenCalledWith(
+                [repo.getProjectDirectory()], {hgStatusOption: HgStatusOption.ONLY_NON_IGNORED});
+          }, 550);
+        });
+      }
+    );
   });
 
   describe('_refreshStatusesOfAllFilesInCache', () => {
