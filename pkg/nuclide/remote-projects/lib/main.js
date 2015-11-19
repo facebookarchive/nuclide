@@ -141,46 +141,6 @@ function closeOpenFilesForRemoteProject(remoteProjectConfig: RemoteConnectionCon
   }
 }
 
-/**
- * Restore a nuclide project state from a serialized state of the remote connection config.
- */
-async function restoreNuclideProjectState(
-  remoteProjectConfig: SerializableRemoteConnectionConfiguration,
-) {
-  // try to re-connect, then, add the project to atom.project and the tree.
-  const connection = await createRemoteConnection(remoteProjectConfig);
-  if (!connection) {
-    getLogger().info(
-      'No RemoteConnection returned on restore state trial:',
-      remoteProjectConfig.host,
-      remoteProjectConfig.cwd,
-    );
-  }
-
-  // On Atom restart, it tries to open uri paths as local `TextEditor` pane items.
-  // Here, Nuclide reloads the remote project files that have empty text editors open.
-  const config = connection == null ? {...remoteProjectConfig, port: 0} : connection.getConfig();
-  const openInstances = getOpenFileEditorForRemoteProject(config);
-  for (const openInstance of openInstances) {
-    // Keep the original open editor item with a unique name until the remote buffer is loaded,
-    // Then, we are ready to replace it with the remote tab in the same pane.
-    const {pane, editor, uri, filePath} = openInstance;
-    // Here, a unique uri is picked to the pending open pane item to maintain the pane layout.
-    // Otherwise, the open won't be completed because there exists a pane item with the same uri.
-    editor.getBuffer().file.path = `${uri}.to-close`;
-    // Cleanup the old pane item on successful opening or when no connection could be established.
-    const cleanupBuffer = () => pane.removeItem(editor);
-    if (!connection || filePath === remoteProjectConfig.cwd) {
-      cleanupBuffer();
-    } else {
-      // If we clean up the buffer before the `openUriInPane` finishes,
-      // the pane will be closed, because it could have no other items.
-      // So we must clean up after.
-      atom.workspace.openURIInPane(uri, pane).then(cleanupBuffer, cleanupBuffer);
-    }
-  }
-}
-
 function getRemoteRootDirectories(): Array<atom$Directory> {
   // TODO: Use nuclide-remote-uri instead.
   return atom.project.getDirectories().filter(
@@ -250,6 +210,32 @@ module.exports = {
 
     subscriptions.add(getRemoteConnection().onDidAddRemoteConnection(connection => {
       addRemoteFolderToProject(connection);
+
+
+      // On Atom restart, it tries to open uri paths as local `TextEditor` pane items.
+      // Here, Nuclide reloads the remote project files that have empty text editors open.
+      const config = connection.getConfig();
+      const openInstances = getOpenFileEditorForRemoteProject(config);
+      for (const openInstance of openInstances) {
+        // Keep the original open editor item with a unique name until the remote buffer is loaded,
+        // Then, we are ready to replace it with the remote tab in the same pane.
+        const {pane, editor, uri, filePath} = openInstance;
+        // Here, a unique uri is picked to the pending open pane item to maintain the pane layout.
+        // Otherwise, the open won't be completed because there exists a pane item with the same
+        // uri.
+        editor.getBuffer().file.path = `${uri}.to-close`;
+        // Cleanup the old pane item on successful opening or when no connection could be
+        // established.
+        const cleanupBuffer = () => pane.removeItem(editor);
+        if (filePath === config.cwd) {
+          cleanupBuffer();
+        } else {
+          // If we clean up the buffer before the `openUriInPane` finishes,
+          // the pane will be closed, because it could have no other items.
+          // So we must clean up after.
+          atom.workspace.openURIInPane(uri, pane).then(cleanupBuffer, cleanupBuffer);
+        }
+      }
     }));
 
     subscriptions.add(atom.commands.add(
@@ -288,9 +274,18 @@ module.exports = {
 
       // Remove remote projects added in case of reloads.
       // We already have their connection config stored.
-      let remoteProjectsConfigAsDeserializedJson: SerializableRemoteConnectionConfiguration[] =
+      const remoteProjectsConfigAsDeserializedJson: SerializableRemoteConnectionConfiguration[] =
         (state && state.remoteProjectsConfig) || [];
-      remoteProjectsConfigAsDeserializedJson.forEach(restoreNuclideProjectState);
+      remoteProjectsConfigAsDeserializedJson.forEach(async config => {
+        const connection = await createRemoteConnection(config);
+        if (!connection) {
+          getLogger().info(
+            'No RemoteConnection returned on restore state trial:',
+            config.host,
+            config.cwd,
+          );
+        }
+      });
       // Clear obsolete config.
       atom.config.set('nuclide.remoteProjectsConfig', []);
     }));
