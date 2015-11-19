@@ -571,7 +571,7 @@ describe('HgRepositoryClient', () => {
     };
 
     beforeEach(() => {
-      spyOn(repo._service, 'fetchDiffInfoForPaths').andCallFake((filePaths) => {
+      spyOn(repo._service, 'fetchDiffInfo').andCallFake((filePaths) => {
         const mockFetchedPathToDiffInfo = new Map();
         for (const filePath of filePaths) {
           mockFetchedPathToDiffInfo.set(filePath, mockDiffInfo);
@@ -597,7 +597,7 @@ describe('HgRepositoryClient', () => {
         // This second call should not kick off a second `hg diff` call, because
         // the first one should be still running.
         repo._updateDiffInfo([PATH_1]);
-        expect(repo._service.fetchDiffInfoForPaths.calls.length).toBe(1);
+        expect(repo._service.fetchDiffInfo.calls.length).toBe(1);
       });
     });
 

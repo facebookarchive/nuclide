@@ -13,10 +13,7 @@
 import {HgStatusOption} from './hg-constants';
 import {Observable, Subject} from 'rx';
 import {parseHgBlameOutput} from './hg-blame-output-parser';
-import {
-  parseHgDiffUnifiedOutput,
-  parseMultiFileHgDiffUnifiedOutput,
-} from './hg-diff-output-parser';
+import {parseMultiFileHgDiffUnifiedOutput} from './hg-diff-output-parser';
 import {
   fetchCommonAncestorOfHeadAndRevision,
   expressionForRevisionsBeforeHead,
@@ -132,26 +129,9 @@ class HgServiceBase {
   }
 
   /**
-   * See HgService.def::fetchDiffInfo for details.
-   */
-  async fetchDiffInfo(filePath: string): Promise<?DiffInfo> {
-    const args = ['diff', '--unified', '0', filePath];
-    const options = {
-      cwd: this.getWorkingDirectory(),
-    };
-    let output;
-    try {
-      output = await this._hgAsyncExecute(args, options);
-    } catch (e) {
-      return null;
-    }
-    return parseHgDiffUnifiedOutput(output.stdout);
-  }
-
-  /**
    * See HgService.def::fetchDiffInfoForPaths for details.
    */
-  async fetchDiffInfoForPaths(
+  async fetchDiffInfo(
     filePaths: Array<NuclideUri>,
   ): Promise<?Map<NuclideUri, DiffInfo>>
   {

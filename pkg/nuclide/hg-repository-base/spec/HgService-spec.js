@@ -110,14 +110,22 @@ describe('HgService', () => {
     });
   });
 
-  describe('::_fetchDiffInfo', () => {
-    var mockHgDiffOutput = '@@ -150,11 +150,2 @@';
-    var expectedDiffInfo = {
+  describe('::fetchDiffInfo', () => {
+    const mockHgDiffOutput =
+    `diff --git test-test/blah/blah.js test-test/blah/blah.js
+    --- test1.js
+    +++ test1.js
+    @@ -150,1 +150,2 @@
+    -hi
+    +
+    +asdfdf`;
+
+    const expectedDiffInfo = {
       added: 2,
-      deleted: 11,
+      deleted: 1,
       lineDiffs: [{
         oldStart: 150,
-        oldLines: 11,
+        oldLines: 1,
         newStart: 150,
         newLines: 2,
       }],
@@ -133,8 +141,10 @@ describe('HgService', () => {
 
       waitsForPromise(async () => {
         invariant(hgService);
-        var diffInfo = await hgService.fetchDiffInfo(PATH_1);
-        expect(diffInfo).toEqual(expectedDiffInfo);
+        const pathToDiffInfo = await hgService.fetchDiffInfo([PATH_1]);
+        invariant(pathToDiffInfo);
+        expect(pathToDiffInfo.size).toBe(1);
+        expect(pathToDiffInfo.get(PATH_1)).toEqual(expectedDiffInfo);
       });
     });
   });

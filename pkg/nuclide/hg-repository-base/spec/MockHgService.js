@@ -34,11 +34,7 @@ class MockHgService {
     return new Subject();
   }
 
-  fetchDiffInfo(filePath: NuclideUri): Promise<?DiffInfo> {
-    return Promise.resolve(null);
-  }
-
-  fetchDiffInfoForPaths(filePaths: Array<NuclideUri>): Promise<?Map<NuclideUri, DiffInfo>> {
+  fetchDiffInfo(filePaths: Array<NuclideUri>): Promise<?Map<NuclideUri, DiffInfo>> {
     return Promise.resolve(null);
   }
 

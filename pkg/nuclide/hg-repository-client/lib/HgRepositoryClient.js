@@ -707,7 +707,7 @@ export default class HgRepositoryClient {
     }
 
     // Call the HgService and update our cache with the results.
-    const pathsToDiffInfo = await this._service.fetchDiffInfoForPaths(pathsToFetch);
+    const pathsToDiffInfo = await this._service.fetchDiffInfo(pathsToFetch);
     if (pathsToDiffInfo) {
       for (const [filePath, diffInfo] of pathsToDiffInfo) {
         this._hgDiffCache[filePath] = diffInfo;

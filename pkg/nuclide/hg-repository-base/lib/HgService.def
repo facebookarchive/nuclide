@@ -77,13 +77,6 @@ export class HgService {
   observeHgRepoStateDidChange(): Observable<void> {}
 
   /**
-   * Shells out to `hg diff` to retrieve line diff information for the path.
-   * The path is presumed to be in the repo. If the `hg diff` call fails, this
-   * method returns null.
-   */
-  fetchDiffInfo(filePath: NuclideUri): Promise<?DiffInfo> {}
-
-  /**
    * Shells out to `hg diff` to retrieve line diff information for the paths.
    * @param An Array of NuclideUri (absolute paths) for which to fetch diff info.
    * @return A map of each NuclideUri (absolute path) to its DiffInfo.
@@ -91,7 +84,7 @@ export class HgService {
    *   If the `hg diff` call fails, this method returns null.
    *   If a path has no changes, it will not appear in the returned Map.
    */
-  fetchDiffInfoForPaths(filePaths: Array<NuclideUri>): Promise<?Map<NuclideUri, DiffInfo>> {}
+  fetchDiffInfo(filePaths: Array<NuclideUri>): Promise<?Map<NuclideUri, DiffInfo>> {}
 
   /**
    * Section: Bookmarks
