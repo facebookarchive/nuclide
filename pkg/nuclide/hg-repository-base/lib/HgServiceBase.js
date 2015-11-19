@@ -10,25 +10,27 @@
  */
 /* @providesModule LocalHgServiceBase */
 
-var {HgStatusOption} = require('./hg-constants');
-var {Observable, Subject} = require('rx');
-var {parseHgBlameOutput, parseHgDiffUnifiedOutput} = require('./hg-output-helpers');
+import {HgStatusOption} from './hg-constants';
+import {Observable, Subject} from 'rx';
+import {parseHgBlameOutput, parseHgDiffUnifiedOutput} from './hg-output-helpers';
 import {
   fetchCommonAncestorOfHeadAndRevision,
   expressionForRevisionsBeforeHead,
   fetchRevisionInfoBetweenRevisions,
 } from './hg-revision-expression-helpers';
-var {fetchFileContentAtRevision,
-    fetchFilesChangedAtRevision} = require('./hg-revision-state-helpers');
-var {asyncExecute, createArgsForScriptCommand} = require('nuclide-commons');
-var path = require('path');
+import {
+  fetchFileContentAtRevision,
+  fetchFilesChangedAtRevision,
+} from './hg-revision-state-helpers';
+import {asyncExecute, createArgsForScriptCommand} from 'nuclide-commons';
+import path from 'path';
 
 import type {DiffInfo, RevisionFileChanges, StatusCodeIdValue, RevisionInfo} from './hg-constants';
 import type {NuclideUri} from 'nuclide-remote-uri';
 
 const FORK_BASE_BOOKMARK_NAME = 'remote/master';
 
-var logger;
+let logger;
 function getLogger() {
   if (!logger) {
     logger = require('nuclide-logging').getLogger();
@@ -69,9 +71,9 @@ class HgServiceBase {
     filePaths: Array<string>,
     options: ?any
   ): Promise<Map<string, StatusCodeIdValue>> {
-    var statusMap = new Map();
+    const statusMap = new Map();
 
-    var args = ['status', '-Tjson'];
+    let args = ['status', '-Tjson'];
     if (options && ('hgStatusOption' in options)) {
       if (options.hgStatusOption === HgStatusOption.ONLY_IGNORED) {
         args.push('--ignored');
@@ -80,16 +82,17 @@ class HgServiceBase {
       }
     }
     args = args.concat(filePaths);
-    var execOptions = {
+    const execOptions = {
       cwd: this.getWorkingDirectory(),
     };
+    let output;
     try {
-      var output = await this._hgAsyncExecute(args, execOptions);
+      output = await this._hgAsyncExecute(args, execOptions);
     } catch (e) {
       return statusMap;
     }
 
-    var statuses = JSON.parse(output.stdout);
+    const statuses = JSON.parse(output.stdout);
     statuses.forEach((status) => {
       statusMap.set(this._absolutize(status.path), status.status);
     });
@@ -128,12 +131,13 @@ class HgServiceBase {
    * See HgService.def::fetchDiffInfo for details.
    */
   async fetchDiffInfo(filePath: string): Promise<?DiffInfo> {
-    var args = ['diff', '--unified', '0', filePath];
-    var options = {
+    const args = ['diff', '--unified', '0', filePath];
+    const options = {
       cwd: this.getWorkingDirectory(),
     };
+    let output;
     try {
-      var output = await this._hgAsyncExecute(args, options);
+      output = await this._hgAsyncExecute(args, options);
     } catch (e) {
       return null;
     }
@@ -152,14 +156,14 @@ class HgServiceBase {
       if (options.env) {
         options.env['HGPLAIN'] = 1;
       } else {
-        var {assign} = require('nuclide-commons').object;
-        var env = {'HGPLAIN': 1};
+        const {assign} = require('nuclide-commons').object;
+        const env = {'HGPLAIN': 1};
         assign(env, process.env);
         options.env = env;
       }
     }
 
-    var cmd;
+    let cmd;
     if (options['TTY_OUTPUT']) {
       cmd = 'script';
       args = createArgsForScriptCommand('hg', args);
@@ -176,7 +180,7 @@ class HgServiceBase {
   }
 
   fetchCurrentBookmark(): Promise<string> {
-    var {fetchCurrentBookmark} = require('./hg-bookmark-helpers');
+    const {fetchCurrentBookmark} = require('./hg-bookmark-helpers');
     return fetchCurrentBookmark(path.join(this._workingDirectory, '.hg'));
   }
 
@@ -218,12 +222,12 @@ class HgServiceBase {
   }
 
   async getBlameAtHead(filePath: NuclideUri): Promise<Map<string, string>> {
-    var args =
+    const args =
       ['blame', '-r', 'wdir()', '-Tjson', '--changeset', '--user', '--line-number', filePath];
-    var execOptions = {
+    const execOptions = {
       cwd: this.getWorkingDirectory(),
     };
-    var output;
+    let output;
     try {
       output = await this._hgAsyncExecute(args, execOptions);
     } catch (e) {
@@ -239,13 +243,13 @@ class HgServiceBase {
    * https://bitbucket.org/facebook/hg-experimental/src/fbf23b3f96bade5986121a7c57d7400585d75f54/phabdiff.py.
    */
   async getDifferentialRevisionForChangeSetId(changeSetId: string): Promise<?string> {
-    var args = ['log', '-T', '{phabdiff}\n', '--limit', '1', '--rev', changeSetId];
-    var execOptions = {
+    const args = ['log', '-T', '{phabdiff}\n', '--limit', '1', '--rev', changeSetId];
+    const execOptions = {
       cwd: this.getWorkingDirectory(),
     };
     try {
-      var output = await this._hgAsyncExecute(args, execOptions);
-      var stdout = output.stdout.trim();
+      const output = await this._hgAsyncExecute(args, execOptions);
+      const stdout = output.stdout.trim();
       return stdout ? stdout : null;
     } catch (e) {
       // This should not happen: `hg log` does not error even if it does not recognize the template.
@@ -259,8 +263,8 @@ class HgServiceBase {
   async getSmartlog(ttyOutput: boolean, concise: boolean): Promise<Object> {
     // disable the pager extension so that 'hg sl' terminates. We can't just use
     // HGPLAIN because we have not found a way to get colored output when we do.
-    var args = ['--config', 'extensions.pager=!', concise ? 'sl' : 'smartlog'];
-    var execOptions = {
+    const args = ['--config', 'extensions.pager=!', concise ? 'sl' : 'smartlog'];
+    const execOptions = {
       cwd: this.getWorkingDirectory(),
       NO_HGPLAIN: concise, // `hg sl` is likely user-defined.
       TTY_OUTPUT: ttyOutput,
@@ -269,7 +273,7 @@ class HgServiceBase {
   }
 
   async checkout(revision: string, create: boolean): Promise<boolean> {
-    var options = {
+    const options = {
       cwd: this.getWorkingDirectory(),
     };
     try {
