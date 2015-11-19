@@ -192,6 +192,18 @@ async function createEditorForNuclide(
   return createTextEditor(textEditorParams);
 }
 
+/**
+ * Check if the remote buffer has already been initialized in editor.
+ * This checks if the buffer is instance of NuclideTextBuffer.
+ */
+function isRemoteBufferInitialized(editor: TextEditor): boolean {
+  const buffer = editor.getBuffer();
+  if (buffer && buffer.constructor.name === 'NuclideTextBuffer') {
+    return true;
+  }
+  return false;
+}
+
 module.exports = {
 
   config: {
@@ -220,6 +232,12 @@ module.exports = {
         // Keep the original open editor item with a unique name until the remote buffer is loaded,
         // Then, we are ready to replace it with the remote tab in the same pane.
         const {pane, editor, uri, filePath} = openInstance;
+
+        // Skip restoring the editer who has remote content loaded.
+        if (isRemoteBufferInitialized(editor)) {
+          continue;
+        }
+
         // Here, a unique uri is picked to the pending open pane item to maintain the pane layout.
         // Otherwise, the open won't be completed because there exists a pane item with the same
         // uri.
