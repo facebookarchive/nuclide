@@ -9,10 +9,9 @@
  * the root directory of this source tree.
  */
 
-var {parseHgDiffUnifiedOutput} = require('../lib/hg-diff-output-parser');
+const {parseHgDiffUnifiedOutput} = require('../lib/hg-diff-output-parser');
 
-// `hg diff` output
-var multiChunkChangeHgDiffOutput =
+const MULTI_CHUNK_CHANGE_HG_DIFF_OUTPUT =
 `diff --git a/test-test/blah/blah.js b/test-test/blah/blah.js
 --- a/jar-rename/blah/blah.js
 +++ b/jar-rename/blah/blah.js
@@ -30,8 +29,8 @@ diff --git a/test.xml b/test.xml
 describe('hg-diff-output-parser', () => {
   describe('parseHgDiffUnifiedOutput', () => {
     it('parses a summary line correctly when both old and new line counts are explicit.', () => {
-      var testOutput = '@@ -150,11 +150,2 @@';
-      var diffInfo = parseHgDiffUnifiedOutput(testOutput);
+      const testOutput = '@@ -150,11 +150,2 @@';
+      const diffInfo = parseHgDiffUnifiedOutput(testOutput);
       expect(diffInfo).toEqual({
         added: 2,
         deleted: 11,
@@ -45,8 +44,8 @@ describe('hg-diff-output-parser', () => {
     });
 
     it('parses a summary line correctly when both old and new line counts are left out.', () => {
-      var testOutput = '@@ -150 +150 @@';
-      var diffInfo = parseHgDiffUnifiedOutput(testOutput);
+      const testOutput = '@@ -150 +150 @@';
+      const diffInfo = parseHgDiffUnifiedOutput(testOutput);
       expect(diffInfo).toEqual({
         added: 1,
         deleted: 1,
@@ -60,8 +59,8 @@ describe('hg-diff-output-parser', () => {
     });
 
     it('parses a summary line correctly when the old line count is left out.', () => {
-      var testOutput = '@@ -150 +150,2 @@';
-      var diffInfo = parseHgDiffUnifiedOutput(testOutput);
+      const testOutput = '@@ -150 +150,2 @@';
+      const diffInfo = parseHgDiffUnifiedOutput(testOutput);
       expect(diffInfo).toEqual({
         added: 2,
         deleted: 1,
@@ -75,8 +74,8 @@ describe('hg-diff-output-parser', () => {
     });
 
     it('parses a summary line correctly when the new line count is left out.', () => {
-      var testOutput = '@@ -150,11 +150 @@';
-      var diffInfo = parseHgDiffUnifiedOutput(testOutput);
+      const testOutput = '@@ -150,11 +150 @@';
+      const diffInfo = parseHgDiffUnifiedOutput(testOutput);
       expect(diffInfo).toEqual({
         added: 1,
         deleted: 11,
@@ -90,7 +89,7 @@ describe('hg-diff-output-parser', () => {
     });
 
     it('parses a full diff output correctly when multiple chunks changes.', () => {
-      var diffInfo = parseHgDiffUnifiedOutput(multiChunkChangeHgDiffOutput);
+      const diffInfo = parseHgDiffUnifiedOutput(MULTI_CHUNK_CHANGE_HG_DIFF_OUTPUT);
       expect(diffInfo).toEqual({
         added: 5,
         deleted: 0,
@@ -112,8 +111,8 @@ describe('hg-diff-output-parser', () => {
     });
 
     it('handles empty string as input.', () => {
-      var diffInfoForNull = parseHgDiffUnifiedOutput('');
-      var diffInfoForEmptyString = parseHgDiffUnifiedOutput('');
+      const diffInfoForNull = parseHgDiffUnifiedOutput('');
+      const diffInfoForEmptyString = parseHgDiffUnifiedOutput('');
       expect(diffInfoForNull).toEqual({
         added: 0,
         deleted: 0,

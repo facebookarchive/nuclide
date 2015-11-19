@@ -9,13 +9,12 @@
  * the root directory of this source tree.
  */
 
-var {parseHgBlameOutput} = require('../lib/hg-blame-output-parser');
+const {parseHgBlameOutput} = require('../lib/hg-blame-output-parser');
 
-// `hg blame` output
-var hgBlameOutputWithError =
+const HG_BLAME_OUTPUT_WITH_ERROR =
 `[abort: Tools/Nuclide/pkg/blah.js: no such file in rev c2096f856c82`;
 
-var hgBlameForFileWithCommitAndUncommittedChanges =
+const HG_BLAME_FOR_FILE_WITH_COMMITTED_AND_UNCOMMITTED_CHANGES =
 `[
  {
   "line": "hello",
@@ -31,26 +30,31 @@ var hgBlameForFileWithCommitAndUncommittedChanges =
  }
 ]`;
 
-var unexpectedHgBlameOutput = 'not json';
+const UNEXPECTED_HG_BLAME_OUTPUT = 'not json';
 
 
 describe('hg-blame-output-parser', () => {
   describe('parseHgBlameOutput', () => {
     it('handles an error message from Hg.', () => {
-      var parseResults = parseHgBlameOutput(hgBlameOutputWithError);
+      const parseResults = parseHgBlameOutput(HG_BLAME_OUTPUT_WITH_ERROR);
       expect(parseResults).toEqual(new Map());
     });
 
-    it('parses the output of "hg blame" when there are committed and uncommited changes in the file.', () => {
-      var parseResults = parseHgBlameOutput(hgBlameForFileWithCommitAndUncommittedChanges);
-      var expectedBlame = new Map();
-      expectedBlame.set('0', 'Abbot B a@b.com 0559394b');
-      expectedBlame.set('1', 'a@b.com null');
-      expect(parseResults).toEqual(expectedBlame);
-    });
+    it(
+      'parses the output of "hg blame" when there are committed and uncommited ' +
+      'changes in the file.',
+      () => {
+        const parseResults =
+            parseHgBlameOutput(HG_BLAME_FOR_FILE_WITH_COMMITTED_AND_UNCOMMITTED_CHANGES);
+        const expectedBlame = new Map();
+        expectedBlame.set('0', 'Abbot B a@b.com 0559394b');
+        expectedBlame.set('1', 'a@b.com null');
+        expect(parseResults).toEqual(expectedBlame);
+      }
+    );
 
     it('gracefully handles unexpected output, e.g. if the error message changes.', () => {
-      var parseResults = parseHgBlameOutput(unexpectedHgBlameOutput);
+      const parseResults = parseHgBlameOutput(UNEXPECTED_HG_BLAME_OUTPUT);
       expect(parseResults).toEqual(new Map());
     });
   });
