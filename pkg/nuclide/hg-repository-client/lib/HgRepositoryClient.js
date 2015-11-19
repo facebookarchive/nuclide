@@ -42,8 +42,8 @@ export type HgStatusCommandOptions = {
 };
 
 const EDITOR_SUBSCRIPTION_NAME = 'hg-repository-editor-subscription';
-const DEBOUNCE_MILLISECONDS_FOR_REFRESH_ALL = 500;
-const MAX_INDIVIDUAL_CHANGED_PATHS = 1;
+export const DEBOUNCE_MILLISECONDS_FOR_REFRESH_ALL = 500;
+export const MAX_INDIVIDUAL_CHANGED_PATHS = 1;
 
 function filterForOnlyNotIgnored(code: StatusCodeIdValue): boolean {
   return (code !== StatusCodeId.IGNORED);
@@ -72,7 +72,7 @@ function filterForAllStatues() {
  * in addition to providing asynchronous methods for some getters.
  */
 
-class HgRepositoryClient {
+export default class HgRepositoryClient {
   _path: string;
   _workingDirectory: atom$Directory;
   _projectDirectory: atom$Directory;
@@ -868,5 +868,3 @@ class HgRepositoryClient {
     return this._service.getSmartlog(ttyOutput, concise);
   }
 }
-
-module.exports = HgRepositoryClient;

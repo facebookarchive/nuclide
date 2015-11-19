@@ -10,7 +10,10 @@
  */
 
 var {Directory} = require('atom');
-var HgRepositoryClient = require('../lib/HgRepositoryClient');
+import
+  HgRepositoryClient,
+  {DEBOUNCE_MILLISECONDS_FOR_REFRESH_ALL, MAX_INDIVIDUAL_CHANGED_PATHS}
+from '../lib/HgRepositoryClient';
 var MockHgService = require('nuclide-hg-repository-base').MockHgService;
 var {HgStatusOption, StatusCodeId, StatusCodeNumber} = require('nuclide-hg-repository-base').hgConstants;
 var path = require('path');
@@ -245,6 +248,10 @@ describe('HgRepositoryClient', () => {
       'MAX_INDIVIDUAL_CHANGED_PATHS paths changed within the project directory.',
       () => {
         const mockUpdate = [PATH_1, PATH_2];
+        // This test is only valid if the number of relevant files in the update
+        // > MAX_INDIVIDUAL_CHANGED_PATHS. If MAX_INDIVIDUAL_CHANGED_PATHS changes,
+        // this test needs to be updated.
+        expect(mockUpdate.length).toBeGreaterThan(MAX_INDIVIDUAL_CHANGED_PATHS);
         spyOn(repo, '_updateStatuses');
 
         waitsForPromise(async () => {
@@ -252,7 +259,7 @@ describe('HgRepositoryClient', () => {
           setTimeout(() => {
             expect(repo._updateStatuses).toHaveBeenCalledWith(
                 [repo.getProjectDirectory()], {hgStatusOption: HgStatusOption.ONLY_NON_IGNORED});
-          }, 550);
+          }, DEBOUNCE_MILLISECONDS_FOR_REFRESH_ALL + 50);
         });
       }
     );
@@ -262,6 +269,10 @@ describe('HgRepositoryClient', () => {
       'are <= MAX_INDIVIDUAL_CHANGED_PATHS paths changed within the project directory.',
       () => {
         const mockUpdate = [PATH_1];
+        // This test is only valid if the number of relevant files in the update
+        // <= MAX_INDIVIDUAL_CHANGED_PATHS. If MAX_INDIVIDUAL_CHANGED_PATHS changes,
+        // this test needs to be updated.
+        expect(mockUpdate.length).not.toBeGreaterThan(MAX_INDIVIDUAL_CHANGED_PATHS);
         spyOn(repo, '_updateStatuses');
 
         waitsForPromise(async () => {
@@ -275,7 +286,7 @@ describe('HgRepositoryClient', () => {
               [repo.getProjectDirectory()],
               {hgStatusOption: HgStatusOption.ONLY_NON_IGNORED},
             );
-          }, 550);
+          }, DEBOUNCE_MILLISECONDS_FOR_REFRESH_ALL + 50);
         });
       }
     );
@@ -292,7 +303,7 @@ describe('HgRepositoryClient', () => {
           setTimeout(() => {
             expect(repo._updateStatuses).not.toHaveBeenCalledWith(
                 [repo.getProjectDirectory()], {hgStatusOption: HgStatusOption.ONLY_NON_IGNORED});
-          }, 550);
+          }, DEBOUNCE_MILLISECONDS_FOR_REFRESH_ALL + 50);
         });
       }
     );
@@ -319,7 +330,7 @@ describe('HgRepositoryClient', () => {
           Object.keys(testRepoState),
           {hgStatusOption: HgStatusOption.ALL_STATUSES}
         );
-      }, 550);
+      }, DEBOUNCE_MILLISECONDS_FOR_REFRESH_ALL + 50);
     });
   });
 
