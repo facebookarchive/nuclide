@@ -12,7 +12,8 @@
 
 import {HgStatusOption} from './hg-constants';
 import {Observable, Subject} from 'rx';
-import {parseHgBlameOutput, parseHgDiffUnifiedOutput} from './hg-output-helpers';
+import {parseHgBlameOutput} from './hg-blame-output-parser';
+import {parseHgDiffUnifiedOutput} from './hg-diff-output-parser';
 import {
   fetchCommonAncestorOfHeadAndRevision,
   expressionForRevisionsBeforeHead,
