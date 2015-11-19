@@ -38,6 +38,10 @@ class MockHgService {
     return Promise.resolve(null);
   }
 
+  fetchDiffInfoForPaths(filePaths: Array<NuclideUri>): Promise<?Map<NuclideUri, DiffInfo>> {
+    return Promise.resolve(null);
+  }
+
   fetchCurrentBookmark(): Promise<string> {
     return Promise.resolve('');
   }

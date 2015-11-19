@@ -13,7 +13,10 @@
 import {HgStatusOption} from './hg-constants';
 import {Observable, Subject} from 'rx';
 import {parseHgBlameOutput} from './hg-blame-output-parser';
-import {parseHgDiffUnifiedOutput} from './hg-diff-output-parser';
+import {
+  parseHgDiffUnifiedOutput,
+  parseMultiFileHgDiffUnifiedOutput,
+} from './hg-diff-output-parser';
 import {
   fetchCommonAncestorOfHeadAndRevision,
   expressionForRevisionsBeforeHead,
@@ -143,6 +146,36 @@ class HgServiceBase {
       return null;
     }
     return parseHgDiffUnifiedOutput(output.stdout);
+  }
+
+  /**
+   * See HgService.def::fetchDiffInfoForPaths for details.
+   */
+  async fetchDiffInfoForPaths(
+    filePaths: Array<NuclideUri>,
+  ): Promise<?Map<NuclideUri, DiffInfo>>
+  {
+    // '--unified 0' gives us 0 lines of context around each change (we don't
+    // care about the context).
+    // '--noprefix' omits the a/ and b/ prefixes from filenames.
+    const args = ['diff', '--unified', '0', '--noprefix'].concat(filePaths);
+    const options = {
+      cwd: this.getWorkingDirectory(),
+    };
+    let output;
+    try {
+      output = await this._hgAsyncExecute(args, options);
+    } catch (e) {
+      getLogger().error(
+          `Error when running hg diff for paths: ${filePaths} \n\tError: ${e.stderr}`);
+      return null;
+    }
+    const pathToDiffInfo = parseMultiFileHgDiffUnifiedOutput(output.stdout);
+    const absolutePathToDiffInfo = new Map();
+    for (const [filePath, diffInfo] of pathToDiffInfo) {
+      absolutePathToDiffInfo.set(this._absolutize(filePath), diffInfo);
+    }
+    return absolutePathToDiffInfo;
   }
 
   /**
