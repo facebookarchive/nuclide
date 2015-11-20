@@ -234,4 +234,8 @@ module.exports = {
   get BatchProcessedQueue() {
     return requireFromCache('./BatchProcessedQueue').BatchProcessedQueue;
   },
+
+  get ExtendableError() {
+    return requireFromCache('./ExtendableError');
+  },
 };
