@@ -181,10 +181,6 @@ export default class ConnectionDialog extends React.Component<DefaultProps, Prop
     if (this.props.onClosed) {
       this.props.onClosed();
     }
-    const domNode = React.findDOMNode(this);
-    if (domNode) {
-      React.unmountComponentAtNode(domNode.parentNode);
-    }
   }
 
   ok() {
