@@ -17,7 +17,11 @@ declare class atom$Model {
 }
 
 declare class atom$Package {
+  activateTime: number;
   mainModule: any;
+  name: string;
+  loadTime: number;
+  getType(): 'atom' | 'textmate' | 'theme';
 }
 
 /**
@@ -182,6 +186,7 @@ declare class atom$PackageManager {
   onDidActivateInitialPackages(callback: () => void): atom$Disposable;
   onDidActivatePackage(callback: (pkg: atom$Package) => mixed): atom$Disposable;
   onDidDeactivatePackage(callback: (pkg: atom$Package) => mixed): atom$Disposable;
+  onDidLoadPackage(callback: (pkg: atom$Package) => mixed): atom$Disposable;
 
   // Package system data
   getApmPath(): string;
@@ -198,21 +203,28 @@ declare class atom$PackageManager {
 
   // Accessing active packages
   getActivePackage(name: string): ?atom$Package;
+  getActivePackages(): Array<atom$Package>;
   isPackageActive(name: string): boolean;
 
   // Activating and deactivating packages
   activatePackage(name: string): Promise<atom$Package>;
 
   // Accessing loaded packages
+  getLoadedPackages(): Array<atom$Package>;
   isPackageLoaded(name: string): boolean;
 
   // Accessing available packages
   getAvailablePackageNames(): Array<string>;
 
   // (Undocumented.)
+  activate(): Promise;
+  deactivatePackages(): void;
   loadPackage(name: string): void;
+  loadPackages(): void;
   serviceHub: atom$ServiceHub;
+  packageDirPaths: Array<string>;
   unloadPackage(name: string): void;
+  unloadPackages(): void;
 }
 
 type atom$PaneSplitParams = {
@@ -415,7 +427,8 @@ declare class atom$TextEditor extends atom$Model {
     textChanged: boolean;
     cursor: atom$Cursor;
   }) => mixed): atom$Disposable;
-  onDidDestroy(callback: () => void): atom$Disposable;
+  onDidDestroy(callback: () => mixed): atom$Disposable;
+  onDidSave(callback: (event: {path: string}) => mixed): atom$Disposable;
   getBuffer(): atom$TextBuffer;
   observeGrammar(callback: (grammar: atom$Grammar) => mixed): atom$Disposable;
   onWillInsertText(callback: (event: {cancel: () => void; text: string;}) => void): atom$Disposable;
@@ -559,6 +572,9 @@ declare class atom$TextEditor extends atom$Model {
 
   // This is undocumented, but Nuclide uses it in the AtomTextEditor wrapper.
   setLineNumberGutterVisible(lineNumberGutterVisible: boolean): void;
+
+  // Undocumented Methods
+  moveToTop(): void;
 }
 
 /**
@@ -778,6 +794,7 @@ declare class atom$GitRepository {
 }
 
 declare class atom$Grammar {
+  name: string;
   scopeName: string;
 }
 
@@ -984,6 +1001,7 @@ type atom$UnhandledErrorEvent = {
 // This list is not complete.
 type AtomGlobal = {
   // Properties
+  appVersion: string;
   clipboard: atom$Clipboard;
   commands: atom$CommandRegistry;
   config: atom$Config;

@@ -14,6 +14,10 @@ var {EventEmitter} = require('events');
 var Constants = require('./Constants');
 
 import type {Dispatcher} from 'flux';
+import type {
+  nuclide_debugger$DebuggerInstance,
+  nuclide_debugger$Service,
+} from 'nuclide-debugger-interfaces/service';
 import type * as DebuggerProcessInfo from './DebuggerProcessInfo';
 
 /**

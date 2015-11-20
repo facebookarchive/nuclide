@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type HomeFragments from 'nuclide-home-interfaces';
+import type {HomeFragments} from 'nuclide-home-interfaces';
 import type HomePaneItemType from './HomePaneItem';
 
 var BASE_ITEM_URI = 'nuclide-home://';

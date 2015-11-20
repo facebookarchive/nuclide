@@ -14,6 +14,7 @@ const {CompositeDisposable} = require('atom');
 import {beginTimerTracking, failTimerTracking, endTimerTracking} from './AnalyticsHelper';
 
 import type {Dispatcher} from 'flux';
+import type {nuclide_debugger$Service} from 'nuclide-debugger-interfaces/service';
 import type * as DebuggerStore from './DebuggerStore';
 import type * as DebuggerProcessInfo from './DebuggerProcessInfo';
 import type * as Bridge from './Bridge';

@@ -58,6 +58,7 @@ module.exports = {
     }
 
     var {time: realLoadTime, promiseTime: realPromiseLoadTime} = await timedAsync(
+      // $FlowFixMe: Not sure for what versions of Atom this worked
       atom.packages.loadPackages()
     );
     var loadedPackages = atom.packages.getLoadedPackages().filter(isNotTheme);

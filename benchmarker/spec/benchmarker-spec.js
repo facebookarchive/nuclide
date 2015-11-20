@@ -76,6 +76,7 @@ describe('Nuclide performance', () => {
 
       // If there is no result file (probably the first iteration of a new benchmark), create it.
       if (!resultFile) {
+        // $FlowFixMe
         resultFile = createResultFile(resultDir, benchmark, columns);
         setTestState({resultFile});
         console.log(`Writing raw results for ${benchmark.name} to ${yellow(resultFile)}`);
@@ -206,7 +207,7 @@ function getNextTestState(
     };
   }
 
-  if (benchmark.index < benchmarks.length - 1) {
+  if (typeof benchmark.index === 'number' && benchmark.index < benchmarks.length - 1) {
     // There is another benchmark of this run to do. Reset the file path.
     return {
       repetition: 0,

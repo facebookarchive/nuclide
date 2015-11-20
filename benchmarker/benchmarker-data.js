@@ -53,7 +53,7 @@ function aggregateTable(
 function avg(values: Array<string>, decimalPlaces: number = 2): string {
   return aggregate(values, values => {
     var sum = values.reduce((i, j) => i + j);
-    return parseFloat(sum) / values.length;
+    return sum / values.length;
   }, decimalPlaces);
 }
 
