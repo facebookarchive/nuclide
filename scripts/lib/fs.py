@@ -86,6 +86,6 @@ def cross_platform_check_output(cmd_args, **kwargs):
 
     if returncode:
         logging.error('Error running %s in %s', cmd_args, kwargs.get('cwd', os.getcwd()))
-        raise subprocess.CalledProcessError(returncode, cmd_args, output=stdout)
+        raise subprocess.CalledProcessError(returncode, cmd_args)
 
     return stdout
