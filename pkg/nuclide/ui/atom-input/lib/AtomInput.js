@@ -105,7 +105,7 @@ class AtomInput extends React.Component {
 
     return (
       <atom-text-editor
-        className={className}
+        class={className}
         mini
         onClick={this.props.onClick}
         onFocus={this.props.onFocus}
