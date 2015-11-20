@@ -5,12 +5,10 @@
   "version": "0.0.0",
   "description": "Uses hyperclick to open URLs in the browser",
   "nuclide": {
-    "flowCheck": true,
     "packageType": "Atom",
     "testRunner": "apm"
   },
-  "activationCommands": {
-  },
+  "activationCommands": {},
   "engines": {
     "atom": ">=1.1.0"
   },
@@ -22,8 +20,7 @@
     }
   },
   "devDependencies": {
-    "hyperclick-interfaces": "0.0.0",
-    "nuclide-external-interfaces": "0.0.0"
+    "hyperclick-interfaces": "0.0.0"
   },
   "_atomModuleCache": {
     "extensions": {

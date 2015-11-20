@@ -27,9 +27,7 @@
     "nuclide-analytics": "0.0.0",
     "nuclide-logging": "0.0.0"
   },
-  "devDependencies": {
-    "nuclide-external-interfaces": "0.0.0"
-  },
+  "devDependencies": {},
   "_atomModuleCache": {
     "extensions": {
       ".node": []

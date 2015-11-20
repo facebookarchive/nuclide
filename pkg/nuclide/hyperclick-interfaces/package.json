@@ -5,11 +5,8 @@
   "version": "0.0.0",
   "description": "Flow types for the hyperclick provider interface. This is a dev-only package. It does not contain executable code.",
   "nuclide": {
-    "flowCheck": true,
     "packageType": "Node",
     "testRunner": "npm"
   },
-  "devDependencies": {
-    "nuclide-external-interfaces": "0.0.0"
-  }
+  "devDependencies": {}
 }

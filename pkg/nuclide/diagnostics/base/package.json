@@ -5,7 +5,6 @@
   "version": "0.0.0",
   "description": "Core data structures for nuclide-diagnostics",
   "nuclide": {
-    "flowCheck": true,
     "packageType": "Node",
     "testRunner": "apm"
   },
@@ -13,7 +12,6 @@
     "atom": ">=1.0.2"
   },
   "devDependencies": {
-    "nuclide-external-interfaces": "0.0.0",
     "nuclide-remote-uri": "0.0.0"
   }
 }

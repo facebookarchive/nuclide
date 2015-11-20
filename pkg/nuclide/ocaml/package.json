@@ -4,8 +4,7 @@
   "main": "./lib/main",
   "version": "0.0.0",
   "description": "Provides support for OCaml in Nuclide",
-  "activationCommands": {
-  },
+  "activationCommands": {},
   "nuclide": {
     "packageType": "Atom",
     "testRunner": "apm"
@@ -31,9 +30,7 @@
     "nuclide-client": "0.0.0",
     "nuclide-commons": "0.0.0"
   },
-  "devDependencies": {
-    "nuclide-external-interfaces": "0.0.0"
-  },
+  "devDependencies": {},
   "_atomModuleCache": {
     "extensions": {
       ".node": []

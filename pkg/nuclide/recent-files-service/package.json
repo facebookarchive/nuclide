@@ -5,12 +5,10 @@
   "version": "0.0.0",
   "description": "Provides a list of recently opened file paths in reverse chronological order.",
   "nuclide": {
-    "flowCheck": true,
     "packageType": "Atom",
     "testRunner": "apm"
   },
-  "activationCommands": {
-  },
+  "activationCommands": {},
   "engines": {
     "atom": ">=1.0.9"
   },
@@ -19,9 +17,7 @@
     "nuclide-atom-helpers": "0.0.0",
     "nuclide-commons": "0.0.0"
   },
-  "devDependencies": {
-    "nuclide-external-interfaces": "0.0.0"
-  },
+  "devDependencies": {},
   "providedServices": {
     "nuclide-recent-files-service": {
       "versions": {

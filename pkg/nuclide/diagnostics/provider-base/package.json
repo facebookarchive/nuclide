@@ -5,7 +5,6 @@
   "version": "0.0.0",
   "description": "Utilities to make implementing a diagnostics provider easier",
   "nuclide": {
-    "flowCheck": true,
     "packageType": "Node",
     "testRunner": "apm"
   },
@@ -13,7 +12,6 @@
     "nuclide-text-event-dispatcher": "0.0.0"
   },
   "devDependencies": {
-    "nuclide-diagnostics-base": "0.0.0",
-    "nuclide-external-interfaces": "0.0.0"
+    "nuclide-diagnostics-base": "0.0.0"
   }
 }

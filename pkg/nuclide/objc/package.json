@@ -5,7 +5,6 @@
   "version": "0.0.0",
   "description": "Provides support for Objective-C in Nuclide",
   "nuclide": {
-    "flowCheck": true,
     "packageType": "Atom",
     "testRunner": "apm"
   },
@@ -16,9 +15,7 @@
     "nuclide-analytics": "0.0.0",
     "nuclide-atom-helpers": "0.0.0"
   },
-  "devDependencies": {
-    "nuclide-external-interfaces": "0.0.0"
-  },
+  "devDependencies": {},
   "_atomModuleCache": {
     "extensions": {
       ".node": []

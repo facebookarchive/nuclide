@@ -22,9 +22,7 @@
     "nuclide-reprint-js": "0.0.0",
     "nuclide-update-cursor": "0.0.0"
   },
-  "devDependencies": {
-    "nuclide-external-interfaces": "0.0.0"
-  },
+  "devDependencies": {},
   "_atomModuleCache": {
     "extensions": {
       ".node": []

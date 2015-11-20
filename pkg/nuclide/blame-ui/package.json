@@ -18,13 +18,12 @@
   "engines": {
     "atom": ">=1.0.3"
   },
-  "dependencies" : {
+  "dependencies": {
     "nuclide-analytics": "0.0.0",
     "nuclide-logging": "0.0.0"
   },
   "devDependencies": {
-    "nuclide-blame-base": "0.0.0",
-    "nuclide-external-interfaces": "0.0.0"
+    "nuclide-blame-base": "0.0.0"
   },
   "_atomModuleCache": {
     "extensions": {

@@ -5,7 +5,6 @@
   "version": "0.0.0",
   "description": "Utility to load an Atom package that is packaged as a Node package",
   "nuclide": {
-    "flowCheck": true,
     "packageType": "Node",
     "testRunner": "apm"
   },
@@ -13,7 +12,5 @@
     "fs-plus": "2.8.1",
     "nuclide-commons": "0.0.0"
   },
-  "devDependencies": {
-    "nuclide-external-interfaces": "0.0.0"
-  }
+  "devDependencies": {}
 }

@@ -25,14 +25,12 @@ class JsTestRunner(object):
         apm_tests = []
         npm_tests = []
         serial_only_tests = []
-        flow_tests = []
+        flow_tests = [('flow', self._package_manager.get_nuclide_path(), 'nuclide')]
 
         for package_config in self._package_manager.get_configs():
             # Even if the npm/apm tests are disabled, we should still honor the Flow check.
             pkg_path = package_config['packageRootAbsolutePath']
             name = package_config['name']
-            if package_config['flowCheck']:
-                flow_tests.append(('flow', pkg_path, name))
 
             if package_config['excludeTestsFromContinuousIntegration']:
                 continue

@@ -5,7 +5,6 @@
   "version": "0.0.0",
   "description": "Provides a code-highlighting provider API",
   "nuclide": {
-    "flowCheck": true,
     "packageType": "Atom",
     "testRunner": "apm"
   },
@@ -13,7 +12,6 @@
     "nuclide-commons": "0.0.0"
   },
   "devDependencies": {
-    "nuclide-external-interfaces": "0.0.0",
     "nuclide-jasmine": "0.0.0"
   },
   "consumedServices": {

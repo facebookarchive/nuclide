@@ -25,7 +25,6 @@
     "ssh2": "0.4.11"
   },
   "devDependencies": {
-    "nuclide-external-interfaces": "0.0.0",
     "nuclide-test-helpers": "0.0.0",
     "temp": "0.8.3"
   }

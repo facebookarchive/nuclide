@@ -13,7 +13,6 @@
   },
   "devDependencies": {
     "nuclide-arcanist-base": "0.0.0",
-    "nuclide-external-interfaces": "0.0.0",
     "nuclide-remote-uri": "0.0.0"
   }
 }

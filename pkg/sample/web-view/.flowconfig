@@ -1,8 +1,0 @@
-[include]
-
-[ignore]
-
-[libs]
-../../nuclide/atom-interfaces/1.0/
-
-[options]

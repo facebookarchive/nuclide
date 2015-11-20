@@ -5,7 +5,6 @@
   "version": "0.0.0",
   "description": "Provides a utility to run babel code in a separate process",
   "nuclide": {
-    "flowCheck": true,
     "packageType": "Node",
     "testRunner": "npm"
   },
@@ -13,7 +12,6 @@
     "nuclide-node-transpiler": "0.0.0"
   },
   "devDependencies": {
-    "nuclide-external-interfaces": "0.0.0",
     "nuclide-jasmine": "0.0.0",
     "nuclide-test-helpers": "0.0.0"
   },

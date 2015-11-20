@@ -5,7 +5,6 @@
   "version": "0.0.0",
   "description": "Provides some simple process stats in the status bar",
   "nuclide": {
-    "flowCheck": true,
     "packageType": "Atom",
     "testRunner": "apm"
   },
@@ -24,9 +23,7 @@
     "nuclide-atom-helpers": "0.0.0",
     "react-for-atom": "0.14.3"
   },
-  "devDependencies": {
-    "nuclide-external-interfaces": "0.0.0"
-  },
+  "devDependencies": {},
   "_atomModuleCache": {
     "extensions": {
       ".node": []

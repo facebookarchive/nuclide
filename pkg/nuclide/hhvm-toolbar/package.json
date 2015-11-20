@@ -7,7 +7,6 @@
     "atom": ">=0.192.0"
   },
   "nuclide": {
-    "flowCheck": true,
     "packageType": "Node",
     "testRunner": "apm"
   },
@@ -22,7 +21,5 @@
     "nuclide-ui-dropdown": "0.0.0",
     "react-for-atom": "0.14.3"
   },
-  "devDependencies": {
-    "nuclide-external-interfaces": "0.0.0"
-  }
+  "devDependencies": {}
 }

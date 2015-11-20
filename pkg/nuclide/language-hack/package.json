@@ -7,9 +7,7 @@
     "packageType": "Atom",
     "testRunner": "apm"
   },
-  "devDependencies": {
-    "nuclide-external-interfaces": "0.0.0"
-  },
+  "devDependencies": {},
   "_atomModuleCache": {
     "extensions": {
       ".node": []

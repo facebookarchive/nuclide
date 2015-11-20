@@ -8,8 +8,7 @@
     "packageType": "Atom",
     "testRunner": "apm"
   },
-  "activationCommands": {
-  },
+  "activationCommands": {},
   "engines": {
     "atom": ">=1.0.9"
   },
@@ -30,7 +29,6 @@
     "rx": "3.1.1"
   },
   "devDependencies": {
-    "nuclide-busy-signal-interfaces": "0.0.0",
-    "nuclide-external-interfaces": "0.0.0"
+    "nuclide-busy-signal-interfaces": "0.0.0"
   }
 }

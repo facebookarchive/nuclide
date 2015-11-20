@@ -6,13 +6,9 @@
   "description": "A wrapper that uses keytar shipped with apm",
   "nuclide": {
     "excludeTestsFromContinuousIntegration": true,
-    "flowCheck": true,
     "packageType": "Node",
     "testRunner": "apm"
   },
-  "dependencies": {
-  },
-  "devDependencies": {
-    "nuclide-external-interfaces": "0.0.0"
-  }
+  "dependencies": {},
+  "devDependencies": {}
 }

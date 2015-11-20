@@ -39,8 +39,7 @@
     "nuclide-service-hub-plus": "0.0.0"
   },
   "devDependencies": {
-    "nuclide-atom-test-helpers": "0.0.0",
-    "nuclide-external-interfaces": "0.0.0"
+    "nuclide-atom-test-helpers": "0.0.0"
   },
   "_atomModuleCache": {
     "extensions": {

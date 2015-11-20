@@ -5,7 +5,6 @@
   "version": "0.0.0",
   "description": "Provides utility functions for creating package test suites",
   "nuclide": {
-    "flowCheck": true,
     "packageType": "Node",
     "testRunner": "npm"
   },
@@ -17,7 +16,6 @@
     "temp": "0.8.3"
   },
   "devDependencies": {
-    "nuclide-external-interfaces": "0.0.0",
     "nuclide-jasmine": "0.0.0"
   },
   "scripts": {

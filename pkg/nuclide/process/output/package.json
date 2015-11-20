@@ -21,7 +21,6 @@
   },
   "devDependencies": {
     "nuclide-atom-helpers": "0.0.0",
-    "nuclide-external-interfaces": "0.0.0",
     "nuclide-process-output-store": "0.0.0"
   }
 }

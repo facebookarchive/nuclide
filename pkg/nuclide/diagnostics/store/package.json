@@ -8,8 +8,7 @@
     "packageType": "Atom",
     "testRunner": "apm"
   },
-  "activationCommands": {
-  },
+  "activationCommands": {},
   "engines": {
     "atom": ">=1.0.2"
   },
@@ -39,7 +38,6 @@
     "nuclide-logging": "0.0.0"
   },
   "devDependencies": {
-    "nuclide-external-interfaces": "0.0.0",
     "nuclide-remote-uri": "0.0.0",
     "nuclide-test-helpers": "0.0.0"
   },

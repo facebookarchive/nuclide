@@ -14,7 +14,6 @@
     "nuclide-remote-uri": "0.0.0"
   },
   "devDependencies": {
-    "nuclide-external-interfaces": "0.0.0",
     "temp": "0.8.3"
   }
 }

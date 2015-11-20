@@ -5,7 +5,6 @@
   "version": "0.0.0",
   "description": "Search names of open files via nuclide-quick-open",
   "nuclide": {
-    "flowCheck": true,
     "packageType": "Atom",
     "testRunner": "apm"
   },
@@ -13,7 +12,6 @@
     "nuclide-commons": "0.0.0"
   },
   "devDependencies": {
-    "nuclide-external-interfaces": "0.0.0",
     "nuclide-quick-open-interfaces": "0.0.0"
   },
   "providedServices": {

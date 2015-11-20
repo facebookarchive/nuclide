@@ -6,7 +6,6 @@
   "description": "Provides API to work with Buck",
   "nuclide": {
     "excludeTestsFromContinuousIntegration": true,
-    "flowCheck": true,
     "packageType": "Node",
     "testRunner": "npm"
   },
@@ -18,7 +17,6 @@
     "temp": "0.8.3"
   },
   "devDependencies": {
-    "nuclide-external-interfaces": "0.0.0",
     "nuclide-jasmine": "0.0.0",
     "nuclide-remote-uri": "0.0.0",
     "rx": "3.1.1"

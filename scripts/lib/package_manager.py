@@ -11,7 +11,8 @@ from json_helpers import json_load
 from package_config import create_config_for_package
 from topological_installer import TopologicalInstaller
 
-PACKAGES_PATH = os.path.realpath(os.path.join(os.path.dirname(__file__), '../../pkg'))
+NUCLIDE_PATH = os.path.realpath(os.path.join(os.path.dirname(__file__), '../..'))
+PACKAGES_PATH = os.path.join(NUCLIDE_PATH, 'pkg')
 
 
 class PackageManager(object):
@@ -80,6 +81,9 @@ class PackageManager(object):
 
     def get_local_package_root(self, package_name):
         return self._package_map[package_name]['packageRootAbsolutePath']
+
+    def get_nuclide_path(self):
+        return NUCLIDE_PATH
 
     def get_package_map(self):
         return self._package_map

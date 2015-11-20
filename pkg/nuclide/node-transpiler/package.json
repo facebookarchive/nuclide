@@ -5,7 +5,6 @@
   "version": "0.0.0",
   "description": "Transpiles JavaScript files that 'use babel'",
   "nuclide": {
-    "flowCheck": true,
     "packageType": "Node",
     "testRunner": "npm"
   },

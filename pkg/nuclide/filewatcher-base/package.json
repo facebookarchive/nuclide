@@ -4,7 +4,6 @@
   "version": "0.0.0",
   "description": "Watches files and directories on a remote directory using watchman.",
   "nuclide": {
-    "flowCheck": true,
     "packageType": "Node",
     "testRunner": "npm"
   },
@@ -15,7 +14,6 @@
     "rx": "3.1.1"
   },
   "devDependencies": {
-    "nuclide-external-interfaces": "0.0.0",
     "nuclide-jasmine": "0.0.0",
     "nuclide-remote-uri": "0.0.0"
   },

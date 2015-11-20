@@ -52,7 +52,6 @@
     "hyperclick-interfaces": "0.0.0",
     "nuclide-busy-signal-interfaces": "0.0.0",
     "nuclide-diagnostics-base": "0.0.0",
-    "nuclide-external-interfaces": "0.0.0",
     "nuclide-test-helpers": "0.0.0"
   },
   "_atomModuleCache": {

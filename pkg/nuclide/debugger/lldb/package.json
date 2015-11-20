@@ -5,7 +5,6 @@
   "version": "0.0.0",
   "description": "Allows debugging of LLDB from Nuclide",
   "nuclide": {
-    "flowCheck": true,
     "packageType": "Atom",
     "testRunner": "apm"
   },
@@ -18,8 +17,7 @@
     "nuclide-logging": "0.0.0"
   },
   "devDependencies": {
-    "nuclide-debugger-interfaces": "0.0.0",
-    "nuclide-external-interfaces": "0.0.0"
+    "nuclide-debugger-interfaces": "0.0.0"
   },
   "providedServices": {
     "nuclide-debugger-lldb-service": {

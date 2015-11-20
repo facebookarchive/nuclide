@@ -10,7 +10,6 @@
 #
 # It will create all of the necessary boilerplate files underneath it:
 #
-#     .flowconfig
 #     package.json
 #     lib/main.js
 
@@ -33,37 +32,6 @@ NODE_PACKAGE = 'node'
 ATOM_PACKAGE = 'atom'
 DEFAULT_DIRECTORY = 'nuclide'
 PACKAGE_DIRECTORIES = [DEFAULT_DIRECTORY, 'fb']
-
-APM_FLOWCONFIG = """\
-[include]
-
-[ignore]
-
-[libs]
-./node_modules/nuclide-external-interfaces/1.0/
-
-[options]
-unsafe.enable_getters_and_setters=true
-esproposal.decorators=ignore
-suppress_comment=.*\\\\$FlowFixMe.*
-suppress_comment=.*\\\\$FlowIssue.*
-"""
-
-NPM_FLOWCONFIG = """\
-[include]
-
-[ignore]
-
-[libs]
-./node_modules/nuclide-external-interfaces/1.0/atom-jasmine.js
-./node_modules/nuclide-external-interfaces/1.0/jasmine.js
-
-[options]
-unsafe.enable_getters_and_setters=true
-esproposal.decorators=ignore
-suppress_comment=.*\\\\$FlowFixMe.*
-suppress_comment=.*\\\\$FlowIssue.*
-"""
 
 USERNAME = commands.getoutput("whoami")
 
@@ -138,7 +106,6 @@ ATOM_APM_PACKAGE_JSON_TEMPLATE = """\
   "version": "0.0.0",
   "description": "",
   "nuclide": {
-    "flowCheck": true,
     "packageType": "Atom",
     "testRunner": "apm"
   },
@@ -166,7 +133,6 @@ NODE_APM_PACKAGE_JSON_TEMPLATE = """\
   "version": "0.0.0",
   "description": "",
   "nuclide": {
-    "flowCheck": true,
     "packageType": "Node",
     "testRunner": "apm"
   },
@@ -184,7 +150,6 @@ NODE_NPM_PACKAGE_JSON_TEMPLATE = """\
   "version": "0.0.0",
   "description": "",
   "nuclide": {
-    "flowCheck": true,
     "packageType": "Node",
     "testRunner": "npm"
   },
@@ -218,14 +183,6 @@ def create_package(dir_name, package_name, package_type, test_runner):
     # Create the directory for the new package.
     pkg_dir = os.path.join(PACKAGES_PATH, dir_name)
     os.makedirs(pkg_dir)
-
-    # Add the .flowconfig file.
-    if test_runner == NPM:
-        flowconfig = NPM_FLOWCONFIG
-    else:
-        flowconfig = APM_FLOWCONFIG
-    with open(os.path.join(pkg_dir, '.flowconfig'), 'w') as f:
-        f.write(flowconfig)
 
     # Add the .babelrc file.
     with open(os.path.join(pkg_dir, '.babelrc'), 'w') as f:

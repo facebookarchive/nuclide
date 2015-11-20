@@ -4,7 +4,6 @@
   "version": "0.0.0",
   "description": "Atom-compatible Jasmine test runner that runs outside of Atom",
   "nuclide": {
-    "flowCheck": true,
     "packageType": "Node",
     "testRunner": "npm"
   },
@@ -12,9 +11,7 @@
     "jasmine-focused": "1.0.7",
     "nuclide-node-transpiler": "0.0.0"
   },
-  "devDependencies": {
-    "nuclide-external-interfaces": "0.0.0"
-  },
+  "devDependencies": {},
   "bin": {
     "jasmine-node-transpiled": "bin/jasmine-node-transpiled",
     "run-jasmine-tests": "bin/run-jasmine-tests"

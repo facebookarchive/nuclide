@@ -23,8 +23,7 @@
     "ws": "0.7.1"
   },
   "devDependencies": {
-    "nuclide-debugger-interfaces": "0.0.0",
-    "nuclide-external-interfaces": "0.0.0"
+    "nuclide-debugger-interfaces": "0.0.0"
   },
   "providedServices": {
     "nuclide-debugger-node-service": {

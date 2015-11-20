@@ -5,7 +5,6 @@
   "version": "0.0.0",
   "description": "Keyboard shortcuts for moving the current tab to a new pane.",
   "nuclide": {
-    "flowCheck": true,
     "packageType": "Atom",
     "testRunner": "apm"
   },
@@ -23,9 +22,7 @@
   "dependencies": {
     "nuclide-analytics": "0.0.0"
   },
-  "devDependencies": {
-    "nuclide-external-interfaces": "0.0.0"
-  },
+  "devDependencies": {},
   "_atomModuleCache": {
     "extensions": {
       ".node": []

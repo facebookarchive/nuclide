@@ -5,7 +5,6 @@
   "version": "0.0.0",
   "description": "Provides path search functionality in Nuclide",
   "nuclide": {
-    "flowCheck": true,
     "packageType": "Node",
     "testRunner": "npm"
   },
@@ -20,7 +19,6 @@
     "url-join": "0.0.1"
   },
   "devDependencies": {
-    "nuclide-external-interfaces": "0.0.0",
     "nuclide-jasmine": "0.0.0",
     "nuclide-test-helpers": "0.0.0",
     "temp": "0.8.3"

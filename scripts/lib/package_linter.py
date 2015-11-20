@@ -55,7 +55,6 @@ EXACT_SEMVER_RE = re.compile(r'^\d+\.\d+\.\d+$')
 #  - missing/incorrect repository
 #  - missing/incorrect version
 #  - missing/incorrect scripts/test property
-#  - missing/incorrect .flowconfig
 #  - packages used in Atom must declare nuclide-external-interfaces in devDependencies
 #  - unsorted dependencies
 #  - unsorted devDependencies
@@ -177,7 +176,6 @@ class PackageLinter(object):
 
     def verify_npm_package(self, package):
         self.verify_npm_test_property(package)
-        self.read_flowconfig_for_package(package)
 
     def verify_npm_test_property(self, package):
         '''npm packages should use nuclide-jasmine for running tests.'''
@@ -202,28 +200,6 @@ class PackageLinter(object):
 
     def verify_apm_package(self, package):
         self.verify_apm_test_property(package)
-        config = self.read_flowconfig_for_package(package)
-        if config:
-            try:
-                config.get('libs', PATH_TO_ATOM_INTERFACES)
-            except NoOptionError:
-                self.report_error(
-                    'Package %s should have an entry for %s in its [libs] section.',
-                    package['name'],
-                    PATH_TO_ATOM_INTERFACES)
-            try:
-                value = config.get('options', 'unsafe.enable_getters_and_setters')
-                if value != 'true':
-                    self.report_error(
-                        'unsafe.enable_getters_and_setters in %s was "%s" instead of "true".',
-                        package['name'],
-                        value)
-            except NoOptionError:
-                self.report_error(
-                    'Package %s should have an entry for %s in its [options] section.',
-                    package['name'],
-                    'unsafe.enable_getters_and_setters')
-
 
     def verify_apm_test_property(self, package):
         '''apm packages should not specify a separate test runner.'''
@@ -233,27 +209,6 @@ class PackageLinter(object):
                 ('Package %s should not have a custom scripts/test section ' +
                     'because it will use apm as its test runner.'),
                 package_name)
-
-        if (not 'nuclide-external-interfaces' in package.get('devDependencies', {}) and
-                package_name != 'nuclide-external-interfaces'):
-            self.report_error(
-                ('Package %s should have nuclide-external-interfaces in its devDependencies ' +
-                    'because it uses apm as its test runner.'),
-                package_name)
-
-    def read_flowconfig_for_package(self, package):
-        if not self._supports_config_parser_allow_no_value:
-            sys.stderr.write('Python 2.7 or later is required to parse .flowconfig properly.\n')
-            return None
-
-        flowconfig_path = os.path.join(package['packageRootAbsolutePath'], '.flowconfig')
-        if not os.path.isfile(flowconfig_path):
-            self.report_error('Expected .flowconfig file at %s not found.', flowconfig_path)
-            return None
-
-        config = ConfigParser(allow_no_value=True)
-        config.read(flowconfig_path)
-        return config
 
     def validate_babelrc(self, package):
         # See https://phabricator.fb.com/D2301649 for details on why this exists.

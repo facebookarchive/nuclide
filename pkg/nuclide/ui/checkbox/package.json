@@ -5,7 +5,6 @@
   "version": "0.0.0",
   "description": "Provides a checkbox widget for Nuclide user interfaces",
   "nuclide": {
-    "flowCheck": true,
     "packageType": "Node",
     "testRunner": "apm"
   },
@@ -13,7 +12,5 @@
     "nuclide-atom-npm": "0.0.0",
     "react-for-atom": "0.14.3"
   },
-  "devDependencies": {
-    "nuclide-external-interfaces": "0.0.0"
-  }
+  "devDependencies": {}
 }

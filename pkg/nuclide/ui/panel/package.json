@@ -5,7 +5,6 @@
   "version": "0.0.0",
   "description": "Provides support for new UI panels in Nuclide",
   "nuclide": {
-    "flowCheck": true,
     "packageType": "Node",
     "testRunner": "apm"
   },
@@ -17,7 +16,5 @@
     "nuclide-commons": "0.0.0",
     "react-for-atom": "0.14.3"
   },
-  "devDependencies": {
-    "nuclide-external-interfaces": "0.0.0"
-  }
+  "devDependencies": {}
 }

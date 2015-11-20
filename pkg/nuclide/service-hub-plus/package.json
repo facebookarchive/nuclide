@@ -5,11 +5,8 @@
   "version": "0.0.0",
   "description": "Provides a workaround for https://github.com/atom/service-hub/issues/6",
   "nuclide": {
-    "flowCheck": true,
     "packageType": "Node",
     "testRunner": "apm"
   },
-  "devDependencies": {
-    "nuclide-external-interfaces": "0.0.0"
-  }
+  "devDependencies": {}
 }

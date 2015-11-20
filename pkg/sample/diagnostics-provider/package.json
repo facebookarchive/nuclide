@@ -15,7 +15,6 @@
     "nuclide-diagnostics-provider-base": "0.0.32"
   },
   "devDependencies": {
-    "nuclide-diagnostics-base": "0.0.32",
-    "nuclide-external-interfaces": "0.0.32"
+    "nuclide-diagnostics-base": "0.0.32"
   }
 }

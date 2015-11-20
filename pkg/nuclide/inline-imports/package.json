@@ -5,7 +5,6 @@
   "version": "0.0.0",
   "description": "Babel plugin that transforms ES6 import references into inline require calls",
   "nuclide": {
-    "flowCheck": true,
     "packageType": "Node",
     "testRunner": "npm"
   },
