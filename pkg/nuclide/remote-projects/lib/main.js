@@ -334,10 +334,14 @@ module.exports = {
   },
 
   deactivate(): void {
-    // This should always be true here, but we do this to appease Flow.
     if (packageSubscriptions) {
       packageSubscriptions.dispose();
       packageSubscriptions = null;
+    }
+
+    if (controller != null) {
+      controller.destroy();
+      controller = null;
     }
   },
 
