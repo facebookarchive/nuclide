@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type TestRunner from './TestRunner';
+import type {TestRunner, Message} from './main';
 
 var Ansi = require('./Ansi');
 var {
@@ -34,7 +34,6 @@ class TestRunnerController {
 
   _activeTestRunner: ?Object;
   _buffer: TextBuffer;
-  _compositeDisposable: ?CompositeDisposable;
   _executionState: number;
   _panel: ?atom$Panel;
   _path: ?string;
@@ -150,16 +149,11 @@ class TestRunnerController {
       }
     }
 
-    // If there's no test runner service for the URI of the active text editor, nothing further can
-    // be done.
-    var testRunnerService = selectedTestRunner.getByUri(testPath);
-    if (!testRunnerService) {
-      logger.warn(`No test runner service found for path "${testPath}"`);
-      return;
-    }
-
     this.clearOutput();
-    this._runTestRunnerServiceForPath(testRunnerService, testPath);
+    this._runTestRunnerServiceForPath(
+      selectedTestRunner.runTest(testPath),
+      testPath,
+      selectedTestRunner.label);
     track('testrunner-run-tests', {
       path: testPath,
       testRunner: selectedTestRunner.label,
@@ -172,22 +166,10 @@ class TestRunnerController {
   }
 
   stopTests(): void {
-    if (this._run && this._run.testRunner) {
-      track('testrunner-stop-tests', {
-        testRunner: this._run.testRunner.label,
-      });
-      try {
-        this._run.testRunner.stop(this._run.id);
-      } catch (e) {
-        // If the remote connection goes away, it won't be possible to stop tests. Log an error and
-        // proceed as usual.
-        logger.error(`Error when stopping test run #'${this._run.id}: ${e}`);
-      }
-    }
+    this._stopListening();
 
     // Respond in the UI immediately and assume the process is properly killed.
     this._setExecutionState(TestRunnerPanel.ExecutionState.STOPPED);
-    this._stopListening();
   }
 
   serialize(): TestRunnerControllerState {
@@ -231,85 +213,67 @@ class TestRunnerController {
     this.runTests();
   }
 
-  _runTestRunnerServiceForPath(testRunnerService: Object, path: NuclideUri): void {
-    var disposables = new CompositeDisposable();
+  _runTestRunnerServiceForPath(testRun: Observable<Message>, path: NuclideUri, label: string):
+      void {
+    const subscription = testRun
+      .doOnNext((message: Message) => {
+        switch (message.kind) {
+          case 'summary':
+            this._testSuiteModel = new TestSuiteModel(message.summaryInfo);
+            this._renderPanel();
+            break;
+          case 'run-test':
+            const testInfo = message.testInfo;
+            if (this._testSuiteModel) {
+              this._testSuiteModel.addTestRun(testInfo);
+            }
 
-    disposables.add(
-      testRunnerService.onDidRunSummary(value => {
-        var {summaryInfo} = value;
-        this._testSuiteModel = new TestSuiteModel(summaryInfo);
-        this._renderPanel();
-      })
-    );
-    disposables.add(
-      testRunnerService.onDidRunTest(value => {
-        var {testInfo} = value;
-        if (this._testSuiteModel) {
-          this._testSuiteModel.addTestRun(testInfo);
-        }
+            // If a test run throws an exception, the stack trace is returned in 'details'.
+            // Append its entirety to the console.
+            if (testInfo.hasOwnProperty('details') && testInfo.details !== '') {
+              this._appendToBuffer(testInfo.details);
+            }
 
-        // If a test run throws an exception, the stack trace is returned in 'details'. Append its
-        // entirety to the console.
-        if (testInfo.hasOwnProperty('details') && testInfo.details !== '') {
-          this._appendToBuffer(testInfo.details);
+            // Append a PASS/FAIL message depending on whether the class has test failures.
+            this._appendToBuffer(TestRunModel.formatStatusMessage(
+              testInfo.name,
+              testInfo.durationSecs,
+              testInfo.status
+            ));
+            this._renderPanel();
+            break;
+          case 'start':
+            if (this._run) {
+              this._run.start();
+            }
+            break;
+          case 'error':
+            const error = message.error;
+            if (this._run) {
+              this._run.stop();
+            }
+            if (error.code === 'ENOENT') {
+              this._appendToBuffer(
+                `${Ansi.YELLOW}Command '${error.path}' does not exist${Ansi.RESET}`);
+              this._appendToBuffer(`${Ansi.YELLOW}Are you trying to run remotely?${Ansi.RESET}`);
+              this._appendToBuffer(`${Ansi.YELLOW}Path: ${path}${Ansi.RESET}`);
+            }
+            this._appendToBuffer(`${Ansi.RED}Original Error: ${error.message}${Ansi.RESET}`);
+            this._setExecutionState(TestRunnerPanel.ExecutionState.STOPPED);
+            logger.error(`Error running tests: "${error.message}"`);
+            break;
+          case 'stderr':
+            // Color stderr output red in the console to distinguish it as error.
+            this._appendToBuffer(`${Ansi.RED}${message.data}${Ansi.RESET}`);
+            break;
         }
-
-        // Append a PASS/FAIL message depending on whether the class has test failures.
-        this._appendToBuffer(TestRunModel.formatStatusMessage(
-          testInfo.name,
-          testInfo.durationSecs,
-          testInfo.status
-        ));
-        this._renderPanel();
       })
-    );
-    disposables.add(
-      testRunnerService.onDidStart(() => {
-        if (this._run) {
-          this._run.start();
-        }
-      })
-    );
-    disposables.add(
-      testRunnerService.onDidEnd(() => {
-        if (this._run) {
-          this._run.stop();
-        }
+      .finally(() => {
         this._stopListening();
         this._setExecutionState(TestRunnerPanel.ExecutionState.STOPPED);
       })
-    );
-    disposables.add(
-      testRunnerService.onError(info => {
-        if (this._run) {
-          this._run.stop();
-        }
-        if (info.error.code === 'ENOENT') {
-          this._appendToBuffer(
-            `${Ansi.YELLOW}Command '${info.error.path}' does not exist${Ansi.RESET}`);
-          this._appendToBuffer(`${Ansi.YELLOW}Are you trying to run remotely?${Ansi.RESET}`);
-          this._appendToBuffer(`${Ansi.YELLOW}Path: ${path}${Ansi.RESET}`);
-        }
-        this._appendToBuffer(`${Ansi.RED}Original Error: ${info.error.message}${Ansi.RESET}`);
-        this._setExecutionState(TestRunnerPanel.ExecutionState.STOPPED);
-        logger.error(`Error running tests: "${info.error.message}"`);
-      })
-    );
-    disposables.add(
-      testRunnerService.onStderrData(info => {
-        // Color stderr output red in the console to distinguish it as error.
-        this._appendToBuffer(`${Ansi.RED}${info.data}${Ansi.RESET}`);
-      })
-    );
-
-    // Keep a reference to listeners so they can be removed when testing ends or when this instance
-    // is destroyed.
-    this._compositeDisposable = disposables;
-
-    // Run tests for the path.
-    testRunnerService.run(path).then(runId => {
-      this._run = new TestRunModel(runId, testRunnerService);
-    });
+      .subscribe();
+    this._run = new TestRunModel(label, subscription.dispose.bind(subscription));
   }
 
   _setExecutionState(executionState: number): void {
@@ -367,8 +331,20 @@ class TestRunnerController {
   }
 
   _stopListening(): void {
-    if (this._compositeDisposable) {
-      this._compositeDisposable.dispose();
+    if (this._run && (this._run.dispose != null)) {
+      try {
+        const dispose = this._run.dispose;
+        this._run.dispose = null;
+        this._run.stop();
+        track('testrunner-stop-tests', {
+          testRunner: this._run.label,
+        });
+        dispose();
+      } catch (e) {
+        // If the remote connection goes away, it won't be possible to stop tests. Log an error and
+        // proceed as usual.
+        logger.error(`Error when stopping test run #'${this._run.label}: ${e}`);
+      }
     }
   }
 

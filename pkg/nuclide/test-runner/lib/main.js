@@ -9,10 +9,9 @@
  * the root directory of this source tree.
  */
 
-import type TestRunner from './TestRunner';
 import type TestRunnerControllerState from './TestRunnerController';
 import type {HomeFragments} from 'nuclide-home-interfaces';
-
+import type {TestRunner} from 'nuclide-test-runner-interfaces';
 
 var {
   CompositeDisposable,

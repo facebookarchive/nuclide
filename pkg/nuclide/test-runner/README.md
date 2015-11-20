@@ -8,21 +8,17 @@ Test runners asynchronously run tests remotely or locally and emit events when t
 
 #### Provide a test runner
 
-Test runner implementations should implement the interface found in
-"[./example/TestRunnerInterface.js](./examples/TestRunnerInterface.js)".
-They do not need to actually extend that class, only match its methods.
+Test runner implementations should export the TestRunner.
 
 **main.js:**
 
 ```javascript
 module.exports = {
-  provideTestRunner() {
+  provideTestRunner(): TestRunner {
     return {
-      getByUri(uri: string): TestRunnerInterface {
-        // Return the runner that will do the work for the given URI. Objects returned by this
-        // function should implement the interface in example/TestRunnerInterface.js but do not need
-        // to actually extend that class.
-        return new TestRunnerImpl(uri);
+      runTest(uri: string): Observable<Message> {
+        // Return the runner that will do the work for the given URI.
+        return ...(uri);
       },
       // Used to identify this runner in the testing panel to allow users to select the correct
       // runner for a given test.

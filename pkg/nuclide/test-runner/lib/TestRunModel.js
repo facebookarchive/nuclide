@@ -9,12 +9,12 @@
  * the root directory of this source tree.
  */
 
-var Ansi = require('./Ansi');
+const Ansi = require('./Ansi');
 
 /**
  * Status codes returned in the "status" field of the testing utility's JSON response.
  */
-var Status: {[key: string]: number} = {
+const Status: {[key: string]: number} = {
   PASSED: 1,
   FAILED: 2,
   SKIPPED: 3,
@@ -22,14 +22,14 @@ var Status: {[key: string]: number} = {
   TIMEOUT: 5,
 };
 
-var StatusSymbol: {[key: $Keys<typeof Status>]: string} = {};
+const StatusSymbol: {[key: $Keys<typeof Status>]: string} = {};
 StatusSymbol[Status.PASSED] = `${Ansi.GREEN}✓${Ansi.RESET}`;
 StatusSymbol[Status.FAILED] = `${Ansi.RED}✗${Ansi.RESET}`;
 StatusSymbol[Status.SKIPPED] = `${Ansi.YELLOW}?${Ansi.RESET}`;
 StatusSymbol[Status.FATAL] = `${Ansi.RED}✘${Ansi.RESET}`;
 StatusSymbol[Status.TIMEOUT] = `${Ansi.BLUE}✉${Ansi.RESET}`;
 
-var StatusMessage: {[key: $Keys<typeof Status>]: string} = {};
+const StatusMessage: {[key: $Keys<typeof Status>]: string} = {};
 StatusMessage[Status.PASSED] = `${Ansi.GREEN}(PASS)${Ansi.RESET}`;
 StatusMessage[Status.FAILED] = `${Ansi.RED}(FAIL)${Ansi.RESET}`;
 StatusMessage[Status.SKIPPED] = `${Ansi.YELLOW}(SKIP)${Ansi.RESET}`;
@@ -40,14 +40,14 @@ class TestRunModel {
 
   static Status: {[key: string]: number};
 
-  id: number;
   startTime: ?number;
   endTime: ?number;
-  testRunner: Object;
+  label: string;
+  dispose: ?() => void;
 
-  constructor(id: number, testRunner: Object) {
-    this.id = id;
-    this.testRunner = testRunner;
+  constructor(label: string, dispose: () => void) {
+    this.label = label;
+    this.dispose = dispose;
   }
 
   getDuration(): ?number {
@@ -69,10 +69,9 @@ class TestRunModel {
    * failed, skipped, etc.
    */
   static formatStatusMessage(name: string, duration: number, status: $Keys<typeof Status>): string {
-    var durationStr = duration.toFixed(3);
+    const durationStr = duration.toFixed(3);
     return `      ${StatusSymbol[status]} ${name} ${durationStr}s ${StatusMessage[status]}`;
   }
-
 }
 
 // TODO: Use a property initializer when supported by Flow.
