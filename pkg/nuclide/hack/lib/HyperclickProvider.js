@@ -9,32 +9,38 @@
  * the root directory of this source tree.
  */
 
-var {findDefinition} = require('./hack');
-var {goToLocation} = require('nuclide-atom-helpers');
+import {findDefinition} from './hack';
+import {goToLocation} from 'nuclide-atom-helpers';
+import {trackTiming} from 'nuclide-analytics';
 
-var {HACK_GRAMMARS_SET} = require('nuclide-hack-common/lib/constants');
+import {HACK_GRAMMARS_SET} from 'nuclide-hack-common/lib/constants';
 
-module.exports = {
-  priority: 20,
-  providerName: 'nuclide-hack',
-  async getSuggestionForWord(textEditor: TextEditor, text: string, range: Range) {
+class HyperclickProvider {
+
+  @trackTiming('hack.get-definition')
+  async getSuggestionForWord(
+    textEditor: atom$TextEditor,
+    text: string,
+    range: atom$Range,
+  ): Promise<?HyperclickSuggestion> {
     if (!HACK_GRAMMARS_SET.has(textEditor.getGrammar().scopeName)) {
       return null;
     }
 
-    var {start: position} = range;
+    const {start: position} = range;
 
     // Create the actual-call promise synchronously for next calls to consume.
-    var location = await findDefinition(textEditor, position.row, position.column);
+    const location = await findDefinition(textEditor, position.row, position.column);
     if (location) {
       // Optionally use the range returned from the definition match, if any.
-      var range = location.range || range;
       return {
-        range,
+        range: location.range || range,
         callback: () => goToLocation(location.file, location.line, location.column),
       };
     } else {
       return null;
     }
-  },
-};
+  }
+}
+
+module.exports = HyperclickProvider;

@@ -10,11 +10,13 @@
  */
 
 import type {Point} from 'atom';
-import CodeHighlightProvider from './CodeHighlightProvider';
 
-var {CompositeDisposable} = require('atom');
-var {HACK_GRAMMARS} = require('nuclide-hack-common/lib/constants');
-var HACK_GRAMMARS_STRING = HACK_GRAMMARS.join(', ');
+import CodeHighlightProvider from './CodeHighlightProvider';
+import {CompositeDisposable} from 'atom';
+import {HACK_GRAMMARS} from 'nuclide-hack-common/lib/constants';
+
+const HACK_GRAMMARS_STRING = HACK_GRAMMARS.join(', ');
+const PACKAGE_NAME = 'nuclide-hack';
 
 // One of text or snippet is required.
 type Suggestion = {
@@ -66,8 +68,16 @@ module.exports = {
     };
   },
 
-  getHyperclickProvider() {
-    return require('./HyperclickProvider');
+  getHyperclickProvider(): HyperclickProvider {
+    const HackHyperclickProvider = require('./HyperclickProvider');
+    const hackHyperclickProvider = new HackHyperclickProvider();
+    const getSuggestionForWord =
+        hackHyperclickProvider.getSuggestionForWord.bind(hackHyperclickProvider);
+    return {
+      priority: 20,
+      providerName: PACKAGE_NAME,
+      getSuggestionForWord,
+    };
   },
 
   /** Provider for code format service. */
@@ -96,7 +106,7 @@ module.exports = {
     return {
       selector: HACK_GRAMMARS_STRING,
       inclusionPriority: 1,
-      providerName: 'nuclide-hack',
+      providerName: PACKAGE_NAME,
 
       typeHint(editor: TextEditor, position: Point): Promise<string> {
         return typeHintProvider.typeHint(editor, position);

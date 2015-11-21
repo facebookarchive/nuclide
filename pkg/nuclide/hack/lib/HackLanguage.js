@@ -22,7 +22,6 @@ import type {
 } from 'nuclide-hack-base/lib/types';
 import type NuclideClient from 'nuclide-server/lib/NuclideClient';
 
-import {trackTiming} from 'nuclide-analytics';
 import {parse, createRemoteUri, getPath} from 'nuclide-remote-uri';
 import {getHackService} from './utils';
 import {getLogger} from 'nuclide-logging';
@@ -246,7 +245,6 @@ module.exports = class HackLanguage {
     return hackDiagnostics.messages;
   }
 
-  @trackTiming('hack.get-definition')
   async getDefinition(
       filePath: NuclideUri,
       contents: string,
@@ -353,7 +351,6 @@ module.exports = class HackLanguage {
     }
     return ((definitionResult: any): HackDefinitionResult).definition;
   }
-
 
   async _getDefinitionLocationAtPosition(
       filePath: NuclideUri,
