@@ -151,32 +151,6 @@ describe('Hyperclick', () => {
       });
     });
 
-    it('consumes multi-range providers', () => {
-      waitsForPromise(async () => {
-        var callback = jasmine.createSpy('callback');
-        var provider = {
-          getSuggestion(sourceTextEditor: TextEditor, sourcePosition: Point) {
-            var range = [
-              new Range(sourcePosition, sourcePosition.translate([0, 1])),
-              new Range(sourcePosition.translate([0, 2]), sourcePosition.translate([0, 3])),
-            ];
-            return {range, callback};
-          },
-        };
-        spyOn(provider, 'getSuggestion').andCallThrough();
-        hyperclick.consumeProvider(provider);
-
-        var position = new Point(0, 8);
-
-        dispatch(MouseEvent, 'mousemove', position, {metaKey: true});
-        await hyperclickForTextEditor.getSuggestionAtMouse();
-        expect(provider.getSuggestion).toHaveBeenCalledWith(textEditor, position);
-
-        dispatch(MouseEvent, 'mousedown', position, {metaKey: true});
-        expect(callback.callCount).toBe(1);
-      });
-    });
-
     it('consumes multiple providers from different sources', () => {
       waitsForPromise(async () => {
         var callback1 = jasmine.createSpy('callback');
@@ -337,70 +311,6 @@ describe('Hyperclick', () => {
             expectedRange2);
 
         expect(provider.getSuggestionForWord.callCount).toBe(2);
-
-        dispatch(MouseEvent, 'mousedown', position2, {metaKey: true});
-        expect(callback.callCount).toBe(1);
-      });
-    });
-
-    it('ignores <mousemove> in the same multi-range as the last suggestion', () => {
-      waitsForPromise(async () => {
-        var range = [
-          new Range(new Point(0, 1), new Point(0, 2)),
-          new Range(new Point(0, 4), new Point(0, 5)),
-        ];
-        var callback = jasmine.createSpy('callback');
-        var provider = {
-          getSuggestion(sourceTextEditor: TextEditor, sourcePosition: Point) {
-            return {range, callback};
-          },
-        };
-        spyOn(provider, 'getSuggestion').andCallThrough();
-        hyperclick.consumeProvider(provider);
-
-        var position = new Point(0, 1);
-
-        dispatch(MouseEvent, 'mousemove', position, {metaKey: true});
-        await hyperclickForTextEditor.getSuggestionAtMouse();
-        expect(provider.getSuggestion).toHaveBeenCalledWith(textEditor, position);
-
-        dispatch(MouseEvent, 'mousemove', new Point(0, 4), {metaKey: true});
-        await hyperclickForTextEditor.getSuggestionAtMouse();
-
-        expect(provider.getSuggestion.callCount).toBe(1);
-
-        dispatch(MouseEvent, 'mousedown', position, {metaKey: true});
-        expect(callback.callCount).toBe(1);
-      });
-    });
-
-    it('handles <mousemove> in a different multi-range as the last suggestion', () => {
-      waitsForPromise(async () => {
-        var range = [
-          new Range(new Point(0, 1), new Point(0, 2)),
-          new Range(new Point(0, 4), new Point(0, 5)),
-        ];
-        var callback = jasmine.createSpy('callback');
-        var provider = {
-          getSuggestion(sourceTextEditor: TextEditor, position: Point) {
-            return {range, callback};
-          },
-        };
-        spyOn(provider, 'getSuggestion').andCallThrough();
-        hyperclick.consumeProvider(provider);
-
-        var position1 = new Point(0, 1);
-
-        dispatch(MouseEvent, 'mousemove', position1, {metaKey: true});
-        await hyperclickForTextEditor.getSuggestionAtMouse();
-        expect(provider.getSuggestion).toHaveBeenCalledWith(textEditor, position1);
-
-        var position2 = new Point(0, 3);
-        dispatch(MouseEvent, 'mousemove', position2, {metaKey: true});
-        await hyperclickForTextEditor.getSuggestionAtMouse();
-        expect(provider.getSuggestion).toHaveBeenCalledWith(textEditor, position2);
-
-        expect(provider.getSuggestion.callCount).toBe(2);
 
         dispatch(MouseEvent, 'mousedown', position2, {metaKey: true});
         expect(callback.callCount).toBe(1);

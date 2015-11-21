@@ -25,7 +25,7 @@ class SuggestionList {
 
     this.hide();
 
-    var {start: position} = Array.isArray(suggestion.range) ? suggestion.range[0] : suggestion.range;
+    const {start: position} = suggestion.range;
     this._suggestionMarker = textEditor.markBufferPosition(position);
     if (this._suggestionMarker) {
       this._overlayDecoration = textEditor.decorateMarker(this._suggestionMarker, {
