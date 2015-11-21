@@ -17,7 +17,7 @@
  * @param thisArg Value to use as `this` when executing `mapFn`.
  */
 // $FlowIssue
-function from<T, U>(
+export function from<T, U>(
   arrayLike: Iterable | {length: number},
   mapFn?: (original: T) => U,
   thisArg?: mixed
@@ -65,7 +65,7 @@ function from<T, U>(
  * @param Function to execute on each value in the array.
  * @param Object to use as `this` when executing `callback`.
  */
-function find<T>(
+export function find<T>(
     array: Array<T>,
     callback: (element: T, index: number, array: Array<T>) => mixed,
     thisArg?: mixed): ?T {
@@ -83,7 +83,7 @@ function find<T>(
  * @param Function to execute on each value in the array.
  * @param Object to use as `this` when executing `callback`.
  */
-function findIndex<T>(
+export function findIndex<T>(
     array: Array<T>,
     callback: (element: T, index: number, array: Array<T>) => mixed,
     thisArg?: mixed): number {
@@ -99,16 +99,18 @@ function findIndex<T>(
   return result;
 }
 
-function remove<T>(array: Array<T>, element: T): void {
+export function remove<T>(array: Array<T>, element: T): void {
   var index = array.indexOf(element);
   if (index >= 0) {
     array.splice(index, 1);
   }
 }
 
-module.exports = {
-  find,
-  findIndex,
-  from,
-  remove,
-};
+export function equal<T>(
+  array1: Array<T>,
+  array2: Array<T>,
+  equalComparator?: (a: T, b: T) => boolean,
+): boolean {
+  const equalFunction = equalComparator || ((a: T,  b: T) => a === b);
+  return array1.every((item1, i) => equalFunction(item1, array2[i]));
+}

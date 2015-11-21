@@ -308,3 +308,21 @@ describe('Array.remove', () => {
     expect(single).toEqual([]);
   });
 });
+
+describe('Array.equal', () => {
+
+  it('checks boolean elements', () => {
+    expect(es6Array.equal([true, false, true], [true, false, true])).toBe(true);
+    expect(es6Array.equal([true], [false])).toBe(false);
+  });
+
+  it('checks number elements', () => {
+    expect(es6Array.equal([1, 2, 3], [1, 2, 3])).toBe(true);
+    expect(es6Array.equal([1, 5, 3], [1, 2, 3])).toBe(false);
+  });
+
+  it('checks object elements', () => {
+    expect(es6Array.equal([{}], [{}])).toBe(false);
+    expect(es6Array.equal([{x: 1}, {x: 2}], [{x: 1}, {x: 2}], (a, b) => a.x === b.x)).toBe(true);
+  });
+});
