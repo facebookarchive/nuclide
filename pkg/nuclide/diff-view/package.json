@@ -15,6 +15,7 @@
     "classnames": "2.2.0",
     "diff": "1.4.0",
     "immutable": "3.7.5",
+    "lru-cache": "2.6.5",
     "nuclide-analytics": "0.0.0",
     "nuclide-atom-helpers": "0.0.0",
     "nuclide-client": "0.0.0",

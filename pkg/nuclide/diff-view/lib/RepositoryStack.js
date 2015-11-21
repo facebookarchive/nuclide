@@ -22,6 +22,7 @@ import {array, promises, debounce} from 'nuclide-commons';
 import {trackTiming} from 'nuclide-analytics';
 import {notifyInternalError} from './notifications';
 import invariant from 'assert';
+import LRU from 'lru-cache';
 
 const {serializeAsyncCall} = promises;
 const CHANGE_COMPARE_STATUS_EVENT = 'did-change-compare-status';
@@ -50,6 +51,7 @@ export default class RepositoryStack {
   _selectedCompareCommitId: ?number;
   _isActive: boolean;
   _serializedUpdateStatus: () => Promise<void>;
+  _revisionIdToFileChanges: LRU<number, RevisionFileChanges>;
 
   constructor(repository: HgRepositoryClient) {
     this._repository = repository;
@@ -58,6 +60,7 @@ export default class RepositoryStack {
     this._compareFileChanges = new Map();
     this._dirtyFileChanges = new Map();
     this._isActive = false;
+    this._revisionIdToFileChanges = new LRU({max: 100});
     this._selectedCompareCommitId = null;
     this._lastRevisionsFileHistory = null;
     this._serializedUpdateStatus = serializeAsyncCall(() => this._updateChangedStatus());
@@ -244,10 +247,18 @@ export default class RepositoryStack {
   async _fetchRevisionsFileHistory(revisionsState: RevisionsState): Promise<RevisionsFileHistory> {
     const {revisions} = revisionsState;
 
+    // Revision ids are unique and don't change, except when the revision is amended/rebased.
+    // Hence, it's cached here to avoid service calls when working on a stack of commits.
     const revisionsFileHistory = await Promise.all(revisions
       .map(async(revision) => {
         const {id} = revision;
-        const changes = await this._repository.fetchFilesChangedAtRevision(`${id}`);
+        let changes = null;
+        if (this._revisionIdToFileChanges.has(id)) {
+          changes = this._revisionIdToFileChanges.get(id);
+        } else {
+          changes = await this._repository.fetchFilesChangedAtRevision(`${id}`);
+          this._revisionIdToFileChanges.set(id, changes);
+        }
         return {id, changes};
       })
     );
@@ -383,5 +394,8 @@ export default class RepositoryStack {
 
   dispose(): void {
     this._subscriptions.dispose();
+    this._dirtyFileChanges.clear();
+    this._compareFileChanges.clear();
+    this._revisionIdToFileChanges.reset();
   }
 }
