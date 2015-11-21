@@ -20,6 +20,7 @@ import DiffViewEditorPane from './DiffViewEditorPane';
 import DiffViewTree from './DiffViewTree';
 import SyncScroll from './SyncScroll';
 import DiffTimelineView from './DiffTimelineView';
+import DiffNavigationBar from './DiffNavigationBar';
 import {object} from 'nuclide-commons';
 import {createPaneContainer} from 'nuclide-atom-helpers';
 
@@ -57,9 +58,12 @@ class DiffViewComponent extends React.Component {
   _timelineComponent: ?DiffTimelineView;
   _treePane: ?atom$Pane;
   _treeComponent: ?ReactComponent;
+  _navigationPane: ?atom$Pane;
+  _navigationComponent: ?DiffNavigationBar;
 
   _boundHandleNewOffsets: Function;
   _boundUpdateLineDiffState: Function;
+  _boundOnNavigationClick: Function;
 
   constructor(props: Props) {
     super(props);
@@ -90,6 +94,7 @@ class DiffViewComponent extends React.Component {
     this._boundUpdateLineDiffState = this._updateLineDiffState.bind(this);
     this._boundOnChangeNewTextEditor = this._onChangeNewTextEditor.bind(this);
     this._boundOnTimelineChangeRevision = this._onTimelineChangeRevision.bind(this);
+    this._boundOnNavigationClick = this._onNavigationClick.bind(this);
   }
 
   componentDidMount(): void {
@@ -109,14 +114,16 @@ class DiffViewComponent extends React.Component {
       copyActiveItem: false,
       flexScale: 2,
     });
+    this._navigationPane = treePane.splitLeft({
+      // The navigation pane sits between the tree and the editors.
+      flexScale: 0.08,
+    });
     this._timelinePane = treePane.splitDown({
       copyActiveItem: false,
       flexScale: 1,
     });
 
-    this._renderTree();
-    this._renderEditors();
-    this._renderTimeline();
+    this._renderDiffView();
 
     React.findDOMNode(this.refs['paneContainer']).appendChild(
       atom.views.getView(this._paneContainer),
@@ -136,10 +143,15 @@ class DiffViewComponent extends React.Component {
     this._updateLineDiffState(diffModel.getActiveFileState());
   }
 
-  componentDidUpdate(): void {
+  _renderDiffView(): void {
     this._renderTree();
     this._renderEditors();
+    this._renderNavigation();
     this._renderTimeline();
+  }
+
+  componentDidUpdate(): void {
+    this._renderDiffView();
   }
 
   _renderTree(): void {
@@ -191,6 +203,33 @@ class DiffViewComponent extends React.Component {
         onSelectionChange={this._boundOnTimelineChangeRevision}/>,
       this._getPaneElement(this._timelinePane),
     );
+  }
+
+  _renderNavigation(): void {
+    invariant(this._navigationPane);
+    const {oldEditorState, newEditorState} = this.state;
+    const {offsets: oldOffsets, highlightedLines: oldLines, text: oldContents} = oldEditorState;
+    const {offsets: newOffsets, highlightedLines: newLines, text: newContents} = newEditorState;
+    const navigationPaneElement = this._getPaneElement(this._navigationPane);
+    this._navigationComponent = React.render(
+      <DiffNavigationBar
+        elementHeight={navigationPaneElement.clientHeight}
+        addedLines={newLines.added}
+        newOffsets={newOffsets}
+        newContents={newContents}
+        removedLines={oldLines.removed}
+        oldOffsets={oldOffsets}
+        oldContents={oldContents}
+        onClick={this._boundOnNavigationClick}/>,
+        navigationPaneElement,
+    );
+  }
+
+  _onNavigationClick(lineNumber: number, isAddedLine: boolean): void {
+    const textEditorComponent = isAddedLine ? this._newEditorComponent : this._oldEditorComponent;
+    invariant(textEditorComponent, 'Diff View Navigation Error: Non valid text editor component');
+    const textEditor = textEditorComponent.getEditorModel();
+    textEditor.scrollToBufferPosition([lineNumber, 0]);
   }
 
   _getPaneElement(pane: atom$Pane): HTMLElement {

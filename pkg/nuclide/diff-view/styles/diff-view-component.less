@@ -199,5 +199,24 @@ atom-text-editor, atom-text-editor::shadow {
       background-color: multiply(@syntax-background-color, @error-color-faded);
     }
   }
+}
 
+.nuclide-diff-view-navigation-bar {
+  height: 100%;
+  width: 100%;
+}
+
+.nuclide-diff-view-navigation-target {
+  position: absolute;
+  width: 100%;
+  cursor: pointer;
+  &.added {
+    background-color: @background-color-success;
+  }
+  &.removed {
+    background-color: @background-color-error;
+  }
+  &.modified {
+    background-color: @background-color-warning;
+  }
 }

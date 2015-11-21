@@ -564,6 +564,7 @@ declare class atom$TextEditor extends atom$Model {
 
   // Scrolling the TextEditor
   scrollToBufferPosition(position: atom$Point | number[], options?: {center?: boolean}): void;
+  scrollToScreenPosition(position: atom$Point | number[], options?: {center?: boolean}): void;
   scrollToBottom(): void;
 
   // TextEditor Rendering

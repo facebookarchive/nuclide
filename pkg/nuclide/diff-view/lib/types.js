@@ -32,11 +32,13 @@ export type RevisionsState = {
   commitId: number;
 };
 
+export type OffsetMap = {[lineNumber: string]: number};
+
 export type TextDiff = {
   addedLines: Array<number>;
   removedLines: Array<number>;
-  oldLineOffsets: {[lineNumber: string]: number};
-  newLineOffsets: {[lineNumber: string]: number};
+  oldLineOffsets: OffsetMap;
+  newLineOffsets: OffsetMap;
 };
 
 export type HgDiffState = {

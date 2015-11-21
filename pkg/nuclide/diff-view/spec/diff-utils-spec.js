@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-var {computeDiff} = require('../lib/diff-utils');
+import {computeDiff, getLineCountWithOffsets, getOffsetLineNumber} from '../lib/diff-utils';
 
 describe('diff-utils', () => {
   describe('computeDiff()', () => {
@@ -60,6 +60,35 @@ adding a non-new-line line`
       expect(removedLines).toEqual([1, 2, 7]); // 2 lines were removed in the middle and last new-line replaced.
       expect(oldLineOffsets).toEqual({4: 2}); // offset 2 for the 2 lines added after the sync line.
       expect(newLineOffsets).toEqual({1: 2}); // offset 2 for the 2 lines removed before the sync line.
+    });
+
+  });
+
+  describe('getLineCountWithOffsets()', () => {
+
+    it('gets the same number of lines when no offsets', () => {
+      expect(getLineCountWithOffsets('line-1\nline-2\nline-3', {})).toBe(3);
+    });
+
+    it('gets the line numbers with offsets', () => {
+      expect(getLineCountWithOffsets('line-1\nline-2\nline-3', {0: 2, 2: 1})).toBe(6);
+    });
+
+  });
+
+  describe('getOffsetLineNumber()', () => {
+
+    it('return the same line number when no are given', () => {
+      expect(getOffsetLineNumber(2, {})).toBe(2);
+    });
+
+    it('return the offseted line number when passed offsets', () => {
+      const offsets = {0: 1, 1: 2, 2: 3};
+      expect(getOffsetLineNumber(0, offsets)).toBe(0);
+      expect(getOffsetLineNumber(1, offsets)).toBe(2);
+      expect(getOffsetLineNumber(2, offsets)).toBe(5);
+      expect(getOffsetLineNumber(3, offsets)).toBe(9);
+      expect(getOffsetLineNumber(4, offsets)).toBe(10);
     });
 
   });

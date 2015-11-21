@@ -156,7 +156,6 @@ class RevisionTimelineNode extends React.Component {
     return (
       <div
         className={revisionClassName}
-        key={hash}
         onClick={this.handleSelectionChange.bind(this, revision)}
         title={tooltip}>
         <div className="revision-bubble" />

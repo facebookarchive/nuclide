@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {TextDiff} from './types';
+import type {TextDiff, OffsetMap} from './types';
 
 type ChunkPiece = {
   added: number;
@@ -85,7 +85,9 @@ function _computeDiffChunks(oldText: string, newText: string): DiffChunk {
   return {addedLines, removedLines, chunks};
 }
 
-function _computeOffsets(diffChunks: Array<any>): {oldLineOffsets: any; newLineOffsets: any;} {
+function _computeOffsets(
+  diffChunks: Array<ChunkPiece>,
+): {oldLineOffsets: OffsetMap; newLineOffsets: OffsetMap;} {
   var newLineOffsets = {};
   var oldLineOffsets = {};
 
@@ -118,4 +120,21 @@ function _computeOffsets(diffChunks: Array<any>): {oldLineOffsets: any; newLineO
     oldLineOffsets,
     newLineOffsets,
   };
+}
+
+export function getLineCountWithOffsets(contents: string, offsets: OffsetMap): number {
+  const linesCount = contents.split(/\r\n|\n/).length;
+  return Object.keys(offsets)
+    .map(offsetKey => offsets[offsetKey])
+    .reduce((count, offsetLines) => count + offsetLines, linesCount);
+}
+
+export function getOffsetLineNumber(lineNumber: number, offsets: OffsetMap): number {
+  let offsetLineNumber = lineNumber;
+  for (const offsetKey in offsets) {
+    if (lineNumber > parseInt(offsetKey, 10)) {
+      offsetLineNumber += offsets[offsetKey];
+    }
+  }
+  return offsetLineNumber;
 }
