@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {HyperclickSuggestion, HyperclickProvider} from 'hyperclick-interfaces';
+
 import HyperclickForTextEditor from './HyperclickForTextEditor';
 import SuggestionList from './SuggestionList';
 import SuggestionListElement from './SuggestionListElement';
@@ -21,12 +23,14 @@ import {trackOperationTiming} from 'nuclide-analytics';
  * Calls the given functions and returns the first non-null return value.
  */
 async function findTruthyReturnValue(fns: Array<void | () => Promise<any>>): Promise<any> {
+  /* eslint-disable babel/no-await-in-loop */
   for (const fn of fns) {
     const result = typeof fn === 'function' ? await fn() : null;
     if (result) {
       return result;
     }
   }
+  /* eslint-enable babel/no-await-in-loop */
 }
 
 /**
@@ -73,7 +77,7 @@ class Hyperclick {
     this._hyperclickForTextEditors.clear();
   }
 
-  _applyToAll<T>(item: T | Array<T>, f: (x: T) => void): void {
+  _applyToAll<T>(item: Array<T> | T, f: (x: T) => void): void {
     if (Array.isArray(item)) {
       item.forEach(x => f(x));
     } else {

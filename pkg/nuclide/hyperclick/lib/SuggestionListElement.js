@@ -9,20 +9,20 @@
  * the root directory of this source tree.
  */
 
+import type SuggestionListType from './SuggestionList';
+
 import {CompositeDisposable, Disposable} from 'atom';
 import React from 'react-for-atom';
+import invariant from 'assert';
 
 /**
  * We need to create this custom HTML element so we can hook into the view
  * registry. The overlay decoration only works through the view registry.
  */
 class SuggestionListElement extends HTMLElement {
-  _model: Object;
+  _model: SuggestionListType;
 
-  initialize(model: Object) {
-    if (!model) {
-      return;
-    }
+  initialize(model: SuggestionListType) {
     this._model = model;
     return this;
   }
@@ -39,41 +39,58 @@ class SuggestionListElement extends HTMLElement {
   }
 }
 
-const SuggestionList = React.createClass({
-  _subscriptions: undefined,
+type Props = {
+  suggestionList: SuggestionListType;
+};
 
-  propTypes: {
-    suggestionList: React.PropTypes.object,
-  },
+type State = {
+  selectedIndex: number;
+};
 
-  getInitialState() {
-    return {
+/* eslint-disable react/prop-types */
+class SuggestionList extends React.Component {
+  props: Props;
+  state: State;
+
+  _textEditor: ?atom$TextEditor;
+
+  _subscriptions: atom$CompositeDisposable;
+  _boundConfirm: () => void;
+
+  constructor(props: Props) {
+    super(props);
+    this.state = {
       selectedIndex: 0,
-      items: [],
     };
-  },
+    this._subscriptions = new CompositeDisposable();
+    this._boundConfirm = this._confirm.bind(this);
+  }
 
   componentWillMount() {
-    this._items = this.props.suggestionList.getSuggestion().callback;
-    this._textEditor = this.props.suggestionList.getTextEditor();
-  },
+    const {suggestionList} = this.props;
+    const suggestion = suggestionList.getSuggestion();
+    invariant(suggestion);
+    this._items = suggestion.callback;
+    this._textEditor = suggestionList.getTextEditor();
+  }
 
   componentDidMount() {
-    this._subscriptions = new CompositeDisposable();
-
-    const textEditorView = atom.views.getView(this._textEditor);
+    const textEditor = this._textEditor;
+    invariant(textEditor);
+    const textEditorView = atom.views.getView(textEditor);
+    const boundClose = this._close.bind(this);
     this._subscriptions.add(
         atom.commands.add(textEditorView, {
-          'core:move-up': this._moveSelectionUp,
-          'core:move-down': this._moveSelectionDown,
-          'core:move-to-top': this._moveSelectionToTop,
-          'core:move-to-bottom': this._moveSelectionToBottom,
-          'core:cancel': this._close,
-          'editor:newline': this._confirm,
+          'core:move-up': this._moveSelectionUp.bind(this),
+          'core:move-down': this._moveSelectionDown.bind(this),
+          'core:move-to-top': this._moveSelectionToTop.bind(this),
+          'core:move-to-bottom': this._moveSelectionToBottom.bind(this),
+          'core:cancel': boundClose,
+          'editor:newline': this._boundConfirm,
         }));
 
-    this._subscriptions.add(this._textEditor.onDidChange(this._close));
-    this._subscriptions.add(this._textEditor.onDidChangeCursorPosition(this._close));
+    this._subscriptions.add(textEditor.onDidChange(boundClose));
+    this._subscriptions.add(textEditor.onDidChangeCursorPosition(boundClose));
 
     // Prevent scrolling the editor when scrolling the suggestion list.
     const stopPropagation = (event) => event.stopPropagation();
@@ -93,7 +110,7 @@ const SuggestionList = React.createClass({
     this._subscriptions.add(new Disposable(() => {
       textEditorView.removeEventListener('keydown', keydown);
     }));
-  },
+  }
 
   render() {
     const itemComponents = this._items.map((item, index) => {
@@ -104,7 +121,7 @@ const SuggestionList = React.createClass({
       return (
         <li className={className}
             key={index}
-            onMouseDown={this._confirm}
+            onMouseDown={this._boundConfirm}
             onMouseEnter={this._setSelectedIndex.bind(this, index)}>
           {item.title}
         </li>
@@ -118,32 +135,32 @@ const SuggestionList = React.createClass({
         </ol>
       </div>
     );
-  },
+  }
 
   componentDidUpdate(prevProps: mixed, prevState: mixed) {
     if (prevState.selectedIndex !== this.state.selectedIndex) {
       this._updateScrollPosition();
     }
-  },
+  }
 
   componentWillUnmount() {
     this._subscriptions.dispose();
-  },
+  }
 
   _confirm() {
     this._items[this.state.selectedIndex].callback();
     this._close();
-  },
+  }
 
   _close() {
     this.props.suggestionList.hide();
-  },
+  }
 
   _setSelectedIndex(index: number) {
     this.setState({
       selectedIndex: index,
     });
-  },
+  }
 
   _moveSelectionDown(event) {
     if (this.state.selectedIndex < this._items.length - 1) {
@@ -154,7 +171,7 @@ const SuggestionList = React.createClass({
     if (event) {
       event.stopImmediatePropagation();
     }
-  },
+  }
 
   _moveSelectionUp(event) {
     if (this.state.selectedIndex > 0) {
@@ -165,27 +182,27 @@ const SuggestionList = React.createClass({
     if (event) {
       event.stopImmediatePropagation();
     }
-  },
+  }
 
   _moveSelectionToBottom(event) {
     this.setState({selectedIndex: Math.max(this._items.length - 1, 0)});
     if (event) {
       event.stopImmediatePropagation();
     }
-  },
+  }
 
   _moveSelectionToTop(event) {
     this.setState({selectedIndex: 0});
     if (event) {
       event.stopImmediatePropagation();
     }
-  },
+  }
 
   _updateScrollPosition() {
     const listNode = React.findDOMNode(this.refs['selectionList']);
     const selectedNode = listNode.getElementsByClassName('selected')[0];
     selectedNode.scrollIntoViewIfNeeded(false);
-  },
-});
+  }
+}
 
 module.exports = SuggestionListElement = document.registerElement('hyperclick-suggestion-list', {prototype: SuggestionListElement.prototype});

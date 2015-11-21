@@ -9,6 +9,10 @@
  * the root directory of this source tree.
  */
 
+import type {HyperclickSuggestion} from 'hyperclick-interfaces';
+
+import invariant from 'assert';
+
 export default class SuggestionList {
   _textEditor: atom$TextEditor;
   _suggestion: HyperclickSuggestion;
@@ -25,6 +29,7 @@ export default class SuggestionList {
 
     this.hide();
 
+    invariant(suggestion.range);
     const {start: position} = suggestion.range;
     this._suggestionMarker = textEditor.markBufferPosition(position);
     if (this._suggestionMarker) {
@@ -36,6 +41,7 @@ export default class SuggestionList {
   }
 
   hide() {
+    // $FlowFixMe method override not working with `this`.
     atom.views.getView(this).dispose();
     if (this._suggestionMarker) {
       this._suggestionMarker.destroy();

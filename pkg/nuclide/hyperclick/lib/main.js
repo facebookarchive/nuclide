@@ -8,6 +8,8 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
+
+import type {HyperclickProvider} from 'hyperclick-interfaces';
 import type HyperclickType from './Hyperclick';
 
 let hyperclick: ?HyperclickType = null;
@@ -20,7 +22,7 @@ module.exports = {
   },
 
   deactivate() {
-    if (hyperclick) {
+    if (hyperclick != null) {
       hyperclick.dispose();
       hyperclick = null;
     }
@@ -30,10 +32,10 @@ module.exports = {
     if (typeof provider.providerName !== 'string') {
       throw new Error('Missing "providerName" property for hyperclick provider.');
     }
-    if (hyperclick) {
+    if (hyperclick != null) {
       hyperclick.consumeProvider(provider);
       return new Disposable(() => {
-        if (hyperclick) {
+        if (hyperclick != null) {
           hyperclick.removeProvider(provider);
         }
       });
@@ -45,9 +47,9 @@ module.exports = {
    * observed by default by hyperclick. However, if a TextEditor is created via some other means,
    * (such as a building block for a piece of UI), then it must be observed explicitly.
    */
-  observeTextEditor(): (textEditor: TextEditor) => void {
-    return (textEditor: TextEditor) => {
-      if (hyperclick) {
+  observeTextEditor(): (textEditor: atom$TextEditor) => void {
+    return (textEditor: atom$TextEditor) => {
+      if (hyperclick != null) {
         hyperclick.observeTextEditor(textEditor);
       }
     };

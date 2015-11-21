@@ -11,14 +11,20 @@
 
 /* eslint-env browser */
 
+import type {HyperclickProvider} from 'hyperclick-interfaces';
+import type HyperclickForTextEditor from '../lib/HyperclickForTextEditor';
+
+import {array} from 'nuclide-commons';
 import {Point, Range} from 'atom';
 import Hyperclick from '../lib/Hyperclick';
+import invariant from 'assert';
 
 describe('Hyperclick', () => {
-  let textEditor;
-  let textEditorView;
-  let hyperclick;
-  let hyperclickForTextEditor;
+  let textEditor: atom$TextEditor = (null: any);
+  let textEditorView: atom$TextEditorElement = (null: any);
+  let hyperclick: Hyperclick = (null: any);
+  let hyperclickForTextEditor: HyperclickForTextEditor = (null: any);
+
   beforeEach(() => waitsForPromise(async () => {
     textEditor = await atom.workspace.open('hyperclick.txt');
     textEditorView = atom.views.getView(textEditor);
@@ -27,7 +33,7 @@ describe('Hyperclick', () => {
     jasmine.attachToDOM(textEditorView);
 
     hyperclick = new Hyperclick();
-    hyperclickForTextEditor = hyperclick._hyperclickForTextEditors.values().next().value;
+    hyperclickForTextEditor = array.from(hyperclick._hyperclickForTextEditors)[0];
   }));
 
   afterEach(() => {
@@ -40,23 +46,33 @@ describe('Hyperclick', () => {
    *
    * Adapted from https://github.com/atom/atom/blob/5272584d2910e5b3f2b0f309aab4775eb0f779a6/spec/text-editor-component-spec.coffee#L2845
    */
-  function clientCoordinatesForScreenPosition(screenPosition: Point): {clientX: number; clientY: number} {
+  function clientCoordinatesForScreenPosition(
+    screenPosition: atom$Point,
+  ): {clientX: number; clientY: number} {
     const positionOffset = textEditorView.pixelPositionForScreenPosition(screenPosition);
-    const scrollViewClientRect = textEditorView.component.domNode
+    const {component} = textEditorView;
+    invariant(component);
+    const scrollViewClientRect = component.domNode
         .querySelector('.scroll-view')
         .getBoundingClientRect();
-    const clientX = scrollViewClientRect.left + positionOffset.left - textEditor.getScrollLeft();
-    const clientY = scrollViewClientRect.top + positionOffset.top - textEditor.getScrollTop();
+    // $FlowFixMe: Use of private method.
+    const scrollLeft = textEditor.getScrollLeft();
+    // $FlowFixMe: Use of private method.
+    const scrollTop = textEditor.getScrollTop();
+    const clientX = scrollViewClientRect.left + positionOffset.left - scrollLeft;
+    const clientY = scrollViewClientRect.top + positionOffset.top - scrollTop;
     return {clientX, clientY};
   }
 
   function dispatch(
-      eventClass: KeyboardEvent | MouseEvent,
+      // $FlowIssue KeyboardEvent isn't defined.
+      eventClass: typeof KeyboardEvent | typeof MouseEvent,
       type: string,
-      position: Point,
-      properties?: mixed): void {
+      position: atom$Point,
+      properties?: {clientX?: number, clientY?: number, metaKey?: boolean},
+    ): void {
     const {clientX, clientY} = clientCoordinatesForScreenPosition(position);
-    if (properties) {
+    if (properties != null) {
       properties.clientX = clientX;
       properties.clientY = clientY;
     } else {
@@ -65,7 +81,9 @@ describe('Hyperclick', () => {
     const event = new eventClass(type, properties);
     let domNode = null;
     if (eventClass === MouseEvent) {
-      domNode = textEditorView.component.linesComponent.getDomNode();
+      const {component} = textEditorView;
+      invariant(component);
+      domNode = component.linesComponent.getDomNode();
     } else {
       domNode = textEditorView;
     }
@@ -73,13 +91,13 @@ describe('Hyperclick', () => {
   }
 
   describe('simple case', () => {
-    let provider;
-
+    let provider: HyperclickProvider = (null: any);
     const position = new Point(0, 1);
 
     beforeEach(() => {
       provider = {
-        getSuggestionForWord(sourceTextEditor, text, range) {
+        providerName: 'test',
+        async getSuggestionForWord(sourceTextEditor, text, range) {
           return {range, callback: () => {}};
         },
       };
@@ -106,7 +124,8 @@ describe('Hyperclick', () => {
       waitsForPromise(async () => {
         const callback = jasmine.createSpy('callback');
         const provider = {
-          getSuggestionForWord(sourceTextEditor, text, range) {
+          providerName: 'test',
+          async getSuggestionForWord(sourceTextEditor, text, range) {
             return {range, callback};
           },
         };
@@ -133,7 +152,8 @@ describe('Hyperclick', () => {
       waitsForPromise(async () => {
         const callback = jasmine.createSpy('callback');
         const provider = {
-          getSuggestionForWord(sourceTextEditor, text, range) {
+          providerName: 'test',
+          async getSuggestionForWord(sourceTextEditor, text, range) {
             return {range, callback};
           },
           wordRegExp: /word/g,
@@ -161,14 +181,16 @@ describe('Hyperclick', () => {
       waitsForPromise(async () => {
         const callback1 = jasmine.createSpy('callback');
         const provider1 = {
+          providerName: 'test',
           // Do not return a suggestion, so we can fall through to provider2.
-          getSuggestionForWord(sourceTextEditor, text, range) {}
+          async getSuggestionForWord(sourceTextEditor, text, range) {},
         };
         spyOn(provider1, 'getSuggestionForWord').andCallThrough();
 
         const callback2 = jasmine.createSpy('callback');
         const provider2 = {
-          getSuggestionForWord(sourceTextEditor, text, range) {
+          providerName: 'test',
+          async getSuggestionForWord(sourceTextEditor, text, range) {
             return {range, callback: callback2};
           },
         };
@@ -198,14 +220,16 @@ describe('Hyperclick', () => {
       waitsForPromise(async () => {
         const callback1 = jasmine.createSpy('callback');
         const provider1 = {
+          providerName: 'test',
           // Do not return a suggestion, so we can fall through to provider2.
-          getSuggestionForWord(sourceTextEditor, text, range) {}
+          async getSuggestionForWord(sourceTextEditor, text, range) {},
         };
         spyOn(provider1, 'getSuggestionForWord').andCallThrough();
 
         const callback2 = jasmine.createSpy('callback');
         const provider2 = {
-          getSuggestionForWord(sourceTextEditor, text, range) {
+          providerName: 'test',
+          async getSuggestionForWord(sourceTextEditor, text, range) {
             return {range, callback: callback2};
           },
         };
@@ -235,7 +259,8 @@ describe('Hyperclick', () => {
     it('ignores <mousemove> in the same word as the last position', () => {
       waitsForPromise(async () => {
         const provider = {
-          getSuggestionForWord(sourceTextEditor, text, range) {
+          providerName: 'test',
+          async getSuggestionForWord(sourceTextEditor, text, range) {
             // Never resolve this, so we know that no suggestion is set.
             return new Promise(() => {});
           },
@@ -256,7 +281,8 @@ describe('Hyperclick', () => {
       waitsForPromise(async () => {
         const callback = jasmine.createSpy('callback');
         const provider = {
-          getSuggestionForWord(sourceTextEditor, text, range) {
+          providerName: 'test',
+          async getSuggestionForWord(sourceTextEditor, text, range) {
             return {range, callback};
           },
         };
@@ -288,7 +314,8 @@ describe('Hyperclick', () => {
       waitsForPromise(async () => {
         const callback = jasmine.createSpy('callback');
         const provider = {
-          getSuggestionForWord(sourceTextEditor, text, range) {
+          providerName: 'test',
+          async getSuggestionForWord(sourceTextEditor, text, range) {
             return {range, callback};
           },
         };
@@ -326,7 +353,8 @@ describe('Hyperclick', () => {
 
   describe('adds the `hyperclick` CSS class', () => {
     const provider = {
-      getSuggestionForWord(sourceTextEditor, text, range) {
+      providerName: 'test',
+      async getSuggestionForWord(sourceTextEditor, text, range) {
         return {range, callback() {}};
       },
     };
@@ -373,7 +401,8 @@ describe('Hyperclick', () => {
       waitsForPromise(async () => {
         const callback = jasmine.createSpy('callback');
         const provider = {
-          getSuggestionForWord(sourceTextEditor, text, range) {
+          providerName: 'test',
+          async getSuggestionForWord(sourceTextEditor, text, range) {
             return {range, callback};
           },
         };
@@ -400,7 +429,8 @@ describe('Hyperclick', () => {
       waitsForPromise(async () => {
         const callback1 = jasmine.createSpy('callback');
         const provider1 = {
-          getSuggestionForWord(sourceTextEditor, text, range) {
+          providerName: 'test',
+          async getSuggestionForWord(sourceTextEditor, text, range) {
             return {range, callback: callback1};
           },
           priority: 5,
@@ -409,7 +439,8 @@ describe('Hyperclick', () => {
 
         const callback2 = jasmine.createSpy('callback');
         const provider2 = {
-          getSuggestionForWord(sourceTextEditor, text, range) {
+          providerName: 'test',
+          async getSuggestionForWord(sourceTextEditor, text, range) {
             return {range, callback: callback1};
           },
           priority: 3,
@@ -430,7 +461,8 @@ describe('Hyperclick', () => {
       waitsForPromise(async () => {
         const callback1 = jasmine.createSpy('callback');
         const provider1 = {
-          getSuggestionForWord(sourceTextEditor, text, range) {
+          providerName: 'test',
+          async getSuggestionForWord(sourceTextEditor, text, range) {
             return {range, callback: callback1};
           },
           priority: 3,
@@ -439,7 +471,8 @@ describe('Hyperclick', () => {
 
         const callback2 = jasmine.createSpy('callback');
         const provider2 = {
-          getSuggestionForWord(sourceTextEditor, text, range) {
+          providerName: 'test',
+          async getSuggestionForWord(sourceTextEditor, text, range) {
             return {range, callback: callback2};
           },
           priority: 5,
@@ -460,7 +493,8 @@ describe('Hyperclick', () => {
       waitsForPromise(async () => {
         const callback1 = jasmine.createSpy('callback');
         const provider1 = {
-          getSuggestionForWord(sourceTextEditor, text, range) {
+          providerName: 'test',
+          async getSuggestionForWord(sourceTextEditor, text, range) {
             return {range, callback: callback1};
           },
         };
@@ -468,7 +502,8 @@ describe('Hyperclick', () => {
 
         const callback2 = jasmine.createSpy('callback');
         const provider2 = {
-          getSuggestionForWord(sourceTextEditor, text, range) {
+          providerName: 'test',
+          async getSuggestionForWord(sourceTextEditor, text, range) {
             return {range, callback: callback2};
           },
           priority: 1,
@@ -489,7 +524,8 @@ describe('Hyperclick', () => {
       waitsForPromise(async () => {
         const callback1 = jasmine.createSpy('callback');
         const provider1 = {
-          getSuggestionForWord(sourceTextEditor, text, range) {
+          providerName: 'test',
+          async getSuggestionForWord(sourceTextEditor, text, range) {
             return {range, callback: callback1};
           },
           priority: -1,
@@ -498,7 +534,8 @@ describe('Hyperclick', () => {
 
         const callback2 = jasmine.createSpy('callback');
         const provider2 = {
-          getSuggestionForWord(sourceTextEditor, text, range) {
+          providerName: 'test',
+          async getSuggestionForWord(sourceTextEditor, text, range) {
             return {range, callback: callback2};
           },
         };
@@ -518,7 +555,8 @@ describe('Hyperclick', () => {
       waitsForPromise(async () => {
         const callback1 = jasmine.createSpy('callback');
         const provider1 = {
-          getSuggestionForWord(sourceTextEditor, text, range) {
+          providerName: 'test',
+          async getSuggestionForWord(sourceTextEditor, text, range) {
             return {range, callback: callback1};
           },
         };
@@ -526,7 +564,8 @@ describe('Hyperclick', () => {
 
         const callback2 = jasmine.createSpy('callback');
         const provider2 = {
-          getSuggestionForWord(sourceTextEditor, text, range) {
+          providerName: 'test',
+          async getSuggestionForWord(sourceTextEditor, text, range) {
             return {range, callback: callback2};
           },
         };
@@ -546,14 +585,16 @@ describe('Hyperclick', () => {
       waitsForPromise(async () => {
         const callback1 = jasmine.createSpy('callback');
         const provider1 = {
-          getSuggestionForWord(sourceTextEditor, text, range) {
+          providerName: 'test',
+          async getSuggestionForWord(sourceTextEditor, text, range) {
             return {range, callback: callback1};
           },
           priority: 1,
         };
         const callback2 = jasmine.createSpy('callback');
         const provider2 = {
-          getSuggestionForWord(sourceTextEditor, text, range) {
+          providerName: 'test',
+          async getSuggestionForWord(sourceTextEditor, text, range) {
             return {range, callback: callback2};
           },
           priority: 2,
@@ -586,7 +627,8 @@ describe('Hyperclick', () => {
           },
         ];
         const provider = {
-          getSuggestionForWord(sourceTextEditor, text, range) {
+          providerName: 'test',
+          async getSuggestionForWord(sourceTextEditor, text, range) {
             return {range, callback};
           },
         };
@@ -621,7 +663,8 @@ describe('Hyperclick', () => {
           },
         ];
         const provider = {
-          getSuggestionForWord(sourceTextEditor, text, range) {
+          providerName: 'test',
+          async getSuggestionForWord(sourceTextEditor, text, range) {
             return {range, callback};
           },
         };
@@ -657,7 +700,8 @@ describe('Hyperclick', () => {
           },
         ];
         const provider = {
-          getSuggestionForWord(sourceTextEditor, text, range) {
+          providerName: 'test',
+          async getSuggestionForWord(sourceTextEditor, text, range) {
             return {range, callback};
           },
         };
@@ -692,7 +736,8 @@ describe('Hyperclick', () => {
 
         const callback = jasmine.createSpy('callback');
         const provider = {
-          getSuggestionForWord(sourceTextEditor, text, range) {
+          providerName: 'test',
+          async getSuggestionForWord(sourceTextEditor, text, range) {
             return {range, callback};
           },
         };

@@ -24,6 +24,7 @@ type JasmineMatcher = {
   toBeNull(): boolean;
   toBeUndefined(): boolean;
   toEqual(expected: mixed): boolean;
+  toExist(): boolean;
   toHaveBeenCalled(): boolean;
   toHaveBeenCalledWith(...args: Array<mixed>): boolean;
   toMatch(expected: mixed): boolean;

@@ -300,7 +300,7 @@ type RangeConstructorArg =
 
 declare class atom$Range {
   static fromObject(
-    object: atom$Range | [atom$Point | number, atom$Point | number],
+    object: atom$Range | [atom$Point | [number, number], atom$Point | [number, number]],
     copy?: boolean,
   ): atom$Range;
   constructor(pointA: RangeConstructorArg, pointB: RangeConstructorArg): void;
@@ -572,6 +572,9 @@ declare class atom$TextEditor extends atom$Model {
 
   // This is undocumented, but Nuclide uses it in the AtomTextEditor wrapper.
   setLineNumberGutterVisible(lineNumberGutterVisible: boolean): void;
+
+  // Editor Options
+  setSoftWrapped(softWrapped: boolean): void;
 
   // Undocumented Methods
   moveToTop(): void;

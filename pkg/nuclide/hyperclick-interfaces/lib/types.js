@@ -38,5 +38,5 @@ export type HyperclickSuggestion = {
   range: ?atom$Range;
 
   // The function to call when the underlined text is clicked.
-  callback: () => void | Array<{title: string; callback: () => {}}>;
+  callback: (() => void) | Array<{title: string; callback: () => {}}>;
 };

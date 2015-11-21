@@ -9,35 +9,38 @@
  * the root directory of this source tree.
  */
 
+import type {HyperclickSuggestion} from 'hyperclick-interfaces';
+
 import type Hyperclick from './Hyperclick';
 import type {TimingTracker} from 'nuclide-analytics';
 
 import {trackTiming, startTracking} from 'nuclide-analytics';
 import getWordTextAndRange from './get-word-text-and-range';
+import invariant from 'assert';
 
 /**
  * Construct this object to enable Hyperclick in a text editor.
  * Call `dispose` to disable the feature.
  */
 export default class HyperclickForTextEditor {
-  _textEditor: TextEditor;
-  _textEditorView: HTMLElement;
+  _textEditor: atom$TextEditor;
+  _textEditorView: atom$TextEditorElement;
   _hyperclick: Hyperclick;
-  _lastMouseEvent: ?SyntheticMouseEvent;
+  _lastMouseEvent: ?MouseEvent;
   _lastPosition: ?atom$Point;
   _lastSuggestionAtMousePromise: ?Promise<HyperclickSuggestion>;
   _lastSuggestionAtMouse: ?HyperclickSuggestion;
   _navigationMarkers: ?Array<atom$Marker>;
   _lastWordRange: ?atom$Range;
-  _onMouseMove: (event: SyntheticMouseEvent) => void;
-  _onMouseDown: (event: SyntheticMouseEvent) => void;
+  _onMouseMove: (event: MouseEvent) => void;
+  _onMouseDown: (event: MouseEvent) => void;
   _onKeyDown: (event: SyntheticKeyboardEvent) => void;
   _onKeyUp: (event: SyntheticKeyboardEvent) => void;
   _commandSubscription: atom$Disposable;
   _isDestroyed: boolean;
   _loadingTracker: ?TimingTracker;
 
-  constructor(textEditor: TextEditor, hyperclick: Hyperclick) {
+  constructor(textEditor: atom$TextEditor, hyperclick: Hyperclick) {
     this._textEditor = textEditor;
     this._textEditorView = atom.views.getView(textEditor);
 
@@ -57,8 +60,9 @@ export default class HyperclickForTextEditor {
     this._onMouseMove = this._onMouseMove.bind(this);
     this._textEditorView.addEventListener('mousemove', this._onMouseMove);
     this._onMouseDown = this._onMouseDown.bind(this);
-    this._textEditorView.component.linesComponent.getDomNode()
-      .addEventListener('mousedown', this._onMouseDown);
+    const {component} = this._textEditorView;
+    invariant(component);
+    component.linesComponent.getDomNode().addEventListener('mousedown', this._onMouseDown);
 
     this._onKeyDown = this._onKeyDown.bind(this);
     this._textEditorView.addEventListener('keydown', this._onKeyDown);
@@ -77,11 +81,12 @@ export default class HyperclickForTextEditor {
     if (Array.isArray(suggestion.callback) && suggestion.callback.length > 0) {
       this._hyperclick.showSuggestionList(this._textEditor, suggestion);
     } else {
+      invariant(typeof suggestion.callback === 'function');
       suggestion.callback();
     }
   }
 
-  _onMouseMove(event: SyntheticMouseEvent): void {
+  _onMouseMove(event: MouseEvent): void {
     if (this._isLoading()) {
       // Show the loading cursor.
       this._textEditorView.classList.add('hyperclick-loading');
@@ -90,10 +95,10 @@ export default class HyperclickForTextEditor {
     // We save the last `MouseEvent` so the user can trigger Hyperclick by
     // pressing the key without moving the mouse again. We only save the
     // relevant properties to prevent retaining a reference to the event.
-    this._lastMouseEvent = {
+    this._lastMouseEvent = ({
       clientX: event.clientX,
       clientY: event.clientY,
-    };
+    }: any);
 
     if (this._isMouseAtLastWordRange()) {
       return;
@@ -112,7 +117,7 @@ export default class HyperclickForTextEditor {
     }
   }
 
-  _onMouseDown(event: SyntheticMouseEvent): void {
+  _onMouseDown(event: MouseEvent): void {
     if (!this._isHyperclickEvent(event)) {
       return;
     }
@@ -153,8 +158,9 @@ export default class HyperclickForTextEditor {
 
     const position = this._getMousePositionAsBufferPosition();
 
-    if (this._lastSuggestionAtMouse) {
+    if (this._lastSuggestionAtMouse != null) {
       const {range} = this._lastSuggestionAtMouse;
+      invariant(range, 'Hyperclick result must have a valid Range');
       if (this._isPositionInRange(position, range)) {
         return;
       }
@@ -196,7 +202,10 @@ export default class HyperclickForTextEditor {
   }
 
   _getMousePositionAsBufferPosition(): atom$Point {
-    const screenPosition = this._textEditorView.component.screenPositionForMouseEvent(this._lastMouseEvent);
+    const {component} = this._textEditorView;
+    invariant(component);
+    invariant(this._lastMouseEvent);
+    const screenPosition = component.screenPositionForMouseEvent(this._lastMouseEvent);
     return this._textEditor.bufferPositionForScreenPosition(screenPosition);
   }
 
@@ -204,14 +213,17 @@ export default class HyperclickForTextEditor {
     if (!this._lastSuggestionAtMouse) {
       return false;
     }
-    return this._isPositionInRange(this._getMousePositionAsBufferPosition(), this._lastSuggestionAtMouse.range);
+    const {range} = this._lastSuggestionAtMouse;
+    invariant(range, 'Hyperclick result must have a valid Range');
+    return this._isPositionInRange(this._getMousePositionAsBufferPosition(), range);
   }
 
   _isMouseAtLastWordRange(): boolean {
-    if (!this._lastWordRange) {
+    const lastWordRange = this._lastWordRange;
+    if (lastWordRange == null) {
       return false;
     }
-    return this._isPositionInRange(this._getMousePositionAsBufferPosition(), this._lastWordRange);
+    return this._isPositionInRange(this._getMousePositionAsBufferPosition(), lastWordRange);
   }
 
   _isPositionInRange(position: atom$Point, range: atom$Range): boolean {
@@ -262,8 +274,8 @@ export default class HyperclickForTextEditor {
   /**
    * Returns whether an event should be handled by hyperclick or not.
    */
-  _isHyperclickEvent(event: SyntheticKeyboardEvent | SyntheticMouseEvent): boolean {
-    // If the user is pressing either the meta key or the alt key.
+  _isHyperclickEvent(event: SyntheticKeyboardEvent | MouseEvent): boolean {
+    // If the user is pressing either the meta/ctrl key or the alt key.
     return process.platform === 'darwin' ? event.metaKey : event.ctrlKey;
   }
 
@@ -275,7 +287,6 @@ export default class HyperclickForTextEditor {
     this._loadingTracker = null;
     this._textEditorView.classList.remove('hyperclick-loading');
   }
-
 
   dispose() {
     this._isDestroyed = true;
