@@ -46,6 +46,7 @@ export default class RepositoryStack {
   _repository: HgRepositoryClient;
   _revisionsStatePromise: ?Promise<RevisionsState>;
   _revisionsFileHistoryPromise: ?Promise<RevisionsFileHistory>;
+  _lastRevisionsFileHistory: ?RevisionsFileHistory;
   _selectedCompareCommitId: ?number;
   _isActive: boolean;
   _serializedUpdateStatus: () => Promise<void>;
@@ -58,6 +59,7 @@ export default class RepositoryStack {
     this._dirtyFileChanges = new Map();
     this._isActive = false;
     this._selectedCompareCommitId = null;
+    this._lastRevisionsFileHistory = null;
     this._serializedUpdateStatus = serializeAsyncCall(() => this._updateChangedStatus());
     const debouncedSerializedUpdateStatus = debounce(
       this._serializedUpdateStatus,
@@ -127,7 +129,17 @@ export default class RepositoryStack {
     const revisionsState = await this._getRevisionsStatePromise();
     this._emitter.emit(CHANGE_REVISIONS_EVENT, revisionsState);
 
-    const revisionsFileHistory = await this._getRevisionFileHistoryPromise(revisionsState);
+    // If the commits haven't changed ids, then thier diff haven't changed as well.
+    if (this._lastRevisionsFileHistory != null) {
+      const revisionIds = revisionsState.revisions.map(revision => revision.id);
+      const fileHistoryRevisionIds = this._lastRevisionsFileHistory
+        .map(revisionChanges => revisionChanges.id);
+      if (array.equal(revisionIds, fileHistoryRevisionIds)) {
+        return;
+      }
+    }
+
+    const revisionsFileHistory = await this._getRevisionFileHistoryPromise(revisionsState, false);
     this._compareFileChanges = this._computeCompareChangesFromHistory(
       revisionsState,
       revisionsFileHistory,
@@ -185,7 +197,13 @@ export default class RepositoryStack {
     revisionsState: RevisionsState,
   ): Promise<RevisionsFileHistory> {
     this._revisionsFileHistoryPromise = this._fetchRevisionsFileHistory(revisionsState)
-      .catch(() => this._revisionsFileHistoryPromise = null);
+      .then(revisionsFileHistory =>
+        this._lastRevisionsFileHistory = revisionsFileHistory
+      , error => {
+        this._revisionsFileHistoryPromise = null;
+        this._lastRevisionsFileHistory = null;
+        throw error;
+      });
     return this._revisionsFileHistoryPromise;
   }
 
@@ -227,7 +245,6 @@ export default class RepositoryStack {
     const {revisions} = revisionsState;
 
     const revisionsFileHistory = await Promise.all(revisions
-      .slice(1) // Exclude the BASE revision.
       .map(async(revision) => {
         const {id} = revision;
         const changes = await this._repository.fetchFilesChangedAtRevision(`${id}`);
@@ -249,6 +266,7 @@ export default class RepositoryStack {
     const startCommitId = compareCommitId ? (compareCommitId + 1) : commitId;
     // Get the revision changes that's newer than or is the current commit id.
     const compareRevisionsFileChanges = revisionsFileHistory
+      .slice(1) // Exclude the BASE revision.
       .filter(revision => revision.id >= startCommitId)
       .map(revision => revision.changes);
 
