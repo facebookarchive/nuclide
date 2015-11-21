@@ -63,7 +63,13 @@ describe('Hyperclick', () => {
       properties = {clientX, clientY};
     }
     var event = new eventClass(type, properties);
-    textEditorView.dispatchEvent(event);
+    let domNode = null;
+    if (eventClass === MouseEvent) {
+      domNode = textEditorView.component.linesComponent.getDomNode();
+    } else {
+      domNode = textEditorView;
+    }
+    domNode.dispatchEvent(event);
   }
 
   describe('simple case', () => {

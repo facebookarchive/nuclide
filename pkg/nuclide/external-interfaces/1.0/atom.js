@@ -583,7 +583,17 @@ declare class atom$TextEditor extends atom$Model {
  */
 declare class atom$TextEditorComponent {
   domNode: HTMLElement;
+  linesComponent: atom$LinesComponent;
   screenPositionForMouseEvent(event: MouseEvent): atom$Point;
+}
+
+/**
+ * This is not part of the official Atom 1.0 API. Nevertheless, we need it to access
+ * the deepest dom element receiving DOM events.
+ */
+declare class atom$LinesComponent {
+  domNode: HTMLElement;
+  getDomNode(): HTMLElement;
 }
 
 /**

@@ -57,7 +57,8 @@ class HyperclickForTextEditor {
     this._onMouseMove = this._onMouseMove.bind(this);
     this._textEditorView.addEventListener('mousemove', this._onMouseMove);
     this._onMouseDown = this._onMouseDown.bind(this);
-    this._textEditorView.addEventListener('mousedown', this._onMouseDown);
+    this._textEditorView.component.linesComponent.getDomNode()
+      .addEventListener('mousedown', this._onMouseDown);
 
     this._onKeyDown = this._onKeyDown.bind(this);
     this._textEditorView.addEventListener('keydown', this._onKeyDown);
@@ -118,11 +119,11 @@ class HyperclickForTextEditor {
 
     if (this._lastSuggestionAtMouse) {
       this._confirmSuggestion(this._lastSuggestionAtMouse);
+      // Prevent the <meta-click> event from adding another cursor.
+      event.stopPropagation();
     }
 
     this._clearSuggestion();
-    // Prevent the <meta-click> event from adding another cursor.
-    event.stopPropagation();
   }
 
   _onKeyDown(event: SyntheticKeyboardEvent): void {
