@@ -11,7 +11,7 @@
 
 import type {BlameProvider} from 'nuclide-blame-base/blame-types';
 
-var blameProvider;
+let blameProvider;
 
 module.exports = {
   config: {

@@ -13,7 +13,7 @@ import {trackOperationTiming} from 'nuclide-analytics';
 
 import type {BlameForEditor} from 'nuclide-blame-base/blame-types';
 
-var logger;
+let logger;
 function getLogger() {
   if (!logger) {
     logger = require('nuclide-logging').getLogger();
@@ -23,11 +23,17 @@ function getLogger() {
 
 function canProvideBlameForEditor(editor: TextEditor): boolean {
   if (editor.isModified()) {
-    atom.notifications.addInfo('There is Hg blame information for this file, but only for saved changes. Save, then try again.');
-    getLogger().info(`nuclide-blame: Could not open Hg blame due to unsaved changes in file: ${String(editor.getPath())}`);
+    atom.notifications.addInfo(
+      'There is Hg blame information for this file, but only for saved changes. ' +
+      'Save, then try again.'
+    );
+    getLogger().info(
+      'nuclide-blame: Could not open Hg blame due to unsaved changes in file: ' +
+      String(editor.getPath())
+    );
     return false;
   }
-  var repo = hgRepositoryForEditor(editor);
+  const repo = hgRepositoryForEditor(editor);
   return !!repo;
 }
 
@@ -39,22 +45,22 @@ function getBlameForEditor(editor: TextEditor): Promise<BlameForEditor> {
 }
 
 async function doGetBlameForEditor(editor: TextEditor): Promise<BlameForEditor> {
-  var path = editor.getPath();
+  const path = editor.getPath();
   if (!path) {
     return Promise.resolve(new Map());
   }
 
-  var repo = hgRepositoryForEditor(editor);
+  const repo = hgRepositoryForEditor(editor);
   if (!repo) {
-    var message = `HgBlameProvider could not fetch blame for ${path}: no Hg repo found.`;
+    const message = `HgBlameProvider could not fetch blame for ${path}: no Hg repo found.`;
     getLogger().error(message);
     throw new Error(message);
   }
 
-  var blameInfo = await repo.getBlameAtHead(editor.getPath());
+  const blameInfo = await repo.getBlameAtHead(editor.getPath());
   // TODO (t8045823) Convert the return type of ::getBlameAtHead to a Map when
   // the service framework supports a Map return type.
-  var useShortName = !(atom.config.get('nuclide-blame-provider-hg.showVerboseBlame'));
+  const useShortName = !(atom.config.get('nuclide-blame-provider-hg.showVerboseBlame'));
   return formatBlameInfo(blameInfo, useShortName);
 }
 
@@ -69,17 +75,17 @@ function formatBlameInfo(
   rawBlameData: Map<string, string>,
   useShortName: boolean
 ): BlameForEditor {
-  var extractAuthor = useShortName ? shortenBlameName : identity;
+  const extractAuthor = useShortName ? shortenBlameName : identity;
 
-  var blameForEditor = new Map();
+  const blameForEditor = new Map();
   rawBlameData.forEach((blameName, serializedLineNumber) => {
-    var lineNumber = parseInt(serializedLineNumber, 10);
-    var index = blameName.lastIndexOf(' ');
-    var changeSetId = blameName.substring(index + 1);
-    var fullAuthor = blameName.substring(0, index);
+    const lineNumber = parseInt(serializedLineNumber, 10);
+    const index = blameName.lastIndexOf(' ');
+    const changeSetId = blameName.substring(index + 1);
+    const fullAuthor = blameName.substring(0, index);
 
     // The ChangeSet ID will be null for uncommitted local changes.
-    var blameInfo = {
+    const blameInfo = {
       author: extractAuthor(fullAuthor),
       changeset: changeSetId !== 'null' ? changeSetId : null,
     };
@@ -90,7 +96,7 @@ function formatBlameInfo(
 
 
 // From http://www.regular-expressions.info/email.html.
-var EMAIL_REGEX = /\b([A-Za-z0-9._%+-]+)@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}\b/;
+const EMAIL_REGEX = /\b([A-Za-z0-9._%+-]+)@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}\b/;
 /**
  * `hg blame` may return the 'user' name in a mix of formats:
  *   - foo@bar.com
@@ -100,7 +106,7 @@ var EMAIL_REGEX = /\b([A-Za-z0-9._%+-]+)@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}\b/;
  * The examples above would become 'foo'.
  */
 function shortenBlameName(blameName: string): string {
-  var match = blameName.match(EMAIL_REGEX);
+  const match = blameName.match(EMAIL_REGEX);
   // Index 0 will be the whole email. Index 1 is the capture group.
   return match ? match[1] : blameName;
 }
@@ -110,9 +116,9 @@ function identity<T>(anything: T): T {
   return anything;
 }
 
-var getUrlForRevision;
+let getUrlForRevision;
 try {
-  var {getPhabricatorUrlForRevision} = require('./fb/FbHgBlameProvider');
+  const {getPhabricatorUrlForRevision} = require('./fb/FbHgBlameProvider');
   getUrlForRevision = getPhabricatorUrlForRevision;
 } catch (e) {
   // Ignore case where FbHgBlameProvider is unavailable.

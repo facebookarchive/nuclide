@@ -9,12 +9,12 @@
  * the root directory of this source tree.
  */
 
-var {CompositeDisposable, Disposable} = require('atom');
+const {CompositeDisposable, Disposable} = require('atom');
 
-import type {BlameProvider} from 'nuclide-blame-base/blame-types';
+import type {BlameProvider} from 'nuclide-blame-base';
 import {trackTiming} from 'nuclide-analytics';
 
-var PACKAGES_MISSING_MESSAGE =
+const PACKAGES_MISSING_MESSAGE =
 `Could not open blame: the nuclide-blame package needs other Atom packages to provide:
   - a gutter UI class
   - at least one blame provider
@@ -35,12 +35,20 @@ class Activation {
     this._textEditorToBlameGutter = new Map();
     this._textEditorToDestroySubscription = new Map();
     this._packageDisposables = new CompositeDisposable();
-    this._packageDisposables.add(atom.contextMenu.add(
-      {'atom-text-editor': [{label: 'Show Blame', command: 'nuclide-blame:show-blame', shouldDisplay: () => this._canShowBlame()}]}
-    ));
-    this._packageDisposables.add(atom.contextMenu.add(
-      {'atom-text-editor': [{label: 'Hide Blame', command: 'nuclide-blame:hide-blame', shouldDisplay: () => this._canHideBlame()}]}
-    ));
+    this._packageDisposables.add(atom.contextMenu.add({
+      'atom-text-editor': [{
+        label: 'Show Blame',
+        command: 'nuclide-blame:show-blame',
+        shouldDisplay: () => this._canShowBlame(),
+      }],
+    }));
+    this._packageDisposables.add(atom.contextMenu.add({
+      'atom-text-editor': [{
+        label: 'Hide Blame',
+        command: 'nuclide-blame:hide-blame',
+        shouldDisplay: () => this._canHideBlame(),
+      }],
+    }));
     this._packageDisposables.add(
       atom.commands.add('atom-text-editor', 'nuclide-blame:show-blame', () => this._showBlame())
     );
@@ -55,7 +63,7 @@ class Activation {
       this._registeredProviders.clear();
     }
     this._textEditorToBlameGutter.clear();
-    for (var disposable of this._textEditorToDestroySubscription.values()) {
+    for (const disposable of this._textEditorToDestroySubscription.values()) {
       disposable.dispose();
     }
     this._textEditorToDestroySubscription.clear();
@@ -66,7 +74,7 @@ class Activation {
    */
 
   _removeBlameGutterForEditor(editor: atom$TextEditor): void {
-    var blameGutter = this._textEditorToBlameGutter.get(editor);
+    const blameGutter = this._textEditorToBlameGutter.get(editor);
     if (blameGutter) {
       blameGutter.destroy();
       this._textEditorToBlameGutter.delete(editor);
@@ -79,10 +87,10 @@ class Activation {
       return;
     }
 
-    var blameGutter = this._textEditorToBlameGutter.get(editor);
+    let blameGutter = this._textEditorToBlameGutter.get(editor);
     if (!blameGutter) {
-      var providerForEditor = null;
-      for (var blameProvider of this._registeredProviders) {
+      let providerForEditor = null;
+      for (const blameProvider of this._registeredProviders) {
         if (blameProvider.canProvideBlameForEditor(editor)) {
           providerForEditor = blameProvider;
           break;
@@ -90,25 +98,30 @@ class Activation {
       }
 
       if (providerForEditor) {
-        var blameGutterClass = this._blameGutterClass;
+        const blameGutterClass = this._blameGutterClass;
         blameGutter = new blameGutterClass('nuclide-blame', editor, providerForEditor);
         this._textEditorToBlameGutter.set(editor, blameGutter);
-        var destroySubscription = editor.onDidDestroy(() => this._editorWasDestroyed(editor));
+        const destroySubscription = editor.onDidDestroy(() => this._editorWasDestroyed(editor));
         this._textEditorToDestroySubscription.set(editor, destroySubscription);
-        var {track} = require('nuclide-analytics');
+        const {track} = require('nuclide-analytics');
         track('blame-open', {
           editorPath: editor.getPath(),
         });
       } else {
-        atom.notifications.addInfo('Could not open blame: no blame information currently available for this file.');
-        var logger = require('nuclide-logging').getLogger();
-        logger.info(`nuclide-blame: Could not open blame: no blame provider currently available for this file: ${String(editor.getPath())}`);
+        atom.notifications.addInfo(
+          'Could not open blame: no blame information currently available for this file.'
+        );
+        const logger = require('nuclide-logging').getLogger();
+        logger.info(
+          'nuclide-blame: Could not open blame: no blame provider currently available for this ' +
+          `file: ${String(editor.getPath())}`
+        );
       }
     }
   }
 
   _editorWasDestroyed(editor: atom$TextEditor): void {
-    var blameGutter = this._textEditorToBlameGutter.get(editor);
+    const blameGutter = this._textEditorToBlameGutter.get(editor);
     if (blameGutter) {
       blameGutter.destroy();
       this._textEditorToBlameGutter.delete(editor);
@@ -122,23 +135,23 @@ class Activation {
 
    @trackTiming('blame.showBlame')
   _showBlame(event): void {
-    var editor = atom.workspace.getActiveTextEditor();
+    const editor = atom.workspace.getActiveTextEditor();
     this._showBlameGutterForEditor(editor);
   }
 
   @trackTiming('blame.hideBlame')
   _hideBlame(event): void {
-    var editor = atom.workspace.getActiveTextEditor();
+    const editor = atom.workspace.getActiveTextEditor();
     this._removeBlameGutterForEditor(editor);
   }
 
   _canShowBlame(): boolean {
-    var editor = atom.workspace.getActiveTextEditor();
+    const editor = atom.workspace.getActiveTextEditor();
     return !(this._textEditorToBlameGutter.get(editor));
   }
 
   _canHideBlame(): boolean {
-    var editor = atom.workspace.getActiveTextEditor();
+    const editor = atom.workspace.getActiveTextEditor();
     return !!(this._textEditorToBlameGutter.get(editor));
   }
 
@@ -172,7 +185,7 @@ class Activation {
 }
 
 
-var activation: ?Activation;
+let activation: ?Activation;
 
 module.exports = {
   activate(state: ?Object): void {
