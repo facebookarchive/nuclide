@@ -9,7 +9,9 @@
  * the root directory of this source tree.
  */
 
-import type {LineRangesWithOffsets} from './types';
+import type {LineRangesWithOffsets, OffsetMap} from './types';
+
+import {array} from 'nuclide-commons';
 
 /*
  * @param screenLines The original screen lines before adding offsets.
@@ -20,16 +22,13 @@ import type {LineRangesWithOffsets} from './types';
  */
 export function buildLineRangesWithOffsets(
     screenLines: Array<any>,
-    lineOffsets: any,
+    lineOffsets: OffsetMap,
     startBufferRow: number,
     endBufferRow: number,
     emptyLineFactory: () => any
     ): LineRangesWithOffsets {
 
-  const offsetLineNumbers = Object.keys(lineOffsets)
-    .map(lineNumber => parseInt(lineNumber, 10))
-    .sort((x, y) => x - y);
-
+  const offsetLineNumbers = array.from(lineOffsets.keys()).sort();
   let priorScreenLine = startBufferRow;
   const newRegions = [];
   const newScreenLines = [];
@@ -54,7 +53,7 @@ export function buildLineRangesWithOffsets(
     if (offsetLineNumber < priorScreenLine || offsetLineNumber >= endBufferRow) {
       continue;
     }
-    const offsetLines = lineOffsets[offsetLineNumber];
+    const offsetLines = lineOffsets.get(offsetLineNumber);
     captureScreenLinesRegion(offsetLineNumber - 1);
     // Add empty screen lines to represent offsets.
     for (let i = 0; i < offsetLines; i++) {

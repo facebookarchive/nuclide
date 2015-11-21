@@ -9,12 +9,14 @@
  * the root directory of this source tree.
  */
 
-var {Range}  = require('atom');
-var {buildLineRangesWithOffsets} = require('./editor-utils');
-var React = require('react-for-atom');
-var logger = require('nuclide-logging').getLogger();
+import type {InlineComponent, RenderedComponent, OffsetMap} from './types';
 
-import type {InlineComponent, RenderedComponent} from './types';
+import {Range} from 'atom';
+import {buildLineRangesWithOffsets} from './editor-utils';
+import React from 'react-for-atom';
+import {getLogger} from 'nuclide-logging';
+
+const logger = getLogger();
 
 /**
  * The DiffViewEditor manages the lifecycle of the two editors used in the diff view,
@@ -24,7 +26,7 @@ export default class DiffViewEditor {
   _editor: Object;
   _editorElement: Object;
   _markers: Array<atom$Marker>;
-  _lineOffsets: Object;
+  _lineOffsets: OffsetMap;
   _originalBuildScreenLines: () => Object;
 
   constructor(editorElement: TextEditorElement) {
@@ -32,7 +34,7 @@ export default class DiffViewEditor {
     this._editor = editorElement.getModel();
 
     this._markers = [];
-    this._lineOffsets = {};
+    this._lineOffsets = new Map();
 
     // Ugly Hack to the display buffer to allow fake soft wrapped lines,
     // to create the non-numbered empty space needed between real text buffer lines.
@@ -141,7 +143,7 @@ export default class DiffViewEditor {
     return marker;
   }
 
-  setOffsets(lineOffsets: any): void {
+  setOffsets(lineOffsets: OffsetMap): void {
     this._lineOffsets = lineOffsets;
     // When the diff view is editable: upon edits in the new editor, the old editor needs to update its
     // rendering state to show the offset wrapped lines.
@@ -170,7 +172,7 @@ export default class DiffViewEditor {
     displayBuffer.softWrapped = false;
     const {regions, screenLines} = this._originalBuildScreenLines.apply(displayBuffer, arguments);
     displayBuffer.softWrapped = true;
-    if (!Object.keys(this._lineOffsets).length) {
+    if (this._lineOffsets.size === 0) {
       return {regions, screenLines};
     }
 

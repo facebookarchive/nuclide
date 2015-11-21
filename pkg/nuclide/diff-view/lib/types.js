@@ -32,7 +32,7 @@ export type RevisionsState = {
   commitId: number;
 };
 
-export type OffsetMap = {[lineNumber: string]: number};
+export type OffsetMap = Map<number, number>;
 
 export type TextDiff = {
   addedLines: Array<number>;

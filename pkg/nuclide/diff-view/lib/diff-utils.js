@@ -11,6 +11,8 @@
 
 import type {TextDiff, OffsetMap} from './types';
 
+import {array} from 'nuclide-commons';
+
 type ChunkPiece = {
   added: number;
   removed: number;
@@ -88,8 +90,8 @@ function _computeDiffChunks(oldText: string, newText: string): DiffChunk {
 function _computeOffsets(
   diffChunks: Array<ChunkPiece>,
 ): {oldLineOffsets: OffsetMap; newLineOffsets: OffsetMap;} {
-  var newLineOffsets = {};
-  var oldLineOffsets = {};
+  const newLineOffsets = new Map();
+  const oldLineOffsets = new Map();
 
   var oldLineCount = 0;
   var newLineCount = 0;
@@ -107,9 +109,9 @@ function _computeOffsets(
         // Sign of offset indicates which version of document requires the offset
         // (negative -> old version, positive -> new version).
         // Magnitude of offset indicates the number of offset lines required for version.
-        newLineOffsets[newLineCount] = offset * -1;
+        newLineOffsets.set(newLineCount, offset * -1);
       } else if (offset > 0) {
-        oldLineOffsets[oldLineCount] = offset;
+        oldLineOffsets.set(oldLineCount, offset);
       }
       newLineCount += count;
       oldLineCount += count;
@@ -124,16 +126,15 @@ function _computeOffsets(
 
 export function getLineCountWithOffsets(contents: string, offsets: OffsetMap): number {
   const linesCount = contents.split(/\r\n|\n/).length;
-  return Object.keys(offsets)
-    .map(offsetKey => offsets[offsetKey])
+  return array.from(offsets.values())
     .reduce((count, offsetLines) => count + offsetLines, linesCount);
 }
 
 export function getOffsetLineNumber(lineNumber: number, offsets: OffsetMap): number {
   let offsetLineNumber = lineNumber;
-  for (const offsetKey in offsets) {
-    if (lineNumber > parseInt(offsetKey, 10)) {
-      offsetLineNumber += offsets[offsetKey];
+  for (const [offsetLine, offsetLineNumbers] of offsets) {
+    if (lineNumber > offsetLine) {
+      offsetLineNumber += offsetLineNumbers;
     }
   }
   return offsetLineNumber;

@@ -9,16 +9,38 @@
  * the root directory of this source tree.
  */
 
+import type {HighlightedLines, OffsetMap, InlineComponent} from './types';
+
 import {CompositeDisposable} from 'atom';
 import {debounce} from 'nuclide-commons';
 import React, {PropTypes} from 'react-for-atom';
 import DiffViewEditor from './DiffViewEditor';
 import invariant from 'assert';
 
-import type {HighlightedLines} from './types';
 const CHANGE_DEBOUNCE_DELAY_MS = 100;
 
+type Props = {
+  filePath: NuclideUri,
+  offsets: OffsetMap,
+  highlightedLines: {
+    added: Array<number>;
+    removed: Array<number>;
+  },
+  initialTextContent: string;
+  inlineElements: Array<InlineComponent>;
+  handleNewOffsets: (newOffsets: OffsetMap) => any,
+  readOnly: boolean,
+  onChange: (newContents: string) => any,
+};
+
+type State = {
+  textContent: string;
+};
+
+/* eslint-disable react/prop-types */
 export default class DiffViewEditorPane extends React.Component {
+  props: Props;
+  state: State;
 
   _diffViewEditor: ?DiffViewEditor;
   _subscriptions: CompositeDisposable;
@@ -26,7 +48,7 @@ export default class DiffViewEditorPane extends React.Component {
   // All view changes should be pushed from the model/store through subscriptions.
   _isMounted: boolean;
 
-  constructor(props: Object) {
+  constructor(props: Props) {
     super(props);
     this.state = {
       textContent: this.props.initialTextContent,
@@ -116,7 +138,7 @@ export default class DiffViewEditorPane extends React.Component {
     this._diffViewEditor.setHighlightedLines(highlightedLines.added, highlightedLines.removed);
   }
 
-  _setOffsets(offsets: { [key: string]: number }): void {
+  _setOffsets(offsets: OffsetMap): void {
     invariant(this._diffViewEditor);
     this._diffViewEditor.setOffsets(offsets);
   }
@@ -175,17 +197,3 @@ export default class DiffViewEditorPane extends React.Component {
     return React.findDOMNode(this.refs['editor']);
   }
 }
-
-DiffViewEditorPane.propTypes = {
-  filePath: PropTypes.string.isRequired,
-  offsets: PropTypes.objectOf(PropTypes.number).isRequired,
-  highlightedLines: PropTypes.shape({
-    added: PropTypes.arrayOf(PropTypes.number),
-    removed: PropTypes.arrayOf(PropTypes.number),
-  }).isRequired,
-  initialTextContent: PropTypes.string.isRequired,
-  inlineElements: PropTypes.arrayOf(PropTypes.object).isRequired,
-  handleNewOffsets: PropTypes.func.isRequired,
-  readOnly: PropTypes.bool.isRequired,
-  onChange: PropTypes.func,
-};

@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {FileChangeState, InlineComponent} from './types';
+import type {FileChangeState, InlineComponent, OffsetMap} from './types';
 import type DiffViewModel from './DiffViewModel';
 import type {RevisionInfo} from 'nuclide-hg-repository-base/lib/hg-constants';
 
@@ -30,7 +30,7 @@ type Props = {
 
 type EditorState = {
   text: string;
-  offsets: Object;
+  offsets: OffsetMap;
   highlightedLines: {
     added: Array<number>;
     removed: Array<number>;
@@ -69,7 +69,7 @@ class DiffViewComponent extends React.Component {
     super(props);
     const oldEditorState = {
       text: '',
-      offsets: {},
+      offsets: new Map(),
       highlightedLines: {
         added: [],
         removed: [],
@@ -78,7 +78,7 @@ class DiffViewComponent extends React.Component {
     };
     const newEditorState = {
       text: '',
-      offsets: {},
+      offsets: new Map(),
       highlightedLines: {
         added: [],
         removed: [],
@@ -270,11 +270,11 @@ class DiffViewComponent extends React.Component {
   }
 
   _handleNewOffsets(offsetsFromComponents: Map): void {
-    const oldLineOffsets = object.assign({}, this.state.oldEditorState.offsets);
-    const newLineOffsets = object.assign({}, this.state.newEditorState.offsets);
+    const oldLineOffsets = new Map(this.state.oldEditorState.offsets);
+    const newLineOffsets = new Map(this.state.newEditorState.offsets);
     offsetsFromComponents.forEach((offsetAmount, row) => {
-      newLineOffsets[row] = (newLineOffsets[row] || 0) + offsetAmount;
-      oldLineOffsets[row] = (oldLineOffsets[row] || 0) + offsetAmount;
+      newLineOffsets.set(row, (newLineOffsets.get(row) || 0) + offsetAmount);
+      oldLineOffsets.set(row, (oldLineOffsets.get(row) || 0) + offsetAmount);
     });
     const oldEditorState = object.assign({}, this.state.oldEditorState, {offsets: oldLineOffsets});
     const newEditorState = object.assign({}, this.state.newEditorState, {offsets: newLineOffsets});
