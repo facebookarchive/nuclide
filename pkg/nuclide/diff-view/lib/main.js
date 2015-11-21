@@ -56,10 +56,12 @@ function createView(entryPath: string): HTMLElement {
     component,
     element: hostElement,
   };
+  diffModel.activate();
   activateFilePath(entryPath);
 
   const destroySubscription = hostElement.onDidDestroy(() => {
     React.unmountComponentAtNode(hostElement);
+    diffModel.deactivate();
     destroySubscription.dispose();
     invariant(subscriptions);
     subscriptions.remove(destroySubscription);

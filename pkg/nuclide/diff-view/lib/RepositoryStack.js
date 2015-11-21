@@ -15,15 +15,15 @@ import type {RevisionFileChanges} from 'nuclide-hg-repository-base/lib/hg-consta
 import type {NuclideUri} from 'nuclide-remote-uri';
 import type {RevisionInfo} from 'nuclide-hg-repository-base/lib/hg-constants';
 
-import invariant from 'assert';
 import {CompositeDisposable, Emitter} from 'atom';
 import {HgStatusToFileChangeStatus, FileChangeStatus} from './constants';
 import {getFileSystemContents} from './utils';
 import {array, promises, debounce} from 'nuclide-commons';
 import {trackTiming} from 'nuclide-analytics';
 import {notifyInternalError} from './notifications';
+import invariant from 'assert';
 
-const {RequestSerializer, serializeAsyncCall} = promises;
+const {serializeAsyncCall} = promises;
 const CHANGE_COMPARE_STATUS_EVENT = 'did-change-compare-status';
 const CHANGE_DIRTY_STATUS_EVENT = 'did-change-dirty-status';
 const CHANGE_REVISIONS_EVENT = 'did-change-revisions';
@@ -44,10 +44,11 @@ export default class RepositoryStack {
   _dirtyFileChanges: Map<NuclideUri, FileChangeStatusValue>;
   _compareFileChanges: Map<NuclideUri, FileChangeStatusValue>;
   _repository: HgRepositoryClient;
-  _revisionsState: ?RevisionsState;
-  _revisionsStateRequests: RequestSerializer;
-  _revisionsFileHistory: ?RevisionsFileHistory;
-  _revisionsHistoryRequests: RequestSerializer;
+  _revisionsStatePromise: ?Promise<RevisionsState>;
+  _revisionsFileHistoryPromise: ?Promise<RevisionsFileHistory>;
+  _selectedCompareCommitId: ?number;
+  _isActive: boolean;
+  _serializedUpdateStatus: () => Promise<void>;
 
   constructor(repository: HgRepositoryClient) {
     this._repository = repository;
@@ -55,20 +56,33 @@ export default class RepositoryStack {
     this._subscriptions = new CompositeDisposable();
     this._compareFileChanges = new Map();
     this._dirtyFileChanges = new Map();
-    this._revisionsStateRequests = new RequestSerializer();
-    this._revisionsHistoryRequests = new RequestSerializer();
-    const debouncedBoundUpdateStatus = debounce(
-      serializeAsyncCall(() => this._updateChangedStatus()),
+    this._isActive = false;
+    this._selectedCompareCommitId = null;
+    this._serializedUpdateStatus = serializeAsyncCall(() => this._updateChangedStatus());
+    const debouncedSerializedUpdateStatus = debounce(
+      this._serializedUpdateStatus,
       UPDATE_STATUS_DEBOUNCE_MS,
       false,
     );
-    debouncedBoundUpdateStatus();
+    debouncedSerializedUpdateStatus();
     // Get the initial project status, if it's not already there,
     // triggered by another integration, like the file tree.
     repository.getStatuses([repository.getProjectDirectory()]);
     this._subscriptions.add(
-      repository.onDidChangeStatuses(debouncedBoundUpdateStatus)
+      repository.onDidChangeStatuses(debouncedSerializedUpdateStatus)
     );
+  }
+
+  activate(): void {
+    if (this._isActive) {
+      return;
+    }
+    this._isActive = true;
+    this._serializedUpdateStatus();
+  }
+
+  deactivate(): void {
+    this._isActive = false;
   }
 
   @trackTiming('diff-view.update-change-status')
@@ -105,49 +119,54 @@ export default class RepositoryStack {
    * and `hg log --rev ${revId}` for every commit.
    */
   async _updateCompareFileChanges(): Promise<void> {
-    const {status: revisionsStatus, result: revisionsResult} = await this._revisionsStateRequests
-      .run(this._fetchRevisionsState());
-    if (revisionsStatus === 'outdated') {
+    // We should only update the revision state when the repository is active.
+    if (!this._isActive) {
+      this._revisionsStatePromise = null;
       return;
     }
-    this._revisionsState = revisionsResult;
-    this._emitter.emit(CHANGE_REVISIONS_EVENT, this._revisionsState);
+    const revisionsState = await this._getRevisionsStatePromise();
+    this._emitter.emit(CHANGE_REVISIONS_EVENT, revisionsState);
 
-    const {status: revisionsHistoryStatus, result: revisionsHistoryResult} =
-      await this._revisionsHistoryRequests.run(this._fetchRevisionsFileHistory());
-    if (revisionsHistoryStatus === 'outdated') {
-      return;
-    }
-    this._revisionsFileHistory = revisionsHistoryResult;
-    this._compareFileChanges = this._computeCompareChangesFromHistory();
+    const revisionsFileHistory = await this._getRevisionFileHistoryPromise(revisionsState);
+    this._compareFileChanges = this._computeCompareChangesFromHistory(
+      revisionsState,
+      revisionsFileHistory,
+    );
     this._emitter.emit(CHANGE_COMPARE_STATUS_EVENT, this._compareFileChanges);
   }
 
-  @trackTiming('diff-view.fetch-revisions-state')
-  async _fetchRevisionsState(): Promise<RevisionsState> {
-    // While rebasing, the common ancestor of `HEAD` and `BASE`
-    // may be not applicable, but that's defined once the rebase is done.
-    // Hence, we need to retry fetching the revision info (depending on the common ancestor)
-    // because the watchman-based Mercurial updates doesn't consider or wait while rebasing.
-    const revisions = await promises.retryLimit(
-      () => this._repository.fetchRevisionInfoBetweenHeadAndBase(),
-      (result) => result != null,
-      FETCH_REV_INFO_MAX_TRIES,
-      FETCH_REV_INFO_RETRY_TIME_MS,
+  _getRevisionsStatePromise(): Promise<RevisionsState> {
+    this._revisionsStatePromise = this._fetchRevisionsState().then(
+      this._amendSelectedCompareCommitId.bind(this),
+      error => {
+        this._revisionsStatePromise = null;
+        throw error;
+      },
     );
-    /* eslint-enable no-await-in-loop */
-    if (revisions == null) {
-      throw new Error('Cannot fetch revision info needed!');
+    return this._revisionsStatePromise;
+  }
+
+  getCachedRevisionsStatePromise(): Promise<RevisionsState> {
+    if (this._revisionsStatePromise != null) {
+      return this._revisionsStatePromise.then(this._amendSelectedCompareCommitId.bind(this));
+    } else {
+      return this._getRevisionsStatePromise();
     }
+  }
+
+  /**
+   * Amend the revisions state with the latest selected valid compare commit id.
+   */
+  _amendSelectedCompareCommitId(revisionsState: RevisionsState): RevisionsState {
+    const {commitId, revisions} = revisionsState;
     // Prioritize the cached compaereCommitId, if it exists.
     // The user could have selected that from the timeline view.
-    let {compareCommitId} = this._revisionsState || {};
+    let compareCommitId = this._selectedCompareCommitId;
     if (!array.find(revisions, revision => revision.id === compareCommitId)) {
       // Invalidate if there there is no longer a revision with that id.
       compareCommitId = null;
     }
     const latestToOldestRevisions = revisions.slice().reverse();
-    const commitId = latestToOldestRevisions[0].id;
     if (compareCommitId == null && latestToOldestRevisions.length > 1) {
       // If the user has already committed, most of the times, he'd be working on an amend.
       // So, the heuristic here is to compare against the previous version,
@@ -162,10 +181,50 @@ export default class RepositoryStack {
     };
   }
 
+  _getRevisionFileHistoryPromise(
+    revisionsState: RevisionsState,
+  ): Promise<RevisionsFileHistory> {
+    this._revisionsFileHistoryPromise = this._fetchRevisionsFileHistory(revisionsState)
+      .catch(() => this._revisionsFileHistoryPromise = null);
+    return this._revisionsFileHistoryPromise;
+  }
+
+  _getCachedRevisionFileHistoryPromise(
+    revisionsState: RevisionsState,
+  ): Promise<RevisionsFileHistory> {
+    if (this._revisionsFileHistoryPromise != null) {
+      return this._revisionsFileHistoryPromise;
+    } else {
+      return this._getRevisionFileHistoryPromise(revisionsState);
+    }
+  }
+
+  @trackTiming('diff-view.fetch-revisions-state')
+  async _fetchRevisionsState(): Promise<RevisionsState> {
+    // While rebasing, the common ancestor of `HEAD` and `BASE`
+    // may be not applicable, but that's defined once the rebase is done.
+    // Hence, we need to retry fetching the revision info (depending on the common ancestor)
+    // because the watchman-based Mercurial updates doesn't consider or wait while rebasing.
+    const revisions = await promises.retryLimit(
+      () => this._repository.fetchRevisionInfoBetweenHeadAndBase(),
+      (result) => result != null,
+      FETCH_REV_INFO_MAX_TRIES,
+      FETCH_REV_INFO_RETRY_TIME_MS,
+    );
+    if (revisions == null) {
+      throw new Error('Cannot fetch revision info needed!');
+    }
+    const commitId = revisions[revisions.length - 1];
+    return {
+      revisions,
+      commitId,
+      compareCommitId: null,
+    };
+  }
+
   @trackTiming('diff-view.fetch-revisions-change-history')
-  async _fetchRevisionsFileHistory(): Promise<RevisionsFileHistory> {
-    invariant(this._revisionsState, 'revisionsState must be defined to fetch compare changes');
-    const {revisions} = this._revisionsState;
+  async _fetchRevisionsFileHistory(revisionsState: RevisionsState): Promise<RevisionsFileHistory> {
+    const {revisions} = revisionsState;
 
     const revisionsFileHistory = await Promise.all(revisions
       .slice(1) // Exclude the BASE revision.
@@ -179,15 +238,17 @@ export default class RepositoryStack {
     return revisionsFileHistory;
   }
 
-  _computeCompareChangesFromHistory(): Map<NuclideUri, FileChangeStatusValue> {
-    invariant(this._revisionsState, 'revisionsState must exist to fetch compute changes');
-    const {commitId, compareCommitId} = this._revisionsState;
+  _computeCompareChangesFromHistory(
+    revisionsState: RevisionsState,
+    revisionsFileHistory: RevisionsFileHistory,
+  ): Map<NuclideUri, FileChangeStatusValue> {
+
+    const {commitId, compareCommitId} = revisionsState;
     // The status is fetched by merging the changes right after the `compareCommitId` if specified,
     // or `HEAD` if not.
     const startCommitId = compareCommitId ? (compareCommitId + 1) : commitId;
     // Get the revision changes that's newer than or is the current commit id.
-    invariant(this._revisionsFileHistory, 'revisionsFileHistory must exist to compute changes!');
-    const compareRevisionsFileChanges = this._revisionsFileHistory
+    const compareRevisionsFileChanges = revisionsFileHistory
       .filter(revision => revision.id >= startCommitId)
       .map(revision => revision.changes);
 
@@ -245,12 +306,8 @@ export default class RepositoryStack {
     return this._compareFileChanges;
   }
 
-  getRevisionsState(): ?RevisionsState {
-    return this._revisionsState;
-  }
-
   async fetchHgDiff(filePath: NuclideUri): Promise<HgDiffState> {
-    const {compareCommitId} = await this._revisionsStateRequests.waitForLatestResult();
+    const {compareCommitId} = await this.getCachedRevisionsStatePromise();
     const committedContentsPromise = this._repository
       .fetchFileContentAtRevision(filePath, compareCommitId ? `${compareCommitId}` : null)
       // If the file didn't exist on the previous revision, return empty contents.
@@ -269,16 +326,23 @@ export default class RepositoryStack {
   }
 
   async setRevision(revision: RevisionInfo): Promise<void> {
-    invariant(this._revisionsState, 'The active repository stack must have an active state!');
-    const {revisions} = this._revisionsState;
-    if (revisions && revisions.indexOf(revision) !== -1) {
-      this._revisionsState.compareCommitId = revision.id;
-      await this._revisionsHistoryRequests.waitForLatestResult();
-      this._compareFileChanges = this._computeCompareChangesFromHistory();
-      this._emitter.emit(CHANGE_COMPARE_STATUS_EVENT, this._compareFileChanges);
-    } else {
-      throw new Error('Diff Viw Timeline: non-applicable selected revision');
-    }
+    const revisionsState = await this.getCachedRevisionsStatePromise();
+    const {revisions} = revisionsState;
+
+    invariant(
+      revisions && revisions.indexOf(revision) !== -1,
+      'Diff Viw Timeline: non-applicable selected revision',
+    );
+
+    this._selectedCompareCommitId = revisionsState.compareCommitId = revision.id;
+    this._emitter.emit(CHANGE_REVISIONS_EVENT, revisionsState);
+
+    const revisionsFileHistory = await this._getCachedRevisionFileHistoryPromise(revisionsState);
+    this._compareFileChanges = this._computeCompareChangesFromHistory(
+      revisionsState,
+      revisionsFileHistory,
+    );
+    this._emitter.emit(CHANGE_COMPARE_STATUS_EVENT, this._compareFileChanges);
   }
 
   onDidChangeDirtyStatus(

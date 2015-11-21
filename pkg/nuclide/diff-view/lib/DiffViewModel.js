@@ -46,6 +46,7 @@ class DiffViewModel {
   _uiProviders: Array<Object>;
   _repositoryStacks: Map<HgRepositoryClient, RepositoryStack>;
   _repositorySubscriptions: Map<HgRepositoryClient, CompositeDisposable>;
+  _isActive: boolean;
 
   constructor(uiProviders: Array<Object>) {
     this._uiProviders = uiProviders;
@@ -55,6 +56,7 @@ class DiffViewModel {
     this._subscriptions = new CompositeDisposable();
     this._repositoryStacks = new Map();
     this._repositorySubscriptions = new Map();
+    this._isActive = false;
     this._updateRepositories();
     this._subscriptions.add(atom.project.onDidChangePaths(this._updateRepositories.bind(this)));
     this._setActiveFileState({
@@ -105,12 +107,16 @@ class DiffViewModel {
     subscriptions.add(
       repositoryStack.onDidChangeDirtyStatus(this._updateDirtyChangedStatus.bind(this)),
       repositoryStack.onDidChangeCompareStatus(this._updateCompareChangedStatus.bind(this)),
-      repositoryStack.onDidChangeRevisions(
-        () => this._updateChangedRevisions(repositoryStack).catch(notifyInternalError)
-      ),
+      repositoryStack.onDidChangeRevisions(revisionsState => {
+        this._updateChangedRevisions(repositoryStack, revisionsState)
+          .catch(notifyInternalError);
+      }),
     );
     this._repositoryStacks.set(repository, repositoryStack);
     this._repositorySubscriptions.set(repository, subscriptions);
+    if (this._isActive) {
+      repositoryStack.activate();
+    }
     return repositoryStack;
   }
 
@@ -122,10 +128,11 @@ class DiffViewModel {
     this._emitter.emit(CHANGE_COMPARE_STATUS_EVENT, this._compareFileChanges);
   }
 
-  async _updateChangedRevisions(repositoryStack: RepositoryStack): Promise<void> {
+  async _updateChangedRevisions(
+    repositoryStack: RepositoryStack,
+    revisionsState: RevisionsState,
+  ): Promise<void> {
     if (repositoryStack === this._activeRepositoryStack) {
-      const revisionsState = repositoryStack.getRevisionsState();
-      invariant(revisionsState, 'revisionsState must exist to update changed revisions');
       track('diff-view-update-timeline-revisions', {
         revisionsCount: `${revisionsState.revisions.length}`,
       });
@@ -233,7 +240,6 @@ class DiffViewModel {
     const repositoryStack = this._activeRepositoryStack;
     invariant(repositoryStack, 'There must be an active repository stack!');
     repositoryStack.setRevision(revision).catch(notifyInternalError);
-    this._updateActiveDiffState(this._activeFileState.filePath).catch(notifyInternalError);
   }
 
   getActiveFileState(): FileChangeState {
@@ -275,7 +281,7 @@ class DiffViewModel {
   }
 
   @trackTiming('diff-view.hg-state-update')
-  _fetchHgDiff(filePath: NuclideUri): Promise<HgDiffState> {
+  async _fetchHgDiff(filePath: NuclideUri): Promise<HgDiffState> {
     // Calling atom.project.repositoryForDirectory gets the real path of the directory,
     // which is another round-trip and calls the repository providers to get an existing repository.
     // Instead, the first match of the filtering here is the only possible match.
@@ -287,17 +293,22 @@ class DiffViewModel {
 
     const repositoryStack = this._repositoryStacks.get(repository);
     invariant(repositoryStack);
-    this._setActiveRepositoryStack(repositoryStack);
-    return repositoryStack.fetchHgDiff(filePath);
+    const [hgDiff] = await Promise.all([
+      repositoryStack.fetchHgDiff(filePath),
+      this._setActiveRepositoryStack(repositoryStack),
+    ]);
+    return hgDiff;
   }
 
-  _setActiveRepositoryStack(repositoryStack: RepositoryStack) {
+  async _setActiveRepositoryStack(repositoryStack: RepositoryStack): Promise<void> {
     if (this._activeRepositoryStack === repositoryStack) {
       return;
     }
     this._activeRepositoryStack = repositoryStack;
-    this._emitter.emit(CHANGE_REVISIONS_EVENT, repositoryStack.getRevisionsState());
+    const revisionsState = await repositoryStack.getCachedRevisionsStatePromise();
+    this._updateChangedRevisions(repositoryStack, revisionsState);
   }
+
 
   @trackTiming('diff-view.save-file')
   async saveActiveFile(): Promise<void> {
@@ -367,6 +378,26 @@ class DiffViewModel {
       return null;
     }
     return this._activeRepositoryStack.getRevisionsState();
+  }
+
+  activate(): void {
+    this._isActive = true;
+    for (const repositoryStack of this._repositoryStacks.values()) {
+      repositoryStack.activate();
+    }
+  }
+
+  deactivate(): void {
+    this._isActive = false;
+    if (this._activeRepositoryStack != null) {
+      this._activeRepositoryStack.deactivate();
+      this._activeRepositoryStack = null;
+    }
+    this._setActiveFileState({
+      filePath: '',
+      oldContents: '',
+      newContents: '',
+    });
   }
 
   dispose(): void {
