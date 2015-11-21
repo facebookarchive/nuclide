@@ -9,23 +9,23 @@
  * the root directory of this source tree.
  */
 
-var {Range} = require('atom');
-var {defaultWordRegExpForEditor} = require('./hyperclick-utils');
+import {Range} from 'atom';
+import {defaultWordRegExpForEditor} from './hyperclick-utils';
 
 /**
  * Returns the text and range for the word that contains the given position.
  */
-function getWordTextAndRange(
+export default function getWordTextAndRange(
     textEditor: TextEditor,
     position: atom$Point,
     wordRegExp?: ?RegExp): {text: string; range: Range} {
-  var textAndRange = {text: '', range: new Range(position, position)};
+  let textAndRange = {text: '', range: new Range(position, position)};
   wordRegExp = wordRegExp || defaultWordRegExpForEditor(textEditor);
   if (!wordRegExp) {
     return textAndRange;
   }
 
-  var buffer = textEditor.getBuffer();
+  const buffer = textEditor.getBuffer();
   buffer.scanInRange(wordRegExp, buffer.rangeForRow(position.row), data => {
     if (data.range.containsPoint(position)) {
       textAndRange = {
@@ -41,5 +41,3 @@ function getWordTextAndRange(
 
   return textAndRange;
 }
-
-module.exports = getWordTextAndRange;

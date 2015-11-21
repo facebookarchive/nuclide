@@ -9,13 +9,13 @@
  * the root directory of this source tree.
  */
 
-class SuggestionList {
-  _textEditor: TextEditor;
+export default class SuggestionList {
+  _textEditor: atom$TextEditor;
   _suggestion: HyperclickSuggestion;
   _suggestionMarker: ?atom$Marker;
   _overlayDecoration: ?atom$Decoration;
 
-  show(textEditor: TextEditor, suggestion: HyperclickSuggestion): void {
+  show(textEditor: atom$TextEditor, suggestion: HyperclickSuggestion): void {
     if (!textEditor || !suggestion) {
       return;
     }
@@ -54,5 +54,3 @@ class SuggestionList {
     return this._suggestion;
   }
 }
-
-module.exports = SuggestionList;

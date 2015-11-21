@@ -10,16 +10,16 @@
  */
 
 import type Hyperclick from './Hyperclick';
-import {trackTiming, startTracking} from 'nuclide-analytics';
 import type {TimingTracker} from 'nuclide-analytics';
 
-var getWordTextAndRange = require('./get-word-text-and-range');
+import {trackTiming, startTracking} from 'nuclide-analytics';
+import getWordTextAndRange from './get-word-text-and-range';
 
 /**
  * Construct this object to enable Hyperclick in a text editor.
  * Call `dispose` to disable the feature.
  */
-class HyperclickForTextEditor {
+export default class HyperclickForTextEditor {
   _textEditor: TextEditor;
   _textEditorView: HTMLElement;
   _hyperclick: Hyperclick;
@@ -98,7 +98,7 @@ class HyperclickForTextEditor {
     if (this._isMouseAtLastWordRange()) {
       return;
     }
-    var {range} = getWordTextAndRange(this._textEditor, this._getMousePositionAsBufferPosition());
+    const {range} = getWordTextAndRange(this._textEditor, this._getMousePositionAsBufferPosition());
     this._lastWordRange = range;
 
     if (this._isHyperclickEvent(event)) {
@@ -151,10 +151,10 @@ class HyperclickForTextEditor {
       return;
     }
 
-    var position = this._getMousePositionAsBufferPosition();
+    const position = this._getMousePositionAsBufferPosition();
 
     if (this._lastSuggestionAtMouse) {
-      var {range} = this._lastSuggestionAtMouse;
+      const {range} = this._lastSuggestionAtMouse;
       if (this._isPositionInRange(position, range)) {
         return;
       }
@@ -196,7 +196,7 @@ class HyperclickForTextEditor {
   }
 
   _getMousePositionAsBufferPosition(): atom$Point {
-    var screenPosition = this._textEditorView.component.screenPositionForMouseEvent(this._lastMouseEvent);
+    const screenPosition = this._textEditorView.component.screenPositionForMouseEvent(this._lastMouseEvent);
     return this._textEditor.bufferPositionForScreenPosition(screenPosition);
   }
 
@@ -227,7 +227,7 @@ class HyperclickForTextEditor {
 
   @trackTiming('hyperclick:confirm-cursor')
   async _confirmSuggestionAtCursor(): Promise<void> {
-    var suggestion = await this._hyperclick.getSuggestion(
+    const suggestion = await this._hyperclick.getSuggestion(
         this._textEditor,
         this._textEditor.getCursorBufferPosition());
     if (suggestion) {
@@ -287,5 +287,3 @@ class HyperclickForTextEditor {
     this._commandSubscription.dispose();
   }
 }
-
-module.exports = HyperclickForTextEditor;

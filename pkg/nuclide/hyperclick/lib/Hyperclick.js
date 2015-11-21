@@ -9,20 +9,20 @@
  * the root directory of this source tree.
  */
 
-var HyperclickForTextEditor = require('./HyperclickForTextEditor');
-var SuggestionList = require('./SuggestionList');
-var SuggestionListElement = require('./SuggestionListElement');
-var getWordTextAndRange = require('./get-word-text-and-range');
-var {defaultWordRegExpForEditor} = require('./hyperclick-utils');
-var {remove} = require('nuclide-commons').array;
+import HyperclickForTextEditor from './HyperclickForTextEditor';
+import SuggestionList from './SuggestionList';
+import SuggestionListElement from './SuggestionListElement';
+import getWordTextAndRange from './get-word-text-and-range';
+import {defaultWordRegExpForEditor} from './hyperclick-utils';
+import {array} from 'nuclide-commons';
 import {trackOperationTiming} from 'nuclide-analytics';
 
 /**
  * Calls the given functions and returns the first non-null return value.
  */
 async function findTruthyReturnValue(fns: Array<void | () => Promise<any>>): Promise<any> {
-  for (var fn of fns) {
-    var result = typeof fn === 'function' ? await fn() : null;
+  for (const fn of fns) {
+    const result = typeof fn === 'function' ? await fn() : null;
     if (result) {
       return result;
     }
@@ -54,7 +54,7 @@ class Hyperclick {
   }
 
   observeTextEditor(textEditor: TextEditor) {
-    var hyperclickForTextEditor = new HyperclickForTextEditor(textEditor, this);
+    const hyperclickForTextEditor = new HyperclickForTextEditor(textEditor, this);
     this._hyperclickForTextEditors.add(hyperclickForTextEditor);
     textEditor.onDidDestroy(() => {
       hyperclickForTextEditor.dispose();
@@ -90,14 +90,14 @@ class Hyperclick {
   }
 
   _consumeSingleProvider(provider: HyperclickProvider): void {
-    var priority = provider.priority || 0;
-    for (var i = 0, len = this._consumedProviders.length; i < len; i++) {
-      var item = this._consumedProviders[i];
+    const priority = provider.priority || 0;
+    for (let i = 0, len = this._consumedProviders.length; i < len; i++) {
+      const item = this._consumedProviders[i];
       if (provider === item) {
         return;
       }
 
-      var itemPriority = item.priority || 0;
+      const itemPriority = item.priority || 0;
       if (priority > itemPriority) {
         this._consumedProviders.splice(i, 0, provider);
         return;
@@ -110,7 +110,7 @@ class Hyperclick {
   }
 
   _removeSingleProvider(provider: HyperclickProvider): void {
-    remove(this._consumedProviders, provider);
+    array.remove(this._consumedProviders, provider);
   }
 
   /**
@@ -118,19 +118,19 @@ class Hyperclick {
    */
   getSuggestion(textEditor: TextEditor, position: atom$Point): Promise {
     // Get the default word RegExp for this editor.
-    var defaultWordRegExp = defaultWordRegExpForEditor(textEditor);
+    const defaultWordRegExp = defaultWordRegExpForEditor(textEditor);
 
     return findTruthyReturnValue(this._consumedProviders.map((provider: HyperclickProvider) => {
       if (provider.getSuggestion) {
-        var getSuggestion = provider.getSuggestion.bind(provider);
+        const getSuggestion = provider.getSuggestion.bind(provider);
         return () => trackOperationTiming(
             provider.providerName + '.getSuggestion',
             () => getSuggestion(textEditor, position));
       } else if (provider.getSuggestionForWord) {
-        var getSuggestionForWord = provider.getSuggestionForWord.bind(provider);
+        const getSuggestionForWord = provider.getSuggestionForWord.bind(provider);
         return () => {
-          var wordRegExp = provider.wordRegExp || defaultWordRegExp;
-          var {text, range} = getWordTextAndRange(textEditor, position, wordRegExp);
+          const wordRegExp = provider.wordRegExp || defaultWordRegExp;
+          const {text, range} = getWordTextAndRange(textEditor, position, wordRegExp);
           return trackOperationTiming(
             provider.providerName + '.getSuggestionForWord',
             () => getSuggestionForWord(textEditor, text, range));

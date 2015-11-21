@@ -8,13 +8,14 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
+import type HyperclickType from './Hyperclick';
 
-var hyperclick: ?Hyperclick = null;
-var {Disposable} = require('atom');
+let hyperclick: ?HyperclickType = null;
+import {Disposable} from 'atom';
 
 module.exports = {
   activate() {
-    var Hyperclick = require('./Hyperclick');
+    const Hyperclick = require('./Hyperclick');
     hyperclick = new Hyperclick();
   },
 

@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-var {CompositeDisposable, Disposable} = require('atom');
-var React = require('react-for-atom');
+import {CompositeDisposable, Disposable} from 'atom';
+import React from 'react-for-atom';
 
 /**
  * We need to create this custom HTML element so we can hook into the view
@@ -39,7 +39,7 @@ class SuggestionListElement extends HTMLElement {
   }
 }
 
-var SuggestionList = React.createClass({
+const SuggestionList = React.createClass({
   _subscriptions: undefined,
 
   propTypes: {
@@ -61,7 +61,7 @@ var SuggestionList = React.createClass({
   componentDidMount() {
     this._subscriptions = new CompositeDisposable();
 
-    var textEditorView = atom.views.getView(this._textEditor);
+    const textEditorView = atom.views.getView(this._textEditor);
     this._subscriptions.add(
         atom.commands.add(textEditorView, {
           'core:move-up': this._moveSelectionUp,
@@ -76,13 +76,13 @@ var SuggestionList = React.createClass({
     this._subscriptions.add(this._textEditor.onDidChangeCursorPosition(this._close));
 
     // Prevent scrolling the editor when scrolling the suggestion list.
-    var stopPropagation = (event) => event.stopPropagation();
+    const stopPropagation = (event) => event.stopPropagation();
     React.findDOMNode(this.refs['scroller']).addEventListener('mousewheel', stopPropagation);
     this._subscriptions.add(new Disposable(() => {
       React.findDOMNode(this.refs['scroller']).removeEventListener('mousewheel', stopPropagation);
     }));
 
-    var keydown = (event: Event) => {
+    const keydown = (event: Event) => {
       // If the user presses the enter key, confirm the selection.
       if (event.keyCode === 13) {
         event.stopImmediatePropagation();
@@ -96,8 +96,8 @@ var SuggestionList = React.createClass({
   },
 
   render() {
-    var itemComponents = this._items.map((item, index) => {
-      var className = 'hyperclick-result-item';
+    const itemComponents = this._items.map((item, index) => {
+      let className = 'hyperclick-result-item';
       if (index === this.state.selectedIndex) {
         className += ' selected';
       }
@@ -182,8 +182,8 @@ var SuggestionList = React.createClass({
   },
 
   _updateScrollPosition() {
-    var listNode = React.findDOMNode(this.refs['selectionList']);
-    var selectedNode = listNode.getElementsByClassName('selected')[0];
+    const listNode = React.findDOMNode(this.refs['selectionList']);
+    const selectedNode = listNode.getElementsByClassName('selected')[0];
     selectedNode.scrollIntoViewIfNeeded(false);
   },
 });

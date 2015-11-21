@@ -9,14 +9,10 @@
  * the root directory of this source tree.
  */
 
-function defaultWordRegExpForEditor(textEditor: atom$TextEditor): ?RegExp {
-  var lastCursor = textEditor.getLastCursor();
+export function defaultWordRegExpForEditor(textEditor: atom$TextEditor): ?RegExp {
+  const lastCursor = textEditor.getLastCursor();
   if (!lastCursor) {
     return null;
   }
   return lastCursor.wordRegExp();
 }
-
-module.exports = {
-  defaultWordRegExpForEditor,
-};
