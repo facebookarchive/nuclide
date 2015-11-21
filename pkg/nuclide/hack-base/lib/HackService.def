@@ -57,7 +57,7 @@ export type HackSearchPosition = {
 
 export type HackDefinitionResult = {
   hackRoot: NuclideUri;
-  definition: HackSearchPosition;
+  definitions: Array<HackSearchPosition>;
 };
 
 export type HackReference = {

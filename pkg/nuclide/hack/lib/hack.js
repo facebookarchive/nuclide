@@ -157,7 +157,11 @@ module.exports = {
    * If a location can be found for the declaration, the return value will
    * resolve to an object with these fields: file, line, column.
    */
-  async findDefinition(editor: TextEditor, line: number, column: number): Promise<any> {
+  async findDefinition(
+    editor: atom$TextEditor,
+    line: number,
+    column: number,
+  ): Promise<?Array<Object>> {
     const hackLanguage = await getHackLanguageForUri(editor.getPath());
     const filePath = editor.getPath();
     if (!hackLanguage || !filePath) {
@@ -167,25 +171,25 @@ module.exports = {
     const contents = editor.getText();
     const buffer = editor.getBuffer();
     const lineText = buffer.lineForRow(line);
-    const pos = await hackLanguage.getDefinition(
+    const positions = await hackLanguage.getDefinition(
       filePath, contents, line + 1, column + 1, lineText
     );
-    if (!pos) {
+    if (positions.length === 0) {
       return null;
     }
-    let range = null;
-    // If the search string was expanded to include more than a valid regex php word.
-    // e.g. in case of XHP tags, the start and end column are provided to underline the full range
-    // to visit its definition.
-    if (pos.searchStartColumn && pos.searchEndColumn) {
-      range = new Range([line, pos.searchStartColumn], [line, pos.searchEndColumn]);
-    }
-    return {
-      file: pos.path,
-      line: pos.line,
-      column: pos.column,
-      range,
-    };
+    return positions.map(position => {
+      let range = null;
+      // If the search string was expanded to include more than a valid regex php word.
+      // e.g. in case of XHP tags, the start and end column are provided to underline the full range
+      // to visit its definition.
+      if (position.searchStartColumn && position.searchEndColumn) {
+        range = new Range([line, position.searchStartColumn], [line, position.searchEndColumn]);
+      }
+      return {
+        ...position,
+        range,
+      };
+    });
   },
 
   async findReferences(

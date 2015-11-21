@@ -106,7 +106,7 @@ export async function getDefinition(
 ): Promise<?HackDefinitionResult> {
   const searchTypes = symbolTypeToSearchTypes(symbolType);
   const searchResponse = await getSearchResults(file, query, searchTypes);
-  return selectDefinitionSearchResult(searchResponse, query);
+  return selectDefinitionSearchResults(searchResponse, query);
 }
 
 export async function getIdentifierDefinition(
@@ -132,7 +132,7 @@ export async function getIdentifierDefinition(
     return null;
   }
   const searchResponse = await getSearchResults(file, identifier);
-  return selectDefinitionSearchResult(searchResponse, identifier);
+  return selectDefinitionSearchResults(searchResponse, identifier);
 }
 
 /**
@@ -239,7 +239,7 @@ export function getHackEnvironmentDetails(
   return getHackExecOptions(localFile);
 }
 
-function selectDefinitionSearchResult(
+function selectDefinitionSearchResults(
   searchReposnse: ?HackSearchResult,
   query: string,
 ): ?HackDefinitionResult {
@@ -256,12 +256,8 @@ function selectDefinitionSearchResult(
     }
     return fullName === query;
   });
-  if (matchingResults.length === 1) {
-    return {
-      hackRoot,
-      definition: matchingResults[0],
-    };
-  } else {
-    return null;
-  }
+  return {
+    hackRoot,
+    definitions: matchingResults,
+  };
 }

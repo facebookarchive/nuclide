@@ -26,20 +26,32 @@ class HyperclickProvider {
     if (!HACK_GRAMMARS_SET.has(textEditor.getGrammar().scopeName)) {
       return null;
     }
-
     const {start: position} = range;
-
     // Create the actual-call promise synchronously for next calls to consume.
-    const location = await findDefinition(textEditor, position.row, position.column);
-    if (location) {
-      // Optionally use the range returned from the definition match, if any.
-      return {
-        range: location.range || range,
-        callback: () => goToLocation(location.file, location.line, location.column),
-      };
-    } else {
+    const locations = await findDefinition(textEditor, position.row, position.column);
+    if (locations == null) {
       return null;
     }
+    // Optionally use the range returned from the definition matches, if any.
+    // When the word regex isn't good enough for matching ranges (e.g. in case of XHP),
+    // the only non-null returned results would be for the xhp range.
+    // Hence, considered the most accurate range for the definition result(s).
+    const newRange = locations
+      .map(location => location.range)
+      .filter(locationRange => locationRange != null)
+      [0];
+    const callbacks = locations.map(location => {
+      return {
+        title: `${location.name} : ${location.scope}`,
+        callback() {
+          goToLocation(location.path, location.line, location.column);
+        },
+      };
+    });
+    return {
+      range: newRange || range,
+      callback: callbacks.length === 1 ? callbacks[0].callback : callbacks,
+    };
   }
 }
 

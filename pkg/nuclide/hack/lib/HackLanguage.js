@@ -25,11 +25,11 @@ import type NuclideClient from 'nuclide-server/lib/NuclideClient';
 import {parse, createRemoteUri, getPath} from 'nuclide-remote-uri';
 import {getHackService} from './utils';
 import {getLogger} from 'nuclide-logging';
+import {array} from 'nuclide-commons';
 
 var {Range, Emitter} = require('atom');
 var HackWorker = require('./HackWorker');
 var {CompletionType, SymbolType} = require('nuclide-hack-common');
-var logger = require('nuclide-logging').getLogger();
 // The word char regex include \ to search for namespaced classes.
 var wordCharRegex = /[\w\\]/;
 // The xhp char regex include : and - to match xhp tags like <ui:button-group>.
@@ -251,7 +251,7 @@ module.exports = class HackLanguage {
       lineNumber: number,
       column: number,
       lineText: string
-    ): Promise<?Object> {
+    ): Promise<Array<HackSearchPosition>> {
     // Ask the `hh_server` to parse, indentiy the position,
     // and lookup that identifier for a location match.
     const identifierResult = await this._getDefinitionFromIdentifier(
@@ -261,10 +261,10 @@ module.exports = class HackLanguage {
       column,
       lineText,
     );
-    if (identifierResult != null) {
+    if (identifierResult.length === 1) {
       return identifierResult;
     }
-    const [symbolSearchResult, stringParseResult, clientSideResult] =
+    const heuristicResults =
       await Promise.all([
         // Ask the `hh_server` for a symbol name search location.
         this._getDefinitionFromSymbolName(filePath, contents, lineNumber, column),
@@ -273,12 +273,12 @@ module.exports = class HackLanguage {
         // Ask Hack client side for a result location.
         this._getDefinitionLocationAtPosition(filePath, contents, lineNumber, column),
       ]);
-    // We now have results from all 3 sources. Chose the best results to show to the user.
-    return symbolSearchResult
-      || stringParseResult
-      || clientSideResult
-      || null
-    ;
+    // We now have results from all 4 sources.
+    // Choose the best results to show to the user.
+    const definitionResults = [identifierResult].concat(heuristicResults);
+    return array.find(definitionResults, definitionResult => definitionResult.length === 1)
+      || array.find(definitionResults, definitionResult => definitionResult.length > 1)
+      || [];
   }
 
   async getSymbolNameAtPosition(
@@ -328,55 +328,56 @@ module.exports = class HackLanguage {
     contents: string,
     lineNumber: number,
     column: number
-  ): Promise<?HackSearchPosition> {
-    let symbol = null;
+  ): Promise<Array<HackSearchPosition>> {
     if (contents.length > MAX_HACK_WORKER_TEXT_SIZE) {
       // Avoid Poor Worker Performance for large files.
-      return null;
+      return [];
     }
+    let symbol = null;
     try {
       symbol = await this.getSymbolNameAtPosition(getPath(filePath), contents, lineNumber, column);
     } catch (err) {
       // Ignore the error.
-      logger.warn('_getDefinitionFromSymbolName error:', err);
-      return null;
+      getLogger().warn('_getDefinitionFromSymbolName error:', err);
+      return [];
     }
     if (!symbol || !symbol.name) {
-      return null;
+      return [];
     }
     const {getDefinition} = getHackService(filePath);
     const definitionResult = await getDefinition(filePath, symbol.name, symbol.type);
     if (!definitionResult) {
-      return null;
+      return [];
     }
-    return ((definitionResult: any): HackDefinitionResult).definition;
+    return ((definitionResult: any): HackDefinitionResult).definitions;
   }
 
   async _getDefinitionLocationAtPosition(
       filePath: NuclideUri,
       contents: string,
       lineNumber: number,
-      column: number
-    ): Promise<?HackSearchPosition> {
+      column: number,
+    ): Promise<Array<HackSearchPosition>> {
     if (!filePath || contents.length > MAX_HACK_WORKER_TEXT_SIZE) {
       // Avoid Poor Worker Performance for large files.
-      return null;
+      return [];
     }
-    let {hostname, port, path: localPath} = parse(filePath);
+    const {hostname, port, path: localPath} = parse(filePath);
     await this.updateFile(localPath, contents);
     const webWorkerMessage = {cmd: 'hh_infer_pos', args: [localPath, lineNumber, column]};
     const response = await this._hackWorker.runWorkerTask(webWorkerMessage);
     const position = response.pos || {};
-    if (position.filename) {
-      return {
-        path: hostname ? createRemoteUri(hostname, port, position.filename) : position.filename,
-        line: position.line - 1,
-        column: position.char_start - 1,
-        length: position.char_end - position.char_start + 1,
-      };
-    } else {
-      return null;
+    if (!position.filename) {
+      return [];
     }
+    return [{
+      path: (hostname && port)
+        ? createRemoteUri(hostname, parseInt(port, 10), position.filename)
+        : position.filename,
+      line: position.line - 1,
+      column: position.char_start - 1,
+      length: position.char_end - position.char_start + 1,
+    }];
   }
 
   async _getDefinitionFromIdentifier(
@@ -385,56 +386,58 @@ module.exports = class HackLanguage {
       lineNumber: number,
       column: number,
       lineText: string,
-    ): Promise<?HackSearchPosition> {
+  ): Promise<Array<HackSearchPosition>> {
     const {getIdentifierDefinition} = getHackService(filePath);
     const definitionResult = await getIdentifierDefinition(
       filePath, contents, lineNumber, column
     );
     if (!definitionResult) {
-      return null;
+      return [];
     }
-    const {definition} = ((definitionResult: any): HackDefinitionResult);
-    let {name} = definition;
-    if (name.startsWith(':')) {
-      // XHP class name, usages omit the leading ':'.
-      name = name.substring(1);
-    }
-    const definitionIndex = lineText.indexOf(name);
-    if (
-      definitionIndex === -1 ||
-      definitionIndex >= column ||
-      !xhpCharRegex.test(lineText.substring(definitionIndex, column))
-    ) {
-      return definition;
-    } else {
-      return {
-        ...definition,
-        searchStartColumn: definitionIndex,
-        searchEndColumn: definitionIndex + definition.name.length,
-      };
-    }
+    const {definitions} = ((definitionResult: any): HackDefinitionResult);
+    return definitions.map(definition => {
+      let {name} = definition;
+      if (name.startsWith(':')) {
+        // XHP class name, usages omit the leading ':'.
+        name = name.substring(1);
+      }
+      const definitionIndex = lineText.indexOf(name);
+      if (
+        definitionIndex === -1 ||
+        definitionIndex >= column ||
+        !xhpCharRegex.test(lineText.substring(definitionIndex, column))
+      ) {
+        return definition;
+      } else {
+        return {
+          ...definition,
+          searchStartColumn: definitionIndex,
+          searchEndColumn: definitionIndex + definition.name.length,
+        };
+      }
+    });
   }
 
   async _getDefinitionFromStringParse(
     filePath: NuclideUri,
     lineText: string,
     column: number
-  ): Promise<?HackSearchPosition> {
+  ): Promise<Array<HackSearchPosition>> {
     var {search, start, end} = this._parseStringForExpression(lineText, column);
     if (!search) {
-      return null;
+      return [];
     }
     const {getDefinition} = getHackService(filePath);
     const definitionResult = await getDefinition(filePath, search, SymbolType.UNKNOWN);
     if (!definitionResult) {
-      return null;
+      return [];
     }
-    const definition = ((definitionResult: any): HackDefinitionResult).definition;
-    return {
+    const definitions = ((definitionResult: any): HackDefinitionResult).definitions;
+    return definitions.map(definition => ({
       ...definition,
       searchStartColumn: start,
       searchEndColumn: end,
-    };
+    }));
   }
 
   _parseStringForExpression(

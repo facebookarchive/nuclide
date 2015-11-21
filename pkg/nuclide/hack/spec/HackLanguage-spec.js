@@ -106,15 +106,15 @@ class HackClass {}
         var column = 26;
         var lineText = fileContents.split(/\r\n|\n/)[lineNumber - 1];
 
-        var definition = await hackLanguage._getDefinitionLocationAtPosition(
+        const definitions = await hackLanguage._getDefinitionLocationAtPosition(
           filePath, fileContents, lineNumber, column
         );
-        expect(definition).toEqual({
+        expect(definitions).toEqual([{
           path: filePath,
           line: 7,
           column: 6,
           length: 9,
-        });
+        }]);
       });
     });
 
