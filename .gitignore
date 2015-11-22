@@ -1,0 +1,24 @@
+.DS_Store
+npm-debug.log
+*.pyc
+
+/node_modules
+
+/pkg/nuclide/clang/clangfiles
+
+/pkg/nuclide/debugger/atom/VendorLib/devtools/*.Makefile
+/pkg/nuclide/debugger/atom/VendorLib/devtools/*.mk
+/pkg/nuclide/debugger/atom/VendorLib/devtools/*.rules
+/pkg/nuclide/debugger/atom/VendorLib/devtools/*.sln
+/pkg/nuclide/debugger/atom/VendorLib/devtools/*.tmp
+/pkg/nuclide/debugger/atom/VendorLib/devtools/*.vcproj*
+/pkg/nuclide/debugger/atom/VendorLib/devtools/*.vcxproj*
+/pkg/nuclide/debugger/atom/VendorLib/devtools/*.xcodeproj*
+
+/pkg/nuclide/node-transpiler/babel-cache
+
+/pkg/nuclide/service-transformer/gen
+
+# $UPFixMe
+/pkg/**/node_modules
+/scripts/**/node_modules
