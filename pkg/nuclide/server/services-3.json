@@ -28,7 +28,6 @@
   },
   {
     "name": "InfoService",
-    "definition": "lib/services/InfoService.def",
     "implementation": "lib/services/InfoService.js"
   },
   {

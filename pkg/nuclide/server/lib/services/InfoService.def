@@ -1,3 +1,0 @@
-// Contains services that let client's query info about the running server.
-
-export function getServerVersion(): Promise<string> {}
