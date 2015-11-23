@@ -14,8 +14,6 @@
  * make XHR requests to the NuclideFS service.  It is a Promise based API.
  */
 
-import type {HackReference} from 'nuclide-hack-common';
-
 type ExecResult = {error: ?Error; stdout: string; stderr: string};
 type NuclideClientOptions = {
   cwd: ?string;
@@ -121,80 +119,6 @@ class NuclideClient {
     this._searchProviders[rootDirectory] = providers;
 
     return providers;
-  }
-
-  getHackDiagnostics(): Promise {
-    var {cwd} = this._options;
-    return this.eventbus.callMethod(
-      /*serviceName*/ 'hack',
-      /*methodName*/ 'getDiagnostics',
-      /*methodArgs*/ [{cwd}],
-      /*extraOptions*/ {method: 'POST', json: true}
-    );
-  }
-
-  getHackCompletions(query: string): Promise {
-    var {cwd} = this._options;
-    return this.eventbus.callMethod(
-      /*serviceName*/ 'hack',
-      /*methodName*/ 'getCompletions',
-      /*methodArgs*/ [query, {cwd}],
-      /*extraOptions*/ {method: 'POST', json: true}
-    );
-  }
-
-  getHackDefinition(query: string, symbolType: SymbolType): Promise {
-    var {cwd} = this._options;
-    return this.eventbus.callMethod(
-      /*serviceName*/ 'hack',
-      /*methodName*/ 'getDefinition',
-      /*methodArgs*/ [query, symbolType, {cwd}],
-      /*extraOptions*/ {method: 'POST', json: true}
-    );
-  }
-
-
-  getHackIdentifierDefinition(contents: string, line: number, column: number): Promise {
-    const {cwd} = this._options;
-    return this.eventbus.callMethod(
-      /*serviceName*/ 'hack',
-      /*methodName*/ 'getIdentifierDefinition',
-      /*methodArgs*/ [contents, line, column, {cwd}],
-      /*extraOptions*/ {method: 'POST', json: true}
-    );
-  }
-
-  getHackDependencies(dependenciesInfo: Array<{name: string; type: string}>): Promise<any> {
-    var {cwd} = this._options;
-    return this.eventbus.callMethod(
-      /*serviceName*/ 'hack',
-      /*methodName*/ 'getDependencies',
-      /*methodArgs*/ [dependenciesInfo, {cwd}],
-      /*extraOptions*/ {method: 'POST', json: true}
-    );
-  }
-
-  getHackSearchResults(
-      search: string,
-      filterTypes: ?Array<SearchResultType>,
-      searchPostfix: ?string): Promise {
-    var {cwd} = this._options;
-    return this.eventbus.callMethod(
-      /*serviceName*/ 'hack',
-      /*methodName*/ 'getSearchResults',
-      /*methodArgs*/ [search, filterTypes, searchPostfix, {cwd}],
-      /*extraOptions*/ {method: 'POST', json: true}
-    );
-  }
-
-  getHackReferences(query: string): Promise<Array<HackReference>> {
-    var {cwd} = this._options;
-    return this.eventbus.callMethod(
-      /*serviceName*/ 'hack',
-      /*methodName*/ 'getReferences',
-      /*methodArgs*/ [query, {cwd}],
-      /*extraOptions*/ {method: 'POST', json: true}
-    );
   }
 
   close() : void {

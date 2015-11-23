@@ -27,7 +27,6 @@
     "nuclide-filewatcher-base": "0.0.0",
     "nuclide-flow-base": "0.0.0",
     "nuclide-hack-base": "0.0.0",
-    "nuclide-hack-common": "0.0.0",
     "nuclide-hack-search-service": "0.0.0",
     "nuclide-hg-repository-base": "0.0.0",
     "nuclide-logging": "0.0.0",
