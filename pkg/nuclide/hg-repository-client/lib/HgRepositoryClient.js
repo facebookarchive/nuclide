@@ -798,11 +798,10 @@ export default class HgRepositoryClient {
     } else if (relevantChangedPaths.length <= MAX_INDIVIDUAL_CHANGED_PATHS) {
       // Update the statuses individually.
       this._updateStatuses(relevantChangedPaths, {hgStatusOption: HgStatusOption.ALL_STATUSES});
-      relevantChangedPaths.forEach((filePath) => {
-        if (this._hgDiffCache[filePath]) {
-          this._updateDiffInfo(filePath);
-        }
-      });
+      const pathsInDiffCache = relevantChangedPaths.filter(
+        filePath => (this._hgDiffCache[filePath] != null)
+      );
+      this._updateDiffInfo(pathsInDiffCache);
     } else {
       // This is a heuristic to improve performance. Many files being changed may
       // be a sign that we are picking up changes that were created in an automated
