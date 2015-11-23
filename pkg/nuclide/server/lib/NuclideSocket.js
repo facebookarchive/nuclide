@@ -234,6 +234,12 @@ class NuclideSocket extends EventEmitter {
     this._heartbeatInterval = setInterval(() => this._heartbeat(), HEARTBEAT_INTERVAL_MS);
   }
 
+  // Resolves if the connection looks healthy.
+  // Will reject quickly if the connection looks unhealthy.
+  testConnection(): Promise<void> {
+    return this._sendHeartBeat();
+  }
+
   _sendHeartBeat(): Promise<void> {
     return this.xhrRequest({
       uri: HEARTBEAT_CHANNEL,

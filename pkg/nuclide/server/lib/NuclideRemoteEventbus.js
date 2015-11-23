@@ -19,6 +19,7 @@ var {SERVICE_FRAMEWORK_EVENT_CHANNEL,
   SERVICE_FRAMEWORK_RPC_TIMEOUT_MS,
   SERVICE_FRAMEWORK3_CHANNEL} = require('./config');
 var logger = require('nuclide-logging').getLogger();
+import invariant from 'assert';
 
 import {object} from 'nuclide-commons';
 import ServiceFramework from './serviceframework';
@@ -49,6 +50,14 @@ class NuclideRemoteEventbus {
 
     this._clientComponent = new ServiceFramework.ClientComponent(this._serviceFramework3Emitter,
       this.socket, () => this._rpcRequestId++);
+  }
+
+  // Resolves if the connection looks healthy.
+  // Will reject quickly if the connection looks unhealthy.
+  testConnection(): Promise<void> {
+    // Don't call this after socket is closed.
+    invariant(this.socket != null);
+    return this.socket.testConnection();
   }
 
   _handleSocketMessage(message: any) {

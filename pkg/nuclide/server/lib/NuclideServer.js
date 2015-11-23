@@ -26,7 +26,7 @@ var {EventEmitter} = require('events');
 var WebSocketServer = require('ws').Server;
 var {deserializeArgs, sendJsonResponse, sendTextResponse} = require('./utils');
 var {getVersion} = require('nuclide-version');
-
+import invariant from 'assert';
 import ServiceFramework from './serviceframework';
 
 import {getLogger, flushLogsAndExit} from 'nuclide-logging';
@@ -59,18 +59,22 @@ type ServiceConfig = {
 }
 
 class NuclideServer {
+  static _theServer: ?NuclideServer;
+
   _webServer: http.Server | https.Server;
   _webSocketServer: WebSocketServer;
   _clients: {[clientId: string]: SocketClient};
   _eventSubscriptions: Map</* eventName */ string, Set</* clientId */ string>>;
   _port: number;
-  _version: string;
   _serviceWithoutServiceFrameworkConfigs: Array<string>;
   _serviceWithServiceFrameworkConfigs: Array<any>;
 
   _serverComponent: ServiceFramework.ServerComponent;
 
   constructor(options: NuclideServerOptions) {
+    invariant(NuclideServer._theServer == null);
+    NuclideServer._theServer = this;
+
     var {serverKey, serverCertificate, port, certificateAuthorityCertificate, trackEventLoop} = options;
 
     this._app = connect();
@@ -211,8 +215,6 @@ class NuclideServer {
     this._serviceRegistry = {};
     this._version = getVersion().toString();
     this._setupHeartbeatHandler();
-    this._setupVersionHandler();
-    this._setupShutdownHandler();
     this._setupServiceFrameworkSubscriptionHandler();
     this._serviceWithoutServiceFrameworkConfigs = loadConfigsOfServiceWithoutServiceFramework();
     this._serviceWithServiceFrameworkConfigs = loadConfigsOfServiceWithServiceFramework();
@@ -237,31 +239,22 @@ class NuclideServer {
     });
   }
 
-  _setupVersionHandler() {
-    this._registerService('/server/version', () => this._version, 'post', true);
-  }
-
   _setupHeartbeatHandler() {
     this._registerService('/' + HEARTBEAT_CHANNEL, async () => this._version,
         'post', true);
   }
 
-  _setupShutdownHandler() {
-    const shutdownServer = () => {
-      logger.info('Shutting down the server');
-      try {
-        this.close();
-      } catch (e) {
-        logger.error('Error while shutting down, but proceeding anyway:', e);
-      } finally {
-        flushLogsAndExit(0);
+  static shutdown(): void {
+    logger.info('Shutting down the server');
+    try {
+      if (NuclideServer._theServer != null) {
+        NuclideServer._theServer.close();
       }
-    };
-    this._registerService('/server/shutdown', () => {
-      logger.info('Server received a shutdown request - terminating!');
-      // Shutdown after timeout to give a chance to reply success to the shutdown request.
-      setTimeout(shutdownServer, SERVER_SHUTDOWN_TIMEOUT_MS);
-    }, 'post');
+    } catch (e) {
+      logger.error('Error while shutting down, but proceeding anyway:', e);
+    } finally {
+      flushLogsAndExit(0);
+    }
   }
 
   _setupServiceFrameworkSubscriptionHandler() {
@@ -453,6 +446,9 @@ class NuclideServer {
   }
 
   close() {
+    invariant(NuclideServer._theServer === this);
+    NuclideServer._theServer = null;
+
     this._webSocketServer.close();
     this._webServer.close();
     this._serviceWithoutServiceFrameworkConfigs.forEach(service_path => {

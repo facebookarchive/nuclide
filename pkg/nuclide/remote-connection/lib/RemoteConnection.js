@@ -295,21 +295,34 @@ class RemoteConnection {
     // Right now we don't re-handshake.
     if (this._initialized === undefined) {
       this._initialized = false;
-      // Do version check.
-      var client = this._getClient();
-      var serverVersion;
+      const client = this._getClient();
+
+      // Test connection first. First time we get here we're checking to reestablish
+      // connection using cached credentials. This will fail fast (faster than infoService)
+      // when we don't have cached credentials yet.
       try {
-        serverVersion = await client.version();
+        await client.testConnection();
+
+        // Do version check.
+        let serverVersion;
+
+        // Need to set initialized to true optimistically so that we can get the InfoService.
+        // TODO: We shouldn't need the client to get a service.
+        this._initialized = true;
+        const infoService = this.getService('InfoService');
+        serverVersion = await infoService.getServerVersion();
+
+        const clientVersion = getVersion();
+        if (clientVersion !== serverVersion) {
+          throw new Error(
+            `Version mismatch. Client at ${clientVersion} while server at ${serverVersion}.`);
+        }
       } catch (e) {
         client.close();
+        this._initialized = false;
         throw e;
       }
-      var clientVersion = getVersion();
-      if (clientVersion != serverVersion) {
-        client.close();
-        throw new Error(`Version mismatch. Client at ${clientVersion} while server at ${serverVersion}.`);
-      }
-      this._initialized = true;
+
 
       const FileSystemService = this.getService('FileSystemService');
       this._config.cwd = await FileSystemService.resolveRealPath(this._config.cwd);

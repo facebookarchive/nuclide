@@ -10,7 +10,12 @@
  */
 
 import {getVersion} from 'nuclide-version';
+import NuclideServer from '../NuclideServer';
 
 export async function getServerVersion(): Promise<string> {
   return getVersion();
+}
+
+export function shutdownServer(): void {
+  NuclideServer.shutdown();
 }

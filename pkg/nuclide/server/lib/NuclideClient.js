@@ -37,6 +37,12 @@ class NuclideClient {
     return this._id;
   }
 
+  // Resolves if the connection looks healthy.
+  // Will reject quickly if the connection looks unhealthy.
+  testConnection(): Promise<void> {
+    return this.eventbus.testConnection();
+  }
+
   // Delegate RPC functions to the NuclideRemoteEventbus class.
   callRemoteFunction(...args: Array<any>): any {
     return this.eventbus.callRemoteFunction.apply(this.eventbus, args);
@@ -88,30 +94,6 @@ class NuclideClient {
       /*methodName*/ 'directory',
       /*methodArgs*/ [directory, query],
       /*extraOptions*/ {json: true}
-    );
-  }
-
-  /**
-   * Returns the server version.
-   */
-  version(): Promise<number|string> {
-    return this.eventbus.callMethod(
-      /*serviceName*/ 'server',
-      /*methodName*/ 'version',
-      /*methodArgs*/ [],
-      /*extraOptions*/ {method: 'POST', json: true}
-    );
-  }
-
-  /**
-   * Returns the server version.
-   */
-  shutdownServer(): Promise {
-    return this.eventbus.callMethod(
-      /*serviceName*/ 'server',
-      /*methodName*/ 'shutdown',
-      /*methodArgs*/ [],
-      /*extraOptions*/ {method: 'POST'}
     );
   }
 

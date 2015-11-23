@@ -45,6 +45,10 @@ class NuclideLocalEventbus extends EventEmitter {
     this._services['/fs/writeFile'] = {handler: fsPromise.writeFile};
   }
 
+  testConnection(): Promise<void> {
+    return Promise.resolve();
+  }
+
   async callMethod(
       serviceName: string,
       methodName: string,

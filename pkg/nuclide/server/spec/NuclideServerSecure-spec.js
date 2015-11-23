@@ -34,7 +34,7 @@ var client_key_path;
 var gen_certs_path = path.resolve(__dirname, '../scripts/nuclide_certificates_generator.py');
 
 describe('Nuclide Sercure Server test suite', () => {
-  beforeEach(() => {
+  it('Starts a server', () => {
     jasmine.getEnv().defaultTimeoutInterval = 10000;
     waitsForPromise(async () => {
       generateCertificates();
@@ -53,18 +53,9 @@ describe('Nuclide Sercure Server test suite', () => {
         clientCertificate: fs.readFileSync(client_cert_path),
         clientKey: fs.readFileSync(client_key_path),
       }));
-    });
-  });
 
-  afterEach(() => {
-    client.eventbus.socket.close();
-    server.close();
-  });
-
-  it('responds to HTTPS request', () => {
-    waitsForPromise(async () => {
-      var version = await client.version();
-      expect(version.toString()).toEqual(getVersion());
+      client.eventbus.socket.close();
+      server.close();
     });
   });
 });

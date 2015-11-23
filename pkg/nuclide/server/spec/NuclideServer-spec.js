@@ -37,13 +37,6 @@ describe('Nuclide Server test suite', () => {
     server.close();
   });
 
-  it('responds to version', () => {
-    waitsForPromise(async () => {
-      var version = await client.version();
-      expect(version.toString()).toEqual(getVersion());
-    });
-  });
-
   it('websocket is connected with the server', () => {
     var websocket = new WebSocket('ws://localhost:8176');
     var opened = false;

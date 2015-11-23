@@ -104,16 +104,18 @@ function addRemoteFolderToProject(connection: RemoteConnection) {
     var hostname = connection.getRemoteHostname();
     if (getRemoteConnection().getByHostname(hostname).length > 1) {
       getLogger().info('Remaining remote projects using Nuclide Server - no prompt to shutdown');
-      return connection.close();
+      connection.close();
+      return;
     }
 
     const buttons = ['Keep It', 'Shutdown'];
     const buttonToActions = new Map();
 
     buttonToActions.set(buttons[0], () => connection.close());
-    buttonToActions.set(buttons[1], () => {
-      connection.getClient().shutdownServer();
-      return connection.close();
+    buttonToActions.set(buttons[1], async () => {
+      await connection.getService('InfoService').shutdownServer();
+      connection.close();
+      return;
     });
 
     if (atom.config.get(
@@ -129,7 +131,7 @@ function addRemoteFolderToProject(connection: RemoteConnection) {
       buttons,
     });
 
-    return buttonToActions.get(buttons[choice])();
+    buttonToActions.get(buttons[choice])();
   }
 }
 
