@@ -199,7 +199,16 @@ export class FlowRoot {
         return [];
       }
       const json = parseJSON(args, result.stdout);
-      const candidates = json.map(item => processAutocompleteItem(replacementPrefix, item));
+      let resultsArray;
+      if (Array.isArray(json)) {
+        // Flow < v0.20.0
+        resultsArray = json;
+      } else {
+        // Flow >= v0.20.0. The output format was changed to support more detailed failure
+        // information.
+        resultsArray = json.result;
+      }
+      const candidates = resultsArray.map(item => processAutocompleteItem(replacementPrefix, item));
       return filter(candidates, replacementPrefix, { key: 'displayText' });
     } catch (e) {
       return [];

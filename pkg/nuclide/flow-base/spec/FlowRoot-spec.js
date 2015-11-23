@@ -94,7 +94,21 @@ describe('FlowRoot', () => {
     let options: any;
     let activatedManually: boolean = (undefined: any);
 
-    function runWith(results) {
+    function newRunWith(results) {
+      mockExec(JSON.stringify({result: results}));
+      return flowRoot.flowGetAutocompleteSuggestions(
+        file,
+        currentContents,
+        line,
+        column,
+        prefix,
+        activatedManually,
+      );
+    }
+
+    // Uses the old format that flow autocomplete used to use. Can be removed once we no longer want
+    // to support Flow versions under v0.20.0
+    function oldRunWith(results) {
       mockExec(JSON.stringify(results));
       return flowRoot.flowGetAutocompleteSuggestions(
         file,
@@ -106,108 +120,111 @@ describe('FlowRoot', () => {
       );
     }
 
-    async function getNameArray(results: Object): Promise<Array<string>> {
-      return ((await runWith(results)).map(item => item.text));
-    }
+    [oldRunWith, newRunWith].forEach(runWith => {
 
-    async function getNameSet(results: Object): Promise<Set<string>> {
-      return new Set(await getNameArray(results));
-    }
-
-    function hasEqualElements(set1: Set<string>, set2: Set<string>): boolean {
-      if (set1.size !== set2.size) {
-        return false;
+      async function getNameArray(results: Object): Promise<Array<string>> {
+        return ((await runWith(results)).map(item => item.text));
       }
-      for (const item of set1) {
-        if (!set2.has(item)) {
+
+      async function getNameSet(results: Object): Promise<Set<string>> {
+        return new Set(await getNameArray(results));
+      }
+
+      function hasEqualElements(set1: Set<string>, set2: Set<string>): boolean {
+        if (set1.size !== set2.size) {
           return false;
         }
+        for (const item of set1) {
+          if (!set2.has(item)) {
+            return false;
+          }
+        }
+        return true;
       }
-      return true;
-    }
 
-    beforeEach(() => {
-      prefix = '';
-      activatedManually = false;
-      optionNames = [
-        'Foo',
-        'foo',
-        'Bar',
-        'BigLongNameOne',
-        'BigLongNameTwo',
-      ];
-      options = optionNames.map(name => ({name, type: 'foo'}));
-    });
-
-    it('should not provide suggestions when no characters have been typed', () => {
-      waitsForPromise(async () => {
-        expect(hasEqualElements(await getNameSet(options), new Set())).toBe(true);
+      beforeEach(() => {
+        prefix = '';
+        activatedManually = false;
+        optionNames = [
+          'Foo',
+          'foo',
+          'Bar',
+          'BigLongNameOne',
+          'BigLongNameTwo',
+        ];
+        options = optionNames.map(name => ({name, type: 'foo'}));
       });
-    });
 
-    it('should always provide suggestions when activated manually', () => {
-      activatedManually = true;
-      waitsForPromise(async () => {
-        expect(hasEqualElements(await getNameSet(options), new Set(optionNames))).toBe(true);
+      it('should not provide suggestions when no characters have been typed', () => {
+        waitsForPromise(async () => {
+          expect(hasEqualElements(await getNameSet(options), new Set())).toBe(true);
+        });
       });
-    });
 
-    it('should always provide suggestions when the prefix contains .', () => {
-      prefix = '   .   ';
-      waitsForPromise(async () => {
-        expect(hasEqualElements(await getNameSet(options), new Set(optionNames))).toBe(true);
+      it('should always provide suggestions when activated manually', () => {
+        activatedManually = true;
+        waitsForPromise(async () => {
+          expect(hasEqualElements(await getNameSet(options), new Set(optionNames))).toBe(true);
+        });
       });
-    });
 
-    it('should not filter suggestions if the prefix is a .', () => {
-      waitsForPromise(async () => {
-        prefix = '.';
-        expect(hasEqualElements(await getNameSet(options), new Set(optionNames))).toBe(true);
+      it('should always provide suggestions when the prefix contains .', () => {
+        prefix = '   .   ';
+        waitsForPromise(async () => {
+          expect(hasEqualElements(await getNameSet(options), new Set(optionNames))).toBe(true);
+        });
       });
-    });
 
-    it('should filter suggestions by the prefix', () => {
-      waitsForPromise(async () => {
-        prefix = 'bln';
-        expect(
-          hasEqualElements(
-            await getNameSet(options),
-            new Set(['BigLongNameOne', 'BigLongNameTwo'])
-          )
-        ).toBe(true);
+      it('should not filter suggestions if the prefix is a .', () => {
+        waitsForPromise(async () => {
+          prefix = '.';
+          expect(hasEqualElements(await getNameSet(options), new Set(optionNames))).toBe(true);
+        });
       });
-    });
 
-    it('should rank better matches higher', () => {
-      waitsForPromise(async () => {
-        prefix = 'one';
-        const nameArray = await getNameArray(options);
-        expect(nameArray[0]).toEqual('BigLongNameOne');
+      it('should filter suggestions by the prefix', () => {
+        waitsForPromise(async () => {
+          prefix = 'bln';
+          expect(
+            hasEqualElements(
+              await getNameSet(options),
+              new Set(['BigLongNameOne', 'BigLongNameTwo'])
+            )
+          ).toBe(true);
+        });
       });
-    });
 
-    it('should expose extra information about a function', () => {
-      prefix = 'f';
-      waitsForPromise(async () => {
-        const result = await runWith([
-          {
-            name: 'foo',
-            type: '(param1: type1, param2: type2) => ret',
-            func_details: {
-              params: [
-                { name: 'param1', type: 'type1' },
-                { name: 'param2', type: 'type2' },
-              ],
-              return_type: 'ret',
+      it('should rank better matches higher', () => {
+        waitsForPromise(async () => {
+          prefix = 'one';
+          const nameArray = await getNameArray(options);
+          expect(nameArray[0]).toEqual('BigLongNameOne');
+        });
+      });
+
+      it('should expose extra information about a function', () => {
+        prefix = 'f';
+        waitsForPromise(async () => {
+          const result = await runWith([
+            {
+              name: 'foo',
+              type: '(param1: type1, param2: type2) => ret',
+              func_details: {
+                params: [
+                  { name: 'param1', type: 'type1' },
+                  { name: 'param2', type: 'type2' },
+                ],
+                return_type: 'ret',
+              },
             },
-          },
-        ]);
-        const fooResult = result[0];
-        expect(fooResult.displayText).toEqual('foo');
-        expect(fooResult.snippet).toEqual('foo(${1:param1}, ${2:param2})');
-        expect(fooResult.type).toEqual('function');
-        expect(fooResult.leftLabel).toEqual('ret');
-        expect(fooResult.rightLabel).toEqual('(param1: type1, param2: type2)');
+          ]);
+          const fooResult = result[0];
+          expect(fooResult.displayText).toEqual('foo');
+          expect(fooResult.snippet).toEqual('foo(${1:param1}, ${2:param2})');
+          expect(fooResult.type).toEqual('function');
+          expect(fooResult.leftLabel).toEqual('ret');
+          expect(fooResult.rightLabel).toEqual('(param1: type1, param2: type2)');
+        });
       });
     });
   });
