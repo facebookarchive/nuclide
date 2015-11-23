@@ -18,8 +18,6 @@ describe('withLoadingNotification', () => {
       dismiss: jasmine.createSpy('dismiss'),
     };
     spyOn(atom.notifications, 'addInfo').andReturn(mockNotif);
-    // Remove apm's spy on setTimeout.
-    window.setTimeout = window.setTimeout.originalValue;
   });
 
   it('displays and closes a loading notification', () => {
@@ -28,12 +26,13 @@ describe('withLoadingNotification', () => {
       const promise = new Promise((resolve, reject) => {
         setTimeout(() => resolve(testValue), 10);
       });
-      const result = await withLoadingNotification(
+      const resultPromise = withLoadingNotification(
         promise,
         'test message',
         /* delayMs */ 0,
       );
-      expect(result).toEqual(testValue);
+      advanceClock(10);
+      expect(await resultPromise).toEqual(testValue);
       expect(atom.notifications.addInfo).toHaveBeenCalled();
       invariant(mockNotif);
       expect(mockNotif.dismiss).toHaveBeenCalled();
@@ -46,11 +45,13 @@ describe('withLoadingNotification', () => {
         setTimeout(() => reject(), 10);
       });
       try {
-        await withLoadingNotification(
+        const resultPromise = withLoadingNotification(
           promise,
           'test message',
           /* delayMs */ 0,
         );
+        advanceClock(10);
+        await resultPromise;
       } catch (e) {}
       expect(atom.notifications.addInfo).toHaveBeenCalled();
       invariant(mockNotif);
@@ -62,14 +63,15 @@ describe('withLoadingNotification', () => {
     waitsForPromise(async () => {
       const testValue = 1;
       const promise = new Promise((resolve, reject) => {
-        setTimeout(() => resolve(testValue), 0);
+        setTimeout(() => resolve(testValue), 1);
       });
-      const result = await withLoadingNotification(
+      const resultPromise = withLoadingNotification(
         promise,
         'test message',
         /* delayMs */ 10,
       );
-      expect(result).toEqual(testValue);
+      advanceClock(1);
+      expect(await resultPromise).toEqual(testValue);
       expect(atom.notifications.addInfo.calls.length).toEqual(0);
       invariant(mockNotif);
       expect(mockNotif.dismiss.calls.length).toEqual(0);
