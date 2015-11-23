@@ -23,16 +23,6 @@
 
     // Allow block to extend past parent's width, for autoresizing purposes.
     display: inline-block;
-
-    background-color: @tree-view-background-color;
-
-    &:focus {
-      background-color: contrast(
-        @text-color,
-        darken(@tree-view-background-color, 2%),
-        lighten(@tree-view-background-color, 5%),
-        25%);
-    }
   }
 
   .diff-timeline {
@@ -119,7 +109,6 @@
       margin-left: 20px;
       display: inline-block;
     }
-
 
     .selected-revision-start,
     .selected-revision-end {
