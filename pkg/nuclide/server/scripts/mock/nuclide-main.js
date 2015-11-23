@@ -55,11 +55,8 @@ function handleRequest(request, response) {
   var path = url.parse(request.url, false).pathname;
 
   switch (path) {
-    case '/server/version':
+    case '/heartbeat':
       handleVersion(request, response);
-      break;
-    case '/server/setversion':
-      handleSetVersion(request, response);
       break;
     default:
       response.writeHead(500);
@@ -73,18 +70,6 @@ function handleRequest(request, response) {
 function handleVersion(request, response) {
   response.writeHead(200);
   response.write(version);
-  response.end();
-}
-
-function handleSetVersion(request, response) {
-  response.writeHead(200);
-  var parsedUrl = url.parse(request.url, true);
-
-  if (parsedUrl.query) {
-    version = parsedUrl.query.version;
-    response.write('Version set to ' + parsedUrl.query.version);
-  }
-
   response.end();
 }
 

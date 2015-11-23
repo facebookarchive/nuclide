@@ -14,6 +14,7 @@ var WebSocket = require('ws');
 var uuid = require('uuid');
 var {EventEmitter} = require('events');
 var logger = require('nuclide-logging').getLogger();
+import {HEARTBEAT_CHANNEL} from './config';
 
 type NuclideSocketOptions = {
   certificateAuthorityCertificate: ?Buffer;
@@ -233,12 +234,16 @@ class NuclideSocket extends EventEmitter {
     this._heartbeatInterval = setInterval(() => this._heartbeat(), HEARTBEAT_INTERVAL_MS);
   }
 
+  _sendHeartBeat(): Promise<void> {
+    return this.xhrRequest({
+      uri: HEARTBEAT_CHANNEL,
+      method: 'POST',
+    });
+  }
+
   async _heartbeat(): Promise<void> {
     try {
-      await this.xhrRequest({
-        uri: 'server/version',
-        method: 'POST',
-      });
+      await this._sendHeartBeat();
       this._heartbeatConnectedOnce = true;
       var now = Date.now();
       this._lastHeartbeatTime = this._lastHeartbeatTime || now;

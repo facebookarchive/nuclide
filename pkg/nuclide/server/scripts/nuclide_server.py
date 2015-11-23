@@ -79,10 +79,10 @@ class NuclideServer(object):
         if self.is_https():
             server_cert, server_key, ca = self.get_server_certificate_files()
             client_cert, client_key = self.get_client_certificate_files(ca)
-            self._version = utils.http_get('localhost', self.port, method='POST', url='/server/version',
+            self._version = utils.http_get('localhost', self.port, method='POST', url='/heartbeat',
                                            key_file=client_key, cert_file=client_cert, ca_cert = ca)
         else:
-            self._version = utils.http_get('localhost', self.port, method='POST', url='/server/version')
+            self._version = utils.http_get('localhost', self.port, method='POST', url='/heartbeat')
         return self._version
 
     def _get_proc_info(self):

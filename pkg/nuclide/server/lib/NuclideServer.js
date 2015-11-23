@@ -15,9 +15,11 @@ var fs = require('fs');
 var {getService, getRemoteEventName} = require('./service-manager');
 var http = require('http');
 var https = require('https');
-var {SERVICE_FRAMEWORK_EVENT_CHANNEL,
+import {
+  HEARTBEAT_CHANNEL,
+  SERVICE_FRAMEWORK_EVENT_CHANNEL,
   SERVICE_FRAMEWORK_RPC_CHANNEL,
-  SERVICE_FRAMEWORK3_CHANNEL} = require('./config');
+  SERVICE_FRAMEWORK3_CHANNEL} from './config';
 var {parseServiceApiSync} = require('nuclide-service-transformer');
 var path = require('path');
 var {EventEmitter} = require('events');
@@ -209,6 +211,8 @@ class NuclideServer {
     var {loadConfigsOfServiceWithServiceFramework,
       loadConfigsOfServiceWithoutServiceFramework} = require('./config');
     this._serviceRegistry = {};
+    this._version = getVersion().toString();
+    this._setupHeartbeatHandler();
     this._setupStatsHandler();
     this._setupVersionHandler();
     this._setupShutdownHandler();
@@ -251,8 +255,12 @@ class NuclideServer {
   }
 
   _setupVersionHandler() {
-    this._version = getVersion().toString();
     this._registerService('/server/version', () => this._version, 'post', true);
+  }
+
+  _setupHeartbeatHandler() {
+    this._registerService('/' + HEARTBEAT_CHANNEL, async () => this._version,
+        'post', true);
   }
 
   _setupShutdownHandler() {

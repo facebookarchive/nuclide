@@ -29,6 +29,7 @@ var CUSTOM_SERVICES_CONFIG_PATH = path.resolve(
   PACKAGE_ROOT,
   require(path.resolve(PACKAGE_ROOT, 'package.json'))['nuclide']['customServices']
 );
+const HEARTBEAT_CHANNEL = 'heartbeat';
 var SERVICE_FRAMEWORK_EVENT_CHANNEL = 'service_framework_event';
 var SERVICE_FRAMEWORK_RPC_CHANNEL = 'service_framework_rpc';
 var SERVICE_FRAMEWORK3_CHANNEL = 'service_framework3_rpc';
@@ -84,6 +85,7 @@ function _resolveServiceConfigPath(serviceConfigPath: string): string {
 module.exports = {
   loadConfigsOfServiceWithoutServiceFramework,
   loadConfigsOfServiceWithServiceFramework,
+  HEARTBEAT_CHANNEL,
   SERVICE_FRAMEWORK_EVENT_CHANNEL,
   SERVICE_FRAMEWORK_RPC_CHANNEL,
   SERVICE_FRAMEWORK_RPC_TIMEOUT_MS,

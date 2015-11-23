@@ -52,9 +52,9 @@ xdescribe('NuclideSocket test suite', () => {
   });
 
   describe('xhrRequest()', () => {
-    it('gets the server version', () => {
+    it('gets heartbeat', () => {
       waitsForPromise(async () => {
-        var version = await socket.xhrRequest({uri: 'server/version', method: 'POST'});
+        const version = await socket.xhrRequest({uri: 'heartbeat', method: 'POST'});
         expect(version).toBeDefined();
       });
     });
