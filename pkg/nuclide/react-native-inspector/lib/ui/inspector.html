@@ -102,7 +102,7 @@
         require.cache[__filename].paths = requirePaths;
 
         // Start the element inspector.
-        require(path.join(packageDirectory, 'lib/vendor/dev-tools/standalone.js'))
+        require(path.join(packageDirectory, 'VendorLib/dev-tools/standalone.js'))
           .setContentDOMNode(document.getElementById('container'))
           .startServer();
       }
