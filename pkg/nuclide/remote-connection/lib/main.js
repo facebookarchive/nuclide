@@ -24,13 +24,15 @@ const NUCLIDE_CLIENT_EXPORTS_KEY = '_nuclide_client_exports';
 const nuclideClientExports: NuclideClientExports = require('nuclide-commons').singleton.get(
   NUCLIDE_CLIENT_EXPORTS_KEY,
   () => {
-    var {
+    const {
+      getService,
+      getServiceByNuclideUri,
+      getServiceLogger,
+      getRemoteServiceByRemoteConnection,
+    } = require('./service-manager');
+    const {
       getClient,
       getFileForPath,
-      getService,
-      getServiceLogger,
-      getServiceByNuclideUri,
-      getRemoteServiceByRemoteConnection,
     } = require('./client');
     return {
       getClient,

@@ -352,7 +352,7 @@ class RemoteConnection {
 
   _watchRootProjectDirectory(): void {
     // TODO(peterhal): move singleton from main.js to client.js
-    const {getServiceByNuclideUri} = require('./main');
+    const {getServiceByNuclideUri} = require('./service-manager');
     const rootDirectoryUri = this.getUriForInitialWorkingDirectory();
     const {watchDirectoryRecursive} = getServiceByNuclideUri(
       'FileWatcherService', rootDirectoryUri
@@ -518,7 +518,7 @@ class RemoteConnection {
   // however we should wait until we remove the event-bus and v2 rpc framework
   // before making that change.
   getService(serviceName: string): any {
-    var {getRemoteServiceByRemoteConnection} = require('./main');
+    const {getRemoteServiceByRemoteConnection} = require('./service-manager');
     return getRemoteServiceByRemoteConnection(serviceName, this);
   }
 }

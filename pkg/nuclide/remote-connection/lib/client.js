@@ -11,12 +11,6 @@
 
 import type {NuclideUri} from 'nuclide-remote-uri';
 
-var {
-  getService,
-  getServiceByNuclideUri,
-  getServiceLogger,
-  getRemoteServiceByRemoteConnection,
-} = require('./service-manager');
 var localClients: {[rootPath: string]: NuclideClient} = {};
 var RemoteConnection = require('./RemoteConnection');
 var localEventBus: ?NuclideLocalEventbus = null;
@@ -64,10 +58,6 @@ module.exports = {
       return localClient;
     }
   },
-  getService,
-  getServiceLogger,
-  getServiceByNuclideUri,
-  getRemoteServiceByRemoteConnection,
 
   getFileForPath(filePath: NuclideUri): ?(File | RemoteFile) {
     if (isRemote(filePath)) {
