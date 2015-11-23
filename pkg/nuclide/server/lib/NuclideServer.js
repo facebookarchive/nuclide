@@ -67,8 +67,6 @@ class NuclideServer {
   _version: string;
   _serviceWithoutServiceFrameworkConfigs: Array<string>;
   _serviceWithServiceFrameworkConfigs: Array<any>;
-  _responses: {[timeBin: string]: any};
-  _errors: Array<any>;
 
   _serverComponent: ServiceFramework.ServerComponent;
 
@@ -213,7 +211,6 @@ class NuclideServer {
     this._serviceRegistry = {};
     this._version = getVersion().toString();
     this._setupHeartbeatHandler();
-    this._setupStatsHandler();
     this._setupVersionHandler();
     this._setupShutdownHandler();
     this._setupServiceFrameworkSubscriptionHandler();
@@ -238,20 +235,6 @@ class NuclideServer {
         next();
       }
     });
-  }
-
-  _setupStatsHandler() {
-    this._clearStats();
-    this._registerService(
-      '/server/getStats',
-      () => ({
-        errors: this._errors,
-        responses: this._responses,
-      }),
-      'get',
-      false,
-    );
-    this._registerService('/server/clearStats', this._clearStats.bind(this), 'post', false);
   }
 
   _setupVersionHandler() {
@@ -328,45 +311,7 @@ class NuclideServer {
     if (!serviceFunction) {
       throw Error('No service registered with name: ' + serviceName);
     }
-    return this._recordRequestStats(serviceName, args, serviceFunction);
-  }
-
-  /**
-   * Given a service request, records response time and errors
-   */
-  async _recordRequestStats(
-    serviceName: string,
-    args: Array<any>,
-    serviceFunction: () => Promise<any>,
-  ): Promise<any> {
-    var requestStart = Date.now();
-    var result = null;
-
-    try {
-      result = await serviceFunction.apply(this, args);
-
-      var responseTime = Date.now() - requestStart;
-      var bin = Math.floor(responseTime / STAT_BIN_SIZE_MS) * STAT_BIN_SIZE_MS;
-      if (!this._responses[bin]) {
-        this._responses[bin] = [];
-      }
-      this._responses[bin].push({serviceName});
-    } catch (error) {
-      var responseTime = Date.now() - requestStart;
-      this._errors.push({
-        error,
-        responseTime,
-        serviceName,
-      });
-      throw error;
-    }
-
-    return result;
-  }
-
-  _clearStats(): Object {
-    this._errors = [];
-    return this._responses = {};
+    return serviceFunction.apply(this, args);
   }
 
   /**
