@@ -29,8 +29,9 @@ export default class SuggestionList {
 
     this.hide();
 
-    invariant(suggestion.range);
-    const {start: position} = suggestion.range;
+    const {range} = suggestion;
+    invariant(range);
+    const {start: position} = Array.isArray(range) ? range[0] : range;
     this._suggestionMarker = textEditor.markBufferPosition(position);
     if (this._suggestionMarker) {
       this._overlayDecoration = textEditor.decorateMarker(this._suggestionMarker, {

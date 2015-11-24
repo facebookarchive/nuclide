@@ -100,7 +100,17 @@ export default class HyperclickForTextEditor {
       clientY: event.clientY,
     }: any);
 
-    if (this._isMouseAtLastWordRange()) {
+
+    // Don't fetch suggestions if the mouse is still in the same 'word', where
+    // 'word' is a whitespace-delimited group of characters.
+    //
+    // If the last suggestion had multiple ranges, we have no choice but to
+    // fetch suggestions because the new word might be between those ranges.
+    // This should be ok because it will reuse that last suggestion until the
+    // mouse moves off of it.
+    const lastSuggestionIsNotMultiRange = !this._lastSuggestionAtMouse ||
+        !Array.isArray(this._lastSuggestionAtMouse.range);
+    if (this._isMouseAtLastWordRange() && lastSuggestionIsNotMultiRange) {
       return;
     }
     const {range} = getWordTextAndRange(this._textEditor, this._getMousePositionAsBufferPosition());
@@ -226,8 +236,10 @@ export default class HyperclickForTextEditor {
     return this._isPositionInRange(this._getMousePositionAsBufferPosition(), lastWordRange);
   }
 
-  _isPositionInRange(position: atom$Point, range: atom$Range): boolean {
-    return range.containsPoint(position);
+  _isPositionInRange(position: atom$Point, range: atom$Range | Array<atom$Range>): boolean {
+    return (Array.isArray(range)
+        ? range.some(r => r.containsPoint(position))
+        : range.containsPoint(position));
   }
 
   _clearSuggestion(): void {
@@ -250,7 +262,7 @@ export default class HyperclickForTextEditor {
   /**
    * Add markers for the given range(s), or clears them if `ranges` is null.
    */
-  _updateNavigationMarkers(range: ?atom$Range): void {
+  _updateNavigationMarkers(range: ? (atom$Range | Array<atom$Range>)): void {
     if (this._navigationMarkers) {
       this._navigationMarkers.forEach(marker => marker.destroy());
       this._navigationMarkers = null;
@@ -263,12 +275,15 @@ export default class HyperclickForTextEditor {
     }
 
     this._textEditorView.classList.add('hyperclick');
-    const marker = this._textEditor.markBufferRange(range, {invalidate: 'never'});
-    this._textEditor.decorateMarker(
-      marker,
-      {type: 'highlight', class: 'hyperclick'}
-    );
-    this._navigationMarkers = [marker];
+    const ranges = Array.isArray(range) ? range : [range];
+    this._navigationMarkers = ranges.map(markerRange => {
+      const marker = this._textEditor.markBufferRange(markerRange, {invalidate: 'never'});
+      this._textEditor.decorateMarker(
+        marker,
+        {type: 'highlight', class: 'hyperclick'},
+      );
+      return marker;
+    });
   }
 
   /**
