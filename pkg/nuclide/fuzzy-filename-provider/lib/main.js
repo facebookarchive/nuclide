@@ -13,10 +13,11 @@ import type {
   Provider,
 } from 'nuclide-quick-open-interfaces';
 
-const {
+import {
   CompositeDisposable,
-  Disposable,
-} = require('atom');
+} from 'atom';
+
+import {getServiceByNuclideUri} from 'nuclide-client';
 
 let providerInstance: ?Provider;
 function getProviderInstance(): Provider {
@@ -59,20 +60,19 @@ let projectRoots: Set<string> = new Set();
  * @param projectPaths All the root directories in the Atom workspace.
  */
 function initSearch(projectPaths: Array<string>): void {
-  const {getClient} = require('nuclide-client');
   const newProjectRoots = new Set();
   projectPaths.forEach((projectPath) => {
     newProjectRoots.add(projectPath);
     if (projectRoots.has(projectPath)) {
       return;
     }
-    const client = getClient(projectPath);
-    if (client) {
+    const service: ?FuzzyFileSearchService = getServiceByNuclideUri(
+      'FuzzyFileSearchService', projectPath);
+    if (service) {
       // It doesn't matter what the search term is. Empirically, doing an initial
       // search speeds up the next search much more than simply doing the setup
       // kicked off by 'fileSearchForDirectory'.
-      client.searchDirectory(projectPath, 'a');
-      getActivation()._disposables.add(new Disposable(() => client.close()));
+      service.queryFuzzyFile(projectPath, 'a');
     }
   });
   projectRoots = newProjectRoots;

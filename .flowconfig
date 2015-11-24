@@ -6,6 +6,7 @@
 .*/scripts/.*
 
 # non-flowCheck
+.*/pkg/fb/diffs-and-tasks/.*
 .*/pkg/fb/biggrep-provider/.*
 .*/pkg/fb/graphql/.*
 .*/pkg/fb/hg-smartlog/.*

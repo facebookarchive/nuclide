@@ -10,10 +10,12 @@
  */
 
 import type {Task} from 'nuclide-task';
-import type {FileSearchResult} from './FileSearch';
+import type {FileSearchResult as FileSearchResultType} from './FileSearch';
+
+export type FileSearchResult = FileSearchResultType;
 
 type DirectoryUri = string;
-type FileSearch = {
+export type FileSearch = {
   query: (query: string) => Promise<Array<FileSearchResult>>;
   dispose: () => void;
 };

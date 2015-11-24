@@ -14,8 +14,7 @@ import type {
   Provider,
   ProviderType,
 } from 'nuclide-quick-open-interfaces';
-
-const {getClient} = require('nuclide-client');
+import {getFuzzyFileSearchService} from './utils';
 
 const FuzzyFileNameProvider: Provider = {
 
@@ -55,13 +54,15 @@ const FuzzyFileNameProvider: Provider = {
     if (query.length === 0) {
       return [];
     }
-    const directoryPath = directory.getPath();
-    const client = getClient(directoryPath);
-    if (client == null) {
+
+    const service = await getFuzzyFileSearchService(directory);
+    if (service == null) {
       return [];
     }
-    return client.searchDirectory(directoryPath, query);
+
+    const directoryPath = directory.getPath();
+    return await service.queryFuzzyFile(directoryPath, query);
   },
 };
 
-module.exports = FuzzyFileNameProvider;
+export default FuzzyFileNameProvider;

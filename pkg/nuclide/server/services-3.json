@@ -18,6 +18,10 @@
     "name": "FlowService"
   },
   {
+    "implementation": "nuclide-fuzzy-file-search-service/lib/FuzzyFileSearchService.js",
+    "name": "FuzzyFileSearchService"
+  },
+  {
     "definition": "nuclide-buck-base/lib/BuckUtils.def",
     "implementation": "nuclide-buck-base/lib/BuckUtils.js",
     "name": "BuckUtils"
