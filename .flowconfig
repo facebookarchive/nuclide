@@ -26,7 +26,6 @@
 .*/pkg/nuclide/buck/files/.*
 .*/pkg/nuclide/buck/toolbar/.*
 .*/pkg/nuclide/busy-signal-provider-base/.*
-.*/pkg/nuclide/busy-signal/.*
 .*/pkg/nuclide/clang-atom/.*
 .*/pkg/nuclide/clang/.*
 .*/pkg/nuclide/client/.*
