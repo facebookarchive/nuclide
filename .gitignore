@@ -1,5 +1,5 @@
 .DS_Store
-npm-debug.log
+npm-debug.log*
 *.pyc
 
 /node_modules
