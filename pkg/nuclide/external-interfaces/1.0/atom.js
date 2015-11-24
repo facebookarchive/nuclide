@@ -875,6 +875,11 @@ declare class atom$KeymapManager {
 
 }
 
+declare class atom$MenuManager {
+  add(items: Array<Object>): atom$Disposable;
+  update(): void;
+}
+
 declare class atom$Project {
   // Event Subscription
   onDidChangePaths(callback: (projectPaths: Array<string>) => mixed): atom$Disposable;
@@ -1026,6 +1031,7 @@ type AtomGlobal = {
   deserializers: atom$DeserializerManager;
   grammars: atom$GrammarRegistry;
   keymaps: atom$KeymapManager;
+  menu: atom$MenuManager;
   notifications: atom$NotificationManager;
   packages: atom$PackageManager;
   themes: atom$ThemeManager;
