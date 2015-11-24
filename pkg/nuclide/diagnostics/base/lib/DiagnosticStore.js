@@ -239,7 +239,9 @@ class DiagnosticStore {
    *   change. The array of messages is meant to completely replace any previous
    *   project-scope messages.
    */
-  onProjectMessagesDidUpdate(callback: (messages: Array<ProjectDiagnosticMessage>) => mixed): atom$Disposable {
+  onProjectMessagesDidUpdate(
+    callback: (messages: Array<ProjectDiagnosticMessage>) => mixed
+  ): atom$Disposable {
     const emitterDisposable = this._nonFileChangeEmitter.on(PROJECT_MESSAGE_CHANGE_EVENT, callback);
     this._projectListenersCount += 1;
 
