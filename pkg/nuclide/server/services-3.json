@@ -27,6 +27,10 @@
     "name": "HackSearchService"
   },
   {
+    "implementation": "nuclide-ocaml-base/lib/LocalMerlinService.js",
+    "name": "MerlinService"
+  },
+  {
     "name": "InfoService",
     "implementation": "lib/services/InfoService.js"
   },

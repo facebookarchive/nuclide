@@ -11,9 +11,16 @@
 
 import type {NuclideUri} from 'nuclide-remote-uri';
 
-var {PromiseQueue} = require('nuclide-commons');
+import {
+  checkOutput,
+  findNearestFile,
+  safeSpawn,
+  PromiseQueue,
+} from 'nuclide-commons';
 
-var ERROR_RESPONSES = new Set([
+const logger = require('nuclide-logging').getLogger();
+
+const ERROR_RESPONSES = new Set([
   'failure',
   'error',
   'exception',
@@ -27,7 +34,7 @@ var ERROR_RESPONSES = new Set([
  *   https://github.com/the-lambda-church/merlin/blob/master/PROTOCOL.md
  *   https://github.com/the-lambda-church/merlin/tree/master/src/frontend
  */
-class MerlinProcess {
+export class MerlinProcess {
   _proc: child_process$ChildProcess;
   _promiseQueue: PromiseQueue;
   _running: bool;
@@ -101,7 +108,7 @@ class MerlinProcess {
     line: number,
     col: number,
     kind: string,
-  ): Promise<?{file: string, pos: {line: number, column: number}}> {
+  ): Promise<?{file: string, pos: {line: number, col: number}}> {
     return await this._promiseQueue.submit(async (resolve, reject) => {
       var location: Object = await this.runSingleCommand([
         'locate',
@@ -198,4 +205,59 @@ class MerlinProcess {
   }
 }
 
-module.exports = MerlinProcess;
+let merlinProcessInstance: ?MerlinProcess;
+
+export async function getInstance(file: NuclideUri): Promise<?MerlinProcess> {
+  if (merlinProcessInstance && merlinProcessInstance.isRunning()) {
+    return merlinProcessInstance;
+  }
+
+  const merlinPath = getPathToMerlin();
+
+  if (!await isInstalled(merlinPath)) {
+    return null;
+  }
+
+  const dotMerlinPath = await findNearestFile('.merlin', file);
+
+  const options = {
+    cwd: (dotMerlinPath ? require('path').dirname(dotMerlinPath) : '.'),
+  };
+
+  logger.info('Spawning new ocamlmerlin process');
+  const process = await safeSpawn(merlinPath, [], options);
+  merlinProcessInstance = new MerlinProcess(process);
+
+  if (dotMerlinPath) {
+    // TODO(pieter) add support for multiple .dotmerlin files
+    await merlinProcessInstance.pushDotMerlinPath(dotMerlinPath);
+    logger.debug('Added .merlin path: ' + dotMerlinPath);
+  }
+
+  return merlinProcessInstance;
+}
+
+/**
+ * @return The path to ocamlmerlin on the user's machine. It is recommended not to cache the result
+ *   of this function in case the user updates his or her preferences in Atom, in which case the
+ *   return value will be stale.
+ */
+function getPathToMerlin(): string {
+  if (global.atom) {
+    return global.atom.config.get('nuclide-ocaml.pathToMerlin');
+  } else {
+    return 'ocamlmerlin';
+  }
+}
+
+let isInstalledCache: ?boolean = null;
+async function isInstalled(merlinPath: string): Promise<boolean> {
+  if (isInstalledCache == null) {
+    const result = await checkOutput('which', [merlinPath]);
+    isInstalledCache = result.exitCode === 0;
+    if (!isInstalledCache) {
+      logger.info('ocamlmerlin not installed');
+    }
+  }
+  return isInstalledCache;
+}

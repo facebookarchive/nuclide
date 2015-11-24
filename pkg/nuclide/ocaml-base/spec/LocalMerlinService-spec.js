@@ -13,16 +13,17 @@ var {uncachedRequire} = require('nuclide-test-helpers');
 
 describe('LocalMerlinService', () => {
   function getMockedMerlinService(callback): Promise<any> {
-    var MerlinProcess: any = uncachedRequire(require, '../lib/MerlinProcess');
-    var merlinService = new (uncachedRequire(require, '../lib/LocalMerlinService'): any)();
+    const MerlinProcess: any = uncachedRequire(require, '../lib/MerlinProcess');
 
-    spyOn(merlinService, '_getInstance').andCallFake(() => {
-      var mockedProcess = new MerlinProcess({on: () => null});
+    spyOn(MerlinProcess, 'getInstance').andCallFake(() => {
+      const mockedProcess = new MerlinProcess.MerlinProcess({on: () => null});
       spyOn(mockedProcess, 'runSingleCommand').andCallFake(callback);
       return Promise.resolve(mockedProcess);
     });
 
-    return Promise.resolve(merlinService);
+    const MerlinService = (uncachedRequire(require, '../lib/LocalMerlinService'): any);
+
+    return Promise.resolve(MerlinService);
   }
 
   describe('pushDotMerlinPath()', () => {
