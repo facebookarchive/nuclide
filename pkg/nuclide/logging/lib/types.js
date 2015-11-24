@@ -45,4 +45,10 @@ export type LoggingEvent = {
   logger?: {
     category: string;
   };
+  storageKey?: string;
+  runtime?: any;
+}
+
+export type LoggingAppender = {
+  appenders: any;
 }

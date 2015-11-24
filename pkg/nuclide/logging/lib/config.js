@@ -9,22 +9,24 @@
  * the root directory of this source tree.
  */
 
-var {clientInfo, fsPromise, systemInfo, ScribeProcess} = require('nuclide-commons');
-var os = require('os');
-var path = require('path');
-var {USER} = require('nuclide-commons').env;
+import type {LoggingAppender} from './types';
+const {clientInfo, fsPromise, systemInfo, ScribeProcess} = require('nuclide-commons');
+const os = require('os');
+const path = require('path');
+const {USER} = require('nuclide-commons').env;
+let LOG_FILE_PATH;
 
 if (systemInfo.isRunningInWindows()) {
-  var LOG_FILE_PATH = path.join(os.tmpdir(), `/nuclide-${USER}-logs/nuclide.log`);
+  LOG_FILE_PATH = path.join(os.tmpdir(), `/nuclide-${USER}-logs/nuclide.log`);
 } else {
-  var LOG_FILE_PATH = `/tmp/nuclide-${USER}-logs/nuclide.log`;
+  LOG_FILE_PATH = `/tmp/nuclide-${USER}-logs/nuclide.log`;
 }
 
-var logDirectory = path.dirname(LOG_FILE_PATH);
-var logDirectoryInitialized = false;
-var scribeAppenderPath = path.join(__dirname, '../fb/scribeAppender.js');
+const logDirectory = path.dirname(LOG_FILE_PATH);
+let logDirectoryInitialized = false;
+const scribeAppenderPath = path.join(__dirname, '../fb/scribeAppender.js');
 
-var LOG4JS_DATE_FORMAT = '-yyyy-MM-dd';
+const LOG4JS_DATE_FORMAT = '-yyyy-MM-dd';
 
 async function getServerLogAppenderConfig(): Promise<?Object> {
   // Skip config scribe_cat logger if
@@ -53,7 +55,7 @@ async function getServerLogAppenderConfig(): Promise<?Object> {
  * @return The absolute path to the log file for the specified date.
  */
 function getPathToLogFileForDate(targetDate: Date): string {
-  var log4jsFormatter = require('log4js/lib/date_format').asString;
+  const log4jsFormatter = require('log4js/lib/date_format').asString;
   return LOG_FILE_PATH + log4jsFormatter(LOG4JS_DATE_FORMAT, targetDate);
 }
 
@@ -65,7 +67,7 @@ function getPathToLogFileForToday(): string {
 }
 
 module.exports = {
-  async getDefaultConfig(): Promise<mixed> {
+  async getDefaultConfig(): Promise<LoggingAppender> {
 
     if (!logDirectoryInitialized) {
       await fsPromise.mkdirp(logDirectory);
@@ -97,7 +99,7 @@ module.exports = {
       ],
     };
 
-    var serverLogAppenderConfig = await getServerLogAppenderConfig();
+    const serverLogAppenderConfig = await getServerLogAppenderConfig();
     if (serverLogAppenderConfig) {
       config.appenders.push(serverLogAppenderConfig);
     }

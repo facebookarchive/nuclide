@@ -11,7 +11,6 @@
 .*/pkg/fb/graphql/.*
 .*/pkg/fb/handle-url/.*
 .*/pkg/fb/hg-smartlog/.*
-.*/pkg/fb/logging-helper/.*
 .*/pkg/fb/nuclide-file-creation-ios/.*
 .*/pkg/fb/nuclide-file-creation/.*
 .*/pkg/fb/phabricator-comments-client/.*

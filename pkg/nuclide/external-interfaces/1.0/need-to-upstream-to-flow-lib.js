@@ -12,6 +12,11 @@
 
 /* eslint-disable no-unused-vars */
 
+type IDBDatabase = {
+  close: () => void;
+  transaction: (key: string) => any;
+}
+
 type CreateInterfaceOptions = {
   input: stream$Readable;
   output?: stream$Writable;

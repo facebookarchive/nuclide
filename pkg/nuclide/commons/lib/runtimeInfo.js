@@ -36,7 +36,7 @@ export type RuntimeInformation = {
   uptime: number;
 };
 
-var cachedInformation = null;
+let cachedInformation = null;
 
 function getCacheableRuntimeInformation(): RuntimeInformation {
   if (cachedInformation !== null) {
@@ -63,7 +63,7 @@ function getCacheableRuntimeInformation(): RuntimeInformation {
 }
 
 export function getRuntimeInformation(): RuntimeInformation {
-  var runtimeInformation = assign({}, getCacheableRuntimeInformation());
+  const runtimeInformation = assign({}, getCacheableRuntimeInformation());
   runtimeInformation.sessionId = session.id;
   runtimeInformation.timestamp = Date.now();
   runtimeInformation.installerPackageVersion = getInstallerPackageBuildNumber();
