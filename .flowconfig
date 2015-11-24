@@ -9,7 +9,6 @@
 .*/pkg/fb/biggrep-provider/.*
 .*/pkg/fb/error-reporting/.*
 .*/pkg/fb/graphql/.*
-.*/pkg/fb/handle-url/.*
 .*/pkg/fb/hg-smartlog/.*
 .*/pkg/fb/nuclide-file-creation-ios/.*
 .*/pkg/fb/nuclide-file-creation/.*

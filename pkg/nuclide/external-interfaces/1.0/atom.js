@@ -1066,8 +1066,9 @@ declare var atom: AtomGlobal;
  * ipc is used by webviews to communicate with the parent view.
  */
 declare module 'ipc' {
-  declare function on(name: string, callback: (event: any) => void): atom$Disposable;
-  declare function sendToHost(name: string, ...args: any[]): void;
+  declare function on(channel: string, callback: (event: any) => void): atom$Disposable;
+  declare function send(channel: string, ...args: any[]): void;
+  declare function sendToHost(channel: string, ...args: any[]): void;
 }
 
 declare class WebviewElement extends HTMLElement {
