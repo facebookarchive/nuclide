@@ -2,11 +2,5 @@
   {
     "useServiceFramework": false,
     "path": "lib/services/NuclideSearchService.js"
-  },
-  {
-    "definition": "nuclide-clang/lib/ClangService.js",
-    "implementation": "nuclide-clang/lib/LocalClangService.js",
-    "name": "ClangService",
-    "useServiceFramework": true
   }
 ]

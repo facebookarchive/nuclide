@@ -14,6 +14,10 @@
     "name": "FileSystemService"
   },
   {
+    "implementation": "nuclide-clang/lib/ClangService.js",
+    "name": "ClangService"
+  },
+  {
     "implementation": "nuclide-flow-base/lib/FlowService.js",
     "name": "FlowService"
   },
