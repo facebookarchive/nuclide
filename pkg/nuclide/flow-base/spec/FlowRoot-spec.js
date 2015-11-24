@@ -120,7 +120,7 @@ describe('FlowRoot', () => {
       );
     }
 
-    [oldRunWith, newRunWith].forEach(runWith => {
+    [oldRunWith, newRunWith].forEach((runWith: (results: any) => Promise<Array<any>>) => {
 
       async function getNameArray(results: Object): Promise<Array<string>> {
         return ((await runWith(results)).map(item => item.text));
