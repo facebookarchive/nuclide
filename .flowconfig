@@ -7,7 +7,6 @@
 
 # non-flowCheck
 .*/pkg/fb/biggrep-provider/.*
-.*/pkg/fb/error-reporting/.*
 .*/pkg/fb/graphql/.*
 .*/pkg/fb/hg-smartlog/.*
 .*/pkg/fb/nuclide-file-creation-ios/.*
