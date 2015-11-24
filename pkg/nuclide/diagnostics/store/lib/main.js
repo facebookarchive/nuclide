@@ -9,7 +9,13 @@
  * the root directory of this source tree.
  */
 
-import type {DiagnosticStore} from 'nuclide-diagnostics-base';
+import type {
+  DiagnosticStore,
+  DiagnosticUpdater,
+  DiagnosticProviderUpdate,
+  DiagnosticProvider,
+  InvalidationMessage,
+} from 'nuclide-diagnostics-base';
 import type {LinterProvider} from './LinterAdapter';
 
 import {Disposable, CompositeDisposable} from 'atom';

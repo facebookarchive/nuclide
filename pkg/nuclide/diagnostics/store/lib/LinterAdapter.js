@@ -11,6 +11,15 @@
 
 import type {NuclideUri} from 'nuclide-remote-uri';
 
+import type {
+  DiagnosticMessage,
+  DiagnosticProviderUpdate,
+  FileDiagnosticMessage,
+  ProjectDiagnosticMessage,
+  MessageUpdateCallback,
+  MessageInvalidationCallback,
+} from 'nuclide-diagnostics-base';
+
 type LinterTrace = {
   type: 'Trace';
   text?: string;
@@ -67,8 +76,13 @@ export function linterMessageToDiagnosticMessage(
   msg: LinterMessage,
   providerName: string,
 ): DiagnosticMessage {
+  // The types are slightly different, so we need to copy to make Flow happy. Basically, a Trace
+  // does not need a filePath property, but a LinterTrace does. Trace is a subtype of LinterTrace,
+  // so copying works but aliasing does not. For a detailed explanation see
+  // https://github.com/facebook/flow/issues/908
+  const trace = msg.trace ? msg.trace.map(component => ({...component})) : undefined;
   if (msg.filePath) {
-    return {
+    return ({
       scope: 'file',
       providerName,
       type: msg.type,
@@ -76,18 +90,18 @@ export function linterMessageToDiagnosticMessage(
       text: msg.text,
       html: msg.html,
       range: msg.range && Range.fromObject(msg.range),
-      trace: msg.trace,
-    };
+      trace: trace,
+    }: FileDiagnosticMessage);
   } else {
-    return {
+    return ({
       scope: 'project',
       providerName,
       type: msg.type,
       text: msg.text,
       html: msg.html,
       range: msg.range && Range.fromObject(msg.range),
-      trace: msg.trace,
-    };
+      trace: trace,
+    }: ProjectDiagnosticMessage);
   }
 }
 

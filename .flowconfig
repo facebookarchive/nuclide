@@ -33,7 +33,6 @@
 .*/pkg/nuclide/debugger/atom/spec/.*
 .*/pkg/nuclide/debugger/hhvm/.*
 .*/pkg/nuclide/debugger/node/.*
-.*/pkg/nuclide/diagnostics/store/.*
 .*/pkg/nuclide/diagnostics/ui/.*
 .*/pkg/nuclide/diff-view/.*
 .*/pkg/nuclide/file-tree/.*

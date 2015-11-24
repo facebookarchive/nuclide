@@ -169,7 +169,7 @@ describe('message transformation functions', () => {
   };
 
   let providerName;
-  let currentPath;
+  let currentPath: string = (null: any);
 
   beforeEach(() => {
     providerName = 'provider';
