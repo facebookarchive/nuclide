@@ -1,4 +1,4 @@
-'use babel';
+'use strict';
 /* @flow */
 
 /*
@@ -8,6 +8,12 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
+
+/**
+ * THIS IS FILE IS NOT TRANSPILED - USE ELECTRON COMPATIBLE JAVASCRIPT
+ */
+
+/*eslint-disable no-var*/
 
 require('nuclide-node-transpiler');
 
@@ -20,8 +26,8 @@ window.XMLHttpRequest.prototype.open = (function(original) {
     'nuclide_',
   ];
   return function(method, url, async, user, password) {
-    let newUrl;
-    for (let i = 0; i < unmappedUrlPrefixes.length; i++) {
+    var newUrl;
+    for (var i = 0; i < unmappedUrlPrefixes.length; i++) {
       if (url.startsWith(unmappedUrlPrefixes[i]) ||
           url.startsWith('./' + unmappedUrlPrefixes[i])) {
         newUrl = url;
