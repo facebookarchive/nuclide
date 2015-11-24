@@ -35,4 +35,8 @@ class ProcessOutputWrapper extends NuclideCustomPaneItem {
   }
 }
 
-module.exports = document.registerElement('process-output-wrapper', ProcessOutputWrapper);
+ProcessOutputWrapper = document.registerElement('process-output-wrapper', {
+  prototype: ProcessOutputWrapper.prototype,
+});
+
+export {ProcessOutputWrapper};

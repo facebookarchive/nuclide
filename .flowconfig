@@ -52,7 +52,6 @@
 .*/pkg/nuclide/installer/.*
 .*/pkg/nuclide/language-hack/.*
 .*/pkg/nuclide/ocaml/.*
-.*/pkg/nuclide/process/output/.*
 .*/pkg/nuclide/quick-open/.*
 .*/pkg/nuclide/remote-connection/.*
 .*/pkg/nuclide/remote-projects/.*

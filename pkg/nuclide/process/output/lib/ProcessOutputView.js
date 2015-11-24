@@ -10,7 +10,7 @@
  */
 
 import type {ProcessOutputStore} from 'nuclide-process-output-store';
-import type ProcessOutputHandler from './types';
+import type {ProcessOutputHandler} from './types';
 
 const {CompositeDisposable, TextBuffer} = require('atom');
 const AtomTextEditor = require('nuclide-ui-atom-text-editor');
@@ -18,7 +18,19 @@ const React = require('react-for-atom');
 
 const PROCESS_OUTPUT_PATH = 'nuclide-process-output.ansi';
 
-class ProcessOutputView extends React.Component {
+/* eslint-disable react/prop-types */
+
+type DefaultProps = {};
+type Props = {
+  onDidBufferChange: (event: Object) => void,
+  processOutputStore: ProcessOutputStore,
+  processOutputHandler: ?ProcessOutputHandler,
+  processOutputViewTopElement: ?HTMLElement,
+};
+type State = {};
+
+
+export default class ProcessOutputView extends React.Component<DefaultProps, Props, State> {
   _processOutputStore: ProcessOutputStore;
   _textBuffer: atom$TextBuffer;
   _disposables: atom$CompositeDisposable;
@@ -31,7 +43,7 @@ class ProcessOutputView extends React.Component {
    *   output of the process. If not provided, the default action is to simply
    *   append the output of the process to the view.
    */
-  constructor(props: {[key: string]: mixed}) {
+  constructor(props: Props) {
     super(props);
     this._processOutputStore = props.processOutputStore;
     this._outputHandler = props.processOutputHandler;
@@ -81,11 +93,4 @@ class ProcessOutputView extends React.Component {
   }
 }
 
-ProcessOutputView.propTypes = {
-  onDidBufferChange: React.PropTypes.func.isRequired,
-  processOutputStore: React.PropTypes.object.isRequired,
-  processOutputHandler: React.PropTypes.func,
-  processOutputViewTopElement: React.PropTypes.element,
-};
-
-module.exports = ProcessOutputView;
+/* eslint-enable react/prop-types */

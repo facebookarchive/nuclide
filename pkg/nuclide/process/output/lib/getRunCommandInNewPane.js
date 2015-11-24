@@ -10,7 +10,7 @@
  */
 
 import type {ProcessOutputStore} from 'nuclide-process-output-store';
-import type ProcessOutputHandler from './types';
+import type {ProcessOutputHandler} from './types';
 
 export type RunCommandOptions = {
   /* A title for the tab of the newly opened pane. */
@@ -28,7 +28,7 @@ export type RunCommandOptions = {
   destroyExistingPane?: boolean;
 };
 export type RunCommandFunctionAndCleanup = {
-  runCommandInNewPane: (options: RunCommandOptions) => HTMLElement;
+  runCommandInNewPane: (options: RunCommandOptions) => Promise<atom$TextEditor>;
   disposable: atom$IDisposable;
 };
 
@@ -41,9 +41,9 @@ const PROCESS_OUTPUT_HANDLER_KEY = 'nuclide-processOutputHandler';
 const PROCESS_OUTPUT_STORE_KEY = 'nuclide-processOutputStore';
 const PROCESS_OUTPUT_VIEW_TOP_ELEMENT = 'nuclide-processOutputViewTopElement';
 type CreateProcessOutputViewOptions = {
-  PROCESS_OUTPUT_HANDLER_KEY: ?ProcessOutputHandler;
-  PROCESS_OUTPUT_STORE_KEY: ProcessOutputStore;
-  PROCESS_OUTPUT_VIEW_TOP_ELEMENT: ?ReactElement;
+  'nuclide-processOutputHandler': ?ProcessOutputHandler;
+  'nuclide-processOutputStore': ProcessOutputStore;
+  'nuclide-processOutputViewTopElement': ?ReactElement;
 };
 
 let subscriptions: ?CompositeDisposable;
@@ -73,7 +73,7 @@ function createProcessOutputView(
   const processOutputViewTopElement = openOptions[PROCESS_OUTPUT_VIEW_TOP_ELEMENT];
   const tabTitle = uri.slice(NUCLIDE_PROCESS_OUTPUT_VIEW_URI.length);
 
-  const ProcessOutputWrapper = require('./ProcessOutputWrapper');
+  const {ProcessOutputWrapper} = require('./ProcessOutputWrapper');
   const hostElement = new ProcessOutputWrapper();
   hostElement.initialize({
     title: tabTitle,
@@ -105,10 +105,13 @@ function createProcessOutputView(
 /**
  * @param options See definition of RunCommandOptions.
  */
-async function runCommandInNewPane(options: RunCommandOptions): Promise<HTMLElement> {
+function runCommandInNewPane(options: RunCommandOptions): Promise<atom$TextEditor> {
   const openOptions = {
+    // $FlowIssue https://github.com/facebook/flow/issues/252
     [PROCESS_OUTPUT_HANDLER_KEY]: options.processOutputHandler,
+    // $FlowIssue https://github.com/facebook/flow/issues/252
     [PROCESS_OUTPUT_STORE_KEY]: options.processOutputStore,
+    // $FlowIssue https://github.com/facebook/flow/issues/252
     [PROCESS_OUTPUT_VIEW_TOP_ELEMENT]: options.processOutputViewTopElement,
   };
 
@@ -128,6 +131,7 @@ async function runCommandInNewPane(options: RunCommandOptions): Promise<HTMLElem
 function activateModule(): void {
   if (!subscriptions) {
     subscriptions = new CompositeDisposable();
+    // $FlowFixMe: the expando options argument is an undocumented hack.
     subscriptions.add(atom.workspace.addOpener((uri, options) => {
       if (uri.startsWith(NUCLIDE_PROCESS_OUTPUT_VIEW_URI)) {
         return createProcessOutputView(uri, options);
