@@ -146,10 +146,10 @@ function startWebWorker(): Worker {
   // http://stackoverflow.com/questions/10343913/how-to-create-a-web-worker-from-a-string
   // I did so because I can't use the atom:// url protocol to load resources in javascript:
   // https://github.com/atom/atom/blob/master/src/browser/atom-protocol-handler.coffee
-  var hhIdeText = fs.readFileSync(path.join(__dirname, '../static/hh_ide.js'));
-  var webWorkerText = fs.readFileSync(path.join(__dirname, '../static/HackWebWorker.js'));
+  const hhIdeText = fs.readFileSync(path.join(__dirname, '../VendorLib/hh_ide.js'));
+  const webWorkerText = fs.readFileSync(path.join(__dirname, '../static/HackWebWorker.js'));
   // Concatenate the code text to pass to the Worker in a blob url
-  var workerText = hhIdeText + '\n//<<MERGE>>\n' + webWorkerText;
+  const workerText = hhIdeText + '\n//<<MERGE>>\n' + webWorkerText;
   var {Blob, Worker, URL} = window;
   var blob = new Blob([workerText], {type: 'application/javascript'});
   var worker = new Worker(URL.createObjectURL(blob));
