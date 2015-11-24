@@ -69,8 +69,10 @@ class TypeHintManager {
         this._typeHintToggle = !this._typeHintToggle;
         if (this._typeHintToggle) {
           const editor = atom.workspace.getActiveTextEditor();
-          const position = editor.getCursorScreenPosition();
-          this._typeHintInEditor(editor, position);
+          if (editor != null) {
+            const position = editor.getCursorScreenPosition();
+            this._typeHintInEditor(editor, position);
+          }
         } else {
           this._typeHintElement.style.display = 'none';
         }
@@ -86,7 +88,9 @@ class TypeHintManager {
       }));
 
       const editorView = atom.views.getView(editor);
-      const mouseMoveListener = (e) => this._delayedTypeHint(e, editor, editorView);
+      const mouseMoveListener = (e) => {
+        this._delayedTypeHint(((e: any): MouseEvent), editor, editorView);
+      };
       editorView.addEventListener('mousemove', mouseMoveListener);
       const mouseListenerSubscription = new Disposable(() =>
           editorView.removeEventListener('mousemove', mouseMoveListener));

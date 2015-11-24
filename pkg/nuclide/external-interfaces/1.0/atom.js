@@ -578,6 +578,8 @@ declare class atom$TextEditor extends atom$Model {
   setSoftWrapped(softWrapped: boolean): void;
 
   // Undocumented Methods
+  getDefaultCharWidth(): number;
+  getLineHeightInPixels(): number;
   moveToTop(): void;
 }
 

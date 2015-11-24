@@ -13,6 +13,8 @@ import type {
   TypeHintProvider,
 } from './TypeHintManager';
 
+import invariant from 'assert';
+
 import type TypeHintManager from './TypeHintManager';
 
 const {Disposable} = require('atom');
@@ -29,8 +31,13 @@ module.exports = {
   },
 
   consumeProvider(provider: TypeHintProvider): Disposable {
+    invariant(typeHintManager);
     typeHintManager.addProvider(provider);
-    return new Disposable(() => typeHintManager.removeProvider(provider));
+    return new Disposable(() => {
+      if (typeHintManager != null) {
+        typeHintManager.removeProvider(provider);
+      }
+    });
   },
 
   deactivate() {
