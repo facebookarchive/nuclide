@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import invariant from 'assert';
+
 /**
  * This file contains a set of custom matchers for jasmine testing, as described
  * here: http://jasmine.github.io/1.3/introduction.html#section-Writing_a_custom_matcher.
@@ -38,6 +40,7 @@ function toEqualAtomRanges(expected: ?Array<atom$Range>): boolean {
     return false;
   }
   this.actual.some((range, index) => {
+    invariant(expected); // Tell Flow this is definitely non-null now.
     if (range.isEqual(expected[index])) {
       return false;
     } else {

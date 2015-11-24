@@ -33,6 +33,10 @@ type JasmineMatcher = {
   // Custom Matchers from nuclide-test-helpers
   diffJson(expected: mixed): boolean;
   diffLines(expected: string): boolean;
+
+  // Custom Matchers from nuclide-atom-test-helpers
+  toEqualAtomRange(): boolean;
+  toEqualAtomRanges(): boolean;
 };
 
 // Declaring, describing, and grouping tests
