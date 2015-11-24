@@ -8,6 +8,9 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
+
+import type {DiagnosticMessage} from 'nuclide-diagnostics-base';
+
 const {Column, Table} = require('fixed-data-table-for-atom');
 const React = require('react-for-atom');
 
@@ -63,9 +66,6 @@ function messageColumnCellDataGetter(
   let text = '';
   let isPlainText = true;
   const traces = diagnostic.trace || [];
-  // This works fine, and in fact Flow accepts it if I use a for...of and push onto the array,
-  // instead of using a spread operator.
-  // $FlowIssue
   const allMessages: Array<{html?: string, text?: string}> = [diagnostic, ...traces];
   for (const message of allMessages) {
     if (message.html != null) {
@@ -96,7 +96,7 @@ function onRowClick(
   rowIndex: number,
   rowData: DiagnosticMessage
 ): void {
-  if (rowData.filePath == null) {
+  if (rowData.scope !== 'file' || rowData.filePath == null) {
     return;
   }
 

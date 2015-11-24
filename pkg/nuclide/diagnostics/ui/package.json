@@ -43,7 +43,8 @@
   },
   "devDependencies": {
     "nuclide-diagnostics-base": "0.0.0",
-    "nuclide-home-interfaces": "0.0.0"
+    "nuclide-home-interfaces": "0.0.0",
+    "nuclide-remote-uri": "0.0.0"
   },
   "_atomModuleCache": {
     "extensions": {

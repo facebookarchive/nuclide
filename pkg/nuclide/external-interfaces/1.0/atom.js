@@ -496,7 +496,7 @@ declare class atom$TextEditor extends atom$Model {
 
   // Markers
   markBufferPosition(position: atom$Point | Array<number>): atom$Marker;
-  markBufferRange(range: atom$Range | Array<Array<number>>, properties: {
+  markBufferRange(range: atom$Range | Array<Array<number>>, properties?: {
     maintainHistory?: boolean;
     reversed?: boolean;
     persistent?: boolean;

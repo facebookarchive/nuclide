@@ -9,15 +9,17 @@
  * the root directory of this source tree.
  */
 
+import type {FileDiagnosticMessage} from 'nuclide-diagnostics-base';
+
 const {Range} = require('atom');
 
 const {compareMessagesByFile} = require('../lib/paneUtils');
 
 describe('compareMessagesByFile', () => {
 
-  let fileAMsgA: FileDiagnosticMessage;
-  let fileAMsgB: FileDiagnosticMessage;
-  let fileBMsgA: FileDiagnosticMessage;
+  let fileAMsgA: FileDiagnosticMessage = (null: any);
+  let fileAMsgB: FileDiagnosticMessage = (null: any);
+  let fileBMsgA: FileDiagnosticMessage = (null: any);
 
   beforeEach(() => {
     fileAMsgA = {

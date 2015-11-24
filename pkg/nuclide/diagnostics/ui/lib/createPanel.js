@@ -8,6 +8,12 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
+
+import type {
+  DiagnosticMessage,
+  DiagnosticUpdater,
+} from 'nuclide-diagnostics-base';
+
 const invariant = require('assert');
 const {debounce} = require('nuclide-commons');
 const {compareMessagesByFile} = require('./paneUtils');
@@ -89,7 +95,8 @@ function createDiagnosticsPanel(
 
   const activePaneItemSubscription = atom.workspace.onDidChangeActivePaneItem(paneItem => {
     if (isTextEditor(paneItem)) {
-      props.pathToActiveTextEditor = paneItem ? paneItem.getPath() : null;
+      const textEditor: atom$TextEditor = (paneItem: any);
+      props.pathToActiveTextEditor = textEditor ? textEditor.getPath() : null;
       if (props.filterByActiveTextEditor) {
         render();
       }

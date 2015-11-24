@@ -8,6 +8,9 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
+
+import type {DiagnosticUpdater} from 'nuclide-diagnostics-base';
+
 import invariant from 'assert';
 import {CompositeDisposable} from 'atom';
 

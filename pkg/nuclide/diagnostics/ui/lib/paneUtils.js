@@ -8,6 +8,9 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
+
+import type {DiagnosticMessage} from 'nuclide-diagnostics-base';
+
 function fileColumnCellDataGetter(cellDataKey: 'filePath', diagnostic: DiagnosticMessage): string {
   if (diagnostic.filePath) {
     const [, relativePath] = atom.project.relativizePath(diagnostic.filePath);

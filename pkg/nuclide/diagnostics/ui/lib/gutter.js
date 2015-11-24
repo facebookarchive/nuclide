@@ -8,6 +8,15 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
+
+import type {
+  FileMessageUpdate,
+  FileDiagnosticMessage,
+  Trace,
+} from 'nuclide-diagnostics-base';
+
+import type {NuclideUri} from 'nuclide-remote-uri';
+
 const {track} = require('nuclide-analytics');
 const React = require('react-for-atom');
 
@@ -282,15 +291,17 @@ function createElementForTrace(
   goToLocation: (path: string, line: number) => mixed,
 ): HTMLElement {
   let locSpan = null;
-  if (trace.filePath) {
-    const [, relativePath] = atom.project.relativizePath(trace.filePath);
+  // Local variable so that the type refinement holds in the onClick handler.
+  const path = trace.filePath;
+  if (path) {
+    const [, relativePath] = atom.project.relativizePath(path);
     let locString = relativePath;
     if (trace.range) {
       locString += `:${trace.range.start.row + 1}`;
     }
     const onClick = () => {
       track('diagnostics-gutter-goto-location');
-      goToLocation(trace.filePath, Math.max(trace.range ? trace.range.start.row : 0, 0));
+      goToLocation(path, Math.max(trace.range ? trace.range.start.row : 0, 0));
     };
     locSpan = <span>: <a href="#" onClick={onClick}>{locString}</a></span>;
   }
