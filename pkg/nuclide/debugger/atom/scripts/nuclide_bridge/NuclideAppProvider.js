@@ -26,9 +26,9 @@ class NuclideApp extends WebInspector.App {
   presentUI() {
     var rootView = new WebInspector.RootView();
     WebInspector.inspectorView.show(rootView.element);
-    WebInspector.inspectorView.panel('sources').then(sourcesPanel => {
+    WebInspector.inspectorView.panel('sources').then(panel => {
       // Force Sources view to hide the editor.
-      var sourcesPanel: any = sourcesPanel;
+      const sourcesPanel: any = panel;
       sourcesPanel._splitView.addEventListener(
         WebInspector.SplitView.Events.ShowModeChanged,
         this._forceOnlySidebar,

@@ -28,10 +28,10 @@ function getUndeclaredTypes(
 
   var undeclared = getNonDeclarationTypes(root);
   // now remove anything that was declared
-  for (var name of declaredIdentifiers) {
+  for (const name of declaredIdentifiers) {
     undeclared.delete(name);
   }
-  for (var name of declaredTypes) {
+  for (const name of declaredTypes) {
     undeclared.delete(name);
   }
   return undeclared;

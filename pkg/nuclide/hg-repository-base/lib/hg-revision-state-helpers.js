@@ -132,8 +132,9 @@ function parseRevisionFileChangeOutput(
 
 
 async function hgAsyncExecute(args: Array<string>, execOptions: any): Promise<any> {
+  let output;
   try {
-    var output = await asyncExecute('hg', args, execOptions);
+    output = await asyncExecute('hg', args, execOptions);
   } catch (e) {
     logger.error('Hg command: failed with error: ', e.stderr);
     return null;

@@ -90,13 +90,10 @@ function applyUpdateToEditor(editor: TextEditor, update: FileMessageUpdate): voi
     }
 
     var highlightCssClass;
-    var gutterMarkerCssClass;
     if (message.type === 'Error') {
       highlightCssClass = HIGHLIGHT_CSS + ' ' + ERROR_HIGHLIGHT_CSS;
-      gutterMarkerCssClass = ERROR_GUTTER_CSS;
     } else {
       highlightCssClass = HIGHLIGHT_CSS + ' ' + WARNING_HIGHLIGHT_CSS;
-      gutterMarkerCssClass = WARNING_GUTTER_CSS;
     }
 
     // This marker underlines text.
@@ -113,7 +110,7 @@ function applyUpdateToEditor(editor: TextEditor, update: FileMessageUpdate): voi
   for (var [row, messages] of rowToMessage.entries()) {
     // If at least one of the diagnostics is an error rather than the warning,
     // display the glyph in the gutter to represent an error rather than a warning.
-    var gutterMarkerCssClass = messages.some(msg => msg.type === 'Error')
+    const gutterMarkerCssClass = messages.some(msg => msg.type === 'Error')
       ? ERROR_GUTTER_CSS
       : WARNING_GUTTER_CSS;
 

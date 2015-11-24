@@ -30,15 +30,15 @@ export function from<T, U>(
   if (typeof Symbol !== 'undefined' &&
       typeof arrayLike === 'object' &&
       typeof arrayLike[Symbol.iterator] === 'function') {
-    var array = [];
+    const array = [];
     // $FlowIssue: property @@iterator not found
-    for (var value of arrayLike) {
+    for (const value of arrayLike) {
       array.push(mapFn.call(thisArg, value));
     }
     return array;
   } else if (typeof arrayLike.next === 'function') {
-    var array = [];
-    for (var value of arrayLike) {
+    const array = [];
+    for (const value of arrayLike) {
       array.push(mapFn.call(thisArg, value));
     }
     return array;

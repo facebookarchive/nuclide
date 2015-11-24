@@ -22,8 +22,9 @@ async function findVcsHelper(src: string): Promise<VcsInfo> {
   var options = {
     'cwd': path.dirname(src),
   };
+  let hgResult;
   try {
-    var hgResult = await asyncExecute('hg', ['root'], options);
+    hgResult = await asyncExecute('hg', ['root'], options);
   } catch (e) {
     hgResult = e;
   }

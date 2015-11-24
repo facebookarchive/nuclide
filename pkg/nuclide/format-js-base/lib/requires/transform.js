@@ -26,8 +26,9 @@ var removeUnusedTypes = require('./removeUnusedTypes');
  */
 function transform(root: Collection, options: SourceOptions): void {
   var blacklist: Set<TransformKey> = options.blacklist || new Set();
+  let comments;
   if (!blacklist.has('requires.transferComments')) {
-    var comments = removeLeadingComments(root);
+    comments = removeLeadingComments(root);
   }
   if (!blacklist.has('requires.removeUnusedRequires')) {
     removeUnusedRequires(root, options);

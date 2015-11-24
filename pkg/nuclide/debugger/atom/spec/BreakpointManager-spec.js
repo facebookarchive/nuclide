@@ -34,8 +34,8 @@ describe('BreakpointManager', () => {
 
   it('should clean up breakpoint display for an editor when the editor is closed', () => {
     waitsForPromise(async () => {
-      var editor = await utils.createEditorWithUniquePath();
-      var path = editor.getPath();
+      const uniqueEditor = await utils.createEditorWithUniquePath();
+      const path = uniqueEditor.getPath();
       breakpointStore.addBreakpoint(path, 1);
       var editor = await atom.workspace.open(path);
       expect(hasBreakpointDecorationInRow(editor, 0)).toBe(true);

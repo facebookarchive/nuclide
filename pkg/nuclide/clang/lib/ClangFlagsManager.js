@@ -97,10 +97,11 @@ class ClangFlagsManager {
 
     // TODO(mbolin): The architecture should be chosen from a dropdown menu like
     // it is in Xcode rather than hardcoding things to iphonesimulator-x86_64.
+    let arch;
     if (process.platform === 'darwin') {
-      var arch = 'iphonesimulator-x86_64';
+      arch = 'iphonesimulator-x86_64';
     } else {
-      var arch = 'default';
+      arch = 'default';
     }
     // TODO(mbolin): Need logic to make sure results are restricted to
     // apple_library or apple_binary rules. In practice, this should be OK for
@@ -163,13 +164,13 @@ class ClangFlagsManager {
     args.forEach((arg, argIndex) => {
       if (CLANG_FLAGS_THAT_TAKE_PATHS.has(arg)) {
         var nextIndex = argIndex + 1;
-        var filePath = args[nextIndex];
+        let filePath = args[nextIndex];
         if (!path.isAbsolute(filePath)) {
           filePath = path.join(buckProjectRoot, filePath);
           args[nextIndex] = filePath;
         }
       } else if (SINGLE_LETTER_CLANG_FLAGS_THAT_TAKE_PATHS.has(arg.substring(0, 2))) {
-        var filePath = arg.substring(2);
+        let filePath = arg.substring(2);
         if (!path.isAbsolute(filePath)) {
           filePath = path.join(buckProjectRoot, filePath);
           args[argIndex] = arg.substring(0, 2) + filePath;

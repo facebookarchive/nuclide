@@ -57,22 +57,22 @@ describe('findWholeRangeOfSymbol', () => {
 
     var text1 = 'createDirectoryAtPath';
     var textRangeInSample1 = new Range([17, 20], [17, 41]);
-    var ranges = findWholeRangeOfSymbol(editor, text1, textRangeInSample1, spelling, extent);
-    expect(ranges).toEqualAtomRanges(expectedRanges);
+    const ranges1 = findWholeRangeOfSymbol(editor, text1, textRangeInSample1, spelling, extent);
+    expect(ranges1).toEqualAtomRanges(expectedRanges);
 
     var text2 = 'withIntermediateDirectories';
     var textRangeInSample2 = new Range([18, 14], [18, 41]);
-    var ranges = findWholeRangeOfSymbol(editor, text2, textRangeInSample2, spelling, extent);
-    expect(ranges).toEqualAtomRanges(expectedRanges);
+    const ranges2 = findWholeRangeOfSymbol(editor, text2, textRangeInSample2, spelling, extent);
+    expect(ranges2).toEqualAtomRanges(expectedRanges);
 
     var text3 = 'attributes';
     var textRangeInSample3 = new Range([19, 31], [19, 41]);
-    var ranges = findWholeRangeOfSymbol(editor, text3, textRangeInSample3, spelling, extent);
-    expect(ranges).toEqualAtomRanges(expectedRanges);
+    const ranges3 = findWholeRangeOfSymbol(editor, text3, textRangeInSample3, spelling, extent);
+    expect(ranges3).toEqualAtomRanges(expectedRanges);
 
     var text4 = 'createDirectoryAtPath';
     var textRangeInSample4 = new Range([19, 46], [19, 51]);
-    var ranges = findWholeRangeOfSymbol(editor, text4, textRangeInSample4, spelling, extent);
-    expect(ranges).toEqualAtomRanges(expectedRanges);
+    const ranges4 = findWholeRangeOfSymbol(editor, text4, textRangeInSample4, spelling, extent);
+    expect(ranges4).toEqualAtomRanges(expectedRanges);
   });
 });

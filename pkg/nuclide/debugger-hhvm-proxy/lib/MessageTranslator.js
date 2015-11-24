@@ -65,18 +65,18 @@ export class MessageTranslator {
 
   async handleCommand(command: string): Promise {
     log('handleCommand: ' + command);
-    var {id, method, params} = JSON.parse(command);
+    const {id, method, params} = JSON.parse(command);
 
     if (!method || typeof method !== 'string') {
       this._replyWithError(id, 'Missing method: ' + command);
       return;
     }
-    var methodParts = method.split('.');
+    const methodParts = method.split('.');
     if (methodParts.length !== 2) {
       this._replyWithError(id, 'Badly formatted method: ' + command);
       return;
     }
-    var [domain, method] = methodParts;
+    const [domain, methodName] = methodParts;
 
     if (!this._handlers.has(domain)) {
       this._replyWithError(id, 'Unknown domain: ' + command);
@@ -84,7 +84,7 @@ export class MessageTranslator {
     }
 
     try {
-      await this._handlers.get(domain).handleMethod(id, method, params);
+      await this._handlers.get(domain).handleMethod(id, methodName, params);
     } catch (e) {
       logError(`Exception handling command ${id}: ${e} ${e.stack}`);
       this._replyWithError(id, `Error handling command: ${e}\n ${e.stack}`);

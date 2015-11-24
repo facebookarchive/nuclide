@@ -45,9 +45,9 @@ function compareReference(x: Reference, y: Reference): number {
 
 async function readFileContents(uri: NuclideUri): Promise<?string> {
   var localPath = getPath(uri);
+  let contents;
   try {
-    var contents =
-        (await getFileSystemServiceByNuclideUri(uri).readFile(localPath)).toString('utf8');
+    contents = (await getFileSystemServiceByNuclideUri(uri).readFile(localPath)).toString('utf8');
   } catch (e) {
     getLogger().error(`find-references: could not load file ${uri}`, e);
     return null;
@@ -146,14 +146,14 @@ class FindReferencesModel {
     // 2. Group references within each file.
     this._references = [];
     for (var entry of refsByFile) {
-      var [fileUri, references] = entry;
-      references.sort(compareReference);
+      const [fileUri, entryReferences] = entry;
+      entryReferences.sort(compareReference);
       // Group references that are <= 1 line apart together.
       var groups = [];
       var curGroup = [];
       var curStartLine = -11;
       var curEndLine = -11;
-      for (var ref of references) {
+      for (const ref of entryReferences) {
         if (ref.start.line <= curEndLine + 1 + this.getPreviewContext()) {
           curGroup.push(ref);
           curEndLine = Math.max(curEndLine, ref.end.line);
