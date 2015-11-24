@@ -15,7 +15,8 @@ const TIMEOUT = 30 * 1000;
 
 const REPETITIONS = 3;
 
-const {timedAsync, timedSync} = require('../benchmarker-utils');
+import path from 'path';
+import {timedAsync, timedSync} from '../benchmarker-utils';
 
 const isNotTheme = pkg => pkg.getType !== 'theme';
 
@@ -53,7 +54,7 @@ module.exports = {
         atom.packages.packageDirPaths=[];
         break;
       case 'nuclide':
-        atom.packages.packageDirPaths=["/Users/jpearce/.atom/packages"];
+        atom.packages.packageDirPaths=[path.join(process.env.ATOM_HOME, 'packages')];
         break;
     }
 
