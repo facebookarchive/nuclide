@@ -121,13 +121,13 @@ function generateFunctionProxy(name: string, funcType: FunctionType): any {
   var argumentsPromise = generateArgumentConversionPromise(funcType.argumentTypes);
 
   // Call the remoteFunctionCall method of the NuclideClient object.
-  var args = funcType.argumentTypes.map((arg, i) => t.identifier(`arg${i}`));
   var rpcCallExpression = t.callExpression(callRemoteFunctionExpression, [
     t.literal(name),
     t.literal(funcType.returnType.kind),
     t.identifier('args'),
   ]);
 
+  let value, transformer, type;
   var returnType = funcType.returnType;
   switch (returnType.kind) {
     case 'void':
@@ -142,9 +142,9 @@ function generateFunctionProxy(name: string, funcType: FunctionType): any {
         rpcCallExpression,
       ));
 
-      var value = t.identifier('value');
-      var type = returnType.type;
-      var transformer = t.arrowFunctionExpression([value],
+      value = t.identifier('value');
+      type = returnType.type;
+      transformer = t.arrowFunctionExpression([value],
         generateTransformStatement(value, type, false));
 
       rpcCallExpression = thenPromise(rpcCallExpression, transformer);
@@ -162,9 +162,9 @@ function generateFunctionProxy(name: string, funcType: FunctionType): any {
 
       // We then map the incoming events through the appropriate marshaller. We use concatMap
       // instead of flatMap, since concatMap ensures that the order of the events doesn't change.
-      var value = t.identifier('value');
-      var type = returnType.type;
-      var transformer = t.arrowFunctionExpression([value],
+      value = t.identifier('value');
+      type = returnType.type;
+      transformer = t.arrowFunctionExpression([value],
         generateTransformStatement(value, type, false));
       rpcCallExpression = t.callExpression(
         t.memberExpression(rpcCallExpression, t.identifier('concatMap')), [transformer]);
@@ -320,9 +320,9 @@ function generateRemoteDispatch(methodName: string, funcType: FunctionType) {
     case 'void':
       break;
     case 'promise':
-      var transformer = t.arrowFunctionExpression([value],
+      const promiseTransformer = t.arrowFunctionExpression([value],
         generateTransformStatement(value, returnType.type, false));
-      rpcCallExpression = thenPromise(rpcCallExpression, transformer);
+      rpcCallExpression = thenPromise(rpcCallExpression, promiseTransformer);
       break;
     case 'observable':
       var argumentsObservable = generateArgumentConversionObservable(funcType.argumentTypes);
@@ -345,17 +345,17 @@ function generateRemoteDispatch(methodName: string, funcType: FunctionType) {
       // Finally, we map the events through the appropriate marshaller. We use concatMap instead of
       // flatMap to ensure that the order doesn't change, in case one event takes especially long
       // to marshal.
-      var transformer = t.arrowFunctionExpression([value],
+      const observableTransformer = t.arrowFunctionExpression([value],
         generateTransformStatement(value, returnType.type, false));
       rpcCallExpression = t.callExpression(
-        t.memberExpression(rpcCallExpression, t.identifier('concatMap')), [transformer]);
+        t.memberExpression(rpcCallExpression, t.identifier('concatMap')), [observableTransformer]);
       break;
     default:
       throw new Error(`Unkown return type ${returnType.kind}.`);
   }
 
-  var args = funcType.argumentTypes.map((arg, i) => t.identifier(`arg${i}`));
-  var funcExpression = t.functionExpression(null, args, t.blockStatement([
+  const funcTypeArgs = funcType.argumentTypes.map((arg, i) => t.identifier(`arg${i}`));
+  const funcExpression = t.functionExpression(null, funcTypeArgs, t.blockStatement([
     t.returnStatement(rpcCallExpression)]));
 
   return t.methodDefinition(t.identifier(methodName), funcExpression, 'method', false, false);

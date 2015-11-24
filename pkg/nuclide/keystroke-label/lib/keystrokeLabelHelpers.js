@@ -121,7 +121,7 @@ function humanizeKeystroke(keystroke: string, platform: ?string): string {
   const humanizedKeystrokes = [];
   for (let i = 0; i < keystrokes.length; i++) {
     const currentKeystroke = keystrokes[i];
-    var splitKeystroke = currentKeystroke.split('-');
+    splitKeystroke = currentKeystroke.split('-');
     keys = [];
     for (let index = 0; index < splitKeystroke.length; index++) {
       key = splitKeystroke[index];

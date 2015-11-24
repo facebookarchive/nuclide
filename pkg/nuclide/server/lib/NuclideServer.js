@@ -403,11 +403,11 @@ class NuclideServer {
     }
 
     const {serviceName, methodName, methodArgs, serviceOptions, requestId} = message;
-    var result = null;
+    let result = null;
     let error = null;
 
     try {
-      var result = await this.callService(
+      result = await this.callService(
         '/' + serviceName + '/' + methodName,
         [serviceOptions].concat(methodArgs),
       );

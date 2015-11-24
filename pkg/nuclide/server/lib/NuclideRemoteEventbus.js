@@ -64,7 +64,7 @@ class NuclideRemoteEventbus {
     const {channel, event} = message;
 
     if (channel === SERVICE_FRAMEWORK_RPC_CHANNEL) {
-      var {requestId, error, result} = message;
+      const {requestId, error, result} = message;
       this._serviceFrameworkRpcEmitter.emit(requestId.toString(), error, result);
       return;
     }
@@ -76,7 +76,7 @@ class NuclideRemoteEventbus {
     }
 
     if (channel === SERVICE_FRAMEWORK3_CHANNEL) {
-      var {requestId, hadError, error, result} = message;
+      const {requestId, hadError, error, result} = message;
       this._serviceFramework3Emitter.emit(requestId.toString(), hadError, error, result);
       return;
     }

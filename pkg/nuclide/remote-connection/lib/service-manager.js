@@ -102,10 +102,11 @@ function getService(serviceName: string, hostname: ?string, serviceOptions: ?any
 
   serviceOptions = serviceOptions || {};
 
+  let serviceInstance;
   if (hostname) {
-    var serviceInstance = createRemoteService(serviceConfig, hostname, serviceOptions);
+    serviceInstance = createRemoteService(serviceConfig, hostname, serviceOptions);
   } else {
-    var serviceInstance = createLocalService(serviceConfig, serviceOptions);
+    serviceInstance = createLocalService(serviceConfig, serviceOptions);
   }
   cachedServices.set(cacheKey, serviceInstance);
 

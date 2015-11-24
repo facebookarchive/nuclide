@@ -142,58 +142,64 @@ export default class ServerComponent {
       switch (message.type) {
         case 'FunctionCall':
           // Transform arguments and call function.
-          var {localImplementation, type} = this._functionsByName.get(message.function);
-          var transfomedArgs = await Promise.all(
-            message.args.map((arg, i) => this._typeRegistry.unmarshal(arg, type.argumentTypes[i]))
+          const {
+            localImplementation: fcLocalImplementation,
+            type: fcType,
+          } = this._functionsByName.get(message.function);
+          const fcTransfomedArgs = await Promise.all(
+            message.args.map((arg, i) => this._typeRegistry.unmarshal(arg, fcType.argumentTypes[i]))
           );
 
           // Invoke function and return the results.
-          returnType = type.returnType;
-          returnVal = localImplementation.apply(this, transfomedArgs);
+          returnType = fcType.returnType;
+          returnVal = fcLocalImplementation.apply(this, fcTransfomedArgs);
           break;
         case 'MethodCall':
           // Get the object.
-          var object = this._objectRegistry.get(message.objectId);
+          const mcObject = this._objectRegistry.get(message.objectId);
 
           // Get the method FunctionType description.
-          var type: FunctionType = this._classesByName.get(object._interface)
+          const mcType: FunctionType = this._classesByName.get(mcObject._interface)
             .definition.instanceMethods.get(message.method);
 
           // Unmarshal arguments.
-          var transfomedArgs = await Promise.all(
-            message.args.map((arg, i) => this._typeRegistry.unmarshal(arg, type.argumentTypes[i]))
+          const mcTransfomedArgs = await Promise.all(
+            message.args.map((arg, i) => this._typeRegistry.unmarshal(arg, mcType.argumentTypes[i]))
           );
 
           // Invoke message.
-          returnType = type.returnType;
-          returnVal = object[message.method].apply(object, transfomedArgs);
+          returnType = mcType.returnType;
+          returnVal = mcObject[message.method].apply(mcObject, mcTransfomedArgs);
           break;
         case 'NewObject':
-          var {localImplementation, definition} = this._classesByName.get(message.interface);
+          const {
+            localImplementation: noLocalImplementation,
+            definition: noDefinition,
+          } = this._classesByName.get(message.interface);
 
           // Transform arguments.
-          var transfomedArgs = await Promise.all(message.args.map((arg, i) =>
-            this._typeRegistry.unmarshal(arg, definition.constructorArgs[i])));
+          const noTransfomedArgs = await Promise.all(message.args.map((arg, i) =>
+            this._typeRegistry.unmarshal(arg, noDefinition.constructorArgs[i])));
 
           // Create a new object and put it in the registry.
-          var object = construct(localImplementation, transfomedArgs);
+          const noObject = construct(noLocalImplementation, noTransfomedArgs);
 
           // Return the object, which will automatically be converted to an id through the
           // marshalling system.
           returnType = {kind: 'promise', type: { kind: 'named', name: message.interface }};
-          returnVal = Promise.resolve(object);
+          returnVal = Promise.resolve(noObject);
           break;
         case 'DisposeObject':
           // Get the object.
-          var object = this._objectRegistry.get(message.objectId);
+          const doObject = this._objectRegistry.get(message.objectId);
 
           // Remove the object from the registry, and scrub it's id.
-          object._remoteId = undefined;
+          doObject._remoteId = undefined;
           this._objectRegistry.delete(message.objectId);
 
           // Call the object's local dispose function.
           returnType = {kind: 'promise', type: { kind: 'void'}};
-          await object.dispose();
+          await doObject.dispose();
 
           // Return a void Promise
           returnVal = Promise.resolve();

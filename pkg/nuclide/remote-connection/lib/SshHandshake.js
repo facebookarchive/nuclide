@@ -330,7 +330,7 @@ export class SshHandshake {
     if (this._isSecure()) {
       invariant(this._remoteHost);
       invariant(this._remotePort);
-      var connection = new RemoteConnection({
+      const connection = new RemoteConnection({
         host: this._remoteHost,
         port: this._remotePort,
         cwd: this._config.cwd,
@@ -345,7 +345,7 @@ export class SshHandshake {
       }).listen(0, 'localhost', () => {
         const localPort = this._getLocalPort();
         invariant(localPort);
-        connection = new RemoteConnection({
+        const connection = new RemoteConnection({
           host: 'localhost',
           port: localPort,
           cwd: this._config.cwd,

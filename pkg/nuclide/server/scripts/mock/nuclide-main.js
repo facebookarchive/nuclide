@@ -29,6 +29,7 @@ function processArgs() {
 }
 
 function startServer(args) {
+  let _webServer;
   if (args.key && args.cert && args.ca) {
     const webServerOptions = {
       key: fs.readFileSync(args.key),
@@ -38,10 +39,10 @@ function startServer(args) {
       rejectUnauthorized: true,
     };
 
-    var _webServer = https.createServer(webServerOptions, handleRequest);
+    _webServer = https.createServer(webServerOptions, handleRequest);
     console.log('running in secure mode');
   } else {
-    var _webServer = http.createServer(handleRequest);
+    _webServer = http.createServer(handleRequest);
   }
 
   _webServer.on('listening', function () {

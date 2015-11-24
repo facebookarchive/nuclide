@@ -52,12 +52,12 @@ describe('NuclideRadioGroup', () => {
     const component2 = renderIntoDocument(
       <NuclideRadioGroup {...props} />
     );
-    var radioInputs = scryRenderedDOMComponentsWithTag(
+    const radioInputs2 = scryRenderedDOMComponentsWithTag(
       component2,
       'input'
     );
-    expect(React.findDOMNode(radioInputs[0]).getAttribute('name')).toEqual('radiogroup-2');
-    expect(React.findDOMNode(radioInputs[1]).getAttribute('name')).toEqual('radiogroup-2');
+    expect(React.findDOMNode(radioInputs2[0]).getAttribute('name')).toEqual('radiogroup-2');
+    expect(React.findDOMNode(radioInputs2[1]).getAttribute('name')).toEqual('radiogroup-2');
   });
 
 

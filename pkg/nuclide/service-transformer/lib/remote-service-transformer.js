@@ -511,7 +511,7 @@ function createRemoteEventMethodDefinition(classDeclaration: any, methodDefiniti
       = createManipulatedCallbackArrowFunction(methodDefinition.value.params[0]);
 
   if (manipulatedCallback) {
-    var callbackParameter = t.identifier('_' + callbackParameter.name);
+    callbackParameter = t.identifier('_' + callbackParameter.name);
 
     remoteEventMethodBody.push(t.variableDeclaration(
       /* kind */ 'var',

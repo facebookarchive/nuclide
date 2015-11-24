@@ -84,16 +84,16 @@ xdescribe('when more than one service instance is created for the same service',
       disposable1.dispose();
       await sleep(50);
 
-      var ret1 = await client.makeRpc(definitionClassName + '/addCounter', [10], options1);
-      var ret2 = await client.makeRpc(definitionClassName + '/addCounter', [100], options2);
-      expect(ret1).toBe(20);
-      expect(ret2).toBe(200);
+      const ret3 = await client.makeRpc(definitionClassName + '/addCounter', [10], options1);
+      const ret4 = await client.makeRpc(definitionClassName + '/addCounter', [100], options2);
+      expect(ret3).toBe(20);
+      expect(ret4).toBe(200);
 
       // Make sure the disposed one stopped working while another one still working.
       await sleep(50);
 
       expect(options1Value).toBe(10);
-      expect(options2Value).toBe(ret2);
+      expect(options2Value).toBe(ret4);
 
       client.eventbus.socket.close();
       server.close();
