@@ -48,7 +48,6 @@
 .*/pkg/nuclide/hg-git-bridge/.*
 .*/pkg/nuclide/hg-repository-client/.*
 .*/pkg/nuclide/hg-repository/.*
-.*/pkg/nuclide/installer/.*
 .*/pkg/nuclide/language-hack/.*
 .*/pkg/nuclide/ocaml/.*
 .*/pkg/nuclide/quick-open/.*
