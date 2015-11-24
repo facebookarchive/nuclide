@@ -4,8 +4,6 @@
 # This source code is licensed under the license found in the LICENSE file in
 # the root directory of this source tree.
 
-from __future__ import print_function
-
 from threading import Thread
 from ws4py.server.wsgirefserver import WSGIServer, WebSocketWSGIRequestHandler
 from ws4py.server.wsgiutils import WebSocketWSGIApplication
@@ -22,6 +20,7 @@ from handler import HandlerDomainSet, UndefinedDomainError, UndefinedHandlerErro
 from page_domain import PageDomain
 from remote_objects import RemoteObjectManager
 from runtime import RuntimeDomain
+from logging_helper import log_debug, log_error
 
 
 class DebuggerWebSocket(WebSocket):
@@ -71,11 +70,11 @@ class DebuggerWebSocket(WebSocket):
         except UndefinedDomainError as e:
             response['error'] = 'Undefined domain: %s' % str(e)
             response['result'] = {}
-            print('Received message with', response['error'])
+            log_debug('Received message with %s' % response['error'])
         except UndefinedHandlerError as e:
             response['error'] = 'Undefined handler: %s' % str(e)
             response['result'] = {}
-            print('Received message with', response['error'])
+            log_debug('Received message with %s' % response['error'])
         except Exception as e:
             response['error'] = repr(e)
             response['result'] = {}
@@ -85,20 +84,25 @@ class DebuggerWebSocket(WebSocket):
         return response
 
     def received_message(self, message):
+        log_debug('received_message: %s' % message.data);
         parsed = None
         try:
             parsed = json.loads(message.data)
         except Exception:
             # Print invalid JSON requests to stderr.
-            print('Invalid JSON:', message, file=sys.stderr)
+            log_error('Invalid JSON: %s' % message)
 
         response = self._generate_response(parsed)
-        self.send(json.dumps(response))
+        response_in_json = json.dumps(response);
+        log_debug('response: %s' % response_in_json);
+        self.send(response_in_json)
 
     def send_notification(self, method, params=None):
         """ Send a notification over the socket to a Chrome Dev Tools client.
         """
-        self.send(json.dumps({'method': method, 'params': params}))
+        notification_in_json = json.dumps({'method': method, 'params': params});
+        log_debug('send_notification: %s' % notification_in_json);
+        self.send(notification_in_json)
 
 
 class ChromeDevToolsDebuggerApp(object):
@@ -132,5 +136,5 @@ class ChromeDevToolsDebuggerApp(object):
 def __lldb_init_module(debugger, internal_dict):
     # Print the server port on lldb import.
     app = ChromeDevToolsDebuggerApp(debugger)
-    print('chrome_debug(%s)' % app.debug_server.server_port)
+    log_debug('chrome_debug(%s)' % app.debug_server.server_port)
     app.start_nonblocking()

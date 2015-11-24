@@ -17,6 +17,7 @@ from chromedebugger import ChromeDevToolsDebuggerApp
 import argparse
 import sys
 import os
+from logging_helper import log_debug
 
 
 def parseArgs():
@@ -56,8 +57,7 @@ def main():
         app = ChromeDevToolsDebuggerApp(debugger,
                                         port=args.port,
                                         basepath=args.basepath)
-        print('Port: %s' % app.debug_server.server_port)
-        sys.stdout.flush()
+        log_debug('Port: %s' % app.debug_server.server_port)
         app.start_blocking()
     except KeyboardInterrupt:  # Force app to exit on Ctrl-C.
         os._exit(1)
