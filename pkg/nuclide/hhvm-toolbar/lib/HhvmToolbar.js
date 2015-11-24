@@ -9,10 +9,10 @@
  * the root directory of this source tree.
  */
 
-var AtomInput = require('nuclide-ui-atom-input');
-var NuclideDropdown = require('nuclide-ui-dropdown');
-var React = require('react-for-atom');
-var {PropTypes} = React;
+const AtomInput = require('nuclide-ui-atom-input');
+const NuclideDropdown = require('nuclide-ui-dropdown');
+const React = require('react-for-atom');
+const {PropTypes} = React;
 
 const WEB_SERVER_OPTION = {label: 'WebServer', value: 0};
 const SCRIPT_OPTION = {label: 'Script', value: 1};
@@ -30,7 +30,7 @@ const NO_LAUNCH_DEBUG_OPTIONS = [
 async function callDebugService(scriptTarget: ?string): Promise {
   // Use commands here to trigger package activation.
   atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:show');
-  var debuggerService = await require('nuclide-service-hub-plus')
+  const debuggerService = await require('nuclide-service-hub-plus')
       .consumeFirstProvider('nuclide-debugger.remote');
   debuggerService.debugHhvm(scriptTarget);
 }
@@ -57,7 +57,7 @@ class HhvmToolbar extends React.Component {
   }
 
   componentWillReceiveProps(nextProps: Object) {
-    var selectedIndex = this.state.selectedIndex;
+    let selectedIndex = this.state.selectedIndex;
     // Reset selected item to DEFAULT_OPTION_INDEX if target is not launchable anymore.
     // TODO[jeffreytan]: this is ugly, refactor to make it more elegant.
     if (!this._isTargetLaunchable(nextProps.targetFilePath)) {
@@ -68,8 +68,8 @@ class HhvmToolbar extends React.Component {
   }
 
   render(): ReactElement {
-    var debugTarget = this._getDebugTarget(this.state.selectedIndex, this.props.targetFilePath);
-    var isDebugScript = this._isDebugScript(this.state.selectedIndex);
+    const debugTarget = this._getDebugTarget(this.state.selectedIndex, this.props.targetFilePath);
+    const isDebugScript = this._isDebugScript(this.state.selectedIndex);
     return (
       <div className="buck-toolbar block">
         <NuclideDropdown
@@ -103,14 +103,14 @@ class HhvmToolbar extends React.Component {
   }
 
   _getDebugTarget(index: number, targetFilePath: string): string {
-    var remoteUri = require('nuclide-remote-uri');
-    var hostName = remoteUri.getHostname(targetFilePath);
-    var remoteFilePath = remoteUri.getPath(targetFilePath);
+    const remoteUri = require('nuclide-remote-uri');
+    const hostName = remoteUri.getHostname(targetFilePath);
+    const remoteFilePath = remoteUri.getPath(targetFilePath);
     return this._isDebugScript(index) ? remoteFilePath : hostName;
   }
 
   _handleDropdownChange(newIndex: number) {
-    var debugTarget = this._getDebugTarget(newIndex, this.props.targetFilePath);
+    const debugTarget = this._getDebugTarget(newIndex, this.props.targetFilePath);
     if (this.refs['debugTarget']) {
       this.refs['debugTarget'].setText(debugTarget);
     }
@@ -127,7 +127,7 @@ class HhvmToolbar extends React.Component {
       atom.views.getView(atom.workspace),
       'nuclide-debugger:stop-debugging');
 
-    var scriptTarget = null;
+    let scriptTarget = null;
     if (this._isDebugScript(this.state.selectedIndex)) {
       scriptTarget = this.refs['debugTarget'].getText();
     }

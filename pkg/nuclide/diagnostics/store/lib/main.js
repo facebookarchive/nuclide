@@ -14,19 +14,19 @@ import type {LinterProvider} from './LinterAdapter';
 
 import {Disposable, CompositeDisposable} from 'atom';
 
-var legacyLinterSetting = 'nuclide-diagnostics-store.consumeLegacyLinters';
+const legacyLinterSetting = 'nuclide-diagnostics-store.consumeLegacyLinters';
 
-var legacyLintOnTheFlySetting = 'nuclide-diagnostics-store.legacyLintOnTheFly';
+const legacyLintOnTheFlySetting = 'nuclide-diagnostics-store.legacyLintOnTheFly';
 
-var disposables = null;
-var diagnosticStore = null;
-var diagnosticUpdater = null;
+let disposables = null;
+let diagnosticStore = null;
+let diagnosticUpdater = null;
 
 function addDisposable(disposable: atom$IDisposable) {
   if (disposables) {
     disposables.add(disposable);
   } else {
-    var logger = require('nuclide-logging').getLogger();
+    const logger = require('nuclide-logging').getLogger();
     logger.error('disposables is null');
   }
 }
@@ -43,7 +43,7 @@ function getDiagnosticStore(): DiagnosticStore {
  */
 function getDiagnosticUpdater(): DiagnosticUpdater {
   if (!diagnosticUpdater) {
-    var store = getDiagnosticStore();
+    const store = getDiagnosticStore();
     diagnosticUpdater = {
       onFileMessagesDidUpdate: store.onFileMessagesDidUpdate.bind(store),
       onProjectMessagesDidUpdate: store.onProjectMessagesDidUpdate.bind(store),
@@ -53,9 +53,9 @@ function getDiagnosticUpdater(): DiagnosticUpdater {
   return diagnosticUpdater;
 }
 
-var consumeLegacyLinters = false;
-var lintOnTheFly = false;
-var allLinterAdapters = new Set();
+let consumeLegacyLinters = false;
+let lintOnTheFly = false;
+const allLinterAdapters = new Set();
 
 module.exports = {
   // $FlowIssue https://github.com/facebook/flow/issues/620
@@ -84,15 +84,15 @@ module.exports = {
   },
 
   consumeLinterProvider(provider: LinterProvider | Array<LinterProvider>): atom$IDisposable {
-    var {createAdapters} = require('./LinterAdapterFactory');
-    var newAdapters = createAdapters(provider);
-    var adapterDisposables = new CompositeDisposable();
-    for (var adapter of newAdapters) {
+    const {createAdapters} = require('./LinterAdapterFactory');
+    const newAdapters = createAdapters(provider);
+    const adapterDisposables = new CompositeDisposable();
+    for (const adapter of newAdapters) {
       adapter.setEnabled(consumeLegacyLinters);
       adapter.setLintOnFly(lintOnTheFly);
       allLinterAdapters.add(adapter);
-      var diagnosticDisposable = this.consumeDiagnosticProvider(adapter);
-      var adapterDisposable = new Disposable(() => {
+      const diagnosticDisposable = this.consumeDiagnosticProvider(adapter);
+      const adapterDisposable = new Disposable(() => {
         diagnosticDisposable.dispose();
         adapter.dispose();
         allLinterAdapters.delete(adapter);
@@ -104,9 +104,9 @@ module.exports = {
   },
 
   consumeDiagnosticProvider(provider: DiagnosticProvider): atom$IDisposable {
-    var store = getDiagnosticStore();
+    const store = getDiagnosticStore();
     // Register the diagnostic store for updates from the new provider.
-    var compositeDisposable = new CompositeDisposable();
+    const compositeDisposable = new CompositeDisposable();
     compositeDisposable.add(
       provider.onMessageUpdate((update: DiagnosticProviderUpdate) => {
         store.updateMessages(provider, update);

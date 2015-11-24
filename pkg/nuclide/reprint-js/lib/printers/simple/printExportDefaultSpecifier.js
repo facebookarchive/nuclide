@@ -12,7 +12,7 @@
 import type {ExportDefaultSpecifier} from 'ast-types-flow';
 import type {Lines, Print} from '../../types/common';
 
-var flatten = require('../../utils/flatten');
+const flatten = require('../../utils/flatten');
 
 function printExportDefaultSpecifier(
   print: Print,

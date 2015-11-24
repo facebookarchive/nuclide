@@ -12,7 +12,7 @@
 import addPrepareStackTraceHook from '../lib/stacktrace';
 import {__test__} from '../lib/stacktrace';
 
-var STACK_FRAME_PROPERTIES = [
+const STACK_FRAME_PROPERTIES = [
   'functionName', 'methodName', 'fileName', 'lineNumber', 'columnNumber', 'evalOrigin',
   'isTopLevel', 'isEval', 'isNative', 'isConstructor',
 ];
@@ -22,7 +22,7 @@ function validateStructuredStackTraceCreated(e: Error): void {
   expect(e.stackTrace instanceof Array).toBe(true);
   // $FlowIssue
   e.stackTrace.forEach(frame => {
-    var keys = Object.keys(frame);
+    const keys = Object.keys(frame);
     STACK_FRAME_PROPERTIES.forEach(property => {
       expect(keys.indexOf(property) >= 0).toBe(true);
     });
@@ -37,28 +37,28 @@ describe('stacktrace hook', () => {
   });
 
   it('creates hooked prepareStackTrace', () => {
-    var {createHookedPrepareStackTrace} = __test__;
-    var prepareStackTrace = (error, frames) => 'test';
-    var hooked = createHookedPrepareStackTrace(prepareStackTrace);
+    const {createHookedPrepareStackTrace} = __test__;
+    const prepareStackTrace = (error, frames) => 'test';
+    const hooked = createHookedPrepareStackTrace(prepareStackTrace);
     expect(hooked.name).toBe('nuclideHookedPrepareStackTrace');
     expect(hooked !== prepareStackTrace).toBe(true);
   });
 
   it('does\'t hook a hooked function again', () => {
-    var {createHookedPrepareStackTrace} = __test__;
-    var prepareStackTrace = (error, frames) => 'test';
-    var hooked = createHookedPrepareStackTrace(prepareStackTrace);
+    const {createHookedPrepareStackTrace} = __test__;
+    const prepareStackTrace = (error, frames) => 'test';
+    const hooked = createHookedPrepareStackTrace(prepareStackTrace);
     expect(hooked.name).toBe('nuclideHookedPrepareStackTrace');
     expect(hooked !== prepareStackTrace).toBe(true);
 
-    var hookedTwice = createHookedPrepareStackTrace(hooked);
+    const hookedTwice = createHookedPrepareStackTrace(hooked);
     expect(hookedTwice.name).toBe('nuclideHookedPrepareStackTrace');
     expect(hookedTwice).toBe(hooked);
   });
 
   it('generates structured stacktrace', () => {
     addPrepareStackTraceHook();
-    var e = new Error();
+    const e = new Error();
     // e.stackTrace won't be availabe until e.stack is called.
     // $FlowIssue
     expect(e.stackTrace).toBe(undefined);
@@ -68,13 +68,13 @@ describe('stacktrace hook', () => {
 
   it('doesn\'t screw up previous customization', () => {
 
-    var customizedStack = 'There is no spoon';
+    const customizedStack = 'There is no spoon';
     // $FlowFixMe
     Error.prepareStackTrace = (_, frames) => {
       return customizedStack;
     };
 
-    var e = new Error();
+    let e = new Error();
     // e.stack is customized.
     expect(e.stack).toBe(customizedStack);
     // $FlowIssue
@@ -93,17 +93,17 @@ describe('stacktrace hook', () => {
   it('support following up customization', () => {
     addPrepareStackTraceHook();
 
-    var e = new Error();
+    let e = new Error();
     // $FlowIssue
     expect(e.stackTrace).toBe(undefined);
     expect(typeof e.stack).toBe('string');
     validateStructuredStackTraceCreated(e);
 
     // $FlowFixMe
-    var originalPrepareStackTrace = Error.prepareStackTrace;
+    const originalPrepareStackTrace = Error.prepareStackTrace;
 
     // Add customization and verify it works.
-    var customizedStack = 'There is no spoon';
+    const customizedStack = 'There is no spoon';
     // $FlowFixMe
     Error.prepareStackTrace = (_, frames) => {
       return customizedStack;

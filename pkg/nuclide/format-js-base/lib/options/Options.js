@@ -13,9 +13,9 @@ import type {ModuleMapOptions} from './ModuleMapOptions';
 import type {RequireOptions} from './RequireOptions';
 import type {SourceOptions} from './SourceOptions';
 
-var {getPath} = require('nuclide-remote-uri');
-var invariant = require('assert');
-var path = require('path');
+const {getPath} = require('nuclide-remote-uri');
+const invariant = require('assert');
+const path = require('path');
 
 /**
  * Valides the options used to construct a module map.
@@ -35,7 +35,7 @@ function validateModuleMapOptions(options: ModuleMapOptions): void {
   invariant(options.builtInTypes, '`builtInTypes` must be provided.');
 
   // TODO: Use let.
-  var filePath;
+  let filePath;
   for (filePath of options.paths) {
     invariant(isAbsolute(filePath), 'All paths must be absolute.');
   }
@@ -76,7 +76,7 @@ function isAbsolute(sourcePath: string): boolean {
   return path.isAbsolute(getPath(sourcePath));
 }
 
-var Options = {
+const Options = {
   validateModuleMapOptions,
   validateRequireOptions,
   validateSourceOptions,

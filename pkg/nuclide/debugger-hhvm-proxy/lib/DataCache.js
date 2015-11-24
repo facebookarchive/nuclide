@@ -10,8 +10,8 @@
  */
 
 
-var {log, logErrorAndThrow} = require('./utils');
-var {
+const {log, logErrorAndThrow} = require('./utils');
+const {
   remoteObjectIdOfObjectId,
   createContextObjectId,
   isContextObjectId,
@@ -20,12 +20,12 @@ var {
   isWatchContextObjectId,
 } = require('./ObjectId');
 
-var {
+const {
   convertProperties,
   getPagedProperties,
 } = require('./properties.js');
 
-var {convertValue} = require('./values.js');
+const {convertValue} = require('./values.js');
 
 // TODO: Move these Chrome types to a shared package.
 type RemoteObjectId = string;
@@ -59,7 +59,7 @@ type PropertyDescriptor = {
 
 import type {DbgpSocket} from './DbgpSocket';
 
-var {STATUS_BREAK} = require('./DbgpSocket');
+const {STATUS_BREAK} = require('./DbgpSocket');
 
 /**
  * Handles data value tracking between Chrome and Dbgp.
@@ -108,7 +108,7 @@ export class DataCache {
     if (!this.isEnabled()) {
       throw new Error('Must be enabled to get scopes.');
     }
-    var contexts = await this._socket.getContextsForFrame(frameIndex);
+    const contexts = await this._socket.getContextsForFrame(frameIndex);
     return contexts.map(context => {
       return {
         object: this._remoteObjectOfContext(frameIndex, context),
@@ -122,12 +122,12 @@ export class DataCache {
       throw new Error('Must be enabled to evaluate expression.');
     }
 
-    var evaluatedResult = await this._socket.evaluateOnCallFrame(frameIndex, expression);
+    const evaluatedResult = await this._socket.evaluateOnCallFrame(frameIndex, expression);
     if (evaluatedResult.wasThrown) {
       return evaluatedResult;
     }
-    var id = getWatchContextObjectId(this._enableCount, frameIndex);
-    var result = convertValue(id, evaluatedResult.result);
+    const id = getWatchContextObjectId(this._enableCount, frameIndex);
+    const result = convertValue(id, evaluatedResult.result);
     return {
       result,
       wasThrown: false,
@@ -147,7 +147,7 @@ export class DataCache {
   }
 
   async getProperties(remoteId: RemoteObjectId): Promise<Array<PropertyDescriptor>> {
-    var id = JSON.parse(remoteId);
+    const id = JSON.parse(remoteId);
     if (id.enableCount !== this._enableCount) {
       logErrorAndThrow(`Got request for stale RemoteObjectId ${remoteId}`);
     }
@@ -166,7 +166,7 @@ export class DataCache {
   }
 
   async _getSinglePageOfProperties(id: ObjectId): Promise<Array<PropertyDescriptor>> {
-    var properties = null;
+    let properties = null;
     if (isWatchContextObjectId(id)) {
       properties = await this._socket.getPropertiesByFullnameAllConexts(id.frameIndex, id.fullname, id.page);
     } else {
@@ -176,22 +176,22 @@ export class DataCache {
   }
 
   async _getContextProperties(id: ObjectId): Promise<Array<PropertyDescriptor>> {
-    var properties = await this._socket.getContextProperties(id.frameIndex, id.contextId);
+    const properties = await this._socket.getContextProperties(id.frameIndex, id.contextId);
     return convertProperties(id, properties);
   }
 }
 
 function contextNameToScopeType(name: string): string {
   switch (name) {
-  case 'Locals':
-    return 'local';
-  case 'Superglobals':
-    return 'global';
-  case 'User defined constants':
-    return 'global';
+    case 'Locals':
+      return 'local';
+    case 'Superglobals':
+      return 'global';
+    case 'User defined constants':
+      return 'global';
   // TODO: Verify this ...
-  default:
-    log(`Unexpected context name: ${name}`);
-    return 'closure';
+    default:
+      log(`Unexpected context name: ${name}`);
+      return 'closure';
   }
 }

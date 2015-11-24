@@ -9,20 +9,20 @@
  * the root directory of this source tree.
  */
 
-var {uncachedRequire, spyOnGetterValue} = require('nuclide-test-helpers');
-var {Range} = require('atom');
+const {uncachedRequire, spyOnGetterValue} = require('nuclide-test-helpers');
+const {Range} = require('atom');
 
 const TYPE_HINT_PROVIDER = '../lib/FlowTypeHintProvider';
 
 describe('FlowTypeHintProvider', () => {
-  var editor = {
+  const editor = {
     getPath() { return ''; },
     getText() { return ''; },
   };
-  var position = [1, 1];
-  var range = new Range([1, 2], [3, 4]);
+  const position = [1, 1];
+  const range = new Range([1, 2], [3, 4]);
 
-  var typeHintProvider;
+  let typeHintProvider;
 
   afterEach(() => {
     // we assume here that runWith is called in every spec -- otherwise these
@@ -46,7 +46,7 @@ describe('FlowTypeHintProvider', () => {
     spyOnGetterValue(require('nuclide-atom-helpers'), 'extractWordAtPosition')
       .andReturn(word);
 
-    var {FlowTypeHintProvider} = uncachedRequire(require, TYPE_HINT_PROVIDER);
+    const {FlowTypeHintProvider} = uncachedRequire(require, TYPE_HINT_PROVIDER);
     typeHintProvider = new FlowTypeHintProvider();
     return await typeHintProvider.typeHint(editor, position);
   }

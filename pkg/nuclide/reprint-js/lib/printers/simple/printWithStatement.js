@@ -12,8 +12,8 @@
 import type {Lines, Print} from '../../types/common';
 import type {WithStatement} from 'ast-types-flow';
 
-var markers = require('../../constants/markers');
-var wrapStatement = require('../../wrappers/simple/wrapStatement');
+const markers = require('../../constants/markers');
+const wrapStatement = require('../../wrappers/simple/wrapStatement');
 
 function printWithStatement(print: Print, node: WithStatement): Lines {
   const wrap = x => wrapStatement(print, node, x);

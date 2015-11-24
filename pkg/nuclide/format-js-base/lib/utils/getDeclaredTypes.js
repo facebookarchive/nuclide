@@ -12,7 +12,7 @@
 import type {Collection, Node, NodePath} from '../types/ast';
 import type {SourceOptions} from '../options/SourceOptions';
 
-var jscs = require('jscodeshift');
+const jscs = require('jscodeshift');
 
 type ConfigEntry = {
   searchTerms: [any, Object],
@@ -20,7 +20,7 @@ type ConfigEntry = {
   getNodes: (path: NodePath) => Array<Node>,
 };
 
-var CONFIG: Array<ConfigEntry> = [
+const CONFIG: Array<ConfigEntry> = [
   {
     searchTerms: [
       jscs.ImportDeclaration,
@@ -63,15 +63,15 @@ function getDeclaredTypes(
   filters?: ?Array<(path: NodePath) => boolean>
 ): Set<string> {
   // Start with the built in types that are always declared.
-  var {moduleMap} = options;
-  var ids = new Set(moduleMap.getBuiltInTypes());
+  const {moduleMap} = options;
+  const ids = new Set(moduleMap.getBuiltInTypes());
   CONFIG.forEach(config => {
     root
       .find(config.searchTerms[0], config.searchTerms[1])
       .filter(path => filters ? filters.every(filter => filter(path)) : true)
       .filter(path => config.filters.every(filter => filter(path)))
       .forEach(path => {
-        var nodes = config.getNodes(path);
+        const nodes = config.getNodes(path);
         nodes.forEach(node => {
           if (jscs.Identifier.check(node)) {
             ids.add(node.name);

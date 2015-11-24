@@ -12,8 +12,8 @@
 import type {Collection, Node, NodePath} from '../types/ast';
 import type {SourceOptions} from '../options/SourceOptions';
 
-var getNamesFromID = require('./getNamesFromID');
-var jscs = require('jscodeshift');
+const getNamesFromID = require('./getNamesFromID');
+const jscs = require('jscodeshift');
 
 type ConfigEntry = {
   searchTerms: [any, Object],
@@ -25,7 +25,7 @@ type ConfigEntry = {
  * identifiers are safe to use in code. They should not include types that have
  * been declared.
  */
-var CONFIG: Array<ConfigEntry> = [
+const CONFIG: Array<ConfigEntry> = [
   // function foo(...rest) {}
   {
     searchTerms: [jscs.FunctionDeclaration],
@@ -72,17 +72,17 @@ function getDeclaredIdentifiers(
   filters?: ?Array<(path: NodePath) => boolean>
 ): Set<string> {
   // Start with the globals since they are always "declared" and safe to use.
-  var {moduleMap} = options;
-  var ids = new Set(moduleMap.getBuiltIns());
+  const {moduleMap} = options;
+  const ids = new Set(moduleMap.getBuiltIns());
   CONFIG.forEach(config => {
     root
       .find(config.searchTerms[0], config.searchTerms[1])
       .filter(path => filters ? filters.every(filter => filter(path)) : true)
       .forEach(path => {
-        var nodes = config.getNodes(path);
+        const nodes = config.getNodes(path);
         nodes.forEach(node => {
-          var names = getNamesFromID(node);
-          for (var name of names) {
+          const names = getNamesFromID(node);
+          for (const name of names) {
             ids.add(name);
           }
         });

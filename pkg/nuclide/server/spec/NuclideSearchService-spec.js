@@ -9,16 +9,16 @@
  * the root directory of this source tree.
  */
 
-var NuclideServer = require('../lib/NuclideServer');
-var NuclideClient = require('../lib/NuclideClient');
-var NuclideRemoteEventbus = require('../lib/NuclideRemoteEventbus');
+const NuclideServer = require('../lib/NuclideServer');
+const NuclideClient = require('../lib/NuclideClient');
+const NuclideRemoteEventbus = require('../lib/NuclideRemoteEventbus');
 
-var path = require('path');
-var pathToTestDir = path.join(__dirname, 'testfiles');
-var pathToTestFile = path.join(pathToTestDir, 'testfile.txt');
+const path = require('path');
+const pathToTestDir = path.join(__dirname, 'testfiles');
+const pathToTestFile = path.join(pathToTestDir, 'testfile.txt');
 
-var server;
-var client;
+let server;
+let client;
 
 xdescribe('NuclideSearch test suite', () => {
   beforeEach(() => {
@@ -38,7 +38,7 @@ xdescribe('NuclideSearch test suite', () => {
   describe('Querying', () => {
     it('should return query results for the given directory', () => {
       waitsForPromise(async () => {
-        var results = await client.searchDirectory(pathToTestDir, 'te');
+        const results = await client.searchDirectory(pathToTestDir, 'te');
         expect(results.length).toBe(1);
         expect(results[0].path).toBe(path.join(pathToTestDir, 'testfile.txt'));
       });
@@ -46,7 +46,7 @@ xdescribe('NuclideSearch test suite', () => {
 
     it('should return query results for the given directory if it has a hostname', () => {
       waitsForPromise(async () => {
-        var results = await client.searchDirectory(`nuclide://some.host.com${pathToTestDir}`, 'te');
+        const results = await client.searchDirectory(`nuclide://some.host.com${pathToTestDir}`, 'te');
         expect(results.length).toBe(1);
         expect(results[0].path).toBe(`nuclide://some.host.com${pathToTestDir}/testfile.txt`);
       });

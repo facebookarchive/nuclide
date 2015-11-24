@@ -9,12 +9,12 @@
  * the root directory of this source tree.
  */
 
-var fs = require('fs');
+const fs = require('fs');
 
 // For the purposes of the benchmarker, a TSV file always has a column heading row at the top.
 
 function writeTsv(location: string, columns: Array<string>, record: ?Object): void {
-  var file = fs.openSync(location, 'a');
+  const file = fs.openSync(location, 'a');
   if (record) {
     // $FlowFixMe: Bad upstream definition
     fs.writeSync(file, columns.map(column => record[column]).join('\t') + '\n');
@@ -31,8 +31,8 @@ function writeAllTsv(location: string, columns: Array<string>, records: Array<Ob
 }
 
 function readAllTsv(location: string): {columns: Array<string>, records: Array<Object>} {
-  var columns = [];
-  var records = [];
+  let columns = [];
+  const records = [];
   fs.readFileSync(location, 'utf8').split('\n').forEach((row, r) => {
     if (r === 0) {
       // First line has column headings.
@@ -42,7 +42,7 @@ function readAllTsv(location: string): {columns: Array<string>, records: Array<O
       return;
     } else {
       // Anything else is a record.
-      var record = {};
+      const record = {};
       row.split('\t').forEach((cell, c) => {
         record[columns[c]] = cell;
       });

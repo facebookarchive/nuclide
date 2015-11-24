@@ -9,20 +9,20 @@
  * the root directory of this source tree.
  */
 
-var LazyTestTreeNode = require('./LazyTestTreeNode');
-var React = require('react-for-atom');
-var TreeNodeComponent = require('../lib/TreeNodeComponent');
-var invariant = require('assert');
+const LazyTestTreeNode = require('./LazyTestTreeNode');
+const React = require('react-for-atom');
+const TreeNodeComponent = require('../lib/TreeNodeComponent');
+const invariant = require('assert');
 
-var {TestUtils} = React.addons;
+const {TestUtils} = React.addons;
 
 describe('TreeNodeComponent', () => {
 
-  var props;
-  var treeNodeComponent;
+  let props;
+  let treeNodeComponent;
 
-  var iconClassName = 'icon-file-text';
-  var label = 'file.js';
+  const iconClassName = 'icon-file-text';
+  const label = 'file.js';
 
   beforeEach(() => {
     props = {
@@ -57,13 +57,13 @@ describe('TreeNodeComponent', () => {
     //
     // See: https://atom.io/packages/file-icons
     it('uses selectors necessary for the "file-icons" package', () => {
-      var domNode = React.findDOMNode(treeNodeComponent);
+      const domNode = React.findDOMNode(treeNodeComponent);
 
       expect(domNode.classList.contains('entry')).toBe(true);
       expect(domNode.classList.contains('file')).toBe(true);
       expect(domNode.classList.contains('list-item')).toBe(true);
 
-      var iconComponent = TestUtils.findRenderedDOMComponentWithClass(
+      const iconComponent = TestUtils.findRenderedDOMComponentWithClass(
         treeNodeComponent,
         iconClassName
       );
@@ -76,7 +76,7 @@ describe('TreeNodeComponent', () => {
   describe('clicking a node', () => {
 
     it('calls its `onClick` callback', () => {
-      var domNode = React.findDOMNode(treeNodeComponent);
+      const domNode = React.findDOMNode(treeNodeComponent);
 
       TestUtils.Simulate.click(domNode);
       invariant(props);
@@ -88,7 +88,7 @@ describe('TreeNodeComponent', () => {
   describe('clicking a node\'s arrow', () => {
 
     it('calls its `onClickArrow` callback, not its `onClick` callback', () => {
-      var arrow = TestUtils.findRenderedDOMComponentWithClass(
+      const arrow = TestUtils.findRenderedDOMComponentWithClass(
           treeNodeComponent,
           'nuclide-tree-component-item-arrow'
         );
@@ -104,7 +104,7 @@ describe('TreeNodeComponent', () => {
   describe('double clicking a node', () => {
 
     it('calls its `onDoubleClick` callback', () => {
-      var domNode = React.findDOMNode(treeNodeComponent);
+      const domNode = React.findDOMNode(treeNodeComponent);
 
       TestUtils.Simulate.doubleClick(domNode);
       invariant(props);

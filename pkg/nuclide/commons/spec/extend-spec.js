@@ -8,15 +8,15 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-var {extend} = require('../lib/main');
+const {extend} = require('../lib/main');
 
 describe('extend()', () => {
 
   it('extends multiple arguments without touching the source', () => {
-    var obj1 = {a: 2};
-    var obj2 = {b: 3};
-    var obj3 = {d: '4'};
-    var result = extend.immutableExtend(obj1, obj2, obj3);
+    const obj1 = {a: 2};
+    const obj2 = {b: 3};
+    const obj3 = {d: '4'};
+    const result = extend.immutableExtend(obj1, obj2, obj3);
     expect(obj1).toEqual({a: 2});
     expect(obj2).toEqual({b: 3});
     expect(obj3).toEqual({d: '4'});
@@ -24,7 +24,7 @@ describe('extend()', () => {
   });
 
   it('should prioritize the last arguments on the first ones', () => {
-    var result = extend.immutableExtend(
+    const result = extend.immutableExtend(
       {a: 'abc'},
       {a: 'def', b: 'lol'},
       {b: 'ghi', c: 'mom'}

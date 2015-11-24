@@ -9,13 +9,13 @@
  * the root directory of this source tree.
  */
 
-var blocked = require('../lib/blocked');
+const blocked = require('../lib/blocked');
 
-var now = 0;
+let now = 0;
 
 describe('blocked()', () => {
-  var blockHandler;
-  var intervalHandler;
+  let blockHandler;
+  let intervalHandler;
 
   beforeEach(() => {
     blockHandler = jasmine.createSpy();

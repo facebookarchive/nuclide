@@ -47,7 +47,7 @@ type ParsedRemoteUrl = {
 import invariant from 'assert';
 import pathPackage from 'path';
 
-var REMOTE_PATH_URI_PREFIX = 'nuclide://';
+const REMOTE_PATH_URI_PREFIX = 'nuclide://';
 
 function isRemote(uri: NuclideUri): boolean {
   return uri.startsWith(REMOTE_PATH_URI_PREFIX);
@@ -163,7 +163,7 @@ function getPort(remoteUri: NuclideUri): number {
 
 function join(uri: NuclideUri, ...relativePath: Array<string>): NuclideUri {
   if (isRemote(uri)) {
-    var {hostname, port, path} = parseRemoteUri(uri);
+    const {hostname, port, path} = parseRemoteUri(uri);
     relativePath.splice(0, 0, path);
     return createRemoteUri(
       hostname,
@@ -177,7 +177,7 @@ function join(uri: NuclideUri, ...relativePath: Array<string>): NuclideUri {
 
 function normalize(uri: NuclideUri): NuclideUri {
   if (isRemote(uri)) {
-    var {hostname, port, path} = parseRemoteUri(uri);
+    const {hostname, port, path} = parseRemoteUri(uri);
     return createRemoteUri(
       hostname,
       Number(port),
@@ -194,7 +194,7 @@ function getParent(uri: NuclideUri): NuclideUri {
 }
 
 function relative(uri: NuclideUri, other: NuclideUri): string {
-  var remote = isRemote(uri);
+  const remote = isRemote(uri);
   if (remote !== isRemote(other) ||
       (remote && getHostname(uri) !== getHostname(other))) {
     throw new Error('Cannot relative urls on different hosts.');
@@ -217,7 +217,7 @@ function basename(uri: NuclideUri): NuclideUri {
 
 function dirname(uri: NuclideUri): NuclideUri {
   if (isRemote(uri)) {
-    var {hostname, port, path} = parseRemoteUri(uri);
+    const {hostname, port, path} = parseRemoteUri(uri);
     return createRemoteUri(
       hostname,
       Number(port),
@@ -235,7 +235,7 @@ function dirname(uri: NuclideUri): NuclideUri {
  * Returns null if not a valid file: URI.
  */
 function uriToNuclideUri(uri: string): ?string {
-  var urlParts = require('url').parse(uri, false);
+  const urlParts = require('url').parse(uri, false);
   if (urlParts.protocol === 'file:' && urlParts.path) { // only handle real files for now.
     return urlParts.path;
   } else if (isRemote(uri)) {

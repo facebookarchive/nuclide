@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-var {sep: pathSeperator, normalize} = require('path');
-var {realpathSync} = require('fs');
+const {sep: pathSeperator, normalize} = require('path');
+const {realpathSync} = require('fs');
 
 /**
  * Returns if the `rootPath` directory contains the `checkPath` which could be:
@@ -21,8 +21,8 @@ var {realpathSync} = require('fs');
  * Follows symlinks to figure out if the real paths of the root and check paths matches.
  */
 function containsPathSync(rootPath: string, checkPath: string): boolean {
-  var realRootPath = null;
-  var realCheckPath = null;
+  let realRootPath = null;
+  let realCheckPath = null;
   try {
     realRootPath = realpathSync(rootPath);
     realCheckPath = realpathSync(checkPath);
@@ -31,12 +31,12 @@ function containsPathSync(rootPath: string, checkPath: string): boolean {
     realCheckPath = checkPath;
   }
 
-  var normalizedRootPath = normalize(realRootPath);
-  var normalizedCheckPath = normalize(realCheckPath);
+  const normalizedRootPath = normalize(realRootPath);
+  const normalizedCheckPath = normalize(realCheckPath);
 
-  var rootPathNumberOfParts = normalizedRootPath.split(pathSeperator).length;
+  const rootPathNumberOfParts = normalizedRootPath.split(pathSeperator).length;
   // Extract the matching piece of the normalized path to compare with the root path.
-  var rootPathMatch = normalizedCheckPath.split(pathSeperator).slice(0, rootPathNumberOfParts).join(pathSeperator);
+  const rootPathMatch = normalizedCheckPath.split(pathSeperator).slice(0, rootPathNumberOfParts).join(pathSeperator);
   return rootPathMatch === normalizedRootPath;
 }
 

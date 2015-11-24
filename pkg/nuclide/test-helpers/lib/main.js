@@ -63,7 +63,7 @@ function uncachedRequire(require: Object, module: string): mixed {
  *   it)
  */
 function spyOnGetterValue(object: Object, f: string): JasmineSpy {
-  var value = object[f];
+  const value = object[f];
   delete object[f];
   object[f] = value;
   return spyOn(object, f);
@@ -74,14 +74,14 @@ function spyOnGetterValue(object: Object, f: string): JasmineSpy {
  * set to undefined to be equivalent to a property that was not set at all.
  */
 function arePropertiesEqual(obj1: Object, obj2: Object): boolean {
-  var allProps = new Set();
+  const allProps = new Set();
   function addAllProps(obj) {
-    for (var prop of Object.keys(obj)) {
+    for (const prop of Object.keys(obj)) {
       allProps.add(prop);
     }
   }
   [obj1, obj2].forEach(addAllProps);
-  for (var prop of allProps) {
+  for (const prop of allProps) {
     if (obj1[prop] !== obj2[prop]) {
       return false;
     }

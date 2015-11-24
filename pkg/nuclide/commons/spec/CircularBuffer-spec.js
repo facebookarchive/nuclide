@@ -14,12 +14,12 @@ describe('CircularBuffer', () => {
 
   describe('empty buffer', () => {
     it('verify ordinary API use for CircularBuffer with no elements added', () => {
-      let buffer = new CircularBuffer(4);
+      const buffer = new CircularBuffer(4);
       expect(buffer.capacity).toBe(4);
 
       // This verifies that CircularBuffer implements Iterable correctly by demonstrating that it
       // works with for/of.
-      for (let element of buffer) { // eslint-disable-line no-unused-vars
+      for (const element of buffer) { // eslint-disable-line no-unused-vars
         throw new Error('Should not iterate anything when empty.');
       }
     });
@@ -27,23 +27,23 @@ describe('CircularBuffer', () => {
 
   describe('singleton buffer', () => {
     it('verify ordinary API use for CircularBuffer with one element', () => {
-      let buffer = new CircularBuffer(1);
+      const buffer = new CircularBuffer(1);
       expect(buffer.capacity).toBe(1);
 
       // This verifies that CircularBuffer implements Iterable correctly by demonstrating that it
       // works with for/of.
       buffer.push('foo');
-      let elements1 = [];
-      for (let element of buffer) {
+      const elements1 = [];
+      for (const element of buffer) {
         elements1.push(element);
       }
       expect(elements1).toEqual(['foo']);
 
       // Because the buffer is of capacty 1, inserting one more element effectively
       // overwrites the entire contents.
-      let elements2 = [];
+      const elements2 = [];
       buffer.push('bar');
-      for (let element of buffer) {
+      for (const element of buffer) {
         elements2.push(element);
       }
       expect(elements2).toEqual(['bar']);
@@ -52,13 +52,13 @@ describe('CircularBuffer', () => {
 
   describe('that is not at capacity', () => {
     it('iterator works correctly when the buffer is half full', () => {
-      let buffer = new CircularBuffer(4);
+      const buffer = new CircularBuffer(4);
       expect(buffer.capacity).toBe(4);
 
       buffer.push('A');
       buffer.push('B');
-      let elements = [];
-      for (let element of buffer) {
+      const elements = [];
+      for (const element of buffer) {
         elements.push(element);
       }
       expect(elements).toEqual(['A', 'B']);
@@ -67,15 +67,15 @@ describe('CircularBuffer', () => {
 
   describe('that is at capacity', () => {
     it('iterator works correctly when the buffer is exactly full', () => {
-      let buffer = new CircularBuffer(4);
+      const buffer = new CircularBuffer(4);
       expect(buffer.capacity).toBe(4);
 
       buffer.push('A');
       buffer.push('B');
       buffer.push('C');
       buffer.push('D');
-      let elements = [];
-      for (let element of buffer) {
+      const elements = [];
+      for (const element of buffer) {
         elements.push(element);
       }
       expect(elements).toEqual(['A', 'B', 'C', 'D']);
@@ -84,7 +84,7 @@ describe('CircularBuffer', () => {
 
   describe('that is just over capacity', () => {
     it('iterator works correctly when the buffer has had to wrap around', () => {
-      let buffer = new CircularBuffer(4);
+      const buffer = new CircularBuffer(4);
       expect(buffer.capacity).toBe(4);
 
       buffer.push('A');
@@ -92,8 +92,8 @@ describe('CircularBuffer', () => {
       buffer.push('C');
       buffer.push('D');
       buffer.push('E');
-      let elements = [];
-      for (let element of buffer) {
+      const elements = [];
+      for (const element of buffer) {
         elements.push(element);
       }
       expect(elements).toEqual(['B', 'C', 'D', 'E']);
@@ -102,7 +102,7 @@ describe('CircularBuffer', () => {
 
   describe('that has wrapped around more than once', () => {
     it('iterator works correctly when the buffer has had to wrap around', () => {
-      let buffer = new CircularBuffer(4);
+      const buffer = new CircularBuffer(4);
       expect(buffer.capacity).toBe(4);
 
       buffer.push('A');
@@ -115,8 +115,8 @@ describe('CircularBuffer', () => {
       buffer.push('4');
       buffer.push('E');
       buffer.push('F');
-      let elements = [];
-      for (let element of buffer) {
+      const elements = [];
+      for (const element of buffer) {
         elements.push(element);
       }
       expect(elements).toEqual(['3', '4', 'E', 'F']);
@@ -125,10 +125,10 @@ describe('CircularBuffer', () => {
 
   it('throws when modified during iteration', () => {
     expect(() => {
-      let buffer = new CircularBuffer(4);
+      const buffer = new CircularBuffer(4);
       buffer.push('A');
       buffer.push('B');
-      for (let element of buffer) { // eslint-disable-line no-unused-vars
+      for (const element of buffer) { // eslint-disable-line no-unused-vars
         buffer.push('C');
       }
     })

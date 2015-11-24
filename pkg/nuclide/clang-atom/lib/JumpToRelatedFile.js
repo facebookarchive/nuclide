@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-var GRAMMARS = [
+const GRAMMARS = [
   'source.c',
   'source.cpp',
   'source.objc',
@@ -39,7 +39,7 @@ class JumpToRelatedFile {
     }
 
     // A map from TextEditor to Disposable.
-    var {observeLanguageTextEditors} = require('nuclide-atom-helpers');
+    const {observeLanguageTextEditors} = require('nuclide-atom-helpers');
     this._languageListener = observeLanguageTextEditors(
         GRAMMARS,
         textEditor => this._enableInTextEditor(textEditor),
@@ -61,10 +61,10 @@ class JumpToRelatedFile {
   _enableInTextEditor(textEditor: TextEditor) {
     // We add this class to make our keybinding's selector more specific than
     // the one for `editor:move-line-up` and `editor:move-line-down`.
-    var textEditorEl = atom.views.getView(textEditor);
+    const textEditorEl = atom.views.getView(textEditor);
     textEditorEl.classList.add('editor-objc');
 
-    var commandSubscription = atom.commands.add(
+    const commandSubscription = atom.commands.add(
       textEditorEl,
       {
         'autocomplete-plus-clang:jump-to-next-related-file': () => {
@@ -82,7 +82,7 @@ class JumpToRelatedFile {
   }
 
   _disableInTextEditor(textEditor: TextEditor): void {
-    var subscription = this._commandSubscriptionsMap.get(textEditor);
+    const subscription = this._commandSubscriptionsMap.get(textEditor);
     if (subscription) {
       subscription.dispose();
       this._commandSubscriptionsMap.delete(textEditor);
@@ -94,7 +94,7 @@ class JumpToRelatedFile {
    * before the current one alphabetically.
    */
   getNextRelatedFile(path: string): string {
-    var {relatedFiles, index} = this._relatedFileFinder.find(path);
+    const {relatedFiles, index} = this._relatedFileFinder.find(path);
     return relatedFiles[(relatedFiles.length + index - 1) % relatedFiles.length];
   }
 
@@ -103,7 +103,7 @@ class JumpToRelatedFile {
    * after the current one alphabetically.
    */
   getPreviousRelatedFile(path: string): string {
-    var {relatedFiles, index} = this._relatedFileFinder.find(path);
+    const {relatedFiles, index} = this._relatedFileFinder.find(path);
     return relatedFiles[(index + 1) % relatedFiles.length];
   }
 

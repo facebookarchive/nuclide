@@ -9,14 +9,14 @@
  * the root directory of this source tree.
  */
 
-var NuclideTextBuffer = require('../lib/NuclideTextBuffer');
-var {RemoteFile, RemoteConnection} = require('nuclide-remote-connection');
+const NuclideTextBuffer = require('../lib/NuclideTextBuffer');
+const {RemoteFile, RemoteConnection} = require('nuclide-remote-connection');
 
 describe('NuclideTextBuffer', () => {
 
-  var buffer = null;
-  var connection = null;
-  var filePath = __filename;
+  let buffer = null;
+  let connection = null;
+  const filePath = __filename;
 
   beforeEach(() => {
     connection = new RemoteConnection({});

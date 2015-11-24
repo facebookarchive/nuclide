@@ -9,14 +9,14 @@
  * the root directory of this source tree.
  */
 
-var {CompositeDisposable} = require('atom');
-var {EventEmitter} = require('events');
-var LazyTreeNode = require('./LazyTreeNode');
-var TreeNodeComponent = require('./TreeNodeComponent');
-var {forEachCachedNode} = require('./tree-node-traversals');
-var React = require('react-for-atom');
+const {CompositeDisposable} = require('atom');
+const {EventEmitter} = require('events');
+const LazyTreeNode = require('./LazyTreeNode');
+const TreeNodeComponent = require('./TreeNodeComponent');
+const {forEachCachedNode} = require('./tree-node-traversals');
+const React = require('react-for-atom');
 
-var {PropTypes} = React;
+const {PropTypes} = React;
 
 type TreeMenuItemDefinition = {
   label: string;
@@ -52,7 +52,7 @@ function toggleSetHas(
     value: string,
     forceHas?: ?boolean
 ): boolean {
-  var added;
+  let added;
 
   if (forceHas || (forceHas === undefined && !set.has(value))) {
     set.add(value);
@@ -65,12 +65,12 @@ function toggleSetHas(
   return added;
 }
 
-var FIRST_SELECTED_DESCENDANT_REF: string = 'firstSelectedDescendant';
+const FIRST_SELECTED_DESCENDANT_REF: string = 'firstSelectedDescendant';
 
 /**
  * Generic tree component that operates on LazyTreeNodes.
  */
-var TreeRootComponent = React.createClass({
+const TreeRootComponent = React.createClass({
   _allKeys: (null: ?Array<string>),
   _emitter: (null: ?EventEmitter),
   _keyToNode: (null: ?{[key: string]: LazyTreeNode}),
@@ -103,9 +103,9 @@ var TreeRootComponent = React.createClass({
   },
 
   getInitialState(): any {
-    var rootKeys = this.props.initialRoots.map((root) => root.getKey());
+    const rootKeys = this.props.initialRoots.map((root) => root.getKey());
 
-    var selectedKeys;
+    let selectedKeys;
     if (this.props.initialSelectedNodeKeys) {
       selectedKeys = new Set(this.props.initialSelectedNodeKeys);
     } else {
@@ -131,7 +131,7 @@ var TreeRootComponent = React.createClass({
     // (3) Press the up or down arrow key to change the selected node
     // (4) The new node should scroll into view
     if (!prevState || this.state.selectedKeys !== prevState.selectedKeys) {
-      var firstSelectedDescendant = this.refs[FIRST_SELECTED_DESCENDANT_REF];
+      const firstSelectedDescendant = this.refs[FIRST_SELECTED_DESCENDANT_REF];
       if (firstSelectedDescendant !== undefined) {
         React.findDOMNode(firstSelectedDescendant).scrollIntoViewIfNeeded(false);
       }
@@ -143,7 +143,7 @@ var TreeRootComponent = React.createClass({
   },
 
   _deselectDescendants(root: LazyTreeNode): void {
-    var selectedKeys = this.state.selectedKeys;
+    const selectedKeys = this.state.selectedKeys;
 
     forEachCachedNode(root, node => {
       // `forEachCachedNode` iterates over the root, but it should remain
@@ -167,8 +167,8 @@ var TreeRootComponent = React.createClass({
   },
 
   _toggleNodeExpanded(node: LazyTreeNode, forceExpanded?: ?boolean): void {
-    var expandedKeys = this.state.expandedKeys;
-    var keyAdded = toggleSetHas(expandedKeys, node.getKey(), forceExpanded);
+    const expandedKeys = this.state.expandedKeys;
+    const keyAdded = toggleSetHas(expandedKeys, node.getKey(), forceExpanded);
 
     // If the node was collapsed, deselect its descendants so only nodes visible
     // in the tree remain selected.
@@ -180,7 +180,7 @@ var TreeRootComponent = React.createClass({
   },
 
   _toggleNodeSelected(node: LazyTreeNode, forceSelected?: ?boolean): void {
-    var selectedKeys = this.state.selectedKeys;
+    const selectedKeys = this.state.selectedKeys;
     toggleSetHas(selectedKeys, node.getKey(), forceSelected);
     this.setState({selectedKeys});
   },
@@ -226,13 +226,13 @@ var TreeRootComponent = React.createClass({
   },
 
   addContextMenuItemGroup(menuItemDefinitions: Array<TreeMenuItemDefinition>): void {
-    var items = menuItemDefinitions.slice();
+    let items = menuItemDefinitions.slice();
     items = items.map((definition) => {
       definition.shouldDisplay = () => {
         if (this.state.roots.length === 0 && !definition.shouldDisplayIfTreeIsEmpty) {
           return false;
         }
-        var shouldDisplayForSelectedNodes = definition.shouldDisplayForSelectedNodes;
+        const shouldDisplayForSelectedNodes = definition.shouldDisplayForSelectedNodes;
         if (shouldDisplayForSelectedNodes) {
           return shouldDisplayForSelectedNodes.call(definition, this.getSelectedNodes());
         }
@@ -246,7 +246,7 @@ var TreeRootComponent = React.createClass({
     items.push({type: 'separator'});
 
     // TODO: Use a computed property when supported by Flow.
-    var contextMenuObj = {};
+    const contextMenuObj = {};
     contextMenuObj[this.props.eventHandlerSelector] = items;
     atom.contextMenu.add(contextMenuObj);
   },
@@ -256,32 +256,32 @@ var TreeRootComponent = React.createClass({
       return this.props.elementToRenderWhenEmpty;
     }
 
-    var children = [];
-    var expandedKeys = this.state.expandedKeys;
-    var foundFirstSelectedDescendant: boolean = false;
+    const children = [];
+    const expandedKeys = this.state.expandedKeys;
+    let foundFirstSelectedDescendant: boolean = false;
 
-    var promises: Array<Promise> = [];
-    var allKeys: Array<string> = [];
-    var keyToNode: { [key:string]: LazyTreeNode} = {};
+    const promises: Array<Promise> = [];
+    const allKeys: Array<string> = [];
+    const keyToNode: { [key:string]: LazyTreeNode} = {};
 
     this.state.roots.forEach((root) => {
-      var stack = [{node: root, depth: 0}];
+      const stack = [{node: root, depth: 0}];
 
       while (stack.length !== 0) {
         // Pop off the top of the stack and add it to the list of nodes to display.
-        var item = stack.pop();
-        var node = item.node;
+        const item = stack.pop();
+        const node = item.node;
 
         // Keep a reference the first selected descendant with
         // `this.refs[FIRST_SELECTED_DESCENDANT_REF]`.
-        var isNodeSelected: boolean = this._isNodeSelected(node);
-        var ref: ?string = null;
+        const isNodeSelected: boolean = this._isNodeSelected(node);
+        let ref: ?string = null;
         if (!foundFirstSelectedDescendant && isNodeSelected) {
           foundFirstSelectedDescendant = true;
           ref = FIRST_SELECTED_DESCENDANT_REF;
         }
 
-        var child = (
+        const child = (
           <TreeNodeComponent {...item}
             isContainer={node.isContainer()}
             isExpanded={this._isNodeExpanded(node)}
@@ -308,7 +308,7 @@ var TreeRootComponent = React.createClass({
           continue;
         }
 
-        var cachedChildren = node.getCachedChildren();
+        const cachedChildren = node.getCachedChildren();
         if (!cachedChildren || !node.isCacheValid()) {
           promises.push(node.fetchChildren());
         }
@@ -316,7 +316,7 @@ var TreeRootComponent = React.createClass({
         // Prevent flickering by always rendering cached children -- if they're invalid,
         // then the fetch will happen soon.
         if (cachedChildren) {
-          var depth = item.depth + 1;
+          const depth = item.depth + 1;
           // Push the node's children on the stack in reverse order so that when
           // they are popped off the stack, they are iterated in the original
           // order.
@@ -346,16 +346,16 @@ var TreeRootComponent = React.createClass({
   },
 
   componentWillMount(): void {
-    var allKeys = [];
-    var keyToNode = {};
+    const allKeys = [];
+    const keyToNode = {};
 
     this.state.roots.forEach(root => {
-      var rootKey = root.getKey();
+      const rootKey = root.getKey();
       allKeys.push(rootKey);
       keyToNode[rootKey] = root;
     });
 
-    var subscriptions = new CompositeDisposable();
+    const subscriptions = new CompositeDisposable();
     subscriptions.add(atom.commands.add(
       this.props.eventHandlerSelector,
       {
@@ -387,7 +387,7 @@ var TreeRootComponent = React.createClass({
   },
 
   serialize(): TreeComponentState {
-    var {from} = require('nuclide-commons').array;
+    const {from} = require('nuclide-commons').array;
     return {
       expandedNodeKeys: from(this.state.expandedKeys),
       selectedNodeKeys: from(this.state.selectedKeys),
@@ -410,14 +410,14 @@ var TreeRootComponent = React.createClass({
       this.removeStateForSubtree(root);
     });
 
-    var expandedKeys = this.state.expandedKeys;
+    const expandedKeys = this.state.expandedKeys;
     roots.forEach((root) => expandedKeys.add(root.getKey()));
 
     // We have to create the listener before setting the state so it can pick
     // up the changes from `setState`.
-    var promise = this._createDidUpdateListener(/* shouldResolve */ () => {
-      var rootsReady = (this.state.roots === roots);
-      var childrenReady = this.state.roots.every(root => root.isCacheValid());
+    const promise = this._createDidUpdateListener(/* shouldResolve */ () => {
+      const rootsReady = (this.state.roots === roots);
+      const childrenReady = this.state.roots.every(root => root.isCacheValid());
       return rootsReady && childrenReady;
     });
 
@@ -431,7 +431,7 @@ var TreeRootComponent = React.createClass({
 
   _createDidUpdateListener(shouldResolve: () => boolean): Promise<void> {
     return new Promise((resolve, reject) => {
-      var listener = () => {
+      const listener = () => {
         if (shouldResolve()) {
           resolve(undefined);
 
@@ -462,11 +462,11 @@ var TreeRootComponent = React.createClass({
   },
 
   removeStateForSubtree(root: LazyTreeNode): void {
-    var expandedKeys = this.state.expandedKeys;
-    var selectedKeys = this.state.selectedKeys;
+    const expandedKeys = this.state.expandedKeys;
+    const selectedKeys = this.state.selectedKeys;
 
     forEachCachedNode(root, (node) => {
-      var cachedKey = node.getKey();
+      const cachedKey = node.getKey();
       expandedKeys.delete(cachedKey);
       selectedKeys.delete(cachedKey);
     });
@@ -482,9 +482,9 @@ var TreeRootComponent = React.createClass({
   },
 
   getExpandedNodes(): Array<LazyTreeNode> {
-    var expandedNodes = [];
+    const expandedNodes = [];
     this.state.expandedKeys.forEach(key => {
-      var node = this.getNodeForKey(key);
+      const node = this.getNodeForKey(key);
       if (node != null) {
         expandedNodes.push(node);
       }
@@ -493,9 +493,9 @@ var TreeRootComponent = React.createClass({
   },
 
   getSelectedNodes(): Array<LazyTreeNode> {
-    var selectedNodes = [];
+    const selectedNodes = [];
     this.state.selectedKeys.forEach(key => {
-      var node = this.getNodeForKey(key);
+      const node = this.getNodeForKey(key);
       if (node != null) {
         selectedNodes.push(node);
       }
@@ -509,7 +509,7 @@ var TreeRootComponent = React.createClass({
       return null;
     }
 
-    var selectedKey;
+    let selectedKey;
     if (this._allKeys != null) {
       this._allKeys.every((key) => {
         if (this.state.selectedKeys.has(key)) {
@@ -524,7 +524,7 @@ var TreeRootComponent = React.createClass({
   },
 
   _expandSelection(): void {
-    var key = this._getFirstSelectedKey();
+    const key = this._getFirstSelectedKey();
     if (key) {
       this.expandNodeKey(key);
     }
@@ -540,7 +540,7 @@ var TreeRootComponent = React.createClass({
 
     // We have to create the listener before setting the state so it can pick
     // up the changes from `setState`.
-    var promise =
+    const promise =
       this._createDidUpdateListener(/* shouldResolve */ () => this.state.selectedKeys.has(nodeKey));
     this.setState({selectedKeys: new Set([nodeKey])});
     return promise;
@@ -562,13 +562,13 @@ var TreeRootComponent = React.createClass({
    * the expand to never resolve).
    */
   expandNodeKey(nodeKey: string): Promise<void> {
-    var node = this.getNodeForKey(nodeKey);
+    const node = this.getNodeForKey(nodeKey);
 
     if (node && node.isContainer()) {
-      var promise = this._createDidUpdateListener(/* shouldResolve */ () => {
-        var isExpanded = this.state.expandedKeys.has(nodeKey);
-        var nodeNow = this.getNodeForKey(nodeKey);
-        var isDoneFetching = (nodeNow && nodeNow.isContainer() && nodeNow.isCacheValid());
+      const promise = this._createDidUpdateListener(/* shouldResolve */ () => {
+        const isExpanded = this.state.expandedKeys.has(nodeKey);
+        const nodeNow = this.getNodeForKey(nodeKey);
+        const isDoneFetching = (nodeNow && nodeNow.isContainer() && nodeNow.isCacheValid());
         return isExpanded && isDoneFetching;
       });
       this._toggleNodeExpanded(node, true /* forceExpanded */);
@@ -579,10 +579,10 @@ var TreeRootComponent = React.createClass({
   },
 
   collapseNodeKey(nodeKey: string): Promise<void> {
-    var node = this.getNodeForKey(nodeKey);
+    const node = this.getNodeForKey(nodeKey);
 
     if (node && node.isContainer()) {
-      var promise = this._createDidUpdateListener(
+      const promise = this._createDidUpdateListener(
         /* shouldResolve */ () => !this.state.expandedKeys.has(nodeKey)
       );
       this._toggleNodeExpanded(node, false /* forceExpanded */);
@@ -597,16 +597,16 @@ var TreeRootComponent = React.createClass({
   },
 
   _collapseSelection(): void {
-    var key = this._getFirstSelectedKey();
+    const key = this._getFirstSelectedKey();
     if (!key) {
       return;
     }
 
-    var expandedKeys = this.state.expandedKeys;
-    var node = this.getNodeForKey(key);
+    const expandedKeys = this.state.expandedKeys;
+    const node = this.getNodeForKey(key);
     if ((node != null) && (!expandedKeys.has(key) || !node.isContainer())) {
       // If the selection is already collapsed or it's not a container, select its parent.
-      var parent = node.getParent();
+      const parent = node.getParent();
       if (parent) {
         this.selectNodeKey(parent.getKey());
       }
@@ -616,13 +616,13 @@ var TreeRootComponent = React.createClass({
   },
 
   _moveSelectionUp(): void {
-    var allKeys = this._allKeys;
+    const allKeys = this._allKeys;
     if (!allKeys) {
       return;
     }
 
-    var keyIndexToSelect = allKeys.length - 1;
-    var key = this._getFirstSelectedKey();
+    let keyIndexToSelect = allKeys.length - 1;
+    const key = this._getFirstSelectedKey();
     if (key) {
       keyIndexToSelect = allKeys.indexOf(key);
       if (keyIndexToSelect > 0) {
@@ -634,13 +634,13 @@ var TreeRootComponent = React.createClass({
   },
 
   _moveSelectionDown(): void {
-    var allKeys = this._allKeys;
+    const allKeys = this._allKeys;
     if (!allKeys) {
       return;
     }
 
-    var keyIndexToSelect = 0;
-    var key = this._getFirstSelectedKey();
+    let keyIndexToSelect = 0;
+    const key = this._getFirstSelectedKey();
     if (key) {
       keyIndexToSelect = allKeys.indexOf(key);
       if (keyIndexToSelect !== -1 && keyIndexToSelect < allKeys.length - 1) {
@@ -652,9 +652,9 @@ var TreeRootComponent = React.createClass({
   },
 
   _confirmSelection(): void {
-    var key = this._getFirstSelectedKey();
+    const key = this._getFirstSelectedKey();
     if (key) {
-      var node = this.getNodeForKey(key);
+      const node = this.getNodeForKey(key);
       if (node) {
         this._confirmNode(node);
       }

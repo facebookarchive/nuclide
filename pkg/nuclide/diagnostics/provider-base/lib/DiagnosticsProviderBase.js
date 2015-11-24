@@ -46,10 +46,10 @@ type ProviderBaseOptions = {
   enableForAllGrammars?: boolean;
 }
 
-var UPDATE_EVENT = 'update';
-var INVALIDATE_EVENT = 'invalidate';
+const UPDATE_EVENT = 'update';
+const INVALIDATE_EVENT = 'invalidate';
 
-var {CompositeDisposable, Emitter} = require('atom');
+const {CompositeDisposable, Emitter} = require('atom');
 
 function getTextEventDispatcher() {
   return require('nuclide-text-event-dispatcher').getInstance();
@@ -96,8 +96,8 @@ class DiagnosticsProviderBase {
    */
   _subscribeToTextEditorEvent(shouldRunOnTheFly: boolean) {
     this._disposeEventSubscription();
-    var dispatcher = this._textEventDispatcher;
-    var subscription;
+    const dispatcher = this._textEventDispatcher;
+    let subscription;
     if (shouldRunOnTheFly) {
       if (this._allGrammarScopes) {
         subscription = dispatcher.onAnyFileChange(this._textEventCallback);
@@ -148,13 +148,13 @@ class DiagnosticsProviderBase {
    */
 
   onMessageUpdate(callback: MessageUpdateCallback): atom$Disposable {
-    var disposable = this._emitter.on(UPDATE_EVENT, callback);
+    const disposable = this._emitter.on(UPDATE_EVENT, callback);
     this._newUpdateSubscriberCallback(callback);
     return disposable;
   }
 
   onMessageInvalidation(callback: MessageInvalidationCallback): atom$Disposable {
-    var disposable = this._emitter.on(INVALIDATE_EVENT, callback);
+    const disposable = this._emitter.on(INVALIDATE_EVENT, callback);
     this._newInvalidateSubscriberCallback(callback);
     return disposable;
   }

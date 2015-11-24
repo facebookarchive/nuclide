@@ -8,17 +8,17 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-var {CompositeDisposable, Range} = require('atom');
+const {CompositeDisposable, Range} = require('atom');
 import {trackOperationTiming} from 'nuclide-analytics';
 
-var GRAMMARS = [
+const GRAMMARS = [
   'source.objc',
   'source.objcpp',
 ];
 
 // The indentation amount depends on previous lines. If the user types a colon outside of a method
 // call, it searches the entire buffer. This hard cutoff should work for sane code.
-var NUMBER_OF_PREVIOUS_LINES_TO_SEARCH_FOR_COLONS = 25;
+const NUMBER_OF_PREVIOUS_LINES_TO_SEARCH_FOR_COLONS = 25;
 
 /**
  * This provides improved Objective-C indentation by aligning colons.
@@ -34,13 +34,13 @@ class ObjectiveCColonIndenter {
     }
     this._insertTextSubscriptionsMap = new Map();
 
-    var subscriptions = this._subscriptions = new CompositeDisposable();
+    const subscriptions = this._subscriptions = new CompositeDisposable();
     subscriptions.add({dispose: () => {
       this._insertTextSubscriptionsMap.forEach((subscription) => subscription.dispose());
       this._insertTextSubscriptionsMap.clear();
     }});
 
-    var {observeLanguageTextEditors} = require('nuclide-atom-helpers');
+    const {observeLanguageTextEditors} = require('nuclide-atom-helpers');
     subscriptions.add(observeLanguageTextEditors(
         GRAMMARS,
         textEditor => this._enableInTextEditor(textEditor),
@@ -59,23 +59,23 @@ class ObjectiveCColonIndenter {
       trackOperationTiming(
         'objc:indent-colon',
         () => {
-          var {range, text} = event;
+          const {range, text} = event;
 
           // Ignore the inserted text if the user is typing in a string or comment.
           //
           // The scope descriptor marks the text with semantic information,
           // generally used for syntax highlighting.
-          var isNonCodeText = textEditor.scopeDescriptorForBufferPosition(range.start)
+          const isNonCodeText = textEditor.scopeDescriptorForBufferPosition(range.start)
             .getScopesArray()
             .some(scope => scope.startsWith('string') || scope.startsWith('comment'));
           if (text !== ':' || isNonCodeText) {
             return;
           }
 
-          var buffer = textEditor.getBuffer();
+          const buffer = textEditor.getBuffer();
 
-          var currentColonPosition = range.start;
-          var colonColumn =
+          const currentColonPosition = range.start;
+          const colonColumn =
           ObjectiveCColonIndenter.getIndentedColonColumn(buffer, currentColonPosition);
           if (!colonColumn) {
             return;
@@ -84,13 +84,13 @@ class ObjectiveCColonIndenter {
           // Fully replace the current line with the properly-indented line.
           //
           // 1. Get the current line and strip all the indentation.
-          var line = buffer.lineForRow(currentColonPosition.row);
+          const line = buffer.lineForRow(currentColonPosition.row);
           // $FlowIssue This needs to be added to lib/core.js.
-          var unindentedLine = line.trimLeft();
+          const unindentedLine = line.trimLeft();
           // 2. Calculate the amount of indentation the line should end up with.
-          var numberOfIndentCharacters = line.length - unindentedLine.length;
-          var unindentedCurrentColonColumn = currentColonPosition.column - numberOfIndentCharacters;
-          var totalIndentAmount = unindentedCurrentColonColumn >= colonColumn
+          const numberOfIndentCharacters = line.length - unindentedLine.length;
+          const unindentedCurrentColonColumn = currentColonPosition.column - numberOfIndentCharacters;
+          const totalIndentAmount = unindentedCurrentColonColumn >= colonColumn
             ? 0
             : colonColumn - unindentedCurrentColonColumn;
           // 3. Replace the current line with the properly-indented line.
@@ -99,7 +99,7 @@ class ObjectiveCColonIndenter {
             ' '.repeat(totalIndentAmount) + unindentedLine);
 
           // Move the cursor to right after the inserted colon.
-          var newCursorPosition = [
+          const newCursorPosition = [
             currentColonPosition.row,
             totalIndentAmount + unindentedCurrentColonColumn + 1,
           ];
@@ -111,7 +111,7 @@ class ObjectiveCColonIndenter {
   }
 
   _disableInTextEditor(textEditor: TextEditor): void {
-    var subscription = this._insertTextSubscriptionsMap.get(textEditor);
+    const subscription = this._insertTextSubscriptionsMap.get(textEditor);
     if (subscription) {
       subscription.dispose();
       this._insertTextSubscriptionsMap.delete(textEditor);
@@ -122,7 +122,7 @@ class ObjectiveCColonIndenter {
    * Return the column of the colon to align with, or null if it doesn't exist.
    */
   static getIndentedColonColumn(buffer: atom$TextBuffer, startPosition: atom$Point): ?number {
-    var startPositionText = buffer.getTextInRange(Range.fromObject(
+    const startPositionText = buffer.getTextInRange(Range.fromObject(
         [startPosition, startPosition.translate([0, 1])]));
     if (startPositionText !== ':') {
       throw new Error(
@@ -137,8 +137,8 @@ class ObjectiveCColonIndenter {
     // reached the start of the method.
     //
     // This doesn't work if there are strings/comments that contain `:`.
-    var column = null;
-    var numberOfUnclosedBrackets = 0;
+    let column = null;
+    let numberOfUnclosedBrackets = 0;
     buffer.backwardsScanInRange(
         // Only stop at the key characters: `:[]+-`.
         /:|\[|\]|\+|-/g,
@@ -147,12 +147,12 @@ class ObjectiveCColonIndenter {
           startPosition.translate([0, -1]),
         ]),
         ({match, matchText, range, stop}) => {
-          var position = range.start;
+          const position = range.start;
           // If we find a key character on the starting line, then the user is
           // typing a single-line method (it doesn't need to be indented).
-          var isSingleLineMethod = (position.row === startPosition.row);
+          const isSingleLineMethod = (position.row === startPosition.row);
           // `+` or `-` means we've reached the start of a method declaration.
-          var isDeclaration = (matchText === '+' || matchText === '-');
+          const isDeclaration = (matchText === '+' || matchText === '-');
           if (isSingleLineMethod || isDeclaration) {
             stop();
             return;

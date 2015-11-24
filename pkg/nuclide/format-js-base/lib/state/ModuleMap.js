@@ -13,13 +13,13 @@ import type {AbsolutePath, Identifier, Literal} from '../types/common';
 import type {ModuleMapOptions} from '../options/ModuleMapOptions';
 import type {RequireOptions} from '../options/RequireOptions';
 
-var ModuleMapUtils = require('../utils/ModuleMapUtils');
-var Options = require('../options/Options');
+const ModuleMapUtils = require('../utils/ModuleMapUtils');
+const Options = require('../options/Options');
 
-var jscs = require('jscodeshift');
-var oneLineObjectPattern = require('../utils/oneLineObjectPattern');
+const jscs = require('jscodeshift');
+const oneLineObjectPattern = require('../utils/oneLineObjectPattern');
 
-var {statement} = jscs.template;
+const {statement} = jscs.template;
 
 class ModuleMap {
   // Note: These fields are ordered by precendence.
@@ -63,15 +63,15 @@ class ModuleMap {
     this._aliasesToRelativize = options.aliasesToRelativize;
 
     // TODO: Use let for proper scoping.
-    var id;
-    var ids;
-    var filePath;
-    var set;
+    let id;
+    let ids;
+    let filePath;
+    let set;
 
     this._defaults = new Map();
     for (filePath of options.paths) {
       ids = ModuleMapUtils.getIdentifiersFromPath(filePath);
-      var literal = ModuleMapUtils.getLiteralFromPath(filePath);
+      const literal = ModuleMapUtils.getLiteralFromPath(filePath);
       for (id of ids) {
         set = this._defaults.get(id);
         if (!set) {
@@ -118,8 +118,8 @@ class ModuleMap {
     }
 
     // TODO: Use let for proper scoping.
-    var literal;
-    var tmp;
+    let literal;
+    let tmp;
 
     if (this._aliases.has(id)) {
       literal = this._aliases.get(id);
@@ -143,10 +143,10 @@ class ModuleMap {
       this._defaultsToRelativize.has(id) &&
       this._defaultsToRelativize.get(id).size === 1
     ) {
-      var nonNullSourcePath = options.sourcePath;
+      const nonNullSourcePath = options.sourcePath;
       // TODO: What's the best way to get the single thing out of a one element
       // Set?
-      for (var filePath of this._defaultsToRelativize.get(id)) {
+      for (const filePath of this._defaultsToRelativize.get(id)) {
         literal = ModuleMapUtils.relativizeForRequire(
           nonNullSourcePath,
           filePath
@@ -163,11 +163,11 @@ class ModuleMap {
     }
 
     // Create common nodes for printing.
-    var idNode = jscs.identifier(id);
-    var literalNode = jscs.literal(literal);
+    const idNode = jscs.identifier(id);
+    const literalNode = jscs.literal(literal);
 
     // TODO: Support exports and destructuring.
-    var destructure = false;
+    const destructure = false;
 
     if (destructure && options.typeImport) {
       // import type {foo} from 'foo';
@@ -185,7 +185,7 @@ class ModuleMap {
       return tmp;
     } else if (destructure && !options.typeImport) {
       // var {foo} = require('foo');
-      var property = jscs.property('init', idNode, idNode);
+      const property = jscs.property('init', idNode, idNode);
       property.shorthand = true;
       return jscs.variableDeclaration(
         'const',

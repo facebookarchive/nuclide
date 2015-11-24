@@ -12,19 +12,19 @@
 import type {Lines, Print} from '../../types/common';
 import type {UnaryExpression} from 'ast-types-flow';
 
-var markers = require('../../constants/markers');
-var wrapExpression = require('../../wrappers/simple/wrapExpression');
+const markers = require('../../constants/markers');
+const wrapExpression = require('../../wrappers/simple/wrapExpression');
 
 function printUnaryExpression(print: Print, node: UnaryExpression): Lines {
   const wrap = x => wrapExpression(print, node, x);
 
-  let hasSpace = (
+  const hasSpace = (
     node.operator === 'typeof' ||
     node.operator === 'void' ||
     node.operator === 'delete'
   );
 
-  let parts = [node.operator];
+  const parts = [node.operator];
   if (hasSpace) {
     parts.push(markers.noBreak);
     parts.push(markers.space);

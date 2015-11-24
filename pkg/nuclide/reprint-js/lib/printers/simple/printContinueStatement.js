@@ -12,15 +12,15 @@
 import type {ContinueStatement} from 'ast-types-flow';
 import type {Lines, Print} from '../../types/common';
 
-var markers = require('../../constants/markers');
-var wrapStatement = require('../../wrappers/simple/wrapStatement');
+const markers = require('../../constants/markers');
+const wrapStatement = require('../../wrappers/simple/wrapStatement');
 
 function printContinueStatement(print: Print, node: ContinueStatement): Lines {
   const wrap = x => wrapStatement(print, node, x);
 
   let parts = ['continue'];
   if (node.label) {
-    let label = node.label;
+    const label = node.label;
     parts = parts.concat([
       ':',
       markers.noBreak,

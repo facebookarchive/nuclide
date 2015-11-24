@@ -11,10 +11,10 @@
 
 import type {Node} from '../types/ast';
 
-var jscs = require('jscodeshift');
+const jscs = require('jscodeshift');
 
 function getNamesFromID(node: Node): Set<string> {
-  var ids = new Set();
+  const ids = new Set();
   if (jscs.Identifier.check(node)) {
     ids.add(node.name);
   } else if (
@@ -22,19 +22,19 @@ function getNamesFromID(node: Node): Set<string> {
     jscs.SpreadElement.check(node) ||
     jscs.SpreadProperty.check(node)
   ) {
-    for (var id of getNamesFromID(node.argument)) {
+    for (const id of getNamesFromID(node.argument)) {
       ids.add(id);
     }
   } else if (jscs.ObjectPattern.check(node)) {
     node.properties.forEach(prop => {
       // Generally props have a value, if it is a spread property it doesn't.
-      for (var id of getNamesFromID(prop.value || prop)) {
+      for (const id of getNamesFromID(prop.value || prop)) {
         ids.add(id);
       }
     });
   } else if (jscs.ArrayPattern.check(node)) {
     node.elements.forEach(element => {
-      for (var id of getNamesFromID(element)) {
+      for (const id of getNamesFromID(element)) {
         ids.add(id);
       }
     });

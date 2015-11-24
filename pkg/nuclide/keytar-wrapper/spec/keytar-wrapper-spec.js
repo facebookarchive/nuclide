@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-var {replacePassword, getPassword, __test__} = require('../lib/main');
-var {
+const {replacePassword, getPassword, __test__} = require('../lib/main');
+const {
   runScriptInApmNode,
   getApmNodePath,
   getApmNodeModulesPath,
@@ -36,16 +36,16 @@ describe('Keytar Wrapper', () => {
 
   describe('runScriptInApmNode', () => {
     it('runs a string as a script in apm node', () => {
-      var result = runScriptInApmNode('require("keytar");console.log("true")');
+      const result = runScriptInApmNode('require("keytar");console.log("true")');
       expect(result).toEqual('true\n');
     });
   });
 
   describe('*Password', () => {
     it('sets password in keychain', () => {
-      var crypto = require('crypto');
+      const crypto = require('crypto');
       //$FlowIssue https://github.com/facebook/flow/pull/955
-      var randomString = crypto.pseudoRandomBytes(32).toString('hex');
+      const randomString = crypto.pseudoRandomBytes(32).toString('hex');
       replacePassword('nuclide-keytar-wrapper', 'fake user', randomString);
       expect(getPassword('nuclide-keytar-wrapper', 'fake user')).toEqual(randomString);
     });

@@ -9,28 +9,28 @@
  * the root directory of this source tree.
  */
 
-var path = require('path');
-var {spawnSync} = require('child_process');
+const path = require('path');
+const {spawnSync} = require('child_process');
 
 function getApmNodePath() {
-  var apmDir = path.dirname(atom.packages.getApmPath());
+  const apmDir = path.dirname(atom.packages.getApmPath());
   return path.normalize(path.join(apmDir, 'node'));
 }
 
 function getApmNodeModulesPath() {
-  var apmDir = path.dirname(atom.packages.getApmPath());
+  const apmDir = path.dirname(atom.packages.getApmPath());
   return path.normalize(path.join(apmDir, '..', 'node_modules'));
 }
 
 function runScriptInApmNode(script: string) {
-  var args = ['-e', script];
-  var options = {env: {NODE_PATH: getApmNodeModulesPath()}};
-  var output = spawnSync(getApmNodePath(), args, options);
+  const args = ['-e', script];
+  const options = {env: {NODE_PATH: getApmNodeModulesPath()}};
+  const output = spawnSync(getApmNodePath(), args, options);
   return output.stdout.toString();
 }
 
 function getPassword(service: string, account: string): ?string {
-  var script = `
+  const script = `
     var keytar = require('keytar');
     var service = ${JSON.stringify(service)};
     var account = ${JSON.stringify(account)};
@@ -44,7 +44,7 @@ function replacePassword(
     service: string,
     account: string,
     password: string): ?boolean {
-  var script = `
+  const script = `
     var keytar = require('keytar');
     var service = ${JSON.stringify(service)};
     var account = ${JSON.stringify(account)};
@@ -62,5 +62,5 @@ module.exports = {
     runScriptInApmNode,
     getApmNodePath,
     getApmNodeModulesPath,
-  }
+  },
 };

@@ -8,16 +8,16 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-var util = require('util');
+const util = require('util');
 
 function layout(loggingEvent: any): Array<any> {
-  var eventInfo = util.format(
+  const eventInfo = util.format(
     '[%s] [%s] %s - ',
     loggingEvent.startTime.toISOString(),
     loggingEvent.level,
     loggingEvent.categoryName);
 
-  var data = loggingEvent.data.slice();
+  const data = loggingEvent.data.slice();
 
   // Since console.log support string format as first parameter, we should preserve this behavior
   // by concating eventInfo with first parameter if it is string.

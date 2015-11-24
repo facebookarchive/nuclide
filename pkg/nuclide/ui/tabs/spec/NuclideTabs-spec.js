@@ -9,11 +9,11 @@
  * the root directory of this source tree.
  */
 
-var Tabs = require('../lib/NuclideTabs');
-var React = require('react-for-atom');
+const Tabs = require('../lib/NuclideTabs');
+const React = require('react-for-atom');
 
-var {TestUtils} = React.addons;
-var {
+const {TestUtils} = React.addons;
+const {
   Simulate,
   SimulateNative,
   renderIntoDocument,
@@ -23,17 +23,17 @@ var {
 describe('NuclideCheckbox', () => {
 
   it('notifies callback of tab changes', () => {
-    var onChange = jasmine.createSpy('onChange');
+    const onChange = jasmine.createSpy('onChange');
 
-    var props = {
+    const props = {
       tabs: [{name: 'first', tabContent: 123}, {name: 'second', tabContent: 456}],
       activeTabName: 'first',
       onActiveTabChange: onChange,
     };
-    var component = renderIntoDocument(
+    const component = renderIntoDocument(
       <Tabs {...props} />
     );
-    var node = scryRenderedDOMComponentsWithClass(
+    const node = scryRenderedDOMComponentsWithClass(
       component,
       'title'
     )[1];
@@ -44,18 +44,18 @@ describe('NuclideCheckbox', () => {
   });
 
   it('should work with customized event types', () => {
-    var onChange = jasmine.createSpy('onChange');
+    const onChange = jasmine.createSpy('onChange');
 
-    var props = {
+    const props = {
       tabs: [{name: 'first', tabContent: 123}, {name: 'second', tabContent: 456}],
       activeTabName: 'first',
       triggeringEvent: 'onMouseEnter',
       onActiveTabChange: onChange,
     };
-    var component = renderIntoDocument(
+    const component = renderIntoDocument(
       <Tabs {...props} />
     );
-    var node = scryRenderedDOMComponentsWithClass(
+    const node = scryRenderedDOMComponentsWithClass(
       component,
       'title'
     )[1];

@@ -9,16 +9,16 @@
  * the root directory of this source tree.
  */
 
-var Console = require('./Console');
-var NuclideUiDropdown = require('nuclide-ui-dropdown');
-var {PanelComponent} = require('nuclide-ui-panel');
-var {createPaneContainer} = require('nuclide-atom-helpers');
-var React = require('react-for-atom');
-var TestClassTree = require('./TestClassTree');
+const Console = require('./Console');
+const NuclideUiDropdown = require('nuclide-ui-dropdown');
+const {PanelComponent} = require('nuclide-ui-panel');
+const {createPaneContainer} = require('nuclide-atom-helpers');
+const React = require('react-for-atom');
+const TestClassTree = require('./TestClassTree');
 
-var pathUtil = require('path');
+const pathUtil = require('path');
 
-var {PropTypes} = React;
+const {PropTypes} = React;
 
 function runStopButtonClassName(icon: string, className: string): string {
   return `btn btn-sm icon inline-block icon-${icon} ${className}`;
@@ -73,7 +73,7 @@ class TestRunnerPanel extends React.Component {
   }
 
   componentWillReceiveProps(nextProps: Object) {
-    var currSelectedIndex = this.state.selectedTestRunnerIndex;
+    const currSelectedIndex = this.state.selectedTestRunnerIndex;
     if (currSelectedIndex === -1 && nextProps.testRunners.length > 0) {
       this.setState({selectedTestRunnerIndex: 0});
     } else if (nextProps.testRunners.length === 0 && currSelectedIndex >= 0) {
@@ -88,7 +88,7 @@ class TestRunnerPanel extends React.Component {
   }
 
   render() {
-    var runStopButton;
+    let runStopButton;
     switch (this.props.executionState) {
       case TestRunnerPanel.ExecutionState.RUNNING:
         runStopButton = (
@@ -100,7 +100,7 @@ class TestRunnerPanel extends React.Component {
         );
         break;
       case TestRunnerPanel.ExecutionState.STOPPED:
-        var initialTest = this.props.path === undefined;
+        const initialTest = this.props.path === undefined;
         runStopButton = (
           <button
             className={runStopButtonClassName(initialTest ? 'playback-play' : 'sync', 'btn-primary')}
@@ -114,7 +114,7 @@ class TestRunnerPanel extends React.Component {
 
     // Assign `value` only when needed so a null/undefined value will show an indeterminate progress
     // bar.
-    var progressAttrs: ?{[key: string]: mixed};
+    let progressAttrs: ?{[key: string]: mixed};
     if (this.props.progressValue) {
       // `key` is set to force React to treat this as a new element when the `value` attr should be
       // removed. Currently it just sets `value="0"`, which is styled differently from no `value`
@@ -126,7 +126,7 @@ class TestRunnerPanel extends React.Component {
       };
     }
 
-    var runMsg;
+    let runMsg;
     if (this.props.executionState === TestRunnerPanel.ExecutionState.RUNNING) {
       runMsg = (
         <span className="inline-block">Running</span>
@@ -137,12 +137,12 @@ class TestRunnerPanel extends React.Component {
       );
     }
 
-    var pathMsg;
+    let pathMsg;
     if (this.props.path) {
       pathMsg = <span title={this.props.path}>{pathUtil.basename(this.props.path)}</span>;
     }
 
-    var dropdown;
+    let dropdown;
     if (this.isDisabled()) {
       dropdown = <span className="inline-block text-warning">No registered test runners</span>;
     } else {
@@ -201,7 +201,7 @@ class TestRunnerPanel extends React.Component {
   }
 
   getSelectedTestRunner(): ?Object {
-    var selectedTestRunnerIndex = this.state.selectedTestRunnerIndex;
+    const selectedTestRunnerIndex = this.state.selectedTestRunnerIndex;
     if (selectedTestRunnerIndex >= 0) {
       return this.props.testRunners[selectedTestRunnerIndex];
     }

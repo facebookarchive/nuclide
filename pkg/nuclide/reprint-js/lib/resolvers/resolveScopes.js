@@ -11,12 +11,12 @@
 
 import type Options from '../options/Options';
 
-var buildScopes = require('../utils/buildScopes');
-var invariant = require('assert');
-var isMarker = require('../utils/isMarker');
-var isScopeMarker = require('../utils/isScopeMarker');
-var markers = require('../constants/markers');
-var translateScopeMarker = require('../utils/translateScopeMarker');
+const buildScopes = require('../utils/buildScopes');
+const invariant = require('assert');
+const isMarker = require('../utils/isMarker');
+const isScopeMarker = require('../utils/isScopeMarker');
+const markers = require('../constants/markers');
+const translateScopeMarker = require('../utils/translateScopeMarker');
 
 const MIN_RELEVANT_SCOPE_VALUE = 10;
 

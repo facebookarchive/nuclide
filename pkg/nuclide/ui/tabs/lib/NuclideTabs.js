@@ -9,14 +9,14 @@
  * the root directory of this source tree.
  */
 
-var React = require('react-for-atom');
+const React = require('react-for-atom');
 
-var {PropTypes} = React;
+const {PropTypes} = React;
 
-var {array} = require('nuclide-commons');
+const {array} = require('nuclide-commons');
 const classnames = require('classnames');
 
-var NuclideTabs = React.createClass({
+const NuclideTabs = React.createClass({
 
   propTypes: {
     tabs: PropTypes.arrayOf(PropTypes.shape({
@@ -43,8 +43,8 @@ var NuclideTabs = React.createClass({
   },
 
   _renderTabMenu(): ReactElement {
-    var tabs = this.props.tabs.map(tab => {
-      var handler = {};
+    const tabs = this.props.tabs.map(tab => {
+      const handler = {};
       handler[this.props.triggeringEvent] = this._handleTabChange.bind(this, tab.name);
       return (
         <li

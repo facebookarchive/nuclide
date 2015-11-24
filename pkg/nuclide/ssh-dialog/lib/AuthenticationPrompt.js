@@ -29,7 +29,7 @@ export default class AuthenticationPrompt extends React.Component<DefaultProps, 
 
   render() {
     // Instructions may contain newlines that need to be converted to <br> tags.
-    var safeHtml = this.props.instructions
+    const safeHtml = this.props.instructions
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/\\n/g, '<br>');
@@ -67,7 +67,7 @@ export default class AuthenticationPrompt extends React.Component<DefaultProps, 
 
   componentDidMount() {
     this._disposables = new CompositeDisposable();
-    var root = React.findDOMNode(this.refs['root']);
+    const root = React.findDOMNode(this.refs['root']);
 
     // Hitting enter when this panel has focus should confirm the dialog.
     this._disposables.add(atom.commands.add(

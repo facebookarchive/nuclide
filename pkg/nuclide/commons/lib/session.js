@@ -12,7 +12,7 @@
 // Since nuclide-commons is a Node package, we might end up having multiple copy of it running in
 // Node/Atom. To make sure we only have one copy of sessionId, we store it as a property of `global`
 // object with SESSION_ID_KEY as key.
-var SESSION_ID_KEY = '_nuclide_session_id_key';
+const SESSION_ID_KEY = '_nuclide_session_id_key';
 
 module.exports = {
   /**

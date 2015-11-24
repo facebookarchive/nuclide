@@ -15,13 +15,13 @@ type ComboboxOption = {
   matchIndex: number;
 };
 
-var {CompositeDisposable} = require('atom');
-var AtomInput = require('nuclide-ui-atom-input');
-var React = require('react-for-atom');
+const {CompositeDisposable} = require('atom');
+const AtomInput = require('nuclide-ui-atom-input');
+const React = require('react-for-atom');
 
-var emptyfunction = require('emptyfunction');
+const emptyfunction = require('emptyfunction');
 
-var {PropTypes} = React;
+const {PropTypes} = React;
 
 /**
  * A Combo Box.
@@ -81,8 +81,8 @@ class AtomComboBox extends React.Component {
   }
 
   componentDidMount() {
-    var node = React.findDOMNode(this);
-    var _subscriptions = this._subscriptions = new CompositeDisposable();
+    const node = React.findDOMNode(this);
+    const _subscriptions = this._subscriptions = new CompositeDisposable();
     _subscriptions.add(
       atom.commands.add(node, 'core:move-up', this._handleMoveUp),
       atom.commands.add(node, 'core:move-down', this._handleMoveDown),
@@ -104,7 +104,7 @@ class AtomComboBox extends React.Component {
   }
 
   receiveUpdate(newOptions: Array<string>) {
-    var filteredOptions = this._getFilteredOptions(newOptions, this.state.textInput);
+    const filteredOptions = this._getFilteredOptions(newOptions, this.state.textInput);
     this.setState({
       options: newOptions,
       filteredOptions: filteredOptions,
@@ -129,11 +129,11 @@ class AtomComboBox extends React.Component {
 
   // TODO use native (fuzzy/strict - configurable?) filter provider
   _getFilteredOptions(options: Array<string>, filterValue: string): Array<ComboboxOption> {
-    var lowerCaseState = filterValue.toLowerCase();
+    const lowerCaseState = filterValue.toLowerCase();
     return options
       .map(
         option => {
-          var valueLowercase = option.toLowerCase();
+          const valueLowercase = option.toLowerCase();
           return {
             value: option,
             valueLowercase: valueLowercase,
@@ -146,13 +146,13 @@ class AtomComboBox extends React.Component {
   }
 
   _handleTextInputChange(): void {
-    var newText = this.refs.freeformInput.getText();
+    const newText = this.refs.freeformInput.getText();
     if (newText === this.state.textInput) {
       return;
     }
     this.requestUpdate();
-    var filteredOptions = this._getFilteredOptions(this.state.options, newText);
-    var selectedIndex;
+    const filteredOptions = this._getFilteredOptions(this.state.options, newText);
+    let selectedIndex;
     if (filteredOptions.length === 0) {
       // If there aren't any options, don't select anything.
       selectedIndex = -1;
@@ -189,7 +189,7 @@ class AtomComboBox extends React.Component {
     this.selectValue(selectedValue, () => {
       // Focus the input again because the click will cause the input to blur. This mimics native
       // <select> behavior by keeping focus in the form being edited.
-      var input = React.findDOMNode(this.refs['freeformInput']);
+      const input = React.findDOMNode(this.refs['freeformInput']);
       if (input) {
         input.focus();
       }
@@ -222,7 +222,7 @@ class AtomComboBox extends React.Component {
   }
 
   _handleConfirm() {
-    var option = this.state.filteredOptions[this.state.selectedIndex];
+    const option = this.state.filteredOptions[this.state.selectedIndex];
     if (option !== undefined) {
       this.selectValue(option.value);
     }
@@ -233,27 +233,27 @@ class AtomComboBox extends React.Component {
   }
 
   _scrollSelectedOptionIntoViewIfNeeded(): void {
-    var selectedOption = React.findDOMNode(this.refs['selectedOption']);
+    const selectedOption = React.findDOMNode(this.refs['selectedOption']);
     if (selectedOption) {
       selectedOption.scrollIntoViewIfNeeded();
     }
   }
 
   render(): ReactElement {
-    var optionsContainer;
+    let optionsContainer;
     if (this.state.optionsVisible) {
-      var options = this.state.filteredOptions.map((option, i) => {
-        var beforeMatch = option.value.substring(0, option.matchIndex);
-        var endOfMatchIndex = option.matchIndex + this.state.textInput.length;
-        var highlightedMatch = option.value.substring(
+      const options = this.state.filteredOptions.map((option, i) => {
+        const beforeMatch = option.value.substring(0, option.matchIndex);
+        const endOfMatchIndex = option.matchIndex + this.state.textInput.length;
+        const highlightedMatch = option.value.substring(
           option.matchIndex,
           endOfMatchIndex
         );
-        var afterMatch = option.value.substring(
+        const afterMatch = option.value.substring(
           endOfMatchIndex,
           option.value.length
         );
-        var isSelected = i === this.state.selectedIndex;
+        const isSelected = i === this.state.selectedIndex;
         return (
           <li
             className={isSelected ? 'selected' : null}

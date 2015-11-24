@@ -11,7 +11,7 @@
 
 import type {Collection, Node} from '../types/ast';
 
-var FirstNode = require('../utils/FirstNode');
+const FirstNode = require('../utils/FirstNode');
 
 /**
  * Removes the leading comments from the first node. Leading comments are
@@ -22,30 +22,30 @@ var FirstNode = require('../utils/FirstNode');
  *   - else comments 0 to N-2
  */
 function removeLeadingComments(root: Collection): Array<Node> {
-  var firstPath = FirstNode.get(root);
+  const firstPath = FirstNode.get(root);
   if (!firstPath) {
     return [];
   }
-  var first = firstPath.node;
+  const first = firstPath.node;
   if (!first || !first.comments) {
     return [];
   }
 
   // Check if the last comment ends exactly where the first node starts.
-  var transferLastcomment = false;
-  var lastComment = first.comments.reduce(
+  let transferLastcomment = false;
+  const lastComment = first.comments.reduce(
     (curr, next) => next.leading ? next : curr,
     null
   );
   if (lastComment && first.start != null && lastComment.end != null) {
-    var difference = Math.abs(first.start - lastComment.end);
+    const difference = Math.abs(first.start - lastComment.end);
     if (difference > 1) {
       transferLastcomment = true;
     }
   }
 
   // Count how many comments we need to transfer, treat negative counts as 0.
-  var transferCount = first.comments.reduce(
+  const transferCount = first.comments.reduce(
     (count, next) => next.leading ? count + 1 : count,
     transferLastcomment ? 0 : -1,
   );
@@ -54,8 +54,8 @@ function removeLeadingComments(root: Collection): Array<Node> {
   }
 
   // Make the transfer.
-  var transfer = [];
-  var keep = [];
+  const transfer = [];
+  const keep = [];
   first.comments.forEach(comment => {
     if (transfer.length < transferCount && comment.leading) {
       transfer.push(comment);

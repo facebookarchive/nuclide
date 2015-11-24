@@ -32,7 +32,7 @@ export type OpenFileEditorInstance = {
 export function sanitizeNuclideUri(uri: string): string {
   // Remove the leading absolute path prepended to the file paths
   // between atom reloads.
-  var protocolIndex = uri.indexOf(NUCLIDE_PROTOCOL_PREFIX);
+  const protocolIndex = uri.indexOf(NUCLIDE_PROTOCOL_PREFIX);
   if (protocolIndex > 0) {
     uri = uri.substring(protocolIndex);
   }

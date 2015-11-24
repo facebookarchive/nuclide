@@ -69,7 +69,7 @@ export function find<T>(
     array: Array<T>,
     callback: (element: T, index: number, array: Array<T>) => mixed,
     thisArg?: mixed): ?T {
-  var resultIndex = findIndex(array, callback, thisArg);
+  const resultIndex = findIndex(array, callback, thisArg);
   return resultIndex >= 0 ? array[resultIndex] : undefined;
 }
 
@@ -87,7 +87,7 @@ export function findIndex<T>(
     array: Array<T>,
     callback: (element: T, index: number, array: Array<T>) => mixed,
     thisArg?: mixed): number {
-  var result = -1;
+  let result = -1;
   array.some(function(element: T, index: number, arr: Array<T>) {
     if (callback.call(thisArg, element, index, arr)) {
       result = index;
@@ -100,7 +100,7 @@ export function findIndex<T>(
 }
 
 export function remove<T>(array: Array<T>, element: T): void {
-  var index = array.indexOf(element);
+  const index = array.indexOf(element);
   if (index >= 0) {
     array.splice(index, 1);
   }

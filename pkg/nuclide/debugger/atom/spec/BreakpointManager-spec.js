@@ -9,14 +9,14 @@
  * the root directory of this source tree.
  */
 
-var BreakpointManager = require('../lib/BreakpointManager.js');
-var BreakpointStore = require('../lib/BreakpointStore.js');
-var {hasBreakpointDecorationInRow} = require('./utils');
-var utils = require('./utils');
+const BreakpointManager = require('../lib/BreakpointManager.js');
+const BreakpointStore = require('../lib/BreakpointStore.js');
+const {hasBreakpointDecorationInRow} = require('./utils');
+const utils = require('./utils');
 
 describe('BreakpointManager', () => {
-  var breakpointManager;
-  var breakpointStore;
+  let breakpointManager;
+  let breakpointStore;
 
   beforeEach(() => {
     breakpointStore = new BreakpointStore();
@@ -25,9 +25,9 @@ describe('BreakpointManager', () => {
 
   it('should display existing breakpoints in editor when it is opened', () => {
     waitsForPromise(async () => {
-      var path = utils.getUniquePath();
+      const path = utils.getUniquePath();
       breakpointStore.addBreakpoint(path, 0);
-      var editor = await atom.workspace.open(path);
+      const editor = await atom.workspace.open(path);
       expect(hasBreakpointDecorationInRow(editor, 0)).toBe(true);
     });
   });
@@ -37,7 +37,7 @@ describe('BreakpointManager', () => {
       const uniqueEditor = await utils.createEditorWithUniquePath();
       const path = uniqueEditor.getPath();
       breakpointStore.addBreakpoint(path, 1);
-      var editor = await atom.workspace.open(path);
+      const editor = await atom.workspace.open(path);
       expect(hasBreakpointDecorationInRow(editor, 0)).toBe(true);
       expect(breakpointManager.getDisplayControllers().size).toBe(1);
 

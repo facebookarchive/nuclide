@@ -60,7 +60,7 @@ import {DiagnosticsProviderBase} from 'nuclide-diagnostics-provider-base';
 
 import {promises as commonsPromises} from 'nuclide-commons';
 
-var {RequestSerializer} = commonsPromises;
+const {RequestSerializer} = commonsPromises;
 
 // Exported for testing.
 export function linterMessageToDiagnosticMessage(
@@ -97,18 +97,18 @@ export function linterMessagesToDiagnosticUpdate(
   msgs: Array<LinterMessage>,
   providerName?: string = 'Unnamed Linter',
 ): DiagnosticProviderUpdate {
-  var filePathToMessages = new Map();
+  const filePathToMessages = new Map();
   if (currentPath) {
     // Make sure we invalidate the messages for the current path. We may want to
     // figure out which other paths we want to invalidate if it turns out that
     // linters regularly return messages for other files.
     filePathToMessages.set(currentPath, []);
   }
-  var projectMessages = [];
-  for (var msg of msgs) {
-    var diagnosticMessage = linterMessageToDiagnosticMessage(msg, providerName);
+  const projectMessages = [];
+  for (const msg of msgs) {
+    const diagnosticMessage = linterMessageToDiagnosticMessage(msg, providerName);
     if (diagnosticMessage.scope === 'file') {
-      var path = diagnosticMessage.filePath;
+      const path = diagnosticMessage.filePath;
       if (!filePathToMessages.has(path)) {
         filePathToMessages.set(path, []);
       }
@@ -147,7 +147,7 @@ export class LinterAdapter {
     provider: LinterProvider,
     ProviderBase?: typeof DiagnosticsProviderBase = DiagnosticsProviderBase,
   ) {
-    var utilsOptions = {
+    const utilsOptions = {
       grammarScopes: new Set(provider.grammarScopes),
       enableForAllGrammars: provider.allGrammarScopes,
       shouldRunOnTheFly: provider.lintOnFly,
@@ -162,10 +162,10 @@ export class LinterAdapter {
 
   async _runLint(editor: TextEditor): Promise<void> {
     if (this._enabled) {
-      var result = await this._requestSerializer.run(this._provider.lint(editor));
+      const result = await this._requestSerializer.run(this._provider.lint(editor));
       if (result.status === 'success') {
-        var linterMessages = result.result;
-        var diagnosticUpdate = linterMessagesToDiagnosticUpdate(
+        const linterMessages = result.result;
+        const diagnosticUpdate = linterMessagesToDiagnosticUpdate(
           editor.getPath(),
           linterMessages, this._provider.providerName || this._provider.name
         );
@@ -175,9 +175,9 @@ export class LinterAdapter {
   }
 
   _newUpdateSubscriber(callback: MessageUpdateCallback): void {
-    var activeTextEditor = atom.workspace.getActiveTextEditor();
+    const activeTextEditor = atom.workspace.getActiveTextEditor();
     if (activeTextEditor) {
-      var matchesGrammar =
+      const matchesGrammar =
         this._provider.grammarScopes.indexOf(activeTextEditor.getGrammar().scopeName) !== -1;
       if (!this._lintInProgress() && matchesGrammar) {
         this._runLint(activeTextEditor);

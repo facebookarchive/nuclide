@@ -12,14 +12,14 @@
 import type {Lines, Print} from '../../types/common';
 import type {Program} from 'ast-types-flow';
 
-var flatten = require('../../utils/flatten');
-var printArrayOfStatements = require('../common/printArrayOfStatements');
-var printComments = require('../common/printComments');
+const flatten = require('../../utils/flatten');
+const printArrayOfStatements = require('../common/printArrayOfStatements');
+const printComments = require('../common/printComments');
 
 function printProgram(print: Print, node: Program): Lines {
   return flatten([
     printComments(node.innerComments),
-    printArrayOfStatements(print, node.body)
+    printArrayOfStatements(print, node.body),
   ]);
 }
 

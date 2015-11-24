@@ -13,7 +13,7 @@ import invariant from 'assert';
 import {getLogger} from 'nuclide-logging';
 import type {RemoteConnectionConfiguration} from './RemoteConnection';
 
-var logger = getLogger();
+const logger = getLogger();
 
 /**
  * Version of RemoteConnectionConfiguration that uses string instead of Buffer for fields so it can
@@ -32,7 +32,7 @@ const CONFIG_KEY_PREFIX = 'nuclide.nuclide-connection.config';
 
 export function getConnectionConfig(host: string): ?RemoteConnectionConfiguration {
   // $FlowIssue
-  var storedConfig = atom.config.get(getAtomConfigKey(host));
+  const storedConfig = atom.config.get(getAtomConfigKey(host));
   if (!storedConfig) {
     return null;
   }
@@ -64,24 +64,24 @@ function getAtomConfigKey(host: string): string {
 function encryptConfig(
   remoteProjectConfig: RemoteConnectionConfiguration,
 ): SerializableRemoteConnectionConfiguration {
-  let {replacePassword} = require('nuclide-keytar-wrapper');
-  let crypto = require('crypto');
+  const {replacePassword} = require('nuclide-keytar-wrapper');
+  const crypto = require('crypto');
 
-  let sha1 = crypto.createHash('sha1');
+  const sha1 = crypto.createHash('sha1');
   sha1.update(`${remoteProjectConfig.host}:${remoteProjectConfig.port}`);
-  let sha1sum = sha1.digest('hex');
+  const sha1sum = sha1.digest('hex');
 
-  let {certificateAuthorityCertificate, clientCertificate, clientKey} = remoteProjectConfig;
+  const {certificateAuthorityCertificate, clientCertificate, clientKey} = remoteProjectConfig;
   invariant(clientKey);
-  let realClientKey = clientKey.toString(); // Convert from Buffer to string.
-  let {salt, password, encryptedString} = encryptString(realClientKey);
+  const realClientKey = clientKey.toString(); // Convert from Buffer to string.
+  const {salt, password, encryptedString} = encryptString(realClientKey);
   replacePassword('nuclide.remoteProjectConfig', sha1sum, password);
 
-  let clientKeyWithSalt = encryptedString + '.' + salt;
+  const clientKeyWithSalt = encryptedString + '.' + salt;
 
   invariant(certificateAuthorityCertificate);
   invariant(clientCertificate);
-  let buffersAsStrings = {
+  const buffersAsStrings = {
     certificateAuthorityCertificate: certificateAuthorityCertificate.toString(),
     clientCertificate: clientCertificate.toString(),
     clientKey: clientKeyWithSalt,
@@ -98,28 +98,28 @@ function encryptConfig(
 function decryptConfig(
   remoteProjectConfig: SerializableRemoteConnectionConfiguration,
 ): RemoteConnectionConfiguration {
-  var {getPassword} = require('nuclide-keytar-wrapper');
-  var crypto = require('crypto');
+  const {getPassword} = require('nuclide-keytar-wrapper');
+  const crypto = require('crypto');
 
-  var sha1 = crypto.createHash('sha1');
+  const sha1 = crypto.createHash('sha1');
   sha1.update(`${remoteProjectConfig.host}:${remoteProjectConfig.port}`);
-  var sha1sum = sha1.digest('hex');
+  const sha1sum = sha1.digest('hex');
 
-  var password = getPassword('nuclide.remoteProjectConfig', sha1sum);
+  const password = getPassword('nuclide.remoteProjectConfig', sha1sum);
 
   if (!password) {
     throw new Error('Cannot find password for encrypted client key');
   }
 
-  let {certificateAuthorityCertificate, clientCertificate, clientKey} = remoteProjectConfig;
+  const {certificateAuthorityCertificate, clientCertificate, clientKey} = remoteProjectConfig;
   invariant(clientKey);
-  let [encryptedString, salt] = clientKey.split('.');
+  const [encryptedString, salt] = clientKey.split('.');
 
   if (!encryptedString || !salt) {
     throw new Error('Cannot decrypt client key');
   }
 
-  let restoredClientKey = decryptString(encryptedString, password, salt);
+  const restoredClientKey = decryptString(encryptedString, password, salt);
   if (!restoredClientKey.startsWith('-----BEGIN RSA PRIVATE KEY-----')) {
     getLogger().error(
       `decrypted client key did not start with expected header: ${restoredClientKey}`);
@@ -127,7 +127,7 @@ function decryptConfig(
 
   invariant(certificateAuthorityCertificate);
   invariant(clientCertificate);
-  let stringsAsBuffers = {
+  const stringsAsBuffers = {
     certificateAuthorityCertificate: new Buffer(certificateAuthorityCertificate),
     clientCertificate: new Buffer(clientCertificate),
     clientKey: new Buffer(restoredClientKey),
@@ -137,32 +137,32 @@ function decryptConfig(
 }
 
 function decryptString(text: string, password: string, salt: string): string {
-  var crypto = require('crypto');
+  const crypto = require('crypto');
 
-  var decipher = crypto.createDecipheriv(
+  const decipher = crypto.createDecipheriv(
       'aes-128-cbc',
       new Buffer(password, 'base64'),
       new Buffer(salt, 'base64'));
 
-  var decryptedString = decipher.update(text, 'base64', 'utf8');
+  let decryptedString = decipher.update(text, 'base64', 'utf8');
   decryptedString += decipher.final('utf8');
 
   return decryptedString;
 }
 
 function encryptString(text: string): {password: string, salt: string, encryptedString: string} {
-  var crypto = require('crypto');
+  const crypto = require('crypto');
   // $FlowIssue
-  var password = crypto.randomBytes(16).toString('base64');
+  const password = crypto.randomBytes(16).toString('base64');
   // $FlowIssue
-  var salt = crypto.randomBytes(16).toString('base64');
+  const salt = crypto.randomBytes(16).toString('base64');
 
-  var cipher = crypto.createCipheriv(
+  const cipher = crypto.createCipheriv(
     'aes-128-cbc',
     new Buffer(password, 'base64'),
     new Buffer(salt, 'base64'));
 
-  var encryptedString = cipher.update(
+  let encryptedString = cipher.update(
     text,
     /* input_encoding */ 'utf8',
     /* output_encoding */ 'base64',
@@ -176,7 +176,7 @@ function encryptString(text: string): {password: string, salt: string, encrypted
   };
 }
 
-export var __test__ = {
+export const __test__ = {
   decryptString,
   encryptString,
 };

@@ -11,11 +11,11 @@
 
 import type {Reference, ReferenceGroup} from '../types';
 
-var React = require('react-for-atom');
-var FilePreview = require('./FilePreview');
-var {relative} = require('nuclide-remote-uri');
+const React = require('react-for-atom');
+const FilePreview = require('./FilePreview');
+const {relative} = require('nuclide-remote-uri');
 
-var FileReferencesView = React.createClass({
+const FileReferencesView = React.createClass({
   propTypes: {
     uri: React.PropTypes.string.isRequired,
     grammar: React.PropTypes.object.isRequired,
@@ -36,16 +36,16 @@ var FileReferencesView = React.createClass({
   },
 
   render(): ReactElement {
-    var groups = this.props.refGroups.map((group: ReferenceGroup, i) => {
-      var previewText = this.props.previewText[i];
-      var ranges = group.references.map((ref, j) => {
-        var range = ref.start.line;
+    const groups = this.props.refGroups.map((group: ReferenceGroup, i) => {
+      const previewText = this.props.previewText[i];
+      const ranges = group.references.map((ref, j) => {
+        let range = ref.start.line;
         if (ref.end.line !== ref.start.line) {
           range += '-' + ref.end.line;
         } else {
           range += ', column ' + ref.start.column;
         }
-        var caller;
+        let caller;
         if (ref.name) {
           caller = <span>{' '}in <code>{ref.name}</code></span>;
         }

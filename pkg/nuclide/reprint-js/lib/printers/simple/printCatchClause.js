@@ -12,8 +12,8 @@
 import type {CatchClause} from 'ast-types-flow';
 import type {Lines, Print} from '../../types/common';
 
-var flatten = require('../../utils/flatten');
-var markers = require('../../constants/markers');
+const flatten = require('../../utils/flatten');
+const markers = require('../../constants/markers');
 
 function printCatchClause(print: Print, node: CatchClause): Lines {
   return flatten([

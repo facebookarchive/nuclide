@@ -9,14 +9,14 @@
  * the root directory of this source tree.
  */
 
-var {getFileForPath} = require('../lib/client');
-var {RemoteConnection, RemoteFile} = require('../lib/main');
-var {File} = require('atom');
+const {getFileForPath} = require('../lib/client');
+const {RemoteConnection, RemoteFile} = require('../lib/main');
+const {File} = require('atom');
 
 describe('getFileForPath()', () => {
 
-  var connectedRemoteUri = 'nuclide://server:123/abs';
-  var connection = null;
+  const connectedRemoteUri = 'nuclide://server:123/abs';
+  let connection = null;
 
   beforeEach(() => {
     spyOn(RemoteConnection, 'getForUri').andCallFake(uri => {
@@ -33,17 +33,17 @@ describe('getFileForPath()', () => {
   });
 
   it('returns a local File if the path is a local path', () => {
-    var localFile = getFileForPath(__filename);
+    const localFile = getFileForPath(__filename);
     expect(localFile instanceof File).toBe(true);
   });
 
   it('returns a remote File if the path is a remote path that has a valid connection', () => {
-    var remoteFile = getFileForPath(`${connectedRemoteUri}/dir/file.txt`);
+    const remoteFile = getFileForPath(`${connectedRemoteUri}/dir/file.txt`);
     expect(remoteFile instanceof RemoteFile).toBe(true);
   });
 
   it('returns null if path is remote with no valid connection', () => {
-    var remoteFile = getFileForPath('nuclide://no-conn-server:123/dir/file.txt');
+    const remoteFile = getFileForPath('nuclide://no-conn-server:123/dir/file.txt');
     expect(remoteFile).toBe(null);
   });
 });

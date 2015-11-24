@@ -10,9 +10,9 @@
  */
 
 
-var url = require('url');
-var remoteUri = require('nuclide-remote-uri');
-var {log} = require('./utils');
+const url = require('url');
+const remoteUri = require('nuclide-remote-uri');
+const {log} = require('./utils');
 
 function translateMessageFromServer(hostname: string, port: number, message: string): string {
   return translateMessage(message, uri => translateUriFromServer(hostname, port, uri));
@@ -23,8 +23,8 @@ function translateMessageToServer(message: string): string {
 }
 
 function translateMessage(message: string, translateUri: (uri: string) => string): string {
-  var obj = JSON.parse(message);
-  var result;
+  const obj = JSON.parse(message);
+  let result;
   switch (obj.method) {
     case 'Debugger.scriptParsed':
       result = translateField(obj, 'params.url', translateUri);
@@ -43,8 +43,8 @@ function translateMessage(message: string, translateUri: (uri: string) => string
 }
 
 function translateField(obj: Object, field: string, translateUri: (uri: string) => string): mixed {
-  var fields = field.split('.');
-  var fieldName = fields[0];
+  const fields = field.split('.');
+  const fieldName = fields[0];
   if (fields.length === 1) {
     obj[fieldName] = translateUri(obj[fieldName]);
   } else {
@@ -54,9 +54,9 @@ function translateField(obj: Object, field: string, translateUri: (uri: string) 
 }
 
 function translateUriFromServer(hostname: string, port: number, uri: string): string {
-  var components = remoteUri.parse(uri);
+  const components = remoteUri.parse(uri);
   if (components.protocol === 'file:') {
-    var result = remoteUri.createRemoteUri(hostname, port, components.pathname);
+    const result = remoteUri.createRemoteUri(hostname, port, components.pathname);
     log(`Translated URI from ${uri} to ${result}`);
     return result;
   } else {
@@ -66,7 +66,7 @@ function translateUriFromServer(hostname: string, port: number, uri: string): st
 
 function translateUriToServer(uri: string): string {
   if (remoteUri.isRemote(uri)) {
-    var result = url.format({
+    const result = url.format({
       protocol: 'file',
       slashes: true,
       pathname: remoteUri.getPath(uri),

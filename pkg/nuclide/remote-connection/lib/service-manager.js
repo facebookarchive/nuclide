@@ -10,26 +10,26 @@
  */
 import type Item from './ServiceLogger';
 
-var logger = require('nuclide-logging').getLogger();
-var {loadConfigsOfServiceWithServiceFramework} = require('nuclide-server/lib/config');
-var {optionsToString} = require('nuclide-server/lib/service-manager');
-var RemoteConnection = require('./RemoteConnection');
-var {isRemote, getHostname} = require('nuclide-remote-uri');
+const logger = require('nuclide-logging').getLogger();
+const {loadConfigsOfServiceWithServiceFramework} = require('nuclide-server/lib/config');
+const {optionsToString} = require('nuclide-server/lib/service-manager');
+const RemoteConnection = require('./RemoteConnection');
+const {isRemote, getHostname} = require('nuclide-remote-uri');
 
 import {getProxy} from 'nuclide-service-parser';
 import ServiceFramework from 'nuclide-server/lib/serviceframework';
 import ServiceLogger from './ServiceLogger';
 
-var serviceConfigs = loadConfigsOfServiceWithServiceFramework();
-var newServices = ServiceFramework.loadServicesConfig();
+const serviceConfigs = loadConfigsOfServiceWithServiceFramework();
+const newServices = ServiceFramework.loadServicesConfig();
 
 // A cache stores services in form of '$serviceName@$host:$options' => $serviceObject. A special
 // case would be the local service, where the $host will be empty string.
-var cachedServices: Map<string, any> = new Map();
+const cachedServices: Map<string, any> = new Map();
 
 RemoteConnection.onDidCloseRemoteConnection((connection: RemoteConnection) => {
-  for (var cacheEntry of cachedServices) {
-    var [cacheKey, serviceInstance] = cacheEntry;
+  for (const cacheEntry of cachedServices) {
+    const [cacheKey, serviceInstance] = cacheEntry;
     if (serviceInstance._connection === connection) {
       cachedServices.delete(cacheKey);
     }
@@ -64,7 +64,7 @@ function getServiceByNuclideUri(
   nuclideUri: ?NuclideUri = null,
   serviceOptions: ?any = null
 ): ?any {
-  var hostname = (nuclideUri && isRemote(nuclideUri)) ?
+  const hostname = (nuclideUri && isRemote(nuclideUri)) ?
     getHostname(nuclideUri) :
     null;
   return getService(serviceName, hostname, serviceOptions);
@@ -94,7 +94,7 @@ function getService(serviceName: string, hostname: ?string, serviceOptions: ?any
     return null;
   }
 
-  var cacheKey = serviceName + '@' + (hostname ? hostname : '') + ':' + optionsToString(serviceOptions);
+  const cacheKey = serviceName + '@' + (hostname ? hostname : '') + ':' + optionsToString(serviceOptions);
 
   if (cachedServices.has(cacheKey)) {
     return cachedServices.get(cacheKey);
@@ -113,20 +113,20 @@ function getService(serviceName: string, hostname: ?string, serviceOptions: ?any
 }
 
 function createRemoteService(serviceConfig: ServiceConfig, hostname: string, serviceOptions: any): any {
-  var {requireRemoteServiceSync} = require('nuclide-service-transformer');
-  var remoteServiceClass = requireRemoteServiceSync(
+  const {requireRemoteServiceSync} = require('nuclide-service-transformer');
+  const remoteServiceClass = requireRemoteServiceSync(
     serviceConfig.definition,
     serviceConfig.name,
     /* isDecorator */ false);
-  var remoteConnection = RemoteConnection.getByHostnameAndPath(hostname, null);
+  const remoteConnection = RemoteConnection.getByHostnameAndPath(hostname, null);
   return new remoteServiceClass(remoteConnection, serviceOptions);
 }
 
 function createLocalService(serviceConfig: ServiceConfig, serviceOptions: any): any {
-  var serviceClass = require(serviceConfig.implementation);
-  var serviceImplementation = new serviceClass(serviceOptions);
-  var {requireRemoteServiceSync} = require('nuclide-service-transformer');
-  var decorator = requireRemoteServiceSync(
+  const serviceClass = require(serviceConfig.implementation);
+  const serviceImplementation = new serviceClass(serviceOptions);
+  const {requireRemoteServiceSync} = require('nuclide-service-transformer');
+  const decorator = requireRemoteServiceSync(
     serviceConfig.definition,
     serviceConfig.name,
     /* isDecorator */ true,

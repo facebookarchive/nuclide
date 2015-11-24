@@ -9,11 +9,11 @@
  * the root directory of this source tree.
  */
 
-var NuclideDropdown = require('../lib/NuclideDropdown');
-var React = require('react-for-atom');
+const NuclideDropdown = require('../lib/NuclideDropdown');
+const React = require('react-for-atom');
 
-var {TestUtils} = React.addons;
-var {
+const {TestUtils} = React.addons;
+const {
   Simulate,
   renderIntoDocument,
   scryRenderedDOMComponentsWithTag,
@@ -22,7 +22,7 @@ var {
 describe('NuclideDropdown', () => {
 
   it('honors the selectedIndex param', () => {
-    var props = {
+    const props = {
       menuItems: [
         {label: 'foo', value: 'vfoo'},
         {label: 'bar', value: 'vbar'},
@@ -30,21 +30,21 @@ describe('NuclideDropdown', () => {
       selectedIndex: 1,
       onSelectedChange: () => {},
     };
-    var component = renderIntoDocument(
+    const component = renderIntoDocument(
       <NuclideDropdown {...props} />
     );
 
-    var select = scryRenderedDOMComponentsWithTag(component, 'select');
+    const select = scryRenderedDOMComponentsWithTag(component, 'select');
     expect(React.findDOMNode(select[0]).selectedIndex).toBe(1);
     expect(React.findDOMNode(select[0]).value).toBe('vbar');
   });
 
   it('calls the callback with the new index when a different menu item is selected', () => {
-    var changedIndex;
-    var onChange = (index) => {
+    let changedIndex;
+    const onChange = (index) => {
       changedIndex = index;
     };
-    var props = {
+    const props = {
       menuItems: [
         {label: 'foo', value: 'vfoo'},
         {label: 'bar', value: 'vbar'},
@@ -52,11 +52,11 @@ describe('NuclideDropdown', () => {
       selectedIndex: 0,
       onSelectedChange: onChange,
     };
-    var component = renderIntoDocument(
+    const component = renderIntoDocument(
       <NuclideDropdown {...props} />
     );
 
-    var select = scryRenderedDOMComponentsWithTag(component, 'select');
+    const select = scryRenderedDOMComponentsWithTag(component, 'select');
     React.findDOMNode(select[0]).selectedIndex = 1;
     Simulate.change(React.findDOMNode(select[0]));
     expect(changedIndex).toBe(1);

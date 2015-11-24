@@ -9,21 +9,21 @@
  * the root directory of this source tree.
  */
 
-var path = require('path');
-var {ensureTrailingSeparator} = require('../lib/paths');
+const path = require('path');
+const {ensureTrailingSeparator} = require('../lib/paths');
 
 describe('paths.js', () => {
   describe('ensureTrailingSeparator', () => {
     it('adds a trailing separator if the path does not already have one.', () => {
       expect(ensureTrailingSeparator('')).toBe(path.sep);
-      var pathWithoutSeparator = path.join('some', 'path');
+      const pathWithoutSeparator = path.join('some', 'path');
       expect(ensureTrailingSeparator(pathWithoutSeparator)).toBe(pathWithoutSeparator + path.sep);
     });
 
     it('does not add a trailing separator if hte path already has one.', () => {
-      var separator = path.sep;
+      const separator = path.sep;
       expect(ensureTrailingSeparator(separator)).toBe(separator);
-      var pathWithSeparator = path.join('some', 'path', path.sep);
+      const pathWithSeparator = path.join('some', 'path', path.sep);
       expect(ensureTrailingSeparator(pathWithSeparator)).toBe(pathWithSeparator);
     });
   });

@@ -8,14 +8,14 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-var {Point, TextBuffer} = require('atom');
-var ObjectiveCBracketBalancer = require('../lib/ObjectiveCBracketBalancer');
-var {getOpenBracketInsertPosition} = ObjectiveCBracketBalancer;
+const {Point, TextBuffer} = require('atom');
+const ObjectiveCBracketBalancer = require('../lib/ObjectiveCBracketBalancer');
+const {getOpenBracketInsertPosition} = ObjectiveCBracketBalancer;
 
 describe('ObjectiveCBracketBalancer', () => {
   describe('getOpenBracketInsertPosition', () => {
     it('throws an error if the close bracket position does not contain a close bracket', () => {
-      var error = new Error('The close bracket position must contain a close bracket');
+      const error = new Error('The close bracket position must contain a close bracket');
       expect(() => getOpenBracketInsertPosition(new TextBuffer(''), Point.fromObject([0, 0])))
           .toThrow(error);
       expect(() => getOpenBracketInsertPosition(new TextBuffer(' ]'), Point.fromObject([0, 0])))

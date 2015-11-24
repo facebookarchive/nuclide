@@ -15,7 +15,7 @@ import {getServiceByNuclideUri} from 'nuclide-client';
 import {goToLocation} from 'nuclide-atom-helpers';
 
 import {JS_GRAMMARS} from './constants.js';
-var JS_GRAMMARS_SET = new Set(JS_GRAMMARS);
+const JS_GRAMMARS_SET = new Set(JS_GRAMMARS);
 
 class FlowHyperclickProvider {
   async getSuggestionForWord(textEditor: TextEditor, text: string, range: atom$Range):
@@ -24,11 +24,11 @@ class FlowHyperclickProvider {
       return null;
     }
 
-    var file = textEditor.getPath();
-    var {start: position} = range;
-    var flowService = getServiceByNuclideUri('FlowService', file);
+    const file = textEditor.getPath();
+    const {start: position} = range;
+    const flowService = getServiceByNuclideUri('FlowService', file);
     invariant(flowService);
-    var location = await flowService
+    const location = await flowService
         .flowFindDefinition(file, textEditor.getText(), position.row + 1, position.column + 1);
     if (location) {
       return {

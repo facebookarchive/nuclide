@@ -10,10 +10,10 @@
  */
 import {getClassPrefix} from '../lib/class-prefix';
 
-var fs = require('fs');
-var {addMatchers} = require('nuclide-test-helpers');
-var path = require('path');
-var {requireRemoteServiceSync} = require('../lib/main');
+const fs = require('fs');
+const {addMatchers} = require('nuclide-test-helpers');
+const path = require('path');
+const {requireRemoteServiceSync} = require('../lib/main');
 
 function testGenerateRemoteService(
   serviceName: string,
@@ -26,7 +26,7 @@ function testGenerateRemoteService(
     sourceFilePath = require.resolve(sourceFilePath);
     expectedFilePath = require.resolve(expectedFilePath);
 
-    var transpiledFilePath = path.join(
+    const transpiledFilePath = path.join(
         __dirname,
         '../gen/',
         getClassPrefix(isDecorator) + path.basename(sourceFilePath));
@@ -37,8 +37,8 @@ function testGenerateRemoteService(
 
     requireRemoteServiceSync(sourceFilePath, serviceName, isDecorator);
 
-    var generatedCode = fs.readFileSync(transpiledFilePath, 'utf8');
-    var expectedCode = fs.readFileSync(path.resolve(__dirname, expectedFilePath), 'utf8')
+    const generatedCode = fs.readFileSync(transpiledFilePath, 'utf8');
+    const expectedCode = fs.readFileSync(path.resolve(__dirname, expectedFilePath), 'utf8')
         .replace(/REQUIRE_PLACE_HOLDER/g, sourceFilePath);
     expect(generatedCode).diffLines(expectedCode);
   });

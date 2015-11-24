@@ -12,13 +12,13 @@
 import type {ImportDeclaration} from 'ast-types-flow';
 import type {Lines, Print} from '../../types/common';
 
-var flatten = require('../../utils/flatten');
-var invariant = require('assert');
-var markers = require('../../constants/markers');
+const flatten = require('../../utils/flatten');
+const invariant = require('assert');
+const markers = require('../../constants/markers');
 
 function printImportDeclaration(print: Print, node: ImportDeclaration): Lines {
   let open = false;
-  let specifiers = node.specifiers.map((specifier, i, arr) => {
+  const specifiers = node.specifiers.map((specifier, i, arr) => {
     let parts = [];
 
     // Check if we should open.

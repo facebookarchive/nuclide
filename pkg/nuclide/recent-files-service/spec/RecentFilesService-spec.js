@@ -45,8 +45,8 @@ describe('RecentFilesService', () => {
   describe('getRecentFiles', () => {
     it('returns a reverse-chronological list of recently opened files', () => {
       waitsForPromise(async () => {
-        var mostRecentFiles;
-        var previousTimestamp = 0;
+        let mostRecentFiles;
+        let previousTimestamp = 0;
         expect(recentFilesService.getRecentFiles().length).toEqual(0);
 
         await atom.workspace.open(FILE_PATH_1);
@@ -78,8 +78,8 @@ describe('RecentFilesService', () => {
       waitsForPromise(async () => {
         await atom.workspace.open(FILE_PATH_1);
         advanceClock(ON_DID_CHANGE_ACTIVE_PANE_ITEM_DEBOUNCE_MS);
-        var recentFiles = recentFilesService.getRecentFiles();
-        var mostRecentFile = recentFiles[0];
+        const recentFiles = recentFilesService.getRecentFiles();
+        const mostRecentFile = recentFiles[0];
         expect(Object.keys(mostRecentFile).length).toEqual(2);
         expect(typeof mostRecentFile.timestamp === 'number').toBe(true);
         expect(mostRecentFile.path.endsWith(FILE_PATH_1)).toBe(true);
@@ -88,7 +88,7 @@ describe('RecentFilesService', () => {
 
     it('resets the order of previously tracked files when they are touched', () => {
       waitsForPromise(async () => {
-        var mostRecentFiles;
+        let mostRecentFiles;
         expect(recentFilesService.getRecentFiles().length).toEqual(0);
 
         await atom.workspace.open(FILE_PATH_1);
@@ -122,13 +122,13 @@ describe('RecentFilesService', () => {
 
   describe('initialization and de-serialization', () => {
     it('correctly restores itself from serialized state', () => {
-      var serializedState = {filelist: [
+      const serializedState = {filelist: [
         {path: FILE_PATH_1, timestamp: 100},
         {path: FILE_PATH_2, timestamp: 200},
         {path: FILE_PATH_3, timestamp: 300},
       ]};
-      var restoredRecentFilesService = new RecentFilesService(serializedState);
-      var mostRecentFiles = restoredRecentFilesService.getRecentFiles();
+      const restoredRecentFilesService = new RecentFilesService(serializedState);
+      const mostRecentFiles = restoredRecentFilesService.getRecentFiles();
       expect(mostRecentFiles).toEqual(serializedState.filelist);
     });
 

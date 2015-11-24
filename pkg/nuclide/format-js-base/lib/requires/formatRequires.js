@@ -11,15 +11,15 @@
 
 import type {Collection, Node, NodePath} from '../types/ast';
 
-var FirstNode = require('../utils/FirstNode');
-var NewLine = require('../utils/NewLine');
+const FirstNode = require('../utils/FirstNode');
+const NewLine = require('../utils/NewLine');
 
-var {compareStrings, isCapitalized} = require('../utils/StringUtils');
-var hasOneRequireDeclaration = require('../utils/hasOneRequireDeclaration');
-var isGlobal = require('../utils/isGlobal');
-var isRequireExpression = require('../utils/isRequireExpression');
-var jscs = require('jscodeshift');
-var reprintRequire = require('../utils/reprintRequire');
+const {compareStrings, isCapitalized} = require('../utils/StringUtils');
+const hasOneRequireDeclaration = require('../utils/hasOneRequireDeclaration');
+const isGlobal = require('../utils/isGlobal');
+const isRequireExpression = require('../utils/isRequireExpression');
+const jscs = require('jscodeshift');
+const reprintRequire = require('../utils/reprintRequire');
 
 type ConfigEntry = {
   searchTerms: [any, Object],
@@ -29,7 +29,7 @@ type ConfigEntry = {
 };
 
 // Set up a config to easily add require formats
-var CONFIG: Array<ConfigEntry> = [
+const CONFIG: Array<ConfigEntry> = [
   // Handle type imports
   {
     searchTerms: [
@@ -107,28 +107,28 @@ var CONFIG: Array<ConfigEntry> = [
  * sorting.
  */
 function formatRequires(root: Collection): void {
-  var first = FirstNode.get(root);
+  const first = FirstNode.get(root);
   if (!first) {
     return;
   }
-  var _first = first; // For flow.
+  const _first = first; // For flow.
 
   // Create groups of requires from each config
-  var nodeGroups = CONFIG.map(config => {
-    var paths = root
+  const nodeGroups = CONFIG.map(config => {
+    const paths = root
       .find(config.searchTerms[0], config.searchTerms[1])
       .filter(path => config.filters.every(filter => filter(path)));
 
     // Save the underlying nodes before removing the paths
-    var nodes = paths.nodes().slice();
+    const nodes = paths.nodes().slice();
     paths.forEach(path => jscs(path).remove());
     return nodes.map(node => config.mapper(node)).sort(config.comparator);
   });
 
   // Build all the nodes we want to insert, then add them
-  var allGroups = [[NewLine.statement]];
+  const allGroups = [[NewLine.statement]];
   nodeGroups.forEach(group => allGroups.push(group, [NewLine.statement]));
-  var nodesToInsert = Array.prototype.concat.apply([], allGroups);
+  const nodesToInsert = Array.prototype.concat.apply([], allGroups);
   nodesToInsert.reverse().forEach(node => _first.insertBefore(node));
 }
 
@@ -139,7 +139,7 @@ function isValidRequireDeclaration(node: Node): boolean {
   if (!hasOneRequireDeclaration(node)) {
     return false;
   }
-  var declaration = node.declarations[0];
+  const declaration = node.declarations[0];
   if (jscs.Identifier.check(declaration.id)) {
     return true;
   }
@@ -157,7 +157,7 @@ function isValidRequireDeclaration(node: Node): boolean {
 }
 
 function getDeclarationName(node: Node): string {
-  var declaration = node.declarations[0];
+  const declaration = node.declarations[0];
   if (jscs.Identifier.check(declaration.id)) {
     return declaration.id.name;
   }

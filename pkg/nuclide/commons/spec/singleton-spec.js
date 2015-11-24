@@ -10,9 +10,9 @@
  */
 
 describe('singleton', () => {
-  var singleton = require('../lib/singleton');
-  var count = 0;
-  var field = 'singleton-test-field';
+  const singleton = require('../lib/singleton');
+  let count = 0;
+  const field = 'singleton-test-field';
 
   function get() {
     return singleton.get(field, () => { return count++; });
@@ -27,27 +27,27 @@ describe('singleton', () => {
   }
 
   it('get', () => {
-    var id1 = get();
-    var id2 = get();
+    const id1 = get();
+    const id2 = get();
     expect(id1).toEqual(id2);
   });
 
   it('clear', () => {
-    var id1 = get();
+    const id1 = get();
 
     clear();
 
-    var id2 = get();
+    const id2 = get();
     expect(id2 !== id1).toBe(true);
   });
 
   it('reset', () => {
-    var id1 = get();
+    const id1 = get();
 
-    var id2 = reset();
+    const id2 = reset();
     expect(id2).not.toEqual(id1);
 
-    var id3 = get();
+    const id3 = get();
     expect(id3).toEqual(id2);
   });
 });

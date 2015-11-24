@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-var Actions = {
+const Actions = {
   SET_DEBUGGER_PROCESS: 'SET_DEBUGGER_PROCESS',
   SET_ERROR: 'SET_ERROR',
   ADD_SERVICE: 'ADD_SERVICE',

@@ -9,20 +9,20 @@
  * the root directory of this source tree.
  */
 
-var SAMPLE_FILE = '/tmp/nuclide-benchmarker-open-edit-save.js';
-var FILE_SIZE = 10000;
-var TIMEOUT = 30 * 1000;
+const SAMPLE_FILE = '/tmp/nuclide-benchmarker-open-edit-save.js';
+const FILE_SIZE = 10000;
+const TIMEOUT = 30 * 1000;
 
-var PACKAGES = [
+const PACKAGES = [
   '',
   'nuclide-arcanist',
   'language-javascript',
   'language-javascript,nuclide-flow',
   'language-javascript,nuclide-flow,hyperclick',
 ];
-var REPETITIONS = 3;
+const REPETITIONS = 3;
 
-var {timedAsync, timedSync, makeSizedFixture} = require('../benchmarker-utils');
+const {timedAsync, timedSync, makeSizedFixture} = require('../benchmarker-utils');
 
 module.exports = {
   description: 'times how long a 10k file takes to open, edit, save, close with different packages',
@@ -31,21 +31,21 @@ module.exports = {
   iterations: PACKAGES.length,
   repetitions: REPETITIONS,
   run: async (iteration: number): Object => {
-    var result = {};
+    const result = {};
 
     // Create a file of the target size.
     makeSizedFixture(SAMPLE_FILE, FILE_SIZE);
 
     // Activate packages for this iteration.
-    var packages = PACKAGES[iteration].split(',').map(p => p.trim()).filter(p => p != '');
+    const packages = PACKAGES[iteration].split(',').map(p => p.trim()).filter(p => p != '');
     result.packages = packages.join(',');
-    var {time: activate} = await timedAsync(
+    const {time: activate} = await timedAsync(
       Promise.all(packages.map(p => atom.packages.activatePackage(p)))
     );
     result.activate = activate;
 
     // Open the file, insert text, append text, save and close.
-    var {ret: editor, time: open} = await timedAsync(atom.workspace.open(SAMPLE_FILE));
+    const {ret: editor, time: open} = await timedAsync(atom.workspace.open(SAMPLE_FILE));
     result.open = open;
 
     // The first insertion forces buffer tokenization and is much slower than subsequent mutations.

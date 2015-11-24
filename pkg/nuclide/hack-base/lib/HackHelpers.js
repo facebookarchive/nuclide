@@ -22,8 +22,8 @@ const HH_SERVER_INIT_MESSAGE = 'hh_server still initializing';
 const HH_SERVER_BUSY_MESSAGE = 'hh_server is busy';
 const logger = require('nuclide-logging').getLogger();
 
-var hhPromiseQueue: ?PromiseQueue = null;
-var pendingSearchPromises: Map<string, Promise> = new Map();
+let hhPromiseQueue: ?PromiseQueue = null;
+const pendingSearchPromises: Map<string, Promise> = new Map();
 
 const SYMBOL_CLASS_SEARCH_TYPES = Object.freeze([
   SearchResultType.CLASS,
@@ -46,12 +46,12 @@ export async function getHackExecOptions(
   localFile: string
 ): Promise<?{hackRoot: string, hackCommand: string}> {
   // $FlowFixMe incompatible type.
-  var [hhResult, hackRoot] = await Promise.all([
+  const [hhResult, hackRoot] = await Promise.all([
     // `stdout` would be empty if there is no such command.
     checkOutput('which', [PATH_TO_HH_CLIENT]),
     findHackConfigDir(localFile),
   ]);
-  var hackCommand = hhResult.stdout.trim();
+  const hackCommand = hhResult.stdout.trim();
   if (hackRoot && hackCommand) {
     return {hackRoot, hackCommand};
   } else {
@@ -73,31 +73,31 @@ export async function callHHClient(
     hhPromiseQueue = new PromiseQueue();
   }
 
-  var hackExecOptions = await getHackExecOptions(filePath);
+  const hackExecOptions = await getHackExecOptions(filePath);
   if (!hackExecOptions) {
     return null;
   }
-  var {hackRoot} = hackExecOptions;
+  const {hackRoot} = hackExecOptions;
 
   invariant(hhPromiseQueue);
   return hhPromiseQueue.submit(async (resolve, reject) => {
     // Append args on the end of our commands.
-    var defaults = ['--retries', '0', '--retry-if-init', 'false', '--from', 'nuclide'];
+    const defaults = ['--retries', '0', '--retry-if-init', 'false', '--from', 'nuclide'];
     if (outputJson) {
       defaults.unshift('--json');
     }
 
-    var allArgs = defaults.concat(args);
+    const allArgs = defaults.concat(args);
     allArgs.push(hackRoot);
 
-    var execResult = null;
+    let execResult = null;
     try {
       execResult = await checkOutput(PATH_TO_HH_CLIENT, allArgs, {stdin: processInput});
     } catch (err) {
       reject(err);
       return;
     }
-    var {stdout, stderr} = execResult;
+    const {stdout, stderr} = execResult;
     if (stderr.indexOf(HH_SERVER_INIT_MESSAGE) !== -1) {
       reject(new Error(`${HH_SERVER_INIT_MESSAGE}: try: \`arc build\` or try again later!`));
       return;
@@ -106,7 +106,7 @@ export async function callHHClient(
       return;
     }
 
-    var output = errorStream ? stderr : stdout;
+    const output = errorStream ? stderr : stdout;
     if (!outputJson) {
       resolve({result: output, hackRoot});
       return;
@@ -114,7 +114,7 @@ export async function callHHClient(
     try {
       resolve({result: JSON.parse(output), hackRoot});
     } catch (err) {
-      var errorMessage = `hh_client error, args: [${args.join(',')}]
+      const errorMessage = `hh_client error, args: [${args.join(',')}]
 stdout: ${stdout}, stderr: ${stderr}`;
       logger.error(errorMessage);
       reject(new Error(errorMessage));
@@ -164,7 +164,7 @@ export async function getSearchResults(
 
   const {result: searchResult, hackRoot} = searchResponse;
   let result: Array<HackSearchPosition> = [];
-  for (let entry of searchResult) {
+  for (const entry of searchResult) {
     const resultFile = entry.filename;
     if (!resultFile.startsWith(hackRoot)) {
       // Filter out files out of repo results, e.g. hh internal files.
@@ -193,8 +193,8 @@ function filterSearchResults(
   filter: Array<SearchResultTypeValue>,
 ): Array<HackSearchPosition> {
   return results.filter((result) => {
-    var info = result.additionalInfo;
-    var searchType = getSearchType(info);
+    const info = result.additionalInfo;
+    const searchType = getSearchType(info);
     return filter.indexOf(searchType) !== -1;
   });
 }

@@ -13,15 +13,15 @@ import type {
   Provider,
 } from 'nuclide-quick-open-interfaces';
 
-var {
+const {
   CompositeDisposable,
   Disposable,
 } = require('atom');
 
-var providerInstance: ?Provider;
+let providerInstance: ?Provider;
 function getProviderInstance(): Provider {
   if (providerInstance == null) {
-    var FuzzyFileNameProvider = require('./FuzzyFileNameProvider');
+    const FuzzyFileNameProvider = require('./FuzzyFileNameProvider');
     providerInstance = {...FuzzyFileNameProvider};
   }
   return providerInstance;
@@ -45,7 +45,7 @@ class Activation {
   }
 }
 
-var activation: ?Activation = null;
+let activation: ?Activation = null;
 function getActivation() {
   if (activation == null) {
     activation = new Activation();
@@ -53,20 +53,20 @@ function getActivation() {
   }
   return activation;
 }
-var projectRoots: Set<string> = new Set();
+let projectRoots: Set<string> = new Set();
 
 /**
  * @param projectPaths All the root directories in the Atom workspace.
  */
 function initSearch(projectPaths: Array<string>): void {
-  var {getClient} = require('nuclide-client');
-  var newProjectRoots = new Set();
+  const {getClient} = require('nuclide-client');
+  const newProjectRoots = new Set();
   projectPaths.forEach((projectPath) => {
     newProjectRoots.add(projectPath);
     if (projectRoots.has(projectPath)) {
       return;
     }
-    var client = getClient(projectPath);
+    const client = getClient(projectPath);
     if (client) {
       // It doesn't matter what the search term is. Empirically, doing an initial
       // search speeds up the next search much more than simply doing the setup

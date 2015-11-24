@@ -12,8 +12,8 @@
 import type {Lines, Print} from '../../types/common';
 import type {MethodDefinition} from 'ast-types-flow';
 
-var flatten = require('../../utils/flatten');
-var markers = require('../../constants/markers');
+const flatten = require('../../utils/flatten');
+const markers = require('../../constants/markers');
 
 function printMethodDefinition(print: Print, node: MethodDefinition): Lines {
   let parts = [];
@@ -57,7 +57,7 @@ function printMethodDefinition(print: Print, node: MethodDefinition): Lines {
     ]);
   }
 
-  let key = node.kind === 'constructor'
+  const key = node.kind === 'constructor'
     ? ['constructor']
     : print(node.key);
 

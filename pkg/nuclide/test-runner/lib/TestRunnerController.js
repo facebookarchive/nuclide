@@ -11,20 +11,20 @@
 
 import type {TestRunner, Message} from './main';
 
-var Ansi = require('./Ansi');
-var {
+const Ansi = require('./Ansi');
+const {
   CompositeDisposable,
   TextBuffer,
 } = require('atom');
-var React = require('react-for-atom');
-var TestRunModel = require('./TestRunModel');
-var TestRunnerPanel = require('./ui/TestRunnerPanel');
-var TestSuiteModel = require('./TestSuiteModel');
+const React = require('react-for-atom');
+const TestRunModel = require('./TestRunModel');
+const TestRunnerPanel = require('./ui/TestRunnerPanel');
+const TestSuiteModel = require('./TestSuiteModel');
 
-var {array} = require('nuclide-commons');
-var logger = require('nuclide-logging').getLogger();
-var os = require('os');
-var {track} = require('nuclide-analytics');
+const {array} = require('nuclide-commons');
+const logger = require('nuclide-logging').getLogger();
+const os = require('os');
+const {track} = require('nuclide-analytics');
 
 export type TestRunnerControllerState = {
   panelVisible?: boolean;
@@ -122,7 +122,7 @@ class TestRunnerController {
     }
 
     // Get selected test runner when Flow knows `this._testRunnerPanel` is defined.
-    var selectedTestRunner = this._testRunnerPanel.getSelectedTestRunner();
+    const selectedTestRunner = this._testRunnerPanel.getSelectedTestRunner();
     if (!selectedTestRunner) {
       logger.warn(`No test runner selected. Active test runners: ${this._testRunners.size}`);
       return;
@@ -131,11 +131,11 @@ class TestRunnerController {
     // 1. Use the `path` argument to this function
     // 2. Use `this._path` on the instance
     // 3. Let `testPath` be `undefined` so the path will be taken from the active `TextEditor`
-    var testPath = (path === undefined) ? this._path : path;
+    let testPath = (path === undefined) ? this._path : path;
 
     // If there's no path yet, get the path from the active `TextEditor`.
     if (testPath === undefined) {
-      var activeTextEditor = atom.workspace.getActiveTextEditor();
+      const activeTextEditor = atom.workspace.getActiveTextEditor();
       if (!activeTextEditor) {
         logger.debug('Attempted to run tests with no active text editor.');
         return;
@@ -288,14 +288,14 @@ class TestRunnerController {
       return;
     }
 
-    var root = this._root;
+    let root = this._root;
 
     if (!root) {
       root = document.createElement('div');
       this._root = root;
     }
 
-    var progressValue;
+    let progressValue;
     if  (this._testSuiteModel && this._executionState === TestRunnerPanel.ExecutionState.RUNNING) {
       progressValue = this._testSuiteModel.progressPercent();
     } else {

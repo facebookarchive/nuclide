@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-var TestSuiteModel = require('../lib/TestSuiteModel');
+const TestSuiteModel = require('../lib/TestSuiteModel');
 
 describe('TestSuiteModel', () => {
   const testClassSummaries = [
@@ -37,19 +37,19 @@ describe('TestSuiteModel', () => {
   };
 
   it('maps test class IDs from a Array<TestClassSummary>', () => {
-    var model = new TestSuiteModel(testClassSummaries);
-    var testClassSummary = testClassSummaries[0];
+    const model = new TestSuiteModel(testClassSummaries);
+    const testClassSummary = testClassSummaries[0];
     expect(model.testClasses.get(testClassSummary['id'])).toBe(testClassSummary);
   });
 
   it('calculates progress percent', () => {
-    var model = new TestSuiteModel(testClassSummaries);
+    const model = new TestSuiteModel(testClassSummaries);
     model.addTestRun(goodTestRun);
     expect(model.progressPercent()).toBe(50);
   });
 
   it('handles bad test runs (invalid syntax in test file, for example)', () => {
-    var model = new TestSuiteModel(testClassSummaries);
+    const model = new TestSuiteModel(testClassSummaries);
     expect(model.addTestRun.bind(model, badTestRun)).not.toThrow();
 
     // The bad test run has no ID and so is not added to the TestSuiteModel's summary.

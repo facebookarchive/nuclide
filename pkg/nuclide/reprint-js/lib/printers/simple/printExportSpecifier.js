@@ -12,8 +12,8 @@
 import type {ExportSpecifier} from 'ast-types-flow';
 import type {Lines, Print} from '../../types/common';
 
-var flatten = require('../../utils/flatten');
-var markers = require('../../constants/markers');
+const flatten = require('../../utils/flatten');
+const markers = require('../../constants/markers');
 
 function printExportSpecifier(print: Print, node: ExportSpecifier): Lines {
   // I'm pretty sure it's safe to assume they are both Identifiers, but let's

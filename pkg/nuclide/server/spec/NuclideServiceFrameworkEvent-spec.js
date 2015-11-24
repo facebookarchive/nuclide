@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-var path = require('path');
-var ServiceIntegrationTestHelper = require('./ServiceIntegrationTestHelper');
+const path = require('path');
+const ServiceIntegrationTestHelper = require('./ServiceIntegrationTestHelper');
 
 type EventMethodTestCase = {
   methodName: string;
@@ -26,14 +26,14 @@ function testEventServiceWithServiceFramworkRegistered(
   testCases: Array<EventMethodTestCase>,
 ): void {
   waitsForPromise(async () => {
-    var testHelper = new ServiceIntegrationTestHelper(
+    const testHelper = new ServiceIntegrationTestHelper(
         className,
         definitionClassAbsolutePath,
         implementationClassPathAbsolutePath);
 
     await testHelper.start();
 
-    var remoteService = testHelper.getRemoteService();
+    const remoteService = testHelper.getRemoteService();
 
     await Promise.all(testCases.map(async (testCase) => {
       remoteService[testCase.methodName](testCase.callback);
@@ -54,9 +54,9 @@ xdescribe('Nuclide serivce with service framework event test suite', () => {
   });
 
   it('subscribes to event and callback is triggered', () => {
-    var onceEventTriggered = false;
-    var truthValid = false;
-    var repeatEvents = [];
+    let onceEventTriggered = false;
+    let truthValid = false;
+    const repeatEvents = [];
     testEventServiceWithServiceFramworkRegistered(
       'EventService',
       path.resolve(__dirname, 'fixtures/EventService.js'),
@@ -90,7 +90,7 @@ xdescribe('Nuclide serivce with service framework event test suite', () => {
           expectations: () => {
             expect(repeatEvents.length).toBe(4);
 
-            var previousId = -1;
+            let previousId = -1;
             repeatEvents.forEach(sequenceId => {
               expect(sequenceId > previousId).toBe(true);
               previousId = sequenceId;
@@ -103,7 +103,7 @@ xdescribe('Nuclide serivce with service framework event test suite', () => {
   });
 
   it('works with files that contain multiple services.', () => {
-    var eventTriggered = false;
+    let eventTriggered = false;
     testEventServiceWithServiceFramworkRegistered(
       'TestServiceA',
       path.resolve(__dirname, 'fixtures/MultipleServices.js'),

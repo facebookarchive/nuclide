@@ -11,9 +11,9 @@
 
 
 const {log, logInfo, logError, setLogLevel} = require('./utils');
-var {translateMessageFromServer, translateMessageToServer} = require('./ChromeMessageRemoting');
-var remoteUri = require('nuclide-remote-uri');
-var {Disposable} = require('atom');
+const {translateMessageFromServer, translateMessageToServer} = require('./ChromeMessageRemoting');
+const remoteUri = require('nuclide-remote-uri');
+const {Disposable} = require('atom');
 
 type NotificationMessage = {
   type: 'info' | 'warning' | 'error' | 'fatalError';
@@ -35,7 +35,7 @@ class DebuggerProcess {
     this._proxy = null;
     this._server = null;
     this._webSocket = null;
-    var {CompositeDisposable} = require('atom');
+    const {CompositeDisposable} = require('atom');
     this._disposables = new CompositeDisposable();
     this._sessionEndCallback = null;
 
@@ -44,9 +44,9 @@ class DebuggerProcess {
 
   getWebsocketAddress(): Promise<string> {
     logInfo('Connecting to: ' + this._remoteDirectoryUri);
-    var {HhvmDebuggerProxyService} = require('nuclide-client').
+    const {HhvmDebuggerProxyService} = require('nuclide-client').
       getServiceByNuclideUri('HhvmDebuggerProxyService', this._remoteDirectoryUri);
-    var proxy = new HhvmDebuggerProxyService();
+    const proxy = new HhvmDebuggerProxyService();
     this._proxy = proxy;
     this._disposables.add(proxy);
     this._disposables.add(proxy.getNotificationObservable().subscribe(
@@ -82,7 +82,7 @@ class DebuggerProcess {
       config.endDebugWhenNoRequests = true;
     }
 
-    var attachPromise = proxy.attach(config);
+    const attachPromise = proxy.attach(config);
     if (this._launchScriptPath) {
       logInfo('launchScript: ' + this._launchScriptPath);
       proxy.launchScript(this._launchScriptPath);
@@ -94,8 +94,8 @@ class DebuggerProcess {
 
       // setup web socket
       // TODO: Assign random port rather than using fixed port.
-      var wsPort = 2000;
-      var WebSocketServer = require('ws').Server;
+      const wsPort = 2000;
+      const WebSocketServer = require('ws').Server;
       this._server = new WebSocketServer({port: wsPort});
       this._server.on('error', error => {
         logError('Server error: ' + error);
@@ -117,7 +117,7 @@ class DebuggerProcess {
         this._webSocket.on('close', this._onSocketClose.bind(this));
       });
 
-      var result = 'ws=localhost:' + String(wsPort) + '/';
+      const result = 'ws=localhost:' + String(wsPort) + '/';
       log('Listening for connection at: ' + result);
       return result;
     });

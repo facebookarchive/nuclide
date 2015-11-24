@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-var {array} = require('nuclide-commons');
+const {array} = require('nuclide-commons');
 import type DebuggerModel from './DebuggerModel';
 
 class RemoteControlService {
@@ -31,14 +31,14 @@ class RemoteControlService {
     // Nullable values are captured as nullable in lambdas, as they may change
     // between lambda capture and lambda evaluation. Assigning to a
     // non-nullable value after checking placates flow in this regard.
-    var modelNullable = this._getModel();
+    const modelNullable = this._getModel();
     if (!modelNullable) {
       return Promise.reject(new Error('Package is not activated.'));
     }
-    var model = modelNullable;
+    const model = modelNullable;
     return model.getStore().getProcessInfoList('lldb')
       .then(processes => {
-        var process = array.find(processes, p => p.pid === pid);
+        const process = array.find(processes, p => p.pid === pid);
         if (process) {
           process.basepath = basepath;
           model.getActions().attachToProcess(process);
@@ -49,11 +49,11 @@ class RemoteControlService {
   }
 
   debugHhvm(scriptTarget: ?string): Promise {
-    var modelNullable = this._getModel();
+    const modelNullable = this._getModel();
     if (!modelNullable) {
       return Promise.reject(new Error('Package is not activated.'));
     }
-    var model = modelNullable;
+    const model = modelNullable;
     return model.getStore().getProcessInfoList('hhvm')
       .then(processes => {
         // TODO[jeffreytan]: currently HHVM debugger getProcessInfoList() always

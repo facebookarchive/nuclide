@@ -11,14 +11,14 @@
 
 describe('session.js', () => {
   it('keeps session id identical unless reset is called', () => {
-    var session = require('../lib/session');
+    const session = require('../lib/session');
 
-    var id = session.id;
-    var id1 = session.id;
+    const id = session.id;
+    const id1 = session.id;
     expect(id).toEqual(id1);
 
     session.reset();
-    var id2 = session.id;
+    const id2 = session.id;
     expect(id2 !== id1).toBe(true);
   });
 });

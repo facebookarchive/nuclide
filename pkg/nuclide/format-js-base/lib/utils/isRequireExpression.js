@@ -11,10 +11,10 @@
 
 import type {Node} from '../types/ast';
 
-var getRootIdentifierInExpression = require('./getRootIdentifierInExpression');
+const getRootIdentifierInExpression = require('./getRootIdentifierInExpression');
 
 function isRequireExpression(node: Node): boolean {
-  var root = getRootIdentifierInExpression(node);
+  const root = getRootIdentifierInExpression(node);
   return !!(root && root.name === 'require');
 }
 

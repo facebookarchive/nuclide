@@ -12,17 +12,17 @@
 // We can't pull in nuclide-find-references as a dependency, unfortunately.
 // import type {FindReferencesReturn} from 'nuclide-find-references';
 
-var {findReferences} = require('./hack');
-var {HACK_GRAMMARS_SET} = require('nuclide-hack-common');
+const {findReferences} = require('./hack');
+const {HACK_GRAMMARS_SET} = require('nuclide-hack-common');
 import {trackOperationTiming} from 'nuclide-analytics';
 
 async function doFindReferences(
   textEditor: TextEditor,
   position: atom$Point,
 ): Promise<?Object /*FindReferencesReturn*/> {
-  var {withLoadingNotification} = require('nuclide-atom-helpers');
+  const {withLoadingNotification} = require('nuclide-atom-helpers');
 
-  var result = await withLoadingNotification(
+  const result = await withLoadingNotification(
     findReferences(textEditor, position.row, position.column),
     'Loading references from Hack server...',
   );
@@ -30,7 +30,7 @@ async function doFindReferences(
     return {type: 'error', message: 'Only classes/functions/methods are supported.'};
   }
 
-  var {baseUri, symbolName, references} = result;
+  let {baseUri, symbolName, references} = result;
 
   // Process this into the format nuclide-find-references expects.
   references = references.map(ref => {
@@ -63,7 +63,7 @@ async function doFindReferences(
 
 module.exports = {
   async isEditorSupported(textEditor: TextEditor): Promise<boolean> {
-    var fileUri = textEditor.getPath();
+    const fileUri = textEditor.getPath();
     if (!fileUri || !HACK_GRAMMARS_SET.has(textEditor.getGrammar().scopeName)) {
       return false;
     }

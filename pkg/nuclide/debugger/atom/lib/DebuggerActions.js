@@ -20,7 +20,7 @@ import type * as DebuggerProcessInfo from './DebuggerProcessInfo';
 import type * as Bridge from './Bridge';
 
 function track(...args: any) {
-  var trackFunc = require('nuclide-analytics').track;
+  const trackFunc = require('nuclide-analytics').track;
   trackFunc.apply(null, args);
 }
 
@@ -54,7 +54,7 @@ class DebuggerActions {
     this.killDebugger(); // Kill the existing session.
     this.setError(null);
 
-    var process = null;
+    let process = null;
     if (launchTarget) {
       process = processInfo.launch(launchTarget);
     } else {
@@ -95,7 +95,7 @@ class DebuggerActions {
   killDebugger() {
     track(AnalyticsEvents.DEBUGGER_STOP);
     endTimerTracking();
-    var process = this._store.getDebuggerProcess();
+    const process = this._store.getDebuggerProcess();
     if (process) {
       process.dispose();
       this._dispatcher.dispatch({

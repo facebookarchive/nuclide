@@ -9,13 +9,13 @@
  * the root directory of this source tree.
  */
 
-var NuclideClient = require('../lib/NuclideClient');
-var NuclideServer = require('../lib/NuclideServer');
-var NuclideRemoteEventbus = require('../lib/NuclideRemoteEventbus');
+const NuclideClient = require('../lib/NuclideClient');
+const NuclideServer = require('../lib/NuclideServer');
+const NuclideRemoteEventbus = require('../lib/NuclideRemoteEventbus');
 
-var server: NuclideServer;
-var client: NuclideClient;
-var socket: NuclideSocket;
+let server: NuclideServer;
+let client: NuclideClient;
+let socket: NuclideSocket;
 
 xdescribe('NuclideSocket test suite', () => {
   beforeEach(() => {
@@ -44,7 +44,7 @@ xdescribe('NuclideSocket test suite', () => {
   it('disconnects on close', () => {
     waitsForPromise(async () => {
       await socket.waitForConnect();
-      var disconnectHandler = jasmine.createSpy();
+      const disconnectHandler = jasmine.createSpy();
       socket.on('disconnect', disconnectHandler);
       socket.close();
       waitsFor(() => disconnectHandler.callCount > 0);
@@ -62,7 +62,7 @@ xdescribe('NuclideSocket test suite', () => {
 
   describe('heartbeat()', () => {
     it('checks and emits heartbeat every 5 seconds', () => {
-      var heartbeatHandler = jasmine.createSpy();
+      const heartbeatHandler = jasmine.createSpy();
       // There was an initial heartbeat, but we can't be sure if it went before or after we do listen here.
       socket.on('heartbeat', heartbeatHandler);
       window.advanceClock(5050); // Advance the heartbeat interval.
@@ -72,7 +72,7 @@ xdescribe('NuclideSocket test suite', () => {
     });
 
     it('on ECONNREFUSED, emits PORT_NOT_ACCESSIBLE, when the server was never accessible', () => {
-      var heartbeatErrorHandler = jasmine.createSpy();
+      const heartbeatErrorHandler = jasmine.createSpy();
       socket.on('heartbeat.error', heartbeatErrorHandler);
       // Assume the hearbeat didn't happen.
       socket._heartbeatConnectedOnce = false;
@@ -83,7 +83,7 @@ xdescribe('NuclideSocket test suite', () => {
     });
 
     it('on ECONNREFUSED, emits SERVER_CRASHED, when the server was once reachable', () => {
-      var heartbeatErrorHandler = jasmine.createSpy();
+      const heartbeatErrorHandler = jasmine.createSpy();
       socket.on('heartbeat.error', heartbeatErrorHandler);
       socket._heartbeatConnectedOnce = true;
       server.close();
@@ -93,7 +93,7 @@ xdescribe('NuclideSocket test suite', () => {
     });
 
     it('on ENOTFOUND, emits NETWORK_AWAY error, when the server can not be located', () => {
-      var heartbeatErrorHandler = jasmine.createSpy();
+      const heartbeatErrorHandler = jasmine.createSpy();
       socket.on('heartbeat.error', heartbeatErrorHandler);
       socket._serverUri = 'http://not.existing.uri.conf:8657';
       window.advanceClock(5050); // Advance the heartbeat interval.
@@ -104,15 +104,15 @@ xdescribe('NuclideSocket test suite', () => {
 
   describe('reconnect flow', () => {
     it('the socket would send the cached messages on reconnect', () => {
-      var reconnectHandler = jasmine.createSpy();
+      const reconnectHandler = jasmine.createSpy();
       socket.on('reconnect', reconnectHandler);
       spyOn(server, '_onSocketMessage');
 
-      var message0 = {foo0: 'bar0'};
-      var message1 = {foo1: 'bar1'};
-      var message2 = {foo2: 'bar2'};
-      var message3 = {foo3: 'bar3'};
-      var message4 = {foo4: 'bar4'};
+      const message0 = {foo0: 'bar0'};
+      const message1 = {foo1: 'bar1'};
+      const message2 = {foo2: 'bar2'};
+      const message3 = {foo3: 'bar3'};
+      const message4 = {foo4: 'bar4'};
 
       waitsForPromise(() => socket.waitForConnect());
       runs(() => socket.send(message0));

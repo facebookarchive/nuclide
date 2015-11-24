@@ -12,13 +12,13 @@
 import type {Collection, Node, NodePath} from '../types/ast';
 import type {SourceOptions} from '../options/SourceOptions';
 
-var getDeclaredIdentifiers = require('../utils/getDeclaredIdentifiers');
-var getDeclaredTypes = require('../utils/getDeclaredTypes');
-var getNonDeclarationTypes = require('../utils/getNonDeclarationTypes');
-var isGlobal = require('../utils/isGlobal');
-var jscs = require('jscodeshift');
+const getDeclaredIdentifiers = require('../utils/getDeclaredIdentifiers');
+const getDeclaredTypes = require('../utils/getDeclaredTypes');
+const getNonDeclarationTypes = require('../utils/getNonDeclarationTypes');
+const isGlobal = require('../utils/isGlobal');
+const jscs = require('jscodeshift');
 
-var {match} = jscs;
+const {match} = jscs;
 
 type ConfigEntry = {
   searchTerms: [any, Object],
@@ -27,7 +27,7 @@ type ConfigEntry = {
 };
 
 // These are the things we should try to remove.
-var CONFIG: Array<ConfigEntry> = [
+const CONFIG: Array<ConfigEntry> = [
   // import type Foo from 'Foo';
   {
     searchTerms: [
@@ -40,9 +40,9 @@ var CONFIG: Array<ConfigEntry> = [
 ];
 
 function removeUnusedTypes(root: Collection, options: SourceOptions): void {
-  var declared = getDeclaredIdentifiers(root, options);
-  var used = getNonDeclarationTypes(root, options);
-  var nonTypeImport = getDeclaredTypes(
+  const declared = getDeclaredIdentifiers(root, options);
+  const used = getNonDeclarationTypes(root, options);
+  const nonTypeImport = getDeclaredTypes(
     root,
     options,
     [path => !isTypeImportDeclaration(path.node)]

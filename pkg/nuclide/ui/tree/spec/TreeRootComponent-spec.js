@@ -11,16 +11,16 @@
 
 import type LazyTreeNode from '../lib/LazyTreeNode';
 
-var LazyTestTreeNode = require('./LazyTestTreeNode');
-var React = require('react-for-atom');
-var TreeNodeComponent = require('../lib/TreeNodeComponent');
-var TreeRootComponent = require('../lib/TreeRootComponent');
-var invariant = require('assert');
+const LazyTestTreeNode = require('./LazyTestTreeNode');
+const React = require('react-for-atom');
+const TreeNodeComponent = require('../lib/TreeNodeComponent');
+const TreeRootComponent = require('../lib/TreeRootComponent');
+const invariant = require('assert');
 
-var {TestUtils} = React.addons;
+const {TestUtils} = React.addons;
 
 function clickNodeWithLabel(component: TreeRootComponent, label: string): void {
-  var nodeComponents = getNodeComponents(component);
+  const nodeComponents = getNodeComponents(component);
   TestUtils.Simulate.click(React.findDOMNode(nodeComponents[label]));
 }
 
@@ -28,10 +28,10 @@ function clickNodeWithLabel(component: TreeRootComponent, label: string): void {
  * Returns an object whose keys are labels and values are TreeNodeComponent's.
  */
 function getNodeComponents(component: TreeRootComponent): any {
-  var nodeComponents = {};
+  const nodeComponents = {};
   TestUtils.scryRenderedComponentsWithType(component, TreeNodeComponent)
       .forEach(nodeComponent => {
-        var label = nodeComponent.props.node.getItem().label;
+        const label = nodeComponent.props.node.getItem().label;
         nodeComponents[label] = nodeComponent;
       });
   return nodeComponents;
@@ -40,10 +40,10 @@ function getNodeComponents(component: TreeRootComponent): any {
 describe('TreeRootComponent', () => {
   // Use `renderComponent` in `beforeEach` to return the component so the test
   // methods have a chance to modify the default props.
-  var renderComponent: ?(props: any) => TreeRootComponent;
-  var props;
-  var hostEl;
-  var nodes: {[key: string]: LazyTreeNode} = {};
+  let renderComponent: ?(props: any) => TreeRootComponent;
+  let props;
+  let hostEl;
+  let nodes: {[key: string]: LazyTreeNode} = {};
 
   beforeEach(() => {
     nodes = {};
@@ -121,13 +121,13 @@ describe('TreeRootComponent', () => {
     it('preserves state for reusable roots + removes state for non-reusable roots', () => {
       waitsForPromise(async () => {
         invariant(renderComponent);
-        var component = renderComponent(props);
+        const component = renderComponent(props);
         await component.setRoots([nodes['A']]);
         await component.setRoots([nodes['G'], nodes['A']]);
 
         expect(component.getRootNodes()).toEqual([nodes['G'], nodes['A']]);
         expect(component.getSelectedNodes()).toEqual([]);
-        var expandedNodeKeys = component.getExpandedNodes().map(node => node.getKey());
+        const expandedNodeKeys = component.getExpandedNodes().map(node => node.getKey());
         expect(expandedNodeKeys).toEqual([nodes['G'].getKey(), nodes['A'].getKey()]);
       });
     });
@@ -135,11 +135,11 @@ describe('TreeRootComponent', () => {
     it('returns a Promise that resolves after the children are rendered', () => {
       waitsForPromise(async () => {
         invariant(renderComponent);
-        var component = renderComponent(props);
+        const component = renderComponent(props);
 
         // The children should be in the tree if we `await` the promise.
         await component.setRoots([nodes['D']]);
-        var nodeComponents = getNodeComponents(component);
+        let nodeComponents = getNodeComponents(component);
         expect(nodeComponents['E']).not.toBeUndefined();
 
         // The children shouldn't immediately be in the tree if we don't
@@ -153,19 +153,19 @@ describe('TreeRootComponent', () => {
     it('rejects outdated promises', () => {
       waitsForPromise(async () => {
         invariant(renderComponent);
-        var component = renderComponent(props);
+        const component = renderComponent(props);
 
-        var setRootsPromise1 = component.setRoots([nodes['A']]);
-        var setRootsPromise2 = component.setRoots([nodes['D']]);
+        const setRootsPromise1 = component.setRoots([nodes['A']]);
+        const setRootsPromise2 = component.setRoots([nodes['D']]);
         await setRootsPromise2;
-        var isRejected = false;
+        let isRejected = false;
         try {
           await setRootsPromise1;
         } catch (error) {
           isRejected = true;
         }
         expect(isRejected).toBe(true);
-        var nodeComponents = getNodeComponents(component);
+        const nodeComponents = getNodeComponents(component);
         expect(nodeComponents['B']).toBeUndefined();
         expect(nodeComponents['E']).not.toBeUndefined();
       });
@@ -176,7 +176,7 @@ describe('TreeRootComponent', () => {
     it('invalidates the cached nodes', () => {
       waitsForPromise(async () => {
         invariant(renderComponent);
-        var component = renderComponent(props);
+        const component = renderComponent(props);
         await component.setRoots([nodes['G'], nodes['A']]);
 
         expect(nodes['G'].isCacheValid()).toBe(true);
@@ -194,7 +194,7 @@ describe('TreeRootComponent', () => {
     it('moves the selection to the parent when collapsing a non-container node', () => {
       waitsForPromise(async () => {
         invariant(renderComponent);
-        var component = renderComponent(props);
+        const component = renderComponent(props);
         await component.setRoots([nodes['A']]);
 
         clickNodeWithLabel(component, 'B');
@@ -210,7 +210,7 @@ describe('TreeRootComponent', () => {
     it('moves selection to the parent when collapsing an already-collapsed container node', () => {
       waitsForPromise(async () => {
         invariant(renderComponent);
-        var component = renderComponent(props);
+        const component = renderComponent(props);
         await component.setRoots([nodes['G']]);
 
         clickNodeWithLabel(component, 'H');
@@ -227,7 +227,7 @@ describe('TreeRootComponent', () => {
     it('collapses the selection when collapsing an expanded container node', () => {
       waitsForPromise(async () => {
         invariant(renderComponent);
-        var component = renderComponent(props);
+        const component = renderComponent(props);
         await component.setRoots([nodes['G']]);
 
         clickNodeWithLabel(component, 'H');
@@ -245,7 +245,7 @@ describe('TreeRootComponent', () => {
     it('does nothing when collapsing an already-collapsed root element', () => {
       waitsForPromise(async () => {
         invariant(renderComponent);
-        var component = renderComponent(props);
+        const component = renderComponent(props);
         await component.setRoots([nodes['G']]);
 
         clickNodeWithLabel(component, 'G');
@@ -263,7 +263,7 @@ describe('TreeRootComponent', () => {
     it('collapses the selection when collapsing an expanded root element', () => {
       waitsForPromise(async () => {
         invariant(renderComponent);
-        var component = renderComponent(props);
+        const component = renderComponent(props);
         await component.setRoots([nodes['G']]);
 
         clickNodeWithLabel(component, 'G');
@@ -282,7 +282,7 @@ describe('TreeRootComponent', () => {
     it('returns a Promise that resolves after the node is selected', () => {
       waitsForPromise(async () => {
         invariant(renderComponent);
-        var component = renderComponent(props);
+        const component = renderComponent(props);
         await component.setRoots([nodes['A']]);
 
         await component.selectNodeKey(nodes['B'].getKey());
@@ -293,12 +293,12 @@ describe('TreeRootComponent', () => {
     it('resolves promises even if they are about to be overridden by a parallel call', () => {
       waitsForPromise(async () => {
         invariant(renderComponent);
-        var component = renderComponent(props);
+        const component = renderComponent(props);
 
         await component.setRoots([nodes['A']]);
 
-        var selectNodeKeyPromise1 = component.selectNodeKey(nodes['B'].getKey());
-        var selectNodeKeyPromise2 = component.selectNodeKey(nodes['A'].getKey());
+        const selectNodeKeyPromise1 = component.selectNodeKey(nodes['B'].getKey());
+        const selectNodeKeyPromise2 = component.selectNodeKey(nodes['A'].getKey());
         await selectNodeKeyPromise2;
         await selectNodeKeyPromise1;
         expect(component.getSelectedNodes().map(node => node.getKey()))
@@ -309,10 +309,10 @@ describe('TreeRootComponent', () => {
     it('rejects if the key does not exist', () => {
       waitsForPromise(async () => {
         invariant(renderComponent);
-        var component = renderComponent(props);
+        const component = renderComponent(props);
         await component.setRoots([nodes['A']]);
 
-        var isRejected = false;
+        let isRejected = false;
         try {
           await component.selectNodeKey('unknown key');
         } catch (error) {
@@ -327,13 +327,13 @@ describe('TreeRootComponent', () => {
     it('returns a Promise that resolves after a container node is expanded', () => {
       waitsForPromise(async () => {
         invariant(renderComponent);
-        var component = renderComponent(props);
+        const component = renderComponent(props);
         await component.setRoots([nodes['G']]);
 
         await component.expandNodeKey(nodes['H'].getKey());
 
         expect(component.getExpandedNodes()).toEqual([nodes['G'], nodes['H']]);
-        var nodeComponents = getNodeComponents(component);
+        const nodeComponents = getNodeComponents(component);
         expect(nodeComponents['J']).not.toBeUndefined();
       });
     });
@@ -341,7 +341,7 @@ describe('TreeRootComponent', () => {
     it('does not expand a non-container node', () => {
       waitsForPromise(async () => {
         invariant(renderComponent);
-        var component = renderComponent(props);
+        const component = renderComponent(props);
         await component.setRoots([nodes['A']]);
 
         await component.expandNodeKey(nodes['B'].getKey());
@@ -353,14 +353,14 @@ describe('TreeRootComponent', () => {
     it('rejects older promises even though they will succeed', () => {
       waitsForPromise(async () => {
         invariant(renderComponent);
-        var component = renderComponent(props);
+        const component = renderComponent(props);
 
         await component.setRoots([nodes['G']]);
 
-        var expandNodeKeyPromise1 = component.expandNodeKey(nodes['H'].getKey());
-        var expandNodeKeyPromise2 = component.expandNodeKey(nodes['I'].getKey());
+        const expandNodeKeyPromise1 = component.expandNodeKey(nodes['H'].getKey());
+        const expandNodeKeyPromise2 = component.expandNodeKey(nodes['I'].getKey());
         await expandNodeKeyPromise2;
-        var isRejected = false;
+        let isRejected = false;
         try {
           await expandNodeKeyPromise1;
         } catch (error) {
@@ -381,7 +381,7 @@ describe('TreeRootComponent', () => {
     it('returns a Promise that resolves after the node is collapsed', () => {
       waitsForPromise(async () => {
         invariant(renderComponent);
-        var component = renderComponent(props);
+        const component = renderComponent(props);
         await component.setRoots([nodes['A']]);
         expect(component.getExpandedNodes()).toEqual([nodes['A']]);
 
@@ -393,7 +393,7 @@ describe('TreeRootComponent', () => {
     it('keeps a non-container node collapsed', () => {
       waitsForPromise(async () => {
         invariant(renderComponent);
-        var component = renderComponent(props);
+        const component = renderComponent(props);
         await component.setRoots([nodes['A']]);
 
         await component.collapseNodeKey(nodes['B'].getKey());
@@ -405,14 +405,14 @@ describe('TreeRootComponent', () => {
     it('resolves promises even if they are about to be overridden by a parallel call', () => {
       waitsForPromise(async () => {
         invariant(renderComponent);
-        var component = renderComponent(props);
+        const component = renderComponent(props);
 
         await component.setRoots([nodes['G']]);
         await component.expandNodeKey(nodes['H'].getKey());
         await component.expandNodeKey(nodes['I'].getKey());
 
-        var collapseNodeKeyPromise1 = component.collapseNodeKey(nodes['H'].getKey());
-        var collapseNodeKeyPromise2 = component.collapseNodeKey(nodes['I'].getKey());
+        const collapseNodeKeyPromise1 = component.collapseNodeKey(nodes['H'].getKey());
+        const collapseNodeKeyPromise2 = component.collapseNodeKey(nodes['I'].getKey());
         await collapseNodeKeyPromise2;
         await collapseNodeKeyPromise1;
         expect(component.getExpandedNodes().map(node => node.getKey()))
@@ -425,14 +425,14 @@ describe('TreeRootComponent', () => {
     it('rejects expandNodeKey and resolves collapseNodeKey when called in succession', () => {
       waitsForPromise(async () => {
         invariant(renderComponent);
-        var component = renderComponent(props);
+        const component = renderComponent(props);
 
         await component.setRoots([nodes['G']]);
 
-        var expandNodeKeyPromise = component.expandNodeKey(nodes['H'].getKey());
-        var collapseNodeKeyPromise = component.collapseNodeKey(nodes['H'].getKey());
+        const expandNodeKeyPromise = component.expandNodeKey(nodes['H'].getKey());
+        const collapseNodeKeyPromise = component.collapseNodeKey(nodes['H'].getKey());
         await collapseNodeKeyPromise;
-        var isRejected = false;
+        let isRejected = false;
         try {
           await expandNodeKeyPromise;
         } catch (error) {
@@ -449,13 +449,13 @@ describe('TreeRootComponent', () => {
     it('resolves collapseNodeKey and resolves expandNodeKey when called in succession', () => {
       waitsForPromise(async () => {
         invariant(renderComponent);
-        var component = renderComponent(props);
+        const component = renderComponent(props);
 
         await component.setRoots([nodes['G']]);
         await component.expandNodeKey(nodes['H'].getKey());
 
-        var collapseNodeKeyPromise = component.collapseNodeKey(nodes['H'].getKey());
-        var expandNodeKeyPromise = component.expandNodeKey(nodes['H'].getKey());
+        const collapseNodeKeyPromise = component.collapseNodeKey(nodes['H'].getKey());
+        const expandNodeKeyPromise = component.expandNodeKey(nodes['H'].getKey());
         await expandNodeKeyPromise;
         await collapseNodeKeyPromise;
         expect(component.getExpandedNodes().map(node => node.getKey()))
@@ -471,7 +471,7 @@ describe('TreeRootComponent', () => {
     it('deselects descendants of the node', () => {
       waitsForPromise(async () => {
         invariant(renderComponent);
-        var component = renderComponent(props);
+        const component = renderComponent(props);
         await component.setRoots([nodes['G']]);
 
         component.selectNodeKey(nodes['H'].getKey());
@@ -485,7 +485,7 @@ describe('TreeRootComponent', () => {
     it('does not deselect the node', () => {
       waitsForPromise(async () => {
         invariant(renderComponent);
-        var component = renderComponent(props);
+        const component = renderComponent(props);
         await component.setRoots([nodes['G']]);
 
         component.selectNodeKey(nodes['G'].getKey());
@@ -498,7 +498,7 @@ describe('TreeRootComponent', () => {
   });
 
   describe('user interaction', () => {
-    var onConfirmSelection: ?{callCount: number};
+    let onConfirmSelection: ?{callCount: number};
 
     beforeEach(() => {
       onConfirmSelection = jasmine.createSpy('onConfirmSelection');
@@ -510,12 +510,12 @@ describe('TreeRootComponent', () => {
       it('toggles whether the node is collapsed', () => {
         waitsForPromise(async () => {
           invariant(renderComponent);
-          var component = renderComponent(props);
+          const component = renderComponent(props);
           await component.setRoots([nodes['G']]);
 
           expect(component.getExpandedNodes()).toEqual([nodes['G']]);
 
-          var nodeComponents = getNodeComponents(component);
+          const nodeComponents = getNodeComponents(component);
           TestUtils.Simulate.click(React.findDOMNode(nodeComponents['G'].refs['arrow']));
 
           expect(component.getExpandedNodes()).toEqual([]);
@@ -527,12 +527,12 @@ describe('TreeRootComponent', () => {
       it('does not toggle whether node is selected', () => {
         waitsForPromise(async () => {
           invariant(renderComponent);
-          var component = renderComponent(props);
+          const component = renderComponent(props);
           await component.setRoots([nodes['G']]);
 
           expect(component.getSelectedNodes()).toEqual([]);
 
-          var nodeComponents = getNodeComponents(component);
+          const nodeComponents = getNodeComponents(component);
           TestUtils.Simulate.click(React.findDOMNode(nodeComponents['G'].refs['arrow']));
 
           expect(component.getSelectedNodes()).toEqual([]);
@@ -546,7 +546,7 @@ describe('TreeRootComponent', () => {
       it('toggles whether the node is collapsed if it is a container', () => {
         waitsForPromise(async () => {
           invariant(renderComponent);
-          var component = renderComponent(props);
+          const component = renderComponent(props);
           await component.setRoots([nodes['G']]);
           await component.selectNodeKey(nodes['G'].getKey());
 
@@ -568,7 +568,7 @@ describe('TreeRootComponent', () => {
       it('calls onConfirmSelection if the node is not a container', () => {
         waitsForPromise(async () => {
           invariant(renderComponent);
-          var component = renderComponent(props);
+          const component = renderComponent(props);
           await component.setRoots([nodes['G']]);
           await component.expandNodeKey(nodes['H'].getKey());
           await component.selectNodeKey(nodes['J'].getKey());
@@ -589,14 +589,14 @@ describe('TreeRootComponent', () => {
       it('toggles whether the node is collapsed if it is a container', () => {
         waitsForPromise(async () => {
           invariant(renderComponent);
-          var component = renderComponent(props);
+          const component = renderComponent(props);
           await component.setRoots([nodes['G']]);
           await component.selectNodeKey(nodes['G'].getKey());
 
           expect(component.getSelectedNodes()).toEqual([nodes['G']]);
           expect(component.isNodeKeyExpanded(nodes['G'].getKey())).toBe(true);
 
-          var nodeComponents = getNodeComponents(component);
+          const nodeComponents = getNodeComponents(component);
 
           TestUtils.Simulate.click(React.findDOMNode(nodeComponents['G']));
           expect(component.isNodeKeyExpanded(nodes['G'].getKey())).toBe(false);
@@ -612,14 +612,14 @@ describe('TreeRootComponent', () => {
       it('calls onConfirmSelection if the node is not a container', () => {
         waitsForPromise(async () => {
           invariant(renderComponent);
-          var component = renderComponent(props);
+          const component = renderComponent(props);
           await component.setRoots([nodes['G']]);
           await component.expandNodeKey(nodes['H'].getKey());
           await component.selectNodeKey(nodes['J'].getKey());
 
           expect(component.getSelectedNodes()).toEqual([nodes['J']]);
 
-          var nodeComponents = getNodeComponents(component);
+          const nodeComponents = getNodeComponents(component);
           TestUtils.Simulate.click(React.findDOMNode(nodeComponents['J']));
 
           invariant(onConfirmSelection);
@@ -633,13 +633,13 @@ describe('TreeRootComponent', () => {
       it('selects the node if it is a container', () => {
         waitsForPromise(async () => {
           invariant(renderComponent);
-          var component = renderComponent(props);
+          const component = renderComponent(props);
           await component.setRoots([nodes['G']]);
 
           expect(component.getSelectedNodes()).toEqual([]);
           expect(component.isNodeKeyExpanded(nodes['G'].getKey())).toBe(true);
 
-          var nodeComponents = getNodeComponents(component);
+          const nodeComponents = getNodeComponents(component);
           TestUtils.Simulate.click(React.findDOMNode(nodeComponents['G']));
 
           expect(component.getSelectedNodes()).toEqual([nodes['G']]);
@@ -653,13 +653,13 @@ describe('TreeRootComponent', () => {
       it('selects the node if it is not a container', () => {
         waitsForPromise(async () => {
           invariant(renderComponent);
-          var component = renderComponent(props);
+          const component = renderComponent(props);
           await component.setRoots([nodes['G']]);
           await component.expandNodeKey(nodes['H'].getKey());
 
           expect(component.getSelectedNodes()).toEqual([]);
 
-          var nodeComponents = getNodeComponents(component);
+          const nodeComponents = getNodeComponents(component);
           TestUtils.Simulate.click(React.findDOMNode(nodeComponents['J']));
           expect(component.getSelectedNodes()).toEqual([nodes['J']]);
 
@@ -671,12 +671,12 @@ describe('TreeRootComponent', () => {
       it('selects node if right clicking or ctrl clicking for context menu', () => {
         waitsForPromise(async () => {
           invariant(renderComponent);
-          var component = renderComponent(props);
+          const component = renderComponent(props);
           await component.setRoots([nodes['G']]);
 
           expect(component.getSelectedNodes()).toEqual([]);
 
-          var nodeComponents = getNodeComponents(component);
+          const nodeComponents = getNodeComponents(component);
 
           TestUtils.Simulate.mouseDown(React.findDOMNode(nodeComponents['G']), {button: 2});
           expect(component.getSelectedNodes()).toEqual([nodeComponents['G'].props.node]);
@@ -702,13 +702,13 @@ describe('TreeRootComponent', () => {
     it('creates one node for each unique path', () => {
       waitsForPromise(async () => {
         invariant(renderComponent);
-        var component = renderComponent(props);
+        const component = renderComponent(props);
         await component.setRoots([nodes['G']]);
         // Ensure nodes with children are expanded so their subtrees render.
         await component.expandNodeKey(nodes['H'].getKey());
         await component.expandNodeKey(nodes['I'].getKey());
 
-        var renderedNodes = TestUtils.scryRenderedComponentsWithType(component, TreeNodeComponent);
+        const renderedNodes = TestUtils.scryRenderedComponentsWithType(component, TreeNodeComponent);
         // 6 nodes should render: G, H, I, J, K, and H(2). The two 'H' nodes have the same label but
         // both should render and be part of the length. If duplicate labels prevent the nodes from
         // rendering, this test will fail.

@@ -22,7 +22,7 @@ import type {LoggingEvent} from './types';
  * logview.
  */
 export function patchErrorsOfLoggingEvent(loggingEvent: LoggingEvent): LoggingEvent {
-  var loggingEventCopy = {...loggingEvent};
+  const loggingEventCopy = {...loggingEvent};
   loggingEventCopy.data = (loggingEventCopy.data || []).slice();
 
   if (!loggingEventCopy.data.some(item => item instanceof Error)) {
@@ -62,7 +62,7 @@ export function serializeLoggingEvent(loggingEvent: mixed): string {
  * log4js internals.
  */
 export function deserializeLoggingEvent(loggingEventString: string): LoggingEvent {
-  var loggingEvent;
+  let loggingEvent;
   try {
     loggingEvent = JSON.parse(loggingEventString);
     loggingEvent.startTime = new Date(loggingEvent.startTime);

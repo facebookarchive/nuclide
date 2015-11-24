@@ -9,12 +9,12 @@
  * the root directory of this source tree.
  */
 
-var Emitter = require('./Emitter');
-var Multimap = require('../../lib/Multimap');
-var ipc = require('ipc');
+const Emitter = require('./Emitter');
+const Multimap = require('../../lib/Multimap');
+const ipc = require('ipc');
 import {beginTimerTracking, endTimerTracking} from '../../lib/AnalyticsHelper';
 
-var WebInspector: typeof WebInspector = window.WebInspector;
+const WebInspector: typeof WebInspector = window.WebInspector;
 
 /**
   * Generates a string from a breakpoint that can be used in hashed
@@ -169,8 +169,8 @@ class NuclideBridge {
   }
 
   _handleCallFrameSelected(event: WebInspector.Event) {
-    var frame: WebInspector$CallFrame = event.data;
-    var uiLocation =
+    const frame: WebInspector$CallFrame = event.data;
+    const uiLocation =
       WebInspector.debuggerWorkspaceBinding.rawLocationToUILocation(frame.location());
     ipc.sendToHost('notification', 'CallFrameSelected', {
       sourceURL: uiLocation.uiSourceCode.uri(),
@@ -179,7 +179,7 @@ class NuclideBridge {
   }
 
   _handleOpenSourceLocation(event: WebInspector.Event) {
-    var eventData = event.data;
+    const eventData = event.data;
     this.sendOpenSourceLocation(eventData.url, eventData.lineNumber);
   }
 
@@ -210,12 +210,12 @@ class NuclideBridge {
   }
 
   _handleBreakpointAdded(event: WebInspector$Event) {
-    var location = event.data.uiLocation;
+    const location = event.data.uiLocation;
     this._sendBreakpointNotification(location, 'BreakpointAdded');
   }
 
   _handleBreakpointRemoved(event: WebInspector$Event) {
-    var location = event.data.uiLocation;
+    const location = event.data.uiLocation;
     this._sendBreakpointNotification(location, 'BreakpointRemoved');
   }
 
@@ -235,12 +235,12 @@ class NuclideBridge {
   // needs to revisit the unresolved breakpoints detection logic.
   _parseBreakpointSources() {
     this._allBreakpoints.forEach(breakpoint => {
-      var sourceUrl = breakpoint.sourceURL;
+      const sourceUrl = breakpoint.sourceURL;
       // TODO[jeffreytan]: investigate if we need to do the same for LLDB or not.
       if (sourceUrl.endsWith('.php') || sourceUrl.endsWith('.hh')) {
-        var source = WebInspector.workspace.uiSourceCodeForOriginURL(sourceUrl);
+        const source = WebInspector.workspace.uiSourceCodeForOriginURL(sourceUrl);
         if (!source) {
-          var target = WebInspector.targetManager.mainTarget();
+          const target = WebInspector.targetManager.mainTarget();
           if (target) {
             target.debuggerModel._parsedScriptSource(
               sourceUrl,
@@ -258,16 +258,16 @@ class NuclideBridge {
       this._suppressBreakpointNotification = true;
       this._unresolvedBreakpoints = new Multimap();
 
-      var newBreakpointSet = new Set(this._allBreakpoints.map(breakpoint =>
+      const newBreakpointSet = new Set(this._allBreakpoints.map(breakpoint =>
         formatBreakpointKey(breakpoint.sourceURL, breakpoint.lineNumber)));
 
       // Removing unlisted breakpoints and mark the ones that already exist.
-      var unchangedBreakpointSet = new Set();
-      var existingBreakpoints = WebInspector.breakpointManager.allBreakpoints();
+      const unchangedBreakpointSet = new Set();
+      const existingBreakpoints = WebInspector.breakpointManager.allBreakpoints();
       existingBreakpoints.forEach(existingBreakpoint => {
-        var source = existingBreakpoint.uiSourceCode();
+        const source = existingBreakpoint.uiSourceCode();
         if (source) {
-          var key = formatBreakpointKey(source.uri(), existingBreakpoint.lineNumber());
+          const key = formatBreakpointKey(source.uri(), existingBreakpoint.lineNumber());
           if (newBreakpointSet.has(key)) {
             unchangedBreakpointSet.add(key);
             return;
@@ -280,9 +280,9 @@ class NuclideBridge {
 
       // Add the ones that don't.
       this._allBreakpoints.forEach(breakpoint => {
-        var key = formatBreakpointKey(breakpoint.sourceURL, breakpoint.lineNumber);
+        const key = formatBreakpointKey(breakpoint.sourceURL, breakpoint.lineNumber);
         if (!unchangedBreakpointSet.has(key)) {
-          var source = WebInspector.workspace.uiSourceCodeForOriginURL(breakpoint.sourceURL);
+          const source = WebInspector.workspace.uiSourceCodeForOriginURL(breakpoint.sourceURL);
           if (source) {
             WebInspector.breakpointManager.setBreakpoint(
               source,
@@ -305,7 +305,7 @@ class NuclideBridge {
   }
 
   _continue(): void {
-    var target = WebInspector.targetManager.mainTarget();
+    const target = WebInspector.targetManager.mainTarget();
     if (target) {
       beginTimerTracking('nuclide-debugger-atom:continue');
       target.debuggerModel.resume();
@@ -313,7 +313,7 @@ class NuclideBridge {
   }
 
   _stepOver(): void {
-    var target = WebInspector.targetManager.mainTarget();
+    const target = WebInspector.targetManager.mainTarget();
     if (target) {
       beginTimerTracking('nuclide-debugger-atom:stepOver');
       target.debuggerModel.stepOver();
@@ -321,7 +321,7 @@ class NuclideBridge {
   }
 
   _stepInto(): void {
-    var target = WebInspector.targetManager.mainTarget();
+    const target = WebInspector.targetManager.mainTarget();
     if (target) {
       beginTimerTracking('nuclide-debugger-atom:stepInto');
       target.debuggerModel.stepInto();
@@ -329,7 +329,7 @@ class NuclideBridge {
   }
 
   _stepOut(): void {
-    var target = WebInspector.targetManager.mainTarget();
+    const target = WebInspector.targetManager.mainTarget();
     if (target) {
       beginTimerTracking('nuclide-debugger-atom:stepOut');
       target.debuggerModel.stepOut();
@@ -337,7 +337,7 @@ class NuclideBridge {
   }
 
   _handleUISourceCodeAdded(event: Object) {
-    var source = event.data;
+    const source = event.data;
     this._unresolvedBreakpoints.get(source.uri()).forEach(line => {
       WebInspector.breakpointManager.setBreakpoint(source, line , 0, '', true);
     });
@@ -351,7 +351,7 @@ class NuclideBridge {
   }
 
   getUnresolvedBreakpointsList(): {url: string; line: number}[] {
-    var result = [];
+    const result = [];
     this._unresolvedBreakpoints.forEach((line, url) => {
       result.push({url, line});
     });

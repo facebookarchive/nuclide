@@ -9,11 +9,11 @@
  * the root directory of this source tree.
  */
 
-var NuclideRadioGroup = require('../lib/NuclideRadioGroup');
-var React = require('react-for-atom');
+const NuclideRadioGroup = require('../lib/NuclideRadioGroup');
+const React = require('react-for-atom');
 
-var {TestUtils} = React.addons;
-var {
+const {TestUtils} = React.addons;
+const {
   Simulate,
   renderIntoDocument,
   scryRenderedDOMComponentsWithTag,
@@ -22,13 +22,13 @@ var {
 describe('NuclideRadioGroup', () => {
 
   it('honors the selectedIndex param', () => {
-    var props = {optionLabels: ['foo', 'bar'], selectedIndex: 1};
-    var component = renderIntoDocument(
+    const props = {optionLabels: ['foo', 'bar'], selectedIndex: 1};
+    const component = renderIntoDocument(
       <NuclideRadioGroup {...props} />
     );
     expect(component.props.selectedIndex).toBe(1);
 
-    var radioInputs = scryRenderedDOMComponentsWithTag(
+    const radioInputs = scryRenderedDOMComponentsWithTag(
       component,
       'input'
     );
@@ -38,8 +38,8 @@ describe('NuclideRadioGroup', () => {
 
 
   it('should use the correct, unique radio group name', () => {
-    var props = {optionLabels: ['foo', 'bar'], selectedIndex: 1};
-    var component = renderIntoDocument(
+    const props = {optionLabels: ['foo', 'bar'], selectedIndex: 1};
+    const component = renderIntoDocument(
       <NuclideRadioGroup {...props} />
     );
     var radioInputs = scryRenderedDOMComponentsWithTag(
@@ -49,7 +49,7 @@ describe('NuclideRadioGroup', () => {
     // Global uid is `1` as this point, since this is the second RadioGroup component to be created.
     expect(React.findDOMNode(radioInputs[0]).getAttribute('name')).toEqual('radiogroup-1');
     expect(React.findDOMNode(radioInputs[1]).getAttribute('name')).toEqual('radiogroup-1');
-    var component2 = renderIntoDocument(
+    const component2 = renderIntoDocument(
       <NuclideRadioGroup {...props} />
     );
     var radioInputs = scryRenderedDOMComponentsWithTag(
@@ -62,17 +62,17 @@ describe('NuclideRadioGroup', () => {
 
 
   it('calls its onSelectedChange handler when a radio input is changed', () => {
-    var onSelectedChange = jasmine.createSpy('onSelectedChange');
+    const onSelectedChange = jasmine.createSpy('onSelectedChange');
 
-    var props = {
+    const props = {
       optionLabels: ['foo', 'bar'],
       selectedIndex: 0,
       onSelectedChange: onSelectedChange,
     };
-    var component = renderIntoDocument(
+    const component = renderIntoDocument(
       <NuclideRadioGroup {...props} />
     );
-    var radioInputs = scryRenderedDOMComponentsWithTag(
+    const radioInputs = scryRenderedDOMComponentsWithTag(
       component,
       'input'
     );

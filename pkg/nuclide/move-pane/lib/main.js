@@ -22,14 +22,14 @@ function trackSplit(
 
 function doSplit(
     splitOperation: (pane: atom$Pane, params?: atom$PaneSplitParams) => atom$Pane) {
-  var pane = atom.workspace.getActivePane();
+  const pane = atom.workspace.getActivePane();
   if (pane) {
     // Note that this will (intentionally) create an empty pane if the active
     // pane contains exactly zero or one items.
     // The new empty pane will be kept if the global atom setting
     // 'Destroy Empty Panes' is false, otherwise it will be removed.
-    var newPane = splitOperation(pane, {copyActiveItem: false});
-    var item = pane.getActiveItem();
+    const newPane = splitOperation(pane, {copyActiveItem: false});
+    const item = pane.getActiveItem();
     if (item) {
       pane.moveItemToPane(item, newPane, 0);
     }
@@ -80,7 +80,7 @@ class Activation {
   }
 }
 
-var activation: ?Activation = null;
+let activation: ?Activation = null;
 
 module.exports = {
 

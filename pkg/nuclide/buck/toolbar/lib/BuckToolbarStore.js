@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-var logger;
+let logger;
 function getLogger() {
   if (!logger) {
     logger = require('nuclide-logging').getLogger();
@@ -17,17 +17,17 @@ function getLogger() {
   return logger;
 }
 
-var invariant = require('assert');
-var {Disposable, Emitter} = require('atom');
-var path = require('path');
-var {Dispatcher} = require('flux');
-var {buckProjectRootForPath} = require('nuclide-buck-commons');
-var BuckToolbarActions = require('./BuckToolbarActions');
+const invariant = require('assert');
+const {Disposable, Emitter} = require('atom');
+const path = require('path');
+const {Dispatcher} = require('flux');
+const {buckProjectRootForPath} = require('nuclide-buck-commons');
+const BuckToolbarActions = require('./BuckToolbarActions');
 
 type BuckRunDetails = {
   pid?: number;
 };
-import type {ProcessOutputDataHandlers, ProcessOutputStore as ProcessOutputStoreType}
+import type {ProcessOutputDataHandlers, ProcessOutputStore as ProcessOutputStoreType,}
   from 'nuclide-process-output-store/lib/types';
 import type {BuckProject} from 'nuclide-buck-base/lib/BuckProject';
 import ReactNativeServerManager from './ReactNativeServerManager';
@@ -167,21 +167,21 @@ class BuckToolbarStore {
   }
 
   async _getReactNativeServerCommand(): Promise<?string> {
-    var buckProject = this._mostRecentBuckProject;
+    const buckProject = this._mostRecentBuckProject;
     if (!buckProject) {
       return null;
     }
-    var serverCommand = await buckProject.getBuckConfig('react-native', 'server');
-    var repoRoot = await buckProject.getPath();
+    const serverCommand = await buckProject.getBuckConfig('react-native', 'server');
+    const repoRoot = await buckProject.getPath();
     return path.join(repoRoot, serverCommand);
   }
 
   async _updateProject(editor: TextEditor): Promise<void> {
-    var nuclideUri = editor.getPath();
+    const nuclideUri = editor.getPath();
     if (!nuclideUri) {
       return;
     }
-    var buckProject = this._textEditorToBuckProject.get(editor);
+    let buckProject = this._textEditorToBuckProject.get(editor);
     if (!buckProject) {
       buckProject = await buckProjectRootForPath(nuclideUri);
       if (!buckProject) {
@@ -203,10 +203,10 @@ class BuckToolbarStore {
   }
 
   async _findRuleType(): Promise<string> {
-    var buckProject = this._mostRecentBuckProject;
-    var buildTarget = this._buildTarget;
+    const buckProject = this._mostRecentBuckProject;
+    const buildTarget = this._buildTarget;
 
-    var buildRuleType = '';
+    let buildRuleType = '';
     if (buildTarget && buckProject) {
       try {
         buildRuleType = await buckProject.buildRuleTypeFor(buildTarget);
@@ -218,21 +218,21 @@ class BuckToolbarStore {
   }
 
   async _findIsReactNativeApp(): Promise<boolean> {
-    var buildRuleType = this._buildRuleType;
+    const buildRuleType = this._buildRuleType;
     if (buildRuleType !== 'apple_bundle' && buildRuleType !== 'android_binary') {
       return false;
     }
-    var buckProject = this._mostRecentBuckProject;
+    const buckProject = this._mostRecentBuckProject;
     if (!buckProject) {
       return false;
     }
 
-    var reactNativeRule = buildRuleType === 'apple_bundle'
+    const reactNativeRule = buildRuleType === 'apple_bundle'
     ? 'ios_react_native_library'
     : 'android_react_native_library';
 
-    var buildTarget = this._buildTarget;
-    var matches = await buckProject.queryWithArgs(
+    const buildTarget = this._buildTarget;
+    const matches = await buckProject.queryWithArgs(
       `kind('${reactNativeRule}', deps('%s'))`,
       [buildTarget],
     );
@@ -249,18 +249,18 @@ class BuckToolbarStore {
       atom.views.getView(atom.workspace),
       'nuclide-debugger:stop-debugging');
 
-    var installResult = await this._doBuild(true, true);
+    const installResult = await this._doBuild(true, true);
     if (!installResult) {
       return;
     }
-    var {buckProject, pid} = installResult;
+    const {buckProject, pid} = installResult;
 
     if (pid) {
       // Use commands here to trigger package activation.
       atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:show');
-      var debuggerService = await require('nuclide-service-hub-plus')
+      const debuggerService = await require('nuclide-service-hub-plus')
           .consumeFirstProvider('nuclide-debugger.remote');
-      var buckProjectPath = await buckProject.getPath();
+      const buckProjectPath = await buckProject.getPath();
       debuggerService.debugLLDB(pid, buckProjectPath);
     }
   }
@@ -269,9 +269,9 @@ class BuckToolbarStore {
     run: boolean,
     debug: boolean,
   ): Promise<?{buckProject: BuckProject, buildTarget: string, pid: ?number}> {
-    var buildTarget = this._buildTarget;
-    var simulator = this._simulator;
-    var buckProject = this._mostRecentBuckProject;
+    const buildTarget = this._buildTarget;
+    const simulator = this._simulator;
+    const buckProject = this._mostRecentBuckProject;
     if (!this._buildTarget) {
       return;
     }
@@ -282,7 +282,7 @@ class BuckToolbarStore {
 
     let appArgs = [];
     if (run && this.isReactNativeServerMode()) {
-      var serverCommand = await this._getReactNativeServerCommand();
+      const serverCommand = await this._getReactNativeServerCommand();
       if (serverCommand) {
         this._reactNativeServerActions.startServer(serverCommand);
         appArgs = REACT_NATIVE_APP_FLAGS;
@@ -290,7 +290,7 @@ class BuckToolbarStore {
       }
     }
 
-    var command = `buck ${run ? 'install' : 'build'} ${buildTarget}`;
+    const command = `buck ${run ? 'install' : 'build'} ${buildTarget}`;
     atom.notifications.addInfo(`${command} started.`);
     const ws = await this._setupWebSocket(buckProject, buildTarget);
 
@@ -298,7 +298,7 @@ class BuckToolbarStore {
     this._isBuilding = true;
     this.emitChange();
 
-    var {pid} = await this._runBuckCommandInNewPane(
+    const {pid} = await this._runBuckCommandInNewPane(
         {buckProject, buildTarget, simulator, run, debug, command, appArgs});
 
     this._isBuilding = false;
@@ -325,12 +325,12 @@ class BuckToolbarStore {
   }): Promise<BuckRunDetails> {
     const {buckProject, buildTarget, simulator, run, debug, command, appArgs} = buckParams;
 
-    var getRunCommandInNewPane = require('nuclide-process-output');
-    var {runCommandInNewPane, disposable} = getRunCommandInNewPane();
+    const getRunCommandInNewPane = require('nuclide-process-output');
+    const {runCommandInNewPane, disposable} = getRunCommandInNewPane();
 
-    var runProcessWithHandlers = async (dataHandlerOptions: ProcessOutputDataHandlers) => {
-      var {stdout, stderr, error, exit} = dataHandlerOptions;
-      var observable;
+    const runProcessWithHandlers = async (dataHandlerOptions: ProcessOutputDataHandlers) => {
+      const {stdout, stderr, error, exit} = dataHandlerOptions;
+      let observable;
       invariant(buckProject);
       if (run) {
         observable = await buckProject.installWithOutput(
@@ -338,20 +338,20 @@ class BuckToolbarStore {
       } else {
         observable = await buckProject.buildWithOutput([buildTarget]);
       }
-      var onNext = (data: {stdout: string} | {stderr: string}) => {
+      const onNext = (data: {stdout: string} | {stderr: string}) => {
         if (data.stdout) {
           stdout(data.stdout);
         } else {
           stderr(data.stderr);
         }
       };
-      var onError = (data: string) => {
+      const onError = (data: string) => {
         error(new Error(data));
         exit(1);
         atom.notifications.addError(`${buildTarget} failed to build.`);
         disposable.dispose();
       };
-      var onExit = () => {
+      const onExit = () => {
         // onExit will only be called if the process completes successfully,
         // i.e. with exit code 0. Unfortunately an Observable cannot pass an
         // argument (e.g. an exit code) on completion.
@@ -359,7 +359,7 @@ class BuckToolbarStore {
         atom.notifications.addSuccess(`${command} succeeded.`);
         disposable.dispose();
       };
-      var subscription = observable.subscribe(onNext, onError, onExit);
+      const subscription = observable.subscribe(onNext, onError, onExit);
 
       return {
         kill() {
@@ -456,14 +456,14 @@ class BuckToolbarStore {
   }
 
   _notifyError() {
-    var activeEditor = atom.workspace.getActiveTextEditor();
+    const activeEditor = atom.workspace.getActiveTextEditor();
     if (!activeEditor) {
       atom.notifications.addWarning(
           `Could not build: must navigate to a file that is part of a Buck project.`);
       return;
     }
 
-    var fileName = activeEditor.getPath();
+    const fileName = activeEditor.getPath();
     atom.notifications.addWarning(
         `Could not build: file '${fileName}' is not part of a Buck project.`);
   }

@@ -9,10 +9,10 @@
  * the root directory of this source tree.
  */
 
-var GRAMMARS = new Set([
+const GRAMMARS = new Set([
   'source.ocaml',
 ]);
-var EXTENSIONS = new Set([
+const EXTENSIONS = new Set([
   'ml',
   'mli',
 ]);
@@ -21,28 +21,28 @@ module.exports = {
   priority: 20,
   providerName: 'nuclide-ocaml',
   async getSuggestionForWord(textEditor: TextEditor, text: string, range: atom$Range) {
-    var {getServiceByNuclideUri} = require('nuclide-client');
+    const {getServiceByNuclideUri} = require('nuclide-client');
 
     if (!GRAMMARS.has(textEditor.getGrammar().scopeName)) {
       return null;
     }
 
-    var file = textEditor.getPath();
+    const file = textEditor.getPath();
 
-    var kind = 'ml';
-    var extension = require('path').extname(file);
+    let kind = 'ml';
+    const extension = require('path').extname(file);
     if (EXTENSIONS.has(extension)) {
       kind = extension;
     }
 
-    var instance = await getServiceByNuclideUri('MerlinService', file);
-    var start = range.start;
+    const instance = await getServiceByNuclideUri('MerlinService', file);
+    const start = range.start;
 
     return {
       range,
       callback: async function() {
         await instance.pushNewBuffer(file, textEditor.getText());
-        var location = await instance.locate(
+        const location = await instance.locate(
           file,
           start.row,
           start.column,
@@ -51,9 +51,9 @@ module.exports = {
           return;
         }
 
-        var {goToLocation} = require('nuclide-atom-helpers');
+        const {goToLocation} = require('nuclide-atom-helpers');
         goToLocation(location.file, location.pos.line - 1, location.pos.col);
-      }
+      },
     };
-  }
+  },
 };

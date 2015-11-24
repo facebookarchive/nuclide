@@ -9,13 +9,13 @@
  * the root directory of this source tree.
  */
 
-var {Point} = require('atom');
-var {HACK_GRAMMARS} = require('nuclide-hack-common');
-var hack = require('../lib/hack');
+const {Point} = require('atom');
+const {HACK_GRAMMARS} = require('nuclide-hack-common');
+const hack = require('../lib/hack');
 
 describe('FindReferencesProvider', () => {
   // Create a fake editor
-  var mockEditor = {
+  const mockEditor = {
     getGrammar() {
       return {scopeName: HACK_GRAMMARS[0]};
     },
@@ -24,7 +24,7 @@ describe('FindReferencesProvider', () => {
     },
   };
 
-  var FindReferencesProvider;
+  let FindReferencesProvider;
   beforeEach(() => {
     spyOn(hack, 'findReferences').andReturn({
       baseUri: '/test/',
@@ -53,7 +53,7 @@ describe('FindReferencesProvider', () => {
 
   it('should be able to return references', () => {
     waitsForPromise(async () => {
-      var refs = await FindReferencesProvider.findReferences(mockEditor, new Point(1, 1));
+      const refs = await FindReferencesProvider.findReferences(mockEditor, new Point(1, 1));
       expect(refs).toEqual({
         type: 'data',
         baseUri: '/test/',

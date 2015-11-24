@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-var path = require('path');
+const path = require('path');
 
 export type HgRepositoryDescription = {
   repoPath: ?string;
@@ -22,20 +22,20 @@ export type HgRepositoryDescription = {
  * originURL iff it finds that the given directory is within an Hg repository.
  */
 function findHgRepository(directoryPath: string): HgRepositoryDescription {
-  var fs = require('fs-plus');
-  var workingDirectoryPath = directoryPath;
-  var repoPath = null;
-  var originURL = null;
+  const fs = require('fs-plus');
+  let workingDirectoryPath = directoryPath;
+  let repoPath = null;
+  let originURL = null;
   /*eslint-disable no-constant-condition */
   while (true) {
-    var dirToTest = path.join(workingDirectoryPath, '.hg');
+    const dirToTest = path.join(workingDirectoryPath, '.hg');
     if (fs.isDirectorySync(dirToTest) &&
         fs.isFileSync(path.join(dirToTest, 'hgrc'))) {
-      var ini = require('ini');
+      const ini = require('ini');
       // I'm not quite sure why this header is required, but I copied this
       // from the npm page to make things work: https://www.npmjs.com/package/ini.
-      var header = 'scope = global\n';
-      var config = ini.parse(header +
+      const header = 'scope = global\n';
+      const config = ini.parse(header +
           fs.readFileSync(path.join(dirToTest, 'hgrc')));
       if (typeof config.paths.default === 'string') {
         repoPath = dirToTest;
@@ -55,7 +55,7 @@ function findHgRepository(directoryPath: string): HgRepositoryDescription {
 }
 
 function isRootDir(directoryPath: string): boolean {
-  var {isRoot} = require('nuclide-commons').fsPromise;
+  const {isRoot} = require('nuclide-commons').fsPromise;
   return isRoot(directoryPath);
 }
 

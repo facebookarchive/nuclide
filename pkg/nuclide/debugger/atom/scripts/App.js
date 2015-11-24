@@ -16,12 +16,12 @@ require('nuclide-node-transpiler');
  * tree, and resources to be selectively mapped back into the devtools tree.
  */
 window.XMLHttpRequest.prototype.open = (function(original) {
-  var unmappedUrlPrefixes = [
+  const unmappedUrlPrefixes = [
     'nuclide_',
   ];
   return function(method, url, async, user, password) {
-    var newUrl;
-    for (var i = 0; i < unmappedUrlPrefixes.length; i++) {
+    let newUrl;
+    for (let i = 0; i < unmappedUrlPrefixes.length; i++) {
       if (url.startsWith(unmappedUrlPrefixes[i]) ||
           url.startsWith('./' + unmappedUrlPrefixes[i])) {
         newUrl = url;
@@ -49,9 +49,9 @@ window.loadScriptsPromise = (function(original) {
 // WebInspector.SourceMap indirectly needs this in order to load inline source maps.
 window.InspectorFrontendHost = {
   loadNetworkResource: function(url, headers, streamId, callback) {
-    var dataPrefix = 'data:application/json;base64,';
+    const dataPrefix = 'data:application/json;base64,';
     if (url.startsWith(dataPrefix)) {
-      var response = atob(url.slice(dataPrefix.length));
+      const response = atob(url.slice(dataPrefix.length));
       WebInspector.Streams.streamWrite(streamId, response);
       callback({statusCode: 200});
     } else {

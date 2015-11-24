@@ -12,8 +12,8 @@
 import type {IfStatement} from 'ast-types-flow';
 import type {Lines, Print} from '../../types/common';
 
-var markers = require('../../constants/markers');
-var wrapStatement = require('../../wrappers/simple/wrapStatement');
+const markers = require('../../constants/markers');
+const wrapStatement = require('../../wrappers/simple/wrapStatement');
 
 function printIfStatement(print: Print, node: IfStatement): Lines {
   const wrap = x => wrapStatement(print, node, x);
@@ -33,7 +33,7 @@ function printIfStatement(print: Print, node: IfStatement): Lines {
   ];
 
   if (node.alternate) {
-    let alternate = node.alternate;
+
     parts = parts.concat([
       markers.noBreak,
       ' else ',

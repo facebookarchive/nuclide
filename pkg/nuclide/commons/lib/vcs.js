@@ -8,18 +8,18 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-var {asyncExecute} = require('./process');
-var path = require('path');
+const {asyncExecute} = require('./process');
+const path = require('path');
 
 type VcsInfo = {
   vcs: string;
   root: string;
 }
 
-var vcsInfoCache: {[src: string]: VcsInfo} = {};
+const vcsInfoCache: {[src: string]: VcsInfo} = {};
 
 async function findVcsHelper(src: string): Promise<VcsInfo> {
-  var options = {
+  const options = {
     'cwd': path.dirname(src),
   };
   let hgResult;
@@ -36,7 +36,7 @@ async function findVcsHelper(src: string): Promise<VcsInfo> {
     };
   }
 
-  var gitResult;
+  let gitResult;
   try {
     gitResult = await asyncExecute('git', ['rev-parse', '--show-toplevel'], options);
   } catch (e) {
@@ -58,7 +58,7 @@ async function findVcsHelper(src: string): Promise<VcsInfo> {
  * as the root directory for the VCS.
  */
 async function findVcs(src: string): Promise<VcsInfo> {
-  var vcsInfo = vcsInfoCache[src];
+  let vcsInfo = vcsInfoCache[src];
   if (vcsInfo) {
     return vcsInfo;
   }

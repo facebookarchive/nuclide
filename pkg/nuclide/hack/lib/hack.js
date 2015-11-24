@@ -36,7 +36,7 @@ const SYMBOL_TYPES_WITH_REFERENCES = new Set([
  * creating the designated HackService instances with the NuclideClient it needs per remote project.
  * Also, it deelegates the language feature request to the correct HackLanguage instance.
  */
-var clientToHackLanguage: {[clientId: string]: HackLanguage} = {};
+const clientToHackLanguage: {[clientId: string]: HackLanguage} = {};
 
 module.exports = {
 
@@ -63,8 +63,8 @@ module.exports = {
   },
 
   async fetchCompletionsForEditor(editor: TextEditor, prefix: string): Promise<Array<any>> {
-    var hackLanguage = await getHackLanguageForUri(editor.getPath());
-    var filePath = editor.getPath();
+    const hackLanguage = await getHackLanguageForUri(editor.getPath());
+    const filePath = editor.getPath();
     if (!hackLanguage || !filePath) {
       return [];
     }
@@ -89,15 +89,15 @@ module.exports = {
   },
 
   async formatSourceFromEditor(editor: TextEditor, range: atom$Range): Promise<string> {
-    var buffer = editor.getBuffer();
-    var filePath = editor.getPath();
-    var hackLanguage = await getHackLanguageForUri(filePath);
+    const buffer = editor.getBuffer();
+    const filePath = editor.getPath();
+    const hackLanguage = await getHackLanguageForUri(filePath);
     if (!hackLanguage || !filePath) {
       return buffer.getTextInRange(range);
     }
 
-    var startPosition = buffer.characterIndexForPosition(range.start);
-    var endPosition = buffer.characterIndexForPosition(range.end);
+    const startPosition = buffer.characterIndexForPosition(range.start);
+    const endPosition = buffer.characterIndexForPosition(range.end);
     return await hackLanguage.formatSource(buffer.getText(), startPosition + 1, endPosition + 1);
   },
 
@@ -128,21 +128,21 @@ module.exports = {
   },
 
   async typeHintFromEditor(editor: TextEditor, position: atom$Point): Promise<?TypeHint> {
-    var filePath = editor.getPath();
-    var hackLanguage = await getHackLanguageForUri(filePath);
+    const filePath = editor.getPath();
+    const hackLanguage = await getHackLanguageForUri(filePath);
     if (!hackLanguage || !filePath) {
       return null;
     }
 
-    var matchData = extractWordAtPosition(editor, position, HACK_WORD_REGEX);
+    const matchData = extractWordAtPosition(editor, position, HACK_WORD_REGEX);
     if (!matchData) {
       return null;
     }
 
-    var path = getPath(filePath);
-    var contents = editor.getText();
+    const path = getPath(filePath);
+    const contents = editor.getText();
 
-    var type = await hackLanguage.getType(path, contents, matchData.wordMatch[0], position.row + 1, position.column + 1);
+    const type = await hackLanguage.getType(path, contents, matchData.wordMatch[0], position.row + 1, position.column + 1);
     if (!type || type === '_') {
       return null;
     } else {
@@ -217,12 +217,12 @@ module.exports = {
     if (!referencesResult) {
       return null;
     }
-    var {hackRoot, references} = referencesResult;
+    const {hackRoot, references} = referencesResult;
     return {baseUri: hackRoot, symbolName: symbol.name, references};
   },
 
   async isFinishedLoadingDependencies(editor: TextEditor): Promise<boolean> {
-    var hackLanguage = await getHackLanguageForUri(editor.getPath());
+    const hackLanguage = await getHackLanguageForUri(editor.getPath());
     return hackLanguage.isFinishedLoadingDependencies();
   },
 
@@ -230,7 +230,7 @@ module.exports = {
     editor: TextEditor,
     callback: (() => mixed),
   ): Promise<atom$Disposable> {
-    var hackLanguage = await getHackLanguageForUri(editor.getPath());
+    const hackLanguage = await getHackLanguageForUri(editor.getPath());
     return hackLanguage.onFinishedLoadingDependencies(callback);
   },
 
@@ -239,7 +239,7 @@ module.exports = {
 };
 
 function getCachedHackLanguageForUri(uri: NuclideUri): ?HackLanguage {
-  var client = getClient(uri);
+  const client = getClient(uri);
   if (!client) {
     return null;
   }
@@ -249,7 +249,7 @@ function getCachedHackLanguageForUri(uri: NuclideUri): ?HackLanguage {
 function getHackLanguageForUri(uri: NuclideUri): Promise<?HackLanguage> {
   // `getClient` can return null if a file path doesn't have a root directory in the tree.
   // Also, returns null when reloading Atom with open files, while the RemoteConnection creation is pending.
-  var client = getClient(uri);
+  const client = getClient(uri);
   if (!client) {
     return null;
   }

@@ -22,12 +22,12 @@ function createSingleAdapter(
   if (provider.disabledForNuclide) {
     return;
   }
-  var validationErrors = validateLinter(provider);
+  const validationErrors = validateLinter(provider);
   if (validationErrors.length === 0) {
     return new LinterAdapter(provider, ProviderBase);
   } else {
-    var nameString = provider && provider.providerName ? ` (${provider.providerName})` : '';
-    var message = `nuclide-diagnostics-store found problems with a linter${nameString}. ` +
+    const nameString = provider && provider.providerName ? ` (${provider.providerName})` : '';
+    let message = `nuclide-diagnostics-store found problems with a linter${nameString}. ` +
       'Diagnostic messages from that linter will be unavailable.\n';
     message += validationErrors.map(error => `- ${error}\n`).join('');
     atom.notifications.addError(message, {dismissable: true});
@@ -40,7 +40,7 @@ function addSingleAdapter(
   provider: LinterProvider,
   ProviderBase?: typeof DiagnosticsProviderBase,
 ): void {
-  var adapter: ?LinterAdapter = createSingleAdapter(provider);
+  const adapter: ?LinterAdapter = createSingleAdapter(provider);
   if (adapter) {
     adapters.add(adapter);
   }
@@ -50,9 +50,9 @@ function createAdapters(
   providers: LinterProvider | Array<LinterProvider>,
   ProviderBase?: typeof DiagnosticsProviderBase,
 ): Set<LinterAdapter> {
-  var adapters = new Set();
+  const adapters = new Set();
   if (Array.isArray(providers)) {
-    for (var provider of providers) {
+    for (const provider of providers) {
       addSingleAdapter(adapters, provider);
     }
   } else {
@@ -62,14 +62,14 @@ function createAdapters(
 }
 
 function validateLinter(provider: LinterProvider): Array<string> {
-  var errors = [];
+  const errors = [];
   validate(provider, 'Must not be undefined', errors);
 
   if (errors.length === 0) {
     validate(provider.grammarScopes, 'Must specify grammarScopes', errors);
     validate(Array.isArray(provider.grammarScopes), 'grammarScopes must be an Array', errors);
     if (errors.length === 0) {
-      for (var grammar of provider.grammarScopes) {
+      for (const grammar of provider.grammarScopes) {
         validate(
           typeof grammar === 'string',
           `Each grammarScope entry must be a string: ${grammar}`,

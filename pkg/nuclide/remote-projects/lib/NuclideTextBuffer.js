@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-var {CompositeDisposable, TextBuffer} = require('atom');
+const {CompositeDisposable, TextBuffer} = require('atom');
 
 class NuclideTextBuffer extends TextBuffer {
 
@@ -72,11 +72,11 @@ class NuclideTextBuffer extends TextBuffer {
     this.fileSubscriptions = new CompositeDisposable();
 
     this.fileSubscriptions.add(this.file.onDidChange(async () => {
-      var isModified = await this._isModified();
+      const isModified = await this._isModified();
       if (isModified) {
         this.conflict = true;
       }
-      var previousContents = this.cachedDiskContents;
+      const previousContents = this.cachedDiskContents;
       await this.updateCachedDiskContents();
       if (previousContents === this.cachedDiskContents) {
         return;
@@ -89,7 +89,7 @@ class NuclideTextBuffer extends TextBuffer {
     }));
 
     this.fileSubscriptions.add(this.file.onDidDelete(() => {
-      var modified = this.getText() !== this.cachedDiskContents;
+      const modified = this.getText() !== this.cachedDiskContents;
       this.wasModifiedBeforeRemove = modified;
       if (modified) {
         this.updateCachedDiskContents();
@@ -99,11 +99,11 @@ class NuclideTextBuffer extends TextBuffer {
     }));
 
     this.fileSubscriptions.add(this.file.onDidRename(() => {
-        this.emitter.emit('did-change-path', this.getPath());
+      this.emitter.emit('did-change-path', this.getPath());
     }));
 
     this.fileSubscriptions.add(this.file.onWillThrowWatchError((errorObject) => {
-        this.emitter.emit('will-throw-watch-error', errorObject);
+      this.emitter.emit('will-throw-watch-error', errorObject);
     }));
   }
 
@@ -112,7 +112,7 @@ class NuclideTextBuffer extends TextBuffer {
       return false;
     }
     if (this.file) {
-      var exists = await this.file.exists();
+      const exists = await this.file.exists();
       if (exists) {
         return this.getText() !== this.cachedDiskContents;
       } else {

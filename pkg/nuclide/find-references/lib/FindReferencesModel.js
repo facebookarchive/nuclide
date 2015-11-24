@@ -22,17 +22,17 @@ type FindReferencesOptions = {
   previewContext?: number;
 };
 
-var {getLogger} = require('nuclide-logging');
-var {getFileSystemServiceByNuclideUri} = require('nuclide-client');
-var {getPath} = require('nuclide-remote-uri');
+const {getLogger} = require('nuclide-logging');
+const {getFileSystemServiceByNuclideUri} = require('nuclide-client');
+const {getPath} = require('nuclide-remote-uri');
 
-var FRAGMENT_GRAMMARS = {
+const FRAGMENT_GRAMMARS = {
   'text.html.hack': 'source.hackfragment',
   'text.html.php': 'source.hackfragment',
 };
 
 function compareLocation(x: Location, y: Location): number {
-  var lineDiff = x.line - y.line;
+  const lineDiff = x.line - y.line;
   if (lineDiff) {
     return lineDiff;
   }
@@ -44,7 +44,7 @@ function compareReference(x: Reference, y: Reference): number {
 }
 
 async function readFileContents(uri: NuclideUri): Promise<?string> {
-  var localPath = getPath(uri);
+  const localPath = getPath(uri);
   let contents;
   try {
     contents = (await getFileSystemServiceByNuclideUri(uri).readFile(localPath)).toString('utf8');
@@ -103,7 +103,7 @@ class FindReferencesModel {
     offset: number,
     limit: number
   ): Promise<Array<FileReferences>> {
-    var fileReferences: Array<?FileReferences> = await Promise.all(
+    const fileReferences: Array<?FileReferences> = await Promise.all(
       this._references.slice(offset, offset + limit).map(
         this._makeFileReferences.bind(this)
       )
@@ -134,9 +134,9 @@ class FindReferencesModel {
 
   _groupReferencesByFile(references: Array<Reference>): void {
     // 1. Group references by file.
-    var refsByFile = new Map();
-    for (var reference of references) {
-      var fileReferences = refsByFile.get(reference.uri);
+    const refsByFile = new Map();
+    for (const reference of references) {
+      let fileReferences = refsByFile.get(reference.uri);
       if (fileReferences == null) {
         refsByFile.set(reference.uri, fileReferences = []);
       }
@@ -145,14 +145,14 @@ class FindReferencesModel {
 
     // 2. Group references within each file.
     this._references = [];
-    for (var entry of refsByFile) {
+    for (const entry of refsByFile) {
       const [fileUri, entryReferences] = entry;
       entryReferences.sort(compareReference);
       // Group references that are <= 1 line apart together.
-      var groups = [];
-      var curGroup = [];
-      var curStartLine = -11;
-      var curEndLine = -11;
+      const groups = [];
+      let curGroup = [];
+      let curStartLine = -11;
+      let curEndLine = -11;
       for (const ref of entryReferences) {
         if (ref.start.line <= curEndLine + 1 + this.getPreviewContext()) {
           curGroup.push(ref);
@@ -178,15 +178,15 @@ class FindReferencesModel {
   async _makeFileReferences(
     fileReferences: [string, Array<ReferenceGroup>]
   ): Promise<?FileReferences> {
-    var [uri, refGroups] = fileReferences;
-    var fileContents = await readFileContents(uri);
+    let [uri, refGroups] = fileReferences;
+    const fileContents = await readFileContents(uri);
     if (!fileContents) {
       return null;
     }
-    var fileLines = fileContents.split('\n');
-    var previewText = [];
+    const fileLines = fileContents.split('\n');
+    const previewText = [];
     refGroups = refGroups.map(group => {
-      var {references, startLine, endLine} = group;
+      let {references, startLine, endLine} = group;
       // Expand start/end lines with context.
       startLine = Math.max(startLine - this.getPreviewContext(), 1);
       endLine = Math.min(endLine + this.getPreviewContext(), fileLines.length);
@@ -201,8 +201,8 @@ class FindReferencesModel {
       previewText.push(fileLines.slice(startLine - 1, endLine).join('\n'));
       return {references, startLine, endLine};
     });
-    var grammar = atom.grammars.selectGrammar(uri, fileContents);
-    var fragmentGrammar = FRAGMENT_GRAMMARS[grammar.scopeName];
+    let grammar = atom.grammars.selectGrammar(uri, fileContents);
+    const fragmentGrammar = FRAGMENT_GRAMMARS[grammar.scopeName];
     if (fragmentGrammar) {
       grammar = atom.grammars.grammarForScopeName(fragmentGrammar) || grammar;
     }

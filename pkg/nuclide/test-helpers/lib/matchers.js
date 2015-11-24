@@ -26,10 +26,10 @@
 
 // We have to create an invariant function that is a lie because using invariant() with an
 // instanceof check is the only way to convince Flow of the type of an unbound `this`.
-var invariant = (condition: boolean) => {};
+const invariant = (condition: boolean) => {};
 
-var chalk = require('chalk');
-var diff = require('diff');
+const chalk = require('chalk');
+const diff = require('diff');
 
 type Change = {
   value: string;
@@ -45,8 +45,8 @@ type Change = {
  * @returns True if the objects are identical.
  */
 function diffJson(expected: Object): boolean {
-  var parts = diff.diffJson(expected, this.actual);
-  var {message, changes} = formatMessage(parts);
+  const parts = diff.diffJson(expected, this.actual);
+  const {message, changes} = formatMessage(parts);
   invariant(this instanceof jasmine.Matchers);
   this.message = () => message;
   return changes === 0;
@@ -60,8 +60,8 @@ function diffJson(expected: Object): boolean {
  * @returns True if the strings are identical.
  */
 function diffLines(expected: string): boolean {
-  var parts = diff.diffLines(expected, this.actual);
-  var {message, changes} = formatMessage(parts);
+  const parts = diff.diffLines(expected, this.actual);
+  const {message, changes} = formatMessage(parts);
   invariant(this instanceof jasmine.Matchers);
   this.message = () => message;
   return changes === 0;
@@ -75,9 +75,9 @@ function diffLines(expected: string): boolean {
  *   and a string containing the colored diff output.
  */
 function formatMessage(parts: Array<Change>): {changes: number, message: string} {
-  var changes = 0, message = '';
-  for (var part of parts) {
-    var color = 'gray';
+  let changes = 0, message = '';
+  for (const part of parts) {
+    let color = 'gray';
     if (part.added || part.removed) {
       ++changes;
       color = part.added ? 'green' : 'red';
@@ -88,7 +88,7 @@ function formatMessage(parts: Array<Change>): {changes: number, message: string}
 }
 
 function addMatchers(spec: JasmineSpec) {
-  var matchersPrototype = {
+  const matchersPrototype = {
     diffJson,
     diffLines,
   };

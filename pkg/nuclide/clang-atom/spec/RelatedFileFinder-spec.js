@@ -8,18 +8,18 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-var RelatedFileFinder = require('../lib/RelatedFileFinder');
+const RelatedFileFinder = require('../lib/RelatedFileFinder');
 
 describe('RelatedFileFinder', () => {
 
   describe('@find', () => {
     it('finds related file with a different extension', () => {
-      var fs = require('fs');
+      const fs = require('fs');
       spyOn(fs, 'readdirSync').andReturn([
         'Test.h',
         'Test.m',
       ]);
-      var relatedFileFinder = new RelatedFileFinder();
+      const relatedFileFinder = new RelatedFileFinder();
 
       expect(relatedFileFinder.find('dir/Test.m')).toEqual({
         relatedFiles: ['dir/Test.h', 'dir/Test.m'],
@@ -28,12 +28,12 @@ describe('RelatedFileFinder', () => {
     });
 
     it('finds related file whose name ends with `Internal`', () => {
-      var fs = require('fs');
+      const fs = require('fs');
       spyOn(fs, 'readdirSync').andReturn([
         'TestInternal.h',
         'Test.m',
       ]);
-      var relatedFileFinder = new RelatedFileFinder();
+      const relatedFileFinder = new RelatedFileFinder();
 
       expect(relatedFileFinder.find('dir/Test.m')).toEqual({
         relatedFiles: ['dir/Test.m', 'dir/TestInternal.h'],
@@ -42,12 +42,12 @@ describe('RelatedFileFinder', () => {
     });
 
     it('does not find related file whose name starts with `Internal`', () => {
-      var fs = require('fs');
+      const fs = require('fs');
       spyOn(fs, 'readdirSync').andReturn([
         'InternalTest.h',
         'Test.m',
       ]);
-      var relatedFileFinder = new RelatedFileFinder();
+      const relatedFileFinder = new RelatedFileFinder();
 
       expect(relatedFileFinder.find('dir/Test.m')).toEqual({
         relatedFiles: ['dir/Test.m'],
@@ -56,9 +56,9 @@ describe('RelatedFileFinder', () => {
     });
 
     it('throws an error if given path is not in `relatedFiles`', () => {
-      var fs = require('fs');
+      const fs = require('fs');
       spyOn(fs, 'readdirSync').andReturn([]);
-      var relatedFileFinder = new RelatedFileFinder();
+      const relatedFileFinder = new RelatedFileFinder();
 
       expect(() => relatedFileFinder.find('dir/Test.m'))
           .toThrow(new Error('Given path must be in `relatedFiles`: dir/Test.m'));

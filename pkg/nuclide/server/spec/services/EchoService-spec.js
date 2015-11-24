@@ -14,7 +14,7 @@ import path from 'path';
 import ServiceTestHelper from './ServiceTestHelper';
 
 describe('EchoServer', () => {
-  var testHelper, service;
+  let testHelper, service;
   beforeEach(() => {
     testHelper = new ServiceTestHelper();
     waitsForPromise(() => testHelper.start([{
@@ -30,70 +30,70 @@ describe('EchoServer', () => {
 
   // Basic types.
   it('Echoes an argument of type "any".', () => {
-    var number = 12345;
+    const number = 12345;
     waitsForPromise(async() => {
-      var results = await service.echoAny(number);
+      const results = await service.echoAny(number);
       expect(results).toBe(number);
     });
-    var object = {hello: 'world', success: true};
+    const object = {hello: 'world', success: true};
     waitsForPromise(async() => {
-      var results = await service.echoAny(object);
+      const results = await service.echoAny(object);
       expect(results).toEqual(object);
     });
   });
   it('Echoes a string.', () => {
-    var expected = 'Hello World.';
+    const expected = 'Hello World.';
     waitsForPromise(async () => {
-      var results = await service.echoString(expected);
+      const results = await service.echoString(expected);
       expect(results).toBe(expected);
     });
   });
   it('Echoes a number.', () => {
-    var expected = 231312;
+    const expected = 231312;
     waitsForPromise(async () => {
-      var results = await service.echoNumber(expected);
+      const results = await service.echoNumber(expected);
       expect(results).toBe(expected);
     });
   });
   it('Echoes a boolean.', () => {
-    var expected = false;
+    const expected = false;
     waitsForPromise(async () => {
-      var results = await service.echoBoolean(expected);
+      const results = await service.echoBoolean(expected);
       expect(results).toBe(expected);
     });
   });
 
   // More complex types.
   it('Echoes a date.', () => {
-    var expected = new Date();
+    const expected = new Date();
     waitsForPromise(async () => {
-      var results = await service.echoDate(expected);
+      const results = await service.echoDate(expected);
       expect(results.getTime()).toBe(expected.getTime());
     });
   });
   it('Echoes a Regex.', () => {
-    var expected = /nuclide/ig;
+    const expected = /nuclide/ig;
     waitsForPromise(async () => {
-      var results = await service.echoRegExp(expected);
+      const results = await service.echoRegExp(expected);
       expect(results.source).toBe(expected.source);
     });
   });
   it('Echoes a Buffer.', () => {
-    var expected = new Buffer('Test Buffer Content.');
+    const expected = new Buffer('Test Buffer Content.');
     waitsForPromise(async () => {
-      var results = await service.echoBuffer(expected);
+      const results = await service.echoBuffer(expected);
       expect(results.equals(expected)).toBe(true);
     });
   });
 
   // Parameterized types.
   it('Echoes an Array<Array<Date>>.', () => {
-    var a = new Date();
-    var b = new Date(1995, 11, 17, 3, 24, 0);
-    var expected = [[ a, b ]];
+    const a = new Date();
+    const b = new Date(1995, 11, 17, 3, 24, 0);
+    const expected = [[ a, b ]];
 
     waitsForPromise(async () => {
-      var results = await service.echoArrayOfArrayOfDate(expected);
+      const results = await service.echoArrayOfArrayOfDate(expected);
       expect(results.length).toBe(1);
       expect(results[0].length).toBe(2);
       expect(results[0][0].getTime()).toBe(a.getTime());
@@ -101,31 +101,31 @@ describe('EchoServer', () => {
     });
   });
   it('Echoes an Object.', () => {
-    var a = null;
-    var b = new Buffer('testBuffer');
+    const a = null;
+    const b = new Buffer('testBuffer');
 
     waitsForPromise(async () => {
-      var results = await service.echoObject({a, b});
+      const results = await service.echoObject({a, b});
       expect(results.a).toBe(null);
       expect(results.b.equals(b)).toBe(true);
     });
   });
   it('Echoes a Set.', () => {
-    var original = new Set(['a', 'b']);
+    const original = new Set(['a', 'b']);
     waitsForPromise(async () => {
-      var results = await service.echoSet(original);
+      const results = await service.echoSet(original);
       expect(results.has('a')).toBeTruthy();
       expect(results.has('b')).toBeTruthy();
       expect(results.has('c')).toBeFalsy();
     });
   });
   it('Echoes a Map.', () => {
-    var original = new Map([
+    const original = new Map([
       ['a', new Date()],
       ['b', new Date(1995, 11, 17, 3, 24, 0)],
     ]);
     waitsForPromise(async () => {
-      var results = await service.echoMap(original);
+      const results = await service.echoMap(original);
       expect(results.has('a')).toBeTruthy();
       expect(results.get('a').getTime()).toBeTruthy(original.get('a').getTime());
 
@@ -136,9 +136,9 @@ describe('EchoServer', () => {
     });
   });
   it('Echoes a Tuple.', () => {
-    var original = [3, 'hello'];
+    const original = [3, 'hello'];
     waitsForPromise(async () => {
-      var results = await service.echoTuple(original);
+      const results = await service.echoTuple(original);
       expect(results.length).toBe(original.length);
       expect(results[0]).toBe(original[0]);
       expect(results[1]).toBe(original[1]);
@@ -147,14 +147,14 @@ describe('EchoServer', () => {
 
   // Echo value types.
   it('Echoes a value type (struct).', () => {
-    var expected = {
+    const expected = {
       a: new Date(),
       b: new Buffer('Buffer Test Data.'),
     };
 
     waitsForPromise(async () => {
       invariant(service);
-      var results = await service.echoValueType(expected);
+      const results = await service.echoValueType(expected);
 
       expect(results.a.getTime()).toBe(expected.a.getTime());
       expect(results.b.equals(expected.b)).toBe(true);
@@ -163,10 +163,10 @@ describe('EchoServer', () => {
 
   // Echo a NuclideUri.
   it('Echoes a NuclideUri.', () => {
-    var expected = testHelper._connection.getUriOfRemotePath('/fake/file.txt');
+    const expected = testHelper._connection.getUriOfRemotePath('/fake/file.txt');
     waitsForPromise(async () => {
       invariant(service);
-      var results = await service.echoNuclideUri(expected);
+      const results = await service.echoNuclideUri(expected);
       expect(results).toBe(expected);
     });
   });

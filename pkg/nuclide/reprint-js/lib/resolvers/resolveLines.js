@@ -12,12 +12,12 @@
 import type Options from '../options/Options';
 import type {Output} from '../types/common';
 
-var resolveAll = require('./resolveAll');
-var resolveDuplicates = require('./resolveDuplicates');
-var resolveForcedMarkers = require('./resolveForcedMarkers');
-var resolveForcedScopeBreaks = require('./resolveForcedScopeBreaks');
-var resolveNoBreaks = require('./resolveNoBreaks');
-var resolveScopes = require('./resolveScopes');
+const resolveAll = require('./resolveAll');
+const resolveDuplicates = require('./resolveDuplicates');
+const resolveForcedMarkers = require('./resolveForcedMarkers');
+const resolveForcedScopeBreaks = require('./resolveForcedScopeBreaks');
+const resolveNoBreaks = require('./resolveNoBreaks');
+const resolveScopes = require('./resolveScopes');
 
 /**
  * After printing the AST parts and all appropriate markers this will join the

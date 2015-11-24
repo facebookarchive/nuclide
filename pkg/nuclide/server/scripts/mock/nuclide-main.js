@@ -8,17 +8,17 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-var https = require('https');
-var http = require('http');
-var fs = require('fs');
-var path = require('path');
-var url = require('url');
+const https = require('https');
+const http = require('http');
+const fs = require('fs');
+const path = require('path');
+const url = require('url');
 
-var version;
+let version;
 
 function processArgs() {
-  var args = process.argv.slice(2);
-  var processedArgs = {};
+  const args = process.argv.slice(2);
+  const processedArgs = {};
 
   args.forEach(function (argument, index) {
     if (index % 2 !== 0) {
@@ -30,7 +30,7 @@ function processArgs() {
 
 function startServer(args) {
   if (args.key && args.cert && args.ca) {
-    var webServerOptions = {
+    const webServerOptions = {
       key: fs.readFileSync(args.key),
       cert: fs.readFileSync(args.cert),
       ca: fs.readFileSync(args.ca),
@@ -52,7 +52,7 @@ function startServer(args) {
 }
 
 function handleRequest(request, response) {
-  var path = url.parse(request.url, false).pathname;
+  const path = url.parse(request.url, false).pathname;
 
   switch (path) {
     case '/heartbeat':
@@ -75,7 +75,7 @@ function handleVersion(request, response) {
 
 // Set the initial version by reading from the file.
 try {
-  var json = JSON.parse(fs.readFileSync(path.resolve(__dirname, 'version.json')));
+  const json = JSON.parse(fs.readFileSync(path.resolve(__dirname, 'version.json')));
   version = json.Version.toString();
 } catch (e) {
   version = 'test-version';

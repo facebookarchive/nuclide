@@ -8,10 +8,10 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-var {track} = require('nuclide-analytics');
-var React = require('react-for-atom');
+const {track} = require('nuclide-analytics');
+const React = require('react-for-atom');
 
-var GUTTER_ID = 'nuclide-diagnostics-gutter';
+const GUTTER_ID = 'nuclide-diagnostics-gutter';
 
 // Needs to be the same as glyph-height in gutter.atom-text-editor.less.
 const GLYPH_HEIGHT = 15; // px
@@ -28,19 +28,19 @@ const POPUP_DISPOSE_TIMEOUT = 100;
 // might have to listen for mouseover events on TextEditor and then use its own APIs, such as
 // decorationsForScreenRowRange(), to see if there is a hit target instead. Since this will be
 // happening onmousemove, we also have to be careful to make sure this is not expensive.
-var HIGHLIGHT_CSS = 'nuclide-diagnostics-gutter-ui-highlight';
+const HIGHLIGHT_CSS = 'nuclide-diagnostics-gutter-ui-highlight';
 
-var ERROR_HIGHLIGHT_CSS = 'nuclide-diagnostics-gutter-ui-highlight-error';
-var WARNING_HIGHLIGHT_CSS = 'nuclide-diagnostics-gutter-ui-highlight-warning';
+const ERROR_HIGHLIGHT_CSS = 'nuclide-diagnostics-gutter-ui-highlight-error';
+const WARNING_HIGHLIGHT_CSS = 'nuclide-diagnostics-gutter-ui-highlight-warning';
 
-var ERROR_GUTTER_CSS = 'nuclide-diagnostics-gutter-ui-gutter-error';
-var WARNING_GUTTER_CSS = 'nuclide-diagnostics-gutter-ui-gutter-warning';
+const ERROR_GUTTER_CSS = 'nuclide-diagnostics-gutter-ui-gutter-error';
+const WARNING_GUTTER_CSS = 'nuclide-diagnostics-gutter-ui-gutter-warning';
 
-var editorToMarkers: WeakMap<TextEditor, Set<atom$Marker>> = new WeakMap();
-var itemToEditor: WeakMap<HTMLElement, TextEditor> = new WeakMap();
+const editorToMarkers: WeakMap<TextEditor, Set<atom$Marker>> = new WeakMap();
+const itemToEditor: WeakMap<HTMLElement, TextEditor> = new WeakMap();
 
 function applyUpdateToEditor(editor: TextEditor, update: FileMessageUpdate): void {
-  var gutter = editor.gutterWithName(GUTTER_ID);
+  let gutter = editor.gutterWithName(GUTTER_ID);
   if (!gutter) {
     // TODO(jessicalin): Determine an appropriate priority so that the gutter:
     // (1) Shows up to the right of the line numbers.
@@ -55,8 +55,8 @@ function applyUpdateToEditor(editor: TextEditor, update: FileMessageUpdate): voi
     });
   }
 
-  var marker;
-  var markers = editorToMarkers.get(editor);
+  let marker;
+  let markers = editorToMarkers.get(editor);
 
   // TODO: Consider a more efficient strategy that does not blindly destroy all of the
   // existing markers.
@@ -69,9 +69,9 @@ function applyUpdateToEditor(editor: TextEditor, update: FileMessageUpdate): voi
     markers = new Set();
   }
 
-  var rowToMessage: Map<number, Array<FileDiagnosticMessage>> = new Map();
+  const rowToMessage: Map<number, Array<FileDiagnosticMessage>> = new Map();
   function addMessageForRow(message: FileDiagnosticMessage, row: number) {
-    var messages = rowToMessage.get(row);
+    let messages = rowToMessage.get(row);
     if (!messages) {
       messages = [];
       rowToMessage.set(row, messages);
@@ -79,9 +79,9 @@ function applyUpdateToEditor(editor: TextEditor, update: FileMessageUpdate): voi
     messages.push(message);
   }
 
-  for (var message of update.messages) {
-    var range = message.range;
-    var highlightMarker;
+  for (const message of update.messages) {
+    const range = message.range;
+    let highlightMarker;
     if (range) {
       addMessageForRow(message, range.start.row);
       highlightMarker = editor.markBufferRange(range);
@@ -89,7 +89,7 @@ function applyUpdateToEditor(editor: TextEditor, update: FileMessageUpdate): voi
       addMessageForRow(message, 0);
     }
 
-    var highlightCssClass;
+    let highlightCssClass;
     if (message.type === 'Error') {
       highlightCssClass = HIGHLIGHT_CSS + ' ' + ERROR_HIGHLIGHT_CSS;
     } else {
@@ -107,7 +107,7 @@ function applyUpdateToEditor(editor: TextEditor, update: FileMessageUpdate): voi
   }
 
   // Find all of the gutter markers for the same row and combine them into one marker/popup.
-  for (var [row, messages] of rowToMessage.entries()) {
+  for (const [row, messages] of rowToMessage.entries()) {
     // If at least one of the diagnostics is an error rather than the warning,
     // display the glyph in the gutter to represent an error rather than a warning.
     const gutterMarkerCssClass = messages.some(msg => msg.type === 'Error')
@@ -115,9 +115,9 @@ function applyUpdateToEditor(editor: TextEditor, update: FileMessageUpdate): voi
       : WARNING_GUTTER_CSS;
 
     // This marker adds some UI to the gutter.
-    var {item, dispose} = createGutterItem(messages, gutterMarkerCssClass);
+    const {item, dispose} = createGutterItem(messages, gutterMarkerCssClass);
     itemToEditor.set(item, editor);
-    var gutterMarker = editor.markBufferPosition([row, 0]);
+    const gutterMarker = editor.markBufferPosition([row, 0]);
     gutter.decorateMarker(gutterMarker, {item});
     gutterMarker.onDidDestroy(dispose);
     markers.add(gutterMarker);
@@ -195,9 +195,9 @@ function showPopupFor(
     item: HTMLElement,
     goToLocation: (filePath: NuclideUri, line: number) => mixed,
     ): HTMLElement {
-  var children = messages.map(message => {
+  const children = messages.map(message => {
     const contents = createElementForMessage(message, goToLocation);
-    var diagnosticTypeClass = message.type === 'Error'
+    const diagnosticTypeClass = message.type === 'Error'
       ? 'nuclide-diagnostics-gutter-ui-popup-error'
       : 'nuclide-diagnostics-gutter-ui-popup-warning';
     // native-key-bindings and tabIndex=-1 are both needed to allow copying the text in the popup.
@@ -211,12 +211,12 @@ function showPopupFor(
   });
   // The popup will be an absolutely positioned child element of <atom-workspace> so that it appears
   // on top of everything.
-  var workspaceElement = atom.views.getView(atom.workspace);
-  var hostElement = window.document.createElement('div');
+  const workspaceElement = atom.views.getView(atom.workspace);
+  const hostElement = window.document.createElement('div');
   workspaceElement.parentNode.appendChild(hostElement);
 
   // Move it down vertically so it does not end up under the mouse pointer.
-  var {top, left} = item.getBoundingClientRect();
+  const {top, left} = item.getBoundingClientRect();
 
   React.render(
     <DiagnosticsPopup left={left} top={top}>
@@ -226,13 +226,13 @@ function showPopupFor(
 
   // Check to see whether the popup is within the bounds of the TextEditor. If not, display it above
   // the glyph rather than below it.
-  var editor = itemToEditor.get(item);
-  var editorElement = atom.views.getView(editor);
-  var {top: editorTop, height: editorHeight} = editorElement.getBoundingClientRect();
-  var {top: itemTop, height: itemHeight} = item.getBoundingClientRect();
-  var popupHeight = hostElement.firstElementChild.clientHeight;
+  const editor = itemToEditor.get(item);
+  const editorElement = atom.views.getView(editor);
+  const {top: editorTop, height: editorHeight} = editorElement.getBoundingClientRect();
+  const {top: itemTop, height: itemHeight} = item.getBoundingClientRect();
+  const popupHeight = hostElement.firstElementChild.clientHeight;
   if ((itemTop + itemHeight + popupHeight) > (editorTop + editorHeight)) {
-    var popupElement = hostElement.firstElementChild;
+    const popupElement = hostElement.firstElementChild;
     // Shift the popup back down by GLYPH_HEIGHT, so that the bottom padding overlaps with the
     // glyph. An additional 4 px is needed to make it look the same way it does when it shows up
     // below. I don't know why.
@@ -326,7 +326,7 @@ class DiagnosticsPopup extends React.Component {
   }
 }
 
-var {PropTypes} = React;
+const {PropTypes} = React;
 
 DiagnosticsPopup.propTypes = {
   children: PropTypes.node,

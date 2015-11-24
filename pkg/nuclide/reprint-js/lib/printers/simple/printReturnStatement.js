@@ -12,15 +12,15 @@
 import type {Lines, Print} from '../../types/common';
 import type {ReturnStatement} from 'ast-types-flow';
 
-var markers = require('../../constants/markers');
-var wrapStatement = require('../../wrappers/simple/wrapStatement');
+const markers = require('../../constants/markers');
+const wrapStatement = require('../../wrappers/simple/wrapStatement');
 
 function printReturnStatement(print: Print, node: ReturnStatement): Lines {
   const wrap = x => wrapStatement(print, node, x);
 
   let parts = ['return'];
   if (node.argument) {
-    let argument = node.argument;
+    const argument = node.argument;
     parts = parts.concat([
       markers.space,
       print(argument),

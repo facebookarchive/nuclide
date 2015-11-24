@@ -25,18 +25,18 @@ type SerializableRemoteConnectionConfiguration = {
   cwd: string;
 }
 
-var packageSubscriptions: ?CompositeDisposable = null;
-var controller: ?RemoteProjectsController = null;
+let packageSubscriptions: ?CompositeDisposable = null;
+let controller: ?RemoteProjectsController = null;
 
 const CLOSE_PROJECT_DELAY_MS = 100;
 const pendingFiles = {};
 
-var logger = null;
+let logger = null;
 function getLogger() {
   return logger || (logger = require('nuclide-logging').getLogger());
 }
 
-var RemoteConnection = null;
+let RemoteConnection = null;
 function getRemoteConnection() {
   return RemoteConnection ||
     (RemoteConnection = require('nuclide-remote-connection').RemoteConnection);
@@ -54,7 +54,7 @@ function createSerializableRemoteConnectionConfiguration(
 async function createRemoteConnection(
   remoteProjectConfig: SerializableRemoteConnectionConfiguration,
 ): Promise<?RemoteConnection> {
-  var RemoteConnection = getRemoteConnection();
+  const RemoteConnection = getRemoteConnection();
 
   const connection = await RemoteConnection.createConnectionBySavedConfig(
     remoteProjectConfig.host,
@@ -66,7 +66,7 @@ async function createRemoteConnection(
   }
 
   // If connection fails using saved config, open connect dialog.
-  var {openConnectionDialog} = require('nuclide-ssh-dialog');
+  const {openConnectionDialog} = require('nuclide-ssh-dialog');
   return openConnectionDialog({
     initialServer: remoteProjectConfig.host,
     initialCwd: remoteProjectConfig.cwd,
@@ -74,7 +74,7 @@ async function createRemoteConnection(
 }
 
 function addRemoteFolderToProject(connection: RemoteConnection) {
-  var workingDirectoryUri = connection.getUriForInitialWorkingDirectory();
+  const workingDirectoryUri = connection.getUriForInitialWorkingDirectory();
   // If restoring state, then the project already exists with local directory and wrong repo
   // instances. Hence, we remove it here, if existing, and add the new path for which we added a
   // workspace opener handler.
@@ -82,7 +82,7 @@ function addRemoteFolderToProject(connection: RemoteConnection) {
 
   atom.project.addPath(workingDirectoryUri);
 
-  var subscription = atom.project.onDidChangePaths(() => {
+  const subscription = atom.project.onDidChangePaths(() => {
     // Delay closing the underlying socket connection until registered subscriptions have closed.
     // We should never depend on the order of registration of the `onDidChangePaths` event,
     // which also dispose consumed service's resources.
@@ -92,7 +92,7 @@ function addRemoteFolderToProject(connection: RemoteConnection) {
   function checkClosedProject() {
     // The project paths may have changed during the delay time.
     // Hence, the latest project paths are fetched here.
-    var paths = atom.project.getPaths();
+    const paths = atom.project.getPaths();
     if (paths.indexOf(workingDirectoryUri) !== -1) {
       return;
     }
@@ -101,7 +101,7 @@ function addRemoteFolderToProject(connection: RemoteConnection) {
 
     closeOpenFilesForRemoteProject(connection.getConfig());
 
-    var hostname = connection.getRemoteHostname();
+    const hostname = connection.getRemoteHostname();
     if (getRemoteConnection().getByHostname(hostname).length > 1) {
       getLogger().info('Remaining remote projects using Nuclide Server - no prompt to shutdown');
       connection.close();
@@ -125,7 +125,7 @@ function addRemoteFolderToProject(connection: RemoteConnection) {
       buttons.reverse();
     }
 
-    var choice = atom.confirm({
+    const choice = atom.confirm({
       message: 'No more remote projects on the host: \'' + hostname +
         '\'. Would you like to shutdown Nuclide server there?',
       buttons,
@@ -136,7 +136,7 @@ function addRemoteFolderToProject(connection: RemoteConnection) {
 }
 
 function closeOpenFilesForRemoteProject(remoteProjectConfig: RemoteConnectionConfiguration): void {
-  var openInstances = getOpenFileEditorForRemoteProject(remoteProjectConfig);
+  const openInstances = getOpenFileEditorForRemoteProject(remoteProjectConfig);
   for (const openInstance of openInstances) {
     const {editor, pane} = openInstance;
     pane.removeItem(editor);
@@ -190,7 +190,7 @@ async function createEditorForNuclide(
     }
   }
 
-  let textEditorParams = {buffer};
+  const textEditorParams = {buffer};
   return createTextEditor(textEditorParams);
 }
 
@@ -212,9 +212,9 @@ module.exports = {
   config: require('../package.json').nuclide.config,
 
   activate(state: ?{remoteProjectsConfig: SerializableRemoteConnectionConfiguration[]}): void {
-    let subscriptions = new CompositeDisposable();
+    const subscriptions = new CompositeDisposable();
 
-    var RemoteProjectsController = require('./RemoteProjectsController');
+    const RemoteProjectsController = require('./RemoteProjectsController');
     controller = new RemoteProjectsController();
 
     subscriptions.add(getRemoteConnection().onDidAddRemoteConnection(connection => {
@@ -262,15 +262,15 @@ module.exports = {
     // Subscribe opener before restoring the remote projects.
     subscriptions.add(atom.workspace.addOpener((uri = '') => {
       if (uri.startsWith('nuclide:')) {
-        var connection = getRemoteConnection().getForUri(uri);
+        const connection = getRemoteConnection().getForUri(uri);
         // On Atom restart, it tries to open the uri path as a file tab because it's not a local
         // directory. We can't let that create a file with the initial working directory path.
         if (connection && uri !== connection.getUriForInitialWorkingDirectory()) {
           if (pendingFiles[uri]) {
             return pendingFiles[uri];
           }
-          var textEditorPromise = pendingFiles[uri] = createEditorForNuclide(connection, uri);
-          var removeFromCache = () => delete pendingFiles[uri];
+          const textEditorPromise = pendingFiles[uri] = createEditorForNuclide(connection, uri);
+          const removeFromCache = () => delete pendingFiles[uri];
           textEditorPromise.then(removeFromCache, removeFromCache);
           return textEditorPromise;
         }
@@ -317,10 +317,10 @@ module.exports = {
   // TODO: All of the elements of the array are non-null, but it does not seem possible to convince
   // Flow of that.
   serialize(): {remoteProjectsConfig: Array<?SerializableRemoteConnectionConfiguration>} {
-    let remoteProjectsConfig: Array<?SerializableRemoteConnectionConfiguration> =
+    const remoteProjectsConfig: Array<?SerializableRemoteConnectionConfiguration> =
       getRemoteRootDirectories()
         .map((directory: atom$Directory): ?SerializableRemoteConnectionConfiguration => {
-          let connection = getRemoteConnection().getForUri(directory.getPath());
+          const connection = getRemoteConnection().getForUri(directory.getPath());
           return connection ?
             createSerializableRemoteConnectionConfiguration(connection.getConfig()) : null;
         })
@@ -343,14 +343,14 @@ module.exports = {
   },
 
   createRemoteDirectoryProvider(): RemoteDirectoryProvider {
-    var RemoteDirectoryProvider = require('./RemoteDirectoryProvider');
+    const RemoteDirectoryProvider = require('./RemoteDirectoryProvider');
     return new RemoteDirectoryProvider();
   },
 
   createRemoteDirectorySearcher(): RemoteDirectorySearcher {
-    var {getServiceByNuclideUri} = require('nuclide-client');
-    var {RemoteDirectory} = require('nuclide-remote-connection');
-    var RemoteDirectorySearcher = require('./RemoteDirectorySearcher');
+    const {getServiceByNuclideUri} = require('nuclide-client');
+    const {RemoteDirectory} = require('nuclide-remote-connection');
+    const RemoteDirectorySearcher = require('./RemoteDirectorySearcher');
     return new RemoteDirectorySearcher((dir: RemoteDirectory) =>
       getServiceByNuclideUri('FindInProjectService', dir.getPath()));
   },

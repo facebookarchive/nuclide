@@ -9,15 +9,15 @@
  * the root directory of this source tree.
  */
 
-var nuclideUri = require('../lib/main');
+const nuclideUri = require('../lib/main');
 
 describe('nuclide-uri', () => {
-  var localUri = '/usr/local/file';
-  var badRemoteUriNoPort = 'nuclide://fb.com/un/deux';
-  var badRemoteUriNoPath = 'nuclide://fb.com:8000';
-  var remoteUri = nuclideUri.createRemoteUri('fb.com', 8000, '/usr/local');
-  var remoteUriWithSpaces = nuclideUri.createRemoteUri('fb.com', 8000, '/a b/c d');
-  var remoteUriWithHashes = nuclideUri.createRemoteUri('fb.co.uk', 8000, '/ab/#c.d  #');
+  const localUri = '/usr/local/file';
+  const badRemoteUriNoPort = 'nuclide://fb.com/un/deux';
+  const badRemoteUriNoPath = 'nuclide://fb.com:8000';
+  const remoteUri = nuclideUri.createRemoteUri('fb.com', 8000, '/usr/local');
+  const remoteUriWithSpaces = nuclideUri.createRemoteUri('fb.com', 8000, '/a b/c d');
+  const remoteUriWithHashes = nuclideUri.createRemoteUri('fb.co.uk', 8000, '/ab/#c.d  #');
 
   it('isRemote', () => {
     expect(nuclideUri.isRemote('/')).toBe(false);

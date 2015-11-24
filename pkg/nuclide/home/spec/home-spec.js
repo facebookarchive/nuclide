@@ -9,12 +9,12 @@
  * the root directory of this source tree.
  */
 
-var BASE_ITEM_URI = 'nuclide-home://';
-var CONFIG_KEY = 'nuclide-home.showHome';
+const BASE_ITEM_URI = 'nuclide-home://';
+const CONFIG_KEY = 'nuclide-home.showHome';
 
 function findHomePaneAndItem(): {pane: ?atom$Pane, item: ?Object} {
-  var pane = atom.workspace.paneForURI(BASE_ITEM_URI);
-  var item = pane ? pane.itemForURI(BASE_ITEM_URI) : null;
+  const pane = atom.workspace.paneForURI(BASE_ITEM_URI);
+  const item = pane ? pane.itemForURI(BASE_ITEM_URI) : null;
   return {pane, item};
 }
 
@@ -34,7 +34,7 @@ describe('Home', () => {
   it('appears when opened by URI, persisting into config', () => {
     waitsForPromise(async () => {
       await atom.workspace.open(BASE_ITEM_URI);
-      var {item} = findHomePaneAndItem();
+      const {item} = findHomePaneAndItem();
       expect(item).toBeTruthy();
       if (item) {
         expect(item.getTitle()).toEqual('Home');
@@ -47,7 +47,7 @@ describe('Home', () => {
   it('disappears when closed, persisting into config', () => {
     waitsForPromise(async () => {
       await atom.workspace.open(BASE_ITEM_URI);
-      var {pane, item} = findHomePaneAndItem();
+      const {pane, item} = findHomePaneAndItem();
       expect(item).toBeTruthy();
       if (pane && item) {
         pane.activateItem(item);

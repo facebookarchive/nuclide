@@ -78,7 +78,7 @@ export async function getCompletions(
   file: NuclideUri,
   markedContents: string
 ): Promise<?HackCompletionsResult> {
-  var hhResult = await callHHClient(
+  const hhResult = await callHHClient(
     /*args*/ ['--auto-complete'],
     /*errorStream*/ false,
     /*outputJson*/ true,
@@ -88,8 +88,8 @@ export async function getCompletions(
   if (!hhResult) {
     return null;
   }
-  var {hackRoot, result} = hhResult;
-  var completions = ((result : any): Array<HackCompletion>);
+  const {hackRoot, result} = hhResult;
+  const completions = ((result : any): Array<HackCompletion>);
   return {
     hackRoot,
     completions,
@@ -246,7 +246,7 @@ function selectDefinitionSearchResults(
   if (!searchReposnse) {
     return null;
   }
-  var {result: searchResults, hackRoot} = searchReposnse;
+  const {result: searchResults, hackRoot} = searchReposnse;
   const matchingResults = searchResults.filter(result => {
     // If the request had a :: in it, it's a full name, so we should compare to
     // the name of the result in that format.

@@ -10,10 +10,10 @@
  */
 
 
-var GLOBAL_MAP_NAME = '__NUCLIDE_SINGLETONS__';
+const GLOBAL_MAP_NAME = '__NUCLIDE_SINGLETONS__';
 
 function getMap(): Map<string, any> {
-  var map = global[GLOBAL_MAP_NAME];
+  let map = global[GLOBAL_MAP_NAME];
   if (!map) {
     map = global[GLOBAL_MAP_NAME] = new Map();
   }
@@ -26,7 +26,7 @@ function getMap(): Map<string, any> {
  * return the result of the constructor call.
  */
 export function get<T>(field: string, constructor: () => T): T {
-  var map = getMap();
+  const map = getMap();
   if (!map.has(field)) {
     map.set(field, constructor());
   }

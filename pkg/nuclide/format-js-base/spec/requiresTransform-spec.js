@@ -9,14 +9,14 @@
  * the root directory of this source tree.
  */
 
-var DefaultModuleMap = require('../lib/state/DefaultModuleMap');
+const DefaultModuleMap = require('../lib/state/DefaultModuleMap');
 
-var jscodeshift = require('jscodeshift');
-var printRoot = require('../lib/utils/printRoot');
-var {readFile} = require('nuclide-commons').fsPromise;
-var requiresTransform = require('../lib/requires/transform');
+const jscodeshift = require('jscodeshift');
+const printRoot = require('../lib/utils/printRoot');
+const {readFile} = require('nuclide-commons').fsPromise;
+const requiresTransform = require('../lib/requires/transform');
 
-var TESTS = [
+const TESTS = [
   'add-array-expressions',
   'add-assignments',
   'add-classes',
@@ -67,24 +67,24 @@ var TESTS = [
   'split-multiple-leading-comments',
 ];
 
-var SOURCE_OPTIONS = {
+const SOURCE_OPTIONS = {
   moduleMap: DefaultModuleMap,
 };
 
 describe('requiresTransform', () => {
   TESTS.forEach(name => {
     it(`should ${name}`, () => {
-      var testPath = 'fixtures/requires/' + name + '.test';
-      var expectedPath = 'fixtures/requires/' + name + '.expected';
+      const testPath = 'fixtures/requires/' + name + '.test';
+      const expectedPath = 'fixtures/requires/' + name + '.expected';
 
       waitsForPromise(async () => {
-        var test = await readFile(testPath, 'utf8');
+        const test = await readFile(testPath, 'utf8');
 
-        var root = jscodeshift(test);
+        const root = jscodeshift(test);
         requiresTransform(root, SOURCE_OPTIONS);
-        var actual = printRoot(root);
+        const actual = printRoot(root);
 
-        var expected = await readFile(expectedPath, 'utf8');
+        const expected = await readFile(expectedPath, 'utf8');
         expect(actual).toBe(expected);
       });
     });

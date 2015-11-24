@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-var theFunction = (extraProp: mixed): Object => {
+const theFunction = (extraProp: mixed): Object => {
   return {
     foo: 'bar',
     baz: extraProp,

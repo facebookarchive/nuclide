@@ -9,16 +9,16 @@
  * the root directory of this source tree.
  */
 
-var {Disposable} = require('event-kit');
-var {getRemoteEventName} = require('./service-manager');
-var {serializeArgs} = require('./utils');
-var {EventEmitter} = require('events');
-var NuclideSocket = require('./NuclideSocket');
-var {SERVICE_FRAMEWORK_EVENT_CHANNEL,
+const {Disposable} = require('event-kit');
+const {getRemoteEventName} = require('./service-manager');
+const {serializeArgs} = require('./utils');
+const {EventEmitter} = require('events');
+const NuclideSocket = require('./NuclideSocket');
+const {SERVICE_FRAMEWORK_EVENT_CHANNEL,
   SERVICE_FRAMEWORK_RPC_CHANNEL,
   SERVICE_FRAMEWORK_RPC_TIMEOUT_MS,
   SERVICE_FRAMEWORK3_CHANNEL} = require('./config');
-var logger = require('nuclide-logging').getLogger();
+const logger = require('nuclide-logging').getLogger();
 import invariant from 'assert';
 
 import {object} from 'nuclide-commons';
@@ -61,7 +61,7 @@ class NuclideRemoteEventbus {
   }
 
   _handleSocketMessage(message: any) {
-    var {channel, event} = message;
+    const {channel, event} = message;
 
     if (channel === SERVICE_FRAMEWORK_RPC_CHANNEL) {
       var {requestId, error, result} = message;
@@ -105,10 +105,10 @@ class NuclideRemoteEventbus {
     callback: (...args: Array<any>) => void,
     serviceOptions: any
   ): Disposable {
-    var [serviceName, eventMethodName] = localEventName.split('/');
-    var remoteEventName = getRemoteEventName(serviceName, eventMethodName, serviceOptions);
+    const [serviceName, eventMethodName] = localEventName.split('/');
+    const remoteEventName = getRemoteEventName(serviceName, eventMethodName, serviceOptions);
     this.serviceFrameworkEventEmitter.on(remoteEventName, callback);
-    var subscribePromise = this._subscribeEventOnServer(serviceName, eventMethodName, serviceOptions);
+    const subscribePromise = this._subscribeEventOnServer(serviceName, eventMethodName, serviceOptions);
     return new Disposable(() => {
       this.serviceFrameworkEventEmitter.removeListener(remoteEventName, callback);
       return subscribePromise.then(
@@ -127,7 +127,7 @@ class NuclideRemoteEventbus {
       // Error condition that should never happen, return `undefined`.
       return;
     }
-    var {args, argTypes} = serializeArgs(methodArgs || []);
+    const {args, argTypes} = serializeArgs(methodArgs || []);
     try {
       return await this.socket.xhrRequest(object.assign({
         uri: serviceName + '/' + methodName,
@@ -151,7 +151,7 @@ class NuclideRemoteEventbus {
       timeout: number =SERVICE_FRAMEWORK_RPC_TIMEOUT_MS
     ): Promise<any> {
 
-    var requestId = this._rpcRequestId ++;
+    const requestId = this._rpcRequestId ++;
 
     this.socket.send({
       serviceName,

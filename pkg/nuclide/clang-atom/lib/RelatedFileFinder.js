@@ -8,8 +8,8 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-var fs = require('fs');
-var path = require('path');
+const fs = require('fs');
+const path = require('path');
 
 module.exports =
 /**
@@ -30,28 +30,28 @@ class RelatedFileFinder {
    * @return The related files and the given path's index into it.
    */
   find(filePath: string): {relatedFiles: Array<string>; index: number} {
-    var dirname = path.dirname(filePath);
-    var prefix = this._getPrefix(filePath);
+    const dirname = path.dirname(filePath);
+    const prefix = this._getPrefix(filePath);
 
-    var relatedFiles = fs.readdirSync(dirname)
+    const relatedFiles = fs.readdirSync(dirname)
         .filter((otherFilePath) => this._getPrefix(otherFilePath) === prefix)
         .map((otherFilePath) => path.join(dirname, otherFilePath))
         .sort();
 
-    var index = relatedFiles.indexOf(filePath);
+    const index = relatedFiles.indexOf(filePath);
     if (index === -1) {
       throw new Error('Given path must be in `relatedFiles`: ' + filePath);
     }
 
     return {
       relatedFiles: relatedFiles,
-      index: index
+      index: index,
     };
   }
 
   _getPrefix(filePath: string) {
-    var extname = path.extname(filePath);
-    var basename = path.basename(filePath, extname);
+    const extname = path.extname(filePath);
+    const basename = path.basename(filePath, extname);
     return basename.replace(/Internal$/, '');
   }
 

@@ -39,11 +39,11 @@ const payload1 =
 </init>`;
 
 describe('debugger-hhvm-proxy DbgpConnector', () => {
-  var server;
-  var socket;
+  let server;
+  let socket;
 
   function createSocketSpy() {
-    var result = new EventEmitter();
+    const result = new EventEmitter();
     spyOn(result, 'on').andCallThrough();
     spyOn(result, 'once').andCallThrough();
     return result;
@@ -67,16 +67,16 @@ describe('debugger-hhvm-proxy DbgpConnector', () => {
   });
 
   it('connection attach', () => {
-    var port = 7779;
+    const port = 7779;
 
-    var config = {
+    const config = {
       xdebugPort: port,
       pid: null,
       idekeyRegex: null,
       scriptRegex: null,
     };
 
-    var onAttach = jasmine.createSpy('onAttach').andCallFake(
+    const onAttach = jasmine.createSpy('onAttach').andCallFake(
       params => {
         const attachedSocket = params.socket;
         expect(socket.once).toHaveBeenCalledWith('data', jasmine.any(Function));
@@ -86,9 +86,9 @@ describe('debugger-hhvm-proxy DbgpConnector', () => {
         expect(server.close).toHaveBeenCalledWith();
         expect(onClose).toHaveBeenCalledWith(undefined);
       });
-    var onClose = jasmine.createSpy('onClose');
+    const onClose = jasmine.createSpy('onClose');
 
-    var connector = new DbgpConnector(config);
+    const connector = new DbgpConnector(config);
     connector.listen();
     connector.onClose(onClose);
     connector.onAttach(onAttach);
@@ -99,7 +99,7 @@ describe('debugger-hhvm-proxy DbgpConnector', () => {
     expect(server.on).toHaveBeenCalledWith('connection', jasmine.any(Function));
     expect(server.on).toHaveBeenCalledWith('close', jasmine.any(Function));
 
-    var emitted = server.emit('connection', socket);
+    const emitted = server.emit('connection', socket);
     expect(emitted).toBe(true);
 
     expect(onClose).not.toHaveBeenCalledWith();
@@ -111,18 +111,18 @@ describe('debugger-hhvm-proxy DbgpConnector', () => {
   });
 
   it('abort connection', () => {
-    var port = 7781;
+    const port = 7781;
 
-    var config = {
+    const config = {
       xdebugPort: port,
       pid: null,
       idekeyRegex: null,
       scriptRegex: null,
     };
 
-    var onClose = jasmine.createSpy('onClose');
+    const onClose = jasmine.createSpy('onClose');
 
-    var connector = new DbgpConnector(config);
+    const connector = new DbgpConnector(config);
     connector.listen();
     connector.onClose(onClose);
 

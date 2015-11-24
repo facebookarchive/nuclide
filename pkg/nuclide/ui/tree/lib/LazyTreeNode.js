@@ -61,7 +61,7 @@ class LazyTreeNode {
   }
 
   fetchChildren(): Promise {
-    var pendingFetch = this._pendingFetch;
+    let pendingFetch = this._pendingFetch;
     if (!pendingFetch) {
       pendingFetch = this._fetchChildren(this).then((children) => {
         // Store the children before returning them from the Promise.
@@ -73,7 +73,7 @@ class LazyTreeNode {
 
       // Make sure that whether the fetch succeeds or fails, the _pendingFetch
       // field is cleared.
-      var clear = () => {
+      const clear = () => {
         this._pendingFetch = null;
       };
       pendingFetch.then(clear, clear);
@@ -86,11 +86,11 @@ class LazyTreeNode {
    * LazyTreeNodes that make up the tree.
    */
   getKey(): string {
-    var key = this.__key;
+    let key = this.__key;
     if (!key) {
       // TODO(mbolin): Escape slashes.
-      var prefix = this.__parent ? this.__parent.getKey() : '/';
-      var suffix = this.__isContainer ? '/' : '';
+      const prefix = this.__parent ? this.__parent.getKey() : '/';
+      const suffix = this.__isContainer ? '/' : '';
       key = prefix + this.getLabel() + suffix;
       this.__key = key;
     }

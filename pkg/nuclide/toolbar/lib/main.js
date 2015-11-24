@@ -26,8 +26,8 @@ class Activation {
   _handleBuildTargetChange: Function;
 
   constructor(state: ?Object) {
-    var {CompositeDisposable} = require('atom');
-    var ProjectStore = require('./ProjectStore');
+    const {CompositeDisposable} = require('atom');
+    const ProjectStore = require('./ProjectStore');
 
     this._state = {
       panelVisible: state != null && state.panelVisible != null ? state.panelVisible : true,
@@ -54,10 +54,10 @@ class Activation {
   }
 
   _createToolbar() {
-    var NuclideToolbar = require('./NuclideToolbar');
-    var item = document.createElement('div');
-    var {Disposable} = require('atom');
-    var React = require('react-for-atom');
+    const NuclideToolbar = require('./NuclideToolbar');
+    const item = document.createElement('div');
+    const {Disposable} = require('atom');
+    const React = require('react-for-atom');
 
     this._nuclideToolbar = React.render(
       <NuclideToolbar
@@ -109,8 +109,8 @@ class Activation {
 
   dispose() {
     if (this._nuclideToolbar) {
-      var React = require('react-for-atom');
-      var toolbarNode = React.findDOMNode(this._nuclideToolbar);
+      const React = require('react-for-atom');
+      const toolbarNode = React.findDOMNode(this._nuclideToolbar);
       // If the toolbar is currently hidden for some reason, then toolbarNode will be null.
       if (toolbarNode) {
         React.unmountComponentAtNode(toolbarNode.parentNode);
@@ -126,8 +126,8 @@ class Activation {
   }
 }
 
-var activation: ?Activation = null;
-var toolBar: ?any = null;
+let activation: ?Activation = null;
+let toolBar: ?any = null;
 
 module.exports = {
   activate(state: ?Object) {

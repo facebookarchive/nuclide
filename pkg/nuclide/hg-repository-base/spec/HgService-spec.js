@@ -38,12 +38,12 @@ describe('HgService', () => {
       stdout: JSON.stringify([
         {
           'path': relativize(PATH_1),
-          'status': StatusCodeId.MODIFIED
+          'status': StatusCodeId.MODIFIED,
         },
         {
           'path': relativize(PATH_2),
-          'status': StatusCodeId.ADDED
-        }
+          'status': StatusCodeId.ADDED,
+        },
       ]),
     };
 

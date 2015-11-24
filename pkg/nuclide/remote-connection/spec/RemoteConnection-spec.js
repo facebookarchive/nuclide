@@ -9,17 +9,17 @@
  * the root directory of this source tree.
  */
 
-var fs = require('fs');
-var RemoteConnection = require('../lib/RemoteConnection');
-var {EventEmitter} = require('events');
-var path = require('path');
-var pathToFakePk = path.join(__dirname, 'fakepk');
+const fs = require('fs');
+const RemoteConnection = require('../lib/RemoteConnection');
+const {EventEmitter} = require('events');
+const path = require('path');
+const pathToFakePk = path.join(__dirname, 'fakepk');
 
 describe('RemoteConnection', () => {
-  var testConnections = RemoteConnection.test.connections;
-  var testConnection;
-  var testHostname = 'foo.nuclide.com';
-  var testPath = '/home/foo/test';
+  const testConnections = RemoteConnection.test.connections;
+  let testConnection;
+  const testHostname = 'foo.nuclide.com';
+  const testPath = '/home/foo/test';
 
   beforeEach(() => {
     fs.writeFileSync(pathToFakePk, '');
@@ -39,45 +39,45 @@ describe('RemoteConnection', () => {
 
   describe('getByHostnameAndPath()', () => {
     it('gets a connection if the hostname and path matches', () => {
-      var conn = RemoteConnection.getByHostnameAndPath(testHostname, testPath);
+      const conn = RemoteConnection.getByHostnameAndPath(testHostname, testPath);
       expect(conn).toBe(testConnection);
     });
 
     it('returns undefined if the path is not matching', () => {
-      var conn = RemoteConnection.getByHostnameAndPath(testHostname, '/home/bar/test');
+      const conn = RemoteConnection.getByHostnameAndPath(testHostname, '/home/bar/test');
       expect(conn).toBeUndefined();
     });
 
     it('returns undefined if the hostname is not matching', () => {
-      var conn = RemoteConnection.getByHostnameAndPath('bar.nuclide.com', testPath);
+      const conn = RemoteConnection.getByHostnameAndPath('bar.nuclide.com', testPath);
       expect(conn).toBeUndefined();
     });
 
     it('returns a connection if given a file path deep into the directory path', () => {
-      var conn = RemoteConnection.getByHostnameAndPath(testHostname, testPath + '/def/abc.txt');
+      const conn = RemoteConnection.getByHostnameAndPath(testHostname, testPath + '/def/abc.txt');
       expect(conn).toBe(testConnection);
     });
   });
 
   describe('getForUri()', () => {
     it('gets a connection if the hostname and path matches', () => {
-      var conn = RemoteConnection.getForUri(`nuclide://${testHostname}:8919${testPath}`);
+      const conn = RemoteConnection.getForUri(`nuclide://${testHostname}:8919${testPath}`);
       expect(conn).toBe(testConnection);
     });
 
     it('returns undefined if the path is not matching', () => {
-      var conn = RemoteConnection.getForUri(`nuclide://${testHostname}:9292$/home/bar/test`);
+      const conn = RemoteConnection.getForUri(`nuclide://${testHostname}:9292$/home/bar/test`);
       expect(conn).toBeUndefined();
     });
 
     it('returns undefined if the hostname is not matching', () => {
-      var conn = RemoteConnection.getForUri(`nuclide://bar.nuclide.com:9292${testPath}`);
+      const conn = RemoteConnection.getForUri(`nuclide://bar.nuclide.com:9292${testPath}`);
       expect(conn).toBeUndefined();
     });
 
 
     it('returns a connection if given a file path deep into the directory path', () => {
-      var conn = RemoteConnection.getForUri(`nuclide://${testHostname}:7685${testPath}/def/abc.txt`);
+      const conn = RemoteConnection.getForUri(`nuclide://${testHostname}:7685${testPath}/def/abc.txt`);
       expect(conn).toBe(testConnection);
     });
   });

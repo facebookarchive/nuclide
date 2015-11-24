@@ -11,8 +11,8 @@
 
 import {Observable, Subject} from 'rx';
 
-var counters: Array<Counter> = [];
-var newCounters = new Subject();
+const counters: Array<Counter> = [];
+const newCounters = new Subject();
 
 export class Counter {
   _count: number;

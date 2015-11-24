@@ -59,7 +59,7 @@ function statsToObject(stats: fs.Stats): Object {
 }
 
 function objectToStats(jsonStats: Object): fs.Stats {
-  var stats = new fs.Stats();
+  const stats = new fs.Stats();
 
   stats.dev = jsonStats.dev;
   stats.mode = jsonStats.mode;
@@ -353,12 +353,12 @@ export default class TypeRegistry {
     this._registerKind('array', async (value: any, type: Type) => {
       assert(value instanceof Array, 'Expected an object of type Array.');
       invariant(type.kind === 'array');
-      var elemType = type.type;
+      const elemType = type.type;
       return await Promise.all(value.map(elem => this.marshal(elem, elemType)));
     }, async (value: any, type: Type) => {
       assert(value instanceof Array, 'Expected an object of type Array.');
       invariant(type.kind === 'array');
-      var elemType = type.type;
+      const elemType = type.type;
       return await Promise.all(value.map(elem => this.unmarshal(elem, elemType)));
     });
 
@@ -366,7 +366,7 @@ export default class TypeRegistry {
     this._registerKind('object', async (obj: any, type: Type) => {
       assert(typeof obj === 'object', 'Expected an argument of type object.');
       invariant(type.kind === 'object');
-      var newObj = {}; // Create a new object so we don't mutate the original one.
+      const newObj = {}; // Create a new object so we don't mutate the original one.
       await Promise.all(type.fields.map(async prop => {
         // Check if the source object has this key.
         if (obj.hasOwnProperty(prop.name)) {
@@ -382,7 +382,7 @@ export default class TypeRegistry {
     }, async (obj: any, type: Type) => {
       assert(typeof obj === 'object', 'Expected an argument of type object.');
       invariant(type.kind === 'object');
-      var newObj = {}; // Create a new object so we don't mutate the original one.
+      const newObj = {}; // Create a new object so we don't mutate the original one.
       await Promise.all(type.fields.map(async prop => {
         // Check if the source object has this key.
         if (obj.hasOwnProperty(prop.name)) {
@@ -401,16 +401,16 @@ export default class TypeRegistry {
     this._registerKind('set', async (value: any, type: Type) => {
       invariant(type.kind === 'set');
       assert(value instanceof Set, 'Expected an object of type Set.');
-      var serializePromises = [];
-      for (var elem of value) {
+      const serializePromises = [];
+      for (const elem of value) {
         serializePromises.push(this.marshal(elem, type.type));
       }
       return await Promise.all(serializePromises);
     }, async (value: any, type: Type) => {
       assert(value instanceof Array, 'Expected an object of type Array.');
       invariant(type.kind === 'set');
-      var elemType = type.type;
-      var elements = await Promise.all(value.map(elem => this.unmarshal(elem, elemType)));
+      const elemType = type.type;
+      const elements = await Promise.all(value.map(elem => this.unmarshal(elem, elemType)));
       return new Set(elements);
     });
 
@@ -418,8 +418,8 @@ export default class TypeRegistry {
     this._registerKind('map', async (map: Map, type: Type) => {
       assert(map instanceof Map, 'Expected an object of type Set.');
       invariant(type.kind === 'map');
-      var serializePromises = [];
-      for (var [key, value] of map) {
+      const serializePromises = [];
+      for (const [key, value] of map) {
         serializePromises.push(Promise.all([
           this.marshal(key, type.keyType),
           this.marshal(value, type.valueType),
@@ -429,9 +429,9 @@ export default class TypeRegistry {
     }, async (serialized: any, type: Type) => {
       assert(serialized instanceof Array, 'Expected an object of type Array.');
       invariant(type.kind === 'map');
-      var keyType = type.keyType;
-      var valueType = type.valueType;
-      var entries = await Promise.all(
+      const keyType = type.keyType;
+      const valueType = type.valueType;
+      const entries = await Promise.all(
         serialized.map(entry => Promise.all([
           this.unmarshal(entry[0], keyType),
           this.unmarshal(entry[1], valueType),
@@ -445,7 +445,7 @@ export default class TypeRegistry {
       // Assert the length of the array.
       assert(Array.isArray(value), 'Expected an object of type Array.');
       invariant(type.kind === 'tuple');
-      var types = type.types;
+      const types = type.types;
       assert(value.length === types.length, `Expected tuple of length ${types.length}.`);
 
       // Convert all of the elements through the correct marshaller.
@@ -455,7 +455,7 @@ export default class TypeRegistry {
       // Assert the length of the array.
       assert(Array.isArray(value), 'Expected an object of type Array.');
       invariant(type.kind === 'tuple');
-      var types = type.types;
+      const types = type.types;
       assert(value.length === types.length, `Expected tuple of length ${types.length}.`);
 
       // Convert all of the elements through the correct unmarshaller.

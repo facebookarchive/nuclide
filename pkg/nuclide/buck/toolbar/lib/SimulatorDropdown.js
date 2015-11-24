@@ -9,11 +9,11 @@
  * the root directory of this source tree.
  */
 
-var IosSimulator = require('./IosSimulator');
-var NuclideDropdown = require('nuclide-ui-dropdown');
-var React = require('react-for-atom');
+const IosSimulator = require('./IosSimulator');
+const NuclideDropdown = require('nuclide-ui-dropdown');
+const React = require('react-for-atom');
 
-var {PropTypes} = React;
+const {PropTypes} = React;
 
 import type {Device} from './IosSimulator';
 
@@ -34,8 +34,8 @@ class SimulatorDropdown extends React.Component {
   }
 
   _buildMenuItems(devices: Array<Device>) {
-    var selectedIndex = IosSimulator.selectDevice(devices);
-    var menuItems = devices.map(device => ({
+    const selectedIndex = IosSimulator.selectDevice(devices);
+    const menuItems = devices.map(device => ({
       label: `${device.name} (${device.os})`,
       value: device.udid,
     }));
@@ -61,7 +61,7 @@ class SimulatorDropdown extends React.Component {
   }
 
   _handleSelection(newIndex: number) {
-    var selectedItem = this.state.menuItems[newIndex];
+    const selectedItem = this.state.menuItems[newIndex];
     if (selectedItem) {
       this.props.onSelectedSimulatorChange(selectedItem.value);
     }

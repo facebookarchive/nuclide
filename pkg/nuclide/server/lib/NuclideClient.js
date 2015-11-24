@@ -70,7 +70,7 @@ class NuclideClient {
    * Make rpc call to service given serviceUri in form of `$serviceName/$methodName` and args as arguments list.
    */
   makeRpc(serviceUri: string, args: Array<any>, serviceOptions: any): Promise<any> {
-    var [serviceName, methodName] = serviceUri.split('/');
+    const [serviceName, methodName] = serviceUri.split('/');
     return this.eventbus.callServiceFrameworkMethod(
       serviceName,
       methodName,
@@ -105,7 +105,7 @@ class NuclideClient {
   }
 
   async getSearchProviders(rootDirectory: string): Promise<Array<{name:string}>> {
-    var providers = this._searchProviders[rootDirectory];
+    let providers = this._searchProviders[rootDirectory];
     if (providers) {
       return providers;
     }

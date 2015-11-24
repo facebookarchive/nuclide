@@ -11,9 +11,9 @@
 
 import type {Context, Lines, Print} from '../../types/common';
 
-var markers = require('../../constants/markers');
-var printComment = require('../../printers/common/printComment');
-var unwrapMarkers = require('../../utils/unwrapMarkers');
+const markers = require('../../constants/markers');
+const printComment = require('../../printers/common/printComment');
+const unwrapMarkers = require('../../utils/unwrapMarkers');
 
 function wrapWithComments(
   print: Print,
@@ -35,7 +35,7 @@ function wrapWithComments(
         return [];
       }
 
-      let parts = [printComment(comment)];
+      const parts = [printComment(comment)];
       const next = i === arr.length - 1 ? node : arr[i + 1];
       const min = comment.loc.end.line;
       const max = next.loc.start.line;
@@ -61,7 +61,7 @@ function wrapWithComments(
       const prev = i === 0 ? node : arr[i - 1];
       const min = prev.loc.end.line;
       const max = comment.loc.start.line;
-      let parts = [];
+      const parts = [];
 
       for (let i = 0; i < max - min; i++) {
         parts.push(markers.multiHardBreak);

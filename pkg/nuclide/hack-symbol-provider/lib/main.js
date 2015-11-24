@@ -13,10 +13,10 @@ import type {
   Provider,
 } from 'nuclide-quick-open-interfaces';
 
-var providerInstance: ?Provider;
+let providerInstance: ?Provider;
 function getProviderInstance(): Provider {
   if (providerInstance == null) {
-    var HackSymbolProvider = require('./HackSymbolProvider');
+    const HackSymbolProvider = require('./HackSymbolProvider');
     providerInstance = {...HackSymbolProvider};
   }
   return providerInstance;

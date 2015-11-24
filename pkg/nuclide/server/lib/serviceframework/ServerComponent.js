@@ -19,7 +19,7 @@ import type {RequestMessage, ErrorResponseMessage, PromiseResponseMessage,
   ObservableResponseMessage} from './types';
 import type {SocketClient} from '../NuclideServer';
 
-var logger = require('nuclide-logging').getLogger();
+const logger = require('nuclide-logging').getLogger();
 
 export default class ServerComponent {
   _typeRegistry: TypeRegistry;
@@ -58,12 +58,12 @@ export default class ServerComponent {
     // NuclideUri type requires no transformations (it is done on the client side).
     this._typeRegistry.registerType('NuclideUri', uri => uri, remotePath => remotePath);
 
-    var services = loadServicesConfig();
-    for (var service of services) {
+    const services = loadServicesConfig();
+    for (const service of services) {
       logger.debug(`Registering 3.0 service ${service.name}...`);
       try {
-        var defs = getDefinitions(service.definition);
-        var localImpl = require(service.implementation);
+        const defs = getDefinitions(service.definition);
+        const localImpl = require(service.implementation);
 
         // Register type aliases.
         defs.forEach(definition => {
@@ -131,7 +131,7 @@ export default class ServerComponent {
 
 
   async handleMessage(client: SocketClient, message: RequestMessage): Promise<void> {
-    let requestId = message.requestId;
+    const requestId = message.requestId;
 
     let returnVal: ?Promise = null;
     let returnType: PromiseType | ObservableType | VoidType = { kind: 'void' };
@@ -233,7 +233,7 @@ export default class ServerComponent {
 
         // Send the result of the promise across the socket.
         returnVal.then(result => {
-          var resultMessage: PromiseResponseMessage = {
+          const resultMessage: PromiseResponseMessage = {
             channel: 'service_framework3_rpc',
             type: 'PromiseMessage',
             requestId,
@@ -242,7 +242,7 @@ export default class ServerComponent {
           };
           this._server._sendSocketMessage(client, resultMessage);
         }, error => {
-          var errorMessage: ErrorResponseMessage = {
+          const errorMessage: ErrorResponseMessage = {
             channel: 'service_framework3_rpc',
             type: 'ErrorMessage',
             requestId,
@@ -268,8 +268,8 @@ export default class ServerComponent {
         returnVal = returnVal.concatMap(value => this._typeRegistry.marshal(value, returnType.type));
 
         // Send the next, error, and completion events of the observable across the socket.
-        var subscription = returnVal.subscribe(data => {
-          var eventMessage: ObservableResponseMessage = {
+        const subscription = returnVal.subscribe(data => {
+          const eventMessage: ObservableResponseMessage = {
             channel: 'service_framework3_rpc',
             type: 'ObservableMessage',
             requestId,
@@ -281,7 +281,7 @@ export default class ServerComponent {
           };
           this._server._sendSocketMessage(client, eventMessage);
         }, error => {
-          var errorMessage: ErrorResponseMessage = {
+          const errorMessage: ErrorResponseMessage = {
             channel: 'service_framework3_rpc',
             type: 'ErrorMessage',
             requestId,
@@ -291,7 +291,7 @@ export default class ServerComponent {
           this._server._sendSocketMessage(client, errorMessage);
           this._subscriptions.delete(requestId);
         }, completed => {
-          var eventMessage: ObservableResponseMessage = {
+          const eventMessage: ObservableResponseMessage = {
             channel: 'service_framework3_rpc',
             type: 'ObservableMessage',
             requestId,

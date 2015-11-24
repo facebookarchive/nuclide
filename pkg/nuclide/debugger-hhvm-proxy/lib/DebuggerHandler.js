@@ -50,9 +50,9 @@ export class DebuggerHandler extends Handler {
 
     this._hadFirstContinuationCommand = false;
     this._connectionMultiplexer = connectionMultiplexer;
-    var FileCache = require('./FileCache');
+    const FileCache = require('./FileCache');
     this._files = new FileCache(clientCallback);
-    var {EventEmitter} = require('events');
+    const {EventEmitter} = require('events');
     this._emitter = new EventEmitter();
     this._statusSubscription = this._connectionMultiplexer.onStatus(
       this._onStatusChanged.bind(this)
@@ -131,21 +131,21 @@ export class DebuggerHandler extends Handler {
   }
 
   async _setPauseOnExceptions(id: number, params: Object): Promise {
-    var {state} = params;
+    const {state} = params;
     await this._connectionMultiplexer.setPauseOnExceptions(state);
     this.replyToCommand(id, {});
   }
 
   _setBreakpointByUrl(id: number, params: Object): void {
-    var {lineNumber, url, columnNumber, condition} = params;
+    const {lineNumber, url, columnNumber, condition} = params;
     if (!url || condition !== '' || columnNumber !== 0) {
       this.replyWithError(id, 'Invalid arguments to Debugger.setBreakpointByUrl: ' + JSON.stringify(params));
       return;
     }
     this._files.registerFile(url);
 
-    var path = uriToPath(url);
-    var breakpointId = this._connectionMultiplexer.setBreakpoint(path, lineNumber + 1);
+    const path = uriToPath(url);
+    const breakpointId = this._connectionMultiplexer.setBreakpoint(path, lineNumber + 1);
     this.replyToCommand(id, {
       breakpointId: breakpointId,
       locations: [
@@ -157,7 +157,7 @@ export class DebuggerHandler extends Handler {
   }
 
   async _removeBreakpoint(id: number, params: Object): Promise {
-    var {breakpointId} = params;
+    const {breakpointId} = params;
     await this._connectionMultiplexer.removeBreakpoint(breakpointId);
     this.replyToCommand(id, {id: breakpointId});
   }
@@ -168,14 +168,14 @@ export class DebuggerHandler extends Handler {
   }
 
   async _getStackFrames(): Promise<Array<Object>> {
-    var frames = await this._connectionMultiplexer.getStackFrames();
+    const frames = await this._connectionMultiplexer.getStackFrames();
     return await Promise.all(
       frames.stack.map((frame, frameIndex) => this._convertFrame(frame, frameIndex)));
   }
 
   async _convertFrame(frame: Object, frameIndex: number): Promise<Object> {
     log('Converting frame: ' + JSON.stringify(frame));
-    var {
+    const {
       idOfFrame,
       functionOfFrame,
       fileUrlOfFrame,
@@ -209,7 +209,7 @@ export class DebuggerHandler extends Handler {
   }
 
   async _sendBreakCommand(id: number): Promise {
-    var response = await this._connectionMultiplexer.sendBreakCommand();
+    const response = await this._connectionMultiplexer.sendBreakCommand();
     if (!response) {
       this.replyWithError(id, 'Unable to break');
     }

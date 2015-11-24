@@ -18,7 +18,7 @@ import type PropertyDescriptor from './DataCache';
 import type RemoteObjectId from './DataCache';
 import type {Disposable} from 'nuclide-commons';
 
-var connectionCount = 1;
+let connectionCount = 1;
 
 export class Connection {
   _socket: DbgpSocket;
@@ -26,7 +26,7 @@ export class Connection {
   _id: number;
 
   constructor(socket: Socket) {
-    var dbgpSocket = new DbgpSocket(socket);
+    const dbgpSocket = new DbgpSocket(socket);
     this._socket = dbgpSocket;
     this._dataCache = new DataCache(dbgpSocket);
     this._id = connectionCount++;

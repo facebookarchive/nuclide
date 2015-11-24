@@ -9,9 +9,9 @@
  * the root directory of this source tree.
  */
 
-var {CompositeDisposable, Disposable} = require('atom');
+const {CompositeDisposable, Disposable} = require('atom');
 /* eslint-disable no-unused-vars */
-var BreakpointStore = require('./BreakpointStore.js');
+const BreakpointStore = require('./BreakpointStore.js');
 /* eslint-enable no-unused-vars */
 
 /**
@@ -49,23 +49,23 @@ class BreakpointDisplayController {
     this._markers = [];
 
     // Configure the gutter.
-    var gutter = editor.addGutter({
+    const gutter = editor.addGutter({
       name: 'nuclide-breakpoint',
       visible: false,
     });
     this._disposables.add(gutter.onDidDestroy(this._handleGutterDestroyed.bind(this)));
     this._gutter = gutter;
-    var boundClickHandler = this._handleGutterClick.bind(this);
-    var gutterView = atom.views.getView(gutter);
+    const boundClickHandler = this._handleGutterClick.bind(this);
+    const gutterView = atom.views.getView(gutter);
     gutterView.addEventListener('click', boundClickHandler);
     this._disposables.add(
       new Disposable(() => gutterView.removeEventListener('click', boundClickHandler)));
 
     // Add click listeners into line number gutter for setting breakpoints.
-    var lineNumberGutter = editor.gutterWithName('line-number');
+    const lineNumberGutter = editor.gutterWithName('line-number');
     if (lineNumberGutter) {
-      var lineNumberGutterView = atom.views.getView(lineNumberGutter);
-      var boundLineNumberClickHandler = this._handleLineNumberGutterClick.bind(this);
+      const lineNumberGutterView = atom.views.getView(lineNumberGutter);
+      const boundLineNumberClickHandler = this._handleLineNumberGutterClick.bind(this);
       lineNumberGutterView.addEventListener('click', boundLineNumberClickHandler);
       this._disposables.add(new Disposable(() => {
         lineNumberGutterView.removeEventListener('click', boundLineNumberClickHandler);
@@ -107,20 +107,20 @@ class BreakpointDisplayController {
    * Update the display with the current set of breakpoints for this editor.
    */
   _update() {
-    var gutter = this._gutter;
+    const gutter = this._gutter;
     if (!gutter) {
       return;
     }
 
-    var path = this._editor.getPath();
-    var breakpoints = path ? this._breakpointStore.getBreakpointsForPath(path) : new Set();
+    const path = this._editor.getPath();
+    const breakpoints = path ? this._breakpointStore.getBreakpointsForPath(path) : new Set();
 
-    var unhandledLines = new Set(breakpoints);
-    var markersToKeep = [];
+    const unhandledLines = new Set(breakpoints);
+    const markersToKeep = [];
 
     // Destroy markers that no longer correspond to breakpoints.
     this._markers.forEach(marker => {
-      var line = marker.getStartBufferPosition().row;
+      const line = marker.getStartBufferPosition().row;
       if (breakpoints.has(line)) {
         markersToKeep.push(marker);
         unhandledLines.delete(line);
@@ -134,12 +134,12 @@ class BreakpointDisplayController {
       if (!gutter) { // flow seems a bit confused here.
         return;
       }
-      var marker = this._editor.markBufferPosition([line, 0], {
+      const marker = this._editor.markBufferPosition([line, 0], {
         persistent: false,
         invalidate: 'touch',
       });
       marker.onDidChange(this._handleMarkerChange.bind(this));
-      var elem = document.createElement('a');
+      const elem = document.createElement('a');
       if (!(elem instanceof window.HTMLAnchorElement)) {
         throw 'should have created anchor element';
       }
@@ -156,7 +156,7 @@ class BreakpointDisplayController {
    * Handler for marker movements due to text being edited.
    */
   _handleMarkerChange(event: Object) {
-    var path = this._editor.getPath();
+    const path = this._editor.getPath();
     if (!path) {
       return;
     }
@@ -175,20 +175,20 @@ class BreakpointDisplayController {
   }
 
   _handleGutterClick(event: Event) {
-    var path = this._editor.getPath();
+    const path = this._editor.getPath();
     if (!path) {
       return;
     }
     // Beware, screenPositionForMouseEvent is not a public api and may change in future versions.
     // $FlowIssue
-    var screenPos = atom.views.getView(this._editor).component.screenPositionForMouseEvent(event);
-    var bufferPos = this._editor.bufferPositionForScreenPosition(screenPos);
+    const screenPos = atom.views.getView(this._editor).component.screenPositionForMouseEvent(event);
+    const bufferPos = this._editor.bufferPositionForScreenPosition(screenPos);
     this._breakpointStore.toggleBreakpoint(path, bufferPos.row);
   }
 
   _handleLineNumberGutterClick(event: Event) {
     // Filter out clicks to other line number gutter elements, e.g. the folding chevron.
-    var target: Object = event.target; // classList isn't in the defs of HTMLElement...
+    const target: Object = event.target; // classList isn't in the defs of HTMLElement...
     if (!target.classList.contains('line-number')) {
       return;
     }

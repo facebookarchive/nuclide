@@ -9,20 +9,20 @@
  * the root directory of this source tree.
  */
 
-var temp = require('temp').track();
-var fs = require('fs');
-var path = require('path');
-var {EventEmitter} = require('events');
-var NuclideClient = require('../lib/NuclideClient');
-var NuclideLocalEventBus = require('../lib/NuclideLocalEventbus');
+const temp = require('temp').track();
+const fs = require('fs');
+const path = require('path');
+const {EventEmitter} = require('events');
+const NuclideClient = require('../lib/NuclideClient');
+const NuclideLocalEventBus = require('../lib/NuclideLocalEventbus');
 
 describe('NuclideLocalEventBus test suite', () => {
 
-  var dirPath;
-  var filePath;
-  var fileContents;
-  var client;
-  var eventBus;
+  let dirPath;
+  let filePath;
+  let fileContents;
+
+  let eventBus;
 
   beforeEach(() => {
     dirPath = temp.mkdirSync();

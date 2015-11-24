@@ -9,10 +9,10 @@
  * the root directory of this source tree.
  */
 
-var React = require('react-for-atom');
-var emptyfunction = require('emptyfunction');
+const React = require('react-for-atom');
+const emptyfunction = require('emptyfunction');
 
-var {PropTypes} = React;
+const {PropTypes} = React;
 
 class NuclideDropdown extends React.Component {
 
@@ -53,15 +53,15 @@ class NuclideDropdown extends React.Component {
   }
 
   render(): ReactElement {
-    var options = this.props.menuItems.map(item =>
+    const options = this.props.menuItems.map(item =>
       <option key={item.value} value={item.value}>{item.label}</option>
     );
-    var selectClassName = 'btn nuclide-dropdown';
+    let selectClassName = 'btn nuclide-dropdown';
     if (this.props.size) {
       selectClassName = `${selectClassName} btn-${this.props.size}`;
     }
-    var selectedItem = this.props.menuItems[this.props.selectedIndex];
-    var selectedValue = selectedItem && selectedItem.value;
+    const selectedItem = this.props.menuItems[this.props.selectedIndex];
+    const selectedValue = selectedItem && selectedItem.value;
     return (
       <div className={'nuclide-dropdown-container ' + this.props.className}>
         <select
@@ -79,7 +79,7 @@ class NuclideDropdown extends React.Component {
 
   _onChange(event: SyntheticMouseEvent): void {
     if (event.target.hasOwnProperty('selectedIndex')) {
-      var selectedIndex = event.target.selectedIndex;
+      const selectedIndex = event.target.selectedIndex;
       this.props.onSelectedChange(selectedIndex);
     }
   }

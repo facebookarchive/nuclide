@@ -9,11 +9,11 @@
  * the root directory of this source tree.
  */
 
-var UnresolvedBreakpointsSidebarPane = require('./UnresolvedBreakpointsSidebarPane');
+const UnresolvedBreakpointsSidebarPane = require('./UnresolvedBreakpointsSidebarPane');
 
 // Supress ESLint no-undef about using WebInspector without window, which would
 // not have flow types attached.
-var WebInspector: typeof WebInspector = window.WebInspector;
+const WebInspector: typeof WebInspector = window.WebInspector;
 
 /**
  * The App is declared in `module.json` and the highest priority one is loaded
@@ -24,7 +24,7 @@ var WebInspector: typeof WebInspector = window.WebInspector;
  */
 class NuclideApp extends WebInspector.App {
   presentUI() {
-    var rootView = new WebInspector.RootView();
+    const rootView = new WebInspector.RootView();
     WebInspector.inspectorView.show(rootView.element);
     WebInspector.inspectorView.panel('sources').then(panel => {
       // Force Sources view to hide the editor.

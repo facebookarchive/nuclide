@@ -24,8 +24,8 @@ import type PropertyDescriptor from './DataCache';
 import type RemoteObjectId from './DataCache';
 import type {Disposable} from 'nuclide-commons';
 import type {ExceptionState} from './BreakpointStore';
-var {BreakpointStore} = require('./BreakpointStore');
-var {DbgpConnector} = require('./DbgpConnector');
+const {BreakpointStore} = require('./BreakpointStore');
+const {DbgpConnector} = require('./DbgpConnector');
 import type {ConnectionConfig} from './DbgpConnector';
 import {
   STATUS_STARTING,

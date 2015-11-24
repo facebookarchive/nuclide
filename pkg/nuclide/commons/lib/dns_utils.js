@@ -23,7 +23,7 @@ async function lookupPreferIpv6(host: string): Promise<string> {
 
 function lookup(host: string, family: DnsFamily): Promise<string> {
   return new Promise((resolve, reject) => {
-    var dns = require('dns');
+    const dns = require('dns');
     dns.lookup(host, family, (error: ?Error, address: ?string) => {
       if (error) {
         reject(error);

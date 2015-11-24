@@ -9,12 +9,12 @@
  * the root directory of this source tree.
  */
 
-var {CompositeDisposable, Disposable} = require('atom');
-var {EventEmitter} = require('events');
-var {buckProjectRootForPath} = require('nuclide-buck-commons');
+const {CompositeDisposable, Disposable} = require('atom');
+const {EventEmitter} = require('events');
+const {buckProjectRootForPath} = require('nuclide-buck-commons');
 import {trackTiming} from 'nuclide-analytics';
 
-var ARC_PROJECT_WWW = 'facebook-www';
+const ARC_PROJECT_WWW = 'facebook-www';
 
 type ProjectType = 'Buck' | 'Hhvm' | 'Other';
 
@@ -35,27 +35,27 @@ class ProjectStore {
   _monitorActiveEditorChange() {
     // For the current active editor, and any update to the active editor,
     // decide whether the toolbar should be displayed.
-    var {onWorkspaceDidStopChangingActivePaneItem} =
+    const {onWorkspaceDidStopChangingActivePaneItem} =
         require('nuclide-atom-helpers').atomEventDebounce;
-    var callback = this._onDidChangeActivePaneItem.bind(this);
+    const callback = this._onDidChangeActivePaneItem.bind(this);
     this._disposables.add(onWorkspaceDidStopChangingActivePaneItem(callback));
     callback();
   }
 
   async _onDidChangeActivePaneItem(): Promise {
-    var activeTextEditor = atom.workspace.getActiveTextEditor();
+    const activeTextEditor = atom.workspace.getActiveTextEditor();
     if (!activeTextEditor) {
       return;
     }
 
-    var fileName = activeTextEditor.getPath();
+    const fileName = activeTextEditor.getPath();
     if (!fileName) {
       return;
     }
     this._currentFilePath = fileName;
 
     this._projectType = 'Other';
-    var isBuckProject = await this._isFileBuckProject(fileName);
+    const isBuckProject = await this._isFileBuckProject(fileName);
     if (isBuckProject) {
       this._projectType = 'Buck';
     } else if (await this._isFileHHVMProject(fileName)) {
@@ -66,21 +66,21 @@ class ProjectStore {
 
   @trackTiming('toolbar.isFileHHVMProject')
   async _isFileHHVMProject(fileName: string): Promise<boolean> {
-    var remoteUri = require('nuclide-remote-uri');
-    var arcanist = require('nuclide-arcanist-client');
-    var arcProjectId = await arcanist.findArcProjectIdOfPath(fileName);
+    const remoteUri = require('nuclide-remote-uri');
+    const arcanist = require('nuclide-arcanist-client');
+    const arcProjectId = await arcanist.findArcProjectIdOfPath(fileName);
 
     return remoteUri.isRemote(fileName) && arcProjectId === ARC_PROJECT_WWW;
   }
 
   @trackTiming('toolbar.isFileBuckProject')
   async _isFileBuckProject(fileName: string): Promise<boolean> {
-    var buckProject = await buckProjectRootForPath(fileName);
+    const buckProject = await buckProjectRootForPath(fileName);
     return !!buckProject;
   }
 
   onChange(callback: () => void): Disposable {
-    var emitter = this._eventEmitter;
+    const emitter = this._eventEmitter;
     this._eventEmitter.on('change', callback);
     return (new Disposable(() => emitter.removeListener('change', callback)));
   }

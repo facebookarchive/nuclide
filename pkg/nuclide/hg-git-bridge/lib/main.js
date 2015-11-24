@@ -16,5 +16,5 @@ module.exports = {
 
   get repositoryForPath() {
     return require('./repositoryForPath');
-  }
+  },
 };

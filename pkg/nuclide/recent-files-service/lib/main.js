@@ -11,7 +11,7 @@
 
 import invariant from 'assert';
 
-var {
+const {
   CompositeDisposable,
   Disposable,
 } = require('atom');
@@ -24,7 +24,7 @@ class Activation {
 
   constructor(state: ?Object) {
     this._subscriptions = new CompositeDisposable();
-    var RecentFilesService = require('./RecentFilesService');
+    const RecentFilesService = require('./RecentFilesService');
     this._service = new RecentFilesService(state);
     this._subscriptions.add(new Disposable(() => {
       this._service.dispose();
@@ -40,7 +40,7 @@ class Activation {
   }
 }
 
-var activation: ?Activation = null;
+let activation: ?Activation = null;
 
 module.exports = {
 

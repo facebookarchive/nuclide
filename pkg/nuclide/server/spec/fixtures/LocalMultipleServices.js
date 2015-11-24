@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-var {Disposable} = require('event-kit');
-var {TestServiceA, TestServiceB} = require('./MultipleServices');
+const {Disposable} = require('event-kit');
+const {TestServiceA, TestServiceB} = require('./MultipleServices');
 
 class LocalTestServiceA extends TestServiceA {
   method(): Promise<string> {
@@ -18,7 +18,7 @@ class LocalTestServiceA extends TestServiceA {
   }
 
   onEvent(callback: () => void): Disposable {
-    var timeoutId = setTimeout(() => {
+    const timeoutId = setTimeout(() => {
       callback();
     }, 400);
 

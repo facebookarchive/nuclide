@@ -11,8 +11,8 @@
 
 import type {Lines, Print} from '../../types/common';
 
-var flatten = require('../../utils/flatten');
-var markers = require('../../constants/markers');
+const flatten = require('../../utils/flatten');
+const markers = require('../../constants/markers');
 
 function printArrayOfStatements(print: Print, nodes: Array<any>): Lines {
   return flatten(nodes.map((node, i, arr) => {

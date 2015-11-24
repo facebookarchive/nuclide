@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-var {CompositeDisposable} = require('atom');
-var logger = null;
+const {CompositeDisposable} = require('atom');
+let logger = null;
 
 function getLogger() {
   return logger || (logger = require('nuclide-logging').getLogger());
@@ -41,12 +41,12 @@ class FileWatcher {
   }
 
   async _promptReload(): Promise {
-    var {getPath, basename} = require('nuclide-remote-uri');
+    const {getPath, basename} = require('nuclide-remote-uri');
 
-    var filePath = this._editor.getPath();
-    var encoding = this._editor.getEncoding();
-    var fileName = basename(filePath);
-    var choice = atom.confirm({
+    const filePath = this._editor.getPath();
+    const encoding = this._editor.getEncoding();
+    const fileName = basename(filePath);
+    const choice = atom.confirm({
       message: fileName + ' has changed on disk.',
       buttons: ['Reload', 'Compare', 'Ignore'],
     });
@@ -54,23 +54,23 @@ class FileWatcher {
       return;
     }
     if (choice === 0) {
-      var buffer = this._editor.getBuffer();
+      const buffer = this._editor.getBuffer();
       if (buffer) {
         buffer.reload();
       }
       return;
     }
 
-    var {getFileSystemServiceByNuclideUri} = require('nuclide-client');
+    const {getFileSystemServiceByNuclideUri} = require('nuclide-client');
 
     // Load the file contents locally or remotely.
-    var localFilePath = getPath(filePath);
-    var filesystemContents = (await getFileSystemServiceByNuclideUri(filePath).
+    const localFilePath = getPath(filePath);
+    const filesystemContents = (await getFileSystemServiceByNuclideUri(filePath).
       readFile(localFilePath)).toString(encoding);
 
     // Open a right split pane to compare the contents.
     // TODO: We can use the diff-view here when ready.
-    var splitEditor = await atom.workspace.open(null, {split: 'right'});
+    const splitEditor = await atom.workspace.open(null, {split: 'right'});
 
     splitEditor.insertText(filesystemContents);
     splitEditor.setGrammar(this._editor.getGrammar());

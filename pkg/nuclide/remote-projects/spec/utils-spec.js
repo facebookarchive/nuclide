@@ -9,27 +9,27 @@
  * the root directory of this source tree.
  */
 
-var {sanitizeNuclideUri} = require('../lib/utils');
+const {sanitizeNuclideUri} = require('../lib/utils');
 
 describe('Utils Test Suite', () => {
 
   describe('sanitizeUri()', () => {
     it('returns a clean url from a normalized url version', () => {
-      var normalizedUrl = 'nuclide:/abc.fb.com/some/path';
-      var fixedUrl = sanitizeNuclideUri(normalizedUrl);
+      const normalizedUrl = 'nuclide:/abc.fb.com/some/path';
+      const fixedUrl = sanitizeNuclideUri(normalizedUrl);
       expect(fixedUrl).toBe('nuclide://abc.fb.com/some/path');
     });
 
     it('returns a clean url from a normalized and path prepended url version', () => {
-      var brokenUrl = '/some_path/abosolute/atom/nuclide:/abc.fb.com/some/path';
-      var fixedUrl = sanitizeNuclideUri(brokenUrl);
+      const brokenUrl = '/some_path/abosolute/atom/nuclide:/abc.fb.com/some/path';
+      const fixedUrl = sanitizeNuclideUri(brokenUrl);
       expect(fixedUrl).toBe('nuclide://abc.fb.com/some/path');
     });
 
     it('returns the same url if it is valid url', () => {
-      var url = 'nuclide://abc.fb.com/some/path';
+      const url = 'nuclide://abc.fb.com/some/path';
       expect(sanitizeNuclideUri(url)).toBe(url);
-      var ftpUrl = 'ftp://abc.fb.com/some/path';
+      const ftpUrl = 'ftp://abc.fb.com/some/path';
       expect(sanitizeNuclideUri(ftpUrl)).toBe(ftpUrl);
     });
   });

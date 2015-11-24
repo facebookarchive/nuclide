@@ -12,8 +12,8 @@
 import type {JSXSpreadAttribute} from 'ast-types-flow';
 import type {Lines, Print} from '../../types/common';
 
-var flatten = require('../../utils/flatten');
-var markers = require('../../constants/markers');
+const flatten = require('../../utils/flatten');
+const markers = require('../../constants/markers');
 
 function printJSXSpreadAttribute(
   print: Print,

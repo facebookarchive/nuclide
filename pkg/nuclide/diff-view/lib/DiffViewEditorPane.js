@@ -84,7 +84,7 @@ export default class DiffViewEditorPane extends React.Component {
       this._subscriptions.dispose();
     }
     if (this._diffViewEditor) {
-      var textEditor = this.getEditorModel();
+      const textEditor = this.getEditorModel();
       textEditor.destroy();
       this._diffViewEditor = null;
     }
@@ -102,7 +102,7 @@ export default class DiffViewEditorPane extends React.Component {
   }
 
   componentWillReceiveProps(newProps: Object): void {
-    var newState = this.state;
+    let newState = this.state;
     if (newProps.initialTextContent !== this.state.textContent) {
       newState = {textContent: newProps.initialTextContent};
       this.setState(newState);
@@ -112,7 +112,7 @@ export default class DiffViewEditorPane extends React.Component {
   }
 
   _updateDiffView(newProps: Object, newState: Object): void {
-    var oldProps = this.props;
+    const oldProps = this.props;
     if (oldProps.filePath !== newProps.filePath) {
       // Loading a new file should clear the undo history.
       this._setTextContent(newProps.filePath, newState.textContent, true /*clearHistory*/);

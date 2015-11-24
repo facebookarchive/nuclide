@@ -8,14 +8,14 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-var invariant = require('assert');
-var {debounce} = require('nuclide-commons');
-var {compareMessagesByFile} = require('./paneUtils');
-var {isTextEditor} = require('nuclide-atom-helpers');
-var React = require('react-for-atom');
-var DiagnosticsPanel = require('./DiagnosticsPanel');
+const invariant = require('assert');
+const {debounce} = require('nuclide-commons');
+const {compareMessagesByFile} = require('./paneUtils');
+const {isTextEditor} = require('nuclide-atom-helpers');
+const React = require('react-for-atom');
+const DiagnosticsPanel = require('./DiagnosticsPanel');
 
-var DEFAULT_TABLE_WIDTH = 600;
+const DEFAULT_TABLE_WIDTH = 600;
 
 type PanelProps = {
   diagnostics: Array<DiagnosticMessage>;
@@ -40,12 +40,12 @@ function createDiagnosticsPanel(
   getDiagnosticsPanel: () => ?DiagnosticsPanel;
   setWarnAboutLinter: (warn: boolean) => void;
  } {
-  var diagnosticsPanel: ?DiagnosticsPanel = null;
-  var bottomPanel: ?atom$Panel = null;
-  var diagnosticsNeedSorting = false;
-  var activeEditor: ?atom$TextEditor = atom.workspace.getActiveTextEditor();
-  var pathToActiveTextEditor = activeEditor ? activeEditor.getPath() : null;
-  var props: PanelProps = {
+  let diagnosticsPanel: ?DiagnosticsPanel = null;
+  let bottomPanel: ?atom$Panel = null;
+  let diagnosticsNeedSorting = false;
+  const activeEditor: ?atom$TextEditor = atom.workspace.getActiveTextEditor();
+  const pathToActiveTextEditor = activeEditor ? activeEditor.getPath() : null;
+  const props: PanelProps = {
     diagnostics: [],
     width: DEFAULT_TABLE_WIDTH,
     height: initialHeight,
@@ -71,7 +71,7 @@ function createDiagnosticsPanel(
     disableLinter,
   };
 
-  var item = document.createElement('div');
+  const item = document.createElement('div');
   function render() {
     if (bottomPanel && !bottomPanel.isVisible()) {
       return;
@@ -87,7 +87,7 @@ function createDiagnosticsPanel(
     diagnosticsPanel = React.render(<DiagnosticsPanel {...props} />, item);
   }
 
-  var activePaneItemSubscription = atom.workspace.onDidChangeActivePaneItem(paneItem => {
+  const activePaneItemSubscription = atom.workspace.onDidChangeActivePaneItem(paneItem => {
     if (isTextEditor(paneItem)) {
       props.pathToActiveTextEditor = paneItem ? paneItem.getPath() : null;
       if (props.filterByActiveTextEditor) {
@@ -96,7 +96,7 @@ function createDiagnosticsPanel(
     }
   });
 
-  var messagesDidUpdateSubscription = diagnosticUpdater.onAllMessagesDidUpdate(
+  const messagesDidUpdateSubscription = diagnosticUpdater.onAllMessagesDidUpdate(
     (messages: Array<DiagnosticMessage>) => {
       props.diagnostics = messages;
       diagnosticsNeedSorting = true;
@@ -117,7 +117,7 @@ function createDiagnosticsPanel(
   // We create an invisible iframe with 100% width, so it will match the width of the panel. We
   // subscribe to its resize events and use that as a proxy for the panel being resized and update
   // the width of the FixedDataTable accordingly.
-  var iframe = window.document.createElement('iframe');
+  const iframe = window.document.createElement('iframe');
   iframe.style.width = '100%';
   iframe.style.height = '1px';
   iframe.style.position = 'absolute';
@@ -126,14 +126,14 @@ function createDiagnosticsPanel(
 
   // Both the iframe and the host element for the React component are children of the root element
   // that serves as the item for the panel.
-  var rootElement = document.createElement('div');
+  const rootElement = document.createElement('div');
   rootElement.appendChild(iframe);
   rootElement.appendChild(item);
   bottomPanel = atom.workspace.addBottomPanel({item: rootElement});
 
   // Now that the iframe is in the DOM, subscribe to its resize events.
-  var win = iframe.contentWindow;
-  var resizeListener = debounce(
+  const win = iframe.contentWindow;
+  const resizeListener = debounce(
     () => {
       props.width = win.innerWidth;
       render();

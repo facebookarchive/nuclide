@@ -12,8 +12,8 @@
 import type {Lines, Print} from '../../types/common';
 import type {RestElement} from 'ast-types-flow';
 
-var flatten = require('../../utils/flatten');
-var markers = require('../../constants/markers');
+const flatten = require('../../utils/flatten');
+const markers = require('../../constants/markers');
 
 function printRestElement(print: Print, node: RestElement): Lines {
   return flatten([

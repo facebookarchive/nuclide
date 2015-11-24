@@ -12,8 +12,8 @@
 import type {Lines, Print} from '../../types/common';
 import type {TryStatement} from 'ast-types-flow';
 
-var markers = require('../../constants/markers');
-var wrapStatement = require('../../wrappers/simple/wrapStatement');
+const markers = require('../../constants/markers');
+const wrapStatement = require('../../wrappers/simple/wrapStatement');
 
 function printTryStatement(print: Print, node: TryStatement): Lines {
   const wrap = x => wrapStatement(print, node, x);
@@ -27,7 +27,7 @@ function printTryStatement(print: Print, node: TryStatement): Lines {
   ];
 
   if (node.handler) {
-    let handler = node.handler;
+    const handler = node.handler;
     parts = parts.concat([
       markers.noBreak,
       markers.space,
@@ -36,7 +36,7 @@ function printTryStatement(print: Print, node: TryStatement): Lines {
   }
 
   if (node.finalizer) {
-    let finalizer = node.finalizer;
+    const finalizer = node.finalizer;
     parts = parts.concat([
       markers.noBreak,
       markers.space,

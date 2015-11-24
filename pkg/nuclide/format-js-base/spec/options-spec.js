@@ -9,28 +9,28 @@
  * the root directory of this source tree.
  */
 
-var DefaultModuleMap = require('../lib/state/DefaultModuleMap');
+const DefaultModuleMap = require('../lib/state/DefaultModuleMap');
 
-var jscs = require('jscodeshift');
-var printRoot = require('../lib/utils/printRoot');
-var {readFile} = require('nuclide-commons').fsPromise;
-var requiresTransform = require('../lib/requires/transform');
+const jscs = require('jscodeshift');
+const printRoot = require('../lib/utils/printRoot');
+const {readFile} = require('nuclide-commons').fsPromise;
+const requiresTransform = require('../lib/requires/transform');
 
 describe('options', () => {
   it('should respect blacklist options', () => {
-    var testPath = 'fixtures/options/respect-blacklist.test';
-    var expectedPath = 'fixtures/options/respect-blacklist.expected';
+    const testPath = 'fixtures/options/respect-blacklist.test';
+    const expectedPath = 'fixtures/options/respect-blacklist.expected';
     waitsForPromise(async () => {
-      var test = await readFile(testPath, 'utf8');
+      const test = await readFile(testPath, 'utf8');
 
-      var root = jscs(test);
+      const root = jscs(test);
       requiresTransform(root, {
         moduleMap: DefaultModuleMap,
         blacklist: new Set(['requires.removeUnusedRequires']),
       });
-      var actual = printRoot(root);
+      const actual = printRoot(root);
 
-      var expected = await readFile(expectedPath, 'utf8');
+      const expected = await readFile(expectedPath, 'utf8');
       expect(actual).toBe(expected);
     });
   });

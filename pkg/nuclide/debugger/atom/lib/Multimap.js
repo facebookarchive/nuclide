@@ -25,7 +25,7 @@ class Multimap<K, V> {
   }
 
   hasEntry(key: K, value: V): boolean {
-    var values = this._storage.get(key);
+    const values = this._storage.get(key);
     if (values) {
       return values.has(value);
     }
@@ -33,14 +33,14 @@ class Multimap<K, V> {
   }
 
   get(key: K): Set<V> {
-    var set = this._storage.get(key);
+    const set = this._storage.get(key);
     return new Set(set) || new Set();
   }
 
   delete(key: K, value: V): boolean {
-    var set = this._storage.get(key);
+    const set = this._storage.get(key);
     if (set) {
-      var deleted = set.delete(value);
+      const deleted = set.delete(value);
       if (set.size === 0) {
         this._storage.delete(key);
       }
@@ -54,7 +54,7 @@ class Multimap<K, V> {
   }
 
   set(key: K, value: V): Multimap<K, V> {
-    var set = this._storage.get(key);
+    const set = this._storage.get(key);
     if (set) {
       set.add(value);
     } else {

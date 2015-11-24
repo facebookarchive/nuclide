@@ -13,7 +13,7 @@ import path from 'path';
 import temp from 'temp';
 
 // Automatically track and cleanup files at exit.
-var tempWithAutoCleanup = temp.track();
+const tempWithAutoCleanup = temp.track();
 
 /**
  * When called from a file in a spec/ directory that has a subdirectory named fixtures/, it copies
@@ -26,7 +26,7 @@ var tempWithAutoCleanup = temp.track();
  */
 async function copyFixture(fixtureName: string, dirname: string): Promise<string> {
   // Create a temp directory.
-  var tempDir = await new Promise((resolve, reject) => {
+  const tempDir = await new Promise((resolve, reject) => {
     tempWithAutoCleanup.mkdir(fixtureName, (err: ?Error, dirPath) => {
       if (err) {
         reject(err);
@@ -38,7 +38,7 @@ async function copyFixture(fixtureName: string, dirname: string): Promise<string
 
   // Recursively copy the contents of the fixture to the temp directory.
   await new Promise((resolve, reject) => {
-    var sourceDirectory = path.join(dirname, 'fixtures', fixtureName);
+    const sourceDirectory = path.join(dirname, 'fixtures', fixtureName);
     ncp(sourceDirectory, tempDir, (err: ?Error) => {
       if (err) {
         reject(err);

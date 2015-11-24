@@ -13,14 +13,14 @@ import type {BusySignalProviderBase} from 'nuclide-busy-signal-provider-base';
 
 import {trackTiming} from 'nuclide-analytics';
 
-var {getServiceByNuclideUri} = require('nuclide-client');
-var {promises, array} = require('nuclide-commons');
-var {RequestSerializer} = promises;
-var {DiagnosticsProviderBase} = require('nuclide-diagnostics-provider-base');
-var {Range} = require('atom');
-var invariant = require('assert');
+const {getServiceByNuclideUri} = require('nuclide-client');
+const {promises, array} = require('nuclide-commons');
+const {RequestSerializer} = promises;
+const {DiagnosticsProviderBase} = require('nuclide-diagnostics-provider-base');
+const {Range} = require('atom');
+const invariant = require('assert');
 
-var {JS_GRAMMARS} = require('./constants.js');
+const {JS_GRAMMARS} = require('./constants.js');
 
 /* TODO remove these duplicate definitions once we figure out importing types
  * through symlinks. */
@@ -76,9 +76,9 @@ function flowMessageToTrace(message) {
 }
 
 function flowMessageToDiagnosticMessage(flowMessages) {
-  var flowMessage = flowMessages[0];
+  const flowMessage = flowMessages[0];
 
-  var diagnosticMessage: FileDiagnosticMessage = {
+  const diagnosticMessage: FileDiagnosticMessage = {
     scope: 'file',
     providerName: 'Flow',
     type: flowMessage['level'] === 'error' ? 'Error' : 'Warning',
@@ -111,7 +111,7 @@ class FlowDiagnosticsProvider {
     ProviderBase?: typeof DiagnosticsProviderBase = DiagnosticsProviderBase,
   ) {
     this._busySignalProvider = busySignalProvider;
-    var utilsOptions = {
+    const utilsOptions = {
       grammarScopes: new Set(JS_GRAMMARS),
       shouldRunOnTheFly,
       onTextEditorEvent: editor => this._runDiagnostics(editor),
@@ -131,38 +131,38 @@ class FlowDiagnosticsProvider {
 
   @trackTiming('flow.run-diagnostics')
   async _runDiagnosticsImpl(textEditor: TextEditor): Promise<void> {
-    var file = textEditor.getPath();
+    const file = textEditor.getPath();
     if (!file) {
       return;
     }
 
-    var currentContents = textEditor.isModified() ? textEditor.getText() : null;
+    const currentContents = textEditor.isModified() ? textEditor.getText() : null;
 
-    var flowService = getServiceByNuclideUri('FlowService', file);
+    const flowService = getServiceByNuclideUri('FlowService', file);
     invariant(flowService);
-    var result = await this._requestSerializer.run(
+    const result = await this._requestSerializer.run(
       flowService.flowFindDiagnostics(file, currentContents)
     );
     if (result.status === 'outdated') {
       return;
     }
-    var diagnostics: ?Diagnostics = result.result;
+    const diagnostics: ?Diagnostics = result.result;
     if (!diagnostics) {
       return;
     }
-    var {flowRoot, messages} = diagnostics;
+    const {flowRoot, messages} = diagnostics;
 
-    var pathsToInvalidate = this._getPathsToInvalidate(flowRoot);
+    const pathsToInvalidate = this._getPathsToInvalidate(flowRoot);
     /* TODO Consider optimizing for the common case of only a single flow root
      * by invalidating all instead of enumerating the files. */
     this._providerBase.publishMessageInvalidation({scope: 'file', filePaths: pathsToInvalidate});
 
-    var pathsForRoot = new Set();
+    const pathsForRoot = new Set();
     this._flowRootToFilePaths.set(flowRoot, pathsForRoot);
-    for (var message of messages) {
+    for (const message of messages) {
       /* Each message consists of several different components, each with its
        * own text and path. */
-      for (var messageComponent of message) {
+      for (const messageComponent of message) {
         pathsForRoot.add(messageComponent.path);
       }
     }
@@ -171,7 +171,7 @@ class FlowDiagnosticsProvider {
   }
 
   _getPathsToInvalidate(flowRoot: NuclideUri): Array<NuclideUri> {
-    var filePaths = this._flowRootToFilePaths.get(flowRoot);
+    const filePaths = this._flowRootToFilePaths.get(flowRoot);
     if (!filePaths) {
       return [];
     }
@@ -184,9 +184,9 @@ class FlowDiagnosticsProvider {
     //
     // Once we provide all diagnostics, instead of just the current file, we can
     // probably remove the activeTextEditor parameter.
-    var activeTextEditor = atom.workspace.getActiveTextEditor();
+    const activeTextEditor = atom.workspace.getActiveTextEditor();
     if (activeTextEditor) {
-      var matchesGrammar = JS_GRAMMARS.indexOf(activeTextEditor.getGrammar().scopeName) !== -1;
+      const matchesGrammar = JS_GRAMMARS.indexOf(activeTextEditor.getGrammar().scopeName) !== -1;
       if (matchesGrammar) {
         this._runDiagnostics(activeTextEditor);
       }
@@ -215,9 +215,9 @@ class FlowDiagnosticsProvider {
   ): DiagnosticProviderUpdate {
 
     // convert array messages to Error Objects with Traces
-    var fileDiagnostics = diagnostics.map(flowMessageToDiagnosticMessage);
+    const fileDiagnostics = diagnostics.map(flowMessageToDiagnosticMessage);
 
-    var filePathToMessages = new Map();
+    const filePathToMessages = new Map();
 
     // This invalidates the errors in the current file. If Flow, when running in this root, has
     // reported errors for this file, this invalidation is not necessary because the path will be
@@ -234,9 +234,9 @@ class FlowDiagnosticsProvider {
     // from another root. But such is life.
     filePathToMessages.set(currentFile, []);
 
-    for (var diagnostic of fileDiagnostics) {
-      var path = diagnostic['filePath'];
-      var diagnosticArray = filePathToMessages.get(path);
+    for (const diagnostic of fileDiagnostics) {
+      const path = diagnostic['filePath'];
+      let diagnosticArray = filePathToMessages.get(path);
       if (!diagnosticArray) {
         diagnosticArray = [];
         filePathToMessages.set(path, diagnosticArray);
@@ -248,13 +248,13 @@ class FlowDiagnosticsProvider {
   }
 
   invalidateProjectPath(projectPath: string): void {
-    var pathsToInvalidate = new Set();
-    for (var flowRootEntry of this._flowRootToFilePaths) {
-      var [flowRoot, filePaths] = flowRootEntry;
+    const pathsToInvalidate = new Set();
+    for (const flowRootEntry of this._flowRootToFilePaths) {
+      const [flowRoot, filePaths] = flowRootEntry;
       if (!flowRoot.startsWith(projectPath)) {
         continue;
       }
-      for (var filePath of filePaths) {
+      for (const filePath of filePaths) {
         pathsToInvalidate.add(filePath);
       }
       this._flowRootToFilePaths.delete(flowRoot);

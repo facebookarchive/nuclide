@@ -10,7 +10,7 @@
  */
 function fileColumnCellDataGetter(cellDataKey: 'filePath', diagnostic: DiagnosticMessage): string {
   if (diagnostic.filePath) {
-    var [, relativePath] = atom.project.relativizePath(diagnostic.filePath);
+    const [, relativePath] = atom.project.relativizePath(diagnostic.filePath);
     return relativePath;
   } else {
     return '';
@@ -18,10 +18,10 @@ function fileColumnCellDataGetter(cellDataKey: 'filePath', diagnostic: Diagnosti
 }
 
 function compareMessagesByFile(a: DiagnosticMessage, b: DiagnosticMessage): number {
-  var aMsg = fileColumnCellDataGetter('filePath', a);
-  var bMsg = fileColumnCellDataGetter('filePath', b);
+  const aMsg = fileColumnCellDataGetter('filePath', a);
+  const bMsg = fileColumnCellDataGetter('filePath', b);
 
-  var compareVal = aMsg.localeCompare(bMsg);
+  let compareVal = aMsg.localeCompare(bMsg);
   // If the messages are from the same file (`filePath` is equal and `localeCompare`
   // returns 0), compare the line numbers within the file to determine their sort order.
   if (compareVal === 0 && (a.range !== undefined && b.range !== undefined)) {

@@ -11,18 +11,18 @@
 
 import type {SourceOptions} from './options/SourceOptions';
 
-var Options = require('./options/Options');
+const Options = require('./options/Options');
 
-var jscs = require('jscodeshift');
-var nuclideTransform = require('./nuclide/transform');
-var printRoot = require('./utils/printRoot');
-var requiresTransform = require('./requires/transform');
+const jscs = require('jscodeshift');
+const nuclideTransform = require('./nuclide/transform');
+const printRoot = require('./utils/printRoot');
+const requiresTransform = require('./requires/transform');
 
 function transform(source: string, options: SourceOptions): string {
   Options.validateSourceOptions(options);
 
   // Parse the source code once, then reuse the root node
-  var root = jscs(source);
+  const root = jscs(source);
 
   // Add use-strict
   // TODO: implement this, make it configurable
@@ -30,7 +30,7 @@ function transform(source: string, options: SourceOptions): string {
   // Requires
   requiresTransform(root, options);
 
-  var output = printRoot(root);
+  let output = printRoot(root);
 
   // Transform that operates on the raw string output.
   output = nuclideTransform(output, options);

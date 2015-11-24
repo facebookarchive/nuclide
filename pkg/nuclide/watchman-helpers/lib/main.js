@@ -9,13 +9,13 @@
  * the root directory of this source tree.
  */
 
-var {fsPromise} = require('nuclide-commons');
+const {fsPromise} = require('nuclide-commons');
 
-var WATCHMAN_DEFAULT_PATH = '/usr/local/bin/watchman';
+const WATCHMAN_DEFAULT_PATH = '/usr/local/bin/watchman';
 
 async function getWatchmanBinaryPath(): Promise<string> {
   try {
-    var stats = await fsPromise.stat(WATCHMAN_DEFAULT_PATH);
+    const stats = await fsPromise.stat(WATCHMAN_DEFAULT_PATH);
     // `stats` contains a `mode` property, a number which can be used to determine
     // whether this file is executable. However, the number is platform-dependent.
     if (stats && stats.isFile()) {

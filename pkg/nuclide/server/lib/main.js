@@ -16,7 +16,7 @@ import NuclideServer from './NuclideServer';
 
 const DEFAULT_PORT = 9090;
 
-var logger = getLogger();
+const logger = getLogger();
 
 function setupServer(): void {
   try {
@@ -80,7 +80,7 @@ process.on('unhandledRejection', (error, promise) => {
   logger.error(`Unhandled promise rejection ${promise}. Error:`, error);
 });
 
-var argv = require('yargs')
+const argv = require('yargs')
     .default('port', DEFAULT_PORT)
     .argv;
 

@@ -27,14 +27,14 @@ import {getHackService} from './utils';
 import {getLogger} from 'nuclide-logging';
 import {array} from 'nuclide-commons';
 
-var {Range, Emitter} = require('atom');
-var HackWorker = require('./HackWorker');
-var {CompletionType, SymbolType} = require('nuclide-hack-common');
+const {Range, Emitter} = require('atom');
+const HackWorker = require('./HackWorker');
+const {CompletionType, SymbolType} = require('nuclide-hack-common');
 // The word char regex include \ to search for namespaced classes.
-var wordCharRegex = /[\w\\]/;
+const wordCharRegex = /[\w\\]/;
 // The xhp char regex include : and - to match xhp tags like <ui:button-group>.
-var xhpCharRegex = /[\w:-]/;
-var XHP_LINE_TEXT_REGEX = /<([a-z][a-z0-9_.:-]*)[^>]*\/?>/gi;
+const xhpCharRegex = /[\w:-]/;
+const XHP_LINE_TEXT_REGEX = /<([a-z][a-z0-9_.:-]*)[^>]*\/?>/gi;
 
 const UPDATE_DEPENDENCIES_INTERVAL_MS = 10000;
 const DEPENDENCIES_LOADED_EVENT = 'dependencies-loaded';
@@ -78,9 +78,9 @@ module.exports = class HackLanguage {
   _setupUpdateDependenciesInterval() {
     // Fetch any dependencies the HackWorker needs after learning about this file.
     // We don't block any realtime logic on the dependency fetching - it could take a while.
-    var pendingUpdateDependencies = false;
+    let pendingUpdateDependencies = false;
 
-    var finishUpdateDependencies = () => {
+    const finishUpdateDependencies = () => {
       pendingUpdateDependencies = false;
     };
 
@@ -126,7 +126,7 @@ module.exports = class HackLanguage {
   async updateFile(path: string, contents: string): Promise {
     if (contents !== this._pathContentsMap.get(path)) {
       this._pathContentsMap.set(path, contents);
-      var webWorkerMessage = {cmd: 'hh_add_file', args: [path, contents]};
+      const webWorkerMessage = {cmd: 'hh_add_file', args: [path, contents]};
       this._isFinishedLoadingDependencies = false;
       return await this._hackWorker.runWorkerTask(webWorkerMessage);
     }
@@ -151,7 +151,7 @@ module.exports = class HackLanguage {
     if (!dependenciesResult) {
       return;
     }
-    let {dependencies} = dependenciesResult;
+    const {dependencies} = dependenciesResult;
     // Serially update depednecies not to block the worker from serving other feature requests.
     /* eslint-disable babel/no-await-in-loop */
     for (const [filePath, contents] of dependencies) {
@@ -162,7 +162,7 @@ module.exports = class HackLanguage {
 
   async updateDependency(path: string, contents: string): Promise {
     if (contents !== this._pathContentsMap.get(path)) {
-      var webWorkerMessage = {cmd: 'hh_add_dep', args: [path, contents]};
+      const webWorkerMessage = {cmd: 'hh_add_dep', args: [path, contents]};
       await this._hackWorker.runWorkerTask(webWorkerMessage, {isDependency: true});
     }
   }
@@ -188,9 +188,9 @@ module.exports = class HackLanguage {
     startPosition: number,
     endPosition: number,
   ): Promise<string> {
-    var webWorkerMessage = {cmd: 'hh_format', args: [contents, startPosition, endPosition]};
-    var response = await this._hackWorker.runWorkerTask(webWorkerMessage);
-    var errorMessage = response.error_message;
+    const webWorkerMessage = {cmd: 'hh_format', args: [contents, startPosition, endPosition]};
+    const response = await this._hackWorker.runWorkerTask(webWorkerMessage);
+    const errorMessage = response.error_message;
     if (errorMessage) {
       if (errorMessage === 'Php_or_decl') {
         throw new Error('Sorry, PHP and <?hh //decl are not supported');
@@ -223,8 +223,8 @@ module.exports = class HackLanguage {
 
   async getDiagnostics(path: string, contents: string): Promise<Array<HackDiagnostic>> {
     await this.updateFile(path, contents);
-    var webWorkerMessage = {cmd: 'hh_check_file', args: [path]};
-    var {errors} = await this._hackWorker.runWorkerTask(webWorkerMessage);
+    const webWorkerMessage = {cmd: 'hh_check_file', args: [path]};
+    const {errors} = await this._hackWorker.runWorkerTask(webWorkerMessage);
     return errors;
   }
 
@@ -289,13 +289,13 @@ module.exports = class HackLanguage {
   ): Promise<?HackSymbolNameResult> {
 
     await this.updateFile(path, contents);
-    var webWorkerMessage = {cmd: 'hh_get_method_name', args: [path, lineNumber, column]};
-    var response = await this._hackWorker.runWorkerTask(webWorkerMessage);
+    const webWorkerMessage = {cmd: 'hh_get_method_name', args: [path, lineNumber, column]};
+    const response = await this._hackWorker.runWorkerTask(webWorkerMessage);
     if (!response.name) {
       return null;
     }
-    var symbolType = getSymbolType(response.result_type);
-    var position = response.pos;
+    const symbolType = getSymbolType(response.result_type);
+    const position = response.pos;
     return {
       name: response.name,
       type: symbolType,
@@ -423,7 +423,7 @@ module.exports = class HackLanguage {
     lineText: string,
     column: number
   ): Promise<Array<HackSearchPosition>> {
-    var {search, start, end} = this._parseStringForExpression(lineText, column);
+    const {search, start, end} = this._parseStringForExpression(lineText, column);
     if (!search) {
       return [];
     }
@@ -444,20 +444,20 @@ module.exports = class HackLanguage {
     lineText: string,
     column: number,
   ): {search: string; start: number; end: number} {
-    var search = null;
-    var start = column;
+    let search = null;
+    let start = column;
 
-    var isXHP = false;
-    var xhpMatch;
+    let isXHP = false;
+    let xhpMatch;
     while  (xhpMatch = XHP_LINE_TEXT_REGEX.exec(lineText)) {
-      var xhpMatchIndex = xhpMatch.index + 1;
+      const xhpMatchIndex = xhpMatch.index + 1;
       if (column >= xhpMatchIndex && column < (xhpMatchIndex + xhpMatch[1].length)) {
         isXHP = true;
         break;
       }
     }
 
-    var syntaxCharRegex = isXHP ? xhpCharRegex : wordCharRegex;
+    const syntaxCharRegex = isXHP ? xhpCharRegex : wordCharRegex;
     // Scan for the word start for the hack variable, function or xhp tag
     // we are trying to get the definition for.
     while (start >= 0 && syntaxCharRegex.test(lineText.charAt(start))) {
@@ -467,7 +467,7 @@ module.exports = class HackLanguage {
       start--;
     }
     start++;
-    var end = column;
+    let end = column;
     while (syntaxCharRegex.test(lineText.charAt(end))) {
       end++;
     }
@@ -490,8 +490,8 @@ module.exports = class HackLanguage {
       return null;
     }
     await this.updateFile(path, contents);
-    var webWorkerMessage = {cmd: 'hh_infer_type', args: [path, lineNumber, column]};
-    var {type} = await this._hackWorker.runWorkerTask(webWorkerMessage);
+    const webWorkerMessage = {cmd: 'hh_infer_type', args: [path, lineNumber, column]};
+    const {type} = await this._hackWorker.runWorkerTask(webWorkerMessage);
     return type;
   }
 
@@ -524,15 +524,15 @@ module.exports = class HackLanguage {
     acceptable: ?((value: T) => boolean),
     timeoutMs: ?number,
   ): Promise<T> {
-    var startTime = Date.now();
+    const startTime = Date.now();
     while (!timeoutMs || Date.now() - startTime < timeoutMs) {
-      var result = await func();
+      const result = await func();
       if ((acceptable && acceptable(result)) || this.isFinishedLoadingDependencies()) {
         return result;
       }
       // Wait for dependencies to finish loading - to avoid polling, we'll wait for the callback.
       await new Promise(resolve => {
-        var subscription = this.onFinishedLoadingDependencies(() => {
+        const subscription = this.onFinishedLoadingDependencies(() => {
           subscription.dispose();
           resolve();
         });
@@ -543,7 +543,7 @@ module.exports = class HackLanguage {
 
 };
 
-var stringToCompletionType = {
+const stringToCompletionType = {
   'id': CompletionType.ID,
   'new': CompletionType.NEW,
   'type': CompletionType.TYPE,
@@ -552,14 +552,14 @@ var stringToCompletionType = {
 };
 
 function getCompletionType(input: string) {
-  var completionType = stringToCompletionType[input];
+  let completionType = stringToCompletionType[input];
   if (typeof completionType === 'undefined') {
     completionType = CompletionType.NONE;
   }
   return completionType;
 }
 
-var stringToSymbolType = {
+const stringToSymbolType = {
   'class': SymbolType.CLASS,
   'function': SymbolType.FUNCTION,
   'method': SymbolType.METHOD,
@@ -567,14 +567,14 @@ var stringToSymbolType = {
 };
 
 function getSymbolType(input: string) {
-  var symbolType = stringToSymbolType[input];
+  let symbolType = stringToSymbolType[input];
   if (typeof symbolType === 'undefined') {
     symbolType = SymbolType.METHOD;
   }
   return symbolType;
 }
 
-var serverCompletionTypes = new Set([
+const serverCompletionTypes = new Set([
   CompletionType.ID,
   CompletionType.NEW,
   CompletionType.TYPE,
@@ -586,15 +586,15 @@ function shouldDoServerCompletion(type: number): boolean {
 
 function processCompletions(completionsResponse: Array<HackCompletion>): Array<any> {
   return completionsResponse.map(completion => {
-    var {name, type, func_details: functionDetails} = completion;
+    let {name, type, func_details: functionDetails} = completion;
     if (type && type.indexOf('(') === 0 && type.lastIndexOf(')') === type.length - 1) {
       type = type.substring(1, type.length - 1);
     }
-    var matchSnippet = name;
+    let matchSnippet = name;
     if (functionDetails) {
-      var {params} = functionDetails;
+      const {params} = functionDetails;
       // Construct the snippet: e.g. myFunction(${1:$arg1}, ${2:$arg2});
-      var paramsString = params.map((param, index) => '${' + (index + 1) + ':' + param.name + '}').join(', ');
+      const paramsString = params.map((param, index) => '${' + (index + 1) + ':' + param.name + '}').join(', ');
       matchSnippet = name + '(' + paramsString + ')';
     }
     return {

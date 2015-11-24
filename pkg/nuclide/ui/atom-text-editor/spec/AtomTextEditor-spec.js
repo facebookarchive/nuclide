@@ -9,17 +9,17 @@
  * the root directory of this source tree.
  */
 
-var AtomTextEditor = require('../lib/AtomTextEditor');
-var React = require('react-for-atom');
-var invariant = require('assert');
+const AtomTextEditor = require('../lib/AtomTextEditor');
+const React = require('react-for-atom');
+const invariant = require('assert');
 
-var {TestUtils} = React.addons;
+const {TestUtils} = React.addons;
 
 describe('nuclide-ui-atom-text-editor', () => {
 
   describe('when its `path` is set', () => {
 
-    var grammar;
+    let grammar;
 
     beforeEach(() => {
       // Path is relative to the root of this package (where "package.json" lives).
@@ -33,7 +33,7 @@ describe('nuclide-ui-atom-text-editor', () => {
     });
 
     it('loads the desired `Grammar`', () => {
-      var element = TestUtils.renderIntoDocument(<AtomTextEditor path=".ansi" />);
+      const element = TestUtils.renderIntoDocument(<AtomTextEditor path=".ansi" />);
       expect(element.getModel().getGrammar().scopeName).toEqual('text.ansi');
     });
 
@@ -41,7 +41,7 @@ describe('nuclide-ui-atom-text-editor', () => {
 
   describe('when `readOnly`', () => {
 
-    var element;
+    let element;
 
     describe('is true', () => {
 
@@ -51,7 +51,7 @@ describe('nuclide-ui-atom-text-editor', () => {
 
       it('allows copying', () => {
         invariant(element);
-        var model = element.getModel();
+        const model = element.getModel();
         model.setText('fraggle');
         model.selectAll();
         model.copySelectedText();
@@ -60,7 +60,7 @@ describe('nuclide-ui-atom-text-editor', () => {
 
       it('disallows inserting', () => {
         invariant(element);
-        var model = element.getModel();
+        const model = element.getModel();
         model.setText('foobar');
         model.insertNewline();
         expect(model.getText()).toEqual('foobar');
@@ -68,7 +68,7 @@ describe('nuclide-ui-atom-text-editor', () => {
 
       it('disallows pasting', () => {
         invariant(element);
-        var model = element.getModel();
+        const model = element.getModel();
         atom.clipboard.write('foo bar baz');
         model.pasteText();
         expect(model.getText()).toEqual('');
@@ -76,7 +76,7 @@ describe('nuclide-ui-atom-text-editor', () => {
 
       it('disallows deleting text', () => {
         invariant(element);
-        var model = element.getModel();
+        const model = element.getModel();
         model.setText('balloon');
         model.selectAll();
         model.delete();
@@ -85,7 +85,7 @@ describe('nuclide-ui-atom-text-editor', () => {
 
       it('disallows backspace', () => {
         invariant(element);
-        var model = element.getModel();
+        const model = element.getModel();
         model.setText('foobar');
         model.moveToEndOfLine();
         model.backspace();
@@ -102,7 +102,7 @@ describe('nuclide-ui-atom-text-editor', () => {
 
       it('allows copying', () => {
         invariant(element);
-        var model = element.getModel();
+        const model = element.getModel();
         model.setText('fraggle');
         model.selectAll();
         model.copySelectedText();
@@ -111,7 +111,7 @@ describe('nuclide-ui-atom-text-editor', () => {
 
       it('allows inserting', () => {
         invariant(element);
-        var model = element.getModel();
+        const model = element.getModel();
         model.setText('foobar');
         model.insertNewline();
         expect(model.getText()).toEqual('foobar\n');
@@ -119,7 +119,7 @@ describe('nuclide-ui-atom-text-editor', () => {
 
       it('allows pasting', () => {
         invariant(element);
-        var model = element.getModel();
+        const model = element.getModel();
         atom.clipboard.write('foo bar baz');
         model.pasteText();
         expect(model.getText()).toEqual('foo bar baz');
@@ -127,7 +127,7 @@ describe('nuclide-ui-atom-text-editor', () => {
 
       it('allows deleting text', () => {
         invariant(element);
-        var model = element.getModel();
+        const model = element.getModel();
         model.setText('balloon');
         model.selectAll();
         model.delete();
@@ -136,7 +136,7 @@ describe('nuclide-ui-atom-text-editor', () => {
 
       it('allows backspace', () => {
         invariant(element);
-        var model = element.getModel();
+        const model = element.getModel();
         model.setText('foobar');
         model.moveToEndOfLine();
         model.backspace();

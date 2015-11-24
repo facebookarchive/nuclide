@@ -9,14 +9,14 @@
  * the root directory of this source tree.
  */
 
-var ClangFlagsManager = require('../lib/ClangFlagsManager');
+const ClangFlagsManager = require('../lib/ClangFlagsManager');
 
 describe('ClangFlagsManager', () => {
 
   it('sanitizeCommand()', () => {
-    var {sanitizeCommand} = ClangFlagsManager;
+    const {sanitizeCommand} = ClangFlagsManager;
 
-    var originalArgs = [
+    const originalArgs = [
       '/usr/bin/clang',
       '-mios-simulator-version-min=7.0',
       '-c',
@@ -68,11 +68,11 @@ describe('ClangFlagsManager', () => {
       'buck-out/local/path/EXExample.o',
       'local/path/EXExample.m',
     ];
-    var buckProjectRoot = '/Users/whoami/project/';
-    var sanitizedCommandArgs = sanitizeCommand(
+    const buckProjectRoot = '/Users/whoami/project/';
+    const sanitizedCommandArgs = sanitizeCommand(
         '/Users/whoami/project/local/path/EXExample.m', originalArgs, buckProjectRoot);
 
-    var expectedArgs = [
+    const expectedArgs = [
       '/usr/bin/clang',
       '-mios-simulator-version-min=7.0',
       '-c',

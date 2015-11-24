@@ -60,7 +60,7 @@ export class MerlinProcess {
    */
   async pushDotMerlinPath(path: NuclideUri): Promise<mixed> {
     return await this._promiseQueue.submit(async (resolve, reject) => {
-      var result = await this.runSingleCommand([
+      const result = await this.runSingleCommand([
         'reset',
         'dot_merlin',
         [path],
@@ -85,7 +85,7 @@ export class MerlinProcess {
         name,
       ]);
 
-      var result = await this.runSingleCommand([
+      const result = await this.runSingleCommand([
         'tell',
         'source',
         content,
@@ -110,7 +110,7 @@ export class MerlinProcess {
     kind: string,
   ): Promise<?{file: string, pos: {line: number, col: number}}> {
     return await this._promiseQueue.submit(async (resolve, reject) => {
-      var location: Object = await this.runSingleCommand([
+      const location: Object = await this.runSingleCommand([
         'locate',
         /* identifier name */ '',
         kind,
@@ -135,7 +135,7 @@ export class MerlinProcess {
 
   async complete(path: NuclideUri, line: number, col: number, prefix: string): Promise<mixed> {
     return await this._promiseQueue.submit(async (resolve, reject) => {
-      var result = await this.runSingleCommand([
+      const result = await this.runSingleCommand([
         'complete',
         'prefix',
         prefix,
@@ -154,25 +154,25 @@ export class MerlinProcess {
    * on a single line).
    */
   runSingleCommand(command: mixed): Promise<mixed> {
-    var logger = require('nuclide-logging').getLogger();
+    const logger = require('nuclide-logging').getLogger();
 
-    var commandString = JSON.stringify(command);
-    var stdin = this._proc.stdin;
-    var stdout = this._proc.stdout;
+    const commandString = JSON.stringify(command);
+    const stdin = this._proc.stdin;
+    const stdout = this._proc.stdout;
 
     return new Promise((resolve, reject) => {
       // Flow claims that createInterface is not found, but it obviously can find it since the type
       // hint for `reader` returns Interface, which is the return value of createInterface.
       // $FlowIssue
-      var {createInterface} = require('readline');
-      var reader = createInterface({
+      const {createInterface} = require('readline');
+      const reader = createInterface({
         input: stdout,
         terminal: false,
       });
 
       reader.on('line', (line) => {
         reader.close();
-        var response;
+        let response;
         try {
           response = JSON.parse(line);
         } catch (err) {
@@ -184,8 +184,8 @@ export class MerlinProcess {
           return;
         }
 
-        var status = response[0];
-        var content = response[1];
+        const status = response[0];
+        const content = response[1];
 
         if (ERROR_RESPONSES.has(status)) {
           logger.error('Ocamlmerlin raised an error: ' + line);

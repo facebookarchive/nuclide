@@ -8,20 +8,20 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-var {Column, Table} = require('fixed-data-table-for-atom');
-var React = require('react-for-atom');
+const {Column, Table} = require('fixed-data-table-for-atom');
+const React = require('react-for-atom');
 
 import {track} from 'nuclide-analytics';
 
-var {fileColumnCellDataGetter} = require('./paneUtils');
+const {fileColumnCellDataGetter} = require('./paneUtils');
 
 type textAndType = {text: string, isPlainText: boolean};
 
-var ROW_VERTICAL_PADDING = 16; // 8px top and bottom padding.
-var DEFAULT_ROW_TEXT_HEIGHT = 15;
-var MAX_CHARS_PER_LINE = 100;
+const ROW_VERTICAL_PADDING = 16; // 8px top and bottom padding.
+const DEFAULT_ROW_TEXT_HEIGHT = 15;
+const MAX_CHARS_PER_LINE = 100;
 
-var TypeToHighlightClassName = {
+const TypeToHighlightClassName = {
   ERROR: 'highlight-error',
   WARNING: 'highlight-warning',
 };
@@ -45,7 +45,7 @@ function plainTextColumnCellRenderer(text: string): ReactElement {
 }
 
 function typeColumnCellRenderer(text: string): ReactElement {
-  var highlightClassName = TypeToHighlightClassName[text.toUpperCase()] || 'highlight';
+  const highlightClassName = TypeToHighlightClassName[text.toUpperCase()] || 'highlight';
   return (
     <span className="nuclide-fixed-data-cell">
       <span className={highlightClassName}>
@@ -102,8 +102,8 @@ function onRowClick(
 
   track('diagnostics-panel-goto-location');
 
-  var uri = rowData.filePath;
-  var options = {
+  const uri = rowData.filePath;
+  const options = {
     searchAllPanes: true,
     // If initialLine is N, Atom will navigate to line N+1.
     // Flow sometimes reports a row of -1, so this ensures the line is at least one.
@@ -127,15 +127,15 @@ class DiagnosticsPane extends React.Component {
 
   _rowHeightGetter(rowIndex: number): number {
     // TODO(t8055416): Improve this heuristic for determining the row height.
-    var diagnostic = this._rowGetter(rowIndex);
-    var filePath = fileColumnCellDataGetter('filePath', diagnostic);
-    var {text: message} = messageColumnCellDataGetter('message', diagnostic);
+    const diagnostic = this._rowGetter(rowIndex);
+    const filePath = fileColumnCellDataGetter('filePath', diagnostic);
+    const {text: message} = messageColumnCellDataGetter('message', diagnostic);
 
     // Note this will be an overestimate if the message is HTML instead of plaintext.
-    var messageLength = message.length;
+    const messageLength = message.length;
 
-    var textLength = Math.max(filePath.length, messageLength);
-    var numRowsOfText = Math.floor(textLength / MAX_CHARS_PER_LINE) + 1;
+    const textLength = Math.max(filePath.length, messageLength);
+    const numRowsOfText = Math.floor(textLength / MAX_CHARS_PER_LINE) + 1;
     return numRowsOfText * DEFAULT_ROW_TEXT_HEIGHT + ROW_VERTICAL_PADDING;
   }
 
@@ -149,7 +149,7 @@ class DiagnosticsPane extends React.Component {
   render(): ReactElement {
     // TODO(ehzhang): Setting isResizable={true} on columns seems to break things pretty badly.
     // Perhaps this is because we are using react-for-atom instead of react?
-    var fileColumn = null;
+    let fileColumn = null;
     if (this.props.showFileName) {
       fileColumn = (
         <Column
@@ -218,7 +218,7 @@ class DiagnosticsPane extends React.Component {
   }
 }
 
-var {PropTypes} = React;
+const {PropTypes} = React;
 
 DiagnosticsPane.propTypes = {
   height: PropTypes.number.isRequired,

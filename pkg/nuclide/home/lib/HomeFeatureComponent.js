@@ -9,12 +9,12 @@
  * the root directory of this source tree.
  */
 
-var React = require('react-for-atom');
+const React = require('react-for-atom');
 
 class HomeFeatureComponent extends React.Component {
 
   render(): ReactElement {
-    var {title, command} = this.props;
+    const {title, command} = this.props;
     return (
       <details className="welcome-card">
         <summary className={`welcome-summary icon icon-${this.props.icon}`}>

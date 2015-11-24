@@ -10,19 +10,19 @@
  */
 
 
-var {log, logError} = require('./utils');
+const {log, logError} = require('./utils');
 
 async function getProcessInfoList(): Promise<Array<DebuggerProcessInfo>> {
   log('Getting process info list');
 
-  var remoteUri = require('nuclide-remote-uri');
+  const remoteUri = require('nuclide-remote-uri');
   // TODO: Currently first remote dir only.
-  var remoteDirectoryPath = atom.project.getDirectories()
+  const remoteDirectoryPath = atom.project.getDirectories()
     .map(directoryPath => directoryPath.getPath())
     .filter(directoryPath => remoteUri.isRemote(directoryPath))[0];
 
   if (remoteDirectoryPath) {
-    var ProcessInfo = require('./ProcessInfo');
+    const ProcessInfo = require('./ProcessInfo');
     return [new ProcessInfo(remoteDirectoryPath)];
   } else {
     log('No remote dirs getting process info list');

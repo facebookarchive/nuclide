@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-var path = require('path');
-var {USER, HOME} = require('nuclide-commons').env;
+const path = require('path');
+const {USER, HOME} = require('nuclide-commons').env;
 
 import type {NuclideRemoteConnectionParams} from './connection-types';
 

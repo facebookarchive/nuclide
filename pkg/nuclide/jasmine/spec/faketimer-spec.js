@@ -11,7 +11,7 @@
 
 describe('Fake timer test suite', () => {
   it('test setTimeout and clearTimeout', () => {
-    var firstExecuted = false;
+    let firstExecuted = false;
 
     setTimeout(() => {firstExecuted = true}, 10);
 
@@ -21,10 +21,10 @@ describe('Fake timer test suite', () => {
     window.advanceClock(1);
     expect(firstExecuted).toBe(true);
 
-    var secondExecuted = false;
-    var thirdExecuted = false;
+    let secondExecuted = false;
+    let thirdExecuted = false;
 
-    var secondId = setTimeout(() => {secondExecuted = true}, 20);
+    const secondId = setTimeout(() => {secondExecuted = true}, 20);
     setTimeout(() => {thirdExecuted = true}, 30);
 
     window.advanceClock(19);
@@ -40,8 +40,8 @@ describe('Fake timer test suite', () => {
   });
 
   it('test fakeSetTimeout triggered in expected order', () => {
-    var firstExecuted = false;
-    var secondExecuted = false;
+    let firstExecuted = false;
+    let secondExecuted = false;
 
     setTimeout(() => {
       firstExecuted = true;
@@ -60,12 +60,12 @@ describe('Fake timer test suite', () => {
   });
 
   it('test fakeSetInterval and fakeClearInterval', () => {
-    var firstExecutedCount = 0;
-    var secondExecutedCount = 0;
+    let firstExecutedCount = 0;
+    let secondExecutedCount = 0;
 
     window.fakeSetInterval(() => firstExecutedCount++, 10);
     window.advanceClock(5);
-    var secondId = window.fakeSetInterval(() => secondExecutedCount++, 10);
+    const secondId = window.fakeSetInterval(() => secondExecutedCount++, 10);
 
     window.advanceClock(15);
 
@@ -82,8 +82,8 @@ describe('Fake timer test suite', () => {
 
   // Atom's implementation will fail at this test case. (https://github.com/atom/atom/issues/6627)
   it('test fakeSetInterval triggered in expected order', () => {
-    var firstExecutedCount = 0;
-    var secondExecutedCount = 0;
+    let firstExecutedCount = 0;
+    let secondExecutedCount = 0;
 
     window.fakeSetInterval(() => {
       firstExecutedCount++;

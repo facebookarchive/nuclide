@@ -13,12 +13,12 @@ import type TestRunnerControllerState from './TestRunnerController';
 import type {HomeFragments} from 'nuclide-home-interfaces';
 import type {TestRunner} from 'nuclide-test-runner-interfaces';
 
-var {
+const {
   CompositeDisposable,
   Disposable,
 } = require('atom');
 
-var logger;
+let logger;
 function getLogger() {
   if (!logger) {
     logger = require('nuclide-logging').getLogger();
@@ -34,7 +34,7 @@ function getLogger() {
  *     'fo…ar'
  */
 function limitString(str: string, length?: number = 20): string {
-  var strLength = str.length;
+  const strLength = str.length;
   return (strLength > length) ?
     `${str.substring(0, length / 2)}…${str.substring(str.length - length / 2)}` :
     str;
@@ -48,7 +48,7 @@ class Activation {
 
   constructor(state: ?TestRunnerControllerState) {
     this._testRunners = new Set();
-    var TestRunnerController = require('./TestRunnerController');
+    const TestRunnerController = require('./TestRunnerController');
     this._controller = new TestRunnerController(state, this._testRunners);
     this._disposables = new CompositeDisposable();
     this._disposables.add(
@@ -66,7 +66,7 @@ class Activation {
         '.entry.file.list-item',
         'nuclide-test-runner:run-tests',
         (event) => {
-          var target = event.currentTarget.querySelector('.name');
+          const target = event.currentTarget.querySelector('.name');
           this._controller.runTests(target.dataset.path);
         }
       )
@@ -77,7 +77,7 @@ class Activation {
         '.entry.directory.list-item',
         'nuclide-test-runner:run-tests',
         (event) => {
-          var target = event.currentTarget.querySelector('.name');
+          const target = event.currentTarget.querySelector('.name');
           this._controller.runTests(target.dataset.path);
         }
       )
@@ -126,7 +126,7 @@ class Activation {
       // Intentionally **not** an arrow function because Atom sets the context when calling this and
       // allows dynamically setting values by assigning to `this`.
       created: function(event) {
-        var target = event.target;
+        let target = event.target;
         if (target.dataset.name === undefined) {
           // If the event did not happen on the `name` span, search for it in the descendants.
           target = target.querySelector('.name');
@@ -135,7 +135,7 @@ class Activation {
           // If no necessary `.name` descendant is found, don't display a context menu.
           return false;
         }
-        var name = target.dataset.name;
+        const name = target.dataset.name;
         this.command = 'nuclide-test-runner:run-tests';
         this.label = `${label} '${limitString(name)}'`;
       },
@@ -145,7 +145,7 @@ class Activation {
           return false;
         }
 
-        var target = event.target;
+        let target = event.target;
         if (target.dataset.name === undefined) {
           // If the event did not happen on the `name` span, search for it in the descendants.
           target = target.querySelector('.name');
@@ -159,8 +159,8 @@ class Activation {
 
 }
 
-var activation: ?Activation;
-var toolBar: ?any = null;
+let activation: ?Activation;
+let toolBar: ?any = null;
 
 module.exports = {
 

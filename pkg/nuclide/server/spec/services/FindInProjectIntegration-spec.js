@@ -21,14 +21,14 @@ describe('FindInProjectService-Integration', () => {
 
   // Strips out port number, hostname, and current file directory.
   function makePortable(jsonObject) {
-      return JSON.parse(
+    return JSON.parse(
         JSON.stringify(jsonObject, null, 2)
           .replace(new RegExp('\/\/localhost:\\d*/*' + __dirname, 'g'), 'VARIABLE')
       );
   }
 
   it('can execute a basic search', () => {
-    var testHelper = new ServiceTestHelper();
+    const testHelper = new ServiceTestHelper();
 
     waitsForPromise(async () => {
       // Start the integration test helper.
@@ -38,20 +38,20 @@ describe('FindInProjectService-Integration', () => {
         implementation: 'nuclide-remote-search/lib/FindInProjectService.js',
       }]);
 
-      var remoteService = testHelper.getRemoteService(
+      const remoteService = testHelper.getRemoteService(
         'FindInProjectService',
         'nuclide-remote-search/lib/FindInProjectService.def');
 
       // Search in the fixtures/basic directory.
-      var connection = testHelper.getRemoteConnection();
-      var input_dir = path.join(__dirname, 'fixtures', 'basic');
-      var uri = connection.getUriOfRemotePath(input_dir);
+      const connection = testHelper.getRemoteConnection();
+      const input_dir = path.join(__dirname, 'fixtures', 'basic');
+      const uri = connection.getUriOfRemotePath(input_dir);
 
       // Do search.
-      var updates = await remoteService.findInProjectSearch(uri,
+      const updates = await remoteService.findInProjectSearch(uri,
         /hello world/i, []).toArray().toPromise();
 
-      var expected = JSON.parse(fs.readFileSync(input_dir + '.json'));
+      const expected = JSON.parse(fs.readFileSync(input_dir + '.json'));
       expect(makePortable(updates)).diffJson(expected);
       testHelper.stop();
     });

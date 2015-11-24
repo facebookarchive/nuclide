@@ -8,16 +8,16 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-var JumpToRelatedFile = require('../lib/JumpToRelatedFile');
+const JumpToRelatedFile = require('../lib/JumpToRelatedFile');
 
 describe('JumpToRelatedFile', () => {
-  var relatedFiles = ['dir/Test.h', 'dir/Test.m', 'dir/TestInternal.h'];
+  const relatedFiles = ['dir/Test.h', 'dir/Test.m', 'dir/TestInternal.h'];
 
   describe('@getNextRelatedFile_', () => {
     it('gets next related file at the start of the sequence', () => {
-      var currentFile = 'dir/Test.h';
+      const currentFile = 'dir/Test.h';
 
-      var jumpToRelatedFile = new JumpToRelatedFile({
+      const jumpToRelatedFile = new JumpToRelatedFile({
         find: () => ({relatedFiles, index: relatedFiles.indexOf(currentFile)}),
       });
 
@@ -26,9 +26,9 @@ describe('JumpToRelatedFile', () => {
     });
 
     it('gets next related file in the middle of the sequence', () => {
-      var currentFile = 'dir/Test.m';
+      const currentFile = 'dir/Test.m';
 
-      var jumpToRelatedFile = new JumpToRelatedFile({
+      const jumpToRelatedFile = new JumpToRelatedFile({
         find: () => ({relatedFiles, index: relatedFiles.indexOf(currentFile)}),
       });
 
@@ -37,9 +37,9 @@ describe('JumpToRelatedFile', () => {
     });
 
     it('gets next related file at the end of the sequence', () => {
-      var currentFile = 'dir/TestInternal.h';
+      const currentFile = 'dir/TestInternal.h';
 
-      var jumpToRelatedFile = new JumpToRelatedFile({
+      const jumpToRelatedFile = new JumpToRelatedFile({
         find: () => ({relatedFiles, index: relatedFiles.indexOf(currentFile)}),
       });
 
@@ -50,9 +50,9 @@ describe('JumpToRelatedFile', () => {
 
   describe('@getPreviousRelatedFile_', () => {
     it('gets previous related file at the start of the sequence', () => {
-      var currentFile = 'dir/Test.h';
+      const currentFile = 'dir/Test.h';
 
-      var jumpToRelatedFile = new JumpToRelatedFile({
+      const jumpToRelatedFile = new JumpToRelatedFile({
         find: () => ({relatedFiles, index: relatedFiles.indexOf(currentFile)}),
       });
 
@@ -61,9 +61,9 @@ describe('JumpToRelatedFile', () => {
     });
 
     it('gets previous related file in the middle of the sequence', () => {
-      var currentFile = 'dir/Test.m';
+      const currentFile = 'dir/Test.m';
 
-      var jumpToRelatedFile = new JumpToRelatedFile({
+      const jumpToRelatedFile = new JumpToRelatedFile({
         find: () => ({relatedFiles, index: relatedFiles.indexOf(currentFile)}),
       });
 
@@ -72,9 +72,9 @@ describe('JumpToRelatedFile', () => {
     });
 
     it('gets previous related file at the end of the sequence', () => {
-      var currentFile = 'dir/TestInternal.h';
+      const currentFile = 'dir/TestInternal.h';
 
-      var jumpToRelatedFile = new JumpToRelatedFile({
+      const jumpToRelatedFile = new JumpToRelatedFile({
         find: () => ({relatedFiles, index: relatedFiles.indexOf(currentFile)}),
       });
 

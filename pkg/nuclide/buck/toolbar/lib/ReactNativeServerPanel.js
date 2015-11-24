@@ -11,7 +11,7 @@
 
 import type {Disposable} from 'atom';
 import React from 'react-for-atom';
-var {PropTypes} = React;
+const {PropTypes} = React;
 import ReactNativeServerActions from './ReactNativeServerActions';
 import ReactNativeServerManager from './ReactNativeServerManager';
 

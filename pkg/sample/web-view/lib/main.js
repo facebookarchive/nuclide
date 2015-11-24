@@ -9,9 +9,9 @@
  * the root directory of this source tree.
  */
 
-var {CompositeDisposable} = require('atom');
+const {CompositeDisposable} = require('atom');
 
-var URI_PREFIX = 'sample-web-view:';
+const URI_PREFIX = 'sample-web-view:';
 
 /**
  * Encapsulates the state for this package so it can be cleaned up easily in deactivate().
@@ -31,8 +31,8 @@ class Activation {
           return;
         }
 
-        var WebViewPane = require('./WebViewPane');
-        var element = new WebViewPane();
+        const WebViewPane = require('./WebViewPane');
+        const element = new WebViewPane();
         element.src = uriToOpen.substring(URI_PREFIX.length);
         return element;
       })
@@ -55,7 +55,7 @@ class Activation {
   }
 }
 
-var activation: ?Activation = null;
+let activation: ?Activation = null;
 
 module.exports = {
 
@@ -70,5 +70,5 @@ module.exports = {
       activation.dispose();
       activation = null;
     }
-  }
+  },
 };

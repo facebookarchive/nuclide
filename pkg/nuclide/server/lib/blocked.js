@@ -18,11 +18,11 @@
  * To cancel, call clearInterval on the returned interval handler.
  */
 module.exports = (fn: (ms: number) => void, intervalMs = 100, thresholdMs = 50) => {
-  var start = Date.now();
+  let start = Date.now();
 
   return setInterval(() => {
-    var deltaMs = Date.now() - start;
-    var blockTimeMs = deltaMs - intervalMs;
+    const deltaMs = Date.now() - start;
+    const blockTimeMs = deltaMs - intervalMs;
     if (blockTimeMs > thresholdMs) {
       fn(blockTimeMs);
     }

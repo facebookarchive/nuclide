@@ -9,21 +9,21 @@
  * the root directory of this source tree.
  */
 
-var {RemoteConnection, RemoteDirectory} = require('nuclide-remote-connection');
+const {RemoteConnection, RemoteDirectory} = require('nuclide-remote-connection');
 
 /**
  * The prefix a URI must have for `RemoteDirectoryProvider` to try to produce a
  * `RemoteDirectory` for it. This should also be the path prefix checked by the
  * handler we register with `atom.project.registerOpener()` to open remote files.
  */
-var REMOTE_PATH_URI_PREFIX = 'nuclide://';
+const REMOTE_PATH_URI_PREFIX = 'nuclide://';
 
 class RemoteDirectoryProvider {
   directoryForURISync(uri: string): ?RemoteDirectory {
     if (!uri.startsWith(REMOTE_PATH_URI_PREFIX)) {
       return null;
     }
-    var connection = RemoteConnection.getForUri(uri);
+    const connection = RemoteConnection.getForUri(uri);
     if (connection) {
       return connection.createDirectory(uri);
     } else {

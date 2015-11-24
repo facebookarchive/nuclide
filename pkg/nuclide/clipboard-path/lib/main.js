@@ -10,15 +10,15 @@
  */
 
 
-var {CompositeDisposable} = require('atom');
-var {getPath} = require('nuclide-remote-uri');
-var {trackOperationTiming} = require('nuclide-analytics');
+const {CompositeDisposable} = require('atom');
+const {getPath} = require('nuclide-remote-uri');
+const {trackOperationTiming} = require('nuclide-analytics');
 
 import type {NuclideUri} from 'nuclide-remote-uri';
 
 function copyAbsolutePath(): void {
   trackOperation('copyAbsolutePath', () => {
-    var uri = getCurrentNuclideUri();
+    const uri = getCurrentNuclideUri();
     if (!uri) {
       return;
     }
@@ -28,12 +28,12 @@ function copyAbsolutePath(): void {
 
 function copyProjectRelativePath(): void {
   trackOperation('copyProjectRelativePath', () => {
-    var uri = getCurrentNuclideUri();
+    const uri = getCurrentNuclideUri();
     if (!uri) {
       return;
     }
 
-    var projectRelativePath = getAtomProjectRelativePath(uri);
+    const projectRelativePath = getAtomProjectRelativePath(uri);
     if (projectRelativePath) {
       copyToClipboard('Copied project relative path', projectRelativePath);
     } else {
@@ -47,27 +47,27 @@ function copyProjectRelativePath(): void {
 function copyRepositoryRelativePath(): Promise {
   trackOperation('copyRepositoryRelativePath', async () => {
 
-    var uri = getCurrentNuclideUri();
+    const uri = getCurrentNuclideUri();
     if (!uri) {
       return;
     }
 
     // First source control relative.
-    var repoRelativePath = getRepositoryRelativePath(uri);
+    const repoRelativePath = getRepositoryRelativePath(uri);
     if (repoRelativePath) {
       copyToClipboard('Copied repository relative path', repoRelativePath);
       return;
     }
 
     // Next try arcanist relative.
-    var arcRelativePath = await getArcanistRelativePath(uri);
+    const arcRelativePath = await getArcanistRelativePath(uri);
     if (arcRelativePath) {
       copyToClipboard('Copied arc project relative path', arcRelativePath);
       return;
     }
 
     // Lastly, project and absolute.
-    var projectRelativePath = getAtomProjectRelativePath(uri);
+    const projectRelativePath = getAtomProjectRelativePath(uri);
     if (projectRelativePath) {
       copyToClipboard('Copied project relative path', projectRelativePath);
     } else {
@@ -77,7 +77,7 @@ function copyRepositoryRelativePath(): Promise {
 }
 
 function getAtomProjectRelativePath(path: NuclideUri): ?string {
-  var [projectPath, relativePath] = atom.project.relativizePath(path);
+  const [projectPath, relativePath] = atom.project.relativizePath(path);
   if (!projectPath) {
     return null;
   }
@@ -92,7 +92,7 @@ function getRepositoryRelativePath(path: NuclideUri): ?string {
 }
 
 function getArcanistRelativePath(path: NuclideUri): Promise<?string> {
-  var {getProjectRelativePath} = require('nuclide-arcanist-client');
+  const {getProjectRelativePath} = require('nuclide-arcanist-client');
   return getProjectRelativePath(path);
 }
 
@@ -102,13 +102,13 @@ function copyToClipboard(messagePrefix: string, value: string): void {
 }
 
 function getCurrentNuclideUri(): ?NuclideUri {
-  var editor = atom.workspace.getActiveTextEditor();
+  const editor = atom.workspace.getActiveTextEditor();
   if (!editor) {
     notify('Nothing copied. No active text editor.');
     return null;
   }
 
-  var path = editor.getPath();
+  const path = editor.getPath();
   if (!path) {
     notify('Nothing copied. Current text editor is unnamed.');
     return null;
@@ -149,7 +149,7 @@ class Activation {
   }
 }
 
-var activation: ?Activation = null;
+let activation: ?Activation = null;
 
 module.exports = {
 

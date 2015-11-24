@@ -9,10 +9,10 @@
  * the root directory of this source tree.
  */
 
-var path = require('path');
-var NuclideServer = require('../lib/NuclideServer');
-var NuclideRemoteEventbus = require('../lib/NuclideRemoteEventbus');
-var NuclideClient = require('../lib/NuclideClient');
+const path = require('path');
+const NuclideServer = require('../lib/NuclideServer');
+const NuclideRemoteEventbus = require('../lib/NuclideRemoteEventbus');
+const NuclideClient = require('../lib/NuclideClient');
 
 function testRpcServiceWithServiceFrameworkRegistered(
   definitionClassAbsolutePath: string,
@@ -21,7 +21,7 @@ function testRpcServiceWithServiceFrameworkRegistered(
   testCases: Array<{methodName: string; args: Array<any>; expected: any}>,
 ): void {
   waitsForPromise(async () => {
-    var server = new NuclideServer({port: 8176});
+    const server = new NuclideServer({port: 8176});
 
     server._registerServiceWithServiceFramework({
       name: definitionClassName,
@@ -30,7 +30,7 @@ function testRpcServiceWithServiceFrameworkRegistered(
     });
 
     await server.connect();
-    var client = new NuclideClient('test', new NuclideRemoteEventbus('http://localhost:8176'));
+    const client = new NuclideClient('test', new NuclideRemoteEventbus('http://localhost:8176'));
 
     await Promise.all(testCases.map(testCase => {
       return client.makeRpc(

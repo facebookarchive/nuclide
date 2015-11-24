@@ -9,9 +9,9 @@
  * the root directory of this source tree.
  */
 
-var Immutable = require('immutable');
+const Immutable = require('immutable');
 
-var OptionsRecord = Immutable.Record({
+const OptionsRecord = Immutable.Record({
 
   // Line length settings.
 

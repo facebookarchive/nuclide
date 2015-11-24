@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-var CounterService = require('./CounterService');
-var {Disposable} = require('event-kit');
+const CounterService = require('./CounterService');
+const {Disposable} = require('event-kit');
 
 class LocalCounterService extends CounterService {
   constructor(serviceOptions: {cwd: string}) {

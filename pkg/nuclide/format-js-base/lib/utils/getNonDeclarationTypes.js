@@ -11,7 +11,7 @@
 
 import type {Collection, Node} from '../types/ast';
 
-var jscs = require('jscodeshift');
+const jscs = require('jscodeshift');
 
 /**
  * This will get a list of all types that are not from a declaration.
@@ -20,7 +20,7 @@ var jscs = require('jscodeshift');
  * types that are used but undeclared see getUndeclaredTypes
  */
 function getNonDeclarationTypes(root: Collection): Set<string> {
-  var ids = new Set();
+  const ids = new Set();
 
   // Pull out the logic to handle a generic type annotation, we have to iterate
   // down the qualified types to handle things like: `<Immutable.List<Foo>>`
@@ -29,7 +29,7 @@ function getNonDeclarationTypes(root: Collection): Set<string> {
       ids.add(node.id.name);
     }
     if (jscs.QualifiedTypeIdentifier.check(node.id)) {
-      var currPos = node.id;
+      let currPos = node.id;
       while (currPos && !jscs.Identifier.check(currPos)) {
         currPos = currPos.qualification;
       }

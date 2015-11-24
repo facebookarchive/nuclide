@@ -12,11 +12,11 @@
 import type {Lines, Print} from '../../types/common';
 import type {SwitchCase} from 'ast-types-flow';
 
-var flatten = require('../../utils/flatten');
-var markers = require('../../constants/markers');
+const flatten = require('../../utils/flatten');
+const markers = require('../../constants/markers');
 
 function printSwitchCase(print: Print, node: SwitchCase): Lines {
-  let consequentParts = flatten(node.consequent.map(
+  const consequentParts = flatten(node.consequent.map(
     node => print(node)
   ));
   if (node.consequent.length > 0) {
@@ -33,7 +33,7 @@ function printSwitchCase(print: Print, node: SwitchCase): Lines {
       markers.dedent,
     ]);
   } else {
-    let test = node.test;
+    const test = node.test;
     return flatten([
       'case',
       markers.space,

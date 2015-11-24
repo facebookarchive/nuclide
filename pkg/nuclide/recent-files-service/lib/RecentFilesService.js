@@ -13,10 +13,10 @@ export type FilePath = string;
 export type TimeStamp = number;
 export type FileList = Array<{path: FilePath, timestamp: TimeStamp}>;
 
-var {CompositeDisposable} = require('atom');
+const {CompositeDisposable} = require('atom');
 
-var {array} = require('nuclide-commons');
-var {onWorkspaceDidStopChangingActivePaneItem} = require('nuclide-atom-helpers').atomEventDebounce;
+const {array} = require('nuclide-commons');
+const {onWorkspaceDidStopChangingActivePaneItem} = require('nuclide-atom-helpers').atomEventDebounce;
 import {trackTiming} from 'nuclide-analytics';
 
 class RecentFilesService {
@@ -38,7 +38,7 @@ class RecentFilesService {
       if (!item || typeof item.getPath !== 'function') {
         return;
       }
-      let editorPath = item.getPath();
+      const editorPath = item.getPath();
       if (editorPath != null) {
         this.touchFile(editorPath);
       }

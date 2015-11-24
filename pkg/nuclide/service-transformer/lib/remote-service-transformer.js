@@ -98,11 +98,11 @@
  */
 import {getClassPrefix, hasGeneratedClassPrefix} from './class-prefix';
 
-var {Transformer} = require('babel-core');
-var t = require('babel-core').types;
-var {isEventMethodName} = require('./method-name-parser');
-var {isGenericFlowTypeAnnotation} = require('./flow-annotation');
-var {createGetUriOfRemotePathAssignmentExpression, createGetPathOfUriAssignmentExpression}
+const {Transformer} = require('babel-core');
+const t = require('babel-core').types;
+const {isEventMethodName} = require('./method-name-parser');
+const {isGenericFlowTypeAnnotation} = require('./flow-annotation');
+const {createGetUriOfRemotePathAssignmentExpression, createGetPathOfUriAssignmentExpression}
     = require('./nuclide-uri-transformer');
 
 /**
@@ -111,11 +111,11 @@ var {createGetUriOfRemotePathAssignmentExpression, createGetPathOfUriAssignmentE
  */
 function createBaseClassRequireExpression(baseClassName: string, baseClassFilePath: string): any {
   // Create a require expression that loads the file of the service definition.
-  var requireExpression = t.callExpression(t.identifier('require'),
+  const requireExpression = t.callExpression(t.identifier('require'),
     [t.literal(baseClassFilePath)]);
   // First try to access the service as a property of the module - if not,
   // the service is the module itself.
-  var orExpression = t.binaryExpression('||', t.memberExpression(requireExpression,
+  const orExpression = t.binaryExpression('||', t.memberExpression(requireExpression,
     t.identifier(baseClassName)), requireExpression);
 
   return t.variableDeclaration(
@@ -148,7 +148,7 @@ function createAnalyticsRequireExpression(): any {
 }
 
 function createRemoteClassDeclaration(classDeclaration: any, isDecorator: boolean): any {
-  var remoteMethodDefinitions = classDeclaration.body.body.map(bodyPart => {
+  const remoteMethodDefinitions = classDeclaration.body.body.map(bodyPart => {
     // Create remote method definition for each class method. The part type must be checked because
     // ES7 class properties are also part of the `body` array and have type `ClassProperty`.
     if (bodyPart.type === 'MethodDefinition') {
@@ -160,8 +160,8 @@ function createRemoteClassDeclaration(classDeclaration: any, isDecorator: boolea
     }
   });
 
-  var classPrefix = getClassPrefix(isDecorator);
-  var remoteClassDeclaration = t.classDeclaration(
+  const classPrefix = getClassPrefix(isDecorator);
+  const remoteClassDeclaration = t.classDeclaration(
     /* id */ t.identifier(classPrefix + classDeclaration.id.name),
     /* body */ t.classBody(
       [createConstructorDefinition(isDecorator)].concat(remoteMethodDefinitions)
@@ -182,7 +182,7 @@ function createRemoteClassDeclaration(classDeclaration: any, isDecorator: boolea
 }
 
 function createConstructorDefinition(isDecorator: boolean): any {
-  var constructorFunctionExpression;
+  let constructorFunctionExpression;
   if (isDecorator) {
     constructorFunctionExpression = t.functionExpression(
       /* id */ null,
@@ -271,15 +271,15 @@ function createGetUriFromPathPromiseExpression(
     promiseNode: any,
     nestedflowTypeNodeOfPromise: any): any {
 
-  var arrowFunctionParameter = t.identifier('result');
-  var assignmentExpression = createGetUriOfRemotePathAssignmentExpression(
+  const arrowFunctionParameter = t.identifier('result');
+  const assignmentExpression = createGetUriOfRemotePathAssignmentExpression(
       nestedflowTypeNodeOfPromise, arrowFunctionParameter);
 
   if (!assignmentExpression) {
     return promiseNode;
   }
 
-  var arrowFunction = t.arrowFunctionExpression(
+  const arrowFunction = t.arrowFunctionExpression(
     /* params */ [arrowFunctionParameter],
     /* body */ t.blockStatement(
       [
@@ -305,10 +305,10 @@ function createRemoteRpcMethodDefinition(
 ): any {
   // For each parameter of the method, check its flow type and create manipulation expression if
   // the flow type matches or contains `NuclideUri`.
-  var parametersManipulationExpressions = [];
+  const parametersManipulationExpressions = [];
   if (!isDecorator) {
     methodDefinition.value.params.forEach(param => {
-      var assignmentExpression = createGetPathOfUriAssignmentExpression(
+      const assignmentExpression = createGetPathOfUriAssignmentExpression(
           param.typeAnnotation.typeAnnotation, param);
       if (assignmentExpression) {
         parametersManipulationExpressions.push(assignmentExpression);
@@ -316,9 +316,9 @@ function createRemoteRpcMethodDefinition(
     });
   }
 
-  var remoteFunctionExpression;
+  let remoteFunctionExpression;
   if (isDecorator) {
-    var argsAsIdentifiers = methodDefinition.value.params.map(param => t.identifier(param.name));
+    const argsAsIdentifiers = methodDefinition.value.params.map(param => t.identifier(param.name));
 
     // AST node of
     // `this._serviceLogger.logServiceCall(
@@ -329,7 +329,7 @@ function createRemoteRpcMethodDefinition(
     //   $methodParam1,
     //   ...);
     // );`
-    var logServiceCallExpression = t.callExpression(
+    const logServiceCallExpression = t.callExpression(
       /* callee */ t.memberExpression(
         t.memberExpression(
           t.thisExpression(),
@@ -350,7 +350,7 @@ function createRemoteRpcMethodDefinition(
     //   $methodParam1,
     //   ...);
     // );`
-    var delegateExpression = t.callExpression(
+    const delegateExpression = t.callExpression(
       /* callee */ t.memberExpression(
         t.memberExpression(
           t.thisExpression(),
@@ -379,7 +379,7 @@ function createRemoteRpcMethodDefinition(
     //    ....],
     //   this._options);
     // );`
-    var rpcCallExpression = t.callExpression(
+    let rpcCallExpression = t.callExpression(
       /* callee */ t.memberExpression(
         t.memberExpression(
           t.thisExpression(),
@@ -396,11 +396,11 @@ function createRemoteRpcMethodDefinition(
 
     // If the method's return value is typed as Promise<..> and has nested `NuclideUri`, append
     // manipulation code in `returnValue.then(...)` block.
-    var methodReturnType = methodDefinition.value.returnType;
+    const methodReturnType = methodDefinition.value.returnType;
     if (methodReturnType !== undefined &&
         isGenericFlowTypeAnnotation(methodReturnType.typeAnnotation, 'Promise')) {
 
-      var typeParameters = methodReturnType.typeAnnotation.typeParameters;
+      const typeParameters = methodReturnType.typeAnnotation.typeParameters;
 
       if (typeParameters && typeParameters.params.length === 1)  {
         rpcCallExpression = createGetUriFromPathPromiseExpression(
@@ -422,7 +422,7 @@ function createRemoteRpcMethodDefinition(
   }
 
   // Create the method defintion AST node.
-  var remoteMethodDefinition = t.methodDefinition(
+  const remoteMethodDefinition = t.methodDefinition(
     /* key */ t.identifier(methodDefinition.key.name),
     /* value */ remoteFunctionExpression,
     /* kind */ 'method'
@@ -465,11 +465,11 @@ function createManipulatedCallbackArrowFunction(callbackAstNode: any): ?any {
     return null;
   }
 
-  var parameterManipulateExpressions = [];
+  const parameterManipulateExpressions = [];
 
   callbackAstNode.typeAnnotation.typeAnnotation.params.forEach(callbackParameterFlowtypeNode => {
-    var identifier = callbackParameterFlowtypeNode.name;
-    var manipulateCallbackParameterAssignmentExpression =
+    const identifier = callbackParameterFlowtypeNode.name;
+    const manipulateCallbackParameterAssignmentExpression =
       createGetUriOfRemotePathAssignmentExpression(
         callbackParameterFlowtypeNode.typeAnnotation,
         identifier
@@ -483,7 +483,7 @@ function createManipulatedCallbackArrowFunction(callbackAstNode: any): ?any {
     return null;
   }
 
-  var parameterIdentifiers = callbackAstNode.typeAnnotation.typeAnnotation.params.map(
+  const parameterIdentifiers = callbackAstNode.typeAnnotation.typeAnnotation.params.map(
       node => node.name);
 
   return t.arrowFunctionExpression(
@@ -504,10 +504,10 @@ function createManipulatedCallbackArrowFunction(callbackAstNode: any): ?any {
 }
 
 function createRemoteEventMethodDefinition(classDeclaration: any, methodDefinition: any): any {
-  var remoteEventMethodBody = [];
+  const remoteEventMethodBody = [];
   var callbackParameter = methodDefinition.value.params[0];
 
-  var manipulatedCallback
+  const manipulatedCallback
       = createManipulatedCallbackArrowFunction(methodDefinition.value.params[0]);
 
   if (manipulatedCallback) {
@@ -549,7 +549,7 @@ function createRemoteEventMethodDefinition(classDeclaration: any, methodDefiniti
     )
   );
 
-  var remoteFunctionExpression = t.functionExpression(
+  const remoteFunctionExpression = t.functionExpression(
     /* id */ null,
     /* params */ methodDefinition.value.params,
     /* body */ t.blockStatement(remoteEventMethodBody),
@@ -566,7 +566,7 @@ export default function createServiceTransformer(
   baseClassFilePath: string,
   isDecorator: boolean,
 ): any {
-  var classPrefix = getClassPrefix(isDecorator);
+  const classPrefix = getClassPrefix(isDecorator);
   return new Transformer('remote-service', {
     ClassDeclaration: function (node, parent) {
       // Skip classes with `Remote` prefix as it's generated.
@@ -611,7 +611,7 @@ export default function createServiceTransformer(
           node.expression.left.property.name !== 'exports') {
         return;
       }
-      var right = node.expression.right;
+      const right = node.expression.right;
 
       // If expression takes form `module.exports = $identifier`, then we are exporting
       // only one class.
@@ -625,7 +625,7 @@ export default function createServiceTransformer(
       // we are exporting multiple classes.
       if (t.isObjectExpression(right)) {
         // Ensure that all the properties in this object are all identifier : identifier mappins.
-        var identifiers = right.properties.every(prop => {
+        const identifiers = right.properties.every(prop => {
           return t.isIdentifier(prop.key) && t.isIdentifier(prop.value);
         });
         if (!identifiers) {

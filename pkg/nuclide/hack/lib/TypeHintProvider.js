@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-var hack = require('./hack');
+const hack = require('./hack');
 import {trackTiming} from 'nuclide-analytics';
 
 module.exports = class TypeHintProvider {

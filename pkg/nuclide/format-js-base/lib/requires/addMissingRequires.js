@@ -12,30 +12,30 @@
 import type {Collection} from '../types/ast';
 import type {SourceOptions} from '../options/SourceOptions';
 
-var FirstNode = require('../utils/FirstNode');
+const FirstNode = require('../utils/FirstNode');
 
-var getUndeclaredIdentifiers = require('../utils/getUndeclaredIdentifiers');
-var getUndeclaredJSXIdentifiers = require('../utils/getUndeclaredJSXIdentifiers');
-var jscs = require('jscodeshift');
+const getUndeclaredIdentifiers = require('../utils/getUndeclaredIdentifiers');
+const getUndeclaredJSXIdentifiers = require('../utils/getUndeclaredJSXIdentifiers');
+
 
 function addMissingRequires(root: Collection, options: SourceOptions): void {
-  var first = FirstNode.get(root);
+  const first = FirstNode.get(root);
   if (!first) {
     return;
   }
-  var _first = first; // For flow.
+  const _first = first; // For flow.
 
-  var {moduleMap} = options;
+  const {moduleMap} = options;
 
   // Add the missing requires.
   getUndeclaredIdentifiers(root, options).forEach(name => {
-    var node = moduleMap.getRequire(name, {sourcePath: options.sourcePath});
+    const node = moduleMap.getRequire(name, {sourcePath: options.sourcePath});
     _first.insertBefore(node);
   });
 
   // Add missing JSX requires.
   getUndeclaredJSXIdentifiers(root, options).forEach(name => {
-    var node = moduleMap.getRequire(name, {
+    const node = moduleMap.getRequire(name, {
       sourcePath: options.sourcePath,
       jsxIdentifier: true,
     });

@@ -28,8 +28,8 @@ type DiffChunk = {
 };
 
 export function computeDiff(oldText: string, newText: string): TextDiff {
-  var {addedLines, removedLines, chunks} = _computeDiffChunks(oldText, newText);
-  var {oldLineOffsets, newLineOffsets} = _computeOffsets(chunks);
+  const {addedLines, removedLines, chunks} = _computeDiffChunks(oldText, newText);
+  const {oldLineOffsets, newLineOffsets} = _computeOffsets(chunks);
 
   return {
     addedLines,
@@ -41,7 +41,7 @@ export function computeDiff(oldText: string, newText: string): TextDiff {
 
 function _computeDiffChunks(oldText: string, newText: string): DiffChunk {
 
-  var JsDiff = require('diff');
+  const JsDiff = require('diff');
 
   // If the last line has changes, JsDiff doesn't return that.
   // Generally, content with new line ending are easier to calculate offsets for.
@@ -50,19 +50,19 @@ function _computeDiffChunks(oldText: string, newText: string): DiffChunk {
     newText += '\n';
   }
 
-  var lineDiff = JsDiff.diffLines(oldText, newText);
-  var chunks = [];
+  const lineDiff = JsDiff.diffLines(oldText, newText);
+  const chunks = [];
 
-  var addedCount = 0;
-  var removedCount = 0;
-  var nextOffset = 0;
-  var offset = 0;
+  let addedCount = 0;
+  let removedCount = 0;
+  let nextOffset = 0;
+  let offset = 0;
 
-  var addedLines = [];
-  var removedLines = [];
+  const addedLines = [];
+  const removedLines = [];
   lineDiff.forEach(part => {
-    var {added, removed, value} = part;
-    var count = value.split('\n').length - 1;
+    const {added, removed, value} = part;
+    const count = value.split('\n').length - 1;
     if (!added && !removed) {
       addedCount += count;
       removedCount += count;
@@ -93,11 +93,11 @@ function _computeOffsets(
   const newLineOffsets = new Map();
   const oldLineOffsets = new Map();
 
-  var oldLineCount = 0;
-  var newLineCount = 0;
+  let oldLineCount = 0;
+  let newLineCount = 0;
 
-  for (var chunk of diffChunks) {
-    var {added, removed, offset, count} = chunk;
+  for (const chunk of diffChunks) {
+    const {added, removed, offset, count} = chunk;
     if (added) {
       newLineCount += count;
     } else if (removed) {

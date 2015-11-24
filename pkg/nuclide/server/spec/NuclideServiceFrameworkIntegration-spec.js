@@ -9,10 +9,10 @@
  * the root directory of this source tree.
  */
 
-var path = require('path');
-var NuclideServer = require('../lib/NuclideServer');
-var NuclideRemoteEventbus = require('../lib/NuclideRemoteEventbus');
-var NuclideClient = require('../lib/NuclideClient');
+const path = require('path');
+const NuclideServer = require('../lib/NuclideServer');
+const NuclideRemoteEventbus = require('../lib/NuclideRemoteEventbus');
+const NuclideClient = require('../lib/NuclideClient');
 
 function sleep(ms: number): Promise {
   return new Promise((resolve, reject) => {
@@ -28,12 +28,12 @@ xdescribe('when more than one service instance is created for the same service',
 
   it('the service framework uses the service instance that corresponds to the given serviceOptions.', () => {
     waitsForPromise(async () => {
-      var definitionClassName = 'CounterService';
-      var definitionClassAbsolutePath = path.resolve(__dirname, 'fixtures/CounterService.js');
-      var implementationClassPathAbsolutePath = path
+      const definitionClassName = 'CounterService';
+      const definitionClassAbsolutePath = path.resolve(__dirname, 'fixtures/CounterService.js');
+      const implementationClassPathAbsolutePath = path
           .resolve(__dirname, 'fixtures/LocalCounterService.js');
 
-      var server = new NuclideServer({port: 8176});
+      const server = new NuclideServer({port: 8176});
 
       server._serviceWithServiceFrameworkConfigs = [{
         name: definitionClassName,
@@ -45,25 +45,24 @@ xdescribe('when more than one service instance is created for the same service',
       await server.connect();
 
       // Set up two service options using same service.
-      var options1 = {cwd: '/1'};
-      var options2 = {cwd: '/2'};
-      var client = new NuclideClient(
+      const options1 = {cwd: '/1'};
+      const options2 = {cwd: '/2'};
+      const client = new NuclideClient(
         'test', new NuclideRemoteEventbus('http://localhost:8176'));
 
       // Set onCounterUpdated event listener for both options.
-      var options1Value = 0;
-      var options2Value = 0;
+      let options1Value = 0;
+      let options2Value = 0;
 
-      var options1Callback = currentValue => options1Value = currentValue;
-      var options2Callback = currentValue => options2Value = currentValue;
+      const options1Callback = currentValue => options1Value = currentValue;
+      const options2Callback = currentValue => options2Value = currentValue;
 
-      var disposable1 = client.registerEventListener(
+      const disposable1 = client.registerEventListener(
         definitionClassName + '/' + 'onCounterUpdated', options1Callback, options1)
-      var disposable2 = client.registerEventListener(
-        definitionClassName + '/' + 'onCounterUpdated', options2Callback, options2)
 
-      var cwd1 = await client.makeRpc(definitionClassName + '/getCwd', [], options1);
-      var cwd2 = await client.makeRpc(definitionClassName + '/getCwd', [], options2);
+
+      const cwd1 = await client.makeRpc(definitionClassName + '/getCwd', [], options1);
+      const cwd2 = await client.makeRpc(definitionClassName + '/getCwd', [], options2);
 
       // Make sure the options return different cwd.
       expect(cwd1).toBe('/1');

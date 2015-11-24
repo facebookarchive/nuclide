@@ -12,8 +12,8 @@
 import type {Lines, Print} from '../../types/common';
 import type {WhileStatement} from 'ast-types-flow';
 
-var markers = require('../../constants/markers');
-var wrapStatement = require('../../wrappers/simple/wrapStatement');
+const markers = require('../../constants/markers');
+const wrapStatement = require('../../wrappers/simple/wrapStatement');
 
 function printWhileStatement(print: Print, node: WhileStatement): Lines {
   const wrap = x => wrapStatement(print, node, x);

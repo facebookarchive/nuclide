@@ -12,9 +12,9 @@
 import type {Lines, Print} from '../../types/common';
 import type {Node} from 'ast-types-flow';
 
-var flatten = require('../../utils/flatten');
-var markers = require('../../constants/markers');
-var unwrapMarkers = require('../../utils/unwrapMarkers');
+const flatten = require('../../utils/flatten');
+const markers = require('../../constants/markers');
+const unwrapMarkers = require('../../utils/unwrapMarkers');
 
 /**
  * Adds parenthesis and the appropriate markers to a set of lines. It also moves

@@ -69,7 +69,7 @@ export default class ConnectionDialog extends React.Component<DefaultProps, Prop
   }
 
   _createInitialState() {
-    var sshHandshake = new SshHandshake(decorateSshConnectionDelegateWithTracking({
+    const sshHandshake = new SshHandshake(decorateSshConnectionDelegateWithTracking({
       onKeyboardInteractive: (name, instructions, instructionsLang, prompts, finish)  => {
         // TODO: Display all prompts, not just the first one.
         this.requestAuthentication(prompts[0], finish);

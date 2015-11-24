@@ -28,18 +28,18 @@ type Suggestion = {
   className: ?string;
 };
 
-var subscriptions: ?CompositeDisposable = null;
-var hackDiagnosticsProvider;
+let subscriptions: ?CompositeDisposable = null;
+let hackDiagnosticsProvider;
 let busySignalProvider;
 
 module.exports = {
 
   activate() {
-    var {getCachedHackLanguageForUri} = require('./hack');
-    var {projects} = require('nuclide-atom-helpers');
+    const {getCachedHackLanguageForUri} = require('./hack');
+    const {projects} = require('nuclide-atom-helpers');
     subscriptions = new CompositeDisposable();
     subscriptions.add(projects.onDidRemoveProjectPath(projectPath => {
-      var hackLanguage = getCachedHackLanguageForUri(projectPath);
+      const hackLanguage = getCachedHackLanguageForUri(projectPath);
       if (hackLanguage) {
         hackLanguage.dispose();
       }
@@ -51,8 +51,8 @@ module.exports = {
 
   /** Provider for autocomplete service. */
   createAutocompleteProvider() {
-    var AutocompleteProvider = require('./AutocompleteProvider');
-    var autocompleteProvider = new AutocompleteProvider();
+    const AutocompleteProvider = require('./AutocompleteProvider');
+    const autocompleteProvider = new AutocompleteProvider();
 
     return {
       selector: HACK_GRAMMARS.map(grammar => '.' + grammar).join(', '),
@@ -82,8 +82,8 @@ module.exports = {
 
   /** Provider for code format service. */
   createCodeFormatProvider(): any {
-    var CodeFormatProvider = require('./CodeFormatProvider');
-    var codeFormatProvider = new CodeFormatProvider();
+    const CodeFormatProvider = require('./CodeFormatProvider');
+    const codeFormatProvider = new CodeFormatProvider();
 
     return {
       selector: HACK_GRAMMARS_STRING,
@@ -100,8 +100,8 @@ module.exports = {
   },
 
   createTypeHintProvider(): any {
-    var TypeHintProvider = require('./TypeHintProvider');
-    var typeHintProvider = new TypeHintProvider();
+    const TypeHintProvider = require('./TypeHintProvider');
+    const typeHintProvider = new TypeHintProvider();
 
     return {
       selector: HACK_GRAMMARS_STRING,
@@ -136,7 +136,7 @@ module.exports = {
 
   provideDiagnostics() {
     if (!hackDiagnosticsProvider) {
-      var HackDiagnosticsProvider = require('./HackDiagnosticsProvider');
+      const HackDiagnosticsProvider = require('./HackDiagnosticsProvider');
       const busyProvider = this.provideBusySignal();
       hackDiagnosticsProvider = new HackDiagnosticsProvider(false, busyProvider);
     }
@@ -152,5 +152,5 @@ module.exports = {
       hackDiagnosticsProvider.dispose();
       hackDiagnosticsProvider = null;
     }
-  }
+  },
 };

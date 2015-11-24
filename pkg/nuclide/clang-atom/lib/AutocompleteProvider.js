@@ -20,8 +20,8 @@ function getCompletionBody(
   columnOffset: number,
   indentation: number
 ): string {
-  var inlineBody = getCompletionBodyInline(completion);
-  var multiLineBody =
+  const inlineBody = getCompletionBodyInline(completion);
+  const multiLineBody =
     getCompletionBodyMultiLine(completion, columnOffset, indentation);
 
   if (columnOffset + inlineBody.length > MAX_LINE_LENGTH && multiLineBody) {
@@ -36,7 +36,7 @@ function getCompletionBodyMultiLine(
   indentation: number
 ): ?string {
   // Filter out whitespace chunks.
-  var chunks = completion.chunks.filter((chunk) => chunk.spelling.trim());
+  const chunks = completion.chunks.filter((chunk) => chunk.spelling.trim());
 
   // We only handle completions in which non-placeholder and placeholder
   // chunks alternate, starting with non-placeholder chunk.
@@ -46,18 +46,18 @@ function getCompletionBodyMultiLine(
 
   // Group non-placeholders and placeholders into groups of two.
   // One of each.
-  var args = [];
-  for (var i = 0, n = chunks.length / 2; i < n; ++i) {
-    var firstChunk = chunks[i * 2];
-    var secondChunk = chunks[i * 2 + 1];
+  const args = [];
+  for (let i = 0, n = chunks.length / 2; i < n; ++i) {
+    const firstChunk = chunks[i * 2];
+    const secondChunk = chunks[i * 2 + 1];
 
     if (firstChunk.isPlaceHolder || !secondChunk.isPlaceHolder) {
       return null;
     }
 
     // If firstChunk ends with colon remove it because we add it manually later.
-    var text = firstChunk.spelling;
-    var placeholder = secondChunk.spelling;
+    let text = firstChunk.spelling;
+    const placeholder = secondChunk.spelling;
     if (text.endsWith(':')) {
       text = text.substring(0, text.length - 1);
     }
@@ -100,17 +100,17 @@ function _convertArgsToMultiLineSnippet(
   //     Argument3:arg3]
   //
 
-  var colonPosition = Math.max.apply(null,
+  const colonPosition = Math.max.apply(null,
     args.map((arg) => arg.offset + arg.text.length)
   );
 
   return args.reduce((body, arg, index) => {
-    var spacesCnt = index === 0 ? 0 : colonPosition - arg.offset - arg.text.length;
+    const spacesCnt = index === 0 ? 0 : colonPosition - arg.offset - arg.text.length;
     if (spacesCnt < 0) {
       throw Error('This is a bug! Spaces count is negative.');
     }
 
-    var line = `${' '.repeat(spacesCnt)}${arg.text}:\${${index + 1}:${arg.placeholder}}\n`;
+    const line = `${' '.repeat(spacesCnt)}${arg.text}:\${${index + 1}:${arg.placeholder}}\n`;
     if (index > 0 && line[colonPosition - arg.offset] !== ':') {
       throw Error('This is a bug! Colons are not aligned!');
     }
@@ -119,8 +119,8 @@ function _convertArgsToMultiLineSnippet(
 }
 
 function getCompletionBodyInline(completion: Completion): string {
-  var body = '';
-  var placeHolderCnt = 0;
+  let body = '';
+  let placeHolderCnt = 0;
   completion.chunks.forEach((chunk) => {
     if (chunk.isPlaceHolder) {
       placeHolderCnt++;
@@ -143,13 +143,13 @@ class AutocompleteProvider {
   async getAutocompleteSuggestions(
       request: {editor: TextEditor; bufferPosition: Point; scopeDescriptor: any; prefix: string}):
       Promise<Array<{snippet: string; rightLabel: string}>> {
-    var {editor, bufferPosition: cursorPosition, prefix} = request;
-    var indentation = editor.indentationForBufferRow(cursorPosition.row);
-    var column = cursorPosition.column;
-    var data = await this._libClangProcess.getCompletions(editor);
+    const {editor, bufferPosition: cursorPosition, prefix} = request;
+    const indentation = editor.indentationForBufferRow(cursorPosition.row);
+    const column = cursorPosition.column;
+    const data = await this._libClangProcess.getCompletions(editor);
     return data.completions.map((completion) => {
-      var snippet = getCompletionBody(completion, column, indentation);
-      var replacementPrefix = /^\s*$/.test(prefix) ? '' : prefix;
+      const snippet = getCompletionBody(completion, column, indentation);
+      const replacementPrefix = /^\s*$/.test(prefix) ? '' : prefix;
       return {
         snippet,
         replacementPrefix,

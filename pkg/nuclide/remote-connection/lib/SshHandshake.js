@@ -9,20 +9,20 @@
  * the root directory of this source tree.
  */
 
-var ConnectionTracker = require('./ConnectionTracker');
-var SshConnection = require('ssh2').Client;
-var fs = require('fs-plus');
-var net = require('net');
-var logger = require('nuclide-logging').getLogger();
-var invariant = require('assert');
+const ConnectionTracker = require('./ConnectionTracker');
+const SshConnection = require('ssh2').Client;
+const fs = require('fs-plus');
+const net = require('net');
+const logger = require('nuclide-logging').getLogger();
+const invariant = require('assert');
 
-var RemoteConnection = require('./RemoteConnection');
-var {fsPromise} = require('nuclide-commons');
+const RemoteConnection = require('./RemoteConnection');
+const {fsPromise} = require('nuclide-commons');
 
 // Sync word and regex pattern for parsing command stdout.
-var SYNC_WORD = 'SYNSYN';
-var STDOUT_REGEX = /SYNSYN[\s\S\n]*({.*})[\s\S\n]*SYNSYN/;
-var READY_TIMEOUT = 60000;
+const SYNC_WORD = 'SYNSYN';
+const STDOUT_REGEX = /SYNSYN[\s\S\n]*({.*})[\s\S\n]*SYNSYN/;
+const READY_TIMEOUT = 60000;
 
 export type SshConnectionConfiguration = {
   host: string; // host nuclide server is running on
@@ -35,7 +35,7 @@ export type SshConnectionConfiguration = {
   password: string; // for simple password-based authentication
 }
 
-var SupportedMethods = {
+const SupportedMethods = {
   SSL_AGENT: 'SSL_AGENT',
   PASSWORD: 'PASSWORD',
   PRIVATE_KEY: 'PRIVATE_KEY',
@@ -97,7 +97,7 @@ export class SshHandshake {
 
     this._delegate.onWillConnect(this._config);
 
-    var existingConnection = RemoteConnection
+    const existingConnection = RemoteConnection
       .getByHostnameAndPath(this._config.host, this._config.cwd);
 
     if (existingConnection) {
@@ -115,11 +115,11 @@ export class SshHandshake {
       return;
     }
 
-    var {lookupPreferIpv6} = require('nuclide-commons').dnsUtils;
+    const {lookupPreferIpv6} = require('nuclide-commons').dnsUtils;
     return lookupPreferIpv6(config.host).then((address) => {
       if (config.authMethod === SupportedMethods.SSL_AGENT) {
         // Point to ssh-agent's socket for ssh-agent-based authentication.
-        var agent = process.env['SSH_AUTH_SOCK'];
+        let agent = process.env['SSH_AUTH_SOCK'];
         if (!agent && /^win/.test(process.platform)) {
           // #100: On Windows, fall back to pageant.
           agent = 'pageant';
@@ -136,16 +136,16 @@ export class SshHandshake {
           // When the user chooses password-based authentication, we specify
           // the config as follows so that it tries simple password auth and
           // failing that it falls through to the keyboard interactive path
-          this._connection.connect({
-            host: address,
-            port: config.sshPort,
-            username: config.username,
-            password: config.password,
-            tryKeyboard: true,
-          });
+        this._connection.connect({
+          host: address,
+          port: config.sshPort,
+          username: config.username,
+          password: config.password,
+          tryKeyboard: true,
+        });
       } else if (config.authMethod === SupportedMethods.PRIVATE_KEY) {
         // We use fs-plus's normalize() function because it will expand the ~, if present.
-        var expandedPath = fs.normalize(config.pathToPrivateKey);
+        const expandedPath = fs.normalize(config.pathToPrivateKey);
         fsPromise.readFile(expandedPath).then(privateKey => {
           this._connection.connect({
             host: address,
@@ -223,11 +223,11 @@ export class SshHandshake {
 
   _startRemoteServer(): Promise<void> {
     return new Promise((resolve, reject) => {
-      var stdOut = '';
+      let stdOut = '';
 
       //TODO: escape any single quotes
       //TODO: the timeout value shall be configurable using .json file too (t6904691).
-      var cmd = `${this._config.remoteServerCommand} --workspace=${this._config.cwd} --common_name=${this._config.host} -t 60`;
+      const cmd = `${this._config.remoteServerCommand} --workspace=${this._config.cwd} --common_name=${this._config.host} -t 60`;
 
       // This imitates a user typing:
       //   $ TERM=nuclide ssh server
@@ -252,17 +252,17 @@ export class SshHandshake {
           return;
         }
         stream.on('close', (code, signal) => {
-          var rejectWithError = (error) => {
-              logger.error(error);
-              var errorText = `${error}\n\nstdout:${stdOut}`;
-              reject(new Error(errorText));
+          const rejectWithError = (error) => {
+            logger.error(error);
+            const errorText = `${error}\n\nstdout:${stdOut}`;
+            reject(new Error(errorText));
           };
 
           // Note: this code is probably the code from the child shell if one
           // is in use.
           if (code === 0) {
-            var serverInfo;
-            var match = STDOUT_REGEX.exec(stdOut);
+            let serverInfo;
+            const match = STDOUT_REGEX.exec(stdOut);
             if (!match) {
               rejectWithError(`Bad stdout from remote server: ${stdOut}`);
               return;
@@ -312,11 +312,11 @@ export class SshHandshake {
       return;
     }
 
-    var finishHandshake = async (connection: RemoteConnection) => {
+    const finishHandshake = async (connection: RemoteConnection) => {
       try {
         await connection.initialize();
       } catch (e) {
-        var error = new Error(`Failed to connect to Nuclide server on ${this._config.host}: ${e.message}`);
+        const error = new Error(`Failed to connect to Nuclide server on ${this._config.host}: ${e.message}`);
         this._delegate.onError(error, this._config);
       }
       this._delegate.onDidConnect(connection, this._config);
@@ -343,7 +343,7 @@ export class SshHandshake {
       this._forwardingServer = net.createServer(sock => {
         this._forwardSocket(sock);
       }).listen(0, 'localhost', () => {
-        var localPort = this._getLocalPort();
+        const localPort = this._getLocalPort();
         invariant(localPort);
         connection = new RemoteConnection({
           host: 'localhost',
@@ -369,7 +369,7 @@ SshHandshake.SupportedMethods = SupportedMethods;
 export function decorateSshConnectionDelegateWithTracking(
   delegate: SshConnectionDelegate,
 ): SshConnectionDelegate {
-  var connectionTracker;
+  let connectionTracker;
 
   return {
     onKeyboardInteractive: (

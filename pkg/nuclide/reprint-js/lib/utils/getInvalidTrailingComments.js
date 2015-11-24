@@ -11,7 +11,7 @@
 
 import type {Node} from 'ast-types-flow';
 
-var Immutable = require('immutable');
+const Immutable = require('immutable');
 
 /**
  * This traverses an entire ast and determines which trailing comments are

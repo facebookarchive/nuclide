@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-var {array, asyncExecute} = require('nuclide-commons');
+const {array, asyncExecute} = require('nuclide-commons');
 
 export type Device = {
   name: string;
@@ -18,7 +18,7 @@ export type Device = {
   os: string;
 }
 
-var DeviceState = {
+const DeviceState = {
   Creating: 'Creating',
   Booting: 'Booting',
   ShuttingDown: 'Shutting Down',
@@ -27,13 +27,13 @@ var DeviceState = {
 };
 
 function parseDevicesFromSimctlOutput(output: string): Device[] {
-  var devices = [];
-  var currentOS = null;
+  const devices = [];
+  let currentOS = null;
 
   output.split('\n').forEach(line => {
-    var section = line.match(/^-- (.+) --$/);
+    const section = line.match(/^-- (.+) --$/);
     if (section) {
-      var header = section[1].match(/^iOS (.+)$/);
+      const header = section[1].match(/^iOS (.+)$/);
       if (header) {
         currentOS = header[1];
       } else {
@@ -42,9 +42,9 @@ function parseDevicesFromSimctlOutput(output: string): Device[] {
       return;
     }
 
-    var device = line.match(/^[ ]*([^()]+) \(([^()]+)\) \((Creating|Booting|Shutting Down|Shutdown|Booted)\)/);
+    const device = line.match(/^[ ]*([^()]+) \(([^()]+)\) \((Creating|Booting|Shutting Down|Shutdown|Booted)\)/);
     if (device && currentOS) {
-      var [, name, udid, state] = device;
+      const [, name, udid, state] = device;
       devices.push({name, udid, state, os: currentOS});
     }
   });
@@ -53,9 +53,9 @@ function parseDevicesFromSimctlOutput(output: string): Device[] {
 }
 
 async function getDevices(): Promise<Device[]> {
-  var xcrunOutput;
+  let xcrunOutput;
   try {
-    var {stdout} = await asyncExecute('xcrun', ['simctl', 'list', 'devices']);
+    const {stdout} = await asyncExecute('xcrun', ['simctl', 'list', 'devices']);
     xcrunOutput = stdout;
   } catch (e) {
     // Users may not have xcrun installed, particularly if they are using Buck for non-iOS projects.
@@ -65,7 +65,7 @@ async function getDevices(): Promise<Device[]> {
 }
 
 function selectDevice(devices: Device[]): number {
-  var bootedDeviceIndex = array.findIndex(
+  const bootedDeviceIndex = array.findIndex(
     devices,
     device => device.state === DeviceState.Booted
   );
@@ -73,8 +73,8 @@ function selectDevice(devices: Device[]): number {
     return bootedDeviceIndex;
   }
 
-  var defaultDeviceIndex = 0;
-  var lastOS = '';
+  let defaultDeviceIndex = 0;
+  let lastOS = '';
   devices.forEach((device, index) => {
     if (device.name === 'iPhone 5s') {
       if (device.os > lastOS) {

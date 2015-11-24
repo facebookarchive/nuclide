@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-var Console = { log: (text) => {} };
+const Console = { log: (text) => {} };
 Console.log('Hello World.');
-var a = 3; Console.log(a);
+const a = 3; Console.log(a);
 Console.log('Hello World.');

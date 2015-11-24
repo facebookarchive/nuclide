@@ -9,14 +9,14 @@
  * the root directory of this source tree.
  */
 
-var babel = require('babel-core');
-var fs = require('fs');
-var {isEventMethodName} = require('./method-name-parser');
+const babel = require('babel-core');
+const fs = require('fs');
+const {isEventMethodName} = require('./method-name-parser');
 
-var cache: Map<string, any> = new Map();
+const cache: Map<string, any> = new Map();
 
 function parseAst(sourceFilePath: string): any {
-  var sourceCode = fs.readFileSync(sourceFilePath, 'utf8');
+  const sourceCode = fs.readFileSync(sourceFilePath, 'utf8');
 
   return babel.transform(sourceCode, {
     blacklist: ['es6.classes', 'flow', 'strict'],
@@ -37,20 +37,20 @@ function parseServiceApiSync(
     return cache.get(absoluteServiceDefinitionClassFilePath);
   }
 
-  var ast = parseAst(absoluteServiceDefinitionClassFilePath);
+  const ast = parseAst(absoluteServiceDefinitionClassFilePath);
 
-  var [classDeclaration] = ast.program.body
+  const [classDeclaration] = ast.program.body
       .filter(astNode => astNode.type === 'ClassDeclaration' && astNode.id.name === serviceName);
 
-  var methodNames = classDeclaration.body.body
+  const methodNames = classDeclaration.body.body
     // Because class bodies in ES7 can contain static property intializers, ensure a part is a
     // "MethodDefinition" before using it. Static properties have type "ClassProperty".
     .filter(bodyPart => bodyPart.type === 'MethodDefinition')
     .map(methodDefinition => methodDefinition.key.name);
-  var rpcMethodNames = methodNames.filter(methodName => !isEventMethodName(methodName));
-  var eventMethodNames = methodNames.filter(methodName => isEventMethodName(methodName));
+  const rpcMethodNames = methodNames.filter(methodName => !isEventMethodName(methodName));
+  const eventMethodNames = methodNames.filter(methodName => isEventMethodName(methodName));
 
-  var serviceStructure = {
+  const serviceStructure = {
     className: classDeclaration.id.name,
     eventMethodNames,
     rpcMethodNames,

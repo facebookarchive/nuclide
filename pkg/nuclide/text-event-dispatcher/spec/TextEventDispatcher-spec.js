@@ -16,13 +16,13 @@ import {
   __TEST__,
 } from '../lib/TextEventDispatcher';
 
-var {TextCallbackContainer} = __TEST__;
+const {TextCallbackContainer} = __TEST__;
 
-var grammar = 'testgrammar';
+const grammar = 'testgrammar';
 
 describe('TextCallbackContainer', () => {
-  var textCallbackContainer: any;
-  var callback: any;
+  let textCallbackContainer: any;
+  let callback: any;
 
   beforeEach(() => {
     textCallbackContainer = new TextCallbackContainer();
@@ -44,14 +44,14 @@ describe('TextCallbackContainer', () => {
 
   it('should return callback', () => {
     textCallbackContainer.addCallback([grammar], ['did-reload'], callback);
-    var callbacks = textCallbackContainer.getCallbacks(grammar, 'did-reload');
+    const callbacks = textCallbackContainer.getCallbacks(grammar, 'did-reload');
     expect(callbacks).toEqual(new Set([callback]));
     checkInvariant();
   });
 
   it('should always return callbacks for all', () => {
     textCallbackContainer.addCallback('all', ['did-save'], callback);
-    var callbacks = textCallbackContainer.getCallbacks('asdf', 'did-save');
+    const callbacks = textCallbackContainer.getCallbacks('asdf', 'did-save');
     expect(callbacks).toEqual(new Set([callback]));
     checkInvariant();
   });
@@ -66,13 +66,13 @@ describe('TextCallbackContainer', () => {
 });
 
 describe('TextEventDispatcher', () => {
-  var textEventDispatcher: any;
-  var fakeTextEditor: any;
-  var fakeTextEditor2: any;
-  var activeEditor: any;
+  let textEventDispatcher: any;
+  let fakeTextEditor: any;
+  let fakeTextEditor2: any;
+  let activeEditor: any;
   // Stores callbacks that have subscribed to Atom text events. Can be called to simulate
-  var textEventCallbacks: any;
-  var paneSwitchCallbacks: any;
+  let textEventCallbacks: any;
+  let paneSwitchCallbacks: any;
 
   function fakeObserveEditors(callback) {
     callback(fakeTextEditor);
@@ -82,10 +82,10 @@ describe('TextEventDispatcher', () => {
 
 
   function makeFakeEditor(path?: string = '') {
-    var editor;
+    let editor;
     // Register a callback for this fake editor.
-    var registerCallback = callback => {
-      var set = textEventCallbacks.get(editor);
+    const registerCallback = callback => {
+      let set = textEventCallbacks.get(editor);
       if (!set) {
         set = new Set();
         textEventCallbacks.set(editor, set);
@@ -95,7 +95,7 @@ describe('TextEventDispatcher', () => {
         set.delete(callback);
       });
     };
-    var buffer = {
+    const buffer = {
       onDidStopChanging: registerCallback,
       onDidSave: registerCallback,
       onDidReload: registerCallback,
@@ -118,7 +118,7 @@ describe('TextEventDispatcher', () => {
   }
 
   function triggerAtomEvent(editor) {
-    for (var callback of textEventCallbacks.get(editor)) {
+    for (const callback of textEventCallbacks.get(editor)) {
       callback();
     }
   }
@@ -148,14 +148,14 @@ describe('TextEventDispatcher', () => {
   });
 
   it('should fire events', () => {
-    var callback = jasmine.createSpy();
+    const callback = jasmine.createSpy();
     textEventDispatcher.onFileChange([grammar], callback);
     triggerAtomEvent(fakeTextEditor);
     expect(callback).toHaveBeenCalled();
   });
 
   it('should debounce events', () => {
-    var callback = jasmine.createSpy();
+    const callback = jasmine.createSpy();
     textEventDispatcher.onFileChange([grammar], callback);
     // This test hinges on these two calls happening within 50 ms of each other.
     // An initial attempt to mock the clock was unsuccessful, probably because
@@ -168,7 +168,7 @@ describe('TextEventDispatcher', () => {
   });
 
   it('should dispatch pending events on a tab switch', () => {
-    var callback = jasmine.createSpy();
+    const callback = jasmine.createSpy();
     textEventDispatcher.onFileChange([grammar], callback);
     triggerAtomEvent(fakeTextEditor2);
     expect(callback).not.toHaveBeenCalled();
@@ -178,7 +178,7 @@ describe('TextEventDispatcher', () => {
   });
 
   it('should always dispatch to clients that request all changes', () => {
-    var callback = jasmine.createSpy();
+    const callback = jasmine.createSpy();
     textEventDispatcher.onAnyFileChange(callback);
     triggerAtomEvent(fakeTextEditor);
     expect(callback).toHaveBeenCalled();
@@ -186,8 +186,8 @@ describe('TextEventDispatcher', () => {
 
   it('should deregister from text editor events when it has no subscribers', () => {
     expect(textEventCallbacks.get(fakeTextEditor)).toBe(undefined);
-    var callback = jasmine.createSpy();
-    var disposable = textEventDispatcher.onAnyFileChange(callback);
+    const callback = jasmine.createSpy();
+    const disposable = textEventDispatcher.onAnyFileChange(callback);
     expect(textEventCallbacks.get(fakeTextEditor).size).toBeGreaterThan(0);
     disposable.dispose();
     expect(textEventCallbacks.get(fakeTextEditor).size).toBe(0);

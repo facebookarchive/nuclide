@@ -12,8 +12,8 @@
 import type {ForStatement} from 'ast-types-flow';
 import type {Lines, Print} from '../../types/common';
 
-var markers = require('../../constants/markers');
-var wrapStatement = require('../../wrappers/simple/wrapStatement');
+const markers = require('../../constants/markers');
+const wrapStatement = require('../../wrappers/simple/wrapStatement');
 
 function printForStatement(print: Print, node: ForStatement): Lines {
   const wrap = x => wrapStatement(print, node, x);
@@ -26,13 +26,13 @@ function printForStatement(print: Print, node: ForStatement): Lines {
   ];
   parts.push(markers.scopeBreak);
   if (node.init) {
-    let init = node.init;
+    const init = node.init;
     parts.push(print(init));
   }
   parts.push(';');
   parts.push(markers.scopeBreak);
   if (node.test) {
-    let test = node.test;
+    const test = node.test;
     parts = parts.concat([
       markers.space,
       print(test),
@@ -41,7 +41,7 @@ function printForStatement(print: Print, node: ForStatement): Lines {
   parts.push(';');
   parts.push(markers.scopeBreak);
   if (node.update) {
-    let update = node.update;
+    const update = node.update;
     parts = parts.concat([
       markers.space,
       print(update),

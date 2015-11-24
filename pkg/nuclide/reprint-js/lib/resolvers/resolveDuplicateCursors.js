@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-var markers = require('../constants/markers');
+const markers = require('../constants/markers');
 
 /**
  * This removes all but the first cursor. Since cursors are added at the end of

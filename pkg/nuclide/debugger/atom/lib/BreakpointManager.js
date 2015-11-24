@@ -9,10 +9,10 @@
  * the root directory of this source tree.
  */
 
-var {CompositeDisposable} = require('atom');
-var BreakpointDisplayController = require('./BreakpointDisplayController.js');
+const {CompositeDisposable} = require('atom');
+const BreakpointDisplayController = require('./BreakpointDisplayController.js');
 /* eslint-disable no-unused-vars */
-var BreakpointStore = require('./BreakpointStore');
+const BreakpointStore = require('./BreakpointStore');
 /* eslint-enable no-unused-vars */
 
 class BreakpointManager {
@@ -54,7 +54,7 @@ class BreakpointManager {
       // TODO[jeffreytan]: flow does not seem to accept delegate typing,
       // need to ask flow team if this is a known issue.
       // $FlowFixMe
-      var controller = new BreakpointDisplayController(this, this._breakpointStore, editor);
+      const controller = new BreakpointDisplayController(this, this._breakpointStore, editor);
       this._displayControllers.set(editor, controller);
     }
   }

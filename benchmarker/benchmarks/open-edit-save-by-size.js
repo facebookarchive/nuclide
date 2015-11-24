@@ -9,13 +9,13 @@
  * the root directory of this source tree.
  */
 
-var SAMPLE_FILE = '/tmp/nuclide-benchmarker-open-edit-save.js';
-var TIMEOUT = 30 * 1000;
+const SAMPLE_FILE = '/tmp/nuclide-benchmarker-open-edit-save.js';
+const TIMEOUT = 30 * 1000;
 
-var ITERATIONS = 32; // From 0 bytes to 10^6 bytes exponentially, as per sizeForIteration.
-var REPETITIONS = 3;
+const ITERATIONS = 32; // From 0 bytes to 10^6 bytes exponentially, as per sizeForIteration.
+const REPETITIONS = 3;
 
-var {timedAsync, timedSync, makeSizedFixture} = require('../benchmarker-utils');
+const {timedAsync, timedSync, makeSizedFixture} = require('../benchmarker-utils');
 
 function sizeForIteration(iteration: number): number {
   if (iteration > 0) {
@@ -31,14 +31,14 @@ module.exports = {
   iterations: ITERATIONS,
   repetitions: REPETITIONS,
   run: async (iteration: number): Object => {
-    var result = {};
+    const result = {};
 
     // Create a file of the target size.
     result.bytes = sizeForIteration(iteration);
     makeSizedFixture(SAMPLE_FILE, result.bytes);
 
     // Open the file, insert text, append text, save and close.
-    var {ret: editor, time: open} = await timedAsync(atom.workspace.open(SAMPLE_FILE));
+    const {ret: editor, time: open} = await timedAsync(atom.workspace.open(SAMPLE_FILE));
     result.open = open;
 
     // The first insertion forces buffer tokenization and is much slower than subsequent mutations.

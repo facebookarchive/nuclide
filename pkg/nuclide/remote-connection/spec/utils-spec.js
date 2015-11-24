@@ -9,10 +9,10 @@
  * the root directory of this source tree.
  */
 
-var {containsPathSync} = require('../lib/utils');
-var fs = require('fs');
-var path = require('path');
-var temp = require('temp').track();
+const {containsPathSync} = require('../lib/utils');
+const fs = require('fs');
+const path = require('path');
+const temp = require('temp').track();
 
 describe('containsPathSync()', () => {
 
@@ -29,14 +29,14 @@ describe('containsPathSync()', () => {
   });
 
   it('returns true if the the root path is a symlink or if the file is a symlink', () => {
-    var directoryPath = temp.mkdirSync();
-    var originalDirPath = path.join(directoryPath, 'dir_1');
-    var symlinkDirPath = path.join(directoryPath, 'dir_2');
+    const directoryPath = temp.mkdirSync();
+    const originalDirPath = path.join(directoryPath, 'dir_1');
+    const symlinkDirPath = path.join(directoryPath, 'dir_2');
     fs.mkdirSync(originalDirPath);
     fs.symlinkSync(originalDirPath, symlinkDirPath);
-    var filePath = path.join(symlinkDirPath, 'file.txt');
+    const filePath = path.join(symlinkDirPath, 'file.txt');
     fs.writeFileSync(filePath, 'test', 'utf8');
-    var fileRealPath = fs.realpathSync(filePath);
+    const fileRealPath = fs.realpathSync(filePath);
 
     expect(fileRealPath).toBe(path.join(fs.realpathSync(originalDirPath), 'file.txt'));
     expect(containsPathSync(originalDirPath, filePath)).toBe(true);

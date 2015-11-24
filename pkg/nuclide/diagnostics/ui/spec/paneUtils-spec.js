@@ -9,15 +9,15 @@
  * the root directory of this source tree.
  */
 
-var {Range} = require('atom');
+const {Range} = require('atom');
 
-var {compareMessagesByFile} = require('../lib/paneUtils');
+const {compareMessagesByFile} = require('../lib/paneUtils');
 
 describe('compareMessagesByFile', () => {
 
-  var fileAMsgA: FileDiagnosticMessage;
-  var fileAMsgB: FileDiagnosticMessage;
-  var fileBMsgA: FileDiagnosticMessage;
+  let fileAMsgA: FileDiagnosticMessage;
+  let fileAMsgB: FileDiagnosticMessage;
+  let fileBMsgA: FileDiagnosticMessage;
 
   beforeEach(() => {
     fileAMsgA = {
@@ -44,17 +44,17 @@ describe('compareMessagesByFile', () => {
   });
 
   it('sorts messages based on file path', () => {
-    var msgs = [fileBMsgA, fileAMsgA];
+    const msgs = [fileBMsgA, fileAMsgA];
     expect(msgs.sort(compareMessagesByFile)).toEqual([fileAMsgA, fileBMsgA]);
   });
 
   it('sorts messages within a file based on line number', () => {
-    var msgs = [fileAMsgB, fileAMsgA];
+    const msgs = [fileAMsgB, fileAMsgA];
     expect(msgs.sort(compareMessagesByFile)).toEqual([fileAMsgA, fileAMsgB]);
   });
 
   it('sorts messages based on file path && by line number', () => {
-    var msgs = [fileAMsgB, fileBMsgA, fileAMsgA];
+    const msgs = [fileAMsgB, fileBMsgA, fileAMsgA];
     expect(msgs.sort(compareMessagesByFile)).toEqual([fileAMsgA, fileAMsgB, fileBMsgA]);
   });
 

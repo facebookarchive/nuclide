@@ -53,8 +53,8 @@ class DelayedEventManager {
       return null;
     }
     // Prevent 'this' from being bound to DelayedEventManager.
-    var setTimeoutFunction = this._setTimeoutFunction;
-    var eventId = setTimeoutFunction(callback, delayInMilliseconds);
+    const setTimeoutFunction = this._setTimeoutFunction;
+    const eventId = setTimeoutFunction(callback, delayInMilliseconds);
     this._ids.add(eventId);
     return eventId;
   }
@@ -63,10 +63,10 @@ class DelayedEventManager {
    * Cancel the event with the given identifier.
    */
   cancelEvent(identifier: any): void {
-    var hadId = this._ids.delete(identifier);
+    const hadId = this._ids.delete(identifier);
     if (hadId) {
       // Prevent 'this' from being bound to DelayedEventManager.
-      var clearTimeoutFunction = this._clearTimeoutFunction;
+      const clearTimeoutFunction = this._clearTimeoutFunction;
       clearTimeoutFunction(identifier);
     }
   }
@@ -76,7 +76,7 @@ class DelayedEventManager {
    */
   cancelAllEvents(): void {
     // Prevent 'this' from being bound to DelayedEventManager.
-    var clearTimeoutFunction = this._clearTimeoutFunction;
+    const clearTimeoutFunction = this._clearTimeoutFunction;
     this._ids.forEach(clearTimeoutFunction);
     this._ids.clear();
   }

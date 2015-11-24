@@ -11,9 +11,9 @@
 
 import type {Node} from '../types/ast';
 
-var jscs = require('jscodeshift');
+const jscs = require('jscodeshift');
 
-var {match} = jscs;
+const {match} = jscs;
 
 /**
  * This traverses a node to find the first identifier in nested expressions.

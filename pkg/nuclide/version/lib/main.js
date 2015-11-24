@@ -9,11 +9,11 @@
  * the root directory of this source tree.
  */
 
-var fs = require('fs');
-var path = require('path');
+const fs = require('fs');
+const path = require('path');
 
 const TEST_VERSION = 'test-version';
-var version;
+let version;
 
 /*
  * This is the versioning of Nuclide client-server protocol.
@@ -40,7 +40,7 @@ export function getVersion(): string {
       // instead of reading from the json file.
       //
       // Cannot use require() who counts on extension (.json) for parsing file as json.
-      var json = JSON.parse(
+      const json = JSON.parse(
         fs.readFileSync(path.resolve(__dirname, '../version.json')).toString()
       );
       version = json.Version.toString();

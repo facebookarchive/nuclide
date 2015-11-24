@@ -12,8 +12,8 @@
 import {get, reset} from './singleton';
 import path from 'path';
 
-var SMALLEST_NUCLIDE_BUILD_NUMBER = 5394875;
-var INSTALLER_BUILD_NUMBER_KEY = '_nuclide_installer_build_number_key';
+const SMALLEST_NUCLIDE_BUILD_NUMBER = 5394875;
+const INSTALLER_BUILD_NUMBER_KEY = '_nuclide_installer_build_number_key';
 
 export function isRunningInTest(): boolean {
   return process.env.NODE_ENV === 'test';
@@ -43,8 +43,8 @@ export function isRunningInNuclide(): boolean {
     return false;
   }
 
-  var version = getAtomVersion();
-  var buildNumber = version.split('.')[2];
+  const version = getAtomVersion();
+  const buildNumber = version.split('.')[2];
   // If the PATCH version (the third part of version string splitted by dot) is a number and larger
   // than SMALLEST_NUCLIDE_BUILD_NUMBER, then it's a build number.
   if (/^\d+$/.test(buildNumber) && parseInt(buildNumber, 10) >= SMALLEST_NUCLIDE_BUILD_NUMBER) {
@@ -53,7 +53,7 @@ export function isRunningInNuclide(): boolean {
   return false;
 }
 
-var atomConfig = isRunningInClient() ?
+const atomConfig = isRunningInClient() ?
     require(path.join(atom.getLoadSettings().resourcePath, 'package.json')) :
     {};
 
@@ -74,6 +74,6 @@ export function setInstallerPackageBuildNumber(buildNumber: number): void {
 
 // TODO(chenshen) implement isDevelopment.
 
-export var __test__ = {
+export const __test__ = {
   SMALLEST_NUCLIDE_BUILD_NUMBER,
 };

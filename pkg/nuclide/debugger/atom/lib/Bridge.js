@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-var remoteUri = require('nuclide-remote-uri');
-var {CompositeDisposable, Disposable} = require('atom');
+const remoteUri = require('nuclide-remote-uri');
+const {CompositeDisposable, Disposable} = require('atom');
 
 import type * as BreakpointStore from './BreakpointStore';
 
@@ -37,7 +37,7 @@ class Bridge {
 
   setWebviewElement(webview: WebviewElement) {
     this._webview = webview;
-    var boundHandler = this._handleIpcMessage.bind(this);
+    const boundHandler = this._handleIpcMessage.bind(this);
     webview.addEventListener('ipc-message', boundHandler);
     this._cleanupDisposables.add(new Disposable(() =>
       webview.removeEventListener('ipc-message', boundHandler)));
@@ -108,8 +108,8 @@ class Bridge {
 
   _setSelectedCallFrameLine(nullableOptions: ?{sourceURL: string; lineNumber: number}) {
     if (nullableOptions) {
-      var options = nullableOptions; // For use in capture without re-checking null
-      var path = remoteUri.uriToNuclideUri(options.sourceURL);
+      const options = nullableOptions; // For use in capture without re-checking null
+      const path = remoteUri.uriToNuclideUri(options.sourceURL);
       if (path) { // only handle real files for now
         atom.workspace.open(path).then(editor => {
           this._clearSelectedCallFrameMarker();
@@ -123,8 +123,8 @@ class Bridge {
 
   _openSourceLocation(nullableOptions: ?{sourceURL: string; lineNumber: number}) {
     if (nullableOptions) {
-      var options = nullableOptions; // For use in capture without re-checking null
-      var path = remoteUri.uriToNuclideUri(options.sourceURL);
+      const options = nullableOptions; // For use in capture without re-checking null
+      const path = remoteUri.uriToNuclideUri(options.sourceURL);
       if (path) { // only handle real files for now.
         atom.workspace.open(path)
           .then((editor) => {
@@ -136,7 +136,7 @@ class Bridge {
   }
 
   _highlightCallFrameLine(editor: atom$TextEditor, line: number) {
-    var marker = editor.markBufferRange(
+    const marker = editor.markBufferRange(
       [[line, 0], [line, Infinity]],
       {persistent: false, invalidate: 'never'});
     editor.decorateMarker(marker, {
@@ -147,7 +147,7 @@ class Bridge {
   }
 
   _addBreakpoint(location: {sourceURL: string; lineNumber: number}) {
-    var path = remoteUri.uriToNuclideUri(location.sourceURL);
+    const path = remoteUri.uriToNuclideUri(location.sourceURL);
     // only handle real files for now.
     if (path) {
       try {
@@ -160,7 +160,7 @@ class Bridge {
   }
 
   _removeBreakpoint(location: {sourceURL: string; lineNumber: number}) {
-    var path = remoteUri.uriToNuclideUri(location.sourceURL);
+    const path = remoteUri.uriToNuclideUri(location.sourceURL);
     // only handle real files for now.
     if (path) {
       try {
@@ -185,9 +185,9 @@ class Bridge {
 
   _sendAllBreakpoints() {
     // Send an array of file/line objects.
-    var webview = this._webview;
+    const webview = this._webview;
     if (webview && !this._suppressBreakpointSync) {
-      var results = [];
+      const results = [];
       this._breakpointStore.getAllBreakpoints().forEach((line, key) => {
         results.push({
           sourceURL: remoteUri.nuclideUriToUri(key),

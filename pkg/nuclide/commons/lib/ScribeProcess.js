@@ -11,7 +11,7 @@
 
 import {checkOutput, safeSpawn} from './process';
 
-var SCRIBE_CAT_COMMAND = 'scribe_cat';
+let SCRIBE_CAT_COMMAND = 'scribe_cat';
 
 /**
  * A wrapper of `scribe_cat` (https://github.com/facebookarchive/scribe/blob/master/examples/scribe_cat)
@@ -34,7 +34,7 @@ export class ScribeProcess {
    * Check if `scribe_cat` exists in PATH.
    */
   static async isScribeCatOnPath(): Promise<boolean> {
-    var {exitCode} = await checkOutput('which', [SCRIBE_CAT_COMMAND]);
+    const {exitCode} = await checkOutput('which', [SCRIBE_CAT_COMMAND]);
     return exitCode === 0;
   }
 
@@ -48,8 +48,8 @@ export class ScribeProcess {
    *        for more information.
    */
   async write(message: string | Object, replacer?: ()=>mixed): Promise<void> {
-    var os = require('os');
-    var child = await this._getOrCreateChildProcess();
+    const os = require('os');
+    const child = await this._getOrCreateChildProcess();
     return new Promise((resolve, reject) => {
       child.stdin.write(`${JSON.stringify(message)}${os.EOL}`, resolve);
     });
@@ -57,7 +57,7 @@ export class ScribeProcess {
 
   async dispose(): Promise<void> {
     if (this._childPromise) {
-      var child = await this._childPromise;
+      const child = await this._childPromise;
       if (this._childProcessRunning.get(child)) {
         child.kill();
       }
@@ -88,9 +88,9 @@ export class ScribeProcess {
   }
 }
 
-export var __test__ = {
+export const __test__ = {
   setScribeCatCommand(newCommand: string): string {
-    var originalCommand = SCRIBE_CAT_COMMAND;
+    const originalCommand = SCRIBE_CAT_COMMAND;
     SCRIBE_CAT_COMMAND = newCommand;
     return originalCommand;
   },

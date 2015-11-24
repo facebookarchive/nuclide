@@ -12,8 +12,8 @@
 import type {Identifier} from 'ast-types-flow';
 import type {Lines, Print} from '../../types/common';
 
-var flatten = require('../../utils/flatten');
-var markers = require('../../constants/markers');
+const flatten = require('../../utils/flatten');
+const markers = require('../../constants/markers');
 
 function printIdentifier(print: Print, node: Identifier): Lines {
   return  flatten([

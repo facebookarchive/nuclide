@@ -9,12 +9,12 @@
  * the root directory of this source tree.
  */
 
-var {Disposable} = require('event-kit');
-var EventService = require('./EventService');
+const {Disposable} = require('event-kit');
+const EventService = require('./EventService');
 
 class LocalEventService extends EventService {
   onOnceEvent(callback: () => void): Disposable {
-    var timeoutId = setTimeout(() => {
+    const timeoutId = setTimeout(() => {
       callback();
     }, 400);
 
@@ -24,9 +24,9 @@ class LocalEventService extends EventService {
   }
 
   onRevealTruthOnceEvent(callback: (augend: number, addend: number, sum: number) => void): Disposable {
-    var timeoutId = setTimeout(() => {
-      var augend = Math.random();
-      var addend = Math.random();
+    const timeoutId = setTimeout(() => {
+      const augend = Math.random();
+      const addend = Math.random();
       callback(augend, addend, augend + addend);
     }, 100);
 
@@ -36,8 +36,8 @@ class LocalEventService extends EventService {
   }
 
   onRepeatEvent(callback: (id: number) => void): Disposable {
-    var sequenceId = 0;
-    var intervalId = setInterval(() => {
+    let sequenceId = 0;
+    const intervalId = setInterval(() => {
       callback(sequenceId);
       sequenceId++;
     }, 100);

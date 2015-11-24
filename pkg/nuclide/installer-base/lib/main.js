@@ -27,24 +27,24 @@ type InstallConfig = {
  *   failed.
  */
 async function installPackagesInConfig(config: InstallConfig): Promise<boolean> {
-  var installedPackages = await getInstalledPackages();
-  var packagesToInstall = findPackagesToInstall(config, installedPackages);
-  var numPackages = packagesToInstall.length;
+  const installedPackages = await getInstalledPackages();
+  const packagesToInstall = findPackagesToInstall(config, installedPackages);
+  const numPackages = packagesToInstall.length;
   if (numPackages === 0) {
     return true;
   }
 
   // Create a progress bar to show what percentage of the packages are installed.
-  var numInstalled = 0;
-  var progress = window.document.createElement('progress');
+  let numInstalled = 0;
+  const progress = window.document.createElement('progress');
   progress.max = numPackages;
   progress.value = 0;
   progress.className = 'display-inline';
   progress.style.width = '100%';
 
   // Display a notification telling the user that installation has started.
-  var ellipsisLength = 0;
-  var notification = atom.notifications.addInfo(
+  let ellipsisLength = 0;
+  const notification = atom.notifications.addInfo(
     createInstallationMessage(numPackages, ellipsisLength),
     {
       // The detail property cannot be empty or else the DOM nodes we hook into in the following
@@ -53,17 +53,17 @@ async function installPackagesInConfig(config: InstallConfig): Promise<boolean> 
       dismissable: true,
     },
   );
-  var timerId: ?number;
+  let timerId: ?number;
   notification.onDidDismiss(() => { if (timerId) { clearInterval(timerId); } });
 
   // Extract the DOM elements of interest from the notification.
   // The structure of the <atom-notification> element can be found at:
   // https://github.com/atom/notifications/blob/master/lib/notification-element.coffee.
-  var notificationEl = atom.views.getView(notification);
-  var messageEl = notificationEl.querySelector('.message');
-  var notificationContentEl = notificationEl.querySelector('.detail-content');
-  var detailTextElement: ?HTMLElement;
-  var messageParagraphElement: ?HTMLElement;
+  const notificationEl = atom.views.getView(notification);
+  const messageEl = notificationEl.querySelector('.message');
+  const notificationContentEl = notificationEl.querySelector('.detail-content');
+  let detailTextElement: ?HTMLElement;
+  let messageParagraphElement: ?HTMLElement;
 
   // Defensive checks in case the DOM structure changes.
   if (notificationContentEl) {
@@ -76,7 +76,7 @@ async function installPackagesInConfig(config: InstallConfig): Promise<boolean> 
 
   // Keep track of the packages that are currently being installed and keep the contents of the
   // notification up to date with what is currently being installed.
-  var currentlyInstalling = new Set();
+  const currentlyInstalling = new Set();
 
   function updateMessage() {
     if (messageParagraphElement) {
@@ -87,7 +87,7 @@ async function installPackagesInConfig(config: InstallConfig): Promise<boolean> 
 
   function render() {
     if (detailTextElement) {
-      var {from} = require('nuclide-commons').array;
+      const {from} = require('nuclide-commons').array;
       detailTextElement.innerText = `Installing ${from(currentlyInstalling).join(', ')}`;
     }
     updateMessage();
@@ -110,7 +110,7 @@ async function installPackagesInConfig(config: InstallConfig): Promise<boolean> 
   }
 
   // Perform the installation.
-  var failure: ?Error;
+  let failure: ?Error;
   try {
     await installApmPackages(packagesToInstall, onBeginInstallation, onFinishInstallation);
   } catch (e) {
@@ -144,11 +144,11 @@ function createInstallationMessage(numPackages: number, ellipsisLength: number):
  * that correspond to user-installed Atom packages.
  */
 async function getInstalledPackages(): Promise<{[key: PackageName]: PackageVersion}> {
-  var {asyncExecute} = require('nuclide-commons');
-  var apm = atom.packages.getApmPath();
-  var json;
+  const {asyncExecute} = require('nuclide-commons');
+  const apm = atom.packages.getApmPath();
+  let json;
   try {
-    var {stdout} = await asyncExecute(apm, ['ls', '--json']);
+    const {stdout} = await asyncExecute(apm, ['ls', '--json']);
     json = stdout;
   } catch (e) {
     /*eslint-disable no-console*/
@@ -158,7 +158,7 @@ async function getInstalledPackages(): Promise<{[key: PackageName]: PackageVersi
     throw Error(`${apm} ls --json failed with exit code ${e.exitCode}`);
   }
 
-  var installedPackages = {};
+  const installedPackages = {};
   JSON.parse(json)['user'].forEach(pkg => {
     installedPackages[pkg['name']] = pkg['version'];
   });
@@ -169,10 +169,10 @@ function findPackagesToInstall(
   config: InstallConfig,
   installedPackages: {[key: PackageName]: PackageVersion}
   ): Array<string> {
-  var packagesToInstall = [];
-  var semver = require('semver');
+  const packagesToInstall = [];
+  const semver = require('semver');
   config.packages.forEach(pkg => {
-    var {name, version} = pkg;
+    const {name, version} = pkg;
     if (!name) {
       throw Error(`Entry without a name in ${JSON.stringify(config, null, 2)}`);
     }
@@ -200,20 +200,20 @@ function installApmPackages(
   onBeginInstallation: (packageName: string) => void,
   onFinishInstallation: (packageName: string) => void,
 ): Promise {
-  var {asyncExecute, PromisePool} = require('nuclide-commons');
+  const {asyncExecute, PromisePool} = require('nuclide-commons');
   // Use ~25% of the number of cores so that the installer does not eat up all the resources.
-  var poolSize = Math.max(Math.ceil(require('os').cpus().length / 4), 1);
-  var pool = new PromisePool(poolSize);
-  var apm = atom.packages.getApmPath();
-  var promises = [];
+  const poolSize = Math.max(Math.ceil(require('os').cpus().length / 4), 1);
+  const pool = new PromisePool(poolSize);
+  const apm = atom.packages.getApmPath();
+  const promises = [];
   packages.forEach(pkg => {
-    var executor = (resolve, reject) => {
+    const executor = (resolve, reject) => {
       onBeginInstallation(pkg);
       asyncExecute(apm, ['install', '--production', pkg])
         .then(() => onFinishInstallation(pkg))
         .then(resolve, reject);
     };
-    var promise = pool.submit(executor);
+    const promise = pool.submit(executor);
     promises.push(promise);
   });
   return Promise.all(promises);

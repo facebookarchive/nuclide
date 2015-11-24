@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-var nuclideClient = require('nuclide-client');
+const nuclideClient = require('nuclide-client');
 
 // convenience location creator
 function loc(line, column) {
@@ -17,8 +17,8 @@ function loc(line, column) {
 }
 
 describe('FindReferencesModel', () => {
-  var FindReferencesModel;
-  var fakeGrammar = {};
+  let FindReferencesModel;
+  const fakeGrammar = {};
 
   beforeEach(() => {
     spyOn(atom.grammars, 'selectGrammar').andReturn(fakeGrammar);
@@ -28,8 +28,8 @@ describe('FindReferencesModel', () => {
         if (fileName === 'bad') {
           throw 'bad file';
         }
-        var file = '';
-        for (var i = 1; i <= 9; i++) {
+        let file = '';
+        for (let i = 1; i <= 9; i++) {
           file += i + '\n';
         }
         return file;
@@ -41,19 +41,19 @@ describe('FindReferencesModel', () => {
 
   it('should group references by file', () => {
     waitsForPromise(async () => {
-      var refs = [
+      const refs = [
         // These should be sorted in the final output.
         {uri: '/test/1', name: 'test1', start: loc(9, 1), end: loc(10, 1)},
         {uri: '/test/1', name: 'test1', start: loc(1, 1), end: loc(1, 1)},
         {uri: '/test/2', name: 'test2', start: loc(2, 1), end: loc(2, 1)},
       ];
-      var model = new FindReferencesModel('/test', 'testFunction', refs);
+      const model = new FindReferencesModel('/test', 'testFunction', refs);
       expect(model.getReferenceCount()).toEqual(3);
       expect(model.getFileCount()).toEqual(2);
 
-      var result = await model.getFileReferences(0, 100);
+      const result = await model.getFileReferences(0, 100);
       // Note the 1 line of context in the previews (but make sure it doesn't overflow)
-      var expectedResult = [
+      const expectedResult = [
         {
           uri: '/test/1',
           grammar: fakeGrammar,
@@ -75,8 +75,8 @@ describe('FindReferencesModel', () => {
       expect(result).toEqual(expectedResult);
 
       // It should also work if we fetch each one separately.
-      var res1 = await model.getFileReferences(0, 1);
-      var res2 = await model.getFileReferences(1, 1);
+      const res1 = await model.getFileReferences(0, 1);
+      const res2 = await model.getFileReferences(1, 1);
       expect(res1.concat(res2)).toEqual(expectedResult);
     });
   });
@@ -84,7 +84,7 @@ describe('FindReferencesModel', () => {
   it('should group overlapping references', () => {
     waitsForPromise(async () => {
       // Adjacent blocks (including context) should get merged into a single group.
-      var refs = [
+      const refs = [
         {uri: '/test/1', name: 'test1', start: loc(1, 1), end: loc(1, 1)},
         {uri: '/test/1', name: 'test1', start: loc(2, 1), end: loc(2, 1)},
         {uri: '/test/1', name: 'test1', start: loc(4, 1), end: loc(4, 1)},
@@ -94,11 +94,11 @@ describe('FindReferencesModel', () => {
         {uri: '/test/2', name: 'test2', start: loc(1, 1), end: loc(4, 1)},
         {uri: '/test/2', name: 'test2', start: loc(2, 1), end: loc(3, 1)},
       ];
-      var model = new FindReferencesModel('/test', 'testFunction', refs);
+      const model = new FindReferencesModel('/test', 'testFunction', refs);
       expect(model.getReferenceCount()).toEqual(7);
       expect(model.getFileCount()).toEqual(2);
 
-      var result = await model.getFileReferences(0, 100);
+      const result = await model.getFileReferences(0, 100);
       expect(result).toEqual([
         {
           uri: '/test/1',
@@ -123,15 +123,15 @@ describe('FindReferencesModel', () => {
 
   it('should hide bad files', () => {
     waitsForPromise(async () => {
-      var refs = [
+      const refs = [
         {uri: '/test/1', name: 'test1', start: loc(1, 1), end: loc(1, 1)},
         {uri: 'bad', name: 'bad', start: loc(2, 1), end: loc(2, 1)},
       ];
-      var model = new FindReferencesModel('/test', 'testFunction', refs);
+      const model = new FindReferencesModel('/test', 'testFunction', refs);
       expect(model.getReferenceCount()).toEqual(2);
       expect(model.getFileCount()).toEqual(2);
 
-      var result = await model.getFileReferences(0, 100);
+      const result = await model.getFileReferences(0, 100);
       // Bad file should be silently hidden.
       expect(result).toEqual([
         {

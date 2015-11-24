@@ -27,34 +27,34 @@ declare class Benchmark {
   index?: number;
 }
 
-var fs = require('fs');
-var path = require('path');
-var {sleep, sleepUntilNoRequests, yellow, green} = require('../benchmarker-utils');
-var {writeTsv, writeAllTsv, readAllTsv} = require('../benchmarker-tsv');
-var {aggregateTable, avg} = require('../benchmarker-data');
+const fs = require('fs');
+const path = require('path');
+const {sleep, sleepUntilNoRequests, yellow, green} = require('../benchmarker-utils');
+const {writeTsv, writeAllTsv, readAllTsv} = require('../benchmarker-tsv');
+const {aggregateTable, avg} = require('../benchmarker-data');
 
-var RUN_STATE_KEY = 'nuclide-benchmarker-run-state';
-var RESULT_DIR_ROOT = '/tmp/nuclide-benchmarker-results';
+const RUN_STATE_KEY = 'nuclide-benchmarker-run-state';
+const RESULT_DIR_ROOT = '/tmp/nuclide-benchmarker-results';
 
 // These benchmarks need to load packages fast, and re-use native module information in localstorage.
 // Disabling devMode allows Atom to access the data stored within the installed-packages:*.* cache.
 atom.devMode = false;
 
 // Determine what benchmarks are to be run, and with which packages installed.
-var {benchmarks, packages} = getBenchmarksAndPackages();
+const {benchmarks, packages} = getBenchmarksAndPackages();
 
 describe('Nuclide performance', () => {
 
   // Rehydrate the state of the benchmark run following a restart or a reload.
-  var {benchmarkIndex, iteration, repetition, resultDir, resultFile} = getTestState();
+  let {benchmarkIndex, iteration, repetition, resultDir, resultFile} = getTestState();
 
   // Load the benchmark we need to (continue to) run.
-  var benchmark: Benchmark = require('../benchmarks/' + benchmarks[benchmarkIndex]);
+  const benchmark: Benchmark = require('../benchmarks/' + benchmarks[benchmarkIndex]);
   benchmark.index = benchmarkIndex;
   benchmark.name = benchmarks[benchmarkIndex];
 
   // Every record stored in a file has an iteration column at the start for aggregation purposes.
-  var columns = benchmark.columns;
+  const columns = benchmark.columns;
   columns.unshift('iteration');
 
   it(benchmark.description, () => {
@@ -90,16 +90,16 @@ describe('Nuclide performance', () => {
       console.log(yellow(`${benchmark.name}: ` +
                           `iteration ${iteration + 1} of ${benchmark.iterations}, ` +
                           `repetition ${repetition + 1} of ${benchmark.repetitions}`));
-      var result = await benchmark.run(iteration);
+      const result = await benchmark.run(iteration);
       result.iteration = iteration;
       writeTsv(resultFile, columns, result);
 
       // Determine the next benchmark & iteration due so that when we reload Atom, it can continue.
-      var nextTestState = getNextTestState(benchmarks, benchmark, iteration, repetition);
+      const nextTestState = getNextTestState(benchmarks, benchmark, iteration, repetition);
 
       // Detect if we have reached the end of an individual benchmark or of the whole run (and exit).
       if (nextTestState.iteration === 0) {
-        var processedResultFile = processResultFile(resultFile, benchmark);
+        const processedResultFile = processResultFile(resultFile, benchmark);
         console.log(`Results for ${benchmark.name} are in ${green(processedResultFile)}`);
       }
       if (nextTestState.benchmarkIndex === 0) {
@@ -118,7 +118,7 @@ describe('Nuclide performance', () => {
 });
 
 function getBenchmarksAndPackages(): {benchmarks: Array<string>, packages: Array<string>} {
-  var benchmarks = [];
+  let benchmarks = [];
   if (process.env.BENCHMARK) {
     // A single benchmark has been passed in from the command line or shell.
     benchmarks = [process.env.BENCHMARK];
@@ -129,7 +129,7 @@ function getBenchmarksAndPackages(): {benchmarks: Array<string>, packages: Array
       .map(filename => filename.replace(/\.js$/, ''));
   }
 
-  var packages = [];
+  let packages = [];
   if (process.env.BENCHMARK_PACKAGES) {
     // packages to be loaded have been passed in from the command line or shell.
     packages = process.env.BENCHMARK_PACKAGES.split(',').map(p => p.trim()).filter(p => p != '');
@@ -138,7 +138,7 @@ function getBenchmarksAndPackages(): {benchmarks: Array<string>, packages: Array
 }
 
 function getTestState(): Object {
-  var item = sessionStorage.getItem(RUN_STATE_KEY);
+  const item = sessionStorage.getItem(RUN_STATE_KEY);
   if (item) {
     try {
       return JSON.parse(item);
@@ -154,8 +154,8 @@ function getTestState(): Object {
 }
 
 function setTestState(newState: Object): void {
-  var state = getTestState();
-  for (var key in newState) {
+  const state = getTestState();
+  for (const key in newState) {
     state[key] = newState[key];
   }
   sessionStorage.setItem(RUN_STATE_KEY, JSON.stringify(state));
@@ -165,7 +165,7 @@ function createResultDir(): string {
   if (!fs.existsSync(RESULT_DIR_ROOT)) {
     fs.mkdirSync(RESULT_DIR_ROOT);
   }
-  var resultDir = path.join(RESULT_DIR_ROOT, Date.now().toString());
+  const resultDir = path.join(RESULT_DIR_ROOT, Date.now().toString());
   fs.mkdirSync(resultDir);
   return resultDir;
 }
@@ -175,15 +175,15 @@ function createResultFile(
   benchmark: {name: string},
   columns: Array<string>,
 ): string {
-  var resultFile = path.join(resultDir, benchmark.name + '.tsv');
+  const resultFile = path.join(resultDir, benchmark.name + '.tsv');
   writeTsv(resultFile, columns);
   return resultFile;
 }
 
 function processResultFile(resultFile: string): string {
   // Aggregates on the first column, averaging the other columns.
-  var {columns, records} = readAllTsv(resultFile);
-  var processedResultFile = resultFile.replace(/\.tsv$/, '.processed.tsv');
+  const {columns, records} = readAllTsv(resultFile);
+  const processedResultFile = resultFile.replace(/\.tsv$/, '.processed.tsv');
   writeAllTsv(processedResultFile, columns, aggregateTable(columns, records, columns[0], avg));
   return processedResultFile;
 }

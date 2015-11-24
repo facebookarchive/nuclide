@@ -15,9 +15,9 @@ import type {
   ProviderType,
 } from 'nuclide-quick-open-interfaces';
 
-var {getClient} = require('nuclide-client');
+const {getClient} = require('nuclide-client');
 
-var FuzzyFileNameProvider: Provider = {
+const FuzzyFileNameProvider: Provider = {
 
   getName(): string {
     return 'FuzzyFileNameProvider';
@@ -55,8 +55,8 @@ var FuzzyFileNameProvider: Provider = {
     if (query.length === 0) {
       return [];
     }
-    var directoryPath = directory.getPath();
-    var client = getClient(directoryPath);
+    const directoryPath = directory.getPath();
+    const client = getClient(directoryPath);
     if (client == null) {
       return [];
     }

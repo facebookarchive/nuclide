@@ -10,7 +10,7 @@
  */
 
 
-var {convertValue} = require('../lib/values');
+const {convertValue} = require('../lib/values');
 
 describe('debugger-hhvm-proxy convertValue', () => {
 
@@ -163,19 +163,19 @@ describe('debugger-hhvm-proxy convertValue', () => {
   it('object', () => {
     expect(convertValue(
       {},
-    {
-      $:{
-        name: '$arg',
-        fullname: '$arg',
-        address: '140735546955520',
-        type: 'object',
-        classname: 'CLS',
-        children: '0',
-        numchildren: '0',
-        page: '0',
-        pagesize: '32'
+      {
+        $:{
+          name: '$arg',
+          fullname: '$arg',
+          address: '140735546955520',
+          type: 'object',
+          classname: 'CLS',
+          children: '0',
+          numchildren: '0',
+          page: '0',
+          pagesize: '32',
+        },
       }
-    }
     )).toEqual({
       description: 'CLS',
       type: 'object',

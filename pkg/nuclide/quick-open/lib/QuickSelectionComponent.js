@@ -16,7 +16,7 @@ import type {
 import type {
   DirectoryName,
   GroupedResult,
-  ServiceName
+  ServiceName,
 } from 'nuclide-quick-open-interfaces';
 
 type ResultContext = {

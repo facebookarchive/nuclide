@@ -9,18 +9,18 @@
  * the root directory of this source tree.
  */
 
-var {Directory, GitRepository} = require('atom');
-var fs = require('fs');
-var repositoryContainsPath = require('../lib/repositoryContainsPath');
-var {asyncExecute} = require('nuclide-commons');
-var {MockHgService} = require('nuclide-hg-repository-base');
-var {HgRepositoryClient} = require('nuclide-hg-repository-client');
-var path = require('path');
-var temp = require('temp').track();
+const {Directory, GitRepository} = require('atom');
+const fs = require('fs');
+const repositoryContainsPath = require('../lib/repositoryContainsPath');
+const {asyncExecute} = require('nuclide-commons');
+const {MockHgService} = require('nuclide-hg-repository-base');
+const {HgRepositoryClient} = require('nuclide-hg-repository-client');
+const path = require('path');
+const temp = require('temp').track();
 
 describe('repositoryContainsPath', () => {
-  var tempFolder;
-  var repoRoot;
+  let tempFolder;
+  let repoRoot;
 
   beforeEach(() => {
     // Create a temporary Hg repository.
@@ -34,7 +34,7 @@ describe('repositoryContainsPath', () => {
       // Create a temporary Git repository.
       await asyncExecute('git', ['init'], {cwd: repoRoot});
 
-      var gitRepository = new GitRepository(repoRoot);
+      const gitRepository = new GitRepository(repoRoot);
       // For some reason, the path returned in tests from
       // GitRepository.getWorkingDirectory is prepended with '/private',
       // which makes the Directory::contains method inaccurate in
@@ -45,9 +45,9 @@ describe('repositoryContainsPath', () => {
       });
 
       expect(repositoryContainsPath(gitRepository, repoRoot)).toBe(true);
-      var subdir = path.join(repoRoot, 'subdir');
+      const subdir = path.join(repoRoot, 'subdir');
       expect(repositoryContainsPath(gitRepository, subdir)).toBe(true);
-      var parentDir = path.resolve(tempFolder, '..');
+      const parentDir = path.resolve(tempFolder, '..');
       expect(repositoryContainsPath(gitRepository, parentDir)).toBe(false);
     });
   });
@@ -57,7 +57,7 @@ describe('repositoryContainsPath', () => {
       // Create temporary Hg repository.
       await asyncExecute('hg', ['init'], {cwd: repoRoot});
 
-      var hgRepository = new HgRepositoryClient(
+      const hgRepository = new HgRepositoryClient(
         /* repoPath */ path.join(repoRoot, '.hg'),
         /* hgService */ new MockHgService(),
         /* options */  {
@@ -68,9 +68,9 @@ describe('repositoryContainsPath', () => {
       );
 
       expect(repositoryContainsPath(hgRepository, repoRoot)).toBe(true);
-      var subdir = path.join(repoRoot, 'subdir');
+      const subdir = path.join(repoRoot, 'subdir');
       expect(repositoryContainsPath(hgRepository, subdir)).toBe(true);
-      var parentDir = path.resolve(tempFolder, '..');
+      const parentDir = path.resolve(tempFolder, '..');
       expect(repositoryContainsPath(hgRepository, parentDir)).toBe(false);
     });
   });

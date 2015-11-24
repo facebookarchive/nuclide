@@ -11,15 +11,15 @@
 
 import type {Collection, NodePath} from '../types/ast';
 
-var NewLine = require('./NewLine');
+const NewLine = require('./NewLine');
 
-var getRootIdentifierInExpression = require('./getRootIdentifierInExpression');
-var isGlobal = require('./isGlobal');
-var jscs = require('jscodeshift');
+const getRootIdentifierInExpression = require('./getRootIdentifierInExpression');
+const isGlobal = require('./isGlobal');
+const jscs = require('jscodeshift');
 
-var {match} = jscs;
+const {match} = jscs;
 
-var FirstNode = {
+const FirstNode = {
   /**
    * Gets the first node that it's safe to insert before on.
    *
@@ -27,7 +27,7 @@ var FirstNode = {
    * then there isn't ever code that would result in a require being changed.
    */
   get(root: Collection): ?NodePath {
-    var first;
+    let first;
     root
       .find(jscs.Node)
       .filter(path => isGlobal(path))
@@ -51,7 +51,7 @@ var FirstNode = {
     if (match(path, {expression: {type: 'Literal'}})) {
       return false;
     }
-    var firstObject = getRootIdentifierInExpression(path.node);
+    const firstObject = getRootIdentifierInExpression(path.node);
     if (firstObject && match(firstObject, {name: 'jest'})) {
       return false;
     }

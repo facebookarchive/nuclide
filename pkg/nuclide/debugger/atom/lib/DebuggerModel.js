@@ -9,13 +9,13 @@
  * the root directory of this source tree.
  */
 
-var BreakpointManager = require('./BreakpointManager');
-var BreakpointStore = require('./BreakpointStore');
-var DebuggerActions = require('./DebuggerActions');
-var DebuggerStore = require('./DebuggerStore');
-var Bridge = require('./Bridge');
-var {CompositeDisposable} = require('atom');
-var {Dispatcher} = require('flux');
+const BreakpointManager = require('./BreakpointManager');
+const BreakpointStore = require('./BreakpointStore');
+const DebuggerActions = require('./DebuggerActions');
+const DebuggerStore = require('./DebuggerStore');
+const Bridge = require('./Bridge');
+const {CompositeDisposable} = require('atom');
+const {Dispatcher} = require('flux');
 
 import type {SerializedState} from './main';
 

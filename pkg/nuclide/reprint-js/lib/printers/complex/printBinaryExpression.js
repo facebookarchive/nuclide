@@ -12,8 +12,8 @@
 import type {BinaryExpression} from 'ast-types-flow';
 import type {Context, Lines, Print} from '../../types/common';
 
-var markers = require('../../constants/markers');
-var wrapExpression = require('../../wrappers/simple/wrapExpression');
+const markers = require('../../constants/markers');
+const wrapExpression = require('../../wrappers/simple/wrapExpression');
 
 function printBinaryExpression(
   print: Print,

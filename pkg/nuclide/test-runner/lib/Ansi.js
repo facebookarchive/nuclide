@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-var Ansi = {
+const Ansi = {
   BLUE: '\u001B[34m',
   GREEN: '\u001B[32m',
   RED: '\u001B[31m',

@@ -8,7 +8,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-var invariant = require('assert');
+const invariant = require('assert');
 
 /*eslint-disable no-unused-vars*/
 type WaitsForPromiseOptions = {
@@ -24,12 +24,12 @@ function waitsForPromise(...args: Array<WaitsForPromiseOptions | () => Promise<m
     var [shouldReject, timeout] = [false, 0];
   }
 
-  var finished = false;
+  let finished = false;
 
   runs(() => {
-    var fn = args[args.length - 1];
+    const fn = args[args.length - 1];
     invariant(typeof fn === 'function');
-    var promise = fn();
+    const promise = fn();
     if (shouldReject) {
       promise.then(() => {
         jasmine.getEnv().currentSpec.fail(
@@ -43,7 +43,7 @@ function waitsForPromise(...args: Array<WaitsForPromiseOptions | () => Promise<m
       promise.then(() => {
         // Do nothing, it's expected.
       }, (error) => {
-        var text = error ? (error.stack || error.toString()) : 'undefined';
+        const text = error ? (error.stack || error.toString()) : 'undefined';
         jasmine.getEnv().currentSpec.fail(
           `Expected promise to be resolved, but it was rejected with ${text}`);
       }).then(() => {

@@ -10,7 +10,7 @@
  */
 import React from 'react-for-atom';
 
-let {PropTypes, addons} = React;
+const {PropTypes, addons} = React;
 
 /**
  * A checkbox component with an input checkbox and a label. We restrict the label to a string

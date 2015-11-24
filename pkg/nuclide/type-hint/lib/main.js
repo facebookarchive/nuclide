@@ -15,15 +15,15 @@ import type {
 
 import type TypeHintManager from './TypeHintManager';
 
-var {Disposable} = require('atom');
+const {Disposable} = require('atom');
 
-var typeHintManager: ?TypeHintManager = null;
+let typeHintManager: ?TypeHintManager = null;
 
 module.exports = {
 
   activate(state: ?any): void {
     if (!typeHintManager) {
-      var TypeHintManager = require('./TypeHintManager');
+      const TypeHintManager = require('./TypeHintManager');
       typeHintManager = new TypeHintManager();
     }
   },
@@ -38,6 +38,6 @@ module.exports = {
       typeHintManager.dispose();
       typeHintManager = null;
     }
-  }
+  },
 
 };

@@ -10,8 +10,8 @@
  */
 
 
-var {log, logError} = require('./utils');
-var {EventEmitter} = require('events');
+const {log, logError} = require('./utils');
+const {EventEmitter} = require('events');
 import {DbgpMessageHandler, getDbgpMessageHandlerInstance} from './DbgpMessageHandler';
 import type {Disposable} from 'nuclide-commons';
 import type {Socket} from 'net';
@@ -115,16 +115,16 @@ class DbgpSocket {
   }
 
   _onData(data: Buffer | string): void {
-    var message = data.toString();
+    const message = data.toString();
     log('Recieved data: ' + message);
-    var responses = this._messageHandler.parseMessages(message);
+    const responses = this._messageHandler.parseMessages(message);
     responses.forEach(r => {
-      var response = r.response;
+      const response = r.response;
       if (response) {
-        var responseAttributes = response.$;
-        var {command, transaction_id} = responseAttributes;
-        var transactionId = Number(transaction_id);
-        var call = this._calls.get(transactionId);
+        const responseAttributes = response.$;
+        const {command, transaction_id} = responseAttributes;
+        const transactionId = Number(transaction_id);
+        const call = this._calls.get(transactionId);
         if (!call) {
           logError('Missing call for response: ' + message);
           return;
@@ -152,19 +152,19 @@ class DbgpSocket {
   }
 
   async getContextsForFrame(frameIndex: number): Promise<Array<DbgpContext>> {
-    var result = await this._callDebugger('context_names', `-d ${frameIndex}`);
+    const result = await this._callDebugger('context_names', `-d ${frameIndex}`);
     return result.context.map(context => context.$);
   }
 
   async getContextProperties(frameIndex: number, contextId: string): Promise<Array<DbgpProperty>> {
-    var result = await this._callDebugger('context_get', `-d ${frameIndex} -c ${contextId}`);
+    const result = await this._callDebugger('context_get', `-d ${frameIndex} -c ${contextId}`);
     // 0 results yields missing 'property' member
     return result.property || [];
   }
 
   async getPropertiesByFullname(frameIndex: number, contextId: string, fullname: string,
       page: number): Promise<Array<DbgpProperty>> {
-    var result = await this._callDebugger(
+    const result = await this._callDebugger(
       'property_value', `-d ${frameIndex} -c ${contextId} -n ${fullname} -p ${page}`);
     // property_value returns the outer property, we want the children ...
     // 0 results yields missing 'property' member
@@ -201,7 +201,7 @@ class DbgpSocket {
   // Returns one of:
   //  starting, stopping, stopped, running, break
   async getStatus(): Promise<string> {
-    var response = await this._callDebugger('status');
+    const response = await this._callDebugger('status');
     // TODO: Do we ever care about response.$.reason?
     return response.$.status;
   }
@@ -210,14 +210,14 @@ class DbgpSocket {
   // is a status message which occurs after execution stops.
   async sendContinuationCommand(command: string): Promise<string> {
     this._emitStatus(STATUS_RUNNING);
-    var response = await this._callDebugger(command);
-    var status = response.$.status;
+    const response = await this._callDebugger(command);
+    const status = response.$.status;
     this._emitStatus(status);
     return status;
   }
 
   async sendBreakCommand(): Promise<boolean> {
-    var response = await this._callDebugger('break');
+    const response = await this._callDebugger('break');
     return response.$.success !== '0';
   }
 
@@ -225,7 +225,7 @@ class DbgpSocket {
    * Returns the exception breakpoint id.
    */
   async setExceptionBreakpoint(exceptionName: string): Promise<string> {
-    var response = await this._callDebugger('breakpoint_set', `-t exception -x ${exceptionName}`);
+    const response = await this._callDebugger('breakpoint_set', `-t exception -x ${exceptionName}`);
     if (response.error) {
       throw new Error('Error from setPausedOnExceptions: ' + JSON.stringify(response));
     }
@@ -237,7 +237,7 @@ class DbgpSocket {
    * Returns a breakpoint id
    */
   async setBreakpoint(filename: string, lineNumber: number): Promise<string> {
-    var response = await this._callDebugger('breakpoint_set', `-t line -f ${filename} -n ${lineNumber}`);
+    const response = await this._callDebugger('breakpoint_set', `-t line -f ${filename} -n ${lineNumber}`);
     if (response.error) {
       throw new Error('Error setting breakpoint: ' + JSON.stringify(response));
     }
@@ -246,7 +246,7 @@ class DbgpSocket {
   }
 
   async removeBreakpoint(breakpointId: string): Promise {
-    var response = await this._callDebugger('breakpoint_remove', `-d ${breakpointId}`);
+    const response = await this._callDebugger('breakpoint_remove', `-d ${breakpointId}`);
     if (response.error) {
       throw new Error('Error removing breakpoint: ' + JSON.stringify(response));
     }
@@ -255,7 +255,7 @@ class DbgpSocket {
   // Sends command to hhvm.
   // Returns an object containing the resulting attributes.
   _callDebugger(command: string, params: ?string): Promise<Object> {
-    var transactionId = this._sendCommand(command, params);
+    const transactionId = this._sendCommand(command, params);
     return new Promise((resolve, reject) => {
       this._calls.set(transactionId, {
         command,
@@ -265,8 +265,8 @@ class DbgpSocket {
   }
 
   _sendCommand(command: string, params: ?string): number {
-    var id = ++this._transactionId;
-    var message = `${command} -i ${id}`;
+    const id = ++this._transactionId;
+    let message = `${command} -i ${id}`;
     if (params) {
       message += ' ' + params;
     }

@@ -41,7 +41,7 @@ var manipulationCreator = new ManipulationAssignmentExpressionCreator(
     addSuffixManipulation);
 
 function createOnetimeHelperPlugin(): any {
-  var expired = false;
+  let expired = false;
   return new Transformer('helper', {
     FunctionDeclaration(node, parent) {
       if (expired) {
@@ -49,10 +49,10 @@ function createOnetimeHelperPlugin(): any {
       } else {
         expired = true;
       }
-      var parametersManipulationExpressions = [];
+      const parametersManipulationExpressions = [];
 
       node.params.forEach(param => {
-        var assignmentExpression = manipulationCreator.create(
+        const assignmentExpression = manipulationCreator.create(
             param.typeAnnotation.typeAnnotation, param);
         if (assignmentExpression) {
           parametersManipulationExpressions.push(assignmentExpression);

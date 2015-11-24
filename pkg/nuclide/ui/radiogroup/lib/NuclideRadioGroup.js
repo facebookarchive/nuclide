@@ -9,17 +9,17 @@
  * the root directory of this source tree.
  */
 
-var React = require('react-for-atom');
+const React = require('react-for-atom');
 
-var {PropTypes} = React;
+const {PropTypes} = React;
 
 // Globally unique ID used as the "name" attribute to group radio inputs.
-var uid = 0;
+let uid = 0;
 
 /**
  * A managed radio group component. Accepts arbitrary react elements as labels.
  */
-var NuclideRadioGroup = React.createClass({
+const NuclideRadioGroup = React.createClass({
 
   propTypes: {
     optionLabels: PropTypes.arrayOf(PropTypes.node).isRequired,
@@ -42,8 +42,8 @@ var NuclideRadioGroup = React.createClass({
   },
 
   render: function(): ReactElement {
-    var checkboxes = this.props.optionLabels.map((labelContent, i) => {
-      var id = 'nuclide-radiogroup-' + uid + '-' + i;
+    const checkboxes = this.props.optionLabels.map((labelContent, i) => {
+      const id = 'nuclide-radiogroup-' + uid + '-' + i;
       return (
         <div key={i}>
           <input

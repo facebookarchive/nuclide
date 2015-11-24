@@ -58,9 +58,9 @@ export default class ServiceMonitor extends React.Component {
   // TODO(t8579695): Make it possible to click on a row and console.dir() the arguments so that they
   // can be inspected.
   render(): void {
-    let rows = [];
-    let serviceFilter = this.state.serviceFilter.toLowerCase();
-    for (let item of this.props.serviceLogger) {
+    const rows = [];
+    const serviceFilter = this.state.serviceFilter.toLowerCase();
+    for (const item of this.props.serviceLogger) {
       if (item.service.toLowerCase().indexOf(serviceFilter) === -1) {
         continue;
       }

@@ -10,7 +10,7 @@
  */
 
 
-var {DebuggerProcessInfo} = require('nuclide-debugger-utils');
+const {DebuggerProcessInfo} = require('nuclide-debugger-utils');
 class ProcessInfo extends DebuggerProcessInfo
 {
   _remoteDirectoryPath: string;
@@ -22,12 +22,12 @@ class ProcessInfo extends DebuggerProcessInfo
   }
 
   attach(): DebuggerProcess {
-    var DebuggerProcess = require('./DebuggerProcess');
+    const DebuggerProcess = require('./DebuggerProcess');
     return new DebuggerProcess(this._remoteDirectoryPath);
   }
 
   launch(launchTarget: string) {
-    var DebuggerProcess = require('./DebuggerProcess');
+    const DebuggerProcess = require('./DebuggerProcess');
     return new DebuggerProcess(this._remoteDirectoryPath, launchTarget);
   }
 
@@ -36,7 +36,7 @@ class ProcessInfo extends DebuggerProcessInfo
   }
 
   displayString(): string {
-    var remoteUri = require('nuclide-remote-uri');
+    const remoteUri = require('nuclide-remote-uri');
     return remoteUri.getHostname(this._remoteDirectoryPath);
   }
 }

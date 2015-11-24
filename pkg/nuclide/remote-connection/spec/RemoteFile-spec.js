@@ -9,24 +9,24 @@
  * the root directory of this source tree.
  */
 
-var fs = require('fs');
-var path = require('path');
-var crypto = require('crypto');
-var temp = require('temp').track();
-var RemoteFile = require('../lib/RemoteFile');
-var connectionMock = require('./connection_mock');
+const fs = require('fs');
+const path = require('path');
+const crypto = require('crypto');
+const temp = require('temp').track();
+const RemoteFile = require('../lib/RemoteFile');
+const connectionMock = require('./connection_mock');
 
 describe('RemoteFile', () => {
 
-  var computeDigest = (contents) => crypto.createHash('sha1')
+  const computeDigest = (contents) => crypto.createHash('sha1')
     .update(contents || '').digest('hex');
 
   describe('getRealPath() & getRealPathSync()', () => {
-    var filePath;
-    var symlinkedFilePath;
+    let filePath;
+    let symlinkedFilePath;
 
     beforeEach(() => {
-      var tempDir = temp.mkdirSync('realpath_test');
+      const tempDir = temp.mkdirSync('realpath_test');
       filePath = path.join(tempDir, 'file.txt');
       fs.writeFileSync(filePath, 'some contents');
       filePath = fs.realpathSync(filePath);
@@ -36,15 +36,15 @@ describe('RemoteFile', () => {
 
     it('gets realpath of a file', () => {
       waitsForPromise(async () => {
-        var file = new RemoteFile(connectionMock, symlinkedFilePath);
-        var realpath = await file.getRealPath();
+        const file = new RemoteFile(connectionMock, symlinkedFilePath);
+        const realpath = await file.getRealPath();
         expect(realpath).toBe(fs.realpathSync(symlinkedFilePath));
       });
     });
 
     it('caches the getRealPath result', () => {
       waitsForPromise(async () => {
-        var file = new RemoteFile(connectionMock, symlinkedFilePath);
+        const file = new RemoteFile(connectionMock, symlinkedFilePath);
         expect(file.getRealPathSync()).toBe(symlinkedFilePath);
         await file.getRealPath();
         expect(file.getRealPathSync()).toBe(filePath);
@@ -53,7 +53,7 @@ describe('RemoteFile', () => {
   });
 
   describe('delete()', () => {
-    var tempDir;
+    let tempDir;
 
     beforeEach(() => {
       tempDir = temp.mkdirSync('delete_test');
@@ -61,9 +61,9 @@ describe('RemoteFile', () => {
 
     it('deletes the existing file', () => {
       waitsForPromise(async () => {
-        var filePath = path.join(tempDir, 'file_to_delete');
+        const filePath = path.join(tempDir, 'file_to_delete');
         fs.writeFileSync(filePath, '');
-        var file = new RemoteFile(connectionMock, filePath);
+        const file = new RemoteFile(connectionMock, filePath);
         expect(fs.existsSync(filePath)).toBe(true);
         await file.delete();
         expect(fs.existsSync(filePath)).toBe(false);
@@ -72,8 +72,8 @@ describe('RemoteFile', () => {
 
     it('deletes the non-existent file', () => {
       waitsForPromise(async () => {
-        var filePath = path.join(tempDir, 'file_to_delete');
-        var file = new RemoteFile(connectionMock, filePath);
+        const filePath = path.join(tempDir, 'file_to_delete');
+        const file = new RemoteFile(connectionMock, filePath);
         await file.delete();
         expect(fs.existsSync(filePath)).toBe(false);
       });
@@ -81,7 +81,7 @@ describe('RemoteFile', () => {
   });
 
   describe('RemoteFile::onDidDelete()', () => {
-    var tempDir;
+    let tempDir;
 
     beforeEach(() => {
       tempDir = temp.mkdirSync('on_did_create_and_delete_test');
@@ -89,10 +89,10 @@ describe('RemoteFile', () => {
 
     it('calls on delete', () => {
       waitsForPromise(async () => {
-        var filePath = path.join(tempDir, 'file_to_delete');
+        const filePath = path.join(tempDir, 'file_to_delete');
         fs.writeFileSync(filePath, '');
-        var file = new RemoteFile(connectionMock, filePath);
-        var callbackSpy = jasmine.createSpy();
+        const file = new RemoteFile(connectionMock, filePath);
+        const callbackSpy = jasmine.createSpy();
         file._willAddSubscription = jasmine.createSpy();
         file.onDidDelete(callbackSpy);
         waitsFor(() => !file._pendingSubscription);
@@ -107,7 +107,7 @@ describe('RemoteFile', () => {
   });
 
   describe('RemoteFile::rename()', () => {
-    var tempDir;
+    let tempDir;
 
     beforeEach(() => {
       tempDir = temp.mkdirSync('rename_test');
@@ -135,7 +135,7 @@ describe('RemoteFile', () => {
   });
 
   describe('copy()', () => {
-    var tempDir;
+    let tempDir;
 
     beforeEach(() => {
       tempDir = temp.mkdirSync('copy_test');
@@ -146,18 +146,18 @@ describe('RemoteFile', () => {
     // delegating to `fsPromise` here.
     it('copying existing files', () => {
       waitsForPromise(async () => {
-        var filePath = path.join(tempDir, 'file_to_copy');
-        var fileContents = 'copy me!';
+        const filePath = path.join(tempDir, 'file_to_copy');
+        const fileContents = 'copy me!';
         fs.writeFileSync(filePath, fileContents);
-        var newFilePath = path.join(tempDir, 'copied_file');
+        const newFilePath = path.join(tempDir, 'copied_file');
         expect(fs.existsSync(filePath)).toBe(true);
         expect(fs.existsSync(newFilePath)).toBe(false);
 
-        var file = new RemoteFile(connectionMock, filePath);
+        const file = new RemoteFile(connectionMock, filePath);
         file._subscribeToNativeChangeEvents = () => {};
-        var result = await file.copy(newFilePath);
-        var newFile = new RemoteFile(connectionMock, newFilePath);
-        var digest = await newFile.getDigest();
+        const result = await file.copy(newFilePath);
+        const newFile = new RemoteFile(connectionMock, newFilePath);
+        const digest = await newFile.getDigest();
         expect(result).toBe(true);
         expect(fs.existsSync(newFilePath)).toBe(true);
         expect(digest).toBe(computeDigest(fileContents));
@@ -167,10 +167,10 @@ describe('RemoteFile', () => {
 
   // TODO: #7344702 Re-enable and don't depend on watchman.
   xdescribe('RemoteFile watchFile integration', () => {
-    var WATCHMAN_SETTLE_TIME_MS = 1 * 1000;
-    var tempDir;
-    var filePath;
-    var file;
+    const WATCHMAN_SETTLE_TIME_MS = 1 * 1000;
+    let tempDir;
+    let filePath;
+    let file;
 
     beforeEach(() => {
       jasmine.getEnv().defaultTimeoutInterval = 10000;
@@ -192,7 +192,7 @@ describe('RemoteFile', () => {
 
     describe('when the contents of the file change', () => {
       it('notifies ::onDidChange observers', () => {
-        var changeHandler = jasmine.createSpy();
+        const changeHandler = jasmine.createSpy();
         file.onDidChange(changeHandler);
         waitsFor(() => !file._pendingSubscription);
         runs(() => fs.writeFileSync(filePath, 'this is new!'));
@@ -203,7 +203,7 @@ describe('RemoteFile', () => {
 
     describe('when the file is deleted, but not through the client', () => {
       it('notifies ::onDidDelete observers', () => {
-        var deletionHandler = jasmine.createSpy();
+        const deletionHandler = jasmine.createSpy();
         file.onDidDelete(deletionHandler);
         waitsFor(() => !file._pendingSubscription);
         runs(() => fs.unlinkSync(filePath));
@@ -215,7 +215,7 @@ describe('RemoteFile', () => {
     // Watchman doesn't support rename event, if needed, will need to be fuzzily implemented.
     xdescribe('when the file is renamed', () => {
       it('notifies ::onDidRename observers', () => {
-        var renameHandler = jasmine.createSpy();
+        const renameHandler = jasmine.createSpy();
         file.onDidRename(renameHandler);
         waitsFor(() => !file._pendingSubscription);
         runs(() => fs.renameSync(filePath, filePath + '_moved'));
@@ -231,11 +231,11 @@ describe('RemoteFile', () => {
 
     describe('when a watch handling error happens', () => {
       it('notifies ::onWillThrowWatchError observers', () => {
-        var notExistingFile = new RemoteFile(connectionMock, path.join(tempDir, 'no_existing.txt'));
-        var skippedError;
-        var handleError;
+        const notExistingFile = new RemoteFile(connectionMock, path.join(tempDir, 'no_existing.txt'));
+        let skippedError;
+        let handleError;
         notExistingFile.onWillThrowWatchError((watchError) => {
-          var {error, handle} = watchError;
+          const {error, handle} = watchError;
           skippedError = error;
           handle();
         });
@@ -257,7 +257,7 @@ describe('RemoteFile', () => {
   });
 
   describe('::create()', () => {
-    var tempDir;
+    let tempDir;
 
     beforeEach(() => {
       tempDir = temp.mkdirSync('create_test');
@@ -265,16 +265,16 @@ describe('RemoteFile', () => {
 
     it('returns true when file creation is successful', () => {
       waitsForPromise(async () => {
-        var filePath = path.join(tempDir, 'create.txt');
-        var remoteFile = new RemoteFile(connectionMock, filePath);
-        var wasCreated = await remoteFile.create();
+        const filePath = path.join(tempDir, 'create.txt');
+        const remoteFile = new RemoteFile(connectionMock, filePath);
+        const wasCreated = await remoteFile.create();
         expect(wasCreated).toBe(true);
       });
     });
   });
 
   describe('::exists()', () => {
-    var tempDir;
+    let tempDir;
 
     beforeEach(() => {
       tempDir = temp.mkdirSync('on_did_change_test');
@@ -282,28 +282,28 @@ describe('RemoteFile', () => {
 
     it('exists resolves to true when the file exists', () => {
       waitsForPromise(async () => {
-        var filePath = path.join(tempDir, 'file.txt');
+        const filePath = path.join(tempDir, 'file.txt');
         fs.writeFileSync(filePath, 'sample contents');
-        var existingFile = new RemoteFile(connectionMock, filePath);
-        var exists = await existingFile.exists();
+        const existingFile = new RemoteFile(connectionMock, filePath);
+        const exists = await existingFile.exists();
         expect(exists).toBe(true);
       });
     });
 
     it('exists resolves to true when the file exists', () => {
       waitsForPromise(async () => {
-        var notExistingFile = new RemoteFile(connectionMock, path.join(tempDir, 'no_existing.txt'));
-        var exists = await notExistingFile.exists();
+        const notExistingFile = new RemoteFile(connectionMock, path.join(tempDir, 'no_existing.txt'));
+        const exists = await notExistingFile.exists();
         expect(exists).toBe(false);
       });
     });
   });
 
   describe('RemoteFile::getDigest(), getDigestSync() and _setDigest()', () => {
-    var tempDir;
-    var filePath;
-    var file;
-    var fileContents;
+    let tempDir;
+    let filePath;
+    let file;
+    let fileContents;
 
     beforeEach(() => {
       tempDir = temp.mkdirSync('on_did_change_test');
@@ -315,7 +315,7 @@ describe('RemoteFile', () => {
 
     it('getDigest even if the file was not read before', () => {
       waitsForPromise(async () => {
-        var digest = await file.getDigest();
+        const digest = await file.getDigest();
         expect(digest).toBe(computeDigest(fileContents));
       });
     });
@@ -323,7 +323,7 @@ describe('RemoteFile', () => {
     it('getDigestSync cached the digest value', () => {
       waitsForPromise(async () => {
         await file.getDigest();
-        var digest = file.getDigestSync();
+        const digest = file.getDigestSync();
         expect(digest).toBe(computeDigest(fileContents));
       });
     });
@@ -331,13 +331,13 @@ describe('RemoteFile', () => {
     it('file reading sets the digest', () => {
       waitsForPromise(async () => {
         await file.read();
-        var digest = file.getDigestSync();
+        const digest = file.getDigestSync();
         expect(digest).toBe(computeDigest(fileContents));
       });
     });
 
     it('getDigestSync throws if no digest is cached!', () => {
-      var digestError;
+      let digestError;
       try {
         file.getDigestSync();
       } catch (error) {
@@ -348,7 +348,7 @@ describe('RemoteFile', () => {
 
     it('_setDigest sets the digest', () => {
       waitsForPromise(async () => {
-        var newContents = 'new contents 2!';
+        const newContents = 'new contents 2!';
         file._setDigest(newContents);
         expect(file.getDigestSync()).toBe(computeDigest(newContents));
       });
@@ -357,24 +357,24 @@ describe('RemoteFile', () => {
 
   describe('RemoteFile::getParent()', () => {
     it('gets the parent directory for a file in a root directory', () => {
-      var remote = {createDirectory(){}};
-      var parentDirectory = jasmine.createSpy('RemoteDirectory');
+      const remote = {createDirectory(){}};
+      const parentDirectory = jasmine.createSpy('RemoteDirectory');
       spyOn(remote, 'createDirectory').andReturn(parentDirectory);
 
-      var filePath = 'nuclide://foo.bar.com:8084/foo.txt';
-      var file = new RemoteFile(remote, filePath);
+      const filePath = 'nuclide://foo.bar.com:8084/foo.txt';
+      const file = new RemoteFile(remote, filePath);
       expect(file.getParent()).toBe(parentDirectory);
       expect(remote.createDirectory).toHaveBeenCalledWith(
           'nuclide://foo.bar.com:8084/');
     });
 
     it('gets the parent directory for a file in a non-root directory', () => {
-      var remote = {createDirectory(){}};
-      var parentDirectory = jasmine.createSpy('RemoteDirectory');
+      const remote = {createDirectory(){}};
+      const parentDirectory = jasmine.createSpy('RemoteDirectory');
       spyOn(remote, 'createDirectory').andReturn(parentDirectory);
 
-      var filePath = 'nuclide://foo.bar.com:8084/a/foo.txt';
-      var file = new RemoteFile(remote, filePath);
+      const filePath = 'nuclide://foo.bar.com:8084/a/foo.txt';
+      const file = new RemoteFile(remote, filePath);
       expect(file.getParent()).toBe(parentDirectory);
       expect(remote.createDirectory).toHaveBeenCalledWith(
           'nuclide://foo.bar.com:8084/a');

@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-var LazyTreeNode = require('../lib/LazyTreeNode');
+const LazyTreeNode = require('../lib/LazyTreeNode');
 
 class LazyTestTreeNode extends LazyTreeNode {
 
@@ -19,7 +19,7 @@ class LazyTestTreeNode extends LazyTreeNode {
       isContainer: boolean,
       fetchChildren: ?(node: LazyTreeNode) => Promise) {
     // Test tree nodes that provide no `fetchChildren` get a default fetcher that returns nothing.
-    var localFetchChildren = fetchChildren || (() => Promise.resolve());
+    const localFetchChildren = fetchChildren || (() => Promise.resolve());
     super(item, parent, isContainer, localFetchChildren);
   }
 

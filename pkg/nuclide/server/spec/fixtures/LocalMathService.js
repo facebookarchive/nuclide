@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-var MathService = require('./MathService');
+const MathService = require('./MathService');
 
 class LocalMathService extends MathService {
   pi(): Promise<number> {

@@ -9,9 +9,9 @@
  * the root directory of this source tree.
  */
 
-var {CompositeDisposable} = require('atom');
+const {CompositeDisposable} = require('atom');
 
-var subscriptions: ?CompositeDisposable = null;
+let subscriptions: ?CompositeDisposable = null;
 
 module.exports = {
 
@@ -20,8 +20,8 @@ module.exports = {
       return;
     }
 
-    var formatCode = require('./formatCode');
-    var localSubscriptions = new CompositeDisposable();
+    const formatCode = require('./formatCode');
+    const localSubscriptions = new CompositeDisposable();
     localSubscriptions.add(atom.commands.add(
       'atom-text-editor',
       'nuclide-format-js:format',
@@ -30,7 +30,7 @@ module.exports = {
     ));
 
     // Set up run-on-save based on atom config.
-    var runOnSave = atom.config.get('nuclide-format-js.runOnSave');
+    let runOnSave = atom.config.get('nuclide-format-js.runOnSave');
     atom.config.observe('nuclide-format-js.runOnSave', newValue => {
       runOnSave = !!newValue;
     });

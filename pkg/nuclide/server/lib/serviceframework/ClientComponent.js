@@ -24,7 +24,7 @@ import type {RequestMessage, CallRemoteFunctionMessage, CreateRemoteObjectMessag
   CallRemoteMethodMessage, DisposeRemoteObjectMessage, DisposeObservableMessage,
   ReturnType, ObservableResult} from './types';
 
-var logger = require('nuclide-logging').getLogger();
+const logger = require('nuclide-logging').getLogger();
 
 export default class ClientComponent {
   _emitter: EventEmitter;
@@ -105,7 +105,7 @@ export default class ClientComponent {
    * @param args - The serialized arguments to invoke the remote function with.
    */
   callRemoteFunction(functionName: string, returnType: ReturnType, args: Array<any>): any {
-    var message: CallRemoteFunctionMessage = {
+    const message: CallRemoteFunctionMessage = {
       protocol: 'service_framework3_rpc',
       type: 'FunctionCall',
       function: functionName,
@@ -124,7 +124,7 @@ export default class ClientComponent {
    * @param args - The serialized arguments to invoke the remote method with.
    */
   callRemoteMethod(objectId: number, methodName: string, returnType: ReturnType, args: Array<any>): any {
-    var message: CallRemoteMethodMessage = {
+    const message: CallRemoteMethodMessage = {
       protocol: 'service_framework3_rpc',
       type: 'MethodCall',
       method: methodName,
@@ -142,7 +142,7 @@ export default class ClientComponent {
    * @param args - Serialized arguments to pass to the remote constructor.
    */
   createRemoteObject(interfaceName: string, args: Array<any>): Promise<number> {
-    var message: CreateRemoteObjectMessage = {
+    const message: CreateRemoteObjectMessage = {
       protocol: 'service_framework3_rpc',
       type: 'NewObject',
       interface: interfaceName,
@@ -159,7 +159,7 @@ export default class ClientComponent {
    * @returns A Promise that resolves when the object disposal has completed.
    */
   disposeRemoteObject(objectId: number): Promise<void> {
-    var message: DisposeRemoteObjectMessage = {
+    const message: DisposeRemoteObjectMessage = {
       protocol: 'service_framework3_rpc',
       type: 'DisposeObject',
       requestId: this._requestIdGenerator(),
@@ -195,7 +195,7 @@ export default class ClientComponent {
           }, SERVICE_FRAMEWORK_RPC_TIMEOUT_MS);
         });
       case 'observable':
-        var observable = Observable.create(observer => {
+        const observable = Observable.create(observer => {
           this._socket.send(message);
 
           // Listen for 'next', 'error', and 'completed' events.
@@ -221,7 +221,7 @@ export default class ClientComponent {
 
             // Send a message to server to call the dispose function of
             // the remote Observable subscription.
-            var disposeMessage: DisposeObservableMessage = {
+            const disposeMessage: DisposeObservableMessage = {
               protocol: 'service_framework3_rpc',
               type: 'DisposeObservable',
               requestId: message.requestId,

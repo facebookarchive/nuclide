@@ -9,19 +9,19 @@
  * the root directory of this source tree.
  */
 
-var fs = require('fs');
-var path = require('path');
-var invariant = require('assert');
-var temp = require('temp').track();
-var WatchmanClient = require('../lib/WatchmanClient');
+const fs = require('fs');
+const path = require('path');
+const invariant = require('assert');
+const temp = require('temp').track();
+const WatchmanClient = require('../lib/WatchmanClient');
 
-var FILE_MODE = 33188;
+const FILE_MODE = 33188;
 
 describe('WatchmanClient test suite', () => {
 
-  var dirPath: string = '';
-  var client: any;
-  var filePath: string = '';
+  let dirPath: string = '';
+  let client: any;
+  let filePath: string = '';
 
   beforeEach(() => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -32,7 +32,7 @@ describe('WatchmanClient test suite', () => {
     // Many people use restrict_root_files so watchman only will watch folders
     // that have those listed files in them.  This list of root files almost
     // always has .git in it.
-    var watchmanRootPath = path.join(dirPath, '.git');
+    const watchmanRootPath = path.join(dirPath, '.git');
     fs.mkdirSync(watchmanRootPath);
     waits(1010);
   });
@@ -44,8 +44,8 @@ describe('WatchmanClient test suite', () => {
   describe('restore subscriptions', () => {
     it('restores subscriptions on client end', () => {
       waitsForPromise(async () => {
-        var watcher = await client.watchDirectoryRecursive(dirPath);
-        var changeHandler = jasmine.createSpy();
+        const watcher = await client.watchDirectoryRecursive(dirPath);
+        const changeHandler = jasmine.createSpy();
         watcher.on('change', changeHandler);
         waits(1010);
         runs(() => fs.writeFileSync(filePath, 'def'));
@@ -54,7 +54,7 @@ describe('WatchmanClient test suite', () => {
           expect(changeHandler.callCount).toBe(1);
           expect(changeHandler.argsForCall[0][0]).toEqual([{name: 'test.txt', mode: FILE_MODE, new: false, exists: true}]);
           // End the socket client to watchman to trigger restore subscriptions.
-          var internalClient = await client._clientPromise;
+          const internalClient = await client._clientPromise;
           internalClient.end();
         });
         waits(1000); // Wait for WatchmanClient to restore subscriptions.
@@ -73,12 +73,12 @@ describe('WatchmanClient test suite', () => {
   describe('cleanup watchers after unwatch', () => {
     it('unwatch cleans up watchman watchlist resources', () => {
       waitsForPromise(async () => {
-        var dirRealPath = fs.realpathSync(dirPath);
+        const dirRealPath = fs.realpathSync(dirPath);
         await client.watchDirectoryRecursive(dirPath);
-        var watchList = await client._watchList();
+        const watchList = await client._watchList();
         expect(watchList.indexOf(dirRealPath)).not.toBe(-1);
         await client.unwatch(dirPath);
-        var afterCleanupWatchList = await client._watchList();
+        const afterCleanupWatchList = await client._watchList();
         expect(afterCleanupWatchList.indexOf(dirRealPath)).toBe(-1);
       });
     });
@@ -87,7 +87,7 @@ describe('WatchmanClient test suite', () => {
   describe('version()', () => {
     it('We need version 3.1.0 or bigger', () => {
       waitsForPromise(async () => {
-        var version = await client.version();
+        const version = await client.version();
         expect(version > '3.0.999').toBe(true);
       });
     });
@@ -96,13 +96,13 @@ describe('WatchmanClient test suite', () => {
   describe('watchProject()', () => {
     it('should be able to watch nested project folders, but cleanup watchRoot', () => {
       waitsForPromise(async () => {
-        var dirRealPath = fs.realpathSync(dirPath);
+        const dirRealPath = fs.realpathSync(dirPath);
         // The .watchmanconfig file, amonst others that could also be configured
         // define the project root directory.
         fs.writeFileSync(path.join(dirPath, '.watchmanconfig'), '');
-        var nestedDirPath = path.join(dirPath, 'nested');
+        const nestedDirPath = path.join(dirPath, 'nested');
         fs.mkdirSync(nestedDirPath);
-        var {watch: watchRoot, relative_path: relativePath} = await client._watchProject(nestedDirPath);
+        const {watch: watchRoot, relative_path: relativePath} = await client._watchProject(nestedDirPath);
         expect(watchRoot).toBe(dirRealPath);
         expect(relativePath).toBe('nested');
         await client._deleteWatcher(watchRoot);
@@ -112,7 +112,7 @@ describe('WatchmanClient test suite', () => {
     it('fails with meaningful error when the version is < 3.1.0', () => {
       client._watchmanVersionPromise = Promise.resolve('1.0.0');
       waitsForPromise(async () => {
-        var watchVersionError;
+        let watchVersionError;
         try {
           await client._watchProject(dirPath)
         } catch (error) {

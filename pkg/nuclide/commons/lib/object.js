@@ -13,14 +13,14 @@
  * O(1)-check if a given object is empty (has no properties, inherited or not)
  */
 function isEmpty(obj: Object): boolean {
-  for (var key in obj) { // eslint-disable-line no-unused-vars
+  for (const key in obj) { // eslint-disable-line no-unused-vars
     return false;
   }
   return true;
 }
 
 function copyProperties(src: Object, dest: Object): void {
-  for (var key in src) {
+  for (const key in src) {
     dest[key] = src[key];
   }
 }
@@ -41,7 +41,7 @@ function assign(target: Object, ...sources: Array<Object>): Object {
  * Based off the equivalent function in www.
  */
 function keyMirror(obj: Object): Object {
-  var ret = {};
+  const ret = {};
   Object.keys(obj).forEach(key => {
     ret[key] = key;
   });

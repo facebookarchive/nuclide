@@ -9,18 +9,18 @@
  * the root directory of this source tree.
  */
 
-var {
+const {
   findPackagesToInstall,
 } = require('../lib/main').__test__;
 
 describe('findPackagesToInstall', () => {
   it('installs only packages that are not installed with the requested version', () => {
-    var installedPackages = {
+    const installedPackages = {
       'nuclide-abc': '1.2.3',
       'nuclide-def': '4.5.6',
       'nuclide-ghi': '7.8.9',
     };
-    var config = {
+    const config = {
       packages: [
         {
           // Already installed, but requested version is older: nothing to install.

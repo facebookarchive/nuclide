@@ -16,9 +16,9 @@ module.exports = {
    * Call `callback` on every node in the subtree, including `rootNode`.
    */
   forEachCachedNode(rootNode: LazyTreeNode, callback: (node: LazyTreeNode)=>void) {
-    var stack = [rootNode];
+    const stack = [rootNode];
     while (stack.length !== 0) {
-      var node = stack.pop();
+      const node = stack.pop();
       callback(node);
       (node.getCachedChildren() || []).forEach((childNode) => stack.push(childNode));
     }

@@ -265,7 +265,7 @@ class RemoteFile {
   }
 
   async copy(newPath: string): Promise<boolean> {
-    var wasCopied = await this._getFileSystemService().copy(this._localPath, newPath);
+    const wasCopied = await this._getFileSystemService().copy(this._localPath, newPath);
     this._subscribeToNativeChangeEvents();
     return wasCopied;
   }

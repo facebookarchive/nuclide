@@ -13,9 +13,9 @@
  * adapted from https://github.com/atom/underscore-plus/blob/master/src/underscore-plus.coffee
  */
 
-var {array} = require('nuclide-commons');
+const {array} = require('nuclide-commons');
 
-var MAC_MODIFIER_KEYMAP = {
+const MAC_MODIFIER_KEYMAP = {
   alt: '\u2325',
   cmd: '\u2318',
   ctrl: '\u2303',
@@ -28,7 +28,7 @@ var MAC_MODIFIER_KEYMAP = {
   up: '\u2191',
 };
 
-var NON_MAC_MODIFIER_KEYMAP = {
+const NON_MAC_MODIFIER_KEYMAP = {
   alt: 'Alt',
   cmd: 'Cmd',
   ctrl: 'Ctrl',
@@ -43,7 +43,7 @@ var NON_MAC_MODIFIER_KEYMAP = {
 
 // Human key combos should always explicitly state the shift key. This map is a disambiguator.
 // 'shift-version': 'no-shift-version'
-var SHIFT_KEYMAP = {
+const SHIFT_KEYMAP = {
   '_': '-',
   ':': ';',
   '?': '/',
@@ -57,12 +57,12 @@ var SHIFT_KEYMAP = {
   '~': '`',
 };
 
-var FN_KEY_RE = /f[0-9]{1,2}/;
+const FN_KEY_RE = /f[0-9]{1,2}/;
 
 // $FlowIssue
 function flatten<T>(arr: Array<T | Array<T>>): Array<T> {
-  var flattened = [];
-  for (var el of arr) {
+  let flattened = [];
+  for (const el of arr) {
     if (Array.isArray(el)) {
       flattened = flattened.concat(flatten(el));
     } else {
@@ -73,8 +73,8 @@ function flatten<T>(arr: Array<T | Array<T>>): Array<T> {
 }
 
 function capitalize(word: string): string {
-  var first = word[0] || '';
-  var rest = word.slice(1);
+  const first = word[0] || '';
+  const rest = word.slice(1);
   return first.toUpperCase() + rest;
 }
 
@@ -82,7 +82,7 @@ function humanizeKey(key: string, platform: ?string): string | Array<string> {
   if (!key) {
     return key;
   }
-  var modifierKeyMap = platform === 'darwin' ? MAC_MODIFIER_KEYMAP : NON_MAC_MODIFIER_KEYMAP;
+  const modifierKeyMap = platform === 'darwin' ? MAC_MODIFIER_KEYMAP : NON_MAC_MODIFIER_KEYMAP;
   if (modifierKeyMap[key]) {
     return modifierKeyMap[key];
   }
@@ -90,7 +90,7 @@ function humanizeKey(key: string, platform: ?string): string | Array<string> {
     if (SHIFT_KEYMAP[key]) {
       return [modifierKeyMap.shift, SHIFT_KEYMAP[key]];
     }
-    var uppercase = key.toUpperCase();
+    const uppercase = key.toUpperCase();
     if (key === uppercase && uppercase !== key.toLowerCase()) {
       return [modifierKeyMap.shift, uppercase];
     }
@@ -115,15 +115,15 @@ function humanizeKeystroke(keystroke: string, platform: ?string): string {
     return keystroke;
   }
   platform = platform || process.platform;
-  var separator = platform === 'darwin' ? '' : '+';
+  const separator = platform === 'darwin' ? '' : '+';
   var key, keys, splitKeystroke;
-  var keystrokes = keystroke.split(' ');
-  var humanizedKeystrokes = [];
-  for (var i = 0; i < keystrokes.length; i++) {
-    var currentKeystroke = keystrokes[i];
+  const keystrokes = keystroke.split(' ');
+  const humanizedKeystrokes = [];
+  for (let i = 0; i < keystrokes.length; i++) {
+    const currentKeystroke = keystrokes[i];
     var splitKeystroke = currentKeystroke.split('-');
     keys = [];
-    for (var index = 0; index < splitKeystroke.length; index++) {
+    for (let index = 0; index < splitKeystroke.length; index++) {
       key = splitKeystroke[index];
       if (key === '' && splitKeystroke[index - 1] === '') {
         key = '-';

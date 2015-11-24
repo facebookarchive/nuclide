@@ -10,7 +10,7 @@
  */
 import {CompositeDisposable} from 'atom';
 
-var subscriptions: ?CompositeDisposable = null;
+let subscriptions: ?CompositeDisposable = null;
 
 module.exports = {
   // $FlowIssue https://github.com/facebook/flow/issues/620
@@ -23,7 +23,7 @@ module.exports = {
 
     subscriptions = new CompositeDisposable();
 
-    var {registerGrammarForFileExtension} = require('nuclide-atom-helpers');
+    const {registerGrammarForFileExtension} = require('nuclide-atom-helpers');
     subscriptions.add(registerGrammarForFileExtension('source.python', 'BUCK'));
     subscriptions.add(registerGrammarForFileExtension('source.ini', '.buckconfig'));
   },

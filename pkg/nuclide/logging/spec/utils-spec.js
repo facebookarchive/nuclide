@@ -46,31 +46,31 @@ describe('Logview Appender Utils.', () => {
   });
 
   it('patches error of loggingEvent', () => {
-    var error = new Error('test');
-    var loggingEventWithError = createLoggingEvent(error);
+    const error = new Error('test');
+    const loggingEventWithError = createLoggingEvent(error);
     expect(loggingEventWithError.data[0] instanceof Error).toBe(true);
     expect(loggingEventWithError.data[0]).toBe(error);
 
-    var patchedLoggingEventWithError = patchErrorsOfLoggingEvent(loggingEventWithError);
+    const patchedLoggingEventWithError = patchErrorsOfLoggingEvent(loggingEventWithError);
     expect(patchedLoggingEventWithError.data[0] instanceof Error).toBe(false);
     expect(typeof patchedLoggingEventWithError.data[0].stack).toBe('string');
     expect(patchedLoggingEventWithError.data[0].stackTrace instanceof Array).toBe(true);
   });
 
   it('addes error if no error exists in loggingEvent.data', () => {
-    var loggingEventWithoutError = createLoggingEvent();
+    const loggingEventWithoutError = createLoggingEvent();
     expect(loggingEventWithoutError.data.length).toBe(0);
-    var patchedLoggingEventWithoutError = patchErrorsOfLoggingEvent(loggingEventWithoutError);
+    const patchedLoggingEventWithoutError = patchErrorsOfLoggingEvent(loggingEventWithoutError);
     expect(typeof patchedLoggingEventWithoutError.data[0].stack).toBe('string');
   });
 
   it('Test serialization/deserialization utils.', () => {
-    var loggingEvent = patchErrorsOfLoggingEvent(createLoggingEvent(new Error('123')));
+    const loggingEvent = patchErrorsOfLoggingEvent(createLoggingEvent(new Error('123')));
 
-    var serialization = serializeLoggingEvent(loggingEvent);
+    const serialization = serializeLoggingEvent(loggingEvent);
     expect(typeof serialization === 'string').toBe(true);
 
-    var deserialization = deserializeLoggingEvent(serialization);
+    const deserialization = deserializeLoggingEvent(serialization);
     expect(deserialization.startTime.toString()).toEqual(loggingEvent.startTime.toString());
     expect(deserialization.categoryName).toEqual(loggingEvent.categoryName);
     expect(JSON.stringify(deserialization.level))

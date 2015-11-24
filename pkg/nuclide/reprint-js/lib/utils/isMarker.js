@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-var markers = require('../constants/markers');
+const markers = require('../constants/markers');
 
 const MARKER_SET = new Set();
 Object.keys(markers).forEach(key => {

@@ -9,14 +9,14 @@
  * the root directory of this source tree.
  */
 
-var {encryptString, decryptString} =
+const {encryptString, decryptString} =
   require('../lib/RemoteConnectionConfigurationManager.js').__test__;
 
 describe('RemoteConnectionConfigurationManager', () => {
   describe('encryptString and decryptString', () => {
     it('can encrypt and dycrypt strings', () => {
-      var text = 'This little piggy went to market';
-      var {
+      const text = 'This little piggy went to market';
+      const {
         password,
         salt,
         encryptedString,

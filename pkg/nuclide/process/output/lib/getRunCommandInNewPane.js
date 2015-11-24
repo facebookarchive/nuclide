@@ -36,19 +36,19 @@ import {CompositeDisposable, Disposable} from 'atom';
 import invariant from 'assert';
 import {destroyPaneItemWithTitle} from 'nuclide-atom-helpers';
 
-var NUCLIDE_PROCESS_OUTPUT_VIEW_URI = 'atom://nuclide/process-output/';
-var PROCESS_OUTPUT_HANDLER_KEY = 'nuclide-processOutputHandler';
-var PROCESS_OUTPUT_STORE_KEY = 'nuclide-processOutputStore';
-var PROCESS_OUTPUT_VIEW_TOP_ELEMENT = 'nuclide-processOutputViewTopElement';
+const NUCLIDE_PROCESS_OUTPUT_VIEW_URI = 'atom://nuclide/process-output/';
+const PROCESS_OUTPUT_HANDLER_KEY = 'nuclide-processOutputHandler';
+const PROCESS_OUTPUT_STORE_KEY = 'nuclide-processOutputStore';
+const PROCESS_OUTPUT_VIEW_TOP_ELEMENT = 'nuclide-processOutputViewTopElement';
 type CreateProcessOutputViewOptions = {
   PROCESS_OUTPUT_HANDLER_KEY: ?ProcessOutputHandler;
   PROCESS_OUTPUT_STORE_KEY: ProcessOutputStore;
   PROCESS_OUTPUT_VIEW_TOP_ELEMENT: ?ReactElement;
 };
 
-var subscriptions: ?CompositeDisposable;
+let subscriptions: ?CompositeDisposable;
 let processOutputStores: ?Set<ProcessOutputStore>;
-var logger;
+let logger;
 
 function getLogger() {
   if (!logger) {
@@ -68,13 +68,13 @@ function createProcessOutputView(
   uri: string,
   openOptions: CreateProcessOutputViewOptions
 ): HTMLElement {
-  var processOutputStore = openOptions[PROCESS_OUTPUT_STORE_KEY];
-  var processOutputHandler = openOptions[PROCESS_OUTPUT_HANDLER_KEY];
-  var processOutputViewTopElement = openOptions[PROCESS_OUTPUT_VIEW_TOP_ELEMENT];
-  var tabTitle = uri.slice(NUCLIDE_PROCESS_OUTPUT_VIEW_URI.length);
+  const processOutputStore = openOptions[PROCESS_OUTPUT_STORE_KEY];
+  const processOutputHandler = openOptions[PROCESS_OUTPUT_HANDLER_KEY];
+  const processOutputViewTopElement = openOptions[PROCESS_OUTPUT_VIEW_TOP_ELEMENT];
+  const tabTitle = uri.slice(NUCLIDE_PROCESS_OUTPUT_VIEW_URI.length);
 
-  var ProcessOutputWrapper = require('./ProcessOutputWrapper');
-  var hostElement = new ProcessOutputWrapper();
+  const ProcessOutputWrapper = require('./ProcessOutputWrapper');
+  const hostElement = new ProcessOutputWrapper();
   hostElement.initialize({
     title: tabTitle,
     initialProps: {
@@ -88,12 +88,12 @@ function createProcessOutputView(
   processOutputStores.add(processOutputStore);
 
   // When the process exits, we want to remove the reference to the process.
-  var handleProcessExit = () => {
+  const handleProcessExit = () => {
     if (processOutputStores) {
       processOutputStores.delete(processOutputStore);
     }
   };
-  var handleProcessExitWithError = (error: Error) => {
+  const handleProcessExitWithError = (error: Error) => {
     getLogger().error(`runCommandInNewPane encountered an error running: ${tabTitle}`, error);
     handleProcessExit();
   };
@@ -154,7 +154,7 @@ function disposeModule(): void {
  * "Reference Counting"
  */
 
-var references: number = 0;
+let references: number = 0;
 function incrementReferences() {
   if (references === 0) {
     activateModule();

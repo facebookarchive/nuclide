@@ -38,7 +38,7 @@ export default class ServiceLogger {
     isLocal: boolean,
     ...args: Array<mixed>
   ): void {
-    var item: Item = {
+    const item: Item = {
       date: new Date(),
       service,
       method,
@@ -100,7 +100,7 @@ function createArgInfo(service: string, method: string, args: Array<mixed>): ?st
     if (method === 'fetchDiffInfo') {
       return /* fileName */ args[0];
     } else if (method === 'fetchStatuses') {
-      let filePaths: Array<string> = args[0];
+      const filePaths: Array<string> = args[0];
       return filePaths.join(';');
     }
   }

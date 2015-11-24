@@ -9,6 +9,6 @@
  * the root directory of this source tree.
  */
 
-var Options = require('./Options');
+const Options = require('./Options');
 
 module.exports = new Options();

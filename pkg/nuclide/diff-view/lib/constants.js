@@ -9,11 +9,11 @@
  * the root directory of this source tree.
  */
 
- var {StatusCodeNumber: HgStatusCodeNumber} = require('nuclide-hg-repository-base').hgConstants;
+const {StatusCodeNumber: HgStatusCodeNumber} = require('nuclide-hg-repository-base').hgConstants;
 
 import type {FileChangeStatusValue} from './types';
 
-var FileChangeStatus: {[key: string]: FileChangeStatusValue} = {
+const FileChangeStatus: {[key: string]: FileChangeStatusValue} = {
   ADDED: 1,
   MODIFIED: 2,
   MISSING: 3,
@@ -21,7 +21,7 @@ var FileChangeStatus: {[key: string]: FileChangeStatusValue} = {
   UNTRACKED: 5,
 };
 
-var HgStatusToFileChangeStatus : {[key: HgStatusCodeNumber]: FileChangeStatus} = {
+const HgStatusToFileChangeStatus : {[key: HgStatusCodeNumber]: FileChangeStatus} = {
   [HgStatusCodeNumber.ADDED]: FileChangeStatus.ADDED,
   [HgStatusCodeNumber.MODIFIED]: FileChangeStatus.MODIFIED,
   [HgStatusCodeNumber.MISSING]: FileChangeStatus.MISSING,
@@ -29,7 +29,7 @@ var HgStatusToFileChangeStatus : {[key: HgStatusCodeNumber]: FileChangeStatus} =
   [HgStatusCodeNumber.UNTRACKED]: FileChangeStatus.UNTRACKED,
 };
 
-var FileChangeStatusToPrefix: {[key: FileChangeStatusValue]: string} = {
+const FileChangeStatusToPrefix: {[key: FileChangeStatusValue]: string} = {
   [FileChangeStatus.ADDED]: '[A] ',
   [FileChangeStatus.MODIFIED]: '[M] ',
   [FileChangeStatus.MISSING]: '[!] ',

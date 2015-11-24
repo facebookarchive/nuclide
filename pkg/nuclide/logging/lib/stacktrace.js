@@ -12,9 +12,9 @@ import type {node$CallSite} from './types';
 
 type PrepareStackTraceFunction = (error: Error, frames: Array<node$CallSite>) => any;
 
-var PREPARE_STACK_TRACE_HOOKED_KEY = '_nuclide_error_stack_trace_hooked';
+const PREPARE_STACK_TRACE_HOOKED_KEY = '_nuclide_error_stack_trace_hooked';
 
-var hookedPrepareStackTrace: ?PrepareStackTraceFunction;
+let hookedPrepareStackTrace: ?PrepareStackTraceFunction;
 
 /**
  * v8 provided a way to customize Error stacktrace generation by overwriting
@@ -77,7 +77,7 @@ function createHookedPrepareStackTrace(
     return prepareStackTrace;
   }
 
-  var hookedFunction = function nuclideHookedPrepareStackTrace(
+  const hookedFunction = function nuclideHookedPrepareStackTrace(
     error: Error,
     frames: Array<node$CallSite>,
   ): any {
@@ -107,14 +107,14 @@ function structuredStackTraceHook(error: Error, frames: Array<node$CallSite>): v
 }
 
 function defaultPrepareStackTrace(error: Error, frames: Array<node$CallSite>): string {
-  var formattedStackTrace = error.message ? `${error.name}: ${error.message}` : `${error.name}`;
+  let formattedStackTrace = error.message ? `${error.name}: ${error.message}` : `${error.name}`;
   frames.forEach(frame => {
     formattedStackTrace += `\n    at ${frame.toString()}`;
   });
   return formattedStackTrace;
 }
 
-export var __test__ = {
+export const __test__ = {
   createHookedPrepareStackTrace,
   resetPrepareStackTraceHooked() {
     require('nuclide-commons').singleton.clear(PREPARE_STACK_TRACE_HOOKED_KEY);

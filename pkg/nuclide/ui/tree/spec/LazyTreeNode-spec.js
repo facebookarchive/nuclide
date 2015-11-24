@@ -11,13 +11,13 @@
 
 import type LazyTreeNode from '../lib/LazyTreeNode';
 
-var LazyTestTreeNode = require('./LazyTestTreeNode');
-var invariant = require('assert');
+const LazyTestTreeNode = require('./LazyTestTreeNode');
+const invariant = require('assert');
 
 describe('LazyTreeNode', () => {
   it('caches the fetched children', () => {
     waitsForPromise(async () => {
-      var children = null;
+      let children = null;
       async function fetchChildren(parentNode: LazyTreeNode): Promise<Array<LazyTreeNode>> {
         children = [
           new LazyTestTreeNode({label: 'B'}, /* parent */ parentNode, false),
@@ -25,7 +25,7 @@ describe('LazyTreeNode', () => {
         ];
         return children;
       }
-      var node = new LazyTestTreeNode({label: 'A'}, /* parent */ null, true, fetchChildren);
+      const node = new LazyTestTreeNode({label: 'A'}, /* parent */ null, true, fetchChildren);
 
       expect(await node.fetchChildren()).toEqual(children);
       expect(node.getCachedChildren()).toEqual(children);
@@ -35,7 +35,7 @@ describe('LazyTreeNode', () => {
   describe('isRoot', () => {
     it('returns true for a root', () => {
       waitsForPromise(async () => {
-        var children = null;
+        let children = null;
         async function fetchChildren(parentNode: LazyTreeNode): Promise<Array<LazyTreeNode>> {
           children = [
             new LazyTestTreeNode({label: 'B'}, /* parent */ parentNode, false),
@@ -43,14 +43,14 @@ describe('LazyTreeNode', () => {
           ];
           return children;
         }
-        var node = new LazyTestTreeNode({label: 'A'}, /* parent */ null, true, fetchChildren);
+        const node = new LazyTestTreeNode({label: 'A'}, /* parent */ null, true, fetchChildren);
         expect(await node.fetchChildren()).toEqual(children);
         expect(node.isRoot()).toBe(true);
       });
     });
     it('returns false for a fetched, non-root node', () => {
       waitsForPromise(async () => {
-        var children = null;
+        let children = null;
         async function fetchChildren(parentNode: LazyTreeNode): Promise<Array<LazyTreeNode>> {
           children = [
             new LazyTestTreeNode({label: 'B'}, /* parent */ parentNode, false),
@@ -58,9 +58,9 @@ describe('LazyTreeNode', () => {
           ];
           return children;
         }
-        var node = new LazyTestTreeNode({label: 'A'}, /* parent */ null, true, fetchChildren);
+        const node = new LazyTestTreeNode({label: 'A'}, /* parent */ null, true, fetchChildren);
         expect(await node.fetchChildren()).toEqual(children);
-        var cachedChildren = node.getCachedChildren();
+        const cachedChildren = node.getCachedChildren();
         invariant(cachedChildren);
         expect(cachedChildren[0].isRoot()).toBe(false);
       });

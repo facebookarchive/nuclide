@@ -10,13 +10,13 @@
  */
 
 
-var {uncachedRequire, clearRequireCache} = require('nuclide-test-helpers');
+const {uncachedRequire, clearRequireCache} = require('nuclide-test-helpers');
 
 describe('debugger-hhvm-proxy Connection', () => {
-  var socket;
-  var dbgpSocket;
-  var dataCache;
-  var connection;
+  let socket;
+  let dbgpSocket;
+  let dataCache;
+  let connection;
 
   beforeEach(() => {
     socket = jasmine.createSpyObj('socket', ['write', 'end', 'destroy']);
@@ -35,10 +35,10 @@ describe('debugger-hhvm-proxy Connection', () => {
     DbgpSocket = spyOn(require('../lib/DbgpSocket'), 'DbgpSocket').andReturn(dbgpSocket);
 
     dataCache = jasmine.createSpyObj('dataCache', [
-        'evaluateOnCallFrame', 'getProperties', 'getScopesForFrame']);
+      'evaluateOnCallFrame', 'getProperties', 'getScopesForFrame']);
     DataCache = spyOn(require('../lib/DataCache'), 'DataCache').andReturn(dataCache);
 
-    var {Connection} =
+    const {Connection} =
       uncachedRequire(require, '../lib/Connection');
     connection = new Connection(socket);
   });

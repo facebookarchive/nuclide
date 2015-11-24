@@ -12,8 +12,8 @@
 import type {Lines, Print} from '../../types/common';
 import type {TypeParameterInstantiation} from 'ast-types-flow';
 
-var flatten = require('../../utils/flatten');
-var printCommaSeparatedNodes = require('../common/printCommaSeparatedNodes');
+const flatten = require('../../utils/flatten');
+const printCommaSeparatedNodes = require('../common/printCommaSeparatedNodes');
 
 function printTypeParameterInstantiation(
   print: Print,

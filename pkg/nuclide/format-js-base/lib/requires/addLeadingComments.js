@@ -11,20 +11,20 @@
 
 import type {Collection, Node} from '../types/ast';
 
-var FirstNode = require('../utils/FirstNode');
+const FirstNode = require('../utils/FirstNode');
 
-var reprintComment = require('../utils/reprintComment');
+const reprintComment = require('../utils/reprintComment');
 
 function addLeadingComments(root: Collection, comments: ?Array<Node>): void {
   if (!comments || comments.length === 0) {
     return;
   }
 
-  var firstPath = FirstNode.get(root);
+  const firstPath = FirstNode.get(root);
   if (!firstPath) {
     return;
   }
-  var first = firstPath.node;
+  const first = firstPath.node;
   first.comments = first.comments ? comments.concat(first.comments) : comments;
   first.comments = first.comments.map(comment => reprintComment(comment));
   firstPath.replace(first);

@@ -9,9 +9,9 @@
  * the root directory of this source tree.
  */
 
-var ModuleMap = require('./ModuleMap');
+const ModuleMap = require('./ModuleMap');
 
-var DefaultModuleMap = new ModuleMap({
+const DefaultModuleMap = new ModuleMap({
   paths: [],
   pathsToRelativize: [],
   aliases: require('../constants/commonAliases'),

@@ -18,11 +18,11 @@ class Activation {
   _configSubscription: atom$Disposable;
 
   constructor() {
-    var ObjectiveCColonIndenterCtr = require('./ObjectiveCColonIndenter');
+    const ObjectiveCColonIndenterCtr = require('./ObjectiveCColonIndenter');
     this._indentFeature = new ObjectiveCColonIndenterCtr();
     this._indentFeature.enable();
 
-    var ObjectiveCBracketBalancerCtr = require('./ObjectiveCBracketBalancer');
+    const ObjectiveCBracketBalancerCtr = require('./ObjectiveCBracketBalancer');
     this._bracketFeature = new ObjectiveCBracketBalancerCtr();
     this._configSubscription = atom.config.observe(
         'nuclide-objc.enableAutomaticSquareBracketInsertion',
@@ -36,7 +36,7 @@ class Activation {
   }
 }
 
-var activation: ?Activation;
+let activation: ?Activation;
 
 module.exports = {
   // $FlowIssue https://github.com/facebook/flow/issues/620

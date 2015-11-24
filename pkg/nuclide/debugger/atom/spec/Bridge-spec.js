@@ -9,10 +9,10 @@
  * the root directory of this source tree.
  */
 
-var BreakpointStore = require('../lib/BreakpointStore');
-var Bridge = require('../lib/Bridge');
-var utils = require('./utils');
-var {array} = require('nuclide-commons');
+const BreakpointStore = require('../lib/BreakpointStore');
+const Bridge = require('../lib/Bridge');
+const utils = require('./utils');
+const {array} = require('nuclide-commons');
 
 class MockWebview {
   _listeners: Map<String, Set<Function>>;
@@ -24,7 +24,7 @@ class MockWebview {
   }
 
   addEventListener(name, callback) {
-    var set = this._listeners.get(name);
+    const set = this._listeners.get(name);
     if (set) {
       set.add(callback);
     } else {
@@ -33,14 +33,14 @@ class MockWebview {
   }
 
   removeEventListener(name, callback) {
-    var set = this._listeners.get(name);
+    const set = this._listeners.get(name);
     if (set) {
       set.delete(callback);
     }
   }
 
   dispatchEvent(name, obj) {
-    var set = this._listeners.get(name);
+    const set = this._listeners.get(name);
     if (set) {
       set.forEach(callback => callback(obj));
     }
@@ -57,16 +57,16 @@ class MockWebview {
 }
 
 describe('Bridge', () => {
-  var breakpointStore;
-  var bridge;
-  var editor;
-  var mockWebview;
-  var path;
+  let breakpointStore;
+  let bridge;
+  let editor;
+  let mockWebview;
+  let path;
 
   function getCallFrameDecorationInRow(row: number): ?atom$Decoration {
-    var decorationArrays = editor.decorationsForScreenRowRange(row, row);
-    for (var key in decorationArrays) {
-      var result = array.find(decorationArrays[key], (item) => item.getProperties().class === 'nuclide-current-line-highlight');
+    const decorationArrays = editor.decorationsForScreenRowRange(row, row);
+    for (const key in decorationArrays) {
+      const result = array.find(decorationArrays[key], (item) => item.getProperties().class === 'nuclide-current-line-highlight');
       if (result !== undefined) {
         return result;
       }
@@ -75,8 +75,8 @@ describe('Bridge', () => {
   }
 
   function getCursorInRow(row: number): ?atom$Cursor {
-    var result = null;
-    var cursors = editor.getCursors();
+    let result = null;
+    const cursors = editor.getCursors();
     cursors.forEach(cursor => {
       if (cursor.getBufferRow() === row) {
         result = cursor;
@@ -184,7 +184,7 @@ describe('Bridge', () => {
   });
 
   it('should move cursor to target line when open source location', () => {
-    var line = 13;
+    const line = 13;
     sendIpcNotification('OpenSourceLocation', {
       sourceURL: 'file://' + path,
       lineNumber: line,
@@ -200,7 +200,7 @@ describe('Bridge', () => {
   });
 
   it('should change BreakpointStore when getting add/remove breakpoints notification', () => {
-    var line = 15;
+    const line = 15;
     sendIpcNotification('BreakpointAdded', {
       sourceURL: 'file://' + path,
       lineNumber: line,

@@ -9,12 +9,12 @@
  * the root directory of this source tree.
  */
 
-var {debounce} = require('../lib/main');
+const {debounce} = require('../lib/main');
 
 describe('debounce()', () => {
   it('only calls function once after time advances', () => {
-    var timerCallback: any = jasmine.createSpy('timerCallback');
-    var debouncedFunc = debounce(timerCallback, 100, false);
+    const timerCallback: any = jasmine.createSpy('timerCallback');
+    const debouncedFunc = debounce(timerCallback, 100, false);
 
     debouncedFunc();
     expect(timerCallback).not.toHaveBeenCalled();

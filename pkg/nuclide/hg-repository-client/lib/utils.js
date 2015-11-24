@@ -9,14 +9,14 @@
  * the root directory of this source tree.
  */
 
-var path = require('path');
-var {ensureTrailingSeparator} = require('nuclide-commons').paths;
+const path = require('path');
+const {ensureTrailingSeparator} = require('nuclide-commons').paths;
 
-var ADD_ACTION = 'add';
-var REMOVE_ACTION = 'remove';
+const ADD_ACTION = 'add';
+const REMOVE_ACTION = 'remove';
 type DirectoriesCacheOperation = 'add' | 'remove';
 
-var separatorRegex = new RegExp(path.sep, 'g');
+const separatorRegex = new RegExp(path.sep, 'g');
 
 /**
  * This function takes in a file path, and computes all directories that would
@@ -81,10 +81,10 @@ function computeAllParentDirectories(
     separatorRegex.lastIndex = ensureTrailingSeparator(pathPrefixToSkip).length;
   }
 
-  var shouldAdd = (operation === ADD_ACTION);
-  var match;
+  const shouldAdd = (operation === ADD_ACTION);
+  let match;
   while ((match = separatorRegex.exec(modifiedPath))) {
-    var newSubPath = modifiedPath.slice(0, match.index + 1);
+    const newSubPath = modifiedPath.slice(0, match.index + 1);
     if (shouldAdd) {
       addItemToCache(newSubPath, directories);
     } else {
@@ -94,7 +94,7 @@ function computeAllParentDirectories(
 }
 
 function addItemToCache(item: string, cache: Map<string, number>) {
-  var existingValue = cache.get(item);
+  const existingValue = cache.get(item);
   if (existingValue) {
     cache.set(item, existingValue + 1);
   } else {
@@ -103,9 +103,9 @@ function addItemToCache(item: string, cache: Map<string, number>) {
 }
 
 function removeItemFromCache(item: string, cache: Map<string, number>) {
-  var existingValue = cache.get(item);
+  const existingValue = cache.get(item);
   if (existingValue) {
-    var newValue = existingValue - 1;
+    const newValue = existingValue - 1;
     if (newValue > 0) {
       cache.set(item, newValue);
     } else {

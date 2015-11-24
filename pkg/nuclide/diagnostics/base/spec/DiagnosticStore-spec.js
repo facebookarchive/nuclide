@@ -9,43 +9,43 @@
  * the root directory of this source tree.
  */
 
-var DiagnosticStore = require('../lib/DiagnosticStore');
-var invariant = require('assert');
+const DiagnosticStore = require('../lib/DiagnosticStore');
+const invariant = require('assert');
 
 // Test Constants
-var dummyProviderA: any = {};
-var dummyProviderB: any = {};
+const dummyProviderA: any = {};
+const dummyProviderB: any = {};
 
-var fileMessageA = {
+const fileMessageA = {
   scope: 'file',
   providerName: 'dummyProviderA',
   type: 'Error',
   filePath: 'fileA',
 };
-var fileMessageA2 = { // Warning instead of Error
+const fileMessageA2 = { // Warning instead of Error
   scope: 'file',
   providerName: 'dummyProviderA',
   type: 'Warning',
   filePath: 'fileA',
 };
-var fileMessageB = {
+const fileMessageB = {
   scope: 'file',
   providerName: 'dummyProviderB',
   type: 'Error',
   filePath: 'fileB',
 };
 
-var projectMessageA = {
+const projectMessageA = {
   scope: 'project',
   providerName: 'dummyProviderA',
   type: 'Error',
 };
-var projectMessageA2 = { // Warning instead of Error
+const projectMessageA2 = { // Warning instead of Error
   scope: 'project',
   providerName: 'dummyProviderA',
   type: 'Warning',
 };
-var projectMessageB = {
+const projectMessageB = {
   scope: 'project',
   providerName: 'dummyProviderB',
   type: 'Error',
@@ -53,17 +53,17 @@ var projectMessageB = {
 
 
 describe('DiagnosticStore', () => {
-  var diagnosticStore;
-  var spy_fileA: any;
-  var spy_fileA_subscription;
-  var spy_fileB: any;
-  var spy_fileB_subscription;
-  var spy_project: any;
-  var spy_project_subscription;
-  var spy_allMessages: any;
-  var spy_allMessages_subscription;
+  let diagnosticStore;
+  let spy_fileA: any;
+  let spy_fileA_subscription;
+  let spy_fileB: any;
+  let spy_fileB_subscription;
+  let spy_project: any;
+  let spy_project_subscription;
+  let spy_allMessages: any;
+  let spy_allMessages_subscription;
 
-  var disposeSpies = () => {
+  const disposeSpies = () => {
     if (spy_fileA_subscription) {
       spy_fileA_subscription.dispose();
     }
@@ -78,7 +78,7 @@ describe('DiagnosticStore', () => {
     }
   };
 
-  var setSpies = () => {
+  const setSpies = () => {
     spy_fileA = jasmine.createSpy();
     spy_fileB = jasmine.createSpy();
     spy_project = jasmine.createSpy();
@@ -91,8 +91,8 @@ describe('DiagnosticStore', () => {
     spy_allMessages_subscription = diagnosticStore.onAllMessagesDidUpdate(spy_allMessages);
   };
 
-  var addUpdateA = () => {
-    var updateA = {
+  const addUpdateA = () => {
+    const updateA = {
       filePathToMessages: new Map([['fileA', [fileMessageA]]]),
       projectMessages: [projectMessageA],
     };
@@ -100,8 +100,8 @@ describe('DiagnosticStore', () => {
     diagnosticStore.updateMessages(dummyProviderA, updateA);
   };
 
-  var addUpdateB = () => {
-    var updateB = {
+  const addUpdateB = () => {
+    const updateB = {
       filePathToMessages: new Map([['fileB', [fileMessageB]]]),
       projectMessages: [projectMessageB],
     };
@@ -109,8 +109,8 @@ describe('DiagnosticStore', () => {
     diagnosticStore.updateMessages(dummyProviderB, updateB);
   };
 
-  var addUpdateA2 = () => {
-    var updateA2 = {
+  const addUpdateA2 = () => {
+    const updateA2 = {
       filePathToMessages: new Map([['fileA', [fileMessageA2]]]),
       projectMessages: [projectMessageA2],
     };
@@ -160,7 +160,7 @@ describe('DiagnosticStore', () => {
     invariant(diagnosticStore);
     expect(diagnosticStore._getFileMessages('fileA')).toEqual([fileMessageA]);
     expect(diagnosticStore._getProjectMessages()).toEqual([projectMessageA]);
-    var allMessages = diagnosticStore._getAllMessages();
+    const allMessages = diagnosticStore._getAllMessages();
     expect(allMessages.length).toBe(2);
     expect(allMessages).toContain(fileMessageA);
     expect(allMessages).toContain(projectMessageA);
@@ -216,11 +216,11 @@ describe('DiagnosticStore', () => {
     invariant(diagnosticStore);
     expect(diagnosticStore._getFileMessages('fileA')).toEqual([fileMessageA]);
     expect(diagnosticStore._getFileMessages('fileB')).toEqual([fileMessageB]);
-    var projectMessages = diagnosticStore._getProjectMessages();
+    const projectMessages = diagnosticStore._getProjectMessages();
     expect(projectMessages.length).toBe(2);
     expect(projectMessages).toContain(projectMessageA);
     expect(projectMessages).toContain(projectMessageB);
-    var allMessages = diagnosticStore._getAllMessages();
+    const allMessages = diagnosticStore._getAllMessages();
     expect(allMessages.length).toBe(4);
     expect(allMessages).toContain(fileMessageA);
     expect(allMessages).toContain(projectMessageA);
@@ -266,11 +266,11 @@ describe('DiagnosticStore', () => {
     invariant(diagnosticStore);
     expect(diagnosticStore._getFileMessages('fileA')).toEqual([fileMessageA2]);
     expect(diagnosticStore._getFileMessages('fileB')).toEqual([fileMessageB]);
-    var projectMessages = diagnosticStore._getProjectMessages();
+    const projectMessages = diagnosticStore._getProjectMessages();
     expect(projectMessages.length).toBe(2);
     expect(projectMessages).toContain(projectMessageA2);
     expect(projectMessages).toContain(projectMessageB);
-    var allMessages = diagnosticStore._getAllMessages();
+    const allMessages = diagnosticStore._getAllMessages();
     expect(allMessages.length).toBe(4);
     expect(allMessages).toContain(fileMessageA2);
     expect(allMessages).toContain(projectMessageA2);
@@ -289,7 +289,7 @@ describe('DiagnosticStore', () => {
       setSpies();
 
       // Test 4A. Invalidate file messages from ProviderA.
-      var fileInvalidationMessage = {scope: 'file', filePaths: ['fileA']};
+      const fileInvalidationMessage = {scope: 'file', filePaths: ['fileA']};
       invariant(diagnosticStore);
       diagnosticStore.invalidateMessages(dummyProviderA, fileInvalidationMessage);
 
@@ -314,11 +314,11 @@ describe('DiagnosticStore', () => {
       // Expect the getter methods on DiagnosticStore to return the correct info.
       expect(diagnosticStore._getFileMessages('fileA')).toEqual([]);
       expect(diagnosticStore._getFileMessages('fileB')).toEqual([fileMessageB]);
-      var projectMessages = diagnosticStore._getProjectMessages();
+      const projectMessages = diagnosticStore._getProjectMessages();
       expect(projectMessages.length).toBe(2);
       expect(projectMessages).toContain(projectMessageA2);
       expect(projectMessages).toContain(projectMessageB);
-      var allMessages = diagnosticStore._getAllMessages();
+      const allMessages = diagnosticStore._getAllMessages();
       expect(allMessages.length).toBe(3);
       expect(allMessages).toContain(projectMessageA2);
       expect(allMessages).toContain(fileMessageB);
@@ -329,7 +329,7 @@ describe('DiagnosticStore', () => {
       // Set up the state of the store.
       addUpdateB();
       addUpdateA2();
-      var fileInvalidationMessage = {scope: 'file', filePaths: ['fileA']};
+      const fileInvalidationMessage = {scope: 'file', filePaths: ['fileA']};
       invariant(diagnosticStore);
       diagnosticStore.invalidateMessages(dummyProviderA, fileInvalidationMessage);
 
@@ -338,7 +338,7 @@ describe('DiagnosticStore', () => {
       setSpies();
 
       // Test 4B. Invalidate project messages from ProviderA.
-      var projectInvalidationMessage = {scope: 'project'};
+      const projectInvalidationMessage = {scope: 'project'};
       invariant(diagnosticStore);
       diagnosticStore.invalidateMessages(dummyProviderA, projectInvalidationMessage);
 
@@ -360,10 +360,10 @@ describe('DiagnosticStore', () => {
       // Expect the getter methods on DiagnosticStore to return the correct info.
       expect(diagnosticStore._getFileMessages('fileA')).toEqual([]);
       expect(diagnosticStore._getFileMessages('fileB')).toEqual([fileMessageB]);
-      var projectMessages = diagnosticStore._getProjectMessages();
+      const projectMessages = diagnosticStore._getProjectMessages();
       expect(projectMessages.length).toBe(1);
       expect(projectMessages).toContain(projectMessageB);
-      var allMessages = diagnosticStore._getAllMessages();
+      const allMessages = diagnosticStore._getAllMessages();
       expect(allMessages.length).toBe(2);
       expect(allMessages).toContain(fileMessageB);
       expect(allMessages).toContain(projectMessageB);
@@ -392,7 +392,7 @@ describe('DiagnosticStore', () => {
     spy_allMessages_subscription.dispose();
 
     // All messages from ProviderB should be removed.
-    var providerInvalidationMessage = {scope: 'all'};
+    const providerInvalidationMessage = {scope: 'all'};
     invariant(diagnosticStore);
     diagnosticStore.invalidateMessages(dummyProviderB, providerInvalidationMessage);
 

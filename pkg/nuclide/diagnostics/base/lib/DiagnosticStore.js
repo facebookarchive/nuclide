@@ -21,10 +21,10 @@ import type {
 
 import type {NuclideUri} from 'nuclide-remote-uri';
 
-var {Disposable, Emitter} = require('atom');
+const {Disposable, Emitter} = require('atom');
 
-var PROJECT_MESSAGE_CHANGE_EVENT = 'messages-changed-for-project';
-var ALL_CHANGE_EVENT = 'messages-changed';
+const PROJECT_MESSAGE_CHANGE_EVENT = 'messages-changed-for-project';
+const ALL_CHANGE_EVENT = 'messages-changed';
 
 class DiagnosticStore {
   // A map from each diagnostic provider to:
@@ -100,7 +100,7 @@ class DiagnosticStore {
       diagnosticProvider: DiagnosticProvider,
       newFilePathsToMessages: Map<NuclideUri, Array<FileDiagnosticMessage>>
     ): void {
-    var fileToMessages = this._providerToFileToMessages.get(diagnosticProvider);
+    let fileToMessages = this._providerToFileToMessages.get(diagnosticProvider);
     if (!fileToMessages) {
       fileToMessages = new Map();
       this._providerToFileToMessages.set(diagnosticProvider, fileToMessages);
@@ -109,7 +109,7 @@ class DiagnosticStore {
       // Update _providerToFileToMessages.
       fileToMessages.set(filePath, newMessagesForPath);
       // Update _fileToProviders.
-      var providers = this._fileToProviders.get(filePath);
+      let providers = this._fileToProviders.get(filePath);
       if (!providers) {
         providers = new Set();
         this._fileToProviders.set(filePath, providers);
@@ -156,14 +156,14 @@ class DiagnosticStore {
     diagnosticProvider: DiagnosticProvider,
     pathsToRemove: Iterable<NuclideUri>
   ): void {
-    var fileToDiagnostics = this._providerToFileToMessages.get(diagnosticProvider);
-    for (var filePath of pathsToRemove) {
+    const fileToDiagnostics = this._providerToFileToMessages.get(diagnosticProvider);
+    for (const filePath of pathsToRemove) {
       // Update _providerToFileToMessages.
       if (fileToDiagnostics) {
         fileToDiagnostics.delete(filePath);
       }
       // Update _fileToProviders.
-      var providers = this._fileToProviders.get(filePath);
+      const providers = this._fileToProviders.get(filePath);
       if (providers) {
         providers.delete(diagnosticProvider);
       }
@@ -178,9 +178,9 @@ class DiagnosticStore {
 
   _invalidateAllMessagesForProvider(diagnosticProvider: DiagnosticProvider): void {
     // Invalidate all file messages.
-    var filesToDiagnostics = this._providerToFileToMessages.get(diagnosticProvider);
+    const filesToDiagnostics = this._providerToFileToMessages.get(diagnosticProvider);
     if (filesToDiagnostics) {
-      var allFilePaths = filesToDiagnostics.keys();
+      const allFilePaths = filesToDiagnostics.keys();
       this._invalidateFileMessagesForProvider(diagnosticProvider, allFilePaths);
     }
     // Invalidate all project messages.
@@ -206,10 +206,10 @@ class DiagnosticStore {
       filePath: NuclideUri
     ): atom$Disposable {
     // Use the filePath as the event name.
-    var emitterDisposable = this._fileChangeEmitter.on(filePath, callback);
+    const emitterDisposable = this._fileChangeEmitter.on(filePath, callback);
     this._incrementFileListenerCount(filePath);
 
-    var fileMessages = this._getFileMessages(filePath);
+    const fileMessages = this._getFileMessages(filePath);
     if (fileMessages.length) {
       callback({filePath, messages: fileMessages});
     }
@@ -220,12 +220,12 @@ class DiagnosticStore {
   }
 
   _incrementFileListenerCount(filePath: NuclideUri): void {
-    var currentCount = this._fileToListenersCount.get(filePath) || 0;
+    const currentCount = this._fileToListenersCount.get(filePath) || 0;
     this._fileToListenersCount.set(filePath, currentCount + 1);
   }
 
   _decrementFileListenerCount(filePath: NuclideUri): void {
-    var currentCount = this._fileToListenersCount.get(filePath) || 0;
+    const currentCount = this._fileToListenersCount.get(filePath) || 0;
     if (currentCount > 0) {
       this._fileToListenersCount.set(filePath, currentCount - 1);
     }
@@ -240,10 +240,10 @@ class DiagnosticStore {
    *   project-scope messages.
    */
   onProjectMessagesDidUpdate(callback: (messages: Array<ProjectDiagnosticMessage>) => mixed): atom$Disposable {
-    var emitterDisposable = this._nonFileChangeEmitter.on(PROJECT_MESSAGE_CHANGE_EVENT, callback);
+    const emitterDisposable = this._nonFileChangeEmitter.on(PROJECT_MESSAGE_CHANGE_EVENT, callback);
     this._projectListenersCount += 1;
 
-    var projectMessages = this._getProjectMessages();
+    const projectMessages = this._getProjectMessages();
     if (projectMessages.length) {
       callback(projectMessages);
     }
@@ -261,10 +261,10 @@ class DiagnosticStore {
    *   of messages is meant to completely replace any previous messages.
    */
   onAllMessagesDidUpdate(callback: (messages: Array<DiagnosticMessage>) => mixed): atom$Disposable {
-    var emitterDisposable = this._nonFileChangeEmitter.on(ALL_CHANGE_EVENT, callback);
+    const emitterDisposable = this._nonFileChangeEmitter.on(ALL_CHANGE_EVENT, callback);
     this._allMessagesListenersCount += 1;
 
-    var allMessages = this._getAllMessages();
+    const allMessages = this._getAllMessages();
     if (allMessages.length) {
       callback(allMessages);
     }
@@ -279,11 +279,11 @@ class DiagnosticStore {
    * Prefer to get updates via ::onFileMessagesDidUpdate.
    */
   _getFileMessages(filePath: NuclideUri): Array<FileDiagnosticMessage> {
-    var allFileMessages = [];
-    var relevantProviders = this._fileToProviders.get(filePath);
+    let allFileMessages = [];
+    const relevantProviders = this._fileToProviders.get(filePath);
     if (relevantProviders) {
-      for (var provider of relevantProviders) {
-        var messages = (this._providerToFileToMessages.get(provider)).get(filePath);
+      for (const provider of relevantProviders) {
+        const messages = (this._providerToFileToMessages.get(provider)).get(filePath);
         allFileMessages = allFileMessages.concat(messages);
       }
     }
@@ -295,8 +295,8 @@ class DiagnosticStore {
    * Prefer to get updates via ::onProjectMessagesDidUpdate.
    */
   _getProjectMessages(): Array<ProjectDiagnosticMessage> {
-    var allProjectMessages = [];
-    for (var messages of this._providerToProjectDiagnostics.values()) {
+    let allProjectMessages = [];
+    for (const messages of this._providerToProjectDiagnostics.values()) {
       allProjectMessages = allProjectMessages.concat(messages);
     }
     return allProjectMessages;
@@ -307,10 +307,10 @@ class DiagnosticStore {
    * Prefer to get updates via ::onAllMessagesDidUpdate.
    */
   _getAllMessages(): Array<DiagnosticMessage> {
-    var allMessages = [];
+    let allMessages = [];
     // Get all file messages.
-    for (var fileToMessages of this._providerToFileToMessages.values()) {
-      for (var messages of fileToMessages.values()) {
+    for (const fileToMessages of this._providerToFileToMessages.values()) {
+      for (const messages of fileToMessages.values()) {
         allMessages = allMessages.concat(messages);
       }
     }

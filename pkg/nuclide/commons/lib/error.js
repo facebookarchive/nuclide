@@ -9,9 +9,9 @@
  * the root directory of this source tree.
  */
 
- function stringifyError(error: Error): string {
-   return `name: ${error.name}, message: ${error.message}, stack: ${error.stack}.`;
- }
+function stringifyError(error: Error): string {
+  return `name: ${error.name}, message: ${error.message}, stack: ${error.stack}.`;
+}
 
 module.exports = {
   stringifyError,

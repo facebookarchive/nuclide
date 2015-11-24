@@ -9,23 +9,23 @@
  * the root directory of this source tree.
  */
 
-var ConnectionState = require('../ConnectionState');
-var {
+const ConnectionState = require('../ConnectionState');
+const {
   notifyLocalDiskFile,
   notifyConnectedRemoteFile,
   notifyDisconnectedRemoteFile,
 } = require('../notification');
-var React = require('react-for-atom');
-var {PropTypes} = React;
+const React = require('react-for-atom');
+const {PropTypes} = React;
 
-var StatusBarTile = React.createClass({
+const StatusBarTile = React.createClass({
   propTypes: {
     connectionState: PropTypes.number.isRequired,
     fileUri: PropTypes.string,
   },
 
   render(): ?ReactElement {
-    var iconName = null;
+    let iconName = null;
     switch (this.props.connectionState) {
       case ConnectionState.NONE:
         break;

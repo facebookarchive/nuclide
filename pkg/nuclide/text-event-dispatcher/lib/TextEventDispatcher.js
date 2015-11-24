@@ -9,21 +9,21 @@
  * the root directory of this source tree.
  */
 
-var invariant = require('assert');
-var {Disposable, CompositeDisposable} = require('atom');
+const invariant = require('assert');
+const {Disposable, CompositeDisposable} = require('atom');
 
-var {debounce} = require('nuclide-commons');
+const {debounce} = require('nuclide-commons');
 
 type EventCallback = (editor: TextEditor) => mixed;
 
 type Event = 'did-reload' | 'did-change' | 'did-save' | 'did-open';
 
 // A reload changes the text in the buffer, so it should trigger a refresh.
-var FILE_CHANGE_EVENTS = ['did-change', 'did-reload', 'did-open'];
+const FILE_CHANGE_EVENTS = ['did-change', 'did-reload', 'did-open'];
 
 // A reload basically indicates that an external program saved the file, so
 // it should trigger a refresh.
-var FILE_SAVE_EVENTS = ['did-save', 'did-reload', 'did-open'];
+const FILE_SAVE_EVENTS = ['did-save', 'did-reload', 'did-open'];
 
 /**
  * Stores callbacks keyed on grammar and event, to allow for easy retrieval when
@@ -45,11 +45,11 @@ class TextCallbackContainer<CallbackArg> {
   }
 
   getCallbacks(grammar: string, event: Event): Set<(arg: CallbackArg) => mixed> {
-    var eventMap = this._callbacks.get(grammar);
-    var callbacksForGrammar = this._getCallbacksFromEventMap(eventMap, event);
-    var callbacksForAll = this._getCallbacksFromEventMap(this._allGrammarCallbacks, event);
-    var resultSet = new Set();
-    var add = callback => { resultSet.add(callback); };
+    const eventMap = this._callbacks.get(grammar);
+    const callbacksForGrammar = this._getCallbacksFromEventMap(eventMap, event);
+    const callbacksForAll = this._getCallbacksFromEventMap(this._allGrammarCallbacks, event);
+    const resultSet = new Set();
+    const add = callback => { resultSet.add(callback); };
     callbacksForGrammar.forEach(add);
     callbacksForAll.forEach(add);
     return resultSet;
@@ -66,7 +66,7 @@ class TextCallbackContainer<CallbackArg> {
     if (!eventMap) {
       return new Set();
     }
-    var callbackSet = eventMap.get(event);
+    const callbackSet = eventMap.get(event);
     if (!callbackSet) {
       return new Set();
     }
@@ -81,8 +81,8 @@ class TextCallbackContainer<CallbackArg> {
     if (grammarScopes === 'all') {
       this._addToEventMap(this._allGrammarCallbacks, events, callback);
     } else {
-      for (var grammarScope of grammarScopes) {
-        var eventMap = this._callbacks.get(grammarScope);
+      for (const grammarScope of grammarScopes) {
+        let eventMap = this._callbacks.get(grammarScope);
         if (!eventMap) {
           eventMap = new Map();
           this._callbacks.set(grammarScope, eventMap);
@@ -102,8 +102,8 @@ class TextCallbackContainer<CallbackArg> {
     if (grammarScopes === 'all') {
       this._removeFromEventMap(this._allGrammarCallbacks, events, callback);
     } else {
-      for (var grammarScope of grammarScopes) {
-        var eventMap = this._callbacks.get(grammarScope);
+      for (const grammarScope of grammarScopes) {
+        const eventMap = this._callbacks.get(grammarScope);
         invariant(eventMap);
         this._removeFromEventMap(eventMap, events, callback);
         if (eventMap.size === 0) {
@@ -117,8 +117,8 @@ class TextCallbackContainer<CallbackArg> {
       eventMap: Map<Event, Set<(arg: CallbackArg) => mixed>>,
       events: Iterable<Event>,
       callback: (arg: CallbackArg) => mixed): void {
-    for (var event of events) {
-      var callbackSet = eventMap.get(event);
+    for (const event of events) {
+      let callbackSet = eventMap.get(event);
       if (!callbackSet) {
         callbackSet = new Set();
         eventMap.set(event, callbackSet);
@@ -131,8 +131,8 @@ class TextCallbackContainer<CallbackArg> {
       eventMap: Map<Event, Set<(arg: CallbackArg) => mixed>>,
       events: Iterable<Event>,
       callback: (arg: CallbackArg) => mixed): void {
-    for (var event of events) {
-      var callbackSet = eventMap.get(event);
+    for (const event of events) {
+      const callbackSet = eventMap.get(event);
       invariant(callbackSet);
       callbackSet.delete(callback);
       if (callbackSet.size === 0) {
@@ -182,9 +182,9 @@ class TextEventDispatcher {
     }
     // Sometimes these events get triggered several times in succession
     // (particularly on startup).
-    var debouncedCallback = debounce(callback, 50, true);
+    const debouncedCallback = debounce(callback, 50, true);
     this._callbackContainer.addCallback(grammarScopes, events, debouncedCallback);
-    var disposables = new Disposable(() => {
+    const disposables = new Disposable(() => {
       this._callbackContainer.removeCallback(grammarScopes, events, debouncedCallback);
       if (this._callbackContainer.isEmpty()) {
         this._deregisterEditorListeners();
@@ -216,11 +216,11 @@ class TextEventDispatcher {
     // Whenever the active pane item changes, we check to see if there are any
     // pending events for the newly-focused TextEditor.
     this._getEditorListenerDisposable().add(atom.workspace.onDidChangeActivePaneItem(() => {
-      var currentEditor = atom.workspace.getActiveTextEditor();
+      const currentEditor = atom.workspace.getActiveTextEditor();
       if (currentEditor) {
-        var pendingEvents = this._pendingEvents.get(currentEditor.getBuffer());
+        const pendingEvents = this._pendingEvents.get(currentEditor.getBuffer());
         if (pendingEvents) {
-          for (var event of pendingEvents) {
+          for (const event of pendingEvents) {
             this._dispatchEvents(currentEditor, event);
           }
           this._pendingEvents.delete(currentEditor.getBuffer());
@@ -229,8 +229,8 @@ class TextEventDispatcher {
     }));
 
     this._getEditorListenerDisposable().add(atom.workspace.observeTextEditors(editor => {
-      var buffer = editor.getBuffer();
-      var makeDispatch = (event: Event) => {
+      const buffer = editor.getBuffer();
+      const makeDispatch = (event: Event) => {
         return () => {
           this._dispatchEvents(editor, event);
         };
@@ -250,10 +250,10 @@ class TextEventDispatcher {
   }
 
   _dispatchEvents(editor: TextEditor, event: Event): void {
-    var currentEditor = atom.workspace.getActiveTextEditor();
+    const currentEditor = atom.workspace.getActiveTextEditor();
     if (currentEditor && editor === currentEditor) {
-      var callbacks = this._callbackContainer.getCallbacks(editor.getGrammar().scopeName, event);
-      for (var callback of callbacks) {
+      const callbacks = this._callbackContainer.getCallbacks(editor.getGrammar().scopeName, event);
+      for (const callback of callbacks) {
         callback(editor);
       }
     // We want to avoid storing pending events if this event was generated by
@@ -261,8 +261,8 @@ class TextEventDispatcher {
     // multiple panes have the same file open.
     } else if (!currentEditor || editor.getBuffer() !== currentEditor.getBuffer()) {
       // Trigger this event next time we switch to an editor with this buffer.
-      var buffer = editor.getBuffer();
-      var events = this._pendingEvents.get(buffer);
+      const buffer = editor.getBuffer();
+      let events = this._pendingEvents.get(buffer);
       if (!events) {
         events = new Set();
         this._pendingEvents.set(buffer, events);
@@ -272,7 +272,7 @@ class TextEventDispatcher {
   }
 
   _getEditorListenerDisposable(): CompositeDisposable {
-    var disposable = this._editorListenerDisposable;
+    const disposable = this._editorListenerDisposable;
     invariant(disposable, 'TextEventDispatcher disposable is not initialized');
     return disposable;
   }

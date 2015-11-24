@@ -58,13 +58,13 @@ describe('PromisePool', () => {
   beforeEach(() => window.useRealClock());
 
   it('Run async operations in parallel and do not exceed pool size.', () => {
-    var poolSize = 3;
-    var numDelayedExecutors = 30;
-    var delayMs = 10;
-    var numRunning = 0;
+    const poolSize = 3;
+    const numDelayedExecutors = 30;
+    const delayMs = 10;
+    let numRunning = 0;
 
-    var executors = [];
-    for (var i = 0; i < numDelayedExecutors; i++) {
+    const executors = [];
+    for (let i = 0; i < numDelayedExecutors; i++) {
       executors.push((resolve, reject) => {
         numRunning++;
         expect(numRunning <= poolSize).toBe(true);
@@ -76,12 +76,12 @@ describe('PromisePool', () => {
       });
     }
 
-    var queue = new PromisePool(poolSize);
+    const queue = new PromisePool(poolSize);
 
     waitsForPromise(async () => {
-      var start = Date.now();
+      const start = Date.now();
       await Promise.all(executors.map(executor => queue.submit(executor)));
-      var end = Date.now();
+      const end = Date.now();
       expect(end - start < numDelayedExecutors * delayMs / (poolSize - 1));
     });
   });

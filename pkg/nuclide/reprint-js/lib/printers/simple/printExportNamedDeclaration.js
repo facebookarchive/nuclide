@@ -12,9 +12,9 @@
 import type {ExportNamedDeclaration} from 'ast-types-flow';
 import type {Lines, Print} from '../../types/common';
 
-var flatten = require('../../utils/flatten');
-var invariant = require('assert');
-var markers = require('../../constants/markers');
+const flatten = require('../../utils/flatten');
+const invariant = require('assert');
+const markers = require('../../constants/markers');
 
 function printExportNamedDeclaration(
   print: Print,
@@ -43,14 +43,14 @@ function printExportNamedDeclaration(
   if (node.specifiers.length > 0) {
     invariant(!node.declaration, 'Cannot have both declaration and specifiers');
     let open = false;
-    let specifiers = node.specifiers.map((specifier, i, arr) => {
+    const specifiers = node.specifiers.map((specifier, i, arr) => {
       let subParts = [];
 
       // Check if we should open.
       if (!open && specifier.type === 'ExportSpecifier') {
         open = true;
         subParts = subParts.concat([
-          '{'
+          '{',
         ]);
       }
 

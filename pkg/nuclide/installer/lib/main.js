@@ -13,14 +13,14 @@
 // but short enough so that users who have just installed the nuclide-installer
 // for the first time do not get impatient waiting to see Nuclide packages start
 // to appear under Installed Packages in Settings.
-var TIME_TO_WAIT_BEFORE_CHECKING_FOR_UPDATES_IN_MS = 5 * 1000;
+const TIME_TO_WAIT_BEFORE_CHECKING_FOR_UPDATES_IN_MS = 5 * 1000;
 
 module.exports = {
   activate(state: ?Object): void {
     // Add a delay before checking for package updates so that this
     // is not on the critical path for Atom startup.
     setTimeout(async () => {
-      var pathToConfig;
+      let pathToConfig;
       try {
         pathToConfig = require.resolve('./config.json');
       } catch (e) {
@@ -28,8 +28,8 @@ module.exports = {
         return;
       }
 
-      var config = require(pathToConfig);
-      var {installPackagesInConfig} = require('nuclide-installer-base');
+      const config = require(pathToConfig);
+      const {installPackagesInConfig} = require('nuclide-installer-base');
       installPackagesInConfig(config);
     }, TIME_TO_WAIT_BEFORE_CHECKING_FOR_UPDATES_IN_MS);
   },

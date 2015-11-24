@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-var {Directory} = require('atom');
-var path = require('path');
+const {Directory} = require('atom');
+const path = require('path');
 
 import type {NuclideUri} from 'nuclide-remote-uri';
 
@@ -21,13 +21,13 @@ import type {NuclideUri} from 'nuclide-remote-uri';
  *   (aka root directory) of the repository, or is the working directory.
  */
 function repositoryContainsPath(repository: Repository, filePath: NuclideUri): boolean {
-  var workingDirectoryPath = repository.getWorkingDirectory();
+  const workingDirectoryPath = repository.getWorkingDirectory();
   if (pathsAreEqual(workingDirectoryPath, filePath)) {
     return true;
   }
 
   if (repository.getType() === 'git') {
-    var rootGitProjectDirectory = new Directory(workingDirectoryPath);
+    const rootGitProjectDirectory = new Directory(workingDirectoryPath);
     return rootGitProjectDirectory.contains(filePath);
   } else if (repository.getType() === 'hg') {
     return repository._workingDirectory.contains(filePath);

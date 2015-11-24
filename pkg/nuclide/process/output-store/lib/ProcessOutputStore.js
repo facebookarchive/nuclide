@@ -47,7 +47,7 @@ class ProcessOutputStore {
     if (this._processPromise) {
       return this._processPromise;
     }
-    var options = {
+    const options = {
       stdout: (data) => this._receiveStdout(data),
       stderr: (data) => this._receiveStderr(data),
       error: (error) => this._handleProcessError(error),
@@ -73,7 +73,7 @@ class ProcessOutputStore {
    * any errors.
    */
   onWillThrowError(callback: (error: Error) => mixed): Disposable {
-    var listenerSubscription = this._emitter.on('will-throw-error', callback);
+    const listenerSubscription = this._emitter.on('will-throw-error', callback);
     this._listenerSubscriptions.add(listenerSubscription);
     return listenerSubscription;
   }
@@ -82,7 +82,7 @@ class ProcessOutputStore {
    * Get notified when the process exits.
    */
   onProcessExit(callback: (exitCode: number) => mixed): Disposable {
-    var listenerSubscription = this._emitter.on('exit', callback);
+    const listenerSubscription = this._emitter.on('exit', callback);
     this._listenerSubscriptions.add(listenerSubscription);
     return listenerSubscription;
   }
@@ -132,7 +132,7 @@ class ProcessOutputStore {
     if (this._stdout) {
       callback(this._stdout);
     }
-    var listenerSubscription = this._emitter.on('stdout', callback);
+    const listenerSubscription = this._emitter.on('stdout', callback);
     this._listenerSubscriptions.add(listenerSubscription);
     return listenerSubscription;
   }
@@ -147,7 +147,7 @@ class ProcessOutputStore {
     if (this._stderr) {
       callback(this._stderr);
     }
-    var listenerSubscription = this._emitter.on('stderr', callback);
+    const listenerSubscription = this._emitter.on('stderr', callback);
     this._listenerSubscriptions.add(listenerSubscription);
     return listenerSubscription;
   }

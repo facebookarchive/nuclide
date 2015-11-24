@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-var nextFileId = 0;
+let nextFileId = 0;
 
 function getUniquePath() {
   nextFileId++;
@@ -17,7 +17,7 @@ function getUniquePath() {
 }
 
 async function createEditorWithUniquePath(): atom$TextEditor {
-  var path = getUniquePath();
+  const path = getUniquePath();
   return await atom.workspace.open(path);
 }
 
@@ -26,10 +26,10 @@ function hasBreakpointDecorationInRow(editor: atom$TextEditor, row: number): boo
 }
 
 function getBreakpointDecorationInRow(editor: atom$TextEditor, row: number): ?atom$Decoration {
-  var decorationArrays = editor.decorationsForScreenRowRange(row, row);
-  for (var key in decorationArrays) {
-    var decorations = decorationArrays[key];
-    for (var i = 0; i < decorations.length; i++) {
+  const decorationArrays = editor.decorationsForScreenRowRange(row, row);
+  for (const key in decorationArrays) {
+    const decorations = decorationArrays[key];
+    for (let i = 0; i < decorations.length; i++) {
       if (decorations[i].getProperties().gutterName === 'nuclide-breakpoint') {
         return decorations[i];
       }

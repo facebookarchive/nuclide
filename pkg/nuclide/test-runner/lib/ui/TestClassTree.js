@@ -11,11 +11,11 @@
 
 import type LazyTreeNode from 'nuclide-ui-tree';
 
-var React = require('react-for-atom');
-var TestClassTreeNode = require('./TestClassTreeNode');
-var {TreeRootComponent} = require('nuclide-ui-tree');
+const React = require('react-for-atom');
+const TestClassTreeNode = require('./TestClassTreeNode');
+const {TreeRootComponent} = require('nuclide-ui-tree');
 
-var {PropTypes} = React;
+const {PropTypes} = React;
 
 function labelClassNameForNode(): string {
   return 'icon icon-code';
@@ -25,9 +25,9 @@ class TestClassTree extends React.Component {
 
   componentDidUpdate(prevProps: Object) {
     if (this.props.testSuiteModel !== prevProps.testSuiteModel) {
-      var roots = [];
+      const roots = [];
       if (this.props.testSuiteModel) {
-        for (var testClass of this.props.testSuiteModel.testClasses.values()) {
+        for (const testClass of this.props.testSuiteModel.testClasses.values()) {
           roots.push(new TestClassTreeNode(testClass));
         }
       }
@@ -38,7 +38,7 @@ class TestClassTree extends React.Component {
   }
 
   render() {
-    var emptyRenderMessage = (
+    const emptyRenderMessage = (
       <div className="nuclide-tree-root-placeholder">
         <h3>Running tests</h3>
         <ol>
@@ -67,8 +67,8 @@ class TestClassTree extends React.Component {
       return;
     }
 
-    var item = node.getItem();
-    var testRun = this.props.testSuiteModel.testRuns.get(item['id']);
+    const item = node.getItem();
+    const testRun = this.props.testSuiteModel.testRuns.get(item['id']);
     if (testRun) {
       if (testRun['numFailures'] > 0) {
         // Red/error if the test class had errors.

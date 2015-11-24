@@ -9,13 +9,13 @@
  * the root directory of this source tree.
  */
 
-var {SMALLEST_NUCLIDE_BUILD_NUMBER} = require('../lib/clientInfo').__test__;
+const {SMALLEST_NUCLIDE_BUILD_NUMBER} = require('../lib/clientInfo').__test__;
 
-var spiedVersion = '';
+let spiedVersion = '';
 
 function testIsRunningInNuclide(version: string, expected: boolean): void {
   spiedVersion = version;
-  var {isRunningInNuclide} = require('../lib/clientInfo');
+  const {isRunningInNuclide} = require('../lib/clientInfo');
   expect(isRunningInNuclide()).toBe(expected);
 }
 

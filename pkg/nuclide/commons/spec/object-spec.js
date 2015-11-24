@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-var objectHelpers = require('../lib/object.js');
+const objectHelpers = require('../lib/object.js');
 
 describe('object.isEmpty', () => {
   it('correctly identifies empty Objects', () => {
@@ -18,9 +18,9 @@ describe('object.isEmpty', () => {
 
   it('correctly identifies non-empty Objects', () => {
 
-    var proto = {a:1, b:2, c:3};
-    var objWithOwnProperties = Object.create(proto, {foo: {value: 'bar'}});
-    var objWithoutOwnProperties = Object.create(proto);
+    const proto = {a:1, b:2, c:3};
+    const objWithOwnProperties = Object.create(proto, {foo: {value: 'bar'}});
+    const objWithoutOwnProperties = Object.create(proto);
 
     expect(objectHelpers.isEmpty({a: 1})).toEqual(false);
     expect(objectHelpers.isEmpty(objWithOwnProperties)).toEqual(false);

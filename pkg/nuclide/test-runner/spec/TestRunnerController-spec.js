@@ -11,11 +11,11 @@
 
 import type TestRunner from '../lib/TestRunner';
 
-var TestRunnerController = require('../lib/TestRunnerController');
+const TestRunnerController = require('../lib/TestRunnerController');
 
 describe('TestRunnerController', () => {
 
-  var testRunners: Set<TestRunner>;
+  let testRunners: Set<TestRunner>;
 
   beforeEach(() => {
     testRunners = new Set();
@@ -46,7 +46,7 @@ describe('TestRunnerController', () => {
       // The controller needs at least one test runner to run tests.
       testRunners.add({getByUri() {}, label: ''});
       // Start with `panelVisible: false` to ensure the panel is initially hidden.
-      var controller = new TestRunnerController({panelVisible: false}, testRunners);
+      const controller = new TestRunnerController({panelVisible: false}, testRunners);
       expect(atom.workspace.getBottomPanels().length).toEqual(0);
       waitsForPromise(async () => {
         await controller.runTests();
@@ -61,7 +61,7 @@ describe('TestRunnerController', () => {
     // When new test runners are added, the dropdown in the UI needs to update. However, it should
     // not force a render if the panel is still supposed to be hidden.
     it('does not create a panel if `panelVisible` is false', () => {
-      var controller = new TestRunnerController({panelVisible: false}, testRunners);
+      const controller = new TestRunnerController({panelVisible: false}, testRunners);
       testRunners.add({
         getByUri() {},
         label: '',

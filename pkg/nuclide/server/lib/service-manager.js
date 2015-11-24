@@ -9,10 +9,10 @@
  * the root directory of this source tree.
  */
 
-var logger = require('nuclide-logging').getLogger();
+const logger = require('nuclide-logging').getLogger();
 
 // A cache stores services in form of '$serviceName@$cwd' => $serviceObject.
-var cachedServices: Map<string, any> = new Map();
+const cachedServices: Map<string, any> = new Map();
 
 function optionsToString(options: ?any): string {
   if (!options) {
@@ -20,7 +20,7 @@ function optionsToString(options: ?any): string {
   } else if (options instanceof Array) {
     return '[' + options.map(item => optionsToString(item)).join(', ') + ']';
   } else if (options instanceof Object) {
-    var keys = Object.keys(options).sort();
+    const keys = Object.keys(options).sort();
     return '{' + keys.map(key => key + ': ' + optionsToString(options[key])).join(', ') + '}';
   } else if (typeof options === 'number' || typeof options === 'boolean' || typeof options === 'string') {
     return JSON.stringify(options);
@@ -33,18 +33,18 @@ function optionsToString(options: ?any): string {
  * Create a new or retrieve a cached service instance by serviceName and service options.
  */
 function getService(serviceName: string, options: any, localImplementationClassPath: string): any {
-  var key = serviceName + '@' + optionsToString(options);
+  const key = serviceName + '@' + optionsToString(options);
   if (!cachedServices.has(key)) {
     logger.debug(`Create service instance: ${key}`);
-    var serviceInstance = createLocalService(serviceName, localImplementationClassPath, options);
+    const serviceInstance = createLocalService(serviceName, localImplementationClassPath, options);
     cachedServices.set(key, serviceInstance);
   }
   return cachedServices.get(key);
 }
 
 function createLocalService(serviceName: string, localImplementationClassPath: string, options: any): any {
-  var serviceModule = require(localImplementationClassPath);
-  var serviceClass = serviceModule[serviceName] || serviceModule;
+  const serviceModule = require(localImplementationClassPath);
+  const serviceClass = serviceModule[serviceName] || serviceModule;
   return new serviceClass(options);
 }
 

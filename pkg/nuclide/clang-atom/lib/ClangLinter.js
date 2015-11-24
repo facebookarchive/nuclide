@@ -9,10 +9,10 @@
  * the root directory of this source tree.
  */
 
-var {Range} = require('atom');
+const {Range} = require('atom');
 import {trackOperationTiming} from 'nuclide-analytics';
 
-var libClangProcessSingleton;
+let libClangProcessSingleton;
 function getLibClangProcess() {
   if (!libClangProcessSingleton) {
     libClangProcessSingleton = require('./main-shared').getSharedLibClangProcess();
@@ -29,19 +29,19 @@ module.exports = {
     return trackOperationTiming(
       'nuclide-clang-atom:lint',
       async () => {
-        var filePath = textEditor.getPath();
+        const filePath = textEditor.getPath();
         if (!filePath) {
           return [];
         }
 
         // If libClangProcess has not been installed yet, then do not try to lint.
-        var libClangProcess = getLibClangProcess();
+        const libClangProcess = getLibClangProcess();
         if (!libClangProcess) {
           return [];
         }
 
-        var data = await libClangProcess.getDiagnostics(textEditor);
-        var messages = data.diagnostics.map(function(diagnostic) {
+        const data = await libClangProcess.getDiagnostics(textEditor);
+        const messages = data.diagnostics.map(function(diagnostic) {
           // We show only warnings, errors and fatals (2, 3 and 4, respectively).
           if (diagnostic.severity < 2) {
             return null;
@@ -52,15 +52,15 @@ module.exports = {
             return null;
           }
 
-          var type = diagnostic.severity === 2 ? 'Warning' : 'Error';
+          const type = diagnostic.severity === 2 ? 'Warning' : 'Error';
           // Clang adds file-wide errors on line -1, so we put it on line 0 instead.
           // The usual file-wide error is 'too many errors emitted, stopping now'.
-          var line = Math.max(0, diagnostic.location.line);
-          var col = 0;
-          var range;
+          const line = Math.max(0, diagnostic.location.line);
+          const col = 0;
+          let range;
           if (diagnostic.ranges) {
             // Use the first range from the diagnostic as the range for Linter.
-            var clangRange = diagnostic.ranges[0];
+            const clangRange = diagnostic.ranges[0];
             range = new Range(
               [clangRange.start.line, clangRange.start.column],
               [clangRange.end.line, clangRange.end.column]

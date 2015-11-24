@@ -16,7 +16,7 @@ type DiagnosticCount = {
   warningCount: number;
 }
 
-var STATUS_BAR_PRIORITY = 0;
+const STATUS_BAR_PRIORITY = 0;
 
 class StatusBarTile {
 
@@ -40,7 +40,7 @@ class StatusBarTile {
       return;
     }
 
-    var diagnosticCount = {
+    const diagnosticCount = {
       errorCount: 0,
       warningCount: 0,
     };
@@ -59,7 +59,7 @@ class StatusBarTile {
       return;
     }
 
-    var item = this._item = document.createElement('div');
+    const item = this._item = document.createElement('div');
     item.className = 'inline-block';
     this._render();
     this._tile = statusBar.addLeftTile({
@@ -73,9 +73,9 @@ class StatusBarTile {
     messages: Array<DiagnosticMessage>,
   ): void {
     // Update the DiagnosticCount for the updater.
-    var errorCount = 0;
-    var warningCount = 0;
-    for (var message of messages) {
+    let errorCount = 0;
+    let warningCount = 0;
+    for (const message of messages) {
       if (message.type === 'Error') {
         ++errorCount;
       } else if (message.type === 'Warning') {
@@ -88,9 +88,9 @@ class StatusBarTile {
     });
 
     // Recalculate the total diagnostic count.
-    var totalErrorCount = 0;
-    var totalWarningCount = 0;
-    for (var diagnosticCount of this._diagnosticUpdaters.values()) {
+    let totalErrorCount = 0;
+    let totalWarningCount = 0;
+    for (const diagnosticCount of this._diagnosticUpdaters.values()) {
       totalErrorCount += diagnosticCount.errorCount;
       totalWarningCount += diagnosticCount.warningCount;
     }
@@ -150,15 +150,15 @@ class StatusBarTileComponent extends React.Component {
   }
 
   _onClick(): void {
-    var target = atom.views.getView(atom.workspace);
+    const target = atom.views.getView(atom.workspace);
     atom.commands.dispatch(target, 'nuclide-diagnostics-ui:toggle-table');
 
-    var {track} = require('nuclide-analytics');
+    const {track} = require('nuclide-analytics');
     track('diagnostics-show-table-from-status-bar');
   }
 }
 
-var {PropTypes} = React;
+const {PropTypes} = React;
 
 StatusBarTileComponent.propTypes = {
   errorCount: PropTypes.number.isRequired,

@@ -9,13 +9,13 @@
  * the root directory of this source tree.
  */
 
-var React = require('react-for-atom');
-var BreakpointStore = require('./BreakpointStore.js');
-var DebuggerActions = require('./DebuggerActions');
-var DebuggerInspector = require('./DebuggerInspector');
-var DebuggerSessionSelector = require('./DebuggerSessionSelector');
-var DebuggerStore = require('./DebuggerStore');
-var Bridge = require('./Bridge');
+const React = require('react-for-atom');
+const BreakpointStore = require('./BreakpointStore.js');
+const DebuggerActions = require('./DebuggerActions');
+const DebuggerInspector = require('./DebuggerInspector');
+const DebuggerSessionSelector = require('./DebuggerSessionSelector');
+const DebuggerStore = require('./DebuggerStore');
+const Bridge = require('./Bridge');
 
 type State = {
   hasDebuggerProcess: boolean;
@@ -30,7 +30,7 @@ function getStateFromStore(store: DebuggerStore): State {
   };
 }
 
-var DebuggerControllerView = React.createClass({
+const DebuggerControllerView = React.createClass({
   propTypes: {
     actions: React.PropTypes.instanceOf(DebuggerActions).isRequired,
     breakpointStore: React.PropTypes.instanceOf(BreakpointStore).isRequired,
@@ -50,14 +50,14 @@ var DebuggerControllerView = React.createClass({
   },
 
   componentWillUnmount() {
-    var listener = this.state.debuggerStoreChangeListener;
+    const listener = this.state.debuggerStoreChangeListener;
     if (listener != null) {
       listener.dispose();
     }
   },
 
   componentWillReceiveProps(nextProps: {store: DebuggerStore}) {
-    var listener = this.state.debuggerStoreChangeListener;
+    const listener = this.state.debuggerStoreChangeListener;
     if (listener != null) {
       listener.dispose();
     }

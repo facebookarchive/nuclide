@@ -8,14 +8,14 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-var {Point, TextBuffer} = require('atom');
-var ObjectiveCColonIndenter = require('../lib/ObjectiveCColonIndenter');
-var {getIndentedColonColumn} = ObjectiveCColonIndenter;
+const {Point, TextBuffer} = require('atom');
+const ObjectiveCColonIndenter = require('../lib/ObjectiveCColonIndenter');
+const {getIndentedColonColumn} = ObjectiveCColonIndenter;
 
 describe('ObjectiveCColonIndenter', () => {
   describe('getIndentedColonColumn', () => {
     it('throws an error if the close bracket position does not contain a colon', () => {
-      var error = new Error('The start position must contain a colon, found \'\' instead');
+      let error = new Error('The start position must contain a colon, found \'\' instead');
       expect(() => getIndentedColonColumn(new TextBuffer(''), Point.fromObject([0, 0])))
           .toThrow(error);
       error = new Error('The start position must contain a colon, found \' \' instead');

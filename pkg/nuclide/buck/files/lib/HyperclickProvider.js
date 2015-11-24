@@ -9,16 +9,16 @@
  * the root directory of this source tree.
  */
 
-var {isBuckFile} = require('nuclide-buck-base');
-var {buckProjectRootForPath} = require('nuclide-buck-commons');
-var {fsPromise} = require('nuclide-commons');
-var {goToLocation, extractWordAtPosition} = require('nuclide-atom-helpers');
+const {isBuckFile} = require('nuclide-buck-base');
+const {buckProjectRootForPath} = require('nuclide-buck-commons');
+const {fsPromise} = require('nuclide-commons');
+const {goToLocation, extractWordAtPosition} = require('nuclide-atom-helpers');
 
 import type {Point} from 'atom';
 
-var targetRegex = /(\/(?:\/[\w\-\.]*)*){0,1}:([\w\-\.]+)/;
+const targetRegex = /(\/(?:\/[\w\-\.]*)*){0,1}:([\w\-\.]+)/;
 
-var ESCAPE_REGEXP = /([.*+?^${}()|\[\]\/\\])/g;
+const ESCAPE_REGEXP = /([.*+?^${}()|\[\]\/\\])/g;
 
 function escapeRegExp(str: string): string {
   return str.replace(ESCAPE_REGEXP, '\\$1');
@@ -42,17 +42,17 @@ async function parseTarget(
     return null;
   }
 
-  var path;
+  let path;
   if (match[1]) {
     // Strip off the leading slashes from the fully-qualified build target.
-    var basePath = match[1].substring('//'.length);
-    var buckRoot = await buckProject.getPath();
+    const basePath = match[1].substring('//'.length);
+    const buckRoot = await buckProject.getPath();
     path = require('nuclide-remote-uri').join(buckRoot, basePath, 'BUCK');
   } else {
     // filePath is already an absolute path.
     path = filePath;
   }
-  var name = match[2];
+  const name = match[2];
   return {path, name};
 }
 
@@ -64,7 +64,7 @@ async function parseTarget(
  * If `target.path` file cannot be found or read, Promise resolves to null.
  */
 async function findTargetLocation(target: {path: string; name: string}): Promise {
-  var data;
+  let data;
   try {
     data = await fsPromise.readFile(target.path, 'utf-8');
   } catch (e) {
@@ -74,8 +74,8 @@ async function findTargetLocation(target: {path: string; name: string}): Promise
   // We split the file content into lines and look for the line that looks
   // like "name = '#{target.name}'" ignoring whitespaces and trailling
   // comma.
-  var lines = data.split('\n');
-  var regex = new RegExp(
+  const lines = data.split('\n');
+  const regex = new RegExp(
       '^\\s*' + // beginning of the line
       'name\\s*=\\s*' + // name =
       '[\'\"]' + // opening quotation mark
@@ -84,7 +84,7 @@ async function findTargetLocation(target: {path: string; name: string}): Promise
       ',?$' // optional trailling comma
   );
 
-  var lineIndex = 0;
+  let lineIndex = 0;
   lines.forEach((line, i) => {
     if (regex.test(line)) {
       lineIndex = i;
@@ -98,7 +98,7 @@ module.exports = {
   priority: 50,
   providerName: 'nuclide-buck-files',
   async getSuggestion(textEditor: TextEditor, position: Point): Promise<mixed> {
-    var absolutePath = textEditor.getPath();
+    const absolutePath = textEditor.getPath();
     if (!absolutePath) {
       return null;
     }
@@ -107,19 +107,19 @@ module.exports = {
       return null;
     }
 
-    var buckProject = await buckProjectRootForPath(absolutePath);
+    const buckProject = await buckProjectRootForPath(absolutePath);
     if (!buckProject) {
       return null;
     }
 
-    var wordMatchAndRange = extractWordAtPosition(textEditor, position, targetRegex);
+    const wordMatchAndRange = extractWordAtPosition(textEditor, position, targetRegex);
     if (!wordMatchAndRange) {
       return null;
     }
-    var {wordMatch, range} = wordMatchAndRange;
+    const {wordMatch, range} = wordMatchAndRange;
 
-    var target = await parseTarget(wordMatch, absolutePath, buckProject);
-    var location = await findTargetLocation(target);
+    const target = await parseTarget(wordMatch, absolutePath, buckProject);
+    const location = await findTargetLocation(target);
     if (location) {
       return {
         range,

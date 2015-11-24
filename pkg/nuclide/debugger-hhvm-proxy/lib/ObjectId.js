@@ -76,14 +76,14 @@ function createContextObjectId(enableCount: number, frameIndex: number, contextI
 }
 
 function pagedObjectId(objectId: ObjectId, fullname: string, elementRange: ElementRange): ObjectId {
-  var result = copyObjectId(objectId);
+  const result = copyObjectId(objectId);
   result.fullname = fullname;
   result.elementRange = elementRange;
   return result;
 }
 
 function singlePageObjectId(objectId: ObjectId, fullname: string, page: number): ObjectId {
-  var result = copyObjectId(objectId);
+  const result = copyObjectId(objectId);
   result.fullname = fullname;
   result.page = page;
   return result;
@@ -142,21 +142,21 @@ function countOfObjectId(id: ObjectId, pagesize: number, parentEndIndex: number)
  * Note that the children may be a combination of PagedObjectIds and SinglePageObjectIds.
  */
 function getChildIds(id: ObjectId): Array<PropertyDescriptor> {
-  var pagesize = id.elementRange.pagesize;
+  const pagesize = id.elementRange.pagesize;
 
   // Handle a page of pages (... of pages)
-  var childSize = pagesize;
+  let childSize = pagesize;
   while ((childSize * pagesize) < id.elementRange.count) {
     childSize *= pagesize;
   }
 
-  var result = [];
-  var childStartIndex = id.elementRange.startIndex;
-  var endIndex = endIndexOfObjectId(id);
+  const result = [];
+  let childStartIndex = id.elementRange.startIndex;
+  const endIndex = endIndexOfObjectId(id);
   while (childStartIndex < endIndex) {
-    var childCount = Math.min(childSize, endIndex - childStartIndex);
+    const childCount = Math.min(childSize, endIndex - childStartIndex);
 
-    var childId;
+    let childId;
     if (childCount <= pagesize) {
       childId = singlePageObjectId(id, id.fullname, Math.trunc(childStartIndex / pagesize));
     } else {

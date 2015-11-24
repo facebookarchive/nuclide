@@ -16,15 +16,15 @@ import {ScribeProcess, __test__} from '../lib/ScribeProcess';
 // data into scribe, it save data into ${process.env['SCRIBE_MOCK_PATH'] + category_name}
 // so that we could verify that the data is saved.
 // Also, if a special data "abort" (with quote) is received, it will crash itself.
-var scribeCatMockCommandPath = path.join(path.dirname(__filename), 'scripts', 'scribe_cat_mock');
-var tempDir = '';
-var scribeProcess: ?ScribeProcess = null;
-var originalCommand = '';
+const scribeCatMockCommandPath = path.join(path.dirname(__filename), 'scripts', 'scribe_cat_mock');
+let tempDir = '';
+let scribeProcess: ?ScribeProcess = null;
+let originalCommand = '';
 
 async function getContentOfScribeCategory(category: string): Promise<Array<mixed>> {
-  var categoryFilePath = path.join(tempDir, category);
-  var content = await fsPromise.readFile(categoryFilePath);
-  var result = content.toString().split('\n')
+  const categoryFilePath = path.join(tempDir, category);
+  const content = await fsPromise.readFile(categoryFilePath);
+  const result = content.toString().split('\n')
     .filter(item => (item.length > 0))
     .map(item => JSON.parse(item));
   return result;
@@ -56,9 +56,9 @@ describe('scribe_cat test suites', () => {
   });
 
   it('Saves data to scribe category', () => {
-    var localScribeProcess = scribeProcess = new ScribeProcess('test');
+    const localScribeProcess = scribeProcess = new ScribeProcess('test');
 
-    var messages = 'A nuclide is an atomic species characterized by the specific constitution of its nucleus.'.split(' ');
+    const messages = 'A nuclide is an atomic species characterized by the specific constitution of its nucleus.'.split(' ');
     waitsForPromise(async () => {
       await Promise.all(messages.map(message => localScribeProcess.write(message)));
       // Wait for `scribe_cat_mock` to flush data into disk.
@@ -68,10 +68,10 @@ describe('scribe_cat test suites', () => {
   });
 
   it('Saves data to scribe category and resume from error', () => {
-    var localScribeProcess = scribeProcess = new ScribeProcess('test');
+    const localScribeProcess = scribeProcess = new ScribeProcess('test');
 
-    var firstPart = 'A nuclide is an atomic species'.split(' ');
-    var secondPart = 'characterized by the specific constitution of its nucleus.'.split(' ');
+    const firstPart = 'A nuclide is an atomic species'.split(' ');
+    const secondPart = 'characterized by the specific constitution of its nucleus.'.split(' ');
 
     waitsForPromise(async () => {
       await Promise.all(firstPart.map(message => localScribeProcess.write(message)));

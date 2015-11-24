@@ -9,13 +9,13 @@
  * the root directory of this source tree.
  */
 
-var subscriptions: ?CompositeDisposable = null;
-var watchers: ?Map = null;
+let subscriptions: ?CompositeDisposable = null;
+let watchers: ?Map = null;
 
 module.exports = {
 
   activate(state: ?Object): void {
-    var {CompositeDisposable} = require('atom');
+    const {CompositeDisposable} = require('atom');
 
     subscriptions = new CompositeDisposable();
     watchers = new Map();
@@ -25,8 +25,8 @@ module.exports = {
         return;
       }
 
-      var FileWatcher = require('./FileWatcher');
-      var fileWatcher = new FileWatcher(editor);
+      const FileWatcher = require('./FileWatcher');
+      const fileWatcher = new FileWatcher(editor);
       watchers.set(editor, fileWatcher);
 
       subscriptions.add(editor.onDidDestroy(() => {
@@ -43,7 +43,7 @@ module.exports = {
     if (!subscriptions) {
       return;
     }
-    for (var fileWatcher of watchers.values()) {
+    for (const fileWatcher of watchers.values()) {
       fileWatcher.destroy();
     }
     subscriptions.dispose();

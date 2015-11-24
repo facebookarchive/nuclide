@@ -12,7 +12,7 @@
 import {Directory} from 'atom';
 import
   HgRepositoryClient,
-  {DEBOUNCE_MILLISECONDS_FOR_REFRESH_ALL, MAX_INDIVIDUAL_CHANGED_PATHS}
+  {DEBOUNCE_MILLISECONDS_FOR_REFRESH_ALL, MAX_INDIVIDUAL_CHANGED_PATHS,}
 from '../lib/HgRepositoryClient';
 import MockHgService from 'nuclide-hg-repository-base/spec/MockHgService';
 import {
@@ -301,18 +301,18 @@ describe('HgRepositoryClient', () => {
     it(
       'does not triggers a full refresh of the state of the Hg statuses if none of ' +
       'the changed paths are within the project directory.', () => {
-        const path_not_in_project = '/Random/Path';
-        const mockUpdate = [path_not_in_project];
-        spyOn(repo, '_updateStatuses');
+      const path_not_in_project = '/Random/Path';
+      const mockUpdate = [path_not_in_project];
+      spyOn(repo, '_updateStatuses');
 
-        waitsForPromise(async () => {
-          await repo._filesDidChange(mockUpdate);
-          setTimeout(() => {
-            expect(repo._updateStatuses).not.toHaveBeenCalledWith(
+      waitsForPromise(async () => {
+        await repo._filesDidChange(mockUpdate);
+        setTimeout(() => {
+          expect(repo._updateStatuses).not.toHaveBeenCalledWith(
                 [repo.getProjectDirectory()], {hgStatusOption: HgStatusOption.ONLY_NON_IGNORED});
-          }, DEBOUNCE_MILLISECONDS_FOR_REFRESH_ALL + 50);
-        });
-      }
+        }, DEBOUNCE_MILLISECONDS_FOR_REFRESH_ALL + 50);
+      });
+    }
     );
   });
 

@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-var {
+const {
   getCompletionBodyInline,
   getCompletionBodyMultiLine,
 } = require('../lib/AutocompleteProvider').__test__;
@@ -18,7 +18,7 @@ describe('AutocompleteProvider', () => {
 
   describe('@getCompletionBodyMultiLine', () => {
     it('converts method call with first argument being longest', () => {
-      var completion = {};
+      const completion = {};
       completion.chunks = [
         {
           spelling: 'ArgumentOne:',
@@ -54,7 +54,7 @@ describe('AutocompleteProvider', () => {
         },
       ];
 
-      var body = getCompletionBodyMultiLine(
+      const body = getCompletionBodyMultiLine(
           completion,
           /* columnOffset */ 10,
           /* indentation */ 2);
@@ -67,7 +67,7 @@ describe('AutocompleteProvider', () => {
     });
 
     it('converts method call with third argument being longest', () => {
-      var completion = {};
+      const completion = {};
       completion.chunks = [
         {
           spelling: 'Arg1:',
@@ -115,7 +115,7 @@ describe('AutocompleteProvider', () => {
         },
       ];
 
-      var body = getCompletionBodyMultiLine(
+      const body = getCompletionBodyMultiLine(
           completion,
           /* columnOffset */ 10,
           /* indentation */ 3);
@@ -129,7 +129,7 @@ describe('AutocompleteProvider', () => {
     });
 
     it('calls getCompletionBodyMultiLine with odd number of non-empty chunks', () => {
-      var completion = {};
+      const completion = {};
       completion.chunks = [
         {
           spelling: 'ArgumentOne:',
@@ -149,7 +149,7 @@ describe('AutocompleteProvider', () => {
         },
       ];
 
-      var body = getCompletionBodyMultiLine(
+      const body = getCompletionBodyMultiLine(
           completion,
           /* columnOffset */ 10,
           /* indentation */ 3);
@@ -158,7 +158,7 @@ describe('AutocompleteProvider', () => {
     });
 
     it('calls getCompletionBodyMultiLine with two non-placeholder chunks in a row', () => {
-      var completion = {};
+      const completion = {};
       completion.chunks = [
         {
           spelling: 'ArgumentOne:',
@@ -182,7 +182,7 @@ describe('AutocompleteProvider', () => {
         },
       ];
 
-      var body = getCompletionBodyMultiLine(
+      const body = getCompletionBodyMultiLine(
           completion,
           /* columnOffset */ 10,
           /* indentation */ 3);
@@ -191,7 +191,7 @@ describe('AutocompleteProvider', () => {
     });
 
     it('calls getCompletionBodyMultiLine with two placeholder chunks in a row', () => {
-      var completion = {};
+      const completion = {};
       completion.chunks = [
         {
           spelling: 'ArgumentOne:',
@@ -215,7 +215,7 @@ describe('AutocompleteProvider', () => {
         },
       ];
 
-      var body = getCompletionBodyMultiLine(
+      const body = getCompletionBodyMultiLine(
           completion,
           /* columnOffset */ 10,
           /* indentation */ 3);
@@ -226,7 +226,7 @@ describe('AutocompleteProvider', () => {
 
   describe('@getCompletionBodyInline', () => {
     it('converts method call with 2 arguments', () => {
-      var completion = {};
+      const completion = {};
       completion.chunks = [
         {
           spelling: 'ArgumentOne:',
@@ -250,12 +250,12 @@ describe('AutocompleteProvider', () => {
         },
       ];
 
-      var body = getCompletionBodyInline(completion);
+      const body = getCompletionBodyInline(completion);
       expect(body).toBe('ArgumentOne:${1:arg1} arg2:${2:argTwo}');
     });
 
     it('converts short completion with no placeholders', () => {
-      var completion = {};
+      const completion = {};
       completion.chunks = [
         {
           spelling: 'self',
@@ -263,7 +263,7 @@ describe('AutocompleteProvider', () => {
         },
       ];
 
-      var body = getCompletionBodyInline(completion);
+      const body = getCompletionBodyInline(completion);
       expect(body).toBe('self');
     });
   });

@@ -8,12 +8,12 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-var url = require('url');
-var {asyncRequest} = require('./utils');
-var WebSocket = require('ws');
-var uuid = require('uuid');
-var {EventEmitter} = require('events');
-var logger = require('nuclide-logging').getLogger();
+const url = require('url');
+const {asyncRequest} = require('./utils');
+const WebSocket = require('ws');
+const uuid = require('uuid');
+const {EventEmitter} = require('events');
+const logger = require('nuclide-logging').getLogger();
 import {HEARTBEAT_CHANNEL} from './config';
 
 type NuclideSocketOptions = {
@@ -58,7 +58,7 @@ class NuclideSocket extends EventEmitter {
     this._previouslyConnected = false;
     this._cachedMessages = [];
 
-    var {protocol, host} = url.parse(serverUri);
+    const {protocol, host} = url.parse(serverUri);
     this._websocketUri = `ws${protocol === 'https:' ? 's' : ''}://${host}`;
 
     this._heartbeatConnectedOnce = false;
@@ -81,14 +81,14 @@ class NuclideSocket extends EventEmitter {
   }
 
   _reconnect() {
-    var {certificateAuthorityCertificate, clientKey, clientCertificate} = this._options;
-    var websocket = new WebSocket(this._websocketUri, {
+    const {certificateAuthorityCertificate, clientKey, clientCertificate} = this._options;
+    const websocket = new WebSocket(this._websocketUri, {
       cert: clientCertificate,
       key: clientKey,
       ca: certificateAuthorityCertificate,
     });
 
-    var onSocketOpen = () => {
+    const onSocketOpen = () => {
       this._websocket = websocket;
       this._reconnectTime = INITIAL_RECONNECT_TIME_MS;
       // Handshake the server with my client id to manage my re-connect attemp, if it is.
@@ -108,7 +108,7 @@ class NuclideSocket extends EventEmitter {
     };
     websocket.on('open', onSocketOpen);
 
-    var onSocketClose = () => {
+    const onSocketClose = () => {
       if (this._websocket !== websocket) {
         return;
       }
@@ -122,7 +122,7 @@ class NuclideSocket extends EventEmitter {
     };
     websocket.on('close', onSocketClose);
 
-    var onSocketError = (error) => {
+    const onSocketError = (error) => {
       if (this._websocket !== websocket) {
         return;
       }
@@ -132,10 +132,10 @@ class NuclideSocket extends EventEmitter {
     };
     websocket.on('error', onSocketError);
 
-    var onSocketMessage = (data, flags) => {
+    const onSocketMessage = (data, flags) => {
       // flags.binary will be set if a binary data is received.
       // flags.masked will be set if the data was masked.
-      var json = JSON.parse(data);
+      const json = JSON.parse(data);
       this.emit('message', json);
     };
 
@@ -158,7 +158,7 @@ class NuclideSocket extends EventEmitter {
   }
 
   _cleanWebSocket() {
-    let websocket = this._websocket;
+    const websocket = this._websocket;
     if (websocket != null) {
       websocket.dispose();
       websocket.close();
@@ -192,13 +192,13 @@ class NuclideSocket extends EventEmitter {
     // Wrap the data in an object, because if `data` is a primitive data type,
     // finding it in an array would return the first matching item, not necessarily the same
     // inserted item.
-    var message = {data};
+    const message = {data};
     this._cachedMessages.push(message);
     if (!this._connected) {
       return;
     }
 
-    let websocket = this._websocket;
+    const websocket = this._websocket;
     if (websocket == null) {
       return;
     }
@@ -206,7 +206,7 @@ class NuclideSocket extends EventEmitter {
       if (err) {
         logger.warn('WebSocket error, but caching the message:', err);
       } else {
-        var messageIndex = this._cachedMessages.indexOf(message);
+        const messageIndex = this._cachedMessages.indexOf(message);
         if (messageIndex !== -1) {
           this._cachedMessages.splice(messageIndex, 1);
         }
@@ -215,7 +215,7 @@ class NuclideSocket extends EventEmitter {
   }
 
   async xhrRequest(options: any): Promise<string|any> {
-    var {certificateAuthorityCertificate, clientKey, clientCertificate} = this._options;
+    const {certificateAuthorityCertificate, clientKey, clientCertificate} = this._options;
     if (certificateAuthorityCertificate && clientKey && clientCertificate) {
       options.agentOptions = {
         ca: certificateAuthorityCertificate,
@@ -225,7 +225,7 @@ class NuclideSocket extends EventEmitter {
     }
 
     options.uri = this._serverUri + '/' + options.uri;
-    var {body} = await asyncRequest(options);
+    const {body} = await asyncRequest(options);
     return body;
   }
 
@@ -251,7 +251,7 @@ class NuclideSocket extends EventEmitter {
     try {
       await this._sendHeartBeat();
       this._heartbeatConnectedOnce = true;
-      var now = Date.now();
+      const now = Date.now();
       this._lastHeartbeatTime = this._lastHeartbeatTime || now;
       if (this._lastHeartbeat === 'away'
           || ((now - this._lastHeartbeatTime) > MAX_HEARTBEAT_AWAY_RECONNECT_MS)) {
@@ -268,8 +268,8 @@ class NuclideSocket extends EventEmitter {
       // Error code could could be one of:
       // ['ENOTFOUND', 'ECONNREFUSED', 'ECONNRESET', 'ETIMEDOUT']
       // A heuristic mapping is done between the xhr error code to the state of server connection.
-      var {code: originalCode, message} = err;
-      var code = null;
+      const {code: originalCode, message} = err;
+      let code = null;
       switch (originalCode) {
         case 'ENOTFOUND':
         // A socket operation failed because the network was down.

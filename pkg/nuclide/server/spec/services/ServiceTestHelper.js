@@ -32,7 +32,7 @@ export default class ServiceTestHelper {
     this._server = new NuclideServer({port: 0});
     await this._server.connect();
 
-    var port = this._server._webServer.address().port;
+    const port = this._server._webServer.address().port;
     this._client = new NuclideClient('test',
       new NuclideRemoteEventbus(`http://localhost:${port}`));
     this._connection = new _RemoteConnectionMock(this._client, port);

@@ -9,34 +9,34 @@
  * the root directory of this source tree.
  */
 
-var blocked = require('./blocked');
-var connect = require('connect');
-var fs = require('fs');
-var {getService, getRemoteEventName} = require('./service-manager');
-var http = require('http');
-var https = require('https');
+const blocked = require('./blocked');
+const connect = require('connect');
+
+const {getService, getRemoteEventName} = require('./service-manager');
+const http = require('http');
+const https = require('https');
 import {
   HEARTBEAT_CHANNEL,
   SERVICE_FRAMEWORK_EVENT_CHANNEL,
   SERVICE_FRAMEWORK_RPC_CHANNEL,
   SERVICE_FRAMEWORK3_CHANNEL} from './config';
-var {parseServiceApiSync} = require('nuclide-service-transformer');
-var path = require('path');
-var {EventEmitter} = require('events');
-var WebSocketServer = require('ws').Server;
-var {deserializeArgs, sendJsonResponse, sendTextResponse} = require('./utils');
-var {getVersion} = require('nuclide-version');
+const {parseServiceApiSync} = require('nuclide-service-transformer');
+
+const {EventEmitter} = require('events');
+const WebSocketServer = require('ws').Server;
+const {deserializeArgs, sendJsonResponse, sendTextResponse} = require('./utils');
+const {getVersion} = require('nuclide-version');
 import invariant from 'assert';
 import ServiceFramework from './serviceframework';
 
 import {getLogger, flushLogsAndExit} from 'nuclide-logging';
 const logger = getLogger();
 
-var SERVER_SHUTDOWN_TIMEOUT_MS = 1000;
-var STAT_BIN_SIZE_MS = 20;
 
-var EVENT_HANDLE_REGISTERED = '_nuclideServerEventHandleRegstered';
-var idIncrement = 0;
+
+
+const EVENT_HANDLE_REGISTERED = '_nuclideServerEventHandleRegstered';
+
 
 type NuclideServerOptions = {
   port: number;
@@ -75,12 +75,12 @@ class NuclideServer {
     invariant(NuclideServer._theServer == null);
     NuclideServer._theServer = this;
 
-    var {serverKey, serverCertificate, port, certificateAuthorityCertificate, trackEventLoop} = options;
+    const {serverKey, serverCertificate, port, certificateAuthorityCertificate, trackEventLoop} = options;
 
     this._app = connect();
     this._attachUtilHandlers(this._app);
     if (serverKey && serverCertificate && certificateAuthorityCertificate) {
-      var webServerOptions = {
+      const webServerOptions = {
         key: serverKey,
         cert: serverCertificate,
         ca: certificateAuthorityCertificate,
@@ -127,7 +127,7 @@ class NuclideServer {
   }
 
   _createWebSocketServer(): WebSocketServer {
-    var webSocketServer = new WebSocketServer({server: this._webServer});
+    const webSocketServer = new WebSocketServer({server: this._webServer});
     webSocketServer.on('connection', (socket) => this._onConnection(socket));
     webSocketServer.on('error', (error) => logger.error('WebSocketServer Error:', error));
     return webSocketServer;
@@ -135,18 +135,18 @@ class NuclideServer {
 
   _getServiceFrameworkServiceAndRegisterEventHandle(
       serviceConfig: ServiceConfig, serviceOptions: any): any {
-    var localServiceInstance = getService(serviceConfig.name, serviceOptions, serviceConfig.implementation);
+    const localServiceInstance = getService(serviceConfig.name, serviceOptions, serviceConfig.implementation);
     if (localServiceInstance[EVENT_HANDLE_REGISTERED]) {
       return localServiceInstance;
     }
 
-    var serviceApi = parseServiceApiSync(serviceConfig.definition, serviceConfig.name);
+    const serviceApi = parseServiceApiSync(serviceConfig.definition, serviceConfig.name);
 
     serviceApi.eventMethodNames.forEach(methodName => {
       localServiceInstance[methodName].call(localServiceInstance, (...args) => {
-        var eventName = getRemoteEventName(serviceConfig.name, methodName, serviceOptions);
+        const eventName = getRemoteEventName(serviceConfig.name, methodName, serviceOptions);
         (this._eventSubscriptions.get(eventName) || []).forEach(clientId => {
-          var client = this._clients[clientId];
+          const client = this._clients[clientId];
 
           if (!client) {
             logger.warn('Client with clientId: %s not found!', clientId);
@@ -169,7 +169,7 @@ class NuclideServer {
   }
 
   _registerServiceWithServiceFramework(serviceConfig: ServiceConfig): void {
-    var serviceApi = parseServiceApiSync(serviceConfig.definition, serviceConfig.name);
+    const serviceApi = parseServiceApiSync(serviceConfig.definition, serviceConfig.name);
 
     serviceApi.rpcMethodNames.forEach(methodName => {
       this._registerService(
@@ -178,7 +178,7 @@ class NuclideServer {
         // Take serviceOptions as first argument for serviceFramework service.
         // TODO(chenshen) seperate the logic of service initialization.
         (serviceOptions, ...args) => {
-          var localServiceInstance = this._getServiceFrameworkServiceAndRegisterEventHandle(
+          const localServiceInstance = this._getServiceFrameworkServiceAndRegisterEventHandle(
               serviceConfig, serviceOptions);
           return localServiceInstance[methodName].apply(localServiceInstance, args);
         },
@@ -189,15 +189,15 @@ class NuclideServer {
   }
 
   _registerServiceWithoutServiceFramework(serviceFilePath: string): void {
-    var {urlHandlers, services, initialize} = require(serviceFilePath);
-    for (var serviceName in services) {
-      var serviceConfig = services[serviceName];
+    const {urlHandlers, services, initialize} = require(serviceFilePath);
+    for (const serviceName in services) {
+      const serviceConfig = services[serviceName];
       this._registerService(serviceName, serviceConfig.handler, serviceConfig.method, serviceConfig.text);
     }
 
     if (urlHandlers) {
-      for (var url in urlHandlers) {
-        var handlerConfig = urlHandlers[url];
+      for (const url in urlHandlers) {
+        const handlerConfig = urlHandlers[url];
         this._attachUrlHandler(url, handlerConfig.handler, handlerConfig.method);
       }
     }
@@ -210,7 +210,7 @@ class NuclideServer {
   _setupServices() {
     // Lazy require these functions so that we could spyOn them while testing in
     // ServiceIntegrationTestHelper.
-    var {loadConfigsOfServiceWithServiceFramework,
+    const {loadConfigsOfServiceWithServiceFramework,
       loadConfigsOfServiceWithoutServiceFramework} = require('./config');
     this._serviceRegistry = {};
     this._version = getVersion().toString();
@@ -261,10 +261,10 @@ class NuclideServer {
     this._registerService('/serviceFramework/subscribeEvent', (serviceOptions: any, clientId: string, serviceName: string, methodName: string) => {
 
       // Create the service instance and register the event handle.
-      var [serviceConfig] = this._serviceWithServiceFrameworkConfigs.filter(config => config.name === serviceName);
+      const [serviceConfig] = this._serviceWithServiceFrameworkConfigs.filter(config => config.name === serviceName);
       this._getServiceFrameworkServiceAndRegisterEventHandle(serviceConfig, serviceOptions);
 
-      var eventName = getRemoteEventName(serviceName, methodName, serviceOptions);
+      const eventName = getRemoteEventName(serviceName, methodName, serviceOptions);
 
       this._eventSubscriptions.set(
         eventName,
@@ -275,7 +275,7 @@ class NuclideServer {
     }, 'post');
 
     this._registerService('/serviceFramework/unsubscribeEvent', (serviceOptions: any, clientId: string, serviceName: string, methodName: string) => {
-      var eventName = getRemoteEventName(serviceName, methodName, serviceOptions);
+      const eventName = getRemoteEventName(serviceName, methodName, serviceOptions);
       if (this._eventSubscriptions.has(eventName)) {
         this._eventSubscriptions.get(eventName).delete(clientId);
       }
@@ -300,7 +300,7 @@ class NuclideServer {
    * Calls a registered service with a name and arguments.
    */
   callService(serviceName: string, args: Array<any>): Promise<any> {
-    var serviceFunction = this._serviceRegistry[serviceName];
+    const serviceFunction = this._serviceRegistry[serviceName];
     if (!serviceFunction) {
       throw Error('No service registered with name: ' + serviceName);
     }
@@ -325,10 +325,10 @@ class NuclideServer {
   }
 
   _registerHttpService(serviceName: string, method: string, isTextResponse: ?boolean) {
-    var loweredCaseMethod = method.toLowerCase();
+    const loweredCaseMethod = method.toLowerCase();
     this._app[loweredCaseMethod](serviceName, async (request, response, next) => {
       try {
-        var result = await this.callService(serviceName, deserializeArgs(request.url));
+        const result = await this.callService(serviceName, deserializeArgs(request.url));
         if (isTextResponse) {
           sendTextResponse(response, result || '');
         } else {
@@ -356,8 +356,8 @@ class NuclideServer {
   _onConnection(socket: WebSocket): void {
     logger.debug('WebSocket connecting');
 
-    var subscriptions = {};
-    var client = null;
+
+    let client = null;
 
     socket.on('error', (e) =>
       logger.error('Client #%s error: %s', client ? client.id : 'unkown', e.message));
@@ -402,9 +402,9 @@ class NuclideServer {
       return;
     }
 
-    var {serviceName, methodName, methodArgs, serviceOptions, requestId} = message;
+    const {serviceName, methodName, methodArgs, serviceOptions, requestId} = message;
     var result = null;
-    var error = null;
+    let error = null;
 
     try {
       var result = await this.callService(
@@ -427,8 +427,8 @@ class NuclideServer {
   _sendSocketMessage(client: SocketClient, data: any) {
     // Wrap the data in an object, because if `data` is a primitive data type,
     // finding it in an array would return the first matching item, not necessarily the same inserted item.
-    var message = {data};
-    var {id, socket, messageQueue} = client;
+    const message = {data};
+    const {id, socket, messageQueue} = client;
     messageQueue.push(message);
     if (!socket) {
       return;
@@ -437,7 +437,7 @@ class NuclideServer {
       if (err) {
         logger.warn('Failed sending socket message to client:', id, data);
       } else {
-        var messageIndex = messageQueue.indexOf(message);
+        const messageIndex = messageQueue.indexOf(message);
         if (messageIndex !== -1) {
           messageQueue.splice(messageIndex, 1);
         }
@@ -452,7 +452,7 @@ class NuclideServer {
     this._webSocketServer.close();
     this._webServer.close();
     this._serviceWithoutServiceFrameworkConfigs.forEach(service_path => {
-      var {shutdown} = require(service_path);
+      const {shutdown} = require(service_path);
       if (shutdown) {
         shutdown(this);
       }

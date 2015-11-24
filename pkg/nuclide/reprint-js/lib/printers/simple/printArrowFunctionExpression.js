@@ -12,9 +12,9 @@
 import type {ArrowFunctionExpression} from 'ast-types-flow';
 import type {Lines, Print} from '../../types/common';
 
-var markers = require('../../constants/markers');
-var printCommaSeparatedNodes = require('../common/printCommaSeparatedNodes');
-var wrapExpression = require('../../wrappers/simple/wrapExpression');
+const markers = require('../../constants/markers');
+const printCommaSeparatedNodes = require('../common/printCommaSeparatedNodes');
+const wrapExpression = require('../../wrappers/simple/wrapExpression');
 
 function printArrowFunctionExpression(
   print: Print,

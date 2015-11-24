@@ -9,22 +9,22 @@
  * the root directory of this source tree.
  */
 
-var AtomComboBox = require('nuclide-ui-atom-combo-box');
-var {CompositeDisposable} = require('atom');
-var React = require('react-for-atom');
-var {Dispatcher} = require('flux');
-var {PropTypes} = React;
-var SimulatorDropdown = require('./SimulatorDropdown');
-var BuckToolbarActions = require('./BuckToolbarActions');
-var BuckToolbarStore = require('./BuckToolbarStore');
+const AtomComboBox = require('nuclide-ui-atom-combo-box');
+const {CompositeDisposable} = require('atom');
+const React = require('react-for-atom');
+const {Dispatcher} = require('flux');
+const {PropTypes} = React;
+const SimulatorDropdown = require('./SimulatorDropdown');
+const BuckToolbarActions = require('./BuckToolbarActions');
+const BuckToolbarStore = require('./BuckToolbarStore');
 import NuclideCheckbox from 'nuclide-ui-checkbox';
 
-var {debounce} = require('nuclide-commons');
-var {
+const {debounce} = require('nuclide-commons');
+const {
   atomEventDebounce,
   isTextEditor,
 } = require('nuclide-atom-helpers');
-var {onWorkspaceDidStopChangingActivePaneItem} = atomEventDebounce;
+const {onWorkspaceDidStopChangingActivePaneItem} = atomEventDebounce;
 
 class BuckToolbar extends React.Component {
 
@@ -52,7 +52,7 @@ class BuckToolbar extends React.Component {
     this._run = this._run.bind(this);
     this._debug = this._debug.bind(this);
 
-    var dispatcher = new Dispatcher();
+    const dispatcher = new Dispatcher();
     this._buckToolbarActions = new BuckToolbarActions(dispatcher);
     this._buckToolbarStore = new BuckToolbarStore(dispatcher);
 
@@ -77,7 +77,7 @@ class BuckToolbar extends React.Component {
     if (!isTextEditor(item)) {
       return;
     }
-    var textEditor: TextEditor = item;
+    const textEditor: TextEditor = item;
     this._buckToolbarActions.updateProjectFor(textEditor);
   }
 
@@ -86,9 +86,9 @@ class BuckToolbar extends React.Component {
   }
 
   render(): ReactElement {
-    var buckToolbarStore = this._buckToolbarStore;
-    var disabled = !buckToolbarStore.getBuildTarget() || buckToolbarStore.isBuilding();
-    var serverModeCheckbox;
+    const buckToolbarStore = this._buckToolbarStore;
+    const disabled = !buckToolbarStore.getBuildTarget() || buckToolbarStore.isBuilding();
+    let serverModeCheckbox;
     if (buckToolbarStore.isReactNativeApp()) {
       serverModeCheckbox =
         <div className="inline-block">
@@ -99,7 +99,7 @@ class BuckToolbar extends React.Component {
           />
         </div>;
     }
-    var progressBar;
+    let progressBar;
     if (buckToolbarStore.isBuilding()) {
       progressBar =
         <progress

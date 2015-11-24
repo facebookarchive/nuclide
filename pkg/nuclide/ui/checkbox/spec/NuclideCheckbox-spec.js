@@ -11,7 +11,7 @@
 
 import NuclideCheckbox from '../lib/NuclideCheckbox';
 import React from 'react-for-atom';
-let {TestUtils} = React.addons;
+const {TestUtils} = React.addons;
 
 let hostEl;
 

@@ -11,20 +11,20 @@
 
 import invariant from 'assert';
 
-var {extractWordAtPosition} = require('nuclide-atom-helpers');
-var {getServiceByNuclideUri} = require('nuclide-client');
-var {Range} = require('atom');
+const {extractWordAtPosition} = require('nuclide-atom-helpers');
+const {getServiceByNuclideUri} = require('nuclide-client');
+const {Range} = require('atom');
 
 import {JAVASCRIPT_WORD_REGEX} from './constants';
 
 export class FlowTypeHintProvider {
   async typeHint(editor: TextEditor, position: atom$Point): Promise<?TypeHint> {
-    var enabled = atom.config.get('nuclide-flow.enableTypeHints');
+    const enabled = atom.config.get('nuclide-flow.enableTypeHints');
     if (!enabled) {
       return null;
     }
-    var filePath = editor.getPath();
-    var contents = editor.getText();
+    const filePath = editor.getPath();
+    const contents = editor.getText();
     const flowService = await getServiceByNuclideUri('FlowService', filePath);
     invariant(flowService);
 
@@ -44,8 +44,8 @@ export class FlowTypeHintProvider {
     // TODO(nmote) refine this regex to better capture JavaScript expressions.
     // Having this regex be not quite right is just a display issue, though --
     // it only affects the location of the tooltip.
-    var word = extractWordAtPosition(editor, position, JAVASCRIPT_WORD_REGEX);
-    var range;
+    const word = extractWordAtPosition(editor, position, JAVASCRIPT_WORD_REGEX);
+    let range;
     if (word) {
       range = word.range;
     } else {
@@ -81,7 +81,7 @@ export function getTypeHintTree(typeHint: ?string): ?HintTree {
     const json = JSON.parse(typeHint);
     return jsonToTree(json);
   } catch (e) {
-    var logger = require('nuclide-logging').getLogger();
+    const logger = require('nuclide-logging').getLogger();
     logger.error(`Problem parsing type hint: ${e.message}`);
     // If there is any problem parsing just fall back on the original string
     return null;
@@ -103,7 +103,7 @@ function jsonToTree(json: Object): HintTree {
     case OBJECT:
       const propTypes = json['type']['propTypes'];
       const children = [];
-      for (let prop of propTypes) {
+      for (const prop of propTypes) {
         const propName = prop['name'];
         const childTree = jsonToTree(prop['type']);
         // Instead of making single child node just for the type name, we'll graft the type onto the

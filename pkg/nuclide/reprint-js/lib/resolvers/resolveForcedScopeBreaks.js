@@ -9,13 +9,13 @@
  * the root directory of this source tree.
  */
 
-var buildRuns = require('../utils/buildRuns');
-var buildScopes = require('../utils/buildScopes');
-var invariant = require('assert');
-var isScopeBreakMarker = require('../utils/isScopeBreakMarker');
-var isScopeMarker = require('../utils/isScopeMarker');
-var markers = require('../constants/markers');
-var translateScopeMarker = require('../utils/translateScopeMarker');
+const buildRuns = require('../utils/buildRuns');
+const buildScopes = require('../utils/buildScopes');
+const invariant = require('assert');
+const isScopeBreakMarker = require('../utils/isScopeBreakMarker');
+const isScopeMarker = require('../utils/isScopeMarker');
+const markers = require('../constants/markers');
+const translateScopeMarker = require('../utils/translateScopeMarker');
 
 /**
  * Sometimes a scope break may be adjacent to a hard break. If that's the case
@@ -28,8 +28,8 @@ function resolveForcedScopeBreaks(lines: Array<any>): Array<any> {
   const runs = buildRuns(lines);
   const toBreak = new Set();
 
-  for (let run of runs) {
-    let [start, end] = run;
+  for (const run of runs) {
+    const [start, end] = run;
     let broken = false;
     for (let i = start; i < end; i++) {
       if (

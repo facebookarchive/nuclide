@@ -10,7 +10,7 @@
  */
 
 import {Observable, ReplaySubject} from 'rx';
-var {RemoteDirectory} = require('nuclide-remote-connection');
+const {RemoteDirectory} = require('nuclide-remote-connection');
 
 type SearchResult = {
   filePath: string;
@@ -48,20 +48,20 @@ class RemoteDirectorySearcher {
 
   search(directories: Array<RemoteDirectory>, regex: RegExp, options: Object): RemoteDirectorySearch {
     // Track the files that we have seen updates for.
-    var seenFiles = new Set();
+    const seenFiles = new Set();
 
     // Get the remote service that corresponds to each remote directory.
-    var services = directories.map(dir => this._serviceProvider(dir));
+    const services = directories.map(dir => this._serviceProvider(dir));
 
     // Start the search in each directory, and merge the resulting streams.
-    var searchStream = Observable.merge(directories.map((dir, index) =>
+    const searchStream = Observable.merge(directories.map((dir, index) =>
       services[index].findInProjectSearch(dir.getPath(), regex, options.inclusions)));
 
     // Create a subject that we can use to track search completion.
-    var searchCompletion = new ReplaySubject();
+    const searchCompletion = new ReplaySubject();
     searchCompletion.onNext();
 
-    var subscription = searchStream.subscribe(next => {
+    const subscription = searchStream.subscribe(next => {
       options.didMatch(next);
 
       // Call didSearchPaths with the number of unique files we have seen matches in. This is
@@ -76,7 +76,7 @@ class RemoteDirectorySearcher {
     });
 
     // Return a promise that resolves on search completion.
-    var completionPromise = searchCompletion.toPromise();
+    const completionPromise = searchCompletion.toPromise();
     return {
       then: completionPromise.then.bind(completionPromise),
       cancel() {

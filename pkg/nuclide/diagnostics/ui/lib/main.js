@@ -15,15 +15,15 @@ import type DiagnosticsPanel from './DiagnosticsPanel';
 import type StatusBarTile from './StatusBarTile';
 import type {HomeFragments} from 'nuclide-home-interfaces';
 
-var DEFAULT_HIDE_DIAGNOSTICS_PANEL = true;
-var DEFAULT_TABLE_HEIGHT = 200;
-var DEFAULT_FILTER_BY_ACTIVE_EDITOR = false;
-var LINTER_PACKAGE = 'linter';
+const DEFAULT_HIDE_DIAGNOSTICS_PANEL = true;
+const DEFAULT_TABLE_HEIGHT = 200;
+const DEFAULT_FILTER_BY_ACTIVE_EDITOR = false;
+const LINTER_PACKAGE = 'linter';
 
-var subscriptions: ?CompositeDisposable = null;
-var bottomPanel: ?atom$Panel = null;
-var getDiagnosticsPanel: ?(() => ?DiagnosticsPanel);
-var statusBarTile: ?StatusBarTile;
+let subscriptions: ?CompositeDisposable = null;
+let bottomPanel: ?atom$Panel = null;
+let getDiagnosticsPanel: ?(() => ?DiagnosticsPanel);
+let statusBarTile: ?StatusBarTile;
 
 type ActivationState = {
   hideDiagnosticsPanel: boolean;
@@ -31,13 +31,13 @@ type ActivationState = {
   filterByActiveTextEditor: boolean;
 };
 
-var activationState: ?ActivationState = null;
+let activationState: ?ActivationState = null;
 
-var diagnosticUpdaterForTable: ?DiagnosticUpdater = null;
+let diagnosticUpdaterForTable: ?DiagnosticUpdater = null;
 
 function createPanel(diagnosticUpdater: DiagnosticUpdater, disposables: CompositeDisposable) {
   invariant(activationState);
-  var {
+  const {
     atomPanel: panel,
     getDiagnosticsPanel: getDiagnosticsPanelFn,
     setWarnAboutLinter,
@@ -52,7 +52,7 @@ function createPanel(diagnosticUpdater: DiagnosticUpdater, disposables: Composit
 
   activationState.hideDiagnosticsPanel = false;
 
-  var onDidChangeVisibleSubscription = panel.onDidChangeVisible((visible: boolean) => {
+  const onDidChangeVisibleSubscription = panel.onDidChangeVisible((visible: boolean) => {
     invariant(activationState);
     activationState.hideDiagnosticsPanel = !visible;
   });
@@ -96,14 +96,14 @@ function tryRecordActivationState(): void {
     activationState.diagnosticsPanelHeight = bottomPanel.getItem().clientHeight;
 
     invariant(getDiagnosticsPanel);
-    var diagnosticsPanel = getDiagnosticsPanel();
+    const diagnosticsPanel = getDiagnosticsPanel();
     if (diagnosticsPanel) {
       activationState.filterByActiveTextEditor = diagnosticsPanel.props.filterByActiveTextEditor;
     }
   }
 }
 
-var toolBar: ?any = null;
+let toolBar: ?any = null;
 
 module.exports = {
   activate(state: ?Object): void {
@@ -131,17 +131,17 @@ module.exports = {
   consumeDiagnosticUpdates(diagnosticUpdater: DiagnosticUpdater): void {
     getStatusBarTile().consumeDiagnosticUpdates(diagnosticUpdater);
 
-    var {applyUpdateToEditor} = require('./gutter');
+    const {applyUpdateToEditor} = require('./gutter');
 
     invariant(subscriptions);
     subscriptions.add(atom.workspace.observeTextEditors((editor: TextEditor) => {
-      var filePath = editor.getPath();
+      const filePath = editor.getPath();
       if (!filePath) {
         return; // The file is likely untitled.
       }
 
-      var callback = applyUpdateToEditor.bind(/* receiver */ null, editor);
-      var disposable = diagnosticUpdater.onFileMessagesDidUpdate(callback, filePath);
+      const callback = applyUpdateToEditor.bind(/* receiver */ null, editor);
+      const disposable = diagnosticUpdater.onFileMessagesDidUpdate(callback, filePath);
 
       // Be sure to remove the subscription on the DiagnosticStore once the editor is closed.
       editor.onDidDestroy(() => disposable.dispose());
@@ -154,13 +154,13 @@ module.exports = {
     }
     diagnosticUpdaterForTable = diagnosticUpdater;
 
-    var lazilyCreateTable = createPanel.bind(null, diagnosticUpdater, subscriptions);
+    const lazilyCreateTable = createPanel.bind(null, diagnosticUpdater, subscriptions);
 
-    var showTableSubscription = atom.commands.add(
+    const showTableSubscription = atom.commands.add(
       atom.views.getView(atom.workspace),
       'nuclide-diagnostics-ui:toggle-table',
       () => {
-        var bottomPanelRef = bottomPanel;
+        const bottomPanelRef = bottomPanel;
         if (!bottomPanelRef) {
           lazilyCreateTable();
         } else if (bottomPanelRef.isVisible()) {
@@ -238,6 +238,6 @@ module.exports = {
 };
 
 function logPanelIsDisplayed() {
-  var {track} = require('nuclide-analytics');
+  const {track} = require('nuclide-analytics');
   track('diagnostics-show-table');
 }

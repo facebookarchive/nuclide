@@ -9,10 +9,10 @@
  * the root directory of this source tree.
  */
 
-var {Range} = require('atom');
+const {Range} = require('atom');
 
 // Matches something like: textA: or textA:textB:
-var OBJC_SELECTOR_NAME_REGEX = /([^\s:]+:)+/g;
+const OBJC_SELECTOR_NAME_REGEX = /([^\s:]+:)+/g;
 
 /**
  * libclang doesn't seem to be able to return multiple ranges to define the location
@@ -42,7 +42,7 @@ function findWholeRangeOfSymbol(
     return [textRange];
   } else if ((text + ':') === spelling) {
     // Quick check for a common case, an Obj-C selector with one argument.
-    var newRange = new Range(textRange.start, [textRange.end.row, textRange.end.column + 1]);
+    const newRange = new Range(textRange.start, [textRange.end.row, textRange.end.column + 1]);
     return [newRange];
   } else if (spelling.match(OBJC_SELECTOR_NAME_REGEX)) {
     // Obj-C selector with multiple arguments, e.g. doFoo:withBar:
@@ -51,31 +51,31 @@ function findWholeRangeOfSymbol(
     // nested in arguments to the selector, such as in the case of
     // `[aThing doFoo:[anotherThing withBar:aBar] withBar:aBar]`.
     // TODO (t8131986) Improve this implementation.
-    var ranges = [];
+    const ranges = [];
 
-    var extentStart = [extent.start.line, extent.start.column];
-    var extentEnd = [extent.end.line, extent.end.column];
+    const extentStart = [extent.start.line, extent.start.column];
+    const extentEnd = [extent.end.line, extent.end.column];
 
-    var selectorSegments = spelling.split(':');
-    var iterator = ({match, matchText, range, stop, replace}) => {
+    const selectorSegments = spelling.split(':');
+    const iterator = ({match, matchText, range, stop, replace}) => {
       if (!matchText) {
         return;
       }
       ranges.push(range);
       stop();
     };
-    for (var selectorSegment of selectorSegments) {
+    for (const selectorSegment of selectorSegments) {
       if (selectorSegment.length === 0) {
         // The last segment broken may be an empty string.
         continue;
       }
       // 'split' removes the colon, but we want to underline the colon too.
-      var segmentWithColon = selectorSegment + ':';
-      var regex = new RegExp(segmentWithColon);
+      const segmentWithColon = selectorSegment + ':';
+      const regex = new RegExp(segmentWithColon);
 
-      var rangeOfPreviousSegment = ranges[(ranges.length - 1)];
-      var rangeStart = rangeOfPreviousSegment ? rangeOfPreviousSegment.end : extentStart;
-      var rangeToScan = new Range(rangeStart, extentEnd);
+      const rangeOfPreviousSegment = ranges[(ranges.length - 1)];
+      const rangeStart = rangeOfPreviousSegment ? rangeOfPreviousSegment.end : extentStart;
+      const rangeToScan = new Range(rangeStart, extentEnd);
 
       textEditor.scanInBufferRange(regex, rangeToScan, iterator);
     }

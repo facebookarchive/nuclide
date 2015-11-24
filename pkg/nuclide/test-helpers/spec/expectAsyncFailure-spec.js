@@ -9,11 +9,11 @@
  * the root directory of this source tree.
  */
 
-var {expectAsyncFailure} = require('../lib/main');
+const {expectAsyncFailure} = require('../lib/main');
 
 describe('expectAsyncFailure', () => {
   it('fails when provided Promise succeeds', () => {
-    var verify: any = jasmine.createSpy();
+    const verify: any = jasmine.createSpy();
     waitsForPromise({shouldReject: true}, () => {
       return expectAsyncFailure(
           Promise.resolve('resolved, not rejected!'),
@@ -25,10 +25,10 @@ describe('expectAsyncFailure', () => {
   });
 
   it('fails when provided Promise fails but with wrong error message', () => {
-    var callCount = 0;
+    let callCount = 0;
     function verify(error) {
       ++callCount;
-      var expectedMessage = 'I failed badly.';
+      const expectedMessage = 'I failed badly.';
       if (error.message !== expectedMessage) {
         throw Error(`Expected '${expectedMessage}', but was ${error.message}.`);
       }
@@ -45,10 +45,10 @@ describe('expectAsyncFailure', () => {
   });
 
   it('succeeds when provided Promise fails in the expected way', () => {
-    var callCount = 0;
+    let callCount = 0;
     function verify(error) {
       ++callCount;
-      var expectedMessage = 'I failed badly.';
+      const expectedMessage = 'I failed badly.';
       if (error.message !== expectedMessage) {
         throw Error(`Expected '${expectedMessage}', but was ${error.message}.`);
       }

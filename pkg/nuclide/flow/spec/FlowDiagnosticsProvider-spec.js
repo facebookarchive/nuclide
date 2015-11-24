@@ -9,23 +9,23 @@
  * the root directory of this source tree.
  */
 
-var {Range} = require('atom');
+const {Range} = require('atom');
 
-var testPath = 'myPath';
+const testPath = 'myPath';
 
 describe('FlowDiagnosticsProvider', () => {
 
-  var flowDiagnosticsProvider: any;
+  let flowDiagnosticsProvider: any;
 
   beforeEach(() => {
     class FakeProviderBase { }
-    var FlowDiagnosticsProvider = require('../lib/FlowDiagnosticsProvider');
+    const FlowDiagnosticsProvider = require('../lib/FlowDiagnosticsProvider');
     flowDiagnosticsProvider = new FlowDiagnosticsProvider(false, (FakeProviderBase: any));
   });
 
   describe('processDiagnostics', () => {
     it('should propertly transform a simple diagnostic', () => {
-      var diags = [[
+      const diags = [[
         {
           level: 'error',
           path: testPath,
@@ -38,7 +38,7 @@ describe('FlowDiagnosticsProvider', () => {
         },
       ]];
 
-      var expectedOutput = {
+      const expectedOutput = {
         scope: 'file',
         providerName: 'Flow',
         text: 'message',
@@ -47,20 +47,20 @@ describe('FlowDiagnosticsProvider', () => {
         range: new Range([0, 2], [1, 4]),
       };
 
-      var message = flowDiagnosticsProvider
+      const message = flowDiagnosticsProvider
         ._processDiagnostics(diags, testPath)
         .filePathToMessages.get(testPath)[0];
       expect(message).toEqual(expectedOutput);
     });
 
     it('should invalidate errors from the current file if Flow returns none', () => {
-      var diags = [];
-      var update = flowDiagnosticsProvider._processDiagnostics(diags, testPath);
+      const diags = [];
+      const update = flowDiagnosticsProvider._processDiagnostics(diags, testPath);
       expect(update.filePathToMessages.has(testPath)).toBe(true);
     });
 
     it('should keep warnings as warnings', () => {
-      var diags = [[
+      const diags = [[
         {
           level: 'warning',
           path: testPath,
@@ -73,7 +73,7 @@ describe('FlowDiagnosticsProvider', () => {
         },
       ]];
 
-      var expectedOutput = {
+      const expectedOutput = {
         scope: 'file',
         providerName: 'Flow',
         text: 'message',
@@ -82,14 +82,14 @@ describe('FlowDiagnosticsProvider', () => {
         range: new Range([0, 2], [1, 4]),
       };
 
-      var message = flowDiagnosticsProvider
+      const message = flowDiagnosticsProvider
         ._processDiagnostics(diags, testPath)
         .filePathToMessages.get(testPath)[0];
       expect(message).toEqual(expectedOutput);
     });
 
     it('should not filter diagnostics not in the target file', () => {
-      var diags = [[
+      const diags = [[
         {
           path: 'notMyPath',
           descr: 'message',
@@ -101,14 +101,14 @@ describe('FlowDiagnosticsProvider', () => {
         },
       ]];
 
-      var allMessages = flowDiagnosticsProvider
+      const allMessages = flowDiagnosticsProvider
         ._processDiagnostics(diags, testPath)
         .filePathToMessages;
       expect(allMessages.has('notMyPath')).toBe(true);
     });
 
     it('should create traces for diagnostics spanning multiple messages', () => {
-      var diags = [[
+      const diags = [[
         {
           level: 'error',
           path: testPath,
@@ -131,7 +131,7 @@ describe('FlowDiagnosticsProvider', () => {
         },
       ]];
 
-      var expectedOutput = {
+      const expectedOutput = {
         scope: 'file',
         providerName: 'Flow',
         type: 'Error',
@@ -146,7 +146,7 @@ describe('FlowDiagnosticsProvider', () => {
         }],
       };
 
-      var message = flowDiagnosticsProvider
+      const message = flowDiagnosticsProvider
         ._processDiagnostics(diags, testPath)
         .filePathToMessages.get(testPath)[0];
       expect(message).toEqual(expectedOutput);
@@ -156,14 +156,14 @@ describe('FlowDiagnosticsProvider', () => {
   describe('invalidateProjectPath', () => {
     it('should remove corresponding errors to certain flow root', () => {
       // Mock a diagnostic provider with 2 flow roots, sharing common file real paths.
-      var flowRootToFilePaths = new Map();
-      var root1Paths = ['/flow/root1/file.js', '/flow/common/file.js'];
-      var root2Paths = ['/flow/root2/file.js', '/flow/common/file.js'];
+      const flowRootToFilePaths = new Map();
+      const root1Paths = ['/flow/root1/file.js', '/flow/common/file.js'];
+      const root2Paths = ['/flow/root2/file.js', '/flow/common/file.js'];
       flowRootToFilePaths.set('/flow/root1', new Set(root1Paths));
       flowRootToFilePaths.set('/flow/root2', new Set(root2Paths));
       flowDiagnosticsProvider._flowRootToFilePaths = flowRootToFilePaths;
       // Mock the `publishMessageInvalidation` call to capture call arguments.
-      var publishHandler = jasmine.createSpy('publish');
+      const publishHandler = jasmine.createSpy('publish');
       flowDiagnosticsProvider._providerBase.publishMessageInvalidation = publishHandler;
 
       flowDiagnosticsProvider.invalidateProjectPath('/flow/root1');

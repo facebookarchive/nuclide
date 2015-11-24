@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-var getPosition = require('./getPosition');
-var getRawPosition = require('./getRawPosition');
+const getPosition = require('./getPosition');
+const getRawPosition = require('./getRawPosition');
 
 // Accuracy determines how many tokens we look for to guess the position.
 const ACCURACIES = [15, 4, 1];

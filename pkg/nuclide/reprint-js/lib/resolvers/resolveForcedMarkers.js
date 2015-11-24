@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-var markers = require('../constants/markers');
+const markers = require('../constants/markers');
 
 /**
  * This actualizes the forced markers we already have. It's not guaranteed to

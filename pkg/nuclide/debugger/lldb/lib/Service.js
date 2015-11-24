@@ -101,15 +101,15 @@ class ProcessInfo extends DebuggerProcessInfo {
   }
 
   attach(): DebuggerProcess {
-    var packagePath = atom.packages.resolvePackagePath('nuclide-debugger-lldb');
+    const packagePath = atom.packages.resolvePackagePath('nuclide-debugger-lldb');
     invariant(packagePath);
 
-    var lldbPath = path.join(packagePath, 'scripts/main.py');
-    var args = [lldbPath, '-p', String(this._pid)];
+    const lldbPath = path.join(packagePath, 'scripts/main.py');
+    const args = [lldbPath, '-p', String(this._pid)];
     if (this._basepath) {
       args.push('--basepath', this._basepath);
     }
-    var proc = child_process.spawn('python', args);
+    const proc = child_process.spawn('python', args);
     return new DebuggerProcess(proc);
   }
 
@@ -126,14 +126,14 @@ class ProcessInfo extends DebuggerProcessInfo {
 }
 
 async function getProcessInfoList(): Promise<Array<nuclide_debugger$DebuggerProcessInfo>> {
-  var {asyncExecute} = require('nuclide-commons');
-  var result = await asyncExecute('ps', ['-e', '-o', 'pid,comm'], {});
+  const {asyncExecute} = require('nuclide-commons');
+  const result = await asyncExecute('ps', ['-e', '-o', 'pid,comm'], {});
   return result.stdout.toString().split('\n').slice(1).map(line => {
-    var words = line.trim().split(' ');
-    var pid = Number(words[0]);
-    var command = words.slice(1).join(' ');
-    var components = command.split('/');
-    var name = components[components.length - 1];
+    const words = line.trim().split(' ');
+    const pid = Number(words[0]);
+    const command = words.slice(1).join(' ');
+    const components = command.split('/');
+    const name = components[components.length - 1];
     return new ProcessInfo(pid, command, name);
   })
   .filter(item => !item.displayString().startsWith('(') || !item.displayString().endsWith(')'));

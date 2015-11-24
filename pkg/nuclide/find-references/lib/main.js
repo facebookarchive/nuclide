@@ -144,7 +144,7 @@ module.exports = {
       if (!path || supportedProviders.get(editor)) {
         return;
       }
-      var supported = await Promise.all(providers.map(
+      let supported = await Promise.all(providers.map(
         async (provider) => {
           if (await provider.isEditorSupported(editor)) {
             return provider;

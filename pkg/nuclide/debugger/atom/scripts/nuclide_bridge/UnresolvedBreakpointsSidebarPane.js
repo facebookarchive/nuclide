@@ -9,15 +9,15 @@
  * the root directory of this source tree.
  */
 
-var NuclideBridge = require('./NuclideBridge');
-var React = require('react');
-var path = require('path');
-var url = require('url');
+const NuclideBridge = require('./NuclideBridge');
+const React = require('react');
+const path = require('path');
+const url = require('url');
 import invariant from 'assert';
 
-var WebInspector: typeof WebInspector = window.WebInspector;
+const WebInspector: typeof WebInspector = window.WebInspector;
 
-var UnresolvedBreakpointsComponent = React.createClass({
+const UnresolvedBreakpointsComponent = React.createClass({
   _changeHandler: {dispose: () => {}},
 
   componentWillMount() {
@@ -29,11 +29,11 @@ var UnresolvedBreakpointsComponent = React.createClass({
   },
 
   render() {
-    var children = this.state.breakpoints.map(breakpoint => {
-      var {pathname} = url.parse(breakpoint.url);
+    const children = this.state.breakpoints.map(breakpoint => {
+      const {pathname} = url.parse(breakpoint.url);
       invariant(pathname);
-      var longRep = `${pathname}:${breakpoint.line + 1}`;
-      var shortRep = `${path.basename(pathname)}:${breakpoint.line + 1}`;
+      const longRep = `${pathname}:${breakpoint.line + 1}`;
+      const shortRep = `${path.basename(pathname)}:${breakpoint.line + 1}`;
       return (
         <li
           key={longRep}

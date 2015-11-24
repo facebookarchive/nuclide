@@ -31,7 +31,7 @@ export default {
   },
 
   consumeRecentFilesService(service: mixed) {
-    let instance = getProviderInstance();
+    const instance = getProviderInstance();
     invariant(instance.setRecentFilesService != null);
     instance.setRecentFilesService(service);
   },

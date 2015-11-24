@@ -9,14 +9,14 @@
  * the root directory of this source tree.
  */
 
-var {
+const {
   addAllParentDirectoriesToCache,
   removeAllParentDirectoriesFromCache,
 } = require('../lib/utils');
 
 describe('nuclide-hg-repository-client/utils', () => {
-  var cache: ?Map;
-  var TEST_PATH = '/A/B/C/D.js';
+  let cache: ?Map;
+  const TEST_PATH = '/A/B/C/D.js';
 
   beforeEach(() => {
     // Set up the cache as if these two other files were already inserted:

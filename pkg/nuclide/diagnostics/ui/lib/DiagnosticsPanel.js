@@ -8,29 +8,29 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-var DiagnosticsPane = require('./DiagnosticsPane');
-var {PanelComponent} = require('nuclide-ui-panel');
-var React = require('react-for-atom');
+const DiagnosticsPane = require('./DiagnosticsPane');
+const {PanelComponent} = require('nuclide-ui-panel');
+const React = require('react-for-atom');
 
 import {track} from 'nuclide-analytics';
 
 // This must match the value in diagnostics-table.less.
-var PANEL_HEADER_HEIGHT_IN_PX = 28;
+const PANEL_HEADER_HEIGHT_IN_PX = 28;
 
 // This must match the value in panel-component.less.
-var RESIZE_HANDLER_HEIGHT_IN_PX = 4;
+const RESIZE_HANDLER_HEIGHT_IN_PX = 4;
 
-var keyboardShortcut: ?string = null;
+let keyboardShortcut: ?string = null;
 function getKeyboardShortcut(): string {
   if (keyboardShortcut != null) {
     return keyboardShortcut;
   }
 
-  var matchingKeyBindings = atom.keymaps.findKeyBindings({
+  const matchingKeyBindings = atom.keymaps.findKeyBindings({
     command: 'nuclide-diagnostics-ui:toggle-table',
   });
   if (matchingKeyBindings.length && matchingKeyBindings[0].keystrokes) {
-    var {humanizeKeystroke} = require('nuclide-keystroke-label');
+    const {humanizeKeystroke} = require('nuclide-keystroke-label');
     keyboardShortcut = humanizeKeystroke(matchingKeyBindings[0].keystrokes);
   } else {
     keyboardShortcut = '';
@@ -53,11 +53,11 @@ class DiagnosticsPanel extends React.Component {
   }
 
   render(): ReactElement {
-    var warningCount = 0;
-    var errorCount = 0;
-    var {diagnostics} = this.props;
+    let warningCount = 0;
+    let errorCount = 0;
+    let {diagnostics} = this.props;
     if (this.props.filterByActiveTextEditor && this.props.pathToActiveTextEditor) {
-      var pathToFilterBy = this.props.pathToActiveTextEditor;
+      const pathToFilterBy = this.props.pathToActiveTextEditor;
       diagnostics = diagnostics.filter(diagnostic => diagnostic.filePath === pathToFilterBy);
     }
     diagnostics.forEach(diagnostic => {
@@ -68,11 +68,11 @@ class DiagnosticsPanel extends React.Component {
       }
     });
 
-    var panelHeight = this.props.height;
-    var paneHeight = panelHeight - PANEL_HEADER_HEIGHT_IN_PX - RESIZE_HANDLER_HEIGHT_IN_PX;
+    const panelHeight = this.props.height;
+    const paneHeight = panelHeight - PANEL_HEADER_HEIGHT_IN_PX - RESIZE_HANDLER_HEIGHT_IN_PX;
 
-    var shortcut = getKeyboardShortcut();
-    var shortcutSpan = null;
+    const shortcut = getKeyboardShortcut();
+    let shortcutSpan = null;
     if (shortcut) {
       shortcutSpan = (
         <span className="text-subtle inline-block">
@@ -83,7 +83,7 @@ class DiagnosticsPanel extends React.Component {
       );
     }
 
-    var linterWarning = null;
+    let linterWarning = null;
     if (this.props.warnAboutLinter) {
       linterWarning = (
         <div className="nuclide-diagnostics-pane-linter-warning">
@@ -97,8 +97,8 @@ class DiagnosticsPanel extends React.Component {
       );
     }
 
-    var errorSpanClassName = `inline-block ${errorCount > 0 ? 'text-error' : ''}`;
-    var warningSpanClassName = `inline-block ${warningCount > 0 ? 'text-warning' : ''}`;
+    const errorSpanClassName = `inline-block ${errorCount > 0 ? 'text-error' : ''}`;
+    const warningSpanClassName = `inline-block ${warningCount > 0 ? 'text-warning' : ''}`;
 
     // We hide the horizontal overflow in the PanelComponent because the presence of the scrollbar
     // throws off our height calculations.
@@ -158,7 +158,7 @@ class DiagnosticsPanel extends React.Component {
   }
 }
 
-var {PropTypes} = React;
+const {PropTypes} = React;
 
 DiagnosticsPanel.propTypes = {
   diagnostics: PropTypes.array.isRequired,

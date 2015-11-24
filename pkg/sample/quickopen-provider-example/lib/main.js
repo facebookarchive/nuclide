@@ -13,10 +13,10 @@ import type {
   Provider,
 } from 'nuclide-quick-open-interfaces';
 
-var providerInstance: ?Provider;
+let providerInstance: ?Provider;
 function getProviderInstance(): Provider {
   if (providerInstance == null) {
-    var ExampleProvider = require('./ExampleProvider');
+    const ExampleProvider = require('./ExampleProvider');
     providerInstance = {...ExampleProvider};
   }
   return providerInstance;

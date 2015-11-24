@@ -24,7 +24,7 @@ import path from 'path';
 import split from 'split';
 
 // This pattern is used for parsing the output of grep.
-var GREP_PARSE_PATTERN = /(.*):(\d*):(.*)/;
+const GREP_PARSE_PATTERN = /(.*):(\d*):(.*)/;
 
 /**
  * Searches for all instances of a pattern in a directory.
@@ -37,7 +37,7 @@ var GREP_PARSE_PATTERN = /(.*):(\d*):(.*)/;
 export default function search(directory: string, regex: RegExp, subdirs: Array<string>):
     Observable<search$FileResult> {
   // Matches are stored in a Map of filename => Array<Match>.
-  var matchesByFile: Map<string, Array<search$Match>> = new Map();
+  const matchesByFile: Map<string, Array<search$Match>> = new Map();
 
   if (!subdirs || subdirs.length === 0) {
     // Since no subdirs were specified, run search on the root directory.
@@ -46,7 +46,7 @@ export default function search(directory: string, regex: RegExp, subdirs: Array<
     // Run the search on each subdirectory that exists.
     return Observable.from(subdirs).concatMap(async subdir => {
       try {
-        var stat = await fsPromise.lstat(path.join(directory, subdir));
+        const stat = await fsPromise.lstat(path.join(directory, subdir));
         if (stat.isDirectory()) {
           return searchInSubdir(matchesByFile, directory, subdir, regex);
         }
@@ -67,10 +67,10 @@ function searchInSubdir(
   regex: RegExp
 ): Observable<search$FileResult> {
   // Try running search commands, falling through to the next if there is an error.
-  var vcsargs = (regex.ignoreCase ? ['-i'] : []).concat(['-n', regex.source]);
-  var grepargs = (regex.ignoreCase ? ['-i'] : []).concat(['-rHn', '-e', regex.source, '.']);
-  var cmdDir = path.join(directory, subdir);
-  var linesSource = Observable.catch(
+  const vcsargs = (regex.ignoreCase ? ['-i'] : []).concat(['-n', regex.source]);
+  const grepargs = (regex.ignoreCase ? ['-i'] : []).concat(['-rHn', '-e', regex.source, '.']);
+  const cmdDir = path.join(directory, subdir);
+  const linesSource = Observable.catch(
     getLinesFromCommand('hg', ['wgrep'].concat(vcsargs), cmdDir),
     getLinesFromCommand('git', ['grep'].concat(vcsargs), cmdDir),
     getLinesFromCommand('grep', grepargs, cmdDir),
@@ -80,23 +80,23 @@ function searchInSubdir(
   // Transform lines into file matches.
   return linesSource.map(line => {
     // Try to parse the output of grep.
-    var grepMatchResult = line.match(GREP_PARSE_PATTERN);
+    const grepMatchResult = line.match(GREP_PARSE_PATTERN);
     if (!grepMatchResult) {
       return;
     }
 
     // Extract the filename, line number, and line text from grep output.
-    var lineText = grepMatchResult[3];
-    var lineNo = parseInt(grepMatchResult[2], 10) - 1;
-    var filePath = path.join(subdir, grepMatchResult[1]);
+    const lineText = grepMatchResult[3];
+    const lineNo = parseInt(grepMatchResult[2], 10) - 1;
+    const filePath = path.join(subdir, grepMatchResult[1]);
 
     // Try to extract the actual "matched" text.
-    var matchTextResult = regex.exec(lineText);
+    const matchTextResult = regex.exec(lineText);
     if (!matchTextResult) {
       return;
     }
-    var matchText = matchTextResult[0];
-    var matchIndex = matchTextResult.index;
+    const matchText = matchTextResult[0];
+    const matchIndex = matchTextResult.index;
 
     // Put this match into lists grouped by files.
     if (!matchesByFile.has(filePath)) {
@@ -120,8 +120,8 @@ function searchInSubdir(
 function getLinesFromCommand(command: string, args: Array<string>, localDirectoryPath: string):
     Observable<string> {
   return Observable.create(observer => {
-    var proc: ?child_process$ChildProcess = null;
-    var exited = false;
+    let proc: ?child_process$ChildProcess = null;
+    let exited = false;
 
     // Spawn the search command in the given directory.
     safeSpawn(command, args, {cwd: localDirectoryPath}).then(child => {
@@ -134,7 +134,7 @@ function getLinesFromCommand(command: string, args: Array<string>, localDirector
       proc.stdout.pipe(split()).on('data', observer.onNext.bind(observer));
 
       // Keep a running string of stderr, in case we need to throw an error.
-      var stderr = '';
+      let stderr = '';
       proc.stderr.on('data', data => {
         stderr += data;
       });

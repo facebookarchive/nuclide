@@ -12,7 +12,7 @@
 import type {Lines, Print} from '../../types/common';
 import type {StringLiteralTypeAnnotation} from 'ast-types-flow';
 
-var escapeStringLiteral = require('../../utils/escapeStringLiteral');
+const escapeStringLiteral = require('../../utils/escapeStringLiteral');
 
 function printStringLiteralTypeAnnotation(
   print: Print,

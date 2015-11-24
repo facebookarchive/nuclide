@@ -95,7 +95,7 @@ function importantCharactersForString(str: string): Set<string> {
   return importantCharacters;
 }
 
-export let __test__ = {
+export const __test__ = {
   checkIfMatchesCamelCaseLetters,
   isLetterImportant,
   importantCharactersForString,

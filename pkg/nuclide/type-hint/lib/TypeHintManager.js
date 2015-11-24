@@ -9,13 +9,13 @@
  * the root directory of this source tree.
  */
 
-var {CompositeDisposable, Disposable} = require('atom');
+const {CompositeDisposable, Disposable} = require('atom');
 
-var {remove} = require('nuclide-commons').array;
+const {remove} = require('nuclide-commons').array;
 
 import {track, trackOperationTiming} from 'nuclide-analytics';
 
-var TYPEHINT_DELAY_MS = 200;
+const TYPEHINT_DELAY_MS = 200;
 
 type HintTree = {
   value: string;
@@ -68,8 +68,8 @@ class TypeHintManager {
       () => {
         this._typeHintToggle = !this._typeHintToggle;
         if (this._typeHintToggle) {
-          var editor = atom.workspace.getActiveTextEditor();
-          var position = editor.getCursorScreenPosition();
+          const editor = atom.workspace.getActiveTextEditor();
+          const position = editor.getCursorScreenPosition();
           this._typeHintInEditor(editor, position);
         } else {
           this._typeHintElement.style.display = 'none';
@@ -85,12 +85,12 @@ class TypeHintManager {
         this._typeHintToggle = false;
       }));
 
-      var editorView = atom.views.getView(editor);
-      var mouseMoveListener = (e) => this._delayedTypeHint(e, editor, editorView);
+      const editorView = atom.views.getView(editor);
+      const mouseMoveListener = (e) => this._delayedTypeHint(e, editor, editorView);
       editorView.addEventListener('mousemove', mouseMoveListener);
-      var mouseListenerSubscription = new Disposable(() =>
+      const mouseListenerSubscription = new Disposable(() =>
           editorView.removeEventListener('mousemove', mouseMoveListener));
-      var destroySubscription = editor.onDidDestroy(() => {
+      const destroySubscription = editor.onDidDestroy(() => {
         this._clearTypeHintTimer();
         mouseListenerSubscription.dispose();
         this._subscriptions.remove(mouseListenerSubscription);
@@ -124,15 +124,15 @@ class TypeHintManager {
         return;
       }
       // Delay a bit + Cancel and schedule another update if the mouse keeps moving.
-      var screenPosition = editorView.component.screenPositionForMouseEvent(e);
-      var position = editor.bufferPositionForScreenPosition(screenPosition);
+      const screenPosition = editorView.component.screenPositionForMouseEvent(e);
+      const position = editor.bufferPositionForScreenPosition(screenPosition);
       this._typeHintInEditor(editor, position);
     }, TYPEHINT_DELAY_MS);
   }
 
   async _typeHintInEditor(editor: TextEditor, position: atom$Point): Promise {
-    var {scopeName} = editor.getGrammar();
-    var matchingProviders = this._getMatchingProvidersForScopeName(scopeName);
+    const {scopeName} = editor.getGrammar();
+    const matchingProviders = this._getMatchingProvidersForScopeName(scopeName);
 
     if (this._marker) {
       this._marker.destroy();
@@ -162,7 +162,7 @@ class TypeHintManager {
       return;
     }
 
-    var {hint, range} = typeHint;
+    const {hint, range} = typeHint;
 
     // We track the timing above, but we still want to know the number of popups that are shown.
     track('type-hint-popup', {
@@ -171,13 +171,13 @@ class TypeHintManager {
     });
 
     // Transform the matched element range to the hint range.
-    var marker: atom$Marker = editor.markBufferRange(range, {invalidate: 'never'});
+    const marker: atom$Marker = editor.markBufferRange(range, {invalidate: 'never'});
     this._marker = marker;
 
     // This relative positioning is to work around the issue that `position: 'head'`
     // doesn't work for overlay decorators are rendered on the bottom right of the given range.
     // Atom issue: https://github.com/atom/atom/issues/6695
-    var expressionLength = range.end.column - range.start.column;
+    const expressionLength = range.end.column - range.start.column;
     this._typeHintElement.style.left = -(expressionLength * editor.getDefaultCharWidth()) +  'px';
     this._typeHintElement.style.top = -(2 * editor.getLineHeightInPixels()) + 'px';
     this._typeHintElement.textContent = hint;
@@ -190,7 +190,7 @@ class TypeHintManager {
 
   _getMatchingProvidersForScopeName(scopeName: string): Array<TypeHintProvider> {
     return this._typeHintProviders.filter((provider: TypeHintProvider) => {
-      var providerGrammars = provider.selector.split(/, ?/);
+      const providerGrammars = provider.selector.split(/, ?/);
       return provider.inclusionPriority > 0 && providerGrammars.indexOf(scopeName) !== -1;
     }).sort((providerA: TypeHintProvider, providerB: TypeHintProvider) => {
       return providerA.inclusionPriority - providerB.inclusionPriority;

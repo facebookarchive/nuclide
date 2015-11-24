@@ -9,9 +9,9 @@
  * the root directory of this source tree.
  */
 
-var chalk = require('chalk');
-var invariant = require('assert');
-var {addMatchers, diffJson, diffLines} = require('../lib/matchers.js');
+const chalk = require('chalk');
+const invariant = require('assert');
+const {addMatchers, diffJson, diffLines} = require('../lib/matchers.js');
 
 describe('matchers', () => {
   beforeEach(function () {
@@ -20,22 +20,22 @@ describe('matchers', () => {
 
   describe('matchers.diffJson', () => {
     it('accepts two identical objects.', () => {
-      var actual = {a: 2, b: {c: 3}};
-      var expected = {b: {c: 3}, a: 2};
+      const actual = {a: 2, b: {c: 3}};
+      const expected = {b: {c: 3}, a: 2};
       expect(actual).diffJson(expected);
     });
 
     it('rejects two different objects.', () => {
-      var actual = {a: 1, b: 2};
-      var expected = {b: 2, c: 3};
+      const actual = {a: 1, b: 2};
+      const expected = {b: 2, c: 3};
       expect(actual).not.diffJson(expected);
     });
 
     it('colors diff output.', () => {
-      var match = {actual : {a: 1, b: 2}};
-      var isMatch = diffJson.bind(match)({b: 2, c: 3});
+      const match = {actual : {a: 1, b: 2}};
+      const isMatch = diffJson.bind(match)({b: 2, c: 3});
 
-      var expected = chalk.gray('{\n')
+      const expected = chalk.gray('{\n')
           + chalk.green('  "a": 1,\n')
           + chalk.gray('  "b": 2,\n')
           + chalk.red('  "c": 3\n')
@@ -49,22 +49,22 @@ describe('matchers', () => {
 
   describe('matchers.diffLines', () => {
     it('accepts two identical strings.', () => {
-      var actual = 'line1\nline2\nline3';
-      var expected = 'line1\nline2\nline3';
+      const actual = 'line1\nline2\nline3';
+      const expected = 'line1\nline2\nline3';
       expect(actual).diffLines(expected);
     });
 
     it('rejects two different strings.', () => {
-      var actual = 'line1\nline2\nline3';
-      var expected = 'line1\nline3';
+      const actual = 'line1\nline2\nline3';
+      const expected = 'line1\nline3';
       expect(actual).not.diffLines(expected);
     });
 
     it('colors diff output.', () => {
-      var match = { actual: 'line1\nline2\nline3' };
-      var isMatch = diffLines.bind(match)('line1\nline3');
+      const match = { actual: 'line1\nline2\nline3' };
+      const isMatch = diffLines.bind(match)('line1\nline3');
 
-      var expected = chalk.gray('line1\n')
+      const expected = chalk.gray('line1\n')
           + chalk.green('line2\n')
           + chalk.gray('line3');
 

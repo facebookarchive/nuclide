@@ -12,10 +12,10 @@
 import type {BlockStatement} from 'ast-types-flow';
 import type {Lines, Print} from '../../types/common';
 
-var markers = require('../../constants/markers');
-var printArrayOfStatements = require('../common/printArrayOfStatements');
-var printComments = require('../common/printComments');
-var wrapStatement = require('../../wrappers/simple/wrapStatement');
+const markers = require('../../constants/markers');
+const printArrayOfStatements = require('../common/printArrayOfStatements');
+const printComments = require('../common/printComments');
+const wrapStatement = require('../../wrappers/simple/wrapStatement');
 
 function printBlockStatement(print: Print, node: BlockStatement): Lines {
   const wrap = x => wrapStatement(print, node, x);

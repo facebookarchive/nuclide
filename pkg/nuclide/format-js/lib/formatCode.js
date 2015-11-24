@@ -9,9 +9,9 @@
  * the root directory of this source tree.
  */
 
-var logger = require('nuclide-logging').getLogger();
-var {track} = require('nuclide-analytics');
-var {updateCursor} = require('nuclide-update-cursor');
+const logger = require('nuclide-logging').getLogger();
+const {track} = require('nuclide-analytics');
+const {updateCursor} = require('nuclide-update-cursor');
 
 async function formatCode(editor: ?TextEditor): Promise<void> {
   editor = editor || atom.workspace.getActiveTextEditor();

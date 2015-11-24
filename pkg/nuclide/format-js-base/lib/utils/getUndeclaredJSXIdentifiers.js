@@ -12,17 +12,17 @@
 import type {Collection} from '../types/ast';
 import type {SourceOptions} from '../options/SourceOptions';
 
-var getDeclaredIdentifiers = require('./getDeclaredIdentifiers');
-var getJSXIdentifiers = require('./getJSXIdentifiers');
+const getDeclaredIdentifiers = require('./getDeclaredIdentifiers');
+const getJSXIdentifiers = require('./getJSXIdentifiers');
 
 function getUndeclaredJSXIdentifiers(
   root: Collection,
   options: SourceOptions
 ): Set<string> {
-  var declaredIdentifiers = getDeclaredIdentifiers(root, options);
-  var jsxIdentifiers = getJSXIdentifiers(root);
-  var undeclared = new Set();
-  for (var id of jsxIdentifiers) {
+  const declaredIdentifiers = getDeclaredIdentifiers(root, options);
+  const jsxIdentifiers = getJSXIdentifiers(root);
+  const undeclared = new Set();
+  for (const id of jsxIdentifiers) {
     if (!declaredIdentifiers.has(id)) {
       undeclared.add(id);
     }

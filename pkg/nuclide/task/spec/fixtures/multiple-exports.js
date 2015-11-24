@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-var total = 0;
+let total = 0;
 
 function increment() {
   ++total;

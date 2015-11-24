@@ -9,10 +9,10 @@
  * the root directory of this source tree.
  */
 
-var {asyncExecute, scriptSafeSpawnAndObserveOutput} = require('nuclide-commons');
-var {fsPromise} = require('nuclide-commons');
-var logger = require('nuclide-logging').getLogger();
-var path = require('path');
+const {asyncExecute, scriptSafeSpawnAndObserveOutput} = require('nuclide-commons');
+const {fsPromise} = require('nuclide-commons');
+const logger = require('nuclide-logging').getLogger();
+const path = require('path');
 
 type dontRunOptions = {
   run: false;
@@ -54,7 +54,7 @@ import type {Observable} from 'rx';
  * TODO(mbolin): This does not account for the case where the user runs
  * `buck build` from the command line while Nuclide is also trying to build.
  */
-var BLOCKING_BUCK_COMMAND_QUEUE_PREFIX = 'buck';
+const BLOCKING_BUCK_COMMAND_QUEUE_PREFIX = 'buck';
 
 /**
  * Represents a Buck project on disk. All Buck commands for a project should be
@@ -92,7 +92,7 @@ export class BuckProject {
    */
   _runBuckCommandFromProjectRoot(args: Array<string>
       ): Promise<{stdout: string; stderr: string; exitCode: number}> {
-    var {pathToBuck, buckCommandOptions: options} = this._getBuckCommandAndOptions();
+    const {pathToBuck, buckCommandOptions: options} = this._getBuckCommandAndOptions();
     logger.debug('Buck command:', pathToBuck, args, options);
     return asyncExecute(pathToBuck, args, options);
   }
@@ -101,13 +101,13 @@ export class BuckProject {
    * @return The path to buck and set of options to be used to run a `buck` command.
    */
   _getBuckCommandAndOptions(): BuckCommandAndOptions {
-    var pathToBuck;
+    let pathToBuck;
     if (global.atom) {
       pathToBuck = global.atom.config.get('nuclide-buck-files.pathToBuck');
     } else {
       pathToBuck = 'buck';
     }
-    var buckCommandOptions = {
+    const buckCommandOptions = {
       cwd: this._rootPath,
       queueName: this._serialQueueName,
     };
@@ -115,22 +115,22 @@ export class BuckProject {
   }
 
   async getOwner(filePath: string): Promise<Array<string>> {
-    var args = ['audit', 'owner', filePath];
-    var result = await this._runBuckCommandFromProjectRoot(args);
-    var stdout = result.stdout;
-    var targets = stdout.trim().split('\n');
+    const args = ['audit', 'owner', filePath];
+    const result = await this._runBuckCommandFromProjectRoot(args);
+    const stdout = result.stdout;
+    const targets = stdout.trim().split('\n');
     return targets;
   }
 
   async getBuckConfig(section: string, property: string): Promise<?string> {
-    var buckConfig = this._buckConfig;
+    let buckConfig = this._buckConfig;
     if (!buckConfig) {
       buckConfig = this._buckConfig = await this._loadBuckConfig();
     }
     if (!buckConfig.hasOwnProperty(section)) {
       return null;
     }
-    var sectionConfig = buckConfig[section];
+    const sectionConfig = buckConfig[section];
     if (!sectionConfig.hasOwnProperty(property)) {
       return null;
     }
@@ -142,9 +142,9 @@ export class BuckProject {
    * and ~/.buckconfig.d/ directory.
    */
   async _loadBuckConfig(): Promise<BuckConfig> {
-    var ini = require('ini');
-    var header = 'scope = global\n';
-    var buckConfigContent = await fsPromise.readFile(path.join(this._rootPath, '.buckconfig'));
+    const ini = require('ini');
+    const header = 'scope = global\n';
+    const buckConfigContent = await fsPromise.readFile(path.join(this._rootPath, '.buckconfig'));
     return ini.parse(header + buckConfigContent);
   }
 
@@ -220,11 +220,11 @@ export class BuckProject {
     buildTargets: Array<string>,
     options: BaseBuckBuildOptions,
   ): Observable<{stderr?: string; stdout?: string;}> {
-    var args = this._translateOptionsToBuckBuildArgs({
+    const args = this._translateOptionsToBuckBuildArgs({
       baseOptions: {...options},
       buildTargets,
     });
-    var {pathToBuck, buckCommandOptions} = this._getBuckCommandAndOptions();
+    const {pathToBuck, buckCommandOptions} = this._getBuckCommandAndOptions();
 
     return scriptSafeSpawnAndObserveOutput(pathToBuck, args, buckCommandOptions);
   }
@@ -275,9 +275,9 @@ export class BuckProject {
   }
 
   async listAliases(): Promise<Array<string>> {
-    var args = ['audit', 'alias', '--list'];
-    var result = await this._runBuckCommandFromProjectRoot(args);
-    var stdout = result.stdout.trim();
+    const args = ['audit', 'alias', '--list'];
+    const result = await this._runBuckCommandFromProjectRoot(args);
+    const stdout = result.stdout.trim();
     return stdout ? stdout.split('\n') : [];
   }
 
@@ -285,8 +285,8 @@ export class BuckProject {
    * Currently, if `aliasOrTarget` contains a flavor, this will fail.
    */
   async resolveAlias(aliasOrTarget: string): Promise<string> {
-    var args = ['targets', '--resolve-alias', aliasOrTarget];
-    var result = await this._runBuckCommandFromProjectRoot(args);
+    const args = ['targets', '--resolve-alias', aliasOrTarget];
+    const result = await this._runBuckCommandFromProjectRoot(args);
     return result.stdout.trim();
   }
 
@@ -296,11 +296,11 @@ export class BuckProject {
    * @return Promise resolves to absolute path to output file
    */
   async outputFileFor(aliasOrTarget: string): Promise<?string> {
-    var args = ['targets', '--show-output', aliasOrTarget];
-    var result = await this._runBuckCommandFromProjectRoot(args);
-    var stdout = result.stdout.trim();
+    const args = ['targets', '--show-output', aliasOrTarget];
+    const result = await this._runBuckCommandFromProjectRoot(args);
+    const stdout = result.stdout.trim();
     if (stdout.indexOf(' ') !== -1) {
-      var relativePath = stdout.split(' ')[1];
+      const relativePath = stdout.split(' ')[1];
       return path.resolve(this._rootPath, relativePath);
     } else {
       return null;
@@ -311,11 +311,11 @@ export class BuckProject {
    * Currently, if `aliasOrTarget` contains a flavor, this will fail.
    */
   async buildRuleTypeFor(aliasOrTarget: string): Promise<string> {
-    var args = ['query', aliasOrTarget, '--json', '--output-attributes', 'buck.type'];
-    var result = await this._runBuckCommandFromProjectRoot(args);
-    var json: {[target: string]: Object} = JSON.parse(result.stdout);
+    const args = ['query', aliasOrTarget, '--json', '--output-attributes', 'buck.type'];
+    const result = await this._runBuckCommandFromProjectRoot(args);
+    const json: {[target: string]: Object} = JSON.parse(result.stdout);
     // If aliasOrTarget is an alias, targets[0] will be the fully qualified build target.
-    var targets = Object.keys(json);
+    const targets = Object.keys(json);
     if (!targets || targets.length !== 1) {
       throw new Error(`Error determining rule type of '${aliasOrTarget}'.`);
     }
@@ -323,16 +323,16 @@ export class BuckProject {
   }
 
   async getServerPort(): Promise<number> {
-    var args = ['server', 'status', '--json', '--http-port'];
-    var result = await this._runBuckCommandFromProjectRoot(args);
-    var json: Object = JSON.parse(result.stdout);
+    const args = ['server', 'status', '--json', '--http-port'];
+    const result = await this._runBuckCommandFromProjectRoot(args);
+    const json: Object = JSON.parse(result.stdout);
     return json['http.port'];
   }
 
   async query(query: string): Promise<Array<string>> {
-    var args = ['query', '--json', query];
-    var result = await this._runBuckCommandFromProjectRoot(args);
-    var json: Array<string> = JSON.parse(result.stdout);
+    const args = ['query', '--json', query];
+    const result = await this._runBuckCommandFromProjectRoot(args);
+    const json: Array<string> = JSON.parse(result.stdout);
     return json;
   }
 
@@ -340,13 +340,13 @@ export class BuckProject {
     query: string,
     args: Array<string>,
   ): Promise<{[aliasOrTarget: string]: Array<string>}> {
-    var completeArgs = ['query', '--json', query].concat(args);
-    var result = await this._runBuckCommandFromProjectRoot(completeArgs);
-    var json: {[aliasOrTarget: string]: Array<string>} = JSON.parse(result.stdout);
+    const completeArgs = ['query', '--json', query].concat(args);
+    const result = await this._runBuckCommandFromProjectRoot(completeArgs);
+    const json: {[aliasOrTarget: string]: Array<string>} = JSON.parse(result.stdout);
 
     // `buck query` does not include entries in the JSON for params that did not match anything. We
     // massage the output to ensure that every argument has an entry in the output.
-    for (var arg of args) {
+    for (const arg of args) {
       if (!json.hasOwnProperty(arg)) {
         json[arg] = [];
       }

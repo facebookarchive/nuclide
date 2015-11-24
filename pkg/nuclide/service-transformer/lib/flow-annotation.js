@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-var NUCLIDE_URI_FLOW_TYPE_NAME = 'NuclideUri';
+const NUCLIDE_URI_FLOW_TYPE_NAME = 'NuclideUri';
 
 function isGenericFlowTypeAnnotation(typeAnnotation: ?any, annotationName: string): boolean {
   return (

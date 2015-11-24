@@ -12,15 +12,15 @@
 import type {HomeFragments} from 'nuclide-home-interfaces';
 import type HomePaneItemType from './HomePaneItem';
 
-var BASE_ITEM_URI = 'nuclide-home://';
+const BASE_ITEM_URI = 'nuclide-home://';
 
-var {CompositeDisposable, Disposable} = require('atom');
+const {CompositeDisposable, Disposable} = require('atom');
 
-var disposables: ?CompositeDisposable = null;
-var paneItem: ?HomePaneItemType;
+let disposables: ?CompositeDisposable = null;
+let paneItem: ?HomePaneItemType;
 
-var currentConfig = {};
-var allHomeFragments: Set<HomeFragments> = new Set();
+let currentConfig = {};
+const allHomeFragments: Set<HomeFragments> = new Set();
 
 function activate(): void {
   disposables = new CompositeDisposable();
@@ -36,7 +36,7 @@ function activate(): void {
   considerDisplayingHome();
 }
 
-var config = {
+const config = {
   showHome: {
     type: 'boolean',
     default: true,
@@ -68,7 +68,7 @@ function considerDisplayingHome() {
     }
   } else {
     if (paneItem) {
-      var pane = atom.workspace.paneForItem(paneItem);
+      const pane = atom.workspace.paneForItem(paneItem);
       if (pane) {
         pane.destroyItem(paneItem);
       }
@@ -81,7 +81,7 @@ function getHomePaneItem(uri: string): ?HomePaneItemType {
   if (!uri.startsWith(BASE_ITEM_URI)) {
     return;
   }
-  var HomePaneItem = require('./HomePaneItem');
+  const HomePaneItem = require('./HomePaneItem');
   paneItem = new HomePaneItem().initialize(uri, allHomeFragments);
   return paneItem;
 }

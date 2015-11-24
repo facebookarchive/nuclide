@@ -9,15 +9,15 @@
  * the root directory of this source tree.
  */
 
-var invariant = require('assert');
+const invariant = require('assert');
 
-var {CompositeDisposable} = require('atom');
+const {CompositeDisposable} = require('atom');
 
 import {track} from 'nuclide-analytics';
 
 import {JS_GRAMMARS, JAVASCRIPT_WORD_REGEX} from './constants.js';
-var GRAMMARS_STRING = JS_GRAMMARS.join(', ');
-var diagnosticsOnFlySetting = 'nuclide-flow.diagnosticsOnFly';
+const GRAMMARS_STRING = JS_GRAMMARS.join(', ');
+const diagnosticsOnFlySetting = 'nuclide-flow.diagnosticsOnFly';
 
 const PACKAGE_NAME = 'nuclide-flow';
 
@@ -27,9 +27,9 @@ function getServiceByNuclideUri(service, file?) {
 
 let busySignalProvider;
 
-var flowDiagnosticsProvider;
+let flowDiagnosticsProvider;
 
-var disposables;
+let disposables;
 
 module.exports = {
 
@@ -40,16 +40,16 @@ module.exports = {
     if (!disposables) {
       disposables = new CompositeDisposable();
 
-      var {registerGrammarForFileExtension} = require('nuclide-atom-helpers');
+      const {registerGrammarForFileExtension} = require('nuclide-atom-helpers');
       disposables.add(registerGrammarForFileExtension('source.ini', '.flowconfig'));
     }
   },
 
   /** Provider for autocomplete service. */
   createAutocompleteProvider(): atom$AutocompleteProvider {
-    var AutocompleteProvider = require('./FlowAutocompleteProvider');
-    var autocompleteProvider = new AutocompleteProvider();
-    var getSuggestions = autocompleteProvider.getSuggestions.bind(autocompleteProvider);
+    const AutocompleteProvider = require('./FlowAutocompleteProvider');
+    const autocompleteProvider = new AutocompleteProvider();
+    const getSuggestions = autocompleteProvider.getSuggestions.bind(autocompleteProvider);
     return {
       selector: JS_GRAMMARS.map(grammar => '.' + grammar).join(', '),
       disableForSelector: '.source.js .comment',
@@ -64,9 +64,9 @@ module.exports = {
   },
 
   getHyperclickProvider(): HyperclickProvider {
-    var FlowHyperclickProvider = require('./FlowHyperclickProvider');
-    var flowHyperclickProvider = new FlowHyperclickProvider();
-    var getSuggestionForWord =
+    const FlowHyperclickProvider = require('./FlowHyperclickProvider');
+    const flowHyperclickProvider = new FlowHyperclickProvider();
+    const getSuggestionForWord =
         flowHyperclickProvider.getSuggestionForWord.bind(flowHyperclickProvider);
     return {
       wordRegExp: JAVASCRIPT_WORD_REGEX,
@@ -87,15 +87,15 @@ module.exports = {
   provideDiagnostics() {
     if (!flowDiagnosticsProvider) {
       const busyProvider = this.provideBusySignal();
-      var FlowDiagnosticsProvider = require('./FlowDiagnosticsProvider');
-      var runOnTheFly = ((atom.config.get(diagnosticsOnFlySetting): any): boolean);
+      const FlowDiagnosticsProvider = require('./FlowDiagnosticsProvider');
+      const runOnTheFly = ((atom.config.get(diagnosticsOnFlySetting): any): boolean);
       flowDiagnosticsProvider = new FlowDiagnosticsProvider(runOnTheFly, busyProvider);
       invariant(disposables);
       disposables.add(atom.config.observe(diagnosticsOnFlySetting, newValue => {
         invariant(flowDiagnosticsProvider);
         flowDiagnosticsProvider.setRunOnTheFly(newValue);
       }));
-      var {projects} = require('nuclide-atom-helpers');
+      const {projects} = require('nuclide-atom-helpers');
       disposables.add(projects.onDidRemoveProjectPath(projectPath => {
         invariant(flowDiagnosticsProvider);
         flowDiagnosticsProvider.invalidateProjectPath(projectPath);
@@ -105,9 +105,9 @@ module.exports = {
   },
 
   createTypeHintProvider(): Object {
-    var {FlowTypeHintProvider} = require('./FlowTypeHintProvider');
-    var flowTypeHintProvider = new FlowTypeHintProvider();
-    var typeHint = flowTypeHintProvider.typeHint.bind(flowTypeHintProvider);
+    const {FlowTypeHintProvider} = require('./FlowTypeHintProvider');
+    const flowTypeHintProvider = new FlowTypeHintProvider();
+    const typeHint = flowTypeHintProvider.typeHint.bind(flowTypeHintProvider);
     return {
       selector: GRAMMARS_STRING,
       providerName: PACKAGE_NAME,

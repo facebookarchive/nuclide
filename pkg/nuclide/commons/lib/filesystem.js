@@ -9,10 +9,10 @@
  * the root directory of this source tree.
  */
 
-var fs = require('fs');
-var path = require('path');
-var mkdirpLib = require('mkdirp');
-var rimraf = require('rimraf');
+const fs = require('fs');
+const path = require('path');
+const mkdirpLib = require('mkdirp');
+const rimraf = require('rimraf');
 
 function isRoot(filePath: string): boolean {
   return path.dirname(filePath) === filePath;
@@ -65,10 +65,10 @@ async function findNearestFile(fileName: string, pathToDirectory: string): Promi
   // this function. The downside would be that if someone added a closer file
   // with fileName to pathToFile (or deleted the one that was cached), then we
   // would have a bug. This would probably be pretty rare, though.
-  var currentPath = path.resolve(pathToDirectory);
+  let currentPath = path.resolve(pathToDirectory);
   do { // eslint-disable-line no-constant-condition
-    var fileToFind = path.join(currentPath, fileName);
-    var hasFile = await exists(fileToFind);
+    const fileToFind = path.join(currentPath, fileName);
+    const hasFile = await exists(fileToFind);
     if (hasFile) {
       return currentPath;
     }
@@ -94,7 +94,7 @@ function exists(filePath: string): Promise<boolean> {
  * @return true if the path was created; false if it already existed.
  */
 async function mkdirp(filePath: string): Promise<boolean> {
-  var isExistingDirectory = await exists(filePath);
+  const isExistingDirectory = await exists(filePath);
   if (isExistingDirectory) {
     return false;
   } else {
@@ -145,7 +145,7 @@ function expandHomeDir(filePath: string): string {
  */
 function denodeifyFsMethod(methodName: string): () => Promise {
   return function(...args): Promise {
-    var method = fs[methodName];
+    const method = fs[methodName];
     return new Promise((resolve, reject) => {
       method.apply(fs, args.concat([
         (err, result) => err ? reject(err) : resolve(result),

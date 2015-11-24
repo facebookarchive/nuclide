@@ -10,16 +10,16 @@
  */
 
 
-var {BreakpointStore} = require('../lib/BreakpointStore');
+const {BreakpointStore} = require('../lib/BreakpointStore');
 
 describe('debugger-hhvm-proxy BreakpointStore', () => {
-  var store;
-  var connection1, connection2;
-  var onStatus1;
-  var onStatus2;
+  let store;
+  let connection1, connection2;
+  let onStatus1;
+
 
   function createIdGenerator(prefix) {
-    var id = 0;
+    let id = 0;
     return () => {
       id++;
       return prefix + id;
@@ -28,8 +28,8 @@ describe('debugger-hhvm-proxy BreakpointStore', () => {
 
   beforeEach(() => {
     store = new BreakpointStore();
-    var con1IdGenerator = createIdGenerator('con1prefix');
-    var con2IdGenerator = createIdGenerator('con2prefix');
+    const con1IdGenerator = createIdGenerator('con1prefix');
+    const con2IdGenerator = createIdGenerator('con2prefix');
     connection1 = jasmine.createSpyObj(
       'Connection1',
       ['setBreakpoint', 'removeBreakpoint', 'setExceptionBreakpoint', 'onStatus']
@@ -56,14 +56,14 @@ describe('debugger-hhvm-proxy BreakpointStore', () => {
     waitsForPromise(async () => {
       store.addConnection(connection1);
 
-      var id1 = store.setBreakpoint('file1', 42);
+      const id1 = store.setBreakpoint('file1', 42);
       expect(connection1.setBreakpoint).toHaveBeenCalledWith('file1', 42);
 
-      var id2 = store.setBreakpoint('file1', 43);
+      const id2 = store.setBreakpoint('file1', 43);
       expect(connection1.setBreakpoint).toHaveBeenCalledWith('file1', 43);
       expect(id1).not.toEqual(id2);
 
-      var id3 = store.setPauseOnExceptions('all');
+      const id3 = store.setPauseOnExceptions('all');
       expect(connection1.setExceptionBreakpoint).toHaveBeenCalledWith('*');
       expect(id3).not.toEqual(id2);
 
@@ -81,9 +81,9 @@ describe('debugger-hhvm-proxy BreakpointStore', () => {
   it('add bps - then connections', () => {
     waitsForPromise(async () => {
 
-      var id1 = store.setBreakpoint('file1', 42);
-      var id2 = store.setBreakpoint('file1', 43);
-      var id3 = store.setPauseOnExceptions('all');
+      const id1 = store.setBreakpoint('file1', 42);
+      const id2 = store.setBreakpoint('file1', 43);
+      const id3 = store.setPauseOnExceptions('all');
 
       store.addConnection(connection1);
       expect(connection1.setBreakpoint).toHaveBeenCalledWith('file1', 42);

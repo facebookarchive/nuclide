@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-var Immutable = require('immutable');
-var {LazyTreeNode} = require('nuclide-ui-tree');
+const Immutable = require('immutable');
+const {LazyTreeNode} = require('nuclide-ui-tree');
 
 class TestClassTreeNode extends LazyTreeNode {
 

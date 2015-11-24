@@ -12,25 +12,25 @@ import {fixtures} from '../lib/main';
 import fs from 'fs';
 import path from 'path';
 
-var {copyFixture} = fixtures;
+const {copyFixture} = fixtures;
 
 describe('copyFixture', () => {
 
   it('should copy a directory recursively', () => {
     waitsForPromise(async () => {
-      var copyOfFixture = await copyFixture('fixture-to-copy', __dirname);
+      const copyOfFixture = await copyFixture('fixture-to-copy', __dirname);
       expect(path.isAbsolute(copyOfFixture)).toBe(true);
 
       expect(fs.statSync(copyOfFixture).isDirectory()).toBe(true);
 
-      var file1txt = path.join(copyOfFixture, 'file1.txt');
+      const file1txt = path.join(copyOfFixture, 'file1.txt');
       expect(fs.statSync(file1txt).isFile()).toBe(true);
       expect(fs.readFileSync(file1txt, 'utf8')).toBe('hello\n');
 
-      var dir1 = path.join(copyOfFixture, 'dir1');
+      const dir1 = path.join(copyOfFixture, 'dir1');
       expect(fs.statSync(dir1).isDirectory()).toBe(true);
 
-      var file2txt = path.join(dir1, 'file2.txt');
+      const file2txt = path.join(dir1, 'file2.txt');
       expect(fs.statSync(file2txt).isFile()).toBe(true);
       expect(fs.readFileSync(file2txt, 'utf8')).toBe('world\n');
     });

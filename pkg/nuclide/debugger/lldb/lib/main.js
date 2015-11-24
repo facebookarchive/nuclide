@@ -17,7 +17,7 @@ module.exports = {
   },
 
   provideNuclideDebuggerLLDB(): nuclide_debugger$Service {
-    var Service = require('./Service');
+    const Service = require('./Service');
     return Service;
   },
 };

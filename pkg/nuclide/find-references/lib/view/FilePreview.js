@@ -11,10 +11,10 @@
 
 import type {Reference} from '../types';
 
-var AtomInput = require('nuclide-ui-atom-input');
-var React = require('react-for-atom');
+const AtomInput = require('nuclide-ui-atom-input');
+const React = require('react-for-atom');
 
-var FilePreview = React.createClass({
+const FilePreview = React.createClass({
 
   propTypes: {
     text: React.PropTypes.string.isRequired,
@@ -25,15 +25,15 @@ var FilePreview = React.createClass({
   },
 
   componentDidMount() {
-    var editor = this.refs.editor.getTextEditor();
-    var {grammar, references, startLine, endLine} = this.props;
+    const editor = this.refs.editor.getTextEditor();
+    const {grammar, references, startLine, endLine} = this.props;
 
     if (grammar) {
       editor.setGrammar(grammar);
     }
 
     references.forEach((ref: Reference) => {
-      var marker = editor.markBufferRange([
+      const marker = editor.markBufferRange([
         [ref.start.line - startLine, ref.start.column - 1],
         [ref.end.line - startLine, ref.end.column],
       ]);
@@ -48,8 +48,8 @@ var FilePreview = React.createClass({
   },
 
   render(): ReactElement {
-    var lineNumbers = [];
-    for (var i = this.props.startLine; i <= this.props.endLine; i++) {
+    const lineNumbers = [];
+    for (let i = this.props.startLine; i <= this.props.endLine; i++) {
       lineNumbers.push(
         <div key={i} className="nuclide-find-references-line-number">
           {i}
@@ -68,7 +68,7 @@ var FilePreview = React.createClass({
         />
       </div>
     );
-  }
+  },
 
 });
 

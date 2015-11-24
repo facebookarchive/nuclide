@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-var WebInspector: typeof WebInspector = window.WebInspector;
+const WebInspector: typeof WebInspector = window.WebInspector;
 
 /**
  * Wrapper around `WebInspector.Object` to act like `atom.Emitter`.
@@ -22,7 +22,7 @@ class Emitter {
   }
 
   on(eventType: string, callback: (value?: any) => void): {dispose: () => void} {
-    var listener = event => callback(event.data);
+    const listener = event => callback(event.data);
     this._underlying.addEventListener(eventType, listener);
     return {
       dispose: () => {

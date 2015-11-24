@@ -11,7 +11,7 @@
 
 import path from 'path';
 
-var PACKAGE_ROOT = path.resolve(__dirname, '..', '..');
+const PACKAGE_ROOT = path.resolve(__dirname, '..', '..');
 
 type ConfigEntry = {
   name: string;
@@ -24,8 +24,8 @@ type ConfigEntry = {
  */
 export function loadServicesConfig(): Array<ConfigEntry> {
   // $FlowIssue - This path is not recognized.
-  var publicServices = createServiceConfigObject(require('../../services-3.json'));
-  var privateServices = [];
+  const publicServices = createServiceConfigObject(require('../../services-3.json'));
+  let privateServices = [];
   try {
     // $FlowIssue - This path is not recognized.
     privateServices = createServiceConfigObject(require('../../fb/fb-services-3.json'));

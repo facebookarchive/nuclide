@@ -11,20 +11,20 @@
 import createServiceTransformer from './remote-service-transformer';
 import {getClassPrefix} from './class-prefix';
 
-var babel = require('babel-core');
-var fs = require('fs');
-var mkdirp = require('mkdirp');
-var path = require('path');
-var parseServiceApiSync = require('./service-parser');
+const babel = require('babel-core');
+const fs = require('fs');
+const mkdirp = require('mkdirp');
+const path = require('path');
+const parseServiceApiSync = require('./service-parser');
 
-var TRANSPILED_FILE_FOLDER = path.join(__dirname, '../gen/');
-var BABEL_HEADER = "'use babel';";
+const TRANSPILED_FILE_FOLDER = path.join(__dirname, '../gen/');
+const BABEL_HEADER = "'use babel';";
 
-var transpiledFilePathsForDecorator = new Set();
-var transpiledFilePathsForRemote = new Set();
+const transpiledFilePathsForDecorator = new Set();
+const transpiledFilePathsForRemote = new Set();
 
 function transpile(sourceFilePath: string, destFilePath: string, isDecorator: boolean): void {
-  var sourceCode = fs.readFileSync(sourceFilePath, 'utf8');
+  let sourceCode = fs.readFileSync(sourceFilePath, 'utf8');
 
   // While transpiling Flow import, babel might insert some code at the top of file so that the
   // generated code won't start with `'use babel';` and failed to load into Atom accordingly.
@@ -36,7 +36,7 @@ function transpile(sourceFilePath: string, destFilePath: string, isDecorator: bo
 
   sourceCode = sourceCode.substring(BABEL_HEADER.length);
 
-  var code = babel.transform(sourceCode, {
+  let code = babel.transform(sourceCode, {
     blacklist: ['es6.arrowFunctions', 'es6.classes', 'strict'],
     optional: ['es7.classProperties'],
     plugins: [createServiceTransformer(sourceFilePath, isDecorator)],
@@ -69,15 +69,15 @@ function requireRemoteServiceSync(
   // Note that `require('module')._resolveFilename(path, module)` is equivelent to
   // `require.resolve(path)` under the context of given module.
   // $FlowFixMe
-  var resolvedServiceDefinitionFilePath = require('module')._resolveFilename(
+  const resolvedServiceDefinitionFilePath = require('module')._resolveFilename(
       serviceDefinitionFilePath,
       module.parent ? module.parent : module);
 
-  var transpiledRemoteServiceFilePath = path.join(
+  const transpiledRemoteServiceFilePath = path.join(
       TRANSPILED_FILE_FOLDER,
       getClassPrefix(isDecorator) + path.basename(resolvedServiceDefinitionFilePath));
 
-  var transpiledFilePaths = isDecorator
+  const transpiledFilePaths = isDecorator
     ? transpiledFilePathsForDecorator
     : transpiledFilePathsForRemote;
   if (!transpiledFilePaths.has(resolvedServiceDefinitionFilePath)) {
@@ -85,7 +85,7 @@ function requireRemoteServiceSync(
     transpiledFilePaths.add(resolvedServiceDefinitionFilePath);
   }
 
-  var serviceModule = require(transpiledRemoteServiceFilePath);
+  const serviceModule = require(transpiledRemoteServiceFilePath);
   return serviceModule[serviceName] || serviceModule;
 }
 

@@ -9,9 +9,9 @@
  * the root directory of this source tree.
  */
 
-var {readdirSync} = require('fs');
-var {readFile} = require('nuclide-commons').fsPromise;
-var {reprint} = require('../lib/main');
+const {readdirSync} = require('fs');
+const {readFile} = require('nuclide-commons').fsPromise;
+const {reprint} = require('../lib/main');
 
 // Helpful for debugging.
 const only = new Set([
@@ -24,7 +24,7 @@ function getTests() {
   }
   const files = readdirSync('./fixtures/');
   const tests = new Set();
-  for (let file of files) {
+  for (const file of files) {
     if (/\.test$/.test(file)) {
       tests.add(file.substring(0, file.length - 5));
     }

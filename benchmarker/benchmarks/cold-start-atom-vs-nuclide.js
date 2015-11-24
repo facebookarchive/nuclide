@@ -9,15 +9,15 @@
  * the root directory of this source tree.
  */
 
-var SAMPLE_FILE = '/tmp/nuclide-benchmarker-open-edit-save.js';
-var FILE_SIZE = 10000;
-var TIMEOUT = 30 * 1000;
 
-var REPETITIONS = 3;
 
-var {timedAsync, timedSync} = require('../benchmarker-utils');
+const TIMEOUT = 30 * 1000;
 
-var isNotTheme = pkg => pkg.getType !== 'theme';
+const REPETITIONS = 3;
+
+const {timedAsync, timedSync} = require('../benchmarker-utils');
+
+const isNotTheme = pkg => pkg.getType !== 'theme';
 
 module.exports = {
   description: 'times how long it takes to activate packages for Atom & Nuclide',
@@ -42,12 +42,12 @@ module.exports = {
   repetitions: REPETITIONS,
   run: async (iteration: number): Object => {
 
-    var claimedWindowLoadTime = atom.getWindowLoadTime();
+    const claimedWindowLoadTime = atom.getWindowLoadTime();
 
     atom.packages.deactivatePackages();
     atom.packages.unloadPackages();
 
-    var mode = iteration == 0 ? 'atom' : 'nuclide';
+    const mode = iteration == 0 ? 'atom' : 'nuclide';
     switch (mode) {
       case 'atom':
         atom.packages.packageDirPaths=[];
@@ -57,22 +57,22 @@ module.exports = {
         break;
     }
 
-    var {time: realLoadTime, promiseTime: realPromiseLoadTime} = await timedAsync(
+    const {time: realLoadTime, promiseTime: realPromiseLoadTime} = await timedAsync(
       // $FlowFixMe: Not sure for what versions of Atom this worked
       atom.packages.loadPackages()
     );
-    var loadedPackages = atom.packages.getLoadedPackages().filter(isNotTheme);
-    var loadedCount = loadedPackages.length;
+    const loadedPackages = atom.packages.getLoadedPackages().filter(isNotTheme);
+    const loadedCount = loadedPackages.length;
 
-    var {time: realActivateTime, promiseTime: realPromiseActivateTime} = await timedAsync(
+    const {time: realActivateTime, promiseTime: realPromiseActivateTime} = await timedAsync(
       atom.packages.activate()
     );
-    var activePackages = atom.packages.getActivePackages().filter(isNotTheme);
-    var activeCount = activePackages.length;
+    const activePackages = atom.packages.getActivePackages().filter(isNotTheme);
+    const activeCount = activePackages.length;
 
-    var summedClaimedLoadTime = 0;
-    var maxClaimedLoadTime = 0;
-    var slowestClaimedLoad = '';
+    let summedClaimedLoadTime = 0;
+    let maxClaimedLoadTime = 0;
+    let slowestClaimedLoad = '';
     loadedPackages.forEach(pkg => {
       summedClaimedLoadTime += pkg.loadTime;
       maxClaimedLoadTime = Math.max(maxClaimedLoadTime, pkg.loadTime);
@@ -80,9 +80,9 @@ module.exports = {
         slowestClaimedLoad = pkg.name;
       }
     });
-    var summedClaimedActivateTime = 0;
-    var maxClaimedActivateTime = 0;
-    var slowestClaimedActivate = '';
+    let summedClaimedActivateTime = 0;
+    let maxClaimedActivateTime = 0;
+    let slowestClaimedActivate = '';
     activePackages.forEach(pkg => {
       summedClaimedActivateTime += pkg.activateTime;
       maxClaimedActivateTime = Math.max(maxClaimedActivateTime, pkg.activateTime);
@@ -91,7 +91,7 @@ module.exports = {
       }
     });
 
-    var result = {
+    const result = {
       mode,
       claimedWindowLoadTime,
       realLoadTime,

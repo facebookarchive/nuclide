@@ -11,26 +11,26 @@
 
 import type {Collection} from '../types/ast';
 
-var jscs = require('jscodeshift');
+const jscs = require('jscodeshift');
 
-var {isLowerCase} = require('./StringUtils');
+const {isLowerCase} = require('./StringUtils');
 
 // TODO: make this configurable somehow, we probably don't want to explicitly
 // list out all of the lowercase html tags that are built-in
-var LOWER_CASE_WHITE_LIST = new Set(['fbt']);
+const LOWER_CASE_WHITE_LIST = new Set(['fbt']);
 
 /**
  * This will get a list of identifiers for JSXElements in the AST
  */
 function getJSXIdentifiers(root: Collection): Set<string> {
-  var ids = new Set();
+  const ids = new Set();
   root
     // There should be an opening element for every single closing element so
     // we can just look for opening ones
     .find(jscs.JSXOpeningElement)
     .filter(path => jscs.JSXIdentifier.check(path.node.name))
     .forEach(path => {
-      var name = path.node.name.name;
+      const name = path.node.name.name;
       // TODO: should this be here or in addMissingRequires?
       if (!isLowerCase(name) || LOWER_CASE_WHITE_LIST.has(name)) {
         ids.add(name);

@@ -12,7 +12,7 @@
 import type {Lines, Print} from '../../types/common';
 import type {ThisExpression} from 'ast-types-flow';
 
-var wrapExpression = require('../../wrappers/simple/wrapExpression');
+const wrapExpression = require('../../wrappers/simple/wrapExpression');
 
 function printThisExpression(print: Print, node: ThisExpression): Lines {
   const wrap = x => wrapExpression(print, node, x);

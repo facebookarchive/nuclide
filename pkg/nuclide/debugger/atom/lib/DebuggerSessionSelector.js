@@ -9,10 +9,10 @@
  * the root directory of this source tree.
  */
 
-var DebuggerActions = require('./DebuggerActions');
-var DebuggerProcessInfo = require('./DebuggerProcessInfo');
-var DebuggerStore = require('./DebuggerStore');
-var React = require('react-for-atom');
+const DebuggerActions = require('./DebuggerActions');
+const DebuggerProcessInfo = require('./DebuggerProcessInfo');
+const DebuggerStore = require('./DebuggerStore');
+const React = require('react-for-atom');
 
 type State = {
   selectedProcess: ?DebuggerProcessInfo;
@@ -23,7 +23,7 @@ type State = {
 /**
  * View for setting up a new debugging session.
  */
-var DebuggerSessionSelector = React.createClass({
+const DebuggerSessionSelector = React.createClass({
   propTypes: {
     actions: React.PropTypes.instanceOf(DebuggerActions).isRequired,
     store: React.PropTypes.instanceOf(DebuggerStore).isRequired,
@@ -45,7 +45,7 @@ var DebuggerSessionSelector = React.createClass({
   },
 
   componentWillUnmount() {
-    var listener = this.state.debuggerStoreChangeListener;
+    const listener = this.state.debuggerStoreChangeListener;
     if (listener != null) {
       listener.dispose();
     }
@@ -117,7 +117,7 @@ function compareDebuggerProcessInfo(
   value: DebuggerProcessInfo,
   other: DebuggerProcessInfo,
 ): number {
-  var cmp = value.getServiceName().localeCompare(other.getServiceName());
+  const cmp = value.getServiceName().localeCompare(other.getServiceName());
   if (cmp === 0) {
     return value.compareDetails(other);
   } else {

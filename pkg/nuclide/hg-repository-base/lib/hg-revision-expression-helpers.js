@@ -76,20 +76,20 @@ export async function fetchCommonAncestorOfHeadAndRevision(
   revision: string,
   workingDirectory: string,
 ): Promise<string> {
-  var {asyncExecute} = require('nuclide-commons');
+  const {asyncExecute} = require('nuclide-commons');
 
-  var ancestorExpression = `ancestor(${revision}, ${HG_CURRENT_WORKING_DIRECTORY_PARENT})`;
+  let ancestorExpression = `ancestor(${revision}, ${HG_CURRENT_WORKING_DIRECTORY_PARENT})`;
   // shell-escape does not wrap ancestorExpression in quotes without this toString conversion.
   ancestorExpression = ancestorExpression.toString();
 
   // shell-escape does not wrap '{rev}' in quotes unless it is double-quoted.
-  var args = ['log', '--template', '{rev}', '--rev', ancestorExpression];
-  var options = {
+  const args = ['log', '--template', '{rev}', '--rev', ancestorExpression];
+  const options = {
     cwd: workingDirectory,
   };
 
   try {
-    var {stdout: ancestorRevisionNumber} = await asyncExecute('hg', args, options);
+    const {stdout: ancestorRevisionNumber} = await asyncExecute('hg', args, options);
     return ancestorRevisionNumber;
   } catch (e) {
     logger.warn('Failed to get hg common ancestor: ', e.stderr, e.command);

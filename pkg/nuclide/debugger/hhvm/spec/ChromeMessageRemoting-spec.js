@@ -10,12 +10,12 @@
  */
 
 
-var {translateMessageFromServer, translateMessageToServer} = require('../lib/ChromeMessageRemoting');
+const {translateMessageFromServer, translateMessageToServer} = require('../lib/ChromeMessageRemoting');
 
 describe('debugger-hhvm ChromeMessageRemoting', () => {
 
-    it('translateMessageFromServer', () => {
-      expect(translateMessageFromServer(
+  it('translateMessageFromServer', () => {
+    expect(translateMessageFromServer(
         'myhost',
         8080,
         JSON.stringify({
@@ -26,23 +26,23 @@ describe('debugger-hhvm ChromeMessageRemoting', () => {
             startLine:0,
             startColumn:0,
             endLine:0,
-            endColumn:0
-          }
+            endColumn:0,
+          },
         }))).toBe(JSON.stringify({
-        method: 'Debugger.scriptParsed',
-        params: {
-          scriptId: '/home/test.php',
-          url: 'nuclide://myhost:8080/home/test.php',
-          startLine:0,
-          startColumn:0,
-          endLine:0,
-          endColumn:0
-        }
-      }));
-    });
+          method: 'Debugger.scriptParsed',
+          params: {
+            scriptId: '/home/test.php',
+            url: 'nuclide://myhost:8080/home/test.php',
+            startLine:0,
+            startColumn:0,
+            endLine:0,
+            endColumn:0,
+          },
+        }));
+  });
 
-    it('translateMessageFromServer with space', () => {
-      expect(translateMessageFromServer(
+  it('translateMessageFromServer with space', () => {
+    expect(translateMessageFromServer(
         'myhost',
         8080,
         JSON.stringify({
@@ -53,23 +53,23 @@ describe('debugger-hhvm ChromeMessageRemoting', () => {
             startLine:0,
             startColumn:0,
             endLine:0,
-            endColumn:0
-          }
+            endColumn:0,
+          },
         }))).toBe(JSON.stringify({
-        method: 'Debugger.scriptParsed',
-        params: {
-          scriptId: '/home/te st.php',
-          url: 'nuclide://myhost:8080/home/te st.php',
-          startLine:0,
-          startColumn:0,
-          endLine:0,
-          endColumn:0
-        }
-      }));
-    });
+          method: 'Debugger.scriptParsed',
+          params: {
+            scriptId: '/home/te st.php',
+            url: 'nuclide://myhost:8080/home/te st.php',
+            startLine:0,
+            startColumn:0,
+            endLine:0,
+            endColumn:0,
+          },
+        }));
+  });
 
-    it('translateMessageToServer', () => {
-      expect(translateMessageToServer(
+  it('translateMessageToServer', () => {
+    expect(translateMessageToServer(
         JSON.stringify({
           method: 'Debugger.setBreakpointByUrl',
           params: {
@@ -77,7 +77,7 @@ describe('debugger-hhvm ChromeMessageRemoting', () => {
             url: 'nuclide://myhost:8080/home/test.php',
             columnNumber: 0,
             condition: '',
-          }
+          },
         }))).toBe(JSON.stringify({
           method: 'Debugger.setBreakpointByUrl',
           params: {
@@ -85,8 +85,8 @@ describe('debugger-hhvm ChromeMessageRemoting', () => {
             url: 'file:///home/test.php',
             columnNumber: 0,
             condition: '',
-        }
-      }));
-    });
+          },
+        }));
+  });
 
 });

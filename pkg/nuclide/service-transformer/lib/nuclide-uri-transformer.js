@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-var {isNuclideUriFlowTypeAnnotation} = require('./flow-annotation');
-var t = require('babel-core').types;
+const {isNuclideUriFlowTypeAnnotation} = require('./flow-annotation');
+const t = require('babel-core').types;
 
 type Identifier = any;
 type AssignmentExpression = any;
@@ -21,7 +21,7 @@ type FlowTypeNode = any;
  * `$identifier  = this._connection.getPathOfUri($identifier);`
  */
 function createGetPathOfUriAssignmentExpression(identifier: Identifier): AssignmentExpression {
-  var callExpression = t.callExpression(
+  const callExpression = t.callExpression(
     /* callee */ t.memberExpression(
       t.memberExpression(
         t.thisExpression(),
@@ -48,7 +48,7 @@ function createGetPathOfUriAssignmentExpression(identifier: Identifier): Assignm
 function createGetUriOfRemotePathAssignmentExpression(
   identifier: Identifier,
 ): AssignmentExpression {
-  var callExpression = t.callExpression(
+  const callExpression = t.callExpression(
     /* callee */ t.memberExpression(
       t.memberExpression(
         t.thisExpression(),
@@ -170,15 +170,15 @@ class ManipulationAssignmentExpressionCreator {
       return null;
     }
 
-    var nestedFlowType = flowTypeNode.typeParameters.params[0];
-    var arrowFunctionParam = t.identifier('item');
-    var assignmentExpression = this._visit(nestedFlowType, arrowFunctionParam);
+    const nestedFlowType = flowTypeNode.typeParameters.params[0];
+    const arrowFunctionParam = t.identifier('item');
+    const assignmentExpression = this._visit(nestedFlowType, arrowFunctionParam);
 
     if (!assignmentExpression) {
       return null;
     }
 
-    var arrowFunction = t.arrowFunctionExpression(
+    const arrowFunction = t.arrowFunctionExpression(
       /* params */ [arrowFunctionParam],
       /* body */ t.blockStatement(
         [
@@ -188,7 +188,7 @@ class ManipulationAssignmentExpressionCreator {
       )
     );
 
-    var callArrayMapExpression = t.callExpression(
+    const callArrayMapExpression = t.callExpression(
       /* callee */ t.memberExpression(
         identifier,
         t.identifier('map'),
@@ -223,17 +223,17 @@ class ManipulationAssignmentExpressionCreator {
     flowTypeNode: FlowTypeNode,
     identifier: Identifier,
   ): ?AssignmentExpression {
-    var objectIdentifier = t.identifier('obj');
-    var assignmentExpressions = [];
+    const objectIdentifier = t.identifier('obj');
+    const assignmentExpressions = [];
 
     flowTypeNode.properties.forEach(property => {
-      var key = property.key;
+      const key = property.key;
       if (key.type !== 'Identifier') {
         return;
       }
 
-      var propertyExpression = t.memberExpression(objectIdentifier, t.identifier(key.name));
-      var assignmentExpression = this._visit(property.value, propertyExpression);
+      const propertyExpression = t.memberExpression(objectIdentifier, t.identifier(key.name));
+      const assignmentExpression = this._visit(property.value, propertyExpression);
 
       if (assignmentExpression) {
         assignmentExpressions.push(assignmentExpression);
@@ -246,7 +246,7 @@ class ManipulationAssignmentExpressionCreator {
     }
 
     // Create expression of `obj = require('nuclide-commons').object.assign({}, obj);`.
-    var shallowCopyExpression = t.expressionStatement(
+    const shallowCopyExpression = t.expressionStatement(
       t.assignmentExpression(
         /* operator */ '=',
         /* left */ objectIdentifier,
@@ -269,7 +269,7 @@ class ManipulationAssignmentExpressionCreator {
       )
     );
 
-    var arrowFunction = t.arrowFunctionExpression(
+    const arrowFunction = t.arrowFunctionExpression(
       /* params */ [objectIdentifier],
       /* body */ t.blockStatement(
         [shallowCopyExpression].concat(
@@ -279,7 +279,7 @@ class ManipulationAssignmentExpressionCreator {
       )
     );
 
-    var callArrowFunctionExpression = t.callExpression(
+    const callArrowFunctionExpression = t.callExpression(
       /* callee */ arrowFunction,
       /* arguments */ [identifier],
     );
@@ -310,7 +310,7 @@ class ManipulationAssignmentExpressionCreator {
       return null;
     }
 
-    var assignmentExpression = this._visit(flowTypeNode.typeAnnotation, identifier);
+    const assignmentExpression = this._visit(flowTypeNode.typeAnnotation, identifier);
 
     if (!assignmentExpression) {
       return null;
@@ -330,7 +330,7 @@ module.exports = {
     flowTypeNode: FlowTypeNode,
     identifier: Identifier
   ): ?AssignmentExpression {
-    var creator = new ManipulationAssignmentExpressionCreator(
+    const creator = new ManipulationAssignmentExpressionCreator(
         isNuclideUriFlowTypeAnnotation,
         createGetPathOfUriAssignmentExpression);
     return creator.create(flowTypeNode, identifier);
@@ -340,7 +340,7 @@ module.exports = {
     flowTypeNode: FlowTypeNode,
     identifier: Identifier
   ): ?AssignmentExpression {
-    var creator = new ManipulationAssignmentExpressionCreator(
+    const creator = new ManipulationAssignmentExpressionCreator(
       isNuclideUriFlowTypeAnnotation,
       createGetUriOfRemotePathAssignmentExpression,
     );

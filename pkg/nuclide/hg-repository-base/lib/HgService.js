@@ -9,24 +9,24 @@
  * the root directory of this source tree.
  */
 
-var {debounce, denodeify} = require('nuclide-commons');
-var DelayedEventManager = require('./DelayedEventManager');
-var watchman = require('fb-watchman');
-var HgServiceBase = require('./HgServiceBase');
-var logger = require('nuclide-logging').getLogger();
-var {getWatchmanBinaryPath} = require('nuclide-watchman-helpers');
-var path = require('path');
+const {debounce, denodeify} = require('nuclide-commons');
+const DelayedEventManager = require('./DelayedEventManager');
+const watchman = require('fb-watchman');
+const HgServiceBase = require('./HgServiceBase');
+const logger = require('nuclide-logging').getLogger();
+const {getWatchmanBinaryPath} = require('nuclide-watchman-helpers');
+const path = require('path');
 
-var WATCHMAN_SUBSCRIPTION_NAME_PRIMARY = 'hg-repository-watchman-subscription-primary';
-var WATCHMAN_SUBSCRIPTION_NAME_HGIGNORE = 'hg-repository-watchman-subscription-hgignore';
-var WATCHMAN_SUBSCRIPTION_NAME_HGLOCK = 'hg-repository-watchman-subscription-hglock';
-var WATCHMAN_SUBSCRIPTION_NAME_HGDIRSTATE = 'hg-repository-watchman-subscription-hgdirstate';
-var WATCHMAN_SUBSCRIPTION_NAME_HGBOOKMARK = 'hg-repository-watchman-subscription-hgbookmark';
-var WATCHMAN_SUBSCRIPTION_NAME_ARC_BUILD_LOCK = 'arc-build-lock';
-var EVENT_DELAY_IN_MS = 1000;
+const WATCHMAN_SUBSCRIPTION_NAME_PRIMARY = 'hg-repository-watchman-subscription-primary';
+const WATCHMAN_SUBSCRIPTION_NAME_HGIGNORE = 'hg-repository-watchman-subscription-hgignore';
+const WATCHMAN_SUBSCRIPTION_NAME_HGLOCK = 'hg-repository-watchman-subscription-hglock';
+const WATCHMAN_SUBSCRIPTION_NAME_HGDIRSTATE = 'hg-repository-watchman-subscription-hgdirstate';
+const WATCHMAN_SUBSCRIPTION_NAME_HGBOOKMARK = 'hg-repository-watchman-subscription-hgbookmark';
+const WATCHMAN_SUBSCRIPTION_NAME_ARC_BUILD_LOCK = 'arc-build-lock';
+const EVENT_DELAY_IN_MS = 1000;
 
 function getArcBuildLockFile(): ?string {
-  var lockFile;
+  let lockFile;
   try {
     lockFile = require('./fb/config').arcBuildLockFile;
   } catch (e) {
@@ -40,7 +40,7 @@ function getArcBuildLockFile(): ?string {
  *   watchman subscription.
  */
 function getPrimaryWatchmanSubscriptionRefinements(): Array<mixed> {
-  var refinements = [];
+  let refinements = [];
   try {
     refinements = require('./fb/config').primaryWatchSubscriptionRefinements;
   } catch (e) {
@@ -90,7 +90,7 @@ export class HgService extends HgServiceBase {
       watchmanBinaryPath: await getWatchmanBinaryPath(),
     });
     this._watchmanClient = watchmanClient;
-    var workingDirectory = this.getWorkingDirectory();
+    const workingDirectory = this.getWorkingDirectory();
     watchmanClient.command(['watch', workingDirectory], (watchError, watchResp) => {
       if (watchError) {
         logger.error('Error initiating watchman watch: ' + watchError);
@@ -106,7 +106,7 @@ export class HgService extends HgServiceBase {
           return;
         }
 
-        var primarySubscriptionExpression = ['allof',
+        let primarySubscriptionExpression = ['allof',
           ['not', ['dirname', '.hg']],
           ['not', ['name', '.hgignore', 'wholename']],
           // Hg appears to modify temporary files that begin with these
@@ -237,7 +237,7 @@ export class HgService extends HgServiceBase {
         });
 
         // Subscribe to changes to a file that appears to be the 'arc build' lock file.
-        var arcBuildLockFile = getArcBuildLockFile();
+        const arcBuildLockFile = getArcBuildLockFile();
         if (arcBuildLockFile) {
           watchmanClient.command([
             'subscribe',
@@ -312,7 +312,7 @@ export class HgService extends HgServiceBase {
           );
         } else if (update.subscription === WATCHMAN_SUBSCRIPTION_NAME_HGLOCK ||
                    update.subscription === WATCHMAN_SUBSCRIPTION_NAME_ARC_BUILD_LOCK) {
-          var lockfile = update.files[0];
+          const lockfile = update.files[0];
           if (lockfile.exists) {
             // TODO: Implement a timer to unset this, in case watchman update
             // fails to notify of the removal of the lock. I haven't seen this
@@ -349,7 +349,7 @@ export class HgService extends HgServiceBase {
           this._delayedEventManager.cancelAllEvents();
 
           // Using a local variable here to allow better type refinement.
-          var allowEventsAgain = this._allowEventsAgain;
+          let allowEventsAgain = this._allowEventsAgain;
           if (!allowEventsAgain) {
             allowEventsAgain = debounce(() => {
               if (this._shouldUseDirstate) {
@@ -370,7 +370,7 @@ export class HgService extends HgServiceBase {
   }
 
   async _cleanUpWatchman(): Promise<void> {
-    var watchmanClient = this._watchmanClient;
+    const watchmanClient = this._watchmanClient;
     if (watchmanClient) {
       await Promise.all([
         this._asyncExecuteWatchmanCommand(
@@ -397,8 +397,8 @@ export class HgService extends HgServiceBase {
    * @param update The latest watchman update.
    */
   _filesDidChange(update: any): void {
-    var workingDirectory = this.getWorkingDirectory();
-    var changedFiles = update.files.map(file => path.join(workingDirectory, file.name));
+    const workingDirectory = this.getWorkingDirectory();
+    const changedFiles = update.files.map(file => path.join(workingDirectory, file.name));
     this._filesDidChangeObserver.onNext(changedFiles);
   }
 

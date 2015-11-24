@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-var url = require('url');
-var request = require('request');
+const url = require('url');
+const request = require('request');
 const MAX_REQUEST_LENGTH = 1e6;
 
 type ResponseBody = {body: string; response: HttpResponse};
@@ -33,7 +33,7 @@ function asyncRequest(options: any): Promise<ResponseBody> {
       if (error) {
         reject(error);
       } else if (response.statusCode < 200 || response.statusCode >= 300) {
-        var errorJson = body;
+        let errorJson = body;
         if (typeof body !== 'object') {
           try {
             errorJson = JSON.parse(body);
@@ -42,7 +42,7 @@ function asyncRequest(options: any): Promise<ResponseBody> {
             errorJson = {message: body};
           }
         }
-        var err = new Error(errorJson.message);
+        const err = new Error(errorJson.message);
         // Success http status codes range from 200 to 299.
         err.code = errorJson.code || response.statusCode;
         reject(err);
@@ -77,7 +77,7 @@ function sendJsonResponse(response: http.ServerResponse, json: any, statusCode: 
   */
 function parseRequestBody(httpRequest: http.IncomingMessage, isJson: ?boolean): Promise<string> {
   return new Promise((resolve, reject) => {
-    var body = '';
+    let body = '';
     httpRequest.on('data', (data) => {
       body += data;
       // too much POST data, kill the connection!
@@ -94,7 +94,7 @@ function parseRequestBody(httpRequest: http.IncomingMessage, isJson: ?boolean): 
  * Parses the url parameters ?abc=erf&lol=432c
  */
 function getQueryParameters(requestUrl): QueryParams {
-  var {query} = url.parse(requestUrl, true);
+  const {query} = url.parse(requestUrl, true);
   return query;
 }
 
@@ -104,8 +104,8 @@ function getQueryParameters(requestUrl): QueryParams {
  * to help the server understand and parse it.
  */
 function serializeArgs(args: Array<any>): SerializedArguments {
-  var argsOnHttp = [];
-  var argTypes = [];
+  const argsOnHttp = [];
+  const argTypes = [];
   args.forEach(function(arg) {
     // I do this because nulls are normally sent as empty strings
     if (arg === undefined) {
@@ -130,11 +130,11 @@ function serializeArgs(args: Array<any>): SerializedArguments {
  * of the original arguments of the same types the client called the function with.
  */
 function deserializeArgs(requestUrl: string): Array<any> {
-  var {args, argTypes} = getQueryParameters(requestUrl);
+  let {args, argTypes} = getQueryParameters(requestUrl);
   args = args || [];
   argTypes = argTypes || [];
-  var argsArray = Array.isArray(args) ? args : [args];
-  var argTypesArray = Array.isArray(argTypes) ? argTypes : [argTypes];
+  const argsArray = Array.isArray(args) ? args : [args];
+  const argTypesArray = Array.isArray(argTypes) ? argTypes : [argTypes];
   return argsArray.map(function(arg, i) {
     // I do this because nulls are normally sent as empty strings.
     if (argTypesArray[i] === 'undefined') {

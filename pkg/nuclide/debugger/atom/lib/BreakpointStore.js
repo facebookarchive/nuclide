@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-var {Emitter} = require('atom');
-var Multimap = require('./Multimap');
+const {Emitter} = require('atom');
+const Multimap = require('./Multimap');
 
 export type SerializedBreakpoint = {
   line: number,
@@ -67,7 +67,7 @@ class BreakpointStore {
   }
 
   getSerializedBreakpoints(): Array<SerializedBreakpoint> {
-    var breakpoints = [];
+    const breakpoints = [];
     this._breakpoints.forEach((line, sourceURL) => {
       breakpoints.push({line, sourceURL});
     });
@@ -75,8 +75,8 @@ class BreakpointStore {
   }
 
   _deserializeBreakpoints(breakpoints: Array<SerializedBreakpoint>): void {
-    for (var breakpoint of breakpoints) {
-      var {line, sourceURL} = breakpoint;
+    for (const breakpoint of breakpoints) {
+      const {line, sourceURL} = breakpoint;
       this.addBreakpoint(sourceURL, line);
     }
   }

@@ -10,12 +10,12 @@
  */
 
 
-var {log, logError} = require('./utils');
-var {DebuggerHandler} = require('./DebuggerHandler');
-var PageHandler = require('./PageHandler');
-var ConsoleHandler = require('./ConsoleHandler');
-var {RuntimeHandler} = require('./RuntimeHandler');
-var {ConnectionMultiplexer} = require('./ConnectionMultiplexer');
+const {log, logError} = require('./utils');
+const {DebuggerHandler} = require('./DebuggerHandler');
+const PageHandler = require('./PageHandler');
+const ConsoleHandler = require('./ConsoleHandler');
+const {RuntimeHandler} = require('./RuntimeHandler');
+const {ConnectionMultiplexer} = require('./ConnectionMultiplexer');
 import {ClientCallback} from './ClientCallback';
 
 import type {ConnectionConfig} from './DbgpConnector';

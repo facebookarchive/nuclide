@@ -22,7 +22,7 @@ import {Type} from '../lib/types';
 
 import {builtinLocation} from '../lib/builtin-types';
 
-var t = babel.types;
+const t = babel.types;
 
 describe('Proxy generator test suite.', () => {
   beforeEach(function() {
@@ -44,7 +44,7 @@ describe('Proxy generator test suite.', () => {
   }
 });
 
-var ArrayOfArrayOfNuclideUri: Type = {
+const ArrayOfArrayOfNuclideUri: Type = {
   location: builtinLocation,
   kind: 'array',
   type: {
@@ -64,7 +64,7 @@ describe('generateTransformStatement helper function', function () {
   });
 
   it('Generates a marshal statement.', () => {
-    var code = generate(__test__.generateTransformStatement(t.identifier('value'),
+    const code = generate(__test__.generateTransformStatement(t.identifier('value'),
         ArrayOfArrayOfNuclideUri, true)).code;
     expect(code).diffLines(marshalText);
   });
@@ -72,13 +72,13 @@ describe('generateTransformStatement helper function', function () {
   it('Generates an unmarshal statement.', () => {
 
     // $FlowIssue
-    var code = generate(__test__.generateTransformStatement(t.identifier('value'),
+    const code = generate(__test__.generateTransformStatement(t.identifier('value'),
         ArrayOfArrayOfNuclideUri, false)).code;
     expect(code).diffLines(unmarshalText);
   });
 });
 
-var marshalText = `_client.marshal(value, {
+const marshalText = `_client.marshal(value, {
   location: {
     type: "builtin"
   },
@@ -98,7 +98,7 @@ var marshalText = `_client.marshal(value, {
   }
 })`;
 
-var unmarshalText = `_client.unmarshal(value, {
+const unmarshalText = `_client.unmarshal(value, {
   location: {
     type: "builtin"
   },

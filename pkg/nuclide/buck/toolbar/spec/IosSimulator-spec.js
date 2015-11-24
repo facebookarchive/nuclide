@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-var {
+const {
   parseDevicesFromSimctlOutput,
   selectDevice,
 } = require('../lib/IosSimulator');
@@ -39,10 +39,10 @@ describe('IosSimulator', () => {
       },
       {
         name: 'iPhone 5',
-         udid: 'AE1CD3D0-A85B-4A73-B320-9CA7BA4FAEB0',
-         os: '8.4',
-         state: 'Shutdown',
-       },
+        udid: 'AE1CD3D0-A85B-4A73-B320-9CA7BA4FAEB0',
+        os: '8.4',
+        state: 'Shutdown',
+      },
     ]);
   });
 

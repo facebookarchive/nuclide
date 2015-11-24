@@ -12,9 +12,9 @@
 import type {FunctionTypeAnnotation} from 'ast-types-flow';
 import type {Lines, Print} from '../../types/common';
 
-var flatten = require('../../utils/flatten');
-var markers = require('../../constants/markers');
-var printCommaSeparatedNodes = require('../common/printCommaSeparatedNodes');
+const flatten = require('../../utils/flatten');
+const markers = require('../../constants/markers');
+const printCommaSeparatedNodes = require('../common/printCommaSeparatedNodes');
 
 function printFunctionTypeAnnotation(
   print: Print,

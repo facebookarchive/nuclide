@@ -12,11 +12,11 @@
 import type {ProcessOutputStore} from 'nuclide-process-output-store';
 import type ProcessOutputHandler from './types';
 
-var {CompositeDisposable, TextBuffer} = require('atom');
-var AtomTextEditor = require('nuclide-ui-atom-text-editor');
-var React = require('react-for-atom');
+const {CompositeDisposable, TextBuffer} = require('atom');
+const AtomTextEditor = require('nuclide-ui-atom-text-editor');
+const React = require('react-for-atom');
 
-var PROCESS_OUTPUT_PATH = 'nuclide-process-output.ansi';
+const PROCESS_OUTPUT_PATH = 'nuclide-process-output.ansi';
 
 class ProcessOutputView extends React.Component {
   _processOutputStore: ProcessOutputStore;

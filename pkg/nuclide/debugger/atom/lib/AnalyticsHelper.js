@@ -10,7 +10,7 @@
  */
 import {startTracking} from 'nuclide-analytics';
 
-var timer = null;
+let timer = null;
 export function beginTimerTracking(eventName: string) {
   timer = startTracking(eventName);
 }

@@ -9,10 +9,10 @@
  * the root directory of this source tree.
  */
 
-var {CompositeDisposable} = require('atom');
-var React = require('react-for-atom');
+const {CompositeDisposable} = require('atom');
+const React = require('react-for-atom');
 
-var {PropTypes} = React;
+const {PropTypes} = React;
 
 /**
  * An input field rendered as an <atom-text-editor mini />.
@@ -52,18 +52,18 @@ class AtomInput extends React.Component {
   }
 
   componentDidMount(): void {
-    var disposables = this._disposables = new CompositeDisposable();
+    const disposables = this._disposables = new CompositeDisposable();
 
     // There does not appear to be any sort of infinite loop where calling
     // setState({value}) in response to onDidChange() causes another change
     // event.
 
-    var textEditor = this.getTextEditor();
+    const textEditor = this.getTextEditor();
     disposables.add(textEditor.onDidChange(() => {
       this.setState({value: textEditor.getText()});
       this.props.onDidChange.call(null, textEditor.getText());
     }));
-    var placeholderText = this.props.placeholderText;
+    const placeholderText = this.props.placeholderText;
     if (placeholderText !== null) {
       textEditor.setPlaceholderText(placeholderText);
     }
@@ -98,7 +98,7 @@ class AtomInput extends React.Component {
   }
 
   render(): ReactElement {
-    var className;
+    let className;
     if (this.props.size) {
       className = `atom-text-editor-${this.props.size}`;
     }

@@ -9,25 +9,25 @@
  * the root directory of this source tree.
  */
 
-var path = require('path');
-var {asyncExecute, findNearestFile} = require('nuclide-commons');
-var LRU = require('lru-cache');
+const path = require('path');
+const {asyncExecute, findNearestFile} = require('nuclide-commons');
+const LRU = require('lru-cache');
 
 import invariant from 'assert';
 
-var flowConfigDirCache = LRU({
+const flowConfigDirCache = LRU({
   max: 10,
   length: function (n) { return n.length; },
   maxAge: 1000 * 30, //30 seconds
 });
-var flowPathCache = LRU({
+const flowPathCache = LRU({
   max: 10,
   maxAge: 1000 * 30, // 30 seconds
 });
 
 function insertAutocompleteToken(contents: string, line: number, col: number): string {
-  var lines = contents.split('\n');
-  var theLine = lines[line];
+  const lines = contents.split('\n');
+  let theLine = lines[line];
   theLine = theLine.substring(0, col) + 'AUTO332' + theLine.substring(col);
   lines[line] = theLine;
   return lines.join('\n');
@@ -40,15 +40,15 @@ function insertAutocompleteToken(contents: string, line: number, col: number): s
  */
 function processAutocompleteItem(replacementPrefix: string, flowItem: Object): Object {
   // Truncate long types for readability
-  var description = flowItem['type'].length < 80
+  const description = flowItem['type'].length < 80
     ? flowItem['type']
     : flowItem['type'].substring(0,80) + ' ...';
-  var result = {
+  let result = {
     description: description,
     displayText: flowItem['name'],
     replacementPrefix,
   };
-  var funcDetails = flowItem['func_details'];
+  const funcDetails = flowItem['func_details'];
   if (funcDetails) {
     // The parameters in human-readable form for use on the right label.
     const rightParamStrings = funcDetails['params']
@@ -122,10 +122,10 @@ function isOptional(param: string): boolean {
 }
 
 async function isFlowInstalled(): Promise<boolean> {
-  var os = require('os');
-  var platform = os.platform();
+  const os = require('os');
+  const platform = os.platform();
   if (platform === 'linux' || platform === 'darwin') {
-    var flowPath = getPathToFlow();
+    const flowPath = getPathToFlow();
     if (!flowPathCache.has(flowPath)) {
       flowPathCache.set(flowPath, await canFindFlow(flowPath));
     }

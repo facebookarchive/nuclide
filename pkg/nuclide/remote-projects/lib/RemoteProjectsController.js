@@ -9,14 +9,14 @@
  * the root directory of this source tree.
  */
 
-var React = require('react-for-atom');
-var {CompositeDisposable, Disposable} = require('atom');
-var StatusBarTile = require('./ui/StatusBarTile');
-var {isTextEditor} = require('nuclide-atom-helpers');
-var remoteUri = require('nuclide-remote-uri');
-var ConnectionState = require('./ConnectionState');
+const React = require('react-for-atom');
+const {CompositeDisposable, Disposable} = require('atom');
+const StatusBarTile = require('./ui/StatusBarTile');
+const {isTextEditor} = require('nuclide-atom-helpers');
+const remoteUri = require('nuclide-remote-uri');
+const ConnectionState = require('./ConnectionState');
 
-var {onWorkspaceDidStopChangingActivePaneItem} =
+const {onWorkspaceDidStopChangingActivePaneItem} =
   require('nuclide-atom-helpers').atomEventDebounce;
 
 class RemoteProjectsController {
@@ -52,8 +52,8 @@ class RemoteProjectsController {
       this._renderStatusBar(ConnectionState.NONE);
       return;
     }
-    var textEditor = paneItem;
-    var fileUri = textEditor.getPath();
+    const textEditor = paneItem;
+    const fileUri = textEditor.getPath();
     if (!fileUri) {
       return;
     }
@@ -62,12 +62,12 @@ class RemoteProjectsController {
       return;
     }
 
-    var updateStatus = isConnected => {
+    const updateStatus = isConnected => {
       this._renderStatusBar(isConnected ? ConnectionState.CONNECTED : ConnectionState.DISCONNECTED, fileUri);
     };
 
-    var {getClient} = require('nuclide-client');
-    var client = getClient(fileUri);
+    const {getClient} = require('nuclide-client');
+    const client = getClient(fileUri);
     if (!client || !client.eventbus) {
       updateStatus(false);
       return;
@@ -86,17 +86,17 @@ class RemoteProjectsController {
     this._statusBarDiv = document.createElement('div');
     this._statusBarDiv.className = 'nuclide-remote-projects inline-block';
 
-    var tooltip = atom.tooltips.add(
+    const tooltip = atom.tooltips.add(
       this._statusBarDiv,
       {title: 'Click to show details of connection.'}
     );
-    var rightTile = statusBar.addLeftTile({
+    const rightTile = statusBar.addLeftTile({
       item: this._statusBarDiv,
       priority: -99,
     });
 
     this._disposables.add(new Disposable(() => {
-      var parentNode = this._statusBarDiv.parentNode;
+      const parentNode = this._statusBarDiv.parentNode;
       if (parentNode) {
         parentNode.removeChild(this._statusBarDiv);
       }

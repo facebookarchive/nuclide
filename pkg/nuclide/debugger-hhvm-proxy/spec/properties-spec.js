@@ -10,7 +10,7 @@
  */
 
 
-var {convertProperties, convertProperty, getPagedProperties} = require('../lib/properties');
+const {convertProperties, convertProperty, getPagedProperties} = require('../lib/properties');
 
 describe('debugger-hhvm-proxy properties', () => {
 
@@ -25,7 +25,7 @@ describe('debugger-hhvm-proxy properties', () => {
           address: '140735826684480',
           type: 'string',
           size: '15',
-          encoding: 'base64'
+          encoding: 'base64',
         },
       }
     )).toEqual({
@@ -51,7 +51,7 @@ describe('debugger-hhvm-proxy properties', () => {
             address: '140735826684480',
             type: 'string',
             size: '15',
-            encoding: 'base64'
+            encoding: 'base64',
           },
         },
         {
@@ -116,7 +116,7 @@ describe('debugger-hhvm-proxy properties', () => {
               page: 0,
             }
           ),
-        }
+        },
       },
       {
         configurable: false,
@@ -134,7 +134,7 @@ describe('debugger-hhvm-proxy properties', () => {
               page: 1,
             }
           ),
-        }
+        },
       },
     ]);
   });
@@ -173,7 +173,7 @@ describe('debugger-hhvm-proxy properties', () => {
               },
             }
           ),
-        }
+        },
       },
       {
         configurable: false,
@@ -191,7 +191,7 @@ describe('debugger-hhvm-proxy properties', () => {
               page: 1024,
             }
           ),
-        }
+        },
       },
     ]);
   });

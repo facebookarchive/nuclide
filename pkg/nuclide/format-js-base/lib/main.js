@@ -18,7 +18,7 @@ module.exports = {
   },
 
   createModuleMap(options: ModuleMapOptions): ModuleMap {
-    var ModuleMapClass = require('./state/ModuleMap');
+    const ModuleMapClass = require('./state/ModuleMap');
     return new ModuleMapClass(options);
   },
 

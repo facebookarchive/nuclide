@@ -9,10 +9,10 @@
  * the root directory of this source tree.
  */
 
-var {findTargetLocation, parseTarget} = require('../lib/HyperclickProvider');
+const {findTargetLocation, parseTarget} = require('../lib/HyperclickProvider');
 
 describe('HyperclickProvider', () => {
-  var projectPath;
+  let projectPath;
 
   beforeEach(() => {
     projectPath = require('path').join(__dirname, 'fixtures/test-project') + '/';
@@ -21,13 +21,13 @@ describe('HyperclickProvider', () => {
 
   describe('parseTarget', () => {
     it('searches //Apps/TestApp/BUCK.test', () => {
-      var buckProject = {
+      const buckProject = {
         getPath() {
           return Promise.resolve(projectPath);
         },
       };
       waitsForPromise(async () => {
-        var target = await parseTarget(
+        let target = await parseTarget(
             [':target1', null, 'target1'],
             null,
             buckProject);
@@ -55,7 +55,7 @@ describe('HyperclickProvider', () => {
   });
 
   describe('findTargetLocation', () => {
-    var targetsByFile = {
+    const targetsByFile = {
       'Apps/TestApp/BUCK.test': {
         'Target1': 1,
         'w3ird_target-name': 7,
@@ -84,20 +84,20 @@ describe('HyperclickProvider', () => {
       },
     };
 
-    for (var file in targetsByFile) {
-      for (var targetName in targetsByFile[file]) {
+    for (const file in targetsByFile) {
+      for (const targetName in targetsByFile[file]) {
         it('asks for a location of the target', () => {
           waitsForPromise(() => {
             return findTargetLocation({path: projectPath + file, name: targetName})
             .then((location) => {
-              var line = targetsByFile[file][targetName];
+              const line = targetsByFile[file][targetName];
               if (line !== -1) {
                 expect(location).toEqual(
-                    {
-                      path: projectPath + file,
-                      line: line,
-                      column: 0,
-                    });
+                  {
+                    path: projectPath + file,
+                    line: line,
+                    column: 0,
+                  });
               } else {
                 expect(location).toEqual({path: projectPath + file, line: 0, column: 0});
               }

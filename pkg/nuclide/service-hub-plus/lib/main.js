@@ -11,7 +11,7 @@
 
 function consumeFirstProvider(keyPath: string, version: string = '0.0.0'): Promise {
   return new Promise((resolve, reject) => {
-    var subscription = atom.packages.serviceHub.consume(keyPath, version, provider => {
+    const subscription = atom.packages.serviceHub.consume(keyPath, version, provider => {
       resolve(provider);
       subscription.dispose();
     });

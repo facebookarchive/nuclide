@@ -58,11 +58,11 @@ class RequestSerializer<T> {
   }
 
   async run(promise: Promise<T>): Promise<RunReturn<T>> {
-    var thisOp = this._lastDispatchedOp + 1;
+    const thisOp = this._lastDispatchedOp + 1;
     this._lastDispatchedOp = thisOp;
     this._latestPromise = promise;
     this._waitResolve();
-    var result = await promise;
+    const result = await promise;
     if (this._lastFinishedOp < thisOp) {
       this._lastFinishedOp = thisOp;
       return {
@@ -213,7 +213,7 @@ function serializeAsyncCall<T>(asyncFun: () => Promise<T>): () => Promise<T> {
   };
 }
 
-var promises = module.exports = {
+const promises = module.exports = {
 
   /**
    * Returns a value derived asynchronously from an element in the items array.
@@ -238,16 +238,16 @@ var promises = module.exports = {
       // Create a local copy of items to defend against the caller modifying the
       // array before this Promise is resolved.
       items = items.slice();
-      var numItems = items.length;
+      const numItems = items.length;
 
-      var next = async function(index) {
+      const next = async function(index) {
         if (index === numItems) {
           resolve(null);
           return;
         }
 
-        var item = items[index];
-        var result = await test.call(thisArg, item);
+        const item = items[index];
+        const result = await test.call(thisArg, item);
         if (result !== null) {
           resolve(result);
         } else {
@@ -291,14 +291,14 @@ var promises = module.exports = {
    * @param mappingFunction the async Promise function that could return a useful result.
    */
   asyncLimit<T, V>(array: Array<T>, limit: number, mappingFunction: (item: T) => Promise<V>): Promise<Array<V>> {
-    var result: Array<V> = new Array(array.length);
-    var parallelPromises = 0;
-    var index = 0;
+    const result: Array<V> = new Array(array.length);
+    let parallelPromises = 0;
+    let index = 0;
 
-    var parallelLimit = Math.min(limit, array.length);
+    const parallelLimit = Math.min(limit, array.length);
 
     return new Promise((resolve, reject) => {
-      var runPromise = async () => {
+      const runPromise = async () => {
         if (index === array.length) {
           if (parallelPromises === 0) {
             resolve(result);
@@ -306,7 +306,7 @@ var promises = module.exports = {
           return;
         }
         ++parallelPromises;
-        var i = index++;
+        const i = index++;
         try {
           result[i] = await mappingFunction(array[i]);
         } catch (e) {
@@ -343,7 +343,7 @@ var promises = module.exports = {
    * @param limit the configurable number of parallel async operations.
    */
   async asyncFilter<T>(array: Array<T>, filterFunction: (item: T) => Promise<boolean>, limit?: number): Promise<Array<T>> {
-    var filteredList = [];
+    const filteredList = [];
     await promises.asyncLimit(array, limit || array.length, async (item: T) => {
       if (await filterFunction(item)) {
         filteredList.push(item);
@@ -373,7 +373,7 @@ var promises = module.exports = {
    * @param limit the configurable number of parallel async operations.
    */
   async asyncSome<T>(array: Array<T>, someFunction: (item: T) => Promise<boolean>, limit?: number): Promise<boolean> {
-    var resolved = false;
+    let resolved = false;
     await promises.asyncLimit(array, limit || array.length, async (item: T) => {
       if (resolved) {
         // We don't need to call the someFunction anymore or wait any longer.

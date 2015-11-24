@@ -8,10 +8,10 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-var RemoteConnection = require('./RemoteConnection');
-var RemoteDirectory = require('./RemoteDirectory');
-var RemoteFile = require('./RemoteFile');
-var {SshHandshake, decorateSshConnectionDelegateWithTracking} = require('./SshHandshake');
+const RemoteConnection = require('./RemoteConnection');
+const RemoteDirectory = require('./RemoteDirectory');
+const RemoteFile = require('./RemoteFile');
+const {SshHandshake, decorateSshConnectionDelegateWithTracking} = require('./SshHandshake');
 
 /*
  * We want the services to exist as a singleton. The ./service-manager.js file

@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-var isMarker = require('./isMarker');
+const isMarker = require('./isMarker');
 
 /**
  * This returns a list of all the contiguous runs of markers within this set

@@ -13,10 +13,10 @@ import type {Point} from 'atom';
 
 import {trackOperationTiming} from 'nuclide-analytics';
 
-var libClangProcess = null;
-var editorSubscription = null;
-var jumpToRelatedFile = null;
-var diagnostics = [];
+let libClangProcess = null;
+let editorSubscription = null;
+let jumpToRelatedFile = null;
+let diagnostics = [];
 
 // One of text our snippet is required.
 type Suggestion = {
@@ -31,7 +31,7 @@ type Suggestion = {
 module.exports = {
   activate() {
     // Create a process that can talk to libclang asynchronously.
-    var LibClangProcess = require('./LibClangProcess');
+    const LibClangProcess = require('./LibClangProcess');
     libClangProcess = new LibClangProcess();
 
     // Because a ClangLinter is created via reflection via the Linter package,
@@ -39,16 +39,16 @@ module.exports = {
     // static method.
     require('./main-shared').setSharedLibClangProcess(libClangProcess);
 
-    var JumpToRelatedFile = require('./JumpToRelatedFile');
-    var RelatedFileFinder = require('./RelatedFileFinder');
+    const JumpToRelatedFile = require('./JumpToRelatedFile');
+    const RelatedFileFinder = require('./RelatedFileFinder');
     jumpToRelatedFile = new JumpToRelatedFile(new RelatedFileFinder());
     jumpToRelatedFile.enable();
   },
 
   /** Provider for autocomplete service. */
   createAutocompleteProvider(): mixed {
-    var {AutocompleteProvider} = require('./AutocompleteProvider');
-    var autocompleteProvider = new AutocompleteProvider(libClangProcess);
+    const {AutocompleteProvider} = require('./AutocompleteProvider');
+    const autocompleteProvider = new AutocompleteProvider(libClangProcess);
 
     return {
       selector: '.source.objc, .source.objcpp, .source.cpp, .source.c',

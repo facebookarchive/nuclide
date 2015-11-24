@@ -11,27 +11,27 @@
 
 import type {FileReferences} from '../types';
 
-var React = require('react-for-atom');
-var FileReferencesView = require('./FileReferencesView');
-var FindReferencesModel = require('../FindReferencesModel');
+const React = require('react-for-atom');
+const FileReferencesView = require('./FileReferencesView');
+const FindReferencesModel = require('../FindReferencesModel');
 
 // Number of files to show on every page.
-var PAGE_SIZE = 10;
+const PAGE_SIZE = 10;
 // Start loading more once the user scrolls within this many pixels of the bottom.
-var SCROLL_LOAD_THRESHOLD = 250;
+const SCROLL_LOAD_THRESHOLD = 250;
 
 function pluralize(noun: string, count: number) {
   return count === 1 ? noun : noun + 's';
 }
 
-var FindReferencesView = React.createClass({
+const FindReferencesView = React.createClass({
 
   propTypes: {
     model: React.PropTypes.objectOf(FindReferencesModel).isRequired,
   },
 
   getInitialState() {
-    var references: Array<FileReferences> = [];
+    const references: Array<FileReferences> = [];
     return {
       loading: true,
       fetched: 0,
@@ -44,7 +44,7 @@ var FindReferencesView = React.createClass({
   },
 
   async _fetchMore(count: number): Promise<void> {
-    var next = await this.props.model.getFileReferences(
+    const next = await this.props.model.getFileReferences(
       this.state.fetched,
       PAGE_SIZE
     );
@@ -56,11 +56,11 @@ var FindReferencesView = React.createClass({
   },
 
   _onScroll(evt: Event) {
-    var root = React.findDOMNode(this.refs.root);
+    const root = React.findDOMNode(this.refs.root);
     if (this.state.loading || root.clientHeight >= root.scrollHeight) {
       return;
     }
-    var scrollBottom = root.scrollTop + root.clientHeight;
+    const scrollBottom = root.scrollTop + root.clientHeight;
     if (root.scrollHeight - scrollBottom <= SCROLL_LOAD_THRESHOLD) {
       this.setState({loading: true});
       this._fetchMore(PAGE_SIZE);
@@ -68,7 +68,7 @@ var FindReferencesView = React.createClass({
   },
 
   render(): ReactElement {
-    var children = this.state.references.map((fileRefs, i) =>
+    const children = this.state.references.map((fileRefs, i) =>
       <FileReferencesView
         key={i}
         {...fileRefs}
@@ -76,8 +76,8 @@ var FindReferencesView = React.createClass({
       />
     );
 
-    var refCount = this.props.model.getReferenceCount();
-    var fileCount = this.props.model.getFileCount();
+    const refCount = this.props.model.getReferenceCount();
+    const fileCount = this.props.model.getFileCount();
     if (this.state.fetched < fileCount) {
       children.push(
         <div
@@ -96,7 +96,7 @@ var FindReferencesView = React.createClass({
         {children}
       </div>
     );
-  }
+  },
 
 });
 

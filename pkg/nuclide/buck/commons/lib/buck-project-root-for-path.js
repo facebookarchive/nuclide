@@ -11,9 +11,9 @@
 
 import {getServiceByNuclideUri} from 'nuclide-client';
 import type {BuckProject} from 'nuclide-buck-base/lib/BuckProject';
-var {getPath} = require('nuclide-remote-uri');
+const {getPath} = require('nuclide-remote-uri');
 
-var buckProjectForBuckProjectDirectory: {[key: string]: mixed} = {};
+const buckProjectForBuckProjectDirectory: {[key: string]: mixed} = {};
 
 /**
  * @return Promise that resolves to buck project or null if the
@@ -28,14 +28,14 @@ async function buckProjectRootForPath(filePath: string): Promise<?BuckProject> {
     return null;
   }
 
-  var buckProject = buckProjectForBuckProjectDirectory[directory];
+  let buckProject = buckProjectForBuckProjectDirectory[directory];
   if (buckProject) {
     return buckProject;
   }
 
   directory = getPath(directory);
 
-  var buckService = getServiceByNuclideUri('BuckProject', filePath);
+  const buckService = getServiceByNuclideUri('BuckProject', filePath);
   if (buckService) {
     buckProject = new buckService.BuckProject({rootPath: directory});
     buckProjectForBuckProjectDirectory[directory] = buckProject;

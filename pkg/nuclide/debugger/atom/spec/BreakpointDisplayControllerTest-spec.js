@@ -9,11 +9,11 @@
  * the root directory of this source tree.
  */
 
-var BreakpointDisplayController = require('../lib/BreakpointDisplayController');
-var BreakpointStore = require('../lib/BreakpointStore');
-var utils = require('./utils');
+const BreakpointDisplayController = require('../lib/BreakpointDisplayController');
+const BreakpointStore = require('../lib/BreakpointStore');
+const utils = require('./utils');
 
-var controllerDelegate = {
+const controllerDelegate = {
   handleTextEditorDestroyed(controller: BreakpointDisplayController) {
     controller.dispose();
   },
@@ -21,16 +21,16 @@ var controllerDelegate = {
 
 describe('BreakpointDisplayController', () => {
   /* eslint-disable no-unused-vars */
-  var displayController;
+
   /* eslint-enable no-unused-vars */
-  var editor;
-  var store;
-  var testFilePath;
+  let editor;
+  let store;
+  let testFilePath;
 
   function simulateClickAtBufferPosition(target: EventTarget, row: number) {
-    var editorView = atom.views.getView(editor);
-    var position = editorView.pixelPositionForBufferPosition([row, 0]);
-    var event = new window.MouseEvent('click', {
+    const editorView = atom.views.getView(editor);
+    const position = editorView.pixelPositionForBufferPosition([row, 0]);
+    const event = new window.MouseEvent('click', {
       clientX: position.left,
       clientY: position.top,
       bubbles: true,
@@ -53,7 +53,7 @@ describe('BreakpointDisplayController', () => {
     store.addBreakpoint(testFilePath, 1);
     expect(utils.hasBreakpointDecorationInRow(editor, 1)).toBe(true);
 
-    var decoration = utils.getBreakpointDecorationInRow(editor, 1);
+    const decoration = utils.getBreakpointDecorationInRow(editor, 1);
     simulateClickAtBufferPosition(decoration.getProperties().item, 1);
 
     expect(utils.hasBreakpointDecorationInRow(editor, 1)).toBe(false);
@@ -63,8 +63,8 @@ describe('BreakpointDisplayController', () => {
   it('should toggle breakpoint when breakpoint gutter is clicked', () => {
     editor.setText('foo\nbar\nbaz');
     expect(utils.hasBreakpointDecorationInRow(editor, 1)).toBe(false);
-    var gutter = editor.gutterWithName('nuclide-breakpoint');
-    var gutterView = atom.views.getView(gutter);
+    const gutter = editor.gutterWithName('nuclide-breakpoint');
+    const gutterView = atom.views.getView(gutter);
     simulateClickAtBufferPosition(gutterView, 1);
     expect(utils.hasBreakpointDecorationInRow(editor, 1)).toBe(true);
     simulateClickAtBufferPosition(gutterView, 1);
@@ -74,8 +74,8 @@ describe('BreakpointDisplayController', () => {
   it('should toggle breakpoint when line number gutter is clicked', () => {
     editor.setText('foo\nbar\nbaz');
     expect(utils.hasBreakpointDecorationInRow(editor, 1)).toBe(false);
-    var gutter = editor.gutterWithName('line-number');
-    var lineNumberElem = atom.views.getView(gutter).querySelector('.line-number');
+    const gutter = editor.gutterWithName('line-number');
+    const lineNumberElem = atom.views.getView(gutter).querySelector('.line-number');
     expect(lineNumberElem).not.toBeNull();
     simulateClickAtBufferPosition(lineNumberElem, 1);
     expect(utils.hasBreakpointDecorationInRow(editor, 1)).toBe(true);

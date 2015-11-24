@@ -9,17 +9,17 @@
  * the root directory of this source tree.
  */
 
-var fs = require('fs');
-var path = require('path');
-var WebSocket = require('ws');
-var {EventEmitter} = require('events');
-var NuclideServer = require('../lib/NuclideServer');
-var NuclideRemoteEventbus = require('../lib/NuclideRemoteEventbus');
-var NuclideClient = require('../lib/NuclideClient');
-var {getVersion} = require('nuclide-version');
 
-var server;
-var client;
+
+const WebSocket = require('ws');
+const {EventEmitter} = require('events');
+const NuclideServer = require('../lib/NuclideServer');
+const NuclideRemoteEventbus = require('../lib/NuclideRemoteEventbus');
+const NuclideClient = require('../lib/NuclideClient');
+const {getVersion} = require('nuclide-version');
+
+let server;
+let client;
 
 describe('Nuclide Server test suite', () => {
   beforeEach(() => {
@@ -38,8 +38,8 @@ describe('Nuclide Server test suite', () => {
   });
 
   it('websocket is connected with the server', () => {
-    var websocket = new WebSocket('ws://localhost:8176');
-    var opened = false;
+    const websocket = new WebSocket('ws://localhost:8176');
+    let opened = false;
     websocket.once('open', () => {
       opened = true;
     });
@@ -49,9 +49,9 @@ describe('Nuclide Server test suite', () => {
   xdescribe('reconnect websocket flow', () => {
     it('server sent messages, while disconnected will still be delievered', () => {
       // Here is the initial message.
-      var nuclideSocket = client.eventbus.socket;
-      var messageHandler = jasmine.createSpy();
-      var reconnectHandler = jasmine.createSpy();
+      const nuclideSocket = client.eventbus.socket;
+      const messageHandler = jasmine.createSpy();
+      const reconnectHandler = jasmine.createSpy();
       nuclideSocket.on('reconnect', reconnectHandler);
       nuclideSocket.on('message', messageHandler);
       // The maximum reconnect time is 5 seconds - advance clock to sip the reconnect time.
@@ -59,17 +59,17 @@ describe('Nuclide Server test suite', () => {
 
       waitsForPromise(() => nuclideSocket.waitForConnect());
 
-      var message1 = {foo1: 'bar1'};
-      var message2 = {foo2: 'bar2'};
-      var message3 = {foo3: 'bar3'};
-      var message4 = {foo4: 'bar4'};
+      const message1 = {foo1: 'bar1'};
+      const message2 = {foo2: 'bar2'};
+      const message3 = {foo3: 'bar3'};
+      const message4 = {foo4: 'bar4'};
 
       // Wait for the connection to exist on the server.
       waits(() => Object.keys(server._clients).length === 1);
 
-      var serverSocketClient = null;
+      let serverSocketClient = null;
       runs(() => {
-        var clientId = Object.keys(server._clients)[0];
+        const clientId = Object.keys(server._clients)[0];
         serverSocketClient = server._clients[clientId];
         expect(serverSocketClient.id).toBe(clientId);
 

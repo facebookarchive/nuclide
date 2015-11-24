@@ -8,17 +8,17 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-var {goToLocation} = require('nuclide-atom-helpers');
-var findWholeRangeOfSymbol = require('./findWholeRangeOfSymbol');
+const {goToLocation} = require('nuclide-atom-helpers');
+const findWholeRangeOfSymbol = require('./findWholeRangeOfSymbol');
 
-var GRAMMARS = new Set([
+const GRAMMARS = new Set([
   'source.c',
   'source.cpp',
   'source.objc',
   'source.objcpp',
 ]);
 
-var libClangProcessSingleton;
+let libClangProcessSingleton;
 function getLibClangProcess() {
   if (!libClangProcessSingleton) {
     libClangProcessSingleton = require('./main-shared').getSharedLibClangProcess();
@@ -36,11 +36,11 @@ module.exports = {
       return null;
     }
 
-    var {start: position} = range;
+    const {start: position} = range;
 
-    var result = await getLibClangProcess().getDeclaration(textEditor, position.row, position.column);
+    const result = await getLibClangProcess().getDeclaration(textEditor, position.row, position.column);
     if (result) {
-      var wholeRange = findWholeRangeOfSymbol(textEditor, text, range, result.spelling, result.extent);
+      const wholeRange = findWholeRangeOfSymbol(textEditor, text, range, result.spelling, result.extent);
       return {
         range: wholeRange,
         callback: () => goToLocation(result.file, result.line, result.column),

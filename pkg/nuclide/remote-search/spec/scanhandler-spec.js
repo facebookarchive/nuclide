@@ -11,11 +11,11 @@
 
 import type {search$FileResult} from '../lib/types';
 
-var {asyncExecute} = require('nuclide-commons');
-var fs = require('fs');
-var {addMatchers} = require('nuclide-test-helpers');
-var path = require('path');
-var temp = require('temp').track();
+const {asyncExecute} = require('nuclide-commons');
+const fs = require('fs');
+const {addMatchers} = require('nuclide-test-helpers');
+const path = require('path');
+const temp = require('temp').track();
 
 import search from './../lib/scanhandler';
 
@@ -28,7 +28,7 @@ describe('Scan Handler Tests', () => {
   it('Should recursively scan all files in a directory', () => {
     waitsForPromise(async () => {
       // Setup the test folder.
-      var folder = temp.mkdirSync();
+      const folder = temp.mkdirSync();
       fs.writeFileSync(path.join(folder, 'file1.js'), `var a = 4;
         console.log("Hello World!");
         console.log(a);
@@ -39,8 +39,8 @@ describe('Scan Handler Tests', () => {
         console.log("Hello World!");
         console.log(a);`);
 
-      var results = await search(folder, /hello world/i, []).toArray().toPromise();
-      var expected = JSON.parse(
+      const results = await search(folder, /hello world/i, []).toArray().toPromise();
+      const expected = JSON.parse(
         fs.readFileSync(path.join(__dirname, 'fixtures', 'basic.json'), 'utf8')
       );
 
@@ -53,14 +53,14 @@ describe('Scan Handler Tests', () => {
   it('Can execute a case sensitive search', () => {
     waitsForPromise(async () => {
       // Setup the test folder.
-      var folder = temp.mkdirSync();
+      const folder = temp.mkdirSync();
       fs.writeFileSync(path.join(folder, 'file1.js'), `var a = 4;
         console.log("Hello World!");
         console.log(a);
         console.error("hello world!");`);
 
-      var results = await search(folder, /hello world/, []).toArray().toPromise();
-      var expected = JSON.parse(
+      const results = await search(folder, /hello world/, []).toArray().toPromise();
+      const expected = JSON.parse(
         fs.readFileSync(path.join(__dirname, 'fixtures', 'casesensitive.json'), 'utf8')
       );
 
@@ -73,8 +73,8 @@ describe('Scan Handler Tests', () => {
   it('Can execute a search of subdirectories.', () => {
     waitsForPromise(async () => {
       // Setup the test folder.
-      var folder = temp.mkdirSync();
-      var testCode = 'console.log("Hello World!");';
+      const folder = temp.mkdirSync();
+      const testCode = 'console.log("Hello World!");';
       fs.mkdirSync(path.join(folder, 'dir1'));
       fs.writeFileSync(path.join(folder, 'dir1', 'file.txt'), testCode);
       fs.mkdirSync(path.join(folder, 'dir2'));
@@ -82,10 +82,10 @@ describe('Scan Handler Tests', () => {
       fs.mkdirSync(path.join(folder, 'dir3'));
       fs.writeFileSync(path.join(folder, 'dir3', 'file.txt'), testCode);
 
-      var results = await search(
+      const results = await search(
         folder, /hello world/i, ['dir2', 'dir3', 'nonexistantdir']
       ).toArray().toPromise();
-      var expected = JSON.parse(
+      const expected = JSON.parse(
         fs.readFileSync(path.join(__dirname, 'fixtures', 'subdirs.json'), 'utf8')
       );
 
@@ -99,7 +99,7 @@ describe('Scan Handler Tests', () => {
   it('Git repo: should ignore untracked files or files listed in .gitignore', () => {
     waitsForPromise(async () => {
       // Create a git repo in a temporary folder.
-      var folder = temp.mkdirSync();
+      const folder = temp.mkdirSync();
       await asyncExecute('git', ['init'], {cwd: folder});
 
       // Create a file that is ignored.
@@ -113,8 +113,8 @@ describe('Scan Handler Tests', () => {
       // Create a file that is untracked.
       fs.writeFileSync(path.join(folder, 'untracked.txt'), 'Hello World!');
 
-      var results = await search(folder, /hello world/i, []).toArray().toPromise();
-      var expected = JSON.parse(
+      const results = await search(folder, /hello world/i, []).toArray().toPromise();
+      const expected = JSON.parse(
         fs.readFileSync(path.join(__dirname, 'fixtures', 'repo.json'), 'utf8')
       );
 
@@ -130,7 +130,7 @@ describe('Scan Handler Tests', () => {
   xit('Hg repo: should ignore untracked files or files listed in .hgignore', () => {
     waitsForPromise(async () => {
       // Create a git repo in a temporary folder.
-      var folder = temp.mkdirSync();
+      const folder = temp.mkdirSync();
       await asyncExecute('hg', ['init'], {cwd: folder});
 
       // Create a file that is ignored.
@@ -146,8 +146,8 @@ describe('Scan Handler Tests', () => {
 
       await asyncExecute('hg', ['commit', '-m', 'test commit'], {cwd: folder});
 
-      var results = await search(folder, /hello world/i, []).toArray().toPromise();
-      var expected = JSON.parse(
+      const results = await search(folder, /hello world/i, []).toArray().toPromise();
+      const expected = JSON.parse(
         fs.readFileSync(path.join(__dirname, 'fixtures', 'repo.json'), 'utf8')
       );
 

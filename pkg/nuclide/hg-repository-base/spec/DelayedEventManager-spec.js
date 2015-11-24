@@ -9,13 +9,13 @@
  * the root directory of this source tree.
  */
 
-var DelayedEventManager = require('../lib/DelayedEventManager');
+const DelayedEventManager = require('../lib/DelayedEventManager');
 import invariant from 'assert';
 
 describe('DelayedEventManager', () => {
-  var manager;
-  var callbackSpy: any;
-  var EVENT_DELAY_IN_MS = 10;
+  let manager;
+  let callbackSpy: any;
+  const EVENT_DELAY_IN_MS = 10;
 
   beforeEach(() => {
     manager = new DelayedEventManager(setTimeout, clearTimeout);
@@ -24,7 +24,7 @@ describe('DelayedEventManager', () => {
 
   it('fires events after the delay period has passed.', () => {
     invariant(manager);
-    var id = manager.addEvent(callbackSpy, EVENT_DELAY_IN_MS);
+    const id = manager.addEvent(callbackSpy, EVENT_DELAY_IN_MS);
     expect(id).toBeDefined();
     window.advanceClock(EVENT_DELAY_IN_MS);
     expect(callbackSpy).toHaveBeenCalled();
@@ -34,7 +34,7 @@ describe('DelayedEventManager', () => {
     it('determines whether the DelayedEventManager can accept new events.', () => {
       invariant(manager);
       manager.setCanAcceptEvents(false);
-      var id = manager.addEvent(callbackSpy, EVENT_DELAY_IN_MS);
+      let id = manager.addEvent(callbackSpy, EVENT_DELAY_IN_MS);
       expect(id).toBeNull();
       window.advanceClock(EVENT_DELAY_IN_MS);
       expect(callbackSpy).not.toHaveBeenCalled();
@@ -50,10 +50,10 @@ describe('DelayedEventManager', () => {
   describe('::cancelEvent', () => {
     it('cancels the event with the given identifier.', () => {
       invariant(manager);
-      var id = manager.addEvent(callbackSpy, EVENT_DELAY_IN_MS);
+      const id = manager.addEvent(callbackSpy, EVENT_DELAY_IN_MS);
       expect(id).toBeDefined();
-      var callbackSpy2 = jasmine.createSpy();
-      var id2 = manager.addEvent(callbackSpy2, EVENT_DELAY_IN_MS);
+      const callbackSpy2 = jasmine.createSpy();
+      const id2 = manager.addEvent(callbackSpy2, EVENT_DELAY_IN_MS);
       expect(id2).toBeDefined();
 
       window.advanceClock(EVENT_DELAY_IN_MS - 1);
@@ -68,10 +68,10 @@ describe('DelayedEventManager', () => {
   describe('::cancelAllEvents', () => {
     it('cancels all pending events.', () => {
       invariant(manager);
-      var id = manager.addEvent(callbackSpy, EVENT_DELAY_IN_MS);
+      const id = manager.addEvent(callbackSpy, EVENT_DELAY_IN_MS);
       expect(id).toBeDefined();
-      var callbackSpy2 = jasmine.createSpy();
-      var id2 = manager.addEvent(callbackSpy2, EVENT_DELAY_IN_MS);
+      const callbackSpy2 = jasmine.createSpy();
+      const id2 = manager.addEvent(callbackSpy2, EVENT_DELAY_IN_MS);
       expect(id2).toBeDefined();
 
       window.advanceClock(EVENT_DELAY_IN_MS - 1);
@@ -86,10 +86,10 @@ describe('DelayedEventManager', () => {
   describe('::dispose', () => {
     it('will cancel all pending events.', () => {
       invariant(manager);
-      var id = manager.addEvent(callbackSpy, EVENT_DELAY_IN_MS);
+      const id = manager.addEvent(callbackSpy, EVENT_DELAY_IN_MS);
       expect(id).toBeDefined();
-      var callbackSpy2 = jasmine.createSpy();
-      var id2 = manager.addEvent(callbackSpy2, EVENT_DELAY_IN_MS);
+      const callbackSpy2 = jasmine.createSpy();
+      const id2 = manager.addEvent(callbackSpy2, EVENT_DELAY_IN_MS);
       expect(id2).toBeDefined();
 
       window.advanceClock(EVENT_DELAY_IN_MS - 1);

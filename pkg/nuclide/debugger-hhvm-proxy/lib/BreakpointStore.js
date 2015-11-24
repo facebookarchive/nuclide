@@ -22,7 +22,7 @@ type ExceptionState = 'none' | 'uncaught' | 'all';
 const PAUSE_ALL_EXCEPTION_NAME = '*';
 const EXCEPTION_PAUSE_STATE_ALL = 'all';
 
-var {
+const {
   STATUS_STOPPED,
   STATUS_ERROR,
   STATUS_END,
@@ -54,10 +54,10 @@ export class BreakpointStore {
 
   setBreakpoint(filename: string, lineNumber: number): BreakpointId {
     this._breakpointCount++;
-    var storeId = String(this._breakpointCount);
+    const storeId = String(this._breakpointCount);
     this._breakpoints.set(storeId, {storeId, filename, lineNumber});
-    for (var entry of this._connections.entries()) {
-      var [connection, map] = entry;
+    for (const entry of this._connections.entries()) {
+      const [connection, map] = entry;
       map.set(storeId, connection.setBreakpoint(filename, lineNumber));
     }
     return storeId;
@@ -76,11 +76,11 @@ export class BreakpointStore {
   async setPauseOnExceptions(state: ExceptionState): Promise {
     if (state === EXCEPTION_PAUSE_STATE_ALL) {
       this._breakpointCount++;
-      var breakpiontId = String(this._breakpointCount);
+      const breakpiontId = String(this._breakpointCount);
       this._pauseAllExceptionBreakpointId = breakpiontId;
 
-      for (var entry of this._connections.entries()) {
-        var [connection, map] = entry;
+      for (const entry of this._connections.entries()) {
+        const [connection, map] = entry;
         map.set(
           breakpiontId,
           connection.setExceptionBreakpoint(PAUSE_ALL_EXCEPTION_NAME)
@@ -94,7 +94,7 @@ export class BreakpointStore {
 
   async _removePauseAllExceptionBreakpointIfNeeded(): Promise {
     if (this._pauseAllExceptionBreakpointId !== null) {
-      var breakpointId = this._pauseAllExceptionBreakpointId;
+      const breakpointId = this._pauseAllExceptionBreakpointId;
       this._pauseAllExceptionBreakpointId = null;
       return await this._removeBreakpointFromConnections(breakpointId);
     } else {
@@ -107,9 +107,9 @@ export class BreakpointStore {
   async _removeBreakpointFromConnections(breakpointId: string): Promise {
     return Promise.all(require('nuclide-commons').array.from(this._connections.entries())
       .map(entry => {
-        var [connection, map] = entry;
+        const [connection, map] = entry;
         if (map.has(breakpointId)) {
-          var connectionIdPromise = map.get(breakpointId);
+          const connectionIdPromise = map.get(breakpointId);
           map.delete(breakpointId);
           // Ensure we've removed from the connection's map before awaiting.
           return (async () => connection.removeBreakpoint(await connectionIdPromise))();
@@ -120,7 +120,7 @@ export class BreakpointStore {
   }
 
   addConnection(connection: Connection): void {
-    var map = new Map();
+    const map = new Map();
     this._breakpoints.forEach(breakpoint => {
       map.set(
         breakpoint.storeId,
@@ -137,10 +137,10 @@ export class BreakpointStore {
     this._connections.set(connection, map);
     connection.onStatus(status => {
       switch (status) {
-      case STATUS_STOPPED:
-      case STATUS_ERROR:
-      case STATUS_END:
-        this._removeConnection(connection);
+        case STATUS_STOPPED:
+        case STATUS_ERROR:
+        case STATUS_END:
+          this._removeConnection(connection);
       }
     });
   }

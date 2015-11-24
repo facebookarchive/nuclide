@@ -116,29 +116,29 @@ export default class HgRepositoryClient {
     this._hgDiffCacheFilesToClear = new Set();
     this._disposables[EDITOR_SUBSCRIPTION_NAME] =
         (atom.workspace.observeTextEditors((editor: atom$TextEditor) => {
-      if (!editor.getPath()) {
+          if (!editor.getPath()) {
         // TODO: observe for when this editor's path changes.
-        return;
-      }
+            return;
+          }
 
-      if (!this._isPathRelevant(editor.getPath())) {
-        return;
-      }
+          if (!this._isPathRelevant(editor.getPath())) {
+            return;
+          }
 
-      const filePath = editor.getPath();
+          const filePath = editor.getPath();
       // If this editor has been previously active, we will have already
       // initialized diff info and registered listeners on it.
-      if (this._disposables[filePath]) {
-        return;
-      }
+          if (this._disposables[filePath]) {
+            return;
+          }
 
       // TODO (t8227570) Get initial diff stats for this editor, and refresh
       // this information whenever the content of the editor changes.
 
-      this._disposables[filePath] = new CompositeDisposable();
-      this._disposables[filePath].add(editor.onDidSave((event) => {
-        this._updateDiffInfo([event.path]);
-      }));
+          this._disposables[filePath] = new CompositeDisposable();
+          this._disposables[filePath].add(editor.onDidSave((event) => {
+            this._updateDiffInfo([event.path]);
+          }));
       // Remove the file from the diff stats cache when the editor is closed.
       // This isn't strictly necessary, but keeps the cache as small as possible.
       // There are cases where this removal may result in removing information
@@ -147,12 +147,12 @@ export default class HgRepositoryClient {
       //   * if the file is open in multiple editors, and one of those is closed.
       // These are probably edge cases, though, and the information will be
       // refetched the next time the file is edited.
-      this._disposables[filePath].add(editor.onDidDestroy(() => {
-        this._hgDiffCacheFilesToClear.add(filePath);
-        this._disposables[filePath].dispose();
-        delete this._disposables[filePath];
-      }));
-    }));
+          this._disposables[filePath].add(editor.onDidDestroy(() => {
+            this._hgDiffCacheFilesToClear.add(filePath);
+            this._disposables[filePath].dispose();
+            delete this._disposables[filePath];
+          }));
+        }));
 
     // Get updates that tell the HgRepositoryClient when to clear its caches.
     this._service.observeFilesDidChange().subscribe(this._filesDidChange.bind(this));

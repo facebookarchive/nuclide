@@ -9,11 +9,11 @@
  * the root directory of this source tree.
  */
 
-var {getPath} = require('nuclide-remote-uri');
-var {requireRemoteServiceSync} = require('nuclide-service-transformer');
-var NuclideServer = require('../lib/NuclideServer');
-var NuclideRemoteEventbus = require('../lib/NuclideRemoteEventbus');
-var NuclideClient = require('../lib/NuclideClient');
+const {getPath} = require('nuclide-remote-uri');
+const {requireRemoteServiceSync} = require('nuclide-service-transformer');
+const NuclideServer = require('../lib/NuclideServer');
+const NuclideRemoteEventbus = require('../lib/NuclideRemoteEventbus');
+const NuclideClient = require('../lib/NuclideClient');
 
 class _RemoteConnectionMock {
   constructor(client: NuclideClient, port: number) {
@@ -79,7 +79,7 @@ class ServiceIntegrationTestHelper {
     this._server = new NuclideServer({port: 0});
     await this._server.connect();
 
-    var port = this._server._webServer.address().port;
+    const port = this._server._webServer.address().port;
     this._client = new NuclideClient(
       'test', new NuclideRemoteEventbus(`nuclide://localhost:${port}`));
     this._connection = new _RemoteConnectionMock(this._client, port);
@@ -91,7 +91,7 @@ class ServiceIntegrationTestHelper {
   }
 
   getRemoteService(serviceOptions={}: any): any {
-    var remoteServiceClass = requireRemoteServiceSync(
+    const remoteServiceClass = requireRemoteServiceSync(
       this._definitionPath,
       this._className,
       /* isDecorator */ false,
@@ -100,7 +100,7 @@ class ServiceIntegrationTestHelper {
   }
 
   getLocalService(serviceOptions={}: any): any {
-    var serviceClass = require(this._implementationPath);
+    const serviceClass = require(this._implementationPath);
     return new serviceClass(serviceOptions);
   }
 

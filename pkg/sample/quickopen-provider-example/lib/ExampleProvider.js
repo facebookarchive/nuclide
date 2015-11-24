@@ -15,9 +15,9 @@ import type {
   ProviderType,
 } from 'nuclide-quick-open-interfaces';
 
-var FIXTURE = ['ac', 'accumsan', 'adipiscing', 'amet', 'auctor', 'consectetur', 'dictum', 'dolor', 'efficitur', 'eget', 'elit', 'enim', 'eros', 'eu', 'Fusce', 'imperdiet', 'in', 'ipsum', 'lacus', 'leo', 'libero', 'lorem', 'Lorem', 'luctus', 'mattis', 'maximus', 'mi', 'Morbi', 'Nam', 'nec', 'non', 'Nulla', 'Nullam', 'odio', 'placerat', 'quis', 'sagittis', 'sapien', 'scelerisque', 'Sed', 'semper', 'sit', 'tellus', 'tempus', 'tincidunt', 'turpis', 'ultricies', 'Ut', 'vel', 'venenatis', 'vestibulum', 'Vestibulum', 'vitae'];
+const FIXTURE = ['ac', 'accumsan', 'adipiscing', 'amet', 'auctor', 'consectetur', 'dictum', 'dolor', 'efficitur', 'eget', 'elit', 'enim', 'eros', 'eu', 'Fusce', 'imperdiet', 'in', 'ipsum', 'lacus', 'leo', 'libero', 'lorem', 'Lorem', 'luctus', 'mattis', 'maximus', 'mi', 'Morbi', 'Nam', 'nec', 'non', 'Nulla', 'Nullam', 'odio', 'placerat', 'quis', 'sagittis', 'sapien', 'scelerisque', 'Sed', 'semper', 'sit', 'tellus', 'tempus', 'tincidunt', 'turpis', 'ultricies', 'Ut', 'vel', 'venenatis', 'vestibulum', 'Vestibulum', 'vitae'];
 
-var ExampleProvider: Provider = {
+const ExampleProvider: Provider = {
 
   /**
    * A unique name, used internally by quick-open to store cached results.
@@ -90,7 +90,7 @@ var ExampleProvider: Provider = {
     if (!query.length) {
       return Promise.resolve([]);
     }
-    var results = (
+    const results = (
       FIXTURE
         .filter(f => f.indexOf(query) !== -1)
         .map(str => ({path: '/foo/bar/' + str + '.js'}))

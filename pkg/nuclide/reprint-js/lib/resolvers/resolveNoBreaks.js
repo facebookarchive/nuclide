@@ -9,12 +9,12 @@
  * the root directory of this source tree.
  */
 
-var buildRuns = require('../utils/buildRuns');
-var buildScopes = require('../utils/buildScopes');
-var invariant = require('assert');
-var isScopeBreakMarker = require('../utils/isScopeBreakMarker');
-var isScopeMarker = require('../utils/isScopeMarker');
-var markers = require('../constants/markers');
+const buildRuns = require('../utils/buildRuns');
+const buildScopes = require('../utils/buildScopes');
+const invariant = require('assert');
+const isScopeBreakMarker = require('../utils/isScopeBreakMarker');
+const isScopeMarker = require('../utils/isScopeMarker');
+const markers = require('../constants/markers');
 
 /**
  * This squashes all no break markers and any nearby breaks.
@@ -26,8 +26,8 @@ function resolveNoBreaks(lines: Array<any>): Array<any> {
   const kill = new Set();
   const killScopes = new Set();
 
-  for (let run of runs) {
-    let [start, end] = run;
+  for (const run of runs) {
+    const [start, end] = run;
     let hasNoBreak = false;
 
     // Check for the noBreak.

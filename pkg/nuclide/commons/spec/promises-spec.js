@@ -8,20 +8,20 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-var {asyncFind, denodeify} = require('../lib/main');
-var {promises} = require('../lib/main');
-var {expectAsyncFailure} = require('nuclide-test-helpers');
+const {asyncFind, denodeify} = require('../lib/main');
+const {promises} = require('../lib/main');
+const {expectAsyncFailure} = require('nuclide-test-helpers');
 
 describe('promises::asyncFind()', () => {
 
   it('Empty list of items should resolve to null.', () => {
-    var isResolved = false;
-    var observedResult;
-    var isRejected = false;
-    var observedError;
+    let isResolved = false;
+    let observedResult;
+    let isRejected = false;
+    let observedError;
 
-    var args = [];
-    var test = (value) => { throw new Error('Should not be called.'); };
+    const args = [];
+    const test = (value) => { throw new Error('Should not be called.'); };
 
     runs(() => {
       asyncFind(args, test)
@@ -46,13 +46,13 @@ describe('promises::asyncFind()', () => {
   });
 
   it('Last item in list resolves.', () => {
-    var isResolved = false;
-    var observedResult;
-    var isRejected = false;
-    var observedError;
+    let isResolved = false;
+    let observedResult;
+    let isRejected = false;
+    let observedError;
 
-    var args = ['foo', 'bar', 'baz'];
-    var test = (value) => {
+    const args = ['foo', 'bar', 'baz'];
+    const test = (value) => {
       if (value === 'foo') {
         return null;
       } else if (value === 'bar') {
@@ -99,12 +99,12 @@ describe('promises::denodeify()', () => {
    * expressed in Flow.
    */
   function asyncProduct(): void {
-    var factors = Array.prototype.slice.call(arguments, 0, arguments.length - 1);
-    var product = factors.reduce((previousValue, currentValue) => {
+    const factors = Array.prototype.slice.call(arguments, 0, arguments.length - 1);
+    const product = factors.reduce((previousValue, currentValue) => {
       return previousValue * currentValue;
     }, 1);
 
-    var callback = arguments[arguments.length - 1];
+    const callback = arguments[arguments.length - 1];
     if (isNaN(product)) {
       callback(new Error('product was NaN'));
     } else {
@@ -112,14 +112,14 @@ describe('promises::denodeify()', () => {
     }
   }
 
-  var denodeifiedAsyncProduct = denodeify(asyncProduct);
+  const denodeifiedAsyncProduct = denodeify(asyncProduct);
 
   it('resolves Promise when callback succeeds', () => {
     waitsForPromise(async () => {
-      var trivialProduct = await denodeifiedAsyncProduct();
+      const trivialProduct = await denodeifiedAsyncProduct();
       expect(trivialProduct).toBe(1);
 
-      var product = await denodeifiedAsyncProduct(1, 2, 3, 4, 5);
+      const product = await denodeifiedAsyncProduct(1, 2, 3, 4, 5);
       expect(product).toBe(120);
     });
   });
@@ -140,17 +140,17 @@ describe('promises::denodeify()', () => {
     }
   }
 
-  var denodeifiedChecksReceiver = denodeify(checksReceiver);
+  const denodeifiedChecksReceiver = denodeify(checksReceiver);
 
   it('result of denodeify propagates receiver as expected', () => {
     waitsForPromise(async () => {
-      var receiver = {denodeifiedChecksReceiver};
-      var result = await receiver.denodeifiedChecksReceiver(receiver);
+      const receiver = {denodeifiedChecksReceiver};
+      const result = await receiver.denodeifiedChecksReceiver(receiver);
       expect(result).toBe('winner');
     });
 
     waitsForPromise(async () => {
-      var receiver = {denodeifiedChecksReceiver};
+      const receiver = {denodeifiedChecksReceiver};
       await expectAsyncFailure(receiver.denodeifiedChecksReceiver(null), (error: Error) => {
         expect(error.message).toBe('unexpected receiver');
       });
@@ -231,13 +231,13 @@ describe('promises::asyncLimit()', () => {
 
   it('runs in series if limit is 1', () => {
     waitsForPromise(async () => {
-      var {result, parallelismHistory} = await captureParallelismHistory(
+      const {result, parallelismHistory} = await captureParallelismHistory(
           promises.asyncLimit,
-          [
+        [
             [1, 2, 3],
-            1,
-            (item) => waitPromise(10, item + 1),
-          ]
+          1,
+          (item) => waitPromise(10, item + 1),
+        ]
       );
       expect(parallelismHistory).toEqual([1, 1, 1]);
       expect(result).toEqual([2, 3, 4]);
@@ -246,13 +246,13 @@ describe('promises::asyncLimit()', () => {
 
   it('runs with the specified limit, until finishing', () => {
     waitsForPromise(async () => {
-      var {result, parallelismHistory} = await captureParallelismHistory(
+      const {result, parallelismHistory} = await captureParallelismHistory(
           promises.asyncLimit,
-          [
+        [
             [1, 2, 3, 4, 5, 6, 7, 8, 9],
-            3,
-            (item) => waitPromise(10 + item, item - 1),
-          ]
+          3,
+          (item) => waitPromise(10 + item, item - 1),
+        ]
       );
       expect(result).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8]);
       expect(parallelismHistory).toEqual([1, 2, 3, 3, 3, 3, 3, 3, 3]);
@@ -261,7 +261,7 @@ describe('promises::asyncLimit()', () => {
 
   it('works when the limit is bigger than the array length', () => {
     waitsForPromise(async () => {
-      var result = await promises.asyncLimit([1, 2, 3], 10, (item) => waitPromise(10, item * 2));
+      const result = await promises.asyncLimit([1, 2, 3], 10, (item) => waitPromise(10, item * 2));
       expect(result).toEqual([2, 4, 6]);
     });
   });
@@ -283,12 +283,12 @@ describe('promises::asyncFilter()', () => {
 
   it('filters an array with an async iterator and maximum parallelization when no limit is specified', () => {
     waitsForPromise(async () => {
-      var {result: filtered, parallelismHistory} = await captureParallelismHistory(
+      const {result: filtered, parallelismHistory} = await captureParallelismHistory(
           promises.asyncFilter,
-          [
+        [
             [1, 2, 3, 4, 5],
-            (item) => waitPromise(10 + item, item > 2),
-          ]
+          (item) => waitPromise(10 + item, item > 2),
+        ]
       );
       expect(filtered).toEqual([3, 4, 5]);
       expect(parallelismHistory).toEqual([1, 2, 3, 4, 5]);
@@ -297,13 +297,13 @@ describe('promises::asyncFilter()', () => {
 
   it('filters an array with a limit on parallelization', () => {
     waitsForPromise(async () => {
-      var {result: filtered, parallelismHistory} = await captureParallelismHistory(
+      const {result: filtered, parallelismHistory} = await captureParallelismHistory(
           promises.asyncFilter,
-          [
+        [
             [1, 2, 3, 4, 5],
-            (item) => waitPromise(10 + item, item > 2),
-            3,
-          ]
+          (item) => waitPromise(10 + item, item > 2),
+          3,
+        ]
       );
       expect(filtered).toEqual([3, 4, 5]);
       // Increasing promise resolve time will gurantee maximum parallelization.
@@ -318,12 +318,12 @@ describe('promises::asyncSome()', () => {
 
   it('some an array with an async iterator and maximum parallelization when no limit is specified', () => {
     waitsForPromise(async () => {
-      var {result, parallelismHistory} = await captureParallelismHistory(
+      const {result, parallelismHistory} = await captureParallelismHistory(
           promises.asyncSome,
-          [
+        [
             [1, 2, 3, 4, 5],
-            (item) => waitPromise(10, item === 6),
-          ]
+          (item) => waitPromise(10, item === 6),
+        ]
       );
       expect(result).toEqual(false);
       expect(parallelismHistory).toEqual([1, 2, 3, 4, 5]);
@@ -332,13 +332,13 @@ describe('promises::asyncSome()', () => {
 
   it('some an array with a limit on parallelization', () => {
     waitsForPromise(async () => {
-      var {result, parallelismHistory} = await captureParallelismHistory(
+      const {result, parallelismHistory} = await captureParallelismHistory(
           promises.asyncSome,
-          [
+        [
             [1, 2, 3, 4, 5],
-            (item) => waitPromise(10 + item, item === 5),
-            3,
-          ]
+          (item) => waitPromise(10 + item, item === 5),
+          3,
+        ]
       );
       expect(result).toEqual(true);
       expect(parallelismHistory).toEqual([1, 2, 3, 3, 3]);
@@ -496,17 +496,17 @@ async function captureParallelismHistory(
     args: Array<mixed>
   ): Promise<{result: mixed, parallelismHistory: Array<number>}> {
 
-  var parallelismHistory = [];
-  var parralelism = 0;
-  var result = await asyncFunction.apply(null, args.map(arg => {
+  const parallelismHistory = [];
+  let parralelism = 0;
+  const result = await asyncFunction.apply(null, args.map(arg => {
     if (typeof arg !== 'function') {
       return arg;
     }
-    var func = arg;
+    const func = arg;
     return async (item) => {
       ++parralelism;
       parallelismHistory.push(parralelism);
-      var value = await func(item);
+      const value = await func(item);
       --parralelism;
       return value;
     };

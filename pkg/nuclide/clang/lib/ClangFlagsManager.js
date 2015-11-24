@@ -12,11 +12,11 @@
 import type BuckUtils from 'nuclide-buck-base/lib/BuckUtils';
 import type {BuckProject} from 'nuclide-buck-base/lib/BuckProject';
 
-var logger = require('nuclide-logging').getLogger();
-var path = require('path');
-var buckProjectModule = require('nuclide-buck-base').BuckProject;
+const logger = require('nuclide-logging').getLogger();
+const path = require('path');
+const buckProjectModule = require('nuclide-buck-base').BuckProject;
 
-var CLANG_FLAGS_THAT_TAKE_PATHS = new Set([
+const CLANG_FLAGS_THAT_TAKE_PATHS = new Set([
   '-F',
   '-I',
   '-include',
@@ -25,10 +25,10 @@ var CLANG_FLAGS_THAT_TAKE_PATHS = new Set([
   '-isystem',
 ]);
 
-var {from} = require('nuclide-commons').array;
-var clangArgs = from(CLANG_FLAGS_THAT_TAKE_PATHS, item => item.length === 2 ? item : null)
+const {from} = require('nuclide-commons').array;
+const clangArgs = from(CLANG_FLAGS_THAT_TAKE_PATHS, item => item.length === 2 ? item : null)
     .filter(item => item !== null);
-var SINGLE_LETTER_CLANG_FLAGS_THAT_TAKE_PATHS = new Set(clangArgs);
+const SINGLE_LETTER_CLANG_FLAGS_THAT_TAKE_PATHS = new Set(clangArgs);
 
 
 class ClangFlagsManager {
@@ -56,7 +56,7 @@ class ClangFlagsManager {
     // return null. Going forward, we probably want to special-case some of the
     // paths under /Applications/Xcode.app so that click-to-symbol works in
     // files like Frameworks/UIKit.framework/Headers/UIImage.h.
-    var buckProjectRoot = await this._buckUtils.getBuckProjectRoot(src);
+    const buckProjectRoot = await this._buckUtils.getBuckProjectRoot(src);
     if (buckProjectRoot == null) {
       logger.info(
           'Did not try to attempt to get flags from Buck because ' +
@@ -69,7 +69,7 @@ class ClangFlagsManager {
       return this._cachedBuckProjects.get(buckProjectRoot);
     }
 
-    var buckProject = new buckProjectModule.BuckProject({rootPath: buckProjectRoot});
+    const buckProject = new buckProjectModule.BuckProject({rootPath: buckProjectRoot});
     this._cachedBuckProjects.set(buckProjectRoot, buckProject);
     return buckProject;
   }
@@ -80,17 +80,17 @@ class ClangFlagsManager {
    *     under the project root.
    */
   async getFlagsForSrc(src: string): Promise<?Array<string>> {
-    var flags = this.pathToFlags[src];
+    const flags = this.pathToFlags[src];
     if (flags) {
       return flags;
     }
 
-    var buckProject = await this._getBuckProject(src);
+    const buckProject = await this._getBuckProject(src);
     if (!buckProject) {
       return null;
     }
 
-    var targets = await buckProject.getOwner(src);
+    const targets = await buckProject.getOwner(src);
     if (targets.length === 0) {
       return null;
     }
@@ -108,36 +108,36 @@ class ClangFlagsManager {
     // now. Though once we start supporting ordinary .cpp files, then we
     // likely need to be even more careful about choosing the architecture
     // flavor.
-    var buildTarget = targets[0] + '#compilation-database,' + arch;
+    const buildTarget = targets[0] + '#compilation-database,' + arch;
 
-    var buildReport = await buckProject.build([buildTarget]);
+    const buildReport = await buckProject.build([buildTarget]);
     if (!buildReport.success) {
       // TODO(mbolin): Frequently failing due to 'Daemon is busy' errors.
       // Ultimately, Buck should queue things up, but for now, Nuclide should.
-      var error = `Failed to build ${buildTarget}`;
+      const error = `Failed to build ${buildTarget}`;
       logger.error(error);
       throw error;
     }
-    var buckProjectRoot = await buckProject.getPath();
-    var pathToCompilationDatabase = buildReport['results'][buildTarget]['output'];
+    const buckProjectRoot = await buckProject.getPath();
+    let pathToCompilationDatabase = buildReport['results'][buildTarget]['output'];
     pathToCompilationDatabase = path.join(
         buckProjectRoot,
         pathToCompilationDatabase);
 
-    var {readFile} = require('nuclide-commons').fsPromise;
+    const {readFile} = require('nuclide-commons').fsPromise;
 
-    var compilationDatabaseJsonBuffer = await readFile(pathToCompilationDatabase);
-    var compilationDatabaseJson = compilationDatabaseJsonBuffer.toString('utf8');
-    var compilationDatabase = JSON.parse(compilationDatabaseJson);
+    const compilationDatabaseJsonBuffer = await readFile(pathToCompilationDatabase);
+    const compilationDatabaseJson = compilationDatabaseJsonBuffer.toString('utf8');
+    const compilationDatabase = JSON.parse(compilationDatabaseJson);
     compilationDatabase.forEach((item) => {
-      var {file} = item;
+      const {file} = item;
       // "args" is a non-standard property that we introduced in an older version of Buck.
       // Fortunately, the clang folks have seen the light and have added support for an identical
       // property that they happened to name "arguments":
       // https://github.com/facebook/buck/issues/437
       // For now, fall back to "args" until we get everyone to use a newer enough version of Buck
       // and then we can remove the support for the old "args" property.
-      var command = item.arguments || item.args;
+      const command = item.arguments || item.args;
       this.pathToFlags[file] = ClangFlagsManager.sanitizeCommand(
           file,
           command,
@@ -157,13 +157,13 @@ class ClangFlagsManager {
     // For safety, create a new copy of the array. We exclude the path to the file to compile from
     // compilation database generated by Buck. It must be removed from the list of command-line
     // arguments passed to libclang.
-    var normalizedSourceFile = path.normalize(sourceFile);
+    const normalizedSourceFile = path.normalize(sourceFile);
     args = args.filter((arg) => normalizedSourceFile !== path.resolve(buckProjectRoot, arg));
 
     // Resolve relative path arguments against the Buck project root.
     args.forEach((arg, argIndex) => {
       if (CLANG_FLAGS_THAT_TAKE_PATHS.has(arg)) {
-        var nextIndex = argIndex + 1;
+        const nextIndex = argIndex + 1;
         let filePath = args[nextIndex];
         if (!path.isAbsolute(filePath)) {
           filePath = path.join(buckProjectRoot, filePath);
@@ -179,7 +179,7 @@ class ClangFlagsManager {
     });
 
     // If an output file is specified, remove that argument.
-    var index = args.indexOf('-o');
+    const index = args.indexOf('-o');
     if (index !== -1) {
       args.splice(index, 2);
     }

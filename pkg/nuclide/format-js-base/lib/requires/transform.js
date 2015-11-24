@@ -13,19 +13,19 @@ import type {Collection} from '../types/ast';
 import type {SourceOptions} from '../options/SourceOptions';
 import type {TransformKey} from '../types/transforms';
 
-var addLeadingComments = require('./addLeadingComments');
-var addMissingRequires = require('./addMissingRequires');
-var addMissingTypes = require('./addMissingTypes');
-var formatRequires = require('./formatRequires');
-var removeLeadingComments = require('./removeLeadingComments');
-var removeUnusedRequires = require('./removeUnusedRequires');
-var removeUnusedTypes = require('./removeUnusedTypes');
+const addLeadingComments = require('./addLeadingComments');
+const addMissingRequires = require('./addMissingRequires');
+const addMissingTypes = require('./addMissingTypes');
+const formatRequires = require('./formatRequires');
+const removeLeadingComments = require('./removeLeadingComments');
+const removeUnusedRequires = require('./removeUnusedRequires');
+const removeUnusedTypes = require('./removeUnusedTypes');
 
 /**
  * This is the collection of transforms that affect requires.
  */
 function transform(root: Collection, options: SourceOptions): void {
-  var blacklist: Set<TransformKey> = options.blacklist || new Set();
+  const blacklist: Set<TransformKey> = options.blacklist || new Set();
   let comments;
   if (!blacklist.has('requires.transferComments')) {
     comments = removeLeadingComments(root);

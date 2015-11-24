@@ -15,10 +15,10 @@
  * readFile, writeFile, etc.
  */
 
-var mv = require('mv');
-var fs = require('fs');
-var pathUtil = require('path');
-var {fsPromise} = require('nuclide-commons');
+const mv = require('mv');
+const fs = require('fs');
+const pathUtil = require('path');
+const {fsPromise} = require('nuclide-commons');
 
 import type FileWithStats from './FileSystemServiceType';
 
@@ -76,7 +76,7 @@ export function mkdirp(path: string): Promise<boolean> {
  * @return A boolean indicating whether the file was created.
  */
 export async function newFile(filePath: string): Promise<boolean> {
-  var isExistingFile = await fsPromise.exists(filePath);
+  const isExistingFile = await fsPromise.exists(filePath);
   if (isExistingFile) {
     return false;
   }
@@ -95,15 +95,15 @@ export async function newFile(filePath: string): Promise<boolean> {
  * isSymbolicLink: true if the entry is a symlink to another filesystem location.
  */
 export async function readdir(path: string): Promise<Array<FileWithStats>> {
-  var files = await fsPromise.readdir(path);
-  var entries = await Promise.all(files.map(async (file) => {
-    var fullpath = pathUtil.join(path, file);
-    var lstats = await fsPromise.lstat(fullpath);
+  const files = await fsPromise.readdir(path);
+  const entries = await Promise.all(files.map(async (file) => {
+    const fullpath = pathUtil.join(path, file);
+    const lstats = await fsPromise.lstat(fullpath);
     if (!lstats.isSymbolicLink()) {
       return {file, stats: lstats, isSymbolicLink: false};
     } else {
       try {
-        var stats = await fsPromise.stat(fullpath);
+        const stats = await fsPromise.stat(fullpath);
         return {file, stats, isSymbolicLink: true};
       } catch (error) {
         return {file, stats: undefined, isSymbolicLink: true, error};
@@ -135,7 +135,7 @@ export function resolveRealPath(path: string): Promise<string> {
  */
 export function rename(sourcePath: string, destinationPath: string): Promise {
   return new Promise((resolve, reject) => {
-    var fsPlus = require('fs-plus');
+    const fsPlus = require('fs-plus');
     fsPlus.move(sourcePath, destinationPath, error => {
       error ? reject(error) : resolve();
     });
@@ -146,12 +146,12 @@ export function rename(sourcePath: string, destinationPath: string): Promise {
  * Runs the equivalent of `cp sourcePath destinationPath`.
  */
 export async function copy(sourcePath: string, destinationPath: string): Promise<boolean> {
-  var isExistingFile = await fsPromise.exists(destinationPath);
+  const isExistingFile = await fsPromise.exists(destinationPath);
   if (isExistingFile) {
     return false;
   }
   await new Promise((resolve, reject) => {
-    var fsPlus = require('fs-plus');
+    const fsPlus = require('fs-plus');
     fsPlus.copy(sourcePath, destinationPath, error => {
       error ? reject(error) : resolve();
     });

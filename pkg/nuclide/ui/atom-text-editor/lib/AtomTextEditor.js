@@ -76,7 +76,7 @@ class AtomTextEditor extends React.Component {
   }
 
   componentDidMount(): void {
-    var atomTextEditorElement = React.findDOMNode(this);
+    const atomTextEditorElement = React.findDOMNode(this);
     atomTextEditorElement.setModel(this._textEditorModel);
 
     // HACK! This is a workaround for the ViewRegistry where Atom has a default view provider for

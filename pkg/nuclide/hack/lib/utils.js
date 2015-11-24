@@ -21,11 +21,11 @@ const MATCH_APLHABETICAL_SCORE = 1;
 const HACK_SERVICE_NAME = 'HackService';
 
 function compareHackCompletions(token: string): (matchText1: string, matchText2: string) => number {
-  var tokenLowerCase = token.toLowerCase();
+  const tokenLowerCase = token.toLowerCase();
 
   return (matchText1: string, matchText2: string) => {
-    var matchTexts = [matchText1, matchText2];
-    var scores = matchTexts.map((matchText, i) => {
+    const matchTexts = [matchText1, matchText2];
+    const scores = matchTexts.map((matchText, i) => {
       if (matchText.startsWith(token)) {
         // Matches starting with the prefix gets the highest score.
         return MATCH_PREFIX_CASE_SENSITIVE_SCORE;
@@ -34,7 +34,7 @@ function compareHackCompletions(token: string): (matchText1: string, matchText2:
         return MATCH_PREFIX_CASE_INSENSITIVE_SCORE;
       }
 
-      var score;
+      let score;
       if (matchText.indexOf(token) !== -1) {
         // Small score for a match that contains the token case-sensitive.
         score = MATCH_TOKEN_CASE_SENSITIVE_SCORE;

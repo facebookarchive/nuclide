@@ -9,11 +9,11 @@
  * the root directory of this source tree.
  */
 
-var {EventEmitter} = require('events');
-var path = require('path');
-var {loadConfigsOfServiceWithoutServiceFramework} = require('./config');
+const {EventEmitter} = require('events');
 
-var idIncrement = 0;
+const {loadConfigsOfServiceWithoutServiceFramework} = require('./config');
+
+
 
 class NuclideLocalEventbus extends EventEmitter {
   constructor(options = {}) {
@@ -24,21 +24,21 @@ class NuclideLocalEventbus extends EventEmitter {
     this._enabledServices = loadConfigsOfServiceWithoutServiceFramework();
 
     this._enabledServices.forEach((service_path) => {
-      var {services} = require(service_path);
-      for (var serviceId in services) {
+      const {services} = require(service_path);
+      for (const serviceId in services) {
         this._services[serviceId] = services[serviceId];
       }
     });
 
     // Run initialize after all services registered if exists.
     this._enabledServices.forEach((service_path) => {
-      var {initialize} = require(service_path);
+      const {initialize} = require(service_path);
       if (initialize) {
         initialize(this);
       }
     });
 
-    var {fsPromise} = require('nuclide-commons');
+    const {fsPromise} = require('nuclide-commons');
 
     // readFile and writeFile aren't exposed as services for performance optimization.
     this._services['/fs/readFile'] = {handler: fsPromise.readFile};
@@ -56,9 +56,9 @@ class NuclideLocalEventbus extends EventEmitter {
       extraOptions: ?any
     ): Promise<string|any> {
 
-    var serviceId = '/' + serviceName + '/' + methodName;
+    const serviceId = '/' + serviceName + '/' + methodName;
     // extend the default options with the extra options
-    var service = this._services[serviceId];
+    const service = this._services[serviceId];
     if (!service) {
       throw new Error('Cannot call a non registered local service with id: ' + serviceId);
     }
@@ -66,7 +66,7 @@ class NuclideLocalEventbus extends EventEmitter {
   }
 
   callService(serviceName: string, args: Array<any>): Promise<any> {
-    var serviceFunction = this._services[serviceName];
+    const serviceFunction = this._services[serviceName];
     if (!serviceFunction) {
       throw Error('No service registered with name: ' + serviceName);
     }
@@ -75,7 +75,7 @@ class NuclideLocalEventbus extends EventEmitter {
 
   close(): void {
     this._enabledServices.forEach((service_path) => {
-      var {shutdown} = require(service_path);
+      const {shutdown} = require(service_path);
       if (shutdown) {
         shutdown(this);
       }

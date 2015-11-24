@@ -13,7 +13,7 @@ import type {SourceOptions} from '../options/SourceOptions';
 import type {TransformKey} from '../types/transforms';
 
 function transform(source: string, options: SourceOptions): string {
-  var blacklist: Set<TransformKey> = options.blacklist || new Set();
+  const blacklist: Set<TransformKey> = options.blacklist || new Set();
   if (blacklist.has('nuclide.fixHeader')) {
     return source;
   }

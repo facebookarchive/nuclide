@@ -9,17 +9,17 @@
  * the root directory of this source tree.
  */
 
-var BreakpointStore = require('./BreakpointStore');
-var Bridge = require('./Bridge');
-var DebuggerActions = require('./DebuggerActions');
-var React = require('react-for-atom');
-var path = require('path');
-var {PanelComponent} = require('nuclide-ui-panel');
+const BreakpointStore = require('./BreakpointStore');
+const Bridge = require('./Bridge');
+const DebuggerActions = require('./DebuggerActions');
+const React = require('react-for-atom');
+const path = require('path');
+const {PanelComponent} = require('nuclide-ui-panel');
 
 /**
  * Wrapper for Chrome Devtools frontend view.
  */
-var DebuggerInspector = React.createClass({
+const DebuggerInspector = React.createClass({
   _webviewNode: (null: ?Object),
 
   displayName: 'DebuggerInspector',
@@ -55,20 +55,20 @@ var DebuggerInspector = React.createClass({
   componentDidMount() {
     // Cast from HTMLElement down to WebviewElement without instanceof
     // checking, as WebviewElement constructor is not exposed.
-    var webviewNode = ((document.createElement('webview'): any): WebviewElement);
+    const webviewNode = ((document.createElement('webview'): any): WebviewElement);
     webviewNode.src = this._getUrl();
     webviewNode.nodeintegration = true;
     webviewNode.disablewebsecurity = true;
     webviewNode.classList.add('native-key-bindings'); // required to pass through certain key events
     webviewNode.classList.add('nuclide-debugger-webview');
     this._webviewNode = webviewNode;
-    var controlBarNode = React.findDOMNode(this.refs.controlBar);
+    const controlBarNode = React.findDOMNode(this.refs.controlBar);
     controlBarNode.parentNode.insertBefore(webviewNode, controlBarNode.nextSibling);
     this.props.bridge.setWebviewElement(webviewNode);
   },
 
   componentDidUpdate() {
-    var webviewNode = this._webviewNode;
+    const webviewNode = this._webviewNode;
     if (webviewNode) {
       webviewNode.src = this._getUrl();
     }
@@ -82,7 +82,7 @@ var DebuggerInspector = React.createClass({
   },
 
   _getUrl(): string {
-    var packagePath = path.resolve(path.dirname(module.filename), '../');
+    const packagePath = path.resolve(path.dirname(module.filename), '../');
     return `${packagePath}/scripts/inspector.html?${this.props.socket}`;
   },
 
@@ -91,7 +91,7 @@ var DebuggerInspector = React.createClass({
   },
 
   _handleClickDevTools() {
-    var webviewNode = this._webviewNode;
+    const webviewNode = this._webviewNode;
     if (webviewNode) {
       webviewNode.openDevTools();
     }

@@ -9,17 +9,17 @@
  * the root directory of this source tree.
  */
 
-var {CompositeDisposable, Disposable} = require('atom');
-var remoteUri = require('nuclide-remote-uri');
-var logger = require('nuclide-logging').getLogger();
-var {EventEmitter} = require('events');
+const {CompositeDisposable, Disposable} = require('atom');
+const remoteUri = require('nuclide-remote-uri');
+const logger = require('nuclide-logging').getLogger();
+const {EventEmitter} = require('events');
 
-var RemoteFile = require('./RemoteFile');
-var RemoteDirectory = require('./RemoteDirectory');
-var NuclideClient = require('nuclide-server/lib/NuclideClient');
-var NuclideRemoteEventbus = require('nuclide-server/lib/NuclideRemoteEventbus');
-var {getConnectionConfig, setConnectionConfig} = require('./RemoteConnectionConfigurationManager');
-var {getVersion} = require('nuclide-version');
+const RemoteFile = require('./RemoteFile');
+const RemoteDirectory = require('./RemoteDirectory');
+const NuclideClient = require('nuclide-server/lib/NuclideClient');
+const NuclideRemoteEventbus = require('nuclide-server/lib/NuclideRemoteEventbus');
+const {getConnectionConfig, setConnectionConfig} = require('./RemoteConnectionConfigurationManager');
+const {getVersion} = require('nuclide-version');
 
 const HEARTBEAT_AWAY_REPORT_COUNT = 3;
 const HEARTBEAT_NOTIFICATION_ERROR = 1;
@@ -52,8 +52,8 @@ function getReloadKeystrokeLabel(): ?string {
   return humanizeKeystroke(binding[0].keystrokes);
 }
 
-var _connections: Array<RemoteConnection> = [];
-var _emitter: EventEmitter = new EventEmitter();
+const _connections: Array<RemoteConnection> = [];
+const _emitter: EventEmitter = new EventEmitter();
 
 class RemoteConnection {
   _entries: {[path: string]: RemoteFile|RemoteDirectory};
@@ -106,27 +106,27 @@ class RemoteConnection {
   // ::repositoryForDirectorySync, so we need the repo information to already be
   // available when the new path is added. t6913624 tracks cleanup of this.
   async _setHgRepoInfo(): Promise<void> {
-    var remotePath = this.getPathForInitialWorkingDirectory();
-    var {getHgRepository} = this.getService('SourceControlService');
-    var hgRepoDescription = await getHgRepository(remotePath);
+    const remotePath = this.getPathForInitialWorkingDirectory();
+    const {getHgRepository} = this.getService('SourceControlService');
+    const hgRepoDescription = await getHgRepository(remotePath);
     this._setHgRepositoryDescription(hgRepoDescription);
   }
 
   _monitorConnectionHeartbeat() {
-    var socket = this.getClient().eventbus.socket;
-    var serverUri = socket.getServerUri();
+    const socket = this.getClient().eventbus.socket;
+    const serverUri = socket.getServerUri();
 
     /**
      * Adds an Atom notification for the detected heartbeat network status
      * The function makes sure not to add many notifications for the same event and prioritize new events.
      */
-    var addHeartbeatNotification = (type: number, errorCode: string, message: string, dismissable: boolean) => {
-      var {code, notification: existingNotification} = this._lastHeartbeatNotification || {};
+    const addHeartbeatNotification = (type: number, errorCode: string, message: string, dismissable: boolean) => {
+      const {code, notification: existingNotification} = this._lastHeartbeatNotification || {};
       if (code && code === errorCode && dismissable) {
         // A dismissible heartbeat notification with this code is already active.
         return;
       }
-      var notification = null;
+      let notification = null;
       switch (type) {
         case HEARTBEAT_NOTIFICATION_ERROR:
           notification = atom.notifications.addError(message, {dismissable});
@@ -146,12 +146,12 @@ class RemoteConnection {
       };
     };
 
-    var onHeartbeat = () => {
+    const onHeartbeat = () => {
       if (this._lastHeartbeatNotification) {
         // If there has been existing heartbeat error/warning,
         // that means connection has been lost and we shall show a message about connection
         // being restored without a reconnect prompt.
-        var {notification} = this._lastHeartbeatNotification;
+        const {notification} = this._lastHeartbeatNotification;
         notification.dismiss();
         atom.notifications.addSuccess('Connection restored to Nuclide Server at: ' + serverUri);
         this._heartbeatNetworkAwayCount = 0;
@@ -159,7 +159,7 @@ class RemoteConnection {
       }
     };
 
-    var notifyNetworkAway = (code: string) => {
+    const notifyNetworkAway = (code: string) => {
       this._heartbeatNetworkAwayCount++;
       if (this._heartbeatNetworkAwayCount >= HEARTBEAT_AWAY_REPORT_COUNT) {
         addHeartbeatNotification(HEARTBEAT_NOTIFICATION_WARNING, code,
@@ -169,49 +169,49 @@ class RemoteConnection {
       }
     };
 
-    var onHeartbeatError = (error: any) => {
+    const onHeartbeatError = (error: any) => {
       const reloadkeystroke = getReloadKeystrokeLabel();
       const reloadKeystrokeLabel = reloadkeystroke ? ` : (${reloadkeystroke})` : '';
-      var {code, message, originalCode} = error;
+      const {code, message, originalCode} = error;
       logger.info('Heartbeat network error:', code, originalCode, message);
       switch (code) {
-          case 'NETWORK_AWAY':
+        case 'NETWORK_AWAY':
             // Notify switching networks, disconnected, timeout, unreachable server or fragile connection.
-            notifyNetworkAway(code);
-            break;
-          case 'SERVER_CRASHED':
+          notifyNetworkAway(code);
+          break;
+        case 'SERVER_CRASHED':
             // Server shut down or port no longer accessible.
             // Notify the server was there, but now gone.
-            addHeartbeatNotification(HEARTBEAT_NOTIFICATION_ERROR, code,
+          addHeartbeatNotification(HEARTBEAT_NOTIFICATION_ERROR, code,
                 'Nuclide server crashed!<br/>' +
                 'Please reload Nuclide to restore your remote project connection!' +
                 reloadKeystrokeLabel,
                 /*dismissable*/ true);
             // TODO(most) reconnect RemoteConnection, restore the current project state,
             // and finally change dismissable to false and type to 'WARNING'.
-            break;
-          case 'PORT_NOT_ACCESSIBLE':
+          break;
+        case 'PORT_NOT_ACCESSIBLE':
             // Notify never heard a heartbeat from the server.
-            var {port} = remoteUri.parse(serverUri);
-            addHeartbeatNotification(HEARTBEAT_NOTIFICATION_ERROR, code,
+          const {port} = remoteUri.parse(serverUri);
+          addHeartbeatNotification(HEARTBEAT_NOTIFICATION_ERROR, code,
                 `Nuclide server is not reachable.<br/>It could be running on a port that is not accessible: ${port}`,
                 /*dismissable*/ true);
-            break;
-          case 'INVALID_CERTIFICATE':
+          break;
+        case 'INVALID_CERTIFICATE':
             // Notify the client certificate is not accepted by nuclide server (certificate mismatch).
-            addHeartbeatNotification(HEARTBEAT_NOTIFICATION_ERROR, code,
+          addHeartbeatNotification(HEARTBEAT_NOTIFICATION_ERROR, code,
                 'Connection Reset Error!!<br/>This could be caused by the client certificate mismatching the server certificate.<br/>' +
                 'Please reload Nuclide to restore your remote project connection!' +
                 reloadKeystrokeLabel,
                 /*dismissable*/ true);
             // TODO(most): reconnect RemoteConnection, restore the current project state.
             // and finally change dismissable to false and type to 'WARNING'.
-            break;
-          default:
-            notifyNetworkAway(code);
-            logger.error('Unrecongnized heartbeat error code: ' + code, message);
-            break;
-        }
+          break;
+        default:
+          notifyNetworkAway(code);
+          logger.error('Unrecongnized heartbeat error code: ' + code, message);
+          break;
+      }
     };
     socket.on('heartbeat', onHeartbeat);
     socket.on('heartbeat.error', onHeartbeatError);
@@ -231,10 +231,10 @@ class RemoteConnection {
   }
 
   createDirectory(uri: string): RemoteDirectory {
-    var {path} = remoteUri.parse(uri);
+    let {path} = remoteUri.parse(uri);
     path = require('path').normalize(path);
 
-    var entry = this._entries[path];
+    let entry = this._entries[path];
     if (!entry || entry.getLocalPath() !== path) {
       this._entries[path] = entry = new RemoteDirectory(
         this,
@@ -262,10 +262,10 @@ class RemoteConnection {
   }
 
   createFile(uri: string): RemoteFile {
-    var {path} = remoteUri.parse(uri);
+    let {path} = remoteUri.parse(uri);
     path = require('path').normalize(path);
 
-    var entry = this._entries[path];
+    let entry = this._entries[path];
     if (!entry || entry.getLocalPath() !== path) {
       this._entries[path] = entry = new RemoteFile(this, this.getUriOfRemotePath(path));
       this._addHandlersForEntry(entry);
@@ -279,12 +279,12 @@ class RemoteConnection {
   }
 
   _addHandlersForEntry(entry: RemoteFile | RemoteDirectory): void {
-    var oldPath = entry.getLocalPath();
-    var renameSubscription = entry.onDidRename(() => {
+    const oldPath = entry.getLocalPath();
+    const renameSubscription = entry.onDidRename(() => {
       delete this._entries[oldPath];
       this._entries[entry.getLocalPath()] = entry;
     });
-    var deleteSubscription = entry.onDidDelete(() => {
+    const deleteSubscription = entry.onDidDelete(() => {
       delete this._entries[entry.getLocalPath()];
       renameSubscription.dispose();
       deleteSubscription.dispose();
@@ -416,8 +416,8 @@ class RemoteConnection {
 
   _getClient(): NuclideClient {
     if (!this._client) {
-      var uri;
-      var options = {};
+      let uri;
+      const options = {};
 
       // Use https if we have key, cert, and ca
       if (this._isSecure()) {
@@ -430,7 +430,7 @@ class RemoteConnection {
       }
 
       // The remote connection and client are identified by both the remote host and the inital working directory.
-      var clientId = this.getRemoteHost() + this.getPathForInitialWorkingDirectory();
+      const clientId = this.getRemoteHost() + this.getPathForInitialWorkingDirectory();
       this._client = new NuclideClient(clientId, new NuclideRemoteEventbus(uri, options), {cwd: this._config.cwd});
     }
     return this._client;
@@ -492,7 +492,7 @@ class RemoteConnection {
   }
 
   static getForUri(uri: string): ?RemoteConnection {
-    var {hostname, path} = remoteUri.parse(uri);
+    const {hostname, path} = remoteUri.parse(uri);
     return RemoteConnection.getByHostnameAndPath(hostname, path);
   }
 

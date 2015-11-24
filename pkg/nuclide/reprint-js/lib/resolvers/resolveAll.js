@@ -12,7 +12,7 @@
 import type Options from '../options/Options';
 import type {Output} from '../types/common';
 
-var markers = require('../constants/markers');
+const markers = require('../constants/markers');
 
 /**
  * This resolves all markers. We are guaranteed to have a single remaining

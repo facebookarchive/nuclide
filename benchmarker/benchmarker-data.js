@@ -18,9 +18,9 @@ function aggregateTable(
 ): Array<Object> {
 
   // Map data set into arrays of values keyed by distinct keyColumn values and columns.
-  var groupedValues = {};
+  const groupedValues = {};
   records.forEach(record => {
-    var key = record[keyColumn];
+    const key = record[keyColumn];
     if (!groupedValues[key]) {
       groupedValues[key] = {};
     }
@@ -33,9 +33,9 @@ function aggregateTable(
   });
 
   // Aggregate those arrays.
-  var aggregatedRecords = [];
-  for (var key in groupedValues) {
-    var reducedRecord = {};
+  const aggregatedRecords = [];
+  for (const key in groupedValues) {
+    const reducedRecord = {};
     columns.forEach(column => {
       if (column === keyColumn) {
         // Don't aggregate the key column.
@@ -52,7 +52,7 @@ function aggregateTable(
 
 function avg(values: Array<string>, decimalPlaces: number = 2): string {
   return aggregate(values, values => {
-    var sum = values.reduce((i, j) => i + j);
+    const sum = values.reduce((i, j) => i + j);
     return sum / values.length;
   }, decimalPlaces);
 }

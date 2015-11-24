@@ -11,7 +11,7 @@
 
 import type {Node} from '../types/ast';
 
-var jscs = require('jscodeshift');
+const jscs = require('jscodeshift');
 
 /**
  * This is a hack to force an ObjectPattern node to be printed on one line
@@ -21,16 +21,16 @@ function oneLineObjectPattern(node: Node): Node {
     return node;
   }
 
-  var props = node.properties;
+  const props = node.properties;
   if (!props.every(prop => prop.shorthand && jscs.Identifier.check(prop.key))) {
     return node;
   }
 
-  var mySource =
+  const mySource =
     'var {' +
     props.map(prop => prop.key.name).join(', ') +
     '} = _;';
-  var myAst = jscs(mySource);
+  const myAst = jscs(mySource);
   return myAst.find(jscs.ObjectPattern).nodes()[0];
 }
 

@@ -27,7 +27,7 @@ class NuclideCustomPaneItem extends HTMLElement {
     this._uri = options.uri;
     this._allowSplit = !!options.allowSplit;
 
-    var component = this.__renderPaneItem(options);
+    const component = this.__renderPaneItem(options);
     React.render(component, this);
   }
 

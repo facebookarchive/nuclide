@@ -9,17 +9,17 @@
  * the root directory of this source tree.
  */
 
-var invariant = require('assert');
+const invariant = require('assert');
 
 import type CodeFormatManager from './CodeFormatManager';
 import type {CodeFormatProvider} from './types';
 
-var codeFormatManager: ?CodeFormatManager = null;
+let codeFormatManager: ?CodeFormatManager = null;
 
 module.exports = {
 
   activate(state: ?any): void {
-    var CodeFormatManager = require('./CodeFormatManager');
+    const CodeFormatManager = require('./CodeFormatManager');
     codeFormatManager = new CodeFormatManager();
   },
 
@@ -33,6 +33,6 @@ module.exports = {
       codeFormatManager.dispose();
       codeFormatManager = null;
     }
-  }
+  },
 
 };

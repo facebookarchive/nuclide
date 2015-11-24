@@ -16,11 +16,11 @@
  */
 require('jasmine-focused');
 
-var now = 0;
-var timeoutCount = 0;
-var intervalCount = 0;
-var timeouts = [];
-var intervalTimeouts = {};
+let now = 0;
+let timeoutCount = 0;
+let intervalCount = 0;
+let timeouts = [];
+let intervalTimeouts = {};
 
 function resetTimeouts(): void {
   now = 0;
@@ -31,7 +31,7 @@ function resetTimeouts(): void {
 }
 
 function fakeSetTimeout(callback: () => ?any, ms: number): number {
-  var id = ++timeoutCount;
+  const id = ++timeoutCount;
   timeouts.push([id, now + ms, callback]);
   timeouts = timeouts
       .sort(([id0, strikeTime0, cb0], [id1, strikeTime1, cb1]) => strikeTime0 - strikeTime1);
@@ -44,8 +44,8 @@ function fakeClearTimeout(idToClear: number): void {
 }
 
 function fakeSetInterval(callback: () => ?any, ms: number): number {
-  var id = ++intervalCount;
-  var action = () => {
+  const id = ++intervalCount;
+  const action = () => {
     callback();
     intervalTimeouts[id] = fakeSetTimeout(action, ms);
   };
@@ -58,10 +58,10 @@ function fakeClearInterval(idToClear: number): void {
 }
 
 function advanceClock(deltaMs: number): void {
-  var advanceTo = now + deltaMs;
+  const advanceTo = now + deltaMs;
 
   while (timeouts.length !== 0 && timeouts[0][1] <= advanceTo) {
-    var [ , strikeTime, callback] = timeouts.shift();
+    const [ , strikeTime, callback] = timeouts.shift();
     now = strikeTime;
     callback();
   }
@@ -99,7 +99,7 @@ global.advanceClock = advanceClock;
 global.useRealClock = useRealClock;
 global.unspy = unspy;
 global.now = unspy;
-var attributes = {};
+const attributes = {};
 attributes['get'] = function() { return now; };
 Object.defineProperty(global, 'now', attributes);
 

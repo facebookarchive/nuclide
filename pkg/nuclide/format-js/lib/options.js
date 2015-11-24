@@ -12,10 +12,10 @@
 import type ModuleMap from 'nuclide-format-js-base/lib/state/ModuleMap';
 import type {SourceOptions} from 'nuclide-format-js-base/lib/options/SourceOptions';
 
-var {Directory, File} = require('atom');
-var NuclideCommons = require('nuclide-commons');
+const {Directory, File} = require('atom');
+const NuclideCommons = require('nuclide-commons');
 
-var formatJSBase = require('nuclide-format-js-base');
+const formatJSBase = require('nuclide-format-js-base');
 
 // These are the common settings needed to construct a module map.
 type Settings = {
@@ -24,55 +24,55 @@ type Settings = {
   builtInTypes: Array<string>,
 };
 
-var arrayFrom = NuclideCommons.array.from;
+const arrayFrom = NuclideCommons.array.from;
 
-var {createModuleMap} = formatJSBase;
+const {createModuleMap} = formatJSBase;
 // We need this in array formats.
-var defaultAliases = arrayFrom(formatJSBase.defaultAliases);
-var defaultBuiltIns = arrayFrom(formatJSBase.defaultBuiltIns);
-var defaultBuiltInTypes = arrayFrom(formatJSBase.defaultBuiltInTypes);
+const defaultAliases = arrayFrom(formatJSBase.defaultAliases);
+const defaultBuiltIns = arrayFrom(formatJSBase.defaultBuiltIns);
+const defaultBuiltInTypes = arrayFrom(formatJSBase.defaultBuiltInTypes);
 
 /**
  * Single entry point to get the options for a source file. Deals with finding
  * the configuration file and caching.
  */
 async function getOptions(sourcePath: string): SourceOptions {
-  var jsonFile = getJSON(sourcePath);
+  const jsonFile = getJSON(sourcePath);
   if (!jsonFile) {
     return getNuclideOptions(sourcePath);
   }
 
   // Parse the json.
-  var json = JSON.parse(await jsonFile.read());
+  const json = JSON.parse(await jsonFile.read());
 
   // Construct the blacklist.
-  var blacklist = getNuclideBlacklist();
+  const blacklist = getNuclideBlacklist();
   if (json.blacklist) {
     json.blacklist.forEach(transform => blacklist.add(transform));
   }
 
   // Construct the module map.
-  var rootDir = jsonFile.getParent();
-  var nuclideSettings = getNuclideSettings();
-  var jsonSettings = getJSONSettings(json);
+  const rootDir = jsonFile.getParent();
+  const nuclideSettings = getNuclideSettings();
+  const jsonSettings = getJSONSettings(json);
 
-  var aliases = new Map([
+  const aliases = new Map([
     ...defaultAliases,
     ...nuclideSettings.aliases,
     ...jsonSettings.aliases,
   ]);
-  var builtIns = new Set([
+  const builtIns = new Set([
     ...defaultBuiltIns,
     ...nuclideSettings.builtIns,
     ...jsonSettings.builtIns,
   ]);
-  var builtInTypes = new Set([
+  const builtInTypes = new Set([
     ...defaultBuiltInTypes,
     ...nuclideSettings.builtInTypes,
     ...jsonSettings.builtInTypes,
   ]);
 
-  var moduleMapOptions = {
+  const moduleMapOptions = {
     paths: [],
     pathsToRelativize: [],
     aliases,
@@ -83,7 +83,7 @@ async function getOptions(sourcePath: string): SourceOptions {
 
   // Add the paths to the module map options. Make sure to take into account
   // relativization.
-  var paths = getPaths(rootDir, json);
+  const paths = getPaths(rootDir, json);
 
   if (json.relativize) {
     moduleMapOptions.pathsToRelativize = paths;
@@ -91,7 +91,7 @@ async function getOptions(sourcePath: string): SourceOptions {
     moduleMapOptions.paths = paths;
   }
 
-  var moduleMap = createModuleMap(moduleMapOptions);
+  const moduleMap = createModuleMap(moduleMapOptions);
 
   // Put everything together in the source options object.
   return {
@@ -108,10 +108,10 @@ async function getOptions(sourcePath: string): SourceOptions {
  * TODO: Cache things.
  */
 function getJSON(sourcePath: string): ?File {
-  var startFile = new File(sourcePath);
-  var current = startFile.getParent();
+  const startFile = new File(sourcePath);
+  let current = startFile.getParent();
   while (true) {
-    var jsonFile = current.getFile('formatjs.json');
+    const jsonFile = current.getFile('formatjs.json');
     if (jsonFile.existsSync()) {
       return jsonFile;
     }
@@ -132,10 +132,10 @@ function getJSONSettings(json: Object): Settings {
 }
 
 function getPaths(directory: Directory, json: Object): Array<string> {
-  var pathGroups: Array<Array<string>> = [];
-  var entries = directory.getEntriesSync();
-  for (var entry of entries) {
-    var path = entry.getRealPathSync();
+  const pathGroups: Array<Array<string>> = [];
+  const entries = directory.getEntriesSync();
+  for (const entry of entries) {
+    const path = entry.getRealPathSync();
 
     // Check if we should ignore the path.
     if (
@@ -192,26 +192,26 @@ function getNuclideSettings(): Settings {
  */
 function getNuclideModuleMap(): ModuleMap {
   // Get all the options from atom config.
-  var settings = getNuclideSettings();
+  const settings = getNuclideSettings();
 
   // Construct the aliases.
-  var aliases = new Map(settings.aliases);
-  for (var entry of defaultAliases) {
-    var [key, value] = entry;
+  const aliases = new Map(settings.aliases);
+  for (const entry of defaultAliases) {
+    const [key, value] = entry;
     if (!aliases.has(key)) {
       aliases.set(key, value);
     }
   }
 
   // Construct the built ins.
-  var builtIns = new Set(defaultBuiltIns);
-  for (var builtIn of settings.builtIns) {
+  const builtIns = new Set(defaultBuiltIns);
+  for (const builtIn of settings.builtIns) {
     builtIns.add(builtIn);
   }
 
   // Construct built in types.
-  var builtInTypes = new Set(defaultBuiltInTypes);
-  for (var builtInType of settings.builtInTypes) {
+  const builtInTypes = new Set(defaultBuiltInTypes);
+  for (const builtInType of settings.builtInTypes) {
     builtInTypes.add(builtInType);
   }
 
@@ -230,7 +230,7 @@ function getNuclideModuleMap(): ModuleMap {
  * Construct the blacklist from the settings.
  */
 function getNuclideBlacklist(): Set<string> {
-  var blacklist = new Set();
+  const blacklist = new Set();
   if (!atom.config.get('nuclide-format-js.nuclideFixHeader')) {
     blacklist.add('nuclide.fixHeader');
   }
@@ -263,8 +263,8 @@ function getNuclideBlacklist(): Set<string> {
  */
 function fixAliases(aliases: ?Array<string>): Array<[string, string]> {
   aliases = aliases || [];
-  var pairs = [];
-  for (var i = 0; i < aliases.length - 1; i += 2) {
+  const pairs = [];
+  for (let i = 0; i < aliases.length - 1; i += 2) {
     pairs.push([aliases[i], aliases[i + 1]]);
   }
   return pairs;

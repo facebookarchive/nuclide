@@ -19,7 +19,7 @@ import {
   linterMessagesToDiagnosticUpdate,
 } from '../lib/LinterAdapter';
 
-var grammar = 'testgrammar';
+const grammar = 'testgrammar';
 
 import {arePropertiesEqual} from 'nuclide-test-helpers';
 
@@ -32,15 +32,15 @@ function makePromise<T>(ret: T, timeout: number): Promise<T> {
 }
 
 describe('LinterAdapter', () => {
-  var eventCallback: any;
-  var fakeLinter: any;
-  var linterAdapter: any;
-  var linterReturn: any;
-  var fakeEditor: any;
-  var subscribedToAny: any;
-  var newUpdateSubscriber: any;
-  var publishMessageUpdateSpy: any;
-  var fakeDiagnosticsProviderBase: any;
+  let eventCallback: any;
+  let fakeLinter: any;
+  let linterAdapter: any;
+  let linterReturn: any;
+  let fakeEditor: any;
+  let subscribedToAny: any;
+  let newUpdateSubscriber: any;
+  let publishMessageUpdateSpy: any;
+  let fakeDiagnosticsProviderBase: any;
 
   class FakeDiagnosticsProviderBase {
     publishMessageUpdate: JasmineSpy;
@@ -107,7 +107,7 @@ describe('LinterAdapter', () => {
   });
 
   it('should dispatch an event on subscribe if no lint is in progress', () => {
-    var callback = jasmine.createSpy();
+    const callback = jasmine.createSpy();
     newUpdateSubscriber(callback);
     waitsFor(() => {
       return publishMessageUpdateSpy.callCount > 0;
@@ -116,7 +116,7 @@ describe('LinterAdapter', () => {
 
   it('should work when the linter is synchronous', () => {
     linterReturn = [{type: 'Error', filePath: 'foo'}];
-    var message = null;
+    let message = null;
     linterAdapter.onMessageUpdate(m => {
       message = m;
     });
@@ -128,8 +128,8 @@ describe('LinterAdapter', () => {
 
   it('should not reorder results', () => {
     waitsForPromise(async () => {
-      var numMessages = 0;
-      var lastMessage = null;
+      let numMessages = 0;
+      let lastMessage = null;
       linterAdapter.onMessageUpdate(message => {
         numMessages++;
         lastMessage = message;

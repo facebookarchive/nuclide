@@ -11,13 +11,13 @@
 
 import {trackTiming} from 'nuclide-analytics';
 
-var {findDiagnostics, getHackLanguageForUri, getCachedHackLanguageForUri} = require('./hack');
-var {RequestSerializer} = require('nuclide-commons').promises;
-var {DiagnosticsProviderBase} = require('nuclide-diagnostics-provider-base');
-var {Range} = require('atom');
+const {findDiagnostics, getHackLanguageForUri, getCachedHackLanguageForUri} = require('./hack');
+const {RequestSerializer} = require('nuclide-commons').promises;
+const {DiagnosticsProviderBase} = require('nuclide-diagnostics-provider-base');
+const {Range} = require('atom');
 import invariant from 'assert';
 
-var {HACK_GRAMMARS_SET} = require('nuclide-hack-common/lib/constants');
+const {HACK_GRAMMARS_SET} = require('nuclide-hack-common/lib/constants');
 
 import type {BusySignalProviderBase} from 'nuclide-busy-signal-provider-base';
 import type HackLanguage from './HackLanguage';
@@ -61,10 +61,10 @@ function hackMessageToTrace(traceError: HackError): Object {
 function hackMessageToDiagnosticMessage(
   hackDiagnostic: HackDiagnosticItem
 ): FileDiagnosticMessage {
-  var {message: hackMessages} = hackDiagnostic;
+  const {message: hackMessages} = hackDiagnostic;
 
-  var causeMessage = hackMessages[0];
-  var diagnosticMessage: FileDiagnosticMessage = {
+  const causeMessage = hackMessages[0];
+  const diagnosticMessage: FileDiagnosticMessage = {
     scope: 'file',
     providerName: 'Hack',
     type: 'Error',
@@ -119,7 +119,7 @@ class HackDiagnosticsProvider {
 
   @trackTiming('hack.run-diagnostics')
   async _runDiagnosticsImpl(textEditor: atom$TextEditor): Promise<void> {
-    var filePath = textEditor.getPath();
+    const filePath = textEditor.getPath();
     if (!filePath) {
       return;
     }
@@ -127,13 +127,13 @@ class HackDiagnosticsProvider {
     // `hh_client` doesn't currently support `onTheFly` diagnosis.
     // So, currently, it would only work if there is no `hh_client` or `.hhconfig` where
     // the `HackWorker` model will diagnose with the updated editor contents.
-    var {status, result} = await this._requestSerializer.run(findDiagnostics(textEditor));
+    const {status, result} = await this._requestSerializer.run(findDiagnostics(textEditor));
     if (!result || status === 'outdated') {
       return;
     }
 
-    var diagnostics = result;
-    var hackLanguage = await getHackLanguageForUri(textEditor.getPath());
+    const diagnostics = result;
+    const hackLanguage = await getHackLanguageForUri(textEditor.getPath());
     if (!hackLanguage) {
       return;
     }
@@ -141,12 +141,12 @@ class HackDiagnosticsProvider {
     this._providerBase.publishMessageInvalidation({scope: 'file', filePaths: [filePath]});
     this._invalidatePathsForHackLanguage(hackLanguage);
 
-    var pathsForHackLanguage = new Set();
+    const pathsForHackLanguage = new Set();
     this._hackLanguageToFilePaths.set(hackLanguage, pathsForHackLanguage);
-    for (var diagnostic of diagnostics) {
+    for (const diagnostic of diagnostics) {
       /* Each message consists of several different components, each with its
        * own text and path. */
-      for (var diagnosticMessage of diagnostic.message) {
+      for (const diagnosticMessage of diagnostic.message) {
         pathsForHackLanguage.add(diagnosticMessage.path);
       }
     }
@@ -156,12 +156,12 @@ class HackDiagnosticsProvider {
 
   _processDiagnostics(diagnostics: Array<HackDiagnosticItem>): DiagnosticProviderUpdate {
     // Convert array messages to Error Objects with Traces.
-    var fileDiagnostics = diagnostics.map(hackMessageToDiagnosticMessage);
+    const fileDiagnostics = diagnostics.map(hackMessageToDiagnosticMessage);
 
-    var filePathToMessages = new Map();
-    for (var diagnostic of fileDiagnostics) {
-      var path = diagnostic['filePath'];
-      var diagnosticArray = filePathToMessages.get(path);
+    const filePathToMessages = new Map();
+    for (const diagnostic of fileDiagnostics) {
+      const path = diagnostic['filePath'];
+      let diagnosticArray = filePathToMessages.get(path);
       if (!diagnosticArray) {
         diagnosticArray = [];
         filePathToMessages.set(path, diagnosticArray);
@@ -176,7 +176,7 @@ class HackDiagnosticsProvider {
     if (!hackLanguage.isHackAvailable()) {
       return [];
     }
-    var filePaths = this._hackLanguageToFilePaths.get(hackLanguage);
+    const filePaths = this._hackLanguageToFilePaths.get(hackLanguage);
     if (!filePaths) {
       return [];
     }
@@ -189,7 +189,7 @@ class HackDiagnosticsProvider {
     //
     // Once we provide all diagnostics, instead of just the current file, we can
     // probably remove the activeTextEditor parameter.
-    var activeTextEditor = atom.workspace.getActiveTextEditor();
+    const activeTextEditor = atom.workspace.getActiveTextEditor();
     if (activeTextEditor) {
       if (HACK_GRAMMARS_SET.has(activeTextEditor.getGrammar().scopeName)) {
         this._runDiagnostics(activeTextEditor);

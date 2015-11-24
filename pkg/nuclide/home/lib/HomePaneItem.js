@@ -11,11 +11,11 @@
 
 import type {HomeFragments} from 'nuclide-home-interfaces';
 
-var React = require('react-for-atom');
-var HomeFeatureComponent = require('./HomeFeatureComponent');
-var arrayFrom = require('nuclide-commons').array.from;
+const React = require('react-for-atom');
+const HomeFeatureComponent = require('./HomeFeatureComponent');
+const arrayFrom = require('nuclide-commons').array.from;
 
-var DEFAULT_WELCOME = (
+const DEFAULT_WELCOME = (
   <div>
     <p>
       Thanks for trying Nuclide, Facebook's
@@ -55,13 +55,13 @@ class HomePaneItem extends HTMLElement {
   }
 
   render() {
-    var welcomes = [];
-    var features = [];
-    var sortedHomeFragments = arrayFrom(this.allHomeFragments).sort(
+    let welcomes = [];
+    const features = [];
+    const sortedHomeFragments = arrayFrom(this.allHomeFragments).sort(
       (fragmentA, fragmentB) => (fragmentB.priority || 0) - (fragmentA.priority || 0)
     );
     sortedHomeFragments.forEach(fragment => {
-      var {welcome, feature} = fragment;
+      const {welcome, feature} = fragment;
       if (welcome) {
         welcomes.push(<div key={welcomes.length}>{welcome}</div>);
       }
@@ -73,7 +73,7 @@ class HomePaneItem extends HTMLElement {
       welcomes = DEFAULT_WELCOME;
     }
 
-    var containers = [
+    const containers = [
       <div key="welcome" className="welcome-container">
         <section className="text-center">
           <div className="nuclide-home-logo" />

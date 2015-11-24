@@ -14,7 +14,7 @@
  * whether the linter package or this package is activated first. If/when linter
  * moves to the Services API, then this can go away.
  */
-var libClangProcess;
+let libClangProcess;
 
 function setSharedLibClangProcess(libClangProcessSingleton: LibClangProcess) {
   libClangProcess = libClangProcessSingleton;

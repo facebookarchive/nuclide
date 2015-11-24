@@ -38,7 +38,7 @@ export class DbgpMessageHandler {
    * Throws if the message is malformatted.
    */
   parseMessages(data: string): Array<Object> {
-    let components = data.split('\x00');
+    const components = data.split('\x00');
     /**
      * components.length can be 1, 2 or more than 3:
      * 1: The whole data block is part of a full message(xml-partX).
@@ -48,10 +48,10 @@ export class DbgpMessageHandler {
     log(`Total components: ${components.length}`);
 
     // Merge head component with prevIncompletedMessage if needed.
-    let results = [];
+    const results = [];
     let prevIncompletedMessage = this._prevIncompletedMessage;
     if (prevIncompletedMessage) {
-      let firstMessageContent = components.shift();
+      const firstMessageContent = components.shift();
       prevIncompletedMessage.content += firstMessageContent;
 
       if (this._isCompletedMessage(prevIncompletedMessage)) {
@@ -65,11 +65,11 @@ export class DbgpMessageHandler {
       logErrorAndThrow(`Error: got extra messages without completing previous message.`);
     }
 
-    let isIncompleteResponse = (components.length % 2 === 0);
+    const isIncompleteResponse = (components.length % 2 === 0);
 
     // Verify empty tail component for completed response.
     if (!isIncompleteResponse) {
-      let lastComponent = components.pop();
+      const lastComponent = components.pop();
       if (lastComponent.length !== 0) {
         logErrorAndThrow(`The complete response should terminate with zero character while got:` +
           ` ${lastComponent} `);
@@ -80,9 +80,9 @@ export class DbgpMessageHandler {
     if (isIncompleteResponse && components.length > 0) {
       invariant(components.length >= 2);
       // content comes after length.
-      let content = components.pop();
-      let length = Number(components.pop());
-      let lastMessage = {length, content};
+      const content = components.pop();
+      const length = Number(components.pop());
+      const lastMessage = {length, content};
       if (!this._isIncompletedMessage(lastMessage)) {
         logErrorAndThrow(`The last message should be a fragment of a full message: ` +
           JSON.stringify(lastMessage));
@@ -93,7 +93,7 @@ export class DbgpMessageHandler {
     // The remaining middle components should all be completed messages.
     invariant(components.length % 2 === 0);
     while (components.length >= 2) {
-      let message = {
+      const message = {
         length: Number(components.shift()),
         content: components.shift(),
       };
@@ -131,9 +131,9 @@ export class DbgpMessageHandler {
    * Throws if the input is not valid xml.
    */
   _parseXml(message: DbgpMessage): Object {
-    let xml = message.content;
-    var errorValue;
-    var resultValue;
+    const xml = message.content;
+    let errorValue;
+    let resultValue;
     require('xml2js').parseString(xml, (error, result) => {
       errorValue = error;
       resultValue = result;

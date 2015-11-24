@@ -9,12 +9,12 @@
  * the root directory of this source tree.
  */
 
-var fs = require('fs');
-var path = require('path');
-var logger = require('nuclide-logging').getLogger();
+const fs = require('fs');
+const path = require('path');
+const logger = require('nuclide-logging').getLogger();
 
-var DEFAULT_WEBWORKER_TIMEOUT = 30 * 1000;
-var DEFAULT_POOR_PERF_TIMEOUT = 8 * 1000;
+const DEFAULT_WEBWORKER_TIMEOUT = 30 * 1000;
+const DEFAULT_POOR_PERF_TIMEOUT = 8 * 1000;
 
 type WorkerTask = {
   workerMessage: any;
@@ -60,11 +60,11 @@ class HackWorker {
   runWorkerTask(workerMessage: any, options: any): Promise<any> {
     return new Promise((resolve, reject) => {
       options = options || {};
-      var queue = options.isDependency ? this._depTaskQueue : this._taskQueue;
+      const queue = options.isDependency ? this._depTaskQueue : this._taskQueue;
       queue.push({
         workerMessage,
         onResponse: (response) => {
-          var internalError = response.internal_error;
+          const internalError = response.internal_error;
           if (internalError) {
             logger.error('Hack Worker: Internal Error! - ' +
                 String(internalError) + ' - ' + JSON.stringify(workerMessage));
@@ -97,7 +97,7 @@ class HackWorker {
     }
     if (this._activeTask) {
       // dispatch it and start timers
-      var workerMessage = this._activeTask.workerMessage;
+      const workerMessage = this._activeTask.workerMessage;
       this._dispatchTask(workerMessage);
       this._timeoutTimer = setTimeout(() => {
         logger.warn('Webworker is stuck in a job!', JSON.stringify(workerMessage));
@@ -150,9 +150,9 @@ function startWebWorker(): Worker {
   const webWorkerText = fs.readFileSync(path.join(__dirname, '../static/HackWebWorker.js'));
   // Concatenate the code text to pass to the Worker in a blob url
   const workerText = hhIdeText + '\n//<<MERGE>>\n' + webWorkerText;
-  var {Blob, Worker, URL} = window;
-  var blob = new Blob([workerText], {type: 'application/javascript'});
-  var worker = new Worker(URL.createObjectURL(blob));
+  const {Blob, Worker, URL} = window;
+  const blob = new Blob([workerText], {type: 'application/javascript'});
+  const worker = new Worker(URL.createObjectURL(blob));
   return worker;
 }
 

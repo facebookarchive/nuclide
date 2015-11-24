@@ -37,7 +37,7 @@ export class BatchProcessedQueue<T> {
 
   _handleBatch() {
     this._timeoutId = null;
-    var batch = this._items;
+    const batch = this._items;
     this._items = [];
     this._handler(batch);
   }

@@ -52,7 +52,7 @@ export default class CircularBuffer<T> {
   push(element: T): void {
     ++this._generation;
     this._elements[this._nextInsertIndex] = element;
-    let nextIndex = this._nextInsertIndex + 1;
+    const nextIndex = this._nextInsertIndex + 1;
     this._nextInsertIndex = nextIndex % this._capacity;
     if (this._nextInsertIndex === 0 && !this._isFull) {
       this._isFull = true;
@@ -66,11 +66,11 @@ export default class CircularBuffer<T> {
    */
   // $FlowIssue: t6187050
   [Symbol.iterator](): Iterator<T> {
-    let generation = this._generation;
+    const generation = this._generation;
     let index = this._isFull ? this._nextInsertIndex : 0;
     let numIterations = this._isFull ? this._capacity : this._nextInsertIndex;
 
-    let next = (): {done: boolean, value: ?T} => {
+    const next = (): {done: boolean, value: ?T} => {
       if (numIterations === 0) {
         return {done: true, value: undefined};
       }
@@ -78,7 +78,7 @@ export default class CircularBuffer<T> {
         throw new Error('CircularBuffer was modified during iteration.');
       }
       --numIterations;
-      let value = this._elements[index];
+      const value = this._elements[index];
       index = (index + 1) % this._capacity;
       return {done: false, value};
     };

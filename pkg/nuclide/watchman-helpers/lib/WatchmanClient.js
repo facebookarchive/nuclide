@@ -9,12 +9,12 @@
  * the root directory of this source tree.
  */
 
-var watchman = require('fb-watchman');
+const watchman = require('fb-watchman');
 
-var {isEmpty} = require('nuclide-commons').object;
-var logger = require('nuclide-logging').getLogger();
-var {getWatchmanBinaryPath} = require('./main');
-var path = require('path');
+const {isEmpty} = require('nuclide-commons').object;
+const logger = require('nuclide-logging').getLogger();
+const {getWatchmanBinaryPath} = require('./main');
+const path = require('path');
 
 import WatchmanSubscription from './WatchmanSubscription';
 import type {WatchmanSubscriptionOptions} from './WatchmanSubscription';
@@ -84,8 +84,8 @@ class WatchmanClient {
   }
 
   async _restoreSubscriptions(): Promise {
-    var watchSubscriptions: Array<WatchmanSubscription> = [];
-    for (var key in this._subscriptions) {
+    const watchSubscriptions: Array<WatchmanSubscription> = [];
+    for (const key in this._subscriptions) {
       watchSubscriptions.push(this._subscriptions[key]);
     }
     await Promise.all(watchSubscriptions.map(async (subscription: WatchmanSubscription) => {
@@ -109,7 +109,7 @@ class WatchmanClient {
   }
 
   _onSubscriptionResult(response: WatchmanSubscriptionResponse) {
-    var subscription = this._getSubscription(response.subscription);
+    const subscription = this._getSubscription(response.subscription);
     if (!subscription) {
       return logger.error('Subscription not found for response:!', response);
     }
@@ -117,14 +117,14 @@ class WatchmanClient {
   }
 
   async watchDirectoryRecursive(localDirectoryPath: string) : Promise<WatchmanSubscription> {
-    var existingSubscription = this._getSubscription(localDirectoryPath);
+    const existingSubscription = this._getSubscription(localDirectoryPath);
     if (existingSubscription) {
       existingSubscription.subscriptionCount++;
       return existingSubscription;
     } else {
-      var {watch: watchRoot, relative_path: relativePath} = await this._watchProject(localDirectoryPath);
-      var clock = await this._clock(watchRoot);
-      var options: WatchmanSubscriptionOptions = {
+      const {watch: watchRoot, relative_path: relativePath} = await this._watchProject(localDirectoryPath);
+      const clock = await this._clock(watchRoot);
+      const options: WatchmanSubscriptionOptions = {
         fields: ['name', 'new', 'exists', 'mode'],
         since: clock,
       };
@@ -133,7 +133,7 @@ class WatchmanClient {
         options.expression = ['dirname', relativePath];
       }
       // relativePath is undefined if watchRoot is the same as directoryPath.
-      var subscription = this._setSubscription(localDirectoryPath,
+      const subscription = this._setSubscription(localDirectoryPath,
           new WatchmanSubscription(
             /*subscriptionRoot*/ watchRoot,
             /*pathFromSubscriptionRootToSubscriptionPath*/ relativePath,
@@ -151,7 +151,7 @@ class WatchmanClient {
   }
 
   async unwatch(entryPath: string): Promise {
-    var subscription = this._getSubscription(entryPath);
+    const subscription = this._getSubscription(entryPath);
 
     if (!subscription) {
       return logger.error('No watcher entity found with path:', entryPath);
@@ -173,7 +173,7 @@ class WatchmanClient {
   }
 
   async _watchList(): Promise<Array<string>> {
-    var {roots} = await this._command('watch-list');
+    const {roots} = await this._command('watch-list');
     return roots;
   }
 
@@ -186,18 +186,18 @@ class WatchmanClient {
   }
 
   async _watch(directoryPath: string): Promise {
-    var response = await this._command('watch', directoryPath);
+    const response = await this._command('watch', directoryPath);
     if (response.warning) {
       logger.warn('watchman warning: ', response.warning);
     }
   }
 
   async _watchProject(directoryPath: string): Promise<any> {
-    var watchmanVersion = await this._watchmanVersionPromise;
+    const watchmanVersion = await this._watchmanVersionPromise;
     if (!watchmanVersion || watchmanVersion < '3.1.0') {
       throw new Error('Watchman version: ' + watchmanVersion + ' does not support watch-project');
     }
-    var response = await this._command('watch-project', directoryPath);
+    const response = await this._command('watch-project', directoryPath);
     if (response.warning) {
       logger.warn('watchman warning: ', response.warning);
     }
@@ -205,12 +205,12 @@ class WatchmanClient {
   }
 
   async _clock(directoryPath: string): Promise<string> {
-    var {clock} = await this._command('clock', directoryPath);
+    const {clock} = await this._command('clock', directoryPath);
     return clock;
   }
 
   async version(): Promise<string> {
-    var {version} = await this._command('version');
+    const {version} = await this._command('version');
     return version;
   }
 

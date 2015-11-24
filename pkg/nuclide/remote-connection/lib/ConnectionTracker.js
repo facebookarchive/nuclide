@@ -14,7 +14,7 @@ import {track} from 'nuclide-analytics';
 
 import type {SshConnectionConfiguration} from './SshHandshake';
 
-var CONNECTION_EVENT = 'nuclide-remote-connection';
+const CONNECTION_EVENT = 'nuclide-remote-connection';
 
 export default class ConnectionTracker {
 

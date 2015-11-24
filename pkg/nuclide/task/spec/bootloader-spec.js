@@ -10,13 +10,13 @@
  */
 import type {Task} from '../lib/bootstrap';
 
-var invariant = require('assert');
-var {createTask} = require('../lib/bootloader');
-var {expectAsyncFailure} = require('nuclide-test-helpers');
+const invariant = require('assert');
+const {createTask} = require('../lib/bootloader');
+const {expectAsyncFailure} = require('nuclide-test-helpers');
 
 describe('Task', () => {
   describe('.invokeRemoteMethod()', () => {
-    var task: ?Task = null;
+    let task: ?Task = null;
 
     beforeEach(() => {
       task = createTask();
@@ -34,7 +34,7 @@ describe('Task', () => {
     it('can call a synchronous function that is a lone export', () => {
       waitsForPromise(async () => {
         invariant(task);
-        var result = await task.invokeRemoteMethod({
+        const result = await task.invokeRemoteMethod({
           file: require.resolve('./fixtures/one-export-returns-object.js'),
           args: ['add me!'],
         });
@@ -45,7 +45,7 @@ describe('Task', () => {
     it('can call an async function that is a lone export', () => {
       waitsForPromise(async () => {
         invariant(task);
-        var result = await task.invokeRemoteMethod({
+        const result = await task.invokeRemoteMethod({
           file: require.resolve('./fixtures/one-export-returns-string-async.js'),
         });
         expect(result).toEqual('#winning');
@@ -56,7 +56,7 @@ describe('Task', () => {
     xit('can call a synchronous function from an exports object', () => {
       waitsForPromise(async () => {
         invariant(task);
-        var result = await task.invokeRemoteMethod({
+        const result = await task.invokeRemoteMethod({
           file: require.resolve('./fixtures/multiple-exports.js'),
           method: 'product',
           args: [1, 2, 3, 4, 5],
@@ -69,7 +69,7 @@ describe('Task', () => {
     xit('can call an async function from an exports object', () => {
       waitsForPromise(async () => {
         invariant(task);
-        var result = await task.invokeRemoteMethod({
+        const result = await task.invokeRemoteMethod({
           file: require.resolve('./fixtures/multiple-exports.js'),
           method: 'asyncFetch',
         });
@@ -89,7 +89,7 @@ describe('Task', () => {
         await Promise.all([increment(), increment(), increment()]);
 
         invariant(task);
-        var result = await task.invokeRemoteMethod({
+        const result = await task.invokeRemoteMethod({
           file: require.resolve('./fixtures/multiple-exports.js'),
           method: 'getTotal',
         });
@@ -100,7 +100,7 @@ describe('Task', () => {
     it('synchronous function that throws Error returns a rejected Promise', () => {
       waitsForPromise(async () => {
         invariant(task);
-        var promise = task.invokeRemoteMethod({
+        const promise = task.invokeRemoteMethod({
           file: require.resolve('./fixtures/exports-that-fail.js'),
           method: 'throwsErrorSynchronously',
         });
@@ -113,7 +113,7 @@ describe('Task', () => {
     it('synchronous function that returns a rejected Promise returns a rejected Promise', () => {
       waitsForPromise(async () => {
         invariant(task);
-        var promise = task.invokeRemoteMethod({
+        const promise = task.invokeRemoteMethod({
           file: require.resolve('./fixtures/exports-that-fail.js'),
           method: 'returnsRejectedPromise',
         });
@@ -126,7 +126,7 @@ describe('Task', () => {
     it('async function that throws returns a rejected Promise', () => {
       waitsForPromise(async () => {
         invariant(task);
-        var promise = task.invokeRemoteMethod({
+        const promise = task.invokeRemoteMethod({
           file: require.resolve('./fixtures/exports-that-fail.js'),
           method: 'asyncFunctionThatThrows',
         });

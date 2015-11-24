@@ -33,11 +33,11 @@ type SearchResponse = {
   results: Array<SearchQueryResult>;
 }
 
-var {fsPromise} = require('nuclide-commons');
-var {fileSearchForDirectory} = require('nuclide-path-search');
-var remoteUri = require('nuclide-remote-uri');
+const {fsPromise} = require('nuclide-commons');
+const {fileSearchForDirectory} = require('nuclide-path-search');
+const remoteUri = require('nuclide-remote-uri');
 
-var providers;
+let providers;
 
 /*
  * TODO(williamsc): This needs to have some better
@@ -45,20 +45,20 @@ var providers;
  */
 
 // Cache of previously indexed folders for later use.
-var fileSearchers: any = Object.create(null);
+let fileSearchers: any = Object.create(null);
 
 // TODO (mikeo): Make this another search provider
 async function doSearchDirectory(directoryUri: string, query: string): Promise<Array<FileSearchResult>> {
-  var search = fileSearchers[directoryUri];
+  let search = fileSearchers[directoryUri];
   if (search === undefined) {
-    var directory = remoteUri.parse(directoryUri).path;
+    const directory = remoteUri.parse(directoryUri).path;
 
-    var exists = await fsPromise.exists(directory);
+    const exists = await fsPromise.exists(directory);
     if (!exists) {
       throw new Error('Could not find directory to search : ' + directory);
     }
 
-    var stat = await fsPromise.stat(directory);
+    const stat = await fsPromise.stat(directory);
     if (!stat.isDirectory()) {
       throw new Error('Provided path is not a directory : ' + directory);
     }
@@ -71,27 +71,27 @@ async function doSearchDirectory(directoryUri: string, query: string): Promise<A
 }
 
 async function getSearchProviders(cwd: string): Promise<Array<ProviderInfo>> {
-  var validPromises = [];
+  const validPromises = [];
 
   async function checkAvailability(providerName) {
-    var isAvailable = await providers[providerName].isAvailable(cwd);
+    const isAvailable = await providers[providerName].isAvailable(cwd);
     return isAvailable ? {name: providerName} : null;
   }
 
-  for (var name in providers) {
+  for (const name in providers) {
     validPromises.push(checkAvailability(name));
   }
 
-  var results = await Promise.all(validPromises);
+  const results = await Promise.all(validPromises);
   return results.filter((provider) => !!provider);
 }
 
 async function doSearchQuery(cwd: string, provider: string, query: string): Promise<SearchResponse> {
-  var currentProvider = providers[provider];
+  const currentProvider = providers[provider];
   if (!currentProvider) {
     throw new Error(`Invalid provider: ${provider}`);
   }
-  var results = await currentProvider.query(cwd, query);
+  const results = await currentProvider.query(cwd, query);
   return {results};
 }
 
@@ -112,7 +112,7 @@ function initialize(server) {
 
 function shutdown(server) {
   clearProviders();
-  for (var k in fileSearchers) {
+  for (const k in fileSearchers) {
     fileSearchers[k].dispose();
   }
   fileSearchers = Object.create(null);

@@ -14,21 +14,21 @@ import type FileSystemService from '../../lib/services/FileSystemServiceType';
 import ServiceTestHelper from './ServiceTestHelper';
 import invariant from 'assert';
 
-var fs = require('fs');
-var path = require('path');
-var rimraf = require('rimraf');
-var temp = require('temp').track();
+const fs = require('fs');
+const path = require('path');
+const rimraf = require('rimraf');
+const temp = require('temp').track();
 
-var pathToTestDir = path.join(__dirname, '../testfiles');
-var pathToTestFile = path.join(pathToTestDir, 'testfile.txt');
-var pathToWriteFile = pathToTestFile + '.1';
-var pathToLinkFile = pathToTestFile + '.2';
-var pathToBrokenLinkFile = pathToTestFile + '.3';
-var pathToMissingFile = pathToTestFile + '.oops';
+const pathToTestDir = path.join(__dirname, '../testfiles');
+const pathToTestFile = path.join(pathToTestDir, 'testfile.txt');
+const pathToWriteFile = pathToTestFile + '.1';
+const pathToLinkFile = pathToTestFile + '.2';
+const pathToBrokenLinkFile = pathToTestFile + '.3';
+const pathToMissingFile = pathToTestFile + '.oops';
 
 describe('FileSystemService', () => {
-  var testHelper;
-  var service : FileSystemService;
+  let testHelper;
+  let service : FileSystemService;
   beforeEach(() => {
     waitsForPromise(async () => {
       testHelper = new ServiceTestHelper();
@@ -40,14 +40,14 @@ describe('FileSystemService', () => {
 
   it('can readFile', () => {
     waitsForPromise(async () => {
-      var body = await service.readFile(pathToTestFile);
+      const body = await service.readFile(pathToTestFile);
       expect(body.toString()).toEqual('I\'m a little teapot.\n');
     });
   });
 
   it('returns 500 code if file cannot be opened', () => {
     waitsForPromise(async () => {
-      var err;
+      let err;
       try {
         await service.readFile(pathToMissingFile);
       } catch (e) {
@@ -67,7 +67,7 @@ describe('FileSystemService', () => {
 
   it('returns 500 if file cannot be written', () => {
     waitsForPromise(async () => {
-      var err;
+      let err;
       try {
         await service.writeFile(pathToWriteFile + '/that/is/missing', 'something');
       } catch (e) {
@@ -80,7 +80,7 @@ describe('FileSystemService', () => {
 
   it('can stat', () => {
     waitsForPromise(async () => {
-      var stats = await service.stat(pathToTestFile);
+      const stats = await service.stat(pathToTestFile);
       expect(stats).toEqual(fs.statSync(pathToTestFile));
     });
   });
@@ -89,12 +89,12 @@ describe('FileSystemService', () => {
     waitsForPromise(async () => {
       fs.symlinkSync(pathToTestFile, pathToLinkFile);
       fs.symlinkSync(pathToMissingFile, pathToBrokenLinkFile);
-      var entries = await service.readdir(pathToTestDir);
+      const entries = await service.readdir(pathToTestDir);
       expect(entries.length).toBe(2); // Skips broken link
       entries.sort((a, b) => {
         return a.file.localeCompare(b.file);
       });
-      var statsTarget = fs.statSync(pathToTestFile);
+      let statsTarget = fs.statSync(pathToTestFile);
 
       expect(entries[0].stats).toEqual(statsTarget);
       expect(entries[0].file).toBe('testfile.txt');
@@ -111,27 +111,27 @@ describe('FileSystemService', () => {
   it('can lstat', () => {
     waitsForPromise(async () => {
       fs.symlinkSync(pathToTestFile, pathToLinkFile);
-      var lstats = await service.lstat(pathToLinkFile);
+      const lstats = await service.lstat(pathToLinkFile);
       expect(lstats).toEqual(fs.lstatSync(pathToLinkFile));
     });
   });
 
   it('returns false from exists if file missing', () => {
     waitsForPromise(async () => {
-      var exists = await service.exists(pathToMissingFile);
+      const exists = await service.exists(pathToMissingFile);
       expect(exists).toBe(false);
     });
   });
 
   it('returns true from exists if file exists', () => {
     waitsForPromise(async () => {
-      var exists = await service.exists(pathToTestFile);
+      const exists = await service.exists(pathToTestFile);
       expect(exists).toBe(true);
     });
   });
 
   describe('newFile()', () => {
-    var dirPath;
+    let dirPath;
 
     beforeEach(() => {
       dirPath = path.join(__dirname, 'newFile_test');
@@ -144,9 +144,9 @@ describe('FileSystemService', () => {
 
     it('creates the file and the expected subdirectories', () => {
       waitsForPromise(async () => {
-        var newPath = path.join(dirPath, 'foo/bar/baz.txt');
+        const newPath = path.join(dirPath, 'foo/bar/baz.txt');
         expect(fs.existsSync(newPath)).toBe(false);
-        var isNew = await service.newFile(newPath);
+        const isNew = await service.newFile(newPath);
         expect(fs.existsSync(newPath)).toBe(true);
         expect(fs.statSync(newPath).isFile()).toBe(true);
         expect(fs.readFileSync(newPath).toString()).toBe('');
@@ -159,11 +159,11 @@ describe('FileSystemService', () => {
         fs.mkdirSync(dirPath);
         fs.mkdirSync(path.join(dirPath, 'foo'));
         fs.mkdirSync(path.join(dirPath, 'foo/bar'));
-        var newPath = path.join(dirPath, 'foo/bar/baz.txt');
+        const newPath = path.join(dirPath, 'foo/bar/baz.txt');
         fs.writeFileSync(newPath, 'contents');
         expect(fs.existsSync(newPath)).toBe(true);
 
-        var isNew = await service.newFile(newPath);
+        const isNew = await service.newFile(newPath);
         expect(fs.statSync(newPath).isFile()).toBe(true);
         expect(fs.readFileSync(newPath).toString()).toBe('contents');
         expect(isNew).toBe(false);
@@ -174,7 +174,7 @@ describe('FileSystemService', () => {
   describe('realpath()', () => {
     it('gets the same exact path of a normal file', () => {
       waitsForPromise(async () => {
-        var realpath = await service.realpath(pathToTestFile);
+        const realpath = await service.realpath(pathToTestFile);
         expect(realpath).toBe(pathToTestFile);
       });
     });
@@ -182,14 +182,14 @@ describe('FileSystemService', () => {
     it('gets the real path of a symlinked file', () => {
       waitsForPromise(async () => {
         fs.symlinkSync(pathToTestFile, pathToLinkFile);
-        var realpath = await service.realpath(pathToLinkFile);
+        const realpath = await service.realpath(pathToLinkFile);
         expect(realpath).toBe(pathToTestFile);
       });
     });
   });
 
   describe('rename()', () => {
-    var dirPath;
+    let dirPath;
 
     beforeEach(() => {
       dirPath = temp.mkdirSync('rename_test');
@@ -197,9 +197,9 @@ describe('FileSystemService', () => {
 
     it('succeeds when renaming a file', () => {
       waitsForPromise(async () => {
-        var sourcePath = path.join(dirPath, 'file');
+        const sourcePath = path.join(dirPath, 'file');
         fs.writeFileSync(sourcePath, '');
-        var destinationPath = path.join(dirPath, 'destination_file');
+        const destinationPath = path.join(dirPath, 'destination_file');
 
         await service.rename(sourcePath, destinationPath);
 
@@ -210,9 +210,9 @@ describe('FileSystemService', () => {
 
     it('succeeds when renaming a folder', () => {
       waitsForPromise(async () => {
-        var sourcePath = path.join(dirPath, 'directory');
+        const sourcePath = path.join(dirPath, 'directory');
         fs.mkdirSync(sourcePath);
-        var destinationPath = path.join(dirPath, 'destination_folder');
+        const destinationPath = path.join(dirPath, 'destination_folder');
 
         await service.rename(sourcePath, destinationPath);
 
@@ -223,9 +223,9 @@ describe('FileSystemService', () => {
 
     it('succeeds when renaming into a non-existent directory', () => {
       waitsForPromise(async () => {
-        var sourcePath = path.join(dirPath, 'file');
+        const sourcePath = path.join(dirPath, 'file');
         fs.writeFileSync(sourcePath, '');
-        var destinationPath = path.join(dirPath, 'non-existent', 'destination_file');
+        const destinationPath = path.join(dirPath, 'non-existent', 'destination_file');
 
         await service.rename(sourcePath, destinationPath);
 
@@ -236,10 +236,10 @@ describe('FileSystemService', () => {
 
     it('throws error if the source does not exist', () => {
       waitsForPromise(async () => {
-        var sourcePath = path.join(dirPath, 'file');
-        var destinationPath = path.join(dirPath, 'destination_file');
+        const sourcePath = path.join(dirPath, 'file');
+        const destinationPath = path.join(dirPath, 'destination_file');
 
-        var err;
+        let err;
         try {
           await service.rename(sourcePath, destinationPath);
         } catch (e) {
@@ -254,12 +254,12 @@ describe('FileSystemService', () => {
 
     it('throws error if the destination exists', () => {
       waitsForPromise(async () => {
-        var sourcePath = path.join(dirPath, 'file');
+        const sourcePath = path.join(dirPath, 'file');
         fs.writeFileSync(sourcePath, '');
-        var destinationPath = path.join(dirPath, 'destination_file');
+        const destinationPath = path.join(dirPath, 'destination_file');
         fs.writeFileSync(destinationPath, '');
 
-        var err;
+        let err;
         try {
           await service.rename(sourcePath, destinationPath);
         } catch (e) {
@@ -273,7 +273,7 @@ describe('FileSystemService', () => {
   });
 
   describe('mkdir()', () => {
-    var dirPath;
+    let dirPath;
 
     beforeEach(() => {
       dirPath = path.join(__dirname, 'mkdir_test');
@@ -297,7 +297,7 @@ describe('FileSystemService', () => {
 
     it('throws an error if already existing directory', () => {
       waitsForPromise(async () => {
-        var err;
+        let err;
         fs.mkdirSync(dirPath);
         try {
           await service.mkdir(dirPath);
@@ -311,7 +311,7 @@ describe('FileSystemService', () => {
 
     it('throws an error if the path is nested in a non-existing directory', () => {
       waitsForPromise(async () => {
-        var err;
+        let err;
         try {
           await service.mkdir(path.join(dirPath, 'foo'));
         } catch (e) {
@@ -324,7 +324,7 @@ describe('FileSystemService', () => {
   });
 
   describe('mkdirp()', () => {
-    var dirPath;
+    let dirPath;
 
     beforeEach(() => {
       dirPath = path.join(__dirname, 'mkdirp_test');
@@ -337,9 +337,9 @@ describe('FileSystemService', () => {
 
     it('creates the expected subdirectories', () => {
       waitsForPromise(async () => {
-        var newPath = path.join(dirPath, 'foo/bar/baz');
+        const newPath = path.join(dirPath, 'foo/bar/baz');
         expect(fs.existsSync(newPath)).toBe(false);
-        var isNew = await service.mkdirp(newPath);
+        const isNew = await service.mkdirp(newPath);
         expect(fs.existsSync(newPath)).toBe(true);
         expect(isNew).toBe(true);
       });
@@ -350,11 +350,11 @@ describe('FileSystemService', () => {
         fs.mkdirSync(dirPath);
         fs.mkdirSync(path.join(dirPath, 'foo'));
         fs.mkdirSync(path.join(dirPath, 'foo/bar'));
-        var newPath = path.join(dirPath, 'foo/bar/baz');
+        const newPath = path.join(dirPath, 'foo/bar/baz');
         fs.mkdirSync(newPath);
         expect(fs.existsSync(newPath)).toBe(true);
 
-        var isNew = await service.mkdirp(newPath);
+        const isNew = await service.mkdirp(newPath);
         expect(fs.existsSync(newPath)).toBe(true);
         expect(isNew).toBe(false);
       });
@@ -362,7 +362,7 @@ describe('FileSystemService', () => {
   });
 
   describe('rmdir()', () => {
-    var dirPath;
+    let dirPath;
 
     beforeEach(() => {
       dirPath = temp.mkdirSync('rmdir_test');
@@ -370,7 +370,7 @@ describe('FileSystemService', () => {
 
     it('removes non-empty directories', () => {
       waitsForPromise(async () => {
-        var directoryToRemove = path.join(dirPath, 'foo');
+        const directoryToRemove = path.join(dirPath, 'foo');
         await service.mkdirp(path.join(directoryToRemove, 'bar'));
         expect(fs.existsSync(directoryToRemove)).toBe(true);
         await service.rmdir(directoryToRemove);
@@ -380,7 +380,7 @@ describe('FileSystemService', () => {
 
     it('does nothing for non-existent directories', () => {
       waitsForPromise(async () => {
-        var directoryToRemove = path.join(dirPath, 'foo');
+        const directoryToRemove = path.join(dirPath, 'foo');
         await service.rmdir(directoryToRemove);
         expect(fs.existsSync(directoryToRemove)).toBe(false);
       });
@@ -388,7 +388,7 @@ describe('FileSystemService', () => {
   });
 
   describe('unlink()', () => {
-    var dirPath;
+    let dirPath;
 
     beforeEach(() => {
       dirPath = temp.mkdirSync('unlink_test');
@@ -396,7 +396,7 @@ describe('FileSystemService', () => {
 
     it('removes file if it exists', () => {
       waitsForPromise(async () => {
-        var fileToRemove = path.join(dirPath, 'foo');
+        const fileToRemove = path.join(dirPath, 'foo');
         fs.writeFileSync(fileToRemove, '');
         expect(fs.existsSync(fileToRemove)).toBe(true);
         await service.unlink(fileToRemove);
@@ -406,7 +406,7 @@ describe('FileSystemService', () => {
 
     it('does nothing for non-existent files', () => {
       waitsForPromise(async () => {
-        var fileToRemove = path.join(dirPath, 'foo');
+        const fileToRemove = path.join(dirPath, 'foo');
         await service.unlink(fileToRemove);
         expect(fs.existsSync(fileToRemove)).toBe(false);
       });

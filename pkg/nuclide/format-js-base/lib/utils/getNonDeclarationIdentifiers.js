@@ -11,21 +11,21 @@
 
 import type {Collection, Node, NodePath} from '../types/ast';
 
-var getNamesFromID = require('./getNamesFromID');
-var jscs = require('jscodeshift');
+const getNamesFromID = require('./getNamesFromID');
+const jscs = require('jscodeshift');
 
 type ConfigEntry = {
   searchTerms: [any, Object],
   getNodes: (path: NodePath) => Array<Node>,
 };
 
-var REACT_NODE = jscs.identifier('React');
+const REACT_NODE = jscs.identifier('React');
 
 /**
  * These are the ways in which one might access an undeclared identifier. This
  * should only apply to actual code, not accessing undeclared types.
  */
-var CONFIG: Array<ConfigEntry> = [
+const CONFIG: Array<ConfigEntry> = [
   // foo;
   {
     searchTerms: [jscs.ExpressionStatement],
@@ -195,15 +195,15 @@ var CONFIG: Array<ConfigEntry> = [
  * identifiers that are access but undeclared see getUndeclaredIdentifiers
  */
 function getNonDeclarationIdentifiers(root: Collection): Set<string> {
-  var ids = new Set();
+  const ids = new Set();
   CONFIG.forEach(config => {
     root
       .find(config.searchTerms[0], config.searchTerms[1])
       .forEach(path => {
-        var nodes = config.getNodes(path);
+        const nodes = config.getNodes(path);
         nodes.forEach(node => {
-          var names = getNamesFromID(node);
-          for (var name of names) {
+          const names = getNamesFromID(node);
+          for (const name of names) {
             ids.add(name);
           }
         });

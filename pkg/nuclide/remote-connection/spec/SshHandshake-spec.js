@@ -9,11 +9,11 @@
  * the root directory of this source tree.
  */
 
-var {EventEmitter} = require('events');
-var path = require('path');
-var pathToFakePk = path.join(__dirname, 'fakepk');
-var {clearRequireCache, uncachedRequire} = require('nuclide-test-helpers');
-var {SshHandshake} = require('../lib/SshHandshake');
+const {EventEmitter} = require('events');
+const path = require('path');
+const pathToFakePk = path.join(__dirname, 'fakepk');
+const {clearRequireCache, uncachedRequire} = require('nuclide-test-helpers');
+const {SshHandshake} = require('../lib/SshHandshake');
 
 describe('SshHandshake', () => {
   class MockSshConnection extends EventEmitter {
@@ -21,9 +21,9 @@ describe('SshHandshake', () => {
     end() { }
   }
 
-  var dns;
-  var originalDnsLookup;
-  var handshakeDelegate;
+  let dns;
+  let originalDnsLookup;
+  let handshakeDelegate;
 
   beforeEach(() => {
     dns = uncachedRequire(require, 'dns');
@@ -46,10 +46,10 @@ describe('SshHandshake', () => {
 
   describe('connect()', () => {
     it('calls delegates onError when ssh connection fails', () => {
-      var mockError = new Error('mock error');
-      var sshConnection = new MockSshConnection();
-      var sshHandshake = new SshHandshake(handshakeDelegate, sshConnection);
-      var config = {pathToPrivateKey: pathToFakePk, authMethod: 'PRIVATE_KEY'};
+      const mockError = new Error('mock error');
+      const sshConnection = new MockSshConnection();
+      const sshHandshake = new SshHandshake(handshakeDelegate, sshConnection);
+      const config = {pathToPrivateKey: pathToFakePk, authMethod: 'PRIVATE_KEY'};
 
       sshHandshake.connect(config);
       sshConnection.emit('error', mockError);
@@ -61,13 +61,13 @@ describe('SshHandshake', () => {
     });
 
     it('calls delegates onError when private key does not exist', () => {
-      var sshConnection = new MockSshConnection();
-      var sshHandshake = new SshHandshake(handshakeDelegate, sshConnection);
-      var config = {pathToPrivateKey: pathToFakePk + '.oops', authMethod: 'PRIVATE_KEY'};
+      const sshConnection = new MockSshConnection();
+      const sshHandshake = new SshHandshake(handshakeDelegate, sshConnection);
+      const config = {pathToPrivateKey: pathToFakePk + '.oops', authMethod: 'PRIVATE_KEY'};
 
       sshHandshake.connect(config);
 
-      var onErrorCalled = false;
+      let onErrorCalled = false;
 
       handshakeDelegate.onError.andCallFake((e, _config) => {
         expect(e.code).toBe('ENOENT');
@@ -87,9 +87,9 @@ describe('SshHandshake', () => {
 
   describe('cancel()', () => {
     it('calls SshConnection.end()', () => {
-      var sshConnection = new MockSshConnection();
-      var sshHandshake = new SshHandshake(handshakeDelegate, sshConnection);
-      var config = {pathToPrivateKey: pathToFakePk};
+      const sshConnection = new MockSshConnection();
+      const sshHandshake = new SshHandshake(handshakeDelegate, sshConnection);
+      const config = {pathToPrivateKey: pathToFakePk};
 
       spyOn(sshConnection, 'end');
 

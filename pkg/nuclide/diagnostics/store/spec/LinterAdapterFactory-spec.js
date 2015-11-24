@@ -13,7 +13,7 @@ import {Disposable} from 'atom';
 
 import {createAdapters, validateLinter} from '../lib/LinterAdapterFactory';
 
-var grammar = 'testgrammar';
+const grammar = 'testgrammar';
 
 describe('createAdapters', () => {
   class FakeDiagnosticsProviderBase {
@@ -29,10 +29,10 @@ describe('createAdapters', () => {
     return createAdapters(linterProviders, (FakeDiagnosticsProviderBase: any));
   }
 
-  var fakeLinter: any;
+  let fakeLinter: any;
 
   beforeEach(() => {
-    var fakeEditor = {
+    const fakeEditor = {
       getPath() { return 'foo'; },
       getGrammar() { return { scopeName: grammar }; },
     };
@@ -64,7 +64,7 @@ describe('createAdapters', () => {
 });
 
 describe('validateLinter', () => {
-  var linter: any;
+  let linter: any;
 
   beforeEach(() => {
     linter = {

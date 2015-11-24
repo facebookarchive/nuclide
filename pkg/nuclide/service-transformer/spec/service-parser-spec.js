@@ -9,10 +9,10 @@
  * the root directory of this source tree.
  */
 
-var parseServiceApiSync = require('../lib/service-parser');
+const parseServiceApiSync = require('../lib/service-parser');
 
 function testParseServiceApi(sourceFilePath: string, serviceName: string, expected: any): void {
-  var parsed = parseServiceApiSync(require.resolve(sourceFilePath), serviceName);
+  const parsed = parseServiceApiSync(require.resolve(sourceFilePath), serviceName);
   expect(parsed.rpcMethodNames.sort()).toEqual(expected.rpcMethodNames.sort());
   expect(parsed.eventMethodNames.sort()).toEqual(expected.eventMethodNames.sort());
 }

@@ -9,16 +9,16 @@
  * the root directory of this source tree.
  */
 
-var invariant = require('assert');
-var {TextBuffer} = require('atom');
-var handleBuckAnsiOutput = require('../lib/handleBuckAnsiOutput');
+const invariant = require('assert');
+const {TextBuffer} = require('atom');
+const handleBuckAnsiOutput = require('../lib/handleBuckAnsiOutput');
 
 describe('handleBuckAnsiOutput', () => {
-  var RESUME_WRAPPING_ESCAPE = '\u001B[?7h';
-  var STOP_WRAPPING_ESCAPE = '\u001B[?7l';
-  var ERASE_PREVIOUS_LINE_ESCAPE_PAIR = '\u001B[1A\u001B[2K';
+  const RESUME_WRAPPING_ESCAPE = '\u001B[?7h';
+  const STOP_WRAPPING_ESCAPE = '\u001B[?7l';
+  const ERASE_PREVIOUS_LINE_ESCAPE_PAIR = '\u001B[1A\u001B[2K';
 
-  var textBuffer;
+  let textBuffer;
   beforeEach(() => {
     textBuffer = new TextBuffer({
       load: false,
@@ -29,15 +29,15 @@ describe('handleBuckAnsiOutput', () => {
   it('correctly translates the effect of ANSI output that contains escape characters that Buck uses.', () => {
     invariant(textBuffer);
 
-    var line0 = `0`;
-    var line1 = `1`;
-    var line2 = `2`;
-    var line3 = `${RESUME_WRAPPING_ESCAPE}${ERASE_PREVIOUS_LINE_ESCAPE_PAIR}${STOP_WRAPPING_ESCAPE}3`; // Erases line2.
-    var line4 = `${RESUME_WRAPPING_ESCAPE}${ERASE_PREVIOUS_LINE_ESCAPE_PAIR}${ERASE_PREVIOUS_LINE_ESCAPE_PAIR}${STOP_WRAPPING_ESCAPE}4`; // Erases line3 and line1.
-    var line5 = `5`;
-    var line6 = `${RESUME_WRAPPING_ESCAPE}`;
-    var text = [line0, line1, line2, line3, line4, line5, line6].join('\n');
-    var expectedResultingText = ['0', '4', '5', ''].join('\n');
+    const line0 = `0`;
+    const line1 = `1`;
+    const line2 = `2`;
+    const line3 = `${RESUME_WRAPPING_ESCAPE}${ERASE_PREVIOUS_LINE_ESCAPE_PAIR}${STOP_WRAPPING_ESCAPE}3`; // Erases line2.
+    const line4 = `${RESUME_WRAPPING_ESCAPE}${ERASE_PREVIOUS_LINE_ESCAPE_PAIR}${ERASE_PREVIOUS_LINE_ESCAPE_PAIR}${STOP_WRAPPING_ESCAPE}4`; // Erases line3 and line1.
+    const line5 = `5`;
+    const line6 = `${RESUME_WRAPPING_ESCAPE}`;
+    const text = [line0, line1, line2, line3, line4, line5, line6].join('\n');
+    const expectedResultingText = ['0', '4', '5', ''].join('\n');
 
     handleBuckAnsiOutput(textBuffer, text);
     expect(textBuffer.getText()).toEqual(expectedResultingText);

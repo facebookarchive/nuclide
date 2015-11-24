@@ -9,13 +9,13 @@
  * the root directory of this source tree.
  */
 
-var AtomInput = require('../lib/AtomInput');
-var React = require('react-for-atom');
+const AtomInput = require('../lib/AtomInput');
+const React = require('react-for-atom');
 
-var reactElement;
+let reactElement;
 
 function createWithProps(props: any) {
-  var hostEl = document.createElement('div');
+  const hostEl = document.createElement('div');
   return React.render(<AtomInput {...props} />, hostEl);
 }
 
@@ -35,7 +35,7 @@ describe('AtomInput', () => {
   });
 
   it('focus() focuses the end of the line', () => {
-    var initialValue = 'some text';
+    const initialValue = 'some text';
     reactElement = createWithProps({initialValue});
     expect(reactElement.getTextEditor().getCursorBufferPosition()).toEqual(
         [0, 0]);
@@ -45,10 +45,10 @@ describe('AtomInput', () => {
   });
 
   it('onDidChange() is fired when the text changes', () => {
-    var initialValue = 'some text';
+    const initialValue = 'some text';
     reactElement = createWithProps({initialValue});
-    var onDidChange = jasmine.createSpy('onDidChange');
-    var disposable = reactElement.onDidChange(onDidChange);
+    const onDidChange = jasmine.createSpy('onDidChange');
+    const disposable = reactElement.onDidChange(onDidChange);
 
     reactElement.setText('the new text');
     expect(onDidChange.calls.length).toBe(1);
@@ -62,12 +62,12 @@ describe('AtomInput', () => {
   });
 
   it('updates will stop firing when the component is unmounted', () => {
-    var initialValue = 'some text';
+    const initialValue = 'some text';
     reactElement = createWithProps({initialValue});
-    var onDidChange = jasmine.createSpy('onDidChange');
+    const onDidChange = jasmine.createSpy('onDidChange');
     reactElement.onDidChange(onDidChange);
 
-    var textEditor = reactElement.getTextEditor();
+    const textEditor = reactElement.getTextEditor();
     textEditor.setText('the new text');
     expect(onDidChange.calls.length).toBe(1);
 

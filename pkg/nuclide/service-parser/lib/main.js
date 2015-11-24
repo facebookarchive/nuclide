@@ -18,9 +18,9 @@ import path from 'path';
 import type {Definitions} from './types';
 
 /** Cache for definitions. */
-var definitionsCache: Map<string, Definitions> = new Map();
+const definitionsCache: Map<string, Definitions> = new Map();
 /** Cache for remote proxies. */
-var proxiesCache: Map<string, {factory: Function, proxies: WeakMap}> = new Map();
+const proxiesCache: Map<string, {factory: Function, proxies: WeakMap}> = new Map();
 
 /**
  * Load the definitions, cached by their resolved file path.
@@ -29,7 +29,7 @@ var proxiesCache: Map<string, {factory: Function, proxies: WeakMap}> = new Map()
  * @returns - The Definitions that represents the API of the definiition file.
  */
 export function getDefinitions(definitionPath: string): Definitions {
-  var resolvedPath = resolvePath(definitionPath);
+  const resolvedPath = resolvePath(definitionPath);
 
   // Cache definitions by the resolved file path they were loaded from.
   if (!definitionsCache.has(resolvedPath)) {
@@ -91,7 +91,7 @@ function resolvePath(definitionPath: string): string {
 }
 
 // Export caches for testing.
-export var __test__ = {
+export const __test__ = {
   definitionsCache,
   proxiesCache,
 };

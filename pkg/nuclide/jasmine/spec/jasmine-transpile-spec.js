@@ -8,7 +8,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-var waitsForPromise = require('../lib/waitsForPromise');
+const waitsForPromise = require('../lib/waitsForPromise');
 
 function testFlowtypedFunction(arg: number): number {
   return arg;
@@ -16,7 +16,7 @@ function testFlowtypedFunction(arg: number): number {
 
 describe('Jasmine transpile test suite', () => {
   it('test transpiler worked as exepcted', () => {
-    var promise = Promise.resolve('test');
+    const promise = Promise.resolve('test');
     expect(typeof promise).toEqual('object');
     expect(testFlowtypedFunction(1)).toEqual(1);
   });
@@ -27,8 +27,8 @@ describe('Jasmine waitsForPromise test suite', () => {
 
   it('test waitsForPromise worked as expected on a resolved promise', () => {
     waitsForPromise(async () => {
-      var promise = Promise.resolve('test');
-      var result = await promise;
+      const promise = Promise.resolve('test');
+      const result = await promise;
       expect(result).toEqual('test');
     });
   });

@@ -11,14 +11,14 @@
 
 import type {Node} from '../types/ast';
 
-var hasOneDeclaration = require('./hasOneDeclaration');
-var isRequireExpression = require('./isRequireExpression');
+const hasOneDeclaration = require('./hasOneDeclaration');
+const isRequireExpression = require('./isRequireExpression');
 
 function hasOneRequireDeclaration(node: Node): boolean {
   if (!hasOneDeclaration(node)) {
     return false;
   }
-  var declaration = node.declarations[0];
+  const declaration = node.declarations[0];
   return isRequireExpression(declaration.init);
 }
 

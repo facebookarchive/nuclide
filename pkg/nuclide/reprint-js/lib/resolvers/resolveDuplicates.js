@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-var buildRuns = require('../utils/buildRuns');
-var markers = require('../constants/markers');
+const buildRuns = require('../utils/buildRuns');
+const markers = require('../constants/markers');
 
 /**
  * This squashes all duplicates that should not be kept.
@@ -19,8 +19,8 @@ function resolveDuplicates(lines: Array<any>): Array<any> {
   const runs = buildRuns(lines);
   const kill = new Set();
 
-  for (let run of runs) {
-    let [start, end] = run;
+  for (const run of runs) {
+    const [start, end] = run;
 
     let hardBreak = 0;
     let multiHardBreak = 0;

@@ -40,7 +40,7 @@ function labelClassNameForNode(node: LazyTreeNode): string {
 }
 
 function rowClassNameForNode(node: LazyTreeNode) {
-  var vcsClassName = vcsClassNameForEntry(node.getItem());
+  const vcsClassName = vcsClassNameForEntry(node.getItem());
   return classnames({
     [vcsClassName]: vcsClassName,
   });
@@ -49,17 +49,17 @@ function rowClassNameForNode(node: LazyTreeNode) {
 function vcsClassNameForEntry(entry: FileChange): string {
   let className = '';
   switch (entry.statusCode) {
-  case FileChangeStatus.ADDED:
-  case FileChangeStatus.UNTRACKED:
-    className = 'status-added';
-    break;
-  case FileChangeStatus.MODIFIED:
-    className = 'status-modified';
-    break;
-  case FileChangeStatus.REMOVED:
-  case FileChangeStatus.MISSING:
-    className = 'status-removed';
-    break;
+    case FileChangeStatus.ADDED:
+    case FileChangeStatus.UNTRACKED:
+      className = 'status-added';
+      break;
+    case FileChangeStatus.MODIFIED:
+      className = 'status-modified';
+      break;
+    case FileChangeStatus.REMOVED:
+    case FileChangeStatus.MISSING:
+      className = 'status-removed';
+      break;
   }
   return className;
 }

@@ -13,7 +13,7 @@ import {DiagnosticsProviderBase} from 'nuclide-diagnostics-provider-base';
 
 import {Range} from 'atom';
 
-var PROVIDER_NAME = 'Sample';
+const PROVIDER_NAME = 'Sample';
 
 export default class SampleDiagnosticsProvider {
   _providerBase: DiagnosticsProviderBase;
@@ -22,7 +22,7 @@ export default class SampleDiagnosticsProvider {
     /* Look here:
      * https://github.com/facebook/nuclide/blob/master/pkg/nuclide/diagnostics/provider-base/ for
      * a complete list of options. */
-    var baseOptions = {
+    const baseOptions = {
       // This will make our error show up in all files.
       enableForAllGrammars: true,
       // This callback gets called whenever there is a text editor event, such as a file save, that
@@ -33,13 +33,13 @@ export default class SampleDiagnosticsProvider {
   }
 
   _sendDiagnostics(editor: TextEditor): void {
-    var filePath = editor.getPath();
+    const filePath = editor.getPath();
     // When a New file is created, it will be "untitled" and getPath() will return null.
     if (filePath == null) {
       return;
     }
 
-    var diagnostics: DiagnosticProviderUpdate = {
+    const diagnostics: DiagnosticProviderUpdate = {
       filePathToMessages: new Map([[filePath, [
         {
           scope: 'file',

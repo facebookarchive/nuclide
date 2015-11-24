@@ -12,8 +12,8 @@
 import type {Context, Lines, Print} from '../../types/common';
 import type {VariableDeclaration} from 'ast-types-flow';
 
-var flatten = require('../../utils/flatten');
-var markers = require('../../constants/markers');
+const flatten = require('../../utils/flatten');
+const markers = require('../../constants/markers');
 
 function printVariableDeclaration(
   print: Print,
@@ -22,7 +22,7 @@ function printVariableDeclaration(
 ): Lines {
   const last = context.path.last();
 
-  let parts = [
+  const parts = [
     node.kind,
     markers.space,
     flatten(node.declarations.map((node, i) => {
@@ -39,7 +39,7 @@ function printVariableDeclaration(
   ];
 
   // For these node types we shouldn't break or add a semicolon.
-  let nonBreakingParents = new Set([
+  const nonBreakingParents = new Set([
     'ForInStatement',
     'ForOfStatement',
     'ForStatement',

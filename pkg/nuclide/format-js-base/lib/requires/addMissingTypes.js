@@ -12,28 +12,28 @@
 import type {Collection} from '../types/ast';
 import type {SourceOptions} from '../options/SourceOptions';
 
-var FirstNode = require('../utils/FirstNode');
+const FirstNode = require('../utils/FirstNode');
 
-var getUndeclaredTypes = require('../utils/getUndeclaredTypes');
-var jscs = require('jscodeshift');
+const getUndeclaredTypes = require('../utils/getUndeclaredTypes');
+const jscs = require('jscodeshift');
 
-var {statement} = jscs.template;
+const {statement} = jscs.template;
 
 function addMissingTypes(root: Collection, options: SourceOptions): void {
-  var first = FirstNode.get(root);
+  const first = FirstNode.get(root);
   if (!first) {
     return;
   }
-  var _first = first; // For flow.
+  const _first = first; // For flow.
 
-  var {moduleMap} = options;
-  var requireOptions = {
+  const {moduleMap} = options;
+  const requireOptions = {
     sourcePath: options.sourcePath,
     typeImport: true,
   };
 
   getUndeclaredTypes(root, options).forEach(name => {
-    var node = moduleMap.getRequire(name, requireOptions);
+    const node = moduleMap.getRequire(name, requireOptions);
     _first.insertBefore(node);
   });
 }

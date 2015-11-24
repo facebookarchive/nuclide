@@ -9,12 +9,12 @@
  * the root directory of this source tree.
  */
 
-var jscs = require('jscodeshift');
+const jscs = require('jscodeshift');
 
 /**
  * This module helps support a hack to easily introduce new lines into the AST.
  */
-var NewLine = {
+const NewLine = {
   literal: '$$newline$$',
   replace(input: string): string {
     /**

@@ -14,7 +14,7 @@ import {computeDiff, getLineCountWithOffsets, getOffsetLineNumber} from '../lib/
 describe('diff-utils', () => {
   describe('computeDiff()', () => {
     it('diffs two empty texts', () => {
-      var {addedLines, removedLines, oldLineOffsets, newLineOffsets} = computeDiff('', '');
+      const {addedLines, removedLines, oldLineOffsets, newLineOffsets} = computeDiff('', '');
       expect(addedLines).toEqual([]);
       expect(removedLines).toEqual([]);
       expect(oldLineOffsets.size).toBe(0);
@@ -22,7 +22,7 @@ describe('diff-utils', () => {
     });
 
     it('diffs simple text with one line changes', () => {
-      var {addedLines, removedLines, oldLineOffsets, newLineOffsets} = computeDiff(
+      const {addedLines, removedLines, oldLineOffsets, newLineOffsets} = computeDiff(
 `simple text
 on multiline
 same end line`,
@@ -38,7 +38,7 @@ same end line`
     });
 
     it('diffs multi-line text changes', () => {
-      var {addedLines, removedLines, oldLineOffsets, newLineOffsets} = computeDiff(
+      const {addedLines, removedLines, oldLineOffsets, newLineOffsets} = computeDiff(
 `This text is intended for testing.
 If we test at too low a level,
 testing for matching tags

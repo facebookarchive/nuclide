@@ -12,9 +12,9 @@
 import type {Collection} from '../types/ast';
 import type {SourceOptions} from '../options/SourceOptions';
 
-var getDeclaredIdentifiers = require('./getDeclaredIdentifiers');
-var getDeclaredTypes = require('./getDeclaredTypes');
-var getNonDeclarationTypes = require('./getNonDeclarationTypes');
+const getDeclaredIdentifiers = require('./getDeclaredIdentifiers');
+const getDeclaredTypes = require('./getDeclaredTypes');
+const getNonDeclarationTypes = require('./getNonDeclarationTypes');
 
 /**
  * This will get a list of all types that are used but undeclared.
@@ -23,10 +23,10 @@ function getUndeclaredTypes(
   root: Collection,
   options: SourceOptions
 ): Set<string> {
-  var declaredIdentifiers = getDeclaredIdentifiers(root, options);
-  var declaredTypes = getDeclaredTypes(root, options);
+  const declaredIdentifiers = getDeclaredIdentifiers(root, options);
+  const declaredTypes = getDeclaredTypes(root, options);
 
-  var undeclared = getNonDeclarationTypes(root);
+  const undeclared = getNonDeclarationTypes(root);
   // now remove anything that was declared
   for (const name of declaredIdentifiers) {
     undeclared.delete(name);

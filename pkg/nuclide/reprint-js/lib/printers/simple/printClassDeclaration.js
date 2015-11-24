@@ -12,8 +12,8 @@
 import type {ClassDeclaration} from 'ast-types-flow';
 import type {Lines, Print} from '../../types/common';
 
-var flatten = require('../../utils/flatten');
-var markers = require('../../constants/markers');
+const flatten = require('../../utils/flatten');
+const markers = require('../../constants/markers');
 
 function printClassDeclaration(print: Print, node: ClassDeclaration): Lines {
   let parts = flatten([
@@ -29,7 +29,7 @@ function printClassDeclaration(print: Print, node: ClassDeclaration): Lines {
   ]);
 
   if (node.superClass) {
-    let superClass = node.superClass;
+    const superClass = node.superClass;
     parts = flatten([
       parts,
       'extends',

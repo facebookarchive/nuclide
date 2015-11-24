@@ -9,14 +9,14 @@
  * the root directory of this source tree.
  */
 
-var {Range} = require('atom');
+const {Range} = require('atom');
 
-var testPath = 'myPath';
+const testPath = 'myPath';
 
 describe('HackDiagnosticsProvider', () => {
 
-  var hackDiagnosticsProvider: any;
-  var fakeHackLanguages: Array<any>;
+  let hackDiagnosticsProvider: any;
+  let fakeHackLanguages: Array<any>;
 
   function createFakeHackLanguage(uri: string) {
     return {
@@ -43,7 +43,7 @@ describe('HackDiagnosticsProvider', () => {
   describe('processDiagnostics', () => {
 
     it('should propertly transform a simple diagnostic', () => {
-      var diagnostics = [
+      const diagnostics = [
         {
           message: [
             {
@@ -57,7 +57,7 @@ describe('HackDiagnosticsProvider', () => {
         },
       ];
 
-      var expectedOutput = {
+      const expectedOutput = {
         scope: 'file',
         providerName: 'Hack',
         text: 'message',
@@ -66,14 +66,14 @@ describe('HackDiagnosticsProvider', () => {
         range: new Range([0, 2], [0, 4]),
       };
 
-      var message = hackDiagnosticsProvider
+      const message = hackDiagnosticsProvider
         ._processDiagnostics(diagnostics, testPath)
         .filePathToMessages.get(testPath)[0];
       expect(message).toEqual(expectedOutput);
     });
 
     it('should not filter diagnostics not in the target file', () => {
-      var diagnostics = [
+      const diagnostics = [
         {
           message: [
             {
@@ -87,7 +87,7 @@ describe('HackDiagnosticsProvider', () => {
         },
       ];
 
-      var allMessages = hackDiagnosticsProvider
+      const allMessages = hackDiagnosticsProvider
         ._processDiagnostics(diagnostics, testPath)
         .filePathToMessages;
       expect(allMessages.size).toBe(1);
@@ -95,7 +95,7 @@ describe('HackDiagnosticsProvider', () => {
     });
 
     it('should create traces for diagnostics on multiple messages and combine the text', () => {
-      var diagnostics = [
+      const diagnostics = [
         {
           message: [
             {
@@ -116,7 +116,7 @@ describe('HackDiagnosticsProvider', () => {
         },
       ];
 
-      var expectedOutput = {
+      const expectedOutput = {
         scope: 'file',
         providerName: 'Hack',
         type: 'Error',
@@ -131,7 +131,7 @@ describe('HackDiagnosticsProvider', () => {
         }],
       };
 
-      var message = hackDiagnosticsProvider
+      const message = hackDiagnosticsProvider
         ._processDiagnostics(diagnostics, testPath)
         .filePathToMessages.get(testPath)[0];
       expect(message).toEqual(expectedOutput);
@@ -141,14 +141,14 @@ describe('HackDiagnosticsProvider', () => {
   describe('invalidateProjectPath', () => {
     it('should remove corresponding errors to certain hack language', () => {
       // Mock a diagnostic provider with 2 hack language roots, sharing common file real paths.
-      var hackLanguageToFilePaths = new Map();
-      var root1Paths = ['/hack/root1/file.js', '/hack/common/file.js'];
-      var root2Paths = ['/hack/root2/file.js', '/hack/common/file.js'];
+      const hackLanguageToFilePaths = new Map();
+      const root1Paths = ['/hack/root1/file.js', '/hack/common/file.js'];
+      const root2Paths = ['/hack/root2/file.js', '/hack/common/file.js'];
       hackLanguageToFilePaths.set(fakeHackLanguages[0], new Set(root1Paths));
       hackLanguageToFilePaths.set(fakeHackLanguages[1], new Set(root2Paths));
       hackDiagnosticsProvider._hackLanguageToFilePaths = hackLanguageToFilePaths;
       // Mock the `publishMessageInvalidation` call to capture call arguments.
-      var publishHandler = jasmine.createSpy('publish');
+      const publishHandler = jasmine.createSpy('publish');
       hackDiagnosticsProvider._providerBase.publishMessageInvalidation = publishHandler;
 
       hackDiagnosticsProvider.invalidateProjectPath('/hack/root1');

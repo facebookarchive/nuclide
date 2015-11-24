@@ -10,8 +10,8 @@
  */
 
 
-var {log} = require('./utils');
-var {
+const {log} = require('./utils');
+const {
   remoteObjectIdOfObjectId,
   endIndexOfObjectId,
   startIndexOfObjectId,
@@ -19,7 +19,7 @@ var {
   getChildIds,
 } = require('./ObjectId');
 
-var {convertValue} = require('./values');
+const {convertValue} = require('./values');
 
 function convertProperties(id: ObjectId, properties: Array<DbgpProperty>): Array<PropertyDescriptor> {
   log('Got properties: ' + JSON.stringify(properties));
@@ -31,7 +31,7 @@ function convertProperties(id: ObjectId, properties: Array<DbgpProperty>): Array
  */
 function convertProperty(contextId: ObjectId, dbgpProperty: DbgpProperty): PropertyDescriptor {
   log('Converting to Chrome property: ' + JSON.stringify(dbgpProperty));
-  var result = {
+  const result = {
     configurable: false,
     enumerable: true,
     name: dbgpProperty.$.name,
@@ -45,13 +45,13 @@ function convertProperty(contextId: ObjectId, dbgpProperty: DbgpProperty): Prope
  * for the object's children.
  */
 function getPagedProperties(pagedId: ObjectId): Array<PropertyDescriptor> {
-  var pagesize = pagedId.elementRange.pagesize;
-  var endIndex = endIndexOfObjectId(pagedId);
+  const pagesize = pagedId.elementRange.pagesize;
+  const endIndex = endIndexOfObjectId(pagedId);
 
-  var childIds = getChildIds(pagedId);
+  const childIds = getChildIds(pagedId);
   return childIds.map(childId => {
-    var childStartIndex = startIndexOfObjectId(childId, pagesize);
-    var childCount = countOfObjectId(childId, pagesize, endIndex);
+    const childStartIndex = startIndexOfObjectId(childId, pagesize);
+    const childCount = countOfObjectId(childId, pagesize, endIndex);
     return {
       configurable: false,
       enumerable: true,
@@ -60,7 +60,7 @@ function getPagedProperties(pagedId: ObjectId): Array<PropertyDescriptor> {
         description: `${childCount} elements`,
         type: 'object',
         objectId: remoteObjectIdOfObjectId(childId),
-      }
+      },
     };
   });
 }

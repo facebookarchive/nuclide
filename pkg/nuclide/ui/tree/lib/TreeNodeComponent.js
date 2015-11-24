@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-var LazyTreeNode = require('./LazyTreeNode');
-var React = require('react-for-atom');
+const LazyTreeNode = require('./LazyTreeNode');
+const React = require('react-for-atom');
 
 const classnames = require('classnames');
 
@@ -19,11 +19,11 @@ const {
   PropTypes,
 } = React;
 
-var INDENT_IN_PX = 10;
-var INDENT_PER_LEVEL_IN_PX = 15;
-var DOWN_ARROW = '\uF0A3';
-var RIGHT_ARROW = '\uF078';
-var SPINNER = '\uF087';
+const INDENT_IN_PX = 10;
+const INDENT_PER_LEVEL_IN_PX = 15;
+const DOWN_ARROW = '\uF0A3';
+const RIGHT_ARROW = '\uF078';
+const SPINNER = '\uF087';
 
 /**
  * Represents one entry in a TreeComponent.
@@ -60,7 +60,7 @@ class TreeNodeComponent extends React.Component {
   }
 
   render(): ReactElement {
-    var rowClassNameObj: {[key: string]: boolean} = {
+    const rowClassNameObj: {[key: string]: boolean} = {
       // Support for selectors in the "file-icons" package.
       // @see {@link https://atom.io/packages/file-icons|file-icons}
       'entry file list-item': true,
@@ -71,11 +71,11 @@ class TreeNodeComponent extends React.Component {
       rowClassNameObj[this.props.rowClassName] = true;
     }
 
-    var itemStyle = {
+    const itemStyle = {
       paddingLeft: INDENT_IN_PX + this.props.depth * INDENT_PER_LEVEL_IN_PX,
     };
 
-    var arrow;
+    let arrow;
     if (this.props.isContainer) {
       if (this.props.isExpanded) {
         if (this.props.isLoading) {

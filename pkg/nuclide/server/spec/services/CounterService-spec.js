@@ -14,7 +14,7 @@ import path from 'path';
 import ServiceTestHelper from './ServiceTestHelper';
 
 describe('CounterService', () => {
-  var testHelper, service;
+  let testHelper, service;
   beforeEach(() => {
     testHelper = new ServiceTestHelper();
     waitsForPromise(() => testHelper.start([{
@@ -33,18 +33,18 @@ describe('CounterService', () => {
     waitsForPromise(async () => {
       invariant(service);
 
-      var watchedCounters = 0;
+      let watchedCounters = 0;
       service.Counter.watchNewCounters().subscribe(async counter => {
         await counter.getCount();
         ++watchedCounters;
       });
 
       // Create two services.
-      var counter1 = new service.Counter(3);
-      var counter2 = new service.Counter(5);
+      const counter1 = new service.Counter(3);
+      const counter2 = new service.Counter(5);
 
       // Subscribe to events from counter1.
-      var completed1 = false;
+      let completed1 = false;
       counter1.watchChanges().subscribe(event => {
         expect(event.type).toBe('add');
         expect(event.oldValue).toBe(3);
@@ -64,7 +64,7 @@ describe('CounterService', () => {
       expect(await counter2.getCount()).toBe(7);
 
       // Call a static method that returns Counter instances.
-      var counters = await service.Counter.listCounters();
+      const counters = await service.Counter.listCounters();
       expect(await counters[0].getCount()).toBe(4);
       expect(await counters[1].getCount()).toBe(7);
 

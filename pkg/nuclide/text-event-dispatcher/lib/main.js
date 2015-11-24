@@ -13,7 +13,7 @@ import {TextEventDispatcher as TED} from './TextEventDispatcher';
 // Flow complains if I use the same name for the type and the value :(
 export type TextEventDispatcher = TED;
 
-var dispatcher = null;
+let dispatcher = null;
 module.exports = {
   getInstance() {
     if (!dispatcher) {

@@ -9,14 +9,14 @@
  * the root directory of this source tree.
  */
 
-var {keyMirror} = require('nuclide-commons').object;
+const {keyMirror} = require('nuclide-commons').object;
 
 // Maps clang's cursor types to the actual declaration types: for a full list see
 // https://github.com/llvm-mirror/clang/blob/master/include/clang/Basic/DeclNodes.td
 //
 // Keep in sync with the clang Python binding (../fb/lib/python/clang/cindex.py)
 // The order of the keys matches the ordering in cindex.py.
-var ClangCursorToDeclarationTypes = {
+const ClangCursorToDeclarationTypes = {
   UNEXPOSED_DECL: '',
   STRUCT_DECL: 'Record',
   UNION_DECL: 'Record',
@@ -84,7 +84,7 @@ export type DeclarationInfo = {
 
 export type NuclideUri = string;
 
-var ClangCursorTypes: {[key: ClangCursorType]: ClangCursorType} =
+const ClangCursorTypes: {[key: ClangCursorType]: ClangCursorType} =
   keyMirror(ClangCursorToDeclarationTypes);
 
 module.exports = {

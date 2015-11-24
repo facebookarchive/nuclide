@@ -9,10 +9,10 @@
  * the root directory of this source tree.
  */
 
-var AtomTextEditor = require('nuclide-ui-atom-text-editor');
-var React = require('react-for-atom');
+const AtomTextEditor = require('nuclide-ui-atom-text-editor');
+const React = require('react-for-atom');
 
-var {PropTypes} = React;
+const {PropTypes} = React;
 
 class Console extends React.Component {
 

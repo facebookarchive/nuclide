@@ -9,9 +9,9 @@
  * the root directory of this source tree.
  */
 
-var {Disposable} = require('atom');
-var WebSocketServer = require('ws').Server;
-var Session = require('../VendorLib/session');
+const {Disposable} = require('atom');
+const WebSocketServer = require('ws').Server;
+const Session = require('../VendorLib/session');
 
 class DebuggerProcess {
   _debugPort: number;
@@ -61,7 +61,7 @@ class DebuggerProcess {
   }
 }
 
-var {DebuggerProcessInfo} = require('nuclide-debugger-utils');
+const {DebuggerProcessInfo} = require('nuclide-debugger-utils');
 
 class ProcessInfo extends DebuggerProcessInfo {
   pid: number;
@@ -80,7 +80,7 @@ class ProcessInfo extends DebuggerProcessInfo {
 
     // This is the port that the V8 debugger usually listens on.
     // TODO(natthu): Provide a way to override this in the UI.
-    var debugPort = 5858;
+    const debugPort = 5858;
     return new DebuggerProcess(debugPort);
   }
 
@@ -96,15 +96,15 @@ class ProcessInfo extends DebuggerProcessInfo {
 }
 
 function getProcessInfoList(): Promise<Array<DebuggerProcessInfo>> {
-  var {asyncExecute} = require('nuclide-commons');
+  const {asyncExecute} = require('nuclide-commons');
   return asyncExecute('ps', ['-e', '-o', 'pid,comm'], {})
     .then(result => {
       return result.stdout.toString().split('\n').slice(1).map(line => {
-        var words = line.trim().split(' ');
-        var pid = Number(words[0]);
-        var command = words.slice(1).join(' ');
-        var components = command.split('/');
-        var name = components[components.length - 1];
+        const words = line.trim().split(' ');
+        const pid = Number(words[0]);
+        const command = words.slice(1).join(' ');
+        const components = command.split('/');
+        const name = components[components.length - 1];
         if (name !== 'node') {
           return null;
         }

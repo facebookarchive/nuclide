@@ -49,22 +49,22 @@ export default class DiffViewEditor {
   }
 
   renderInlineComponents(elements: Array<InlineComponent>): Promise<Array<RenderedComponent>> {
-    var {object} = require('nuclide-commons');
-    var components = [];
-    var renderPromises = [];
-    var scrollToRow = this._scrollToRow.bind(this);
+    const {object} = require('nuclide-commons');
+    const components = [];
+    const renderPromises = [];
+    const scrollToRow = this._scrollToRow.bind(this);
     elements.forEach(element => {
-      var {node, bufferRow} = element;
+      const {node, bufferRow} = element;
       if (!node.props.helpers) {
         node.props.helpers = {};
       }
-      var helpers = {
+      const helpers = {
         scrollToRow,
       };
       object.assign(node.props.helpers, helpers);
-      var container = document.createElement('div');
-      var component;
-      var didRenderPromise = new Promise((res, rej) => {
+      const container = document.createElement('div');
+      let component;
+      const didRenderPromise = new Promise((res, rej) => {
         component = React.render(node, container, () => {
           res();
         });
@@ -81,11 +81,11 @@ export default class DiffViewEditor {
 
   attachInlineComponents(elements: Array<RenderedComponent>): void {
     elements.forEach(element => {
-      var {bufferRow, container} = element;
+      const {bufferRow, container} = element;
       // an overlay marker at a buffer range with row x renders under row x + 1
       // so, use range at bufferRow - 1 to actually display at bufferRow
-      var range = [[bufferRow - 1, 0], [bufferRow - 1, 0]];
-      var marker = this._editor.markBufferRange(range, {invalidate: 'never'});
+      const range = [[bufferRow - 1, 0], [bufferRow - 1, 0]];
+      const marker = this._editor.markBufferRange(range, {invalidate: 'never'});
       this._editor.decorateMarker(marker, {type: 'overlay', item: container});
     });
   }
@@ -96,12 +96,12 @@ export default class DiffViewEditor {
 
   setFileContents(filePath: string, contents: string, clearHistory: boolean): void {
     // The text is set via diffs to keep the cursor position.
-    var buffer = this._editor.getBuffer();
+    const buffer = this._editor.getBuffer();
     buffer.setTextViaDiff(contents);
     if (clearHistory) {
       buffer.clearUndoStack();
     }
-    var grammar = atom.grammars.selectGrammar(filePath, contents);
+    const grammar = atom.grammars.selectGrammar(filePath, contents);
     this._editor.setGrammar(grammar);
   }
 
@@ -118,7 +118,7 @@ export default class DiffViewEditor {
    * @param removedLines An array of buffer line numbers that should be highlighted as removed.
    */
   setHighlightedLines(addedLines: Array<number> = [], removedLines: Array<number> = []) {
-    for (var marker of this._markers) {
+    for (const marker of this._markers) {
       marker.destroy();
     }
     this._markers = addedLines.map(lineNumber => this._createLineMarker(lineNumber, 'insert'))
@@ -131,14 +131,14 @@ export default class DiffViewEditor {
   *    Could be a value of: ['insert', 'delete'].
    */
   _createLineMarker(lineNumber: number, type: string): atom$Marker {
-    var screenPosition = this._editor.screenPositionForBufferPosition({row: lineNumber, column: 0});
-    var range = new Range(
+    const screenPosition = this._editor.screenPositionForBufferPosition({row: lineNumber, column: 0});
+    const range = new Range(
         screenPosition,
         {row: screenPosition.row, column: this._editor.lineTextForScreenRow(screenPosition.row).length}
         // TODO: highlight the full line when the mapping between buffer lines to screen line is implemented.
         // {row: screenPosition.row + 1, column: 0}
     );
-    var marker = this._editor.markScreenRange(range, {invalidate: 'never'});
+    const marker = this._editor.markScreenRange(range, {invalidate: 'never'});
     this._editor.decorateMarker(marker, {type: 'highlight', class: `diff-view-${type}`});
     return marker;
   }
@@ -178,7 +178,7 @@ export default class DiffViewEditor {
 
     return buildLineRangesWithOffsets(screenLines, this._lineOffsets, startBufferRow, endBufferRow,
       () => {
-        var copy = screenLines[0].copy();
+        const copy = screenLines[0].copy();
         copy.token = [];
         copy.text = '';
         copy.tags = [];

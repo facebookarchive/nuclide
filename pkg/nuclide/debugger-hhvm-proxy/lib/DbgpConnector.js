@@ -78,11 +78,11 @@ export class DbgpConnector {
   }
 
   listen(): void {
-    var port = this._config.xdebugPort;
+    const port = this._config.xdebugPort;
 
     log('Creating debug server on port ' + port);
 
-    var server = require('net').createServer();
+    const server = require('net').createServer();
 
     server.on('close', socket => log('Closing port ' + port));
     server.listen(port, () => log('Listening on port ' + port));
@@ -95,7 +95,7 @@ export class DbgpConnector {
   }
 
   _onSocketConnection(socket: Socket) {
-    var port = this._config.xdebugPort;
+    const port = this._config.xdebugPort;
 
     log('Connection on port ' + port);
     if (!this._checkListening(socket, 'Connection')) {
@@ -105,7 +105,7 @@ export class DbgpConnector {
   }
 
   _onServerError(error: Object): void {
-    var port = this._config.xdebugPort;
+    const port = this._config.xdebugPort;
 
     let errorMessage;
     if (error.code === 'EADDRINUSE') {
@@ -150,7 +150,7 @@ export class DbgpConnector {
    */
   _checkListening(socket: Socket, message: string): boolean {
     if (!this.isListening()) {
-      var port = this._config.xdebugPort;
+      const port = this._config.xdebugPort;
       log('Ignoring ' + message + ' on port ' + port + ' after stopped connection.');
       return false;
     }

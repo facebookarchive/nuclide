@@ -12,8 +12,8 @@
 import type {LabeledStatement} from 'ast-types-flow';
 import type {Lines, Print} from '../../types/common';
 
-var markers = require('../../constants/markers');
-var wrapStatement = require('../../wrappers/simple/wrapStatement');
+const markers = require('../../constants/markers');
+const wrapStatement = require('../../wrappers/simple/wrapStatement');
 
 function printLabeledStatement(print: Print, node: LabeledStatement): Lines {
   const wrap = x => wrapStatement(print, node, x);

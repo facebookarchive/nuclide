@@ -28,45 +28,45 @@ describe('debugger-hhvm-proxy DbgpMessageHandler', () => {
   });
 
   it('singleton', () => {
-    let messageHandler2 = getDbgpMessageHandlerInstance();
+    const messageHandler2 = getDbgpMessageHandlerInstance();
     expect(messageHandler).toBe(messageHandler2);
   });
 
   it('single completed message', () => {
-    let message = makeMessage({
+    const message = makeMessage({
       command: 'context_names',
       transaction_id: '1',
     },
     '<context name="Local" id="0"/>' +
     '<context name="Global" id="1"/>' +
     '<context name="Class" id="2"/>');
-    let results = messageHandler.parseMessages(message);
+    const results = messageHandler.parseMessages(message);
     expect(results.length).toBe(1);
   });
 
   it('two completed messages', () => {
-    let message1 = makeMessage({
+    const message1 = makeMessage({
       command: 'context_names',
       transaction_id: '1',
     },
     '<context name="Local" id="0"/>' +
     '<context name="Global" id="1"/>' +
     '<context name="Class" id="2"/>');
-    let message2 = makeMessage({
+    const message2 = makeMessage({
       command: 'context_names',
       transaction_id: '2',
     },
     '<context name="Local2" id="0"/>' +
     '<context name="Global2" id="1"/>' +
     '<context name="Class2" id="2"/>');
-    let results = messageHandler.parseMessages(message1 + message2);
+    const results = messageHandler.parseMessages(message1 + message2);
     expect(results.length).toBe(2);
   });
 
   it('single incompleted message', () => {
-    let completedMessage = makeDbgpMessage(payload);
-    let messagePart1 = completedMessage.slice(0, -20);
-    let messagePart2 = completedMessage.slice(-20);
+    const completedMessage = makeDbgpMessage(payload);
+    const messagePart1 = completedMessage.slice(0, -20);
+    const messagePart2 = completedMessage.slice(-20);
 
     let results = messageHandler.parseMessages(messagePart1);
     expect(results.length).toBe(0);
@@ -76,7 +76,7 @@ describe('debugger-hhvm-proxy DbgpMessageHandler', () => {
   });
 
   it('one completed message with one incompleted message ending', () => {
-    let completedMessage1 = makeMessage({
+    const completedMessage1 = makeMessage({
       command: 'context_names',
       transaction_id: '1',
     },
@@ -84,9 +84,9 @@ describe('debugger-hhvm-proxy DbgpMessageHandler', () => {
     '<context name="Global" id="1"/>' +
     '<context name="Class" id="2"/>');
 
-    let completedMessage2 = makeDbgpMessage(payload);
-    let messagePart1 = completedMessage2.slice(0, -20);
-    let messagePart2 = completedMessage2.slice(-20);
+    const completedMessage2 = makeDbgpMessage(payload);
+    const messagePart1 = completedMessage2.slice(0, -20);
+    const messagePart2 = completedMessage2.slice(-20);
 
     let results = messageHandler.parseMessages(completedMessage1 + messagePart1);
     expect(results.length).toBe(1);
@@ -96,10 +96,10 @@ describe('debugger-hhvm-proxy DbgpMessageHandler', () => {
   });
 
   it('single message in three incompleted parts', () => {
-    let completedMessage = makeDbgpMessage(payload);
-    let messagePart1 = completedMessage.slice(0, -50);
-    let messagePart2 = completedMessage.slice(-50, -20);
-    let messagePart3 = completedMessage.slice(-20);
+    const completedMessage = makeDbgpMessage(payload);
+    const messagePart1 = completedMessage.slice(0, -50);
+    const messagePart2 = completedMessage.slice(-50, -20);
+    const messagePart3 = completedMessage.slice(-20);
 
     let results = messageHandler.parseMessages(messagePart1);
     expect(results.length).toBe(0);
@@ -112,7 +112,7 @@ describe('debugger-hhvm-proxy DbgpMessageHandler', () => {
   });
 
   it('completed message with bad ending', () => {
-    let completedMessageBadEnding = makeDbgpMessage(payload) + 'badEnding';
+    const completedMessageBadEnding = makeDbgpMessage(payload) + 'badEnding';
 
     expect(() => {
       messageHandler.parseMessages(completedMessageBadEnding);
@@ -120,7 +120,7 @@ describe('debugger-hhvm-proxy DbgpMessageHandler', () => {
   });
 
   it('completed message in incompleted message format', () => {
-    let completedMessageWithoutNull = makeDbgpMessage(payload).slice(-1);
+    const completedMessageWithoutNull = makeDbgpMessage(payload).slice(-1);
 
     expect(() => {
       messageHandler.parseMessages(completedMessageWithoutNull);
@@ -128,11 +128,11 @@ describe('debugger-hhvm-proxy DbgpMessageHandler', () => {
   });
 
   it('extra messages without completing previous message', () => {
-    let completedMessage1 = makeDbgpMessage(payload);
-    let messagePart1 = completedMessage1.slice(0, -50);
-    let messagePart2 = completedMessage1.slice(-50, -20);
+    const completedMessage1 = makeDbgpMessage(payload);
+    const messagePart1 = completedMessage1.slice(0, -50);
+    const messagePart2 = completedMessage1.slice(-50, -20);
 
-    let completedMessage2 = makeMessage({
+    const completedMessage2 = makeMessage({
       command: 'context_names',
       transaction_id: '1',
     },
@@ -140,7 +140,7 @@ describe('debugger-hhvm-proxy DbgpMessageHandler', () => {
     '<context name="Global" id="1"/>' +
     '<context name="Class" id="2"/>');
 
-    let results = messageHandler.parseMessages(messagePart1);
+    const results = messageHandler.parseMessages(messagePart1);
     expect(results.length).toBe(0);
 
     expect(() => {
@@ -149,9 +149,9 @@ describe('debugger-hhvm-proxy DbgpMessageHandler', () => {
   });
 
   it('got incompleted message in the middle of array', () => {
-    let completedMessage1 = makeDbgpMessage(payload);
-    let IncompletedMessage = makeDbgpMessage(payload).slice(-5) + '\x00';
-    let completedMessage2 = makeDbgpMessage(payload);
+    const completedMessage1 = makeDbgpMessage(payload);
+    const IncompletedMessage = makeDbgpMessage(payload).slice(-5) + '\x00';
+    const completedMessage2 = makeDbgpMessage(payload);
 
     expect(() => {
       messageHandler.parseMessages(completedMessage1 + IncompletedMessage + completedMessage2);

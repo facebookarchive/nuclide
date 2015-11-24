@@ -23,18 +23,18 @@ import {
 import {idOfFrame, functionOfFrame, fileOfFrame, locationOfFrame} from '../lib/frame';
 
 describe('debugger-hhvm-proxy DbgpSocket', () => {
-    var socket;
-    var dbgpSocket;
-    var onData;
-    var onEnd;
-    var onError;
-    var onStatus;
+  let socket;
+  let dbgpSocket;
+  let onData;
+  let onEnd;
+  let onError;
+  let onStatus;
 
-    beforeEach(() => {
-      socket = jasmine.createSpyObj('socket', ['write', 'end', 'destroy']);
-      onStatus = jasmine.createSpy('onStatus');
-      socket.on = (event, callback) => {
-        switch (event) {
+  beforeEach(() => {
+    socket = jasmine.createSpyObj('socket', ['write', 'end', 'destroy']);
+    onStatus = jasmine.createSpy('onStatus');
+    socket.on = (event, callback) => {
+      switch (event) {
         case 'data':
           onData = callback;
           break;
@@ -44,344 +44,344 @@ describe('debugger-hhvm-proxy DbgpSocket', () => {
         case 'end':
           onEnd = callback;
           break;
-        }
-      };
-      spyOn(socket, 'on').andCallThrough();
-      dbgpSocket = new DbgpSocket(socket);
-      dbgpSocket.onStatus(onStatus);
-    });
+      }
+    };
+    spyOn(socket, 'on').andCallThrough();
+    dbgpSocket = new DbgpSocket(socket);
+    dbgpSocket.onStatus(onStatus);
+  });
 
-    function testSocketWrite(socketWrite: string): void {
-      expect(socket.write).toHaveBeenCalledWith(socketWrite + '\x00');
-    }
+  function testSocketWrite(socketWrite: string): void {
+    expect(socket.write).toHaveBeenCalledWith(socketWrite + '\x00');
+  }
 
-    function testCallResult(socketWrite, onDataObject, body): void {
-      testSocketWrite(socketWrite);
-      onData(makeMessage(onDataObject, body));
-    }
+  function testCallResult(socketWrite, onDataObject, body): void {
+    testSocketWrite(socketWrite);
+    onData(makeMessage(onDataObject, body));
+  }
 
-    async function testCall(resultPromise, socketWrite, onDataObject, expectedResult, body) {
-      testCallResult(socketWrite, onDataObject, body);
-      var result = await resultPromise;
-      expect(result).toBe(expectedResult);
-    }
+  async function testCall(resultPromise, socketWrite, onDataObject, expectedResult, body) {
+    testCallResult(socketWrite, onDataObject, body);
+    const result = await resultPromise;
+    expect(result).toBe(expectedResult);
+  }
 
-    it('constructor', () => {
-      expect(socket.on).toHaveBeenCalledWith('end', jasmine.any(Function));
-      expect(socket.on).toHaveBeenCalledWith('error', jasmine.any(Function));
-      expect(socket.on).toHaveBeenCalledWith('data', jasmine.any(Function));
-    });
+  it('constructor', () => {
+    expect(socket.on).toHaveBeenCalledWith('end', jasmine.any(Function));
+    expect(socket.on).toHaveBeenCalledWith('error', jasmine.any(Function));
+    expect(socket.on).toHaveBeenCalledWith('data', jasmine.any(Function));
+  });
 
-    it('dispose', () => {
-      dbgpSocket.dispose();
-      expect(socket.end).toHaveBeenCalled();
-      expect(socket.destroy).toHaveBeenCalled();
-    });
+  it('dispose', () => {
+    dbgpSocket.dispose();
+    expect(socket.end).toHaveBeenCalled();
+    expect(socket.destroy).toHaveBeenCalled();
+  });
 
-    it('error', () => {
-      onError({code: 42});
-      expect(onStatus).toHaveBeenCalledWith(STATUS_ERROR);
-    });
+  it('error', () => {
+    onError({code: 42});
+    expect(onStatus).toHaveBeenCalledWith(STATUS_ERROR);
+  });
 
-    it('end', () => {
-      onEnd();
-      expect(onStatus).toHaveBeenCalledWith(STATUS_END);
-    });
+  it('end', () => {
+    onEnd();
+    expect(onStatus).toHaveBeenCalledWith(STATUS_END);
+  });
 
-    it('constructor', () => {
-      expect(socket.on).toHaveBeenCalledWith('data', jasmine.any(Function));
-    });
+  it('constructor', () => {
+    expect(socket.on).toHaveBeenCalledWith('data', jasmine.any(Function));
+  });
 
-    it('getStatus', () => {
-      waitsForPromise(() => {
-        return testCall(
+  it('getStatus', () => {
+    waitsForPromise(() => {
+      return testCall(
           dbgpSocket.getStatus(),
           'status -i 1',
-          {
-            status: 'stopping',
-            reason: 'ok',
-            command: 'status',
-            transaction_id: '1',
-          },
+        {
+          status: 'stopping',
+          reason: 'ok',
+          command: 'status',
+          transaction_id: '1',
+        },
           'stopping');
-      });
     });
+  });
 
-    it('sendContinuationCommand - break', () => {
-      waitsForPromise(async () => {
-        var resultPromise = dbgpSocket.sendContinuationCommand(COMMAND_STEP_OVER);
-        expect(onStatus).toHaveBeenCalledWith(STATUS_RUNNING);
-        await testCall(
+  it('sendContinuationCommand - break', () => {
+    waitsForPromise(async () => {
+      const resultPromise = dbgpSocket.sendContinuationCommand(COMMAND_STEP_OVER);
+      expect(onStatus).toHaveBeenCalledWith(STATUS_RUNNING);
+      await testCall(
           resultPromise,
           'step_over -i 1',
-          {
-            status: 'break',
-            reason: 'ok',
-            command: 'step_over',
-            transaction_id: '1',
-          },
+        {
+          status: 'break',
+          reason: 'ok',
+          command: 'step_over',
+          transaction_id: '1',
+        },
           STATUS_BREAK);
-        expect(onStatus).toHaveBeenCalledWith(STATUS_BREAK);
-      });
+      expect(onStatus).toHaveBeenCalledWith(STATUS_BREAK);
     });
+  });
 
-    it('sendContinuationCommand - stopping', () => {
-      waitsForPromise(async () => {
-        var resultPromise = dbgpSocket.sendContinuationCommand(COMMAND_STEP_OVER);
-        expect(onStatus).toHaveBeenCalledWith(STATUS_RUNNING);
-        await testCall(
+  it('sendContinuationCommand - stopping', () => {
+    waitsForPromise(async () => {
+      const resultPromise = dbgpSocket.sendContinuationCommand(COMMAND_STEP_OVER);
+      expect(onStatus).toHaveBeenCalledWith(STATUS_RUNNING);
+      await testCall(
           resultPromise,
           'step_over -i 1',
-          {
-            status: 'stopping',
-            reason: 'ok',
-            command: 'step_over',
-            transaction_id: '1',
-          },
+        {
+          status: 'stopping',
+          reason: 'ok',
+          command: 'step_over',
+          transaction_id: '1',
+        },
           STATUS_STOPPING);
-        expect(onStatus).toHaveBeenCalledWith(STATUS_STOPPING);
-      });
+      expect(onStatus).toHaveBeenCalledWith(STATUS_STOPPING);
     });
+  });
 
-    it('sendBreakCommand', () => {
-      waitsForPromise(async () => {
-        await testCall(
+  it('sendBreakCommand', () => {
+    waitsForPromise(async () => {
+      await testCall(
           dbgpSocket.sendBreakCommand(),
           'break -i 1',
-          {
-            success: '1',
-            command: 'break',
-            transaction_id: '1',
-          },
+        {
+          success: '1',
+          command: 'break',
+          transaction_id: '1',
+        },
           true);
-        await testCall(
+      await testCall(
           dbgpSocket.sendBreakCommand(),
           'break -i 2',
-          {
-            success: '0',
-            command: 'break',
-            transaction_id: '2',
-          },
+        {
+          success: '0',
+          command: 'break',
+          transaction_id: '2',
+        },
           false);
-      });
     });
+  });
 
-    it('getStackFrames', () => {
-      waitsForPromise(async () => {
-        var call = dbgpSocket.getStackFrames();
-        testCallResult(
+  it('getStackFrames', () => {
+    waitsForPromise(async () => {
+      const call = dbgpSocket.getStackFrames();
+      testCallResult(
           'stack_get -i 1',
-          {
-            command: 'stack_get',
-            transaction_id: '1',
-          },
+        {
+          command: 'stack_get',
+          transaction_id: '1',
+        },
           '<stack where="foo" level="0" type="file" filename="file:///home/peterhal/test/dbgp/test-client.php" lineno="4"></stack>' +
           '<stack where="{main}" level="1" type="file" filename="file:///home/peterhal/test/dbgp/test-client.php" lineno="10"></stack>');
-        var result = await call;
+      const result = await call;
 
-        var stack = result.stack;
-        expect(stack.length).toBe(2);
+      const stack = result.stack;
+      expect(stack.length).toBe(2);
 
-        var frame0 = stack[0];
-        expect(idOfFrame(frame0)).toBe('0');
-        expect(functionOfFrame(frame0)).toBe('foo');
-        expect(fileOfFrame(frame0)).toBe('/home/peterhal/test/dbgp/test-client.php');
-        expect(locationOfFrame(frame0)).toEqual({lineNumber:3, scriptId: fileOfFrame(frame0)});
+      const frame0 = stack[0];
+      expect(idOfFrame(frame0)).toBe('0');
+      expect(functionOfFrame(frame0)).toBe('foo');
+      expect(fileOfFrame(frame0)).toBe('/home/peterhal/test/dbgp/test-client.php');
+      expect(locationOfFrame(frame0)).toEqual({lineNumber:3, scriptId: fileOfFrame(frame0)});
 
-        var frame1 = stack[1];
-        expect(idOfFrame(frame1)).toBe('1');
-        expect(functionOfFrame(frame1)).toBe('{main}');
-        expect(fileOfFrame(frame1)).toBe('/home/peterhal/test/dbgp/test-client.php');
-        expect(locationOfFrame(frame1)).toEqual({lineNumber:9, scriptId: fileOfFrame(frame1)});
-      });
+      const frame1 = stack[1];
+      expect(idOfFrame(frame1)).toBe('1');
+      expect(functionOfFrame(frame1)).toBe('{main}');
+      expect(fileOfFrame(frame1)).toBe('/home/peterhal/test/dbgp/test-client.php');
+      expect(locationOfFrame(frame1)).toEqual({lineNumber:9, scriptId: fileOfFrame(frame1)});
     });
+  });
 
-    it('setExceptionBreakpoint', () => {
-      waitsForPromise(async () => {
-        var call = dbgpSocket.setExceptionBreakpoint('exception_name');
-        testCallResult(
-          'breakpoint_set -i 1 -t exception -x exception_name',
-          {
-            command: 'breakpoint_set',
-            transaction_id: '1',
-            state: 'enabled',
-            id: '10',
-          });
-        var result = await call;
-        expect(result).toBe('10');
-      });
-    });
-
-    it('setBreakpoint', () => {
-      waitsForPromise(async () => {
-        var call = dbgpSocket.setBreakpoint('/test.php', 42);
-        testCallResult(
-          'breakpoint_set -i 1 -t line -f /test.php -n 42',
-          {
-            command: 'breakpoint_set',
-            transaction_id: '1',
-            state: 'enabled',
-            id: '12',
-          });
-        var result = await call;
-        expect(result).toBe('12');
-      });
-    });
-
-    it('setBreakpoint - error', () => {
-      var call = dbgpSocket.setBreakpoint('/test.php', 42);
+  it('setExceptionBreakpoint', () => {
+    waitsForPromise(async () => {
+      const call = dbgpSocket.setExceptionBreakpoint('exception_name');
       testCallResult(
-        'breakpoint_set -i 1 -t line -f /test.php -n 42',
+          'breakpoint_set -i 1 -t exception -x exception_name',
         {
           command: 'breakpoint_set',
           transaction_id: '1',
-        },
-        '<error code="1" apperr="42"><message>setBreakpoint error</message></error>');
-      waitsForPromise({shouldReject: true}, async () => (await call));
+          state: 'enabled',
+          id: '10',
+        });
+      const result = await call;
+      expect(result).toBe('10');
     });
+  });
 
-    it('removeBreakpoint', () => {
-      waitsForPromise(async () => {
-        var call = dbgpSocket.removeBreakpoint('42');
-        testCallResult(
-          'breakpoint_remove -i 1 -d 42',
-          {
-            command: 'breakpoint_remove',
-            transaction_id: '1',
-          });
-        var result = await call;
-        expect(result).toBe(undefined);
-      });
-    });
-
-    it('removeBreakpoint - error', () => {
-      var call = dbgpSocket.removeBreakpoint('42');
+  it('setBreakpoint', () => {
+    waitsForPromise(async () => {
+      const call = dbgpSocket.setBreakpoint('/test.php', 42);
       testCallResult(
-        'breakpoint_remove -i 1 -d 42',
+          'breakpoint_set -i 1 -t line -f /test.php -n 42',
+        {
+          command: 'breakpoint_set',
+          transaction_id: '1',
+          state: 'enabled',
+          id: '12',
+        });
+      const result = await call;
+      expect(result).toBe('12');
+    });
+  });
+
+  it('setBreakpoint - error', () => {
+    const call = dbgpSocket.setBreakpoint('/test.php', 42);
+    testCallResult(
+        'breakpoint_set -i 1 -t line -f /test.php -n 42',
+      {
+        command: 'breakpoint_set',
+        transaction_id: '1',
+      },
+        '<error code="1" apperr="42"><message>setBreakpoint error</message></error>');
+    waitsForPromise({shouldReject: true}, async () => (await call));
+  });
+
+  it('removeBreakpoint', () => {
+    waitsForPromise(async () => {
+      const call = dbgpSocket.removeBreakpoint('42');
+      testCallResult(
+          'breakpoint_remove -i 1 -d 42',
         {
           command: 'breakpoint_remove',
           transaction_id: '1',
-        },
-        '<error code="1" apperr="42"><message>removeBreakpoint error</message></error>');
-      waitsForPromise({shouldReject: true}, async () => (await call));
+        });
+      const result = await call;
+      expect(result).toBe(undefined);
     });
+  });
 
-    it('getContextsForFrame', () => {
-      waitsForPromise(async () => {
-        var call = dbgpSocket.getContextsForFrame('42');
-        testCallResult(
+  it('removeBreakpoint - error', () => {
+    const call = dbgpSocket.removeBreakpoint('42');
+    testCallResult(
+        'breakpoint_remove -i 1 -d 42',
+      {
+        command: 'breakpoint_remove',
+        transaction_id: '1',
+      },
+        '<error code="1" apperr="42"><message>removeBreakpoint error</message></error>');
+    waitsForPromise({shouldReject: true}, async () => (await call));
+  });
+
+  it('getContextsForFrame', () => {
+    waitsForPromise(async () => {
+      const call = dbgpSocket.getContextsForFrame('42');
+      testCallResult(
           'context_names -i 1 -d 42',
-          {
-            command: 'context_names',
-            transaction_id: '1',
-          },
+        {
+          command: 'context_names',
+          transaction_id: '1',
+        },
           '<context name="Local" id="0"/>' +
           '<context name="Global" id="1"/>' +
           '<context name="Class" id="2"/>');
-        var result = await call;
-        expect(result).toEqual([
-          {
-            name: 'Local',
-            id: '0',
-          },
-          {
-            name: 'Global',
-            id: '1',
-          },
-          {
-            name: 'Class',
-            id : '2',
-          }
-        ]);
-      });
+      const result = await call;
+      expect(result).toEqual([
+        {
+          name: 'Local',
+          id: '0',
+        },
+        {
+          name: 'Global',
+          id: '1',
+        },
+        {
+          name: 'Class',
+          id : '2',
+        },
+      ]);
     });
+  });
 
-    it('getContextProperties', () => {
-      waitsForPromise(async () => {
-        var call = dbgpSocket.getContextProperties(43, '42');
-        testCallResult(
+  it('getContextProperties', () => {
+    waitsForPromise(async () => {
+      const call = dbgpSocket.getContextProperties(43, '42');
+      testCallResult(
           'context_get -i 1 -d 43 -c 42',
-          {
-            command: 'context_get',
-            transaction_id: '1',
-          },
+        {
+          command: 'context_get',
+          transaction_id: '1',
+        },
           '<property>the-result</property>');
-        var result = await call;
-        expect(result).toEqual(['the-result']);
-      });
+      const result = await call;
+      expect(result).toEqual(['the-result']);
     });
+  });
 
-    it('getPropertiesByFullname', () => {
-      waitsForPromise(async () => {
-        var call = dbgpSocket.getPropertiesByFullname(43, '42', 'fullname-value', 45);
-        testCallResult(
+  it('getPropertiesByFullname', () => {
+    waitsForPromise(async () => {
+      const call = dbgpSocket.getPropertiesByFullname(43, '42', 'fullname-value', 45);
+      testCallResult(
           'property_value -i 1 -d 43 -c 42 -n fullname-value -p 45',
-          {
-            command: 'property_value',
-            transaction_id: '1',
-          },
+        {
+          command: 'property_value',
+          transaction_id: '1',
+        },
           '<property><property>the-result</property></property>');
-        var result = await call;
-        expect(result).toEqual(['the-result']);
-      });
+      const result = await call;
+      expect(result).toEqual(['the-result']);
     });
+  });
 
-    it('mulitple messages', () => {
-      waitsForPromise(async () => {
-        var call1 = dbgpSocket.getContextsForFrame(0);
-        var call2 = dbgpSocket.getContextsForFrame(1);
+  it('mulitple messages', () => {
+    waitsForPromise(async () => {
+      const call1 = dbgpSocket.getContextsForFrame(0);
+      const call2 = dbgpSocket.getContextsForFrame(1);
 
-        testSocketWrite('context_names -i 1 -d 0');
-        testSocketWrite('context_names -i 2 -d 1');
+      testSocketWrite('context_names -i 1 -d 0');
+      testSocketWrite('context_names -i 2 -d 1');
 
-        var message1 = makeMessage({
-              command: 'context_names',
-              transaction_id: '1',
-            },
+      const message1 = makeMessage({
+        command: 'context_names',
+        transaction_id: '1',
+      },
             '<context name="Local" id="0"/>' +
             '<context name="Global" id="1"/>' +
             '<context name="Class" id="2"/>');
-        var message2 = makeMessage({
-              command: 'context_names',
-              transaction_id: '2',
-            },
+      const message2 = makeMessage({
+        command: 'context_names',
+        transaction_id: '2',
+      },
             '<context name="Local2" id="0"/>' +
             '<context name="Global2" id="1"/>' +
             '<context name="Class2" id="2"/>');
 
-        onData(message1 + message2);
+      onData(message1 + message2);
 
-        var result1 = await call1;
-        expect(result1).toEqual([
-          {
-            name: 'Local',
-            id: '0',
-          },
-          {
-            name: 'Global',
-            id: '1',
-          },
-          {
-            name: 'Class',
-            id : '2',
-          }
-        ]);
+      const result1 = await call1;
+      expect(result1).toEqual([
+        {
+          name: 'Local',
+          id: '0',
+        },
+        {
+          name: 'Global',
+          id: '1',
+        },
+        {
+          name: 'Class',
+          id : '2',
+        },
+      ]);
 
-        var result2 = await call2;
-        expect(result2).toEqual([
-          {
-            name: 'Local2',
-            id: '0',
-          },
-          {
-            name: 'Global2',
-            id: '1',
-          },
-          {
-            name: 'Class2',
-            id : '2',
-          }
-        ]);
-      });
+      const result2 = await call2;
+      expect(result2).toEqual([
+        {
+          name: 'Local2',
+          id: '0',
+        },
+        {
+          name: 'Global2',
+          id: '1',
+        },
+        {
+          name: 'Class2',
+          id : '2',
+        },
+      ]);
     });
+  });
 });

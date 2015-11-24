@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-var markers = require('../constants/markers');
+const markers = require('../constants/markers');
 
 /**
  * Given an array of lines this will parse the scopes and return a mapping of
@@ -17,9 +17,9 @@ var markers = require('../constants/markers');
  * array where arr[lineNumber] is the scopeID.
  */
 function buildScopes(lines: Array<any>): Array<?number> {
-  let scopes = [];
+  const scopes = [];
   let id = 0;
-  let stack = [];
+  const stack = [];
   for (let i = 0; i < lines.length; i++) {
     if (lines[i] === markers.openScope) {
       stack.push(id++);

@@ -9,9 +9,9 @@
  * the root directory of this source tree.
  */
 
-var TestRunModel = require('../lib/TestRunModel');
+const TestRunModel = require('../lib/TestRunModel');
 
-var TestRunStatus = TestRunModel.Status;
+const TestRunStatus = TestRunModel.Status;
 
 describe('TestRunModel', () => {
 

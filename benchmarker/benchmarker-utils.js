@@ -18,33 +18,33 @@ async function timedAsync<T>(
   promiseHandles: number,
   ret: T,
 }> {
-  var start = Date.now();
-  var ret = await promise;
-  var promiseTime = Date.now() - start;
-  var promiseHandles = process._getActiveRequests().length;
+  const start = Date.now();
+  const ret = await promise;
+  const promiseTime = Date.now() - start;
+  const promiseHandles = process._getActiveRequests().length;
   if (waitUntilNoRequests) {
     await sleepUntilNoRequests();
   }
-  var time = Date.now() - start;
+  const time = Date.now() - start;
   return {time, promiseTime, promiseHandles, ret};
 }
 
 function timedSync<T>(func: () => T): {time: number, ret: T} {
-  var start = Date.now();
-  var ret = func();
+  const start = Date.now();
+  const ret = func();
   Promise.resolve(sleepUntilNoRequests());
-  var time = Date.now() - start;
+  const time = Date.now() - start;
   return {time, ret};
 }
 
 function makeSizedFixture(location: string, size: number): void {
-  var fs = require('fs');
-  var file = fs.openSync(location, 'w');
-  var line = '// ------\n';
-  var lineLength = line.length;
+  const fs = require('fs');
+  const file = fs.openSync(location, 'w');
+  const line = '// ------\n';
+  const lineLength = line.length;
   // $FlowFixMe: Bad upstream definition
   fs.truncateSync(file, 0);
-  for (var i = 0; i < size; i += lineLength) {
+  for (let i = 0; i < size; i += lineLength) {
     // $FlowFixMe: Bad upstream definition
     fs.writeSync(file, line);
   }

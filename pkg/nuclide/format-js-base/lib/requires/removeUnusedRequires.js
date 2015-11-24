@@ -12,19 +12,19 @@
 import type {Collection, Node, NodePath} from '../types/ast';
 import type {SourceOptions} from '../options/SourceOptions';
 
-var getDeclaredIdentifiers = require('../utils/getDeclaredIdentifiers');
-var getNamesFromID = require('../utils/getNamesFromID');
-var getNonDeclarationIdentifiers = require('../utils/getNonDeclarationIdentifiers');
-var hasOneRequireDeclaration = require('../utils/hasOneRequireDeclaration');
-var isGlobal = require('../utils/isGlobal');
-var jscs = require('jscodeshift');
+const getDeclaredIdentifiers = require('../utils/getDeclaredIdentifiers');
+const getNamesFromID = require('../utils/getNamesFromID');
+const getNonDeclarationIdentifiers = require('../utils/getNonDeclarationIdentifiers');
+const hasOneRequireDeclaration = require('../utils/hasOneRequireDeclaration');
+const isGlobal = require('../utils/isGlobal');
+const jscs = require('jscodeshift');
 
 function removeUnusedRequires(
   root: Collection,
   options: SourceOptions,
 ): void {
-  var used = getNonDeclarationIdentifiers(root, options);
-  var nonRequires = getDeclaredIdentifiers(
+  const used = getNonDeclarationIdentifiers(root, options);
+  const nonRequires = getDeclaredIdentifiers(
     root,
     options,
     [path => !hasOneRequireDeclaration(path.node)]
@@ -36,9 +36,9 @@ function removeUnusedRequires(
     .filter(path => isGlobal(path))
     .filter(path => hasOneRequireDeclaration(path.node))
     .filter(path => {
-      var id = path.node.declarations[0].id;
-      var names = getNamesFromID(id);
-      for (var name of names) {
+      const id = path.node.declarations[0].id;
+      const names = getNamesFromID(id);
+      for (const name of names) {
         if (used.has(name) && !nonRequires.has(name)) {
           return false;
         }

@@ -28,30 +28,30 @@ var server = net.createServer(
     });
 
     socket.on('data', function(data) {
-        console.log('server: ' + data.toString());
+      console.log('server: ' + data.toString());
     });
   });
 
 server.listen(port, function() { //'listening' listener
-    console.log('server bound');
+  console.log('server bound');
 });
 
 var readline = require('readline');
 var rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-      terminal: false
+  input: process.stdin,
+  output: process.stdout,
+  terminal: false,
 });
 
 rl.on('line', function(line){
   if (socket) {
-      if (line === 'b') {
-        line = 'break -i 2\0';
-      }
-      console.log('local: ' + line);
-      socket.write(line + '\0', undefined /* encoding */, function() {
-        console.log('finished writing: ' + line);
-      });
+    if (line === 'b') {
+      line = 'break -i 2\0';
+    }
+    console.log('local: ' + line);
+    socket.write(line + '\0', undefined /* encoding */, function() {
+      console.log('finished writing: ' + line);
+    });
   }
 })
 

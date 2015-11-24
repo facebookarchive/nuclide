@@ -9,9 +9,9 @@
  * the root directory of this source tree.
  */
 
-var {Disposable} = require('atom');
-var {EventEmitter} = require('events');
-var Constants = require('./Constants');
+const {Disposable} = require('atom');
+const {EventEmitter} = require('events');
+const Constants = require('./Constants');
 
 import type {Dispatcher} from 'flux';
 import type {
@@ -84,7 +84,7 @@ class DebuggerStore {
   }
 
   onChange(callback: () => void): Disposable {
-    var emitter = this._eventEmitter;
+    const emitter = this._eventEmitter;
     this._eventEmitter.on('change', callback);
     return new Disposable(() => emitter.removeListener('change', callback));
   }

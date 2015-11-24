@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-var {CompositeDisposable, Disposable} = require('atom');
+const {CompositeDisposable, Disposable} = require('atom');
 import {trackTiming} from 'nuclide-analytics';
 
 import type {nuclide_debugger$Service} from 'nuclide-debugger-interfaces/service';
@@ -22,9 +22,9 @@ export type SerializedState = {
 };
 
 function createDebuggerView(model: DebuggerModel): HTMLElement {
-  var DebuggerControllerView = require('./DebuggerControllerView');
-  var React = require('react-for-atom');
-  var elem = document.createElement('div');
+  const DebuggerControllerView = require('./DebuggerControllerView');
+  const React = require('react-for-atom');
+  const elem = document.createElement('div');
   elem.className = 'nuclide-debugger-root';
   React.render(
     <DebuggerControllerView
@@ -87,7 +87,7 @@ class Activation {
   }
 
   serialize(): SerializedState {
-    var state = {
+    const state = {
       breakpoints: this.getModel().getBreakpointStore().getSerializedBreakpoints(),
     };
     return state;
@@ -105,7 +105,7 @@ class Activation {
   }
 
   _toggle() {
-    var panel = this._getPanel();
+    const panel = this._getPanel();
     if (panel.isVisible()) {
       panel.hide();
     } else {
@@ -141,11 +141,11 @@ class Activation {
 
   @trackTiming('nuclide-debugger-atom:toggleBreakpoint')
   _toggleBreakpoint() {
-    var editor = atom.workspace.getActiveTextEditor();
+    const editor = atom.workspace.getActiveTextEditor();
     if (editor && editor.getPath()) {
-      var filePath = editor.getPath();
+      const filePath = editor.getPath();
       if (filePath) {
-        var line = editor.getLastCursor().getBufferRow();
+        const line = editor.getLastCursor().getBufferRow();
         this.getModel().getBreakpointStore().toggleBreakpoint(filePath, line);
       }
     }
@@ -156,7 +156,7 @@ class Activation {
    */
   _getPanel(): Object {
     if (!this._panel) {
-      var panel = atom.workspace.addRightPanel({
+      const panel = atom.workspace.addRightPanel({
         item: this._model,
         visible: false,
       });
@@ -169,8 +169,8 @@ class Activation {
   }
 }
 
-var activation = null;
-var toolBar: ?any = null;
+let activation = null;
+let toolBar: ?any = null;
 
 module.exports = {
   activate(state: ?SerializedState) {

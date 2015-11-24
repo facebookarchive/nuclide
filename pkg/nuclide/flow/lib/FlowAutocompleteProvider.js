@@ -17,13 +17,13 @@ class FlowAutocompleteProvider {
   @trackTiming('flow.autocomplete')
   getSuggestions(request: atom$AutocompleteRequest): Promise<?Array<atom$AutocompleteSuggestion>> {
     const {editor, prefix, activatedManually} = request;
-    var file = editor.getPath();
-    var contents = editor.getText();
-    var cursor = editor.getLastCursor();
-    var line = cursor.getBufferRow();
-    var col = cursor.getBufferColumn();
+    const file = editor.getPath();
+    const contents = editor.getText();
+    const cursor = editor.getLastCursor();
+    const line = cursor.getBufferRow();
+    const col = cursor.getBufferColumn();
 
-    var flowService = require('nuclide-client').getServiceByNuclideUri('FlowService', file);
+    const flowService = require('nuclide-client').getServiceByNuclideUri('FlowService', file);
     invariant(flowService);
     return flowService.flowGetAutocompleteSuggestions(
       file,
