@@ -39,7 +39,7 @@ module.exports = {
     var start = range.start;
 
     return {
-      range: [range],
+      range,
       callback: async function() {
         await instance.pushNewBuffer(file, textEditor.getText());
         var location = await instance.locate(
