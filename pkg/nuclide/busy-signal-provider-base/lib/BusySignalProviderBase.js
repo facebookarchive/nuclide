@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {BusySignalMessage} from 'nuclide-busy-signal-interfaces';
+
 import {Subject} from 'rx';
 import invariant from 'assert';
 
