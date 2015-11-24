@@ -68,6 +68,7 @@ type JasmineSpy = {
   calls: Array<JasmineSpyCall>;
   identity: string;
   mostRecentCall: JasmineSpyCall;
+  wasCalled: boolean;
 };
 
 declare function spyOn(object: Object, method: string): JasmineSpy;
@@ -122,7 +123,7 @@ declare var jasmine: {
    * This is a non-standard method that Atom adds to Jasmine via spec-helper.coffee.
    * Ideally, we would declare this in atom-jasmine.js, but we can't extend this global here.
    */
-  attachToDOM(element: HTMLElement): ?HTMLElement;
+  attachToDOM(element: Element): ?HTMLElement;
 
   createSpy(name?: string): JasmineSpy;
   createSpyObj(name: string, spyNames: Array<string>): {[key: string]: JasmineSpy};
