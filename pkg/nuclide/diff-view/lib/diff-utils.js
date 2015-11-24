@@ -69,13 +69,13 @@ function _computeDiffChunks(oldText: string, newText: string): DiffChunk {
       offset = nextOffset;
       nextOffset = 0;
     } else if (added) {
-      for (var i = 0; i < count; i++) {
+      for (let i = 0; i < count; i++) {
         addedLines.push(addedCount + i);
       }
       addedCount += count;
       nextOffset += count;
     } else {
-      for (var i = 0; i < count; i++) {
+      for (let i = 0; i < count; i++) {
         removedLines.push(removedCount + i);
       }
       removedCount += count;

@@ -33,31 +33,31 @@ function getRepositoryDescription(directory: Directory): ?mixed {
   const {RemoteDirectory} = require('nuclide-remote-connection');
 
   if (RemoteDirectory.isRemoteDirectory(directory)) {
-    var repositoryDescription = directory.getHgRepositoryDescription();
+    const repositoryDescription = directory.getHgRepositoryDescription();
     if (!repositoryDescription.repoPath) {
       return null;
     }
 
     const remoteConnection = directory._remote;
-    var {repoPath, originURL, workingDirectoryPath} = repositoryDescription;
+    const {repoPath, originURL, workingDirectoryPath} = repositoryDescription;
     const workingDirectoryLocalPath = workingDirectoryPath;
     // These paths are all relative to the remote fs. We need to turn these into URIs.
-    var repoPath = remoteConnection.getUriOfRemotePath(repoPath);
-    var workingDirectoryPath = remoteConnection.getUriOfRemotePath(workingDirectoryPath);
+    const repoUri = remoteConnection.getUriOfRemotePath(repoPath);
+    const workingDirectoryUri = remoteConnection.getUriOfRemotePath(workingDirectoryPath);
     return {
       originURL,
-      repoPath,
-      workingDirectory: new RemoteDirectory(remoteConnection, workingDirectoryPath),
+      repoUri,
+      workingDirectory: new RemoteDirectory(remoteConnection, workingDirectoryUri),
       workingDirectoryLocalPath,
     };
   } else {
     const {findHgRepository} = require('nuclide-source-control-helpers');
-    var repositoryDescription = findHgRepository(directory.getPath());
+    const repositoryDescription = findHgRepository(directory.getPath());
     if (!repositoryDescription.repoPath) {
       return null;
     }
 
-    var {repoPath, originURL, workingDirectoryPath} = repositoryDescription;
+    const {repoPath, originURL, workingDirectoryPath} = repositoryDescription;
     return {
       originURL,
       repoPath,
@@ -80,7 +80,12 @@ export default class HgRepositoryProvider {
         return null;
       }
 
-      const {originURL, repoPath, workingDirectory, workingDirectoryLocalPath} = repositoryDescription;
+      const {
+        originURL,
+        repoPath,
+        workingDirectory,
+        workingDirectoryLocalPath,
+      } = repositoryDescription;
 
       const {getServiceByNuclideUri} = require('nuclide-client');
       const {HgService} = getServiceByNuclideUri('HgService', directory.getPath());
@@ -92,7 +97,9 @@ export default class HgRepositoryProvider {
         originURL,
       });
     } catch (err) {
-      getLogger().error('Failed to create an HgRepositoryClient for ', directory.getPath(), ', error: ', err);
+      getLogger().error(
+        'Failed to create an HgRepositoryClient for ', directory.getPath(), ', error: ', err
+      );
       return null;
     }
   }

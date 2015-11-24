@@ -18,10 +18,14 @@ type WaitsForPromiseOptions = {
 /*eslint-enable no-unused-vars*/
 
 function waitsForPromise(...args: Array<WaitsForPromiseOptions | () => Promise<mixed>>): void {
+  let shouldReject;
+  let timeout;
   if (args.length > 1) {
-    var {shouldReject, timeout} = args[0];
+    shouldReject = args[0].shouldReject;
+    timeout = args[0].timeout;
   } else {
-    var [shouldReject, timeout] = [false, 0];
+    shouldReject = false;
+    timeout = 0;
   }
 
   let finished = false;
