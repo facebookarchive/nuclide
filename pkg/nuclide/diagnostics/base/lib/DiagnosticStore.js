@@ -17,7 +17,7 @@ import type {
   FileDiagnosticMessage,
   ProjectDiagnosticMessage,
   FileMessageUpdate,
-} from './types';
+} from './main';
 
 import type {NuclideUri} from 'nuclide-remote-uri';
 

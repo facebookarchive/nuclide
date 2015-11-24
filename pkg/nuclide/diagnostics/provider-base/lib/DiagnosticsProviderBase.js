@@ -14,7 +14,7 @@ import type {
   InvalidationMessage,
   MessageInvalidationCallback,
   MessageUpdateCallback,
-} from 'nuclide-diagnostics-base/lib/types';
+} from 'nuclide-diagnostics-base';
 import type {TextEventDispatcher} from 'nuclide-text-event-dispatcher';
 
 type ProviderBaseOptions = {
