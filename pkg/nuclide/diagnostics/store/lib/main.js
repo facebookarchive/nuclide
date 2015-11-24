@@ -58,17 +58,8 @@ var lintOnTheFly = false;
 var allLinterAdapters = new Set();
 
 module.exports = {
-  config: {
-    consumeLegacyLinters: {
-      type: 'boolean',
-      default: true,
-    },
-    legacyLintOnTheFly: {
-      type: 'boolean',
-      default: false,
-      description: 'Used only for legacy linters',
-    },
-  },
+  // $FlowIssue https://github.com/facebook/flow/issues/620
+  config: require('../package.json').nuclide.config,
 
   activate(state: ?Object): void {
     if (!disposables) {

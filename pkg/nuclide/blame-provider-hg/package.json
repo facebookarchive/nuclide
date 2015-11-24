@@ -5,6 +5,13 @@
   "version": "0.0.0",
   "description": "Makes Hg blame information available to the nuclide-blame feature.",
   "nuclide": {
+    "config": {
+      "showVerboseBlame": {
+        "type": "boolean",
+        "default": false,
+        "description": "Show complete name returned from \"hg blame\", instead of shortened name."
+      }
+    },
     "packageType": "Atom",
     "testRunner": "apm"
   },

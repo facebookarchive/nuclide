@@ -5,6 +5,13 @@
   "version": "0.0.0",
   "description": "Provides quick open functionality in Nuclide",
   "nuclide": {
+    "config": {
+      "useSelection": {
+        "type": "boolean",
+        "default": true,
+        "description": "Use current selection to pre-fill search input"
+      }
+    },
     "packageType": "Atom",
     "testRunner": "apm"
   },

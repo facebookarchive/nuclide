@@ -305,13 +305,8 @@ function activateSearchUI(): void {
 
 module.exports = {
 
-  config: {
-    useSelection: {
-      type: 'boolean',
-      default: true,
-      description: 'Use current selection to pre-fill search input',
-    },
-  },
+  // $FlowIssue https://github.com/facebook/flow/issues/620
+  config: require('../package.json').nuclide.config,
 
   activate(): void {
     listeners = new CompositeDisposable();

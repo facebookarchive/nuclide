@@ -14,13 +14,8 @@ import type {BlameProvider} from 'nuclide-blame-base/blame-types';
 let blameProvider;
 
 module.exports = {
-  config: {
-    showVerboseBlame: {
-      type: 'boolean',
-      default: false,
-      description: 'Show complete name returned from "hg blame", instead of shortened name.',
-    },
-  },
+  // $FlowIssue https://github.com/facebook/flow/issues/620
+  config: require('../package.json').nuclide.config,
 
   activate(state: ?Object): void {
   },

@@ -5,6 +5,12 @@
   "version": "0.0.0",
   "description": "Provides support for Objective-C in Nuclide",
   "nuclide": {
+    "config": {
+      "enableAutomaticSquareBracketInsertion": {
+        "type": "boolean",
+        "default": false
+      }
+    },
     "packageType": "Atom",
     "testRunner": "apm"
   },

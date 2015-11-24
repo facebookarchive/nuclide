@@ -13,13 +13,8 @@ import {CompositeDisposable} from 'atom';
 var subscriptions: ?CompositeDisposable = null;
 
 module.exports = {
-  config: {
-    pathToBuck: {
-      type: 'string',
-      default: 'buck',
-      description: 'Absolute path to the Buck executable on your system.',
-    },
-  },
+  // $FlowIssue https://github.com/facebook/flow/issues/620
+  config: require('../package.json').nuclide.config,
 
   activate() {
     if (subscriptions) {

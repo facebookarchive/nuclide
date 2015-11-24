@@ -208,13 +208,8 @@ function isRemoteBufferInitialized(editor: TextEditor): boolean {
 
 module.exports = {
 
-  config: {
-    shutdownServerAfterDisconnection: {
-      type: 'boolean',
-      description: 'Shutdown nuclide server after all remote projects are disconnected',
-      default: true,
-    },
-  },
+  // $FlowIssue https://github.com/facebook/flow/issues/620
+  config: require('../package.json').nuclide.config,
 
   activate(state: ?{remoteProjectsConfig: SerializableRemoteConnectionConfiguration[]}): void {
     let subscriptions = new CompositeDisposable();

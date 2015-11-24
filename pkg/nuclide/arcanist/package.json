@@ -5,6 +5,16 @@
   "version": "0.0.0",
   "description": "Displays arcanist linter messages in Nuclide",
   "nuclide": {
+    "config": {
+      "blacklistedLinters": {
+        "type": "array",
+        "description": "Comma-separated list of linter names that should not be displayed",
+        "default": [],
+        "items": {
+          "type": "string"
+        }
+      }
+    },
     "packageType": "Atom",
     "testRunner": "apm"
   },

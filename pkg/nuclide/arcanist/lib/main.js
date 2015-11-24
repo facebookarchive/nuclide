@@ -30,17 +30,8 @@ function getBusySignalProvider(): BusySignalProviderBaseT {
 
 module.exports = {
 
-  config: {
-    blacklistedLinters: {
-      type: 'array',
-      description: 'Comma-separated list of linter names that should not be displayed',
-      // Flow wants this annotated.
-      default: ([]: Array<string>),
-      items: {
-        type: 'string',
-      },
-    },
-  },
+  // $FlowIssue https://github.com/facebook/flow/issues/620
+  config: require('../package.json').nuclide.config,
 
   activate(): void {
     if (subscriptions) {

@@ -6,6 +6,12 @@
   "description": "Provides support for OCaml in Nuclide",
   "activationCommands": {},
   "nuclide": {
+    "config": {
+      "pathToMerlin": {
+        "type": "string",
+        "default": "ocamlmerlin"
+      }
+    },
     "packageType": "Atom",
     "testRunner": "apm"
   },

@@ -5,6 +5,17 @@
   "version": "0.0.0",
   "description": "Provides an API to consume diagnostics.",
   "nuclide": {
+    "config": {
+      "consumeLegacyLinters": {
+        "type": "boolean",
+        "default": true
+      },
+      "legacyLintOnTheFly": {
+        "type": "boolean",
+        "default": false,
+        "description": "Used only for legacy linters"
+      }
+    },
     "packageType": "Atom",
     "testRunner": "apm"
   },

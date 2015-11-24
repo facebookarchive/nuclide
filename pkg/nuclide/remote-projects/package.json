@@ -5,6 +5,13 @@
   "version": "0.0.0",
   "description": "Manages remote projects",
   "nuclide": {
+    "config": {
+      "shutdownServerAfterDisconnection": {
+        "type": "boolean",
+        "description": "Shutdown nuclide server after all remote projects are disconnected",
+        "default": true
+      }
+    },
     "packageType": "Atom",
     "testRunner": "apm"
   },

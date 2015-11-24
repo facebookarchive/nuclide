@@ -33,33 +33,8 @@ var disposables;
 
 module.exports = {
 
-  config: {
-    pathToFlow: {
-      type: 'string',
-      default: 'flow',
-      description: 'Absolute path to the Flow executable on your system.',
-    },
-
-    enableTypeHints: {
-      type: 'boolean',
-      default: true,
-      description: 'Display tooltips with Flow types',
-    },
-
-    enableStructuredTypeHints: {
-      type: 'boolean',
-      default: false,
-      description:
-        'Show tree-structured type hints. Type hints must first be enabled. Requires Flow v0.17.0',
-    },
-
-    diagnosticsOnFly: {
-      type: 'boolean',
-      default: false,
-      title: 'Diagnostics as you type',
-      description: 'Report Flow errors and warnings as you type, rather than waiting for a save',
-    },
-  },
+  // $FlowIssue https://github.com/facebook/flow/issues/620
+  config: require('../package.json').nuclide.config,
 
   activate() {
     if (!disposables) {

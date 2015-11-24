@@ -160,18 +160,8 @@ class Activation {
 let activation: ?Activation;
 
 module.exports = {
-  config: {
-    revealFileOnSwitch: {
-      type: 'boolean',
-      default: false,
-      description: 'Automatically reveal the current file when you switch tabs',
-    },
-    hideIgnoredNames: {
-      type: 'boolean',
-      default: true,
-      description: 'Hide paths that match the "Ignored Names" under "Settings > Core Settings"',
-    },
-  },
+  // $FlowIssue https://github.com/facebook/flow/issues/620
+  config: require('../package.json').nuclide.config,
 
   activate(state: ?FileTreeControllerState): void {
     // We need to check if the package is already disabled, otherwise Atom will add it to the

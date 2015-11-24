@@ -13,38 +13,8 @@ import type {HomeFragments} from 'nuclide-home-interfaces';
 
 module.exports = {
 
-  config: {
-    scriptRegex: {
-      type: 'string',
-      default: '^(?!/var.*)',
-      description: 'Regular expression to filter connection script path.',
-    },
-
-    idekeyRegex: {
-      type: 'string',
-      default: '',
-      description: 'Regular expression to filter connection idekey. Usually your OS user id.',
-    },
-
-    xdebugPort: {
-      type: 'number',
-      default: 9000,
-      description: 'Port for DBGP connection to HHVM.'
-    },
-
-    endDebugWhenNoRequests: {
-      type: 'boolean',
-      default: false,
-      description: 'Whether or not to end debug session when there is no http requests.',
-    },
-
-    logLevel: {
-      type: 'string',
-      default: 'INFO',
-      description: 'Specify that level of logging from debugger, ' +
-        'supported values: ALL | TRACE | DEBUG | INFO | WARN | ERROR | FATAL | OFF.',
-    },
-  },
+  // $FlowIssue https://github.com/facebook/flow/issues/620
+  config: require('../package.json').nuclide.config,
 
   activate(state: mixed): void {
   },
