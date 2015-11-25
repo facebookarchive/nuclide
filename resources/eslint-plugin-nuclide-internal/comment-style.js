@@ -1,4 +1,4 @@
-'use babel';
+'use strict';
 /* @noflow */
 
 /*
@@ -9,7 +9,9 @@
  * the root directory of this source tree.
  */
 
-var whitelistedComments = [
+const DISABLE_FLAKY_RULES = true;
+
+const whitelistedComments = [
   /@flow/,
   /^\s*eslint-/,
 ];
@@ -20,7 +22,7 @@ function isWhitelisted(text) {
   });
 }
 
-var identifiers = {}
+const identifiers = {};
 
 /**
  * Often you want to reference an identifier in a comment. This allows that
@@ -49,7 +51,7 @@ module.exports = function(context) {
     }
 
     // Currently disabled due to false positives.
-    return;
+    if (DISABLE_FLAKY_RULES) { return; }
     if (isWhitelisted(node.value)) {
       return;
     }
@@ -64,10 +66,10 @@ module.exports = function(context) {
   }
 
   function checkBlockComment(node) {
-    var lines = node.value.split('\n');
+    const lines = node.value.split('\n');
     if (lines.length > 1) {
-      var firstLine = lines[0];
-      var lastLine = lines[lines.length - 1];
+      const firstLine = lines[0];
+      const lastLine = lines[lines.length - 1];
       // The first line must be empty or start with * for a docblock.
       if (firstLine !== '' && firstLine !== '*') {
         context.report(node, 'First line of multiline comment should be empty');
@@ -89,12 +91,12 @@ module.exports = function(context) {
 
   function checkDocComments(node) {
     // Currently disabled due to false positives.
-    return;
-    var leadingComments = context.getSourceCode().getComments(node).leading;
+    if (DISABLE_FLAKY_RULES) { return; }
+    const leadingComments = context.getSourceCode().getComments(node).leading;
     if (leadingComments.length > 0) {
-      var docComment = leadingComments[leadingComments.length - 1];
-      var lastCommentLine = docComment.loc.end.line;
-      var firstNodeLine = node.loc.start.line;
+      const docComment = leadingComments[leadingComments.length - 1];
+      const lastCommentLine = docComment.loc.end.line;
+      const firstNodeLine = node.loc.start.line;
       if (firstNodeLine === lastCommentLine + 1) {
         if (docComment.type !== 'Block' || docComment.value.charAt(0) !== '*') {
           context.report(docComment, 'Documentation comments should start with /**');

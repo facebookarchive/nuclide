@@ -1,0 +1,32 @@
+{
+  "name": "nuclide",
+  "version": "0.0.0",
+  "description": "A collection of packages for Atom to provide IDE-like functionality for a variety of programming languages and technologies",
+  "keywords": [
+    "atom",
+    "flow",
+    "hack",
+    "react"
+  ],
+  "homepage": "http://nuclide.io/",
+  "license": "SEE LICENSE IN LICENSE",
+  "main": "./index.js",
+  "bin": {},
+  "repository": "facebook/nuclide",
+  "scripts": {
+    "lint": "eslint",
+    "lint-all": "eslint ."
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "babel-eslint": "4.1.6",
+    "eslint": "1.10.1",
+    "eslint-plugin-babel": "2.2.0",
+    "eslint-plugin-jasmine": "1.6.0",
+    "eslint-plugin-nuclide-internal": "file:resources/eslint-plugin-nuclide-internal",
+    "eslint-plugin-react": "3.10.0"
+  },
+  "bundledDependencies": [],
+  "optionalDependencies": {},
+  "private": true
+}

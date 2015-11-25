@@ -46,6 +46,7 @@
   "plugins": [
     "babel",
     "jasmine",
+    "nuclide-internal",
     "react",
   ],
 
@@ -85,7 +86,7 @@
     "curly": 1,                      // specify curly brace conventions for all control statements
     "default-case": 0,               // require default case in switch statements (off by default)
     "dot-notation": 0,               // dot notation encouraged except for foreign properties that cannot be renamed (i.e., Closure Compiler rules)
-    "eqeqeq": 1,                     // require the use of === and !==
+    "eqeqeq": [1, "allow-null"],                     // require the use of === and !==
     "guard-for-in": 0,               // make sure for-in loops have an if statement (off by default)
     "no-alert": 1,                   // disallow the use of alert, confirm, and prompt
     "no-caller": 1,                  // disallow use of arguments.caller or arguments.callee
@@ -156,7 +157,6 @@
 
     "react/jsx-curly-spacing": [1, "never"],  // Enforce or disallow spaces inside of curly braces in JSX attributes
     "react/jsx-no-undef": 1,                  // Disallow undeclared variables in JSX
-    "react/jsx-quotes": [1, "double"],        // Enforce quote style for JSX attributes
     "react/jsx-uses-react": 1,                // Prevent React to be incorrectly marked as unused
     "react/jsx-uses-vars": 1,                 // Prevent variables used in JSX to be incorrectly marked as unused
     "react/no-unknown-property": 1,           // Prevent usage of unknown DOM property
@@ -189,6 +189,7 @@
     "no-extra-parens": [1, "functions"],  // disallow wrapping of non-IIFE statements in parens
     "no-mixed-spaces-and-tabs": 1,        // disallow mixed spaces and tabs for indentation
     "indent": [1, 2, {"SwitchCase": 1}],  // indentation should be two spaces
+    "jsx-quotes": [1, "prefer-double"],
     "quotes": [                           // enforce single quotes, allow double to avoid escaping ("don't escape" instead of 'don\'t escape')
       1, "single", "avoid-escape"
     ],
@@ -237,7 +238,7 @@
     "no-plusplus": 0,                 // disallow use of unary operators, ++ and -- (off by default)
 
   // Custom
-    "comment-style": 1,
+    "nuclide-internal/comment-style": 1,
     "babel/no-await-in-loop": 1
   }
 }
