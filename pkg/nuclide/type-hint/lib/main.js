@@ -15,11 +15,11 @@ import type {
 
 import invariant from 'assert';
 
-import type TypeHintManager from './TypeHintManager';
+import type * as TypeHintManagerT from './TypeHintManager';
 
 const {Disposable} = require('atom');
 
-let typeHintManager: ?TypeHintManager = null;
+let typeHintManager: ?TypeHintManagerT = null;
 
 module.exports = {
 
