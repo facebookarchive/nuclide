@@ -551,6 +551,8 @@ declare class atom$TextEditor extends atom$Model {
   // Indentation
   indentationForBufferRow(bufferRow: number): number;
 
+  lineTextForBufferRow(bufferRow: number): string;
+
   // Grammars
   getGrammar(): atom$Grammar;
   setGrammar(grammar: atom$Grammar): void;

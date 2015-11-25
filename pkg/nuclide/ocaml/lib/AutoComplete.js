@@ -13,8 +13,13 @@ const {getServiceByNuclideUri} = require('nuclide-client');
 
 module.exports = {
   async getAutocompleteSuggestions(
-      request: {editor: TextEditor; bufferPosition: Point; scopeDescriptor: any; prefix: string}):
-      Promise<?Array<{snippet: string; rightLabel: string}>> {
+    request: {
+      editor: atom$TextEditor,
+      bufferPosition: atom$Point,
+      scopeDescriptor: any,
+      prefix: string,
+    }
+  ): Promise<?Array<{snippet: string; rightLabel: string}>> {
 
     const {editor, prefix} = request;
 

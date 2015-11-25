@@ -36,7 +36,9 @@
     "nuclide-client": "0.0.0",
     "nuclide-commons": "0.0.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "hyperclick-interfaces": "0.0.0"
+  },
   "_atomModuleCache": {
     "extensions": {
       ".node": []

@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {HyperclickSuggestion} from 'hyperclick-interfaces';
+
 const GRAMMARS = new Set([
   'source.ocaml',
 ]);
@@ -20,7 +22,11 @@ const EXTENSIONS = new Set([
 module.exports = {
   priority: 20,
   providerName: 'nuclide-ocaml',
-  async getSuggestionForWord(textEditor: TextEditor, text: string, range: atom$Range) {
+  async getSuggestionForWord(
+    textEditor: atom$TextEditor,
+    text: string,
+    range: atom$Range
+  ): Promise<?HyperclickSuggestion> {
     const {getServiceByNuclideUri} = require('nuclide-client');
 
     if (!GRAMMARS.has(textEditor.getGrammar().scopeName)) {
@@ -28,6 +34,10 @@ module.exports = {
     }
 
     const file = textEditor.getPath();
+
+    if (file == null) {
+      return null;
+    }
 
     let kind = 'ml';
     const extension = require('path').extname(file);
