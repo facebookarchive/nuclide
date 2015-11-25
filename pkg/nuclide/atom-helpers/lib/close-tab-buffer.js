@@ -12,7 +12,6 @@ function closeTabForBuffer(buffer: atom$TextBuffer) {
   atom.workspace.getPanes().forEach((pane) => {
     pane.getItems().forEach((item) => {
       if (item.buffer === buffer) {
-        // $FlowFixMe: Not a public method in Atom.
         pane.removeItem(item);
       }
     });

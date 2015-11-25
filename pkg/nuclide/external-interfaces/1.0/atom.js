@@ -239,6 +239,7 @@ type atom$PaneSplitParams = {
 
 declare class atom$Pane {
   // Items
+  addItem(item: Object, index: number): Object;
   getItems(): Array<Object>;
   getActiveItem(): ?Object;
   itemAtIndex(index: number): ?Object;
@@ -258,6 +259,10 @@ declare class atom$Pane {
   splitRight(params?: atom$PaneSplitParams): atom$Pane;
   splitUp(params?: atom$PaneSplitParams): atom$Pane;
   splitDown(params?: atom$PaneSplitParams): atom$Pane;
+
+  // Undocumented Methods
+  removeItem(item: Object, moved: ?boolean): void;
+  setActiveItem(item: Object): Object;
 }
 
 declare class atom$Panel {
@@ -655,6 +660,7 @@ declare class atom$Workspace {
   onDidChangeActivePaneItem(callback: (item: mixed) => mixed): atom$Disposable;
   onDidDestroyPaneItem(callback: (event: mixed) => mixed): atom$Disposable;
   observeActivePaneItem(callback: (item: mixed) => mixed): atom$Disposable;
+  observePaneItems(callback: (item: mixed) => mixed): atom$Disposable;
   onWillDestroyPaneItem(
     callback: (event: {item: mixed, pane: mixed, index: number}) => mixed
   ): atom$Disposable;
