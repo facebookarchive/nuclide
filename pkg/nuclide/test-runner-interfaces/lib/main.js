@@ -76,3 +76,7 @@ export type ErrorMessage = {
 
 export type Message = StartMessage | SummaryMessage |
     RunTestMessage | StderrMessage | StdoutMessage | ErrorMessage;
+
+export type TestRunner = {
+  label: string;
+};

@@ -9,13 +9,13 @@
  * the root directory of this source tree.
  */
 
-import type TestRunner from '../lib/TestRunner';
+import type {TestRunner} from 'nuclide-test-runner-interfaces';
 
 const TestRunnerController = require('../lib/TestRunnerController');
 
 describe('TestRunnerController', () => {
 
-  let testRunners: Set<TestRunner>;
+  let testRunners: Set<TestRunner> = (null: any);
 
   beforeEach(() => {
     testRunners = new Set();

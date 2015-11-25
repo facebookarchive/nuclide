@@ -11,10 +11,12 @@
 
 const Ansi = require('./Ansi');
 
+import type {TestRunStatus} from 'nuclide-test-runner-interfaces';
+
 /**
  * Status codes returned in the "status" field of the testing utility's JSON response.
  */
-const Status: {[key: string]: number} = {
+const Status: {[key: string]: TestRunStatus} = {
   PASSED: 1,
   FAILED: 2,
   SKIPPED: 3,
@@ -22,14 +24,14 @@ const Status: {[key: string]: number} = {
   TIMEOUT: 5,
 };
 
-const StatusSymbol: {[key: $Keys<typeof Status>]: string} = {};
+const StatusSymbol: {[key: TestRunStatus]: string} = {};
 StatusSymbol[Status.PASSED] = `${Ansi.GREEN}✓${Ansi.RESET}`;
 StatusSymbol[Status.FAILED] = `${Ansi.RED}✗${Ansi.RESET}`;
 StatusSymbol[Status.SKIPPED] = `${Ansi.YELLOW}?${Ansi.RESET}`;
 StatusSymbol[Status.FATAL] = `${Ansi.RED}✘${Ansi.RESET}`;
 StatusSymbol[Status.TIMEOUT] = `${Ansi.BLUE}✉${Ansi.RESET}`;
 
-const StatusMessage: {[key: $Keys<typeof Status>]: string} = {};
+const StatusMessage: {[key: TestRunStatus]: string} = {};
 StatusMessage[Status.PASSED] = `${Ansi.GREEN}(PASS)${Ansi.RESET}`;
 StatusMessage[Status.FAILED] = `${Ansi.RED}(FAIL)${Ansi.RESET}`;
 StatusMessage[Status.SKIPPED] = `${Ansi.YELLOW}(SKIP)${Ansi.RESET}`;
@@ -38,7 +40,7 @@ StatusMessage[Status.TIMEOUT] = `${Ansi.BLUE}(TIMEOUT)${Ansi.RESET}`;
 
 class TestRunModel {
 
-  static Status: {[key: string]: number};
+  static Status: {[key: string]: TestRunStatus};
 
   startTime: ?number;
   endTime: ?number;
@@ -68,7 +70,7 @@ class TestRunModel {
    * @return A summary of the test run including its name, its duration, and whether it passed,
    * failed, skipped, etc.
    */
-  static formatStatusMessage(name: string, duration: number, status: $Keys<typeof Status>): string {
+  static formatStatusMessage(name: string, duration: number, status: TestRunStatus): string {
     const durationStr = duration.toFixed(3);
     return `      ${StatusSymbol[status]} ${name} ${durationStr}s ${StatusMessage[status]}`;
   }

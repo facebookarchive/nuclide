@@ -42,7 +42,6 @@
 .*/pkg/nuclide/server/.*
 .*/pkg/nuclide/service/monitor/.*
 .*/pkg/nuclide/ssh-dialog/.*
-.*/pkg/nuclide/test-runner/.*
 .*/pkg/nuclide/toolbar/.*
 .*/pkg/nuclide/ui/mutable-list-selector/.*
 .*/pkg/nuclide/ui/radiogroup/.*

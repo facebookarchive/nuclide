@@ -18,19 +18,21 @@ describe('TestSuiteModel', () => {
   ];
 
   const badTestRun = {
-    duration: 0.1,
+    durationSecs: 0.1,
     name: 'foo',
     numAssertions: 1,
     numFailures: 0,
+    numMethods: 1,
     numSkipped: 0,
     status: 3,
   };
 
   const goodTestRun = {
-    duration: 1.1,
+    durationSecs: 1.1,
     name: 'foo',
     numAssertions: 1,
     numFailures: 0,
+    numMethods: 1,
     numSkipped: 0,
     status: 2,
     test_json: testClassSummaries[0],

@@ -66,7 +66,7 @@ class Activation {
         '.entry.file.list-item',
         'nuclide-test-runner:run-tests',
         (event) => {
-          const target = event.currentTarget.querySelector('.name');
+          const target = ((event.currentTarget: any): HTMLElement).querySelector('.name');
           this._controller.runTests(target.dataset.path);
         }
       )
@@ -77,7 +77,7 @@ class Activation {
         '.entry.directory.list-item',
         'nuclide-test-runner:run-tests',
         (event) => {
-          const target = event.currentTarget.querySelector('.name');
+          const target = ((event.currentTarget: any): HTMLElement).querySelector('.name');
           this._controller.runTests(target.dataset.path);
         }
       )

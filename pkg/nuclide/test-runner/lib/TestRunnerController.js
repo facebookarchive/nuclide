@@ -9,13 +9,13 @@
  * the root directory of this source tree.
  */
 
-import type {TestRunner, Message} from './main';
+import type {TestRunner, Message} from 'nuclide-test-runner-interfaces';
+import type {NuclideUri} from 'nuclide-remote-uri';
+import type {Observable} from 'rx';
+import invariant from 'assert';
 
 const Ansi = require('./Ansi');
-const {
-  CompositeDisposable,
-  TextBuffer,
-} = require('atom');
+const {TextBuffer} = require('atom');
 const React = require('react-for-atom');
 const TestRunModel = require('./TestRunModel');
 const TestRunnerPanel = require('./ui/TestRunnerPanel');
@@ -50,7 +50,11 @@ class TestRunnerController {
   stopTests: Function;
   _handleClickRun: Function;
 
-  constructor(state: ?TestRunnerControllerState = {}, testRunners: Set<TestRunner>) {
+  constructor(state: ?TestRunnerControllerState, testRunners: Set<TestRunner>) {
+    if (state == null) {
+      state = {};
+    }
+
     this._state = {
       panelVisible: state.panelVisible,
     };
@@ -58,7 +62,7 @@ class TestRunnerController {
     // TODO: Use the ReadOnlyTextBuffer class from nuclide-atom-text-editor when it is exported.
     this._buffer = new TextBuffer();
     // Make `delete` a no-op to effectively create a read-only buffer.
-    this._buffer.delete = () => {};
+    (this._buffer: Object).delete = () => {};
 
     this._executionState = TestRunnerPanel.ExecutionState.STOPPED;
     this._testRunners = testRunners;
@@ -143,10 +147,11 @@ class TestRunnerController {
 
       // If the active text editor has no path, bail because there's nowhere to run tests.
       testPath = activeTextEditor.getPath();
-      if (!testPath) {
-        logger.warn('Attempted to run tests on an editor with no path.');
-        return;
-      }
+    }
+
+    if (!testPath) {
+      logger.warn('Attempted to run tests on an editor with no path.');
+      return;
     }
 
     this.clearOutput();
@@ -336,11 +341,13 @@ class TestRunnerController {
         const dispose = this._run.dispose;
         this._run.dispose = null;
         this._run.stop();
+        invariant(this._run); // Calling `stop()` should never null the `_run` property.
         track('testrunner-stop-tests', {
           testRunner: this._run.label,
         });
         dispose();
       } catch (e) {
+        invariant(this._run); // Nothing in the try block should ever null the `_run` property.
         // If the remote connection goes away, it won't be possible to stop tests. Log an error and
         // proceed as usual.
         logger.error(`Error when stopping test run #'${this._run.label}: ${e}`);

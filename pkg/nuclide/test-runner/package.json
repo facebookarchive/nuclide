@@ -45,7 +45,8 @@
   "devDependencies": {
     "nuclide-home-interfaces": "0.0.0",
     "nuclide-remote-uri": "0.0.0",
-    "nuclide-test-runner-interfaces": "0.0.0"
+    "nuclide-test-runner-interfaces": "0.0.0",
+    "rx": "3.1.1"
   },
   "_atomModuleCache": {
     "extensions": {
