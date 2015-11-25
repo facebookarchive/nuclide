@@ -20,4 +20,4 @@ if [[ $shacode -ne 0 ]] ; then
   shasum package.json > $SUMFILE
 fi
 
-node "$BASE_DIR/node_modules/.bin/eslint" --config "$BASE_DIR/.eslintrc" "$@"
+node --harmony "$BASE_DIR/node_modules/.bin/eslint" --config "$BASE_DIR/.eslintrc" "$@"
