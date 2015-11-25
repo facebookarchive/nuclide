@@ -35,7 +35,6 @@
 .*/pkg/nuclide/hack-symbol-provider/.*
 .*/pkg/nuclide/hack/.*
 .*/pkg/nuclide/hg-repository/.*
-.*/pkg/nuclide/language-hack/.*
 .*/pkg/nuclide/ocaml/.*
 .*/pkg/nuclide/quick-open/.*
 .*/pkg/nuclide/remote-connection/.*

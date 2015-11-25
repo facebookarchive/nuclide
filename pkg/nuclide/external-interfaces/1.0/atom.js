@@ -815,7 +815,13 @@ declare class atom$GitRepository extends atom$Repository {
 declare class atom$Grammar {
   name: string;
   scopeName: string;
+  tokenizeLines(text: string): Array<Array<atom$GrammarToken>>;
 }
+
+type atom$GrammarToken = {
+  value: string;
+  scopes: Array<string>;
+};
 
 declare class atom$GrammarRegistry {
   // Event Subscription

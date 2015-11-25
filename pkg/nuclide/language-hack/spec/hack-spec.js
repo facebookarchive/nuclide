@@ -1,12 +1,18 @@
 'use babel';
 /* @flow */
 
+import invariant from 'assert';
+
 describe('PHP grammar', () => {
-  let grammar = null;
+  let grammar: atom$Grammar = (null: any);
 
   beforeEach(() => {
     waitsForPromise(() => atom.packages.activatePackage('nuclide-language-hack'));
-    runs(() => grammar = atom.grammars.grammarForScopeName('text.html.hack'));
+    runs(() => {
+      const hackGrammar = atom.grammars.grammarForScopeName('text.html.hack');
+      invariant(hackGrammar);
+      grammar = hackGrammar;
+    });
   });
 
   it('parses the grammar', () => {
