@@ -20,7 +20,6 @@ import type {
   HackSymbolNameResult,
   HackReferencesResult,
 } from 'nuclide-hack-base/lib/types';
-import type NuclideClient from 'nuclide-server/lib/NuclideClient';
 
 import {parse, createRemoteUri, getPath} from 'nuclide-remote-uri';
 import {getHackService} from './utils';
@@ -49,7 +48,6 @@ module.exports = class HackLanguage {
 
   _hhAvailable: boolean;
   _hackWorker: HackWorker;
-  _client: ?NuclideClient;
   _pathContentsMap: Map<string, string>;
   _basePath: ?string;
   _initialFileUri: NuclideUri;

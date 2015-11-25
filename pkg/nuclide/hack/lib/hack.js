@@ -13,14 +13,13 @@ import type {HackReference} from 'nuclide-hack-base/lib/types';
 import type {HackDiagnosticItem} from './types';
 
 import invariant from 'assert';
-import {getClient, getFileSystemServiceByNuclideUri} from 'nuclide-client';
 import {extractWordAtPosition} from 'nuclide-atom-helpers';
 import HackLanguage from './HackLanguage';
-import {getPath} from 'nuclide-remote-uri';
+import {getPath, isRemote} from 'nuclide-remote-uri';
 import {Range} from 'atom';
-import pathUtil from 'path';
 import {SymbolType} from 'nuclide-hack-common';
 import {getHackService} from './utils';
+import {RemoteConnection} from 'nuclide-remote-connection';
 
 const HACK_WORD_REGEX = /[a-zA-Z0-9_$]+/g;
 
@@ -31,12 +30,20 @@ const SYMBOL_TYPES_WITH_REFERENCES = new Set([
   SymbolType.METHOD,
 ]);
 
+
 /**
  * This is responsible for managing (creating/disposing) multiple HackLanguage instances,
  * creating the designated HackService instances with the NuclideClient it needs per remote project.
  * Also, it deelegates the language feature request to the correct HackLanguage instance.
  */
-const clientToHackLanguage: {[clientId: string]: HackLanguage} = {};
+const uriToHackLanguage: Map<string, HackLanguage> = new Map();
+
+// dummy key into uriToHackLanguage for local projects.
+// Any non-remote NuclideUri will do.
+// TODO: I suspect we should key the local service off of the presence of a .hhconfig file
+// rather than having a single HackLanguage for all local requests. Regardless, we haven't tested
+// local hack services so save that for another day.
+const LOCAL_URI_KEY = 'local-hack-key';
 
 module.exports = {
 
@@ -238,41 +245,41 @@ module.exports = {
   getCachedHackLanguageForUri,
 };
 
+// Returns null if we can't get the key at this time because the RemoteConnection is initializing.
+// This can happen on startup when reloading remote files.
+function getKeyOfUri(uri: NuclideUri): ?string {
+  const remoteConnection = RemoteConnection.getForUri(uri);
+  return remoteConnection == null ?
+    (isRemote(uri) ? null : LOCAL_URI_KEY) :
+    remoteConnection.getUriForInitialWorkingDirectory();
+}
+
 function getCachedHackLanguageForUri(uri: NuclideUri): ?HackLanguage {
-  const client = getClient(uri);
-  if (!client) {
-    return null;
-  }
-  return clientToHackLanguage[client.getID()];
+  const key = getKeyOfUri(uri);
+  return key == null ? null : uriToHackLanguage.get();
 }
 
 function getHackLanguageForUri(uri: NuclideUri): Promise<?HackLanguage> {
-  // `getClient` can return null if a file path doesn't have a root directory in the tree.
-  // Also, returns null when reloading Atom with open files, while the RemoteConnection creation is pending.
-  const client = getClient(uri);
-  if (!client) {
+  const key = getKeyOfUri(uri);
+  if (key == null) {
     return null;
   }
-  return createHackLanguageIfNotExisting(client, uri);
+  return createHackLanguageIfNotExisting(key, uri);
 }
 
 async function createHackLanguageIfNotExisting(
-  client: NuclideClient,
+  key: string,
   fileUri: NuclideUri,
 ): Promise<HackLanguage> {
-  const clientId = client.getID();
-  if (clientToHackLanguage[clientId]) {
-    return clientToHackLanguage[clientId];
-  }
+  if (!uriToHackLanguage.has(key)) {
+    const hackEnvironment = await getHackService(fileUri).getHackEnvironmentDetails(fileUri);
+    const isHHAvailable = hackEnvironment != null;
+    const {hackRoot} = hackEnvironment || {};
 
-  const hackEnvironment = await getHackService(fileUri).getHackEnvironmentDetails(fileUri);
-  const isHHAvailable = hackEnvironment != null;
-  const {hackRoot} = hackEnvironment || {};
-
-  // If multiple calls were done asynchronously, then return the single-created HackLanguage.
-  if (clientToHackLanguage[clientId]) {
-    return clientToHackLanguage[clientId];
+    // If multiple calls were done asynchronously, then return the single-created HackLanguage.
+    if (!uriToHackLanguage.has(key)) {
+      uriToHackLanguage.set(key, new HackLanguage(isHHAvailable, hackRoot, fileUri));
+    }
   }
-  clientToHackLanguage[clientId] = new HackLanguage(isHHAvailable, hackRoot, fileUri);
-  return clientToHackLanguage[clientId];
+  return uriToHackLanguage.get(key);
 }
