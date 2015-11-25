@@ -9,7 +9,34 @@
  * the root directory of this source tree.
  */
 
-function sortByKeys(path: Path): Node {
+// $UPFixMe: Once the scripts have access to node_modules, we can get some of these (Node, NodePath)
+//           from the ast-types-flow package.
+
+type FileInfo = {
+  path: string;
+  source: string;
+};
+
+type Node = {
+  value: Object,
+};
+
+type NodePath = {
+  node: Node;
+};
+
+type jscodeshift = {
+  (source: string): Object;
+  find(type: Node): jscodeshift;
+  replaceWith(nodes: Node): jscodeshift;
+  Property: Node;
+};
+
+type Api = {
+  jscodeshift: jscodeshift;
+};
+
+function sortByKeys(path: NodePath): Node {
   const {node} = path;
   node.value.properties.sort((one, two) => {
     return one.key.value.localeCompare(two.key.value);
@@ -17,8 +44,8 @@ function sortByKeys(path: Path): Node {
   return node;
 }
 
-module.exports = function(file, api) {
-  const jsonSource = file.source;
+module.exports = function(fileInfo: FileInfo, api: Api): string {
+  const jsonSource = fileInfo.source;
   // Make JSON valid JavaScript input for jscodeshift by wrapping it in parentheses.
   const jsSource = '(' + jsonSource + ')';
   const root = api.jscodeshift(jsSource);

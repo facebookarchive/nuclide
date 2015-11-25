@@ -18,10 +18,3 @@ Nuclide debugger type declarations for use with the Flow type checker.
     ```sh
     ./scripts/dev/setup
     ```
-
-3. Reference the interfaces in the local `.flowconfig`:
-
-    ```
-    [libs]
-    ./node_modules/nuclide-debugger-interfaces/
-    ```
