@@ -72,7 +72,7 @@ export default class NuclideMutableListSelector
     this.props.onItemClicked(itemId);
   }
 
-  render() {
+  render(): ?ReactElement {
     const listItems = [];
     for (const item of this.props.items) {
       (item : NuclideListSelectorItem);

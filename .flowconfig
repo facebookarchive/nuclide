@@ -43,8 +43,6 @@
 .*/pkg/nuclide/service/monitor/.*
 .*/pkg/nuclide/ssh-dialog/.*
 .*/pkg/nuclide/toolbar/.*
-.*/pkg/nuclide/ui/mutable-list-selector/.*
-.*/pkg/nuclide/ui/radiogroup/.*
 .*/pkg/sample/diagnostics-provider/.*
 .*/pkg/sample/quickopen-provider-example/.*
 .*/pkg/sample/web-view/.*
