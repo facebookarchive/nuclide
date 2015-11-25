@@ -16,6 +16,8 @@ import type {
 
 const {BLAME_DECORATION_CLASS} = require('./constants');
 import {track, trackTiming} from 'nuclide-analytics';
+import {CompositeDisposable} from 'atom';
+
 const BLAME_GUTTER_DEFAULT_WIDTH = 50;
 const LOADING_SPINNER_ID = 'blame-loading-spinner';
 const MS_TO_WAIT_BEFORE_SPINNER = 2000;
@@ -33,6 +35,8 @@ export default class {
   _loadingSpinnerDiv: ?HTMLElement;
   _loadingSpinnerTimeoutId: number;
   _isDestroyed: boolean;
+  _isEditorDestroyed: boolean;
+  _subscriptions: CompositeDisposable;
 
   /**
    * @param gutterName A name for this gutter. Must not be used by any another
@@ -43,7 +47,9 @@ export default class {
    */
   constructor(gutterName: string, editor: atom$TextEditor, blameProvider: BlameProvider) {
     this._isDestroyed = false;
+    this._isEditorDestroyed = false;
 
+    this._subscriptions = new CompositeDisposable();
     this._editor = editor;
     this._blameProvider = blameProvider;
     this._changesetSpanClassName = CHANGESET_CSS_CLASS;
@@ -59,9 +65,14 @@ export default class {
       const onClick = this._onClick.bind(this);
       const gutterView: HTMLElement = atom.views.getView(this._gutter);
       gutterView.addEventListener('click', onClick);
-      this._gutter.onDidDestroy(() => gutterView.removeEventListener('click', onClick));
+      this._subscriptions.add(this._gutter.onDidDestroy(
+          () => gutterView.removeEventListener('click', onClick)
+      ));
     }
 
+    this._subscriptions.add(editor.onDidDestroy(() => {
+      this._isEditorDestroyed = true;
+    }));
     this._fetchAndDisplayBlame();
   }
 
@@ -75,12 +86,15 @@ export default class {
       return;
     }
 
-    const changeset = target.dataset[HG_CHANGESET_DATA_ATTRIBUTE];
+    const dataset: {[key: string]: string} = (target: any).dataset;
+    const changeset = dataset[HG_CHANGESET_DATA_ATTRIBUTE];
     if (!changeset) {
       return;
     }
 
-    const url = await this._blameProvider.getUrlForRevision(this._editor, changeset);
+    const blameProvider = this._blameProvider;
+    invariant(typeof blameProvider.getUrlForRevision === 'function');
+    const url = await blameProvider.getUrlForRevision(this._editor, changeset);
     if (url) {
       // Note that 'shell' is not the public 'shell' package on npm but an Atom built-in.
       require('shell').openExternal(url);
@@ -89,8 +103,8 @@ export default class {
     }
 
     track('blame-gutter-click-revision', {
-      editorPath: this._editor.getPath(),
-      url,
+      editorPath: this._editor.getPath() || '',
+      url: url || '',
     });
   }
 
@@ -138,7 +152,7 @@ export default class {
   destroy(): void {
     this._isDestroyed = true;
     this._cleanUpLoadingSpinner();
-    if (!this._editor.isDestroyed()) {
+    if (!this._isEditorDestroyed) {
       // Due to a bug in the Gutter API, destroying a Gutter after the editor
       // has been destroyed results in an exception.
       this._gutter.destroy();

@@ -141,6 +141,7 @@ declare class atom$Emitter {
 }
 
 declare class atom$Gutter {
+  name: string;
   destroy(): void;
   decorateMarker(
     marker: atom$Marker,
@@ -627,6 +628,7 @@ declare class atom$ViewRegistry {
   ): atom$Disposable;
   getView(textEditor: atom$TextEditor): atom$TextEditorElement;
   getView(notification: atom$Notification): HTMLElement;
+  getView(gutter: atom$Gutter): HTMLElement;
   getView(object: Object): HTMLElement;
   providers: Array<atom$ViewProvider>;
 }
