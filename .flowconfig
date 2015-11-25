@@ -17,7 +17,6 @@
 .*/pkg/nuclide/arcanist/.*
 .*/pkg/nuclide/blame-provider-hg/.*
 .*/pkg/nuclide/blame-ui/.*
-.*/pkg/nuclide/blame/.*
 .*/pkg/nuclide/buck/commons/.*
 .*/pkg/nuclide/buck/files/.*
 .*/pkg/nuclide/buck/toolbar/.*
