@@ -37,7 +37,6 @@
 .*/pkg/nuclide/hack-symbol-provider/.*
 .*/pkg/nuclide/hack/.*
 .*/pkg/nuclide/hg-git-bridge/.*
-.*/pkg/nuclide/hg-repository-client/.*
 .*/pkg/nuclide/hg-repository/.*
 .*/pkg/nuclide/language-hack/.*
 .*/pkg/nuclide/ocaml/.*

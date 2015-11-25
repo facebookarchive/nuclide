@@ -76,6 +76,8 @@ function filterForAllStatues() {
  * in addition to providing asynchronous methods for some getters.
  */
 
+import type {NuclideUri} from 'nuclide-remote-uri';
+
 export default class HgRepositoryClient {
   _path: string;
   _workingDirectory: atom$Directory;
@@ -84,7 +86,7 @@ export default class HgRepositoryClient {
   _service: HgService;
   _emitter: Emitter;
   // A map from a key (in most cases, a file path), to a related Disposable.
-  _disposables: {[key: string]: atom$Disposable};
+  _disposables: {[key: string]: atom$IDisposable};
   _hgStatusCache: {[filePath: NuclideUri]: StatusCodeIdValue};
   // Map of directory path to the number of modified files within that directory.
   _modifiedDirectoryCache: Map<string, number>;
@@ -114,31 +116,26 @@ export default class HgRepositoryClient {
     this._hgDiffCache = {};
     this._hgDiffCacheFilesUpdating = new Set();
     this._hgDiffCacheFilesToClear = new Set();
-    this._disposables[EDITOR_SUBSCRIPTION_NAME] =
-        (atom.workspace.observeTextEditors((editor: atom$TextEditor) => {
-          if (!editor.getPath()) {
+    this._disposables[EDITOR_SUBSCRIPTION_NAME] = atom.workspace.observeTextEditors(editor => {
+      const filePath = editor.getPath();
+      if (!filePath) {
         // TODO: observe for when this editor's path changes.
-            return;
-          }
-
-          if (!this._isPathRelevant(editor.getPath())) {
-            return;
-          }
-
-          const filePath = editor.getPath();
+        return;
+      }
+      if (!this._isPathRelevant(filePath)) {
+        return;
+      }
       // If this editor has been previously active, we will have already
       // initialized diff info and registered listeners on it.
-          if (this._disposables[filePath]) {
-            return;
-          }
-
+      if (this._disposables[filePath]) {
+        return;
+      }
       // TODO (t8227570) Get initial diff stats for this editor, and refresh
       // this information whenever the content of the editor changes.
-
-          this._disposables[filePath] = new CompositeDisposable();
-          this._disposables[filePath].add(editor.onDidSave((event) => {
-            this._updateDiffInfo([event.path]);
-          }));
+      const editorSubscriptions = this._disposables[filePath] = new CompositeDisposable();
+      editorSubscriptions.add(editor.onDidSave(event => {
+        this._updateDiffInfo([event.path]);
+      }));
       // Remove the file from the diff stats cache when the editor is closed.
       // This isn't strictly necessary, but keeps the cache as small as possible.
       // There are cases where this removal may result in removing information
@@ -147,12 +144,12 @@ export default class HgRepositoryClient {
       //   * if the file is open in multiple editors, and one of those is closed.
       // These are probably edge cases, though, and the information will be
       // refetched the next time the file is edited.
-          this._disposables[filePath].add(editor.onDidDestroy(() => {
-            this._hgDiffCacheFilesToClear.add(filePath);
-            this._disposables[filePath].dispose();
-            delete this._disposables[filePath];
-          }));
-        }));
+      editorSubscriptions.add(editor.onDidDestroy(() => {
+        this._hgDiffCacheFilesToClear.add(filePath);
+        this._disposables[filePath].dispose();
+        delete this._disposables[filePath];
+      }));
+    });
 
     // Get updates that tell the HgRepositoryClient when to clear its caches.
     this._service.observeFilesDidChange().subscribe(this._filesDidChange.bind(this));
@@ -169,7 +166,6 @@ export default class HgRepositoryClient {
   destroy() {
     this._emitter.emit('did-destroy');
     this._emitter.dispose();
-    this._emitter = null;
     Object.keys(this._disposables).forEach((key) => {
       this._disposables[key].dispose();
     });
@@ -226,19 +222,19 @@ export default class HgRepositoryClient {
     return true;
   }
 
-  relativize(filePath: string): string {
+  relativize(filePath: NuclideUri): string {
     return this._workingDirectory.relativize(filePath);
   }
 
   // TODO This is a stub.
-  hasBranch(branch: string) {
+  hasBranch(branch: string): boolean {
     return false;
   }
 
   /**
    * @return The current Hg bookmark.
    */
-  getShortHead(filePath): string {
+  getShortHead(filePath: NuclideUri): string {
     if (!this._currentBookmark) {
       // Kick off a fetch to get the current bookmark. This is async.
       this.fetchCurrentBookmark();
@@ -248,17 +244,17 @@ export default class HgRepositoryClient {
   }
 
   // TODO This is a stub.
-  isSubmodule(path) {
+  isSubmodule(path: NuclideUri): boolean {
     return false;
   }
 
   // TODO This is a stub.
-  getAheadBehindCount(reference, path) {
+  getAheadBehindCount(reference: string, path: NuclideUri): number {
     return 0;
   }
 
   // TODO This is a stub.
-  getCachedUpstreamAheadBehindCount(path) {
+  getCachedUpstreamAheadBehindCount(path: ?NuclideUri): {ahead: number; behind: number;} {
     return {
       ahead: 0,
       behind: 0,
@@ -280,7 +276,9 @@ export default class HgRepositoryClient {
   }
 
   // TODO This is a stub.
-  getReferences(path: ?string) {
+  getReferences(
+    path: ?NuclideUri,
+  ): {heads: Array<string>; remotes: Array<string>; tags: Array<string>;} {
     return {
       heads: [],
       remotes: [],
@@ -289,7 +287,7 @@ export default class HgRepositoryClient {
   }
 
   // TODO This is a stub.
-  getReferenceTarget(reference: string, path: ?string) {
+  getReferenceTarget(reference: string, path: ?NuclideUri): ?string {
     return null;
   }
 
@@ -302,7 +300,7 @@ export default class HgRepositoryClient {
 
   // TODO (jessicalin) Can we change the API to make this method return a Promise?
   // If not, might need to do a synchronous `hg status` query.
-  isPathModified(filePath: string): boolean {
+  isPathModified(filePath: ?NuclideUri): boolean {
     if (!filePath) {
       return false;
     }
@@ -316,7 +314,7 @@ export default class HgRepositoryClient {
 
   // TODO (jessicalin) Can we change the API to make this method return a Promise?
   // If not, might need to do a synchronous `hg status` query.
-  isPathNew(filePath: string): boolean {
+  isPathNew(filePath: ?NuclideUri): boolean {
     if (!filePath) {
       return false;
     }
@@ -331,7 +329,7 @@ export default class HgRepositoryClient {
   // TODO (jessicalin) Can we change the API to make this method return a Promise?
   // If not, this method lies a bit by using cached information.
   // TODO (jessicalin) Make this work for ignored directories.
-  isPathIgnored(filePath: string): boolean {
+  isPathIgnored(filePath: ?NuclideUri): boolean {
     if (!filePath) {
       return false;
     }
@@ -346,10 +344,7 @@ export default class HgRepositoryClient {
   /**
    * Checks if the given path is within the repo directory (i.e. `.hg/`).
    */
-  _isPathWithinHgRepo(filePath: string): boolean {
-    if (!filePath) {
-      return false;
-    }
+  _isPathWithinHgRepo(filePath: NuclideUri): boolean {
     return (filePath === this.getPath()) || (filePath.indexOf(this.getPath() + '/') === 0);
   }
 
@@ -357,7 +352,7 @@ export default class HgRepositoryClient {
    * Checks whether a path is relevant to this HgRepositoryClient. A path is
    * defined as 'relevant' if it is within the project directory opened within the repo.
    */
-  _isPathRelevant(filePath: string): boolean {
+  _isPathRelevant(filePath: NuclideUri): boolean {
     return this._projectDirectory.contains(filePath) ||
            (this._projectDirectory.getPath() === filePath);
   }
@@ -378,11 +373,11 @@ export default class HgRepositoryClient {
   }
 
   // We don't want to do any synchronous 'hg status' calls. Just use cached values.
-  getPathStatus(filePath: string): StatusCodeNumberValue {
+  getPathStatus(filePath: NuclideUri): StatusCodeNumberValue {
     return this.getCachedPathStatus(filePath);
   }
 
-  getCachedPathStatus(filePath: string): StatusCodeNumberValue {
+  getCachedPathStatus(filePath: ?NuclideUri): StatusCodeNumberValue {
     if (!filePath) {
       return StatusCodeNumber.CLEAN;
     }
@@ -393,7 +388,7 @@ export default class HgRepositoryClient {
     return StatusCodeNumber.CLEAN;
   }
 
-  getAllPathStatuses(): {[filePath: string]: StatusCodeNumberValue} {
+  getAllPathStatuses(): {[filePath: NuclideUri]: StatusCodeNumberValue} {
     const pathStatuses = Object.create(null);
     for (const filePath in this._hgStatusCache) {
       pathStatuses[filePath] = StatusCodeIdToNumber[this._hgStatusCache[filePath]];
@@ -401,7 +396,7 @@ export default class HgRepositoryClient {
     return pathStatuses;
   }
 
-  isStatusModified(status: number): boolean {
+  isStatusModified(status: ?number): boolean {
     return (
       status === StatusCodeNumber.MODIFIED ||
       status === StatusCodeNumber.MISSING ||
@@ -409,7 +404,7 @@ export default class HgRepositoryClient {
     );
   }
 
-  isStatusNew(status: number): boolean {
+  isStatusNew(status: ?number): boolean {
     return (
       status === StatusCodeNumber.ADDED ||
       status === StatusCodeNumber.UNTRACKED
@@ -550,7 +545,7 @@ export default class HgRepositoryClient {
     return statusMapPathToStatusId;
   }
 
-  _addAllParentDirectoriesToCache(filePath: string) {
+  _addAllParentDirectoriesToCache(filePath: NuclideUri) {
     addAllParentDirectoriesToCache(
       this._modifiedDirectoryCache,
       filePath,
@@ -558,7 +553,7 @@ export default class HgRepositoryClient {
     );
   }
 
-  _removeAllParentDirectoriesFromCache(filePath: string) {
+  _removeAllParentDirectoriesFromCache(filePath: NuclideUri) {
     removeAllParentDirectoriesFromCache(
       this._modifiedDirectoryCache,
       filePath,
@@ -592,7 +587,7 @@ export default class HgRepositoryClient {
    *
    */
 
-  getDiffStats(filePath: string): {added: number; deleted: number;} {
+  getDiffStats(filePath: ?NuclideUri): {added: number; deleted: number;} {
     const cleanStats = {added: 0, deleted: 0};
     if (!filePath) {
       return cleanStats;
@@ -611,7 +606,7 @@ export default class HgRepositoryClient {
   // TODO (jessicalin) Export the LineDiff type (from hg-output-helpers) when
   // types can be exported.
   // TODO (jessicalin) Make this method work with the passed-in `text`. t6391579
-  getLineDiffs(filePath: string, text: string): Array<LineDiff> {
+  getLineDiffs(filePath: ?NuclideUri, text: ?string): Array<LineDiff> {
     if (!filePath) {
       return [];
     }
@@ -631,7 +626,7 @@ export default class HgRepositoryClient {
    * @param path The file path to get the status for. If a path is not in the
    *   project, default "clean" stats will be returned.
    */
-  async getDiffStatsForPath(filePath: string): Promise<{added: number; deleted: number;}> {
+  async getDiffStatsForPath(filePath: NuclideUri): Promise<{added: number; deleted: number;}> {
     const cleanStats = {added: 0, deleted: 0};
     if (!filePath) {
       return cleanStats;
@@ -658,7 +653,7 @@ export default class HgRepositoryClient {
    * @param path The absolute file path to get the line diffs for. If the path \
    *   is not in the project, an empty Array will be returned.
    */
-  async getLineDiffsForPath(filePath: string): Promise<Array<LineDiff>> {
+  async getLineDiffsForPath(filePath: NuclideUri): Promise<Array<LineDiff>> {
     const lineDiffs = [];
     if (!filePath) {
       return lineDiffs;
@@ -753,7 +748,7 @@ export default class HgRepositoryClient {
       // There is currently no dedicated 'shortHeadDidChange' event.
       this._emitter.emit('did-change-statuses');
     }
-    return this._currentBookmark;
+    return this._currentBookmark || '';
   }
 
 
@@ -791,17 +786,14 @@ export default class HgRepositoryClient {
    * Updates the cache in response to any number of (non-.hgignore) files changing.
    * @param update The changed file paths.
    */
-  _filesDidChange(changedPaths: Array<string>): void {
+  _filesDidChange(changedPaths: Array<NuclideUri>): void {
     const relevantChangedPaths = changedPaths.filter(this._isPathRelevant.bind(this));
     if (relevantChangedPaths.length === 0) {
       return;
     } else if (relevantChangedPaths.length <= MAX_INDIVIDUAL_CHANGED_PATHS) {
       // Update the statuses individually.
       this._updateStatuses(relevantChangedPaths, {hgStatusOption: HgStatusOption.ALL_STATUSES});
-      const pathsInDiffCache = relevantChangedPaths.filter(
-        filePath => (this._hgDiffCache[filePath] != null)
-      );
-      this._updateDiffInfo(pathsInDiffCache);
+      this._updateDiffInfo(relevantChangedPaths.filter(filePath => this._hgDiffCache[filePath]));
     } else {
       // This is a heuristic to improve performance. Many files being changed may
       // be a sign that we are picking up changes that were created in an automated
@@ -884,7 +876,7 @@ export default class HgRepositoryClient {
     return this._service.getDifferentialRevisionForChangeSetId(changeSetId);
   }
 
-  getSmartlog(ttyOutput: boolean, concise: boolean): Promise<string> {
+  getSmartlog(ttyOutput: boolean, concise: boolean): Promise<Object> {
     return this._service.getSmartlog(ttyOutput, concise);
   }
 }

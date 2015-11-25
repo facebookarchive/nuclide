@@ -15,7 +15,7 @@ const {
 } = require('../lib/utils');
 
 describe('nuclide-hg-repository-client/utils', () => {
-  let cache: ?Map;
+  let cache: Map<string, number> = (null: any);
   const TEST_PATH = '/A/B/C/D.js';
 
   beforeEach(() => {
