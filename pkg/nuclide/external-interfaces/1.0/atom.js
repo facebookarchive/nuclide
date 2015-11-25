@@ -808,7 +808,7 @@ declare class atom$File {
   writeSync(text: string): void;
 }
 
-declare class atom$GitRepository {
+declare class atom$GitRepository extends atom$Repository {
 }
 
 declare class atom$Grammar {
@@ -887,8 +887,8 @@ declare class atom$Project {
   onDidChangePaths(callback: (projectPaths: Array<string>) => mixed): atom$Disposable;
 
   // Accessing the git repository
-  getRepositories(): Array<?Repository>;
-  repositoryForDirectory(directory: atom$Directory): Promise<?Repository>;
+  getRepositories(): Array<?atom$Repository>;
+  repositoryForDirectory(directory: atom$Directory): Promise<?atom$Repository>;
 
   // Managing Paths
   getPaths(): Array<string>;
@@ -1000,6 +1000,7 @@ declare module 'atom' {
   declare var Disposable: typeof atom$Disposable;
   declare var Emitter: typeof atom$Emitter;
   declare var File: typeof atom$File;
+  declare var GitRepository: typeof atom$GitRepository;
   declare var Notification: typeof atom$Notification;
   declare var Point: typeof atom$Point;
   declare var Range: typeof atom$Range;
@@ -1102,7 +1103,7 @@ type RepositoryLineDiff = {
 
 // Taken from the interface of GitRepository, which is also implemented
 // by HgRepositoryClient.
-declare class Repository {
+declare class atom$Repository {
   // Event Subscription
   onDidChangeStatus: (callback: RepositoryDidChangeStatusCallback) => atom$Disposable;
   onDidChangeStatuses: (callback: () => mixed) => atom$Disposable;

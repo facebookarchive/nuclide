@@ -17,7 +17,7 @@ import {array} from 'nuclide-commons';
  *   a Repository it belongs to.
  * @return A Git or Hg repository the path belongs to, if any.
  */
-function repositoryForPath(aPath: NuclideUri): ?Repository {
+function repositoryForPath(aPath: NuclideUri): ?atom$Repository {
   // Calling atom.project.repositoryForDirectory gets the real path of the directory,
   // which requires a round-trip to the server for remote paths.
   // Instead, this function keeps filtering local.

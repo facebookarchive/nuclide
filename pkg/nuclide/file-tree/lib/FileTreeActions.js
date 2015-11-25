@@ -250,7 +250,7 @@ class FileTreeActions {
   }
 
   async _repositoryAdded(
-    repo: Repository,
+    repo: atom$Repository,
     rootKeysForRepository: Immutable.Map<Repository, Immutable.Set<string>>,
   ): Promise<void> {
     // For now, we only support HgRepository objects.
@@ -321,7 +321,7 @@ class FileTreeActions {
   }
 
   _onDidChangeStatusesForRepository(
-    repo: Repository,
+    repo: atom$Repository,
     rootKeysForRepository: Immutable.Map<Repository, Immutable.Set<string>>,
   ) {
     for (const rootKey of rootKeysForRepository.get(repo)) {
@@ -336,7 +336,7 @@ class FileTreeActions {
     }
   }
 
-  _repositoryRemoved(repo: Repository) {
+  _repositoryRemoved(repo: atom$Repository) {
     const disposable = this._subscriptionForRepository.get(repo);
     if (!disposable) {
       // There is a small chance that the add/remove of the Repository could happen so quickly that

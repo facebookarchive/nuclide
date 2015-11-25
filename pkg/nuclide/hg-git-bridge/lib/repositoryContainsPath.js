@@ -9,10 +9,11 @@
  * the root directory of this source tree.
  */
 
-const {Directory} = require('atom');
-const path = require('path');
-
 import type {NuclideUri} from 'nuclide-remote-uri';
+import type {HgRepositoryClient} from 'nuclide-hg-repository-client';
+
+import {Directory} from 'atom';
+import path from 'path';
 
 /**
  * @param repository Either a GitRepository or HgRepositoryClient.
@@ -20,7 +21,7 @@ import type {NuclideUri} from 'nuclide-remote-uri';
  * @return boolean Whether the file path exists within the working directory
  *   (aka root directory) of the repository, or is the working directory.
  */
-function repositoryContainsPath(repository: Repository, filePath: NuclideUri): boolean {
+function repositoryContainsPath(repository: atom$Repository, filePath: NuclideUri): boolean {
   const workingDirectoryPath = repository.getWorkingDirectory();
   if (pathsAreEqual(workingDirectoryPath, filePath)) {
     return true;
@@ -30,7 +31,8 @@ function repositoryContainsPath(repository: Repository, filePath: NuclideUri): b
     const rootGitProjectDirectory = new Directory(workingDirectoryPath);
     return rootGitProjectDirectory.contains(filePath);
   } else if (repository.getType() === 'hg') {
-    return repository._workingDirectory.contains(filePath);
+    const hgRepository = ((repository: any): HgRepositoryClient);
+    return hgRepository._workingDirectory.contains(filePath);
   }
   throw new Error('repositoryContainsPath: Received an unrecognized repository type. Expected git or hg.');
 }

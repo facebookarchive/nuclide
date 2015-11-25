@@ -14,7 +14,7 @@ import type {DiffInfo, StatusCodeIdValue} from '../lib/hg-constants';
 import type {NuclideUri} from 'nuclide-remote-uri';
 
 // This class is meant to be stubbed out.
-export default class MockHgService {
+module.exports = class MockHgService {
   fetchStatuses(
     filePaths: Array<NuclideUri>,
     options: ?any

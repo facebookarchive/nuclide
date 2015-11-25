@@ -9,18 +9,21 @@
  * the root directory of this source tree.
  */
 
-const {Directory, GitRepository} = require('atom');
-const fs = require('fs');
-const repositoryContainsPath = require('../lib/repositoryContainsPath');
-const {asyncExecute} = require('nuclide-commons');
-const {MockHgService} = require('nuclide-hg-repository-base');
-const {HgRepositoryClient} = require('nuclide-hg-repository-client');
-const path = require('path');
+import type {HgService as HgServiceType} from 'nuclide-hg-repository-base/lib/HgService.js';
+
+import {Directory, GitRepository} from 'atom';
+import fs from 'fs';
+import repositoryContainsPath from '../lib/repositoryContainsPath';
+import {asyncExecute} from 'nuclide-commons';
+import {MockHgService} from 'nuclide-hg-repository-base';
+import {HgRepositoryClient} from 'nuclide-hg-repository-client';
+import path from 'path';
+
 const temp = require('temp').track();
 
 describe('repositoryContainsPath', () => {
-  let tempFolder;
-  let repoRoot;
+  let tempFolder: string = (null: any);
+  let repoRoot: string = (null: any);
 
   beforeEach(() => {
     // Create a temporary Hg repository.
@@ -57,15 +60,19 @@ describe('repositoryContainsPath', () => {
       // Create temporary Hg repository.
       await asyncExecute('hg', ['init'], {cwd: repoRoot});
 
-      const hgRepository = new HgRepositoryClient(
+      const mockService = new MockHgService();
+      const mockHgService: HgServiceType = (mockService: any);
+      const hgRepositoryClient = new HgRepositoryClient(
         /* repoPath */ path.join(repoRoot, '.hg'),
-        /* hgService */ new MockHgService(),
+        /* hgService */ mockHgService,
         /* options */  {
           originURL: 'testURL',
           workingDirectory: new Directory(repoRoot),
           projectRootDirectory: new Directory(repoRoot),
         }
       );
+
+      const hgRepository: atom$Repository = (hgRepositoryClient: any);
 
       expect(repositoryContainsPath(hgRepository, repoRoot)).toBe(true);
       const subdir = path.join(repoRoot, 'subdir');
