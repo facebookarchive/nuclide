@@ -582,6 +582,7 @@ declare class atom$TextEditor extends atom$Model {
   getDefaultCharWidth(): number;
   getLineHeightInPixels(): number;
   moveToTop(): void;
+  tokenForBufferPosition(position: atom$Point | number[]): atom$Token;
 }
 
 /**
@@ -1156,4 +1157,10 @@ type atom$AutocompleteProvider = {
   inclusionPriority: number;
   getSuggestions:
       (request: atom$AutocompleteRequest) => Promise<Array<atom$AutocompleteSuggestion>>;
+}
+
+// Undocumented API.
+declare class atom$Token {
+  value: string;
+  matchesScopeSelector(selector: string): boolean;
 }

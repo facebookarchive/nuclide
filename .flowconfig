@@ -6,7 +6,6 @@
 # non-flowCheck
 .*/pkg/fb/diffs-and-tasks/.*
 .*/pkg/fb/biggrep-provider/.*
-.*/pkg/fb/hg-smartlog/.*
 .*/pkg/fb/nuclide-file-creation-ios/.*
 .*/pkg/fb/nuclide-file-creation/.*
 .*/pkg/fb/phabricator-comments-client/.*
