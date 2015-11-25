@@ -385,7 +385,7 @@ export class HgService extends HgServiceBase {
         this._asyncExecuteWatchmanCommand(
           ['unsubscribe', this.getWorkingDirectory(), WATCHMAN_SUBSCRIPTION_NAME_HGDIRSTATE]
         ),
-        await this._asyncExecuteWatchmanCommand(
+        this._asyncExecuteWatchmanCommand(
           ['unsubscribe', this.getWorkingDirectory(), WATCHMAN_SUBSCRIPTION_NAME_HGBOOKMARK]
         ),
       ]);
