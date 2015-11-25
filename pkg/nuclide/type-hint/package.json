@@ -16,7 +16,9 @@
     "nuclide-commons": "0.0.0",
     "nuclide-logging": "0.0.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "nuclide-type-hint-interfaces": "0.0.0"
+  },
   "consumedServices": {
     "nuclide-type-hint.provider": {
       "versions": {

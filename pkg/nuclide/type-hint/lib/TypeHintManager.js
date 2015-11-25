@@ -9,6 +9,10 @@
  * the root directory of this source tree.
  */
 
+import type {TypeHintProvider} from 'nuclide-type-hint-interfaces';
+
+import invariant from 'assert';
+
 const {CompositeDisposable, Disposable} = require('atom');
 
 const {remove} = require('nuclide-commons').array;
@@ -16,33 +20,6 @@ const {remove} = require('nuclide-commons').array;
 import {track, trackOperationTiming} from 'nuclide-analytics';
 
 const TYPEHINT_DELAY_MS = 200;
-
-type HintTree = {
-  value: string;
-  children?: Array<HintTree>;
-}
-
-type TypeHint = {
-  /**
-   * A type hint string to display. One of hint and hintTree must be provided.
-   */
-  hint?: string;
-  /**
-   * A hint tree to display. If specified, overrides hint. The top-level value will be displayed,
-   * and it can be expanded to reveal its children.
-   */
-  hintTree?: HintTree;
-  range: atom$Range;
-};
-
-export type TypeHintProvider = {
-  typeHint(editor: TextEditor, bufferPosition: atom$Point): Promise<TypeHint>;
-  inclusionPriority: number;
-  selector: string;
-  // A unique name for the provider to be used for analytics. It is recommended that it be the name
-  // of the provider's package.
-  providerName: string;
-};
 
 class TypeHintManager {
 
@@ -157,7 +134,6 @@ class TypeHintManager {
       logger.error('Type hint provider has no name', provider);
     }
 
-    // $FlowFixMe
     const typeHint = await trackOperationTiming(
       name + '.typeHint',
       () => provider.typeHint(editor, position),
@@ -167,6 +143,8 @@ class TypeHintManager {
     }
 
     const {hint, range} = typeHint;
+    // For now, actual hint text is required.
+    invariant(hint != null);
 
     // We track the timing above, but we still want to know the number of popups that are shown.
     track('type-hint-popup', {
