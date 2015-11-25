@@ -18,8 +18,8 @@ export type BlameInfo = {
 export type BlameForEditor = Map<number, BlameInfo>;
 
 export type BlameProvider = {
-  canProvideBlameForEditor: (editor: TextEditor) => boolean;
-  getBlameForEditor: (editor: TextEditor) => Promise<BlameForEditor>;
+  canProvideBlameForEditor: (editor: atom$TextEditor) => boolean;
+  getBlameForEditor: (editor: atom$TextEditor) => Promise<BlameForEditor>;
 
   /**
    * Tries to find a URL that contains more information about the revision. If no such URL exists,
@@ -29,5 +29,5 @@ export type BlameProvider = {
    * implementation that returns `Promise.resolve(null)`. The absence of this method indicates to
    * clients that they should not expose UI that depends on this functionality.
    */
-  getUrlForRevision?: (editor: TextEditor, revision: string) => Promise<?string>;
+  getUrlForRevision?: (editor: atom$TextEditor, revision: string) => Promise<?string>;
 };

@@ -15,7 +15,6 @@
 .*/pkg/fb/test-runner-t-client/.*
 .*/pkg/nuclide/arcanist-client/.*
 .*/pkg/nuclide/arcanist/.*
-.*/pkg/nuclide/blame-base/.*
 .*/pkg/nuclide/blame-provider-hg/.*
 .*/pkg/nuclide/blame-ui/.*
 .*/pkg/nuclide/blame/.*
