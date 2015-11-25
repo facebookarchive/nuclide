@@ -10,6 +10,13 @@
  */
 
 import type {BusySignalProviderBase} from 'nuclide-busy-signal-provider-base';
+import type {NuclideUri} from 'nuclide-remote-uri';
+import type {
+  FileDiagnosticMessage,
+  MessageUpdateCallback,
+  MessageInvalidationCallback,
+  DiagnosticProviderUpdate,
+} from 'nuclide-diagnostics-base';
 
 import {trackTiming} from 'nuclide-analytics';
 

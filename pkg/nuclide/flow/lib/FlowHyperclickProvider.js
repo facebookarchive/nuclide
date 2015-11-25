@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {HyperclickSuggestion} from 'hyperclick-interfaces';
+
 import invariant from 'assert';
 
 import {getServiceByNuclideUri} from 'nuclide-client';

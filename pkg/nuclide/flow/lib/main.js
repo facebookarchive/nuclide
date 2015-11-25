@@ -9,6 +9,11 @@
  * the root directory of this source tree.
  */
 
+import type {HyperclickProvider} from 'hyperclick-interfaces';
+import type {
+  BusySignalProviderBase as BusySignalProviderBaseT,
+} from 'nuclide-busy-signal-provider-base';
+
 const invariant = require('assert');
 
 const {CompositeDisposable} = require('atom');
@@ -76,7 +81,7 @@ module.exports = {
     };
   },
 
-  provideBusySignal(): BusySignalProviderBase {
+  provideBusySignal(): BusySignalProviderBaseT {
     if (!busySignalProvider) {
       const {BusySignalProviderBase} = require('nuclide-busy-signal-provider-base');
       busySignalProvider = new BusySignalProviderBase();

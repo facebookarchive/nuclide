@@ -12,6 +12,8 @@
 const {uncachedRequire, spyOnGetterValue} = require('nuclide-test-helpers');
 const {Range} = require('atom');
 
+import {array} from 'nuclide-commons';
+
 const TYPE_HINT_PROVIDER = '../lib/FlowTypeHintProvider';
 
 describe('FlowTypeHintProvider', () => {
@@ -46,7 +48,7 @@ describe('FlowTypeHintProvider', () => {
     spyOnGetterValue(require('nuclide-atom-helpers'), 'extractWordAtPosition')
       .andReturn(word);
 
-    const {FlowTypeHintProvider} = uncachedRequire(require, TYPE_HINT_PROVIDER);
+    const {FlowTypeHintProvider} = (uncachedRequire(require, TYPE_HINT_PROVIDER): any);
     typeHintProvider = new FlowTypeHintProvider();
     return await typeHintProvider.typeHint(editor, position);
   }
@@ -117,9 +119,8 @@ describe('getTypeHintTree', () => {
     return {
       kind: 'FunT',
       funType: {
-        // Somehow this works but Array.from is still not implemented.
-        paramNames: [for (x of paramToType.keys()) x],
-        paramTypes: [for (x of paramToType.values()) x],
+        paramNames: array.from(paramToType.keys()),
+        paramTypes: array.from(paramToType.values()),
         returnType,
       },
     };

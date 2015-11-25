@@ -1166,7 +1166,7 @@ type atom$AutocompleteProvider = {
   disableForSelector: string;
   inclusionPriority: number;
   getSuggestions:
-      (request: atom$AutocompleteRequest) => Promise<Array<atom$AutocompleteSuggestion>>;
+      (request: atom$AutocompleteRequest) => Promise<?Array<atom$AutocompleteSuggestion>>;
 }
 
 // Undocumented API.

@@ -9,12 +9,12 @@
  * the root directory of this source tree.
  */
 
-type HintTree = {
+export type HintTree = {
   value: string;
   children?: Array<HintTree>;
 }
 
-type TypeHint = {
+export type TypeHint = {
   /**
    * A type hint string to display. One of hint and hintTree must be provided.
    */

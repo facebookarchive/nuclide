@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {TypeHint} from 'nuclide-type-hint-interfaces';
+
 import invariant from 'assert';
 
 const {extractWordAtPosition} = require('nuclide-atom-helpers');
