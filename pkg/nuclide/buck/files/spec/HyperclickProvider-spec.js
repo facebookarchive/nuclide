@@ -9,10 +9,12 @@
  * the root directory of this source tree.
  */
 
+import type {BuckProject} from 'nuclide-buck-base/lib/BuckProject';
+
 const {findTargetLocation, parseTarget} = require('../lib/HyperclickProvider');
 
 describe('HyperclickProvider', () => {
-  let projectPath;
+  let projectPath: string = (null: any);
 
   beforeEach(() => {
     projectPath = require('path').join(__dirname, 'fixtures/test-project') + '/';
@@ -21,7 +23,7 @@ describe('HyperclickProvider', () => {
 
   describe('parseTarget', () => {
     it('searches //Apps/TestApp/BUCK.test', () => {
-      const buckProject = {
+      const buckProject: BuckProject = {
         getPath() {
           return Promise.resolve(projectPath);
         },

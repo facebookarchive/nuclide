@@ -9,6 +9,10 @@
  * the root directory of this source tree.
  */
 
+type Target = {path: string; name: string};
+
+import type {BuckProject} from 'nuclide-buck-base/lib/BuckProject';
+
 const {isBuckFile} = require('nuclide-buck-base');
 const {buckProjectRootForPath} = require('nuclide-buck-commons');
 const {fsPromise} = require('nuclide-commons');
@@ -35,17 +39,19 @@ function escapeRegExp(str: string): string {
  * Returns null if target cannot be parsed from given arguments.
  */
 async function parseTarget(
-    match: Array<string>,
-    filePath: string,
-    buckProject: BuckProject): Promise<?{path: string; name: string}> {
+  match: Array<?string>,
+  filePath: ?string,
+  buckProject: BuckProject,
+): Promise<?Target> {
   if (!match || !filePath) {
     return null;
   }
 
   let path;
-  if (match[1]) {
+  const fullTarget = match[1];
+  if (fullTarget) {
     // Strip off the leading slashes from the fully-qualified build target.
-    const basePath = match[1].substring('//'.length);
+    const basePath = fullTarget.substring('//'.length);
     const buckRoot = await buckProject.getPath();
     path = require('nuclide-remote-uri').join(buckRoot, basePath, 'BUCK');
   } else {
@@ -53,6 +59,9 @@ async function parseTarget(
     path = filePath;
   }
   const name = match[2];
+  if (!name) {
+    return null;
+  }
   return {path, name};
 }
 
@@ -63,7 +72,7 @@ async function parseTarget(
  * position property of the target location will be set to null.
  * If `target.path` file cannot be found or read, Promise resolves to null.
  */
-async function findTargetLocation(target: {path: string; name: string}): Promise {
+async function findTargetLocation(target: Target): Promise {
   let data;
   try {
     data = await fsPromise.readFile(target.path, 'utf-8');
@@ -119,6 +128,9 @@ module.exports = {
     const {wordMatch, range} = wordMatchAndRange;
 
     const target = await parseTarget(wordMatch, absolutePath, buckProject);
+    if (!target) {
+      return null;
+    }
     const location = await findTargetLocation(target);
     if (location) {
       return {
