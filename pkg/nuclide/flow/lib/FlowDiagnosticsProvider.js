@@ -22,8 +22,10 @@ const invariant = require('assert');
 
 const {JS_GRAMMARS} = require('./constants.js');
 
-/* TODO remove these duplicate definitions once we figure out importing types
- * through symlinks. */
+/*
+ * TODO remove these duplicate definitions once we figure out importing types
+ * through symlinks.
+ */
 export type Diagnostics = {
   flowRoot: NuclideUri,
   messages: Array<FlowDiagnosticItem>
@@ -101,8 +103,10 @@ class FlowDiagnosticsProvider {
   _busySignalProvider: BusySignalProviderBase;
   _requestSerializer: RequestSerializer;
 
-  /** Maps flow root to the set of file paths under that root for which we have
-    * ever reported diagnostics. */
+  /**
+    * Maps flow root to the set of file paths under that root for which we have
+    * ever reported diagnostics.
+    */
   _flowRootToFilePaths: Map<NuclideUri, Set<NuclideUri>>;
 
   constructor(
@@ -153,15 +157,19 @@ class FlowDiagnosticsProvider {
     const {flowRoot, messages} = diagnostics;
 
     const pathsToInvalidate = this._getPathsToInvalidate(flowRoot);
-    /* TODO Consider optimizing for the common case of only a single flow root
-     * by invalidating all instead of enumerating the files. */
+    /*
+     * TODO Consider optimizing for the common case of only a single flow root
+     * by invalidating all instead of enumerating the files.
+     */
     this._providerBase.publishMessageInvalidation({scope: 'file', filePaths: pathsToInvalidate});
 
     const pathsForRoot = new Set();
     this._flowRootToFilePaths.set(flowRoot, pathsForRoot);
     for (const message of messages) {
-      /* Each message consists of several different components, each with its
-       * own text and path. */
+      /*
+       * Each message consists of several different components, each with its
+       * own text and path.
+       */
       for (const messageComponent of message) {
         pathsForRoot.add(messageComponent.path);
       }
