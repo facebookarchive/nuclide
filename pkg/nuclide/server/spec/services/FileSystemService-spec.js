@@ -34,7 +34,7 @@ describe('FileSystemService', () => {
       testHelper = new ServiceTestHelper();
       await testHelper.start();
       service = testHelper.getRemoteService('FileSystemService',
-          '../services/FileSystemService.def');
+          '../../lib/services/FileSystemService.def');
     });
   });
 

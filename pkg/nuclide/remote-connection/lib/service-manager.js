@@ -9,10 +9,9 @@
  * the root directory of this source tree.
  */
 import type Item from './ServiceLogger';
+import invariant from 'assert';
 
 const logger = require('nuclide-logging').getLogger();
-const {loadConfigsOfServiceWithServiceFramework} = require('nuclide-server/lib/config');
-const {optionsToString} = require('nuclide-server/lib/service-manager');
 const RemoteConnection = require('./RemoteConnection');
 const {isRemote, getHostname} = require('nuclide-remote-uri');
 
@@ -20,7 +19,6 @@ import {getProxy} from 'nuclide-service-parser';
 import ServiceFramework from 'nuclide-server/lib/serviceframework';
 import ServiceLogger from './ServiceLogger';
 
-const serviceConfigs = loadConfigsOfServiceWithServiceFramework();
 const newServices = ServiceFramework.loadServicesConfig();
 
 // A cache stores services in form of '$serviceName@$host:$options' => $serviceObject. A special
@@ -78,61 +76,13 @@ function getServiceByNuclideUri(
 function getService(serviceName: string, hostname: ?string, serviceOptions: ?any): ?any {
   /** First, try to find a 3.0 service */
   let [serviceConfig] = newServices.filter(config => config.name === serviceName);
-  if (serviceConfig) {
-    if (hostname) {
-      const remoteConnection = RemoteConnection.getByHostnameAndPath(hostname, null);
-      return getProxy(serviceConfig.name, serviceConfig.definition, remoteConnection.getClient());
-    } else {
-      return require(serviceConfig.implementation);
-    }
-  }
-
-  /** Then try to find a legacy service */
-  [serviceConfig] = serviceConfigs.filter(config => config.name === serviceName);
-  if (!serviceConfig) {
-    logger.error('Service %s undefined.', serviceName);
-    return null;
-  }
-
-  const cacheKey = serviceName + '@' + (hostname ? hostname : '') + ':' + optionsToString(serviceOptions);
-
-  if (cachedServices.has(cacheKey)) {
-    return cachedServices.get(cacheKey);
-  }
-
-  serviceOptions = serviceOptions || {};
-
-  let serviceInstance;
+  invariant(serviceConfig);
   if (hostname) {
-    serviceInstance = createRemoteService(serviceConfig, hostname, serviceOptions);
+    const remoteConnection = RemoteConnection.getByHostnameAndPath(hostname, null);
+    return getProxy(serviceConfig.name, serviceConfig.definition, remoteConnection.getClient());
   } else {
-    serviceInstance = createLocalService(serviceConfig, serviceOptions);
+    return require(serviceConfig.implementation);
   }
-  cachedServices.set(cacheKey, serviceInstance);
-
-  return serviceInstance;
-}
-
-function createRemoteService(serviceConfig: ServiceConfig, hostname: string, serviceOptions: any): any {
-  const {requireRemoteServiceSync} = require('nuclide-service-transformer');
-  const remoteServiceClass = requireRemoteServiceSync(
-    serviceConfig.definition,
-    serviceConfig.name,
-    /* isDecorator */ false);
-  const remoteConnection = RemoteConnection.getByHostnameAndPath(hostname, null);
-  return new remoteServiceClass(remoteConnection, serviceOptions);
-}
-
-function createLocalService(serviceConfig: ServiceConfig, serviceOptions: any): any {
-  const serviceClass = require(serviceConfig.implementation);
-  const serviceImplementation = new serviceClass(serviceOptions);
-  const {requireRemoteServiceSync} = require('nuclide-service-transformer');
-  const decorator = requireRemoteServiceSync(
-    serviceConfig.definition,
-    serviceConfig.name,
-    /* isDecorator */ true,
-  );
-  return new decorator(serviceImplementation, getServiceLogger());
 }
 
 let serviceLogger: ?ServiceLogger;

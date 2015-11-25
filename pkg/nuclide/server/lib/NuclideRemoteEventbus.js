@@ -10,12 +10,10 @@
  */
 
 const {Disposable} = require('event-kit');
-const {getRemoteEventName} = require('./service-manager');
 const {serializeArgs} = require('./utils');
 const {EventEmitter} = require('events');
 const NuclideSocket = require('./NuclideSocket');
-const {SERVICE_FRAMEWORK_EVENT_CHANNEL,
-  SERVICE_FRAMEWORK_RPC_CHANNEL,
+const {
   SERVICE_FRAMEWORK_RPC_TIMEOUT_MS,
   SERVICE_FRAMEWORK3_CHANNEL} = require('./config');
 const logger = require('nuclide-logging').getLogger();
@@ -34,8 +32,6 @@ class NuclideRemoteEventbus {
   socket: ?NuclideSocket;
 
   _rpcRequestId: number;
-  serviceFrameworkEventEmitter: EventEmitter;
-  _serviceFrameworkRpcEmitter: EventEmitter;
   _serviceFramework3Emitter: EventEmitter;
 
   _clientComponent: ServiceFramework.ClientComponent;
@@ -45,7 +41,6 @@ class NuclideRemoteEventbus {
     this.socket.on('message', (message) => this._handleSocketMessage(message));
     this.serviceFrameworkEventEmitter = new EventEmitter();
     this._rpcRequestId = 1;
-    this._serviceFrameworkRpcEmitter = new EventEmitter();
     this._serviceFramework3Emitter = new EventEmitter();
 
     this._clientComponent = new ServiceFramework.ClientComponent(this._serviceFramework3Emitter,
@@ -61,116 +56,10 @@ class NuclideRemoteEventbus {
   }
 
   _handleSocketMessage(message: any) {
-    const {channel, event} = message;
-
-    if (channel === SERVICE_FRAMEWORK_RPC_CHANNEL) {
-      const {requestId, error, result} = message;
-      this._serviceFrameworkRpcEmitter.emit(requestId.toString(), error, result);
-      return;
-    }
-
-    if (channel === SERVICE_FRAMEWORK_EVENT_CHANNEL) {
-      this.serviceFrameworkEventEmitter.emit.apply(this.serviceFrameworkEventEmitter,
-          [event.name].concat(event.args));
-      return;
-    }
-
-    if (channel === SERVICE_FRAMEWORK3_CHANNEL) {
-      const {requestId, hadError, error, result} = message;
-      this._serviceFramework3Emitter.emit(requestId.toString(), hadError, error, result);
-      return;
-    }
-  }
-
-  _subscribeEventOnServer(serviceName: string, methodName: string, serviceOptions: any): Promise<any> {
-    return this.callServiceFrameworkMethod(
-      'serviceFramework',
-      'subscribeEvent',
-      /*methodArgs*/ [this.socket.id, serviceName, methodName],
-      serviceOptions
-   );
-  }
-
-  _unsubscribeEventFromServer(serviceName: string, methodName: string, serviceOptions: any): Promise<any> {
-    return this.callServiceFrameworkMethod(
-      'serviceFramework',
-      'unsubscribeEvent',
-      /*methodArgs*/ [this.socket.id, serviceName, methodName],
-      serviceOptions
-   );
-  }
-
-  registerEventListener(
-    localEventName: string,
-    callback: (...args: Array<any>) => void,
-    serviceOptions: any
-  ): Disposable {
-    const [serviceName, eventMethodName] = localEventName.split('/');
-    const remoteEventName = getRemoteEventName(serviceName, eventMethodName, serviceOptions);
-    this.serviceFrameworkEventEmitter.on(remoteEventName, callback);
-    const subscribePromise = this._subscribeEventOnServer(serviceName, eventMethodName, serviceOptions);
-    return new Disposable(() => {
-      this.serviceFrameworkEventEmitter.removeListener(remoteEventName, callback);
-      return subscribePromise.then(
-          () => this._unsubscribeEventFromServer(serviceName, eventMethodName, serviceOptions));
-    });
-  }
-
-  async callMethod(
-      serviceName: string,
-      methodName: string,
-      methodArgs: ?Array<any>,
-      extraOptions: ?any
-    ): Promise<any> {
-    if (!this.socket) {
-      logger.error('RemoteEventBus closed - callMethod:', serviceName, methodName);
-      // Error condition that should never happen, return `undefined`.
-      return;
-    }
-    const {args, argTypes} = serializeArgs(methodArgs || []);
-    try {
-      return await this.socket.xhrRequest(object.assign({
-        uri: serviceName + '/' + methodName,
-        qs: {
-          args,
-          argTypes,
-        },
-        method: 'GET', // default request method is 'GET'.
-      }, extraOptions || {}));
-    } catch (err) {
-      logger.error(err);
-      throw err;
-    }
-  }
-
-  async callServiceFrameworkMethod(
-      serviceName: string,
-      methodName: string,
-      methodArgs: Array<any>,
-      serviceOptions: any,
-      timeout: number =SERVICE_FRAMEWORK_RPC_TIMEOUT_MS
-    ): Promise<any> {
-
-    const requestId = this._rpcRequestId ++;
-
-    this.socket.send({
-      serviceName,
-      methodName,
-      methodArgs,
-      serviceOptions,
-      requestId,
-    });
-
-    return new Promise((resolve, reject) => {
-      this._serviceFrameworkRpcEmitter.once(requestId.toString(), (error, result) => {
-        error ? reject(error) : resolve(result);
-      });
-
-      setTimeout(() => {
-        this._serviceFrameworkRpcEmitter.removeAllListeners(requestId.toString());
-        reject(`Timeout after ${timeout} for ${serviceName}/${methodName}`);
-      }, timeout);
-    });
+    const {channel} = message;
+    invariant(channel === SERVICE_FRAMEWORK3_CHANNEL);
+    const {requestId, hadError, error, result} = message;
+    this._serviceFramework3Emitter.emit(requestId.toString(), hadError, error, result);
   }
 
   // Delegate RPC functions to ServiceFramework.ClientComponent

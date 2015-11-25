@@ -436,19 +436,6 @@ class RemoteConnection {
     return this._client;
   }
 
-  /**
-   * Make rpc call through this connection given serviceUri in form of `$serviceName/$methodName`
-   * and args as arguments list.
-   */
-  makeRpc(serviceUri: string, args: Array<any>, serviceOptions: any): Promise<any> {
-    return this.getClient().makeRpc(serviceUri, args, serviceOptions);
-  }
-
-  registerEventListener(eventName: string, callback: (payload: any) => void, serviceOptions: any): Disposable {
-    return this.getClient().registerEventListener(eventName, callback, serviceOptions);
-  }
-
-
   _isSecure(): boolean {
     return !!(
         this._config.certificateAuthorityCertificate

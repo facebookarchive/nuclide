@@ -42,42 +42,25 @@ class Transpiler(object):
         # Values are arrays of relative paths under the package that identify paths that should not
         # be transpiled.
         exclude_from_transpilation = {}
-        service_framework_v3_config = 'pkg/nuclide/server/services-3.json'
-        config_files = [
-            # Service framework v2 configuration.
-            'pkg/nuclide/server/fb/custom-services-config.json',
-            'pkg/nuclide/server/services-config.json',
-            # Service framework v3 configuration.
-            service_framework_v3_config,
-        ]
-        for config_file in config_files:
-            abs_config_file_path = os.path.join(path_to_nuclide_repo, config_file)
-            if not os.path.isfile(abs_config_file_path):
+        entries = json_helpers.json_load(
+                os.path.join(path_to_nuclide_repo,
+                'pkg/nuclide/server/services-3.json'))
+        for entry in entries:
+            # For service framework v3 config entry, skip transpile the implementation
+            # file only if the definition file is omitted.
+            if entry.get('definition'):
                 continue
+            exclude_file = entry['implementation']
 
-            entries = json_helpers.json_load(abs_config_file_path)
-            for entry in entries:
-                if config_file == service_framework_v3_config:
-                    # For service framework v3 config entry, skip transpile the implementation
-                    # file only if the definition file is omitted.
-                    if entry.get('definition'):
-                        continue
-                    exclude_file = entry['implementation']
-                else:
-                    if not entry['useServiceFramework']:
-                        continue
-                    # For service framework v2 config entry, skip transpile the definition file.
-                    exclude_file = entry['definition']
-
-                index = exclude_file.index('/')
-                package_name = exclude_file[:index]
-                relative_path = exclude_file[index + 1:]
-                if package_name not in exclude_from_transpilation:
-                    paths = []
-                    exclude_from_transpilation[package_name] = paths
-                else:
-                    paths = exclude_from_transpilation[package_name]
-                paths.append(relative_path)
+            index = exclude_file.index('/')
+            package_name = exclude_file[:index]
+            relative_path = exclude_file[index + 1:]
+            if package_name not in exclude_from_transpilation:
+                paths = []
+                exclude_from_transpilation[package_name] = paths
+            else:
+                paths = exclude_from_transpilation[package_name]
+            paths.append(relative_path)
 
         return Transpiler(exclude_from_transpilation, transpile_script)
 

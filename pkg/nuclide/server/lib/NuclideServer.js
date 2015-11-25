@@ -12,16 +12,11 @@
 const blocked = require('./blocked');
 const connect = require('connect');
 
-const {getService, getRemoteEventName} = require('./service-manager');
 const http = require('http');
 const https = require('https');
 import {
   HEARTBEAT_CHANNEL,
-  SERVICE_FRAMEWORK_EVENT_CHANNEL,
-  SERVICE_FRAMEWORK_RPC_CHANNEL,
   SERVICE_FRAMEWORK3_CHANNEL} from './config';
-const {parseServiceApiSync} = require('nuclide-service-transformer');
-
 const {EventEmitter} = require('events');
 const WebSocketServer = require('ws').Server;
 const {deserializeArgs, sendJsonResponse, sendTextResponse} = require('./utils');
@@ -66,8 +61,6 @@ class NuclideServer {
   _clients: {[clientId: string]: SocketClient};
   _eventSubscriptions: Map</* eventName */ string, Set</* clientId */ string>>;
   _port: number;
-  _serviceWithoutServiceFrameworkConfigs: Array<string>;
-  _serviceWithServiceFrameworkConfigs: Array<any>;
 
   _serverComponent: ServiceFramework.ServerComponent;
 
@@ -133,101 +126,12 @@ class NuclideServer {
     return webSocketServer;
   }
 
-  _getServiceFrameworkServiceAndRegisterEventHandle(
-      serviceConfig: ServiceConfig, serviceOptions: any): any {
-    const localServiceInstance = getService(serviceConfig.name, serviceOptions, serviceConfig.implementation);
-    if (localServiceInstance[EVENT_HANDLE_REGISTERED]) {
-      return localServiceInstance;
-    }
-
-    const serviceApi = parseServiceApiSync(serviceConfig.definition, serviceConfig.name);
-
-    serviceApi.eventMethodNames.forEach(methodName => {
-      localServiceInstance[methodName].call(localServiceInstance, (...args) => {
-        const eventName = getRemoteEventName(serviceConfig.name, methodName, serviceOptions);
-        (this._eventSubscriptions.get(eventName) || []).forEach(clientId => {
-          const client = this._clients[clientId];
-
-          if (!client) {
-            logger.warn('Client with clientId: %s not found!', clientId);
-            return;
-          }
-
-          this._sendSocketMessage(client, {
-            channel: SERVICE_FRAMEWORK_EVENT_CHANNEL,
-            event: {
-              name: eventName,
-              args,
-            },
-          });
-        });
-      });
-    });
-    Object.defineProperty(localServiceInstance, EVENT_HANDLE_REGISTERED, {value: true});
-
-    return localServiceInstance;
-  }
-
-  _registerServiceWithServiceFramework(serviceConfig: ServiceConfig): void {
-    const serviceApi = parseServiceApiSync(serviceConfig.definition, serviceConfig.name);
-
-    serviceApi.rpcMethodNames.forEach(methodName => {
-      this._registerService(
-        '/' + serviceApi.className + '/' + methodName,
-
-        // Take serviceOptions as first argument for serviceFramework service.
-        // TODO(chenshen) seperate the logic of service initialization.
-        (serviceOptions, ...args) => {
-          const localServiceInstance = this._getServiceFrameworkServiceAndRegisterEventHandle(
-              serviceConfig, serviceOptions);
-          return localServiceInstance[methodName].apply(localServiceInstance, args);
-        },
-        'post',
-      );
-    });
-
-  }
-
-  _registerServiceWithoutServiceFramework(serviceFilePath: string): void {
-    const {urlHandlers, services, initialize} = require(serviceFilePath);
-    for (const serviceName in services) {
-      const serviceConfig = services[serviceName];
-      this._registerService(serviceName, serviceConfig.handler, serviceConfig.method, serviceConfig.text);
-    }
-
-    if (urlHandlers) {
-      for (const url in urlHandlers) {
-        const handlerConfig = urlHandlers[url];
-        this._attachUrlHandler(url, handlerConfig.handler, handlerConfig.method);
-      }
-    }
-
-    if (initialize) {
-      initialize(this);
-    }
-  }
-
   _setupServices() {
     // Lazy require these functions so that we could spyOn them while testing in
     // ServiceIntegrationTestHelper.
-    const {loadConfigsOfServiceWithServiceFramework,
-      loadConfigsOfServiceWithoutServiceFramework} = require('./config');
     this._serviceRegistry = {};
     this._version = getVersion().toString();
     this._setupHeartbeatHandler();
-    this._setupServiceFrameworkSubscriptionHandler();
-    this._serviceWithoutServiceFrameworkConfigs = loadConfigsOfServiceWithoutServiceFramework();
-    this._serviceWithServiceFrameworkConfigs = loadConfigsOfServiceWithServiceFramework();
-
-    this._serviceWithoutServiceFrameworkConfigs.forEach((config: string) => {
-      this._registerServiceWithoutServiceFramework(config);
-      logger.debug(`Registered service ${config} without ServiceFramework.`);
-    });
-
-    this._serviceWithServiceFrameworkConfigs.forEach(config => {
-      this._registerServiceWithServiceFramework(config);
-      logger.debug(`Registered service ${config.name} with ServiceFramework.`);
-    });
 
     // Setup error handler.
     this._app.use((error, request, response, next) => {
@@ -255,32 +159,6 @@ class NuclideServer {
     } finally {
       flushLogsAndExit(0);
     }
-  }
-
-  _setupServiceFrameworkSubscriptionHandler() {
-    this._registerService('/serviceFramework/subscribeEvent', (serviceOptions: any, clientId: string, serviceName: string, methodName: string) => {
-
-      // Create the service instance and register the event handle.
-      const [serviceConfig] = this._serviceWithServiceFrameworkConfigs.filter(config => config.name === serviceName);
-      this._getServiceFrameworkServiceAndRegisterEventHandle(serviceConfig, serviceOptions);
-
-      const eventName = getRemoteEventName(serviceName, methodName, serviceOptions);
-
-      this._eventSubscriptions.set(
-        eventName,
-        (this._eventSubscriptions.get(eventName) || new Set()).add(clientId),
-      );
-
-      logger.debug(`${clientId} subscribed to ${eventName}`);
-    }, 'post');
-
-    this._registerService('/serviceFramework/unsubscribeEvent', (serviceOptions: any, clientId: string, serviceName: string, methodName: string) => {
-      const eventName = getRemoteEventName(serviceName, methodName, serviceOptions);
-      if (this._eventSubscriptions.has(eventName)) {
-        this._eventSubscriptions.get(eventName).delete(clientId);
-      }
-      logger.debug(`${clientId} unsubscribed to ${eventName}`);
-    }, 'post');
   }
 
   connect(): Promise {
@@ -397,31 +275,8 @@ class NuclideServer {
 
   async _onSocketMessage(client: SocketClient, message: any): void {
     message = JSON.parse(message);
-    if (message.protocol && message.protocol === SERVICE_FRAMEWORK3_CHANNEL) {
-      this._serverComponent.handleMessage(client, message);
-      return;
-    }
-
-    const {serviceName, methodName, methodArgs, serviceOptions, requestId} = message;
-    let result = null;
-    let error = null;
-
-    try {
-      result = await this.callService(
-        '/' + serviceName + '/' + methodName,
-        [serviceOptions].concat(methodArgs),
-      );
-    } catch (e) {
-      logger.error('Failed to call %s/%s with error %o', serviceName, methodName, e);
-      error = e;
-    }
-
-    this._sendSocketMessage(client, {
-      channel: SERVICE_FRAMEWORK_RPC_CHANNEL,
-      requestId,
-      result,
-      error,
-    });
+    invariant(message.protocol && message.protocol === SERVICE_FRAMEWORK3_CHANNEL);
+    this._serverComponent.handleMessage(client, message);
   }
 
   _sendSocketMessage(client: SocketClient, data: any) {
@@ -451,12 +306,6 @@ class NuclideServer {
 
     this._webSocketServer.close();
     this._webServer.close();
-    this._serviceWithoutServiceFrameworkConfigs.forEach(service_path => {
-      const {shutdown} = require(service_path);
-      if (shutdown) {
-        shutdown(this);
-      }
-    });
   }
 }
 

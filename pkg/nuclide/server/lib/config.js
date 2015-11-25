@@ -18,76 +18,12 @@
   *      a service definition and a local implementation.
   */
 
-const fs = require('fs-plus');
-const path = require('path');
-
-const PACKAGE_ROOT = path.resolve(__dirname, '..');
-
-// Custom services path is defined in "package.json", which is always in the root, so resolve
-// the path to the custom services config from the root as well.
-const CUSTOM_SERVICES_CONFIG_PATH = path.resolve(
-  PACKAGE_ROOT,
-  require(path.resolve(PACKAGE_ROOT, 'package.json'))['nuclide']['customServices']
-);
 const HEARTBEAT_CHANNEL = 'heartbeat';
-const SERVICE_FRAMEWORK_EVENT_CHANNEL = 'service_framework_event';
-const SERVICE_FRAMEWORK_RPC_CHANNEL = 'service_framework_rpc';
 const SERVICE_FRAMEWORK3_CHANNEL = 'service_framework3_rpc';
-
 const SERVICE_FRAMEWORK_RPC_TIMEOUT_MS = 60 * 1000;
-const SERVICES_CONFIG_PATH = path.resolve(PACKAGE_ROOT, 'services-config.json');
-
-function loadConfigs(): Array<any> {
-  let configList = require(SERVICES_CONFIG_PATH);
-
-  if (fs.isFileSync(CUSTOM_SERVICES_CONFIG_PATH)) {
-    const customConfigs = require(CUSTOM_SERVICES_CONFIG_PATH);
-    configList = configList.concat(customConfigs);
-  }
-
-  return configList;
-}
-
-function loadConfigsOfServiceWithServiceFramework(): Array<any> {
-  return loadConfigs()
-    .filter(config => config.useServiceFramework)
-    .map(config => {
-      return {
-        name: config.name,
-        definition: _resolveServiceConfigPath(config.definition),
-        implementation: _resolveServiceConfigPath(config.implementation),
-      };
-    });
-}
-
-function loadConfigsOfServiceWithoutServiceFramework(): Array<string> {
-  return loadConfigs()
-    .filter(config => !config.useServiceFramework)
-    .map(config => _resolveServiceConfigPath(config.path));
-}
-
-/**
-  * Resolve service path defined in service-config.json to absolute path. The service path could
-  * be in one of following forms:
-  *   1. A path relative to the folder contains `service-config.json`.
-  *   2. An absolute path.
-  *   3. A path in form of `$dependency_package/path/to/service`. For example,
-  *      'nuclide-commons/lib/array.js'.
-  */
-function _resolveServiceConfigPath(serviceConfigPath: string): string {
-  try {
-    return require.resolve(serviceConfigPath);
-  } catch (e) {
-    return path.resolve(path.dirname(SERVICES_CONFIG_PATH), serviceConfigPath);
-  }
-}
 
 module.exports = {
-  loadConfigsOfServiceWithoutServiceFramework,
-  loadConfigsOfServiceWithServiceFramework,
   HEARTBEAT_CHANNEL,
-  SERVICE_FRAMEWORK_EVENT_CHANNEL,
-  SERVICE_FRAMEWORK_RPC_CHANNEL,
   SERVICE_FRAMEWORK_RPC_TIMEOUT_MS,
   SERVICE_FRAMEWORK3_CHANNEL,
 };

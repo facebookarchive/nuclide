@@ -20,7 +20,6 @@
     "nuclide-remote-uri": "0.0.0",
     "nuclide-server": "0.0.0",
     "nuclide-service-parser": "0.0.0",
-    "nuclide-service-transformer": "0.0.0",
     "nuclide-version": "0.0.0",
     "ssh2": "0.4.11"
   },

@@ -14,7 +14,6 @@
  * make XHR requests to the NuclideFS service.  It is a Promise based API.
  */
 
-type ExecResult = {error: ?Error; stdout: string; stderr: string};
 type NuclideClientOptions = {
   cwd: ?string;
 };
@@ -64,61 +63,6 @@ class NuclideClient {
   }
   registerType(...args): void {
     return this.eventbus.registerType(...args);
-  }
-
-  /**
-   * Make rpc call to service given serviceUri in form of `$serviceName/$methodName` and args as arguments list.
-   */
-  makeRpc(serviceUri: string, args: Array<any>, serviceOptions: any): Promise<any> {
-    const [serviceName, methodName] = serviceUri.split('/');
-    return this.eventbus.callServiceFrameworkMethod(
-      serviceName,
-      methodName,
-      /* methodArgs */ args,
-      /* serviceOptions */ serviceOptions
-   );
-  }
-
-  registerEventListener(eventName: string, callback: (...args: Array<any>) => void, serviceOptions: any): Disposable {
-    return this.eventbus.registerEventListener(eventName, callback, serviceOptions);
-  }
-
-  /**
-   * Searches the contents of `directory` for paths mathing `query`.
-   */
-  async searchDirectory(directory: string, query: string): Promise<any> {
-    return await this.eventbus.callMethod(
-      /*serviceName*/ 'search',
-      /*methodName*/ 'directory',
-      /*methodArgs*/ [directory, query],
-      /*extraOptions*/ {json: true}
-    );
-  }
-
-  doSearchQuery(rootDirectory:string, provider: string, query: string): Promise {
-    return this.eventbus.callMethod(
-      /*serviceName*/ 'search',
-      /*methodName*/ 'query',
-      /*methodArgs*/ [rootDirectory, provider, query],
-      /*extraOptions*/ {method: 'POST', json: true}
-    );
-  }
-
-  async getSearchProviders(rootDirectory: string): Promise<Array<{name:string}>> {
-    let providers = this._searchProviders[rootDirectory];
-    if (providers) {
-      return providers;
-    }
-    providers = await this.eventbus.callMethod(
-      /*serviceName*/ 'search',
-      /*methodName*/ 'listProviders',
-      /*methodArgs*/ [rootDirectory],
-      /*extraOptions*/ {method: 'POST', json: true}
-    );
-
-    this._searchProviders[rootDirectory] = providers;
-
-    return providers;
   }
 
   close() : void {
