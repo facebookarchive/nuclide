@@ -43,7 +43,7 @@ export function getDefinitions(definitionPath: string): Definitions {
  * Get a proxy module for a given (service, client) pair. This function generates
  * the definitions if the they don't exist, and caches the proxy module if it has
  * already been generated before.
- * @param cleintObject {NuclideClient} The client object that needs to be able to marhsal
+ * @param clientObject {ClientComponent} The client object that needs to be able to marhsal
  *   and unmarshal objects, as well as make RPC calls.
  * @returns - A proxy module that exports the API specified by the definition
  */

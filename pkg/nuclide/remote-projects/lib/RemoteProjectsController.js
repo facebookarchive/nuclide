@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import {RemoteConnection} from 'nuclide-remote-connection';
 const React = require('react-for-atom');
 const {CompositeDisposable, Disposable} = require('atom');
 const StatusBarTile = require('./ui/StatusBarTile');
@@ -66,18 +67,18 @@ class RemoteProjectsController {
       this._renderStatusBar(isConnected ? ConnectionState.CONNECTED : ConnectionState.DISCONNECTED, fileUri);
     };
 
-    const {getClient} = require('nuclide-client');
-    const client = getClient(fileUri);
-    if (!client || !client.eventbus) {
+    const connection = RemoteConnection.getForUri(fileUri);
+    if (connection == null) {
       updateStatus(false);
       return;
     }
 
-    updateStatus(client.eventbus.socket.isConnected());
-    client.eventbus.socket.on('status', updateStatus);
+    const socket = connection.getSocket();
+    updateStatus(socket.isConnected());
+    socket.on('status', updateStatus);
 
     this._statusSubscription = new Disposable(() => {
-      client.eventbus.socket.removeListener('status', updateStatus);
+      socket.removeListener('status', updateStatus);
     });
     this._disposables.add(this._statusSubscription);
   }

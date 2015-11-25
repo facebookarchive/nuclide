@@ -32,7 +32,7 @@ class NuclideSocket extends EventEmitter {
   id: string;
 
   _serverUri: string;
-  _options: ?NuclideSocketOptions;
+  _options: NuclideSocketOptions;
   _reconnectTime: number;
   _reconnectTimer: ?number; // ID from a setTimeout() call.
   _connected: boolean;
@@ -46,7 +46,7 @@ class NuclideSocket extends EventEmitter {
   _lastHeartbeatTime: ?number;
   _heartbeatInterval: ?number;
 
-  constructor(serverUri: string, options: ?NuclideSocketOptions) {
+  constructor(serverUri: string, options: ?NuclideSocketOptions = {}) {
     super();
     this._serverUri = serverUri;
     this._options = options;

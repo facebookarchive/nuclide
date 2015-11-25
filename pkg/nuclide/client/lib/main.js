@@ -16,7 +16,6 @@ const FILE_SYSTEM_SERVICE = 'FileSystemService';
 
 // TODO: Remove this once all services have been moved to framework v3.
 import {
-  getClient,
   getFileForPath,
   getService,
   getServiceLogger,
@@ -24,7 +23,6 @@ import {
 } from 'nuclide-remote-connection';
 
 module.exports = {
-  getClient,
   getFileForPath,
   getService,
   getServiceLogger,

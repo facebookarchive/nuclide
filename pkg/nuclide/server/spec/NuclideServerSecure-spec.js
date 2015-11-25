@@ -13,12 +13,13 @@ const fs = require('fs');
 const path = require('path');
 const {execSync} = require('child_process');
 const NuclideServer = require('../lib/NuclideServer');
-const NuclideClient = require('../lib/NuclideClient');
-const NuclideRemoteEventbus = require('../lib/NuclideRemoteEventbus');
 const {getVersion} = require('nuclide-version');
+import ClientComponent from '../lib/serviceframework/ClientComponent';
+import NuclideSocket from '../lib/NuclideSocket';
 
 let server;
 let client;
+let socket;
 
 // Paths to certificate authority crt (certificate)
 let ca_cert_path;
@@ -48,13 +49,14 @@ describe('Nuclide Sercure Server test suite', () => {
 
       await server.connect();
 
-      client = new NuclideClient('test', new NuclideRemoteEventbus('https://localhost:8176', {
+      socket = new NuclideSocket('https://localhost:8176', {
         certificateAuthorityCertificate: fs.readFileSync(ca_cert_path),
         clientCertificate: fs.readFileSync(client_cert_path),
         clientKey: fs.readFileSync(client_key_path),
-      }));
+      });
+      client = new ClientComponent(socket);
 
-      client.eventbus.socket.close();
+      socket.close();
       server.close();
     });
   });

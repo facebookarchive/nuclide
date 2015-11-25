@@ -9,12 +9,10 @@
  * the root directory of this source tree.
  */
 
-const NuclideClient = require('../lib/NuclideClient');
 const NuclideServer = require('../lib/NuclideServer');
-const NuclideRemoteEventbus = require('../lib/NuclideRemoteEventbus');
+import NuclideSocket from '../lib/NuclideSocket';
 
 let server: NuclideServer;
-let client: NuclideClient;
 let socket: NuclideSocket;
 
 xdescribe('NuclideSocket test suite', () => {
@@ -23,8 +21,7 @@ xdescribe('NuclideSocket test suite', () => {
     waitsForPromise(async () => {
       server = new NuclideServer({port: 8176});
       await server.connect();
-      client = new NuclideClient('test', new NuclideRemoteEventbus('http://localhost:8176'));
-      socket = client.eventbus.socket;
+      socket = new NuclideSocket('http://localhost:8176');
     });
 
     // Use spec-helper.coffee utils to test the the heartbeat interval.

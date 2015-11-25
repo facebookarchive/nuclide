@@ -14,12 +14,13 @@
 const WebSocket = require('ws');
 const {EventEmitter} = require('events');
 const NuclideServer = require('../lib/NuclideServer');
-const NuclideRemoteEventbus = require('../lib/NuclideRemoteEventbus');
-const NuclideClient = require('../lib/NuclideClient');
 const {getVersion} = require('nuclide-version');
+import ClientComponent from '../lib/serviceframework/ClientComponent';
+import NuclideSocket from '../lib/NuclideSocket';
 
 let server;
 let client;
+let socket;
 
 describe('Nuclide Server test suite', () => {
   beforeEach(() => {
@@ -28,7 +29,8 @@ describe('Nuclide Server test suite', () => {
     waitsForPromise(async () => {
       server = new NuclideServer({port: 8176});
       await server.connect();
-      client = new NuclideClient('test', new NuclideRemoteEventbus('http://localhost:8176'));
+      socket = new NuclideSocket('http://localhost:8176');
+      client = new ClientComponent(socket);
     });
   });
 
@@ -49,7 +51,7 @@ describe('Nuclide Server test suite', () => {
   xdescribe('reconnect websocket flow', () => {
     it('server sent messages, while disconnected will still be delievered', () => {
       // Here is the initial message.
-      const nuclideSocket = client.eventbus.socket;
+      const nuclideSocket = socket;
       const messageHandler = jasmine.createSpy();
       const reconnectHandler = jasmine.createSpy();
       nuclideSocket.on('reconnect', reconnectHandler);

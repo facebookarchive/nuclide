@@ -18,12 +18,10 @@ const {EventEmitter} = require('events');
 
 const RemoteFile = require('./RemoteFile');
 const RemoteDirectory = require('./RemoteDirectory');
-const NuclideClient = require('nuclide-server/lib/NuclideClient');
-const NuclideRemoteEventbus = require('nuclide-server/lib/NuclideRemoteEventbus');
-const {
-  getConnectionConfig,
-  setConnectionConfig,
-} = require('./RemoteConnectionConfigurationManager');
+const NuclideSocket = require('nuclide-server/lib/NuclideSocket');
+const ClientComponent = require('nuclide-server/lib/serviceframework/ClientComponent');
+const {getConnectionConfig, setConnectionConfig} =
+  require('./RemoteConnectionConfigurationManager');
 const {getVersion} = require('nuclide-version');
 
 const HEARTBEAT_AWAY_REPORT_COUNT = 3;
@@ -69,7 +67,7 @@ class RemoteConnection {
   _hgRepositoryDescription: ?HgRepositoryDescription;
   _heartbeatNetworkAwayCount: number;
   _lastHeartbeatNotification: ?HeartbeatNotification;
-  _client: ?NuclideClient;
+  _client: ?ClientComponent;
 
   constructor(config: RemoteConnectionConfiguration) {
     this._subscriptions = new CompositeDisposable();
@@ -118,7 +116,7 @@ class RemoteConnection {
   }
 
   _monitorConnectionHeartbeat() {
-    const socket = this.getClient().eventbus.socket;
+    const socket = this.getSocket();
     const serverUri = socket.getServerUri();
 
     /**
@@ -422,7 +420,7 @@ class RemoteConnection {
     }
   }
 
-  getClient(): NuclideClient {
+  getClient(): ClientComponent {
     if (!this._initialized) {
       throw new Error('Remote connection has not been initialized.');
     } else if (this._closed) {
@@ -432,7 +430,7 @@ class RemoteConnection {
     }
   }
 
-  _getClient(): NuclideClient {
+  _getClient(): ClientComponent {
     if (!this._client) {
       let uri;
       const options = {};
@@ -450,11 +448,8 @@ class RemoteConnection {
       // The remote connection and client are identified by both the remote host and the inital
       // working directory.
       const clientId = this.getRemoteHost() + this.getPathForInitialWorkingDirectory();
-      this._client = new NuclideClient(
-        clientId,
-        new NuclideRemoteEventbus(uri, options),
-        {cwd: this._config.cwd},
-      );
+      const socket = new NuclideSocket(uri, options);
+      this._client = new ClientComponent(socket);
     }
     return this._client;
   }
@@ -531,6 +526,10 @@ class RemoteConnection {
   getService(serviceName: string): any {
     const {getRemoteServiceByRemoteConnection} = require('./service-manager');
     return getRemoteServiceByRemoteConnection(serviceName, this);
+  }
+
+  getSocket(): NuclideSocket {
+    return this.getClient().getSocket();
   }
 }
 

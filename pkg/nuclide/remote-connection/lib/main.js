@@ -31,11 +31,9 @@ const nuclideClientExports = require('nuclide-commons').singleton.get(
       getRemoteServiceByRemoteConnection,
     } = require('./service-manager');
     const {
-      getClient,
       getFileForPath,
     } = require('./client');
     return {
-      getClient,
       getFileForPath,
       getService,
       getServiceLogger,
@@ -51,7 +49,6 @@ module.exports = {
   RemoteFile,
   RemoteDirectory,
   SshHandshake,
-  getClient: nuclideClientExports.getClient,
   getFileForPath: nuclideClientExports.getFileForPath,
   getService: nuclideClientExports.getService,
   getServiceLogger: nuclideClientExports.getServiceLogger,

@@ -3,7 +3,7 @@
 The classes defined in this directory are used to integrate the service framework proxy-generation and marshalling code with the actual message passing layer. See the `nuclide-service-parser` package for steps related to definition parsing, proxy-generation, and type marshalling.
 
 ## ClientComponent
-`ClientComponent` is used by the `NuclideRemoteEventbus` class - all functions related to the service framework are delegated to a `ClientComponent` instance. These functions are `callRemoteFunction`, `createRemoteObject`, `callRemoteMethod`, and `disposeRemoteObject`.
+`ClientComponent` is used by the `RemoteConnection` class - all functions related to the service framework are delegated to a `ClientComponent` instance. These functions are `callRemoteFunction`, `createRemoteObject`, `callRemoteMethod`, and `disposeRemoteObject`.
 
 ## ServerComponent
 `ServerComponent` is used by the `NuclideServer` class - all functions related to the service framework are delegated to a `ServerComponent` instance. All of the messages come in through the `handleMessage` function.

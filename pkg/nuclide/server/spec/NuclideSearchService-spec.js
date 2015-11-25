@@ -10,8 +10,6 @@
  */
 
 const NuclideServer = require('../lib/NuclideServer');
-const NuclideClient = require('../lib/NuclideClient');
-const NuclideRemoteEventbus = require('../lib/NuclideRemoteEventbus');
 
 const path = require('path');
 const pathToTestDir = path.join(__dirname, 'testfiles');

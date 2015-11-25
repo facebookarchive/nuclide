@@ -54,7 +54,7 @@ var unmarshalCall = (...args) => t.callExpression(clientDotUnmarshalExpression, 
  * Given the parsed result of a definition file, generate a remote proxy module
  * that exports the definition's API, but internally calls RPC functions. The function
  * does not return the proxy module directly, but rather returns a 'factory' method
- * that should be called with a NuclideClient object. This factory method returns the
+ * that should be called with a ClientComponent object. This factory method returns the
  * remote module with the client object 'closed over,' and used to make the RPC calls.
  * @param defs - The result of parsing the definition file.
  * @returns The proxy factory method.
@@ -87,7 +87,7 @@ export default function generateProxy(serviceName: string, defs: Definitions): s
   // Return the remote module.
   statements.push(t.returnStatement(remoteModule));
 
-  // Wrap the remoteModule construction in a function that takes a NuclideClient object as
+  // Wrap the remoteModule construction in a function that takes a ClientComponent object as
   // an argument.
   var func = t.arrowFunctionExpression([clientIdentifier], t.blockStatement(statements));
   var assignment = t.assignmentExpression('=', moduleDotExportsExpression, func);
@@ -120,7 +120,7 @@ function generateFunctionProxy(name: string, funcType: FunctionType): any {
   var args = funcType.argumentTypes.map((arg, i) => t.identifier(`arg${i}`));
   var argumentsPromise = generateArgumentConversionPromise(funcType.argumentTypes);
 
-  // Call the remoteFunctionCall method of the NuclideClient object.
+  // Call the remoteFunctionCall method of the ClientComponent object.
   var rpcCallExpression = t.callExpression(callRemoteFunctionExpression, [
     t.literal(name),
     t.literal(funcType.returnType.kind),

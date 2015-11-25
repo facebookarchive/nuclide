@@ -13,15 +13,14 @@ import * as config from '../../lib/serviceframework/config';
 import {getPath} from 'nuclide-remote-uri';
 import {getProxy} from 'nuclide-service-parser';
 import NuclideServer from '../../lib/NuclideServer';
-import NuclideClient from '../../lib/NuclideClient';
-import NuclideRemoteEventbus from '../../lib/NuclideRemoteEventbus';
 import ServiceFramework from '../../lib/serviceframework';
+import NuclideSocket from '../../lib/NuclideSocket';
 
 type Services = Array<{name: string, definition: string, implementation: string}>;
 
 export default class ServiceTestHelper {
   _server: NuclideServer;
-  _client: NuclideClient;
+  _client: ServiceFramework.ClientComponent;
   _connection: _RemoteConnectionMock;
 
   async start(customServices: ?Services): Promise<void> {
@@ -33,18 +32,18 @@ export default class ServiceTestHelper {
     await this._server.connect();
 
     const port = this._server._webServer.address().port;
-    this._client = new NuclideClient('test',
-      new NuclideRemoteEventbus(`http://localhost:${port}`));
+    this._client = new ServiceFramework.ClientComponent(
+      new NuclideSocket(`http://localhost:${port}`));
     this._connection = new _RemoteConnectionMock(this._client, port);
   }
 
   stop(): void {
-    this._client.eventbus.socket.close();
+    this._client.getSocket().close();
     this._server.close();
   }
 
   getRemoteService(serviceName: string, serviceDefinitionFile: string): any {
-    return getProxy(serviceName, serviceDefinitionFile, this._connection.getClient());
+    return getProxy(serviceName, serviceDefinitionFile, this._client);
   }
 
   getRemoteConnection(): _RemoteConnectionMock {
@@ -53,10 +52,10 @@ export default class ServiceTestHelper {
 }
 
 class _RemoteConnectionMock {
-  _client: NuclideClient;
+  _client: ServiceFramework.ClientComponent;
   _port: number;
 
-  constructor(client: NuclideClient, port: number) {
+  constructor(client: ServiceFramework.ClientComponent, port: number) {
     this._client = client;
     this._port = port;
 
@@ -65,7 +64,7 @@ class _RemoteConnectionMock {
       path => this.getUriOfRemotePath(path));
   }
 
-  getClient(): NuclideClient {
+  getClient(): ServiceFramework.ClientComponent {
     return this._client;
   }
 

@@ -10,6 +10,7 @@
  */
 
 import * as config from '../../lib/serviceframework/config';
+import {SERVICE_FRAMEWORK3_CHANNEL} from '../config';
 
 import invariant from 'assert';
 import {EventEmitter} from 'events';
@@ -27,17 +28,17 @@ import type {RequestMessage, CallRemoteFunctionMessage, CreateRemoteObjectMessag
 const logger = require('nuclide-logging').getLogger();
 
 export default class ClientComponent {
+  _rpcRequestId: number;
   _emitter: EventEmitter;
   _socket: NuclideSocket;
-  _requestIdGenerator: () => number;
 
   _typeRegistry: TypeRegistry;
   _objectRegistry: Map<number, any>;
 
-  constructor(emitter: EventEmitter, socket: NuclideSocket, requestIdGenerator: () => number) {
-    this._emitter = emitter;
+  constructor(socket: NuclideSocket) {
+    this._emitter = new EventEmitter();
     this._socket = socket;
-    this._requestIdGenerator = requestIdGenerator;
+    this._rpcRequestId = 1;
 
     this._typeRegistry = new TypeRegistry();
     this._objectRegistry = new Map();
@@ -84,6 +85,7 @@ export default class ClientComponent {
         continue;
       }
     }
+    this._socket.on('message', (message) => this._handleSocketMessage(message));
   }
 
   // Delegate marshalling to the type registry.
@@ -109,7 +111,7 @@ export default class ClientComponent {
       protocol: 'service_framework3_rpc',
       type: 'FunctionCall',
       function: functionName,
-      requestId: this._requestIdGenerator(),
+      requestId: this._generateRequestId(),
       args,
     };
     return this._sendMessageAndListenForResult(message, returnType, `Calling function ${functionName}`);
@@ -129,7 +131,7 @@ export default class ClientComponent {
       type: 'MethodCall',
       method: methodName,
       objectId,
-      requestId: this._requestIdGenerator(),
+      requestId: this._generateRequestId(),
       args,
     };
     return this._sendMessageAndListenForResult(message, returnType, `Calling remote method ${methodName}.`);
@@ -146,7 +148,7 @@ export default class ClientComponent {
       protocol: 'service_framework3_rpc',
       type: 'NewObject',
       interface: interfaceName,
-      requestId: this._requestIdGenerator(),
+      requestId: this._generateRequestId(),
       args,
     };
     return this._sendMessageAndListenForResult(message, 'promise', `Creating instance of ${interfaceName}`);
@@ -162,7 +164,7 @@ export default class ClientComponent {
     const message: DisposeRemoteObjectMessage = {
       protocol: 'service_framework3_rpc',
       type: 'DisposeObject',
-      requestId: this._requestIdGenerator(),
+      requestId: this._generateRequestId(),
       objectId,
     };
     return this._sendMessageAndListenForResult(message, 'promise', `Disposing object ${objectId}`);
@@ -234,6 +236,31 @@ export default class ClientComponent {
       default:
         throw new Error(`Unkown return type: ${returnType}.`);
     }
+  }
+
+  getSocket(): NuclideSocket {
+    return this._socket;
+  }
+
+  _handleSocketMessage(message: any) {
+    const {channel} = message;
+    invariant(channel === SERVICE_FRAMEWORK3_CHANNEL);
+    const {requestId, hadError, error, result} = message;
+    this._emitter.emit(requestId.toString(), hadError, error, result);
+  }
+
+  _generateRequestId() {
+    return this._rpcRequestId++;
+  }
+
+  // Resolves if the connection looks healthy.
+  // Will reject quickly if the connection looks unhealthy.
+  testConnection(): Promise<void> {
+    return this._socket.testConnection();
+  }
+
+  close(): void {
+    this._socket.close();
   }
 }
 
