@@ -8,10 +8,11 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
+
+import type {BlameForEditor} from 'nuclide-blame-base';
+
 import {hgRepositoryForEditor} from './common';
 import {trackOperationTiming} from 'nuclide-analytics';
-
-import type {BlameForEditor} from 'nuclide-blame-base/blame-types';
 
 let logger;
 function getLogger() {
@@ -21,7 +22,7 @@ function getLogger() {
   return logger;
 }
 
-function canProvideBlameForEditor(editor: TextEditor): boolean {
+function canProvideBlameForEditor(editor: atom$TextEditor): boolean {
   if (editor.isModified()) {
     atom.notifications.addInfo(
       'There is Hg blame information for this file, but only for saved changes. ' +
@@ -37,14 +38,14 @@ function canProvideBlameForEditor(editor: TextEditor): boolean {
   return !!repo;
 }
 
-function getBlameForEditor(editor: TextEditor): Promise<BlameForEditor> {
+function getBlameForEditor(editor: atom$TextEditor): Promise<BlameForEditor> {
   return trackOperationTiming(
     'blame-provider-hg:getBlameForEditor',
     () => doGetBlameForEditor(editor)
   );
 }
 
-async function doGetBlameForEditor(editor: TextEditor): Promise<BlameForEditor> {
+async function doGetBlameForEditor(editor: atom$TextEditor): Promise<BlameForEditor> {
   const path = editor.getPath();
   if (!path) {
     return Promise.resolve(new Map());
@@ -57,7 +58,7 @@ async function doGetBlameForEditor(editor: TextEditor): Promise<BlameForEditor> 
     throw new Error(message);
   }
 
-  const blameInfo = await repo.getBlameAtHead(editor.getPath());
+  const blameInfo = await repo.getBlameAtHead(path);
   // TODO (t8045823) Convert the return type of ::getBlameAtHead to a Map when
   // the service framework supports a Map return type.
   const useShortName = !(atom.config.get('nuclide-blame-provider-hg.showVerboseBlame'));

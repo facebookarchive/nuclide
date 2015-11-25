@@ -31,7 +31,8 @@
     "nuclide-logging": "0.0.0"
   },
   "devDependencies": {
-    "nuclide-blame-base": "0.0.0"
+    "nuclide-blame-base": "0.0.0",
+    "nuclide-hg-repository-client": "0.0.0"
   },
   "_atomModuleCache": {
     "extensions": {

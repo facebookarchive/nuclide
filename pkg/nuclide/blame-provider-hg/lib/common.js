@@ -8,12 +8,15 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
+
+import type {HgRepositoryClient} from 'nuclide-hg-repository-client';
+
 const {repositoryForPath} = require('nuclide-hg-git-bridge');
 
-export function hgRepositoryForEditor(editor: TextEditor): ?Repository {
-  const repo = repositoryForPath(editor.getPath());
+export function hgRepositoryForEditor(editor: TextEditor): ?HgRepositoryClient {
+  const repo = repositoryForPath(editor.getPath() || '');
   if (!repo || repo.getType() !== 'hg') {
     return null;
   }
-  return repo;
+  return ((repo: any): HgRepositoryClient);
 }
