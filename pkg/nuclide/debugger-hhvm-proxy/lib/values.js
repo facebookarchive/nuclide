@@ -10,7 +10,7 @@
  */
 
 
-import {log} from './utils';
+import logger from './utils';
 import {base64Decode} from './helpers.js';
 import {
   remoteObjectIdOfObjectId,
@@ -119,7 +119,7 @@ function getAggregateRemoteObjectId(contextId: ObjectId, dbgpProperty: DbgpPrope
   const numchildren = Number(dbgpProperty.$.numchildren);
   const pagesize = Number(dbgpProperty.$.pagesize);
   const pageCount = Math.trunc((numchildren + pagesize - 1) / pagesize);
-  log(`numchildren: ${numchildren} pagesize: ${pagesize} pageCount ${pageCount}`)
+  logger.log(`numchildren: ${numchildren} pagesize: ${pagesize} pageCount ${pageCount}`);
   if (pageCount > 1) {
     const elementRange = {
       pagesize,

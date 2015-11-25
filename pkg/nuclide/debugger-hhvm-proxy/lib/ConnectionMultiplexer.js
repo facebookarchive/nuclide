@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {log, logError} from './utils';
+import logger from './utils';
 import {Connection} from './Connection';
 import {
   isDummyConnection,
@@ -26,7 +26,7 @@ import type {Disposable} from 'nuclide-commons';
 import type {ExceptionState} from './BreakpointStore';
 const {BreakpointStore} = require('./BreakpointStore');
 const {DbgpConnector} = require('./DbgpConnector');
-import type {ConnectionConfig} from './DbgpConnector';
+import type {ConnectionConfig} from './HhvmDebuggerProxyService';
 import {
   STATUS_STARTING,
   STATUS_STOPPING,
@@ -140,7 +140,7 @@ export class ConnectionMultiplexer {
   }
 
   async _handleDummyConnection(socket: Socket): Promise<void> {
-    log('ConnectionMultiplexer successfully got dummy connection.');
+    logger.log('ConnectionMultiplexer successfully got dummy connection.');
     const dummyConnection = new Connection(socket);
     // Continue from loader breakpoint to hit xdebug_break()
     // which will load whole www repo for evaluation if possible.
@@ -184,7 +184,7 @@ export class ConnectionMultiplexer {
       try {
         status = await connection.getStatus();
       } catch (e) {
-        logError('Error getting initial connection status: ' + e.message);
+        logger.logError('Error getting initial connection status: ' + e.message);
         status = STATUS_ERROR;
       }
       this._connectionOnStatus(connection, status);
@@ -192,7 +192,7 @@ export class ConnectionMultiplexer {
   }
 
   _connectionOnStatus(connection: Connection, status: string): void {
-    log(`Mux got status: ${status} on connection ${connection.getId()}`);
+    logger.log(`Mux got status: ${status} on connection ${connection.getId()}`);
     this._connections.get(connection).status = status;
 
     switch (status) {
@@ -214,7 +214,7 @@ export class ConnectionMultiplexer {
       case STATUS_BREAK:
         if (connection === this._enabledConnection) {
           // This can happen when we step.
-          log('Mux break on enabled connection');
+          logger.log('Mux break on enabled connection');
           this._emitStatus(STATUS_BREAK);
           return;
         }
@@ -235,7 +235,7 @@ export class ConnectionMultiplexer {
     }
 
     if (this._status === STATUS_BREAK) {
-      log('Mux already in break status');
+      logger.log('Mux already in break status');
       return;
     }
 
@@ -249,7 +249,7 @@ export class ConnectionMultiplexer {
   }
 
   _enableConnection(connection: Connection): void {
-    log('Mux enabling connection');
+    logger.log('Mux enabling connection');
     this._enabledConnection = connection;
     this._setStatus(STATUS_BREAK);
   }
@@ -273,7 +273,7 @@ export class ConnectionMultiplexer {
   }
 
   async runtimeEvaluate(expression: string): Promise<Object> {
-    log(`runtimeEvaluate() on dummy connection for: ${expression}`);
+    logger.log(`runtimeEvaluate() on dummy connection for: ${expression}`);
     if (this._dummyConnection) {
       // Global runtime evaluation on dummy connection does not care about
       // which frame it is being evaluated on so choose top frame here.
@@ -388,7 +388,7 @@ export class ConnectionMultiplexer {
   }
 
   _disableConnection(): void {
-    log('Mux disabling connection');
+    logger.log('Mux disabling connection');
     this._enabledConnection = null;
     this._setStatus(STATUS_RUNNING);
   }

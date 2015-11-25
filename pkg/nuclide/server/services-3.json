@@ -48,7 +48,6 @@
     "name": "FindInProjectService"
   },
   {
-    "definition": "nuclide-debugger-hhvm-proxy/lib/HhvmDebuggerProxyService.def",
     "implementation": "nuclide-debugger-hhvm-proxy/lib/HhvmDebuggerProxyService.js",
     "name": "HhvmDebuggerProxyService"
   },

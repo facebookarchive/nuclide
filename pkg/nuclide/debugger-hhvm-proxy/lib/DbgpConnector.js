@@ -9,13 +9,13 @@
  * the root directory of this source tree.
  */
 
-import {log, logError} from './utils';
+import logger from './utils';
 import {Emitter} from 'event-kit';
 import {DbgpMessageHandler, getDbgpMessageHandlerInstance} from './DbgpMessageHandler';
 import {failConnection} from './ConnectionUtils';
 
 import type {Socket, Server} from 'net';
-
+import type {ConnectionConfig} from './HhvmDebuggerProxyService';
 /**
  * xdebugPort is the port to listen for dbgp connections on.
  *
@@ -27,15 +27,6 @@ import type {Socket, Server} from 'net';
  * and pid filters connections by process id (appid in the dbgp terminology).
  * Note that 0 pid also does not filter on process id.
  */
-export type ConnectionConfig = {
-  xdebugPort: number;
-  pid: ?number;
-  scriptRegex: ?string;
-  idekeyRegex: ?string;
-  endDebugWhenNoRequests: boolean;
-  logLevel: string;
-  targetUri: string;
-};
 
 const DBGP_ATTACH_EVENT = 'dbgp-attach-event';
 const DBGP_CLOSE_EVENT = 'dbgp-close-event';
@@ -80,16 +71,16 @@ export class DbgpConnector {
   listen(): void {
     const port = this._config.xdebugPort;
 
-    log('Creating debug server on port ' + port);
+    logger.log('Creating debug server on port ' + port);
 
     const server = require('net').createServer();
 
-    server.on('close', socket => log('Closing port ' + port));
-    server.listen(port, () => log('Listening on port ' + port));
+    server.on('close', socket => logger.log('Closing port ' + port));
+    server.listen(port, undefined, undefined, () => logger.log('Listening on port ' + port));
 
     server.on('error', error => this._onServerError(error));
     server.on('connection', socket => this._onSocketConnection(socket));
-    server.on('close', () => { log('DBGP Server closed.'); });
+    server.on('close', () => { logger.log('DBGP Server closed.'); });
 
     this._server = server;
   }
@@ -97,7 +88,7 @@ export class DbgpConnector {
   _onSocketConnection(socket: Socket) {
     const port = this._config.xdebugPort;
 
-    log('Connection on port ' + port);
+    logger.log('Connection on port ' + port);
     if (!this._checkListening(socket, 'Connection')) {
       return;
     }
@@ -115,7 +106,7 @@ export class DbgpConnector {
       errorMessage = `Unknown debugger socket error: ${error.code}.`;
     }
 
-    logError(errorMessage);
+    logger.logError(errorMessage);
     this._emitter.emit(DBGP_ERROR_EVENT, errorMessage);
 
     this.dispose();
@@ -151,7 +142,7 @@ export class DbgpConnector {
   _checkListening(socket: Socket, message: string): boolean {
     if (!this.isListening()) {
       const port = this._config.xdebugPort;
-      log('Ignoring ' + message + ' on port ' + port + ' after stopped connection.');
+      logger.log('Ignoring ' + message + ' on port ' + port + ' after stopped connection.');
       return false;
     }
     return true;

@@ -10,10 +10,9 @@
  */
 
 
-const {log, logError} = require('./utils');
+import logger from './utils';
 const {EventEmitter} = require('events');
 import {DbgpMessageHandler, getDbgpMessageHandlerInstance} from './DbgpMessageHandler';
-import type {Disposable} from 'nuclide-commons';
 import type {Socket} from 'net';
 
 // Responses to the DBGP 'status' command
@@ -104,7 +103,7 @@ class DbgpSocket {
   _onError(error: Error): void {
     // Not sure if hhvm is alive or not
     // do not set _isClosed flag so that detach will be sent before dispose().
-    logError('socket error ' + error.code);
+    logger.logError('socket error ' + error.code);
     this._emitStatus(STATUS_ERROR);
   }
 
@@ -116,7 +115,7 @@ class DbgpSocket {
 
   _onData(data: Buffer | string): void {
     const message = data.toString();
-    log('Recieved data: ' + message);
+    logger.log('Recieved data: ' + message);
     const responses = this._messageHandler.parseMessages(message);
     responses.forEach(r => {
       const response = r.response;
@@ -126,23 +125,24 @@ class DbgpSocket {
         const transactionId = Number(transaction_id);
         const call = this._calls.get(transactionId);
         if (!call) {
-          logError('Missing call for response: ' + message);
+          logger.logError('Missing call for response: ' + message);
           return;
         }
         this._calls.delete(transactionId);
 
         if (call.command !== command) {
-          logError('Bad command in response. Found ' + command + '. expected ' + call.command);
+          logger.logError('Bad command in response. Found ' +
+            command + '. expected ' + call.command);
           return;
         }
         try {
-          log('Completing call: ' + message);
+          logger.log('Completing call: ' + message);
           call.complete(response);
         } catch (e) {
-          logError('Exception: ' + e.toString() + ' handling call: ' + message);
+          logger.logError('Exception: ' + e.toString() + ' handling call: ' + message);
         }
       } else {
-        logError('Unexpected socket message: ' + message);
+        logger.logError('Unexpected socket message: ' + message);
       }
     });
   }
@@ -276,15 +276,15 @@ class DbgpSocket {
 
   _sendMessage(message: string): void {
     if (this._socket) {
-      log('Sending message: ' + message);
+      logger.log('Sending message: ' + message);
       this._socket.write(message + '\x00');
     } else {
-      logError('Attempt to send message after dispose: ' + message);
+      logger.logError('Attempt to send message after dispose: ' + message);
     }
   }
 
   _emitStatus(status: string): void {
-    log('Emitting status: ' + status);
+    logger.log('Emitting status: ' + status);
     this._emitter.emit(DBGP_SOCKET_STATUS_EVENT, status);
   }
 

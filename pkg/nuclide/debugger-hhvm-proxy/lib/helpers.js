@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {log, logErrorAndThrow} from './utils';
+import logger from './utils';
 import type {ChildProcess} from 'child_process';
 
 export const DUMMY_FRAME_ID = 'Frame.0';
@@ -41,7 +41,7 @@ export function uriToPath(uri: string): string {
   const components = require('url').parse(uri);
   // Some filename returned from hhvm does not have protocol.
   if (components.protocol !== 'file:' && components.protocol !== null) {
-    logErrorAndThrow('unexpected file protocol. Got: ' + components.protocol);
+    logger.logErrorAndThrow('unexpected file protocol. Got: ' + components.protocol);
   }
   return components.pathname;
 }
@@ -52,20 +52,20 @@ export function launchPhpScriptWithXDebugEnabled(scriptPath: string): ChildProce
   // TODO[jeffreytan]: make hhvm path configurable so that it will
   // work for non-FB environment.
   const proc = child_process.spawn('/usr/local/hphpi/bin/hhvm', args);
-  log(`child_process(${proc.pid}) spawned with xdebug enabled for: ${scriptPath}`);
+  logger.log(`child_process(${proc.pid}) spawned with xdebug enabled for: ${scriptPath}`);
 
   proc.stdout.on('data', chunk => {
     // stdout should hopefully be set to line-buffering, in which case the
     // string would come on one line.
     const block: string = chunk.toString();
     const output = `child_process(${proc.pid}) stdout: ${block}`;
-    log(output);
+    logger.log(output);
   });
   proc.on('error', err => {
-    log(`child_process(${proc.pid}) error: ${err}`);
+    logger.log(`child_process(${proc.pid}) error: ${err}`);
   });
   proc.on('exit', code => {
-    log(`child_process(${proc.pid}) exit: ${code}`);
+    logger.log(`child_process(${proc.pid}) exit: ${code}`);
   });
   return proc;
 }

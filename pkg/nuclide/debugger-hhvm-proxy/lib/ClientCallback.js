@@ -8,7 +8,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-import {log, logError} from './utils';
+import logger from './utils';
 import {Observable, Subject} from 'rx';
 
 export type UserMessageType = 'notification' | 'console';
@@ -47,7 +47,7 @@ export class ClientCallback {
   }
 
   sendUserMessage(type: UserMessageType, message: Object): void {
-    log(`sendUserMessage(${type}): ${JSON.stringify(message)}`);
+    logger.log(`sendUserMessage(${type}): ${JSON.stringify(message)}`);
     if (type === 'notification') {
       this._notificationObservable.onNext({
         type: message.type,
@@ -58,13 +58,13 @@ export class ClientCallback {
         message,
       });
     } else {
-      logError(`Unknown UserMessageType: ${type}`);
+      logger.logError(`Unknown UserMessageType: ${type}`);
     }
   }
 
   unknownMethod(id: number, domain: string, method: string, params: ?Object): void {
     const message = 'Unknown chrome dev tools method: ' + domain + '.' + method;
-    log(message);
+    logger.log(message);
     this.replyWithError(id, message);
   }
 
@@ -86,7 +86,7 @@ export class ClientCallback {
 
   _sendJsonObject(value: Object): void {
     const message = JSON.stringify(value);
-    log('Sending JSON: ' + message);
+    logger.log('Sending JSON: ' + message);
     this._serverMessageObservable.onNext(message);
   }
 

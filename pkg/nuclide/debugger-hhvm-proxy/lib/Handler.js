@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {log} from './utils';
+import logger from './utils';
 import {ClientCallback} from './ClientCallback';
 import type {UserMessageType} from './ClientCallback';
 
@@ -35,7 +35,7 @@ class Handler {
 
   unknownMethod(id: number, method: string, params: ?Object): void {
     const message = 'Unknown chrome dev tools method: ' + this.getDomain() + '.' + method;
-    log(message);
+    logger.log(message);
     this.replyWithError(id, message);
   }
 

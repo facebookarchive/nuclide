@@ -10,7 +10,7 @@
  */
 
 
-import {log, logErrorAndThrow} from './utils';
+import logger from './utils';
 import {uriToPath} from './helpers';
 import Handler from './Handler';
 import {
@@ -60,7 +60,7 @@ export class DebuggerHandler extends Handler {
   }
 
   onSessionEnd(callback: () => void): void {
-    log('onSessionEnd');
+    logger.log('onSessionEnd');
     this._emitter.on(SESSION_END_EVENT, callback);
   }
 
@@ -174,7 +174,7 @@ export class DebuggerHandler extends Handler {
   }
 
   async _convertFrame(frame: Object, frameIndex: number): Promise<Object> {
-    log('Converting frame: ' + JSON.stringify(frame));
+    logger.log('Converting frame: ' + JSON.stringify(frame));
     const {
       idOfFrame,
       functionOfFrame,
@@ -204,7 +204,7 @@ export class DebuggerHandler extends Handler {
       this._connectionMultiplexer.listen();
       return;
     }
-    log('Sending continuation command: ' + command);
+    logger.log('Sending continuation command: ' + command);
     this._connectionMultiplexer.sendContinuationCommand(command);
   }
 
@@ -216,7 +216,7 @@ export class DebuggerHandler extends Handler {
   }
 
   async _onStatusChanged(status: string): Promise {
-    log('Sending status: ' + status);
+    logger.log('Sending status: ' + status);
     switch (status) {
       case STATUS_BREAK:
         await this._sendPausedMessage();
@@ -234,7 +234,7 @@ export class DebuggerHandler extends Handler {
         // These two should be hidden by the ConnectionMultiplexer
         break;
       default:
-        logErrorAndThrow('Unexpected status: ' + status);
+        logger.logErrorAndThrow('Unexpected status: ' + status);
     }
   }
 
@@ -260,7 +260,7 @@ export class DebuggerHandler extends Handler {
   }
 
   _endSession(): void {
-    log('DebuggerHandler: Ending session');
+    logger.log('DebuggerHandler: Ending session');
     if (this._statusSubscription) {
       this._statusSubscription.dispose();
       this._statusSubscription = null;

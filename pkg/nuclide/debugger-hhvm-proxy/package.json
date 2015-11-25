@@ -1,7 +1,7 @@
 {
   "name": "nuclide-debugger-hhvm-proxy",
   "repository": "https://github.com/facebook/nuclide",
-  "main": "./lib/main",
+  "main": "./lib/HhvmDebuggerProxyService",
   "version": "0.0.0",
   "description": "Proxies from chrome debug protocol to dbgp for hhvm debugging.",
   "nuclide": {

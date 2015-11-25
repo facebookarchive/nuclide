@@ -10,7 +10,7 @@
  */
 
 
-const {log, logErrorAndThrow} = require('./utils');
+const logger = require('./utils');
 const {
   remoteObjectIdOfObjectId,
   createContextObjectId,
@@ -149,7 +149,7 @@ export class DataCache {
   async getProperties(remoteId: RemoteObjectId): Promise<Array<PropertyDescriptor>> {
     const id = JSON.parse(remoteId);
     if (id.enableCount !== this._enableCount) {
-      logErrorAndThrow(`Got request for stale RemoteObjectId ${remoteId}`);
+      logger.logErrorAndThrow(`Got request for stale RemoteObjectId ${remoteId}`);
     }
 
     // context and single paged ids require getting children from the debuggee and converting
@@ -191,7 +191,7 @@ function contextNameToScopeType(name: string): string {
       return 'global';
   // TODO: Verify this ...
     default:
-      log(`Unexpected context name: ${name}`);
+      logger.log(`Unexpected context name: ${name}`);
       return 'closure';
   }
 }

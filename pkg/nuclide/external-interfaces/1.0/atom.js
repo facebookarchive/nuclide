@@ -31,6 +31,10 @@ type atom$IDisposable = {
   dispose: () => void;
 }
 
+type Disposable = {
+  dispose: () => void;
+}
+
 type atom$CommandCallback = (event: Event) => mixed;
 
 declare class atom$CommandRegistry {

@@ -10,7 +10,7 @@
  */
 
 
-const {log, logError} = require('./utils');
+const logger = require('./utils');
 const {DebuggerHandler} = require('./DebuggerHandler');
 const PageHandler = require('./PageHandler');
 const ConsoleHandler = require('./ConsoleHandler');
@@ -18,7 +18,7 @@ const {RuntimeHandler} = require('./RuntimeHandler');
 const {ConnectionMultiplexer} = require('./ConnectionMultiplexer');
 import {ClientCallback} from './ClientCallback';
 
-import type {ConnectionConfig} from './DbgpConnector';
+import type {ConnectionConfig} from './HhvmDebuggerProxyService';
 import type Handler from './Handler';
 
 /**
@@ -59,12 +59,12 @@ export class MessageTranslator {
   }
 
   onSessionEnd(callback: () => void): void {
-    log('onSessionEnd');
+    logger.log('onSessionEnd');
     this._debuggerHandler.onSessionEnd(callback);
   }
 
   async handleCommand(command: string): Promise {
-    log('handleCommand: ' + command);
+    logger.log('handleCommand: ' + command);
     const {id, method, params} = JSON.parse(command);
 
     if (!method || typeof method !== 'string') {
@@ -86,13 +86,13 @@ export class MessageTranslator {
     try {
       await this._handlers.get(domain).handleMethod(id, methodName, params);
     } catch (e) {
-      logError(`Exception handling command ${id}: ${e} ${e.stack}`);
+      logger.logError(`Exception handling command ${id}: ${e} ${e.stack}`);
       this._replyWithError(id, `Error handling command: ${e}\n ${e.stack}`);
     }
   }
 
   _replyWithError(id: number, error: string): void {
-    log(error);
+    logger.log(error);
     this._clientCallback.replyWithError(id, error);
   }
 

@@ -10,7 +10,7 @@
  */
 
 
-const {log} = require('./utils');
+const logger = require('./utils');
 const {
   remoteObjectIdOfObjectId,
   endIndexOfObjectId,
@@ -22,7 +22,7 @@ const {
 const {convertValue} = require('./values');
 
 function convertProperties(id: ObjectId, properties: Array<DbgpProperty>): Array<PropertyDescriptor> {
-  log('Got properties: ' + JSON.stringify(properties));
+  logger.log('Got properties: ' + JSON.stringify(properties));
   return properties.map(property => convertProperty(id, property));
 }
 
@@ -30,7 +30,7 @@ function convertProperties(id: ObjectId, properties: Array<DbgpProperty>): Array
  * Converts a DbgpProperty to a Chrome PropertyDescriptor.
  */
 function convertProperty(contextId: ObjectId, dbgpProperty: DbgpProperty): PropertyDescriptor {
-  log('Converting to Chrome property: ' + JSON.stringify(dbgpProperty));
+  logger.log('Converting to Chrome property: ' + JSON.stringify(dbgpProperty));
   const result = {
     configurable: false,
     enumerable: true,

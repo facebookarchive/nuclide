@@ -8,7 +8,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-import {log} from './utils';
+import logger from './utils';
 import type {Connection} from './Connection';
 
 type BreakpointId = string;
@@ -99,7 +99,7 @@ export class BreakpointStore {
       return await this._removeBreakpointFromConnections(breakpointId);
     } else {
       // This can happen if users switch between 'none' and 'uncaught' states.
-      log('No exception breakpoint to remove.');
+      logger.log('No exception breakpoint to remove.');
       return Promise.resolve();
     }
   }

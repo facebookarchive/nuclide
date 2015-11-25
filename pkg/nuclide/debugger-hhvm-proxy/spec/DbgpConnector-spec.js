@@ -94,7 +94,7 @@ describe('debugger-hhvm-proxy DbgpConnector', () => {
     connector.onAttach(onAttach);
 
     expect(server.on).toHaveBeenCalledWith('close', jasmine.any(Function));
-    expect(server.listen).toHaveBeenCalledWith(port, jasmine.any(Function));
+    expect(server.listen).toHaveBeenCalledWith(port, undefined, undefined, jasmine.any(Function));
     expect(server.on).toHaveBeenCalledWith('error', jasmine.any(Function));
     expect(server.on).toHaveBeenCalledWith('connection', jasmine.any(Function));
     expect(server.on).toHaveBeenCalledWith('close', jasmine.any(Function));
@@ -127,7 +127,7 @@ describe('debugger-hhvm-proxy DbgpConnector', () => {
     connector.onClose(onClose);
 
     expect(server.on).toHaveBeenCalledWith('close', jasmine.any(Function));
-    expect(server.listen).toHaveBeenCalledWith(port, jasmine.any(Function));
+    expect(server.listen).toHaveBeenCalledWith(port, undefined, undefined, jasmine.any(Function));
     expect(server.on).toHaveBeenCalledWith('error', jasmine.any(Function));
     expect(server.on).toHaveBeenCalledWith('connection', jasmine.any(Function));
     expect(server.on).toHaveBeenCalledWith('close', jasmine.any(Function));
@@ -157,7 +157,7 @@ describe('debugger-hhvm-proxy DbgpConnector', () => {
     connector.onError(onError);
 
     expect(server.on).toHaveBeenCalledWith('close', jasmine.any(Function));
-    expect(server.listen).toHaveBeenCalledWith(port, jasmine.any(Function));
+    expect(server.listen).toHaveBeenCalledWith(port, undefined, undefined, jasmine.any(Function));
     expect(server.on).toHaveBeenCalledWith('error', jasmine.any(Function));
     expect(server.on).toHaveBeenCalledWith('connection', jasmine.any(Function));
     expect(server.on).toHaveBeenCalledWith('close', jasmine.any(Function));
@@ -197,7 +197,7 @@ describe('debugger-hhvm-proxy DbgpConnector', () => {
     connector.onError(onError);
 
     expect(server.on).toHaveBeenCalledWith('close', jasmine.any(Function));
-    expect(server.listen).toHaveBeenCalledWith(port, jasmine.any(Function));
+    expect(server.listen).toHaveBeenCalledWith(port, undefined, undefined, jasmine.any(Function));
     expect(server.on).toHaveBeenCalledWith('error', jasmine.any(Function));
     expect(server.on).toHaveBeenCalledWith('connection', jasmine.any(Function));
     expect(server.on).toHaveBeenCalledWith('close', jasmine.any(Function));

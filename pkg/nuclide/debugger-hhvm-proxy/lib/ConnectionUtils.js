@@ -8,12 +8,12 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-import {log, logError} from './utils';
+import logger from './utils';
 import {launchPhpScriptWithXDebugEnabled, uriToPath} from './helpers';
 import {fsPromise, findNearestFile} from 'nuclide-commons';
 
 import type {Socket} from 'net';
-import type {ConnectionConfig} from './DbgpConnector';
+import type {ConnectionConfig} from './HhvmDebuggerProxyService';
 
 let dummyRequestFilePath = 'php_only_xdebug_request.php';
 
@@ -23,7 +23,7 @@ async function getHackRoot(filePath: string): Promise<?string> {
 
 export async function setRootDirectoryUri(directoryUri: string): Promise {
   const hackRootDirectory = await getHackRoot(directoryUri);
-  log(`setRootDirectoryUri: from ${directoryUri} to ${hackRootDirectory}`);
+  logger.log(`setRootDirectoryUri: from ${directoryUri} to ${hackRootDirectory}`);
   const path = require('path');
   // TODO: make xdebug_includes.php path configurable from hhconfig.
   const hackDummyRequestFilePath = path.join(
@@ -47,7 +47,7 @@ export function isDummyConnection(message: Object): boolean {
 }
 
 export function failConnection(socket: Socket, errorMessage: string): void {
-  log(errorMessage);
+  logger.log(errorMessage);
   socket.end();
   socket.destroy();
 }
@@ -55,13 +55,13 @@ export function failConnection(socket: Socket, errorMessage: string): void {
 export function isCorrectConnection(config: ConnectionConfig, message: Object): boolean {
   const {pid, idekeyRegex, scriptRegex} = config;
   if (!message || !message.init || !message.init.$) {
-    logError('Incorrect init');
+    logger.logError('Incorrect init');
     return false;
   }
 
   const init = message.init;
   if (!init.engine || !init.engine || !init.engine[0] || init.engine[0]._ !== 'xdebug') {
-    logError('Incorrect engine');
+    logger.logError('Incorrect engine');
     return false;
   }
 
@@ -69,7 +69,7 @@ export function isCorrectConnection(config: ConnectionConfig, message: Object): 
   if (attributes.xmlns !== 'urn:debugger_protocol_v1'
     || attributes['xmlns:xdebug'] !== 'http://xdebug.org/dbgp/xdebug'
     || attributes.language !== 'PHP') {
-    logError('Incorrect attributes');
+    logger.logError('Incorrect attributes');
     return false;
   }
 

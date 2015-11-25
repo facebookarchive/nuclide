@@ -9,9 +9,27 @@
  * the root directory of this source tree.
  */
 
-import {log, logInfo, setLogLevel} from './utils';
+import logger from './utils';
 import {launchPhpScriptWithXDebugEnabled} from './helpers';
 import {setRootDirectoryUri} from './ConnectionUtils';
+import {MessageTranslator} from './MessageTranslator';
+
+import type {Observable} from 'rx';
+
+export type ConnectionConfig = {
+  xdebugPort: number;
+  pid?: number;
+  scriptRegex?: string;
+  idekeyRegex?: string;
+  endDebugWhenNoRequests: boolean;
+  logLevel: string;
+  targetUri: string;
+};
+
+export type NotificationMessage = {
+  type: string;
+  message: string;
+};
 
 // Connection states
 const INITIAL = 'initial';
@@ -19,8 +37,6 @@ const CONNECTING = 'connecting';
 const CONNECTED = 'connected';
 const CLOSED = 'closed';
 
-import {MessageTranslator} from './MessageTranslator';
-import type {ConnectionConfig} from './DbgpConnector';
 
 /**
  * Proxy for converting between Chrome dev tools debugger
@@ -62,10 +78,10 @@ export class HhvmDebuggerProxyService {
   }
 
   async attach(config: ConnectionConfig): Promise<string> {
-    logInfo('Connecting config: ' + JSON.stringify(config));
+    logger.logInfo('Connecting config: ' + JSON.stringify(config));
 
     await setRootDirectoryUri(config.targetUri);
-    setLogLevel(config.logLevel);
+    logger.setLogLevel(config.logLevel);
     this._setState(CONNECTING);
 
     this._translator = new MessageTranslator(config, this._clientCallback);
@@ -77,13 +93,13 @@ export class HhvmDebuggerProxyService {
   }
 
   async launchScript(scriptPath: string): Promise<string> {
-    log('launchScript: ' + scriptPath);
+    logger.log('launchScript: ' + scriptPath);
     launchPhpScriptWithXDebugEnabled(scriptPath);
     return 'Script launched';
   }
 
   async sendCommand(message: string): Promise<void> {
-    logInfo('Recieved command: ' + message);
+    logger.logInfo('Recieved command: ' + message);
     if (this._translator) {
       this._translator.handleCommand(message);
     }
@@ -94,7 +110,7 @@ export class HhvmDebuggerProxyService {
   }
 
   _setState(newState: string): void {
-    log('state change from ' + this._state + ' to ' + newState);
+    logger.log('state change from ' + this._state + ' to ' + newState);
     // TODO: Consider logging socket info: remote ip, etc.
     this._state = newState;
 
@@ -104,7 +120,7 @@ export class HhvmDebuggerProxyService {
   }
 
   async dispose(): Promise<void> {
-    logInfo('Proxy: Ending session');
+    logger.logInfo('Proxy: Ending session');
     this._clientCallback.dispose();
     if (this._translator) {
       this._translator.dispose();
