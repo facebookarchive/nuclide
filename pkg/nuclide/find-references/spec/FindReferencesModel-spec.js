@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type * as FindReferencesModelT from '../lib/FindReferencesModel';
+
 const nuclideClient = require('nuclide-client');
 
 // convenience location creator
@@ -17,7 +19,7 @@ function loc(line, column) {
 }
 
 describe('FindReferencesModel', () => {
-  let FindReferencesModel;
+  let FindReferencesModel: Class<FindReferencesModelT> = (null: any);
   const fakeGrammar = {};
 
   beforeEach(() => {
