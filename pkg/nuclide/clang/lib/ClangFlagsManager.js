@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type BuckUtils from 'nuclide-buck-base/lib/BuckUtils';
+import type {BuckUtils} from 'nuclide-buck-base/lib/BuckUtils';
 import type {BuckProject} from 'nuclide-buck-base/lib/BuckProject';
 
 const logger = require('nuclide-logging').getLogger();
