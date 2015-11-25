@@ -10,9 +10,13 @@
  */
 
 import type {NuclideUri} from 'nuclide-remote-uri';
+import type RemoteFile from './RemoteFile';
+
+import NuclideClient from 'nuclide-server/lib/NuclideClient';
+import NuclideLocalEventbus from 'nuclide-server/lib/NuclideLocalEventbus';
 
 const localClients: {[rootPath: string]: NuclideClient} = {};
-const RemoteConnection = require('./RemoteConnection');
+const {RemoteConnection} = require('./RemoteConnection');
 let localEventBus: ?NuclideLocalEventbus = null;
 let defaultLocalClient: ?NuclideClient = null;
 const {containsPathSync} = require('./utils');
@@ -30,15 +34,13 @@ module.exports = {
       return connection ? connection.getClient() : null;
     } else {
       if (!localEventBus) {
-        const NuclideLocalEventbus = require('nuclide-server/lib/NuclideLocalEventbus');
         localEventBus = new NuclideLocalEventbus();
       }
       if (!defaultLocalClient) {
-        const NuclideClient = require('nuclide-server/lib/NuclideClient');
         defaultLocalClient = new NuclideClient('local', localEventBus);
       }
-      // Return a default local client with no working directory if Atom was started to edit a single file
-      // with a command like: $ atom file.php
+      // Return a default local client with no working directory if Atom was started to edit a
+      // single file with a command like: $ atom file.php
       let localClient = defaultLocalClient;
       atom.project.getPaths().forEach(rootPath => {
         if (!containsPathSync(rootPath, path)) {
@@ -46,7 +48,6 @@ module.exports = {
         }
         // Create a local client with its root as the working directory, if none already exists.
         if (!localClients[rootPath]) {
-          const NuclideClient = require('nuclide-server/lib/NuclideClient');
           localClients[rootPath] = new NuclideClient(
             /*id: string*/ 'local/' + rootPath,
             /*eventbus: NuclideLocalEventBus*/ localEventBus,
@@ -59,7 +60,7 @@ module.exports = {
     }
   },
 
-  getFileForPath(filePath: NuclideUri): ?(File | RemoteFile) {
+  getFileForPath(filePath: NuclideUri): ?(atom$File | RemoteFile) {
     if (isRemote(filePath)) {
       const connection = RemoteConnection.getForUri(filePath);
       if (!connection) {

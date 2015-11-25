@@ -8,7 +8,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-const RemoteConnection = require('./RemoteConnection');
+const {RemoteConnection} = require('./RemoteConnection');
 const RemoteDirectory = require('./RemoteDirectory');
 const RemoteFile = require('./RemoteFile');
 const {SshHandshake, decorateSshConnectionDelegateWithTracking} = require('./SshHandshake');
@@ -21,7 +21,7 @@ const {SshHandshake, decorateSshConnectionDelegateWithTracking} = require('./Ssh
  * loading, which is done via its getService() and getServiceByNuclideUri() methods.
  */
 const NUCLIDE_CLIENT_EXPORTS_KEY = '_nuclide_client_exports';
-const nuclideClientExports: NuclideClientExports = require('nuclide-commons').singleton.get(
+const nuclideClientExports = require('nuclide-commons').singleton.get(
   NUCLIDE_CLIENT_EXPORTS_KEY,
   () => {
     const {

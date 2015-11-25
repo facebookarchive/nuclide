@@ -9,13 +9,14 @@
  * the root directory of this source tree.
  */
 import type Item from './ServiceLogger';
-import invariant from 'assert';
+import type {NuclideUri} from 'nuclide-remote-uri';
 
 const logger = require('nuclide-logging').getLogger();
-const RemoteConnection = require('./RemoteConnection');
+const {RemoteConnection} = require('./RemoteConnection');
 const {isRemote, getHostname} = require('nuclide-remote-uri');
 
 import {getProxy} from 'nuclide-service-parser';
+import invariant from 'assert';
 import ServiceFramework from 'nuclide-server/lib/serviceframework';
 import ServiceLogger from './ServiceLogger';
 
@@ -89,7 +90,7 @@ let serviceLogger: ?ServiceLogger;
 function getServiceLogger(): ServiceLogger {
   if (!serviceLogger) {
     serviceLogger = new ServiceLogger();
-    serviceLogger.onNewItem((item: Item) => {
+    serviceLogger.onNewItem(item => {
       // TODO(t8579744): Log these to a separate file. Note that whatever file is used should also
       // be included in bug reports.
       logger.debug('Service call:', item.service, item.method, item.isLocal, item.argInfo);

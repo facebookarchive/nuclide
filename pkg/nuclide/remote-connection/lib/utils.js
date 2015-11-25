@@ -36,7 +36,8 @@ function containsPathSync(rootPath: string, checkPath: string): boolean {
 
   const rootPathNumberOfParts = normalizedRootPath.split(pathSeperator).length;
   // Extract the matching piece of the normalized path to compare with the root path.
-  const rootPathMatch = normalizedCheckPath.split(pathSeperator).slice(0, rootPathNumberOfParts).join(pathSeperator);
+  const rootPathMatch = normalizedCheckPath.split(pathSeperator)
+    .slice(0, rootPathNumberOfParts).join(pathSeperator);
   return rootPathMatch === normalizedRootPath;
 }
 

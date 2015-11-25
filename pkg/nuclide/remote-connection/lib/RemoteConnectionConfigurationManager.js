@@ -81,13 +81,15 @@ function encryptConfig(
 
   invariant(certificateAuthorityCertificate);
   invariant(clientCertificate);
-  const buffersAsStrings = {
+
+  return {
+    host: remoteProjectConfig.host,
+    port: remoteProjectConfig.port,
+    cwd: remoteProjectConfig.cwd,
     certificateAuthorityCertificate: certificateAuthorityCertificate.toString(),
     clientCertificate: clientCertificate.toString(),
     clientKey: clientKeyWithSalt,
   };
-
-  return {...remoteProjectConfig, ...buffersAsStrings};
 }
 
 /**
@@ -127,13 +129,14 @@ function decryptConfig(
 
   invariant(certificateAuthorityCertificate);
   invariant(clientCertificate);
-  const stringsAsBuffers = {
+  return {
+    host: remoteProjectConfig.host,
+    port: remoteProjectConfig.port,
+    cwd: remoteProjectConfig.cwd,
     certificateAuthorityCertificate: new Buffer(certificateAuthorityCertificate),
     clientCertificate: new Buffer(clientCertificate),
     clientKey: new Buffer(restoredClientKey),
   };
-
-  return {...remoteProjectConfig, ...stringsAsBuffers};
 }
 
 function decryptString(text: string, password: string, salt: string): string {

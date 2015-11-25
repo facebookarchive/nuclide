@@ -9,14 +9,15 @@
  * the root directory of this source tree.
  */
 
-const ConnectionTracker = require('./ConnectionTracker');
+import ConnectionTracker from './ConnectionTracker';
+
 const SshConnection = require('ssh2').Client;
 const fs = require('fs-plus');
 const net = require('net');
 const logger = require('nuclide-logging').getLogger();
 const invariant = require('assert');
 
-const RemoteConnection = require('./RemoteConnection');
+const {RemoteConnection} = require('./RemoteConnection');
 const {fsPromise} = require('nuclide-commons');
 
 // Sync word and regex pattern for parsing command stdout.
@@ -76,7 +77,7 @@ export class SshHandshake {
   _delegate: SshConnectionDelegate;
   _connection: SshConnection;
   _config: SshConnectionConfiguration;
-  _forwardingServer: net.Socket;
+  _forwardingServer: net.Server;
   _remoteHost: ?string;
   _remotePort: ?number;
   _certificateAuthorityCertificate: Buffer;
@@ -181,17 +182,20 @@ export class SshHandshake {
 
   _forwardSocket(socket: net.Socket): void {
     this._connection.forwardOut(
+      /* $FlowIssue t9212378 */
       socket.remoteAddress,
+      /* $FlowIssue t9212378 */
       socket.remotePort,
       'localhost',
       this._remotePort,
       (err, stream) => {
         if (err) {
+          /* $FlowIssue t9212378 */
           socket.end();
           logger.error(err);
           return;
         }
-
+        /* $FlowIssue t9212378 */
         socket.pipe(stream);
         stream.pipe(socket);
       }
@@ -227,7 +231,8 @@ export class SshHandshake {
 
       //TODO: escape any single quotes
       //TODO: the timeout value shall be configurable using .json file too (t6904691).
-      const cmd = `${this._config.remoteServerCommand} --workspace=${this._config.cwd} --common_name=${this._config.host} -t 60`;
+      const cmd = `${this._config.remoteServerCommand} --workspace=${this._config.cwd}`
+        + ` --common_name=${this._config.host} -t 60`;
 
       // This imitates a user typing:
       //   $ TERM=nuclide ssh server
@@ -316,7 +321,9 @@ export class SshHandshake {
       try {
         await connection.initialize();
       } catch (e) {
-        const error = new Error(`Failed to connect to Nuclide server on ${this._config.host}: ${e.message}`);
+        const error = new Error(
+          `Failed to connect to Nuclide server on ${this._config.host}: ${e.message}`,
+        );
         this._delegate.onError(error, this._config);
       }
       this._delegate.onDidConnect(connection, this._config);
@@ -340,6 +347,7 @@ export class SshHandshake {
       });
       finishHandshake(connection);
     } else {
+      /* $FlowIssue t9212378 */
       this._forwardingServer = net.createServer(sock => {
         this._forwardSocket(sock);
       }).listen(0, 'localhost', () => {
@@ -359,7 +367,7 @@ export class SshHandshake {
     return this._forwardingServer ? this._forwardingServer.address().port : null;
   }
 
-  getConfig(): SshConnectionConfiguration{
+  getConfig(): SshConnectionConfiguration {
     return this._config;
   }
 }

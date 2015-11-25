@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import invariant from 'assert';
+
 const {CompositeDisposable, Disposable} = require('atom');
 const remoteUri = require('nuclide-remote-uri');
 const logger = require('nuclide-logging').getLogger();
@@ -18,7 +20,10 @@ const RemoteFile = require('./RemoteFile');
 const RemoteDirectory = require('./RemoteDirectory');
 const NuclideClient = require('nuclide-server/lib/NuclideClient');
 const NuclideRemoteEventbus = require('nuclide-server/lib/NuclideRemoteEventbus');
-const {getConnectionConfig, setConnectionConfig} = require('./RemoteConnectionConfigurationManager');
+const {
+  getConnectionConfig,
+  setConnectionConfig,
+} = require('./RemoteConnectionConfigurationManager');
 const {getVersion} = require('nuclide-version');
 
 const HEARTBEAT_AWAY_REPORT_COUNT = 3;
@@ -118,33 +123,36 @@ class RemoteConnection {
 
     /**
      * Adds an Atom notification for the detected heartbeat network status
-     * The function makes sure not to add many notifications for the same event and prioritize new events.
+     * The function makes sure not to add many notifications for the same event and prioritize
+     * new events.
      */
-    const addHeartbeatNotification = (type: number, errorCode: string, message: string, dismissable: boolean) => {
-      const {code, notification: existingNotification} = this._lastHeartbeatNotification || {};
-      if (code && code === errorCode && dismissable) {
-        // A dismissible heartbeat notification with this code is already active.
-        return;
-      }
-      let notification = null;
-      switch (type) {
-        case HEARTBEAT_NOTIFICATION_ERROR:
-          notification = atom.notifications.addError(message, {dismissable});
-          break;
-        case HEARTBEAT_NOTIFICATION_WARNING:
-          notification = atom.notifications.addWarning(message, {dismissable});
-          break;
-        default:
-          throw new Error('Unrecongnized heartbeat notification type');
-      }
-      if (existingNotification) {
-        existingNotification.dismiss();
-      }
-      this._lastHeartbeatNotification = {
-        notification,
-        code: errorCode,
+    const addHeartbeatNotification =
+      (type: number, errorCode: string, message: string, dismissable: boolean) => {
+        const {code, notification: existingNotification} = this._lastHeartbeatNotification || {};
+        if (code && code === errorCode && dismissable) {
+          // A dismissible heartbeat notification with this code is already active.
+          return;
+        }
+        let notification = null;
+        switch (type) {
+          case HEARTBEAT_NOTIFICATION_ERROR:
+            notification = atom.notifications.addError(message, {dismissable});
+            break;
+          case HEARTBEAT_NOTIFICATION_WARNING:
+            notification = atom.notifications.addWarning(message, {dismissable});
+            break;
+          default:
+            throw new Error('Unrecongnized heartbeat notification type');
+        }
+        if (existingNotification) {
+          existingNotification.dismiss();
+        }
+        invariant(notification);
+        this._lastHeartbeatNotification = {
+          notification,
+          code: errorCode,
+        };
       };
-    };
 
     const onHeartbeat = () => {
       if (this._lastHeartbeatNotification) {
@@ -176,7 +184,8 @@ class RemoteConnection {
       logger.info('Heartbeat network error:', code, originalCode, message);
       switch (code) {
         case 'NETWORK_AWAY':
-            // Notify switching networks, disconnected, timeout, unreachable server or fragile connection.
+            // Notify switching networks, disconnected, timeout, unreachable server or fragile
+            // connection.
           notifyNetworkAway(code);
           break;
         case 'SERVER_CRASHED':
@@ -194,13 +203,16 @@ class RemoteConnection {
             // Notify never heard a heartbeat from the server.
           const {port} = remoteUri.parse(serverUri);
           addHeartbeatNotification(HEARTBEAT_NOTIFICATION_ERROR, code,
-                `Nuclide server is not reachable.<br/>It could be running on a port that is not accessible: ${port}`,
+                'Nuclide server is not reachable.<br/>It could be running on a port' +
+                `that is not accessible: ${port}`,
                 /*dismissable*/ true);
           break;
         case 'INVALID_CERTIFICATE':
-            // Notify the client certificate is not accepted by nuclide server (certificate mismatch).
+            // Notify the client certificate is not accepted by nuclide server
+            // (certificate mismatch).
           addHeartbeatNotification(HEARTBEAT_NOTIFICATION_ERROR, code,
-                'Connection Reset Error!!<br/>This could be caused by the client certificate mismatching the server certificate.<br/>' +
+                'Connection Reset Error!!<br/>This could be caused by the client' +
+                ' certificate mismatching the server certificate.<br/>' +
                 'Please reload Nuclide to restore your remote project connection!' +
                 reloadKeystrokeLabel,
                 /*dismissable*/ true);
@@ -249,6 +261,7 @@ class RemoteConnection {
       // this._addHandlersForEntry(entry);
     }
 
+    invariant(entry instanceof RemoteDirectory);
     if (!entry.isDirectory()) {
       throw new Error('Path is not a directory:' + uri);
     }
@@ -271,6 +284,7 @@ class RemoteConnection {
       this._addHandlersForEntry(entry);
     }
 
+    invariant(entry instanceof RemoteFile);
     if (entry.isDirectory()) {
       throw new Error('Path is not a file');
     }
@@ -280,10 +294,12 @@ class RemoteConnection {
 
   _addHandlersForEntry(entry: RemoteFile | RemoteDirectory): void {
     const oldPath = entry.getLocalPath();
+    /* $FlowFixMe */
     const renameSubscription = entry.onDidRename(() => {
       delete this._entries[oldPath];
       this._entries[entry.getLocalPath()] = entry;
     });
+    /* $FlowFixMe */
     const deleteSubscription = entry.onDidDelete(() => {
       delete this._entries[entry.getLocalPath()];
       renameSubscription.dispose();
@@ -354,9 +370,11 @@ class RemoteConnection {
     // TODO(peterhal): move singleton from main.js to client.js
     const {getServiceByNuclideUri} = require('./service-manager');
     const rootDirectoryUri = this.getUriForInitialWorkingDirectory();
-    const {watchDirectoryRecursive} = getServiceByNuclideUri(
+    const FileWatcherService = getServiceByNuclideUri(
       'FileWatcherService', rootDirectoryUri
     );
+    invariant(FileWatcherService);
+    const {watchDirectoryRecursive} = FileWatcherService;
     // Start watching the project for changes and initialize the root watcher
     // for next calls to `watchFile` and `watchDirectory`.
     const watchStream = watchDirectoryRecursive(rootDirectoryUri);
@@ -429,9 +447,14 @@ class RemoteConnection {
         uri = `http://${this.getRemoteHost()}`;
       }
 
-      // The remote connection and client are identified by both the remote host and the inital working directory.
+      // The remote connection and client are identified by both the remote host and the inital
+      // working directory.
       const clientId = this.getRemoteHost() + this.getPathForInitialWorkingDirectory();
-      this._client = new NuclideClient(clientId, new NuclideRemoteEventbus(uri, options), {cwd: this._config.cwd});
+      this._client = new NuclideClient(
+        clientId,
+        new NuclideRemoteEventbus(uri, options),
+        {cwd: this._config.cwd},
+      );
     }
     return this._client;
   }
@@ -480,6 +503,7 @@ class RemoteConnection {
 
   static getForUri(uri: string): ?RemoteConnection {
     const {hostname, path} = remoteUri.parse(uri);
+    invariant(hostname);
     return RemoteConnection.getByHostnameAndPath(hostname, path);
   }
 
@@ -510,10 +534,10 @@ class RemoteConnection {
   }
 }
 
-// Expose local variables for testability.
-RemoteConnection.test = {
-  connections: _connections,
-  getReloadKeystrokeLabel,
+module.exports = {
+  RemoteConnection,
+  __test__: {
+    connections: _connections,
+    getReloadKeystrokeLabel,
+  },
 };
-
-module.exports = RemoteConnection;

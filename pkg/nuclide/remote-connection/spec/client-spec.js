@@ -24,8 +24,8 @@ describe('getFileForPath()', () => {
         return null;
       }
       if (!connection) {
-        connection = new RemoteConnection({host: 'server', port: 123});
-        // Skip the usage of the watcher service.
+        connection = new RemoteConnection({host: 'server', cwd: '', port: 123});
+        // $FlowFixMe Skip the usage of the watcher service.
         connection._addHandlersForEntry = () => {};
       }
       return connection;

@@ -10,13 +10,13 @@
  */
 
 const fs = require('fs');
-const RemoteConnection = require('../lib/RemoteConnection');
+const {RemoteConnection, __test__} = require('../lib/RemoteConnection');
 const {EventEmitter} = require('events');
 const path = require('path');
 const pathToFakePk = path.join(__dirname, 'fakepk');
 
 describe('RemoteConnection', () => {
-  const testConnections = RemoteConnection.test.connections;
+  const testConnections = __test__.connections;
   let testConnection;
   const testHostname = 'foo.nuclide.com';
   const testPath = '/home/foo/test';
@@ -27,6 +27,7 @@ describe('RemoteConnection', () => {
       getPathForInitialWorkingDirectory: () => testPath,
       getRemoteHostname: () => testHostname,
     };
+    // $FlowFixMe This should be a mock.
     testConnections.push(testConnection);
   });
 
@@ -83,7 +84,7 @@ describe('RemoteConnection', () => {
   });
 
   describe('getReloadKeystrokeLabel', () => {
-    const getReloadKeystrokeLabel = RemoteConnection.test.getReloadKeystrokeLabel;
+    const getReloadKeystrokeLabel = __test__.getReloadKeystrokeLabel;
     it('returns the correct keystroke to reload the window', () => {
       const keystroke = getReloadKeystrokeLabel();
       if (process.platform === 'darwin') {

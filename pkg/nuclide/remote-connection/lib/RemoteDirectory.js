@@ -10,7 +10,7 @@
  */
 
 import type {FileSystemService} from 'nuclide-server/lib/services/FileSystemServiceType';
-import type RemoteConnection from './RemoteConnection';
+import type {RemoteConnection} from './RemoteConnection';
 import type RemoteFile from './RemoteFile';
 
 import invariant from 'assert';
@@ -26,6 +26,7 @@ const MARKER_PROPERTY_FOR_REMOTE_DIRECTORY = '__nuclide_remote_directory__';
 /* Mostly implements https://atom.io/docs/api/latest/Directory */
 class RemoteDirectory {
   static isRemoteDirectory(directory: atom$Directory | RemoteDirectory): boolean {
+    /* $FlowFixMe */
     return directory[MARKER_PROPERTY_FOR_REMOTE_DIRECTORY] === true;
   }
 

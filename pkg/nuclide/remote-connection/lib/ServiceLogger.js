@@ -27,7 +27,6 @@ export default class ServiceLogger {
   _emitter: Emitter;
 
   constructor() {
-    // $FlowIssue Flow does not understand a getter that returns a constructor function.
     this._buffer = new CircularBuffer(10000);
     this._emitter = new Emitter();
   }
@@ -46,7 +45,6 @@ export default class ServiceLogger {
       args,
       argInfo: createArgInfo(service, method, args),
     };
-    // $FlowIssue
     this._buffer.push(item);
     this._emitter.emit(NEW_ITEM_EVENT, item);
   }
@@ -78,7 +76,7 @@ export default class ServiceLogger {
  * services such as Flow take the unsaved file contents as an argument, which would clutter our
  * logs.
  */
-function createArgInfo(service: string, method: string, args: Array<mixed>): ?string {
+function createArgInfo(service: string, method: string, args: Array<any>): ?string {
   if (service === 'ArcanistBaseService') {
     // All Arcanist services take a file.
     return /* fileName */ args[0];

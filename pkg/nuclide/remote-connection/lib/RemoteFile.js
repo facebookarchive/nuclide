@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type RemoteConnection from './RemoteConnection';
+import type {RemoteConnection} from './RemoteConnection';
 import type RemoteDirectory from './RemoteDirectory';
 import type {FileSystemService} from 'nuclide-server/lib/services/FileSystemServiceType';
 
