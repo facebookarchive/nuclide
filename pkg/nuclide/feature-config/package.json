@@ -1,0 +1,14 @@
+{
+  "name": "nuclide-feature-config",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "Wrapper for Nuclide/Atom feature config",
+  "nuclide": {
+    "packageType": "Node",
+    "testRunner": "apm"
+  },
+  "devDependencies": {
+    "nuclide-external-interfaces": "0.0.0"
+  }
+}
