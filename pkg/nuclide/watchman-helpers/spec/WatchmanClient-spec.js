@@ -52,7 +52,12 @@ describe('WatchmanClient test suite', () => {
         waitsFor(() => changeHandler.callCount > 0);
         runs(async () => {
           expect(changeHandler.callCount).toBe(1);
-          expect(changeHandler.argsForCall[0][0]).toEqual([{name: 'test.txt', mode: FILE_MODE, new: false, exists: true}]);
+          expect(changeHandler.argsForCall[0][0]).toEqual([{
+            name: 'test.txt',
+            mode: FILE_MODE,
+            new: false,
+            exists: true,
+          }]);
           // End the socket client to watchman to trigger restore subscriptions.
           const internalClient = await client._clientPromise;
           internalClient.end();
@@ -62,7 +67,12 @@ describe('WatchmanClient test suite', () => {
         waitsFor(() => changeHandler.callCount > 1);
         runs(() => {
           expect(changeHandler.callCount).toBe(2);
-          expect(changeHandler.argsForCall[1][0]).toEqual([{name: 'test.txt', mode: FILE_MODE, new: false, exists: false}]);
+          expect(changeHandler.argsForCall[1][0]).toEqual([{
+            name: 'test.txt',
+            mode: FILE_MODE,
+            new: false,
+            exists: false,
+          }]);
         });
       });
       // Cleanup watch resources.
@@ -102,7 +112,10 @@ describe('WatchmanClient test suite', () => {
         fs.writeFileSync(path.join(dirPath, '.watchmanconfig'), '');
         const nestedDirPath = path.join(dirPath, 'nested');
         fs.mkdirSync(nestedDirPath);
-        const {watch: watchRoot, relative_path: relativePath} = await client._watchProject(nestedDirPath);
+        const {
+          watch: watchRoot,
+          relative_path: relativePath,
+        } = await client._watchProject(nestedDirPath);
         expect(watchRoot).toBe(dirRealPath);
         expect(relativePath).toBe('nested');
         await client._deleteWatcher(watchRoot);
@@ -114,7 +127,7 @@ describe('WatchmanClient test suite', () => {
       waitsForPromise(async () => {
         let watchVersionError;
         try {
-          await client._watchProject(dirPath)
+          await client._watchProject(dirPath);
         } catch (error) {
           watchVersionError = error;
         }

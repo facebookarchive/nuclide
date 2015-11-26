@@ -122,7 +122,10 @@ class WatchmanClient {
       existingSubscription.subscriptionCount++;
       return existingSubscription;
     } else {
-      const {watch: watchRoot, relative_path: relativePath} = await this._watchProject(localDirectoryPath);
+      const {
+        watch: watchRoot,
+        relative_path: relativePath,
+      } = await this._watchProject(localDirectoryPath);
       const clock = await this._clock(watchRoot);
       const options: WatchmanSubscriptionOptions = {
         fields: ['name', 'new', 'exists', 'mode'],
