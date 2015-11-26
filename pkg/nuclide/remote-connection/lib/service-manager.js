@@ -80,6 +80,9 @@ function getService(serviceName: string, hostname: ?string, serviceOptions: ?any
   invariant(serviceConfig);
   if (hostname) {
     const remoteConnection = RemoteConnection.getByHostnameAndPath(hostname, null);
+    if (remoteConnection == null) {
+      return null;
+    }
     return getProxy(serviceConfig.name, serviceConfig.definition, remoteConnection.getClient());
   } else {
     return require(serviceConfig.implementation);

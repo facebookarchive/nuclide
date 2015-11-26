@@ -496,9 +496,11 @@ class RemoteConnection {
     });
   }
 
-  static getForUri(uri: string): ?RemoteConnection {
+  static getForUri(uri: NuclideUri): ?RemoteConnection {
     const {hostname, path} = remoteUri.parse(uri);
-    invariant(hostname);
+    if (hostname == null) {
+      return null;
+    }
     return RemoteConnection.getByHostnameAndPath(hostname, path);
   }
 
