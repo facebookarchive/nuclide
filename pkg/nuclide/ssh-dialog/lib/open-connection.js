@@ -62,8 +62,12 @@ export function openConnectionDialog(props): Promise<?RemoteConnection> {
 
     dialogProps.onClosed = () => {
       // Unmount the ConnectionDialog and clean up the host element.
-      React.unmountComponentAtNode(hostEl);
-      hostEl.parentNode.removeChild(hostEl);
+      if (hostEl) {
+        React.unmountComponentAtNode(hostEl);
+        if (hostEl.parentNode) {
+          hostEl.parentNode.removeChild(hostEl);
+        }
+      }
     };
 
     React.render(<ConnectionDialog {...dialogProps} />, hostEl);
