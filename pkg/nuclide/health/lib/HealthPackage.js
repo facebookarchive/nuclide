@@ -61,64 +61,8 @@ let keyDownTime = 0;
 let keyLatency = 0;
 let lastKeyLatency = 0;
 
-export const config = {
-  analyticsTimeout: {
-    order: 0,
-    type: 'integer',
-    default: 10,
-    description: 'Polling interval for sending aggregated health stats as analytics (in minutes).',
-    minimum: 1,
-    maximum: 60,
-  },
-  viewTimeout: {
-    order: 1,
-    type: 'integer',
-    default: 1,
-    description: 'Polling interval for showing health stats in status views (in seconds).',
-    minimum: 1,
-    maximum: 60,
-  },
-  showCpu: {
-    order: 2,
-    type: 'boolean',
-    default: false,
-    title: 'Show CPU usage as a percentage',
-    description:
-      'Show CPU average for the last minute as a percentage in status bar (except on Windows).',
-  },
-  showHeap: {
-    order: 3,
-    type: 'boolean',
-    default: false,
-    description: 'Show heap usage as a percentage in status bar.',
-  },
-  showMemory: {
-    order: 4,
-    type: 'boolean',
-    default: false,
-    description: 'Show memory usage in MB in status bar.',
-  },
-  showKeyLatency: {
-    order: 5,
-    type: 'boolean',
-    default: false,
-    description: 'Show latest editor key latency in milliseconds in status bar.',
-  },
-  showActiveHandles: {
-    order: 6,
-    type: 'boolean',
-    default: false,
-    title: 'Show Handles',
-    description: 'Show number of active handles open in Node in status bar.',
-  },
-  showActiveRequests: {
-    order: 7,
-    type: 'boolean',
-    default: false,
-    title: 'Show Event Loop',
-    description: 'Show number of active requests in the Node event loop in status bar.',
-  },
-};
+// $FlowIssue https://github.com/facebook/flow/issues/620
+export const config = require('../package.json').nuclide.config;
 
 class Activation {
   disposables: CompositeDisposable;

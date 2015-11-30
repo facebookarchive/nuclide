@@ -36,13 +36,8 @@ function activate(): void {
   considerDisplayingHome();
 }
 
-const config = {
-  showHome: {
-    type: 'boolean',
-    default: true,
-    description: 'Show the home pane (by default shown on first startup).',
-  },
-};
+// $FlowIssue https://github.com/facebook/flow/issues/620
+const config = require('../package.json').nuclide.config;
 
 function setHomeFragments(homeFragments: HomeFragments): Disposable {
   allHomeFragments.add(homeFragments);

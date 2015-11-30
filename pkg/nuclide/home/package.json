@@ -5,6 +5,13 @@
   "version": "0.0.0",
   "description": "Provides a welcome message and other links for first time users.",
   "nuclide": {
+    "config": {
+      "showHome": {
+        "type": "boolean",
+        "default": true,
+        "description": "Show the home pane (by default shown on first startup)."
+      }
+    },
     "packageType": "Atom",
     "testRunner": "apm"
   },
