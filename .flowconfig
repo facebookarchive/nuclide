@@ -1,7 +1,9 @@
 [include]
 
 [ignore]
-.*/node_modules/fbjs/.*
+
+# second-level dependencies
+.*/node_modules/[^/]+/node_modules/.*
 
 # non-flowCheck
 .*/pkg/fb/biggrep-provider/.*
