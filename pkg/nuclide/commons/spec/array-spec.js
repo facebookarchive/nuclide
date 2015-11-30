@@ -325,4 +325,9 @@ describe('Array.equal', () => {
     expect(es6Array.equal([{}], [{}])).toBe(false);
     expect(es6Array.equal([{x: 1}, {x: 2}], [{x: 1}, {x: 2}], (a, b) => a.x === b.x)).toBe(true);
   });
+
+  it('works with arrays of different lengths', () => {
+    expect(es6Array.equal([1, 2], [1, 2, 3])).toBe(false);
+    expect(es6Array.equal([1, 2, 3], [1, 2])).toBe(false);
+  });
 });

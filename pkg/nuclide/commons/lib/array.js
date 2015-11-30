@@ -111,6 +111,9 @@ export function equal<T>(
   array2: Array<T>,
   equalComparator?: (a: T, b: T) => boolean,
 ): boolean {
+  if (array1.length !== array2.length) {
+    return false;
+  }
   const equalFunction = equalComparator || ((a: T,  b: T) => a === b);
   return array1.every((item1, i) => equalFunction(item1, array2[i]));
 }
