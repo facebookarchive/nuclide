@@ -96,6 +96,15 @@ export default class ConnectionDetailsPrompt
     const idOfSelectedItem = (this.state.indexOfSelectedConnectionProfile != null) ?
       String(this.state.indexOfSelectedConnectionProfile) : null;
 
+    // We have to manually update the contents of an existing ConnectionDetailsForm,
+    // because it contains AtomInput components (which don't update their contents
+    // when their props change).
+    const existingConnectionDetailsForm = this.refs['connection-details-form'];
+    if (existingConnectionDetailsForm) {
+      existingConnectionDetailsForm.setFormFields(prefilledConnectionParams);
+      existingConnectionDetailsForm.clearPassword();
+    }
+
     return (
       <div className="nuclide-connection-details-prompt">
         <div className="left-column">
