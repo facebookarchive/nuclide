@@ -70,6 +70,7 @@ export function getSavedConnectionProfiles(): Array<NuclideRemoteConnectionProfi
  * Saves the connection profiles. Overwrites any existing profiles.
  */
 export function saveConnectionProfiles(profiles: Array<NuclideRemoteConnectionProfile>): void {
+  prepareConnectionProfilesForSaving(profiles);
   atom.config.set(CONNECTION_PROFILES_KEY, profiles);
 }
 
@@ -166,6 +167,21 @@ function prepareSavedConnectionProfilesForDisplay(
   connectionProfiles.forEach((profile: NuclideRemoteConnectionProfile) => {
     if (!profile.params.remoteServerCommand) {
       profile.params.remoteServerCommand = currentOfficialRSC;
+    }
+  });
+}
+
+function prepareConnectionProfilesForSaving(
+  connectionProfiles: Array<NuclideRemoteConnectionProfile>
+): void {
+  // If a connection profile has a default remote server command, replace it with
+  // an empty string. This indicates that this server command should be filled in
+  // when this profile is used.
+  const defaultConnectionSettings = getDefaultConfig();
+  const currentOfficialRSC = defaultConnectionSettings.remoteServerCommand;
+  connectionProfiles.forEach((profile: NuclideRemoteConnectionProfile) => {
+    if (profile.params.remoteServerCommand === currentOfficialRSC) {
+      profile.params.remoteServerCommand = '';
     }
   });
 }
