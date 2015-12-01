@@ -17,6 +17,7 @@ import type {
 const {BLAME_DECORATION_CLASS} = require('./constants');
 import {track, trackTiming} from 'nuclide-analytics';
 import {CompositeDisposable} from 'atom';
+import invariant from 'assert';
 
 const BLAME_GUTTER_DEFAULT_WIDTH = 50;
 const LOADING_SPINNER_ID = 'blame-loading-spinner';
