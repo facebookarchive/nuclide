@@ -12,6 +12,7 @@
 import {
   getDefaultConnectionProfile,
   getOfficialRemoteServerCommand,
+  getSavedConnectionProfiles,
   onSavedConnectionProfilesDidChange,
   saveConnectionConfig,
   saveConnectionProfiles,
@@ -51,9 +52,10 @@ export function openConnectionDialog(props): Promise<?RemoteConnection> {
     // profile plus any user-created connection profiles. Initialize this to the
     // default connection profile. This array of profiles may change in the lifetime
     // of `openConnectionDialog` flow.
-    // TODO: Load the initial set of connection profiles.
     let compositeConnectionProfiles: Array<NuclideRemoteConnectionProfile> =
         [defaultConnectionProfile];
+    // Add any previously-created (saved) connection profiles.
+    compositeConnectionProfiles = compositeConnectionProfiles.concat(getSavedConnectionProfiles());
 
     // We want to observe changes in the saved connection profiles during the
     // lifetime of this connection dialog, because the user can add/delete
