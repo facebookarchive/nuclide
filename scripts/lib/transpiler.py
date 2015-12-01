@@ -52,9 +52,14 @@ class Transpiler(object):
                 continue
             exclude_file = entry['implementation']
 
-            index = exclude_file.index('/')
-            package_name = exclude_file[:index]
-            relative_path = exclude_file[index + 1:]
+            if os.path.isfile(os.path.join(path_to_nuclide_repo, 'pkg/nuclide/server', exclude_file)):
+                package_name = 'nuclide-server'
+                relative_path = exclude_file
+            else:
+                index = exclude_file.index('/')
+                package_name = exclude_file[:index]
+                relative_path = exclude_file[index + 1:]
+
             if package_name not in exclude_from_transpilation:
                 paths = []
                 exclude_from_transpilation[package_name] = paths
