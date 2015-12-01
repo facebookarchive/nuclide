@@ -9,7 +9,10 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideRemoteConnectionProfile} from './connection-types';
+import type {
+  NuclideRemoteConnectionParams,
+  NuclideRemoteConnectionProfile,
+} from './connection-types';
 
 import AuthenticationPrompt from './AuthenticationPrompt';
 import ConnectionDetailsPrompt from './ConnectionDetailsPrompt';
@@ -220,6 +223,31 @@ export default class ConnectionDialog extends React.Component<DefaultProps, Prop
       instructions: instructions.prompt,
       finish,
     });
+  }
+
+  getFormFields(): ?NuclideRemoteConnectionParams {
+    const connectionDetailsForm = this.refs['connection-details'];
+    if (!connectionDetailsForm) {
+      return null;
+    }
+    const {
+      username,
+      server,
+      cwd,
+      remoteServerCommand,
+      sshPort,
+      pathToPrivateKey,
+      authMethod,
+    } = connectionDetailsForm.getFormFields();
+    return {
+      username,
+      server,
+      cwd,
+      remoteServerCommand,
+      sshPort,
+      pathToPrivateKey,
+      authMethod,
+    };
   }
 }
 /* eslint-enable react/prop-types */
