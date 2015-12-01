@@ -127,7 +127,7 @@ export default class ConnectionDetailsPrompt
           />
         </div>
         <div className="connection-profiles padded">
-          <title>Profiles</title>
+          <h3 className="title">Connection Profiles</h3>
           <NuclideMutableListSelector
             items={listSelectorItems}
             idOfInitiallySelectedItem={idOfSelectedItem}
