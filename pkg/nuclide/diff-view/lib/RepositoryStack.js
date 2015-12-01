@@ -133,16 +133,20 @@ export default class RepositoryStack {
     this._emitter.emit(CHANGE_REVISIONS_EVENT, revisionsState);
 
     // If the commits haven't changed ids, then thier diff haven't changed as well.
+    let revisionsFileHistory = null;
     if (this._lastRevisionsFileHistory != null) {
       const revisionIds = revisionsState.revisions.map(revision => revision.id);
       const fileHistoryRevisionIds = this._lastRevisionsFileHistory
         .map(revisionChanges => revisionChanges.id);
       if (array.equal(revisionIds, fileHistoryRevisionIds)) {
-        return;
+        revisionsFileHistory = this._lastRevisionsFileHistory;
       }
     }
 
-    const revisionsFileHistory = await this._getRevisionFileHistoryPromise(revisionsState, false);
+    // Fetch revisions history if revisions state have changed.
+    if (revisionsFileHistory == null) {
+      revisionsFileHistory = await this._getRevisionFileHistoryPromise(revisionsState, false);
+    }
     this._compareFileChanges = this._computeCompareChangesFromHistory(
       revisionsState,
       revisionsFileHistory,
