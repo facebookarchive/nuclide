@@ -90,6 +90,46 @@ export function openConnectionDialog(props): Promise<?RemoteConnection> {
       }
     }
 
+    let newProfileForm;
+    /*
+     * When the "+" button is clicked (the user intends to add a new connection profile),
+     * open a new dialog with a form to create one.
+     * This new dialog will be prefilled with the info from the default connection profile.
+     */
+    function onAddProfileClicked() {
+      // If there is already an open form, don't open another one.
+      if (newProfileForm) {
+        return;
+      }
+      const hostElementForNewProfileForm = document.createElement('div');
+      workspaceEl.appendChild(hostElementForNewProfileForm);
+
+      // Props
+      const closeNewProfileForm = () => {
+        newProfileForm = null;
+        React.unmountComponentAtNode(hostElementForNewProfileForm);
+        hostElementForNewProfileForm.parentNode.removeChild(hostElementForNewProfileForm);
+      };
+      const onSave = (newProfile: NuclideRemoteConnectionProfile) => {
+        // Don't include the default connection profile.
+        const userCreatedProfiles = compositeConnectionProfiles.slice(1).concat(newProfile);
+        saveConnectionProfiles(userCreatedProfiles);
+        closeNewProfileForm();
+      };
+      const initialDialogProps = {
+        onCancel: closeNewProfileForm,
+        onSave,
+        initialFormFields: defaultConnectionProfile.params,
+      };
+
+      // Pop up a dialog that is pre-filled with the default params.
+      const CreateConnectionProfileForm = require('./CreateConnectionProfileForm');
+      newProfileForm = React.render(
+        <CreateConnectionProfileForm {...initialDialogProps} />,
+        hostElementForNewProfileForm,
+      );
+    }
+
     // The connection profiles could change, but the rest of the props passed
     // to the ConnectionDialog will not.
     // Note: the `cleanupSubscriptionFunc` is called when the dialog closes:
@@ -97,8 +137,7 @@ export function openConnectionDialog(props): Promise<?RemoteConnection> {
     const baseDialogProps = extend.immutableExtend({
       // Select the default connection profile, which should always be index 0.
       indexOfInitiallySelectedConnectionProfile: 0,
-      // TODO jessicalin This will be filled in and used later in this stack.
-      onAddProfileClicked: () => {},
+      onAddProfileClicked,
       onDeleteProfileClicked,
       onConnect: async (connection, config) => {
         resolve(connection);
