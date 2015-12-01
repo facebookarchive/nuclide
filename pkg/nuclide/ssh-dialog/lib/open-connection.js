@@ -14,12 +14,15 @@ import {
   getOfficialRemoteServerCommand,
   onSavedConnectionProfilesDidChange,
   saveConnectionConfig,
+  saveConnectionProfiles,
 } from './connection-profile-utils';
+import {getLogger} from 'nuclide-logging';
 
 import type {Disposable} from 'atom';
 import type {RemoteConnection} from 'nuclide-remote-connection';
 import type {NuclideRemoteConnectionProfile} from './connection-types';
 
+const logger = getLogger();
 let dialogPromiseQueue: ?PromiseQueue = null;
 
 /**
@@ -44,6 +47,13 @@ export function openConnectionDialog(props): Promise<?RemoteConnection> {
     // connection profile should not change (even if it is reset by the user
     // connecting to a remote project from another Atom window).
     const defaultConnectionProfile: NuclideRemoteConnectionProfile = getDefaultConnectionProfile();
+    // The `compositeConnectionProfiles` is the combination of the default connection
+    // profile plus any user-created connection profiles. Initialize this to the
+    // default connection profile. This array of profiles may change in the lifetime
+    // of `openConnectionDialog` flow.
+    // TODO: Load the initial set of connection profiles.
+    let compositeConnectionProfiles: Array<NuclideRemoteConnectionProfile> =
+        [defaultConnectionProfile];
 
     // We want to observe changes in the saved connection profiles during the
     // lifetime of this connection dialog, because the user can add/delete
@@ -52,6 +62,29 @@ export function openConnectionDialog(props): Promise<?RemoteConnection> {
     function cleanupSubscriptionFunc(): void {
       if (connectionProfilesSubscription) {
         connectionProfilesSubscription.dispose();
+      }
+    }
+
+    function onDeleteProfileClicked(indexToDelete: number) {
+      if (indexToDelete === 0) {
+        // no-op: The default connection profile can't be deleted.
+        // TODO jessicalin: Show this error message in a better place.
+        atom.notifications.addError('The default connection profile cannot be deleted.');
+        return;
+      }
+      if (compositeConnectionProfiles) {
+        if (indexToDelete >= compositeConnectionProfiles.length) {
+          logger.fatal('Tried to delete a connection profile with an index that does not exist. ' +
+              'This should never happen.');
+          return;
+        }
+        // Remove the index of the profile to delete.
+        let newConnectionProfiles = compositeConnectionProfiles.slice(0, indexToDelete).concat(
+            compositeConnectionProfiles.slice(indexToDelete + 1));
+        // Remove the first index, because this is the default connection profile,
+        // not a user-created profile.
+        newConnectionProfiles = newConnectionProfiles.slice(1);
+        saveConnectionProfiles(newConnectionProfiles);
       }
     }
 
@@ -64,8 +97,7 @@ export function openConnectionDialog(props): Promise<?RemoteConnection> {
       indexOfInitiallySelectedConnectionProfile: 0,
       // TODO jessicalin This will be filled in and used later in this stack.
       onAddProfileClicked: () => {},
-      // TODO jessicalin This will be filled in and used later in this stack.
-      onDeleteProfileClicked: () => {},
+      onDeleteProfileClicked,
       onConnect: async (connection, config) => {
         resolve(connection);
         saveConnectionConfig(config, getOfficialRemoteServerCommand());
@@ -95,16 +127,20 @@ export function openConnectionDialog(props): Promise<?RemoteConnection> {
     // with the new set of connection profiles.
     connectionProfilesSubscription = onSavedConnectionProfilesDidChange(
       (newProfiles: ?Array<NuclideRemoteConnectionProfile>) => {
-        const connectionProfiles = newProfiles ? [defaultConnectionProfile].concat(newProfiles) :
+        compositeConnectionProfiles = newProfiles ? [defaultConnectionProfile].concat(newProfiles) :
             [defaultConnectionProfile];
-        const newDialogProps = extend.immutableExtend(baseDialogProps, {connectionProfiles});
+        const newDialogProps = extend.immutableExtend(
+          baseDialogProps,
+          {connectionProfiles: compositeConnectionProfiles},
+        );
         React.render(<ConnectionDialog {...newDialogProps} />, hostEl);
       }
     );
 
-    const initialDialogProps = extend.immutableExtend(baseDialogProps, {
-      connectionProfiles: [defaultConnectionProfile],
-    });
+    const initialDialogProps = extend.immutableExtend(
+      baseDialogProps,
+      {connectionProfiles: compositeConnectionProfiles},
+    );
     React.render(<ConnectionDialog {...initialDialogProps} />, hostEl);
   });
 }
