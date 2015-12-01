@@ -24,7 +24,10 @@ const authMethods = [
   SupportedMethods.PRIVATE_KEY,
 ];
 
-import type {NuclideRemoteConnectionParamsWithPassword} from './connection-types';
+import type {
+  NuclideRemoteAuthMethods,
+  NuclideRemoteConnectionParamsWithPassword,
+} from './connection-types';
 
 
 /** Component to prompt the user for connection details. */
@@ -224,15 +227,61 @@ export default class ConnectionDetailsForm extends React.Component {
     };
   }
 
+  // Note: 'password' is not settable. The only exposed method is 'clearPassword'.
+  setFormFields(fields: {
+    username?: string,
+    server?: string,
+    cwd?: string,
+    remoteServerCommand?: string,
+    sshPort?: string,
+    pathToPrivateKey?: string,
+    authMethod?: NuclideRemoteAuthMethods,
+  }): void {
+    this._setText('username', fields.username);
+    this._setText('server', fields.server);
+    this._setText('cwd', fields.cwd);
+    this._setText('remoteServerCommand', fields.remoteServerCommand);
+    this._setText('sshPort', fields.sshPort);
+    this._setText('pathToPrivateKey', fields.pathToPrivateKey);
+    this._setAuthMethod(fields.authMethod);
+  }
+
   _getText(fieldName: string): string {
     return (this.refs[fieldName] && this.refs[fieldName].getText().trim()) || '';
+  }
+
+  _setText(fieldName: string, text: ?string): void {
+    if (text == null) {
+      return;
+    }
+    const atomInput = this.refs[fieldName];
+    if (atomInput) {
+      atomInput.setText(text);
+    }
   }
 
   _getAuthMethod(): string {
     return authMethods[this.state.selectedAuthMethodIndex];
   }
 
+  _setAuthMethod(authMethod: ?NuclideRemoteAuthMethods): void {
+    if (authMethod == null) {
+      return;
+    }
+    const newIndex = authMethods.indexOf(authMethod);
+    if (newIndex >= 0) {
+      this.setState({selectedAuthMethodIndex: newIndex});
+    }
+  }
+
   _getPassword(): string {
     return (this.refs.password && React.findDOMNode(this.refs.password).value) || '';
+  }
+
+  clearPassword(): void {
+    const passwordInput = this.refs['password'];
+    if (passwordInput) {
+      passwordInput.value = '';
+    }
   }
 }
