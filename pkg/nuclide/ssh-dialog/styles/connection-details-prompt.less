@@ -1,0 +1,12 @@
+@import "ui-variables";
+
+/* Atom creates a shadow around each item that matches ".list-group .selected::before".
+ *
+ * nuclide-connection-details-prompt has the Atom "padded" class applied, so we
+ * want the shadow within it to be padded. We need to manually adjust the shadow's
+ * padding, though, because the shadow is absolutely positioned.
+ */
+.nuclide-connection-details-prompt .connection-profiles .list-group .selected::before {
+  left: @component-padding;
+  right: @component-padding;
+}

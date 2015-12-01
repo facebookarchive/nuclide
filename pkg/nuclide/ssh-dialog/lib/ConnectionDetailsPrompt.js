@@ -112,7 +112,7 @@ export default class ConnectionDetailsPrompt
 
     return (
       <div className="nuclide-connection-details-prompt">
-        <div className="left-column">
+        <div className="connection-details-form">
           <ConnectionDetailsForm
             ref="connection-details-form"
             initialUsername={prefilledConnectionParams.username}
@@ -126,7 +126,7 @@ export default class ConnectionDetailsPrompt
             onCancel={this.props.onCancel}
           />
         </div>
-        <div className="right-column">
+        <div className="connection-profiles padded">
           <title>Profiles</title>
           <NuclideMutableListSelector
             items={listSelectorItems}
