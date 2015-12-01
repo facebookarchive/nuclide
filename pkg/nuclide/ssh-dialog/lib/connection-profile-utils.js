@@ -62,6 +62,7 @@ export function getDefaultConnectionProfile(): NuclideRemoteConnectionProfile {
 export function getSavedConnectionProfiles(): Array<NuclideRemoteConnectionProfile> {
   const connectionProfiles = atom.config.get(CONNECTION_PROFILES_KEY);
   (connectionProfiles : ?Array<NuclideRemoteConnectionProfile>);
+  prepareSavedConnectionProfilesForDisplay(connectionProfiles);
   return connectionProfiles || [];
 }
 
@@ -87,7 +88,11 @@ export function onSavedConnectionProfilesDidChange(
 ): Disposable {
   return atom.config.onDidChange(
     CONNECTION_PROFILES_KEY,
-    (event: ConnectionProfileChange) => callback(event.newValue)
+    (event: ConnectionProfileChange) => {
+      const newProfiles = event.newValue;
+      prepareSavedConnectionProfilesForDisplay(newProfiles);
+      callback(newProfiles);
+    }
   );
 }
 
@@ -146,4 +151,21 @@ export function getDefaultConfig(): any {
 
 export function getOfficialRemoteServerCommand(): string {
   return getDefaultConfig().remoteServerCommand;
+}
+
+function prepareSavedConnectionProfilesForDisplay(
+  connectionProfiles: ?Array<NuclideRemoteConnectionProfile>,
+): void {
+  if (!connectionProfiles) {
+    return;
+  }
+  // If a profile does not inclide a remote server command, this means the user
+  // intended to use the default server command. We must fill this in.
+  const defaultConnectionSettings = getDefaultConfig();
+  const currentOfficialRSC = defaultConnectionSettings.remoteServerCommand;
+  connectionProfiles.forEach((profile: NuclideRemoteConnectionProfile) => {
+    if (!profile.params.remoteServerCommand) {
+      profile.params.remoteServerCommand = currentOfficialRSC;
+    }
+  });
 }
