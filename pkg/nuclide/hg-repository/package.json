@@ -26,7 +26,9 @@
     "nuclide-remote-connection": "0.0.0",
     "nuclide-source-control-helpers": "0.0.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "nuclide-test-helpers": "0.0.0"
+  },
   "_atomModuleCache": {
     "extensions": {
       ".node": []
