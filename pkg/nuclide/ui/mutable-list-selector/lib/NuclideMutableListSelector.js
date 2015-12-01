@@ -76,7 +76,7 @@ export default class NuclideMutableListSelector
     const listItems = [];
     for (const item of this.props.items) {
       (item : NuclideListSelectorItem);
-      let classes = 'nuclide-list-selector list-item';
+      let classes = 'nuclide-mutable-list-selector list-item';
       if (item.id === this.state.idOfSelectedItem) {
         classes += ' selected';
       }
@@ -91,18 +91,18 @@ export default class NuclideMutableListSelector
     }
 
     return (
-      <div className="nuclide-list-selector">
-        <div className="nuclide-list-selector list-container">
+      <div className="nuclide-mutable-list-selector">
+        <div className="nuclide-mutable-list-selector list-container">
           {listItems}
         </div>
-        <div className="nuclide-list-selector button-container">
+        <div className="nuclide-mutable-list-selector button-container">
           <button
-            className="nuclide-list-selector button"
+            className="nuclide-mutable-list-selector button"
             onClick={this.props.onAddButtonClicked}>
             +
           </button>
           <button
-            className="nuclide-list-selector button"
+            className="nuclide-mutable-list-selector button"
             onClick={this._boundOnDeleteButtonClicked}>
             -
           </button>
