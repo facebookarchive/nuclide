@@ -79,8 +79,13 @@ export default class ConnectionDetailsPrompt
     if (this.props.connectionProfiles &&
         this.props.connectionProfiles.length &&
         this.state.indexOfSelectedConnectionProfile != null) {
-      const selectedProfile =
-          this.props.connectionProfiles[this.state.indexOfSelectedConnectionProfile];
+      let indexToSelect = this.state.indexOfSelectedConnectionProfile;
+      if (indexToSelect >= this.props.connectionProfiles.length) {
+        // This logic protects us from incorrect indices passed from above, and
+        // allows us to passively account for profiles being deleted.
+        indexToSelect = this.props.connectionProfiles.length - 1;
+      }
+      const selectedProfile = this.props.connectionProfiles[indexToSelect];
       prefilledConnectionParams = selectedProfile.params;
     }
 
