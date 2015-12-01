@@ -12,7 +12,7 @@
 import type {NuclideRemoteConnectionProfile} from './connection-types';
 
 import AuthenticationPrompt from './AuthenticationPrompt';
-import ConnectionDetailsForm from './ConnectionDetailsForm';
+import ConnectionDetailsPrompt from './ConnectionDetailsPrompt';
 import IndeterminateProgressBar from './IndeterminateProgressBar';
 import React from 'react-for-atom';
 import {
@@ -103,27 +103,14 @@ export default class ConnectionDialog extends React.Component<DefaultProps, Prop
     let content;
     let isOkDisabled;
     if (mode === REQUEST_CONNECTION_DETAILS) {
-      // This is a temporary conversion. It will be removed when ConnectionDetailsForm
-      // is replaced with ConnectionDetailsPrompt later in this stack of diffs.
-      let initialConnectionParams = {};
-      if (this.props.connectionProfiles &&
-          this.props.connectionProfiles.length &&
-          this.props.indexOfInitiallySelectedConnectionProfile != null) {
-        const initialProfile =
-            this.props.connectionProfiles[this.props.indexOfInitiallySelectedConnectionProfile];
-        initialConnectionParams = initialProfile.params;
-      }
-
       content = (
-        <ConnectionDetailsForm
+        <ConnectionDetailsPrompt
           ref="connection-details"
-          initialUsername={initialConnectionParams.username}
-          initialServer={initialConnectionParams.server}
-          initialRemoteServerCommand={initialConnectionParams.remoteServerCommand}
-          initialCwd={initialConnectionParams.cwd}
-          initialSshPort={initialConnectionParams.sshPort}
-          initialPathToPrivateKey={initialConnectionParams.pathToPrivateKey}
-          initialAuthMethod={initialConnectionParams.authMethod}
+          connectionProfiles={this.props.connectionProfiles}
+          indexOfInitiallySelectedConnectionProfile=
+            {this.props.indexOfInitiallySelectedConnectionProfile}
+          onAddProfileClicked={this.props.onAddProfileClicked}
+          onDeleteProfileClicked={this.props.onDeleteProfileClicked}
           onConfirm={this._boundOk}
           onCancel={this._boundCancel}
         />
