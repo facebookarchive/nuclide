@@ -16,6 +16,8 @@ import type {
 } from 'nuclide-quick-open-interfaces';
 import type {HomeFragments} from 'nuclide-home-interfaces';
 
+import featureConfig from 'nuclide-feature-config';
+
 let trackFunction;
 function track(...args) {
   const trackFunc = trackFunction || (trackFunction = require('nuclide-analytics').track);
@@ -251,7 +253,7 @@ class Activation {
       const isAlreadyVisible = this._searchPanel.isVisible();
       this._searchPanel.show();
       this._searchComponent.focus();
-      if (atom.config.get('nuclide-quick-open.useSelection') && !isAlreadyVisible) {
+      if (featureConfig.get('nuclide-quick-open.useSelection') && !isAlreadyVisible) {
         const selectedText = this._getFirstSelectionText();
         if (selectedText && selectedText.length <= MAX_SELECTION_LENGTH) {
           this._searchComponent.setInputValue(selectedText.split('\n')[0]);

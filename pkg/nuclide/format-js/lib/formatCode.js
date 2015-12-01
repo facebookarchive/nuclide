@@ -10,6 +10,7 @@
  */
 
 const logger = require('nuclide-logging').getLogger();
+const featureConfig = require('nuclide-feature-config');
 const {track} = require('nuclide-analytics');
 const {updateCursor} = require('nuclide-update-cursor');
 
@@ -28,7 +29,7 @@ async function formatCode(editor: ?TextEditor): Promise<void> {
   let source = oldSource;
 
   // Reprint transform.
-  if (atom.config.get('nuclide-format-js.reprint')) {
+  if (featureConfig.get('nuclide-format-js.reprint')) {
     const {reprint} = require('nuclide-reprint-js');
     const reprintResult = reprint(source, {
       maxLineLength: 80,
@@ -57,7 +58,7 @@ async function formatCode(editor: ?TextEditor): Promise<void> {
   editor.setCursorBufferPosition(updateCursor(oldSource, position, source));
 
   // Save the file if that option is specified.
-  if (atom.config.get('nuclide-format-js.saveAfterRun')) {
+  if (featureConfig.get('nuclide-format-js.saveAfterRun')) {
     editor.save();
   }
 }

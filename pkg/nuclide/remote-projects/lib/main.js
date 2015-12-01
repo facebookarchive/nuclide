@@ -15,6 +15,7 @@ import type {RemoteConnectionConfiguration} from 'nuclide-remote-connection/lib/
 
 import {createTextEditor} from 'nuclide-atom-helpers';
 import {getOpenFileEditorForRemoteProject} from './utils';
+import featureConfig from 'nuclide-feature-config';
 import {CompositeDisposable} from 'atom';
 
 /**
@@ -118,7 +119,7 @@ function addRemoteFolderToProject(connection: RemoteConnection) {
       return;
     });
 
-    if (atom.config.get(
+    if (featureConfig.get(
       'nuclide-remote-projects.shutdownServerAfterDisconnection',
     )) {
       // Atom takes the first button in the list as default option.

@@ -12,13 +12,14 @@
 import type {BusySignalProviderBase} from 'nuclide-busy-signal-provider-base';
 
 import {CompositeDisposable} from 'atom';
-
 import {DiagnosticsProviderBase} from 'nuclide-diagnostics-provider-base';
 
+import featureConfig from 'nuclide-feature-config';
 import {trackTiming} from 'nuclide-analytics';
 import {isTextEditor} from 'nuclide-atom-helpers';
 import {promises} from 'nuclide-commons';
 import invariant from 'assert';
+
 const {RequestSerializer} = promises;
 
 export class ArcanistDiagnosticsProvider {
@@ -86,7 +87,7 @@ export class ArcanistDiagnosticsProvider {
         return;
       }
       const diagnostics = result.result;
-      const blackListedLinters = new Set(atom.config.get('nuclide-arcanist.blacklistedLinters'));
+      const blackListedLinters = new Set(featureConfig.get('nuclide-arcanist.blacklistedLinters'));
       const filteredDiagnostics = diagnostics.filter(diagnostic => {
         return !blackListedLinters.has(diagnostic.code);
       });

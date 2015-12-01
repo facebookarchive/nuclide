@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+const featureConfig = require('nuclide-feature-config');
+
 const BASE_ITEM_URI = 'nuclide-health://';
 
 function findHealthPaneAndItem(): {pane: ?atom$Pane, item: ?Object} {
@@ -39,7 +41,7 @@ describe('Health', () => {
       expect(item).toBeTruthy();
       if (item) {
         expect(item.getTitle()).toEqual('Health');
-        const interval = atom.config.get('nuclide-health.viewTimeout');
+        const interval = featureConfig.get('nuclide-health.viewTimeout');
         expect(typeof interval).toEqual('number');
 
         if (typeof interval === 'number') {

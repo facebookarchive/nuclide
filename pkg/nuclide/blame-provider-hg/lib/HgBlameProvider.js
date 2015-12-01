@@ -11,6 +11,7 @@
 
 import type {BlameForEditor} from 'nuclide-blame-base';
 
+import featureConfig from 'nuclide-feature-config';
 import {hgRepositoryForEditor} from './common';
 import {trackOperationTiming} from 'nuclide-analytics';
 
@@ -61,7 +62,7 @@ async function doGetBlameForEditor(editor: atom$TextEditor): Promise<BlameForEdi
   const blameInfo = await repo.getBlameAtHead(path);
   // TODO (t8045823) Convert the return type of ::getBlameAtHead to a Map when
   // the service framework supports a Map return type.
-  const useShortName = !(atom.config.get('nuclide-blame-provider-hg.showVerboseBlame'));
+  const useShortName = !(featureConfig.get('nuclide-blame-provider-hg.showVerboseBlame'));
   return formatBlameInfo(blameInfo, useShortName);
 }
 

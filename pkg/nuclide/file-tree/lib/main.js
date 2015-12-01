@@ -15,6 +15,8 @@ import type {FileTreeControllerState} from './FileTreeController';
 
 import {CompositeDisposable} from 'atom';
 
+import featureConfig from 'nuclide-feature-config';
+
 /**
  * Minimum interval (in ms) between onChangeActivePaneItem events before revealing the active pane
  * item in the file tree.
@@ -52,13 +54,13 @@ class Activation {
 
     const revealSetting = 'nuclide-file-tree.revealFileOnSwitch';
     // Flow does not know that this setting is a boolean, thus the cast.
-    this._setRevealOnFileSwitch(((atom.config.get(revealSetting): any): boolean));
+    this._setRevealOnFileSwitch(((featureConfig.get(revealSetting): any): boolean));
 
     const ignoredNamesSetting = 'core.ignoredNames';
     this._setIgnoredNames(((atom.config.get(ignoredNamesSetting): any): string | Array<string>));
 
     const hideIgnoredNamesSetting = 'nuclide-file-tree.hideIgnoredNames';
-    this._setRevealOnFileSwitch(((atom.config.get(hideIgnoredNamesSetting): any): boolean));
+    this._setRevealOnFileSwitch(((featureConfig.get(hideIgnoredNamesSetting): any): boolean));
 
     const excludeVcsIgnoredPathsSetting = 'core.excludeVcsIgnoredPaths';
     this._setExcludeVcsIgnoredPaths(
@@ -66,9 +68,9 @@ class Activation {
     );
 
     this._subscriptions.add(
-      atom.config.observe(revealSetting, this._setRevealOnFileSwitch.bind(this)),
+      featureConfig.observe(revealSetting, this._setRevealOnFileSwitch.bind(this)),
       atom.config.observe(ignoredNamesSetting, this._setIgnoredNames.bind(this)),
-      atom.config.observe(hideIgnoredNamesSetting, this._setHideIgnoredNames.bind(this)),
+      featureConfig.observe(hideIgnoredNamesSetting, this._setHideIgnoredNames.bind(this)),
       atom.config.observe(
         excludeVcsIgnoredPathsSetting,
         this._setExcludeVcsIgnoredPaths.bind(this),

@@ -34,6 +34,7 @@
     "nuclide-analytics": "0.0.0",
     "nuclide-atom-helpers": "0.0.0",
     "nuclide-commons": "0.0.0",
+    "nuclide-feature-config": "0.0.0",
     "nuclide-hg-git-bridge": "0.0.0",
     "nuclide-hg-repository-base": "0.0.0",
     "nuclide-logging": "0.0.0",

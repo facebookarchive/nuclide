@@ -11,6 +11,8 @@
 
 const {CompositeDisposable} = require('atom');
 
+const featureConfig = require('nuclide-feature-config');
+
 let subscriptions: ?CompositeDisposable = null;
 
 module.exports = {
@@ -30,8 +32,8 @@ module.exports = {
     ));
 
     // Set up run-on-save based on atom config.
-    let runOnSave = atom.config.get('nuclide-format-js.runOnSave');
-    atom.config.observe('nuclide-format-js.runOnSave', newValue => {
+    let runOnSave = featureConfig.get('nuclide-format-js.runOnSave');
+    featureConfig.observe('nuclide-format-js.runOnSave', newValue => {
       runOnSave = !!newValue;
     });
     localSubscriptions.add(atom.workspace.observeTextEditors(editor => {

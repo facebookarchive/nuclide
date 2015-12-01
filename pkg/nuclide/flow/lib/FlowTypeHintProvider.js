@@ -14,6 +14,7 @@ import type {TypeHint} from 'nuclide-type-hint-interfaces';
 import invariant from 'assert';
 
 const {extractWordAtPosition} = require('nuclide-atom-helpers');
+const featureConfig = require('nuclide-feature-config');
 const {getServiceByNuclideUri} = require('nuclide-client');
 const {Range} = require('atom');
 
@@ -21,7 +22,7 @@ import {JAVASCRIPT_WORD_REGEX} from './constants';
 
 export class FlowTypeHintProvider {
   async typeHint(editor: TextEditor, position: atom$Point): Promise<?TypeHint> {
-    const enabled = atom.config.get('nuclide-flow.enableTypeHints');
+    const enabled = featureConfig.get('nuclide-flow.enableTypeHints');
     if (!enabled) {
       return null;
     }
@@ -30,7 +31,7 @@ export class FlowTypeHintProvider {
     const flowService = await getServiceByNuclideUri('FlowService', filePath);
     invariant(flowService);
 
-    const enableStructuredTypeHints = atom.config.get('nuclide-flow.enableStructuredTypeHints');
+    const enableStructuredTypeHints = featureConfig.get('nuclide-flow.enableStructuredTypeHints');
     const getTypeResult = await flowService.flowGetType(
       filePath,
       contents,

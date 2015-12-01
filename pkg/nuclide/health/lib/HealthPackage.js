@@ -40,6 +40,7 @@ import React from 'react-for-atom';
 // Imports from other Nuclide packages.
 import {track} from 'nuclide-analytics';
 import {atomEventDebounce} from 'nuclide-atom-helpers';
+import featureConfig from 'nuclide-feature-config';
 
 // Imports from within this Nuclide package.
 import HealthPaneItem from './HealthPaneItem';
@@ -73,7 +74,7 @@ class Activation {
 
   activate() {
     this.disposables.add(
-      atom.config.onDidChange('nuclide-health', (event) => {
+      featureConfig.onDidChange('nuclide-health', (event) => {
         currentConfig = event.newValue;
         // If user changes any config, update the health - and reset the polling cycles.
         updateViews();
@@ -88,7 +89,7 @@ class Activation {
         () => atom.workspace.open(BASE_ITEM_URI, {searchAllPanes: true}),
       ),
     );
-    currentConfig = atom.config.get('nuclide-health');
+    currentConfig = featureConfig.get('nuclide-health');
     timeActiveEditorKeys();
     updateViews();
     updateAnalytics();

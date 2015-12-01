@@ -101,6 +101,18 @@ declare class atom$Config {
 
   // Undocumented Methods
   save(): void;
+  setSchema(
+    keyPath: string,
+    schema: {
+      default?: mixed,
+      description?: string,
+      enum?: Array<mixed>,
+      maximum?: number,
+      minimum?: number,
+      title?: string,
+      type: string,
+    }
+  ): void;
 }
 
 declare class atom$Cursor {

@@ -73,4 +73,32 @@ module.exports = {
   ): boolean {
     return atom.config.set(formatKeyPath(keyPath), ...Array.prototype.slice.call(arguments, 1));
   },
+
+  /*
+   * Sets the schema of a setting for a Nuclide feature key. Takes and returns the same types as
+   * `atom.config.setSchema`.
+   */
+  setSchema(
+    keyPath: string,
+    schema: Object
+  ): void {
+    return atom.config.setSchema(
+      formatKeyPath(keyPath),
+      ...Array.prototype.slice.call(arguments, 1)
+    );
+  },
+
+  /*
+   * Restores a setting for a Nuclide feature key to its default value. Takes and returns the same
+   * types as `atom.config.set`.
+   */
+  unset(
+    keyPath: string,
+    options?: {
+      scopeSelector?: string,
+      source?: string,
+    }
+  ): void {
+    return atom.config.unset(formatKeyPath(keyPath), ...Array.prototype.slice.call(arguments, 1));
+  },
 };

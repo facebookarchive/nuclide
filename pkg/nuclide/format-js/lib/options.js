@@ -15,6 +15,7 @@ import type {SourceOptions} from 'nuclide-format-js-base/lib/options/SourceOptio
 const {Directory, File} = require('atom');
 const NuclideCommons = require('nuclide-commons');
 
+const featureConfig = require('nuclide-feature-config');
 const formatJSBase = require('nuclide-format-js-base');
 
 // These are the common settings needed to construct a module map.
@@ -179,9 +180,9 @@ function getNuclideOptions(sourcePath: string): SourceOptions {
  */
 function getNuclideSettings(): Settings {
   return {
-    aliases: fixAliases((atom.config.get('nuclide-format-js.aliases'): any)),
-    builtIns: atom.config.get('nuclide-format-js.builtIns'),
-    builtInTypes: atom.config.get('nuclide-format-js.builtInTypes'),
+    aliases: fixAliases((featureConfig.get('nuclide-format-js.aliases'): any)),
+    builtIns: featureConfig.get('nuclide-format-js.builtIns'),
+    builtInTypes: featureConfig.get('nuclide-format-js.builtInTypes'),
   };
 }
 
@@ -231,25 +232,25 @@ function getNuclideModuleMap(): ModuleMap {
  */
 function getNuclideBlacklist(): Set<string> {
   const blacklist = new Set();
-  if (!atom.config.get('nuclide-format-js.nuclideFixHeader')) {
+  if (!featureConfig.get('nuclide-format-js.nuclideFixHeader')) {
     blacklist.add('nuclide.fixHeader');
   }
-  if (!atom.config.get('nuclide-format-js.requiresTransferComments')) {
+  if (!featureConfig.get('nuclide-format-js.requiresTransferComments')) {
     blacklist.add('requires.transferComments');
   }
-  if (!atom.config.get('nuclide-format-js.requiresRemoveUnusedRequires')) {
+  if (!featureConfig.get('nuclide-format-js.requiresRemoveUnusedRequires')) {
     blacklist.add('requires.removeUnusedRequires');
   }
-  if (!atom.config.get('nuclide-format-js.requiresAddMissingRequires')) {
+  if (!featureConfig.get('nuclide-format-js.requiresAddMissingRequires')) {
     blacklist.add('requires.addMissingRequires');
   }
-  if (!atom.config.get('nuclide-format-js.requiresRemoveUnusedTypes')) {
+  if (!featureConfig.get('nuclide-format-js.requiresRemoveUnusedTypes')) {
     blacklist.add('requires.removeUnusedTypes');
   }
-  if (!atom.config.get('nuclide-format-js.requiresAddMissingTypes')) {
+  if (!featureConfig.get('nuclide-format-js.requiresAddMissingTypes')) {
     blacklist.add('requires.addMissingTypes');
   }
-  if (!atom.config.get('nuclide-format-js.requiresFormatRequires')) {
+  if (!featureConfig.get('nuclide-format-js.requiresFormatRequires')) {
     blacklist.add('requires.formatRequires');
   }
   return blacklist;

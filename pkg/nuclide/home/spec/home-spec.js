@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+const featureConfig = require('nuclide-feature-config');
+
 const BASE_ITEM_URI = 'nuclide-home://';
 const CONFIG_KEY = 'nuclide-home.showHome';
 
@@ -39,7 +41,7 @@ describe('Home', () => {
       if (item) {
         expect(item.getTitle()).toEqual('Home');
         expect(item.innerHTML).toContain('Welcome to Nuclide');
-        expect(atom.config.get(CONFIG_KEY)).toBeTruthy();
+        expect(featureConfig.get(CONFIG_KEY)).toBeTruthy();
       }
     });
   });
@@ -53,7 +55,7 @@ describe('Home', () => {
         pane.activateItem(item);
         atom.commands.dispatch(atom.views.getView(atom.workspace), 'core:close');
         expect(findHomePaneAndItem().item).toBeFalsy();
-        expect(atom.config.get(CONFIG_KEY)).toBeFalsy();
+        expect(featureConfig.get(CONFIG_KEY)).toBeFalsy();
       }
     });
   });

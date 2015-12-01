@@ -15,9 +15,9 @@ import type {
 } from 'nuclide-busy-signal-provider-base';
 
 const invariant = require('assert');
-
 const {CompositeDisposable} = require('atom');
 
+import featureConfig from 'nuclide-feature-config';
 import {track} from 'nuclide-analytics';
 
 import {JS_GRAMMARS, JAVASCRIPT_WORD_REGEX} from './constants.js';
@@ -93,10 +93,10 @@ module.exports = {
     if (!flowDiagnosticsProvider) {
       const busyProvider = this.provideBusySignal();
       const FlowDiagnosticsProvider = require('./FlowDiagnosticsProvider');
-      const runOnTheFly = ((atom.config.get(diagnosticsOnFlySetting): any): boolean);
+      const runOnTheFly = ((featureConfig.get(diagnosticsOnFlySetting): any): boolean);
       flowDiagnosticsProvider = new FlowDiagnosticsProvider(runOnTheFly, busyProvider);
       invariant(disposables);
-      disposables.add(atom.config.observe(diagnosticsOnFlySetting, newValue => {
+      disposables.add(featureConfig.observe(diagnosticsOnFlySetting, newValue => {
         invariant(flowDiagnosticsProvider);
         flowDiagnosticsProvider.setRunOnTheFly(newValue);
       }));

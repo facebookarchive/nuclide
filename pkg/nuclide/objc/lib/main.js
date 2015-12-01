@@ -12,6 +12,8 @@
 import type ObjectiveCColonIndenter from './ObjectiveCColonIndenter';
 import type ObjectiveCBracketBalancer from './ObjectiveCBracketBalancer';
 
+import featureConfig from 'nuclide-feature-config';
+
 class Activation {
   _indentFeature: ObjectiveCColonIndenter;
   _bracketFeature: ObjectiveCBracketBalancer;
@@ -24,7 +26,7 @@ class Activation {
 
     const ObjectiveCBracketBalancerCtr = require('./ObjectiveCBracketBalancer');
     this._bracketFeature = new ObjectiveCBracketBalancerCtr();
-    this._configSubscription = atom.config.observe(
+    this._configSubscription = featureConfig.observe(
         'nuclide-objc.enableAutomaticSquareBracketInsertion',
         enabled => enabled ? this._bracketFeature.enable() : this._bracketFeature.disable());
   }

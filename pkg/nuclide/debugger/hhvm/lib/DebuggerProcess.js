@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-
 const {log, logInfo, logError, setLogLevel} = require('./utils');
+const featureConfig = require('nuclide-feature-config');
 const {translateMessageFromServer, translateMessageToServer} = require('./ChromeMessageRemoting');
 const remoteUri = require('nuclide-remote-uri');
 const {Disposable} = require('atom');
@@ -39,7 +39,7 @@ class DebuggerProcess {
     this._disposables = new CompositeDisposable();
     this._sessionEndCallback = null;
 
-    setLogLevel(atom.config.get('nuclide-debugger-hhvm').logLevel);
+    setLogLevel(featureConfig.get('nuclide-debugger-hhvm').logLevel);
   }
 
   getWebsocketAddress(): Promise<string> {
@@ -60,7 +60,7 @@ class DebuggerProcess {
       this._handleServerEnd.bind(this)
     ));
 
-    const config = atom.config.get('nuclide-debugger-hhvm');
+    const config = featureConfig.get('nuclide-debugger-hhvm');
     config.targetUri = remoteUri.getPath(this._remoteDirectoryUri);
     logInfo('Connection config: ' + JSON.stringify(config));
 

@@ -39,6 +39,7 @@
   "dependencies": {
     "nuclide-client": "0.0.0",
     "nuclide-debugger-utils": "0.0.0",
+    "nuclide-feature-config": "0.0.0",
     "nuclide-logging": "0.0.0",
     "nuclide-remote-uri": "0.0.0",
     "ws": "0.7.1"

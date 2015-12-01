@@ -15,6 +15,7 @@ import type HomePaneItemType from './HomePaneItem';
 const BASE_ITEM_URI = 'nuclide-home://';
 
 const {CompositeDisposable, Disposable} = require('atom');
+const featureConfig = require('nuclide-feature-config');
 
 let disposables: ?CompositeDisposable = null;
 let paneItem: ?HomePaneItemType;
@@ -25,14 +26,14 @@ const allHomeFragments: Set<HomeFragments> = new Set();
 function activate(): void {
   disposables = new CompositeDisposable();
   disposables.add(
-    atom.config.onDidChange('nuclide-home', (event) => {
+    featureConfig.onDidChange('nuclide-home', (event) => {
       currentConfig = event.newValue;
       considerDisplayingHome();
     }),
     atom.workspace.addOpener(getHomePaneItem),
     atom.commands.add('atom-workspace', 'nuclide-home:toggle-pane', togglePane),
   );
-  currentConfig = atom.config.get('nuclide-home');
+  currentConfig = featureConfig.get('nuclide-home');
   considerDisplayingHome();
 }
 
@@ -53,7 +54,7 @@ function setHomeFragments(homeFragments: HomeFragments): Disposable {
 }
 
 function togglePane() {
-  atom.config.set('nuclide-home.showHome', !atom.config.get('nuclide-home.showHome'));
+  featureConfig.set('nuclide-home.showHome', !featureConfig.get('nuclide-home.showHome'));
 }
 
 function considerDisplayingHome() {

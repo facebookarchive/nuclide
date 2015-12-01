@@ -30,6 +30,7 @@
     "nuclide-buck-base": "0.0.0",
     "nuclide-buck-commons": "0.0.0",
     "nuclide-commons": "0.0.0",
+    "nuclide-feature-config": "0.0.0",
     "nuclide-remote-uri": "0.0.0"
   },
   "devDependencies": {},

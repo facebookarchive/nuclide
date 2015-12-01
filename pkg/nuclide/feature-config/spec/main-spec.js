@@ -9,30 +9,38 @@
  * the root directory of this source tree.
  */
 
-import nuclideFeatureConfig from '../lib/main';
+import featureConfig from '../lib/main';
 
 describe('main', () => {
   it('returns numbers when numbers are set', () => {
-    nuclideFeatureConfig.set('foobar', 5);
-    expect(nuclideFeatureConfig.get('foobar')).toEqual(5);
+    featureConfig.set('foobar', 5);
+    expect(featureConfig.get('foobar')).toEqual(5);
   });
 
   it('returns booleans when numbers are set', () => {
-    nuclideFeatureConfig.set('cat', true);
-    expect(nuclideFeatureConfig.get('cat')).toEqual(true);
+    featureConfig.set('cat', true);
+    expect(featureConfig.get('cat')).toEqual(true);
   });
 
   it('passes values to observers on change', () => {
     const spy = jasmine.createSpy('spy');
-    nuclideFeatureConfig.observe('animal', spy);
-    nuclideFeatureConfig.set('animal', 'yup');
+    featureConfig.observe('animal', spy);
+    featureConfig.set('animal', 'yup');
     expect(spy).toHaveBeenCalled();
   });
 
   it('calls callbacks passed to `onDidChange`', () => {
     const spy = jasmine.createSpy('willis');
-    nuclideFeatureConfig.onDidChange('mars.attacks', spy);
-    nuclideFeatureConfig.set('mars.attacks', 42);
+    featureConfig.onDidChange('mars.attacks', spy);
+    featureConfig.set('mars.attacks', 42);
     expect(spy).toHaveBeenCalled();
+  });
+
+  it('resets to defaults with "unset"', () => {
+    featureConfig.setSchema('purple.pants', {type: 'number', default: 15});
+    featureConfig.set('purple.pants', 25);
+    expect(featureConfig.get('purple.pants')).toEqual(25);
+    featureConfig.unset('purple.pants');
+    expect(featureConfig.get('purple.pants')).toEqual(15);
   });
 });

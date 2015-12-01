@@ -30,6 +30,7 @@
     "react-for-atom": "0.14.3"
   },
   "devDependencies": {
+    "nuclide-feature-config": "0.0.0",
     "nuclide-home-interfaces": "0.0.0"
   },
   "_atomModuleCache": {
