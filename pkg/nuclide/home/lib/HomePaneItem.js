@@ -13,6 +13,7 @@ import type {HomeFragments} from 'nuclide-home-interfaces';
 
 const React = require('react-for-atom');
 const HomeFeatureComponent = require('./HomeFeatureComponent');
+const NuclideLogo = require('./NuclideLogo');
 const arrayFrom = require('nuclide-commons').array.from;
 
 const DEFAULT_WELCOME = (
@@ -76,7 +77,7 @@ class HomePaneItem extends HTMLElement {
     const containers = [
       <div key="welcome" className="welcome-container">
         <section className="text-center">
-          <div className="nuclide-home-logo" />
+          <NuclideLogo className="nuclide-home-logo" />
           <h1 className="welcome-title">Welcome to Nuclide</h1>
         </section>
         <section className="text-center">
