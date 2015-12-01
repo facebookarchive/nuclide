@@ -81,28 +81,30 @@ export default class NuclideMutableListSelector
         classes += ' selected';
       }
       listItems.push(
-        <div
+        <li
           key={item.id}
           className={classes}
           onClick={this._onItemClicked.bind(this, item.id)}>
-          {item.displayTitle}
-        </div>
+          <span>
+            {item.displayTitle}
+          </span>
+        </li>
       );
     }
 
     return (
       <div className="nuclide-mutable-list-selector">
-        <div className="nuclide-mutable-list-selector list-container">
+        <ul className="nuclide-mutable-list-selector list-group">
           {listItems}
-        </div>
-        <div className="nuclide-mutable-list-selector button-container">
+        </ul>
+        <div className="nuclide-mutable-list-selector btn-group">
           <button
-            className="nuclide-mutable-list-selector button"
+            className="nuclide-mutable-list-selector btn"
             onClick={this.props.onAddButtonClicked}>
             +
           </button>
           <button
-            className="nuclide-mutable-list-selector button"
+            className="nuclide-mutable-list-selector btn"
             onClick={this._boundOnDeleteButtonClicked}>
             -
           </button>
