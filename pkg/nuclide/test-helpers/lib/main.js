@@ -136,6 +136,7 @@ module.exports = {
   get fixtures() {
     return require('./fixtures');
   },
+  activateAllPackages: require('./package-utils').activateAllPackages,
   spyOnGetterValue,
   uncachedRequire,
   arePropertiesEqual,
