@@ -10,28 +10,30 @@
  */
 
 
-const logger = require('./utils');
-const {
+import logger from './utils';
+import {
   remoteObjectIdOfObjectId,
   createContextObjectId,
   isContextObjectId,
   isPagedObjectId,
   getWatchContextObjectId,
   isWatchContextObjectId,
-} = require('./ObjectId');
-
-const {
+} from './ObjectId';
+import {
   convertProperties,
   getPagedProperties,
-} = require('./properties.js');
+} from './properties.js';
+import invariant from 'assert';
+import {convertValue} from './values.js';
 
-const {convertValue} = require('./values.js');
+import type {DbgpContext} from './DbgpSocket';
+import type {ObjectId} from './ObjectId';
 
 // TODO: Move these Chrome types to a shared package.
-type RemoteObjectId = string;
+export type RemoteObjectId = string;
 
 // description wins over value in display
-type RemoteObject = {
+export type RemoteObject = {
   className?: string;
   description?: string;
   objectId?: RemoteObjectId;
@@ -41,12 +43,12 @@ type RemoteObject = {
 };
 
 // scope.object.description shows on RHS
-type Scope = {
+export type Scope = {
   object: RemoteObject;
   type: string; // [ "catch" , "closure" , "global" , "local" , "with" ]
 };
 
-type PropertyDescriptor = {
+export type PropertyDescriptor = {
   configurable: boolean;
   enumerable: boolean;
   get?: RemoteObject;
@@ -104,7 +106,7 @@ export class DataCache {
     this._enabled = true;
   }
 
-  async getScopesForFrame(frameIndex: number): Promise<Scope> {
+  async getScopesForFrame(frameIndex: number): Promise<Array<Scope>> {
     if (!this.isEnabled()) {
       throw new Error('Must be enabled to get scopes.');
     }
@@ -127,6 +129,7 @@ export class DataCache {
       return evaluatedResult;
     }
     const id = getWatchContextObjectId(this._enableCount, frameIndex);
+    invariant(evaluatedResult.result);
     const result = convertValue(id, evaluatedResult.result);
     return {
       result,
@@ -156,7 +159,7 @@ export class DataCache {
     // them from dbgp to chrome format.
     if (isContextObjectId(id)) {
       return await this._getContextProperties(id);
-    } else if (isPagedObjectId(id)){
+    } else if (isPagedObjectId(id)) {
       // Paged id's children are constructed directly in chrome format from the contents of the
       // object id. Does not require going to the debuggee.
       return getPagedProperties(id);
@@ -167,10 +170,22 @@ export class DataCache {
 
   async _getSinglePageOfProperties(id: ObjectId): Promise<Array<PropertyDescriptor>> {
     let properties = null;
+    const {fullname, page} = id;
+    invariant(fullname != null);
+    invariant(page != null);
     if (isWatchContextObjectId(id)) {
-      properties = await this._socket.getPropertiesByFullnameAllConexts(id.frameIndex, id.fullname, id.page);
+      properties = await this._socket.getPropertiesByFullnameAllConexts(
+        id.frameIndex,
+        fullname,
+        page
+      );
     } else {
-      properties = await this._socket.getPropertiesByFullname(id.frameIndex, id.contextId, id.fullname, id.page);
+      properties = await this._socket.getPropertiesByFullname(
+        id.frameIndex,
+        id.contextId,
+        fullname,
+        page
+      );
     }
     return convertProperties(id, properties);
   }

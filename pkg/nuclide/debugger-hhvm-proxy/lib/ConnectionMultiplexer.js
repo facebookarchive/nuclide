@@ -19,10 +19,9 @@ import {
 } from './ConnectionUtils';
 
 import type {Socket} from 'net';
-import type Scope from './DataCache';
-import type PropertyDescriptor from './DataCache';
-import type RemoteObjectId from './DataCache';
-import type {Disposable} from 'nuclide-commons';
+import type {Scope}from './DataCache';
+import type {PropertyDescriptor} from './DataCache';
+import type {RemoteObjectId} from './DataCache';
 import type {ExceptionState} from './BreakpointStore';
 const {BreakpointStore} = require('./BreakpointStore');
 const {DbgpConnector} = require('./DbgpConnector');
@@ -38,9 +37,7 @@ import {
   COMMAND_RUN,
 } from './DbgpSocket';
 import {EventEmitter} from 'events';
-import {ChildProcess} from 'child_process';
 import {ClientCallback} from './ClientCallback';
-
 
 const CONNECTION_MUX_STATUS_EVENT = 'connection-mux-status';
 
@@ -101,7 +98,7 @@ export class ConnectionMultiplexer {
   _dummyConnection: ?Connection;
   _connections: Map<Connection, ConnectionInfo>;
   _connector: ?DbgpConnector;
-  _dummyRequestProcess: ?ChildProcess;
+  _dummyRequestProcess: ?child_process$ChildProcess;
 
   constructor(config: ConnectionConfig, clientCallback: ClientCallback) {
     this._config = config;
@@ -318,16 +315,16 @@ export class ConnectionMultiplexer {
     return this._breakpointStore.removeBreakpoint(breakpointId);
   }
 
-  getStackFrames(): Promise<{stack: Array<Object>}> {
+  getStackFrames(): Promise<{stack: Object}> {
     if (this._enabledConnection) {
       return this._enabledConnection.getStackFrames();
     } else {
       // This occurs on startup with the loader breakpoint.
-      return Promise.resolve({stack: []});
+      return Promise.resolve({stack: {}});
     }
   }
 
-  getScopesForFrame(frameIndex: number): Promise<Scope> {
+  getScopesForFrame(frameIndex: number): Promise<Array<Scope>> {
     if (this._enabledConnection) {
       return this._enabledConnection.getScopesForFrame(frameIndex);
     } else {

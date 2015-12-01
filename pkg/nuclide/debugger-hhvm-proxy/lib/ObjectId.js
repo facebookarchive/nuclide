@@ -9,6 +9,9 @@
  * the root directory of this source tree.
  */
 
+import invariant from 'assert';
+
+import type {RemoteObjectId} from './DataCache';
 
 /*
  * An ElementRange identifies a range of child elements of a data value.
@@ -48,7 +51,7 @@ type ElementRange = {
  * of children of the value represented by fullname. Note that the children of
  * PagedObjectIds may be a combination of SinglePageObjectIds and PagedObjectIds.
  */
-type ObjectId = {
+export type ObjectId = {
   enableCount: number;
   frameIndex: number;
   contextId: string;
@@ -67,7 +70,11 @@ function remoteObjectIdOfObjectId(id: ObjectId): RemoteObjectId {
   return JSON.stringify(id);
 }
 
-function createContextObjectId(enableCount: number, frameIndex: number, contextId: string): ObjectId {
+function createContextObjectId(
+  enableCount: number,
+  frameIndex: number,
+  contextId: string,
+): ObjectId {
   return {
     enableCount,
     frameIndex,
@@ -117,14 +124,17 @@ function endIndexOfElementRange(elementRange: ElementRange): number {
   return elementRange.startIndex + elementRange.count;
 }
 
-function endIndexOfObjectId(id: ObjectId): ObjectId {
+function endIndexOfObjectId(id: ObjectId): number {
+  invariant(id.elementRange);
   return endIndexOfElementRange(id.elementRange);
 }
 
 function startIndexOfObjectId(id: ObjectId, pagesize: number): number {
   if (isSinglePageObjectId(id)) {
+    invariant(id.page != null);
     return id.page * pagesize;
   } else {
+    invariant(id.elementRange);
     return id.elementRange.startIndex;
   }
 }
@@ -133,6 +143,7 @@ function countOfObjectId(id: ObjectId, pagesize: number, parentEndIndex: number)
   if (isSinglePageObjectId(id)) {
     return Math.min(pagesize, parentEndIndex - startIndexOfObjectId(id, pagesize));
   } else {
+    invariant(id.elementRange);
     return id.elementRange.count;
   }
 }
@@ -141,7 +152,8 @@ function countOfObjectId(id: ObjectId, pagesize: number, parentEndIndex: number)
  * Given a PagedObjectId, return an array of ObjectIds for its children.
  * Note that the children may be a combination of PagedObjectIds and SinglePageObjectIds.
  */
-function getChildIds(id: ObjectId): Array<PropertyDescriptor> {
+function getChildIds(id: ObjectId): Array<ObjectId> {
+  invariant(id.elementRange);
   const pagesize = id.elementRange.pagesize;
 
   // Handle a page of pages (... of pages)
@@ -157,10 +169,15 @@ function getChildIds(id: ObjectId): Array<PropertyDescriptor> {
     const childCount = Math.min(childSize, endIndex - childStartIndex);
 
     let childId;
+    invariant(id.fullname != null);
     if (childCount <= pagesize) {
       childId = singlePageObjectId(id, id.fullname, Math.trunc(childStartIndex / pagesize));
     } else {
-      childId = pagedObjectId(id, id.fullname, {pagesize, startIndex: childStartIndex, count: childCount});
+      childId = pagedObjectId(
+        id,
+        id.fullname,
+        {pagesize, startIndex: childStartIndex, count: childCount}
+      );
     }
 
     result.push(childId);

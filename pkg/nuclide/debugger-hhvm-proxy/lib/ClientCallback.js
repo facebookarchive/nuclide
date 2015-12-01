@@ -11,11 +11,13 @@
 import logger from './utils';
 import {Observable, Subject} from 'rx';
 
+import type {NotificationMessage} from './HhvmDebuggerProxyService';
+
 export type UserMessageType = 'notification' | 'console';
 export type NotificationType = 'info' | 'warning' | 'error' | 'fatalError';
 
 function createMessage(method: string, params: ?Object): Object {
-  const result = {method};
+  const result: Object = {method};
   if (params) {
     result.params = params;
   }
@@ -73,7 +75,7 @@ export class ClientCallback {
   }
 
   replyToCommand(id: number, result: Object, error: ?string): void {
-    const value = {id, result};
+    const value: Object = {id, result};
     if (error) {
       value.error = error;
     }

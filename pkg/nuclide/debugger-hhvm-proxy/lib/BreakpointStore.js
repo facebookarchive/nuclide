@@ -17,7 +17,7 @@ type Breakpoint = {
   filename: string;
   lineNumber: number;
 };
-type ExceptionState = 'none' | 'uncaught' | 'all';
+export type ExceptionState = 'none' | 'uncaught' | 'all';
 
 const PAUSE_ALL_EXCEPTION_NAME = '*';
 const EXCEPTION_PAUSE_STATE_ALL = 'all';
@@ -93,8 +93,8 @@ export class BreakpointStore {
   }
 
   async _removePauseAllExceptionBreakpointIfNeeded(): Promise {
-    if (this._pauseAllExceptionBreakpointId !== null) {
-      const breakpointId = this._pauseAllExceptionBreakpointId;
+    const breakpointId = this._pauseAllExceptionBreakpointId;
+    if (breakpointId) {
       this._pauseAllExceptionBreakpointId = null;
       return await this._removeBreakpointFromConnections(breakpointId);
     } else {

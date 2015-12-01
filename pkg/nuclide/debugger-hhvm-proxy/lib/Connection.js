@@ -13,10 +13,9 @@ import {DbgpSocket} from './DbgpSocket';
 import {DataCache} from './DataCache';
 
 import type {Socket} from 'net';
-import type Scope from './DataCache';
-import type PropertyDescriptor from './DataCache';
-import type RemoteObjectId from './DataCache';
-import type {Disposable} from 'nuclide-commons';
+import type {Scope} from './DataCache';
+import type {PropertyDescriptor} from './DataCache';
+import type {RemoteObjectId} from './DataCache';
 
 let connectionCount = 1;
 
@@ -56,11 +55,11 @@ export class Connection {
     return this._socket.removeBreakpoint(breakpointId);
   }
 
-  getStackFrames(): Promise<Array<Object>> {
+  getStackFrames(): Promise<Object> {
     return this._socket.getStackFrames();
   }
 
-  getScopesForFrame(frameIndex: number): Promise<Scope> {
+  getScopesForFrame(frameIndex: number): Promise<Array<Scope>> {
     return this._dataCache.getScopesForFrame(frameIndex);
   }
 

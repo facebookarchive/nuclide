@@ -10,7 +10,6 @@
  */
 
 import logger from './utils';
-import type {ChildProcess} from 'child_process';
 
 export const DUMMY_FRAME_ID = 'Frame.0';
 
@@ -41,12 +40,12 @@ export function uriToPath(uri: string): string {
   const components = require('url').parse(uri);
   // Some filename returned from hhvm does not have protocol.
   if (components.protocol !== 'file:' && components.protocol !== null) {
-    logger.logErrorAndThrow('unexpected file protocol. Got: ' + components.protocol);
+    logger.logErrorAndThrow(`unexpected file protocol. Got: ${components.protocol}`);
   }
-  return components.pathname;
+  return components.pathname || '';
 }
 
-export function launchPhpScriptWithXDebugEnabled(scriptPath: string): ChildProcess {
+export function launchPhpScriptWithXDebugEnabled(scriptPath: string): child_process$ChildProcess {
   const child_process = require('child_process');
   const args = ['-c', 'xdebug.ini', scriptPath];
   // TODO[jeffreytan]: make hhvm path configurable so that it will

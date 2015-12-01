@@ -10,18 +10,25 @@
  */
 
 
-const logger = require('./utils');
-const {
+import logger from './utils';
+import {
   remoteObjectIdOfObjectId,
   endIndexOfObjectId,
   startIndexOfObjectId,
   countOfObjectId,
   getChildIds,
-} = require('./ObjectId');
+} from './ObjectId';
+import {convertValue} from './values';
+import invariant from 'assert';
 
-const {convertValue} = require('./values');
+import type {PropertyDescriptor} from './DataCache';
+import type {ObjectId} from './ObjectId';
+import type {DbgpProperty} from './DbgpSocket';
 
-function convertProperties(id: ObjectId, properties: Array<DbgpProperty>): Array<PropertyDescriptor> {
+function convertProperties(
+  id: ObjectId,
+  properties: Array<DbgpProperty>
+): Array<PropertyDescriptor> {
   logger.log('Got properties: ' + JSON.stringify(properties));
   return properties.map(property => convertProperty(id, property));
 }
@@ -45,6 +52,7 @@ function convertProperty(contextId: ObjectId, dbgpProperty: DbgpProperty): Prope
  * for the object's children.
  */
 function getPagedProperties(pagedId: ObjectId): Array<PropertyDescriptor> {
+  invariant(pagedId.elementRange);
   const pagesize = pagedId.elementRange.pagesize;
   const endIndex = endIndexOfObjectId(pagedId);
 

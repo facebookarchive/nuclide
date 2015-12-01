@@ -142,6 +142,7 @@ export class DbgpMessageHandler {
       throw new Error('Error ' + JSON.stringify(errorValue) + ' parsing xml: ' + xml);
     }
     logger.log('Translating server message result json: ' + JSON.stringify(resultValue));
+    invariant(resultValue != null);
     return resultValue;
   }
 

@@ -21,7 +21,7 @@
 .*/pkg/nuclide/clang-atom/.*
 .*/pkg/nuclide/client/.*
 .*/pkg/nuclide/clipboard-path/.*
-.*/pkg/nuclide/debugger-hhvm-proxy/.*
+.*/pkg/nuclide/debugger-hhvm-proxy/spec/.*
 .*/pkg/nuclide/debugger/atom/spec/.*
 .*/pkg/nuclide/debugger/hhvm/.*
 .*/pkg/nuclide/debugger/node/.*

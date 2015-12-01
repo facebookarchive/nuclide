@@ -27,10 +27,11 @@ import {
   COMMAND_STEP_OUT,
 } from './DbgpSocket';
 
+import FileCache from './FileCache';
+import {EventEmitter} from 'events';
+
 import type {ConnectionMultiplexer} from './ConnectionMultiplexer';
 import type {ClientCallback} from './ClientCallback';
-import type FileCache from './FileCache';
-import type {EventEmitter} from 'events';
 
 const SESSION_END_EVENT = 'session-end-event';
 
@@ -50,9 +51,7 @@ export class DebuggerHandler extends Handler {
 
     this._hadFirstContinuationCommand = false;
     this._connectionMultiplexer = connectionMultiplexer;
-    const FileCache = require('./FileCache');
     this._files = new FileCache(clientCallback);
-    const {EventEmitter} = require('events');
     this._emitter = new EventEmitter();
     this._statusSubscription = this._connectionMultiplexer.onStatus(
       this._onStatusChanged.bind(this)
@@ -139,7 +138,8 @@ export class DebuggerHandler extends Handler {
   _setBreakpointByUrl(id: number, params: Object): void {
     const {lineNumber, url, columnNumber, condition} = params;
     if (!url || condition !== '' || columnNumber !== 0) {
-      this.replyWithError(id, 'Invalid arguments to Debugger.setBreakpointByUrl: ' + JSON.stringify(params));
+      this.replyWithError(id, 'Invalid arguments to Debugger.setBreakpointByUrl: '
+        + JSON.stringify(params));
       return;
     }
     this._files.registerFile(url);
@@ -189,12 +189,6 @@ export class DebuggerHandler extends Handler {
       location: locationOfFrame(frame),
       scopeChain: await this._connectionMultiplexer.getScopesForFrame(frameIndex),
     };
-  }
-
-  // Returns one of:
-  //  starting, stopping, stopped, running, break
-  _getStatus(): Promise<string> {
-    return this._connectionMultiplexer.getStatus();
   }
 
   _sendContinuationCommand(command: string): void {

@@ -10,7 +10,7 @@
  */
 
 
-const logger = require('./utils');
+import logger from './utils';
 const {DebuggerHandler} = require('./DebuggerHandler');
 const PageHandler = require('./PageHandler');
 const ConsoleHandler = require('./ConsoleHandler');

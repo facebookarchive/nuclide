@@ -11,7 +11,7 @@
 
 
 import logger from './utils';
-const {EventEmitter} = require('events');
+import {EventEmitter} from 'events';
 import {DbgpMessageHandler, getDbgpMessageHandlerInstance} from './DbgpMessageHandler';
 import type {Socket} from 'net';
 
@@ -35,12 +35,12 @@ const COMMAND_DETACH = 'detach';
 
 const DBGP_SOCKET_STATUS_EVENT = 'dbgp-socket-status';
 
-type DbgpContext = {
+export type DbgpContext = {
   name: string;
   id: string;
 };
 
-type DbgpProperty = {
+export type DbgpProperty = {
   $: {
     name: string;
     fullname: string;
@@ -48,6 +48,7 @@ type DbgpProperty = {
     type: string;
 
     // array or object
+    classname?: string;
     children?: boolean;
     numChildren?: number;
     page?: number;
@@ -66,7 +67,8 @@ type DbgpProperty = {
 };
 
 type EvaluationResult = {
-  result: ?DbgpProperty;
+  error?: Object;
+  result?: ?DbgpProperty;
   wasThrown: boolean;
 };
 
@@ -91,16 +93,17 @@ class DbgpSocket {
     this._isClosed = false;
     this._messageHandler = getDbgpMessageHandlerInstance();
 
-    this._socket.on('end', this._onEnd.bind(this));
-    this._socket.on('error', this._onError.bind(this));
-    this._socket.on('data', this._onData.bind(this));
+    socket.on('end', this._onEnd.bind(this));
+    socket.on('error', this._onError.bind(this));
+    socket.on('data', this._onData.bind(this));
   }
 
   onStatus(callback: (status: string) => mixed): Disposable {
-    return require('nuclide-commons').event.attachEvent(this._emitter, DBGP_SOCKET_STATUS_EVENT, callback);
+    return require('nuclide-commons').event
+      .attachEvent(this._emitter, DBGP_SOCKET_STATUS_EVENT, callback);
   }
 
-  _onError(error: Error): void {
+  _onError(error: {code: number}): void {
     // Not sure if hhvm is alive or not
     // do not set _isClosed flag so that detach will be sent before dispose().
     logger.logError('socket error ' + error.code);
@@ -147,7 +150,7 @@ class DbgpSocket {
     });
   }
 
-  getStackFrames(): Promise<Array<Object>> {
+  getStackFrames(): Promise<Object> {
     return this._callDebugger('stack_get');
   }
 
@@ -171,8 +174,11 @@ class DbgpSocket {
     return result.property[0].property || [];
   }
 
-  async getPropertiesByFullnameAllConexts(frameIndex: number, fullname: string,
-      page: number): Promise<Array<DbgpProperty>> {
+  async getPropertiesByFullnameAllConexts(
+    frameIndex: number,
+    fullname: string,
+    page: number,
+  ): Promise<Array<DbgpProperty>> {
     // Pass zero as contextId to search all contexts.
     return await this.getPropertiesByFullname(frameIndex, /*contextId*/'0', fullname, page);
   }
@@ -237,7 +243,10 @@ class DbgpSocket {
    * Returns a breakpoint id
    */
   async setBreakpoint(filename: string, lineNumber: number): Promise<string> {
-    const response = await this._callDebugger('breakpoint_set', `-t line -f ${filename} -n ${lineNumber}`);
+    const response = await this._callDebugger(
+      'breakpoint_set',
+      `-t line -f ${filename} -n ${lineNumber}`
+    );
     if (response.error) {
       throw new Error('Error setting breakpoint: ' + JSON.stringify(response));
     }
@@ -275,9 +284,11 @@ class DbgpSocket {
   }
 
   _sendMessage(message: string): void {
-    if (this._socket) {
+    const socket = this._socket;
+    if (socket != null) {
       logger.log('Sending message: ' + message);
-      this._socket.write(message + '\x00');
+      // $FlowIssue - t9258852
+      socket.write(message + '\x00');
     } else {
       logger.logError('Attempt to send message after dispose: ' + message);
     }
@@ -294,11 +305,14 @@ class DbgpSocket {
       this.sendContinuationCommand(COMMAND_DETACH);
     }
 
-    if (this._socket) {
+    const socket = this._socket;
+    if (socket) {
       // end - Sends the FIN packet and closes writing.
       // destroy - closes for reading and writing.
-      this._socket.end();
-      this._socket.destroy();
+      // $FlowIssue - t9258852
+      socket.end();
+      // $FlowIssue - t9258852
+      socket.destroy();
       this._socket = null;
       this._isClosed = true;
     }

@@ -9,7 +9,6 @@
  * the root directory of this source tree.
  */
 
-
 /**
  * A file in the file cache.
  */
@@ -23,10 +22,12 @@ class File {
   }
 
   async getSource(): Promise<string> {
-    if (this._source === null) {
-      this._source = (await require('nuclide-commons').readFile(this._path, 'utf8'));
+    let source = this._source;
+    if (source === null) {
+      source = (await require('nuclide-commons').readFile(this._path, 'utf8')).toString();
+      this._source = source;
     }
-    return this._source;
+    return source;
   }
 }
 

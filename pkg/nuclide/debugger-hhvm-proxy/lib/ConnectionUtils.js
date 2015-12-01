@@ -37,7 +37,7 @@ export async function setRootDirectoryUri(directoryUri: string): Promise {
   }
 }
 
-export function sendDummyRequest(): ChildProcess {
+export function sendDummyRequest(): child_process$ChildProcess {
   return launchPhpScriptWithXDebugEnabled(dummyRequestFilePath);
 }
 
@@ -48,7 +48,9 @@ export function isDummyConnection(message: Object): boolean {
 
 export function failConnection(socket: Socket, errorMessage: string): void {
   logger.log(errorMessage);
+  // $FlowIssue - t9258852
   socket.end();
+  // $FlowIssue - t9258852
   socket.destroy();
 }
 

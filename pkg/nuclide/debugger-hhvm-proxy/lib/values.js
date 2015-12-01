@@ -17,6 +17,11 @@ import {
   pagedObjectId,
   singlePageObjectId,
 } from './ObjectId';
+import invariant from 'assert';
+
+import type {DbgpProperty} from './DbgpSocket';
+import type {ObjectId} from './ObjectId';
+import type {RemoteObject, RemoteObjectId} from './DataCache';
 
 /**
  * Converts a dbgp value to a Chrome RemoteObject.
@@ -80,7 +85,9 @@ function convertFloatValue(dbgpProperty: DbgpProperty): RemoteObject {
 }
 
 function convertBoolValue(dbgpProperty: DbgpProperty): RemoteObject {
-  const value = dbgpProperty.$.encoding === 'base64' ? `TODO: Base64 encoded bool: ${JSON.stringify(dbgpProperty)}`
+  invariant(dbgpProperty._ != null);
+  const value = dbgpProperty.$.encoding === 'base64'
+    ? `TODO: Base64 encoded bool: ${JSON.stringify(dbgpProperty)}`
     : toBool(dbgpProperty._);
   return {
     type: 'boolean',
@@ -98,6 +105,7 @@ function convertNullValue(dbgpProperty: DbgpProperty): RemoteObject {
 
 function convertArrayValue(contextId: ObjectId, dbgpProperty: DbgpProperty): RemoteObject {
   const remoteId = getAggregateRemoteObjectId(contextId, dbgpProperty);
+  invariant(dbgpProperty.$.numchildren != null);
   return {
     description: `Array[${dbgpProperty.$.numchildren}]`,
     type: 'object',
@@ -108,6 +116,7 @@ function convertArrayValue(contextId: ObjectId, dbgpProperty: DbgpProperty): Rem
 
 function convertObjectValue(contextId: ObjectId, dbgpProperty: DbgpProperty): RemoteObject {
   const remoteId = getAggregateRemoteObjectId(contextId, dbgpProperty);
+  invariant(dbgpProperty.$.classname != null);
   return {
     description: dbgpProperty.$.classname,
     type: 'object',
@@ -115,7 +124,11 @@ function convertObjectValue(contextId: ObjectId, dbgpProperty: DbgpProperty): Re
   };
 }
 
-function getAggregateRemoteObjectId(contextId: ObjectId, dbgpProperty: DbgpProperty): RemoteObjectId {
+function getAggregateRemoteObjectId(
+  contextId: ObjectId,
+  dbgpProperty: DbgpProperty
+): RemoteObjectId {
+  invariant(dbgpProperty.$.numchildren != null);
   const numchildren = Number(dbgpProperty.$.numchildren);
   const pagesize = Number(dbgpProperty.$.pagesize);
   const pageCount = Math.trunc((numchildren + pagesize - 1) / pagesize);
@@ -126,7 +139,8 @@ function getAggregateRemoteObjectId(contextId: ObjectId, dbgpProperty: DbgpPrope
       startIndex: 0,
       count: numchildren,
     };
-    return remoteObjectIdOfObjectId(pagedObjectId(contextId, dbgpProperty.$.fullname, elementRange));
+    return remoteObjectIdOfObjectId(
+      pagedObjectId(contextId, dbgpProperty.$.fullname, elementRange));
   } else {
     return remoteObjectIdOfObjectId(singlePageObjectId(contextId, dbgpProperty.$.fullname, 0));
   }
