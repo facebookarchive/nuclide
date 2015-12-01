@@ -11,6 +11,8 @@
 
 import type {BusySignalMessage} from 'nuclide-busy-signal-interfaces';
 
+import {Disposable} from 'atom';
+
 import {Subject} from 'rx';
 import invariant from 'assert';
 
@@ -23,6 +25,17 @@ export class BusySignalProviderBase {
   constructor() {
     this.messages = new Subject();
     this._nextId = 0;
+  }
+
+  /**
+   * Displays the message until the returned disposable is disposed
+   */
+  displayMessage(message: string): atom$Disposable {
+    const {busy, done} = this._nextMessagePair(message);
+    this.messages.onNext(busy);
+    return new Disposable(() => {
+      this.messages.onNext(done);
+    });
   }
 
   _nextMessagePair(message: string): {busy: BusySignalMessage, done: BusySignalMessage} {
@@ -47,18 +60,15 @@ export class BusySignalProviderBase {
    * function executes.
    */
   reportBusy<T>(message: string, f: () => Promise<T>): Promise<T> {
-    const {busy, done} = this._nextMessagePair(message);
-    const publishDone = () => {
-      this.messages.onNext(done);
-    };
-    this.messages.onNext(busy);
+    const messageRemover = this.displayMessage(message);
+    const removeMessage = messageRemover.dispose.bind(messageRemover);
     try {
       const returnValue = f();
       invariant(isPromise(returnValue));
-      returnValue.then(publishDone, publishDone);
+      returnValue.then(removeMessage, removeMessage);
       return returnValue;
     } catch (e) {
-      publishDone();
+      removeMessage();
       throw e;
     }
   }
