@@ -156,7 +156,7 @@ class Activation {
 
   _canShowBlame(): boolean {
     const editor = atom.workspace.getActiveTextEditor();
-    return editor != null && this._textEditorToBlameGutter.has(editor);
+    return !(editor != null && this._textEditorToBlameGutter.has(editor));
   }
 
   _canHideBlame(): boolean {
