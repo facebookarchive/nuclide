@@ -39,6 +39,7 @@ const TESTS = [
   'add-switches',
   'add-tagged-template-expressions',
   'add-template-expressions',
+  'add-template-identifiers',
   'add-try-catches',
   'add-types',
   'demote-requires',

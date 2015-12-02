@@ -186,6 +186,12 @@ const CONFIG: Array<ConfigEntry> = [
     searchTerms: [jscs.TaggedTemplateExpression],
     getNodes: path => [path.node.tag],
   },
+
+  // `${bar}`
+  {
+    searchTerms: [jscs.TemplateLiteral],
+    getNodes: path => path.node.expressions,
+  },
 ];
 
 /**
