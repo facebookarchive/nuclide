@@ -116,12 +116,8 @@ class Server:
     options = (
         TranslationUnit.PARSE_PRECOMPILED_PREAMBLE |
         TranslationUnit.PARSE_CACHE_COMPLETION_RESULTS |
-        TranslationUnit.PARSE_INCLUDE_BRIEF_COMMENTS_IN_CODE_COMPLETION)
-
-    if src.endswith('.h'): # Is it a header file?
-      # Documentation in cindex.py recommends including this option when
-      # parsing header files.
-      options |= TranslationUnit.PARSE_INCOMPLETE
+        TranslationUnit.PARSE_INCLUDE_BRIEF_COMMENTS_IN_CODE_COMPLETION |
+        TranslationUnit.PARSE_INCOMPLETE)
 
     args = self._get_args_for_flags(src, flags)
     translation_unit = self.index.parse(src, args, unsaved_files, options)
@@ -200,9 +196,10 @@ class Server:
     token_start_column = request['tokenStartColumn']
     flags = request['flags']
 
-    # Update the translation unit with the latest contents.
-    translation_unit = self._tryUpdateTranslationUnit(src, contents, flags)
-
+    # NOTE: there is no need to update the translation unit here.
+    # libclang's completions API seamlessly takes care of unsaved content
+    # without any special handling.
+    translation_unit = self._get_translation_unit(src, flags)
     if translation_unit:
       completions = get_completions(
           translation_unit,
