@@ -11,7 +11,7 @@
 
 import type {HyperclickProvider} from 'hyperclick-interfaces';
 import type {
-  BusySignalProviderBase as BusySignalProviderBaseT,
+  BusySignalProviderBase as BusySignalProviderBaseType,
 } from 'nuclide-busy-signal-provider-base';
 
 const invariant = require('assert');
@@ -81,7 +81,7 @@ module.exports = {
     };
   },
 
-  provideBusySignal(): BusySignalProviderBaseT {
+  provideBusySignal(): BusySignalProviderBaseType {
     if (!busySignalProvider) {
       const {BusySignalProviderBase} = require('nuclide-busy-signal-provider-base');
       busySignalProvider = new BusySignalProviderBase();

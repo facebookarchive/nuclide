@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {FlowRoot as FlowRootT} from '../lib/FlowRoot';
+import type {FlowRoot as FlowRootType} from '../lib/FlowRoot';
 
 import {uncachedRequire} from 'nuclide-test-helpers';
 
@@ -22,7 +22,7 @@ describe('FlowRoot', () => {
   const line = 2;
   const column = 12;
 
-  let flowRoot: FlowRootT = (null: any);
+  let flowRoot: FlowRootType = (null: any);
 
   let fakeExecFlow: any;
 

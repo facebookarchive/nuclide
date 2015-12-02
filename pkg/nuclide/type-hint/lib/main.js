@@ -13,11 +13,11 @@ import type {TypeHintProvider} from 'nuclide-type-hint-interfaces';
 
 import invariant from 'assert';
 
-import type * as TypeHintManagerT from './TypeHintManager';
+import type * as TypeHintManagerType from './TypeHintManager';
 
 const {Disposable} = require('atom');
 
-let typeHintManager: ?TypeHintManagerT = null;
+let typeHintManager: ?TypeHintManagerType = null;
 
 module.exports = {
 

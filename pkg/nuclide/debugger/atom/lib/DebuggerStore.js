@@ -18,7 +18,7 @@ import type {
   nuclide_debugger$DebuggerInstance,
   nuclide_debugger$Service,
 } from 'nuclide-debugger-interfaces/service';
-import type * as DebuggerProcessInfo from './DebuggerProcessInfo';
+import type * as DebuggerProcessInfoType from './DebuggerProcessInfo';
 
 /**
  * Flux style Store holding all data used by the debugger plugin.
@@ -66,7 +66,7 @@ class DebuggerStore {
    *
    * @param optional service name (e.g. lldb) to filter resulting attachables.
    */
-  getProcessInfoList(serviceName?: string): Promise<Array<DebuggerProcessInfo>> {
+  getProcessInfoList(serviceName?: string): Promise<Array<DebuggerProcessInfoType>> {
     return Promise.all(
         require('nuclide-commons').array.from(this._services)
           .map(service => {

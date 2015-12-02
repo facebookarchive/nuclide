@@ -12,8 +12,10 @@
 module.exports = {
   rules: {
     'comment-style': require('./comment-style'),
+    'import-type-style': require('./import-type-style'),
   },
   rulesConfig: {
     'comment-style': 0,
+    'import-type-style': 0,
   },
 };

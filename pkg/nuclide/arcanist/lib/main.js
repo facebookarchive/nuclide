@@ -10,7 +10,7 @@
  */
 
 import type {
-  BusySignalProviderBase as BusySignalProviderBaseT,
+  BusySignalProviderBase as BusySignalProviderBaseType,
 } from 'nuclide-busy-signal-provider-base';
 
 import {CompositeDisposable} from 'atom';
@@ -18,9 +18,9 @@ import invariant from 'assert';
 
 let subscriptions: ?CompositeDisposable = null;
 
-let busySignalProvider: ?BusySignalProviderBaseT = null;
+let busySignalProvider: ?BusySignalProviderBaseType = null;
 
-function getBusySignalProvider(): BusySignalProviderBaseT {
+function getBusySignalProvider(): BusySignalProviderBaseType {
   if (busySignalProvider == null) {
     const {BusySignalProviderBase} = require('nuclide-busy-signal-provider-base');
     busySignalProvider = new BusySignalProviderBase();

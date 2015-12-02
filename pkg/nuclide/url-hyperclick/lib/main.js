@@ -12,11 +12,11 @@
 import {CompositeDisposable} from 'atom';
 import invariant from 'assert';
 
-import type {HyperclickProvider as HyperclickProviderT} from './HyperclickProvider';
+import type {HyperclickProvider as HyperclickProviderType} from './HyperclickProvider';
 
 class Activation {
   _disposables: CompositeDisposable;
-  _hyperclickProvider: HyperclickProviderT;
+  _hyperclickProvider: HyperclickProviderType;
 
   constructor(state: ?Object) {
     this._disposables = new CompositeDisposable();
@@ -25,7 +25,7 @@ class Activation {
   activate(): void {
   }
 
-  getHyperclickProvider(): HyperclickProviderT {
+  getHyperclickProvider(): HyperclickProviderType {
     let provider = this._hyperclickProvider;
     if (provider == null) {
       const {HyperclickProvider} = require('./HyperclickProvider');
@@ -55,7 +55,7 @@ export function deactivate(): void {
   }
 }
 
-export function getHyperclickProvider(): HyperclickProviderT {
+export function getHyperclickProvider(): HyperclickProviderType {
   invariant(activation);
   return activation.getHyperclickProvider();
 }

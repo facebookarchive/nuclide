@@ -11,7 +11,7 @@
 
 import type {NuclideUri} from 'nuclide-remote-uri';
 
-import type {FlowRoot as FlowRootT} from './FlowRoot';
+import type {FlowRoot as FlowRootType} from './FlowRoot';
 
 // Diagnostic information, returned from findDiagnostics.
 export type Diagnostics = {
@@ -57,9 +57,9 @@ import {findFlowConfigDir} from './FlowHelpers';
 
 // string rather than NuclideUri because this module will always execute at the location of the
 // file, so it will always be a real path and cannot be prefixed with nuclide://
-const flowRoots: Map<string, FlowRootT> = new Map();
+const flowRoots: Map<string, FlowRootType> = new Map();
 
-async function getInstance(file: string): Promise<?FlowRootT> {
+async function getInstance(file: string): Promise<?FlowRootType> {
   const root = await findFlowConfigDir(file);
   if (root == null) {
     return null;
@@ -76,7 +76,7 @@ async function getInstance(file: string): Promise<?FlowRootT> {
 
 async function runWithInstance<T>(
   file: string,
-  f: (instance: FlowRootT) => Promise<T>
+  f: (instance: FlowRootType) => Promise<T>
 ): Promise<?T> {
   const instance = await getInstance(file);
   if (instance == null) {

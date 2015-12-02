@@ -15,9 +15,9 @@ import {beginTimerTracking, failTimerTracking, endTimerTracking} from './Analyti
 
 import type {Dispatcher} from 'flux';
 import type {nuclide_debugger$Service} from 'nuclide-debugger-interfaces/service';
-import type * as DebuggerStore from './DebuggerStore';
-import type * as DebuggerProcessInfo from './DebuggerProcessInfo';
-import type * as Bridge from './Bridge';
+import type * as DebuggerStoreType from './DebuggerStore';
+import type * as DebuggerProcessInfoType from './DebuggerProcessInfo';
+import type * as BridgeType from './Bridge';
 
 function track(...args: any) {
   const trackFunc = require('nuclide-analytics').track;
@@ -36,16 +36,16 @@ const AnalyticsEvents = {
 class DebuggerActions {
   _disposables: CompositeDisposable;
   _dispatcher: Dispatcher;
-  _store: DebuggerStore;
-  _bridge: Bridge;
+  _store: DebuggerStoreType;
+  _bridge: BridgeType;
 
-  constructor(dispatcher: Dispatcher, store: DebuggerStore) {
+  constructor(dispatcher: Dispatcher, store: DebuggerStoreType) {
     this._disposables = new CompositeDisposable();
     this._dispatcher = dispatcher;
     this._store = store;
   }
 
-  attachToProcess(processInfo: DebuggerProcessInfo, launchTarget: ?string) {
+  attachToProcess(processInfo: DebuggerProcessInfoType, launchTarget: ?string) {
     track(AnalyticsEvents.DEBUGGER_START, {
       serviceName: processInfo.getServiceName(),
     });

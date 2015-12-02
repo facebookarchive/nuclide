@@ -12,10 +12,10 @@
 const remoteUri = require('nuclide-remote-uri');
 const {CompositeDisposable, Disposable} = require('atom');
 
-import type * as BreakpointStore from './BreakpointStore';
+import type * as BreakpointStoreType from './BreakpointStore';
 
 class Bridge {
-  _breakpointStore: BreakpointStore;
+  _breakpointStore: BreakpointStoreType;
   _disposables: CompositeDisposable;
   // Contains disposable items should be disposed by
   // cleanup() method.
@@ -24,7 +24,7 @@ class Bridge {
   _webview: ?WebviewElement;
   _suppressBreakpointSync: boolean;
 
-  constructor(breakpointStore: BreakpointStore) {
+  constructor(breakpointStore: BreakpointStoreType) {
     this._breakpointStore = breakpointStore;
     this._disposables = new CompositeDisposable();
     this._cleanupDisposables = new CompositeDisposable();

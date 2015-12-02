@@ -11,7 +11,7 @@
 
 import type {Observable} from 'rx';
 
-import type {FlowProcess as FlowProcessT} from '../lib/FlowProcess';
+import type {FlowProcess as FlowProcessType} from '../lib/FlowProcess';
 import {FLOW_RETURN_CODES} from '../lib/FlowProcess';
 
 import {uncachedRequire} from 'nuclide-test-helpers';
@@ -25,7 +25,7 @@ describe('FlowProcess', () => {
   // methods).
   let childSpy: any;
 
-  let flowProcess: FlowProcessT = (null: any);
+  let flowProcess: FlowProcessType = (null: any);
 
   const root = '/path/to/flow/root';
 
