@@ -14,7 +14,9 @@ import type {HomeFragments} from 'nuclide-home-interfaces';
 const React = require('react-for-atom');
 const HomeFeatureComponent = require('./HomeFeatureComponent');
 const NuclideLogo = require('./NuclideLogo');
+
 const arrayFrom = require('nuclide-commons').array.from;
+const featureConfig = require('nuclide-feature-config');
 
 const DEFAULT_WELCOME = (
   <div>
@@ -45,7 +47,7 @@ class HomePaneItem extends HTMLElement {
 
     // Re-use styles from the Atom welcome pane where possible.
     this.className = 'welcome pane-item padded';
-    atom.config.set('nuclide-home.showHome', true);
+    featureConfig.set('nuclide-home.showHome', true);
     this.render();
     return this;
   }
@@ -112,7 +114,7 @@ class HomePaneItem extends HTMLElement {
 
   destroy(): void {
     React.unmountComponentAtNode(this);
-    atom.config.set('nuclide-home.showHome', false);
+    featureConfig.set('nuclide-home.showHome', false);
   }
 
   serialize() {
