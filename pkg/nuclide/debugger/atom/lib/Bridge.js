@@ -12,7 +12,7 @@
 const remoteUri = require('nuclide-remote-uri');
 const {CompositeDisposable, Disposable} = require('atom');
 
-import type * as BreakpointStoreType from './BreakpointStore';
+import type BreakpointStoreType from './BreakpointStore';
 
 class Bridge {
   _breakpointStore: BreakpointStoreType;

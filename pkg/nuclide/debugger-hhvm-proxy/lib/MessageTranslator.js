@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import invariant from 'assert';
 
 import logger from './utils';
 const {DebuggerHandler} = require('./DebuggerHandler');
@@ -84,7 +85,9 @@ export class MessageTranslator {
     }
 
     try {
-      await this._handlers.get(domain).handleMethod(id, methodName, params);
+      const handler = this._handlers.get(domain);
+      invariant(handler != null);
+      await handler.handleMethod(id, methodName, params);
     } catch (e) {
       logger.logError(`Exception handling command ${id}: ${e} ${e.stack}`);
       this._replyWithError(id, `Error handling command: ${e}\n ${e.stack}`);

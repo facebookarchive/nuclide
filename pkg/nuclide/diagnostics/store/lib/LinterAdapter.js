@@ -111,7 +111,7 @@ export function linterMessagesToDiagnosticUpdate(
   msgs: Array<LinterMessage>,
   providerName?: string = 'Unnamed Linter',
 ): DiagnosticProviderUpdate {
-  const filePathToMessages = new Map();
+  const filePathToMessages: Map<NuclideUri, Array<FileDiagnosticMessage>> = new Map();
   if (currentPath) {
     // Make sure we invalidate the messages for the current path. We may want to
     // figure out which other paths we want to invalidate if it turns out that
@@ -123,10 +123,12 @@ export function linterMessagesToDiagnosticUpdate(
     const diagnosticMessage = linterMessageToDiagnosticMessage(msg, providerName);
     if (diagnosticMessage.scope === 'file') {
       const path = diagnosticMessage.filePath;
-      if (!filePathToMessages.has(path)) {
-        filePathToMessages.set(path, []);
+      let messages = filePathToMessages.get(path);
+      if (messages == null) {
+        messages = [];
+        filePathToMessages.set(path, messages);
       }
-      filePathToMessages.get(path).push(diagnosticMessage);
+      messages.push(diagnosticMessage);
     } else { // Project scope.
       projectMessages.push(diagnosticMessage);
     }

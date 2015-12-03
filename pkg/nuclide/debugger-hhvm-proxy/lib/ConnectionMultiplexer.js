@@ -37,6 +37,7 @@ import {
   COMMAND_RUN,
 } from './DbgpSocket';
 import {EventEmitter} from 'events';
+import invariant from 'assert';
 import {ClientCallback} from './ClientCallback';
 
 const CONNECTION_MUX_STATUS_EVENT = 'connection-mux-status';
@@ -190,7 +191,9 @@ export class ConnectionMultiplexer {
 
   _connectionOnStatus(connection: Connection, status: string): void {
     logger.log(`Mux got status: ${status} on connection ${connection.getId()}`);
-    this._connections.get(connection).status = status;
+    const connectionInfo = this._connections.get(connection);
+    invariant(connectionInfo != null);
+    connectionInfo.status = status;
 
     switch (status) {
       case STATUS_STARTING:
@@ -374,6 +377,7 @@ export class ConnectionMultiplexer {
 
   _removeConnection(connection: Connection): void {
     const info = this._connections.get(connection);
+    invariant(info != null);
     info.onStatusDisposable.dispose();
     connection.dispose();
     this._connections.delete(connection);

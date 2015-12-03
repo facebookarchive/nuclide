@@ -55,13 +55,14 @@ function watchEntity(
   return Observable.fromPromise(
     getRealPath(entityPath)
   ).flatMap(realPath => {
-    if (!watchedEntities.has(realPath)) {
-      watchedEntities.set(realPath, {
+    let watchEntry = watchedEntities.get(realPath);
+    if (watchEntry == null) {
+      watchEntry = {
         eventEmitter: new EventEmitter(),
         subscriptionCount: 0,
-      });
+      };
+      watchedEntities.set(realPath, watchEntry);
     }
-    const watchEntry = watchedEntities.get(realPath);
     watchEntry.subscriptionCount++;
 
     const {eventEmitter} = watchEntry;
@@ -132,6 +133,7 @@ function onWatcherChange(subscription: WatchmanSubscription, entries: Array<File
   for (const entry of entries) {
     const entryPath = path.join(subscription.root, entry.name);
     if (watchedFiles.has(entryPath)) {
+      // $FlowFixMe(most)
       const {eventEmitter} = watchedFiles.get(entryPath);
       // TODO(most): handle `rename`, if needed.
       if (!entry.exists) {
@@ -148,13 +150,16 @@ function onWatcherChange(subscription: WatchmanSubscription, entries: Array<File
         if (!directoryChanges.has(entryDirectoryPath)) {
           directoryChanges.set(entryDirectoryPath, []);
         }
+        // $FlowFixMe(most)
         directoryChanges.get(entryDirectoryPath).push(entry);
       }
     }
   }
 
   for (const [watchedDirectoryPath, changes] of directoryChanges) {
-    const {eventEmitter} = watchedDirectories.get(watchedDirectoryPath);
+    const watchEntry = watchedDirectories.get(watchedDirectoryPath);
+    invariant(watchEntry != null);
+    const {eventEmitter} = watchEntry;
     eventEmitter.emit(CHANGE_EVENT_NAME, changes);
   }
 }

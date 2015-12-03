@@ -639,6 +639,7 @@ export default class HgRepositoryClient {
     }
 
     // Fall back to a fetch.
+    // $FlowFixMe
     const fetchedPathToDiffInfo = await this._updateDiffInfo([filePath]);
     if (fetchedPathToDiffInfo && fetchedPathToDiffInfo.get(filePath)) {
       const diffInfo = fetchedPathToDiffInfo.get(filePath);
@@ -667,8 +668,11 @@ export default class HgRepositoryClient {
 
     // Fall back to a fetch.
     const fetchedPathToDiffInfo = await this._updateDiffInfo([filePath]);
-    if (fetchedPathToDiffInfo && fetchedPathToDiffInfo.get(filePath)) {
-      return fetchedPathToDiffInfo.get(filePath).lineDiffs;
+    if (fetchedPathToDiffInfo != null) {
+      const diffInfo = fetchedPathToDiffInfo.get(filePath);
+      if (diffInfo != null) {
+        return diffInfo.lineDiffs;
+      }
     }
 
     return lineDiffs;

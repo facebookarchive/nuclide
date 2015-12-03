@@ -9,10 +9,14 @@
  * the root directory of this source tree.
  */
 
+import invariant from 'assert';
+
 module.exports = {
   // Get name of the user who starts this process, supports both *nix and Windows.
-  get USER() {
-    return process.env['USER'] || process.env['USERNAME'];
+  get USER(): string {
+    const user = process.env['USER'] || process.env['USERNAME'];
+    invariant(user != null);
+    return user;
   },
 
   // Get home directory of the user who starts this process, supports both *nix and Windows.

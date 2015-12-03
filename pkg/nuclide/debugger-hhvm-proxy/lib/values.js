@@ -51,6 +51,7 @@ function convertValue(contextId: ObjectId, dbgpProperty: DbgpProperty): RemoteOb
 function convertStringValue(dbgpProperty: DbgpProperty): RemoteObject {
   let value;
   if (dbgpProperty.hasOwnProperty('_')) {
+    // $FlowFixMe(peterhal)
     value = dbgpProperty.$.encoding === 'base64' ? base64Decode(dbgpProperty._) :
       `TODO: Non-base64 encoded string: ${JSON.stringify(dbgpProperty)}`;
   } else {

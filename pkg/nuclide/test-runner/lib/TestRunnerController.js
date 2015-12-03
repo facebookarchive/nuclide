@@ -236,6 +236,7 @@ class TestRunnerController {
             // If a test run throws an exception, the stack trace is returned in 'details'.
             // Append its entirety to the console.
             if (testInfo.hasOwnProperty('details') && testInfo.details !== '') {
+              // $FlowFixMe(peterhal)
               this._appendToBuffer(testInfo.details);
             }
 

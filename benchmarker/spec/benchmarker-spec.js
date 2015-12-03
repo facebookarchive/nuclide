@@ -49,6 +49,7 @@ describe('Nuclide performance', () => {
   let {benchmarkIndex, iteration, repetition, resultDir, resultFile} = getTestState();
 
   // Load the benchmark we need to (continue to) run.
+  // $FlowIgnore -- in this case we do not want to use a string literal in require.
   const benchmark: Benchmark = require('../benchmarks/' + benchmarks[benchmarkIndex]);
   benchmark.index = benchmarkIndex;
   benchmark.name = benchmarks[benchmarkIndex];

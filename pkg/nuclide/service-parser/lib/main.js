@@ -14,6 +14,7 @@ import fs from 'fs';
 import generateProxy from './proxy-generator';
 import parseServiceDefinition from './service-parser';
 import path from 'path';
+import invariant from 'assert';
 
 import type {Definitions} from './types';
 
@@ -28,6 +29,7 @@ const proxiesCache: Map<string, {factory: Function, proxies: WeakMap}> = new Map
  *  the caller.
  * @returns - The Definitions that represents the API of the definiition file.
  */
+// $FlowFixMe
 export function getDefinitions(definitionPath: string): Definitions {
   const resolvedPath = resolvePath(definitionPath);
 
@@ -73,6 +75,7 @@ export function getProxy(serviceName: string, definitionPath: string, clientObje
 
   // Cache remote proxy modules by the (definition path, client object) tuple.
   const cache = proxiesCache.get(resolvedPath);
+  invariant(cache != null);
   if (!cache.proxies.has(clientObject)) {
     cache.proxies.set(clientObject, cache.factory(clientObject));
   }

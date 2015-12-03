@@ -30,7 +30,11 @@ export function get<T>(field: string, constructor: () => T): T {
   if (!map.has(field)) {
     map.set(field, constructor());
   }
-  return map.get(field);
+  // Cast through `any` because `map.get` can return null/undefined. We know that `field` exists
+  // because we have just checked it above. However, we cannot just call `get` and then check it
+  // against null because T may be a nullable type, in which case this would break subtly. So, we
+  // circumvent the type system here to maintain the desired runtime behavior.
+  return (map.get(field): any);
 }
 
 export function clear(field: string): void {

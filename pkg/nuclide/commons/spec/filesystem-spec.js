@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import invariant from 'assert';
+
 const path = require('path');
 const fs = require('fs');
 const temp = require('temp').track();
@@ -59,6 +61,7 @@ describe('filesystem test suite', () => {
     });
 
     it('expands ~/ to HOME', () => {
+      invariant(process.env.HOME != null);
       expect(expandHomeDir('~/abc')).toBe(path.join(process.env.HOME, 'abc'));
     });
 

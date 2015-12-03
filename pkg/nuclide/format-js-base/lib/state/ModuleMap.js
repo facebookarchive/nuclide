@@ -126,6 +126,7 @@ class ModuleMap {
     } else if (options.sourcePath && this._aliasesToRelativize.has(id)) {
       literal = ModuleMapUtils.relativizeForRequire(
         options.sourcePath,
+        // $FlowFixMe(kad)
         this._aliasesToRelativize.get(id)
       );
     } else if (
@@ -134,6 +135,7 @@ class ModuleMap {
     ) {
       // TODO: What's the best way to get the single thing out of a one element
       // Set?
+      // $FlowFixMe(kad)
       for (tmp of this._defaults.get(id)) {
         literal = tmp;
         break;
@@ -146,6 +148,7 @@ class ModuleMap {
       const nonNullSourcePath = options.sourcePath;
       // TODO: What's the best way to get the single thing out of a one element
       // Set?
+      // $FlowFixMe(kad)
       for (const filePath of this._defaultsToRelativize.get(id)) {
         literal = ModuleMapUtils.relativizeForRequire(
           nonNullSourcePath,

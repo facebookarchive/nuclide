@@ -13,6 +13,8 @@ const path = require('path');
 const fs = require('fs-plus');
 const temp = require('temp').track();
 
+import invariant from 'assert';
+
 import {uncachedRequire} from 'nuclide-test-helpers';
 
 const rootConfig = {
@@ -168,6 +170,7 @@ describe('nuclide-arcanist-base', () => {
     it('should call `arc lint` with the paths', () => {
       waitsForPromise(async () => {
         const filePaths = filePathMap.get('/fake/path/one');
+        invariant(filePaths != null);
         expect(filePaths.length).toBe(3);
         await arcanistBaseService.findDiagnostics(filePaths);
         // Expect arc lint to be called once

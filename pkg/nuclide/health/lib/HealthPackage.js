@@ -349,20 +349,24 @@ function aggregate(
 
 function getHealthStats(): HealthStats {
   const stats = process.memoryUsage();                               // RSS, heap and usage.
-  stats.heapPercentage = (100 * stats.heapUsed / stats.heapTotal);   // Just for convenience.
-  stats.cpuPercentage = os.loadavg()[0];                             // 1 minute CPU average.
 
   if (keyLatency) {
     lastKeyLatency = keyLatency;
   }
-  stats.lastKeyLatency = lastKeyLatency;
-  stats.keyLatency = keyLatency;
+
+  const result = {
+    ...stats,
+    heapPercentage: (100 * stats.heapUsed / stats.heapTotal),   // Just for convenience.
+    cpuPercentage: os.loadavg()[0],                             // 1 minute CPU average.
+    lastKeyLatency,
+    keyLatency,
+    activeHandles: getActiveHandles().length,
+    activeRequests: getActiveRequests().length,
+  };
+
   keyLatency = 0; // We only want to ever record a key latency time once, and so we reset it.
 
-  stats.activeHandles = getActiveHandles().length;
-  stats.activeRequests = getActiveRequests().length;
-
-  return stats;
+  return result;
 }
 
 // These two functions are to defend against undocumented Node functions.

@@ -56,9 +56,7 @@ describe('PathSetFactory', () => {
       waitsForPromise(async () => {
         await setUpGitRepo();
         const expectedOutput = {
-          // $FlowIssue https://github.com/facebook/flow/issues/252
           [TRACKED_FILE_BASE]: true,
-          // $FlowIssue https://github.com/facebook/flow/issues/252
           [UNTRACKED_FILE_BASE]: true,
         };
         invariant(testDir);
@@ -87,9 +85,7 @@ describe('PathSetFactory', () => {
       waitsForPromise(async () => {
         await setUpHgRepo();
         const expectedOutput = {
-          // $FlowIssue https://github.com/facebook/flow/issues/252
           [TRACKED_FILE_BASE]: true,
-          // $FlowIssue https://github.com/facebook/flow/issues/252
           [UNTRACKED_FILE_BASE]: true,
         };
         invariant(testDir);

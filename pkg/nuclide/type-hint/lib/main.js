@@ -13,7 +13,7 @@ import type {TypeHintProvider} from 'nuclide-type-hint-interfaces';
 
 import invariant from 'assert';
 
-import type * as TypeHintManagerType from './TypeHintManager';
+import type TypeHintManagerType from './TypeHintManager';
 
 const {Disposable} = require('atom');
 

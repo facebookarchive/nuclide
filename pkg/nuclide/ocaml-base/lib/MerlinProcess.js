@@ -161,9 +161,6 @@ export class MerlinProcess {
     const stdout = this._proc.stdout;
 
     return new Promise((resolve, reject) => {
-      // Flow claims that createInterface is not found, but it obviously can find it since the type
-      // hint for `reader` returns Interface, which is the return value of createInterface.
-      // $FlowIssue
       const {createInterface} = require('readline');
       const reader = createInterface({
         input: stdout,

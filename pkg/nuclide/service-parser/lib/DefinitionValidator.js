@@ -184,6 +184,7 @@ export function validateDefinitions(definitions: Definitions): void {
         break;
       case 'named':
         const name = type.name;
+        // $FlowFixMe(peterhal)
         const definition: AliasDefinition | InterfaceDefinition = namedTypes.get(name);
         if (containingDefinitions.indexOf((definition: any)) !== -1) {
           throw errorDefinitions(
@@ -540,6 +541,7 @@ export function validateDefinitions(definitions: Definitions): void {
   // Will return a named type if and only if the alias resolves to a builtin type, or an interface.
   function resolveNamedType(namedType: NamedType): Type {
     const def = namedTypes.get(namedType.name);
+    invariant(def != null);
     switch (def.kind) {
       case 'alias':
         const type = def.definition;

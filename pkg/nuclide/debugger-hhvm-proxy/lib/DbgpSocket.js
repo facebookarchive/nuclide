@@ -287,7 +287,6 @@ class DbgpSocket {
     const socket = this._socket;
     if (socket != null) {
       logger.log('Sending message: ' + message);
-      // $FlowIssue - t9258852
       socket.write(message + '\x00');
     } else {
       logger.logError('Attempt to send message after dispose: ' + message);
@@ -309,7 +308,6 @@ class DbgpSocket {
     if (socket) {
       // end - Sends the FIN packet and closes writing.
       // destroy - closes for reading and writing.
-      // $FlowIssue - t9258852
       socket.end();
       // $FlowIssue - t9258852
       socket.destroy();

@@ -21,6 +21,7 @@ const fileSearch: FileSearch = {
   dispose() {},
 };
 
+// $FlowIgnore #yolo
 pathSearch.fileSearchForDirectory = function() {
   return Promise.resolve(fileSearch);
 };

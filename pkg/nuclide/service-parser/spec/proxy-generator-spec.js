@@ -70,8 +70,6 @@ describe('generateTransformStatement helper function', function () {
   });
 
   it('Generates an unmarshal statement.', () => {
-
-    // $FlowIssue
     const code = generate(__test__.generateTransformStatement(t.identifier('value'),
         ArrayOfArrayOfNuclideUri, false)).code;
     expect(code).diffLines(unmarshalText);

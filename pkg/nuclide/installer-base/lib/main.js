@@ -53,7 +53,7 @@ async function installPackagesInConfig(config: InstallConfig): Promise<boolean> 
       dismissable: true,
     },
   );
-  let timerId: ?number;
+  let timerId: ?number = undefined;
   notification.onDidDismiss(() => { if (timerId) { clearInterval(timerId); } });
 
   // Extract the DOM elements of interest from the notification.
@@ -62,8 +62,8 @@ async function installPackagesInConfig(config: InstallConfig): Promise<boolean> 
   const notificationEl = atom.views.getView(notification);
   const messageEl = notificationEl.querySelector('.message');
   const notificationContentEl = notificationEl.querySelector('.detail-content');
-  let detailTextElement: ?HTMLElement;
-  let messageParagraphElement: ?HTMLElement;
+  let detailTextElement: ?HTMLElement = undefined;
+  let messageParagraphElement: ?HTMLElement = undefined;
 
   // Defensive checks in case the DOM structure changes.
   if (notificationContentEl) {
@@ -110,7 +110,7 @@ async function installPackagesInConfig(config: InstallConfig): Promise<boolean> 
   }
 
   // Perform the installation.
-  let failure: ?Error;
+  let failure: ?Error = undefined;
   try {
     await installApmPackages(packagesToInstall, onBeginInstallation, onFinishInstallation);
   } catch (e) {

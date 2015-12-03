@@ -14,6 +14,8 @@ const path = require('path');
 const mkdirpLib = require('mkdirp');
 const rimraf = require('rimraf');
 
+import invariant from 'assert';
+
 function isRoot(filePath: string): boolean {
   return path.dirname(filePath) === filePath;
 }
@@ -129,6 +131,7 @@ function expandHomeDir(filePath: string): string {
   const {HOME} = process.env;
   let resolvedPath = null;
   if (filePath === '~') {
+    invariant(HOME != null);
     resolvedPath = HOME;
   } else if (filePath.startsWith(`~${path.sep}`)) {
     resolvedPath = `${HOME}${filePath.substr(1)}`;

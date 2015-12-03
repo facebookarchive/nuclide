@@ -128,16 +128,18 @@ export default class TypeRegistry {
 
     this._registerKind('named', async (value: any, type: Type) => {
       invariant(type.kind === 'named');
-      if (!this._namedMarshallers.has(type.name)) {
+      const namedMarshaller = this._namedMarshallers.get(type.name);
+      if (namedMarshaller == null) {
         throw new Error(`No marshaller found for named type ${type.name}.`);
       }
-      return await this._namedMarshallers.get(type.name).marshaller(value);
+      return await namedMarshaller.marshaller(value);
     }, async (value: any, type: Type) => {
       invariant(type.kind === 'named');
-      if (!this._namedMarshallers.get(type.name)) {
+      const namedMarshaller = this._namedMarshallers.get(type.name);
+      if (namedMarshaller == null) {
         throw new Error(`No marshaller found for named type ${type.name}.`);
       }
-      return await this._namedMarshallers.get(type.name).unmarshaller(value);
+      return await namedMarshaller.unmarshaller(value);
     });
 
     this._registerKind(
@@ -183,10 +185,11 @@ export default class TypeRegistry {
    * @param type - The type object (used to find the appropriate function).
    */
   marshal(value: any, type: Type): Promise<any> {
-    if (!this._kindMarshallers.has(type.kind)) {
+    const kindMarshaller = this._kindMarshallers.get(type.kind);
+    if (kindMarshaller == null) {
       throw new Error(`No marshaller found for type kind ${type.kind}.`);
     }
-    return this._kindMarshallers.get(type.kind).marshaller(value, type);
+    return kindMarshaller.marshaller(value, type);
   }
 
   /**
@@ -195,10 +198,11 @@ export default class TypeRegistry {
    * @param type - The type object (used to find the appropriate function).
    */
   unmarshal(value: any, type: Type): Promise<any> {
-    if (!this._kindMarshallers.has(type.kind)) {
+    const kindMarshaller = this._kindMarshallers.get(type.kind);
+    if (kindMarshaller == null) {
       throw new Error(`No unmarshaller found for type kind ${type.kind}.`);
     }
-    return this._kindMarshallers.get(type.kind).unmarshaller(value, type);
+    return kindMarshaller.unmarshaller(value, type);
   }
 
   _registerPrimitives(): void {

@@ -71,16 +71,18 @@ export async function findDiagnostics(pathToFiles: Array<NuclideUri>):
     pathToFiles.map(async path => {
       const arcConfigDir = await findArcConfigDirectory(path);
       if (arcConfigDir) {
-        if (!arcConfigDirToFiles.has(arcConfigDir)) {
-          arcConfigDirToFiles.set(arcConfigDir, []);
+        let files = arcConfigDirToFiles.get(arcConfigDir);
+        if (files == null) {
+          files = [];
+          arcConfigDirToFiles.set(arcConfigDir, files);
         }
-        const files = arcConfigDirToFiles.get(arcConfigDir);
         files.push(path);
       }
     })
   );
 
   // Kick off all the arc execs at once, then await later so they all happen in parallel.
+  // $FlowIssue: https://github.com/facebook/flow/issues/1143
   const results: Array<Promise<Array<ArcDiagnostic>>> = [];
   for (const [arcDir, files] of arcConfigDirToFiles) {
     results.push(execArcLint(arcDir, files));
@@ -110,10 +112,12 @@ async function execArcLint(cwd: string, filePaths: Array<NuclideUri>):
     }
     for (const path of Object.keys(json)) {
       const errorsToAdd = json[path];
-      if (!output.has(path)) {
-        output.set(path, []);
+
+      let errors = output.get(path);
+      if (errors == null) {
+        errors = [];
+        output.set(path, errors);
       }
-      const errors = output.get(path);
       for (const error of errorsToAdd) {
         errors.push(error);
       }

@@ -107,11 +107,8 @@ function createProcessOutputView(
  */
 function runCommandInNewPane(options: RunCommandOptions): Promise<atom$TextEditor> {
   const openOptions = {
-    // $FlowIssue https://github.com/facebook/flow/issues/252
     [PROCESS_OUTPUT_HANDLER_KEY]: options.processOutputHandler,
-    // $FlowIssue https://github.com/facebook/flow/issues/252
     [PROCESS_OUTPUT_STORE_KEY]: options.processOutputStore,
-    // $FlowIssue https://github.com/facebook/flow/issues/252
     [PROCESS_OUTPUT_VIEW_TOP_ELEMENT]: options.processOutputViewTopElement,
   };
 

@@ -99,10 +99,12 @@ function searchInSubdir(
     const matchIndex = matchTextResult.index;
 
     // Put this match into lists grouped by files.
-    if (!matchesByFile.has(filePath)) {
-      matchesByFile.set(filePath, []);
+    let matches = matchesByFile.get(filePath);
+    if (matches == null) {
+      matches = [];
+      matchesByFile.set(filePath, matches);
     }
-    matchesByFile.get(filePath).push({
+    matches.push({
       lineText,
       lineTextOffset: 0,
       matchText,

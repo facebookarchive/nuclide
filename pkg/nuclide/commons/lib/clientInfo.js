@@ -54,6 +54,7 @@ export function isRunningInNuclide(): boolean {
 }
 
 const atomConfig = isRunningInClient() ?
+    // $FlowIgnore
     require(path.join(atom.getLoadSettings().resourcePath, 'package.json')) :
     {};
 

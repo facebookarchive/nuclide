@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import invariant from 'assert';
+
 import {uriToPath} from './helpers';
 import {ClientCallback} from './ClientCallback';
 import File from './File';
@@ -40,7 +42,9 @@ class FileCache {
           'endColumn': 0,
         });
     }
-    return this._files.get(filepath);
+    const result = this._files.get(filepath);
+    invariant(result != null);
+    return result;
   }
 
   getFileSource(filepath: string): Promise<string> {

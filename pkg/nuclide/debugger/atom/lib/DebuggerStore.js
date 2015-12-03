@@ -18,7 +18,7 @@ import type {
   nuclide_debugger$DebuggerInstance,
   nuclide_debugger$Service,
 } from 'nuclide-debugger-interfaces/service';
-import type * as DebuggerProcessInfoType from './DebuggerProcessInfo';
+import type DebuggerProcessInfoType from './DebuggerProcessInfo';
 
 /**
  * Flux style Store holding all data used by the debugger plugin.

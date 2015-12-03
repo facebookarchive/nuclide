@@ -48,6 +48,7 @@ function clearRequireCache(require: Object, module: string): void {
 
 function uncachedRequire(require: Object, module: string): mixed {
   clearRequireCache(require, module);
+  // $FlowIgnore
   return require(module);
 }
 

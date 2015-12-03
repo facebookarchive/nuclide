@@ -59,6 +59,7 @@ module.exports = {
     }
 
     if (!nuclide[mainFilename]) {
+      // $FlowIgnore
       nuclide[mainFilename] = require(path.join(libPath, mainFilename));
 
       const packagePath = path.dirname(libPath);

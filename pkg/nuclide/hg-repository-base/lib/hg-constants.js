@@ -58,19 +58,12 @@ const StatusCodeNumber: {[key: string]: StatusCodeNumberValue} = {
 };
 
 const StatusCodeIdToNumber: {[key: StatusCodeIdValue]: StatusCodeNumberValue} = {
-  // $FlowIssue (t6187050)
   [StatusCodeId.ADDED]: StatusCodeNumber.ADDED,
-  // $FlowIssue (t6187050)
   [StatusCodeId.CLEAN]: StatusCodeNumber.CLEAN,
-  // $FlowIssue (t6187050)
   [StatusCodeId.IGNORED]: StatusCodeNumber.IGNORED,
-  // $FlowIssue (t6187050)
   [StatusCodeId.MODIFIED]: StatusCodeNumber.MODIFIED,
-  // $FlowIssue (t6187050)
   [StatusCodeId.MISSING]: StatusCodeNumber.MISSING,
-  // $FlowIssue (t6187050)
   [StatusCodeId.REMOVED]: StatusCodeNumber.REMOVED,
-  // $FlowIssue (t6187050)
   [StatusCodeId.UNTRACKED]: StatusCodeNumber.UNTRACKED,
 };
 

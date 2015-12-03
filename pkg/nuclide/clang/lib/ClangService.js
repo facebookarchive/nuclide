@@ -147,7 +147,6 @@ type Connection = {
 }
 
 async function createAsyncConnection(pathToLibClangServer: string): Promise<Connection> {
-  // $FlowIssue D2268946
   return await new Promise(async (resolve, reject) => {
     const {libClangLibraryFile, pythonPathEnv, pythonExecutable} = await _findClangServerArgs();
     const options = {

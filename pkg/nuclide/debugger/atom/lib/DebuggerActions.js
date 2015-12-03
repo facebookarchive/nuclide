@@ -15,9 +15,9 @@ import {beginTimerTracking, failTimerTracking, endTimerTracking} from './Analyti
 
 import type {Dispatcher} from 'flux';
 import type {nuclide_debugger$Service} from 'nuclide-debugger-interfaces/service';
-import type * as DebuggerStoreType from './DebuggerStore';
-import type * as DebuggerProcessInfoType from './DebuggerProcessInfo';
-import type * as BridgeType from './Bridge';
+import type DebuggerStoreType from './DebuggerStore';
+import type DebuggerProcessInfoType from './DebuggerProcessInfo';
+import type BridgeType from './Bridge';
 
 function track(...args: any) {
   const trackFunc = require('nuclide-analytics').track;

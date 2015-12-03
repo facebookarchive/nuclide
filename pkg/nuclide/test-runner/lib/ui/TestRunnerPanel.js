@@ -114,7 +114,7 @@ class TestRunnerPanel extends React.Component {
 
     // Assign `value` only when needed so a null/undefined value will show an indeterminate progress
     // bar.
-    let progressAttrs: ?{[key: string]: mixed};
+    let progressAttrs: ?{[key: string]: mixed} = undefined;
     if (this.props.progressValue) {
       // `key` is set to force React to treat this as a new element when the `value` attr should be
       // removed. Currently it just sets `value="0"`, which is styled differently from no `value`

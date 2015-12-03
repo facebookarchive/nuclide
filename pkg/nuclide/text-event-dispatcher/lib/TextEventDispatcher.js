@@ -60,7 +60,7 @@ class TextCallbackContainer<CallbackArg> {
   }
 
   _getCallbacksFromEventMap(
-    eventMap: Map<Event, Set<(arg: CallbackArg) => mixed>>,
+    eventMap: ?Map<Event, Set<(arg: CallbackArg) => mixed>>,
     event: Event): Set<(arg: CallbackArg
   ) => mixed> {
     if (!eventMap) {

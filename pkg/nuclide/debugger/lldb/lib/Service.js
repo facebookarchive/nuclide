@@ -128,6 +128,7 @@ class ProcessInfo extends DebuggerProcessInfo {
 async function getProcessInfoList(): Promise<Array<nuclide_debugger$DebuggerProcessInfo>> {
   const {asyncExecute} = require('nuclide-commons');
   const result = await asyncExecute('ps', ['-e', '-o', 'pid,comm'], {});
+  // $FlowFixMe: cryptic error about Promises
   return result.stdout.toString().split('\n').slice(1).map(line => {
     const words = line.trim().split(' ');
     const pid = Number(words[0]);

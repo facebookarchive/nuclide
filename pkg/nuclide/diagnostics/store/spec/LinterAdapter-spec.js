@@ -219,7 +219,9 @@ describe('message transformation functions', () => {
       providerName = undefined;
       const result = runWith([fileMessage]);
       invariant(result.filePathToMessages);
-      const resultMessage = result.filePathToMessages.get(fileMessage.filePath)[0];
+      const messages = result.filePathToMessages.get(fileMessage.filePath);
+      invariant(messages != null);
+      const resultMessage = messages[0];
       expect(resultMessage.providerName).toEqual('Unnamed Linter');
     });
 
@@ -228,7 +230,9 @@ describe('message transformation functions', () => {
       invariant(result.filePathToMessages);
       // The actual message transformations are tested in the tests from
       // linterMessageToDiagnosticMessage -- no need to duplicate them here.
-      expect(result.filePathToMessages.get(fileMessage.filePath).length).toEqual(1);
+      const messages = result.filePathToMessages.get(fileMessage.filePath);
+      invariant(messages != null);
+      expect(messages.length).toEqual(1);
       invariant(result.projectMessages);
       expect(result.projectMessages.length).toEqual(1);
     });

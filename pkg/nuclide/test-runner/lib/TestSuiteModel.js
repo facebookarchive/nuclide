@@ -24,6 +24,7 @@ class TestSuiteModel {
 
   addTestRun(testRun: TestRunInfo): void {
     if (testRun.hasOwnProperty('test_json')) {
+      // $FlowFixMe(rossallen)
       this.testRuns.set(testRun.test_json.id, testRun);
     }
   }

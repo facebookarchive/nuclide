@@ -68,6 +68,7 @@ class WindowMouseListener {
       this._textEditorMouseListenersMap.set(textEditor, mouseListener);
 
       const destroySubscription = textEditor.onDidDestroy(() => {
+        // $FlowIssue: There is no way for this to become null.
         mouseListener.dispose();
         this._textEditorMouseListenersMap.delete(textEditor);
         this._textEditorMouseListenersCountMap.delete(textEditor);

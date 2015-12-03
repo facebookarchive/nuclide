@@ -11,6 +11,8 @@
 
 import type {RevisionInfo} from './hg-constants';
 
+import invariant from 'assert';
+
 const logger = require('nuclide-logging').getLogger();
 
 /**
@@ -188,6 +190,7 @@ export function parseBookmarksOutput(bookmarksOutput: string): Map<number, Array
       commitsToBookmarks.set(commitId, []);
     }
     const bookmarks = commitsToBookmarks.get(commitId);
+    invariant(bookmarks != null);
     bookmarks.push(bookmarkString);
   }
   return commitsToBookmarks;

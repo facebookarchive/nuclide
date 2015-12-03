@@ -44,7 +44,6 @@ describe('Keytar Wrapper', () => {
   describe('*Password', () => {
     it('sets password in keychain', () => {
       const crypto = require('crypto');
-      //$FlowIssue https://github.com/facebook/flow/pull/955
       const randomString = crypto.pseudoRandomBytes(32).toString('hex');
       replacePassword('nuclide-keytar-wrapper', 'fake user', randomString);
       expect(getPassword('nuclide-keytar-wrapper', 'fake user')).toEqual(randomString);

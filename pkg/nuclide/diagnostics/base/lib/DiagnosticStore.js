@@ -21,6 +21,8 @@ import type {
 
 import type {NuclideUri} from 'nuclide-remote-uri';
 
+import invariant from 'assert';
+
 const {Disposable, Emitter} = require('atom');
 
 const PROJECT_MESSAGE_CHANGE_EVENT = 'messages-changed-for-project';
@@ -107,6 +109,7 @@ class DiagnosticStore {
     }
     newFilePathsToMessages.forEach((newMessagesForPath, filePath) => {
       // Update _providerToFileToMessages.
+      // $FlowIssue: Flow should understand that fileToMessages cannot be null/undefined here.
       fileToMessages.set(filePath, newMessagesForPath);
       // Update _fileToProviders.
       let providers = this._fileToProviders.get(filePath);
@@ -285,7 +288,10 @@ class DiagnosticStore {
     const relevantProviders = this._fileToProviders.get(filePath);
     if (relevantProviders) {
       for (const provider of relevantProviders) {
-        const messages = (this._providerToFileToMessages.get(provider)).get(filePath);
+        const fileToMessages = this._providerToFileToMessages.get(provider);
+        invariant(fileToMessages != null);
+        const messages = fileToMessages.get(filePath);
+        invariant(messages != null);
         allFileMessages = allFileMessages.concat(messages);
       }
     }

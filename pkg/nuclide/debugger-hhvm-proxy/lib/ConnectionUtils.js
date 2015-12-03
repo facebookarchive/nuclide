@@ -48,7 +48,6 @@ export function isDummyConnection(message: Object): boolean {
 
 export function failConnection(socket: Socket, errorMessage: string): void {
   logger.log(errorMessage);
-  // $FlowIssue - t9258852
   socket.end();
   // $FlowIssue - t9258852
   socket.destroy();

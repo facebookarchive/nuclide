@@ -21,6 +21,7 @@ async function timedAsync<T>(
   const start = Date.now();
   const ret = await promise;
   const promiseTime = Date.now() - start;
+  // $FlowFixMe: Use a public API
   const promiseHandles = process._getActiveRequests().length;
   if (waitUntilNoRequests) {
     await sleepUntilNoRequests();
@@ -56,6 +57,7 @@ function sleep(milliseconds: number): Promise<void> {
 }
 
 async function sleepUntilNoRequests(pollMilliseconds: number = 1): Promise {
+  // $FlowFixMe: use public API.
   while (process._getActiveRequests().length !== 0) {
     await sleep(pollMilliseconds);
   }

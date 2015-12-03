@@ -13,8 +13,6 @@ import type {FlowRoot as FlowRootType} from '../lib/FlowRoot';
 
 import {uncachedRequire} from 'nuclide-test-helpers';
 
-const flowRootPath = '../lib/FlowRoot';
-
 describe('FlowRoot', () => {
   const file = '/path/to/test.js';
   const root = '/path/to';
@@ -29,7 +27,7 @@ describe('FlowRoot', () => {
   function newFlowService() {
     // We do a require here instead of just importing at the top of the file because the describe
     // block below needs to mock things, and has to use uncachedRequire.
-    const {FlowRoot} = require(flowRootPath);
+    const {FlowRoot} = require('../lib/FlowRoot');
     return new FlowRoot(root);
   }
 

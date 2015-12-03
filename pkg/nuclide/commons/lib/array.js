@@ -38,6 +38,7 @@ export function from<T, U>(
     return array;
   } else if (typeof arrayLike.next === 'function') {
     const array = [];
+    // $FlowIssue: property @@iterator not found
     for (const value of arrayLike) {
       array.push(mapFn.call(thisArg, value));
     }

@@ -141,7 +141,9 @@ class ServiceParser {
 
   _add(definition: Definition): void {
     if (this._defs.has(definition.name)) {
-      throw this._errorLocations([definition.location, this._defs.get(definition.name).location],
+      const existingDef = this._defs.get(definition.name);
+      invariant(existingDef != null);
+      throw this._errorLocations([definition.location, existingDef.location],
         `Duplicate definition for ${definition.name}`);
     } else {
       this._defs.set(definition.name, definition);
@@ -226,6 +228,7 @@ class ServiceParser {
 
   _defineMethod(name: string, type: FunctionType, peers: Map<string, FunctionType>): void {
     if (peers.has(name)) {
+      // $FlowFixMe(peterhal)
       const relatedLocation: SourceLocation = (peers.get(name).location: any);
       throw this._errorLocations([(type.location: any), relatedLocation],
         `Duplicate method definition ${name}`);

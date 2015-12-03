@@ -80,7 +80,6 @@ describe('HgRepositoryClient', () => {
   describe('::getStatuses', () => {
     beforeEach(() => {
       // Test setup: Mock out the dependency on HgRepository::_updateStatuses, and set up the cache state.
-      // $FlowIssue computed properties (t6187050)
       const mockFetchedStatuses = {[PATH_1]: StatusCodeId.ADDED};
       spyOn(repo, '_updateStatuses').andCallFake((paths, options) => {
         const statuses = new Map();
@@ -90,9 +89,7 @@ describe('HgRepositoryClient', () => {
         return Promise.resolve(statuses);
       });
       repo._hgStatusCache = {
-        // $FlowIssue computed properties (t6187050)
         [PATH_2]: StatusCodeId.IGNORED,
-        // $FlowIssue computed properties (t6187050)
         [PATH_3]: StatusCodeId.MODIFIED,
       };
     });
@@ -144,15 +141,10 @@ describe('HgRepositoryClient', () => {
 
     beforeEach(() => {
       mockOldCacheState = {
-        // $FlowIssue computed properties (t6187050)
         [PATH_1]: StatusCodeId.IGNORED,
-        // $FlowIssue computed properties (t6187050)
         [PATH_2]: StatusCodeId.UNTRACKED,
-        // $FlowIssue computed properties (t6187050)
         [PATH_3]: StatusCodeId.MODIFIED,
-        // $FlowIssue computed properties (t6187050)
         [PATH_4]: StatusCodeId.IGNORED,
-        // $FlowIssue computed properties (t6187050)
         [PATH_5]: StatusCodeId.MODIFIED,
       };
 
@@ -168,7 +160,6 @@ describe('HgRepositoryClient', () => {
       });
       repo._hgStatusCache = {};
       Object.keys(mockOldCacheState).forEach((filePath) => {
-        // $FlowIssue computed properties (t6187050)
         repo._hgStatusCache[filePath] = mockOldCacheState[filePath];
       });
       // Make it so all of the test paths are deemed within the repo.
@@ -332,11 +323,8 @@ describe('HgRepositoryClient', () => {
         'interval.', () => {
       // Test setup: force the state of the repo.
       const testRepoState = {
-        // $FlowIssue computed properties (t6187050)
         [PATH_1]: StatusCodeId.IGNORED,
-        // $FlowIssue computed properties (t6187050)
         [PATH_2]: StatusCodeId.MODIFIED,
-        // $FlowIssue computed properties (t6187050)
         [PATH_3]: StatusCodeId.ADDED,
       };
       repo._hgStatusCache = testRepoState;
@@ -359,7 +347,6 @@ describe('HgRepositoryClient', () => {
     it('returns true if the path is marked ignored in the cache.', () => {
       // Force the state of the cache.
       repo._hgStatusCache = {
-        // $FlowIssue computed properties (t6187050)
         [PATH_1]: StatusCodeId.IGNORED,
       };
       expect(repo.isPathIgnored(PATH_1)).toBe(true);
@@ -380,9 +367,7 @@ describe('HgRepositoryClient', () => {
     it('returns false if the path is null or undefined, but handles files with those names.', () => {
       // Force the state of the cache.
       repo._hgStatusCache = {
-        // $FlowIssue computed properties (t6187050)
         [PATH_CALLED_NULL]: StatusCodeId.IGNORED,
-        // $FlowIssue computed properties (t6187050)
         [PATH_CALLED_UNDEFINED]: StatusCodeId.IGNORED,
       };
       expect(repo.isPathIgnored(null)).toBe(false);
@@ -396,9 +381,7 @@ describe('HgRepositoryClient', () => {
     it('returns false if the path is null or undefined, but handles files with those names.', () => {
       // Force the state of the cache.
       repo._hgStatusCache = {
-        // $FlowIssue computed properties (t6187050)
         [PATH_CALLED_NULL]: StatusCodeId.ADDED,
-        // $FlowIssue computed properties (t6187050)
         [PATH_CALLED_UNDEFINED]: StatusCodeId.ADDED,
       };
       expect(repo.isPathNew(null)).toBe(false);
@@ -412,9 +395,7 @@ describe('HgRepositoryClient', () => {
     it('returns false if the path is null or undefined, but handles files with those names.', () => {
       // Force the state of the cache.
       repo._hgStatusCache = {
-        // $FlowIssue computed properties (t6187050)
         [PATH_CALLED_NULL]: StatusCodeId.MODIFIED,
-        // $FlowIssue computed properties (t6187050)
         [PATH_CALLED_UNDEFINED]: StatusCodeId.MODIFIED,
       };
       expect(repo.isPathModified(null)).toBe(false);
@@ -427,9 +408,7 @@ describe('HgRepositoryClient', () => {
   describe('::getCachedPathStatus', () => {
     beforeEach(() => {
       repo._hgStatusCache = {
-        // $FlowIssue computed properties (t6187050)
         [PATH_1]: StatusCodeId.MODIFIED,
-        // $FlowIssue computed properties (t6187050)
         [PATH_2]: StatusCodeId.IGNORED,
       };
     });
@@ -541,7 +520,6 @@ describe('HgRepositoryClient', () => {
         deleted: mockDiffStats.deleted,
         lineDiffs: mockLineDiffs,
       };
-      // $FlowIssue computed properties (t6187050)
       const mockFetchedDiffInfo = {[PATH_1]: mockDiffInfo};
       spyOn(repo, '_updateDiffInfo').andCallFake((filePaths) => {
         const mockFetchedPathToDiffInfo = new Map();
@@ -551,7 +529,6 @@ describe('HgRepositoryClient', () => {
         return Promise.resolve(mockFetchedPathToDiffInfo);
       });
       repo._hgDiffCache = {
-        // $FlowIssue computed properties (t6187050)
         [PATH_2]: mockDiffInfo,
       };
     });
@@ -680,9 +657,7 @@ describe('HgRepositoryClient', () => {
     it('handles a null or undefined input "path" but handles paths with those names.', () => {
       // Force the state of the cache.
       repo._hgStatusCache = {
-        // $FlowIssue computed properties (t6187050)
         [PATH_CALLED_NULL]: StatusCodeId.MODIFIED,
-        // $FlowIssue computed properties (t6187050)
         [PATH_CALLED_UNDEFINED]: StatusCodeId.MODIFIED,
       };
       expect(repo.getCachedPathStatus(null)).toBe(StatusCodeNumber.CLEAN);
@@ -720,9 +695,7 @@ describe('HgRepositoryClient', () => {
       };
       // Force the state of the cache.
       repo._hgDiffCache = {
-        // $FlowIssue computed properties (t6187050)
         [PATH_CALLED_NULL]: mockDiffInfo,
-        // $FlowIssue computed properties (t6187050)
         [PATH_CALLED_UNDEFINED]: mockDiffInfo,
       };
       const cleanStats = {added: 0, deleted: 0};
@@ -748,9 +721,7 @@ describe('HgRepositoryClient', () => {
       };
       // Force the state of the cache.
       repo._hgDiffCache = {
-        // $FlowIssue computed properties (t6187050)
         [PATH_CALLED_NULL]: mockDiffInfo,
-        // $FlowIssue computed properties (t6187050)
         [PATH_CALLED_UNDEFINED]: mockDiffInfo,
       };
       // For now the second argument, 'text', is not used.

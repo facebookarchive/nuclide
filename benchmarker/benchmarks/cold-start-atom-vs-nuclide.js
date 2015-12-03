@@ -15,6 +15,7 @@ const TIMEOUT = 30 * 1000;
 
 const REPETITIONS = 3;
 
+import invariant from 'assert';
 import path from 'path';
 import {timedAsync, timedSync} from '../benchmarker-utils';
 
@@ -54,7 +55,9 @@ module.exports = {
         atom.packages.packageDirPaths=[];
         break;
       case 'nuclide':
-        atom.packages.packageDirPaths=[path.join(process.env.ATOM_HOME, 'packages')];
+        const atomHome = process.env.ATOM_HOME;
+        invariant(atomHome != null);
+        atom.packages.packageDirPaths=[path.join(atomHome, 'packages')];
         break;
     }
 

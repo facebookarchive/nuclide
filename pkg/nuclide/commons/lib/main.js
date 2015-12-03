@@ -41,6 +41,7 @@ export type ErrorMessage = {
 const requireCache: {[id: string]: any} = {};
 function requireFromCache(id: string): any {
   if (!requireCache.hasOwnProperty(id)) {
+    // $FlowIgnore
     requireCache[id] = require(id);
   }
   return requireCache[id];
