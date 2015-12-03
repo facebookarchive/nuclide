@@ -56,8 +56,10 @@ describe('SshHandshake', () => {
 
       expect(handshakeDelegate.onWillConnect.callCount).toBe(1);
       expect(handshakeDelegate.onError.callCount).toBe(1);
-      expect(handshakeDelegate.onError.calls[0].args[0]).toBe(mockError);
-      expect(handshakeDelegate.onError.calls[0].args[1]).toBe(config);
+      expect(handshakeDelegate.onError.calls[0].args[0])
+        .toBe(SshHandshake.ErrorType.UNKNOWN);
+      expect(handshakeDelegate.onError.calls[0].args[1]).toBe(mockError);
+      expect(handshakeDelegate.onError.calls[0].args[2]).toBe(config);
     });
 
     it('calls delegates onError when private key does not exist', () => {
@@ -69,7 +71,8 @@ describe('SshHandshake', () => {
 
       let onErrorCalled = false;
 
-      handshakeDelegate.onError.andCallFake((e, _config) => {
+      handshakeDelegate.onError.andCallFake((errorType, e, _config) => {
+        expect(errorType).toBe(SshHandshake.ErrorType.CANT_READ_PRIVATE_KEY);
         expect(e.code).toBe('ENOENT');
         expect(_config).toBe(config);
         onErrorCalled = true;
