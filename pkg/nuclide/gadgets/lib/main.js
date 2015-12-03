@@ -9,19 +9,29 @@
  * the root directory of this source tree.
  */
 
+import type {Commands} from '../types/Commands';
+import type {Gadget} from '../types/Gadget';
+
+import invariant from 'assert';
 import {CompositeDisposable} from 'atom';
+import createCommands from './createCommands';
+import createStateStream from './createStateStream';
+import getInitialState from './getInitialState';
+import Rx from 'rx';
 
 class Activation {
   _disposables: CompositeDisposable;
+  commands: Commands;
 
-  constructor(state: ?Object) {
-    // TODO(matthewwithanm): Assign all fields here so they are
-    // non-nullable for the lifetime of Activation.
-    this._disposables = new CompositeDisposable();
-  }
+  constructor(initialState: ?Object) {
+    initialState = getInitialState();
+    const action$ = new Rx.Subject();
+    createStateStream(action$, initialState);
+    this.commands = createCommands(action$);
 
-  activate() {
-    // TODO(matthewwithanm): Add activation code here.
+    this._disposables = new CompositeDisposable(
+      action$,
+    );
   }
 
   dispose() {
@@ -32,15 +42,21 @@ class Activation {
 let activation: ?Activation = null;
 
 export function activate(state: ?Object) {
-  if (!activation) {
-    activation = new Activation(state);
-    activation.activate();
+  if (activation != null) {
+    return;
   }
+  activation = new Activation(state);
 }
 
 export function deactivate() {
-  if (activation) {
-    activation.dispose();
-    activation = null;
+  if (activation == null) {
+    return;
   }
+  activation.dispose();
+  activation = null;
+}
+
+export function consumeGadget(gadget: Gadget) {
+  invariant(activation);
+  activation.commands.registerGadget(gadget);
 }
