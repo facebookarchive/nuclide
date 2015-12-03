@@ -19,6 +19,7 @@ import createComponentItem from './createComponentItem';
 import createStateStream from './createStateStream';
 import GadgetPlaceholder from './GadgetPlaceholder';
 import getInitialState from './getInitialState';
+import observableFromSubscribeFunction from './observableFromSubscribeFunction';
 import React from 'react-for-atom';
 import Rx from 'rx';
 import syncAtomCommands from './syncAtomCommands';
@@ -34,6 +35,7 @@ class Activation {
     const commands = this.commands = createCommands(action$, () => state$.getValue());
 
     const getGadgets = state => state.get('gadgets');
+    const gadget$ = state$.map(getGadgets).distinctUntilChanged();
 
     this._disposables = new CompositeDisposable(
       action$,
@@ -41,8 +43,15 @@ class Activation {
       // Handle all gadget URLs
       atom.workspace.addOpener(uri => commands.openUri(uri)),
 
+      // Replace all placeholders with real gadgets: both when new items are added *and* when new
+      // gadgets are registered. Placeholders may be added an any time, for example, by splitting.
+      observableFromSubscribeFunction(atom.workspace.observePaneItems.bind(atom.workspace))
+        .merge(gadget$)
+        .throttle(100)
+        .forEach(() => this.commands.replacePlaceholders()),
+
       // Keep the atom commands up to date with the registered gadgets.
-      syncAtomCommands(state$.map(getGadgets), commands),
+      syncAtomCommands(gadget$, commands),
     );
   }
 

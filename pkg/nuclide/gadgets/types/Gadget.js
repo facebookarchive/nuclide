@@ -11,5 +11,6 @@
 
 export type Gadget = {
   gadgetId: string;
+  deserializeState?: (state: Object) => Object;
   prototype: Object;
 };

@@ -19,6 +19,7 @@ export type Commands = {
   createPaneItem(gadgetId: string): ?Object;
   deactivate(): void;
   openUri(uri: string): ?Object;
+  replacePlaceholders(): void;
   registerGadget(gadget: Gadget): void;
   showGadget(gadgetId: string): void;
   unregisterGadget(gadgetId: string): void;
