@@ -137,7 +137,7 @@
     "no-shadow-restricted-names": 1, // disallow shadowing of names such as arguments
     "no-undef": 0,                   // this causes false positives in the presence of Flow type annotations. Flow should take care of this problem, anyway.
     "no-undefined": 0,               // disallow use of undefined variable (off by default)
-    "no-undef-init": 1,              // disallow use of undefined when initializing variables
+    "no-undef-init": 0,              // disallow use of undefined when initializing variables
     "no-unused-vars": [1, {"vars": "all", "args": "none"}], // disallow declaration of variables that are not used in the code
     "no-use-before-define": 0,       // disallow use of variables before they are defined
 
