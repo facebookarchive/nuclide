@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import * as GadgetUri from './GadgetUri';
 import type {Commands} from '../types/Commands';
 import type {Gadget} from '../types/Gadget';
 
@@ -27,6 +28,14 @@ export default function createCommands(observer: Rx.Observer): Commands {
         type: ActionTypes.REGISTER_GADGET,
         payload: {gadget},
       });
+    },
+
+    /**
+     * Ensure that a gadget of the specified gadgetId is visible, creating one if necessary.
+     */
+    showGadget(gadgetId: string): void {
+      const uri = GadgetUri.format({gadgetId});
+      atom.workspace.open(uri, {searchAllPanes: true});
     },
 
   };

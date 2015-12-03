@@ -16,7 +16,10 @@ import Rx from 'rx';
 /**
  * Convert a stream of actions into a stream of application states.
  */
-export default function createStateStream(action$: Rx.Observable, initialState: Immutable.Map) {
+export default function createStateStream(
+  action$: Rx.Observable,
+  initialState: Immutable.Map,
+): Rx.Observable {
   const state$ = new Rx.BehaviorSubject(initialState);
   action$.scan(handleAction, initialState).subscribe(state$);
   return state$;

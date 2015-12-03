@@ -17,4 +17,5 @@ import type {Gadget} from './Gadget';
  */
 export type Commands = {
   registerGadget(gadget: Gadget): void;
+  showGadget(gadgetId: string): void;
 };

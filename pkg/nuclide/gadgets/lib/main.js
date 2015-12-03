@@ -18,6 +18,7 @@ import createCommands from './createCommands';
 import createStateStream from './createStateStream';
 import getInitialState from './getInitialState';
 import Rx from 'rx';
+import syncAtomCommands from './syncAtomCommands';
 
 class Activation {
   _disposables: CompositeDisposable;
@@ -26,11 +27,16 @@ class Activation {
   constructor(initialState: ?Object) {
     initialState = getInitialState();
     const action$ = new Rx.Subject();
-    createStateStream(action$, initialState);
-    this.commands = createCommands(action$);
+    const state$ = createStateStream(action$, initialState);
+    const commands = this.commands = createCommands(action$);
+
+    const getGadgets = state => state.get('gadgets');
 
     this._disposables = new CompositeDisposable(
       action$,
+
+      // Keep the atom commands up to date with the registered gadgets.
+      syncAtomCommands(state$.map(getGadgets), commands),
     );
   }
 
