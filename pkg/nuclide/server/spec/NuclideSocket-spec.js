@@ -60,7 +60,8 @@ xdescribe('NuclideSocket test suite', () => {
   describe('heartbeat()', () => {
     it('checks and emits heartbeat every 5 seconds', () => {
       const heartbeatHandler = jasmine.createSpy();
-      // There was an initial heartbeat, but we can't be sure if it went before or after we do listen here.
+      // There was an initial heartbeat, but we can't be sure if it went before or after we do
+      // listen here.
       socket.on('heartbeat', heartbeatHandler);
       window.advanceClock(5050); // Advance the heartbeat interval.
       waitsFor(() => heartbeatHandler.callCount > 0);
@@ -116,12 +117,14 @@ xdescribe('NuclideSocket test suite', () => {
       waitsFor(() => server._onSocketMessage.calls.length === 1);
 
       runs(() => {
-        // This call will error, because the socket will be closed on the next statement synchronously.
+        // This call will error, because the socket will be closed on the next statement
+        // synchronously.
         socket.send(message1); // The messages will be cached and sent in order.
         socket._cleanWebSocket();
 
         socket.send(message2); // The messages will be cached and sent in order.
-        // Make sure a close event on the old socket doesn't have any effect on the reconnect with a new socket.
+        // Make sure a close event on the old socket doesn't have any effect on the reconnect
+        // with a new socket.
         window.advanceClock(31 * 1000); // The default WebSocket's close timeout is 30 seconds.
         socket.send(message3); // The messages will be cached and sent in order.
         socket._scheduleReconnect();

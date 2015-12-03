@@ -13,7 +13,6 @@ const fs = require('fs');
 const path = require('path');
 const {execSync} = require('child_process');
 const NuclideServer = require('../lib/NuclideServer');
-const {getVersion} = require('nuclide-version');
 import ClientComponent from '../lib/serviceframework/ClientComponent';
 import NuclideSocket from '../lib/NuclideSocket';
 

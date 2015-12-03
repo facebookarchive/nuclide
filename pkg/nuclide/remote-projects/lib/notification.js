@@ -20,7 +20,8 @@ function notifyConnectedRemoteFile(fileUri: string): void {
 
 function notifyDisconnectedRemoteFile(fileUri: string): void {
   const hostname = require('nuclide-remote-uri').getHostname(fileUri);
-  atom.notifications.addError(`The connection to the server: \`${hostname}\` is lost, retrying in the background!`);
+  atom.notifications.addError(
+    `The connection to the server: \`${hostname}\` is lost, retrying in the background!`);
 }
 
 module.exports = {

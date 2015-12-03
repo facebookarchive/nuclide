@@ -447,7 +447,6 @@ class RemoteConnection {
 
       // The remote connection and client are identified by both the remote host and the inital
       // working directory.
-      const clientId = this.getRemoteHost() + this.getPathForInitialWorkingDirectory();
       const socket = new NuclideSocket(uri, options);
       this._client = new ClientComponent(socket);
     }

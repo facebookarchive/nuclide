@@ -708,7 +708,8 @@ describe('TreeRootComponent', () => {
         await component.expandNodeKey(nodes['H'].getKey());
         await component.expandNodeKey(nodes['I'].getKey());
 
-        const renderedNodes = TestUtils.scryRenderedComponentsWithType(component, TreeNodeComponent);
+        const renderedNodes =
+          TestUtils.scryRenderedComponentsWithType(component, TreeNodeComponent);
         // 6 nodes should render: G, H, I, J, K, and H(2). The two 'H' nodes have the same label but
         // both should render and be part of the length. If duplicate labels prevent the nodes from
         // rendering, this test will fail.

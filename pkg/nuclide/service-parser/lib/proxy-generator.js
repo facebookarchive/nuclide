@@ -19,36 +19,39 @@ import type {
   InterfaceDefinition,
 } from './types';
 
-var t = babel.types;
+const t = babel.types;
 
-var promiseDotAllExpression = t.memberExpression(t.identifier('Promise'), t.identifier('all'));
-var thenIdent = t.identifier('then');
+const promiseDotAllExpression = t.memberExpression(t.identifier('Promise'), t.identifier('all'));
+const thenIdent = t.identifier('then');
 
-var observableIdentifier = t.identifier('Observable');
+const observableIdentifier = t.identifier('Observable');
 
-var moduleDotExportsExpression =
+const moduleDotExportsExpression =
   t.memberExpression(t.identifier('module'), t.identifier('exports'));
-var clientIdentifier = t.identifier('_client');
+const clientIdentifier = t.identifier('_client');
 
 // Functions that are implemented at the connection layer.
-var callRemoteFunctionExpression =
+const callRemoteFunctionExpression =
   t.memberExpression(clientIdentifier, t.identifier('callRemoteFunction'));
-var callRemoteMethodExpression =
+const callRemoteMethodExpression =
   t.memberExpression(clientIdentifier, t.identifier('callRemoteMethod'));
-var createRemoteObjectExpression =
+const createRemoteObjectExpression =
   t.memberExpression(clientIdentifier, t.identifier('createRemoteObject'));
-var disposeRemoteObjectExpression =
+const disposeRemoteObjectExpression =
   t.memberExpression(clientIdentifier, t.identifier('disposeRemoteObject'));
 
-var thisDotIdPromiseExpression = t.memberExpression(t.thisExpression(), t.identifier('_idPromise'));
+const thisDotIdPromiseExpression =
+  t.memberExpression(t.thisExpression(), t.identifier('_idPromise'));
 
-var remoteModule = t.identifier('remoteModule');
-var emptyObject = t.objectExpression([]);
+const remoteModule = t.identifier('remoteModule');
+const emptyObject = t.objectExpression([]);
 
-var clientDotMarshalExpression = t.memberExpression(clientIdentifier, t.identifier('marshal'));
-var clientDotUnmarshalExpression = t.memberExpression(clientIdentifier, t.identifier('unmarshal'));
-var marshalCall = (...args) => t.callExpression(clientDotMarshalExpression, args);
-var unmarshalCall = (...args) => t.callExpression(clientDotUnmarshalExpression, args);
+const clientDotMarshalExpression
+  = t.memberExpression(clientIdentifier, t.identifier('marshal'));
+const clientDotUnmarshalExpression
+  = t.memberExpression(clientIdentifier, t.identifier('unmarshal'));
+const marshalCall = (...args) => t.callExpression(clientDotMarshalExpression, args);
+const unmarshalCall = (...args) => t.callExpression(clientDotUnmarshalExpression, args);
 
 /**
  * Given the parsed result of a definition file, generate a remote proxy module
@@ -61,7 +64,7 @@ var unmarshalCall = (...args) => t.callExpression(clientDotUnmarshalExpression, 
  */
 export default function generateProxy(serviceName: string, defs: Definitions): string {
   // Initialized remoteModule to empty object.
-  var statements = [t.assignmentExpression('=', remoteModule, emptyObject)];
+  const statements = [t.assignmentExpression('=', remoteModule, emptyObject)];
 
   defs.forEach(definition => {
     const name = definition.name;
@@ -89,9 +92,9 @@ export default function generateProxy(serviceName: string, defs: Definitions): s
 
   // Wrap the remoteModule construction in a function that takes a ClientComponent object as
   // an argument.
-  var func = t.arrowFunctionExpression([clientIdentifier], t.blockStatement(statements));
-  var assignment = t.assignmentExpression('=', moduleDotExportsExpression, func);
-  var program = t.program([
+  const func = t.arrowFunctionExpression([clientIdentifier], t.blockStatement(statements));
+  const assignment = t.assignmentExpression('=', moduleDotExportsExpression, func);
+  const program = t.program([
     t.expressionStatement(t.literal('use babel')),
     t.importDeclaration([
       t.importSpecifier(t.identifier('Observable'), t.identifier('Observable'))],
@@ -113,15 +116,15 @@ export default function generateProxy(serviceName: string, defs: Definitions): s
  *   a property of the remote module.
  */
 function generateFunctionProxy(name: string, funcType: FunctionType): any {
-  var proxyStatments = [];
+  const proxyStatments = [];
 
   // Convert all of the arguments into marshaled form. `argumentsPromise` will resolve
   // to an array of the converted arguments.
-  var args = funcType.argumentTypes.map((arg, i) => t.identifier(`arg${i}`));
-  var argumentsPromise = generateArgumentConversionPromise(funcType.argumentTypes);
+  const args = funcType.argumentTypes.map((arg, i) => t.identifier(`arg${i}`));
+  const argumentsPromise = generateArgumentConversionPromise(funcType.argumentTypes);
 
   // Call the remoteFunctionCall method of the ClientComponent object.
-  var rpcCallExpression = t.callExpression(callRemoteFunctionExpression, [
+  let rpcCallExpression = t.callExpression(callRemoteFunctionExpression, [
     t.literal(name),
     t.literal(funcType.returnType.kind),
     t.identifier('args'),
@@ -185,7 +188,7 @@ function generateFunctionProxy(name: string, funcType: FunctionType): any {
  */
 function generateArgumentConversionPromise(argumentTypes: Array<Type>): Array<any> {
   // Convert all of the arguments into marshaled form.
-  var args = argumentTypes.map((arg, i) => t.identifier(`arg${i}`));
+  const args = argumentTypes.map((arg, i) => t.identifier(`arg${i}`));
   return t.callExpression(promiseDotAllExpression,
     [t.arrayExpression(
       args.map((arg, i) => generateTransformStatement(arg, argumentTypes[i], true))
@@ -201,13 +204,13 @@ function generateArgumentConversionPromise(argumentTypes: Array<Type>): Array<an
  */
 function generateArgumentConversionObservable(argumentTypes: Array<Type>): Array<any> {
   // Create identifiers that represent all of the arguments.
-  var args = argumentTypes.map((arg, i) => t.identifier(`arg${i}`));
+  const args = argumentTypes.map((arg, i) => t.identifier(`arg${i}`));
 
   // We create an initial observable by concatenating (http://rxmarbles.com/#concat) all of
   // the marshalling promises. Concatenation takes multiple streams (Promises in this case), and
   // returns one stream where all the elements of the input streams are emitted. Concat preserves
   // order, ensuring that all of stream's elements are emitted before the next stream's can emit.
-  var argumentsObservable = t.callExpression(
+  const argumentsObservable = t.callExpression(
       t.memberExpression(observableIdentifier, t.identifier('concat')),
       args.map((arg, i) => generateTransformStatement(arg, argumentTypes[i], true)));
 
@@ -242,7 +245,7 @@ function generateInterfaceProxy(def: InterfaceDefinition): any {
 
   // Generate proxies for instance methods.
   def.instanceMethods.forEach((funcType, methodName) => {
-    var methodDefinition = generateRemoteDispatch(methodName, funcType);
+    const methodDefinition = generateRemoteDispatch(methodName, funcType);
 
     // Add trackTiming decorator to instance method that returns a promise.
     if (funcType.returnType.kind === 'promise') {
@@ -273,11 +276,11 @@ function generateInterfaceProxy(def: InterfaceDefinition): any {
  */
 function generateRemoteConstructor(className: string, constructorArgs: Array<Type>) {
   // Convert constructor arguments.
-  var args = constructorArgs.map((arg, i) => t.identifier(`arg${i}`));
-  var argumentsPromise = generateArgumentConversionPromise(constructorArgs);
+  const args = constructorArgs.map((arg, i) => t.identifier(`arg${i}`));
+  const argumentsPromise = generateArgumentConversionPromise(constructorArgs);
 
   // Make an RPC call that will return the id of the remote object.
-  var rpcCallExpression = t.callExpression(createRemoteObjectExpression, [
+  let rpcCallExpression = t.callExpression(createRemoteObjectExpression, [
     t.literal(className),
     t.identifier('args'),
   ]);
@@ -287,7 +290,7 @@ function generateRemoteConstructor(className: string, constructorArgs: Array<Typ
   // Set a promise that resolves when the id of the remotable object is known.
   rpcCallExpression = t.assignmentExpression('=', thisDotIdPromiseExpression, rpcCallExpression);
 
-  var constructor = t.FunctionExpression(null, args, t.blockStatement([rpcCallExpression]));
+  const constructor = t.FunctionExpression(null, args, t.blockStatement([rpcCallExpression]));
   return t.methodDefinition(t.identifier('constructor'), constructor, 'constructor', false, false);
 }
 
@@ -299,15 +302,14 @@ function generateRemoteConstructor(className: string, constructorArgs: Array<Typ
  */
 function generateRemoteDispatch(methodName: string, funcType: FunctionType) {
   // First, convert the arguments.
-  var args = funcType.argumentTypes.map((arg, i) => t.identifier(`arg${i}`));
-  var argumentsPromise = generateArgumentConversionPromise(funcType.argumentTypes);
+  const argumentsPromise = generateArgumentConversionPromise(funcType.argumentTypes);
 
-  var id = t.identifier('id');
-  var value = t.identifier('value');
+  const id = t.identifier('id');
+  const value = t.identifier('value');
 
-  var remoteMethodCall = t.callExpression(callRemoteMethodExpression, [
+  const remoteMethodCall = t.callExpression(callRemoteMethodExpression, [
     id, t.literal(methodName), t.literal(funcType.returnType.kind), t.identifier('args')]);
-  var rpcCallExpression = thenPromise(thisDotIdPromiseExpression, t.arrowFunctionExpression(
+  let rpcCallExpression = thenPromise(thisDotIdPromiseExpression, t.arrowFunctionExpression(
     [id], remoteMethodCall));
 
   rpcCallExpression = thenPromise(argumentsPromise, t.arrowFunctionExpression(
@@ -325,12 +327,12 @@ function generateRemoteDispatch(methodName: string, funcType: FunctionType) {
       rpcCallExpression = thenPromise(rpcCallExpression, promiseTransformer);
       break;
     case 'observable':
-      var argumentsObservable = generateArgumentConversionObservable(funcType.argumentTypes);
+      const argumentsObservable = generateArgumentConversionObservable(funcType.argumentTypes);
 
       // We need to resolve both the transformed arguments and the object id before making the RPC.
       // We can use forkJoin - https://github.com/Reactive-Extensions/RxJS/blob/master/doc/api/core/operators/forkjoin.md.
       // This will resolve to an Observable that emits an array with [id, args] as the two elements.
-      var idAndArgumentsObservable = t.callExpression(t.memberExpression(observableIdentifier,
+      const idAndArgumentsObservable = t.callExpression(t.memberExpression(observableIdentifier,
         t.identifier('forkJoin')), [thisDotIdPromiseExpression, argumentsObservable]);
 
       // Once we resolve both the id and the transformed arguments, we can map them to then RPC
@@ -368,7 +370,7 @@ function generateRemoteDispatch(methodName: string, funcType: FunctionType) {
  * @returns A MethodDefinition node that can be attached to a class body.
  */
 function generateDisposeMethod() {
-  var id = t.identifier('id');
+  const id = t.identifier('id');
 
   // Replace `idPromise` with thenable object that throws error.
   const disposedError = t.newExpression(t.identifier('Error'),
@@ -382,7 +384,7 @@ function generateDisposeMethod() {
     thisDotIdPromiseExpression, thenableErrorObject));
 
   // Call `_client.disposeRemoteObject`.
-  var rpcCallExpression = t.callExpression(disposeRemoteObjectExpression, [id]);
+  let rpcCallExpression = t.callExpression(disposeRemoteObjectExpression, [id]);
 
   // Wrap these statements in a `.then` on `idPromise`, so that they can execute after the
   // id has been determined.
@@ -393,7 +395,7 @@ function generateDisposeMethod() {
       t.returnStatement(rpcCallExpression),
     ]))]
   );
-  var returnStatement = t.returnStatement(rpcCallExpression);
+  const returnStatement = t.returnStatement(rpcCallExpression);
 
   return t.methodDefinition(t.identifier('dispose'),
     t.functionExpression(null, [], t.blockStatement([returnStatement])), 'method', false, false);
@@ -411,7 +413,7 @@ function generateTransformStatement(id: any, type: Type, marshal: boolean): any 
   // The first argument is the value to be marshalled or unmarshalled.
   // The second argument is the type object, which encodes all of the information required
   // to marshal / unmarshal the value.
-  var convertArgs = [id, objectToLiteral(type)];
+  const convertArgs = [id, objectToLiteral(type)];
 
   // If the type is parameterized, we send the parameters as an optional fourth argument.
   if (type.param) {
@@ -454,6 +456,6 @@ function thenPromise(promiseExpression, functionExpression): any {
 }
 
 /** Export private functions for unit-testing. */
-export var __test__ = {
+export const __test__ = {
   generateTransformStatement,
 };

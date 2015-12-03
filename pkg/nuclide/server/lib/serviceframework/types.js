@@ -54,7 +54,8 @@ export type DisposeObservableMessage = {
 }
 
 // Encodes the structure of messages that can be sent from the server to the client.
-export type ResponseMessage = PromiseResponseMessage | ErrorResponseMessage | ObservableResponseMessage;
+export type ResponseMessage =
+  PromiseResponseMessage | ErrorResponseMessage | ObservableResponseMessage;
 
 export type ErrorResponseMessage = {
   channel: 'service_framework3_rpc';

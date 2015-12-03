@@ -144,7 +144,7 @@ export function openConnectionDialog(props): Promise<?RemoteConnection> {
         saveConnectionConfig(config, getOfficialRemoteServerCommand());
         cleanupSubscriptionFunc();
       },
-      onError: (err, config) => {
+      onError: (err, config) => { //eslint-disable-line handle-callback-err
         resolve(/*connection*/ null);
         saveConnectionConfig(config, getOfficialRemoteServerCommand());
         cleanupSubscriptionFunc();

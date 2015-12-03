@@ -241,7 +241,7 @@ class RemoteDirectory {
     let entries;
     try {
       entries = await this._getFileSystemService().readdir(this._localPath);
-    } catch(e) {
+    } catch (e) {
       callback(e, null);
       return;
     }

@@ -30,7 +30,7 @@ function printSwitchStatement(print: Print, node: SwitchStatement): Lines {
     ') {',
     markers.hardBreak,
     markers.indent,
-    node.cases.map(node => print(node)),
+    node.cases.map(caseNode => print(caseNode)),
     markers.noBreak, // Squash the last breaks.
     '',
     markers.dedent,

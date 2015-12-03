@@ -19,9 +19,11 @@ export default class SampleDiagnosticsProvider {
   _providerBase: DiagnosticsProviderBase;
 
   constructor() {
-    /* Look here:
+    /**
+     * Look here:
      * https://github.com/facebook/nuclide/blob/master/pkg/nuclide/diagnostics/provider-base/ for
-     * a complete list of options. */
+     * a complete list of options.
+     */
     const baseOptions = {
       // This will make our error show up in all files.
       enableForAllGrammars: true,

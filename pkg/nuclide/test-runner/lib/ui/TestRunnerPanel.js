@@ -103,7 +103,9 @@ class TestRunnerPanel extends React.Component {
         const initialTest = this.props.path === undefined;
         runStopButton = (
           <button
-            className={runStopButtonClassName(initialTest ? 'playback-play' : 'sync', 'btn-primary')}
+            className={
+              runStopButtonClassName(initialTest ? 'playback-play' : 'sync', 'btn-primary')
+            }
             disabled={this.isDisabled()}
             onClick={this.props.onClickRun}>
             {initialTest ? 'Test' : 'Re-Test'}
@@ -112,8 +114,8 @@ class TestRunnerPanel extends React.Component {
         break;
     }
 
-    // Assign `value` only when needed so a null/undefined value will show an indeterminate progress
-    // bar.
+    // Assign `value` only when needed so a null/undefined value will show an indeterminate
+    // progress bar.
     let progressAttrs: ?{[key: string]: mixed} = undefined;
     if (this.props.progressValue) {
       // `key` is set to force React to treat this as a new element when the `value` attr should be

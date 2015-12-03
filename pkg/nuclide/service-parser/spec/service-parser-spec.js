@@ -223,15 +223,6 @@ describe('Nuclide service parser test suite.', () => {
     }).toThrow();
   });
 
-  it('Promise in union throws', () => {
-    const code = `
-      export type A = 42 | Promise<42>;
-    `;
-    expect(() => {
-      parseServiceDefinition('fileName', code);
-    }).toThrow();
-  });
-
   it('Non-literal in union throws', () => {
     const code = `
       export type A = 42 | number;

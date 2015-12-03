@@ -231,11 +231,14 @@
 
     "max-depth": 0,                  // specify the maximum depth that blocks can be nested (off by default)
     "max-len": [1, 100, 2,           // specify the maximum length of a line in your program [warning level, max line length, number of characters to treat a tab as]
-        {ignoreUrls: true}],
+        {ignoreUrls: true, ignorePattern: "^\\s*(import|(var|const|let)\\s.+=\\s*require\\s*\\()"}],
     "max-params": 0,                 // limits the number of parameters that can be used in the function declaration. (off by default)
     "max-statements": 0,             // specify the maximum number of statement allowed in a function (off by default)
     "no-bitwise": 1,                 // disallow use of bitwise operators (off by default)
     "no-plusplus": 0,                 // disallow use of unary operators, ++ and -- (off by default)
+
+  // Jasmine
+    "jasmine/no-spec-dupes": [1, "branch"],
 
   // Custom
     "nuclide-internal/comment-style": 1,

@@ -37,10 +37,10 @@ function getLogger() {
   return logger || (logger = require('nuclide-logging').getLogger());
 }
 
-let RemoteConnection = null;
+let RemoteConnection_ = null;
 function getRemoteConnection() {
-  return RemoteConnection ||
-    (RemoteConnection = require('nuclide-remote-connection').RemoteConnection);
+  return RemoteConnection_ ||
+    (RemoteConnection_ = require('nuclide-remote-connection').RemoteConnection);
 }
 
 function createSerializableRemoteConnectionConfiguration(
@@ -185,7 +185,7 @@ async function createEditorForNuclide(
     buffer.setEncoding(atom.config.get('core.fileEncoding'));
     try {
       await buffer.load();
-    } catch(err) {
+    } catch (err) {
       getLogger().warn('buffer load issue:', err);
       throw err;
     }

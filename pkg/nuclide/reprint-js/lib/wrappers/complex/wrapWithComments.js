@@ -40,7 +40,7 @@ function wrapWithComments(
       const min = comment.loc.end.line;
       const max = next.loc.start.line;
 
-      for (let i = 0; i < max - min; i++) {
+      for (let j = 0; j < max - min; j++) {
         parts.push(markers.multiHardBreak);
       }
 
@@ -63,7 +63,7 @@ function wrapWithComments(
       const max = comment.loc.start.line;
       const parts = [];
 
-      for (let i = 0; i < max - min; i++) {
+      for (let j = 0; j < max - min; j++) {
         parts.push(markers.multiHardBreak);
       }
 

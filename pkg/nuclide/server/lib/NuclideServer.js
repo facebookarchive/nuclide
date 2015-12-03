@@ -17,7 +17,6 @@ const https = require('https');
 import {
   HEARTBEAT_CHANNEL,
   SERVICE_FRAMEWORK3_CHANNEL} from './config';
-const {EventEmitter} = require('events');
 const WebSocketServer = require('ws').Server;
 const {deserializeArgs, sendJsonResponse, sendTextResponse} = require('./utils');
 const {getVersion} = require('nuclide-version');
@@ -26,12 +25,6 @@ import ServiceFramework from './serviceframework';
 
 import {getLogger, flushLogsAndExit} from 'nuclide-logging';
 const logger = getLogger();
-
-
-
-
-const EVENT_HANDLE_REGISTERED = '_nuclideServerEventHandleRegstered';
-
 
 type NuclideServerOptions = {
   port: number;
@@ -46,12 +39,6 @@ export type SocketClient = {
   subscriptions: {[channel: string]: (event: any) => void};
   socket: ?WebSocket;
 };
-
-type ServiceConfig = {
-  name: string;
-  definition: string;
-  implementation: string;
-}
 
 class NuclideServer {
   static _theServer: ?NuclideServer;
@@ -68,7 +55,13 @@ class NuclideServer {
     invariant(NuclideServer._theServer == null);
     NuclideServer._theServer = this;
 
-    const {serverKey, serverCertificate, port, certificateAuthorityCertificate, trackEventLoop} = options;
+    const {
+      serverKey,
+      serverCertificate,
+      port,
+      certificateAuthorityCertificate,
+      trackEventLoop,
+    } = options;
 
     this._app = connect();
     this._attachUtilHandlers(this._app);
@@ -187,8 +180,8 @@ class NuclideServer {
 
   /**
    * Registers a service function to a service name.
-   * This allows simple future calls of the service by name and arguments or http-triggered endpoint calls
-   * with arguments serialized over http.
+   * This allows simple future calls of the service by name and arguments or http-triggered
+   * endpoint calls with arguments serialized over http.
    */
   _registerService(
       serviceName: string,
@@ -212,7 +205,7 @@ class NuclideServer {
         } else {
           sendJsonResponse(response, result);
         }
-      } catch(e) {
+      } catch (e) {
         // Delegate to the registered connect error handler.
         next(e);
       }
@@ -220,12 +213,17 @@ class NuclideServer {
   }
 
   /**
-   * Attach an explicit http connect handler for some services that need request/response related optimizations.
-   * e.g. readFile and writeFile uses it to stream reading and writing files (perf improvement for big files).
+   * Attach an explicit http connect handler for some services that need request/response
+   * related optimizations. e.g. readFile and writeFile uses it to stream reading and writing
+   * files (perf improvement for big files).
    */
   _attachUrlHandler(
     url: string,
-    handler: (request: http.IncomingMessage, response: http.OutgoingMessage, next: (err: Error) => void) => void,
+    handler: (
+      request: http.IncomingMessage,
+      response: http.OutgoingMessage,
+      next: (err: Error) => void
+    ) => void,
     method: ?string = 'get'
   ): void {
     this._app[method](url, handler);
@@ -250,7 +248,8 @@ class NuclideServer {
       }
       logger.info('Client #%s connecting with a new socket!', clientId);
       client.socket = socket;
-      client.messageQueue.splice(0).forEach(message => this._sendSocketMessage(client, message.data));
+      client.messageQueue.splice(0).forEach(message =>
+        this._sendSocketMessage(client, message.data));
       socket.on('message', (message) => this._onSocketMessage(client, message));
     });
 
@@ -263,13 +262,11 @@ class NuclideServer {
       }
       logger.info('Client #%s closing a socket!', client.id);
       // TODO: enable subscription cleanup when we have a robust reconnect scenario.
-      /*
-      for (var channel in client.subscriptions) {
-        this.unsubscribe(channel, subscriptions[channel]);
-      }
-      this._eventSubscriptions.forEach(value => value.delete(client.id));
-      delete this._clients[client.id];
-      */
+      // for (var channel in client.subscriptions) {
+      //   this.unsubscribe(channel, subscriptions[channel]);
+      // }
+      // this._eventSubscriptions.forEach(value => value.delete(client.id));
+      // delete this._clients[client.id];
     });
   }
 
@@ -281,7 +278,8 @@ class NuclideServer {
 
   _sendSocketMessage(client: SocketClient, data: any) {
     // Wrap the data in an object, because if `data` is a primitive data type,
-    // finding it in an array would return the first matching item, not necessarily the same inserted item.
+    // finding it in an array would return the first matching item, not necessarily
+    // the same inserted item.
     const message = {data};
     const {id, socket, messageQueue} = client;
     messageQueue.push(message);

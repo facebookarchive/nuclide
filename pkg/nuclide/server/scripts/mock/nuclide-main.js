@@ -22,7 +22,7 @@ function processArgs() {
 
   args.forEach(function (argument, index) {
     if (index % 2 !== 0) {
-      processedArgs[args[index-1].slice(2)] = argument;
+      processedArgs[args[index - 1].slice(2)] = argument;
     }
   });
   return processedArgs;
@@ -40,22 +40,22 @@ function startServer(args) {
     };
 
     _webServer = https.createServer(webServerOptions, handleRequest);
-    console.log('running in secure mode');
+    console.log('running in secure mode'); //eslint-disable-line no-console
   } else {
     _webServer = http.createServer(handleRequest);
   }
 
   _webServer.on('listening', function () {
-    console.log('listening on port ' + args.port);
+    console.log('listening on port ' + args.port); //eslint-disable-line no-console
   });
 
   _webServer.listen(args.port || 8084, '::');
 }
 
 function handleRequest(request, response) {
-  const path = url.parse(request.url, false).pathname;
+  const pathname = url.parse(request.url, false).pathname;
 
-  switch (path) {
+  switch (pathname) {
     case '/heartbeat':
       handleVersion(request, response);
       break;

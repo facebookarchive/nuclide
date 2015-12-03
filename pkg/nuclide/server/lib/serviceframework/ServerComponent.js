@@ -111,7 +111,7 @@ export default class ServerComponent {
           }
         });
 
-      } catch(e) {
+      } catch (e) {
         logger.error(`Failed to load service ${service.name}. Stack Trace:\n${e.stack}`);
         continue;
       }
@@ -231,7 +231,8 @@ export default class ServerComponent {
 
         // Ensure that the return value is a promise.
         if (!isThenable(returnVal)) {
-          returnVal = Promise.reject(new Error('Expected a Promise, but the function returned something else.'));
+          returnVal = Promise.reject(
+            new Error('Expected a Promise, but the function returned something else.'));
         }
 
         // Marshal the result, to send over the network.
@@ -271,7 +272,8 @@ export default class ServerComponent {
         }
 
         // Marshal the result, to send over the network.
-        returnVal = returnVal.concatMap(value => this._typeRegistry.marshal(value, returnType.type));
+        returnVal = returnVal
+          .concatMap(value => this._typeRegistry.marshal(value, returnType.type));
 
         // Send the next, error, and completion events of the observable across the socket.
         const subscription = returnVal.subscribe(data => {

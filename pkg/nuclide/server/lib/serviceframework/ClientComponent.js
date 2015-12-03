@@ -80,7 +80,7 @@ export default class ClientComponent {
               break;
           }
         });
-      } catch(e) {
+      } catch (e) {
         logger.error(`Failed to load service ${service.name}. Stack Trace:\n${e.stack}`);
         continue;
       }
@@ -102,8 +102,8 @@ export default class ClientComponent {
   /**
    * Call a remote function, through the service framework.
    * @param functionName - The name of the remote function to invoke.
-   * @param returnType - The type of object that this function returns, so the the transport layer can
-   *   register the appropriate listeners.
+   * @param returnType - The type of object that this function returns, so the the transport
+   *   layer can register the appropriate listeners.
    * @param args - The serialized arguments to invoke the remote function with.
    */
   callRemoteFunction(functionName: string, returnType: ReturnType, args: Array<any>): any {
@@ -114,18 +114,27 @@ export default class ClientComponent {
       requestId: this._generateRequestId(),
       args,
     };
-    return this._sendMessageAndListenForResult(message, returnType, `Calling function ${functionName}`);
+    return this._sendMessageAndListenForResult(
+      message,
+      returnType,
+      `Calling function ${functionName}`
+    );
   }
 
   /**
    * Call a method of a remote object, through the service framework.
    * @param objectId - The id of the remote object.
    * @param methodName - The name of the method to invoke.
-   * @param returnType - The type of object that this function returns, so the the transport layer can
-   *   register the appropriate listeners.
+   * @param returnType - The type of object that this function returns, so the the transport
+   *   layer can register the appropriate listeners.
    * @param args - The serialized arguments to invoke the remote method with.
    */
-  callRemoteMethod(objectId: number, methodName: string, returnType: ReturnType, args: Array<any>): any {
+  callRemoteMethod(
+    objectId: number,
+    methodName: string,
+    returnType: ReturnType,
+    args: Array<any>
+  ): any {
     const message: CallRemoteMethodMessage = {
       protocol: 'service_framework3_rpc',
       type: 'MethodCall',
@@ -134,7 +143,11 @@ export default class ClientComponent {
       requestId: this._generateRequestId(),
       args,
     };
-    return this._sendMessageAndListenForResult(message, returnType, `Calling remote method ${methodName}.`);
+    return this._sendMessageAndListenForResult(
+      message,
+      returnType,
+      `Calling remote method ${methodName}.`
+    );
   }
 
   /**
@@ -151,7 +164,11 @@ export default class ClientComponent {
       requestId: this._generateRequestId(),
       args,
     };
-    return this._sendMessageAndListenForResult(message, 'promise', `Creating instance of ${interfaceName}`);
+    return this._sendMessageAndListenForResult(
+      message,
+      'promise',
+      `Creating instance of ${interfaceName}`
+    );
   }
 
   /**
@@ -175,10 +192,14 @@ export default class ClientComponent {
    * @param returnType - Determines the type of messages we should subscribe to, and what this
    *   function should return.
    * @param requestId - The id of the request who's result we are listening for.
-   * @returns Depending on the expected return type, this function either returns undefined, a Promise,
-   *   or an Observable.
+   * @returns Depending on the expected return type, this function either returns undefined, a
+   *   Promise, or an Observable.
    */
-  _sendMessageAndListenForResult(message: RequestMessage, returnType: ReturnType, timeoutMessage: string): any {
+  _sendMessageAndListenForResult(
+    message: RequestMessage,
+    returnType: ReturnType,
+    timeoutMessage: string
+  ): any {
     switch (returnType) {
       case 'void':
         this._socket.send(message);
@@ -193,7 +214,10 @@ export default class ClientComponent {
 
           setTimeout(() => {
             this._emitter.removeAllListeners(message.requestId.toString());
-            reject(`Timeout after ${SERVICE_FRAMEWORK_RPC_TIMEOUT_MS} for requestId: ${message.requestId}, ${timeoutMessage}.`);
+            reject(
+              `Timeout after ${SERVICE_FRAMEWORK_RPC_TIMEOUT_MS} for requestId: ` +
+              `${message.requestId}, ${timeoutMessage}.`
+            );
           }, SERVICE_FRAMEWORK_RPC_TIMEOUT_MS);
         });
       case 'observable':

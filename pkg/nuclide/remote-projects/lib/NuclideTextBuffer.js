@@ -116,7 +116,8 @@ class NuclideTextBuffer extends TextBuffer {
       if (exists) {
         return this.getText() !== this.cachedDiskContents;
       } else {
-        return this.wasModifiedBeforeRemove != null ? this.wasModifiedBeforeRemove : !this.isEmpty();
+        return this.wasModifiedBeforeRemove != null ?
+          this.wasModifiedBeforeRemove : !this.isEmpty();
       }
     } else {
       return !this.isEmpty();

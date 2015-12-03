@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {Lines, Print} from '../../types/common';
+import type {Lines} from '../../types/common';
 
 const flatten = require('../../utils/flatten');
 const printComment = require('./printComment');

@@ -46,36 +46,36 @@ describe('RemoteDirectory', () => {
 
 describe('RemoteDirectory::isRoot()', () => {
   it('nuclide://example.com:9090/ is a root', () => {
-    const path = 'nuclide://example.com:9090/';
-    const remoteDirectory = new RemoteDirectory(connectionMock, path);
+    const remoteDirectory = new RemoteDirectory(connectionMock,
+      'nuclide://example.com:9090/');
     expect(remoteDirectory.isRoot()).toBe(true);
   });
 
   it('nuclide://example.com:9090/path/to/directory is not a root', () => {
-    const path = 'nuclide://example.com:9090/path/to/directory';
-    const remoteDirectory = new RemoteDirectory(connectionMock, path);
+    const remoteDirectory = new RemoteDirectory(connectionMock,
+      'nuclide://example.com:9090/path/to/directory');
     expect(remoteDirectory.isRoot()).toBe(false);
   });
 });
 
 describe('RemoteDirectory::getBaseName()', () => {
   it('to handle a root path', () => {
-    const path = 'nuclide://example.com:9090/';
-    const remoteDirectory = new RemoteDirectory(connectionMock, path);
+    const remoteDirectory = new RemoteDirectory(connectionMock,
+      'nuclide://example.com:9090/');
     expect(remoteDirectory.getBaseName()).toBe('');
   });
 
   it('to handle a non-root path', () => {
-    const path = 'nuclide://example.com:9090/path/to/directory';
-    const remoteDirectory = new RemoteDirectory(connectionMock, path);
+    const remoteDirectory = new RemoteDirectory(connectionMock,
+      'nuclide://example.com:9090/path/to/directory');
     expect(remoteDirectory.getBaseName()).toBe('directory');
   });
 });
 
 describe('RemoteDirectory::relativize()', () => {
   it('to relativize a file against a root path', () => {
-    const path = 'nuclide://example.com:9090/';
-    const remoteDirectory = new RemoteDirectory(connectionMock, path);
+    const remoteDirectory = new RemoteDirectory(connectionMock,
+      'nuclide://example.com:9090/');
     expect(remoteDirectory.relativize('nuclide://example.com:9090/foo/bar'))
         .toBe('foo/bar');
   });
@@ -145,18 +145,18 @@ describe('RemoteDirectory::getEntries()', () => {
 
 describe('RemoteDirectory::getParent()', () => {
   it('a root is its own parent', () => {
-    const path = 'nuclide://example.com:9090/';
-    const remoteDirectory = new RemoteDirectory(connectionMock, path);
+    const remoteDirectory = new RemoteDirectory(connectionMock,
+      'nuclide://example.com:9090/');
     expect(remoteDirectory.getParent()).toBe(remoteDirectory);
   });
 
   it('a non-root has the expected parent', () => {
-    const remote = {createDirectory(){}};
+    const remote = {createDirectory() {}};
     const parentDirectory = jasmine.createSpy('RemoteDirectory');
     spyOn(remote, 'createDirectory').andReturn(parentDirectory);
 
-    const path = 'nuclide://example.com:9090/path/to/directory';
-    const remoteDirectory = new RemoteDirectory(remote, path);
+    const remoteDirectory = new RemoteDirectory(remote,
+      'nuclide://example.com:9090/path/to/directory');
     expect(remoteDirectory.getParent()).toBe(parentDirectory);
     expect(remote.createDirectory).toHaveBeenCalledWith(
         'nuclide://example.com:9090/path/to');
@@ -165,39 +165,39 @@ describe('RemoteDirectory::getParent()', () => {
 
 describe('RemoteDirectory::contains()', () => {
   it('returns false when passed undefined path', () => {
-    const path = 'nuclide://example.com:9090/';
-    const remoteDirectory = new RemoteDirectory(connectionMock, path);
+    const remoteDirectory = new RemoteDirectory(connectionMock,
+      'nuclide://example.com:9090/');
     expect(remoteDirectory.contains(undefined)).toBe(false);
   });
 
   it('returns false when passed null path', () => {
     const remote = jasmine.createSpy('RemoteConnection');
-    const path = 'nuclide://example.com:9090/';
-    const remoteDirectory = new RemoteDirectory(remote, path);
+    const remoteDirectory = new RemoteDirectory(remote,
+      'nuclide://example.com:9090/');
     expect(remoteDirectory.contains(null)).toBe(false);
   });
 
   it('returns false when passed empty path', () => {
-    const path = 'nuclide://example.com:9090/';
-    const remoteDirectory = new RemoteDirectory(connectionMock, path);
+    const remoteDirectory = new RemoteDirectory(connectionMock,
+      'nuclide://example.com:9090/');
     expect(remoteDirectory.contains('')).toBe(false);
   });
 
   it('returns true when passed sub directory', () => {
-    const path = 'nuclide://example.com:9090/';
-    const remoteDirectory = new RemoteDirectory(connectionMock, path);
+    const remoteDirectory = new RemoteDirectory(connectionMock,
+      'nuclide://example.com:9090/');
     expect(remoteDirectory.contains('nuclide://example.com:9090/asdf')).toBe(true);
   });
 });
 
 describe('RemoteDirectory::getFile()', () => {
   it('returns a RemoteFile under the directory', () => {
-    const remote = {createFile(){}};
+    const remote = {createFile() {}};
     const remoteFile = jasmine.createSpy('RemoteFile');
     spyOn(remote, 'createFile').andReturn(remoteFile);
 
-    const path = 'nuclide://example.com:9090/path/to/directory';
-    const remoteDirectory = new RemoteDirectory(remote, path);
+    const remoteDirectory = new RemoteDirectory(remote,
+      'nuclide://example.com:9090/path/to/directory');
     expect(remoteDirectory.getFile('foo.txt')).toBe(remoteFile);
     expect(remote.createFile).toHaveBeenCalledWith(
         'nuclide://example.com:9090/path/to/directory/foo.txt');
@@ -289,7 +289,12 @@ xdescribe('RemoteDirectory::onDidChange()', () => {
     waitsFor(() => changeHandler.callCount > 0);
     runs(() => {
       expect(changeHandler.callCount).toBe(1);
-      expect(changeHandler.argsForCall[0][0]).toEqual([{name: 'new_file.txt', mode: FILE_MODE, exists: true, new: true}]);
+      expect(changeHandler.argsForCall[0][0]).toEqual([{
+        name: 'new_file.txt',
+        mode: FILE_MODE,
+        exists: true,
+        new: true,
+      }]);
     });
   });
 
@@ -302,7 +307,12 @@ xdescribe('RemoteDirectory::onDidChange()', () => {
     waitsFor(() => changeHandler.callCount > 0);
     runs(() => {
       expect(changeHandler.callCount).toBe(1);
-      expect(changeHandler.argsForCall[0][0]).toEqual([{name: path.basename(filePath), mode: FILE_MODE, exists: false, new: false}]);
+      expect(changeHandler.argsForCall[0][0]).toEqual([{
+        name: path.basename(filePath),
+        mode: FILE_MODE,
+        exists: false,
+        new: false,
+      }]);
     });
   });
 

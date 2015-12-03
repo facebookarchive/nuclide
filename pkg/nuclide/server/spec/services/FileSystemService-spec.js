@@ -423,6 +423,6 @@ describe('FileSystemService', () => {
     }
     try {
       fs.unlinkSync(pathToBrokenLinkFile);
-    } catch(e) { /*exists can't check for broken symlinks, just absorb the error for cleanup */ }
+    } catch (e) { /*exists can't check for broken symlinks, just absorb the error for cleanup */ }
   });
 });

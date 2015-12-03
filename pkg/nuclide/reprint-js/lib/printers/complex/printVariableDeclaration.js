@@ -25,14 +25,14 @@ function printVariableDeclaration(
   const parts = [
     node.kind,
     markers.space,
-    flatten(node.declarations.map((node, i) => {
+    flatten(node.declarations.map((declNode, i) => {
       if (i === 0) {
-        return print(node);
+        return print(declNode);
       } else {
         return [
           ',',
           markers.space,
-          print(node),
+          print(declNode),
         ];
       }
     })),

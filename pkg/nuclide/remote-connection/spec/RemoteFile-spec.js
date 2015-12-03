@@ -180,7 +180,8 @@ describe('RemoteFile', () => {
       fs.writeFileSync(filePath, 'sample contents');
       // Ask watchman to watch the directory.
       waitsForPromise(() => connectionMock.getClient().watchDirectoryRecursive(tempDir));
-      waits(WATCHMAN_SETTLE_TIME_MS + /* buffer */ 10); // wait for the watchman to settle on the created directory and file.
+      // wait for the watchman to settle on the created directory and file.
+      waits(WATCHMAN_SETTLE_TIME_MS + /* buffer */ 10);
     });
 
     afterEach(() => {
@@ -231,7 +232,10 @@ describe('RemoteFile', () => {
 
     describe('when a watch handling error happens', () => {
       it('notifies ::onWillThrowWatchError observers', () => {
-        const notExistingFile = new RemoteFile(connectionMock, path.join(tempDir, 'no_existing.txt'));
+        const notExistingFile = new RemoteFile(
+          connectionMock,
+          path.join(tempDir, 'no_existing.txt')
+        );
         let skippedError;
         let handleError;
         notExistingFile.onWillThrowWatchError((watchError) => {
@@ -242,7 +246,7 @@ describe('RemoteFile', () => {
         waitsForPromise(async () => {
           try {
             // Simulate an change event comes, but the file doesn't exist!
-            await notExistingFile._handleNativeChangeEvent('change')
+            await notExistingFile._handleNativeChangeEvent('change');
           } catch (error) {
             handleError = error;
           }
@@ -292,7 +296,10 @@ describe('RemoteFile', () => {
 
     it('exists resolves to true when the file exists', () => {
       waitsForPromise(async () => {
-        const notExistingFile = new RemoteFile(connectionMock, path.join(tempDir, 'no_existing.txt'));
+        const notExistingFile = new RemoteFile(
+          connectionMock,
+          path.join(tempDir, 'no_existing.txt')
+        );
         const exists = await notExistingFile.exists();
         expect(exists).toBe(false);
       });
@@ -357,7 +364,7 @@ describe('RemoteFile', () => {
 
   describe('RemoteFile::getParent()', () => {
     it('gets the parent directory for a file in a root directory', () => {
-      const remote = {createDirectory(){}};
+      const remote = {createDirectory() {}};
       const parentDirectory = jasmine.createSpy('RemoteDirectory');
       spyOn(remote, 'createDirectory').andReturn(parentDirectory);
 
@@ -369,7 +376,7 @@ describe('RemoteFile', () => {
     });
 
     it('gets the parent directory for a file in a non-root directory', () => {
-      const remote = {createDirectory(){}};
+      const remote = {createDirectory() {}};
       const parentDirectory = jasmine.createSpy('RemoteDirectory');
       spyOn(remote, 'createDirectory').andReturn(parentDirectory);
 

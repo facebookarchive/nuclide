@@ -49,7 +49,8 @@ describe('reprint', () => {
   });
 });
 
-function firstDifference(a, b) {
+function firstDifference(a, b) { //eslint-disable-line no-unused-vars
+  /*eslint-disable no-console*/
   for (let i = 0; i < a.length && i < b.length; i++) {
     if (a.charAt(i) !== b.charAt(i)) {
       console.log();

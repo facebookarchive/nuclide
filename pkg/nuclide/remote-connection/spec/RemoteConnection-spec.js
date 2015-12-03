@@ -11,7 +11,6 @@
 
 const fs = require('fs');
 const {RemoteConnection, __test__} = require('../lib/RemoteConnection');
-const {EventEmitter} = require('events');
 const path = require('path');
 const pathToFakePk = path.join(__dirname, 'fakepk');
 

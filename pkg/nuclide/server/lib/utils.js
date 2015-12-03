@@ -21,7 +21,8 @@ type SerializedArguments = {args: Array<string>; argTypes: Array<string>};
  * Promisified version of the request function:
  * https://www.npmjs.com/package/request#requestoptions-callback
  * Defaults to using the node's querystring module to encode the url query parameters.
- * If you want to use the npm's qs module to encode the query parameters, explicitly provide the option:
+ * If you want to use the npm's qs module to encode the query parameters, explicitly provide
+ * the option:
  * {useQuerystring: false}
  */
 function asyncRequest(options: any): Promise<ResponseBody> {
@@ -37,7 +38,7 @@ function asyncRequest(options: any): Promise<ResponseBody> {
         if (typeof body !== 'object') {
           try {
             errorJson = JSON.parse(body);
-          } catch (err) {
+          } catch (realErr) {
             // 404 responses aren't currently JSON.
             errorJson = {message: body};
           }

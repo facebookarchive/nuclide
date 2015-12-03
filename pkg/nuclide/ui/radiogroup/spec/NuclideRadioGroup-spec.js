@@ -42,7 +42,7 @@ describe('NuclideRadioGroup', () => {
     const component = renderIntoDocument(
       <NuclideRadioGroup {...props} />
     );
-    var radioInputs = scryRenderedDOMComponentsWithTag(
+    const radioInputs = scryRenderedDOMComponentsWithTag(
       component,
       'input'
     );

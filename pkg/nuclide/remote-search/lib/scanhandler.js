@@ -31,7 +31,7 @@ const GREP_PARSE_PATTERN = /(.*):(\d*):(.*)/;
  * @param directory - The directory in which to perform a search.
  * @param regex - The pattern to match.
  * @param subdirs - An array of subdirectories to search within `directory`. If subdirs is an
-    empty array, then simply search in directory.
+ *   empty array, then simply search in directory.
  * @returns An observable that emits match events.
  */
 export default function search(directory: string, regex: RegExp, subdirs: Array<string>):

@@ -12,9 +12,7 @@
 
 
 const WebSocket = require('ws');
-const {EventEmitter} = require('events');
 const NuclideServer = require('../lib/NuclideServer');
-const {getVersion} = require('nuclide-version');
 import ClientComponent from '../lib/serviceframework/ClientComponent';
 import NuclideSocket from '../lib/NuclideSocket';
 
@@ -94,10 +92,14 @@ describe('Nuclide Server test suite', () => {
 
       waitsFor(() => messageHandler.callCount === 4);
       runs(() => {
-        expect(messageHandler.argsForCall[0][0]).toEqual(message1); // Received on the first stable websocket connection.
-        expect(messageHandler.argsForCall[1][0]).toEqual(message2); // Cached in the queue when disconnected.
-        expect(messageHandler.argsForCall[2][0]).toEqual(message3); // Cached in the queue when disconnected.
-        expect(messageHandler.argsForCall[3][0]).toEqual(message4); // Received on the reconnected stable websocket connection.
+        // Received on the first stable websocket connection.
+        expect(messageHandler.argsForCall[0][0]).toEqual(message1);
+        // Cached in the queue when disconnected.
+        expect(messageHandler.argsForCall[1][0]).toEqual(message2);
+        // Cached in the queue when disconnected.
+        expect(messageHandler.argsForCall[2][0]).toEqual(message3);
+        // Received on the reconnected stable websocket connection.
+        expect(messageHandler.argsForCall[3][0]).toEqual(message4);
       });
     });
   });

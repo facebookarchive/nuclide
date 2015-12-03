@@ -10,7 +10,6 @@
  */
 
 import type {Lines, Print} from '../../types/common';
-import type {Node} from 'ast-types-flow';
 
 const flatten = require('../../utils/flatten');
 const markers = require('../../constants/markers');

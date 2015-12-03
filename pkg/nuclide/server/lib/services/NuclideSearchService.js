@@ -9,11 +9,6 @@
  * the root directory of this source tree.
  */
 
-type SearchQuery = {
-  provider: string;
-  query: string;
-}
-
 type ProviderInfo = {
   name: string;
 }
@@ -48,7 +43,10 @@ let providers;
 let fileSearchers: any = Object.create(null);
 
 // TODO (mikeo): Make this another search provider
-async function doSearchDirectory(directoryUri: string, query: string): Promise<Array<FileSearchResult>> {
+async function doSearchDirectory(
+  directoryUri: string,
+  query: string
+): Promise<Array<FileSearchResult>> {
   let search = fileSearchers[directoryUri];
   if (search === undefined) {
     const directory = remoteUri.parse(directoryUri).path;
@@ -86,7 +84,11 @@ async function getSearchProviders(cwd: string): Promise<Array<ProviderInfo>> {
   return results.filter((provider) => !!provider);
 }
 
-async function doSearchQuery(cwd: string, provider: string, query: string): Promise<SearchResponse> {
+async function doSearchQuery(
+  cwd: string,
+  provider: string,
+  query: string
+): Promise<SearchResponse> {
   const currentProvider = providers[provider];
   if (!currentProvider) {
     throw new Error(`Invalid provider: ${provider}`);

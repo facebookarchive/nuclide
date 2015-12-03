@@ -64,7 +64,9 @@ class RemoteProjectsController {
     }
 
     const updateStatus = isConnected => {
-      this._renderStatusBar(isConnected ? ConnectionState.CONNECTED : ConnectionState.DISCONNECTED, fileUri);
+      this._renderStatusBar(
+        isConnected ? ConnectionState.CONNECTED : ConnectionState.DISCONNECTED,
+        fileUri);
     };
 
     const connection = RemoteConnection.getForUri(fileUri);

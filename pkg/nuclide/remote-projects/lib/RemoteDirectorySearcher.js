@@ -12,22 +12,6 @@
 import {Observable, ReplaySubject} from 'rx';
 const {RemoteDirectory} = require('nuclide-remote-connection');
 
-type SearchResult = {
-  filePath: string;
-  matches: Array<{
-    lineText: string;
-    lineTextOffset: number;
-    matchText: string;
-    range: Array<Array<number>>
-  }>;
-};
-
-type DirectorySearchDelegate = {
-  didMatch: (result: SearchResult) => void;
-  didSearchPaths: (count: number) => void;
-  inclusions: Array<string>;
-};
-
 type RemoteDirectorySearch = {
   then: (onFullfilled: any, onRejected: any) => Promise<any>;
   cancel: () => void;
@@ -46,7 +30,11 @@ class RemoteDirectorySearcher {
     return RemoteDirectory.isRemoteDirectory(directory);
   }
 
-  search(directories: Array<RemoteDirectory>, regex: RegExp, options: Object): RemoteDirectorySearch {
+  search(
+    directories: Array<RemoteDirectory>,
+    regex: RegExp,
+    options: Object
+  ): RemoteDirectorySearch {
     // Track the files that we have seen updates for.
     const seenFiles = new Set();
 

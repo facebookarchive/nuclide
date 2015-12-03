@@ -199,63 +199,54 @@ describe('validateFormInputs', () => {
     expect(resultFromEmptyAuthMethod.errorMessage).not.toBeNull();
   });
 
-  it(
-    'rejects a profile if the Authentication Method selected is "Private Key", and ' +
-    'a Private Key File is missing', () => {
-      minimumValidParamsWithPrivateKey.pathToPrivateKey = null;
-      const resultFromNullPathToPrivateKey = validateFormInputs(
-        validProfileName,
-        minimumValidParamsWithPrivateKey,
-        defaultServerCommand,
-      );
-      expect(resultFromNullPathToPrivateKey.errorMessage).not.toBeNull();
+  it('rejects a profile if the Authentication Method selected is "Private Key", and a Private Key File is missing', () => { //eslint-disable-line max-len
+    minimumValidParamsWithPrivateKey.pathToPrivateKey = null;
+    const resultFromNullPathToPrivateKey = validateFormInputs(
+      validProfileName,
+      minimumValidParamsWithPrivateKey,
+      defaultServerCommand,
+    );
+    expect(resultFromNullPathToPrivateKey.errorMessage).not.toBeNull();
 
-      minimumValidParamsWithPrivateKey.pathToPrivateKey = '';
-      const resultFromEmptyPathToPrivateKey = validateFormInputs(
-        validProfileName,
-        minimumValidParamsWithPrivateKey,
-        defaultServerCommand,
-      );
-      expect(resultFromEmptyPathToPrivateKey.errorMessage).not.toBeNull();
-    }
-  );
+    minimumValidParamsWithPrivateKey.pathToPrivateKey = '';
+    const resultFromEmptyPathToPrivateKey = validateFormInputs(
+      validProfileName,
+      minimumValidParamsWithPrivateKey,
+      defaultServerCommand,
+    );
+    expect(resultFromEmptyPathToPrivateKey.errorMessage).not.toBeNull();
+  });
 
-  it(
-    'does not reject a profile if the Private Key File is missing, but the ' +
-    'Authentication Method selected is not "Private Key"', () => {
-      const passwordAuthMethodProfile = validateFormInputs(
-        validProfileName,
-        minimumValidParamsWithPassword,
-        defaultServerCommand,
-      );
-      expect(passwordAuthMethodProfile.validatedProfile).toBeDefined();
+  it('does not reject a profile if the Private Key File is missing, but the Authentication Method selected is not "Private Key"', () => { //eslint-disable-line max-len
+    const passwordAuthMethodProfile = validateFormInputs(
+      validProfileName,
+      minimumValidParamsWithPassword,
+      defaultServerCommand,
+    );
+    expect(passwordAuthMethodProfile.validatedProfile).toBeDefined();
 
-      const sshAgentAuthMethodProfile = validateFormInputs(
-        validProfileName,
-        minimumValidParamsWithSshAgent,
-        defaultServerCommand,
-      );
-      expect(sshAgentAuthMethodProfile.validatedProfile).toBeDefined();
-    }
-  );
+    const sshAgentAuthMethodProfile = validateFormInputs(
+      validProfileName,
+      minimumValidParamsWithSshAgent,
+      defaultServerCommand,
+    );
+    expect(sshAgentAuthMethodProfile.validatedProfile).toBeDefined();
+  });
 
   /**
    * Section: Special Cases
    */
-  it(
-    'strips a password, if it is provided and the "Password" Authentication Method ' +
-    'is chosen, and provides a warning message.', () => {
-      minimumValidParamsWithPassword.password = 'secretpassword';
-      const resultFromProfileWithPassword = validateFormInputs(
-        validProfileName,
-        minimumValidParamsWithPassword,
-        defaultServerCommand,
-      );
-      expect(resultFromProfileWithPassword.validatedProfile).toBeDefined();
-      expect(resultFromProfileWithPassword.validatedProfile.params.password).not.toBeDefined();
-      expect(resultFromProfileWithPassword.warningMessage).toBeDefined();
-    }
-  );
+  it('strips a password, if it is provided and the "Password" Authentication Method is chosen, and provides a warning message.', () => { //eslint-disable-line max-len
+    minimumValidParamsWithPassword.password = 'secretpassword';
+    const resultFromProfileWithPassword = validateFormInputs(
+      validProfileName,
+      minimumValidParamsWithPassword,
+      defaultServerCommand,
+    );
+    expect(resultFromProfileWithPassword.validatedProfile).toBeDefined();
+    expect(resultFromProfileWithPassword.validatedProfile.params.password).not.toBeDefined();
+    expect(resultFromProfileWithPassword.warningMessage).toBeDefined();
+  });
 
   it('only saves the remote server command if it is different than the "default".', () => {
     const resultFromProfileWithDefaultRSC = validateFormInputs(

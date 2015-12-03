@@ -22,8 +22,8 @@ function printObjectExpression(print: Print, node: ObjectExpression): Lines {
     markers.openScope,
     markers.scopeIndent,
     markers.scopeBreak,
-    node.properties.map((node, i, arr) => [
-      print(node),
+    node.properties.map((propNode, i, arr) => [
+      print(propNode),
       i === arr.length - 1 ? markers.scopeComma : ',',
       i === arr.length - 1 ? markers.scopeBreak : markers.scopeSpaceBreak,
     ]),
