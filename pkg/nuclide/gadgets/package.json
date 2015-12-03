@@ -1,0 +1,24 @@
+{
+  "name": "nuclide-gadgets",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "A unified panel experience for Atom",
+  "nuclide": {
+    "packageType": "Atom",
+    "testRunner": "apm"
+  },
+  "activationCommands": {
+  },
+  "engines": {
+    "atom": ">=1.1.0"
+  },
+  "devDependencies": {
+    "nuclide-external-interfaces": "0.0.0"
+  },
+  "_atomModuleCache": {
+    "extensions": {
+      ".node": []
+    }
+  }
+}
