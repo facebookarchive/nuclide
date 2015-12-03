@@ -13,7 +13,11 @@ import React from 'react-for-atom';
 import path from 'path';
 import {toJsString} from 'nuclide-commons';
 
-export default class Panel extends React.Component {
+export default class Inspector extends React.Component {
+
+  getTitle(): string {
+    return 'RN Element Inspector';
+  }
 
   render(): ?ReactElement {
     return <div style={{width: '100%', height: '100%'}} />;
@@ -41,3 +45,5 @@ export default class Panel extends React.Component {
   }
 
 }
+
+Inspector.gadgetId = 'nuclide-react-native-inspector';
