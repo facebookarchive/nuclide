@@ -16,6 +16,7 @@ import type {
 
 import type {SshHandshakeErrorType} from 'nuclide-remote-connection/lib/SshHandshake';
 
+import {notifySshHandshakeError} from './notification';
 import AuthenticationPrompt from './AuthenticationPrompt';
 import ConnectionDetailsPrompt from './ConnectionDetailsPrompt';
 import IndeterminateProgressBar from './IndeterminateProgressBar';
@@ -93,7 +94,7 @@ export default class ConnectionDialog extends React.Component<DefaultProps, Prop
         config: SshConnectionConfiguration,
       ) => {
         this.close(); // Close the dialog.
-        atom.notifications.addError(error.message, {dismissable: true});
+        notifySshHandshakeError(errorType, error, config);
         this.props.onError(error, config);
         logger.debug(error);
       },
