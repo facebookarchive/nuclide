@@ -41,6 +41,7 @@ class Activation {
   }
 
   dispose() {
+    this.commands.deactivate();
     this._disposables.dispose();
   }
 }

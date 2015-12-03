@@ -16,6 +16,7 @@ import type {Gadget} from './Gadget';
  * "action creators" in vanilla Flux.
  */
 export type Commands = {
+  deactivate(): void;
   registerGadget(gadget: Gadget): void;
   showGadget(gadgetId: string): void;
 };

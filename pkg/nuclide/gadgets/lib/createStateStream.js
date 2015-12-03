@@ -30,6 +30,11 @@ export default function createStateStream(
  */
 function handleAction(state, action) {
   switch (action.type) {
+
+    case ActionTypes.DEACTIVATE: {
+      return state.set('gadgets', Immutable.Map());
+    }
+
     case ActionTypes.REGISTER_GADGET: {
       const gadgets = state.get('gadgets');
       const {gadget} = action.payload;
@@ -38,5 +43,6 @@ function handleAction(state, action) {
         gadgets.set(gadget.gadgetId, gadget),
       );
     }
+
   }
 }

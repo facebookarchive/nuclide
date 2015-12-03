@@ -23,6 +23,13 @@ export default function createCommands(observer: Rx.Observer): Commands {
 
   return {
 
+    deactivate(): void {
+      observer.onNext({
+        type: ActionTypes.DEACTIVATE,
+      });
+      observer.onCompleted();
+    },
+
     registerGadget(gadget: Gadget): void {
       observer.onNext({
         type: ActionTypes.REGISTER_GADGET,

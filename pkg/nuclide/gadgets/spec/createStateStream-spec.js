@@ -12,6 +12,7 @@
 import * as ActionTypes from '../lib/ActionTypes';
 import createStateStream from '../lib/createStateStream';
 import getInitialState from '../lib/getInitialState';
+import Immutable from 'immutable';
 import Rx from 'rx';
 
 describe('createStateStream', () => {
@@ -25,6 +26,18 @@ describe('createStateStream', () => {
     });
     const state$ = createStateStream(action$, getInitialState());
     expect(state$.getValue().get('gadgets').get(gadgetId)).toBe(gadget);
+  });
+
+  it('clears the gadget list on deactivation', () => {
+    const action$ = Rx.Observable.of({type: ActionTypes.DEACTIVATE});
+    const initialState = Immutable.Map({
+      gadgets: Immutable.Map({
+        a: {gadgetId: 'a'},
+        b: {gadgetId: 'b'},
+      }),
+    });
+    const state$ = createStateStream(action$, initialState);
+    expect(state$.getValue().get('gadgets').size).toBe(0);
   });
 
 });

@@ -10,3 +10,4 @@
  */
 
 export const REGISTER_GADGET = 'REGISTER_GADGET';
+export const DEACTIVATE = 'DEACTIVATE';
