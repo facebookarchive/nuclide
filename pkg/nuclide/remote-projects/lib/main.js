@@ -278,33 +278,30 @@ module.exports = {
       }
     }));
 
-    // Don't do require or any other expensive operations in activate().
-    subscriptions.add(atom.packages.onDidActivateInitialPackages(() => {
-      // RemoteDirectoryProvider will be called before this.
-      // If RemoteDirectoryProvider failed to provide a RemoteDirectory for a
-      // given URI, Atom will create a generic Directory to wrap that. We want
-      // to delete these instead, because those directories aren't valid/useful
-      // if they are not true RemoteDirectory objects (connected to a real
-      // real remote folder).
-      deleteDummyRemoteRootDirectories();
+    // If RemoteDirectoryProvider is called before this, and it failed
+    // to provide a RemoteDirectory for a
+    // given URI, Atom will create a generic Directory to wrap that. We want
+    // to delete these instead, because those directories aren't valid/useful
+    // if they are not true RemoteDirectory objects (connected to a real
+    // real remote folder).
+    deleteDummyRemoteRootDirectories();
 
-      // Remove remote projects added in case of reloads.
-      // We already have their connection config stored.
-      const remoteProjectsConfigAsDeserializedJson: SerializableRemoteConnectionConfiguration[] =
-        (state && state.remoteProjectsConfig) || [];
-      remoteProjectsConfigAsDeserializedJson.forEach(async config => {
-        const connection = await createRemoteConnection(config);
-        if (!connection) {
-          getLogger().info(
-            'No RemoteConnection returned on restore state trial:',
-            config.host,
-            config.cwd,
-          );
-        }
-      });
-      // Clear obsolete config.
-      atom.config.set('nuclide.remoteProjectsConfig', []);
-    }));
+    // Remove remote projects added in case of reloads.
+    // We already have their connection config stored.
+    const remoteProjectsConfigAsDeserializedJson: SerializableRemoteConnectionConfiguration[] =
+      (state && state.remoteProjectsConfig) || [];
+    remoteProjectsConfigAsDeserializedJson.forEach(async config => {
+      const connection = await createRemoteConnection(config);
+      if (!connection) {
+        getLogger().info(
+          'No RemoteConnection returned on restore state trial:',
+          config.host,
+          config.cwd,
+        );
+      }
+    });
+    // Clear obsolete config.
+    atom.config.set('nuclide.remoteProjectsConfig', []);
 
     packageSubscriptions = subscriptions;
   },
