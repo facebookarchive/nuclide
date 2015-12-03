@@ -30,6 +30,7 @@
   },
   "dependencies": {
     "immutable": "3.7.5",
+    "react-for-atom": "0.14.3",
     "rx": "3.1.1"
   }
 }

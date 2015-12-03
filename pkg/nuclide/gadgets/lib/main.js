@@ -28,12 +28,15 @@ class Activation {
     initialState = getInitialState();
     const action$ = new Rx.Subject();
     const state$ = createStateStream(action$, initialState);
-    const commands = this.commands = createCommands(action$);
+    const commands = this.commands = createCommands(action$, () => state$.getValue());
 
     const getGadgets = state => state.get('gadgets');
 
     this._disposables = new CompositeDisposable(
       action$,
+
+      // Handle all gadget URLs
+      atom.workspace.addOpener(uri => commands.openUri(uri)),
 
       // Keep the atom commands up to date with the registered gadgets.
       syncAtomCommands(state$.map(getGadgets), commands),

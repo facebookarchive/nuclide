@@ -9,17 +9,24 @@
  * the root directory of this source tree.
  */
 
-import * as GadgetUri from './GadgetUri';
 import type {Commands} from '../types/Commands';
 import type {Gadget} from '../types/Gadget';
+import type Immutable from 'immutable';
 
 import * as ActionTypes from './ActionTypes';
+import createComponentItem from './createComponentItem';
+import * as GadgetUri from './GadgetUri';
+import React from 'react-for-atom';
 import Rx from 'rx';
+import wrapGadget from './wrapGadget';
 
 /**
  * Create an object that provides commands ("action creators")
  */
-export default function createCommands(observer: Rx.Observer): Commands {
+export default function createCommands(
+  observer: Rx.Observer,
+  getState: () => Immutable.Map,
+): Commands {
 
   return {
 
@@ -30,7 +37,42 @@ export default function createCommands(observer: Rx.Observer): Commands {
       observer.onCompleted();
     },
 
+    /**
+     * Creates a new gadget instance.
+     */
+    openUri(uri: string): ?Object {
+      const parsed = GadgetUri.parse(uri);
+
+      if (parsed == null) {
+        return;
+      }
+
+      return this.createPaneItem(parsed.gadgetId);
+    },
+
+    /**
+     * Creates a new pane item for the specified gadget. This is meant to be the single point
+     * through which all pane item creation goes (new pane item creation, deserialization,
+     * splitting, reopening, etc.).
+     */
+    createPaneItem(gadgetId: string): ?Object {
+      // Look up the gadget.
+      const gadget = getState().get('gadgets').get(gadgetId);
+
+      // If there's no gadget registered with the provided ID, abort. Maybe the user just
+      // deactivated that package.
+      if (gadget == null) {
+        return;
+      }
+
+      const GadgetComponent = gadget;
+      return createComponentItem(<GadgetComponent />);
+    },
+
     registerGadget(gadget: Gadget): void {
+      // Wrap the gadget so it has Atom-specific stuff.
+      gadget = wrapGadget(gadget);
+
       observer.onNext({
         type: ActionTypes.REGISTER_GADGET,
         payload: {gadget},

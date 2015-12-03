@@ -16,7 +16,9 @@ import type {Gadget} from './Gadget';
  * "action creators" in vanilla Flux.
  */
 export type Commands = {
+  createPaneItem(gadgetId: string): ?Object;
   deactivate(): void;
+  openUri(uri: string): ?Object;
   registerGadget(gadget: Gadget): void;
   showGadget(gadgetId: string): void;
   unregisterGadget(gadgetId: string): void;
