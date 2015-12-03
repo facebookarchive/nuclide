@@ -135,7 +135,7 @@ export class FlowProcess {
     // ChildProcess object.
     const serverProcess = await safeSpawn( // eslint-disable-line babel/no-await-in-loop
       pathToFlow,
-      ['server', this._root],
+      ['server', '--from', 'nuclide', this._root],
     );
     const logIt = data => {
       logger.debug('flow server: ' + data);

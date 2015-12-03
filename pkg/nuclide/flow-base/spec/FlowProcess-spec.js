@@ -87,7 +87,7 @@ describe('FlowProcess', () => {
       it('should spawn a new Flow server', () => {
         expect(require('nuclide-commons').safeSpawn).toHaveBeenCalledWith(
           'flow',
-          ['server', '/path/to/flow/root']
+          ['server', '--from', 'nuclide', '/path/to/flow/root']
         );
       });
     });
