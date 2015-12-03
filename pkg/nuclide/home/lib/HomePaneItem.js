@@ -46,7 +46,7 @@ class HomePaneItem extends HTMLElement {
     this.allHomeFragments = allHomeFragments;
 
     // Re-use styles from the Atom welcome pane where possible.
-    this.className = 'welcome pane-item padded';
+    this.className = 'nuclide-home pane-item padded';
     featureConfig.set('nuclide-home.showHome', true);
     this.render();
     return this;
@@ -77,10 +77,10 @@ class HomePaneItem extends HTMLElement {
     }
 
     const containers = [
-      <div key="welcome" className="welcome-container">
+      <div key="welcome" className="nuclide-home-container">
         <section className="text-center">
           <NuclideLogo className="nuclide-home-logo" />
-          <h1 className="welcome-title">Welcome to Nuclide</h1>
+          <h1 className="nuclide-home-title">Welcome to Nuclide</h1>
         </section>
         <section className="text-center">
           {welcomes}
@@ -89,7 +89,7 @@ class HomePaneItem extends HTMLElement {
     ];
 
     if (features.length > 0) {
-      containers.push(<div key="features" className="welcome-container">{features}</div>);
+      containers.push(<div key="features" className="nuclide-home-container">{features}</div>);
     }
 
     React.render(<div className="nuclide-home-containers">{containers}</div>, this);

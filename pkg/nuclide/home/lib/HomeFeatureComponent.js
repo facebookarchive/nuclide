@@ -16,8 +16,8 @@ class HomeFeatureComponent extends React.Component {
   render(): ReactElement {
     const {title, command} = this.props;
     return (
-      <details className="welcome-card">
-        <summary className={`welcome-summary icon icon-${this.props.icon}`}>
+      <details className="nuclide-home-card">
+        <summary className={`nuclide-home-summary icon icon-${this.props.icon}`}>
           {title}
           {command ? <button
             className="pull-right btn btn-sm nuclide-home-tryit"
@@ -25,7 +25,7 @@ class HomeFeatureComponent extends React.Component {
             Try it
           </button> : null}
         </summary>
-        <div className="welcome-detail">
+        <div className="nuclide-home-detail">
           {this.props.description}
         </div>
       </details>
