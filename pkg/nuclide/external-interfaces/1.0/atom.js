@@ -1101,6 +1101,7 @@ type AtomGlobal = {
 
   // Undocumented Methods
   getConfigDirPath(): string;
+  showSaveDialogSync(options: Object): string;
 }
 
 declare var atom: AtomGlobal;

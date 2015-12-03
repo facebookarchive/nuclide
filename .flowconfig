@@ -7,8 +7,6 @@
 
 # non-flowCheck
 .*/pkg/fb/biggrep-provider/.*
-.*/pkg/fb/nuclide-file-creation-ios/.*
-.*/pkg/fb/nuclide-file-creation/.*
 .*/pkg/fb/phabricator-comments-client/.*
 .*/pkg/fb/phabricator/.*
 .*/pkg/fb/slog-viewer/spec/.*
