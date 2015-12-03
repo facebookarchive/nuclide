@@ -45,6 +45,13 @@ export default function createCommands(observer: Rx.Observer): Commands {
       atom.workspace.open(uri, {searchAllPanes: true});
     },
 
+    unregisterGadget(gadgetId: string): void {
+      observer.onNext({
+        type: ActionTypes.UNREGISTER_GADGET,
+        payload: {gadgetId},
+      });
+    },
+
   };
 
 }

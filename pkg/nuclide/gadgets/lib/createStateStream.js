@@ -44,5 +44,14 @@ function handleAction(state, action) {
       );
     }
 
+    case ActionTypes.UNREGISTER_GADGET: {
+      const gadgets = state.get('gadgets');
+      const {gadgetId} = action.payload;
+      return state.set(
+        'gadgets',
+        gadgets.filter(gadget => gadget.gadgetId !== gadgetId),
+      );
+    }
+
   }
 }

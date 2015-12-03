@@ -13,7 +13,7 @@ import type {Commands} from '../types/Commands';
 import type {Gadget} from '../types/Gadget';
 
 import invariant from 'assert';
-import {CompositeDisposable} from 'atom';
+import {CompositeDisposable, Disposable} from 'atom';
 import createCommands from './createCommands';
 import createStateStream from './createStateStream';
 import getInitialState from './getInitialState';
@@ -66,4 +66,10 @@ export function deactivate() {
 export function consumeGadget(gadget: Gadget) {
   invariant(activation);
   activation.commands.registerGadget(gadget);
+  return new Disposable(() => {
+    if (activation == null) {
+      return;
+    }
+    activation.commands.unregisterGadget(gadget.gadgetId);
+  });
 }

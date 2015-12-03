@@ -13,6 +13,7 @@
     "atom": ">=1.1.0"
   },
   "devDependencies": {
+    "nuclide-commons": "0.0.0",
     "nuclide-external-interfaces": "0.0.0"
   },
   "consumedServices": {

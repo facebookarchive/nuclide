@@ -19,4 +19,5 @@ export type Commands = {
   deactivate(): void;
   registerGadget(gadget: Gadget): void;
   showGadget(gadgetId: string): void;
+  unregisterGadget(gadgetId: string): void;
 };

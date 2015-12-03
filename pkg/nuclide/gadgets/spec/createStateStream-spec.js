@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import {array} from 'nuclide-commons';
 import * as ActionTypes from '../lib/ActionTypes';
 import createStateStream from '../lib/createStateStream';
 import getInitialState from '../lib/getInitialState';
@@ -38,6 +39,23 @@ describe('createStateStream', () => {
     });
     const state$ = createStateStream(action$, initialState);
     expect(state$.getValue().get('gadgets').size).toBe(0);
+  });
+
+  it('removes unregistered gadgets', () => {
+    const gadgetId = 'gadget-id-value';
+    const action$ = Rx.Observable.of({
+      type: ActionTypes.UNREGISTER_GADGET,
+      payload: {gadgetId},
+    });
+    const initialState = Immutable.Map({
+      gadgets: Immutable.Map({
+        'gadget-id-value': {gadgetId},
+        other: {gadgetId: 'other'},
+      }),
+    });
+    const state$ = createStateStream(action$, initialState);
+    const gadgets = state$.getValue().get('gadgets');
+    expect(array.from(gadgets.keys())).toEqual(['other']);
   });
 
 });
