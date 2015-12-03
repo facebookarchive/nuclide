@@ -15,8 +15,11 @@ import type {Gadget} from '../types/Gadget';
 import invariant from 'assert';
 import {CompositeDisposable, Disposable} from 'atom';
 import createCommands from './createCommands';
+import createComponentItem from './createComponentItem';
 import createStateStream from './createStateStream';
+import GadgetPlaceholder from './GadgetPlaceholder';
 import getInitialState from './getInitialState';
+import React from 'react-for-atom';
 import Rx from 'rx';
 import syncAtomCommands from './syncAtomCommands';
 
@@ -76,3 +79,12 @@ export function consumeGadget(gadget: Gadget) {
     activation.commands.unregisterGadget(gadget.gadgetId);
   });
 }
+
+atom.deserializers.add({
+  name: 'GadgetPlaceholder',
+  deserialize(state) {
+    // Pane items are deserialized before the gadget providers have had a chance to register their
+    // gadgets. Therefore, we need to create a placeholder item that we later replace.
+    return createComponentItem(<GadgetPlaceholder {...state.data} />);
+  },
+});

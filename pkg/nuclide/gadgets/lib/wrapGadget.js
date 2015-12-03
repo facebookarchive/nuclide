@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import invariant from 'assert';
 import * as GadgetUri from './GadgetUri';
 import observableFromSubscribeFunction from './observableFromSubscribeFunction';
 import React from 'react-for-atom';
@@ -50,7 +51,35 @@ export default function wrapGadget(gadget: any): Object {
       React.unmountComponentAtNode(this.element);
     }
 
+    // Deserialization happens before the gadgets are available, so we need to serialize gadgets as
+    // placeholders (which are later replaced with the real thing).
+    serialize() {
+      return {
+        deserializer: 'GadgetPlaceholder',
+        data: {
+          gadgetId: this.constructor.gadgetId,
+          iconName: this.getIconName && this.getIconName(),
+
+          // It's attractive to try to do a default serialization but that's probably a bad idea
+          // because it could be costly and confusing to serialize a bunch of unneeded stuff.
+          rawInitialGadgetState: this.serializeState && this.serializeState(),
+
+          title: this.getTitle(),
+        },
+      };
+    }
+
   }
+
+  // Since we need to serialize gadgets as placeholders, we can't let users define `serialize()`
+  // (which Atom calls) directly. But that's okay because it's kinda icky boilerplate anyway. They
+  // can just handle serializing only the state (if they need serialization at all) by implementing
+  // `serializeState()`.
+  invariant(
+    !('serialize' in gadget.prototype),
+    `Gadgets can't define a "serialize" method. To provide custom serialization, `
+    + `implement "serializeState"`
+  );
 
   // Add event subscription methods.
   addSubscribeMethods(PaneItem.prototype, {

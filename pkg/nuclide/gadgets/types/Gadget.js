@@ -11,4 +11,5 @@
 
 export type Gadget = {
   gadgetId: string;
+  prototype: Object;
 };
