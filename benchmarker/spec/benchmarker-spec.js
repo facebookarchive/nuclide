@@ -36,23 +36,25 @@ const {aggregateTable, avg} = require('../benchmarker-data');
 const RUN_STATE_KEY = 'nuclide-benchmarker-run-state';
 const RESULT_DIR_ROOT = '/tmp/nuclide-benchmarker-results';
 
-// These benchmarks need to load packages fast, and re-use native module information in localstorage.
+// These benchmarks need to load packages fast, and re-use native module info in localstorage.
 // Disabling devMode allows Atom to access the data stored within the installed-packages:*.* cache.
 atom.devMode = false;
 
 // Determine what benchmarks are to be run, and with which packages installed.
-const {benchmarks, packages} = getBenchmarksAndPackages();
+const {benchmarks: allBenchmarks, packages: allPackages} = getBenchmarksAndPackages();
 
 describe('Nuclide performance', () => {
 
   // Rehydrate the state of the benchmark run following a restart or a reload.
-  let {benchmarkIndex, iteration, repetition, resultDir, resultFile} = getTestState();
+  const testState = getTestState();
+  const {benchmarkIndex, iteration, repetition} = testState;
+  let {resultDir, resultFile} = testState;
 
   // Load the benchmark we need to (continue to) run.
   // $FlowIgnore -- in this case we do not want to use a string literal in require.
-  const benchmark: Benchmark = require('../benchmarks/' + benchmarks[benchmarkIndex]);
+  const benchmark: Benchmark = require('../benchmarks/' + allBenchmarks[benchmarkIndex]);
   benchmark.index = benchmarkIndex;
-  benchmark.name = benchmarks[benchmarkIndex];
+  benchmark.name = allBenchmarks[benchmarkIndex];
 
   // Every record stored in a file has an iteration column at the start for aggregation purposes.
   const columns = benchmark.columns;
@@ -66,7 +68,7 @@ describe('Nuclide performance', () => {
     waitsForPromise({timeout: benchmark.timeout}, async () => {
 
       // Load any packages that might have been passed in from the command line.
-      await Promise.all(packages.map(p => atom.packages.activatePackage(p)));
+      await Promise.all(allPackages.map(p => atom.packages.activatePackage(p)));
 
       // If there is no result directory (probably a new overall benchmark run), create it.
       if (!resultDir) {
@@ -96,9 +98,9 @@ describe('Nuclide performance', () => {
       writeTsv(resultFile, columns, result);
 
       // Determine the next benchmark & iteration due so that when we reload Atom, it can continue.
-      const nextTestState = getNextTestState(benchmarks, benchmark, iteration, repetition);
+      const nextTestState = getNextTestState(allBenchmarks, benchmark, iteration, repetition);
 
-      // Detect if we have reached the end of an individual benchmark or of the whole run (and exit).
+      // Detect if we have reached the end of an individual benchmark or of the whole run (& exit).
       if (nextTestState.iteration === 0) {
         const processedResultFile = processResultFile(resultFile, benchmark);
         console.log(`Results for ${benchmark.name} are in ${green(processedResultFile)}`);
@@ -133,7 +135,7 @@ function getBenchmarksAndPackages(): {benchmarks: Array<string>, packages: Array
   let packages = [];
   if (process.env.BENCHMARK_PACKAGES) {
     // packages to be loaded have been passed in from the command line or shell.
-    packages = process.env.BENCHMARK_PACKAGES.split(',').map(p => p.trim()).filter(p => p != '');
+    packages = process.env.BENCHMARK_PACKAGES.split(',').map(p => p.trim()).filter(p => p !== '');
   }
   return {benchmarks, packages};
 }

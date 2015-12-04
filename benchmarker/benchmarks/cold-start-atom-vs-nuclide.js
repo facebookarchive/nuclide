@@ -17,7 +17,7 @@ const REPETITIONS = 3;
 
 import invariant from 'assert';
 import path from 'path';
-import {timedAsync, timedSync} from '../benchmarker-utils';
+import {timedAsync} from '../benchmarker-utils';
 
 const isNotTheme = pkg => pkg.getType !== 'theme';
 
@@ -49,15 +49,15 @@ module.exports = {
     atom.packages.deactivatePackages();
     atom.packages.unloadPackages();
 
-    const mode = iteration == 0 ? 'atom' : 'nuclide';
+    const mode = iteration === 0 ? 'atom' : 'nuclide';
     switch (mode) {
       case 'atom':
-        atom.packages.packageDirPaths=[];
+        atom.packages.packageDirPaths = [];
         break;
       case 'nuclide':
         const atomHome = process.env.ATOM_HOME;
         invariant(atomHome != null);
-        atom.packages.packageDirPaths=[path.join(atomHome, 'packages')];
+        atom.packages.packageDirPaths = [path.join(atomHome, 'packages')];
         break;
     }
 
@@ -112,7 +112,7 @@ module.exports = {
       slowestClaimedActivate,
     };
 
-    console.log(JSON.stringify(result));
+    console.log(JSON.stringify(result)); // eslint-disable-line no-console
     return result;
 
   },

@@ -65,7 +65,7 @@ Every benchmark module needs exports the following properties:
   * **columns**: an array of the columns of data this benchmark produces, which will get written to the TSV results file.
   * **timeout**: how long in milliseconds the benchmark should take to execute a single `run` function.
   * **iterations**: how many iterations this benchmark needs.
-  * **repetitions**: how many times ecah iteration should be called; `3` is suitable.
+  * **repetitions**: how many times each iteration should be called; `3` is suitable.
   * **run**: an async function that takes the iteration number as an argument and returns a record object - in other words a single object with a key for each of the `columns` specified above, containing a result value.
 
 A very simple benchmark might look like:

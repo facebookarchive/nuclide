@@ -51,9 +51,9 @@ function aggregateTable(
 }
 
 function avg(values: Array<string>, decimalPlaces: number = 2): string {
-  return aggregate(values, values => {
-    const sum = values.reduce((i, j) => i + j);
-    return sum / values.length;
+  return aggregate(values, processedValues => {
+    const sum = processedValues.reduce((i, j) => i + j);
+    return sum / processedValues.length;
   }, decimalPlaces);
 }
 

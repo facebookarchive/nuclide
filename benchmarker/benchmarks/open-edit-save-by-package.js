@@ -37,7 +37,7 @@ module.exports = {
     makeSizedFixture(SAMPLE_FILE, FILE_SIZE);
 
     // Activate packages for this iteration.
-    const packages = PACKAGES[iteration].split(',').map(p => p.trim()).filter(p => p != '');
+    const packages = PACKAGES[iteration].split(',').map(p => p.trim()).filter(p => p !== '');
     result.packages = packages.join(',');
     const {time: activate} = await timedAsync(
       Promise.all(packages.map(p => atom.packages.activatePackage(p)))
