@@ -61,6 +61,12 @@ const CONFIG: Array<ConfigEntry> = [
     searchTerms: [jscs.CatchClause],
     getNodes: path => [path.node.param],
   },
+
+  // function foo(a = b) {}
+  {
+    searchTerms: [jscs.AssignmentPattern],
+    getNodes: path => [path.node.left],
+  },
 ];
 
 /**

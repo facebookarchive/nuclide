@@ -192,6 +192,12 @@ const CONFIG: Array<ConfigEntry> = [
     searchTerms: [jscs.TemplateLiteral],
     getNodes: path => path.node.expressions,
   },
+
+  // function foo(a = b) {}
+  {
+    searchTerms: [jscs.AssignmentPattern],
+    getNodes: path => [path.node.right],
+  },
 ];
 
 /**

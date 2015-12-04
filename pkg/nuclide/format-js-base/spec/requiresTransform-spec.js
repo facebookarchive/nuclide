@@ -22,6 +22,7 @@ const TESTS = [
   'add-classes',
   'add-common-aliases',
   'add-constructor-arguments',
+  'add-default-params',
   'add-expressions',
   'add-function-calls',
   'add-if-elses',
