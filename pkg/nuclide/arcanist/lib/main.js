@@ -22,8 +22,8 @@ let busySignalProvider: ?BusySignalProviderBaseType = null;
 
 function getBusySignalProvider(): BusySignalProviderBaseType {
   if (busySignalProvider == null) {
-    const {BusySignalProviderBase} = require('nuclide-busy-signal-provider-base');
-    busySignalProvider = new BusySignalProviderBase();
+    const {DedupedBusySignalProviderBase} = require('nuclide-busy-signal-provider-base');
+    busySignalProvider = new DedupedBusySignalProviderBase();
   }
   return busySignalProvider;
 }
