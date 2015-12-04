@@ -10,5 +10,6 @@
  */
 
 import {BusySignalProviderBase} from './BusySignalProviderBase';
+import {DedupedBusySignalProviderBase} from './DedupedBusySignalProviderBase';
 
-export {BusySignalProviderBase};
+export {BusySignalProviderBase, DedupedBusySignalProviderBase};
