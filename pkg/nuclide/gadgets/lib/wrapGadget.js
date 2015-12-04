@@ -9,10 +9,9 @@
  * the root directory of this source tree.
  */
 
+import addObserveMethods from './addObserveMethods';
 import invariant from 'assert';
 import * as GadgetUri from './GadgetUri';
-import observableFromSubscribeFunction from './observableFromSubscribeFunction';
-import React from 'react-for-atom';
 
 /**
  * A higher order component that wraps the provided gadget to adapt it to Atom's expectations for
@@ -27,8 +26,7 @@ import React from 'react-for-atom';
  *
  * It should be noted that our approach makes it super simple to manage your gadget state using
  * React (`setState()`) but doesn't require it. If you'd like to manage it in some other way (e.g.
- * Flux), just call the `notify` function (provided as a prop) whenever your store's state changes.
- * (This is basically like using `forceUpdate()` when you have an impure `render()`.)
+ * Flux), just call `this.forceUpdate()` whenever your store's state changes.
  */
 export default function wrapGadget(gadget: any): Object {
   // We need to maintain the instance methods of the provided gadget (since that's how Atom will
@@ -37,15 +35,6 @@ export default function wrapGadget(gadget: any): Object {
   // Until then, let's just try really hard to minimize the number of things we do that the
   // component can see.
   class PaneItem extends (gadget: Object) {
-
-    componentDidUpdate(prevProps, prevState) {
-      if (super.componentDidUpdate) {
-        super.componentDidUpdate(prevProps, prevState);
-      }
-
-      // Notify Atom that the state changed.
-      this.props.notify();
-    }
 
     // Deserialization happens before the gadgets are available, so we need to serialize gadgets as
     // placeholders (which are later replaced with the real thing).
@@ -67,6 +56,13 @@ export default function wrapGadget(gadget: any): Object {
 
   }
 
+  // Add observe methods for title and icon by default. We special case these because, practically
+  // speaking, they're probably the only ones that will ever be used.
+  addObserveMethods({
+    onDidChangeTitle: instance => instance.getTitle(),
+    onDidChangeIcon: instance => instance.getIconName && instance.getIconName(),
+  })(PaneItem);
+
   // Since we need to serialize gadgets as placeholders, we can't let users define `serialize()`
   // (which Atom calls) directly. But that's okay because it's kinda icky boilerplate anyway. They
   // can just handle serializing only the state (if they need serialization at all) by implementing
@@ -76,12 +72,6 @@ export default function wrapGadget(gadget: any): Object {
     `Gadgets can't define a "serialize" method. To provide custom serialization, `
     + `implement "serializeState"`
   );
-
-  // Add event subscription methods.
-  addSubscribeMethods(PaneItem.prototype, {
-    onDidChangeTitle: 'getTitle',
-    onDidChangeIcon: 'getIconName',
-  });
 
   // Copy statics.
   for (const prop in gadget) {
@@ -111,32 +101,3 @@ const defaultMethods = {
     return GadgetUri.format({gadgetId: this.constructor.gadgetId});
   },
 };
-
-/**
- * Creates and adds a subscription method for each of the items in the provided map of subscription
- * method names to getter names.
- */
-function addSubscribeMethods(proto, events) {
-  for (const event of Object.keys(events)) {
-    const getterName = events[event];
-
-    // Only add the event subscription method if there's a corresponding getter.
-    if (!(getterName in proto)) {
-      continue;
-    }
-
-    const streamName = `_${getterName}Stream`;
-
-    // Add a subscription method to the prototype.
-    proto[event] = function(callback) {
-      let stream = this[streamName];
-      if (stream == null) {
-        const getValue = () => this[getterName]();
-        this[streamName] = stream = observableFromSubscribeFunction(this.props.subscribe)
-          .map(getValue)
-          .distinctUntilChanged();
-      }
-      return stream.subscribe(callback);
-    };
-  }
-}

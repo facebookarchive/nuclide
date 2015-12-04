@@ -79,23 +79,7 @@ export default function createCommands(
         return;
       }
 
-      // Create a mini pub-sub system for the component. This is used internally by the wrapper
-      // component (see `wrapGadget()`) to communicate state changes to Atom. Note that, even though
-      // the stream contains component states, we intentionally don't omit duplicates (i.e. using
-      // `distinctUntilChanged`) since the event may be communicating an external side-effect (e.g.
-      // in a Flux store).
-      const state$ = new Rx.Subject();
-      const notify = () => state$.onNext(reactElement.state);
-      // Wrap each callback so that we don't leak the fact that it's implemented with observables
-      // (by accepting Observers as well as callbacks).
-      const subscribe = cb => state$.forEach(() => cb());
-
       const GadgetComponent = gadget;
-      props = {
-        ...props,
-        notify,
-        subscribe,
-      };
       const reactElement = createComponentItem(<GadgetComponent {...props} />);
 
       observer.onNext({
