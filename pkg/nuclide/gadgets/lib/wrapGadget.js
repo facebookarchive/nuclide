@@ -31,8 +31,11 @@ import React from 'react-for-atom';
  * (This is basically like using `forceUpdate()` when you have an impure `render()`.)
  */
 export default function wrapGadget(gadget: any): Object {
-  // We want to maintain the instance methods of the provided gadget, so we create our new one by
-  // subclassing. /:
+  // We need to maintain the instance methods of the provided gadget (since that's how Atom will
+  // interact with it), so we create our new one by subclassing. /: Once the environment supports
+  // Proxies, we shoulds switch to them (so that we're not trampling on the component's namespace).
+  // Until then, let's just try really hard to minimize the number of things we do that the
+  // component can see.
   class PaneItem extends (gadget: Object) {
 
     componentDidUpdate(prevProps, prevState) {
