@@ -101,10 +101,7 @@ class ProcessInfo extends DebuggerProcessInfo {
   }
 
   attach(): DebuggerProcess {
-    const packagePath = atom.packages.resolvePackagePath('nuclide-debugger-lldb');
-    invariant(packagePath);
-
-    const lldbPath = path.join(packagePath, 'scripts/main.py');
+    const lldbPath = path.join(__dirname, '../scripts/main.py');
     const args = [lldbPath, '-p', String(this._pid)];
     if (this._basepath) {
       args.push('--basepath', this._basepath);
