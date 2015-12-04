@@ -1167,27 +1167,37 @@ declare class atom$Repository {
 }
 
 // One of text or snippet is required.
+// TODO(hansonw): use a union + intersection type
 type atom$AutocompleteSuggestion = {
-  text: ?string;
-  snippet: ?string;
-  replacementPrefix: ?string;
-  rightLabel: ?string;
-  rightLabelHTML: ?string;
-  className: ?string;
-}
+  text?: string,
+  snippet?: string,
+  replacementPrefix?: string;
+  type?: ?string;
+  leftLabel?: ?string;
+  leftLabelHTML?: ?string;
+  rightLabel?: ?string;
+  rightLabelHTML?: ?string;
+  className?: ?string;
+  iconHTML?: ?string;
+  description?: ?string;
+  descriptionMoreURL?: ?string;
+};
 
 type atom$AutocompleteRequest = {
   editor: TextEditor;
+  bufferPosition: atom$Point;
+  scopeDescriptor: string;
   prefix: string;
   activatedManually: boolean;
 }
 
 type atom$AutocompleteProvider = {
   selector: string;
-  disableForSelector: string;
-  inclusionPriority: number;
   getSuggestions:
       (request: atom$AutocompleteRequest) => Promise<?Array<atom$AutocompleteSuggestion>>;
+  disableForSelector?: string;
+  inclusionPriority?: number;
+  excludeLowerPriority?: boolean;
 }
 
 // Undocumented API.

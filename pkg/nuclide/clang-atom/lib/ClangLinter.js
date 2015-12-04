@@ -25,7 +25,7 @@ module.exports = {
   grammarScopes: ['source.c', 'source.cpp', 'source.objc', 'source.objcpp'],
   scope: 'file',
   lintOnFly: true,
-  lint(textEditor: TextEditor): Promise<Array<Object>> {
+  lint(textEditor: TextEditor): Promise<Array<?Object>> {
     return trackOperationTiming(
       'nuclide-clang-atom:lint',
       async () => {

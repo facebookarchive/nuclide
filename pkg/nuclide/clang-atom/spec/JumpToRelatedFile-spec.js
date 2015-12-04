@@ -12,37 +12,32 @@ const JumpToRelatedFile = require('../lib/JumpToRelatedFile');
 
 describe('JumpToRelatedFile', () => {
   const relatedFiles = ['dir/Test.h', 'dir/Test.m', 'dir/TestInternal.h'];
+  let currentFile = '';
+  const relatedFileFinder: any = {
+    find: () => ({relatedFiles, index: relatedFiles.indexOf(currentFile)}),
+  };
 
   describe('@getNextRelatedFile_', () => {
     it('gets next related file at the start of the sequence', () => {
-      const currentFile = 'dir/Test.h';
+      currentFile = 'dir/Test.h';
 
-      const jumpToRelatedFile = new JumpToRelatedFile({
-        find: () => ({relatedFiles, index: relatedFiles.indexOf(currentFile)}),
-      });
-
+      const jumpToRelatedFile = new JumpToRelatedFile(relatedFileFinder);
       expect(jumpToRelatedFile.getNextRelatedFile(currentFile))
           .toEqual('dir/TestInternal.h');
     });
 
     it('gets next related file in the middle of the sequence', () => {
-      const currentFile = 'dir/Test.m';
+      currentFile = 'dir/Test.m';
 
-      const jumpToRelatedFile = new JumpToRelatedFile({
-        find: () => ({relatedFiles, index: relatedFiles.indexOf(currentFile)}),
-      });
-
+      const jumpToRelatedFile = new JumpToRelatedFile(relatedFileFinder);
       expect(jumpToRelatedFile.getNextRelatedFile(currentFile))
           .toEqual('dir/Test.h');
     });
 
     it('gets next related file at the end of the sequence', () => {
-      const currentFile = 'dir/TestInternal.h';
+      currentFile = 'dir/TestInternal.h';
 
-      const jumpToRelatedFile = new JumpToRelatedFile({
-        find: () => ({relatedFiles, index: relatedFiles.indexOf(currentFile)}),
-      });
-
+      const jumpToRelatedFile = new JumpToRelatedFile(relatedFileFinder);
       expect(jumpToRelatedFile.getNextRelatedFile(currentFile))
           .toEqual('dir/Test.m');
     });
@@ -50,34 +45,25 @@ describe('JumpToRelatedFile', () => {
 
   describe('@getPreviousRelatedFile_', () => {
     it('gets previous related file at the start of the sequence', () => {
-      const currentFile = 'dir/Test.h';
+      currentFile = 'dir/Test.h';
 
-      const jumpToRelatedFile = new JumpToRelatedFile({
-        find: () => ({relatedFiles, index: relatedFiles.indexOf(currentFile)}),
-      });
-
+      const jumpToRelatedFile = new JumpToRelatedFile(relatedFileFinder);
       expect(jumpToRelatedFile.getPreviousRelatedFile(currentFile))
           .toEqual('dir/Test.m');
     });
 
     it('gets previous related file in the middle of the sequence', () => {
-      const currentFile = 'dir/Test.m';
+      currentFile = 'dir/Test.m';
 
-      const jumpToRelatedFile = new JumpToRelatedFile({
-        find: () => ({relatedFiles, index: relatedFiles.indexOf(currentFile)}),
-      });
-
+      const jumpToRelatedFile = new JumpToRelatedFile(relatedFileFinder);
       expect(jumpToRelatedFile.getPreviousRelatedFile(currentFile))
           .toEqual('dir/TestInternal.h');
     });
 
     it('gets previous related file at the end of the sequence', () => {
-      const currentFile = 'dir/TestInternal.h';
+      currentFile = 'dir/TestInternal.h';
 
-      const jumpToRelatedFile = new JumpToRelatedFile({
-        find: () => ({relatedFiles, index: relatedFiles.indexOf(currentFile)}),
-      });
-
+      const jumpToRelatedFile = new JumpToRelatedFile(relatedFileFinder);
       expect(jumpToRelatedFile.getPreviousRelatedFile(currentFile))
           .toEqual('dir/Test.h');
     });

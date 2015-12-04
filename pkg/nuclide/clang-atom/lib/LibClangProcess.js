@@ -8,12 +8,20 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-const {getServiceByNuclideUri} = require('nuclide-client');
-const {Point} = require('atom');
+
+import type {
+  ClangCompileResult,
+  ClangCompletionsResult,
+  ClangDeclarationResult,
+} from 'nuclide-clang';
+
+/* $FlowFixMe: remote connection is not typed yet */
+import {getServiceByNuclideUri} from 'nuclide-remote-connection';
+import {Point} from 'atom';
 
 class LibClangProcess {
 
-  async getDiagnostics(editor: TextEditor): Promise<Array<mixed>> {
+  async getDiagnostics(editor: TextEditor): Promise<ClangCompileResult> {
     const src = editor.getPath();
     const contents = editor.getText();
 
@@ -21,7 +29,7 @@ class LibClangProcess {
         .compile(src, contents);
   }
 
-  getCompletions(editor: TextEditor): Promise {
+  async getCompletions(editor: TextEditor): Promise<ClangCompletionsResult> {
     const src = editor.getPath();
     const cursor = editor.getLastCursor();
     const range = cursor.getCurrentWordBufferRange({
@@ -44,7 +52,11 @@ class LibClangProcess {
    * If a location can be found for the declaration, it will be available via
    * the 'location' field on the returned object.
    */
-  getDeclaration(editor: TextEditor, line: number, column: number): Promise {
+  getDeclaration(
+    editor: TextEditor,
+    line: number,
+    column: number,
+  ): Promise<?ClangDeclarationResult> {
     const src = editor.getPath();
     return getServiceByNuclideUri('ClangService', src)
         .getDeclaration(src, editor.getText(), line, column);

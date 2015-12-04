@@ -9,14 +9,16 @@
  * the root directory of this source tree.
  */
 
+import type RelatedFileFinder from './RelatedFileFinder';
+
+import {trackOperationTiming} from 'nuclide-analytics';
+
 const GRAMMARS = [
   'source.c',
   'source.cpp',
   'source.objc',
   'source.objcpp',
 ];
-
-import {trackOperationTiming} from 'nuclide-analytics';
 
 module.exports =
 /**
@@ -26,6 +28,8 @@ module.exports =
  */
 class JumpToRelatedFile {
   _commandSubscriptionsMap: Map;
+  _relatedFileFinder: RelatedFileFinder;
+  _languageListener: ?Disposable;
 
   constructor(relatedFileFinder: RelatedFileFinder) {
     this._relatedFileFinder = relatedFileFinder;
@@ -48,13 +52,14 @@ class JumpToRelatedFile {
 
   disable(): void {
     // The feature is already disabled.
-    if (!this._languageListener) {
+    const languageListener = this._languageListener;
+    if (!languageListener) {
       return;
     }
 
     this._commandSubscriptionsMap.forEach(subscription => subscription.dispose());
     this._commandSubscriptionsMap.clear();
-    this._languageListener.dispose();
+    languageListener.dispose();
     this._languageListener = null;
   }
 
@@ -68,14 +73,20 @@ class JumpToRelatedFile {
       textEditorEl,
       {
         'autocomplete-plus-clang:jump-to-next-related-file': () => {
-          trackOperationTiming(
-            'autocomplete-plus-clang:jump-to-next-related-file',
-            () => this._open(this.getNextRelatedFile(textEditor.getPath())));
+          const path = textEditor.getPath();
+          if (path) {
+            trackOperationTiming(
+              'autocomplete-plus-clang:jump-to-next-related-file',
+              () => this._open(this.getNextRelatedFile(path)));
+          }
         },
         'autocomplete-plus-clang:jump-to-previous-related-file': () => {
-          trackOperationTiming(
-            'autocomplete-plus-clang:jump-to-previous-related-file',
-            () => this._open(this.getPreviousRelatedFile(textEditor.getPath())));
+          const path = textEditor.getPath();
+          if (path) {
+            trackOperationTiming(
+              'autocomplete-plus-clang:jump-to-previous-related-file',
+              () => this._open(this.getPreviousRelatedFile(path)));
+          }
         },
       });
     this._commandSubscriptionsMap.set(textEditor, commandSubscription);

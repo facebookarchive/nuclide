@@ -30,7 +30,7 @@ describe('AutocompleteProvider', () => {
         },
         {
           spelling: ' ',
-          isPlaceholder: false,
+          isPlaceHolder: false,
         },
         {
           spelling: 'arg2:',
@@ -42,7 +42,7 @@ describe('AutocompleteProvider', () => {
         },
         {
           spelling: ' ',
-          isPlaceholder: false,
+          isPlaceHolder: false,
         },
         {
           spelling: 'Argument3:',
@@ -79,7 +79,7 @@ describe('AutocompleteProvider', () => {
         },
         {
           spelling: ' ',
-          isPlaceholder: false,
+          isPlaceHolder: false,
         },
         {
           spelling: 'arg2:',
@@ -91,7 +91,7 @@ describe('AutocompleteProvider', () => {
         },
         {
           spelling: ' ',
-          isPlaceholder: false,
+          isPlaceHolder: false,
         },
         {
           spelling: 'Argument3:',
@@ -103,7 +103,7 @@ describe('AutocompleteProvider', () => {
         },
         {
           spelling: ' ',
-          isPlaceholder: false,
+          isPlaceHolder: false,
         },
         {
           spelling: 'test123',
@@ -141,7 +141,7 @@ describe('AutocompleteProvider', () => {
         },
         {
           spelling: ' ',
-          isPlaceholder: false,
+          isPlaceHolder: false,
         },
         {
           spelling: 'arg2:',
@@ -170,11 +170,11 @@ describe('AutocompleteProvider', () => {
         },
         {
           spelling: ' ',
-          isPlaceholder: false,
+          isPlaceHolder: false,
         },
         {
           spelling: 'arg2',
-          isPlaceholder: false,
+          isPlaceHolder: false,
         },
         {
           spelling: 'arg2:',
@@ -203,11 +203,11 @@ describe('AutocompleteProvider', () => {
         },
         {
           spelling: '   ',
-          isPlaceholder: false,
+          isPlaceHolder: false,
         },
         {
           spelling: 'arg2',
-          isPlaceholder: true,
+          isPlaceHolder: true,
         },
         {
           spelling: 'arg2:',
@@ -238,7 +238,7 @@ describe('AutocompleteProvider', () => {
         },
         {
           spelling: ' ',
-          isPlaceholder: false,
+          isPlaceHolder: false,
         },
         {
           spelling: 'arg2:',

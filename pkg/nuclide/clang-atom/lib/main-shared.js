@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type LibClangProcess from './LibClangProcess';
+
 /**
  * This shared code exists to workaround a race condition where we cannot be sure
  * whether the linter package or this package is activated first. If/when linter

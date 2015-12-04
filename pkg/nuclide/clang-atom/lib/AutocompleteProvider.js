@@ -11,12 +11,13 @@
 
 import type {Point} from 'atom';
 import type LibClangProcess from './LibClangProcess';
+import type {ClangCompletion} from 'nuclide-clang';
 
 const MAX_LINE_LENGTH = 120;
 const TAB_LENGTH = 2;
 
 function getCompletionBody(
-  completion: Completion,
+  completion: ClangCompletion,
   columnOffset: number,
   indentation: number
 ): string {
@@ -31,7 +32,7 @@ function getCompletionBody(
 }
 
 function getCompletionBodyMultiLine(
-  completion: Completion,
+  completion: ClangCompletion,
   columnOffset: number,
   indentation: number
 ): ?string {
@@ -118,7 +119,7 @@ function _convertArgsToMultiLineSnippet(
   }, '');
 }
 
-function getCompletionBodyInline(completion: Completion): string {
+function getCompletionBodyInline(completion: ClangCompletion): string {
   let body = '';
   let placeHolderCnt = 0;
   completion.chunks.forEach((chunk) => {
@@ -141,8 +142,8 @@ class AutocompleteProvider {
   }
 
   async getAutocompleteSuggestions(
-      request: {editor: TextEditor; bufferPosition: Point; scopeDescriptor: any; prefix: string}):
-      Promise<Array<{snippet: string; rightLabel: string}>> {
+    request: atom$AutocompleteRequest
+  ): Promise<Array<atom$AutocompleteSuggestion>> {
     const {editor, bufferPosition: cursorPosition, prefix} = request;
     const indentation = editor.indentationForBufferRow(cursorPosition.row);
     const column = cursorPosition.column;

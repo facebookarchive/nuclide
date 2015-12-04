@@ -78,7 +78,43 @@ export type ClangCursorExtent = {
   end: {line: number; column: number};
 };
 
-export type Declaration = {
+export type ClangCompileResult = {
+  diagnostics: Array<{
+    spelling: string;
+    severity: number;
+    location: {
+      column: number;
+      file: NuclideUri;
+      line: number;
+    };
+    ranges: any;
+  }>
+};
+
+export type ClangCompletion = {
+  chunks: Array<{spelling: string, isPlaceHolder: boolean}>,
+  first_token?: ?string,
+  result_type?: string,
+  spelling?: string,
+};
+
+export type ClangCompletionsResult = {
+  file: string,
+  completions: Array<ClangCompletion>,
+  line: number,
+  column: number,
+  prefix: string,
+};
+
+export type ClangDeclarationResult = {
+  file: NuclideUri;
+  line: number;
+  column: number;
+  spelling: ?string;
+  extent: ClangCursorExtent;
+};
+
+export type ClangDeclaration = {
   name: string,
   type: ClangCursorType,
   cursor_usr: ?string,
@@ -88,20 +124,11 @@ export type Declaration = {
 // Fetches information for a declaration and all its parents.
 // The first element in info will be for the declaration itself,
 // the second will be for its direct semantic parent (if it exists), etc.
-export type DeclarationInfo = {
-  file: NuclideUri,
+export type ClangDeclarationInfoResult = {
+  src: NuclideUri,
   line: number,
   column: number,
-  info: Array<Declaration>,
-};
-
-// The result of a getDeclaration call.
-export type DeclarationResult = {
-  file: NuclideUri;
-  line: number;
-  column: number;
-  spelling: ?string;
-  extent: ClangCursorExtent;
+  info?: Array<ClangDeclaration>,
 };
 
 export const ClangCursorTypes: {[key: ClangCursorType]: ClangCursorType} =
@@ -269,18 +296,7 @@ function _getNextRequestId(): string {
 export async function compile(
   src: NuclideUri,
   contents: string
-): Promise<{
-  diagnostics: Array<{
-    spelling: string;
-    severity: number;
-    location: {
-      column: number;
-      file: NuclideUri;
-      line: number;
-    };
-    ranges: any;
-  }>
-}> {
+): Promise<ClangCompileResult> {
   const flags = await clangFlagsManager.getFlagsForSrc(src);
   return _makeRequest({
     method: 'compile',
@@ -290,8 +306,14 @@ export async function compile(
   });
 }
 
-export async function getCompletions(src: NuclideUri, contents: string,
-  line: number, column: number, tokenStartColumn: number, prefix: string): Promise<any> {
+export async function getCompletions(
+  src: NuclideUri,
+  contents: string,
+  line: number,
+  column: number,
+  tokenStartColumn: number,
+  prefix: string,
+): Promise<ClangCompletionsResult> {
   const flags = await clangFlagsManager.getFlagsForSrc(src);
   return _makeRequest({
     method: 'get_completions',
@@ -313,7 +335,7 @@ export async function getCompletions(src: NuclideUri, contents: string,
  *   spelling: The spelling of the entity.
  */
 export async function getDeclaration(src: NuclideUri, contents: string, line: number, column: number
-): Promise<?DeclarationResult> {
+): Promise<?ClangDeclarationResult> {
   const flags = await clangFlagsManager.getFlagsForSrc(src);
   const data = await _makeRequest({
     method: 'get_declaration',
@@ -343,7 +365,7 @@ export async function getDeclarationInfo(
   contents: string,
   line: number,
   column: number
-): Promise<?DeclarationInfo> {
+): Promise<ClangDeclarationInfoResult> {
   const flags = await clangFlagsManager.getFlagsForSrc(src);
   return _makeRequest({
     method: 'get_declaration_info',

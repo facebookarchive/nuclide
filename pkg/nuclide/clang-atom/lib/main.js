@@ -10,23 +10,15 @@
  */
 
 import type {Point} from 'atom';
+import type LibClangProcess from './LibClangProcess';
+import type {HyperclickProvider} from 'hyperclick-interfaces';
+
+import invariant from 'assert';
 
 import {trackOperationTiming} from 'nuclide-analytics';
 
-let libClangProcess = null;
-let editorSubscription = null;
+let libClangProcess = (null : ?LibClangProcess);
 let jumpToRelatedFile = null;
-let diagnostics = [];
-
-// One of text our snippet is required.
-type Suggestion = {
-  text: ?string;
-  snippet: ?string;
-  replacementPrefix: ?string;
-  rightLabel: ?string;
-  rightLabelHTML: ?string;
-  className: ?string;
-}
 
 module.exports = {
   activate() {
@@ -46,8 +38,9 @@ module.exports = {
   },
 
   /** Provider for autocomplete service. */
-  createAutocompleteProvider(): mixed {
+  createAutocompleteProvider(): atom$AutocompleteProvider {
     const {AutocompleteProvider} = require('./AutocompleteProvider');
+    invariant(libClangProcess);
     const autocompleteProvider = new AutocompleteProvider(libClangProcess);
 
     return {
@@ -55,8 +48,8 @@ module.exports = {
       inclusionPriority: 1,
 
       getSuggestions(
-          request: {editor: TextEditor; bufferPosition: Point; scopeDescriptor: any; prefix: string}
-          ): Promise<Array<Suggestion>> {
+        request: atom$AutocompleteRequest
+      ): Promise<Array<atom$AutocompleteSuggestion>> {
         return trackOperationTiming('nuclide-clang-atom:getAutocompleteSuggestions',
           () => autocompleteProvider.getAutocompleteSuggestions(request));
       },
@@ -64,25 +57,13 @@ module.exports = {
   },
 
   deactivate() {
-    // TODO(mbolin): Find a way to unregister the AutocompleteDelegate from
-    // ServiceHub, or set a boolean in the AutocompleteDelegate to always return
-    // empty results.
-
-    if (editorSubscription) {
-      editorSubscription.off();
-      editorSubscription = null;
-    }
-
     if (jumpToRelatedFile) {
       jumpToRelatedFile.disable();
       jumpToRelatedFile = null;
     }
-
-    diagnostics.forEach((diagnostic) => diagnostic.dispose());
-    diagnostics = [];
   },
 
-  getHyperclickProvider() {
+  getHyperclickProvider(): HyperclickProvider {
     return require('./HyperclickProvider');
   },
 

@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {ClangCursorExtent} from 'nuclide-clang';
+
 const {Range} = require('atom');
 
 // Matches something like: textA: or textA:textB:
@@ -36,7 +38,7 @@ function findWholeRangeOfSymbol(
     text: string,
     textRange: Range,
     spelling: ?string,
-    extent: mixed,  /* TODO (jessicalin) Move ClangCursorExtent somewhere it can be imported */
+    extent: ClangCursorExtent,
   ): Array<atom$Range> {
   if (!spelling || text === spelling) {
     return [textRange];

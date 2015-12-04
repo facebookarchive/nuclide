@@ -8,6 +8,12 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
+
+import type LibClangProcess from './LibClangProcess';
+import type {HyperclickSuggestion} from 'hyperclick-interfaces';
+
+import invariant from 'assert';
+
 const {goToLocation} = require('nuclide-atom-helpers');
 const findWholeRangeOfSymbol = require('./findWholeRangeOfSymbol');
 
@@ -19,10 +25,11 @@ const GRAMMARS = new Set([
 ]);
 
 let libClangProcessSingleton;
-function getLibClangProcess() {
+function getLibClangProcess(): LibClangProcess {
   if (!libClangProcessSingleton) {
     libClangProcessSingleton = require('./main-shared').getSharedLibClangProcess();
   }
+  invariant(libClangProcessSingleton);
   return libClangProcessSingleton;
 }
 
@@ -31,7 +38,11 @@ module.exports = {
   // fb-diffs-and-tasks.
   priority: 10,
   providerName: 'nuclide-clang-atom',
-  async getSuggestionForWord(textEditor: TextEditor, text: string, range: atom$Range) {
+  async getSuggestionForWord(
+    textEditor: TextEditor,
+    text: string,
+    range: atom$Range,
+  ): Promise<?HyperclickSuggestion> {
     if (!GRAMMARS.has(textEditor.getGrammar().scopeName)) {
       return null;
     }
