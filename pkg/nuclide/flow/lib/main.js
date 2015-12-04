@@ -83,8 +83,8 @@ module.exports = {
 
   provideBusySignal(): BusySignalProviderBaseType {
     if (!busySignalProvider) {
-      const {BusySignalProviderBase} = require('nuclide-busy-signal-provider-base');
-      busySignalProvider = new BusySignalProviderBase();
+      const {DedupedBusySignalProviderBase} = require('nuclide-busy-signal-provider-base');
+      busySignalProvider = new DedupedBusySignalProviderBase();
     }
     return busySignalProvider;
   },
