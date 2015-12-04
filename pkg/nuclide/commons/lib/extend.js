@@ -11,7 +11,7 @@
 
 import {assign} from './object';
 
-function immutableExtend(...args: Array<Object>) {
+function immutableExtend(...args: Array<Object>): Object {
   return assign({}, ...args);
 }
 

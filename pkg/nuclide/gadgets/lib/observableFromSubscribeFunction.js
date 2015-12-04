@@ -14,6 +14,6 @@ import Rx from 'rx';
 type SubscribeCallback = (...args: Array<mixed>) => mixed;
 type SubscribeFunction = (callback: SubscribeCallback) => atom$IDisposable;
 
-export default function observableFromSubscribeFunction(fn: SubscribeFunction) {
+export default function observableFromSubscribeFunction(fn: SubscribeFunction): Rx.Observable {
   return new Rx.Observable.create(observer => fn((...args) => observer.onNext(...args)));
 }

@@ -14,7 +14,7 @@ import React from 'react-for-atom';
 /**
  * Create an object suitable for use as an Atom pane item from a React element.
  */
-export default function createComponentItem(reactElement: ?ReactElement) {
+export default function createComponentItem(reactElement: ?ReactElement): HTMLElement {
   // In order to get the stateful object with the methods that Atom wants for items, we actually
   // have to mount it.
   const container = document.createElement('div');

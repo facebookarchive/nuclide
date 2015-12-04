@@ -87,7 +87,7 @@ export function deactivate() {
   activation = null;
 }
 
-export function consumeGadget(gadget: Gadget) {
+export function consumeGadget(gadget: Gadget): atom$Disposable {
   invariant(activation);
   activation.commands.registerGadget(gadget);
   return new Disposable(() => {

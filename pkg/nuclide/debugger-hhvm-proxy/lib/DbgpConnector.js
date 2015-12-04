@@ -64,7 +64,7 @@ export class DbgpConnector {
     return this._emitter.on(DBGP_CLOSE_EVENT, callback);
   }
 
-  onError(callback: () => void): Disposable {
+  onError(callback: (error: string) => void): Disposable {
     return this._emitter.on(DBGP_ERROR_EVENT, callback);
   }
 

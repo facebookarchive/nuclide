@@ -9,15 +9,14 @@
  * the root directory of this source tree.
  */
 
-import {TextEventDispatcher as TED} from './TextEventDispatcher';
-// Flow complains if I use the same name for the type and the value :(
-export type TextEventDispatcher = TED;
+import {TextEventDispatcher} from './TextEventDispatcher';
+export type {TextEventDispatcher};
 
 let dispatcher = null;
 module.exports = {
-  getInstance() {
+  getInstance(): TextEventDispatcher {
     if (!dispatcher) {
-      dispatcher = new TED();
+      dispatcher = new TextEventDispatcher();
     }
     return dispatcher;
   },

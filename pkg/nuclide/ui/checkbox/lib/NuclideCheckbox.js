@@ -29,7 +29,7 @@ export default class NuclideCheckbox extends React.Component {
     this._onChange = this._onChange.bind(this);
   }
 
-  shouldComponentUpdate(nextProps: Object, nextState: Object) {
+  shouldComponentUpdate(nextProps: Object, nextState: Object): boolean {
     return addons.PureRenderMixin.shouldComponentUpdate.call(this, nextProps, nextState);
   }
 
