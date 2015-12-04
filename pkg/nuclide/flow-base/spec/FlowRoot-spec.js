@@ -11,8 +11,6 @@
 
 import type {FlowRoot as FlowRootType} from '../lib/FlowRoot';
 
-import {uncachedRequire} from 'nuclide-test-helpers';
-
 describe('FlowRoot', () => {
   const file = '/path/to/test.js';
   const root = '/path/to';

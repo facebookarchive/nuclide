@@ -154,8 +154,6 @@ export class MerlinProcess {
    * on a single line).
    */
   runSingleCommand(command: mixed): Promise<mixed> {
-    const logger = require('nuclide-logging').getLogger();
-
     const commandString = JSON.stringify(command);
     const stdin = this._proc.stdin;
     const stdout = this._proc.stdout;
