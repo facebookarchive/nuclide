@@ -43,12 +43,21 @@ class Activation {
       // Handle all gadget URLs
       atom.workspace.addOpener(uri => commands.openUri(uri)),
 
-      // Replace all placeholders with real gadgets: both when new items are added *and* when new
-      // gadgets are registered. Placeholders may be added an any time, for example, by splitting.
+      // Re-render all pane items when (1) new items are added, (2) new gadgets are registered and
+      // (3) the active pane item changes.
       observableFromSubscribeFunction(atom.workspace.observePaneItems.bind(atom.workspace))
+        .merge(
+          observableFromSubscribeFunction(
+            atom.workspace.onDidChangeActivePaneItem.bind(atom.workspace)
+          )
+        )
         .merge(gadget$)
         .throttle(100)
-        .forEach(() => this.commands.replacePlaceholders()),
+        .forEach(() => this.commands.renderPaneItems()),
+
+      // Clean up when pane items are destroyed.
+      observableFromSubscribeFunction(atom.workspace.onDidDestroyPaneItem.bind(atom.workspace))
+        .forEach(({item}) => this.commands.destroyPaneItem(item)),
 
       // Keep the atom commands up to date with the registered gadgets.
       syncAtomCommands(gadget$, commands),

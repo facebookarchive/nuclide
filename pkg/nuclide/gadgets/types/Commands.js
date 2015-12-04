@@ -16,10 +16,12 @@ import type {Gadget} from './Gadget';
  * "action creators" in vanilla Flux.
  */
 export type Commands = {
-  createPaneItem(gadgetId: string): ?Object;
+  createPaneItem(gadgetId: string, props: Object): ?Object;
+  destroyPaneItem(item: Object): void;
   deactivate(): void;
   openUri(uri: string): ?Object;
-  replacePlaceholders(): void;
+  renderPaneItems(): void;
+  replacePlaceholder(item: Object, pane: Object, index: number): ?Object;
   registerGadget(gadget: Gadget): void;
   showGadget(gadgetId: string): void;
   unregisterGadget(gadgetId: string): void;

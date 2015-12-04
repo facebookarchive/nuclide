@@ -9,6 +9,9 @@
  * the root directory of this source tree.
  */
 
+export const CREATE_PANE_ITEM = 'CREATE_PANE_ITEM';
+export const DESTROY_PANE_ITEM = 'DESTROY_PANE_ITEM';
 export const REGISTER_GADGET = 'REGISTER_GADGET';
 export const DEACTIVATE = 'DEACTIVATE';
 export const UNREGISTER_GADGET = 'UNREGISTER_GADGET';
+export const UPDATE_PANE_ITEM = 'UPDATE_PANE_ITEM';

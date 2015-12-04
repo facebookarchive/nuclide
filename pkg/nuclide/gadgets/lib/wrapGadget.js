@@ -47,13 +47,6 @@ export default function wrapGadget(gadget: any): Object {
       this.props.notify();
     }
 
-    destroy() {
-      if (super.destroy) {
-        super.destroy();
-      }
-      React.unmountComponentAtNode(this.element);
-    }
-
     // Deserialization happens before the gadgets are available, so we need to serialize gadgets as
     // placeholders (which are later replaced with the real thing).
     serialize() {

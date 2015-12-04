@@ -18,5 +18,7 @@ import Immutable from 'immutable';
 export default function getInitialState(): Immutable.Map {
   return Immutable.Map({
     gadgets: Immutable.Map(),
+    components: Immutable.Map(),
+    props: Immutable.Map(),
   });
 }

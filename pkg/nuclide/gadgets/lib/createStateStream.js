@@ -31,8 +31,24 @@ export default function createStateStream(
 function handleAction(state, action) {
   switch (action.type) {
 
+    case ActionTypes.CREATE_PANE_ITEM: {
+      const {item, props, component} = action.payload;
+      return state.merge({
+        components: state.get('components').set(item, component),
+        props: state.get('props').set(item, props),
+      });
+    }
+
     case ActionTypes.DEACTIVATE: {
       return state.set('gadgets', Immutable.Map());
+    }
+
+    case ActionTypes.DESTROY_PANE_ITEM: {
+      const {item} = action.payload;
+      return state.merge({
+        components: state.get('components').delete(item),
+        props: state.get('props').delete(item),
+      });
     }
 
     case ActionTypes.REGISTER_GADGET: {
@@ -50,6 +66,14 @@ function handleAction(state, action) {
       return state.set(
         'gadgets',
         gadgets.filter(gadget => gadget.gadgetId !== gadgetId),
+      );
+    }
+
+    case ActionTypes.UPDATE_PANE_ITEM: {
+      const {item, props} = action.payload;
+      return state.set(
+        'props',
+        state.get('props').set(item, props),
       );
     }
 

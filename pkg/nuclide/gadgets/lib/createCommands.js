@@ -38,6 +38,19 @@ export default function createCommands(
       observer.onCompleted();
     },
 
+    destroyPaneItem(item): void {
+      if (!getState().get('components').has(item)) {
+        return;
+      }
+
+      React.unmountComponentAtNode(item.element);
+
+      observer.onNext({
+        type: ActionTypes.DESTROY_PANE_ITEM,
+        payload: {item},
+      });
+    },
+
     /**
      * Creates a new gadget instance.
      */
@@ -56,7 +69,7 @@ export default function createCommands(
      * through which all pane item creation goes (new pane item creation, deserialization,
      * splitting, reopening, etc.).
      */
-    createPaneItem(gadgetId: string, initialState?: ?Object) {
+    createPaneItem(gadgetId: string, props: Object) {
       // Look up the gadget.
       const gadget = getState().get('gadgets').get(gadgetId);
 
@@ -72,16 +85,29 @@ export default function createCommands(
       // `distinctUntilChanged`) since the event may be communicating an external side-effect (e.g.
       // in a Flux store).
       const state$ = new Rx.Subject();
-      const notify = () => state$.onNext(component.state);
+      const notify = () => state$.onNext(reactElement.state);
       // Wrap each callback so that we don't leak the fact that it's implemented with observables
       // (by accepting Observers as well as callbacks).
       const subscribe = cb => state$.forEach(() => cb());
 
       const GadgetComponent = gadget;
-      const component = createComponentItem(
-        <GadgetComponent initialState={initialState} notify={notify} subscribe={subscribe} />
-      );
-      return component;
+      props = {
+        ...props,
+        notify,
+        subscribe,
+      };
+      const reactElement = createComponentItem(<GadgetComponent {...props} />);
+
+      observer.onNext({
+        type: ActionTypes.CREATE_PANE_ITEM,
+        payload: {
+          item: reactElement,
+          component: GadgetComponent,
+          props,
+        },
+      });
+
+      return reactElement;
     },
 
     registerGadget(gadget: Gadget): void {
@@ -94,53 +120,102 @@ export default function createCommands(
       });
     },
 
-    replacePlaceholders(): void {
+    /**
+     * Make sure all of the pane items reflect the current state of the app.
+     */
+    renderPaneItems(): void {
+      const state = getState();
+
       atom.workspace.getPanes()
         .forEach(pane => {
           const items = pane.getItems();
+          const activeItem = pane.getActiveItem();
 
           // Iterate in reverse so that we can't get tripped up by the items we're adding.
           for (let index = items.length - 1; index >= 0; index--) {
             const item = items[index];
 
-            if (!(item instanceof GadgetPlaceholder)) {
+            // If the item is a placeholder, try to replace it. If we were successful, then we know
+            // the item is up-to-date, so there's no need to update it and we can move on to the
+            // next item.
+            if (this.replacePlaceholder(item, pane, index) != null) {
               continue;
             }
 
-            const gadgetId = item.getGadgetId();
-            const gadget = getState().get('gadgets').get(gadgetId);
+            const GadgetComponent = state.get('components').get(item);
 
-            if (gadget == null) {
-              // Still don't have the gadget.
+            // If there's no component for this item, it isn't a gadget.
+            if (GadgetComponent == null) {
               continue;
             }
 
-            // Now that we have the gadget, we can deserialize the state. **IMPORTANT:** if it
-            // doesn't have any (e.g. it's `== null`) that's okay! It allows components to provide a
-            // default initial state in their constructor; for example:
-            //
-            //     constructor(props) {
-            //       super(props);
-            //       this.state = props.initialState || {count: 1};
-            //     }
-            const rawInitialGadgetState = item.getRawInitialGadgetState();
-            const initialState = (
-              typeof gadget.deserializeState === 'function' ?
-                gadget.deserializeState(rawInitialGadgetState) : rawInitialGadgetState
+            // Update the props for the item.
+            const oldProps = state.get('props').get(item);
+            const newProps = {
+              ...oldProps,
+              visible: item === activeItem,
+            };
+
+            // Re-render the item with the new props.
+            React.render(
+              <GadgetComponent {...newProps} />,
+              item.element,
             );
 
-            const realItem = this.createPaneItem(gadgetId, initialState);
-
-            // Replace the placeholder with the real item. We'll add the real item first and then
-            // remove the old one so that we don't risk dropping down to zero items.
-            const isActive = pane.getActiveItem() === item;
-            pane.addItem(realItem, index + 1);
-            pane.destroyItem(item);
-            if (isActive) {
-              pane.setActiveItem(realItem);
-            }
+            observer.onNext({
+              type: ActionTypes.UPDATE_PANE_ITEM,
+              payload: {
+                item,
+                props: newProps,
+              },
+            });
           }
         });
+    },
+
+    /**
+     * Replace the item if it is a placeholder, returning the new item.
+     */
+    replacePlaceholder(item, pane, index): ?Object {
+      if (!(item instanceof GadgetPlaceholder)) {
+        return null;
+      }
+
+      const gadgetId = item.getGadgetId();
+      const gadget = getState().get('gadgets').get(gadgetId);
+
+      if (gadget == null) {
+        // Still don't have the gadget.
+        return null;
+      }
+
+      // Now that we have the gadget, we can deserialize the state. **IMPORTANT:** if it
+      // doesn't have any (e.g. it's `== null`) that's okay! It allows components to provide a
+      // default initial state in their constructor; for example:
+      //
+      //     constructor(props) {
+      //       super(props);
+      //       this.state = props.initialState || {count: 1};
+      //     }
+      const rawInitialGadgetState = item.getRawInitialGadgetState();
+      const initialState = (
+        typeof gadget.deserializeState === 'function' ?
+          gadget.deserializeState(rawInitialGadgetState) : rawInitialGadgetState
+      );
+
+      const isActive = pane.getActiveItem() === item;
+
+      const realItem = this.createPaneItem(gadgetId, {initialState, visible: isActive});
+
+      // Replace the placeholder with the real item. We'll add the real item first and then
+      // remove the old one so that we don't risk dropping down to zero items.
+      pane.addItem(realItem, index + 1);
+      pane.destroyItem(item);
+      if (isActive) {
+        pane.setActiveItem(realItem);
+      }
+
+      return realItem;
     },
 
     /**
