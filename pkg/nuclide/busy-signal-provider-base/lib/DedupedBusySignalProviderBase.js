@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {MessageDisplayOptions} from './BusySignalProviderBase';
+
 import invariant from 'assert';
 
 import {Disposable} from 'atom';
@@ -32,35 +34,44 @@ export class DedupedBusySignalProviderBase extends BusySignalProviderBase {
     this._messageRecords = new Map();
   }
 
-  displayMessage(message: string): atom$Disposable {
-    this._incrementCount(message);
+  displayMessage(message: string, options?: MessageDisplayOptions): atom$Disposable {
+    this._incrementCount(message, options);
     return new Disposable(() => {
-      this._decrementCount(message);
+      this._decrementCount(message, options);
     });
   }
 
-  _incrementCount(message: string): void {
-    let record = this._messageRecords.get(message);
+  _incrementCount(message: string, options?: MessageDisplayOptions): void {
+    const key = this._getKey(message, options);
+    let record = this._messageRecords.get(key);
     if (record == null) {
       record = {
-        disposable: super.displayMessage(message),
+        disposable: super.displayMessage(message, options),
         count: 1,
       };
-      this._messageRecords.set(message, record);
+      this._messageRecords.set(key, record);
     } else {
       record.count++;
     }
   }
 
-  _decrementCount(message: string): void {
-    const record = this._messageRecords.get(message);
+  _decrementCount(message: string, options?: MessageDisplayOptions): void {
+    const key = this._getKey(message, options);
+    const record = this._messageRecords.get(key);
     invariant(record != null);
     invariant(record.count > 0);
     if (record.count === 1) {
       record.disposable.dispose();
-      this._messageRecords.delete(message);
+      this._messageRecords.delete(key);
     } else {
       record.count--;
     }
+  }
+
+  _getKey(message: string, options?: MessageDisplayOptions): string {
+    return JSON.stringify({
+      message,
+      options,
+    });
   }
 }

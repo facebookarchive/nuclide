@@ -10,14 +10,19 @@
  */
 
 import type {BusySignalMessage} from 'nuclide-busy-signal-interfaces';
+import type {NuclideUri} from 'nuclide-remote-uri';
 
-import {Disposable} from 'atom';
+import {Disposable, CompositeDisposable} from 'atom';
 
 import {Subject} from 'rx';
 import invariant from 'assert';
 
 import {promises} from 'nuclide-commons';
 const {isPromise} = promises;
+
+export type MessageDisplayOptions = {
+  onlyForFile: NuclideUri,
+};
 
 export class BusySignalProviderBase {
   messages: Subject<BusySignalMessage>;
@@ -30,7 +35,36 @@ export class BusySignalProviderBase {
   /**
    * Displays the message until the returned disposable is disposed
    */
-  displayMessage(message: string): atom$Disposable {
+  displayMessage(message: string, options?: MessageDisplayOptions): atom$IDisposable {
+    if (options == null || options.onlyForFile == null) {
+      return this._displayMessage(message);
+    }
+
+    let displayedDisposable = null;
+    const disposeDisplayed = () => {
+      if (displayedDisposable != null) {
+        displayedDisposable.dispose();
+        displayedDisposable = null;
+      }
+    };
+    return new CompositeDisposable(
+      atom.workspace.observeActivePaneItem(item => {
+        if (item != null &&
+            typeof item.getPath === 'function' &&
+            item.getPath() === options.onlyForFile) {
+          if (displayedDisposable == null) {
+            displayedDisposable = this._displayMessage(message);
+          }
+        } else {
+          disposeDisplayed();
+        }
+      }),
+      // We can't add displayedDisposable directly because its value may change.
+      new Disposable(disposeDisplayed)
+    );
+  }
+
+  _displayMessage(message: string): atom$Disposable {
     const {busy, done} = this._nextMessagePair(message);
     this.messages.onNext(busy);
     return new Disposable(() => {
@@ -59,8 +93,8 @@ export class BusySignalProviderBase {
    * Used to indicate that some work is ongoing while the given asynchronous
    * function executes.
    */
-  reportBusy<T>(message: string, f: () => Promise<T>): Promise<T> {
-    const messageRemover = this.displayMessage(message);
+  reportBusy<T>(message: string, f: () => Promise<T>, options?: MessageDisplayOptions): Promise<T> {
+    const messageRemover = this.displayMessage(message, options);
     const removeMessage = messageRemover.dispose.bind(messageRemover);
     try {
       const returnValue = f();
