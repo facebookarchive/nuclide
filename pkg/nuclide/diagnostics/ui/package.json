@@ -33,7 +33,7 @@
     }
   },
   "dependencies": {
-    "fixed-data-table-for-atom": "0.4.3",
+    "fixed-data-table-for-atom": "0.4.5",
     "nuclide-analytics": "0.0.0",
     "nuclide-atom-helpers": "0.0.0",
     "nuclide-commons": "0.0.0",
