@@ -8,7 +8,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-import type Item from './ServiceLogger';
+
 import type {NuclideUri} from 'nuclide-remote-uri';
 
 const logger = require('nuclide-logging').getLogger();
@@ -76,7 +76,7 @@ function getServiceByNuclideUri(
  */
 function getService(serviceName: string, hostname: ?string, serviceOptions: ?any): ?any {
   /** First, try to find a 3.0 service */
-  let [serviceConfig] = newServices.filter(config => config.name === serviceName);
+  const [serviceConfig] = newServices.filter(config => config.name === serviceName);
   invariant(serviceConfig);
   if (hostname) {
     const remoteConnection = RemoteConnection.getByHostnameAndPath(hostname, null);
@@ -85,6 +85,7 @@ function getService(serviceName: string, hostname: ?string, serviceOptions: ?any
     }
     return getProxy(serviceConfig.name, serviceConfig.definition, remoteConnection.getClient());
   } else {
+    // $FlowIgnore
     return require(serviceConfig.implementation);
   }
 }

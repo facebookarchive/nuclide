@@ -19,6 +19,12 @@ export type FileWithStats = {
 
 export type FileSystemService = {
 
+  /**
+   * Copies a file to a new path.
+   * @return true if the operation was successful; false if it wasn't.
+   */
+  copy(oldPath: string, newPath: string): Promise<boolean>;
+
   exists(path: string): Promise<boolean>;
 
   findNearestFile(fileName: string, pathToDirectory: string): Promise<?string>;

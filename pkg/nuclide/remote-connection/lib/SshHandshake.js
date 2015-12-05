@@ -54,10 +54,12 @@ const ErrorType = {
   SERVER_VERSION_MISMATCH: 'SERVER_VERSION_MISMATCH',
 };
 
-export type SshHandshakeErrorType = ErrorType.UNKNOWN | ErrorType.HOST_NOT_FOUND |
-  ErrorType.CANT_READ_PRIVATE_KEY | ErrorType.SSH_CONNECT_TIMEOUT | ErrorType.SSH_CONNECT_FAILED |
-  ErrorType.SSH_AUTHENTICATION | ErrorType.DIRECTORY_NOT_FOUND | ErrorType.SERVER_START_FAILED |
-  ErrorType.SERVER_VERSION_MISMATCH;
+export type SshHandshakeErrorType = 'UNKNOWN' | 'HOST_NOT_FOUND' | 'CANT_READ_PRIVATE_KEY' |
+  'SSH_CONNECT_TIMEOUT' | 'SSH_CONNECT_FAILED' | 'SSH_AUTHENTICATION' | 'DIRECTORY_NOT_FOUND' |
+  'SERVER_START_FAILED' | 'SERVER_VERSION_MISMATCH';
+
+type SshConnectionErrorLevel = 'client-timeout' | 'client-socket' | 'protocal' |
+  'client-authentication' | 'agent' | 'client-dns';
 
 /**
  * The server is asking for replies to the given prompts for
@@ -91,7 +93,7 @@ export type SshConnectionDelegate = {
     (errorType: SshHandshakeErrorType, error: Error, config: SshConnectionConfiguration) => void;
 };
 
-const SshConnectionErrorLevelMap: Map<string, string> = new Map([
+const SshConnectionErrorLevelMap: Map<SshConnectionErrorLevel, SshHandshakeErrorType> = new Map([
   ['client-timeout', ErrorType.SSH_CONNECT_TIMEOUT],
   ['client-socket', ErrorType.SSH_CONNECT_FAILED],
   ['protocal', ErrorType.SSH_CONNECT_FAILED],
@@ -137,8 +139,8 @@ export class SshHandshake {
   }
 
   _onSshConnectionError(error: Error): void {
-    const errorType = SshConnectionErrorLevelMap.get(error.level) ||
-      SshHandshake.ErrorType.UNKNOWN;
+    const errorLevel = ((error: Object).level: SshConnectionErrorLevel);
+    const errorType = SshConnectionErrorLevelMap.get(errorLevel) || SshHandshake.ErrorType.UNKNOWN;
     this._error('Ssh connection failed.', errorType, error);
   }
 
@@ -249,12 +251,10 @@ export class SshHandshake {
       this._remotePort,
       (err, stream) => {
         if (err) {
-          /* $FlowIssue t9212378 */
           socket.end();
           logger.error(err);
           return;
         }
-        /* $FlowIssue t9212378 */
         socket.pipe(stream);
         stream.pipe(socket);
       }

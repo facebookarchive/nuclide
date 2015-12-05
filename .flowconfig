@@ -34,7 +34,7 @@
 .*/pkg/nuclide/hg-repository/.*
 .*/pkg/nuclide/ocaml/.*
 .*/pkg/nuclide/quick-open/.*
-.*/pkg/nuclide/remote-connection/.*
+.*/pkg/nuclide/remote-connection/spec/.*
 .*/pkg/nuclide/remote-projects/.*
 .*/pkg/nuclide/reprint-js/.*
 .*/pkg/nuclide/server/spec/.*

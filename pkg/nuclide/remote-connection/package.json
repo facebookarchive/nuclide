@@ -24,7 +24,9 @@
     "ssh2": "0.4.11"
   },
   "devDependencies": {
+    "nuclide-source-control-helpers": "0.0.0",
     "nuclide-test-helpers": "0.0.0",
+    "rx": "3.1.1",
     "temp": "0.8.3"
   }
 }

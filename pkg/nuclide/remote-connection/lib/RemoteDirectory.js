@@ -10,6 +10,7 @@
  */
 
 import type {FileSystemService} from 'nuclide-server/lib/services/FileSystemServiceType';
+import type {Observable} from 'rx';
 import type {RemoteConnection} from './RemoteConnection';
 import type RemoteFile from './RemoteFile';
 
@@ -251,8 +252,9 @@ class RemoteDirectory {
     entries.sort((a, b) => {
       return a.file.toLowerCase().localeCompare(b.file.toLowerCase());
     }).forEach((entry) => {
+      invariant(entry);
       const uri = this._host + path.join(this._localPath, entry.file);
-      if (entry.stats.isFile()) {
+      if (entry.stats && entry.stats.isFile()) {
         files.push(this._remote.createFile(uri));
       } else {
         directories.push(this._remote.createDirectory(uri));

@@ -8,8 +8,12 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
+import type {NuclideUri} from 'nuclide-remote-uri';
+import type {HgRepositoryDescription} from 'nuclide-source-control-helpers/lib/hg-repository';
 
 import invariant from 'assert';
+import ClientComponent from 'nuclide-server/lib/serviceframework/ClientComponent';
+import RemoteDirectory from './RemoteDirectory';
 
 const {CompositeDisposable, Disposable} = require('atom');
 const remoteUri = require('nuclide-remote-uri');
@@ -17,9 +21,7 @@ const logger = require('nuclide-logging').getLogger();
 const {EventEmitter} = require('events');
 
 const RemoteFile = require('./RemoteFile');
-const RemoteDirectory = require('./RemoteDirectory');
 const NuclideSocket = require('nuclide-server/lib/NuclideSocket');
-const ClientComponent = require('nuclide-server/lib/serviceframework/ClientComponent');
 const {getConnectionConfig, setConnectionConfig} =
   require('./RemoteConnectionConfigurationManager');
 const {getVersion} = require('nuclide-version');
@@ -55,11 +57,10 @@ function getReloadKeystrokeLabel(): ?string {
   return humanizeKeystroke(binding[0].keystrokes);
 }
 
-const _connections: Array<RemoteConnection> = [];
 const _emitter: EventEmitter = new EventEmitter();
 
 class RemoteConnection {
-  _entries: {[path: string]: RemoteFile|RemoteDirectory};
+  _entries: {[path: string]: RemoteFile | RemoteDirectory};
   _config: RemoteConnectionConfiguration;
   _initialized: ?bool;
   _closed: ?bool;
@@ -68,6 +69,9 @@ class RemoteConnection {
   _heartbeatNetworkAwayCount: number;
   _lastHeartbeatNotification: ?HeartbeatNotification;
   _client: ?ClientComponent;
+
+  /* $FlowIssue https://github.com/facebook/flow/issues/850 */
+  static _connections: Array<RemoteConnection> = [];
 
   constructor(config: RemoteConnectionConfiguration) {
     this._subscriptions = new CompositeDisposable();
@@ -360,7 +364,7 @@ class RemoteConnection {
   }
 
   _addConnection() {
-    _connections.push(this);
+    RemoteConnection._connections.push(this);
     _emitter.emit('did-add', this);
   }
 
@@ -415,7 +419,7 @@ class RemoteConnection {
       // Future getClient calls should fail, if it has a cached RemoteConnection instance.
       this._closed = true;
       // Remove from _connections to not be considered in future connection queries.
-      _connections.splice(_connections.indexOf(this), 1);
+      RemoteConnection._connections.splice(RemoteConnection._connections.indexOf(this), 1);
       _emitter.emit('did-close', this);
     }
   }
@@ -450,6 +454,7 @@ class RemoteConnection {
       const socket = new NuclideSocket(uri, options);
       this._client = new ClientComponent(socket);
     }
+    invariant(this._client);
     return this._client;
   }
 
@@ -511,14 +516,16 @@ class RemoteConnection {
    *   the hostname and ignore the initial working directory.
    */
   static getByHostnameAndPath(hostname: string, path: ?string): ?RemoteConnection {
-    return _connections.filter(connection => {
+    return RemoteConnection._connections.filter(connection => {
       return connection.getRemoteHostname() === hostname &&
           (!path || path.startsWith(connection.getPathForInitialWorkingDirectory()));
     })[0];
   }
 
   static getByHostname(hostname: string): Array<RemoteConnection> {
-    return _connections.filter(connection => connection.getRemoteHostname() === hostname);
+    return RemoteConnection._connections.filter(
+      connection => connection.getRemoteHostname() === hostname,
+    );
   }
 
   // TODO(peterhal): The implementation should move from service-manager to here
@@ -537,7 +544,7 @@ class RemoteConnection {
 module.exports = {
   RemoteConnection,
   __test__: {
-    connections: _connections,
+    connections: RemoteConnection._connections,
     getReloadKeystrokeLabel,
   },
 };

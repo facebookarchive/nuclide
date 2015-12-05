@@ -156,9 +156,7 @@ function decryptString(text: string, password: string, salt: string): string {
 
 function encryptString(text: string): {password: string, salt: string, encryptedString: string} {
   const crypto = require('crypto');
-  // $FlowIssue
   const password = crypto.randomBytes(16).toString('base64');
-  // $FlowIssue
   const salt = crypto.randomBytes(16).toString('base64');
 
   const cipher = crypto.createCipheriv(

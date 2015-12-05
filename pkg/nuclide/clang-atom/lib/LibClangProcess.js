@@ -15,7 +15,6 @@ import type {
   ClangDeclarationResult,
 } from 'nuclide-clang';
 
-/* $FlowFixMe: remote connection is not typed yet */
 import {getServiceByNuclideUri} from 'nuclide-remote-connection';
 import {Point} from 'atom';
 
