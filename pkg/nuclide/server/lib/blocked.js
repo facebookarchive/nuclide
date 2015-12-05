@@ -17,7 +17,10 @@
  * @return the interval handler.
  * To cancel, call clearInterval on the returned interval handler.
  */
-module.exports = (fn: (ms: number) => void, intervalMs = 100, thresholdMs = 50) => {
+function blocked(
+    fn: (ms: number) => void,
+    intervalMs: number = 100,
+    thresholdMs: number = 50): number {
   let start = Date.now();
 
   return setInterval(() => {
@@ -28,4 +31,6 @@ module.exports = (fn: (ms: number) => void, intervalMs = 100, thresholdMs = 50) 
     }
     start = Date.now();
   }, intervalMs);
-};
+}
+
+module.exports = blocked;

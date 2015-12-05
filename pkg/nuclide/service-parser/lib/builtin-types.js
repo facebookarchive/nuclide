@@ -18,6 +18,7 @@ import type {
   AnyType,
   MixedType,
   NamedType,
+  VoidType,
 } from './types';
 
 export const builtinLocation: BuiltinLocation = {
@@ -34,6 +35,11 @@ export function locationToString(location: Location): string {
       throw new Error('Bad location type');
   }
 }
+
+export const voidType: VoidType = {
+  location: builtinLocation,
+  kind: 'void',
+};
 
 export const anyType: AnyType = {
   location: builtinLocation,

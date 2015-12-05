@@ -32,3 +32,66 @@ declare module 'readline' {
   }
   declare function createInterface(options: CreateInterfaceOptions): Interface;
 }
+
+// T9254051 - Fix flow http/https definitions.
+declare class http$fixed$Server extends events$EventEmitter {
+  listen(port: number, hostname?: string, backlog?: number, callback?: Function): http$fixed$Server;
+  listen(path: string, callback?: Function): http$fixed$Server;
+  listen(handle: Object, callback?: Function): http$fixed$Server;
+  close(callback?: Function): http$fixed$Server;
+  address(): { port: number; fmaily: string; address: string; };
+  maxHeadersCount: number;
+}
+
+declare class http$fixed$IncomingMessage extends stream$Readable {
+  headers: Object;
+  httpVersion: string;
+  method: string;
+  trailers: Object;
+  setTimeout(msecs: number, callback: Function): void;
+  socket: any;  // TODO net.Socket
+  statusCode: number;
+  url: String;
+  connection: { destroy: () =>void };
+}
+
+declare class http$fixed$ClientRequest extends stream$Writable {
+}
+
+declare class http$fixed$ServerResponse {
+  setHeader(name: string, value: string): void;
+  statusCode: number;
+  write(value: string): void;
+  end(): void;
+}
+
+declare class https$fixed {
+  Server: typeof http$fixed$Server;
+  createServer(options: Object,
+    requestListener?:
+      (request: http$fixed$IncomingMessage, response: http$fixed$ServerResponse) => void):
+      http$fixed$Server;
+  request(
+    options: Object | string,
+    callback: (response: http$fixed$IncomingMessage) => void
+  ): http$fixed$ClientRequest;
+  get(
+    options: Object | string,
+    callback: (response: http$fixed$IncomingMessage) => void
+  ): http$fixed$ClientRequest;
+}
+
+declare class http$fixed {
+  Server: typeof http$fixed$Server;
+  createServer(requestListener?:
+      (request: http$fixed$IncomingMessage, response: http$fixed$ServerResponse) => void):
+      http$fixed$Server;
+  request(
+    options: Object | string,
+    callback: (response: http$fixed$IncomingMessage) => void
+  ): http$fixed$ClientRequest;
+  get(
+    options: Object | string,
+    callback: (response: http$fixed$IncomingMessage) => void
+  ): http$fixed$ClientRequest;
+}

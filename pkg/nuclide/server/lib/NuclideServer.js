@@ -10,14 +10,15 @@
  */
 
 const blocked = require('./blocked');
-const connect = require('connect');
+const connect: connect$module = require('connect');
 
-const http = require('http');
-const https = require('https');
+const http: http$fixed = (require('http'): any);
+const https: https$fixed = (require('https'): any);
+
 import {
   HEARTBEAT_CHANNEL,
   SERVICE_FRAMEWORK3_CHANNEL} from './config';
-const WebSocketServer = require('ws').Server;
+const WebSocketServer: Class<ws$Server> = require('ws').Server;
 const {deserializeArgs, sendJsonResponse, sendTextResponse} = require('./utils');
 const {getVersion} = require('nuclide-version');
 import invariant from 'assert';
@@ -37,17 +38,20 @@ type NuclideServerOptions = {
 export type SocketClient = {
   id: string;
   subscriptions: {[channel: string]: (event: any) => void};
-  socket: ?WebSocket;
+  socket: ?ws$WebSocket;
+  messageQueue: Array<{data: string}>;
 };
 
 class NuclideServer {
   static _theServer: ?NuclideServer;
 
-  _webServer: http.Server | https.Server;
-  _webSocketServer: WebSocketServer;
+  _webServer: http$fixed$Server;
+  _webSocketServer: ws$Server;
   _clients: {[clientId: string]: SocketClient};
-  _eventSubscriptions: Map</* eventName */ string, Set</* clientId */ string>>;
   _port: number;
+  _app: connect$Server;
+  _serviceRegistry: {[serviceName: string]: () => any};
+  _version: string;
 
   _serverComponent: ServiceFramework.ServerComponent;
 
@@ -63,8 +67,9 @@ class NuclideServer {
       trackEventLoop,
     } = options;
 
+    this._version = getVersion().toString();
     this._app = connect();
-    this._attachUtilHandlers(this._app);
+    this._attachUtilHandlers();
     if (serverKey && serverCertificate && certificateAuthorityCertificate) {
       const webServerOptions = {
         key: serverKey,
@@ -82,7 +87,6 @@ class NuclideServer {
 
     this._webSocketServer = this._createWebSocketServer();
     this._clients = {};
-    this._eventSubscriptions = new Map();
 
     this._setupServices(); // Setup 1.0 and 2.0 services.
 
@@ -96,9 +100,10 @@ class NuclideServer {
     this._serverComponent = new ServiceFramework.ServerComponent(this);
   }
 
-  _attachUtilHandlers(app) {
+  _attachUtilHandlers() {
     // Add specific method handlers.
     ['get', 'post', 'delete', 'put'].forEach((methodName) => {
+      // $FlowFixMe - Use map instead of computed property on library type.
       this._app[methodName] = (uri, handler) => {
         this._app.use(uri, (request, response, next) => {
           if (request.method.toUpperCase() !== methodName.toUpperCase()) {
@@ -112,7 +117,7 @@ class NuclideServer {
     });
   }
 
-  _createWebSocketServer(): WebSocketServer {
+  _createWebSocketServer(): ws$Server {
     const webSocketServer = new WebSocketServer({server: this._webServer});
     webSocketServer.on('connection', (socket) => this._onConnection(socket));
     webSocketServer.on('error', (error) => logger.error('WebSocketServer Error:', error));
@@ -123,12 +128,14 @@ class NuclideServer {
     // Lazy require these functions so that we could spyOn them while testing in
     // ServiceIntegrationTestHelper.
     this._serviceRegistry = {};
-    this._version = getVersion().toString();
     this._setupHeartbeatHandler();
 
     // Setup error handler.
-    this._app.use((error, request, response, next) => {
-      if (error) {
+    this._app.use((error: ?connect$Error,
+        request: http$fixed$IncomingMessage,
+        response: http$fixed$ServerResponse,
+        next: Function) => {
+      if (error != null) {
         sendJsonResponse(response, {code: error.code, message: error.message}, 500);
       } else {
         next();
@@ -186,8 +193,8 @@ class NuclideServer {
   _registerService(
       serviceName: string,
       serviceFunction: () => Promise<any>,
-      method: ?string = 'get',
-      isTextResponse: ?boolean) {
+      method: string,
+      isTextResponse: boolean) {
     if (this._serviceRegistry[serviceName]) {
       throw new Error('A service with this name is already registered:', serviceName);
     }
@@ -197,6 +204,7 @@ class NuclideServer {
 
   _registerHttpService(serviceName: string, method: string, isTextResponse: ?boolean) {
     const loweredCaseMethod = method.toLowerCase();
+    // $FlowFixMe - Use map instead of computed property.
     this._app[loweredCaseMethod](serviceName, async (request, response, next) => {
       try {
         const result = await this.callService(serviceName, deserializeArgs(request.url));
@@ -212,24 +220,7 @@ class NuclideServer {
     });
   }
 
-  /**
-   * Attach an explicit http connect handler for some services that need request/response
-   * related optimizations. e.g. readFile and writeFile uses it to stream reading and writing
-   * files (perf improvement for big files).
-   */
-  _attachUrlHandler(
-    url: string,
-    handler: (
-      request: http.IncomingMessage,
-      response: http.OutgoingMessage,
-      next: (err: Error) => void
-    ) => void,
-    method: ?string = 'get'
-  ): void {
-    this._app[method](url, handler);
-  }
-
-  _onConnection(socket: WebSocket): void {
+  _onConnection(socket: ws$WebSocket): void {
     logger.debug('WebSocket connecting');
 
 
@@ -238,9 +229,10 @@ class NuclideServer {
     socket.on('error', (e) =>
       logger.error('Client #%s error: %s', client ? client.id : 'unkown', e.message));
 
-    socket.once('message', (clientId) => {
+    socket.once('message', (clientId: string) => {
       client = this._clients[clientId] = this._clients[clientId] ||
           {subscriptions: {}, id: clientId, messageQueue: []};
+      const localClient = client;
       // If an existing client, we close its socket before listening to the new socket.
       if (client.socket) {
         client.socket.close();
@@ -248,9 +240,9 @@ class NuclideServer {
       }
       logger.info('Client #%s connecting with a new socket!', clientId);
       client.socket = socket;
-      client.messageQueue.splice(0).forEach(message =>
-        this._sendSocketMessage(client, message.data));
-      socket.on('message', (message) => this._onSocketMessage(client, message));
+      client.messageQueue.splice(0).
+          forEach(message => this._sendSocketMessage(localClient, message.data));
+      socket.on('message', (message) => this._onSocketMessage(localClient, message));
     });
 
     socket.on('close', () => {
@@ -261,16 +253,10 @@ class NuclideServer {
         client.socket = null;
       }
       logger.info('Client #%s closing a socket!', client.id);
-      // TODO: enable subscription cleanup when we have a robust reconnect scenario.
-      // for (var channel in client.subscriptions) {
-      //   this.unsubscribe(channel, subscriptions[channel]);
-      // }
-      // this._eventSubscriptions.forEach(value => value.delete(client.id));
-      // delete this._clients[client.id];
     });
   }
 
-  async _onSocketMessage(client: SocketClient, message: any): void {
+  _onSocketMessage(client: SocketClient, message: any): void {
     message = JSON.parse(message);
     invariant(message.protocol && message.protocol === SERVICE_FRAMEWORK3_CHANNEL);
     this._serverComponent.handleMessage(client, message);

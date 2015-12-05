@@ -9,13 +9,27 @@
  * the root directory of this source tree.
  */
 
-const url = require('url');
+import invariant from 'assert';
+import url from 'url';
 const request = require('request');
 const MAX_REQUEST_LENGTH = 1e6;
 
-type ResponseBody = {body: string; response: HttpResponse};
+type HttpResponse = {
+  statusCode: number;
+};
+export type ResponseBody = {body: string; response: HttpResponse};
 type QueryParams = {[key:string]: any};
 type SerializedArguments = {args: Array<string>; argTypes: Array<string>};
+
+export type RequestOptions = {
+  uri: string;
+  agentOptions?: {
+    ca: Buffer;
+    key: Buffer;
+    cert: Buffer;
+  };
+  useQuerystring?: boolean;
+};
 
 /**
  * Promisified version of the request function:
@@ -25,7 +39,7 @@ type SerializedArguments = {args: Array<string>; argTypes: Array<string>};
  * the option:
  * {useQuerystring: false}
  */
-function asyncRequest(options: any): Promise<ResponseBody> {
+function asyncRequest(options: RequestOptions): Promise<ResponseBody> {
   return new Promise((resolve, reject) => {
     if (options.useQuerystring === undefined) {
       options.useQuerystring = true;
@@ -38,12 +52,13 @@ function asyncRequest(options: any): Promise<ResponseBody> {
         if (typeof body !== 'object') {
           try {
             errorJson = JSON.parse(body);
-          } catch (realErr) {
+          } catch (e) {
             // 404 responses aren't currently JSON.
             errorJson = {message: body};
           }
         }
-        const err = new Error(errorJson.message);
+        // Cast to Object for use of code field below...
+        const err: Object = new Error(errorJson.message);
         // Success http status codes range from 200 to 299.
         err.code = errorJson.code || response.statusCode;
         reject(err);
@@ -57,7 +72,8 @@ function asyncRequest(options: any): Promise<ResponseBody> {
 /**
  * Write a text or convert to text response with an optional status code.
  */
-function sendTextResponse(response: http.ServerResponse, text: any, statusCode: ?number): void {
+function sendTextResponse(response: http$fixed$ServerResponse, text: any, statusCode: ?number):
+    void {
   if (typeof statusCode === 'number') {
     response.statusCode = statusCode;
   }
@@ -68,7 +84,8 @@ function sendTextResponse(response: http.ServerResponse, text: any, statusCode: 
 /**
  * Write a json response text with an optional status code.
  */
-function sendJsonResponse(response: http.ServerResponse, json: any, statusCode: ?number): void {
+function sendJsonResponse(response: http$fixed$ServerResponse, json: any, statusCode: ?number):
+    void {
   response.setHeader('Content-Type', 'application/json');
   sendTextResponse(response, JSON.stringify(json), statusCode);
 }
@@ -76,7 +93,8 @@ function sendJsonResponse(response: http.ServerResponse, json: any, statusCode: 
 /**
   * Parses the request body in an anyc/promise way
   */
-function parseRequestBody(httpRequest: http.IncomingMessage, isJson: ?boolean): Promise<string> {
+function parseRequestBody(httpRequest: http$fixed$IncomingMessage, isJson: ?boolean):
+    Promise<string> {
   return new Promise((resolve, reject) => {
     let body = '';
     httpRequest.on('data', (data) => {
@@ -94,8 +112,10 @@ function parseRequestBody(httpRequest: http.IncomingMessage, isJson: ?boolean): 
 /**
  * Parses the url parameters ?abc=erf&lol=432c
  */
-function getQueryParameters(requestUrl): QueryParams {
-  const {query} = url.parse(requestUrl, true);
+function getQueryParameters(requestUrl: string): QueryParams {
+  const components: ?Object = url.parse(requestUrl, true);
+  invariant(components != null);
+  const {query} = components;
   return query;
 }
 

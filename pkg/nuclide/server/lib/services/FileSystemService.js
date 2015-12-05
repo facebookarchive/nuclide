@@ -20,7 +20,7 @@ const fs = require('fs');
 const pathUtil = require('path');
 const {fsPromise} = require('nuclide-commons');
 
-import type FileWithStats from './FileSystemServiceType';
+import type {FileWithStats} from './FileSystemServiceType';
 
 
 ///////////////////

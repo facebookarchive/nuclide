@@ -14,12 +14,31 @@ import {getDefinitions} from 'nuclide-service-parser';
 import {loadServicesConfig} from './config';
 import NuclideServer from '../NuclideServer';
 import TypeRegistry from 'nuclide-service-parser/lib/TypeRegistry';
+import {builtinLocation, voidType} from 'nuclide-service-parser/lib/builtin-types';
+import type {
+  VoidType,
+  FunctionType,
+  PromiseType,
+  ObservableType,
+  Definition,
+  InterfaceDefinition,
+  Type,
+} from 'nuclide-service-parser/lib/types';
+import invariant from 'assert';
 
 import type {RequestMessage, ErrorResponseMessage, PromiseResponseMessage,
   ObservableResponseMessage} from './types';
 import type {SocketClient} from '../NuclideServer';
 
 const logger = require('nuclide-logging').getLogger();
+
+type FunctionImplementation = {localImplementation: Function; type: FunctionType};
+
+type RemoteObject = {
+  _interface: string;
+  _remoteId: ?number;
+  dispose: () => mixed;
+};
 
 export default class ServerComponent {
   _typeRegistry: TypeRegistry;
@@ -28,7 +47,7 @@ export default class ServerComponent {
    * Store a mapping from function name to a structure holding both the local implementation and
    * the type definition of the function.
    */
-  _functionsByName: Map<string, {localImplementation: Function; type: FunctionType}>;
+  _functionsByName: Map<string, FunctionImplementation>;
 
   /**
    * Store a mapping from a class name to a struct containing it's local constructor and it's
@@ -36,7 +55,7 @@ export default class ServerComponent {
    */
   _classesByName: Map<string, {localImplementation: any; definition: InterfaceDefinition}>;
 
-  _objectRegistry: Map<number, any>;
+  _objectRegistry: Map<number, RemoteObject>;
   _nextObjectId: number;
 
   _subscriptions: Map<number, Disposable>;
@@ -63,16 +82,17 @@ export default class ServerComponent {
       logger.debug(`Registering 3.0 service ${service.name}...`);
       try {
         const defs = getDefinitions(service.definition);
+        // $FlowIssue - the parameter passed to require must be a literal string.
         const localImpl = require(service.implementation);
 
         // Register type aliases.
-        defs.forEach(definition => {
+        defs.forEach((definition: Definition) => {
           const name = definition.name;
           switch (definition.kind) {
             case 'alias':
               logger.debug(`Registering type alias ${name}...`);
               if (definition.definition != null) {
-                this._typeRegistry.registerAlias(name, definition.definition);
+                this._typeRegistry.registerAlias(name, (definition.definition: Type));
               }
               break;
             case 'function':
@@ -133,8 +153,8 @@ export default class ServerComponent {
   async handleMessage(client: SocketClient, message: RequestMessage): Promise<void> {
     const requestId = message.requestId;
 
-    let returnVal: ?Promise = null;
-    let returnType: PromiseType | ObservableType | VoidType = { kind: 'void' };
+    let returnVal: ?(Promise | Observable) = null;
+    let returnType: PromiseType | ObservableType | VoidType = voidType;
     let callError;
     let hadError = false;
 
@@ -145,22 +165,28 @@ export default class ServerComponent {
           const {
             localImplementation: fcLocalImplementation,
             type: fcType,
-          } = this._functionsByName.get(message.function);
+          } = this._getFunctionImplemention(message.function);
           const fcTransfomedArgs = await Promise.all(
             message.args.map((arg, i) => this._typeRegistry.unmarshal(arg, fcType.argumentTypes[i]))
           );
 
           // Invoke function and return the results.
-          returnType = fcType.returnType;
+          invariant(fcType.returnType.kind === 'void' ||
+            fcType.returnType.kind === 'promise' ||
+            fcType.returnType.kind === 'observable');
+          returnType = (fcType.returnType: PromiseType | ObservableType | VoidType);
           returnVal = fcLocalImplementation.apply(this, fcTransfomedArgs);
           break;
         case 'MethodCall':
           // Get the object.
           const mcObject = this._objectRegistry.get(message.objectId);
+          invariant(mcObject != null);
 
           // Get the method FunctionType description.
-          const mcType: FunctionType = this._classesByName.get(mcObject._interface)
-            .definition.instanceMethods.get(message.method);
+          const className = this._classesByName.get(mcObject._interface);
+          invariant(className != null);
+          const mcType = className.definition.instanceMethods.get(message.method);
+          invariant(mcType != null);
 
           // Unmarshal arguments.
           const mcTransfomedArgs = await Promise.all(
@@ -168,14 +194,19 @@ export default class ServerComponent {
           );
 
           // Invoke message.
-          returnType = mcType.returnType;
+          invariant(mcType.returnType.kind === 'void' ||
+            mcType.returnType.kind === 'promise' ||
+            mcType.returnType.kind === 'observable');
+          returnType = (mcType.returnType: PromiseType | ObservableType | VoidType);
           returnVal = mcObject[message.method].apply(mcObject, mcTransfomedArgs);
           break;
         case 'NewObject':
+          const classDefinition = this._classesByName.get(message.interface);
+          invariant(classDefinition != null);
           const {
             localImplementation: noLocalImplementation,
             definition: noDefinition,
-          } = this._classesByName.get(message.interface);
+          } = classDefinition;
 
           // Transform arguments.
           const noTransfomedArgs = await Promise.all(message.args.map((arg, i) =>
@@ -186,19 +217,32 @@ export default class ServerComponent {
 
           // Return the object, which will automatically be converted to an id through the
           // marshalling system.
-          returnType = {kind: 'promise', type: { kind: 'named', name: message.interface }};
+          returnType = {
+            kind: 'promise',
+            type: {
+              kind: 'named',
+              name: message.interface,
+              location: builtinLocation,
+            },
+            location: builtinLocation,
+          };
           returnVal = Promise.resolve(noObject);
           break;
         case 'DisposeObject':
           // Get the object.
           const doObject = this._objectRegistry.get(message.objectId);
+          invariant(doObject != null);
 
           // Remove the object from the registry, and scrub it's id.
           doObject._remoteId = undefined;
           this._objectRegistry.delete(message.objectId);
 
           // Call the object's local dispose function.
-          returnType = {kind: 'promise', type: { kind: 'void'}};
+          returnType = {
+            kind: 'promise',
+            type: voidType,
+            location: builtinLocation,
+          };
           await doObject.dispose();
 
           // Return a void Promise
@@ -206,8 +250,9 @@ export default class ServerComponent {
           break;
         case 'DisposeObservable':
           // Dispose an in-progress observable, before it has naturally completed.
-          if (this._subscriptions.has(requestId)) {
-            this._subscriptions.get(requestId).dispose();
+          const subscription = this._subscriptions.get(requestId);
+          if (subscription != null) {
+            subscription.dispose();
             this._subscriptions.delete(requestId);
           }
           break;
@@ -236,6 +281,8 @@ export default class ServerComponent {
         }
 
         // Marshal the result, to send over the network.
+        invariant(returnVal != null);
+        // $FlowIssue
         returnVal = returnVal.then(value => this._typeRegistry.marshal(value, returnType.type));
 
         // Send the result of the promise across the socket.
@@ -270,13 +317,15 @@ export default class ServerComponent {
           returnVal = Observable.throw(new Error(
             'Expected an Observable, but the function returned something else.'));
         }
+        let returnObservable: Observable = returnVal;
 
         // Marshal the result, to send over the network.
-        returnVal = returnVal
-          .concatMap(value => this._typeRegistry.marshal(value, returnType.type));
+        returnObservable = returnObservable.concatMap(
+            // $FlowIssue
+            value => this._typeRegistry.marshal(value, returnType.type));
 
         // Send the next, error, and completion events of the observable across the socket.
-        const subscription = returnVal.subscribe(data => {
+        const subscription = returnObservable.subscribe(data => {
           const eventMessage: ObservableResponseMessage = {
             channel: 'service_framework3_rpc',
             type: 'ObservableMessage',
@@ -314,6 +363,12 @@ export default class ServerComponent {
       default:
         throw new Error(`Unkown return type ${returnType.kind}.`);
     }
+  }
+
+  _getFunctionImplemention(name: string): FunctionImplementation {
+    const result = this._functionsByName.get(name);
+    invariant(result);
+    return result;
   }
 }
 

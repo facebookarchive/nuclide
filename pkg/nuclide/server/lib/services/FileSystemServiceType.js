@@ -1,3 +1,6 @@
+'use babel';
+/* @flow */
+
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -6,9 +9,11 @@
  * the root directory of this source tree.
  */
 
+import type {Stats} from 'fs';
+
 export type FileWithStats = {
   file: string;
-  stats: ?fs.Stats;
+  stats: ?Stats;
   isSymbolicLink: boolean;
 };
 
@@ -22,7 +27,7 @@ export type FileSystemService = {
    * The lstat endpoint is the same as the stat endpoint except it will return
    * the stat of a link instead of the file the link points to.
    */
-  lstat(path: string): Promise<fs.Stats>;
+  lstat(path: string): Promise<Stats>;
 
   /**
    * Creates a new directory with the given path.
@@ -101,7 +106,7 @@ export type FileSystemService = {
    * }
    *
    */
-  stat(path: string): Promise<fs.Stats>;
+  stat(path: string): Promise<Stats>;
 
   /**
    * Removes files. Does not fail if the file doesn't exist.

@@ -8,6 +8,8 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
+
+import type {RequestOptions} from './utils';
 const url = require('url');
 const {asyncRequest} = require('./utils');
 const WebSocket = require('ws');
@@ -17,9 +19,9 @@ const logger = require('nuclide-logging').getLogger();
 import {HEARTBEAT_CHANNEL} from './config';
 
 type NuclideSocketOptions = {
-  certificateAuthorityCertificate: ?Buffer;
-  clientCertificate: ?Buffer;
-  clientKey: ?Buffer;
+  certificateAuthorityCertificate?: Buffer;
+  clientCertificate?: Buffer;
+  clientKey?: Buffer;
 };
 
 const INITIAL_RECONNECT_TIME_MS = 10;
@@ -46,7 +48,7 @@ class NuclideSocket extends EventEmitter {
   _lastHeartbeatTime: ?number;
   _heartbeatInterval: ?number;
 
-  constructor(serverUri: string, options: ?NuclideSocketOptions = {}) {
+  constructor(serverUri: string, options: NuclideSocketOptions = {}) {
     super();
     this._serverUri = serverUri;
     this._options = options;
@@ -214,7 +216,7 @@ class NuclideSocket extends EventEmitter {
     });
   }
 
-  async xhrRequest(options: any): Promise<string|any> {
+  async xhrRequest(options: RequestOptions): Promise<string> {
     const {certificateAuthorityCertificate, clientKey, clientCertificate} = this._options;
     if (certificateAuthorityCertificate && clientKey && clientCertificate) {
       options.agentOptions = {
@@ -240,8 +242,8 @@ class NuclideSocket extends EventEmitter {
     return this._sendHeartBeat();
   }
 
-  _sendHeartBeat(): Promise<void> {
-    return this.xhrRequest({
+  async _sendHeartBeat(): Promise<void> {
+    await this.xhrRequest({
       uri: HEARTBEAT_CHANNEL,
       method: 'POST',
     });

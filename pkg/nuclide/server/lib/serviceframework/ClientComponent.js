@@ -73,6 +73,7 @@ export default class ClientComponent {
                 // Generate the proxy by manually setting the prototype of the object to be the
                 // prototype of the remote proxy constructor.
                 const object = { _idPromise: Promise.resolve(objectId) };
+                // $FlowIssue - T9254210 add Object.setPrototypeOf typing
                 Object.setPrototypeOf(object, proxy[name].prototype);
                 this._objectRegistry.set(objectId, object);
                 return object;
@@ -89,13 +90,13 @@ export default class ClientComponent {
   }
 
   // Delegate marshalling to the type registry.
-  marshal(...args): any {
+  marshal(...args: any): any {
     return this._typeRegistry.marshal(...args);
   }
-  unmarshal(...args): any {
+  unmarshal(...args: any): any {
     return this._typeRegistry.unmarshal(...args);
   }
-  registerType(...args): void {
+  registerType(...args: any): void {
     return this._typeRegistry.registerType(...args);
   }
 
@@ -266,14 +267,14 @@ export default class ClientComponent {
     return this._socket;
   }
 
-  _handleSocketMessage(message: any) {
+  _handleSocketMessage(message: any): void {
     const {channel} = message;
     invariant(channel === SERVICE_FRAMEWORK3_CHANNEL);
     const {requestId, hadError, error, result} = message;
     this._emitter.emit(requestId.toString(), hadError, error, result);
   }
 
-  _generateRequestId() {
+  _generateRequestId(): number {
     return this._rpcRequestId++;
   }
 

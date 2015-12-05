@@ -28,11 +28,19 @@ type SearchResponse = {
   results: Array<SearchQueryResult>;
 }
 
+import invariant from 'assert';
+import type {FileSearchResult} from 'nuclide-path-search';
+
 const {fsPromise} = require('nuclide-commons');
 const {fileSearchForDirectory} = require('nuclide-path-search');
 const remoteUri = require('nuclide-remote-uri');
 
-let providers;
+type SearchProvider = {
+  isAvailable: (cwd: string) => boolean;
+  query: (cwd: string, query: string) => Promise<Array<SearchQueryResult>>;
+};
+
+let providers: ?{[providerName: string]: SearchProvider};
 
 /*
  * TODO(williamsc): This needs to have some better
@@ -69,9 +77,10 @@ async function doSearchDirectory(
 }
 
 async function getSearchProviders(cwd: string): Promise<Array<ProviderInfo>> {
-  const validPromises = [];
+  const validPromises: Array<Promise<?ProviderInfo>> = [];
 
-  async function checkAvailability(providerName) {
+  async function checkAvailability(providerName: string): Promise<?ProviderInfo> {
+    invariant(providers);
     const isAvailable = await providers[providerName].isAvailable(cwd);
     return isAvailable ? {name: providerName} : null;
   }
@@ -80,8 +89,11 @@ async function getSearchProviders(cwd: string): Promise<Array<ProviderInfo>> {
     validPromises.push(checkAvailability(name));
   }
 
-  const results = await Promise.all(validPromises);
-  return results.filter((provider) => !!provider);
+  // $FlowIssue - Can't handle Promise.all
+  const allResults: Array<?ProviderInfo> =
+      await Promise.all((validPromises: Array<Promise<?ProviderInfo>>));
+  // Any is required here as otherwise we get a flow error in core.js
+  return (allResults.filter(provider => provider != null): any);
 }
 
 async function doSearchQuery(
@@ -89,15 +101,17 @@ async function doSearchQuery(
   provider: string,
   query: string
 ): Promise<SearchResponse> {
-  const currentProvider = providers[provider];
+  invariant(providers);
+  const currentProvider: ?SearchProvider = providers[provider];
   if (!currentProvider) {
     throw new Error(`Invalid provider: ${provider}`);
   }
-  const results = await currentProvider.query(cwd, query);
+  invariant(currentProvider != null);
+  const results: Array<SearchQueryResult> = await currentProvider.query(cwd, query);
   return {results};
 }
 
-function addProvider(name: string, provider) {
+function addProvider(name: string, provider: SearchProvider): void {
   providers = providers || {};
   if (providers[name]) {
     throw new Error(`${name} has already been added as a provider.`);
@@ -105,14 +119,14 @@ function addProvider(name: string, provider) {
   providers[name] = provider;
 }
 
-function clearProviders() {
-  providers = undefined;
+function clearProviders(): void {
+  providers = null;
 }
 
-function initialize(server) {
+function initialize(): void {
 }
 
-function shutdown(server) {
+function shutdown(): void {
   clearProviders();
   for (const k in fileSearchers) {
     fileSearchers[k].dispose();
