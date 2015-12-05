@@ -16,7 +16,6 @@
 .*/pkg/nuclide/buck/commons/.*
 .*/pkg/nuclide/buck/files/.*
 .*/pkg/nuclide/buck/toolbar/.*
-.*/pkg/nuclide/client/.*
 .*/pkg/nuclide/clipboard-path/.*
 .*/pkg/nuclide/debugger-hhvm-proxy/spec/.*
 .*/pkg/nuclide/debugger/atom/spec/.*
