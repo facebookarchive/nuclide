@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type * as FindReferencesModelType from '../lib/FindReferencesModel';
+import type FindReferencesModelType from '../lib/FindReferencesModel';
 
 const nuclideClient = require('nuclide-client');
 

@@ -181,7 +181,6 @@ module.exports = {
   consumeProvider(provider: FindReferencesProvider): void {
     providers.push(provider);
     // Editors are often open before providers load, so update existing ones too.
-    /* $FlowFixMe: forEach callback should allow non-void */
     supportedProviders.forEach(async (supported, editor) => {
       if (await provider.isEditorSupported(editor)) {
         if (!supported.length) {
