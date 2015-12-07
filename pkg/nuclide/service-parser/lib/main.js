@@ -15,6 +15,7 @@ import generateProxy from './proxy-generator';
 import parseServiceDefinition from './service-parser';
 import path from 'path';
 import invariant from 'assert';
+import Module from 'module';
 
 import type {Definitions} from './types';
 
@@ -60,9 +61,11 @@ export function getProxy(serviceName: string, definitionPath: string, clientObje
     const filename = path.parse(definitionPath).name + 'Proxy.js';
     const transpiled = createOrFetchFromCache(code, filename);
 
-    // Load the module direcly from a string.
-    const m = new module.constructor();
-  // $FlowIssue
+    // Load the module directly from a string,
+    const m = new Module();
+    // as if it were a sibling to this file.
+    m.filename = m.id = path.join(__dirname, filename);
+    // $FlowIssue
     m.paths = module.paths;
     m._compile(transpiled, filename);
 

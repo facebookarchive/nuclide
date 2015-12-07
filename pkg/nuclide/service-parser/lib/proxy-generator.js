@@ -91,7 +91,8 @@ export default function generateProxy(serviceName: string, defs: Definitions): s
   statements.push(t.returnStatement(remoteModule));
 
   // Wrap the remoteModule construction in a function that takes a ClientComponent object as
-  // an argument.
+  // an argument. `require` calls will resolve as if made by a file that is a sibling to
+  // this module's `lib/main.js`.
   const func = t.arrowFunctionExpression([clientIdentifier], t.blockStatement(statements));
   const assignment = t.assignmentExpression('=', moduleDotExportsExpression, func);
   const program = t.program([
