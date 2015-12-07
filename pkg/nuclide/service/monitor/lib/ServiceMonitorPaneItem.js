@@ -26,4 +26,6 @@ class ServiceMonitorPaneItem extends NuclideCustomPaneItem {
   }
 }
 
-module.exports = document.registerElement('nuclide-service-monitor', ServiceMonitorPaneItem);
+module.exports = document.registerElement('nuclide-service-monitor', {
+  prototype: ServiceMonitorPaneItem.prototype,
+});

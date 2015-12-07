@@ -32,7 +32,6 @@
 .*/pkg/nuclide/reprint-js/.*
 .*/pkg/nuclide/server/spec/.*
 .*/pkg/nuclide/server/scripts/.*
-.*/pkg/nuclide/service/monitor/.*
 .*/pkg/nuclide/ssh-dialog/.*
 .*/pkg/nuclide/toolbar/.*
 .*/pkg/sample/diagnostics-provider/.*
