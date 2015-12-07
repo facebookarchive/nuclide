@@ -12,6 +12,7 @@
 import type {FileSystemService} from 'nuclide-server/lib/services/FileSystemServiceType';
 import type {Observable} from 'rx';
 import type {RemoteConnection} from './RemoteConnection';
+import type {HgRepositoryDescription} from 'nuclide-source-control-helpers';
 import type RemoteFile from './RemoteFile';
 
 import invariant from 'assert';
@@ -38,7 +39,7 @@ class RemoteDirectory {
   _subscriptionCount: number;
   _host: string;
   _localPath: string;
-  _hgRepositoryDescription: ?string;
+  _hgRepositoryDescription: ?HgRepositoryDescription;
   _watchSubscription: Observable;
 
   /**
@@ -283,7 +284,7 @@ class RemoteDirectory {
   }
 
   // A workaround before Atom 2.0: see ::getHgRepoInfo of main.js.
-  getHgRepositoryDescription() {
+  getHgRepositoryDescription(): ?HgRepositoryDescription {
     return this._hgRepositoryDescription;
   }
 

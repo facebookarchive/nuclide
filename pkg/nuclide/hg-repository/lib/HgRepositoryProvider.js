@@ -11,6 +11,8 @@
 
 const {Directory} = require('atom');
 import {trackTiming} from 'nuclide-analytics';
+import {RemoteDirectory as RemoteDirectoryType} from 'nuclide-remote-connection';
+const {HgRepositoryClient} = require('nuclide-hg-repository-client');
 
 let logger = null;
 function getLogger() {
@@ -29,15 +31,23 @@ function getLogger() {
  *    repository (i.e. if it's a remote directory, the URI minus the hostname).
  *  If the directory is not part of a Mercurial repository, returns null.
  */
-function getRepositoryDescription(directory: Directory): ?mixed {
+function getRepositoryDescription(
+  directory: atom$Directory | RemoteDirectoryType,
+): ?{
+  originURL: string,
+  repoPath: string,
+  workingDirectory: atom$Directory | RemoteDirectoryType,
+  workingDirectoryLocalPath: string,
+} {
   const {RemoteDirectory} = require('nuclide-remote-connection');
-
-  if (RemoteDirectory.isRemoteDirectory(directory)) {
+  if (directory instanceof RemoteDirectoryType) {
     const repositoryDescription = directory.getHgRepositoryDescription();
-    if (!repositoryDescription.repoPath) {
+    if (repositoryDescription == null
+      || repositoryDescription.repoPath == null
+      || repositoryDescription.originURL == null
+    ) {
       return null;
     }
-
     const remoteConnection = directory._remote;
     const {repoPath, originURL, workingDirectoryPath} = repositoryDescription;
     const workingDirectoryLocalPath = workingDirectoryPath;
@@ -46,14 +56,14 @@ function getRepositoryDescription(directory: Directory): ?mixed {
     const workingDirectoryUri = remoteConnection.getUriOfRemotePath(workingDirectoryPath);
     return {
       originURL,
-      repoUri,
+      repoPath: repoUri,
       workingDirectory: new RemoteDirectory(remoteConnection, workingDirectoryUri),
       workingDirectoryLocalPath,
     };
   } else {
     const {findHgRepository} = require('nuclide-source-control-helpers');
     const repositoryDescription = findHgRepository(directory.getPath());
-    if (!repositoryDescription.repoPath) {
+    if (repositoryDescription.repoPath == null || repositoryDescription.originURL == null) {
       return null;
     }
 
@@ -67,13 +77,13 @@ function getRepositoryDescription(directory: Directory): ?mixed {
   }
 }
 
-export default class HgRepositoryProvider {
-  repositoryForDirectory(directory: Directory) {
+export class HgRepositoryProvider {
+  repositoryForDirectory(directory: Directory): Promise<?HgRepositoryClient> {
     return Promise.resolve(this.repositoryForDirectorySync(directory));
   }
 
   @trackTiming('hg-repository.repositoryForDirectorySync')
-  repositoryForDirectorySync(directory: Directory): ?HgRepository {
+  repositoryForDirectorySync(directory: Directory): ?HgRepositoryClient {
     try {
       const repositoryDescription = getRepositoryDescription(directory);
       if (!repositoryDescription) {
@@ -90,7 +100,6 @@ export default class HgRepositoryProvider {
       const {getServiceByNuclideUri} = require('nuclide-client');
       const {HgService} = getServiceByNuclideUri('HgService', directory.getPath());
       const hgService = new HgService(workingDirectoryLocalPath);
-      const {HgRepositoryClient} = require('nuclide-hg-repository-client');
       return new HgRepositoryClient(repoPath, hgService, {
         workingDirectory,
         projectRootDirectory: directory,

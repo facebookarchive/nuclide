@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 import type {NuclideUri} from 'nuclide-remote-uri';
-import type {HgRepositoryDescription} from 'nuclide-source-control-helpers/lib/hg-repository';
+import type {HgRepositoryDescription} from 'nuclide-source-control-helpers';
 
 import invariant from 'assert';
 import ClientComponent from 'nuclide-server/lib/serviceframework/ClientComponent';

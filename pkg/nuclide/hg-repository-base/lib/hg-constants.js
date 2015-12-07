@@ -12,17 +12,6 @@
 
 import type {NuclideUri} from 'nuclide-remote-uri';
 
-export type HgRepositoryOptions = {
-  /** The origin URL of this repository. */
-  originURL: string;
-
-  /** The working directory of this repository. */
-  workingDirectory: atom$Directory;
-
-  /** The root directory that is opened in Atom, which this Repository serves. **/
-  projectRootDirectory: atom$Directory;
-};
-
 /**
  * These are status codes used by Mercurial's output.
  * Documented in http://selenic.com/hg/help/status.

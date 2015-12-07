@@ -9,6 +9,12 @@
  * the root directory of this source tree.
  */
 
+export type HgRepositoryDescription = {
+  repoPath: ?string;
+  originURL: ?string;
+  workingDirectoryPath: string;
+};
+
 module.exports = {
   get findHgRepository() {
     return require('./hg-repository');

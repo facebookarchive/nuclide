@@ -16,7 +16,7 @@ module.exports = {
   },
 
   createHgRepositoryProvider() {
-    const HgRepositoryProvider = require('./HgRepositoryProvider');
+    const {HgRepositoryProvider} = require('./HgRepositoryProvider');
     return new HgRepositoryProvider();
   },
 };

@@ -12,7 +12,6 @@
 import type {
   DiffInfo,
   HgStatusOptionValue,
-  HgRepositoryOptions,
   LineDiff,
   RevisionInfo,
   RevisionFileChanges,
@@ -34,6 +33,17 @@ import {
 import {debounce} from 'nuclide-commons';
 import {ensureTrailingSeparator} from 'nuclide-commons/lib/paths';
 import {addAllParentDirectoriesToCache, removeAllParentDirectoriesFromCache} from './utils';
+
+type HgRepositoryOptions = {
+  /** The origin URL of this repository. */
+  originURL: string;
+
+  /** The working directory of this repository. */
+  workingDirectory: atom$Directory | RemoteDirectory;
+
+  /** The root directory that is opened in Atom, which this Repository serves. **/
+  projectRootDirectory: atom$Directory;
+};
 
 /**
  *
@@ -77,10 +87,11 @@ function filterForAllStatues() {
  */
 
 import type {NuclideUri} from 'nuclide-remote-uri';
+import type {RemoteDirectory} from 'nuclide-remote-connection';
 
 export default class HgRepositoryClient {
   _path: string;
-  _workingDirectory: atom$Directory;
+  _workingDirectory: atom$Directory | RemoteDirectory;
   _projectDirectory: atom$Directory;
   _originURL: string;
   _service: HgService;

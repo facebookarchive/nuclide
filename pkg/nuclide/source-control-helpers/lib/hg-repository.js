@@ -11,11 +11,7 @@
 
 const path = require('path');
 
-export type HgRepositoryDescription = {
-  repoPath: ?string;
-  originURL: ?string;
-  workingDirectoryPath: string;
-};
+import type {HgRepositoryDescription} from './main';
 
 /**
  * This function returns HgRepositoryDescription filled with a repoPath and
