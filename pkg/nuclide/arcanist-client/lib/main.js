@@ -10,7 +10,8 @@
  */
 
 import type {NuclideUri} from 'nuclide-remote-uri';
-import type {ArcanistBaseService} from 'nuclide-arcanist-base';
+// $FlowIssue t9336315
+import typeof * as ArcanistBaseService from 'nuclide-arcanist-base';
 
 function getService(fileName: NuclideUri): ArcanistBaseService {
   return require('nuclide-client').getServiceByNuclideUri('ArcanistBaseService', fileName);
@@ -36,12 +37,15 @@ async function findDiagnostics(fileNames: Iterable<NuclideUri>): Promise<Array<O
   const serviceToFileNames: Map<ArcanistBaseService, Array<NuclideUri>> = new Map();
   for (const file of fileNames) {
     const service = getService(file);
-    if (!serviceToFileNames.has(service)) {
-      serviceToFileNames.set(service, []);
+    let files = serviceToFileNames.get(service);
+    if (files == null) {
+      files = [];
+      serviceToFileNames.set(service, files);
     }
-    const files = serviceToFileNames.get(service);
     files.push(file);
   }
+
+  // $FlowIssue: https://github.com/facebook/flow/issues/1143
   const results: Array<Promise<Array<Object>>> = [];
   for (const [service, files] of serviceToFileNames) {
     results.push(service.findDiagnostics(files));
