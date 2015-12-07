@@ -32,7 +32,8 @@ export function getOsVersion(): string {
 }
 
 export async function getFlowVersion(): Promise<string> {
-  const flowPath = global.atom ? global.atom.config.get('nuclide-flow.pathToFlow') : 'flow';
+  // $UPFixMe: This should use nuclide-features-config
+  const flowPath = global.atom && global.atom.config.get('nuclide-flow.pathToFlow') || 'flow';
   const {stdout} = await asyncExecute(flowPath, ['--version']);
   return stdout.trim();
 }

@@ -101,12 +101,9 @@ export class BuckProject {
    * @return The path to buck and set of options to be used to run a `buck` command.
    */
   _getBuckCommandAndOptions(): BuckCommandAndOptions {
-    let pathToBuck;
-    if (global.atom) {
-      pathToBuck = global.atom.config.get('nuclide-buck-files.pathToBuck');
-    } else {
-      pathToBuck = 'buck';
-    }
+    // $UPFixMe: This should use nuclide-features-config
+    const pathToBuck =
+      global.atom && global.atom.config.get('nuclide-buck-files.pathToBuck') || 'buck';
     const buckCommandOptions = {
       cwd: this._rootPath,
       queueName: this._serialQueueName,

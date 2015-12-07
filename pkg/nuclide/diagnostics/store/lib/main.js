@@ -19,6 +19,7 @@ import type {
 import type {LinterProvider} from './LinterAdapter';
 
 import {Disposable, CompositeDisposable} from 'atom';
+import featureConfig from 'nuclide-feature-config';
 
 const legacyLinterSetting = 'nuclide-diagnostics-store.consumeLegacyLinters';
 
@@ -73,8 +74,8 @@ module.exports = {
     }
 
     // Returns mixed so a cast is necessary.
-    consumeLegacyLinters = ((atom.config.get(legacyLinterSetting): any): boolean);
-    atom.config.observe(legacyLinterSetting, newValue => {
+    consumeLegacyLinters = ((featureConfig.get(legacyLinterSetting): any): boolean);
+    featureConfig.observe(legacyLinterSetting, newValue => {
       // To make this really solid, we should also probably trigger the linter
       // for the active text editor. Possibly more trouble than it's worth,
       // though, since this may be a temporary option.
@@ -82,8 +83,8 @@ module.exports = {
       allLinterAdapters.forEach(adapter => adapter.setEnabled(newValue));
     });
 
-    lintOnTheFly = ((atom.config.get(legacyLintOnTheFlySetting): any): boolean);
-    atom.config.observe(legacyLintOnTheFlySetting, newValue => {
+    lintOnTheFly = ((featureConfig.get(legacyLintOnTheFlySetting): any): boolean);
+    featureConfig.observe(legacyLintOnTheFlySetting, newValue => {
       lintOnTheFly = newValue;
       allLinterAdapters.forEach(adapter => adapter.setLintOnFly(newValue));
     });
