@@ -11,6 +11,7 @@
 
 const {uncachedRequire, spyOnGetterValue} = require('nuclide-test-helpers');
 const {Range} = require('atom');
+const featureConfig = require('nuclide-feature-config');
 
 import {array} from 'nuclide-commons';
 
@@ -30,12 +31,12 @@ describe('FlowTypeHintProvider', () => {
     // we assume here that runWith is called in every spec -- otherwise these
     // will not be spies
     jasmine.unspy(require('nuclide-atom-helpers'), 'extractWordAtPosition');
-    jasmine.unspy(atom.config, 'get');
+    jasmine.unspy(featureConfig, 'get');
     jasmine.unspy(require('nuclide-client'), 'getServiceByNuclideUri');
   });
 
   async function runWith(enabled, result, word) {
-    spyOn(atom.config, 'get').andCallFake(key => {
+    spyOn(featureConfig, 'get').andCallFake(key => {
       if (key === 'nuclide-flow.enableTypeHints') {
         return enabled;
       } else {

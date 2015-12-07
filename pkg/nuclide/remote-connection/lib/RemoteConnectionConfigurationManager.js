@@ -33,6 +33,7 @@ const CONFIG_KEY_PREFIX = 'nuclide.nuclide-connection.config';
 export function getConnectionConfig(host: string): ?RemoteConnectionConfiguration {
   // $FlowIssue
   const storedConfig = atom.config.get(getAtomConfigKey(host));
+  // $UPFixMe: These settings should go through nuclide-feature-config
   if (!storedConfig) {
     return null;
   }

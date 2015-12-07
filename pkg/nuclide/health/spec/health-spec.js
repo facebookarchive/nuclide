@@ -10,6 +10,7 @@
  */
 
 const featureConfig = require('nuclide-feature-config');
+const path = require('path');
 
 const BASE_ITEM_URI = 'nuclide-health://';
 
@@ -30,7 +31,14 @@ describe('Health', () => {
   beforeEach(() => {
     waitsForPromise(async () => {
       jasmine.unspy(window, 'setTimeout');
-      await atom.packages.activatePackage('nuclide-health');
+      // $FlowIssue https://github.com/facebook/flow/issues/620
+      const config = require('../package.json').nuclide.config;
+      // $UPFixMe: With UP, the default settings are set by the loader, but
+      // I don't have a good way to do that just for tests (yet).
+      Object.keys(config).forEach(k =>
+        featureConfig.setSchema(`nuclide-health.${k}`, config[k])
+      );
+      await atom.packages.activatePackage(path.join(__dirname, '..'));
     });
   });
 

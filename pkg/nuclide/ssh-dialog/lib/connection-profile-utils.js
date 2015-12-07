@@ -15,6 +15,7 @@ import type {
   NuclideSavedConnectionDialogConfig,
 } from './connection-types';
 
+// $UPFixMe: These settings should go through nuclide-feature-config
 const CONNECTION_PROFILES_KEY = 'nuclide.connectionProfiles';
 const LAST_USED_CONNECTION_KEY = 'nuclide.lastConnectionDetails';
 

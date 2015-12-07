@@ -301,6 +301,7 @@ module.exports = {
       }
     });
     // Clear obsolete config.
+    // $UPFixMe: These settings should go through nuclide-feature-config
     atom.config.set('nuclide.remoteProjectsConfig', []);
 
     packageSubscriptions = subscriptions;
