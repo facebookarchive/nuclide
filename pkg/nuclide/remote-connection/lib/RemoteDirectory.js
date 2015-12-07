@@ -136,7 +136,7 @@ class RemoteDirectory {
     return false;
   }
 
-  _isRoot(filePath): boolean {
+  _isRoot(filePath: string): boolean {
     filePath = path.normalize(filePath);
     const parts = path.parse(filePath);
     return parts.root === filePath;
