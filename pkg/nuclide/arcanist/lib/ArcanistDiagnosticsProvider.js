@@ -11,6 +11,11 @@
 
 import type {BusySignalProviderBase} from 'nuclide-busy-signal-provider-base';
 
+import type {
+  MessageUpdateCallback,
+  MessageInvalidationCallback,
+} from 'nuclide-diagnostics-base';
+
 import {CompositeDisposable} from 'atom';
 import {DiagnosticsProviderBase} from 'nuclide-diagnostics-provider-base';
 
@@ -41,6 +46,7 @@ export class ArcanistDiagnosticsProvider {
     this._requestSerializer = new RequestSerializer();
     this._subscriptions.add(atom.workspace.onWillDestroyPaneItem(({item}) => {
       if (isTextEditor(item)) {
+        invariant(typeof item.getPath === 'function');
         const path: ?string = item.getPath();
         if (!path) {
           return;
@@ -82,7 +88,7 @@ export class ArcanistDiagnosticsProvider {
     const {Range} = require('atom');
     try {
       const result = await this._requestSerializer.run(
-        require('nuclide-arcanist-client').findDiagnostics([textEditor.getPath()])
+        require('nuclide-arcanist-client').findDiagnostics([filePath])
       );
       if (result.status === 'outdated') {
         return;

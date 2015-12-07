@@ -13,6 +13,10 @@ import type {
   BusySignalProviderBase as BusySignalProviderBaseType,
 } from 'nuclide-busy-signal-provider-base';
 
+import type {
+  BusySignalProvider,
+} from 'nuclide-busy-signal-interfaces';
+
 import {CompositeDisposable} from 'atom';
 import invariant from 'assert';
 
