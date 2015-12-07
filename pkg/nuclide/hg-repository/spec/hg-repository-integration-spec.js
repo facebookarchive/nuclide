@@ -8,7 +8,11 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-import {activateAllPackages, fixtures} from 'nuclide-test-helpers';
+import {
+  activateAllPackages,
+  copyMercurialFixture,
+  deactivateAllPackages,
+} from 'nuclide-integration-test-helpers';
 import path from 'path';
 
 describe('Mercurial Repository Integration Tests', () => {
@@ -22,7 +26,7 @@ describe('Mercurial Repository Integration Tests', () => {
     waitsForPromise(async () => {
       spyOn(console, 'error');
       // Copy mercurial project to temporary directory.
-      const repoPath = await fixtures.copyGlobalMercurialFixture('hg_repo_1');
+      const repoPath = await copyMercurialFixture('hg_repo_1');
       // Add this directory as a new project in atom.
       atom.project.setPaths([repoPath]);
       // Open a file within this project.
@@ -34,7 +38,6 @@ describe('Mercurial Repository Integration Tests', () => {
   });
 
   afterEach(() => {
-    atom.packages.deactivatePackages();
-    atom.packages.unloadPackages();
+    deactivateAllPackages();
   });
 });

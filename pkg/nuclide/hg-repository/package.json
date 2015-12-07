@@ -27,7 +27,7 @@
     "nuclide-source-control-helpers": "0.0.0"
   },
   "devDependencies": {
-    "nuclide-test-helpers": "0.0.0"
+    "nuclide-integration-test-helpers": "0.0.0"
   },
   "_atomModuleCache": {
     "extensions": {

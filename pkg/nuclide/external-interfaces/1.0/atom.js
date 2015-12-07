@@ -22,6 +22,8 @@ declare class atom$Package {
   name: string;
   loadTime: number;
   getType(): 'atom' | 'textmate' | 'theme';
+  hasActivationCommands(): boolean;
+  hasActivationHooks(): boolean;
 }
 
 /**

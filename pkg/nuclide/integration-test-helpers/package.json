@@ -1,0 +1,17 @@
+{
+  "name": "nuclide-integration-test-helpers",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "Common utility functions for atom package integration tests.",
+  "nuclide": {
+    "packageType": "Node",
+    "testRunner": "apm"
+  },
+  "devDependencies": {
+    "fs-plus": "2.8.1",
+    "nuclide-commons": "0.0.0",
+    "nuclide-external-interfaces": "0.0.0",
+    "nuclide-test-helpers": "0.0.0"
+  }
+}
