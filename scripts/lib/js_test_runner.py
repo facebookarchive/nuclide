@@ -15,10 +15,11 @@ APM_TEST_WRAPPER = os.path.realpath(os.path.join(os.path.dirname(__file__),
                                                  'run-apm-test-with-timeout'))
 
 class JsTestRunner(object):
-    def __init__(self, package_manager, include_apm=True, packages_to_test=[], verbose=False):
+    def __init__(self, package_manager, include_apm=True, packages_to_test=[], verbose=False, run_in_band=False):
         self._package_manager = package_manager
         self._include_apm = include_apm
         self._packages_to_test = packages_to_test
+        self._run_in_band = run_in_band
         self._verbose = verbose
 
     def run_tests(self):
@@ -51,7 +52,7 @@ class JsTestRunner(object):
               test_bucket = apm_tests
             test_bucket.append(test_args)
 
-        if platform_checker.is_windows():
+        if self._run_in_band or platform_checker.is_windows():
             # We run all tests in serial on Windows because Python's multiprocessing library has issues:
             # https://docs.python.org/2/library/multiprocessing.html#windows
             parallel_tests = []

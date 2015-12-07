@@ -28,9 +28,11 @@ parser = optparse.OptionParser(usage='usage: %prog [options] [package-names]',
 parser.add_option('--no-install', action='store_true', default=False, help='Skip `./setup` step')
 parser.add_option('--verbose', action='store_true', default=False, help='Verbose output')
 parser.add_option('--no-atom', action='store_true', default=False, help='Exclude packages that depend on Atom')
+parser.add_option('--run-in-band', action='store_true', default=False, help='Run tests in a single process')
 atom.add_args_for_env_setup(parser)
 options, args = parser.parse_args(sys.argv[1:])
 
+run_in_band = options.run_in_band
 verbose = options.verbose
 
 # When testing the server packages, only `node` and `npm` need to be on the $PATH.
@@ -73,5 +75,5 @@ for package_name in args:
 
 # Create and run JsTestRunner.
 from js_test_runner import JsTestRunner
-test_runner = JsTestRunner(package_manager, include_apm, args, verbose)
+test_runner = JsTestRunner(package_manager, include_apm, args, verbose, run_in_band)
 test_runner.run_tests()
