@@ -25,7 +25,6 @@
 .*/pkg/nuclide/file-tree/.*
 .*/pkg/nuclide/file-watcher/.*
 .*/pkg/nuclide/find-references/.*
-.*/pkg/nuclide/flow/.*
 .*/pkg/nuclide/format-js/.*
 .*/pkg/nuclide/fuzzy-filename-provider/.*
 .*/pkg/nuclide/hack-symbol-provider/.*

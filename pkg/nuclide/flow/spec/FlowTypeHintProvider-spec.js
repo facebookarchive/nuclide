@@ -87,6 +87,7 @@ describe('FlowTypeHintProvider', () => {
 });
 
 describe('getTypeHintTree', () => {
+  // $FlowIgnore
   const {getTypeHintTree} = require(TYPE_HINT_PROVIDER);
 
   function runWith(obj: Object): Object {
