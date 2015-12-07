@@ -22,7 +22,9 @@
   "dependencies": {
     "nuclide-analytics": "0.0.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "nuclide-integration-test-helpers": "0.0.0"
+  },
   "_atomModuleCache": {
     "extensions": {
       ".node": []
