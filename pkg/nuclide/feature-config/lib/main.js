@@ -33,6 +33,16 @@ module.exports = {
   },
 
   /*
+   * Gets the schema of a setting for a Nuclide feature key. Takes and returns the same types as
+   * `atom.config.getSchema`.
+   */
+  getSchema(
+    keyPath: string
+  ): atom$ConfigSchema {
+    return atom.config.getSchema(formatKeyPath(keyPath));
+  },
+
+  /*
    * Takes and returns the same types as `atom.config.observe` except `keyPath` is not optional.
    * To observe changes on the entire config, use `atom.config.observe`.
    */

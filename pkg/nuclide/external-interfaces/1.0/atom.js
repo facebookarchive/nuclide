@@ -58,6 +58,21 @@ declare class atom$CompositeDisposable {
   clear(): void;
 }
 
+type atom$ConfigType =
+  'boolean' | 'string' | 'integer' | 'number' |
+  'array' | 'object' | 'color' | 'any'
+
+type atom$ConfigSchema = {
+  default?: mixed,
+  description?: string,
+  enum?: Array<mixed>,
+  maximum?: number,
+  minimum?: number,
+  properties?: Object,
+  title?: string,
+  type: Array<atom$ConfigType> | atom$ConfigType,
+}
+
 declare class atom$Config {
   // Config Subscription
   observe(
@@ -102,18 +117,11 @@ declare class atom$Config {
   getUserConfigPath(): string;
 
   // Undocumented Methods
+  getSchema(keyPath: string): atom$ConfigSchema;
   save(): void;
   setSchema(
     keyPath: string,
-    schema: {
-      default?: mixed,
-      description?: string,
-      enum?: Array<mixed>,
-      maximum?: number,
-      minimum?: number,
-      title?: string,
-      type: string,
-    }
+    schema: atom$ConfigSchema,
   ): void;
 }
 
