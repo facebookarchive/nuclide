@@ -28,7 +28,7 @@ export function buildLineRangesWithOffsets(
     emptyLineFactory: () => any
     ): LineRangesWithOffsets {
 
-  const offsetLineNumbers = array.from(lineOffsets.keys()).sort();
+  const offsetLineNumbers = array.from(lineOffsets.keys()).sort((x, y) => x - y);
   let priorScreenLine = startBufferRow;
   const newRegions = [];
   const newScreenLines = [];

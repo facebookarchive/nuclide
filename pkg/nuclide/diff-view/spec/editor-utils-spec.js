@@ -122,5 +122,19 @@ describe('editor-utils', () => {
       ]);
       expect(followingScreenLines).toEqual([0, 5, 6, 7, 8]);
     });
+
+    it('returns regions with multi-digit numbers, verifying sort offset lines works', () => {
+      const {regions, screenLines} = buildLineRangesWithOffsets(
+        [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13], new Map([[2, 2], [11, 1]]), 0, 13, () => 0
+      );
+      expect(regions).toEqual([
+        {bufferRows: 1, screenRows: 1},
+        {bufferRows: 1, screenRows: 3},
+        {bufferRows: 8, screenRows: 8},
+        {bufferRows: 1, screenRows: 2},
+        {bufferRows: 2, screenRows: 2},
+      ]);
+      expect(screenLines).toEqual([1, 2, 0, 0, 3, 4, 5, 6, 7, 8, 9, 10, 11, 0, 12, 13]);
+    });
   });
 });
