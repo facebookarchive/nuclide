@@ -14,10 +14,11 @@ import type {HyperclickSuggestion} from 'hyperclick-interfaces';
 import {Range} from 'atom';
 
 // This regex could be improved -- right now it just matches everything starting with http:// or
-// https:// and consuming characters as long as they are not whitespace or a closing ), ], or }.
+// https:// and consuming characters as long as they are not whitespace or a closing ), ], or },
+// while ignoring trailing periods.
 // This is so that links in parentheses etc. are still matched properly. We could improve this so
 // that it matches only legal URI characters, but this should be fine.
-const URL_REGEX = /https?:\/\/[^\s)\]}]+/;
+const URL_REGEX = /\b(https?:\/\/[^\s)}\]]*[^.\s)}\]])/;
 
 export class HyperclickProvider {
   priority: number;
