@@ -44,7 +44,7 @@ function copyProjectRelativePath(): void {
   });
 }
 
-function copyRepositoryRelativePath(): Promise {
+function copyRepositoryRelativePath(): void {
   trackOperation('copyRepositoryRelativePath', async () => {
 
     const uri = getCurrentNuclideUri();
@@ -117,7 +117,7 @@ function getCurrentNuclideUri(): ?NuclideUri {
   return path;
 }
 
-function trackOperation(eventName: string, operation: () => void): void {
+function trackOperation(eventName: string, operation: () => mixed): void {
   trackOperationTiming('nuclide-clipboard-path:' + eventName, operation);
 }
 
