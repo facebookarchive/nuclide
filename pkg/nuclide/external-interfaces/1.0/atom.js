@@ -824,6 +824,9 @@ declare class atom$File {
   // File Metadata
   isFile(): boolean;
   isDirectory(): boolean;
+  exists(): boolean;
+  setEncoding(encoding: string): void;
+  getEncoding(): string;
 
   // Event Subscription
   onDidRename(callback: () => void): atom$Disposable;
@@ -950,6 +953,7 @@ type TextBufferScanIterator = (arg: {
 
 declare class atom$TextBuffer {
   file: ?atom$File;
+  emitter: atom$Emitter;
 
   // Events
   onDidChange(callback: () => mixed): atom$Disposable;
@@ -959,6 +963,9 @@ declare class atom$TextBuffer {
 
   // File Details
   setPath(filePath: string): void;
+  getPath(): string;
+  setEncoding(encoding: string): void;
+  getEncoding(): string;
   getUri(): string;
 
   // Reading Text
@@ -1003,6 +1010,9 @@ declare class atom$TextBuffer {
 
   // Position/Index mapping
   characterIndexForPosition(position: atom$Point): number;
+
+  // Buffer Operations
+  reload(): void;
 }
 
 declare class atom$Notification {

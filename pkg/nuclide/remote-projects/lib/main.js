@@ -9,14 +9,23 @@
  * the root directory of this source tree.
  */
 
-import type RemoteProjectsController from './RemoteProjectsController';
 import type {HomeFragments} from 'nuclide-home-interfaces';
-import type {RemoteConnectionConfiguration} from 'nuclide-remote-connection/lib/RemoteConnection';
+import type {
+  RemoteConnectionConfiguration,
+} from 'nuclide-remote-connection/lib/RemoteConnection';
+import type RemoteDirectoryProviderT from './RemoteDirectoryProvider';
+import type RemoteDirectorySearcherT from './RemoteDirectorySearcher';
+import type RemoteProjectsControllerT from './RemoteProjectsController';
 
 import {createTextEditor} from 'nuclide-atom-helpers';
+import {getLogger} from 'nuclide-logging';
 import {getOpenFileEditorForRemoteProject} from './utils';
 import featureConfig from 'nuclide-feature-config';
+import invariant from 'assert';
 import {CompositeDisposable} from 'atom';
+import {RemoteConnection} from 'nuclide-remote-connection';
+
+const logger = getLogger();
 
 /**
  * Stores the host and cwd of a remote connection.
@@ -27,21 +36,10 @@ type SerializableRemoteConnectionConfiguration = {
 }
 
 let packageSubscriptions: ?CompositeDisposable = null;
-let controller: ?RemoteProjectsController = null;
+let controller: ?RemoteProjectsControllerT = null;
 
 const CLOSE_PROJECT_DELAY_MS = 100;
 const pendingFiles = {};
-
-let logger = null;
-function getLogger() {
-  return logger || (logger = require('nuclide-logging').getLogger());
-}
-
-let RemoteConnection_ = null;
-function getRemoteConnection() {
-  return RemoteConnection_ ||
-    (RemoteConnection_ = require('nuclide-remote-connection').RemoteConnection);
-}
 
 function createSerializableRemoteConnectionConfiguration(
   config: RemoteConnectionConfiguration,
@@ -55,7 +53,6 @@ function createSerializableRemoteConnectionConfiguration(
 async function createRemoteConnection(
   remoteProjectConfig: SerializableRemoteConnectionConfiguration,
 ): Promise<?RemoteConnection> {
-  const RemoteConnection = getRemoteConnection();
 
   const connection = await RemoteConnection.createConnectionBySavedConfig(
     remoteProjectConfig.host,
@@ -103,8 +100,8 @@ function addRemoteFolderToProject(connection: RemoteConnection) {
     closeOpenFilesForRemoteProject(connection.getConfig());
 
     const hostname = connection.getRemoteHostname();
-    if (getRemoteConnection().getByHostname(hostname).length > 1) {
-      getLogger().info('Remaining remote projects using Nuclide Server - no prompt to shutdown');
+    if (RemoteConnection.getByHostname(hostname).length > 1) {
+      logger.info('Remaining remote projects using Nuclide Server - no prompt to shutdown');
       connection.close();
       return;
     }
@@ -126,13 +123,15 @@ function addRemoteFolderToProject(connection: RemoteConnection) {
       buttons.reverse();
     }
 
-    const choice = atom.confirm({
+    const choice = global.atom.confirm({
       message: 'No more remote projects on the host: \'' + hostname +
         '\'. Would you like to shutdown Nuclide server there?',
       buttons,
     });
 
-    buttonToActions.get(buttons[choice])();
+    const action = buttonToActions.get(buttons[choice]);
+    invariant(action);
+    action();
   }
 }
 
@@ -182,11 +181,12 @@ async function createEditorForNuclide(
   } else {
     const NuclideTextBuffer = require('./NuclideTextBuffer');
     buffer = new NuclideTextBuffer(connection, {filePath: uri});
-    buffer.setEncoding(atom.config.get('core.fileEncoding'));
+    buffer.setEncoding(global.atom.config.get('core.fileEncoding'));
     try {
+      /* $FlowFixMe Private Atom API */
       await buffer.load();
     } catch (err) {
-      getLogger().warn('buffer load issue:', err);
+      logger.warn('buffer load issue:', err);
       throw err;
     }
   }
@@ -218,7 +218,7 @@ module.exports = {
     const RemoteProjectsController = require('./RemoteProjectsController');
     controller = new RemoteProjectsController();
 
-    subscriptions.add(getRemoteConnection().onDidAddRemoteConnection(connection => {
+    subscriptions.add(RemoteConnection.onDidAddRemoteConnection(connection => {
       addRemoteFolderToProject(connection);
 
 
@@ -239,6 +239,7 @@ module.exports = {
         // Here, a unique uri is picked to the pending open pane item to maintain the pane layout.
         // Otherwise, the open won't be completed because there exists a pane item with the same
         // uri.
+        /* $FlowFixMe */
         editor.getBuffer().file.path = `${uri}.to-close`;
         // Cleanup the old pane item on successful opening or when no connection could be
         // established.
@@ -249,6 +250,7 @@ module.exports = {
           // If we clean up the buffer before the `openUriInPane` finishes,
           // the pane will be closed, because it could have no other items.
           // So we must clean up after.
+          /* $FlowFixMe Calling Atom private API. */
           atom.workspace.openURIInPane(uri, pane).then(cleanupBuffer, cleanupBuffer);
         }
       }
@@ -257,13 +259,14 @@ module.exports = {
     subscriptions.add(atom.commands.add(
         'atom-workspace',
         'nuclide-remote-projects:connect',
+          /* $FlowIssue. */
         () => require('nuclide-ssh-dialog').openConnectionDialog()
     ));
 
     // Subscribe opener before restoring the remote projects.
     subscriptions.add(atom.workspace.addOpener((uri = '') => {
       if (uri.startsWith('nuclide:')) {
-        const connection = getRemoteConnection().getForUri(uri);
+        const connection = RemoteConnection.getForUri(uri);
         // On Atom restart, it tries to open the uri path as a file tab because it's not a local
         // directory. We can't let that create a file with the initial working directory path.
         if (connection && uri !== connection.getUriForInitialWorkingDirectory()) {
@@ -293,7 +296,7 @@ module.exports = {
     remoteProjectsConfigAsDeserializedJson.forEach(async config => {
       const connection = await createRemoteConnection(config);
       if (!connection) {
-        getLogger().info(
+        logger.info(
           'No RemoteConnection returned on restore state trial:',
           config.host,
           config.cwd,
@@ -307,7 +310,7 @@ module.exports = {
     packageSubscriptions = subscriptions;
   },
 
-  consumeStatusBar(statusBar: Element): void {
+  consumeStatusBar(statusBar: atom$StatusBar): void {
     if (controller) {
       controller.consumeStatusBar(statusBar);
     }
@@ -319,7 +322,7 @@ module.exports = {
     const remoteProjectsConfig: Array<?SerializableRemoteConnectionConfiguration> =
       getRemoteRootDirectories()
         .map((directory: atom$Directory): ?SerializableRemoteConnectionConfiguration => {
-          const connection = getRemoteConnection().getForUri(directory.getPath());
+          const connection = RemoteConnection.getForUri(directory.getPath());
           return connection ?
             createSerializableRemoteConnectionConfiguration(connection.getConfig()) : null;
         })
@@ -341,12 +344,12 @@ module.exports = {
     }
   },
 
-  createRemoteDirectoryProvider(): RemoteDirectoryProvider {
+  createRemoteDirectoryProvider(): RemoteDirectoryProviderT {
     const RemoteDirectoryProvider = require('./RemoteDirectoryProvider');
     return new RemoteDirectoryProvider();
   },
 
-  createRemoteDirectorySearcher(): RemoteDirectorySearcher {
+  createRemoteDirectorySearcher(): RemoteDirectorySearcherT {
     const {getServiceByNuclideUri} = require('nuclide-client');
     const {RemoteDirectory} = require('nuclide-remote-connection');
     const RemoteDirectorySearcher = require('./RemoteDirectorySearcher');

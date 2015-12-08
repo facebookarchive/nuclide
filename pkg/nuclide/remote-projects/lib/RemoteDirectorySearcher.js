@@ -26,14 +26,14 @@ class RemoteDirectorySearcher {
     this._serviceProvider = serviceProvider;
   }
 
-  canSearchDirectory(directory: Directory | RemoteDirectory): boolean {
+  canSearchDirectory(directory: atom$Directory | RemoteDirectory): boolean {
     return RemoteDirectory.isRemoteDirectory(directory);
   }
 
   search(
     directories: Array<RemoteDirectory>,
     regex: RegExp,
-    options: Object
+    options: Object,
   ): RemoteDirectorySearch {
     // Track the files that we have seen updates for.
     const seenFiles = new Set();

@@ -21,7 +21,7 @@ const {PropTypes} = React;
 const StatusBarTile = React.createClass({
   propTypes: {
     connectionState: PropTypes.number.isRequired,
-    fileUri: PropTypes.string,
+    fileUri: React.PropTypes.string,
   },
 
   render(): ?ReactElement {
@@ -53,6 +53,9 @@ const StatusBarTile = React.createClass({
   },
 
   onStatusBarTileClicked(): void {
+    if (!this.props.fileUri) {
+      return;
+    }
     switch (this.props.connectionState) {
       case ConnectionState.LOCAL:
         notifyLocalDiskFile(this.props.fileUri);

@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import invariant from 'assert';
 import {RemoteConnection} from 'nuclide-remote-connection';
 const React = require('react-for-atom');
 const {CompositeDisposable, Disposable} = require('atom');
@@ -22,8 +23,8 @@ const {onWorkspaceDidStopChangingActivePaneItem} =
 
 class RemoteProjectsController {
   _disposables: CompositeDisposable;
-  _statusBarDiv: ?Element;
-  _statusBarTile: ?Element;
+  _statusBarDiv: ?HTMLElement;
+  _statusBarTile: ?atom$StatusBarTile;
   _statusSubscription: ?Disposable;
 
   constructor() {
@@ -66,7 +67,8 @@ class RemoteProjectsController {
     const updateStatus = isConnected => {
       this._renderStatusBar(
         isConnected ? ConnectionState.CONNECTED : ConnectionState.DISCONNECTED,
-        fileUri);
+        fileUri,
+      );
     };
 
     const connection = RemoteConnection.getForUri(fileUri);
@@ -85,7 +87,7 @@ class RemoteProjectsController {
     this._disposables.add(this._statusSubscription);
   }
 
-  consumeStatusBar(statusBar: Element): void {
+  consumeStatusBar(statusBar: atom$StatusBar): void {
     this._statusBarDiv = document.createElement('div');
     this._statusBarDiv.className = 'nuclide-remote-projects inline-block';
 
@@ -93,12 +95,14 @@ class RemoteProjectsController {
       this._statusBarDiv,
       {title: 'Click to show details of connection.'}
     );
+    invariant(this._statusBarDiv);
     const rightTile = statusBar.addLeftTile({
       item: this._statusBarDiv,
       priority: -99,
     });
 
     this._disposables.add(new Disposable(() => {
+      invariant(this._statusBarDiv);
       const parentNode = this._statusBarDiv.parentNode;
       if (parentNode) {
         parentNode.removeChild(this._statusBarDiv);

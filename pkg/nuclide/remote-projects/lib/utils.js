@@ -8,9 +8,11 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-
-import {parse, createRemoteUri} from 'nuclide-remote-uri';
+import type {NuclideUri} from 'nuclide-remote-uri';
 import type {RemoteConnectionConfiguration} from 'nuclide-remote-connection/lib/RemoteConnection';
+
+import invariant from 'assert';
+import {parse, createRemoteUri} from 'nuclide-remote-uri';
 
 const NUCLIDE_PROTOCOL_PREFIX = 'nuclide:/';
 const NUCLIDE_PROTOCOL_PREFIX_LENGTH = NUCLIDE_PROTOCOL_PREFIX.length;
@@ -59,6 +61,7 @@ export function* getOpenFileEditorForRemoteProject(
       const uri = sanitizeNuclideUri(paneItem.getURI());
       const {hostname: fileHostname, path: filePath} = parse(uri);
       if (fileHostname === connectionConfig.host && filePath.startsWith(connectionConfig.cwd)) {
+        invariant(fileHostname);
         yield {
           pane,
           editor: paneItem,

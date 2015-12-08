@@ -9,9 +9,19 @@
  * the root directory of this source tree.
  */
 
+import type {RemoteConnection} from 'nuclide-remote-connection/lib/RemoteConnection';
+import type RemoteFile from 'nuclide-remote-connection/lib/RemoteFile';
+
+import invariant from 'assert';
 const {CompositeDisposable, TextBuffer} = require('atom');
 
 class NuclideTextBuffer extends TextBuffer {
+  connection: RemoteConnection;
+  cachedDiskContents: string;
+  fileSubscriptions: CompositeDisposable;
+  /* $FlowFixMe */
+  file: ?RemoteFile;
+  conflict: boolean;
 
   constructor(connection: RemoteConnection, params: any) {
     super(params);
@@ -31,8 +41,11 @@ class NuclideTextBuffer extends TextBuffer {
     }
     if (filePath) {
       this.file = this.createFile(filePath);
-      this.file.setEncoding(this.getEncoding());
-      this.subscribeToFile();
+      if (this.file !== null) {
+        const file = this.file;
+        file.setEncoding(this.getEncoding());
+        this.subscribeToFile();
+      }
     } else {
       this.file = null;
     }
@@ -43,7 +56,7 @@ class NuclideTextBuffer extends TextBuffer {
     return this.connection.createFile(filePath);
   }
 
-  async saveAs(filePath: string) {
+  async saveAs(filePath: string): Promise<void> {
     if (!filePath) {
       throw new Error('Can\'t save buffer with no file path');
     }
@@ -51,9 +64,12 @@ class NuclideTextBuffer extends TextBuffer {
     this.emitter.emit('will-save', {path: filePath});
     this.setPath(filePath);
     try {
-      await this.file.write(this.getText());
+      invariant(this.file);
+      const file = this.file;
+      await file.write(this.getText());
       this.cachedDiskContents = this.getText();
       this.conflict = false;
+      /* $FlowFixMe Private Atom API */
       this.emitModifiedStatusChanged(false);
       this.emitter.emit('did-save', {path: filePath});
     } catch (e) {
@@ -61,7 +77,7 @@ class NuclideTextBuffer extends TextBuffer {
     }
   }
 
-  updateCachedDiskContentsSync() {
+  updateCachedDiskContentsSync(): void {
     throw new Error('updateCachedDiskContentsSync isn\'t supported in NuclideTextBuffer');
   }
 
@@ -69,6 +85,7 @@ class NuclideTextBuffer extends TextBuffer {
     if (this.fileSubscriptions) {
       this.fileSubscriptions.dispose();
     }
+    invariant(this.file);
     this.fileSubscriptions = new CompositeDisposable();
 
     this.fileSubscriptions.add(this.file.onDidChange(async () => {
@@ -77,6 +94,7 @@ class NuclideTextBuffer extends TextBuffer {
         this.conflict = true;
       }
       const previousContents = this.cachedDiskContents;
+      /* $FlowFixMe Private Atom API */
       await this.updateCachedDiskContents();
       if (previousContents === this.cachedDiskContents) {
         return;
@@ -88,20 +106,26 @@ class NuclideTextBuffer extends TextBuffer {
       }
     }));
 
+    invariant(this.file);
     this.fileSubscriptions.add(this.file.onDidDelete(() => {
       const modified = this.getText() !== this.cachedDiskContents;
+      /* $FlowFixMe Private Atom API */
       this.wasModifiedBeforeRemove = modified;
       if (modified) {
+        /* $FlowFixMe Private Atom API */
         this.updateCachedDiskContents();
       } else {
+        /* $FlowFixMe Private Atom API */
         this.destroy();
       }
     }));
 
+    invariant(this.file);
     this.fileSubscriptions.add(this.file.onDidRename(() => {
       this.emitter.emit('did-change-path', this.getPath());
     }));
 
+    invariant(this.file);
     this.fileSubscriptions.add(this.file.onWillThrowWatchError((errorObject) => {
       this.emitter.emit('will-throw-watch-error', errorObject);
     }));
