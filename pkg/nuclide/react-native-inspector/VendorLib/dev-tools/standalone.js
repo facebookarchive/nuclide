@@ -1,5 +1,5 @@
 // @nolint
-// @generated SignedSource<<bd0ea53def1e02d213f38ebd18e38af1>>
+// @generated SignedSource<<822b6081b864584484e687bbc62cb082>>
 module.exports =
 /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
@@ -108,6 +108,17 @@ module.exports =
 	  node.innerHTML = '<h2 id="waiting">Waiting for a connection from React Native</h2>';
 	}
 	
+	function onError(e) {
+	  React.unmountComponentAtNode(node);
+	  var message;
+	  if (e.code === 'EADDRINUSE') {
+	    message = 'Another instance of DevTools is running';
+	  } else {
+	    message = 'Unknown error (' + e.message + ')';
+	  }
+	  node.innerHTML = '<h2 id="waiting">' + message + '</h2>';
+	}
+	
 	function initialize(socket) {
 	  socket.send('eval:' + backendScript);
 	  var listeners = [];
@@ -154,7 +165,9 @@ module.exports =
 	 * This is the normal mode, where it connects to the react native packager
 	 */
 	function connectToSocket() {
-	  var socket = ws.connect('ws://localhost:8081/devtools');
+	  var port = arguments.length <= 0 || arguments[0] === undefined ? 8081 : arguments[0];
+	
+	  var socket = ws.connect('ws://localhost:' + port + '/devtools');
 	  socket.onmessage = function (evt) {
 	    if (evt.data === 'attach:agent') {
 	      initialize(socket);
@@ -168,13 +181,23 @@ module.exports =
 	    onDisconnected();
 	    console.log('Connection to RN closed');
 	  };
+	
+	  return {
+	    close: function close() {
+	      onDisconnected();
+	      socket.close();
+	    }
+	  };
 	}
 	
 	/**
 	 * When the Electron app is running in "server mode"
 	 */
+	var restartTimeout = null;
 	function startServer() {
-	  var server = new ws.Server({ port: 8097 });
+	  var port = arguments.length <= 0 || arguments[0] === undefined ? 8097 : arguments[0];
+	
+	  var server = new ws.Server({ port: port });
 	  var connected = false;
 	  server.on('connection', function (socket) {
 	    if (connected) {
@@ -195,6 +218,23 @@ module.exports =
 	    };
 	    initialize(socket);
 	  });
+	
+	  server.on('error', function (e) {
+	    onError(e);
+	    console.error('Failed to start the DevTools server', e);
+	    restartTimeout = setTimeout(function () {
+	      return startServer(port);
+	    }, 1000);
+	  });
+	
+	  return {
+	    close: function close() {
+	      connected = false;
+	      onDisconnected();
+	      clearTimeout(restartTimeout);
+	      server.close();
+	    }
+	  };
 	}
 	
 	var DevtoolsUI = {
