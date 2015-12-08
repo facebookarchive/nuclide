@@ -9,7 +9,6 @@
 .*/pkg/fb/biggrep-provider/.*
 .*/pkg/fb/phabricator-comments-client/.*
 .*/pkg/fb/phabricator/.*
-.*/pkg/fb/slog-viewer/spec/.*
 .*/pkg/fb/test-runner-t-client/.*
 .*/pkg/nuclide/buck/files/.*
 .*/pkg/nuclide/buck/toolbar/.*
