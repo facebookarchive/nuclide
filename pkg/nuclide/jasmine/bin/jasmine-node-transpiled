@@ -21,6 +21,7 @@ var args = [
   '--harmony',
   runJasmineTests,
   '--forceexit',
+  '--color',
 ].concat(varArgs);
 
 var testInfo = 'cd ' + process.cwd() + ' && node ' + args.join(' ');

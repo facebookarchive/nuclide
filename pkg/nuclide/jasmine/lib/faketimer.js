@@ -14,7 +14,7 @@
  * Use fakeSetTimeout, fakeClearTimeout, fakeSetInterval and fakeClearInterval to mock Node.js's
  * Timer utils, and using advanceClock to advance the fake timer to trigger timed callback.
  */
-require('jasmine-focused');
+require('jasmine-node');
 
 let now = 0;
 let timeoutCount = 0;

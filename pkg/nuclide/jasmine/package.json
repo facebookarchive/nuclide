@@ -8,7 +8,7 @@
     "testRunner": "npm"
   },
   "dependencies": {
-    "jasmine-focused": "1.0.7",
+    "jasmine-node": "1.14.5",
     "nuclide-node-transpiler": "0.0.0"
   },
   "devDependencies": {},

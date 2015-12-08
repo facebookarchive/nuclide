@@ -10,11 +10,5 @@
   },
   "dependencies": {
     "babel-core": "5.8.21"
-  },
-  "devDependencies": {
-    "jasmine-focused": "1.0.7"
-  },
-  "scripts": {
-    "test": "node --harmony node_modules/.bin/jasmine-focused spec"
   }
 }

@@ -18,7 +18,6 @@ except ImportError:
 
 DEFAULT_NPM_TEST_COMMAND = 'node --harmony node_modules/.bin/jasmine-node-transpiled spec'
 NPM_TEST_COMMANDS = {
-  'nuclide-inline-imports': 'node --harmony node_modules/.bin/jasmine-focused spec',
   'nuclide-jasmine': 'node --harmony bin/jasmine-node-transpiled spec',
 }
 PATH_TO_ATOM_INTERFACES = './node_modules/nuclide-external-interfaces/1.0/'
@@ -34,6 +33,7 @@ VERSION_BLACKLIST = {
   'fb-nuclide-installer': 'The installer needs to be versioned.',
 }
 PACKAGES_WITHOUT_TESTS = [
+    'nuclide-inline-imports', # $UPFixMe: OfflineInstaller doesn't like jasmine-node's bin
     'hyperclick-interfaces',
     'nuclide-debugger-interfaces', # contains no code, so no tests.
     'nuclide-external-interfaces', # contains no code, so no tests.
