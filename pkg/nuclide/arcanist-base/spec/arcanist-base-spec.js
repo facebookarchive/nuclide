@@ -58,7 +58,7 @@ describe('nuclide-arcanist-base', () => {
   });
 
   afterEach(() => {
-    temp.cleanup();
+    temp.cleanupSync();
   });
 
   it('findArcConfigDirectory', () => {
