@@ -9,6 +9,12 @@
  * the root directory of this source tree.
  */
 
+import type {
+  DiagnosticProviderUpdate,
+  MessageUpdateCallback,
+  MessageInvalidationCallback,
+} from '../../../nuclide/diagnostics/base';
+
 import {DiagnosticsProviderBase} from '../../../nuclide/diagnostics/provider-base';
 
 import {Range} from 'atom';

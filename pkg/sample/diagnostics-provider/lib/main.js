@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import type {DiagnosticProvider} from '../../../nuclide/diagnostics/base';
 import SampleDiagnosticsProvider from './SampleDiagnosticsProvider';
 
 export function provideDiagnostics(): DiagnosticProvider {
