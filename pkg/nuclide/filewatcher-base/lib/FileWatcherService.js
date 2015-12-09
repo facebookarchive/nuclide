@@ -14,6 +14,7 @@ import type WatchmanSubscription from '../../watchman-helpers/lib/WatchmanSubscr
 import type {FileChange} from '../../watchman-helpers/lib/WatchmanClient';
 import type {watcher$WatchResult} from './types';
 
+import invariant from 'assert';
 import path from 'path';
 import {Observable} from 'rx';
 import {EventEmitter} from 'events';
