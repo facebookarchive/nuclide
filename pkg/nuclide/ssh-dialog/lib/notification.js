@@ -12,9 +12,9 @@
 import type {
   SshConnectionConfiguration,
   SshHandshakeErrorType,
-} from 'nuclide-remote-connection/lib/SshHandshake';
+} from '../../remote-connection/lib/SshHandshake';
 
-import {SshHandshake} from 'nuclide-remote-connection';
+import {SshHandshake} from '../../remote-connection';
 
 export function notifySshHandshakeError(
   errorType: SshHandshakeErrorType,

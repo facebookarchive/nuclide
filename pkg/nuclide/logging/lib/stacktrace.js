@@ -28,7 +28,7 @@ let hookedPrepareStackTrace: ?PrepareStackTraceFunction;
  * customize Error.prepareStackTrace.
  */
 export default function addPrepareStackTraceHook(): void {
-  require('nuclide-commons').singleton.get(
+  require('../../commons').singleton.get(
     PREPARE_STACK_TRACE_HOOKED_KEY,
     () => {
       hookedPrepareStackTrace = createHookedPrepareStackTrace(Error.prepareStackTrace
@@ -117,6 +117,6 @@ function defaultPrepareStackTrace(error: Error, frames: Array<node$CallSite>): s
 export const __test__ = {
   createHookedPrepareStackTrace,
   resetPrepareStackTraceHooked() {
-    require('nuclide-commons').singleton.clear(PREPARE_STACK_TRACE_HOOKED_KEY);
+    require('../../commons').singleton.clear(PREPARE_STACK_TRACE_HOOKED_KEY);
   },
 };

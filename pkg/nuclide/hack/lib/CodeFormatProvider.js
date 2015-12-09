@@ -10,7 +10,7 @@
  */
 
 const hack = require('./hack');
-import {trackTiming} from 'nuclide-analytics';
+import {trackTiming} from '../../analytics';
 
 class CodeFormatProvider {
 

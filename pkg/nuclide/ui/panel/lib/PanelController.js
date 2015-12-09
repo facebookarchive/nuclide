@@ -10,7 +10,7 @@
  */
 
 const React = require('react-for-atom');
-const {assign} = require('nuclide-commons').object;
+const {assign} = require('../../../commons').object;
 
 const PanelComponent = require('./PanelComponent');
 

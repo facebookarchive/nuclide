@@ -18,7 +18,7 @@
 const mv = require('mv');
 const fs = require('fs');
 const pathUtil = require('path');
-const {fsPromise} = require('nuclide-commons');
+const {fsPromise} = require('../../../commons');
 
 import type {FileWithStats} from './FileSystemServiceType';
 

@@ -13,11 +13,11 @@ import type {
   FileMessageUpdate,
   FileDiagnosticMessage,
   Trace,
-} from 'nuclide-diagnostics-base';
+} from '../../base';
 
-import type {NuclideUri} from 'nuclide-remote-uri';
+import type {NuclideUri} from '../../../remote-uri';
 
-const {track} = require('nuclide-analytics');
+const {track} = require('../../../analytics');
 const React = require('react-for-atom');
 
 const GUTTER_ID = 'nuclide-diagnostics-gutter';

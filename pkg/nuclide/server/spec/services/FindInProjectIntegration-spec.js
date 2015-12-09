@@ -10,7 +10,7 @@
  */
 
 import fs from 'fs';
-import {addMatchers} from 'nuclide-test-helpers';
+import {addMatchers} from '../../../test-helpers';
 import path from 'path';
 import ServiceTestHelper from './ServiceTestHelper';
 
@@ -34,13 +34,13 @@ describe('FindInProjectService-Integration', () => {
       // Start the integration test helper.
       await testHelper.start([{
         name: 'FindInProjectService',
-        definition: 'nuclide-remote-search/lib/FindInProjectService.def',
-        implementation: 'nuclide-remote-search/lib/FindInProjectService.js',
+        definition: '../../../remote-search/lib/FindInProjectService.def',
+        implementation: '../../../remote-search/lib/FindInProjectService.js',
       }]);
 
       const remoteService = testHelper.getRemoteService(
         'FindInProjectService',
-        'nuclide-remote-search/lib/FindInProjectService.def');
+        '../../../remote-search/lib/FindInProjectService.def');
 
       // Search in the fixtures/basic directory.
       const connection = testHelper.getRemoteConnection();

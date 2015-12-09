@@ -8,10 +8,10 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-import type {BlameProvider} from 'nuclide-blame-base';
+import type {BlameProvider} from '../../blame-base';
 
 import {CompositeDisposable, Disposable} from 'atom';
-import {trackTiming} from 'nuclide-analytics';
+import {trackTiming} from '../../analytics';
 import invariant from 'assert';
 
 const PACKAGES_MISSING_MESSAGE =
@@ -108,7 +108,7 @@ class Activation {
         this._textEditorToBlameGutter.set(editor, blameGutter);
         const destroySubscription = editor.onDidDestroy(() => this._editorWasDestroyed(editor));
         this._textEditorToDestroySubscription.set(editor, destroySubscription);
-        const {track} = require('nuclide-analytics');
+        const {track} = require('../../analytics');
         track('blame-open', {
           editorPath: editor.getPath() || '',
         });
@@ -116,7 +116,7 @@ class Activation {
         atom.notifications.addInfo(
           'Could not open blame: no blame information currently available for this file.'
         );
-        const logger = require('nuclide-logging').getLogger();
+        const logger = require('../../logging').getLogger();
         logger.info(
           'nuclide-blame: Could not open blame: no blame provider currently available for this ' +
           `file: ${String(editor.getPath())}`

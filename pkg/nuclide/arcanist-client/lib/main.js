@@ -9,12 +9,12 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from 'nuclide-remote-uri';
+import type {NuclideUri} from '../../remote-uri';
 // $FlowIssue t9336315
-import typeof * as ArcanistBaseService from 'nuclide-arcanist-base';
+import typeof * as ArcanistBaseService from '../../arcanist-base';
 
 function getService(fileName: NuclideUri): ArcanistBaseService {
-  return require('nuclide-client').getServiceByNuclideUri('ArcanistBaseService', fileName);
+  return require('../../client').getServiceByNuclideUri('ArcanistBaseService', fileName);
 }
 
 function findArcConfigDirectory(fileName: NuclideUri): Promise<?NuclideUri> {

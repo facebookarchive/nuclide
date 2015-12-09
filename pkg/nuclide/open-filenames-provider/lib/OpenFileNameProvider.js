@@ -13,9 +13,9 @@ import type {
   FileResult,
   Provider,
   ProviderType,
-} from 'nuclide-quick-open-interfaces';
+} from '../../quick-open-interfaces';
 
-import {regexp} from 'nuclide-commons';
+import {regexp} from '../../commons';
 const {safeRegExpFromString} = regexp;
 
 // Returns paths of currently opened editor tabs.

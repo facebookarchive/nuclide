@@ -32,20 +32,6 @@
       }
     }
   },
-  "dependencies": {
-    "fixed-data-table-for-atom": "0.4.5",
-    "nuclide-analytics": "0.0.0",
-    "nuclide-atom-helpers": "0.0.0",
-    "nuclide-commons": "0.0.0",
-    "nuclide-keystroke-label": "0.0.0",
-    "nuclide-ui-panel": "0.0.0",
-    "react-for-atom": "0.14.3"
-  },
-  "devDependencies": {
-    "nuclide-diagnostics-base": "0.0.0",
-    "nuclide-home-interfaces": "0.0.0",
-    "nuclide-remote-uri": "0.0.0"
-  },
   "_atomModuleCache": {
     "extensions": {
       ".node": []

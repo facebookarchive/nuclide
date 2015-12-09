@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from 'nuclide-remote-uri';
-import type {FileSystemService} from 'nuclide-server/lib/services/FileSystemServiceType';
+import type {NuclideUri} from '../../remote-uri';
+import type {FileSystemService} from '../../server/lib/services/FileSystemServiceType';
 
 const FILE_SYSTEM_SERVICE = 'FileSystemService';
 
@@ -20,7 +20,7 @@ import {
   getService,
   getServiceLogger,
   getServiceByNuclideUri,
-} from 'nuclide-remote-connection';
+} from '../../remote-connection';
 
 module.exports = {
   getFileForPath,

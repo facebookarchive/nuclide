@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from 'nuclide-remote-uri';
+import type {NuclideUri} from '../../remote-uri';
 
 export type FileSearchResult = {
   path: NuclideUri;
@@ -17,8 +17,8 @@ export type FileSearchResult = {
   matchIndexes: Array<number>;
 };
 
-import {fileSearchForDirectory} from 'nuclide-path-search';
-import {fsPromise} from 'nuclide-commons';
+import {fileSearchForDirectory} from '../../path-search';
+import {fsPromise} from '../../commons';
 const fileSearchers: Map = new Map();
 /**
  * Performs a fuzzy file search in the specified directory.

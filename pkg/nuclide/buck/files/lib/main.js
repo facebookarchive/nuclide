@@ -23,7 +23,7 @@ module.exports = {
 
     subscriptions = new CompositeDisposable();
 
-    const {registerGrammarForFileExtension} = require('nuclide-atom-helpers');
+    const {registerGrammarForFileExtension} = require('../../../atom-helpers');
     subscriptions.add(registerGrammarForFileExtension('source.python', 'BUCK'));
     subscriptions.add(registerGrammarForFileExtension('source.ini', '.buckconfig'));
   },

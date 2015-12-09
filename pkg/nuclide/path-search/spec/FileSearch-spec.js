@@ -16,7 +16,7 @@ import {track} from 'temp';
 const temp = track();
 import url from 'url';
 
-import {asyncExecute} from 'nuclide-commons';
+import {asyncExecute} from '../../commons';
 
 import {fileSearchForDirectory} from '../lib/FileSearch';
 

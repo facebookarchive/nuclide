@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from 'nuclide-remote-uri';
-import {getHackExecOptions, getSearchResults} from 'nuclide-hack-base/lib/HackHelpers';
+import type {NuclideUri} from '../../remote-uri';
+import {getHackExecOptions, getSearchResults} from '../../hack-base/lib/HackHelpers';
 
 /**
  * The trailing underscore is to distinguish this from the one that is listed in

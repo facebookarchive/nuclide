@@ -10,7 +10,7 @@
  */
 
 import ConnectionDetailsForm from './ConnectionDetailsForm';
-import NuclideMutableListSelector from 'nuclide-ui-mutable-list-selector';
+import NuclideMutableListSelector from '../../ui/mutable-list-selector';
 import React from 'react-for-atom';
 
 import type {

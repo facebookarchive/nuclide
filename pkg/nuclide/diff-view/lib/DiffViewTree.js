@@ -9,20 +9,20 @@
  * the root directory of this source tree.
  */
 
-import type LazyTreeNode from 'nuclide-ui-tree';
+import type LazyTreeNode from '../../ui/tree';
 import type {FileChange, FileChangeState} from './types';
 import type DiffViewModel from './DiffViewModel';
 
-import {fileTypeClass} from 'nuclide-atom-helpers';
-import {TreeRootComponent} from 'nuclide-ui-tree';
+import {fileTypeClass} from '../../atom-helpers';
+import {TreeRootComponent} from '../../ui/tree';
 import DiffViewTreeNode from './DiffViewTreeNode';
-import remoteUri from 'nuclide-remote-uri';
+import remoteUri from '../../remote-uri';
 import Immutable from 'immutable';
 import {FileChangeStatus} from './constants';
 import {CompositeDisposable} from 'atom';
 import React from 'react-for-atom';
 
-import {array} from 'nuclide-commons';
+import {array} from '../../commons';
 import classnames from 'classnames';
 
 function labelClassNameForNode(node: LazyTreeNode): string {
@@ -120,7 +120,7 @@ export default class DiffViewTree extends React.Component {
     const noChildrenFetcher = async () => Immutable.List.of();
     const {filePath: rootPath} = rootNode.getItem();
     const childNodes = [];
-    const {repositoryForPath} = require('nuclide-hg-git-bridge');
+    const {repositoryForPath} = require('../../hg-git-bridge');
     const repository = repositoryForPath(rootPath);
     if (repository == null || repository.getType() !== 'hg') {
       const nodeName = `[X] Non-Mercurial Repository`;

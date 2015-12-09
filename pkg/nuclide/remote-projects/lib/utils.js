@@ -8,16 +8,16 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-import type {NuclideUri} from 'nuclide-remote-uri';
-import type {RemoteConnectionConfiguration} from 'nuclide-remote-connection/lib/RemoteConnection';
+import type {NuclideUri} from '../../remote-uri';
+import type {RemoteConnectionConfiguration} from '../../remote-connection/lib/RemoteConnection';
 
 import invariant from 'assert';
-import {parse, createRemoteUri} from 'nuclide-remote-uri';
+import {parse, createRemoteUri} from '../../remote-uri';
 
 const NUCLIDE_PROTOCOL_PREFIX = 'nuclide:/';
 const NUCLIDE_PROTOCOL_PREFIX_LENGTH = NUCLIDE_PROTOCOL_PREFIX.length;
 
-import {isTextEditor} from 'nuclide-atom-helpers';
+import {isTextEditor} from '../../atom-helpers';
 
 export type OpenFileEditorInstance = {
   pane: atom$Pane;

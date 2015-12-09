@@ -14,7 +14,7 @@ import invariant from 'assert';
 import vm from 'vm';
 import fs from 'fs';
 
-import {array} from 'nuclide-commons';
+import {array} from '../../commons';
 
 import type {
   Type,

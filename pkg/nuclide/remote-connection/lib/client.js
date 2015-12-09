@@ -9,11 +9,11 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from 'nuclide-remote-uri';
+import type {NuclideUri} from '../../remote-uri';
 import type RemoteFile from './RemoteFile';
 
 const {RemoteConnection} = require('./RemoteConnection');
-const {isRemote} = require('nuclide-remote-uri');
+const {isRemote} = require('../../remote-uri');
 
 module.exports = {
   getFileForPath(filePath: NuclideUri): ?(atom$File | RemoteFile) {

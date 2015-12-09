@@ -29,11 +29,11 @@ type SearchResponse = {
 }
 
 import invariant from 'assert';
-import type {FileSearchResult} from 'nuclide-path-search';
+import type {FileSearchResult} from '../../../path-search';
 
-const {fsPromise} = require('nuclide-commons');
-const {fileSearchForDirectory} = require('nuclide-path-search');
-const remoteUri = require('nuclide-remote-uri');
+const {fsPromise} = require('../../../commons');
+const {fileSearchForDirectory} = require('../../../path-search');
+const remoteUri = require('../../../remote-uri');
 
 type SearchProvider = {
   isAvailable: (cwd: string) => boolean;

@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {HyperclickProvider} from 'hyperclick-interfaces';
+import type {HyperclickProvider} from '../../hyperclick-interfaces';
 import type HyperclickType from './Hyperclick';
 
 let hyperclick: ?HyperclickType = null;

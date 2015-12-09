@@ -11,7 +11,7 @@
 
 import invariant from 'assert';
 import {existsSync, moveSync} from 'fs-plus';
-import {fixtures} from 'nuclide-test-helpers';
+import {fixtures} from '../../test-helpers';
 import path from 'path';
 
 /*

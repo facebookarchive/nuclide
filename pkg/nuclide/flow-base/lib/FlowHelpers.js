@@ -10,7 +10,7 @@
  */
 
 const path = require('path');
-const {asyncExecute, findNearestFile} = require('nuclide-commons');
+const {asyncExecute, findNearestFile} = require('../../commons');
 const LRU = require('lru-cache');
 
 import invariant from 'assert';

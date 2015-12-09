@@ -10,7 +10,7 @@
  */
 
 import invariant from 'assert';
-import {getLogger} from 'nuclide-logging';
+import {getLogger} from '../../logging';
 import type {RemoteConnectionConfiguration} from './RemoteConnection';
 
 const logger = getLogger();
@@ -65,7 +65,7 @@ function getAtomConfigKey(host: string): string {
 function encryptConfig(
   remoteProjectConfig: RemoteConnectionConfiguration,
 ): SerializableRemoteConnectionConfiguration {
-  const {replacePassword} = require('nuclide-keytar-wrapper');
+  const {replacePassword} = require('../../keytar-wrapper');
   const crypto = require('crypto');
 
   const sha1 = crypto.createHash('sha1');
@@ -101,7 +101,7 @@ function encryptConfig(
 function decryptConfig(
   remoteProjectConfig: SerializableRemoteConnectionConfiguration,
 ): RemoteConnectionConfiguration {
-  const {getPassword} = require('nuclide-keytar-wrapper');
+  const {getPassword} = require('../../keytar-wrapper');
   const crypto = require('crypto');
 
   const sha1 = crypto.createHash('sha1');

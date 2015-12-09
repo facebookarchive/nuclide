@@ -13,7 +13,7 @@ import type {Point} from 'atom';
 
 import CodeHighlightProvider from './CodeHighlightProvider';
 import {CompositeDisposable} from 'atom';
-import {HACK_GRAMMARS} from 'nuclide-hack-common/lib/constants';
+import {HACK_GRAMMARS} from '../../hack-common/lib/constants';
 
 const HACK_GRAMMARS_STRING = HACK_GRAMMARS.join(', ');
 const PACKAGE_NAME = 'nuclide-hack';
@@ -36,7 +36,7 @@ module.exports = {
 
   activate() {
     const {getCachedHackLanguageForUri} = require('./hack');
-    const {projects} = require('nuclide-atom-helpers');
+    const {projects} = require('../../atom-helpers');
     subscriptions = new CompositeDisposable();
     subscriptions.add(projects.onDidRemoveProjectPath(projectPath => {
       const hackLanguage = getCachedHackLanguageForUri(projectPath);
@@ -128,7 +128,7 @@ module.exports = {
 
   provideBusySignal(): BusySignalProviderBase {
     if (busySignalProvider == null) {
-      const {BusySignalProviderBase} = require('nuclide-busy-signal-provider-base');
+      const {BusySignalProviderBase} = require('../../busy-signal-provider-base');
       busySignalProvider = new BusySignalProviderBase();
     }
     return busySignalProvider;

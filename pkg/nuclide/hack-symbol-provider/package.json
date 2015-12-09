@@ -8,15 +8,6 @@
     "packageType": "Atom",
     "testRunner": "apm"
   },
-  "dependencies": {
-    "nuclide-client": "0.0.0",
-    "nuclide-hack-search-service": "0.0.0",
-    "react-for-atom": "0.14.3"
-  },
-  "devDependencies": {
-    "nuclide-quick-open-interfaces": "0.0.0",
-    "nuclide-test-helpers": "0.0.0"
-  },
   "providedServices": {
     "nuclide-quick-open-register-provider": {
       "description": "Register ourselves with the quick-open package",

@@ -8,19 +8,7 @@
     "packageType": "Node",
     "testRunner": "npm"
   },
-  "dependencies": {
-    "fb-watchman": "1.1.0",
-    "nuclide-commons": "0.0.0",
-    "nuclide-logging": "0.0.0",
-    "nuclide-watchman-helpers": "0.0.0",
-    "rx": "3.1.1"
-  },
-  "devDependencies": {
-    "event-kit": "1.1.1",
-    "nuclide-jasmine": "0.0.0",
-    "nuclide-remote-uri": "0.0.0"
-  },
   "scripts": {
-    "test": "node --harmony node_modules/.bin/jasmine-node-transpiled spec"
+    "test": "node --harmony ../jasmine/bin/jasmine-node-transpiled spec"
   }
 }

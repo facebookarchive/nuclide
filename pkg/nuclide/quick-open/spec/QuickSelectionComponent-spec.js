@@ -11,7 +11,7 @@
 
 import type {
   FileResult,
-} from 'nuclide-quick-open-interfaces';
+} from '../../quick-open-interfaces';
 
 const React = require('react-for-atom');
 const QuickSelectionComponent = require('../lib/QuickSelectionComponent');

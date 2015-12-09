@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-const AtomInput = require('nuclide-ui-atom-input');
-const NuclideDropdown = require('nuclide-ui-dropdown');
+const AtomInput = require('../../ui/atom-input');
+const NuclideDropdown = require('../../ui/dropdown');
 const React = require('react-for-atom');
 const {PropTypes} = React;
 
@@ -30,7 +30,7 @@ const NO_LAUNCH_DEBUG_OPTIONS = [
 async function callDebugService(scriptTarget: ?string): Promise {
   // Use commands here to trigger package activation.
   atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:show');
-  const debuggerService = await require('nuclide-service-hub-plus')
+  const debuggerService = await require('../../service-hub-plus')
       .consumeFirstProvider('nuclide-debugger.remote');
   debuggerService.debugHhvm(scriptTarget);
 }
@@ -103,7 +103,7 @@ class HhvmToolbar extends React.Component {
   }
 
   _getDebugTarget(index: number, targetFilePath: string): string {
-    const remoteUri = require('nuclide-remote-uri');
+    const remoteUri = require('../../remote-uri');
     const hostName = remoteUri.getHostname(targetFilePath);
     const remoteFilePath = remoteUri.getPath(targetFilePath);
     return this._isDebugScript(index) ? remoteFilePath : hostName;

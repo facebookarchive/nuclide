@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from 'nuclide-remote-uri';
+import type {NuclideUri} from '../../remote-uri';
 import type {
   HackCompletionsResult,
   HackCompletion,
@@ -19,16 +19,16 @@ import type {
   HackSearchPosition,
   HackSymbolNameResult,
   HackReferencesResult,
-} from 'nuclide-hack-base/lib/types';
+} from '../../hack-base/lib/types';
 
-import {parse, createRemoteUri, getPath} from 'nuclide-remote-uri';
+import {parse, createRemoteUri, getPath} from '../../remote-uri';
 import {getHackService} from './utils';
-import {getLogger} from 'nuclide-logging';
-import {array} from 'nuclide-commons';
+import {getLogger} from '../../logging';
+import {array} from '../../commons';
 
 const {Range, Emitter} = require('atom');
 const HackWorker = require('./HackWorker');
-const {CompletionType, SymbolType} = require('nuclide-hack-common');
+const {CompletionType, SymbolType} = require('../../hack-common');
 // The word char regex include \ to search for namespaced classes.
 const wordCharRegex = /[\w\\]/;
 // The xhp char regex include : and - to match xhp tags like <ui:button-group>.

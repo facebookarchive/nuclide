@@ -10,20 +10,5 @@
   },
   "engines": {
     "atom": ">=0.184.0"
-  },
-  "dependencies": {
-    "nuclide-atom-npm": "0.0.0",
-    "nuclide-client": "0.0.0",
-    "nuclide-commons": "0.0.0",
-    "nuclide-logging": "0.0.0",
-    "nuclide-remote-connection": "0.0.0",
-    "nuclide-ui-atom-input": "0.0.0",
-    "nuclide-ui-mutable-list-selector": "0.0.0",
-    "nuclide-ui-radiogroup": "0.0.0",
-    "nuclide-version": "0.0.0",
-    "react-for-atom": "0.14.3"
-  },
-  "devDependencies": {
-    "temp": "0.8.3"
   }
 }

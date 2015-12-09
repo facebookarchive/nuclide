@@ -13,7 +13,7 @@
  * adapted from https://github.com/atom/underscore-plus/blob/master/src/underscore-plus.coffee
  */
 
-const {array} = require('nuclide-commons');
+const {array} = require('../../commons');
 
 const MAC_MODIFIER_KEYMAP = {
   alt: '\u2325',

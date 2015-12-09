@@ -7,8 +7,5 @@
   "nuclide": {
     "packageType": "Node",
     "testRunner": "npm"
-  },
-  "dependencies": {
-    "babel-core": "5.8.21"
   }
 }

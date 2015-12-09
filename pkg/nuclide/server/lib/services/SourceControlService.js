@@ -14,9 +14,9 @@
  * See t6913624.
  */
 
-import type {HgRepositoryDescription} from 'nuclide-source-control-helpers';
+import type {HgRepositoryDescription} from '../../../source-control-helpers';
 
 export function getHgRepository(directoryPath: string): Promise<HgRepositoryDescription> {
-  const {findHgRepository} = require('nuclide-source-control-helpers');
+  const {findHgRepository} = require('../../../source-control-helpers');
   return Promise.resolve(findHgRepository(directoryPath));
 }

@@ -10,8 +10,8 @@
  */
 
 import * as config from '../../lib/serviceframework/config';
-import {getPath} from 'nuclide-remote-uri';
-import {getProxy} from 'nuclide-service-parser';
+import {getPath} from '../../../remote-uri';
+import {getProxy} from '../../../service-parser';
 import NuclideServer from '../../lib/NuclideServer';
 import ServiceFramework from '../../lib/serviceframework';
 import NuclideSocket from '../../lib/NuclideSocket';

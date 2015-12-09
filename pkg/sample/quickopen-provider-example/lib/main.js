@@ -11,7 +11,7 @@
 
 import type {
   Provider,
-} from 'nuclide-quick-open-interfaces';
+} from '../../../nuclide/quick-open-interfaces';
 
 let providerInstance: ?Provider;
 function getProviderInstance(): Provider {

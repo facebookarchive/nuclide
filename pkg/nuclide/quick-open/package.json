@@ -18,26 +18,6 @@
   "engines": {
     "atom": ">=0.187.0"
   },
-  "dependencies": {
-    "classnames": "2.2.0",
-    "flux": "2.0.3",
-    "nuclide-analytics": "0.0.0",
-    "nuclide-atom-helpers": "0.0.0",
-    "nuclide-client": "0.0.0",
-    "nuclide-commons": "0.0.0",
-    "nuclide-feature-config": "0.0.0",
-    "nuclide-keystroke-label": "0.0.0",
-    "nuclide-logging": "0.0.0",
-    "nuclide-remote-uri": "0.0.0",
-    "nuclide-ui-atom-input": "0.0.0",
-    "nuclide-ui-tabs": "0.0.0",
-    "object-assign": "2.0.0",
-    "react-for-atom": "0.14.3"
-  },
-  "devDependencies": {
-    "nuclide-home-interfaces": "0.0.0",
-    "nuclide-quick-open-interfaces": "0.0.0"
-  },
   "consumedServices": {
     "nuclide-quick-open-register-provider": {
       "versions": {

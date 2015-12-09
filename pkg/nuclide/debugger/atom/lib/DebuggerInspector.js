@@ -14,7 +14,7 @@ const Bridge = require('./Bridge');
 const DebuggerActions = require('./DebuggerActions');
 const React = require('react-for-atom');
 const path = require('path');
-const {PanelComponent} = require('nuclide-ui-panel');
+const {PanelComponent} = require('../../../ui/panel');
 
 /**
  * Wrapper for Chrome Devtools frontend view.

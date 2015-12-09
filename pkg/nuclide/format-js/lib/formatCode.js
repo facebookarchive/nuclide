@@ -9,10 +9,10 @@
  * the root directory of this source tree.
  */
 
-const logger = require('nuclide-logging').getLogger();
-const featureConfig = require('nuclide-feature-config');
-const {track} = require('nuclide-analytics');
-const {updateCursor} = require('nuclide-update-cursor');
+const logger = require('../../logging').getLogger();
+const featureConfig = require('../../feature-config');
+const {track} = require('../../analytics');
+const {updateCursor} = require('../../update-cursor');
 
 async function formatCode(editor: ?TextEditor): Promise<void> {
   editor = editor || atom.workspace.getActiveTextEditor();
@@ -30,7 +30,7 @@ async function formatCode(editor: ?TextEditor): Promise<void> {
 
   // Reprint transform.
   if (featureConfig.get('nuclide-format-js.reprint')) {
-    const {reprint} = require('nuclide-reprint-js');
+    const {reprint} = require('../../reprint-js');
     const reprintResult = reprint(source, {
       maxLineLength: 80,
       useSpaces: true,
@@ -41,7 +41,7 @@ async function formatCode(editor: ?TextEditor): Promise<void> {
 
   // Auto-require transform.
   // TODO: Add a limit so the transform is not run on files over a certain size.
-  const {transform} = require('nuclide-format-js-base');
+  const {transform} = require('../../format-js-base');
   const {getOptions} = require('./options');
   const path = editor.getPath();
   source = transform(source, await getOptions(path));

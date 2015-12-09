@@ -14,11 +14,11 @@ import FileTreeActions from '../lib/FileTreeActions';
 import FileTreeHelpers from '../lib/FileTreeHelpers';
 import FileTreeStore from '../lib/FileTreeStore';
 
-import {fixtures} from 'nuclide-test-helpers';
+import {fixtures} from '../../test-helpers';
 import fs from 'fs';
 import pathModule from 'path';
 
-import {denodeify} from 'nuclide-commons';
+import {denodeify} from '../../commons';
 
 import tempModule from 'temp';
 tempModule.track();

@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-import {SshHandshake} from 'nuclide-remote-connection';
-import {extend} from 'nuclide-commons';
+import {SshHandshake} from '../../remote-connection';
+import {extend} from '../../commons';
 const {immutableExtend} = extend;
 import {validateFormInputs} from '../lib/form-validation-utils';
 

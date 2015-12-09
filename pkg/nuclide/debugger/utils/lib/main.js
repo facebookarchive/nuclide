@@ -11,7 +11,7 @@
 import type {
   nuclide_debugger$DebuggerInstance,
   nuclide_debugger$DebuggerProcessInfo,
-} from 'nuclide-debugger-interfaces/service';
+} from '../../interfaces/service';
 
 class DebuggerProcessInfo {
   _serviceName: string;

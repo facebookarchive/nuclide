@@ -61,7 +61,7 @@ class DebuggerProcess {
   }
 }
 
-const {DebuggerProcessInfo} = require('nuclide-debugger-utils');
+const {DebuggerProcessInfo} = require('../../utils');
 
 class ProcessInfo extends DebuggerProcessInfo {
   pid: number;
@@ -96,7 +96,7 @@ class ProcessInfo extends DebuggerProcessInfo {
 }
 
 function getProcessInfoList(): Promise<Array<DebuggerProcessInfo>> {
-  const {asyncExecute} = require('nuclide-commons');
+  const {asyncExecute} = require('../../../commons');
   return asyncExecute('ps', ['-e', '-o', 'pid,comm'], {})
     .then(result => {
       return result.stdout.toString().split('\n').slice(1).map(line => {

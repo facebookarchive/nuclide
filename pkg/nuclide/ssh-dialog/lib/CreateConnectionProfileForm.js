@@ -14,7 +14,7 @@ import type {
   NuclideRemoteConnectionProfile,
 } from './connection-types';
 
-import AtomInput from 'nuclide-ui-atom-input';
+import AtomInput from '../../ui/atom-input';
 import React from 'react-for-atom';
 import ConnectionDetailsForm from './ConnectionDetailsForm';
 import {validateFormInputs} from './form-validation-utils';

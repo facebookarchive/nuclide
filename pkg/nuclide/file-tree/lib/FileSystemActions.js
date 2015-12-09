@@ -13,13 +13,13 @@ import type FileTreeNode from './FileTreeNode';
 import type {
   RemoteDirectory,
   RemoteFile,
-} from 'nuclide-remote-connection';
+} from '../../remote-connection';
 
 import FileTreeHelpers from './FileTreeHelpers';
 import FileTreeStore from './FileTreeStore';
 import FileDialogComponent from '../components/FileDialogComponent';
 import React from 'react-for-atom';
-import RemoteUri from 'nuclide-remote-uri';
+import RemoteUri from '../../remote-uri';
 
 import fs from 'fs-plus';
 import pathModule from 'path';

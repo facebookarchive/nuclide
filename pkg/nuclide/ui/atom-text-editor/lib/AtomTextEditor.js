@@ -11,7 +11,7 @@
 
 import React from 'react-for-atom';
 import {TextBuffer} from 'atom';
-import {createTextEditor} from 'nuclide-atom-helpers';
+import {createTextEditor} from '../../../atom-helpers';
 
 const {PropTypes} = React;
 

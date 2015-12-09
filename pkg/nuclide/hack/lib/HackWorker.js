@@ -11,7 +11,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const logger = require('nuclide-logging').getLogger();
+const logger = require('../../logging').getLogger();
 
 const DEFAULT_WEBWORKER_TIMEOUT = 30 * 1000;
 const DEFAULT_POOR_PERF_TIMEOUT = 8 * 1000;

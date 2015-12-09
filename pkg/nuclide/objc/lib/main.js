@@ -12,7 +12,7 @@
 import type ObjectiveCColonIndenter from './ObjectiveCColonIndenter';
 import type ObjectiveCBracketBalancer from './ObjectiveCBracketBalancer';
 
-import featureConfig from 'nuclide-feature-config';
+import featureConfig from '../../feature-config';
 
 class Activation {
   _indentFeature: ObjectiveCColonIndenter;

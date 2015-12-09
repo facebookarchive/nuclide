@@ -11,8 +11,8 @@
 
 const watchman = require('fb-watchman');
 
-const {isEmpty} = require('nuclide-commons').object;
-const logger = require('nuclide-logging').getLogger();
+const {isEmpty} = require('../../commons').object;
+const logger = require('../../logging').getLogger();
 const {getWatchmanBinaryPath} = require('./main');
 const path = require('path');
 

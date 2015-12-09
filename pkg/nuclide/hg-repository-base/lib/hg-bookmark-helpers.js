@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const {fsPromise} = require('nuclide-commons');
+const {fsPromise} = require('../../commons');
 const path = require('path');
 
 
@@ -27,7 +27,7 @@ async function fetchCurrentBookmark(repoPath: string): Promise<string> {
     if (!(e.code === 'ENOENT')) {
       // We expect an error if the bookmark file doesn't exist. Otherwise, the
       // error is unexpected, so log it.
-      const logger = require('nuclide-logging').getLogger();
+      const logger = require('../../logging').getLogger();
       logger.error(e);
     }
     result = '';

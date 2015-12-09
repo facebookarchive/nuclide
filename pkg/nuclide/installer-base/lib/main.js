@@ -87,7 +87,7 @@ async function installPackagesInConfig(config: InstallConfig): Promise<boolean> 
 
   function render() {
     if (detailTextElement) {
-      const {from} = require('nuclide-commons').array;
+      const {from} = require('../../commons').array;
       detailTextElement.innerText = `Installing ${from(currentlyInstalling).join(', ')}`;
     }
     updateMessage();
@@ -144,7 +144,7 @@ function createInstallationMessage(numPackages: number, ellipsisLength: number):
  * that correspond to user-installed Atom packages.
  */
 async function getInstalledPackages(): Promise<{[key: PackageName]: PackageVersion}> {
-  const {asyncExecute} = require('nuclide-commons');
+  const {asyncExecute} = require('../../commons');
   const apm = atom.packages.getApmPath();
   let json;
   try {
@@ -200,7 +200,7 @@ function installApmPackages(
   onBeginInstallation: (packageName: string) => void,
   onFinishInstallation: (packageName: string) => void,
 ): Promise {
-  const {asyncExecute, PromisePool} = require('nuclide-commons');
+  const {asyncExecute, PromisePool} = require('../../commons');
   // Use ~25% of the number of cores so that the installer does not eat up all the resources.
   const poolSize = Math.max(Math.ceil(require('os').cpus().length / 4), 1);
   const pool = new PromisePool(poolSize);

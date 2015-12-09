@@ -10,10 +10,10 @@
  */
 
 import invariant from 'assert';
-import type {ProcessOutputDataHandlers} from 'nuclide-process-output-store/lib/types';
+import type {ProcessOutputDataHandlers} from '../../../process/output-store/lib/types';
 import type {Dispatcher} from 'flux';
-import {scriptSafeSpawnAndObserveOutput} from 'nuclide-commons';
-import ExecutorServer from 'nuclide-react-native-node-executor';
+import {scriptSafeSpawnAndObserveOutput} from '../../../commons';
+import ExecutorServer from '../../../react-native-node-executor';
 import {Emitter} from 'atom';
 import type {Disposable} from 'atom';
 import React from 'react-for-atom';
@@ -92,7 +92,7 @@ export default class ReactNativeServerManager {
   }
 
   async _createProcessRunner(serverCommand: string): Promise<?Object> {
-    const getRunCommandInNewPane = require('nuclide-process-output');
+    const getRunCommandInNewPane = require('../../../process/output');
     const {runCommandInNewPane, disposable} = getRunCommandInNewPane();
 
     const runProcessWithHandlers = (dataHandlerOptions: ProcessOutputDataHandlers) => {
@@ -125,7 +125,7 @@ export default class ReactNativeServerManager {
       });
     };
 
-    const {ProcessOutputStore} = require('nuclide-process-output-store');
+    const {ProcessOutputStore} = require('../../../process/output-store');
     const processOutputStore = new ProcessOutputStore(runProcessWithHandlers);
 
     const panel =
@@ -172,7 +172,7 @@ export default class ReactNativeServerManager {
 
   async _attachNodeDebugger(pid: number): Promise<void> {
     atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:show');
-    const debuggerService = await require('nuclide-service-hub-plus')
+    const debuggerService = await require('../../../service-hub-plus')
       .consumeFirstProvider('nuclide-debugger.remote');
     debuggerService.debugNode(pid);
   }

@@ -48,7 +48,7 @@ class _Task {
     child.on('error', log);
     child.send({
       action: 'bootstrap',
-      transpiler: require.resolve('nuclide-node-transpiler'),
+      transpiler: require.resolve('../../node-transpiler'),
     });
 
     const onExitCallback = () => child.kill();

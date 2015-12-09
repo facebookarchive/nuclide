@@ -10,10 +10,10 @@
  */
 
 import type {RevisionFileChanges} from './hg-constants';
-import type {NuclideUri} from 'nuclide-remote-uri';
+import type {NuclideUri} from '../../remote-uri';
 
-const {asyncExecute} = require('nuclide-commons');
-const logger = require('nuclide-logging').getLogger();
+const {asyncExecute} = require('../../commons');
+const logger = require('../../logging').getLogger();
 const path = require('path');
 import invariant from 'assert';
 

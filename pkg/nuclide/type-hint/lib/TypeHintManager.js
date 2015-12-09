@@ -9,15 +9,15 @@
  * the root directory of this source tree.
  */
 
-import type {TypeHintProvider} from 'nuclide-type-hint-interfaces';
+import type {TypeHintProvider} from '../../type-hint-interfaces';
 
 import invariant from 'assert';
 
 const {CompositeDisposable, Disposable} = require('atom');
 
-const {remove} = require('nuclide-commons').array;
+const {remove} = require('../../commons').array;
 
-import {track, trackOperationTiming} from 'nuclide-analytics';
+import {track, trackOperationTiming} from '../../analytics';
 
 const TYPEHINT_DELAY_MS = 200;
 
@@ -130,7 +130,7 @@ class TypeHintManager {
       name = provider.providerName;
     } else {
       name = 'unknown';
-      const logger = require('nuclide-logging').getLogger();
+      const logger = require('../../logging').getLogger();
       logger.error('Type hint provider has no name', provider);
     }
 

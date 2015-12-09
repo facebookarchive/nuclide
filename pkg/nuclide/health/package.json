@@ -10,8 +10,7 @@
         "order": 0,
         "type": "integer",
         "default": 10,
-        "description":
-          "Polling interval for sending aggregated health stats as analytics (in minutes).",
+        "description": "Polling interval for sending aggregated health stats as analytics (in minutes).",
         "minimum": 1,
         "maximum": 60
       },
@@ -28,8 +27,7 @@
         "type": "boolean",
         "default": false,
         "title": "Show CPU usage as a percentage",
-        "description":
-          "Show CPU average for the last minute as a percentage in status bar (except on Windows)."
+        "description": "Show CPU average for the last minute as a percentage in status bar (except on Windows)."
       },
       "showHeap": {
         "order": 3,
@@ -77,13 +75,6 @@
   "engines": {
     "atom": ">=1.0.0"
   },
-  "dependencies": {
-    "nuclide-analytics": "0.0.0",
-    "nuclide-atom-helpers": "0.0.0",
-    "nuclide-feature-config": "0.0.0",
-    "react-for-atom": "0.14.3"
-  },
-  "devDependencies": {},
   "_atomModuleCache": {
     "extensions": {
       ".node": []

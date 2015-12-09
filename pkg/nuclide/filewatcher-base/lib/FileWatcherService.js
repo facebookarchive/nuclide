@@ -9,16 +9,16 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from 'nuclide-remote-uri';
-import type WatchmanSubscription from 'nuclide-watchman-helpers/lib/WatchmanSubscription';
-import type {FileChange} from 'nuclide-watchman-helpers/lib/WatchmanClient';
+import type {NuclideUri} from '../../remote-uri';
+import type WatchmanSubscription from '../../watchman-helpers/lib/WatchmanSubscription';
+import type {FileChange} from '../../watchman-helpers/lib/WatchmanClient';
 import type {watcher$WatchResult} from './types';
 
 import path from 'path';
 import {Observable} from 'rx';
 import {EventEmitter} from 'events';
-import {fsPromise} from 'nuclide-commons';
-import {WatchmanClient} from 'nuclide-watchman-helpers';
+import {fsPromise} from '../../commons';
+import {WatchmanClient} from '../../watchman-helpers';
 
 type watcher$WatchEntry = {
   eventEmitter: EventEmitter;

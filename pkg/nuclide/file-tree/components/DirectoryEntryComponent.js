@@ -11,7 +11,7 @@
 
 const FileTreeActions = require('../lib/FileTreeActions');
 const React = require('react-for-atom');
-const {StatusCodeNumber} = require('nuclide-hg-repository-base').hgConstants;
+const {StatusCodeNumber} = require('../../hg-repository-base').hgConstants;
 
 const classnames = require('classnames');
 const {isContextClick} = require('../lib/FileTreeHelpers');

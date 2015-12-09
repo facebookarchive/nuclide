@@ -10,7 +10,7 @@
 
 // Generates a .proxy file to stdout from a service definition file.
 
-require('nuclide-node-transpiler');
+require('../../node-transpiler');
 
 var parseServiceDefinition = require('../lib/service-parser');
 var generateProxy = require('../lib/proxy-generator').default;

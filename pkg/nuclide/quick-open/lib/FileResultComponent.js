@@ -11,10 +11,10 @@
 
 import type {
   FileResult,
-} from 'nuclide-quick-open-interfaces';
+} from '../../quick-open-interfaces';
 
 const React = require('react-for-atom');
-const {fileTypeClass} = require('nuclide-atom-helpers');
+const {fileTypeClass} = require('../../atom-helpers');
 const path = require('path');
 
 class FileResultComponent {

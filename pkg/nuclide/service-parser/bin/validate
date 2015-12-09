@@ -9,7 +9,7 @@
  */
 
 // Load nuclide-node-transpiler to start transpiling.
-require('nuclide-node-transpiler');
+require('../../node-transpiler');
 
 // Load the service parser module.
 var serviceParser = require('../lib/main');

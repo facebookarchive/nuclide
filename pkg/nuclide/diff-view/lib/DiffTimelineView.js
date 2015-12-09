@@ -11,12 +11,12 @@
 
 import type DiffViewModel from './DiffViewModel';
 import type {RevisionsState} from './types';
-import type {RevisionInfo} from 'nuclide-hg-repository-base/lib/hg-constants';
+import type {RevisionInfo} from '../../hg-repository-base/lib/hg-constants';
 
 import {CompositeDisposable} from 'atom';
 import React from 'react-for-atom';
 
-import {array} from 'nuclide-commons';
+import {array} from '../../commons';
 import classnames from 'classnames';
 
 type DiffTimelineViewProps = {

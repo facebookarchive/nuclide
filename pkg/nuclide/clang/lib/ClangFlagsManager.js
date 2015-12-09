@@ -9,12 +9,12 @@
  * the root directory of this source tree.
  */
 
-import type {BuckUtils} from 'nuclide-buck-base/lib/BuckUtils';
-import type {BuckProject} from 'nuclide-buck-base/lib/BuckProject';
+import type {BuckUtils} from '../../buck/base/lib/BuckUtils';
+import type {BuckProject} from '../../buck/base/lib/BuckProject';
 
-const logger = require('nuclide-logging').getLogger();
+const logger = require('../../logging').getLogger();
 const path = require('path');
-const buckProjectModule = require('nuclide-buck-base').BuckProject;
+const buckProjectModule = require('../../buck/base').BuckProject;
 
 const CLANG_FLAGS_THAT_TAKE_PATHS = new Set([
   '-F',
@@ -25,7 +25,7 @@ const CLANG_FLAGS_THAT_TAKE_PATHS = new Set([
   '-isystem',
 ]);
 
-const {from} = require('nuclide-commons').array;
+const {from} = require('../../commons').array;
 const clangArgs = from(CLANG_FLAGS_THAT_TAKE_PATHS, item => item.length === 2 ? item : null)
     .filter(item => item !== null);
 const SINGLE_LETTER_CLANG_FLAGS_THAT_TAKE_PATHS = new Set(clangArgs);
@@ -124,7 +124,7 @@ class ClangFlagsManager {
         buckProjectRoot,
         pathToCompilationDatabase);
 
-    const {readFile} = require('nuclide-commons').fsPromise;
+    const {readFile} = require('../../commons').fsPromise;
 
     const compilationDatabaseJsonBuffer = await readFile(pathToCompilationDatabase);
     const compilationDatabaseJson = compilationDatabaseJsonBuffer.toString('utf8');

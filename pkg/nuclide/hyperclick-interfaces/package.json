@@ -7,6 +7,5 @@
   "nuclide": {
     "packageType": "Node",
     "testRunner": "npm"
-  },
-  "devDependencies": {}
+  }
 }

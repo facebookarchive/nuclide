@@ -9,17 +9,17 @@
  * the root directory of this source tree.
  */
 
-import type {FileSystemService} from 'nuclide-server/lib/services/FileSystemServiceType';
+import type {FileSystemService} from '../../server/lib/services/FileSystemServiceType';
 import type {Observable} from 'rx';
 import type {RemoteConnection} from './RemoteConnection';
-import type {HgRepositoryDescription} from 'nuclide-source-control-helpers';
+import type {HgRepositoryDescription} from '../../source-control-helpers';
 import type RemoteFile from './RemoteFile';
 
 import invariant from 'assert';
 import path from 'path';
 import {Disposable, Emitter} from 'atom';
-import {getLogger} from 'nuclide-logging';
-import remoteUri from 'nuclide-remote-uri';
+import {getLogger} from '../../logging';
+import remoteUri from '../../remote-uri';
 
 const logger = getLogger();
 

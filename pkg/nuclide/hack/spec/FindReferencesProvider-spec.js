@@ -10,7 +10,7 @@
  */
 
 const {Point} = require('atom');
-const {HACK_GRAMMARS} = require('nuclide-hack-common');
+const {HACK_GRAMMARS} = require('../../hack-common');
 const hack = require('../lib/hack');
 
 describe('FindReferencesProvider', () => {

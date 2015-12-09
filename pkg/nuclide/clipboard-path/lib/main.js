@@ -11,10 +11,10 @@
 
 
 const {CompositeDisposable} = require('atom');
-const {getPath} = require('nuclide-remote-uri');
-const {trackOperationTiming} = require('nuclide-analytics');
+const {getPath} = require('../../remote-uri');
+const {trackOperationTiming} = require('../../analytics');
 
-import type {NuclideUri} from 'nuclide-remote-uri';
+import type {NuclideUri} from '../../remote-uri';
 
 function copyAbsolutePath(): void {
   trackOperation('copyAbsolutePath', () => {
@@ -92,7 +92,7 @@ function getRepositoryRelativePath(path: NuclideUri): ?string {
 }
 
 function getArcanistRelativePath(path: NuclideUri): Promise<?string> {
-  const {getProjectRelativePath} = require('nuclide-arcanist-client');
+  const {getProjectRelativePath} = require('../../arcanist-client');
   return getProjectRelativePath(path);
 }
 

@@ -10,7 +10,7 @@
  */
 
 import {getProxy, __test__} from '../lib/main';
-import {addMatchers} from 'nuclide-test-helpers';
+import {addMatchers} from '../../test-helpers';
 
 describe('Module public API.', () => {
   beforeEach(function() {

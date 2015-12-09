@@ -11,7 +11,7 @@
 
 const {Range} = require('atom');
 const findWholeRangeOfSymbol = require('../lib/findWholeRangeOfSymbol');
-const {toEqualAtomRange, toEqualAtomRanges} = require('nuclide-atom-test-helpers').jasmineMatchers;
+const {toEqualAtomRange, toEqualAtomRanges} = require('../../atom-test-helpers').jasmineMatchers;
 
 describe('findWholeRangeOfSymbol', () => {
   let editor: atom$TextEditor = (null: any);

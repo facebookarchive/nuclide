@@ -11,7 +11,7 @@
 
 import type FindReferencesModelType from '../lib/FindReferencesModel';
 
-const nuclideClient = require('nuclide-client');
+const nuclideClient = require('../../client');
 
 // convenience location creator
 function loc(line, column) {

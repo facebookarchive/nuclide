@@ -10,7 +10,7 @@
  */
 
 import fs from 'fs';
-import {addMatchers} from 'nuclide-test-helpers';
+import {addMatchers} from '../../test-helpers';
 import parseServiceDefinition from '../lib/service-parser';
 import path from 'path';
 import type {Definition} from '../lib/types.js';

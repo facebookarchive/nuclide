@@ -9,10 +9,10 @@
  * the root directory of this source tree.
  */
 
-import type {HackSearchPosition} from 'nuclide-hack-base/lib/types';
-import type {SearchResultTypeValue} from 'nuclide-hack-common/lib/constants';
+import type {HackSearchPosition} from '../../hack-base/lib/types';
+import type {SearchResultTypeValue} from '../../hack-common/lib/constants';
 
-import {clearRequireCache, uncachedRequire} from 'nuclide-test-helpers';
+import {clearRequireCache, uncachedRequire} from '../../test-helpers';
 import invariant from 'assert';
 import {queryHack} from '../lib/HackSearchService';
 
@@ -25,7 +25,7 @@ describe('queryHack()', () => {
   ) => Promise<Array<HackSearchPosition>>) = null;
 
   beforeEach(() => {
-    spyOn(require('nuclide-hack-base/lib/HackHelpers'), 'getSearchResults')
+    spyOn(require('../../hack-base/lib/HackHelpers'), 'getSearchResults')
       .andCallFake((
         filePath: string,
         search: string,
@@ -39,7 +39,7 @@ describe('queryHack()', () => {
   });
 
   afterEach(() => {
-    unspy(require('nuclide-hack-base/lib/HackHelpers'), 'getSearchResults');
+    unspy(require('../../hack-base/lib/HackHelpers'), 'getSearchResults');
     clearRequireCache(require, '../lib/HackSearchService');
   });
 

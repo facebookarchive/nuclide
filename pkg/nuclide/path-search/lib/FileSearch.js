@@ -11,8 +11,8 @@
 
 import urlJoin from 'url-join';
 
-import {parse} from 'nuclide-remote-uri';
-import {fsPromise} from 'nuclide-commons';
+import {parse} from '../../remote-uri';
+import {fsPromise} from '../../commons';
 
 import {createPathSet} from './PathSetFactory';
 import PathSearch from './PathSearch';

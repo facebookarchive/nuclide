@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from 'nuclide-remote-uri';
+import type {NuclideUri} from '../../../remote-uri';
 
 import type {
   DiagnosticMessage,
@@ -18,7 +18,7 @@ import type {
   ProjectDiagnosticMessage,
   MessageUpdateCallback,
   MessageInvalidationCallback,
-} from 'nuclide-diagnostics-base';
+} from '../../base';
 
 type LinterTrace = {
   type: 'Trace';
@@ -65,9 +65,9 @@ export type LinterProvider = {
 
 import {Range} from 'atom';
 
-import {DiagnosticsProviderBase} from 'nuclide-diagnostics-provider-base';
+import {DiagnosticsProviderBase} from '../../provider-base';
 
-import {promises as commonsPromises} from 'nuclide-commons';
+import {promises as commonsPromises} from '../../../commons';
 
 const {RequestSerializer} = commonsPromises;
 

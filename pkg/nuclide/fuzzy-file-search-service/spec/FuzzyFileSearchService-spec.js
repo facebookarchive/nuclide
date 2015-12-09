@@ -9,9 +9,9 @@
  * the root directory of this source tree.
  */
 
-import type {FileSearch, FileSearchResult} from 'nuclide-path-search';
-import * as pathSearch from 'nuclide-path-search';
-import {fsPromise} from 'nuclide-commons';
+import type {FileSearch, FileSearchResult} from '../../path-search';
+import * as pathSearch from '../../path-search';
+import {fsPromise} from '../../commons';
 const result: Array<FileSearchResult> = [];
 
 const fileSearch: FileSearch = {

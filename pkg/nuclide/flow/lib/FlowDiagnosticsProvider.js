@@ -9,21 +9,21 @@
  * the root directory of this source tree.
  */
 
-import type {BusySignalProviderBase} from 'nuclide-busy-signal-provider-base';
-import type {NuclideUri} from 'nuclide-remote-uri';
+import type {BusySignalProviderBase} from '../../busy-signal-provider-base';
+import type {NuclideUri} from '../../remote-uri';
 import type {
   FileDiagnosticMessage,
   MessageUpdateCallback,
   MessageInvalidationCallback,
   DiagnosticProviderUpdate,
-} from 'nuclide-diagnostics-base';
+} from '../../diagnostics/base';
 
-import {trackTiming} from 'nuclide-analytics';
+import {trackTiming} from '../../analytics';
 
-const {getServiceByNuclideUri} = require('nuclide-client');
-const {promises, array} = require('nuclide-commons');
+const {getServiceByNuclideUri} = require('../../client');
+const {promises, array} = require('../../commons');
 const {RequestSerializer} = promises;
-const {DiagnosticsProviderBase} = require('nuclide-diagnostics-provider-base');
+const {DiagnosticsProviderBase} = require('../../diagnostics/provider-base');
 const {Range} = require('atom');
 const invariant = require('assert');
 

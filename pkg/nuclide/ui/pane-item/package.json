@@ -8,13 +8,7 @@
     "packageType": "Node",
     "testRunner": "npm"
   },
-  "dependencies": {
-    "react-for-atom": "0.14.3"
-  },
-  "devDependencies": {
-    "nuclide-jasmine": "0.0.0"
-  },
   "scripts": {
-    "test": "node --harmony node_modules/.bin/jasmine-node-transpiled spec"
+    "test": "node --harmony ../../jasmine/bin/jasmine-node-transpiled spec"
   }
 }

@@ -116,7 +116,7 @@ export class ConnectionMultiplexer {
   }
 
   onStatus(callback: (status: string) => mixed): Disposable {
-    return require('nuclide-commons').event.attachEvent(this._emitter,
+    return require('../../commons').event.attachEvent(this._emitter,
       CONNECTION_MUX_STATUS_EVENT, callback);
   }
 

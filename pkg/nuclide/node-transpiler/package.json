@@ -7,12 +7,5 @@
   "nuclide": {
     "packageType": "Node",
     "testRunner": "npm"
-  },
-  "dependencies": {
-    "babel-core": "5.8.21",
-    "babel-runtime": "5.8.12",
-    "mv": "2.1.1",
-    "nuclide-inline-imports": "0.0.0",
-    "temp": "0.8.3"
   }
 }

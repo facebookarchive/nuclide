@@ -12,7 +12,7 @@
 let logger;
 function getLogger() {
   if (!logger) {
-    logger = require('nuclide-logging').getLogger();
+    logger = require('../../../logging').getLogger();
   }
   return logger;
 }
@@ -21,15 +21,15 @@ const invariant = require('assert');
 const {Disposable, Emitter} = require('atom');
 const path = require('path');
 const {Dispatcher} = require('flux');
-const {buckProjectRootForPath} = require('nuclide-buck-commons');
+const {buckProjectRootForPath} = require('../../commons');
 const BuckToolbarActions = require('./BuckToolbarActions');
 
 type BuckRunDetails = {
   pid?: number;
 };
 import type {ProcessOutputDataHandlers, ProcessOutputStore as ProcessOutputStoreType,}
-  from 'nuclide-process-output-store/lib/types';
-import type {BuckProject} from 'nuclide-buck-base/lib/BuckProject';
+  from '../../../process/output-store/lib/types';
+import type {BuckProject} from '../../base/lib/BuckProject';
 import ReactNativeServerManager from './ReactNativeServerManager';
 import ReactNativeServerActions from './ReactNativeServerActions';
 
@@ -258,7 +258,7 @@ class BuckToolbarStore {
     if (pid) {
       // Use commands here to trigger package activation.
       atom.commands.dispatch(atom.views.getView(atom.workspace), 'nuclide-debugger:show');
-      const debuggerService = await require('nuclide-service-hub-plus')
+      const debuggerService = await require('../../../service-hub-plus')
           .consumeFirstProvider('nuclide-debugger.remote');
       const buckProjectPath = await buckProject.getPath();
       debuggerService.debugLLDB(pid, buckProjectPath);
@@ -325,7 +325,7 @@ class BuckToolbarStore {
   }): Promise<BuckRunDetails> {
     const {buckProject, buildTarget, simulator, run, debug, command, appArgs} = buckParams;
 
-    const getRunCommandInNewPane = require('nuclide-process-output');
+    const getRunCommandInNewPane = require('../../../process/output');
     const {runCommandInNewPane, disposable} = getRunCommandInNewPane();
 
     const runProcessWithHandlers = async (dataHandlerOptions: ProcessOutputDataHandlers) => {
@@ -370,9 +370,9 @@ class BuckToolbarStore {
     };
 
     const buckRunPromise: Promise<BuckRunDetails> = new Promise((resolve, reject) => {
-      const {ProcessOutputStore} = require('nuclide-process-output-store');
+      const {ProcessOutputStore} = require('../../../process/output-store');
       const processOutputStore = new ProcessOutputStore(runProcessWithHandlers);
-      const {handleBuckAnsiOutput} = require('nuclide-process-output-handler');
+      const {handleBuckAnsiOutput} = require('../../../process/output-handler');
 
       this._buckProcessOutputStore = processOutputStore;
       const exitSubscription = processOutputStore.onProcessExit((exitCode: number) => {

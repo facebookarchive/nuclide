@@ -11,7 +11,7 @@
 
 import invariant from 'assert';
 
-import {trackTiming} from 'nuclide-analytics';
+import {trackTiming} from '../../analytics';
 
 class FlowAutocompleteProvider {
   @trackTiming('flow.autocomplete')
@@ -23,7 +23,7 @@ class FlowAutocompleteProvider {
     const line = cursor.getBufferRow();
     const col = cursor.getBufferColumn();
 
-    const flowService = require('nuclide-client').getServiceByNuclideUri('FlowService', file);
+    const flowService = require('../../client').getServiceByNuclideUri('FlowService', file);
     invariant(flowService);
     return flowService.flowGetAutocompleteSuggestions(
       file,

@@ -10,11 +10,11 @@
  */
 
 import {Disposable, Observable} from 'rx';
-import {getDefinitions} from 'nuclide-service-parser';
+import {getDefinitions} from '../../../service-parser';
 import {loadServicesConfig} from './config';
 import NuclideServer from '../NuclideServer';
-import TypeRegistry from 'nuclide-service-parser/lib/TypeRegistry';
-import {builtinLocation, voidType} from 'nuclide-service-parser/lib/builtin-types';
+import TypeRegistry from '../../../service-parser/lib/TypeRegistry';
+import {builtinLocation, voidType} from '../../../service-parser/lib/builtin-types';
 import type {
   VoidType,
   FunctionType,
@@ -23,14 +23,14 @@ import type {
   Definition,
   InterfaceDefinition,
   Type,
-} from 'nuclide-service-parser/lib/types';
+} from '../../../service-parser/lib/types';
 import invariant from 'assert';
 
 import type {RequestMessage, ErrorResponseMessage, PromiseResponseMessage,
   ObservableResponseMessage} from './types';
 import type {SocketClient} from '../NuclideServer';
 
-const logger = require('nuclide-logging').getLogger();
+const logger = require('../../../logging').getLogger();
 
 type FunctionImplementation = {localImplementation: Function; type: FunctionType};
 

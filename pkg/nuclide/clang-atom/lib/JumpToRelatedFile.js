@@ -11,7 +11,7 @@
 
 import type RelatedFileFinder from './RelatedFileFinder';
 
-import {trackOperationTiming} from 'nuclide-analytics';
+import {trackOperationTiming} from '../../analytics';
 
 const GRAMMARS = [
   'source.c',
@@ -43,7 +43,7 @@ class JumpToRelatedFile {
     }
 
     // A map from TextEditor to Disposable.
-    const {observeLanguageTextEditors} = require('nuclide-atom-helpers');
+    const {observeLanguageTextEditors} = require('../../atom-helpers');
     this._languageListener = observeLanguageTextEditors(
         GRAMMARS,
         textEditor => this._enableInTextEditor(textEditor),

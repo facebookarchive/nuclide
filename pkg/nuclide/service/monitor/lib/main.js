@@ -11,7 +11,7 @@
 import {CompositeDisposable} from 'atom';
 import ServiceMonitorPaneItem from './ServiceMonitorPaneItem';
 import invariant from 'assert';
-import {track} from 'nuclide-analytics';
+import {track} from '../../../analytics';
 
 const NUCLIDE_SERVICE_MONITOR_URI = 'nuclide-service-monitor://view';
 

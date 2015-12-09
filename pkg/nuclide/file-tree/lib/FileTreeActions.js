@@ -12,13 +12,13 @@
 import type {Dispatcher} from 'flux';
 
 import {ActionType} from './FileTreeConstants';
-import {debounce} from 'nuclide-commons';
+import {debounce} from '../../commons';
 import {Disposable} from 'atom';
 import FileTreeDispatcher from './FileTreeDispatcher';
 import FileTreeHelpers from './FileTreeHelpers';
 import FileTreeStore from './FileTreeStore';
 import Immutable from 'immutable';
-import {repositoryForPath} from 'nuclide-hg-git-bridge';
+import {repositoryForPath} from '../../hg-git-bridge';
 
 let instance: ?Object;
 
@@ -261,7 +261,7 @@ class FileTreeActions {
     // At this point, we assume that repo is a Nuclide HgRepositoryClient.
 
     // First, get the output of `hg status` for the repository.
-    const {hgConstants} = require('nuclide-hg-repository-base');
+    const {hgConstants} = require('../../hg-repository-base');
     // TODO(mbolin): Verify that all of this is set up correctly for remote files.
     const repoRoot = repo.getWorkingDirectory();
     const statusCodeForPath = await repo.getStatuses([repoRoot], {

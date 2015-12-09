@@ -13,20 +13,20 @@ import type QuickSelectionComponent from './QuickSelectionComponent';
 
 import type {
   Provider,
-} from 'nuclide-quick-open-interfaces';
-import type {HomeFragments} from 'nuclide-home-interfaces';
+} from '../../quick-open-interfaces';
+import type {HomeFragments} from '../../home-interfaces';
 
-import featureConfig from 'nuclide-feature-config';
+import featureConfig from '../../feature-config';
 
 let trackFunction;
 function track(...args) {
-  const trackFunc = trackFunction || (trackFunction = require('nuclide-analytics').track);
+  const trackFunc = trackFunction || (trackFunction = require('../../analytics').track);
   trackFunc.apply(null, args);
 }
 
 let debounceFunction = null;
 function debounce(...args) {
-  const debounceFunc = debounceFunction || (debounceFunction = require('nuclide-commons').debounce);
+  const debounceFunc = debounceFunction || (debounceFunction = require('../../commons').debounce);
   return debounceFunc.apply(null, args);
 }
 

@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 const {CompositeDisposable, Range} = require('atom');
-import {trackOperationTiming} from 'nuclide-analytics';
+import {trackOperationTiming} from '../../analytics';
 
 const GRAMMARS = [
   'source.objc',
@@ -40,7 +40,7 @@ class ObjectiveCColonIndenter {
       this._insertTextSubscriptionsMap.clear();
     }});
 
-    const {observeLanguageTextEditors} = require('nuclide-atom-helpers');
+    const {observeLanguageTextEditors} = require('../../atom-helpers');
     subscriptions.add(observeLanguageTextEditors(
         GRAMMARS,
         textEditor => this._enableInTextEditor(textEditor),

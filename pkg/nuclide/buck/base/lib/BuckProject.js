@@ -9,9 +9,9 @@
  * the root directory of this source tree.
  */
 
-const {asyncExecute, scriptSafeSpawnAndObserveOutput} = require('nuclide-commons');
-const {fsPromise} = require('nuclide-commons');
-const logger = require('nuclide-logging').getLogger();
+const {asyncExecute, scriptSafeSpawnAndObserveOutput} = require('../../../commons');
+const {fsPromise} = require('../../../commons');
+const logger = require('../../../logging').getLogger();
 const path = require('path');
 
 type dontRunOptions = {

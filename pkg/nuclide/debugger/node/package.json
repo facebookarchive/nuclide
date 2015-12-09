@@ -8,23 +8,6 @@
     "packageType": "Atom",
     "testRunner": "apm"
   },
-  "dependencies": {
-    "async": "0.9.2",
-    "debug": "2.2.0",
-    "glob": "5.0.5",
-    "nuclide-client": "0.0.0",
-    "nuclide-commons": "0.0.0",
-    "nuclide-debugger-utils": "0.0.0",
-    "path-is-absolute": "1.0.0",
-    "semver": "5.0.3",
-    "strong-data-uri": "1.0.0",
-    "v8-debug": "0.5.4",
-    "v8-profiler": "5.3.2",
-    "ws": "0.7.1"
-  },
-  "devDependencies": {
-    "nuclide-debugger-interfaces": "0.0.0"
-  },
   "providedServices": {
     "nuclide-debugger-node-service": {
       "description": "Debugger backend for node processes.",

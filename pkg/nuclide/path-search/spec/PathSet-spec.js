@@ -9,9 +9,9 @@
  * the root directory of this source tree.
  */
 
-import {array} from 'nuclide-commons';
+import {array} from '../../commons';
 const {from} = array;
-import {expectAsyncFailure} from 'nuclide-test-helpers';
+import {expectAsyncFailure} from '../../test-helpers';
 
 import PathSet from '../lib/PathSet';
 

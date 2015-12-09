@@ -1,0 +1,8 @@
+/.eslintignore
+/.eslintrc
+/.flowconfig
+/benchmarker
+/pkg/**/spec
+/pkg/sample
+/resources
+/scripts

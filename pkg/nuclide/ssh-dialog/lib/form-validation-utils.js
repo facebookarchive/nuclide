@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {SshHandshake} from 'nuclide-remote-connection';
+import {SshHandshake} from '../../remote-connection';
 
 import type {
   NuclideRemoteConnectionParamsWithPassword,

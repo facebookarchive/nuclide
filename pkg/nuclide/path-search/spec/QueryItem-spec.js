@@ -181,7 +181,7 @@ describe('isLetterImportant', () => {
   });
 });
 
-import {areSetsEqual} from 'nuclide-test-helpers';
+import {areSetsEqual} from '../../test-helpers';
 
 describe('importantCharactersForString', () => {
   it('returns the set of important characters for a given string', () => {

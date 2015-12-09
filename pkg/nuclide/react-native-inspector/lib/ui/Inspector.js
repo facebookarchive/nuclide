@@ -11,7 +11,7 @@
 
 import React from 'react-for-atom';
 import path from 'path';
-import {toJsString} from 'nuclide-commons';
+import {toJsString} from '../../../commons';
 
 export default class Inspector extends React.Component {
 
@@ -40,7 +40,7 @@ export default class Inspector extends React.Component {
         `initializeElementInspector(${toJsString(packageDirectory)}, ${toJsString(requirePaths)});`
       );
     });
-    webview.src = 'atom://nuclide-react-native-inspector/lib/ui/inspector.html';
+    webview.src = 'atom://nuclide/pkg/nuclide/react-native-inspector/lib/ui/inspector.html';
     el.appendChild(webview);
   }
 

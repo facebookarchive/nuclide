@@ -10,7 +10,7 @@
  */
 
 const IosSimulator = require('./IosSimulator');
-const NuclideDropdown = require('nuclide-ui-dropdown');
+const NuclideDropdown = require('../../../ui/dropdown');
 const React = require('react-for-atom');
 
 const {PropTypes} = React;

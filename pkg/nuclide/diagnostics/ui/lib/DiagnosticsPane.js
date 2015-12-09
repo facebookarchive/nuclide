@@ -9,12 +9,12 @@
  * the root directory of this source tree.
  */
 
-import type {DiagnosticMessage} from 'nuclide-diagnostics-base';
+import type {DiagnosticMessage} from '../../base';
 
 const {Column, Table} = require('fixed-data-table-for-atom');
 const React = require('react-for-atom');
 
-import {track} from 'nuclide-analytics';
+import {track} from '../../../analytics';
 
 const {fileColumnCellDataGetter} = require('./paneUtils');
 

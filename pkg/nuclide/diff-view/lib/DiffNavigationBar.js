@@ -11,7 +11,7 @@
 
 import type {OffsetMap} from './types';
 
-import {array} from 'nuclide-commons';
+import {array} from '../../commons';
 import React from 'react-for-atom';
 import {getLineCountWithOffsets, getOffsetLineNumber} from './diff-utils';
 import classnames from 'classnames';

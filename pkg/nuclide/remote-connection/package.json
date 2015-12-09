@@ -8,25 +8,5 @@
     "packageType": "Node",
     "testsCannotBeRunInParallel": true,
     "testRunner": "apm"
-  },
-  "dependencies": {
-    "fs-plus": "2.8.1",
-    "nuclide-analytics": "0.0.0",
-    "nuclide-atom-helpers": "0.0.0",
-    "nuclide-commons": "0.0.0",
-    "nuclide-keystroke-label": "0.0.0",
-    "nuclide-keytar-wrapper": "0.0.0",
-    "nuclide-logging": "0.0.0",
-    "nuclide-remote-uri": "0.0.0",
-    "nuclide-server": "0.0.0",
-    "nuclide-service-parser": "0.0.0",
-    "nuclide-version": "0.0.0",
-    "ssh2": "0.4.11"
-  },
-  "devDependencies": {
-    "nuclide-source-control-helpers": "0.0.0",
-    "nuclide-test-helpers": "0.0.0",
-    "rx": "3.1.1",
-    "temp": "0.8.3"
   }
 }

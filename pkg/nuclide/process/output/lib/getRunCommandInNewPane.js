@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {ProcessOutputStore} from 'nuclide-process-output-store';
+import type {ProcessOutputStore} from '../../output-store';
 import type {ProcessOutputHandler} from './types';
 
 export type RunCommandOptions = {
@@ -34,7 +34,7 @@ export type RunCommandFunctionAndCleanup = {
 
 import {CompositeDisposable, Disposable} from 'atom';
 import invariant from 'assert';
-import {destroyPaneItemWithTitle} from 'nuclide-atom-helpers';
+import {destroyPaneItemWithTitle} from '../../../atom-helpers';
 
 const NUCLIDE_PROCESS_OUTPUT_VIEW_URI = 'atom://nuclide/process-output/';
 const PROCESS_OUTPUT_HANDLER_KEY = 'nuclide-processOutputHandler';
@@ -52,7 +52,7 @@ let logger;
 
 function getLogger() {
   if (!logger) {
-    logger = require('nuclide-logging').getLogger();
+    logger = require('../../../logging').getLogger();
   }
   return logger;
 }

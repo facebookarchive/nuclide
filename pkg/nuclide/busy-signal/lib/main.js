@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {BusySignalProvider} from 'nuclide-busy-signal-interfaces';
+import type {BusySignalProvider} from '../../busy-signal-interfaces';
 
 import type {StatusBarTile as StatusBarTileType} from './StatusBarTile';
 

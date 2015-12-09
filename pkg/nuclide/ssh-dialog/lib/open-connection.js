@@ -17,10 +17,10 @@ import {
   saveConnectionConfig,
   saveConnectionProfiles,
 } from './connection-profile-utils';
-import {getLogger} from 'nuclide-logging';
+import {getLogger} from '../../logging';
 
 import type {Disposable} from 'atom';
-import type {RemoteConnection} from 'nuclide-remote-connection';
+import type {RemoteConnection} from '../../remote-connection';
 import type {NuclideRemoteConnectionProfile} from './connection-types';
 
 const logger = getLogger();
@@ -32,7 +32,7 @@ let dialogPromiseQueue: ?PromiseQueue = null;
  * asking for additional (e.g. 2-fac) authentication.
  */
 export function openConnectionDialog(props): Promise<?RemoteConnection> {
-  const {extend, PromiseQueue} = require('nuclide-commons');
+  const {extend, PromiseQueue} = require('../../commons');
   if (!dialogPromiseQueue) {
     dialogPromiseQueue = new PromiseQueue();
   }

@@ -10,13 +10,13 @@
  */
 
 const {Directory} = require('atom');
-import {trackTiming} from 'nuclide-analytics';
-import {RemoteDirectory as RemoteDirectoryType} from 'nuclide-remote-connection';
-const {HgRepositoryClient} = require('nuclide-hg-repository-client');
+import {trackTiming} from '../../analytics';
+import {RemoteDirectory as RemoteDirectoryType} from '../../remote-connection';
+const {HgRepositoryClient} = require('../../hg-repository-client');
 
 let logger = null;
 function getLogger() {
-  return logger || (logger = require('nuclide-logging').getLogger());
+  return logger || (logger = require('../../logging').getLogger());
 }
 
 /**
@@ -39,7 +39,7 @@ function getRepositoryDescription(
   workingDirectory: atom$Directory | RemoteDirectoryType,
   workingDirectoryLocalPath: string,
 } {
-  const {RemoteDirectory} = require('nuclide-remote-connection');
+  const {RemoteDirectory} = require('../../remote-connection');
   if (directory instanceof RemoteDirectoryType) {
     const repositoryDescription = directory.getHgRepositoryDescription();
     if (repositoryDescription == null
@@ -61,7 +61,7 @@ function getRepositoryDescription(
       workingDirectoryLocalPath,
     };
   } else {
-    const {findHgRepository} = require('nuclide-source-control-helpers');
+    const {findHgRepository} = require('../../source-control-helpers');
     const repositoryDescription = findHgRepository(directory.getPath());
     if (repositoryDescription.repoPath == null || repositoryDescription.originURL == null) {
       return null;
@@ -97,7 +97,7 @@ export class HgRepositoryProvider {
         workingDirectoryLocalPath,
       } = repositoryDescription;
 
-      const {getServiceByNuclideUri} = require('nuclide-client');
+      const {getServiceByNuclideUri} = require('../../client');
       const {HgService} = getServiceByNuclideUri('HgService', directory.getPath());
       const hgService = new HgService(workingDirectoryLocalPath);
       return new HgRepositoryClient(repoPath, hgService, {

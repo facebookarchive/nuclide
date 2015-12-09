@@ -8,18 +8,7 @@
     "packageType": "Node",
     "testRunner": "npm"
   },
-  "dependencies": {
-    "nuclide-commons": "0.0.0",
-    "nuclide-logging": "0.0.0",
-    "nuclide-remote-uri": "0.0.0"
-  },
-  "devDependencies": {
-    "fs-plus": "2.8.1",
-    "nuclide-jasmine": "0.0.0",
-    "nuclide-test-helpers": "0.0.0",
-    "temp": "0.8.3"
-  },
   "scripts": {
-    "test": "node --harmony node_modules/.bin/jasmine-node-transpiled spec"
+    "test": "node --harmony ../jasmine/bin/jasmine-node-transpiled spec"
   }
 }

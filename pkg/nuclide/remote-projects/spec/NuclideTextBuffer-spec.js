@@ -10,7 +10,7 @@
  */
 
 const NuclideTextBuffer = require('../lib/NuclideTextBuffer');
-const {RemoteFile, RemoteConnection} = require('nuclide-remote-connection');
+const {RemoteFile, RemoteConnection} = require('../../remote-connection');
 
 describe('NuclideTextBuffer', () => {
 

@@ -23,18 +23,18 @@ import {
   fetchFileContentAtRevision,
   fetchFilesChangedAtRevision,
 } from './hg-revision-state-helpers';
-import {asyncExecute, createArgsForScriptCommand} from 'nuclide-commons';
+import {asyncExecute, createArgsForScriptCommand} from '../../commons';
 import path from 'path';
 
 import type {DiffInfo, RevisionFileChanges, StatusCodeIdValue, RevisionInfo} from './hg-constants';
-import type {NuclideUri} from 'nuclide-remote-uri';
+import type {NuclideUri} from '../../remote-uri';
 
 const FORK_BASE_BOOKMARK_NAME = 'remote/master';
 
 let logger;
 function getLogger() {
   if (!logger) {
-    logger = require('nuclide-logging').getLogger();
+    logger = require('../../logging').getLogger();
   }
   return logger;
 }
@@ -170,7 +170,7 @@ class HgServiceBase {
       if (options.env) {
         options.env['HGPLAIN'] = 1;
       } else {
-        const {assign} = require('nuclide-commons').object;
+        const {assign} = require('../../commons').object;
         const env = {'HGPLAIN': 1};
         assign(env, process.env);
         options.env = env;

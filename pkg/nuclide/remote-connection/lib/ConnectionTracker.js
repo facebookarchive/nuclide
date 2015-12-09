@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-import {error} from 'nuclide-commons';
-import {track} from 'nuclide-analytics';
+import {error} from '../../commons';
+import {track} from '../../analytics';
 
 import type {SshConnectionConfiguration} from './SshHandshake';
 

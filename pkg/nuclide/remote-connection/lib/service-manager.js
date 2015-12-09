@@ -9,15 +9,15 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from 'nuclide-remote-uri';
+import type {NuclideUri} from '../../remote-uri';
 
-const logger = require('nuclide-logging').getLogger();
+const logger = require('../../logging').getLogger();
 const {RemoteConnection} = require('./RemoteConnection');
-const {isRemote, getHostname} = require('nuclide-remote-uri');
+const {isRemote, getHostname} = require('../../remote-uri');
 
-import {getProxy} from 'nuclide-service-parser';
+import {getProxy} from '../../service-parser';
 import invariant from 'assert';
-import ServiceFramework from 'nuclide-server/lib/serviceframework';
+import ServiceFramework from '../../server/lib/serviceframework';
 import ServiceLogger from './ServiceLogger';
 
 const newServices = ServiceFramework.loadServicesConfig();

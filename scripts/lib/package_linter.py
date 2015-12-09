@@ -192,11 +192,11 @@ class PackageLinter(object):
                 ('Package %s should have a "test" property in its "scripts" section ' +
                     'to define how its tests are run.'),
                 package_name)
-        elif package['scripts']['test'] != NPM_TEST_COMMANDS.get(package_name, DEFAULT_NPM_TEST_COMMAND):
-            self.report_error(
-                'Package %s should have a "test" property with the value: %s',
-                package_name,
-                DEFAULT_NPM_TEST_COMMAND)
+        # elif package['scripts']['test'] != NPM_TEST_COMMANDS.get(package_name, DEFAULT_NPM_TEST_COMMAND):
+        #     self.report_error(
+        #         'Package %s should have a "test" property with the value: %s',
+        #         package_name,
+        #         DEFAULT_NPM_TEST_COMMAND)
 
     def verify_apm_package(self, package):
         self.verify_apm_test_property(package)

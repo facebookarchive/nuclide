@@ -11,7 +11,7 @@
 
 import type {
   Provider,
-} from 'nuclide-quick-open-interfaces';
+} from '../../quick-open-interfaces';
 
 const invariant = require('assert');
 

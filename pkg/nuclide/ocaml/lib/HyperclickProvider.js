@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {HyperclickSuggestion} from 'hyperclick-interfaces';
+import type {HyperclickSuggestion} from '../../hyperclick-interfaces';
 
 const GRAMMARS = new Set([
   'source.ocaml',
@@ -27,7 +27,7 @@ module.exports = {
     text: string,
     range: atom$Range
   ): Promise<?HyperclickSuggestion> {
-    const {getServiceByNuclideUri} = require('nuclide-client');
+    const {getServiceByNuclideUri} = require('../../client');
 
     if (!GRAMMARS.has(textEditor.getGrammar().scopeName)) {
       return null;
@@ -61,7 +61,7 @@ module.exports = {
           return;
         }
 
-        const {goToLocation} = require('nuclide-atom-helpers');
+        const {goToLocation} = require('../../atom-helpers');
         goToLocation(location.file, location.pos.line - 1, location.pos.col);
       },
     };

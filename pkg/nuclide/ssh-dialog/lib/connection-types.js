@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {SshHandshake} from 'nuclide-remote-connection';
+import type {SshHandshake} from '../../remote-connection';
 
 export type NuclideRemoteAuthMethods =
   // $FlowFixMe: Flow can't find the PASSWORD property on SupportedMethods.

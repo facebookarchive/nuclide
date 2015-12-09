@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {HomeFragments} from 'nuclide-home-interfaces';
+import type {HomeFragments} from '../../home-interfaces';
 import type DiffViewModelType from './DiffViewModel';
 
 import {CompositeDisposable} from 'atom';
@@ -31,7 +31,7 @@ let changeCountElement: ?HTMLElement = null;
 let logger = null;
 
 function getLogger() {
-  return logger || (logger = require('nuclide-logging').getLogger());
+  return logger || (logger = require('../../logging').getLogger());
 }
 
 // To add a View as an Atom workspace pane, we return `DiffViewElement` which extends `HTMLElement`.
@@ -71,7 +71,7 @@ function createView(entryPath: string): HTMLElement {
   invariant(subscriptions);
   subscriptions.add(destroySubscription);
 
-  const {track} = require('nuclide-analytics');
+  const {track} = require('../../analytics');
   track('diff-view-open');
 
   return hostElement;
@@ -96,7 +96,7 @@ function activateFilePath(filePath: string): void {
 }
 
 function projectsContainPath(checkPath: string): boolean {
-  const {isRemote} = require('nuclide-remote-uri');
+  const {isRemote} = require('../../remote-uri');
   const {Directory} = require('atom');
   return atom.project.getDirectories().some(directory => {
     const directoryPath = directory.getPath();

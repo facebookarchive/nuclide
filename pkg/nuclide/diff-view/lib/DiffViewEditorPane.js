@@ -12,7 +12,7 @@
 import type {HighlightedLines, OffsetMap, InlineComponent} from './types';
 
 import {CompositeDisposable} from 'atom';
-import {debounce} from 'nuclide-commons';
+import {debounce} from '../../commons';
 import React, {PropTypes} from 'react-for-atom';
 import DiffViewEditor from './DiffViewEditor';
 import invariant from 'assert';

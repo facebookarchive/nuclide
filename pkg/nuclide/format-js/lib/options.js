@@ -9,14 +9,14 @@
  * the root directory of this source tree.
  */
 
-import type ModuleMap from 'nuclide-format-js-base/lib/state/ModuleMap';
-import type {SourceOptions} from 'nuclide-format-js-base/lib/options/SourceOptions';
+import type ModuleMap from '../../format-js-base/lib/state/ModuleMap';
+import type {SourceOptions} from '../../format-js-base/lib/options/SourceOptions';
 
 const {Directory, File} = require('atom');
-const NuclideCommons = require('nuclide-commons');
+const NuclideCommons = require('../../commons');
 
-const featureConfig = require('nuclide-feature-config');
-const formatJSBase = require('nuclide-format-js-base');
+const featureConfig = require('../../feature-config');
+const formatJSBase = require('../../format-js-base');
 
 // These are the common settings needed to construct a module map.
 type Settings = {

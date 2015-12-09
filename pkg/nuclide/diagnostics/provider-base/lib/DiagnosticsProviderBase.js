@@ -14,8 +14,8 @@ import type {
   InvalidationMessage,
   MessageInvalidationCallback,
   MessageUpdateCallback,
-} from 'nuclide-diagnostics-base';
-import type {TextEventDispatcher} from 'nuclide-text-event-dispatcher';
+} from '../../base';
+import type {TextEventDispatcher} from '../../../text-event-dispatcher';
 
 type ProviderBaseOptions = {
   /** The callback by which a provider is notified of text events, such as a file save. */
@@ -52,7 +52,7 @@ const INVALIDATE_EVENT = 'invalidate';
 const {CompositeDisposable, Emitter} = require('atom');
 
 function getTextEventDispatcher() {
-  return require('nuclide-text-event-dispatcher').getInstance();
+  return require('../../../text-event-dispatcher').getInstance();
 }
 
 class DiagnosticsProviderBase {

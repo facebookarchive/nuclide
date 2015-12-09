@@ -14,7 +14,7 @@ import type {
   NuclideRemoteConnectionProfile,
 } from './connection-types';
 
-import type {SshHandshakeErrorType} from 'nuclide-remote-connection/lib/SshHandshake';
+import type {SshHandshakeErrorType} from '../../remote-connection/lib/SshHandshake';
 
 import {notifySshHandshakeError} from './notification';
 import AuthenticationPrompt from './AuthenticationPrompt';
@@ -24,8 +24,8 @@ import React from 'react-for-atom';
 import {
   SshHandshake,
   decorateSshConnectionDelegateWithTracking,
-} from 'nuclide-remote-connection';
-const logger = require('nuclide-logging').getLogger();
+} from '../../remote-connection';
+const logger = require('../../logging').getLogger();
 
 type DefaultProps = {};
 type Props = {

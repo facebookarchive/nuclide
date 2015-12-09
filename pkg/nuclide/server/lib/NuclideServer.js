@@ -20,11 +20,11 @@ import {
   SERVICE_FRAMEWORK3_CHANNEL} from './config';
 const WebSocketServer: Class<ws$Server> = require('ws').Server;
 const {deserializeArgs, sendJsonResponse, sendTextResponse} = require('./utils');
-const {getVersion} = require('nuclide-version');
+const {getVersion} = require('../../version');
 import invariant from 'assert';
 import ServiceFramework from './serviceframework';
 
-import {getLogger, flushLogsAndExit} from 'nuclide-logging';
+import {getLogger, flushLogsAndExit} from '../../logging';
 const logger = getLogger();
 
 type NuclideServerOptions = {

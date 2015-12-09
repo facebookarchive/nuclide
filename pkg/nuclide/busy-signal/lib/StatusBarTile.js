@@ -11,7 +11,7 @@
 
 import type {Observable} from 'rx';
 
-import type {BusySignalMessage} from 'nuclide-busy-signal-interfaces';
+import type {BusySignalMessage} from '../../busy-signal-interfaces';
 
 import React from 'react-for-atom';
 

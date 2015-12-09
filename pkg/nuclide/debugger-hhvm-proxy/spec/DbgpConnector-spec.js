@@ -14,7 +14,7 @@ import net from 'net';
 import {makeDbgpMessage} from '../lib/helpers';
 import {DbgpConnector} from '../lib/DbgpConnector';
 import {EventEmitter} from 'events';
-import {uncachedRequire, clearRequireCache} from 'nuclide-test-helpers';
+import {uncachedRequire, clearRequireCache} from '../../test-helpers';
 
 const payload1 =
 `<init

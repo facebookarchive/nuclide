@@ -17,7 +17,7 @@ import type {Dispatcher} from 'flux';
 import type {
   nuclide_debugger$DebuggerInstance,
   nuclide_debugger$Service,
-} from 'nuclide-debugger-interfaces/service';
+} from '../../interfaces/service';
 import type DebuggerProcessInfoType from './DebuggerProcessInfo';
 
 /**
@@ -68,7 +68,7 @@ class DebuggerStore {
    */
   getProcessInfoList(serviceName?: string): Promise<Array<DebuggerProcessInfoType>> {
     return Promise.all(
-        require('nuclide-commons').array.from(this._services)
+        require('../../../commons').array.from(this._services)
           .map(service => {
             if (!serviceName || service.name === serviceName) {
               return service.getProcessInfoList();

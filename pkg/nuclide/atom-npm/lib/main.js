@@ -11,7 +11,7 @@
 
 const fs = require('fs-plus');
 const path = require('path');
-const {fsPromise} = require('nuclide-commons');
+const {fsPromise} = require('../../commons');
 
 async function loadStyles(stylesPath: string): Promise {
   // TODO(jjiaa): If possible, check that `stylesPath` is also a directory.

@@ -11,14 +11,14 @@
 
 import type {RemoteConnection} from './RemoteConnection';
 import type RemoteDirectory from './RemoteDirectory';
-import type {FileSystemService} from 'nuclide-server/lib/services/FileSystemServiceType';
+import type {FileSystemService} from '../../server/lib/services/FileSystemServiceType';
 
 import invariant from 'assert';
 import pathUtil from 'path';
 import crypto from 'crypto';
 import {Disposable, Emitter} from 'atom';
-import remoteUri from 'nuclide-remote-uri';
-import {getLogger} from 'nuclide-logging';
+import remoteUri from '../../remote-uri';
+import {getLogger} from '../../logging';
 
 const logger = getLogger();
 

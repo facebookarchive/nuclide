@@ -11,7 +11,7 @@
 
 const HackWorker = require('../lib/HackWorker');
 const {EventEmitter} = require('events');
-const logger = require('nuclide-logging').getLogger();
+const logger = require('../../logging').getLogger();
 
 describe('HackWorker', () => {
   describe('runWorkerTask()', () => {

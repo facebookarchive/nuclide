@@ -12,11 +12,11 @@
 import type {
   FileResult,
   GroupedResult,
-} from 'nuclide-quick-open-interfaces';
+} from '../../quick-open-interfaces';
 
 const {
   isEmpty,
-} = require('nuclide-commons').object;
+} = require('../../commons').object;
 
 export function filterEmptyResults(resultsGroupedByService: GroupedResult): GroupedResult {
   const filteredTree = {};

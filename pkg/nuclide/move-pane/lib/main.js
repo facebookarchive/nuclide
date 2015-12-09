@@ -10,7 +10,7 @@
  */
 
 import {CompositeDisposable} from 'atom';
-import {trackOperationTiming} from 'nuclide-analytics';
+import {trackOperationTiming} from '../../analytics';
 
 function trackSplit(
     operation: string,

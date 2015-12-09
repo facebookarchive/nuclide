@@ -11,10 +11,10 @@
 
 /* eslint-env browser */
 
-import type {HyperclickProvider} from 'hyperclick-interfaces';
+import type {HyperclickProvider} from '../../hyperclick-interfaces';
 import type HyperclickForTextEditor from '../lib/HyperclickForTextEditor';
 
-import {array} from 'nuclide-commons';
+import {array} from '../../commons';
 import {Point, Range} from 'atom';
 import Hyperclick from '../lib/Hyperclick';
 import invariant from 'assert';

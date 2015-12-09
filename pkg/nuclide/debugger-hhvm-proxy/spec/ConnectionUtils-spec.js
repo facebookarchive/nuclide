@@ -89,11 +89,11 @@ function convertMessageIntoJson(payload: string): Object {
 
 describe('debugger-hhvm-proxy ConnectionUtils', () => {
   beforeEach(() => {
-    spyOn(require('nuclide-commons').fsPromise, 'exists').andReturn(true);
+    spyOn(require('../../commons').fsPromise, 'exists').andReturn(true);
   });
 
   afterEach(() => {
-    unspy(require('nuclide-commons').fsPromise, 'exists');
+    unspy(require('../../commons').fsPromise, 'exists');
   });
 
   describe('isCorrectConnection', () => {

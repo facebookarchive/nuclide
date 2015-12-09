@@ -38,9 +38,9 @@ import os from 'os';
 import React from 'react-for-atom';
 
 // Imports from other Nuclide packages.
-import {track} from 'nuclide-analytics';
-import {atomEventDebounce} from 'nuclide-atom-helpers';
-import featureConfig from 'nuclide-feature-config';
+import {track} from '../../analytics';
+import {atomEventDebounce} from '../../atom-helpers';
+import featureConfig from '../../feature-config';
 
 // Imports from within this Nuclide package.
 import HealthPaneItem from './HealthPaneItem';

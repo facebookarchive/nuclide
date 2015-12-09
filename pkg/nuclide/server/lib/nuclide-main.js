@@ -11,7 +11,7 @@
  */
 
 // Set up the on-the-fly transpiler.
-require('nuclide-node-transpiler');
+require('../../node-transpiler');
 
 // Load the ES6+ server code now that the transpiler is in place.
 require('./main');

@@ -15,7 +15,7 @@ const {asyncRequest} = require('./utils');
 const WebSocket = require('ws');
 const uuid = require('uuid');
 const {EventEmitter} = require('events');
-const logger = require('nuclide-logging').getLogger();
+const logger = require('../../logging').getLogger();
 import {HEARTBEAT_CHANNEL} from './config';
 
 type NuclideSocketOptions = {

@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const {StatusCodeNumber: HgStatusCodeNumber} = require('nuclide-hg-repository-base').hgConstants;
+const {StatusCodeNumber: HgStatusCodeNumber} = require('../../hg-repository-base').hgConstants;
 
 import type {FileChangeStatusValue} from './types';
 

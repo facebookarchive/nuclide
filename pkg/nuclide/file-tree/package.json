@@ -24,31 +24,6 @@
   "engines": {
     "atom": ">=1.0.3"
   },
-  "dependencies": {
-    "classnames": "2.2.0",
-    "flux": "2.0.3",
-    "fs-plus": "2.8.1",
-    "immutable": "3.7.5",
-    "lodash.memoize": "3.0.4",
-    "minimatch": "3.0.0",
-    "nuclide-analytics": "0.0.0",
-    "nuclide-atom-helpers": "0.0.0",
-    "nuclide-commons": "0.0.0",
-    "nuclide-feature-config": "0.0.0",
-    "nuclide-hg-git-bridge": "0.0.0",
-    "nuclide-hg-repository-base": "0.0.0",
-    "nuclide-logging": "0.0.0",
-    "nuclide-remote-connection": "0.0.0",
-    "nuclide-remote-uri": "0.0.0",
-    "nuclide-ui-atom-input": "0.0.0",
-    "nuclide-ui-panel": "0.0.0",
-    "react-for-atom": "0.14.3"
-  },
-  "devDependencies": {
-    "nuclide-test-helpers": "0.0.0",
-    "temp": "0.8.3",
-    "touch": "0.0.3"
-  },
   "_atomModuleCache": {
     "extensions": {
       ".node": []

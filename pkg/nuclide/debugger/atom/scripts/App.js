@@ -15,7 +15,7 @@
 
 /*eslint-disable no-var*/
 
-require('nuclide-node-transpiler');
+require('../../../node-transpiler');
 
 /**
  * Override XHR.open to allow this page to be located outside the devtools

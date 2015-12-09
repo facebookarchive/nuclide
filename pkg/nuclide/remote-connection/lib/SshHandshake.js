@@ -14,11 +14,11 @@ import ConnectionTracker from './ConnectionTracker';
 const SshConnection = require('ssh2').Client;
 const fs = require('fs-plus');
 const net = require('net');
-const logger = require('nuclide-logging').getLogger();
+const logger = require('../../logging').getLogger();
 const invariant = require('assert');
 
 const {RemoteConnection} = require('./RemoteConnection');
-const {fsPromise} = require('nuclide-commons');
+const {fsPromise} = require('../../commons');
 
 // Sync word and regex pattern for parsing command stdout.
 const SYNC_WORD = 'SYNSYN';
@@ -166,7 +166,7 @@ export class SshHandshake {
       return;
     }
 
-    const {lookupPreferIpv6} = require('nuclide-commons').dnsUtils;
+    const {lookupPreferIpv6} = require('../../commons').dnsUtils;
     let address = null;
     try {
       address = await lookupPreferIpv6(config.host);

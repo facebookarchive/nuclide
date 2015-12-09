@@ -9,17 +9,17 @@
  * the root directory of this source tree.
  */
 
-import type {HgRepositoryClient} from 'nuclide-hg-repository-client';
+import type {HgRepositoryClient} from '../../hg-repository-client';
 import type {FileChangeStatusValue, HgDiffState, RevisionsState} from './types';
-import type {RevisionFileChanges} from 'nuclide-hg-repository-base/lib/hg-constants';
-import type {NuclideUri} from 'nuclide-remote-uri';
-import type {RevisionInfo} from 'nuclide-hg-repository-base/lib/hg-constants';
+import type {RevisionFileChanges} from '../../hg-repository-base/lib/hg-constants';
+import type {NuclideUri} from '../../remote-uri';
+import type {RevisionInfo} from '../../hg-repository-base/lib/hg-constants';
 
 import {CompositeDisposable, Emitter} from 'atom';
 import {HgStatusToFileChangeStatus, FileChangeStatus} from './constants';
 import {getFileSystemContents} from './utils';
-import {array, promises, debounce} from 'nuclide-commons';
-import {trackTiming} from 'nuclide-analytics';
+import {array, promises, debounce} from '../../commons';
+import {trackTiming} from '../../analytics';
 import {notifyInternalError} from './notifications';
 import invariant from 'assert';
 import LRU from 'lru-cache';

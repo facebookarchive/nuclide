@@ -12,7 +12,7 @@
 import type FileTreeStore from './FileTreeStore';
 
 import FileTreeHelpers from './FileTreeHelpers';
-import RemoteUri from 'nuclide-remote-uri';
+import RemoteUri from '../../remote-uri';
 
 class FileTreeNode {
   _store: FileTreeStore;

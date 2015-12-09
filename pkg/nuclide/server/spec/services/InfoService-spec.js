@@ -10,7 +10,7 @@
  */
 
 import ServiceTestHelper from './ServiceTestHelper';
-import {getVersion} from 'nuclide-version';
+import {getVersion} from '../../../version';
 import invariant from 'assert';
 
 describe('InfoService', () => {

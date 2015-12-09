@@ -44,19 +44,23 @@ from npm import Npm
 from package_manager import PackageManager
 from platform_checker import is_windows
 
-package_manager = PackageManager()
+# package_manager = PackageManager()
+package_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
+logging.info('Running "npm install" for %s...', package_root)
 npm = Npm(verbose)
-package_manager.install_dependencies(npm, include_packages_that_depend_on_atom=include_apm,
-                                     exclude_windows_incompatible_packages=is_windows())
+npm._npm_install(package_root, True)
+
+# package_manager.install_dependencies(npm, include_packages_that_depend_on_atom=include_apm,
+#                                      exclude_windows_incompatible_packages=is_windows())
 
 # Remove any dead symlinks under ~/.atom/packages. These can be created when a package is deleted or
 # renamed and a reference to the old package is still hanging around.
-if include_apm:
-    import os
-    import subprocess
-    packages_dir = os.path.expanduser('~/.atom/packages')
-    for entry in os.listdir(packages_dir):
-        full_path = os.path.join(packages_dir, entry)
-        if os.path.islink(full_path) and not os.path.exists(full_path):
-            logging.info('Removing broken symlink %s', full_path)
-            subprocess.check_call(['apm', 'uninstall', entry])
+# if include_apm:
+#     import os
+#     import subprocess
+#     packages_dir = os.path.expanduser('~/.atom/packages')
+#     for entry in os.listdir(packages_dir):
+#         full_path = os.path.join(packages_dir, entry)
+#         if os.path.islink(full_path) and not os.path.exists(full_path):
+#             logging.info('Removing broken symlink %s', full_path)
+#             subprocess.check_call(['apm', 'uninstall', entry])

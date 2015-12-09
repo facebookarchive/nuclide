@@ -10,7 +10,7 @@
  */
 
 const path = require('path');
-const {ensureTrailingSeparator} = require('nuclide-commons').paths;
+const {ensureTrailingSeparator} = require('../../commons').paths;
 
 const ADD_ACTION = 'add';
 const REMOVE_ACTION = 'remove';

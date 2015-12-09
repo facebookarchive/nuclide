@@ -9,12 +9,12 @@
  * the root directory of this source tree.
  */
 
-const AtomInput = require('nuclide-ui-atom-input');
+const AtomInput = require('../../ui/atom-input');
 const {CompositeDisposable} = require('atom');
-const RadioGroup = require('nuclide-ui-radiogroup');
+const RadioGroup = require('../../ui/radiogroup');
 const React = require('react-for-atom');
 const {PropTypes} = React;
-const {SshHandshake} = require('nuclide-remote-connection');
+const {SshHandshake} = require('../../remote-connection');
 
 // $FlowFixMe: Flow can't find the PASSWORD, etc. properties on SupportedMethods.
 const {SupportedMethods} = SshHandshake;

@@ -17,12 +17,6 @@
   "engines": {
     "atom": ">=1.0.9"
   },
-  "dependencies": {
-    "nuclide-analytics": "0.0.0",
-    "nuclide-atom-helpers": "0.0.0",
-    "nuclide-feature-config": "0.0.0"
-  },
-  "devDependencies": {},
   "_atomModuleCache": {
     "extensions": {
       ".node": []

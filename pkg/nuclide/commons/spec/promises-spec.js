@@ -10,7 +10,7 @@
  */
 const {asyncFind, denodeify} = require('../lib/main');
 const {promises} = require('../lib/main');
-const {expectAsyncFailure} = require('nuclide-test-helpers');
+const {expectAsyncFailure} = require('../../test-helpers');
 
 describe('promises::asyncFind()', () => {
 

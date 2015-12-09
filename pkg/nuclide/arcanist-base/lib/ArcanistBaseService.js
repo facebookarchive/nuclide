@@ -9,9 +9,9 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from 'nuclide-remote-uri';
+import type {NuclideUri} from '../../remote-uri';
 import invariant from 'assert';
-const logger = require('nuclide-logging').getLogger();
+const logger = require('../../logging').getLogger();
 
 const ARC_CONFIG_FILE_NAME = '.arcconfig';
 
@@ -30,7 +30,7 @@ const arcProjectMap: Map<?NuclideUri, ?Object> = new Map();
 
 export async function findArcConfigDirectory(fileName: NuclideUri): Promise<?NuclideUri> {
   if (!arcConfigDirectoryMap.has(fileName)) {
-    const findNearestFile = require('nuclide-commons').findNearestFile;
+    const findNearestFile = require('../../commons').findNearestFile;
     const result = await findNearestFile(ARC_CONFIG_FILE_NAME, fileName);
     arcConfigDirectoryMap.set(fileName, result);
   }
@@ -45,7 +45,7 @@ export async function readArcConfig(fileName: NuclideUri): Promise<?any> {
   if (!arcProjectMap.has(arcConfigDirectory)) {
     const path = require('path');
     const arcconfigFile = path.join(arcConfigDirectory, ARC_CONFIG_FILE_NAME);
-    const contents = await require('nuclide-commons').readFile(arcconfigFile, 'utf8');
+    const contents = await require('../../commons').readFile(arcconfigFile, 'utf8');
     invariant(typeof contents === 'string');
     const result = JSON.parse(contents);
     arcProjectMap.set(arcConfigDirectory, result);
@@ -96,7 +96,7 @@ async function execArcLint(cwd: string, filePaths: Array<NuclideUri>):
     Promise<Array<ArcDiagnostic>> {
   const args: Array<string> = ['lint', '--output', 'json', ...filePaths];
   const options = {'cwd': cwd};
-  const {asyncExecute} = require('nuclide-commons');
+  const {asyncExecute} = require('../../commons');
   const result = await asyncExecute('arc', args, options);
 
   const output: Map<string, Array<Object>> = new Map();

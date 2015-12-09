@@ -11,8 +11,8 @@
 
 const {CompositeDisposable, Disposable} = require('atom');
 const {EventEmitter} = require('events');
-const {buckProjectRootForPath} = require('nuclide-buck-commons');
-import {trackTiming} from 'nuclide-analytics';
+const {buckProjectRootForPath} = require('../../buck/commons');
+import {trackTiming} from '../../analytics';
 
 const ARC_PROJECT_WWW = 'facebook-www';
 
@@ -36,7 +36,7 @@ class ProjectStore {
     // For the current active editor, and any update to the active editor,
     // decide whether the toolbar should be displayed.
     const {onWorkspaceDidStopChangingActivePaneItem} =
-        require('nuclide-atom-helpers').atomEventDebounce;
+        require('../../atom-helpers').atomEventDebounce;
     const callback = this._onDidChangeActivePaneItem.bind(this);
     this._disposables.add(onWorkspaceDidStopChangingActivePaneItem(callback));
     callback();
@@ -66,8 +66,8 @@ class ProjectStore {
 
   @trackTiming('toolbar.isFileHHVMProject')
   async _isFileHHVMProject(fileName: string): Promise<boolean> {
-    const remoteUri = require('nuclide-remote-uri');
-    const arcanist = require('nuclide-arcanist-client');
+    const remoteUri = require('../../remote-uri');
+    const arcanist = require('../../arcanist-client');
     const arcProjectId = await arcanist.findArcProjectIdOfPath(fileName);
 
     return remoteUri.isRemote(fileName) && arcProjectId === ARC_PROJECT_WWW;

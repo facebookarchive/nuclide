@@ -10,7 +10,7 @@
  */
 
 const path = require('path');
-const {USER, HOME} = require('nuclide-commons').env;
+const {USER, HOME} = require('../../commons').env;
 
 import type {NuclideRemoteConnectionParams} from './connection-types';
 
@@ -25,7 +25,7 @@ function getConnectionDialogDefaultSettings(): NuclideRemoteConnectionParams {
     cwd: `/home/${USER}/`,
     pathToPrivateKey: path.join(HOME, '.ssh', 'id_rsa'),
     remoteServerCommand: 'nuclide-start-server',
-    authMethod: require('nuclide-remote-connection').SshHandshake.SupportedMethods.PASSWORD,
+    authMethod: require('../../remote-connection').SshHandshake.SupportedMethods.PASSWORD,
     sshPort: '22',
   };
 }

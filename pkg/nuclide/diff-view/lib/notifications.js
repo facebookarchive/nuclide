@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {getLogger} from 'nuclide-logging';
+import {getLogger} from '../../logging';
 const logger = getLogger();
 
 export function notifyInternalError(error: Error) {

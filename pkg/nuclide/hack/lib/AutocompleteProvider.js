@@ -10,7 +10,7 @@
  */
 
 const {Point, Range} = require('atom');
-import {trackTiming} from 'nuclide-analytics';
+import {trackTiming} from '../../analytics';
 
 const FIELD_ACCESSORS = ['->', '::'];
 const PREFIX_LOOKBACK = Math.max.apply(null, FIELD_ACCESSORS.map(prefix => prefix.length));

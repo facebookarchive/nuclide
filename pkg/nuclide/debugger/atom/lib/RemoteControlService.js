@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const {array} = require('nuclide-commons');
+const {array} = require('../../../commons');
 import type DebuggerModel from './DebuggerModel';
 
 class RemoteControlService {

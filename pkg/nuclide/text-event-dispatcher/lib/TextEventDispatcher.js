@@ -12,7 +12,7 @@
 const invariant = require('assert');
 const {Disposable, CompositeDisposable} = require('atom');
 
-const {debounce} = require('nuclide-commons');
+const {debounce} = require('../../commons');
 
 type EventCallback = (editor: TextEditor) => mixed;
 

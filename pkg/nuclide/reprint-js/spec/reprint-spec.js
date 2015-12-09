@@ -10,7 +10,7 @@
  */
 
 const {readdirSync} = require('fs');
-const {readFile} = require('nuclide-commons').fsPromise;
+const {readFile} = require('../../commons').fsPromise;
 const {reprint} = require('../lib/main');
 
 // Helpful for debugging.

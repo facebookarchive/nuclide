@@ -9,14 +9,14 @@
  * the root directory of this source tree.
  */
 
-import type {DiagnosticUpdater} from 'nuclide-diagnostics-base';
+import type {DiagnosticUpdater} from '../../base';
 
 import invariant from 'assert';
 import {CompositeDisposable} from 'atom';
 
 import type DiagnosticsPanel from './DiagnosticsPanel';
 import type StatusBarTile from './StatusBarTile';
-import type {HomeFragments} from 'nuclide-home-interfaces';
+import type {HomeFragments} from '../../../home-interfaces';
 
 const DEFAULT_HIDE_DIAGNOSTICS_PANEL = true;
 const DEFAULT_TABLE_HEIGHT = 200;
@@ -241,6 +241,6 @@ module.exports = {
 };
 
 function logPanelIsDisplayed() {
-  const {track} = require('nuclide-analytics');
+  const {track} = require('../../../analytics');
   track('diagnostics-show-table');
 }

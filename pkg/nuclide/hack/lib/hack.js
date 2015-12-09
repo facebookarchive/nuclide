@@ -9,17 +9,17 @@
  * the root directory of this source tree.
  */
 
-import type {HackReference} from 'nuclide-hack-base/lib/types';
+import type {HackReference} from '../../hack-base/lib/types';
 import type {HackDiagnosticItem} from './types';
 
 import invariant from 'assert';
-import {extractWordAtPosition} from 'nuclide-atom-helpers';
+import {extractWordAtPosition} from '../../atom-helpers';
 import HackLanguage from './HackLanguage';
-import {getPath, isRemote} from 'nuclide-remote-uri';
+import {getPath, isRemote} from '../../remote-uri';
 import {Range} from 'atom';
-import {SymbolType} from 'nuclide-hack-common';
+import {SymbolType} from '../../hack-common';
 import {getHackService} from './utils';
-import {RemoteConnection} from 'nuclide-remote-connection';
+import {RemoteConnection} from '../../remote-connection';
 
 const HACK_WORD_REGEX = /[a-zA-Z0-9_$]+/g;
 

@@ -7,7 +7,6 @@
     "packageType": "Atom",
     "testRunner": "apm"
   },
-  "devDependencies": {},
   "_atomModuleCache": {
     "extensions": {
       ".node": []

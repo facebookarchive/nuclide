@@ -19,7 +19,7 @@ import {Observable} from 'rx';
 import {
   fsPromise,
   safeSpawn,
-} from 'nuclide-commons';
+} from '../../commons';
 import path from 'path';
 import split from 'split';
 

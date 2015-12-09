@@ -12,7 +12,7 @@
 import type {
   DiagnosticUpdater,
   DiagnosticMessage,
-} from 'nuclide-diagnostics-base';
+} from '../../base';
 
 import {CompositeDisposable} from 'atom';
 import React from 'react-for-atom';
@@ -159,7 +159,7 @@ class StatusBarTileComponent extends React.Component {
     const target = atom.views.getView(atom.workspace);
     atom.commands.dispatch(target, 'nuclide-diagnostics-ui:toggle-table');
 
-    const {track} = require('nuclide-analytics');
+    const {track} = require('../../../analytics');
     track('diagnostics-show-table-from-status-bar');
   }
 }

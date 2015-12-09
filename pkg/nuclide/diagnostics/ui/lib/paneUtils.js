@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {DiagnosticMessage} from 'nuclide-diagnostics-base';
+import type {DiagnosticMessage} from '../../base';
 
 function fileColumnCellDataGetter(cellDataKey: 'filePath', diagnostic: DiagnosticMessage): string {
   if (diagnostic.filePath) {

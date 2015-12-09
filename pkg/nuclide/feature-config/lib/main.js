@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const NUCLIDE_CONFIG_SCOPE = '';
+const NUCLIDE_CONFIG_SCOPE = 'nuclide.';
 
 function formatKeyPath(keyPath: string): string {
   return `${NUCLIDE_CONFIG_SCOPE}${keyPath}`;

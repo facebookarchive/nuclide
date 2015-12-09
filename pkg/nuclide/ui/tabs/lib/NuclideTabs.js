@@ -13,7 +13,7 @@ const React = require('react-for-atom');
 
 const {PropTypes} = React;
 
-const {array} = require('nuclide-commons');
+const {array} = require('../../../commons');
 const classnames = require('classnames');
 
 const NuclideTabs = React.createClass({

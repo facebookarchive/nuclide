@@ -11,12 +11,12 @@
 
 type Target = {path: string; name: string};
 
-import type {BuckProject} from 'nuclide-buck-base/lib/BuckProject';
+import type {BuckProject} from '../../base/lib/BuckProject';
 
-const {isBuckFile} = require('nuclide-buck-base');
-const {buckProjectRootForPath} = require('nuclide-buck-commons');
-const {fsPromise} = require('nuclide-commons');
-const {goToLocation, extractWordAtPosition} = require('nuclide-atom-helpers');
+const {isBuckFile} = require('../../base');
+const {buckProjectRootForPath} = require('../../commons');
+const {fsPromise} = require('../../../commons');
+const {goToLocation, extractWordAtPosition} = require('../../../atom-helpers');
 
 import type {Point} from 'atom';
 
@@ -53,7 +53,7 @@ async function parseTarget(
     // Strip off the leading slashes from the fully-qualified build target.
     const basePath = fullTarget.substring('//'.length);
     const buckRoot = await buckProject.getPath();
-    path = require('nuclide-remote-uri').join(buckRoot, basePath, 'BUCK');
+    path = require('../../../remote-uri').join(buckRoot, basePath, 'BUCK');
   } else {
     // filePath is already an absolute path.
     path = filePath;

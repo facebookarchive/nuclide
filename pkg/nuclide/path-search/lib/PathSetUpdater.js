@@ -10,12 +10,12 @@
  */
 
 import type PathSet from './PathSet';
-import type {WatchmanSubscription} from 'nuclide-watchman-helpers';
+import type {WatchmanSubscription} from '../../watchman-helpers';
 
 import {Disposable} from 'event-kit';
 import invariant from 'assert';
 
-import {WatchmanClient} from 'nuclide-watchman-helpers';
+import {WatchmanClient} from '../../watchman-helpers';
 
 /**
  * This class keeps the PathSets passed to it up to date by using file system

@@ -11,7 +11,7 @@
 
 import type {Point} from 'atom';
 import type LibClangProcess from './LibClangProcess';
-import type {ClangCompletion} from 'nuclide-clang';
+import type {ClangCompletion} from '../../clang';
 
 const MAX_LINE_LENGTH = 120;
 const TAB_LENGTH = 2;

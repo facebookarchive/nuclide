@@ -8,23 +8,23 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-import type {NuclideUri} from 'nuclide-remote-uri';
-import type {HgRepositoryDescription} from 'nuclide-source-control-helpers';
+import type {NuclideUri} from '../../remote-uri';
+import type {HgRepositoryDescription} from '../../source-control-helpers';
 
 import invariant from 'assert';
-import ClientComponent from 'nuclide-server/lib/serviceframework/ClientComponent';
+import ClientComponent from '../../server/lib/serviceframework/ClientComponent';
 import RemoteDirectory from './RemoteDirectory';
 
 const {CompositeDisposable, Disposable} = require('atom');
-const remoteUri = require('nuclide-remote-uri');
-const logger = require('nuclide-logging').getLogger();
+const remoteUri = require('../../remote-uri');
+const logger = require('../../logging').getLogger();
 const {EventEmitter} = require('events');
 
 const RemoteFile = require('./RemoteFile');
-const NuclideSocket = require('nuclide-server/lib/NuclideSocket');
+const NuclideSocket = require('../../server/lib/NuclideSocket');
 const {getConnectionConfig, setConnectionConfig} =
   require('./RemoteConnectionConfigurationManager');
-const {getVersion} = require('nuclide-version');
+const {getVersion} = require('../../version');
 
 const HEARTBEAT_AWAY_REPORT_COUNT = 3;
 const HEARTBEAT_NOTIFICATION_ERROR = 1;
@@ -53,7 +53,7 @@ function getReloadKeystrokeLabel(): ?string {
   if (!binding || !binding[0]) {
     return null;
   }
-  const {humanizeKeystroke} = require('nuclide-keystroke-label');
+  const {humanizeKeystroke} = require('../../keystroke-label');
   return humanizeKeystroke(binding[0].keystrokes);
 }
 

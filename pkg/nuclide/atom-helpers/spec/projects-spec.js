@@ -8,7 +8,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-const {singleton} = require('nuclide-commons');
+const {singleton} = require('../../commons');
 const projects = require('../lib/projects');
 const {PROJECT_PATH_WATCHER_INSTANCE_KEY} = projects.__test__;
 

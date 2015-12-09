@@ -11,9 +11,9 @@
 
 import type {search$FileResult} from '../lib/types';
 
-const {asyncExecute} = require('nuclide-commons');
+const {asyncExecute} = require('../../commons');
 const fs = require('fs');
-const {addMatchers} = require('nuclide-test-helpers');
+const {addMatchers} = require('../../test-helpers');
 const path = require('path');
 const temp = require('temp').track();
 

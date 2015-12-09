@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const {uncachedRequire} = require('nuclide-test-helpers');
+const {uncachedRequire} = require('../../test-helpers');
 
 describe('LocalMerlinService', () => {
   function getMockedMerlinService(callback): Promise<any> {

@@ -9,17 +9,17 @@
  * the root directory of this source tree.
  */
 
-import {trackTiming} from 'nuclide-analytics';
+import {trackTiming} from '../../analytics';
 
 const {findDiagnostics, getHackLanguageForUri, getCachedHackLanguageForUri} = require('./hack');
-const {RequestSerializer} = require('nuclide-commons').promises;
-const {DiagnosticsProviderBase} = require('nuclide-diagnostics-provider-base');
+const {RequestSerializer} = require('../../commons').promises;
+const {DiagnosticsProviderBase} = require('../../diagnostics/provider-base');
 const {Range} = require('atom');
 import invariant from 'assert';
 
-const {HACK_GRAMMARS_SET} = require('nuclide-hack-common/lib/constants');
+const {HACK_GRAMMARS_SET} = require('../../hack-common/lib/constants');
 
-import type {BusySignalProviderBase} from 'nuclide-busy-signal-provider-base';
+import type {BusySignalProviderBase} from '../../busy-signal-provider-base';
 import type HackLanguage from './HackLanguage';
 import type {HackDiagnosticItem, HackError} from './types';
 
@@ -180,7 +180,7 @@ class HackDiagnosticsProvider {
     if (!filePaths) {
       return [];
     }
-    return require('nuclide-commons').array.from(filePaths);
+    return require('../../commons').array.from(filePaths);
   }
 
   _receivedNewUpdateSubscriber(callback: MessageUpdateCallback): void {

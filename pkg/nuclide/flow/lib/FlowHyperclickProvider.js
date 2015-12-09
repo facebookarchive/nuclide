@@ -9,12 +9,12 @@
  * the root directory of this source tree.
  */
 
-import type {HyperclickSuggestion} from 'hyperclick-interfaces';
+import type {HyperclickSuggestion} from '../../hyperclick-interfaces';
 
 import invariant from 'assert';
 
-import {getServiceByNuclideUri} from 'nuclide-client';
-import {goToLocation} from 'nuclide-atom-helpers';
+import {getServiceByNuclideUri} from '../../client';
+import {goToLocation} from '../../atom-helpers';
 
 import {JS_GRAMMARS} from './constants.js';
 const JS_GRAMMARS_SET = new Set(JS_GRAMMARS);

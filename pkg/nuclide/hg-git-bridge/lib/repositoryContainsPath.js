@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from 'nuclide-remote-uri';
-import type {HgRepositoryClient} from 'nuclide-hg-repository-client';
+import type {NuclideUri} from '../../remote-uri';
+import type {HgRepositoryClient} from '../../hg-repository-client';
 
 import {Directory} from 'atom';
 import path from 'path';

@@ -10,8 +10,8 @@
  */
 
 import type TestRunnerControllerState from './TestRunnerController';
-import type {HomeFragments} from 'nuclide-home-interfaces';
-import type {TestRunner} from 'nuclide-test-runner-interfaces';
+import type {HomeFragments} from '../../home-interfaces';
+import type {TestRunner} from '../../test-runner-interfaces';
 
 const {
   CompositeDisposable,
@@ -21,7 +21,7 @@ const {
 let logger;
 function getLogger() {
   if (!logger) {
-    logger = require('nuclide-logging').getLogger();
+    logger = require('../../logging').getLogger();
   }
   return logger;
 }

@@ -8,15 +8,6 @@
     "packageType": "Atom",
     "testRunner": "apm"
   },
-  "dependencies": {
-    "nuclide-client": "0.0.0",
-    "nuclide-logging": "0.0.0"
-  },
-  "devDependencies": {
-    "nuclide-external-interfaces": "0.0.0",
-    "nuclide-fuzzy-file-search-service": "0.0.0",
-    "nuclide-quick-open-interfaces": "0.0.0"
-  },
   "providedServices": {
     "nuclide-quick-open-register-provider": {
       "description": "Register ourselves with the quick-open package",

@@ -9,16 +9,16 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from 'nuclide-remote-uri';
+import type {NuclideUri} from '../../remote-uri';
 
 import {
   checkOutput,
   findNearestFile,
   safeSpawn,
   PromiseQueue,
-} from 'nuclide-commons';
+} from '../../commons';
 
-const logger = require('nuclide-logging').getLogger();
+const logger = require('../../logging').getLogger();
 
 const ERROR_RESPONSES = new Set([
   'failure',

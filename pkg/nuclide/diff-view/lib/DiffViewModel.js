@@ -9,18 +9,18 @@
  * the root directory of this source tree.
  */
 
-import type {HgRepositoryClient} from 'nuclide-hg-repository-client';
+import type {HgRepositoryClient} from '../../hg-repository-client';
 import type {FileChangeState, RevisionsState, FileChangeStatusValue, HgDiffState} from './types';
-import type {RevisionInfo} from 'nuclide-hg-repository-base/lib/hg-constants';
-import type {NuclideUri} from 'nuclide-remote-uri';
+import type {RevisionInfo} from '../../hg-repository-base/lib/hg-constants';
+import type {NuclideUri} from '../../remote-uri';
 
 import invariant from 'assert';
 import {CompositeDisposable, Emitter} from 'atom';
-import {repositoryForPath} from 'nuclide-hg-git-bridge';
-import {track, trackTiming} from 'nuclide-analytics';
+import {repositoryForPath} from '../../hg-git-bridge';
+import {track, trackTiming} from '../../analytics';
 import {getFileSystemContents} from './utils';
-import {getFileForPath, getFileSystemServiceByNuclideUri} from 'nuclide-client';
-import {array, map, debounce} from 'nuclide-commons';
+import {getFileForPath, getFileSystemServiceByNuclideUri} from '../../client';
+import {array, map, debounce} from '../../commons';
 import RepositoryStack from './RepositoryStack';
 import {
   notifyInternalError,
@@ -323,7 +323,7 @@ class DiffViewModel {
   }
 
   async _saveFile(filePath: NuclideUri, newContents: string): Promise<void> {
-    const {getPath} = require('nuclide-remote-uri');
+    const {getPath} = require('../../remote-uri');
     try {
       // We don't use files, because `getFileForPath` returns the same remote file
       // instance everytime, which could have an invalid filesystem contents cache.

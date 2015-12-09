@@ -8,7 +8,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-import {uncachedRequire, clearRequireCache} from 'nuclide-test-helpers';
+import {uncachedRequire, clearRequireCache} from '../../test-helpers';
 
 describe('debugger-hhvm-proxy ClientCallback', () => {
   let clientCallback: any;

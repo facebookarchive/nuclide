@@ -10,9 +10,9 @@
  */
 
 const Console = require('./Console');
-const NuclideUiDropdown = require('nuclide-ui-dropdown');
-const {PanelComponent} = require('nuclide-ui-panel');
-const {createPaneContainer} = require('nuclide-atom-helpers');
+const NuclideUiDropdown = require('../../../ui/dropdown');
+const {PanelComponent} = require('../../../ui/panel');
+const {createPaneContainer} = require('../../../atom-helpers');
 const React = require('react-for-atom');
 const TestClassTree = require('./TestClassTree');
 

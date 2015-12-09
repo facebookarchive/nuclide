@@ -9,14 +9,14 @@
  * the root directory of this source tree.
  */
 
-import type {HgService as HgServiceType} from 'nuclide-hg-repository-base/lib/HgService.js';
+import type {HgService as HgServiceType} from '../../hg-repository-base/lib/HgService.js';
 
 import {Directory, GitRepository} from 'atom';
 import fs from 'fs';
 import repositoryContainsPath from '../lib/repositoryContainsPath';
-import {asyncExecute} from 'nuclide-commons';
-import {MockHgService} from 'nuclide-hg-repository-base';
-import {HgRepositoryClient} from 'nuclide-hg-repository-client';
+import {asyncExecute} from '../../commons';
+import {MockHgService} from '../../hg-repository-base';
+import {HgRepositoryClient} from '../../hg-repository-client';
 import path from 'path';
 
 const temp = require('temp').track();

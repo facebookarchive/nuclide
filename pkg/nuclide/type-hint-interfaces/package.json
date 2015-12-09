@@ -7,8 +7,5 @@
   "nuclide": {
     "packageType": "Node",
     "testRunner": "apm"
-  },
-  "devDependencies": {
-    "nuclide-external-interfaces": "0.0.0"
   }
 }

@@ -13,9 +13,9 @@ import type {
   ClangCompileResult,
   ClangCompletionsResult,
   ClangDeclarationResult,
-} from 'nuclide-clang';
+} from '../../clang';
 
-import {getServiceByNuclideUri} from 'nuclide-remote-connection';
+import {getServiceByNuclideUri} from '../../remote-connection';
 import {Point} from 'atom';
 
 class LibClangProcess {

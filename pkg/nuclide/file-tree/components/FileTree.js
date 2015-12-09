@@ -14,8 +14,8 @@ import FileTreeStore from '../lib/FileTreeStore';
 import React from 'react-for-atom';
 import RootNodeComponent from './RootNodeComponent';
 import EmptyComponent from './EmptyComponent';
-import {track} from 'nuclide-analytics';
-import {once} from 'nuclide-commons';
+import {track} from '../../analytics';
+import {once} from '../../commons';
 
 const {PropTypes} = React;
 

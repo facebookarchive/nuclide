@@ -10,4 +10,4 @@
  */
 
 const DEBUGGER_LOGGER_CATEGORY = 'nuclide-hhvm-debugger';
-export default require('nuclide-logging').getCategoryLogger(DEBUGGER_LOGGER_CATEGORY);
+export default require('../../../logging').getCategoryLogger(DEBUGGER_LOGGER_CATEGORY);

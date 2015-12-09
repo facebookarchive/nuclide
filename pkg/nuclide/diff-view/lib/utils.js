@@ -10,7 +10,7 @@
  */
 
 import invariant from 'assert';
-import {getFileSystemServiceByNuclideUri} from 'nuclide-client';
+import {getFileSystemServiceByNuclideUri} from '../../client';
 
 /**
  * Reads the file contents and returns empty string if the file doesn't exist
@@ -21,7 +21,7 @@ import {getFileSystemServiceByNuclideUri} from 'nuclide-client';
 export function getFileSystemContents(filePath: NuclideUri): Promise<string> {
   const fileSystemService = getFileSystemServiceByNuclideUri(filePath);
   invariant(fileSystemService);
-  const localFilePath = require('nuclide-remote-uri').getPath(filePath);
+  const localFilePath = require('../../remote-uri').getPath(filePath);
   return fileSystemService.readFile(localFilePath)
     .then(
       contents => contents.toString('utf8'),

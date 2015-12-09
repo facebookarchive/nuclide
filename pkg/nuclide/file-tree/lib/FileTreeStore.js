@@ -12,7 +12,7 @@
 import type {
   RemoteDirectory,
   RemoteFile,
-} from 'nuclide-remote-connection';
+} from '../../remote-connection';
 
 import {ActionType} from './FileTreeConstants';
 import {Disposable, Emitter} from 'atom';
@@ -21,11 +21,11 @@ import FileTreeHelpers from './FileTreeHelpers';
 import FileTreeNode from './FileTreeNode';
 import Immutable from 'immutable';
 import {Minimatch} from 'minimatch';
-import {repositoryContainsPath} from 'nuclide-hg-git-bridge';
+import {repositoryContainsPath} from '../../hg-git-bridge';
 
-import {array} from 'nuclide-commons';
-import {getLogger} from 'nuclide-logging';
-import {object as objectUtil} from 'nuclide-commons';
+import {array} from '../../commons';
+import {getLogger} from '../../logging';
+import {object as objectUtil} from '../../commons';
 import shell from 'shell';
 import memoize from 'lodash.memoize';
 
@@ -33,7 +33,7 @@ import memoize from 'lodash.memoize';
 const VERSION = 1;
 
 import type {Dispatcher} from 'flux';
-import type {NuclideUri} from 'nuclide-remote-uri';
+import type {NuclideUri} from '../../remote-uri';
 
 type ActionPayload = Object;
 type ChangeListener = () => mixed;

@@ -53,24 +53,6 @@
   "engines": {
     "atom": ">=0.196.0"
   },
-  "dependencies": {
-    "nuclide-analytics": "0.0.0",
-    "nuclide-atom-helpers": "0.0.0",
-    "nuclide-busy-signal-provider-base": "0.0.0",
-    "nuclide-commons": "0.0.0",
-    "nuclide-diagnostics-provider-base": "0.0.0",
-    "nuclide-hack-common": "0.0.0",
-    "nuclide-logging": "0.0.0",
-    "nuclide-remote-connection": "0.0.0",
-    "nuclide-remote-uri": "0.0.0",
-    "nuclide-text-event-dispatcher": "0.0.0"
-  },
-  "devDependencies": {
-    "hyperclick-interfaces": "0.0.0",
-    "nuclide-busy-signal-interfaces": "0.0.0",
-    "nuclide-diagnostics-base": "0.0.0",
-    "nuclide-hack-base": "0.0.0"
-  },
   "_atomModuleCache": {
     "extensions": {
       ".node": []

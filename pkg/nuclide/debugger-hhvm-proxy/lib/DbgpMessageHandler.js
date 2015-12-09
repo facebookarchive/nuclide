@@ -153,7 +153,7 @@ export class DbgpMessageHandler {
 }
 
 export function getDbgpMessageHandlerInstance(): DbgpMessageHandler {
-  return require('nuclide-commons').singleton.get(
+  return require('../../commons').singleton.get(
     GLOBAL_HHVM_DEBUGGER_KEY, () => {
       return new DbgpMessageHandler();
     });

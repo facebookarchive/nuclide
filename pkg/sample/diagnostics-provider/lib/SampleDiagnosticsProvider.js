@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {DiagnosticsProviderBase} from 'nuclide-diagnostics-provider-base';
+import {DiagnosticsProviderBase} from '../../../nuclide/diagnostics/provider-base';
 
 import {Range} from 'atom';
 

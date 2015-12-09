@@ -10,8 +10,8 @@
  */
 
 import fs from 'fs';
-import {getLogger, flushLogsAndExit, initialUpdateConfig} from 'nuclide-logging';
-import {startTracking} from 'nuclide-analytics';
+import {getLogger, flushLogsAndExit, initialUpdateConfig} from '../../logging';
+import {startTracking} from '../../analytics';
 import NuclideServer from './NuclideServer';
 
 const DEFAULT_PORT = 9090;

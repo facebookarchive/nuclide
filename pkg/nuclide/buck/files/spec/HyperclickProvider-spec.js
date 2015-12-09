@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {BuckProject} from 'nuclide-buck-base/lib/BuckProject';
+import type {BuckProject} from '../../base/lib/BuckProject';
 
 const {findTargetLocation, parseTarget} = require('../lib/HyperclickProvider');
 

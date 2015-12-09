@@ -9,11 +9,11 @@
  * the root directory of this source tree.
  */
 
-import NuclideCustomPaneItem from 'nuclide-ui-pane-item';
+import NuclideCustomPaneItem from '../../../ui/pane-item';
 import ProcessOutputView from './ProcessOutputView';
 import React from 'react-for-atom';
 
-import type {NuclideCustomPaneItemOptions} from 'nuclide-ui-pane-item/lib/types';
+import type {NuclideCustomPaneItemOptions} from '../../../ui/pane-item/lib/types';
 
 class ProcessOutputWrapper extends NuclideCustomPaneItem {
 

@@ -12,7 +12,7 @@
 const BreakpointStore = require('../lib/BreakpointStore');
 const Bridge = require('../lib/Bridge');
 const utils = require('./utils');
-const {array} = require('nuclide-commons');
+const {array} = require('../../../commons');
 
 class MockWebview {
   _listeners: Map<String, Set<Function>>;

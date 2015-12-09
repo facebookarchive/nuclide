@@ -13,14 +13,14 @@
 // import type {FindReferencesReturn} from 'nuclide-find-references';
 
 const {findReferences} = require('./hack');
-const {HACK_GRAMMARS_SET} = require('nuclide-hack-common');
-import {trackOperationTiming} from 'nuclide-analytics';
+const {HACK_GRAMMARS_SET} = require('../../hack-common');
+import {trackOperationTiming} from '../../analytics';
 
 async function doFindReferences(
   textEditor: TextEditor,
   position: atom$Point,
 ): Promise<?Object /*FindReferencesReturn*/> {
-  const {withLoadingNotification} = require('nuclide-atom-helpers');
+  const {withLoadingNotification} = require('../../atom-helpers');
 
   const result = await withLoadingNotification(
     findReferences(textEditor, position.row, position.column),

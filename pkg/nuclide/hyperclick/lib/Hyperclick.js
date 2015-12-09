@@ -9,15 +9,15 @@
  * the root directory of this source tree.
  */
 
-import type {HyperclickSuggestion, HyperclickProvider} from 'hyperclick-interfaces';
+import type {HyperclickSuggestion, HyperclickProvider} from '../../hyperclick-interfaces';
 
 import HyperclickForTextEditor from './HyperclickForTextEditor';
 import SuggestionList from './SuggestionList';
 import SuggestionListElement from './SuggestionListElement';
 import getWordTextAndRange from './get-word-text-and-range';
 import {defaultWordRegExpForEditor} from './hyperclick-utils';
-import {array} from 'nuclide-commons';
-import {trackOperationTiming} from 'nuclide-analytics';
+import {array} from '../../commons';
+import {trackOperationTiming} from '../../analytics';
 
 /**
  * Calls the given functions and returns the first non-null return value.

@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {BusySignalProviderBase} from 'nuclide-busy-signal-provider-base';
+import {BusySignalProviderBase} from '../../busy-signal-provider-base';
 import {ArcanistDiagnosticsProvider} from '../lib/ArcanistDiagnosticsProvider';
 import fs from 'fs';
 import path from 'path';

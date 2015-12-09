@@ -10,7 +10,7 @@
  */
 /* @providesModule HgConstants */
 
-import type {NuclideUri} from 'nuclide-remote-uri';
+import type {NuclideUri} from '../../remote-uri';
 
 /**
  * These are status codes used by Mercurial's output.

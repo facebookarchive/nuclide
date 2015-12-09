@@ -24,7 +24,7 @@ class File {
   async getSource(): Promise<string> {
     let source = this._source;
     if (source === null) {
-      source = (await require('nuclide-commons').readFile(this._path, 'utf8')).toString();
+      source = (await require('../../commons').readFile(this._path, 'utf8')).toString();
       this._source = source;
     }
     return source;

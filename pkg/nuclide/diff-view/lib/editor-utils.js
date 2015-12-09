@@ -11,7 +11,7 @@
 
 import type {LineRangesWithOffsets, OffsetMap} from './types';
 
-import {array} from 'nuclide-commons';
+import {array} from '../../commons';
 
 /*
  * @param screenLines The original screen lines before adding offsets.

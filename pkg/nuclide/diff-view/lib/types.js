@@ -8,8 +8,8 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-import type {NuclideUri} from 'nuclide-remote-uri';
-import type {RevisionInfo} from 'nuclide-hg-repository-base/lib/hg-constants';
+import type {NuclideUri} from '../../remote-uri';
+import type {RevisionInfo} from '../../hg-repository-base/lib/hg-constants';
 
 export type FileChangeStatusValue = 1 | 2 | 3 | 4 | 5;
 

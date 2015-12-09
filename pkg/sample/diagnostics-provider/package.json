@@ -10,11 +10,5 @@
         "0.1.0": "provideDiagnostics"
       }
     }
-  },
-  "dependencies": {
-    "nuclide-diagnostics-provider-base": "0.0.32"
-  },
-  "devDependencies": {
-    "nuclide-diagnostics-base": "0.0.32"
   }
 }

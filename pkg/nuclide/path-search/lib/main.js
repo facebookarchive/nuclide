@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {Task} from 'nuclide-task';
+import type {Task} from '../../task';
 import type {FileSearchResult as FileSearchResultType} from './FileSearch';
 
 export type FileSearchResult = FileSearchResultType;
@@ -52,7 +52,7 @@ class MainProcessFileSearch {
 const fileSearchForDirectoryUri: {[key: DirectoryUri]: Promise<MainProcessFileSearch>} = {};
 
 async function newFileSearch(directoryUri: string): Promise<MainProcessFileSearch> {
-  const {createTask} = require('nuclide-task');
+  const {createTask} = require('../../task');
   const task = createTask();
   await task.invokeRemoteMethod({
     file: require.resolve('./FileSearch'),

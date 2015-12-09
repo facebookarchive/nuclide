@@ -7,14 +7,5 @@
   "nuclide": {
     "packageType": "Node",
     "testRunner": "apm"
-  },
-  "dependencies": {
-    "nuclide-commons": "0.0.0"
-  },
-  "devDependencies": {
-    "nuclide-hg-repository-base": "0.0.0",
-    "nuclide-hg-repository-client": "0.0.0",
-    "nuclide-remote-uri": "0.0.0",
-    "temp": "0.8.3"
   }
 }

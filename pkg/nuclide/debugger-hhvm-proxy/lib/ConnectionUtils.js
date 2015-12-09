@@ -10,7 +10,7 @@
  */
 import logger from './utils';
 import {launchPhpScriptWithXDebugEnabled, uriToPath} from './helpers';
-import {fsPromise, findNearestFile} from 'nuclide-commons';
+import {fsPromise, findNearestFile} from '../../commons';
 
 import type {Socket} from 'net';
 import type {ConnectionConfig} from './HhvmDebuggerProxyService';

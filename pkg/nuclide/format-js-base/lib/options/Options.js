@@ -13,7 +13,7 @@ import type {ModuleMapOptions} from './ModuleMapOptions';
 import type {RequireOptions} from './RequireOptions';
 import type {SourceOptions} from './SourceOptions';
 
-const {getPath} = require('nuclide-remote-uri');
+const {getPath} = require('../../../remote-uri');
 const invariant = require('assert');
 const path = require('path');
 

@@ -51,7 +51,7 @@ function findHgRepository(directoryPath: string): HgRepositoryDescription {
 }
 
 function isRootDir(directoryPath: string): boolean {
-  const {isRoot} = require('nuclide-commons').fsPromise;
+  const {isRoot} = require('../../commons').fsPromise;
   return isRoot(directoryPath);
 }
 

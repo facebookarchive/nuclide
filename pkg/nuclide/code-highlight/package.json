@@ -8,12 +8,6 @@
     "packageType": "Atom",
     "testRunner": "apm"
   },
-  "dependencies": {
-    "nuclide-commons": "0.0.0"
-  },
-  "devDependencies": {
-    "nuclide-jasmine": "0.0.0"
-  },
   "consumedServices": {
     "nuclide-code-highlight.provider": {
       "versions": {

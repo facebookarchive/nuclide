@@ -13,8 +13,8 @@ import type {
   FileResult,
   Provider,
   ProviderType,
-} from 'nuclide-quick-open-interfaces';
-import type {HackSearchPosition} from 'nuclide-hack-base/lib/types';
+} from '../../quick-open-interfaces';
+import type {HackSearchPosition} from '../../hack-base/lib/types';
 
 import {getHackSearchService} from './getHackSearchService';
 import path from 'path';

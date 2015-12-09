@@ -12,7 +12,7 @@ import {
   activateAllPackages,
   copyMercurialFixture,
   deactivateAllPackages,
-} from 'nuclide-integration-test-helpers';
+} from '../../integration-test-helpers';
 import path from 'path';
 
 describe('Mercurial Repository Integration Tests', () => {

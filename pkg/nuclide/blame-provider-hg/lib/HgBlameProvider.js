@@ -9,16 +9,16 @@
  * the root directory of this source tree.
  */
 
-import type {BlameForEditor} from 'nuclide-blame-base';
+import type {BlameForEditor} from '../../blame-base';
 
-import featureConfig from 'nuclide-feature-config';
+import featureConfig from '../../feature-config';
 import {hgRepositoryForEditor} from './common';
-import {trackOperationTiming} from 'nuclide-analytics';
+import {trackOperationTiming} from '../../analytics';
 
 let logger;
 function getLogger() {
   if (!logger) {
-    logger = require('nuclide-logging').getLogger();
+    logger = require('../../logging').getLogger();
   }
   return logger;
 }

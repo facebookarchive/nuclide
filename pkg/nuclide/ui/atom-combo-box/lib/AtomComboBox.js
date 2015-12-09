@@ -16,7 +16,7 @@ type ComboboxOption = {
 };
 
 const {CompositeDisposable} = require('atom');
-const AtomInput = require('nuclide-ui-atom-input');
+const AtomInput = require('../../atom-input');
 const React = require('react-for-atom');
 
 const emptyfunction = require('emptyfunction');

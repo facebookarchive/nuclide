@@ -9,20 +9,20 @@
  * the root directory of this source tree.
  */
 
-import type {BusySignalProviderBase} from 'nuclide-busy-signal-provider-base';
+import type {BusySignalProviderBase} from '../../busy-signal-provider-base';
 
 import type {
   MessageUpdateCallback,
   MessageInvalidationCallback,
-} from 'nuclide-diagnostics-base';
+} from '../../diagnostics/base';
 
 import {CompositeDisposable} from 'atom';
-import {DiagnosticsProviderBase} from 'nuclide-diagnostics-provider-base';
+import {DiagnosticsProviderBase} from '../../diagnostics/provider-base';
 
-import featureConfig from 'nuclide-feature-config';
-import {trackTiming} from 'nuclide-analytics';
-import {isTextEditor} from 'nuclide-atom-helpers';
-import {promises} from 'nuclide-commons';
+import featureConfig from '../../feature-config';
+import {trackTiming} from '../../analytics';
+import {isTextEditor} from '../../atom-helpers';
+import {promises} from '../../commons';
 import invariant from 'assert';
 
 const {RequestSerializer} = promises;
@@ -88,7 +88,7 @@ export class ArcanistDiagnosticsProvider {
     const {Range} = require('atom');
     try {
       const result = await this._requestSerializer.run(
-        require('nuclide-arcanist-client').findDiagnostics([filePath])
+        require('../../arcanist-client').findDiagnostics([filePath])
       );
       if (result.status === 'outdated') {
         return;
@@ -125,7 +125,7 @@ export class ArcanistDiagnosticsProvider {
       };
       this._providerBase.publishMessageUpdate(diagnosticsUpdate);
     } catch (error) {
-      const logger = require('nuclide-logging').getLogger();
+      const logger = require('../../logging').getLogger();
       logger.error(error);
       return;
     }

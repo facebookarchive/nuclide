@@ -17,7 +17,7 @@ import type {
   FileResult,
   Provider,
   ProviderResult,
-} from 'nuclide-quick-open-interfaces';
+} from '../../quick-open-interfaces';
 
 type ResultRenderer = (item: FileResult) => ReactElement;
 
@@ -31,19 +31,19 @@ const {
 const {
   array,
   debounce,
-} = require('nuclide-commons');
+} = require('../../commons');
 
 let logger = null;
 function getLogger() {
   if (logger == null) {
-    logger = require('nuclide-logging').getLogger();
+    logger = require('../../logging').getLogger();
   }
   return logger;
 }
 
 let trackFunction;
 function track(...args) {
-  const trackFunc = trackFunction || (trackFunction = require('nuclide-analytics').track);
+  const trackFunc = trackFunction || (trackFunction = require('../../analytics').track);
   trackFunc.apply(null, args);
 }
 

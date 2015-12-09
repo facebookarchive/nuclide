@@ -10,8 +10,8 @@
  */
 
 const {Emitter, Directory} = require('atom');
-const {isRemote} = require('nuclide-remote-uri');
-const {singleton} = require('nuclide-commons');
+const {isRemote} = require('../../remote-uri');
+const {singleton} = require('../../commons');
 
 const REMOVE_PROJECT_EVENT = 'did-remove-project';
 const ADD_PROJECT_EVENT = 'did-add-project';

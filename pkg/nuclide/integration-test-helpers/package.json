@@ -7,11 +7,5 @@
   "nuclide": {
     "packageType": "Node",
     "testRunner": "apm"
-  },
-  "devDependencies": {
-    "fs-plus": "2.8.1",
-    "nuclide-commons": "0.0.0",
-    "nuclide-external-interfaces": "0.0.0",
-    "nuclide-test-helpers": "0.0.0"
   }
 }

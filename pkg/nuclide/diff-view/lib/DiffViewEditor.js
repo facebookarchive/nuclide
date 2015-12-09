@@ -14,7 +14,7 @@ import type {InlineComponent, RenderedComponent, OffsetMap} from './types';
 import {Range} from 'atom';
 import {buildLineRangesWithOffsets} from './editor-utils';
 import React from 'react-for-atom';
-import {getLogger} from 'nuclide-logging';
+import {getLogger} from '../../logging';
 
 const logger = getLogger();
 
@@ -49,7 +49,7 @@ export default class DiffViewEditor {
   }
 
   renderInlineComponents(elements: Array<InlineComponent>): Promise<Array<RenderedComponent>> {
-    const {object} = require('nuclide-commons');
+    const {object} = require('../../commons');
     const components = [];
     const renderPromises = [];
     const scrollToRow = this._scrollToRow.bind(this);

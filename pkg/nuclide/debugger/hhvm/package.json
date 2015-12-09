@@ -29,24 +29,11 @@
       "logLevel": {
         "type": "string",
         "default": "INFO",
-        "description":
-          "Specify that level of logging from debugger, supported values: ALL | TRACE | DEBUG | INFO | WARN | ERROR | FATAL | OFF."
+        "description": "Specify that level of logging from debugger, supported values: ALL | TRACE | DEBUG | INFO | WARN | ERROR | FATAL | OFF."
       }
     },
     "packageType": "Atom",
     "testRunner": "apm"
-  },
-  "dependencies": {
-    "nuclide-client": "0.0.0",
-    "nuclide-debugger-utils": "0.0.0",
-    "nuclide-feature-config": "0.0.0",
-    "nuclide-logging": "0.0.0",
-    "nuclide-remote-uri": "0.0.0",
-    "ws": "0.7.1"
-  },
-  "devDependencies": {
-    "nuclide-debugger-interfaces": "0.0.0",
-    "nuclide-home-interfaces": "0.0.0"
   },
   "providedServices": {
     "nuclide-debugger-hhvm-service": {

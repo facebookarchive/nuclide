@@ -12,10 +12,6 @@
   "engines": {
     "atom": ">=1.1.0"
   },
-  "devDependencies": {
-    "nuclide-commons": "0.0.0",
-    "nuclide-external-interfaces": "0.0.0"
-  },
   "consumedServices": {
     "nuclide-gadgets.provider": {
       "versions": {
@@ -27,10 +23,5 @@
     "extensions": {
       ".node": []
     }
-  },
-  "dependencies": {
-    "immutable": "3.7.5",
-    "react-for-atom": "0.14.3",
-    "rx": "3.1.1"
   }
 }

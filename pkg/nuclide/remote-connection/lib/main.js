@@ -21,7 +21,7 @@ const {SshHandshake, decorateSshConnectionDelegateWithTracking} = require('./Ssh
  * loading, which is done via its getService() and getServiceByNuclideUri() methods.
  */
 const NUCLIDE_CLIENT_EXPORTS_KEY = '_nuclide_client_exports';
-const nuclideClientExports = require('nuclide-commons').singleton.get(
+const nuclideClientExports = require('../../commons').singleton.get(
   NUCLIDE_CLIENT_EXPORTS_KEY,
   () => {
     const {

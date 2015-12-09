@@ -99,7 +99,7 @@ class DbgpSocket {
   }
 
   onStatus(callback: (status: string) => mixed): Disposable {
-    return require('nuclide-commons').event
+    return require('../../commons').event
       .attachEvent(this._emitter, DBGP_SOCKET_STATUS_EVENT, callback);
   }
 

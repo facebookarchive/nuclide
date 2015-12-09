@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const featureConfig = require('nuclide-feature-config');
+const featureConfig = require('../../feature-config');
 const path = require('path');
 
 const BASE_ITEM_URI = 'nuclide-home://';

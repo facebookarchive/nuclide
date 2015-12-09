@@ -11,7 +11,7 @@
 
 const {CompositeDisposable} = require('atom');
 
-const featureConfig = require('nuclide-feature-config');
+const featureConfig = require('../../feature-config');
 
 let subscriptions: ?CompositeDisposable = null;
 

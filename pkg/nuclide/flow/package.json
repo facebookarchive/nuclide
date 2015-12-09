@@ -19,15 +19,13 @@
       "enableStructuredTypeHints": {
         "type": "boolean",
         "default": false,
-        "description":
-          "Show tree-structured type hints. Type hints must first be enabled. Requires Flow v0.17.0"
+        "description": "Show tree-structured type hints. Type hints must first be enabled. Requires Flow v0.17.0"
       },
       "diagnosticsOnFly": {
         "type": "boolean",
         "default": false,
         "title": "Diagnostics as you type",
-        "description":
-          "Report Flow errors and warnings as you type, rather than waiting for a save"
+        "description": "Report Flow errors and warnings as you type, rather than waiting for a save"
       }
     },
     "packageType": "Atom",
@@ -62,25 +60,6 @@
   },
   "engines": {
     "atom": ">0.188.0"
-  },
-  "dependencies": {
-    "nuclide-analytics": "0.0.0",
-    "nuclide-atom-helpers": "0.0.0",
-    "nuclide-busy-signal-provider-base": "0.0.0",
-    "nuclide-client": "0.0.0",
-    "nuclide-commons": "0.0.0",
-    "nuclide-diagnostics-provider-base": "0.0.0",
-    "nuclide-feature-config": "0.0.0",
-    "nuclide-flow-base": "0.0.0",
-    "nuclide-logging": "0.0.0"
-  },
-  "devDependencies": {
-    "hyperclick-interfaces": "0.0.0",
-    "nuclide-busy-signal-interfaces": "0.0.0",
-    "nuclide-diagnostics-base": "0.0.0",
-    "nuclide-remote-uri": "0.0.0",
-    "nuclide-test-helpers": "0.0.0",
-    "nuclide-type-hint-interfaces": "0.0.0"
   },
   "_atomModuleCache": {
     "extensions": {

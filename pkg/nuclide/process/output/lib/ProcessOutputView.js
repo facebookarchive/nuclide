@@ -9,11 +9,11 @@
  * the root directory of this source tree.
  */
 
-import type {ProcessOutputStore} from 'nuclide-process-output-store';
+import type {ProcessOutputStore} from '../../output-store';
 import type {ProcessOutputHandler} from './types';
 
 const {CompositeDisposable, TextBuffer} = require('atom');
-const AtomTextEditor = require('nuclide-ui-atom-text-editor');
+const AtomTextEditor = require('../../../ui/atom-text-editor');
 const React = require('react-for-atom');
 
 const PROCESS_OUTPUT_PATH = 'nuclide-process-output.ansi';

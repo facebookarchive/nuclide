@@ -15,11 +15,11 @@ import type {
   DiagnosticProviderUpdate,
   DiagnosticProvider,
   InvalidationMessage,
-} from 'nuclide-diagnostics-base';
+} from '../../base';
 import type {LinterProvider} from './LinterAdapter';
 
 import {Disposable, CompositeDisposable} from 'atom';
-import featureConfig from 'nuclide-feature-config';
+import featureConfig from '../../../feature-config';
 
 const legacyLinterSetting = 'nuclide-diagnostics-store.consumeLegacyLinters';
 
@@ -33,14 +33,14 @@ function addDisposable(disposable: atom$IDisposable) {
   if (disposables) {
     disposables.add(disposable);
   } else {
-    const logger = require('nuclide-logging').getLogger();
+    const logger = require('../../../logging').getLogger();
     logger.error('disposables is null');
   }
 }
 
 function getDiagnosticStore(): DiagnosticStore {
   if (!diagnosticStore) {
-    diagnosticStore = new (require('nuclide-diagnostics-base').DiagnosticStore)();
+    diagnosticStore = new (require('../../base').DiagnosticStore)();
   }
   return diagnosticStore;
 }

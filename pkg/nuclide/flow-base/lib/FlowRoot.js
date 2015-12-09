@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from 'nuclide-remote-uri';
+import type {NuclideUri} from '../../remote-uri';
 
 import type {
   Diagnostics,
@@ -19,7 +19,7 @@ import type {
 import {filter} from 'fuzzaldrin';
 
 
-import {getLogger} from 'nuclide-logging';
+import {getLogger} from '../../logging';
 const logger = getLogger();
 
 import {

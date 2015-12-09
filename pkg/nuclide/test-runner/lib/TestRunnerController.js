@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-import type {TestRunner, Message} from 'nuclide-test-runner-interfaces';
-import type {NuclideUri} from 'nuclide-remote-uri';
+import type {TestRunner, Message} from '../../test-runner-interfaces';
+import type {NuclideUri} from '../../remote-uri';
 import type {Observable} from 'rx';
 import invariant from 'assert';
 
@@ -21,10 +21,10 @@ const TestRunModel = require('./TestRunModel');
 const TestRunnerPanel = require('./ui/TestRunnerPanel');
 const TestSuiteModel = require('./TestSuiteModel');
 
-const {array} = require('nuclide-commons');
-const logger = require('nuclide-logging').getLogger();
+const {array} = require('../../commons');
+const logger = require('../../logging').getLogger();
 const os = require('os');
-const {track} = require('nuclide-analytics');
+const {track} = require('../../analytics');
 
 export type TestRunnerControllerState = {
   panelVisible?: boolean;

@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-import {LazyTreeNode} from 'nuclide-ui-tree';
-import {basename} from 'nuclide-remote-uri';
+import {LazyTreeNode} from '../../ui/tree';
+import {basename} from '../../remote-uri';
 import {FileChangeStatusToPrefix} from './constants';
 
 import type {FileChange} from './types';

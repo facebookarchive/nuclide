@@ -10,16 +10,16 @@
  */
 
 import invariant from 'assert';
-import {RemoteConnection} from 'nuclide-remote-connection';
+import {RemoteConnection} from '../../remote-connection';
 const React = require('react-for-atom');
 const {CompositeDisposable, Disposable} = require('atom');
 const StatusBarTile = require('./ui/StatusBarTile');
-const {isTextEditor} = require('nuclide-atom-helpers');
-const remoteUri = require('nuclide-remote-uri');
+const {isTextEditor} = require('../../atom-helpers');
+const remoteUri = require('../../remote-uri');
 const ConnectionState = require('./ConnectionState');
 
 const {onWorkspaceDidStopChangingActivePaneItem} =
-  require('nuclide-atom-helpers').atomEventDebounce;
+  require('../../atom-helpers').atomEventDebounce;
 
 class RemoteProjectsController {
   _disposables: CompositeDisposable;

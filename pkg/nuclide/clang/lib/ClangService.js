@@ -9,18 +9,18 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from 'nuclide-remote-uri';
+import type {NuclideUri} from '../../remote-uri';
 
-const {checkOutput, fsPromise, safeSpawn} = require('nuclide-commons');
-const logger = require('nuclide-logging').getLogger();
+const {checkOutput, fsPromise, safeSpawn} = require('../../commons');
+const logger = require('../../logging').getLogger();
 const path = require('path');
 const split = require('split');
 const {EventEmitter} = require('events');
 const ClangFlagsManager = require('./ClangFlagsManager');
 
-import {BuckUtils} from 'nuclide-buck-base/lib/BuckUtils';
+import {BuckUtils} from '../../buck/base/lib/BuckUtils';
 
-const {keyMirror} = require('nuclide-commons').object;
+const {keyMirror} = require('../../commons').object;
 
 // Maps clang's cursor types to the actual declaration types: for a full list see
 // https://github.com/llvm-mirror/clang/blob/master/include/clang/Basic/DeclNodes.td

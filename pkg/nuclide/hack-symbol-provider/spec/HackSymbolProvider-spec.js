@@ -9,12 +9,12 @@
  * the root directory of this source tree.
  */
 
-import type {HackSearchPosition} from 'nuclide-hack-base/lib/types';
-import type {HackSearchService} from 'nuclide-hack-search-service';
+import type {HackSearchPosition} from '../../hack-base/lib/types';
+import type {HackSearchService} from '../../hack-search-service';
 
 import HackSymbolProvider from '../lib/HackSymbolProvider';
 import React from 'react-for-atom';
-import {clearRequireCache, uncachedRequire} from 'nuclide-test-helpers';
+import {clearRequireCache, uncachedRequire} from '../../test-helpers';
 import invariant from 'assert';
 
 const {TestUtils} = React.addons;

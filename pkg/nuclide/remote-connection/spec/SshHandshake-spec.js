@@ -12,7 +12,7 @@
 const {EventEmitter} = require('events');
 const path = require('path');
 const pathToFakePk = path.join(__dirname, 'fakepk');
-const {clearRequireCache, uncachedRequire} = require('nuclide-test-helpers');
+const {clearRequireCache, uncachedRequire} = require('../../test-helpers');
 const {SshHandshake} = require('../lib/SshHandshake');
 
 describe('SshHandshake', () => {

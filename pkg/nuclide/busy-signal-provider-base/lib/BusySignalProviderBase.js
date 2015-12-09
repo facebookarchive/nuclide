@@ -9,15 +9,15 @@
  * the root directory of this source tree.
  */
 
-import type {BusySignalMessage} from 'nuclide-busy-signal-interfaces';
-import type {NuclideUri} from 'nuclide-remote-uri';
+import type {BusySignalMessage} from '../../busy-signal-interfaces';
+import type {NuclideUri} from '../../remote-uri';
 
 import {Disposable, CompositeDisposable} from 'atom';
 
 import {Subject} from 'rx';
 import invariant from 'assert';
 
-import {promises} from 'nuclide-commons';
+import {promises} from '../../commons';
 const {isPromise} = promises;
 
 export type MessageDisplayOptions = {

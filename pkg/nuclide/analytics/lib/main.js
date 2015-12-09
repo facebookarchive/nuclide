@@ -10,7 +10,7 @@
  */
 
 import invariant from 'assert';
-import {singleton} from 'nuclide-commons';
+import {singleton} from '../../commons';
 import {AnalyticsBatcher} from './AnalyticsBatcher';
 import {track as rawTrack} from './track';
 
@@ -163,7 +163,7 @@ function trackOperationTiming<T>(eventName: string, operation: () => T): T {
   try {
     const result = operation();
 
-    if (require('nuclide-commons').promises.isPromise(result)) {
+    if (require('../../commons').promises.isPromise(result)) {
       // Atom uses a different Promise implementation than Nuclide, so the following is not true:
       // invariant(result instanceof Promise);
 

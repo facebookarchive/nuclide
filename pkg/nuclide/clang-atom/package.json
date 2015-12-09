@@ -28,20 +28,6 @@
       }
     }
   },
-  "dependencies": {
-    "fs-plus": "2.8.1",
-    "nuclide-analytics": "0.0.0",
-    "nuclide-atom-helpers": "0.0.0",
-    "nuclide-commons": "0.0.0",
-    "nuclide-logging": "0.0.0",
-    "nuclide-remote-connection": "0.0.0",
-    "nuclide-service-hub-plus": "0.0.0"
-  },
-  "devDependencies": {
-    "hyperclick-interfaces": "0.0.0",
-    "nuclide-atom-test-helpers": "0.0.0",
-    "nuclide-clang": "0.0.0"
-  },
   "_atomModuleCache": {
     "extensions": {
       ".node": []

@@ -9,16 +9,16 @@
  * the root directory of this source tree.
  */
 
-import type {HyperclickProvider} from 'hyperclick-interfaces';
+import type {HyperclickProvider} from '../../hyperclick-interfaces';
 import type {
   BusySignalProviderBase as BusySignalProviderBaseType,
-} from 'nuclide-busy-signal-provider-base';
+} from '../../busy-signal-provider-base';
 
 const invariant = require('assert');
 const {CompositeDisposable} = require('atom');
 
-import featureConfig from 'nuclide-feature-config';
-import {track} from 'nuclide-analytics';
+import featureConfig from '../../feature-config';
+import {track} from '../../analytics';
 
 import {JS_GRAMMARS, JAVASCRIPT_WORD_REGEX} from './constants.js';
 const GRAMMARS_STRING = JS_GRAMMARS.join(', ');
@@ -27,7 +27,7 @@ const diagnosticsOnFlySetting = 'nuclide-flow.diagnosticsOnFly';
 const PACKAGE_NAME = 'nuclide-flow';
 
 function getServiceByNuclideUri(service, file?) {
-  return require('nuclide-client').getServiceByNuclideUri(service, file);
+  return require('../../client').getServiceByNuclideUri(service, file);
 }
 
 let busySignalProvider;
@@ -45,7 +45,7 @@ module.exports = {
     if (!disposables) {
       disposables = new CompositeDisposable();
 
-      const {registerGrammarForFileExtension} = require('nuclide-atom-helpers');
+      const {registerGrammarForFileExtension} = require('../../atom-helpers');
       disposables.add(registerGrammarForFileExtension('source.ini', '.flowconfig'));
     }
   },
@@ -83,7 +83,7 @@ module.exports = {
 
   provideBusySignal(): BusySignalProviderBaseType {
     if (!busySignalProvider) {
-      const {DedupedBusySignalProviderBase} = require('nuclide-busy-signal-provider-base');
+      const {DedupedBusySignalProviderBase} = require('../../busy-signal-provider-base');
       busySignalProvider = new DedupedBusySignalProviderBase();
     }
     return busySignalProvider;
@@ -100,7 +100,7 @@ module.exports = {
         invariant(flowDiagnosticsProvider);
         flowDiagnosticsProvider.setRunOnTheFly(newValue);
       }));
-      const {projects} = require('nuclide-atom-helpers');
+      const {projects} = require('../../atom-helpers');
       disposables.add(projects.onDidRemoveProjectPath(projectPath => {
         invariant(flowDiagnosticsProvider);
         flowDiagnosticsProvider.invalidateProjectPath(projectPath);

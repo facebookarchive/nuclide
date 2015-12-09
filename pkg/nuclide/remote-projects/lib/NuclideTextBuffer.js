@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-import type {RemoteConnection} from 'nuclide-remote-connection/lib/RemoteConnection';
-import type RemoteFile from 'nuclide-remote-connection/lib/RemoteFile';
+import type {RemoteConnection} from '../../remote-connection/lib/RemoteConnection';
+import type RemoteFile from '../../remote-connection/lib/RemoteFile';
 
 import invariant from 'assert';
 const {CompositeDisposable, TextBuffer} = require('atom');

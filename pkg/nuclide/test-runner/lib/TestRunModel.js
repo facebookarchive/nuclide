@@ -11,7 +11,7 @@
 
 const Ansi = require('./Ansi');
 
-import type {TestRunStatus} from 'nuclide-test-runner-interfaces';
+import type {TestRunStatus} from '../../test-runner-interfaces';
 
 /**
  * Status codes returned in the "status" field of the testing utility's JSON response.

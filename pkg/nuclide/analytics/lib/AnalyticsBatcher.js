@@ -11,7 +11,7 @@
 
 const BATCH_EVENT = 'batch';
 
-import {BatchProcessedQueue} from 'nuclide-commons';
+import {BatchProcessedQueue} from '../../commons';
 
 type TrackEvent = {
   key: string;

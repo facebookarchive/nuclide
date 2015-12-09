@@ -18,7 +18,7 @@
  * This file provides methods to do this.
  */
 
-const {debounce} = require('nuclide-commons');
+const {debounce} = require('../../commons');
 
 const DEFAULT_DEBOUNCE_INTERVAL_MS = 100;
 

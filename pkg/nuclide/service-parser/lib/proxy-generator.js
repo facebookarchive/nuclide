@@ -102,7 +102,7 @@ export default function generateProxy(serviceName: string, defs: Definitions): s
       t.literal('rx')),
     t.importDeclaration([
       t.importSpecifier(t.identifier('trackTiming'), t.identifier('trackTiming'))],
-      t.literal('nuclide-analytics')),
+      t.literal('../../analytics')),
     assignment,
   ]);
 

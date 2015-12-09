@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const {getServiceByNuclideUri} = require('nuclide-client');
+const {getServiceByNuclideUri} = require('../../client');
 
 module.exports = {
   async getAutocompleteSuggestions(

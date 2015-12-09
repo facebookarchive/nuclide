@@ -9,13 +9,13 @@
  * the root directory of this source tree.
  */
 
-import type {HomeFragments} from 'nuclide-home-interfaces';
+import type {HomeFragments} from '../../home-interfaces';
 import type HomePaneItemType from './HomePaneItem';
 
 const BASE_ITEM_URI = 'nuclide-home://';
 
 const {CompositeDisposable, Disposable} = require('atom');
-const featureConfig = require('nuclide-feature-config');
+const featureConfig = require('../../feature-config');
 
 let disposables: ?CompositeDisposable = null;
 let paneItem: ?HomePaneItemType;

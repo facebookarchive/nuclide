@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {getServiceByNuclideUri} from 'nuclide-remote-connection';
+import {getServiceByNuclideUri} from '../../remote-connection';
 import invariant from 'assert';
 
 const MATCH_PREFIX_CASE_SENSITIVE_SCORE = 6;

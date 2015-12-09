@@ -10,7 +10,7 @@
  */
 
 
-const {DebuggerProcessInfo} = require('nuclide-debugger-utils');
+const {DebuggerProcessInfo} = require('../../utils');
 class ProcessInfo extends DebuggerProcessInfo
 {
   _remoteDirectoryPath: string;
@@ -36,7 +36,7 @@ class ProcessInfo extends DebuggerProcessInfo
   }
 
   displayString(): string {
-    const remoteUri = require('nuclide-remote-uri');
+    const remoteUri = require('../../../remote-uri');
     return remoteUri.getHostname(this._remoteDirectoryPath);
   }
 }

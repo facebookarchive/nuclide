@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {createOrFetchFromCache} from 'nuclide-node-transpiler/lib/babel-cache';
+import {createOrFetchFromCache} from '../../node-transpiler/lib/babel-cache';
 import fs from 'fs';
 import generateProxy from './proxy-generator';
 import parseServiceDefinition from './service-parser';

@@ -11,8 +11,6 @@
   "engines": {
     "atom": ">=0.190.0"
   },
-  "dependencies": {},
-  "devDependencies": {},
   "consumedServices": {
     "nuclide-code-format.provider": {
       "versions": {

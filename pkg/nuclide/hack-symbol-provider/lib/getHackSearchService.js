@@ -8,9 +8,9 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-import type {HackSearchService} from 'nuclide-hack-search-service';
+import type {HackSearchService} from '../../hack-search-service';
 
-import {getServiceByNuclideUri} from 'nuclide-client';
+import {getServiceByNuclideUri} from '../../client';
 
 /**
  * @return HackSearchService for the specified directory if it is part of a Hack project.

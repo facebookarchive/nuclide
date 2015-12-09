@@ -11,7 +11,7 @@
 
 import type {TextDiff, OffsetMap} from './types';
 
-import {array} from 'nuclide-commons';
+import {array} from '../../commons';
 
 type ChunkPiece = {
   added: number;

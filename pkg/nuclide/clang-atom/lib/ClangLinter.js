@@ -10,7 +10,7 @@
  */
 
 const {Range} = require('atom');
-import {trackOperationTiming} from 'nuclide-analytics';
+import {trackOperationTiming} from '../../analytics';
 
 let libClangProcessSingleton;
 function getLibClangProcess() {

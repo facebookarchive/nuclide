@@ -11,19 +11,7 @@
   "engines": {
     "atom": ">0.194.0"
   },
-  "dependencies": {
-    "dequeue": "1.0.5",
-    "mkdirp": "0.5.0",
-    "rimraf": "2.2.8",
-    "rx": "3.1.1",
-    "temp": "0.8.3",
-    "uuid": "2.0.1"
-  },
-  "devDependencies": {
-    "nuclide-jasmine": "0.0.0",
-    "nuclide-test-helpers": "0.0.0"
-  },
   "scripts": {
-    "test": "node --harmony node_modules/.bin/jasmine-node-transpiled spec"
+    "test": "node --harmony ../jasmine/bin/jasmine-node-transpiled spec"
   }
 }

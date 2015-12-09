@@ -11,11 +11,11 @@
 
 import type {
   BusySignalProviderBase as BusySignalProviderBaseType,
-} from 'nuclide-busy-signal-provider-base';
+} from '../../busy-signal-provider-base';
 
 import type {
   BusySignalProvider,
-} from 'nuclide-busy-signal-interfaces';
+} from '../../busy-signal-interfaces';
 
 import {CompositeDisposable} from 'atom';
 import invariant from 'assert';
@@ -26,7 +26,7 @@ let busySignalProvider: ?BusySignalProviderBaseType = null;
 
 function getBusySignalProvider(): BusySignalProviderBaseType {
   if (busySignalProvider == null) {
-    const {DedupedBusySignalProviderBase} = require('nuclide-busy-signal-provider-base');
+    const {DedupedBusySignalProviderBase} = require('../../busy-signal-provider-base');
     busySignalProvider = new DedupedBusySignalProviderBase();
   }
   return busySignalProvider;
@@ -41,7 +41,7 @@ module.exports = {
       return;
     }
 
-    const {registerGrammarForFileExtension} = require('nuclide-atom-helpers');
+    const {registerGrammarForFileExtension} = require('../../atom-helpers');
     subscriptions = new CompositeDisposable();
     subscriptions.add(registerGrammarForFileExtension('source.json', '.arcconfig'));
   },

@@ -8,9 +8,9 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-import type {FuzzyFileSearchService} from 'nuclide-fuzzy-file-search-service';
+import type {FuzzyFileSearchService} from '../../fuzzy-file-search-service';
 
-import {getServiceByNuclideUri} from 'nuclide-client';
+import {getServiceByNuclideUri} from '../../client';
 
 /**
  * @return FuzzyFileSearchService for the specified directory if it is part of a Hack project.

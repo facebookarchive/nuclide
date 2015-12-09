@@ -9,12 +9,12 @@
  * the root directory of this source tree.
  */
 
-const {debounce, denodeify} = require('nuclide-commons');
+const {debounce, denodeify} = require('../../commons');
 const DelayedEventManager = require('./DelayedEventManager');
 const watchman = require('fb-watchman');
 const HgServiceBase = require('./HgServiceBase');
-const logger = require('nuclide-logging').getLogger();
-const {getWatchmanBinaryPath} = require('nuclide-watchman-helpers');
+const logger = require('../../logging').getLogger();
+const {getWatchmanBinaryPath} = require('../../watchman-helpers');
 const path = require('path');
 
 const WATCHMAN_SUBSCRIPTION_NAME_PRIMARY = 'hg-repository-watchman-subscription-primary';

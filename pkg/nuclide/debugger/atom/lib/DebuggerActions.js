@@ -14,13 +14,13 @@ const {CompositeDisposable} = require('atom');
 import {beginTimerTracking, failTimerTracking, endTimerTracking} from './AnalyticsHelper';
 
 import type {Dispatcher} from 'flux';
-import type {nuclide_debugger$Service} from 'nuclide-debugger-interfaces/service';
+import type {nuclide_debugger$Service} from '../../interfaces/service';
 import type DebuggerStoreType from './DebuggerStore';
 import type DebuggerProcessInfoType from './DebuggerProcessInfo';
 import type BridgeType from './Bridge';
 
 function track(...args: any) {
-  const trackFunc = require('nuclide-analytics').track;
+  const trackFunc = require('../../../analytics').track;
   trackFunc.apply(null, args);
 }
 
@@ -124,7 +124,7 @@ class DebuggerActions {
   }
 
   setError(error: ?string) {
-    require('nuclide-logging').getLogger().error(error);
+    require('../../../logging').getLogger().error(error);
     this._dispatcher.dispatch({
       actionType: Constants.Actions.SET_ERROR,
       data: error,

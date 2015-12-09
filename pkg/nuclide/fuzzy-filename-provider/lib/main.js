@@ -11,13 +11,13 @@
 
 import type {
   Provider,
-} from 'nuclide-quick-open-interfaces';
+} from '../../quick-open-interfaces';
 
 import {
   CompositeDisposable,
 } from 'atom';
 
-import {getServiceByNuclideUri} from 'nuclide-client';
+import {getServiceByNuclideUri} from '../../client';
 
 let providerInstance: ?Provider;
 function getProviderInstance(): Provider {

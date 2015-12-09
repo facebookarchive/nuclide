@@ -8,12 +8,6 @@
     "packageType": "Atom",
     "testRunner": "apm"
   },
-  "dependencies": {
-    "nuclide-commons": "0.0.0"
-  },
-  "devDependencies": {
-    "nuclide-quick-open-interfaces": "0.0.0"
-  },
   "consumedServices": {
     "nuclide-recent-files-service": {
       "versions": {

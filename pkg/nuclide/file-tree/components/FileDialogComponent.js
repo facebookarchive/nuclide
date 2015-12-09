@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import AtomInput from 'nuclide-ui-atom-input';
+import AtomInput from '../../ui/atom-input';
 import {CompositeDisposable} from 'atom';
 import React from 'react-for-atom';
 

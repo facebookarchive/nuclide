@@ -13,7 +13,7 @@ const {CompositeDisposable} = require('atom');
 let logger = null;
 
 function getLogger() {
-  return logger || (logger = require('nuclide-logging').getLogger());
+  return logger || (logger = require('../../logging').getLogger());
 }
 
 class FileWatcher {
@@ -41,7 +41,7 @@ class FileWatcher {
   }
 
   async _promptReload(): Promise {
-    const {getPath, basename} = require('nuclide-remote-uri');
+    const {getPath, basename} = require('../../remote-uri');
 
     const filePath = this._editor.getPath();
     const encoding = this._editor.getEncoding();
@@ -61,7 +61,7 @@ class FileWatcher {
       return;
     }
 
-    const {getFileSystemServiceByNuclideUri} = require('nuclide-client');
+    const {getFileSystemServiceByNuclideUri} = require('../../client');
 
     // Load the file contents locally or remotely.
     const localFilePath = getPath(filePath);

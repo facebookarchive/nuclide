@@ -17,7 +17,7 @@ import type {
   DirectoryName,
   GroupedResult,
   ServiceName,
-} from 'nuclide-quick-open-interfaces';
+} from '../../quick-open-interfaces';
 
 type ResultContext = {
   nonEmptyResults: GroupedResult;
@@ -29,17 +29,17 @@ type ResultContext = {
   currentDirectory: Object;
 };
 
-const AtomInput = require('nuclide-ui-atom-input');
+const AtomInput = require('../../ui/atom-input');
 const {CompositeDisposable, Disposable, Emitter} = require('atom');
 const {
   debounce,
   object,
-} = require('nuclide-commons');
+} = require('../../commons');
 const React = require('react-for-atom');
 
 import SearchResultManager from './SearchResultManager';
 const searchResultManager = SearchResultManager.getInstance();
-const NuclideTabs = require('nuclide-ui-tabs');
+const NuclideTabs = require('../../ui/tabs');
 const {PropTypes} = React;
 const classnames = require('classnames');
 
@@ -52,7 +52,7 @@ const {
  * For example, this will return different keybindings on windows vs linux.
  */
 function _findKeybindingForAction(action: string, target: HTMLElement): string {
-  const {humanizeKeystroke} = require('nuclide-keystroke-label');
+  const {humanizeKeystroke} = require('../../keystroke-label');
   const matchingKeyBindings = atom.keymaps.findKeyBindings({
     command: action,
     target,

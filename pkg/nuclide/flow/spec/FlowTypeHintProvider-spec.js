@@ -9,11 +9,11 @@
  * the root directory of this source tree.
  */
 
-const {uncachedRequire, spyOnGetterValue} = require('nuclide-test-helpers');
+const {uncachedRequire, spyOnGetterValue} = require('../../test-helpers');
 const {Range} = require('atom');
-const featureConfig = require('nuclide-feature-config');
+const featureConfig = require('../../feature-config');
 
-import {array} from 'nuclide-commons';
+import {array} from '../../commons';
 
 const TYPE_HINT_PROVIDER = '../lib/FlowTypeHintProvider';
 
@@ -30,9 +30,9 @@ describe('FlowTypeHintProvider', () => {
   afterEach(() => {
     // we assume here that runWith is called in every spec -- otherwise these
     // will not be spies
-    jasmine.unspy(require('nuclide-atom-helpers'), 'extractWordAtPosition');
+    jasmine.unspy(require('../../atom-helpers'), 'extractWordAtPosition');
     jasmine.unspy(featureConfig, 'get');
-    jasmine.unspy(require('nuclide-client'), 'getServiceByNuclideUri');
+    jasmine.unspy(require('../../client'), 'getServiceByNuclideUri');
   });
 
   async function runWith(enabled, result, word) {
@@ -43,10 +43,10 @@ describe('FlowTypeHintProvider', () => {
         return false;
       }
     });
-    spyOn(require('nuclide-client'), 'getServiceByNuclideUri').andReturn({
+    spyOn(require('../../client'), 'getServiceByNuclideUri').andReturn({
       flowGetType() { return Promise.resolve(result); },
     });
-    spyOnGetterValue(require('nuclide-atom-helpers'), 'extractWordAtPosition')
+    spyOnGetterValue(require('../../atom-helpers'), 'extractWordAtPosition')
       .andReturn(word);
 
     const {FlowTypeHintProvider} = (uncachedRequire(require, TYPE_HINT_PROVIDER): any);

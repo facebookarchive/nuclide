@@ -11,14 +11,6 @@
   "engines": {
     "atom": ">=0.170.0"
   },
-  "dependencies": {
-    "nuclide-commons": "0.0.0",
-    "nuclide-debugger-utils": "0.0.0",
-    "nuclide-logging": "0.0.0"
-  },
-  "devDependencies": {
-    "nuclide-debugger-interfaces": "0.0.0"
-  },
   "providedServices": {
     "nuclide-debugger-lldb-service": {
       "description": "Debugger backend for native processes.",

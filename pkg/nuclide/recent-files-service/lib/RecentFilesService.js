@@ -15,9 +15,9 @@ export type FileList = Array<{path: FilePath, timestamp: TimeStamp}>;
 
 const {CompositeDisposable} = require('atom');
 
-const {array} = require('nuclide-commons');
-const {onWorkspaceDidStopChangingActivePaneItem} = require('nuclide-atom-helpers').atomEventDebounce;
-import {trackTiming} from 'nuclide-analytics';
+const {array} = require('../../commons');
+const {onWorkspaceDidStopChangingActivePaneItem} = require('../../atom-helpers').atomEventDebounce;
+import {trackTiming} from '../../analytics';
 
 class RecentFilesService {
   // Map uses `Map`'s insertion ordering to keep files in order.

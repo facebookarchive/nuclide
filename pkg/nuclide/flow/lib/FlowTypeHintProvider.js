@@ -9,13 +9,13 @@
  * the root directory of this source tree.
  */
 
-import type {TypeHint} from 'nuclide-type-hint-interfaces';
+import type {TypeHint} from '../../type-hint-interfaces';
 
 import invariant from 'assert';
 
-const {extractWordAtPosition} = require('nuclide-atom-helpers');
-const featureConfig = require('nuclide-feature-config');
-const {getServiceByNuclideUri} = require('nuclide-client');
+const {extractWordAtPosition} = require('../../atom-helpers');
+const featureConfig = require('../../feature-config');
+const {getServiceByNuclideUri} = require('../../client');
 const {Range} = require('atom');
 
 import {JAVASCRIPT_WORD_REGEX} from './constants';
@@ -84,7 +84,7 @@ export function getTypeHintTree(typeHint: ?string): ?HintTree {
     const json = JSON.parse(typeHint);
     return jsonToTree(json);
   } catch (e) {
-    const logger = require('nuclide-logging').getLogger();
+    const logger = require('../../logging').getLogger();
     logger.error(`Problem parsing type hint: ${e.message}`);
     // If there is any problem parsing just fall back on the original string
     return null;

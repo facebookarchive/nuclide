@@ -7,15 +7,6 @@
     "packageType": "Node",
     "testRunner": "npm"
   },
-  "dependencies": {
-    "jasmine-node": "1.14.5",
-    "nuclide-node-transpiler": "0.0.0"
-  },
-  "devDependencies": {},
-  "bin": {
-    "jasmine-node-transpiled": "bin/jasmine-node-transpiled",
-    "run-jasmine-tests": "bin/run-jasmine-tests"
-  },
   "scripts": {
     "test": "node --harmony bin/jasmine-node-transpiled spec"
   }

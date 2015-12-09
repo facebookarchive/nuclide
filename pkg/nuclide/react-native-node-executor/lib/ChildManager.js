@@ -20,7 +20,7 @@ import type {EventEmitter} from 'events';
 let logger;
 function getLogger() {
   if (!logger) {
-    logger = require('nuclide-logging').getLogger();
+    logger = require('../../logging').getLogger();
   }
   return logger;
 }

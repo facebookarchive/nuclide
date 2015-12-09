@@ -22,9 +22,9 @@ type FindReferencesOptions = {
   previewContext?: number;
 };
 
-const {getLogger} = require('nuclide-logging');
-const {getFileSystemServiceByNuclideUri} = require('nuclide-client');
-const {getPath} = require('nuclide-remote-uri');
+const {getLogger} = require('../../logging');
+const {getFileSystemServiceByNuclideUri} = require('../../client');
+const {getPath} = require('../../remote-uri');
 
 const FRAGMENT_GRAMMARS = {
   'text.html.hack': 'source.hackfragment',

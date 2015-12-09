@@ -10,7 +10,7 @@
  */
 import type {
   nuclide_debugger$Service,
-} from 'nuclide-debugger-interfaces/service';
+} from '../../interfaces/service';
 
 module.exports = {
   activate(state: mixed): void {

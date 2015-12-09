@@ -9,19 +9,19 @@
  * the root directory of this source tree.
  */
 
-import type {HgService as HgServiceType} from 'nuclide-hg-repository-base/lib/HgService.js';
+import type {HgService as HgServiceType} from '../../hg-repository-base/lib/HgService.js';
 
 import {Directory} from 'atom';
 import
   HgRepositoryClient,
   {DEBOUNCE_MILLISECONDS_FOR_REFRESH_ALL, MAX_INDIVIDUAL_CHANGED_PATHS,}
 from '../lib/HgRepositoryClient';
-import MockHgService from 'nuclide-hg-repository-base/spec/MockHgService';
+import MockHgService from '../../hg-repository-base/spec/MockHgService';
 import {
   HgStatusOption,
   StatusCodeId,
   StatusCodeNumber,
-} from 'nuclide-hg-repository-base/lib/hg-constants';
+} from '../../hg-repository-base/lib/hg-constants';
 import path from 'path';
 import temp from 'temp';
 const tempWithAutoCleanup = temp.track();
@@ -621,7 +621,7 @@ describe('HgRepositoryClient', () => {
   });
 
   describe('::getDirectoryStatus', () => {
-    const {ensureTrailingSeparator} = require('nuclide-commons').paths;
+    const {ensureTrailingSeparator} = require('../../commons').paths;
     const testDir = createFilePath('subDirectory');
     const subDirectory = path.join(testDir, 'dir1');
     const subSubDirectory = path.join(subDirectory, 'dir2');

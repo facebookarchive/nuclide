@@ -10,11 +10,11 @@
  */
 import type {
   nuclide_debugger$DebuggerProcessInfo,
-} from 'nuclide-debugger-interfaces/service';
+} from '../../interfaces/service';
 
-import {DebuggerProcessInfo} from 'nuclide-debugger-utils';
+import {DebuggerProcessInfo} from '../../utils';
 import {Emitter} from 'atom';
-import {getLogger} from 'nuclide-logging';
+import {getLogger} from '../../../logging';
 
 import child_process from 'child_process';
 import invariant from 'assert';
@@ -123,7 +123,7 @@ class ProcessInfo extends DebuggerProcessInfo {
 }
 
 async function getProcessInfoList(): Promise<Array<nuclide_debugger$DebuggerProcessInfo>> {
-  const {asyncExecute} = require('nuclide-commons');
+  const {asyncExecute} = require('../../../commons');
   const result = await asyncExecute('ps', ['-e', '-o', 'pid,comm'], {});
   // $FlowFixMe: cryptic error about Promises
   return result.stdout.toString().split('\n').slice(1).map(line => {

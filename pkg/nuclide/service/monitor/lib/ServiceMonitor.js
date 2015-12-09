@@ -8,9 +8,9 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-import type Item from 'nuclide-remote-connection/lib/ServiceLogger';
+import type Item from '../../../remote-connection/lib/ServiceLogger';
 
-import AtomInput from 'nuclide-ui-atom-input';
+import AtomInput from '../../../ui/atom-input';
 import {CompositeDisposable} from 'atom';
 import React from 'react-for-atom';
 

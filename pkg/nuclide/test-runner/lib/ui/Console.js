@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const AtomTextEditor = require('nuclide-ui-atom-text-editor');
+const AtomTextEditor = require('../../../ui/atom-text-editor');
 const React = require('react-for-atom');
 
 const {PropTypes} = React;

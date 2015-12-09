@@ -19,12 +19,12 @@ import type {
   HackReference,
   HackReferencesResult,
 } from './types';
-import type {SymbolTypeValue} from 'nuclide-hack-common/lib/constants';
-import type {NuclideUri} from 'nuclide-remote-uri';
+import type {SymbolTypeValue} from '../../hack-common/lib/constants';
+import type {NuclideUri} from '../../remote-uri';
 
-import {fsPromise, promises} from 'nuclide-commons';
+import {fsPromise, promises} from '../../commons';
 import invariant from 'assert';
-import {SymbolType, SearchResultType} from 'nuclide-hack-common/lib/constants';
+import {SymbolType, SearchResultType} from '../../hack-common/lib/constants';
 import {
   callHHClient,
   symbolTypeToSearchTypes,

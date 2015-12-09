@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const AtomComboBox = require('nuclide-ui-atom-combo-box');
+const AtomComboBox = require('../../../ui/atom-combo-box');
 const {CompositeDisposable} = require('atom');
 const React = require('react-for-atom');
 const {Dispatcher} = require('flux');
@@ -17,13 +17,13 @@ const {PropTypes} = React;
 const SimulatorDropdown = require('./SimulatorDropdown');
 const BuckToolbarActions = require('./BuckToolbarActions');
 const BuckToolbarStore = require('./BuckToolbarStore');
-import NuclideCheckbox from 'nuclide-ui-checkbox';
+import NuclideCheckbox from '../../../ui/checkbox';
 
-const {debounce} = require('nuclide-commons');
+const {debounce} = require('../../../commons');
 const {
   atomEventDebounce,
   isTextEditor,
-} = require('nuclide-atom-helpers');
+} = require('../../../atom-helpers');
 const {onWorkspaceDidStopChangingActivePaneItem} = atomEventDebounce;
 
 class BuckToolbar extends React.Component {

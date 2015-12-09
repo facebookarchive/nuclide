@@ -10,7 +10,7 @@
  */
 
 import invariant from 'assert';
-import {activateAllPackages, deactivateAllPackages} from 'nuclide-integration-test-helpers';
+import {activateAllPackages, deactivateAllPackages} from '../../integration-test-helpers';
 
 describe('Move Pane Integration Tests', () => {
   let movePanePromise: Promise<atom$Package> = (null : any);

@@ -10,7 +10,7 @@
  */
 
 
-const {uncachedRequire} = require('nuclide-test-helpers');
+const {uncachedRequire} = require('../../test-helpers');
 const {
   remoteObjectIdOfObjectId,
   createContextObjectId,

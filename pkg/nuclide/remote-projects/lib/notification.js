@@ -14,12 +14,12 @@ function notifyLocalDiskFile(fileUri: string): void {
 }
 
 function notifyConnectedRemoteFile(fileUri: string): void {
-  const hostname = require('nuclide-remote-uri').getHostname(fileUri);
+  const hostname = require('../../remote-uri').getHostname(fileUri);
   atom.notifications.addInfo(`The connection to the server: \`${hostname}\` is healthy.`);
 }
 
 function notifyDisconnectedRemoteFile(fileUri: string): void {
-  const hostname = require('nuclide-remote-uri').getHostname(fileUri);
+  const hostname = require('../../remote-uri').getHostname(fileUri);
   atom.notifications.addError(
     `The connection to the server: \`${hostname}\` is lost, retrying in the background!`);
 }

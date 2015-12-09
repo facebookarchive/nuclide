@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from 'nuclide-remote-uri';
+import type {NuclideUri} from '../../../remote-uri';
 import invariant from 'assert';
 const buckProjectDirectoryByPath: {[filePath: NuclideUri]: NuclideUri} = {};
 
@@ -18,7 +18,7 @@ export class BuckUtils {
   async getBuckProjectRoot(filePath: NuclideUri): Promise<?NuclideUri> {
     let directory = buckProjectDirectoryByPath[filePath];
     if (!directory) {
-      const {findNearestFile} = require('nuclide-commons').fsPromise;
+      const {findNearestFile} = require('../../../commons').fsPromise;
       directory = await findNearestFile('.buckconfig', filePath);
       if (directory === null) {
         return null;

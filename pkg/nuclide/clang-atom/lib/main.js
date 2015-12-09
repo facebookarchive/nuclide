@@ -11,11 +11,11 @@
 
 import type {Point} from 'atom';
 import type LibClangProcess from './LibClangProcess';
-import type {HyperclickProvider} from 'hyperclick-interfaces';
+import type {HyperclickProvider} from '../../hyperclick-interfaces';
 
 import invariant from 'assert';
 
-import {trackOperationTiming} from 'nuclide-analytics';
+import {trackOperationTiming} from '../../analytics';
 
 let libClangProcess = (null : ?LibClangProcess);
 let jumpToRelatedFile = null;

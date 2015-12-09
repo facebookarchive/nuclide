@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {TypeHintProvider} from 'nuclide-type-hint-interfaces';
+import type {TypeHintProvider} from '../../type-hint-interfaces';
 
 import invariant from 'assert';
 

@@ -105,7 +105,7 @@ export class BreakpointStore {
   }
 
   async _removeBreakpointFromConnections(breakpointId: string): Promise {
-    return Promise.all(require('nuclide-commons').array.from(this._connections.entries())
+    return Promise.all(require('../../commons').array.from(this._connections.entries())
       .map(entry => {
         const [connection, map] = entry;
         if (map.has(breakpointId)) {

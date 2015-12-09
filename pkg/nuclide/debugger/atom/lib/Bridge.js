@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const remoteUri = require('nuclide-remote-uri');
+const remoteUri = require('../../../remote-uri');
 const {CompositeDisposable, Disposable} = require('atom');
 
 import type BreakpointStoreType from './BreakpointStore';

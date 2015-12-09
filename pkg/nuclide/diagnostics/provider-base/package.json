@@ -7,11 +7,5 @@
   "nuclide": {
     "packageType": "Node",
     "testRunner": "apm"
-  },
-  "dependencies": {
-    "nuclide-text-event-dispatcher": "0.0.0"
-  },
-  "devDependencies": {
-    "nuclide-diagnostics-base": "0.0.0"
   }
 }

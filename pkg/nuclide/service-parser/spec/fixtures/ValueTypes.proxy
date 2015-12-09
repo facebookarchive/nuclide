@@ -1,6 +1,6 @@
 "use babel";
 import { Observable } from "rx";
-import { trackTiming } from "nuclide-analytics";
+import { trackTiming } from "../../analytics";
 
 module.exports = _client => {
   remoteModule = {}

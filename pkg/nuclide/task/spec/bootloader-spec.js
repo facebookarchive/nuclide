@@ -12,7 +12,7 @@ import type {Task} from '../lib/bootstrap';
 
 const invariant = require('assert');
 const {createTask} = require('../lib/bootloader');
-const {expectAsyncFailure} = require('nuclide-test-helpers');
+const {expectAsyncFailure} = require('../../test-helpers');
 
 describe('Task', () => {
   describe('.invokeRemoteMethod()', () => {

@@ -10,7 +10,7 @@
  */
 import type {CodeHighlightProvider} from './types';
 import {CompositeDisposable} from 'atom';
-import {debounce} from 'nuclide-commons';
+import {debounce} from '../../commons';
 
 const HIGHLIGHT_DELAY_MS = 250;
 

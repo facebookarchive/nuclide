@@ -25,16 +25,6 @@
   "engines": {
     "atom": ">=1.0.5"
   },
-  "dependencies": {
-    "nuclide-analytics": "0.0.0",
-    "nuclide-feature-config": "0.0.0",
-    "nuclide-hg-git-bridge": "0.0.0",
-    "nuclide-logging": "0.0.0"
-  },
-  "devDependencies": {
-    "nuclide-blame-base": "0.0.0",
-    "nuclide-hg-repository-client": "0.0.0"
-  },
   "_atomModuleCache": {
     "extensions": {
       ".node": []

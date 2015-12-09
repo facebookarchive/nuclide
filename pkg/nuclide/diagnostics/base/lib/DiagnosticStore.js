@@ -19,7 +19,7 @@ import type {
   FileMessageUpdate,
 } from './main';
 
-import type {NuclideUri} from 'nuclide-remote-uri';
+import type {NuclideUri} from '../../../remote-uri';
 
 import invariant from 'assert';
 

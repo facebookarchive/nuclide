@@ -13,7 +13,7 @@ const DefaultModuleMap = require('../lib/state/DefaultModuleMap');
 
 const jscodeshift = require('jscodeshift');
 const printRoot = require('../lib/utils/printRoot');
-const {readFile} = require('nuclide-commons').fsPromise;
+const {readFile} = require('../../commons').fsPromise;
 const requiresTransform = require('../lib/requires/transform');
 
 const TESTS = [

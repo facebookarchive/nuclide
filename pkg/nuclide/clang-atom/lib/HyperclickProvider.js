@@ -10,11 +10,11 @@
  */
 
 import type LibClangProcess from './LibClangProcess';
-import type {HyperclickSuggestion} from 'hyperclick-interfaces';
+import type {HyperclickSuggestion} from '../../hyperclick-interfaces';
 
 import invariant from 'assert';
 
-const {goToLocation} = require('nuclide-atom-helpers');
+const {goToLocation} = require('../../atom-helpers');
 const findWholeRangeOfSymbol = require('./findWholeRangeOfSymbol');
 
 const GRAMMARS = new Set([

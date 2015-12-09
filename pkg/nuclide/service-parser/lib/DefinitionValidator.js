@@ -11,7 +11,7 @@
 
 import {locationToString} from './builtin-types';
 import invariant from 'assert';
-import {array, set} from 'nuclide-commons';
+import {array, set} from '../../commons';
 
 import type {
   Definitions,

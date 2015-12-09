@@ -11,7 +11,7 @@
 
 
 const url = require('url');
-const remoteUri = require('nuclide-remote-uri');
+const remoteUri = require('../../../remote-uri');
 const {log} = require('./utils');
 
 function translateMessageFromServer(hostname: string, port: number, message: string): string {

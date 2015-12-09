@@ -66,7 +66,7 @@ class JsTestRunner(object):
         serial_tests += serial_only_tests
 
         if parallel_tests:
-            pool = Pool(processes=cpu_count())
+            pool = Pool(processes=max(1, cpu_count() - 2))
             results = [pool.apply_async(run_test, args=test_args) for test_args in parallel_tests]
             for async_result in results:
                 async_result.wait()

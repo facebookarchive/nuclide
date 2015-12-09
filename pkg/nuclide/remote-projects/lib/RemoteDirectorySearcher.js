@@ -10,7 +10,7 @@
  */
 
 import {Observable, ReplaySubject} from 'rx';
-const {RemoteDirectory} = require('nuclide-remote-connection');
+const {RemoteDirectory} = require('../../remote-connection');
 
 type RemoteDirectorySearch = {
   then: (onFullfilled: any, onRejected: any) => Promise<any>;

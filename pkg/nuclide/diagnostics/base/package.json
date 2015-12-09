@@ -10,8 +10,5 @@
   },
   "engines": {
     "atom": ">=1.0.2"
-  },
-  "devDependencies": {
-    "nuclide-remote-uri": "0.0.0"
   }
 }

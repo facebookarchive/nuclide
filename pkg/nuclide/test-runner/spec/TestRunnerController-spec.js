@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {TestRunner} from 'nuclide-test-runner-interfaces';
+import type {TestRunner} from '../../test-runner-interfaces';
 
 const TestRunnerController = require('../lib/TestRunnerController');
 

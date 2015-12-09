@@ -11,8 +11,7 @@
     "config": {
       "runOnSave": {
         "title": "Run on save",
-        "description":
-          "This setting is not recommended yet. Instead use the default keyboard shortcut, `cmd-shift-i`.",
+        "description": "This setting is not recommended yet. Instead use the default keyboard shortcut, `cmd-shift-i`.",
         "type": "boolean",
         "default": false
       },
@@ -42,18 +41,21 @@
       },
       "aliases": {
         "title": "Aliases",
-        "description":
-          "This is used to specify common aliases that you use. Each pair of entries should be in the format \"variableName, moduleName\".",
+        "description": "This is used to specify common aliases that you use. Each pair of entries should be in the format \"variableName, moduleName\".",
         "type": "array",
-        "default": ["Immutable", "immutable", "fbt", "fbt"],
+        "default": [
+          "Immutable",
+          "immutable",
+          "fbt",
+          "fbt"
+        ],
         "items": {
           "type": "string"
         }
       },
       "nuclideFixHeader": {
         "title": "Nuclide: Fix Header",
-        "description":
-          "This is used to fix the header when developing on Nuclide source code. This should rarely affect anything outside of Nuclide source.",
+        "description": "This is used to fix the header when developing on Nuclide source code. This should rarely affect anything outside of Nuclide source.",
         "type": "boolean",
         "default": true
       },
@@ -99,16 +101,6 @@
   "engines": {
     "atom": ">=1.0.3"
   },
-  "dependencies": {
-    "nuclide-analytics": "0.0.0",
-    "nuclide-commons": "0.0.0",
-    "nuclide-feature-config": "0.0.0",
-    "nuclide-format-js-base": "0.0.0",
-    "nuclide-logging": "0.0.0",
-    "nuclide-reprint-js": "0.0.0",
-    "nuclide-update-cursor": "0.0.0"
-  },
-  "devDependencies": {},
   "_atomModuleCache": {
     "extensions": {
       ".node": []

@@ -27,7 +27,7 @@ class WindowMouseListener {
   constructor() {
     this._subscriptions = new CompositeDisposable();
 
-    const {debounce} = require('nuclide-commons');
+    const {debounce} = require('../../commons');
     const handler = debounce(
         event => this._handleMouseMove(event),
         DEBOUNCE_TIME,

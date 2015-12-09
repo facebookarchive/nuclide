@@ -10,10 +10,10 @@
  */
 
 import type {LoggingAppender} from './types';
-const {clientInfo, fsPromise, systemInfo, ScribeProcess} = require('nuclide-commons');
+const {clientInfo, fsPromise, systemInfo, ScribeProcess} = require('../../commons');
 const os = require('os');
 const path = require('path');
-const {USER} = require('nuclide-commons').env;
+const {USER} = require('../../commons').env;
 let LOG_FILE_PATH;
 
 if (systemInfo.isRunningInWindows()) {

@@ -7,9 +7,5 @@
   "nuclide": {
     "packageType": "Node",
     "testRunner": "apm"
-  },
-  "dependencies": {
-    "nuclide-commons": "0.0.0"
-  },
-  "devDependencies": {}
+  }
 }

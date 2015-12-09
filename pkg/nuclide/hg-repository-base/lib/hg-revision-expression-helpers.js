@@ -13,7 +13,7 @@ import type {RevisionInfo} from './hg-constants';
 
 import invariant from 'assert';
 
-const logger = require('nuclide-logging').getLogger();
+const logger = require('../../logging').getLogger();
 
 /**
  * This file contains utilities for getting an expression to specify a certain
@@ -78,7 +78,7 @@ export async function fetchCommonAncestorOfHeadAndRevision(
   revision: string,
   workingDirectory: string,
 ): Promise<string> {
-  const {asyncExecute} = require('nuclide-commons');
+  const {asyncExecute} = require('../../commons');
 
   let ancestorExpression = `ancestor(${revision}, ${HG_CURRENT_WORKING_DIRECTORY_PARENT})`;
   // shell-escape does not wrap ancestorExpression in quotes without this toString conversion.
@@ -115,7 +115,7 @@ export async function fetchRevisionInfoBetweenRevisions(
   revisionTo: string,
   workingDirectory: string,
 ): Promise<Array<RevisionInfo>> {
-  const {asyncExecute} = require('nuclide-commons');
+  const {asyncExecute} = require('../../commons');
 
   const revisionExpression = `${revisionFrom}::${revisionTo}`;
   const revisionLogArgs = [

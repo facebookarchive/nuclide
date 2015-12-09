@@ -8,15 +8,7 @@
     "packageType": "Node",
     "testRunner": "npm"
   },
-  "dependencies": {
-    "jscodeshift": "0.3.5",
-    "nuclide-remote-uri": "0.0.0"
-  },
-  "devDependencies": {
-    "nuclide-commons": "0.0.0",
-    "nuclide-jasmine": "0.0.0"
-  },
   "scripts": {
-    "test": "node --harmony node_modules/.bin/jasmine-node-transpiled spec"
+    "test": "node --harmony ../jasmine/bin/jasmine-node-transpiled spec"
   }
 }

@@ -4,9 +4,6 @@
   "main": "./lib/main",
   "version": "0.0.0",
   "description": "An example provider for the nuclide-quick-open package",
-  "devDependencies": {
-    "nuclide-quick-open-interfaces": "0.0.0"
-  },
   "providedServices": {
     "nuclide-quick-open-register-provider": {
       "description": "Register ourselves with the quick-open package",

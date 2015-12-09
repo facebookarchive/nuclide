@@ -10,7 +10,7 @@
  */
 
 
-const {uncachedRequire, clearRequireCache} = require('nuclide-test-helpers');
+const {uncachedRequire, clearRequireCache} = require('../../test-helpers');
 
 describe('debugger-hhvm-proxy Connection', () => {
   let socket;

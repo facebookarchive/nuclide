@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from 'nuclide-remote-uri';
-import type {SymbolTypeValue} from 'nuclide-hack-common';
+import type {NuclideUri} from '../../remote-uri';
+import type {SymbolTypeValue} from '../../hack-common';
 
 export type HackDiagnosticsResult = {
   // The location of the .hhconfig where these messages came from.

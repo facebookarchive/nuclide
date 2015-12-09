@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {BlameProvider} from 'nuclide-blame-base';
+import type {BlameProvider} from '../../blame-base';
 
 let blameProvider;
 

@@ -21,7 +21,7 @@ import {
 
 const grammar = 'testgrammar';
 
-import {arePropertiesEqual} from 'nuclide-test-helpers';
+import {arePropertiesEqual} from '../../../test-helpers';
 
 function makePromise<T>(ret: T, timeout: number): Promise<T> {
   return new Promise(resolve => {

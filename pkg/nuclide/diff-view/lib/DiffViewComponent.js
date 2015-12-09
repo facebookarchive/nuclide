@@ -11,7 +11,7 @@
 
 import type {FileChangeState, InlineComponent, OffsetMap} from './types';
 import type DiffViewModel from './DiffViewModel';
-import type {RevisionInfo} from 'nuclide-hg-repository-base/lib/hg-constants';
+import type {RevisionInfo} from '../../hg-repository-base/lib/hg-constants';
 
 import invariant from 'assert';
 import {CompositeDisposable} from 'atom';
@@ -21,8 +21,8 @@ import DiffViewTree from './DiffViewTree';
 import SyncScroll from './SyncScroll';
 import DiffTimelineView from './DiffTimelineView';
 import DiffNavigationBar from './DiffNavigationBar';
-import {object} from 'nuclide-commons';
-import {createPaneContainer} from 'nuclide-atom-helpers';
+import {object} from '../../commons';
+import {createPaneContainer} from '../../atom-helpers';
 
 type Props = {
   diffModel: DiffViewModel;

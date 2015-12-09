@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const BuckToolbar = require('nuclide-buck-toolbar');
+const BuckToolbar = require('../../buck/toolbar');
 const React = require('react-for-atom');
 const {Disposable} = require('atom');
 const {PropTypes} = React;
@@ -48,7 +48,7 @@ class NuclideToolbar extends React.Component {
 
   render(): ?ReactElement {
     if (this.state.projectType === 'Hhvm') {
-      const HhvmToolbar = require('nuclide-hhvm-toolbar');
+      const HhvmToolbar = require('../../hhvm-toolbar');
       return (
         <div className="tool-panel padded nuclide-toolbar">
           <HhvmToolbar

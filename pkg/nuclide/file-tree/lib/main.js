@@ -15,7 +15,7 @@ import type {FileTreeControllerState} from './FileTreeController';
 
 import {CompositeDisposable} from 'atom';
 
-import featureConfig from 'nuclide-feature-config';
+import featureConfig from '../../feature-config';
 
 /**
  * Minimum interval (in ms) between onChangeActivePaneItem events before revealing the active pane
@@ -121,7 +121,7 @@ class Activation {
 
   _setRevealOnFileSwitch(shouldReveal: boolean) {
     const {onWorkspaceDidStopChangingActivePaneItem} =
-      require('nuclide-atom-helpers').atomEventDebounce;
+      require('../../atom-helpers').atomEventDebounce;
 
     if (shouldReveal) {
       const reveal = () => {

@@ -14,16 +14,6 @@
   "engines": {
     "atom": ">=1.0.9"
   },
-  "dependencies": {
-    "nuclide-analytics": "0.0.0",
-    "nuclide-client": "0.0.0",
-    "nuclide-ui-atom-input": "0.0.0",
-    "nuclide-ui-pane-item": "0.0.0",
-    "react-for-atom": "0.14.3"
-  },
-  "devDependencies": {
-    "nuclide-remote-connection": "0.0.0"
-  },
   "_atomModuleCache": {
     "extensions": {
       ".node": []

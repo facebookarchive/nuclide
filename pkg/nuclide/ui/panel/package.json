@@ -10,11 +10,5 @@
   },
   "engines": {
     "atom": ">=0.186.0"
-  },
-  "dependencies": {
-    "nuclide-atom-npm": "0.0.0",
-    "nuclide-commons": "0.0.0",
-    "react-for-atom": "0.14.3"
-  },
-  "devDependencies": {}
+  }
 }

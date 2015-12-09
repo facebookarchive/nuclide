@@ -10,9 +10,9 @@
  */
 
 const {log, logInfo, logError, setLogLevel} = require('./utils');
-const featureConfig = require('nuclide-feature-config');
+const featureConfig = require('../../../feature-config');
 const {translateMessageFromServer, translateMessageToServer} = require('./ChromeMessageRemoting');
-const remoteUri = require('nuclide-remote-uri');
+const remoteUri = require('../../../remote-uri');
 const {Disposable} = require('atom');
 
 type NotificationMessage = {
@@ -44,7 +44,7 @@ class DebuggerProcess {
 
   getWebsocketAddress(): Promise<string> {
     logInfo('Connecting to: ' + this._remoteDirectoryUri);
-    const {HhvmDebuggerProxyService} = require('nuclide-client').
+    const {HhvmDebuggerProxyService} = require('../../../client').
       getServiceByNuclideUri('HhvmDebuggerProxyService', this._remoteDirectoryUri);
     const proxy = new HhvmDebuggerProxyService();
     this._proxy = proxy;

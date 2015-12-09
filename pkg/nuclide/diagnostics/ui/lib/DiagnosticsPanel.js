@@ -9,10 +9,10 @@
  * the root directory of this source tree.
  */
 const DiagnosticsPane = require('./DiagnosticsPane');
-const {PanelComponent} = require('nuclide-ui-panel');
+const {PanelComponent} = require('../../../ui/panel');
 const React = require('react-for-atom');
 
-import {track} from 'nuclide-analytics';
+import {track} from '../../../analytics';
 
 // This must match the value in diagnostics-table.less.
 const PANEL_HEADER_HEIGHT_IN_PX = 28;
@@ -30,7 +30,7 @@ function getKeyboardShortcut(): string {
     command: 'nuclide-diagnostics-ui:toggle-table',
   });
   if (matchingKeyBindings.length && matchingKeyBindings[0].keystrokes) {
-    const {humanizeKeystroke} = require('nuclide-keystroke-label');
+    const {humanizeKeystroke} = require('../../../keystroke-label');
     keyboardShortcut = humanizeKeystroke(matchingKeyBindings[0].keystrokes);
   } else {
     keyboardShortcut = '';

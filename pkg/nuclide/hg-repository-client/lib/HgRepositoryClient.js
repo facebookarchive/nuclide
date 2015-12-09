@@ -17,11 +17,11 @@ import type {
   RevisionFileChanges,
   StatusCodeIdValue,
   StatusCodeNumberValue,
-} from 'nuclide-hg-repository-base/lib/hg-constants';
+} from '../../hg-repository-base/lib/hg-constants';
 
 import type {
   HgService,
-} from 'nuclide-hg-repository-base/lib/HgService.js';
+} from '../../hg-repository-base/lib/HgService.js';
 
 import {CompositeDisposable, Emitter} from 'atom';
 import {
@@ -29,9 +29,9 @@ import {
   StatusCodeIdToNumber,
   StatusCodeNumber,
   HgStatusOption,
-} from 'nuclide-hg-repository-base/lib/hg-constants';
-import {debounce} from 'nuclide-commons';
-import {ensureTrailingSeparator} from 'nuclide-commons/lib/paths';
+} from '../../hg-repository-base/lib/hg-constants';
+import {debounce} from '../../commons';
+import {ensureTrailingSeparator} from '../../commons/lib/paths';
 import {addAllParentDirectoriesToCache, removeAllParentDirectoriesFromCache} from './utils';
 
 type HgRepositoryOptions = {
@@ -86,8 +86,8 @@ function filterForAllStatues() {
  * in addition to providing asynchronous methods for some getters.
  */
 
-import type {NuclideUri} from 'nuclide-remote-uri';
-import type {RemoteDirectory} from 'nuclide-remote-connection';
+import type {NuclideUri} from '../../remote-uri';
+import type {RemoteDirectory} from '../../remote-connection';
 
 export default class HgRepositoryClient {
   _path: string;

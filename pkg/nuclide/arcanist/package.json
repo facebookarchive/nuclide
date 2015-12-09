@@ -34,23 +34,6 @@
   "engines": {
     "atom": ">=1.0.3"
   },
-  "dependencies": {
-    "nuclide-analytics": "0.0.0",
-    "nuclide-arcanist-client": "0.0.0",
-    "nuclide-atom-helpers": "0.0.0",
-    "nuclide-busy-signal-provider-base": "0.0.0",
-    "nuclide-commons": "0.0.0",
-    "nuclide-diagnostics-provider-base": "0.0.0",
-    "nuclide-feature-config": "0.0.0",
-    "nuclide-logging": "0.0.0",
-    "nuclide-remote-uri": "0.0.0"
-  },
-  "devDependencies": {
-    "nuclide-busy-signal-interfaces": "0.0.0",
-    "nuclide-diagnostics-base": "0.0.0",
-    "nuclide-test-helpers": "0.0.0",
-    "temp": "0.8.3"
-  },
   "_atomModuleCache": {
     "extensions": {
       ".node": []

@@ -14,7 +14,7 @@ import type {Observable} from 'rx';
 import type {FlowProcess as FlowProcessType} from '../lib/FlowProcess';
 import {FLOW_RETURN_CODES} from '../lib/FlowProcess';
 
-import {uncachedRequire} from 'nuclide-test-helpers';
+import {uncachedRequire} from '../../test-helpers';
 
 const flowProcessPath = '../lib/FlowProcess';
 
@@ -37,7 +37,7 @@ describe('FlowProcess', () => {
     // We need this level of indirection to ensure that if fakeAsyncExec is rebound, the new one
     // gets executed.
     const runFakeAsyncExec = () => fakeAsyncExec();
-    spyOn(require('nuclide-commons'), 'asyncExecute').andCallFake(runFakeAsyncExec);
+    spyOn(require('../../commons'), 'asyncExecute').andCallFake(runFakeAsyncExec);
 
     childSpy = {
       stdout: { on() {} },
@@ -46,7 +46,7 @@ describe('FlowProcess', () => {
       kill() {},
     };
 
-    spyOn(require('nuclide-commons'), 'safeSpawn').andReturn(childSpy);
+    spyOn(require('../../commons'), 'safeSpawn').andReturn(childSpy);
     // we have to create another flow service here since we've mocked modules
     // we depend on since the outer beforeEach ran.
     const {FlowProcess} = (uncachedRequire(require, flowProcessPath): any);
@@ -79,13 +79,13 @@ describe('FlowProcess', () => {
     });
 
     afterEach(() => {
-      global.unspy(require('nuclide-commons'), 'asyncExecute');
-      global.unspy(require('nuclide-commons'), 'safeSpawn');
+      global.unspy(require('../../commons'), 'asyncExecute');
+      global.unspy(require('../../commons'), 'safeSpawn');
     });
 
     describe('execFlow', () => {
       it('should spawn a new Flow server', () => {
-        expect(require('nuclide-commons').safeSpawn).toHaveBeenCalledWith(
+        expect(require('../../commons').safeSpawn).toHaveBeenCalledWith(
           'flow',
           ['server', '--from', 'nuclide', '/path/to/flow/root']
         );
@@ -104,9 +104,9 @@ describe('FlowProcess', () => {
 
       it('should blacklist the root', () => {
         expect(event).toBe('exit');
-        (require('nuclide-commons').safeSpawn: any).reset();
+        (require('../../commons').safeSpawn: any).reset();
         waitsForPromise(async () => { await execFlow(); });
-        expect(require('nuclide-commons').safeSpawn).not.toHaveBeenCalled();
+        expect(require('../../commons').safeSpawn).not.toHaveBeenCalled();
       });
     });
 

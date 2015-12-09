@@ -13,7 +13,7 @@ import * as babel from 'babel-core';
 import fs from 'fs';
 import generate from 'babel-core/lib/generation';
 import generateProxy from '../lib/proxy-generator';
-import {addMatchers} from 'nuclide-test-helpers';
+import {addMatchers} from '../../test-helpers';
 import parseServiceDefinition from '../lib/service-parser';
 import path from 'path';
 import {__test__} from '../lib/proxy-generator';

@@ -12,7 +12,7 @@
 import invariant from 'assert';
 import path from 'path';
 
-import {WatchmanSubscription} from 'nuclide-watchman-helpers';
+import {WatchmanSubscription} from '../../watchman-helpers';
 
 import PathSet from '../lib/PathSet';
 import PathSetUpdater from '../lib/PathSetUpdater';

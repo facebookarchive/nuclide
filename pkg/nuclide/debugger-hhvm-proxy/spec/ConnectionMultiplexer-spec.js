@@ -10,7 +10,7 @@
  */
 
 
-import {uncachedRequire, clearRequireCache} from 'nuclide-test-helpers';
+import {uncachedRequire, clearRequireCache} from '../../test-helpers';
 
 import {
   STATUS_STARTING,

@@ -7,13 +7,5 @@
   "nuclide": {
     "packageType": "Node",
     "testRunner": "apm"
-  },
-  "dependencies": {
-    "nuclide-commons": "0.0.0",
-    "rx": "3.1.1"
-  },
-  "devDependencies": {
-    "nuclide-busy-signal-interfaces": "0.0.0",
-    "nuclide-remote-uri": "0.0.0"
   }
 }

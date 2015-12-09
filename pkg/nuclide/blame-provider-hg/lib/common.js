@@ -9,9 +9,9 @@
  * the root directory of this source tree.
  */
 
-import type {HgRepositoryClient} from 'nuclide-hg-repository-client';
+import type {HgRepositoryClient} from '../../hg-repository-client';
 
-const {repositoryForPath} = require('nuclide-hg-git-bridge');
+const {repositoryForPath} = require('../../hg-git-bridge');
 
 export function hgRepositoryForEditor(editor: TextEditor): ?HgRepositoryClient {
   const repo = repositoryForPath(editor.getPath() || '');

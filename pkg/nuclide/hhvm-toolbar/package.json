@@ -10,16 +10,5 @@
     "packageType": "Node",
     "testRunner": "apm"
   },
-  "description": "Provides a toolbar in Nuclide to build projects with HHVM",
-  "dependencies": {
-    "nuclide-atom-npm": "0.0.0",
-    "nuclide-commons": "0.0.0",
-    "nuclide-logging": "0.0.0",
-    "nuclide-remote-uri": "0.0.0",
-    "nuclide-service-hub-plus": "0.0.0",
-    "nuclide-ui-atom-input": "0.0.0",
-    "nuclide-ui-dropdown": "0.0.0",
-    "react-for-atom": "0.14.3"
-  },
-  "devDependencies": {}
+  "description": "Provides a toolbar in Nuclide to build projects with HHVM"
 }

@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {BusySignalMessage} from 'nuclide-busy-signal-interfaces';
+import type {BusySignalMessage} from '../../busy-signal-interfaces';
 
 import {Subject} from 'rx';
 

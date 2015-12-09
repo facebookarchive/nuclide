@@ -9,21 +9,21 @@
  * the root directory of this source tree.
  */
 
-import type {HomeFragments} from 'nuclide-home-interfaces';
+import type {HomeFragments} from '../../home-interfaces';
 import type {
   RemoteConnectionConfiguration,
-} from 'nuclide-remote-connection/lib/RemoteConnection';
+} from '../../remote-connection/lib/RemoteConnection';
 import type RemoteDirectoryProviderT from './RemoteDirectoryProvider';
 import type RemoteDirectorySearcherT from './RemoteDirectorySearcher';
 import type RemoteProjectsControllerT from './RemoteProjectsController';
 
-import {createTextEditor} from 'nuclide-atom-helpers';
-import {getLogger} from 'nuclide-logging';
+import {createTextEditor} from '../../atom-helpers';
+import {getLogger} from '../../logging';
 import {getOpenFileEditorForRemoteProject} from './utils';
-import featureConfig from 'nuclide-feature-config';
+import featureConfig from '../../feature-config';
 import invariant from 'assert';
 import {CompositeDisposable} from 'atom';
-import {RemoteConnection} from 'nuclide-remote-connection';
+import {RemoteConnection} from '../../remote-connection';
 
 const logger = getLogger();
 
@@ -64,7 +64,7 @@ async function createRemoteConnection(
   }
 
   // If connection fails using saved config, open connect dialog.
-  const {openConnectionDialog} = require('nuclide-ssh-dialog');
+  const {openConnectionDialog} = require('../../ssh-dialog');
   return openConnectionDialog({
     initialServer: remoteProjectConfig.host,
     initialCwd: remoteProjectConfig.cwd,
@@ -154,8 +154,8 @@ function getRemoteRootDirectories(): Array<atom$Directory> {
  * remote URIs.
  */
 function deleteDummyRemoteRootDirectories() {
-  const {RemoteDirectory} = require('nuclide-remote-connection');
-  const {isRemote} = require('nuclide-remote-uri');
+  const {RemoteDirectory} = require('../../remote-connection');
+  const {isRemote} = require('../../remote-uri');
   for (const directory of atom.project.getDirectories()) {
     if (isRemote(directory.getPath()) &&
         !(RemoteDirectory.isRemoteDirectory(directory))) {
@@ -260,7 +260,7 @@ module.exports = {
         'atom-workspace',
         'nuclide-remote-projects:connect',
           /* $FlowIssue. */
-        () => require('nuclide-ssh-dialog').openConnectionDialog()
+        () => require('../../ssh-dialog').openConnectionDialog()
     ));
 
     // Subscribe opener before restoring the remote projects.
@@ -350,8 +350,8 @@ module.exports = {
   },
 
   createRemoteDirectorySearcher(): RemoteDirectorySearcherT {
-    const {getServiceByNuclideUri} = require('nuclide-client');
-    const {RemoteDirectory} = require('nuclide-remote-connection');
+    const {getServiceByNuclideUri} = require('../../client');
+    const {RemoteDirectory} = require('../../remote-connection');
     const RemoteDirectorySearcher = require('./RemoteDirectorySearcher');
     return new RemoteDirectorySearcher((dir: RemoteDirectory) =>
       getServiceByNuclideUri('FindInProjectService', dir.getPath()));

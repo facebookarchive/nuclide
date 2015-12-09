@@ -10,9 +10,9 @@
  */
 
 const {CompositeDisposable, Disposable} = require('atom');
-import {trackTiming} from 'nuclide-analytics';
+import {trackTiming} from '../../../analytics';
 
-import type {nuclide_debugger$Service} from 'nuclide-debugger-interfaces/service';
+import type {nuclide_debugger$Service} from '../../interfaces/service';
 import RemoteControlService from './RemoteControlService';
 import DebuggerModel from './DebuggerModel';
 import type {SerializedBreakpoint} from './BreakpointStore';

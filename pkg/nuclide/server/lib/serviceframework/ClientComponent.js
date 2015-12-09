@@ -18,14 +18,14 @@ import NuclideSocket from '../NuclideSocket';
 import {Observable} from 'rx';
 import {SERVICE_FRAMEWORK_RPC_TIMEOUT_MS} from '../config';
 
-import TypeRegistry from 'nuclide-service-parser/lib/TypeRegistry';
-import {getProxy, getDefinitions} from 'nuclide-service-parser';
+import TypeRegistry from '../../../service-parser/lib/TypeRegistry';
+import {getProxy, getDefinitions} from '../../../service-parser';
 
 import type {RequestMessage, CallRemoteFunctionMessage, CreateRemoteObjectMessage,
   CallRemoteMethodMessage, DisposeRemoteObjectMessage, DisposeObservableMessage,
   ReturnType, ObservableResult} from './types';
 
-const logger = require('nuclide-logging').getLogger();
+const logger = require('../../../logging').getLogger();
 
 export default class ClientComponent {
   _rpcRequestId: number;

@@ -12,10 +12,10 @@ import type {
   BlameForEditor,
   BlameInfo,
   BlameProvider,
-} from 'nuclide-blame-base';
+} from '../../blame-base';
 
 const {BLAME_DECORATION_CLASS} = require('./constants');
-import {track, trackTiming} from 'nuclide-analytics';
+import {track, trackTiming} from '../../analytics';
 import {CompositeDisposable} from 'atom';
 import invariant from 'assert';
 

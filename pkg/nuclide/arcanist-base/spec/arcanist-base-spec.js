@@ -15,7 +15,7 @@ const temp = require('temp').track();
 
 import invariant from 'assert';
 
-import {uncachedRequire} from 'nuclide-test-helpers';
+import {uncachedRequire} from '../../test-helpers';
 
 const rootConfig = {
   'project_id': 'project1',
@@ -153,7 +153,7 @@ describe('nuclide-arcanist-base', () => {
     beforeEach(() => {
       setResult({});
       execArgs = [];
-      spyOn(require('nuclide-commons'), 'asyncExecute').andCallFake((command, args, options) => {
+      spyOn(require('../../commons'), 'asyncExecute').andCallFake((command, args, options) => {
         execArgs.push(args);
         return arcResult;
       });

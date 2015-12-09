@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {process$asyncExecuteRet} from 'nuclide-commons';
+import type {process$asyncExecuteRet} from '../../commons';
 
 import type {ServerStatusType} from './FlowService';
 
@@ -17,13 +17,13 @@ import invariant from 'assert';
 
 import {BehaviorSubject, Observable} from 'rx';
 
-import {getLogger} from 'nuclide-logging';
+import {getLogger} from '../../logging';
 const logger = getLogger();
 
 import {
   asyncExecute,
   safeSpawn,
-} from 'nuclide-commons';
+} from '../../commons';
 
 import {
   isFlowInstalled,

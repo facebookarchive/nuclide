@@ -11,7 +11,7 @@
 
 import type {Reference} from './types';
 
-import {track} from 'nuclide-analytics';
+import {track} from '../../analytics';
 import {CompositeDisposable} from 'atom';
 
 export type FindReferencesData = {
@@ -102,7 +102,7 @@ async function tryCreateView(): Promise<?HTMLElement> {
     }
   } catch (e) {
     // TODO(peterhal): Remove this when unhandled rejections have a default handler.
-    const {getLogger} = require('nuclide-logging');
+    const {getLogger} = require('../../logging');
     getLogger().error('Exception in nuclide-find-references', e);
     showError(e);
   }

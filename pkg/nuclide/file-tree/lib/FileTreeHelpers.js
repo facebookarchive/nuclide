@@ -15,8 +15,8 @@ import {
   RemoteConnection,
   RemoteDirectory,
   RemoteFile,
-} from 'nuclide-remote-connection';
-import RemoteUri from 'nuclide-remote-uri';
+} from '../../remote-connection';
+import RemoteUri from '../../remote-uri';
 
 import pathModule from 'path';
 import url from 'url';

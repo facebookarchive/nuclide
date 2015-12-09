@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from 'nuclide-remote-uri';
-import {array} from 'nuclide-commons';
+import type {NuclideUri} from '../../remote-uri';
+import {array} from '../../commons';
 
 /**
  * @param aPath The NuclideUri of a file or directory for which you want to find

@@ -9,9 +9,9 @@
  * the root directory of this source tree.
  */
 
-import {getServiceByNuclideUri} from 'nuclide-client';
-import type {BuckProject} from 'nuclide-buck-base/lib/BuckProject';
-const {getPath} = require('nuclide-remote-uri');
+import {getServiceByNuclideUri} from '../../../client';
+import type {BuckProject} from '../../base/lib/BuckProject';
+const {getPath} = require('../../../remote-uri');
 
 const buckProjectForBuckProjectDirectory: {[key: string]: mixed} = {};
 

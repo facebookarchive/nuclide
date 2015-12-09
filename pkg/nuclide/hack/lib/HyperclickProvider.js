@@ -10,10 +10,10 @@
  */
 
 import {findDefinition} from './hack';
-import {goToLocation} from 'nuclide-atom-helpers';
-import {trackTiming} from 'nuclide-analytics';
+import {goToLocation} from '../../atom-helpers';
+import {trackTiming} from '../../analytics';
 
-import {HACK_GRAMMARS_SET} from 'nuclide-hack-common/lib/constants';
+import {HACK_GRAMMARS_SET} from '../../hack-common/lib/constants';
 
 class HyperclickProvider {
 

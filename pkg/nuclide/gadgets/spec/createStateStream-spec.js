@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {array} from 'nuclide-commons';
+import {array} from '../../commons';
 import * as ActionTypes from '../lib/ActionTypes';
 import createStateStream from '../lib/createStateStream';
 import getInitialState from '../lib/getInitialState';

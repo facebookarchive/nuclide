@@ -15,7 +15,7 @@
 // the nuclide-debugger-utils package can go away because then
 // nuclide-debugger-lldb can depend on this nuclide-debugger package directly.
 
-import type {nuclide_debugger$DebuggerInstance} from 'nuclide-debugger-interfaces/service';
+import type {nuclide_debugger$DebuggerInstance} from '../../interfaces/service';
 
 class DebuggerProcessInfo {
   _serviceName: string;
