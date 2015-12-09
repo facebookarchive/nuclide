@@ -16,7 +16,7 @@ import {toJsString} from '../../../commons';
 export default class Inspector extends React.Component {
 
   getTitle(): string {
-    return 'RN Element Inspector';
+    return 'React Native Inspector';
   }
 
   render(): ?ReactElement {
