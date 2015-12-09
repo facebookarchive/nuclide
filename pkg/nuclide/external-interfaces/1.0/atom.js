@@ -261,7 +261,7 @@ type atom$PaneSplitParams = {
 
 declare class atom$Pane {
   // Items
-  addItem(item: Object, index: number): Object;
+  addItem(item: Object, index?: number): Object;
   getItems(): Array<Object>;
   getActiveItem(): ?Object;
   itemAtIndex(index: number): ?Object;
