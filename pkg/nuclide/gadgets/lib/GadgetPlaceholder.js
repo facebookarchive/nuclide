@@ -12,6 +12,7 @@
 /*eslint-disable react/prop-types */
 
 import * as GadgetUri from './GadgetUri';
+import createComponentItem from './createComponentItem';
 import React from 'react-for-atom';
 
 type Props = {
@@ -21,7 +22,7 @@ type Props = {
   title: string;
 };
 
-export default class GadgetPlaceholder extends React.Component<void, Props> {
+class GadgetPlaceholder extends React.Component<void, Props> {
 
   destroy() {
     React.unmountComponentAtNode(this.element);
@@ -66,4 +67,10 @@ export default class GadgetPlaceholder extends React.Component<void, Props> {
     };
   }
 
+  static deserialize(state) {
+    return createComponentItem(<GadgetPlaceholder {...state.data} />);
+  }
+
 }
+
+module.exports = GadgetPlaceholder;
