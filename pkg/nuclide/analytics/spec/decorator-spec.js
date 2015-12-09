@@ -103,7 +103,10 @@ describe('The @trackTiming decorator', () => {
       expect(trackValues.eventName).toEqual('TestClass.foo');
       expect(trackValues.error).toEqual('0');
       expect(trackValues.exception).toEqual('');
-      expect(parseInt(trackValues.duration, 10) >= 50).toBe(true);
+
+      // `trackTiming` rounds .001ms resolution timestamps whereas `setTimeout` uses 1ms precision.
+      // This can lead to `trackTiming` counting 49ms for 50ms of a 1ms-resolution clock elapsing.
+      expect(parseInt(trackValues.duration, 10)).not.toBeLessThan(49);
     });
   });
 
@@ -129,7 +132,10 @@ describe('The @trackTiming decorator', () => {
       expect(trackValues.eventName).toEqual('TestClass.foo');
       expect(trackValues.error).toEqual('1');
       expect(trackValues.exception).toEqual('Error: ' + rejectReason.toString());
-      expect(parseInt(trackValues.duration, 10) >= 50).toBe(true);
+
+      // `trackTiming` rounds .001ms resolution timestamps whereas `setTimeout` uses 1ms precision.
+      // This can lead to `trackTiming` counting 49ms for 50ms of a 1ms-resolution clock elapsing.
+      expect(parseInt(trackValues.duration, 10)).not.toBeLessThan(49);
     });
   });
 });
