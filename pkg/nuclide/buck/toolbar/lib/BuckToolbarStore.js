@@ -27,8 +27,8 @@ const BuckToolbarActions = require('./BuckToolbarActions');
 type BuckRunDetails = {
   pid?: number;
 };
-import type {ProcessOutputDataHandlers, ProcessOutputStore as ProcessOutputStoreType,}
-  from '../../../process/output-store/lib/types';
+import type {ProcessOutputStore as ProcessOutputStoreType} from '../../../process/output-store';
+import type {ProcessOutputDataHandlers} from '../../../process/output-store/lib/types';
 import type {BuckProject} from '../../base/lib/BuckProject';
 import ReactNativeServerManager from './ReactNativeServerManager';
 import ReactNativeServerActions from './ReactNativeServerActions';
@@ -172,7 +172,13 @@ class BuckToolbarStore {
       return null;
     }
     const serverCommand = await buckProject.getBuckConfig('react-native', 'server');
+    if (serverCommand == null) {
+      return null;
+    }
     const repoRoot = await buckProject.getPath();
+    if (repoRoot == null) {
+      return null;
+    }
     return path.join(repoRoot, serverCommand);
   }
 
@@ -338,11 +344,11 @@ class BuckToolbarStore {
       } else {
         observable = await buckProject.buildWithOutput([buildTarget]);
       }
-      const onNext = (data: {stdout: string} | {stderr: string}) => {
+      const onNext = (data: {stderr?: string; stdout?: string}) => {
         if (data.stdout) {
           stdout(data.stdout);
         } else {
-          stderr(data.stderr);
+          stderr(data.stderr || '');
         }
       };
       const onError = (data: string) => {

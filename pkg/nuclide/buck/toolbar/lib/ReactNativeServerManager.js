@@ -99,11 +99,11 @@ export default class ReactNativeServerManager {
       const {stdout, stderr, error, exit} = dataHandlerOptions;
       invariant(serverCommand);
       const observable = scriptSafeSpawnAndObserveOutput(serverCommand);
-      const onNext = (data: {stdout: string} | {stderr: string}) => {
+      const onNext = (data: {stdout?: string; stderr?: string}) => {
         if (data.stdout) {
           stdout(data.stdout);
         } else {
-          stderr(data.stderr);
+          stderr(data.stderr || '');
         }
       };
       const onError = (data: string) => {
@@ -179,8 +179,8 @@ export default class ReactNativeServerManager {
 
   _startNodeExecutorServer() {
     if (!this._nodeExecutorServer) {
-      this._nodeExecutorServer = new ExecutorServer(8090);
-      this._nodeExecutorServer.onDidEvalApplicationScript(this._attachNodeDebugger.bind(this));
+      const server = this._nodeExecutorServer = new ExecutorServer(8090);
+      server.onDidEvalApplicationScript(this._attachNodeDebugger.bind(this));
     }
   }
 }

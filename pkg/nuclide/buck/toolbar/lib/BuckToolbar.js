@@ -77,7 +77,7 @@ class BuckToolbar extends React.Component {
     if (!isTextEditor(item)) {
       return;
     }
-    const textEditor: TextEditor = item;
+    const textEditor: TextEditor = ((item: any): TextEditor);
     this._buckToolbarActions.updateProjectFor(textEditor);
   }
 
