@@ -1,7 +1,6 @@
 [include]
 
 [ignore]
-
 # second-level dependencies
 .*/node_modules/[^/]+/node_modules/.*
 

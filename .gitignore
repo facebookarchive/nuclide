@@ -18,7 +18,3 @@ npm-debug.log*
 /pkg/nuclide/node-transpiler/babel-cache
 
 /pkg/nuclide/service-transformer/gen
-
-# $UPFixMe
-/pkg/**/node_modules
-/scripts/**/node_modules
