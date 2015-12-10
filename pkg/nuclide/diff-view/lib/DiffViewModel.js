@@ -73,14 +73,17 @@ class DiffViewModel {
       )
     );
     // Dispose removed projects repositories.
-    array.from(this._repositoryStacks.keys())
-      .filter(repository => !repositories.has(repository))
-      .forEach(repository => {
-        this._repositoryStacks.get(repository).dispose();
-        this._repositoryStacks.delete(repository);
-        this._repositorySubscriptions.get(repository).dispose();
-        this._repositorySubscriptions.delete(repository);
-      });
+    for (const [repository, repositoryStack] of this._repositoryStacks) {
+      if (repositories.has(repository)) {
+        continue;
+      }
+      repositoryStack.dispose();
+      this._repositoryStacks.delete(repository);
+      const subscriptions = this._repositorySubscriptions.get(repository);
+      invariant(subscriptions);
+      subscriptions.dispose();
+      this._repositorySubscriptions.delete(repository);
+    }
 
     for (const repository of repositories) {
       if (this._repositoryStacks.has(repository)) {
@@ -285,13 +288,14 @@ class DiffViewModel {
     // Calling atom.project.repositoryForDirectory gets the real path of the directory,
     // which is another round-trip and calls the repository providers to get an existing repository.
     // Instead, the first match of the filtering here is the only possible match.
-    const repository: HgRepositoryClient = repositoryForPath(filePath);
+    const repository = repositoryForPath(filePath);
     if (repository == null || repository.getType() !== 'hg') {
       const type = repository ? repository.getType() : 'no repository';
       throw new Error(`Diff view only supports \`Mercurial\` repositories, but found \`${type}\``);
     }
 
-    const repositoryStack = this._repositoryStacks.get(repository);
+    const hgRepository: HgRepositoryClient = (repository: any);
+    const repositoryStack = this._repositoryStacks.get(hgRepository);
     invariant(repositoryStack);
     const [hgDiff] = await Promise.all([
       repositoryStack.fetchHgDiff(filePath),
@@ -373,11 +377,11 @@ class DiffViewModel {
     return this._compareFileChanges;
   }
 
-  getActiveRevisionsState(): ?RevisionsState {
+  async getActiveRevisionsState(): Promise<?RevisionsState> {
     if (this._activeRepositoryStack == null) {
       return null;
     }
-    return this._activeRepositoryStack.getRevisionsState();
+    return await this._activeRepositoryStack.getCachedRevisionsStatePromise();
   }
 
   activate(): void {

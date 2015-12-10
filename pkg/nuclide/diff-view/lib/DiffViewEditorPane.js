@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import type {NuclideUri} from '../../remote-uri';
 import type {HighlightedLines, OffsetMap, InlineComponent} from './types';
 
 import {CompositeDisposable} from 'atom';

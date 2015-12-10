@@ -137,9 +137,9 @@ export default class RepositoryStack {
     // If the commits haven't changed ids, then thier diff haven't changed as well.
     let revisionsFileHistory = null;
     if (this._lastRevisionsFileHistory != null) {
-      const revisionIds = revisionsState.revisions.map(revision => revision.id);
       const fileHistoryRevisionIds = this._lastRevisionsFileHistory
         .map(revisionChanges => revisionChanges.id);
+      const revisionIds = revisionsState.revisions.map(revision => revision.id);
       if (array.equal(revisionIds, fileHistoryRevisionIds)) {
         revisionsFileHistory = this._lastRevisionsFileHistory;
       }
@@ -177,8 +177,9 @@ export default class RepositoryStack {
   }
 
   getCachedRevisionsStatePromise(): Promise<RevisionsState> {
-    if (this._revisionsStatePromise != null) {
-      return this._revisionsStatePromise.then(this._amendSelectedCompareCommitId.bind(this));
+    const revisionsStatePromise = this._revisionsStatePromise;
+    if (revisionsStatePromise != null) {
+      return revisionsStatePromise.then(this._amendSelectedCompareCommitId.bind(this));
     } else {
       return this._getRevisionsStatePromise();
     }

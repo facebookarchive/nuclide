@@ -437,7 +437,7 @@ export default class HgRepositoryClient {
    */
   async getStatuses(
     paths: Array<string>,
-    options: HgStatusCommandOptions,
+    options?: HgStatusCommandOptions,
   ): Promise<Map<NuclideUri, StatusCodeNumberValue>> {
     const statusMap = new Map();
     const isRelavantStatus = this._getPredicateForRelevantStatuses(options);
@@ -475,7 +475,7 @@ export default class HgRepositoryClient {
    */
   async _updateStatuses(
     filePaths: Array<string>,
-    options: HgStatusCommandOptions,
+    options: ?HgStatusCommandOptions,
   ): Promise<Map<NuclideUri, StatusCodeIdValue>> {
     const pathsInRepo = filePaths.filter((filePath) => {
       return this._isPathRelevant(filePath);
@@ -578,7 +578,7 @@ export default class HgRepositoryClient {
    * returned, given the passed-in options for ::getStatuses.
    */
   _getPredicateForRelevantStatuses(
-    options: HgStatusCommandOptions
+    options: ?HgStatusCommandOptions
   ): (code: StatusCodeIdValue) => boolean {
     const hasOptions = options && ('hgStatusOption' in options);
 

@@ -11,6 +11,7 @@
 
 const {StatusCodeNumber: HgStatusCodeNumber} = require('../../hg-repository-base').hgConstants;
 
+import type {StatusCodeNumberValue} from '../../hg-repository-base/lib/hg-constants';
 import type {FileChangeStatusValue} from './types';
 
 const FileChangeStatus: {[key: string]: FileChangeStatusValue} = {
@@ -21,7 +22,7 @@ const FileChangeStatus: {[key: string]: FileChangeStatusValue} = {
   UNTRACKED: 5,
 };
 
-const HgStatusToFileChangeStatus : {[key: HgStatusCodeNumber]: FileChangeStatus} = {
+const HgStatusToFileChangeStatus : {[key: StatusCodeNumberValue]: FileChangeStatusValue} = {
   [HgStatusCodeNumber.ADDED]: FileChangeStatus.ADDED,
   [HgStatusCodeNumber.MODIFIED]: FileChangeStatus.MODIFIED,
   [HgStatusCodeNumber.MISSING]: FileChangeStatus.MISSING,

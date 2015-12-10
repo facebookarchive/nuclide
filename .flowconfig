@@ -14,7 +14,6 @@
 .*/pkg/nuclide/debugger/atom/spec/.*
 .*/pkg/nuclide/debugger/hhvm/.*
 .*/pkg/nuclide/debugger/node/.*
-.*/pkg/nuclide/diff-view/.*
 .*/pkg/nuclide/file-tree/.*
 .*/pkg/nuclide/format-js/.*
 .*/pkg/nuclide/fuzzy-filename-provider/.*

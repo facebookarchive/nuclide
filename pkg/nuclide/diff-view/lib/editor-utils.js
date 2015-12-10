@@ -12,6 +12,7 @@
 import type {LineRangesWithOffsets, OffsetMap} from './types';
 
 import {array} from '../../commons';
+import invariant from 'assert';
 
 /*
  * @param screenLines The original screen lines before adding offsets.
@@ -56,6 +57,7 @@ export function buildLineRangesWithOffsets(
     const offsetLines = lineOffsets.get(offsetLineNumber);
     captureScreenLinesRegion(offsetLineNumber - 1);
     // Add empty screen lines to represent offsets.
+    invariant(offsetLines);
     for (let i = 0; i < offsetLines; i++) {
       newScreenLines.push(emptyLineFactory());
     }

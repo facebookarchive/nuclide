@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {InlineComponent, RenderedComponent, OffsetMap} from './types';
+import type {InlineComponent, RenderedComponent, LineRangesWithOffsets, OffsetMap} from './types';
 
 import {Range} from 'atom';
 import {buildLineRangesWithOffsets} from './editor-utils';
@@ -27,9 +27,9 @@ export default class DiffViewEditor {
   _editorElement: Object;
   _markers: Array<atom$Marker>;
   _lineOffsets: OffsetMap;
-  _originalBuildScreenLines: () => Object;
+  _originalBuildScreenLines: (startBufferRow: number, endBufferRow: number) => mixed;
 
-  constructor(editorElement: TextEditorElement) {
+  constructor(editorElement: atom$TextEditorElement) {
     this._editorElement = editorElement;
     this._editor = editorElement.getModel();
 
@@ -38,14 +38,18 @@ export default class DiffViewEditor {
 
     // Ugly Hack to the display buffer to allow fake soft wrapped lines,
     // to create the non-numbered empty space needed between real text buffer lines.
+    // $FlowFixMe use of non-official API.
     this._originalBuildScreenLines = this._editor.displayBuffer.buildScreenLines;
+    // $FlowFixMe use of non-official API.
     this._editor.displayBuffer.checkScreenLinesInvariant = () => {};
+    // $FlowFixMe use of non-official API.
     this._editor.displayBuffer.buildScreenLines = (...args) => this._buildScreenLinesWithOffsets.apply(this, args);
 
     // There is no editor API to cancel foldability, but deep inside the line state creation,
     // it uses those functions to determine if a line is foldable or not.
     // For Diff View, folding breaks offsets, hence we need to make it unfoldable.
-    this._editor.isFoldableAtScreenRow = this._editor.isFoldableAtBufferRow = () => false;
+    // $FlowFixMe use of non-official API.
+    this._editor.isFoldableAtScreenRow = this._editor.isFoldableAtBufferRow = (row) => false;
   }
 
   renderInlineComponents(elements: Array<InlineComponent>): Promise<Array<RenderedComponent>> {
@@ -134,7 +138,7 @@ export default class DiffViewEditor {
     const screenPosition = this._editor.screenPositionForBufferPosition({row: lineNumber, column: 0});
     const range = new Range(
         screenPosition,
-        {row: screenPosition.row, column: this._editor.lineTextForScreenRow(screenPosition.row).length}
+        [screenPosition.row, this._editor.lineTextForScreenRow(screenPosition.row).length],
         // TODO: highlight the full line when the mapping between buffer lines to screen line is implemented.
         // {row: screenPosition.row + 1, column: 0}
     );

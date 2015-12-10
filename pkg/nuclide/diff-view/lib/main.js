@@ -150,10 +150,13 @@ module.exports = {
       }
     ));
 
-    function getTargetFromEvent(event) {
-      return event.currentTarget.classList.contains('name')
-        ? event.currentTarget
-        : event.currentTarget.querySelector('.name');
+    function getTargetFromEvent(event: Event): HTMLElement {
+      // Event target isn't necessarily an HTMLElement,
+      // but that's guranteed in the usages here.
+      const target: HTMLElement = (event.currentTarget: any);
+      return target.classList.contains('name')
+        ? target
+        : target.querySelector('.name');
     }
 
     // Listen for file tree context menu file item events to open the diff view.

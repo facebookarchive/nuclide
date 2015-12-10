@@ -162,7 +162,6 @@ class NavigatonBarJumpTarget extends React.Component {
     };
     const targetClassName = classnames({
       'nuclide-diff-view-navigation-target': true,
-      // $FlowIssue (t6187050)
       [lineChangeClass]: true,
     });
 
