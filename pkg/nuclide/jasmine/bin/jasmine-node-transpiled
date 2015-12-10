@@ -43,12 +43,16 @@ child.stderr.on('data', function(/* Buffer */ data) {
 
 child.on('close', function(code) {
   clearTimeout(timeoutId);
-  console.log('TEST PASSED when running: ' + testInfo);
+  if (code === 0) {
+    console.log('TEST PASSED when running: ' + testInfo);
+  } else {
+    console.error('TEST FAILED when running: ' + testInfo);
+  }
   process.exit(code);
 });
 
 child.on('error', function(err) {
   console.error('TEST FAILED when running: ' + testInfo);
   console.error(err.toString());
-  process.abort();
+  process.exit(1);
 });

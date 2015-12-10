@@ -12,6 +12,14 @@ if (!process.env.NODE_ENV) {
   process.env.NODE_ENV = 'test';
 }
 
+// Set this up before we call the jasmine cli.js. The jasmine cli.js does this same
+// trick, but neglects to respect the exit code, so we beat the to the punch.
+function onExit(code) {
+  process.removeListener('exit', onExit);
+  process.exit(code);
+}
+process.on('exit', onExit);
+
 // Load nuclide-node-transpiler to start transpiling.
 require('../../node-transpiler');
 
@@ -25,12 +33,10 @@ try {
   // This loads the CLI for Jasmine.
   require('jasmine-node/bin/jasmine-node');
 } catch (e) {
-  // If a spec file has a generator and node is not invoked with the --harmony flag,
-  // this catch block will be reached. For some reason, invoking `process.exit(1)`
-  // here does not cause the promise to terminate with exit code 1. The script will terminate,
-  // but the exit code will still be 0. By comparison, `process.abort()` forces a
-  // termination with a non-zero exit code. Observed with Node v0.12.0 on OS X.
-  //
-  // There is no need to print the exception because it has already been printed.
-  process.abort();
+  // Note that the process.exit(1) works now because of the onExit handler
+  // installed at the start of this script.
+  console.error(e.toString());
+  console.error(e.stack);
+
+  process.exit(1);
 }
