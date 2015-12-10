@@ -49,14 +49,16 @@ class WebViewPane extends HTMLElement {
 
     this._webview = webview;
 
-    webview.addEventListener('page-title-set', (event: {title: string}) => {
-      this._title = event.title;
-      this._emitter.emit('did-change-title');
+    webview.addEventListener('page-title-set', (event: Event) => {
+      if (event.title) {
+        this._title = event.title;
+        this._emitter.emit('did-change-title');
+      }
     });
 
     // Unfortunately, page-title-set never seems to fire, so we listen for frame loads and update
     // the title based on those instead.
-    webview.addEventListener('did-frame-finish-load', (event: {isMainFrame: boolean}) => {
+    webview.addEventListener('did-frame-finish-load', (event: Event) => {
       if (event.isMainFrame) {
         this._title = webview.getTitle();
         this._emitter.emit('did-change-title');
@@ -90,4 +92,6 @@ class WebViewPane extends HTMLElement {
   }
 }
 
-module.exports = document.registerElement('sample-web-view', WebViewPane);
+module.exports = document.registerElement('sample-web-view', {
+  prototype: WebViewPane.prototype,
+});

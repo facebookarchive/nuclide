@@ -28,7 +28,6 @@
 .*/pkg/nuclide/server/scripts/.*
 .*/pkg/nuclide/ssh-dialog/.*
 .*/pkg/nuclide/toolbar/.*
-.*/pkg/sample/web-view/.*
 
 [libs]
 ./pkg/nuclide/external-interfaces/1.0/
