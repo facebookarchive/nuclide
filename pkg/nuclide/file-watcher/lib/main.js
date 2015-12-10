@@ -9,7 +9,8 @@
  * the root directory of this source tree.
  */
 
-let subscriptions: ?CompositeDisposable = null;
+import type {CompositeDisposable as CompositeDisposableType} from 'atom';
+let subscriptions: ?CompositeDisposableType = null;
 let watchers: ?Map = null;
 
 module.exports = {
@@ -17,30 +18,33 @@ module.exports = {
   activate(state: ?Object): void {
     const {CompositeDisposable} = require('atom');
 
-    subscriptions = new CompositeDisposable();
-    watchers = new Map();
+    const _subscriptions = new CompositeDisposable();
+    const _watchers = new Map();
 
-    subscriptions.add(atom.workspace.observeTextEditors(editor => {
-      if (watchers.has(editor)) {
+    _subscriptions.add(atom.workspace.observeTextEditors(editor => {
+      if (_watchers.has(editor)) {
         return;
       }
 
       const FileWatcher = require('./FileWatcher');
       const fileWatcher = new FileWatcher(editor);
-      watchers.set(editor, fileWatcher);
+      _watchers.set(editor, fileWatcher);
 
-      subscriptions.add(editor.onDidDestroy(() => {
+      _subscriptions.add(editor.onDidDestroy(() => {
         fileWatcher.destroy();
-        watchers.delete(editor);
+        _watchers.delete(editor);
       }));
     }));
+
+    watchers = _watchers;
+    subscriptions = _subscriptions;
 
     // Disable the file-watcher package from showing the promot, if installed.
     atom.config.set('file-watcher.promptWhenFileHasChangedOnDisk', false);
   },
 
   deactivate(): void {
-    if (!subscriptions) {
+    if (subscriptions == null || watchers == null) {
       return;
     }
     for (const fileWatcher of watchers.values()) {

@@ -616,6 +616,7 @@ declare class atom$TextEditor extends atom$Model {
   getLineHeightInPixels(): number;
   moveToTop(): void;
   tokenForBufferPosition(position: atom$Point | number[]): atom$Token;
+  onDidConflict(callback: () => void): atom$Disposable;
 }
 
 /**
@@ -1013,6 +1014,8 @@ declare class atom$TextBuffer {
 
   // Buffer Operations
   reload(): void;
+
+  isInConflict(): boolean;
 }
 
 declare class atom$Notification {

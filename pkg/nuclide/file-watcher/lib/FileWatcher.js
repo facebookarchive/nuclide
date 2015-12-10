@@ -19,21 +19,22 @@ function getLogger() {
 class FileWatcher {
 
   _editor: TextEditor;
-  _subscriptions: CompositeDisposable;
+  _subscriptions: ?CompositeDisposable;
 
   constructor(editor: TextEditor) {
     this._editor = editor;
-    this._subscriptions = new CompositeDisposable();
     if (this._editor == null) {
       getLogger().warn('No editor instance on this._editor');
       return;
     }
-    this._subscriptions.add(this._editor.onDidConflict(() => {
+    const _subscriptions = new CompositeDisposable();
+    _subscriptions.add(this._editor.onDidConflict(() => {
       if (this._shouldPromptToReload()) {
-        getLogger().info('Conflict at file: ' + this._editor.getPath());
+        getLogger().info(`Conflict at file: ${this._editor.getPath() || 'File not found'}`);
         this._promptReload();
       }
     }));
+    this._subscriptions = _subscriptions;
   }
 
   _shouldPromptToReload(): boolean {
@@ -44,6 +45,9 @@ class FileWatcher {
     const {getPath, basename} = require('../../remote-uri');
 
     const filePath = this._editor.getPath();
+    if (filePath == null) {
+      return;
+    }
     const encoding = this._editor.getEncoding();
     const fileName = basename(filePath);
     const choice = atom.confirm({
@@ -70,7 +74,7 @@ class FileWatcher {
 
     // Open a right split pane to compare the contents.
     // TODO: We can use the diff-view here when ready.
-    const splitEditor = await atom.workspace.open(null, {split: 'right'});
+    const splitEditor = await atom.workspace.open('', {split: 'right'});
 
     splitEditor.insertText(filesystemContents);
     splitEditor.setGrammar(this._editor.getGrammar());
@@ -82,7 +86,7 @@ class FileWatcher {
     }
     this._subscriptions.dispose();
     this._subscriptions = null;
-  };
+  }
 }
 
 module.exports = FileWatcher;
