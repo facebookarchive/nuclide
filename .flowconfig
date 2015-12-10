@@ -24,7 +24,6 @@
 .*/pkg/nuclide/server/spec/.*
 .*/pkg/nuclide/server/scripts/.*
 .*/pkg/nuclide/ssh-dialog/.*
-.*/pkg/nuclide/toolbar/.*
 
 [libs]
 ./pkg/nuclide/external-interfaces/1.0/
