@@ -128,7 +128,7 @@ export default class HyperclickForTextEditor {
   }
 
   _onMouseDown(event: MouseEvent): void {
-    if (!this._isHyperclickEvent(event)) {
+    if (!this._isHyperclickEvent(event) || !this._isMouseAtLastSuggestion()) {
       return;
     }
 
