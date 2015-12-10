@@ -18,6 +18,7 @@ import getInitialState from './getInitialState';
 import observableFromSubscribeFunction from './observableFromSubscribeFunction';
 import Rx from 'rx';
 import syncAtomCommands from './syncAtomCommands';
+import trackActions from './trackActions';
 
 class Activation {
   _disposables: CompositeDisposable;
@@ -56,6 +57,9 @@ class Activation {
 
       // Keep the atom commands up to date with the registered gadgets.
       syncAtomCommands(gadget$, commands),
+
+      // Collect some analytics about gadget actions.
+      trackActions(action$),
     );
   }
 

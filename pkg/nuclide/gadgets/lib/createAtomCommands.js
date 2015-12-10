@@ -9,8 +9,10 @@
  * the root directory of this source tree.
  */
 
-import {CompositeDisposable} from 'atom';
 import type Immutable from 'immutable';
+
+import {CompositeDisposable} from 'atom';
+import normalizeEventString from './normalizeEventString';
 
 export default function createAtomCommands(
   gadgets: Immutable.Map,
@@ -28,9 +30,5 @@ export default function createAtomCommands(
 }
 
 function formatCommandName(gadgetId: string, action: string): string {
-  return `${toDashed(gadgetId)}:${toDashed(action)}`;
-}
-
-function toDashed(str: string): string {
-  return str.replace(/\s+/g, '-').toLowerCase();
+  return `${normalizeEventString(gadgetId)}:${normalizeEventString(action)}`;
 }

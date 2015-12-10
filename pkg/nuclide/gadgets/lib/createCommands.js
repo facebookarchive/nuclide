@@ -69,7 +69,7 @@ export default function createCommands(
      * through which all pane item creation goes (new pane item creation, deserialization,
      * splitting, reopening, etc.).
      */
-    createPaneItem(gadgetId: string, props: Object) {
+    createPaneItem(gadgetId: string, props: Object, isNew: boolean = true) {
       // Look up the gadget.
       const gadget = getState().get('gadgets').get(gadgetId);
 
@@ -87,7 +87,9 @@ export default function createCommands(
         payload: {
           item: reactElement,
           component: GadgetComponent,
+          gadgetId,
           props,
+          isNew,
         },
       });
 
@@ -189,7 +191,7 @@ export default function createCommands(
 
       const isActive = pane.getActiveItem() === item;
 
-      const realItem = this.createPaneItem(gadgetId, {initialState, visible: isActive});
+      const realItem = this.createPaneItem(gadgetId, {initialState, visible: isActive}, false);
 
       // Replace the placeholder with the real item. We'll add the real item first and then
       // remove the old one so that we don't risk dropping down to zero items.
