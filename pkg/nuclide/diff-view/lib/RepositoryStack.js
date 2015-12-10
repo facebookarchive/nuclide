@@ -23,7 +23,9 @@ import {trackTiming} from '../../analytics';
 import {notifyInternalError} from './notifications';
 import invariant from 'assert';
 import LRU from 'lru-cache';
+import {getLogger} from '../../logging';
 
+const logger = getLogger();
 const {serializeAsyncCall} = promises;
 const CHANGE_COMPARE_STATUS_EVENT = 'did-change-compare-status';
 const CHANGE_DIRTY_STATUS_EVENT = 'did-change-dirty-status';
@@ -145,7 +147,16 @@ export default class RepositoryStack {
 
     // Fetch revisions history if revisions state have changed.
     if (revisionsFileHistory == null) {
-      revisionsFileHistory = await this._getRevisionFileHistoryPromise(revisionsState, false);
+      try {
+        revisionsFileHistory = await this._getRevisionFileHistoryPromise(revisionsState);
+      } catch (error) {
+        logger.error(
+          'Cannot fetch revision history: ' +
+          '(could happen with pending source-control history writing operations)',
+          error,
+        );
+        return;
+      }
     }
     this._compareFileChanges = this._computeCompareChangesFromHistory(
       revisionsState,
@@ -254,13 +265,16 @@ export default class RepositoryStack {
     // Revision ids are unique and don't change, except when the revision is amended/rebased.
     // Hence, it's cached here to avoid service calls when working on a stack of commits.
     const revisionsFileHistory = await Promise.all(revisions
-      .map(async(revision) => {
+      .map(async (revision) => {
         const {id} = revision;
         let changes = null;
         if (this._revisionIdToFileChanges.has(id)) {
           changes = this._revisionIdToFileChanges.get(id);
         } else {
           changes = await this._repository.fetchFilesChangedAtRevision(`${id}`);
+          if (changes == null) {
+            throw new Error(`Changes not available for revision: ${id}`);
+          }
           this._revisionIdToFileChanges.set(id, changes);
         }
         return {id, changes};
