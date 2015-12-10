@@ -32,6 +32,7 @@ NODE_PACKAGE = 'node'
 ATOM_PACKAGE = 'atom'
 DEFAULT_DIRECTORY = 'nuclide'
 PACKAGE_DIRECTORIES = [DEFAULT_DIRECTORY, 'fb']
+NUCLIDE_JASMINE_BIN = os.path.join(PACKAGES_PATH, DEFAULT_DIRECTORY, 'jasmine/bin/jasmine-node-transpiled')
 
 USERNAME = commands.getoutput("whoami")
 
@@ -114,9 +115,6 @@ ATOM_APM_PACKAGE_JSON_TEMPLATE = """\
   "engines": {
     "atom": ">=%s"
   },
-  "devDependencies": {
-    "nuclide-external-interfaces": "0.0.0"
-  },
   "_atomModuleCache": {
     "extensions": {
       ".node": []
@@ -135,9 +133,6 @@ NODE_APM_PACKAGE_JSON_TEMPLATE = """\
   "nuclide": {
     "packageType": "Node",
     "testRunner": "apm"
-  },
-  "devDependencies": {
-    "nuclide-external-interfaces": "0.0.0"
   }
 }
 """
@@ -153,12 +148,8 @@ NODE_NPM_PACKAGE_JSON_TEMPLATE = """\
     "packageType": "Node",
     "testRunner": "npm"
   },
-  "devDependencies": {
-    "nuclide-external-interfaces": "0.0.0",
-    "nuclide-jasmine": "0.0.0"
-  },
   "scripts": {
-    "test": "node --harmony node_modules/.bin/jasmine-node-transpiled spec"
+    "test": "node --harmony %s spec"
   }
 }
 """
@@ -202,7 +193,10 @@ def create_package(dir_name, package_name, package_type, test_runner):
     with open(os.path.join(pkg_dir, 'package.json'), 'w') as f:
         if package_type == NODE_PACKAGE:
             if test_runner == NPM:
-                f.write(NODE_NPM_PACKAGE_JSON_TEMPLATE % package_name)
+                f.write(NODE_NPM_PACKAGE_JSON_TEMPLATE % (
+                  package_name,
+                  os.path.relpath(NUCLIDE_JASMINE_BIN, pkg_dir)
+                ))
             else:
                 f.write(NODE_APM_PACKAGE_JSON_TEMPLATE % package_name)
         else:
