@@ -66,7 +66,10 @@ function resolveScopesOnce(lines: Array<any>, options: Options): Array<any> {
     if (!scopeDepth.has(scopes[i])) {
       scopeDepth.set(scopes[i], depth);
     }
-    scopeDepth.set(scopes[i], Math.min(scopeDepth.get(scopes[i]), depth));
+    const thisScopeDepth = scopeDepth.get(scopes[i]);
+    if (thisScopeDepth) {
+      scopeDepth.set(scopes[i], Math.min(thisScopeDepth, depth));
+    }
     if (line === markers.closeScope) {
       depth--;
     }
@@ -110,19 +113,23 @@ function resolveScopesOnce(lines: Array<any>, options: Options): Array<any> {
             continue;
           }
 
+          const bestScopeValue = scopeValue.get(bestScope);
+          const thisScopeValue = scopeValue.get(scopes[j]);
+          const bestScopeDepth = scopeDepth.get(bestScope);
+          const thisScopeDepth = scopeDepth.get(scopes[j]);
+
           if (
-            scopeValue.get(bestScope) <= MIN_RELEVANT_SCOPE_VALUE &&
-            scopeValue.get(scopes[j]) > MIN_RELEVANT_SCOPE_VALUE
-          ) {
-            bestScope = scopes[j];
-          } else if (
-            scopeValue.get(bestScope) > MIN_RELEVANT_SCOPE_VALUE &&
-            scopeValue.get(scopes[j]) > MIN_RELEVANT_SCOPE_VALUE &&
-            (
-              scopeDepth.get(scopes[j]) < scopeDepth.get(bestScope) ||
-              (
-                scopeDepth.get(scopes[j]) === scopeDepth.get(bestScope) ||
-                scopeValue.get(scopes[j]) > scopeValue.get(bestScope)
+            bestScopeValue != null &&
+            thisScopeValue != null &&
+            thisScopeValue > MIN_RELEVANT_SCOPE_VALUE && (
+              bestScopeValue <= MIN_RELEVANT_SCOPE_VALUE || (
+                bestScopeDepth != null &&
+                thisScopeDepth != null && (
+                  thisScopeDepth < bestScopeDepth || (
+                    thisScopeDepth === bestScopeDepth ||
+                    thisScopeValue > bestScopeValue
+                  )
+                )
               )
             )
           ) {
