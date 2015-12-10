@@ -9,12 +9,19 @@
  * the root directory of this source tree.
  */
 
+import type Rx from 'rx';
+
 import invariant from 'assert';
 import {singleton} from '../../commons';
 import {AnalyticsBatcher} from './AnalyticsBatcher';
 import {track as rawTrack} from './track';
 
 const ANALYTICS_BATCHER = 'analytics-batcher';
+
+export type TrackingEvent = {
+  type: string,
+  data?: Object,
+};
 
 function getBatcher(): AnalyticsBatcher {
   return singleton.get(
@@ -48,6 +55,21 @@ function track(eventName: string, values?: {[key: string]: string}): Promise<mix
     getBatcher().track(eventName, values || {});
     return Promise.resolve();
   }
+}
+
+/**
+ * An alternative interface for `track` that accepts a single event object. This is particularly
+ * useful when dealing with streams (Observables).
+ */
+function trackEvent(event: TrackingEvent): Promise<mixed> {
+  return track(event.type, event.data);
+}
+
+/**
+ * Track each event in a stream of TrackingEvents.
+ */
+function trackEvents(events: Rx.Observable<TrackingEvent>): Rx.Disposable {
+  return events.forEach(trackEvent);
 }
 
 /**
@@ -187,6 +209,8 @@ function trackOperationTiming<T>(eventName: string, operation: () => T): T {
 
 module.exports = {
   track,
+  trackEvent,
+  trackEvents,
   trackOperationTiming,
   startTracking,
   TimingTracker,
