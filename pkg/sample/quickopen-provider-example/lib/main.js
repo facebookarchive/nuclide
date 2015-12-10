@@ -24,7 +24,7 @@ function getProviderInstance(): Provider {
 
 module.exports = {
 
-  registerProvider() {
+  registerProvider(): Provider {
     return getProviderInstance();
   },
 

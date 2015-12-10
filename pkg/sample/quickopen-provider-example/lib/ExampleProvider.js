@@ -15,7 +15,14 @@ import type {
   ProviderType,
 } from '../../../nuclide/quick-open-interfaces';
 
-const FIXTURE = ['ac', 'accumsan', 'adipiscing', 'amet', 'auctor', 'consectetur', 'dictum', 'dolor', 'efficitur', 'eget', 'elit', 'enim', 'eros', 'eu', 'Fusce', 'imperdiet', 'in', 'ipsum', 'lacus', 'leo', 'libero', 'lorem', 'Lorem', 'luctus', 'mattis', 'maximus', 'mi', 'Morbi', 'Nam', 'nec', 'non', 'Nulla', 'Nullam', 'odio', 'placerat', 'quis', 'sagittis', 'sapien', 'scelerisque', 'Sed', 'semper', 'sit', 'tellus', 'tempus', 'tincidunt', 'turpis', 'ultricies', 'Ut', 'vel', 'venenatis', 'vestibulum', 'Vestibulum', 'vitae']; //eslint-disable-line max-len
+const FIXTURE = [
+  'ac', 'accumsan', 'adipiscing', 'amet', 'auctor', 'consectetur', 'dictum', 'dolor', 'efficitur',
+  'eget', 'elit', 'enim', 'eros', 'eu', 'Fusce', 'imperdiet', 'in', 'ipsum', 'lacus', 'leo',
+  'libero', 'lorem', 'Lorem', 'luctus', 'mattis', 'maximus', 'mi', 'Morbi', 'Nam', 'nec', 'non',
+  'Nulla', 'Nullam', 'odio', 'placerat', 'quis', 'sagittis', 'sapien', 'scelerisque', 'Sed',
+  'semper', 'sit', 'tellus', 'tempus', 'tincidunt', 'turpis', 'ultricies', 'Ut', 'vel', 'venenatis',
+  'vestibulum', 'Vestibulum', 'vitae',
+];
 
 const ExampleProvider: Provider = {
 

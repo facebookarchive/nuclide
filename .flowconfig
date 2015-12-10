@@ -30,7 +30,6 @@
 .*/pkg/nuclide/server/scripts/.*
 .*/pkg/nuclide/ssh-dialog/.*
 .*/pkg/nuclide/toolbar/.*
-.*/pkg/sample/quickopen-provider-example/.*
 .*/pkg/sample/web-view/.*
 
 [libs]
