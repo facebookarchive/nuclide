@@ -17,6 +17,8 @@ import type {
 
 import type {NuclideUri} from '../../../remote-uri';
 
+import invariant from 'assert';
+
 const {track} = require('../../../analytics');
 const React = require('react-for-atom');
 
@@ -267,23 +269,53 @@ function createElementForMessage(
   const providerClassName = message.type === 'Error'
     ? 'highlight-error'
     : 'highlight-warning';
-  const providerNameSpan = (
-    <span className="pull-right">&nbsp;
+  const copy = () => {
+    const text = plainTextForDiagnostic(message);
+    atom.clipboard.write(text);
+  };
+  const header = (
+    <div className="nuclide-diagnostics-gutter-ui-popup-header">
       <span className={`${providerClassName}`}>{message.providerName}</span>
-    </span>
+      <button className="pull-right btn btn-xs" onClick={copy}>Copy</button>
+    </div>
   );
   const traceElements = message.trace
     ? message.trace.map(traceItem => createElementForTrace(traceItem, goToLocation))
     : null;
-  // Put providerNameSpan to the left of the messages, even though it is floated so it will appear
-  // on the right. This allows users to select and copy the entire message text without also getting
-  // the provider name.
   return (
     <div>
-      <div>{providerNameSpan}{createMessageSpan(message)}</div>
+      {header}
+      <div>{createMessageSpan(message)}</div>
       {traceElements}
     </div>
   );
+}
+
+function plainTextForDiagnostic(message: FileDiagnosticMessage): string {
+  const {getPath} = require('../../../remote-uri');
+  function plainTextForItem(item: FileDiagnosticMessage | Trace): string {
+    let mainComponent = undefined;
+    if (item.html != null) {
+      // Quick and dirty way to get an approximation for the plain text from HTML. This will work in
+      // simple cases, anyway.
+      mainComponent = item.html.replace('<br/>', '\n').replace(/<[^>]*>/g, '');
+    } else {
+      invariant(item.text != null);
+      mainComponent = item.text;
+    }
+
+    let pathComponent = undefined;
+    if (item.filePath == null) {
+      pathComponent = '';
+    } else {
+      const lineComponent = item.range != null ? `:${item.range.start.row + 1}` : '';
+      pathComponent = ': ' + getPath(item.filePath) + lineComponent;
+    }
+
+    return mainComponent + pathComponent;
+  }
+  const trace = message.trace != null ? message.trace : [];
+  return [message, ...trace].map(plainTextForItem).join('\n');
 }
 
 function createElementForTrace(
