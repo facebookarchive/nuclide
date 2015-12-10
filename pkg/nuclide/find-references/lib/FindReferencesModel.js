@@ -22,6 +22,7 @@ type FindReferencesOptions = {
   previewContext?: number;
 };
 
+const {array} = require('../../commons');
 const {getLogger} = require('../../logging');
 const {getFileSystemServiceByNuclideUri} = require('../../client');
 const {getPath} = require('../../remote-uri');
@@ -108,8 +109,7 @@ class FindReferencesModel {
         this._makeFileReferences.bind(this)
       )
     );
-    /* $FlowFixMe - need array compact function */
-    return fileReferences.filter(x => !!x);
+    return array.compact(fileReferences);
   }
 
   getBasePath(): NuclideUri {

@@ -331,3 +331,9 @@ describe('Array.equal', () => {
     expect(es6Array.equal([1, 2, 3], [1, 2])).toBe(false);
   });
 });
+
+describe('Array.compact', () => {
+  it('filters out null and undefined elements', () => {
+    expect(es6Array.compact([0, false, '', [], null, undefined])).toEqual([0, false, '', []]);
+  });
+});

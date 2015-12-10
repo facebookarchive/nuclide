@@ -118,3 +118,17 @@ export function equal<T>(
   const equalFunction = equalComparator || ((a: T,  b: T) => a === b);
   return array1.every((item1, i) => equalFunction(item1, array2[i]));
 }
+
+/**
+ * Returns a copy of the input Array with all `null` and `undefined` values filtered out.
+ * Allows Flow to typecheck the common `filter(x => x != null)` pattern.
+ */
+export function compact<T>(array: Array<?T>): Array<T> {
+  const result = [];
+  for (const elem of array) {
+    if (elem != null) {
+      result.push(elem);
+    }
+  }
+  return result;
+}

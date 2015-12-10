@@ -11,6 +11,7 @@
 
 import type {Reference} from './types';
 
+import {array} from '../../commons';
 import {track} from '../../analytics';
 import {CompositeDisposable} from 'atom';
 
@@ -152,8 +153,7 @@ module.exports = {
           return null;
         },
       ));
-      /* $FlowFixMe: need array compact function */
-      supported = supported.filter(x => x != null);
+      supported = array.compact(supported);
       if (supported.length) {
         enableForEditor(editor);
       }
