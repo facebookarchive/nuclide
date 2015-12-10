@@ -384,7 +384,6 @@ function getActiveRequests(): Array<Object> {
   return [];
 }
 
-atom.deserializers.add({
-  name: 'HealthPaneItem',
-  deserialize: state => getHealthPaneItem(state.uri),
-});
+// TODO: This shouldn't actually be exported. We do so just because it requires access to module
+//       state and we want to access it in the deserializer module.
+export const _getHealthPaneItem = getHealthPaneItem;

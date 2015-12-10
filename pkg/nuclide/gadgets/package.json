@@ -6,7 +6,10 @@
   "description": "A unified panel experience for Atom",
   "nuclide": {
     "packageType": "Atom",
-    "testRunner": "apm"
+    "testRunner": "apm",
+    "deserializers": {
+      "GadgetPlaceholder": "./lib/deserializeGadgetPlaceholder"
+    }
   },
   "activationCommands": {},
   "engines": {

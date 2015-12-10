@@ -12,6 +12,9 @@
         "description": "Show the home pane (by default shown on first startup)."
       }
     },
+    "deserializers": {
+      "HomePaneItem": "./lib/deserializePaneItem"
+    },
     "packageType": "Atom",
     "testRunner": "apm"
   },

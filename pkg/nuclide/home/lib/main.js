@@ -89,14 +89,13 @@ function deactivate(): void {
   }
 }
 
-atom.deserializers.add({
-  name: 'HomePaneItem',
-  deserialize: state => getHomePaneItem(state.uri),
-});
-
 module.exports = {
   activate,
   config,
   setHomeFragments,
   deactivate,
+
+  // TODO: This shouldn't actually be exported. We do so just because it requires access to module
+  //       state and we want to access it in the deserializer module.
+  _getHomePaneItem: getHomePaneItem,
 };

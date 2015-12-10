@@ -63,7 +63,10 @@
       }
     },
     "packageType": "Atom",
-    "testRunner": "apm"
+    "testRunner": "apm",
+    "deserializers": {
+      "HealthPaneItem": "./lib/deserializePaneItem"
+    }
   },
   "consumedServices": {
     "status-bar": {

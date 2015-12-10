@@ -42,12 +42,3 @@ export function consumeGadget(gadget: Gadget): atom$Disposable {
     activation.commands.unregisterGadget(gadget.gadgetId);
   });
 }
-
-atom.deserializers.add({
-  name: 'GadgetPlaceholder',
-  deserialize(state): mixed {
-    // Pane items are deserialized before the gadget providers have had a chance to register their
-    // gadgets. Therefore, we need to create a placeholder item that we later replace.
-    require('./GadgetPlaceholder').deserialize(state);
-  },
-});
