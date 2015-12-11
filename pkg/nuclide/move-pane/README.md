@@ -8,10 +8,8 @@ We believe that this is the behavior that most Atom users want by default,
 and this avoids the overhead of going back to the previous pane and
 closing the original editor to achieve this effect.
 
-**If you are a Nuclide user and you do not like this behavior**, then
-simply find the `nuclide-move-pane` package in Nuclide and disable it.
-(If you uninstall the package, `nuclide-installer` will simply reinstall
-it the next time it runs.)
+**If you are a Nuclide user and you do not like this behavior**, then simply disable the
+"nuclide-move-pane" feature in the settings page for the "nuclide" Atom package.
 
 **If you would like to have this behavior, but would prefer not to override the default shortcut in
 Atom**, then declare your own shortcuts in `~/.atom/keymap.cson` as you would for any keyboard
