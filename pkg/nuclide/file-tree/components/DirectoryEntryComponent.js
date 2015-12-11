@@ -41,12 +41,12 @@ class DirectoryEntryComponent extends React.Component {
     const outerClassName = classnames({
       'collapsed': !this.props.isExpanded,
       'directory entry list-nested-item': true,
+      'expanded': this.props.isExpanded,
       'project-root': this.props.isRoot,
       'selected': this.props.isSelected,
     });
     const listItemClassName = classnames({
-      'header': this.props.isRoot,
-      'list-item': true,
+      'header list-item': true,
       'loading': this.props.isLoading,
     });
 

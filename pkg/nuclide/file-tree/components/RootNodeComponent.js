@@ -20,9 +20,9 @@ const {PropTypes} = React;
 class RootNodeComponent extends React.Component {
   render(): ReactElement {
     return (
-      <ul className="list-tree has-collapsable-children">
+      <ol className="list-tree has-collapsable-children">
         {this._renderNode(this.props.rootNode, 0)}
-      </ul>
+      </ol>
     );
   }
 
