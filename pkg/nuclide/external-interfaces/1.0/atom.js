@@ -296,7 +296,7 @@ declare class atom$Panel {
   onDidDestroy(callback: (panel: atom$Panel) => any): atom$Disposable;
 
   // Panel Details
-  getItem(): Element;
+  getItem(): HTMLElement;
   getPriority(): number;
   isVisible(): boolean;
   hide(): void;
@@ -554,6 +554,7 @@ declare class atom$TextEditor extends atom$Model {
   // Selections
   selectAll(): void;
   getSelectedBufferRange(): atom$Range;
+  getSelections(): Array<atom$Selection>;
 
   // Searching and Replacing
   scanInBufferRange(
@@ -1227,4 +1228,8 @@ type atom$AutocompleteProvider = {
 declare class atom$Token {
   value: string;
   matchesScopeSelector(selector: string): boolean;
+}
+
+declare class atom$Selection {
+  getText(): string;
 }

@@ -19,46 +19,35 @@ import type {
   ProviderResult,
 } from '../../quick-open-interfaces';
 
-type ResultRenderer = (item: FileResult) => ReactElement;
+import type {Dispatcher} from 'flux';
 
-const assert = require('assert');
+type ResultRenderer = (item: FileResult, serviceName: string, dirName: string) => ReactElement;
 
-const {
+import invariant from 'assert';
+import {track} from '../../analytics';
+import {getLogger} from '../../logging';
+import {
   CompositeDisposable,
   Disposable,
   Emitter,
-} = require('atom');
-const {
+} from 'atom';
+import {
   array,
   debounce,
-} = require('../../commons');
+} from '../../commons';
+import QuickSelectionDispatcher from './QuickSelectionDispatcher';
+import QuickSelectionActions from './QuickSelectionActions';
 
-let logger = null;
-function getLogger() {
-  if (logger == null) {
-    logger = require('../../logging').getLogger();
-  }
-  return logger;
-}
-
-let trackFunction;
-function track(...args) {
-  const trackFunc = trackFunction || (trackFunction = require('../../analytics').track);
-  trackFunc.apply(null, args);
-}
+const assign = Object.assign || require('object-assign');
+const {performance} = global;
 
 function getDefaultResult(): ProviderResult {
   return {
     error: null,
     loading: false,
-    result: [],
+    results: [],
   };
 }
-
-const QuickSelectionDispatcher = require('./QuickSelectionDispatcher');
-const QuickSelectionActions = require('./QuickSelectionActions');
-
-const assign = Object.assign || require('object-assign');
 
 const AnalyticsEvents = {
   QUERY_SOURCE_PROVIDER: 'quickopen-query-source-provider',
@@ -100,9 +89,9 @@ class SearchResultManager {
   _dispatcherToken: string;
   RESULTS_CHANGED: string;
   PROVIDERS_CHANGED: string;
-  _dispatcher: QuickSelectionDispatcher;
-  _providersByDirectory: Map<atom$directory, Set<Provider>>;
-  _directories: Array<atom$directory>;
+  _dispatcher: Dispatcher;
+  _providersByDirectory: Map<atom$Directory, Set<Provider>>;
+  _directories: Array<atom$Directory>;
   _cachedResults: Object;
   // List of most recently used query strings, used for pruning the result cache.
   // Makes use of `Map`'s insertion ordering, so values are irrelevant and always set to `null`.
@@ -195,13 +184,17 @@ class SearchResultManager {
    * Renew the cached list of directories, as well as the cached map of eligible providers
    * for every directory.
    */
-  async _updateDirectories(): void {
+  async _updateDirectories(): Promise<void> {
     const newDirectories = atom.project.getDirectories();
     const newProvidersByDirectories = new Map();
     const eligibilities = [];
     newDirectories.forEach(directory => {
       newProvidersByDirectories.set(directory, new Set());
       for (const provider of this._registeredProviders[DIRECTORY_KEY].values()) {
+        invariant(
+          provider.isEligibleForDirectory != null,
+          `Directory provider ${provider.getName()} must provide \`isEligibleForDirectory()\`.`
+        );
         eligibilities.push(
           provider.isEligibleForDirectory(directory).then(isEligible => ({
             isEligible,
@@ -219,7 +212,12 @@ class SearchResultManager {
         directory,
       } = eligibility;
       if (isEligible) {
-        newProvidersByDirectories.get(directory).add(provider);
+        const providersForDirectory = newProvidersByDirectories.get(directory);
+        invariant(
+          providersForDirectory != null,
+          `Providers for directory ${directory} not defined`
+        );
+        providersForDirectory.add(provider);
       }
     }
     this._directories = newDirectories;
@@ -231,7 +229,7 @@ class SearchResultManager {
     return this._emitter.on(...arguments);
   }
 
-  registerProvider(service: Provider): Disposable {
+  registerProvider(service: Provider): atom$IDisposable {
     if (!isValidProvider(service)) {
       const providerName = service.getName && service.getName() || '<unknown>';
       getLogger().error(`Quick-open provider ${providerName} is not a valid provider`);
@@ -284,7 +282,7 @@ class SearchResultManager {
     providerName: string,
     directory: string,
     query: string,
-    result: Object,
+    result: Array<FileResult>,
     loading: ?boolean = false,
     error: ?Object = null): void {
     this.ensureCacheEntry(providerName, directory);
@@ -308,7 +306,7 @@ class SearchResultManager {
     }
   }
 
-  cacheResult(query: string, result: Object, directory: string, provider: Object): void {
+  cacheResult(query: string, result: Array<FileResult>, directory: string, provider: Object): void {
     const providerName = provider.getName();
     this.setCacheResult(providerName, directory, query, result, false, null);
   }
@@ -329,7 +327,7 @@ class SearchResultManager {
   /**
    * Release the oldest cached results once the cache is full.
    */
-  _cleanCache() {
+  _cleanCache(): void {
     const queueSize = this._queryLruQueue.size;
     if (queueSize <= MAX_CACHED_QUERIES) {
       return;
@@ -341,6 +339,7 @@ class SearchResultManager {
     for (let i = 0; i < entriesToRemove; i++) {
       const firstEntryKey = keyIterator.next().value;
       expiredQueries.push(firstEntryKey);
+      invariant(firstEntryKey != null);
       this._queryLruQueue.delete(firstEntryKey);
     }
 
@@ -356,7 +355,7 @@ class SearchResultManager {
 
   processResult(
     query: string,
-    result: FileResult,
+    result: Array<FileResult>,
     directory: string,
     provider: Object
   ): void {
@@ -413,15 +412,17 @@ class SearchResultManager {
   }
 
   _getProviderByName(providerName: string): Provider {
+    let dirProviderName;
     if (this._isGlobalProvider(providerName)) {
-      return this._registeredProviders[GLOBAL_KEY].get(providerName);
+      dirProviderName = this._registeredProviders[GLOBAL_KEY].get(providerName);
+    } else {
+      dirProviderName = this._registeredProviders[DIRECTORY_KEY].get(providerName);
     }
-    const dirProvider = this._registeredProviders[DIRECTORY_KEY].get(providerName);
-    assert(
-      dirProvider != null,
+    invariant(
+      dirProviderName != null,
       `Provider ${providerName} is not registered with quick-open.`
     );
-    return dirProvider;
+    return dirProviderName;
   }
 
   _getResultsForProvider(query: string, providerName: string): Object {
@@ -441,7 +442,7 @@ class SearchResultManager {
           cachedResult = {};
         }
         const defaultResult = getDefaultResult();
-        const resultList = cachedResult.result || defaultResult.result;
+        const resultList = cachedResult.result || defaultResult.results;
         results[path] = {
           results: resultList.map(result => ({...result, sourceProvider: providerName})),
           loading: cachedResult.loading || defaultResult.loading,
@@ -476,7 +477,7 @@ class SearchResultManager {
     return partial;
   }
 
-  getProviderByName(providerName: string): Provider {
+  getProviderByName(providerName: string): ProviderSpec {
     if (providerName === OMNISEARCH_PROVIDER.name) {
       return {...OMNISEARCH_PROVIDER};
     }

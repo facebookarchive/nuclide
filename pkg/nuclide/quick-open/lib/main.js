@@ -9,20 +9,16 @@
  * the root directory of this source tree.
  */
 
-import type QuickSelectionComponent from './QuickSelectionComponent';
-
 import type {
   Provider,
 } from '../../quick-open-interfaces';
 import type {HomeFragments} from '../../home-interfaces';
 
+import React from 'react-for-atom';
+import QuickSelectionComponent from './QuickSelectionComponent';
+import {CompositeDisposable} from 'atom';
 import featureConfig from '../../feature-config';
-
-let trackFunction;
-function track(...args) {
-  const trackFunc = trackFunction || (trackFunction = require('../../analytics').track);
-  trackFunc.apply(null, args);
-}
+import {track} from '../../analytics';
 
 let debounceFunction = null;
 function debounce(...args) {
@@ -57,22 +53,6 @@ const AnalyticsDebounceDelays = {
   CHANGE_SELECTION: 100,
 };
 
-let _quickSelectionComponent: ?QuickSelectionComponent = null;
-function getQuickSelectionComponentLazily() {
-  if (!_quickSelectionComponent) {
-    _quickSelectionComponent = require('./QuickSelectionComponent');
-  }
-  return _quickSelectionComponent;
-}
-
-let _react = null;
-function getReactLazily() {
-  if (_react === null) {
-    _react = require('react-for-atom');
-  }
-  return _react;
-}
-
 const trackProviderChange = debounce(providerName => {
   analyticsSessionId = analyticsSessionId || Date.now().toString();
   track(
@@ -86,8 +66,8 @@ const trackProviderChange = debounce(providerName => {
 
 class Activation {
   _currentProvider: Object;
-  _previousFocus: ?Element;
-  _reactDiv: Element;
+  _previousFocus: ?HTMLElement;
+  _reactDiv: HTMLElement;
   _searchComponent: QuickSelectionComponent;
   _searchPanel: atom$Panel;
   _subscriptions: atom$CompositeDisposable;
@@ -97,7 +77,6 @@ class Activation {
   constructor() {
     this._previousFocus = null;
     this._maxScrollableAreaHeight = 10000;
-    const {CompositeDisposable} = require('atom');
     this._subscriptions = new CompositeDisposable();
     this._currentProvider = getSearchResultManager().getProviderByName(DEFAULT_PROVIDER);
     const QuickSelectionDispatcher = require('./QuickSelectionDispatcher');
@@ -139,7 +118,7 @@ class Activation {
           'quickopen-filepath': selection.path,
           'quickopen-query': query,
           'quickopen-provider': providerName, // The currently open "tab".
-          'quickopen-session': analyticsSessionId,
+          'quickopen-session': analyticsSessionId || '',
           // Because the `provider` is usually OmniSearch, also track the original provider.
           'quickopen-provider-source': sourceProvider,
         }
@@ -174,8 +153,8 @@ class Activation {
 
   // Customize the element containing the modal.
   _customizeModalElement() {
-    const modalElement = this._searchPanel.getItem().parentNode;
-    modalElement.style.setProperty('margin-left', 0);
+    const modalElement = ((this._searchPanel.getItem().parentNode: any): HTMLElement);
+    modalElement.style.setProperty('margin-left', '0');
     modalElement.style.setProperty('width', 'auto');
     modalElement.style.setProperty('left', MODAL_MARGIN + 'px');
     modalElement.style.setProperty('right', MODAL_MARGIN + 'px');
@@ -189,11 +168,8 @@ class Activation {
   }
 
   _render() {
-    // Abbreviate to avoid shadowing flow type.
-    const QSComponent = getQuickSelectionComponentLazily();
-    const React = getReactLazily();
     return React.render(
-      <QSComponent
+      <QuickSelectionComponent
         activeProvider={this._currentProvider}
         onProviderChange={this.handleActiveProviderChange.bind(this)}
         maxScrollableAreaHeight={this._maxScrollableAreaHeight}
@@ -246,7 +222,7 @@ class Activation {
       track(
         AnalyticsEvents.OPEN_PANEL,
         {
-          'quickopen-session': analyticsSessionId,
+          'quickopen-session': analyticsSessionId || '',
         }
       );
       // showSearchPanel gets called when changing providers even if it's already shown.
@@ -268,7 +244,7 @@ class Activation {
       track(
         AnalyticsEvents.CLOSE_PANEL,
         {
-          'quickopen-session': analyticsSessionId,
+          'quickopen-session': analyticsSessionId || '',
         }
       );
       this._searchPanel.hide();
@@ -276,7 +252,7 @@ class Activation {
       analyticsSessionId = null;
     }
 
-    if (this._previousFocus !== null) {
+    if (this._previousFocus != null) {
       this._previousFocus.focus();
       this._previousFocus = null;
     }
@@ -294,17 +270,15 @@ class Activation {
   }
 }
 
-const {CompositeDisposable} = require('atom');
-
 let activation: ?Activation = null;
-let listeners: ?CompositeDisposable = null;
-
-function activateSearchUI(): void {
-  if (!activation) {
+function getActivation(): Activation {
+  if (activation == null) {
     activation = new Activation();
   }
+  return activation;
 }
 
+let listeners: ?CompositeDisposable = null;
 module.exports = {
 
   // $FlowIssue https://github.com/facebook/flow/issues/620
@@ -315,12 +289,11 @@ module.exports = {
     listeners.add(
       atom.commands.add('atom-workspace', {
         'nuclide-quick-open:toggle-omni-search': () => {
-          activateSearchUI();
-          activation.toggleOmniSearchProvider();
+          getActivation().toggleOmniSearchProvider();
         },
       })
     );
-    activateSearchUI();
+    getActivation();
   },
 
   registerProvider(service: Provider ): atom$Disposable {

@@ -42,14 +42,16 @@ export type FileResult = {
 export type ProviderResult = {
   error: ?Object;
   loading: boolean;
-  result: Array<FileResult>;
+  results: Array<FileResult>;
 };
 
 export type DirectoryName = string;
 export type ServiceName = string;
 
 export type GroupedResult = {
-  [key: DirectoryName]: {
-    [key: ServiceName]: ProviderResult
+  [key: ServiceName]: {
+    results: {
+      [key: DirectoryName]: ProviderResult
+    }
   }
 };

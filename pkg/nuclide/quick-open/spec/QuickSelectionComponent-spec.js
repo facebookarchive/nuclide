@@ -9,17 +9,13 @@
  * the root directory of this source tree.
  */
 
-import type {
-  FileResult,
-} from '../../quick-open-interfaces';
-
-const React = require('react-for-atom');
-const QuickSelectionComponent = require('../lib/QuickSelectionComponent');
+import React from 'react-for-atom';
+import QuickSelectionComponent from '../lib/QuickSelectionComponent';
 
 class TestQuickSelectionProvider {
-  _items: {string: {string: Promise<FileResult>}};
+  _items: {[key: string]: {[key: string]: Promise<{results: Array<any>}>}};
 
-  constructor(items: {string: {string: Promise<FileResult>}}) {
+  constructor(items: {[key: string]: {[key: string]: Promise<{results: Array<any>}>}}) {
     this._items = items;
   }
 
@@ -27,14 +23,15 @@ class TestQuickSelectionProvider {
     return 'test';
   }
 
-  executeQuery(query: String): Promise<{string: {string: Promise<FileResult>}}> {
+  executeQuery(query: string):
+    Promise<{[key: string]: {[key: string]: Promise<{results: Array<any>}>}}> {
     return Promise.resolve(this._items);
   }
 }
 
 xdescribe('QuickSelectionComponent', () => {
   let componentRoot: Node;
-  let component: QuickSelectionComponent;
+  let component: typeof QuickSelectionComponent;
 
   beforeEach(() => {
     spyOn(Date, 'now').andCallFake(() => window.now);
@@ -59,9 +56,9 @@ xdescribe('QuickSelectionComponent', () => {
   // Updates the component to be using a TestQuickSelectionProvider that will serve @items, then
   // executes @callback after the component has completely updated to be using the new provider.
   function withItemsSetTo(
-    items: {string: {string: Promise<FileResult>}},
+    items: {[key: string]: {[key: string]: Promise<{results: Array<any>}>}},
     callback: (component: QuickSelectionComponent) => void) {
-    waitsForPromise(() => new Promise((resolve, reject) => {
+    waitsForPromise(() => new Promise((resolve: (component: any) => any, reject) => {
 
       component.onItemsChanged((newItems) => {
         resolve(component);
@@ -79,9 +76,19 @@ xdescribe('QuickSelectionComponent', () => {
     }).then(callback));
   }
 
-  xdescribe('Confirmation', () => {
+  describe('Confirmation', () => {
     it('should return the selected item on selection', () => {
-      withItemsSetTo({testDirectory: {testProvider: Promise.resolve({results: [1, 2, 3]})}}, () => {
+      withItemsSetTo({
+        testDirectory: {
+          testProvider: Promise.resolve({
+            results: [
+              {path: '1'},
+              {path: '2'},
+              {path: '3'},
+            ],
+          }),
+        },
+      }, () => {
 
         const selectedItemIndex = component.getSelectedIndex();
         expect(selectedItemIndex.selectedDirectory).toBe('');

@@ -9,29 +9,41 @@
  * the root directory of this source tree.
  */
 
+import type {
+  GroupedResult,
+} from '../../quick-open-interfaces';
+
 const {
   filterEmptyResults,
   flattenResults,
 } = require('../lib/searchResultHelpers');
 
-const SEARCH_RESULTS_FIXTURE = {
+const SEARCH_RESULTS_FIXTURE: GroupedResult = {
   searchService: {
     results: {
       shouldNotAppearInOutputFolder: {
         results: [],
+        loading: false,
+        error: null,
       },
       folderB: {
-        results: [1, 2, 3],
+        results: [{path: 'foo'}],
+        loading: false,
+        error: null,
       },
     },
   },
   symbolService: {
-    results : {
+    results: {
       folderA: {
-        results: [4, 5, 6],
+        results: [{path: 'bar'}],
+        loading: false,
+        error: null,
       },
       shouldNotAppearInOutputFolder: {
         results: [],
+        loading: false,
+        error: null,
       },
     },
   },
@@ -39,9 +51,13 @@ const SEARCH_RESULTS_FIXTURE = {
     results: {
       folderA: {
         results: [],
+        loading: false,
+        error: null,
       },
       folderB: {
         results: [],
+        loading: false,
+        error: null,
       },
     },
   },
@@ -50,20 +66,24 @@ const SEARCH_RESULTS_FIXTURE = {
 describe('searchResultHelper', () => {
   describe('emptyResults', () => {
     it('does not include empty folders', () => {
-      const filteredResults = filterEmptyResults(SEARCH_RESULTS_FIXTURE);
+      const filteredResults: GroupedResult = filterEmptyResults(SEARCH_RESULTS_FIXTURE);
 
       expect(filteredResults).toEqual({
         searchService: {
           results: {
             folderB: {
-              results: [1, 2, 3],
+              results: [{path: 'foo'}],
+              loading: false,
+              error: null,
             },
           },
         },
         symbolService: {
           results: {
             folderA: {
-              results: [4, 5, 6],
+              results: [{path: 'bar'}],
+              loading: false,
+              error: null,
             },
           },
         },
@@ -74,7 +94,7 @@ describe('searchResultHelper', () => {
   describe('flattenResults', () => {
     it('returns an array of flattened results', () => {
       expect(flattenResults(SEARCH_RESULTS_FIXTURE)).toEqual(
-        [1, 2, 3, 4, 5, 6]
+        [{path: 'foo'}, {path: 'bar'}]
       );
     });
   });

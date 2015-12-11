@@ -15,7 +15,6 @@
 .*/pkg/nuclide/fuzzy-filename-provider/.*
 .*/pkg/nuclide/hack-symbol-provider/.*
 .*/pkg/nuclide/hack/.*
-.*/pkg/nuclide/quick-open/.*
 .*/pkg/nuclide/remote-connection/spec/.*
 .*/pkg/nuclide/remote-projects/spec/.*
 .*/pkg/nuclide/server/spec/.*

@@ -29,6 +29,12 @@ type ResultContext = {
   currentDirectory: Object;
 };
 
+type Selection = {
+  selectedDirectory: string;
+  selectedService: string;
+  selectedItemIndex: number;
+};
+
 const AtomInput = require('../../ui/atom-input');
 const {CompositeDisposable, Disposable, Emitter} = require('atom');
 const {
@@ -125,7 +131,7 @@ export default class QuickSelectionComponent extends React.Component {
     }
   }
 
-  componentDidMount() {
+  componentDidMount(): void {
     this._modalNode = React.findDOMNode(this);
     this._subscriptions.add(
       atom.commands.add(
@@ -152,11 +158,11 @@ export default class QuickSelectionComponent extends React.Component {
     );
 
     this._updateQueryHandler();
-    inputTextEditor.model.onDidChange(() => this._handleTextInputChange());
+    inputTextEditor.getModel().onDidChange(() => this._handleTextInputChange());
     this.clear();
   }
 
-  componentWillUnmount() {
+  componentWillUnmount(): void {
     this._emitter.dispose();
     this._subscriptions.dispose();
   }
@@ -199,7 +205,7 @@ export default class QuickSelectionComponent extends React.Component {
 
   _updateQueryHandler(): void {
     this._debouncedQueryHandler = debounce(
-      () => this.setKeyboardQuery(this.getInputTextEditor().model.getText()),
+      () => this.setKeyboardQuery(this.getInputTextEditor().getModel().getText()),
       this.getProvider().debounceDelay,
       false
     );
@@ -326,7 +332,7 @@ export default class QuickSelectionComponent extends React.Component {
     }
   }
 
-  moveSelectionUp() {
+  moveSelectionUp(): void {
     const context = this._getCurrentResultContext();
     if (!context) {
       this.moveSelectionToBottom();
@@ -355,10 +361,18 @@ export default class QuickSelectionComponent extends React.Component {
           const newServiceName = context.serviceNames[context.currentServiceIndex - 1];
           const newDirectoryName =
             Object.keys(context.nonEmptyResults[newServiceName].results).pop();
+          if (newDirectoryName == null) {
+            return;
+          }
+          const resultsForDirectory =
+            context.nonEmptyResults[newServiceName].results[newDirectoryName];
+          if (resultsForDirectory == null || resultsForDirectory.results == null) {
+            return;
+          }
           this.setSelectedIndex(
             newServiceName,
             newDirectoryName,
-            context.nonEmptyResults[newServiceName].results[newDirectoryName].results.length - 1
+            resultsForDirectory.results.length - 1
           );
         } else {
           // ...or wrap around to the very bottom
@@ -369,7 +383,7 @@ export default class QuickSelectionComponent extends React.Component {
   }
 
   // Update the scroll position of the list view to ensure the selected item is visible.
-  _updateScrollPosition() {
+  _updateScrollPosition(): void {
     if (!(this.refs && this.refs['selectionList'])) {
       return;
     }
@@ -443,7 +457,7 @@ export default class QuickSelectionComponent extends React.Component {
     );
   }
 
-  getSelectedIndex(): any {
+  getSelectedIndex(): Selection {
     return {
       selectedDirectory: this.state.selectedDirectory,
       selectedService: this.state.selectedService,
@@ -462,7 +476,7 @@ export default class QuickSelectionComponent extends React.Component {
     });
   }
 
-  resetSelection() {
+  resetSelection(): void {
     this.setState({
       selectedService: '',
       selectedDirectory: '',
@@ -480,34 +494,32 @@ export default class QuickSelectionComponent extends React.Component {
     require('./QuickSelectionActions').query(query);
   }
 
-  getProvider(): QuickSelectionProvider {
+  getProvider(): ProviderSpec {
     return this.props.activeProvider;
   }
 
-  // TODO: We need a type that corresponds to <atom-text-editor> that is more specific than
-  // HTMLElement, which would eliminate a number of Flow type errors in this file.
-  getInputTextEditor(): HTMLElement {
+  getInputTextEditor(): atom$TextEditorElement {
     return React.findDOMNode(this.refs['queryInput']);
   }
 
-  clear() {
-    this.getInputTextEditor().model.setText('');
+  clear(): void {
+    this.getInputTextEditor().getModel().setText('');
     this.clearSelection();
   }
 
-  focus() {
+  focus(): void {
     this.getInputTextEditor().focus();
   }
 
-  blur() {
+  blur(): void {
     this.getInputTextEditor().blur();
   }
 
-  setInputValue(value: string) {
+  setInputValue(value: string): void {
     this._getTextEditor().setText(value);
   }
 
-  selectInput() {
+  selectInput(): void {
     this._getTextEditor().selectAll();
   }
 
