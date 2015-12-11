@@ -18,17 +18,17 @@ import type {
 import {getServiceByNuclideUri} from '../../remote-connection';
 import {Point} from 'atom';
 
-class LibClangProcess {
+module.exports = {
 
-  async getDiagnostics(editor: TextEditor): Promise<ClangCompileResult> {
+  getDiagnostics(editor: atom$TextEditor): Promise<ClangCompileResult> {
     const src = editor.getPath();
     const contents = editor.getText();
 
     return getServiceByNuclideUri('ClangService', src)
         .compile(src, contents);
-  }
+  },
 
-  async getCompletions(editor: TextEditor): Promise<ClangCompletionsResult> {
+  getCompletions(editor: atom$TextEditor): Promise<ClangCompletionsResult> {
     const src = editor.getPath();
     const cursor = editor.getLastCursor();
     const range = cursor.getCurrentWordBufferRange({
@@ -45,22 +45,20 @@ class LibClangProcess {
 
     return getServiceByNuclideUri('ClangService', src)
         .getCompletions(src, editor.getText(), line, column, tokenStartColumn, prefix);
-  }
+  },
 
   /**
    * If a location can be found for the declaration, it will be available via
    * the 'location' field on the returned object.
    */
   getDeclaration(
-    editor: TextEditor,
+    editor: atom$TextEditor,
     line: number,
     column: number,
   ): Promise<?ClangDeclarationResult> {
     const src = editor.getPath();
     return getServiceByNuclideUri('ClangService', src)
         .getDeclaration(src, editor.getText(), line, column);
-  }
+  },
 
-}
-
-module.exports = LibClangProcess;
+};

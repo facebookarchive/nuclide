@@ -9,29 +9,13 @@
  * the root directory of this source tree.
  */
 
-import type LibClangProcess from './LibClangProcess';
 import type {HyperclickSuggestion} from '../../hyperclick-interfaces';
 
 import invariant from 'assert';
-
-const {goToLocation} = require('../../atom-helpers');
-const findWholeRangeOfSymbol = require('./findWholeRangeOfSymbol');
-
-const GRAMMARS = new Set([
-  'source.c',
-  'source.cpp',
-  'source.objc',
-  'source.objcpp',
-]);
-
-let libClangProcessSingleton;
-function getLibClangProcess(): LibClangProcess {
-  if (!libClangProcessSingleton) {
-    libClangProcessSingleton = require('./main-shared').getSharedLibClangProcess();
-  }
-  invariant(libClangProcessSingleton);
-  return libClangProcessSingleton;
-}
+import {goToLocation} from '../../atom-helpers';
+import {GRAMMAR_SET} from './constants';
+import {getDeclaration} from './libclang';
+import findWholeRangeOfSymbol from './findWholeRangeOfSymbol';
 
 module.exports = {
   // It is important that this has a lower priority than the handler from
@@ -43,13 +27,13 @@ module.exports = {
     text: string,
     range: atom$Range,
   ): Promise<?HyperclickSuggestion> {
-    if (!GRAMMARS.has(textEditor.getGrammar().scopeName)) {
+    if (!GRAMMAR_SET.has(textEditor.getGrammar().scopeName)) {
       return null;
     }
 
     const {start: position} = range;
 
-    const result = await getLibClangProcess().getDeclaration(textEditor, position.row, position.column);
+    const result = await getDeclaration(textEditor, position.row, position.column);
     if (result) {
       const wholeRange = findWholeRangeOfSymbol(textEditor, text, range, result.spelling, result.extent);
       return {

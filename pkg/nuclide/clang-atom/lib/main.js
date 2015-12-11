@@ -9,33 +9,52 @@
  * the root directory of this source tree.
  */
 
-import type {Point} from 'atom';
-import type LibClangProcess from './LibClangProcess';
 import type {HyperclickProvider} from '../../hyperclick-interfaces';
+import type {
+  BusySignalProviderBase as BusySignalProviderBaseType,
+} from '../../busy-signal-provider-base';
+import type {DiagnosticProvider} from '../../diagnostics/base';
+import type ClangDiagnosticsProvider from './ClangDiagnosticsProvider';
 
-import invariant from 'assert';
-
+import {CompositeDisposable} from 'atom';
 import {trackOperationTiming} from '../../analytics';
 
-let libClangProcess = (null : ?LibClangProcess);
+let busySignalProvider: ?BusySignalProviderBaseType = null;
+let diagnosticProvider: ?ClangDiagnosticsProvider = null;
+let subscriptions: ?CompositeDisposable = null;
+
+function getBusySignalProvider(): BusySignalProviderBaseType {
+  if (!busySignalProvider) {
+    const {BusySignalProviderBase} = require('../../busy-signal-provider-base');
+    busySignalProvider = new BusySignalProviderBase();
+  }
+  return busySignalProvider;
+}
+
+function getDiagnosticsProvider(): ClangDiagnosticsProvider {
+  if (!diagnosticProvider) {
+    const provider = require('./ClangDiagnosticsProvider');
+    diagnosticProvider = new provider(getBusySignalProvider());
+  }
+  return diagnosticProvider;
+}
 
 module.exports = {
   activate() {
-    // Create a process that can talk to libclang asynchronously.
-    const LibClangProcess = require('./LibClangProcess');
-    libClangProcess = new LibClangProcess();
-
-    // Because a ClangLinter is created via reflection via the Linter package,
-    // dependencies cannot be passed from above, so they must be set via a
-    // static method.
-    require('./main-shared').setSharedLibClangProcess(libClangProcess);
+    const {projects} = require('../../atom-helpers');
+    subscriptions = new CompositeDisposable();
+    // Invalidate all diagnostics when closing the project.
+    subscriptions.add(projects.onDidRemoveProjectPath((projectPath) => {
+      if (diagnosticProvider != null) {
+        diagnosticProvider.invalidateProjectPath(projectPath);
+      }
+    }));
   },
 
   /** Provider for autocomplete service. */
   createAutocompleteProvider(): atom$AutocompleteProvider {
     const {AutocompleteProvider} = require('./AutocompleteProvider');
-    invariant(libClangProcess);
-    const autocompleteProvider = new AutocompleteProvider(libClangProcess);
+    const autocompleteProvider = new AutocompleteProvider();
 
     return {
       selector: '.source.objc, .source.objcpp, .source.cpp, .source.c',
@@ -51,13 +70,25 @@ module.exports = {
   },
 
   deactivate() {
+    if (diagnosticProvider != null) {
+      diagnosticProvider.dispose();
+      diagnosticProvider = null;
+    }
+    if (subscriptions != null) {
+      subscriptions.dispose();
+      subscriptions = null;
+    }
   },
 
   getHyperclickProvider(): HyperclickProvider {
     return require('./HyperclickProvider');
   },
 
-  provideLinter() {
-    return require('./ClangLinter');
+  provideBusySignal(): BusySignalProviderBaseType {
+    return getBusySignalProvider();
+  },
+
+  provideDiagnostics(): DiagnosticProvider {
+    return getDiagnosticsProvider();
   },
 };

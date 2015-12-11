@@ -10,10 +10,10 @@
  */
 
 import type {Point} from 'atom';
-import type LibClangProcess from './LibClangProcess';
 import type {ClangCompletion} from '../../clang';
 
 import {ClangCursorToDeclarationTypes} from '../../clang';
+import {getCompletions} from './libclang';
 
 const MAX_LINE_LENGTH = 120;
 const TAB_LENGTH = 2;
@@ -164,11 +164,6 @@ function getCompletionBodyInline(completion: ClangCompletion): string {
 
 
 class AutocompleteProvider {
-  _libClangProcess: LibClangProcess;
-
-  constructor(libClangProcess: LibClangProcess) {
-    this._libClangProcess = libClangProcess;
-  }
 
   async getAutocompleteSuggestions(
     request: atom$AutocompleteRequest
@@ -176,7 +171,7 @@ class AutocompleteProvider {
     const {editor, bufferPosition: cursorPosition, prefix} = request;
     const indentation = editor.indentationForBufferRow(cursorPosition.row);
     const column = cursorPosition.column;
-    const data = await this._libClangProcess.getCompletions(editor);
+    const data = await getCompletions(editor);
     return data.completions.map((completion) => {
       const snippet = getCompletionBody(completion, column, indentation);
       const replacementPrefix = /^\s*$/.test(prefix) ? '' : prefix;
