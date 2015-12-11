@@ -3,7 +3,7 @@
 Provides a collection of services that are run on the Nuclide server to support
 remote file editing.
 
-This package runs as a Node package to provide the server-side functionality
+This runs as a Node package to provide the server-side functionality
 required by Nuclide to support remote file editing.
 
 ## Nuclide Server Prerequisites

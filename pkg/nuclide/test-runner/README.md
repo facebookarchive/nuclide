@@ -1,6 +1,6 @@
 # Test Runner
 
-A panel for running tests provided by test runner service packages
+A panel for running tests provided by test runner services
 
 ### Writing and registering a test runner
 

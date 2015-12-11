@@ -1,6 +1,6 @@
 # nuclide-remote-projects
 
-This package manages remote projects.
+This feature manages remote projects.
 
 # Opening Remote Projects
 You can initiate opening a remote project by either of the following methods.

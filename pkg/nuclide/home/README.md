@@ -1,3 +1,3 @@
 # nuclide-home
 
-This package provides a welcome message and other useful links for first time users.
+This feature provides a welcome message and other useful links for first time Nuclide users.

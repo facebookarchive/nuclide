@@ -1,6 +1,6 @@
 # Nuclide Service Parser
 
-This package is the core of the Nuclide Service Framework, implementing the following components:
+This feature is the core of the Nuclide Service Framework, implementing the following components:
 
 **Definition File Parsing** - The function `parseServiceDefinition`, exported from `lib/service-parser.js` takes in the string source of a service definition file, and returns an object of type `Definitions`, which describes all of the functions, classes, and type aliases encoded in the file.
 

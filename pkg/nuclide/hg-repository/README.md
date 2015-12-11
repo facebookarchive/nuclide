@@ -4,21 +4,20 @@ A Mercurial version of Atom's [`GitRepository`](https://atom.io/docs/api/v0.209.
 
 ## Features
 By default, Atom provides UI to expose information about files that are contained
-in a Git repository. This package adds analogous support for files in Mercurial
+in a Git repository. This feature adds analogous support for files in Mercurial
 repositories.
 
 Specifically, `nuclide-hg-repository` enables the following features when you are
 working in a Mercurial-backed project in Atom:
-* The Nuclide file tree (via the
-[`nuclide-file-tree`](https://atom.io/packages/nuclide-file-tree) package) will highlight
-files that are modified, as well as the directories that contain them.
+* The Nuclide file tree (`nuclide-file-tree` Nuclide feature) will highlight files that are
+modified, as well as the directories that contain them.
 * The Atom [`git-diff`](https://github.com/atom/git-diff) package will highlight
 the gutter next to lines that have been modified.
 * The Atom [`status-bar`](https://github.com/atom/status-bar) will show the
 number of added/removed lines of the currently active file, and the
 current Mercurial bookmark (note: not Mercurial branch).
 
-![Screenshot of features enabled by this package](http://nuclide.io/images/Mercurial_features_screenshot.png)
+![Screenshot of features enabled by this feature](http://nuclide.io/images/Mercurial_features_screenshot.png)
 
 `nuclide-hg-repository` works on local and remote repositories.
 
@@ -34,13 +33,13 @@ available on Windows (June 2015).
 correctly highlighted.
 
 ## How It Works
-This package provides a `atom.repository-provider` service through the Atom
+This feature provides a `atom.repository-provider` service through the Atom
 [`service-hub`](https://github.com/atom/service-hub). The service returns an
 instance of `HgRepositoryClient`, which is the analogous Mercurial implementation
 of Atom's [`GitRepository`](https://atom.io/docs/api/v0.209.0/GitRepository).
 
 ## API
-This and the following sections explain how to use this package from the
+This and the following sections explain how to use this feature from the
 perspective of a developer who wants to leverage the functionality of
 `HgRepositoryClient` in another Atom package.
 

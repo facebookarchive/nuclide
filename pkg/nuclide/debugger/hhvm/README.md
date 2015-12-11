@@ -1,6 +1,6 @@
 # HHVM Debugger
 
-This package enables debugging HHVM processes on a remote machine.
+This feature enables debugging HHVM processes on a remote machine.
 
 ## Setup
 
@@ -81,7 +81,7 @@ Continue, Step Over/Into/Out are controlled by these buttons:
 
 ![Execution Control](./images/ExecControl.png)
 
-### BreakPoints  
+### BreakPoints
 
 Set breakpoints by clicking on the line number in the left side of your source window.
 A line with a breakpoint will show a small red circle next to the line number.
@@ -114,7 +114,8 @@ By default, the debugger will attach to the first HHVM script which is run after
 attach process. On a busy server, you may find that you accidentally attach to a monitoring
 script before you can attach to your intended debuggee script.
 
-You can control the script you attach to in the config settings of the debugger-hhvm package.
+You can control the script you attach to in the 'debugger-hhvm' feature config settings of the
+Nuclide package.
 
 - Open the Settings page with `Cmd - ,`
 - Select the `debugger-hhvm` package

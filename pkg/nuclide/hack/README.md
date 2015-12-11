@@ -1,13 +1,15 @@
 # Hack
 
-This package provides language features integration with [Hack](http://hacklang.org/), a programming language for [HHVM](http://hhvm.com/) including, Linter, Autocompletion, Go to definition, Type Hint on mouse hover and Code Format.
+This feature provides language features integration with [Hack](http://hacklang.org/), a programming
+language for [HHVM](http://hhvm.com/) including, Linter, Autocompletion, Go to definition, Type Hint
+on mouse hover and Code Format.
 
 To get the most of it, HHVM should be installed on your system.
 Follow [Linux instructions](https://github.com/facebook/hhvm/wiki/Getting-Started)
 or [MacOSX instructions](https://github.com/facebook/hhvm/wiki/building-and-installing-hhvm-on-osx-10.9)
 to install HHVM if you do not already have it. Unfortunately HHVM currently has [no Windows
 support](https://github.com/facebook/hhvm/issues/5460).
-This package will have limited functionality on Windows and if you don't have HHVM installed.
+This feature will have limited functionality on Windows and if you don't have HHVM installed.
 
 This is what you need to do to get Hack language features working on your system:
 

@@ -1,6 +1,6 @@
 # nuclide-quick-open
 
-This package provides a modal UI to quickly find both local and remote files.
+This feature provides a modal UI to quickly find both local and remote files.
 
 The package enables fuzzy filename search, as well as searching the names of open files.
 In addition, custom search providers can be supplied, such as providers for language-specific

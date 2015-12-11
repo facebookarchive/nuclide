@@ -1,8 +1,8 @@
 # format-js
 
-This package is a collection of codemods that automatically clean up different aspects of code so
+This feature is a collection of codemods that automatically clean up different aspects of code so
 that you do not have to worry about every little formatting detail. Right now all of the codemods
-live in the `nuclide-format-js-base` package.
+live in the `nuclide-format-js-base` feature.
 
 ## usage
 

@@ -1,7 +1,6 @@
 # nuclide-buck-files
 
-
-Atom package that adds special handling for `BUCK` files. Features include:
+Nuclide feature that adds special handling for `BUCK` files. Features include:
 
 * Syntax highlighting for `BUCK` files.
 * "click-to-symbol" support for build targets in `BUCK` files

@@ -10,12 +10,12 @@ Hyperclick is triggered by two events:
 
 ## Known Providers
 
-* [nuclide-buck-files](https://atom.io/packages/nuclide-buck-files)
-* [nuclide-clang-atom](https://atom.io/packages/nuclide-clang-atom)
-* [nuclide-flow](https://atom.io/packages/nuclide-flow)
-* [nuclide-hack](https://atom.io/packages/nuclide-hack)
-* [nuclide-ocaml](https://atom.io/packages/nuclide-ocaml)
-* [js-hyperclick](https://atom.io/packages/js-hyperclick) - Jump to variable definitions, including when imported/required from another file
+* 'nuclide-buck-files' [Nuclide](https://atom.io/packages/nuclide) feature
+* 'nuclide-clang-atom' Nuclide feature
+* 'nuclide-flow' Nuclide feature
+* 'nuclide-hack' Nuclide feature
+* 'nuclide-ocaml' Nuclide feature
+* 'js-hyperclick' Nuclide feature - Jump to variable definitions, including when imported/required from another file
 
 ## Demo
 

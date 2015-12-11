@@ -1,13 +1,13 @@
 # nuclide-diagnostics-store
 
-This page is for developers wishing to integrate with the `nuclide-diagnostics` packages. If you
-simply want to view diagnostics in Atom, look at the
+This page is for developers wishing to integrate with the `nuclide-diagnostics` Nuclide feature. If
+you simply want to view diagnostics in Atom, look at the
 [end-user docs](https://github.com/facebook/nuclide/tree/master/pkg/nuclide/diagnostics#readme).
 
 ## Overview
 
 `nuclide-diagnostics-store` is responsible for consuming diagnostics from providers and sending
-updates to UI packages.
+updates to a UI provider.
 [`nuclide-diagnostics-ui`](https://github.com/facebook/nuclide/tree/master/pkg/nuclide/diagnostics/ui)
 is our UI implementation.
 
@@ -102,7 +102,7 @@ You are free to implement a provider using only the specification above, but you
 lot of work -- most of it related to subscribing to the appropriate Atom events. To alleviate that
 pain, we have created the
 [`nuclide-diagnostics-provider-base`](https://github.com/facebook/nuclide/tree/master/pkg/nuclide/diagnostics/provider-base)
-package.
+feature.
 
 To see it in action, look at our [sample diagnostics
 provider](https://github.com/facebook/nuclide/tree/master/pkg/sample/diagnostics-provider).

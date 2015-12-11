@@ -3,7 +3,7 @@
 Provides a default UI for diagnostics stored in [`nuclide-diagnostics-store`](
 https://atom.io/packages/nuclide-diagnostics-store).
 
-As shown in the screenshot, this package adds the following UI to Atom:
+As shown in the screenshot, this feature adds the following UI to Atom:
 
 1. For diagnostics that correspond to a particular file, a marker will appear in the gutter of
 the corresponding text editor. Mousing over the marker will display the details of the diagnostic.
