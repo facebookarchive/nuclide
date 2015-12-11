@@ -22,7 +22,11 @@ import traceback
 import logging
 from logging import FileHandler
 
-FD_FOR_READING = 3;
+FD_FOR_READING = 3
+
+# Unfortunately Clang has no way of limiting autocompletion results, but set a reasonable limit
+# to avoid overloading the Atom UI.
+COMPLETIONS_LIMIT = 100
 
 def set_up_logging():
   handler = FileHandler('/tmp/nuclide-clang.log')
@@ -207,7 +211,8 @@ class Server:
           line + 1,
           token_start_column + 1,
           prefix,
-          contents)
+          contents,
+          limit=COMPLETIONS_LIMIT)
     else:
       completions = []
     response['file'] = src

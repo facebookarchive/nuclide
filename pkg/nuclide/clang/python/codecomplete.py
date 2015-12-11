@@ -6,7 +6,7 @@
 
 from clang.cindex import *
 
-def get_completions(translation_unit, absolute_path, line, column, prefix, contents=None):
+def get_completions(translation_unit, absolute_path, line, column, prefix, contents=None, limit=None):
   unsaved_files = []
   if contents:
     contents_as_str = contents.encode('utf8')
@@ -24,16 +24,17 @@ def get_completions(translation_unit, absolute_path, line, column, prefix, conte
     if not first_token or (prefix and not first_token.startswith(prefix)):
       continue
 
-    completions.append(completion_string)
+    completions.append(result)
 
-  completions.sort(key=lambda completion_string: completion_string.priority)
+  completions.sort(key=lambda result: result.string.priority)
 
-  def to_replacement(completion_string):
+  def to_replacement(completion_result):
     chunks = []
     spelling = ''
     result_type = ''
 
     # We want to know which chunks are placeholders.
+    completion_string = completion_result.string
     for chunk in completion_string:
       spelling += chunk.spelling
 
@@ -56,8 +57,9 @@ def get_completions(translation_unit, absolute_path, line, column, prefix, conte
       'chunks': chunks,
       'result_type': result_type,
       'first_token': _getFirstNonResultTypeTokenChunk(completion_string),
+      'cursor_kind': completion_result.kind.name,
     }
-  return map(to_replacement, completions)
+  return map(to_replacement, completions[:limit])
 
 
 def _getFirstNonResultTypeTokenChunk(completion_string):

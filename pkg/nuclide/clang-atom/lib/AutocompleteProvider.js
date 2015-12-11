@@ -13,8 +13,37 @@ import type {Point} from 'atom';
 import type LibClangProcess from './LibClangProcess';
 import type {ClangCompletion} from '../../clang';
 
+import {ClangCursorToDeclarationTypes} from '../../clang';
+
 const MAX_LINE_LENGTH = 120;
 const TAB_LENGTH = 2;
+
+const ClangCursorToAutocompletionTypes = {
+  STRUCT_DECL: 'class',
+  UNION_DECL: 'class',
+  CLASS_DECL: 'class',
+  ENUM_DECL: 'class',
+  FIELD_DECL: 'property',
+  ENUM_CONSTANT_DECL: 'constant',
+  FUNCTION_DECL: 'function',
+  VAR_DECL: 'variable',
+  PARM_DECL: 'variable',
+  OBJC_INTERFACE_DECL: 'class',
+  OBJC_CATEGORY_DECL: 'class',
+  OBJC_PROTOCOL_DECL: 'class',
+  OBJC_PROPERTY_DECL: 'property',
+  OBJC_IVAR_DECL: 'variable',
+  OBJC_INSTANCE_METHOD_DECL: 'method',
+  OBJC_CLASS_METHOD_DECL: 'method',
+  OBJC_IMPLEMENTATION_DECL: 'class',
+  OBJC_CATEGORY_IMPL_DECL: 'class',
+  TYPEDEF_DECL: 'type',
+  CXX_METHOD: 'method',
+  CONSTRUCTOR: 'method',
+  DESTRUCTOR: 'method',
+  FUNCTION_TEMPLATE: 'function',
+  CLASS_TEMPLATE: 'class',
+};
 
 function getCompletionBody(
   completion: ClangCompletion,
@@ -151,10 +180,16 @@ class AutocompleteProvider {
     return data.completions.map((completion) => {
       const snippet = getCompletionBody(completion, column, indentation);
       const replacementPrefix = /^\s*$/.test(prefix) ? '' : prefix;
+      const rightLabel = completion.cursor_kind ?
+        ClangCursorToDeclarationTypes[completion.cursor_kind] : null;
+      const type = completion.cursor_kind ?
+        ClangCursorToAutocompletionTypes[completion.cursor_kind] : null;
       return {
         snippet,
         replacementPrefix,
-        rightLabel: completion.first_token,
+        type,
+        leftLabel: completion.result_type,
+        rightLabel,
       };
     });
   }

@@ -96,6 +96,7 @@ export type ClangCompletion = {
   first_token?: ?string,
   result_type?: string,
   spelling?: string,
+  cursor_kind?: string,
 };
 
 export type ClangCompletionsResult = {
