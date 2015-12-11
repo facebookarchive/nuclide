@@ -33,6 +33,7 @@ describe('PathSetUpdater', () => {
       /*subscriptionRoot*/ MOCK_WATCHMAN_PROJECT_ROOT,
       /*pathFromSubscriptionRootToSubscriptionPath*/ RELATIVE_PATH,
       /*subscriptionPath*/ TEST_DIRECTORY,
+      /*subscriptionName*/ TEST_DIRECTORY,
       /*subscriptionCount*/ 1,
       /*subscriptionOptions*/ {fields: [], since: ''}, // Not used in this test.
     ));

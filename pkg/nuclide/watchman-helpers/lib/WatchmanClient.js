@@ -11,7 +11,7 @@
 
 import path from 'path';
 import watchman from 'fb-watchman';
-import {array, promises} from '../../commons';
+import {object, array, promises} from '../../commons';
 import {getWatchmanBinaryPath} from './main';
 import WatchmanSubscription from './WatchmanSubscription';
 import {getLogger} from '../../logging';
@@ -118,8 +118,12 @@ class WatchmanClient {
     subscription.emit('change', response.files);
   }
 
-  async watchDirectoryRecursive(localDirectoryPath: string): Promise<WatchmanSubscription> {
-    const existingSubscription = this._getSubscription(localDirectoryPath);
+  async watchDirectoryRecursive(
+    localDirectoryPath: string,
+    subscriptionName?: string = localDirectoryPath,
+    subscriptionOptions?: WatchmanSubscriptionOptions,
+  ): Promise<WatchmanSubscription> {
+    const existingSubscription = this._getSubscription(subscriptionName);
     if (existingSubscription) {
       existingSubscription.subscriptionCount++;
       return existingSubscription;
@@ -129,11 +133,11 @@ class WatchmanClient {
         relative_path: relativePath,
       } = await this._watchProject(localDirectoryPath);
       const clock = await this._clock(watchRoot);
-      const options: WatchmanSubscriptionOptions = {
+      const options: WatchmanSubscriptionOptions = object.assign({
         fields: ['name', 'new', 'exists', 'mode'],
         since: clock,
-      };
-      if (relativePath) {
+      }, subscriptionOptions || {});
+      if (relativePath && !options.expression) {
         // Passing an 'undefined' expression causes an exception in fb-watchman.
         options.expression = ['dirname', relativePath];
       }
@@ -142,11 +146,12 @@ class WatchmanClient {
         /*subscriptionRoot*/ watchRoot,
         /*pathFromSubscriptionRootToSubscriptionPath*/ relativePath,
         /*subscriptionPath*/ localDirectoryPath,
+        /*subscriptionName*/ subscriptionName,
         /*subscriptionCount*/ 1,
         /*subscriptionOptions*/ options,
       );
-      this._setSubscription(localDirectoryPath, subscription);
-      await this._subscribe(watchRoot, localDirectoryPath, options);
+      this._setSubscription(subscriptionName, subscription);
+      await this._subscribe(watchRoot, subscriptionName, options);
       return subscription;
     }
   }
