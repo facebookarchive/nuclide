@@ -44,6 +44,9 @@ async function formatCode(editor: ?TextEditor): Promise<void> {
   const {transform} = require('../../format-js-base');
   const {getOptions} = require('./options');
   const path = editor.getPath();
+  if (!path) {
+    return;
+  }
   source = transform(source, await getOptions(path));
 
   // Update the source and position after all transforms are done. Do nothing
@@ -55,7 +58,8 @@ async function formatCode(editor: ?TextEditor): Promise<void> {
   const range = buffer.getRange();
   const position = editor.getCursorBufferPosition();
   editor.setTextInBufferRange(range, source);
-  editor.setCursorBufferPosition(updateCursor(oldSource, position, source));
+  const {row, column} = updateCursor(oldSource, position, source);
+  editor.setCursorBufferPosition([row, column]);
 
   // Save the file if that option is specified.
   if (featureConfig.get('nuclide-format-js.saveAfterRun')) {

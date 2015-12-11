@@ -11,6 +11,7 @@
 
 import type ModuleMap from '../../format-js-base/lib/state/ModuleMap';
 import type {SourceOptions} from '../../format-js-base/lib/options/SourceOptions';
+import type {TransformKey} from '../../format-js-base/lib/types/transforms';
 
 const NuclideCommons = require('../../commons');
 
@@ -37,7 +38,7 @@ const defaultBuiltInTypes = arrayFrom(formatJSBase.defaultBuiltInTypes);
  * Currently, it only looks at the Nuclide settings, but we may
  * extend it to look at the project-specific configuration file later.
  */
-async function getOptions(sourcePath: string): SourceOptions {
+async function getOptions(sourcePath: string): Promise<SourceOptions> {
   return {
     blacklist: getNuclideBlacklist(),
     moduleMap: getNuclideModuleMap(),
@@ -51,8 +52,8 @@ async function getOptions(sourcePath: string): SourceOptions {
 function getNuclideSettings(): Settings {
   return {
     aliases: fixAliases((featureConfig.get('nuclide-format-js.aliases'): any)),
-    builtIns: featureConfig.get('nuclide-format-js.builtIns'),
-    builtInTypes: featureConfig.get('nuclide-format-js.builtInTypes'),
+    builtIns: ((featureConfig.get('nuclide-format-js.builtIns'): any): Array<string>),
+    builtInTypes: ((featureConfig.get('nuclide-format-js.builtInTypes'): any): Array<string>),
   };
 }
 
@@ -100,7 +101,7 @@ function getNuclideModuleMap(): ModuleMap {
 /**
  * Construct the blacklist from the settings.
  */
-function getNuclideBlacklist(): Set<string> {
+function getNuclideBlacklist(): Set<TransformKey> {
   const blacklist = new Set();
   if (!featureConfig.get('nuclide-format-js.nuclideFixHeader')) {
     blacklist.add('nuclide.fixHeader');

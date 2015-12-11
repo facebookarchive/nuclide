@@ -12,7 +12,6 @@
 .*/pkg/nuclide/debugger/hhvm/.*
 .*/pkg/nuclide/debugger/node/.*
 .*/pkg/nuclide/file-tree/.*
-.*/pkg/nuclide/format-js/.*
 .*/pkg/nuclide/fuzzy-filename-provider/.*
 .*/pkg/nuclide/hack-symbol-provider/.*
 .*/pkg/nuclide/hack/.*
