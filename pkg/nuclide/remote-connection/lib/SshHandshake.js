@@ -114,7 +114,6 @@ export class SshHandshake {
   _clientKey: Buffer;
   static SupportedMethods: {};
 
-  /* $FlowIssue https://github.com/facebook/flow/issues/850 */
   static ErrorType = ErrorType;
 
   constructor(delegate: SshConnectionDelegate, connection?: SshConnection) {

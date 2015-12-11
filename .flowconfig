@@ -25,6 +25,7 @@
 ./pkg/nuclide/debugger/interfaces/WebInspector.js
 
 [options]
+esproposal.class_static_fields=enable
 esproposal.decorators=ignore
 suppress_comment=.*\\$FlowFixMe.*
 suppress_comment=.*\\$FlowIssue.*

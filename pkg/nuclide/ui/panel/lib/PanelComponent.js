@@ -25,7 +25,6 @@ class PanelComponent extends React.Component {
 
   _resizeSubscriptions: CompositeDisposable;
 
-  // $FlowIssue t8486988
   static propTypes = {
     children: PropTypes.element.isRequired,
     dock: PropTypes.oneOf(['left', 'bottom', 'right']).isRequired,
@@ -34,7 +33,6 @@ class PanelComponent extends React.Component {
     overflowX: PropTypes.string,
   };
 
-  // $FlowIssue t8486988
   static defaultProps = {
     initialLength: 200,
     onResize: emptyFunction,

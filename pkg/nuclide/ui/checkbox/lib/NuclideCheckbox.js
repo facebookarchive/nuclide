@@ -17,7 +17,7 @@ const {PropTypes, addons} = React;
  * to ensure this component is pure.
  */
 export default class NuclideCheckbox extends React.Component {
-  // $FlowIssue t8486988
+
   static propTypes = {
     checked: PropTypes.bool.isRequired,
     label: PropTypes.string.isRequired,

@@ -14,7 +14,6 @@ const {PropTypes} = React;
 
 export default class BasicStatsSectionComponent extends React.Component {
 
-  // $FlowIssue https://github.com/facebook/flow/issues/850
   static propTypes = {
     cpuPercentage: PropTypes.number.isRequired,
     memory: PropTypes.number.isRequired,

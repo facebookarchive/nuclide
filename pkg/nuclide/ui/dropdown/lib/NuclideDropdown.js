@@ -16,7 +16,6 @@ const {PropTypes} = React;
 
 class NuclideDropdown extends React.Component {
 
-  // $FlowIssue t8486988
   static propTypes = {
     className: PropTypes.string.isRequired,
     disabled: PropTypes.bool.isRequired,
@@ -37,7 +36,6 @@ class NuclideDropdown extends React.Component {
     title: PropTypes.string.isRequired,
   };
 
-  // $FlowIssue t8486988
   static defaultProps = {
     className: '',
     disabled: false,

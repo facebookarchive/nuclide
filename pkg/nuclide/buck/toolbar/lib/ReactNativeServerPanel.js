@@ -19,7 +19,6 @@ export default class ReactNativeServerPanel extends React.Component {
 
   _storeSubscription: Disposable;
 
-  // $FlowIssue t8486988
   static propTypes = {
     actions: PropTypes.instanceOf(ReactNativeServerActions).isRequired,
     store: PropTypes.instanceOf(ReactNativeServerManager).isRequired,

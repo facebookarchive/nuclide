@@ -70,7 +70,6 @@ class RemoteConnection {
   _lastHeartbeatNotification: ?HeartbeatNotification;
   _client: ?ClientComponent;
 
-  /* $FlowIssue https://github.com/facebook/flow/issues/850 */
   static _connections: Array<RemoteConnection> = [];
 
   constructor(config: RemoteConnectionConfiguration) {

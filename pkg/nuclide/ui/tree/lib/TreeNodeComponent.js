@@ -30,7 +30,6 @@ const SPINNER = '\uF087';
  */
 class TreeNodeComponent extends React.Component {
 
-  // $FlowIssue t8486988
   static propTypes = {
     depth: PropTypes.number.isRequired,
     isContainer: PropTypes.bool.isRequired,

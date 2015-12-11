@@ -14,7 +14,6 @@ const {PropTypes} = React;
 
 export default class HealthStatusBarComponent extends React.Component {
 
-  // $FlowIssue https://github.com/facebook/flow/issues/850
   static propTypes = {
     onClickIcon: PropTypes.func.isRequired,
     cpuPercentage: PropTypes.number,

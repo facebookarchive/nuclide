@@ -17,7 +17,7 @@ import React from 'react-for-atom';
 const {PropTypes} = React;
 
 export default class ServiceMonitor extends React.Component {
-  // $FlowIssue t8486988
+
   static propTypes = {
     serviceLogger: PropTypes.object.isRequired,
   };

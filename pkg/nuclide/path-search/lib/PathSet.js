@@ -54,7 +54,6 @@ export default class PathSet {
   _latestPaths: ?{[key: string]: boolean};
   _jobs: Array<ProcessorJob>;
 
-  // $FlowIssue t8486988
   static ERROR_CODE_CANCELED = ERROR_CODE_CANCELED;
 
   constructor(options: Object = {}) {

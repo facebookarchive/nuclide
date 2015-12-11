@@ -35,7 +35,6 @@ class AtomComboBox extends React.Component {
 
   _subscriptions: ?CompositeDisposable;
 
-  // $FlowIssue t8486988
   static propTypes = {
     className: PropTypes.string.isRequired,
     initialTextInput: PropTypes.string,
@@ -51,7 +50,6 @@ class AtomComboBox extends React.Component {
     size: PropTypes.oneOf(['xs', 'sm', 'lg']),
   };
 
-  // $FlowIssue t8486988
   static defaultProps = {
     className: '',
     maxOptionCount: 10,

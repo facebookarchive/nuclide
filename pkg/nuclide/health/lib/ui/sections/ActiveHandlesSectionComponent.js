@@ -17,7 +17,6 @@ import HandlesTableComponent from './HandlesTableComponent';
 
 export default class ActiveHandlesSectionComponent extends React.Component {
 
-  // $FlowIssue https://github.com/facebook/flow/issues/850
   static propTypes = {
     activeHandleObjects: PropTypes.arrayOf(React.PropTypes.object).isRequired,
   };

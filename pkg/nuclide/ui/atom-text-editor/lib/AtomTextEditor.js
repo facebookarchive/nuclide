@@ -20,7 +20,6 @@ class AtomTextEditor extends React.Component {
   _textBuffer: TextBuffer;
   _textEditorModel: TextEditor;
 
-  // $FlowIssue t8486988
   static propTypes = {
     gutterHidden: PropTypes.bool.isRequired,
     path: PropTypes.string,
@@ -28,7 +27,6 @@ class AtomTextEditor extends React.Component {
     textBuffer: PropTypes.instanceOf(TextBuffer),
   };
 
-  // $FlowIssue t8486988
   static defaultProps = {
     gutterHidden: false,
     lineNumberGutterVisible: true,

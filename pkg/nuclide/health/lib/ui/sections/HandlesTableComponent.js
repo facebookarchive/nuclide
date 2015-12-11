@@ -14,7 +14,6 @@ const {PropTypes} = React;
 
 export default class HandlesTableComponent extends React.Component {
 
-  // $FlowIssue https://github.com/facebook/flow/issues/850
   static propTypes = {
     title: PropTypes.string,
     handles: PropTypes.arrayOf(PropTypes.object),

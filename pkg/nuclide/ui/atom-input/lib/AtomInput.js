@@ -21,7 +21,6 @@ class AtomInput extends React.Component {
 
   _disposables: ?CompositeDisposable;
 
-  // $FlowIssue t8486988
   static propTypes = {
     disabled: PropTypes.bool,
     initialValue: PropTypes.string.isRequired,
@@ -33,7 +32,6 @@ class AtomInput extends React.Component {
     size: PropTypes.oneOf(['xs', 'sm', 'lg']),
   };
 
-  // $FlowIssue t8486988
   static defaultProps = {
     disabled: false,
     initialValue: '',
