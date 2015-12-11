@@ -22,7 +22,8 @@ type DiagnosticCount = {
   warningCount: number;
 }
 
-const STATUS_BAR_PRIORITY = 0;
+// Stick this to the left of remote-projects (-99)
+const STATUS_BAR_PRIORITY = -99.5;
 
 class StatusBarTile {
 
