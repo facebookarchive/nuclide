@@ -247,7 +247,7 @@ class HgServiceBase {
     } catch (e) {
       getLogger().error(
           `LocalHgServiceBase failed to fetch blame for file: ${filePath}. Error: ${e.stderr}`);
-      return new Map();
+      throw e;
     }
     return parseHgBlameOutput(output.stdout);
   }

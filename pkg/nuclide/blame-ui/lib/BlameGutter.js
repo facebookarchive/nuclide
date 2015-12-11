@@ -100,7 +100,7 @@ export default class {
       // Note that 'shell' is not the public 'shell' package on npm but an Atom built-in.
       require('shell').openExternal(url);
     } else {
-      atom.notifications.addWarning(`No URL found for ${changeset}.`, {dismissable: true});
+      atom.notifications.addWarning(`No URL found for ${changeset}.`);
     }
 
     track('blame-gutter-click-revision', {
@@ -113,7 +113,17 @@ export default class {
     // Add a loading spinner while we fetch the blame.
     this._addLoadingSpinner();
 
-    const newBlame = await this._blameProvider.getBlameForEditor(this._editor);
+    let newBlame;
+    try {
+      newBlame = await this._blameProvider.getBlameForEditor(this._editor);
+    } catch (error) {
+      atom.notifications.addError(
+        `Failed to fetch blame to display. ` +
+        `The file is empty or untracked or the repository cannot be reached.`,
+        error,
+      );
+      return;
+    }
     // The BlameGutter could have been destroyed while blame was being fetched.
     if (this._isDestroyed) {
       return;
