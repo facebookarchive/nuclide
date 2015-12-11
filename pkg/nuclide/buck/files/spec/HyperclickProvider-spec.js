@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {BuckProject} from '../../base/lib/BuckProject';
+import {BuckProject} from '../../base/lib/BuckProject';
 
 const {findTargetLocation, parseTarget} = require('../lib/HyperclickProvider');
 
@@ -23,11 +23,8 @@ describe('HyperclickProvider', () => {
 
   describe('parseTarget', () => {
     it('searches //Apps/TestApp/BUCK.test', () => {
-      const buckProject: BuckProject = {
-        getPath() {
-          return Promise.resolve(projectPath);
-        },
-      };
+      const buckProject: BuckProject = Object.create(BuckProject.prototype);
+      spyOn(buckProject, 'getPath').andReturn(Promise.resolve(projectPath));
       waitsForPromise(async () => {
         let target = await parseTarget(
             [':target1', null, 'target1'],

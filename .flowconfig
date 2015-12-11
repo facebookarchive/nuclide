@@ -8,7 +8,6 @@
 .*/pkg/fb/biggrep-provider/.*
 .*/pkg/fb/phabricator-comments-client/.*
 .*/pkg/fb/test-runner-t-client/.*
-.*/pkg/nuclide/buck/files/.*
 .*/pkg/nuclide/debugger-hhvm-proxy/spec/.*
 .*/pkg/nuclide/debugger/atom/spec/.*
 .*/pkg/nuclide/debugger/hhvm/.*
