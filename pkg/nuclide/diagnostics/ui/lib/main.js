@@ -159,23 +159,36 @@ module.exports = {
 
     const lazilyCreateTable = createPanel.bind(null, diagnosticUpdater, subscriptions);
 
-    const showTableSubscription = atom.commands.add(
+    const toggleTable = () => {
+      const bottomPanelRef = bottomPanel;
+      if (bottomPanelRef == null) {
+        lazilyCreateTable();
+      } else if (bottomPanelRef.isVisible()) {
+        tryRecordActivationState();
+        bottomPanelRef.hide();
+      } else {
+        logPanelIsDisplayed();
+        bottomPanelRef.show();
+      }
+    };
+
+    const showTable = () => {
+      if (bottomPanel == null || !bottomPanel.isVisible()) {
+        toggleTable();
+      }
+    };
+
+    subscriptions.add(atom.commands.add(
       atom.views.getView(atom.workspace),
       'nuclide-diagnostics-ui:toggle-table',
-      () => {
-        const bottomPanelRef = bottomPanel;
-        if (!bottomPanelRef) {
-          lazilyCreateTable();
-        } else if (bottomPanelRef.isVisible()) {
-          tryRecordActivationState();
-          bottomPanelRef.hide();
-        } else {
-          logPanelIsDisplayed();
-          bottomPanelRef.show();
-        }
-      }
-    );
-    subscriptions.add(showTableSubscription);
+      toggleTable,
+    ));
+
+    subscriptions.add(atom.commands.add(
+      atom.views.getView(atom.workspace),
+      'nuclide-diagnostics-ui:show-table',
+      showTable,
+    ));
 
     invariant(activationState);
     if (!activationState.hideDiagnosticsPanel) {
@@ -232,7 +245,7 @@ module.exports = {
         title: 'Diagnostics',
         icon: 'law',
         description: 'Displays diagnostics, errors, and lint warnings for your files and projects.',
-        command: 'nuclide-diagnostics-ui:toggle-table',
+        command: 'nuclide-diagnostics-ui:show-table',
       },
       priority: 4,
     };
