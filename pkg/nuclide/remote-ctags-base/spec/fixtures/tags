@@ -1,0 +1,3 @@
+a	a.cpp	/^void a() {$/
+b	b.cpp	/^void b() {$/
+c	c.cpp	/^void c() {$/

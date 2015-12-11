@@ -70,5 +70,9 @@
     "definition": "../hg-repository-base/lib/HgService.def",
     "implementation": "../hg-repository-base/lib/HgService.js",
     "name": "HgService"
+  },
+  {
+    "implementation": "../remote-ctags-base/lib/CtagsService.js",
+    "name": "CtagsService"
   }
 ]
