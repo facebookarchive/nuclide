@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type watchman from 'fb-watchman';
+
 const fs = require('fs');
 const path = require('path');
 const invariant = require('assert');
@@ -28,6 +30,7 @@ describe('WatchmanClient test suite', () => {
     client = new WatchmanClient();
     dirPath = temp.mkdirSync();
     filePath = path.join(dirPath, 'test.txt');
+    fs.writeFileSync(path.join(dirPath, 'non-used-file.txt'), 'def');
     fs.writeFileSync(filePath, 'abc');
     // Many people use restrict_root_files so watchman only will watch folders
     // that have those listed files in them.  This list of root files almost
@@ -42,7 +45,8 @@ describe('WatchmanClient test suite', () => {
   });
 
   describe('restore subscriptions', () => {
-    it('restores subscriptions on client end', () => {
+
+    function testRestoreSubscriptions(onRestoreChange: (watchmanClient: watchman.Client) => void) {
       waitsForPromise(async () => {
         const watcher = await client.watchDirectoryRecursive(dirPath);
         const changeHandler = jasmine.createSpy();
@@ -58,11 +62,13 @@ describe('WatchmanClient test suite', () => {
             new: false,
             exists: true,
           }]);
-          // End the socket client to watchman to trigger restore subscriptions.
           const internalClient = await client._clientPromise;
+          onRestoreChange(internalClient);
           internalClient.end();
         });
-        waits(1000); // Wait for WatchmanClient to restore subscriptions.
+        waits(1000); // Wait for watchman to watch the directory.
+        runs(() => window.advanceClock(3000)); // Pass the settle filesystem time.
+        waits(1000); // Wait for the client to restore subscriptions.
         runs(() => fs.unlinkSync(filePath));
         waitsFor(() => changeHandler.callCount > 1);
         runs(() => {
@@ -77,6 +83,20 @@ describe('WatchmanClient test suite', () => {
       });
       // Cleanup watch resources.
       waitsForPromise(() => client.unwatch(dirPath));
+    }
+
+    it('restores subscriptions on client end', () => {
+      testRestoreSubscriptions(watchmanClient => {
+        // End the socket client to watchman to trigger restore subscriptions.
+        watchmanClient.end();
+      });
+    });
+
+    it('restores subscriptions on client error', () => {
+      testRestoreSubscriptions(watchmanClient => {
+        // End the socket client to watchman to trigger restore subscriptions.
+        watchmanClient.emit('error', new Error('fake error'));
+      });
     });
   });
 
@@ -87,6 +107,7 @@ describe('WatchmanClient test suite', () => {
         await client.watchDirectoryRecursive(dirPath);
         const watchList = await client._watchList();
         expect(watchList.indexOf(dirRealPath)).not.toBe(-1);
+        client.dispose = () => {};
         await client.unwatch(dirPath);
         const afterCleanupWatchList = await client._watchList();
         expect(afterCleanupWatchList.indexOf(dirRealPath)).toBe(-1);

@@ -9,14 +9,16 @@
  * the root directory of this source tree.
  */
 
-const watchman = require('fb-watchman');
-
-const {isEmpty} = require('../../commons').object;
-const logger = require('../../logging').getLogger();
-const {getWatchmanBinaryPath} = require('./main');
-const path = require('path');
-
+import path from 'path';
+import watchman from 'fb-watchman';
+import {array, promises} from '../../commons';
+import {getWatchmanBinaryPath} from './main';
 import WatchmanSubscription from './WatchmanSubscription';
+import {getLogger} from '../../logging';
+
+const logger = getLogger();
+const WATCHMAN_SETTLE_TIME_MS = 2500;
+
 import type {WatchmanSubscriptionOptions} from './WatchmanSubscription';
 
 type WatchmanSubscriptionResponse = {
@@ -33,37 +35,36 @@ export type FileChange = {
 };
 
 class WatchmanClient {
-  _subscriptions: {[key: string]: WatchmanSubscription};
+  _subscriptions: Map<string, WatchmanSubscription>;
   _clientPromise: Promise<watchman.Client>;
   _watchmanVersionPromise: Promise<string>;
+  _serializedReconnect: () => Promise<void>;
+
   constructor() {
     this._initWatchmanClient();
-    this._subscriptions = Object.create(null);
+    this._serializedReconnect = promises.serializeAsyncCall(() => this._reconnectClient());
+    this._subscriptions = new Map();
     this._watchmanVersionPromise = this.version();
   }
 
-  dispose(): Promise {
-    return new Promise((resolve, reject) => {
-      if (this._clientPromise) {
-        this._clientPromise.then(client => {
-          client.once('end', () => {
-            resolve();
-          });
-          client.end();
-        });
-      } else {
-        reject();
-      }
-    });
+  async dispose(): Promise<void> {
+    (await this._clientPromise).end();
   }
 
-  _initWatchmanClient() {
+  async _initWatchmanClient(): Promise<void> {
     this._clientPromise = this._createClientPromise();
-    this._clientPromise.then(client => {
-      client.on('end', () => this._onClientEnd());
-      client.on('error', error => logger.error('Error while talking to watchman: ', error));
-      client.on('subscription', response => this._onSubscriptionResult(response));
+
+    const client = await this._clientPromise;
+    client.on('end', this._serializedReconnect);
+    client.on('error', error => {
+      logger.error('Error while talking to watchman: ', error);
+      // Those are errors in deserializing a stream of changes.
+      // The only possible recovery here is reconnecting a new client,
+      // but the failed to serialize events will be missed.
+      // t9353878
+      this._serializedReconnect();
     });
+    client.on('subscription', this._onSubscriptionResult.bind(this));
   }
 
   async _createClientPromise(): Promise<watchman.Client> {
@@ -72,51 +73,52 @@ class WatchmanClient {
     });
   }
 
-  _onClientEnd() {
-    logger.warn('Watchman client ended, creating a new client!');
-    this._clientPromise.then(client => {
-      client.removeAllListeners('end');
-      client.removeAllListeners('error');
-      client.removeAllListeners('subscription');
-    });
-    this._initWatchmanClient();
-    this._restoreSubscriptions();
+  async _reconnectClient(): Promise<void> {
+    logger.error('Watchman client disconnected, reconnecting a new client!');
+    const oldClient = await this._clientPromise;
+    oldClient.removeAllListeners('end');
+    oldClient.removeAllListeners('error');
+    oldClient.removeAllListeners('subscription');
+    oldClient.end();
+    await this._initWatchmanClient();
+    await this._restoreSubscriptions();
   }
 
-  async _restoreSubscriptions(): Promise {
-    const watchSubscriptions: Array<WatchmanSubscription> = [];
-    for (const key in this._subscriptions) {
-      watchSubscriptions.push(this._subscriptions[key]);
-    }
+  async _restoreSubscriptions(): Promise<void> {
+    const watchSubscriptions = array.from(this._subscriptions.values());
     await Promise.all(watchSubscriptions.map(async (subscription: WatchmanSubscription) => {
-      subscription.options.since = await this._clock(subscription.root);
       await this._watchProject(subscription.path);
+      // We have already missed the change events from the disconnect time,
+      // watchman could have died, so the last clock result is not valid.
+      await promises.awaitMilliSeconds(WATCHMAN_SETTLE_TIME_MS);
+      // Register the subscriptions after the filesystem settles.
+      subscription.options.since = await this._clock(subscription.root);
       await this._subscribe(subscription.root, subscription.name, subscription.options);
     }));
   }
 
   _getSubscription(entryPath: string): ?WatchmanSubscription {
-    return this._subscriptions[path.normalize(entryPath)];
+    return this._subscriptions.get(path.normalize(entryPath));
   }
 
-  _setSubscription(entryPath: string, subscription: WatchmanSubscription): WatchmanSubscription {
-    this._subscriptions[path.normalize(entryPath)] = subscription;
-    return subscription;
+  _setSubscription(entryPath: string, subscription: WatchmanSubscription): void {
+    this._subscriptions.set(path.normalize(entryPath), subscription);
   }
 
   _deleteSubscription(entryPath: string): void {
-    delete this._subscriptions[path.normalize(entryPath)];
+    this._subscriptions.delete(path.normalize(entryPath));
   }
 
-  _onSubscriptionResult(response: WatchmanSubscriptionResponse) {
+  _onSubscriptionResult(response: WatchmanSubscriptionResponse): void {
     const subscription = this._getSubscription(response.subscription);
-    if (!subscription) {
-      return logger.error('Subscription not found for response:!', response);
+    if (subscription == null) {
+      logger.error('Subscription not found for response:!', response);
+      return;
     }
     subscription.emit('change', response.files);
   }
 
-  async watchDirectoryRecursive(localDirectoryPath: string) : Promise<WatchmanSubscription> {
+  async watchDirectoryRecursive(localDirectoryPath: string): Promise<WatchmanSubscription> {
     const existingSubscription = this._getSubscription(localDirectoryPath);
     if (existingSubscription) {
       existingSubscription.subscriptionCount++;
@@ -136,14 +138,14 @@ class WatchmanClient {
         options.expression = ['dirname', relativePath];
       }
       // relativePath is undefined if watchRoot is the same as directoryPath.
-      const subscription = this._setSubscription(localDirectoryPath,
-          new WatchmanSubscription(
-            /*subscriptionRoot*/ watchRoot,
-            /*pathFromSubscriptionRootToSubscriptionPath*/ relativePath,
-            /*subscriptionPath*/ localDirectoryPath,
-            /*subscriptionCount*/ 1,
-            /*subscriptionOptions*/ options
-          ));
+      const subscription = new WatchmanSubscription(
+        /*subscriptionRoot*/ watchRoot,
+        /*pathFromSubscriptionRootToSubscriptionPath*/ relativePath,
+        /*subscriptionPath*/ localDirectoryPath,
+        /*subscriptionCount*/ 1,
+        /*subscriptionOptions*/ options,
+      );
+      this._setSubscription(localDirectoryPath, subscription);
       await this._subscribe(watchRoot, localDirectoryPath, options);
       return subscription;
     }
@@ -153,25 +155,21 @@ class WatchmanClient {
     return !!this._getSubscription(entryPath);
   }
 
-  async unwatch(entryPath: string): Promise {
+  async unwatch(entryPath: string): Promise<void> {
     const subscription = this._getSubscription(entryPath);
 
-    if (!subscription) {
-      return logger.error('No watcher entity found with path:', entryPath);
+    if (subscription == null) {
+      logger.error('No watcher entity found with path:', entryPath);
+      return;
     }
 
     if (--subscription.subscriptionCount === 0) {
-
       await this._unsubscribe(subscription.path, subscription.name);
       // Don't delete the watcher if there are other users for it.
       if (!subscription.pathFromSubscriptionRootToSubscriptionPath) {
         await this._deleteWatcher(entryPath);
       }
       this._deleteSubscription(entryPath);
-
-      if (isEmpty(this._subscriptions)) {
-        await this.dispose();
-      }
     }
   }
 
@@ -191,7 +189,7 @@ class WatchmanClient {
   async _watch(directoryPath: string): Promise {
     const response = await this._command('watch', directoryPath);
     if (response.warning) {
-      logger.warn('watchman warning: ', response.warning);
+      logger.error('watchman warning: ', response.warning);
     }
   }
 
@@ -202,7 +200,7 @@ class WatchmanClient {
     }
     const response = await this._command('watch-project', directoryPath);
     if (response.warning) {
-      logger.warn('watchman warning: ', response.warning);
+      logger.error('watchman warning: ', response.warning);
     }
     return response;
   }
@@ -218,10 +216,10 @@ class WatchmanClient {
   }
 
   _subscribe(
-        watchRoot: string,
-        subscriptionName: ?string,
-        options: WatchmanSubscriptionOptions
-      ): Promise<WatchmanSubscription> {
+    watchRoot: string,
+    subscriptionName: ?string,
+    options: WatchmanSubscriptionOptions,
+  ): Promise<WatchmanSubscription> {
     return this._command('subscribe', watchRoot, subscriptionName, options);
   }
 
