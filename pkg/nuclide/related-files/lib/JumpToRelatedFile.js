@@ -13,83 +13,61 @@ import type RelatedFileFinder from './RelatedFileFinder';
 
 import {trackOperationTiming} from '../../analytics';
 
-const GRAMMARS = [
-  'source.c',
-  'source.cpp',
-  'source.objc',
-  'source.objcpp',
-];
-
 module.exports =
 /**
  * Sets up listeners so the user can jump to related files.
  *
- * Clients must call `disable()` once they're done with an instance.
+ * Clients must call `dispose()` once they're done with an instance.
  */
 class JumpToRelatedFile {
   _commandSubscriptionsMap: Map;
   _relatedFileFinder: RelatedFileFinder;
-  _languageListener: ?Disposable;
 
   constructor(relatedFileFinder: RelatedFileFinder) {
     this._relatedFileFinder = relatedFileFinder;
     this._commandSubscriptionsMap = new Map();
   }
 
-  enable(): void {
-    // The feature is already enabled.
-    if (this._languageListener) {
-      return;
-    }
-
-    // A map from TextEditor to Disposable.
-    const {observeLanguageTextEditors} = require('../../atom-helpers');
-    this._languageListener = observeLanguageTextEditors(
-        GRAMMARS,
-        textEditor => this._enableInTextEditor(textEditor),
-        textEditor => this._disableInTextEditor(textEditor));
-  }
-
-  disable(): void {
-    // The feature is already disabled.
-    const languageListener = this._languageListener;
-    if (!languageListener) {
-      return;
-    }
-
+  dispose(): void {
     this._commandSubscriptionsMap.forEach(subscription => subscription.dispose());
     this._commandSubscriptionsMap.clear();
-    languageListener.dispose();
-    this._languageListener = null;
   }
 
-  _enableInTextEditor(textEditor: TextEditor) {
+  enableInTextEditor(textEditor: TextEditor) {
+    if (this._commandSubscriptionsMap.has(textEditor)) {
+      return; // Already enabled.
+    }
+
     // We add this class to make our keybinding's selector more specific than
     // the one for `editor:move-line-up` and `editor:move-line-down`.
     const textEditorEl = atom.views.getView(textEditor);
-    textEditorEl.classList.add('editor-objc');
+    textEditorEl.classList.add('related-files');
 
     const commandSubscription = atom.commands.add(
       textEditorEl,
       {
-        'autocomplete-plus-clang:jump-to-next-related-file': () => {
+        'nuclide-related-files:jump-to-next-related-file': () => {
           const path = textEditor.getPath();
           if (path) {
             trackOperationTiming(
-              'autocomplete-plus-clang:jump-to-next-related-file',
-              () => this._open(this.getNextRelatedFile(path)));
+              'nuclide-related-files:jump-to-next-related-file',
+              async () => this._open(await this.getNextRelatedFile(path)),
+            );
           }
         },
-        'autocomplete-plus-clang:jump-to-previous-related-file': () => {
+        'nuclide-related-files:jump-to-previous-related-file': () => {
           const path = textEditor.getPath();
           if (path) {
             trackOperationTiming(
-              'autocomplete-plus-clang:jump-to-previous-related-file',
-              () => this._open(this.getPreviousRelatedFile(path)));
+              'nuclide-related-files:jump-to-previous-related-file',
+              async () => this._open(await this.getPreviousRelatedFile(path)),
+            );
           }
         },
       });
     this._commandSubscriptionsMap.set(textEditor, commandSubscription);
+
+    textEditor.onDidDestroy(this._disableInTextEditor.bind(this));
   }
 
   _disableInTextEditor(textEditor: TextEditor): void {
@@ -104,8 +82,8 @@ class JumpToRelatedFile {
    * Gets the next related file, which Xcode defines as the one that comes
    * before the current one alphabetically.
    */
-  getNextRelatedFile(path: string): string {
-    const {relatedFiles, index} = this._relatedFileFinder.find(path);
+  async getNextRelatedFile(path: string): Promise<string> {
+    const {relatedFiles, index} = await this._relatedFileFinder.find(path);
     return relatedFiles[(relatedFiles.length + index - 1) % relatedFiles.length];
   }
 
@@ -113,8 +91,8 @@ class JumpToRelatedFile {
    * Gets the previous related file, which Xcode defines as the one that comes
    * after the current one alphabetically.
    */
-  getPreviousRelatedFile(path: string): string {
-    const {relatedFiles, index} = this._relatedFileFinder.find(path);
+  async getPreviousRelatedFile(path: string): Promise<string> {
+    const {relatedFiles, index} = await this._relatedFileFinder.find(path);
     return relatedFiles[(index + 1) % relatedFiles.length];
   }
 

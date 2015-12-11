@@ -18,7 +18,6 @@ import invariant from 'assert';
 import {trackOperationTiming} from '../../analytics';
 
 let libClangProcess = (null : ?LibClangProcess);
-let jumpToRelatedFile = null;
 
 module.exports = {
   activate() {
@@ -30,11 +29,6 @@ module.exports = {
     // dependencies cannot be passed from above, so they must be set via a
     // static method.
     require('./main-shared').setSharedLibClangProcess(libClangProcess);
-
-    const JumpToRelatedFile = require('./JumpToRelatedFile');
-    const RelatedFileFinder = require('./RelatedFileFinder');
-    jumpToRelatedFile = new JumpToRelatedFile(new RelatedFileFinder());
-    jumpToRelatedFile.enable();
   },
 
   /** Provider for autocomplete service. */
@@ -57,10 +51,6 @@ module.exports = {
   },
 
   deactivate() {
-    if (jumpToRelatedFile) {
-      jumpToRelatedFile.disable();
-      jumpToRelatedFile = null;
-    }
   },
 
   getHyperclickProvider(): HyperclickProvider {

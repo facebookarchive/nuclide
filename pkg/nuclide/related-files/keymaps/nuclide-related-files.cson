@@ -1,0 +1,3 @@
+'atom-text-editor:not(.mini).related-files':
+  'ctrl-cmd-up': 'nuclide-related-files:jump-to-next-related-file'
+  'ctrl-cmd-down': 'nuclide-related-files:jump-to-previous-related-file'
