@@ -9,14 +9,12 @@
  * the root directory of this source tree.
  */
 
-import type {
-  Provider,
-} from '../../quick-open-interfaces';
+import {HackSymbolProvider} from './HackSymbolProvider';
+type Provider = typeof HackSymbolProvider;
 
 let providerInstance: ?Provider;
 function getProviderInstance(): Provider {
   if (providerInstance == null) {
-    const HackSymbolProvider = require('./HackSymbolProvider');
     providerInstance = {...HackSymbolProvider};
   }
   return providerInstance;

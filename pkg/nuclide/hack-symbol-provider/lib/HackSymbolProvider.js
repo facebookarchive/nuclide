@@ -20,6 +20,8 @@ import {getHackSearchService} from './getHackSearchService';
 import path from 'path';
 import React from 'react-for-atom';
 
+export type HackFileResult = FileResult & HackSearchPosition;
+
 const ICONS = {
   'interface': 'icon-puzzle',
   'function': 'icon-zap',
@@ -34,7 +36,7 @@ const ICONS = {
   'unknown': 'icon-squirrel',
 };
 
-function bestIconForItem(item: FileResult): string {
+function bestIconForItem(item: HackFileResult): string {
   if (!item.additionalInfo) {
     return ICONS.default;
   }
@@ -51,7 +53,7 @@ function bestIconForItem(item: FileResult): string {
   return ICONS.unknown;
 }
 
-const HackSymbolProvider: Provider<HackSearchPosition> = {
+export const HackSymbolProvider: Provider<HackFileResult> = {
 
   getName(): string {
     return 'HackSymbolProvider';
@@ -82,8 +84,11 @@ const HackSymbolProvider: Provider<HackSearchPosition> = {
     return service != null;
   },
 
-  async executeQuery(query: string, directory: atom$Directory): Promise<Array<HackSearchPosition>> {
-    if (query.length === 0) {
+  async executeQuery(
+    query: string,
+    directory?: atom$Directory
+  ): Promise<Array<HackFileResult>> {
+    if (query.length === 0 || directory == null) {
       return [];
     }
 
@@ -93,10 +98,10 @@ const HackSymbolProvider: Provider<HackSearchPosition> = {
     }
 
     const directoryPath = directory.getPath();
-    return await service.queryHack(directoryPath, query);
+    return (await service.queryHack(directoryPath, query): Array<HackFileResult>);
   },
 
-  getComponentForItem(item: HackSearchPosition): ReactElement {
+  getComponentForItem(item: HackFileResult): ReactElement {
     const filePath = item.path;
     const filename = path.basename(filePath);
     const name = item.name || '';
@@ -111,5 +116,3 @@ const HackSymbolProvider: Provider<HackSearchPosition> = {
     );
   },
 };
-
-module.exports = HackSymbolProvider;

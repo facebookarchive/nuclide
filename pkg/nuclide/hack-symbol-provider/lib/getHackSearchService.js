@@ -8,7 +8,13 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-import type {HackSearchService} from '../../hack-search-service';
+
+import type {HackFileResult} from './HackSymbolProvider';
+
+type HackSearchService = {
+  isAvailableForDirectoryHack(directoryPath: string): Promise<boolean>;
+  queryHack(directoryPath: string, query: string): Promise<Array<HackFileResult>>;
+};
 
 import {getServiceByNuclideUri} from '../../client';
 

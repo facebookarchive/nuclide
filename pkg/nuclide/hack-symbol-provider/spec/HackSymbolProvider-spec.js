@@ -10,9 +10,9 @@
  */
 
 import type {HackSearchPosition} from '../../hack-base/lib/types';
-import type {HackSearchService} from '../../hack-search-service';
+import type {NuclideUri} from '../../remote-uri';
 
-import HackSymbolProvider from '../lib/HackSymbolProvider';
+import {HackSymbolProvider} from '../lib/HackSymbolProvider';
 import React from 'react-for-atom';
 import {clearRequireCache, uncachedRequire} from '../../test-helpers';
 import invariant from 'assert';
@@ -23,7 +23,7 @@ describe('HackSymbolProvider', () => {
   // These tests are set up so that calls to getHackSearchService() will delegate to this
   // function, so make sure to define this function at the start of your test to mock out this
   // behavior.
-  let getHackSearchService: ?((directory: atom$Directory) => Promise<?HackSearchService>);
+  let getHackSearchService: ?((directory: atom$Directory) => Promise<mixed>);
 
   beforeEach(() => {
     getHackSearchService = null;
@@ -54,7 +54,8 @@ describe('HackSymbolProvider', () => {
           hackSearchService);
 
         waitsForPromise(async () => {
-          const isEligible = await HackSymbolProvider.isEligibleForDirectory(mockDirectory);
+          invariant(HackSymbolProvider.isEligibleForDirectory != null);
+          const isEligible = await HackSymbolProvider.isEligibleForDirectory((mockDirectory: any));
           expect(isEligible).toBe(true);
           expect(getHackSearchService).toHaveBeenCalledWith(mockDirectory);
         });
@@ -68,7 +69,8 @@ describe('HackSymbolProvider', () => {
         getHackSearchService = jasmine.createSpy('getHackSearchService').andReturn(null);
 
         waitsForPromise(async () => {
-          const isEligible = await HackSymbolProvider.isEligibleForDirectory(mockDirectory);
+          invariant(HackSymbolProvider.isEligibleForDirectory != null);
+          const isEligible = await HackSymbolProvider.isEligibleForDirectory((mockDirectory: any));
           expect(isEligible).toBe(false);
           expect(getHackSearchService).toHaveBeenCalledWith(mockDirectory);
         });
@@ -85,7 +87,7 @@ describe('HackSymbolProvider', () => {
 
     it('returns an empty array for an empty query', () => {
       waitsForPromise(async () => {
-        const results = await HackSymbolProvider.executeQuery('', mockLocalDirectory);
+        const results = await HackSymbolProvider.executeQuery('', (mockLocalDirectory: any));
         expect(results).toEqual([]);
       });
     });
@@ -102,7 +104,7 @@ describe('HackSymbolProvider', () => {
           hackSearchService);
 
         const query = 'asdf';
-        const results = await HackSymbolProvider.executeQuery(query, mockLocalDirectory);
+        const results = await HackSymbolProvider.executeQuery(query, (mockLocalDirectory: any));
 
         // Verify the expected results were returned by delegating to the HackSearchService.
         expect(results).toEqual(cannedResults);
@@ -133,7 +135,7 @@ describe('HackSymbolProvider', () => {
           hackSearchService);
 
         const query = 'asdf';
-        const results = await HackSymbolProvider.executeQuery(query, mockRemoteDirectory);
+        const results = await HackSymbolProvider.executeQuery(query, (mockRemoteDirectory: any));
 
         // Verify the expected results were returned by delegating to the HackSearchService,
         // and that local file paths are converted to NuclideUris.
@@ -150,7 +152,12 @@ describe('HackSymbolProvider', () => {
         path: '/some/arbitrary/path',
         name: 'IExampleSymbolInterface',
         additionalInfo: 'interface',
+        column: 1,
+        length: 2,
+        line: 3,
+        scope: 'scope',
       };
+      invariant(HackSymbolProvider.getComponentForItem != null);
       const reactElement = HackSymbolProvider.getComponentForItem(mockResult);
       expect(reactElement.props.title).toBe('interface');
       const renderedComponent = TestUtils.renderIntoDocument(reactElement);
@@ -162,7 +169,7 @@ describe('HackSymbolProvider', () => {
   });
 });
 
-function createDummyHackSearchService(): HackSearchService {
+function createDummyHackSearchService(): any {
   return {
     queryHack(
       rootDirectory: NuclideUri,
