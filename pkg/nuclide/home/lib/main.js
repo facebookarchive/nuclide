@@ -37,9 +37,6 @@ function activate(): void {
   considerDisplayingHome();
 }
 
-// $FlowIssue https://github.com/facebook/flow/issues/620
-const config = require('../package.json').nuclide.config;
-
 function setHomeFragments(homeFragments: HomeFragments): Disposable {
   allHomeFragments.add(homeFragments);
   if (paneItem) {
@@ -91,7 +88,6 @@ function deactivate(): void {
 
 module.exports = {
   activate,
-  config,
   setHomeFragments,
   deactivate,
 

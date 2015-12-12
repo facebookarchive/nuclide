@@ -37,10 +37,6 @@ let flowDiagnosticsProvider;
 let disposables;
 
 module.exports = {
-
-  // $FlowIssue https://github.com/facebook/flow/issues/620
-  config: require('../package.json').nuclide.config,
-
   activate() {
     if (!disposables) {
       disposables = new CompositeDisposable();

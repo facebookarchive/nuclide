@@ -52,8 +52,4 @@ module.exports = {
       subscriptions = null;
     }
   },
-
-  // $FlowIssue https://github.com/facebook/flow/issues/620
-  config: require('../package.json').nuclide.config,
-
 };

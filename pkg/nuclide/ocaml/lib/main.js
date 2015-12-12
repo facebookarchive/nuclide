@@ -10,9 +10,6 @@
  */
 
 module.exports = {
-  // $FlowIssue https://github.com/facebook/flow/issues/620
-  config: require('../package.json').nuclide.config,
-
   activate(): void {
   },
 

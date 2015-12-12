@@ -65,9 +65,6 @@ let lintOnTheFly = false;
 const allLinterAdapters = new Set();
 
 module.exports = {
-  // $FlowIssue https://github.com/facebook/flow/issues/620
-  config: require('../package.json').nuclide.config,
-
   activate(state: ?Object): void {
     if (!disposables) {
       disposables = new CompositeDisposable();

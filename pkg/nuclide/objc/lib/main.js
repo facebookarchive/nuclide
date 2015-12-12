@@ -41,9 +41,6 @@ class Activation {
 let activation: ?Activation;
 
 module.exports = {
-  // $FlowIssue https://github.com/facebook/flow/issues/620
-  config: require('../package.json').nuclide.config,
-
   activate(state: ?mixed): void {
     if (!activation) {
       activation = new Activation();

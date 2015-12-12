@@ -62,9 +62,6 @@ let keyDownTime = 0;
 let keyLatency = 0;
 let lastKeyLatency = 0;
 
-// $FlowIssue https://github.com/facebook/flow/issues/620
-export const config = require('../package.json').nuclide.config;
-
 class Activation {
   disposables: CompositeDisposable;
 

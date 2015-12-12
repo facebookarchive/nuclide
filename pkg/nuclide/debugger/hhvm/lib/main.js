@@ -12,10 +12,6 @@
 import type {HomeFragments} from '../../../home-interfaces';
 
 module.exports = {
-
-  // $FlowIssue https://github.com/facebook/flow/issues/620
-  config: require('../package.json').nuclide.config,
-
   activate(state: mixed): void {
   },
 

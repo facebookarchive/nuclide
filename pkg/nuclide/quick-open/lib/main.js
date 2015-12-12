@@ -279,11 +279,8 @@ function getActivation(): Activation {
 }
 
 let listeners: ?CompositeDisposable = null;
+
 module.exports = {
-
-  // $FlowIssue https://github.com/facebook/flow/issues/620
-  config: require('../package.json').nuclide.config,
-
   activate(): void {
     listeners = new CompositeDisposable();
     listeners.add(

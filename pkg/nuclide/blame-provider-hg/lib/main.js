@@ -14,9 +14,6 @@ import type {BlameProvider} from '../../blame-base';
 let blameProvider;
 
 module.exports = {
-  // $FlowIssue https://github.com/facebook/flow/issues/620
-  config: require('../package.json').nuclide.config,
-
   activate(state: ?Object): void {
   },
 

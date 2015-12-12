@@ -13,9 +13,6 @@ import {CompositeDisposable} from 'atom';
 let subscriptions: ?CompositeDisposable = null;
 
 module.exports = {
-  // $FlowIssue https://github.com/facebook/flow/issues/620
-  config: require('../package.json').nuclide.config,
-
   activate() {
     if (subscriptions) {
       return;
