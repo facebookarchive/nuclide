@@ -22,7 +22,6 @@ const {PropTypes} = React;
 class FileTree extends React.Component {
   _subscriptions: CompositeDisposable;
 
-  // $FlowIssue https://github.com/facebook/flow/issues/850
   static trackFirstRender = once(instance => {
     const rootKeysLength = instance.props.store.getRootKeys().length;
     // Wait using `setTimeout` and not `process.nextTick` or `setImmediate`

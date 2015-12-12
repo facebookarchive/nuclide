@@ -9,20 +9,27 @@
  * the root directory of this source tree.
  */
 
-import {trackTiming} from '../../analytics';
-
-const {findDiagnostics, getHackLanguageForUri, getCachedHackLanguageForUri} = require('./hack');
-const {RequestSerializer} = require('../../commons').promises;
-const {DiagnosticsProviderBase} = require('../../diagnostics/provider-base');
-const {Range} = require('atom');
-import invariant from 'assert';
-
-const {HACK_GRAMMARS_SET} = require('../../hack-common/lib/constants');
-
+import type {NuclideUri} from '../../remote-uri';
 import type {BusySignalProviderBase} from '../../busy-signal-provider-base';
 import type HackLanguage from './HackLanguage';
-import type {HackDiagnosticItem, HackError} from './types';
+import type {HackDiagnostic, SingleHackMessage} from '../../hack-base/lib/types';
+import type {
+  FileDiagnosticMessage,
+  MessageUpdateCallback,
+  MessageInvalidationCallback,
+  DiagnosticProviderUpdate,
+} from '../../diagnostics/base';
 
+import {trackTiming} from '../../analytics';
+import {findDiagnostics, getHackLanguageForUri, getCachedHackLanguageForUri} from './hack';
+import {array, promises} from '../../commons';
+import {DiagnosticsProviderBase} from '../../diagnostics/provider-base';
+import {Range} from 'atom';
+import invariant from 'assert';
+
+import {HACK_GRAMMARS_SET} from '../../hack-common/lib/constants';
+
+const {RequestSerializer} = promises;
 /**
  * Currently, a diagnostic from Hack is an object with a "message" property.
  * Each item in the "message" array is an object with the following fields:
@@ -39,7 +46,7 @@ import type {HackDiagnosticItem, HackError} from './types';
  * with which the usage disagrees. Note that these could occur in different
  * files.
  */
-function extractRange(message: HackError): Range {
+function extractRange(message: SingleHackMessage): atom$Range {
   // It's unclear why the 1-based to 0-based indexing works the way that it
   // does, but this has the desired effect in the UI, in practice.
   return new Range(
@@ -49,7 +56,7 @@ function extractRange(message: HackError): Range {
 }
 
 // A trace object is very similar to an error object.
-function hackMessageToTrace(traceError: HackError): Object {
+function hackMessageToTrace(traceError: SingleHackMessage): Object {
   return {
     type: 'Trace',
     text: traceError['descr'],
@@ -59,17 +66,18 @@ function hackMessageToTrace(traceError: HackError): Object {
 }
 
 function hackMessageToDiagnosticMessage(
-  hackDiagnostic: HackDiagnosticItem
+  hackDiagnostic: {message: HackDiagnostic;},
 ): FileDiagnosticMessage {
   const {message: hackMessages} = hackDiagnostic;
 
   const causeMessage = hackMessages[0];
+  invariant(causeMessage.path != null);
   const diagnosticMessage: FileDiagnosticMessage = {
     scope: 'file',
     providerName: 'Hack',
     type: 'Error',
-    text: causeMessage['descr'],
-    filePath: causeMessage['path'],
+    text: causeMessage.descr,
+    filePath: causeMessage.path,
     range: extractRange(causeMessage),
   };
 
@@ -154,7 +162,7 @@ class HackDiagnosticsProvider {
     this._providerBase.publishMessageUpdate(this._processDiagnostics(diagnostics));
   }
 
-  _processDiagnostics(diagnostics: Array<HackDiagnosticItem>): DiagnosticProviderUpdate {
+  _processDiagnostics(diagnostics: Array<{message: HackDiagnostic;}>): DiagnosticProviderUpdate {
     // Convert array messages to Error Objects with Traces.
     const fileDiagnostics = diagnostics.map(hackMessageToDiagnosticMessage);
 
@@ -180,7 +188,7 @@ class HackDiagnosticsProvider {
     if (!filePaths) {
       return [];
     }
-    return require('../../commons').array.from(filePaths);
+    return array.from(filePaths);
   }
 
   _receivedNewUpdateSubscriber(callback: MessageUpdateCallback): void {

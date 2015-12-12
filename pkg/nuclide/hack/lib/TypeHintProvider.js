@@ -9,14 +9,16 @@
  * the root directory of this source tree.
  */
 
-const hack = require('./hack');
+import type {TypeHint} from '../../type-hint-interfaces';
+
+import {typeHintFromEditor} from './hack';
 import {trackTiming} from '../../analytics';
 
 module.exports = class TypeHintProvider {
 
   @trackTiming('hack.typeHint')
-  typeHint(editor: TextEditor, position: Point): Promise<TypeHint> {
-    return hack.typeHintFromEditor(editor, position);
+  typeHint(editor: atom$TextEditor, position: atom$Point): Promise<?TypeHint> {
+    return typeHintFromEditor(editor, position);
   }
 
 };

@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {HyperclickSuggestion} from '../../hyperclick-interfaces';
+
 import {findDefinition} from './hack';
 import {goToLocation} from '../../atom-helpers';
 import {trackTiming} from '../../analytics';

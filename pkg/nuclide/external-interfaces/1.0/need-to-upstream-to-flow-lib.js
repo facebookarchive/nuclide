@@ -12,6 +12,13 @@
 
 /* eslint-disable no-unused-vars */
 
+declare class Worker {
+  addEventListener(type: 'message', listener: (message: {data: mixed}) => mixed): void;
+  addEventListener(type: 'error', listener: (error: Error) => mixed): void;
+  terminate(): void;
+  postMessage(message: mixed): void;
+}
+
 type IDBDatabase = {
   close: () => void;
   transaction: (key: string) => any;

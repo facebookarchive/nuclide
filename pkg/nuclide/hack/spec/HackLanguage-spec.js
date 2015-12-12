@@ -9,9 +9,9 @@
  * the root directory of this source tree.
  */
 
-const path = require('path');
-const fs = require('fs');
-const HackLanguage = require('../lib/HackLanguage');
+import path from 'path';
+import fs from 'fs';
+import HackLanguage from '../lib/HackLanguage';
 
 describe('HackLanguage', () => {
   let hackLanguage;
@@ -114,6 +114,9 @@ class HackClass {}
           line: 7,
           column: 6,
           length: 9,
+          name : undefined,
+          scope : undefined,
+          additionalInfo : undefined,
         }]);
       });
     });

@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const {compareHackCompletions} = require('../lib/utils');
+import {compareHackCompletions} from '../lib/utils';
 
 describe('utils', () => {
 

@@ -9,8 +9,9 @@
  * the root directory of this source tree.
  */
 
-const {Point, Range} = require('atom');
+import {Point, Range} from 'atom';
 import {trackTiming} from '../../analytics';
+import {fetchCompletionsForEditor} from './hack';
 
 const FIELD_ACCESSORS = ['->', '::'];
 const PREFIX_LOOKBACK = Math.max.apply(null, FIELD_ACCESSORS.map(prefix => prefix.length));
@@ -19,8 +20,8 @@ class AutocompleteProvider {
 
   @trackTiming('hack.getAutocompleteSuggestions')
   async getAutocompleteSuggestions(
-      request: {editor: TextEditor; bufferPosition: Point; scopeDescriptor: any; prefix: string}):
-      Promise<Array<{snippet: string; rightLabel: string}>> {
+    request: atom$AutocompleteRequest,
+  ): Promise<?Array<atom$AutocompleteSuggestion>> {
     const {editor, bufferPosition} = request;
     const replacementPrefix = findHackPrefix(editor);
 
@@ -28,7 +29,6 @@ class AutocompleteProvider {
       return [];
     }
 
-    const {fetchCompletionsForEditor} = require('./hack');
     const completions = await fetchCompletionsForEditor(editor, replacementPrefix);
 
     return completions.map(completion => {
@@ -45,17 +45,17 @@ class AutocompleteProvider {
  * Returns true if `bufferPosition` is prefixed with any of the passed `checkPrefixes`.
  */
 function hasPrefix(
-    editor: TextEditor,
-    bufferPosition: Point,
+    editor: atom$TextEditor,
+    bufferPosition: atom$Point,
     checkPrefixes: Array<string>,
-    prefixLookback: number
+    prefixLookback: number,
   ): boolean {
   const priorChars = editor.getTextInBufferRange(
       new Range(new Point(bufferPosition.row, bufferPosition.column - prefixLookback), bufferPosition));
   return checkPrefixes.some(prefix => priorChars.endsWith(prefix));
 }
 
-function findHackPrefix(editor: TextEditor): ?string {
+function findHackPrefix(editor: atom$TextEditor): string {
   const cursor = editor.getLastCursor();
   // We use custom wordRegex to adopt php variables starting with $.
   const currentRange = cursor.getCurrentWordBufferRange({wordRegex:/(\$\w*)|\w+/});
@@ -68,7 +68,7 @@ function findHackPrefix(editor: TextEditor): ?string {
   if (prefix === '$' || !/[\W]$/.test(prefix)) {
     return prefix;
   } else {
-    return null;
+    return '';
   }
 }
 

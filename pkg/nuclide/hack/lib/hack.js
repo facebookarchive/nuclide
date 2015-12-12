@@ -9,17 +9,21 @@
  * the root directory of this source tree.
  */
 
+import type {NuclideUri} from '../../remote-uri';
 import type {HackReference} from '../../hack-base/lib/types';
-import type {HackDiagnosticItem} from './types';
+import type {TypeHint} from '../../type-hint-interfaces';
+import type {HackDiagnostic} from '../../hack-base/lib/types';
+
 
 import invariant from 'assert';
 import {extractWordAtPosition} from '../../atom-helpers';
 import HackLanguage from './HackLanguage';
 import {getPath, isRemote} from '../../remote-uri';
-import {Range} from 'atom';
+import {Disposable, Range} from 'atom';
 import {SymbolType} from '../../hack-common';
 import {getHackService} from './utils';
 import {RemoteConnection} from '../../remote-connection';
+import {compareHackCompletions} from './utils';
 
 const HACK_WORD_REGEX = /[a-zA-Z0-9_$]+/g;
 
@@ -48,8 +52,8 @@ const LOCAL_URI_KEY = 'local-hack-key';
 module.exports = {
 
   async findDiagnostics(
-    editor: TextEditor
-  ): Promise<Array<HackDiagnosticItem>> {
+    editor: atom$TextEditor,
+  ): Promise<Array<{message: HackDiagnostic;}>> {
     const filePath = editor.getPath();
     const hackLanguage = await getHackLanguageForUri(filePath);
     if (!hackLanguage || !filePath) {
@@ -69,7 +73,7 @@ module.exports = {
     return diagnostics;
   },
 
-  async fetchCompletionsForEditor(editor: TextEditor, prefix: string): Promise<Array<any>> {
+  async fetchCompletionsForEditor(editor: atom$TextEditor, prefix: string): Promise<Array<any>> {
     const hackLanguage = await getHackLanguageForUri(editor.getPath());
     const filePath = editor.getPath();
     if (!hackLanguage || !filePath) {
@@ -85,9 +89,7 @@ module.exports = {
     // Filter out the completions that do not contain the prefix as a token in the match text case insentively.
     const tokenLowerCase = prefix.toLowerCase();
 
-    const {compareHackCompletions} = require('./utils');
     const hackCompletionsCompartor = compareHackCompletions(prefix);
-
     return completions
       .filter(completion => completion.matchText.toLowerCase().indexOf(tokenLowerCase) >= 0)
       // Sort the auto-completions based on a scoring function considering:
@@ -95,7 +97,7 @@ module.exports = {
       .sort((completion1, completion2) => hackCompletionsCompartor(completion1.matchText, completion2.matchText));
   },
 
-  async formatSourceFromEditor(editor: TextEditor, range: atom$Range): Promise<string> {
+  async formatSourceFromEditor(editor: atom$TextEditor, range: atom$Range): Promise<string> {
     const buffer = editor.getBuffer();
     const filePath = editor.getPath();
     const hackLanguage = await getHackLanguageForUri(filePath);
@@ -134,7 +136,7 @@ module.exports = {
     );
   },
 
-  async typeHintFromEditor(editor: TextEditor, position: atom$Point): Promise<?TypeHint> {
+  async typeHintFromEditor(editor: atom$TextEditor, position: atom$Point): Promise<?TypeHint> {
     const filePath = editor.getPath();
     const hackLanguage = await getHackLanguageForUri(filePath);
     if (!hackLanguage || !filePath) {
@@ -200,7 +202,7 @@ module.exports = {
   },
 
   async findReferences(
-    editor: TextEditor,
+    editor: atom$TextEditor,
     line: number,
     column: number
   ): Promise<?{baseUri: string, symbolName: string; references: Array<HackReference>}> {
@@ -228,16 +230,23 @@ module.exports = {
     return {baseUri: hackRoot, symbolName: symbol.name, references};
   },
 
-  async isFinishedLoadingDependencies(editor: TextEditor): Promise<boolean> {
+  async isFinishedLoadingDependencies(editor: atom$TextEditor): Promise<boolean> {
     const hackLanguage = await getHackLanguageForUri(editor.getPath());
+    if (hackLanguage == null) {
+      return true;
+    }
     return hackLanguage.isFinishedLoadingDependencies();
   },
 
   async onFinishedLoadingDependencies(
-    editor: TextEditor,
+    editor: atom$TextEditor,
     callback: (() => mixed),
   ): Promise<atom$Disposable> {
     const hackLanguage = await getHackLanguageForUri(editor.getPath());
+    if (hackLanguage == null) {
+      callback();
+      return new Disposable(() => {});
+    }
     return hackLanguage.onFinishedLoadingDependencies(callback);
   },
 
@@ -256,15 +265,18 @@ function getKeyOfUri(uri: NuclideUri): ?string {
 
 function getCachedHackLanguageForUri(uri: NuclideUri): ?HackLanguage {
   const key = getKeyOfUri(uri);
-  return key == null ? null : uriToHackLanguage.get();
+  return key == null ? null : uriToHackLanguage.get(uri);
 }
 
-function getHackLanguageForUri(uri: NuclideUri): Promise<?HackLanguage> {
+async function getHackLanguageForUri(uri: ?NuclideUri): Promise<?HackLanguage> {
+  if (uri == null || uri.length === 0) {
+    return null;
+  }
   const key = getKeyOfUri(uri);
   if (key == null) {
     return null;
   }
-  return createHackLanguageIfNotExisting(key, uri);
+  return await createHackLanguageIfNotExisting(key, uri);
 }
 
 async function createHackLanguageIfNotExisting(

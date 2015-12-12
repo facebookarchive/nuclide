@@ -12,16 +12,15 @@
 // We can't pull in nuclide-find-references as a dependency, unfortunately.
 // import type {FindReferencesReturn} from 'nuclide-find-references';
 
-const {findReferences} = require('./hack');
-const {HACK_GRAMMARS_SET} = require('../../hack-common');
+import {findReferences} from './hack';
+import {HACK_GRAMMARS_SET} from '../../hack-common';
 import {trackOperationTiming} from '../../analytics';
+import {withLoadingNotification} from '../../atom-helpers';
 
 async function doFindReferences(
-  textEditor: TextEditor,
+  textEditor: atom$TextEditor,
   position: atom$Point,
 ): Promise<?Object /*FindReferencesReturn*/> {
-  const {withLoadingNotification} = require('../../atom-helpers');
-
   const result = await withLoadingNotification(
     findReferences(textEditor, position.row, position.column),
     'Loading references from Hack server...',
@@ -62,7 +61,7 @@ async function doFindReferences(
 }
 
 module.exports = {
-  async isEditorSupported(textEditor: TextEditor): Promise<boolean> {
+  async isEditorSupported(textEditor: atom$TextEditor): Promise<boolean> {
     const fileUri = textEditor.getPath();
     if (!fileUri || !HACK_GRAMMARS_SET.has(textEditor.getGrammar().scopeName)) {
       return false;
@@ -70,7 +69,7 @@ module.exports = {
     return true;
   },
 
-  findReferences(editor: TextEditor, position: atom$Point): Promise<?Object> {
+  findReferences(editor: atom$TextEditor, position: atom$Point): Promise<?Object> {
     return trackOperationTiming('hack:findReferences', () => doFindReferences(editor, position));
   },
 };

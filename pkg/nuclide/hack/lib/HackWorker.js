@@ -9,15 +9,17 @@
  * the root directory of this source tree.
  */
 
-const fs = require('fs');
-const path = require('path');
-const logger = require('../../logging').getLogger();
+import fs from 'fs';
+import path from 'path';
+import {getLogger} from '../../logging';
+
+const logger = getLogger();
 
 const DEFAULT_WEBWORKER_TIMEOUT = 30 * 1000;
 const DEFAULT_POOR_PERF_TIMEOUT = 8 * 1000;
 
 type WorkerTask = {
-  workerMessage: any;
+  workerMessage: mixed;
   onResponse: (response: any) => void;
   onFail: (error: Error) => void;
 };
@@ -29,10 +31,13 @@ type WorkerTask = {
  * This is done as a web worker not to block the main UI thread when executing language tasks.
  */
 
-type HackWorkerOptions = {webWorkerTimeout: ?number; poorPerfTimeout: ?number; worker: ?Worker;};
+type HackWorkerOptions = {
+  webWorkerTimeout?: number;
+  poorPerfTimeout?: number;
+  worker?: Worker;
+};
 
 class HackWorker {
-
   _activeTask: ?WorkerTask;
   _taskQueue: Array<WorkerTask>;
   _depTaskQueue: Array<WorkerTask>;
@@ -57,7 +62,7 @@ class HackWorker {
   /**
    * Runs a web worker task and returns a promise of the value expected from the hack worker.
    */
-  runWorkerTask(workerMessage: any, options: any): Promise<any> {
+  runWorkerTask(workerMessage: mixed, options: any): Promise<any> {
     return new Promise((resolve, reject) => {
       options = options || {};
       const queue = options.isDependency ? this._depTaskQueue : this._taskQueue;
@@ -82,11 +87,11 @@ class HackWorker {
     });
   }
 
-  dispose() {
+  dispose(): void {
     this._worker.terminate();
   }
 
-  _dispatchTaskIfReady() {
+  _dispatchTaskIfReady(): void {
     if (this._activeTask) {
       return;
     }
@@ -108,11 +113,11 @@ class HackWorker {
     }
   }
 
-  _dispatchTask(task: WorkerTask) {
-    this._worker.postMessage(task);
+  _dispatchTask(taskMessage: mixed) {
+    this._worker.postMessage(taskMessage);
   }
 
-  _handleHackWorkerReply(reply: any) {
+  _handleHackWorkerReply(reply: mixed) {
     this._clearTimers();
     if (this._activeTask) {
       this._activeTask.onResponse(reply);
@@ -146,8 +151,14 @@ function startWebWorker(): Worker {
   // http://stackoverflow.com/questions/10343913/how-to-create-a-web-worker-from-a-string
   // I did so because I can't use the atom:// url protocol to load resources in javascript:
   // https://github.com/atom/atom/blob/master/src/browser/atom-protocol-handler.coffee
-  const hhIdeText = fs.readFileSync(path.join(__dirname, '../VendorLib/hh_ide.js'));
-  const webWorkerText = fs.readFileSync(path.join(__dirname, '../static/HackWebWorker.js'));
+  const hhIdeText = fs.readFileSync(
+    path.join(__dirname, '../VendorLib/hh_ide.js'),
+    'utf-8',
+  );
+  const webWorkerText = fs.readFileSync(
+    path.join(__dirname, '../static/HackWebWorker.js'),
+    'utf-8',
+  );
   // Concatenate the code text to pass to the Worker in a blob url
   const workerText = hhIdeText + '\n//<<MERGE>>\n' + webWorkerText;
   const {Blob, Worker, URL} = window;

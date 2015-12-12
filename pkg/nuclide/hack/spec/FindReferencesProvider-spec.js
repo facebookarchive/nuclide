@@ -9,20 +9,20 @@
  * the root directory of this source tree.
  */
 
-const {Point} = require('atom');
-const {HACK_GRAMMARS} = require('../../hack-common');
-const hack = require('../lib/hack');
+import {Point} from 'atom';
+import {HACK_GRAMMARS} from '../../hack-common';
+import hack from '../lib/hack';
 
 describe('FindReferencesProvider', () => {
   // Create a fake editor
-  const mockEditor = {
+  const mockEditor = (({
     getGrammar() {
       return {scopeName: HACK_GRAMMARS[0]};
     },
     getPath() {
       return '/test/test.php';
     },
-  };
+  }: any): atom$TextEditor);
 
   let FindReferencesProvider;
   beforeEach(() => {

@@ -25,10 +25,10 @@ import {parse, createRemoteUri, getPath} from '../../remote-uri';
 import {getHackService} from './utils';
 import {getLogger} from '../../logging';
 import {array} from '../../commons';
+import {Range, Emitter} from 'atom';
+import HackWorker from './HackWorker';
+import {CompletionType, SymbolType} from '../../hack-common';
 
-const {Range, Emitter} = require('atom');
-const HackWorker = require('./HackWorker');
-const {CompletionType, SymbolType} = require('../../hack-common');
 // The word char regex include \ to search for namespaced classes.
 const wordCharRegex = /[\w\\]/;
 // The xhp char regex include : and - to match xhp tags like <ui:button-group>.
@@ -219,14 +219,19 @@ module.exports = class HackLanguage {
     );
   }
 
-  async getDiagnostics(path: string, contents: string): Promise<Array<HackDiagnostic>> {
+  async getDiagnostics(
+    path: string,
+    contents: string,
+  ): Promise<Array<{message: HackDiagnostic;}>> {
     await this.updateFile(path, contents);
     const webWorkerMessage = {cmd: 'hh_check_file', args: [path]};
     const {errors} = await this._hackWorker.runWorkerTask(webWorkerMessage);
     return errors;
   }
 
-  async getServerDiagnostics(filePath: NuclideUri): Promise<Array<HackDiagnostic>> {
+  async getServerDiagnostics(
+    filePath: NuclideUri,
+  ): Promise<Array<{message: HackDiagnostic;}>> {
     const {getDiagnostics} = getHackService(filePath);
     let diagnosticResult = null;
     try {
@@ -375,6 +380,9 @@ module.exports = class HackLanguage {
       line: position.line - 1,
       column: position.char_start - 1,
       length: position.char_end - position.char_start + 1,
+      name: position.name,
+      scope: position.scope,
+      additionalInfo: position.additionalInfo,
     }];
   }
 

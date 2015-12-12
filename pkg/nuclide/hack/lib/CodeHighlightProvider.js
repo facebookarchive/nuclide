@@ -9,11 +9,10 @@
  * the root directory of this source tree.
  */
 
-import type {TextEditor, Point, Range} from 'atom';
+import {codeHighlightFromEditor} from './hack';
 
 export default class CodeHighlightProvider {
-  highlight(editor: TextEditor, position: Point): Promise<Array<Range>> {
-    const hack = require('./hack');
-    return hack.codeHighlightFromEditor(editor, position);
+  highlight(editor: atom$TextEditor, position: atom$Point): Promise<Array<atom$Range>> {
+    return codeHighlightFromEditor(editor, position);
   }
 }

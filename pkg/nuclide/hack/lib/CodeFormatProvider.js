@@ -9,14 +9,14 @@
  * the root directory of this source tree.
  */
 
-const hack = require('./hack');
+import {formatSourceFromEditor} from './hack';
 import {trackTiming} from '../../analytics';
 
 class CodeFormatProvider {
 
   @trackTiming('hack.formatCode')
-  formatCode(editor: TextEditor, range: Range): Promise<string> {
-    return hack.formatSourceFromEditor(editor, range);
+  formatCode(editor: atom$TextEditor, range: atom$Range): Promise<string> {
+    return formatSourceFromEditor(editor, range);
   }
 
 }

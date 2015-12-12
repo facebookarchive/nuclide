@@ -9,9 +9,15 @@
  * the root directory of this source tree.
  */
 
-const HackWorker = require('../lib/HackWorker');
-const {EventEmitter} = require('events');
-const logger = require('../../logging').getLogger();
+import HackWorker from '../lib/HackWorker';
+import {EventEmitter} from 'events';
+import {getLogger} from '../../logging';
+
+declare class MockedWorkerEE extends Worker {
+  emit(type: string, data: mixed): void;
+}
+
+const logger = getLogger();
 
 describe('HackWorker', () => {
   describe('runWorkerTask()', () => {
@@ -39,7 +45,7 @@ describe('HackWorker', () => {
       hackWorker.runWorkerTask({cmd: 'nothing', args: []}).catch(taskHandler);
       waitsFor(() => taskHandler.callCount > 0);
       runs(() => {
-        const error = taskHandler.argsForCall[0][0];
+        const error: {type: string; message: string;} = (taskHandler.argsForCall[0][0]: any);
         expect(error.type).toBe('error');
         expect(error.message).toBe('Uncaught TypeError: Cannot read property \'apply\' of undefined');
       });
@@ -47,19 +53,21 @@ describe('HackWorker', () => {
   });
 
   describe('simulate queueing tasks with custom worker', () => {
-    let hackWorker;
-    let worker;
+    let hackWorker: HackWorker = (null: any);
+    let worker: MockedWorkerEE = (null: any);
     const workerReplyIn = (milliSeconds) => {
-      worker.postMessage = (message) => {
+      // $FlowFixMe override instance method.
+      worker.postMessage = message => {
         setTimeout(() => {
           worker.emit('message', {data: message});
         }, milliSeconds);
       };
     };
     beforeEach(() => {
-      worker = new EventEmitter();
-      worker.addEventListener = worker.addListener;
-      worker.terminate = () => 0;
+      const workerEE = (new EventEmitter(): any);
+      workerEE.addEventListener = workerEE.addListener;
+      workerEE.terminate = () => 0;
+      worker = workerEE;
       workerReplyIn(5);
       hackWorker = new HackWorker({worker, webWorkerTimeout: 10, poorPerfTimeout: 20});
     });

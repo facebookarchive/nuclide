@@ -61,7 +61,6 @@ class FileTreeController {
    */
   _revealActiveFilePending: boolean;
 
-  // $FlowIssue t8486988
   static INITIAL_WIDTH = 240;
 
   constructor(state: ?FileTreeControllerState) {
@@ -750,7 +749,6 @@ class FileTreeController {
 }
 
 class FileTreePanel extends React.Component {
-  // $FlowIssue t8486988
   static propTypes = {
     initialWidth: PropTypes.number,
     store: PropTypes.instanceOf(FileTreeStore).isRequired,

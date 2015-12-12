@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {NuclideUri} from '../../remote-uri';
+
 import {getServiceByNuclideUri} from '../../remote-connection';
 import invariant from 'assert';
 

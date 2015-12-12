@@ -9,7 +9,9 @@
  * the root directory of this source tree.
  */
 
-import type {Point} from 'atom';
+import type {TypeHint} from '../../type-hint-interfaces';
+import type {BusySignalProviderBase} from '../../busy-signal-provider-base';
+import type {HyperclickProvider} from '../../hyperclick-interfaces';
 
 import CodeHighlightProvider from './CodeHighlightProvider';
 import {CompositeDisposable} from 'atom';
@@ -50,7 +52,7 @@ module.exports = {
   },
 
   /** Provider for autocomplete service. */
-  createAutocompleteProvider() {
+  createAutocompleteProvider(): atom$AutocompleteProvider {
     const AutocompleteProvider = require('./AutocompleteProvider');
     const autocompleteProvider = new AutocompleteProvider();
 
@@ -61,8 +63,8 @@ module.exports = {
       excludeLowerPriority: false,
 
       getSuggestions(
-          request: {editor: TextEditor; bufferPosition: Point; scopeDescriptor: any; prefix: string}
-          ): Promise<Array<Suggestion>> {
+        request: atom$AutocompleteRequest,
+      ): Promise<?Array<atom$AutocompleteSuggestion>> {
         return autocompleteProvider.getAutocompleteSuggestions(request);
       },
     };
@@ -89,7 +91,7 @@ module.exports = {
       selector: HACK_GRAMMARS_STRING,
       inclusionPriority: 1,
 
-      formatCode(editor: TextEditor, range: Range): Promise<string> {
+      formatCode(editor: atom$TextEditor, range: atom$Range): Promise<string> {
         return codeFormatProvider.formatCode(editor, range);
       },
     };
@@ -108,7 +110,7 @@ module.exports = {
       inclusionPriority: 1,
       providerName: PACKAGE_NAME,
 
-      typeHint(editor: TextEditor, position: Point): Promise<string> {
+      typeHint(editor: atom$TextEditor, position: atom$Point): Promise<?TypeHint> {
         return typeHintProvider.typeHint(editor, position);
       },
     };
