@@ -20,6 +20,8 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '../lib'))
 
 # Parse the command-line arguments.
 import atom
+from dependencies import check_dependencies
+import fs
 import optparse
 parser = optparse.OptionParser(usage='usage: %prog [options] [package-names]',
                                description='Run all tests for Nuclide')
@@ -29,6 +31,7 @@ parser.add_option('--no-install', action='store_true', default=False, help='Skip
 parser.add_option('--verbose', action='store_true', default=False, help='Verbose output')
 parser.add_option('--no-atom', action='store_true', default=False, help='Exclude packages that depend on Atom')
 parser.add_option('--run-in-band', action='store_true', default=False, help='Run tests in a single process')
+parser.add_option('--no-version', action='store_true', default=False, help='Ignore mismatched versions of Atom/npm/node/apm')
 atom.add_args_for_env_setup(parser)
 options, args = parser.parse_args(sys.argv[1:])
 
@@ -38,6 +41,10 @@ verbose = options.verbose
 # When testing the server packages, only `node` and `npm` need to be on the $PATH.
 include_apm = not options.no_atom
 atom.add_node_executables_to_path(parser, include_apm)
+
+should_version_check = not options.no_version
+if should_version_check:
+    check_dependencies(include_apm)
 
 # Run ./lint_packages first because it is cheap to run and catches a lot of errors.
 import subprocess

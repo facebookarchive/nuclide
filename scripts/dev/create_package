@@ -24,7 +24,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '../lib'))
 
 from json_helpers import json_load
 from package_manager import PACKAGES_PATH
-from nuclide_config import NUCLIDE_CONFIG
+from dependencies import get_atom_version
 
 NPM = 'npm'
 APM = 'apm'
@@ -200,9 +200,7 @@ def create_package(dir_name, package_name, package_type, test_runner):
             else:
                 f.write(NODE_APM_PACKAGE_JSON_TEMPLATE % package_name)
         else:
-            nuclide_config = json_load(NUCLIDE_CONFIG)
-            atom_version = nuclide_config['atomVersion']
-            f.write(ATOM_APM_PACKAGE_JSON_TEMPLATE % (package_name, atom_version))
+            f.write(ATOM_APM_PACKAGE_JSON_TEMPLATE % (package_name, get_atom_version()))
 
     print 'New package created at: %s.' % pkg_dir
     print 'Running setup to pick up the changes.'

@@ -1,0 +1,35 @@
+#!/usr/bin/env python
+
+# Copyright (c) 2015-present, Facebook, Inc.
+# All rights reserved.
+#
+# This source code is licensed under the license found in the LICENSE file in
+# the root directory of this source tree.
+
+# Checks that the versions of all dependent programs are correct.
+# The list of dependent programs is in dependencies.json.
+
+# Set up the logging early on in the process.
+import logging
+logging.basicConfig(level=logging.INFO, format='%(message)s')
+
+# Do other ordinary imports.
+import os
+import os.path
+import sys
+
+# Add the lib/ directory to $PYTHONPATH so library code can be imported.
+sys.path.append(os.path.join(os.path.dirname(__file__), '../lib'))
+
+from dependencies import check_dependencies
+
+# Parse the command-line arguments.
+import optparse
+parser = optparse.OptionParser(usage='usage: %prog [options] [package-names]',
+                               description='Run all tests for Nuclide')
+# If you are certain that all of the packages have their dependencies installed correctly,
+# skipping the installation step can save a considerable amount of time.
+parser.add_option('--no-atom', action='store_true', default=False, help='Exclude packages that depend on Atom')
+options, args = parser.parse_args(sys.argv[1:])
+
+check_dependencies(not options.no_atom)

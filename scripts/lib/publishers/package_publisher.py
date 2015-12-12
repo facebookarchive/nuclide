@@ -107,8 +107,8 @@ class PackagePublisher(object):
             logging.info('Publication successful')
 
     def _publish_new_versions(self, version, is_dry_run):
-        from nuclide_config import NUCLIDE_CONFIG
-        atom_semver = json_load(NUCLIDE_CONFIG)['atomVersion']
+        from dependencies import get_atom_version
+        atom_semver = get_atom_version()
         logging.info('Publishing packages at new version %d (Atom %s)', version, atom_semver)
         for publisher in self._publishers:
             if publisher.is_already_published(version) and not is_dry_run:
