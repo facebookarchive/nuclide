@@ -14,7 +14,6 @@ import type {NuclideUri} from '../../remote-uri';
 import {getServiceByNuclideUri} from '../../remote-connection';
 import {basename, dirname, getPath, join} from '../../remote-uri';
 
-module.exports =
 /**
  * Finds related files, to be used in `JumpToRelatedFile`.
  *
@@ -24,7 +23,7 @@ module.exports =
  *
  * For now, we only search in the given path's directory for related files.
  */
-class RelatedFileFinder {
+export default class RelatedFileFinder {
 
   /**
    * Returns the related files and the given file's index in that array.

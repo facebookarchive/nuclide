@@ -8,7 +8,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-const JumpToRelatedFile = require('../lib/JumpToRelatedFile');
+import JumpToRelatedFile from '../lib/JumpToRelatedFile';
 
 describe('JumpToRelatedFile', () => {
   const relatedFiles = ['dir/Test.h', 'dir/Test.m', 'dir/TestInternal.h'];

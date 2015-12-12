@@ -9,16 +9,15 @@
  * the root directory of this source tree.
  */
 
-import type JumpToRelatedFile from './JumpToRelatedFile';
+import JumpToRelatedFile from './JumpToRelatedFile';
+import RelatedFileFinder from './RelatedFileFinder';
 
-let jumper: ?JumpToRelatedFile = null;
+let jumpToRelatedFile: ?JumpToRelatedFile = null;
 
 module.exports = {
   activate() {
-    const jumpToRelatedFile = require('./JumpToRelatedFile');
-    const RelatedFileFinder = require('./RelatedFileFinder');
     // Make it a const for Flow
-    const local = jumper = new jumpToRelatedFile(new RelatedFileFinder());
+    const local = jumpToRelatedFile = new JumpToRelatedFile(new RelatedFileFinder());
 
     atom.workspace.observeTextEditors(textEditor => {
       local.enableInTextEditor(textEditor);
@@ -26,9 +25,9 @@ module.exports = {
   },
 
   deactivate() {
-    if (jumper) {
-      jumper.dispose();
-      jumper = null;
+    if (jumpToRelatedFile) {
+      jumpToRelatedFile.dispose();
+      jumpToRelatedFile = null;
     }
   },
 };

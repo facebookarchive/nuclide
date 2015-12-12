@@ -13,13 +13,12 @@ import type RelatedFileFinder from './RelatedFileFinder';
 
 import {trackOperationTiming} from '../../analytics';
 
-module.exports =
 /**
  * Sets up listeners so the user can jump to related files.
  *
  * Clients must call `dispose()` once they're done with an instance.
  */
-class JumpToRelatedFile {
+export default class JumpToRelatedFile {
   _commandSubscriptionsMap: Map;
   _relatedFileFinder: RelatedFileFinder;
 
@@ -38,11 +37,7 @@ class JumpToRelatedFile {
       return; // Already enabled.
     }
 
-    // We add this class to make our keybinding's selector more specific than
-    // the one for `editor:move-line-up` and `editor:move-line-down`.
     const textEditorEl = atom.views.getView(textEditor);
-    textEditorEl.classList.add('related-files');
-
     const commandSubscription = atom.commands.add(
       textEditorEl,
       {
