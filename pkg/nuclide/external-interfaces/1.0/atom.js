@@ -246,6 +246,7 @@ declare class atom$PackageManager {
   // (Undocumented.)
   activate(): Promise;
   deactivatePackages(): void;
+  deactivatePackage(name: string): void;
   loadPackage(name: string): void;
   loadPackages(): void;
   serviceHub: atom$ServiceHub;
@@ -258,6 +259,9 @@ type atom$PaneSplitParams = {
   copyActiveItem?: boolean;
   items?: Array<Object>;
 };
+
+type atom$PaneSplitOrientation = 'horizontal' | 'vertical';
+type atom$PaneSplitSide = 'before' | 'after';
 
 declare class atom$Pane {
   // Items
@@ -281,6 +285,11 @@ declare class atom$Pane {
   splitRight(params?: atom$PaneSplitParams): atom$Pane;
   splitUp(params?: atom$PaneSplitParams): atom$Pane;
   splitDown(params?: atom$PaneSplitParams): atom$Pane;
+  split(
+    orientation: atom$PaneSplitOrientation,
+    side: atom$PaneSplitSide,
+    params?: atom$PaneSplitParams,
+  ): atom$Pane;
 
   // Undocumented Methods
   removeItem(item: Object, moved: ?boolean): void;
@@ -708,6 +717,16 @@ declare class atom$Workspace {
       searchAllPanes?: boolean;
     }
   ): Promise<atom$TextEditor>;
+  openURIInPane(
+    uri?: string,
+    pane: atom$Pane,
+    options?: {
+      initialLine?: number;
+      initialColumn?: number;
+      activePane?: boolean;
+      searchAllPanes?: boolean;
+    }
+  ): Promise<atom$TextEditor>;
   /* Optional method because this was added post-1.0. */
   buildTextEditor?: ((params: atom$TextEditorParams) => atom$TextEditor);
   reopenItem(): Promise<?atom$TextEditor>;
@@ -810,7 +829,7 @@ declare class atom$Directory {
   getParent(): atom$Directory;
   getFile(filename: string): atom$File;
   getSubdirectory(dirname: string): atom$Directory;
-  getEntries(callback: (error: ?Error, entries: Array<atom$Directory | atom$File>) => mixed): void;
+  getEntries(callback: (error: ?Error, entries: ?Array<atom$Directory | atom$File>) => mixed): void;
   contains(path: string): boolean;
 }
 

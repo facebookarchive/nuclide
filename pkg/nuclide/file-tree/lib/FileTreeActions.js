@@ -20,6 +20,8 @@ import FileTreeStore from './FileTreeStore';
 import Immutable from 'immutable';
 import {repositoryForPath} from '../../hg-git-bridge';
 
+import type {HgRepositoryClient} from '../../hg-repository-client';
+
 let instance: ?Object;
 
 /**
@@ -30,7 +32,7 @@ let instance: ?Object;
 class FileTreeActions {
   _dispatcher: Dispatcher;
   _store: FileTreeStore;
-  _subscriptionForRepository: Immutable.Map<Repository, Disposable>;
+  _subscriptionForRepository: Immutable.Map<atom$Repository, Disposable>;
 
   static getInstance(): FileTreeActions {
     if (!instance) {
@@ -183,7 +185,11 @@ class FileTreeActions {
     }
   }
 
-  openSelectedEntrySplit(nodeKey: string, orientation: string, side: string): void {
+  openSelectedEntrySplit(
+    nodeKey: string,
+    orientation: atom$PaneSplitOrientation,
+    side: atom$PaneSplitSide
+  ): void {
     const pane = atom.workspace.getActivePane();
     atom.workspace.openURIInPane(
       FileTreeHelpers.keyToPath(nodeKey),
@@ -206,7 +212,7 @@ class FileTreeActions {
     const rootKeys = rootDirectories.map(
       directory => FileTreeHelpers.dirPathToKey(directory.getPath())
     );
-    const rootRepos: Array<?Repository> = await Promise.all(rootDirectories.map(
+    const rootRepos: Array<?atom$Repository> = await Promise.all(rootDirectories.map(
       directory => repositoryForPath(directory.getPath())
     ));
 
@@ -225,7 +231,8 @@ class FileTreeActions {
     const prevRepos = this._store.getRepositories();
 
     // Let the store know we have some new repos!
-    const nextRepos: Immutable.Set<Repository> = new Immutable.Set(rootKeysForRepository.keys());
+    const nextRepos: Immutable.Set<atom$Repository> =
+      new Immutable.Set(rootKeysForRepository.keys());
     this._dispatcher.dispatch({
       actionType: ActionType.SET_REPOSITORIES,
       repositories: nextRepos,
@@ -251,20 +258,22 @@ class FileTreeActions {
 
   async _repositoryAdded(
     repo: atom$Repository,
-    rootKeysForRepository: Immutable.Map<Repository, Immutable.Set<string>>,
+    rootKeysForRepository: Immutable.Map<atom$Repository, Immutable.Set<string>>,
   ): Promise<void> {
     // For now, we only support HgRepository objects.
     if (repo.getType() !== 'hg') {
       return;
     }
 
+    const hgRepo = ((repo: any): HgRepositoryClient);
+
     // At this point, we assume that repo is a Nuclide HgRepositoryClient.
 
     // First, get the output of `hg status` for the repository.
     const {hgConstants} = require('../../hg-repository-base');
     // TODO(mbolin): Verify that all of this is set up correctly for remote files.
-    const repoRoot = repo.getWorkingDirectory();
-    const statusCodeForPath = await repo.getStatuses([repoRoot], {
+    const repoRoot = hgRepo.getWorkingDirectory();
+    const statusCodeForPath = await hgRepo.getStatuses([repoRoot], {
       hgStatusOption: hgConstants.HgStatusOption.ONLY_NON_IGNORED,
     });
 
@@ -274,17 +283,18 @@ class FileTreeActions {
     // mark only new files, but not new directories.
     const statusesToReport = {};
     statusCodeForPath.forEach((statusCode, path) => {
-      if (repo.isStatusModified(statusCode)) {
+      if (hgRepo.isStatusModified(statusCode)) {
         statusesToReport[path] = statusCode;
 
         // For modified files, every parent directory should also be flagged as modified.
-        let nodeKey = path;
+        let nodeKey: string = path;
         const keyForRepoRoot = FileTreeHelpers.dirPathToKey(repoRoot);
         do {
           const parentKey = FileTreeHelpers.getParentKey(nodeKey);
           if (parentKey == null) {
             break;
           }
+
           nodeKey = parentKey;
           if (statusesToReport.hasOwnProperty(nodeKey)) {
             // If there is already an entry for this parent file in the statusesToReport map, then
@@ -298,7 +308,7 @@ class FileTreeActions {
         statusesToReport[path] = statusCode;
       }
     });
-    for (const rootKeyForRepo of rootKeysForRepository.get(repo)) {
+    for (const rootKeyForRepo of rootKeysForRepository.get(hgRepo)) {
       this.setVcsStatuses(rootKeyForRepo, statusesToReport);
     }
 
@@ -307,22 +317,22 @@ class FileTreeActions {
 
     // Now that the initial VCS statuses are set, subscribe to changes to the Repository so that the
     // VCS statuses are kept up to date.
-    const subscription = repo.onDidChangeStatuses(
+    const subscription = hgRepo.onDidChangeStatuses(
       // t8227570: If the user is a "nervous saver," many onDidChangeStatuses will get fired in
       // succession. We should probably explore debouncing this in HgRepositoryClient itself.
       debounce(
-        this._onDidChangeStatusesForRepository.bind(this, repo, rootKeysForRepository),
+        this._onDidChangeStatusesForRepository.bind(this, hgRepo, rootKeysForRepository),
         /* wait */ 1000,
         /* immediate */ false,
       )
     );
 
-    this._subscriptionForRepository = this._subscriptionForRepository.set(repo, subscription);
+    this._subscriptionForRepository = this._subscriptionForRepository.set(hgRepo, subscription);
   }
 
   _onDidChangeStatusesForRepository(
-    repo: atom$Repository,
-    rootKeysForRepository: Immutable.Map<Repository, Immutable.Set<string>>,
+    repo: HgRepositoryClient,
+    rootKeysForRepository: Immutable.Map<atom$Repository, Immutable.Set<string>>,
   ) {
     for (const rootKey of rootKeysForRepository.get(repo)) {
       const statusForNodeKey = {};

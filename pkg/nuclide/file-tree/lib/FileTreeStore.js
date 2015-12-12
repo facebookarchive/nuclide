@@ -58,7 +58,7 @@ type StoreData = {
   ignoredPatterns: Immutable.Set<Minimatch>;
   hideIgnoredNames: boolean;
   excludeVcsIgnoredPaths: boolean;
-  repositories: Immutable.Set<Repository>;
+  repositories: Immutable.Set<atom$Repository>;
 };
 
 export type ExportStoreData = {
@@ -81,7 +81,7 @@ class FileTreeStore {
   _emitter: Emitter;
   _logger: any;
   _timer: ?Object;
-  _repositoryForPath: (path: NuclideUri) => ?Repository;
+  _repositoryForPath: (path: NuclideUri) => ?atom$Repository;
 
   static getInstance(): FileTreeStore {
     if (!instance) {
@@ -281,7 +281,7 @@ class FileTreeStore {
     return this._data.trackedNode;
   }
 
-  getRepositories(): Immutable.Set<Repository> {
+  getRepositories(): Immutable.Set<atom$Repository> {
     return this._data.repositories;
   }
 
@@ -555,7 +555,7 @@ class FileTreeStore {
           // and `File`.
           shell.moveItemToTrash(node.nodePath);
         } else {
-          (file: (RemoteDirectory | RemoteFile)).delete();
+          ((file: any): (RemoteDirectory | RemoteFile)).delete();
         }
       }
     });
@@ -674,7 +674,7 @@ class FileTreeStore {
    * alternatives. For example, passing options when constructing an instance of a singleton would
    * make future invocations of `getInstance` unpredictable.
    */
-  _repositoryForPath(path: NuclideUri): ?Repository {
+  _repositoryForPath(path: NuclideUri): ?atom$Repository {
     return this.getRepositories().find(repo => repositoryContainsPath(repo, path));
   }
 
@@ -896,7 +896,7 @@ class FileTreeStore {
     this._set('trackedNode', {nodeKey, rootKey}, true);
   }
 
-  _setRepositories(repositories: Immutable.Set<Repository>): void {
+  _setRepositories(repositories: Immutable.Set<atom$Repository>): void {
     this._set('repositories', repositories);
 
     // Whenever a new set of repositories comes in, invalidate our paths cache by resetting its
@@ -977,7 +977,7 @@ function matchesSome(str: string, patterns: Immutable.Set<Minimatch>) {
   return patterns.some(pattern => pattern.match(str));
 }
 
-function isVcsIgnored(nodeKey: string, repo: ?Repository) {
+function isVcsIgnored(nodeKey: string, repo: ?atom$Repository) {
   return repo && repo.isProjectAtRoot() && repo.isPathIgnored(nodeKey);
 }
 

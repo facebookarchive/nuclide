@@ -31,6 +31,8 @@ const mkdir = denodeify(makeTree);
 import touchModule from 'touch';
 const touch = denodeify(touchModule);
 
+import invariant from 'assert';
+
 class MockRepository {
   isProjectAtRoot() {
     return true;
@@ -96,7 +98,7 @@ describe('FileTreeStore', () => {
    */
   function loadChildKeys(rootKey: string, nodeKey: string): Promise<void> {
     store.getChildKeys(rootKey, nodeKey);
-    return Promise.resolve(store._getLoading(nodeKey));
+    return store._getLoading(nodeKey) || Promise.resolve();
   }
 
   beforeEach(() => {
@@ -243,7 +245,10 @@ describe('FileTreeStore', () => {
 
     it('returns a node when only 1 is selected', () => {
       actions.toggleSelectNode(dir2, dir2);
-      expect(store.getSingleSelectedNode().nodeKey).toEqual(dir2);
+      const singleSelectedNode = store.getSingleSelectedNode();
+      expect(singleSelectedNode).not.toBeNull();
+      invariant(singleSelectedNode);
+      expect(singleSelectedNode.nodeKey).toEqual(dir2);
     });
   });
 
@@ -392,9 +397,13 @@ describe('FileTreeStore', () => {
 
   it('expands deep nested structure of the node', () => {
     waitsForPromise( async () => {
-      const map = await buildTempDirTree('dir3/dir31/foo31.txt', 'dir3/dir32/bar32.txt');
+      const map: Map<string, string> = await buildTempDirTree(
+        'dir3/dir31/foo31.txt',
+        'dir3/dir32/bar32.txt'
+      );
       const dir3 = map.get('dir3');
       const dir31 = map.get('dir3/dir31');
+      invariant(dir3 && dir31);
       actions.setRootKeys([dir3]);
 
       // Await **internal-only** API because the public `expandNodeDeep` API does not
@@ -406,9 +415,13 @@ describe('FileTreeStore', () => {
 
   it('collapses deep nested structore', () => {
     waitsForPromise(async () => {
-      const map = await buildTempDirTree('dir3/dir31/foo31.txt', 'dir3/dir32/bar32.txt');
+      const map: Map<string, string> = await buildTempDirTree(
+        'dir3/dir31/foo31.txt',
+        'dir3/dir32/bar32.txt'
+      );
       const dir3 = map.get('dir3');
       const dir31 = map.get('dir3/dir31');
+      invariant(dir3 && dir31);
       actions.setRootKeys([dir3]);
 
       // Await **internal-only** API because the public `expandNodeDeep` API does not
@@ -428,10 +441,11 @@ describe('FileTreeStore', () => {
       }
       arrFiles.push('dir3/dir32/bar.txt');
 
-      const map = await buildTempDirTree(...arrFiles);
+      const map : Map<string, string> = await buildTempDirTree(...arrFiles);
       const dir3 = map.get('dir3');
       const dir31 = map.get('dir3/dir31');
       const dir32 = map.get('dir3/dir32');
+      invariant(dir3 && dir31 && dir32);
       actions.setRootKeys([dir3]);
 
       // Await **internal-only** API because the public `expandNodeDeep` API does not

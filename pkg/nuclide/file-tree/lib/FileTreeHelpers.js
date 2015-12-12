@@ -42,11 +42,11 @@ function keyToPath(key: string): string {
   return key.replace(/\/+$/, '');
 }
 
-function getParentKey(key: string): ?string {
+function getParentKey(key: string): string {
   const path = keyToPath(key);
   const parsed = RemoteUri.parse(path);
   parsed.pathname = pathModule.join(parsed.pathname, '..');
-  const parentPath = url.format(parsed);
+  const parentPath = url.format((parsed: any));
   return dirPathToKey(parentPath);
 }
 
@@ -60,6 +60,7 @@ function fetchChildren(nodeKey: string): Promise<Array<string>> {
       return;
     }
 
+    // $FlowIssue https://github.com/facebook/flow/issues/582
     directory.getEntries((error, entries) => {
       // Resolve to an empty array if the directory deson't exist.
       // TODO: should we reject promise?
@@ -92,24 +93,28 @@ function getDirectoryByKey(key: string): ?Directory {
 }
 
 // TODO: cache these instantiated entries (also expose a way to purge)
-function getFileByKey(key: string): ?(Directory | File) {
+function getFileByKey(key: string): ?(File | Directory) {
   const path = keyToPath(key);
   if (RemoteUri.isRemote(path)) {
     const connection = RemoteConnection.getForUri(path);
     if (!connection) {
       return;
     }
-    return isDirKey(key) ? new RemoteDirectory(connection, path) : new RemoteFile(connection, path);
+
+    return isDirKey(key) ?
+      (new RemoteDirectory(connection, path): any) :
+      new RemoteFile(connection, path);
   } else {
-    return isDirKey(key) ? new LocalDirectory(path) : new LocalFile(path);
+    return isDirKey(key) ? (new LocalDirectory(path): any) : new LocalFile(path);
   }
 }
 
 // Sometimes remote directories are instantiated as local directories but with invalid paths.
 function isValidDirectory(directory: Directory): boolean {
-  return (!isLocalFile(directory) || isFullyQualifiedLocalPath(directory.getPath()));
+  return (!isLocalFile((directory: any)) || isFullyQualifiedLocalPath(directory.getPath()));
 }
 
+// $FlowIssue https://github.com/facebook/flow/issues/582
 function isLocalFile(entry: File | Directory): boolean {
   // TODO: implement `RemoteDirectory.isRemoteDirectory()`
   return !('getLocalPath' in entry);

@@ -109,7 +109,7 @@ class DirectoryEntryComponent extends React.Component {
     }
   }
 
-  _toggleNodeExpanded(deep): void {
+  _toggleNodeExpanded(deep: boolean): void {
     if (this.props.isExpanded) {
       if (deep) {
         getActions().collapseNodeDeep(this.props.rootKey, this.props.nodeKey);
@@ -140,4 +140,3 @@ DirectoryEntryComponent.propTypes = {
 };
 
 module.exports = DirectoryEntryComponent;
-

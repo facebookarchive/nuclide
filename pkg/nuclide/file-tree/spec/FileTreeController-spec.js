@@ -20,7 +20,7 @@ describe('FileTreeController', () => {
   const actions = FileTreeActions.getInstance();
   const store = FileTreeStore.getInstance();
 
-  let controller: ?FileTreeController;
+  let controller: FileTreeController = (null: any);
   let workspaceElement;
 
   beforeEach(() => {
@@ -158,7 +158,7 @@ describe('FileTreeController', () => {
         });
       });
 
-      describe('via _collapseSelection (left arrow)', () => {
+      describe('via _collapseSelection (left arrow) nested', () => {
         it('selects the parent if the selected node is a collapsed directory', () => {
           actions.selectSingleNode(rootKey, dir2Key);
           expect(store.isSelected(rootKey, dir2Key)).toEqual(true);
@@ -282,7 +282,7 @@ describe('FileTreeController', () => {
         });
       });
 
-      describe('via _collapseSelection (left arrow)', () => {
+      describe('via _collapseSelection (left arrow) nested double+', () => {
         it('selects the parent if the selected node is a file', () => {
           actions.selectSingleNode(rootKey, fooTxtKey);
           expect(store.isSelected(rootKey, fooTxtKey)).toEqual(true);
@@ -293,7 +293,7 @@ describe('FileTreeController', () => {
         });
       });
 
-      describe('via _moveDown', () => {
+      describe('via _moveDown nested double+', () => {
         it('selects the previous nested descendant when one exists', () => {
           actions.selectSingleNode(rootKey, fooTxtKey);
           expect(store.isSelected(rootKey, fooTxtKey)).toEqual(true);
@@ -304,7 +304,7 @@ describe('FileTreeController', () => {
         });
       });
 
-      describe('via _moveUp', () => {
+      describe('via _moveUp nested double+', () => {
         it('selects the previous nested descendant when one exists', () => {
           actions.selectSingleNode(rootKey, dir2Key);
           expect(store.isSelected(rootKey, dir2Key)).toEqual(true);
@@ -358,7 +358,7 @@ describe('FileTreeController', () => {
         });
       });
 
-      describe('via _moveDown', () => {
+      describe('via _moveDown expanded + loading', () => {
         it('selects the next sibling', () => {
           actions.selectSingleNode(rootKey, dir1Key);
           expect(store.isSelected(rootKey, dir1Key)).toEqual(true);
@@ -368,7 +368,7 @@ describe('FileTreeController', () => {
         });
       });
 
-      describe('via _moveUp', () => {
+      describe('via _moveUp expanded + loading', () => {
         it('selects the previous sibling', () => {
           actions.selectSingleNode(rootKey, dir2Key);
           expect(store.isSelected(rootKey, dir2Key)).toEqual(true);

@@ -37,7 +37,7 @@ function renderEntryComponentIntoDocument(componentKlass: Object, props: Object 
 describe('DirectoryEntryComponent', () => {
   const actions = FileTreeActions.getInstance();
 
-  describe('when expanding/collapsing', () => {
+  describe('when expanding/collapsing dir component', () => {
     beforeEach(() => {
       spyOn(actions, 'expandNode');
     });
@@ -60,7 +60,7 @@ describe('DirectoryEntryComponent', () => {
 describe('FileEntryComponent', () => {
   const actions = FileTreeActions.getInstance();
 
-  describe('when expanding/collapsing', () => {
+  describe('when expanding/collapsing file component', () => {
     beforeEach(() => {
       spyOn(actions, 'expandNode');
     });

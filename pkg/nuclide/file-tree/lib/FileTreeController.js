@@ -27,6 +27,8 @@ import {track} from '../../analytics';
 import os from 'os';
 import shell from 'shell';
 
+import invariant from 'assert';
+
 const {PropTypes} = React;
 
 type FileTreeNodeData = {
@@ -49,10 +51,10 @@ class FileTreeController {
   _panel: atom$Panel;
   _fileTreePanel: FileTreePanel;
   _panelElement: HTMLElement;
-  _repositories: Immutable.Set<Repository>;
+  _repositories: Immutable.Set<atom$Repository>;
   _store: FileTreeStore;
   _subscriptions: CompositeDisposable;
-  _subscriptionForRepository: Immutable.Map<Repository, atom$Disposable>;
+  _subscriptionForRepository: Immutable.Map<atom$Repository, atom$Disposable>;
   /**
    * True if a reveal was requested while the file tree is hidden. If so, we should apply it when
    * the tree is shown.
@@ -178,7 +180,7 @@ class FileTreeController {
     }
   }
 
-  _updateRootDirectories(): Promise<void> {
+  _updateRootDirectories(): void {
     // If the remote-projects package hasn't loaded yet remote directories will be instantiated as
     // local directories but with invalid paths. We need to exclude those.
     const rootDirectories = atom.project.getDirectories().filter(directory => (
@@ -279,7 +281,7 @@ class FileTreeController {
    * This method is meant to be triggered by the context-menu click.
    */
   _revealTabFileOnClick(event: Event): void {
-    const tab = event.currentTarget;
+    const tab = ((event.currentTarget: any): Element);
     const title = tab.querySelector('.title[data-path]');
     if (!title) {
       // can only reveal it if we find the file path
@@ -295,13 +297,13 @@ class FileTreeController {
     if (!nodeKey) {
       return;
     }
-    const rootKey: string = this._store.getRootForKey(nodeKey);
+    const rootKey: ?string = this._store.getRootForKey(nodeKey);
     if (!rootKey) {
       return;
     }
     const stack = [];
     let key = nodeKey;
-    while (key !== rootKey) {
+    while (key != null && key !== rootKey) {
       stack.push(key);
       key = FileTreeHelpers.getParentKey(key);
     }
@@ -331,7 +333,7 @@ class FileTreeController {
    * Collapses all selected directory nodes. If the selection is a single file or a single collapsed
    * directory, the selection is set to the directory's parent.
    */
-  _collapseSelection(deep: boolean): void {
+  _collapseSelection(deep: boolean = false): void {
     const selectedNodes = this._store.getSelectedNodes();
     const firstSelectedNode = selectedNodes.first();
     if (selectedNodes.size === 1
@@ -441,6 +443,8 @@ class FileTreeController {
     } else {
       parentKey = FileTreeHelpers.getParentKey(lastSelectedKey);
       rootKey = this._store.getRootForKey(lastSelectedKey);
+
+      invariant(rootKey && parentKey);
       siblingKeys = this._store.getCachedChildKeys(rootKey, parentKey);
     }
 
@@ -508,6 +512,8 @@ class FileTreeController {
     } else {
       parentKey = FileTreeHelpers.getParentKey(lastSelectedKey);
       rootKey = this._store.getRootForKey(lastSelectedKey);
+
+      invariant(rootKey && parentKey);
       siblingKeys = this._store.getCachedChildKeys(rootKey, parentKey);
     }
 
@@ -619,6 +625,8 @@ class FileTreeController {
       siblingKeys = this._store.getRootKeys();
     } else {
       parentKey = FileTreeHelpers.getParentKey(nodeKey);
+
+      invariant(rootKey && parentKey);
       siblingKeys = this._store.getCachedChildKeys(rootKey, parentKey);
     }
 
@@ -648,7 +656,7 @@ class FileTreeController {
     }
   }
 
-  _openSelectedEntrySplit(orientation: string, side: string): void {
+  _openSelectedEntrySplit(orientation: atom$PaneSplitOrientation, side: atom$PaneSplitSide): void {
     const singleSelectedNode = this._store.getSingleSelectedNode();
     // Only perform the default action if a single node is selected.
     if (singleSelectedNode != null && !singleSelectedNode.isContainer) {
@@ -691,7 +699,10 @@ class FileTreeController {
   _searchInDirectory(event: Event): void {
     // Dispatch a command to show the `ProjectFindView`. This opens the view and focuses the search
     // box.
-    atom.commands.dispatch((event.target: Node), 'project-find:show-in-current-directory');
+    atom.commands.dispatch(
+      ((event.target: any): HTMLElement),
+      'project-find:show-in-current-directory'
+    );
   }
 
   _showInFileManager(): void {

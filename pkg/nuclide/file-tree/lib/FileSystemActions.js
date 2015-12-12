@@ -24,6 +24,8 @@ import RemoteUri from '../../remote-uri';
 import fs from 'fs-plus';
 import pathModule from 'path';
 
+import invariant from 'assert';
+
 let dialogComponent: ?ReactComponent;
 let dialogHostElement: ?HTMLElement;
 
@@ -120,7 +122,7 @@ const FileSystemActions = {
         if (FileTreeHelpers.isLocalFile(file)) {
           fs.rename(nodePath, newPath);
         } else {
-          (file: (RemoteDirectory | RemoteFile)).rename(newPath);
+          ((file: any): (RemoteDirectory | RemoteFile)).rename(newPath);
         }
       },
       onClose: this._closeDialog,
@@ -151,10 +153,10 @@ const FileSystemActions = {
           // TODO: Connection could have been lost for remote file.
           return;
         }
-        const directory = file.getParent();
-        const newFile = directory.getFile(newBasename.trim());
-        const newPath = newFile.getPath();
         if (FileTreeHelpers.isLocalFile(file)) {
+          const directory = file.getParent();
+          const newFile = directory.getFile(newBasename.trim());
+          const newPath = newFile.getPath();
           fs.exists(newPath, function(exists) {
             if (!exists) {
               fs.copy(nodePath, newPath);
@@ -163,13 +165,19 @@ const FileSystemActions = {
             }
           });
         } else {
+          invariant(file.isFile());
+          const remoteFile = ((file: any): RemoteFile);
+          const remoteDirectory = remoteFile.getParent();
+          const newRemoteFile = remoteDirectory.getFile(newBasename.trim());
+          const newRemotePath = newRemoteFile.getPath();
+
           const wasCopied =
-            await (file: (RemoteDirectory | RemoteFile)).copy(newFile.getLocalPath());
+            await remoteFile.copy(newRemoteFile.getLocalPath());
           if (!wasCopied) {
-            atom.notifications.addError(`'${newPath}' already exists.`);
+            atom.notifications.addError(`'${newRemotePath}' already exists.`);
             onDidConfirm(null);
           } else {
-            onDidConfirm(newPath);
+            onDidConfirm(newRemotePath);
           }
         }
       },

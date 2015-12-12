@@ -250,7 +250,6 @@ module.exports = {
           // If we clean up the buffer before the `openUriInPane` finishes,
           // the pane will be closed, because it could have no other items.
           // So we must clean up after.
-          /* $FlowFixMe Calling Atom private API. */
           atom.workspace.openURIInPane(uri, pane).then(cleanupBuffer, cleanupBuffer);
         }
       }

@@ -28,6 +28,7 @@ type JasmineMatcher = {
   toHaveBeenCalled(): boolean;
   toHaveBeenCalledWith(...args: Array<mixed>): boolean;
   toMatch(expected: mixed): boolean;
+  toMatchSelector(expected: string): boolean;
   toThrow(): boolean;
 
   // Custom Matchers from nuclide-test-helpers

@@ -238,7 +238,7 @@ class RemoteDirectory {
    * passed to `callback` is `null` to determine if there was an error.
    */
   async getEntries(
-    callback: (error: ?Error, entries: ?Array<RemoteFile | RemoteDirectory>) => any,
+    callback: (error: ?Error, entries: ?Array<RemoteDirectory | RemoteFile>) => any,
   ): Promise<void> {
     let entries;
     try {
@@ -248,7 +248,7 @@ class RemoteDirectory {
       return;
     }
 
-    const directories = [];
+    const directories : Array<RemoteDirectory> = [];
     const files = [];
     entries.sort((a, b) => {
       return a.file.toLowerCase().localeCompare(b.file.toLowerCase());
