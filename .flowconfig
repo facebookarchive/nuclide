@@ -5,7 +5,6 @@
 .*/node_modules/[^/]+/node_modules/.*
 
 # non-flowCheck
-.*/pkg/fb/biggrep-provider/.*
 .*/pkg/nuclide/debugger-hhvm-proxy/spec/.*
 .*/pkg/nuclide/debugger/atom/spec/.*
 .*/pkg/nuclide/debugger/hhvm/.*
