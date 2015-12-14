@@ -16,6 +16,7 @@ class Activation {
 
   _disposables: atom$CompositeDisposable;
   _initialBuildTarget: string;
+  _initialIsReactNativeServerMode: boolean;
   _item: ?HTMLElement;
   _panel: Object;
   _projectStore: ProjectStoreType;
@@ -24,6 +25,7 @@ class Activation {
 
   // Functions to be used as callbacks.
   _handleBuildTargetChange: Function;
+  _handleIsReactNativeServerModeChanged: Function;
 
   constructor(state: ?Object) {
     const {CompositeDisposable} = require('atom');
@@ -35,9 +37,13 @@ class Activation {
 
     // Bind functions used as callbacks to ensure correct context when called.
     this._handleBuildTargetChange = this._handleBuildTargetChange.bind(this);
+    this._handleIsReactNativeServerModeChanged =
+      this._handleIsReactNativeServerModeChanged.bind(this);
 
     this._disposables = new CompositeDisposable();
     this._initialBuildTarget = (state && state.initialBuildTarget) || '';
+    this._initialIsReactNativeServerMode =
+      (state && state.initialIsReactNativeServerMode) || false;
     this._projectStore = new ProjectStore();
     this._addCommands();
     this._createToolbar();
@@ -61,6 +67,8 @@ class Activation {
 
     this._nuclideToolbar = React.render(
       <NuclideToolbar
+        initialIsReactNativeServerMode={this._initialIsReactNativeServerMode}
+        onIsReactNativeServerModeChange={this._handleIsReactNativeServerModeChanged}
         initialBuildTarget={this._initialBuildTarget}
         onBuildTargetChange={this._handleBuildTargetChange}
         projectStore={this._projectStore}
@@ -84,6 +92,10 @@ class Activation {
     this._initialBuildTarget = buildTarget;
   }
 
+  _handleIsReactNativeServerModeChanged(isReactNativeServerMode: boolean) {
+    this._initialIsReactNativeServerMode = isReactNativeServerMode;
+  }
+
   /**
    * Show or hide the panel, if necessary, to match the current state.
    */
@@ -102,6 +114,7 @@ class Activation {
 
   serialize(): Object {
     return {
+      initialIsReactNativeServerMode: this._initialIsReactNativeServerMode,
       initialBuildTarget: this._initialBuildTarget,
       panelVisible: this._state.panelVisible,
     };

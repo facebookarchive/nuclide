@@ -63,6 +63,8 @@ class NuclideToolbar extends React.Component {
           <BuckToolbar
             initialBuildTarget={this.props.initialBuildTarget}
             onBuildTargetChange={this.props.onBuildTargetChange}
+            initialIsReactNativeServerMode={this.props.initialIsReactNativeServerMode}
+            onIsReactNativeServerModeChange={this.props.onIsReactNativeServerModeChange}
           />
         </div>
       );
@@ -76,6 +78,8 @@ class NuclideToolbar extends React.Component {
 NuclideToolbar.propTypes = {
   initialBuildTarget: PropTypes.string.isRequired,
   onBuildTargetChange: PropTypes.func.isRequired,
+  initialIsReactNativeServerMode: PropTypes.bool.isRequired,
+  onIsReactNativeServerModeChange: PropTypes.func.isRequired,
   projectStore: React.PropTypes.instanceOf(ProjectStore).isRequired,
 };
 

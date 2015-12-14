@@ -40,6 +40,10 @@ const REACT_NATIVE_APP_FLAGS = [
   '-websocket-executor-port', '8090',
 ];
 
+type InitialState = {
+  isReactNativeServerMode?: boolean;
+};
+
 class BuckToolbarStore {
 
   _dispatcher: Dispatcher;
@@ -58,7 +62,7 @@ class BuckToolbarStore {
   _buckProcessOutputStore: ?ProcessOutputStoreType;
   _aliasesByProject: WeakMap<BuckProject, Array<string>>;
 
-  constructor(dispatcher: Dispatcher) {
+  constructor(dispatcher: Dispatcher, initialState: InitialState = {}) {
     this._dispatcher = dispatcher;
     this._reactNativeServerActions = new ReactNativeServerActions(dispatcher);
     this._reactNativeServerManager = new ReactNativeServerManager(
@@ -68,17 +72,17 @@ class BuckToolbarStore {
     this._emitter = new Emitter();
     this._textEditorToBuckProject = new WeakMap();
     this._aliasesByProject = new WeakMap();
-    this._initState();
+    this._initState(initialState);
     this._setupActions();
   }
 
-  _initState() {
+  _initState(initialState: InitialState) {
     this._isBuilding = false;
     this._buildTarget = '';
     this._buildProgress = 0;
     this._buildRuleType = '';
     this._isReactNativeApp = false;
-    this._isReactNativeServerMode = false;
+    this._isReactNativeServerMode = initialState.isReactNativeServerMode || false;
   }
 
   _setupActions() {

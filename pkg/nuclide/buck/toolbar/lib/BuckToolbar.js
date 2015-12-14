@@ -54,7 +54,9 @@ class BuckToolbar extends React.Component {
 
     const dispatcher = new Dispatcher();
     this._buckToolbarActions = new BuckToolbarActions(dispatcher);
-    this._buckToolbarStore = new BuckToolbarStore(dispatcher);
+    this._buckToolbarStore = new BuckToolbarStore(dispatcher, {
+      isReactNativeServerMode: props.initialIsReactNativeServerMode || false,
+    });
 
     this._onActivePaneItemChanged(atom.workspace.getActivePaneItem());
     this._handleBuildTargetChange(this.props.initialBuildTarget);
@@ -65,6 +67,7 @@ class BuckToolbar extends React.Component {
       this._onActivePaneItemChanged.bind(this)));
 
     this._disposables.add(this._buckToolbarStore.subscribe(() => {
+      this.props.onIsReactNativeServerModeChange(this._buckToolbarStore.isReactNativeServerMode());
       this.forceUpdate();
     }));
   }
@@ -164,6 +167,8 @@ class BuckToolbar extends React.Component {
 BuckToolbar.propTypes = {
   initialBuildTarget: PropTypes.string,
   onBuildTargetChange: PropTypes.func.isRequired,
+  initialIsReactNativeServerMode: PropTypes.bool,
+  onIsReactNativeServerModeChange: PropTypes.func.isRequired,
 };
 
 module.exports = BuckToolbar;
