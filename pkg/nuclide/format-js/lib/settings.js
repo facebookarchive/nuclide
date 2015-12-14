@@ -18,11 +18,20 @@ const NuclideCommons = require('../../commons');
 const featureConfig = require('../../feature-config');
 const formatJSBase = require('../../format-js-base');
 
-// These are the common settings needed to construct a module map.
-type Settings = {
+// Nuclide package settings used to calculate the module map,
+// the blacklist, and control the plugin behavior.
+export type Settings = {
   aliases: Array<[string, string]>,
   builtIns: Array<string>,
   builtInTypes: Array<string>,
+  nuclideFixHeader: boolean,
+  requiresTransferComments: boolean,
+  requiresRemoveUnusedRequires: boolean,
+  requiresAddMissingRequires: boolean,
+  requiresRemoveUnusedTypes: boolean,
+  requiresAddMissingTypes: boolean,
+  requiresFormatRequires: boolean,
+  runOnSave: boolean,
 };
 
 const arrayFrom = NuclideCommons.array.from;
@@ -34,38 +43,32 @@ const defaultBuiltIns = arrayFrom(formatJSBase.defaultBuiltIns);
 const defaultBuiltInTypes = arrayFrom(formatJSBase.defaultBuiltInTypes);
 
 /**
- * Single entry point to get the options for a source file.
- * Currently, it only looks at the Nuclide settings, but we may
- * extend it to look at the project-specific configuration file later.
+ * Observes the relevant Nuclide package settings.
  */
-async function getOptions(sourcePath: string): Promise<SourceOptions> {
+export function observeSettings(callback: (value: Settings) => void): atom$Disposable {
+  return featureConfig.observe('nuclide-format-js', (settings) =>
+    callback({
+      ...settings,
+      aliases: fixAliases(settings.aliases),
+    })
+  );
+}
+
+/**
+ * Calculates the current options according to the Nuclide configuration object.
+ * This may get expensive in the future as the module map becomes smarter.
+ */
+export function calculateOptions(settings: Settings): SourceOptions {
   return {
-    blacklist: getNuclideBlacklist(),
-    moduleMap: getNuclideModuleMap(),
-    sourcePath,
+    blacklist: calculateBlacklist(settings),
+    moduleMap: calculateModuleMap(settings),
   };
 }
 
 /**
- * Gets some of the important settings from Nuclide.
+ * Calculates a module map from the settings.
  */
-function getNuclideSettings(): Settings {
-  return {
-    aliases: fixAliases((featureConfig.get('nuclide-format-js.aliases'): any)),
-    builtIns: ((featureConfig.get('nuclide-format-js.builtIns'): any): Array<string>),
-    builtInTypes: ((featureConfig.get('nuclide-format-js.builtInTypes'): any): Array<string>),
-  };
-}
-
-/**
- * Constructs a module map from the settings.
- *
- * TODO: Cache things.
- */
-function getNuclideModuleMap(): ModuleMap {
-  // Get all the options from atom config.
-  const settings = getNuclideSettings();
-
+function calculateModuleMap(settings: Settings): ModuleMap {
   // Construct the aliases.
   const aliases = new Map(settings.aliases);
   for (const entry of defaultAliases) {
@@ -87,7 +90,7 @@ function getNuclideModuleMap(): ModuleMap {
     builtInTypes.add(builtInType);
   }
 
-  // And then construct the module map.
+  // And then calculate the module map.
   return createModuleMap({
     paths: [],
     pathsToRelativize: [],
@@ -99,29 +102,29 @@ function getNuclideModuleMap(): ModuleMap {
 }
 
 /**
- * Construct the blacklist from the settings.
+ * Calculates the blacklist from the settings.
  */
-function getNuclideBlacklist(): Set<TransformKey> {
+function calculateBlacklist(settings: Settings): Set<TransformKey> {
   const blacklist = new Set();
-  if (!featureConfig.get('nuclide-format-js.nuclideFixHeader')) {
+  if (!settings.nuclideFixHeader) {
     blacklist.add('nuclide.fixHeader');
   }
-  if (!featureConfig.get('nuclide-format-js.requiresTransferComments')) {
+  if (!settings.requiresTransferComments) {
     blacklist.add('requires.transferComments');
   }
-  if (!featureConfig.get('nuclide-format-js.requiresRemoveUnusedRequires')) {
+  if (!settings.requiresRemoveUnusedRequires) {
     blacklist.add('requires.removeUnusedRequires');
   }
-  if (!featureConfig.get('nuclide-format-js.requiresAddMissingRequires')) {
+  if (!settings.requiresAddMissingRequires) {
     blacklist.add('requires.addMissingRequires');
   }
-  if (!featureConfig.get('nuclide-format-js.requiresRemoveUnusedTypes')) {
+  if (!settings.requiresRemoveUnusedTypes) {
     blacklist.add('requires.removeUnusedTypes');
   }
-  if (!featureConfig.get('nuclide-format-js.requiresAddMissingTypes')) {
+  if (!settings.requiresAddMissingTypes) {
     blacklist.add('requires.addMissingTypes');
   }
-  if (!featureConfig.get('nuclide-format-js.requiresFormatRequires')) {
+  if (!settings.requiresFormatRequires) {
     blacklist.add('requires.formatRequires');
   }
   return blacklist;
@@ -141,5 +144,3 @@ function fixAliases(aliases: ?Array<string>): Array<[string, string]> {
   }
   return pairs;
 }
-
-module.exports = {getOptions};

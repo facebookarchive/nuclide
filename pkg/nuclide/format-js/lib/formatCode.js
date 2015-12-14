@@ -9,12 +9,14 @@
  * the root directory of this source tree.
  */
 
+import type {SourceOptions} from '../../format-js-base/lib/options/SourceOptions';
+
 const logger = require('../../logging').getLogger();
 const featureConfig = require('../../feature-config');
 const {track} = require('../../analytics');
 const {updateCursor} = require('../../update-cursor');
 
-async function formatCode(editor: ?TextEditor): Promise<void> {
+async function formatCode(options: SourceOptions, editor: ?TextEditor): Promise<void> {
   editor = editor || atom.workspace.getActiveTextEditor();
   if (!editor) {
     logger.info('- format-js: No active text editor');
@@ -42,12 +44,7 @@ async function formatCode(editor: ?TextEditor): Promise<void> {
   // Auto-require transform.
   // TODO: Add a limit so the transform is not run on files over a certain size.
   const {transform} = require('../../format-js-base');
-  const {getOptions} = require('./options');
-  const path = editor.getPath();
-  if (!path) {
-    return;
-  }
-  source = transform(source, await getOptions(path));
+  source = transform(source, options);
 
   // Update the source and position after all transforms are done. Do nothing
   // if the source did not change at all.
