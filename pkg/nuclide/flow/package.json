@@ -19,13 +19,13 @@
       "enableStructuredTypeHints": {
         "type": "boolean",
         "default": false,
-        "description": "Show tree-structured type hints. Type hints must first be enabled. Requires Flow v0.17.0"
+        "description": "EXPERIMENTAL: Show tree-structured type hints. Type hints must first be enabled. Requires Flow v0.17.0"
       },
       "diagnosticsOnFly": {
         "type": "boolean",
         "default": false,
         "title": "Diagnostics as you type",
-        "description": "Report Flow errors and warnings as you type, rather than waiting for a save"
+        "description": "EXPERIMENTAL: Report Flow errors and warnings as you type, rather than waiting for a save"
       }
     },
     "packageType": "Atom",
