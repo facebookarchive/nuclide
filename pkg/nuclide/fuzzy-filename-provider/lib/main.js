@@ -13,6 +13,8 @@ import type {
   Provider,
 } from '../../quick-open-interfaces';
 
+import type {FuzzyFileSearchService} from '../../fuzzy-file-search-service';
+
 import {
   CompositeDisposable,
 } from 'atom';

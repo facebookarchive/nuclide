@@ -9,7 +9,6 @@
 .*/pkg/nuclide/debugger/atom/spec/.*
 .*/pkg/nuclide/debugger/hhvm/.*
 .*/pkg/nuclide/debugger/node/.*
-.*/pkg/nuclide/fuzzy-filename-provider/.*
 .*/pkg/nuclide/remote-connection/spec/.*
 .*/pkg/nuclide/remote-projects/spec/.*
 .*/pkg/nuclide/server/spec/.*

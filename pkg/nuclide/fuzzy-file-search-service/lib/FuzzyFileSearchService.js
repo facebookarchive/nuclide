@@ -17,9 +17,9 @@ export type FileSearchResult = {
   matchIndexes: Array<number>;
 };
 
-import {fileSearchForDirectory} from '../../path-search';
+import {fileSearchForDirectory, FileSearch} from '../../path-search';
 import {fsPromise} from '../../commons';
-const fileSearchers: Map = new Map();
+const fileSearchers: Map<string, FileSearch> = new Map();
 
 /**
  * Performs a fuzzy file search in the specified directory.
@@ -57,3 +57,11 @@ export async function isFuzzySearchAvailableFor(
 ): Promise<boolean> {
   return await fsPromise.exists(rootDirectory);
 }
+
+export type FuzzyFileSearchService = {
+  queryFuzzyFile(
+    rootDirectory: NuclideUri,
+    queryString: string,
+  ): Promise<Array<FileSearchResult>>;
+  isFuzzySearchAvailableFor(rootDirectory: NuclideUri): Promise<boolean>;
+};

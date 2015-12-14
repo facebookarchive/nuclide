@@ -14,9 +14,10 @@ import type {
   Provider,
   ProviderType,
 } from '../../quick-open-interfaces';
+
 import {getFuzzyFileSearchService} from './utils';
 
-const FuzzyFileNameProvider: Provider = {
+const FuzzyFileNameProvider: Provider<FileResult> = {
 
   getName(): string {
     return 'FuzzyFileNameProvider';
@@ -50,9 +51,16 @@ const FuzzyFileNameProvider: Provider = {
     return directory.exists();
   },
 
-  async executeQuery(query: string, directory: atom$Directory): Promise<Array<FileResult>> {
+  async executeQuery(query: string, directory?: atom$Directory): Promise<Array<FileResult>> {
     if (query.length === 0) {
       return [];
+    }
+
+    if (directory == null) {
+      throw new Error(
+        'FuzzyFileNameProvider is a directory-specific provider but its executeQuery method was'
+        + ' called without a directory argument.'
+      );
     }
 
     const service = await getFuzzyFileSearchService(directory);
@@ -61,8 +69,9 @@ const FuzzyFileNameProvider: Provider = {
     }
 
     const directoryPath = directory.getPath();
-    return await service.queryFuzzyFile(directoryPath, query);
+    const result = await service.queryFuzzyFile(directoryPath, query);
+    return ((result: any): Array<FileResult>);
   },
 };
 
-export default FuzzyFileNameProvider;
+module.exports = FuzzyFileNameProvider;

@@ -815,6 +815,7 @@ declare class atom$Directory {
   // Directory Metadata
   isFile(): boolean;
   isDirectory(): boolean;
+  exists():Promise<boolean>;
 
   // Managing Paths
   getPath(): string;
