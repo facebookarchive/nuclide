@@ -56,9 +56,9 @@ var TESTS = [
 describe('inline-imports', function() {
   TESTS.forEach(function(name) {
     it('should handle ' + name, function() {
-      var testPath = 'fixtures/' + name + '.test';
-      var errorPath = 'fixtures/' + name + '.error';
-      var expectedPath = 'fixtures/' + name + '.expected';
+      const testPath = 'spec/fixtures/' + name + '.test';
+      const errorPath = 'spec/fixtures/' + name + '.error';
+      const expectedPath = 'spec/fixtures/' + name + '.expected';
       var source = fs.readFileSync(testPath, 'utf8');
       if (fs.existsSync(errorPath)) {
         var error = fs.readFileSync(errorPath, 'utf8').trim();

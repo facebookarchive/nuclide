@@ -25,7 +25,7 @@ import path from 'path';
  * @returns the path to the temporary directory that this function creates.
  */
 export async function copyMercurialFixture(fixtureName: string): Promise<string> {
-  const repo = await fixtures.copyFixture(fixtureName, path.join(__dirname, '..'));
+  const repo = await fixtures.copyFixture(fixtureName, path.join(__dirname, '../spec'));
   const pathToHg = path.join(repo, '.hg-rename');
   invariant(existsSync(pathToHg), `Directory: ${pathToHg} was not found.`);
   moveSync(pathToHg, path.join(repo, '.hg'));

@@ -7,5 +7,8 @@
   "nuclide": {
     "packageType": "Node",
     "testRunner": "npm"
+  },
+  "scripts": {
+    "test": "node --harmony ../jasmine/bin/jasmine-node-transpiled spec"
   }
 }
