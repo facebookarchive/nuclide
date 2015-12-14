@@ -47,7 +47,7 @@ const FuzzyFileNameProvider: Provider = {
   },
 
   isEligibleForDirectory(directory: atom$Directory): Promise<boolean> {
-    return Promise.resolve(true);
+    return directory.exists();
   },
 
   async executeQuery(query: string, directory: atom$Directory): Promise<Array<FileResult>> {

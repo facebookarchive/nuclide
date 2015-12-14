@@ -233,6 +233,31 @@ describe('RemoteDirectory::delete()', () => {
   });
 });
 
+describe('RemoteDirectory::exists()', () => {
+  it('verifies existence', () => {
+    waitsForPromise(async () => {
+      const directoryPath = temp.mkdirSync('exists_test');
+      expect(fs.existsSync(directoryPath)).toBe(true);
+
+      const directory = new RemoteDirectory(connectionMock, `nuclide://host13:1234${directoryPath}`);
+      const exists = await directory.exists();
+      expect(exists).toBe(true);
+    });
+  });
+
+  it('verifies non-existence', () => {
+    waitsForPromise(async () => {
+      const tempDir = temp.mkdirSync('exists_test');
+      const directoryPath = path.join(tempDir, '/directory_that_doesnt_exist');
+      expect(fs.existsSync(directoryPath)).toBe(false);
+
+      const directory = new RemoteDirectory(connectionMock, `nuclide://host13:1234${directoryPath}`);
+      const exists = await directory.exists();
+      expect(exists).toBe(false);
+    });
+  });
+});
+
 describe('RemoteDirectory::rename()', () => {
   let tempDir;
 

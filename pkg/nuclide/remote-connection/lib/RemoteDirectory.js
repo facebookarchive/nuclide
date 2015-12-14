@@ -132,6 +132,10 @@ class RemoteDirectory {
     return this._isRoot(this._localPath);
   }
 
+  exists(): Promise<boolean> {
+    return this._getFileSystemService().exists(this._localPath);
+  }
+
   existsSync(): boolean {
     return false;
   }

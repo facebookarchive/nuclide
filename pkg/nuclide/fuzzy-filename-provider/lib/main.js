@@ -72,7 +72,11 @@ function initSearch(projectPaths: Array<string>): void {
       // It doesn't matter what the search term is. Empirically, doing an initial
       // search speeds up the next search much more than simply doing the setup
       // kicked off by 'fileSearchForDirectory'.
-      service.queryFuzzyFile(projectPath, 'a');
+      service.isFuzzySearchAvailableFor(projectPath).then(isAvailable => {
+        if (isAvailable) {
+          service.queryFuzzyFile(projectPath, 'a');
+        }
+      });
     }
   });
   projectRoots = newProjectRoots;

@@ -20,6 +20,7 @@ export type FileSearchResult = {
 import {fileSearchForDirectory} from '../../path-search';
 import {fsPromise} from '../../commons';
 const fileSearchers: Map = new Map();
+
 /**
  * Performs a fuzzy file search in the specified directory.
  */
@@ -28,8 +29,8 @@ export async function queryFuzzyFile(
   queryString: string
 ): Promise<Array<FileSearchResult>> {
   let search = fileSearchers.get(rootDirectory);
-  if (search == null) {
 
+  if (search == null) {
     const exists = await fsPromise.exists(rootDirectory);
     if (!exists) {
       throw new Error('Could not find directory to search : ' + rootDirectory);
@@ -54,5 +55,5 @@ export async function queryFuzzyFile(
 export async function isFuzzySearchAvailableFor(
     rootDirectory: NuclideUri
 ): Promise<boolean> {
-  return true;
+  return await fsPromise.exists(rootDirectory);
 }
