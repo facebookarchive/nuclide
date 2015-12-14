@@ -14,6 +14,7 @@ const path = require('path');
 const {execSync} = require('child_process');
 const NuclideServer = require('../lib/NuclideServer');
 import ClientComponent from '../lib/serviceframework/ClientComponent';
+import {loadServicesConfig} from '../lib/serviceframework';
 import NuclideSocket from '../lib/NuclideSocket';
 
 let server;
@@ -53,7 +54,7 @@ describe('Nuclide Sercure Server test suite', () => {
         clientCertificate: fs.readFileSync(client_cert_path),
         clientKey: fs.readFileSync(client_key_path),
       });
-      client = new ClientComponent(socket);
+      client = new ClientComponent(socket, loadServicesConfig());
 
       socket.close();
       server.close();

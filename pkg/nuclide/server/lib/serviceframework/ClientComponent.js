@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-import * as config from '../../lib/serviceframework/config';
 import {SERVICE_FRAMEWORK3_CHANNEL} from '../config';
+import type {ConfigEntry} from './index';
 
 import invariant from 'assert';
 import {EventEmitter} from 'events';
@@ -35,7 +35,7 @@ export default class ClientComponent {
   _typeRegistry: TypeRegistry;
   _objectRegistry: Map<number, any>;
 
-  constructor(socket: NuclideSocket) {
+  constructor(socket: NuclideSocket, services: Array<ConfigEntry>) {
     this._emitter = new EventEmitter();
     this._socket = socket;
     this._rpcRequestId = 1;
@@ -43,50 +43,53 @@ export default class ClientComponent {
     this._typeRegistry = new TypeRegistry();
     this._objectRegistry = new Map();
 
-    // Setup services.
-    const services = config.loadServicesConfig();
-    for (const service of services) {
-      logger.debug(`Registering 3.0 service ${service.name}...`);
-      try {
-        const defs = getDefinitions(service.definition);
-        const proxy = getProxy(service.name, service.definition, this);
-
-        defs.forEach(definition => {
-          const name = definition.name;
-          switch (definition.kind) {
-            case 'alias':
-              logger.debug(`Registering type alias ${name}...`);
-              if (definition.definition != null) {
-                this._typeRegistry.registerAlias(name, definition.definition);
-              }
-              break;
-            case 'interface':
-              logger.debug(`Registering interface ${name}.`);
-              this._typeRegistry.registerType(name, async object => {
-                return await object._idPromise;
-              }, async objectId => {
-                // Return a cached proxy, if one already exists, for this object.
-                if (this._objectRegistry.has(objectId)) {
-                  return this._objectRegistry.get(objectId);
-                }
-
-                // Generate the proxy by manually setting the prototype of the object to be the
-                // prototype of the remote proxy constructor.
-                const object = { _idPromise: Promise.resolve(objectId) };
-                // $FlowIssue - T9254210 add Object.setPrototypeOf typing
-                Object.setPrototypeOf(object, proxy[name].prototype);
-                this._objectRegistry.set(objectId, object);
-                return object;
-              });
-              break;
-          }
-        });
-      } catch (e) {
-        logger.error(`Failed to load service ${service.name}. Stack Trace:\n${e.stack}`);
-        continue;
-      }
-    }
+    this.addServices(services);
     this._socket.on('message', (message) => this._handleSocketMessage(message));
+  }
+
+  addServices(services: Array<ConfigEntry>): void {
+    services.forEach(this.addService, this);
+  }
+
+  addService(service: ConfigEntry): void {
+    logger.debug(`Registering 3.0 service ${service.name}...`);
+    try {
+      const defs = getDefinitions(service.definition);
+      const proxy = getProxy(service.name, service.definition, this);
+
+      defs.forEach(definition => {
+        const name = definition.name;
+        switch (definition.kind) {
+          case 'alias':
+            logger.debug(`Registering type alias ${name}...`);
+            if (definition.definition != null) {
+              this._typeRegistry.registerAlias(name, definition.definition);
+            }
+            break;
+          case 'interface':
+            logger.debug(`Registering interface ${name}.`);
+            this._typeRegistry.registerType(name, async object => {
+              return await object._idPromise;
+            }, async objectId => {
+              // Return a cached proxy, if one already exists, for this object.
+              if (this._objectRegistry.has(objectId)) {
+                return this._objectRegistry.get(objectId);
+              }
+
+              // Generate the proxy by manually setting the prototype of the object to be the
+              // prototype of the remote proxy constructor.
+              const object = { _idPromise: Promise.resolve(objectId) };
+              // $FlowIssue - T9254210 add Object.setPrototypeOf typing
+              Object.setPrototypeOf(object, proxy[name].prototype);
+              this._objectRegistry.set(objectId, object);
+              return object;
+            });
+            break;
+        }
+      });
+    } catch (e) {
+      logger.error(`Failed to load service ${service.name}. Stack Trace:\n${e.stack}`);
+    }
   }
 
   // Delegate marshalling to the type registry.

@@ -10,14 +10,9 @@
  */
 
 import path from 'path';
+import type {ConfigEntry} from './index';
 
 const PACKAGE_ROOT = path.resolve(__dirname, '..', '..');
-
-type ConfigEntry = {
-  name: string;
-  definition:string;
-  implementation: string;
-};
 
 /**
  * Load service configs, and resolve all of the paths to absolute paths.

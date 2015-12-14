@@ -14,6 +14,8 @@
 const WebSocket = require('ws');
 const NuclideServer = require('../lib/NuclideServer');
 import ClientComponent from '../lib/serviceframework/ClientComponent';
+const {loadServicesConfig} = require('../lib/serviceframework');
+
 import NuclideSocket from '../lib/NuclideSocket';
 
 let server;
@@ -28,7 +30,7 @@ describe('Nuclide Server test suite', () => {
       server = new NuclideServer({port: 8176});
       await server.connect();
       socket = new NuclideSocket('http://localhost:8176');
-      client = new ClientComponent(socket);
+      client = new ClientComponent(socket, loadServicesConfig());
     });
   });
 

@@ -14,6 +14,7 @@ import type {HgRepositoryDescription} from '../../source-control-helpers';
 import invariant from 'assert';
 import ClientComponent from '../../server/lib/serviceframework/ClientComponent';
 import RemoteDirectory from './RemoteDirectory';
+import {loadServicesConfig} from '../../server/lib/serviceframework/config';
 
 const {CompositeDisposable, Disposable} = require('atom');
 const remoteUri = require('../../remote-uri');
@@ -451,7 +452,7 @@ class RemoteConnection {
       // The remote connection and client are identified by both the remote host and the inital
       // working directory.
       const socket = new NuclideSocket(uri, options);
-      this._client = new ClientComponent(socket);
+      this._client = new ClientComponent(socket, loadServicesConfig());
     }
     invariant(this._client);
     return this._client;
