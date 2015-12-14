@@ -4,6 +4,7 @@
 /benchmarker
 /pkg/**/spec
 /pkg/sample
-/resources
+/resources/**
+!/resources/VendorLib/thrift-0.9.3-fb*
 /scripts
 **/babel-cache/**
