@@ -13,6 +13,7 @@ import fs from 'fs';
 import {getLogger, flushLogsAndExit, initialUpdateConfig} from '../../logging';
 import {startTracking} from '../../analytics';
 import NuclideServer from './NuclideServer';
+import ServiceFramework from './serviceframework';
 
 const DEFAULT_PORT = 9090;
 
@@ -43,7 +44,7 @@ async function main(args) {
       serverCertificate: cert,
       certificateAuthorityCertificate: ca,
       trackEventLoop: true,
-    });
+    }, ServiceFramework.loadServicesConfig());
     await server.connect();
     serverStartTimer.onSuccess();
     logger.info('NuclideServer started on port ' + port + '.');

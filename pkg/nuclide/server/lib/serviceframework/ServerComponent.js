@@ -11,7 +11,6 @@
 
 import {Disposable, Observable} from 'rx';
 import {getDefinitions} from '../../../service-parser';
-import {loadServicesConfig} from './config';
 import NuclideServer from '../NuclideServer';
 import TypeRegistry from '../../../service-parser/lib/TypeRegistry';
 import {builtinLocation, voidType} from '../../../service-parser/lib/builtin-types';
@@ -25,6 +24,7 @@ import type {
   Type,
 } from '../../../service-parser/lib/types';
 import invariant from 'assert';
+import type {ConfigEntry} from './index';
 
 import type {RequestMessage, ErrorResponseMessage, PromiseResponseMessage,
   ObservableResponseMessage} from './types';
@@ -62,7 +62,7 @@ export default class ServerComponent {
 
   _server: NuclideServer;
 
-  constructor(server: NuclideServer) {
+  constructor(server: NuclideServer, services: Array<ConfigEntry>) {
     this._server = server;
 
     this._typeRegistry = new TypeRegistry();
@@ -77,64 +77,68 @@ export default class ServerComponent {
     // NuclideUri type requires no transformations (it is done on the client side).
     this._typeRegistry.registerType('NuclideUri', uri => uri, remotePath => remotePath);
 
-    const services = loadServicesConfig();
-    for (const service of services) {
-      logger.debug(`Registering 3.0 service ${service.name}...`);
-      try {
-        const defs = getDefinitions(service.definition);
-        // $FlowIssue - the parameter passed to require must be a literal string.
-        const localImpl = require(service.implementation);
+    this.addServices(services);
+  }
 
-        // Register type aliases.
-        defs.forEach((definition: Definition) => {
-          const name = definition.name;
-          switch (definition.kind) {
-            case 'alias':
-              logger.debug(`Registering type alias ${name}...`);
-              if (definition.definition != null) {
-                this._typeRegistry.registerAlias(name, (definition.definition: Type));
+  addServices(services: Array<ConfigEntry>): void {
+    services.forEach(this.addService, this);
+  }
+
+  addService(service: ConfigEntry): void {
+    logger.debug(`Registering 3.0 service ${service.name}...`);
+    try {
+      const defs = getDefinitions(service.definition);
+      // $FlowIssue - the parameter passed to require must be a literal string.
+      const localImpl = require(service.implementation);
+
+      // Register type aliases.
+      defs.forEach((definition: Definition) => {
+        const name = definition.name;
+        switch (definition.kind) {
+          case 'alias':
+            logger.debug(`Registering type alias ${name}...`);
+            if (definition.definition != null) {
+              this._typeRegistry.registerAlias(name, (definition.definition: Type));
+            }
+            break;
+          case 'function':
+            // Register module-level functions.
+            this._registerFunction(`${service.name}/${name}`, localImpl[name], definition.type);
+            break;
+          case 'interface':
+            // Register interfaces.
+            logger.debug(`Registering interface ${name}...`);
+            this._classesByName.set(name,  {
+              localImplementation: localImpl[name],
+              definition,
+            });
+
+            this._typeRegistry.registerType(name, async object => {
+              // If the object has already been assigned an id, return that id.
+              if (object._remoteId) {
+                return object._remoteId;
               }
-              break;
-            case 'function':
-              // Register module-level functions.
-              this._registerFunction(`${service.name}/${name}`, localImpl[name], definition.type);
-              break;
-            case 'interface':
-              // Register interfaces.
-              logger.debug(`Registering interface ${name}...`);
-              this._classesByName.set(name,  {
-                localImplementation: localImpl[name],
-                definition,
-              });
 
-              this._typeRegistry.registerType(name, async object => {
-                // If the object has already been assigned an id, return that id.
-                if (object._remoteId) {
-                  return object._remoteId;
-                }
+              // Put the object in the registry.
+              object._interface = name;
+              const objectId = this._nextObjectId;
+              this._objectRegistry.set(objectId, object);
+              object._remoteId = objectId;
+              this._nextObjectId++;
 
-                // Put the object in the registry.
-                object._interface = name;
-                const objectId = this._nextObjectId;
-                this._objectRegistry.set(objectId, object);
-                object._remoteId = objectId;
-                this._nextObjectId++;
+              return objectId;
+            }, async objectId => this._objectRegistry.get(objectId));
 
-                return objectId;
-              }, async objectId => this._objectRegistry.get(objectId));
+            // Register all of the static methods as remote functions.
+            definition.staticMethods.forEach((funcType, funcName) => {
+              this._registerFunction(`${name}/${funcName}`, localImpl[name][funcName], funcType);
+            });
+            break;
+        }
+      });
 
-              // Register all of the static methods as remote functions.
-              definition.staticMethods.forEach((funcType, funcName) => {
-                this._registerFunction(`${name}/${funcName}`, localImpl[name][funcName], funcType);
-              });
-              break;
-          }
-        });
-
-      } catch (e) {
-        logger.error(`Failed to load service ${service.name}. Stack Trace:\n${e.stack}`);
-        continue;
-      }
+    } catch (e) {
+      logger.error(`Failed to load service ${service.name}. Stack Trace:\n${e.stack}`);
     }
   }
 
@@ -148,7 +152,6 @@ export default class ServerComponent {
       type,
     });
   }
-
 
   async handleMessage(client: SocketClient, message: RequestMessage): Promise<void> {
     const requestId = message.requestId;

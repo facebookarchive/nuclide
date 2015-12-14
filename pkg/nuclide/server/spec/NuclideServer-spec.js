@@ -27,7 +27,7 @@ describe('Nuclide Server test suite', () => {
     jasmine.getEnv().defaultTimeoutInterval = 10000;
 
     waitsForPromise(async () => {
-      server = new NuclideServer({port: 8176});
+      server = new NuclideServer({port: 8176}, loadServicesConfig());
       await server.connect();
       socket = new NuclideSocket('http://localhost:8176');
       client = new ClientComponent(socket, loadServicesConfig());

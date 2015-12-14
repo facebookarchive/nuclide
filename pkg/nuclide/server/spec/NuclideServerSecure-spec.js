@@ -45,7 +45,7 @@ describe('Nuclide Sercure Server test suite', () => {
         serverKey: fs.readFileSync(server_key_path),
         serverCertificate: fs.readFileSync(server_cert_path),
         certificateAuthorityCertificate: fs.readFileSync(ca_cert_path),
-      });
+      }, loadServicesConfig());
 
       await server.connect();
 

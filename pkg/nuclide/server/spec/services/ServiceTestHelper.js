@@ -31,7 +31,7 @@ export default class ServiceTestHelper {
       customServices = loadServicesConfig();
     }
 
-    this._server = new NuclideServer({port: 0});
+    this._server = new NuclideServer({port: 0}, customServices);
     await this._server.connect();
 
     const port = this._server._webServer.address().port;

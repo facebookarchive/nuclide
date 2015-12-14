@@ -23,6 +23,7 @@ const {deserializeArgs, sendJsonResponse, sendTextResponse} = require('./utils')
 const {getVersion} = require('../../version');
 import invariant from 'assert';
 import ServiceFramework from './serviceframework';
+import type {ConfigEntry} from './serviceframework/index';
 
 import {getLogger, flushLogsAndExit} from '../../logging';
 const logger = getLogger();
@@ -55,7 +56,7 @@ class NuclideServer {
 
   _serverComponent: ServiceFramework.ServerComponent;
 
-  constructor(options: NuclideServerOptions) {
+  constructor(options: NuclideServerOptions, services: Array<ConfigEntry>) {
     invariant(NuclideServer._theServer == null);
     NuclideServer._theServer = this;
 
@@ -96,8 +97,8 @@ class NuclideServer {
       });
     }
 
-    // Setup 3.0 services.
-    this._serverComponent = new ServiceFramework.ServerComponent(this);
+    this._serverComponent =
+        new ServiceFramework.ServerComponent(this, services);
   }
 
   _attachUtilHandlers() {
