@@ -1,0 +1,14 @@
+{
+  "name": "nuclide-gadgets-interfaces",
+  "description": "Flow types for the public nuclide-gadgets service interface. This is a dev-only package. It does not contain executable code.",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "nuclide": {
+    "packageType": "Node",
+    "testRunner": "npm"
+  },
+  "scripts": {
+    "test": "node --harmony ../jasmine/bin/jasmine-node-transpiled spec"
+  }
+}
