@@ -48,7 +48,13 @@ function tempfile(options: any): Promise<string> {
       if (err) {
         reject(err);
       } else {
-        resolve(info.path);
+        fs.close(info.fd, closeErr => {
+          if (closeErr) {
+            reject(closeErr);
+          } else {
+            resolve(info.path);
+          }
+        });
       }
     });
   });
