@@ -292,8 +292,15 @@ declare class atom$Pane {
   ): atom$Pane;
 
   // Undocumented Methods
+  getParent(): Object;
   removeItem(item: Object, moved: ?boolean): void;
   setActiveItem(item: Object): Object;
+  setFlexScale(flexScale: number): number;
+}
+
+// Undocumented class
+declare class atom$PaneAxis {
+  setFlexScale(flexScale: number): number;
 }
 
 declare class atom$Panel {

@@ -14,7 +14,10 @@ import type {Gadget} from '../types/Gadget';
 import type Immutable from 'immutable';
 
 import * as ActionTypes from './ActionTypes';
+import * as ContainerVisibility from './ContainerVisibility';
 import createComponentItem from './createComponentItem';
+import findPaneAndItem from './findPaneAndItem';
+import getContainerToHide from './getContainerToHide';
 import GadgetPlaceholder from './GadgetPlaceholder';
 import * as GadgetUri from './GadgetUri';
 import React from 'react-for-atom';
@@ -94,6 +97,37 @@ export default function createCommands(
       });
 
       return reactElement;
+    },
+
+    hideGadget(gadgetId: string): void {
+      // Hiding a gadget doesn't just mean closing its pane; it means getting it out of the way.
+      // Just closing its pane and would potentially leave siblings which, presumably, the user
+      // would then have to also close. Instead, it's more useful to identify the group of gadgets
+      // to which this one belongs and get it out of the way. Though groups can be nested, the most
+      // useful to hide is almost certainly the topmost, so that's what we do.
+
+      const match = findPaneAndItem(item => getGadgetId(item) === gadgetId);
+
+      // If the gadget isn't present, no biggie; just no-op.
+      if (match == null) {
+        return;
+      }
+
+      const {item: gadgetItem, pane: parentPane} = match;
+      const containerToHide = getContainerToHide(parentPane);
+
+      // If gadget is at the top level "hiding" is kind of a murky concept but we'll take it to mean
+      // "close."
+      if (containerToHide == null) {
+        parentPane.destroyItem(gadgetItem);
+
+        // TODO: Store the location of the closed pane for serialization so we can reopen this
+        //       gadget there next time. (This isn't necessary if the gadget's default location is
+        //       at the top, but is if it was moved there.)
+        return;
+      }
+
+      ContainerVisibility.hide(containerToHide);
     },
 
     registerGadget(gadget: Gadget): void {
@@ -221,4 +255,8 @@ export default function createCommands(
 
   };
 
+}
+
+function getGadgetId(item) {
+  return item.getGadgetId ? item.getGadgetId() : item.constructor.gadgetId;
 }

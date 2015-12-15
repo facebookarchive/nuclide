@@ -19,13 +19,18 @@ export default function createAtomCommands(
   appCommands: Object,
 ): atom$IDisposable {
   const commands = gadgets
-    .map(gadget => (
+    .map(gadget => ([
       atom.commands.add(
         'atom-workspace',
         formatCommandName(gadget.gadgetId, 'Show'),
         () => appCommands.showGadget(gadget.gadgetId),
-      )
-    ));
+      ),
+      atom.commands.add(
+        'atom-workspace',
+        formatCommandName(gadget.gadgetId, 'Hide'),
+        () => appCommands.hideGadget(gadget.gadgetId),
+      ),
+    ]));
   return new CompositeDisposable(...commands.toArray());
 }
 
