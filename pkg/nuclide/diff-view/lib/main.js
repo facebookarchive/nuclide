@@ -14,6 +14,7 @@ import type DiffViewModelType from './DiffViewModel';
 
 import {CompositeDisposable} from 'atom';
 import invariant from 'assert';
+import nuclideFeatures from '../../../../lib/nuclideFeatures';
 
 let diffViewModel: ?DiffViewModelType = null;
 let activeDiffView: ?{
@@ -210,7 +211,7 @@ module.exports = {
     }
 
     // Wait for all source control providers to register.
-    subscriptions.add(atom.packages.onDidActivateInitialPackages(() => {
+    subscriptions.add(nuclideFeatures.onDidActivateInitialFeatures(() => {
       invariant(state);
       const {activeFilePath} = state;
 

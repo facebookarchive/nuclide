@@ -16,6 +16,7 @@ import type {FileTreeControllerState} from './FileTreeController';
 import {CompositeDisposable} from 'atom';
 
 import featureConfig from '../../feature-config';
+import nuclideFeatures from '../../../../lib/nuclideFeatures';
 
 /**
  * Minimum interval (in ms) between onChangeActivePaneItem events before revealing the active pane
@@ -28,7 +29,7 @@ const ACTIVE_PANE_DEBOUNCE_INTERVAL_MS = 150;
 // Running the code in the global scope here ensures that it's called before 'tree-view' is
 // activated. This allows us to unload it before it's activated, ensuring it has minimal impact on
 // startup time.
-let loadSubscription = atom.packages.onDidLoadInitialPackages(() => {
+let loadSubscription = nuclideFeatures.onDidLoadInitialFeatures(() => {
   if (atom.packages.isPackageLoaded('tree-view')) {
     atom.packages.unloadPackage('tree-view');
   }
