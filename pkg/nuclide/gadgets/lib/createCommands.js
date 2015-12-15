@@ -20,6 +20,7 @@ import createComponentItem from './createComponentItem';
 import * as ExpandedFlexScale from './ExpandedFlexScale';
 import findPaneAndItem from './findPaneAndItem';
 import getContainerToHide from './getContainerToHide';
+import getResizableContainers from './getResizableContainers';
 import GadgetPlaceholder from './GadgetPlaceholder';
 import * as GadgetUri from './GadgetUri';
 import React from 'react-for-atom';
@@ -66,7 +67,7 @@ export default function createCommands(
         return;
       }
 
-      return this.createPaneItem(parsed.gadgetId);
+      return this.showGadget(parsed.gadgetId);
     },
 
     /**
@@ -246,9 +247,37 @@ export default function createCommands(
     /**
      * Ensure that a gadget of the specified gadgetId is visible, creating one if necessary.
      */
-    showGadget(gadgetId: string): void {
-      const uri = GadgetUri.format({gadgetId});
-      atom.workspace.open(uri, {searchAllPanes: true});
+    showGadget(gadgetId: string): Object {
+      const match = findPaneAndItem(item => getGadgetId(item) === gadgetId);
+
+      if (match == null) {
+        // If the gadget isn't in the workspace, create it.
+        // TODO: Where it gets created should be customizable with a `defaultLocation` (or similar)
+        //       static property on the gadget. This is similar to the `split` option of
+        //       `atom.workspace.open`, but uses absolute locations (e.g. it doesn't matter what the
+        //       current active pane is).
+        const newItem = this.createPaneItem(gadgetId);
+        const pane = atom.workspace.getPanes()[0];
+        pane.addItem(newItem);
+        pane.activateItem(newItem);
+        return newItem;
+      }
+
+      const {item, pane} = match;
+      pane.activateItem(item);
+
+      // If the item isn't in a hidable container (i.e. it's a top-level pane item), we're done.
+      const hiddenContainer = getContainerToHide(pane);
+      if (hiddenContainer == null) {
+        return item;
+      }
+
+      // Show all of the containers recursively up the tree.
+      for (const container of getResizableContainers(hiddenContainer)) {
+        ContainerVisibility.show(container);
+      }
+
+      return item;
     },
 
     unregisterGadget(gadgetId: string): void {

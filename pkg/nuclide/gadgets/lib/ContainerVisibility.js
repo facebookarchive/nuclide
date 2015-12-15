@@ -31,3 +31,11 @@ export function hide(container: PaneItemContainer): void {
   // Store the original flex scale so we can restore to it later.
   ExpandedFlexScale.set(container, currentFlexScale);
 }
+
+export function show(container: PaneItemContainer): void {
+  if (!isHidden(container)) {
+    return;
+  }
+  const expandedFlexScale = ExpandedFlexScale.get(container);
+  container.setFlexScale(expandedFlexScale);
+}

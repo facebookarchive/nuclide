@@ -13,6 +13,15 @@ import type {PaneItemContainer} from '../types/PaneItemContainer';
 
 import GadgetPlaceholder from './GadgetPlaceholder';
 
+export function get(container: PaneItemContainer): number {
+  for (const item of container.getItems()) {
+    if (item._expandedFlexScale) {
+      return item._expandedFlexScale;
+    }
+  }
+  return 1;
+}
+
 export function set(container: PaneItemContainer, value: number): void {
   // Store the number on on every gadget item in the container just in case one gets moved or
   // destroyed. It would be nice to store the information on the container (Pane, PaneAxis) itself,
