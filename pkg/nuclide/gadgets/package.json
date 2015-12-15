@@ -15,10 +15,10 @@
   "engines": {
     "atom": ">=1.1.0"
   },
-  "consumedServices": {
-    "nuclide-gadgets.provider": {
+  "providedServices": {
+    "nuclide-gadgets": {
       "versions": {
-        "0.0.0": "consumeGadget"
+        "0.0.0": "provideGadgetsService"
       }
     }
   },

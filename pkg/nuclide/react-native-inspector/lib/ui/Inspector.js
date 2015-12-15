@@ -9,11 +9,12 @@
  * the root directory of this source tree.
  */
 
+import type {Gadget} from '../../../gadgets-interfaces';
 import React from 'react-for-atom';
 import path from 'path';
 import {toJsString} from '../../../commons';
 
-export default class Inspector extends React.Component {
+class Inspector extends React.Component {
 
   getTitle(): string {
     return 'React Native Inspector';
@@ -47,3 +48,5 @@ export default class Inspector extends React.Component {
 }
 
 Inspector.gadgetId = 'nuclide-react-native-inspector';
+
+module.exports = ((Inspector: any): Gadget);

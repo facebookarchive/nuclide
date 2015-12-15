@@ -9,10 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {Gadget} from '../../gadgets-interfaces';
-
-import invariant from 'assert';
-import {Disposable} from 'atom';
+import type {GadgetsService} from '../../gadgets-interfaces';
 
 let activation: ?Object = null;
 
@@ -32,13 +29,7 @@ export function deactivate() {
   activation = null;
 }
 
-export function consumeGadget(gadget: Gadget): atom$Disposable {
-  invariant(activation);
-  activation.commands.registerGadget(gadget);
-  return new Disposable(() => {
-    if (activation == null) {
-      return;
-    }
-    activation.commands.unregisterGadget(gadget.gadgetId);
-  });
+export function provideGadgetsService(): GadgetsService {
+  const createGadgetsService = require('./createGadgetsService');
+  return createGadgetsService(() => activation && activation.commands);
 }
