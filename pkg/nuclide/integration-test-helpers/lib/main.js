@@ -10,7 +10,7 @@
  */
 
 import {dispatchKeyboardEvent} from './event';
-import {copyMercurialFixture} from './fixtures';
+import {copyMercurialFixture, setLocalProject} from './fixtures';
 import {activateAllPackages, deactivateAllPackages} from './package-utils';
 
 module.exports = {
@@ -18,4 +18,5 @@ module.exports = {
   copyMercurialFixture,
   deactivateAllPackages,
   dispatchKeyboardEvent,
+  setLocalProject,
 };

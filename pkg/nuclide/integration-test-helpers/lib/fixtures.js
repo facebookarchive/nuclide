@@ -31,3 +31,15 @@ export async function copyMercurialFixture(fixtureName: string): Promise<string>
   moveSync(pathToHg, path.join(repo, '.hg'));
   return repo;
 }
+
+/**
+ * Set the project.  If there are one or more projects set previously, this replaces them all with
+ * the one(s) provided as the argument `projectPath`.
+ */
+export function setLocalProject(projectPath: string | Array<string>): void {
+  if (Array.isArray(projectPath)) {
+    atom.project.setPaths(projectPath);
+  } else {
+    atom.project.setPaths([projectPath]);
+  }
+}
