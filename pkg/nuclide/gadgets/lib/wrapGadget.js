@@ -36,6 +36,9 @@ export default function wrapGadget(gadget: any): Object {
   // component can see.
   class PaneItem extends (gadget: Object) {
 
+    // Used to restore the item to the correct size when you show its pane.
+    _expandedFlexScale: ?number;
+
     // Deserialization happens before the gadgets are available, so we need to serialize gadgets as
     // placeholders (which are later replaced with the real thing).
     serialize() {
@@ -50,6 +53,7 @@ export default function wrapGadget(gadget: any): Object {
           rawInitialGadgetState: this.serializeState && this.serializeState(),
 
           title: this.getTitle(),
+          expandedFlexScale: this._expandedFlexScale,
         },
       };
     }

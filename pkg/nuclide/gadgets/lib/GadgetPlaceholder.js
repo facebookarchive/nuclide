@@ -20,9 +20,17 @@ type Props = {
   iconName: string;
   rawInitialGadgetState: Object;
   title: string;
+  expandedFlexScale: ?number;
 };
 
 class GadgetPlaceholder extends React.Component<void, Props> {
+
+  _expandedFlexScale: ?number;
+
+  constructor(props: Props) {
+    super(props);
+    this._expandedFlexScale = props && props.expandedFlexScale;
+  }
 
   destroy() {
     React.unmountComponentAtNode(this.element);
@@ -63,6 +71,7 @@ class GadgetPlaceholder extends React.Component<void, Props> {
         iconName: this.getIconName(),
         rawInitialGadgetState: this.getRawInitialGadgetState(),
         title: this.getTitle(),
+        expandedFlexScale: this._expandedFlexScale,
       },
     };
   }

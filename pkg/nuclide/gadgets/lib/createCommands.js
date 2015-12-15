@@ -227,6 +227,9 @@ export default function createCommands(
 
       const realItem = this.createPaneItem(gadgetId, {initialState, visible: isActive}, false);
 
+      // Copy the metadata about the container from the placeholder.
+      realItem._expandedFlexScale = item._expandedFlexScale;
+
       // Replace the placeholder with the real item. We'll add the real item first and then
       // remove the old one so that we don't risk dropping down to zero items.
       pane.addItem(realItem, index + 1);

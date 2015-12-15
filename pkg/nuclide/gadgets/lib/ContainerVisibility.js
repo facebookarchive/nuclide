@@ -13,6 +13,21 @@
 
 import type {PaneItemContainer} from '../types/PaneItemContainer';
 
+import * as ExpandedFlexScale from './ExpandedFlexScale';
+
+export function isHidden(container: PaneItemContainer): boolean {
+  // TODO: Leave a little wiggle room here? Hard to know a good number for flex scale.
+  return container.getFlexScale() === 0;
+}
+
 export function hide(container: PaneItemContainer): void {
+  if (isHidden(container)) {
+    return;
+  }
+
+  const currentFlexScale = container.getFlexScale();
   container.setFlexScale(0);
+
+  // Store the original flex scale so we can restore to it later.
+  ExpandedFlexScale.set(container, currentFlexScale);
 }
