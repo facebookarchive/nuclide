@@ -1,0 +1,26 @@
+{
+  "name": "nuclide-remote-ctags",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "Exposes nuclide-remote-ctags-base functionality to Atom.",
+  "nuclide": {
+    "packageType": "Atom",
+    "testRunner": "apm"
+  },
+  "providedServices": {
+    "hyperclick.provider": {
+      "versions": {
+        "0.0.0": "getHyperclickProvider"
+      }
+    }
+  },
+  "engines": {
+    "atom": ">=1.1.0"
+  },
+  "_atomModuleCache": {
+    "extensions": {
+      ".node": []
+    }
+  }
+}
