@@ -155,8 +155,13 @@ class FindReferencesModel {
       let curEndLine = -11;
       for (const ref of entryReferences) {
         if (ref.start.line <= curEndLine + 1 + this.getPreviewContext()) {
-          curGroup.push(ref);
-          curEndLine = Math.max(curEndLine, ref.end.line);
+          // Remove references with the same range (happens in C++ with templates)
+          if (curGroup.length > 0 && compareReference(curGroup[curGroup.length - 1], ref) !== 0) {
+            curGroup.push(ref);
+            curEndLine = Math.max(curEndLine, ref.end.line);
+          } else {
+            this._referenceCount--;
+          }
         } else {
           addReferenceGroup(groups, curGroup, curStartLine, curEndLine);
           curGroup = [ref];

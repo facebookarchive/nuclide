@@ -95,6 +95,8 @@ describe('FindReferencesModel', () => {
         // and overlapping ranges
         {uri: '/test/2', name: 'test2', start: loc(1, 1), end: loc(4, 1)},
         {uri: '/test/2', name: 'test2', start: loc(2, 1), end: loc(3, 1)},
+        // ignore duplicates
+        {uri: '/test/1', name: 'dupe!', start: loc(1, 1), end: loc(1, 1)},
       ];
       const model = new FindReferencesModel('/test', 'testFunction', refs);
       expect(model.getReferenceCount()).toEqual(7);
@@ -116,7 +118,7 @@ describe('FindReferencesModel', () => {
           grammar: fakeGrammar,
           previewText: ['1\n2\n3\n4\n5'],
           refGroups: [
-            {references: refs.slice(5), startLine: 1, endLine: 5},
+            {references: refs.slice(5, 7), startLine: 1, endLine: 5},
           ],
         },
       ]);

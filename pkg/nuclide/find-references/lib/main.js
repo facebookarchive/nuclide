@@ -11,9 +11,9 @@
 
 import type {Reference} from './types';
 
+import {CompositeDisposable} from 'atom';
 import {array} from '../../commons';
 import {track} from '../../analytics';
-import {CompositeDisposable} from 'atom';
 
 export type FindReferencesData = {
   type: 'data',
@@ -121,22 +121,24 @@ module.exports = {
     subscriptions.add(atom.commands.add(
       'atom-text-editor',
       'nuclide-find-references:activate',
-      () => {
-        // Generate a unique identifier.
-        const crypto = require('crypto');
-        const id = (crypto.randomBytes(8) || '').toString('hex');
-        atom.workspace.open(FIND_REFERENCES_URI + id);
+      async () => {
+        const view = await tryCreateView();
+        if (view != null) {
+          // Generate a unique identifier.
+          const crypto = require('crypto');
+          const id = (crypto.randomBytes(8) || '').toString('hex');
+          const uri = FIND_REFERENCES_URI + id;
+          const disposable = atom.workspace.addOpener((newUri) => {
+            if (uri === newUri) {
+              return view;
+            }
+          });
+          atom.workspace.open(uri);
+          // The new tab opens instantly, so this is no longer needed.
+          disposable.dispose();
+        }
       }
     ));
-
-    // We can't inline `tryCreateView` with an async callback since addOpener
-    // expects a null return value (not a Promise with a null return) if we don't want
-    // to handle the new workspace.
-    subscriptions.add(atom.workspace.addOpener((uri) => {
-      if (uri.startsWith(FIND_REFERENCES_URI)) {
-        return tryCreateView();
-      }
-    }));
 
     // Mark text editors with a working provider with a special CSS class.
     // This ensures the context menu option only appears in supported projects.
