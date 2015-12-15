@@ -58,7 +58,7 @@ const PROVIDERS_CHANGED = 'providers_changed';
 const MAX_OMNI_RESULTS_PER_SERVICE = 5;
 const DEFAULT_QUERY_DEBOUNCE_DELAY = 200;
 const OMNISEARCH_PROVIDER = {
-  action: 'nuclide-quick-open:toggle-omni-search',
+  action: 'nuclide-quick-open:find-anything-via-omni-search',
   debounceDelay: DEFAULT_QUERY_DEBOUNCE_DELAY,
   name: 'OmniSearchResultProvider',
   prompt: 'Search for anything...',

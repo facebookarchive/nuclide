@@ -285,10 +285,10 @@ module.exports = {
     listeners = new CompositeDisposable();
     listeners.add(
       atom.commands.add('atom-workspace', {
-        'nuclide-quick-open:toggle-omni-search': () => {
+        'nuclide-quick-open:find-anything-via-omni-search': () => {
           getActivation().toggleOmniSearchProvider();
         },
-      })
+      }),
     );
     getActivation();
   },
@@ -307,7 +307,7 @@ module.exports = {
         title: 'Quick Open',
         icon: 'search',
         description: 'A powerful search box to quickly find local and remote files and content.',
-        command: 'nuclide-quick-open:toggle-omni-search',
+        command: 'nuclide-quick-open:find-anything-via-omni-search',
       },
       priority: 10,
     };
