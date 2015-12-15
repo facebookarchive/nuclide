@@ -9,11 +9,13 @@
  * the root directory of this source tree.
  */
 
-import {activateAllPackages, deactivateAllPackages} from './package-utils';
+import {dispatchKeyboardEvent} from './event';
 import {copyMercurialFixture} from './fixtures';
+import {activateAllPackages, deactivateAllPackages} from './package-utils';
 
 module.exports = {
   activateAllPackages,
   copyMercurialFixture,
   deactivateAllPackages,
+  dispatchKeyboardEvent,
 };

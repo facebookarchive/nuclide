@@ -951,6 +951,16 @@ declare class atom$KeymapManager {
   keystrokeForKeyboardEvent(event: Event): string;
   getPartialMatchTimeout(): number;
 
+  static buildKeydownEvent(
+    key: string,
+    options: {
+      target: HTMLElement;
+      alt?: boolean;
+      cmd?: boolean;
+      ctrl?: boolean;
+      shift?: boolean;
+    },
+  ): Event;
 }
 
 declare class atom$MenuManager {
