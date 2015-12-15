@@ -39,11 +39,6 @@ export default class HealthPaneItemComponent extends React.Component {
     // For each section, we use settings-view to get a familiar look for table cells.
     return (
       <div>
-        <button
-          className="btn icon icon-gear pull-right"
-          onClick={() => atom.workspace.open('atom://config/packages/nuclide-health')}>
-          Settings
-        </button>
         {Object.keys(sections).map((title, s) =>
           <div className="nuclide-health-pane-item-section" key={s}>
             <h2>{title}</h2>
