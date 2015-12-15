@@ -18,6 +18,10 @@ export type nuclide_debugger$DebuggerInstance = {
 };
 
 export type nuclide_debugger$DebuggerProcessInfo = {
+  pid: number;
+  _command: string;
+  _serviceName: string;
+
   toString(): string;
 
   displayString(): string;

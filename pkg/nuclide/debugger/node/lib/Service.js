@@ -13,12 +13,15 @@ const {Disposable} = require('atom');
 const WebSocketServer = require('ws').Server;
 const Session = require('../VendorLib/session');
 
-class DebuggerProcess {
+import {DebuggerProcess} from '../../utils';
+
+class NodeDebuggerProcess extends DebuggerProcess {
   _debugPort: number;
   _server: ?WebSocketServer;
   _sessionEndCallback: ?() => void;
 
   constructor(debugPort: number) {
+    super();
     this._debugPort = debugPort;
     this._server = null;
   }
@@ -41,16 +44,10 @@ class DebuggerProcess {
         };
         const session = new Session(config, this._debugPort, websocket);
         session.on('close', this._handleSessionEnd.bind(this));
-        return session;
       });
     }
     // create an instance of DebugServer, and get its ws port.
     return Promise.resolve(`ws=localhost:${wsPort}/`);
-  }
-
-  onSessionEnd(callback: () => void): Disposable {
-    this._sessionEndCallback = callback;
-    return (new Disposable(() => this._sessionEndCallback = null));
   }
 
   _handleSessionEnd(): void {
@@ -58,6 +55,11 @@ class DebuggerProcess {
       this._sessionEndCallback();
     }
     this.dispose();
+  }
+
+  onSessionEnd(callback: () => void): Disposable {
+    this._sessionEndCallback = callback;
+    return (new Disposable(() => this._sessionEndCallback = null));
   }
 }
 
@@ -81,7 +83,7 @@ class ProcessInfo extends DebuggerProcessInfo {
     // This is the port that the V8 debugger usually listens on.
     // TODO(natthu): Provide a way to override this in the UI.
     const debugPort = 5858;
-    return new DebuggerProcess(debugPort);
+    return new NodeDebuggerProcess(debugPort);
   }
 
   compareDetails(other: ProcessInfo): number {
@@ -95,10 +97,11 @@ class ProcessInfo extends DebuggerProcessInfo {
   }
 }
 
-function getProcessInfoList(): Promise<Array<DebuggerProcessInfo>> {
+function getProcessInfoList(): Promise<Array<ProcessInfo>> {
   const {asyncExecute} = require('../../../commons');
   return asyncExecute('ps', ['-e', '-o', 'pid,comm'], {})
     .then(result => {
+      // $FlowIssue -- https://github.com/facebook/flow/issues/1143
       return result.stdout.toString().split('\n').slice(1).map(line => {
         const words = line.trim().split(' ');
         const pid = Number(words[0]);

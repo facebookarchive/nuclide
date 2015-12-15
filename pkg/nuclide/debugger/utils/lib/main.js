@@ -13,7 +13,23 @@ import type {
   nuclide_debugger$DebuggerProcessInfo,
 } from '../../interfaces/service';
 
-class DebuggerProcessInfo {
+export class DebuggerProcess {
+  dispose(): void {
+    throw new Error('abstract method');
+  }
+
+  getWebsocketAddress(): Promise<string> {
+    throw new Error('abstract method');
+  }
+
+  onSessionEnd(callback: () => void): {
+    dispose(): void;
+  } {
+    throw new Error('abstract method');
+  }
+}
+
+export class DebuggerProcessInfo {
   _serviceName: string;
 
   constructor(serviceName: string) {
@@ -40,5 +56,3 @@ class DebuggerProcessInfo {
     throw new Error('abstract method');
   }
 }
-
-module.exports = {DebuggerProcessInfo};

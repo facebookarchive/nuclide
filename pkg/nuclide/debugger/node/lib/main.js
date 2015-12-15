@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {nuclide_debugger$Service} from '../../interfaces/service';
+
 module.exports = {
   activate(state: mixed): void {
   },
