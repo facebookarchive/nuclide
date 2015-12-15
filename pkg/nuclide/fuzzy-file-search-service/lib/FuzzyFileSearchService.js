@@ -57,11 +57,3 @@ export async function isFuzzySearchAvailableFor(
 ): Promise<boolean> {
   return await fsPromise.exists(rootDirectory);
 }
-
-export type FuzzyFileSearchService = {
-  queryFuzzyFile(
-    rootDirectory: NuclideUri,
-    queryString: string,
-  ): Promise<Array<FileSearchResult>>;
-  isFuzzySearchAvailableFor(rootDirectory: NuclideUri): Promise<boolean>;
-};
