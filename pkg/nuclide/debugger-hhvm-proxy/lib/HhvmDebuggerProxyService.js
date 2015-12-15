@@ -21,7 +21,7 @@ export type ConnectionConfig = {
   pid?: number;
   scriptRegex?: string;
   idekeyRegex?: string;
-  endDebugWhenNoRequests: boolean;
+  endDebugWhenNoRequests?: boolean;
   logLevel: string;
   targetUri: string;
 };

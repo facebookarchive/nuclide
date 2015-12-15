@@ -9,10 +9,14 @@
  * the root directory of this source tree.
  */
 
+import type {nuclide_debugger$DebuggerProcessInfo,}
+    from '../../interfaces/service';
 
-const {log, logError} = require('./utils');
+import utils from './utils';
+const {log} = utils;
 
-async function getProcessInfoList(): Promise<Array<DebuggerProcessInfo>> {
+async function getProcessInfoList():
+    Promise<Array<nuclide_debugger$DebuggerProcessInfo>> {
   log('Getting process info list');
 
   const remoteUri = require('../../../remote-uri');
@@ -23,7 +27,7 @@ async function getProcessInfoList(): Promise<Array<DebuggerProcessInfo>> {
 
   if (remoteDirectoryPath) {
     const ProcessInfo = require('./ProcessInfo');
-    return [new ProcessInfo(remoteDirectoryPath)];
+    return [(new ProcessInfo(remoteDirectoryPath): nuclide_debugger$DebuggerProcessInfo)];
   } else {
     log('No remote dirs getting process info list');
     return [];

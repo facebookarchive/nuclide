@@ -13,7 +13,12 @@ const {Disposable} = require('atom');
 const WebSocketServer = require('ws').Server;
 const Session = require('../VendorLib/session');
 
+import invariant from 'assert';
+
 import {DebuggerProcess} from '../../utils';
+
+import type {nuclide_debugger$DebuggerProcessInfo,}
+    from '../../interfaces/Service';
 
 class NodeDebuggerProcess extends DebuggerProcess {
   _debugPort: number;
@@ -86,7 +91,8 @@ class ProcessInfo extends DebuggerProcessInfo {
     return new NodeDebuggerProcess(debugPort);
   }
 
-  compareDetails(other: ProcessInfo): number {
+  compareDetails(other: nuclide_debugger$DebuggerProcessInfo): number {
+    invariant(other instanceof ProcessInfo);
     return this._command === other._command
         ? (this.pid - other.pid)
         : (this._command < other._command) ? -1 : 1;
@@ -97,7 +103,8 @@ class ProcessInfo extends DebuggerProcessInfo {
   }
 }
 
-function getProcessInfoList(): Promise<Array<ProcessInfo>> {
+function getProcessInfoList():
+    Promise<Array<nuclide_debugger$DebuggerProcessInfo>> {
   const {asyncExecute} = require('../../../commons');
   return asyncExecute('ps', ['-e', '-o', 'pid,comm'], {})
     .then(result => {

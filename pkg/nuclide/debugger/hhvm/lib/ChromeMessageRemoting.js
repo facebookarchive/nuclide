@@ -12,7 +12,9 @@
 
 const url = require('url');
 const remoteUri = require('../../../remote-uri');
-const {log} = require('./utils');
+import logger from './utils';
+
+const {log} = logger;
 
 function translateMessageFromServer(hostname: string, port: number, message: string): string {
   return translateMessage(message, uri => translateUriFromServer(hostname, port, uri));

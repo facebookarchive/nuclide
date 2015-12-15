@@ -9,20 +9,41 @@
  * the root directory of this source tree.
  */
 
-const {log, logInfo, logError, setLogLevel} = require('./utils');
+import type {NuclideUri} from '../../../remote-uri';
+import utils from './utils';
+import type {ConnectionConfig} from '../../../debugger-hhvm-proxy';
+
+import type {HhvmDebuggerProxyService as HhvmDebuggerProxyServiceType,}
+    from '../../../debugger-hhvm-proxy/lib/HhvmDebuggerProxyService';
+
+const {log, logInfo, logError, setLogLevel} = utils;
 const featureConfig = require('../../../feature-config');
 const {translateMessageFromServer, translateMessageToServer} = require('./ChromeMessageRemoting');
 const remoteUri = require('../../../remote-uri');
 const {Disposable} = require('atom');
+const WebSocketServer = require('ws').Server;
+const {stringifyError} = require('../../../commons').error;
 
 type NotificationMessage = {
   type: 'info' | 'warning' | 'error' | 'fatalError';
   message: string;
 };
 
+type HhvmDebuggerConfig = {
+  scriptRegex: string;
+  idekeyRegex: string;
+  xdebugPort: number;
+  endDebugWhenNoRequests: boolean;
+  logLevel: string;
+};
+
+function getConfig(): HhvmDebuggerConfig {
+  return (featureConfig.get('nuclide-debugger-hhvm'): any);
+}
+
 class DebuggerProcess {
   _remoteDirectoryUri: NuclideUri;
-  _proxy: ?HhvmDebuggerProxyService;
+  _proxy: ?HhvmDebuggerProxyServiceType;
   _server: ?WebSocketServer;
   _webSocket: ?WebSocket;
   _disposables: atom$CompositeDisposable;
@@ -39,7 +60,7 @@ class DebuggerProcess {
     this._disposables = new CompositeDisposable();
     this._sessionEndCallback = null;
 
-    setLogLevel(featureConfig.get('nuclide-debugger-hhvm').logLevel);
+    setLogLevel(getConfig().logLevel);
   }
 
   getWebsocketAddress(): Promise<string> {
@@ -60,29 +81,35 @@ class DebuggerProcess {
       this._handleServerEnd.bind(this)
     ));
 
-    const config = featureConfig.get('nuclide-debugger-hhvm');
-    config.targetUri = remoteUri.getPath(this._remoteDirectoryUri);
+    const config = getConfig();
+    const connectionConfig: ConnectionConfig = {
+      xdebugPort: config.xdebugPort,
+      targetUri: remoteUri.getPath(this._remoteDirectoryUri),
+      logLevel: config.logLevel,
+    };
     logInfo('Connection config: ' + JSON.stringify(config));
 
     if (!isValidRegex(config.scriptRegex)) {
       // TODO: User facing error message?
       logError('nuclide-debugger-hhvm config scriptRegex is not a valid regular expression: '
         + config.scriptRegex);
-      delete config.scriptRegex;
+    } else {
+      connectionConfig.scriptRegex = config.scriptRegex;
     }
 
     if (!isValidRegex(config.idekeyRegex)) {
       // TODO: User facing error message?
       logError('nuclide-debugger-hhvm config idekeyRegex is not a valid regular expression: '
         + config.idekeyRegex);
-      delete config.idekeyRegex;
+    } else {
+      connectionConfig.idekeyRegex = config.idekeyRegex;
     }
 
     if (this._launchScriptPath) {
-      config.endDebugWhenNoRequests = true;
+      connectionConfig.endDebugWhenNoRequests = true;
     }
 
-    const attachPromise = proxy.attach(config);
+    const attachPromise = proxy.attach(connectionConfig);
     if (this._launchScriptPath) {
       logInfo('launchScript: ' + this._launchScriptPath);
       proxy.launchScript(this._launchScriptPath);
@@ -95,16 +122,16 @@ class DebuggerProcess {
       // setup web socket
       // TODO: Assign random port rather than using fixed port.
       const wsPort = 2000;
-      const WebSocketServer = require('ws').Server;
-      this._server = new WebSocketServer({port: wsPort});
-      this._server.on('error', error => {
+      const server = new WebSocketServer({port: wsPort});
+      this._server = server;
+      server.on('error', error => {
         logError('Server error: ' + error);
         this.dispose();
       });
-      this._server.on('headers', headers => {
+      server.on('headers', headers => {
         log('Server headers: ' + headers);
       });
-      this._server.on('connection', webSocket => {
+      server.on('connection', webSocket => {
         if (this._webSocket) {
           log('Already connected to web socket. Discarding new connection.');
           return;
@@ -112,9 +139,9 @@ class DebuggerProcess {
 
         log('Connecting to web socket client.');
         this._webSocket = webSocket;
-        this._webSocket.on('message', this._onSocketMessage.bind(this));
-        this._webSocket.on('error', this._onSocketError.bind(this));
-        this._webSocket.on('close', this._onSocketClose.bind(this));
+        webSocket.on('message', this._onSocketMessage.bind(this));
+        webSocket.on('error', this._onSocketError.bind(this));
+        webSocket.on('close', this._onSocketClose.bind(this));
       });
 
       const result = 'ws=localhost:' + String(wsPort) + '/';
@@ -130,8 +157,9 @@ class DebuggerProcess {
 
   _handleServerMessage(message: string): void {
     log('Recieved server message: ' + message);
-    if (this._webSocket) {
-      this._webSocket.send(
+    const webSocket = this._webSocket;
+    if (webSocket != null) {
+      webSocket.send(
         translateMessageFromServer(
           remoteUri.getHostname(this._remoteDirectoryUri),
           remoteUri.getPort(this._remoteDirectoryUri),
@@ -198,31 +226,34 @@ class DebuggerProcess {
 
   _onSocketMessage(message: string): void {
     log('Recieved webSocket message: ' + message);
-    if (this._proxy) {
-      this._proxy.sendCommand(translateMessageToServer(message));
+    const proxy = this._proxy;
+    if (proxy) {
+      proxy.sendCommand(translateMessageToServer(message));
     }
   }
 
-  _onSocketError(error): void {
-    logError('webSocket error ' + error);
+  _onSocketError(error: Error): void {
+    logError('webSocket error ' + stringifyError(error));
     this.dispose();
   }
 
-  _onSocketClose(code): void {
+  _onSocketClose(code: number): void {
     log('webSocket Closed ' + code);
     this.dispose();
   }
 
   dispose() {
     this._disposables.dispose();
-    if (this._webSocket) {
+    const webSocket = this._webSocket;
+    if (webSocket) {
       logInfo('closing webSocket');
-      this._webSocket.close();
+      webSocket.close();
       this._webSocket = null;
     }
-    if (this._server) {
+    const server = this._server;
+    if (server) {
       logInfo('closing server');
-      this._server.close();
+      server.close();
       this._server = null;
     }
   }

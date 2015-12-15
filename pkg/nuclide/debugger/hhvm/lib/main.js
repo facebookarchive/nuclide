@@ -10,6 +10,7 @@
  */
 
 import type {HomeFragments} from '../../../home-interfaces';
+import type {nuclide_debugger$Service} from '../../interfaces/service';
 
 module.exports = {
   activate(state: mixed): void {
