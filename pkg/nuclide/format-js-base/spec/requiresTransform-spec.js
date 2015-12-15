@@ -76,8 +76,8 @@ const SOURCE_OPTIONS = {
 describe('requiresTransform', () => {
   TESTS.forEach(name => {
     it(`should ${name}`, () => {
-      const testPath = 'fixtures/requires/' + name + '.test';
-      const expectedPath = 'fixtures/requires/' + name + '.expected';
+      const testPath = 'spec/fixtures/requires/' + name + '.test';
+      const expectedPath = 'spec/fixtures/requires/' + name + '.expected';
 
       waitsForPromise(async () => {
         const test = await readFile(testPath, 'utf8');

@@ -18,8 +18,8 @@ const requiresTransform = require('../lib/requires/transform');
 
 describe('options', () => {
   it('should respect blacklist options', () => {
-    const testPath = 'fixtures/options/respect-blacklist.test';
-    const expectedPath = 'fixtures/options/respect-blacklist.expected';
+    const testPath = 'spec/fixtures/options/respect-blacklist.test';
+    const expectedPath = 'spec/fixtures/options/respect-blacklist.expected';
     waitsForPromise(async () => {
       const test = await readFile(testPath, 'utf8');
 

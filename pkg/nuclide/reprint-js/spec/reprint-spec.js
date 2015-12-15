@@ -22,7 +22,7 @@ function getTests() {
   if (only.size > 0) {
     return only;
   }
-  const files = readdirSync('./fixtures/');
+  const files = readdirSync('./spec/fixtures/');
   const tests = new Set();
   for (const file of files) {
     if (/\.test$/.test(file)) {
@@ -35,8 +35,8 @@ function getTests() {
 describe('reprint', () => {
   getTests().forEach(name => {
     it(`should ${name}`, () => {
-      const testPath = 'fixtures/' + name + '.test';
-      const expectedPath = 'fixtures/' + name + '.expected';
+      const testPath = 'spec/fixtures/' + name + '.test';
+      const expectedPath = 'spec/fixtures/' + name + '.expected';
       waitsForPromise(async () => {
         const fileContents = await readFile(testPath, 'utf8');
         const actual = reprint(fileContents).source;
