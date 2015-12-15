@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {Gadget} from '../types/Gadget';
+import type {Gadget} from '../../gadgets-interfaces';
 
 import invariant from 'assert';
 import {Disposable} from 'atom';

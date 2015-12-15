@@ -9,6 +9,12 @@
  * the root directory of this source tree.
  */
 
-module.exports = {
-  // TODO(matthewwithanm): Add export code here.
+export type Gadget = {
+  gadgetId: string;
+  deserializeState?: (state: Object) => Object;
+  prototype: Object;
+};
+
+export type GadgetsService = {
+  registerGadget(gadget: Gadget): atom$IDisposable;
 };

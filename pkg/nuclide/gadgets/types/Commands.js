@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {Gadget} from './Gadget';
+import type {Gadget} from '../../gadgets-interfaces';
 import type {PaneItemContainer} from './PaneItemContainer';
 
 /**

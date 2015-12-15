@@ -10,7 +10,7 @@
  */
 
 import type {Commands} from '../types/Commands';
-import type {Gadget} from '../types/Gadget';
+import type {Gadget} from '../../gadgets-interfaces';
 import type Immutable from 'immutable';
 import type {PaneItemContainer} from '../types/PaneItemContainer';
 
