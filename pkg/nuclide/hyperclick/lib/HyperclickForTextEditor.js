@@ -15,8 +15,11 @@ import type Hyperclick from './Hyperclick';
 import type {TimingTracker} from '../../analytics';
 
 import {trackTiming, startTracking} from '../../analytics';
+import {getLogger} from '../../logging';
 import getWordTextAndRange from './get-word-text-and-range';
 import invariant from 'assert';
+
+const logger = getLogger();
 
 /**
  * Construct this object to enable Hyperclick in a text editor.
@@ -206,6 +209,7 @@ export default class HyperclickForTextEditor {
       if (this._loadingTracker != null) {
         this._loadingTracker.onError(e);
       }
+      logger.error('Error getting Hyperclick suggestion:', e);
     } finally {
       this._doneLoading();
     }
