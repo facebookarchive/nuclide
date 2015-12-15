@@ -9,8 +9,8 @@
  * the root directory of this source tree.
  */
 
-const path = require('path');
-const React = require('react-for-atom');
+import {basename} from 'path';
+import React from 'react-for-atom';
 
 import type {
   FileResult,
@@ -59,6 +59,38 @@ function getIntlRelativeFormatFor(date: Date): string {
   return _formatter.format(date);
 }
 
+const MS_PER_HOUR = 60 * 60 * 1000;
+const MS_PER_DAY = 24 * MS_PER_HOUR;
+const MIN_OPACITY = 0.6;
+const SHELF = 8 * MS_PER_HOUR; // 8 hours: heuristic for "current work day".
+const FALLOFF = 1.1;
+/**
+ * Calculate opacity with logarithmic falloff based on recency of the timestamp.
+ *
+ *  Opacity                     now
+ *  ^                           |
+ *  |                  < SHELF >
+ *  |                  #########
+ *  |                  #########
+ *  |   < FALLOFF >  ###########
+ *  |               ############
+ *  |            ###############
+ *  |        ###################
+ *  | ##########################  ] MIN_OPACITY
+ *  | ##########################  ]
+ *  +----------Time-------------->
+ */
+function opacityForTimestamp(timestamp: number): number {
+  const ageInMS = Date.now() - timestamp;
+  return Math.min(
+    1,
+    Math.max(
+      1 - (FALLOFF * Math.log10(((ageInMS - SHELF) / MS_PER_DAY) + 1)),
+      MIN_OPACITY
+    )
+  );
+}
+
 export const RecentFilesProvider: Provider = {
 
   getName(): string {
@@ -98,15 +130,18 @@ export const RecentFilesProvider: Provider = {
   },
 
   getComponentForItem(item: FileResult): ReactElement {
-    const basename = path.basename(item.path);
-    const filePath = item.path.substring(0, item.path.lastIndexOf(basename));
+    const filename = basename(item.path);
+    const filePath = item.path.substring(0, item.path.lastIndexOf(filename));
     const date = item.timestamp == null ? null : new Date(item.timestamp);
     const datetime = date === null ? '' : date.toLocaleString();
     return (
-      <div className="recent-files-provider-result" title={datetime}>
+      <div
+        className="recent-files-provider-result"
+        style={{opacity: opacityForTimestamp(item.timestamp || Date.now())}}
+        title={datetime}>
         <div className="recent-files-provider-filepath-container">
           <span className="recent-files-provider-file-path">{filePath}</span>
-          <span className="recent-files-provider-file-name">{basename}</span>
+          <span className="recent-files-provider-file-name">{filename}</span>
         </div>
         <div className="recent-files-provider-datetime-container">
           <span className="recent-files-provider-datetime-label">

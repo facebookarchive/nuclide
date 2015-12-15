@@ -10,6 +10,10 @@
  */
 
 import {RecentFilesProvider} from '../lib/RecentFilesProvider';
+import React from 'react-for-atom';
+const {TestUtils} = React.addons;
+let provider: any;
+
 const PROJECT_PATH = '/Users/testuser/';
 const PROJECT_PATH2 = '/Users/something_else/';
 
@@ -32,12 +36,21 @@ const FakeRecentFilesService = {
 let fakeGetProjectPathsImpl = () => [];
 const fakeGetProjectPaths = () => fakeGetProjectPathsImpl();
 
+
+/* eslint-disable react/prop-types */
+// Per https://github.com/facebook/react/issues/4692#issuecomment-163029873
+class Wrapper extends React.Component {
+  render(): ReactElement {
+    return <div>{this.props.children}</div>;
+  }
+}
+/* eslint-enable react/prop-types */
+
 describe('RecentFilesProvider', () => {
-  let recentFilesProvider: any;
 
   beforeEach(() => {
-    recentFilesProvider = {...RecentFilesProvider};
-    recentFilesProvider.setRecentFilesService(FakeRecentFilesService);
+    provider = {...RecentFilesProvider};
+    provider.setRecentFilesService(FakeRecentFilesService);
     spyOn(atom.project, 'getPaths').andCallFake(fakeGetProjectPaths);
   });
 
@@ -45,26 +58,26 @@ describe('RecentFilesProvider', () => {
     it('returns all recently opened files for currently mounted project directories', () => {
       waitsForPromise(async () => {
         fakeGetProjectPathsImpl = () => [PROJECT_PATH];
-        expect(await recentFilesProvider.executeQuery('')).toEqual(FAKE_RECENT_FILES);
+        expect(await provider.executeQuery('')).toEqual(FAKE_RECENT_FILES);
         fakeGetProjectPathsImpl = () => [PROJECT_PATH, PROJECT_PATH2];
-        expect(await recentFilesProvider.executeQuery('')).toEqual(FAKE_RECENT_FILES);
+        expect(await provider.executeQuery('')).toEqual(FAKE_RECENT_FILES);
       });
     });
 
     it('does not return files for project directories that are not currently mounted', () => {
       waitsForPromise(async () => {
         fakeGetProjectPathsImpl = () => [PROJECT_PATH2];
-        expect(await recentFilesProvider.executeQuery('')).toEqual([]);
+        expect(await provider.executeQuery('')).toEqual([]);
 
         fakeGetProjectPathsImpl = () => [];
-        expect(await recentFilesProvider.executeQuery('')).toEqual([]);
+        expect(await provider.executeQuery('')).toEqual([]);
       });
     });
 
     it('filters results according to the query string', () => {
       waitsForPromise(async () => {
         fakeGetProjectPathsImpl = () => [PROJECT_PATH];
-        expect(await recentFilesProvider.executeQuery('ba')).toEqual([
+        expect(await provider.executeQuery('ba')).toEqual([
           // 'foo/bla/foo.js' does not match 'ba', but `bar.js` and `baz.js` do:
           FAKE_RECENT_FILES[1],
           FAKE_RECENT_FILES[2],
@@ -72,4 +85,63 @@ describe('RecentFilesProvider', () => {
       });
     });
   });
+
+  describe('Result rendering', () => {
+    it('should render complete results', () => {
+
+      const timestamp = Date.now();
+      const mockResult = {
+        path: '/some/arbitrary/path',
+        timestamp,
+      };
+      const reactElement = provider.getComponentForItem(mockResult);
+      expect(reactElement.props.title).toEqual(new Date(mockResult.timestamp).toLocaleString());
+      const renderedComponent = TestUtils.renderIntoDocument(<Wrapper>{reactElement}</Wrapper>);
+      expect(
+        TestUtils.scryRenderedDOMComponentsWithClass(
+          renderedComponent,
+          'recent-files-provider-file-name'
+        ).length
+      ).toBe(1);
+      expect(
+        TestUtils.scryRenderedDOMComponentsWithClass(
+          renderedComponent,
+          'recent-files-provider-file-path'
+        ).length
+      ).toBe(1);
+      const datetimeLabels = TestUtils.scryRenderedDOMComponentsWithClass(
+        renderedComponent,
+        'recent-files-provider-datetime-label'
+      );
+      expect(datetimeLabels.length).toBe(1);
+    });
+
+    it('should render results with opacity according to their timestamp', () => {
+      const now = Date.now();
+      const HOURS = 60 * 60 * 1000;
+      const DAYS = 24 * HOURS;
+      expect(provider.getComponentForItem({
+        path: '/some/arbitrary/path',
+        timestamp: now,
+      }).props.style.opacity).toEqual(1);
+
+      expect(provider.getComponentForItem({
+        path: '/some/arbitrary/path',
+        timestamp: now - 7 * HOURS,
+      }).props.style.opacity).toEqual(1);
+
+      expect(provider.getComponentForItem({
+        path: '/some/arbitrary/path',
+        timestamp: now - 8 * HOURS,
+      }).props.style.opacity).toBeLessThan(1);
+
+      expect(provider.getComponentForItem({
+        path: '/some/arbitrary/path',
+        timestamp: now - 10 * DAYS,
+      }).props.style.opacity).toEqual(0.6);
+
+    });
+
+  });
+
 });
