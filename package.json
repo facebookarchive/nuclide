@@ -42,6 +42,7 @@
     "glob": "6.0.1",
     "heap": "0.2.6",
     "immutable": "3.7.5",
+    "intl-relativeformat": "1.1.0",
     "ini": "1.3.4",
     "jscodeshift": "0.3.5",
     "lodash.memoize": "3.0.4",

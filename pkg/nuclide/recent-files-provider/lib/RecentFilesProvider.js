@@ -9,6 +9,9 @@
  * the root directory of this source tree.
  */
 
+const path = require('path');
+const React = require('react-for-atom');
+
 import type {
   FileResult,
   Provider,
@@ -47,6 +50,15 @@ function getRecentFilesMatching(query: string): Array<FileResult> {
     }));
 }
 
+let _formatter = null;
+function getIntlRelativeFormatFor(date: Date): string {
+  if (_formatter == null) {
+    const IntlRelativeFormat = require('intl-relativeformat');
+    _formatter = new IntlRelativeFormat('en');
+  }
+  return _formatter.format(date);
+}
+
 export const RecentFilesProvider: Provider = {
 
   getName(): string {
@@ -83,6 +95,26 @@ export const RecentFilesProvider: Provider = {
 
   setRecentFilesService(service: RecentFilesService): void {
     _recentFilesService = service;
+  },
+
+  getComponentForItem(item: FileResult): ReactElement {
+    const basename = path.basename(item.path);
+    const filePath = item.path.substring(0, item.path.lastIndexOf(basename));
+    const date = item.timestamp == null ? null : new Date(item.timestamp);
+    const datetime = date === null ? '' : date.toLocaleString();
+    return (
+      <div className="recent-files-provider-result" title={datetime}>
+        <div className="recent-files-provider-filepath-container">
+          <span className="recent-files-provider-file-path">{filePath}</span>
+          <span className="recent-files-provider-file-name">{basename}</span>
+        </div>
+        <div className="recent-files-provider-datetime-container">
+          <span className="recent-files-provider-datetime-label">
+            {date === null ? 'At some point' : getIntlRelativeFormatFor(date)}
+          </span>
+        </div>
+      </div>
+    );
   },
 
 };
