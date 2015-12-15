@@ -10,6 +10,7 @@
  */
 
 import type {Gadget} from './Gadget';
+import type {PaneItemContainer} from './PaneItemContainer';
 
 /**
  * The interface for changing the application state. These would also be called
@@ -25,4 +26,5 @@ export type Commands = {
   registerGadget(gadget: Gadget): void;
   showGadget(gadgetId: string): void;
   unregisterGadget(gadgetId: string): void;
+  updateExpandedFlexScale(paneItemContainer: PaneItemContainer): void;
 };

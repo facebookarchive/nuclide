@@ -17,6 +17,7 @@ import createStateStream from './createStateStream';
 import getInitialState from './getInitialState';
 import observableFromSubscribeFunction from './observableFromSubscribeFunction';
 import Rx from 'rx';
+import {DOM as RxDom} from 'rx-dom';
 import syncAtomCommands from './syncAtomCommands';
 import trackActions from './trackActions';
 
@@ -60,6 +61,24 @@ class Activation {
 
       // Collect some analytics about gadget actions.
       trackActions(action$),
+
+      // Update the expanded Flex scale whenever the user starts dragging a handle. Use the capture
+      // phase since resize handles stop propagation of the event during the bubbling phase.
+      RxDom.fromEvent(document, 'mousedown', true)
+        .filter(event => event.target.nodeName.toLowerCase() === 'atom-pane-resize-handle')
+        // Get the models that represent the containers being resized:
+        .flatMap(event => {
+          const handleElement = event.target;
+          return [
+            handleElement.previousElementSibling && handleElement.previousElementSibling.model,
+            handleElement.nextElementSibling && handleElement.nextElementSibling.model,
+          ].filter(paneItemContainer => paneItemContainer !== null);
+        })
+        // Make sure these are actually pane item containers:
+        .filter(paneItemContainer => {
+          return ('getItems' in paneItemContainer) && ('getFlexScale' in paneItemContainer);
+        })
+        .forEach(paneItemContainer => this.commands.updateExpandedFlexScale(paneItemContainer)),
     );
   }
 

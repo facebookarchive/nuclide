@@ -12,10 +12,12 @@
 import type {Commands} from '../types/Commands';
 import type {Gadget} from '../types/Gadget';
 import type Immutable from 'immutable';
+import type {PaneItemContainer} from '../types/PaneItemContainer';
 
 import * as ActionTypes from './ActionTypes';
 import * as ContainerVisibility from './ContainerVisibility';
 import createComponentItem from './createComponentItem';
+import * as ExpandedFlexScale from './ExpandedFlexScale';
 import findPaneAndItem from './findPaneAndItem';
 import getContainerToHide from './getContainerToHide';
 import GadgetPlaceholder from './GadgetPlaceholder';
@@ -254,6 +256,20 @@ export default function createCommands(
         type: ActionTypes.UNREGISTER_GADGET,
         payload: {gadgetId},
       });
+    },
+
+    /**
+     * Update the provided container's expanded flex scale to its current flex scale.
+     */
+    updateExpandedFlexScale(container: PaneItemContainer): void {
+      const flexScale = container.getFlexScale();
+
+      // If the flex scale is zero, the container isn't expanded.
+      if (flexScale === 0) {
+        return;
+      }
+
+      ExpandedFlexScale.set(container, flexScale);
     },
 
   };
