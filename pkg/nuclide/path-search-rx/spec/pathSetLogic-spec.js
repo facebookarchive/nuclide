@@ -12,6 +12,7 @@
 import {areSetsEqual} from '../../test-helpers';
 import {
   intersect,
+  intersectMany,
 } from '../lib/pathSetLogic';
 
 describe('intersect', () => {
@@ -82,5 +83,58 @@ describe('intersect', () => {
       ),
       new Set()
     )).toBe(true);
+  });
+});
+
+describe('intersectMany', () => {
+  it('returns the intersections of all sets in the array', () => {
+    expect(areSetsEqual(
+      intersectMany([
+        new Set([1]),
+        new Set([1, 2]),
+        new Set([1, 2, 3]),
+        new Set([1, 3, 4]),
+        new Set([1, 5]),
+      ]),
+      new Set([1])
+    )).toBe(true);
+
+    expect(areSetsEqual(
+      intersectMany([
+        new Set([]),
+        new Set([1, 2]),
+        new Set([1, 2, 3]),
+      ]),
+      new Set([])
+    )).toBe(true);
+
+    expect(areSetsEqual(
+      intersectMany([
+        new Set([1, 2, 3]),
+        new Set([1, 2, 3]),
+        new Set([1, 2, 3]),
+      ]),
+      new Set([1, 2, 3])
+    )).toBe(true);
+
+    expect(areSetsEqual(
+      intersectMany([]),
+      new Set([])
+    )).toBe(true);
+
+    expect(areSetsEqual(
+      intersectMany([new Set([1])]),
+      new Set([1])
+    )).toBe(true);
+  });
+
+  it('returns a new Set for inputs of length 0 or 1', () => {
+
+    const empty = [];
+    expect(intersectMany(empty) !== empty).toBe(true);
+
+    const oneSet = [new Set([1])];
+    expect(intersectMany(oneSet) !== oneSet).toBe(true);
+
   });
 });
