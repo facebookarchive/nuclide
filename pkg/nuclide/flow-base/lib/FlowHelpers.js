@@ -153,7 +153,7 @@ async function canFindFlow(flowPath: string): Promise<boolean> {
  */
 function getPathToFlow(): string {
   // $UPFixMe: This should use nuclide-features-config
-  return global.atom && global.atom.config.get('nuclide-flow.pathToFlow') || 'flow';
+  return global.atom && global.atom.config.get('nuclide.nuclide-flow.pathToFlow') || 'flow';
 }
 
 function findFlowConfigDir(localFile: string): Promise<?string> {
