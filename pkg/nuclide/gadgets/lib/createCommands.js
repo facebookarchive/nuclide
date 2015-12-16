@@ -25,6 +25,7 @@ import GadgetPlaceholder from './GadgetPlaceholder';
 import * as GadgetUri from './GadgetUri';
 import React from 'react-for-atom';
 import Rx from 'rx';
+import shallowEqual from 'shallowequal';
 import wrapGadget from './wrapGadget';
 
 /**
@@ -178,6 +179,11 @@ export default function createCommands(
               ...oldProps,
               visible: item === activeItem,
             };
+
+            // Don't re-render if the props haven't changed.
+            if (shallowEqual(oldProps, newProps)) {
+              continue;
+            }
 
             // Re-render the item with the new props.
             React.render(
