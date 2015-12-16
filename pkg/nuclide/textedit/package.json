@@ -1,0 +1,11 @@
+{
+  "name": "nuclide-textedit",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "Utilities and types for manipulating editor text",
+  "nuclide": {
+    "packageType": "Node",
+    "testRunner": "apm"
+  }
+}
