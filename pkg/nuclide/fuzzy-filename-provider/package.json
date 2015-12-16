@@ -5,6 +5,13 @@
   "version": "0.0.0",
   "description": "Provides fuzzy-search for filenames in project",
   "nuclide": {
+    "config": {
+      "useRxMode": {
+        "type": "boolean",
+        "default": false,
+        "description": "Use experimental algorithm for filename search "
+      }
+    },
     "packageType": "Atom",
     "testRunner": "apm"
   },
