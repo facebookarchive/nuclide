@@ -11,6 +11,8 @@
 
 import type {NuclideUri} from '../../../remote-uri';
 
+import type {TextEdit} from '../../../textedit';
+
 export type InvalidationMessage = {
   scope: 'file';
   filePaths: Array<NuclideUri>;
@@ -62,6 +64,7 @@ export type FileDiagnosticMessage = {
   html?: string;
   range?: atom$Range;
   trace?: Array<Trace>;
+  fix?: TextEdit;
 };
 
 export type ProjectDiagnosticMessage = {
