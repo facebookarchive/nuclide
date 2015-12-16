@@ -117,8 +117,10 @@ declare class atom$Config {
   getUserConfigPath(): string;
 
   // Undocumented Methods
+  getRawValue(keyPath: ?string, options: {excludeSources?: string, sources?: string}): mixed;
   getSchema(keyPath: string): atom$ConfigSchema;
   save(): void;
+  setRawValue(keyPath: string, value: mixed): void;
   setSchema(
     keyPath: string,
     schema: atom$ConfigSchema,
