@@ -1023,6 +1023,7 @@ declare class atom$TextBuffer {
 
   // Mutating Text
   setText(text: string): atom$Range;
+  setTextInRange(range: atom$Range, text: string, options?: Object): atom$Range;
   setTextViaDiff(text: string): void;
   insert(
     position: atom$Point,
