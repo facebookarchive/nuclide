@@ -47,3 +47,33 @@ export function intersectMany<T>(sets: Array<Set<T>>): Set<T> {
   }
   return intersection;
 }
+
+/**
+ * Given a list of items e.g. [ABC], return all combinations, i.e. [[ABC][AB][AC][BC][A][B][C]].
+ *
+ * Optimized for the use-case of enumerating all possible non-empty combinations of Sets, ordered
+ * by descending cardinality. This is a preprocessing step for lazily creating maximally constrained
+ * subsets of all items in all sets by calculating the intersection of each returned combination.
+ *
+ * The implementation assigns a bit to each item in `sets`, and enumerates combinations via bitwise
+ * `and`. It is thus only suited for sets of size < 32, though realistic numbers are lower due to
+ * the exponential (2^n-1) combination growth.
+ */
+export function enumerateAllCombinations<T>(sets: Array<T>): Array<Array<T>> {
+  const combos = [];
+  const combinationCount = Math.pow(2, sets.length) - 1;
+  // Since we want to intersect the results, enumerate "backwards", in order to generate
+  // the most constrained intersections first.
+  for (let i = combinationCount; i > 0; i--) {
+    const s = [];
+    for (let a = 0; a < sets.length; a++) {
+      /* eslint-disable no-bitwise */
+      if ((i & (1 << a)) !== 0) {
+        s.push(sets[a]);
+      }
+      /* eslint-enable no-bitwise */
+    }
+    combos.push(s);
+  }
+  return combos.sort((a, b) => b.length - a.length);
+}

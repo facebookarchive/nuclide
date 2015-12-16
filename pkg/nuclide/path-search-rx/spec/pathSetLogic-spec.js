@@ -13,6 +13,7 @@ import {areSetsEqual} from '../../test-helpers';
 import {
   intersect,
   intersectMany,
+  enumerateAllCombinations,
 } from '../lib/pathSetLogic';
 
 describe('intersect', () => {
@@ -136,5 +137,47 @@ describe('intersectMany', () => {
     const oneSet = [new Set([1])];
     expect(intersectMany(oneSet) !== oneSet).toBe(true);
 
+  });
+});
+
+// Generates an array of size n, containing the numbers 0..n-1.
+function makeArrayOfSize(n: number): Array<number> {
+  return new Array(n + 1).join(' ').split('').map((_, i) => i);
+}
+
+describe('enumerateAllCombinations', () => {
+  it('enumerates correctly', () => {
+    expect(enumerateAllCombinations(
+      ['a']
+    )).toEqual([
+      ['a'],
+    ]);
+
+    expect(enumerateAllCombinations(
+      ['a', 'b']
+    )).toEqual([
+      ['a', 'b'], ['b'], ['a'],
+    ]);
+
+    expect(enumerateAllCombinations(
+      ['a', 'b', 'c']
+    )).toEqual([
+      ['a', 'b', 'c'],
+      ['b', 'c'],
+      ['a', 'c'],
+      ['a', 'b'],
+      ['c'],
+      ['b'],
+      ['a'],
+    ]);
+  });
+
+  // For perf reasons, we only test up to n=16, which yields 65,535 combinations.
+  it('works for sets `1 ≤ |A| < 32`', () => {
+    for (let i = 1; i < 16; i++) {
+      expect(enumerateAllCombinations(
+        makeArrayOfSize(i)
+      ).length).toEqual(Math.pow(2, i) - 1);
+    }
   });
 });
