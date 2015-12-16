@@ -14,7 +14,7 @@
 const WebSocket = require('ws');
 const NuclideServer = require('../lib/NuclideServer');
 import ClientComponent from '../lib/serviceframework/ClientComponent';
-const {loadServicesConfig} = require('../lib/serviceframework');
+const {loadServicesConfig} = require('../lib/serviceframework/config');
 
 import NuclideSocket from '../lib/NuclideSocket';
 
@@ -48,12 +48,12 @@ describe('Nuclide Server test suite', () => {
     waitsFor(() => opened);
   });
 
-  xdescribe('reconnect websocket flow', () => {
+  xdescribe('reconnect websocket flow', () => { // eslint-disable-line jasmine/no-disabled-tests
     it('server sent messages, while disconnected will still be delievered', () => {
       // Here is the initial message.
       const nuclideSocket = socket;
-      const messageHandler = jasmine.createSpy();
-      const reconnectHandler = jasmine.createSpy();
+      const messageHandler: Function = (jasmine.createSpy(): any);
+      const reconnectHandler: Function = (jasmine.createSpy(): any);
       nuclideSocket.on('reconnect', reconnectHandler);
       nuclideSocket.on('message', messageHandler);
       // The maximum reconnect time is 5 seconds - advance clock to sip the reconnect time.
@@ -67,7 +67,7 @@ describe('Nuclide Server test suite', () => {
       const message4 = {foo4: 'bar4'};
 
       // Wait for the connection to exist on the server.
-      waits(() => Object.keys(server._clients).length === 1);
+      waitsForPromise(() => Object.keys(server._clients).length === 1);
 
       let serverSocketClient = null;
       runs(() => {
@@ -82,15 +82,21 @@ describe('Nuclide Server test suite', () => {
       runs(() => {
         // Close the client socket and start a reconnect trial, send a message in between.
         // A server socket close will trigger a client disconnect and a scheduled reconnect.
-        serverSocketClient.socket.close();
-        server._sendSocketMessage(serverSocketClient, message2);
-        // The default WebSocket's close timeout is 30 seconds.
-        window.advanceClock(31 * 1000);
-        server._sendSocketMessage(serverSocketClient, message3);
+        if (serverSocketClient != null && serverSocketClient.socket != null) {
+          serverSocketClient.socket.close();
+          server._sendSocketMessage(serverSocketClient, message2);
+          // The default WebSocket's close timeout is 30 seconds.
+          window.advanceClock(31 * 1000);
+          server._sendSocketMessage(serverSocketClient, message3);
+        }
       });
 
       waitsFor(() => reconnectHandler.callCount === 1);
-      runs(() => server._sendSocketMessage(serverSocketClient, message4));
+      runs(() => {
+        if (serverSocketClient != null) {
+          server._sendSocketMessage(serverSocketClient, message4);
+        }
+      });
 
       waitsFor(() => messageHandler.callCount === 4);
       runs(() => {

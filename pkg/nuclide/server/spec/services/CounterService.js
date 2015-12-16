@@ -11,12 +11,12 @@
 
 import {Observable, Subject} from 'rx';
 
-const counters: Array<Counter> = [];
-const newCounters = new Subject();
-
 export class Counter {
   _count: number;
   _changes: Subject;
+
+  static _counters: Array<Counter> = [];
+  static _newCounters = new Subject();
 
   // Create a new counter with the given initial count.
   constructor(initialCount: number) {
@@ -26,9 +26,9 @@ export class Counter {
     this._changes = new Subject();
 
     // Add this counter to global list.
-    counters.push(this);
+    Counter._counters.push(this);
     // Broadcast that this counter was created.
-    newCounters.onNext(this);
+    Counter._newCounters.onNext(this);
   }
   // Get the current value of a counter.
   async getCount(): Promise<number> {
@@ -46,14 +46,14 @@ export class Counter {
   }
 
   // Subscribe to changes in this counter.
-  watchChanges(): Observable<CounterChangeEvent> {
+  watchChanges(): Observable {
     return this._changes;
   }
 
   // Dispose function that removes this counter from the global list.
   async dispose(): Promise<void> {
     // Remove this counter from the global list.
-    counters.splice(counters.indexOf(this), 1);
+    Counter._counters.splice(Counter._counters.indexOf(this), 1);
     // Signal that the changes stream is over.
     this._changes.onCompleted();
   }
@@ -62,16 +62,16 @@ export class Counter {
 
   // List all of the counters that have been created.
   static async listCounters(): Promise<Array<Counter>> {
-    return counters;
+    return Counter._counters;
   }
 
   // Returns a stream of counters as they are created.
   static watchNewCounters(): Observable<Counter> {
-    return newCounters;
+    return Counter._newCounters;
   }
 
   // A static method that takes a Counter object as an argument.
   static async indexOf(counter: Counter): Promise<number> {
-    return counters.indexOf(counter);
+    return Counter._counters.indexOf(counter);
   }
 }

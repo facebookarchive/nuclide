@@ -11,7 +11,6 @@
 .*/pkg/nuclide/debugger-hhvm-proxy/spec/.*
 .*/pkg/nuclide/remote-connection/spec/.*
 .*/pkg/nuclide/remote-projects/spec/.*
-.*/pkg/nuclide/server/spec/.*
 .*/pkg/nuclide/server/scripts/.*
 .*/pkg/nuclide/ssh-dialog/.*
 

@@ -30,10 +30,10 @@ const logger = getLogger();
 
 type NuclideServerOptions = {
   port: number;
-  serverKey: ?Buffer;
-  serverCertificate: ?Buffer;
-  certificateAuthorityCertificate: ?Buffer;
-  trackEventLoop: ?boolean;
+  serverKey?: Buffer;
+  serverCertificate?: Buffer;
+  certificateAuthorityCertificate?: Buffer;
+  trackEventLoop?: boolean;
 }
 
 export type SocketClient = {

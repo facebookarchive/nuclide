@@ -9,17 +9,18 @@
  * the root directory of this source tree.
  */
 
-const NuclideServer = require('../lib/NuclideServer');
+import NuclideServer from '../lib/NuclideServer';
+import ServiceFramework from '../lib/serviceframework';
 import NuclideSocket from '../lib/NuclideSocket';
 
 let server: NuclideServer;
 let socket: NuclideSocket;
 
-xdescribe('NuclideSocket test suite', () => {
+xdescribe('NuclideSocket test suite', () => { // eslint-disable-line jasmine/no-disabled-tests
   beforeEach(() => {
     jasmine.getEnv().defaultTimeoutInterval = 10000;
     waitsForPromise(async () => {
-      server = new NuclideServer({port: 8176});
+      server = new NuclideServer({port: 8176}, ServiceFramework.loadServicesConfig());
       await server.connect();
       socket = new NuclideSocket('http://localhost:8176');
     });
@@ -41,7 +42,7 @@ xdescribe('NuclideSocket test suite', () => {
   it('disconnects on close', () => {
     waitsForPromise(async () => {
       await socket.waitForConnect();
-      const disconnectHandler = jasmine.createSpy();
+      const disconnectHandler: Function = (jasmine.createSpy(): any);
       socket.on('disconnect', disconnectHandler);
       socket.close();
       waitsFor(() => disconnectHandler.callCount > 0);
@@ -59,7 +60,7 @@ xdescribe('NuclideSocket test suite', () => {
 
   describe('heartbeat()', () => {
     it('checks and emits heartbeat every 5 seconds', () => {
-      const heartbeatHandler = jasmine.createSpy();
+      const heartbeatHandler: Function = (jasmine.createSpy(): any);
       // There was an initial heartbeat, but we can't be sure if it went before or after we do
       // listen here.
       socket.on('heartbeat', heartbeatHandler);
@@ -70,7 +71,7 @@ xdescribe('NuclideSocket test suite', () => {
     });
 
     it('on ECONNREFUSED, emits PORT_NOT_ACCESSIBLE, when the server was never accessible', () => {
-      const heartbeatErrorHandler = jasmine.createSpy();
+      const heartbeatErrorHandler: Function = (jasmine.createSpy(): any);
       socket.on('heartbeat.error', heartbeatErrorHandler);
       // Assume the hearbeat didn't happen.
       socket._heartbeatConnectedOnce = false;
@@ -81,7 +82,7 @@ xdescribe('NuclideSocket test suite', () => {
     });
 
     it('on ECONNREFUSED, emits SERVER_CRASHED, when the server was once reachable', () => {
-      const heartbeatErrorHandler = jasmine.createSpy();
+      const heartbeatErrorHandler: Function = (jasmine.createSpy(): any);
       socket.on('heartbeat.error', heartbeatErrorHandler);
       socket._heartbeatConnectedOnce = true;
       server.close();
@@ -91,7 +92,7 @@ xdescribe('NuclideSocket test suite', () => {
     });
 
     it('on ENOTFOUND, emits NETWORK_AWAY error, when the server can not be located', () => {
-      const heartbeatErrorHandler = jasmine.createSpy();
+      const heartbeatErrorHandler: Function = (jasmine.createSpy(): any);
       socket.on('heartbeat.error', heartbeatErrorHandler);
       socket._serverUri = 'http://not.existing.uri.conf:8657';
       window.advanceClock(5050); // Advance the heartbeat interval.
@@ -102,7 +103,7 @@ xdescribe('NuclideSocket test suite', () => {
 
   describe('reconnect flow', () => {
     it('the socket would send the cached messages on reconnect', () => {
-      const reconnectHandler = jasmine.createSpy();
+      const reconnectHandler: Function = (jasmine.createSpy(): any);
       socket.on('reconnect', reconnectHandler);
       spyOn(server, '_onSocketMessage');
 

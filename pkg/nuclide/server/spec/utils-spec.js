@@ -13,7 +13,7 @@ const http = require('http');
 const utils = require('../lib/utils');
 const querystring = require('querystring');
 
-xdescribe('NuclideServer utils test', () => {
+xdescribe('NuclideServer utils test', () => { // eslint-disable-line jasmine/no-disabled-tests
   let server, customHandler;
 
   beforeEach(() => {
@@ -26,7 +26,7 @@ xdescribe('NuclideServer utils test', () => {
         res.end('okay');
       }
     });
-    server.listen(36845, '127.0.0.1', () => {
+    server.listen(36845, '127.0.0.1', 511 /* backlog */, () => {
       connected = true;
     });
     waitsFor(() => connected);
@@ -39,7 +39,9 @@ xdescribe('NuclideServer utils test', () => {
 
   it('can do http request in an async way', () => {
     waitsForPromise(async () => {
-      const {body, response} = await utils.asyncRequest('http://127.0.0.1:36845/abc');
+      const {body, response} = await utils.asyncRequest({
+        uri: 'http://127.0.0.1:36845/abc',
+      });
       expect(body).toBe('okay');
       expect(response.statusCode).toBe(200);
     });

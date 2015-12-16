@@ -14,7 +14,6 @@ import {getPath} from '../../../remote-uri';
 import {getProxy} from '../../../service-parser';
 import NuclideServer from '../../lib/NuclideServer';
 import ServiceFramework from '../../lib/serviceframework';
-import {loadServicesConfig} from '../../lib/serviceframework';
 import NuclideSocket from '../../lib/NuclideSocket';
 
 type Services = Array<{name: string, definition: string, implementation: string}>;
@@ -24,11 +23,11 @@ export default class ServiceTestHelper {
   _client: ServiceFramework.ClientComponent;
   _connection: _RemoteConnectionMock;
 
-  async start(customServices: Services): Promise<void> {
+  async start(customServices?: Services): Promise<void> {
     if (customServices) {
       spyOn(config, 'loadServicesConfig').andReturn(customServices);
     } else {
-      customServices = loadServicesConfig();
+      customServices = ServiceFramework.loadServicesConfig();
     }
 
     this._server = new NuclideServer({port: 0}, customServices);

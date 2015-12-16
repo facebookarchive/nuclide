@@ -126,11 +126,18 @@ describe('EchoServer', () => {
     ]);
     waitsForPromise(async () => {
       const results = await service.echoMap(original);
-      expect(results.has('a')).toBeTruthy();
-      expect(results.get('a').getTime()).toBeTruthy(original.get('a').getTime());
 
-      expect(results.has('b')).toBeTruthy();
-      expect(results.get('b').getTime()).toBeTruthy(original.get('b').getTime());
+      const originalA = original.get('a');
+      expect(originalA).toBeTruthy();
+      if (originalA != null) {
+        expect(results.get('a').getTime()).toEqual(originalA.getTime());
+      }
+
+      const originalB = original.get('b');
+      expect(originalB).toBeTruthy();
+      if (originalB != null) {
+        expect(results.get('b').getTime()).toEqual(originalB.getTime());
+      }
 
       expect(results.has('c')).toBeFalsy();
     });

@@ -9,7 +9,8 @@
  * the root directory of this source tree.
  */
 
-const NuclideServer = require('../lib/NuclideServer');
+import NuclideServer from '../lib/NuclideServer';
+import ServiceFramework from '../lib/serviceframework';
 
 const path = require('path');
 const pathToTestDir = path.join(__dirname, 'testfiles');
@@ -18,13 +19,13 @@ const pathToTestFile = path.join(pathToTestDir, 'testfile.txt');
 let server;
 let client;
 
-xdescribe('NuclideSearch test suite', () => {
+xdescribe('NuclideSearch test suite', () => { // eslint-disable-line jasmine/no-disabled-tests
   beforeEach(() => {
     jasmine.getEnv().defaultTimeoutInterval = 10000;
     waitsForPromise(async () => {
-      server = new NuclideServer({port: 8176});
+      server = new NuclideServer({port: 8176}, ServiceFramework.loadServicesConfig());
       await server.connect();
-      client = new NuclideClient('test', new NuclideRemoteEventbus('http://localhost:8176'));
+      // client = new NuclideClient('test', new NuclideRemoteEventbus('http://localhost:8176'));
     });
   });
 

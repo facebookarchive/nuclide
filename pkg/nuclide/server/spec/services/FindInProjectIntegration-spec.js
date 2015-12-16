@@ -21,9 +21,11 @@ describe('FindInProjectService-Integration', () => {
 
   // Strips out port number, hostname, and current file directory.
   function makePortable(jsonObject) {
+    const regex =
+      new RegExp('\/\/localhost:\\d*/*' + __dirname, 'g'); // eslint-disable-line no-path-concat
     return JSON.parse(
-        JSON.stringify(jsonObject, null, 2)
-          .replace(new RegExp('\/\/localhost:\\d*/*' + __dirname, 'g'), 'VARIABLE')
+      JSON.stringify(jsonObject, null, 2)
+        .replace(regex, 'VARIABLE')
       );
   }
 
@@ -51,7 +53,9 @@ describe('FindInProjectService-Integration', () => {
       const updates = await remoteService.findInProjectSearch(uri,
         /hello world/i, []).toArray().toPromise();
 
-      const expected = JSON.parse(fs.readFileSync(input_dir + '.json'));
+      const expected = JSON.parse(
+        fs.readFileSync(input_dir + '.json', {encoding: 'utf8'})
+      );
       expect(makePortable(updates)).diffJson(expected);
       testHelper.stop();
     });

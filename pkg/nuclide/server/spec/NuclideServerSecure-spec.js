@@ -14,11 +14,11 @@ const path = require('path');
 const {execSync} = require('child_process');
 const NuclideServer = require('../lib/NuclideServer');
 import ClientComponent from '../lib/serviceframework/ClientComponent';
-import {loadServicesConfig} from '../lib/serviceframework';
+import {loadServicesConfig} from '../lib/serviceframework/config';
 import NuclideSocket from '../lib/NuclideSocket';
+import invariant from 'assert';
 
 let server;
-let client;
 let socket;
 
 // Paths to certificate authority crt (certificate)
@@ -34,7 +34,7 @@ let client_key_path;
 
 const gen_certs_path = path.resolve(__dirname, '../scripts/nuclide_certificates_generator.py');
 
-describe('Nuclide Sercure Server test suite', () => {
+describe('Nuclide Secure Server test suite', () => {
   it('Starts a server', () => {
     jasmine.getEnv().defaultTimeoutInterval = 10000;
     waitsForPromise(async () => {
@@ -54,7 +54,8 @@ describe('Nuclide Sercure Server test suite', () => {
         clientCertificate: fs.readFileSync(client_cert_path),
         clientKey: fs.readFileSync(client_key_path),
       });
-      client = new ClientComponent(socket, loadServicesConfig());
+      const client = new ClientComponent(socket, loadServicesConfig());
+      invariant(client);
 
       socket.close();
       server.close();
@@ -63,7 +64,7 @@ describe('Nuclide Sercure Server test suite', () => {
 });
 
 function generateCertificates() {
-  const json = JSON.parse(execSync(`${gen_certs_path} -s localhost`));
+  const json = JSON.parse(execSync(`${gen_certs_path} -s localhost`).toString('utf8'));
   ca_cert_path = json.ca_cert;
   server_cert_path = json.server_cert;
   server_key_path = json.server_key;

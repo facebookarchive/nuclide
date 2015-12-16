@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {NuclideUri} from '../../../remote-uri';
+
 import assert from 'assert';
 
 // Basic Primitives.
@@ -60,7 +62,7 @@ export async function echoTuple(arg: [number, string]): Promise<[number, string]
 }
 
 // Value Type
-export async function echoValueType(arg: ValueTypeA): ValueTypeA {
+export async function echoValueType<ValueTypeA>(arg: ValueTypeA): Promise<ValueTypeA> {
   return arg;
 }
 

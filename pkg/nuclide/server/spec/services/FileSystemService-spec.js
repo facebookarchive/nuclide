@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type FileSystemService from '../../lib/services/FileSystemServiceType';
+import type {FileSystemService} from '../../lib/services/FileSystemServiceType';
 
 import ServiceTestHelper from './ServiceTestHelper';
 import invariant from 'assert';
@@ -28,7 +28,7 @@ const pathToMissingFile = pathToTestFile + '.oops';
 
 describe('FileSystemService', () => {
   let testHelper;
-  let service : FileSystemService;
+  let service: FileSystemService;
   beforeEach(() => {
     waitsForPromise(async () => {
       testHelper = new ServiceTestHelper();
@@ -87,8 +87,8 @@ describe('FileSystemService', () => {
 
   it('can readdir', () => {
     waitsForPromise(async () => {
-      fs.symlinkSync(pathToTestFile, pathToLinkFile);
-      fs.symlinkSync(pathToMissingFile, pathToBrokenLinkFile);
+      fs.symlinkSync(pathToTestFile, pathToLinkFile, 'file');
+      fs.symlinkSync(pathToMissingFile, pathToBrokenLinkFile, 'file');
       const entries = await service.readdir(pathToTestDir);
       expect(entries.length).toBe(2); // Skips broken link
       entries.sort((a, b) => {
@@ -110,7 +110,7 @@ describe('FileSystemService', () => {
 
   it('can lstat', () => {
     waitsForPromise(async () => {
-      fs.symlinkSync(pathToTestFile, pathToLinkFile);
+      fs.symlinkSync(pathToTestFile, pathToLinkFile, 'file');
       const lstats = await service.lstat(pathToLinkFile);
       expect(lstats).toEqual(fs.lstatSync(pathToLinkFile));
     });
@@ -131,7 +131,7 @@ describe('FileSystemService', () => {
   });
 
   describe('newFile()', () => {
-    let dirPath;
+    let dirPath: string = (null: any);
 
     beforeEach(() => {
       dirPath = path.join(__dirname, 'newFile_test');
@@ -139,7 +139,6 @@ describe('FileSystemService', () => {
 
     afterEach(() => {
       rimraf.sync(dirPath);
-      dirPath = null;
     });
 
     it('creates the file and the expected subdirectories', () => {
@@ -181,7 +180,7 @@ describe('FileSystemService', () => {
 
     it('gets the real path of a symlinked file', () => {
       waitsForPromise(async () => {
-        fs.symlinkSync(pathToTestFile, pathToLinkFile);
+        fs.symlinkSync(pathToTestFile, pathToLinkFile, 'file');
         const realpath = await service.realpath(pathToLinkFile);
         expect(realpath).toBe(pathToTestFile);
       });
@@ -273,7 +272,7 @@ describe('FileSystemService', () => {
   });
 
   describe('mkdir()', () => {
-    let dirPath;
+    let dirPath: string = (null: any);
 
     beforeEach(() => {
       dirPath = path.join(__dirname, 'mkdir_test');
@@ -283,7 +282,6 @@ describe('FileSystemService', () => {
       if (fs.existsSync(dirPath)) {
         fs.rmdir(dirPath);
       }
-      dirPath = null;
     });
 
     it('creates a directory at a given path', () => {
@@ -324,7 +322,7 @@ describe('FileSystemService', () => {
   });
 
   describe('mkdirp()', () => {
-    let dirPath;
+    let dirPath: string = (null: any);
 
     beforeEach(() => {
       dirPath = path.join(__dirname, 'mkdirp_test');
@@ -332,7 +330,6 @@ describe('FileSystemService', () => {
 
     afterEach(() => {
       rimraf.sync(dirPath);
-      dirPath = null;
     });
 
     it('creates the expected subdirectories', () => {
