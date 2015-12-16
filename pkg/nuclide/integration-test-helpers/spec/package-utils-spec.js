@@ -16,7 +16,9 @@ describe('activate/deactivate all packages', () => {
     waitsForPromise({timeout: 240000}, async () => {
       expect(atom.packages.getActivePackages().length).toBe(0);
       const activatedPackages = await activateAllPackages();
-      expect(activatedPackages.length).toBe(atom.packages.getActivePackages().length);
+      expect(activatedPackages.length).toBeGreaterThan(20); // Inaccurate, just a sanity check.
+      expect(activatedPackages.indexOf('nuclide') >= 0).toBe(true);
+      expect(activatedPackages.indexOf('autocomplete-plus') >= 0).toBe(true);
       deactivateAllPackages();
       expect(atom.packages.getActivePackages().length).toBe(0);
     });
