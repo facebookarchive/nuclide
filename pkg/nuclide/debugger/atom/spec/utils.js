@@ -11,12 +11,12 @@
 
 let nextFileId = 0;
 
-function getUniquePath() {
+function getUniquePath(): string {
   nextFileId++;
   return `/tmp/nuclide-debugger-BreakpointDisplayControllerTest-spec-${nextFileId}.m`;
 }
 
-async function createEditorWithUniquePath(): atom$TextEditor {
+async function createEditorWithUniquePath(): Promise<atom$TextEditor> {
   const path = getUniquePath();
   return await atom.workspace.open(path);
 }

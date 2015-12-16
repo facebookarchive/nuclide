@@ -9,10 +9,11 @@
  * the root directory of this source tree.
  */
 
-const BreakpointManager = require('../lib/BreakpointManager.js');
-const BreakpointStore = require('../lib/BreakpointStore.js');
-const {hasBreakpointDecorationInRow} = require('./utils');
-const utils = require('./utils');
+import BreakpointManager from '../lib/BreakpointManager.js';
+import BreakpointStore from '../lib/BreakpointStore.js';
+import {hasBreakpointDecorationInRow} from './utils';
+import utils from './utils';
+import invariant from 'assert';
 
 describe('BreakpointManager', () => {
   let breakpointManager;
@@ -36,6 +37,7 @@ describe('BreakpointManager', () => {
     waitsForPromise(async () => {
       const uniqueEditor = await utils.createEditorWithUniquePath();
       const path = uniqueEditor.getPath();
+      invariant(path);
       breakpointStore.addBreakpoint(path, 1);
       const editor = await atom.workspace.open(path);
       expect(hasBreakpointDecorationInRow(editor, 0)).toBe(true);

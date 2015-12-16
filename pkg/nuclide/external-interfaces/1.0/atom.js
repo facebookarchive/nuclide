@@ -148,7 +148,7 @@ declare class atom$Decoration {
     callback: (event: {oldProperties: Object; newProperties: Object}) => mixed
     ): atom$Disposable;
   getMarker(): atom$Marker;
-  getProperties(): mixed;
+  getProperties(): Object;
   setProperties(properties: mixed): void;
 }
 
@@ -542,6 +542,10 @@ declare class atom$TextEditor extends atom$Model {
 
   // Decorations
   decorateMarker(marker: atom$Marker, decorationParams: DecorateMarkerParams): atom$Decoration;
+  decorationsForScreenRowRange(
+    startScreenRow: number,
+    endScreenRow: number,
+  ): {[markerId: string]: Array<Object>};
 
   // Markers
   markBufferPosition(position: atom$Point | Array<number>): atom$Marker;
@@ -553,6 +557,7 @@ declare class atom$TextEditor extends atom$Model {
   }): atom$Marker;
 
   // Cursors
+  getCursors(): Array<atom$Cursor>;
   setCursorBufferPosition(
     position: atom$Point | Array<number>,
     options?: {
@@ -663,6 +668,9 @@ declare class atom$LinesComponent {
 declare class atom$TextEditorElement extends HTMLElement {
   component: ?atom$TextEditorComponent;
   getModel(): atom$TextEditor;
+  pixelPositionForBufferPosition(
+    bufferPosition: {row: number, column: number} | Array<number> | atom$Point,
+  ): {top: number, left: number};
   pixelPositionForScreenPosition(screenPosition: atom$Point): {
     left: number;
     top: number;

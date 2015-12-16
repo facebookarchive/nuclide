@@ -9,13 +9,15 @@
  * the root directory of this source tree.
  */
 
+import invariant from 'assert';
+
 const BreakpointStore = require('../lib/BreakpointStore');
 const Bridge = require('../lib/Bridge');
 const utils = require('./utils');
 const {array} = require('../../../commons');
 
 class MockWebview {
-  _listeners: Map<String, Set<Function>>;
+  _listeners: Map<string, Set<Function>>;
   _sendSpy: Object;
 
   constructor() {
@@ -39,7 +41,7 @@ class MockWebview {
     }
   }
 
-  dispatchEvent(name, obj) {
+  _simulateDispatch(name, obj) {
     const set = this._listeners.get(name);
     if (set) {
       set.forEach(callback => callback(obj));
@@ -66,7 +68,10 @@ describe('Bridge', () => {
   function getCallFrameDecorationInRow(row: number): ?atom$Decoration {
     const decorationArrays = editor.decorationsForScreenRowRange(row, row);
     for (const key in decorationArrays) {
-      const result = array.find(decorationArrays[key], (item) => item.getProperties().class === 'nuclide-current-line-highlight');
+      const result = array.find(
+        decorationArrays[key],
+        (item) => item.getProperties().class === 'nuclide-current-line-highlight',
+      );
       if (result !== undefined) {
         return result;
       }
@@ -86,7 +91,7 @@ describe('Bridge', () => {
   }
 
   function sendIpcNotification(...args: any[]) {
-    mockWebview.dispatchEvent('ipc-message', {
+    mockWebview._simulateDispatch('ipc-message', {
       channel: 'notification',
       args: args,
     });
@@ -97,13 +102,15 @@ describe('Bridge', () => {
       editor = await utils.createEditorWithUniquePath();
       // Feed 30 lines to editor
       editor.setText('foo\nbar\nbaz'.repeat(10));
-      path = editor.getPath();
+      const editorPath = editor.getPath();
+      invariant(editorPath);
+      path = editorPath;
       mockWebview = new MockWebview();
       breakpointStore = new BreakpointStore();
       bridge = new Bridge(breakpointStore);
       spyOn(breakpointStore, 'addBreakpoint').andCallThrough();
       spyOn(breakpointStore, 'deleteBreakpoint').andCallThrough();
-      bridge.setWebviewElement(mockWebview);
+      bridge.setWebviewElement(((mockWebview: any): WebviewElement));
     });
     runs(() => {
       sendIpcNotification('CallFrameSelected', {

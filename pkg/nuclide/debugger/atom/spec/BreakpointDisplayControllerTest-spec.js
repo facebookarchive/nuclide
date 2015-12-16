@@ -9,9 +9,10 @@
  * the root directory of this source tree.
  */
 
-const BreakpointDisplayController = require('../lib/BreakpointDisplayController');
-const BreakpointStore = require('../lib/BreakpointStore');
-const utils = require('./utils');
+import BreakpointDisplayController from '../lib/BreakpointDisplayController';
+import BreakpointStore from '../lib/BreakpointStore';
+import utils from './utils';
+import invariant from 'assert';
 
 const controllerDelegate = {
   handleTextEditorDestroyed(controller: BreakpointDisplayController) {
@@ -20,9 +21,6 @@ const controllerDelegate = {
 };
 
 describe('BreakpointDisplayController', () => {
-  /* eslint-disable no-unused-vars */
-
-  /* eslint-enable no-unused-vars */
   let editor;
   let store;
   let testFilePath;
@@ -41,10 +39,15 @@ describe('BreakpointDisplayController', () => {
   beforeEach(() => {
     waitsForPromise(async () => {
       editor = await utils.createEditorWithUniquePath();
-      testFilePath = editor.getPath();
+      const editorPath = editor.getPath();
+      invariant(editorPath);
+      testFilePath = editorPath;
       store = new BreakpointStore();
       document.querySelector('#jasmine-content').appendChild(atom.views.getView(editor));
-      displayController = new BreakpointDisplayController(controllerDelegate, store, editor);
+
+      // BreakpointDisplayController is created for side-effects /:
+      const controller = new BreakpointDisplayController(controllerDelegate, store, editor);
+      invariant(controller);
     });
   });
 
@@ -54,6 +57,11 @@ describe('BreakpointDisplayController', () => {
     expect(utils.hasBreakpointDecorationInRow(editor, 1)).toBe(true);
 
     const decoration = utils.getBreakpointDecorationInRow(editor, 1);
+    invariant(decoration);
+    const properties = decoration.getProperties();
+    invariant(properties);
+    const item = properties.item;
+    invariant(item);
     simulateClickAtBufferPosition(decoration.getProperties().item, 1);
 
     expect(utils.hasBreakpointDecorationInRow(editor, 1)).toBe(false);
@@ -64,6 +72,7 @@ describe('BreakpointDisplayController', () => {
     editor.setText('foo\nbar\nbaz');
     expect(utils.hasBreakpointDecorationInRow(editor, 1)).toBe(false);
     const gutter = editor.gutterWithName('nuclide-breakpoint');
+    invariant(gutter);
     const gutterView = atom.views.getView(gutter);
     simulateClickAtBufferPosition(gutterView, 1);
     expect(utils.hasBreakpointDecorationInRow(editor, 1)).toBe(true);
@@ -75,6 +84,7 @@ describe('BreakpointDisplayController', () => {
     editor.setText('foo\nbar\nbaz');
     expect(utils.hasBreakpointDecorationInRow(editor, 1)).toBe(false);
     const gutter = editor.gutterWithName('line-number');
+    invariant(gutter);
     const lineNumberElem = atom.views.getView(gutter).querySelector('.line-number');
     expect(lineNumberElem).not.toBeNull();
     simulateClickAtBufferPosition(lineNumberElem, 1);
