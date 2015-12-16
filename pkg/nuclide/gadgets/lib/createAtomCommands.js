@@ -30,6 +30,11 @@ export default function createAtomCommands(
         formatCommandName(gadget.gadgetId, 'Hide'),
         () => appCommands.hideGadget(gadget.gadgetId),
       ),
+      atom.commands.add(
+        'atom-workspace',
+        formatCommandName(gadget.gadgetId, 'Toggle'),
+        () => appCommands.toggleGadget(gadget.gadgetId),
+      ),
     ]));
   return new CompositeDisposable(...commands.toArray());
 }

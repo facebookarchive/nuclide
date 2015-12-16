@@ -286,6 +286,27 @@ export default function createCommands(
       return item;
     },
 
+    toggleGadget(gadgetId: string): void {
+      // Show the gadget if it doesn't already exist in the workspace.
+      const match = findPaneAndItem(item => getGadgetId(item) === gadgetId);
+      if (match == null) {
+        this.showGadget(gadgetId);
+        return;
+      }
+
+      const {pane} = match;
+
+      // Show the gadget if it's hidden.
+      for (const container of getResizableContainers(pane)) {
+        if (ContainerVisibility.isHidden(container)) {
+          this.showGadget(gadgetId);
+          return;
+        }
+      }
+
+      this.hideGadget(gadgetId);
+    },
+
     unregisterGadget(gadgetId: string): void {
       observer.onNext({
         type: ActionTypes.UNREGISTER_GADGET,
