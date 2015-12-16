@@ -44,6 +44,10 @@ module.exports = {
     return requireFromCache('./text-editor').createTextEditor;
   },
 
+  get editorForPath() {
+    return requireFromCache('./text-editor').editorForPath;
+  },
+
   get destroyPaneItemWithTitle() {
     return requireFromCache('./destroy-pane-item');
   },

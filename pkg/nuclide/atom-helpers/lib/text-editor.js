@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {NuclideUri} from '../../remote-uri';
+
 export function isTextEditor(item: ?any): boolean {
   if (item == null) {
     return false;
@@ -37,4 +39,20 @@ export function createTextEditor(textEditorParams: atom$TextEditorParams): TextE
     const {TextEditor} = require('atom');
     return new TextEditor(textEditorParams);
   }
+}
+
+/**
+ * Returns a text editor that has the given path open, or null if none exists. If there are multiple
+ * text editors for this path, one is chosen arbitrarily.
+ */
+export function editorForPath(path: NuclideUri): ?atom$TextEditor {
+  // This isn't ideal but realistically iterating through even a few hundred editors shouldn't be a
+  // real problem. And if you have more than a few hundred you probably have bigger problems.
+  for (const editor of atom.workspace.getTextEditors()) {
+    if (editor.getPath() === path) {
+      return editor;
+    }
+  }
+
+  return null;
 }
