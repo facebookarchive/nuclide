@@ -19,6 +19,8 @@ import {PromiseQueue} from './PromiseExecutors';
 import type {Observable as ObservableType, Observer} from 'rx';
 import type {ProcessMessage, process$asyncExecuteRet} from './main';
 
+import invariant from 'assert';
+
 let platformPathPromise: ?Promise<string>;
 
 const blockingQueues = {};
@@ -309,18 +311,19 @@ function observeProcess(createProcess: () => child_process$ChildProcess):
     ObservableType<ProcessMessage> {
   return Observable.using(
     () => new Process(createProcess()),
-    process => {
+    ({process}) => {
+      invariant(process != null, 'process has not yet been disposed');
       // Use replay/connect on exit for the final concat.
       // By default concat defers subscription until after the LHS completes.
-      const exit = Observable.fromEvent(process.process, 'exit').take(1).
+      const exit = Observable.fromEvent(process, 'exit').take(1).
           map(exitCode => ({kind: 'exit', exitCode})).replay();
       exit.connect();
-      const error = Observable.fromEvent(process.process, 'error').
+      const error = Observable.fromEvent(process, 'error').
           takeUntil(exit).
           map(errorObj => ({kind: 'error', error: errorObj}));
-      const stdout = splitStream(observeStream(process.process.stdout)).
+      const stdout = splitStream(observeStream(process.stdout)).
           map(data => ({kind: 'stdout', data}));
-      const stderr = splitStream(observeStream(process.process.stderr)).
+      const stderr = splitStream(observeStream(process.stderr)).
           map(data => ({kind: 'stderr', data}));
       return stdout.merge(stderr).merge(error).concat(exit);
     });

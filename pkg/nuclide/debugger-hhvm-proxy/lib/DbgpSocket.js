@@ -98,7 +98,7 @@ class DbgpSocket {
     socket.on('data', this._onData.bind(this));
   }
 
-  onStatus(callback: (status: string) => mixed): Disposable {
+  onStatus(callback: (status: string) => mixed): atom$Disposable {
     return require('../../commons').event
       .attachEvent(this._emitter, DBGP_SOCKET_STATUS_EVENT, callback);
   }

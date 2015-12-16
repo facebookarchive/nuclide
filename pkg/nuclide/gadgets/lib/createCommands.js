@@ -32,7 +32,7 @@ import wrapGadget from './wrapGadget';
  * Create an object that provides commands ("action creators")
  */
 export default function createCommands(
-  observer: Rx.Observer,
+  observer: rx$IObserver,
   getState: () => Immutable.Map,
 ): Commands {
 

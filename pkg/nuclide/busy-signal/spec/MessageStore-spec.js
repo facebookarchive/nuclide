@@ -52,6 +52,7 @@ describe('MessageStore', () => {
 
   it('should remove invalidated messages', () => {
     messagePublisher.onNext(sampleMessage);
+    // $FlowIssue(>= 0.19.0) #8813014
     messagePublisher.onNext({...sampleMessage, status: 'done'});
     expect(getLastResult()).toEqual([]);
   });

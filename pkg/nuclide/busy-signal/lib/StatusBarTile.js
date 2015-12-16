@@ -17,6 +17,8 @@ import React from 'react-for-atom';
 
 import {StatusBarTileComponent} from './StatusBarTileComponent';
 
+import invariant from 'assert';
+
 // We want to be the furthest left on the right side of the status bar so as not to leave a
 // conspicuous gap (or cause jitter) when nothing is busy.
 const STATUS_BAR_PRIORITY = 1000;
@@ -65,7 +67,10 @@ export class StatusBarTile {
 
   consumeMessageStream(messageStream: Observable<Array<BusySignalMessage>>): void {
     messageStream.subscribe(messages => {
-      this._messages = messages.map(message => message.message);
+      this._messages = messages.map(message => {
+        invariant(message.status === 'busy');
+        return message.message;
+      });
       this._render();
     });
   }

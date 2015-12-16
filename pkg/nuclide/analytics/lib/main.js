@@ -68,7 +68,7 @@ function trackEvent(event: TrackingEvent): Promise<mixed> {
 /**
  * Track each event in a stream of TrackingEvents.
  */
-function trackEvents(events: Rx.Observable<TrackingEvent>): Rx.Disposable {
+function trackEvents(events: Rx.Observable<TrackingEvent>): rx$IDisposable {
   return events.forEach(trackEvent);
 }
 

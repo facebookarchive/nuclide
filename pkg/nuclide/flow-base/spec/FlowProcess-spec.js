@@ -11,6 +11,7 @@
 
 import type {Observable} from 'rx';
 
+import type {ServerStatusType} from '../lib/FlowService';
 import type {FlowProcess as FlowProcessType} from '../lib/FlowProcess';
 import {FLOW_RETURN_CODES} from '../lib/FlowProcess';
 
@@ -122,8 +123,8 @@ describe('FlowProcess', () => {
 
   describe('server state updates', () => {
     let currentStatus: string = (null: any);
-    let subscription: atom$Disposable = (null: any);
-    let statusUpdates: Observable<string> = (null: any);
+    let subscription: rx$IDisposable = (null: any);
+    let statusUpdates: Observable<ServerStatusType> = (null: any);
 
     beforeEach(() => {
       currentStatus = (null: any);

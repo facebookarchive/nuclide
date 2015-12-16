@@ -4,6 +4,9 @@
 # second-level dependencies
 .*/node_modules/[^/]+/node_modules/.*
 
+# Ignore module src to prefer declaration
+.*/node_modules/rx/.*
+
 # non-flowCheck
 .*/pkg/nuclide/debugger-hhvm-proxy/spec/.*
 .*/pkg/nuclide/debugger/atom/spec/.*

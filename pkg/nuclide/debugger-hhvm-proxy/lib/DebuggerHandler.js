@@ -40,7 +40,7 @@ export class DebuggerHandler extends Handler {
   _connectionMultiplexer: ConnectionMultiplexer;
   _files: FileCache;
   _emitter: EventEmitter;
-  _statusSubscription: ?Disposable;
+  _statusSubscription: ?atom$Disposable;
   _hadFirstContinuationCommand: boolean;
 
   constructor(

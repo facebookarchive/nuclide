@@ -19,7 +19,7 @@ import Rx from 'rx';
 export default function createStateStream(
   action$: Rx.Observable,
   initialState: Immutable.Map,
-): Rx.Observable {
+): Rx.BehaviorSubject {
   const state$ = new Rx.BehaviorSubject(initialState);
   action$.scan(handleAction, initialState).subscribe(state$);
   return state$;
@@ -76,6 +76,9 @@ function handleAction(state, action) {
         state.get('props').set(item, props),
       );
     }
+
+    default:
+      throw new Error('Unhandled action type: ' + action.type);
 
   }
 }

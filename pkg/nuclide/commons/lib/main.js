@@ -25,7 +25,7 @@ export type StdoutMessage = {
   data: string;
 };
 export type StderrMessage = {
-  kind: 'stdout';
+  kind: 'stderr';
   data: string;
 };
 export type ExitMessage = {

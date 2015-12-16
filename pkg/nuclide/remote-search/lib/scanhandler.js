@@ -49,6 +49,8 @@ export default function search(directory: string, regex: RegExp, subdirs: Array<
         const stat = await fsPromise.lstat(path.join(directory, subdir));
         if (stat.isDirectory()) {
           return searchInSubdir(matchesByFile, directory, subdir, regex);
+        } else {
+          return Observable.empty();
         }
       } catch (e) {
         return Observable.empty();
@@ -78,11 +80,11 @@ function searchInSubdir(
   );
 
   // Transform lines into file matches.
-  return linesSource.map(line => {
+  return linesSource.flatMap(line => {
     // Try to parse the output of grep.
     const grepMatchResult = line.match(GREP_PARSE_PATTERN);
     if (!grepMatchResult) {
-      return;
+      return [];
     }
 
     // Extract the filename, line number, and line text from grep output.
@@ -93,7 +95,7 @@ function searchInSubdir(
     // Try to extract the actual "matched" text.
     const matchTextResult = regex.exec(lineText);
     if (!matchTextResult) {
-      return;
+      return [];
     }
     const matchText = matchTextResult[0];
     const matchIndex = matchTextResult.index;
@@ -112,8 +114,8 @@ function searchInSubdir(
     });
 
     // If a callback was provided, invoke it with the newest update.
-    return {matches: matchesByFile.get(filePath), filePath};
-  }).filter(Boolean); // Filters out the falsey events.
+    return [{matches, filePath}];
+  });
 }
 
 

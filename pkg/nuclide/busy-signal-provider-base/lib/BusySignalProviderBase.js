@@ -11,6 +11,7 @@
 
 import type {BusySignalMessage} from '../../busy-signal-interfaces';
 import type {NuclideUri} from '../../remote-uri';
+import type {Observable} from 'rx';
 
 import {Disposable, CompositeDisposable} from 'atom';
 
@@ -25,11 +26,14 @@ export type MessageDisplayOptions = {
 };
 
 export class BusySignalProviderBase {
-  messages: Subject<BusySignalMessage>;
   _nextId: number;
+  _messages: Subject<BusySignalMessage>;
+  messages: Observable<BusySignalMessage>;
+
   constructor() {
-    this.messages = new Subject();
     this._nextId = 0;
+    this._messages = new Subject();
+    this.messages = this._messages;
   }
 
   /**
@@ -66,9 +70,9 @@ export class BusySignalProviderBase {
 
   _displayMessage(message: string): atom$Disposable {
     const {busy, done} = this._nextMessagePair(message);
-    this.messages.onNext(busy);
+    this._messages.onNext(busy);
     return new Disposable(() => {
-      this.messages.onNext(done);
+      this._messages.onNext(done);
     });
   }
 

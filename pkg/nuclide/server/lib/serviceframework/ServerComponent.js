@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {Disposable, Observable} from 'rx';
+import {Observable} from 'rx';
 import {getDefinitions} from '../../../service-parser';
 import NuclideServer from '../NuclideServer';
 import TypeRegistry from '../../../service-parser/lib/TypeRegistry';
@@ -58,7 +58,7 @@ export default class ServerComponent {
   _objectRegistry: Map<number, RemoteObject>;
   _nextObjectId: number;
 
-  _subscriptions: Map<number, Disposable>;
+  _subscriptions: Map<number, rx$IDisposable>;
 
   _server: NuclideServer;
 
@@ -320,7 +320,7 @@ export default class ServerComponent {
           returnVal = Observable.throw(new Error(
             'Expected an Observable, but the function returned something else.'));
         }
-        let returnObservable: Observable = returnVal;
+        let returnObservable: Observable = (returnVal : any);
 
         // Marshal the result, to send over the network.
         returnObservable = returnObservable.concatMap(

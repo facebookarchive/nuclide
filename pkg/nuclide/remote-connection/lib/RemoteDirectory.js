@@ -40,7 +40,6 @@ class RemoteDirectory {
   _host: string;
   _localPath: string;
   _hgRepositoryDescription: ?HgRepositoryDescription;
-  _watchSubscription: Observable;
 
   /**
    * @param uri should be of the form "nuclide://example.com:9090/path/to/directory".
