@@ -11,9 +11,17 @@
 
 export type Gadget = {
   gadgetId: string;
+
+  // For now, locations are pretty limited. In the future we might support more complicated things,
+  // including nested locations ("the bottom of the right") and event different container types
+  // (pane items vs panels).
+  defaultLocation?: GadgetLocation;
+
   deserializeState?: (state: Object) => Object;
   prototype: Object;
 };
+
+export type GadgetLocation = 'active-pane' | 'top' | 'bottom' | 'left' | 'right';
 
 export type GadgetsService = {
   registerGadget(gadget: Gadget): atom$IDisposable;

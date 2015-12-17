@@ -778,6 +778,9 @@ declare class atom$Workspace {
 
   destroyActivePaneItemOrEmptyPane(): void;
   destroyActivePaneItem(): void;
+
+  // Undocumented properties
+  paneContainer: Object;
 }
 
 /**

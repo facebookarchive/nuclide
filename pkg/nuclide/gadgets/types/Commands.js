@@ -24,7 +24,7 @@ export type Commands = {
   renderPaneItems(): void;
   replacePlaceholder(item: Object, pane: Object, index: number): ?Object;
   registerGadget(gadget: Gadget): void;
-  showGadget(gadgetId: string): Object;
+  showGadget(gadgetId: string): ?Object;
   toggleGadget(gadgetId: string): void;
   unregisterGadget(gadgetId: string): void;
   updateExpandedFlexScale(paneItemContainer: PaneItemContainer): void;

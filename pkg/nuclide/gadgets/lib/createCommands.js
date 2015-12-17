@@ -10,7 +10,7 @@
  */
 
 import type {Commands} from '../types/Commands';
-import type {Gadget} from '../../gadgets-interfaces';
+import type {Gadget, GadgetLocation} from '../../gadgets-interfaces';
 import type Immutable from 'immutable';
 import type {PaneItemContainer} from '../types/PaneItemContainer';
 
@@ -18,6 +18,7 @@ import * as ActionTypes from './ActionTypes';
 import * as ContainerVisibility from './ContainerVisibility';
 import createComponentItem from './createComponentItem';
 import * as ExpandedFlexScale from './ExpandedFlexScale';
+import findOrCreatePaneItemLocation from './findOrCreatePaneItemLocation';
 import findPaneAndItem from './findPaneAndItem';
 import getContainerToHide from './getContainerToHide';
 import getResizableContainers from './getResizableContainers';
@@ -253,17 +254,20 @@ export default function createCommands(
     /**
      * Ensure that a gadget of the specified gadgetId is visible, creating one if necessary.
      */
-    showGadget(gadgetId: string): Object {
+    showGadget(gadgetId: string): ?Object {
       const match = findPaneAndItem(item => getGadgetId(item) === gadgetId);
 
       if (match == null) {
         // If the gadget isn't in the workspace, create it.
-        // TODO: Where it gets created should be customizable with a `defaultLocation` (or similar)
-        //       static property on the gadget. This is similar to the `split` option of
-        //       `atom.workspace.open`, but uses absolute locations (e.g. it doesn't matter what the
-        //       current active pane is).
         const newItem = this.createPaneItem(gadgetId);
-        const pane = atom.workspace.getPanes()[0];
+
+        if (newItem == null) {
+          return;
+        }
+
+        const gadget = getState().get('gadgets').get(gadgetId);
+        const defaultLocation: GadgetLocation = gadget.defaultLocation || 'active-pane';
+        const pane = findOrCreatePaneItemLocation(defaultLocation);
         pane.addItem(newItem);
         pane.activateItem(newItem);
         return newItem;
