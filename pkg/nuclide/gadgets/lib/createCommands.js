@@ -186,7 +186,7 @@ export default function createCommands(
             const oldProps = state.get('props').get(item);
             const newProps = {
               ...oldProps,
-              visible: item === activeItem,
+              active: item === activeItem,
             };
 
             // Don't re-render if the props haven't changed.
@@ -241,9 +241,8 @@ export default function createCommands(
           gadget.deserializeState(rawInitialGadgetState) : rawInitialGadgetState
       );
 
-      const isActive = pane.getActiveItem() === item;
-
-      const realItem = this.createPaneItem(gadgetId, {initialState, visible: isActive}, false);
+      const active = pane.getActiveItem() === item;
+      const realItem = this.createPaneItem(gadgetId, {initialState, active}, false);
 
       // Copy the metadata about the container from the placeholder.
       realItem._expandedFlexScale = item._expandedFlexScale;
@@ -252,7 +251,7 @@ export default function createCommands(
       // remove the old one so that we don't risk dropping down to zero items.
       pane.addItem(realItem, index + 1);
       pane.destroyItem(item);
-      if (isActive) {
+      if (active) {
         pane.setActiveItem(realItem);
       }
 
