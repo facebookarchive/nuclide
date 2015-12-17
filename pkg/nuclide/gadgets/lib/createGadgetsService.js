@@ -30,6 +30,14 @@ function createGadgetsService(getCommands: () => ?Commands): GadgetsService {
       });
     },
 
+    showGadget(gadgetId: string): void {
+      const commands = getCommands();
+      if (commands == null) {
+        return;
+      }
+      commands.showGadget(gadgetId);
+    },
+
   };
 }
 

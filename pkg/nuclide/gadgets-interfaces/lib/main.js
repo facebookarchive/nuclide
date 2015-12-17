@@ -17,4 +17,5 @@ export type Gadget = {
 
 export type GadgetsService = {
   registerGadget(gadget: Gadget): atom$IDisposable;
+  showGadget(gadgetId: string): void;
 };
