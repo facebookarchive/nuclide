@@ -20,14 +20,27 @@ describe('createAtomCommands', () => {
   // Get a list of the commands registered from the list of calls on an `atom.commands.add` spy.
   const getAddedCommands = calls => calls.map(call => call.args[1]);
 
-  it('registers a show command for each gadget', () => {
-    const gadgetId = 'my-awesome-gadget';
-    const gadgets = Immutable.Map({
-      'my-awesome-gadget': {gadgetId},
-    });
+  const gadgetId = 'my-awesome-gadget';
+  const gadgets = Immutable.Map({
+    'my-awesome-gadget': {gadgetId},
+  });
+
+  beforeEach(() => {
     spyOn(atom.commands, 'add').andReturn(new Disposable(noop));
+  });
+
+  it('registers a show command for each gadget', () => {
     createAtomCommands(gadgets, {});
     expect(getAddedCommands(atom.commands.add.calls)).toContain(`${gadgetId}:show`);
+  });
+
+  it('returns a valid disposable', () => {
+    // Previously, a bug in `createAtomCommands()` caused non-disposables to be added to the
+    // returned CompositeDisposable. Unfortunately, this wouldn't be noticed until `dispose()` was
+    // called on the result when an error would be thrown. Things are good as long as we don't get
+    // that error when invoking `dispose()`.
+    const disposable = createAtomCommands(gadgets, {});
+    expect(() => { disposable.dispose(); }).not.toThrow();
   });
 
 });
