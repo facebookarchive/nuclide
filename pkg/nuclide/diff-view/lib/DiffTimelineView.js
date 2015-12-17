@@ -162,7 +162,7 @@ class RevisionTimelineNode extends React.Component {
         title={tooltip}>
         <div className="revision-bubble" />
         <div className="revision-label">
-          {bookmarksToRender.length ? bookmarksToRender.join(',') : hash}
+          {title} ({bookmarksToRender.length ? bookmarksToRender.join(',') : hash})
         </div>
       </div>
     );
