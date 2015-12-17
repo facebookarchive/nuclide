@@ -17,16 +17,22 @@ import {GRAMMAR_SET} from './constants';
 import {getDeclaration} from './libclang';
 import findWholeRangeOfSymbol from './findWholeRangeOfSymbol';
 
+const IDENTIFIER_REGEXP = /([a-zA-Z_][a-zA-Z0-9_]*)/g;
+
 module.exports = {
   // It is important that this has a lower priority than the handler from
   // fb-diffs-and-tasks.
   priority: 10,
   providerName: 'nuclide-clang-atom',
+  wordRegExp: IDENTIFIER_REGEXP,
   async getSuggestionForWord(
     textEditor: TextEditor,
     text: string,
     range: atom$Range,
   ): Promise<?HyperclickSuggestion> {
+    if (text === '') {
+      return null;
+    }
     if (!GRAMMAR_SET.has(textEditor.getGrammar().scopeName)) {
       return null;
     }
