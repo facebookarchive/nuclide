@@ -54,7 +54,7 @@ class Activation {
 
       // Clean up when pane items are destroyed.
       observableFromSubscribeFunction(atom.workspace.onDidDestroyPaneItem.bind(atom.workspace))
-        .forEach(({item}) => this.commands.destroyPaneItem(item)),
+        .forEach(({item}) => this.commands.cleanUpDestroyedPaneItem(item)),
 
       // Keep the atom commands up to date with the registered gadgets.
       syncAtomCommands(gadget$, commands),

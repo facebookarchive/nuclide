@@ -18,8 +18,9 @@ import type {PaneItemContainer} from './PaneItemContainer';
  */
 export type Commands = {
   createPaneItem(gadgetId: string, props: Object): ?Object;
-  destroyPaneItem(item: Object): void;
+  cleanUpDestroyedPaneItem(item: Object): void;
   deactivate(): void;
+  destroyGadget(gadgetId: string): void;
   openUri(uri: string): ?Object;
   renderPaneItems(): void;
   replacePlaceholder(item: Object, pane: Object, index: number): ?Object;

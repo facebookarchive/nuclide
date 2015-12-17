@@ -17,6 +17,14 @@ import {Disposable} from 'atom';
 function createGadgetsService(getCommands: () => ?Commands): GadgetsService {
   return {
 
+    destroyGadget(gadgetId: string): void {
+      const commands = getCommands();
+      if (commands == null) {
+        return;
+      }
+      commands.destroyGadget(gadgetId);
+    },
+
     registerGadget(gadget: Gadget): Disposable {
       const commands = getCommands();
       if (commands) {

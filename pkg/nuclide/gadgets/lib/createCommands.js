@@ -46,7 +46,15 @@ export default function createCommands(
       observer.onCompleted();
     },
 
-    destroyPaneItem(item): void {
+    destroyGadget(gadgetId: string): void {
+      const match = findPaneAndItem(item => getGadgetId(item) === gadgetId);
+      if (match == null) {
+        return;
+      }
+      match.pane.destroyItem(match.item);
+    },
+
+    cleanUpDestroyedPaneItem(item): void {
       if (!getState().get('components').has(item)) {
         return;
       }

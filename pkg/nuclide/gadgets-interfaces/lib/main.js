@@ -24,6 +24,7 @@ export type Gadget = {
 export type GadgetLocation = 'active-pane' | 'top' | 'bottom' | 'left' | 'right';
 
 export type GadgetsService = {
+  destroyGadget(gadgetId: string): void;
   registerGadget(gadget: Gadget): atom$IDisposable;
   showGadget(gadgetId: string): void;
 };
