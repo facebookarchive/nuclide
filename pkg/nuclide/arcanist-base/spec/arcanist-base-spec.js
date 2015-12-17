@@ -124,13 +124,13 @@ describe('nuclide-arcanist-base', () => {
     const fakeLint = {
       'description' : 'Trailing spaces not allowed. (no-trailing-spaces)',
       'severity' : 'warning',
-      'original' : null,
+      'original' : '  ',
       'line' : 78,
       'bypassChangedLineFiltering' : null,
       'name' : 'ESLint reported a warning.',
       'granularity' : 1,
       'locations' : [],
-      'replacement' : null,
+      'replacement' : '',
       'code' : 'FBNUCLIDELINT1',
       'char' : 2,
       'context' : 'this usually contains some nearby code',
@@ -142,6 +142,8 @@ describe('nuclide-arcanist-base', () => {
       row: 77,
       col: 1,
       code: 'FBNUCLIDELINT1',
+      original: '  ',
+      replacement: '',
     };
 
     function setResult(...results) {

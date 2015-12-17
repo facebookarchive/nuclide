@@ -22,6 +22,10 @@ export type ArcDiagnostic = {
   row: number,
   col: number,
   code: ?string,
+
+  // For autofix
+  original: ?string,
+  replacement: ?string,
 };
 
 // Exported for testing
@@ -149,6 +153,8 @@ function convertLints(
     char: number,
     code: string,
     description: string,
+    original: ?string,
+    replacement: ?string,
   }>,
 ): Array<ArcDiagnostic> {
   return lints.map((lint) => {
@@ -169,6 +175,8 @@ function convertLints(
       row,
       col,
       code: lint['code'],
+      original: lint['original'],
+      replacement: lint['replacement'],
     };
   });
 }
