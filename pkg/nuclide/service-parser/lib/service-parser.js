@@ -10,7 +10,7 @@
  */
 
 import * as babel from 'babel-core';
-import assert from 'assert';
+import invariant from 'assert';
 
 import type {
   Definition,
@@ -95,7 +95,7 @@ class ServiceParser {
 
   parseService(source: string): Definitions {
     const program = babel.parse(source);
-    assert(program && program.type === 'Program', 'The result of parsing is a Program node.');
+    invariant(program && program.type === 'Program', 'The result of parsing is a Program node.');
 
     // Iterate through each node in the program body.
     for (const node of program.body) {
@@ -316,7 +316,7 @@ class ServiceParser {
           location,
           kind: 'object',
           fields: typeAnnotation.properties.map(prop => {
-            assert(prop.type === 'ObjectTypeProperty');
+            invariant(prop.type === 'ObjectTypeProperty');
             return {
               location: this._locationOfNode(prop),
               name: prop.key.name,
@@ -351,7 +351,7 @@ class ServiceParser {
    * from parseTypeAnnotation.
    */
   _parseGenericTypeAnnotation(typeAnnotation): Type {
-    assert(typeAnnotation.type === 'GenericTypeAnnotation');
+    invariant(typeAnnotation.type === 'GenericTypeAnnotation');
     const id = this._parseTypeName(typeAnnotation.id);
     const location: Location = this._locationOfNode(typeAnnotation);
     switch (id) {
@@ -417,7 +417,7 @@ class ServiceParser {
       case 'Identifier':
         return type.name;
       case 'QualifiedTypeIdentifier':
-        assert(type.id.type === 'Identifier');
+        invariant(type.id.type === 'Identifier');
         return `${this._parseTypeName(type.qualification)}.${type.id.name}`;
       default:
         throw this._error(type, `Expected named type. Found ${type.type}`);
