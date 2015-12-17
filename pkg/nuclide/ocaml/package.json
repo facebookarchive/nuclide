@@ -8,6 +8,7 @@
   "nuclide": {
     "config": {
       "pathToMerlin": {
+        "title": "Path to Merlin Executable",
         "type": "string",
         "default": "ocamlmerlin"
       }

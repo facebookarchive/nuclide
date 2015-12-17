@@ -7,10 +7,12 @@
   "nuclide": {
     "config": {
       "consumeLegacyLinters": {
+        "title": "Consume Legacy Linters",
         "type": "boolean",
         "default": true
       },
       "legacyLintOnTheFly": {
+        "title": "Legacy Linters 'lint-on-the-fly'",
         "type": "boolean",
         "default": false,
         "description": "Used only for legacy linters"

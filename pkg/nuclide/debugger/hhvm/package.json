@@ -7,29 +7,35 @@
   "nuclide": {
     "config": {
       "scriptRegex": {
+        "title": "Script Path Filter Regexp",
         "type": "string",
         "default": "^(?!/var.*)",
         "description": "Regular expression to filter connection script path."
       },
       "idekeyRegex": {
+        "title": "Connection IDE Key Regexp",
         "type": "string",
         "default": "",
         "description": "Regular expression to filter connection idekey. Usually your OS user id."
       },
       "xdebugPort": {
+        "title": "DBGP Port",
         "type": "number",
         "default": 9000,
         "description": "Port for DBGP connection to HHVM."
       },
       "endDebugWhenNoRequests": {
+        "title": "End Session When No Requests",
         "type": "boolean",
         "default": false,
         "description": "Whether or not to end debug session when there is no http requests."
       },
       "logLevel": {
+        "title": "Log Level",
         "type": "string",
         "default": "INFO",
-        "description": "Specify that level of logging from debugger, supported values: ALL | TRACE | DEBUG | INFO | WARN | ERROR | FATAL | OFF."
+        "description": "Specify that level of logging from debugger, supported values: ALL | TRACE | DEBUG | INFO | WARN | ERROR | FATAL | OFF.",
+        "enum": ["ALL", "TRACE", "DEBUG", "INFO", "WARN", "ERROR", "FATAL", "OFF"]
       }
     },
     "packageType": "Atom",

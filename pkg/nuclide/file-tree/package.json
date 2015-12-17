@@ -7,11 +7,13 @@
   "nuclide": {
     "config": {
       "revealFileOnSwitch": {
+        "title": "Reveal File on Switch",
         "type": "boolean",
         "default": false,
         "description": "Automatically reveal the current file when you switch tabs"
       },
       "hideIgnoredNames": {
+        "title": "Hide Ignored Names",
         "type": "boolean",
         "default": true,
         "description": "Hide paths that match the \"Ignored Names\" under \"Settings > Core Settings\""

@@ -7,16 +7,19 @@
   "nuclide": {
     "config": {
       "pathToFlow": {
+        "title": "Path to Flow Executable",
         "type": "string",
         "default": "flow",
         "description": "Absolute path to the Flow executable on your system."
       },
       "enableTypeHints": {
+        "title": "Enable Type Hints",
         "type": "boolean",
         "default": true,
         "description": "Display tooltips with Flow types"
       },
       "enableStructuredTypeHints": {
+        "title": "Enable Tree-structured Type Hints",
         "type": "boolean",
         "default": false,
         "description": "EXPERIMENTAL: Show tree-structured type hints. Type hints must first be enabled. Requires Flow v0.17.0"
@@ -24,7 +27,7 @@
       "diagnosticsOnFly": {
         "type": "boolean",
         "default": false,
-        "title": "Diagnostics as you type",
+        "title": "Diagnostics As You Type",
         "description": "EXPERIMENTAL: Report Flow errors and warnings as you type, rather than waiting for a save"
       }
     },

@@ -7,6 +7,7 @@
   "nuclide": {
     "config": {
       "blacklistedLinters": {
+        "title": "Blacklisted Linters",
         "type": "array",
         "description": "Comma-separated list of linter names that should not be displayed",
         "default": [],

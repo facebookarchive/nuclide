@@ -7,6 +7,7 @@
   "nuclide": {
     "config": {
       "analyticsTimeout": {
+        "title": "Analytics Send Interval",
         "order": 0,
         "type": "integer",
         "default": 10,
@@ -15,6 +16,7 @@
         "maximum": 60
       },
       "viewTimeout": {
+        "title": "View Refresh Interval",
         "order": 1,
         "type": "integer",
         "default": 1,
@@ -26,22 +28,25 @@
         "order": 2,
         "type": "boolean",
         "default": false,
-        "title": "Show CPU usage as a percentage",
+        "title": "Show CPU Usage",
         "description": "Show CPU average for the last minute as a percentage in status bar (except on Windows)."
       },
       "showHeap": {
+        "title": "Show Heap Usage",
         "order": 3,
         "type": "boolean",
         "default": false,
         "description": "Show heap usage as a percentage in status bar."
       },
       "showMemory": {
+        "title": "Show Memory Usage",
         "order": 4,
         "type": "boolean",
         "default": false,
         "description": "Show memory usage in MB in status bar."
       },
       "showKeyLatency": {
+        "title": "Show Keystroke Latency",
         "order": 5,
         "type": "boolean",
         "default": false,
