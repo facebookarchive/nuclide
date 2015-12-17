@@ -88,6 +88,12 @@ def run_js_test(test_runner, pkg_path, name):
     """Run `apm test` or `npm test` in the given pkg_path."""
 
     logging.info('Running `%s test` in %s...', test_runner, pkg_path)
+
+    # In Atom 1.2+, "apm test" exits with an error when there is no "spec" directory
+    if test_runner == 'apm' and not os.path.isdir(os.path.join(pkg_path, 'spec')):
+        logging.info('NO TESTS TO RUN FOR: %s', name)
+        return
+
     if test_runner == 'apm':
         test_args = ['node', '--harmony', APM_TEST_WRAPPER, pkg_path]
     else:

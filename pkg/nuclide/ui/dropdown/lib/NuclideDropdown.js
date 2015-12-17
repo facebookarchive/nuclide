@@ -76,8 +76,7 @@ class NuclideDropdown extends React.Component {
   }
 
   _onChange(event: SyntheticMouseEvent): void {
-    if (event.target.hasOwnProperty('selectedIndex')) {
-      // $FlowIssue: We just checked hasOwnProperty!
+    if (event.target.selectedIndex != null) {
       const selectedIndex = event.target.selectedIndex;
       this.props.onSelectedChange(selectedIndex);
     }
