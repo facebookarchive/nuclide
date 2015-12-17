@@ -39,6 +39,7 @@ function startServer(args) {
       rejectUnauthorized: true,
     };
 
+    // $FlowIssue https://github.com/facebook/flow/issues/1137
     _webServer = https.createServer(webServerOptions, handleRequest);
     console.log('running in secure mode'); //eslint-disable-line no-console
   } else {
@@ -76,7 +77,7 @@ function handleVersion(request, response) {
 
 // Set the initial version by reading from the file.
 try {
-  const json = JSON.parse(fs.readFileSync(path.resolve(__dirname, 'version.json')));
+  const json = JSON.parse(fs.readFileSync(path.resolve(__dirname, 'version.json'), 'utf8'));
   version = json.Version.toString();
 } catch (e) {
   version = 'test-version';
