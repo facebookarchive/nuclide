@@ -111,6 +111,17 @@ export class ArcanistDiagnosticsProvider {
         } else {
           text = diagnostic.text;
         }
+        const maybeProperties = {};
+        if (diagnostic.original != null && diagnostic.replacement != null) {
+          maybeProperties.fix = {
+            oldRange: new Range(
+              [diagnostic.row, diagnostic.col],
+              [diagnostic.row, diagnostic.col + diagnostic.original.length],
+            ),
+            newText: diagnostic.replacement,
+            oldText: diagnostic.original,
+          };
+        }
         return {
           scope: 'file',
           providerName: 'Arc' + (diagnostic.code ? `: ${diagnostic.code}` : ''),
@@ -118,6 +129,7 @@ export class ArcanistDiagnosticsProvider {
           text,
           filePath: diagnostic.filePath,
           range,
+          ...maybeProperties,
         };
       });
       const diagnosticsUpdate = {
