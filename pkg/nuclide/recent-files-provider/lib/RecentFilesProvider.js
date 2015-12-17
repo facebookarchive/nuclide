@@ -11,6 +11,7 @@
 
 import {basename} from 'path';
 import React from 'react-for-atom';
+import relativeDate from 'relative-date';
 
 import type {
   FileResult,
@@ -48,15 +49,6 @@ function getRecentFilesMatching(query: string): Array<FileResult> {
       path: result.path,
       timestamp: result.timestamp,
     }));
-}
-
-let _formatter = null;
-function getIntlRelativeFormatFor(date: Date): string {
-  if (_formatter == null) {
-    const IntlRelativeFormat = require('intl-relativeformat');
-    _formatter = new IntlRelativeFormat('en');
-  }
-  return _formatter.format(date);
 }
 
 const MS_PER_HOUR = 60 * 60 * 1000;
@@ -145,7 +137,7 @@ export const RecentFilesProvider: Provider = {
         </div>
         <div className="recent-files-provider-datetime-container">
           <span className="recent-files-provider-datetime-label">
-            {date === null ? 'At some point' : getIntlRelativeFormatFor(date)}
+            {date === null ? 'At some point' : relativeDate(date)}
           </span>
         </div>
       </div>
