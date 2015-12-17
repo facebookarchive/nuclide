@@ -17,6 +17,8 @@ describe('debugger-hhvm-proxy Connection', () => {
   let dbgpSocket;
   let dataCache;
   let connection;
+  let DbgpSocket;
+  let DataCache;
 
   beforeEach(() => {
     socket = jasmine.createSpyObj('socket', ['write', 'end', 'destroy']);
