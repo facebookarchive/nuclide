@@ -254,7 +254,6 @@ module.exports = {
     subscriptions.add(atom.commands.add(
         'atom-workspace',
         'nuclide-remote-projects:connect',
-          /* $FlowIssue. */
         () => require('../../ssh-dialog').openConnectionDialog()
     ));
 

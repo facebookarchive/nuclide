@@ -15,6 +15,10 @@ import type {
   NuclideSavedConnectionDialogConfig,
 } from './connection-types';
 
+import type {
+  SshConnectionConfiguration,
+} from '../../remote-connection/lib/SshHandshake';
+
 // $UPFixMe: These settings should go through nuclide-feature-config
 const CONNECTION_PROFILES_KEY = 'nuclide.connectionProfiles';
 const LAST_USED_CONNECTION_KEY = 'nuclide.lastConnectionDetails';
@@ -61,8 +65,8 @@ export function getDefaultConnectionProfile(): NuclideRemoteConnectionProfile {
  * Returns an array of saved connection profiles.
  */
 export function getSavedConnectionProfiles(): Array<NuclideRemoteConnectionProfile> {
-  const connectionProfiles = atom.config.get(CONNECTION_PROFILES_KEY);
-  (connectionProfiles : ?Array<NuclideRemoteConnectionProfile>);
+  const connectionProfiles: ?Array<NuclideRemoteConnectionProfile> =
+    (atom.config.get(CONNECTION_PROFILES_KEY): any);
   prepareSavedConnectionProfilesForDisplay(connectionProfiles);
   return connectionProfiles || [];
 }
@@ -108,9 +112,8 @@ export function onSavedConnectionProfilesDidChange(
  * connection.
  */
 export function getSavedConnectionConfig(): ?NuclideSavedConnectionDialogConfig {
-  const savedConfig = atom.config.get(LAST_USED_CONNECTION_KEY);
-  (savedConfig : ?NuclideSavedConnectionDialogConfig);
-  return savedConfig;
+  const savedConfig: any = atom.config.get(LAST_USED_CONNECTION_KEY);
+  return (savedConfig : ?NuclideSavedConnectionDialogConfig);
 }
 
 /**
@@ -121,12 +124,12 @@ export function saveConnectionConfig(
   lastOfficialRemoteServerCommand: string
 ): void {
   // Don't store user's password.
-  config = {...config, password: ''};
+  const updatedConfig = {...config, password: ''};
   // SshConnectionConfiguration's sshPort type is 'number', but we want to save
   // everything as strings.
-  config.sshPort = String(config.sshPort);
+  updatedConfig.sshPort = String(config.sshPort);
   atom.config.set(LAST_USED_CONNECTION_KEY, {
-    config,
+    updatedConfig,
     // Save last official command to detect upgrade.
     lastOfficialRemoteServerCommand,
   });

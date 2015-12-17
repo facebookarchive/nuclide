@@ -56,7 +56,7 @@ describe('validateFormInputs', () => {
    */
   it(
     'accepts a valid profile with the Private Key authentication method', () => {
-      const resultFromProfileWithPrivateKey = validateFormInputs(
+      const resultFromProfileWithPrivateKey: any = validateFormInputs(
         validProfileName,
         minimumValidParamsWithPrivateKey,
         defaultServerCommand,
@@ -68,7 +68,7 @@ describe('validateFormInputs', () => {
 
   it(
     'accepts a valid profile with the Password authentication method', () => {
-      const resultFromProfileWithPassword = validateFormInputs(
+      const resultFromProfileWithPassword: any = validateFormInputs(
         validProfileName,
         minimumValidParamsWithPassword,
         defaultServerCommand,
@@ -80,7 +80,7 @@ describe('validateFormInputs', () => {
 
   it(
     'accepts a valid profile with the SSH Agent authentication method', () => {
-      const resultFromProfileWithSshAgent = validateFormInputs(
+      const resultFromProfileWithSshAgent: any = validateFormInputs(
         validProfileName,
         minimumValidParamsWithSshAgent,
         defaultServerCommand,
@@ -94,14 +94,15 @@ describe('validateFormInputs', () => {
    * Section: Invalid Profiles
    */
   it('rejects a profile if a Profile Name is missing.', () => {
-    const resultFromNullProfileName = validateFormInputs(
+    const resultFromNullProfileName: any = validateFormInputs(
+      // $FlowIgnore
       null,
       minimumValidParamsWithPrivateKey,
       defaultServerCommand,
     );
     expect(resultFromNullProfileName.errorMessage).not.toBeNull();
 
-    const resultFromEmptyProfileName = validateFormInputs(
+    const resultFromEmptyProfileName: any = validateFormInputs(
       '',
       minimumValidParamsWithPrivateKey,
       defaultServerCommand,
@@ -111,7 +112,7 @@ describe('validateFormInputs', () => {
 
   it('rejects a profile if a Username is missing.', () => {
     minimumValidParamsWithPrivateKey.username = null;
-    const resultFromNullUsername = validateFormInputs(
+    const resultFromNullUsername: any = validateFormInputs(
       validProfileName,
       minimumValidParamsWithPrivateKey,
       defaultServerCommand,
@@ -119,7 +120,7 @@ describe('validateFormInputs', () => {
     expect(resultFromNullUsername.errorMessage).not.toBeNull();
 
     minimumValidParamsWithPrivateKey.username = '';
-    const resultFromEmptyUsername = validateFormInputs(
+    const resultFromEmptyUsername: any = validateFormInputs(
       validProfileName,
       minimumValidParamsWithPrivateKey,
       defaultServerCommand,
@@ -129,7 +130,7 @@ describe('validateFormInputs', () => {
 
   it('rejects a profile if a Server is missing.', () => {
     minimumValidParamsWithPrivateKey.server = null;
-    const resultFromNullServer = validateFormInputs(
+    const resultFromNullServer: any = validateFormInputs(
       validProfileName,
       minimumValidParamsWithPrivateKey,
       defaultServerCommand,
@@ -137,7 +138,7 @@ describe('validateFormInputs', () => {
     expect(resultFromNullServer.errorMessage).not.toBeNull();
 
     minimumValidParamsWithPrivateKey.server = '';
-    const resultFromEmptyServer = validateFormInputs(
+    const resultFromEmptyServer: any = validateFormInputs(
       validProfileName,
       minimumValidParamsWithPrivateKey,
       defaultServerCommand,
@@ -147,7 +148,7 @@ describe('validateFormInputs', () => {
 
   it('rejects a profile if an Initial Directory is missing.', () => {
     minimumValidParamsWithPrivateKey.cwd = null;
-    const resultFromNullCwd = validateFormInputs(
+    const resultFromNullCwd: any = validateFormInputs(
       validProfileName,
       minimumValidParamsWithPrivateKey,
       defaultServerCommand,
@@ -155,7 +156,7 @@ describe('validateFormInputs', () => {
     expect(resultFromNullCwd.errorMessage).not.toBeNull();
 
     minimumValidParamsWithPrivateKey.cwd = '';
-    const resultFromEmptyCwd = validateFormInputs(
+    const resultFromEmptyCwd: any = validateFormInputs(
       validProfileName,
       minimumValidParamsWithPrivateKey,
       defaultServerCommand,
@@ -165,7 +166,7 @@ describe('validateFormInputs', () => {
 
   it('rejects a profile if an SSH Port is missing.', () => {
     minimumValidParamsWithPrivateKey.sshPort = null;
-    const resultFromNullSshPort = validateFormInputs(
+    const resultFromNullSshPort: any = validateFormInputs(
       validProfileName,
       minimumValidParamsWithPrivateKey,
       defaultServerCommand,
@@ -173,7 +174,7 @@ describe('validateFormInputs', () => {
     expect(resultFromNullSshPort.errorMessage).not.toBeNull();
 
     minimumValidParamsWithPrivateKey.sshPort = '';
-    const resultFromEmptySshPort = validateFormInputs(
+    const resultFromEmptySshPort: any = validateFormInputs(
       validProfileName,
       minimumValidParamsWithPrivateKey,
       defaultServerCommand,
@@ -183,7 +184,7 @@ describe('validateFormInputs', () => {
 
   it('rejects a profile if an Authentication Method is missing.', () => {
     minimumValidParamsWithPrivateKey.authMethod = null;
-    const resultFromNullAuthMethod = validateFormInputs(
+    const resultFromNullAuthMethod: any = validateFormInputs(
       validProfileName,
       minimumValidParamsWithPrivateKey,
       defaultServerCommand,
@@ -191,7 +192,7 @@ describe('validateFormInputs', () => {
     expect(resultFromNullAuthMethod.errorMessage).not.toBeNull();
 
     minimumValidParamsWithPrivateKey.authMethod = '';
-    const resultFromEmptyAuthMethod = validateFormInputs(
+    const resultFromEmptyAuthMethod: any = validateFormInputs(
       validProfileName,
       minimumValidParamsWithPrivateKey,
       defaultServerCommand,
@@ -201,7 +202,7 @@ describe('validateFormInputs', () => {
 
   it('rejects a profile if the Authentication Method selected is "Private Key", and a Private Key File is missing', () => { //eslint-disable-line max-len
     minimumValidParamsWithPrivateKey.pathToPrivateKey = null;
-    const resultFromNullPathToPrivateKey = validateFormInputs(
+    const resultFromNullPathToPrivateKey: any = validateFormInputs(
       validProfileName,
       minimumValidParamsWithPrivateKey,
       defaultServerCommand,
@@ -209,7 +210,7 @@ describe('validateFormInputs', () => {
     expect(resultFromNullPathToPrivateKey.errorMessage).not.toBeNull();
 
     minimumValidParamsWithPrivateKey.pathToPrivateKey = '';
-    const resultFromEmptyPathToPrivateKey = validateFormInputs(
+    const resultFromEmptyPathToPrivateKey: any = validateFormInputs(
       validProfileName,
       minimumValidParamsWithPrivateKey,
       defaultServerCommand,
@@ -218,14 +219,14 @@ describe('validateFormInputs', () => {
   });
 
   it('does not reject a profile if the Private Key File is missing, but the Authentication Method selected is not "Private Key"', () => { //eslint-disable-line max-len
-    const passwordAuthMethodProfile = validateFormInputs(
+    const passwordAuthMethodProfile: any = validateFormInputs(
       validProfileName,
       minimumValidParamsWithPassword,
       defaultServerCommand,
     );
     expect(passwordAuthMethodProfile.validatedProfile).toBeDefined();
 
-    const sshAgentAuthMethodProfile = validateFormInputs(
+    const sshAgentAuthMethodProfile: any = validateFormInputs(
       validProfileName,
       minimumValidParamsWithSshAgent,
       defaultServerCommand,
@@ -238,7 +239,7 @@ describe('validateFormInputs', () => {
    */
   it('strips a password, if it is provided and the "Password" Authentication Method is chosen, and provides a warning message.', () => { //eslint-disable-line max-len
     minimumValidParamsWithPassword.password = 'secretpassword';
-    const resultFromProfileWithPassword = validateFormInputs(
+    const resultFromProfileWithPassword: any = validateFormInputs(
       validProfileName,
       minimumValidParamsWithPassword,
       defaultServerCommand,
@@ -249,7 +250,7 @@ describe('validateFormInputs', () => {
   });
 
   it('only saves the remote server command if it is different than the "default".', () => {
-    const resultFromProfileWithDefaultRSC = validateFormInputs(
+    const resultFromProfileWithDefaultRSC: any = validateFormInputs(
       validProfileName,
       minimumValidParamsWithPassword,
       defaultServerCommand,
@@ -259,7 +260,7 @@ describe('validateFormInputs', () => {
     ).toBe('');
 
     minimumValidParamsWithPassword.remoteServerCommand = 'differentCommand';
-    const resultFromProfileWithDifferentRSC = validateFormInputs(
+    const resultFromProfileWithDifferentRSC: any = validateFormInputs(
       validProfileName,
       minimumValidParamsWithPassword,
       defaultServerCommand,

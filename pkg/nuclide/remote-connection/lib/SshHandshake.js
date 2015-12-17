@@ -112,7 +112,7 @@ export class SshHandshake {
   _certificateAuthorityCertificate: Buffer;
   _clientCertificate: Buffer;
   _clientKey: Buffer;
-  static SupportedMethods: {};
+  static SupportedMethods: typeof SupportedMethods;
 
   static ErrorType = ErrorType;
 

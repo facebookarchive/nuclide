@@ -16,7 +16,6 @@ const React = require('react-for-atom');
 const {PropTypes} = React;
 const {SshHandshake} = require('../../remote-connection');
 
-// $FlowFixMe: Flow can't find the PASSWORD, etc. properties on SupportedMethods.
 const {SupportedMethods} = SshHandshake;
 const authMethods = [
   SupportedMethods.PASSWORD,
@@ -32,7 +31,6 @@ import type {
 
 /** Component to prompt the user for connection details. */
 export default class ConnectionDetailsForm extends React.Component {
-  // $FlowIssue t8486988
   static propTypes = {
     initialUsername: PropTypes.string,
     initialServer: PropTypes.string,
@@ -66,7 +64,7 @@ export default class ConnectionDetailsForm extends React.Component {
     });
   }
 
-  _onKeyUp(e) {
+  _onKeyUp(e: SyntheticEvent): void {
     if (e.key === 'Enter') {
       this.props.onConfirm();
     }
@@ -76,7 +74,7 @@ export default class ConnectionDetailsForm extends React.Component {
     }
   }
 
-  _handlePasswordInputClick(event) {
+  _handlePasswordInputClick(event: SyntheticEvent): void {
     const passwordAuthMethodIndex = authMethods.indexOf(SupportedMethods.PASSWORD);
     this.setState(
       {
@@ -88,7 +86,7 @@ export default class ConnectionDetailsForm extends React.Component {
     );
   }
 
-  _handleKeyFileInputClick(event) {
+  _handleKeyFileInputClick(event: SyntheticEvent): void {
     const privateKeyAuthMethodIndex = authMethods.indexOf(SupportedMethods.PRIVATE_KEY);
     this.setState(
       {
@@ -103,7 +101,7 @@ export default class ConnectionDetailsForm extends React.Component {
     );
   }
 
-  render() {
+  render(): ReactElement {
     const activeAuthMethod = authMethods[this.state.selectedAuthMethodIndex];
     // We need native-key-bindings so that delete works and we need
     // _onKeyUp so that escape and enter work

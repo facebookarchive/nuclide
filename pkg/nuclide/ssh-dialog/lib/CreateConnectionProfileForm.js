@@ -11,11 +11,13 @@
 
 import type {
   NuclideNewConnectionProfileInitialFields,
+  NuclideRemoteConnectionParamsWithPassword,
   NuclideRemoteConnectionProfile,
 } from './connection-types';
 
 import AtomInput from '../../ui/atom-input';
 import React from 'react-for-atom';
+import invariant from 'assert';
 import ConnectionDetailsForm from './ConnectionDetailsForm';
 import {validateFormInputs} from './form-validation-utils';
 
@@ -111,6 +113,7 @@ export default class CreateConnectionProfileForm
       atom.notifications.addError(validationResult.errorMessage);
       return;
     }
+    invariant(validationResult.validatedProfile != null);
     // Save the validated profile, and show any warning messages.
     const newProfile = validationResult.validatedProfile;
     if (validationResult.warningMessage) {

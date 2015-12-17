@@ -14,7 +14,12 @@ import type {
   NuclideRemoteConnectionProfile,
 } from './connection-types';
 
-import type {SshHandshakeErrorType} from '../../remote-connection/lib/SshHandshake';
+import type {
+  SshHandshakeErrorType,
+  SshConnectionConfiguration,
+} from '../../remote-connection/lib/SshHandshake';
+
+import type {RemoteConnection} from '../../remote-connection/lib/RemoteConnection';
 
 import {notifySshHandshakeError} from './notification';
 import AuthenticationPrompt from './AuthenticationPrompt';
@@ -74,7 +79,7 @@ export default class ConnectionDialog extends React.Component<DefaultProps, Prop
     this._boundCancel = this.cancel.bind(this);
   }
 
-  _createInitialState() {
+  _createInitialState(): State {
     const sshHandshake = new SshHandshake(decorateSshConnectionDelegateWithTracking({
       onKeyboardInteractive: (name, instructions, instructionsLang, prompts, finish)  => {
         // TODO: Display all prompts, not just the first one.
@@ -83,7 +88,7 @@ export default class ConnectionDialog extends React.Component<DefaultProps, Prop
 
       onWillConnect:() => {},
 
-      onDidConnect: (connection: SshHandshake, config: SshConnectionConfiguration) => {
+      onDidConnect: (connection: RemoteConnection, config: SshConnectionConfiguration) => {
         this.close(); // Close the dialog.
         this.props.onConnect(connection, config);
       },
@@ -108,7 +113,7 @@ export default class ConnectionDialog extends React.Component<DefaultProps, Prop
     };
   }
 
-  render() {
+  render(): ReactElement {
     const mode = this.state.mode;
     let content;
     let isOkDisabled;

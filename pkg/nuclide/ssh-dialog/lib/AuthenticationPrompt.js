@@ -27,7 +27,7 @@ export default class AuthenticationPrompt extends React.Component<DefaultProps, 
     super(props);
   }
 
-  render() {
+  render(): ReactElement {
     // Instructions may contain newlines that need to be converted to <br> tags.
     const safeHtml = this.props.instructions
         .replace(/&/g, '&amp;')
@@ -55,7 +55,7 @@ export default class AuthenticationPrompt extends React.Component<DefaultProps, 
     );
   }
 
-  _onKeyUp(e) {
+  _onKeyUp(e: SyntheticEvent): void {
     if (e.key === 'Enter') {
       this.props.onConfirm();
     }
@@ -65,7 +65,7 @@ export default class AuthenticationPrompt extends React.Component<DefaultProps, 
     }
   }
 
-  componentDidMount() {
+  componentDidMount(): void {
     this._disposables = new CompositeDisposable();
     const root = React.findDOMNode(this.refs['root']);
 
@@ -84,14 +84,14 @@ export default class AuthenticationPrompt extends React.Component<DefaultProps, 
     React.findDOMNode(this.refs.password).focus();
   }
 
-  componentWillUnmount() {
+  componentWillUnmount(): void {
     if (this._disposables) {
       this._disposables.dispose();
       this._disposables = null;
     }
   }
 
-  getPassword() {
+  getPassword(): string {
     return React.findDOMNode(this.refs.password).value;
   }
 }

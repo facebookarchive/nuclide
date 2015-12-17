@@ -105,15 +105,15 @@ export function validateFormInputs(
   } else {
     profileParams.remoteServerCommand = '';
   }
-
-  const validationResult = {
-    validatedProfile: {
-      displayTitle: profileName,
-      params: profileParams,
-    },
+  const validatedProfile = {
+    displayTitle: profileName,
+    params: profileParams,
   };
-  if (warningMessage.length) {
-    validationResult.warningMessage = warningMessage;
-  }
+  const validationResult = warningMessage.length > 0
+    ? {
+      validatedProfile,
+      warningMessage,
+    }
+    : {validatedProfile};
   return validationResult;
 }

@@ -72,7 +72,7 @@ export default class ConnectionDetailsPrompt
     return this.refs['connection-details-form'].getFormFields();
   }
 
-  render() {
+  render(): ReactElement {
     // If there are profiles, pre-fill the form with the information from the
     // specified selected profile.
     let prefilledConnectionParams = {};

@@ -22,6 +22,7 @@ import {getLogger} from '../../logging';
 import type {Disposable} from 'atom';
 import type {RemoteConnection} from '../../remote-connection';
 import type {NuclideRemoteConnectionProfile} from './connection-types';
+import {extend, PromiseQueue} from '../../commons';
 
 const logger = getLogger();
 let dialogPromiseQueue: ?PromiseQueue = null;
@@ -31,8 +32,7 @@ let dialogPromiseQueue: ?PromiseQueue = null;
  * for connection parameters (e.g. username, server name, etc), and optionally
  * asking for additional (e.g. 2-fac) authentication.
  */
-export function openConnectionDialog(props): Promise<?RemoteConnection> {
-  const {extend, PromiseQueue} = require('../../commons');
+export function openConnectionDialog(props: Object): Promise<?RemoteConnection> {
   if (!dialogPromiseQueue) {
     dialogPromiseQueue = new PromiseQueue();
   }
