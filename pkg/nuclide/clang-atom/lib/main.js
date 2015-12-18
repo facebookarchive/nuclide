@@ -59,6 +59,7 @@ module.exports = {
     return {
       selector: '.source.objc, .source.objcpp, .source.cpp, .source.c',
       inclusionPriority: 1,
+      suggestionPriority: 5,  // Higher than the snippets provider.
 
       getSuggestions(
         request: atom$AutocompleteRequest

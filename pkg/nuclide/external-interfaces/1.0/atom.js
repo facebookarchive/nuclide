@@ -135,6 +135,7 @@ declare class atom$Cursor {
 
   // Local Positions and Ranges
   getCurrentWordBufferRange(options?: {wordRegex: RegExp}): atom$Range;
+  getCurrentWordPrefix(): string;
 
   // Visibility
   // Comparing to another cursor

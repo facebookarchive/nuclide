@@ -9,14 +9,15 @@
  * the root directory of this source tree.
  */
 
-import type {Point} from 'atom';
 import type {ClangCompletion} from '../../clang';
 
+import {Point} from 'atom';
 import {ClangCursorToDeclarationTypes} from '../../clang';
 import {getCompletions} from './libclang';
 
 const MAX_LINE_LENGTH = 120;
 const TAB_LENGTH = 2;
+const VALID_EMPTY_SUFFIX = /(->|\.|::)$/;
 
 const ClangCursorToAutocompletionTypes = {
   STRUCT_DECL: 'class',
@@ -162,26 +163,43 @@ function getCompletionBodyInline(completion: ClangCompletion): string {
   return body;
 }
 
+function getCompletionPrefix(editor: atom$TextEditor): string {
+  const cursor = editor.getLastCursor();
+  const range = cursor.getCurrentWordBufferRange({
+    wordRegex: cursor.wordRegExp({includeNonWordCharacters: false}),
+  });
+
+  // Current word might go beyond the cursor, so we cut it.
+  range.end = new Point(cursor.getBufferRow(), cursor.getBufferColumn());
+  return editor.getTextInBufferRange(range);
+}
 
 class AutocompleteProvider {
 
   async getAutocompleteSuggestions(
     request: atom$AutocompleteRequest
   ): Promise<Array<atom$AutocompleteSuggestion>> {
-    const {editor, bufferPosition: cursorPosition, prefix} = request;
-    const indentation = editor.indentationForBufferRow(cursorPosition.row);
-    const column = cursorPosition.column;
-    const data = await getCompletions(editor);
+    const {editor, bufferPosition: {row, column}, activatedManually} = request;
+    const prefix = getCompletionPrefix(editor);
+    // Only autocomplete empty strings when it's a method (a.?, a->?) or qualifier (a::?).
+    if (!activatedManually && prefix.trim() === '') {
+      const wordPrefix = editor.getLastCursor().getCurrentWordPrefix();
+      if (!VALID_EMPTY_SUFFIX.test(wordPrefix)) {
+        return [];
+      }
+    }
+
+    const indentation = editor.indentationForBufferRow(row);
+    const data = await getCompletions(editor, prefix);
     return data.completions.map((completion) => {
       const snippet = getCompletionBody(completion, column, indentation);
-      const replacementPrefix = /^\s*$/.test(prefix) ? '' : prefix;
       const rightLabel = completion.cursor_kind ?
         ClangCursorToDeclarationTypes[completion.cursor_kind] : null;
       const type = completion.cursor_kind ?
         ClangCursorToAutocompletionTypes[completion.cursor_kind] : null;
       return {
         snippet,
-        replacementPrefix,
+        replacementPrefix: prefix,
         type,
         leftLabel: completion.result_type,
         rightLabel,

@@ -16,7 +16,6 @@ import type {
 } from '../../clang';
 
 import {getServiceByNuclideUri} from '../../remote-connection';
-import {Point} from 'atom';
 
 module.exports = {
 
@@ -28,16 +27,9 @@ module.exports = {
         .compile(src, contents);
   },
 
-  getCompletions(editor: atom$TextEditor): Promise<ClangCompletionsResult> {
+  getCompletions(editor: atom$TextEditor, prefix: string): Promise<ClangCompletionsResult> {
     const src = editor.getPath();
     const cursor = editor.getLastCursor();
-    const range = cursor.getCurrentWordBufferRange({
-      wordRegex: cursor.wordRegExp({includeNonWordCharacters: false}),
-    });
-
-    // Current word might go beyond the cursor, so we cut it.
-    range.end = new Point(cursor.getBufferRow(), cursor.getBufferColumn());
-    const prefix = editor.getTextInBufferRange(range).trim();
 
     const line = cursor.getBufferRow();
     const column = cursor.getBufferColumn();
