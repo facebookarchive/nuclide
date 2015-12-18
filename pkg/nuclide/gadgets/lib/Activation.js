@@ -10,9 +10,11 @@
  */
 
 import type {Commands} from '../types/Commands';
+import type {GadgetsService} from '../../gadgets-interfaces';
 
 import {CompositeDisposable} from 'atom';
 import createCommands from './createCommands';
+import createGadgetsService from './createGadgetsService';
 import createStateStream from './createStateStream';
 import getInitialState from './getInitialState';
 import observableFromSubscribeFunction from './observableFromSubscribeFunction';
@@ -82,10 +84,15 @@ class Activation {
     );
   }
 
-  dispose() {
+  deactivate() {
     this.commands.deactivate();
     this._disposables.dispose();
   }
+
+  provideGadgetsService(): GadgetsService {
+    return createGadgetsService(this.commands);
+  }
+
 }
 
 module.exports = Activation;

@@ -14,35 +14,21 @@ import type {Gadget, GadgetsService} from '../../gadgets-interfaces';
 
 import {Disposable} from 'atom';
 
-function createGadgetsService(getCommands: () => ?Commands): GadgetsService {
+function createGadgetsService(commands: Commands): GadgetsService {
   return {
 
     destroyGadget(gadgetId: string): void {
-      const commands = getCommands();
-      if (commands == null) {
-        return;
-      }
       commands.destroyGadget(gadgetId);
     },
 
     registerGadget(gadget: Gadget): Disposable {
-      const commands = getCommands();
-      if (commands) {
-        commands.registerGadget(gadget);
-      }
+      commands.registerGadget(gadget);
       return new Disposable(() => {
-        if (commands == null) {
-          return;
-        }
         commands.unregisterGadget(gadget.gadgetId);
       });
     },
 
     showGadget(gadgetId: string): void {
-      const commands = getCommands();
-      if (commands == null) {
-        return;
-      }
       commands.showGadget(gadgetId);
     },
 

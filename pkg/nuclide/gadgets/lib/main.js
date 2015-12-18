@@ -11,25 +11,23 @@
 
 import type {GadgetsService} from '../../gadgets-interfaces';
 
+import invariant from 'assert';
+
 let activation: ?Object = null;
 
 export function activate(state: ?Object) {
-  if (activation != null) {
-    return;
-  }
+  invariant(activation == null);
   const Activation = require('./Activation');
   activation = new Activation(state);
 }
 
 export function deactivate() {
-  if (activation == null) {
-    return;
-  }
-  activation.dispose();
+  invariant(activation);
+  activation.deactivate();
   activation = null;
 }
 
 export function provideGadgetsService(): GadgetsService {
-  const createGadgetsService = require('./createGadgetsService');
-  return createGadgetsService(() => activation && activation.commands);
+  invariant(activation);
+  return activation.provideGadgetsService();
 }
