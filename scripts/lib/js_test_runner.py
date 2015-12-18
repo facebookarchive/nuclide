@@ -22,16 +22,23 @@ class JsTestRunner(object):
         self._run_in_band = run_in_band
         self._verbose = verbose
 
+    def run_integration_tests(self):
+        run_js_test('apm', self._package_manager.get_nuclide_path(), 'nuclide')
+
     def run_tests(self):
         apm_tests = []
         npm_tests = []
         serial_only_tests = []
+        # Even if the npm/apm tests are disabled, we should still honor the Flow check.
         flow_tests = [('flow', self._package_manager.get_nuclide_path(), 'nuclide')]
 
         for package_config in self._package_manager.get_configs():
-            # Even if the npm/apm tests are disabled, we should still honor the Flow check.
             pkg_path = package_config['packageRootAbsolutePath']
             name = package_config['name']
+
+            # We run the tests in Nuclide/spec in a separate integration test step.
+            if name == 'nuclide':
+                continue
 
             if package_config['excludeTestsFromContinuousIntegration']:
                 continue

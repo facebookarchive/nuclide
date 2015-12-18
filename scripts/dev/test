@@ -32,6 +32,7 @@ parser.add_option('--verbose', action='store_true', default=False, help='Verbose
 parser.add_option('--no-atom', action='store_true', default=False, help='Exclude packages that depend on Atom')
 parser.add_option('--run-in-band', action='store_true', default=False, help='Run tests in a single process')
 parser.add_option('--no-version', action='store_true', default=False, help='Ignore mismatched versions of Atom/npm/node/apm')
+parser.add_option('--run-integration-tests', action='store_true', default=False, help='Only run tests in Nuclide/spec')
 atom.add_args_for_env_setup(parser)
 options, args = parser.parse_args(sys.argv[1:])
 
@@ -83,4 +84,7 @@ for package_name in args:
 # Create and run JsTestRunner.
 from js_test_runner import JsTestRunner
 test_runner = JsTestRunner(package_manager, include_apm, args, verbose, run_in_band)
-test_runner.run_tests()
+if options.run_integration_tests:
+    test_runner.run_integration_tests()
+else:
+    test_runner.run_tests()
