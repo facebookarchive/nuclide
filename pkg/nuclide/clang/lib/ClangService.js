@@ -170,6 +170,7 @@ async function _findClangServerArgs(): Promise<{
 }
 
 type Connection = {
+  dispose: () => any,
   readableStream: any,
   writableStream: any,
 }
@@ -195,6 +196,7 @@ async function createAsyncConnection(pathToLibClangServer: string): Promise<Conn
     // options.env is undefined (which is not the case here). This will only be an issue if the
     // system cannot find `pythonExecutable`.
     const child = await safeSpawn(pythonExecutable, /* args */ [pathToLibClangServer], options);
+
     child.on('close', function(exitCode) {
       logger.error('%s exited with code %s', pathToLibClangServer, exitCode);
     });
@@ -207,11 +209,20 @@ async function createAsyncConnection(pathToLibClangServer: string): Promise<Conn
     /* $FlowFixMe - update Flow defs for ChildProcess */
     const writableStream = child.stdio[3];
 
+    let childRunning = true;
+    child.on('exit', () => {
+      childRunning = false;
+    });
     // Make sure the bidirectional communication channel is set up before
     // resolving this Promise.
     child.stdout.once('data', function(data: Buffer) {
       if (data.toString() === 'ack\n') {
         const result = {
+          dispose: () => {
+            if (childRunning) {
+              child.kill();
+            }
+          },
           readableStream: child.stdout,
           writableStream: writableStream,
         };
@@ -238,10 +249,21 @@ function connect(): Promise<void> {
       (connection: Connection) => {
         readableStream = connection.readableStream;
         writableStream = connection.writableStream;
-        readableStream.pipe(split(JSON.parse)).on('data', (response) => {
-          const id = response['reqid'];
-          emitter.emit(id, response);
-        });
+        readableStream
+          .pipe(split(JSON.parse))
+          .on('data', (response) => {
+            const id = response['reqid'];
+            emitter.emit(id, response);
+          })
+          .on('error', (error) => {
+            logger.error(
+              'Failed to handle libclang output, most likely the libclang python'
+              + ' server crashed.',
+              error,
+            );
+            asyncConnection = null;
+            connection.dispose();
+          });
       },
       error => {
         // If an error occurs, clear out `asyncConnection`, so that if `_connect()` is
