@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {Commands} from '../types/Commands';
+import type {CommandsType} from '../types/CommandsType';
 import type {Gadget, GadgetLocation} from '../../gadgets-interfaces';
 import type Immutable from 'immutable';
 import type {PaneItemContainer} from '../types/PaneItemContainer';
@@ -25,7 +25,6 @@ import getResizableContainers from './getResizableContainers';
 import GadgetPlaceholder from './GadgetPlaceholder';
 import * as GadgetUri from './GadgetUri';
 import React from 'react-for-atom';
-import Rx from 'rx';
 import shallowEqual from 'shallowequal';
 import wrapGadget from './wrapGadget';
 
@@ -35,7 +34,7 @@ import wrapGadget from './wrapGadget';
 export default function createCommands(
   observer: rx$IObserver,
   getState: () => Immutable.Map,
-): Commands {
+): CommandsType {
 
   return {
 

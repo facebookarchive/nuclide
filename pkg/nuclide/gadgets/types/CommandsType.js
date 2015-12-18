@@ -16,7 +16,7 @@ import type {PaneItemContainer} from './PaneItemContainer';
  * The interface for changing the application state. These would also be called
  * "action creators" in vanilla Flux.
  */
-export type Commands = {
+export type CommandsType = {
   createPaneItem(gadgetId: string, props: Object): ?Object;
   cleanUpDestroyedPaneItem(item: Object): void;
   deactivate(): void;

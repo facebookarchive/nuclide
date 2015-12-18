@@ -9,11 +9,11 @@
  * the root directory of this source tree.
  */
 
-import type {Commands} from '../types/Commands';
+import type {CommandsType} from '../types/CommandsType';
 import type {GadgetsService} from '../../gadgets-interfaces';
 
 import {CompositeDisposable} from 'atom';
-import createCommands from './createCommands';
+import createCommands from './Commands';
 import createGadgetsService from './createGadgetsService';
 import createStateStream from './createStateStream';
 import getInitialState from './getInitialState';
@@ -25,7 +25,7 @@ import trackActions from './trackActions';
 
 class Activation {
   _disposables: CompositeDisposable;
-  commands: Commands;
+  commands: CommandsType;
 
   constructor(initialState: ?Object) {
     initialState = getInitialState();
