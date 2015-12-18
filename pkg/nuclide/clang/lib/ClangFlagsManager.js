@@ -10,11 +10,13 @@
  */
 
 import type {BuckUtils} from '../../buck/base/lib/BuckUtils';
-import type {BuckProject} from '../../buck/base/lib/BuckProject';
 
-const logger = require('../../logging').getLogger();
-const path = require('path');
-const buckProjectModule = require('../../buck/base').BuckProject;
+import path from 'path';
+import {array} from '../../commons';
+import {getLogger} from '../../logging';
+import {BuckProject} from '../../buck/base/lib/BuckProject';
+
+const logger = getLogger();
 
 const CLANG_FLAGS_THAT_TAKE_PATHS = new Set([
   '-F',
@@ -25,16 +27,15 @@ const CLANG_FLAGS_THAT_TAKE_PATHS = new Set([
   '-isystem',
 ]);
 
-const {from} = require('../../commons').array;
-const clangArgs = from(CLANG_FLAGS_THAT_TAKE_PATHS, item => item.length === 2 ? item : null)
-    .filter(item => item !== null);
-const SINGLE_LETTER_CLANG_FLAGS_THAT_TAKE_PATHS = new Set(clangArgs);
-
+const SINGLE_LETTER_CLANG_FLAGS_THAT_TAKE_PATHS = new Set(
+  array.from(CLANG_FLAGS_THAT_TAKE_PATHS)
+    .filter(item => item.length === 2)
+);
 
 class ClangFlagsManager {
   _buckUtils: BuckUtils;
   _cachedBuckProjects: Map<string, BuckProject>;
-  pathToFlags: {[path: string]: Array<string>};
+  pathToFlags: {[path: string]: ?Array<string>};
 
   constructor(buckUtils: BuckUtils) {
     /**
@@ -69,7 +70,7 @@ class ClangFlagsManager {
       return this._cachedBuckProjects.get(buckProjectRoot);
     }
 
-    const buckProject = new buckProjectModule.BuckProject({rootPath: buckProjectRoot});
+    const buckProject = new BuckProject({rootPath: buckProjectRoot});
     this._cachedBuckProjects.set(buckProjectRoot, buckProject);
     return buckProject;
   }
@@ -80,11 +81,16 @@ class ClangFlagsManager {
    *     under the project root.
    */
   async getFlagsForSrc(src: string): Promise<?Array<string>> {
-    const flags = this.pathToFlags[src];
-    if (flags) {
+    let flags = this.pathToFlags[src];
+    if (flags !== undefined) {
       return flags;
     }
+    flags = await this._getFlagsForSrcImpl(src);
+    this.pathToFlags[src] = flags;
+    return flags;
+  }
 
+  async _getFlagsForSrcImpl(src: string): Promise<?Array<string>> {
     const buckProject = await this._getBuckProject(src);
     if (!buckProject) {
       return null;
@@ -131,21 +137,25 @@ class ClangFlagsManager {
     const compilationDatabase = JSON.parse(compilationDatabaseJson);
     compilationDatabase.forEach((item) => {
       const {file} = item;
-      // "args" is a non-standard property that we introduced in an older version of Buck.
-      // Fortunately, the clang folks have seen the light and have added support for an identical
-      // property that they happened to name "arguments":
-      // https://github.com/facebook/buck/issues/437
-      // For now, fall back to "args" until we get everyone to use a newer enough version of Buck
-      // and then we can remove the support for the old "args" property.
-      const command = item.arguments || item.args;
       this.pathToFlags[file] = ClangFlagsManager.sanitizeCommand(
           file,
-          command,
+          item.arguments,
           buckProjectRoot);
     });
 
-    // TODO(mbolin): Currently, src will not be in the map if it corresponds to
-    // a header file. Use heuristics or whatever means necessary to fix this.
+    if (!(src in this.pathToFlags)) {
+      // Look for something else with a different extension.
+      const ext = src.lastIndexOf('.');
+      if (ext !== -1) {
+        const extLess = src.substring(0, ext + 1);
+        for (const file in this.pathToFlags) {
+          if (file.startsWith(extLess)) {
+            return this.pathToFlags[file];
+          }
+        }
+      }
+    }
+
     return this.pathToFlags[src] || null;
   }
 

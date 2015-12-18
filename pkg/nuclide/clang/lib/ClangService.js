@@ -299,6 +299,10 @@ export async function compile(
   contents: string
 ): Promise<ClangCompileResult> {
   const flags = await clangFlagsManager.getFlagsForSrc(src);
+  if (flags == null) {
+    return {diagnostics: []};
+  }
+
   return _makeRequest({
     method: 'compile',
     src,

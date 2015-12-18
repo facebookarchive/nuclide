@@ -9,9 +9,35 @@
  * the root directory of this source tree.
  */
 
-const ClangFlagsManager = require('../lib/ClangFlagsManager');
+import {BuckUtils} from '../../buck/base/lib/BuckUtils';
+import ClangFlagsManager from '../lib/ClangFlagsManager';
 
 describe('ClangFlagsManager', () => {
+
+  let flagsManager: ClangFlagsManager;
+  let buckProject;
+  beforeEach(() => {
+    flagsManager = new ClangFlagsManager(new BuckUtils());
+    buckProject = {
+      getOwner(src) {
+        return ['test'];
+      },
+      getPath() {
+        return __dirname;
+      },
+      build() {
+        return {
+          success: true,
+          results: {
+            'test#compilation-database,iphonesimulator-x86_64': {
+              output: 'fixtures/compile_commands.json',
+            },
+          },
+        };
+      },
+    };
+    spyOn(flagsManager, '_getBuckProject').andReturn(buckProject);
+  });
 
   it('sanitizeCommand()', () => {
     const {sanitizeCommand} = ClangFlagsManager;
@@ -120,6 +146,49 @@ describe('ClangFlagsManager', () => {
       '/absolute/path',
     ];
     expect(sanitizedCommandArgs).toEqual(expectedArgs);
+  });
+
+  it('gets flags for a source file', () => {
+    waitsForPromise(async () => {
+      let flags = await flagsManager.getFlagsForSrc('test.cpp');
+      expect(flags).toEqual(['g++', '-fPIC', '-O3']);
+
+      // Make sure this is cached.
+      spyOn(buckProject, 'build').andCallThrough();
+      flags = await flagsManager.getFlagsForSrc('test.cpp');
+      expect(flags).toEqual(['g++', '-fPIC', '-O3']);
+      expect(buckProject.build).not.toHaveBeenCalled();
+
+      // Make sure cache gets reset.
+      flagsManager.reset();
+      flags = await flagsManager.getFlagsForSrc('test.cpp');
+      expect(flags).toEqual(['g++', '-fPIC', '-O3']);
+      expect(buckProject.build).toHaveBeenCalled();
+    });
+  });
+
+  it('supports negative caching', () => {
+    waitsForPromise(async () => {
+      // Unowned projects shouldn't invoke Buck again.
+      buckProject.getOwner = () => [];
+      let flags = await flagsManager.getFlagsForSrc('test');
+      expect(flags).toBe(null);
+
+      spyOn(buckProject, 'getOwner').andCallThrough();
+      flags = await flagsManager.getFlagsForSrc('test');
+      expect(flags).toBe(null);
+      expect(buckProject.getOwner).not.toHaveBeenCalled();
+    });
+  });
+
+  it('gets flags for header files', () => {
+    waitsForPromise(async () => {
+      let flags = await flagsManager.getFlagsForSrc('test.h');
+      expect(flags).toEqual(['g++', '-fPIC', '-O3']);
+
+      flags = await flagsManager.getFlagsForSrc('test.hpp');
+      expect(flags).toEqual(['g++', '-fPIC', '-O3']);
+    });
   });
 
 });

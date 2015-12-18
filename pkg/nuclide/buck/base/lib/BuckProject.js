@@ -114,9 +114,11 @@ export class BuckProject {
   async getOwner(filePath: string): Promise<Array<string>> {
     const args = ['audit', 'owner', filePath];
     const result = await this._runBuckCommandFromProjectRoot(args);
-    const stdout = result.stdout;
-    const targets = stdout.trim().split('\n');
-    return targets;
+    const stdout = result.stdout.trim();
+    if (stdout === '') {
+      return [];
+    }
+    return stdout.split('\n');
   }
 
   async getBuckConfig(section: string, property: string): Promise<?string> {
