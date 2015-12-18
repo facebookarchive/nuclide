@@ -34,6 +34,7 @@ export type SingleMessage = {
   endline: number;
   start: number;
   end: number;
+  level: string;
 }
 
 export type Loc = {
