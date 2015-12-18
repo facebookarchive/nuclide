@@ -14,6 +14,7 @@ import type {HyperclickSuggestion} from '../../hyperclick-interfaces';
 import type Hyperclick from './Hyperclick';
 import type {TimingTracker} from '../../analytics';
 
+import {Disposable, CompositeDisposable} from 'atom';
 import {trackTiming, startTracking} from '../../analytics';
 import {getLogger} from '../../logging';
 import getWordTextAndRange from './get-word-text-and-range';
@@ -39,7 +40,7 @@ export default class HyperclickForTextEditor {
   _onMouseDown: (event: MouseEvent) => void;
   _onKeyDown: (event: SyntheticKeyboardEvent) => void;
   _onKeyUp: (event: SyntheticKeyboardEvent) => void;
-  _commandSubscription: atom$Disposable;
+  _subscriptions: atom$CompositeDisposable;
   _isDestroyed: boolean;
   _loadingTracker: ?TimingTracker;
 
@@ -59,25 +60,45 @@ export default class HyperclickForTextEditor {
     this._navigationMarkers = null;
 
     this._lastWordRange = null;
+    this._subscriptions = new CompositeDisposable();
 
     this._onMouseMove = this._onMouseMove.bind(this);
     this._textEditorView.addEventListener('mousemove', this._onMouseMove);
     this._onMouseDown = this._onMouseDown.bind(this);
-    const {component} = this._textEditorView;
-    invariant(component);
-    component.linesComponent.getDomNode().addEventListener('mousedown', this._onMouseDown);
+    this._setupMouseDownListener();
 
     this._onKeyDown = this._onKeyDown.bind(this);
     this._textEditorView.addEventListener('keydown', this._onKeyDown);
     this._onKeyUp = this._onKeyUp.bind(this);
     this._textEditorView.addEventListener('keyup', this._onKeyUp);
 
-    this._commandSubscription = atom.commands.add(this._textEditorView, {
+    this._subscriptions.add(atom.commands.add(this._textEditorView, {
       'hyperclick:confirm-cursor': () => this._confirmSuggestionAtCursor(),
-    });
+    }));
 
     this._isDestroyed = false;
     this._loadingTracker = null;
+  }
+
+  _setupMouseDownListener(): void {
+    const getLinesDomNode = (): HTMLElement => {
+      const {component} = this._textEditorView;
+      invariant(component);
+      return component.linesComponent.getDomNode();
+    };
+    const removeMouseDownListener = () => {
+      if (this._textEditorView.component == null) {
+        return;
+      }
+      getLinesDomNode().removeEventListener('mousedown', this._onMouseDown);
+    };
+    const addMouseDownListener = () => {
+      getLinesDomNode().addEventListener('mousedown', this._onMouseDown);
+    };
+    this._subscriptions.add(new Disposable(removeMouseDownListener));
+    this._subscriptions.add(this._textEditorView.onDidDetach(removeMouseDownListener));
+    this._subscriptions.add(this._textEditorView.onDidAttach(addMouseDownListener));
+    addMouseDownListener();
   }
 
   _confirmSuggestion(suggestion: HyperclickSuggestion): void {
@@ -311,9 +332,8 @@ export default class HyperclickForTextEditor {
     this._isDestroyed = true;
     this._clearSuggestion();
     this._textEditorView.removeEventListener('mousemove', this._onMouseMove);
-    this._textEditorView.removeEventListener('mousedown', this._onMouseDown);
     this._textEditorView.removeEventListener('keydown', this._onKeyDown);
     this._textEditorView.removeEventListener('keyup', this._onKeyUp);
-    this._commandSubscription.dispose();
+    this._subscriptions.dispose();
   }
 }

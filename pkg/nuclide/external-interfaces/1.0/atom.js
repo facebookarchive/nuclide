@@ -676,6 +676,11 @@ declare class atom$TextEditorElement extends HTMLElement {
     left: number;
     top: number;
   };
+
+  // Called when the editor is attached to the DOM.
+  onDidAttach(callback: () => mixed): atom$Disposable;
+  // Called when the editor is detached from the DOM.
+  onDidDetach(callback: () => mixed): atom$Disposable;
 }
 
 declare class atom$ViewProvider {
