@@ -74,7 +74,7 @@ export class FlowRoot {
       } else {
         return null;
       }
-    } catch(e) {
+    } catch (e) {
       return null;
     }
   }
