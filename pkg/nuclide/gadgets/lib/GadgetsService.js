@@ -10,29 +10,33 @@
  */
 
 import type Commands from './Commands';
-import type {Gadget, GadgetsService as GadgetsServiceType} from '../../gadgets-interfaces';
+import type {Gadget} from '../../gadgets-interfaces';
 
 import {Disposable} from 'atom';
 
-function createGadgetsService(commands: Commands): GadgetsServiceType {
-  return {
+class GadgetsService {
 
-    destroyGadget(gadgetId: string): void {
-      commands.destroyGadget(gadgetId);
-    },
+  _commands: Commands;
 
-    registerGadget(gadget: Gadget): Disposable {
-      commands.registerGadget(gadget);
-      return new Disposable(() => {
-        commands.unregisterGadget(gadget.gadgetId);
-      });
-    },
+  constructor(commands: Commands) {
+    this._commands = commands;
+  }
 
-    showGadget(gadgetId: string): void {
-      commands.showGadget(gadgetId);
-    },
+  destroyGadget(gadgetId: string): void {
+    this._commands.destroyGadget(gadgetId);
+  }
 
-  };
+  registerGadget(gadget: Gadget): Disposable {
+    this._commands.registerGadget(gadget);
+    return new Disposable(() => {
+      this._commands.unregisterGadget(gadget.gadgetId);
+    });
+  }
+
+  showGadget(gadgetId: string): void {
+    this._commands.showGadget(gadgetId);
+  }
+
 }
 
-module.exports = createGadgetsService;
+module.exports = GadgetsService;

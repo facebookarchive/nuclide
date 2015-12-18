@@ -9,11 +9,9 @@
  * the root directory of this source tree.
  */
 
-import type {GadgetsService as GadgetsServiceType} from '../../gadgets-interfaces';
-
 import {CompositeDisposable} from 'atom';
 import Commands from './Commands';
-import createGadgetsService from './GadgetsService';
+import GadgetsService from './GadgetsService';
 import createStateStream from './createStateStream';
 import getInitialState from './getInitialState';
 import observableFromSubscribeFunction from './observableFromSubscribeFunction';
@@ -88,8 +86,8 @@ class Activation {
     this._disposables.dispose();
   }
 
-  provideGadgetsService(): GadgetsServiceType {
-    return createGadgetsService(this.commands);
+  provideGadgetsService(): GadgetsService {
+    return new GadgetsService(this.commands);
   }
 
 }

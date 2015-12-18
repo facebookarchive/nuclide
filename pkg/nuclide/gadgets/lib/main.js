@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {GadgetsService as GadgetsServiceType} from '../../gadgets-interfaces';
+import type GadgetsService from './GadgetsService';
 
 import invariant from 'assert';
 
@@ -27,7 +27,7 @@ export function deactivate() {
   activation = null;
 }
 
-export function provideGadgetsService(): GadgetsServiceType {
+export function provideGadgetsService(): GadgetsService {
   invariant(activation);
   return activation.provideGadgetsService();
 }
