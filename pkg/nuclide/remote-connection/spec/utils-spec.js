@@ -33,7 +33,7 @@ describe('containsPathSync()', () => {
     const originalDirPath = path.join(directoryPath, 'dir_1');
     const symlinkDirPath = path.join(directoryPath, 'dir_2');
     fs.mkdirSync(originalDirPath);
-    fs.symlinkSync(originalDirPath, symlinkDirPath);
+    fs.symlinkSync(originalDirPath, symlinkDirPath, 'file');
     const filePath = path.join(symlinkDirPath, 'file.txt');
     fs.writeFileSync(filePath, 'test', 'utf8');
     const fileRealPath = fs.realpathSync(filePath);

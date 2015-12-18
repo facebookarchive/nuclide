@@ -165,7 +165,9 @@ class RemoteFile {
     }
   }
 
-  onWillThrowWatchError(callback: () => mixed): atom$Disposable {
+  onWillThrowWatchError(
+    callback: (watchError: {error: Error, handle: () => void}) => mixed,
+  ): atom$Disposable {
     return this._emitter.on('will-throw-watch-error', callback);
   }
 

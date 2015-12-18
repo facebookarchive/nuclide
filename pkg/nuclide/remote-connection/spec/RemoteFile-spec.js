@@ -9,6 +9,9 @@
  * the root directory of this source tree.
  */
 
+import type {RemoteConnection} from '../../remote-connection';
+
+import invariant from 'assert';
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -16,10 +19,14 @@ const temp = require('temp').track();
 const RemoteFile = require('../lib/RemoteFile');
 const connectionMock = require('./connection_mock');
 
+
 describe('RemoteFile', () => {
 
-  const computeDigest = (contents) => crypto.createHash('sha1')
-    .update(contents || '').digest('hex');
+  const computeDigest = (contents) => {
+    const hash = crypto.createHash('sha1').update(contents || '');
+    invariant(hash);
+    return hash.digest('hex');
+  };
 
   describe('getRealPath() & getRealPathSync()', () => {
     let filePath;
@@ -31,7 +38,7 @@ describe('RemoteFile', () => {
       fs.writeFileSync(filePath, 'some contents');
       filePath = fs.realpathSync(filePath);
       symlinkedFilePath = filePath + '.sym';
-      fs.symlinkSync(filePath, symlinkedFilePath);
+      fs.symlinkSync(filePath, symlinkedFilePath, 'file');
     });
 
     it('gets realpath of a file', () => {
@@ -93,9 +100,8 @@ describe('RemoteFile', () => {
         fs.writeFileSync(filePath, '');
         const file = new RemoteFile(connectionMock, filePath);
         const callbackSpy = jasmine.createSpy();
-        file._willAddSubscription = jasmine.createSpy();
+        spyOn(file, '_willAddSubscription').andReturn(null);
         file.onDidDelete(callbackSpy);
-        waitsFor(() => !file._pendingSubscription);
         runs(() => file.delete());
         waitsFor(() => callbackSpy.callCount > 0);
         runs(() => {
@@ -124,7 +130,7 @@ describe('RemoteFile', () => {
         expect(fs.existsSync(filePath)).toBe(true);
 
         const file = new RemoteFile(connectionMock, `nuclide://host123:1234${filePath}`);
-        file._subscribeToNativeChangeEvents = () => {};
+        spyOn(file, '_subscribeToNativeChangeEvents').andReturn(null);
         await file.rename(newFilePath);
 
         expect(fs.existsSync(filePath)).toBe(false);
@@ -154,7 +160,7 @@ describe('RemoteFile', () => {
         expect(fs.existsSync(newFilePath)).toBe(false);
 
         const file = new RemoteFile(connectionMock, filePath);
-        file._subscribeToNativeChangeEvents = () => {};
+        spyOn(file, '_subscribeToNativeChangeEvents').andReturn(null);
         const result = await file.copy(newFilePath);
         const newFile = new RemoteFile(connectionMock, newFilePath);
         const digest = await newFile.getDigest();
@@ -179,6 +185,7 @@ describe('RemoteFile', () => {
       file = new RemoteFile(connectionMock, filePath);
       fs.writeFileSync(filePath, 'sample contents');
       // Ask watchman to watch the directory.
+      // $FlowFixMe old API usage - disabled.
       waitsForPromise(() => connectionMock.getClient().watchDirectoryRecursive(tempDir));
       // wait for the watchman to settle on the created directory and file.
       waits(WATCHMAN_SETTLE_TIME_MS + /* buffer */ 10);
@@ -187,6 +194,7 @@ describe('RemoteFile', () => {
     afterEach(() => {
       waitsForPromise(async () => {
         await file._unsubscribeFromNativeChangeEvents();
+        // $FlowFixMe old API usage - disabled.
         await connectionMock.getClient().unwatchDirectoryRecursive(tempDir);
       });
     });
@@ -195,7 +203,6 @@ describe('RemoteFile', () => {
       it('notifies ::onDidChange observers', () => {
         const changeHandler = jasmine.createSpy();
         file.onDidChange(changeHandler);
-        waitsFor(() => !file._pendingSubscription);
         runs(() => fs.writeFileSync(filePath, 'this is new!'));
         waitsFor(() => changeHandler.callCount > 0);
         runs(() => expect(changeHandler.callCount).toBe(1));
@@ -206,7 +213,6 @@ describe('RemoteFile', () => {
       it('notifies ::onDidDelete observers', () => {
         const deletionHandler = jasmine.createSpy();
         file.onDidDelete(deletionHandler);
-        waitsFor(() => !file._pendingSubscription);
         runs(() => fs.unlinkSync(filePath));
         waitsFor(() => deletionHandler.callCount > 0);
         runs(() => expect(deletionHandler.callCount).toBe(1));
@@ -218,7 +224,6 @@ describe('RemoteFile', () => {
       it('notifies ::onDidRename observers', () => {
         const renameHandler = jasmine.createSpy();
         file.onDidRename(renameHandler);
-        waitsFor(() => !file._pendingSubscription);
         runs(() => fs.renameSync(filePath, filePath + '_moved'));
         waits(500); // wait for the rename event to emit.
         runs(() => window.advanceClock(150)); // pass the rename timeout.
@@ -253,6 +258,7 @@ describe('RemoteFile', () => {
         });
         waitsFor(() => skippedError);
         runs(() => {
+          // $FlowFixMe non-standard property.
           expect(skippedError.code).toBe('ENOENT');
           expect(handleError).not.toBeDefined();
         });
@@ -363,8 +369,15 @@ describe('RemoteFile', () => {
   });
 
   describe('RemoteFile::getParent()', () => {
+    let remote: RemoteConnection = (null: any);
+
+    beforeEach(() => {
+      remote = ({
+        createDirectory: () => {},
+      }: any);
+    });
+
     it('gets the parent directory for a file in a root directory', () => {
-      const remote = {createDirectory() {}};
       const parentDirectory = jasmine.createSpy('RemoteDirectory');
       spyOn(remote, 'createDirectory').andReturn(parentDirectory);
 
@@ -376,7 +389,6 @@ describe('RemoteFile', () => {
     });
 
     it('gets the parent directory for a file in a non-root directory', () => {
-      const remote = {createDirectory() {}};
       const parentDirectory = jasmine.createSpy('RemoteDirectory');
       spyOn(remote, 'createDirectory').andReturn(parentDirectory);
 

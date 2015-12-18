@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {SshConnectionConfiguration} from '../lib/SshHandshake';
+
 const {EventEmitter} = require('events');
 const path = require('path');
 const pathToFakePk = path.join(__dirname, 'fakepk');
@@ -22,17 +24,15 @@ describe('SshHandshake', () => {
   }
 
   let dns;
-  let originalDnsLookup;
   let handshakeDelegate;
 
   beforeEach(() => {
     dns = uncachedRequire(require, 'dns');
-    originalDnsLookup = dns.lookup;
-    dns.lookup = (host, family, callback) => {
+    spyOn(((dns: any): Object), 'lookup').andCallFake((host, family, callback) => {
       process.nextTick(() => {
         callback(/* error */ null, /* address */ 'example.com');
       });
-    };
+    });
     handshakeDelegate = jasmine.createSpyObj(
       'delegate',
       ['onKeyboardInteractive', 'onWillConnect', 'onDidConnect', 'onError'],
@@ -40,7 +40,6 @@ describe('SshHandshake', () => {
   });
 
   afterEach(() => {
-    dns.lookup = originalDnsLookup;
     clearRequireCache(require, 'dns');
   });
 
@@ -49,7 +48,10 @@ describe('SshHandshake', () => {
       const mockError = new Error('mock error');
       const sshConnection = new MockSshConnection();
       const sshHandshake = new SshHandshake(handshakeDelegate, sshConnection);
-      const config = {pathToPrivateKey: pathToFakePk, authMethod: 'PRIVATE_KEY'};
+      const config: SshConnectionConfiguration = ({
+        pathToPrivateKey: pathToFakePk,
+        authMethod: 'PRIVATE_KEY',
+      }: any);
 
       sshHandshake.connect(config);
       sshConnection.emit('error', mockError);
@@ -65,7 +67,10 @@ describe('SshHandshake', () => {
     it('calls delegates onError when private key does not exist', () => {
       const sshConnection = new MockSshConnection();
       const sshHandshake = new SshHandshake(handshakeDelegate, sshConnection);
-      const config = {pathToPrivateKey: pathToFakePk + '.oops', authMethod: 'PRIVATE_KEY'};
+      const config: SshConnectionConfiguration = ({
+        pathToPrivateKey: pathToFakePk + '.oops',
+        authMethod: 'PRIVATE_KEY',
+      }: any);
 
       sshHandshake.connect(config);
 
@@ -92,7 +97,7 @@ describe('SshHandshake', () => {
     it('calls SshConnection.end()', () => {
       const sshConnection = new MockSshConnection();
       const sshHandshake = new SshHandshake(handshakeDelegate, sshConnection);
-      const config = {pathToPrivateKey: pathToFakePk};
+      const config: SshConnectionConfiguration = ({pathToPrivateKey: pathToFakePk}: any);
 
       spyOn(sshConnection, 'end');
 

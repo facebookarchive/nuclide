@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import invariant from 'assert';
 const fs = require('fs');
 const path = require('path');
 const {Directory} = require('atom');
@@ -86,14 +87,6 @@ describe('RemoteDirectory::getEntries()', () => {
     let complete = false;
 
     runs(() => {
-      connectionMock.createDirectory = (uri) => {
-        return new RemoteDirectory(connectionMock, uri);
-      };
-
-      connectionMock.createFile = (uri) => {
-        return new RemoteFile(connectionMock, uri);
-      };
-
       const fileStats = {isFile() { return true; }};
       const directoryStats = {isFile() { return false; }};
 
@@ -109,7 +102,8 @@ describe('RemoteDirectory::getEntries()', () => {
 
       remoteDirectory.getEntries((err, entries) => {
         expect(err).toBe(null);
-        const sortedEntries = entries.map((entry) => entry.getBaseName());
+        invariant(entries);
+        const sortedEntries = entries.map(entry => entry.getBaseName());
         expect(sortedEntries).toEqual(['b', 'Bb', 'a', 'Aa']);
         complete = true;
       });
@@ -151,14 +145,13 @@ describe('RemoteDirectory::getParent()', () => {
   });
 
   it('a non-root has the expected parent', () => {
-    const remote = {createDirectory() {}};
     const parentDirectory = jasmine.createSpy('RemoteDirectory');
-    spyOn(remote, 'createDirectory').andReturn(parentDirectory);
+    spyOn(connectionMock, 'createDirectory').andReturn(parentDirectory);
 
-    const remoteDirectory = new RemoteDirectory(remote,
+    const remoteDirectory = new RemoteDirectory(connectionMock,
       'nuclide://example.com:9090/path/to/directory');
     expect(remoteDirectory.getParent()).toBe(parentDirectory);
-    expect(remote.createDirectory).toHaveBeenCalledWith(
+    expect(connectionMock.createDirectory).toHaveBeenCalledWith(
         'nuclide://example.com:9090/path/to');
   });
 });
@@ -171,8 +164,7 @@ describe('RemoteDirectory::contains()', () => {
   });
 
   it('returns false when passed null path', () => {
-    const remote = jasmine.createSpy('RemoteConnection');
-    const remoteDirectory = new RemoteDirectory(remote,
+    const remoteDirectory = new RemoteDirectory(connectionMock,
       'nuclide://example.com:9090/');
     expect(remoteDirectory.contains(null)).toBe(false);
   });
@@ -192,14 +184,13 @@ describe('RemoteDirectory::contains()', () => {
 
 describe('RemoteDirectory::getFile()', () => {
   it('returns a RemoteFile under the directory', () => {
-    const remote = {createFile() {}};
     const remoteFile = jasmine.createSpy('RemoteFile');
-    spyOn(remote, 'createFile').andReturn(remoteFile);
+    spyOn(connectionMock, 'createFile').andReturn(remoteFile);
 
-    const remoteDirectory = new RemoteDirectory(remote,
+    const remoteDirectory = new RemoteDirectory(connectionMock,
       'nuclide://example.com:9090/path/to/directory');
     expect(remoteDirectory.getFile('foo.txt')).toBe(remoteFile);
-    expect(remote.createFile).toHaveBeenCalledWith(
+    expect(connectionMock.createFile).toHaveBeenCalledWith(
         'nuclide://example.com:9090/path/to/directory/foo.txt');
   });
 });
@@ -296,12 +287,14 @@ xdescribe('RemoteDirectory::onDidChange()', () => {
     directoryPath = temp.mkdirSync('on_did_change_test');
     filePath = path.join(directoryPath, 'sample_file.txt');
     fs.writeFileSync(filePath, 'sample contents!');
+    // $FlowFixMe old API usage - disabled.
     waitsForPromise(() => connectionMock.getClient().watchDirectoryRecursive(directoryPath));
     // wait for the watchman to settle on the created directory and file.
     waits(WATCHMAN_SETTLE_TIME_MS + /* buffer */ 10);
   });
 
   afterEach(() => {
+    // $FlowFixMe old API usage - disabled.
     waitsForPromise(() => connectionMock.getClient().unwatchDirectoryRecursive(directoryPath));
   });
 
@@ -309,7 +302,6 @@ xdescribe('RemoteDirectory::onDidChange()', () => {
     const directory = new RemoteDirectory(connectionMock, directoryPath);
     const changeHandler = jasmine.createSpy();
     directory.onDidChange(changeHandler);
-    waitsFor(() => !directory._pendingSubscription);
     runs(() => fs.writeFileSync(path.join(directoryPath, 'new_file.txt'), 'new contents!'));
     waitsFor(() => changeHandler.callCount > 0);
     runs(() => {
@@ -327,7 +319,6 @@ xdescribe('RemoteDirectory::onDidChange()', () => {
     const directory = new RemoteDirectory(connectionMock, directoryPath);
     const changeHandler = jasmine.createSpy();
     directory.onDidChange(changeHandler);
-    waitsFor(() => !directory._pendingSubscription);
     runs(() => fs.unlinkSync(filePath));
     waitsFor(() => changeHandler.callCount > 0);
     runs(() => {
@@ -345,7 +336,6 @@ xdescribe('RemoteDirectory::onDidChange()', () => {
     const directory = new RemoteDirectory(connectionMock, directoryPath);
     const changeHandler = jasmine.createSpy();
     directory.onDidChange(changeHandler);
-    waitsFor(() => !directory._pendingSubscription);
     fs.writeFileSync(filePath, 'new contents!');
     waits(1000);
     runs(() => expect(changeHandler.callCount).toBe(0));
@@ -355,7 +345,6 @@ xdescribe('RemoteDirectory::onDidChange()', () => {
     const directory = new RemoteDirectory(connectionMock, directoryPath);
     const changeHandler = jasmine.createSpy();
     directory.onDidChange(changeHandler);
-    waitsFor(() => !directory._pendingSubscription);
     runs(() => {
       fs.writeFileSync(path.join(directoryPath, 'new_file_1.txt'), 'new contents 1!');
       fs.writeFileSync(path.join(directoryPath, 'new_file_2.txt'), 'new contents 2!');
@@ -363,6 +352,7 @@ xdescribe('RemoteDirectory::onDidChange()', () => {
     waitsFor(() => changeHandler.callCount > 0);
     runs(() => {
       expect(changeHandler.callCount).toBe(1);
+      // $FlowFixMe - test disabled.
       const sortedChange = changeHandler.argsForCall[0][0].sort((a, b) => a.name > b.name);
       expect(sortedChange).toEqual([
         {name: 'new_file_1.txt', exists: true, mode: FILE_MODE, new: true},
