@@ -9,12 +9,12 @@
  * the root directory of this source tree.
  */
 
-import type {CommandsType} from '../types/CommandsType';
+import type Commands from './Commands';
 import type {Gadget, GadgetsService} from '../../gadgets-interfaces';
 
 import {Disposable} from 'atom';
 
-function createGadgetsService(commands: CommandsType): GadgetsService {
+function createGadgetsService(commands: Commands): GadgetsService {
   return {
 
     destroyGadget(gadgetId: string): void {

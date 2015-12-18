@@ -9,11 +9,10 @@
  * the root directory of this source tree.
  */
 
-import type {CommandsType} from '../types/CommandsType';
 import type {GadgetsService} from '../../gadgets-interfaces';
 
 import {CompositeDisposable} from 'atom';
-import createCommands from './Commands';
+import Commands from './Commands';
 import createGadgetsService from './createGadgetsService';
 import createStateStream from './createStateStream';
 import getInitialState from './getInitialState';
@@ -25,13 +24,13 @@ import trackActions from './trackActions';
 
 class Activation {
   _disposables: CompositeDisposable;
-  commands: CommandsType;
+  commands: Commands;
 
   constructor(initialState: ?Object) {
     initialState = getInitialState();
     const action$ = new Rx.Subject();
     const state$ = createStateStream(action$, initialState);
-    const commands = this.commands = createCommands(action$, () => state$.getValue());
+    const commands = this.commands = new Commands(action$, () => state$.getValue());
 
     const getGadgets = state => state.get('gadgets');
     const gadget$ = state$.map(getGadgets).distinctUntilChanged();
