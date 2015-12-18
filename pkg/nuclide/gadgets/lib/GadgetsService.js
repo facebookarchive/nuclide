@@ -10,11 +10,11 @@
  */
 
 import type Commands from './Commands';
-import type {Gadget, GadgetsService} from '../../gadgets-interfaces';
+import type {Gadget, GadgetsService as GadgetsServiceType} from '../../gadgets-interfaces';
 
 import {Disposable} from 'atom';
 
-function createGadgetsService(commands: Commands): GadgetsService {
+function createGadgetsService(commands: Commands): GadgetsServiceType {
   return {
 
     destroyGadget(gadgetId: string): void {
