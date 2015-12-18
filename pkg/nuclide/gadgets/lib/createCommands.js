@@ -96,20 +96,20 @@ export default function createCommands(
       }
 
       const GadgetComponent = gadget;
-      const reactElement = createComponentItem(<GadgetComponent {...props} />);
+      const item = createComponentItem(<GadgetComponent {...props} />);
 
       observer.onNext({
         type: ActionTypes.CREATE_PANE_ITEM,
         payload: {
-          item: reactElement,
           component: GadgetComponent,
           gadgetId,
+          item,
           props,
           isNew,
         },
       });
 
-      return reactElement;
+      return item;
     },
 
     hideGadget(gadgetId: string): void {
