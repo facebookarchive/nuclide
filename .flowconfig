@@ -10,7 +10,6 @@
 # non-flowCheck
 .*/pkg/nuclide/debugger-hhvm-proxy/spec/.*
 .*/pkg/nuclide/remote-connection/spec/.*
-.*/pkg/nuclide/remote-projects/spec/.*
 
 [libs]
 ./pkg/nuclide/external-interfaces/1.0/

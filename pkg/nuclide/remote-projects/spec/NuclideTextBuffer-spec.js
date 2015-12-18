@@ -9,33 +9,31 @@
  * the root directory of this source tree.
  */
 
-const NuclideTextBuffer = require('../lib/NuclideTextBuffer');
-const {RemoteFile, RemoteConnection} = require('../../remote-connection');
+import invariant from 'assert';
+import NuclideTextBuffer from '../lib/NuclideTextBuffer';
+import {RemoteFile, RemoteConnection} from '../../remote-connection';
 
 describe('NuclideTextBuffer', () => {
 
-  let buffer = null;
+  let buffer: NuclideTextBuffer = (null: any);
   let connection = null;
   const filePath = __filename;
 
   beforeEach(() => {
-    connection = new RemoteConnection({});
-    connection._config = {host: 'most.fb.com', port:9090};
+    connection = new RemoteConnection({host: 'most.fb.com', port:9090, cwd: '/'});
     // Mock watcher service handlers registry.
+    // $FlowFixMe override instance method.
     connection._addHandlersForEntry = () => {};
     buffer = new NuclideTextBuffer(connection, {});
     // Disable file watch subscriptions, not needed here.
+    // $FlowFixMe override instance method.
     buffer.subscribeToFile = () => {};
-  });
-
-  afterEach(() => {
-    buffer = null;
-    connection = null;
   });
 
   it('setPath creates a connection file', () => {
     buffer.setPath(filePath);
     expect(buffer.file instanceof RemoteFile).toBe(true);
+    invariant(buffer.file);
     expect(buffer.file.getPath()).toBe('nuclide://most.fb.com:9090' + __filename);
   });
 });
