@@ -5,6 +5,13 @@
   "version": "0.0.0",
   "description": "Displays diagnostics in context in a TextEditor",
   "nuclide": {
+    "config": {
+      "enableAutofix": {
+        "type": "boolean",
+        "default": false,
+        "description": "Enable the UI for the experimental autofix feature"
+      }
+    },
     "packageType": "Atom",
     "testRunner": "apm"
   },

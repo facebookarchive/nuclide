@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {DiagnosticUpdater} from '../../base';
+import type {DiagnosticUpdater, FileMessageUpdate} from '../../base';
 
 import invariant from 'assert';
 import {CompositeDisposable} from 'atom';
@@ -136,6 +136,8 @@ module.exports = {
 
     const {applyUpdateToEditor} = require('./gutter');
 
+    const fixer = diagnosticUpdater.applyFix.bind(diagnosticUpdater);
+
     invariant(subscriptions);
     subscriptions.add(atom.workspace.observeTextEditors((editor: TextEditor) => {
       const filePath = editor.getPath();
@@ -143,7 +145,9 @@ module.exports = {
         return; // The file is likely untitled.
       }
 
-      const callback = applyUpdateToEditor.bind(/* receiver */ null, editor);
+      const callback = (update: FileMessageUpdate) => {
+        applyUpdateToEditor(editor, update, fixer);
+      };
       const disposable = diagnosticUpdater.onFileMessagesDidUpdate(callback, filePath);
 
       // Be sure to remove the subscription on the DiagnosticStore once the editor is closed.

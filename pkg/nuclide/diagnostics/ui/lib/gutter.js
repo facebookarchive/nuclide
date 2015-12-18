@@ -19,6 +19,8 @@ import type {NuclideUri} from '../../../remote-uri';
 
 import invariant from 'assert';
 
+import featureConfig from '../../../feature-config';
+
 const {track} = require('../../../analytics');
 const React = require('react-for-atom');
 
@@ -50,7 +52,11 @@ const WARNING_GUTTER_CSS = 'nuclide-diagnostics-gutter-ui-gutter-warning';
 const editorToMarkers: WeakMap<TextEditor, Set<atom$Marker>> = new WeakMap();
 const itemToEditor: WeakMap<HTMLElement, TextEditor> = new WeakMap();
 
-function applyUpdateToEditor(editor: TextEditor, update: FileMessageUpdate): void {
+export function applyUpdateToEditor(
+  editor: TextEditor,
+  update: FileMessageUpdate,
+  fixer: (message: FileDiagnosticMessage) => void,
+): void {
   let gutter = editor.gutterWithName(GUTTER_ID);
   if (!gutter) {
     // TODO(jessicalin): Determine an appropriate priority so that the gutter:
@@ -126,7 +132,7 @@ function applyUpdateToEditor(editor: TextEditor, update: FileMessageUpdate): voi
       : WARNING_GUTTER_CSS;
 
     // This marker adds some UI to the gutter.
-    const {item, dispose} = createGutterItem(messages, gutterMarkerCssClass);
+    const {item, dispose} = createGutterItem(messages, gutterMarkerCssClass, fixer);
     itemToEditor.set(item, editor);
     const gutterMarker = editor.markBufferPosition([row, 0]);
     gutter.decorateMarker(gutterMarker, {item});
@@ -144,7 +150,8 @@ function applyUpdateToEditor(editor: TextEditor, update: FileMessageUpdate): voi
 
 function createGutterItem(
   messages: Array<FileDiagnosticMessage>,
-  gutterMarkerCssClass: string
+  gutterMarkerCssClass: string,
+  fixer: (message: FileDiagnosticMessage) => void,
 ): {item: HTMLElement; dispose: () => void} {
   const item = window.document.createElement('span');
   item.innerText = '\u25B6'; // Unicode character for a right-pointing triangle.
@@ -182,7 +189,7 @@ function createGutterItem(
     // If there was somehow another popup for this gutter item, dispose it. This can happen if the
     // user manages to scroll and escape disposal.
     dispose();
-    popupElement = showPopupFor(messages, item, goToLocation);
+    popupElement = showPopupFor(messages, item, goToLocation, fixer);
     popupElement.addEventListener('mouseleave', dispose);
     popupElement.addEventListener('mouseenter', clearDisposeTimeout);
     // This makes sure that the popup disappears when you ctrl+tab to switch tabs.
@@ -205,9 +212,10 @@ function showPopupFor(
     messages: Array<FileDiagnosticMessage>,
     item: HTMLElement,
     goToLocation: (filePath: NuclideUri, line: number) => mixed,
+    fixer: (message: FileDiagnosticMessage) => void,
     ): HTMLElement {
   const children = messages.map(message => {
-    const contents = createElementForMessage(message, goToLocation);
+    const contents = createElementForMessage(message, goToLocation, fixer);
     const diagnosticTypeClass = message.type === 'Error'
       ? 'nuclide-diagnostics-gutter-ui-popup-error'
       : 'nuclide-diagnostics-gutter-ui-popup-warning';
@@ -265,6 +273,7 @@ function showPopupFor(
 function createElementForMessage(
   message: FileDiagnosticMessage,
   goToLocation: (path: string, line: number) => mixed,
+  fixer: (message: FileDiagnosticMessage) => void,
 ): HTMLElement {
   const providerClassName = message.type === 'Error'
     ? 'highlight-error'
@@ -273,10 +282,20 @@ function createElementForMessage(
     const text = plainTextForDiagnostic(message);
     atom.clipboard.write(text);
   };
+  let fixButton = null;
+  if (message.fix != null && featureConfig.get('nuclide-diagnostics-ui.enableAutofix')) {
+    const applyFix = fixer.bind(null, message);
+    fixButton = (
+      <button className="btn btn-xs" onClick={applyFix}>Fix</button>
+    );
+  }
   const header = (
     <div className="nuclide-diagnostics-gutter-ui-popup-header">
       <span className={`${providerClassName}`}>{message.providerName}</span>
-      <button className="pull-right btn btn-xs" onClick={copy}>Copy</button>
+      <span className="pull-right">
+        {fixButton}
+        <button className="btn btn-xs" onClick={copy}>Copy</button>
+      </span>
     </div>
   );
   const traceElements = message.trace
@@ -375,8 +394,4 @@ DiagnosticsPopup.propTypes = {
   children: PropTypes.node,
   left: PropTypes.number.isRequired,
   top: PropTypes.number.isRequired,
-};
-
-module.exports = {
-  applyUpdateToEditor,
 };
