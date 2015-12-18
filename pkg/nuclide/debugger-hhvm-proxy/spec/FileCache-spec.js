@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import type {ClientCallback} from '../lib/ClientCallback';
 
 const FileCache = require('../lib/FileCache');
 
@@ -18,7 +19,9 @@ describe('debugger-hhvm-proxy FileCache', () => {
   let filepath;
 
   beforeEach(() => {
-    callback = jasmine.createSpyObj('callback', ['replyToCommand', 'replyWithError', 'sendMethod']);
+    callback = ((
+      jasmine.createSpyObj('callback', ['replyToCommand', 'replyWithError', 'sendMethod']): any
+    ): ClientCallback);
     cache = new FileCache(callback);
     const path = require('path');
     const fixturesPath = path.join(__dirname, 'fixtures');

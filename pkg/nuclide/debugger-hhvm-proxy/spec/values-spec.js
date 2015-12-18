@@ -9,14 +9,21 @@
  * the root directory of this source tree.
  */
 
+import type {ObjectId} from '../lib/ObjectId';
 
 const {convertValue} = require('../lib/values');
 
 describe('debugger-hhvm-proxy convertValue', () => {
 
+  let objectId: ObjectId = (null: any);
+
+  beforeEach(() => {
+    objectId = (({}: any): ObjectId);
+  });
+
   it('string', () => {
     expect(convertValue(
-      {},
+      objectId,
       {
         _: 'dGVzdC1jbGllbnQucGhw',
         $: {
@@ -24,7 +31,7 @@ describe('debugger-hhvm-proxy convertValue', () => {
           fullname: '$argv[0]',
           address: '140735826684480',
           type: 'string',
-          size: '15',
+          size: 15,
           encoding: 'base64',
         },
       }
@@ -36,7 +43,7 @@ describe('debugger-hhvm-proxy convertValue', () => {
 
   it('int', () => {
     expect(convertValue(
-      {},
+      objectId,
       {
         _: '1',
         $: {
@@ -54,7 +61,7 @@ describe('debugger-hhvm-proxy convertValue', () => {
 
   it('64bit int', () => {
     expect(convertValue(
-      {},
+      objectId,
       {
         _: '-5560108255872548864',
         $: {
@@ -72,7 +79,7 @@ describe('debugger-hhvm-proxy convertValue', () => {
 
   it('float', () => {
     expect(convertValue(
-      {},
+      objectId,
       {
         _: '42.5',
         $: {
@@ -90,7 +97,7 @@ describe('debugger-hhvm-proxy convertValue', () => {
 
   it('bool', () => {
     expect(convertValue(
-      {},
+      objectId,
       {
         _: '1',
         $: {
@@ -108,7 +115,7 @@ describe('debugger-hhvm-proxy convertValue', () => {
 
   it('null', () => {
     expect(convertValue(
-      {},
+      objectId,
       {
         $: {
           name: '$HTTP_RAW_POST_DATA',
@@ -126,17 +133,17 @@ describe('debugger-hhvm-proxy convertValue', () => {
 
   it('array', () => {
     expect(convertValue(
-      {},
+      objectId,
       {
         $: {
           name: '$argv',
           fullname: '$argv',
           address: '140735826684880',
           type: 'array',
-          children: '1',
-          numchildren: '1',
-          page: '0',
-          pagesize: '32',
+          children: true,
+          numchildren: 1,
+          page: 0,
+          pagesize: 32,
         },
         property:[
           {
@@ -146,7 +153,7 @@ describe('debugger-hhvm-proxy convertValue', () => {
               fullname: '$argv[0]',
               address: '140735826684480',
               type: 'string',
-              size: '15',
+              size: 15,
               encoding: 'base64',
             },
           },
@@ -162,7 +169,7 @@ describe('debugger-hhvm-proxy convertValue', () => {
 
   it('object', () => {
     expect(convertValue(
-      {},
+      objectId,
       {
         $:{
           name: '$arg',
@@ -170,10 +177,10 @@ describe('debugger-hhvm-proxy convertValue', () => {
           address: '140735546955520',
           type: 'object',
           classname: 'CLS',
-          children: '0',
+          children: false,
           numchildren: '0',
-          page: '0',
-          pagesize: '32',
+          page: 0,
+          pagesize: 32,
         },
       }
     )).toEqual({

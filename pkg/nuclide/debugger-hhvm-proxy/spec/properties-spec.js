@@ -8,15 +8,21 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-
+import type {ObjectId} from '../lib/ObjectId';
 
 const {convertProperties, convertProperty, getPagedProperties} = require('../lib/properties');
 
 describe('debugger-hhvm-proxy properties', () => {
 
+  let objectId: ObjectId = (null: any);
+
+  beforeEach(() => {
+    objectId = (({}: any): ObjectId);
+  });
+
   it('convertProperty', () => {
     expect(convertProperty(
-      {},
+      objectId,
       {
         _: 'dGVzdC1jbGllbnQucGhw',
         $: {
@@ -24,7 +30,7 @@ describe('debugger-hhvm-proxy properties', () => {
           fullname: '$argv[0]',
           address: '140735826684480',
           type: 'string',
-          size: '15',
+          size: 15,
           encoding: 'base64',
         },
       }
@@ -41,7 +47,7 @@ describe('debugger-hhvm-proxy properties', () => {
 
   it('convertProperties', () => {
     expect(convertProperties(
-      {},
+      objectId,
       [
         {
           _: 'dGVzdC1jbGllbnQucGhw',
@@ -50,7 +56,7 @@ describe('debugger-hhvm-proxy properties', () => {
             fullname: '$argv[0]',
             address: '140735826684480',
             type: 'string',
-            size: '15',
+            size: 15,
             encoding: 'base64',
           },
         },
@@ -91,6 +97,7 @@ describe('debugger-hhvm-proxy properties', () => {
       {
         enableCount: 12,
         frameIndex: 1,
+        // $FlowFixMe - fix test type.
         contextId: 2,
         fullname: 'fullname-value',
         elementRange: {
@@ -144,6 +151,7 @@ describe('debugger-hhvm-proxy properties', () => {
       {
         enableCount: 12,
         frameIndex: 1,
+        // $FlowFixMe - fix test type.
         contextId: 2,
         fullname: 'fullname-value',
         elementRange: {

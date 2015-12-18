@@ -9,21 +9,30 @@
  * the root directory of this source tree.
  */
 
+import type {Connection as ConnectionType} from '../lib/Connection';
+import type {DbgpSocket as DbgpSocketType} from '../lib/DbgpSocket';
+import type {DataCache as DataCacheType} from '../lib/DataCache';
+import type {Socket} from 'net';
 
+type DataCacheConstructorType = () => DataCacheType;
+type ConnectionConstuctorType = () => ConnectionType;
+type DbgpSocketConstructorType = () => DbgpSocketType;
 const {uncachedRequire, clearRequireCache} = require('../../test-helpers');
 
 describe('debugger-hhvm-proxy Connection', () => {
-  let socket;
-  let dbgpSocket;
-  let dataCache;
-  let connection;
-  let DbgpSocket;
-  let DataCache;
+  let DbgpSocketConstructor: DbgpSocketConstructorType = (null: any);
+  let DataCacheConstructor: DataCacheConstructorType = (null: any);
+  let ConnectionConstuctor: ConnectionConstuctorType = (null: any);
+
+  let socket: Socket = (null: any);
+  let dbgpSocket: DbgpSocketType = (null: any);
+  let dataCache: DataCacheType = (null: any);
+  let connection: ConnectionType = (null: any);
 
   beforeEach(() => {
-    socket = jasmine.createSpyObj('socket', ['write', 'end', 'destroy']);
+    socket = ((jasmine.createSpyObj('socket', ['write', 'end', 'destroy']): any): Socket);
 
-    dbgpSocket = jasmine.createSpyObj('dbgpSocket',
+    dbgpSocket = ((jasmine.createSpyObj('dbgpSocket',
       ['onStatus',
       'setBreakpoint',
       'setExceptionBreakpoint',
@@ -33,16 +42,23 @@ describe('debugger-hhvm-proxy Connection', () => {
       'sendContinuationCommand',
       'sendBreakCommand',
       'dispose']
+    ): any): DbgpSocketType);
+    DbgpSocketConstructor = (
+      (spyOn(require('../lib/DbgpSocket'), 'DbgpSocket').andReturn(dbgpSocket): any)
+      : DbgpSocketConstructorType
     );
-    DbgpSocket = spyOn(require('../lib/DbgpSocket'), 'DbgpSocket').andReturn(dbgpSocket);
 
-    dataCache = jasmine.createSpyObj('dataCache', [
-      'evaluateOnCallFrame', 'getProperties', 'getScopesForFrame']);
-    DataCache = spyOn(require('../lib/DataCache'), 'DataCache').andReturn(dataCache);
-
-    const {Connection} =
-      uncachedRequire(require, '../lib/Connection');
-    connection = new Connection(socket);
+    dataCache = ((jasmine.createSpyObj('dataCache', [
+      'evaluateOnCallFrame', 'getProperties', 'getScopesForFrame']
+    ): any): DataCacheType);
+    DataCacheConstructor = (
+      (spyOn(require('../lib/DataCache'), 'DataCache').andReturn(dataCache): any)
+      : DataCacheConstructorType
+    );
+    ConnectionConstuctor = ((
+      uncachedRequire(require, '../lib/Connection'): any
+    ): {Connection: ConnectionConstuctor}).Connection;
+    connection = new ConnectionConstuctor(socket);
   });
 
   afterEach(() => {
@@ -52,12 +68,12 @@ describe('debugger-hhvm-proxy Connection', () => {
   });
 
   it('constructor', () => {
-    expect(DbgpSocket).toHaveBeenCalledWith(socket);
-    expect(DataCache).toHaveBeenCalledWith(dbgpSocket);
+    expect(DbgpSocketConstructor).toHaveBeenCalledWith(socket);
+    expect(DataCacheConstructor).toHaveBeenCalledWith(dbgpSocket);
   });
 
   it('onStatus', () => {
-    function onStatus() {}
+    function onStatus(status: string) {}
     connection.onStatus(onStatus);
     expect(dbgpSocket.onStatus).toHaveBeenCalledWith(onStatus);
   });

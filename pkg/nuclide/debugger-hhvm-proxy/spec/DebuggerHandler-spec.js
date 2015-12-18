@@ -9,6 +9,11 @@
  * the root directory of this source tree.
  */
 
+import type {ClientCallback as ClientCallbackType} from '../lib/ClientCallback';
+import type {
+  ConnectionMultiplexer as ConnectionMultiplexerType,
+} from '../lib/ConnectionMultiplexer';
+
 
 import {
   STATUS_STOPPING,
@@ -28,20 +33,25 @@ describe('debugger-hhvm-proxy DebuggerHandler', () => {
   let onStatusSubscription: any;
 
   beforeEach(() => {
-    clientCallback = jasmine.createSpyObj(
-      'clientCallback',
-      ['replyToCommand', 'replyWithError', 'sendMethod']
-    );
-    connectionMultiplexer = jasmine.createSpyObj('connectionMultiplexer', [
-      'onStatus',
-      'listen',
-      'getStatus',
-      'getStackFrames',
-      'sendContinuationCommand',
-      'sendBreakCommand',
-      'getScopesForFrame',
-    ]);
+    clientCallback = ((
+      jasmine.createSpyObj(
+        'clientCallback',
+        ['replyToCommand', 'replyWithError', 'sendMethod']
+      ): any
+    ): ClientCallbackType);
+    connectionMultiplexer = ((
+      jasmine.createSpyObj('connectionMultiplexer', [
+        'onStatus',
+        'listen',
+        'getStatus',
+        'getStackFrames',
+        'sendContinuationCommand',
+        'sendBreakCommand',
+        'getScopesForFrame',
+      ]): any
+    ): ConnectionMultiplexerType);
     onStatusSubscription = jasmine.createSpyObj('onStatusSubscription', ['dispose']);
+    // $FlowFixMe override instance methods.
     connectionMultiplexer.onStatus = jasmine.createSpy('onStatus').
       andCallFake(callback => {
         onStatus = callback;

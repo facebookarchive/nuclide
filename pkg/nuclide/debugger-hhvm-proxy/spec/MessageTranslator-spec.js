@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import type {MessageTranslator as MessageTranslatorType} from '../lib/MessageTranslator';
 
 import {uncachedRequire, clearRequireCache} from '../../test-helpers';
 
@@ -36,7 +37,9 @@ describe('debugger-hhvm-proxy MessageTranslator', () => {
       'clientCallback',
       ['replyWithError', 'replyToCommand'],
     );
-    const {MessageTranslator} = uncachedRequire(require, '../lib/MessageTranslator');
+    const {MessageTranslator} = ((
+      uncachedRequire(require, '../lib/MessageTranslator'): any
+    ): {MessageTranslator: () => MessageTranslatorType});
     translater = new MessageTranslator(config, clientCallback);
   });
 

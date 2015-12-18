@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import type {ClientCallback} from '../lib/ClientCallback';
 
 import ConsoleHandler from '../lib/ConsoleHandler';
 
@@ -17,10 +18,12 @@ describe('debugger-hhvm-proxy ConsoleHandler', () => {
   let handler: any;
 
   beforeEach(() => {
-    clientCallback = jasmine.createSpyObj(
-      'clientCallback',
-      ['replyToCommand', 'replyWithError', 'sendMethod']
-    );
+    clientCallback = ((
+      jasmine.createSpyObj(
+        'clientCallback',
+        ['replyToCommand', 'replyWithError', 'sendMethod']
+      ): any
+    ): ClientCallback);
     handler = new ConsoleHandler(clientCallback);
   });
 

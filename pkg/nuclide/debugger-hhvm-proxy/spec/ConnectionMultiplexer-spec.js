@@ -9,7 +9,14 @@
  * the root directory of this source tree.
  */
 
-
+import type {Socket} from 'net';
+import type {ClientCallback as ClientCallbackType} from '../lib/ClientCallback';
+import type {DbgpConnector as DbgpConnectorType} from '../lib/DbgpConnector';
+import type {Connection as ConnectionType} from '../lib/Connection';
+import type {BreakpointStore as BreakpointStoreType} from '../lib/BreakpointStore';
+import type {
+  ConnectionMultiplexer as ConnectionMultiplexerType,
+} from '../lib/ConnectionMultiplexer';
 import {uncachedRequire, clearRequireCache} from '../../test-helpers';
 
 import {
@@ -58,55 +65,71 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
     connectionCount = 0;
     onStatus = jasmine.createSpy('onStatus');
 
-    socket = jasmine.createSpyObj('socket', ['on', 'end', 'destroy']);
-    connector = jasmine.createSpyObj('connector', [
-      'listen',
-      'onAttach',
-      'onClose',
-      'dispose',
-    ]);
+    socket = ((
+      jasmine.createSpyObj('socket', ['on', 'end', 'destroy']): any
+    ): Socket);
+    connector = ((
+      jasmine.createSpyObj('connector', [
+        'listen',
+        'onAttach',
+        'onClose',
+        'dispose',
+      ]): any
+    ): DbgpConnectorType);
+    // $FlowFixMe override instance methods.
     connector.onAttach = jasmine.createSpy('onAttach').andCallFake(
       callback => { onDbgpConnectorAttach = callback; }
     );
+    // $FlowFixMe override instance methods.
     connector.onClose = jasmine.createSpy('onClose').andCallFake(
       callback => { onDbgpConnectorClose = callback; }
     );
+    // $FlowFixMe override instance methods.
     connector.onError = jasmine.createSpy('onError').andCallFake(
       callback => { onDbgpConnectorError = callback; }
     );
-    DbgpConnector = spyOn(require('../lib/DbgpConnector'), 'DbgpConnector').andReturn(connector);
+    DbgpConnector = ((
+      spyOn(require('../lib/DbgpConnector'), 'DbgpConnector').andReturn(connector): any
+    ): () => DbgpConnectorType);
 
     connectionSpys = [];
     connections = [];
     function createConnectionSpy() {
       const result = {};
-      const connection = jasmine.createSpyObj('connection' + connectionCount, [
-        'onStatus',
-        'runtimeEvaluate',
-        'evaluateOnCallFrame',
-        'getProperties',
-        'getScopesForFrame',
-        'setBreakpoint',
-        'removeBreakpoint',
-        'getStackFrames',
-        'getStatus',
-        'sendContinuationCommand',
-        'sendBreakCommand',
-        'dispose',
-      ]);
+      const connection = ((
+        jasmine.createSpyObj('connection' + connectionCount, [
+          'onStatus',
+          'runtimeEvaluate',
+          'evaluateOnCallFrame',
+          'getProperties',
+          'getScopesForFrame',
+          'setBreakpoint',
+          'removeBreakpoint',
+          'getStackFrames',
+          'getStatus',
+          'sendContinuationCommand',
+          'sendBreakCommand',
+          'dispose',
+        ]): any
+      ): ConnectionType);
       const id = connectionCount;
+      // $FlowFixMe override instance method.
       connection.getId = () => id;
 
       if (haveStatusThrow) {
+        // $FlowFixMe override instance method.
         connection.getStatus = jasmine.createSpy('getStatus').andCallFake(() => {
           throw new Error('Failed to get status.');
         });
       } else {
+        // $FlowFixMe override instance method.
         connection.getStatus = jasmine.createSpy('getStatus').andReturn(STATUS_STARTING);
       }
+      // $FlowFixMe override instance method.
       connection.evaluateOnCallFrame = jasmine.createSpy('evaluateOnCallFrame').andReturn({});
 
       const statusDispose = jasmine.createSpy('connection.onStatus.dispose' + connectionCount);
+      // $FlowFixMe override instance method.
       connection.onStatus = jasmine.createSpy('onStatus').andCallFake(callback => {
         result.onStatus = callback;
         return {dispose: statusDispose};
@@ -123,9 +146,11 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
       return connection;
     }
 
-    Connection = spyOn(require('../lib/Connection'), 'Connection').andCallFake(() => {
-      return createConnectionSpy();
-    });
+    Connection = ((
+      spyOn(require('../lib/Connection'), 'Connection').andCallFake(() => {
+        return createConnectionSpy();
+      }): any
+    ): () => ConnectionType);
 
     breakpointStore = jasmine.createSpyObj('breakpointStore', [
       'addConnection',
@@ -134,8 +159,10 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
       'setPauseOnExceptions',
       'removeBreakpoint',
     ]);
-    BreakpointStore = spyOn(require('../lib/BreakpointStore'), 'BreakpointStore')
-      .andReturn(breakpointStore);
+    BreakpointStore = ((
+      spyOn(require('../lib/BreakpointStore'), 'BreakpointStore')
+        .andReturn(breakpointStore): any
+    ): () => BreakpointStoreType);
 
     isCorrectConnectionResult = true;
     const isCorrectConnection = spyOn(require('../lib/ConnectionUtils'), 'isCorrectConnection')
@@ -152,12 +179,15 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
       failConnection,
     };
 
-    clientCallback = jasmine.createSpyObj('clientCallback', [
-      'sendUserMessage',
-    ]);
+    clientCallback = ((
+      jasmine.createSpyObj('clientCallback', [
+        'sendUserMessage',
+      ]): any
+    ): ClientCallbackType);
 
-    const {ConnectionMultiplexer} =
-      uncachedRequire(require, '../lib/ConnectionMultiplexer');
+    const {ConnectionMultiplexer} = ((
+      uncachedRequire(require, '../lib/ConnectionMultiplexer'): any
+    ): {ConnectionMultiplexer: () => ConnectionMultiplexerType});
     connectionMultiplexer = new ConnectionMultiplexer(config, clientCallback);
     connectionMultiplexer.onStatus(onStatus);
   });

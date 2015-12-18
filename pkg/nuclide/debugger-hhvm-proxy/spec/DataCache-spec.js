@@ -9,7 +9,10 @@
  * the root directory of this source tree.
  */
 
+import type {DataCache as DataCacheType} from '../lib/DataCache';
+import type {DbgpSocket as DbgpSocketType} from '../lib/DbgpSocket';
 
+import invariant from 'assert';
 const {uncachedRequire} = require('../../test-helpers');
 const {
   remoteObjectIdOfObjectId,
@@ -24,10 +27,10 @@ const CONVERTED_PROPERTIES = ['converted-properties'];
 const EXPRESSION = ['expression'];
 
 describe('debugger-hhvm-proxy DataCache', () => {
-  let socket;
-  let cache;
+  let socket: DbgpSocketType = (null: any);
+  let cache: DataCacheType = (null: any);
 
-  const contextId = createContextObjectId(1, 2, 3);
+  const contextId = createContextObjectId(1, 2, '3');
   const contextRemoteId = remoteObjectIdOfObjectId(contextId);
   const pagedId = pagedObjectId(contextId, 'fullname-value',
       {pagesize: 32, startIndex: 0, count: 42});
@@ -40,10 +43,11 @@ describe('debugger-hhvm-proxy DataCache', () => {
   let statusCallback;
 
   beforeEach(() => {
-
-    socket = jasmine.createSpyObj('socket', ['getContextsForFrame']);
-    socket.getContextsForFrame = jasmine.createSpy('getContextsForFrame').
-      andReturn(Promise.resolve([
+    socket = (({
+      onStatus: (callback) => {
+        statusCallback = callback;
+      },
+      getContextsForFrame: jasmine.createSpy().andReturn(Promise.resolve([
         {
           name: 'Locals',
           id: '0',
@@ -56,8 +60,8 @@ describe('debugger-hhvm-proxy DataCache', () => {
           name: 'User defined constants',
           id : '2',
         },
-      ]));
-    socket.onStatus = callback => { statusCallback = callback; };
+      ])),
+    }: any): DbgpSocketType);
     statusCallback = null;
 
     const properties = require('../lib/properties');
@@ -67,13 +71,18 @@ describe('debugger-hhvm-proxy DataCache', () => {
     const values = require('../lib/values');
     convertValue = spyOn(values, 'convertValue').andReturn(EXPRESSION);
 
-    const {DataCache} = uncachedRequire(require, '../lib/DataCache');
+    const {DataCache} = (
+      (uncachedRequire(require, '../lib/DataCache'): any)
+      : {DataCache: () => DataCacheType}
+    );
     cache = new DataCache(socket);
   });
   function enable() {
+    invariant(statusCallback);
     statusCallback(STATUS_BREAK);
   }
   function disable() {
+    invariant(statusCallback);
     statusCallback(STATUS_RUNNING);
   }
 
@@ -130,13 +139,14 @@ describe('debugger-hhvm-proxy DataCache', () => {
 
   it('getProperties - context', () => {
     waitsForPromise(async () => {
+      // $FlowFixMe override instance method.
       socket.getContextProperties = jasmine.createSpy('getContextProperties').
           andReturn(Promise.resolve(PROPERTIES));
 
       enable();
       const result = await cache.getProperties(contextRemoteId);
       expect(result).toEqual(CONVERTED_PROPERTIES);
-      expect(socket.getContextProperties).toHaveBeenCalledWith(2, 3);
+      expect(socket.getContextProperties).toHaveBeenCalledWith(2, '3');
       expect(convertProperties).toHaveBeenCalledWith(contextId, PROPERTIES);
     });
   });
@@ -152,18 +162,20 @@ describe('debugger-hhvm-proxy DataCache', () => {
 
   it('getProperties - single page', () => {
     waitsForPromise(async () => {
+      // $FlowFixMe override instance method.
       socket.getPropertiesByFullname = jasmine.createSpy('getPropertiesByFullname').
           andReturn(Promise.resolve(PROPERTIES));
       enable();
       const result = await cache.getProperties(singlePageRemoteId);
       expect(result).toEqual(CONVERTED_PROPERTIES);
-      expect(socket.getPropertiesByFullname).toHaveBeenCalledWith(2, 3, 'fullname-value', 42);
+      expect(socket.getPropertiesByFullname).toHaveBeenCalledWith(2, '3', 'fullname-value', 42);
       expect(convertProperties).toHaveBeenCalledWith(singlePageId, PROPERTIES);
     });
   });
 
   it('evaluateOnCallFrame', () => {
     waitsForPromise(async () => {
+      // $FlowFixMe override instance method.
       socket.evaluateOnCallFrame = jasmine.createSpy('evaluateOnCallFrame')
           .andReturn(Promise.resolve({result: PROPERTIES, wasThrown: false}));
       enable();

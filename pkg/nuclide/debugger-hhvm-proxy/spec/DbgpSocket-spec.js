@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import type {Socket} from 'net';
 
 import {makeMessage} from '../lib/helpers';
 import {
@@ -23,7 +24,7 @@ import {
 import {idOfFrame, functionOfFrame, fileOfFrame, locationOfFrame} from '../lib/frame';
 
 describe('debugger-hhvm-proxy DbgpSocket', () => {
-  let socket;
+  let socket: Socket = (null: any);
   let dbgpSocket;
   let onData;
   let onEnd;
@@ -31,8 +32,9 @@ describe('debugger-hhvm-proxy DbgpSocket', () => {
   let onStatus;
 
   beforeEach(() => {
-    socket = jasmine.createSpyObj('socket', ['write', 'end', 'destroy']);
+    socket = ((jasmine.createSpyObj('socket', ['write', 'end', 'destroy', 'on']): any): Socket);
     onStatus = jasmine.createSpy('onStatus');
+    // $FlowFixMe override instance method.
     socket.on = (event, callback) => {
       switch (event) {
         case 'data':
@@ -75,6 +77,7 @@ describe('debugger-hhvm-proxy DbgpSocket', () => {
   it('dispose', () => {
     dbgpSocket.dispose();
     expect(socket.end).toHaveBeenCalled();
+    // $FlowIssue net.Socket.destroy not defined.
     expect(socket.destroy).toHaveBeenCalled();
   });
 
@@ -268,7 +271,7 @@ describe('debugger-hhvm-proxy DbgpSocket', () => {
 
   it('getContextsForFrame', () => {
     waitsForPromise(async () => {
-      const call = dbgpSocket.getContextsForFrame('42');
+      const call = dbgpSocket.getContextsForFrame(42);
       testCallResult(
           'context_names -i 1 -d 42',
         {

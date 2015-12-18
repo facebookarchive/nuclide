@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {ConnectionMultiplexer} from '../lib/ConnectionMultiplexer';
+import type {ClientCallback} from '../lib/ClientCallback';
 
 const {RuntimeHandler} = require('../lib/RuntimeHandler');
 
@@ -18,14 +20,18 @@ describe('debugger-hhvm-proxy RuntimeHandler', () => {
   let handler: any;
 
   beforeEach(() => {
-    connectionMultiplexer = jasmine.createSpyObj('connectionMultiplexer', [
-      'getProperties',
-      'runtimeEvaluate',
-    ]);
-    clientCallback = jasmine.createSpyObj(
-      'clientCallback',
-      ['replyToCommand', 'replyWithError', 'sendMethod']
-    );
+    connectionMultiplexer = ((
+      jasmine.createSpyObj('connectionMultiplexer', [
+        'getProperties',
+        'runtimeEvaluate',
+      ]): any
+    ): ConnectionMultiplexer);
+    clientCallback = ((
+      jasmine.createSpyObj(
+        'clientCallback',
+        ['replyToCommand', 'replyWithError', 'sendMethod']
+      ): any
+    ): ClientCallback);
     handler = new RuntimeHandler(clientCallback, connectionMultiplexer);
   });
 

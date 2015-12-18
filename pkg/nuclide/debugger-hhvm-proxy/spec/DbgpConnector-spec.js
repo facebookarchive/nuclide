@@ -16,6 +16,11 @@ import {DbgpConnector} from '../lib/DbgpConnector';
 import {EventEmitter} from 'events';
 import {uncachedRequire, clearRequireCache} from '../../test-helpers';
 
+declare class ServerType extends events$EventEmitter {
+  close(): void;
+  listen(): void;
+}
+
 const payload1 =
 `<init
   xmlns="urn:debugger_protocol_v1"
@@ -39,7 +44,7 @@ const payload1 =
 </init>`;
 
 describe('debugger-hhvm-proxy DbgpConnector', () => {
-  let server;
+  let server: ServerType = (null: any);
   let socket;
 
   function createSocketSpy() {
@@ -50,11 +55,12 @@ describe('debugger-hhvm-proxy DbgpConnector', () => {
   }
 
   beforeEach(() => {
-    server = new EventEmitter();
-    spyOn(server, 'on').andCallThrough();
-    server.close = jasmine.createSpy('close').andCallFake(() => server.emit('close'));
-    server.listen = jasmine.createSpy('listen');
+    const serverEE: any = new EventEmitter();
+    spyOn(serverEE, 'on').andCallThrough();
+    serverEE.close = jasmine.createSpy('close').andCallFake(() => server.emit('close'));
+    serverEE.listen = jasmine.createSpy('listen');
 
+    server = (serverEE: ServerType);
     socket = createSocketSpy();
 
     spyOn(net, 'createServer').andReturn(server);
@@ -71,9 +77,8 @@ describe('debugger-hhvm-proxy DbgpConnector', () => {
 
     const config = {
       xdebugPort: port,
-      pid: null,
-      idekeyRegex: null,
-      scriptRegex: null,
+      logLevel: '',
+      targetUri: '',
     };
 
     const onAttach = jasmine.createSpy('onAttach').andCallFake(
@@ -115,9 +120,8 @@ describe('debugger-hhvm-proxy DbgpConnector', () => {
 
     const config = {
       xdebugPort: port,
-      pid: null,
-      idekeyRegex: null,
-      scriptRegex: null,
+      logLevel: '',
+      targetUri: '',
     };
 
     const onClose = jasmine.createSpy('onClose');
@@ -143,9 +147,8 @@ describe('debugger-hhvm-proxy DbgpConnector', () => {
     const port = 7781;
     const config = {
       xdebugPort: port,
-      pid: null,
-      idekeyRegex: null,
-      scriptRegex: null,
+      logLevel: '',
+      targetUri: '',
     };
 
     const onClose = jasmine.createSpy('onClose');
@@ -183,9 +186,8 @@ describe('debugger-hhvm-proxy DbgpConnector', () => {
     const port = 7781;
     const config = {
       xdebugPort: port,
-      pid: null,
-      idekeyRegex: null,
-      scriptRegex: null,
+      logLevel: '',
+      targetUri: '',
     };
 
     const onClose = jasmine.createSpy('onClose');

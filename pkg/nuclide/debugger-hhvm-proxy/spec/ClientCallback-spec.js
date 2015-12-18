@@ -8,6 +8,9 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
+
+import type {ClientCallback as ClientCallbackType} from '../lib/ClientCallback';
+
 import {uncachedRequire, clearRequireCache} from '../../test-helpers';
 
 describe('debugger-hhvm-proxy ClientCallback', () => {
@@ -20,7 +23,9 @@ describe('debugger-hhvm-proxy ClientCallback', () => {
       'onCompleted',
     ]);
     spyOn(require('rx'), 'Subject').andReturn(observableSpy);
-    const {ClientCallback} = uncachedRequire(require, '../lib/ClientCallback');
+    const {ClientCallback} = ((
+      uncachedRequire(require, '../lib/ClientCallback'): any
+    ): {ClientCallback: () => ClientCallbackType});
     clientCallback = new ClientCallback();
   });
 

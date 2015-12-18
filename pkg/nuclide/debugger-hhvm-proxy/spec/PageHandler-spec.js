@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import type {ClientCallback as ClientCallbackType} from '../lib/ClientCallback';
 
 import PageHandler from '../lib/PageHandler';
 
@@ -17,10 +18,12 @@ describe('debugger-hhvm-proxy PageHandler', () => {
   let handler: any;
 
   beforeEach(() => {
-    clientCallback = jasmine.createSpyObj(
-      'clientCallback',
-      ['replyToCommand', 'replyWithError', 'sendMethod']
-    );
+    clientCallback = ((
+      jasmine.createSpyObj(
+        'clientCallback',
+        ['replyToCommand', 'replyWithError', 'sendMethod']
+      ): any
+    ): ClientCallbackType);
     handler = new PageHandler(clientCallback);
   });
 

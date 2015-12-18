@@ -8,7 +8,7 @@
 .*/node_modules/rx/.*
 
 # non-flowCheck
-.*/pkg/nuclide/debugger-hhvm-proxy/spec/.*
+
 
 [libs]
 ./pkg/nuclide/external-interfaces/1.0/

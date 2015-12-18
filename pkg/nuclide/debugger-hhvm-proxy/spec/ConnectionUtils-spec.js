@@ -99,7 +99,7 @@ describe('debugger-hhvm-proxy ConnectionUtils', () => {
   describe('isCorrectConnection', () => {
     const config = {
       xdebugPort: 1234,
-      pid: null,
+      pid: 0,
       idekeyRegex: 'username2',
       scriptRegex: 'test2.php',
       endDebugWhenNoRequests: true,

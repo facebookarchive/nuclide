@@ -10,13 +10,13 @@
  */
 
 
+import type {Connection as ConnectionType} from '../lib/Connection';
 const {BreakpointStore} = require('../lib/BreakpointStore');
 
 describe('debugger-hhvm-proxy BreakpointStore', () => {
   let store;
   let connection1, connection2;
   let onStatus1;
-
 
   function createIdGenerator(prefix) {
     let id = 0;
@@ -30,26 +30,19 @@ describe('debugger-hhvm-proxy BreakpointStore', () => {
     store = new BreakpointStore();
     const con1IdGenerator = createIdGenerator('con1prefix');
     const con2IdGenerator = createIdGenerator('con2prefix');
-    connection1 = jasmine.createSpyObj(
-      'Connection1',
-      ['setBreakpoint', 'removeBreakpoint', 'setExceptionBreakpoint', 'onStatus']
-    );
-    connection1.setBreakpoint = jasmine.createSpy('setBreakpoint1').
-        andCallFake(con1IdGenerator);
-    connection1.setExceptionBreakpoint = jasmine.createSpy('setExceptionBreakpoint1').
-        andCallFake(con1IdGenerator);
-    connection1.onStatus = jasmine.createSpy('onStatus1').
-      andCallFake(callback => { onStatus1 = callback; });
-    connection2 = jasmine.createSpyObj(
-      'Connection2',
-      ['setBreakpoint', 'removeBreakpoint', 'setExceptionBreakpoint', 'onStatus']
-    );
-    connection2.setBreakpoint = jasmine.createSpy('setBreakpoint2').
-        andCallFake(con2IdGenerator);
-    connection2.setExceptionBreakpoint = jasmine.createSpy('setExceptionBreakpoint2').
-        andCallFake(con2IdGenerator);
-    connection2.onStatus = jasmine.createSpy('onStatus2').
-      andCallFake(callback => { onStatus2 = callback; });
+
+    connection1 = (({
+      setBreakpoint: jasmine.createSpy().andCallFake(con1IdGenerator),
+      setExceptionBreakpoint: jasmine.createSpy().andCallFake(con1IdGenerator),
+      onStatus: jasmine.createSpy().andCallFake(callback => { onStatus1 = callback; }),
+      removeBreakpoint: jasmine.createSpy(),
+    }: any): ConnectionType);
+    connection2 = (({
+      setBreakpoint: jasmine.createSpy().andCallFake(con2IdGenerator),
+      setExceptionBreakpoint: jasmine.createSpy().andCallFake(con2IdGenerator),
+      onStatus: jasmine.createSpy().andCallFake(callback => { onStatus1 = callback; }),
+      removeBreakpoint: jasmine.createSpy(),
+    }: any): ConnectionType);
   });
 
   it('add connection - then bps', () => {

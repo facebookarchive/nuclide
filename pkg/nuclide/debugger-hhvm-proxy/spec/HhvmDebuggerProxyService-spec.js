@@ -9,6 +9,9 @@
  * the root directory of this source tree.
  */
 
+import type {
+  HhvmDebuggerProxyService as HhvmDebuggerProxyServiceType,
+} from '../lib/HhvmDebuggerProxyService';
 
 import {uncachedRequire, clearRequireCache} from '../../test-helpers';
 
@@ -29,8 +32,9 @@ describe('debugger-hhvm-proxy proxy', () => {
         return translater;
       });
 
-    HhvmDebuggerProxyService =
-      uncachedRequire(require, '../lib/HhvmDebuggerProxyService').HhvmDebuggerProxyService;
+    HhvmDebuggerProxyService = ((
+      uncachedRequire(require, '../lib/HhvmDebuggerProxyService'): any
+    ): {HhvmDebuggerProxyService: () => HhvmDebuggerProxyServiceType}).HhvmDebuggerProxyService;
   });
 
   afterEach(() => {
