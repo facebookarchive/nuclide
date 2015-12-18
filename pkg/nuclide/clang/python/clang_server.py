@@ -142,7 +142,7 @@ class Server:
         # We disable this so that the severity can be better reflected in the UI.
         # For example, this allows unused code to appear as a warning instead of an error.
         pass
-      elif arg == '-MMD':
+      elif arg == '-MMD' or arg == '-MD':
         # Do not write out dependency files.
         pass
       else:

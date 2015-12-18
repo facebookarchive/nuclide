@@ -6,6 +6,10 @@
 
 from clang.cindex import *
 
+import re
+
+OPERATOR_OVERLOAD_RE = re.compile('^operator[^\w]')
+
 def get_completions(translation_unit, absolute_path, line, column, prefix, contents=None, limit=None):
   unsaved_files = []
   if contents:
@@ -26,7 +30,23 @@ def get_completions(translation_unit, absolute_path, line, column, prefix, conte
 
     completions.append(result)
 
-  completions.sort(key=lambda result: result.string.priority)
+  # Strongly downrank destructors and operator overloads.
+  # Slightly downrank methods with a leading underscore (typically private).
+  def improved_priority(result):
+    priority = result.string.priority
+    kind = _getKind(result)
+    if kind == CursorKind.DESTRUCTOR:
+      priority += 50
+    elif kind == CursorKind.CXX_METHOD:
+      first_chunk = _getFirstNonResultTypeTokenChunk(result.string)
+      if first_chunk is not None:
+        if first_chunk.startswith('_'):
+          priority += 25
+        elif OPERATOR_OVERLOAD_RE.match(first_chunk):
+          priority += 100
+    return priority
+
+  completions.sort(key=improved_priority)
 
   def to_replacement(completion_result):
     chunks = []
@@ -36,6 +56,11 @@ def get_completions(translation_unit, absolute_path, line, column, prefix, conte
     # We want to know which chunks are placeholders.
     completion_string = completion_result.string
     for chunk in completion_string:
+      # A piece of text that describes something about the result but
+      # should not be inserted into the buffer. (e.g. const modifier)
+      if chunk.isKindInformative():
+        continue
+
       spelling += chunk.spelling
 
       # There should be at most one ResultType chunk and it should tell us
@@ -48,16 +73,22 @@ def get_completions(translation_unit, absolute_path, line, column, prefix, conte
         continue
 
       chunks.append({
-          'spelling': chunk.spelling,
-          'isPlaceHolder': chunk.isKindPlaceHolder(),
+        'spelling': chunk.spelling,
+        'isPlaceHolder': chunk.isKindPlaceHolder(),
       })
+
+    cursor_kind = _getKind(completion_result)
+    if cursor_kind is None:
+      kind_name = 'UNKNOWN'
+    else:
+      kind_name = cursor_kind.name
 
     return {
       'spelling': spelling,
       'chunks': chunks,
       'result_type': result_type,
       'first_token': _getFirstNonResultTypeTokenChunk(completion_string),
-      'cursor_kind': completion_result.kind.name,
+      'cursor_kind': kind_name,
     }
   return map(to_replacement, completions[:limit])
 
@@ -67,6 +98,14 @@ def _getFirstNonResultTypeTokenChunk(completion_string):
     if not chunk.isKindResultType():
       return chunk.spelling
   return None
+
+
+# Some cursor kinds aren't known to libclang yet.
+def _getKind(completion_result):
+  try:
+    return completion_result.kind
+  except:
+    return None
 
 
 if __name__ == '__main__':
