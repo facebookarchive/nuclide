@@ -12,6 +12,7 @@ import type {NuclideUri} from '../../remote-uri';
 import type {HgRepositoryDescription} from '../../source-control-helpers';
 
 import invariant from 'assert';
+import {trackEvent} from '../../analytics';
 import ClientComponent from '../../server/lib/serviceframework/ClientComponent';
 import RemoteDirectory from './RemoteDirectory';
 import {loadServicesConfig} from '../../server/lib/serviceframework/config';
@@ -183,6 +184,14 @@ class RemoteConnection {
       const reloadkeystroke = getReloadKeystrokeLabel();
       const reloadKeystrokeLabel = reloadkeystroke ? ` : (${reloadkeystroke})` : '';
       const {code, message, originalCode} = error;
+      trackEvent({
+        type: 'heartbeat-error',
+        data: {
+          code: code || '',
+          message: message || '',
+          host: this._config.host,
+        },
+      });
       logger.info('Heartbeat network error:', code, originalCode, message);
       switch (code) {
         case 'NETWORK_AWAY':
