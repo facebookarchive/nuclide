@@ -55,6 +55,7 @@ function getDiagnosticUpdater(): DiagnosticUpdater {
       onFileMessagesDidUpdate: store.onFileMessagesDidUpdate.bind(store),
       onProjectMessagesDidUpdate: store.onProjectMessagesDidUpdate.bind(store),
       onAllMessagesDidUpdate: store.onAllMessagesDidUpdate.bind(store),
+      applyFix: store.applyFix.bind(store),
     };
   }
   return diagnosticUpdater;

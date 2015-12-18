@@ -9,6 +9,8 @@
  * the root directory of this source tree.
  */
 
+import {Range} from 'atom';
+
 const DiagnosticStore = require('../lib/DiagnosticStore');
 const invariant = require('assert');
 
@@ -407,5 +409,42 @@ describe('DiagnosticStore', () => {
     expect(diagnosticStore._getFileMessages('fileB')).toEqual([]);
     expect(diagnosticStore._getProjectMessages().length).toBe(0);
     expect(diagnosticStore._getAllMessages().length).toBe(0);
+  });
+
+  describe('applyFix', () => {
+    const messageWithAutofix = {
+      scope: 'file',
+      providerName: 'dummyProviderA',
+      type: 'Error',
+      filePath: '/tmp/fileA',
+      fix: {
+        oldRange: new Range([0, 0], [0, 1]),
+        newText: 'FOO',
+      },
+    };
+
+    let editor: atom$TextEditor = (null: any);
+
+    beforeEach(() => {
+      waitsForPromise(async () => {
+        diagnosticStore.updateMessages(dummyProviderA, {
+          filePathToMessages: new Map([['/tmp/fileA', [messageWithAutofix]]]),
+          projectMessages: [],
+        });
+        editor = await atom.workspace.open('/tmp/fileA');
+        editor.setText('foobar\n');
+      });
+    });
+
+    it('should apply the fix to the editor', () => {
+      diagnosticStore.applyFix(messageWithAutofix);
+      expect(editor.getText()).toEqual('FOOoobar\n');
+    });
+
+    it('should invalidate the message', () => {
+      expect(diagnosticStore._getFileMessages('/tmp/fileA')).toEqual([messageWithAutofix]);
+      diagnosticStore.applyFix(messageWithAutofix);
+        expect(diagnosticStore._getFileMessages('/tmp/fileA')).toEqual([]);
+    });
   });
 });

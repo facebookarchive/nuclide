@@ -21,6 +21,10 @@ import type {
 
 import type {NuclideUri} from '../../../remote-uri';
 
+import {applyTextEdit} from '../../../textedit';
+
+import {array} from '../../../commons';
+
 import invariant from 'assert';
 
 const {Disposable, Emitter} = require('atom');
@@ -192,6 +196,19 @@ class DiagnosticStore {
     this._emitAllMessages();
   }
 
+  _invalidateSingleMessage(message: FileDiagnosticMessage): void {
+    for (const fileToMessages of this._providerToFileToMessages.values()) {
+      const fileMessages = fileToMessages.get(message.filePath);
+      if (fileMessages != null) {
+        array.remove(fileMessages, message);
+      }
+    }
+    // Looks like emitAllMessages does not actually emit all messages. We need to do both for both
+    // the gutter UI and the diagnostics table to get updated.
+    this._emitFileMessages(message.filePath);
+    this._emitAllMessages();
+  }
+
   /**
    * Section: Methods to read from the store.
    */
@@ -327,6 +344,15 @@ class DiagnosticStore {
     return allMessages;
   }
 
+  /**
+   * Section: Feedback from the UI
+   */
+
+  applyFix(message: FileDiagnosticMessage): void {
+    invariant(message.fix != null);
+    applyTextEdit(message.filePath, message.fix);
+    this._invalidateSingleMessage(message);
+  }
 
   /**
    * Section: Event Emitting
