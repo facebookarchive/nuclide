@@ -18,6 +18,11 @@ export default function createComponentItem(reactElement: ?ReactElement): HTMLEl
   // In order to get the stateful object with the methods that Atom wants for items, we actually
   // have to mount it.
   const container = document.createElement('div');
+
+  // For some reason, setting `container.style.display` to `"flex"` directly here doesn't work
+  // (something clears it) so we add a class to style it instead.
+  container.className = 'nuclide-gadgets--gadget-container';
+
   const mountedComponent = React.render(reactElement, container);
 
   // Add the element as a property of the mounted component. This is a special property that Atom's
