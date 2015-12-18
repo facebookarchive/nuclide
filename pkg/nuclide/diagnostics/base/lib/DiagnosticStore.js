@@ -350,8 +350,14 @@ class DiagnosticStore {
 
   applyFix(message: FileDiagnosticMessage): void {
     invariant(message.fix != null);
-    applyTextEdit(message.filePath, message.fix);
-    this._invalidateSingleMessage(message);
+    const succeeded = applyTextEdit(message.filePath, message.fix);
+    if (succeeded) {
+      this._invalidateSingleMessage(message);
+    } else {
+      atom.notifications.addWarning(
+        'Failed to apply fix. Try saving to get fresh results and then try again.',
+      );
+    }
   }
 
   /**
