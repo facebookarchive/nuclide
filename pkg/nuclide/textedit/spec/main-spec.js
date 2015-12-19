@@ -56,4 +56,25 @@ describe('applyTextEdit', () => {
     expect(applyTextEdit(fakeFile, textedit)).toBeFalsy();
     expect(editor.getText()).toEqual('foo\nbar\nbaz\n');
   });
+
+  it('should reject a patch with an invalid old range', () => {
+    const textedit = {
+      oldRange: new Range([1, 4], [1, 4]),
+      newText: 'foo',
+      oldText: '',
+    };
+
+    expect(applyTextEdit(fakeFile, textedit)).toBeFalsy();
+  });
+
+  it('should accept a patch that appends to a line', () => {
+    const textedit = {
+      oldRange: new Range([1, 3], [1, 3]),
+      newText: ';',
+      oldText: '',
+    };
+
+    expect(applyTextEdit(fakeFile, textedit)).toBeTruthy();
+    expect(editor.getText()).toEqual('foo\nbar;\nbaz\n');
+  });
 });

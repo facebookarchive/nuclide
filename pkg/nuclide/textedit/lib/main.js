@@ -35,6 +35,15 @@ export function applyTextEdit(path: NuclideUri, edit: TextEdit): boolean {
   const editor = editorForPath(path);
   invariant(editor != null);
   const buffer = editor.getBuffer();
+  if (edit.oldRange.start.row === edit.oldRange.end.row) {
+    // A little extra validation when the old range spans only one line. In particular, this helps
+    // when the old range is empty so there is no old text for us to compare against. We can at
+    // least abort if the line isn't long enough.
+    const lineLength = buffer.lineLengthForRow(edit.oldRange.start.row);
+    if (edit.oldRange.end.column > lineLength) {
+      return false;
+    }
+  }
   if (edit.oldText != null) {
     const currentText = buffer.getTextInRange(edit.oldRange);
     if (currentText !== edit.oldText) {
