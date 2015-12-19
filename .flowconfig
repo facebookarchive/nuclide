@@ -7,9 +7,6 @@
 # Ignore module src to prefer declaration
 .*/node_modules/rx/.*
 
-# non-flowCheck
-
-
 [libs]
 ./pkg/nuclide/external-interfaces/1.0/
 ./pkg/nuclide/debugger/interfaces/WebInspector.js
