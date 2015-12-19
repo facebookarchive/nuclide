@@ -11,7 +11,7 @@
 
 import type {NuclideUri} from '../../remote-uri';
 
-export type FileSearchResult = {
+export type FileSearchResultRx = {
   path: NuclideUri;
   score: number;
   matchIndexes: Array<number>;
@@ -27,7 +27,7 @@ const fileSearchers: Map<string, FileSearch> = new Map();
 export async function queryFuzzyFile(
   rootDirectory: NuclideUri,
   queryString: string
-): Promise<Array<FileSearchResult>> {
+): Promise<Array<FileSearchResultRx>> {
   let search = fileSearchers.get(rootDirectory);
 
   if (search == null) {
