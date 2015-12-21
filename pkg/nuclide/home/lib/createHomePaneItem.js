@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import type {Gadget} from '../../gadgets-interfaces';
 import type {HomeFragments} from '../../home-interfaces';
 import type Rx from 'rx';
 
@@ -38,102 +39,99 @@ const DEFAULT_WELCOME = (
   </div>
 );
 
-class HomePaneItem extends HTMLElement {
+/**
+ * Create a HomePaneItem component class that's bound to the provided stream of home fragments.
+ */
+function createHomePaneItem(
+  allHomeFragmentsStream: Rx.Observable<Immutable.Set<HomeFragments>>,
+): typeof React.Component {
 
-  uri: string;
-  allHomeFragments: Immutable.Set<HomeFragments>;
-  _homeFragmentsSubscription: atom$Disposable;
+  class HomePaneItem extends React.Component {
 
-  initialize(
-    uri: string,
-    allHomeFragmentStream: Rx.Observable<Immutable.Set<HomeFragments>>,
-  ): HomePaneItem {
-    this.uri = uri;
-    this.allHomeFragments = Immutable.Set();
+    static gadgetId = 'nuclide-home';
 
-    // Re-render whenever the home fragments change.
-    this._homeFragmentsSubscription = allHomeFragmentStream.forEach(allHomeFragments => {
-      this.allHomeFragments = allHomeFragments;
-      this.render();
-    });
-
-    // Re-use styles from the Atom welcome pane where possible.
-    this.className = 'nuclide-home pane-item padded';
-    featureConfig.set('nuclide-home.showHome', true);
-    this.render();
-    return this;
-  }
-
-  render() {
-    let welcomes = [];
-    const features = [];
-    const sortedHomeFragments = arrayFrom(this.allHomeFragments).sort(
-      (fragmentA, fragmentB) => (fragmentB.priority || 0) - (fragmentA.priority || 0)
-    );
-    sortedHomeFragments.forEach(fragment => {
-      const {welcome, feature} = fragment;
-      if (welcome) {
-        welcomes.push(<div key={welcomes.length}>{welcome}</div>);
-      }
-      if (feature) {
-        features.push(<HomeFeatureComponent key={features.length} {...feature} />);
-      }
-    });
-    if (welcomes.length === 0) {
-      welcomes = DEFAULT_WELCOME;
+    constructor(...args) {
+      super(...args);
+      this.state = {
+        allHomeFragments: Immutable.Set(),
+      };
     }
 
-    const containers = [
-      <div key="welcome" className="nuclide-home-container">
-        <section className="text-center">
-          <NuclideLogo className="nuclide-home-logo" />
-          <h1 className="nuclide-home-title">Welcome to Nuclide</h1>
-        </section>
-        <section className="text-center">
-          {welcomes}
-        </section>
-      </div>,
-    ];
+    componentDidMount() {
+      this._homeFragmentsSubscription = allHomeFragmentsStream.forEach(
+        allHomeFragments => this.setState({allHomeFragments}),
+      );
 
-    if (features.length > 0) {
-      containers.push(<div key="features" className="nuclide-home-container">{features}</div>);
+      featureConfig.set('nuclide-home.showHome', true);
     }
 
-    React.render(<div className="nuclide-home-containers">{containers}</div>, this);
+    render() {
+      let welcomes = [];
+      const features = [];
+      const sortedHomeFragments = arrayFrom(this.state.allHomeFragments).sort(
+        (fragmentA, fragmentB) => (fragmentB.priority || 0) - (fragmentA.priority || 0)
+      );
+      sortedHomeFragments.forEach(fragment => {
+        const {welcome, feature} = fragment;
+        if (welcome) {
+          welcomes.push(<div key={welcomes.length}>{welcome}</div>);
+        }
+        if (feature) {
+          features.push(<HomeFeatureComponent key={features.length} {...feature} />);
+        }
+      });
+      if (welcomes.length === 0) {
+        welcomes = DEFAULT_WELCOME;
+      }
+
+      const containers = [
+        <div key="welcome" className="nuclide-home-container">
+          <section className="text-center">
+            <NuclideLogo className="nuclide-home-logo" />
+            <h1 className="nuclide-home-title">Welcome to Nuclide</h1>
+          </section>
+          <section className="text-center">
+            {welcomes}
+          </section>
+        </div>,
+      ];
+
+      if (features.length > 0) {
+        containers.push(<div key="features" className="nuclide-home-container">{features}</div>);
+      }
+
+      return (
+        // Re-use styles from the Atom welcome pane where possible.
+        <div className="nuclide-home pane-item padded nuclide-home-containers">
+          {containers}
+        </div>
+      );
+    }
+
+    getTitle(): string {
+      return 'Home';
+    }
+
+    getIconName(): string {
+      return 'home';
+    }
+
+    // Return false to prevent the tab getting split (since we only update a singleton health pane).
+    copy() {
+      return false;
+    }
+
+    componentWillUnmount() {
+      featureConfig.set('nuclide-home.showHome', false);
+
+      if (this._homeFragmentsSubscription) {
+        this._homeFragmentsSubscription.dispose();
+      }
+    }
+
   }
 
-  getTitle(): string {
-    return 'Home';
-  }
-
-  getIconName(): string {
-    return 'home';
-  }
-
-  getURI(): string {
-    return this.uri;
-  }
-
-  // Return false to prevent the tab getting split (since we only update a singleton health pane).
-  copy() {
-    return false;
-  }
-
-  destroy(): void {
-    this._homeFragmentsSubscription.dispose();
-    React.unmountComponentAtNode(this);
-    featureConfig.set('nuclide-home.showHome', false);
-  }
-
-  serialize() {
-    return {
-      deserializer: 'HomePaneItem',
-      uri: this.getURI(),
-    };
-  }
+  return ((HomePaneItem: any): Gadget);
 }
 
-module.exports = HomePaneItem = document.registerElement(
-  'nuclide-home-item',
-  {prototype: HomePaneItem.prototype},
-);
+module.exports = createHomePaneItem;

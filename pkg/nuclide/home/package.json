@@ -13,9 +13,6 @@
         "description": "Show the home pane (by default shown on first startup)."
       }
     },
-    "deserializers": {
-      "HomePaneItem": "./lib/deserializePaneItem"
-    },
     "packageType": "Atom",
     "testRunner": "apm"
   },
@@ -23,6 +20,11 @@
     "nuclide-home.homeFragments": {
       "versions": {
         "0.0.0": "setHomeFragments"
+      }
+    },
+    "nuclide-gadgets": {
+      "versions": {
+        "0.0.0": "consumeGadgetsService"
       }
     }
   },

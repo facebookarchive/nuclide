@@ -12,7 +12,7 @@
 const featureConfig = require('../../feature-config');
 const path = require('path');
 
-const BASE_ITEM_URI = 'nuclide-home://';
+const BASE_ITEM_URI = 'atom://nuclide-gadgets/nuclide-home';
 const CONFIG_KEY = 'nuclide-home.showHome';
 
 function findHomePaneAndItem(): {pane: ?atom$Pane, item: ?Object} {
@@ -33,7 +33,10 @@ describe('Home', () => {
       Object.keys(config).forEach(k =>
         featureConfig.setSchema(`nuclide-home.${k}`, config[k])
       );
-      await atom.packages.activatePackage(path.join(__dirname, '..'));
+      await Promise.all([
+        atom.packages.activatePackage(path.join(__dirname, '..')),
+        atom.packages.activatePackage(path.join(__dirname, '..', '..', 'gadgets')),
+      ]);
     });
   });
 
@@ -48,7 +51,7 @@ describe('Home', () => {
       expect(item).toBeTruthy();
       if (item) {
         expect(item.getTitle()).toEqual('Home');
-        expect(item.innerHTML).toContain('Welcome to Nuclide');
+        expect(item.element.innerHTML).toContain('Welcome to Nuclide');
         expect(featureConfig.get(CONFIG_KEY)).toBeTruthy();
       }
     });

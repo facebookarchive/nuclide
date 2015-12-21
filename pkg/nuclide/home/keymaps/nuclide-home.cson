@@ -1,2 +1,2 @@
 'atom-workspace':
-  'ctrl-shift-h': 'nuclide-home:toggle-pane'
+  'ctrl-shift-h': 'nuclide-home:toggle'

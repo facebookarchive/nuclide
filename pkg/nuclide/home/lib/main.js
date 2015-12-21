@@ -9,10 +9,8 @@
  * the root directory of this source tree.
  */
 
+import type {GadgetsService} from '../../gadgets-interfaces';
 import type {HomeFragments} from '../../home-interfaces';
-import type HomePaneItemType from './createHomePaneItem';
-
-const BASE_ITEM_URI = 'nuclide-home://';
 
 const {CompositeDisposable, Disposable} = require('atom');
 const featureConfig = require('../../feature-config');
@@ -20,25 +18,13 @@ const Immutable = require('immutable');
 const Rx = require('rx');
 
 let disposables: ?CompositeDisposable = null;
-let paneItem: ?HomePaneItemType;
+let gadgetsApi: ?GadgetsService = null;
 
 // A stream of all of the fragments. This is essentially the state of our panel.
 const allHomeFragmentsStream: Rx.BehaviorSubject<Immutable.Set<HomeFragments>> =
   new Rx.BehaviorSubject(Immutable.Set());
 
-let currentConfig = {};
-
 function activate(): void {
-  disposables = new CompositeDisposable();
-  disposables.add(
-    featureConfig.onDidChange('nuclide-home', (event) => {
-      currentConfig = event.newValue;
-      considerDisplayingHome();
-    }),
-    atom.workspace.addOpener(getHomePaneItem),
-    atom.commands.add('atom-workspace', 'nuclide-home:toggle-pane', togglePane),
-  );
-  currentConfig = featureConfig.get('nuclide-home');
   considerDisplayingHome();
 }
 
@@ -49,36 +35,18 @@ function setHomeFragments(homeFragments: HomeFragments): Disposable {
   });
 }
 
-function togglePane() {
-  featureConfig.set('nuclide-home.showHome', !featureConfig.get('nuclide-home.showHome'));
-}
-
 function considerDisplayingHome() {
-  if (currentConfig.showHome) {
-    if (!paneItem) {
-      atom.workspace.open(BASE_ITEM_URI, {searchAllPanes: true});
-    }
-  } else {
-    if (paneItem) {
-      const pane = atom.workspace.paneForItem(paneItem);
-      if (pane) {
-        pane.destroyItem(paneItem);
-      }
-      paneItem = null;
-    }
-  }
-}
-
-function getHomePaneItem(uri: string): ?HomePaneItemType {
-  if (!uri.startsWith(BASE_ITEM_URI)) {
+  if (gadgetsApi == null) {
     return;
   }
-  const HomePaneItem = require('./createHomePaneItem');
-  paneItem = new HomePaneItem().initialize(uri, allHomeFragmentsStream);
-  return paneItem;
+  const showHome = featureConfig.get('nuclide-home.showHome');
+  if (showHome) {
+    gadgetsApi.showGadget('nuclide-home');
+  }
 }
 
 function deactivate(): void {
+  gadgetsApi = null;
   allHomeFragmentsStream.onNext(Immutable.Set());
   if (disposables) {
     disposables.dispose();
@@ -86,12 +54,18 @@ function deactivate(): void {
   }
 }
 
+function consumeGadgetsService(api: GadgetsService): atom$IDisposable {
+  const createHomePaneItem = require('./createHomePaneItem');
+  gadgetsApi = api;
+  const gadget = createHomePaneItem(allHomeFragmentsStream);
+  const disposable = api.registerGadget(gadget);
+  considerDisplayingHome();
+  return disposable;
+}
+
 module.exports = {
   activate,
   setHomeFragments,
   deactivate,
-
-  // TODO: This shouldn't actually be exported. We do so just because it requires access to module
-  //       state and we want to access it in the deserializer module.
-  _getHomePaneItem: getHomePaneItem,
+  consumeGadgetsService,
 };
