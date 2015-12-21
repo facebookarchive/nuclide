@@ -191,6 +191,10 @@ class AutocompleteProvider {
 
     const indentation = editor.indentationForBufferRow(row);
     const data = await getCompletions(editor, prefix);
+    if (data == null) {
+      return [];
+    }
+
     return data.completions.map((completion) => {
       const snippet = getCompletionBody(completion, column, indentation);
       const rightLabel = completion.cursor_kind ?

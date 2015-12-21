@@ -19,7 +19,7 @@ import {getServiceByNuclideUri} from '../../remote-connection';
 
 module.exports = {
 
-  getDiagnostics(editor: atom$TextEditor): Promise<ClangCompileResult> {
+  getDiagnostics(editor: atom$TextEditor): Promise<?ClangCompileResult> {
     const src = editor.getPath();
     const contents = editor.getText();
 
@@ -27,7 +27,7 @@ module.exports = {
         .compile(src, contents);
   },
 
-  getCompletions(editor: atom$TextEditor, prefix: string): Promise<ClangCompletionsResult> {
+  getCompletions(editor: atom$TextEditor, prefix: string): Promise<?ClangCompletionsResult> {
     const src = editor.getPath();
     const cursor = editor.getLastCursor();
 

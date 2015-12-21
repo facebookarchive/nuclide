@@ -61,10 +61,11 @@ class ClangDiagnosticsProvider {
     }
 
     try {
-      const filePathToMessages = this._processDiagnostics(
-        await getDiagnostics(textEditor),
-        textEditor,
-      );
+      const diagnostics = await getDiagnostics(textEditor);
+      if (diagnostics == null) {
+        return;
+      }
+      const filePathToMessages = this._processDiagnostics(diagnostics, textEditor);
       this._invalidatePath(filePath);
       this._providerBase.publishMessageUpdate({filePathToMessages});
       this._diagnosticPaths.set(filePath, array.from(filePathToMessages.keys()));
