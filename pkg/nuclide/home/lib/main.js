@@ -16,12 +16,17 @@ const BASE_ITEM_URI = 'nuclide-home://';
 
 const {CompositeDisposable, Disposable} = require('atom');
 const featureConfig = require('../../feature-config');
+const Immutable = require('immutable');
+const Rx = require('rx');
 
 let disposables: ?CompositeDisposable = null;
 let paneItem: ?HomePaneItemType;
 
+// A stream of all of the fragments. This is essentially the state of our panel.
+const allHomeFragmentsStream: Rx.BehaviorSubject<Immutable.Set<HomeFragments>> =
+  new Rx.BehaviorSubject(Immutable.Set());
+
 let currentConfig = {};
-const allHomeFragments: Set<HomeFragments> = new Set();
 
 function activate(): void {
   disposables = new CompositeDisposable();
@@ -38,15 +43,9 @@ function activate(): void {
 }
 
 function setHomeFragments(homeFragments: HomeFragments): Disposable {
-  allHomeFragments.add(homeFragments);
-  if (paneItem) {
-    paneItem.setHomeFragments(allHomeFragments);
-  }
+  allHomeFragmentsStream.onNext(allHomeFragmentsStream.getValue().add(homeFragments));
   return new Disposable(() => {
-    allHomeFragments.delete(homeFragments);
-    if (paneItem) {
-      paneItem.setHomeFragments(allHomeFragments);
-    }
+    allHomeFragmentsStream.onNext(allHomeFragmentsStream.getValue().remove(homeFragments));
   });
 }
 
@@ -75,11 +74,12 @@ function getHomePaneItem(uri: string): ?HomePaneItemType {
     return;
   }
   const HomePaneItem = require('./createHomePaneItem');
-  paneItem = new HomePaneItem().initialize(uri, allHomeFragments);
+  paneItem = new HomePaneItem().initialize(uri, allHomeFragmentsStream);
   return paneItem;
 }
 
 function deactivate(): void {
+  allHomeFragmentsStream.onNext(Immutable.Set());
   if (disposables) {
     disposables.dispose();
     disposables = null;

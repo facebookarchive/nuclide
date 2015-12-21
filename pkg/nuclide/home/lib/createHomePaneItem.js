@@ -10,7 +10,9 @@
  */
 
 import type {HomeFragments} from '../../home-interfaces';
+import type Rx from 'rx';
 
+const Immutable = require('immutable');
 const React = require('react-for-atom');
 const HomeFeatureComponent = require('./HomeFeatureComponent');
 const NuclideLogo = require('./NuclideLogo');
@@ -39,22 +41,27 @@ const DEFAULT_WELCOME = (
 class HomePaneItem extends HTMLElement {
 
   uri: string;
-  allHomeFragments: Set<HomeFragments>;
+  allHomeFragments: Immutable.Set<HomeFragments>;
+  _homeFragmentsSubscription: atom$Disposable;
 
-  initialize(uri: string, allHomeFragments: Set<HomeFragments>): HomePaneItem {
+  initialize(
+    uri: string,
+    allHomeFragmentStream: Rx.Observable<Immutable.Set<HomeFragments>>,
+  ): HomePaneItem {
     this.uri = uri;
-    this.allHomeFragments = allHomeFragments;
+    this.allHomeFragments = Immutable.Set();
+
+    // Re-render whenever the home fragments change.
+    this._homeFragmentsSubscription = allHomeFragmentStream.forEach(allHomeFragments => {
+      this.allHomeFragments = allHomeFragments;
+      this.render();
+    });
 
     // Re-use styles from the Atom welcome pane where possible.
     this.className = 'nuclide-home pane-item padded';
     featureConfig.set('nuclide-home.showHome', true);
     this.render();
     return this;
-  }
-
-  setHomeFragments(allHomeFragments: Set<HomeFragments>): void {
-    this.allHomeFragments = allHomeFragments;
-    this.render();
   }
 
   render() {
@@ -113,6 +120,7 @@ class HomePaneItem extends HTMLElement {
   }
 
   destroy(): void {
+    this._homeFragmentsSubscription.dispose();
     React.unmountComponentAtNode(this);
     featureConfig.set('nuclide-home.showHome', false);
   }
