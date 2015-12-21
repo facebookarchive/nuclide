@@ -46,8 +46,12 @@ NODE_PATHS = EXTRA_NODE_PATHS + ['/opt/local/bin', '/usr/local/bin']
 configure_nuclide_logger()
 
 # This class manages Nuclide servers.
+
+
 class NuclideServerManager(object):
-    version_file = os.path.join(os.path.dirname(__file__), '../node_modules/nuclide-version/version.json')
+    version_file = os.path.join(
+        os.path.dirname(__file__),
+        '../node_modules/nuclide-version/version.json')
     logger = logging.getLogger('NuclideServerManager')
 
     def __init__(self, options):
@@ -149,9 +153,9 @@ class NuclideServerManager(object):
         # For migration, stop the forever monitor processes of Nuclide server.
         # This does not stop existing Nuclide server processes themselves.
         # It just removes the monitor so that we can kill them on upgrade.
-        for proc in ProcessInfo.get_processes(getpass.getuser(),
-                                              '%s.*%s' % (
-                                              re.escape('forever/bin/monitor'), re.escape('nuclide-main.js'))):
+        for proc in ProcessInfo.get_processes(
+                getpass.getuser(), '%s.*%s' %
+                (re.escape('forever/bin/monitor'), re.escape('nuclide-main.js'))):
             self.logger.info('Stopping forever monitor process: %s' % proc)
             proc.stop()
 
@@ -166,7 +170,9 @@ class NuclideServerManager(object):
             server_proc_map[port].append(proc)
         for port in server_proc_map:
             if len(server_proc_map[port]) > 1:
-                self.logger.warning('Multiple Nuclide processes on port %d. Something wrong. Clean them up...' % port)
+                self.logger.warning(
+                    'Multiple Nuclide processes on port %d. Something wrong. Clean them up...' %
+                    port)
                 for proc in server_proc_map[port]:
                     proc.stop()
 
@@ -181,7 +187,9 @@ class NuclideServerManager(object):
             for server in servers:
                 # Return existing server port if the protocol matches.
                 if server.is_https() == (not self.options.insecure):
-                    self.logger.info('Found existing Nuclide server on port: {0}'.format(server.port))
+                    self.logger.info(
+                        'Found existing Nuclide server on port: {0}'.format(
+                            server.port))
                     return server.port
 
         # If no existing servers, find an open port.
@@ -200,7 +208,8 @@ class NuclideServerManager(object):
             if port is None:
                 print('Failed to start Nuclide server because there are no ports available. \
                        Here are the busy ports that were tried: {0}'.format(OPEN_PORTS))
-                self.logger.error('Failed to start Nuclide server because there are no ports available.')
+                self.logger.error(
+                    'Failed to start Nuclide server because there are no ports available.')
                 return 1
         else:
             self.logger.error('The user specified port {0}.'.format(self.options.port))
@@ -213,7 +222,9 @@ class NuclideServerManager(object):
         if not self._is_port_open(port) and not server.is_mine():
             print('You are not the owner of Nuclide server at port %d. Try a different port.' %
                   port, file=sys.stderr)
-            self.logger.error('You are not the owner of Nuclide server at port %d. Try a different port.' % port)
+            self.logger.error(
+                'You are not the owner of Nuclide server at port %d. Try a different port.' %
+                port)
             return 1
 
         # At this moment, the port is either open, or we have an existing server running.
@@ -223,14 +234,16 @@ class NuclideServerManager(object):
             self.logger.info('A Nuclide server is already running. \
                               Running version: {0}. Desired version: {1}.'.format(running_version, version))
             # If the common names don't match, we restart.
-            if (version and version != running_version) or \
-                    (self.options.common_name and server.get_common_name() != self.options.common_name):
+            if (version and version != running_version) or (
+                    self.options.common_name and server.get_common_name() != self.options.common_name):
                 self.logger.info('Restarting Nuclide server on port %d' % port)
                 server.stop()
                 return self.start_server(server)
                 # Don't use restart() here, so that we regenerate the certificates.
             else:
-                self.logger.info('Nuclide server already running on port %d. User may connect.' % port)
+                self.logger.info(
+                    'Nuclide server already running on port %d. User may connect.' %
+                    port)
                 server.print_json()
                 return 0
         else:
@@ -241,39 +254,74 @@ class NuclideServerManager(object):
         if self.options.insecure:
             # Use http.
             self.logger.info('Using http.')
-            return server.start(self.options.timeout, quiet=self.options.quiet, debug=self.options.debug)
+            return server.start(
+                self.options.timeout,
+                quiet=self.options.quiet,
+                debug=self.options.debug)
         else:
             # Use https.
             self.logger.info('Using https.')
             certs_dir = self.options.certs_dir or self._ensure_certs_dir()
             # Add prefix "user.nuclide" to avoid collision.
             common_name = self.options.common_name or \
-                          '%s.nuclide.%s' % (getpass.getuser(), socket.gethostname())
+                '%s.nuclide.%s' % (getpass.getuser(), socket.gethostname())
 
             # TODO: Client common name is 'nuclide'.
             # We may want to generate unique common name and verify it.
             certs_generator = NuclideCertificatesGenerator(certs_dir, common_name, 'nuclide',
                                                            expiration_days=CERTS_EXPIRATION_DAYS)
-            self.logger.info('Initialized NuclideCertificatesGenerator with common_name: {0}'.format(common_name))
+            self.logger.info(
+                'Initialized NuclideCertificatesGenerator with common_name: {0}'.format(common_name))
             self._check_if_certs_files_exist(certs_generator)
-            return server.start(self.options.timeout, cert=certs_generator.server_cert,
-                                key=certs_generator.server_key, ca=certs_generator.ca_cert, quiet=self.options.quiet,
-                                debug=self.options.debug)
+            return server.start(
+                self.options.timeout,
+                cert=certs_generator.server_cert,
+                key=certs_generator.server_key,
+                ca=certs_generator.ca_cert,
+                quiet=self.options.quiet,
+                debug=self.options.debug)
 
 
 def get_option_parser():
     parser = optparse.OptionParser(description='Nuclide server manager')
     parser.add_option('-p', '--port', type=int, help='port number')
-    parser.add_option('-k', '--insecure', help='use http instead of https', action="store_true", default=False)
+    parser.add_option(
+        '-k',
+        '--insecure',
+        help='use http instead of https',
+        action="store_true",
+        default=False)
     # Don't set default value of certs_dir, so that we can just check certs_dir for None.
-    parser.add_option('-d', '--certs_dir', type=str, help='directory to store certificate files, default: ~/.certs')
+    parser.add_option(
+        '-d',
+        '--certs_dir',
+        type=str,
+        help='directory to store certificate files, default: ~/.certs')
     parser.add_option('-n', '--common_name', type=str, help='the common name to use in certificate')
-    parser.add_option('-t', '--timeout', type=int, help='timeout in seconds, default: %default', default=10)
+    parser.add_option(
+        '-t',
+        '--timeout',
+        type=int,
+        help='timeout in seconds, default: %default',
+        default=10)
     parser.add_option('-w', '--workspace', type=str, help='the workspace directory')
-    parser.add_option('-c', '--command', type=str, help='commands: list, start, stopall; default: %default',
-                      default='start')
-    parser.add_option('-q', '--quiet', help='suppress nohup logging', action="store_true", default=False)
-    parser.add_option('--debug', help='Start in debugger. Only use this flag interactively', action="store_true", default=False)
+    parser.add_option(
+        '-c',
+        '--command',
+        type=str,
+        help='commands: list, start, stopall; default: %default',
+        default='start')
+    parser.add_option(
+        '-q',
+        '--quiet',
+        help='suppress nohup logging',
+        action="store_true",
+        default=False)
+    parser.add_option(
+        '--debug',
+        help='Start in debugger. Only use this flag interactively',
+        action="store_true",
+        default=False)
     return parser
 
 

@@ -19,6 +19,7 @@ TIMEOUT = 10
 
 
 class NuclideServerTest(NuclideServerTestBase):
+
     def test_multiple_servers(self):
         server_9090 = NuclideServer(9090)
         self.assertEquals(server_9090.start(timeout=TIMEOUT), 0)
@@ -43,7 +44,11 @@ class NuclideServerTest(NuclideServerTestBase):
     def test_get_certificates(self):
         gen = NuclideCertificatesGenerator(tempfile.gettempdir(), 'localhost', 'test')
         server_9090 = NuclideServer(9090)
-        ret = server_9090.start(timeout=TIMEOUT, cert=gen.server_cert, key=gen.server_key, ca=gen.ca_cert)
+        ret = server_9090.start(
+            timeout=TIMEOUT,
+            cert=gen.server_cert,
+            key=gen.server_key,
+            ca=gen.ca_cert)
         self.assertEquals(ret, 0)
         # Verify cert files.
         server_cert, server_key, ca = server_9090.get_server_certificate_files()

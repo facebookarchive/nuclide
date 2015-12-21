@@ -13,43 +13,44 @@ import logging.handlers
 import os
 import tempfile
 
-LOG_FILE_DIR = os.path.join(tempfile.gettempdir(), 'nuclide-{0}-logs/server-start/'.format(getpass.getuser()))
+LOG_FILE_DIR = os.path.join(tempfile.gettempdir(),
+                            'nuclide-{0}-logs/server-start/'.format(getpass.getuser()))
 LOG_FILE_TEMPLATE = 'nuclide.log'
 LOG_DIR_ERROR_MSG = 'An error occurred while creating the Nuclide server-start log directory. \
                      Nuclide server-start logs will not be written.'
 
 
 def _get_log_file_path():
-  return os.path.join(LOG_FILE_DIR, LOG_FILE_TEMPLATE)
+    return os.path.join(LOG_FILE_DIR, LOG_FILE_TEMPLATE)
 
 
 # Returns a boolean of whether the log directory exists or was successfully created.
 def _make_log_dir():
-  try:
-    os.makedirs(LOG_FILE_DIR)
-  except OSError as e:
-    if e.errno == errno.EEXIST:
-      # The log directory exists
-      return True
-    print(LOG_DIR_ERROR_MSG)
-    return False
-  except Exception:
-    # Any other error
-    print(LOG_DIR_ERROR_MSG)
-    return False
-  return True
+    try:
+        os.makedirs(LOG_FILE_DIR)
+    except OSError as e:
+        if e.errno == errno.EEXIST:
+            # The log directory exists
+            return True
+        print(LOG_DIR_ERROR_MSG)
+        return False
+    except Exception:
+        # Any other error
+        print(LOG_DIR_ERROR_MSG)
+        return False
+    return True
 
 
 def configure_nuclide_logger(loggerName=None):
-  if not _make_log_dir():
-    return
+    if not _make_log_dir():
+        return
 
-  logger = logging.getLogger(loggerName)
-  logger.setLevel(logging.DEBUG)
-  handler = logging.handlers.RotatingFileHandler(_get_log_file_path(),
-                                                 maxBytes=10000,
-                                                 backupCount=7)
-  handler.setLevel(logging.DEBUG)
-  formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-  handler.setFormatter(formatter)
-  logger.addHandler(handler)
+    logger = logging.getLogger(loggerName)
+    logger.setLevel(logging.DEBUG)
+    handler = logging.handlers.RotatingFileHandler(_get_log_file_path(),
+                                                   maxBytes=10000,
+                                                   backupCount=7)
+    handler.setLevel(logging.DEBUG)
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)

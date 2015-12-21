@@ -14,6 +14,7 @@ from process_info import ProcessInfo
 
 
 class ProcessInfoTest(unittest.TestCase):
+
     def test_get_processes(self):
         # Verify against the test process itself.
         testname = 'nuclide_server_py_tests'

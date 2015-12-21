@@ -39,9 +39,9 @@ class NuclideServer(object):
         # TODO: really support workspace.
         self.workspace = None
         if workspace is not None:
-          workspace = os.path.expanduser(workspace)
-          if os.path.exists(workspace):
-            self.workspace = os.path.realpath(workspace)
+            workspace = os.path.expanduser(workspace)
+            if os.path.exists(workspace):
+                self.workspace = os.path.realpath(workspace)
 
     # Get Nuclide server process info from ps.
     # Return a list of process info.
@@ -80,7 +80,7 @@ class NuclideServer(object):
             server_cert, server_key, ca = self.get_server_certificate_files()
             client_cert, client_key = self.get_client_certificate_files(ca)
             self._version = utils.http_get('localhost', self.port, method='POST', url='/heartbeat',
-                                           key_file=client_key, cert_file=client_cert, ca_cert = ca)
+                                           key_file=client_key, cert_file=client_cert, ca_cert=ca)
         else:
             self._version = utils.http_get('localhost', self.port, method='POST', url='/heartbeat')
         return self._version
@@ -148,8 +148,12 @@ class NuclideServer(object):
     def stop(self):
         proc = self._get_proc_info()
         if proc is None:
-            print('Tried to stop NuclideServer at port %d, but you are not the owner.' % self.port, file=sys.stderr)
-            self.logger.error('Tried to stop NuclideServer at port %d, but you are not the owner.' % self.port)
+            print(
+                'Tried to stop NuclideServer at port %d, but you are not the owner.' %
+                self.port, file=sys.stderr)
+            self.logger.error(
+                'Tried to stop NuclideServer at port %d, but you are not the owner.' %
+                self.port)
             return 1
 
         try:
@@ -157,7 +161,9 @@ class NuclideServer(object):
             if ret == 0:
                 self.logger.info('Stopped old Nuclide server on port %d.' % self.port)
             else:
-                self.logger.info('Error occurred when trying to stop old Nuclide server on port {0}.'.format(self.port))
+                self.logger.info(
+                    'Error occurred when trying to stop old Nuclide server on port {0}.'.format(
+                        self.port))
             return ret
         finally:
             self._clear_states()
@@ -210,7 +216,9 @@ class NuclideServer(object):
                 subprocess.Popen(args, stdout=f, stderr=subprocess.STDOUT)
         else:
             self.logger.info('Opening node server subprocess.')
-            p = subprocess.Popen('nohup node --harmony %s > %s 2>&1 &' % (js_cmd, LOG_FILE), shell=True)
+            p = subprocess.Popen(
+                'nohup node --harmony %s > %s 2>&1 &' %
+                (js_cmd, LOG_FILE), shell=True)
 
         if not debug:
             self.logger.info('Trying to ping the Nuclide server...')
@@ -224,8 +232,12 @@ class NuclideServer(object):
                     return 0
                 time.sleep(1)
 
-            timeoutMsg = 'Attempted to start Nuclide server on port %d, but timed out after %d seconds.' % (self.port, timeout)
-            print(timeoutMsg + ' You may want to try a longer timeout (pass a -t option).', file=sys.stderr)
+            timeoutMsg = 'Attempted to start Nuclide server on port %d, but timed out after %d seconds.' % (
+                self.port, timeout)
+            print(
+                timeoutMsg +
+                ' You may want to try a longer timeout (pass a -t option).',
+                file=sys.stderr)
             self.logger.error(timeoutMsg)
         return 1
 

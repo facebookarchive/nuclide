@@ -17,6 +17,7 @@ COLUMNS = ['pid', 'command']
 
 # TODO: Ideally, we want to use psutil, but it is not part of standard library.
 class ProcessInfo(object):
+
     def __init__(self, columns, line):
         self.logger = logging.getLogger('ProcessInfo')
 
@@ -81,7 +82,7 @@ class ProcessInfo(object):
         else:
             # Filter out comm and command column and then append it to the end
             # so that we can use space as delimiter.
-            new_columns = [column for column in columns if column not in ['comm' ,'command']]
+            new_columns = [column for column in columns if column not in ['comm', 'command']]
             new_columns.append('command')
             args.append('-o')
             args.append(','.join(columns))

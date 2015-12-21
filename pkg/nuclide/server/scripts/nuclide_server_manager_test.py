@@ -25,6 +25,7 @@ TARGET_SCRIPT = os.path.join(WORK_DIR, 'nuclide_server_manager.py')
 
 
 class NuclideServerManagerTest(NuclideServerTestBase):
+
     def verify_key(self, text):
         self.assertTrue('BEGIN RSA PRIVATE KEY' in text)
         self.assertTrue('END RSA PRIVATE KEY' in text)
@@ -66,7 +67,8 @@ class NuclideServerManagerTest(NuclideServerTestBase):
             self.assertEquals(hostname, json_ret['hostname'])
         return json_ret['port'], json_ret['version'], json_ret['pid']
 
-    def start_nuclide_server_twice_and_verify(self, workspace, port=None, secure=False, upgrade=False):
+    def start_nuclide_server_twice_and_verify(
+            self, workspace, port=None, secure=False, upgrade=False):
         args = [TARGET_SCRIPT]
         if port is not None:
             args.append('-p')
@@ -97,7 +99,8 @@ class NuclideServerManagerTest(NuclideServerTestBase):
             json.dump({'Version': version}, f)
 
         # Get the port from the started Nuclide server, and use it in the next step.
-        port1, version1, pid1 = self.start_nuclide_server_and_verify_output(args, workspace, port, secure)
+        port1, version1, pid1 = self.start_nuclide_server_and_verify_output(
+            args, workspace, port, secure)
         self.assertEquals(version1, str(version))
         if port is not None:
             self.assertEquals(port1, port)
@@ -109,7 +112,8 @@ class NuclideServerManagerTest(NuclideServerTestBase):
                 json.dump({'Version': version}, f)
 
         # Try to start Nuclide server again.
-        port2, version2, pid2 = self.start_nuclide_server_and_verify_output(args, workspace, port1, secure)
+        port2, version2, pid2 = self.start_nuclide_server_and_verify_output(
+            args, workspace, port1, secure)
 
         # Verify it returns with same port that is passed in.
         self.assertEquals(port1, port2)
@@ -161,7 +165,7 @@ class NuclideServerManagerTest(NuclideServerTestBase):
         self.assertEquals(manager.start_nuclide(), 0)
         self.assertEquals(len(manager.list_servers()), 1)
         # Change the default common name and verify it upgrades the existing server.
-        options, _ = parser.parse_args(['-n', 'localhost']);
+        options, _ = parser.parse_args(['-n', 'localhost'])
         manager = NuclideServerManager(options)
         self.assertEquals(manager.start_nuclide(), 0)
         servers = manager.list_servers()

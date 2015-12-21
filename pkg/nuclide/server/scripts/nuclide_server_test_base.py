@@ -15,6 +15,7 @@ from utils import write_resource_to_file
 
 
 class NuclideServerTestBase(unittest.TestCase):
+
     def setUp(self):
         NuclideServerManager.stop_all()
 

@@ -21,7 +21,12 @@ def check_output_silent(args, cwd=None, env=None):
     # Use Popen here. check_ouput is not available in Python 2.6.
     # cwd=None means don't change cwd.
     # env=None means inheriting the current process' environment.
-    process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd, env=env)
+    process = subprocess.Popen(
+        args,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        cwd=cwd,
+        env=env)
     out, err = process.communicate()
     if process.returncode != 0:
         error = subprocess.CalledProcessError(process.returncode, args)
@@ -35,13 +40,25 @@ def check_output_silent(args, cwd=None, env=None):
 def http_get(host, port, method, url, key_file=None, cert_file=None, ca_cert=None, timeout=1):
     conn = None
     if key_file is not None and cert_file is not None and ca_cert is not None:
-        if sys.version_info<(2,7,9):
-            conn = httplib.HTTPSConnection(host, port, key_file=key_file, cert_file=cert_file, timeout=timeout)
+        if sys.version_info < (2, 7, 9):
+            conn = httplib.HTTPSConnection(
+                host,
+                port,
+                key_file=key_file,
+                cert_file=cert_file,
+                timeout=timeout)
         else:
-            ctx = ssl.create_default_context(cafile = ca_cert)
-            # We disable host name validation here so we can ping the server endpoint using localhost.
+            ctx = ssl.create_default_context(cafile=ca_cert)
+            # We disable host name validation here so we can ping the server endpoint
+            # using localhost.
             ctx.check_hostname = False
-            conn = httplib.HTTPSConnection(host, port, key_file=key_file, cert_file=cert_file, timeout=timeout, context=ctx)
+            conn = httplib.HTTPSConnection(
+                host,
+                port,
+                key_file=key_file,
+                cert_file=cert_file,
+                timeout=timeout,
+                context=ctx)
     else:
         conn = httplib.HTTPConnection(host, port, timeout=timeout)
     try:
@@ -53,7 +70,7 @@ def http_get(host, port, method, url, key_file=None, cert_file=None, ca_cert=Non
         else:
             return None
     except ssl.SSLError as e:
-        if sys.version_info<(2,7,9):
+        if sys.version_info < (2, 7, 9):
             print("An SSL Error occurred", file=sys.stderr)
         else:
             print("An SSL Error occurred: %s" % e.reason, file=sys.stderr)
@@ -88,7 +105,7 @@ def is_ip_address(addr):
 # Return the file path.
 def write_resource_to_file(name, dir):
     target_path = os.path.join(dir, os.path.basename(name))
-    with open (name, 'r') as res_file:
+    with open(name, 'r') as res_file:
         content = res_file.read()
     with open(target_path, 'w') as f:
         f.write(content)

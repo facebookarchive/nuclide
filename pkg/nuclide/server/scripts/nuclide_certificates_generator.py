@@ -79,11 +79,19 @@ class NuclideCertificatesGenerator(object):
         self.generate()
 
     def generate(self):
-        if self._generate_ca() \
-                and self._generate_key_and_cert_request(self.server_key, self._server_csr, self._server_common_name) \
-                and self._generate_certificate(self._server_csr, self.server_cert, 1) \
-                and self._generate_key_and_cert_request(self.client_key, self._client_csr, self._client_common_name) \
-                and self._generate_certificate(self._client_csr, self.client_cert, 2):
+        if self._generate_ca() and self._generate_key_and_cert_request(
+                self.server_key,
+                self._server_csr,
+                self._server_common_name) and self._generate_certificate(
+                self._server_csr,
+                self.server_cert,
+                1) and self._generate_key_and_cert_request(
+                self.client_key,
+                self._client_csr,
+                self._client_common_name) and self._generate_certificate(
+                    self._client_csr,
+                    self.client_cert,
+                2):
             pass
         else:
             raise RuntimeError('Failed to generate certs.')
@@ -92,7 +100,7 @@ class NuclideCertificatesGenerator(object):
     def _generate_ca(self):
         try:
             check_output_silent(shlex.split('openssl genrsa -out %s 1024' % self.ca_key))
-            args = shlex.split('openssl req -new -x509 -days %d -key %s -out %s -batch' \
+            args = shlex.split('openssl req -new -x509 -days %d -key %s -out %s -batch'
                                % (self._expiration_days, self.ca_key, self.ca_cert))
             check_output_silent(args)
         except subprocess.CalledProcessError as e:
@@ -107,8 +115,9 @@ class NuclideCertificatesGenerator(object):
     def _generate_key_and_cert_request(self, key_file, csr_file, common_name):
         try:
             check_output_silent(shlex.split('openssl genrsa -out %s 1024' % key_file))
-            args = shlex.split('openssl req -new -key %s -out %s -subj /CN=%s -config %s'
-                               % (key_file, csr_file, common_name, NuclideCertificatesGenerator.openssl_cnf))
+            args = shlex.split(
+                'openssl req -new -key %s -out %s -subj /CN=%s -config %s' %
+                (key_file, csr_file, common_name, NuclideCertificatesGenerator.openssl_cnf))
             check_output_silent(args, env=self._env)
         except subprocess.CalledProcessError as e:
             self.logger.error('openssl failed: %s' % e.output)
@@ -124,9 +133,14 @@ class NuclideCertificatesGenerator(object):
         try:
             # Enable v3_req extensions.
             args = shlex.split(
-                'openssl x509 -req -days %d -in %s -CA %s -CAkey %s -set_serial %d -out %s -extensions v3_req -extfile %s'
-                % (self._expiration_days, csr_file, self.ca_cert, self.ca_key, serial, cert_file,
-                   NuclideCertificatesGenerator.openssl_cnf))
+                'openssl x509 -req -days %d -in %s -CA %s -CAkey %s -set_serial %d -out %s -extensions v3_req -extfile %s' %
+                (self._expiration_days,
+                 csr_file,
+                 self.ca_cert,
+                 self.ca_key,
+                 serial,
+                 cert_file,
+                 NuclideCertificatesGenerator.openssl_cnf))
             check_output_silent(args, env=self._env)
         except subprocess.CalledProcessError as e:
             self.logger.error('openssl failed: %s' % e.output)
@@ -145,7 +159,8 @@ if __name__ == '__main__':
     parser.add_option('-s', '--server_common_name', type=str,
                       help='SSL certificate common name for the server, default: %default',
                       default='localhost')
-    parser.add_option('-c', '--client_common_name', type=str, help='SSL certificate common name for the client')
+    parser.add_option('-c', '--client_common_name', type=str,
+                      help='SSL certificate common name for the client')
     options, args = parser.parse_args(sys.argv[1:])
 
     generator = NuclideCertificatesGenerator(options.output_dir or tempfile.gettempdir(),
