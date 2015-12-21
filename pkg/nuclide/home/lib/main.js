@@ -10,7 +10,7 @@
  */
 
 import type {HomeFragments} from '../../home-interfaces';
-import type HomePaneItemType from './HomePaneItem';
+import type HomePaneItemType from './createHomePaneItem';
 
 const BASE_ITEM_URI = 'nuclide-home://';
 
@@ -74,7 +74,7 @@ function getHomePaneItem(uri: string): ?HomePaneItemType {
   if (!uri.startsWith(BASE_ITEM_URI)) {
     return;
   }
-  const HomePaneItem = require('./HomePaneItem');
+  const HomePaneItem = require('./createHomePaneItem');
   paneItem = new HomePaneItem().initialize(uri, allHomeFragments);
   return paneItem;
 }
