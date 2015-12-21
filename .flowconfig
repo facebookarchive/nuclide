@@ -3,8 +3,9 @@
 [ignore]
 # second-level dependencies
 .*/node_modules/[^/]+/node_modules/.*
-
-# Ignore module src to prefer declaration
+# becomes first-level dependency with npm3
+.*/node_modules/fbjs/flow/.*
+# ignore module src to prefer declaration
 .*/node_modules/rx/.*
 
 [libs]
