@@ -12,7 +12,7 @@
 const featureConfig = require('../../feature-config');
 const path = require('path');
 
-const BASE_ITEM_URI = 'atom://nuclide-gadgets/nuclide-home';
+const BASE_ITEM_URI = 'atom://nuclide/gadgets/nuclide-home';
 const CONFIG_KEY = 'nuclide-home.showHome';
 
 function findHomePaneAndItem(): {pane: ?atom$Pane, item: ?Object} {

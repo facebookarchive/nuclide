@@ -17,7 +17,7 @@ describe('GadgetUri', () => {
   describe('parse', () => {
 
     it('extracts gadget IDs from gadget URIs', () => {
-      const uri = 'atom://nuclide-gadgets/my-awesome-gadget';
+      const uri = 'atom://nuclide/gadgets/my-awesome-gadget';
       const parsed = GadgetUri.parse(uri);
       invariant(parsed);
       expect(parsed.gadgetId).toBe('my-awesome-gadget');
@@ -35,7 +35,7 @@ describe('GadgetUri', () => {
 
     it('constructs a gadget URI from an ID', () => {
       const uri = GadgetUri.format({gadgetId: 'my-awesome-gadget'});
-      expect(uri).toBe('atom://nuclide-gadgets/my-awesome-gadget');
+      expect(uri).toBe('atom://nuclide/gadgets/my-awesome-gadget');
     });
 
   });
