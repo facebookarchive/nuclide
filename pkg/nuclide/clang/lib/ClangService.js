@@ -17,13 +17,22 @@ import ClangFlagsManager from './ClangFlagsManager';
 import ClangServer from './ClangServer';
 
 const clangFlagsManager = new ClangFlagsManager(new BuckUtils());
+const clangServers: Map<NuclideUri, ClangServer> = new Map();
 
-let clangServer: ?ClangServer;
-function getClangServer(): ClangServer {
-  if (clangServer == null) {
-    clangServer = new ClangServer(clangFlagsManager);
+/**
+ * Spawn one Clang server per translation unit (i.e. source file).
+ * This allows working on multiple files at once, and simplifies per-file state handling.
+ *
+ * TODO(hansonw): Implement some sort of cleanup mechanism to kill idle servers.
+ */
+function getClangServer(src: NuclideUri): ClangServer {
+  let server = clangServers.get(src);
+  if (server != null) {
+    return server;
   }
-  return clangServer;
+  server = new ClangServer(clangFlagsManager, src);
+  clangServers.set(src, server);
+  return server;
 }
 
 // Maps clang's cursor types to the actual declaration types: for a full list see
@@ -143,7 +152,7 @@ export function compile(
   src: NuclideUri,
   contents: string
 ): Promise<?ClangCompileResult> {
-  return getClangServer().makeRequest('compile', src, {contents});
+  return getClangServer(src).makeRequest('compile', {contents});
 }
 
 export function getCompletions(
@@ -154,7 +163,7 @@ export function getCompletions(
   tokenStartColumn: number,
   prefix: string,
 ): Promise<?ClangCompletionsResult> {
-  return getClangServer().makeRequest('get_completions', src, {
+  return getClangServer(src).makeRequest('get_completions', {
     contents,
     line,
     column,
@@ -165,7 +174,7 @@ export function getCompletions(
 
 export async function getDeclaration(src: NuclideUri, contents: string, line: number, column: number
 ): Promise<?ClangDeclarationResult> {
-  const result = await getClangServer().makeRequest('get_declaration', src, {
+  const result = await getClangServer(src).makeRequest('get_declaration', {
     contents,
     line,
     column,
@@ -193,9 +202,14 @@ export function getDeclarationInfo(
   line: number,
   column: number
 ): Promise<?ClangDeclarationInfoResult> {
-  return getClangServer().makeRequest('get_declaration_info', src, {
+  return getClangServer(src).makeRequest('get_declaration_info', {
     contents,
     line,
     column,
   });
+}
+
+export function dispose(): void {
+  clangServers.forEach(server => server.dispose());
+  clangServers.clear();
 }

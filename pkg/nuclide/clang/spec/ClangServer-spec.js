@@ -28,8 +28,8 @@ describe('ClangServer', () => {
 
   it('can handle requests', () => {
     waitsForPromise(async () => {
-      const server = new ClangServer(mockFlagsManager);
-      let response = await server.makeRequest('compile', TEST_FILE, {
+      const server = new ClangServer(mockFlagsManager, TEST_FILE);
+      let response = await server.makeRequest('compile', {
         contents: FILE_CONTENTS,
       });
       invariant(response);
@@ -38,7 +38,7 @@ describe('ClangServer', () => {
         diagnostics: [],
       });
 
-      response = await server.makeRequest('get_completions', TEST_FILE, {
+      response = await server.makeRequest('get_completions', {
         contents: FILE_CONTENTS,
         line: 4,
         column: 7,
@@ -53,7 +53,7 @@ describe('ClangServer', () => {
         'void f()',
       ]);
 
-      response = await server.makeRequest('get_declaration', TEST_FILE, {
+      response = await server.makeRequest('get_declaration', {
         contents: FILE_CONTENTS,
         line: 4,
         column: 2,
@@ -69,8 +69,8 @@ describe('ClangServer', () => {
   it('returns null when flags are unavailable', () => {
     waitsForPromise(async () => {
       const flagsManager = ({getFlagsForSrc: () => null}: any);
-      const server = new ClangServer(flagsManager);
-      const response = await server.makeRequest('compile', TEST_FILE, {
+      const server = new ClangServer(flagsManager, TEST_FILE);
+      const response = await server.makeRequest('compile', {
         contents: FILE_CONTENTS,
       });
       expect(response).toBe(null);
@@ -79,8 +79,8 @@ describe('ClangServer', () => {
 
   it('gracefully handles server crashes', () => {
     waitsForPromise(async () => {
-      const server = new ClangServer(mockFlagsManager);
-      let response = await server.makeRequest('compile', TEST_FILE, {
+      const server = new ClangServer(mockFlagsManager, TEST_FILE);
+      let response = await server.makeRequest('compile', {
         contents: FILE_CONTENTS,
       });
       expect(response).not.toBe(null);
@@ -94,7 +94,7 @@ describe('ClangServer', () => {
       window.useRealClock();
       await new Promise((resolve) => setTimeout(resolve, 10));
 
-      response = await server.makeRequest('compile', TEST_FILE, {
+      response = await server.makeRequest('compile', {
         contents: FILE_CONTENTS,
       });
       expect(response).not.toBe(null);

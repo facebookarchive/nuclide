@@ -61,7 +61,7 @@ type Connection = {
   writableStream: stream$Writable,
 }
 
-async function createAsyncConnection(): Promise<Connection> {
+async function createAsyncConnection(src: string): Promise<Connection> {
   return await new Promise(async (resolve, reject) => {
     const {libClangLibraryFile, pythonPathEnv, pythonExecutable} = await _findClangServerArgs();
     const options = {
@@ -118,7 +118,7 @@ async function createAsyncConnection(): Promise<Connection> {
         reject(data);
       }
     });
-    writableStream.write('init\n');
+    writableStream.write(`init:${src}\n`);
   });
 }
 
@@ -128,19 +128,28 @@ type ClangServerRequest =
 
 export default class ClangServer {
 
+  _src: string;
   _clangFlagsManager: ClangFlagsManager;
   _emitter: EventEmitter;
   _nextRequestId: number;
   _asyncConnection: ?Connection;
 
-  constructor(clangFlagsManager: ClangFlagsManager) {
+  constructor(clangFlagsManager: ClangFlagsManager, src: string) {
+    this._src = src;
     this._clangFlagsManager = clangFlagsManager;
     this._emitter = new EventEmitter();
     this._nextRequestId = 0;
   }
 
-  async makeRequest(method: ClangServerRequest, src: string, params: Object): Promise<?Object> {
-    const flags = await this._clangFlagsManager.getFlagsForSrc(src);
+  dispose() {
+    if (this._asyncConnection) {
+      this._asyncConnection.dispose();
+    }
+    this._emitter.removeAllListeners();
+  }
+
+  async makeRequest(method: ClangServerRequest, params: Object): Promise<?Object> {
+    const flags = await this._clangFlagsManager.getFlagsForSrc(this._src);
     if (flags == null) {
       return null;
     }
@@ -151,7 +160,7 @@ export default class ClangServer {
     }
 
     const reqid = this._getNextRequestId();
-    const request = {reqid, method, src, flags, ...params};
+    const request = {reqid, method, src: this._src, flags, ...params};
     const logData = JSON.stringify(request, (key, value) => {
       // File contents are too large and clutter up the logs, so exclude them.
       if (key === 'contents') {
@@ -189,7 +198,7 @@ export default class ClangServer {
   async _getAsyncConnection(): Promise<?Connection> {
     if (this._asyncConnection == null) {
       try {
-        const connection = await createAsyncConnection();
+        const connection = await createAsyncConnection(this._src);
         connection.readableStream
           .pipe(split(JSON.parse))
           .on('data', (response) => {

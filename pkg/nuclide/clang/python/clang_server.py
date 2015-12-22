@@ -14,13 +14,16 @@ from codecomplete import get_completions
 from declarationlocation import get_declaration_location_and_spelling
 
 import json
+import hashlib
 import logging
 import os
 import re
 import sys
+import time
 import traceback
 from logging import FileHandler
 
+LOGGING_DIR = '/tmp/nuclide-clang-logs'
 FD_FOR_READING = 3
 
 # Unfortunately Clang has no way of limiting autocompletion results, but set a reasonable limit
@@ -28,15 +31,24 @@ FD_FOR_READING = 3
 COMPLETIONS_LIMIT = 100
 
 
-def set_up_logging():
-    handler = FileHandler('/tmp/nuclide-clang.log')
+root_logger = logging.getLogger()
+
+
+def log_filename(value):
+    hash = hashlib.md5(value).hexdigest()[:10]
+    return os.path.basename(value) + '-' + hash + '.log'
+
+
+def set_up_logging(src):
+    if not os.path.exists(LOGGING_DIR):
+        os.mkdir(LOGGING_DIR)
+    handler = FileHandler(os.path.join(LOGGING_DIR, log_filename(src)))
     handler.setFormatter(logging.Formatter(
-        'nuclide-clang-py: [%(name)s] %(message)s'
+        'nuclide-clang-py %(asctime)s: [%(name)s] %(message)s'
     ))
-    root_logger = logging.getLogger()
     root_logger.addHandler(handler)
     root_logger.setLevel(logging.INFO)
-    root_logger.info('starting')
+    root_logger.info('starting for ' + src)
 
 
 def wait_for_init():
@@ -46,11 +58,12 @@ def wait_for_init():
     input_stream = os.fdopen(fd, mode, buffering)
     output_stream = sys.stdout
     first_line = input_stream.readline()
-    if first_line == 'init\n':
+    if first_line.startswith('init:'):
+        src = first_line[5:-1]
         # Client is initiating connection. Acknowledge!
         output_stream.write('ack\n')
         output_stream.flush()
-        return input_stream, output_stream
+        return src, input_stream, output_stream
     else:
         # Fail: did not receive proper initialization sequence.
         sys.exit(2)
@@ -58,7 +71,8 @@ def wait_for_init():
 
 class Server:
 
-    def __init__(self, input_stream, output_stream):
+    def __init__(self, src, input_stream, output_stream):
+        self.src = src
         self.input_stream = input_stream
         self.output_stream = output_stream
         self.index = Index.create()
@@ -87,6 +101,7 @@ class Server:
         reqid = request['reqid']
         response = {'reqid': reqid}
 
+        start_time = time.time()
         try:
             method = request['method']
             if method == 'compile':
@@ -102,6 +117,9 @@ class Server:
                     'error'] = 'Unknown method to clang_server.py: %s.' % method
         except:
             response['error'] = traceback.format_exc()
+
+        root_logger.debug('Finished %s request in %.2lf seconds.',
+                          method, time.time() - start_time)
 
         # response must have a key named "error" if there was a failure of any
         # kind.
@@ -337,6 +355,6 @@ if __name__ == '__main__':
     lib_clang_file = os.environ.get('LIB_CLANG_LIBRARY_FILE')
     if lib_clang_file:
         Config.set_library_file(lib_clang_file)
-    set_up_logging()
-    input_stream, output_stream = wait_for_init()
-    Server(input_stream, output_stream).run()
+    src, input_stream, output_stream = wait_for_init()
+    set_up_logging(src)
+    Server(src, input_stream, output_stream).run()
