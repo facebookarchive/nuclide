@@ -5,7 +5,6 @@
   "version": "0.0.0",
   "description": "Provides logging on both Nuclide client and Nuclide server",
   "nuclide": {
-    "customDeps": "fb/package.json",
     "packageType": "Node",
     "testRunner": "npm"
   },

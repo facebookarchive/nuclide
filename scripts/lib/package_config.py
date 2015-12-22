@@ -67,18 +67,4 @@ def create_config_for_manifest(path, manifest):
 
     config['windowsIncompatible'] = windows_incompatible
 
-    # Check for custom dependencies.
-    if 'customDeps' in nuclide_config:
-        extra_json = os.path.join(
-            os.path.dirname(path), nuclide_config['customDeps'])
-        if os.path.exists(extra_json):
-            extra_manifest = json_load(extra_json)
-            # Track the base dependencies from the published package.json plus
-            # the sideloaded "custom" dependencies separately.
-            # `config['dependencies']` is the merged set of both.
-            config['baseDependencies'] = config['dependencies'].copy()
-            config['customDependencies'] = extra_manifest.get(
-                'dependencies', {})
-            config['dependencies'].update(config['customDependencies'])
-
     return config

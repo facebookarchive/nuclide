@@ -4,7 +4,6 @@
   "version": "0.0.0",
   "description": "Provides a collection of services that are run on the Nuclide server to support remote file editing",
   "nuclide": {
-    "customDeps": "fb/package.json",
     "packageType": "Node",
     "testsCannotBeRunInParallel": true,
     "testRunner": "npm"

@@ -6,5 +6,8 @@
   "nuclide": {
     "packageType": "Node",
     "testRunner": "npm"
+  },
+  "scripts": {
+    "test": "node -e 'process.exit(0);'"
   }
 }
