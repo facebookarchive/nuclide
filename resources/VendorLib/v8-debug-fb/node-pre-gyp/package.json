@@ -18,7 +18,7 @@
     "url": "git://github.com/mapbox/node-pre-gyp.git"
   },
   "bin": "./bin/node-pre-gyp",
-  "main": "./lib/node-pre-gyp.js",
+  "main": "./lib/pre-binding.js",
   "dependencies": {
     "nopt": "~3.0.1",
     "npmlog": "~2.0.0",
