@@ -12,10 +12,12 @@
 module.exports = {
   rules: {
     'comment-style': require('./comment-style'),
+    'fb-license-header': require('./fb-license-header'),
     'import-type-style': require('./import-type-style'),
   },
   rulesConfig: {
     'comment-style': 0,
+    'fb-license-header': 0,
     'import-type-style': 0,
   },
 };

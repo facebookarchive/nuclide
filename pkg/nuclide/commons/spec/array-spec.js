@@ -8,6 +8,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
+
 const es6Array = require('../lib/array.js');
 
 // We have to create an invariant function that is a lie because using invariant() with an

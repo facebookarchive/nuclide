@@ -5,6 +5,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
+
 /**
  * This file installs the logic that modifies Node's built in require()
  * function to transpile .js files that start with either `'use babel'` or

@@ -5,6 +5,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
+
 // This file must be written in ES5. It is used to bootstrap a forked process.
 /*eslint-disable no-var*/
 

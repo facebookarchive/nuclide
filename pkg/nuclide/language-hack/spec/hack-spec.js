@@ -1,6 +1,8 @@
 'use babel';
 /* @flow */
 
+/*eslint-disable nuclide-internal/fb-license-header*/
+
 import invariant from 'assert';
 
 describe('PHP grammar', () => {

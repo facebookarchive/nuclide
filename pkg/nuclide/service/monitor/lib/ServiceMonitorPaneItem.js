@@ -8,6 +8,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
+
 import type {NuclideCustomPaneItemOptions} from '../../../ui/pane-item/lib/types';
 
 import React from 'react-for-atom';

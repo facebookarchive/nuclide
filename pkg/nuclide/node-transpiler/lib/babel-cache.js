@@ -5,6 +5,7 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
+
 /**
  * Because this file helps set up the transpiling, it must be written in ES5 because
  * it will be evaluated before the transpiling is in place.
