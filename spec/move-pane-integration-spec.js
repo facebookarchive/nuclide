@@ -10,7 +10,8 @@
  */
 
 import invariant from 'assert';
-import {activateAllPackages, deactivateAllPackages} from '../../integration-test-helpers';
+import {__testUseOnly_activatePackage as activatePackage} from '..';
+import {activateAllPackages, deactivateAllPackages} from '../pkg/nuclide/integration-test-helpers';
 
 describe('Move Pane Integration Tests', () => {
   let movePanePromise: Promise<atom$Package> = (null : any);
@@ -20,7 +21,7 @@ describe('Move Pane Integration Tests', () => {
       // Activate all packages.
       await activateAllPackages();
       // Load move pane package -- it won't be activated until one of its commands is used.
-      movePanePromise = atom.packages.activatePackage('nuclide-move-pane');
+      movePanePromise = activatePackage('nuclide-move-pane');
       // Set config.
       atom.config.set('core.destroyEmptyPanes', true);
       // Open two tabs.
