@@ -2,11 +2,9 @@
 /.eslintrc
 /.flowconfig
 /benchmarker
-/pkg/**/spec
 /pkg/sample
-/resources/**
-!/resources/VendorLib/thrift-0.9.3-fb*
-!/resources/VendorLib/v8-debug-fb*
-!/resources/VendorLib/v8-profiler-fb*
+/resources/eslint-plugin-nuclide-internal
 /scripts
 **/babel-cache/**
+**/spec
+BUCK
