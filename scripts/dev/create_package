@@ -154,11 +154,6 @@ NODE_NPM_PACKAGE_JSON_TEMPLATE = """\
 }
 """
 
-BABELRC_TEMPLATE = """\
-{
-  "breakConfig": true
-}
-"""
 
 # Return the directory name and package name.
 def get_dir_and_package_name(user_input):
@@ -174,10 +169,6 @@ def create_package(dir_name, package_name, package_type, test_runner):
     # Create the directory for the new package.
     pkg_dir = os.path.join(PACKAGES_PATH, dir_name)
     os.makedirs(pkg_dir)
-
-    # Add the .babelrc file.
-    with open(os.path.join(pkg_dir, '.babelrc'), 'w') as f:
-        f.write(BABELRC_TEMPLATE)
 
     # Add the lib/main.js file.
     lib_dir = os.path.join(pkg_dir, 'lib')
