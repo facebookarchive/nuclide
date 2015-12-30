@@ -26,6 +26,7 @@ type Props = {
   processOutputStore: ProcessOutputStore,
   processOutputHandler: ?ProcessOutputHandler,
   processOutputViewTopElement: ?HTMLElement,
+  textBuffer: TextBuffer;
 };
 type State = {};
 
@@ -47,10 +48,7 @@ class ProcessOutputView extends React.Component<DefaultProps, Props, State> {
     super(props);
     this._processOutputStore = props.processOutputStore;
     this._outputHandler = props.processOutputHandler;
-    this._textBuffer = new TextBuffer({
-      load: false,
-      text: '',
-    });
+    this._textBuffer = props.textBuffer;
     this._disposables = new CompositeDisposable();
   }
 
@@ -61,8 +59,6 @@ class ProcessOutputView extends React.Component<DefaultProps, Props, State> {
   componentDidMount() {
     this._disposables.add(
       this._textBuffer.onDidChange(this._handleBufferChange.bind(this)),
-      this._processOutputStore.observeStdout(data => this._updateTextBuffer(data)),
-      this._processOutputStore.observeStderr(data => this._updateTextBuffer(data)),
     );
   }
 
@@ -71,15 +67,6 @@ class ProcessOutputView extends React.Component<DefaultProps, Props, State> {
     // TODO(natthu): Consider scrolling conditionally i.e. don't scroll if user has scrolled up the
     //               output pane.
     el.scrollTop = el.scrollHeight;
-  }
-
-  _updateTextBuffer(newText: string) {
-    if (this._outputHandler) {
-      this._outputHandler(this._textBuffer, newText);
-    } else {
-      // `{undo: 'skip'}` disables the TextEditor's "undo system".
-      this._textBuffer.append(newText, {undo: 'skip'});
-    }
   }
 
   componentWillUnmount() {

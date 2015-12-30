@@ -35,6 +35,7 @@ export type RunCommandFunctionAndCleanup = {
 import {CompositeDisposable, Disposable} from 'atom';
 import invariant from 'assert';
 import {destroyPaneItemWithTitle} from '../../../atom-helpers';
+import createBoundTextBuffer from './createBoundTextBuffer';
 
 const NUCLIDE_PROCESS_OUTPUT_VIEW_URI = 'atom://nuclide/process-output/';
 const PROCESS_OUTPUT_HANDLER_KEY = 'nuclide-processOutputHandler';
@@ -76,8 +77,8 @@ function createProcessOutputView(
   const ProcessOutputView = require('./ProcessOutputView');
   const component = ProcessOutputView.createView({
     title: tabTitle,
+    textBuffer: createBoundTextBuffer(processOutputStore, processOutputHandler),
     processOutputStore,
-    processOutputHandler,
     processOutputViewTopElement,
   });
 

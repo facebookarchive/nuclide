@@ -1014,6 +1014,7 @@ declare class atom$TextBuffer {
 
   // Events
   onDidChange(callback: () => mixed): atom$Disposable;
+  onDidDestroy(callback: () => mixed): atom$Disposable;
   onDidStopChanging(callback: () => mixed): atom$Disposable;
   onDidSave(callback: () => mixed): atom$Disposable;
   onDidReload(callback: () => mixed): atom$Disposable;
