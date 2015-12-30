@@ -88,6 +88,10 @@ class ProcessOutputView extends React.Component<DefaultProps, Props, State> {
     );
   }
 
+  copy(): Object {
+    return ProcessOutputView.createView({...this.props});
+  }
+
   static createView(props: ?Object): Object {
     const container = document.createElement('div');
     const component = React.render(
