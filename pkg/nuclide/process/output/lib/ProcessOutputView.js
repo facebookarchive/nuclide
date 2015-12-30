@@ -22,7 +22,7 @@ const PROCESS_OUTPUT_PATH = 'nuclide-process-output.ansi';
 
 type DefaultProps = {};
 type Props = {
-  onDidBufferChange: (event: Object) => void,
+  title: string;
   processOutputStore: ProcessOutputStore,
   processOutputHandler: ?ProcessOutputHandler,
   processOutputViewTopElement: ?HTMLElement,
@@ -30,7 +30,7 @@ type Props = {
 type State = {};
 
 
-export default class ProcessOutputView extends React.Component<DefaultProps, Props, State> {
+class ProcessOutputView extends React.Component<DefaultProps, Props, State> {
   _processOutputStore: ProcessOutputStore;
   _textBuffer: atom$TextBuffer;
   _disposables: atom$CompositeDisposable;
@@ -52,16 +52,25 @@ export default class ProcessOutputView extends React.Component<DefaultProps, Pro
       text: '',
     });
     this._disposables = new CompositeDisposable();
-    this._disposables.add(this._textBuffer.onDidChange(this.props.onDidBufferChange));
+  }
+
+  getTitle(): string {
+    return this.props.title;
   }
 
   componentDidMount() {
     this._disposables.add(
-      this._processOutputStore.observeStdout(data => this._updateTextBuffer(data))
+      this._textBuffer.onDidChange(this._handleBufferChange.bind(this)),
+      this._processOutputStore.observeStdout(data => this._updateTextBuffer(data)),
+      this._processOutputStore.observeStderr(data => this._updateTextBuffer(data)),
     );
-    this._disposables.add(
-      this._processOutputStore.observeStderr(data => this._updateTextBuffer(data))
-    );
+  }
+
+  _handleBufferChange(): void {
+    const el = React.findDOMNode(this);
+    // TODO(natthu): Consider scrolling conditionally i.e. don't scroll if user has scrolled up the
+    //               output pane.
+    el.scrollTop = el.scrollHeight;
   }
 
   _updateTextBuffer(newText: string) {
@@ -79,7 +88,7 @@ export default class ProcessOutputView extends React.Component<DefaultProps, Pro
 
   render(): ReactElement {
     return (
-      <div>
+      <div className="nuclide-process-output-view">
         {this.props.processOutputViewTopElement}
         <AtomTextEditor
           ref="process-output-editor"
@@ -91,6 +100,19 @@ export default class ProcessOutputView extends React.Component<DefaultProps, Pro
       </div>
     );
   }
+
+  static createView(props: ?Object): Object {
+    const container = document.createElement('div');
+    const component = React.render(
+      <ProcessOutputView {...props} />,
+      container,
+    );
+    component.element = container;
+    return component;
+  }
+
 }
+
+module.exports = ProcessOutputView;
 
 /* eslint-enable react/prop-types */

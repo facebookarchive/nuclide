@@ -73,15 +73,12 @@ function createProcessOutputView(
   const processOutputViewTopElement = openOptions[PROCESS_OUTPUT_VIEW_TOP_ELEMENT];
   const tabTitle = uri.slice(NUCLIDE_PROCESS_OUTPUT_VIEW_URI.length);
 
-  const {ProcessOutputWrapper} = require('./ProcessOutputWrapper');
-  const hostElement = new ProcessOutputWrapper();
-  hostElement.initialize({
+  const ProcessOutputView = require('./ProcessOutputView');
+  const component = ProcessOutputView.createView({
     title: tabTitle,
-    initialProps: {
-      processOutputStore,
-      processOutputHandler,
-      processOutputViewTopElement,
-    },
+    processOutputStore,
+    processOutputHandler,
+    processOutputViewTopElement,
   });
 
   invariant(processOutputStores);
@@ -99,7 +96,7 @@ function createProcessOutputView(
   };
 
   processOutputStore.startProcess().then(handleProcessExit, handleProcessExitWithError);
-  return hostElement;
+  return component;
 }
 
 /**
