@@ -33,7 +33,7 @@
     "dequeue": "1.0.5",
     "diff": "2.2.1",
     "emptyfunction": "0.0.0",
-    "event-kit": "1.4.1",
+    "event-kit": "2.0.0",
     "fb-watchman": "1.6.0",
     "fixed-data-table-for-atom": "0.4.5",
     "flux": "2.0.3",
