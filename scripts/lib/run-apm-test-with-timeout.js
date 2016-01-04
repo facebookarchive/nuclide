@@ -1,3 +1,7 @@
+#!/usr/bin/env node --harmony
+'use strict';
+/* @noflow */
+
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
  * All rights reserved.
@@ -5,6 +9,11 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
+
+// THIS IS AN ES5 FILE
+/*eslint-disable no-var, prefer-const*/
+/*eslint-disable no-console*/
+
 // This script expects to be passed a directory from which `apm test --one` should be run.
 // It runs `apm test` under a timeout to ensure that the test terminates.
 
