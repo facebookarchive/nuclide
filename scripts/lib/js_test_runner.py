@@ -7,7 +7,9 @@
 import logging
 import os
 import platform_checker
+import shutil
 import subprocess
+import sys
 
 from multiprocessing import Pool, cpu_count
 
@@ -23,7 +25,7 @@ class JsTestRunner(object):
         self._verbose = verbose
 
     def run_integration_tests(self):
-        run_js_test('apm', self._package_manager.get_nuclide_path(), 'nuclide')
+        run_integration_tests_with_clean_state(self._package_manager.get_nuclide_path())
 
     def run_tests(self):
         apm_tests = []
@@ -150,3 +152,36 @@ def run_flow_check(pkg_path, name, show_all):
         raise Exception('FLOW CHECK FAILED: flow test %s' % name)
     else:
         logging.info('FLOW CHECK PASSED: %s', name)
+
+def run_integration_tests_with_clean_state(path_to_nuclide):
+    test_dir = os.path.join(path_to_nuclide, 'spec')
+    test_dir_backup = os.path.join(path_to_nuclide, 'spec-backup');
+
+    # Copy test_dir and its contents to backup so we can restore it later.
+    shutil.copytree(test_dir, test_dir_backup)
+
+    try:
+        # Remove all files in test_dir leaving directory structure intact.
+        for root, _, files in os.walk(test_dir):
+            for name in files:
+                os.remove(os.path.join(root, name))
+
+        # One by one, copy each test in test_dir_backup into test_dir, run the test, and then remove that file.
+        for root, _, files in os.walk(test_dir_backup):
+            for name in files:
+                # Copy file.
+                src_path_list = os.path.join(root, name).split(os.path.sep)
+                dest_path_list = map(lambda piece: piece if piece != 'spec-backup' else 'spec', src_path_list)
+                dest = os.path.sep + os.path.join(*dest_path_list)
+                shutil.copy(os.path.join(root, name), dest)
+
+                # Run test.
+                run_js_test('apm', path_to_nuclide, os.path.basename(dest))
+
+                # Remove file.
+                os.remove(dest)
+    finally:
+        # Clean up by restoring the backup.
+        shutil.rmtree(test_dir)
+        shutil.copytree(test_dir_backup, test_dir)
+        shutil.rmtree(test_dir_backup)
