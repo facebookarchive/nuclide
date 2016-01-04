@@ -24,7 +24,8 @@ module.exports = {
     const contents = editor.getText();
 
     return getServiceByNuclideUri('ClangService', src)
-        .compile(src, contents);
+        .compile(src, contents)
+        .toPromise();
   },
 
   getCompletions(editor: atom$TextEditor, prefix: string): Promise<?ClangCompletionsResult> {

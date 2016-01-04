@@ -13,6 +13,7 @@ import type {NuclideUri} from '../../remote-uri';
 
 import {fsPromise, object} from '../../commons';
 import {BuckUtils} from '../../buck/base/lib/BuckUtils';
+import {Observable} from 'rx';
 import ClangFlagsManager from './ClangFlagsManager';
 import ClangServer from './ClangServer';
 
@@ -148,11 +149,18 @@ export type ClangDeclarationInfoResult = {
 export const ClangCursorTypes: {[key: ClangCursorType]: ClangCursorType} =
   object.keyMirror(ClangCursorToDeclarationTypes);
 
+/**
+ * Compiles the specified source file (automatically determining the correct compilation flags).
+ * It currently returns an Observable just to circumvent the 60s service timeout for Promises.
+ * TODO(9519963): Stream back more detailed compile status message.
+ */
 export function compile(
   src: NuclideUri,
   contents: string
-): Promise<?ClangCompileResult> {
-  return getClangServer(src).makeRequest('compile', {contents});
+): Observable<?ClangCompileResult> {
+  return Observable.fromPromise(
+    getClangServer(src).makeRequest('compile', {contents})
+  );
 }
 
 export function getCompletions(
