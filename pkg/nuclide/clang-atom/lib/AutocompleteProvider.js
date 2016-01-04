@@ -171,7 +171,7 @@ function getCompletionPrefix(editor: atom$TextEditor): string {
 
   // Current word might go beyond the cursor, so we cut it.
   range.end = new Point(cursor.getBufferRow(), cursor.getBufferColumn());
-  return editor.getTextInBufferRange(range);
+  return editor.getTextInBufferRange(range).trim();
 }
 
 class AutocompleteProvider {
@@ -182,7 +182,7 @@ class AutocompleteProvider {
     const {editor, bufferPosition: {row, column}, activatedManually} = request;
     const prefix = getCompletionPrefix(editor);
     // Only autocomplete empty strings when it's a method (a.?, a->?) or qualifier (a::?).
-    if (!activatedManually && prefix.trim() === '') {
+    if (!activatedManually && prefix === '') {
       const wordPrefix = editor.getLastCursor().getCurrentWordPrefix();
       if (!VALID_EMPTY_SUFFIX.test(wordPrefix)) {
         return [];

@@ -19,7 +19,7 @@ const FILE_CONTENTS = fs.readFileSync(TEST_FILE).toString('utf8');
 
 // The test file doesn't need any special flags.
 const mockFlagsManager = ({
-  getFlagsForSrc() {
+  async getFlagsForSrc() {
     return [];
   },
 }: any);
@@ -68,12 +68,23 @@ describe('ClangServer', () => {
 
   it('returns null when flags are unavailable', () => {
     waitsForPromise(async () => {
-      const flagsManager = ({getFlagsForSrc: () => null}: any);
+      const flagsManager = ({
+        getFlagsForSrc: async () => {
+          throw 'fail';
+        },
+      }: any);
       const server = new ClangServer(flagsManager, TEST_FILE);
-      const response = await server.makeRequest('compile', {
+      let response = await server.makeRequest('compile', {
         contents: FILE_CONTENTS,
       });
       expect(response).toBe(null);
+
+      // Retry should go through.
+      spyOn(flagsManager, 'getFlagsForSrc').andReturn(Promise.resolve([]));
+      response = await server.makeRequest('compile', {
+        contents: FILE_CONTENTS,
+      });
+      expect(response).not.toBe(null);
     });
   });
 
@@ -89,13 +100,50 @@ describe('ClangServer', () => {
       invariant(_asyncConnection);
       _asyncConnection.dispose();
 
-      // Yield to the clang server's error handler to reset the connection first.
-      // TODO(hansonw): remove this when pending requests are properly removed.
-      window.useRealClock();
-      await new Promise((resolve) => setTimeout(resolve, 10));
+      // This request should fail, but cleanup should occur.
+      let thrown = false;
+      try {
+        response = await server.makeRequest('compile', {
+          contents: FILE_CONTENTS,
+        });
+      } catch (e) {
+        thrown = true;
+      }
+      expect(thrown).toBe(true);
 
-      response = await server.makeRequest('compile', {
+      // The next request should work as expected.
+      response = await server.makeRequest('get_declaration', {
         contents: FILE_CONTENTS,
+        line: 4,
+        column: 2,
+      });
+      expect(response).not.toBe(null);
+    });
+  });
+
+  it('blocks other requests during compilation', () => {
+    waitsForPromise(async () => {
+      const server = new ClangServer(mockFlagsManager, TEST_FILE);
+      const compilePromise = server.makeRequest('compile', {
+        contents: FILE_CONTENTS,
+      });
+
+      // Since compilation has been triggered but not awaited, this should instantly fail.
+      let response = await server.makeRequest('get_declaration', {
+        contents: FILE_CONTENTS,
+        line: 4,
+        column: 2,
+      });
+      expect(response).toBe(null);
+
+      response = await compilePromise;
+      expect(response).not.toBe(null);
+
+      // Should work again after compilation finishes.
+      response = await server.makeRequest('get_declaration', {
+        contents: FILE_CONTENTS,
+        line: 4,
+        column: 2,
       });
       expect(response).not.toBe(null);
     });

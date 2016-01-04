@@ -94,6 +94,9 @@ async function createAsyncConnection(src: string): Promise<Connection> {
     });
     /* $FlowFixMe - update Flow defs for ChildProcess */
     const writableStream = child.stdio[3];
+    writableStream.on('error', (error) => {
+      logger.error('Error writing data', error);
+    });
 
     let childRunning = true;
     child.on('exit', () => {
@@ -132,24 +135,66 @@ export default class ClangServer {
   _clangFlagsManager: ClangFlagsManager;
   _emitter: EventEmitter;
   _nextRequestId: number;
+  _lastProcessedRequestId: number;
   _asyncConnection: ?Connection;
+  _pendingCompileRequests: number;
+
+  // Cache the flags-fetching promise so we don't end up invoking Buck twice.
+  _flagsPromise: ?Promise<?Array<string>>;
 
   constructor(clangFlagsManager: ClangFlagsManager, src: string) {
     this._src = src;
     this._clangFlagsManager = clangFlagsManager;
     this._emitter = new EventEmitter();
     this._nextRequestId = 0;
+    this._lastProcessedRequestId = -1;
+    this._pendingCompileRequests = 0;
   }
 
   dispose() {
+    // Fail all pending requests.
+    // The Clang server receives requests serially via stdin (and processes them in that order)
+    // so it's quite safe to assume that requests are processed in order.
+    for (let reqid = this._lastProcessedRequestId + 1; reqid < this._nextRequestId; reqid++) {
+      this._emitter.emit(reqid.toString(16), {error: 'Server was killed.'});
+    }
     if (this._asyncConnection) {
       this._asyncConnection.dispose();
     }
     this._emitter.removeAllListeners();
   }
 
+  getFlags(): Promise<?Array<string>> {
+    if (this._flagsPromise != null) {
+      return this._flagsPromise;
+    }
+    this._flagsPromise = this._clangFlagsManager.getFlagsForSrc(this._src)
+      .catch((e) => {
+        logger.error(`clang-server: Could not get flags for ${this._src}:`, e);
+        // Make sure this gets a retry.
+        this._flagsPromise = null;
+      });
+    return this._flagsPromise;
+  }
+
   async makeRequest(method: ClangServerRequest, params: Object): Promise<?Object> {
-    const flags = await this._clangFlagsManager.getFlagsForSrc(this._src);
+    if (method === 'compile') {
+      this._pendingCompileRequests++;
+    } else if (this._pendingCompileRequests) {
+      // All other requests should instantly fail.
+      return null;
+    }
+    try {
+      return await this._makeRequestImpl(method, params);
+    } finally {
+      if (method === 'compile') {
+        this._pendingCompileRequests--;
+      }
+    }
+  }
+
+  async _makeRequestImpl(method: ClangServerRequest, params: Object): Promise<?Object> {
+    const flags = await this.getFlags();
     if (flags == null) {
       return null;
     }
@@ -186,6 +231,7 @@ export default class ClangServer {
             logData,
             response['error']);
         }
+        this._lastProcessedRequestId = parseInt(reqid, 16);
         (isError ? reject : resolve)(response);
       });
     });
@@ -211,9 +257,9 @@ export default class ClangServer {
               + ' server crashed.',
               error,
             );
+            this.dispose();
             this._asyncConnection = null;
-            connection.dispose();
-            // TODO(hansonw): Fail existing requests.
+            this._lastProcessedRequestId = this._nextRequestId - 1;
           });
         this._asyncConnection = connection;
       } catch (e) {

@@ -32,6 +32,10 @@ describe('ClangFlagsManager', () => {
             'test#compilation-database,iphonesimulator-x86_64': {
               output: 'fixtures/compile_commands.json',
             },
+            // For testing on non-Mac machines.
+            'test#compilation-database,default': {
+              output: 'fixtures/compile_commands.json',
+            },
           },
         };
       },
