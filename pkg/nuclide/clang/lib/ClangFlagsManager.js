@@ -47,7 +47,6 @@ class ClangFlagsManager {
   }
 
   reset() {
-    // TODO(mbolin): Message clang_server.py to clear its cache.
     this.pathToFlags = {};
   }
 

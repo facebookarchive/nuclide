@@ -209,6 +209,19 @@ export function getDeclarationInfo(
   });
 }
 
+/**
+ * Kill the Clang server for a particular source file,
+ * as well as all the cached compilation flags.
+ */
+export function reset(src: NuclideUri): void {
+  const server = getClangServer(src);
+  if (server != null) {
+    server.dispose();
+    clangServers.delete(src);
+  }
+  clangFlagsManager.reset();
+}
+
 export function dispose(): void {
   clangServers.forEach(server => server.dispose());
   clangServers.clear();

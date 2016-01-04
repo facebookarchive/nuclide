@@ -38,7 +38,7 @@ class ClangDiagnosticsProvider {
   constructor(busySignalProvider: BusySignalProviderBase) {
     const options = {
       grammarScopes: GRAMMAR_SET,
-      onTextEditorEvent: this._runDiagnostics.bind(this),
+      onTextEditorEvent: this.runDiagnostics.bind(this),
       onNewUpdateSubscriber: this._receivedNewUpdateSubscriber.bind(this),
     };
     this._providerBase = new DiagnosticsProviderBase(options);
@@ -46,7 +46,7 @@ class ClangDiagnosticsProvider {
     this._diagnosticPaths = new Map();
   }
 
-  _runDiagnostics(editor: atom$TextEditor): void {
+  runDiagnostics(editor: atom$TextEditor): void {
     this._busySignalProvider.reportBusy(
       `Clang: compiling \`${editor.getTitle()}\``,
       () => this._runDiagnosticsImpl(editor),
@@ -66,7 +66,7 @@ class ClangDiagnosticsProvider {
         return;
       }
       const filePathToMessages = this._processDiagnostics(diagnostics, textEditor);
-      this._invalidatePath(filePath);
+      this.invalidatePath(filePath);
       this._providerBase.publishMessageUpdate({filePathToMessages});
       this._diagnosticPaths.set(filePath, array.from(filePathToMessages.keys()));
     } catch (error) {
@@ -128,7 +128,7 @@ class ClangDiagnosticsProvider {
     return filePathToMessages;
   }
 
-  _invalidatePath(path: NuclideUri): void {
+  invalidatePath(path: NuclideUri): void {
     const filePaths = this._diagnosticPaths.get(path);
     if (filePaths != null) {
       this._providerBase.publishMessageInvalidation({scope: 'file', filePaths});
@@ -138,7 +138,7 @@ class ClangDiagnosticsProvider {
   _receivedNewUpdateSubscriber(callback: MessageUpdateCallback): void {
     const activeTextEditor = atom.workspace.getActiveTextEditor();
     if (activeTextEditor && GRAMMAR_SET.has(activeTextEditor.getGrammar().scopeName)) {
-      this._runDiagnostics(activeTextEditor);
+      this.runDiagnostics(activeTextEditor);
     }
   }
 

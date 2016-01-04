@@ -53,4 +53,12 @@ module.exports = {
         .getDeclaration(src, editor.getText(), line, column);
   },
 
+  reset(editor: atom$TextEditor) {
+    const src = editor.getPath();
+    if (src != null) {
+      return getServiceByNuclideUri('ClangService', src)
+        .reset(src);
+    }
+  },
+
 };

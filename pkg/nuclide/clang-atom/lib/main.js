@@ -43,6 +43,27 @@ module.exports = {
   activate() {
     const {projects} = require('../../atom-helpers');
     subscriptions = new CompositeDisposable();
+    // Provide a 'Clean and rebuild' command to restart the Clang server for the current file
+    // and reset all compilation flags. Useful when BUCK targets or headers change,
+    // since those are heavily cached for performance. Also great for testing!
+    subscriptions.add(
+      atom.commands.add('atom-workspace', 'nuclide-clang:clean-and-rebuild', async () => {
+        const editor = atom.workspace.getActiveTextEditor();
+        if (editor == null) {
+          return;
+        }
+        const path = editor.getPath();
+        if (path == null) {
+          return;
+        }
+        const {reset} = require('./libclang');
+        await reset(editor);
+        if (diagnosticProvider != null) {
+          diagnosticProvider.invalidatePath(path);
+          diagnosticProvider.runDiagnostics(editor);
+        }
+      }),
+    );
     // Invalidate all diagnostics when closing the project.
     subscriptions.add(projects.onDidRemoveProjectPath((projectPath) => {
       if (diagnosticProvider != null) {
