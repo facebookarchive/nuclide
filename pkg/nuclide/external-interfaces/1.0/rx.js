@@ -41,6 +41,8 @@ declare module 'rx' {
 
     static empty(): Observable<any>;
 
+    static interval(period: number): Observable<number>;
+
     static just(value: T): Observable<T>;
 
     static merge(sources: Observable<T>[]): Observable<T>;
@@ -102,6 +104,8 @@ declare module 'rx' {
       f: (acc: U, value: T) => U,
       initialValue: U,
     ): Observable<U>;
+
+    share(): Observable<T>;
 
     take(count: number): Observable<T>;
 
@@ -174,5 +178,9 @@ declare module 'rx' {
 
   declare class ReplaySubject<T> extends Subject<T> {
 
+  }
+
+  declare class Disposable {
+    static create(action: () => mixed): rx$IDisposable;
   }
 }
