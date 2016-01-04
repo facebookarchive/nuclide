@@ -9,7 +9,10 @@
  * the root directory of this source tree.
  */
 
-import {activateAllPackages, deactivateAllPackages} from '../lib/package-utils';
+import {
+  activateAllPackages,
+  deactivateAllPackages,
+} from '../../pkg/nuclide/integration-test-helpers';
 
 describe('activate/deactivate all packages', () => {
   it('activates and deactivates packages correctly and without hanging', () => {

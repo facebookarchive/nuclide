@@ -87,6 +87,20 @@ class RemoteConnection {
     this._subscriptions.dispose();
   }
 
+  static async _createInsecureConnectionForTesting(
+    cwd: string,
+    port: number,
+  ): Promise<?RemoteConnection> {
+    const config = {
+      host: 'localhost',
+      port,
+      cwd,
+    };
+    const connection = new RemoteConnection(config);
+    await connection.initialize();
+    return connection;
+  }
+
   /**
    * Create a connection by reusing the configuration of last successful connection associated with
    * given host. If the server's certs has been updated or there is no previous successful

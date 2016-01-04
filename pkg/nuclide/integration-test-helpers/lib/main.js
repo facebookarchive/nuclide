@@ -12,11 +12,15 @@
 import {dispatchKeyboardEvent} from './event';
 import {copyMercurialFixture, setLocalProject} from './fixtures';
 import {activateAllPackages, deactivateAllPackages} from './package-utils';
+import {addRemoteProject, startNuclideServer, stopNuclideServer} from './remote-utils';
 
 module.exports = {
   activateAllPackages,
+  addRemoteProject,
   copyMercurialFixture,
   deactivateAllPackages,
   dispatchKeyboardEvent,
   setLocalProject,
+  startNuclideServer,
+  stopNuclideServer,
 };
