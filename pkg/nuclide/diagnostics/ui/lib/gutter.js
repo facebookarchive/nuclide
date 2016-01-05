@@ -269,7 +269,7 @@ function showPopupFor(
       });
     });
   }
-}  
+}
 
 function createElementForMessage(
   message: FileDiagnosticMessage,
