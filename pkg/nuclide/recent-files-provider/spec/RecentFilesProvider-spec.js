@@ -133,7 +133,7 @@ describe('RecentFilesProvider', () => {
       expect(provider.getComponentForItem({
         path: '/some/arbitrary/path',
         timestamp: now - 8 * HOURS,
-      }).props.style.opacity).toBeLessThan(1);
+      }).props.style.opacity).not.toBeGreaterThan(1);
 
       expect(provider.getComponentForItem({
         path: '/some/arbitrary/path',
