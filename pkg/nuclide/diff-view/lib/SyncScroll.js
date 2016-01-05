@@ -15,29 +15,20 @@ export default class SyncScroll {
 
   _subscriptions: ?CompositeDisposable;
   _syncInfo: Array<{
-    scrollElement: atom$TextEditorElement | atom$TextEditor;
+    scrollElement: atom$TextEditorElement;
     scrolling: boolean;
   }>;
 
   constructor(editor1Element: atom$TextEditorElement, editor2Element: atom$TextEditorElement) {
-    // Atom master and releases after v1.0.18 will change the scroll logic to the editor element.
-    let editor1ScrollElement = editor1Element;
-    let editor2ScrollElement = editor2Element;
-    if (editor1Element.onDidChangeScrollTop === undefined) {
-      // As of Atom v1.0.18 and lower, the `TextEditor` is the controller
-      // of the scroll functionality.
-      editor1ScrollElement = editor1Element.getModel();
-      editor2ScrollElement = editor2Element.getModel();
-    }
+    // Atom master or >= v1.0.18 have changed the scroll logic to the editor element.
     const subscriptions = this._subscriptions = new CompositeDisposable();
     this._syncInfo = [{
-      scrollElement: editor1ScrollElement,
+      scrollElement: editor1Element,
       scrolling: false,
     }, {
-      scrollElement: editor2ScrollElement,
+      scrollElement: editor2Element,
       scrolling: false,
     }];
-
     this._syncInfo.forEach((editorInfo, i) => {
       // Note that `onDidChangeScrollTop` isn't technically in the public API.
       const {scrollElement} = editorInfo;
@@ -51,12 +42,17 @@ export default class SyncScroll {
 
   _scrollPositionChanged(changeScrollIndex: number): void {
     const thisInfo  = this._syncInfo[changeScrollIndex];
-    const otherInfo = this._syncInfo[1 - changeScrollIndex];
     if (thisInfo.scrolling) {
       return;
     }
-    const {scrollElement: thisElement} = thisInfo;
+    const otherInfo = this._syncInfo[1 - changeScrollIndex];
     const {scrollElement: otherElement} = otherInfo;
+    if (otherElement.component == null) {
+      // The other editor isn't yet attached,
+      // while both editors were already in sync when attached.
+      return;
+    }
+    const {scrollElement: thisElement} = thisInfo;
     otherInfo.scrolling = true;
     // $FlowFixMe Atom API backword compatability.
     otherElement.setScrollTop(thisElement.getScrollTop());
