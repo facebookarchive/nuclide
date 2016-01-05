@@ -131,4 +131,5 @@ declare var jasmine: {
   getEnv(): JasmineEnvironment;
   pp(value: mixed): string;
   unspy(obj: Object, prop: string): void;
+  useRealClock(): void;
 };
