@@ -142,7 +142,8 @@ export function applyUpdateToEditor(
 
   editorToMarkers.set(editor, markers);
 
-  // Once the gutter is shown for the first time, it is displayed for the lifetime of the TextEditor.
+  // Once the gutter is shown for the first time, it is displayed for the lifetime of the
+  // TextEditor.
   if (update.messages.length > 0) {
     gutter.show();
   }
