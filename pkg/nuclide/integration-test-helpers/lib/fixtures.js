@@ -10,7 +10,7 @@
  */
 
 import invariant from 'assert';
-import {existsSync, moveSync} from 'fs-plus';
+import {absolute, existsSync, moveSync} from 'fs-plus';
 import {fixtures} from '../../test-helpers';
 import path from 'path';
 
@@ -29,7 +29,7 @@ export async function copyMercurialFixture(fixtureName: string): Promise<string>
   const pathToHg = path.join(repo, '.hg-rename');
   invariant(existsSync(pathToHg), `Directory: ${pathToHg} was not found.`);
   moveSync(pathToHg, path.join(repo, '.hg'));
-  return repo;
+  return absolute(repo);
 }
 
 /**
@@ -42,4 +42,16 @@ export function setLocalProject(projectPath: string | Array<string>): void {
   } else {
     atom.project.setPaths([projectPath]);
   }
+}
+
+/*
+ * Copies a specified subdirectory of integration-test-helpers/fixtures to a temporary location.
+ *
+ * @param fixtureName The name of the subdirectory of the fixtures/ directory within the
+ * nuclide-test-helpers package directory that should be copied.
+ * @returns the path to the temporary directory that this function creates.
+ */
+export async function copyFixture(fixtureName: string): Promise<string> {
+  const fixturePath = await fixtures.copyFixture(fixtureName, path.join(__dirname, '../spec'));
+  return absolute(fixturePath);
 }
