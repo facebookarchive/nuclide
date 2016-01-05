@@ -268,7 +268,7 @@ function showPopupFor(
       });
     });
   }
-}
+}  
 
 function createElementForMessage(
   message: FileDiagnosticMessage,
@@ -291,11 +291,9 @@ function createElementForMessage(
   }
   const header = (
     <div className="nuclide-diagnostics-gutter-ui-popup-header">
-      <span className={`${providerClassName}`}>{message.providerName}</span>
-      <span className="pull-right">
-        {fixButton}
-        <button className="btn btn-xs" onClick={copy}>Copy</button>
-      </span>
+      {fixButton}
+      <button className="btn btn-xs" onClick={copy}>Copy</button>
+      <span className={`pull-right ${providerClassName}`}>{message.providerName}</span>
     </div>
   );
   const traceElements = message.trace
