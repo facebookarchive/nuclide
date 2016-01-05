@@ -19,7 +19,6 @@ declare module 'module' {
  */
 export type Definitions = Map<string, Definition>;
 
-// $FlowIssue
 export type Definition = FunctionDefinition | InterfaceDefinition | AliasDefinition;
 
 // A top level function.

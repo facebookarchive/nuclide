@@ -89,7 +89,6 @@ async function getSearchProviders(cwd: string): Promise<Array<ProviderInfo>> {
     validPromises.push(checkAvailability(name));
   }
 
-  // $FlowIssue - Can't handle Promise.all
   const allResults: Array<?ProviderInfo> =
       await Promise.all((validPromises: Array<Promise<?ProviderInfo>>));
   // Any is required here as otherwise we get a flow error in core.js

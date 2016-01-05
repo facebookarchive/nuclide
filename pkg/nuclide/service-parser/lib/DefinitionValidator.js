@@ -214,11 +214,8 @@ export function validateDefinitions(definitions: Definitions): void {
           }
           break;
         case 'interface':
-          // $FlowIssue
           definition.constructorArgs.forEach(validateType);
-          // $FlowIssue
           definition.instanceMethods.forEach(validateType);
-          // $FlowIssue
           definition.staticMethods.forEach(validateType);
           break;
       }
@@ -571,11 +568,8 @@ export function validateDefinitions(definitions: Definitions): void {
           }
           break;
         case 'interface':
-          // $FlowIssue
           definition.constructorArgs.forEach(operation);
-          // $FlowIssue
           definition.instanceMethods.forEach(operation);
-          // $FlowIssue
           definition.staticMethods.forEach(operation);
           break;
       }

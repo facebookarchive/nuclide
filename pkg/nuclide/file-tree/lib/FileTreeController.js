@@ -91,7 +91,8 @@ class FileTreeController {
     );
     this._subscriptions.add(
       atom.commands.add('atom-workspace', {
-        'nuclide-file-tree:reveal-active-file': this.revealActiveFile.bind(this),
+        // Pass undefined so the default parameter gets used.
+        'nuclide-file-tree:reveal-active-file': this.revealActiveFile.bind(this, undefined),
         'nuclide-file-tree:toggle': this.toggleVisibility.bind(this),
         'nuclide-file-tree:toggle-focus': this.toggleTreeFocus.bind(this),
       })

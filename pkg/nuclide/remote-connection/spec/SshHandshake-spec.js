@@ -24,7 +24,7 @@ describe('SshHandshake', () => {
   }
 
   let dns;
-  let handshakeDelegate;
+  let handshakeDelegate: any;
 
   beforeEach(() => {
     dns = uncachedRequire(require, 'dns');

@@ -53,7 +53,7 @@ describe('FileSystemService', () => {
       } catch (e) {
         err = e;
       }
-      expect(err).toBeDefined();
+      invariant(err != null);
       expect(err.code).toBe('ENOENT');
     });
   });
@@ -73,7 +73,7 @@ describe('FileSystemService', () => {
       } catch (e) {
         err = e;
       }
-      expect(err).toBeDefined();
+      invariant(err != null);
       expect(err.code).toBe('ENOENT');
     });
   });
@@ -245,7 +245,7 @@ describe('FileSystemService', () => {
           err = e;
         }
 
-        expect(err).toBeDefined();
+        invariant(err != null);
         expect(err.code).toBe('ENOENT');
         expect(fs.existsSync(destinationPath)).toBe(false);
       });
@@ -265,7 +265,7 @@ describe('FileSystemService', () => {
           err = e;
         }
 
-        expect(err).toBeDefined();
+        invariant(err != null);
         expect(err.code).toBe('EEXIST');
       });
     });
@@ -302,7 +302,7 @@ describe('FileSystemService', () => {
         } catch (e) {
           err = e;
         }
-        expect(err).toBeDefined();
+        invariant(err != null);
         expect(err.code).toBe('EEXIST');
       });
     });
@@ -315,7 +315,7 @@ describe('FileSystemService', () => {
         } catch (e) {
           err = e;
         }
-        expect(err).toBeDefined();
+        invariant(err != null);
         expect(err.code).toBe('ENOENT');
       });
     });

@@ -62,8 +62,8 @@ async function installPackagesInConfig(config: InstallConfig): Promise<boolean> 
   const notificationEl = atom.views.getView(notification);
   const messageEl = notificationEl.querySelector('.message');
   const notificationContentEl = notificationEl.querySelector('.detail-content');
-  let detailTextElement: ?HTMLElement = undefined;
-  let messageParagraphElement: ?HTMLElement = undefined;
+  let detailTextElement;
+  let messageParagraphElement;
 
   // Defensive checks in case the DOM structure changes.
   if (notificationContentEl) {

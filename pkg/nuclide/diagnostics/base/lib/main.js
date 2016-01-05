@@ -91,7 +91,7 @@ export type DiagnosticUpdater = {
     (callback: (messages: Array<ProjectDiagnosticMessage>) => mixed) => atom$Disposable;
   onAllMessagesDidUpdate:
     (callback: (messages: Array<DiagnosticMessage>) => mixed) => atom$Disposable;
-  applyFix: (message: FileMessageUpdate) => void;
+  applyFix: (message: FileDiagnosticMessage) => void;
 };
 
 const DiagnosticStore = require('./DiagnosticStore');

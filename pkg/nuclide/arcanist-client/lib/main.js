@@ -10,7 +10,6 @@
  */
 
 import type {NuclideUri} from '../../remote-uri';
-// $FlowIssue t9336315
 import typeof * as ArcanistBaseService from '../../arcanist-base';
 
 function getService(fileName: NuclideUri): ArcanistBaseService {
@@ -45,7 +44,6 @@ async function findDiagnostics(fileNames: Iterable<NuclideUri>): Promise<Array<O
     files.push(file);
   }
 
-  // $FlowIssue: https://github.com/facebook/flow/issues/1143
   const results: Array<Promise<Array<Object>>> = [];
   for (const [service, files] of serviceToFileNames) {
     results.push(service.findDiagnostics(files));

@@ -76,6 +76,7 @@ export default class DiffViewEditor {
       renderPromises.push(didRenderPromise);
       components.push({
         bufferRow,
+        // $FlowFixMe(most)
         component,
         container,
       });

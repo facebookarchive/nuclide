@@ -9,7 +9,6 @@
  * the root directory of this source tree.
  */
 
-// $FlowIssue t9336315
 import typeof * as FuzzyFileSearchService from '../../fuzzy-file-search-service';
 import featureConfig from '../../feature-config';
 

@@ -62,7 +62,7 @@ export default class JumpToRelatedFile {
       });
     this._commandSubscriptionsMap.set(textEditor, commandSubscription);
 
-    textEditor.onDidDestroy(this._disableInTextEditor.bind(this));
+    textEditor.onDidDestroy(this._disableInTextEditor.bind(this, textEditor));
   }
 
   _disableInTextEditor(textEditor: TextEditor): void {

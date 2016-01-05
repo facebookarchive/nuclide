@@ -64,7 +64,8 @@ export default class {
       // We also want to style the changeset differently if it is clickable.
       this._changesetSpanClassName += ' ' + CLICKABLE_CHANGESET_CSS_CLASS;
 
-      const onClick = this._onClick.bind(this);
+      // $FlowIssue: https://github.com/facebook/flow/issues/1242
+      const onClick: (evt: Event) => Promise<void> = this._onClick.bind(this);
       const gutterView: HTMLElement = atom.views.getView(this._gutter);
       gutterView.addEventListener('click', onClick);
       this._subscriptions.add(this._gutter.onDidDestroy(
@@ -82,7 +83,7 @@ export default class {
    * If the user clicked on a ChangeSet ID, extract it from the DOM element via the data- attribute
    * and find the corresponding Differential revision. If successful, open the URL for the revision.
    */
-  async _onClick(e: MouseEvent): Promise<void> {
+  async _onClick(e: Event): Promise<void> {
     const target = e.target;
     if (!target) {
       return;

@@ -86,7 +86,6 @@ export async function findDiagnostics(pathToFiles: Array<NuclideUri>):
   );
 
   // Kick off all the arc execs at once, then await later so they all happen in parallel.
-  // $FlowIssue: https://github.com/facebook/flow/issues/1143
   const results: Array<Promise<Array<ArcDiagnostic>>> = [];
   for (const [arcDir, files] of arcConfigDirToFiles) {
     results.push(execArcLint(arcDir, files));

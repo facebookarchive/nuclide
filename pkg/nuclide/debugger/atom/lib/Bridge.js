@@ -79,7 +79,11 @@ class Bridge {
     }
   }
 
-  _handleIpcMessage(event: {channel: string; args: any[]}) {
+  _handleIpcMessage(stdEvent: Event): void {
+    // addEventListener expects its callback to take an Event. I'm not sure how to reconcile it with
+    // the type that is expected here.
+    // $FlowFixMe(jeffreytan)
+    const event: {channel: string; args: any[]} = stdEvent;
     switch (event.channel) {
       case 'notification':
         switch (event.args[0]) {

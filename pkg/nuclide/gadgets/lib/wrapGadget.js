@@ -34,7 +34,7 @@ export default function wrapGadget(gadget: any): Object {
   // Proxies, we shoulds switch to them (so that we're not trampling on the component's namespace).
   // Until then, let's just try really hard to minimize the number of things we do that the
   // component can see.
-  class PaneItem extends (gadget: Object) {
+  class PaneItem extends gadget {
 
     // Used to restore the item to the correct size when you show its pane.
     _expandedFlexScale: ?number;

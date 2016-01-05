@@ -13,7 +13,6 @@ import type {
   Provider,
 } from '../../quick-open-interfaces';
 
-// $FlowIssue t9336315
 import typeof * as FuzzyFileSearchService from '../../fuzzy-file-search-service';
 
 import {

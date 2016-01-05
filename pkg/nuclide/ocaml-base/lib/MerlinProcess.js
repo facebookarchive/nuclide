@@ -110,7 +110,7 @@ export class MerlinProcess {
     kind: string,
   ): Promise<?{file: string, pos: {line: number, col: number}}> {
     return await this._promiseQueue.submit(async (resolve, reject) => {
-      const location: Object = await this.runSingleCommand([
+      const location = await this.runSingleCommand([
         'locate',
         /* identifier name */ '',
         kind,
@@ -153,7 +153,7 @@ export class MerlinProcess {
    * that merlin's protocol is line-based (results are json objects rendered
    * on a single line).
    */
-  runSingleCommand(command: mixed): Promise<mixed> {
+  runSingleCommand(command: mixed): Promise<Object> {
     const commandString = JSON.stringify(command);
     const stdin = this._proc.stdin;
     const stdout = this._proc.stdout;

@@ -114,7 +114,6 @@ function isValidDirectory(directory: Directory): boolean {
   return (!isLocalFile((directory: any)) || isFullyQualifiedLocalPath(directory.getPath()));
 }
 
-// $FlowIssue https://github.com/facebook/flow/issues/582
 function isLocalFile(entry: File | Directory): boolean {
   // TODO: implement `RemoteDirectory.isRemoteDirectory()`
   return !('getLocalPath' in entry);

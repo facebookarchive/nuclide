@@ -104,7 +104,7 @@ class DiffViewModel {
     this._emitter.emit(CHANGE_DIRTY_STATUS_EVENT, this._dirtyFileChanges);
   }
 
-  _createRepositoryStack(repository: HgRepositoryClient) {
+  _createRepositoryStack(repository: HgRepositoryClient): RepositoryStack {
     const repositoryStack = new RepositoryStack(repository);
     const subscriptions = new CompositeDisposable();
     subscriptions.add(

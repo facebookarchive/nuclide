@@ -90,6 +90,7 @@ export default class HyperclickForTextEditor {
       if (this._textEditorView.component == null) {
         return;
       }
+      // $FlowFixMe (most)
       getLinesDomNode().removeEventListener('mousedown', this._onMouseDown);
     };
     const addMouseDownListener = () => {
@@ -331,8 +332,11 @@ export default class HyperclickForTextEditor {
   dispose() {
     this._isDestroyed = true;
     this._clearSuggestion();
+    // $FlowFixMe (most)
     this._textEditorView.removeEventListener('mousemove', this._onMouseMove);
+    // $FlowFixMe (most)
     this._textEditorView.removeEventListener('keydown', this._onKeyDown);
+    // $FlowFixMe (most)
     this._textEditorView.removeEventListener('keyup', this._onKeyUp);
     this._subscriptions.dispose();
   }

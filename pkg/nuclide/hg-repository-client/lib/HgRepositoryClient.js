@@ -650,11 +650,12 @@ export default class HgRepositoryClient {
     }
 
     // Fall back to a fetch.
-    // $FlowFixMe
     const fetchedPathToDiffInfo = await this._updateDiffInfo([filePath]);
-    if (fetchedPathToDiffInfo && fetchedPathToDiffInfo.get(filePath)) {
+    if (fetchedPathToDiffInfo) {
       const diffInfo = fetchedPathToDiffInfo.get(filePath);
-      return {added: diffInfo.added, deleted: diffInfo.deleted};
+      if (diffInfo != null) {
+        return {added: diffInfo.added, deleted: diffInfo.deleted};
+      }
     }
 
     return cleanStats;
