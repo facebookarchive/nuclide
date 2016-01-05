@@ -24,8 +24,8 @@ export type ArcDiagnostic = {
   code: ?string,
 
   // For autofix
-  original: ?string,
-  replacement: ?string,
+  original?: string,
+  replacement?: string,
 };
 
 // Exported for testing
@@ -153,11 +153,11 @@ function convertLints(
     char: number,
     code: string,
     description: string,
-    original: ?string,
-    replacement: ?string,
+    original?: string,
+    replacement?: string,
   }>,
 ): Array<ArcDiagnostic> {
-  return lints.map((lint) => {
+  return lints.map(lint => {
     // Choose an appropriate level based on lint['severity'].
     const severity = lint['severity'];
     const level = severity === 'error' ? 'Error' : 'Warning';
@@ -168,15 +168,20 @@ function convertLints(
     const col = Math.max(0, lint['char'] - 1);
     const row = Math.max(0, line - 1);
 
-    return {
+    const diagnostic: ArcDiagnostic = {
       type: level,
       text: lint['description'],
       filePath: pathToFile,
       row,
       col,
       code: lint['code'],
-      original: lint['original'],
-      replacement: lint['replacement'],
     };
+    if (lint.original != null) {
+      diagnostic.original = lint.original;
+    }
+    if (lint.replacement != null) {
+      diagnostic.replacement = lint.replacement;
+    }
+    return diagnostic;
   });
 }
