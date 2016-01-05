@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {BusySignalMessage} from '../../busy-signal-interfaces';
+import type {BusySignalMessage, BusySignalMessageBusy} from '../../busy-signal-interfaces';
 
 import {Subject} from 'rx';
 
@@ -18,7 +18,7 @@ import {MessageStore} from '../lib/MessageStore';
 describe('MessageStore', () => {
   let messageStore: MessageStore = (null: any);
   let messagePublisher: Subject<BusySignalMessage> = (null: any);
-  let messageStreamResults: Array<Array<BusySignalMessage>> = (null: any);
+  let messageStreamResults: Array<Array<BusySignalMessageBusy>> = (null: any);
   let sampleMessage: BusySignalMessage = (null: any);
 
   function getLastResult() {

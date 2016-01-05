@@ -11,12 +11,16 @@
 
 import type {Observable} from 'rx';
 
-export type BusySignalMessage = {
+export type BusySignalMessage = BusySignalMessageBusy | BusySignalMessageDone;
+
+export type BusySignalMessageBusy = {
   status: 'busy',
   // Must be unique to the provider. Used to cancel the message later.
   id: number,
   message: string,
-} | {
+};
+
+export type BusySignalMessageDone = {
   status: 'done',
   // Cancel the busy signal with this identifier.
   id: number,

@@ -11,13 +11,11 @@
 
 import type {Observable} from 'rx';
 
-import type {BusySignalMessage} from '../../busy-signal-interfaces';
+import type {BusySignalMessageBusy} from '../../busy-signal-interfaces';
 
 import React from 'react-for-atom';
 
 import {StatusBarTileComponent} from './StatusBarTileComponent';
-
-import invariant from 'assert';
 
 // We want to be the furthest left on the right side of the status bar so as not to leave a
 // conspicuous gap (or cause jitter) when nothing is busy.
@@ -65,10 +63,9 @@ export class StatusBarTile {
     this._render();
   }
 
-  consumeMessageStream(messageStream: Observable<Array<BusySignalMessage>>): void {
+  consumeMessageStream(messageStream: Observable<Array<BusySignalMessageBusy>>): void {
     messageStream.subscribe(messages => {
       this._messages = messages.map(message => {
-        invariant(message.status === 'busy');
         return message.message;
       });
       this._render();

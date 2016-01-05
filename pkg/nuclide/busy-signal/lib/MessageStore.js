@@ -9,7 +9,11 @@
  * the root directory of this source tree.
  */
 
-import type {BusySignalProvider, BusySignalMessage} from '../../busy-signal-interfaces';
+import type {
+  BusySignalProvider,
+  BusySignalMessage,
+  BusySignalMessageBusy,
+} from '../../busy-signal-interfaces';
 
 import {Observable, BehaviorSubject} from 'rx';
 import {Disposable} from 'atom';
@@ -17,8 +21,8 @@ import invariant from 'assert';
 
 export class MessageStore {
   // provider to id to messages.
-  _currentMessages: Map<BusySignalProvider, Map<number, BusySignalMessage>>;
-  _messageStream: BehaviorSubject<Array<BusySignalMessage>>;
+  _currentMessages: Map<BusySignalProvider, Map<number, BusySignalMessageBusy>>;
+  _messageStream: BehaviorSubject<Array<BusySignalMessageBusy>>;
 
   constructor() {
     this._currentMessages = new Map();
@@ -35,7 +39,7 @@ export class MessageStore {
     });
   }
 
-  getMessageStream(): Observable<Array<BusySignalMessage>> {
+  getMessageStream(): Observable<Array<BusySignalMessageBusy>> {
     return this._messageStream;
   }
 
@@ -55,7 +59,7 @@ export class MessageStore {
   }
 
   _publishMessages(): void {
-    const messages = [];
+    const messages: Array<BusySignalMessageBusy> = [];
     for (const idMap of this._currentMessages.values()) {
       for (const message of idMap.values()) {
         messages.push(message);
