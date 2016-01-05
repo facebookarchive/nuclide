@@ -816,6 +816,16 @@ declare class atom$Clipboard {
 
 declare class atom$ContextMenuManager {
   add(itemsBySelector: Object): atom$Disposable;
+  itemSets: Array<atom$ContextMenuItemSet>;
+}
+
+declare class atom$ContextMenuItemSet {
+  items: Array<atom$ContextMenuItem>;
+}
+
+declare class atom$ContextMenuItem {
+  command: string;
+  label: string;
 }
 
 declare class atom$Deserializer {
