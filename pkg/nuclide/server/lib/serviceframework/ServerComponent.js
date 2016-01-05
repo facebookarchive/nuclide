@@ -11,7 +11,7 @@
 
 import {Observable} from 'rx';
 import {getDefinitions} from '../../../service-parser';
-import NuclideServer from '../NuclideServer';
+import type NuclideServer from '../NuclideServer';
 import TypeRegistry from '../../../service-parser/lib/TypeRegistry';
 import {builtinLocation, voidType} from '../../../service-parser/lib/builtin-types';
 import type {
