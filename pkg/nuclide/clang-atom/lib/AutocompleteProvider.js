@@ -12,6 +12,7 @@
 import type {ClangCompletion} from '../../clang';
 
 import {Point} from 'atom';
+import {trackTiming} from '../../analytics';
 import {ClangCursorToDeclarationTypes} from '../../clang';
 import {getCompletions} from './libclang';
 
@@ -176,6 +177,7 @@ function getCompletionPrefix(editor: atom$TextEditor): string {
 
 class AutocompleteProvider {
 
+  @trackTiming('nuclide-clang-atom.autocomplete')
   async getAutocompleteSuggestions(
     request: atom$AutocompleteRequest
   ): Promise<Array<atom$AutocompleteSuggestion>> {

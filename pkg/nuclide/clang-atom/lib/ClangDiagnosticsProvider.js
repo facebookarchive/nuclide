@@ -53,7 +53,7 @@ class ClangDiagnosticsProvider {
     );
   }
 
-  @trackTiming('nuclide-clang:fetch-diagnostics')
+  @trackTiming('nuclide-clang-atom.fetch-diagnostics')
   async _runDiagnosticsImpl(textEditor: atom$TextEditor): Promise<void> {
     const filePath = textEditor.getPath();
     if (!filePath) {

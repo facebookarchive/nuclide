@@ -11,12 +11,17 @@
 
 import type {BuckUtils} from '../../buck/base/lib/BuckUtils';
 
+import invariant from 'assert';
 import path from 'path';
-import {array} from '../../commons';
+import {parse} from 'shell-quote';
+import {trackTiming} from '../../analytics';
+import {array, fsPromise} from '../../commons';
 import {getLogger} from '../../logging';
 import {BuckProject} from '../../buck/base/lib/BuckProject';
 
 const logger = getLogger();
+
+const COMPILATION_DATABASE_FILE = 'compile_commands.json';
 
 const CLANG_FLAGS_THAT_TAKE_PATHS = new Set([
   '-F',
@@ -35,6 +40,7 @@ const SINGLE_LETTER_CLANG_FLAGS_THAT_TAKE_PATHS = new Set(
 class ClangFlagsManager {
   _buckUtils: BuckUtils;
   _cachedBuckProjects: Map<string, BuckProject>;
+  _compilationDatabases: Set<string>;
   pathToFlags: {[path: string]: ?Array<string>};
 
   constructor(buckUtils: BuckUtils) {
@@ -44,10 +50,13 @@ class ClangFlagsManager {
     this.pathToFlags = {};
     this._buckUtils = buckUtils;
     this._cachedBuckProjects = new Map();
+    this._compilationDatabases = new Set();
   }
 
   reset() {
     this.pathToFlags = {};
+    this._cachedBuckProjects.clear();
+    this._compilationDatabases.clear();
   }
 
   async _getBuckProject(src: string): Promise<?BuckProject> {
@@ -89,15 +98,79 @@ class ClangFlagsManager {
     return flags;
   }
 
+  @trackTiming('nuclide-clang.get-flags')
   async _getFlagsForSrcImpl(src: string): Promise<?Array<string>> {
+    // Look for a manually provided compilation database.
+    const dbDir = await fsPromise.findNearestFile(
+      COMPILATION_DATABASE_FILE,
+      path.dirname(src),
+    );
+    if (dbDir != null) {
+      const dbFile = path.join(dbDir, COMPILATION_DATABASE_FILE);
+      await this._loadFlagsFromCompilationDatabase(dbFile);
+      const flags = this._lookupFlagsForSrc(src);
+      if (flags != null) {
+        return flags;
+      }
+    }
+
+    await this._loadFlagsFromBuck(src);
+    return this._lookupFlagsForSrc(src);
+  }
+
+  _lookupFlagsForSrc(src: string): ?Array<string> {
+    const flags = this.pathToFlags[src];
+    if (flags !== undefined) {
+      return flags;
+    }
+
+    // Header files typically don't have entries in the compilation database.
+    // As a simple heuristic, look for other files with the same extension.
+    const ext = src.lastIndexOf('.');
+    if (ext !== -1) {
+      const extLess = src.substring(0, ext + 1);
+      for (const file in this.pathToFlags) {
+        if (file.startsWith(extLess)) {
+          return this.pathToFlags[file];
+        }
+      }
+    }
+    return null;
+  }
+
+  async _loadFlagsFromCompilationDatabase(dbFile: string): Promise<void> {
+    if (this._compilationDatabases.has(dbFile)) {
+      return;
+    }
+
+    try {
+      const contents = await fsPromise.readFile(dbFile);
+      const data = JSON.parse(contents);
+      invariant(data instanceof Array);
+      await Promise.all(data.map(async entry => {
+        const {directory, command, file} = entry;
+        const args = ClangFlagsManager.parseArgumentsFromCommand(command);
+        const filename = path.resolve(directory, file);
+        if (await fsPromise.exists(filename)) {
+          const realpath = await fsPromise.realpath(filename);
+          this.pathToFlags[realpath] = ClangFlagsManager.sanitizeCommand(file, args, directory);
+        }
+      }));
+      this._compilationDatabases.add(dbFile);
+    } catch (e) {
+      logger.error(`Error reading compilation flags from ${dbFile}`, e);
+    }
+  }
+
+  async _loadFlagsFromBuck(src: string): Promise<void> {
     const buckProject = await this._getBuckProject(src);
     if (!buckProject) {
-      return null;
+      return;
     }
 
     const targets = await buckProject.getOwner(src);
     if (targets.length === 0) {
-      return null;
+      return;
     }
 
     // TODO(mbolin): The architecture should be chosen from a dropdown menu like
@@ -129,9 +202,7 @@ class ClangFlagsManager {
         buckProjectRoot,
         pathToCompilationDatabase);
 
-    const {readFile} = require('../../commons').fsPromise;
-
-    const compilationDatabaseJsonBuffer = await readFile(pathToCompilationDatabase);
+    const compilationDatabaseJsonBuffer = await fsPromise.readFile(pathToCompilationDatabase);
     const compilationDatabaseJson = compilationDatabaseJsonBuffer.toString('utf8');
     const compilationDatabase = JSON.parse(compilationDatabaseJson);
     compilationDatabase.forEach((item) => {
@@ -141,33 +212,34 @@ class ClangFlagsManager {
           item.arguments,
           buckProjectRoot);
     });
+  }
 
-    if (!(src in this.pathToFlags)) {
-      // Look for something else with a different extension.
-      const ext = src.lastIndexOf('.');
-      if (ext !== -1) {
-        const extLess = src.substring(0, ext + 1);
-        for (const file in this.pathToFlags) {
-          if (file.startsWith(extLess)) {
-            return this.pathToFlags[file];
-          }
-        }
+  static parseArgumentsFromCommand(command: string): Array<string> {
+    const result = [];
+    // shell-quote returns objects for things like pipes.
+    // This should never happen with proper flags, but ignore them to be safe.
+    for (const arg of parse(command)) {
+      if (typeof arg !== 'string') {
+        break;
       }
+      result.push(arg);
     }
-
-    return this.pathToFlags[src] || null;
+    return result;
   }
 
   static sanitizeCommand(
     sourceFile: string,
     args: Array<string>,
-    buckProjectRoot: string
+    basePath: string
   ): Array<string> {
     // For safety, create a new copy of the array. We exclude the path to the file to compile from
     // compilation database generated by Buck. It must be removed from the list of command-line
     // arguments passed to libclang.
     const normalizedSourceFile = path.normalize(sourceFile);
-    args = args.filter((arg) => normalizedSourceFile !== path.resolve(buckProjectRoot, arg));
+    args = args.filter((arg) =>
+      normalizedSourceFile !== arg &&
+      normalizedSourceFile !== path.resolve(basePath, arg)
+    );
 
     // Resolve relative path arguments against the Buck project root.
     args.forEach((arg, argIndex) => {
@@ -175,13 +247,13 @@ class ClangFlagsManager {
         const nextIndex = argIndex + 1;
         let filePath = args[nextIndex];
         if (!path.isAbsolute(filePath)) {
-          filePath = path.join(buckProjectRoot, filePath);
+          filePath = path.join(basePath, filePath);
           args[nextIndex] = filePath;
         }
       } else if (SINGLE_LETTER_CLANG_FLAGS_THAT_TAKE_PATHS.has(arg.substring(0, 2))) {
         let filePath = arg.substring(2);
         if (!path.isAbsolute(filePath)) {
-          filePath = path.join(buckProjectRoot, filePath);
+          filePath = path.join(basePath, filePath);
           args[argIndex] = arg.substring(0, 2) + filePath;
         }
       }

@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import path from 'path';
 import {BuckUtils} from '../../buck/base/lib/BuckUtils';
 import ClangFlagsManager from '../lib/ClangFlagsManager';
 
@@ -23,18 +24,18 @@ describe('ClangFlagsManager', () => {
         return ['test'];
       },
       getPath() {
-        return __dirname;
+        return path.join(__dirname, 'fixtures');
       },
       build() {
         return {
           success: true,
           results: {
             'test#compilation-database,iphonesimulator-x86_64': {
-              output: 'fixtures/compile_commands.json',
+              output: 'compile_commands.json',
             },
             // For testing on non-Mac machines.
             'test#compilation-database,default': {
-              output: 'fixtures/compile_commands.json',
+              output: 'compile_commands.json',
             },
           },
         };
@@ -193,6 +194,33 @@ describe('ClangFlagsManager', () => {
       flags = await flagsManager.getFlagsForSrc('test.hpp');
       expect(flags).toEqual(['g++', '-fPIC', '-O3']);
     });
+  });
+
+  it('gets flags from the compilation database', () => {
+    waitsForPromise(async () => {
+      spyOn(buckProject, 'build').andCallThrough();
+      let testFile = path.join(__dirname, 'fixtures', 'test.cpp');
+      let flags = await flagsManager.getFlagsForSrc(testFile);
+      expect(flags).toEqual(['g++', '-fPIC', '-O3']);
+      expect(buckProject.build).not.toHaveBeenCalled();
+
+      testFile = path.join(__dirname, 'fixtures', 'test.h');
+      flags = await flagsManager.getFlagsForSrc(testFile);
+      expect(flags).toEqual(['g++', '-fPIC', '-O3']);
+      expect(buckProject.build).not.toHaveBeenCalled();
+
+      // Fall back to Buck if it's not in the compilation DB.
+      testFile = path.join(__dirname, 'fixtures', 'test2.cpp');
+      flags = await flagsManager.getFlagsForSrc(testFile);
+      expect(buckProject.build).toHaveBeenCalled();
+      expect(flags).toEqual(null);
+    });
+  });
+
+  it('correctly parses arguments from raw commands', () => {
+    // shell-quote is pretty safe; just make sure we ignore unexpected Objects like operators.
+    expect(ClangFlagsManager.parseArgumentsFromCommand('test "a\\" b c" \'a b\' || x'))
+      .toEqual(['test', 'a" b c', 'a b']);
   });
 
 });
