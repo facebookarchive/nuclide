@@ -10,7 +10,7 @@
 # we want to limit our dependencies to built-in Python libraries and libclang
 # (which is provided in ../pythonpath)
 from clang.cindex import *
-from codecomplete import get_completions
+from codecomplete import CompletionCache
 from declarationlocation import get_declaration_location_and_spelling
 
 import json
@@ -77,6 +77,7 @@ class Server:
         self.output_stream = output_stream
         self.index = Index.create()
         self.src_to_translation_unit = {}
+        self.completion_cache = None
 
     def run(self):
         input_stream = self.input_stream
@@ -118,8 +119,8 @@ class Server:
         except:
             response['error'] = traceback.format_exc()
 
-        root_logger.debug('Finished %s request in %.2lf seconds.',
-                          method, time.time() - start_time)
+        root_logger.info('Finished %s request in %.2lf seconds.',
+                         method, time.time() - start_time)
 
         # response must have a key named "error" if there was a failure of any
         # kind.
@@ -230,9 +231,9 @@ class Server:
         # without any special handling.
         translation_unit = self._get_translation_unit(src, flags)
         if translation_unit:
-            completions = get_completions(
-                translation_unit,
-                src,
+            if self.completion_cache is None:
+                self.completion_cache = CompletionCache(self.src, translation_unit)
+            completions = self.completion_cache.get_completions(
                 line + 1,
                 token_start_column + 1,
                 prefix,
@@ -341,6 +342,8 @@ class Server:
             unsaved_files = []
         options = 0  # There are no reparse options available in libclang yet.
         translation_unit.reparse(unsaved_files, options)
+        if self.completion_cache is not None:
+            self.completion_cache.invalidate()
 
     def _tryUpdateTranslationUnit(self, src, unsaved_contents=None, flags=None):
         '''Returns None if the flags for the src cannot be found.'''

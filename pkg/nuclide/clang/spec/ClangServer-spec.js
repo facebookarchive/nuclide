@@ -48,9 +48,9 @@ describe('ClangServer', () => {
       invariant(response);
       expect(response.reqid).toBe('1');
       expect(response.completions.map(x => x.spelling)).toEqual([
-        'bool false',
+        'false',
         'float',
-        'void f()',
+        'f()',
       ]);
 
       response = await server.makeRequest('get_declaration', {

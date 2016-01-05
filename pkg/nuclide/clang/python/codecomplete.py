@@ -6,12 +6,61 @@
 
 from clang.cindex import *
 
+import logging
 import re
+from itertools import imap, islice
+
 
 OPERATOR_OVERLOAD_RE = re.compile('^operator[^\w]')
 
 
-def get_completions(translation_unit, absolute_path, line, column, prefix, contents=None, limit=None):
+logger = logging.getLogger(__name__)
+
+
+class CompletionCache:
+
+    def __init__(self, absolute_path, translation_unit):
+        self._absolute_path = absolute_path
+        self._translation_unit = translation_unit
+        self.invalidate()
+
+    def get_completions(self, line, column, prefix, contents=None, limit=None):
+        results = self._lookup(line, column, prefix)
+        if results is None:
+            results = _get_completions(
+                self._translation_unit,
+                self._absolute_path,
+                line,
+                column,
+                prefix,
+                contents
+            )
+            self._update(line, column, prefix, results)
+        return list(islice(results, limit))
+
+    def invalidate(self):
+        self._last_line = None
+        self._last_column = None
+        self._last_prefix = None
+        self._last_result = None
+
+    def _lookup(self, line, column, prefix):
+        if (line == self._last_line and column == self._last_column and
+            prefix.startswith(self._last_prefix)):
+            if prefix == self._last_prefix:
+                return self._last_result
+            return (result for result in self._last_result
+                    if result['spelling'].startswith(prefix))
+        return None
+
+    def _update(self, line, column, prefix, result):
+        self._last_line = line
+        self._last_column = column
+        self._last_prefix = prefix
+        self._last_result = result
+
+
+def _get_completions(translation_unit, absolute_path, line, column, prefix, contents=None):
     unsaved_files = []
     if contents:
         contents_as_str = contents.encode('utf8')
@@ -33,67 +82,67 @@ def get_completions(translation_unit, absolute_path, line, column, prefix, conte
 
         completions.append(result)
 
-    # Strongly downrank destructors and operator overloads.
-    # Slightly downrank methods with a leading underscore (typically private).
-    def improved_priority(result):
-        priority = result.string.priority
-        kind = _getKind(result)
-        if kind == CursorKind.DESTRUCTOR:
-            priority += 50
-        elif kind == CursorKind.CXX_METHOD:
-            first_chunk = _getFirstNonResultTypeTokenChunk(result.string)
-            if first_chunk is not None:
-                if first_chunk.startswith('_'):
-                    priority += 25
-                elif OPERATOR_OVERLOAD_RE.match(first_chunk):
-                    priority += 100
-        return priority
+    completions.sort(key=_resultPriority)
+    return map(_processResult, completions)
 
-    completions.sort(key=improved_priority)
 
-    def to_replacement(completion_result):
-        chunks = []
-        spelling = ''
-        result_type = ''
+# Strongly downrank destructors and operator overloads.
+# Slightly downrank methods with a leading underscore (typically private).
+def _resultPriority(result):
+    priority = result.string.priority
+    kind = _getKind(result)
+    if kind == CursorKind.DESTRUCTOR:
+        priority += 50
+    elif kind == CursorKind.CXX_METHOD:
+        first_chunk = _getFirstNonResultTypeTokenChunk(result.string)
+        if first_chunk is not None:
+            if first_chunk.startswith('_'):
+                priority += 25
+            elif OPERATOR_OVERLOAD_RE.match(first_chunk):
+                priority += 100
+    return priority
 
-        # We want to know which chunks are placeholders.
-        completion_string = completion_result.string
-        for chunk in completion_string:
-            # A piece of text that describes something about the result but
-            # should not be inserted into the buffer. (e.g. const modifier)
-            if chunk.isKindInformative():
-                continue
 
-            spelling += chunk.spelling
+def _processResult(completion_result):
+    chunks = []
+    spelling = ''
+    result_type = ''
 
-            # There should be at most one ResultType chunk and it should tell us
-            # type of suggested expression. For example, if a method call is
-            # suggested, this chunk will be equal to the method return type.
-            # Obviously, we don't want that chunk in spelling.
-            if chunk.isKindResultType():
-                result_type = chunk.spelling
-                spelling += ' '
-                continue
+    # We want to know which chunks are placeholders.
+    completion_string = completion_result.string
+    for chunk in completion_string:
+        # A piece of text that describes something about the result but
+        # should not be inserted into the buffer. (e.g. const modifier)
+        if chunk.isKindInformative():
+            continue
 
-            chunks.append({
-                'spelling': chunk.spelling,
-                'isPlaceHolder': chunk.isKindPlaceHolder(),
-            })
+        # There should be at most one ResultType chunk and it should tell us
+        # type of suggested expression. For example, if a method call is
+        # suggested, this chunk will be equal to the method return type.
+        # Obviously, we don't want that chunk in spelling.
+        if chunk.isKindResultType():
+            result_type = chunk.spelling
+            continue
 
-        cursor_kind = _getKind(completion_result)
-        if cursor_kind is None:
-            kind_name = 'UNKNOWN'
-        else:
-            kind_name = cursor_kind.name
+        spelling += chunk.spelling
+        chunks.append({
+            'spelling': chunk.spelling,
+            'isPlaceHolder': chunk.isKindPlaceHolder(),
+        })
 
-        return {
-            'spelling': spelling,
-            'chunks': chunks,
-            'result_type': result_type,
-            'first_token': _getFirstNonResultTypeTokenChunk(completion_string),
-            'cursor_kind': kind_name,
-        }
-    return map(to_replacement, completions[:limit])
+    cursor_kind = _getKind(completion_result)
+    if cursor_kind is None:
+        kind_name = 'UNKNOWN'
+    else:
+        kind_name = cursor_kind.name
+
+    return {
+        'spelling': spelling,
+        'chunks': chunks,
+        'result_type': result_type,
+        'first_token': _getFirstNonResultTypeTokenChunk(completion_string),
+        'cursor_kind': kind_name,
+    }
 
 
 def _getFirstNonResultTypeTokenChunk(completion_string):
@@ -122,9 +171,8 @@ if __name__ == '__main__':
     (options, args) = parser.parse_args()
     absolute_path = args[0]
 
-    # TODO(mbolin): Need to call create_translation_unit() from somewhere.
     translation_unit = create_translation_unit(absolute_path)
-    completions = get_completions(
+    completions = _get_completions(
         translation_unit,
         absolute_path,
         options.line,
