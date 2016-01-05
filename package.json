@@ -12,15 +12,13 @@
   "license": "SEE LICENSE IN LICENSE",
   "main": "./lib/main.js",
   "bin": {
-    "jasmine-node-transpiled": "./pkg/nuclide/jasmine/bin/jasmine-node-transpiled",
-    "nuclide-start-server": "./pkg/nuclide/server/nuclide-start-server",
-    "run-jasmine-tests": "./pkg/nuclide/jasmine/bin/run-jasmine-tests",
-    "validate": "./pkg/nuclide/service-parser/bin/validate"
+    "nuclide-start-server": "./pkg/nuclide/server/nuclide-start-server"
   },
   "repository": "facebook/nuclide",
   "scripts": {
     "lint": "eslint",
-    "lint-all": "eslint ."
+    "lint-all": "eslint .",
+    "service-parser-validate": "./pkg/nuclide/service-parser/bin/validate"
   },
   "dependencies": {
     "async": "0.9.2",
