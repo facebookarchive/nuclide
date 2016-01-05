@@ -71,6 +71,7 @@
     "temp": "0.8.3",
     "thrift": "file:resources/VendorLib/thrift-0.9.3-fb",
     "url-join": "0.0.1",
+    "urlregexp": "1.0.2",
     "uuid": "2.0.1",
     "v8-debug": "file:resources/VendorLib/v8-debug-fb",
     "v8-profiler": "file:resources/VendorLib/v8-profiler-fb",

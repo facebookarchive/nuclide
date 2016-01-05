@@ -13,12 +13,10 @@ import type {HyperclickSuggestion} from '../../hyperclick-interfaces';
 
 import {Range} from 'atom';
 
-// This regex could be improved -- right now it just matches everything starting with http:// or
-// https:// and consuming characters as long as they are not whitespace or a closing ), ], or },
-// while ignoring trailing periods.
-// This is so that links in parentheses etc. are still matched properly. We could improve this so
-// that it matches only legal URI characters, but this should be fine.
-const URL_REGEX = /\b(https?:\/\/[^\s)}\]]*[^.\s)}\]])/;
+// "urlregexp" uses the "g" flag. Since we only care about the first result,
+// we make a copy of it w/o the "g" flag so we don't have to reset `lastIndex`
+// after every use.
+const urlregexp = RegExp(require('urlregexp').source);
 
 export class HyperclickProvider {
   priority: number;
@@ -36,7 +34,7 @@ export class HyperclickProvider {
   {
     // The match is an array that also has an index property, something that Flow does not appear to
     // understand.
-    const match: any = text.match(URL_REGEX);
+    const match: any = text.match(urlregexp);
     if (match == null) {
       return null;
     }
