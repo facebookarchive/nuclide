@@ -17,7 +17,7 @@ import {
 } from '../pkg/nuclide/integration-test-helpers';
 import path from 'path';
 
-describe('Blame context menu integration test', () => {
+describe('Blame gutter integration test', () => {
   it('renders the blame gutter', () => {
     let textEditorView: HTMLElement = (null : any);
     let blameGutter: HTMLElement = (null : any);
@@ -53,7 +53,7 @@ describe('Blame context menu integration test', () => {
 
     waitsFor('blame information to populate', 10000, () => {
       blameEntries = array.from(blameGutter.querySelectorAll('.blame-decoration'));
-      return blameEntries.length;
+      return blameEntries.length === 6;
     });
 
     runs(() => {
