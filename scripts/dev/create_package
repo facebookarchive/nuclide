@@ -1,17 +1,22 @@
 #!/usr/bin/env python
 
-# Utility to create a new package for Nuclide. Usage:
+# Copyright (c) 2015-present, Facebook, Inc.
+# All rights reserved.
 #
-#     ./create_package nuclide-xxx
-#
-# This will create the directory:
-#
-#     pkg/nuclide/xxx
-#
-# It will create all of the necessary boilerplate files underneath it:
-#
-#     package.json
-#     lib/main.js
+# This source code is licensed under the license found in the LICENSE file in
+# the root directory of this source tree.
+
+'''
+Utility to create a new feature package for Nuclide. Usage:
+
+    ./create_package nuclide-xxx
+
+This will create the directory and all of the necessary boilerplate:
+
+    pkg/nuclide/xxx
+        |-- package.json
+        +-- lib/main.js
+'''
 
 import commands
 import os
@@ -22,7 +27,6 @@ import sys
 # Add the lib directory to $PYTHONPATH so library code can be imported.
 sys.path.append(os.path.join(os.path.dirname(__file__), '../lib'))
 
-from json_helpers import json_load
 from package_manager import PACKAGES_PATH
 from dependencies import get_atom_version
 
@@ -32,9 +36,10 @@ NODE_PACKAGE = 'node'
 ATOM_PACKAGE = 'atom'
 DEFAULT_DIRECTORY = 'nuclide'
 PACKAGE_DIRECTORIES = [DEFAULT_DIRECTORY, 'fb']
-NUCLIDE_JASMINE_BIN = os.path.join(PACKAGES_PATH, DEFAULT_DIRECTORY, 'jasmine/bin/jasmine-node-transpiled')
+NUCLIDE_JASMINE_BIN = os.path.join(PACKAGES_PATH, DEFAULT_DIRECTORY,
+                                   'jasmine/bin/jasmine-node-transpiled')
 
-USERNAME = commands.getoutput("whoami")
+USERNAME = commands.getoutput('whoami')
 
 COPYRIGHT_BLOCK = """\
 /*
@@ -157,10 +162,10 @@ NODE_NPM_PACKAGE_JSON_TEMPLATE = """\
 
 # Return the directory name and package name.
 def get_dir_and_package_name(user_input):
-    for dir in PACKAGE_DIRECTORIES:
-        if user_input.startswith(dir + '-'):
+    for dirname in PACKAGE_DIRECTORIES:
+        if user_input.startswith(dirname + '-'):
             # Example, given 'nuclide-foo' we shall return ('nuclide/foo', nuclide-foo)
-            return os.path.join(dir, user_input[len(dir) + 1:]), user_input
+            return os.path.join(dirname, user_input[len(dirname) + 1:]), user_input
     # If user input does not start with any known sub directory names, default is 'nuclide'.
     # For example, given 'foo', we shall return ('nuclide/foo', nuclide-foo)
     return os.path.join(DEFAULT_DIRECTORY, user_input), DEFAULT_DIRECTORY + '-' + user_input
@@ -184,10 +189,10 @@ def create_package(dir_name, package_name, package_type, test_runner):
     with open(os.path.join(pkg_dir, 'package.json'), 'w') as f:
         if package_type == NODE_PACKAGE:
             if test_runner == NPM:
-                f.write(NODE_NPM_PACKAGE_JSON_TEMPLATE % (
-                  package_name,
-                  os.path.relpath(NUCLIDE_JASMINE_BIN, pkg_dir)
-                ))
+                f.write(NODE_NPM_PACKAGE_JSON_TEMPLATE % \
+                    (package_name, os.path.relpath(NUCLIDE_JASMINE_BIN, pkg_dir)))
+
+
             else:
                 f.write(NODE_APM_PACKAGE_JSON_TEMPLATE % package_name)
         else:
@@ -202,26 +207,26 @@ def prompt_and_create_package(user_input):
     if user_input is None:
         user_input = raw_input('Enter the name of your new package: ').strip()
     dir_name, package_name = get_dir_and_package_name(user_input)
-    print('Using %s as package name under pkg/%s.' % (package_name, dir_name))
+    print 'Using %s as package name under pkg/%s.' % (package_name, dir_name)
 
-    answer = raw_input(
-            'Can this package be used outside of Atom (e.g., on a server)? [Y/n]: ').strip()
+    answer = raw_input('Can this package be used outside of Atom ' +
+                       '(e.g., on a server)? [Y/n]: ').strip()
     if len(answer) > 0 and (answer[0] == 'N' or answer[0] == 'n'):
         test_runner = APM
         package_type = None
     else:
         test_runner = NPM
         package_type = NODE_PACKAGE
-    print('Using %s as test runner.' % test_runner)
+    print 'Using %s as test runner.' % test_runner
 
     if package_type is None:
-        answer = raw_input(
-                'Can this package be loaded synchronously via require() in Atom? [Y/n]: ').strip()
+        answer = raw_input('Can this package be loaded synchronously via ' +
+                           'require() in Atom? [Y/n]: ').strip()
         if len(answer) > 0 and (answer[0] == 'N' or answer[0] == 'n'):
             package_type = ATOM_PACKAGE
         else:
             package_type = NODE_PACKAGE
-    print('Using %s as package type.' % package_type)
+    print 'Using %s as package type.' % package_type
 
     create_package(dir_name, package_name, package_type, test_runner)
 
@@ -230,5 +235,5 @@ def main():
     user_input = args[0] if len(args) > 0 else None
     prompt_and_create_package(user_input)
 
-if __name__  == '__main__':
+if __name__ == '__main__':
     main()
