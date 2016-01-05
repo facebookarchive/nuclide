@@ -18,6 +18,11 @@ import subprocess
 # Add the lib/ directory to $PYTHONPATH so library code can be imported.
 sys.path.append(os.path.join(os.path.dirname(__file__), '../lib'))
 
+try:
+    from fb.pre_setup import fb_pre_setup
+except ImportError as e:
+    fb_pre_setup = None
+
 # Parse the command-line arguments.
 import atom
 import optparse
@@ -36,9 +41,11 @@ verbose = options.verbose
 if verbose:
     logging.getLogger().setLevel(logging.DEBUG)
 
-# Run pre installation setup actions.
-from pre_installation_setup import setup
-setup()
+# Run pre-setup actions.
+if fb_pre_setup:
+    logging.info('Running development pre-setup scripts...')
+    fb_pre_setup()
+    logging.info('Development pre-setup scripts executed.')
 
 # Install packages.
 from package_manager import NUCLIDE_PATH
