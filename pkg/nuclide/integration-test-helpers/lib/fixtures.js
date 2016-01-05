@@ -15,10 +15,10 @@ import {fixtures} from '../../test-helpers';
 import path from 'path';
 
 /*
- * Copies a specified subdirectory of test-helpers/fixtures to a temporary location.  The
- * fixtureName parameter must contain a directory named .hg-rename.  After the directory specified
- * by fixtureName is copied, its .hg-rename folder will be renamed to .hg, so that it can act as a
- * mercurial repository.
+ * Copies a specified subdirectory of integration-test-helpers/spec/fixtures to a temporary
+ * location.  The fixtureName parameter must contain a directory named .hg-rename.  After the
+ * directory specified by fixtureName is copied, its .hg-rename folder will be renamed to .hg, so
+ * that it can act as a mercurial repository.
  *
  * @param fixtureName The name of the subdirectory of the fixtures/ directory within the
  * nuclide-test-helpers package directory that should be copied.  Must contain a .hg-rename folder.
@@ -45,7 +45,8 @@ export function setLocalProject(projectPath: string | Array<string>): void {
 }
 
 /*
- * Copies a specified subdirectory of integration-test-helpers/fixtures to a temporary location.
+ * Copies a specified subdirectory of integration-test-helpers/spec/fixtures
+ * to a temporary location.
  *
  * @param fixtureName The name of the subdirectory of the fixtures/ directory within the
  * nuclide-test-helpers package directory that should be copied.

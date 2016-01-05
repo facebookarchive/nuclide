@@ -10,17 +10,21 @@
  */
 
 import {dispatchKeyboardEvent} from './event';
-import {copyMercurialFixture, setLocalProject} from './fixtures';
+import {copyFixture, copyMercurialFixture, setLocalProject} from './fixtures';
+import {startFlowServer, stopFlowServer} from './flow-utils';
 import {activateAllPackages, deactivateAllPackages} from './package-utils';
 import {addRemoteProject, startNuclideServer, stopNuclideServer} from './remote-utils';
 
 module.exports = {
   activateAllPackages,
   addRemoteProject,
+  copyFixture,
   copyMercurialFixture,
   deactivateAllPackages,
   dispatchKeyboardEvent,
   setLocalProject,
+  startFlowServer,
+  stopFlowServer,
   startNuclideServer,
   stopNuclideServer,
 };
