@@ -22,19 +22,6 @@ import ServiceLogger from './ServiceLogger';
 
 const newServices = ServiceFramework.loadServicesConfig();
 
-// A cache stores services in form of '$serviceName@$host:$options' => $serviceObject. A special
-// case would be the local service, where the $host will be empty string.
-const cachedServices: Map<string, any> = new Map();
-
-RemoteConnection.onDidCloseRemoteConnection((connection: RemoteConnection) => {
-  for (const cacheEntry of cachedServices) {
-    const [cacheKey, serviceInstance] = cacheEntry;
-    if (serviceInstance._connection === connection) {
-      cachedServices.delete(cacheKey);
-    }
-  }
-});
-
 /**
  * Get a remote v3 service by service name and remote connection.
  */
@@ -52,29 +39,26 @@ function getRemoteServiceByRemoteConnection(
 }
 
 /**
- * Create or get a cached service with given serviceOptions.
+ * Create or get a cached service.
  * @param nuclideUri It could either be either a local path or a remote path in form of
  *    `nuclide:$host:$port/$path`. The function will use the $host from remote path to
- *    create a remote service with given serviceOptions or create a local service if the
- *    uri is local path.
+ *    create a remote service or create a local service if the uri is local path.
  */
 function getServiceByNuclideUri(
   serviceName: string,
-  nuclideUri: ?NuclideUri = null,
-  serviceOptions: ?any = null
+  nuclideUri: ?NuclideUri = null
 ): ?any {
   const hostname = (nuclideUri && isRemote(nuclideUri)) ?
     getHostname(nuclideUri) :
     null;
-  return getService(serviceName, hostname, serviceOptions);
+  return getService(serviceName, hostname);
 }
 
 /**
- * Create or get a cached service with given serviceOptions. If hostname is null or empty string,
- * it returns a local service, otherwise a remote service will be returned. For the same host
- * serviceOptions, the same service instance will be returned.
+ * Create or get a cached service. If hostname is null or empty string,
+ * it returns a local service, otherwise a remote service will be returned.
  */
-function getService(serviceName: string, hostname: ?string, serviceOptions: ?any): ?any {
+function getService(serviceName: string, hostname: ?string): ?any {
   /** First, try to find a 3.0 service */
   const [serviceConfig] = newServices.filter(config => config.name === serviceName);
   invariant(serviceConfig);

@@ -29,7 +29,6 @@ const nuclideClientExports = require('../../commons').singleton.get(
       getService,
       getServiceByNuclideUri,
       getServiceLogger,
-      getRemoteServiceByRemoteConnection,
     } = require('./service-manager');
     const {
       getFileForPath,
@@ -39,7 +38,6 @@ const nuclideClientExports = require('../../commons').singleton.get(
       getService,
       getServiceLogger,
       getServiceByNuclideUri,
-      getRemoteServiceByRemoteConnection,
     };
   },
 );
@@ -54,5 +52,4 @@ module.exports = {
   getService: nuclideClientExports.getService,
   getServiceLogger: nuclideClientExports.getServiceLogger,
   getServiceByNuclideUri: nuclideClientExports.getServiceByNuclideUri,
-  getRemoteServiceByRemoteConnection: nuclideClientExports.getRemoteServiceByRemoteConnection,
 };
