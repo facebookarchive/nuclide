@@ -9,7 +9,6 @@ import os
 
 from json_helpers import json_load
 from package_config import create_config_for_package
-from topological_installer import TopologicalInstaller
 
 NUCLIDE_PATH = os.path.realpath(os.path.join(os.path.dirname(__file__), '../..'))
 PACKAGES_PATH = os.path.join(NUCLIDE_PATH, 'pkg')
@@ -19,39 +18,6 @@ class PackageManager(object):
     def __init__(self):
         # Keys are names of packages and values are the corresponding configs.
         self._package_map = load_package_configs()
-
-    def install_dependencies(self, npm, include_packages_that_depend_on_atom=True,
-                             exclude_windows_incompatible_packages=False):
-        import datetime
-        start = datetime.datetime.now()
-        logging.info('START INSTALL: %s', start)
-
-        configs_to_install = []
-        for package_config in self.get_configs(
-                include_packages_that_depend_on_atom=include_packages_that_depend_on_atom,
-                exclude_windows_incompatible_packages=exclude_windows_incompatible_packages):
-            configs_to_install.append(package_config)
-        installer = TopologicalInstaller(npm, self._package_map, configs_to_install)
-        installer.install()
-
-        end = datetime.datetime.now()
-        logging.info('FINISH INSTALL: %s', end)
-        logging.info('PackageManager.install() took %s seconds.', (end - start).seconds)
-
-    def install_dependencies_by_package_names(self, npm, package_names, copy_local_dependencies=False):
-        import datetime
-        start = datetime.datetime.now()
-        logging.info('START INSTALL: %s', start)
-
-        configs_to_install = []
-        for package_config in self.get_configs(package_names=package_names):
-            configs_to_install.append(package_config)
-        installer = TopologicalInstaller(npm, self._package_map, configs_to_install, copy_local_dependencies)
-        installer.install()
-
-        end = datetime.datetime.now()
-        logging.info('FINISH INSTALL: %s', end)
-        logging.info('PackageManager.install() took %s seconds.', (end - start).seconds)
 
     def get_configs(self, include_packages_that_depend_on_atom=True,
                     exclude_windows_incompatible_packages=False, package_names=None):

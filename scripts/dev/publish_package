@@ -19,6 +19,9 @@ import shutil
 import sys
 import tempfile
 
+# This script is will be re-written for UP, so now it's serving as a placeholder.
+sys.exit(0)
+
 # Add the lib/ directory to $PYTHONPATH so library code can be imported.
 sys.path.append(os.path.join(os.path.dirname(__file__), '../lib'))
 

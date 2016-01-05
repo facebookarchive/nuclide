@@ -9,7 +9,7 @@ import logging
 import os
 import os.path
 import platform_checker
-import semver
+import re
 import sys
 
 from fs import symlink
@@ -65,7 +65,8 @@ def _verify_node():
     node_executable = platform_checker.get_node_executable()
     if _is_executable_on_path(node_executable):
         node_version = fs.cross_platform_check_output([node_executable, '--version']).rstrip()
-        if semver.find_version_in_range([node_version], '>=0.12.0'):
+        major, minor = re.match(r'^v(\d+)\.(\d+)\.(\d+)$', node_version).group(1, 2)
+        if int(major) > 0 or int(minor) >= 12:
             return
 
     raise Exception('Must install Node v0.12.0 or later. Not found in %s' % os.environ['PATH'])

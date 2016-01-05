@@ -13,6 +13,7 @@ logging.basicConfig(level=logging.INFO, format='%(message)s')
 # Do other ordinary imports.
 import os.path
 import sys
+import subprocess
 
 # Add the lib/ directory to $PYTHONPATH so library code can be imported.
 sys.path.append(os.path.join(os.path.dirname(__file__), '../lib'))
@@ -39,28 +40,16 @@ if verbose:
 from pre_installation_setup import setup
 setup()
 
-# Enumerate and install packages.
-from npm import Npm
-from package_manager import PackageManager
-from platform_checker import is_windows
+# Install packages.
+from package_manager import NUCLIDE_PATH
+if options.no_atom:
+    logging.info('Running "npm install" for %s...', NUCLIDE_PATH)
+    install_cmd = ['npm', 'install']
+else:
+    logging.info('Running "apm install" for %s...', NUCLIDE_PATH)
+    install_cmd = ['apm', 'install']
 
-# package_manager = PackageManager()
-package_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
-logging.info('Running "npm install" for %s...', package_root)
-npm = Npm(verbose)
-npm._npm_install(package_root, True)
+if options.verbose:
+    install_cmd.append('--verbose')
 
-# package_manager.install_dependencies(npm, include_packages_that_depend_on_atom=include_apm,
-#                                      exclude_windows_incompatible_packages=is_windows())
-
-# Remove any dead symlinks under ~/.atom/packages. These can be created when a package is deleted or
-# renamed and a reference to the old package is still hanging around.
-# if include_apm:
-#     import os
-#     import subprocess
-#     packages_dir = os.path.expanduser('~/.atom/packages')
-#     for entry in os.listdir(packages_dir):
-#         full_path = os.path.join(packages_dir, entry)
-#         if os.path.islink(full_path) and not os.path.exists(full_path):
-#             logging.info('Removing broken symlink %s', full_path)
-#             subprocess.check_call(['apm', 'uninstall', entry])
+subprocess.check_call(install_cmd, cwd=NUCLIDE_PATH)
