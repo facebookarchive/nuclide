@@ -13,27 +13,11 @@ import type {HyperclickSuggestion} from '../../hyperclick-interfaces';
 import type {CtagsResult, CtagsService} from '../../remote-ctags-base';
 
 import {goToLocation} from '../../atom-helpers';
-import {getLogger} from '../../logging';
 import {getServiceByNuclideUri} from '../../remote-connection';
-import {dirname, getPath, relative} from '../../remote-uri';
+import {dirname, relative} from '../../remote-uri';
+import {CTAGS_KIND_NAMES, getLineNumberForTag} from './utils';
 
 const LIMIT = 100;
-
-// Taken from http://ctags.sourceforge.net/FORMAT
-const CTAGS_KIND_NAMES = {
-  c: 'class',
-  d: 'define',
-  e: 'enum',
-  f: 'function',
-  F: 'file',
-  g: 'enum',
-  m: 'member',
-  p: 'function',
-  s: 'struct',
-  t: 'typedef',
-  u: 'union',
-  v: 'var',
-};
 
 /**
  * If a line number is specified by the tag, jump to that line.
@@ -41,27 +25,7 @@ const CTAGS_KIND_NAMES = {
  */
 function createCallback(tag: CtagsResult) {
   return async () => {
-    let {lineNumber, pattern} = tag;
-    if (lineNumber) {
-      lineNumber--; // ctags line numbers start at 1
-    } else if (pattern != null) {
-      // ctags regexps are just string matches
-      if (pattern.startsWith('/^') && pattern.endsWith('$/')) {
-        pattern = pattern.substr(2, pattern.length - 4);
-      }
-      try {
-        // Search for the pattern in the file.
-        const contents = await getServiceByNuclideUri('FileSystemService', tag.file)
-          .readFile(getPath(tag.file));
-        const lines = contents.toString('utf8').split('\n');
-        lineNumber = lines.indexOf(pattern);
-        if (lineNumber === -1) {
-          lineNumber = 0;
-        }
-      } catch (e) {
-        getLogger().warn(`nuclide-remote-ctags: Could not locate pattern in ${tag.file}`, e);
-      }
-    }
+    const lineNumber = await getLineNumberForTag(tag);
     goToLocation(tag.file, lineNumber, 0);
   };
 }

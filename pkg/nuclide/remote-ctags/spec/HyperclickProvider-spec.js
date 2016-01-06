@@ -82,7 +82,7 @@ describe('HyperclickProvider', () => {
           file: '/path1/path2/a',
           kind: 'f',
           lineNumber: 1337,
-          pattern: '/^function A$/',
+          pattern: '/function A/',
         },
       ];
 
