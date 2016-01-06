@@ -12,7 +12,7 @@
 import path from 'path';
 import watchman from 'fb-watchman';
 import {object, array, promises} from '../../commons';
-import {getWatchmanBinaryPath} from './main';
+import {getWatchmanBinaryPath} from './path';
 import WatchmanSubscription from './WatchmanSubscription';
 import {getLogger} from '../../logging';
 
