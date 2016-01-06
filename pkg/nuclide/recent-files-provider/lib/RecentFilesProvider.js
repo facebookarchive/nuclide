@@ -19,7 +19,7 @@ import type {
   ProviderType,
 } from '../../quick-open-interfaces';
 
-import {regexp} from '../../commons';
+import {array, regexp} from '../../commons';
 const {safeRegExpFromString} = regexp;
 
 // Imported from nuclide-files-service, which is an apm package, preventing a direct import.
@@ -39,11 +39,14 @@ function getRecentFilesMatching(query: string): Array<FileResult> {
   }
   const queryRegExp = safeRegExpFromString(query);
   const projectPaths = atom.project.getPaths();
+  const openFiles = array.compact(
+    atom.workspace.getTextEditors().map(editor => editor.getPath())
+  );
   return _recentFilesService.getRecentFiles()
     .filter(result =>
-      (!query.length || queryRegExp.test(result.path)) && (
-        projectPaths.some(projectPath => result.path.indexOf(projectPath) !== -1)
-      )
+      (!query.length || queryRegExp.test(result.path)) &&
+      projectPaths.some(projectPath => result.path.indexOf(projectPath) !== -1) &&
+      openFiles.every(file => result.path.indexOf(file) === -1)
     )
     .map(result => ({
       path: result.path,

@@ -74,6 +74,19 @@ describe('RecentFilesProvider', () => {
       });
     });
 
+    it('does not return files that are currently open in Atom', () => {
+      waitsForPromise(async () => {
+        fakeGetProjectPathsImpl = () => [PROJECT_PATH];
+        const textEditor = await atom.workspace.open(FILE_PATHS[0]);
+        expect(await provider.executeQuery('')).toEqual([
+          FAKE_RECENT_FILES[1],
+          FAKE_RECENT_FILES[2],
+        ]);
+        textEditor.destroy();
+        expect(await provider.executeQuery('')).toEqual(FAKE_RECENT_FILES);
+      });
+    });
+
     it('filters results according to the query string', () => {
       waitsForPromise(async () => {
         fakeGetProjectPathsImpl = () => [PROJECT_PATH];
