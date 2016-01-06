@@ -15,28 +15,11 @@ const logger = require('../../logging').getLogger();
 const {RemoteConnection} = require('./RemoteConnection');
 const {isRemote, getHostname} = require('../../remote-uri');
 
-import {getProxy} from '../../service-parser';
 import invariant from 'assert';
 import ServiceFramework from '../../server/lib/serviceframework';
 import ServiceLogger from './ServiceLogger';
 
 const newServices = ServiceFramework.loadServicesConfig();
-
-/**
- * Get a remote v3 service by service name and remote connection.
- */
-function getRemoteServiceByRemoteConnection(
-  serviceName: string,
-  connection: RemoteConnection,
-): ?any {
-  const [serviceConfig] = newServices.filter(config => config.name === serviceName);
-  if (serviceConfig) {
-    return getProxy(serviceConfig.name, serviceConfig.definition, connection.getClient());
-  } else {
-    logger.error('Service %s undefined.', serviceName);
-    return null;
-  }
-}
 
 /**
  * Create or get a cached service.
@@ -59,16 +42,15 @@ function getServiceByNuclideUri(
  * it returns a local service, otherwise a remote service will be returned.
  */
 function getService(serviceName: string, hostname: ?string): ?any {
-  /** First, try to find a 3.0 service */
-  const [serviceConfig] = newServices.filter(config => config.name === serviceName);
-  invariant(serviceConfig);
   if (hostname) {
     const remoteConnection = RemoteConnection.getByHostnameAndPath(hostname, null);
     if (remoteConnection == null) {
       return null;
     }
-    return getProxy(serviceConfig.name, serviceConfig.definition, remoteConnection.getClient());
+    return remoteConnection.getService(serviceName);
   } else {
+    const [serviceConfig] = newServices.filter(config => config.name === serviceName);
+    invariant(serviceConfig, `No config found for service ${serviceName}`);
     // $FlowIgnore
     return require(serviceConfig.implementation);
   }
@@ -91,5 +73,4 @@ module.exports = {
   getService,
   getServiceByNuclideUri,
   getServiceLogger,
-  getRemoteServiceByRemoteConnection,
 };

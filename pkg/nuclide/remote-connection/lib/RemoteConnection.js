@@ -17,6 +17,8 @@ import {trackEvent} from '../../analytics';
 import ClientComponent from '../../server/lib/serviceframework/ClientComponent';
 import RemoteDirectory from './RemoteDirectory';
 import {loadServicesConfig} from '../../server/lib/serviceframework/config';
+import {getProxy} from '../../service-parser';
+import ServiceFramework from '../../server/lib/serviceframework';
 
 const {CompositeDisposable, Disposable} = require('atom');
 const remoteUri = require('../../remote-uri');
@@ -29,6 +31,8 @@ const {getConnectionConfig, setConnectionConfig} =
   require('./RemoteConnectionConfigurationManager');
 const {getVersion} = require('../../version');
 
+const newServices = ServiceFramework.loadServicesConfig();
+
 const HEARTBEAT_AWAY_REPORT_COUNT = 3;
 const HEARTBEAT_NOTIFICATION_ERROR = 1;
 const HEARTBEAT_NOTIFICATION_WARNING = 2;
@@ -36,6 +40,8 @@ const HEARTBEAT_NOTIFICATION_WARNING = 2;
 // Taken from the error message in
 // https://github.com/facebook/watchman/blob/99dde8ee3f13233be097c036147748b2d7f8bfa7/tests/integration/rootrestrict.php#L58
 const WATCHMAN_ERROR_MESSAGE_FOR_ENFORCE_ROOT_FILES_REGEX = /global config root_files/;
+
+const FILE_WATCHER_SERVICE = 'FileWatcherService';
 
 type HeartbeatNotification = {
   notification: atom$Notification;
@@ -393,12 +399,8 @@ class RemoteConnection {
   }
 
   _watchRootProjectDirectory(): void {
-    // TODO(peterhal): move singleton from main.js to client.js
-    const {getServiceByNuclideUri} = require('./service-manager');
     const rootDirectoryUri = this.getUriForInitialWorkingDirectory();
-    const FileWatcherService = getServiceByNuclideUri(
-      'FileWatcherService', rootDirectoryUri
-    );
+    const FileWatcherService = this.getService(FILE_WATCHER_SERVICE);
     invariant(FileWatcherService);
     const {watchDirectoryRecursive} = FileWatcherService;
     // Start watching the project for changes and initialize the root watcher
@@ -552,12 +554,10 @@ class RemoteConnection {
     );
   }
 
-  // TODO(peterhal): The implementation should move from service-manager to here
-  // however we should wait until we remove the event-bus and v2 rpc framework
-  // before making that change.
   getService(serviceName: string): any {
-    const {getRemoteServiceByRemoteConnection} = require('./service-manager');
-    return getRemoteServiceByRemoteConnection(serviceName, this);
+    const [serviceConfig] = newServices.filter(config => config.name === serviceName);
+    invariant(serviceConfig != null, `No config found for service ${serviceName}`);
+    return getProxy(serviceConfig.name, serviceConfig.definition, this.getClient());
   }
 
   getSocket(): NuclideSocket {
