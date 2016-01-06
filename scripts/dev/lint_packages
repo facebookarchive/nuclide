@@ -30,14 +30,10 @@ if verbose:
 
 # Validate package definitions
 from package_manager import PackageManager
-package_manager = PackageManager()
+from package_linter import PackageLinter
 
-try:
-    from fb.fb_package_linter import FbPackageLinter
-    linter = FbPackageLinter(package_manager.get_package_map())
-except Exception as e:
-    from package_linter import PackageLinter
-    linter = PackageLinter(package_manager.get_package_map())
+package_manager = PackageManager()
+linter = PackageLinter(package_manager.get_package_map())
 
 if not linter.validate_packages():
     logging.info('Found package lint errors. Exiting...')

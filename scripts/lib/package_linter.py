@@ -9,13 +9,6 @@ import os
 import re
 import sys
 
-from json_helpers import json_load
-
-try:
-    from ConfigParser import ConfigParser, NoOptionError
-except ImportError:
-    from configparser import ConfigParser, NoOptionError
-
 PACKAGE_NAME_WHITELIST = [
     'hyperclick', # we want to upstream this to atom, so do not require nuclide- prefix
     'hyperclick-interfaces',
@@ -193,10 +186,10 @@ class PackageLinter(object):
                     field, package_name, fieldValue)
 
     def is_internal_name(self, package_name):
-        return False
+        return package_name.startswith('fb-')
 
     def get_valid_package_prefixes(self):
-        return ['nuclide-', 'hyperclick']
+        return ['fb-', 'nuclide-', 'hyperclick']
 
     def report_error(self, message, *args):
         logging.error('PACKAGE ERROR (' + self._current_file_being_linted + '): ' + message, *args)
