@@ -54,7 +54,7 @@ export class HyperclickProvider {
       callback: () => {
         const {openExternal} = require('shell');
         let validUrl;
-        if (url.startsWith('http')) {
+        if (url.startsWith('http://') || url.startsWith('https://')) {
           validUrl = url;
         } else {
           // Now that we match urls like 'facebook.com', we have to prepend http:// to them for them to
