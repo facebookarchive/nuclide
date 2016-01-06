@@ -9,26 +9,28 @@
  * the root directory of this source tree.
  */
 
+import invariant from 'assert';
 import path from 'path';
 
-import {findTags, findTagsFile} from '../lib/CtagsService';
+import {getCtagsService, CtagsService} from '../lib/CtagsService';
 
 const TAGS_PATH = path.join(__dirname, 'fixtures', 'tags');
 
-describe('CtagsService.findTagsFile', () => {
+describe('getCtagsService', () => {
   it('can find the tags file from a path', () => {
     waitsForPromise(async () => {
       const filePath = path.join(__dirname, 'fixtures', 'a.cpp');
-      const tagsPath = await findTagsFile(filePath);
-      expect(tagsPath).toBe(path.join(__dirname, 'fixtures', 'tags'));
+      const svc = await getCtagsService(filePath);
+      invariant(svc);
+      expect(await svc.getTagsPath()).toBe(path.join(__dirname, 'fixtures', 'tags'));
     });
   });
 
   it('returns null when no tags file exists', () => {
     waitsForPromise(async () => {
-      const filePath = '/tmp/';
-      const tagsPath = await findTagsFile(filePath);
-      expect(tagsPath).toBe(null);
+      const filePath = '/!@#$%^&/test';
+      const svc = await getCtagsService(filePath);
+      expect(svc).toBe(null);
     });
   });
 });
@@ -36,7 +38,8 @@ describe('CtagsService.findTagsFile', () => {
 describe('CtagsService.findTags', () => {
   it('can read a tags file', () => {
     waitsForPromise(async () => {
-      let tags = await findTags(TAGS_PATH, 'a');
+      const svc = new CtagsService(TAGS_PATH);
+      let tags = await svc.findTags('a');
       expect(tags).toEqual([
         {
           name: 'a',
@@ -47,7 +50,7 @@ describe('CtagsService.findTags', () => {
         },
       ]);
 
-      tags = await findTags(TAGS_PATH, 'b');
+      tags = await svc.findTags('b');
       expect(tags).toEqual([
         {
           name: 'b',
@@ -62,7 +65,8 @@ describe('CtagsService.findTags', () => {
 
   it('ignores missing files', () => {
     waitsForPromise(async () => {
-      const tags = await findTags(TAGS_PATH, 'c');
+      const svc = new CtagsService(TAGS_PATH);
+      const tags = await svc.findTags('c');
       // A tag for `c` exists, but the file has been deliberately removed.
       expect(tags).toEqual([]);
     });
@@ -70,7 +74,8 @@ describe('CtagsService.findTags', () => {
 
   it('respects the given limit', () => {
     waitsForPromise(async () => {
-      const tags = await findTags(TAGS_PATH, '', {partialMatch: true, limit: 1});
+      const svc = new CtagsService(TAGS_PATH);
+      const tags = await svc.findTags('', {partialMatch: true, limit: 1});
       expect(tags).toEqual([
         {
           name: 'a',

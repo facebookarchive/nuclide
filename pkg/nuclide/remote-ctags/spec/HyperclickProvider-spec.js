@@ -41,11 +41,15 @@ describe('HyperclickProvider', () => {
         };
       } else if (service === 'CtagsService') {
         return {
-          findTagsFile() {
-            return '/tags';
-          },
-          findTags(path, query) {
-            return findTagsResult;
+          getCtagsService() {
+            return {
+              async getTagsPath() {
+                return '/tags';
+              },
+              async findTags(path, query) {
+                return findTagsResult;
+              },
+            };
           },
         };
       } else {

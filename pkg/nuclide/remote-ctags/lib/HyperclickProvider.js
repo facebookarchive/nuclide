@@ -10,7 +10,7 @@
  */
 
 import type {HyperclickSuggestion} from '../../hyperclick-interfaces';
-import type {CtagsResult} from '../../remote-ctags-base';
+import type {CtagsResult, CtagsService} from '../../remote-ctags-base';
 
 import {goToLocation} from '../../atom-helpers';
 import {getLogger} from '../../logging';
@@ -86,13 +86,13 @@ export class HyperclickProvider {
       return null;
     }
 
-    const service = getServiceByNuclideUri('CtagsService', path);
-    const tagsPath = await service.findTagsFile(path);
-    if (tagsPath == null) {
+    const service = (await getServiceByNuclideUri('CtagsService', path)
+      .getCtagsService(path): ?CtagsService);
+    if (service == null) {
       return null;
     }
 
-    const tags = await service.findTags(tagsPath, text, {limit: LIMIT});
+    const tags = await service.findTags(text, {limit: LIMIT});
     if (!tags.length) {
       return null;
     }
@@ -110,7 +110,7 @@ export class HyperclickProvider {
       return len;
     });
 
-    const tagsDir = dirname(tagsPath);
+    const tagsDir = dirname(await service.getTagsPath());
     return {
       range,
       callback: tags.map(tag => {
