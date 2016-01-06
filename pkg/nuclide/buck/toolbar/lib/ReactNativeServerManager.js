@@ -14,8 +14,7 @@ import type {ProcessOutputDataHandlers} from '../../../process/output-store/lib/
 import type {Dispatcher} from 'flux';
 import {scriptSafeSpawnAndObserveOutput} from '../../../commons';
 import ExecutorServer from '../../../react-native-node-executor';
-import {Emitter} from 'atom';
-import type {Disposable} from 'atom';
+import ReactNativeServerStatus from './ReactNativeServerStatus';
 import React from 'react-for-atom';
 import ReactNativeServerPanel from './ReactNativeServerPanel';
 import ReactNativeServerActions from './ReactNativeServerActions';
@@ -24,14 +23,14 @@ export default class ReactNativeServerManager {
 
   _actions: ReactNativeServerActions;
   _dispatcher: Dispatcher;
-  _emitter: Emitter;
+  _status: ReactNativeServerStatus;
   _processRunner: ?Object;
   _nodeExecutorServer: ?ExecutorServer;
 
   constructor(dispatcher: Dispatcher, actions: ReactNativeServerActions) {
     this._actions = actions;
     this._dispatcher = dispatcher;
-    this._emitter = new Emitter();
+    this._status = new ReactNativeServerStatus();
     this._setupActions();
   }
 
@@ -40,14 +39,6 @@ export default class ReactNativeServerManager {
     if (this._nodeExecutorServer) {
       this._nodeExecutorServer.close();
     }
-  }
-
-  subscribe(callback: () => void): Disposable {
-    return this._emitter.on('change', callback);
-  }
-
-  isServerRunning(): boolean {
-    return !!this._processRunner;
   }
 
   _setupActions() {
@@ -74,7 +65,7 @@ export default class ReactNativeServerManager {
   _stopServer() {
     this._processRunner && this._processRunner.dispose();
     this._processRunner = null;
-    this._emitter.emit('change');
+    this._status.setServerRunning(false);
   }
 
   async _startServer(serverCommand: string): Promise<void> {
@@ -85,7 +76,7 @@ export default class ReactNativeServerManager {
         return;
       }
       this._processRunner = processRunner;
-      this._emitter.emit('change');
+      this._status.setServerRunning(true);
     }
     invariant(processRunner);
     processRunner.run();
@@ -131,7 +122,7 @@ export default class ReactNativeServerManager {
     const panel =
       <ReactNativeServerPanel
         actions={this._actions}
-        store={this}
+        store={this._status}
         serverCommand={serverCommand}
       />;
 

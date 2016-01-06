@@ -11,21 +11,20 @@
 
 import type {Disposable} from 'atom';
 import React from 'react-for-atom';
-const {PropTypes} = React;
 import ReactNativeServerActions from './ReactNativeServerActions';
-import ReactNativeServerManager from './ReactNativeServerManager';
+import ReactNativeServerStatus from './ReactNativeServerStatus';
+
+type Props = {
+  actions: ReactNativeServerActions;
+  store: ReactNativeServerStatus;
+  serverCommand: string;
+};
 
 export default class ReactNativeServerPanel extends React.Component {
 
   _storeSubscription: Disposable;
 
-  static propTypes = {
-    actions: PropTypes.instanceOf(ReactNativeServerActions).isRequired,
-    store: PropTypes.instanceOf(ReactNativeServerManager).isRequired,
-    serverCommand: PropTypes.string.isRequired,
-  };
-
-  constructor(props: Object) {
+  constructor(props: Props) {
     super(props);
     this._storeSubscription = props.store.subscribe(() => {
       this.forceUpdate();
