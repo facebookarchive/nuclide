@@ -107,6 +107,8 @@ declare module 'rx' {
 
     share(): Observable<T>;
 
+    skipUntilWithTime(startTime: Date | number): Observable<T>;
+
     take(count: number): Observable<T>;
 
     takeUntil(other: Observable<any>): Observable<T>;
