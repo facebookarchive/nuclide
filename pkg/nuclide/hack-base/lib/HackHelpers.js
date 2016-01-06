@@ -12,7 +12,6 @@
 import type {HackSearchResult, HackSearchPosition, HHSearchPosition} from './types';
 import type {SearchResultTypeValue, SymbolTypeValue} from '../../hack-common/lib/constants';
 
-import path from 'path';
 import invariant from 'assert';
 import {findNearestFile, checkOutput, PromiseQueue} from '../../commons';
 import {SearchResultType, SymbolType} from '../../hack-common/lib/constants';

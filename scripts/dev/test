@@ -67,6 +67,15 @@ if not options.no_install:
         setup_args += ['--no-atom']
     subprocess.check_call(setup_args)
 
+# Run ./module_cycle_check
+import subprocess
+try:
+    subprocess.check_call([
+        os.path.join(os.path.dirname(__file__), 'module_cycle_check'),
+    ])
+except subprocess.CalledProcessError:
+    sys.exit(1)
+
 # Create the constructor args for JsTestRunner.
 from package_manager import PackageManager
 package_manager = PackageManager()
