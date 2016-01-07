@@ -36,6 +36,11 @@ export function flushLogsAndExit(exitCode: number): void {
   log4js.shutdown(() => process.exit(exitCode));
 }
 
+export function flushLogsAndAbort(): void {
+  const log4js = require('log4js');
+  log4js.shutdown(() => process.abort());
+}
+
 /**
  * Get log4js logger instance which is also singleton per category.
  * log4js.getLogger() API internally should already provide singleton per category guarantee

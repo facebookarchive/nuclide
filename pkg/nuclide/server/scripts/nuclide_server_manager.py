@@ -15,6 +15,7 @@ import logging
 import optparse
 import os
 import re
+import resource
 import socket
 import sys
 from collections import defaultdict
@@ -322,6 +323,11 @@ def get_option_parser():
         help='Start in debugger. Only use this flag interactively',
         action="store_true",
         default=False)
+    parser.add_option(
+        '--dump-core',
+        help='Dump core file when nuclide-server abort',
+        action="store_true",
+        default=False)
     return parser
 
 
@@ -335,6 +341,15 @@ if __name__ == '__main__':
 
     manager = NuclideServerManager(options)
     manager.cleanup()
+
+    # Enable core dump by change ulimit to infinity.
+    if options.dump_core:
+        try:
+            _, hard_limit = resource.getrlimit(resource.RLIMIT_CORE)
+            resource.setrlimit(resource.RLIMIT_CORE, (resource.RLIM_INFINITY, hard_limit))
+        except Exception as e:
+            logger.warn('Failed to enable core dump', e)
+
     if options.command == 'start':
         ret = manager.start_nuclide()
         print('The log file can be found at %s.' % LOG_FILE, file=sys.stderr)

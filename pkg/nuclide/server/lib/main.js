@@ -10,7 +10,7 @@
  */
 
 import fs from 'fs';
-import {getLogger, flushLogsAndExit, initialUpdateConfig} from '../../logging';
+import {getLogger, flushLogsAndAbort, initialUpdateConfig} from '../../logging';
 import {startTracking} from '../../analytics';
 import NuclideServer from './NuclideServer';
 import ServiceFramework from './serviceframework';
@@ -53,7 +53,7 @@ async function main(args) {
     await initialUpdateConfig();
     await serverStartTimer.onError(e);
     logger.fatal(e);
-    flushLogsAndExit(1);
+    flushLogsAndAbort();
   }
 }
 
@@ -67,7 +67,7 @@ process.on('uncaughtException', (err) => {
   logger.fatal('uncaughtException:', err);
   // According to the docs, we need to close our server when this happens once we logged or
   // handled it: https://nodejs.org/api/process.html#process_event_uncaughtexception
-  flushLogsAndExit(1);
+  flushLogsAndAbort();
 });
 
 // This works in io.js as of v2.4.0 (possibly earlier versions, as well). Support for this was
