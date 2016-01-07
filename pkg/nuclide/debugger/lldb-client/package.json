@@ -1,0 +1,24 @@
+{
+  "name": "nuclide-debugger-lldb-client",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "Nuclide lldb debugging client",
+  "nuclide": {
+    "packageType": "Atom",
+    "testRunner": "apm"
+  },
+  "providedServices": {
+    "nuclide-debugger-lldb-client-service": {
+      "description": "LLDB debugging service.",
+      "versions": {
+        "0.0.0": "provideNuclideDebuggerLLDB"
+      }
+    }
+  },
+  "_atomModuleCache": {
+    "extensions": {
+      ".node": []
+    }
+  }
+}
