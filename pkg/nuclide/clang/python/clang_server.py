@@ -31,6 +31,13 @@ FD_FOR_READING = 3
 COMPLETIONS_LIMIT = 100
 
 
+# Clang warns when you use #pragma once in the main compilation unit.
+# However, we often build compilation units from header files here, so avoid the nag.
+# https://llvm.org/bugs/show_bug.cgi?id=16686
+PRAGMA_ONCE_IN_MAIN_FILE = '#pragma once in main file'
+HEADER_EXTENSIONS = ['.h', '.hh', '.hpp', '.hxx', '.h++']
+
+
 root_logger = logging.getLogger()
 
 
@@ -67,6 +74,11 @@ def wait_for_init():
     else:
         # Fail: did not receive proper initialization sequence.
         sys.exit(2)
+
+
+def is_header_file(src):
+    _, ext = os.path.splitext(src)
+    return ext in HEADER_EXTENSIONS
 
 
 class Server:
@@ -190,6 +202,8 @@ class Server:
         # Return the diagnostics.
         diagnostics = []
         for diag in translation_unit.diagnostics:
+            if diag.spelling == PRAGMA_ONCE_IN_MAIN_FILE and is_header_file(src):
+                continue
             ranges = []
             # Clang indexes for line and column are 1-based.
             for source_range in diag.ranges:
