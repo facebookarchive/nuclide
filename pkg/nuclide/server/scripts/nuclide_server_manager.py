@@ -258,7 +258,8 @@ class NuclideServerManager(object):
             return server.start(
                 self.options.timeout,
                 quiet=self.options.quiet,
-                debug=self.options.debug)
+                debug=self.options.debug,
+                abort_on_uncaught_exception=self.options.dump_core)
         else:
             # Use https.
             self.logger.info('Using https.')
@@ -280,7 +281,8 @@ class NuclideServerManager(object):
                 key=certs_generator.server_key,
                 ca=certs_generator.ca_cert,
                 quiet=self.options.quiet,
-                debug=self.options.debug)
+                debug=self.options.debug,
+                abort_on_uncaught_exception=self.options.dump_core)
 
 
 def get_option_parser():
@@ -325,7 +327,7 @@ def get_option_parser():
         default=False)
     parser.add_option(
         '--dump-core',
-        help='Dump core file when nuclide-server abort',
+        help='Dump core file when uncaught exception or abort',
         action="store_true",
         default=False)
     return parser

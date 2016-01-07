@@ -172,7 +172,8 @@ class NuclideServer(object):
         self.logger.info('NuclideServer is going to restart.')
         return self.start(timeout, force=True)
 
-    def start(self, timeout, cert=None, key=None, ca=None, force=False, quiet=False, debug=False):
+    def start(self, timeout, cert=None, key=None, ca=None, force=False, quiet=False, debug=False,
+              abort_on_uncaught_exception=False):
         self.logger.info('NuclideServer start/restarting with the following arguments:\n \
                           timeout: {0}\n \
                           cert:    {1}\n \
@@ -202,6 +203,8 @@ class NuclideServer(object):
         js_cmd = '%s --port %d' % (NuclideServer.script_path, self.port)
         if cert and key and ca:
             js_cmd += ' --cert %s --key %s --ca %s' % (cert, key, ca)
+        if abort_on_uncaught_exception:
+            js_cmd += ' --abort_on_uncaught_exception '
         if debug:
             args = shlex.split('node debug --harmony %s' % js_cmd)
             p = subprocess.Popen(args)
