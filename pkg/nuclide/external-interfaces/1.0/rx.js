@@ -98,6 +98,10 @@ declare module 'rx' {
 
     mergeAll(): T; // assumption: T is Observable
 
+    publish(): ConnectableObservable<T>;
+
+    publishLast(): ConnectableObservable<T>;
+
     replay(): ConnectableObservable<T>;
 
     scan<U>(
