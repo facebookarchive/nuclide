@@ -41,6 +41,7 @@ class ClangFlagsManager {
   _buckUtils: BuckUtils;
   _cachedBuckProjects: Map<string, BuckProject>;
   _compilationDatabases: Set<string>;
+  _realpathCache: Object;
   pathToFlags: {[path: string]: ?Array<string>};
 
   constructor(buckUtils: BuckUtils) {
@@ -51,12 +52,14 @@ class ClangFlagsManager {
     this._buckUtils = buckUtils;
     this._cachedBuckProjects = new Map();
     this._compilationDatabases = new Set();
+    this._realpathCache = {};
   }
 
   reset() {
     this.pathToFlags = {};
     this._cachedBuckProjects.clear();
     this._compilationDatabases.clear();
+    this._realpathCache = {};
   }
 
   async _getBuckProject(src: string): Promise<?BuckProject> {
@@ -148,11 +151,12 @@ class ClangFlagsManager {
       const data = JSON.parse(contents);
       invariant(data instanceof Array);
       await Promise.all(data.map(async entry => {
-        const {directory, command, file} = entry;
+        const {command, file} = entry;
+        const directory = await fsPromise.realpath(entry.directory, this._realpathCache);
         const args = ClangFlagsManager.parseArgumentsFromCommand(command);
         const filename = path.resolve(directory, file);
         if (await fsPromise.exists(filename)) {
-          const realpath = await fsPromise.realpath(filename);
+          const realpath = await fsPromise.realpath(filename, this._realpathCache);
           this.pathToFlags[realpath] = ClangFlagsManager.sanitizeCommand(file, args, directory);
         }
       }));
