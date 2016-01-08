@@ -180,6 +180,26 @@ describe('RemoteDirectory::contains()', () => {
       'nuclide://example.com:9090/');
     expect(remoteDirectory.contains('nuclide://example.com:9090/asdf')).toBe(true);
   });
+
+  it('returns false when passed dir at same level with similar name', () => {
+    const remoteDirectory = new RemoteDirectory(
+      connectionMock,
+      'nuclide://example.com:9090/www'
+    );
+    expect(
+      remoteDirectory.contains('nuclide://example.com:9090/www-base')
+    ).toBe(false);
+  });
+
+  it('returns false when has slash and passed dir with similar name', () => {
+    const remoteDirectory = new RemoteDirectory(
+      connectionMock,
+      'nuclide://example.com:9090/www/'
+    );
+    expect(
+      remoteDirectory.contains('nuclide://example.com:9090/www-base')
+    ).toBe(false);
+  });
 });
 
 describe('RemoteDirectory::getFile()', () => {

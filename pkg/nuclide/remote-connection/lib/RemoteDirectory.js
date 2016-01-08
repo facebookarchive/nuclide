@@ -268,16 +268,20 @@ class RemoteDirectory {
   }
 
   contains(pathToCheck: ?string): boolean {
-    // Ideally, the type of pathToCheck would be `string` rather than `?string`;
-    // however, as shown by https://github.com/atom/git-diff/pull/53,
-    // `editor.getPath()` unexpectedly returns `?string` rather than `string`,
-    // and its return value is often used with this method, so it is important
-    // to tolerate null as an input.
-    if (pathToCheck) {
-      return pathToCheck.startsWith(this.getPath());
-    } else {
-      return false;
-    }
+    // Can't just do startsWith here. If this directory is "www" and you
+    // are trying to check "www-base", just using startsWith would return
+    // true, even though "www-base" is at the same level as "Www", not
+    // contained in it.
+    // So first check startsWith. If so, then if the two path lengths are
+    // equal OR if the next character in the path to check is a path
+    // separator, then we know the checked path is in this path.
+    const endIndex = this.getPath().slice(-1) === path.sep
+                   ? this.getPath().length - 1
+                   : this.getPath().length;
+    return pathToCheck != null
+      && pathToCheck.startsWith(this.getPath())
+      && (pathToCheck.length === this.getPath().length
+          || pathToCheck.charAt(endIndex) === path.sep);
   }
 
   off() {
