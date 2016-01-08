@@ -15,6 +15,8 @@ from multiprocessing import Pool, cpu_count
 
 APM_TEST_WRAPPER = os.path.realpath(os.path.join(os.path.dirname(__file__),
                                                  'run-apm-test-with-timeout.js'))
+RETRY_LIMIT = 3
+BAD_TEST_OUTPUT = "TextEditorScrollView scrolled when it shouldn't have."
 
 class JsTestRunner(object):
     def __init__(self, package_manager, include_apm=True, packages_to_test=[], verbose=False, run_in_band=False):
@@ -108,24 +110,36 @@ def run_js_test(test_runner, pkg_path, name):
     else:
         test_args = ['npm', 'test']
 
-    proc = subprocess.Popen(
-            test_args,
-            cwd=pkg_path,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            shell=platform_checker.is_windows())
-    stdout = []
-    for line in proc.stdout:
-        # line is a bytes string literal in Python 3.
-        logging.info('[%s test %s]: %s', test_runner, name, line.rstrip().decode('utf-8'))
-        stdout.append(line)
-    proc.wait()
+    for tries in xrange(0, RETRY_LIMIT):
+        proc = subprocess.Popen(
+                test_args,
+                cwd=pkg_path,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                shell=platform_checker.is_windows())
+        retry = False
+        stdout = []
+        for line in proc.stdout:
+            # line is a bytes string literal in Python 3.
+            logging.info('[%s test %s]: %s', test_runner, name, line.rstrip().decode('utf-8'))
+            stdout.append(line)
+            # There are some loglines that correlate highly to test failures due to a bug in atom,
+            # so we retry the test if we see this bad test output.  See: D2809659 for an explanation.
+            if test_runner == 'apm' and tries < RETRY_LIMIT - 1 and BAD_TEST_OUTPUT in line:
+                logging.info('[%s test %s]: %s: %s', test_runner, name, 'Aborting test due to bad output', BAD_TEST_OUTPUT)
+                retry = True
+                break
+        proc.wait()
 
-    if proc.returncode:
-        logging.info('TEST FAILED: %s\nstdout:\n%s', name, '\n'.join(stdout))
-        raise Exception('TEST FAILED: %s test %s' % (test_runner, name))
-    else:
-        logging.info('TEST PASSED: %s', name)
+        if retry:
+            continue
+
+        if proc.returncode:
+            logging.info('TEST FAILED: %s\nstdout:\n%s', name, '\n'.join(stdout))
+            raise Exception('TEST FAILED: %s test %s' % (test_runner, name))
+        else:
+            logging.info('TEST PASSED: %s', name)
+        break
 
 def run_flow_check(pkg_path, name, show_all):
     """Run a flow typecheck in the given pkg_path."""
