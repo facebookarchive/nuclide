@@ -12,7 +12,10 @@
 import type {RemoteConnection} from '../../remote-connection/lib/RemoteConnection';
 import type RemoteFile from '../../remote-connection/lib/RemoteFile';
 
+import {getLogger} from '../../logging/';
 import invariant from 'assert';
+
+const logger = getLogger();
 const {CompositeDisposable, TextBuffer} = require('atom');
 
 class NuclideTextBuffer extends TextBuffer {
@@ -73,6 +76,7 @@ class NuclideTextBuffer extends TextBuffer {
       this.emitModifiedStatusChanged(false);
       this.emitter.emit('did-save', {path: filePath});
     } catch (e) {
+      logger.fatal('Failed to save remote file.', e);
       atom.notifications.addError(`Failed to save remote file: ${e.message}`);
     }
   }
