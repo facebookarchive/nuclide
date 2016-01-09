@@ -176,12 +176,18 @@ def run_integration_tests_with_clean_state(path_to_nuclide):
 
     try:
         # Remove all files in test_dir leaving directory structure intact.
-        for root, _, files in os.walk(test_dir):
+        for root, subdirs, files in os.walk(test_dir):
+            # Whitelist "lib" subdirectories.
+            if 'lib' in subdirs:
+                subdirs.remove('lib')
             for name in files:
                 os.remove(os.path.join(root, name))
 
         # One by one, copy each test in test_dir_backup into test_dir, run the test, and then remove that file.
-        for root, _, files in os.walk(test_dir_backup):
+        for root, subdirs, files in os.walk(test_dir_backup):
+            # Whitelist "lib" subdirectories.
+            if 'lib' in subdirs:
+                subdirs.remove('lib')
             for name in files:
                 # Copy file.
                 src_path_list = os.path.join(root, name).split(os.path.sep)
