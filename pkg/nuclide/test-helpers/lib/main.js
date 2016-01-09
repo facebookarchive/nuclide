@@ -137,6 +137,9 @@ module.exports = {
   get fixtures() {
     return require('./fixtures');
   },
+  get tempdir() {
+    return require('./tempdir');
+  },
   spyOnGetterValue,
   uncachedRequire,
   arePropertiesEqual,
