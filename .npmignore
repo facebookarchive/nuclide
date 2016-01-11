@@ -2,6 +2,7 @@
 /.eslintrc
 /.flowconfig
 /benchmarker
+/docs
 /pkg/sample
 /resources/eslint-plugin-nuclide-internal
 /scripts
