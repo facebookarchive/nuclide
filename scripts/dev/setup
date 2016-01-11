@@ -47,7 +47,7 @@ if options.verbose:
     logging.getLogger().setLevel(logging.DEBUG)
 
 # Run pre-setup actions.
-if fb_pre_setup:
+if fb_pre_setup and not options.no_atom:
     logging.info('Running development pre-setup scripts...')
     fb_pre_setup()
     logging.info('Development pre-setup scripts executed.')
