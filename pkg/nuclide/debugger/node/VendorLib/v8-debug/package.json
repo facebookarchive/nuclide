@@ -1,6 +1,6 @@
 {
   "name": "v8-debug",
-  "version": "0.7.0-fb",
+  "version": "0.7.0",
   "description": "v8 debugger extending API",
   "homepage": "http://github.com/node-inspector/v8-debug",
   "author": "3y3 Ghoti <3y3@bk.ru>",

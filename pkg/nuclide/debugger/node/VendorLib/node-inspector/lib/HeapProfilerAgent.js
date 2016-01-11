@@ -40,7 +40,7 @@ HeapProfilerAgent.prototype._inject = function(injected) {
   this._injectorClient.injection(
     this.injection,
     {
-      'v8-profiler': require.resolve('v8-profiler')
+      'v8-profiler': require.resolve('../../v8-profiler')
     },
     function(error, result) {
       this._injected = !error;

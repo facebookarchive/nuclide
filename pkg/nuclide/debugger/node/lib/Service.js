@@ -11,7 +11,7 @@
 
 const {Disposable} = require('atom');
 const WebSocketServer = require('ws').Server;
-const Session = require('../VendorLib/session');
+const Session = require('../VendorLib/node-inspector/lib/session');
 
 import invariant from 'assert';
 
