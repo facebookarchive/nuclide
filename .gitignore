@@ -34,7 +34,3 @@ BUCK
 # dependencies:
 !/node_modules/thrift
 /node_modules/thrift/node_modules
-!/node_modules/v8-debug
-/node_modules/v8-debug/node_modules
-!/node_modules/v8-profiler
-/node_modules/v8-profiler/node_modules

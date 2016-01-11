@@ -1,6 +1,6 @@
 {
   "name": "nuclide",
-  "version": "0.109.0-alpha2",
+  "version": "0.109.0-alpha3",
   "description": "A unified developer experience for web and mobile development, built as a suite of features on top of Atom to provide hackability and the support of an active community.",
   "keywords": [
     "atom",
@@ -68,8 +68,6 @@
     "url-join": "0.0.1",
     "urlregexp": "1.0.2",
     "uuid": "2.0.1",
-    "v8-debug": "file:resources/VendorLib/v8-debug-fb",
-    "v8-profiler": "file:resources/VendorLib/v8-profiler-fb",
     "ws": "0.8.1",
     "xml2js": "0.4.15",
     "yargs": "3.1.0"
@@ -87,9 +85,7 @@
     "touch": "1.0.0"
   },
   "bundledDependencies": [
-    "thrift",
-    "v8-debug",
-    "v8-profiler"
+    "thrift"
   ],
   "optionalDependencies": {
     "ctags": "3.0.0"
