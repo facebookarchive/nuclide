@@ -1,0 +1,67 @@
+{
+  "name": "node-pre-gyp",
+  "description": "Node.js native addon binary install tool",
+  "version" : "0.6.18",
+  "keywords": [
+    "native",
+    "addon",
+    "module",
+    "c",
+    "c++",
+    "bindings",
+    "binary"
+  ],
+  "license": "BSD",
+  "author": "Dane Springmeyer <dane@mapbox.com>",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/mapbox/node-pre-gyp.git"
+  },
+  "bin": "./bin/node-pre-gyp",
+  "main": "./lib/pre-binding.js",
+  "dependencies": {
+    "nopt": "~3.0.1",
+    "npmlog": "~2.0.0",
+    "request": "2.x",
+    "semver": "~5.1.0",
+    "tar": "~2.2.0",
+    "tar-pack": "~3.1.0",
+    "mkdirp": "~0.5.0",
+    "rc": "~1.1.0",
+    "rimraf": "~2.4.0"
+  },
+  "bundledDependencies":[
+    "nopt",
+    "npmlog",
+    "request",
+    "semver",
+    "tar",
+    "tar-pack",
+    "mkdirp",
+    "rc",
+    "rimraf"
+  ],
+  "devDependencies": {
+    "aws-sdk":"*",
+    "mocha": "1.x",
+    "retire": "0.3.x",
+    "jshint": "^2.5.10"
+  },
+  "jshintConfig": {
+    "node": true,
+    "globalstrict": true,
+    "undef": true,
+    "unused": true,
+    "noarg": true,
+    "mocha": true
+  },
+  "engineStrict": true,
+  "engines": {
+    "node": ">= 0.8.0"
+  },
+  "scripts": {
+    "prepublish":"retire -n && npm ls && jshint test/build.test.js test/s3_setup.test.js test/versioning.test.js",
+    "update-crosswalk":"node scripts/abi_crosswalk.js",
+    "test":"jshint lib lib/util scripts bin/node-pre-gyp && mocha -R spec --timeout 500000"
+  }
+}

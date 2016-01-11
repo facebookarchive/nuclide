@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -15,6 +14,7 @@
  * escaped in JS.
  * See http://timelessrepo.com/json-isnt-a-javascript-subset
  */
-module.exports = function toJsString(str: string): string {
-  return JSON.stringify(str).replace(/\u2028/g,'\\u2028').replace(/\u2029/g,'\\u2029');
+module.exports = function toJsString(str) {
+  return JSON.stringify(str).replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
 };
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInRvSnNTdHJpbmcuanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozs7Ozs7OztBQWlCQSxNQUFNLENBQUMsT0FBTyxHQUFHLFNBQVMsVUFBVSxDQUFDLEdBQVcsRUFBVTtBQUN4RCxTQUFPLElBQUksQ0FBQyxTQUFTLENBQUMsR0FBRyxDQUFDLENBQUMsT0FBTyxDQUFDLFNBQVMsRUFBQyxTQUFTLENBQUMsQ0FBQyxPQUFPLENBQUMsU0FBUyxFQUFDLFNBQVMsQ0FBQyxDQUFDO0NBQ3RGLENBQUMiLCJmaWxlIjoidG9Kc1N0cmluZy5qcyIsInNvdXJjZXNDb250ZW50IjpbIid1c2UgYmFiZWwnO1xuLyogQGZsb3cgKi9cblxuLypcbiAqIENvcHlyaWdodCAoYykgMjAxNS1wcmVzZW50LCBGYWNlYm9vaywgSW5jLlxuICogQWxsIHJpZ2h0cyByZXNlcnZlZC5cbiAqXG4gKiBUaGlzIHNvdXJjZSBjb2RlIGlzIGxpY2Vuc2VkIHVuZGVyIHRoZSBsaWNlbnNlIGZvdW5kIGluIHRoZSBMSUNFTlNFIGZpbGUgaW5cbiAqIHRoZSByb290IGRpcmVjdG9yeSBvZiB0aGlzIHNvdXJjZSB0cmVlLlxuICovXG5cbi8qKlxuICogU2VyaWFsaXplIGEgSlMgb2JqZWN0IGluIGEgd2F5IHRoYXQgdGhlIHJlc3VsdCBpcyB2YWxpZCBKYXZhU2NyaXB0LiBMaW5lIHNlcGFyYXRvciBVKzIwMjggYW5kXG4gKiBQYXJhZ3JhcGggU2VwYXJhdG9yIFUrMjAyOSBhcmUgdGhlIHBvdGVudGlhbCBpc3N1ZXMgaGVyZSwgYXMgdGhleSBjYW4gc2hvdyB1cCBpbiBKU09OIGJ1dCBtdXN0IGJlXG4gKiBlc2NhcGVkIGluIEpTLlxuICogU2VlIGh0dHA6Ly90aW1lbGVzc3JlcG8uY29tL2pzb24taXNudC1hLWphdmFzY3JpcHQtc3Vic2V0XG4gKi9cbm1vZHVsZS5leHBvcnRzID0gZnVuY3Rpb24gdG9Kc1N0cmluZyhzdHI6IHN0cmluZyk6IHN0cmluZyB7XG4gIHJldHVybiBKU09OLnN0cmluZ2lmeShzdHIpLnJlcGxhY2UoL1xcdTIwMjgvZywnXFxcXHUyMDI4JykucmVwbGFjZSgvXFx1MjAyOS9nLCdcXFxcdTIwMjknKTtcbn07XG4iXX0=

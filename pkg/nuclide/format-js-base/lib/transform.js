@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+
+
+var Options = require('./options/Options');
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,20 +10,16 @@
  * the root directory of this source tree.
  */
 
-import type {SourceOptions} from './options/SourceOptions';
+var jscs = require('jscodeshift');
+var nuclideTransform = require('./nuclide/transform');
+var printRoot = require('./utils/printRoot');
+var requiresTransform = require('./requires/transform');
 
-const Options = require('./options/Options');
-
-const jscs = require('jscodeshift');
-const nuclideTransform = require('./nuclide/transform');
-const printRoot = require('./utils/printRoot');
-const requiresTransform = require('./requires/transform');
-
-function transform(source: string, options: SourceOptions): string {
+function transform(source, options) {
   Options.validateSourceOptions(options);
 
   // Parse the source code once, then reuse the root node
-  const root = jscs(source);
+  var root = jscs(source);
 
   // Add use-strict
   // TODO: implement this, make it configurable
@@ -30,7 +27,7 @@ function transform(source: string, options: SourceOptions): string {
   // Requires
   requiresTransform(root, options);
 
-  let output = printRoot(root);
+  var output = printRoot(root);
 
   // Transform that operates on the raw string output.
   output = nuclideTransform(output, options);
@@ -39,3 +36,4 @@ function transform(source: string, options: SourceOptions): string {
 }
 
 module.exports = transform;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInRyYW5zZm9ybS5qcyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOztBQWFBLElBQU0sT0FBTyxHQUFHLE9BQU8sQ0FBQyxtQkFBbUIsQ0FBQyxDQUFDOzs7Ozs7Ozs7O0FBRTdDLElBQU0sSUFBSSxHQUFHLE9BQU8sQ0FBQyxhQUFhLENBQUMsQ0FBQztBQUNwQyxJQUFNLGdCQUFnQixHQUFHLE9BQU8sQ0FBQyxxQkFBcUIsQ0FBQyxDQUFDO0FBQ3hELElBQU0sU0FBUyxHQUFHLE9BQU8sQ0FBQyxtQkFBbUIsQ0FBQyxDQUFDO0FBQy9DLElBQU0saUJBQWlCLEdBQUcsT0FBTyxDQUFDLHNCQUFzQixDQUFDLENBQUM7O0FBRTFELFNBQVMsU0FBUyxDQUFDLE1BQWMsRUFBRSxPQUFzQixFQUFVO0FBQ2pFLFNBQU8sQ0FBQyxxQkFBcUIsQ0FBQyxPQUFPLENBQUMsQ0FBQzs7O0FBR3ZDLE1BQU0sSUFBSSxHQUFHLElBQUksQ0FBQyxNQUFNLENBQUMsQ0FBQzs7Ozs7O0FBTTFCLG1CQUFpQixDQUFDLElBQUksRUFBRSxPQUFPLENBQUMsQ0FBQzs7QUFFakMsTUFBSSxNQUFNLEdBQUcsU0FBUyxDQUFDLElBQUksQ0FBQyxDQUFDOzs7QUFHN0IsUUFBTSxHQUFHLGdCQUFnQixDQUFDLE1BQU0sRUFBRSxPQUFPLENBQUMsQ0FBQzs7QUFFM0MsU0FBTyxNQUFNLENBQUM7Q0FDZjs7QUFFRCxNQUFNLENBQUMsT0FBTyxHQUFHLFNBQVMsQ0FBQyIsImZpbGUiOiJ0cmFuc2Zvcm0uanMiLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIGJhYmVsJztcbi8qIEBmbG93ICovXG5cbi8qXG4gKiBDb3B5cmlnaHQgKGMpIDIwMTUtcHJlc2VudCwgRmFjZWJvb2ssIEluYy5cbiAqIEFsbCByaWdodHMgcmVzZXJ2ZWQuXG4gKlxuICogVGhpcyBzb3VyY2UgY29kZSBpcyBsaWNlbnNlZCB1bmRlciB0aGUgbGljZW5zZSBmb3VuZCBpbiB0aGUgTElDRU5TRSBmaWxlIGluXG4gKiB0aGUgcm9vdCBkaXJlY3Rvcnkgb2YgdGhpcyBzb3VyY2UgdHJlZS5cbiAqL1xuXG5pbXBvcnQgdHlwZSB7U291cmNlT3B0aW9uc30gZnJvbSAnLi9vcHRpb25zL1NvdXJjZU9wdGlvbnMnO1xuXG5jb25zdCBPcHRpb25zID0gcmVxdWlyZSgnLi9vcHRpb25zL09wdGlvbnMnKTtcblxuY29uc3QganNjcyA9IHJlcXVpcmUoJ2pzY29kZXNoaWZ0Jyk7XG5jb25zdCBudWNsaWRlVHJhbnNmb3JtID0gcmVxdWlyZSgnLi9udWNsaWRlL3RyYW5zZm9ybScpO1xuY29uc3QgcHJpbnRSb290ID0gcmVxdWlyZSgnLi91dGlscy9wcmludFJvb3QnKTtcbmNvbnN0IHJlcXVpcmVzVHJhbnNmb3JtID0gcmVxdWlyZSgnLi9yZXF1aXJlcy90cmFuc2Zvcm0nKTtcblxuZnVuY3Rpb24gdHJhbnNmb3JtKHNvdXJjZTogc3RyaW5nLCBvcHRpb25zOiBTb3VyY2VPcHRpb25zKTogc3RyaW5nIHtcbiAgT3B0aW9ucy52YWxpZGF0ZVNvdXJjZU9wdGlvbnMob3B0aW9ucyk7XG5cbiAgLy8gUGFyc2UgdGhlIHNvdXJjZSBjb2RlIG9uY2UsIHRoZW4gcmV1c2UgdGhlIHJvb3Qgbm9kZVxuICBjb25zdCByb290ID0ganNjcyhzb3VyY2UpO1xuXG4gIC8vIEFkZCB1c2Utc3RyaWN0XG4gIC8vIFRPRE86IGltcGxlbWVudCB0aGlzLCBtYWtlIGl0IGNvbmZpZ3VyYWJsZVxuXG4gIC8vIFJlcXVpcmVzXG4gIHJlcXVpcmVzVHJhbnNmb3JtKHJvb3QsIG9wdGlvbnMpO1xuXG4gIGxldCBvdXRwdXQgPSBwcmludFJvb3Qocm9vdCk7XG5cbiAgLy8gVHJhbnNmb3JtIHRoYXQgb3BlcmF0ZXMgb24gdGhlIHJhdyBzdHJpbmcgb3V0cHV0LlxuICBvdXRwdXQgPSBudWNsaWRlVHJhbnNmb3JtKG91dHB1dCwgb3B0aW9ucyk7XG5cbiAgcmV0dXJuIG91dHB1dDtcbn1cblxubW9kdWxlLmV4cG9ydHMgPSB0cmFuc2Zvcm07XG4iXX0=

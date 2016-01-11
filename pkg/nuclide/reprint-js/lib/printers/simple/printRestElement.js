@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,18 +8,12 @@
  * the root directory of this source tree.
  */
 
-import type {Lines, Print} from '../../types/common';
-import type {RestElement} from 'ast-types-flow';
+var flatten = require('../../utils/flatten');
+var markers = require('../../constants/markers');
 
-const flatten = require('../../utils/flatten');
-const markers = require('../../constants/markers');
-
-function printRestElement(print: Print, node: RestElement): Lines {
-  return flatten([
-    '...',
-    markers.noBreak,
-    print(node.argument),
-  ]);
+function printRestElement(print, node) {
+  return flatten(['...', markers.noBreak, print(node.argument)]);
 }
 
 module.exports = printRestElement;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInByaW50UmVzdEVsZW1lbnQuanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7OztBQWNBLElBQU0sT0FBTyxHQUFHLE9BQU8sQ0FBQyxxQkFBcUIsQ0FBQyxDQUFDO0FBQy9DLElBQU0sT0FBTyxHQUFHLE9BQU8sQ0FBQyx5QkFBeUIsQ0FBQyxDQUFDOztBQUVuRCxTQUFTLGdCQUFnQixDQUFDLEtBQVksRUFBRSxJQUFpQixFQUFTO0FBQ2hFLFNBQU8sT0FBTyxDQUFDLENBQ2IsS0FBSyxFQUNMLE9BQU8sQ0FBQyxPQUFPLEVBQ2YsS0FBSyxDQUFDLElBQUksQ0FBQyxRQUFRLENBQUMsQ0FDckIsQ0FBQyxDQUFDO0NBQ0o7O0FBRUQsTUFBTSxDQUFDLE9BQU8sR0FBRyxnQkFBZ0IsQ0FBQyIsImZpbGUiOiJwcmludFJlc3RFbGVtZW50LmpzIiwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBiYWJlbCc7XG4vKiBAZmxvdyAqL1xuXG4vKlxuICogQ29weXJpZ2h0IChjKSAyMDE1LXByZXNlbnQsIEZhY2Vib29rLCBJbmMuXG4gKiBBbGwgcmlnaHRzIHJlc2VydmVkLlxuICpcbiAqIFRoaXMgc291cmNlIGNvZGUgaXMgbGljZW5zZWQgdW5kZXIgdGhlIGxpY2Vuc2UgZm91bmQgaW4gdGhlIExJQ0VOU0UgZmlsZSBpblxuICogdGhlIHJvb3QgZGlyZWN0b3J5IG9mIHRoaXMgc291cmNlIHRyZWUuXG4gKi9cblxuaW1wb3J0IHR5cGUge0xpbmVzLCBQcmludH0gZnJvbSAnLi4vLi4vdHlwZXMvY29tbW9uJztcbmltcG9ydCB0eXBlIHtSZXN0RWxlbWVudH0gZnJvbSAnYXN0LXR5cGVzLWZsb3cnO1xuXG5jb25zdCBmbGF0dGVuID0gcmVxdWlyZSgnLi4vLi4vdXRpbHMvZmxhdHRlbicpO1xuY29uc3QgbWFya2VycyA9IHJlcXVpcmUoJy4uLy4uL2NvbnN0YW50cy9tYXJrZXJzJyk7XG5cbmZ1bmN0aW9uIHByaW50UmVzdEVsZW1lbnQocHJpbnQ6IFByaW50LCBub2RlOiBSZXN0RWxlbWVudCk6IExpbmVzIHtcbiAgcmV0dXJuIGZsYXR0ZW4oW1xuICAgICcuLi4nLFxuICAgIG1hcmtlcnMubm9CcmVhayxcbiAgICBwcmludChub2RlLmFyZ3VtZW50KSxcbiAgXSk7XG59XG5cbm1vZHVsZS5leHBvcnRzID0gcHJpbnRSZXN0RWxlbWVudDtcbiJdfQ==

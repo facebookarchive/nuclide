@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,10 +10,10 @@
  * the root directory of this source tree.
  */
 
-import type {Disposable} from 'atom';
-import type {GadgetsService} from '../../gadgets-interfaces';
+exports.consumeGadgetsService = consumeGadgetsService;
 
-export function consumeGadgetsService(api: GadgetsService): Disposable {
-  const Inspector = require('./ui/Inspector');
+function consumeGadgetsService(api) {
+  var Inspector = require('./ui/Inspector');
   return api.registerGadget(Inspector);
 }
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIm1haW4uanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozs7Ozs7QUFjTyxTQUFTLHFCQUFxQixDQUFDLEdBQW1CLEVBQWM7QUFDckUsTUFBTSxTQUFTLEdBQUcsT0FBTyxDQUFDLGdCQUFnQixDQUFDLENBQUM7QUFDNUMsU0FBTyxHQUFHLENBQUMsY0FBYyxDQUFDLFNBQVMsQ0FBQyxDQUFDO0NBQ3RDIiwiZmlsZSI6Im1haW4uanMiLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIGJhYmVsJztcbi8qIEBmbG93ICovXG5cbi8qXG4gKiBDb3B5cmlnaHQgKGMpIDIwMTUtcHJlc2VudCwgRmFjZWJvb2ssIEluYy5cbiAqIEFsbCByaWdodHMgcmVzZXJ2ZWQuXG4gKlxuICogVGhpcyBzb3VyY2UgY29kZSBpcyBsaWNlbnNlZCB1bmRlciB0aGUgbGljZW5zZSBmb3VuZCBpbiB0aGUgTElDRU5TRSBmaWxlIGluXG4gKiB0aGUgcm9vdCBkaXJlY3Rvcnkgb2YgdGhpcyBzb3VyY2UgdHJlZS5cbiAqL1xuXG5pbXBvcnQgdHlwZSB7RGlzcG9zYWJsZX0gZnJvbSAnYXRvbSc7XG5pbXBvcnQgdHlwZSB7R2FkZ2V0c1NlcnZpY2V9IGZyb20gJy4uLy4uL2dhZGdldHMtaW50ZXJmYWNlcyc7XG5cbmV4cG9ydCBmdW5jdGlvbiBjb25zdW1lR2FkZ2V0c1NlcnZpY2UoYXBpOiBHYWRnZXRzU2VydmljZSk6IERpc3Bvc2FibGUge1xuICBjb25zdCBJbnNwZWN0b3IgPSByZXF1aXJlKCcuL3VpL0luc3BlY3RvcicpO1xuICByZXR1cm4gYXBpLnJlZ2lzdGVyR2FkZ2V0KEluc3BlY3Rvcik7XG59XG4iXX0=

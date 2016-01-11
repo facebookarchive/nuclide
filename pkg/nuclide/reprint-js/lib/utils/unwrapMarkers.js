@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+
+
+var flatten = require('./flatten');
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,25 +10,22 @@
  * the root directory of this source tree.
  */
 
-import type {Lines} from '../types/common';
-
-const flatten = require('./flatten');
-const isMarker = require('./isMarker');
+var isMarker = require('./isMarker');
 
 /**
  * This utility unwraps contiguous leading and trailing markers from lines and
  * then inserts pre and post before adding the markers back.
  */
-function unwrapMarkers(pre: Lines, lines: Lines, post: Lines): Lines {
-  let leading = [];
-  for (let i = 0; i < lines.length && isMarker(lines[i]); i++) {
+function unwrapMarkers(pre, lines, post) {
+  var leading = [];
+  for (var i = 0; i < lines.length && isMarker(lines[i]); i++) {
     leading.push(lines[i]);
   }
-  let trailing = [];
-  for (let i = lines.length - 1; i >= 0 && isMarker(lines[i]); i--) {
+  var trailing = [];
+  for (var i = lines.length - 1; i >= 0 && isMarker(lines[i]); i--) {
     trailing.unshift(lines[i]);
   }
-  let middle = [];
+  var middle = [];
 
   // Everything is a marker... how is that possible?
   if (lines.length === leading.length) {
@@ -38,13 +36,8 @@ function unwrapMarkers(pre: Lines, lines: Lines, post: Lines): Lines {
     middle = lines.slice(leading.length, lines.length - trailing.length);
   }
 
-  return flatten([
-    leading,
-    pre,
-    middle,
-    post,
-    trailing,
-  ]);
+  return flatten([leading, pre, middle, post, trailing]);
 }
 
 module.exports = unwrapMarkers;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInVud3JhcE1hcmtlcnMuanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7QUFhQSxJQUFNLE9BQU8sR0FBRyxPQUFPLENBQUMsV0FBVyxDQUFDLENBQUM7Ozs7Ozs7Ozs7QUFDckMsSUFBTSxRQUFRLEdBQUcsT0FBTyxDQUFDLFlBQVksQ0FBQyxDQUFDOzs7Ozs7QUFNdkMsU0FBUyxhQUFhLENBQUMsR0FBVSxFQUFFLEtBQVksRUFBRSxJQUFXLEVBQVM7QUFDbkUsTUFBSSxPQUFPLEdBQUcsRUFBRSxDQUFDO0FBQ2pCLE9BQUssSUFBSSxDQUFDLEdBQUcsQ0FBQyxFQUFFLENBQUMsR0FBRyxLQUFLLENBQUMsTUFBTSxJQUFJLFFBQVEsQ0FBQyxLQUFLLENBQUMsQ0FBQyxDQUFDLENBQUMsRUFBRSxDQUFDLEVBQUUsRUFBRTtBQUMzRCxXQUFPLENBQUMsSUFBSSxDQUFDLEtBQUssQ0FBQyxDQUFDLENBQUMsQ0FBQyxDQUFDO0dBQ3hCO0FBQ0QsTUFBSSxRQUFRLEdBQUcsRUFBRSxDQUFDO0FBQ2xCLE9BQUssSUFBSSxDQUFDLEdBQUcsS0FBSyxDQUFDLE1BQU0sR0FBRyxDQUFDLEVBQUUsQ0FBQyxJQUFJLENBQUMsSUFBSSxRQUFRLENBQUMsS0FBSyxDQUFDLENBQUMsQ0FBQyxDQUFDLEVBQUUsQ0FBQyxFQUFFLEVBQUU7QUFDaEUsWUFBUSxDQUFDLE9BQU8sQ0FBQyxLQUFLLENBQUMsQ0FBQyxDQUFDLENBQUMsQ0FBQztHQUM1QjtBQUNELE1BQUksTUFBTSxHQUFHLEVBQUUsQ0FBQzs7O0FBR2hCLE1BQUksS0FBSyxDQUFDLE1BQU0sS0FBSyxPQUFPLENBQUMsTUFBTSxFQUFFO0FBQ25DLFdBQU8sR0FBRyxFQUFFLENBQUM7QUFDYixVQUFNLEdBQUcsS0FBSyxDQUFDO0FBQ2YsWUFBUSxHQUFHLEVBQUUsQ0FBQztHQUNmLE1BQU07QUFDTCxVQUFNLEdBQUcsS0FBSyxDQUFDLEtBQUssQ0FBQyxPQUFPLENBQUMsTUFBTSxFQUFFLEtBQUssQ0FBQyxNQUFNLEdBQUcsUUFBUSxDQUFDLE1BQU0sQ0FBQyxDQUFDO0dBQ3RFOztBQUVELFNBQU8sT0FBTyxDQUFDLENBQ2IsT0FBTyxFQUNQLEdBQUcsRUFDSCxNQUFNLEVBQ04sSUFBSSxFQUNKLFFBQVEsQ0FDVCxDQUFDLENBQUM7Q0FDSjs7QUFFRCxNQUFNLENBQUMsT0FBTyxHQUFHLGFBQWEsQ0FBQyIsImZpbGUiOiJ1bndyYXBNYXJrZXJzLmpzIiwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBiYWJlbCc7XG4vKiBAZmxvdyAqL1xuXG4vKlxuICogQ29weXJpZ2h0IChjKSAyMDE1LXByZXNlbnQsIEZhY2Vib29rLCBJbmMuXG4gKiBBbGwgcmlnaHRzIHJlc2VydmVkLlxuICpcbiAqIFRoaXMgc291cmNlIGNvZGUgaXMgbGljZW5zZWQgdW5kZXIgdGhlIGxpY2Vuc2UgZm91bmQgaW4gdGhlIExJQ0VOU0UgZmlsZSBpblxuICogdGhlIHJvb3QgZGlyZWN0b3J5IG9mIHRoaXMgc291cmNlIHRyZWUuXG4gKi9cblxuaW1wb3J0IHR5cGUge0xpbmVzfSBmcm9tICcuLi90eXBlcy9jb21tb24nO1xuXG5jb25zdCBmbGF0dGVuID0gcmVxdWlyZSgnLi9mbGF0dGVuJyk7XG5jb25zdCBpc01hcmtlciA9IHJlcXVpcmUoJy4vaXNNYXJrZXInKTtcblxuLyoqXG4gKiBUaGlzIHV0aWxpdHkgdW53cmFwcyBjb250aWd1b3VzIGxlYWRpbmcgYW5kIHRyYWlsaW5nIG1hcmtlcnMgZnJvbSBsaW5lcyBhbmRcbiAqIHRoZW4gaW5zZXJ0cyBwcmUgYW5kIHBvc3QgYmVmb3JlIGFkZGluZyB0aGUgbWFya2VycyBiYWNrLlxuICovXG5mdW5jdGlvbiB1bndyYXBNYXJrZXJzKHByZTogTGluZXMsIGxpbmVzOiBMaW5lcywgcG9zdDogTGluZXMpOiBMaW5lcyB7XG4gIGxldCBsZWFkaW5nID0gW107XG4gIGZvciAobGV0IGkgPSAwOyBpIDwgbGluZXMubGVuZ3RoICYmIGlzTWFya2VyKGxpbmVzW2ldKTsgaSsrKSB7XG4gICAgbGVhZGluZy5wdXNoKGxpbmVzW2ldKTtcbiAgfVxuICBsZXQgdHJhaWxpbmcgPSBbXTtcbiAgZm9yIChsZXQgaSA9IGxpbmVzLmxlbmd0aCAtIDE7IGkgPj0gMCAmJiBpc01hcmtlcihsaW5lc1tpXSk7IGktLSkge1xuICAgIHRyYWlsaW5nLnVuc2hpZnQobGluZXNbaV0pO1xuICB9XG4gIGxldCBtaWRkbGUgPSBbXTtcblxuICAvLyBFdmVyeXRoaW5nIGlzIGEgbWFya2VyLi4uIGhvdyBpcyB0aGF0IHBvc3NpYmxlP1xuICBpZiAobGluZXMubGVuZ3RoID09PSBsZWFkaW5nLmxlbmd0aCkge1xuICAgIGxlYWRpbmcgPSBbXTtcbiAgICBtaWRkbGUgPSBsaW5lcztcbiAgICB0cmFpbGluZyA9IFtdO1xuICB9IGVsc2Uge1xuICAgIG1pZGRsZSA9IGxpbmVzLnNsaWNlKGxlYWRpbmcubGVuZ3RoLCBsaW5lcy5sZW5ndGggLSB0cmFpbGluZy5sZW5ndGgpO1xuICB9XG5cbiAgcmV0dXJuIGZsYXR0ZW4oW1xuICAgIGxlYWRpbmcsXG4gICAgcHJlLFxuICAgIG1pZGRsZSxcbiAgICBwb3N0LFxuICAgIHRyYWlsaW5nLFxuICBdKTtcbn1cblxubW9kdWxlLmV4cG9ydHMgPSB1bndyYXBNYXJrZXJzO1xuIl19

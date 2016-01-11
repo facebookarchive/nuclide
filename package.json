@@ -1,6 +1,6 @@
 {
   "name": "nuclide",
-  "version": "0.0.0",
+  "version": "0.109.0-alpha1",
   "description": "A unified developer experience for web and mobile development, built as a suite of features on top of Atom to provide hackability and the support of an active community.",
   "keywords": [
     "atom",
@@ -96,6 +96,5 @@
   ],
   "optionalDependencies": {
     "ctags": "3.0.0"
-  },
-  "private": true
+  }
 }

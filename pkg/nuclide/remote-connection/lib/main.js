@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,10 +8,17 @@
  * the root directory of this source tree.
  */
 
-const {RemoteConnection} = require('./RemoteConnection');
-const RemoteDirectory = require('./RemoteDirectory');
-const RemoteFile = require('./RemoteFile');
-const {SshHandshake, decorateSshConnectionDelegateWithTracking} = require('./SshHandshake');
+var _require = require('./RemoteConnection');
+
+var RemoteConnection = _require.RemoteConnection;
+
+var RemoteDirectory = require('./RemoteDirectory');
+var RemoteFile = require('./RemoteFile');
+
+var _require2 = require('./SshHandshake');
+
+var SshHandshake = _require2.SshHandshake;
+var decorateSshConnectionDelegateWithTracking = _require2.decorateSshConnectionDelegateWithTracking;
 
 /*
  * We want the services to exist as a singleton. The ./service-manager.js file
@@ -21,35 +27,35 @@ const {SshHandshake, decorateSshConnectionDelegateWithTracking} = require('./Ssh
  * only one instance of service-manager is loaded, serving as a clearinghouse for all service
  * loading, which is done via its getService() and getServiceByNuclideUri() methods.
  */
-const NUCLIDE_CLIENT_EXPORTS_KEY = '_nuclide_client_exports';
-const nuclideClientExports = require('../../commons').singleton.get(
-  NUCLIDE_CLIENT_EXPORTS_KEY,
-  () => {
-    const {
-      getService,
-      getServiceByNuclideUri,
-      getServiceLogger,
-    } = require('./service-manager');
-    const {
-      getFileForPath,
-    } = require('./client');
-    return {
-      getFileForPath,
-      getService,
-      getServiceLogger,
-      getServiceByNuclideUri,
-    };
-  },
-);
+var NUCLIDE_CLIENT_EXPORTS_KEY = '_nuclide_client_exports';
+var nuclideClientExports = require('../../commons').singleton.get(NUCLIDE_CLIENT_EXPORTS_KEY, function () {
+  var _require3 = require('./service-manager');
+
+  var getService = _require3.getService;
+  var getServiceByNuclideUri = _require3.getServiceByNuclideUri;
+  var getServiceLogger = _require3.getServiceLogger;
+
+  var _require4 = require('./client');
+
+  var getFileForPath = _require4.getFileForPath;
+
+  return {
+    getFileForPath: getFileForPath,
+    getService: getService,
+    getServiceLogger: getServiceLogger,
+    getServiceByNuclideUri: getServiceByNuclideUri
+  };
+});
 
 module.exports = {
-  decorateSshConnectionDelegateWithTracking,
-  RemoteConnection,
-  RemoteFile,
-  RemoteDirectory,
-  SshHandshake,
+  decorateSshConnectionDelegateWithTracking: decorateSshConnectionDelegateWithTracking,
+  RemoteConnection: RemoteConnection,
+  RemoteFile: RemoteFile,
+  RemoteDirectory: RemoteDirectory,
+  SshHandshake: SshHandshake,
   getFileForPath: nuclideClientExports.getFileForPath,
   getService: nuclideClientExports.getService,
   getServiceLogger: nuclideClientExports.getServiceLogger,
-  getServiceByNuclideUri: nuclideClientExports.getServiceByNuclideUri,
+  getServiceByNuclideUri: nuclideClientExports.getServiceByNuclideUri
 };
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIm1haW4uanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7OztlQVcyQixPQUFPLENBQUMsb0JBQW9CLENBQUM7O0lBQWpELGdCQUFnQixZQUFoQixnQkFBZ0I7O0FBQ3ZCLElBQU0sZUFBZSxHQUFHLE9BQU8sQ0FBQyxtQkFBbUIsQ0FBQyxDQUFDO0FBQ3JELElBQU0sVUFBVSxHQUFHLE9BQU8sQ0FBQyxjQUFjLENBQUMsQ0FBQzs7Z0JBQ3VCLE9BQU8sQ0FBQyxnQkFBZ0IsQ0FBQzs7SUFBcEYsWUFBWSxhQUFaLFlBQVk7SUFBRSx5Q0FBeUMsYUFBekMseUNBQXlDOzs7Ozs7Ozs7QUFTOUQsSUFBTSwwQkFBMEIsR0FBRyx5QkFBeUIsQ0FBQztBQUM3RCxJQUFNLG9CQUFvQixHQUFHLE9BQU8sQ0FBQyxlQUFlLENBQUMsQ0FBQyxTQUFTLENBQUMsR0FBRyxDQUNqRSwwQkFBMEIsRUFDMUIsWUFBTTtrQkFLQSxPQUFPLENBQUMsbUJBQW1CLENBQUM7O01BSDlCLFVBQVUsYUFBVixVQUFVO01BQ1Ysc0JBQXNCLGFBQXRCLHNCQUFzQjtNQUN0QixnQkFBZ0IsYUFBaEIsZ0JBQWdCOztrQkFJZCxPQUFPLENBQUMsVUFBVSxDQUFDOztNQURyQixjQUFjLGFBQWQsY0FBYzs7QUFFaEIsU0FBTztBQUNMLGtCQUFjLEVBQWQsY0FBYztBQUNkLGNBQVUsRUFBVixVQUFVO0FBQ1Ysb0JBQWdCLEVBQWhCLGdCQUFnQjtBQUNoQiwwQkFBc0IsRUFBdEIsc0JBQXNCO0dBQ3ZCLENBQUM7Q0FDSCxDQUNGLENBQUM7O0FBRUYsTUFBTSxDQUFDLE9BQU8sR0FBRztBQUNmLDJDQUF5QyxFQUF6Qyx5Q0FBeUM7QUFDekMsa0JBQWdCLEVBQWhCLGdCQUFnQjtBQUNoQixZQUFVLEVBQVYsVUFBVTtBQUNWLGlCQUFlLEVBQWYsZUFBZTtBQUNmLGNBQVksRUFBWixZQUFZO0FBQ1osZ0JBQWMsRUFBRSxvQkFBb0IsQ0FBQyxjQUFjO0FBQ25ELFlBQVUsRUFBRSxvQkFBb0IsQ0FBQyxVQUFVO0FBQzNDLGtCQUFnQixFQUFFLG9CQUFvQixDQUFDLGdCQUFnQjtBQUN2RCx3QkFBc0IsRUFBRSxvQkFBb0IsQ0FBQyxzQkFBc0I7Q0FDcEUsQ0FBQyIsImZpbGUiOiJtYWluLmpzIiwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBiYWJlbCc7XG4vKiBAZmxvdyAqL1xuXG4vKlxuICogQ29weXJpZ2h0IChjKSAyMDE1LXByZXNlbnQsIEZhY2Vib29rLCBJbmMuXG4gKiBBbGwgcmlnaHRzIHJlc2VydmVkLlxuICpcbiAqIFRoaXMgc291cmNlIGNvZGUgaXMgbGljZW5zZWQgdW5kZXIgdGhlIGxpY2Vuc2UgZm91bmQgaW4gdGhlIExJQ0VOU0UgZmlsZSBpblxuICogdGhlIHJvb3QgZGlyZWN0b3J5IG9mIHRoaXMgc291cmNlIHRyZWUuXG4gKi9cblxuY29uc3Qge1JlbW90ZUNvbm5lY3Rpb259ID0gcmVxdWlyZSgnLi9SZW1vdGVDb25uZWN0aW9uJyk7XG5jb25zdCBSZW1vdGVEaXJlY3RvcnkgPSByZXF1aXJlKCcuL1JlbW90ZURpcmVjdG9yeScpO1xuY29uc3QgUmVtb3RlRmlsZSA9IHJlcXVpcmUoJy4vUmVtb3RlRmlsZScpO1xuY29uc3Qge1NzaEhhbmRzaGFrZSwgZGVjb3JhdGVTc2hDb25uZWN0aW9uRGVsZWdhdGVXaXRoVHJhY2tpbmd9ID0gcmVxdWlyZSgnLi9Tc2hIYW5kc2hha2UnKTtcblxuLypcbiAqIFdlIHdhbnQgdGhlIHNlcnZpY2VzIHRvIGV4aXN0IGFzIGEgc2luZ2xldG9uLiBUaGUgLi9zZXJ2aWNlLW1hbmFnZXIuanMgZmlsZVxuICogaW4gdGhpcyBwYWNrYWdlIGNvbnRhaW5zIGEgY2FjaGUgb2Ygc2VydmljZXMsIGVhY2ggb2Ygd2hpY2ggc2hvdWxkIGFsc28gYmUgc2luZ2xldG9ucyBmb3IgZWFjaFxuICogcm9vdC9zZXJ2aWNlIHBhaXIuIFRvIHRoaXMgZW5kLCB3ZSB1c2UgdGhlIHNpbmdsZXRvbigpIHV0aWxpdHkgaW4gbnVjbGlkZS1jb21tb25zIHRvIGVuc3VyZSB0aGF0XG4gKiBvbmx5IG9uZSBpbnN0YW5jZSBvZiBzZXJ2aWNlLW1hbmFnZXIgaXMgbG9hZGVkLCBzZXJ2aW5nIGFzIGEgY2xlYXJpbmdob3VzZSBmb3IgYWxsIHNlcnZpY2VcbiAqIGxvYWRpbmcsIHdoaWNoIGlzIGRvbmUgdmlhIGl0cyBnZXRTZXJ2aWNlKCkgYW5kIGdldFNlcnZpY2VCeU51Y2xpZGVVcmkoKSBtZXRob2RzLlxuICovXG5jb25zdCBOVUNMSURFX0NMSUVOVF9FWFBPUlRTX0tFWSA9ICdfbnVjbGlkZV9jbGllbnRfZXhwb3J0cyc7XG5jb25zdCBudWNsaWRlQ2xpZW50RXhwb3J0cyA9IHJlcXVpcmUoJy4uLy4uL2NvbW1vbnMnKS5zaW5nbGV0b24uZ2V0KFxuICBOVUNMSURFX0NMSUVOVF9FWFBPUlRTX0tFWSxcbiAgKCkgPT4ge1xuICAgIGNvbnN0IHtcbiAgICAgIGdldFNlcnZpY2UsXG4gICAgICBnZXRTZXJ2aWNlQnlOdWNsaWRlVXJpLFxuICAgICAgZ2V0U2VydmljZUxvZ2dlcixcbiAgICB9ID0gcmVxdWlyZSgnLi9zZXJ2aWNlLW1hbmFnZXInKTtcbiAgICBjb25zdCB7XG4gICAgICBnZXRGaWxlRm9yUGF0aCxcbiAgICB9ID0gcmVxdWlyZSgnLi9jbGllbnQnKTtcbiAgICByZXR1cm4ge1xuICAgICAgZ2V0RmlsZUZvclBhdGgsXG4gICAgICBnZXRTZXJ2aWNlLFxuICAgICAgZ2V0U2VydmljZUxvZ2dlcixcbiAgICAgIGdldFNlcnZpY2VCeU51Y2xpZGVVcmksXG4gICAgfTtcbiAgfSxcbik7XG5cbm1vZHVsZS5leHBvcnRzID0ge1xuICBkZWNvcmF0ZVNzaENvbm5lY3Rpb25EZWxlZ2F0ZVdpdGhUcmFja2luZyxcbiAgUmVtb3RlQ29ubmVjdGlvbixcbiAgUmVtb3RlRmlsZSxcbiAgUmVtb3RlRGlyZWN0b3J5LFxuICBTc2hIYW5kc2hha2UsXG4gIGdldEZpbGVGb3JQYXRoOiBudWNsaWRlQ2xpZW50RXhwb3J0cy5nZXRGaWxlRm9yUGF0aCxcbiAgZ2V0U2VydmljZTogbnVjbGlkZUNsaWVudEV4cG9ydHMuZ2V0U2VydmljZSxcbiAgZ2V0U2VydmljZUxvZ2dlcjogbnVjbGlkZUNsaWVudEV4cG9ydHMuZ2V0U2VydmljZUxvZ2dlcixcbiAgZ2V0U2VydmljZUJ5TnVjbGlkZVVyaTogbnVjbGlkZUNsaWVudEV4cG9ydHMuZ2V0U2VydmljZUJ5TnVjbGlkZVVyaSxcbn07XG4iXX0=
