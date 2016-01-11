@@ -14,7 +14,7 @@
   "bin": {
     "nuclide-start-server": "./pkg/nuclide/server/nuclide-start-server"
   },
-  "repository": "facebook/nuclide",
+  "repository": "https://github.com/facebook/nuclide",
   "scripts": {
     "lint": "eslint",
     "lint-all": "eslint .",
@@ -89,14 +89,13 @@
     "sabor": "0.4.0",
     "touch": "1.0.0"
   },
-  "bundledDependencies": [],
+  "bundledDependencies": [
+    "thrift",
+    "v8-debug",
+    "v8-profiler"
+  ],
   "optionalDependencies": {
     "ctags": "3.0.0"
   },
-  "private": true,
-  "_atomModuleCache": {
-    "extensions": {
-      ".node": []
-    }
-  }
+  "private": true
 }
