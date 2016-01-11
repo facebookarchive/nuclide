@@ -1,6 +1,6 @@
 {
   "name": "nuclide",
-  "version": "0.109.0-alpha1",
+  "version": "0.109.0-alpha2",
   "description": "A unified developer experience for web and mobile development, built as a suite of features on top of Atom to provide hackability and the support of an active community.",
   "keywords": [
     "atom",
@@ -11,9 +11,6 @@
   "homepage": "http://nuclide.io/",
   "license": "SEE LICENSE IN LICENSE",
   "main": "./lib/main.js",
-  "bin": {
-    "nuclide-start-server": "./pkg/nuclide/server/nuclide-start-server"
-  },
   "repository": "https://github.com/facebook/nuclide",
   "scripts": {
     "lint": "eslint",
