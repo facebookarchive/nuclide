@@ -8,8 +8,8 @@
  * the root directory of this source tree.
  */
 
-const num = 3; // eslint-disable-line no-unused-vars
+export class Foo {
+  bar(): void {
 
-import {Foo} from './Foo';
-
-new Foo().bar();
+  }
+}
