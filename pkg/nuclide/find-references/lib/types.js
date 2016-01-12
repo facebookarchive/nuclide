@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,30 +10,9 @@
  * the root directory of this source tree.
  */
 
-export type NuclideUri = string;
+// Nuclide URI of the file path
+// name of calling method/function/symbol
 
-export type Location = {
-  line: number,
-  column: number,
-};
-
-export type Reference = {
-  uri: NuclideUri,  // Nuclide URI of the file path
-  name: ?string,    // name of calling method/function/symbol
-  start: Location,
-  end: Location,
-};
-
-export type ReferenceGroup = {
-  references: Array<Reference>,
-  // Start and end range of the preview text.
-  startLine: number,
-  endLine: number,
-};
-
-export type FileReferences = {
-  uri: NuclideUri,
-  grammar: Object /* atom$Grammar */,
-  previewText: Array<string>,
-  refGroups: Array<ReferenceGroup>,
-};
+// Start and end range of the preview text.
+/* atom$Grammar */
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IiIsImZpbGUiOiJ0eXBlcy5qcyIsInNvdXJjZXNDb250ZW50IjpbXX0=

@@ -1,6 +1,6 @@
 {
   "name": "nuclide",
-  "version": "0.0.0",
+  "version": "0.109.0-beta1",
   "description": "A unified developer experience for web and mobile development, built as a suite of features on top of Atom to provide hackability and the support of an active community.",
   "keywords": [
     "atom",
@@ -11,9 +11,6 @@
   "homepage": "http://nuclide.io/",
   "license": "SEE LICENSE IN LICENSE",
   "main": "./lib/main.js",
-  "bin": {
-    "nuclide-start-server": "./pkg/nuclide/server/nuclide-start-server"
-  },
   "repository": "https://github.com/facebook/nuclide",
   "scripts": {
     "lint": "eslint",
@@ -67,7 +64,6 @@
     "ssh2": "0.4.12",
     "strong-data-uri": "1.0.3",
     "temp": "0.8.3",
-    "thrift": "file:resources/VendorLib/thrift-0.9.3-fb",
     "url-join": "0.0.1",
     "urlregexp": "1.0.2",
     "uuid": "2.0.1",
@@ -87,11 +83,8 @@
     "sabor": "0.5.0",
     "touch": "1.0.0"
   },
-  "bundledDependencies": [
-    "thrift"
-  ],
+  "bundledDependencies": [],
   "optionalDependencies": {
     "ctags": "3.0.0"
-  },
-  "private": true
+  }
 }

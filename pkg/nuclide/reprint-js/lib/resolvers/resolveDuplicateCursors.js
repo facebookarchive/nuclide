@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,15 +8,15 @@
  * the root directory of this source tree.
  */
 
-const markers = require('../constants/markers');
+var markers = require('../constants/markers');
 
 /**
  * This removes all but the first cursor. Since cursors are added at the end of
  * nodes this will keep the most valid cursor that appears deepest in the tree.
  */
-function resolveDuplicateCursors(lines: Array<any>): Array<any> {
-  let seenCursor = false;
-  return lines.map(line => {
+function resolveDuplicateCursors(lines) {
+  var seenCursor = false;
+  return lines.map(function (line) {
     if (line === markers.cursor) {
       if (seenCursor) {
         return markers.empty;
@@ -29,3 +28,4 @@ function resolveDuplicateCursors(lines: Array<any>): Array<any> {
 }
 
 module.exports = resolveDuplicateCursors;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInJlc29sdmVEdXBsaWNhdGVDdXJzb3JzLmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7QUFXQSxJQUFNLE9BQU8sR0FBRyxPQUFPLENBQUMsc0JBQXNCLENBQUMsQ0FBQzs7Ozs7O0FBTWhELFNBQVMsdUJBQXVCLENBQUMsS0FBaUIsRUFBYztBQUM5RCxNQUFJLFVBQVUsR0FBRyxLQUFLLENBQUM7QUFDdkIsU0FBTyxLQUFLLENBQUMsR0FBRyxDQUFDLFVBQUEsSUFBSSxFQUFJO0FBQ3ZCLFFBQUksSUFBSSxLQUFLLE9BQU8sQ0FBQyxNQUFNLEVBQUU7QUFDM0IsVUFBSSxVQUFVLEVBQUU7QUFDZCxlQUFPLE9BQU8sQ0FBQyxLQUFLLENBQUM7T0FDdEI7QUFDRCxnQkFBVSxHQUFHLElBQUksQ0FBQztLQUNuQjtBQUNELFdBQU8sSUFBSSxDQUFDO0dBQ2IsQ0FBQyxDQUFDO0NBQ0o7O0FBRUQsTUFBTSxDQUFDLE9BQU8sR0FBRyx1QkFBdUIsQ0FBQyIsImZpbGUiOiJyZXNvbHZlRHVwbGljYXRlQ3Vyc29ycy5qcyIsInNvdXJjZXNDb250ZW50IjpbIid1c2UgYmFiZWwnO1xuLyogQGZsb3cgKi9cblxuLypcbiAqIENvcHlyaWdodCAoYykgMjAxNS1wcmVzZW50LCBGYWNlYm9vaywgSW5jLlxuICogQWxsIHJpZ2h0cyByZXNlcnZlZC5cbiAqXG4gKiBUaGlzIHNvdXJjZSBjb2RlIGlzIGxpY2Vuc2VkIHVuZGVyIHRoZSBsaWNlbnNlIGZvdW5kIGluIHRoZSBMSUNFTlNFIGZpbGUgaW5cbiAqIHRoZSByb290IGRpcmVjdG9yeSBvZiB0aGlzIHNvdXJjZSB0cmVlLlxuICovXG5cbmNvbnN0IG1hcmtlcnMgPSByZXF1aXJlKCcuLi9jb25zdGFudHMvbWFya2VycycpO1xuXG4vKipcbiAqIFRoaXMgcmVtb3ZlcyBhbGwgYnV0IHRoZSBmaXJzdCBjdXJzb3IuIFNpbmNlIGN1cnNvcnMgYXJlIGFkZGVkIGF0IHRoZSBlbmQgb2ZcbiAqIG5vZGVzIHRoaXMgd2lsbCBrZWVwIHRoZSBtb3N0IHZhbGlkIGN1cnNvciB0aGF0IGFwcGVhcnMgZGVlcGVzdCBpbiB0aGUgdHJlZS5cbiAqL1xuZnVuY3Rpb24gcmVzb2x2ZUR1cGxpY2F0ZUN1cnNvcnMobGluZXM6IEFycmF5PGFueT4pOiBBcnJheTxhbnk+IHtcbiAgbGV0IHNlZW5DdXJzb3IgPSBmYWxzZTtcbiAgcmV0dXJuIGxpbmVzLm1hcChsaW5lID0+IHtcbiAgICBpZiAobGluZSA9PT0gbWFya2Vycy5jdXJzb3IpIHtcbiAgICAgIGlmIChzZWVuQ3Vyc29yKSB7XG4gICAgICAgIHJldHVybiBtYXJrZXJzLmVtcHR5O1xuICAgICAgfVxuICAgICAgc2VlbkN1cnNvciA9IHRydWU7XG4gICAgfVxuICAgIHJldHVybiBsaW5lO1xuICB9KTtcbn1cblxubW9kdWxlLmV4cG9ydHMgPSByZXNvbHZlRHVwbGljYXRlQ3Vyc29ycztcbiJdfQ==

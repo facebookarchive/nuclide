@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,22 +10,7 @@
  * the root directory of this source tree.
  */
 
-export type Gadget = {
-  gadgetId: string;
-
-  // For now, locations are pretty limited. In the future we might support more complicated things,
-  // including nested locations ("the bottom of the right") and event different container types
-  // (pane items vs panels).
-  defaultLocation?: GadgetLocation;
-
-  deserializeState?: (state: Object) => Object;
-  prototype: Object;
-};
-
-export type GadgetLocation = 'active-pane' | 'top' | 'bottom' | 'left' | 'right';
-
-export type GadgetsService = {
-  destroyGadget(gadgetId: string): void;
-  registerGadget(gadget: Gadget): atom$IDisposable;
-  showGadget(gadgetId: string): void;
-};
+// For now, locations are pretty limited. In the future we might support more complicated things,
+// including nested locations ("the bottom of the right") and event different container types
+// (pane items vs panels).
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IiIsImZpbGUiOiJtYWluLmpzIiwic291cmNlc0NvbnRlbnQiOltdfQ==

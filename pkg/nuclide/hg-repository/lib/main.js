@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -11,12 +10,16 @@
 
 module.exports = {
 
-  activate(state: any): void {
+  activate: function activate(state) {
     // TODO(mbolin): Add activation code here.
   },
 
-  createHgRepositoryProvider() {
-    const {HgRepositoryProvider} = require('./HgRepositoryProvider');
+  createHgRepositoryProvider: function createHgRepositoryProvider() {
+    var _require = require('./HgRepositoryProvider');
+
+    var HgRepositoryProvider = _require.HgRepositoryProvider;
+
     return new HgRepositoryProvider();
-  },
+  }
 };
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIm1haW4uanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7OztBQVdBLE1BQU0sQ0FBQyxPQUFPLEdBQUc7O0FBRWYsVUFBUSxFQUFBLGtCQUFDLEtBQVUsRUFBUTs7R0FFMUI7O0FBRUQsNEJBQTBCLEVBQUEsc0NBQUc7bUJBQ0ksT0FBTyxDQUFDLHdCQUF3QixDQUFDOztRQUF6RCxvQkFBb0IsWUFBcEIsb0JBQW9COztBQUMzQixXQUFPLElBQUksb0JBQW9CLEVBQUUsQ0FBQztHQUNuQztDQUNGLENBQUMiLCJmaWxlIjoibWFpbi5qcyIsInNvdXJjZXNDb250ZW50IjpbIid1c2UgYmFiZWwnO1xuLyogQGZsb3cgKi9cblxuLypcbiAqIENvcHlyaWdodCAoYykgMjAxNS1wcmVzZW50LCBGYWNlYm9vaywgSW5jLlxuICogQWxsIHJpZ2h0cyByZXNlcnZlZC5cbiAqXG4gKiBUaGlzIHNvdXJjZSBjb2RlIGlzIGxpY2Vuc2VkIHVuZGVyIHRoZSBsaWNlbnNlIGZvdW5kIGluIHRoZSBMSUNFTlNFIGZpbGUgaW5cbiAqIHRoZSByb290IGRpcmVjdG9yeSBvZiB0aGlzIHNvdXJjZSB0cmVlLlxuICovXG5cbm1vZHVsZS5leHBvcnRzID0ge1xuXG4gIGFjdGl2YXRlKHN0YXRlOiBhbnkpOiB2b2lkIHtcbiAgICAvLyBUT0RPKG1ib2xpbik6IEFkZCBhY3RpdmF0aW9uIGNvZGUgaGVyZS5cbiAgfSxcblxuICBjcmVhdGVIZ1JlcG9zaXRvcnlQcm92aWRlcigpIHtcbiAgICBjb25zdCB7SGdSZXBvc2l0b3J5UHJvdmlkZXJ9ID0gcmVxdWlyZSgnLi9IZ1JlcG9zaXRvcnlQcm92aWRlcicpO1xuICAgIHJldHVybiBuZXcgSGdSZXBvc2l0b3J5UHJvdmlkZXIoKTtcbiAgfSxcbn07XG4iXX0=

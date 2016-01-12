@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,11 +10,17 @@
  * the root directory of this source tree.
  */
 
-const {CompositeDisposable, Disposable} = require('atom');
-const {EventEmitter} = require('events');
+var _require = require('atom');
 
-const START_OBSERVING_TEXT_EDITOR_EVENT = 'start-observing-text-editor';
-const STOP_OBSERVING_TEXT_EDITOR_EVENT = 'stop-observing-text-editor';
+var CompositeDisposable = _require.CompositeDisposable;
+var Disposable = _require.Disposable;
+
+var _require2 = require('events');
+
+var EventEmitter = _require2.EventEmitter;
+
+var START_OBSERVING_TEXT_EDITOR_EVENT = 'start-observing-text-editor';
+var STOP_OBSERVING_TEXT_EDITOR_EVENT = 'stop-observing-text-editor';
 
 /**
  * Use this to perform an action on all text editors of the given grammar set.
@@ -21,74 +28,87 @@ const STOP_OBSERVING_TEXT_EDITOR_EVENT = 'stop-observing-text-editor';
  * This exists as its own class to make it possible to reuse instances when
  * multiple callers observe on text editors with the same grammar scopes.
  */
-class LanguageTextEditorsListener {
-  _grammarScopes: Set<string>;
-  _emitter: EventEmitter;
-  _observedTextEditors: Set<TextEditor>;
-  _destroySubscriptionsMap: Map<TextEditor, atom$Disposable>;
-  _grammarSubscription: atom$IDisposable;
 
-  constructor(grammarScopes: Set<string>) {
+var LanguageTextEditorsListener = (function () {
+  function LanguageTextEditorsListener(grammarScopes) {
+    var _this = this;
+
+    _classCallCheck(this, LanguageTextEditorsListener);
+
     this._grammarScopes = grammarScopes;
 
     this._emitter = new EventEmitter();
     this._observedTextEditors = new Set();
     this._destroySubscriptionsMap = new Map();
 
-    const {observeGrammarForTextEditors} = require('./main');
-    this._grammarSubscription = observeGrammarForTextEditors((textEditor, grammar) => {
-      const textEditorHasTheRightGrammar = this._grammarScopes.has(grammar.scopeName);
-      const isTextEditorObserved = this._observedTextEditors.has(textEditor);
+    var _require3 = require('./main');
+
+    var observeGrammarForTextEditors = _require3.observeGrammarForTextEditors;
+
+    this._grammarSubscription = observeGrammarForTextEditors(function (textEditor, grammar) {
+      var textEditorHasTheRightGrammar = _this._grammarScopes.has(grammar.scopeName);
+      var isTextEditorObserved = _this._observedTextEditors.has(textEditor);
       if (textEditorHasTheRightGrammar && !isTextEditorObserved) {
-        this._emitter.emit(START_OBSERVING_TEXT_EDITOR_EVENT, textEditor);
-        this._observedTextEditors.add(textEditor);
+        _this._emitter.emit(START_OBSERVING_TEXT_EDITOR_EVENT, textEditor);
+        _this._observedTextEditors.add(textEditor);
       } else if (!textEditorHasTheRightGrammar && isTextEditorObserved) {
-        this._emitter.emit(STOP_OBSERVING_TEXT_EDITOR_EVENT, textEditor);
-        this._observedTextEditors.delete(textEditor);
+        _this._emitter.emit(STOP_OBSERVING_TEXT_EDITOR_EVENT, textEditor);
+        _this._observedTextEditors['delete'](textEditor);
       }
 
-      const destroySubscription = textEditor.onDidDestroy(() => {
+      var destroySubscription = textEditor.onDidDestroy(function () {
         // When a text editor that we were observing is destroyed, we need to
         // do clean-up even if its grammar hasn't changed.
-        if (this._observedTextEditors.has(textEditor)) {
-          this._emitter.emit(STOP_OBSERVING_TEXT_EDITOR_EVENT, textEditor);
-          this._observedTextEditors.delete(textEditor);
+        if (_this._observedTextEditors.has(textEditor)) {
+          _this._emitter.emit(STOP_OBSERVING_TEXT_EDITOR_EVENT, textEditor);
+          _this._observedTextEditors['delete'](textEditor);
         }
 
         destroySubscription.dispose();
-        this._destroySubscriptionsMap.delete(textEditor);
+        _this._destroySubscriptionsMap['delete'](textEditor);
       });
-      this._destroySubscriptionsMap.set(textEditor, destroySubscription);
+      _this._destroySubscriptionsMap.set(textEditor, destroySubscription);
     });
   }
 
-  observeLanguageTextEditors(
-      fn: (textEditor: TextEditor) => void,
-      cleanupFn: (textEditor: TextEditor) => void): Disposable {
-    // The event was already handled before `fn` was added to the emitter, so
-    // we need to call it on all the existing editors.
-    atom.workspace.getTextEditors()
-        .filter(textEditor => this._grammarScopes.has(textEditor.getGrammar().scopeName))
-        // We wrap `fn` instead of passing it directly to `.forEach` so it only
-        // gets called with one arg (i.e. it matches the Flow annotation).
-        .forEach(textEditor => fn(textEditor));
+  _createClass(LanguageTextEditorsListener, [{
+    key: 'observeLanguageTextEditors',
+    value: function observeLanguageTextEditors(fn, cleanupFn) {
+      var _this2 = this;
 
-    this._emitter.addListener(START_OBSERVING_TEXT_EDITOR_EVENT, fn);
-    this._emitter.addListener(STOP_OBSERVING_TEXT_EDITOR_EVENT, cleanupFn);
-    return new Disposable(() => {
-      this._emitter.removeListener(START_OBSERVING_TEXT_EDITOR_EVENT, fn);
-      this._emitter.removeListener(STOP_OBSERVING_TEXT_EDITOR_EVENT, cleanupFn);
-    });
-  }
+      // The event was already handled before `fn` was added to the emitter, so
+      // we need to call it on all the existing editors.
+      atom.workspace.getTextEditors().filter(function (textEditor) {
+        return _this2._grammarScopes.has(textEditor.getGrammar().scopeName);
+      })
+      // We wrap `fn` instead of passing it directly to `.forEach` so it only
+      // gets called with one arg (i.e. it matches the Flow annotation).
+      .forEach(function (textEditor) {
+        return fn(textEditor);
+      });
 
-  dispose(): void {
-    this._emitter.removeAllListeners();
-    this._observedTextEditors.clear();
-    this._destroySubscriptionsMap.forEach(subscription => subscription.dispose());
-    this._destroySubscriptionsMap.clear();
-    this._grammarSubscription.dispose();
-  }
-}
+      this._emitter.addListener(START_OBSERVING_TEXT_EDITOR_EVENT, fn);
+      this._emitter.addListener(STOP_OBSERVING_TEXT_EDITOR_EVENT, cleanupFn);
+      return new Disposable(function () {
+        _this2._emitter.removeListener(START_OBSERVING_TEXT_EDITOR_EVENT, fn);
+        _this2._emitter.removeListener(STOP_OBSERVING_TEXT_EDITOR_EVENT, cleanupFn);
+      });
+    }
+  }, {
+    key: 'dispose',
+    value: function dispose() {
+      this._emitter.removeAllListeners();
+      this._observedTextEditors.clear();
+      this._destroySubscriptionsMap.forEach(function (subscription) {
+        return subscription.dispose();
+      });
+      this._destroySubscriptionsMap.clear();
+      this._grammarSubscription.dispose();
+    }
+  }]);
+
+  return LanguageTextEditorsListener;
+})();
 
 module.exports =
 /**
@@ -99,13 +119,11 @@ module.exports =
  * @param cleanupFn This is called when a text editor no longer matches the
  * grammars or is destroyed.
  */
-function observeLanguageTextEditors(
-    grammarScopes: Array<string>,
-    fn: (textEditor: TextEditor) => void,
-    cleanupFn?: (textEditor: TextEditor) => void): atom$IDisposable {
-  const subscriptions = new CompositeDisposable();
-  const listener = new LanguageTextEditorsListener(new Set(grammarScopes));
+function observeLanguageTextEditors(grammarScopes, fn, cleanupFn) {
+  var subscriptions = new CompositeDisposable();
+  var listener = new LanguageTextEditorsListener(new Set(grammarScopes));
   subscriptions.add(listener);
-  subscriptions.add(listener.observeLanguageTextEditors(fn, cleanupFn || (() => {})));
+  subscriptions.add(listener.observeLanguageTextEditors(fn, cleanupFn || function () {}));
   return subscriptions;
 };
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIm9ic2VydmUtbGFuZ3VhZ2UtdGV4dC1lZGl0b3JzLmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7OztlQVcwQyxPQUFPLENBQUMsTUFBTSxDQUFDOztJQUFsRCxtQkFBbUIsWUFBbkIsbUJBQW1CO0lBQUUsVUFBVSxZQUFWLFVBQVU7O2dCQUNmLE9BQU8sQ0FBQyxRQUFRLENBQUM7O0lBQWpDLFlBQVksYUFBWixZQUFZOztBQUVuQixJQUFNLGlDQUFpQyxHQUFHLDZCQUE2QixDQUFDO0FBQ3hFLElBQU0sZ0NBQWdDLEdBQUcsNEJBQTRCLENBQUM7Ozs7Ozs7OztJQVFoRSwyQkFBMkI7QUFPcEIsV0FQUCwyQkFBMkIsQ0FPbkIsYUFBMEIsRUFBRTs7OzBCQVBwQywyQkFBMkI7O0FBUTdCLFFBQUksQ0FBQyxjQUFjLEdBQUcsYUFBYSxDQUFDOztBQUVwQyxRQUFJLENBQUMsUUFBUSxHQUFHLElBQUksWUFBWSxFQUFFLENBQUM7QUFDbkMsUUFBSSxDQUFDLG9CQUFvQixHQUFHLElBQUksR0FBRyxFQUFFLENBQUM7QUFDdEMsUUFBSSxDQUFDLHdCQUF3QixHQUFHLElBQUksR0FBRyxFQUFFLENBQUM7O29CQUVILE9BQU8sQ0FBQyxRQUFRLENBQUM7O1FBQWpELDRCQUE0QixhQUE1Qiw0QkFBNEI7O0FBQ25DLFFBQUksQ0FBQyxvQkFBb0IsR0FBRyw0QkFBNEIsQ0FBQyxVQUFDLFVBQVUsRUFBRSxPQUFPLEVBQUs7QUFDaEYsVUFBTSw0QkFBNEIsR0FBRyxNQUFLLGNBQWMsQ0FBQyxHQUFHLENBQUMsT0FBTyxDQUFDLFNBQVMsQ0FBQyxDQUFDO0FBQ2hGLFVBQU0sb0JBQW9CLEdBQUcsTUFBSyxvQkFBb0IsQ0FBQyxHQUFHLENBQUMsVUFBVSxDQUFDLENBQUM7QUFDdkUsVUFBSSw0QkFBNEIsSUFBSSxDQUFDLG9CQUFvQixFQUFFO0FBQ3pELGNBQUssUUFBUSxDQUFDLElBQUksQ0FBQyxpQ0FBaUMsRUFBRSxVQUFVLENBQUMsQ0FBQztBQUNs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LENBQUMiLCJmaWxlIjoib2JzZXJ2ZS1sYW5ndWFnZS10ZXh0LWVkaXRvcnMuanMiLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIGJhYmVsJztcbi8qIEBmbG93ICovXG5cbi8qXG4gKiBDb3B5cmlnaHQgKGMpIDIwMTUtcHJlc2VudCwgRmFjZWJvb2ssIEluYy5cbiAqIEFsbCByaWdodHMgcmVzZXJ2ZWQuXG4gKlxuICogVGhpcyBzb3VyY2UgY29kZSBpcyBsaWNlbnNlZCB1bmRlciB0aGUgbGljZW5zZSBmb3VuZCBpbiB0aGUgTElDRU5TRSBmaWxlIGluXG4gKiB0aGUgcm9vdCBkaXJlY3Rvcnkgb2YgdGhpcyBzb3VyY2UgdHJlZS5cbiAqL1xuXG5jb25zdCB7Q29tcG9zaXRlRGlzcG9zYWJsZSwgRGlzcG9zYWJsZX0gPSByZXF1aXJlKCdhdG9tJyk7XG5jb25zdCB7RXZlbnRFbWl0dGVyfSA9IHJlcXVpcmUoJ2V2ZW50cycpO1xuXG5jb25zdCBTVEFSVF9PQlNFUlZJTkdfVEVYVF9FRElUT1JfRVZFTlQgPSAnc3RhcnQtb2JzZXJ2aW5nLXRleHQtZWRpdG9yJztcbmNvbnN0IFNUT1BfT0JTRVJWSU5HX1RFWFRfRURJVE9SX0VWRU5UID0gJ3N0b3Atb2JzZXJ2aW5nLXRleHQtZWRpdG9yJztcblxuLyoqXG4gKiBVc2UgdGhpcyB0byBwZXJmb3JtIGFuIGFjdGlvbiBvbiBhbGwgdGV4dCBlZGl0b3JzIG9mIHRoZSBnaXZlbiBncmFtbWFyIHNldC5cbiAqXG4gKiBUaGlzIGV4aXN0cyBhcyBpdHMgb3duIGNsYXNzIHRvIG1ha2UgaXQgcG9zc2libGUgdG8gcmV1c2UgaW5zdGFuY2VzIHdoZW5cbiAqIG11bHRpcGxlIGNhbGxlcnMgb2JzZXJ2ZSBvbiB0ZXh0IGVkaXRvcnMgd2l0aCB0aGUgc2FtZSBncmFtbWFyIHNjb3Blcy5cbiAqL1xuY2xhc3MgTGFuZ3VhZ2VUZXh0RWRpdG9yc0xpc3RlbmVyIHtcbiAgX2dyYW1tYXJTY29wZXM6IFNldDxzdHJpbmc+O1xuICBfZW1pdHRlcjogRXZlbnRFbWl0dGVyO1xuICBfb2JzZXJ2ZWRUZXh0RWRpdG9yczogU2V0PFRleHRFZGl0b3I+O1xuICBfZGVzdHJveVN1YnNjcmlwdGlvbnNNYXA6IE1hcDxUZXh0RWRpdG9yLCBhdG9tJERpc3Bvc2FibGU+O1xuICBfZ3JhbW1hclN1YnNjcmlwdGlvbjogYXRvbSRJRGlzcG9zYWJsZTtcblxuICBjb25zdHJ1Y3RvcihncmFtbWFyU2NvcGVzOiBTZXQ8c3RyaW5nPikge1xuICAgIHRoaXMuX2dyYW1tYXJTY29wZXMgPSBncmFtbWFyU2NvcGVzO1xuXG4gICAgdGhpcy5fZW1pdHRlciA9IG5ldyBFdmVudEVtaXR0ZXIoKTtcbiAgICB0aGlzLl9vYnNlcnZlZFRleHRFZGl0b3JzID0gbmV3IFNldCgpO1xuICAgIHRoaXMuX2Rlc3Ryb3lTdWJzY3JpcHRpb25zTWFwID0gbmV3IE1hcCgpO1xuXG4gICAgY29uc3Qge29ic2VydmVHcmFtbWFyRm9yVGV4dEVkaXRvcnN9ID0gcmVxdWlyZSgnLi9tYWluJyk7XG4gICAgdGhpcy5fZ3JhbW1hclN1YnNjcmlwdGlvbiA9IG9ic2VydmVHcmFtbWFyRm9yVGV4dEVkaXRvcnMoKHRleHRFZGl0b3IsIGdyYW1tYXIpID0+IHtcbiAgICAgIGNvbnN0IHRleHRFZGl0b3JIYXNUaGVSaWdodEdyYW1tYXIgPSB0aGlzLl9ncmFtbWFyU2NvcGVzLmhhcyhncmFtbWFyLnNjb3BlTmFtZSk7XG4gICAgICBjb25zdCBpc1RleHRFZGl0b3JPYnNlcnZlZCA9IHRoaXMuX29ic2VydmVkVGV4dEVkaXRvcnMuaGFzKHRleHRFZGl0b3IpO1xuICAgICAgaWYgKHRleHRFZGl0b3JIYXNUaGVSaWdodEdyYW1tYXIgJiYgIWlzVGV4dEVkaXRvck9ic2VydmVkKSB7XG4gICAgICAgIHRoaXMuX2VtaXR0ZXIuZW1pdChTVEFSVF9PQlNFUlZJTkdfVEVYVF9FRElUT1JfRVZFTlQsIHRleHRFZGl0b3IpO1xuICAgICAgICB0aGlzLl9vYnNlcnZlZFRleHRFZGl0b3JzLmFkZCh0ZXh0RWRpdG9yKTtcbiAgICAgIH0gZWxzZSBpZiAoIXRleHRFZGl0b3JIYXNUaGVSaWdodEdyYW1tYXIgJiYgaXNUZXh0RWRpdG9yT2JzZXJ2ZWQpIHtcbiAgICAgICAgdGhpcy5fZW1pdHRlci5lbWl0KFNUT1BfT0JTRVJWSU5HX1RFWFRfRURJVE9SX0VWRU5ULCB0ZXh0RWRpdG9yKTtcbiAgICAgICAgdGhpcy5fb2JzZXJ2ZWRUZXh0RWRpdG9ycy5kZWxldGUodGV4dEVkaXRvcik7XG4gICAgICB9XG5cbiAgICAgIGNvbnN0IGRlc3Ryb3lTdWJzY3JpcHRpb24gPSB0ZXh0RWRpdG9yLm9uRGlkRGVzdHJveSgoKSA9PiB7XG4gICAgICAgIC8vIFdoZW4gYSB0ZXh0IGVkaXRvciB0aGF0IHdlIHdlcmUgb2JzZXJ2aW5nIGlzIGRlc3Ryb3llZCwgd2UgbmVlZCB0b1xuICAgICAgICAvLyBkbyBjbGVhbi11cCBldmVuIGlmIGl0cyBncmFtbWFyIGhhc24ndCBjaGFuZ2VkLlxuICAgICAgICBpZiAodGhpcy5fb2JzZXJ2ZWRUZXh0RWRpdG9ycy5oYXModGV4dEVkaXRvcikpIHtcbiAgICAgICAgICB0aGlzLl9lbWl0dGVyLmVtaXQoU1RPUF9PQlNFUlZJTkdfVEVYVF9FRElUT1JfRVZFTlQsIHRleHRFZGl0b3IpO1xuICAgICAgICAgIHRoaXMuX29ic2VydmVkVGV4dEVkaXRvcnMuZGVsZXRlKHRleHRFZGl0b3IpO1xuICAgICAgICB9XG5cbiAgICAgICAgZGVzdHJveVN1YnNjcmlwdGlvbi5kaXNwb3NlKCk7XG4gICAgICAgIHRoaXMuX2Rlc3Ryb3lTdWJzY3JpcHRpb25zTWFwLmRlbGV0ZSh0ZXh0RWRpdG9yKTtcbiAgICAgIH0pO1xuICAgICAgdGhpcy5fZGVzdHJveVN1YnNjcmlwdGlvbnNNYXAuc2V0KHRleHRFZGl0b3IsIGRlc3Ryb3lTdWJzY3JpcHRpb24pO1xuICAgIH0pO1xuICB9XG5cbiAgb2JzZXJ2ZUxhbmd1YWdlVGV4dEVkaXRvcnMoXG4gICAgICBmbjogKHRleHRFZGl0b3I6IFRleHRFZGl0b3IpID0+IHZvaWQsXG4gICAgICBjbGVhbnVwRm46ICh0ZXh0RWRpdG9yOiBUZXh0RWRpdG9yKSA9PiB2b2lkKTogRGlzcG9zYWJsZSB7XG4gICAgLy8gVGhlIGV2ZW50IHdhcyBhbHJlYWR5IGhhbmRsZWQgYmVmb3JlIGBmbmAgd2FzIGFkZGVkIHRvIHRoZSBlbWl0dGVyLCBzb1xuICAgIC8vIHdlIG5lZWQgdG8gY2FsbCBpdCBvbiBhbGwgdGhlIGV4aXN0aW5nIGVkaXRvcnMuXG4gICAgYXRvbS53b3Jrc3BhY2UuZ2V0VGV4dEVkaXRvcnMoKVxuICAgICAgICAuZmlsdGVyKHRleHRFZGl0b3IgPT4gdGhpcy5fZ3JhbW1hclNjb3Blcy5oYXModGV4dEVkaXRvci5nZXRHcmFtbWFyKCkuc2NvcGVOYW1lKSlcbiAgICAgICAgLy8gV2Ugd3JhcCBgZm5gIGluc3RlYWQgb2YgcGFzc2luZyBpdCBkaXJlY3RseSB0byBgLmZvckVhY2hgIHNvIGl0IG9ubHlcbiAgICAgICAgLy8gZ2V0cyBjYWxsZWQgd2l0aCBvbmUgYXJnIChpLmUuIGl0IG1hdGNoZXMgdGhlIEZsb3cgYW5ub3RhdGlvbikuXG4gICAgICAgIC5mb3JFYWNoKHRleHRFZGl0b3IgPT4gZm4odGV4dEVkaXRvcikpO1xuXG4gICAgdGhpcy5fZW1pdHRlci5hZGRMaXN0ZW5lcihTVEFSVF9PQlNFUlZJTkdfVEVYVF9FRElUT1JfRVZFTlQsIGZuKTtcbiAgICB0aGlzLl9lbWl0dGVyLmFkZExpc3RlbmVyKFNUT1BfT0JTRVJWSU5HX1RFWFRfRURJVE9SX0VWRU5ULCBjbGVhbnVwRm4pO1xuICAgIHJldHVybiBuZXcgRGlzcG9zYWJsZSgoKSA9PiB7XG4gICAgICB0aGlzLl9lbWl0dGVyLnJlbW92ZUxpc3RlbmVyKFNUQVJUX09CU0VSVklOR19URVhUX0VESVRPUl9FVkVOVCwgZm4pO1xuICAgICAgdGhpcy5fZW1pdHRlci5yZW1vdmVMaXN0ZW5lcihTVE9QX09CU0VSVklOR19URVhUX0VESVRPUl9FVkVOVCwgY2xlYW51cEZuKTtcbiAgICB9KTtcbiAgfVxuXG4gIGRpc3Bvc2UoKTogdm9pZCB7XG4gICAgdGhpcy5fZW1pdHRlci5yZW1vdmVBbGxMaXN0ZW5lcnMoKTtcbiAgICB0aGlzLl9vYnNlcnZlZFRleHRFZGl0b3JzLmNsZWFyKCk7XG4gICAgdGhpcy5fZGVzdHJveVN1YnNjcmlwdGlvbnNNYXAuZm9yRWFjaChzdWJzY3JpcHRpb24gPT4gc3Vic2NyaXB0aW9uLmRpc3Bvc2UoKSk7XG4gICAgdGhpcy5fZGVzdHJveVN1YnNjcmlwdGlvbnNNYXAuY2xlYXIoKTtcbiAgICB0aGlzLl9ncmFtbWFyU3Vic2NyaXB0aW9uLmRpc3Bvc2UoKTtcbiAgfVxufVxuXG5tb2R1bGUuZXhwb3J0cyA9XG4vKipcbiAqIFBlcmZvcm0gYWN0aW9ucyBvbiB0ZXh0IGVkaXRvcnMgb2YgYSBnaXZlbiBsYW5ndWFnZS5cbiAqXG4gKiBAcGFyYW0gZ3JhbW1hclNjb3BlcyBUaGUgZ3JhbW1hciBzY29wZSBuYW1lcyB0byB3YXRjaCBmb3IuXG4gKiBAcGFyYW0gZm4gVGhpcyBpcyBjYWxsZWQgb25jZSBvbiBldmVyeSB0ZXh0IGVkaXRvciB0aGF0IG1hdGNoZXMgdGhlIGdyYW1tYXJzLlxuICogQHBhcmFtIGNsZWFudXBGbiBUaGlzIGlzIGNhbGxlZCB3aGVuIGEgdGV4dCBlZGl0b3Igbm8gbG9uZ2VyIG1hdGNoZXMgdGhlXG4gKiBncmFtbWFycyBvciBpcyBkZXN0cm95ZWQuXG4gKi9cbmZ1bmN0aW9uIG9ic2VydmVMYW5ndWFnZVRleHRFZGl0b3JzKFxuICAgIGdyYW1tYXJTY29wZXM6IEFycmF5PHN0cmluZz4sXG4gICAgZm46ICh0ZXh0RWRpdG9yOiBUZXh0RWRpdG9yKSA9PiB2b2lkLFxuICAgIGNsZWFudXBGbj86ICh0ZXh0RWRpdG9yOiBUZXh0RWRpdG9yKSA9PiB2b2lkKTogYXRvbSRJRGlzcG9zYWJsZSB7XG4gIGNvbnN0IHN1YnNjcmlwdGlvbnMgPSBuZXcgQ29tcG9zaXRlRGlzcG9zYWJsZSgpO1xuICBjb25zdCBsaXN0ZW5lciA9IG5ldyBMYW5ndWFnZVRleHRFZGl0b3JzTGlzdGVuZXIobmV3IFNldChncmFtbWFyU2NvcGVzKSk7XG4gIHN1YnNjcmlwdGlvbnMuYWRkKGxpc3RlbmVyKTtcbiAgc3Vic2NyaXB0aW9ucy5hZGQobGlzdGVuZXIub2JzZXJ2ZUxhbmd1YWdlVGV4dEVkaXRvcnMoZm4sIGNsZWFudXBGbiB8fCAoKCkgPT4ge30pKSk7XG4gIHJldHVybiBzdWJzY3JpcHRpb25zO1xufTtcbiJdfQ==

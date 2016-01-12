@@ -1,5 +1,10 @@
-'use babel';
-/* @flow */
+
+
+var jscs = require('jscodeshift');
+
+/**
+ * This is a hack to force an ObjectPattern node to be printed on one line
+ */
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,29 +14,24 @@
  * the root directory of this source tree.
  */
 
-import type {Node} from '../types/ast';
-
-const jscs = require('jscodeshift');
-
-/**
- * This is a hack to force an ObjectPattern node to be printed on one line
- */
-function oneLineObjectPattern(node: Node): Node {
+function oneLineObjectPattern(node) {
   if (!jscs.ObjectPattern.check(node)) {
     return node;
   }
 
-  const props = node.properties;
-  if (!props.every(prop => prop.shorthand && jscs.Identifier.check(prop.key))) {
+  var props = node.properties;
+  if (!props.every(function (prop) {
+    return prop.shorthand && jscs.Identifier.check(prop.key);
+  })) {
     return node;
   }
 
-  const mySource =
-    'var {' +
-    props.map(prop => prop.key.name).join(', ') +
-    '} = _;';
-  const myAst = jscs(mySource);
+  var mySource = 'var {' + props.map(function (prop) {
+    return prop.key.name;
+  }).join(', ') + '} = _;';
+  var myAst = jscs(mySource);
   return myAst.find(jscs.ObjectPattern).nodes()[0];
 }
 
 module.exports = oneLineObjectPattern;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIm9uZUxpbmVPYmplY3RQYXR0ZXJuLmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7O0FBYUEsSUFBTSxJQUFJLEdBQUcsT0FBTyxDQUFDLGFBQWEsQ0FBQyxDQUFDOzs7Ozs7Ozs7Ozs7OztBQUtwQyxTQUFTLG9CQUFvQixDQUFDLElBQVUsRUFBUTtBQUM5QyxNQUFJLENBQUMsSUFBSSxDQUFDLGFBQWEsQ0FBQyxLQUFLLENBQUMsSUFBSSxDQUFDLEVBQUU7QUFDbkMsV0FBTyxJQUFJLENBQUM7R0FDYjs7QUFFRCxNQUFNLEtBQUssR0FBRyxJQUFJLENBQUMsVUFBVSxDQUFDO0FBQzlCLE1BQUksQ0FBQyxLQUFLLENBQUMsS0FBSyxDQUFDLFVBQUEsSUFBSTtXQUFJLElBQUksQ0FBQyxTQUFTLElBQUksSUFBSSxDQUFDLFVBQVUsQ0FBQyxLQUFLLENBQUMsSUFBSSxDQUFDLEdBQUcsQ0FBQztHQUFBLENBQUMsRUFBRTtBQUMzRSxXQUFPLElBQUksQ0FBQztHQUNiOztBQUVELE1BQU0sUUFBUSxHQUNaLE9BQU8sR0FDUCxLQUFLLENBQUMsR0FBRyxDQUFDLFVBQUEsSUFBSTtXQUFJLElBQUksQ0FBQyxHQUFHLENBQUMsSUFBSTtHQUFBLENBQUMsQ0FBQyxJQUFJLENBQUMsSUFBSSxDQUFDLEdBQzNDLFFBQVEsQ0FBQztBQUNYLE1BQU0sS0FBSyxHQUFHLElBQUksQ0FBQyxRQUFRLENBQUMsQ0FBQztBQUM3QixTQUFPLEtBQUssQ0FBQyxJQUFJLENBQUMsSUFBSSxDQUFDLGFBQWEsQ0FBQyxDQUFDLEtBQUssRUFBRSxDQUFDLENBQUMsQ0FBQyxDQUFDO0NBQ2xEOztBQUVELE1BQU0sQ0FBQyxPQUFPLEdBQUcsb0JBQW9CLENBQUMiLCJmaWxlIjoib25lTGluZU9iamVjdFBhdHRlcm4uanMiLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIGJhYmVsJztcbi8qIEBmbG93ICovXG5cbi8qXG4gKiBDb3B5cmlnaHQgKGMpIDIwMTUtcHJlc2VudCwgRmFjZWJvb2ssIEluYy5cbiAqIEFsbCByaWdodHMgcmVzZXJ2ZWQuXG4gKlxuICogVGhpcyBzb3VyY2UgY29kZSBpcyBsaWNlbnNlZCB1bmRlciB0aGUgbGljZW5zZSBmb3VuZCBpbiB0aGUgTElDRU5TRSBmaWxlIGluXG4gKiB0aGUgcm9vdCBkaXJlY3Rvcnkgb2YgdGhpcyBzb3VyY2UgdHJlZS5cbiAqL1xuXG5pbXBvcnQgdHlwZSB7Tm9kZX0gZnJvbSAnLi4vdHlwZXMvYXN0JztcblxuY29uc3QganNjcyA9IHJlcXVpcmUoJ2pzY29kZXNoaWZ0Jyk7XG5cbi8qKlxuICogVGhpcyBpcyBhIGhhY2sgdG8gZm9yY2UgYW4gT2JqZWN0UGF0dGVybiBub2RlIHRvIGJlIHByaW50ZWQgb24gb25lIGxpbmVcbiAqL1xuZnVuY3Rpb24gb25lTGluZU9iamVjdFBhdHRlcm4obm9kZTogTm9kZSk6IE5vZGUge1xuICBpZiAoIWpzY3MuT2JqZWN0UGF0dGVybi5jaGVjayhub2RlKSkge1xuICAgIHJldHVybiBub2RlO1xuICB9XG5cbiAgY29uc3QgcHJvcHMgPSBub2RlLnByb3BlcnRpZXM7XG4gIGlmICghcHJvcHMuZXZlcnkocHJvcCA9PiBwcm9wLnNob3J0aGFuZCAmJiBqc2NzLklkZW50aWZpZXIuY2hlY2socHJvcC5rZXkpKSkge1xuICAgIHJldHVybiBub2RlO1xuICB9XG5cbiAgY29uc3QgbXlTb3VyY2UgPVxuICAgICd2YXIgeycgK1xuICAgIHByb3BzLm1hcChwcm9wID0+IHByb3Aua2V5Lm5hbWUpLmpvaW4oJywgJykgK1xuICAgICd9ID0gXzsnO1xuICBjb25zdCBteUFzdCA9IGpzY3MobXlTb3VyY2UpO1xuICByZXR1cm4gbXlBc3QuZmluZChqc2NzLk9iamVjdFBhdHRlcm4pLm5vZGVzKClbMF07XG59XG5cbm1vZHVsZS5leHBvcnRzID0gb25lTGluZU9iamVjdFBhdHRlcm47XG4iXX0=
