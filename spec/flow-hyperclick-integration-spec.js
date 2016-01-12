@@ -21,7 +21,7 @@ import path from 'path';
 
 import invariant from 'assert';
 
-describe('Flow Autocomplete', () => {
+xdescribe('Flow Autocomplete', () => {
   it('tests simple autocomplete example', () => {
     let textEditor: atom$TextEditor = (null : any);
     let flowProjectPath: string = (null : any);
@@ -69,7 +69,6 @@ describe('Flow Autocomplete', () => {
 
     waitsForPromise(async () => {
       await stopFlowServer(flowProjectPath);
-
       deactivateAllPackages();
     });
   });
