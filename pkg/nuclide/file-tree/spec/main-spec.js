@@ -29,14 +29,4 @@ describe('main', () => {
       expect(atom.packages.isPackageDisabled('tree-view')).toBe(true);
     });
   });
-
-  it("re-enables Atom's builtin tree-view package on disable", () => {
-    waitsForPromise(async () => {
-      expect(atom.packages.isPackageDisabled('tree-view')).toBe(false);
-      await atom.packages.activatePackage('nuclide-file-tree');
-      atom.packages.disablePackage('nuclide-file-tree');
-      atom.packages.deactivatePackage('nuclide-file-tree');
-      expect(atom.packages.isPackageDisabled('tree-view')).toBe(false);
-    });
-  });
 });

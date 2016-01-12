@@ -24,22 +24,6 @@ import nuclideFeatures from '../../../../lib/nuclideFeatures';
  */
 const ACTIVE_PANE_DEBOUNCE_INTERVAL_MS = 150;
 
-// Unload 'tree-view' so we can control whether it is activated or not.
-//
-// Running the code in the global scope here ensures that it's called before 'tree-view' is
-// activated. This allows us to unload it before it's activated, ensuring it has minimal impact on
-// startup time.
-let loadSubscription = nuclideFeatures.onDidLoadInitialFeatures(() => {
-  if (atom.packages.isPackageLoaded('tree-view')) {
-    atom.packages.unloadPackage('tree-view');
-  }
-
-  if (loadSubscription) {
-    loadSubscription.dispose();
-    loadSubscription = null;
-  }
-});
-
 class Activation {
   _fileTreeController: ?FileTreeControllerType;
   _packageState: ?FileTreeControllerState;
@@ -170,6 +154,11 @@ module.exports = {
       atom.packages.disablePackage('tree-view');
     }
 
+    // Unload 'tree-view' to free its resources that are not needed.
+    if (atom.packages.isPackageLoaded('tree-view')) {
+      atom.packages.unloadPackage('tree-view');
+    }
+
     if (!activation) {
       activation = new Activation(state);
     }
@@ -179,19 +168,6 @@ module.exports = {
     if (activation) {
       activation.dispose();
       activation = null;
-    }
-
-    // The user most likely wants either `nuclide-file-tree` or `tree-view` at any given point. If
-    // `nuclide-file-tree` is disabled, we should re-enable `tree-view` so they can still browse
-    // files.
-    //
-    // `deactivate` is called on all packages when a window is torn down. It's also called when a
-    // user clicks "Disable" in the settings view. For the latter, `isPackageDisabled` will be
-    // `true`, and so it is checked here to differentiate.
-    //
-    // @see t8570656
-    if (atom.packages.isPackageDisabled('nuclide-file-tree')) {
-      atom.packages.enablePackage('tree-view');
     }
   },
 
