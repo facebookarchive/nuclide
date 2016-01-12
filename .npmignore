@@ -4,8 +4,12 @@
 /benchmarker
 /docs
 /pkg/sample
-/resources/eslint-plugin-nuclide-internal
 /scripts
-**/babel-cache/**
-**/spec
+babel-cache
+spec
+
+# Ignore "BUCK" files, but not "buck/" directories.
+# Note: These rules get inlined into ".gitignore" for apm publishing, git will
+# ignore "buck/" directories without this exclusion on case-insensitive Macs.
 BUCK
+!buck/
