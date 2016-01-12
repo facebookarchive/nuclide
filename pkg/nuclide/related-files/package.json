@@ -10,10 +10,5 @@
   "nuclide": {
     "packageType": "Atom",
     "testRunner": "apm"
-  },
-  "_atomModuleCache": {
-    "extensions": {
-      ".node": []
-    }
   }
 }

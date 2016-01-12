@@ -17,10 +17,5 @@
         "0.0.0": "consumeProvider"
       }
     }
-  },
-  "_atomModuleCache": {
-    "extensions": {
-      ".node": []
-    }
   }
 }

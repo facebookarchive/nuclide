@@ -23,10 +23,5 @@
         "0.0.0": "registerProvider"
       }
     }
-  },
-  "_atomModuleCache": {
-    "extensions": {
-      ".node": []
-    }
   }
 }

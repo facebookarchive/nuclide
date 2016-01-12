@@ -119,11 +119,6 @@ ATOM_APM_PACKAGE_JSON_TEMPLATE = """\
   },
   "engines": {
     "atom": ">=%s"
-  },
-  "_atomModuleCache": {
-    "extensions": {
-      ".node": []
-    }
   }
 }
 """

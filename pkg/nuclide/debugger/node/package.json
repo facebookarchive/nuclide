@@ -15,10 +15,5 @@
         "0.0.0": "provideNuclideDebuggerNode"
       }
     }
-  },
-  "_atomModuleCache": {
-    "extensions": {
-      ".node": []
-    }
   }
 }

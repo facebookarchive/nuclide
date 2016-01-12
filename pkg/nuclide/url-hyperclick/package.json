@@ -18,10 +18,5 @@
         "0.0.0": "getHyperclickProvider"
       }
     }
-  },
-  "_atomModuleCache": {
-    "extensions": {
-      ".node": []
-    }
   }
 }

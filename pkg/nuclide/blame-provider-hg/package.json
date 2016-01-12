@@ -25,10 +25,5 @@
   },
   "engines": {
     "atom": ">=1.0.5"
-  },
-  "_atomModuleCache": {
-    "extensions": {
-      ".node": []
-    }
   }
 }

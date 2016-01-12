@@ -37,10 +37,5 @@
         "^0.1.0": "consumeToolBar"
       }
     }
-  },
-  "_atomModuleCache": {
-    "extensions": {
-      ".node": []
-    }
   }
 }

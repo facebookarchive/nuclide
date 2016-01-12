@@ -32,10 +32,5 @@
         "0.1.0": "provideBusySignal"
       }
     }
-  },
-  "_atomModuleCache": {
-    "extensions": {
-      ".node": []
-    }
   }
 }

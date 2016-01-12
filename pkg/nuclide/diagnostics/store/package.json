@@ -43,10 +43,5 @@
         "0.0.0": "provideDiagnosticUpdates"
       }
     }
-  },
-  "_atomModuleCache": {
-    "extensions": {
-      ".node": []
-    }
   }
 }

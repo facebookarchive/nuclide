@@ -18,10 +18,5 @@
         "0.0.0": "provideNuclideDebuggerLLDB"
       }
     }
-  },
-  "_atomModuleCache": {
-    "extensions": {
-      ".node": []
-    }
   }
 }

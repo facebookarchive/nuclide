@@ -24,10 +24,5 @@
         "0.0.0": "observeTextEditor"
       }
     }
-  },
-  "_atomModuleCache": {
-    "extensions": {
-      ".node": []
-    }
   }
 }

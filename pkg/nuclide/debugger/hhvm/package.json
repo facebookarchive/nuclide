@@ -35,7 +35,16 @@
         "type": "string",
         "default": "INFO",
         "description": "Specify that level of logging from debugger, supported values: ALL | TRACE | DEBUG | INFO | WARN | ERROR | FATAL | OFF.",
-        "enum": ["ALL", "TRACE", "DEBUG", "INFO", "WARN", "ERROR", "FATAL", "OFF"]
+        "enum": [
+          "ALL",
+          "TRACE",
+          "DEBUG",
+          "INFO",
+          "WARN",
+          "ERROR",
+          "FATAL",
+          "OFF"
+        ]
       }
     },
     "packageType": "Atom",
@@ -52,11 +61,6 @@
       "versions": {
         "0.0.0": "getHomeFragments"
       }
-    }
-  },
-  "_atomModuleCache": {
-    "extensions": {
-      ".node": []
     }
   }
 }

@@ -17,10 +17,5 @@
         "0.0.0": "consumeGadgetsService"
       }
     }
-  },
-  "_atomModuleCache": {
-    "extensions": {
-      ".node": []
-    }
   }
 }

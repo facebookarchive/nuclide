@@ -38,10 +38,5 @@
         "0.0.0": "getHomeFragments"
       }
     }
-  },
-  "_atomModuleCache": {
-    "extensions": {
-      ".node": []
-    }
   }
 }

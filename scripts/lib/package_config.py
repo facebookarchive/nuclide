@@ -67,4 +67,7 @@ def create_config_for_manifest(path, manifest):
 
     config['windowsIncompatible'] = windows_incompatible
 
+    if '_atomModuleCache' in manifest:
+        config['_atomModuleCache'] = manifest.get('_atomModuleCache')
+
     return config
