@@ -1,9 +1,9 @@
 /.eslintignore
 /.eslintrc
 /.flowconfig
-/benchmarker
 /docs
 /pkg/sample
+/resources/benchmarker
 /scripts
 babel-cache
 spec
