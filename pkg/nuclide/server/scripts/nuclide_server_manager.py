@@ -52,7 +52,7 @@ configure_nuclide_logger()
 class NuclideServerManager(object):
     version_file = os.path.join(
         os.path.dirname(__file__),
-        '../node_modules/nuclide-version/version.json')
+        '../../version/version.json')
     logger = logging.getLogger('NuclideServerManager')
 
     def __init__(self, options):
