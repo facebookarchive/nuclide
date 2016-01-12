@@ -15,17 +15,17 @@ class ChainedError(Exception):
         self.cause = cause
 
 
-def json_dump(obj, path):
+def json_dump(obj, path, sort_keys=True):
     with open(path, 'w') as f:
         # Separators must be specified to avoid trailing whitespace.
         # Python is dumb: http://bugs.python.org/issue16333.
-        json.dump(obj, f, indent=2, separators=(',', ': '), sort_keys=True)
+        json.dump(obj, f, indent=2, separators=(',', ': '), sort_keys=sort_keys)
 
         # Make sure all files we write out end with a trailing newline.
         f.write('\n')
 
-def json_dumps(obj, indent=2):
-    return json.dumps(obj, indent=indent, separators=(',', ': '), sort_keys=True)
+def json_dumps(obj, indent=2, sort_keys=True):
+    return json.dumps(obj, indent=indent, separators=(',', ': '), sort_keys=sort_keys)
 
 def json_load(path):
     try:
