@@ -14,6 +14,8 @@ click the "bug" icon in the status bar. Then select "Rebuild Packages", and rest
 
 ![incompatible packages view](images/incompatible-packages-view.png)
 
+_If you can't find "Incompatible Packages", make sure that the `incompatible-packages` package is enabled via `Settings` `->` `Packages`._
+
 #### (hard) Fixing via the CLI
 
 From the Atom Developer Tools, give the incompatible modules storage a kick:
