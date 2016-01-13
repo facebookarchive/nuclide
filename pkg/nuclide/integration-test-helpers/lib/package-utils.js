@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import featureConfig from '../../feature-config';
 import invariant from 'assert';
 import path from 'path';
 import {__testUseOnly_removeFeature} from '../../../../';
@@ -40,6 +41,11 @@ export async function activateAllPackages(): Promise<Array<string>> {
     const inWhitelist = whitelist.indexOf(name) >= 0;
     return (isLanguagePackage || inWhitelist) && !isActivationDeferred;
   });
+
+  // Ensure 3rd-party packages are not installed via the 'atom-package-deps' package when the
+  // 'nuclide' package is activated. It makes network requests that never return in a test env.
+  featureConfig.set('installRecommendedPackages', false);
+
   // Include the path to the nuclide package.
   packageNames.push(path.join(__dirname, '../../../..'));
   await Promise.all(packageNames.map(pack => atom.packages.activatePackage(pack)));
