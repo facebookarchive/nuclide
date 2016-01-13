@@ -93,6 +93,7 @@ export async function fileSearchForDirectory(
   const pathSet = await createPathSet(realpath);
 
   const thisPathSetUpdater = pathSetUpdater || getPathSetUpdater();
+  // $FlowIgnore TODO Fully remove PathSet and use LazyPathSet type throughout.
   await thisPathSetUpdater.startUpdatingPathSet(pathSet, realpath);
 
   // TODO: Stop updating the pathSet when the fileSearch is torn down. But

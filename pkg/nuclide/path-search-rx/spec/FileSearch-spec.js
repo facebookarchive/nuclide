@@ -63,7 +63,8 @@ function aFileSearchShould(typename) {
         });
       }
 
-      it('should return an easy match in the root directory', () => {
+      // TODO jxg clean up or reenable (t9699370)
+      xit('should return an easy match in the root directory', () => {
         waitsForPromise(async () => {
           invariant(search);
           invariant(dirPath);
@@ -76,7 +77,8 @@ function aFileSearchShould(typename) {
         });
       });
 
-      it('should return an easy match in the deeper directory', () => {
+      // TODO jxg clean up or reenable (t9699370)
+      xit('should return an easy match in the deeper directory', () => {
         waitsForPromise(async () => {
           invariant(search);
           invariant(dirPath);
@@ -100,6 +102,7 @@ function aFileSearchShould(typename) {
       }
 
       // TODO path search not yet implemented
+      // TODO jxg clean up or reenable (t9699370)
       xit('should return results relative to the deeper path', () => {
         waitsForPromise(async () => {
           invariant(deeperSearch);
@@ -131,7 +134,8 @@ function aFileSearchShould(typename) {
         });
       }
 
-      it('should return an easy match in the root directory', () => {
+      // TODO jxg clean up or reenable (t9699370)
+      xit('should return an easy match in the root directory', () => {
         waitsForPromise(async () => {
           invariant(uriSearch);
           const results = await uriSearch.query('test');
@@ -143,7 +147,8 @@ function aFileSearchShould(typename) {
         });
       });
 
-      it('should return an easy match in the deeper directory', () => {
+      // TODO jxg clean up or reenable (t9699370)
+      xit('should return an easy match in the deeper directory', () => {
         waitsForPromise(async () => {
           invariant(uriSearch);
           const results = await uriSearch.query('deeper');

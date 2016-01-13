@@ -18,7 +18,7 @@ type FilePathsPseudoSet = {[key: string]: boolean};
 import {spawn} from 'child_process';
 import split from 'split';
 
-import PathSet from './PathSet';
+import LazyPathSet from './LazyPathSet';
 
 function getFilesFromCommand(
     command: string,
@@ -143,7 +143,7 @@ function getAllFiles(localDirectory: string): Promise<FilePathsPseudoSet> {
 /**
  * Creates a `PathSet` with the contents of the specified directory.
  */
-export async function createPathSet(localDirectory: string): Promise<PathSet> {
+export async function createPathSet(localDirectory: string): Promise<LazyPathSet> {
   // Attempts to get a list of files relative to `localDirectory`, hopefully from
   // a fast source control index.
   // TODO (williamsc) once ``{HG|Git}Repository` is working in nuclide-server,
@@ -152,7 +152,7 @@ export async function createPathSet(localDirectory: string): Promise<PathSet> {
       .catch(() => getFilesFromGit(localDirectory))
       .catch(() => getAllFiles(localDirectory))
       .catch(() => { throw new Error(`Failed to populate FileSearch for ${localDirectory}`); });
-  return new PathSet({paths});
+  return new LazyPathSet({paths});
 }
 
 export const __test__ = {
