@@ -45,6 +45,10 @@ class FileTreeNode {
     return this._store.isSelected(this.rootKey, this.nodeKey);
   }
 
+  usePreviewTabs(): boolean {
+    return this._store.usePreviewTabs();
+  }
+
   getVcsStatusCode(): ?number {
     return this._store.getVcsStatusCode(this.rootKey, this.nodeKey);
   }

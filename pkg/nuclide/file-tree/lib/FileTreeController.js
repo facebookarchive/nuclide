@@ -329,6 +329,10 @@ class FileTreeController {
     this._actions.setIgnoredNames(ignoredNames);
   }
 
+  setUsePreviewTabs(usePreviewTabs: boolean): void {
+    this._actions.setUsePreviewTabs(usePreviewTabs);
+  }
+
   /**
    * Collapses all selected directory nodes. If the selection is a single file or a single collapsed
    * directory, the selection is set to the directory's parent.

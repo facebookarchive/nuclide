@@ -93,10 +93,13 @@ class DirectoryEntryComponent extends React.Component {
     const modifySelection = event.ctrlKey || event.metaKey;
     if (modifySelection) {
       getActions().toggleSelectNode(this.props.rootKey, this.props.nodeKey);
-    } else if (this.props.isSelected) {
-      this._toggleNodeExpanded(deep);
     } else {
-      getActions().selectSingleNode(this.props.rootKey, this.props.nodeKey);
+      if (!this.props.isSelected) {
+        getActions().selectSingleNode(this.props.rootKey, this.props.nodeKey);
+      }
+      if (this.props.isSelected || this.props.usePreviewTabs) {
+        this._toggleNodeExpanded(deep);
+      }
     }
   }
 
@@ -132,6 +135,7 @@ DirectoryEntryComponent.propTypes = {
   isLoading: PropTypes.bool.isRequired,
   isRoot: PropTypes.bool.isRequired,
   isSelected: PropTypes.bool.isRequired,
+  usePreviewTabs: PropTypes.bool.isRequired,
   nodeKey: PropTypes.string.isRequired,
   nodeName: PropTypes.string.isRequired,
   nodePath: PropTypes.string.isRequired,

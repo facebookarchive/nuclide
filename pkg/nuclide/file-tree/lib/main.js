@@ -10,8 +10,8 @@
  */
 
 import type {Disposable} from 'atom';
-import type FileTreeControllerType from './FileTreeController';
 import type {FileTreeControllerState} from './FileTreeController';
+import type FileTreeControllerType from './FileTreeController';
 
 import {CompositeDisposable} from 'atom';
 
@@ -52,6 +52,9 @@ class Activation {
       ((atom.config.get(excludeVcsIgnoredPathsSetting): any): boolean)
     );
 
+    const usePreviewTabs = 'tabs.usePreviewTabs';
+    this._setUsePreviewTabs(((atom.config.get(usePreviewTabs): any): ?boolean));
+
     this._subscriptions.add(
       featureConfig.observe(revealSetting, this._setRevealOnFileSwitch.bind(this)),
       atom.config.observe(ignoredNamesSetting, this._setIgnoredNames.bind(this)),
@@ -60,6 +63,7 @@ class Activation {
         excludeVcsIgnoredPathsSetting,
         this._setExcludeVcsIgnoredPaths.bind(this),
       ),
+      atom.config.observe(usePreviewTabs, this._setUsePreviewTabs.bind(this)),
     );
 
   }
@@ -133,6 +137,14 @@ class Activation {
         this._paneItemSubscription = null;
       }
     }
+  }
+
+  _setUsePreviewTabs(usePreviewTabs: ?boolean): void {
+    // config is void during startup, signifying no config yet
+    if (usePreviewTabs == null || !this._fileTreeController) {
+      return;
+    }
+    this._fileTreeController.setUsePreviewTabs(usePreviewTabs);
   }
 
   _deactivate() {

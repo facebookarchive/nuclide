@@ -34,6 +34,7 @@ class RootNodeComponent extends React.Component {
         isLoading={node.isLoading()}
         isRoot={indentLevel === 0}
         isSelected={node.isSelected()}
+        usePreviewTabs={node.usePreviewTabs()}
         vcsStatusCode={node.getVcsStatusCode()}
         key={node.nodeKey}
         nodeKey={node.nodeKey}
@@ -45,6 +46,7 @@ class RootNodeComponent extends React.Component {
       <FileEntryComponent
         indentLevel={indentLevel}
         isSelected={node.isSelected()}
+        usePreviewTabs={node.usePreviewTabs()}
         vcsStatusCode={node.getVcsStatusCode()}
         key={node.nodeKey}
         nodeKey={node.nodeKey}

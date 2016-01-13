@@ -79,6 +79,9 @@ class FileEntryComponent extends React.Component {
       getActions().toggleSelectNode(this.props.rootKey, this.props.nodeKey);
     } else if (!this.props.isSelected) {
       getActions().selectSingleNode(this.props.rootKey, this.props.nodeKey);
+      if (this.props.usePreviewTabs) {
+        getActions().confirmNode(this.props.rootKey, this.props.nodeKey);
+      }
     }
   }
 
@@ -92,13 +95,18 @@ class FileEntryComponent extends React.Component {
   }
 
   _onDoubleClick(): void {
-    getActions().confirmNode(this.props.rootKey, this.props.nodeKey);
+    if (this.props.usePreviewTabs) {
+      getActions().keepPreviewTab();
+    } else {
+      getActions().confirmNode(this.props.rootKey, this.props.nodeKey);
+    }
   }
 }
 
 FileEntryComponent.propTypes = {
   indentLevel: PropTypes.number.isRequired,
   isSelected: PropTypes.bool.isRequired,
+  usePreviewTabs: PropTypes.bool.isRequired,
   nodeKey: PropTypes.string.isRequired,
   nodeName: PropTypes.string.isRequired,
   nodePath: PropTypes.string.isRequired,
@@ -107,4 +115,3 @@ FileEntryComponent.propTypes = {
 };
 
 module.exports = FileEntryComponent;
-

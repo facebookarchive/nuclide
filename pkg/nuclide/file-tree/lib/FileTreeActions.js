@@ -154,6 +154,13 @@ class FileTreeActions {
     });
   }
 
+  setUsePreviewTabs(usePreviewTabs: boolean): void {
+    this._dispatcher.dispatch({
+      actionType: ActionType.SET_USE_PREVIEW_TABS,
+      usePreviewTabs,
+    });
+  }
+
   selectSingleNode(rootKey: string, nodeKey: string): void {
     const selectedKeysByRoot = {};
     selectedKeysByRoot[rootKey] = new Immutable.Set([nodeKey]);
@@ -182,6 +189,13 @@ class FileTreeActions {
           searchAllPanes: true,
         }
       );
+    }
+  }
+
+  keepPreviewTab() {
+    const activePaneItem = atom.workspace.getActivePaneItem();
+    if (activePaneItem != null) {
+      atom.commands.dispatch(atom.views.getView(activePaneItem), 'tabs:keep-preview-tab');
     }
   }
 
