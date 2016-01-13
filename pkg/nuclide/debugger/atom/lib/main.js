@@ -43,47 +43,35 @@ class Activation {
   _panel: ?Object;
 
   constructor(state: ?SerializedState) {
-
-    this._disposables = new CompositeDisposable();
-
-    this._disposables.add(
-      atom.views.addViewProvider(DebuggerModel, createDebuggerView));
-
-    this._disposables.add(
+    this._model = new DebuggerModel(state);
+    this._disposables = new CompositeDisposable(
+      this._model,
+      atom.views.addViewProvider(DebuggerModel, createDebuggerView),
       atom.commands.add('atom-workspace', {
         'nuclide-debugger:toggle': this._toggle.bind(this),
-      }));
-    this._disposables.add(
+      }),
       atom.commands.add('atom-workspace', {
         'nuclide-debugger:show': this._show.bind(this),
-      }));
-    this._disposables.add(
-        atom.commands.add('atom-workspace', {
-          'nuclide-debugger:continue-debugging': this._continue.bind(this),
-        }));
-    this._disposables.add(
+      }),
+      atom.commands.add('atom-workspace', {
+        'nuclide-debugger:continue-debugging': this._continue.bind(this),
+      }),
       atom.commands.add('atom-workspace', {
         'nuclide-debugger:stop-debugging': this._stop.bind(this),
-      }));
-    this._disposables.add(
-        atom.commands.add('atom-workspace', {
-          'nuclide-debugger:step-over': this._stepOver.bind(this),
-        }));
-    this._disposables.add(
-        atom.commands.add('atom-workspace', {
-          'nuclide-debugger:step-into': this._stepInto.bind(this),
-        }));
-    this._disposables.add(
-        atom.commands.add('atom-workspace', {
-          'nuclide-debugger:step-out': this._stepOut.bind(this),
-        }));
-    this._disposables.add(
-        atom.commands.add('atom-workspace', {
-          'nuclide-debugger:toggle-breakpoint': this._toggleBreakpoint.bind(this),
-        }));
-
-    this._model = new DebuggerModel(state);
-    this._disposables.add(this._model);
+      }),
+      atom.commands.add('atom-workspace', {
+        'nuclide-debugger:step-over': this._stepOver.bind(this),
+      }),
+      atom.commands.add('atom-workspace', {
+        'nuclide-debugger:step-into': this._stepInto.bind(this),
+      }),
+      atom.commands.add('atom-workspace', {
+        'nuclide-debugger:step-out': this._stepOut.bind(this),
+      }),
+      atom.commands.add('atom-workspace', {
+        'nuclide-debugger:toggle-breakpoint': this._toggleBreakpoint.bind(this),
+      }),
+    );
   }
 
   serialize(): SerializedState {

@@ -32,7 +32,6 @@ class DebuggerModel {
   _bridge: Bridge;
 
   constructor(state: ?SerializedState) {
-    this._disposables = new CompositeDisposable();
     this._dispatcher = new Dispatcher();
     this._store = new DebuggerStore(this._dispatcher);
     this._actions = new DebuggerActions(this._dispatcher, this._store);
@@ -40,11 +39,13 @@ class DebuggerModel {
     this._breakpointManager = new BreakpointManager(this._breakpointStore);
     this._bridge = new Bridge(this._breakpointStore);
 
-    this._disposables.add(this._store);
-    this._disposables.add(this._actions);
-    this._disposables.add(this._breakpointStore);
-    this._disposables.add(this._breakpointManager);
-    this._disposables.add(this._bridge);
+    this._disposables = new CompositeDisposable(
+      this._store,
+      this._actions,
+      this._breakpointStore,
+      this._breakpointManager,
+      this._bridge,
+    );
   }
 
   dispose() {

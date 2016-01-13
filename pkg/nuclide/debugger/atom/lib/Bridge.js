@@ -26,13 +26,13 @@ class Bridge {
 
   constructor(breakpointStore: BreakpointStoreType) {
     this._breakpointStore = breakpointStore;
-    this._disposables = new CompositeDisposable();
     this._cleanupDisposables = new CompositeDisposable();
     this._selectedCallFrameMarker = null;
     this._webview = null;
     this._suppressBreakpointSync = false;
-    this._disposables.add(
-      breakpointStore.onChange(this._handleBreakpointStoreChange.bind(this)));
+    this._disposables = new CompositeDisposable(
+      breakpointStore.onChange(this._handleBreakpointStoreChange.bind(this)),
+    );
   }
 
   setWebviewElement(webview: WebviewElement) {

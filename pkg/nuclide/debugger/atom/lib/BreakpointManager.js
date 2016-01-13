@@ -23,9 +23,9 @@ class BreakpointManager {
   constructor(store: BreakpointStore) {
     this._breakpointStore = store;
     this._displayControllers = new Map();
-    this._disposables = new CompositeDisposable();
-
-    this._disposables.add(atom.workspace.observeTextEditors(this._handleTextEditor.bind(this)));
+    this._disposables = new CompositeDisposable(
+      atom.workspace.observeTextEditors(this._handleTextEditor.bind(this)),
+    );
   }
 
   dispose(): void {
