@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import {array} from '../../commons';
 import type {QueryScore} from './QueryScore';
 import {enumerateAllCombinations, intersectMany} from './pathSetLogic';
 import {Observable} from 'rx';
@@ -44,6 +45,22 @@ function splitFilePath(path: string): {last: PathSegment; paths: Array<PathSegme
 
 function splitQuery(query: string): Array<string> {
   return query.split(SPLIT_CHARS).filter(segment => !segment.match(ONLY_NON_ALPHANUMERIC_CHARS));
+}
+
+function approximateMatchIndicesFor(
+  query: string,
+  path: string,
+  matchedSegments: Array<string>, // assumed to be lowercase path segments.
+): Array<number> {
+  const matchedIndices = new Set();
+  // Add indices of matched segments
+  for (const segment of matchedSegments) {
+    const startIndex = path.toLowerCase().indexOf(segment);
+    for (let index = startIndex; index < startIndex + segment.length; index++) {
+      matchedIndices.add(index);
+    }
+  }
+  return array.from(matchedIndices);
 }
 
 export default class LazyPathSet {
@@ -151,6 +168,12 @@ export default class LazyPathSet {
               {
                 value: potentialMatch,
                 score: 0,
+                matchIndexes: approximateMatchIndicesFor(
+                  query,
+                  potentialMatch,
+                  array.from(matchedQuerySegments.keys())
+                    .filter(segment => potentialMatch.toLowerCase().indexOf(segment) !== -1)
+                ),
               }
             );
           }
@@ -168,3 +191,7 @@ export default class LazyPathSet {
   }
 
 }
+
+export const __test__ = {
+  approximateMatchIndicesFor,
+};

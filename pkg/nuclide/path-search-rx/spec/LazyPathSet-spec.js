@@ -9,7 +9,8 @@
  * the root directory of this source tree.
  */
 
-import LazyPathSet from '../lib/LazyPathSet';
+import LazyPathSet, {__test__} from '../lib/LazyPathSet';
+const {approximateMatchIndicesFor} = __test__;
 
 const PATHS_FIXTURE = {
   'xyz': true,
@@ -18,6 +19,26 @@ const PATHS_FIXTURE = {
   'foo/bar/baz': true,
   'foo/bar/b': true,
 };
+
+describe('approximateMatchIndicesFor', () => {
+  it('highlights matched segments', () => {
+    expect(approximateMatchIndicesFor(
+      'foo',
+      'some/path/foo/bar',
+      ['foo']
+    )).toEqual([10, 11, 12]);
+    expect(approximateMatchIndicesFor(
+      'foo',
+      'some/path/foo/bar',
+      []
+    )).toEqual([]);
+    expect(approximateMatchIndicesFor(
+      'foo',
+      'some/other/path/foo/bar/baz',
+      ['foo', 'bar']
+    )).toEqual([16, 17, 18, 20, 21, 22]);
+  });
+});
 
 describe('LazyPathSet', () => {
   it('Stores all passed-in paths', () => {
