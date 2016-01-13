@@ -1,4 +1,0 @@
-var two = require('two');
-var three = require('three');
-
-var one = two;

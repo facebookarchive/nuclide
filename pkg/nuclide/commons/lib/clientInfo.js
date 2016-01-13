@@ -1,5 +1,15 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.isRunningInTest = isRunningInTest;
+exports.isRunningInClient = isRunningInClient;
+exports.getAtomVersion = getAtomVersion;
+exports.isRunningInNuclide = isRunningInNuclide;
+exports.getNuclideBuildNumber = getNuclideBuildNumber;
+exports.getInstallerPackageBuildNumber = getInstallerPackageBuildNumber;
+exports.setInstallerPackageBuildNumber = setInstallerPackageBuildNumber;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,21 +19,24 @@
  * the root directory of this source tree.
  */
 
-import {get, reset} from './singleton';
-import path from 'path';
+var _singleton = require('./singleton');
 
-const SMALLEST_NUCLIDE_BUILD_NUMBER = 5394875;
-const INSTALLER_BUILD_NUMBER_KEY = '_nuclide_installer_build_number_key';
+var _path = require('path');
 
-export function isRunningInTest(): boolean {
+var _path2 = _interopRequireDefault(_path);
+
+var SMALLEST_NUCLIDE_BUILD_NUMBER = 5394875;
+var INSTALLER_BUILD_NUMBER_KEY = '_nuclide_installer_build_number_key';
+
+function isRunningInTest() {
   return process.env.NODE_ENV === 'test';
 }
 
-export function isRunningInClient(): boolean {
+function isRunningInClient() {
   return global.atom !== undefined;
 }
 
-export function getAtomVersion(): string {
+function getAtomVersion() {
   if (!isRunningInClient()) {
     throw Error('Not running in Atom/Nuclide.');
   }
@@ -38,13 +51,14 @@ export function getAtomVersion(): string {
  * whereas the counterpart in Atom' version string is realtively small or not a valid number,
  * it is a good way to identify if the running editer is Nuclide or Atom.
  */
-export function isRunningInNuclide(): boolean {
+
+function isRunningInNuclide() {
   if (!isRunningInClient()) {
     return false;
   }
 
-  const version = getAtomVersion();
-  const buildNumber = version.split('.')[2];
+  var version = getAtomVersion();
+  var buildNumber = version.split('.')[2];
   // If the PATCH version (the third part of version string splitted by dot) is a number and larger
   // than SMALLEST_NUCLIDE_BUILD_NUMBER, then it's a build number.
   if (/^\d+$/.test(buildNumber) && parseInt(buildNumber, 10) >= SMALLEST_NUCLIDE_BUILD_NUMBER) {
@@ -53,28 +67,33 @@ export function isRunningInNuclide(): boolean {
   return false;
 }
 
-const atomConfig = isRunningInClient() ?
-    // $FlowIgnore
-    require(path.join(atom.getLoadSettings().resourcePath, 'package.json')) :
-    {};
+var atomConfig = isRunningInClient() ?
+// $FlowIgnore
+require(_path2['default'].join(atom.getLoadSettings().resourcePath, 'package.json')) : {};
 
-export function getNuclideBuildNumber(): number {
+function getNuclideBuildNumber() {
   if (!isRunningInClient()) {
     throw Error('Not running in Atom/Nuclide.');
   }
   return atomConfig.buildNumber || 0;
 }
 
-export function getInstallerPackageBuildNumber(): number {
-  return get(INSTALLER_BUILD_NUMBER_KEY, () => 0);
+function getInstallerPackageBuildNumber() {
+  return (0, _singleton.get)(INSTALLER_BUILD_NUMBER_KEY, function () {
+    return 0;
+  });
 }
 
-export function setInstallerPackageBuildNumber(buildNumber: number): void {
-  reset(INSTALLER_BUILD_NUMBER_KEY, () => buildNumber);
+function setInstallerPackageBuildNumber(buildNumber) {
+  (0, _singleton.reset)(INSTALLER_BUILD_NUMBER_KEY, function () {
+    return buildNumber;
+  });
 }
 
 // TODO(chenshen) implement isDevelopment.
 
-export const __test__ = {
-  SMALLEST_NUCLIDE_BUILD_NUMBER,
+var __test__ = {
+  SMALLEST_NUCLIDE_BUILD_NUMBER: SMALLEST_NUCLIDE_BUILD_NUMBER
 };
+exports.__test__ = __test__;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbImNsaWVudEluZm8uanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7O3lCQVd5QixhQUFhOztvQkFDckIsTUFBTTs7OztBQUV2QixJQUFNLDZCQUE2QixHQUFHLE9BQU8sQ0FBQztBQUM5QyxJQUFNLDBCQUEwQixHQUFHLHFDQUFxQyxDQUFDOztBQUVsRSxTQUFTLGVBQWUsR0FBWTtBQUN6QyxTQUFPLE9BQU8sQ0FBQyxHQUFHLENBQUMsUUFBUSxLQUFLLE1BQU0sQ0FBQztDQUN4Qzs7QUFFTSxTQUFTLGlCQUFpQixHQUFZO0FBQzNDLFNBQU8sTUFBTSxDQUFDLElBQUksS0FBSyxTQUFTLENBQUM7Q0FDbEM7O0FBRU0sU0FBUyxjQUFjLEdBQVc7QUFDdkMsTUFBSSxDQUFDLGlCQUFpQixFQUFFLEVBQUU7QUFDeEIsVUFBTSxLQUFLLENBQUMsOEJBQThCLENBQUMsQ0FBQztHQUM3QztBQUNELFNBQU8sTUFBTSxDQUFDLElBQUksQ0FBQyxVQUFVLEVBQUUsQ0FBQztDQUNqQzs7Ozs7Ozs7Ozs7QUFVTSxTQUFTLGtCQUFrQixHQUFZO0FBQzVDLE1BQUksQ0FBQyxpQkFBaUIsRUFBRSxFQUFFO0FBQ3hCLFdBQU8sS0FBSyxDQUFDO0dBQ2Q7O0FBRUQsTUFBTSxPQUFPLEdBQUcsY0FBYyxFQUFFLENBQUM7QUFDakMsTUFBTSxXQUFXLEdBQUcsT0FBTyxDQUFDLEtBQUssQ0FBQyxHQUFHLENBQUMsQ0FBQyxDQUFDLENBQUMsQ0FBQzs7O0FBRzFDLE1BQUksT0FBTyxDQUFDLElBQUksQ0FBQyxXQUFXLENBQUMsSUFBSSxRQUFRLENBQUMsV0FBVyxFQUFFLEVBQUUsQ0FBQyxJQUFJLDZCQUE2QixFQUFFO0FBQzNGLFdBQU8sSUFBSSxDQUFDO0dBQ2I7QUFDRCxTQUFPLEtBQUssQ0FBQztDQUNkOztBQUVELElBQU0sVUFBVSxHQUFHLGlCQUFpQixFQUFFOztBQUVsQyxPQUFPLENBQUMsa0JBQUssSUFBSSxDQUFDLElBQUksQ0FBQyxlQUFlLEVBQUUsQ0FBQyxZQUFZLEVBQUUsY0FBYyxDQUFDLENBQUMsR0FDdkUsRUFBRSxDQUFDOztBQUVBLFNBQVMscUJBQXFCLEdBQVc7QUFDOUMsTUFBSSxDQUFDLGlCQUFpQixFQUFFLEVBQUU7QUFDeEIsVUFBTSxLQUFLLENBQUMsOEJBQThCLENBQUMsQ0FBQztHQUM3QztBQUNELFNBQU8sVUFBVSxDQUFDLFdBQVcsSUFBSSxDQUFDLENBQUM7Q0FDcEM7O0FBRU0sU0FBUyw4QkFBOEIsR0FBVztBQUN2RCxTQUFPLG9CQUFJLDBCQUEwQixFQUFFO1dBQU0sQ0FBQztHQUFBLENBQUMsQ0FBQztDQUNqRDs7QUFFTSxTQUFTLDhCQUE4QixDQUFDLFdBQW1CLEVBQVE7QUFDeEUsd0JBQU0sMEJBQTBCLEVBQUU7V0FBTSxXQUFXO0dBQUEsQ0FBQyxDQUFDO0NBQ3REOzs7O0FBSU0sSUFBTSxRQUFRLEdBQUc7QUFDdEIsK0JBQTZCLEVBQTdCLDZCQUE2QjtDQUM5QixDQUFDIiwiZmlsZSI6ImNsaWVudEluZm8uanMiLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIGJhYmVsJztcbi8qIEBmbG93ICovXG5cbi8qXG4gKiBDb3B5cmlnaHQgKGMpIDIwMTUtcHJlc2VudCwgRmFjZWJvb2ssIEluYy5cbiAqIEFsbCByaWdodHMgcmVzZXJ2ZWQuXG4gKlxuICogVGhpcyBzb3VyY2UgY29kZSBpcyBsaWNlbnNlZCB1bmRlciB0aGUgbGljZW5zZSBmb3VuZCBpbiB0aGUgTElDRU5TRSBmaWxlIGluXG4gKiB0aGUgcm9vdCBkaXJlY3Rvcnkgb2YgdGhpcyBzb3VyY2UgdHJlZS5cbiAqL1xuXG5pbXBvcnQge2dldCwgcmVzZXR9IGZyb20gJy4vc2luZ2xldG9uJztcbmltcG9ydCBwYXRoIGZyb20gJ3BhdGgnO1xuXG5jb25zdCBTTUFMTEVTVF9OVUNMSURFX0JVSUxEX05VTUJFUiA9IDUzOTQ4NzU7XG5jb25zdCBJTlNUQUxMRVJfQlVJTERfTlVNQkVSX0tFWSA9ICdfbnVjbGlkZV9pbnN0YWxsZXJfYnVpbGRfbnVtYmVyX2tleSc7XG5cbmV4cG9ydCBmdW5jdGlvbiBpc1J1bm5pbmdJblRlc3QoKTogYm9vbGVhbiB7XG4gIHJldHVybiBwcm9jZXNzLmVudi5OT0RFX0VOViA9PT0gJ3Rlc3QnO1xufVxuXG5leHBvcnQgZnVuY3Rpb24gaXNSdW5uaW5nSW5DbGllbnQoKTogYm9vbGVhbiB7XG4gIHJldHVybiBnbG9iYWwuYXRvbSAhPT0gdW5kZWZpbmVkO1xufVxuXG5leHBvcnQgZnVuY3Rpb24gZ2V0QXRvbVZlcnNpb24oKTogc3RyaW5nIHtcbiAgaWYgKCFpc1J1bm5pbmdJbkNsaWVudCgpKSB7XG4gICAgdGhyb3cgRXJyb3IoJ05vdCBydW5uaW5nIGluIEF0b20vTnVjbGlkZS4nKTtcbiAgfVxuICByZXR1cm4gZ2xvYmFsLmF0b20uZ2V0VmVyc2lvbigpO1xufVxuXG4vKipcbiAqIERldGVybWluZSB3aGV0aGVyIHRoZSBwYWNrYWdlIGlzIHJ1bm5pbmcgaW4gQXRvbS5hcHAgb3IgTnVjbGlkZS5hcHAuXG4gKlxuICogV2hpbGUgYnVpbGRpbmcgTnVjbGlkZSByZWxlYXNlLCB3ZSBzZXQgdGhlIGludGVybmFsIGJ1aWxkIG51bWJlciBhcyBwYXJ0IG9mIHZlcnNpb24gbnVtYmVyLlxuICogU28gdGhlIHZlcnNpb24gbG9va3MgbGlrZSAxLjAuJGJ1aWxkTnVtYmVyLiBTaW5jZSB0aGUgaW50ZXJuYWwgYnVpbGQgbnVtYmVyIGlzIHJlYWxseSBiaWcsXG4gKiB3aGVyZWFzIHRoZSBjb3VudGVycGFydCBpbiBBdG9tJyB2ZXJzaW9uIHN0cmluZyBpcyByZWFsdGl2ZWx5IHNtYWxsIG9yIG5vdCBhIHZhbGlkIG51bWJlcixcbiAqIGl0IGlzIGEgZ29vZCB3YXkgdG8gaWRlbnRpZnkgaWYgdGhlIHJ1bm5pbmcgZWRpdGVyIGlzIE51Y2xpZGUgb3IgQXRvbS5cbiAqL1xuZXhwb3J0IGZ1bmN0aW9uIGlzUnVubmluZ0luTnVjbGlkZSgpOiBib29sZWFuIHtcbiAgaWYgKCFpc1J1bm5pbmdJbkNsaWVudCgpKSB7XG4gICAgcmV0dXJuIGZhbHNlO1xuICB9XG5cbiAgY29uc3QgdmVyc2lvbiA9IGdldEF0b21WZXJzaW9uKCk7XG4gIGNvbnN0IGJ1aWxkTnVtYmVyID0gdmVyc2lvbi5zcGxpdCgnLicpWzJdO1xuICAvLyBJZiB0aGUgUEFUQ0ggdmVyc2lvbiAodGhlIHRoaXJkIHBhcnQgb2YgdmVyc2lvbiBzdHJpbmcgc3BsaXR0ZWQgYnkgZG90KSBpcyBhIG51bWJlciBhbmQgbGFyZ2VyXG4gIC8vIHRoYW4gU01BTExFU1RfTlVDTElERV9CVUlMRF9OVU1CRVIsIHRoZW4gaXQncyBhIGJ1aWxkIG51bWJlci5cbiAgaWYgKC9eXFxkKyQvLnRlc3QoYnVpbGROdW1iZXIpICYmIHBhcnNlSW50KGJ1aWxkTnVtYmVyLCAxMCkgPj0gU01BTExFU1RfTlVDTElERV9CVUlMRF9OVU1CRVIpIHtcbiAgICByZXR1cm4gdHJ1ZTtcbiAgfVxuICByZXR1cm4gZmFsc2U7XG59XG5cbmNvbnN0IGF0b21Db25maWcgPSBpc1J1bm5pbmdJbkNsaWVudCgpID9cbiAgICAvLyAkRmxvd0lnbm9yZVxuICAgIHJlcXVpcmUocGF0aC5qb2luKGF0b20uZ2V0TG9hZFNldHRpbmdzKCkucmVzb3VyY2VQYXRoLCAncGFja2FnZS5qc29uJykpIDpcbiAgICB7fTtcblxuZXhwb3J0IGZ1bmN0aW9uIGdldE51Y2xpZGVCdWlsZE51bWJlcigpOiBudW1iZXIge1xuICBpZiAoIWlzUnVubmluZ0luQ2xpZW50KCkpIHtcbiAgICB0aHJvdyBFcnJvcignTm90IHJ1bm5pbmcgaW4gQXRvbS9OdWNsaWRlLicpO1xuICB9XG4gIHJldHVybiBhdG9tQ29uZmlnLmJ1aWxkTnVtYmVyIHx8IDA7XG59XG5cbmV4cG9ydCBmdW5jdGlvbiBnZXRJbnN0YWxsZXJQYWNrYWdlQnVpbGROdW1iZXIoKTogbnVtYmVyIHtcbiAgcmV0dXJuIGdldChJTlNUQUxMRVJfQlVJTERfTlVNQkVSX0tFWSwgKCkgPT4gMCk7XG59XG5cbmV4cG9ydCBmdW5jdGlvbiBzZXRJbnN0YWxsZXJQYWNrYWdlQnVpbGROdW1iZXIoYnVpbGROdW1iZXI6IG51bWJlcik6IHZvaWQge1xuICByZXNldChJTlNUQUxMRVJfQlVJTERfTlVNQkVSX0tFWSwgKCkgPT4gYnVpbGROdW1iZXIpO1xufVxuXG4vLyBUT0RPKGNoZW5zaGVuKSBpbXBsZW1lbnQgaXNEZXZlbG9wbWVudC5cblxuZXhwb3J0IGNvbnN0IF9fdGVzdF9fID0ge1xuICBTTUFMTEVTVF9OVUNMSURFX0JVSUxEX05VTUJFUixcbn07XG4iXX0=

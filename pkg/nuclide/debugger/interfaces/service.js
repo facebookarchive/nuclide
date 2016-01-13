@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -8,28 +9,4 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-
-export type nuclide_debugger$DebuggerInstance = {
-  dispose(): void;
-  getWebsocketAddress(): Promise<string>;
-  onSessionEnd(callback: () => void): {
-    dispose(): void;
-  };
-};
-
-export type nuclide_debugger$DebuggerProcessInfo = {
-  toString(): string;
-
-  displayString(): string;
-
-  getServiceName(): string;
-
-  compareDetails(other: nuclide_debugger$DebuggerProcessInfo): number;
-
-  attach(): nuclide_debugger$DebuggerInstance;
-};
-
-export type nuclide_debugger$Service = {
-  name: string;
-  getProcessInfoList(): Promise<Array<nuclide_debugger$DebuggerProcessInfo>>;
-};
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IiIsImZpbGUiOiJzZXJ2aWNlLmpzIiwic291cmNlc0NvbnRlbnQiOltdfQ==

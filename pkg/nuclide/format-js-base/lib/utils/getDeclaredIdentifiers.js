@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,92 +8,98 @@
  * the root directory of this source tree.
  */
 
-import type {Collection, Node, NodePath} from '../types/ast';
-import type {SourceOptions} from '../options/SourceOptions';
-
-const getNamesFromID = require('./getNamesFromID');
-const jscs = require('jscodeshift');
-
-type ConfigEntry = {
-  searchTerms: [any, Object],
-  getNodes: (path: NodePath) => Array<Node>,
-};
+var getNamesFromID = require('./getNamesFromID');
+var jscs = require('jscodeshift');
 
 /**
  * These are the ways in which an identifier might be declared, note that these
  * identifiers are safe to use in code. They should not include types that have
  * been declared.
  */
-const CONFIG: Array<ConfigEntry> = [
-  // function foo(...rest) {}
-  {
-    searchTerms: [jscs.FunctionDeclaration],
-    getNodes: path => [path.node.id, path.node.rest].concat(path.node.params),
-  },
+var CONFIG = [
+// function foo(...rest) {}
+{
+  searchTerms: [jscs.FunctionDeclaration],
+  getNodes: function getNodes(path) {
+    return [path.node.id, path.node.rest].concat(path.node.params);
+  }
+},
 
-  // foo(...rest) {}, in a class body for example
-  {
-    searchTerms: [jscs.FunctionExpression],
-    getNodes: path => [path.node.rest].concat(path.node.params),
-  },
+// foo(...rest) {}, in a class body for example
+{
+  searchTerms: [jscs.FunctionExpression],
+  getNodes: function getNodes(path) {
+    return [path.node.rest].concat(path.node.params);
+  }
+},
 
-  // var foo;
-  {
-    searchTerms: [jscs.VariableDeclaration],
-    getNodes: path => path.node.declarations.map(declaration => declaration.id),
-  },
+// var foo;
+{
+  searchTerms: [jscs.VariableDeclaration],
+  getNodes: function getNodes(path) {
+    return path.node.declarations.map(function (declaration) {
+      return declaration.id;
+    });
+  }
+},
 
-  // class foo {}
-  {
-    searchTerms: [jscs.ClassDeclaration],
-    getNodes: path => [path.node.id],
-  },
+// class foo {}
+{
+  searchTerms: [jscs.ClassDeclaration],
+  getNodes: function getNodes(path) {
+    return [path.node.id];
+  }
+},
 
-  // (foo, ...rest) => {}
-  {
-    searchTerms: [jscs.ArrowFunctionExpression],
-    getNodes: path => [path.node.rest].concat(path.node.params),
-  },
+// (foo, ...rest) => {}
+{
+  searchTerms: [jscs.ArrowFunctionExpression],
+  getNodes: function getNodes(path) {
+    return [path.node.rest].concat(path.node.params);
+  }
+},
 
-  // try {} catch (foo) {}
-  {
-    searchTerms: [jscs.CatchClause],
-    getNodes: path => [path.node.param],
-  },
+// try {} catch (foo) {}
+{
+  searchTerms: [jscs.CatchClause],
+  getNodes: function getNodes(path) {
+    return [path.node.param];
+  }
+},
 
-  // function foo(a = b) {}
-  {
-    searchTerms: [jscs.AssignmentPattern],
-    getNodes: path => [path.node.left],
-  },
-];
+// function foo(a = b) {}
+{
+  searchTerms: [jscs.AssignmentPattern],
+  getNodes: function getNodes(path) {
+    return [path.node.left];
+  }
+}];
 
 /**
  * This will get a list of all identifiers that are declared within root's AST
  */
-function getDeclaredIdentifiers(
-  root: Collection,
-  options: SourceOptions,
-  filters?: ?Array<(path: NodePath) => boolean>
-): Set<string> {
+function getDeclaredIdentifiers(root, options, filters) {
   // Start with the globals since they are always "declared" and safe to use.
-  const {moduleMap} = options;
-  const ids = new Set(moduleMap.getBuiltIns());
-  CONFIG.forEach(config => {
-    root
-      .find(config.searchTerms[0], config.searchTerms[1])
-      .filter(path => filters ? filters.every(filter => filter(path)) : true)
-      .forEach(path => {
-        const nodes = config.getNodes(path);
-        nodes.forEach(node => {
-          const names = getNamesFromID(node);
-          for (const name of names) {
-            ids.add(name);
-          }
-        });
+  var moduleMap = options.moduleMap;
+
+  var ids = new Set(moduleMap.getBuiltIns());
+  CONFIG.forEach(function (config) {
+    root.find(config.searchTerms[0], config.searchTerms[1]).filter(function (path) {
+      return filters ? filters.every(function (filter) {
+        return filter(path);
+      }) : true;
+    }).forEach(function (path) {
+      var nodes = config.getNodes(path);
+      nodes.forEach(function (node) {
+        var names = getNamesFromID(node);
+        for (var _name of names) {
+          ids.add(_name);
+        }
       });
+    });
   });
   return ids;
 }
 
 module.exports = getDeclaredIdentifiers;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbImdldERlY2xhcmVkSWRlbnRpZmllcnMuanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7OztBQWNBLElBQU0sY0FBYyxHQUFHLE9BQU8sQ0FBQyxrQkFBa0IsQ0FBQyxDQUFDO0FBQ25ELElBQU0sSUFBSSxHQUFHLE9BQU8sQ0FBQyxhQUFhLENBQUMsQ0FBQzs7Ozs7OztBQVlwQyxJQUFNLE1BQTBCLEdBQUc7O0FBRWpDO0FBQ0UsYUFBVyxFQUFFLENBQUMsSUFBSSxDQUFDLG1CQUFtQixDQUFDO0FBQ3ZDLFVBQVEsRUFBRSxrQkFBQSxJQUFJO1dBQUksQ0FBQyxJQUFJLENBQUMsSUFBSSxDQUFDLEVBQUUsRUFBRSxJQUFJLENBQUMsSUFBSSxDQUFDLElBQUksQ0FBQyxDQUFDLE1BQU0sQ0FBQyxJQUFJLENBQUMsSUFBSSxDQUFDLE1BQU0sQ0FBQztHQUFBO0NBQzFFOzs7QUFHRDtBQUNFLGFBQVcsRUFBRSxDQUFDLElBQUksQ0FBQyxrQkFBa0IsQ0FBQztBQUN0QyxVQUFRLEVBQUUsa0JBQUEsSUFBSTtXQUFJLENBQUMsSUFBSSxDQUFDLElBQUksQ0FBQyxJQUFJLENBQUMsQ0FBQyxNQUFNLENBQUMsSUFBSSxDQUFDLElBQUksQ0FBQyxNQUFNLENBQUM7R0FBQTtDQUM1RDs7O0FBR0Q7QUFDRSxhQUFXLEVBQUUsQ0FBQyxJQUFJLENBQUMsbUJBQW1CLENBQUM7QUFDdkMsVUFBUSxFQUFFLGtCQUFBLElBQUk7V0FBSSxJQUFJLENBQUMsSUFBSSxDQUFDLFlBQVksQ0FBQyxHQUFHLENBQUMsVUFBQSxXQUFXO2FBQUksV0FBVyxDQUFDLEVBQUU7S0FBQSxDQUFDO0dBQUE7Q0FDNUU7OztBQUdEO0FBQ0UsYUFBVyxFQUFFLENBQUMsSUFBSSxDQUFDLGdCQUFnQixDQUFDO0FBQ3BDLFVBQVEsRUFBRSxrQkFBQSxJQUFJO1dBQUksQ0FBQyxJQUFJLENBQUMsSUFBSSxDQUFDLEVBQUUsQ0FBQztHQUFBO0NBQ2pDOzs7QUFHRDtBQUNFLGFBQVcsRUFBRSxDQUFDLElBQUksQ0FBQyx1QkFBdUIsQ0FBQztBQUMzQyxVQUFRLEVBQUUsa0JBQUEsSUFBSTtXQUFJLENBQUMsSUFBSSxDQUFDLElBQUksQ0FBQyxJQUFJLENBQUMsQ0FBQyxNQUFNLENBQUMsSUFBSSxDQUFDLElBQUksQ0FBQyxNQUFNLENBQUM7R0FBQTtDQUM1RDs7O0FBR0Q7QUFDRSxhQUFXLEVBQUUsQ0FBQyxJQUFJLENBQUMsV0FBVyxDQUFDO0FBQy9CLFVBQVEsRUFBRSxrQkFBQSxJQUFJO1dBQUksQ0FBQyxJQUFJLENBQUMsSUFBSSxDQUFDLEtBQUssQ0FBQztHQUFBO0NBQ3BDOzs7QUFHRDtBQUNFLGFBQVcsRUFBRSxDQUFDLElBQUksQ0FBQyxpQkFBaUIsQ0FBQztBQUNyQyxVQUFRLEVBQUUsa0JBQUEsSUFBSTtXQUFJLENBQUMsSUFBSSxDQUFDLElBQUksQ0FBQyxJQUFJLENBQUM7R0FBQTtDQUNuQyxDQUNGLENBQUM7Ozs7O0FBS0YsU0FBUyxzQkFBc0IsQ0FDN0IsSUFBZ0IsRUFDaEIsT0FBc0IsRUFDdEIsT0FBNkMsRUFDaEM7O01BRU4sU0FBUyxHQUFJLE9BQU8sQ0FBcEIsU0FBUzs7QUFDaEIsTUFBTSxHQUFHLEdBQUcsSUFBSSxHQUFHLENBQUMsU0FBUyxDQUFDLFdBQVcsRUFBRSxDQUFDLENBQUM7QUFDN0MsUUFBTSxDQUFDLE9BQU8sQ0FBQyxVQUFBLE1BQU0sRUFBSTtBQUN2QixRQUFJLENBQ0QsSUFBSSxDQUFDLE1BQU0sQ0FBQyxXQUFXLENBQUMsQ0FBQyxDQUFDLEVBQUUsTUFBTSxDQUFDLFdBQVcsQ0FBQyxDQUFDLENBQUMsQ0FBQyxDQUNsRCxNQUFNLENBQUMsVUFBQSxJQUFJO2FBQUksT0FBTyxHQUFHLE9BQU8sQ0FBQyxLQUFLLENBQUMsVUFBQSxNQUFNO2VBQUksTUFBTSxDQUFDLElBQUksQ0FBQztPQUFBLENBQUMsR0FBRyxJQUFJO0tBQUEsQ0FBQyxDQUN0RSxPQUFPLENBQUMsVUFBQSxJQUFJLEVBQUk7QUFDZixVQUFNLEtBQUssR0FBRyxNQUFNLENBQUMsUUFBUSxDQUFDLElBQUksQ0FBQyxDQUFDO0FBQ3BDLFdBQUssQ0FBQyxPQUFPLENBQUMsVUFBQSxJQUFJLEVBQUk7QUFDcEIsWUFBTSxLQUFLLEdBQUcsY0FBYyxDQUFDLElBQUksQ0FBQyxDQUFDO0FBQ25DLGFBQUssSUFBTSxLQUFJLElBQUksS0FBSyxFQUFFO0FBQ3hCLGFBQUcsQ0FBQyxHQUFHLENBQUMsS0FBSSxDQUFDLENBQUM7U0FDZjtPQUNGLENBQUMsQ0FBQztLQUNKLENBQUMsQ0FBQztHQUNOLENBQUMsQ0FBQztBQUNILFNBQU8sR0FBRyxDQUFDO0NBQ1o7O0FBRUQsTUFBTSxDQUFDLE9BQU8sR0FBRyxzQkFBc0IsQ0FBQyIsImZpbGUiOiJnZXREZWNsYXJlZElkZW50aWZpZXJzLmpzIiwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBiYWJlbCc7XG4vKiBAZmxvdyAqL1xuXG4vKlxuICogQ29weXJpZ2h0IChjKSAyMDE1LXByZXNlbnQsIEZhY2Vib29rLCBJbmMuXG4gKiBBbGwgcmlnaHRzIHJlc2VydmVkLlxuICpcbiAqIFRoaXMgc291cmNlIGNvZGUgaXMgbGljZW5zZWQgdW5kZXIgdGhlIGxpY2Vuc2UgZm91bmQgaW4gdGhlIExJQ0VOU0UgZmlsZSBpblxuICogdGhlIHJvb3QgZGlyZWN0b3J5IG9mIHRoaXMgc291cmNlIHRyZWUuXG4gKi9cblxuaW1wb3J0IHR5cGUge0NvbGxlY3Rpb24sIE5vZGUsIE5vZGVQYXRofSBmcm9tICcuLi90eXBlcy9hc3QnO1xuaW1wb3J0IHR5cGUge1NvdXJjZU9wdGlvbnN9IGZyb20gJy4uL29wdGlvbnMvU291cmNlT3B0aW9ucyc7XG5cbmNvbnN0IGdldE5hbWVzRnJvbUlEID0gcmVxdWlyZSgnLi9nZXROYW1lc0Zyb21JRCcpO1xuY29uc3QganNjcyA9IHJlcXVpcmUoJ2pzY29kZXNoaWZ0Jyk7XG5cbnR5cGUgQ29uZmlnRW50cnkgPSB7XG4gIHNlYXJjaFRlcm1zOiBbYW55LCBPYmplY3RdLFxuICBnZXROb2RlczogKHBhdGg6IE5vZGVQYXRoKSA9PiBBcnJheTxOb2RlPixcbn07XG5cbi8qKlxuICogVGhlc2UgYXJlIHRoZSB3YXlzIGluIHdoaWNoIGFuIGlkZW50aWZpZXIgbWlnaHQgYmUgZGVjbGFyZWQsIG5vdGUgdGhhdCB0aGVzZVxuICogaWRlbnRpZmllcnMgYXJlIHNhZmUgdG8gdXNlIGluIGNvZGUuIFRoZXkgc2hvdWxkIG5vdCBpbmNsdWRlIHR5cGVzIHRoYXQgaGF2ZVxuICogYmVlbiBkZWNsYXJlZC5cbiAqL1xuY29uc3QgQ09ORklHOiBBcnJheTxDb25maWdFbnRyeT4gPSBbXG4gIC8vIGZ1bmN0aW9uIGZvbyguLi5yZXN0KSB7fVxuICB7XG4gICAgc2VhcmNoVGVybXM6IFtqc2NzLkZ1bmN0aW9uRGVjbGFyYXRpb25dLFxuICAgIGdldE5vZGVzOiBwYXRoID0+IFtwYXRoLm5vZGUuaWQsIHBhdGgubm9kZS5yZXN0XS5jb25jYXQocGF0aC5ub2RlLnBhcmFtcyksXG4gIH0sXG5cbiAgLy8gZm9vKC4uLnJlc3QpIHt9LCBpbiBhIGNsYXNzIGJvZHkgZm9yIGV4YW1wbGVcbiAge1xuICAgIHNlYXJjaFRlcm1zOiBbanNjcy5GdW5jdGlvbkV4cHJlc3Npb25dLFxuICAgIGdldE5vZGVzOiBwYXRoID0+IFtwYXRoLm5vZGUucmVzdF0uY29uY2F0KHBhdGgubm9kZS5wYXJhbXMpLFxuICB9LFxuXG4gIC8vIHZhciBmb287XG4gIHtcbiAgICBzZWFyY2hUZXJtczogW2pzY3MuVmFyaWFibGVEZWNsYXJhdGlvbl0sXG4gICAgZ2V0Tm9kZXM6IHBhdGggPT4gcGF0aC5ub2RlLmRlY2xhcmF0aW9ucy5tYXAoZGVjbGFyYXRpb24gPT4gZGVjbGFyYXRpb24uaWQpLFxuICB9LFxuXG4gIC8vIGNsYXNzIGZvbyB7fVxuICB7XG4gICAgc2VhcmNoVGVybXM6IFtqc2NzLkNsYXNzRGVjbGFyYXRpb25dLFxuICAgIGdldE5vZGVzOiBwYXRoID0+IFtwYXRoLm5vZGUuaWRdLFxuICB9LFxuXG4gIC8vIChmb28sIC4uLnJlc3QpID0+IHt9XG4gIHtcbiAgICBzZWFyY2hUZXJtczogW2pzY3MuQXJyb3dGdW5jdGlvbkV4cHJlc3Npb25dLFxuICAgIGdldE5vZGVzOiBwYXRoID0+IFtwYXRoLm5vZGUucmVzdF0uY29uY2F0KHBhdGgubm9kZS5wYXJhbXMpLFxuICB9LFxuXG4gIC8vIHRyeSB7fSBjYXRjaCAoZm9vKSB7fVxuICB7XG4gICAgc2VhcmNoVGVybXM6IFtqc2NzLkNhdGNoQ2xhdXNlXSxcbiAgICBnZXROb2RlczogcGF0aCA9PiBbcGF0aC5ub2RlLnBhcmFtXSxcbiAgfSxcblxuICAvLyBmdW5jdGlvbiBmb28oYSA9IGIpIHt9XG4gIHtcbiAgICBzZWFyY2hUZXJtczogW2pzY3MuQXNzaWdubWVudFBhdHRlcm5dLFxuICAgIGdldE5vZGVzOiBwYXRoID0+IFtwYXRoLm5vZGUubGVmdF0sXG4gIH0sXG5dO1xuXG4vKipcbiAqIFRoaXMgd2lsbCBnZXQgYSBsaXN0IG9mIGFsbCBpZGVudGlmaWVycyB0aGF0IGFyZSBkZWNsYXJlZCB3aXRoaW4gcm9vdCdzIEFTVFxuICovXG5mdW5jdGlvbiBnZXREZWNsYXJlZElkZW50aWZpZXJzKFxuICByb290OiBDb2xsZWN0aW9uLFxuICBvcHRpb25zOiBTb3VyY2VPcHRpb25zLFxuICBmaWx0ZXJzPzogP0FycmF5PChwYXRoOiBOb2RlUGF0aCkgPT4gYm9vbGVhbj5cbik6IFNldDxzdHJpbmc+IHtcbiAgLy8gU3RhcnQgd2l0aCB0aGUgZ2xvYmFscyBzaW5jZSB0aGV5IGFyZSBhbHdheXMgXCJkZWNsYXJlZFwiIGFuZCBzYWZlIHRvIHVzZS5cbiAgY29uc3Qge21vZHVsZU1hcH0gPSBvcHRpb25zO1xuICBjb25zdCBpZHMgPSBuZXcgU2V0KG1vZHVsZU1hcC5nZXRCdWlsdElucygpKTtcbiAgQ09ORklHLmZvckVhY2goY29uZmlnID0+IHtcbiAgICByb290XG4gICAgICAuZmluZChjb25maWcuc2VhcmNoVGVybXNbMF0sIGNvbmZpZy5zZWFyY2hUZXJtc1sxXSlcbiAgICAgIC5maWx0ZXIocGF0aCA9PiBmaWx0ZXJzID8gZmlsdGVycy5ldmVyeShmaWx0ZXIgPT4gZmlsdGVyKHBhdGgpKSA6IHRydWUpXG4gICAgICAuZm9yRWFjaChwYXRoID0+IHtcbiAgICAgICAgY29uc3Qgbm9kZXMgPSBjb25maWcuZ2V0Tm9kZXMocGF0aCk7XG4gICAgICAgIG5vZGVzLmZvckVhY2gobm9kZSA9PiB7XG4gICAgICAgICAgY29uc3QgbmFtZXMgPSBnZXROYW1lc0Zyb21JRChub2RlKTtcbiAgICAgICAgICBmb3IgKGNvbnN0IG5hbWUgb2YgbmFtZXMpIHtcbiAgICAgICAgICAgIGlkcy5hZGQobmFtZSk7XG4gICAgICAgICAgfVxuICAgICAgICB9KTtcbiAgICAgIH0pO1xuICB9KTtcbiAgcmV0dXJuIGlkcztcbn1cblxubW9kdWxlLmV4cG9ydHMgPSBnZXREZWNsYXJlZElkZW50aWZpZXJzO1xuIl19
