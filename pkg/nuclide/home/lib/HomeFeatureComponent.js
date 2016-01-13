@@ -37,7 +37,10 @@ class HomeFeatureComponent extends React.Component {
 HomeFeatureComponent.propTypes = {
   title: React.PropTypes.string.isRequired,
   icon: React.PropTypes.string.isRequired,
-  description: React.PropTypes.element.isRequired,
+  description: React.PropTypes.oneOfType([
+    React.PropTypes.string,
+    React.PropTypes.element,
+  ]).isRequired,
   command: React.PropTypes.string,
 };
 

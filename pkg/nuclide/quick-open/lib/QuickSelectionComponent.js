@@ -91,8 +91,11 @@ export default class QuickSelectionComponent extends React.Component {
       // treated as immutable
       resultsByService: {},
       renderableProviders: searchResultManager.getRenderableProviders(),
+      selectedService: '',
+      selectedDirectory: '',
+      selectedItemIndex: -1,
+      hasUserSelection: false,
     };
-    this.resetSelection();
     this.handleProvidersChangeBound = this.handleProvidersChange.bind(this);
     this.handleResultsChangeBound = this.handleResultsChange.bind(this);
   }
