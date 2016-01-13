@@ -8,7 +8,7 @@
 
 /* Adapted from the .loading-spinner styles of Atom theme packages.
    We need it here so we can target an element in the shadow DOM. */
-.editor::shadow #blame-loading-spinner {
+atom-text-editor::shadow #blame-loading-spinner {
   width: 20px;
   height: 20px;
   display: block;
