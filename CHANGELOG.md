@@ -1,5 +1,52 @@
 # Nuclide Changelog
 
+## 0.111.0
+
+Nuclide is now a single Atom package named 'nuclide'. All 'nuclide-*' packages are deprecated and
+will be unpublished after this release.
+
+* Node Debugger:
+  * Now works on node processes running any major version of node/iojs including 0.10.x, 0.12.x,
+  1.x, 2.x, 4.x, 5.x.
+* Hyperclick:
+  * Anything that looks like it might be a valid web address is clickable. Eg. http://cats.com
+    (http://cats.com/) (a word with a valid TLD).
+  * ctags support: any symbols in a valid 'tags' file in your project directory should be clickable.
+  * Fix Hyperclick errors with split panes.
+* Settings:
+  * All settings are in one spot: Preferences → Packages → Nuclide → Settings.
+* File Tree:
+  * Preview Tab support. Enable from Packages →  tabs →  Use Preview Tabs.
+* Buck Toolbar
+  * RN Server checkbox value now remembered after restart
+  * Output window can now be moved and split
+* C++ support:
+  * Significant performance improvements for diagnostics, autocompletion, and click-to-declaration
+  * Loading indicator will display in status bar while C++ files are parsing
+  * Stability: clang errors should no longer cause the Nuclide server to crash
+  * “Find References” support for clang-enabled projects (right click on any symbol)
+* More robust Watchman integration for Mercurial and file-change reload features.
+* Fix Mercurial blame for remote projects.
+* Fix Diff View offset rendering for large diffs and split panes errors.
+* Arc lint autofix beta:
+  * In the settings for the Nuclide package, check nuclide-diagnostics-ui: enableAutofix.
+  * There will then be a 'Fix' button in the popup for eligible lint problems.
+
+## 0.0.35
+
+* Improvements to prevent spawning many Mercurial processes.
+* Diff View:
+  * Performance Optimizations (Caching and avoid expensive calls when Diff View is closed).
+  * Add a 'Navigation Bar' for easier (add/delete/change) line change scrolling
+* Hyperclick / Go to definition Improvements:
+  * Go to definition doesn't collide with multi-cursor feature (not end up with multiple cursors).
+  * Hack: Go to definition shows a navigable suggestion list when hh_server can't determine the
+    exact location of the (e.g. dynamically-typed method calls).
+  * Hack: XHP go to definition highlights XHP tags correctly (while it still jumps to the right
+    place).
+  * UX: Fix cursor indicator for loading and result-ready.
+* Support formatting of `const` requires in format-js
+
 ## 0.0.34
 
 npm-only release. Our Node packages were released so that external packages could consume them, but
