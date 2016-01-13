@@ -29,9 +29,6 @@ Add the dependency in `package.json` as usual:
 ```js
 {
   "name": "nuclide-buck-toolbar",
-  "engines": {
-    "atom": ">0.193.0"
-  },
   "dependencies": {
     "nuclide-ui-atom-input": "0.0.0",
   }

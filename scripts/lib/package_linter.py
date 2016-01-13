@@ -97,6 +97,12 @@ class PackageLinter(object):
         if self.is_internal_name(package_name):
             self.expect_field(package_name, package, 'private', True)
 
+        if 'engines' in package:
+            self.report_error(
+                'Extraneous "engines" for %s - Only the root package.json should set "engines".',
+                package_name
+            )
+
         if '_atomModuleCache' in package:
             self.report_error('Extraneous "_atomModuleCache" for %s', package_name)
 

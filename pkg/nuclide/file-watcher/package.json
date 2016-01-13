@@ -7,8 +7,5 @@
   "nuclide": {
     "packageType": "Atom",
     "testRunner": "apm"
-  },
-  "engines": {
-    "atom": ">=0.207.0"
   }
 }

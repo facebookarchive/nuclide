@@ -8,9 +8,6 @@
     "packageType": "Atom",
     "testRunner": "apm"
   },
-  "engines": {
-    "atom": ">=1.0.19"
-  },
   "consumedServices": {
     "nuclide-gadgets": {
       "versions": {

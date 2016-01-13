@@ -3,9 +3,6 @@
   "repository": "https://github.com/facebook/nuclide",
   "main": "./lib/main",
   "version": "0.0.0",
-  "engines": {
-    "atom": ">=0.192.0"
-  },
   "description": "Exposes features from nuclide-clang in Atom",
   "nuclide": {
     "packageType": "Atom",

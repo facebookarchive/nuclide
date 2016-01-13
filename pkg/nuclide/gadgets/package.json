@@ -12,9 +12,6 @@
     }
   },
   "activationCommands": {},
-  "engines": {
-    "atom": ">=1.1.0"
-  },
   "providedServices": {
     "nuclide-gadgets": {
       "versions": {

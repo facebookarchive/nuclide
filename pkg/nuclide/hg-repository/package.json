@@ -14,8 +14,5 @@
         "0.1.0": "createHgRepositoryProvider"
       }
     }
-  },
-  "engines": {
-    "atom": ">0.177.0"
   }
 }

@@ -27,8 +27,5 @@
         "0.0.0": "getHyperclickProvider"
       }
     }
-  },
-  "engines": {
-    "atom": ">=0.190.0"
   }
 }

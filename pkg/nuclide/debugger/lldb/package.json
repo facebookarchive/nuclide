@@ -8,9 +8,6 @@
     "packageType": "Atom",
     "testRunner": "apm"
   },
-  "engines": {
-    "atom": ">=0.170.0"
-  },
   "providedServices": {
     "nuclide-debugger-lldb-service": {
       "description": "Debugger backend for native processes.",

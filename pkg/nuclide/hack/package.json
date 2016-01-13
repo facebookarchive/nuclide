@@ -49,8 +49,5 @@
         "0.0.0": "createCodeHighlightProvider"
       }
     }
-  },
-  "engines": {
-    "atom": ">=0.196.0"
   }
 }

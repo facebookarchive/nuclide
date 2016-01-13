@@ -8,9 +8,6 @@
     "packageType": "Atom",
     "testRunner": "apm"
   },
-  "engines": {
-    "atom": ">=0.190.0"
-  },
   "consumedServices": {
     "nuclide-code-format.provider": {
       "versions": {

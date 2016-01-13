@@ -9,9 +9,6 @@
     "testRunner": "apm"
   },
   "activationCommands": {},
-  "engines": {
-    "atom": ">=1.0.9"
-  },
   "providedServices": {
     "nuclide-recent-files-service": {
       "versions": {

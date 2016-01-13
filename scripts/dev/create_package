@@ -28,7 +28,6 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '../lib'))
 
 from package_manager import PACKAGES_PATH
-from dependencies import get_atom_version
 
 NPM = 'npm'
 APM = 'apm'
@@ -116,9 +115,6 @@ ATOM_APM_PACKAGE_JSON_TEMPLATE = """\
     "testRunner": "apm"
   },
   "activationCommands": {
-  },
-  "engines": {
-    "atom": ">=%s"
   }
 }
 """
@@ -191,7 +187,7 @@ def create_package(dir_name, package_name, package_type, test_runner):
             else:
                 f.write(NODE_APM_PACKAGE_JSON_TEMPLATE % package_name)
         else:
-            f.write(ATOM_APM_PACKAGE_JSON_TEMPLATE % (package_name, get_atom_version()))
+            f.write(ATOM_APM_PACKAGE_JSON_TEMPLATE % package_name)
 
     print 'New package created at: %s.' % pkg_dir
     print 'Running setup to pick up the changes.'

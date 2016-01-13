@@ -27,8 +27,5 @@
         "0.0.0": "consumeGadgetsService"
       }
     }
-  },
-  "engines": {
-    "atom": ">=1.0.0"
   }
 }

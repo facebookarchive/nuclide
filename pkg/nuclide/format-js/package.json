@@ -97,8 +97,5 @@
     },
     "packageType": "Atom",
     "testRunner": "apm"
-  },
-  "engines": {
-    "atom": ">=1.0.3"
   }
 }

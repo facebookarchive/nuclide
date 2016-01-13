@@ -8,9 +8,6 @@
     "packageType": "Node",
     "testRunner": "npm"
   },
-  "engines": {
-    "atom": ">0.194.0"
-  },
   "scripts": {
     "test": "node --harmony ../jasmine/bin/jasmine-node-transpiled spec"
   }

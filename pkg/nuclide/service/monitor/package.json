@@ -10,8 +10,5 @@
   },
   "activationCommands": {
     "atom-workspace": "nuclide-service-monitor:show-monitor"
-  },
-  "engines": {
-    "atom": ">=1.0.9"
   }
 }

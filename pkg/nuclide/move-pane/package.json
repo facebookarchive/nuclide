@@ -15,8 +15,5 @@
       "nuclide-move-pane:move-tab-to-new-pane-left",
       "nuclide-move-pane:move-tab-to-new-pane-right"
     ]
-  },
-  "engines": {
-    "atom": ">=1.0.9"
   }
 }

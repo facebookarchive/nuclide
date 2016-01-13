@@ -14,8 +14,5 @@
       "nuclide-clipboard-path:copy-repository-relative-path",
       "nuclide-clipboard-path:copy-project-relative-path"
     ]
-  },
-  "engines": {
-    "atom": ">=1.0.9"
   }
 }

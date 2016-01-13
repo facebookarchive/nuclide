@@ -16,9 +16,6 @@
     "packageType": "Atom",
     "testRunner": "apm"
   },
-  "engines": {
-    "atom": ">=0.187.0"
-  },
   "consumedServices": {
     "nuclide-quick-open-register-provider": {
       "versions": {

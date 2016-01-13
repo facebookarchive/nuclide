@@ -22,8 +22,5 @@
     "packageType": "Atom",
     "testsCannotBeRunInParallel": true,
     "testRunner": "apm"
-  },
-  "engines": {
-    "atom": ">=1.0.3"
   }
 }

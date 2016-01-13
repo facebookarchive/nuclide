@@ -8,9 +8,6 @@
     "packageType": "Atom",
     "testRunner": "apm"
   },
-  "engines": {
-    "atom": ">=0.199.0"
-  },
   "consumedServices": {
     "phabricator-comments-ui.provider": {
       "versions": {

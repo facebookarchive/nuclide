@@ -22,9 +22,6 @@
     "testRunner": "apm"
   },
   "activationCommands": {},
-  "engines": {
-    "atom": ">=1.0.2"
-  },
   "consumedServices": {
     "linter": {
       "versions": {

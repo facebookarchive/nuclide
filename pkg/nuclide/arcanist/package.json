@@ -31,8 +31,5 @@
         "0.1.0": "provideBusySignal"
       }
     }
-  },
-  "engines": {
-    "atom": ">=1.0.3"
   }
 }
