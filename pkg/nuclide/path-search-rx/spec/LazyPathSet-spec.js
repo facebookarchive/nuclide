@@ -58,4 +58,43 @@ describe('LazyPathSet', () => {
       'xyz',
     ]));
   });
+
+  it('returns matching results', () => {
+    const pathSet = new LazyPathSet({paths: PATHS_FIXTURE});
+    waitsForPromise(async () => {
+      let results = await pathSet.doQuery('foo').toArray().toPromise();
+      expect(results.map(result => result.value)).toEqual([
+        'foo/a',
+        'foo/b',
+        'foo/bar/baz',
+        'foo/bar/b',
+      ]);
+
+      results = await pathSet.doQuery('bar').toArray().toPromise();
+      expect(results.map(result => result.value)).toEqual([
+        'foo/bar/baz',
+        'foo/bar/b',
+      ]);
+
+      results = await pathSet.doQuery('foo bar').toArray().toPromise();
+      expect(results.map(result => result.value)).toEqual([
+        'foo/bar/baz',
+        'foo/bar/b',
+        'foo/a',
+        'foo/b',
+      ]);
+
+      results = await pathSet.doQuery('bar foo').toArray().toPromise();
+      expect(results.map(result => result.value)).toEqual([
+        'foo/bar/baz',
+        'foo/bar/b',
+        'foo/a',
+        'foo/b',
+      ]);
+
+      results = await pathSet.doQuery('nothingwillmatchthisquery').toArray().toPromise();
+      expect(results.map(result => result.value)).toEqual([]);
+    });
+  });
+
 });

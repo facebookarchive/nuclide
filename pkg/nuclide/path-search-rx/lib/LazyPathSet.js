@@ -9,6 +9,9 @@
  * the root directory of this source tree.
  */
 
+import type {QueryScore} from './QueryScore';
+import {enumerateAllCombinations, intersectMany} from './pathSetLogic';
+import {Observable} from 'rx';
 type Path = string;
 type PathSegment = string;
 type PathSet = Set<Path>;
@@ -16,6 +19,18 @@ type PathSetIndex = {
   segments: Map<PathSegment, PathSet>,
   filenames: Map<PathSegment, PathSet>,
 };
+
+const MAX_RESULTS_COUNT = 25;
+
+function findIn(query: string, corpus: Iterator<string>): Array<string> {
+  const results = [];
+  for (const str of corpus) {
+    if (str.indexOf(query) !== -1) {
+      results.push(str);
+    }
+  }
+  return results;
+}
 
 const SPLIT_CHARS = /[\/\s]/;
 const ONLY_NON_ALPHANUMERIC_CHARS = /^[\W]*$/;
@@ -25,6 +40,10 @@ function splitFilePath(path: string): {last: PathSegment; paths: Array<PathSegme
     last: split.pop(),
     paths: split,
   };
+}
+
+function splitQuery(query: string): Array<string> {
+  return query.split(SPLIT_CHARS).filter(segment => !segment.match(ONLY_NON_ALPHANUMERIC_CHARS));
 }
 
 export default class LazyPathSet {
@@ -72,4 +91,80 @@ export default class LazyPathSet {
       filenames,
     };
   }
+
+  doQuery(query: string): Observable<QueryScore> {
+    const results: Map<Path, QueryScore> = new Map();
+
+    const querySegmentsToMatch: Set<PathSegment> = new Set(splitQuery(query.toLowerCase()));
+    const matchedQuerySegments: Map<PathSegment, Array<Set<Path>>> = new Map();
+
+    // Try to match segments directly.
+    for (const segment of querySegmentsToMatch) {
+      const candidate = this._index.segments.get(segment);
+      if (candidate != null) {
+        // It is safe to delete the current element while iterating using Iterators.
+        querySegmentsToMatch.delete(segment);
+        matchedQuerySegments.set(segment, [candidate]);
+      }
+    }
+
+    // Try to match remaining segments fuzzily.
+    for (const segment of querySegmentsToMatch) {
+      const matches = findIn(segment, this._index.segments.keys());
+      if (matches.length > 0) {
+        querySegmentsToMatch.delete(segment);
+        // TODO consider the remaining matchedSegments
+        matchedQuerySegments.set(
+          segment,
+          matches.map(
+            match => this._index.segments.get(match) || new Set()
+          )
+        );
+      }
+    }
+
+    if (matchedQuerySegments.size > 0) {//TODO fix this `if`
+      const pathSets: Array<Set<Path>> = [];
+      for (const matchedSegments of matchedQuerySegments.values()) {
+        // TODO consider the remaining matchedSegments
+        pathSets.push(matchedSegments[0]);
+      }
+      // Smaller candidate sets are likely more entropic, so consider them first.
+      pathSets.sort((s1, s2) => s1.size - s2.size);
+      const setsToIntersect = enumerateAllCombinations(pathSets);
+
+      const unmatchedREs = [];
+      for (const unmatchedSegment of querySegmentsToMatch) {
+        unmatchedREs.push(new RegExp(unmatchedSegment.split('').join('.*?'), 'i'));
+      }
+
+      for (const combination of setsToIntersect) {
+        const intersectionOfMatchedSegments = intersectMany(combination);
+        for (const potentialMatch of intersectionOfMatchedSegments) {
+
+          if (
+            !results.has(potentialMatch) &&
+            (unmatchedREs.length === 0 || unmatchedREs.every(re => re.test(potentialMatch)))
+          ) {
+            results.set(
+              potentialMatch,
+              {
+                value: potentialMatch,
+                score: 0,
+              }
+            );
+          }
+          if (results.size >= MAX_RESULTS_COUNT) {
+            break;
+          }
+        }
+        if (results.size >= MAX_RESULTS_COUNT) {
+          break;
+        }
+      }
+    }
+
+    return Observable.from(results.values());// TODO stream results as they appear.
+  }
+
 }
