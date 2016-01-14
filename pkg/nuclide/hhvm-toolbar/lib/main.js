@@ -48,14 +48,23 @@ class Activation {
   }
 
   consumeToolBar(getToolBar: (group: string) => Object): void {
-    const toolBar = getToolBar('nuclide-hhvm-toolbar');
-    toolBar.addButton({
-      icon: 'hammer',
+    const React = require('react-for-atom');
+    const HhvmIcon = require('./HhvmIcon');
+    const {Disposable} = require('atom');
+    const toolBar = getToolBar('nuclide-buck-toolbar');
+    const toolBarButton = toolBar.addButton({
       callback: 'nuclide-hhvm-toolbar:toggle',
       tooltip: 'Toggle HHVM Toolbar',
-      iconset: 'ion',
       priority: 500,
-    });
+    })[0];
+    const container = document.createElement('div');
+    container.className = 'hhvm-toolbar-icon-container';
+    toolBarButton.appendChild(container);
+    React.render(<HhvmIcon />, container);
+    this._disposables.add(
+      new Disposable(() => { toolBar.removeItems(); }),
+      new Disposable(() => { React.unmountComponentAtNode(container); }),
+    );
   }
 
   _createToolbar() {
