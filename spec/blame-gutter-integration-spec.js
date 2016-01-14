@@ -17,7 +17,7 @@ import {
 } from '../pkg/nuclide/integration-test-helpers';
 import path from 'path';
 
-describe('Blame gutter integration test', () => {
+xdescribe('Blame gutter integration test', () => {
   it('renders the blame gutter', () => {
     let textEditorView: HTMLElement = (null : any);
     let blameGutter: HTMLElement = (null : any);
