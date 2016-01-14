@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,25 +8,26 @@
  * the root directory of this source tree.
  */
 
-const QuickSelectionDispatcher = require('./QuickSelectionDispatcher');
-const {ActionType} = QuickSelectionDispatcher;
+var QuickSelectionDispatcher = require('./QuickSelectionDispatcher');
+var ActionType = QuickSelectionDispatcher.ActionType;
 
-const QuickSelectionActions = {
+var QuickSelectionActions = {
 
-  query(query: string): void {
+  query: function query(_query) {
     QuickSelectionDispatcher.getInstance().dispatch({
       actionType: ActionType.QUERY,
-      query,
+      query: _query
     });
   },
 
-  changeActiveProvider(providerName: string): void {
+  changeActiveProvider: function changeActiveProvider(providerName) {
     QuickSelectionDispatcher.getInstance().dispatch({
       actionType: ActionType.ACTIVE_PROVIDER_CHANGED,
-      providerName,
+      providerName: providerName
     });
-  },
+  }
 
 };
 
 module.exports = QuickSelectionActions;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIlF1aWNrU2VsZWN0aW9uQWN0aW9ucy5qcyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7O0FBV0EsSUFBTSx3QkFBd0IsR0FBRyxPQUFPLENBQUMsNEJBQTRCLENBQUMsQ0FBQztJQUNoRSxVQUFVLEdBQUksd0JBQXdCLENBQXRDLFVBQVU7O0FBRWpCLElBQU0scUJBQXFCLEdBQUc7O0FBRTVCLE9BQUssRUFBQSxlQUFDLE1BQWEsRUFBUTtBQUN6Qiw0QkFBd0IsQ0FBQyxXQUFXLEVBQUUsQ0FBQyxRQUFRLENBQUM7QUFDOUMsZ0JBQVUsRUFBRSxVQUFVLENBQUMsS0FBSztBQUM1QixXQUFLLEVBQUwsTUFBSztLQUNOLENBQUMsQ0FBQztHQUNKOztBQUVELHNCQUFvQixFQUFBLDhCQUFDLFlBQW9CLEVBQVE7QUFDL0MsNEJBQXdCLENBQUMsV0FBVyxFQUFFLENBQUMsUUFBUSxDQUFDO0FBQzlDLGdCQUFVLEVBQUUsVUFBVSxDQUFDLHVCQUF1QjtBQUM5QyxrQkFBWSxFQUFaLFlBQVk7S0FDYixDQUFDLENBQUM7R0FDSjs7Q0FFRixDQUFDOztBQUVGLE1BQU0sQ0FBQyxPQUFPLEdBQUcscUJBQXFCLENBQUMiLCJmaWxlIjoiUXVpY2tTZWxlY3Rpb25BY3Rpb25zLmpzIiwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBiYWJlbCc7XG4vKiBAZmxvdyAqL1xuXG4vKlxuICogQ29weXJpZ2h0IChjKSAyMDE1LXByZXNlbnQsIEZhY2Vib29rLCBJbmMuXG4gKiBBbGwgcmlnaHRzIHJlc2VydmVkLlxuICpcbiAqIFRoaXMgc291cmNlIGNvZGUgaXMgbGljZW5zZWQgdW5kZXIgdGhlIGxpY2Vuc2UgZm91bmQgaW4gdGhlIExJQ0VOU0UgZmlsZSBpblxuICogdGhlIHJvb3QgZGlyZWN0b3J5IG9mIHRoaXMgc291cmNlIHRyZWUuXG4gKi9cblxuY29uc3QgUXVpY2tTZWxlY3Rpb25EaXNwYXRjaGVyID0gcmVxdWlyZSgnLi9RdWlja1NlbGVjdGlvbkRpc3BhdGNoZXInKTtcbmNvbnN0IHtBY3Rpb25UeXBlfSA9IFF1aWNrU2VsZWN0aW9uRGlzcGF0Y2hlcjtcblxuY29uc3QgUXVpY2tTZWxlY3Rpb25BY3Rpb25zID0ge1xuXG4gIHF1ZXJ5KHF1ZXJ5OiBzdHJpbmcpOiB2b2lkIHtcbiAgICBRdWlja1NlbGVjdGlvbkRpc3BhdGNoZXIuZ2V0SW5zdGFuY2UoKS5kaXNwYXRjaCh7XG4gICAgICBhY3Rpb25UeXBlOiBBY3Rpb25UeXBlLlFVRVJZLFxuICAgICAgcXVlcnksXG4gICAgfSk7XG4gIH0sXG5cbiAgY2hhbmdlQWN0aXZlUHJvdmlkZXIocHJvdmlkZXJOYW1lOiBzdHJpbmcpOiB2b2lkIHtcbiAgICBRdWlja1NlbGVjdGlvbkRpc3BhdGNoZXIuZ2V0SW5zdGFuY2UoKS5kaXNwYXRjaCh7XG4gICAgICBhY3Rpb25UeXBlOiBBY3Rpb25UeXBlLkFDVElWRV9QUk9WSURFUl9DSEFOR0VELFxuICAgICAgcHJvdmlkZXJOYW1lLFxuICAgIH0pO1xuICB9LFxuXG59O1xuXG5tb2R1bGUuZXhwb3J0cyA9IFF1aWNrU2VsZWN0aW9uQWN0aW9ucztcbiJdfQ==

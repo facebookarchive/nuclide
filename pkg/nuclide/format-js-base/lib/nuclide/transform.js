@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,18 +8,13 @@
  * the root directory of this source tree.
  */
 
-import type {SourceOptions} from '../options/SourceOptions';
-import type {TransformKey} from '../types/transforms';
-
-function transform(source: string, options: SourceOptions): string {
-  const blacklist: Set<TransformKey> = options.blacklist || new Set();
+function transform(source, options) {
+  var blacklist = options.blacklist || new Set();
   if (blacklist.has('nuclide.fixHeader')) {
     return source;
   }
-  return source.replace(
-    '\'use babel\';\n\n/* @flow */',
-    '\'use babel\';\n/* @flow */'
-  );
+  return source.replace('\'use babel\';\n\n/* @flow */', '\'use babel\';\n/* @flow */');
 }
 
 module.exports = transform;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInRyYW5zZm9ybS5qcyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7O0FBY0EsU0FBUyxTQUFTLENBQUMsTUFBYyxFQUFFLE9BQXNCLEVBQVU7QUFDakUsTUFBTSxTQUE0QixHQUFHLE9BQU8sQ0FBQyxTQUFTLElBQUksSUFBSSxHQUFHLEVBQUUsQ0FBQztBQUNwRSxNQUFJLFNBQVMsQ0FBQyxHQUFHLENBQUMsbUJBQW1CLENBQUMsRUFBRTtBQUN0QyxXQUFPLE1BQU0sQ0FBQztHQUNmO0FBQ0QsU0FBTyxNQUFNLENBQUMsT0FBTyxDQUNuQiwrQkFBK0IsRUFDL0IsNkJBQTZCLENBQzlCLENBQUM7Q0FDSDs7QUFFRCxNQUFNLENBQUMsT0FBTyxHQUFHLFNBQVMsQ0FBQyIsImZpbGUiOiJ0cmFuc2Zvcm0uanMiLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIGJhYmVsJztcbi8qIEBmbG93ICovXG5cbi8qXG4gKiBDb3B5cmlnaHQgKGMpIDIwMTUtcHJlc2VudCwgRmFjZWJvb2ssIEluYy5cbiAqIEFsbCByaWdodHMgcmVzZXJ2ZWQuXG4gKlxuICogVGhpcyBzb3VyY2UgY29kZSBpcyBsaWNlbnNlZCB1bmRlciB0aGUgbGljZW5zZSBmb3VuZCBpbiB0aGUgTElDRU5TRSBmaWxlIGluXG4gKiB0aGUgcm9vdCBkaXJlY3Rvcnkgb2YgdGhpcyBzb3VyY2UgdHJlZS5cbiAqL1xuXG5pbXBvcnQgdHlwZSB7U291cmNlT3B0aW9uc30gZnJvbSAnLi4vb3B0aW9ucy9Tb3VyY2VPcHRpb25zJztcbmltcG9ydCB0eXBlIHtUcmFuc2Zvcm1LZXl9IGZyb20gJy4uL3R5cGVzL3RyYW5zZm9ybXMnO1xuXG5mdW5jdGlvbiB0cmFuc2Zvcm0oc291cmNlOiBzdHJpbmcsIG9wdGlvbnM6IFNvdXJjZU9wdGlvbnMpOiBzdHJpbmcge1xuICBjb25zdCBibGFja2xpc3Q6IFNldDxUcmFuc2Zvcm1LZXk+ID0gb3B0aW9ucy5ibGFja2xpc3QgfHwgbmV3IFNldCgpO1xuICBpZiAoYmxhY2tsaXN0LmhhcygnbnVjbGlkZS5maXhIZWFkZXInKSkge1xuICAgIHJldHVybiBzb3VyY2U7XG4gIH1cbiAgcmV0dXJuIHNvdXJjZS5yZXBsYWNlKFxuICAgICdcXCd1c2UgYmFiZWxcXCc7XFxuXFxuLyogQGZsb3cgKi8nLFxuICAgICdcXCd1c2UgYmFiZWxcXCc7XFxuLyogQGZsb3cgKi8nXG4gICk7XG59XG5cbm1vZHVsZS5leHBvcnRzID0gdHJhbnNmb3JtO1xuIl19

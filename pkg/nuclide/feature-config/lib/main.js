@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,10 +8,10 @@
  * the root directory of this source tree.
  */
 
-const NUCLIDE_CONFIG_SCOPE = 'nuclide.';
+var NUCLIDE_CONFIG_SCOPE = 'nuclide.';
 
-function formatKeyPath(keyPath: string): string {
-  return `${NUCLIDE_CONFIG_SCOPE}${keyPath}`;
+function formatKeyPath(keyPath) {
+  return '' + NUCLIDE_CONFIG_SCOPE + keyPath;
 }
 
 module.exports = {
@@ -21,24 +20,17 @@ module.exports = {
    * `atom.config.get` exception `keyPath` is not optional. To get the entire config object, use
    * `atom.config.get`.
    */
-  get(
-    keyPath: string,
-    options?: {
-      excludeSources?: Array<string>;
-      sources?: Array<string>;
-      scope?: Object;
-    }
-  ): mixed {
-    return atom.config.get(formatKeyPath(keyPath), ...Array.prototype.slice.call(arguments, 1));
+  get: function get(keyPath, options) {
+    var _atom$config;
+
+    return (_atom$config = atom.config).get.apply(_atom$config, [formatKeyPath(keyPath)].concat(_toConsumableArray(Array.prototype.slice.call(arguments, 1))));
   },
 
   /*
    * Gets the schema of a setting for a Nuclide feature key. Takes and returns the same types as
    * `atom.config.getSchema`.
    */
-  getSchema(
-    keyPath: string
-  ): atom$ConfigSchema {
+  getSchema: function getSchema(keyPath) {
     return atom.config.getSchema(formatKeyPath(keyPath));
   },
 
@@ -46,69 +38,50 @@ module.exports = {
    * Takes and returns the same types as `atom.config.observe` except `keyPath` is not optional.
    * To observe changes on the entire config, use `atom.config.observe`.
    */
-  observe(
-    keyPath: string,
-    optionsOrCallback: (Object | (value: any) => void),
-    callback?: (value: any) => void
-  ): atom$Disposable {
-    return atom.config.observe(formatKeyPath(keyPath), ...Array.prototype.slice.call(arguments, 1));
+  observe: function observe(keyPath, optionsOrCallback, callback) {
+    var _atom$config2;
+
+    return (_atom$config2 = atom.config).observe.apply(_atom$config2, [formatKeyPath(keyPath)].concat(_toConsumableArray(Array.prototype.slice.call(arguments, 1))));
   },
 
   /*
    * Takes and returns the same types as `atom.config.onDidChange` except `keyPath` is not optional.
    * To listen to changes on all key paths, use `atom.config.onDidChange`.
    */
-  onDidChange(
-    keyPath: string,
-    optionsOrCallback: (Object | (event: Object) => void),
-    callback?: (event: Object) => void
-  ): atom$Disposable {
-    return atom.config.onDidChange(
-      formatKeyPath(keyPath),
-      ...Array.prototype.slice.call(arguments, 1)
-    );
+  onDidChange: function onDidChange(keyPath, optionsOrCallback, callback) {
+    var _atom$config3;
+
+    return (_atom$config3 = atom.config).onDidChange.apply(_atom$config3, [formatKeyPath(keyPath)].concat(_toConsumableArray(Array.prototype.slice.call(arguments, 1))));
   },
 
   /*
    * Sets the value of a setting for a Nuclide feature key. Takes and returns the same types as
    * `atom.config.set`.
    */
-  set(
-    keyPath: string,
-    value: ?mixed,
-    options?: {
-      scopeSelector?: string,
-      source?: string,
-    }
-  ): boolean {
-    return atom.config.set(formatKeyPath(keyPath), ...Array.prototype.slice.call(arguments, 1));
+  set: function set(keyPath, value, options) {
+    var _atom$config4;
+
+    return (_atom$config4 = atom.config).set.apply(_atom$config4, [formatKeyPath(keyPath)].concat(_toConsumableArray(Array.prototype.slice.call(arguments, 1))));
   },
 
   /*
    * Sets the schema of a setting for a Nuclide feature key. Takes and returns the same types as
    * `atom.config.setSchema`.
    */
-  setSchema(
-    keyPath: string,
-    schema: Object
-  ): void {
-    return atom.config.setSchema(
-      formatKeyPath(keyPath),
-      ...Array.prototype.slice.call(arguments, 1)
-    );
+  setSchema: function setSchema(keyPath, schema) {
+    var _atom$config5;
+
+    return (_atom$config5 = atom.config).setSchema.apply(_atom$config5, [formatKeyPath(keyPath)].concat(_toConsumableArray(Array.prototype.slice.call(arguments, 1))));
   },
 
   /*
    * Restores a setting for a Nuclide feature key to its default value. Takes and returns the same
    * types as `atom.config.set`.
    */
-  unset(
-    keyPath: string,
-    options?: {
-      scopeSelector?: string,
-      source?: string,
-    }
-  ): void {
-    return atom.config.unset(formatKeyPath(keyPath), ...Array.prototype.slice.call(arguments, 1));
-  },
+  unset: function unset(keyPath, options) {
+    var _atom$config6;
+
+    return (_atom$config6 = atom.config).unset.apply(_atom$config6, [formatKeyPath(keyPath)].concat(_toConsumableArray(Array.prototype.slice.call(arguments, 1))));
+  }
 };
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIm1haW4uanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7OztBQVdBLElBQU0sb0JBQW9CLEdBQUcsVUFBVSxDQUFDOztBQUV4QyxTQUFTLGFBQWEsQ0FBQyxPQUFlLEVBQVU7QUFDOUMsY0FBVSxvQkFBb0IsR0FBRyxPQUFPLENBQUc7Q0FDNUM7O0FBRUQsTUFBTSxDQUFDLE9BQU8sR0FBRzs7Ozs7O0FBTWYsS0FBRyxFQUFBLGFBQ0QsT0FBZSxFQUNmLE9BSUMsRUFDTTs7O0FBQ1AsV0FBTyxnQkFBQSxJQUFJLENBQUMsTUFBTSxFQUFDLEdBQUcsTUFBQSxnQkFBQyxhQUFhLENBQUMsT0FBTyxDQUFDLDRCQUFLLEtBQUssQ0FBQyxTQUFTLENBQUMsS0FBSyxDQUFDLElBQUksQ0FBQyxTQUFTLEVBQUUsQ0FBQyxDQUFDLEdBQUMsQ0FBQztHQUM3Rjs7Ozs7O0FBTUQsV0FBUyxFQUFBLG1CQUNQLE9BQWUsRUFDSTtBQUNuQixXQUFPLElBQUksQ0FBQyxNQUFNLENBQUMsU0FBUyxDQUFDLGFBQWEsQ0FBQyxPQUFPLENBQUMsQ0FBQyxDQUFDO0dBQ3REOzs7Ozs7QUFNRCxTQUFPLEVBQUEsaUJBQ0wsT0FBZSxFQUNmLGlCQUFrRCxFQUNsRCxRQUErQixFQUNkOzs7QUFDakIsV0FBTyxpQkFBQSxJQUFJLENBQUMsTUFBTSxFQUFDLE9BQU8sTUFBQSxpQkFBQyxhQUFhLENBQUMsT0FBTyxDQUFDLDRCQUFLLEtBQUssQ0FBQyxTQUFTLENBQUMsS0FBSyxDQUFDLElBQUksQ0FBQyxTQUFTLEVBQUUsQ0FBQyxDQUFDLEdBQUMsQ0FBQztHQUNqRzs7Ozs7O0FBTUQsYUFBVyxFQUFBLHFCQUNULE9BQWUsRUFDZixpQkFBcUQsRUFDckQsUUFBa0MsRUFDakI7OztBQUNqQixXQUFPLGlCQUFBLElBQUksQ0FBQyxNQUFNLEVBQUMsV0FBVyxNQUFBLGlCQUM1QixhQUFhLENBQUMsT0FBTyxDQUFDLDRCQUNuQixLQUFLLENBQUMsU0FBUyxDQUFDLEtBQUssQ0FBQyxJQUFJLENBQUMsU0FBUyxFQUFFLENBQUMsQ0FBQyxHQUM1QyxDQUFDO0dBQ0g7Ozs7OztBQU1ELEtBQUcsRUFBQSxhQUNELE9BQWUsRUFDZixLQUFhLEVBQ2IsT0FHQyxFQUNROzs7QUFDVCxXQUFPLGlCQUFBLElBQUksQ0FBQyxNQUFNLEVBQUMsR0FBRyxNQUFBLGlCQUFDLGFBQWEsQ0FBQyxPQUFPLENBQUMsNEJBQUssS0FBSyxDQUFDLFNBQVMsQ0FBQyxLQUFLLENBQUMsSUFBSSxDQUFDLFNBQVMsRUFBRSxDQUFDLENBQUMsR0FBQyxDQUFDO0dBQzdGOzs7Ozs7QUFNRCxXQUFTLEVBQUEsbUJBQ1AsT0FBZSxFQUNmLE1BQWMsRUFDUjs7O0FBQ04sV0FBTyxpQkFBQSxJQUFJLENBQUMsTUFBTSxFQUFDLFNBQVMsTUFBQSxpQkFDMUIsYUFBYSxDQUFDLE9BQU8sQ0FBQyw0QkFDbkIsS0FBSyxDQUFDLFNBQVMsQ0FBQyxLQUFLLENBQUMsSUFBSSxDQUFDLFNBQVMsRUFBRSxDQUFDLENBQUMsR0FDNUMsQ0FBQztHQUNIOzs7Ozs7QUFNRCxPQUFLLEVBQUEsZUFDSCxPQUFlLEVBQ2YsT0FHQyxFQUNLOzs7QUFDTixXQUFPLGlCQUFBLElBQUksQ0FBQyxNQUFNLEVBQUMsS0FBSyxNQUFBLGlCQUFDLGFBQWEsQ0FBQyxPQUFPLENBQUMsNEJBQUssS0FBSyxDQUFDLFNBQVMsQ0FBQyxLQUFLLENBQUMsSUFBSSxDQUFDLFNBQVMsRUFBRSxDQUFDLENBQUMsR0FBQyxDQUFDO0dBQy9GO0NBQ0YsQ0FBQyIsImZpbGUiOiJtYWluLmpzIiwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBiYWJlbCc7XG4vKiBAZmxvdyAqL1xuXG4vKlxuICogQ29weXJpZ2h0IChjKSAyMDE1LXByZXNlbnQsIEZhY2Vib29rLCBJbmMuXG4gKiBBbGwgcmlnaHRzIHJlc2VydmVkLlxuICpcbiAqIFRoaXMgc291cmNlIGNvZGUgaXMgbGljZW5zZWQgdW5kZXIgdGhlIGxpY2Vuc2UgZm91bmQgaW4gdGhlIExJQ0VOU0UgZmlsZSBpblxuICogdGhlIHJvb3QgZGlyZWN0b3J5IG9mIHRoaXMgc291cmNlIHRyZWUuXG4gKi9cblxuY29uc3QgTlVDTElERV9DT05GSUdfU0NPUEUgPSAnbnVjbGlkZS4nO1xuXG5mdW5jdGlvbiBmb3JtYXRLZXlQYXRoKGtleVBhdGg6IHN0cmluZyk6IHN0cmluZyB7XG4gIHJldHVybiBgJHtOVUNMSURFX0NPTkZJR19TQ09QRX0ke2tleVBhdGh9YDtcbn1cblxubW9kdWxlLmV4cG9ydHMgPSB7XG4gIC8qXG4gICAqIFJldHVybnMgdGhlIHZhbHVlIG9mIGEgc2V0dGluZyBmb3IgYSBOdWNsaWRlIGZlYXR1cmUga2V5LiBUYWtlcyBhbmQgcmV0dXJucyB0aGUgc2FtZSB0eXBlcyBhc1xuICAgKiBgYXRvbS5jb25maWcuZ2V0YCBleGNlcHRpb24gYGtleVBhdGhgIGlzIG5vdCBvcHRpb25hbC4gVG8gZ2V0IHRoZSBlbnRpcmUgY29uZmlnIG9iamVjdCwgdXNlXG4gICAqIGBhdG9tLmNvbmZpZy5nZXRgLlxuICAgKi9cbiAgZ2V0KFxuICAgIGtleVBhdGg6IHN0cmluZyxcbiAgICBvcHRpb25zPzoge1xuICAgICAgZXhjbHVkZVNvdXJjZXM/OiBBcnJheTxzdHJpbmc+O1xuICAgICAgc291cmNlcz86IEFycmF5PHN0cmluZz47XG4gICAgICBzY29wZT86IE9iamVjdDtcbiAgICB9XG4gICk6IG1peGVkIHtcbiAgICByZXR1cm4gYXRvbS5jb25maWcuZ2V0KGZvcm1hdEtleVBhdGgoa2V5UGF0aCksIC4uLkFycmF5LnByb3RvdHlwZS5zbGljZS5jYWxsKGFyZ3VtZW50cywgMSkpO1xuICB9LFxuXG4gIC8qXG4gICAqIEdldHMgdGhlIHNjaGVtYSBvZiBhIHNldHRpbmcgZm9yIGEgTnVjbGlkZSBmZWF0dXJlIGtleS4gVGFrZXMgYW5kIHJldHVybnMgdGhlIHNhbWUgdHlwZXMgYXNcbiAgICogYGF0b20uY29uZmlnLmdldFNjaGVtYWAuXG4gICAqL1xuICBnZXRTY2hlbWEoXG4gICAga2V5UGF0aDogc3RyaW5nXG4gICk6IGF0b20kQ29uZmlnU2NoZW1hIHtcbiAgICByZXR1cm4gYXRvbS5jb25maWcuZ2V0U2NoZW1hKGZvcm1hdEtleVBhdGgoa2V5UGF0aCkpO1xuICB9LFxuXG4gIC8qXG4gICAqIFRha2VzIGFuZCByZXR1cm5zIHRoZSBzYW1lIHR5cGVzIGFzIGBhdG9tLmNvbmZpZy5vYnNlcnZlYCBleGNlcHQgYGtleVBhdGhgIGlzIG5vdCBvcHRpb25hbC5cbiAgICogVG8gb2JzZXJ2ZSBjaGFuZ2VzIG9uIHRoZSBlbnRpcmUgY29uZmlnLCB1c2UgYGF0b20uY29uZmlnLm9ic2VydmVgLlxuICAgKi9cbiAgb2JzZXJ2ZShcbiAgICBrZXlQYXRoOiBzdHJpbmcsXG4gICAgb3B0aW9uc09yQ2FsbGJhY2s6IChPYmplY3QgfCAodmFsdWU6IGFueSkgPT4gdm9pZCksXG4gICAgY2FsbGJhY2s/OiAodmFsdWU6IGFueSkgPT4gdm9pZFxuICApOiBhdG9tJERpc3Bvc2FibGUge1xuICAgIHJldHVybiBhdG9tLmNvbmZpZy5vYnNlcnZlKGZvcm1hdEtleVBhdGgoa2V5UGF0aCksIC4uLkFycmF5LnByb3RvdHlwZS5zbGljZS5jYWxsKGFyZ3VtZW50cywgMSkpO1xuICB9LFxuXG4gIC8qXG4gICAqIFRha2VzIGFuZCByZXR1cm5zIHRoZSBzYW1lIHR5cGVzIGFzIGBhdG9tLmNvbmZpZy5vbkRpZENoYW5nZWAgZXhjZXB0IGBrZXlQYXRoYCBpcyBub3Qgb3B0aW9uYWwuXG4gICAqIFRvIGxpc3RlbiB0byBjaGFuZ2VzIG9uIGFsbCBrZXkgcGF0aHMsIHVzZSBgYXRvbS5jb25maWcub25EaWRDaGFuZ2VgLlxuICAgKi9cbiAgb25EaWRDaGFuZ2UoXG4gICAga2V5UGF0aDogc3RyaW5nLFxuICAgIG9wdGlvbnNPckNhbGxiYWNrOiAoT2JqZWN0IHwgKGV2ZW50OiBPYmplY3QpID0+IHZvaWQpLFxuICAgIGNhbGxiYWNrPzogKGV2ZW50OiBPYmplY3QpID0+IHZvaWRcbiAgKTogYXRvbSREaXNwb3NhYmxlIHtcbiAgICByZXR1cm4gYXRvbS5jb25maWcub25EaWRDaGFuZ2UoXG4gICAgICBmb3JtYXRLZXlQYXRoKGtleVBhdGgpLFxuICAgICAgLi4uQXJyYXkucHJvdG90eXBlLnNsaWNlLmNhbGwoYXJndW1lbnRzLCAxKVxuICAgICk7XG4gIH0sXG5cbiAgLypcbiAgICogU2V0cyB0aGUgdmFsdWUgb2YgYSBzZXR0aW5nIGZvciBhIE51Y2xpZGUgZmVhdHVyZSBrZXkuIFRha2VzIGFuZCByZXR1cm5zIHRoZSBzYW1lIHR5cGVzIGFzXG4gICAqIGBhdG9tLmNvbmZpZy5zZXRgLlxuICAgKi9cbiAgc2V0KFxuICAgIGtleVBhdGg6IHN0cmluZyxcbiAgICB2YWx1ZTogP21peGVkLFxuICAgIG9wdGlvbnM/OiB7XG4gICAgICBzY29wZVNlbGVjdG9yPzogc3RyaW5nLFxuICAgICAgc291cmNlPzogc3RyaW5nLFxuICAgIH1cbiAgKTogYm9vbGVhbiB7XG4gICAgcmV0dXJuIGF0b20uY29uZmlnLnNldChmb3JtYXRLZXlQYXRoKGtleVBhdGgpLCAuLi5BcnJheS5wcm90b3R5cGUuc2xpY2UuY2FsbChhcmd1bWVudHMsIDEpKTtcbiAgfSxcblxuICAvKlxuICAgKiBTZXRzIHRoZSBzY2hlbWEgb2YgYSBzZXR0aW5nIGZvciBhIE51Y2xpZGUgZmVhdHVyZSBrZXkuIFRha2VzIGFuZCByZXR1cm5zIHRoZSBzYW1lIHR5cGVzIGFzXG4gICAqIGBhdG9tLmNvbmZpZy5zZXRTY2hlbWFgLlxuICAgKi9cbiAgc2V0U2NoZW1hKFxuICAgIGtleVBhdGg6IHN0cmluZyxcbiAgICBzY2hlbWE6IE9iamVjdFxuICApOiB2b2lkIHtcbiAgICByZXR1cm4gYXRvbS5jb25maWcuc2V0U2NoZW1hKFxuICAgICAgZm9ybWF0S2V5UGF0aChrZXlQYXRoKSxcbiAgICAgIC4uLkFycmF5LnByb3RvdHlwZS5zbGljZS5jYWxsKGFyZ3VtZW50cywgMSlcbiAgICApO1xuICB9LFxuXG4gIC8qXG4gICAqIFJlc3RvcmVzIGEgc2V0dGluZyBmb3IgYSBOdWNsaWRlIGZlYXR1cmUga2V5IHRvIGl0cyBkZWZhdWx0IHZhbHVlLiBUYWtlcyBhbmQgcmV0dXJucyB0aGUgc2FtZVxuICAgKiB0eXBlcyBhcyBgYXRvbS5jb25maWcuc2V0YC5cbiAgICovXG4gIHVuc2V0KFxuICAgIGtleVBhdGg6IHN0cmluZyxcbiAgICBvcHRpb25zPzoge1xuICAgICAgc2NvcGVTZWxlY3Rvcj86IHN0cmluZyxcbiAgICAgIHNvdXJjZT86IHN0cmluZyxcbiAgICB9XG4gICk6IHZvaWQge1xuICAgIHJldHVybiBhdG9tLmNvbmZpZy51bnNldChmb3JtYXRLZXlQYXRoKGtleVBhdGgpLCAuLi5BcnJheS5wcm90b3R5cGUuc2xpY2UuY2FsbChhcmd1bWVudHMsIDEpKTtcbiAgfSxcbn07XG4iXX0=

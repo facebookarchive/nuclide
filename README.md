@@ -4,23 +4,25 @@
 to provide IDE-like functionality for a variety of programming languages and
 technologies.
 
----
+## Installing Nuclide v0.111.0
 
-**Under heavy refactor... check back very soon.**
+Nuclide v0.111.0 is a single Atom package. To install it, you can either search for the
+['nuclide' Atom package](https://atom.io/packages/nuclide) in *Atom > Packages > Install* or install
+it from the command line with `apm`. While this release focuses on moving to a single package, it
+does include fixes and improvements that you can find in the
+[CHANGELOG.md](https://github.com/facebook/nuclide/blob/v0.111.0/CHANGELOG.md).
 
-We're in the process of "unifying" Nuclide under a single package. This greatly improves performance, and makes installing easier. Because we sync our internal code almost immediately with GitHub, you'll witness this transformation as it happens. :)
+```bash
+$ apm install nuclide
+```
 
-If you're feeling intrepid and want to try it out - at your own risk - then:
+#### Installing Nuclide Server v0.111.0
 
-1. Remove any previously installed Nuclide packages.
+Nuclide's server has moved into the ['nuclide' NPM package](https://www.npmjs.com/package/nuclide).
+The server is required only if you intend to edit remote files from within Atom+Nuclide, and it
+should be installed on the host where the remote files live. We recommend installing the server as
+a global module using NPM's `-g` flag so its binaries are available in '/usr/local/bin'.
 
-2. Install the new stuff.
-
-  ```sh
-  $ git clone https://github.com/facebook/nuclide.git
-  $ cd nuclide
-  $ npm install
-  $ apm link
-  ```
-
-3. Open Atom – now there is only one Nuclide package.
+```bash
+$ npm install -g nuclide
+```

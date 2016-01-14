@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,15 +8,13 @@
  * the root directory of this source tree.
  */
 
-function goToLocation(
-    file: string,
-    line: number,
-    column: number): Promise {
+function goToLocation(file, line, column) {
   return atom.workspace.open(file, {
     initialLine: line,
     initialColumn: column,
-    searchAllPanes: true,
+    searchAllPanes: true
   });
 }
 
 module.exports = goToLocation;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbImdvLXRvLWxvY2F0aW9uLmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7QUFXQSxTQUFTLFlBQVksQ0FDakIsSUFBWSxFQUNaLElBQVksRUFDWixNQUFjLEVBQVc7QUFDM0IsU0FBTyxJQUFJLENBQUMsU0FBUyxDQUFDLElBQUksQ0FBQyxJQUFJLEVBQUU7QUFDL0IsZUFBVyxFQUFFLElBQUk7QUFDakIsaUJBQWEsRUFBRSxNQUFNO0FBQ3JCLGtCQUFjLEVBQUUsSUFBSTtHQUNyQixDQUFDLENBQUM7Q0FDSjs7QUFFRCxNQUFNLENBQUMsT0FBTyxHQUFHLFlBQVksQ0FBQyIsImZpbGUiOiJnby10by1sb2NhdGlvbi5qcyIsInNvdXJjZXNDb250ZW50IjpbIid1c2UgYmFiZWwnO1xuLyogQGZsb3cgKi9cblxuLypcbiAqIENvcHlyaWdodCAoYykgMjAxNS1wcmVzZW50LCBGYWNlYm9vaywgSW5jLlxuICogQWxsIHJpZ2h0cyByZXNlcnZlZC5cbiAqXG4gKiBUaGlzIHNvdXJjZSBjb2RlIGlzIGxpY2Vuc2VkIHVuZGVyIHRoZSBsaWNlbnNlIGZvdW5kIGluIHRoZSBMSUNFTlNFIGZpbGUgaW5cbiAqIHRoZSByb290IGRpcmVjdG9yeSBvZiB0aGlzIHNvdXJjZSB0cmVlLlxuICovXG5cbmZ1bmN0aW9uIGdvVG9Mb2NhdGlvbihcbiAgICBmaWxlOiBzdHJpbmcsXG4gICAgbGluZTogbnVtYmVyLFxuICAgIGNvbHVtbjogbnVtYmVyKTogUHJvbWlzZSB7XG4gIHJldHVybiBhdG9tLndvcmtzcGFjZS5vcGVuKGZpbGUsIHtcbiAgICBpbml0aWFsTGluZTogbGluZSxcbiAgICBpbml0aWFsQ29sdW1uOiBjb2x1bW4sXG4gICAgc2VhcmNoQWxsUGFuZXM6IHRydWUsXG4gIH0pO1xufVxuXG5tb2R1bGUuZXhwb3J0cyA9IGdvVG9Mb2NhdGlvbjtcbiJdfQ==

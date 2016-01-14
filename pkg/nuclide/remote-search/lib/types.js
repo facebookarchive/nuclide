@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -8,19 +9,4 @@
  * This source code is licensed under the license found in the LICENSE file in
  * the root directory of this source tree.
  */
-
-import type {NuclideUri} from '../../remote-uri';
-
-export type search$RangeIndexes = Array<Array<number>>;
-
-export type search$Match = {
-  lineText: string;
-  lineTextOffset: number;
-  matchText: string;
-  range: search$RangeIndexes;
-};
-
-export type search$FileResult = {
-  filePath: NuclideUri;
-  matches: Array<search$Match>;
-}
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IiIsImZpbGUiOiJ0eXBlcy5qcyIsInNvdXJjZXNDb250ZW50IjpbXX0=

@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,40 +8,23 @@
  * the root directory of this source tree.
  */
 
-import type {IfStatement} from 'ast-types-flow';
-import type {Lines, Print} from '../../types/common';
+var markers = require('../../constants/markers');
+var wrapStatement = require('../../wrappers/simple/wrapStatement');
 
-const markers = require('../../constants/markers');
-const wrapStatement = require('../../wrappers/simple/wrapStatement');
+function printIfStatement(print, node) {
+  var wrap = function wrap(x) {
+    return wrapStatement(print, node, x);
+  };
 
-function printIfStatement(print: Print, node: IfStatement): Lines {
-  const wrap = x => wrapStatement(print, node, x);
-
-  let parts = [
-    markers.hardBreak,
-    'if (',
-    markers.openScope,
-    markers.scopeIndent,
-    markers.scopeBreak,
-    print(node.test),
-    markers.scopeBreak,
-    markers.scopeDedent,
-    markers.closeScope,
-    ') ',
-    print(node.consequent),
-  ];
+  var parts = [markers.hardBreak, 'if (', markers.openScope, markers.scopeIndent, markers.scopeBreak, print(node.test), markers.scopeBreak, markers.scopeDedent, markers.closeScope, ') ', print(node.consequent)];
 
   if (node.alternate) {
 
-    parts = parts.concat([
-      markers.noBreak,
-      ' else ',
-      markers.noBreak,
-      print(node.alternate),
-    ]);
+    parts = parts.concat([markers.noBreak, ' else ', markers.noBreak, print(node.alternate)]);
   }
 
   return wrap(parts);
 }
 
 module.exports = printIfStatement;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInByaW50SWZTdGF0ZW1lbnQuanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7OztBQWNBLElBQU0sT0FBTyxHQUFHLE9BQU8sQ0FBQyx5QkFBeUIsQ0FBQyxDQUFDO0FBQ25ELElBQU0sYUFBYSxHQUFHLE9BQU8sQ0FBQyxxQ0FBcUMsQ0FBQyxDQUFDOztBQUVyRSxTQUFTLGdCQUFnQixDQUFDLEtBQVksRUFBRSxJQUFpQixFQUFTO0FBQ2hFLE1BQU0sSUFBSSxHQUFHLFNBQVAsSUFBSSxDQUFHLENBQUM7V0FBSSxhQUFhLENBQUMsS0FBSyxFQUFFLElBQUksRUFBRSxDQUFDLENBQUM7R0FBQSxDQUFDOztBQUVoRCxNQUFJLEtBQUssR0FBRyxDQUNWLE9BQU8sQ0FBQyxTQUFTLEVBQ2pCLE1BQU0sRUFDTixPQUFPLENBQUMsU0FBUyxFQUNqQixPQUFPLENBQUMsV0FBVyxFQUNuQixPQUFPLENBQUMsVUFBVSxFQUNsQixLQUFLLENBQUMsSUFBSSxDQUFDLElBQUksQ0FBQyxFQUNoQixPQUFPLENBQUMsVUFBVSxFQUNsQixPQUFPLENBQUMsV0FBVyxFQUNuQixPQUFPLENBQUMsVUFBVSxFQUNsQixJQUFJLEVBQ0osS0FBSyxDQUFDLElBQUksQ0FBQyxVQUFVLENBQUMsQ0FDdkIsQ0FBQzs7QUFFRixNQUFJLElBQUksQ0FBQyxTQUFTLEVBQUU7O0FBRWxCLFNBQUssR0FBRyxLQUFLLENBQUMsTUFBTSxDQUFDLENBQ25CLE9BQU8sQ0FBQyxPQUFPLEVBQ2YsUUFBUSxFQUNSLE9BQU8sQ0FBQyxPQUFPLEVBQ2YsS0FBSyxDQUFDLElBQUksQ0FBQyxTQUFTLENBQUMsQ0FDdEIsQ0FBQyxDQUFDO0dBQ0o7O0FBRUQsU0FBTyxJQUFJLENBQUMsS0FBSyxDQUFDLENBQUM7Q0FDcEI7O0FBRUQsTUFBTSxDQUFDLE9BQU8sR0FBRyxnQkFBZ0IsQ0FBQyIsImZpbGUiOiJwcmludElmU3RhdGVtZW50LmpzIiwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBiYWJlbCc7XG4vKiBAZmxvdyAqL1xuXG4vKlxuICogQ29weXJpZ2h0IChjKSAyMDE1LXByZXNlbnQsIEZhY2Vib29rLCBJbmMuXG4gKiBBbGwgcmlnaHRzIHJlc2VydmVkLlxuICpcbiAqIFRoaXMgc291cmNlIGNvZGUgaXMgbGljZW5zZWQgdW5kZXIgdGhlIGxpY2Vuc2UgZm91bmQgaW4gdGhlIExJQ0VOU0UgZmlsZSBpblxuICogdGhlIHJvb3QgZGlyZWN0b3J5IG9mIHRoaXMgc291cmNlIHRyZWUuXG4gKi9cblxuaW1wb3J0IHR5cGUge0lmU3RhdGVtZW50fSBmcm9tICdhc3QtdHlwZXMtZmxvdyc7XG5pbXBvcnQgdHlwZSB7TGluZXMsIFByaW50fSBmcm9tICcuLi8uLi90eXBlcy9jb21tb24nO1xuXG5jb25zdCBtYXJrZXJzID0gcmVxdWlyZSgnLi4vLi4vY29uc3RhbnRzL21hcmtlcnMnKTtcbmNvbnN0IHdyYXBTdGF0ZW1lbnQgPSByZXF1aXJlKCcuLi8uLi93cmFwcGVycy9zaW1wbGUvd3JhcFN0YXRlbWVudCcpO1xuXG5mdW5jdGlvbiBwcmludElmU3RhdGVtZW50KHByaW50OiBQcmludCwgbm9kZTogSWZTdGF0ZW1lbnQpOiBMaW5lcyB7XG4gIGNvbnN0IHdyYXAgPSB4ID0+IHdyYXBTdGF0ZW1lbnQocHJpbnQsIG5vZGUsIHgpO1xuXG4gIGxldCBwYXJ0cyA9IFtcbiAgICBtYXJrZXJzLmhhcmRCcmVhayxcbiAgICAnaWYgKCcsXG4gICAgbWFya2Vycy5vcGVuU2NvcGUsXG4gICAgbWFya2Vycy5zY29wZUluZGVudCxcbiAgICBtYXJrZXJzLnNjb3BlQnJlYWssXG4gICAgcHJpbnQobm9kZS50ZXN0KSxcbiAgICBtYXJrZXJzLnNjb3BlQnJlYWssXG4gICAgbWFya2Vycy5zY29wZURlZGVudCxcbiAgICBtYXJrZXJzLmNsb3NlU2NvcGUsXG4gICAgJykgJyxcbiAgICBwcmludChub2RlLmNvbnNlcXVlbnQpLFxuICBdO1xuXG4gIGlmIChub2RlLmFsdGVybmF0ZSkge1xuXG4gICAgcGFydHMgPSBwYXJ0cy5jb25jYXQoW1xuICAgICAgbWFya2Vycy5ub0JyZWFrLFxuICAgICAgJyBlbHNlICcsXG4gICAgICBtYXJrZXJzLm5vQnJlYWssXG4gICAgICBwcmludChub2RlLmFsdGVybmF0ZSksXG4gICAgXSk7XG4gIH1cblxuICByZXR1cm4gd3JhcChwYXJ0cyk7XG59XG5cbm1vZHVsZS5leHBvcnRzID0gcHJpbnRJZlN0YXRlbWVudDtcbiJdfQ==
