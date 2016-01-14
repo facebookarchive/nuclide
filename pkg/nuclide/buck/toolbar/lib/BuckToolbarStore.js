@@ -57,6 +57,7 @@ class BuckToolbarStore {
   _buildProgress: number;
   _buildRuleType: string;
   _simulator: ?string;
+  _isPanelVisible: boolean;
   _isReactNativeApp: boolean;
   _isReactNativeServerMode: boolean;
   _buckProcessOutputStore: ?ProcessOutputStoreType;
@@ -78,9 +79,10 @@ class BuckToolbarStore {
 
   _initState(initialState: InitialState) {
     this._isBuilding = false;
-    this._buildTarget = '';
+    this._buildTarget = initialState.buildTarget || '';
     this._buildProgress = 0;
     this._buildRuleType = '';
+    this._isPanelVisible = initialState.isPanelVisible || false;
     this._isReactNativeApp = false;
     this._isReactNativeServerMode = initialState.isReactNativeServerMode || false;
   }
@@ -109,6 +111,14 @@ class BuckToolbarStore {
           break;
         case BuckToolbarActions.ActionType.DEBUG:
           this._doDebug();
+          break;
+        case BuckToolbarActions.ActionType.TOGGLE_PANEL_VISIBILITY:
+          this._isPanelVisible = !this._isPanelVisible;
+          this.emitChange();
+          break;
+        case BuckToolbarActions.ActionType.UPDATE_PANEL_VISIBILITY:
+          this._isPanelVisible = action.isPanelVisible;
+          this.emitChange();
           break;
       }
     });
@@ -143,6 +153,10 @@ class BuckToolbarStore {
 
   getBuildProgress(): number {
     return this._buildProgress;
+  }
+
+  isPanelVisible(): boolean {
+    return this._isPanelVisible;
   }
 
   isReactNativeApp(): boolean {

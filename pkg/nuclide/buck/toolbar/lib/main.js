@@ -9,4 +9,28 @@
  * the root directory of this source tree.
  */
 
-module.exports = require('../../../atom-npm').load(__dirname, 'BuckToolbar');
+import invariant from 'assert';
+
+let activation: ?Object = null;
+
+export function activate(state: ?Object) {
+  invariant(activation == null);
+  const Activation = require('./Activation');
+  activation = new Activation(state);
+}
+
+export function deactivate(): void {
+  invariant(activation);
+  activation.dispose();
+  activation = null;
+}
+
+export function consumeToolBar(getToolBar: (group: string) => Object): void {
+  invariant(activation);
+  activation.consumeToolBar(getToolBar);
+}
+
+export function serialize(): Object {
+  invariant(activation);
+  return activation.serialize();
+}

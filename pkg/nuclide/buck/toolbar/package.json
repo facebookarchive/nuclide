@@ -4,8 +4,15 @@
   "main": "./lib/main",
   "version": "0.0.0",
   "nuclide": {
-    "packageType": "Node",
+    "packageType": "Atom",
     "testRunner": "apm"
+  },
+  "consumedServices": {
+    "tool-bar": {
+      "versions": {
+        "^0.1.0": "consumeToolBar"
+      }
+    }
   },
   "description": "Provides a toolbar in Nuclide to build projects with Buck"
 }

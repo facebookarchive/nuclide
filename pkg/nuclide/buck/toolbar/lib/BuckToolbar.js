@@ -12,8 +12,6 @@
 const AtomComboBox = require('../../../ui/atom-combo-box');
 const {CompositeDisposable} = require('atom');
 const React = require('react-for-atom');
-const {Dispatcher} = require('flux');
-const {PropTypes} = React;
 const SimulatorDropdown = require('./SimulatorDropdown');
 const BuckToolbarActions = require('./BuckToolbarActions');
 const BuckToolbarStore = require('./BuckToolbarStore');
@@ -51,25 +49,18 @@ class BuckToolbar extends React.Component {
     this._build = this._build.bind(this);
     this._run = this._run.bind(this);
     this._debug = this._debug.bind(this);
-
-    const dispatcher = new Dispatcher();
-    this._buckToolbarActions = new BuckToolbarActions(dispatcher);
-    this._buckToolbarStore = new BuckToolbarStore(dispatcher, {
-      isReactNativeServerMode: props.initialIsReactNativeServerMode || false,
-    });
+    this._buckToolbarActions = this.props.actions;
+    this._buckToolbarStore = this.props.store;
 
     this._onActivePaneItemChanged(atom.workspace.getActivePaneItem());
-    this._handleBuildTargetChange(this.props.initialBuildTarget);
 
     this._disposables = new CompositeDisposable();
     this._disposables.add(this._buckToolbarStore);
     this._disposables.add(onWorkspaceDidStopChangingActivePaneItem(
       this._onActivePaneItemChanged.bind(this)));
 
-    this._disposables.add(this._buckToolbarStore.subscribe(() => {
-      this.props.onIsReactNativeServerModeChange(this._buckToolbarStore.isReactNativeServerMode());
-      this.forceUpdate();
-    }));
+    // Re-render whenever the data in the store changes.
+    this._disposables.add(this._buckToolbarStore.subscribe(() => { this.forceUpdate(); }));
   }
 
   componentWillUnmount() {
@@ -111,13 +102,16 @@ class BuckToolbar extends React.Component {
         />;
     }
     return (
-      <div className="buck-toolbar block">
+      <div
+        className="buck-toolbar padded tool-panel"
+        hidden={!buckToolbarStore.isPanelVisible()}
+      >
         <AtomComboBox
           className="inline-block"
           ref="buildTarget"
           requestOptions={this._requestOptions}
           size="sm"
-          initialTextInput={this.props.initialBuildTarget}
+          initialTextInput={this.props.store.getBuildTarget()}
           onChange={this._handleBuildTargetChange}
           placeholderText="Buck build target"
         />
@@ -139,7 +133,6 @@ class BuckToolbar extends React.Component {
   }
 
   _handleBuildTargetChange(value: string) {
-    this.props.onBuildTargetChange(value);
     this._buckToolbarActions.updateBuildTarget(value);
   }
 
@@ -165,10 +158,8 @@ class BuckToolbar extends React.Component {
 }
 
 BuckToolbar.propTypes = {
-  initialBuildTarget: PropTypes.string,
-  onBuildTargetChange: PropTypes.func.isRequired,
-  initialIsReactNativeServerMode: PropTypes.bool,
-  onIsReactNativeServerModeChange: PropTypes.func.isRequired,
+  store: React.PropTypes.instanceOf(BuckToolbarStore).isRequired,
+  actions: React.PropTypes.instanceOf(BuckToolbarActions).isRequired,
 };
 
 module.exports = BuckToolbar;
