@@ -9,10 +9,8 @@
  * the root directory of this source tree.
  */
 
-const BuckToolbar = require('../../buck/toolbar');
 const React = require('react-for-atom');
 const {Disposable} = require('atom');
-const {PropTypes} = React;
 const ProjectStore = require('./ProjectStore');
 
 class NuclideToolbar extends React.Component {
@@ -57,17 +55,6 @@ class NuclideToolbar extends React.Component {
           />
         </div>
       );
-    } else if (this.state.projectType === 'Buck') {
-      return (
-        <div className="tool-panel padded nuclide-toolbar">
-          <BuckToolbar
-            initialBuildTarget={this.props.initialBuildTarget}
-            onBuildTargetChange={this.props.onBuildTargetChange}
-            initialIsReactNativeServerMode={this.props.initialIsReactNativeServerMode}
-            onIsReactNativeServerModeChange={this.props.onIsReactNativeServerModeChange}
-          />
-        </div>
-      );
     } else {
       // Hide toolbar.
       return null;
@@ -76,10 +63,6 @@ class NuclideToolbar extends React.Component {
 }
 
 NuclideToolbar.propTypes = {
-  initialBuildTarget: PropTypes.string.isRequired,
-  onBuildTargetChange: PropTypes.func.isRequired,
-  initialIsReactNativeServerMode: PropTypes.bool.isRequired,
-  onIsReactNativeServerModeChange: PropTypes.func.isRequired,
   projectStore: React.PropTypes.instanceOf(ProjectStore).isRequired,
 };
 

@@ -15,17 +15,11 @@ import type ProjectStoreType from './ProjectStore';
 class Activation {
 
   _disposables: atom$CompositeDisposable;
-  _initialBuildTarget: string;
-  _initialIsReactNativeServerMode: boolean;
   _item: ?HTMLElement;
   _panel: Object;
   _projectStore: ProjectStoreType;
   _nuclideToolbar: ?NuclideToolbarType;
   _state: Object;
-
-  // Functions to be used as callbacks.
-  _handleBuildTargetChange: Function;
-  _handleIsReactNativeServerModeChanged: Function;
 
   constructor(state: ?Object) {
     const {CompositeDisposable} = require('atom');
@@ -35,15 +29,7 @@ class Activation {
       panelVisible: state != null && state.panelVisible != null ? state.panelVisible : true,
     };
 
-    // Bind functions used as callbacks to ensure correct context when called.
-    this._handleBuildTargetChange = this._handleBuildTargetChange.bind(this);
-    this._handleIsReactNativeServerModeChanged =
-      this._handleIsReactNativeServerModeChanged.bind(this);
-
     this._disposables = new CompositeDisposable();
-    this._initialBuildTarget = (state && state.initialBuildTarget) || '';
-    this._initialIsReactNativeServerMode =
-      (state && state.initialIsReactNativeServerMode) || false;
     this._projectStore = new ProjectStore();
     this._addCommands();
     this._createToolbar();
@@ -67,10 +53,6 @@ class Activation {
 
     this._nuclideToolbar = React.render(
       <NuclideToolbar
-        initialIsReactNativeServerMode={this._initialIsReactNativeServerMode}
-        onIsReactNativeServerModeChange={this._handleIsReactNativeServerModeChanged}
-        initialBuildTarget={this._initialBuildTarget}
-        onBuildTargetChange={this._handleBuildTargetChange}
         projectStore={this._projectStore}
       />,
       item
@@ -86,14 +68,6 @@ class Activation {
     this._disposables.add(new Disposable(() => panel.destroy()));
     this._panel = panel;
     this._updatePanelVisibility();
-  }
-
-  _handleBuildTargetChange(buildTarget: string) {
-    this._initialBuildTarget = buildTarget;
-  }
-
-  _handleIsReactNativeServerModeChanged(isReactNativeServerMode: boolean) {
-    this._initialIsReactNativeServerMode = isReactNativeServerMode;
   }
 
   /**
@@ -114,8 +88,6 @@ class Activation {
 
   serialize(): Object {
     return {
-      initialIsReactNativeServerMode: this._initialIsReactNativeServerMode,
-      initialBuildTarget: this._initialBuildTarget,
       panelVisible: this._state.panelVisible,
     };
   }
@@ -154,7 +126,7 @@ module.exports = {
     toolBar.addButton({
       icon: 'hammer',
       callback: 'nuclide-toolbar:toggle',
-      tooltip: 'Toggle Build Toolbar',
+      tooltip: 'Toggle HHVM Toolbar',
       iconset: 'ion',
       priority: 500,
     });
