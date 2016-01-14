@@ -10,6 +10,7 @@
  */
 
 import {CompositeDisposable, Disposable} from 'atom';
+import BuckIcon from './BuckIcon';
 import BuckToolbar from './BuckToolbar';
 import BuckToolbarActions from './BuckToolbarActions';
 import BuckToolbarStore from './BuckToolbarStore';
@@ -64,15 +65,19 @@ class Activation {
 
   consumeToolBar(getToolBar: (group: string) => Object): void {
     const toolBar = getToolBar('nuclide-buck-toolbar');
-    toolBar.addButton({
-      icon: 'hammer',
+    const toolBarButton = toolBar.addButton({
       callback: 'nuclide-buck-toolbar:toggle',
       tooltip: 'Toggle Buck Toolbar',
       iconset: 'ion',
       priority: 500,
-    });
+    })[0];
+    const container = document.createElement('div');
+    container.className = 'buck-toolbar-icon-container';
+    toolBarButton.appendChild(container);
+    React.render(<BuckIcon />, container);
     this._disposables.add(
       new Disposable(() => { toolBar.removeItems(); }),
+      new Disposable(() => { React.unmountComponentAtNode(container); }),
     );
   }
 
