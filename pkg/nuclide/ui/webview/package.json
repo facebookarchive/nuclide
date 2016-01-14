@@ -1,0 +1,11 @@
+{
+  "name": "nuclide-ui-webview",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "Provide a React interface to Electron's webview tag",
+  "nuclide": {
+    "packageType": "Node",
+    "testRunner": "apm"
+  }
+}
