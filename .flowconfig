@@ -2,7 +2,7 @@
 
 [ignore]
 # second-level dependencies
-.*/node_modules/[^/]+/node_modules/.*
+.*/node_modules/.+/node_modules/.*
 # becomes first-level dependency with npm3
 .*/node_modules/fbjs/flow/.*
 .*/node_modules/babel-types/.*
