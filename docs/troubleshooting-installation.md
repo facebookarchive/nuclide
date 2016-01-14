@@ -12,9 +12,9 @@ If you switch Atom versions, or if you `npm install nuclide` instead of `apm ins
 From the Command Palette, search for "Incompatible Packages: view", or
 click the "bug" icon in the status bar. Then select "Rebuild Packages", and restart Atom.
 
-![incompatible packages view](images/incompatible-packages-view.png)
-
 _If you can't find "Incompatible Packages", make sure that the `incompatible-packages` package is enabled via `Settings` `->` `Packages`._
+
+![incompatible packages view](images/incompatible-packages-view.png)
 
 #### (hard) Fixing via the CLI
 
