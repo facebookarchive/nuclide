@@ -46,14 +46,12 @@ class NuclideToolbar extends React.Component {
 
   render(): ?ReactElement {
     if (this.state.projectType === 'Hhvm') {
-      const HhvmToolbar = require('../../hhvm-toolbar');
+      const HhvmToolbar = require('./HhvmToolbar');
       return (
-        <div className="tool-panel padded nuclide-toolbar">
-          <HhvmToolbar
-            ref="hhvmToolbar"
-            targetFilePath={this.state.currentFilePath}
-          />
-        </div>
+        <HhvmToolbar
+          ref="hhvmToolbar"
+          targetFilePath={this.state.currentFilePath}
+        />
       );
     } else {
       // Hide toolbar.

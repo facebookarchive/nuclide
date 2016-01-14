@@ -1,8 +1,0 @@
-@import "ui-variables";
-
-// Beat the `z-index: 5` of `.tab-bar` so descendants of this element will stack on top of the tab
-// bar. With an equal z-index the tab-bar will win because it is lower in document order.
-atom-panel.top {
-  border-bottom: 1px solid @pane-item-border-color;
-  z-index: 10;
-}

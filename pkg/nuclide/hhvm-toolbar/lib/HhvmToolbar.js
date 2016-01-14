@@ -71,7 +71,7 @@ class HhvmToolbar extends React.Component {
     const debugTarget = this._getDebugTarget(this.state.selectedIndex, this.props.targetFilePath);
     const isDebugScript = this._isDebugScript(this.state.selectedIndex);
     return (
-      <div className="buck-toolbar block">
+      <div className="buck-toolbar block padded">
         <NuclideDropdown
           className="inline-block"
           menuItems={this._getMenuItems()}
