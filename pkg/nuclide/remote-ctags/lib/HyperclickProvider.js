@@ -56,39 +56,43 @@ export class HyperclickProvider {
       return null;
     }
 
-    const tags = await service.findTags(text, {limit: LIMIT});
-    if (!tags.length) {
-      return null;
-    }
-
-    if (tags.length === 1) {
-      return {range, callback: createCallback(tags[0])};
-    }
-
-    // Favor tags in the nearest directory by sorting by common prefix length.
-    tags.sort(({file: a}, {file: b}) => {
-      const len = commonPrefixLength(path, b) - commonPrefixLength(path, a);
-      if (len === 0) {
-        return a.localeCompare(b);
+    try {
+      const tags = await service.findTags(text, {limit: LIMIT});
+      if (!tags.length) {
+        return null;
       }
-      return len;
-    });
 
-    const tagsDir = dirname(await service.getTagsPath());
-    return {
-      range,
-      callback: tags.map(tag => {
-        const relpath = relative(tagsDir, tag.file);
-        let title = `${tag.name} (${relpath})`;
-        if (tag.kind != null && CTAGS_KIND_NAMES[tag.kind] != null) {
-          title = CTAGS_KIND_NAMES[tag.kind] + ' ' + title;
+      if (tags.length === 1) {
+        return {range, callback: createCallback(tags[0])};
+      }
+
+      // Favor tags in the nearest directory by sorting by common prefix length.
+      tags.sort(({file: a}, {file: b}) => {
+        const len = commonPrefixLength(path, b) - commonPrefixLength(path, a);
+        if (len === 0) {
+          return a.localeCompare(b);
         }
-        return {
-          title,
-          callback: createCallback(tag),
-        };
-      }),
-    };
+        return len;
+      });
+
+      const tagsDir = dirname(await service.getTagsPath());
+      return {
+        range,
+        callback: tags.map(tag => {
+          const relpath = relative(tagsDir, tag.file);
+          let title = `${tag.name} (${relpath})`;
+          if (tag.kind != null && CTAGS_KIND_NAMES[tag.kind] != null) {
+            title = CTAGS_KIND_NAMES[tag.kind] + ' ' + title;
+          }
+          return {
+            title,
+            callback: createCallback(tag),
+          };
+        }),
+      };
+    } finally {
+      service.dispose();
+    }
   }
 
 }

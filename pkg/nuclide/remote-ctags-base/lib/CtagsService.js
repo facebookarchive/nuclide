@@ -76,6 +76,10 @@ export class CtagsService {
       });
     });
   }
+
+  dispose(): void {
+    // nothing here
+  }
 }
 
 export async function getCtagsService(path: NuclideUri): Promise<?CtagsService> {

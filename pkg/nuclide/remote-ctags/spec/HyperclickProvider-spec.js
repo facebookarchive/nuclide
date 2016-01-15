@@ -49,6 +49,7 @@ describe('HyperclickProvider', () => {
               async findTags(path, query) {
                 return findTagsResult;
               },
+              dispose() {},
             };
           },
         };
