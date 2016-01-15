@@ -13,12 +13,20 @@ import type {NuclideUri} from '../../remote-uri';
 
 import {fsPromise, object} from '../../commons';
 import {BuckUtils} from '../../buck/base/lib/BuckUtils';
+import LRUCache from 'lru-cache';
 import {Observable} from 'rx';
 import ClangFlagsManager from './ClangFlagsManager';
 import ClangServer from './ClangServer';
 
 const clangFlagsManager = new ClangFlagsManager(new BuckUtils());
-const clangServers: Map<NuclideUri, ClangServer> = new Map();
+
+// Limit the number of active Clang servers.
+const clangServers = new LRUCache({
+  max: 10,
+  dispose(key: NuclideUri, val: ClangServer) {
+    val.dispose();
+  },
+});
 
 /**
  * Spawn one Clang server per translation unit (i.e. source file).
@@ -225,12 +233,12 @@ export function reset(src: NuclideUri): void {
   const server = getClangServer(src);
   if (server != null) {
     server.dispose();
-    clangServers.delete(src);
+    clangServers.del(src);
   }
   clangFlagsManager.reset();
 }
 
 export function dispose(): void {
   clangServers.forEach(server => server.dispose());
-  clangServers.clear();
+  clangServers.reset();
 }
