@@ -128,7 +128,7 @@ class Hyperclick {
       if (provider.getSuggestion) {
         const getSuggestion = provider.getSuggestion.bind(provider);
         return () => trackOperationTiming(
-            provider.providerName + '.getSuggestion',
+            getProviderName(provider) + '.getSuggestion',
             () => getSuggestion(textEditor, position));
       } else if (provider.getSuggestionForWord) {
         const getSuggestionForWord = provider.getSuggestionForWord.bind(provider);
@@ -136,7 +136,7 @@ class Hyperclick {
           const wordRegExp = provider.wordRegExp || defaultWordRegExp;
           const {text, range} = getWordTextAndRange(textEditor, position, wordRegExp);
           return trackOperationTiming(
-            provider.providerName + '.getSuggestionForWord',
+            getProviderName(provider) + '.getSuggestionForWord',
             () => getSuggestionForWord(textEditor, text, range));
         };
       }
@@ -147,6 +147,15 @@ class Hyperclick {
 
   showSuggestionList(textEditor: TextEditor, suggestion: HyperclickSuggestion): void {
     this._suggestionList.show(textEditor, suggestion);
+  }
+}
+
+/** Returns the provider name or a default value */
+function getProviderName(provider: HyperclickProvider): string {
+  if (provider.providerName != null) {
+    return provider.providerName;
+  } else {
+    return 'unnamed-hyperclick-provider';
   }
 }
 

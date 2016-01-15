@@ -30,7 +30,7 @@ export type HyperclickProvider = {
   priority?: number;
 
   // Must be unique. Used for analytics.
-  providerName: string;
+  providerName?: string;
 };
 
 export type HyperclickSuggestion = {

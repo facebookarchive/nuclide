@@ -29,9 +29,6 @@ module.exports = {
   },
 
   consumeProvider(provider: HyperclickProvider | Array<HyperclickProvider>): ?Disposable {
-    if (typeof provider.providerName !== 'string') {
-      throw new Error('Missing "providerName" property for hyperclick provider.');
-    }
     if (hyperclick != null) {
       hyperclick.consumeProvider(provider);
       return new Disposable(() => {
