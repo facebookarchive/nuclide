@@ -42,11 +42,19 @@ def get_declaration_location_and_spelling(translation_unit, absolute_path, line,
     # and `column` property.
     extent = cursor.extent
 
+    type = None
+    try:
+        type = cursor.type and cursor.type.spelling
+    except:
+        logger.warn('Was not able to get cursor type')
+        pass
+
     return {
         'file': loc.file.name,
         'line': loc.line,
         'column': loc.column,
         'spelling': cursor.spelling,
+        'type': type,
         'extent': {
             'start': {'line': extent.start.line, 'column': extent.start.column},
             'end': {'line': extent.end.line, 'column': extent.end.column},

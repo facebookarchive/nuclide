@@ -134,6 +134,7 @@ export type ClangDeclarationResult = {
   line: number;
   column: number;
   spelling: ?string;
+  type: ?string;
   extent: ClangCursorExtent;
 };
 

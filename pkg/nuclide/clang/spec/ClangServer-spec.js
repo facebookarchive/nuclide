@@ -60,9 +60,11 @@ describe('ClangServer', () => {
       });
       invariant(response);
       expect(response.reqid).toBe('2');
-      const {line, column} = response.locationAndSpelling;
+      const {line, column, spelling, type} = response.locationAndSpelling;
       expect(line).toBe(0);
       expect(column).toBe(5);
+      expect(spelling).toBe('f');
+      expect(type).toBe('void ()');
     });
   });
 
