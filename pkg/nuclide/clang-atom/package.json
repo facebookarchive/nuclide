@@ -24,6 +24,11 @@
         "0.1.0": "provideDiagnostics"
       }
     },
+    "nuclide-type-hint.provider": {
+      "versions": {
+        "0.0.0": "createTypeHintProvider"
+      }
+    },
     "nuclide-busy-signal": {
       "versions": {
         "0.1.0": "provideBusySignal"

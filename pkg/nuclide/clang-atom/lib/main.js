@@ -10,6 +10,7 @@
  */
 
 import type {HyperclickProvider} from '../../hyperclick-interfaces';
+import type {TypeHintProvider as TypeHintProviderType} from '../../type-hint-interfaces';
 import type {
   BusySignalProviderBase as BusySignalProviderBaseType,
 } from '../../busy-signal-provider-base';
@@ -17,7 +18,8 @@ import type {DiagnosticProvider} from '../../diagnostics/base';
 import type ClangDiagnosticsProvider from './ClangDiagnosticsProvider';
 
 import {CompositeDisposable} from 'atom';
-import {trackOperationTiming} from '../../analytics';
+import {array} from '../../commons';
+import {GRAMMAR_SET, PACKAGE_NAME} from './constants';
 
 let busySignalProvider: ?BusySignalProviderBaseType = null;
 let diagnosticProvider: ?ClangDiagnosticsProvider = null;
@@ -76,30 +78,28 @@ module.exports = {
   createAutocompleteProvider(): atom$AutocompleteProvider {
     const {AutocompleteProvider} = require('./AutocompleteProvider');
     const autocompleteProvider = new AutocompleteProvider();
+    const getSuggestions = autocompleteProvider.getAutocompleteSuggestions
+      .bind(autocompleteProvider);
 
     return {
       selector: '.source.objc, .source.objcpp, .source.cpp, .source.c',
       inclusionPriority: 1,
       suggestionPriority: 5,  // Higher than the snippets provider.
-
-      getSuggestions(
-        request: atom$AutocompleteRequest
-      ): Promise<Array<atom$AutocompleteSuggestion>> {
-        return trackOperationTiming('nuclide-clang-atom:getAutocompleteSuggestions',
-          () => autocompleteProvider.getAutocompleteSuggestions(request));
-      },
+      getSuggestions,
     };
   },
 
-  deactivate() {
-    if (diagnosticProvider != null) {
-      diagnosticProvider.dispose();
-      diagnosticProvider = null;
-    }
-    if (subscriptions != null) {
-      subscriptions.dispose();
-      subscriptions = null;
-    }
+  createTypeHintProvider(): TypeHintProviderType {
+    const {TypeHintProvider} = require('./TypeHintProvider');
+    const typeHintProvider = new TypeHintProvider();
+    const typeHint = typeHintProvider.typeHint.bind(typeHintProvider);
+
+    return {
+      inclusionPriority: 1,
+      providerName: PACKAGE_NAME,
+      selector: array.from(GRAMMAR_SET).join(', '),
+      typeHint,
+    };
   },
 
   getHyperclickProvider(): HyperclickProvider {
@@ -112,5 +112,16 @@ module.exports = {
 
   provideDiagnostics(): DiagnosticProvider {
     return getDiagnosticsProvider();
+  },
+
+  deactivate() {
+    if (diagnosticProvider != null) {
+      diagnosticProvider.dispose();
+      diagnosticProvider = null;
+    }
+    if (subscriptions != null) {
+      subscriptions.dispose();
+      subscriptions = null;
+    }
   },
 };

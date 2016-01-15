@@ -28,7 +28,7 @@ export type TypeHint = {
 };
 
 export type TypeHintProvider = {
-  typeHint(editor: atom$TextEditor, bufferPosition: atom$Point): Promise<TypeHint>;
+  typeHint(editor: atom$TextEditor, bufferPosition: atom$Point): Promise<?TypeHint>;
   inclusionPriority: number;
   selector: string;
   // A unique name for the provider to be used for analytics. It is recommended that it be the name

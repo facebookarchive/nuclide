@@ -13,7 +13,7 @@ import type {HyperclickSuggestion} from '../../hyperclick-interfaces';
 
 import invariant from 'assert';
 import {goToLocation} from '../../atom-helpers';
-import {GRAMMAR_SET} from './constants';
+import {GRAMMAR_SET, PACKAGE_NAME} from './constants';
 import {getDeclaration} from './libclang';
 import findWholeRangeOfSymbol from './findWholeRangeOfSymbol';
 
@@ -23,7 +23,7 @@ module.exports = {
   // It is important that this has a lower priority than the handler from
   // fb-diffs-and-tasks.
   priority: 10,
-  providerName: 'nuclide-clang-atom',
+  providerName: PACKAGE_NAME,
   wordRegExp: IDENTIFIER_REGEXP,
   async getSuggestionForWord(
     textEditor: TextEditor,

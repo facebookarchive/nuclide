@@ -15,3 +15,5 @@ export const GRAMMAR_SET = new Set([
   'source.objc',
   'source.objcpp',
 ]);
+
+export const PACKAGE_NAME = 'nuclide-clang-atom';
