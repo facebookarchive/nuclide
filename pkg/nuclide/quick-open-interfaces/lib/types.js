@@ -37,6 +37,9 @@ export type FileResult = {
   query?: string;
   context?: string;
   timestamp?: number;
+  // Jump to line/column if provided.
+  line?: number;
+  column?: number;
 };
 
 export type ProviderResult = {

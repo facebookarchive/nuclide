@@ -24,5 +24,9 @@ export function getHyperclickProvider(): HyperclickProviderType {
   };
 }
 
+export function getQuickOpenProvider() {
+  return require('./QuickOpenProvider');
+}
+
 export function deactivate() {
 }

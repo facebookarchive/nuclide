@@ -31,6 +31,21 @@ export const CTAGS_KIND_NAMES = {
   v: 'var',
 };
 
+export const CTAGS_KIND_ICONS = {
+  c: 'icon-code',
+  d: 'icon-quote',
+  e: 'icon-quote',
+  f: 'icon-zap',
+  F: 'icon-file-binary',
+  g: 'icon-quote',
+  m: 'icon-zap',
+  p: 'icon-zap',
+  s: 'icon-code',
+  t: 'icon-tag',
+  u: 'icon-code',
+  v: 'icon-code',
+};
+
 export async function getLineNumberForTag(tag: CtagsResult): Promise<number> {
   let {lineNumber, pattern} = tag;
   if (lineNumber) {
