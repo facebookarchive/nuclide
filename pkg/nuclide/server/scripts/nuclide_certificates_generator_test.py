@@ -22,7 +22,7 @@ class NuclideCertificatesGeneratorTest(unittest.TestCase):
     def verify_key_file(self, key_file):
         with open(key_file, "r") as f:
             text = f.read()
-            self.assertTrue('BEGIN RSA PRIVATE KEY' in text)
+            self.assertTrue('BEGIN RSA PRIVATE KEY' in text) # nolint
             self.assertTrue('END RSA PRIVATE KEY' in text)
 
     def verify_cert_file(self, cert_file):

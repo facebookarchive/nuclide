@@ -10,9 +10,11 @@
  */
 
 const fs = require('fs');
-const path = require('path');
+const invariant = require('assert');
 
-const TEST_VERSION = 'test-version';
+// Use a regex and not the "semver" module so the result here is the same
+// as from python code.
+const SEMVERISH_RE = /^(\d+)\.(\d+)\.(\d+)(?:-([a-z0-9.-]+))?$/;
 let version;
 
 /*
@@ -27,27 +29,23 @@ let version;
  * the client is ready.
  *
  * Rule number two. Every commit that breaks the backward compatibility shall
- * bump the version in version.json. This includes any client changes
+ * bump the version in package.json. This includes any client changes
  * (new feature or whatever) that do not work with the older servers.
  * It also includes server changes that break older clients.
  */
 export function getVersion(): string {
   if (!version) {
-    try {
-      // TODO: The reason we are using version.json file is for our Python
-      // server scripts to read and parse. We shall at one point rewrite our
-      // Python scripts in Node, and then we can hard code the version in code,
-      // instead of reading from the json file.
-      //
-      // Cannot use require() who counts on extension (.json) for parsing file as json.
-      const json = JSON.parse(
-        fs.readFileSync(path.resolve(__dirname, '../version.json')).toString()
-      );
-      version = json.Version.toString();
-    } catch (e) {
-      version = TEST_VERSION;
-      // No VERSION_INFO file, no version. e.g. in your development env.
-    }
+    // Don't use require() because it may be reading from the module cache.
+    // Do use require.resolve so the paths can be codemoded in the future.
+    const pkgFilename = require.resolve('../../../../package.json');
+    const pkgJson = JSON.parse(fs.readFileSync(pkgFilename));
+    const match = SEMVERISH_RE.exec(pkgJson.version);
+    invariant(match);
+    // const majorVersion = match[1];
+    const minorVersion = match[2];
+    // const patchVersion = match[3];
+    // const prereleaseVersion = match[4];
+    version = minorVersion;
   }
   return version;
 }

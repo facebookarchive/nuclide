@@ -27,7 +27,7 @@ TARGET_SCRIPT = os.path.join(WORK_DIR, 'nuclide_server_manager.py')
 class NuclideServerManagerTest(NuclideServerTestBase):
 
     def verify_key(self, text):
-        self.assertTrue('BEGIN RSA PRIVATE KEY' in text)
+        self.assertTrue('BEGIN RSA PRIVATE KEY' in text) # nolint
         self.assertTrue('END RSA PRIVATE KEY' in text)
 
     def verify_cert(self, text):
@@ -95,8 +95,8 @@ class NuclideServerManagerTest(NuclideServerTestBase):
         # Pick a random version to start with.
         version = 100
         # Generate version file for the mock.
-        with open(NuclideServerManager.version_file, 'w') as f:
-            json.dump({'Version': version}, f)
+        with open(NuclideServerManager.package_file, 'w') as f:
+            json.dump({'version': '0.%s.0' % version}, f)
 
         # Get the port from the started Nuclide server, and use it in the next step.
         port1, version1, pid1 = self.start_nuclide_server_and_verify_output(
@@ -108,8 +108,8 @@ class NuclideServerManagerTest(NuclideServerTestBase):
         if upgrade:
             # Bump up the version for upgrade.
             version += 1
-            with open(NuclideServerManager.version_file, 'w') as f:
-                json.dump({'Version': version}, f)
+            with open(NuclideServerManager.package_file, 'w') as f:
+                json.dump({'version': '0.%s.0' % version}, f)
 
         # Try to start Nuclide server again.
         port2, version2, pid2 = self.start_nuclide_server_and_verify_output(

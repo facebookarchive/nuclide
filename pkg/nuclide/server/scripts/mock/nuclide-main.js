@@ -12,10 +12,11 @@
 const https = require('https');
 const http = require('http');
 const fs = require('fs');
-const path = require('path');
 const url = require('url');
 
-let version;
+// Set the initial version by reading from the file.
+const json = JSON.parse(fs.readFileSync(require.resolve('./package.json')));
+const version = /^(\d+)\.(\d+)\.(\d+)(?:-([a-z0-9.-]+))?$/.exec(json.version)[2];
 
 function processArgs() {
   const args = process.argv.slice(2);
@@ -76,11 +77,4 @@ function handleVersion(request, response) {
   response.end();
 }
 
-// Set the initial version by reading from the file.
-try {
-  const json = JSON.parse(fs.readFileSync(path.resolve(__dirname, 'version.json'), 'utf8'));
-  version = json.Version.toString();
-} catch (e) {
-  version = 'test-version';
-}
 startServer(processArgs());

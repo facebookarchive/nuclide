@@ -10,10 +10,14 @@
  */
 
 import {get, reset} from './singleton';
+import fs from 'fs';
 import path from 'path';
 
 const SMALLEST_NUCLIDE_BUILD_NUMBER = 5394875;
 const INSTALLER_BUILD_NUMBER_KEY = '_nuclide_installer_build_number_key';
+const NUCLIDE_PACKAGE_JSON_PATH = require.resolve('../../../../package.json');
+
+const pkgJson = JSON.parse(fs.readFileSync(NUCLIDE_PACKAGE_JSON_PATH));
 
 export function isRunningInTest(): boolean {
   return process.env.NODE_ENV === 'test';
@@ -28,6 +32,16 @@ export function getAtomVersion(): string {
     throw Error('Not running in Atom/Nuclide.');
   }
   return global.atom.getVersion();
+}
+
+export function getNuclideVersion(): string {
+  return pkgJson.version;
+}
+
+export function isRunningOnDevSource(): boolean {
+  // TODO(andres): Find a safe way to figure out if we are running off source
+  // or built nuclide.
+  return false;
 }
 
 /**

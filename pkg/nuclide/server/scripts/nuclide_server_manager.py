@@ -39,6 +39,9 @@ except ImportError as e:
     HOME_FOLDER = os.path.expanduser('~')
     pass
 
+# Minor version is the server protocol version
+SEMVERISH_RE = re.compile(r'^(\d+)\.(\d+)\.(\d+)(?:-([a-z0-9.-]+))?$')
+
 # Certificates store is ~/.certs
 CERTS_DIR = os.path.join(HOME_FOLDER, '.certs')
 CERTS_EXPIRATION_DAYS = 7
@@ -50,9 +53,9 @@ configure_nuclide_logger()
 
 
 class NuclideServerManager(object):
-    version_file = os.path.join(
+    package_file = os.path.join(
         os.path.dirname(__file__),
-        '../../version/version.json')
+        '../../../../package.json')
     logger = logging.getLogger('NuclideServerManager')
 
     def __init__(self, options):
@@ -85,13 +88,17 @@ class NuclideServerManager(object):
         # Otherwise, skip version checking.
         version = None
         try:
-            with open(NuclideServerManager.version_file) as f:
-                version_json = json.load(f)
-            version = str(version_json['Version'])
+            with open(NuclideServerManager.package_file) as f:
+                package_json = json.load(f)
         except IOError as e:
-            NuclideServerManager.logger.error('No version.json. Skip version verification.')
+            NuclideServerManager.logger.error('No package.json. Skip version verification.')
         except (KeyError, ValueError) as e:
-            NuclideServerManager.logger.error('Corrupted version.json. Skip version verification.')
+            NuclideServerManager.logger.error('Corrupted package.json. Skip version verification.')
+        try:
+            match = SEMVERISH_RE.match(package_json['version'])
+            version = match.group(2)
+        except:
+            NuclideServerManager.logger.error('Bad version. Skip version verification.')
         return version
 
     def _ensure_certs_dir(self):

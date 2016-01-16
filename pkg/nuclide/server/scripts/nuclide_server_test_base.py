@@ -24,7 +24,7 @@ class NuclideServerTestBase(unittest.TestCase):
         NuclideCertificatesGenerator.openssl_cnf = write_resource_to_file('openssl.cnf', temp_dir)
         NuclideServer.script_path = write_resource_to_file('mock/nuclide-main.js', temp_dir)
         # Version file in the same directory as the mock script.
-        NuclideServerManager.version_file = os.path.join(temp_dir, 'version.json')
+        NuclideServerManager.package_file = os.path.join(temp_dir, 'package.json')
 
     def tearDown(self):
         NuclideServerManager.stop_all()
