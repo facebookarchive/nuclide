@@ -28,6 +28,7 @@ export async function activateAllPackages(): Promise<Array<string>> {
     'autocomplete-plus',
     'hyperclick',
     'status-bar',
+    'tool-bar',
   ];
 
   // TODO(jonaldislarry) These package(s) cannot be activated manually -- t9243542.
