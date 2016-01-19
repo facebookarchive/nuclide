@@ -57,15 +57,6 @@ export type RemoteConnectionConfiguration = {
   clientKey?: Buffer; // key for https connection.
 }
 
-function getReloadKeystrokeLabel(): ?string {
-  const binding = atom.keymaps.findKeyBindings({command: 'window:reload'});
-  if (!binding || !binding[0]) {
-    return null;
-  }
-  const {humanizeKeystroke} = require('../../keystroke-label');
-  return humanizeKeystroke(binding[0].keystrokes);
-}
-
 const _emitter: EventEmitter = new EventEmitter();
 
 class RemoteConnection {
@@ -150,33 +141,46 @@ class RemoteConnection {
      * The function makes sure not to add many notifications for the same event and prioritize
      * new events.
      */
-    const addHeartbeatNotification =
-      (type: number, errorCode: string, message: string, dismissable: boolean) => {
-        const {code, notification: existingNotification} = this._lastHeartbeatNotification || {};
-        if (code && code === errorCode && dismissable) {
-          // A dismissible heartbeat notification with this code is already active.
-          return;
-        }
-        let notification = null;
-        switch (type) {
-          case HEARTBEAT_NOTIFICATION_ERROR:
-            notification = atom.notifications.addError(message, {dismissable});
-            break;
-          case HEARTBEAT_NOTIFICATION_WARNING:
-            notification = atom.notifications.addWarning(message, {dismissable});
-            break;
-          default:
-            throw new Error('Unrecongnized heartbeat notification type');
-        }
-        if (existingNotification) {
-          existingNotification.dismiss();
-        }
-        invariant(notification);
-        this._lastHeartbeatNotification = {
-          notification,
-          code: errorCode,
-        };
+    const addHeartbeatNotification = (
+      type: number,
+      errorCode: string,
+      message: string,
+      dismissable: boolean,
+      askToReload: boolean
+    ) => {
+      const {code, notification: existingNotification} = this._lastHeartbeatNotification || {};
+      if (code && code === errorCode && dismissable) {
+        // A dismissible heartbeat notification with this code is already active.
+        return;
+      }
+      let notification = null;
+      const options = {dismissable, buttons: []};
+      if (askToReload) {
+        options.buttons.push({
+          className: 'icon icon-zap',
+          onDidClick() { atom.reload(); },
+          text: 'Reload Atom',
+        });
+      }
+      switch (type) {
+        case HEARTBEAT_NOTIFICATION_ERROR:
+          notification = atom.notifications.addError(message, options);
+          break;
+        case HEARTBEAT_NOTIFICATION_WARNING:
+          notification = atom.notifications.addWarning(message, options);
+          break;
+        default:
+          throw new Error('Unrecongnized heartbeat notification type');
+      }
+      if (existingNotification) {
+        existingNotification.dismiss();
+      }
+      invariant(notification);
+      this._lastHeartbeatNotification = {
+        notification,
+        code: errorCode,
       };
+    };
 
     const onHeartbeat = () => {
       if (this._lastHeartbeatNotification) {
@@ -195,15 +199,14 @@ class RemoteConnection {
       this._heartbeatNetworkAwayCount++;
       if (this._heartbeatNetworkAwayCount >= HEARTBEAT_AWAY_REPORT_COUNT) {
         addHeartbeatNotification(HEARTBEAT_NOTIFICATION_WARNING, code,
-          'Nuclide server can not be reached at: ' + serverUri +
-          '<br/>Check your network connection!',
-          /*dismissable*/ true);
+          `Nuclide server can not be reached at "${serverUri}".<br/>` +
+          'Check your network connection.',
+          /*dismissable*/ true,
+          /*askToReload*/ false);
       }
     };
 
     const onHeartbeatError = (error: any) => {
-      const reloadkeystroke = getReloadKeystrokeLabel();
-      const reloadKeystrokeLabel = reloadkeystroke ? ` : (${reloadkeystroke})` : '';
       const {code, message, originalCode} = error;
       trackEvent({
         type: 'heartbeat-error',
@@ -224,10 +227,10 @@ class RemoteConnection {
             // Server shut down or port no longer accessible.
             // Notify the server was there, but now gone.
           addHeartbeatNotification(HEARTBEAT_NOTIFICATION_ERROR, code,
-                'Nuclide server crashed!<br/>' +
-                'Please reload Nuclide to restore your remote project connection!' +
-                reloadKeystrokeLabel,
-                /*dismissable*/ true);
+                '**Nuclide Server Crashed**<br/>' +
+                'Please reload Atom to restore your remote project connection.',
+                /*dismissable*/ true,
+                /*askToReload*/ true);
             // TODO(most) reconnect RemoteConnection, restore the current project state,
             // and finally change dismissable to false and type to 'WARNING'.
           break;
@@ -235,19 +238,21 @@ class RemoteConnection {
             // Notify never heard a heartbeat from the server.
           const {port} = remoteUri.parse(serverUri);
           addHeartbeatNotification(HEARTBEAT_NOTIFICATION_ERROR, code,
-                'Nuclide server is not reachable.<br/>It could be running on a port' +
-                `that is not accessible: ${port}`,
-                /*dismissable*/ true);
+                '**Nuclide Server Is Not Reachable**<br/>' +
+                `It could be running on a port that is not accessible: ${port}.`,
+                /*dismissable*/ true,
+                /*askToReload*/ false);
           break;
         case 'INVALID_CERTIFICATE':
             // Notify the client certificate is not accepted by nuclide server
             // (certificate mismatch).
           addHeartbeatNotification(HEARTBEAT_NOTIFICATION_ERROR, code,
-                'Connection Reset Error!!<br/>This could be caused by the client' +
-                ' certificate mismatching the server certificate.<br/>' +
-                'Please reload Nuclide to restore your remote project connection!' +
-                reloadKeystrokeLabel,
-                /*dismissable*/ true);
+                '**Connection Reset Error**<br/>' +
+                'This could be caused by the client certificate mismatching the ' +
+                  'server certificate.<br/>' +
+                'Please reload Atom to restore your remote project connection.',
+                /*dismissable*/ true,
+                /*askToReload*/ true);
             // TODO(most): reconnect RemoteConnection, restore the current project state.
             // and finally change dismissable to false and type to 'WARNING'.
           break;
@@ -569,6 +574,5 @@ module.exports = {
   RemoteConnection,
   __test__: {
     connections: RemoteConnection._connections,
-    getReloadKeystrokeLabel,
   },
 };
