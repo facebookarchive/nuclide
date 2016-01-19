@@ -12,8 +12,25 @@
 
 /*eslint-disable no-var, prefer-const, no-console*/
 
+var argv = require('yargs')
+  .usage('Usage: $0 [options]')
+  .option('verbose', {
+    describe: 'Show files being transpiled',
+    type: 'boolean',
+  })
+  .help('help')
+  .argv;
+
+var counter = {};
+function logger(group, filename) {
+  counter[group]++ || (counter[group] = 1);
+  if (argv.verbose) {
+    console.log('[%s] %s', group, filename);
+  }
+}
+
 var assert = require('assert');
-var babel = require('babel-core');
+var babelCore = require('babel-core');
 var fs = require('fs');
 var glob = require('glob');
 var path = require('path');
@@ -28,20 +45,6 @@ try {
   console.log('no "fb-services-3.json" found');
 }
 
-var excludes = services.map(function(service) {
-  return path.join(basedir, 'pkg/nuclide/server', service.implementation);
-});
-
-excludes.forEach(function(filename) {
-  // absolute paths are expected
-  assert(filename[0] === '/');
-  // sanity check
-  fs.statSync(filename);
-});
-
-// something went wrong if this number is too small
-assert(excludes.length > 10);
-
 var jsFiles = glob.sync(path.join(basedir, '**/*.js'), {
   ignore: [
     '**/node_modules/**',
@@ -49,24 +52,36 @@ var jsFiles = glob.sync(path.join(basedir, '**/*.js'), {
   ],
 });
 
-var babelPrefixesRe = /^('use babel'|"use babel"|\/\*\* @babel \*\/)/;
+var excludes = services.map(function(service) {
+  return path.join(serverBasedir, service.implementation);
+});
+
+// Sanity checks:
+assert(jsFiles.length > 10);
+assert(excludes.length > 10);
+jsFiles.forEach(function(filename) {
+  assert(path.isAbsolute(filename));
+});
+excludes.forEach(function(exclude) {
+  assert(path.isAbsolute(exclude));
+  fs.statSync(exclude);
+});
+
+console.log('Looking at %s files to transpile...', jsFiles.length);
 
 jsFiles.forEach(function(filename) {
-  // absolute paths are expected
-  assert(filename[0] === '/');
-  var relPath = path.relative(basedir, filename);
   if (excludes.indexOf(filename) !== -1) {
-    console.log('[Exclude] %s', filename);
+    logger('exclude', filename);
     return;
   }
   var src = fs.readFileSync(filename, 'utf8');
-  if (!babelPrefixesRe.test(src)) {
-    console.log('[Skip] "%s"', relPath);
+  if (!hasUseBabel(src)) {
+    logger('skip', filename);
     return;
   }
-  console.log('[Transpile] "%s"', relPath);
+  logger('transpile', filename);
   var safeFilename = path.basename(filename);
-  // Do not leak your info in the sourcemap file path
+  // Prevent leaking private data in the sourcemap file path
   assert(safeFilename.indexOf(process.env.HOME) === -1);
   var opts = {
     filename: safeFilename,
@@ -97,23 +112,40 @@ jsFiles.forEach(function(filename) {
     stage: 0,
     plugins: [stripUseBabel],
   };
-  var result = babel.transform(src, opts);
+  var result = babelCore.transform(src, opts);
   fs.writeFileSync(filename, result.code);
 });
 
-function stripUseBabel() {
-  // TODO: This should also check for `/** @babel */`
+console.log(
+  Object.keys(counter)
+    .map(function(group) { return group + ': ' +  counter[group]; })
+    .join(' | ')
+);
+
+function hasUseBabel(str) {
+  return /^('use babel'|"use babel"|\/\*\* @babel \*\/)/.test(str);
+}
+
+function stripUseBabel(babel) {
   function isUseBabel(node) {
     return (
       node &&
       node.type === 'ExpressionStatement' &&
       node.expression.type === 'Literal' &&
       node.expression.value === 'use babel'
+    ) || (
+      node &&
+      node.type === 'CommentBlock' &&
+      node.value === '* @babel ' // yes, with the "*" and the trailing space
     );
   }
   return new babel.Plugin('strip-use-babel', {
     visitor: {
       Program: function(node, parent, scope, state) {
+        if (isUseBabel(parent.comments[0])) {
+          parent.comments[0].value = '';
+          return;
+        }
         for (var i = 0; i < node.body.length; i++) {
           if (isUseBabel(node.body[i])) {
             this.get('body')[i].dangerouslyRemove();
