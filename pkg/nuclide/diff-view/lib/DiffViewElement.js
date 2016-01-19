@@ -57,6 +57,10 @@ class DiffViewElement extends HTMLElement {
     this._emitter.emit('did-destroy');
   }
 
+  serialize(): ?Object {
+    return null;
+  }
+
   onDidDestroy(callback: () => void): atom$Disposable {
     return this._emitter.on(DID_DESTROY_EVENT_NAME, callback);
   }
