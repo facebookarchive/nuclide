@@ -45,7 +45,7 @@
     "diff": "2.2.1",
     "emptyfunction": "0.0.0",
     "event-kit": "2.0.0",
-    "fb-watchman": "1.6.0",
+    "fb-watchman": "1.8.0",
     "fixed-data-table-for-atom": "0.4.5",
     "flux": "2.0.3",
     "fs-plus": "2.8.1",
