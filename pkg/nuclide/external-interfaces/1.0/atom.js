@@ -17,6 +17,7 @@ declare class atom$Model {
 }
 
 declare class atom$Package {
+  path: string;
   activateTime: number;
   mainModule: any;
   name: string;
@@ -236,6 +237,7 @@ declare class atom$PackageManager {
   activatePackage(name: string): Promise<atom$Package>;
 
   // Accessing loaded packages
+  getLoadedPackage(name: string): ?atom$Package;
   getLoadedPackages(): Array<atom$Package>;
   isPackageLoaded(name: string): boolean;
 
