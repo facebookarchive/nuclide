@@ -63,7 +63,7 @@ class Activation {
     // Listen for run events on files in the file tree
     this._disposables.add(
       atom.commands.add(
-        '.entry.file.list-item',
+        '.tree-view .entry.file.list-item',
         'nuclide-test-runner:run-tests',
         (event) => {
           const target = ((event.currentTarget: any): HTMLElement).querySelector('.name');
@@ -74,7 +74,7 @@ class Activation {
     // Listen for run events on directories in the file tree
     this._disposables.add(
       atom.commands.add(
-        '.entry.directory.list-item',
+        '.tree-view .entry.directory.list-nested-item',
         'nuclide-test-runner:run-tests',
         (event) => {
           const target = ((event.currentTarget: any): HTMLElement).querySelector('.name');
@@ -84,12 +84,12 @@ class Activation {
     );
     this._disposables.add(
       atom.contextMenu.add({
-        '.entry.directory.list-item': [
+        '.tree-view .entry.directory.list-nested-item': [
           {type: 'separator'},
           this._createRunTestsContextMenuItem('Run tests in'),
           {type: 'separator'},
         ],
-        '.entry.file.list-item': [
+        '.tree-view .entry.file.list-item': [
           {type: 'separator'},
           this._createRunTestsContextMenuItem('Run tests at'),
           {type: 'separator'},
