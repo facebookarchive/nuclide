@@ -12,10 +12,9 @@
 import {assign} from './object';
 import {
   getAtomVersion,
-  getInstallerPackageBuildNumber,
-  getNuclideBuildNumber,
+  getNuclideVersion,
+  isDevelopment,
   isRunningInClient,
-  isRunningInNuclide,
 } from './clientInfo';
 import {getOsType} from './systemInfo';
 import environment from './environment';
@@ -28,9 +27,8 @@ export type RuntimeInformation = {
   timestamp: number;
   isClient: boolean;
   isDevelopment: boolean;
-  isRunningInNuclide: boolean;
   atomVersion: string;
-  nuclideVersion: number;
+  nuclideVersion: string;
   installerPackageVersion: number;
   serverVersion: number;
   uptime: number;
@@ -49,14 +47,13 @@ function getCacheableRuntimeInformation(): RuntimeInformation {
     osType: getOsType(),
     timestamp: 0,
     isClient: isRunningInClient(),
+    isDevelopment: isDevelopment(),
     atomVersion: isRunningInClient() ? getAtomVersion() : '',
-    isRunningInNuclide: isRunningInNuclide(),
-    nuclideVersion: isRunningInNuclide() ? getNuclideBuildNumber() : 0 ,
+    nuclideVersion: getNuclideVersion(),
     installerPackageVersion: 0,
     uptime: 0,
     // TODO (chenshen) fill following information.
     serverVersion: 0,
-    isDevelopment: false,
   };
 
   return cachedInformation;
@@ -66,7 +63,6 @@ export function getRuntimeInformation(): RuntimeInformation {
   const runtimeInformation = assign({}, getCacheableRuntimeInformation());
   runtimeInformation.sessionId = session.id;
   runtimeInformation.timestamp = Date.now();
-  runtimeInformation.installerPackageVersion = getInstallerPackageBuildNumber();
   runtimeInformation.uptime = Math.floor(process.uptime() * 1000);
   return runtimeInformation;
 }

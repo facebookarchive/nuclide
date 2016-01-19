@@ -9,86 +9,50 @@
  * the root directory of this source tree.
  */
 
-import {get, reset} from './singleton';
 import fs from 'fs';
 import path from 'path';
+import once from './once';
 
-const SMALLEST_NUCLIDE_BUILD_NUMBER = 5394875;
-const INSTALLER_BUILD_NUMBER_KEY = '_nuclide_installer_build_number_key';
 const NUCLIDE_PACKAGE_JSON_PATH = require.resolve('../../../../package.json');
+const NUCLIDE_BASEDIR = path.dirname(NUCLIDE_PACKAGE_JSON_PATH);
 
 const pkgJson = JSON.parse(fs.readFileSync(NUCLIDE_PACKAGE_JSON_PATH));
 
+// "Development" is defined as working from source - not packaged code.
+// apm/npm and internal releases don't package the base `.flowconfig`, so
+// we use this to figure if we're packaged or not.
+export const isDevelopment = once(function(): boolean {
+  try {
+    fs.statSync(path.join(NUCLIDE_BASEDIR, '.flowconfig'));
+    return true;
+  } catch (err) {
+    return false;
+  }
+});
+
 export function isRunningInTest(): boolean {
-  return process.env.NODE_ENV === 'test';
+  if (isRunningInClient()) {
+    return atom.inSpecMode();
+  } else {
+    return process.env.NODE_ENV === 'test';
+  }
 }
 
 export function isRunningInClient(): boolean {
-  return global.atom !== undefined;
+  return typeof atom !== 'undefined';
 }
 
 export function getAtomVersion(): string {
   if (!isRunningInClient()) {
-    throw Error('Not running in Atom/Nuclide.');
+    throw Error('Not running in Atom.');
   }
-  return global.atom.getVersion();
+  return atom.getVersion();
 }
 
 export function getNuclideVersion(): string {
   return pkgJson.version;
 }
 
-export function isRunningOnDevSource(): boolean {
-  // TODO(andres): Find a safe way to figure out if we are running off source
-  // or built nuclide.
-  return false;
+export function getNuclideDir(): string {
+  return NUCLIDE_BASEDIR;
 }
-
-/**
- * Determine whether the package is running in Atom.app or Nuclide.app.
- *
- * While building Nuclide release, we set the internal build number as part of version number.
- * So the version looks like 1.0.$buildNumber. Since the internal build number is really big,
- * whereas the counterpart in Atom' version string is realtively small or not a valid number,
- * it is a good way to identify if the running editer is Nuclide or Atom.
- */
-export function isRunningInNuclide(): boolean {
-  if (!isRunningInClient()) {
-    return false;
-  }
-
-  const version = getAtomVersion();
-  const buildNumber = version.split('.')[2];
-  // If the PATCH version (the third part of version string splitted by dot) is a number and larger
-  // than SMALLEST_NUCLIDE_BUILD_NUMBER, then it's a build number.
-  if (/^\d+$/.test(buildNumber) && parseInt(buildNumber, 10) >= SMALLEST_NUCLIDE_BUILD_NUMBER) {
-    return true;
-  }
-  return false;
-}
-
-const atomConfig = isRunningInClient() ?
-    // $FlowIgnore
-    require(path.join(atom.getLoadSettings().resourcePath, 'package.json')) :
-    {};
-
-export function getNuclideBuildNumber(): number {
-  if (!isRunningInClient()) {
-    throw Error('Not running in Atom/Nuclide.');
-  }
-  return atomConfig.buildNumber || 0;
-}
-
-export function getInstallerPackageBuildNumber(): number {
-  return get(INSTALLER_BUILD_NUMBER_KEY, () => 0);
-}
-
-export function setInstallerPackageBuildNumber(buildNumber: number): void {
-  reset(INSTALLER_BUILD_NUMBER_KEY, () => buildNumber);
-}
-
-// TODO(chenshen) implement isDevelopment.
-
-export const __test__ = {
-  SMALLEST_NUCLIDE_BUILD_NUMBER,
-};
