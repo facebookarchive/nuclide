@@ -46,14 +46,14 @@ class Activation {
       'atom-text-editor': [{
         label: 'Show Blame',
         command: 'nuclide-blame:show-blame',
-        shouldDisplay: () => this._canShowBlame(),
+        shouldDisplay: (event: MouseEvent) => this._canShowBlame(),
       }],
     }));
     this._packageDisposables.add(atom.contextMenu.add({
       'atom-text-editor': [{
         label: 'Hide Blame',
         command: 'nuclide-blame:hide-blame',
-        shouldDisplay: () => this._canHideBlame(),
+        shouldDisplay: (event: MouseEvent) => this._canHideBlame(),
       }],
     }));
     this._packageDisposables.add(

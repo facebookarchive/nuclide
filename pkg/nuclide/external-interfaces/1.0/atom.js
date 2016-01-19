@@ -815,7 +815,7 @@ declare class atom$Clipboard {
 }
 
 declare class atom$ContextMenuManager {
-  add(itemsBySelector: Object): atom$Disposable;
+  add(itemsBySelector: {[cssSelector: string]: Array<atom$ContextMenuItem>}): atom$Disposable;
   itemSets: Array<atom$ContextMenuItemSet>;
 }
 
@@ -824,8 +824,14 @@ declare class atom$ContextMenuItemSet {
 }
 
 declare class atom$ContextMenuItem {
-  command: string;
-  label: string;
+  command?: string,
+  created?: (event: MouseEvent) => void,
+  enabled?: boolean,
+  label?: string,
+  shouldDisplay?: (event: MouseEvent) => boolean,
+  submenu?: Array<atom$ContextMenuItem>,
+  type?: string,
+  visible?: boolean,
 }
 
 declare class atom$Deserializer {
