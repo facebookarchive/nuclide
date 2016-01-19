@@ -30,7 +30,9 @@ import path from 'path';
 import type {DiffInfo, RevisionFileChanges, StatusCodeIdValue, RevisionInfo} from './hg-constants';
 import type {NuclideUri} from '../../remote-uri';
 
-const FORK_BASE_BOOKMARK_NAME = 'remote/master';
+import {readArcConfig} from '../../arcanist-base';
+
+const DEFAULT_FORK_BASE_NAME = 'default';
 
 let logger;
 function getLogger() {
@@ -38,6 +40,14 @@ function getLogger() {
     logger = require('../../logging').getLogger();
   }
   return logger;
+}
+
+async function getForkBaseName(directoryPath: string): Promise<string> {
+  const arcConfig = await readArcConfig(directoryPath);
+  if (arcConfig != null) {
+    return arcConfig['arc.feature.start.default'] || arcConfig['arc.land.onto.default'];
+  }
+  return DEFAULT_FORK_BASE_NAME;
 }
 
 class HgServiceBase {
@@ -219,10 +229,9 @@ class HgServiceBase {
   }
 
   async fetchRevisionInfoBetweenHeadAndBase(): Promise<?Array<RevisionInfo>> {
+    const fokBaseName = await getForkBaseName(this._workingDirectory);
     const commonAncestorRevision = await fetchCommonAncestorOfHeadAndRevision(
-      // TODO(most): Better way to specify the fork/base that works with `fbsource`
-      // and other mercurial configurations. t8769378
-      FORK_BASE_BOOKMARK_NAME,
+      fokBaseName,
       this._workingDirectory,
     );
     if (!commonAncestorRevision) {
