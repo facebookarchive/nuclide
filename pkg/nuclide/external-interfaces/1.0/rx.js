@@ -64,6 +64,8 @@ declare module 'rx' {
 
     doOnNext(f: (value: T) => mixed): Observable<T>;
 
+    catch(secondOrHandler: Observable<T> | (error: any) => Observable<T>): Observable<T>;
+
     concat(...sources: Observable<T>[]): Observable<T>;
 
     concatMap<U>(
@@ -75,6 +77,8 @@ declare module 'rx' {
     delay(dueTime: number): Observable<T>;
 
     distinctUntilChanged(): Observable<T>;
+
+    doOnError(onError: (error: any) => mixed, thisArg?: any): Observable<T>;
 
     filter(predicate: (value: T) => boolean): Observable<T>;
 
@@ -104,12 +108,16 @@ declare module 'rx' {
 
     replay(): ConnectableObservable<T>;
 
+    retry(retryCount: number): Observable<T>;
+
     scan<U>(
       f: (acc: U, value: T) => U,
       initialValue: U,
     ): Observable<U>;
 
     share(): Observable<T>;
+
+    skip(count: number): Observable<T>;
 
     skipUntilWithTime(startTime: Date | number): Observable<T>;
 
@@ -118,6 +126,8 @@ declare module 'rx' {
     takeUntil(other: Observable<any>): Observable<T>;
 
     takeWhile(f: (value: T) => boolean): Observable<T>;
+
+    tapOnError(onError: (error: any) => mixed, thisArg?: any): Observable<T>;
 
     throttle(duration: number): Observable<T>;
 
