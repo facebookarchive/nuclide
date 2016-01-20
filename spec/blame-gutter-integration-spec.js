@@ -13,29 +13,29 @@ import {array} from '../pkg/nuclide/commons';
 import {
   activateAllPackages,
   copyMercurialFixture,
+  jasmineIntegrationTestSetup,
   deactivateAllPackages,
+  setLocalProject,
 } from '../pkg/nuclide/integration-test-helpers';
 import path from 'path';
 
-xdescribe('Blame gutter integration test', () => {
+describe('Blame gutter integration test', () => {
   it('renders the blame gutter', () => {
     let textEditorView: HTMLElement = (null : any);
     let blameGutter: HTMLElement = (null : any);
     let blameEntries: Array<HTMLElement> = (null : any);
 
-    waitsForPromise({timeout: 240000}, async () => {
-      // Allow jasmine to interact with the DOM.
-      jasmine.attachToDOM(atom.views.getView(atom.workspace));
+    waitsForPromise({timeout: 60000}, async () => {
+      jasmineIntegrationTestSetup();
       // Activate atom packages.
       await activateAllPackages();
       // Copy mercurial project to temporary directory.
       const repoPath = await copyMercurialFixture('hg_repo_1', __dirname);
       // Add this directory as a new project in atom.
-      atom.project.setPaths([repoPath]);
+      setLocalProject(repoPath);
       // Open the test.txt file in the repo.
       const textEditor = await atom.workspace.open(path.join(repoPath, 'test.txt'));
       textEditorView = atom.views.getView(textEditor);
-
       // Simulate 'Show blame' click in context menu.
       atom.commands.dispatch(textEditorView, 'nuclide-blame:show-blame');
     });
@@ -47,13 +47,9 @@ xdescribe('Blame gutter integration test', () => {
       return blameGutter;
     });
 
-    runs(() => {
-      expect(blameGutter).toBeTruthy();
-    });
-
     waitsFor('blame information to populate', 10000, () => {
       blameEntries = array.from(blameGutter.querySelectorAll('.blame-decoration'));
-      return blameEntries.length === 6;
+      return blameEntries.length;
     });
 
     runs(() => {

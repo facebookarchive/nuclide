@@ -11,17 +11,15 @@
 
 import {
   activateAllPackages,
+  jasmineIntegrationTestSetup,
   deactivateAllPackages,
 } from '../pkg/nuclide/integration-test-helpers';
 
 describe('Example Integration Test', () => {
   it('tests my feature', () => {
     waitsForPromise({timeout: 60000}, async () => {
-      // Attach to DOM so we can select elements, or send events.
-      const workspaceView = atom.views.getView(atom.workspace);
-      jasmine.attachToDOM(workspaceView);
-      // Unmock timer functions.
-      jasmine.useRealClock();
+      // Configure some jasmine specific things for integration testing.
+      jasmineIntegrationTestSetup();
       // Activate nuclide packages.
       await activateAllPackages();
 
