@@ -195,6 +195,8 @@ declare class atom$Marker {
     isValid: boolean;
     textChanged: boolean;
   }) => void): atom$Disposable;
+  isValid(): boolean;
+  isDestroyed(): boolean;
   onDidDestroy(callback: () => void): atom$Disposable;
 }
 
