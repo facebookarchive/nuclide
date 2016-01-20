@@ -55,10 +55,11 @@ var ops = {
   call: function (id, data) {
     var returnValue = [[], [], [], [], []];
     try {
-      returnValue = rnRequire(data.moduleName)[data.moduleMethod]
-        .apply(null, data.arguments);
+      if (typeof __fbBatchedBridge === 'object') {
+        returnValue = __fbBatchedBridge[data.method].apply(null, data.arguments);
+      }
     } catch (e) {
-      doLog('Failed while making a call ' + data.moduleName  + ':' + data.moduleMethod + ':::' + e);
+      doLog('Failed while making a call ' + data.method + ':::' + e);
     } finally {
       send(id, JSON.stringify(returnValue));
     }

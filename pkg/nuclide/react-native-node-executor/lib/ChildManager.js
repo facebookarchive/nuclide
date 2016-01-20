@@ -60,10 +60,8 @@ export default class ChildManager {
         return this.prepareJSRuntime(message);
       case 'executeApplicationScript':
         return this.executeApplicationScript(message);
-      case 'executeJSCall':
-        return this.executeJSCall(message);
       default:
-        getLogger().error(`Unknown method: ${message.method}.\nPayload: ${message}`);
+        return this.executeJSCall(message);
     }
   }
 

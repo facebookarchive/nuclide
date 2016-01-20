@@ -66,8 +66,7 @@ export default class Child {
       id,
       op: 'call',
       data: {
-        moduleName: payload.moduleName,
-        moduleMethod: payload.moduleMethod,
+        method: payload.method,
         arguments: payload.arguments,
       },
     });
