@@ -17,7 +17,7 @@ const {PropTypes} = React;
 let uid = 0;
 
 /**
- * A managed radio group component. Accepts arbitrary react elements as labels.
+ * A managed radio group component. Accepts arbitrary React elements as labels.
  */
 const NuclideRadioGroup = React.createClass({
 

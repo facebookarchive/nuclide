@@ -6,3 +6,11 @@ atom-text-editor[mini].atom-text-editor-sm {
   font-size: 0.9em;
   line-height: 2em;
 }
+
+/*
+ * When wrapping <atom-input> elements in .row/.col, their margin-bottom no longer collapses with
+ * the margin-bottom of .block. Ensure the margin is set to 0 so margins don't stack.
+ */
+atom-panel.modal .atom-text-editor-unstyled[mini] {
+  margin: 0;
+}

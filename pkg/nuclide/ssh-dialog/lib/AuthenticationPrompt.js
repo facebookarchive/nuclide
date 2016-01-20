@@ -34,17 +34,15 @@ export default class AuthenticationPrompt extends React.Component<DefaultProps, 
         .replace(/</g, '&lt;')
         .replace(/\\n/g, '<br>');
 
-
     // We need native-key-bindings so that delete works and we need
     // _onKeyUp so that escape and enter work
     return (
-      <div ref="root" className="password-prompt-container">
+      <div ref="root">
         <div
           className="block"
           style={{whiteSpace: 'pre'}}
           dangerouslySetInnerHTML={{__html: safeHtml}}
         />
-
         <input
           type="password"
           className="nuclide-password native-key-bindings"

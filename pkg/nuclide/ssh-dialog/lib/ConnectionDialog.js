@@ -117,6 +117,8 @@ export default class ConnectionDialog extends React.Component<DefaultProps, Prop
     const mode = this.state.mode;
     let content;
     let isOkDisabled;
+    let okButtonText;
+
     if (mode === REQUEST_CONNECTION_DETAILS) {
       content = (
         <ConnectionDetailsPrompt
@@ -131,32 +133,41 @@ export default class ConnectionDialog extends React.Component<DefaultProps, Prop
         />
       );
       isOkDisabled = false;
+      okButtonText = 'Connect';
     } else if (mode === WAITING_FOR_CONNECTION || mode === WAITING_FOR_AUTHENTICATION) {
       content = <IndeterminateProgressBar />;
       isOkDisabled = true;
+      okButtonText = 'Connect';
     } else {
       content = (
-        <AuthenticationPrompt ref="authentication"
-                              instructions={this.state.instructions}
-                              onConfirm={this._boundOk}
-                              onCancel={this._boundCancel}
-      />);
+        <AuthenticationPrompt
+          ref="authentication"
+          instructions={this.state.instructions}
+          onConfirm={this._boundOk}
+          onCancel={this._boundCancel}
+        />
+      );
       isOkDisabled = false;
+      okButtonText = 'OK';
     }
 
     // The root element cannot have a 'key' property, so we use a dummy
     // <div> as the root. Ideally, the <atom-panel> would be the root.
     return (
       <div>
-        <atom-panel class="modal from-top" key="connect-dialog">
-          {content}
-          <div className="block nuclide-ok-cancel">
-            <button className="btn" onClick={this._boundCancel}>
-              Cancel
-            </button>
-            <button className="btn btn-primary" onClick={this._boundOk} disabled={isOkDisabled}>
-              OK
-            </button>
+        <atom-panel class="modal modal-lg from-top" key="connect-dialog">
+          <div className="padded">
+            {content}
+          </div>
+          <div className="padded text-right">
+            <div className="btn-group">
+              <button className="btn" onClick={this._boundCancel}>
+                Cancel
+              </button>
+              <button className="btn btn-primary" onClick={this._boundOk} disabled={isOkDisabled}>
+                {okButtonText}
+              </button>
+            </div>
           </div>
         </atom-panel>
       </div>

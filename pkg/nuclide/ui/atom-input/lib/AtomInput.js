@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+const classNames = require('classnames');
 const {CompositeDisposable} = require('atom');
 const React = require('react-for-atom');
 
@@ -30,6 +31,7 @@ class AtomInput extends React.Component {
     onDidChange: PropTypes.func,
     onBlur: PropTypes.func,
     size: PropTypes.oneOf(['xs', 'sm', 'lg']),
+    unstyled: PropTypes.bool,
   };
 
   static defaultProps = {
@@ -40,6 +42,7 @@ class AtomInput extends React.Component {
     onDidChange: () => {},
     onFocus: () => {},
     onBlur: () => {},
+    unstyled: false,
   };
 
   constructor(props: Object) {
@@ -96,10 +99,10 @@ class AtomInput extends React.Component {
   }
 
   render(): ReactElement {
-    let className;
-    if (this.props.size) {
-      className = `atom-text-editor-${this.props.size}`;
-    }
+    const className = classNames({
+      'atom-text-editor-unstyled': this.props.unstyled,
+      [`atom-text-editor-${this.props.size}`]: (this.props.size != null),
+    });
 
     return (
       <atom-text-editor

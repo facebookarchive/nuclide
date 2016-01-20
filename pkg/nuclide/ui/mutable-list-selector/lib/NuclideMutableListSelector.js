@@ -104,20 +104,22 @@ export default class NuclideMutableListSelector extends React.Component<void, Pr
             {listItems}
           </ol>
         </div>
-        <div className="block btn-group">
-          <button
-            className="btn"
-            disabled={selectedItem == null || selectedItem.deletable === false}
-            onClick={this._boundOnDeleteButtonClicked}
-            title={deleteButtonTitle}>
-            -
-          </button>
-          <button
-            className="btn"
-            onClick={this.props.onAddButtonClicked}
-            title="Create new item">
-            +
-          </button>
+        <div className="text-right">
+          <div className="btn-group">
+            <button
+              className="btn"
+              disabled={selectedItem == null || selectedItem.deletable === false}
+              onClick={this._boundOnDeleteButtonClicked}
+              title={deleteButtonTitle}>
+              -
+            </button>
+            <button
+              className="btn"
+              onClick={this.props.onAddButtonClicked}
+              title="Create new item">
+              +
+            </button>
+          </div>
         </div>
       </div>
     );

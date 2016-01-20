@@ -14,11 +14,11 @@ import NuclideMutableListSelector from '../../ui/mutable-list-selector';
 import React from 'react-for-atom';
 
 import type {
+  NuclideRemoteConnectionParams,
   NuclideRemoteConnectionParamsWithPassword,
   NuclideRemoteConnectionProfile,
 } from './connection-types';
 
-type DefaultProps = {};
 type Props = {
   // The initial list of connection profiles that will be displayed.
   // Whenever a user add/removes profiles via the child NuclideListSelector,
@@ -40,6 +40,7 @@ type Props = {
   // The user's intent is to delete the currently-selected profile.
   onDeleteProfileClicked: (indexOfSelectedConnectionProfile: number) => mixed;
 };
+
 type State = {
   indexOfSelectedConnectionProfile: ?number;
 };
@@ -54,7 +55,7 @@ type State = {
  */
 /* eslint-disable react/prop-types */
 export default class ConnectionDetailsPrompt
-    extends React.Component<DefaultProps, Props, State> {
+    extends React.Component<void, Props, State> {
   _idToConnectionProfile: ?Map<string, NuclideRemoteConnectionProfile>;
   _boundOnProfileClicked: (profileId: string) => void;
   _boundOnDeleteProfileClicked: (profileId: ?string) => void;
@@ -72,10 +73,9 @@ export default class ConnectionDetailsPrompt
     return this.refs['connection-details-form'].getFormFields();
   }
 
-  render(): ReactElement {
+  getPrefilledConnectionParams(): ?NuclideRemoteConnectionParams {
     // If there are profiles, pre-fill the form with the information from the
     // specified selected profile.
-    let prefilledConnectionParams = {};
     if (this.props.connectionProfiles &&
         this.props.connectionProfiles.length &&
         this.state.indexOfSelectedConnectionProfile != null) {
@@ -86,8 +86,25 @@ export default class ConnectionDetailsPrompt
         indexToSelect = this.props.connectionProfiles.length - 1;
       }
       const selectedProfile = this.props.connectionProfiles[indexToSelect];
-      prefilledConnectionParams = selectedProfile.params;
+      return selectedProfile.params;
     }
+  }
+
+  componentDidUpdate() {
+    // We have to manually update the contents of an existing ConnectionDetailsForm,
+    // because it contains AtomInput components (which don't update their contents
+    // when their props change).
+    const existingConnectionDetailsForm = this.refs['connection-details-form'];
+    if (existingConnectionDetailsForm) {
+      existingConnectionDetailsForm.setFormFields(this.getPrefilledConnectionParams());
+      existingConnectionDetailsForm.clearPassword();
+    }
+  }
+
+  render(): ReactElement {
+    // If there are profiles, pre-fill the form with the information from the
+    // specified selected profile.
+    const prefilledConnectionParams = this.getPrefilledConnectionParams() || {};
 
     // Create helper data structures.
     let listSelectorItems;
@@ -104,43 +121,38 @@ export default class ConnectionDetailsPrompt
     } else {
       listSelectorItems = [];
     }
-    const idOfSelectedItem = (this.state.indexOfSelectedConnectionProfile != null) ?
-      String(this.state.indexOfSelectedConnectionProfile) : null;
 
-    // We have to manually update the contents of an existing ConnectionDetailsForm,
-    // because it contains AtomInput components (which don't update their contents
-    // when their props change).
-    const existingConnectionDetailsForm = this.refs['connection-details-form'];
-    if (existingConnectionDetailsForm) {
-      existingConnectionDetailsForm.setFormFields(prefilledConnectionParams);
-      existingConnectionDetailsForm.clearPassword();
-    }
+    const idOfSelectedItem = (this.state.indexOfSelectedConnectionProfile == null)
+      ? null
+      : String(this.state.indexOfSelectedConnectionProfile);
 
     return (
-      <div className="nuclide-connection-details-prompt">
-        <div className="connection-details-form">
-          <ConnectionDetailsForm
-            ref="connection-details-form"
-            initialUsername={prefilledConnectionParams.username}
-            initialServer={prefilledConnectionParams.server}
-            initialRemoteServerCommand={prefilledConnectionParams.remoteServerCommand}
-            initialCwd={prefilledConnectionParams.cwd}
-            initialSshPort={prefilledConnectionParams.sshPort}
-            initialPathToPrivateKey={prefilledConnectionParams.pathToPrivateKey}
-            initialAuthMethod={prefilledConnectionParams.authMethod}
-            onConfirm={this.props.onConfirm}
-            onCancel={this.props.onCancel}
-          />
-        </div>
-        <div className="connection-profiles padded">
-          <h6>Profiles</h6>
-          <NuclideMutableListSelector
-            items={listSelectorItems}
-            idOfSelectedItem={idOfSelectedItem}
-            onItemClicked={this._boundOnProfileClicked}
-            onAddButtonClicked={this.props.onAddProfileClicked}
-            onDeleteButtonClicked={this._boundOnDeleteProfileClicked}
-          />
+      <div className="nuclide-connection-details-prompt container-fluid">
+        <div className="row" style={{display: 'flex'}}>
+          <div className="connection-profiles col-xs-3 inset-panel">
+            <h6>Profiles</h6>
+            <NuclideMutableListSelector
+              items={listSelectorItems}
+              idOfSelectedItem={idOfSelectedItem}
+              onItemClicked={this._boundOnProfileClicked}
+              onAddButtonClicked={this.props.onAddProfileClicked}
+              onDeleteButtonClicked={this._boundOnDeleteProfileClicked}
+            />
+          </div>
+          <div className="connection-details-form col-xs-9">
+            <ConnectionDetailsForm
+              ref="connection-details-form"
+              initialUsername={prefilledConnectionParams.username}
+              initialServer={prefilledConnectionParams.server}
+              initialRemoteServerCommand={prefilledConnectionParams.remoteServerCommand}
+              initialCwd={prefilledConnectionParams.cwd}
+              initialSshPort={prefilledConnectionParams.sshPort}
+              initialPathToPrivateKey={prefilledConnectionParams.pathToPrivateKey}
+              initialAuthMethod={prefilledConnectionParams.authMethod}
+              onConfirm={this.props.onConfirm}
+              onCancel={this.props.onCancel}
+            />
+          </div>
         </div>
       </div>
     );

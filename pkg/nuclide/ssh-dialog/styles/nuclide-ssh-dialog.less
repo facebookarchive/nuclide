@@ -17,14 +17,6 @@
   width: 100%;
 }
 
-.password-prompt-container {
-  padding: @component-padding;
-}
-
-.nuclide-auth-selector {
-  margin-bottom: 20px;
-}
-
 .nuclide-auth-method {
   align-items: center;
   display: flex;
@@ -49,6 +41,10 @@
   width: 250px;
 }
 
-.nuclide-auth-method-privatekey {
-  margin-top: 10px;
+atom-panel.modal .nuclide-connections-dialog-input-unstyled[mini] {
+  /*
+   * When wrapping <atom-input> elements in .row/.col, their margin-bottom no longer collapses with
+   * the margin-bottom of .block. Ensure the margin is set to 0 so margins don't stack.
+   */
+  margin: 0;
 }

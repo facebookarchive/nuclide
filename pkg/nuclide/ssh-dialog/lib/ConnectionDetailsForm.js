@@ -38,7 +38,7 @@ export default class ConnectionDetailsForm extends React.Component {
     initialRemoteServerCommand: PropTypes.string,
     initialSshPort: PropTypes.string,
     initialPathToPrivateKey: PropTypes.string,
-    initialAuthMethod: PropTypes.shape(Object.keys(SupportedMethods)),
+    initialAuthMethod: PropTypes.oneOf(Object.keys(SupportedMethods)),
     onConfirm: PropTypes.func.isRequired,
     onCancel: PropTypes.func.isRequired,
   };
@@ -130,9 +130,10 @@ export default class ConnectionDetailsForm extends React.Component {
           <AtomInput
             ref="pathToPrivateKey"
             disabled={activeAuthMethod !== SupportedMethods.PRIVATE_KEY}
+            initialValue={this.state.pathToPrivateKey}
             onClick={this._handleKeyFileInputClick.bind(this)}
             placeholder="Path to private key"
-            initialValue={this.state.pathToPrivateKey}
+            unstyled={true}
           />
         </div>
       </div>
@@ -144,22 +145,42 @@ export default class ConnectionDetailsForm extends React.Component {
     );
     return (
       <div ref="root">
-        <div className="block">
-          Username:
-          <AtomInput ref="username" initialValue={this.state.username} />
+        <div className="form-group">
+          <label>Username:</label>
+          <AtomInput
+            initialValue={this.state.username}
+            ref="username"
+            unstyled={true}
+          />
         </div>
-        <div className="block">
-          Server:
-          <AtomInput mini ref="server" initialValue={this.state.server} />
+        <div className="form-group row">
+          <div className="col-xs-9">
+            <label>Server:</label>
+            <AtomInput
+              initialValue={this.state.server}
+              ref="server"
+              unstyled={true}
+            />
+          </div>
+          <div className="col-xs-3">
+            <label>SSH Port:</label>
+            <AtomInput
+              initialValue={this.state.sshPort}
+              ref="sshPort"
+              unstyled={true}
+            />
+          </div>
         </div>
-        <div className="block">
-          Initial Directory:
-          <AtomInput ref="cwd" initialValue={this.state.cwd} />
+        <div className="form-group">
+          <label>Initial Directory:</label>
+          <AtomInput
+            initialValue={this.state.cwd}
+            ref="cwd"
+            unstyled={true}
+          />
         </div>
-        <div className="block">
-          Authentication method:
-        </div>
-        <div className="nuclide-auth-selector">
+        <div className="form-group">
+          <label>Authentication method:</label>
           <RadioGroup
             optionLabels={[
               passwordLabel,
@@ -170,16 +191,13 @@ export default class ConnectionDetailsForm extends React.Component {
             selectedIndex={this.state.selectedAuthMethodIndex}
           />
         </div>
-        <div className="block">
-          Advanced Settings
-        </div>
-        <div className="block">
-          SSH Port:
-          <AtomInput ref="sshPort" initialValue={this.state.sshPort} />
-        </div>
-        <div className="block">
-          Remote Server Command:
-          <AtomInput ref="remoteServerCommand" initialValue={this.state.remoteServerCommand} />
+        <div className="form-group">
+          <label>Remote Server Command:</label>
+          <AtomInput
+            initialValue={this.state.remoteServerCommand}
+            ref="remoteServerCommand"
+            unstyled={true}
+          />
         </div>
       </div>
     );
