@@ -1,0 +1,6 @@
+this is a test file
+we will use it to test things
+like Atom markers
+
+
+(^ also a haiku)
