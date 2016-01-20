@@ -427,12 +427,12 @@ describe('DiagnosticStore', () => {
 
     beforeEach(() => {
       waitsForPromise(async () => {
+        editor = await atom.workspace.open('/tmp/fileA');
+        editor.setText('foobar\n');
         diagnosticStore.updateMessages(dummyProviderA, {
           filePathToMessages: new Map([['/tmp/fileA', [messageWithAutofix]]]),
           projectMessages: [],
         });
-        editor = await atom.workspace.open('/tmp/fileA');
-        editor.setText('foobar\n');
       });
     });
 
@@ -444,7 +444,7 @@ describe('DiagnosticStore', () => {
     it('should invalidate the message', () => {
       expect(diagnosticStore._getFileMessages('/tmp/fileA')).toEqual([messageWithAutofix]);
       diagnosticStore.applyFix(messageWithAutofix);
-        expect(diagnosticStore._getFileMessages('/tmp/fileA')).toEqual([]);
+      expect(diagnosticStore._getFileMessages('/tmp/fileA')).toEqual([]);
     });
   });
 });

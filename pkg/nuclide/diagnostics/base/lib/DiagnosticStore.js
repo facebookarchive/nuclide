@@ -25,6 +25,8 @@ import {applyTextEdit} from '../../../textedit';
 
 import {array} from '../../../commons';
 
+import {MarkerTracker} from './MarkerTracker';
+
 import invariant from 'assert';
 
 const {Disposable, Emitter} = require('atom');
@@ -53,6 +55,8 @@ class DiagnosticStore {
   _projectListenersCount: number;
   _allMessagesListenersCount: number;
 
+  _markerTracker: MarkerTracker;
+
   constructor() {
     this._providerToFileToMessages = new Map();
     this._fileToProviders = new Map();
@@ -63,6 +67,8 @@ class DiagnosticStore {
     this._fileToListenersCount = new Map();
     this._projectListenersCount = 0;
     this._allMessagesListenersCount = 0;
+
+    this._markerTracker = new MarkerTracker();
   }
 
   dispose() {
@@ -72,6 +78,7 @@ class DiagnosticStore {
     this._fileChangeEmitter.dispose();
     this._nonFileChangeEmitter.dispose();
     this._fileToListenersCount.clear();
+    this._markerTracker.dispose();
   }
 
 
@@ -112,8 +119,14 @@ class DiagnosticStore {
       this._providerToFileToMessages.set(diagnosticProvider, fileToMessages);
     }
     newFilePathsToMessages.forEach((newMessagesForPath, filePath) => {
+      // Flow naively thinks that since we are in a closure, fileToMessages could have been
+      // reassigned to something null by the time this executes.
+      invariant(fileToMessages != null);
+
+      this._markerTracker.removeFileMessagesForPath(filePath);
+      this._markerTracker.addFileMessages(newMessagesForPath);
+
       // Update _providerToFileToMessages.
-      // $FlowIssue: Flow should understand that fileToMessages cannot be null/undefined here.
       fileToMessages.set(filePath, newMessagesForPath);
       // Update _fileToProviders.
       let providers = this._fileToProviders.get(filePath);
@@ -167,6 +180,7 @@ class DiagnosticStore {
     for (const filePath of pathsToRemove) {
       // Update _providerToFileToMessages.
       if (fileToDiagnostics) {
+        this._markerTracker.removeFileMessagesForPath(filePath);
         fileToDiagnostics.delete(filePath);
       }
       // Update _fileToProviders.
@@ -197,6 +211,7 @@ class DiagnosticStore {
   }
 
   _invalidateSingleMessage(message: FileDiagnosticMessage): void {
+    this._markerTracker.removeFileMessages([message]);
     for (const fileToMessages of this._providerToFileToMessages.values()) {
       const fileMessages = fileToMessages.get(message.filePath);
       if (fileMessages != null) {
@@ -349,14 +364,25 @@ class DiagnosticStore {
    */
 
   applyFix(message: FileDiagnosticMessage): void {
-    invariant(message.fix != null);
-    const succeeded = applyTextEdit(message.filePath, message.fix);
+    const fix = message.fix;
+    invariant(fix != null);
+
+    const actualRange = this._markerTracker.getCurrentRange(message);
+
+    if (actualRange == null) {
+      notifyFixFailed();
+      return;
+    }
+
+    const fixWithActualRange = {
+      ...fix,
+      oldRange: actualRange,
+    };
+    const succeeded = applyTextEdit(message.filePath, fixWithActualRange);
     if (succeeded) {
       this._invalidateSingleMessage(message);
     } else {
-      atom.notifications.addWarning(
-        'Failed to apply fix. Try saving to get fresh results and then try again.',
-      );
+      notifyFixFailed();
     }
   }
 
@@ -381,6 +407,12 @@ class DiagnosticStore {
       this._nonFileChangeEmitter.emit(ALL_CHANGE_EVENT, this._getAllMessages());
     }
   }
+}
+
+function notifyFixFailed() {
+  atom.notifications.addWarning(
+    'Failed to apply fix. Try saving to get fresh results and then try again.',
+  );
 }
 
 module.exports = DiagnosticStore;
