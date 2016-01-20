@@ -143,6 +143,13 @@ export class MarkerTracker {
     }
   }
 
+  removeFileMessagesForPath(path: NuclideUri): void {
+    const existingMessages = this._fileToMessages.get(path);
+    if (existingMessages != null) {
+      this.removeFileMessages(existingMessages);
+    }
+  }
+
   _addMarker(editor: atom$TextEditor, message: FileDiagnosticMessage): void {
     const fix = message.fix;
     invariant(fix != null);
