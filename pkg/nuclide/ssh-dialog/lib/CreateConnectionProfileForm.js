@@ -18,10 +18,10 @@ import type {
 import AtomInput from '../../ui/atom-input';
 import React from 'react-for-atom';
 import invariant from 'assert';
+import {CompositeDisposable} from 'atom';
 import ConnectionDetailsForm from './ConnectionDetailsForm';
 import {validateFormInputs} from './form-validation-utils';
 
-type DefaultProps = {};
 type Props = {
   // A function called when the "Cancel" button is clicked.
   onCancel: () => mixed;
@@ -33,7 +33,6 @@ type Props = {
   // The inputs to pre-fill the form with.
   initialFormFields: NuclideNewConnectionProfileInitialFields,
 };
-type State = {};
 
 const PROFILE_NAME_LABEL = 'Profile Name';
 const DEFAULT_SERVER_COMMAND_PLACEHOLDER = '(DEFAULT)';
@@ -44,13 +43,29 @@ const emptyFunction = () => {};
  * A form that is used to create a new connection profile.
  */
 /* eslint-disable react/prop-types */
-export default class CreateConnectionProfileForm
-    extends React.Component<DefaultProps, Props, State> {
+export default class CreateConnectionProfileForm extends React.Component<void, Props, void> {
+
+  disposables: CompositeDisposable;
 
   constructor(props: Props) {
     super(props);
     this._boundClickSave = this._clickSave.bind(this);
     this._boundClickCancel = this._clickCancel.bind(this);
+    this.disposables = new CompositeDisposable();
+  }
+
+  componentDidMount(): void {
+    const root = React.findDOMNode(this);
+    this.disposables.add(
+      // Hitting enter when this panel has focus should confirm the dialog.
+      atom.commands.add(root, 'core:confirm', this._boundClickSave),
+      // Hitting escape when this panel has focus should cancel the dialog.
+      atom.commands.add(root, 'core:cancel', this._boundClickCancel)
+    );
+  }
+
+  componentWillUnmount(): void {
+    this.disposables.dispose();
   }
 
   /**
@@ -62,11 +77,15 @@ export default class CreateConnectionProfileForm
     const initialFields = this.props.initialFormFields;
 
     return (
-      <div>
-        <atom-panel class="modal from-top">
-          <div>
-            {PROFILE_NAME_LABEL}:
-            <AtomInput ref="profile-name" initialValue="" />
+      <atom-panel class="modal from-top">
+        <div className="padded">
+          <div className="form-group">
+            <label>{PROFILE_NAME_LABEL}:</label>
+            <AtomInput
+              className="nuclide-connections-dialog-input-unstyled"
+              initialValue=""
+              ref="profile-name"
+            />
           </div>
           <ConnectionDetailsForm
             ref="connection-details"
@@ -80,17 +99,18 @@ export default class CreateConnectionProfileForm
             onConfirm={emptyFunction}
             onCancel={emptyFunction}
           />
-
-          <div className="block nuclide-ok-cancel">
-            <button className="btn" onClick={this._boundClickCancel}>
-              Cancel
-            </button>
-            <button className="btn btn-primary" onClick={this._boundClickSave}>
-              Save
-            </button>
+          <div className="padded text-right">
+            <div className="btn-group">
+              <button className="btn" onClick={this._boundClickCancel}>
+                Cancel
+              </button>
+              <button className="btn btn-primary" onClick={this._boundClickSave}>
+                Save
+              </button>
+            </div>
           </div>
-        </atom-panel>
-      </div>
+        </div>
+      </atom-panel>
     );
   }
 

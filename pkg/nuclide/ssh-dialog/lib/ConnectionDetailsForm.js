@@ -144,7 +144,7 @@ export default class ConnectionDetailsForm extends React.Component {
       </div>
     );
     return (
-      <div ref="root">
+      <div>
         <div className="form-group">
           <label>Username:</label>
           <AtomInput
@@ -206,7 +206,7 @@ export default class ConnectionDetailsForm extends React.Component {
   componentDidMount() {
     const disposables = new CompositeDisposable();
     this._disposables = disposables;
-    const root = React.findDOMNode(this.refs['root']);
+    const root = React.findDOMNode(this);
 
     // Hitting enter when this panel has focus should confirm the dialog.
     disposables.add(atom.commands.add(

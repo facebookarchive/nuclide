@@ -32,7 +32,6 @@ import {
 } from '../../remote-connection';
 const logger = require('../../logging').getLogger();
 
-type DefaultProps = {};
 type Props = {
   // The list of connection profiles that will be displayed.
   connectionProfiles: ?Array<NuclideRemoteConnectionProfile>;
@@ -51,6 +50,7 @@ type Props = {
   onCancel: () => mixed;
   onClosed: ?() => mixed;
 };
+
 type State = {
   mode: number;
   instructions: string;
@@ -68,7 +68,7 @@ const WAITING_FOR_AUTHENTICATION = 4;
  * server.
  */
 /* eslint-disable react/prop-types */
-export default class ConnectionDialog extends React.Component<DefaultProps, Props, State> {
+export default class ConnectionDialog extends React.Component<void, Props, State> {
   _boundOk: () => void;
   _boundCancel: () => void;
 
@@ -151,26 +151,22 @@ export default class ConnectionDialog extends React.Component<DefaultProps, Prop
       okButtonText = 'OK';
     }
 
-    // The root element cannot have a 'key' property, so we use a dummy
-    // <div> as the root. Ideally, the <atom-panel> would be the root.
     return (
-      <div>
-        <atom-panel class="modal modal-lg from-top" key="connect-dialog">
-          <div className="padded">
-            {content}
+      <atom-panel class="modal modal-lg from-top">
+        <div className="padded">
+          {content}
+        </div>
+        <div className="padded text-right">
+          <div className="btn-group">
+            <button className="btn" onClick={this._boundCancel}>
+              Cancel
+            </button>
+            <button className="btn btn-primary" onClick={this._boundOk} disabled={isOkDisabled}>
+              {okButtonText}
+            </button>
           </div>
-          <div className="padded text-right">
-            <div className="btn-group">
-              <button className="btn" onClick={this._boundCancel}>
-                Cancel
-              </button>
-              <button className="btn btn-primary" onClick={this._boundOk} disabled={isOkDisabled}>
-                {okButtonText}
-              </button>
-            </div>
-          </div>
-        </atom-panel>
-      </div>
+        </div>
+      </atom-panel>
     );
   }
 
