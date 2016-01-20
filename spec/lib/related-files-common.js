@@ -21,6 +21,7 @@ import {
   setLocalProject,
   startNuclideServer,
   stopNuclideServer,
+  waitsForFile,
 } from '../../pkg/nuclide/integration-test-helpers';
 
 import {fsPromise} from '../../pkg/nuclide/commons';
@@ -29,22 +30,9 @@ import {tempdir} from '../../pkg/nuclide/test-helpers';
 
 export function runTest(remote: boolean) {
   let connection: ?RemoteConnection;
-  let textEditorView: HTMLElement = (null: any);
   let testDir: string = (null: any);
   const TEST_FILES = ['test.cpp', 'test.h', 'testInternal.h', 'test-inl.h'].sort();
   const BAD_FILE = 'bad.txt'; // should not switch to this
-
-  function waitForFile(file) {
-    waitsFor('file to switch', 10000, () => {
-      const textEditor = atom.workspace.getActiveTextEditor();
-      invariant(textEditor != null);
-      const curFile = textEditor.getPath();
-      if (curFile === join(testDir, file)) {
-        textEditorView = atom.views.getView(textEditor);
-        return true;
-      }
-    });
-  }
 
   waitsForPromise({timeout: 60000}, async () => {
     // Activate nuclide packages.
@@ -65,28 +53,33 @@ export function runTest(remote: boolean) {
       setLocalProject(testDir);
     }
     const file = join(testDir, TEST_FILES[0]);
-    const textEditor = await atom.workspace.open(file);
-    textEditorView = atom.views.getView(textEditor);
+    await atom.workspace.open(file);
   });
 
   // Should go over the list in reverse order alphabetically.
   for (let i = 0; i < TEST_FILES.length; i++) {
     runs(() => {
+      const textEditor = atom.workspace.getActiveTextEditor();
+      invariant(textEditor);
+      const textEditorView = atom.views.getView(textEditor);
       dispatchKeyboardEvent('n', textEditorView, {cmd: true, alt: true});
     });
-    waitForFile(TEST_FILES[TEST_FILES.length - i - 1]);
+    waitsForFile(TEST_FILES[TEST_FILES.length - i - 1]);
   }
 
   // Reverse direction.
   for (let i = 0; i < TEST_FILES.length; i++) {
     runs(() => {
+      const textEditor = atom.workspace.getActiveTextEditor();
+      invariant(textEditor);
+      const textEditorView = atom.views.getView(textEditor);
       // No keyboard shortcut for this.
       atom.commands.dispatch(
         textEditorView,
         'nuclide-related-files:jump-to-previous-related-file',
       );
     });
-    waitForFile(TEST_FILES[(i + 1) % TEST_FILES.length]);
+    waitsForFile(TEST_FILES[(i + 1) % TEST_FILES.length]);
   }
 
   runs(() => {

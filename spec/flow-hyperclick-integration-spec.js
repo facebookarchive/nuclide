@@ -9,6 +9,9 @@
  * the root directory of this source tree.
  */
 
+import invariant from 'assert';
+import path from 'path';
+
 import {
   activateAllPackages,
   copyFixture,
@@ -16,10 +19,8 @@ import {
   startFlowServer,
   stopFlowServer,
   dispatchKeyboardEvent,
+  waitsForFile,
 } from '../pkg/nuclide/integration-test-helpers';
-import path from 'path';
-
-import invariant from 'assert';
 
 xdescribe('Flow Autocomplete', () => {
   it('tests simple autocomplete example', () => {
@@ -46,17 +47,7 @@ xdescribe('Flow Autocomplete', () => {
       dispatchKeyboardEvent('enter', document.activeElement, {cmd: true, alt: true});
     });
 
-    waitsFor('Foo.js to become active', 10000, () => {
-      const editor = atom.workspace.getActiveTextEditor();
-      if (editor == null) {
-        return false;
-      }
-      const editorPath = editor.getPath();
-      if (editorPath == null) {
-        return false;
-      }
-      return editorPath.endsWith('Foo.js');
-    });
+    waitsForFile('Foo.js');
 
     runs(() => {
       const editor = atom.workspace.getActiveTextEditor();
