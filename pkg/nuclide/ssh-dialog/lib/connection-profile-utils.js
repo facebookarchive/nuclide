@@ -51,6 +51,7 @@ export function getDefaultConnectionProfile(): NuclideRemoteConnectionProfile {
   // correct bad state that was persisted in users' configs.
   dialogSettings.sshPort = String(dialogSettings.sshPort);
   return {
+    deletable: false,
     displayTitle: '(default)',
     params: dialogSettings,
   };

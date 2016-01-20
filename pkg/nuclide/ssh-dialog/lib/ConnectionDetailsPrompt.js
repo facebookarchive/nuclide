@@ -90,13 +90,19 @@ export default class ConnectionDetailsPrompt
     }
 
     // Create helper data structures.
-    const listSelectorItems = [];
+    let listSelectorItems;
     if (this.props.connectionProfiles) {
-      this.props.connectionProfiles.forEach((profile, index) => {
+      listSelectorItems = this.props.connectionProfiles.map((profile, index) => {
         // Use the index of each profile as its id. This is safe because the
         // items are immutable (within this React component).
-        listSelectorItems.push({id: String(index), displayTitle: profile.displayTitle});
+        return {
+          deletable: profile.deletable,
+          displayTitle: profile.displayTitle,
+          id: String(index),
+        };
       });
+    } else {
+      listSelectorItems = [];
     }
     const idOfSelectedItem = (this.state.indexOfSelectedConnectionProfile != null) ?
       String(this.state.indexOfSelectedConnectionProfile) : null;
@@ -127,10 +133,10 @@ export default class ConnectionDetailsPrompt
           />
         </div>
         <div className="connection-profiles padded">
-          <h3 className="title">Connection Profiles</h3>
+          <h6>Profiles</h6>
           <NuclideMutableListSelector
             items={listSelectorItems}
-            idOfInitiallySelectedItem={idOfSelectedItem}
+            idOfSelectedItem={idOfSelectedItem}
             onItemClicked={this._boundOnProfileClicked}
             onAddButtonClicked={this.props.onAddProfileClicked}
             onDeleteButtonClicked={this._boundOnDeleteProfileClicked}

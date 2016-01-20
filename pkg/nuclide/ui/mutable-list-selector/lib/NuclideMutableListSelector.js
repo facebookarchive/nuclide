@@ -12,15 +12,15 @@
 const React = require('react-for-atom');
 
 type NuclideListSelectorItem = {
-  id: string;
+  deletable?: boolean;
   displayTitle: string;
+  id: string;
 };
 
-type DefaultProps = {};
 type Props = {
-  items: Array<{id: string; displayTitle: string;}>;
+  items: Array<NuclideListSelectorItem>;
   // If null, no item is initially selected.
-  idOfInitiallySelectedItem: ?string;
+  idOfSelectedItem: ?string;
   onItemClicked: (idOfClickedItem: string) => mixed;
   // Function that is called when the "+" button on the list is clicked.
   // The user's intent is to create a new item for the list.
@@ -31,9 +31,10 @@ type Props = {
   // no item selected.
   onDeleteButtonClicked: (idOfCurrentlySelectedItem: ?string) => mixed;
 };
-type State = {
-  idOfSelectedItem: ?string;
-};
+
+const DELETE_BUTTON_TITLE_DEFAULT = 'Delete selected item';
+const DELETE_BUTTON_TITLE_NONE = 'No item selected to delete';
+const DELETE_BUTTON_TITLE_UNDELETABLE = 'Selected item can not be deleted';
 
 /**
  * A generic component that displays selectable list items, and offers
@@ -51,62 +52,71 @@ type State = {
  *   ---------
  */
 /* eslint-disable react/prop-types */
-export default class NuclideMutableListSelector
-    extends React.Component<DefaultProps, Props, State> {
+export default class NuclideMutableListSelector extends React.Component<void, Props, void> {
   _boundOnDeleteButtonClicked: mixed;
 
   constructor(props: Props) {
     super(props);
-    this.state = {
-      idOfSelectedItem: props.idOfInitiallySelectedItem,
-    };
     this._boundOnDeleteButtonClicked = this._onDeleteButtonClicked.bind(this);
   }
 
   _onDeleteButtonClicked() {
-    this.props.onDeleteButtonClicked(this.state.idOfSelectedItem);
+    this.props.onDeleteButtonClicked(this.props.idOfSelectedItem);
   }
 
   _onItemClicked(itemId: string) {
-    this.setState({idOfSelectedItem: itemId});
     this.props.onItemClicked(itemId);
   }
 
   render(): ?ReactElement {
-    const listItems = [];
-    for (const item of this.props.items) {
-      (item : NuclideListSelectorItem);
-      let classes = 'nuclide-mutable-list-selector list-item';
-      if (item.id === this.state.idOfSelectedItem) {
+    let selectedItem;
+    const listItems = this.props.items.map(item => {
+      let classes = 'list-item';
+      if (item.id === this.props.idOfSelectedItem) {
         classes += ' selected';
+        selectedItem = item;
       }
-      listItems.push(
+      return (
         <li
           key={item.id}
           className={classes}
           onClick={this._onItemClicked.bind(this, item.id)}>
-          <span>
-            {item.displayTitle}
-          </span>
+          {item.displayTitle}
         </li>
       );
+    });
+
+    // Explain why the delete button is disabled if the current selection, or lack thereof, is
+    // undeletable.
+    let deleteButtonTitle;
+    if (selectedItem == null) {
+      deleteButtonTitle = DELETE_BUTTON_TITLE_NONE;
+    } else if (selectedItem.deletable === false) {
+      deleteButtonTitle = DELETE_BUTTON_TITLE_UNDELETABLE;
+    } else {
+      deleteButtonTitle = DELETE_BUTTON_TITLE_DEFAULT;
     }
 
     return (
-      <div className="nuclide-mutable-list-selector">
-        <ul className="nuclide-mutable-list-selector list-group">
-          {listItems}
-        </ul>
-        <div className="nuclide-mutable-list-selector btn-group">
+      <div>
+        <div className="block select-list">
+          <ol className="list-group">
+            {listItems}
+          </ol>
+        </div>
+        <div className="block btn-group">
           <button
-            className="nuclide-mutable-list-selector btn"
-            onClick={this.props.onAddButtonClicked}>
-            +
+            className="btn"
+            disabled={selectedItem == null || selectedItem.deletable === false}
+            onClick={this._boundOnDeleteButtonClicked}
+            title={deleteButtonTitle}>
+            -
           </button>
           <button
-            className="nuclide-mutable-list-selector btn"
-            onClick={this._boundOnDeleteButtonClicked}>
-            -
+            className="btn"
+            onClick={this.props.onAddButtonClicked}
+            title="Create new item">
+            +
           </button>
         </div>
       </div>
