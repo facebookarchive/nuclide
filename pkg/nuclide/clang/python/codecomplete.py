@@ -68,6 +68,9 @@ def _get_completions(translation_unit, absolute_path, line, column, prefix, cont
 
     results = translation_unit.codeComplete(
         absolute_path, line, column, unsaved_files)
+    if results is None:
+        return []
+
     completions = []
     for result in results.results:
         completion_string = result.string
