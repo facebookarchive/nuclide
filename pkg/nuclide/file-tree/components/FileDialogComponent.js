@@ -61,14 +61,21 @@ class FileDialogComponent extends React.Component {
       labelClassName = `icon ${this.props.iconClassName}`;
     }
 
+    // `.tree-view-dialog` is unstyled but is added by Atom's tree-view package[1] and is styled by
+    // 3rd-party themes. Add it to make this package's modals styleable the same as Atom's
+    // tree-view.
+    //
+    // [1] https://github.com/atom/tree-view/blob/v0.200.0/lib/dialog.coffee#L7
     return (
-      <atom-panel class="modal from-top" key="add-dialog">
-        <label className={labelClassName}>{this.props.message}</label>
-        <AtomInput
-          initialValue={this.props.initialValue}
-          onBlur={this._close}
-          ref="input"
-        />
+      <atom-panel class="modal overlay from-top">
+        <div className="tree-view-dialog">
+          <label className={labelClassName}>{this.props.message}</label>
+          <AtomInput
+            initialValue={this.props.initialValue}
+            onBlur={this._close}
+            ref="input"
+          />
+        </div>
       </atom-panel>
     );
   }
