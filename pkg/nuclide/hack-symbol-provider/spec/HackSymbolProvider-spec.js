@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {HackSearchPosition} from '../../hack-base/lib/types';
+import type {HackSearchPosition} from '../../hack-base/lib/HackService';
 import type {NuclideUri} from '../../remote-uri';
 
 import {HackSymbolProvider} from '../lib/HackSymbolProvider';

@@ -9,7 +9,8 @@
  * the root directory of this source tree.
  */
 
-import type {HackSearchResult, HackSearchPosition, HHSearchPosition} from './types';
+import type {HackSearchPosition} from './HackService';
+import type {HackSearchResult, HHSearchPosition} from './types';
 import type {SearchResultTypeValue, SymbolTypeValue} from '../../hack-common/lib/constants';
 
 import invariant from 'assert';

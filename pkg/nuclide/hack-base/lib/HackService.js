@@ -9,17 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {
-  HackDiagnosticsResult,
-  HackDiagnostic,
-  HackCompletionsResult,
-  HackCompletion,
-  HackDefinitionResult,
-  HackSearchResult,
-  HackReference,
-  HackReferencesResult,
-} from './types';
-import type {SymbolTypeValue} from '../../hack-common/lib/constants';
+import type {HackSearchResult} from './types';
 import type {NuclideUri} from '../../remote-uri';
 
 import {fsPromise, promises} from '../../commons';
@@ -31,6 +21,81 @@ import {
   getSearchResults,
   getHackExecOptions,
 } from './HackHelpers';
+
+export type SymbolTypeValue = 0 | 1 | 2 | 3 | 4;
+
+export type HackDiagnosticsResult = {
+  // The location of the .hhconfig where these messages came from.
+  hackRoot: NuclideUri;
+  messages: Array<{
+    message: HackDiagnostic;
+  }>;
+};
+
+/**
+ * Each error or warning can consist of any number of different messages from
+ * Flow to help explain the problem and point to different locations that may be
+ * of interest.
+ */
+export type HackDiagnostic = Array<SingleHackMessage>;
+
+export type SingleHackMessage = {
+  path: ?NuclideUri;
+  descr: string;
+  code: number;
+  line: number;
+  start: number;
+  end: number;
+};
+
+export type HackFunctionDetails = {
+  params: Array<{name: string}>;
+};
+
+export type HackCompletion = {
+  name: string;
+  type: string;
+  pos: {
+    filename: NuclideUri,
+    line: number;
+    char_start: number;
+    char_end: number;
+  };
+  func_details: ?HackFunctionDetails;
+};
+
+export type HackCompletionsResult = {
+  hackRoot: NuclideUri;
+  completions: Array<HackCompletion>;
+};
+
+export type HackDefinitionResult = {
+  hackRoot: NuclideUri;
+  definitions: Array<HackSearchPosition>;
+};
+
+export type HackReferencesResult = {
+  hackRoot: NuclideUri;
+  references: Array<HackReference>;
+};
+
+export type HackSearchPosition = {
+  path: NuclideUri;
+  line: number;
+  column: number;
+  name: string;
+  length: number;
+  scope: string;
+  additionalInfo: string;
+};
+
+export type HackReference = {
+  name: string;
+  filename: NuclideUri;
+  line: number;
+  char_start: number;
+  char_end: number;
+};
 
 const HH_NEWLINE = '<?hh\n';
 const HH_STRICT_NEWLINE = '<?hh // strict\n';
@@ -155,12 +220,12 @@ export async function getDependencies(
   // to unblock user-requested hack language features and failry treat other usages of hh_client.
   /* eslint-disable babel/no-await-in-loop */
   for (const dependency of dependenciesInfo) {
-    let {name: dependencyName, type: dependencyType} = dependency;
+    let dependencyName = dependency.name;
     if (dependencyName.startsWith('\\')) {
       dependencyName = dependencyName.substring(1);
     }
     let filter;
-    if (dependencyType === 'class') {
+    if (dependency.type === 'class') {
       filter = [
         SearchResultType.CLASS,
         SearchResultType.ABSTRACT_CLASS,
@@ -235,7 +300,7 @@ export async function getReferences(
 
 export function getHackEnvironmentDetails(
   localFile: string,
-): Promise<?{hackRoot: string, hackCommand: string}> {
+): Promise<?{hackRoot: NuclideUri, hackCommand: string}> {
   return getHackExecOptions(localFile);
 }
 

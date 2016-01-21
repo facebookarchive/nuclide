@@ -17,9 +17,10 @@ import type {
   HackDiagnostic,
   HackDefinitionResult,
   HackSearchPosition,
-  HackSymbolNameResult,
   HackReferencesResult,
-} from '../../hack-base/lib/types';
+} from '../../hack-base/lib/HackService';
+
+import type {HackSymbolNameResult} from '../../hack-base/lib/types';
 
 import {parse, createRemoteUri, getPath} from '../../remote-uri';
 import {getHackService} from './utils';

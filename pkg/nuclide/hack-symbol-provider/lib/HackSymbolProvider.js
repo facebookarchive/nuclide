@@ -14,7 +14,7 @@ import type {
   Provider,
   ProviderType,
 } from '../../quick-open-interfaces';
-import type {HackSearchPosition} from '../../hack-base/lib/types';
+import type {HackSearchPosition} from '../../hack-base/lib/HackService';
 
 import {getHackSearchService} from './getHackSearchService';
 import path from 'path';

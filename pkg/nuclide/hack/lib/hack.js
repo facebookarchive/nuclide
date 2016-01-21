@@ -10,10 +10,8 @@
  */
 
 import type {NuclideUri} from '../../remote-uri';
-import type {HackReference} from '../../hack-base/lib/types';
+import type {HackReference, HackDiagnostic} from '../../hack-base/lib/HackService';
 import type {TypeHint} from '../../type-hint-interfaces';
-import type {HackDiagnostic} from '../../hack-base/lib/types';
-
 
 import invariant from 'assert';
 import {extractWordAtPosition} from '../../atom-helpers';

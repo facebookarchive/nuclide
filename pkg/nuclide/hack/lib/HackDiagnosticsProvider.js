@@ -12,7 +12,10 @@
 import type {NuclideUri} from '../../remote-uri';
 import type {BusySignalProviderBase} from '../../busy-signal-provider-base';
 import type HackLanguage from './HackLanguage';
-import type {HackDiagnostic, SingleHackMessage} from '../../hack-base/lib/types';
+import type {
+  HackDiagnostic,
+  SingleHackMessage,
+} from '../../hack-base/lib/HackService';
 import type {
   FileDiagnosticMessage,
   MessageUpdateCallback,

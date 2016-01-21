@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {HackSearchPosition} from '../../hack-base/lib/types';
+import type {HackSearchPosition} from '../../hack-base/lib/HackService';
 import type {SearchResultTypeValue} from '../../hack-common/lib/constants';
 
 import {clearRequireCache, uncachedRequire} from '../../test-helpers';
