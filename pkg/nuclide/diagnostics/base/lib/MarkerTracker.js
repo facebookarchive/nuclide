@@ -81,9 +81,8 @@ export class MarkerTracker {
   getCurrentRange(message: FileDiagnosticMessage): ?atom$Range {
     this._assertNotDisposed();
     const marker = this._messageToMarker.get(message);
-    invariant(marker != null, `Internal error: Marker is missing for ${message.filePath}`);
 
-    if (marker.isValid()) {
+    if (marker != null && marker.isValid()) {
       return marker.getBufferRange();
     } else {
       return null;

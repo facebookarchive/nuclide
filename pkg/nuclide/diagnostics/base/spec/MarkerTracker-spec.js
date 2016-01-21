@@ -104,9 +104,7 @@ describe('MarkerTracker', () => {
     waitsForPromise(async () => {
       tracker.addFileMessages([messageForInitiallyClosedFile]);
       checkRep(tracker);
-      expect(() => {
-        tracker.getCurrentRange(messageForInitiallyClosedFile);
-      }).toThrow();
+      expect(tracker.getCurrentRange(messageForInitiallyClosedFile)).toBeNull();
       const initiallyClosedEditor = await atom.workspace.open(initiallyClosedFilePath);
       let range = tracker.getCurrentRange(messageForInitiallyClosedFile);
       invariant(range != null);
