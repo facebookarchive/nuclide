@@ -21,8 +21,6 @@ const {RemoteConnection} = require('./RemoteConnection');
 const {fsPromise} = require('../../commons');
 
 // Sync word and regex pattern for parsing command stdout.
-const SYNC_WORD = 'SYNSYN';
-const STDOUT_REGEX = /SYNSYN[\s\S\n]*({.*})[\s\S\n]*SYNSYN/;
 const READY_TIMEOUT_MS = 60 * 1000;
 
 export type SshConnectionConfiguration = {
@@ -283,14 +281,15 @@ export class SshHandshake {
         && this._clientKey);
   }
 
-  _startRemoteServer(): Promise<boolean> {
+  async _startRemoteServer(): Promise<boolean> {
+
     return new Promise((resolve, reject) => {
       let stdOut = '';
-
+      const remoteTempFile = `/tmp/nuclide-sshhandshake-${Math.random()}`;
       //TODO: escape any single quotes
       //TODO: the timeout value shall be configurable using .json file too (t6904691).
       const cmd = `${this._config.remoteServerCommand} --workspace=${this._config.cwd}`
-        + ` --common_name=${this._config.host} -t 60`;
+        + ` --common-name=${this._config.host} --json-output-file=${remoteTempFile} -t 60`;
 
       // This imitates a user typing:
       //   $ TERM=nuclide ssh server
@@ -312,54 +311,76 @@ export class SshHandshake {
       this._connection.shell({term: 'nuclide'}, (err, stream) => {
         if (err) {
           this._onSshConnectionError(err);
-          resolve(false);
+          return resolve(false);
         }
         stream.on('close', (code, signal) => {
           // Note: this code is probably the code from the child shell if one
           // is in use.
           if (code === 0) {
-            let serverInfo;
-            const match = STDOUT_REGEX.exec(stdOut);
-            if (!match) {
-              this._error(
-                'Remote server failed to start',
-                SshHandshake.ErrorType.SERVER_START_FAILED,
-                new Error(stdOut),
-              );
-              resolve(false);
-              return;
-            }
-            try {
-              serverInfo = JSON.parse(match[1]);
-            } catch (e) {
-              this._error(
-                'Remote server failed to start',
-                SshHandshake.ErrorType.SERVER_START_FAILED,
-                new Error(stdOut),
-              );
-              resolve(false);
-              return;
-            }
-            if (!serverInfo.workspace) {
-              this._error(
-                'Could not find directory',
-                SshHandshake.ErrorType.DIRECTORY_NOT_FOUND,
-                new Error(stdOut),
-              );
-              resolve(false);
-              return;
-            }
+            this._connection.sftp(async (error, sftp) => {
+              if (error) {
+                this._error(
+                  'Failed to start sftp connection',
+                  SshHandshake.ErrorType.SERVER_START_FAILED,
+                  error,
+                );
+                return resolve(false);
+              }
+              const localTempFile = await fsPromise.tempfile();
+              sftp.fastGet(remoteTempFile, localTempFile, async (sftpError) => {
+                sftp.end();
+                if (sftpError) {
+                  this._error(
+                    'Failed to transfer server start information',
+                    SshHandshake.ErrorType.SERVER_START_FAILED,
+                    sftpError,
+                  );
+                  return resolve(false);
+                }
 
-            // Update server info that is needed for setting up client.
-            this._updateServerInfo(serverInfo);
-            resolve(true);
+                let serverInfo: any = null;
+                const serverInfoJson = await fsPromise.readFile(localTempFile);
+                try {
+                  serverInfo = JSON.parse(serverInfoJson);
+                } catch (e) {
+                  this._error(
+                    'Malformed server start information',
+                    SshHandshake.ErrorType.SERVER_START_FAILED,
+                    new Error(serverInfoJson),
+                  );
+                  return resolve(false);
+                }
+
+                if (!serverInfo.success) {
+                  this._error(
+                    'Remote server failed to start',
+                    SshHandshake.ErrorType.SERVER_START_FAILED,
+                    new Error(serverInfo.logs),
+                  );
+                  return resolve(false);
+                }
+
+                if (!serverInfo.workspace) {
+                  this._error(
+                    'Could not find directory',
+                    SshHandshake.ErrorType.DIRECTORY_NOT_FOUND,
+                    new Error(serverInfo.logs),
+                  );
+                  return resolve(false);
+                }
+
+                // Update server info that is needed for setting up client.
+                this._updateServerInfo(serverInfo);
+                return resolve(true);
+              });
+            });
           } else {
             this._error(
               'Remote shell execution failed',
               SshHandshake.ErrorType.UNKNOWN,
               new Error(stdOut),
             );
-            resolve(false);
+            return resolve(false);
           }
         }).on('data', data => {
           stdOut += data;
@@ -376,7 +397,7 @@ export class SshHandshake {
         //
         // TODO: (mikeo) There is a SHLVL environment variable set that can be
         // used to decide how many times to exit
-        stream.end(`echo ${SYNC_WORD};${cmd};echo ${SYNC_WORD}\nexit\nexit\n`);
+        stream.end(`${cmd}\nexit\nexit\n`);
       });
     });
   }
