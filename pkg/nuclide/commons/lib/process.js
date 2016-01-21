@@ -19,6 +19,8 @@ import {PromiseQueue} from './PromiseExecutors';
 import type {Observable as ObservableType, Observer} from 'rx';
 import type {ProcessMessage, process$asyncExecuteRet} from './main';
 
+import {observeStream, splitStream} from './stream';
+import {Observable} from 'rx';
 import invariant from 'assert';
 
 let platformPathPromise: ?Promise<string>;
@@ -234,47 +236,6 @@ function scriptSafeSpawnAndObserveOutput(
   });
 }
 
-import {Observable} from 'rx';
-
-/**
- * Observe a stream like stdout or stderr.
- */
-function observeStream(stream: stream$Readable): ObservableType<string> {
-  const error = Observable.fromEvent(stream, 'error').flatMap(Observable.throwError);
-  return Observable.fromEvent(stream, 'data').map(data => data.toString()).
-    merge(error).
-    takeUntil(Observable.fromEvent(stream, 'end').amb(error));
-}
-
-/**
- * Splits a stream of strings on newlines.
- * Includes the newlines in the resulting stream.
- * Sends any non-newline terminated data before closing.
- * Never sends an empty string.
- */
-function splitStream(input: ObservableType<string>): ObservableType<string> {
-  return Observable.create(observer => {
-    let current: string = '';
-
-    function onEnd() {
-      if (current !== '') {
-        observer.onNext(current);
-        current = '';
-      }
-    }
-
-    return input.subscribe(
-      value => {
-        const lines = (current + value).split('\n');
-        current = lines.pop();
-        lines.forEach(line => observer.onNext(line + '\n'));
-      },
-      error => { onEnd(); observer.onError(error); },
-      () => { onEnd(); observer.onCompleted(); },
-    );
-  });
-}
-
 class Process {
   process: ?child_process$ChildProcess;
   constructor(process: child_process$ChildProcess) {
@@ -477,7 +438,6 @@ module.exports = {
   scriptSafeSpawn,
   scriptSafeSpawnAndObserveOutput,
   createExecEnvironment,
-  observeStream,
   observeProcessExit,
   observeProcess,
   COMMON_BINARY_PATHS,

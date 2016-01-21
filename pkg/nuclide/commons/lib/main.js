@@ -96,8 +96,12 @@ module.exports = {
     return requireFromCache('./process').scriptSafeSpawnAndObserveOutput(command, args, options);
   },
 
-  observeStream(process: stream$Readable): Observable<string> {
-    return requireFromCache('./process').observeStream(process);
+  splitStream(input: Observable<string>): Observable<string> {
+    return requireFromCache('./stream').splitStream(input);
+  },
+
+  observeStream(stream: stream$Readable): Observable<string> {
+    return requireFromCache('./stream').observeStream(stream);
   },
 
   observeProcessExit(createProcess: () => child_process$ChildProcess): Observable<number> {
