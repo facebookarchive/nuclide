@@ -12,6 +12,7 @@
 
 import {DUMMY_FRAME_ID} from './helpers';
 import Handler from './Handler';
+import {makeExpressionHphpdCompatible} from './utils';
 
 import type {ConnectionMultiplexer} from './ConnectionMultiplexer';
 import type {ClientCallback} from './ClientCallback';
@@ -39,12 +40,14 @@ export class RuntimeHandler extends Handler {
         break;
 
       case 'evaluate':
+        const compatParams = makeExpressionHphpdCompatible(params);
+
         // Chrome may call 'evaluate' for other purposes like auto-completion etc..
         // and we are only interested in console evaluation.
-        if (params.objectGroup === 'console') {
-          await this._evaluate(id, params);
+        if (compatParams.objectGroup === 'console') {
+          await this._evaluate(id, compatParams);
         } else {
-          this.unknownMethod(id, method, params);
+          this.unknownMethod(id, method, compatParams);
         }
         break;
 

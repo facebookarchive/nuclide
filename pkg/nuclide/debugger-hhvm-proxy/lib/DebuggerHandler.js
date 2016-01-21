@@ -10,6 +10,7 @@
  */
 
 
+import {makeExpressionHphpdCompatible} from './utils';
 import logger from './utils';
 import {uriToPath} from './helpers';
 import Handler from './Handler';
@@ -116,9 +117,10 @@ export class DebuggerHandler extends Handler {
         break;
 
       case 'evaluateOnCallFrame':
+        const compatParams = makeExpressionHphpdCompatible(params);
         const result = await this._connectionMultiplexer.evaluateOnCallFrame(
-          Number(params.callFrameId),
-          params.expression
+          Number(compatParams.callFrameId),
+          compatParams.expression
         );
         this.replyToCommand(id, result);
         break;
