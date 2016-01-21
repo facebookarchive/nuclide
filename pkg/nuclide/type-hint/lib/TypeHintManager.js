@@ -152,7 +152,6 @@ class TypeHintManager {
       const logger = require('../../logging').getLogger();
       logger.error('Type hint provider has no name', provider);
     }
-
     const typeHint = await trackOperationTiming(
       name + '.typeHint',
       () => provider.typeHint(editor, position),
@@ -164,15 +163,6 @@ class TypeHintManager {
     const {hint, hintTree, range} = typeHint;
     // For now, actual hint text is required.
     invariant(hint != null);
-
-
-    // Only (re)-create the typehint if its contents differ from the currently rendered one.
-    const serializedTypeHint = hint + range.serialize().toString();
-    if (this._marker !== null && serializedTypeHint === this._previousTypeHintSerialized) {
-      return;
-    }
-    this._previousTypeHintSerialized = serializedTypeHint;
-
     // We track the timing above, but we still want to know the number of popups that are shown.
     track('type-hint-popup', {
       'scope': scopeName,
@@ -187,13 +177,11 @@ class TypeHintManager {
       <TypeHintComponent content={hintTree || hint} />,
       this._typeHintElement
     );
-    const hintHeight = this._typeHintElement.clientHeight;
     // This relative positioning is to work around the issue that `position: 'head'`
     // doesn't work for overlay decorators are rendered on the bottom right of the given range.
     // Atom issue: https://github.com/atom/atom/issues/6695
     const expressionLength = range.end.column - range.start.column;
     this._typeHintElement.style.left = -(expressionLength * editor.getDefaultCharWidth()) +  'px';
-    this._typeHintElement.style.bottom = hintHeight + 'px';
     this._typeHintElement.style.display = 'block';
 
     editor.decorateMarker(
