@@ -44,18 +44,12 @@ class TypeHintManager {
     this._subscriptions.add(atom.commands.add(
       'atom-text-editor',
       'nuclide-type-hint:toggle',
-      () => {
-        this._typeHintToggle = !this._typeHintToggle;
-        if (this._typeHintToggle) {
-          const editor = atom.workspace.getActiveTextEditor();
-          if (editor != null) {
-            const position = editor.getCursorScreenPosition();
-            this._typeHintInEditor(editor, position);
-          }
-        } else {
-          this._typeHintElement.style.display = 'none';
-        }
-      }
+      this.toggleTypehint.bind(this)
+    ));
+    this._subscriptions.add(atom.commands.add(
+      'atom-text-editor',
+      'core:cancel',
+      this.hideTypehint.bind(this)
     ));
 
     // TODO(most): Replace with @jjiaa's mouseListenerForTextEditor introduced in D2005545.
@@ -89,6 +83,28 @@ class TypeHintManager {
     this._typeHintTimer = null;
     this._typeHintToggle = false;
     this._previousTypeHintSerialized = '';
+  }
+
+  toggleTypehint(): void {
+    this._typeHintToggle = !this._typeHintToggle;
+    if (this._typeHintToggle) {
+      const editor = atom.workspace.getActiveTextEditor();
+      if (editor != null) {
+        const position = editor.getCursorScreenPosition();
+        this._typeHintInEditor(editor, position);
+      }
+    } else {
+      this.hideTypehint();
+    }
+  }
+
+  hideTypehint(): void {
+    this._typeHintElement.style.display = 'none';
+    if (this._marker == null) {
+      return;
+    }
+    this._marker.destroy();
+    this._marker = null;
   }
 
   _clearTypeHintTimer() {
