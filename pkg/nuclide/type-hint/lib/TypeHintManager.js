@@ -145,8 +145,7 @@ class TypeHintManager {
       return;
     }
 
-    const {hint, range} = typeHint;
-
+    const {hint, hintTree, range} = typeHint;
     // For now, actual hint text is required.
     invariant(hint != null);
 
@@ -168,7 +167,10 @@ class TypeHintManager {
     const marker: atom$Marker = editor.markBufferRange(range, {invalidate: 'never'});
     this._marker = marker;
 
-    React.render(<TypeHintComponent content={hint} />, this._typeHintElement);
+    React.render(
+      <TypeHintComponent content={hintTree || hint} />,
+      this._typeHintElement
+    );
     const hintHeight = this._typeHintElement.clientHeight;
     // This relative positioning is to work around the issue that `position: 'head'`
     // doesn't work for overlay decorators are rendered on the bottom right of the given range.
