@@ -20,23 +20,23 @@ import invariant from 'assert';
 const {TestUtils} = React.addons;
 
 describe('HackSymbolProvider', () => {
-  // These tests are set up so that calls to getHackSearchService() will delegate to this
+  // These tests are set up so that calls to getHackService() will delegate to this
   // function, so make sure to define this function at the start of your test to mock out this
   // behavior.
-  let getHackSearchService: ?((directory: atom$Directory) => Promise<mixed>);
+  let getHackService: ?((directory: atom$Directory) => Promise<mixed>);
 
   beforeEach(() => {
-    getHackSearchService = null;
-    spyOn(require('../lib/getHackSearchService'), 'getHackSearchService')
+    getHackService = null;
+    spyOn(require('../lib/getHackService'), 'getHackService')
       .andCallFake((directory: atom$Directory) => {
-        invariant(getHackSearchService);
-        return getHackSearchService(directory);
+        invariant(getHackService);
+        return getHackService(directory);
       });
     uncachedRequire(require, '../lib/HackSymbolProvider');
   });
 
   afterEach(() => {
-    jasmine.unspy(require('../lib/getHackSearchService'), 'getHackSearchService');
+    jasmine.unspy(require('../lib/getHackService'), 'getHackService');
     clearRequireCache(require, '../lib/HackSymbolProvider');
   });
 
@@ -46,33 +46,33 @@ describe('HackSymbolProvider', () => {
     };
 
     it(
-      'isEligibleForDirectory() should return true when getHackSearchService() returns ' +
-        'an instance of HackSearchService',
+      'isEligibleForDirectory() should return true when getHackService() returns ' +
+        'an instance of HackService',
       () => {
-        const hackSearchService = createDummyHackSearchService();
-        getHackSearchService = jasmine.createSpy('getHackSearchService').andReturn(
-          hackSearchService);
+        const hackService = createDummyHackService();
+        getHackService = jasmine.createSpy('getHackService').andReturn(
+          hackService);
 
         waitsForPromise(async () => {
           invariant(HackSymbolProvider.isEligibleForDirectory != null);
           const isEligible = await HackSymbolProvider.isEligibleForDirectory((mockDirectory: any));
           expect(isEligible).toBe(true);
-          expect(getHackSearchService).toHaveBeenCalledWith(mockDirectory);
+          expect(getHackService).toHaveBeenCalledWith(mockDirectory);
         });
       },
     );
 
     it(
-      'isEligibleForDirectory() should return false when getHackSearchService() returns ' +
+      'isEligibleForDirectory() should return false when getHackService() returns ' +
         'null',
       () => {
-        getHackSearchService = jasmine.createSpy('getHackSearchService').andReturn(null);
+        getHackService = jasmine.createSpy('getHackService').andReturn(null);
 
         waitsForPromise(async () => {
           invariant(HackSymbolProvider.isEligibleForDirectory != null);
           const isEligible = await HackSymbolProvider.isEligibleForDirectory((mockDirectory: any));
           expect(isEligible).toBe(false);
-          expect(getHackSearchService).toHaveBeenCalledWith(mockDirectory);
+          expect(getHackService).toHaveBeenCalledWith(mockDirectory);
         });
       },
     );
@@ -94,19 +94,19 @@ describe('HackSymbolProvider', () => {
 
     it('local search returns local paths when searching local directories', () => {
       waitsForPromise(async () => {
-        // Set up the HackSearchService to return some canned results.
+        // Set up the HackService to return some canned results.
         const cannedResults = [
           {path: '/some/local/path/asdf.txt', line: 1, column: 42, context: 'aha'},
         ];
-        const hackSearchService = createDummyHackSearchService();
-        const queryMethod = spyOn(hackSearchService, 'queryHack').andReturn(cannedResults);
-        getHackSearchService = jasmine.createSpy('getHackSearchService').andReturn(
-          hackSearchService);
+        const hackService = createDummyHackService();
+        const queryMethod = spyOn(hackService, 'queryHack').andReturn(cannedResults);
+        getHackService = jasmine.createSpy('getHackService').andReturn(
+          hackService);
 
         const query = 'asdf';
         const results = await HackSymbolProvider.executeQuery(query, (mockLocalDirectory: any));
 
-        // Verify the expected results were returned by delegating to the HackSearchService.
+        // Verify the expected results were returned by delegating to the HackService.
         expect(results).toEqual(cannedResults);
         expect(queryMethod.callCount).toBe(1);
         expect(queryMethod.argsForCall[0]).toEqual([mockLocalDirectory.getPath(), query]);
@@ -115,7 +115,7 @@ describe('HackSymbolProvider', () => {
 
     it('remote search returns remote paths when searching remote directories', () => {
       waitsForPromise(async () => {
-        // Set up the HackSearchService to return some canned results.
+        // Set up the HackService to return some canned results.
         const mockRemoteDirectory = {
           getPath() {
             return 'nuclide://some.host:1234/some/remote/path';
@@ -129,15 +129,15 @@ describe('HackSymbolProvider', () => {
             context: 'aha',
           },
         ];
-        const hackSearchService = createDummyHackSearchService();
-        const queryMethod = spyOn(hackSearchService, 'queryHack').andReturn(cannedResults);
-        getHackSearchService = jasmine.createSpy('getHackSearchService').andReturn(
-          hackSearchService);
+        const hackService = createDummyHackService();
+        const queryMethod = spyOn(hackService, 'queryHack').andReturn(cannedResults);
+        getHackService = jasmine.createSpy('getHackService').andReturn(
+          hackService);
 
         const query = 'asdf';
         const results = await HackSymbolProvider.executeQuery(query, (mockRemoteDirectory: any));
 
-        // Verify the expected results were returned by delegating to the HackSearchService,
+        // Verify the expected results were returned by delegating to the HackService,
         // and that local file paths are converted to NuclideUris.
         expect(results).toEqual(cannedResults);
         expect(queryMethod.callCount).toBe(1);
@@ -169,7 +169,7 @@ describe('HackSymbolProvider', () => {
   });
 });
 
-function createDummyHackSearchService(): any {
+function createDummyHackService(): any {
   return {
     queryHack(
       rootDirectory: NuclideUri,

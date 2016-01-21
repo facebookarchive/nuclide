@@ -14,7 +14,7 @@ import type {CtagsResult} from '../../remote-ctags-base';
 import invariant from 'assert';
 import React from 'react-for-atom';
 import nuclideRemoteConnection from '../../remote-connection';
-import * as hackSearchService from '../../hack-symbol-provider/lib/getHackSearchService';
+import * as hackService from '../../hack-symbol-provider/lib/getHackService';
 
 const {TestUtils} = React.addons;
 
@@ -54,7 +54,7 @@ describe('QuickOpenProvider', () => {
         };
       },
     });
-    hackSpy = spyOn(hackSearchService, 'getHackSearchService').andReturn(null);
+    hackSpy = spyOn(hackService, 'getHackService').andReturn(null);
     QuickOpenProvider = require('../lib/QuickOpenProvider');
   });
 

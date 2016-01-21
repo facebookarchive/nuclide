@@ -9,12 +9,12 @@
  * the root directory of this source tree.
  */
 
-import type {HackSearchPosition} from '../../hack-base/lib/HackService';
+import type {HackSearchPosition} from '../lib/HackService';
 import type {SearchResultTypeValue} from '../../hack-common/lib/constants';
 
 import {clearRequireCache, uncachedRequire} from '../../test-helpers';
 import invariant from 'assert';
-import {queryHack} from '../lib/HackSearchService';
+import {queryHack} from '../lib/HackService';
 
 describe('queryHack()', () => {
   let getSearchResults: ?((
@@ -25,7 +25,7 @@ describe('queryHack()', () => {
   ) => Promise<Array<HackSearchPosition>>) = null;
 
   beforeEach(() => {
-    spyOn(require('../../hack-base/lib/HackHelpers'), 'getSearchResults')
+    spyOn(require('../lib/HackHelpers'), 'getSearchResults')
       .andCallFake((
         filePath: string,
         search: string,
@@ -35,12 +35,12 @@ describe('queryHack()', () => {
         invariant(getSearchResults);
         return getSearchResults(filePath, search, filterTypes, searchPostfix);
       });
-    uncachedRequire(require, '../lib/HackSearchService');
+    uncachedRequire(require, '../lib/HackService');
   });
 
   afterEach(() => {
-    unspy(require('../../hack-base/lib/HackHelpers'), 'getSearchResults');
-    clearRequireCache(require, '../lib/HackSearchService');
+    unspy(require('../lib/HackHelpers'), 'getSearchResults');
+    clearRequireCache(require, '../lib/HackService');
   });
 
   it('empty results are returned when getSearchResults() returns null', () => {

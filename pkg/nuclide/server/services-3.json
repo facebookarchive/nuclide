@@ -35,10 +35,6 @@
     "name": "BuckUtils"
   },
   {
-    "implementation": "../hack-search-service/lib/HackSearchService.js",
-    "name": "HackSearchService"
-  },
-  {
     "implementation": "../ocaml-base/lib/LocalMerlinService.js",
     "name": "MerlinService"
   },

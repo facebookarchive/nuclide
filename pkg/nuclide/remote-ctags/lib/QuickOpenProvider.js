@@ -18,7 +18,7 @@ import type {
 import type {CtagsResult, CtagsService} from '../../remote-ctags-base';
 
 import React from 'react-for-atom';
-import {getHackSearchService} from '../../hack-symbol-provider/lib/getHackSearchService';
+import {getHackService} from '../../hack-symbol-provider/lib/getHackService';
 import {getServiceByNuclideUri} from '../../remote-connection';
 import {join, relative} from '../../remote-uri';
 import {CTAGS_KIND_ICONS, CTAGS_KIND_NAMES, getLineNumberForTag} from './utils';
@@ -64,7 +64,7 @@ module.exports = ({
     // HACK: Ctags results typically just duplicate Hack results when they're present.
     // Disable this when a Hack service is present.
     // TODO(hansonw): Remove this when quick-open has proper ranking/de-duplication.
-    const hack = await getHackSearchService(directory);
+    const hack = await getHackService(directory);
     if (hack != null) {
       return false;
     }

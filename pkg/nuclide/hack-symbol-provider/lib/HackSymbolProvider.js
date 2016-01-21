@@ -16,7 +16,7 @@ import type {
 } from '../../quick-open-interfaces';
 import type {HackSearchPosition} from '../../hack-base/lib/HackService';
 
-import {getHackSearchService} from './getHackSearchService';
+import {getHackService} from './getHackService';
 import path from 'path';
 import React from 'react-for-atom';
 
@@ -80,7 +80,7 @@ export const HackSymbolProvider: Provider<HackFileResult> = {
   },
 
   async isEligibleForDirectory(directory: atom$Directory): Promise<boolean> {
-    const service = await getHackSearchService(directory);
+    const service = await getHackService(directory);
     return service != null;
   },
 
@@ -92,13 +92,14 @@ export const HackSymbolProvider: Provider<HackFileResult> = {
       return [];
     }
 
-    const service = await getHackSearchService(directory);
+    const service = await getHackService(directory);
     if (service == null) {
       return [];
     }
 
     const directoryPath = directory.getPath();
-    return (await service.queryHack(directoryPath, query): Array<HackFileResult>);
+    const results: Array<HackSearchPosition> = await service.queryHack(directoryPath, query);
+    return ((results: any): Array<HackFileResult>);
   },
 
   getComponentForItem(item: HackFileResult): ReactElement {

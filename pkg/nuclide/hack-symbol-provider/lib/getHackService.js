@@ -9,29 +9,24 @@
  * the root directory of this source tree.
  */
 
-import type {HackFileResult} from './HackSymbolProvider';
-
-type HackSearchService = {
-  isAvailableForDirectoryHack(directoryPath: string): Promise<boolean>;
-  queryHack(directoryPath: string, query: string): Promise<Array<HackFileResult>>;
-};
+import typeof * as HackService from '../../hack-base/lib/HackService';
 
 import {getServiceByNuclideUri} from '../../client';
 
 /**
- * @return HackSearchService for the specified directory if it is part of a Hack project.
+ * @return HackService for the specified directory if it is part of a Hack project.
  */
-export async function getHackSearchService(
+export async function getHackService(
   directory: atom$Directory,
-): Promise<?HackSearchService> {
+): Promise<?HackService> {
   const directoryPath = directory.getPath();
-  const service: ?HackSearchService = getServiceByNuclideUri('HackSearchService', directoryPath);
+  const service: ?HackService = getServiceByNuclideUri('HackService', directoryPath);
   if (service == null) {
     return null;
   }
 
   // Note that service being non-null only verifies that the nuclide-server that corresponds to the
-  // directory has the HackSearchService registered: it does not guarantee that the specified
+  // directory has the HackService registered: it does not guarantee that the specified
   // directory is searchable via Hack. As such, we have to perform a second check to make sure
   // that the specified directory belongs to a Hack project.
   if (await service.isAvailableForDirectoryHack(directoryPath)) {
