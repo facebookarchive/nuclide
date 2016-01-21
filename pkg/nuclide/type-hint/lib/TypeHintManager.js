@@ -15,22 +15,20 @@ import invariant from 'assert';
 import {CompositeDisposable, Disposable} from 'atom';
 import React from 'react-for-atom';
 
-import {array} from '../../commons';
+import {array, debounce} from '../../commons';
 import {track, trackOperationTiming} from '../../analytics';
 
 import {TypeHintComponent} from './TypeHintComponent';
 
-const TYPEHINT_DELAY_MS = 200;
+const TYPEHINT_DELAY_MS = 50;
 
 class TypeHintManager {
 
   _subscriptions: atom$CompositeDisposable;
   _marker: ?atom$Marker;
-  _typeHintTimer: ?number;
-  _typeHintToggle: boolean;
   _typeHintElement: HTMLElement;
-  _previousTypeHintSerialized: string;
-
+  _currentRange: ?atom$Range;
+  _isHoveringTypehint: boolean;
   _typeHintProviders: Array<TypeHintProvider>;
   /**
    * This helps determine if we should show the type hint when toggling it via
@@ -61,14 +59,15 @@ class TypeHintManager {
       }));
 
       const editorView = atom.views.getView(editor);
-      const mouseMoveListener = (e) => {
-        this._delayedTypeHint(((e: any): MouseEvent), editor, editorView);
-      };
+      const mouseMoveListener = debounce(
+        (e) => {this._typehintForMouseEvent(((e: any): MouseEvent), editor, editorView);},
+        TYPEHINT_DELAY_MS,
+        /* immediate */ false,
+      );
       editorView.addEventListener('mousemove', mouseMoveListener);
       const mouseListenerSubscription = new Disposable(() =>
           editorView.removeEventListener('mousemove', mouseMoveListener));
       const destroySubscription = editor.onDidDestroy(() => {
-        this._clearTypeHintTimer();
         mouseListenerSubscription.dispose();
         this._subscriptions.remove(mouseListenerSubscription);
         this._subscriptions.remove(destroySubscription);
@@ -76,13 +75,19 @@ class TypeHintManager {
       this._subscriptions.add(mouseListenerSubscription);
       this._subscriptions.add(destroySubscription);
     }));
-    this._typeHintProviders = [];
     this._typeHintElement = document.createElement('div');
     this._typeHintElement.className = 'nuclide-type-hint-overlay';
+
+    const typehintMouseEnter = event => this._handleElementMouseEnter(event);
+    const typehintMouseLeave = event => this._handleElementMouseLeave(event);
+    this._typeHintElement.addEventListener('mouseenter', typehintMouseEnter);
+    this._typeHintElement.addEventListener('mouseleave', typehintMouseLeave);
+
+    this._typeHintProviders = [];
     this._marker = null;
-    this._typeHintTimer = null;
     this._typeHintToggle = false;
-    this._previousTypeHintSerialized = '';
+    this._currentRange = null;
+    this._isHoveringTypehint = false;
   }
 
   toggleTypehint(): void {
@@ -99,51 +104,53 @@ class TypeHintManager {
   }
 
   hideTypehint(): void {
-    this._typeHintElement.style.display = 'none';
     if (this._marker == null) {
       return;
     }
+    this._typeHintElement.style.display = 'none';
     this._marker.destroy();
     this._marker = null;
+    this._currentRange = null;
+    this._isHoveringTypehint = false;
   }
 
-  _clearTypeHintTimer() {
-    clearTimeout(this._typeHintTimer);
-    this._typeHintTimer = null;
+  _handleElementMouseEnter(event: SyntheticEvent): void {
+    this._isHoveringTypehint = true;
   }
 
-  _delayedTypeHint(e: MouseEvent, editor: TextEditor, editorView: HTMLElement) {
-    if (this._typeHintTimer) {
-      this._clearTypeHintTimer();
+  _handleElementMouseLeave(event: Event): void {
+    this._isHoveringTypehint = false;
+  }
+
+  _typehintForMouseEvent(e: MouseEvent, editor: TextEditor, editorView: HTMLElement) {
+    if (!editorView.component) {
+      // The editor was destroyed, but the destroy handler haven't yet been called to cancel
+      // the timer.
+      return;
     }
-    this._typeHintTimer = setTimeout(() => {
-      this._typeHintTimer = null;
-      if (!editorView.component) {
-        // The editor was destroyed, but the destroy handler haven't yet been called to cancel
-        // the timer.
-        return;
-      }
-      // Delay a bit + Cancel and schedule another update if the mouse keeps moving.
-      const screenPosition = editorView.component.screenPositionForMouseEvent(e);
-      const position = editor.bufferPositionForScreenPosition(screenPosition);
-      this._typeHintInEditor(editor, position);
-    }, TYPEHINT_DELAY_MS);
+    const screenPosition = editorView.component.screenPositionForMouseEvent(e);
+    const position = editor.bufferPositionForScreenPosition(screenPosition);
+    this._typeHintInEditor(editor, position);
   }
 
   async _typeHintInEditor(editor: TextEditor, position: atom$Point): Promise {
-    const {scopeName} = editor.getGrammar();
-    const matchingProviders = this._getMatchingProvidersForScopeName(scopeName);
-
-    if (this._marker) {
-      this._marker.destroy();
-      this._marker = null;
-    }
-
-    if (!matchingProviders.length) {
+    if (this._isHoveringTypehint) {
       return;
     }
 
-    const provider = matchingProviders[0];
+    if (this._currentRange != null && this._currentRange.containsPoint(position)) {
+      return;
+    }
+
+    if (this._marker != null) {
+      this.hideTypehint();
+    }
+
+    const {scopeName} = editor.getGrammar();
+    const [provider] = this._getMatchingProvidersForScopeName(scopeName);
+    if (provider == null) {
+      return;
+    }
     let name;
     if (provider.providerName != null) {
       name = provider.providerName;
@@ -168,6 +175,7 @@ class TypeHintManager {
       'scope': scopeName,
       'message': hint,
     });
+    this._currentRange = range;
 
     // Transform the matched element range to the hint range.
     const marker: atom$Marker = editor.markBufferRange(range, {invalidate: 'never'});
