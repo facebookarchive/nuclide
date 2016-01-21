@@ -12,12 +12,13 @@
 import type {TypeHintProvider} from '../../type-hint-interfaces';
 
 import invariant from 'assert';
+import {CompositeDisposable, Disposable} from 'atom';
+import React from 'react-for-atom';
 
-const {CompositeDisposable, Disposable} = require('atom');
-
-const {remove} = require('../../commons').array;
-
+import {array} from '../../commons';
 import {track, trackOperationTiming} from '../../analytics';
+
+import {TypeHintComponent} from './TypeHintComponent';
 
 const TYPEHINT_DELAY_MS = 200;
 
@@ -28,6 +29,7 @@ class TypeHintManager {
   _typeHintTimer: ?number;
   _typeHintToggle: boolean;
   _typeHintElement: HTMLElement;
+  _previousTypeHintSerialized: string;
 
   _typeHintProviders: Array<TypeHintProvider>;
   /**
@@ -86,6 +88,7 @@ class TypeHintManager {
     this._marker = null;
     this._typeHintTimer = null;
     this._typeHintToggle = false;
+    this._previousTypeHintSerialized = '';
   }
 
   _clearTypeHintTimer() {
@@ -143,8 +146,17 @@ class TypeHintManager {
     }
 
     const {hint, range} = typeHint;
+
     // For now, actual hint text is required.
     invariant(hint != null);
+
+
+    // Only (re)-create the typehint if its contents differ from the currently rendered one.
+    const serializedTypeHint = hint + range.serialize().toString();
+    if (this._marker !== null && serializedTypeHint === this._previousTypeHintSerialized) {
+      return;
+    }
+    this._previousTypeHintSerialized = serializedTypeHint;
 
     // We track the timing above, but we still want to know the number of popups that are shown.
     track('type-hint-popup', {
@@ -156,14 +168,16 @@ class TypeHintManager {
     const marker: atom$Marker = editor.markBufferRange(range, {invalidate: 'never'});
     this._marker = marker;
 
+    React.render(<TypeHintComponent content={hint} />, this._typeHintElement);
+    const hintHeight = this._typeHintElement.clientHeight;
     // This relative positioning is to work around the issue that `position: 'head'`
     // doesn't work for overlay decorators are rendered on the bottom right of the given range.
     // Atom issue: https://github.com/atom/atom/issues/6695
     const expressionLength = range.end.column - range.start.column;
     this._typeHintElement.style.left = -(expressionLength * editor.getDefaultCharWidth()) +  'px';
-    this._typeHintElement.style.top = -(2 * editor.getLineHeightInPixels()) + 'px';
-    this._typeHintElement.textContent = hint;
+    this._typeHintElement.style.bottom = hintHeight + 'px';
     this._typeHintElement.style.display = 'block';
+
     editor.decorateMarker(
       marker,
       {type: 'overlay', position: 'head', item: this._typeHintElement}
@@ -184,7 +198,7 @@ class TypeHintManager {
   }
 
   removeProvider(provider: TypeHintProvider): void {
-    remove(this._typeHintProviders, provider);
+    array.remove(this._typeHintProviders, provider);
   }
 
   dispose() {
