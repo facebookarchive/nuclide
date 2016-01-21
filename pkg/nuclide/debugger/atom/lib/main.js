@@ -71,6 +71,23 @@ class Activation {
       atom.commands.add('atom-workspace', {
         'nuclide-debugger:toggle-breakpoint': this._toggleBreakpoint.bind(this),
       }),
+
+      // Context Menu Items.
+      atom.contextMenu.add({
+        'atom-text-editor': [
+          {type: 'separator'},
+          {
+            label: 'Debugger',
+            submenu: [
+              {
+                label: 'Toggle Breakpoint',
+                command: 'nuclide-debugger:toggle-breakpoint',
+              },
+            ],
+          },
+          {type: 'separator'},
+        ],
+      }),
     );
   }
 

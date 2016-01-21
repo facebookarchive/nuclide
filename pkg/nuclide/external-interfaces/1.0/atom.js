@@ -827,7 +827,7 @@ declare class atom$ContextMenuItemSet {
   items: Array<atom$ContextMenuItem>;
 }
 
-declare class atom$ContextMenuItem {
+type atom$ContextMenuItem = {
   command?: string,
   created?: (event: MouseEvent) => void,
   enabled?: boolean,
