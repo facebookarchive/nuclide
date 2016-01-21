@@ -182,7 +182,18 @@ class TypeHintManager {
 
     editor.decorateMarker(
       marker,
-      {type: 'overlay', position: 'head', item: this._typeHintElement}
+      {
+        type: 'overlay',
+        position: 'head',
+        item: this._typeHintElement,
+      }
+    );
+    editor.decorateMarker(
+      marker,
+      {
+        type: 'highlight',
+        class: 'nuclide-type-hint-highlight-region',
+      }
     );
   }
 
