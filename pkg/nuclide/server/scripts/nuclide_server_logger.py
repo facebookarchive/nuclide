@@ -11,6 +11,7 @@ import getpass
 import logging
 import logging.handlers
 import os
+import sys
 import tempfile
 
 LOG_FILE_DIR = os.path.join(tempfile.gettempdir(),
@@ -41,16 +42,25 @@ def _make_log_dir():
     return True
 
 
-def configure_nuclide_logger(loggerName=None):
+def configure_nuclide_logger(verbose=False):
+    root_logger = logging.getLogger()
+    root_logger.setLevel(logging.DEBUG)
+
+    if verbose:
+        handler = logging.StreamHandler(sys.stdout)
+        handler.setLevel(logging.DEBUG)
+        formatter = logging.Formatter(
+            '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        handler.setFormatter(formatter)
+        root_logger.addHandler(handler)
+
     if not _make_log_dir():
         return
 
-    logger = logging.getLogger(loggerName)
-    logger.setLevel(logging.DEBUG)
     handler = logging.handlers.RotatingFileHandler(_get_log_file_path(),
                                                    maxBytes=10000,
                                                    backupCount=7)
     handler.setLevel(logging.DEBUG)
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     handler.setFormatter(formatter)
-    logger.addHandler(handler)
+    root_logger.addHandler(handler)

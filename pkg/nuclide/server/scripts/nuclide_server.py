@@ -152,9 +152,6 @@ class NuclideServer(object):
     def stop(self):
         proc = self._get_proc_info()
         if proc is None:
-            print(
-                'Tried to stop NuclideServer at port %d, but you are not the owner.' %
-                self.port, file=sys.stderr)
             self.logger.error(
                 'Tried to stop NuclideServer at port %d, but you are not the owner.' %
                 self.port)
@@ -188,7 +185,6 @@ class NuclideServer(object):
                           debug:   {6}'.format(timeout, cert, key, ca, force, quiet, debug))
         # If one but not all certificate files are given.
         if (cert or key or ca) and not (cert and key and ca):
-            print('Incomplete certificate files.', file=sys.stderr)
             self.logger.error('Incomplete certificate files.')
 
         if self.is_running():
@@ -233,7 +229,6 @@ class NuclideServer(object):
                 # Wait for a sec and then ping endpoint for version.
                 running_version = self.get_version()
                 if running_version is not None:
-                    print('Verified Nuclide started on port %d.' % self.port, file=sys.stderr)
                     self.logger.info('Verified Nuclide started on port %d.' % self.port)
                     self.print_json()
                     return 0
@@ -241,10 +236,6 @@ class NuclideServer(object):
 
             timeoutMsg = 'Attempted to start Nuclide server on port %d, but timed out after %d seconds.' % (
                 self.port, timeout)
-            print(
-                timeoutMsg +
-                ' You may want to try a longer timeout (pass a -t option).',
-                file=sys.stderr)
             self.logger.error(timeoutMsg)
         return 1
 

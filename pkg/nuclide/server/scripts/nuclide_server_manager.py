@@ -47,8 +47,6 @@ CERTS_DIR = os.path.join(HOME_FOLDER, '.certs')
 CERTS_EXPIRATION_DAYS = 7
 NODE_PATHS = EXTRA_NODE_PATHS + ['/opt/local/bin', '/usr/local/bin']
 
-configure_nuclide_logger()
-
 # This class manages Nuclide servers.
 
 
@@ -214,8 +212,6 @@ class NuclideServerManager(object):
         if self.options.port is None:
             port = self._obtain_nuclide_server_port()
             if port is None:
-                print('Failed to start Nuclide server because there are no ports available. \
-                       Here are the busy ports that were tried: {0}'.format(OPEN_PORTS))
                 self.logger.error(
                     'Failed to start Nuclide server because there are no ports available.')
                 return 1
@@ -228,8 +224,6 @@ class NuclideServerManager(object):
 
         # If given port is being used by somebody else, you shall not pass.
         if not self._is_port_open(port) and not server.is_mine():
-            print('You are not the owner of Nuclide server at port %d. Try a different port.' %
-                  port, file=sys.stderr)
             self.logger.error(
                 'You are not the owner of Nuclide server at port %d. Try a different port.' %
                 port)
@@ -299,7 +293,7 @@ def get_option_parser():
         '-k',
         '--insecure',
         help='use http instead of https',
-        action="store_true",
+        action='store_true',
         default=False)
     # Don't set default value of certs_dir, so that we can just check certs_dir for None.
     parser.add_option(
@@ -325,12 +319,18 @@ def get_option_parser():
         '-q',
         '--quiet',
         help='suppress nohup logging',
-        action="store_true",
+        action='store_true',
         default=False)
     parser.add_option(
         '--debug',
         help='Start in debugger. Only use this flag interactively',
-        action="store_true",
+        action='store_true',
+        default=False)
+    parser.add_option(
+        '-v',
+        '--verbose',
+        help='Print info/errors into stdout',
+        action='store_true',
         default=False)
     parser.add_option(
         '--dump-core',
@@ -350,6 +350,7 @@ if __name__ == '__main__':
 
     manager = NuclideServerManager(options)
     manager.cleanup()
+    configure_nuclide_logger(options.verbose)
 
     # Enable core dump by change ulimit to infinity.
     if options.dump_core:

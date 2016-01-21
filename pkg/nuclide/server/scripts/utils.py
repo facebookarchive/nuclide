@@ -7,16 +7,20 @@
 from __future__ import print_function
 
 import httplib
+import logging
 import os
 import socket
 import ssl
 import subprocess
 import sys
 
+logger = logging.getLogger('utils')
 
 # Run the process silently without stdout and stderr.
 # On success, return stdout. Otherwise, raise CalledProcessError
 # with combined stdout and stderr.
+
+
 def check_output_silent(args, cwd=None, env=None):
     # Use Popen here. check_ouput is not available in Python 2.6.
     # cwd=None means don't change cwd.
@@ -71,14 +75,14 @@ def http_get(host, port, method, url, key_file=None, cert_file=None, ca_cert=Non
             return None
     except ssl.SSLError as e:
         if sys.version_info < (2, 7, 9):
-            print("An SSL Error occurred", file=sys.stderr)
+            logger.error("An SSL Error occurred")
         else:
-            print("An SSL Error occurred: %s" % e.reason, file=sys.stderr)
+            logger.error("An SSL Error occurred: %s" % e.reason)
         return None
     except socket.error:
         return None
     except:
-        print("Unexpected error: %s" % sys.exc_info()[0], file=sys.stderr)
+        logger.error("Unexpected error: %s" % sys.exc_info()[0])
         return None
     finally:
         if conn:
