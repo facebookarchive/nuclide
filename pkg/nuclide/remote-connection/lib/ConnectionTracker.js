@@ -12,7 +12,7 @@
 import {error} from '../../commons';
 import {track} from '../../analytics';
 
-import type {SshConnectionConfiguration} from './SshHandshake';
+import type {SshConnectionConfiguration, SshHandshakeErrorType} from './SshHandshake';
 
 const CONNECTION_EVENT = 'nuclide-remote-connection';
 
@@ -44,11 +44,11 @@ export default class ConnectionTracker {
     this._trackConnectionResult(true);
   }
 
-  trackFailure(e: Error): void {
-    this._trackConnectionResult(false, e);
+  trackFailure(errorType: SshHandshakeErrorType, e: Error): void {
+    this._trackConnectionResult(false, errorType, e);
   }
 
-  _trackConnectionResult(succeed: boolean, e: ?Error): void {
+  _trackConnectionResult(succeed: boolean, errorType?: SshHandshakeErrorType, e?: Error): void {
     if (this._expired) {
       return;
     }
@@ -64,6 +64,7 @@ export default class ConnectionTracker {
       CONNECTION_EVENT,
       {
         error: succeed ? '0' : '1',
+        errorType: errorType || '',
         exception: e ? error.stringifyError(e) : '',
         duration: (Date.now() - this._connectionStartTime).toString(),
         preYubikeyDuration: preYubikeyDuration.toString(),

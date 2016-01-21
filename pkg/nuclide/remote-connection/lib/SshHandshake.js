@@ -486,7 +486,7 @@ export function decorateSshConnectionDelegateWithTracking(
       config: SshConnectionConfiguration,
     ) => {
       invariant(connectionTracker);
-      connectionTracker.trackFailure(error);
+      connectionTracker.trackFailure(errorType, error);
       delegate.onError(errorType, error, config);
     },
   };
