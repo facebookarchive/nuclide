@@ -10,8 +10,9 @@
  */
 
 import fs from 'fs';
-import path from 'path';
+import invariant from 'assert';
 import once from './once';
+import path from 'path';
 
 const NUCLIDE_PACKAGE_JSON_PATH = require.resolve('../../../../package.json');
 const NUCLIDE_BASEDIR = path.dirname(NUCLIDE_PACKAGE_JSON_PATH);
@@ -42,6 +43,16 @@ export function isRunningInClient(): boolean {
   return typeof atom !== 'undefined';
 }
 
+// This path may be a symlink.
+export function getAtomNuclideDir(): string {
+  if (!isRunningInClient()) {
+    throw Error('Not running in Atom.');
+  }
+  const nuclidePackageModule = atom.packages.getLoadedPackage('nuclide');
+  invariant(nuclidePackageModule);
+  return nuclidePackageModule.path;
+}
+
 export function getAtomVersion(): string {
   if (!isRunningInClient()) {
     throw Error('Not running in Atom.');
@@ -53,6 +64,6 @@ export function getNuclideVersion(): string {
   return pkgJson.version;
 }
 
-export function getNuclideDir(): string {
+export function getNuclideRealDir(): string {
   return NUCLIDE_BASEDIR;
 }
