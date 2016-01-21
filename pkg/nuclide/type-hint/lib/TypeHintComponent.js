@@ -17,11 +17,19 @@ type TypeHintComponentProps = {
   content: string | HintTree;
 }
 
+type TypeHintComponentState = {
+  expandedNodes: Set<HintTree>,
+}
+
 /* eslint-disable react/prop-types */
 export class TypeHintComponent extends React.Component {
+  state: TypeHintComponentState;
 
   constructor(props: TypeHintComponentProps) {
     super(props);
+    this.state = {
+      expandedNodes: new Set(),
+    };
   }
 
   getDefaultProps(): TypeHintComponentProps {
@@ -38,19 +46,43 @@ export class TypeHintComponent extends React.Component {
     );
   }
 
+  handleChevronClick(tree: HintTree, event: SyntheticEvent): void {
+    const {expandedNodes} = this.state;
+    if (expandedNodes.has(tree)) {
+      expandedNodes.delete(tree);
+    } else {
+      expandedNodes.add(tree);
+    }
+    // Force update.
+    this.forceUpdate();
+  }
+
   renderHierarchical(tree: HintTree): ReactElement {
     if (tree.children == null) {
       return this.renderPrimitive(tree.value);
     }
     const children = tree.children.map(child => this.renderHierarchical(child));
+    const isExpanded = this.state.expandedNodes.has(tree);
+    const childrenList = isExpanded
+      ? <ul className="list-tree">
+          {children}
+        </ul>
+      : null;
+    const className =
+      'icon nuclide-type-hint-expandable-chevron ' +
+      `icon-chevron-${isExpanded ? 'down' : 'right'}`;
     return (
       <li className="list-nested-item">
         <div className="list-item">
-          <span className="icon icon-chevron-right">{tree.value}</span>
+          <span>
+            <span
+              className={className}
+              onClick={this.handleChevronClick.bind(this, tree)}
+            />
+            {tree.value}
+          </span>
         </div>
-        <ul className="list-tree">
-          {children}
-        </ul>
+        {childrenList}
       </li>
     );
   }
