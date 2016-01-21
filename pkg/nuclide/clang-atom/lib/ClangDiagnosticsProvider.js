@@ -85,12 +85,6 @@ class ClangDiagnosticsProvider {
         return;
       }
 
-      const {file: filePath} = diagnostic.location;
-      // TODO(t7637036): remove when clang errors are less spammy
-      if (filePath !== textEditor.getPath()) {
-        return;
-      }
-
       // Clang adds file-wide errors on line -1, so we put it on line 0 instead.
       // The usual file-wide error is 'too many errors emitted, stopping now'.
       const line = Math.max(0, diagnostic.location.line);
@@ -110,6 +104,7 @@ class ClangDiagnosticsProvider {
         );
       }
 
+      const {file: filePath} = diagnostic.location;
       let messages = filePathToMessages.get(filePath);
       if (messages == null) {
         messages = [];

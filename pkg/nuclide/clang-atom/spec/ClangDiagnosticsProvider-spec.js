@@ -16,6 +16,7 @@ import ClangDiagnosticsProvider from '../lib/ClangDiagnosticsProvider';
 describe('ClangDiagnosticsProvider', () => {
 
   const TEST_PATH = '/path/test.cpp';
+  const TEST_PATH2 = '/path/asdf';
   const fakeEditor: any = {
     getPath() {
       return TEST_PATH;
@@ -52,12 +53,12 @@ describe('ClangDiagnosticsProvider', () => {
             {
               severity: 2,
               location: {
-                file: '/path/asdf', // other paths should be ignored for now
+                file: TEST_PATH2,
                 line: 0,
                 column: 0,
               },
-              ranges: [],
-              spelling: 'ignore me',
+              ranges: null, // use the entire line
+              spelling: 'other file',
             },
             {
               severity: 2,
@@ -66,7 +67,7 @@ describe('ClangDiagnosticsProvider', () => {
                 line: 0,
                 column: 0,
               },
-              ranges: null, // use the entire line
+              ranges: null,
               spelling: 'test error',
             },
             {
@@ -87,27 +88,42 @@ describe('ClangDiagnosticsProvider', () => {
           ],
         }, fakeEditor);
 
-      expect(array.from(filePathToMessages)).toEqual([[
-        TEST_PATH,
+      expect(array.from(filePathToMessages)).toEqual([
         [
-          {
-            scope: 'file',
-            providerName: 'Clang',
-            type: 'Warning',
-            filePath: TEST_PATH,
-            text: 'test error',
-            range: new Range([0, 0], [0, 1]),
-          },
-          {
-            scope: 'file',
-            providerName: 'Clang',
-            type: 'Error',
-            filePath: TEST_PATH,
-            text: 'test error 2',
-            range: new Range([1, 0], [1, 2]),
-          },
+          TEST_PATH2,
+          [
+            {
+              scope: 'file',
+              providerName: 'Clang',
+              type: 'Warning',
+              filePath: TEST_PATH2,
+              text: 'other file',
+              range: new Range([0, 0], [0, 1]),
+            },
+          ],
         ],
-      ]]);
+        [
+          TEST_PATH,
+          [
+            {
+              scope: 'file',
+              providerName: 'Clang',
+              type: 'Warning',
+              filePath: TEST_PATH,
+              text: 'test error',
+              range: new Range([0, 0], [0, 1]),
+            },
+            {
+              scope: 'file',
+              providerName: 'Clang',
+              type: 'Error',
+              filePath: TEST_PATH,
+              text: 'test error 2',
+              range: new Range([1, 0], [1, 2]),
+            },
+          ],
+        ],
+      ]);
     });
   });
 
