@@ -19,8 +19,6 @@ import type {NuclideUri} from '../../../remote-uri';
 
 import invariant from 'assert';
 
-import featureConfig from '../../../feature-config';
-
 const {track} = require('../../../analytics');
 const React = require('react-for-atom');
 
@@ -284,7 +282,7 @@ function createElementForMessage(
     atom.clipboard.write(text);
   };
   let fixButton = null;
-  if (message.fix != null && featureConfig.get('nuclide-diagnostics-ui.enableAutofix')) {
+  if (message.fix != null) {
     const applyFix = fixer.bind(null, message);
     fixButton = (
       <button className="btn btn-xs" onClick={applyFix}>Fix</button>
