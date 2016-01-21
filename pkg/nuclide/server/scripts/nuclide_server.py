@@ -124,7 +124,7 @@ class NuclideServer(object):
         else:
             return None
 
-    def print_json(self):
+    def get_server_info(self):
         output = {'version': self.get_version(), 'port': self.port, 'workspace': self.workspace}
         output['pid'] = self._get_proc_info().get_pid()
         server_cert, server_key, ca = self.get_server_certificate_files()
@@ -134,7 +134,7 @@ class NuclideServer(object):
             output['key'] = self._read_cert_file(client_key)
             output['ca'] = self._read_cert_file(ca)
             output['hostname'] = NuclideCertificatesGenerator.get_common_name(server_cert)
-        print(json.dumps(output))
+        return output
 
     # The Nuclide server is healthy and running.
     def is_healthy(self):
@@ -230,7 +230,6 @@ class NuclideServer(object):
                 running_version = self.get_version()
                 if running_version is not None:
                     self.logger.info('Verified Nuclide started on port %d.' % self.port)
-                    self.print_json()
                     return 0
                 time.sleep(1)
 

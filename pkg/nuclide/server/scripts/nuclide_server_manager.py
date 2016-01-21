@@ -23,7 +23,7 @@ import time
 
 from nuclide_server import LOG_FILE
 from nuclide_server import NuclideServer
-from nuclide_server_logger import configure_nuclide_logger
+from nuclide_server_logger import configure_nuclide_logger, get_buffered_logs
 from nuclide_certificates_generator import NuclideCertificatesGenerator
 from process_info import ProcessInfo
 
@@ -208,13 +208,14 @@ class NuclideServerManager(object):
             return port
 
     def start_nuclide(self):
+        server = None
         self.logger.info('Trying to determine the port to use for Nuclide server...')
         if self.options.port is None:
             port = self._obtain_nuclide_server_port()
             if port is None:
                 self.logger.error(
                     'Failed to start Nuclide server because there are no ports available.')
-                return 1
+                return {'exit_code': 1, 'server': server}
         else:
             self.logger.error('The user specified port {0}.'.format(self.options.port))
             port = self.options.port
@@ -227,29 +228,28 @@ class NuclideServerManager(object):
             self.logger.error(
                 'You are not the owner of Nuclide server at port %d. Try a different port.' %
                 port)
-            return 1
+            return {'exit_code': 1, 'server': server}
 
         # At this moment, the port is either open, or we have an existing server running.
-        if server.is_running():
-            version = NuclideServerManager._get_version()
-            running_version = server.get_version()
-            self.logger.info('A Nuclide server is already running. \
-                              Running version: {0}. Desired version: {1}.'.format(running_version, version))
-            # If the common names don't match, we restart.
-            if (version and version != running_version) or (
-                    self.options.common_name and server.get_common_name() != self.options.common_name):
-                self.logger.info('Restarting Nuclide server on port %d' % port)
-                server.stop()
-                return self.start_server(server)
-                # Don't use restart() here, so that we regenerate the certificates.
-            else:
-                self.logger.info(
-                    'Nuclide server already running on port %d. User may connect.' %
-                    port)
-                server.print_json()
-                return 0
+        if not server.is_running():
+            return {'exit_code': self.start_server(server), 'server': server}
+
+        version = NuclideServerManager._get_version()
+        running_version = server.get_version()
+        self.logger.info('A Nuclide server is already running. \
+                          Running version: {0}. Desired version: {1}.'.format(running_version, version))
+        # If the common names don't match, we restart.
+        if (version and version != running_version) or (
+                self.options.common_name and server.get_common_name() != self.options.common_name):
+            self.logger.info('Restarting Nuclide server on port %d' % port)
+            server.stop()
+            # Don't use restart() here, so that we regenerate the certificates.
+            return {'exit_code': self.start_server(server), 'server': server}
         else:
-            return self.start_server(server)
+            self.logger.info(
+                'Nuclide server already running on port %d. User may connect.' %
+                port)
+            return {'exit_code': 0, 'server': server}
 
     def start_server(self, server):
         self.logger.info('Starting NuclideServer...')
@@ -298,10 +298,10 @@ def get_option_parser():
     # Don't set default value of certs_dir, so that we can just check certs_dir for None.
     parser.add_option(
         '-d',
-        '--certs_dir',
+        '--certs-dir',
         type=str,
         help='directory to store certificate files, default: ~/.certs')
-    parser.add_option('-n', '--common_name', type=str, help='the common name to use in certificate')
+    parser.add_option('-n', '--common-name', type=str, help='the common name to use in certificate')
     parser.add_option(
         '-t',
         '--timeout',
@@ -337,6 +337,12 @@ def get_option_parser():
         help='Dump core file when uncaught exception or abort',
         action="store_true",
         default=False)
+    parser.add_option(
+        '-j',
+        '--json-output-file',
+        type=str,
+        help='Save json format output into a file, only for `start` command',
+        default=None)
     return parser
 
 
@@ -361,7 +367,20 @@ if __name__ == '__main__':
             logger.warn('Failed to enable core dump', e)
 
     if options.command == 'start':
-        ret = manager.start_nuclide()
+        server_start_result = manager.start_nuclide()
+        ret = server_start_result['exit_code']
+        if ret == 0:
+            server = server_start_result['server']
+            result = server.get_server_info()
+            result['success'] = True
+        else:
+            result = {'succes': False, 'logs': get_buffered_logs()}
+
+        if options.json_output_file:
+            with open(options.json_output_file, 'w') as f:
+                json.dump(result, f)
+        else:
+            print(json.dumps(result))
         print('The log file can be found at %s.' % LOG_FILE, file=sys.stderr)
     elif options.command == 'list' or options.command == 'listall':
         if options.command == 'listall':
@@ -370,7 +389,7 @@ if __name__ == '__main__':
         else:
             servers = manager.list_servers()
         for server in servers:
-            server.print_json()
+            print(json.dumps(server.get_server_info()))
         ret = 0
         print('The log file can be found at %s.' % LOG_FILE, file=sys.stderr)
     elif options.command == 'stopall':
