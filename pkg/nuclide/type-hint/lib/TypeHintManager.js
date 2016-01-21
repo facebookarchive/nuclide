@@ -231,6 +231,9 @@ class TypeHintManager {
   }
 
   dispose() {
+    this.hideTypehint();
+    React.unmountComponentAtNode(this._typeHintElement);
+    this._typeHintElement.remove();
     this._subscriptions.dispose();
   }
 }
