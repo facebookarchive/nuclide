@@ -1,5 +1,28 @@
 # Nuclide Changelog
 
+## 0.112.0
+
+### Added
+
+* Dedicated toolbar shortcut icons for toggling the HHVM and Buck top bar.
+* Include type information with clang results.
+* Quick open for ctags.
+* "Reload Atom" on server crash button.
+* Connection profiles got a total makeover.
+
+### Fixed
+
+* Reduced clang cache memory consumption.
+* diff-view context menu items appear both in Nuclide's file-tree and in Atom's tree-view.
+* fb-watchman exceptions.
+* Race condition that prevented the diff-view from re-opening on restart.
+* React Native debugging for newer versions of React Native (Note: Node v4 still needs to be on Atom's path).
+
+### Changed
+
+* Continued improvements to the experimental filename search.
+* hg-repository now checks `default` instead of fb-specific `remote/master`.
+
 ## 0.111.0
 
 Nuclide is now a single Atom package named 'nuclide'. All 'nuclide-*' packages are deprecated and
