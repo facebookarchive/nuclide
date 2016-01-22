@@ -411,7 +411,7 @@ describe('DiagnosticStore', () => {
     expect(diagnosticStore._getAllMessages().length).toBe(0);
   });
 
-  describe('applyFix', () => {
+  describe('autofix', () => {
     const messageWithAutofix = {
       scope: 'file',
       providerName: 'dummyProviderA',
@@ -436,15 +436,24 @@ describe('DiagnosticStore', () => {
       });
     });
 
-    it('should apply the fix to the editor', () => {
-      diagnosticStore.applyFix(messageWithAutofix);
-      expect(editor.getText()).toEqual('FOOoobar\n');
+    describe('applyFix', () => {
+      it('should apply the fix to the editor', () => {
+        diagnosticStore.applyFix(messageWithAutofix);
+        expect(editor.getText()).toEqual('FOOoobar\n');
+      });
+
+      it('should invalidate the message', () => {
+        expect(diagnosticStore._getFileMessages('/tmp/fileA')).toEqual([messageWithAutofix]);
+        diagnosticStore.applyFix(messageWithAutofix);
+        expect(diagnosticStore._getFileMessages('/tmp/fileA')).toEqual([]);
+      });
     });
 
-    it('should invalidate the message', () => {
-      expect(diagnosticStore._getFileMessages('/tmp/fileA')).toEqual([messageWithAutofix]);
-      diagnosticStore.applyFix(messageWithAutofix);
-      expect(diagnosticStore._getFileMessages('/tmp/fileA')).toEqual([]);
+    describe('applyFixesForFile', () => {
+      it('should apply the fixes for the given file', () => {
+        diagnosticStore.applyFixesForFile('/tmp/fileA');
+        expect(editor.getText()).toEqual('FOOoobar\n');
+      });
     });
   });
 });

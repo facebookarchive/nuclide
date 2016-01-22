@@ -370,14 +370,35 @@ class DiagnosticStore {
    */
 
   applyFix(message: FileDiagnosticMessage): void {
+    const succeeded = this._applySingleFix(message);
+    if (!succeeded) {
+      notifyFixFailed();
+    }
+  }
+
+  applyFixesForFile(file: NuclideUri): void {
+    for (const message of this._getFileMessages(file)) {
+      if (message.fix != null) {
+        const succeeded = this._applySingleFix(message);
+        if (!succeeded) {
+          notifyFixFailed();
+          return;
+        }
+      }
+    }
+  }
+
+  /**
+   * Returns true iff the fix succeeds.
+   */
+  _applySingleFix(message: FileDiagnosticMessage): boolean {
     const fix = message.fix;
     invariant(fix != null);
 
     const actualRange = this._markerTracker.getCurrentRange(message);
 
     if (actualRange == null) {
-      notifyFixFailed();
-      return;
+      return false;
     }
 
     const fixWithActualRange = {
@@ -387,8 +408,9 @@ class DiagnosticStore {
     const succeeded = applyTextEdit(message.filePath, fixWithActualRange);
     if (succeeded) {
       this._invalidateSingleMessage(message);
+      return true;
     } else {
-      notifyFixFailed();
+      return false;
     }
   }
 
