@@ -600,6 +600,8 @@ declare class atom$TextEditor extends atom$Model {
   // Soft Wrap Behavior
   // Indentation
   indentationForBufferRow(bufferRow: number): number;
+  setTabLength(tabLength: number): void;
+  setSoftTabs(softTabs: boolean): void;
 
   lineTextForBufferRow(bufferRow: number): string;
 

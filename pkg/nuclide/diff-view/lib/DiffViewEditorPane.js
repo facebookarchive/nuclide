@@ -77,6 +77,17 @@ export default class DiffViewEditorPane extends React.Component {
       diffViewEditor.setReadOnly();
     }
     this._subscriptions.add(textEditor.onDidChange(debouncedOnChange));
+    /*
+     * Those should have been synced automatically, but an implementation limitation of creating
+     * a <atom-text-editor> element assumes default settings for those.
+     * Filed: https://github.com/atom/atom/issues/10506
+     */
+    this._subscriptions.add(atom.config.observe('editor.tabLength', tabLength => {
+      textEditor.setTabLength(tabLength);
+    }));
+    this._subscriptions.add(atom.config.observe('editor.softTabs', softTabs => {
+      textEditor.setSoftTabs(softTabs);
+    }));
     this._updateDiffView(this.props, this.state);
   }
 
