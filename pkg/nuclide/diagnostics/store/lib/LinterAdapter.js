@@ -35,6 +35,11 @@ type LinterMessage = {
   filePath?: NuclideUri,
   range?: atom$Range,
   trace?: Array<LinterTrace>,
+  fix?: {
+    range: atom$Range,
+    newText: string,
+    oldText?: string,
+  },
 };
 
 export type LinterProvider = {
@@ -91,6 +96,11 @@ export function linterMessageToDiagnosticMessage(
       html: msg.html,
       range: msg.range && Range.fromObject(msg.range),
       trace: trace,
+      fix: msg.fix == null ? undefined : {
+        oldRange: msg.fix.range,
+        oldText: msg.fix.oldText,
+        newText: msg.fix.newText,
+      },
     }: FileDiagnosticMessage);
   } else {
     return ({
