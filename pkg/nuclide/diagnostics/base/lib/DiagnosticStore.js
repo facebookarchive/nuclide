@@ -123,7 +123,10 @@ class DiagnosticStore {
       // reassigned to something null by the time this executes.
       invariant(fileToMessages != null);
 
-      this._markerTracker.removeFileMessagesForPath(filePath);
+      const messagesToRemove = fileToMessages.get(filePath);
+      if (messagesToRemove != null) {
+        this._markerTracker.removeFileMessages(messagesToRemove);
+      }
       this._markerTracker.addFileMessages(newMessagesForPath);
 
       // Update _providerToFileToMessages.
@@ -180,7 +183,10 @@ class DiagnosticStore {
     for (const filePath of pathsToRemove) {
       // Update _providerToFileToMessages.
       if (fileToDiagnostics) {
-        this._markerTracker.removeFileMessagesForPath(filePath);
+        const diagnosticsToRemove = fileToDiagnostics.get(filePath);
+        if (diagnosticsToRemove != null) {
+          this._markerTracker.removeFileMessages(diagnosticsToRemove);
+        }
         fileToDiagnostics.delete(filePath);
       }
       // Update _fileToProviders.

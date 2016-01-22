@@ -140,18 +140,6 @@ describe('MarkerTracker', () => {
     checkRep(tracker);
   });
 
-  it('should remove messages by file', () => {
-    tracker.addFileMessages([messageForInitiallyOpenFile, messageForInitiallyClosedFile]);
-
-    expect(tracker._fileToMessages.has(initiallyOpenFilePath)).toBeTruthy();
-    expect(tracker._messageToMarker.has(messageForInitiallyOpenFile)).toBeTruthy();
-
-    tracker.removeFileMessagesForPath(initiallyOpenFilePath);
-
-    expect(tracker._fileToMessages.has(initiallyOpenFilePath)).toBeFalsy();
-    expect(tracker._messageToMarker.has(messageForInitiallyOpenFile)).toBeFalsy();
-  });
-
   it('should remove messages for closed files', () => {
     tracker.addFileMessages([messageForInitiallyClosedFile]);
     expect(tracker._messageToMarker.has(messageForInitiallyClosedFile)).toBeFalsy();
