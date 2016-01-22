@@ -13,7 +13,7 @@ const Console = require('./Console');
 const NuclideUiDropdown = require('../../../ui/dropdown');
 const {PanelComponent} = require('../../../ui/panel');
 const {createPaneContainer} = require('../../../atom-helpers');
-const React = require('react-for-atom');
+const {React} = require('react-for-atom');
 const TestClassTree = require('./TestClassTree');
 
 const pathUtil = require('path');

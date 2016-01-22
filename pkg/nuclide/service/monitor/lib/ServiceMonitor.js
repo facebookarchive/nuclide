@@ -13,7 +13,7 @@ import type Item from '../../../remote-connection/lib/ServiceLogger';
 
 import AtomInput from '../../../ui/atom-input';
 import {CompositeDisposable} from 'atom';
-import React from 'react-for-atom';
+import {React} from 'react-for-atom';
 
 const {PropTypes} = React;
 

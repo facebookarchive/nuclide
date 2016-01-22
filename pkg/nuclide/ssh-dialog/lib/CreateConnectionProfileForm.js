@@ -16,7 +16,7 @@ import type {
 } from './connection-types';
 
 import AtomInput from '../../ui/atom-input';
-import React from 'react-for-atom';
+import {React} from 'react-for-atom';
 import invariant from 'assert';
 import {CompositeDisposable} from 'atom';
 import ConnectionDetailsForm from './ConnectionDetailsForm';

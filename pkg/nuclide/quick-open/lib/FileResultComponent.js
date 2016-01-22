@@ -13,7 +13,7 @@ import type {
   FileResult,
 } from '../../quick-open-interfaces';
 
-const React = require('react-for-atom');
+const {React} = require('react-for-atom');
 const {fileTypeClass} = require('../../atom-helpers');
 const path = require('path');
 

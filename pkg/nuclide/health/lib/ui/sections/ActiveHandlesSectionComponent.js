@@ -10,7 +10,7 @@
  */
 
 import path from 'path';
-import React from 'react-for-atom';
+import {React} from 'react-for-atom';
 const {PropTypes} = React;
 
 import HandlesTableComponent from './HandlesTableComponent';

@@ -12,12 +12,13 @@
 import type LazyTreeNode from '../lib/LazyTreeNode';
 
 const LazyTestTreeNode = require('./LazyTestTreeNode');
-const React = require('react-for-atom');
+const {
+  React,
+  TestUtils,
+} = require('react-for-atom');
 const TreeNodeComponent = require('../lib/TreeNodeComponent');
 const TreeRootComponent = require('../lib/TreeRootComponent');
 const invariant = require('assert');
-
-const {TestUtils} = React.addons;
 
 function clickNodeWithLabel(component: TreeRootComponent, label: string): void {
   const nodeComponents = getNodeComponents(component);

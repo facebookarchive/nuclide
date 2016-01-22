@@ -12,9 +12,10 @@
 import FileTreeActions from '../lib/FileTreeActions';
 import DirectoryEntryComponent from '../components/DirectoryEntryComponent';
 import FileEntryComponent from '../components/FileEntryComponent';
-import React from 'react-for-atom';
-
-const {TestUtils} = React.addons;
+import {
+  React,
+  TestUtils,
+} from 'react-for-atom';
 
 function renderEntryComponentIntoDocument(componentKlass: Object, props: Object = {}) {
   const componentProps = {

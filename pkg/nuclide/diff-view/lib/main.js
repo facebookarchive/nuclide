@@ -43,7 +43,7 @@ function createView(entryPath: string): HTMLElement {
     return activeDiffView.element;
   }
 
-  const React = require('react-for-atom');
+  const {React} = require('react-for-atom');
   const DiffViewElement = require('./DiffViewElement');
   const DiffViewComponent = require('./DiffViewComponent');
 
@@ -123,7 +123,7 @@ function updateToolbarCount(diffViewButton: HTMLElement, count: number): void {
   } else {
     diffViewButton.classList.remove('positive-count');
   }
-  const React = require('react-for-atom');
+  const {React} = require('react-for-atom');
   const DiffCountComponent = require('./DiffCountComponent');
   React.render(<DiffCountComponent count={count}/>, changeCountElement);
 }
@@ -257,7 +257,7 @@ module.exports = {
   },
 
   getHomeFragments(): HomeFragments {
-    const React = require('react-for-atom');
+    const {React} = require('react-for-atom');
     return {
       feature: {
         title: 'Diff View',

@@ -38,7 +38,7 @@ export function openConnectionDialog(props: Object): Promise<?RemoteConnection> 
   }
 
   return dialogPromiseQueue.submit((resolve, reject) => {
-    const React = require('react-for-atom');
+    const {React} = require('react-for-atom');
     const ConnectionDialog = require('./ConnectionDialog');
     const workspaceEl = atom.views.getView(atom.workspace);
     const hostEl = document.createElement('div');

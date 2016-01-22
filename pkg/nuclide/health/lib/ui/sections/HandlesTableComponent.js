@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import React from 'react-for-atom';
+import {React} from 'react-for-atom';
 const {PropTypes} = React;
 
 export default class HandlesTableComponent extends React.Component {

@@ -10,7 +10,7 @@
  */
 
 import type {Gadget} from '../../../gadgets-interfaces';
-import React from 'react-for-atom';
+import {React} from 'react-for-atom';
 import path from 'path';
 import Webview from '../../../ui/webview';
 import {toJsString} from '../../../commons';

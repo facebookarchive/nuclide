@@ -13,7 +13,7 @@ import type {Observable} from 'rx';
 
 import type {BusySignalMessageBusy} from '../../busy-signal-interfaces';
 
-import React from 'react-for-atom';
+import {React} from 'react-for-atom';
 
 import {StatusBarTileComponent} from './StatusBarTileComponent';
 

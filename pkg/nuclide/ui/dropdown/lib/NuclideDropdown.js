@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const React = require('react-for-atom');
+const {React} = require('react-for-atom');
 const emptyfunction = require('emptyfunction');
 
 const {PropTypes} = React;

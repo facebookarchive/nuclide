@@ -18,7 +18,7 @@ import type {
 import FileTreeHelpers from './FileTreeHelpers';
 import FileTreeStore from './FileTreeStore';
 import FileDialogComponent from '../components/FileDialogComponent';
-import React from 'react-for-atom';
+import {React} from 'react-for-atom';
 import RemoteUri from '../../remote-uri';
 
 import fs from 'fs-plus';

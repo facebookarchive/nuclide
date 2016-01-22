@@ -11,7 +11,7 @@
 
 const classNames = require('classnames');
 const {CompositeDisposable} = require('atom');
-const React = require('react-for-atom');
+const {React} = require('react-for-atom');
 
 const {PropTypes} = React;
 

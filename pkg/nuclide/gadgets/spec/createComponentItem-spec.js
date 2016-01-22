@@ -11,7 +11,7 @@
 
 import invariant from 'assert';
 import createComponentItem from '../lib/createComponentItem';
-import React from 'react-for-atom';
+import {React} from 'react-for-atom';
 
 class MyGadget extends React.Component {
   render() {

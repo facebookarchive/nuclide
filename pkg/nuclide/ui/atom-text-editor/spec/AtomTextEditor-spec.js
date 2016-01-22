@@ -10,10 +10,11 @@
  */
 
 const AtomTextEditor = require('../lib/AtomTextEditor');
-const React = require('react-for-atom');
+const {
+  React,
+  TestUtils,
+} = require('react-for-atom');
 const invariant = require('assert');
-
-const {TestUtils} = React.addons;
 
 describe('nuclide-ui-atom-text-editor', () => {
 

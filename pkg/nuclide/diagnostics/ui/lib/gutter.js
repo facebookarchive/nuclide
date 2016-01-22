@@ -20,7 +20,7 @@ import type {NuclideUri} from '../../../remote-uri';
 import invariant from 'assert';
 
 const {track} = require('../../../analytics');
-const React = require('react-for-atom');
+const {React} = require('react-for-atom');
 
 const GUTTER_ID = 'nuclide-diagnostics-gutter';
 

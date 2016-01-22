@@ -23,7 +23,7 @@ export type SerializedState = {
 
 function createDebuggerView(model: DebuggerModel): HTMLElement {
   const DebuggerControllerView = require('./DebuggerControllerView');
-  const React = require('react-for-atom');
+  const {React} = require('react-for-atom');
   const elem = document.createElement('div');
   elem.className = 'nuclide-debugger-root';
   React.render(

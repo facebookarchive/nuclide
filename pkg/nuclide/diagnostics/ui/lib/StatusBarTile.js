@@ -15,7 +15,7 @@ import type {
 } from '../../base';
 
 import {CompositeDisposable} from 'atom';
-import React from 'react-for-atom';
+import {React} from 'react-for-atom';
 
 type DiagnosticCount = {
   errorCount: number;

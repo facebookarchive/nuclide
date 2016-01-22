@@ -10,7 +10,7 @@
  */
 
 import {basename} from 'path';
-import React from 'react-for-atom';
+import {React} from 'react-for-atom';
 import relativeDate from 'relative-date';
 
 import type {

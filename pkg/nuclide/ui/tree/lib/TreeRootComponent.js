@@ -14,7 +14,7 @@ const {EventEmitter} = require('events');
 const LazyTreeNode = require('./LazyTreeNode');
 const TreeNodeComponent = require('./TreeNodeComponent');
 const {forEachCachedNode} = require('./tree-node-traversals');
-const React = require('react-for-atom');
+const {React} = require('react-for-atom');
 
 const {PropTypes} = React;
 

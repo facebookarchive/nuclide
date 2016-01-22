@@ -21,7 +21,7 @@ import FileTreeHelpers from './FileTreeHelpers';
 import FileTreeStore from './FileTreeStore';
 import Immutable from 'immutable';
 import {PanelComponent} from '../../ui/panel';
-import React from 'react-for-atom';
+import {React} from 'react-for-atom';
 import {track} from '../../analytics';
 
 import os from 'os';

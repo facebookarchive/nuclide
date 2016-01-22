@@ -14,7 +14,7 @@ import type {HomeFragments} from '../../home-interfaces';
 import type Rx from 'rx';
 
 const Immutable = require('immutable');
-const React = require('react-for-atom');
+const {React} = require('react-for-atom');
 const HomeFeatureComponent = require('./HomeFeatureComponent');
 const NuclideLogo = require('./NuclideLogo');
 

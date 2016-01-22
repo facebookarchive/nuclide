@@ -13,7 +13,7 @@ import type {HealthStats} from './types';
 import type Rx from 'rx';
 
 import HealthPaneItemComponent from './ui/HealthPaneItemComponent';
-import React from 'react-for-atom';
+import {React} from 'react-for-atom';
 
 type State = {
   stats: HealthStats,

@@ -11,7 +11,7 @@
 
 const AtomComboBox = require('../../../ui/atom-combo-box');
 const {CompositeDisposable} = require('atom');
-const React = require('react-for-atom');
+const {React} = require('react-for-atom');
 const SimulatorDropdown = require('./SimulatorDropdown');
 const BuckToolbarActions = require('./BuckToolbarActions');
 const BuckToolbarStore = require('./BuckToolbarStore');

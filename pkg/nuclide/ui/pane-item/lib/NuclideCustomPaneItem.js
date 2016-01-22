@@ -10,7 +10,7 @@
  */
 
 import invariant from 'assert';
-import React from 'react-for-atom';
+import {React} from 'react-for-atom';
 
 import type {NuclideCustomPaneItemOptions} from './types';
 

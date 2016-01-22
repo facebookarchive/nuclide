@@ -11,7 +11,7 @@
 
 import invariant from 'assert';
 import {RemoteConnection} from '../../remote-connection';
-const React = require('react-for-atom');
+const {React} = require('react-for-atom');
 const {CompositeDisposable, Disposable} = require('atom');
 const StatusBarTile = require('./ui/StatusBarTile');
 const {isTextEditor} = require('../../atom-helpers');

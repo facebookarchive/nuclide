@@ -13,7 +13,7 @@ import type {InlineComponent, RenderedComponent, LineRangesWithOffsets, OffsetMa
 
 import {Range} from 'atom';
 import {buildLineRangesWithOffsets} from './editor-utils';
-import React from 'react-for-atom';
+import {React} from 'react-for-atom';
 import {getLogger} from '../../logging';
 
 const logger = getLogger();

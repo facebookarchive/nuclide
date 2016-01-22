@@ -13,11 +13,12 @@ import type {HackSearchPosition} from '../../hack-base/lib/HackService';
 import type {NuclideUri} from '../../remote-uri';
 
 import {HackSymbolProvider} from '../lib/HackSymbolProvider';
-import React from 'react-for-atom';
+import {
+  React,
+  TestUtils,
+} from 'react-for-atom';
 import {clearRequireCache, uncachedRequire} from '../../test-helpers';
 import invariant from 'assert';
-
-const {TestUtils} = React.addons;
 
 describe('HackSymbolProvider', () => {
   // These tests are set up so that calls to getHackService() will delegate to this

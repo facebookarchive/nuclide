@@ -15,7 +15,7 @@ import type {Dispatcher} from 'flux';
 import {scriptSafeSpawnAndObserveOutput} from '../../../commons';
 import ExecutorServer from '../../../react-native-node-executor';
 import ReactNativeServerStatus from './ReactNativeServerStatus';
-import React from 'react-for-atom';
+import {React} from 'react-for-atom';
 import ReactNativeServerPanel from './ReactNativeServerPanel';
 import ReactNativeServerActions from './ReactNativeServerActions';
 

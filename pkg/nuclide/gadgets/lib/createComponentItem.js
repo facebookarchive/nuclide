@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import React from 'react-for-atom';
+import {React} from 'react-for-atom';
 
 /**
  * Create an object suitable for use as an Atom pane item from a React element.

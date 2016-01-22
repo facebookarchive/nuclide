@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-const React = require('react-for-atom');
+const {React} = require('react-for-atom');
 const {Disposable} = require('atom');
 const ProjectStore = require('./ProjectStore');
 

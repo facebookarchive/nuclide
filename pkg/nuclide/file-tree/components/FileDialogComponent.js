@@ -11,7 +11,7 @@
 
 import AtomInput from '../../ui/atom-input';
 import {CompositeDisposable} from 'atom';
-import React from 'react-for-atom';
+import {React} from 'react-for-atom';
 
 import pathModule from 'path';
 

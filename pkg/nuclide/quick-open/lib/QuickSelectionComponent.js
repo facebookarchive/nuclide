@@ -41,7 +41,7 @@ const {
   debounce,
   object,
 } = require('../../commons');
-const React = require('react-for-atom');
+const {React} = require('react-for-atom');
 
 import SearchResultManager from './SearchResultManager';
 const searchResultManager = SearchResultManager.getInstance();

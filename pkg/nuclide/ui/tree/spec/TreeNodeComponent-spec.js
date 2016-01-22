@@ -10,11 +10,12 @@
  */
 
 const LazyTestTreeNode = require('./LazyTestTreeNode');
-const React = require('react-for-atom');
+const {
+  React,
+  TestUtils,
+} = require('react-for-atom');
 const TreeNodeComponent = require('../lib/TreeNodeComponent');
 const invariant = require('assert');
-
-const {TestUtils} = React.addons;
 
 describe('TreeNodeComponent', () => {
 

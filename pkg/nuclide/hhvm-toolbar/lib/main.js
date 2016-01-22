@@ -48,7 +48,7 @@ class Activation {
   }
 
   consumeToolBar(getToolBar: (group: string) => Object): void {
-    const React = require('react-for-atom');
+    const {React} = require('react-for-atom');
     const HhvmIcon = require('./HhvmIcon');
     const {Disposable} = require('atom');
     const toolBar = getToolBar('nuclide-buck-toolbar');
@@ -67,7 +67,7 @@ class Activation {
     const NuclideToolbar = require('./NuclideToolbar');
     const item = document.createElement('div');
     const {Disposable} = require('atom');
-    const React = require('react-for-atom');
+    const {React} = require('react-for-atom');
 
     this._nuclideToolbar = React.render(
       <NuclideToolbar
@@ -112,7 +112,7 @@ class Activation {
 
   dispose() {
     if (this._nuclideToolbar) {
-      const React = require('react-for-atom');
+      const {React} = require('react-for-atom');
       const toolbarNode = React.findDOMNode(this._nuclideToolbar);
       // If the toolbar is currently hidden for some reason, then toolbarNode will be null.
       if (toolbarNode) {

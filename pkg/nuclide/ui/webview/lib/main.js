@@ -12,7 +12,7 @@
 /*eslint-disable react/prop-types */
 
 import {CompositeDisposable, Disposable} from 'atom';
-import React from 'react-for-atom';
+import {React} from 'react-for-atom';
 
 type Props = {
   className: ?string;
@@ -22,7 +22,7 @@ type Props = {
   style: ?Object;
 };
 
-export default class Webview extends React.Component<void, Props> {
+export default class Webview extends React.Component<void, Props, void> {
 
   constructor(props: Object) {
     super(props);

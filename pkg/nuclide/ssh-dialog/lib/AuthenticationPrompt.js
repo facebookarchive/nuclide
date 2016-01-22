@@ -10,7 +10,7 @@
  */
 
 import {CompositeDisposable} from 'atom';
-import React from 'react-for-atom';
+import {React} from 'react-for-atom';
 
 type DefaultProps = {};
 type Props = {

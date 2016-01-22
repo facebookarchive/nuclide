@@ -10,7 +10,7 @@
  */
 
 const AtomInput = require('../lib/AtomInput');
-const React = require('react-for-atom');
+const {React} = require('react-for-atom');
 
 let reactElement;
 

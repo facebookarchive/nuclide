@@ -10,8 +10,11 @@
  */
 
 import {RecentFilesProvider} from '../lib/RecentFilesProvider';
-import React from 'react-for-atom';
-const {TestUtils} = React.addons;
+import {
+  React,
+  TestUtils,
+} from 'react-for-atom';
+
 let provider: any;
 
 const PROJECT_PATH = '/Users/testuser/';

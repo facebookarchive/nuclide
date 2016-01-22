@@ -11,7 +11,7 @@
 
 const AtomInput = require('../../ui/atom-input');
 const NuclideDropdown = require('../../ui/dropdown');
-const React = require('react-for-atom');
+const {React} = require('react-for-atom');
 const {PropTypes} = React;
 
 const WEB_SERVER_OPTION = {label: 'WebServer', value: 0};

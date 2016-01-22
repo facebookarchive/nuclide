@@ -12,11 +12,12 @@
 import type {CtagsResult} from '../../remote-ctags-base';
 
 import invariant from 'assert';
-import React from 'react-for-atom';
+import {
+  React,
+  TestUtils,
+} from 'react-for-atom';
 import nuclideRemoteConnection from '../../remote-connection';
 import * as hackService from '../../hack-symbol-provider/lib/getHackService';
-
-const {TestUtils} = React.addons;
 
 const TEST_DIR = '/test';
 

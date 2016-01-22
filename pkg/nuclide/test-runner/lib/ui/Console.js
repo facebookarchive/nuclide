@@ -10,7 +10,7 @@
  */
 
 const AtomTextEditor = require('../../../ui/atom-text-editor');
-const React = require('react-for-atom');
+const {React} = require('react-for-atom');
 
 const {PropTypes} = React;
 

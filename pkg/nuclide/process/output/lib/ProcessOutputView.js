@@ -14,7 +14,7 @@ import type {ProcessOutputHandler} from './types';
 
 const {CompositeDisposable, TextBuffer} = require('atom');
 const AtomTextEditor = require('../../../ui/atom-text-editor');
-const React = require('react-for-atom');
+const {React} = require('react-for-atom');
 
 const PROCESS_OUTPUT_PATH = 'nuclide-process-output.ansi';
 

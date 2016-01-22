@@ -12,7 +12,7 @@
 const DebuggerActions = require('./DebuggerActions');
 const DebuggerProcessInfo = require('./DebuggerProcessInfo');
 const DebuggerStore = require('./DebuggerStore');
-const React = require('react-for-atom');
+const {React} = require('react-for-atom');
 
 type State = {
   selectedProcess: ?DebuggerProcessInfo;

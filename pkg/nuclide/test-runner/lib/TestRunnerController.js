@@ -16,7 +16,7 @@ import invariant from 'assert';
 
 const Ansi = require('./Ansi');
 const {TextBuffer} = require('atom');
-const React = require('react-for-atom');
+const {React} = require('react-for-atom');
 const TestRunModel = require('./TestRunModel');
 const TestRunnerPanel = require('./ui/TestRunnerPanel');
 const TestSuiteModel = require('./TestSuiteModel');

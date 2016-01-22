@@ -17,7 +17,7 @@ import type {
 
 import type {CtagsResult, CtagsService} from '../../remote-ctags-base';
 
-import React from 'react-for-atom';
+import {React} from 'react-for-atom';
 import {getHackService} from '../../hack-symbol-provider/lib/getHackService';
 import {getServiceByNuclideUri} from '../../remote-connection';
 import {join, relative} from '../../remote-uri';

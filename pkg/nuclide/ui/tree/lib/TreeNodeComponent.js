@@ -10,14 +10,13 @@
  */
 
 const LazyTreeNode = require('./LazyTreeNode');
-const React = require('react-for-atom');
-
+const {
+  PureRenderMixin,
+  React,
+} = require('react-for-atom');
 const classnames = require('classnames');
 
-const {
-  addons,
-  PropTypes,
-} = React;
+const {PropTypes} = React;
 
 const INDENT_IN_PX = 10;
 const INDENT_PER_LEVEL_IN_PX = 15;
@@ -55,7 +54,7 @@ class TreeNodeComponent extends React.Component {
   }
 
   shouldComponentUpdate(nextProps: Object, nextState: Object): boolean {
-    return addons.PureRenderMixin.shouldComponentUpdate.call(this, nextProps, nextState);
+    return PureRenderMixin.shouldComponentUpdate.call(this, nextProps, nextState);
   }
 
   render(): ReactElement {

@@ -23,7 +23,7 @@ import getContainerToHide from './getContainerToHide';
 import getResizableContainers from './getResizableContainers';
 import GadgetPlaceholder from './GadgetPlaceholder';
 import * as GadgetUri from './GadgetUri';
-import React from 'react-for-atom';
+import {React} from 'react-for-atom';
 import shallowEqual from 'shallowequal';
 import wrapGadget from './wrapGadget';
 

@@ -13,7 +13,7 @@ import type {TypeHintProvider} from '../../type-hint-interfaces';
 
 import invariant from 'assert';
 import {CompositeDisposable, Disposable} from 'atom';
-import React from 'react-for-atom';
+import {React} from 'react-for-atom';
 
 import {array, debounce} from '../../commons';
 import {track, trackOperationTiming} from '../../analytics';

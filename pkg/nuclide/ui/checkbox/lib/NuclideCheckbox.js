@@ -9,9 +9,12 @@
  * the root directory of this source tree.
  */
 
-import React from 'react-for-atom';
+import {
+  PureRenderMixin,
+  React,
+} from 'react-for-atom';
 
-const {PropTypes, addons} = React;
+const {PropTypes} = React;
 
 /**
  * A checkbox component with an input checkbox and a label. We restrict the label to a string
@@ -31,7 +34,7 @@ export default class NuclideCheckbox extends React.Component {
   }
 
   shouldComponentUpdate(nextProps: Object, nextState: Object): boolean {
-    return addons.PureRenderMixin.shouldComponentUpdate.call(this, nextProps, nextState);
+    return PureRenderMixin.shouldComponentUpdate.call(this, nextProps, nextState);
   }
 
   render(): ReactElement {

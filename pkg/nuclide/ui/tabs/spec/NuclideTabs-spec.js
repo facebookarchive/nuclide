@@ -10,9 +10,11 @@
  */
 
 const Tabs = require('../lib/NuclideTabs');
-const React = require('react-for-atom');
+const {
+  React,
+  TestUtils,
+} = require('react-for-atom');
 
-const {TestUtils} = React.addons;
 const {
   Simulate,
   SimulateNative,

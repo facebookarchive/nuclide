@@ -16,7 +16,7 @@ import type {HealthStats, StatsViewProps} from './types';
 import invariant from 'assert';
 import {CompositeDisposable, Disposable} from 'atom';
 import os from 'os';
-import React from 'react-for-atom';
+import {React} from 'react-for-atom';
 import Rx from 'rx';
 
 // Imports from other Nuclide packages.

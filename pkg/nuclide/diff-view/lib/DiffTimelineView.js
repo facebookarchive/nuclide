@@ -14,7 +14,7 @@ import type {RevisionsState} from './types';
 import type {RevisionInfo} from '../../hg-repository-base/lib/hg-constants';
 
 import {CompositeDisposable} from 'atom';
-import React from 'react-for-atom';
+import {React} from 'react-for-atom';
 
 import {array} from '../../commons';
 import classnames from 'classnames';

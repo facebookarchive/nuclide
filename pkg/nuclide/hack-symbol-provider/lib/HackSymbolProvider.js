@@ -18,7 +18,7 @@ import type {HackSearchPosition} from '../../hack-base/lib/HackService';
 
 import {getHackService} from './getHackService';
 import path from 'path';
-import React from 'react-for-atom';
+import {React} from 'react-for-atom';
 
 export type HackFileResult = FileResult & HackSearchPosition;
 

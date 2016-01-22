@@ -12,7 +12,7 @@
 const BreakpointStore = require('./BreakpointStore');
 const Bridge = require('./Bridge');
 const DebuggerActions = require('./DebuggerActions');
-const React = require('react-for-atom');
+const {React} = require('react-for-atom');
 const path = require('path');
 const {PanelComponent} = require('../../../ui/panel');
 

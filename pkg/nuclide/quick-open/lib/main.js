@@ -14,7 +14,7 @@ import type {
 } from '../../quick-open-interfaces';
 import type {HomeFragments} from '../../home-interfaces';
 
-import React from 'react-for-atom';
+import {React} from 'react-for-atom';
 import QuickSelectionComponent from './QuickSelectionComponent';
 import {CompositeDisposable} from 'atom';
 import featureConfig from '../../feature-config';

@@ -12,7 +12,7 @@
 import FileTreeActions from '../lib/FileTreeActions';
 import FileTreeController from '../lib/FileTreeController';
 import FileTreeStore from '../lib/FileTreeStore';
-import React from 'react-for-atom';
+import {React} from 'react-for-atom';
 
 import pathModule from 'path';
 

@@ -10,9 +10,11 @@
  */
 
 const NuclideDropdown = require('../lib/NuclideDropdown');
-const React = require('react-for-atom');
+const {
+  React,
+  TestUtils,
+} = require('react-for-atom');
 
-const {TestUtils} = React.addons;
 const {
   Simulate,
   renderIntoDocument,

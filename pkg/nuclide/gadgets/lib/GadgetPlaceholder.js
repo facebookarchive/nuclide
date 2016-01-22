@@ -13,7 +13,7 @@
 
 import * as GadgetUri from './GadgetUri';
 import createComponentItem from './createComponentItem';
-import React from 'react-for-atom';
+import {React} from 'react-for-atom';
 
 type Props = {
   gadgetId: string;
@@ -23,7 +23,7 @@ type Props = {
   expandedFlexScale: ?number;
 };
 
-class GadgetPlaceholder extends React.Component<void, Props> {
+class GadgetPlaceholder extends React.Component<void, Props, void> {
 
   _expandedFlexScale: ?number;
 

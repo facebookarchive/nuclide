@@ -10,7 +10,7 @@
  */
 
 import type {Disposable} from 'atom';
-import React from 'react-for-atom';
+import {React} from 'react-for-atom';
 import ReactNativeServerActions from './ReactNativeServerActions';
 import ReactNativeServerStatus from './ReactNativeServerStatus';
 

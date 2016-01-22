@@ -10,16 +10,16 @@
  */
 
 const FileTreeActions = require('../lib/FileTreeActions');
-const React = require('react-for-atom');
+const {
+  PureRenderMixin,
+  React,
+} = require('react-for-atom');
 const {StatusCodeNumber} = require('../../hg-repository-base').hgConstants;
 
 const classnames = require('classnames');
 const {isContextClick} = require('../lib/FileTreeHelpers');
 
-const {
-  addons,
-  PropTypes,
-} = React;
+const {PropTypes} = React;
 
 const getActions = FileTreeActions.getInstance;
 
@@ -34,7 +34,7 @@ class DirectoryEntryComponent extends React.Component {
   }
 
   shouldComponentUpdate(nextProps: Object, nextState: Object) {
-    return addons.PureRenderMixin.shouldComponentUpdate.call(this, nextProps, nextState);
+    return PureRenderMixin.shouldComponentUpdate.call(this, nextProps, nextState);
   }
 
   render(): ReactElement {

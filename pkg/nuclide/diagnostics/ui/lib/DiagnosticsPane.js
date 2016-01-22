@@ -11,8 +11,8 @@
 
 import type {DiagnosticMessage} from '../../base';
 
-const {Column, Table} = require('fixed-data-table-for-atom');
-const React = require('react-for-atom');
+const {Column, Table} = require('fixed-data-table');
+const {React} = require('react-for-atom');
 
 import {track} from '../../../analytics';
 

@@ -12,7 +12,7 @@
 const AtomInput = require('../../ui/atom-input');
 const {CompositeDisposable} = require('atom');
 const RadioGroup = require('../../ui/radiogroup');
-const React = require('react-for-atom');
+const {React} = require('react-for-atom');
 const {PropTypes} = React;
 const {SshHandshake} = require('../../remote-connection');
 

@@ -12,7 +12,7 @@
 import type SuggestionListType from './SuggestionList';
 
 import {CompositeDisposable, Disposable} from 'atom';
-import React from 'react-for-atom';
+import {React} from 'react-for-atom';
 import invariant from 'assert';
 
 /**

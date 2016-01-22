@@ -11,7 +11,7 @@
 
 import {CompositeDisposable} from 'atom';
 import FileTreeStore from '../lib/FileTreeStore';
-import React from 'react-for-atom';
+import {React} from 'react-for-atom';
 import RootNodeComponent from './RootNodeComponent';
 import EmptyComponent from './EmptyComponent';
 import {track} from '../../analytics';

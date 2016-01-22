@@ -11,7 +11,7 @@
 
 import type {Reference, ReferenceGroup} from '../types';
 
-const React = require('react-for-atom');
+const {React} = require('react-for-atom');
 const FilePreview = require('./FilePreview');
 const {relative} = require('../../../remote-uri');
 

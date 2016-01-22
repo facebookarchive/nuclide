@@ -11,7 +11,7 @@
 
 const DiagnosticsPane = require('./DiagnosticsPane');
 const {PanelComponent} = require('../../../ui/panel');
-const React = require('react-for-atom');
+const {React} = require('react-for-atom');
 
 import {track} from '../../../analytics';
 

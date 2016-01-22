@@ -20,7 +20,7 @@ import remoteUri from '../../remote-uri';
 import Immutable from 'immutable';
 import {FileChangeStatus} from './constants';
 import {CompositeDisposable} from 'atom';
-import React from 'react-for-atom';
+import {React} from 'react-for-atom';
 
 import {array} from '../../commons';
 import classnames from 'classnames';

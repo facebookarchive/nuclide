@@ -11,7 +11,7 @@
 
 import type FindReferencesModel from './FindReferencesModel';
 
-const React = require('react-for-atom');
+const {React} = require('react-for-atom');
 const FindReferencesView = require('./view/FindReferencesView');
 
 class FindReferencesElement extends HTMLElement {

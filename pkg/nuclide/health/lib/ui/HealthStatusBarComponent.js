@@ -9,7 +9,11 @@
  * the root directory of this source tree.
  */
 
-import React from 'react-for-atom';
+import {
+  PureRenderMixin,
+  React,
+} from 'react-for-atom';
+
 const {PropTypes} = React;
 
 export default class HealthStatusBarComponent extends React.Component {
@@ -65,7 +69,7 @@ export default class HealthStatusBarComponent extends React.Component {
   }
 
   shouldComponentUpdate(nextProps: Object, nextState: Object): boolean {
-    return React.addons.PureRenderMixin.shouldComponentUpdate.call(this, nextProps, nextState);
+    return PureRenderMixin.shouldComponentUpdate.call(this, nextProps, nextState);
   }
 
 }

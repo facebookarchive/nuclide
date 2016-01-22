@@ -25,7 +25,7 @@ import {notifySshHandshakeError} from './notification';
 import AuthenticationPrompt from './AuthenticationPrompt';
 import ConnectionDetailsPrompt from './ConnectionDetailsPrompt';
 import IndeterminateProgressBar from './IndeterminateProgressBar';
-import React from 'react-for-atom';
+import {React} from 'react-for-atom';
 import {
   SshHandshake,
   decorateSshConnectionDelegateWithTracking,

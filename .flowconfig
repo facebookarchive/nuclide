@@ -1,13 +1,13 @@
 [include]
 
 [ignore]
-# second-level dependencies
-.*/node_modules/.+/node_modules/.*
 # becomes first-level dependency with npm3
-.*/node_modules/fbjs/flow/.*
+.*/node_modules/fbjs/lib/.*
 .*/node_modules/babel-types/.*
 # ignore module src to prefer declaration
 .*/node_modules/rx/.*
+# Annotated with `@flow` but has errors
+.*/node_modules/fixed-data-table/internal/.*
 
 [libs]
 ./pkg/nuclide/external-interfaces/1.0/

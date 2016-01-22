@@ -11,7 +11,7 @@
 
 import type LazyTreeNode from '../../../ui/tree';
 
-const React = require('react-for-atom');
+const {React} = require('react-for-atom');
 const TestClassTreeNode = require('./TestClassTreeNode');
 const {TreeRootComponent} = require('../../../ui/tree');
 

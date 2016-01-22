@@ -15,7 +15,7 @@ import type {RevisionInfo} from '../../hg-repository-base/lib/hg-constants';
 
 import invariant from 'assert';
 import {CompositeDisposable} from 'atom';
-import React from 'react-for-atom';
+import {React} from 'react-for-atom';
 import DiffViewEditorPane from './DiffViewEditorPane';
 import DiffViewTree from './DiffViewTree';
 import SyncScroll from './SyncScroll';

@@ -18,7 +18,7 @@ const invariant = require('assert');
 const {debounce} = require('../../../commons');
 const {compareMessagesByFile} = require('./paneUtils');
 const {isTextEditor} = require('../../../atom-helpers');
-const React = require('react-for-atom');
+const {React} = require('react-for-atom');
 const DiagnosticsPanel = require('./DiagnosticsPanel');
 
 const DEFAULT_TABLE_WIDTH = 600;

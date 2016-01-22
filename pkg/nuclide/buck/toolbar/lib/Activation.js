@@ -15,7 +15,7 @@ import BuckToolbar from './BuckToolbar';
 import BuckToolbarActions from './BuckToolbarActions';
 import BuckToolbarStore from './BuckToolbarStore';
 import {Dispatcher} from 'flux';
-import React from 'react-for-atom';
+import {React} from 'react-for-atom';
 
 class Activation {
   _actions: BuckToolbarActions;

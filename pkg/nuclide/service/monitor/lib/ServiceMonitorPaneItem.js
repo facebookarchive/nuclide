@@ -11,7 +11,7 @@
 
 import type {NuclideCustomPaneItemOptions} from '../../../ui/pane-item/lib/types';
 
-import React from 'react-for-atom';
+import {React} from 'react-for-atom';
 import ServiceMonitor from './ServiceMonitor';
 import NuclideCustomPaneItem from '../../../ui/pane-item';
 import {getServiceLogger} from '../../../client';

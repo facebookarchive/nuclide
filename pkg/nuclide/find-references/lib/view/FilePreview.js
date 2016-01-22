@@ -12,7 +12,7 @@
 import type {Reference} from '../types';
 
 const AtomInput = require('../../../ui/atom-input');
-const React = require('react-for-atom');
+const {React} = require('react-for-atom');
 
 const FilePreview = React.createClass({
 
