@@ -182,6 +182,18 @@ module.exports = {
       }
     };
 
+    const fixAllInCurrentFile = () => {
+      const editor = atom.workspace.getActiveTextEditor();
+      if (editor == null) {
+        return;
+      }
+      const path = editor.getPath();
+      if (path == null) {
+        return;
+      }
+      diagnosticUpdater.applyFixesForFile(path);
+    };
+
     subscriptions.add(atom.commands.add(
       atom.views.getView(atom.workspace),
       'nuclide-diagnostics-ui:toggle-table',
@@ -192,6 +204,12 @@ module.exports = {
       atom.views.getView(atom.workspace),
       'nuclide-diagnostics-ui:show-table',
       showTable,
+    ));
+
+    subscriptions.add(atom.commands.add(
+      atom.views.getView(atom.workspace),
+      'nuclide-diagnostics-ui:fix-all-in-current-file',
+      fixAllInCurrentFile,
     ));
 
     invariant(activationState);
