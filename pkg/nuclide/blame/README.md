@@ -20,9 +20,10 @@ information in a custom gutter on an editor.
 ## How to Use
 
 To open blame, right-click in the body of an editor to open the context menu,
-then select 'Show Blame'. 'Show Blame' will only be visible if you have a blame
-provider installed that can provide blame for the file in that editor. To remove
-blame, open the context menu as above, and select 'Hide Blame'.
+then select 'Toggle Blame'. 'Toggle Blame' will only be visible if you have a
+blame provider installed that can provide blame for the file in that editor.
+To remove blame, open the context menu as above, and select 'Toggle Blame'
+again.
 
 ![How to Open Blame](readme/showBlame.png)
 

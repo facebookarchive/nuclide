@@ -44,23 +44,19 @@ class Activation {
     this._packageDisposables = new CompositeDisposable();
     this._packageDisposables.add(atom.contextMenu.add({
       'atom-text-editor': [{
-        label: 'Show Blame',
-        command: 'nuclide-blame:show-blame',
-        shouldDisplay: (event: MouseEvent) => this._canShowBlame(),
-      }],
-    }));
-    this._packageDisposables.add(atom.contextMenu.add({
-      'atom-text-editor': [{
-        label: 'Hide Blame',
-        command: 'nuclide-blame:hide-blame',
-        shouldDisplay: (event: MouseEvent) => this._canHideBlame(),
+        label: 'Toggle Blame',
+        command: 'nuclide-blame:toggle-blame',
+        shouldDisplay: (event: MouseEvent) => (this._canShowBlame() || this._canHideBlame()),
       }],
     }));
     this._packageDisposables.add(
-      atom.commands.add('atom-text-editor', 'nuclide-blame:show-blame', () => this._showBlame())
-    );
-    this._packageDisposables.add(
-      atom.commands.add('atom-text-editor', 'nuclide-blame:hide-blame', () => this._hideBlame())
+      atom.commands.add('atom-text-editor', 'nuclide-blame:toggle-blame', () => {
+        if (this._canShowBlame()) {
+          this._showBlame();
+        } else if (this._canHideBlame()) {
+          this._hideBlame();
+        }
+      })
     );
   }
 

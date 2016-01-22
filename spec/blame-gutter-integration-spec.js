@@ -36,8 +36,8 @@ describe('Blame gutter integration test', () => {
       // Open the test.txt file in the repo.
       const textEditor = await atom.workspace.open(path.join(repoPath, 'test.txt'));
       textEditorView = atom.views.getView(textEditor);
-      // Simulate 'Show blame' click in context menu.
-      atom.commands.dispatch(textEditorView, 'nuclide-blame:show-blame');
+      // Simulate 'Toggle blame' click in context menu.
+      atom.commands.dispatch(textEditorView, 'nuclide-blame:toggle-blame');
     });
 
     waitsFor('gutter blame UI to show up', 10000, () => {
