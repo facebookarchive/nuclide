@@ -57,13 +57,9 @@ class Activation {
       tooltip: 'Toggle HHVM Toolbar',
       priority: 500,
     })[0];
-    const container = document.createElement('div');
-    container.className = 'hhvm-toolbar-icon-container';
-    toolBarButton.appendChild(container);
-    React.render(<HhvmIcon />, container);
+    toolBarButton.innerHTML = React.renderToStaticMarkup(<HhvmIcon />);
     this._disposables.add(
       new Disposable(() => { toolBar.removeItems(); }),
-      new Disposable(() => { React.unmountComponentAtNode(container); }),
     );
   }
 

@@ -71,13 +71,9 @@ class Activation {
       iconset: 'ion',
       priority: 500,
     })[0];
-    const container = document.createElement('div');
-    container.className = 'buck-toolbar-icon-container';
-    toolBarButton.appendChild(container);
-    React.render(<BuckIcon />, container);
+    toolBarButton.innerHTML = React.renderToStaticMarkup(<BuckIcon />);
     this._disposables.add(
       new Disposable(() => { toolBar.removeItems(); }),
-      new Disposable(() => { React.unmountComponentAtNode(container); }),
     );
   }
 
