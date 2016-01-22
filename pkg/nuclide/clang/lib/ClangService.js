@@ -122,7 +122,6 @@ export type ClangCompletion = {
 };
 
 export type ClangCompletionsResult = {
-  file: string,
   completions: Array<ClangCompletion>,
   line: number,
   column: number,
@@ -149,7 +148,6 @@ export type ClangDeclaration = {
 // The first element in info will be for the declaration itself,
 // the second will be for its direct semantic parent (if it exists), etc.
 export type ClangDeclarationInfoResult = {
-  src: NuclideUri,
   line: number,
   column: number,
   info?: Array<ClangDeclaration>,

@@ -205,7 +205,7 @@ export default class ClangServer {
     }
 
     const reqid = this._getNextRequestId();
-    const request = {reqid, method, src: this._src, flags, ...params};
+    const request = {reqid, method, flags, ...params};
     const logData = JSON.stringify(request, (key, value) => {
       // File contents are too large and clutter up the logs, so exclude them.
       if (key === 'contents') {

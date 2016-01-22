@@ -88,7 +88,7 @@ class Server:
         self.input_stream = input_stream
         self.output_stream = output_stream
         self.index = Index.create()
-        self.src_to_translation_unit = {}
+        self.translation_unit = None
         self.completion_cache = None
 
     def run(self):
@@ -138,19 +138,17 @@ class Server:
         # kind.
         return response
 
-    def _get_translation_unit(self, src, flags=None):
-        '''flags can be optional if the translation unit is in the cache.'''
-        translation_unit = self.src_to_translation_unit.get(src)
-        if translation_unit is None:
-            translation_unit = self._create_translation_unit(src, flags)
-            self.src_to_translation_unit[src] = translation_unit
-        return translation_unit
+    def _get_translation_unit(self, unsaved_contents, flags=None):
+        '''
+        Get the current translation unit, or create it if it does not exist.
+        Flags can be optional if the translation unit already exists.
+        '''
+        if self.translation_unit is not None:
+            return self.translation_unit
 
-    def _create_translation_unit(self, src, flags):
         if flags is None:
             return None
 
-        unsaved_files = None
         # Configure the options.
         # See also clang_defaultEditingTranslationUnitOptions in Index.h.
         options = (
@@ -159,14 +157,21 @@ class Server:
             TranslationUnit.PARSE_INCLUDE_BRIEF_COMMENTS_IN_CODE_COMPLETION |
             TranslationUnit.PARSE_INCOMPLETE)
 
-        args = self._get_args_for_flags(src, flags)
-        translation_unit = self.index.parse(src, args, unsaved_files, options)
-        return translation_unit
+        args = self._get_args_for_flags(flags)
+        self.translation_unit = self.index.parse(
+            self.src, args, self._make_files(unsaved_contents), options)
+        return self.translation_unit
 
-    def _get_args_for_flags(self, src, flags):
+    # Clang's API expects a list of (src, contents) pairs.
+    def _make_files(self, unsaved_contents):
+        if unsaved_contents is None:
+            return []
+        return [(self.src, unsaved_contents.encode('utf-8'))]
+
+    def _get_args_for_flags(self, flags):
         args = []
         for arg in flags:
-            if arg == src:
+            if arg == self.src:
                 # Including the input file as an argument causes index.parse() to fail.
                 # Surprisingly, including '/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang'
                 # as the first argument does not cause any issues.
@@ -187,22 +192,21 @@ class Server:
         return args
 
     def compile(self, request, response):
-        src = request['src']
         contents = request['contents']
         flags = request['flags']
 
         # Update the translation unit with the latest contents.
-        translation_unit = self._tryUpdateTranslationUnit(src, contents, flags)
+        translation_unit = self._update_translation_unit(contents, flags)
         if not translation_unit:
             sys.stderr.write(
-                'Suspicious: requesting compilation of %s without flags' % src)
+                'Suspicious: requesting compilation of %s without flags' % self.src)
             response['diagnostics'] = []
             return
 
         # Return the diagnostics.
         diagnostics = []
         for diag in translation_unit.diagnostics:
-            if diag.spelling == PRAGMA_ONCE_IN_MAIN_FILE and is_header_file(src):
+            if diag.spelling == PRAGMA_ONCE_IN_MAIN_FILE and is_header_file(self.src):
                 continue
             ranges = []
             # Clang indexes for line and column are 1-based.
@@ -232,7 +236,6 @@ class Server:
         response['diagnostics'] = diagnostics
 
     def get_completions(self, request, response):
-        src = request['src']
         contents = request['contents']
         line = request['line']
         column = request['column']
@@ -243,7 +246,7 @@ class Server:
         # NOTE: there is no need to update the translation unit here.
         # libclang's completions API seamlessly takes care of unsaved content
         # without any special handling.
-        translation_unit = self._get_translation_unit(src, flags)
+        translation_unit = self._get_translation_unit(None, flags)
         if translation_unit:
             if self.completion_cache is None:
                 self.completion_cache = CompletionCache(self.src, translation_unit)
@@ -255,30 +258,27 @@ class Server:
                 limit=COMPLETIONS_LIMIT)
         else:
             completions = []
-        response['file'] = src
         response['completions'] = completions
         response['line'] = line
         response['column'] = column
         response['prefix'] = prefix
 
     def get_declaration(self, request, response):
-        src = request['src']
         contents = request['contents']
         line = request['line']
         column = request['column']
         flags = request['flags']
 
-        response['src'] = src
         response['line'] = line
         response['column'] = column
 
         # Update the translation unit with the latest contents.
-        translation_unit = self._tryUpdateTranslationUnit(src, contents, flags)
+        translation_unit = self._update_translation_unit(contents, flags)
         if not translation_unit:
             return
 
         location_and_spelling = get_declaration_location_and_spelling(
-            translation_unit, src, line + 1, column + 1)
+            translation_unit, self.src, line + 1, column + 1)
         # Clang returns 1-indexed values, but we want to return 0-indexed.
         if location_and_spelling:
             location_and_spelling['line'] -= 1
@@ -290,18 +290,16 @@ class Server:
         response['locationAndSpelling'] = location_and_spelling
 
     def get_declaration_info(self, request, response):
-        src = request['src']
         contents = request['contents']
         line = request['line']
         column = request['column']
         flags = request['flags']
 
-        response['src'] = src
         response['line'] = line
         response['column'] = column
 
         # Update the translation unit with the latest contents.
-        translation_unit = self._tryUpdateTranslationUnit(src, contents, flags)
+        translation_unit = self._update_translation_unit(contents, flags)
         if not translation_unit:
             return
 
@@ -346,25 +344,14 @@ class Server:
             return base_name + ' (' + name + ')'
         return name
 
-    def _update(self, translation_unit, src, unsaved_contents=None):
-        # If unsaved_contents is unspecified, then assume that the file can be read
-        # directly from disk as-is.
-        if unsaved_contents:
-            contents_as_str = unsaved_contents.encode('utf8')
-            unsaved_files = [(src, contents_as_str)]
-        else:
-            unsaved_files = []
-        options = 0  # There are no reparse options available in libclang yet.
-        translation_unit.reparse(unsaved_files, options)
-        if self.completion_cache is not None:
-            self.completion_cache.invalidate()
-
-    def _tryUpdateTranslationUnit(self, src, unsaved_contents=None, flags=None):
-        '''Returns None if the flags for the src cannot be found.'''
-        translation_unit = self._get_translation_unit(src, flags)
+    def _update_translation_unit(self, unsaved_contents=None, flags=None):
+        translation_unit = self._get_translation_unit(unsaved_contents, flags)
         if translation_unit is None:
             return None
-        self._update(translation_unit, src, unsaved_contents)
+        options = 0  # There are no reparse options available in libclang yet.
+        translation_unit.reparse(self._make_files(unsaved_contents), options)
+        if self.completion_cache is not None:
+            self.completion_cache.invalidate()
         return translation_unit
 
 
