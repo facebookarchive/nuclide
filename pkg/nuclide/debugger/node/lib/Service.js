@@ -18,7 +18,7 @@ import invariant from 'assert';
 import {DebuggerProcess} from '../../utils';
 
 import type {nuclide_debugger$DebuggerProcessInfo,}
-    from '../../interfaces/Service';
+    from '../../interfaces/service';
 
 class NodeDebuggerProcess extends DebuggerProcess {
   _debugPort: number;
