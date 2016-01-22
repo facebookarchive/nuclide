@@ -139,60 +139,6 @@ class Server:
         # kind.
         return response
 
-    def _get_translation_unit(self, unsaved_contents, flags=None):
-        '''
-        Get the current translation unit, or create it if it does not exist.
-        Flags can be optional if the translation unit already exists.
-        '''
-        if self.translation_unit is not None:
-            return self.translation_unit
-
-        if flags is None:
-            return None
-
-        # Configure the options.
-        # See also clang_defaultEditingTranslationUnitOptions in Index.h.
-        options = (
-            TranslationUnit.PARSE_PRECOMPILED_PREAMBLE |
-            TranslationUnit.PARSE_CACHE_COMPLETION_RESULTS |
-            TranslationUnit.PARSE_INCLUDE_BRIEF_COMMENTS_IN_CODE_COMPLETION |
-            TranslationUnit.PARSE_INCOMPLETE)
-
-        args = self._get_args_for_flags(flags)
-        self.translation_unit = self.index.parse(
-            self.src, args, self._make_files(unsaved_contents), options)
-        self.cached_contents = unsaved_contents
-        return self.translation_unit
-
-    # Clang's API expects a list of (src, contents) pairs.
-    def _make_files(self, unsaved_contents):
-        if unsaved_contents is None:
-            return []
-        return [(self.src, unsaved_contents.encode('utf-8'))]
-
-    def _get_args_for_flags(self, flags):
-        args = []
-        for arg in flags:
-            if arg == self.src:
-                # Including the input file as an argument causes index.parse() to fail.
-                # Surprisingly, including '/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang'
-                # as the first argument does not cause any issues.
-                pass
-            elif arg == '-c':
-                # No need to generate a .o file.
-                args.append('-fsyntax-only')
-            elif arg == '-Werror':
-                # We disable this so that the severity can be better reflected in the UI.
-                # For example, this allows unused code to appear as a warning
-                # instead of an error.
-                pass
-            elif arg == '-MMD' or arg == '-MD':
-                # Do not write out dependency files.
-                pass
-            else:
-                args.append(arg)
-        return args
-
     def compile(self, request, response):
         contents = request['contents']
         flags = request['flags']
@@ -345,6 +291,60 @@ class Server:
                     break
             return base_name + ' (' + name + ')'
         return name
+
+    def _get_translation_unit(self, unsaved_contents, flags=None):
+        '''
+        Get the current translation unit, or create it if it does not exist.
+        Flags can be optional if the translation unit already exists.
+        '''
+        if self.translation_unit is not None:
+            return self.translation_unit
+
+        if flags is None:
+            return None
+
+        # Configure the options.
+        # See also clang_defaultEditingTranslationUnitOptions in Index.h.
+        options = (
+            TranslationUnit.PARSE_PRECOMPILED_PREAMBLE |
+            TranslationUnit.PARSE_CACHE_COMPLETION_RESULTS |
+            TranslationUnit.PARSE_INCLUDE_BRIEF_COMMENTS_IN_CODE_COMPLETION |
+            TranslationUnit.PARSE_INCOMPLETE)
+
+        args = self._get_args_for_flags(flags)
+        self.translation_unit = self.index.parse(
+            self.src, args, self._make_files(unsaved_contents), options)
+        self.cached_contents = unsaved_contents
+        return self.translation_unit
+
+    # Clang's API expects a list of (src, contents) pairs.
+    def _make_files(self, unsaved_contents):
+        if unsaved_contents is None:
+            return []
+        return [(self.src, unsaved_contents.encode('utf-8'))]
+
+    def _get_args_for_flags(self, flags):
+        args = []
+        for arg in flags:
+            if arg == self.src:
+                # Including the input file as an argument causes index.parse() to fail.
+                # Surprisingly, including '/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang'
+                # as the first argument does not cause any issues.
+                pass
+            elif arg == '-c':
+                # No need to generate a .o file.
+                args.append('-fsyntax-only')
+            elif arg == '-Werror':
+                # We disable this so that the severity can be better reflected in the UI.
+                # For example, this allows unused code to appear as a warning
+                # instead of an error.
+                pass
+            elif arg == '-MMD' or arg == '-MD':
+                # Do not write out dependency files.
+                pass
+            else:
+                args.append(arg)
+        return args
 
     def _update_translation_unit(self, unsaved_contents=None, flags=None):
         translation_unit = self._get_translation_unit(unsaved_contents, flags)

@@ -161,27 +161,3 @@ def _getKind(completion_result):
         return completion_result.kind
     except:
         return None
-
-
-if __name__ == '__main__':
-    from optparse import OptionParser
-    parser = OptionParser()
-    parser.add_option('-l', '--line', dest='line', type='int')
-    parser.add_option('-c', '--col', '--column', dest='column', type='int')
-    parser.add_option('-p', '--prefix', dest='prefix',
-                      type='string', default='')
-
-    (options, args) = parser.parse_args()
-    absolute_path = args[0]
-
-    translation_unit = create_translation_unit(absolute_path)
-    completions = _get_completions(
-        translation_unit,
-        absolute_path,
-        options.line,
-        options.column,
-        options.prefix,
-        contents=None,
-    )
-    for completion in completions:
-        print completion

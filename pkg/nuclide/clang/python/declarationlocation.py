@@ -60,22 +60,3 @@ def get_declaration_location_and_spelling(translation_unit, absolute_path, line,
             'end': {'line': extent.end.line, 'column': extent.end.column},
         },
     }
-
-if __name__ == '__main__':
-    from optparse import OptionParser
-    parser = OptionParser()
-    parser.add_option('-l', '--line', dest='line', type='int')
-    parser.add_option('-c', '--col', '--column', dest='column', type='int')
-
-    (options, args) = parser.parse_args()
-    absolute_path = args[0]
-
-    # TODO(mbolin): Need to call create_translation_unit() from somewhere.
-    translation_unit = create_translation_unit(absolute_path)
-    location = get_declaration_location(
-        translation_unit,
-        absolute_path,
-        options.line,
-        options.column,
-    )
-    print location
