@@ -90,6 +90,7 @@ class Server:
         self.index = Index.create()
         self.translation_unit = None
         self.completion_cache = None
+        self.cached_contents = None
 
     def run(self):
         input_stream = self.input_stream
@@ -160,6 +161,7 @@ class Server:
         args = self._get_args_for_flags(flags)
         self.translation_unit = self.index.parse(
             self.src, args, self._make_files(unsaved_contents), options)
+        self.cached_contents = unsaved_contents
         return self.translation_unit
 
     # Clang's API expects a list of (src, contents) pairs.
@@ -348,8 +350,13 @@ class Server:
         translation_unit = self._get_translation_unit(unsaved_contents, flags)
         if translation_unit is None:
             return None
+        # Reparsing isn't cheap, so skip it if nothing changed.
+        if (unsaved_contents is not None and
+            unsaved_contents == self.cached_contents):
+            return translation_unit
         options = 0  # There are no reparse options available in libclang yet.
         translation_unit.reparse(self._make_files(unsaved_contents), options)
+        self.cached_contents = unsaved_contents
         if self.completion_cache is not None:
             self.completion_cache.invalidate()
         return translation_unit

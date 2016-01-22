@@ -47,10 +47,24 @@ describe('ClangServer', () => {
       });
       invariant(response);
       expect(response.reqid).toBe('1');
-      expect(response.completions.map(x => x.spelling)).toEqual([
+      expect(response.completions.map(x => x.spelling).sort()).toEqual([
+        'f()',
         'false',
         'float',
-        'f()',
+      ]);
+
+      // This will hit the cache. Double-check the result.
+      response = await server.makeRequest('get_completions', {
+        contents: FILE_CONTENTS,
+        line: 4,
+        column: 7,
+        tokenStartColumn: 7,
+        prefix: 'fa',
+      });
+      invariant(response);
+      expect(response.reqid).toBe('2');
+      expect(response.completions.map(x => x.spelling).sort()).toEqual([
+        'false',
       ]);
 
       response = await server.makeRequest('get_declaration', {
@@ -59,12 +73,36 @@ describe('ClangServer', () => {
         column: 2,
       });
       invariant(response);
-      expect(response.reqid).toBe('2');
+      expect(response.reqid).toBe('3');
       const {line, column, spelling, type} = response.locationAndSpelling;
       expect(line).toBe(0);
       expect(column).toBe(5);
       expect(spelling).toBe('f');
       expect(type).toBe('void ()');
+
+      response = await server.makeRequest('get_declaration_info', {
+        contents: FILE_CONTENTS,
+        line: 4,
+        column: 2,
+      });
+      invariant(response);
+      expect(response.reqid).toBe('4');
+      expect(response.line).toBe(4);
+      expect(response.column).toBe(2);
+      const {info} = response;
+      expect(info.length).toBe(1);
+      expect(info[0].name).toBe('f()');
+      expect(info[0].type).toBe('FUNCTION_DECL');
+      // May not be consistent between clang versions.
+      expect(info[0].cursor_usr).not.toBe(null);
+
+      // Introduce a compile error.
+      response = await server.makeRequest('compile', {
+        contents: FILE_CONTENTS + '}',
+      });
+      invariant(response);
+      expect(response.reqid).toBe('5');
+      expect(response.diagnostics.length).toBe(1);
     });
   });
 
