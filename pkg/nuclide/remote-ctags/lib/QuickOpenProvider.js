@@ -61,15 +61,12 @@ module.exports = ({
   },
 
   async isEligibleForDirectory(directory: atom$Directory): Promise<boolean> {
-    // HACK: Ctags results typically just duplicate Hack results when they're present.
-    // Disable this when a Hack service is present.
-    // TODO(hansonw): Remove this when quick-open has proper ranking/de-duplication.
-    const hack = await getHackService(directory);
-    if (hack != null) {
-      return false;
-    }
     const svc = await getCtagsService(directory);
-    return svc != null;
+    if (svc != null) {
+      svc.dispose();
+      return true;
+    }
+    return false;
   },
 
   getComponentForItem(item: Result): ReactElement {
@@ -99,6 +96,11 @@ module.exports = ({
       return [];
     }
 
+    // HACK: Ctags results typically just duplicate Hack results when they're present.
+    // Filter out results from PHP files when the Hack service is available.
+    // TODO(hansonw): Remove this when quick-open has proper ranking/de-duplication.
+    const hack = await getHackService(directory);
+
     try {
       const results = await service.findTags(query, {
         caseInsensitive: true,
@@ -106,15 +108,17 @@ module.exports = ({
         limit: RESULTS_LIMIT,
       });
 
-      return await Promise.all(results.map(async tag => {
-        const line = await getLineNumberForTag(tag);
-        return {
-          ...tag,
-          path: tag.file,
-          dir,
-          line,
-        };
-      }));
+      return await Promise.all(results
+        .filter(tag => hack == null || !tag.file.endsWith('.php'))
+        .map(async tag => {
+          const line = await getLineNumberForTag(tag);
+          return {
+            ...tag,
+            path: tag.file,
+            dir,
+            line,
+          };
+        }));
     } finally {
       service.dispose();
     }

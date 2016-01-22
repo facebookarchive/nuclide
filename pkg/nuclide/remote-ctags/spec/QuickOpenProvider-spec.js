@@ -66,15 +66,6 @@ describe('QuickOpenProvider', () => {
     });
   });
 
-  it('deactivates when Hack symbols are active', () => {
-    waitsForPromise(async () => {
-      hackSpy.andReturn(Promise.resolve({}));
-      const {isEligibleForDirectory} = QuickOpenProvider;
-      invariant(isEligibleForDirectory);
-      expect(await isEligibleForDirectory(mockDirectory)).toBe(false);
-    });
-  });
-
   it('is able to return and render tag results', () => {
     waitsForPromise(async () => {
       const {executeQuery, getComponentForItem} = QuickOpenProvider;
