@@ -19,8 +19,8 @@ import {
   callHHClient,
   symbolTypeToSearchTypes,
   getSearchResults,
-  getHackExecOptions,
 } from './HackHelpers';
+import {getHackExecOptions} from './hack-config';
 
 export type SymbolTypeValue = 0 | 1 | 2 | 3 | 4;
 

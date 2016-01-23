@@ -14,10 +14,10 @@ import type {HackSearchResult, HHSearchPosition} from './types';
 import type {SearchResultTypeValue, SymbolTypeValue} from '../../hack-common/lib/constants';
 
 import invariant from 'assert';
-import {findNearestFile, checkOutput, PromiseQueue} from '../../commons';
+import {checkOutput, PromiseQueue} from '../../commons';
 import {SearchResultType, SymbolType} from '../../hack-common/lib/constants';
+import {PATH_TO_HH_CLIENT, getHackExecOptions} from './hack-config';
 
-const PATH_TO_HH_CLIENT = 'hh_client';
 const HH_SERVER_INIT_MESSAGE = 'hh_server still initializing';
 const HH_SERVER_BUSY_MESSAGE = 'hh_server is busy';
 const logger = require('../../logging').getLogger();
@@ -34,30 +34,6 @@ const SYMBOL_CLASS_SEARCH_TYPES = Object.freeze([
 ]);
 const SYMBOL_METHOD_SEARCH_TYPES = Object.freeze([SearchResultType.METHOD]);
 const SYMBOL_FUNCTION_SEARCH_TYPES = Object.freeze([SearchResultType.FUNCTION]);
-
-/**
-* If this returns null, then it is not safe to run hack.
-*/
-function findHackConfigDir(localFile: string): Promise<?string> {
-  return findNearestFile('.hhconfig', localFile);
-}
-
-export async function getHackExecOptions(
-  localFile: string
-): Promise<?{hackRoot: string, hackCommand: string}> {
-  // $FlowFixMe incompatible type.
-  const [hhResult, hackRoot] = await Promise.all([
-    // `stdout` would be empty if there is no such command.
-    checkOutput('which', [PATH_TO_HH_CLIENT]),
-    findHackConfigDir(localFile),
-  ]);
-  const hackCommand = hhResult.stdout.trim();
-  if (hackRoot && hackCommand) {
-    return {hackRoot, hackCommand};
-  } else {
-    return null;
-  }
-}
 
  /**
   * Executes hh_client with proper arguments returning the result string or json object.
