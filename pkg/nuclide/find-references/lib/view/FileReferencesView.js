@@ -12,16 +12,17 @@
 import type {Reference, ReferenceGroup} from '../types';
 
 const {React} = require('react-for-atom');
+const {PropTypes} = React;
 const FilePreview = require('./FilePreview');
 const {relative} = require('../../../remote-uri');
 
 const FileReferencesView = React.createClass({
   propTypes: {
-    uri: React.PropTypes.string.isRequired,
-    grammar: React.PropTypes.object.isRequired,
-    previewText: React.PropTypes.arrayOf(React.PropTypes.string).isRequired,
-    refGroups: React.PropTypes.arrayOf(React.PropTypes.object /*ReferenceGroup*/).isRequired,
-    basePath: React.PropTypes.string.isRequired,
+    uri: PropTypes.string.isRequired,
+    grammar: PropTypes.object.isRequired,
+    previewText: PropTypes.arrayOf(PropTypes.string).isRequired,
+    refGroups: PropTypes.arrayOf(PropTypes.object /*ReferenceGroup*/).isRequired,
+    basePath: PropTypes.string.isRequired,
   },
 
   _onRefClick(ref: Reference) {

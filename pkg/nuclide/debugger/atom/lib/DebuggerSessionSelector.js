@@ -13,6 +13,7 @@ const DebuggerActions = require('./DebuggerActions');
 const DebuggerProcessInfo = require('./DebuggerProcessInfo');
 const DebuggerStore = require('./DebuggerStore');
 const {React} = require('react-for-atom');
+const {PropTypes} = React;
 
 type State = {
   selectedProcess: ?DebuggerProcessInfo;
@@ -25,8 +26,8 @@ type State = {
  */
 const DebuggerSessionSelector = React.createClass({
   propTypes: {
-    actions: React.PropTypes.instanceOf(DebuggerActions).isRequired,
-    store: React.PropTypes.instanceOf(DebuggerStore).isRequired,
+    actions: PropTypes.instanceOf(DebuggerActions).isRequired,
+    store: PropTypes.instanceOf(DebuggerStore).isRequired,
   },
 
   getInitialState(): State {

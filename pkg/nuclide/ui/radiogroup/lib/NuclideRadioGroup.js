@@ -23,8 +23,8 @@ const NuclideRadioGroup = React.createClass({
 
   propTypes: {
     optionLabels: PropTypes.arrayOf(PropTypes.node).isRequired,
-    selectedIndex: React.PropTypes.number.isRequired,
-    onSelectedChange: React.PropTypes.func.isRequired,
+    selectedIndex: PropTypes.number.isRequired,
+    onSelectedChange: PropTypes.func.isRequired,
   },
 
   getDefaultProps(): any {

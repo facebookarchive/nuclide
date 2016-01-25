@@ -21,6 +21,7 @@ import invariant from 'assert';
 
 const {track} = require('../../../analytics');
 const {React} = require('react-for-atom');
+const {PropTypes} = React;
 
 const GUTTER_ID = 'nuclide-diagnostics-gutter';
 
@@ -384,8 +385,6 @@ class DiagnosticsPopup extends React.Component {
     );
   }
 }
-
-const {PropTypes} = React;
 
 DiagnosticsPopup.propTypes = {
   children: PropTypes.node,

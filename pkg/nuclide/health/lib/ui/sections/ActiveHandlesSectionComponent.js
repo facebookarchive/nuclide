@@ -11,14 +11,14 @@
 
 import path from 'path';
 import {React} from 'react-for-atom';
-const {PropTypes} = React;
-
 import HandlesTableComponent from './HandlesTableComponent';
+
+const {PropTypes} = React;
 
 export default class ActiveHandlesSectionComponent extends React.Component {
 
   static propTypes = {
-    activeHandleObjects: PropTypes.arrayOf(React.PropTypes.object).isRequired,
+    activeHandleObjects: PropTypes.arrayOf(PropTypes.object).isRequired,
   };
 
   // Returns a list of handles which are not children of others (i.e. sockets as process pipes).

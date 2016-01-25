@@ -23,6 +23,7 @@ const {
   isTextEditor,
 } = require('../../../atom-helpers');
 const {onWorkspaceDidStopChangingActivePaneItem} = atomEventDebounce;
+const {PropTypes} = React;
 
 class BuckToolbar extends React.Component {
 
@@ -158,8 +159,8 @@ class BuckToolbar extends React.Component {
 }
 
 BuckToolbar.propTypes = {
-  store: React.PropTypes.instanceOf(BuckToolbarStore).isRequired,
-  actions: React.PropTypes.instanceOf(BuckToolbarActions).isRequired,
+  store: PropTypes.instanceOf(BuckToolbarStore).isRequired,
+  actions: PropTypes.instanceOf(BuckToolbarActions).isRequired,
 };
 
 module.exports = BuckToolbar;

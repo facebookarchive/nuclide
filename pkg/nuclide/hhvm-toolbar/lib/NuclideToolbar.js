@@ -12,6 +12,7 @@
 const {React} = require('react-for-atom');
 const {Disposable} = require('atom');
 const ProjectStore = require('./ProjectStore');
+const {PropTypes} = React;
 
 class NuclideToolbar extends React.Component {
   _disposable: ?Disposable;
@@ -61,7 +62,7 @@ class NuclideToolbar extends React.Component {
 }
 
 NuclideToolbar.propTypes = {
-  projectStore: React.PropTypes.instanceOf(ProjectStore).isRequired,
+  projectStore: PropTypes.instanceOf(ProjectStore).isRequired,
 };
 
 module.exports = NuclideToolbar;

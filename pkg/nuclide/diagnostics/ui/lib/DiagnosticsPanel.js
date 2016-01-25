@@ -12,6 +12,7 @@
 const DiagnosticsPane = require('./DiagnosticsPane');
 const {PanelComponent} = require('../../../ui/panel');
 const {React} = require('react-for-atom');
+const {PropTypes} = React;
 
 import {track} from '../../../analytics';
 
@@ -158,8 +159,6 @@ class DiagnosticsPanel extends React.Component {
     this.props.onFilterByActiveTextEditorChange.call(null, isChecked);
   }
 }
-
-const {PropTypes} = React;
 
 DiagnosticsPanel.propTypes = {
   diagnostics: PropTypes.array.isRequired,

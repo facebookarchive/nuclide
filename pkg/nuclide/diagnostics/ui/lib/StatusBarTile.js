@@ -17,6 +17,8 @@ import type {
 import {CompositeDisposable} from 'atom';
 import {React} from 'react-for-atom';
 
+const {PropTypes} = React;
+
 type DiagnosticCount = {
   errorCount: number;
   warningCount: number;
@@ -164,8 +166,6 @@ class StatusBarTileComponent extends React.Component {
     track('diagnostics-show-table-from-status-bar');
   }
 }
-
-const {PropTypes} = React;
 
 StatusBarTileComponent.propTypes = {
   errorCount: PropTypes.number.isRequired,

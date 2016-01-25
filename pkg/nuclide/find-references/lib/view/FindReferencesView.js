@@ -12,6 +12,7 @@
 import type {FileReferences} from '../types';
 
 const {React} = require('react-for-atom');
+const {PropTypes} = React;
 const FileReferencesView = require('./FileReferencesView');
 const FindReferencesModel = require('../FindReferencesModel');
 
@@ -27,7 +28,7 @@ function pluralize(noun: string, count: number) {
 const FindReferencesView = React.createClass({
 
   propTypes: {
-    model: React.PropTypes.instanceOf(FindReferencesModel).isRequired,
+    model: PropTypes.instanceOf(FindReferencesModel).isRequired,
   },
 
   getInitialState() {

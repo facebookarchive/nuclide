@@ -13,6 +13,7 @@ import type {DiagnosticMessage} from '../../base';
 
 const {Column, Table} = require('fixed-data-table');
 const {React} = require('react-for-atom');
+const {PropTypes} = React;
 
 import {track} from '../../../analytics';
 
@@ -217,8 +218,6 @@ class DiagnosticsPane extends React.Component {
     );
   }
 }
-
-const {PropTypes} = React;
 
 DiagnosticsPane.propTypes = {
   height: PropTypes.number.isRequired,

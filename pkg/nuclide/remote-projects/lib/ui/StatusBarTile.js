@@ -21,7 +21,7 @@ const {PropTypes} = React;
 const StatusBarTile = React.createClass({
   propTypes: {
     connectionState: PropTypes.number.isRequired,
-    fileUri: React.PropTypes.string,
+    fileUri: PropTypes.string,
   },
 
   render(): ?ReactElement {

@@ -13,6 +13,7 @@ const BreakpointStore = require('./BreakpointStore');
 const Bridge = require('./Bridge');
 const DebuggerActions = require('./DebuggerActions');
 const {React} = require('react-for-atom');
+const {PropTypes} = React;
 const path = require('path');
 const {PanelComponent} = require('../../../ui/panel');
 
@@ -25,10 +26,10 @@ const DebuggerInspector = React.createClass({
   displayName: 'DebuggerInspector',
 
   propTypes: {
-    actions: React.PropTypes.instanceOf(DebuggerActions).isRequired,
-    breakpointStore: React.PropTypes.instanceOf(BreakpointStore).isRequired,
-    socket: React.PropTypes.string.isRequired,
-    bridge: React.PropTypes.instanceOf(Bridge).isRequired,
+    actions: PropTypes.instanceOf(DebuggerActions).isRequired,
+    breakpointStore: PropTypes.instanceOf(BreakpointStore).isRequired,
+    socket: PropTypes.string.isRequired,
+    bridge: PropTypes.instanceOf(Bridge).isRequired,
   },
 
   render(): ?ReactElement {
