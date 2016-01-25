@@ -34,9 +34,9 @@
         "0.0.0": "consumeGadgetsService"
       }
     },
-    "status-bar": {
+    "tool-bar": {
       "versions": {
-        "^1.0.0": "consumeStatusBar"
+        "^0.1.0": "consumeToolBar"
       }
     }
   }

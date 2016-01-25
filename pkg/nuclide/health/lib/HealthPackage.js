@@ -16,7 +16,6 @@ import type {HealthStats} from './types';
 import invariant from 'assert';
 import {CompositeDisposable, Disposable} from 'atom';
 import os from 'os';
-import {React} from 'react-for-atom';
 import Rx from 'rx';
 
 // Imports from other Nuclide packages.
@@ -26,11 +25,9 @@ import featureConfig from '../../feature-config';
 
 // Imports from within this Nuclide package.
 import createHealthGadget from './createHealthGadget';
-import HealthStatusBarComponent from './ui/HealthStatusBarComponent';
 
 // We may as well declare these outside of Activation because most of them really are nullable.
 let currentConfig = {};
-let statusBarItem: ?Element;
 let paneItem: ?HTMLElement;
 let viewTimeout: ?number = null;
 let analyticsTimeout: ?number = null;
@@ -105,31 +102,18 @@ export function deactivate() {
   }
 }
 
-export function consumeStatusBar(statusBar: any): void {
-  statusBarItem = document.createElement('div');
-  statusBarItem.className = 'inline-block nuclide-health';
-  const tile = statusBar.addRightTile({
-    item: statusBarItem,
-    priority: -99, // Quite far right.
-  });
+export function consumeToolBar(getToolBar: (group: string) => Object): void {
   if (activation) {
-    activation.disposables.add(
-      atom.tooltips.add(
-        statusBarItem,
-        {title: 'Click the icon to display Nuclide health stats.'}
-      ),
-      new Disposable(() => {
-        tile.destroy();
-        if (statusBarItem) {
-          const parentNode = statusBarItem.parentNode;
-          if (parentNode) {
-            parentNode.removeChild(statusBarItem);
-          }
-          React.unmountComponentAtNode(statusBarItem);
-          statusBarItem = null;
-        }
-      })
-    );
+    const toolBar = getToolBar('nuclide-health');
+    toolBar.addButton({
+      icon: 'dashboard',
+      callback: 'nuclide-health:toggle',
+      tooltip: 'Toggle Nuclide health stats',
+      priority: 900,
+    });
+    activation.disposables.add(new Disposable(() => {
+      toolBar.removeItems();
+    }));
   }
 }
 
@@ -204,7 +188,6 @@ function updateViews(): void {
 
   const stats = getHealthStats();
   analyticsBuffer.push(stats);
-  updateStatusBar(stats);
   paneItemState$.onNext({stats, activeHandleObjects: getActiveHandles()});
   if (currentConfig.viewTimeout) {
     if (viewTimeout !== null) {
@@ -212,21 +195,6 @@ function updateViews(): void {
     }
     viewTimeout = setTimeout(updateViews, currentConfig.viewTimeout * 1000);
   }
-}
-
-function updateStatusBar(stats: HealthStats): void {
-  if (!statusBarItem) {
-    return;
-  }
-
-  const openHealthPane = () => gadgets && gadgets.showGadget('nuclide-health');
-
-  React.render(
-    <HealthStatusBarComponent
-      onClickIcon={openHealthPane}
-    />,
-    statusBarItem
-  );
 }
 
 function updateAnalytics(): void {
