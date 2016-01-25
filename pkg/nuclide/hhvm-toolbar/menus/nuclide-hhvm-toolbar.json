@@ -1,0 +1,10 @@
+{
+  "context-menu": {
+    ".hhvm-toolbar": [
+      {
+        "command": "nuclide-hhvm-toolbar:toggle",
+        "label": "Hide Tool Bar"
+      }
+    ]
+  }
+}

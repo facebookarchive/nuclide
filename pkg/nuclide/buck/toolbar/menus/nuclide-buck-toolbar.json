@@ -1,0 +1,10 @@
+{
+  "context-menu": {
+    ".buck-toolbar": [
+      {
+        "command": "nuclide-buck-toolbar:toggle",
+        "label": "Hide Tool Bar"
+      }
+    ]
+  }
+}
