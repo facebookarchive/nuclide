@@ -27,6 +27,7 @@ export class DebuggerConnection {
   async sendCommand(message: string): Promise<void> {
     throw new Error('Not implemented');
   }
+  // $FlowFixMe
   async dispose(): Promise<void> {
     throw new Error('Not implemented');
   }

@@ -9,5 +9,5 @@
  * the root directory of this source tree.
  */
 
-const DEBUGGER_LOGGER_CATEGORY = 'nuclide-hhvm-debugger';
+const DEBUGGER_LOGGER_CATEGORY = 'nuclide-lldb-client-debugger';
 export default require('../../../logging').getCategoryLogger(DEBUGGER_LOGGER_CATEGORY);

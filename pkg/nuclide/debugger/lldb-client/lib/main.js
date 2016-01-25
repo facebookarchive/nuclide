@@ -19,5 +19,4 @@ module.exports = {
     const Service = require('./Service');
     return Service;
   },
-
 };

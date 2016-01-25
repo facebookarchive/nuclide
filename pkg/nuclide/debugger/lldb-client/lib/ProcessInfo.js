@@ -13,43 +13,46 @@ import type{
   nuclide_debugger$DebuggerInstance,
   nuclide_debugger$DebuggerProcessInfo,
 } from '../../interfaces/service';
+import type {NuclideUri} from '../../../remote-uri';
+import type {AttachTargetInfo,}
+    from '../../lldb-server/lib/DebuggerRpcServiceInterface';
 
+import {DebuggerProcessInfo} from '../../utils';
 import invariant from 'assert';
+import {DebuggerProcess} from './DebuggerProcess';
 
-const {DebuggerProcessInfo} = require('../../utils');
-class ProcessInfo extends DebuggerProcessInfo
-{
-  _remoteDirectoryPath: string;
+export class ProcessInfo extends DebuggerProcessInfo {
+  _targetUri: NuclideUri;
+  _targetInfo: AttachTargetInfo;
 
-  constructor(remoteDirectoryPath: string) {
-    super('hhvm');
-
-    this._remoteDirectoryPath = remoteDirectoryPath;
+  constructor(targetUri: NuclideUri, targetInfo: AttachTargetInfo) {
+    super('lldb');
+    this._targetUri = targetUri;
+    this._targetInfo = targetInfo;
   }
 
   attach(): nuclide_debugger$DebuggerInstance {
-    const DebuggerProcess = require('./DebuggerProcess');
-    return new DebuggerProcess(this._remoteDirectoryPath);
+    const process = new DebuggerProcess(this._targetUri, this._targetInfo);
+    process.attach();
+    return process;
   }
 
-  launch(launchTarget: string) {
-    const DebuggerProcess = require('./DebuggerProcess');
-    return new DebuggerProcess(this._remoteDirectoryPath, launchTarget);
+  get pid(): number {
+    return this._targetInfo.pid;
   }
 
   compareDetails(other: nuclide_debugger$DebuggerProcessInfo): number {
     invariant(other instanceof ProcessInfo);
-    return compareString(this._remoteDirectoryPath, other._remoteDirectoryPath);
+    return this.displayString() === other.displayString()
+      ? (this.pid - other.pid)
+      : (this.displayString() < other.displayString()) ? -1 : 1;
   }
 
   displayString(): string {
-    const remoteUri = require('../../../remote-uri');
-    return remoteUri.getHostname(this._remoteDirectoryPath);
+    return this._targetInfo.name + '(' + this._targetInfo.pid + ')';
+  }
+
+  toString(): string {
+    return this.displayString();
   }
 }
-
-function compareString(value1: string, value2: string): number {
-  return value1 === value2 ? 0 : (value1 < value2 ? -1 : 1);
-}
-
-module.exports = ProcessInfo;

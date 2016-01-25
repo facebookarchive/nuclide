@@ -12,29 +12,29 @@
 import type {nuclide_debugger$DebuggerProcessInfo,}
     from '../../interfaces/service';
 
-import utils from './utils';
-const {log} = utils;
-
 async function getProcessInfoList():
     Promise<Array<nuclide_debugger$DebuggerProcessInfo>> {
-  log('Getting process info list');
+  const {ProcessInfo} = require('./ProcessInfo');
+  // TODO: Currently first dir only.
+  const debuggerServices = atom.project.getDirectories().map(directory => {
+    return require('../../../client').
+      getServiceByNuclideUri('LLDBDebuggerRpcService', directory.getPath());
+  });
 
-  const remoteUri = require('../../../remote-uri');
-  // TODO: Currently first remote dir only.
-  const remoteDirectoryPath = atom.project.getDirectories()
-    .map(directoryPath => directoryPath.getPath())
-    .filter(directoryPath => remoteUri.isRemote(directoryPath))[0];
+  // TODO: currently first dir only
+  const targetUri = atom.project.getDirectories()[0].getPath();
 
-  if (remoteDirectoryPath) {
-    const ProcessInfo = require('./ProcessInfo');
-    return [(new ProcessInfo(remoteDirectoryPath): nuclide_debugger$DebuggerProcessInfo)];
-  } else {
-    log('No remote dirs getting process info list');
-    return [];
-  }
+  const processes = [];
+  await Promise.all(debuggerServices.map(async (service) => {
+    const targetInfoList = await service.getAttachTargetInfoList();
+    for (const targetInfo of targetInfoList) {
+      processes.push(new ProcessInfo(targetUri, targetInfo));
+    }
+  }));
+  return processes;
 }
 
 module.exports = {
-  name: 'hhvm',
+  name: 'lldb',
   getProcessInfoList,
 };

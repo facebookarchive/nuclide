@@ -10,160 +10,91 @@
  */
 
 import type {NuclideUri} from '../../../remote-uri';
+import type {
+  DebuggerRpcService as DebuggerRpcServiceType,
+  DebuggerConnection as DebuggerConnectionType,
+  AttachTargetInfo,
+} from '../../lldb-server/lib/DebuggerRpcServiceInterface';
+
+import invariant from 'assert';
+import {EventEmitter} from 'events';
 import utils from './utils';
-import type {ConnectionConfig} from '../../../debugger-hhvm-proxy';
-
-import type {HhvmDebuggerProxyService as HhvmDebuggerProxyServiceType,}
-    from '../../../debugger-hhvm-proxy/lib/HhvmDebuggerProxyService';
-
-const {log, logInfo, logError, setLogLevel} = utils;
-const featureConfig = require('../../../feature-config');
+const {log, logInfo, logError} = utils;
 const {translateMessageFromServer, translateMessageToServer} = require('./ChromeMessageRemoting');
 const remoteUri = require('../../../remote-uri');
 const {Disposable} = require('atom');
 const WebSocketServer = require('ws').Server;
 const {stringifyError} = require('../../../commons').error;
 
-type NotificationMessage = {
-  type: 'info' | 'warning' | 'error' | 'fatalError';
-  message: string;
-};
+const SESSION_END_EVENT = 'session-end-event';
 
-type HhvmDebuggerConfig = {
-  scriptRegex: string;
-  idekeyRegex: string;
-  xdebugPort: number;
-  endDebugWhenNoRequests: boolean;
-  logLevel: string;
-};
-
-function getConfig(): HhvmDebuggerConfig {
-  return (featureConfig.get('nuclide-debugger-hhvm'): any);
-}
-
-class DebuggerProcess {
-  _remoteDirectoryUri: NuclideUri;
-  _proxy: ?HhvmDebuggerProxyServiceType;
-  _server: ?WebSocketServer;
-  _webSocket: ?WebSocket;
+export class DebuggerProcess {
+  _targetUri: NuclideUri;
+  _targetInfo: AttachTargetInfo;
+  _rpcService: ?DebuggerRpcServiceType;
+  _debuggerConnection: ?DebuggerConnectionType;
+  _attachPromise: ?Promise<DebuggerConnectionType>;
+  _chromeWebSocketServer: ?WebSocketServer;
+  _chromeWebSocket: ?WebSocket;
   _disposables: atom$CompositeDisposable;
-  _launchScriptPath: ?string;
-  _sessionEndCallback: ?() => void;
+  _emitter: EventEmitter;
 
-  constructor(remoteDirectoryUri: NuclideUri, launchScriptPath: ?string) {
-    this._remoteDirectoryUri = remoteDirectoryUri;
-    this._launchScriptPath = launchScriptPath;
-    this._proxy = null;
-    this._server = null;
-    this._webSocket = null;
+  constructor(targetUri: NuclideUri, targetInfo: AttachTargetInfo) {
+    this._targetUri = targetUri;
+    this._targetInfo = targetInfo;
+    this._rpcService = null;
+    this._debuggerConnection = null;
+    this._attachPromise = null;
+    this._chromeWebSocketServer = null;
+    this._chromeWebSocket = null;
     const {CompositeDisposable} = require('atom');
     this._disposables = new CompositeDisposable();
-    this._sessionEndCallback = null;
-
-    setLogLevel(getConfig().logLevel);
+    this._emitter = new EventEmitter();
   }
 
-  getWebsocketAddress(): Promise<string> {
-    logInfo('Connecting to: ' + this._remoteDirectoryUri);
-    const {HhvmDebuggerProxyService} = require('../../../client').
-      getServiceByNuclideUri('HhvmDebuggerProxyService', this._remoteDirectoryUri);
-    const proxy = new HhvmDebuggerProxyService();
-    this._proxy = proxy;
-    this._disposables.add(proxy);
-    this._disposables.add(proxy.getNotificationObservable().subscribe(
-      this._handleNotificationMessage.bind(this),
-      this._handleNotificationError.bind(this),
-      this._handleNotificationEnd.bind(this),
-    ));
-    this._disposables.add(proxy.getServerMessageObservable().subscribe(
+  attach(): void {
+    const rpcService = this._getRpcService();
+    this._attachPromise = rpcService.attach(this._targetInfo.pid);
+  }
+
+  _getRpcService(): DebuggerRpcServiceType {
+    if (!this._rpcService) {
+      const {DebuggerRpcService} = require('../../../client').
+        getServiceByNuclideUri('LLDBDebuggerRpcService', this._targetUri);
+      const rpcService = new DebuggerRpcService();
+      this._rpcService = rpcService;
+      this._disposables.add(rpcService);
+    }
+    invariant(this._rpcService);
+    return this._rpcService;
+  }
+
+  async getWebsocketAddress(): Promise<string> {
+    // Start websocket server with Chrome after attach completed.
+    invariant(this._attachPromise);
+    const connection = await this._attachPromise;
+    this._registerConnection(connection);
+    return Promise.resolve(this._startChromeWebSocketServer());
+  }
+
+  _registerConnection(connection: DebuggerConnectionType): void {
+    this._debuggerConnection = connection;
+    this._disposables.add(connection);
+    this._disposables.add(connection.getServerMessageObservable().subscribe(
       this._handleServerMessage.bind(this),
       this._handleServerError.bind(this),
-      this._handleServerEnd.bind(this)
+      this._handleSessionEnd.bind(this)
     ));
-
-    const config = getConfig();
-    const connectionConfig: ConnectionConfig = {
-      xdebugPort: config.xdebugPort,
-      targetUri: remoteUri.getPath(this._remoteDirectoryUri),
-      logLevel: config.logLevel,
-    };
-    logInfo('Connection config: ' + JSON.stringify(config));
-
-    if (!isValidRegex(config.scriptRegex)) {
-      // TODO: User facing error message?
-      logError('nuclide-debugger-hhvm config scriptRegex is not a valid regular expression: '
-        + config.scriptRegex);
-    } else {
-      connectionConfig.scriptRegex = config.scriptRegex;
-    }
-
-    if (!isValidRegex(config.idekeyRegex)) {
-      // TODO: User facing error message?
-      logError('nuclide-debugger-hhvm config idekeyRegex is not a valid regular expression: '
-        + config.idekeyRegex);
-    } else {
-      connectionConfig.idekeyRegex = config.idekeyRegex;
-    }
-
-    if (this._launchScriptPath) {
-      connectionConfig.endDebugWhenNoRequests = true;
-    }
-
-    const attachPromise = proxy.attach(connectionConfig);
-    if (this._launchScriptPath) {
-      logInfo('launchScript: ' + this._launchScriptPath);
-      proxy.launchScript(this._launchScriptPath);
-    }
-
-    return attachPromise.then(attachResult => {
-
-      logInfo('Attached to process. Attach message: ' + attachResult);
-
-      // setup web socket
-      // TODO: Assign random port rather than using fixed port.
-      const wsPort = 2000;
-      const server = new WebSocketServer({port: wsPort});
-      this._server = server;
-      server.on('error', error => {
-        logError('Server error: ' + error);
-        this.dispose();
-      });
-      server.on('headers', headers => {
-        log('Server headers: ' + headers);
-      });
-      server.on('connection', webSocket => {
-        if (this._webSocket) {
-          log('Already connected to web socket. Discarding new connection.');
-          return;
-        }
-
-        log('Connecting to web socket client.');
-        this._webSocket = webSocket;
-        webSocket.on('message', this._onSocketMessage.bind(this));
-        webSocket.on('error', this._onSocketError.bind(this));
-        webSocket.on('close', this._onSocketClose.bind(this));
-      });
-
-      const result = 'ws=localhost:' + String(wsPort) + '/';
-      log('Listening for connection at: ' + result);
-      return result;
-    });
-  }
-
-  onSessionEnd(callback: () => void): Disposable {
-    this._sessionEndCallback = callback;
-    return (new Disposable(() => this._sessionEndCallback = null));
   }
 
   _handleServerMessage(message: string): void {
     log('Recieved server message: ' + message);
-    const webSocket = this._webSocket;
-    if (webSocket != null) {
-      webSocket.send(
-        translateMessageFromServer(
-          remoteUri.getHostname(this._remoteDirectoryUri),
-          remoteUri.getPort(this._remoteDirectoryUri),
-          message));
+    const webSocket = this._chromeWebSocket;
+    if (webSocket) {
+      message = this._translateMessageIfNeeded(message);
+      webSocket.send(message);
+    } else {
+      logError('Why isn\'t chrome websocket available?');
     }
   }
 
@@ -171,103 +102,92 @@ class DebuggerProcess {
     logError('Received server error: ' + error);
   }
 
-  _handleServerEnd(): void {
-    log('Server observerable ends.');
-  }
-
-  _handleNotificationMessage(message: NotificationMessage): void {
-    switch (message.type) {
-      case 'info':
-        log('Notification observerable info: ' + message.message);
-        atom.notifications.addInfo(message.message);
-        break;
-
-      case 'warning':
-        log('Notification observerable warning: ' + message.message);
-        atom.notifications.addWarning(message.message);
-        break;
-
-      case 'error':
-        logError('Notification observerable error: ' + message.message);
-        atom.notifications.addError(message.message);
-        break;
-
-      case 'fatalError':
-        logError('Notification observerable fatal error: ' + message.message);
-        atom.notifications.addFatalError(message.message);
-        break;
-
-      default:
-        logError('Unknown message: ' + JSON.stringify(message));
-        break;
-    }
-  }
-
-  _handleNotificationError(error: string): void {
-    logError('Notification observerable error: ' + error);
-  }
-
-  /**
-   * _endSession() must be called from _handleNotificationEnd()
-   * so that we can guarantee all notifications have been processed.
-   */
-  _handleNotificationEnd(): void {
-    log('Notification observerable ends.');
-    this._endSession();
-  }
-
-  _endSession(): void {
+  _handleSessionEnd(): void {
     log('Ending Session');
-    if (this._sessionEndCallback) {
-      this._sessionEndCallback();
-    }
+    this._emitter.emit(SESSION_END_EVENT);
     this.dispose();
   }
 
-  _onSocketMessage(message: string): void {
-    log('Recieved webSocket message: ' + message);
-    const proxy = this._proxy;
-    if (proxy) {
-      proxy.sendCommand(translateMessageToServer(message));
+  _startChromeWebSocketServer(): string {
+    // setup web socket
+    // TODO: Assign random port rather than using fixed port.
+    const wsPort = 2000;
+    const server = new WebSocketServer({port: wsPort});
+    this._chromeWebSocketServer = server;
+    server.on('error', error => {
+      logError('Server error: ' + error);
+      this.dispose();
+    });
+    server.on('headers', headers => {
+      log('Server headers: ' + headers);
+    });
+    server.on('connection', webSocket => {
+      if (this._chromeWebSocket) {
+        log('Already connected to Chrome WebSocket. Discarding new connection.');
+        return;
+      }
+
+      log('Connecting to Chrome WebSocket client.');
+      this._chromeWebSocket = webSocket;
+      webSocket.on('message', this._onChromeSocketMessage.bind(this));
+      webSocket.on('error', this._onChromeSocketError.bind(this));
+      webSocket.on('close', this._onChromeSocketClose.bind(this));
+    });
+
+    const result = 'ws=localhost:' + String(wsPort) + '/';
+    log('Listening for connection at: ' + result);
+    return result;
+  }
+
+  onSessionEnd(callback: () => void): Disposable {
+    this._emitter.on(SESSION_END_EVENT, callback);
+    return (new Disposable(() => this._emitter.removeListener(SESSION_END_EVENT, callback)));
+  }
+
+  _translateMessageIfNeeded(message: string): string {
+    // TODO: do we really need isRemote() checking?
+    if (remoteUri.isRemote(this._targetUri)) {
+      message = translateMessageFromServer(
+        remoteUri.getHostname(this._targetUri),
+        remoteUri.getPort(this._targetUri),
+        message);
+    }
+    return message;
+  }
+
+  _onChromeSocketMessage(message: string): void {
+    log('Recieved Chrome message: ' + message);
+    const connection = this._debuggerConnection;
+    if (connection) {
+      connection.sendCommand(translateMessageToServer(message));
+    } else {
+      logError('Why isn\'t debuger RPC service available?');
     }
   }
 
-  _onSocketError(error: Error): void {
-    logError('webSocket error ' + stringifyError(error));
+  _onChromeSocketError(error: Error): void {
+    logError('Chrome webSocket error ' + stringifyError(error));
     this.dispose();
   }
 
-  _onSocketClose(code: number): void {
-    log('webSocket Closed ' + code);
+  _onChromeSocketClose(code: number): void {
+    log('Chrome webSocket Closed ' + code);
     this.dispose();
   }
 
   dispose() {
     this._disposables.dispose();
-    const webSocket = this._webSocket;
+    const webSocket = this._chromeWebSocket;
     if (webSocket) {
-      logInfo('closing webSocket');
+      logInfo('closing Chrome webSocket');
       webSocket.close();
-      this._webSocket = null;
+      this._chromeWebSocket = null;
     }
-    const server = this._server;
+    const server = this._chromeWebSocketServer;
     if (server) {
-      logInfo('closing server');
+      logInfo('closing Chrome server');
       server.close();
-      this._server = null;
+      this._chromeWebSocketServer = null;
     }
   }
 }
-
-// TODO: Move this to nuclide-commons.
-function isValidRegex(value: string): boolean {
-  try {
-    RegExp(value);
-  } catch (e) {
-    return false;
-  }
-
-  return true;
-}
-
-module.exports = DebuggerProcess;
