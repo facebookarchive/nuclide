@@ -22,9 +22,11 @@ const QuickSelectionActions = {
   },
 
   changeActiveProvider(providerName: string): void {
-    QuickSelectionDispatcher.getInstance().dispatch({
-      actionType: ActionType.ACTIVE_PROVIDER_CHANGED,
-      providerName,
+    setImmediate(() => {
+      QuickSelectionDispatcher.getInstance().dispatch({
+        actionType: ActionType.ACTIVE_PROVIDER_CHANGED,
+        providerName,
+      });
     });
   },
 
