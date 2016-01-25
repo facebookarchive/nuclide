@@ -35,7 +35,7 @@ let analyticsBuffer: Array<HealthStats> = [];
 let gadgets: ?GadgetsService = null;
 
 // Variables for tracking where and when a key was pressed, and the time before it had an effect.
-let activeEditorDisposables: ?CompositeDisposable = null;
+let activeEditorSubscriptions: ?CompositeDisposable = null;
 let keyEditorId = 0;
 let keyDownTime = 0;
 let keyLatency = 0;
@@ -43,78 +43,55 @@ let lastKeyLatency = 0;
 
 let paneItemState$: ?Rx.BehaviorSubject = null;
 
-class Activation {
-  disposables: CompositeDisposable;
-
-  constructor(state: ?Object) {
-    this.disposables = new CompositeDisposable();
-  }
-
-  activate() {
-    paneItemState$ = new Rx.BehaviorSubject(null);
-    this.disposables.add(
-      featureConfig.onDidChange('nuclide-health', (event) => {
-        currentConfig = event.newValue;
-        // If user changes any config, update the health - and reset the polling cycles.
-        updateViews();
-        updateAnalytics();
-      }),
-      atom.workspace.onDidChangeActivePaneItem(disposeActiveEditorDisposables),
-      atomEventDebounce.onWorkspaceDidStopChangingActivePaneItem(timeActiveEditorKeys),
-    );
-    currentConfig = featureConfig.get('nuclide-health');
-    timeActiveEditorKeys();
-    updateViews();
-    updateAnalytics();
-  }
-
-  dispose() {
-    this.disposables.dispose();
-    paneItemState$ = null;
-    if (viewTimeout !== null) {
-      clearTimeout(viewTimeout);
-      viewTimeout = null;
-    }
-    if (analyticsTimeout !== null) {
-      clearTimeout(analyticsTimeout);
-      analyticsTimeout = null;
-    }
-    if (activeEditorDisposables) {
-      activeEditorDisposables.dispose();
-      activeEditorDisposables = null;
-    }
-  }
-}
-
-let activation: ?Activation = null;
+let subscriptions: CompositeDisposable = (null: any);
 
 export function activate(state: ?Object) {
-  if (!activation) {
-    activation = new Activation(state);
-    activation.activate();
-  }
+  paneItemState$ = new Rx.BehaviorSubject(null);
+  subscriptions = new CompositeDisposable();
+  subscriptions.add(
+    featureConfig.onDidChange('nuclide-health', (event) => {
+      currentConfig = event.newValue;
+      // If user changes any config, update the health - and reset the polling cycles.
+      updateViews();
+      updateAnalytics();
+    }),
+    atom.workspace.onDidChangeActivePaneItem(disposeActiveEditorDisposables),
+    atomEventDebounce.onWorkspaceDidStopChangingActivePaneItem(timeActiveEditorKeys),
+  );
+  currentConfig = featureConfig.get('nuclide-health');
+  timeActiveEditorKeys();
+  updateViews();
+  updateAnalytics();
 }
 
 export function deactivate() {
-  if (activation) {
-    activation.dispose();
-    activation = null;
+  subscriptions.dispose();
+  paneItemState$ = null;
+  if (viewTimeout !== null) {
+    clearTimeout(viewTimeout);
+    viewTimeout = null;
+  }
+  if (analyticsTimeout !== null) {
+    clearTimeout(analyticsTimeout);
+    analyticsTimeout = null;
+  }
+  if (activeEditorSubscriptions) {
+    activeEditorSubscriptions.dispose();
+    activeEditorSubscriptions = null;
   }
 }
 
 export function consumeToolBar(getToolBar: (group: string) => Object): void {
-  if (activation) {
-    const toolBar = getToolBar('nuclide-health');
-    toolBar.addButton({
-      icon: 'dashboard',
-      callback: 'nuclide-health:toggle',
-      tooltip: 'Toggle Nuclide health stats',
-      priority: 900,
-    });
-    activation.disposables.add(new Disposable(() => {
-      toolBar.removeItems();
-    }));
-  }
+  const toolBar = getToolBar('nuclide-health');
+  toolBar.addButton({
+    icon: 'dashboard',
+    callback: 'nuclide-health:toggle',
+    tooltip: 'Toggle Nuclide health stats',
+    priority: 900,
+  });
+  subscriptions.add(new Disposable(() => {
+    toolBar.removeItems();
+  }));
 }
 
 export function consumeGadgetsService(gadgetsApi: GadgetsService): Disposable {
@@ -126,15 +103,15 @@ export function consumeGadgetsService(gadgetsApi: GadgetsService): Disposable {
 
 function disposeActiveEditorDisposables(): void {
   // Clear out any events & timing data from previous text editor.
-  if (activeEditorDisposables != null) {
-    activeEditorDisposables.dispose();
-    activeEditorDisposables = null;
+  if (activeEditorSubscriptions != null) {
+    activeEditorSubscriptions.dispose();
+    activeEditorSubscriptions = null;
   }
 }
 
 function timeActiveEditorKeys(): void {
   disposeActiveEditorDisposables();
-  activeEditorDisposables = new CompositeDisposable();
+  activeEditorSubscriptions = new CompositeDisposable();
 
   // If option is enabled, start timing latency of keys on the new text editor.
   if (!paneItem) {
@@ -171,7 +148,7 @@ function timeActiveEditorKeys(): void {
   // Add the listener to keydown.
   view.addEventListener('keydown', startKeyClock);
 
-  activeEditorDisposables.add(
+  activeEditorSubscriptions.add(
     // Remove the listener in a home-made disposable for when this editor is no-longer active.
     new Disposable(() => view.removeEventListener('keydown', startKeyClock)),
 
