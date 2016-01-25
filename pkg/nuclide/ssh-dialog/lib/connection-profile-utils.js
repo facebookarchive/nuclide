@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,19 +10,20 @@
  * the root directory of this source tree.
  */
 
-import type {Disposable} from 'atom';
-import type {
-  NuclideRemoteConnectionProfile,
-  NuclideSavedConnectionDialogConfig,
-} from './connection-types';
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-import type {
-  SshConnectionConfiguration,
-} from '../../remote-connection/lib/SshHandshake';
+exports.getDefaultConnectionProfile = getDefaultConnectionProfile;
+exports.getSavedConnectionProfiles = getSavedConnectionProfiles;
+exports.saveConnectionProfiles = saveConnectionProfiles;
+exports.onSavedConnectionProfilesDidChange = onSavedConnectionProfilesDidChange;
+exports.getSavedConnectionConfig = getSavedConnectionConfig;
+exports.saveConnectionConfig = saveConnectionConfig;
+exports.getDefaultConfig = getDefaultConfig;
+exports.getOfficialRemoteServerCommand = getOfficialRemoteServerCommand;
 
 // $UPFixMe: These settings should go through nuclide-feature-config
-const CONNECTION_PROFILES_KEY = 'nuclide.connectionProfiles';
-const LAST_USED_CONNECTION_KEY = 'nuclide.lastConnectionDetails';
+var CONNECTION_PROFILES_KEY = 'nuclide.connectionProfiles';
+var LAST_USED_CONNECTION_KEY = 'nuclide.lastConnectionDetails';
 
 /**
  * Section: Default Connection Profile
@@ -32,31 +34,30 @@ const LAST_USED_CONNECTION_KEY = 'nuclide.lastConnectionDetails';
  * the connection dialog and the default settings, plus the update logic we use
  * to change the remote server command.
  */
-export function getDefaultConnectionProfile(): NuclideRemoteConnectionProfile {
-  const defaultConnectionSettings = getDefaultConfig();
-  const currentOfficialRSC = defaultConnectionSettings.remoteServerCommand;
 
-  const lastConnectionDetails = getSavedConnectionConfig() || {};
-  const lastConfig = lastConnectionDetails.config || {};
+function getDefaultConnectionProfile() {
+  var defaultConnectionSettings = getDefaultConfig();
+  var currentOfficialRSC = defaultConnectionSettings.remoteServerCommand;
+
+  var lastConnectionDetails = getSavedConnectionConfig() || {};
+  var lastConfig = lastConnectionDetails.config || {};
 
   // Only use the user's last saved remote server command if there has been no
   // change (upgrade) in the official remote server command.
-  let remoteServerCommand = currentOfficialRSC;
-  if (lastConnectionDetails.lastOfficialRemoteServerCommand === currentOfficialRSC
-      && lastConfig.remoteServerCommand) {
+  var remoteServerCommand = currentOfficialRSC;
+  if (lastConnectionDetails.lastOfficialRemoteServerCommand === currentOfficialRSC && lastConfig.remoteServerCommand) {
     remoteServerCommand = lastConfig.remoteServerCommand;
   }
-  const dialogSettings = {...defaultConnectionSettings, ...lastConfig, remoteServerCommand};
+  var dialogSettings = _extends({}, defaultConnectionSettings, lastConfig, { remoteServerCommand: remoteServerCommand });
   // Due to a previous bug in the sshPort type, we may need to do this cast to
   // correct bad state that was persisted in users' configs.
   dialogSettings.sshPort = String(dialogSettings.sshPort);
   return {
     deletable: false,
     displayTitle: '(default)',
-    params: dialogSettings,
+    params: dialogSettings
   };
 }
-
 
 /**
  * Section: User-created Connection Profiles
@@ -65,9 +66,9 @@ export function getDefaultConnectionProfile(): NuclideRemoteConnectionProfile {
 /**
  * Returns an array of saved connection profiles.
  */
-export function getSavedConnectionProfiles(): Array<NuclideRemoteConnectionProfile> {
-  const connectionProfiles: ?Array<NuclideRemoteConnectionProfile> =
-    (atom.config.get(CONNECTION_PROFILES_KEY): any);
+
+function getSavedConnectionProfiles() {
+  var connectionProfiles = atom.config.get(CONNECTION_PROFILES_KEY);
   prepareSavedConnectionProfilesForDisplay(connectionProfiles);
   return connectionProfiles || [];
 }
@@ -75,34 +76,24 @@ export function getSavedConnectionProfiles(): Array<NuclideRemoteConnectionProfi
 /**
  * Saves the connection profiles. Overwrites any existing profiles.
  */
-export function saveConnectionProfiles(profiles: Array<NuclideRemoteConnectionProfile>): void {
+
+function saveConnectionProfiles(profiles) {
   prepareConnectionProfilesForSaving(profiles);
   atom.config.set(CONNECTION_PROFILES_KEY, profiles);
 }
 
-
-type ConnectionProfileChange = {
-  newValue: ?Array<NuclideRemoteConnectionProfile>;
-  oldValue: ?Array<NuclideRemoteConnectionProfile>;
-  keyPath: string;
-};
 /**
  * Calls the callback when the saved connection profiles change.
  * @return Disposable that can be disposed to stop listening for changes.
  */
-export function onSavedConnectionProfilesDidChange(
-  callback: (newProfiles: ?Array<NuclideRemoteConnectionProfile>) => mixed
-): Disposable {
-  return atom.config.onDidChange(
-    CONNECTION_PROFILES_KEY,
-    (event: ConnectionProfileChange) => {
-      const newProfiles = event.newValue;
-      prepareSavedConnectionProfilesForDisplay(newProfiles);
-      callback(newProfiles);
-    }
-  );
-}
 
+function onSavedConnectionProfilesDidChange(callback) {
+  return atom.config.onDidChange(CONNECTION_PROFILES_KEY, function (event) {
+    var newProfiles = event.newValue;
+    prepareSavedConnectionProfilesForDisplay(newProfiles);
+    callback(newProfiles);
+  });
+}
 
 /**
  * Section: Default/Last-Used Connection Profiles
@@ -112,40 +103,40 @@ export function onSavedConnectionProfilesDidChange(
  * Gets the NuclideSavedConnectionDialogConfig representing the user's last
  * connection.
  */
-export function getSavedConnectionConfig(): ?NuclideSavedConnectionDialogConfig {
-  const savedConfig: any = atom.config.get(LAST_USED_CONNECTION_KEY);
-  return (savedConfig : ?NuclideSavedConnectionDialogConfig);
+
+function getSavedConnectionConfig() {
+  var savedConfig = atom.config.get(LAST_USED_CONNECTION_KEY);
+  return savedConfig;
 }
 
 /**
  * Saves a connection configuration along with the last official server command.
  */
-export function saveConnectionConfig(
-  config: SshConnectionConfiguration,
-  lastOfficialRemoteServerCommand: string
-): void {
+
+function saveConnectionConfig(config, lastOfficialRemoteServerCommand) {
   // Don't store user's password.
-  const updatedConfig = {...config, password: ''};
+  var updatedConfig = _extends({}, config, { password: '' });
   // SshConnectionConfiguration's sshPort type is 'number', but we want to save
   // everything as strings.
   updatedConfig.sshPort = String(config.sshPort);
   atom.config.set(LAST_USED_CONNECTION_KEY, {
-    updatedConfig,
+    updatedConfig: updatedConfig,
     // Save last official command to detect upgrade.
-    lastOfficialRemoteServerCommand,
+    lastOfficialRemoteServerCommand: lastOfficialRemoteServerCommand
   });
 }
 
-let defaultConfig: ?any = null;
+var defaultConfig = null;
 /**
  * This fetches the 'default' connection configuration supplied to the user
  * regardless of any connection profiles they might have saved.
  */
-export function getDefaultConfig(): any {
+
+function getDefaultConfig() {
   if (defaultConfig) {
     return defaultConfig;
   }
-  let defaultConfigGetter;
+  var defaultConfigGetter = undefined;
   try {
     defaultConfigGetter = require('./fb/config');
   } catch (e) {
@@ -155,38 +146,35 @@ export function getDefaultConfig(): any {
   return defaultConfig;
 }
 
-export function getOfficialRemoteServerCommand(): string {
+function getOfficialRemoteServerCommand() {
   return getDefaultConfig().remoteServerCommand;
 }
 
-function prepareSavedConnectionProfilesForDisplay(
-  connectionProfiles: ?Array<NuclideRemoteConnectionProfile>,
-): void {
+function prepareSavedConnectionProfilesForDisplay(connectionProfiles) {
   if (!connectionProfiles) {
     return;
   }
   // If a profile does not inclide a remote server command, this means the user
   // intended to use the default server command. We must fill this in.
-  const defaultConnectionSettings = getDefaultConfig();
-  const currentOfficialRSC = defaultConnectionSettings.remoteServerCommand;
-  connectionProfiles.forEach((profile: NuclideRemoteConnectionProfile) => {
+  var defaultConnectionSettings = getDefaultConfig();
+  var currentOfficialRSC = defaultConnectionSettings.remoteServerCommand;
+  connectionProfiles.forEach(function (profile) {
     if (!profile.params.remoteServerCommand) {
       profile.params.remoteServerCommand = currentOfficialRSC;
     }
   });
 }
 
-function prepareConnectionProfilesForSaving(
-  connectionProfiles: Array<NuclideRemoteConnectionProfile>
-): void {
+function prepareConnectionProfilesForSaving(connectionProfiles) {
   // If a connection profile has a default remote server command, replace it with
   // an empty string. This indicates that this server command should be filled in
   // when this profile is used.
-  const defaultConnectionSettings = getDefaultConfig();
-  const currentOfficialRSC = defaultConnectionSettings.remoteServerCommand;
-  connectionProfiles.forEach((profile: NuclideRemoteConnectionProfile) => {
+  var defaultConnectionSettings = getDefaultConfig();
+  var currentOfficialRSC = defaultConnectionSettings.remoteServerCommand;
+  connectionProfiles.forEach(function (profile) {
     if (profile.params.remoteServerCommand === currentOfficialRSC) {
       profile.params.remoteServerCommand = '';
     }
   });
 }
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbImNvbm5lY3Rpb24tcHJvZmlsZS11dGlscy5qcyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7QUFzQkEsSUFBTSx1QkFBdUIsR0FBRyw0QkFBNEIsQ0FBQztBQUM3RCxJQUFNLHdCQUF3QixHQUFHLCtCQUErQixDQUFDOzs7Ozs7Ozs7Ozs7QUFXMUQsU0FBUywyQkFBMkIsR0FBbUM7QUFDNUUsTUFBTSx5QkFBeUIsR0FBRyxnQkFBZ0IsRUFBRSxDQUFDO0FBQ3JELE1BQU0sa0JBQWtCLEdBQUcseUJBQXlCLENBQUMsbUJBQW1CLENBQUM7O0FBRXpFLE1BQU0scUJBQXFCLEdBQUcsd0JBQXdCLEVBQUUsSUFBSSxFQUFFLENBQUM7QUFDL0QsTUFBTSxVQUFVLEdBQUcscUJBQXFCLENBQUMsTUFBTSxJQUFJLEVBQUUsQ0FBQzs7OztBQUl0RCxNQUFJLG1CQUFtQixHQUFHLGtCQUFrQixDQUFDO0FBQzdDLE1BQUkscUJBQXFCLENBQUMsK0JBQStCLEtBQUssa0JBQWtCLElBQ3pFLFVBQVUsQ0FBQyxtQkFBbUIsRUFBRTtBQUNyQyx1QkFBbUIsR0FBRyxVQUFVLENBQUMsbUJBQW1CLENBQUM7R0FDdEQ7QUFDRCxNQUFNLGNBQWMsZ0JBQU8seUJBQXlCLEVBQUssVUFBVSxJQUFFLG1CQUFtQixFQUFuQixtQkFBbUIsR0FBQyxDQUFDOzs7QUFHMUYsZ0JBQWMsQ0FBQyxPQUFPLEdBQUcsTUFBTSxDQUFDLGNBQWMsQ0FBQyxPQUFPLENBQUMsQ0FBQztBQUN4RCxTQUFPO0FBQ0wsYUFBUyxFQUFFLEtBQUs7QUFDaEIsZ0JBQVksRUFBRSxXQUFXO0FBQ3pCLFVBQU0sRUFBRSxjQUFjO0dBQ3ZCLENBQUM7Q0FDSDs7Ozs7Ozs7OztBQVVNLFNBQVMsMEJBQTBCLEdBQTBDO0FBQ2xGLE1BQU0sa0JBQTBELEdBQzdELElBQUksQ0FBQyxNQUFNLENBQUMsR0FBRyxDQUFDLHVCQUF1QixDQUFDLEFBQU0sQ0FBQztBQUNsRCwwQ0FBd0Ms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QW1CLEtBQUssa0JBQWtCLEVBQUU7QUFDN0QsYUFBTyxDQUFDLE1BQU0sQ0FBQyxtQkFBbUIsR0FBRyxFQUFFLENBQUM7S0FDekM7R0FDRixDQUFDLENBQUM7Q0FDSiIsImZpbGUiOiJjb25uZWN0aW9uLXByb2ZpbGUtdXRpbHMuanMiLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIGJhYmVsJztcbi8qIEBmbG93ICovXG5cbi8qXG4gKiBDb3B5cmlnaHQgKGMpIDIwMTUtcHJlc2VudCwgRmFjZWJvb2ssIEluYy5cbiAqIEFsbCByaWdodHMgcmVzZXJ2ZWQuXG4gKlxuICogVGhpcyBzb3VyY2UgY29kZSBpcyBsaWNlbnNlZCB1bmRlciB0aGUgbGljZW5zZSBmb3VuZCBpbiB0aGUgTElDRU5TRSBmaWxlIGluXG4gKiB0aGUgcm9vdCBkaXJlY3Rvcnkgb2YgdGhpcyBzb3VyY2UgdHJlZS5cbiAqL1xuXG5pbXBvcnQgdHlwZSB7RGlzcG9zYWJsZX0gZnJvbSAnYXRvbSc7XG5pbXBvcnQgdHlwZSB7XG4gIE51Y2xpZGVSZW1vdGVDb25uZWN0aW9uUHJvZmlsZSxcbiAgTnVjbGlkZVNhdmVkQ29ubmVjdGlvbkRpYWxvZ0NvbmZpZyxcbn0gZnJvbSAnLi9jb25uZWN0aW9uLXR5cGVzJztcblxuaW1wb3J0IHR5cGUge1xuICBTc2hDb25uZWN0aW9uQ29uZmlndXJhdGlvbixcbn0gZnJvbSAnLi4vLi4vcmVtb3RlLWNvbm5lY3Rpb24vbGliL1NzaEhhbmRzaGFrZSc7XG5cbi8vICRVUEZpeE1lOiBUaGVzZSBzZXR0aW5ncyBzaG91bGQgZ28gdGhyb3VnaCBudWNsaWRlLWZlYXR1cmUtY29uZmlnXG5jb25zdCBDT05ORUNUSU9OX1BST0ZJTEVTX0tFWSA9ICdudWNsaWRlLmNvbm5lY3Rpb25Qcm9maWxlcyc7XG5jb25zdCBMQVNUX1VTRURfQ09OTkVDVElPTl9LRVkgPSAnbnVjbGlkZS5sYXN0Q29ubmVjdGlvbkRldGFpbHMnO1xuXG4vKipcbiAqIFNlY3Rpb246IERlZmF1bHQgQ29ubmVjdGlvbiBQcm9maWxlXG4gKi9cblxuLyoqXG4gKiBBIGRlZmF1bHQgY29ubmVjdGlvbiBwcm9maWxlIGlzIGEgY29tYmluYXRpb24gb2YgdGhlIHVzZXIncyBsYXN0IGlucHV0cyB0b1xuICogdGhlIGNvbm5lY3Rpb24gZGlhbG9nIGFuZCB0aGUgZGVmYXVsdCBzZXR0aW5ncywgcGx1cyB0aGUgdXBkYXRlIGxvZ2ljIHdlIHVzZVxuICogdG8gY2hhbmdlIHRoZSByZW1vdGUgc2VydmVyIGNvbW1hbmQuXG4gKi9cbmV4cG9ydCBmdW5jdGlvbiBnZXREZWZhdWx0Q29ubmVjdGlvblByb2ZpbGUoKTogTnVjbGlkZVJlbW90ZUNvbm5lY3Rpb25Qcm9maWxlIHtcbiAgY29uc3QgZGVmYXVsdENvbm5lY3Rpb25TZXR0aW5ncyA9IGdldERlZmF1bHRDb25maWcoKTtcbiAgY29uc3QgY3VycmVudE9mZmljaWFsUlNDID0gZGVmYXVsdENvbm5lY3Rpb25TZXR0aW5ncy5yZW1vdGVTZXJ2ZXJDb21tYW5kO1xuXG4gIGNvbnN0IGxhc3RDb25uZWN0aW9uRGV0YWlscyA9IGdldFNhdmVkQ29ubmVjdGlvbkNvbmZpZygpIHx8IHt9O1xuICBjb25zdCBsYXN0Q29uZmlnID0gbGFzdENvbm5lY3Rpb25EZXRhaWxzLmNvbmZpZyB8fCB7fTtcblxuICAvLyBPbmx5IHVzZSB0aGUgdXNlcidzIGxhc3Qgc2F2ZWQgcmVtb3RlIHNlcnZlciBjb21tYW5kIGlmIHRoZXJlIGhhcyBiZWVuIG5vXG4gIC8vIGNoYW5nZSAodXBncmFkZSkgaW4gdGhlIG9mZmljaWFsIHJlbW90ZSBzZXJ2ZXIgY29tbWFuZC5cbiAgbGV0IHJlbW90ZVNlcnZlckNvbW1hbmQgPSBjdXJyZW50T2ZmaWNpYWxSU0M7XG4gIGlmIChsYXN0Q29ubmVjdGlvbkRldGFpbHMubGFzdE9mZmljaWFsUmVtb3RlU2VydmVyQ29tbWFuZCA9PT0gY3VycmVudE9mZmljaWFsUlNDXG4gICAgICAmJiBsYXN0Q29uZmlnLnJlbW90ZVNlcnZlckNvbW1hbmQpIHtcbiAgICByZW1vdGVTZXJ2ZXJDb21tYW5kID0gbGFzdENvbmZpZy5yZW1vdGVTZXJ2ZXJDb21tYW5kO1xuICB9XG4gIGNvbnN0IGRpYWxvZ1NldHRpbmdzID0gey4uLmRlZmF1bHRDb25uZWN0aW9uU2V0dGluZ3MsIC4uLmxhc3RDb25maWcsIHJlbW90ZVNlcnZlckNvbW1hbmR9O1xuICAvLyBEdWUgdG8gYSBwcmV2aW91cyBidWcgaW4gdGhlIHNzaFBvcnQgdHlwZSwgd2UgbWF5IG5lZWQgdG8gZG8gdGhpcyBjYXN0IHRvXG4gIC8vIGNvcnJlY3QgYmFkIHN0YXRlIHRoYXQgd2FzIHBlcnNpc3RlZCBpbiB1c2VycycgY29uZmlncy5cbiAgZGlhbG9nU2V0dGluZ3Muc3NoUG9ydCA9IFN0cmluZyhkaWFsb2dTZXR0aW5ncy5zc2hQb3J0KTtcbiAgcmV0dXJuIHtcbiAgICBkZWxldGFibGU6IGZhbHNlLFxuICAgIGRpc3BsYXlUaXRsZTogJyhkZWZhdWx0KScsXG4gICAgcGFyYW1zOiBkaWFsb2dTZXR0aW5ncyxcbiAgfTtcbn1cblxuXG4vKipcbiAqIFNlY3Rpb246IFVzZXItY3JlYXRlZCBDb25uZWN0aW9uIFByb2ZpbGVzXG4gKi9cblxuLyoqXG4gKiBSZXR1cm5zIGFuIGFycmF5IG9mIHNhdmVkIGNvbm5lY3Rpb24gcHJvZmlsZXMuXG4gKi9cbmV4cG9ydCBmdW5jdGlvbiBnZXRTYXZlZENvbm5lY3Rpb25Qcm9maWxlcygpOiBBcnJheTxOdWNsaWRlUmVtb3RlQ29ubmVjdGlvblByb2ZpbGU+IHtcbiAgY29uc3QgY29ubmVjdGlvblByb2ZpbGVzOiA/QXJyYXk8TnVjbGlkZVJlbW90ZUNvbm5lY3Rpb25Qcm9maWxlPiA9XG4gICAgKGF0b20uY29uZmlnLmdldChDT05ORUNUSU9OX1BST0ZJTEVTX0tFWSk6IGFueSk7XG4gIHByZXBhcmVTYXZlZENvbm5lY3Rpb25Qcm9maWxlc0ZvckRpc3BsYXkoY29ubmVjdGlvblByb2ZpbGVzKTtcbiAgcmV0dXJuIGNvbm5lY3Rpb25Qcm9maWxlcyB8fCBbXTtcbn1cblxuLyoqXG4gKiBTYXZlcyB0aGUgY29ubmVjdGlvbiBwcm9maWxlcy4gT3ZlcndyaXRlcyBhbnkgZXhpc3RpbmcgcHJvZmlsZXMuXG4gKi9cbmV4cG9ydCBmdW5jdGlvbiBzYXZlQ29ubmVjdGlvblByb2ZpbGVzKHByb2ZpbGVzOiBBcnJheTxOdWNsaWRlUmVtb3RlQ29ubmVjdGlvblByb2ZpbGU+KTogdm9pZCB7XG4gIHByZXBhcmVDb25uZWN0aW9uUHJvZmlsZXNGb3JTYXZpbmcocHJvZmlsZXMpO1xuICBhdG9tLmNvbmZpZy5zZXQoQ09OTkVDVElPTl9QUk9GSUxFU19LRVksIHByb2ZpbGVzKTtcbn1cblxuXG50eXBlIENvbm5lY3Rpb25Qcm9maWxlQ2hhbmdlID0ge1xuICBuZXdWYWx1ZTogP0FycmF5PE51Y2xpZGVSZW1vdGVDb25uZWN0aW9uUHJvZmlsZT47XG4gIG9sZFZhbHVlOiA/QXJyYXk8TnVjbGlkZVJlbW90ZUNvbm5lY3Rpb25Qcm9maWxlPjtcbiAga2V5UGF0aDogc3RyaW5nO1xufTtcbi8qKlxuICogQ2FsbHMgdGhlIGNhbGxiYWNrIHdoZW4gdGhlIHNhdmVkIGNvbm5lY3Rpb24gcHJvZmlsZXMgY2hhbmdlLlxuICogQHJldHVybiBEaXNwb3NhYmxlIHRoYXQgY2FuIGJlIGRpc3Bvc2VkIHRvIHN0b3AgbGlzdGVuaW5nIGZvciBjaGFuZ2VzLlxuICovXG5leHBvcnQgZnVuY3Rpb24gb25TYXZlZENvbm5lY3Rpb25Qcm9maWxlc0RpZENoYW5nZShcbiAgY2FsbGJhY2s6IChuZXdQcm9maWxlczogP0FycmF5PE51Y2xpZGVSZW1vdGVDb25uZWN0aW9uUHJvZmlsZT4pID0+IG1peGVkXG4pOiBEaXNwb3NhYmxlIHtcbiAgcmV0dXJuIGF0b20uY29uZmlnLm9uRGlkQ2hhbmdlKFxuICAgIENPTk5FQ1RJT05fUFJPRklMRVNfS0VZLFxuICAgIChldmVudDogQ29ubmVjdGlvblByb2ZpbGVDaGFuZ2UpID0+IHtcbiAgICAgIGNvbnN0IG5ld1Byb2ZpbGVzID0gZXZlbnQubmV3VmFsdWU7XG4gICAgICBwcmVwYXJlU2F2ZWRDb25uZWN0aW9uUHJvZmlsZXNGb3JEaXNwbGF5KG5ld1Byb2ZpbGVzKTtcbiAgICAgIGNhbGxiYWNrKG5ld1Byb2ZpbGVzKTtcbiAgICB9XG4gICk7XG59XG5cblxuLyoqXG4gKiBTZWN0aW9uOiBEZWZhdWx0L0xhc3QtVXNlZCBDb25uZWN0aW9uIFByb2ZpbGVzXG4gKi9cblxuLyoqXG4gKiBHZXRzIHRoZSBOdWNsaWRlU2F2ZWRDb25uZWN0aW9uRGlhbG9nQ29uZmlnIHJlcHJlc2VudGluZyB0aGUgdXNlcidzIGxhc3RcbiAqIGNvbm5lY3Rpb24uXG4gKi9cbmV4cG9ydCBmdW5jdGlvbiBnZXRTYXZlZENvbm5lY3Rpb25Db25maWcoKTogP051Y2xpZGVTYXZlZENvbm5lY3Rpb25EaWFsb2dDb25maWcge1xuICBjb25zdCBzYXZlZENvbmZpZzogYW55ID0gYXRvbS5jb25maWcuZ2V0KExBU1RfVVNFRF9DT05ORUNUSU9OX0tFWSk7XG4gIHJldHVybiAoc2F2ZWRDb25maWcgOiA/TnVjbGlkZVNhdmVkQ29ubmVjdGlvbkRpYWxvZ0NvbmZpZyk7XG59XG5cbi8qKlxuICogU2F2ZXMgYSBjb25uZWN0aW9uIGNvbmZpZ3VyYXRpb24gYWxvbmcgd2l0aCB0aGUgbGFzdCBvZmZpY2lhbCBzZXJ2ZXIgY29tbWFuZC5cbiAqL1xuZXhwb3J0IGZ1bmN0aW9uIHNhdmVDb25uZWN0aW9uQ29uZmlnKFxuICBjb25maWc6IFNzaENvbm5lY3Rpb25Db25maWd1cmF0aW9uLFxuICBsYXN0T2ZmaWNpYWxSZW1vdGVTZXJ2ZXJDb21tYW5kOiBzdHJpbmdcbik6IHZvaWQge1xuICAvLyBEb24ndCBzdG9yZSB1c2VyJ3MgcGFzc3dvcmQuXG4gIGNvbnN0IHVwZGF0ZWRDb25maWcgPSB7Li4uY29uZmlnLCBwYXNzd29yZDogJyd9O1xuICAvLyBTc2hDb25uZWN0aW9uQ29uZmlndXJhdGlvbidzIHNzaFBvcnQgdHlwZSBpcyAnbnVtYmVyJywgYnV0IHdlIHdhbnQgdG8gc2F2ZVxuICAvLyBldmVyeXRoaW5nIGFzIHN0cmluZ3MuXG4gIHVwZGF0ZWRDb25maWcuc3NoUG9ydCA9IFN0cmluZyhjb25maWcuc3NoUG9ydCk7XG4gIGF0b20uY29uZmlnLnNldChMQVNUX1VTRURfQ09OTkVDVElPTl9LRVksIHtcbiAgICB1cGRhdGVkQ29uZmlnLFxuICAgIC8vIFNhdmUgbGFzdCBvZmZpY2lhbCBjb21tYW5kIHRvIGRldGVjdCB1cGdyYWRlLlxuICAgIGxhc3RPZmZpY2lhbFJlbW90ZVNlcnZlckNvbW1hbmQsXG4gIH0pO1xufVxuXG5sZXQgZGVmYXVsdENvbmZpZzogP2FueSA9IG51bGw7XG4vKipcbiAqIFRoaXMgZmV0Y2hlcyB0aGUgJ2RlZmF1bHQnIGNvbm5lY3Rpb24gY29uZmlndXJhdGlvbiBzdXBwbGllZCB0byB0aGUgdXNlclxuICogcmVnYXJkbGVzcyBvZiBhbnkgY29ubmVjdGlvbiBwcm9maWxlcyB0aGV5IG1pZ2h0IGhhdmUgc2F2ZWQuXG4gKi9cbmV4cG9ydCBmdW5jdGlvbiBnZXREZWZhdWx0Q29uZmlnKCk6IGFueSB7XG4gIGlmIChkZWZhdWx0Q29uZmlnKSB7XG4gICAgcmV0dXJuIGRlZmF1bHRDb25maWc7XG4gIH1cbiAgbGV0IGRlZmF1bHRDb25maWdHZXR0ZXI7XG4gIHRyeSB7XG4gICAgZGVmYXVsdENvbmZpZ0dldHRlciA9IHJlcXVpcmUoJy4vZmIvY29uZmlnJyk7XG4gIH0gY2F0Y2ggKGUpIHtcbiAgICBkZWZhdWx0Q29uZmlnR2V0dGVyID0gcmVxdWlyZSgnLi9jb25maWcnKTtcbiAgfVxuICBkZWZhdWx0Q29uZmlnID0gZGVmYXVsdENvbmZpZ0dldHRlci5nZXRDb25uZWN0aW9uRGlhbG9nRGVmYXVsdFNldHRpbmdzKCk7XG4gIHJldHVybiBkZWZhdWx0Q29uZmlnO1xufVxuXG5leHBvcnQgZnVuY3Rpb24gZ2V0T2ZmaWNpYWxSZW1vdGVTZXJ2ZXJDb21tYW5kKCk6IHN0cmluZyB7XG4gIHJldHVybiBnZXREZWZhdWx0Q29uZmlnKCkucmVtb3RlU2VydmVyQ29tbWFuZDtcbn1cblxuZnVuY3Rpb24gcHJlcGFyZVNhdmVkQ29ubmVjdGlvblByb2ZpbGVzRm9yRGlzcGxheShcbiAgY29ubmVjdGlvblByb2ZpbGVzOiA/QXJyYXk8TnVjbGlkZVJlbW90ZUNvbm5lY3Rpb25Qcm9maWxlPixcbik6IHZvaWQge1xuICBpZiAoIWNvbm5lY3Rpb25Qcm9maWxlcykge1xuICAgIHJldHVybjtcbiAgfVxuICAvLyBJZiBhIHByb2ZpbGUgZG9lcyBub3QgaW5jbGlkZSBhIHJlbW90ZSBzZXJ2ZXIgY29tbWFuZCwgdGhpcyBtZWFucyB0aGUgdXNlclxuICAvLyBpbnRlbmRlZCB0byB1c2UgdGhlIGRlZmF1bHQgc2VydmVyIGNvbW1hbmQuIFdlIG11c3QgZmlsbCB0aGlzIGluLlxuICBjb25zdCBkZWZhdWx0Q29ubmVjdGlvblNldHRpbmdzID0gZ2V0RGVmYXVsdENvbmZpZygpO1xuICBjb25zdCBjdXJyZW50T2ZmaWNpYWxSU0MgPSBkZWZhdWx0Q29ubmVjdGlvblNldHRpbmdzLnJlbW90ZVNlcnZlckNvbW1hbmQ7XG4gIGNvbm5lY3Rpb25Qcm9maWxlcy5mb3JFYWNoKChwcm9maWxlOiBOdWNsaWRlUmVtb3RlQ29ubmVjdGlvblByb2ZpbGUpID0+IHtcbiAgICBpZiAoIXByb2ZpbGUucGFyYW1zLnJlbW90ZVNlcnZlckNvbW1hbmQpIHtcbiAgICAgIHByb2ZpbGUucGFyYW1zLnJlbW90ZVNlcnZlckNvbW1hbmQgPSBjdXJyZW50T2ZmaWNpYWxSU0M7XG4gICAgfVxuICB9KTtcbn1cblxuZnVuY3Rpb24gcHJlcGFyZUNvbm5lY3Rpb25Qcm9maWxlc0ZvclNhdmluZyhcbiAgY29ubmVjdGlvblByb2ZpbGVzOiBBcnJheTxOdWNsaWRlUmVtb3RlQ29ubmVjdGlvblByb2ZpbGU+XG4pOiB2b2lkIHtcbiAgLy8gSWYgYSBjb25uZWN0aW9uIHByb2ZpbGUgaGFzIGEgZGVmYXVsdCByZW1vdGUgc2VydmVyIGNvbW1hbmQsIHJlcGxhY2UgaXQgd2l0aFxuICAvLyBhbiBlbXB0eSBzdHJpbmcuIFRoaXMgaW5kaWNhdGVzIHRoYXQgdGhpcyBzZXJ2ZXIgY29tbWFuZCBzaG91bGQgYmUgZmlsbGVkIGluXG4gIC8vIHdoZW4gdGhpcyBwcm9maWxlIGlzIHVzZWQuXG4gIGNvbnN0IGRlZmF1bHRDb25uZWN0aW9uU2V0dGluZ3MgPSBnZXREZWZhdWx0Q29uZmlnKCk7XG4gIGNvbnN0IGN1cnJlbnRPZmZpY2lhbFJTQyA9IGRlZmF1bHRDb25uZWN0aW9uU2V0dGluZ3MucmVtb3RlU2VydmVyQ29tbWFuZDtcbiAgY29ubmVjdGlvblByb2ZpbGVzLmZvckVhY2goKHByb2ZpbGU6IE51Y2xpZGVSZW1vdGVDb25uZWN0aW9uUHJvZmlsZSkgPT4ge1xuICAgIGlmIChwcm9maWxlLnBhcmFtcy5yZW1vdGVTZXJ2ZXJDb21tYW5kID09PSBjdXJyZW50T2ZmaWNpYWxSU0MpIHtcbiAgICAgIHByb2ZpbGUucGFyYW1zLnJlbW90ZVNlcnZlckNvbW1hbmQgPSAnJztcbiAgICB9XG4gIH0pO1xufVxuIl19

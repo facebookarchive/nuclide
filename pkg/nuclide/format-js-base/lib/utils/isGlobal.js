@@ -1,5 +1,11 @@
-'use babel';
-/* @flow */
+
+
+/**
+ * Tests if a NodePath is a direct child of the Program node.
+ */
+function isGlobal(path) {
+  return path.parent && path.parent.node.type === 'Program';
+}
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,13 +15,5 @@
  * the root directory of this source tree.
  */
 
-import type {NodePath} from '../types/ast';
-
-/**
- * Tests if a NodePath is a direct child of the Program node.
- */
-function isGlobal(path: NodePath): boolean {
-  return path.parent && path.parent.node.type === 'Program';
-}
-
 module.exports = isGlobal;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbImlzR2xvYmFsLmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7Ozs7O0FBZ0JBLFNBQVMsUUFBUSxDQUFDLElBQWMsRUFBVztBQUN6QyxTQUFPLElBQUksQ0FBQyxNQUFNLElBQUksSUFBSSxDQUFDLE1BQU0sQ0FBQyxJQUFJLENBQUMsSUFBSSxLQUFLLFNBQVMsQ0FBQztDQUMzRDs7Ozs7Ozs7OztBQUVELE1BQU0sQ0FBQyxPQUFPLEdBQUcsUUFBUSxDQUFDIiwiZmlsZSI6ImlzR2xvYmFsLmpzIiwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBiYWJlbCc7XG4vKiBAZmxvdyAqL1xuXG4vKlxuICogQ29weXJpZ2h0IChjKSAyMDE1LXByZXNlbnQsIEZhY2Vib29rLCBJbmMuXG4gKiBBbGwgcmlnaHRzIHJlc2VydmVkLlxuICpcbiAqIFRoaXMgc291cmNlIGNvZGUgaXMgbGljZW5zZWQgdW5kZXIgdGhlIGxpY2Vuc2UgZm91bmQgaW4gdGhlIExJQ0VOU0UgZmlsZSBpblxuICogdGhlIHJvb3QgZGlyZWN0b3J5IG9mIHRoaXMgc291cmNlIHRyZWUuXG4gKi9cblxuaW1wb3J0IHR5cGUge05vZGVQYXRofSBmcm9tICcuLi90eXBlcy9hc3QnO1xuXG4vKipcbiAqIFRlc3RzIGlmIGEgTm9kZVBhdGggaXMgYSBkaXJlY3QgY2hpbGQgb2YgdGhlIFByb2dyYW0gbm9kZS5cbiAqL1xuZnVuY3Rpb24gaXNHbG9iYWwocGF0aDogTm9kZVBhdGgpOiBib29sZWFuIHtcbiAgcmV0dXJuIHBhdGgucGFyZW50ICYmIHBhdGgucGFyZW50Lm5vZGUudHlwZSA9PT0gJ1Byb2dyYW0nO1xufVxuXG5tb2R1bGUuZXhwb3J0cyA9IGlzR2xvYmFsO1xuIl19

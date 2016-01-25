@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,34 +8,18 @@
  * the root directory of this source tree.
  */
 
-import type {ExportSpecifier} from 'ast-types-flow';
-import type {Lines, Print} from '../../types/common';
+var flatten = require('../../utils/flatten');
+var markers = require('../../constants/markers');
 
-const flatten = require('../../utils/flatten');
-const markers = require('../../constants/markers');
-
-function printExportSpecifier(print: Print, node: ExportSpecifier): Lines {
+function printExportSpecifier(print, node) {
   // I'm pretty sure it's safe to assume they are both Identifiers, but let's
   // be safe just in case.
-  if (
-    node.exported &&
-    node.exported.type === 'Identifier' &&
-    node.local &&
-    node.local.type === 'Identifier' &&
-    node.exported.name !== node.local.name
-  ) {
-    return flatten([
-      print(node.local),
-      markers.noBreak,
-      markers.space,
-      'as',
-      markers.noBreak,
-      markers.space,
-      print(node.exported),
-    ]);
+  if (node.exported && node.exported.type === 'Identifier' && node.local && node.local.type === 'Identifier' && node.exported.name !== node.local.name) {
+    return flatten([print(node.local), markers.noBreak, markers.space, 'as', markers.noBreak, markers.space, print(node.exported)]);
   } else {
     return flatten(print(node.local));
   }
 }
 
 module.exports = printExportSpecifier;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInByaW50RXhwb3J0U3BlY2lmaWVyLmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7QUFjQSxJQUFNLE9BQU8sR0FBRyxPQUFPLENBQUMscUJBQXFCLENBQUMsQ0FBQztBQUMvQyxJQUFNLE9BQU8sR0FBRyxPQUFPLENBQUMseUJBQXlCLENBQUMsQ0FBQzs7QUFFbkQsU0FBUyxvQkFBb0IsQ0FBQyxLQUFZLEVBQUUsSUFBcUIsRUFBUzs7O0FBR3hFLE1BQ0UsSUFBSSxDQUFDLFFBQVEsSUFDYixJQUFJLENBQUMsUUFBUSxDQUFDLElBQUksS0FBSyxZQUFZLElBQ25DLElBQUksQ0FBQyxLQUFLLElBQ1YsSUFBSSxDQUFDLEtBQUssQ0FBQyxJQUFJLEtBQUssWUFBWSxJQUNoQyxJQUFJLENBQUMsUUFBUSxDQUFDLElBQUksS0FBSyxJQUFJLENBQUMsS0FBSyxDQUFDLElBQUksRUFDdEM7QUFDQSxXQUFPLE9BQU8sQ0FBQyxDQUNiLEtBQUssQ0FBQyxJQUFJLENBQUMsS0FBSyxDQUFDLEVBQ2pCLE9BQU8sQ0FBQyxPQUFPLEVBQ2YsT0FBTyxDQUFDLEtBQUssRUFDYixJQUFJLEVBQ0osT0FBTyxDQUFDLE9BQU8sRUFDZixPQUFPLENBQUMsS0FBSyxFQUNiLEtBQUssQ0FBQyxJQUFJLENBQUMsUUFBUSxDQUFDLENBQ3JCLENBQUMsQ0FBQztHQUNKLE1BQU07QUFDTCxXQUFPLE9BQU8sQ0FBQyxLQUFLLENBQUMsSUFBSSxDQUFDLEtBQUssQ0FBQyxDQUFDLENBQUM7R0FDbkM7Q0FDRjs7QUFFRCxNQUFNLENBQUMsT0FBTyxHQUFHLG9CQUFvQixDQUFDIiwiZmlsZSI6InByaW50RXhwb3J0U3BlY2lmaWVyLmpzIiwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBiYWJlbCc7XG4vKiBAZmxvdyAqL1xuXG4vKlxuICogQ29weXJpZ2h0IChjKSAyMDE1LXByZXNlbnQsIEZhY2Vib29rLCBJbmMuXG4gKiBBbGwgcmlnaHRzIHJlc2VydmVkLlxuICpcbiAqIFRoaXMgc291cmNlIGNvZGUgaXMgbGljZW5zZWQgdW5kZXIgdGhlIGxpY2Vuc2UgZm91bmQgaW4gdGhlIExJQ0VOU0UgZmlsZSBpblxuICogdGhlIHJvb3QgZGlyZWN0b3J5IG9mIHRoaXMgc291cmNlIHRyZWUuXG4gKi9cblxuaW1wb3J0IHR5cGUge0V4cG9ydFNwZWNpZmllcn0gZnJvbSAnYXN0LXR5cGVzLWZsb3cnO1xuaW1wb3J0IHR5cGUge0xpbmVzLCBQcmludH0gZnJvbSAnLi4vLi4vdHlwZXMvY29tbW9uJztcblxuY29uc3QgZmxhdHRlbiA9IHJlcXVpcmUoJy4uLy4uL3V0aWxzL2ZsYXR0ZW4nKTtcbmNvbnN0IG1hcmtlcnMgPSByZXF1aXJlKCcuLi8uLi9jb25zdGFudHMvbWFya2VycycpO1xuXG5mdW5jdGlvbiBwcmludEV4cG9ydFNwZWNpZmllcihwcmludDogUHJpbnQsIG5vZGU6IEV4cG9ydFNwZWNpZmllcik6IExpbmVzIHtcbiAgLy8gSSdtIHByZXR0eSBzdXJlIGl0J3Mgc2FmZSB0byBhc3N1bWUgdGhleSBhcmUgYm90aCBJZGVudGlmaWVycywgYnV0IGxldCdzXG4gIC8vIGJlIHNhZmUganVzdCBpbiBjYXNlLlxuICBpZiAoXG4gICAgbm9kZS5leHBvcnRlZCAmJlxuICAgIG5vZGUuZXhwb3J0ZWQudHlwZSA9PT0gJ0lkZW50aWZpZXInICYmXG4gICAgbm9kZS5sb2NhbCAmJlxuICAgIG5vZGUubG9jYWwudHlwZSA9PT0gJ0lkZW50aWZpZXInICYmXG4gICAgbm9kZS5leHBvcnRlZC5uYW1lICE9PSBub2RlLmxvY2FsLm5hbWVcbiAgKSB7XG4gICAgcmV0dXJuIGZsYXR0ZW4oW1xuICAgICAgcHJpbnQobm9kZS5sb2NhbCksXG4gICAgICBtYXJrZXJzLm5vQnJlYWssXG4gICAgICBtYXJrZXJzLnNwYWNlLFxuICAgICAgJ2FzJyxcbiAgICAgIG1hcmtlcnMubm9CcmVhayxcbiAgICAgIG1hcmtlcnMuc3BhY2UsXG4gICAgICBwcmludChub2RlLmV4cG9ydGVkKSxcbiAgICBdKTtcbiAgfSBlbHNlIHtcbiAgICByZXR1cm4gZmxhdHRlbihwcmludChub2RlLmxvY2FsKSk7XG4gIH1cbn1cblxubW9kdWxlLmV4cG9ydHMgPSBwcmludEV4cG9ydFNwZWNpZmllcjtcbiJdfQ==
