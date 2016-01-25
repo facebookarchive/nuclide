@@ -73,5 +73,10 @@
   {
     "implementation": "../remote-ctags-base/lib/CtagsService.js",
     "name": "CtagsService"
+  },
+  {
+    "definition": "../debugger/lldb-server/lib/DebuggerRpcServiceInterface.js",
+    "implementation": "../debugger/lldb-server/lib/DebuggerRpcServiceImplementation.js",
+    "name": "LLDBDebuggerRpcService"
   }
 ]
