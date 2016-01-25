@@ -10,6 +10,7 @@
  */
 
 import logger from './utils';
+import {parse} from 'shell-quote';
 
 export const DUMMY_FRAME_ID = 'Frame.0';
 
@@ -47,7 +48,8 @@ export function uriToPath(uri: string): string {
 
 export function launchPhpScriptWithXDebugEnabled(scriptPath: string): child_process$ChildProcess {
   const child_process = require('child_process');
-  const args = ['-c', 'xdebug.ini', scriptPath];
+  const scriptArgv = parse(scriptPath);
+  const args = ['-c', 'xdebug.ini', ...scriptArgv];
   // TODO[jeffreytan]: make hhvm path configurable so that it will
   // work for non-FB environment.
   const proc = child_process.spawn('/usr/local/hphpi/bin/hhvm', args);
