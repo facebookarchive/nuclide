@@ -23,48 +23,6 @@
         "description": "Polling interval for showing health stats in status views (in seconds).",
         "minimum": 1,
         "maximum": 60
-      },
-      "showCpu": {
-        "order": 2,
-        "type": "boolean",
-        "default": false,
-        "title": "Show CPU Usage",
-        "description": "Show CPU average for the last minute as a percentage in status bar (except on Windows)."
-      },
-      "showHeap": {
-        "title": "Show Heap Usage",
-        "order": 3,
-        "type": "boolean",
-        "default": false,
-        "description": "Show heap usage as a percentage in status bar."
-      },
-      "showMemory": {
-        "title": "Show Memory Usage",
-        "order": 4,
-        "type": "boolean",
-        "default": false,
-        "description": "Show memory usage in MB in status bar."
-      },
-      "showKeyLatency": {
-        "title": "Show Keystroke Latency",
-        "order": 5,
-        "type": "boolean",
-        "default": false,
-        "description": "Show latest editor key latency in milliseconds in status bar."
-      },
-      "showActiveHandles": {
-        "order": 6,
-        "type": "boolean",
-        "default": false,
-        "title": "Show Handles",
-        "description": "Show number of active handles open in Node in status bar."
-      },
-      "showActiveRequests": {
-        "order": 7,
-        "type": "boolean",
-        "default": false,
-        "title": "Show Event Loop",
-        "description": "Show number of active requests in the Node event loop in status bar."
       }
     },
     "packageType": "Atom",

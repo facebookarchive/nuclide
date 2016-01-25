@@ -19,13 +19,3 @@ export type HealthStats = {
   activeHandles: number;
   activeRequests: number;
 };
-
-// This type needs to match the propTypes on the view components that display health data.
-export type StatsViewProps = {
-  cpuPercentage?: number;
-  memory?: number;
-  heapPercentage?: number;
-  lastKeyLatency?: number;
-  activeHandles?: number;
-  activeRequests?: number;
-};

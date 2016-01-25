@@ -10,7 +10,7 @@
  */
 
 import type {GadgetsService, Gadget} from '../../gadgets-interfaces';
-import type {HealthStats, StatsViewProps} from './types';
+import type {HealthStats} from './types';
 
 // Imports from non-Nuclide modules.
 import invariant from 'assert';
@@ -116,7 +116,7 @@ export function consumeStatusBar(statusBar: any): void {
     activation.disposables.add(
       atom.tooltips.add(
         statusBarItem,
-        {title: 'Click the icon to display and configure Nuclide health stats.'}
+        {title: 'Click the icon to display Nuclide health stats.'}
       ),
       new Disposable(() => {
         tile.destroy();
@@ -153,7 +153,7 @@ function timeActiveEditorKeys(): void {
   activeEditorDisposables = new CompositeDisposable();
 
   // If option is enabled, start timing latency of keys on the new text editor.
-  if (!currentConfig.showKeyLatency && !paneItem) {
+  if (!paneItem) {
     return;
   }
 
@@ -218,31 +218,11 @@ function updateStatusBar(stats: HealthStats): void {
   if (!statusBarItem) {
     return;
   }
-  const props: StatsViewProps = {};
-  if (currentConfig.showCpu) {
-    props.cpuPercentage = stats.cpuPercentage;
-  }
-  if (currentConfig.showHeap) {
-    props.heapPercentage = stats.heapPercentage;
-  }
-  if (currentConfig.showMemory) {
-    props.memory = stats.rss;
-  }
-  if (currentConfig.showKeyLatency) {
-    props.lastKeyLatency = stats.lastKeyLatency;
-  }
-  if (currentConfig.showActiveHandles) {
-    props.activeHandles = stats.activeHandles;
-  }
-  if (currentConfig.showActiveRequests) {
-    props.activeRequests = stats.activeRequests;
-  }
 
   const openHealthPane = () => gadgets && gadgets.showGadget('nuclide-health');
 
   React.render(
     <HealthStatusBarComponent
-      {...props}
       onClickIcon={openHealthPane}
     />,
     statusBarItem
