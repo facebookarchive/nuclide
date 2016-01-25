@@ -13,6 +13,15 @@ const {React} = require('react-for-atom');
 const {PropTypes} = React;
 
 class HomeFeatureComponent extends React.Component {
+  static propTypes = {
+    title: PropTypes.string.isRequired,
+    icon: PropTypes.string.isRequired,
+    description: PropTypes.oneOfType([
+      PropTypes.string,
+      PropTypes.element,
+    ]).isRequired,
+    command: PropTypes.string,
+  };
 
   render(): ReactElement {
     const {title, command} = this.props;
@@ -32,17 +41,6 @@ class HomeFeatureComponent extends React.Component {
       </details>
     );
   }
-
 }
-
-HomeFeatureComponent.propTypes = {
-  title: PropTypes.string.isRequired,
-  icon: PropTypes.string.isRequired,
-  description: PropTypes.oneOfType([
-    PropTypes.string,
-    PropTypes.element,
-  ]).isRequired,
-  command: PropTypes.string,
-};
 
 module.exports = HomeFeatureComponent;

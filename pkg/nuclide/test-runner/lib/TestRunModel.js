@@ -40,7 +40,7 @@ StatusMessage[Status.TIMEOUT] = `${Ansi.BLUE}(TIMEOUT)${Ansi.RESET}`;
 
 class TestRunModel {
 
-  static Status: {[key: string]: TestRunStatus};
+  static Status: {[key: string]: TestRunStatus} = Status;
 
   startTime: ?number;
   endTime: ?number;
@@ -75,8 +75,5 @@ class TestRunModel {
     return `      ${StatusSymbol[status]} ${name} ${durationStr}s ${StatusMessage[status]}`;
   }
 }
-
-// TODO: Use a property initializer when supported by Flow.
-TestRunModel.Status = Status;
 
 module.exports = TestRunModel;

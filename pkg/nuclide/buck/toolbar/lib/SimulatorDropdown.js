@@ -18,6 +18,19 @@ const {PropTypes} = React;
 import type {Device} from './IosSimulator';
 
 class SimulatorDropdown extends React.Component {
+  static propTypes = {
+    className: PropTypes.string.isRequired,
+    disabled: PropTypes.bool.isRequired,
+    title: PropTypes.string.isRequired,
+    onSelectedSimulatorChange: PropTypes.func.isRequired,
+  };
+
+  static defaultProps = {
+    className: '',
+    disabled: false,
+    title: 'Choose a device',
+    onSelectedSimulatorChange: () => {},
+  };
 
   constructor(props: {[key: string]: mixed}) {
     super(props);
@@ -68,19 +81,5 @@ class SimulatorDropdown extends React.Component {
     this.setState({selectedIndex: newIndex});
   }
 }
-
-SimulatorDropdown.propTypes = {
-  className: PropTypes.string.isRequired,
-  disabled: PropTypes.bool.isRequired,
-  title: PropTypes.string.isRequired,
-  onSelectedSimulatorChange: PropTypes.func.isRequired,
-};
-
-SimulatorDropdown.defaultProps = {
-  className: '',
-  disabled: false,
-  title: 'Choose a device',
-  onSelectedSimulatorChange: () => {},
-};
 
 module.exports = SimulatorDropdown;

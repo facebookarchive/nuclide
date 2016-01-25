@@ -25,7 +25,6 @@ function runStopButtonClassName(icon: string, className: string): string {
 }
 
 class TestRunnerPanel extends React.Component {
-
   _paneContainer: Object;
   _leftPane: atom$Pane;
   _rightPane: atom$Pane;
@@ -34,6 +33,27 @@ class TestRunnerPanel extends React.Component {
 
   // Bound Functions for use as callbacks.
   setSelectedTestRunnerIndex: Function;
+
+  static propTypes = {
+    buffer: PropTypes.object.isRequired,
+    executionState: PropTypes.number.isRequired,
+    onClickClear: PropTypes.func.isRequired,
+    onClickClose: PropTypes.func.isRequired,
+    onClickRun: PropTypes.func.isRequired,
+    onClickStop: PropTypes.func.isRequired,
+    path: PropTypes.string,
+    progressValue: PropTypes.number,
+    runDuration: PropTypes.number,
+    // TODO: Should be `arrayOf(TestRunner)`, but that would require a real object since this is
+    // runtime code for React.
+    testRunners: PropTypes.arrayOf(Object).isRequired,
+    testSuiteModel: PropTypes.object,
+  };
+
+  static ExecutionState = {
+    RUNNING: 0,
+    STOPPED: 1,
+  };
 
   constructor(props: Object) {
     super(props);
@@ -225,28 +245,6 @@ class TestRunnerPanel extends React.Component {
       atom.views.getView(this._rightPane).querySelector('.item-views')
     );
   }
-
 }
-
-TestRunnerPanel.propTypes = {
-  buffer: PropTypes.object.isRequired,
-  executionState: PropTypes.number.isRequired,
-  onClickClear: PropTypes.func.isRequired,
-  onClickClose: PropTypes.func.isRequired,
-  onClickRun: PropTypes.func.isRequired,
-  onClickStop: PropTypes.func.isRequired,
-  path: PropTypes.string,
-  progressValue: PropTypes.number,
-  runDuration: PropTypes.number,
-  // TODO: Should be `arrayOf(TestRunner)`, but that would require a real object since this is
-  // runtime code for React.
-  testRunners: PropTypes.arrayOf(Object).isRequired,
-  testSuiteModel: PropTypes.object,
-};
-
-TestRunnerPanel.ExecutionState = {
-  RUNNING: 0,
-  STOPPED: 1,
-};
 
 module.exports = TestRunnerPanel;

@@ -15,6 +15,9 @@ const {React} = require('react-for-atom');
 const {PropTypes} = React;
 
 class Console extends React.Component {
+  static propTypes = {
+    textBuffer: PropTypes.object.isRequired,
+  };
 
   render() {
     return (
@@ -26,11 +29,6 @@ class Console extends React.Component {
       />
     );
   }
-
 }
-
-Console.propTypes = {
-  textBuffer: PropTypes.object.isRequired,
-};
 
 module.exports = Console;

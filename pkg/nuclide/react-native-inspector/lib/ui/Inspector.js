@@ -16,6 +16,7 @@ import Webview from '../../../ui/webview';
 import {toJsString} from '../../../commons';
 
 class Inspector extends React.Component {
+  static gadgetId = 'nuclide-react-native-inspector';
 
   constructor(props: mixed) {
     super(props);
@@ -46,9 +47,6 @@ class Inspector extends React.Component {
       `initializeElementInspector(${toJsString(packageDirectory)}, ${toJsString(requirePaths)});`
     );
   }
-
 }
-
-Inspector.gadgetId = 'nuclide-react-native-inspector';
 
 module.exports = ((Inspector: any): Gadget);

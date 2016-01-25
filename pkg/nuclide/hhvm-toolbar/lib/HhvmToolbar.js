@@ -36,6 +36,10 @@ async function callDebugService(scriptTarget: ?string): Promise {
 }
 
 class HhvmToolbar extends React.Component {
+  static propTypes = {
+    targetFilePath: PropTypes.string.isRequired,
+  };
+
   constructor(props: mixed) {
     super(props);
     this.state = {
@@ -134,9 +138,5 @@ class HhvmToolbar extends React.Component {
     callDebugService(scriptTarget);
   }
 }
-
-HhvmToolbar.propTypes = {
-  targetFilePath: PropTypes.string.isRequired,
-};
 
 module.exports = HhvmToolbar;

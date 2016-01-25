@@ -22,6 +22,10 @@ function labelClassNameForNode(): string {
 }
 
 class TestClassTree extends React.Component {
+  static propTypes = {
+    isRunning: PropTypes.bool.isRequired,
+    testSuiteModel: PropTypes.object,
+  };
 
   componentDidUpdate(prevProps: Object) {
     if (this.props.testSuiteModel !== prevProps.testSuiteModel) {
@@ -84,12 +88,6 @@ class TestClassTree extends React.Component {
       return 'status-ignored';
     }
   }
-
 }
-
-TestClassTree.propTypes = {
-  isRunning: PropTypes.bool.isRequired,
-  testSuiteModel: PropTypes.object,
-};
 
 module.exports = TestClassTree;

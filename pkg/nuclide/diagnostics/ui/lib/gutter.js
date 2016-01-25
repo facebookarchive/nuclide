@@ -373,6 +373,11 @@ function createMessageSpan(message: {html?: string, text?: string}): HTMLElement
 }
 
 class DiagnosticsPopup extends React.Component {
+  static propTypes = {
+    children: PropTypes.node,
+    left: PropTypes.number.isRequired,
+    top: PropTypes.number.isRequired,
+  };
 
   render() {
     return (
@@ -385,9 +390,3 @@ class DiagnosticsPopup extends React.Component {
     );
   }
 }
-
-DiagnosticsPopup.propTypes = {
-  children: PropTypes.node,
-  left: PropTypes.number.isRequired,
-  top: PropTypes.number.isRequired,
-};

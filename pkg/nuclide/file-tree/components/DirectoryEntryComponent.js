@@ -27,6 +27,20 @@ const getActions = FileTreeActions.getInstance;
 const INDENT_PER_LEVEL = 17;
 
 class DirectoryEntryComponent extends React.Component {
+  static propTypes = {
+    indentLevel: PropTypes.number.isRequired,
+    isExpanded: PropTypes.bool.isRequired,
+    isLoading: PropTypes.bool.isRequired,
+    isRoot: PropTypes.bool.isRequired,
+    isSelected: PropTypes.bool.isRequired,
+    usePreviewTabs: PropTypes.bool.isRequired,
+    nodeKey: PropTypes.string.isRequired,
+    nodeName: PropTypes.string.isRequired,
+    nodePath: PropTypes.string.isRequired,
+    rootKey: PropTypes.string.isRequired,
+    vcsStatusCode: PropTypes.number,
+  };
+
   constructor(props: Object) {
     super(props);
     this._onClick = this._onClick.bind(this);
@@ -128,19 +142,5 @@ class DirectoryEntryComponent extends React.Component {
     }
   }
 }
-
-DirectoryEntryComponent.propTypes = {
-  indentLevel: PropTypes.number.isRequired,
-  isExpanded: PropTypes.bool.isRequired,
-  isLoading: PropTypes.bool.isRequired,
-  isRoot: PropTypes.bool.isRequired,
-  isSelected: PropTypes.bool.isRequired,
-  usePreviewTabs: PropTypes.bool.isRequired,
-  nodeKey: PropTypes.string.isRequired,
-  nodeName: PropTypes.string.isRequired,
-  nodePath: PropTypes.string.isRequired,
-  rootKey: PropTypes.string.isRequired,
-  vcsStatusCode: PropTypes.number,
-};
 
 module.exports = DirectoryEntryComponent;

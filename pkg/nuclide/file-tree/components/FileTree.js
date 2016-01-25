@@ -38,6 +38,10 @@ class FileTree extends React.Component {
     });
   });
 
+  static propTypes = {
+    store: PropTypes.instanceOf(FileTreeStore).isRequired,
+  };
+
   constructor(props: Object) {
     super(props);
     this._subscriptions = new CompositeDisposable();
@@ -118,9 +122,5 @@ class FileTree extends React.Component {
     });
   }
 }
-
-FileTree.propTypes = {
-  store: PropTypes.instanceOf(FileTreeStore).isRequired,
-};
 
 module.exports = FileTree;

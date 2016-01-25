@@ -17,6 +17,10 @@ const {PropTypes} = React;
 class NuclideToolbar extends React.Component {
   _disposable: ?Disposable;
 
+  static propTypes = {
+    projectStore: PropTypes.instanceOf(ProjectStore).isRequired,
+  };
+
   constructor(props: mixed) {
     super(props);
     this.state = {
@@ -60,9 +64,5 @@ class NuclideToolbar extends React.Component {
     }
   }
 }
-
-NuclideToolbar.propTypes = {
-  projectStore: PropTypes.instanceOf(ProjectStore).isRequired,
-};
 
 module.exports = NuclideToolbar;

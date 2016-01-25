@@ -13,6 +13,7 @@ import {React} from 'react-for-atom';
 import wrapGadget from '../lib/wrapGadget';
 
 class MyGadget extends React.Component {
+  static gadgetId = 'my-awesome-gadget';
   doSomething() {
   }
 
@@ -20,8 +21,6 @@ class MyGadget extends React.Component {
     return <div />;
   }
 }
-
-MyGadget.gadgetId = 'my-awesome-gadget';
 
 describe('wrapGadget', () => {
 

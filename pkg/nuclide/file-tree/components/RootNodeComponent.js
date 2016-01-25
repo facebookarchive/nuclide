@@ -18,6 +18,11 @@ import type FileTreeNode from '../lib/FileTreeNode';
 const {PropTypes} = React;
 
 class RootNodeComponent extends React.Component {
+  static propTypes = {
+    rootNode: PropTypes.object.isRequired,
+    rootKey: PropTypes.string.isRequired,
+  };
+
   render(): ReactElement {
     return (
       <ol className="list-tree has-collapsable-children">
@@ -71,10 +76,5 @@ class RootNodeComponent extends React.Component {
     }
   }
 }
-
-RootNodeComponent.propTypes = {
-  rootNode: PropTypes.object.isRequired,
-  rootKey: PropTypes.string.isRequired,
-};
 
 module.exports = RootNodeComponent;

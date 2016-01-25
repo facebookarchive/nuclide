@@ -24,6 +24,20 @@ class FileDialogComponent extends React.Component {
   _subscriptions: CompositeDisposable;
   _isClosed: boolean;
 
+  static propTypes = {
+    iconClassName: PropTypes.string,
+    initialValue: PropTypes.string,
+    // Message is displayed above the input.
+    message: PropTypes.element.isRequired,
+    // Will be called (before `onClose`) if the user confirms.
+    onConfirm: PropTypes.func.isRequired,
+    // Will be called regardless of whether the user confirms.
+    onClose: PropTypes.func.isRequired,
+    // Whether or not to initially select the base name of the path.
+    // This is useful for renaming files.
+    selectBasename: PropTypes.bool,
+  };
+
   constructor() {
     super(...arguments);
     this._isClosed = false;
@@ -92,19 +106,5 @@ class FileDialogComponent extends React.Component {
     }
   }
 }
-
-FileDialogComponent.propTypes = {
-  iconClassName: PropTypes.string,
-  initialValue: PropTypes.string,
-  // Message is displayed above the input.
-  message: PropTypes.element.isRequired,
-  // Will be called (before `onClose`) if the user confirms.
-  onConfirm: PropTypes.func.isRequired,
-  // Will be called regardless of whether the user confirms.
-  onClose: PropTypes.func.isRequired,
-  // Whether or not to initially select the base name of the path.
-  // This is useful for renaming files.
-  selectBasename: PropTypes.bool,
-};
 
 module.exports = FileDialogComponent;

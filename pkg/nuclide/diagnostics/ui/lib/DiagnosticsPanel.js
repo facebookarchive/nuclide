@@ -45,6 +45,19 @@ function getKeyboardShortcut(): string {
  * Dismissable panel that displays the diagnostics from nuclide-diagnostics-store.
  */
 class DiagnosticsPanel extends React.Component {
+  static propTypes = {
+    diagnostics: PropTypes.array.isRequired,
+    height: PropTypes.number.isRequired,
+    onDismiss: PropTypes.func.isRequired,
+    onResize: PropTypes.func.isRequired,
+    width: PropTypes.number.isRequired,
+    pathToActiveTextEditor: PropTypes.string,
+    filterByActiveTextEditor: PropTypes.bool.isRequired,
+    onFilterByActiveTextEditorChange: PropTypes.func.isRequired,
+    warnAboutLinter: PropTypes.bool.isRequired,
+    disableLinter: PropTypes.func.isRequired,
+  };
+
   constructor(props: mixed) {
     super(props);
     this._onFilterByActiveTextEditorChange = this._onFilterByActiveTextEditorChange.bind(this);
@@ -159,18 +172,5 @@ class DiagnosticsPanel extends React.Component {
     this.props.onFilterByActiveTextEditorChange.call(null, isChecked);
   }
 }
-
-DiagnosticsPanel.propTypes = {
-  diagnostics: PropTypes.array.isRequired,
-  height: PropTypes.number.isRequired,
-  onDismiss: PropTypes.func.isRequired,
-  onResize: PropTypes.func.isRequired,
-  width: PropTypes.number.isRequired,
-  pathToActiveTextEditor: PropTypes.string,
-  filterByActiveTextEditor: PropTypes.bool.isRequired,
-  onFilterByActiveTextEditorChange: PropTypes.func.isRequired,
-  warnAboutLinter: PropTypes.bool.isRequired,
-  disableLinter: PropTypes.func.isRequired,
-};
 
 module.exports = DiagnosticsPanel;

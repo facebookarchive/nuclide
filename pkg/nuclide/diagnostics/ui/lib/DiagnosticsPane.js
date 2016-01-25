@@ -114,6 +114,12 @@ function onRowClick(
 }
 
 class DiagnosticsPane extends React.Component {
+  static propTypes = {
+    height: PropTypes.number.isRequired,
+    diagnostics: PropTypes.array.isRequired,
+    showFileName: PropTypes.bool,
+    width: PropTypes.number.isRequired,
+  };
 
   constructor(props: mixed) {
     super(props);
@@ -218,12 +224,5 @@ class DiagnosticsPane extends React.Component {
     );
   }
 }
-
-DiagnosticsPane.propTypes = {
-  height: PropTypes.number.isRequired,
-  diagnostics: PropTypes.array.isRequired,
-  showFileName: PropTypes.bool,
-  width: PropTypes.number.isRequired,
-};
 
 module.exports = DiagnosticsPane;

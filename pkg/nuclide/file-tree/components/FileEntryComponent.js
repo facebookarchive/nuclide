@@ -28,6 +28,17 @@ const getActions = FileTreeActions.getInstance;
 const INDENT_PER_LEVEL = 17;
 
 class FileEntryComponent extends React.Component {
+  static propTypes = {
+    indentLevel: PropTypes.number.isRequired,
+    isSelected: PropTypes.bool.isRequired,
+    usePreviewTabs: PropTypes.bool.isRequired,
+    nodeKey: PropTypes.string.isRequired,
+    nodeName: PropTypes.string.isRequired,
+    nodePath: PropTypes.string.isRequired,
+    rootKey: PropTypes.string.isRequired,
+    vcsStatusCode: PropTypes.number,
+  };
+
   constructor(props: Object) {
     super(props);
     this._onClick = this._onClick.bind(this);
@@ -102,16 +113,5 @@ class FileEntryComponent extends React.Component {
     }
   }
 }
-
-FileEntryComponent.propTypes = {
-  indentLevel: PropTypes.number.isRequired,
-  isSelected: PropTypes.bool.isRequired,
-  usePreviewTabs: PropTypes.bool.isRequired,
-  nodeKey: PropTypes.string.isRequired,
-  nodeName: PropTypes.string.isRequired,
-  nodePath: PropTypes.string.isRequired,
-  rootKey: PropTypes.string.isRequired,
-  vcsStatusCode: PropTypes.number,
-};
 
 module.exports = FileEntryComponent;

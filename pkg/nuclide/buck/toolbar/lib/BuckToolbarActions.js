@@ -15,7 +15,17 @@ class BuckToolbarActions {
 
   _dispatcher: Dispatcher;
 
-  static ActionType: {[key:string]: string};
+  static ActionType = {
+    BUILD: 'BUILD',
+    DEBUG: 'DEBUG',
+    RUN: 'RUN',
+    TOGGLE_PANEL_VISIBILITY: 'TOGGLE_PANEL_VISIBILITY',
+    UPDATE_BUILD_TARGET: 'UPDATE_BUILD_TARGET',
+    UPDATE_PANEL_VISIBILITY: 'UPDATE_PANEL_VISIBILITY',
+    UPDATE_PROJECT: 'UPDATE_PROJECT',
+    UPDATE_REACT_NATIVE_SERVER_MODE: 'UPDATE_REACT_NATIVE_SERVER_MODE',
+    UPDATE_SIMULATOR: 'UPDATE_SIMULATOR',
+  };
 
   constructor(dispatcher: Dispatcher) {
     this._dispatcher = dispatcher;
@@ -74,17 +84,5 @@ class BuckToolbarActions {
     this._dispatcher.dispatch({actionType: BuckToolbarActions.ActionType.DEBUG});
   }
 }
-
-BuckToolbarActions.ActionType = {
-  BUILD: 'BUILD',
-  DEBUG: 'DEBUG',
-  RUN: 'RUN',
-  TOGGLE_PANEL_VISIBILITY: 'TOGGLE_PANEL_VISIBILITY',
-  UPDATE_BUILD_TARGET: 'UPDATE_BUILD_TARGET',
-  UPDATE_PANEL_VISIBILITY: 'UPDATE_PANEL_VISIBILITY',
-  UPDATE_PROJECT: 'UPDATE_PROJECT',
-  UPDATE_REACT_NATIVE_SERVER_MODE: 'UPDATE_REACT_NATIVE_SERVER_MODE',
-  UPDATE_SIMULATOR: 'UPDATE_SIMULATOR',
-};
 
 module.exports = BuckToolbarActions;

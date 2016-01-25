@@ -134,6 +134,11 @@ class StatusBarTile {
 class StatusBarTileComponent extends React.Component {
   _onClick: Function;
 
+  static propTypes = {
+    errorCount: PropTypes.number.isRequired,
+    warningCount: PropTypes.number.isRequired,
+  };
+
   constructor(props) {
     super(props);
     this._onClick = this._onClick.bind(this);
@@ -166,10 +171,5 @@ class StatusBarTileComponent extends React.Component {
     track('diagnostics-show-table-from-status-bar');
   }
 }
-
-StatusBarTileComponent.propTypes = {
-  errorCount: PropTypes.number.isRequired,
-  warningCount: PropTypes.number.isRequired,
-};
 
 module.exports = StatusBarTile;

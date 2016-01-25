@@ -26,7 +26,6 @@ const {onWorkspaceDidStopChangingActivePaneItem} = atomEventDebounce;
 const {PropTypes} = React;
 
 class BuckToolbar extends React.Component {
-
   /**
    * The toolbar makes an effort to keep track of which BuckProject to act on, based on the last
    * TextEditor that had focus that corresponded to a BuckProject. This means that if a user opens
@@ -40,6 +39,11 @@ class BuckToolbar extends React.Component {
   _disposables: CompositeDisposable;
   _buckToolbarStore: BuckToolbarStore;
   _buckToolbarActions: BuckToolbarActions;
+
+  static propTypes = {
+    store: PropTypes.instanceOf(BuckToolbarStore).isRequired,
+    actions: PropTypes.instanceOf(BuckToolbarActions).isRequired,
+  };
 
   constructor(props: mixed) {
     super(props);
@@ -157,10 +161,5 @@ class BuckToolbar extends React.Component {
     this._buckToolbarActions.debug();
   }
 }
-
-BuckToolbar.propTypes = {
-  store: PropTypes.instanceOf(BuckToolbarStore).isRequired,
-  actions: PropTypes.instanceOf(BuckToolbarActions).isRequired,
-};
 
 module.exports = BuckToolbar;
