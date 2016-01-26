@@ -1,5 +1,49 @@
 # Nuclide Changelog
 
+## 0.114.0
+
+### Added
+
+* Output:
+  * Panel for displaying log messages.
+  * adb-logcat provider (and commands for starting and stopping `adb` logcat).
+* Hack: XHP syntax to language grammar.
+
+### Fixed
+
+* Server connection flakiness.
+* File-tree: clicking on a selected node with preview tabs enabled opens the file.
+
+### Changed
+
+## 0.113.0
+
+### Added
+
+* Type Hints:
+  * Better (faster) UX for triggering and interacting with type hints.
+  * ESC/cancel closes current type hint.
+  * Experimental support for flow "hint trees" (interactive UI for exploring nested types in type hints). To try it out, enable the "nuclide-flow: Enable Tree-structured Type Hints" setting.
+* Lint: Autofix is now enabled by default.
+  * Eligible lint errors will have a "Fix" button in the gutter popup.
+  * `alt+shift+a` will fix all eligible errors in the current file.
+* Debugger: HPHPD-style leading `=` syntax for evaluating expressions is now supported in the debugger console.
+* Debugger: Pass multi args to hhvm in script debugging.
+* HHVM Debugger: Scripts launched from the HHVM toolbar can now be passed command line arguments.
+* Debugger: Add a new contextual menu for regular breakpoints (conditional breakpoints in the works).
+* Tool Bar: Add "Hide Tool Bar" context menu for Buck/HHVM.
+
+### Fixed
+
+* ctags: Improve relevancy for JS development, shows results even if Hack service is available.
+* C++: Hyperclick performance improvements, better compile error messaging.
+* Nuclide Server: Diagnostic improvements.
+
+### Changed
+
+* Blame: Replaced individual show/hide commands with toggle.
+* UI: Move Health icon from statusbar to toolbar.
+
 ## 0.112.0
 
 ### Added
