@@ -41,11 +41,14 @@ export default function createOutputGadget(
 
     render(): ?ReactElement {
       return (
-        <table>
-          <tbody>
-            {this._renderRecords()}
-          </tbody>
-        </table>
+        <div>
+          <button onClick={this.handleClearButtonClick}>Clear</button>
+          <table>
+            <tbody>
+              {this._renderRecords()}
+            </tbody>
+          </table>
+        </div>
       );
     }
 
@@ -56,6 +59,11 @@ export default function createOutputGadget(
           <td>{record.text}</td>
         </tr>
       ));
+    }
+
+    handleClearButtonClick(event: MouseEvent): void {
+      event.preventDefault();
+      commands.clearRecords();
     }
 
   }

@@ -52,6 +52,12 @@ function accumulateState(state: AppState, action: Object): AppState {
         providers: new Map(state.providers).set(outputProvider.source, outputProvider),
       };
     }
+    case ActionTypes.RECORDS_CLEARED: {
+      return {
+        ...state,
+        records: [],
+      };
+    }
     case ActionTypes.SOURCE_REMOVED: {
       const {source} = action.payload;
       const providers = new Map(state.providers);

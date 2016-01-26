@@ -109,4 +109,40 @@ describe('createStateStream', () => {
 
   });
 
+  describe('RECORDS_CLEARED', () => {
+    let initialRecords;
+    let finalState;
+
+    beforeEach(() => {
+      waitsForPromise(async () => {
+        initialRecords = [{
+          source: 'Test',
+          level: 'info',
+          text: 'test',
+        }];
+        const initialState = {
+          ...emptyAppState,
+          records: initialRecords,
+        };
+        const action$ = new Rx.Subject();
+        const state$ = createStateStream(action$, initialState).publishLast();
+        state$.connect();
+        action$.onNext({
+          type: ActionTypes.RECORDS_CLEARED,
+        });
+        action$.onCompleted();
+        finalState = await state$.toPromise();
+      });
+    });
+
+    it('clears the records', () => {
+      expect(finalState.records.length).toBe(0);
+    });
+
+    it("doesn't mutate the original records list", () => {
+      expect(initialRecords.length).toBe(1);
+    });
+
+  });
+
 });

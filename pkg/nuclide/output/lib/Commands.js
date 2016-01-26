@@ -24,6 +24,12 @@ export default class Commands {
     this._getState = getState;
   }
 
+  clearRecords(): void {
+    this._observer.onNext({
+      type: ActionTypes.RECORDS_CLEARED,
+    });
+  }
+
   registerOutputProvider(outputProvider: OutputProvider): atom$IDisposable {
     this._observer.onNext({
       type: ActionTypes.PROVIDER_REGISTERED,
