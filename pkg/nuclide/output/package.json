@@ -1,0 +1,13 @@
+{
+  "name": "nuclide-output",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "Aggregate and display output from various sources.",
+  "nuclide": {
+    "packageType": "Atom",
+    "testRunner": "apm"
+  },
+  "activationCommands": {
+  }
+}
