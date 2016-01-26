@@ -76,4 +76,24 @@ describe('FileEntryComponent', () => {
       expect(actions.expandNode).not.toHaveBeenCalled();
     });
   });
+
+  describe('when preview tabs are enabled', () => {
+    beforeEach(() => {
+      spyOn(actions, 'confirmNode');
+    });
+
+    it('opens a file if a selected node is clicked', () => {
+      const nodeComponent = renderEntryComponentIntoDocument(
+        FileEntryComponent,
+        {
+          isSelected: true,
+          usePreviewTabs: true,
+        },
+      );
+      const domNode = React.findDOMNode(nodeComponent);
+      TestUtils.Simulate.click(domNode);
+      expect(actions.confirmNode).toHaveBeenCalled();
+    });
+  });
+
 });

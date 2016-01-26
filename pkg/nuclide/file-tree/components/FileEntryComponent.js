@@ -88,8 +88,10 @@ class FileEntryComponent extends React.Component {
     const modifySelection = event.ctrlKey || event.metaKey;
     if (modifySelection) {
       getActions().toggleSelectNode(this.props.rootKey, this.props.nodeKey);
-    } else if (!this.props.isSelected) {
-      getActions().selectSingleNode(this.props.rootKey, this.props.nodeKey);
+    } else {
+      if (!this.props.isSelected) {
+        getActions().selectSingleNode(this.props.rootKey, this.props.nodeKey);
+      }
       if (this.props.usePreviewTabs) {
         getActions().confirmNode(this.props.rootKey, this.props.nodeKey);
       }
