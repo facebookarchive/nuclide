@@ -65,7 +65,7 @@ class FileTreeController {
 
   constructor(state: ?FileTreeControllerState) {
     const {panel} = {
-      ...{panel: {width: FileTreeController.INITIAL_WIDTH}},
+      panel: {width: FileTreeController.INITIAL_WIDTH},
       ...state,
     };
 

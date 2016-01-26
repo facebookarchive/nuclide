@@ -19,17 +19,15 @@ import {
 
 function renderEntryComponentIntoDocument(componentKlass: Object, props: Object = {}) {
   const componentProps = {
-    ...{
-      indentLevel: 0,
-      isContainer: false,
-      isExpanded: false,
-      isLoading: false,
-      isSelected: false,
-      nodeKey: '',
-      nodeName: '',
-      nodePath: '',
-      rootKey: '',
-    },
+    indentLevel: 0,
+    isContainer: false,
+    isExpanded: false,
+    isLoading: false,
+    isSelected: false,
+    nodeKey: '',
+    nodeName: '',
+    nodePath: '',
+    rootKey: '',
     ...props,
   };
   return TestUtils.renderIntoDocument(React.createElement(componentKlass, componentProps));

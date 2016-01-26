@@ -137,13 +137,11 @@ class FileTreeStore {
     }
     this._data = {
       ...this._getDefaults(),
-      ...{
-        childKeyMap: data.childKeyMap,
-        expandedKeysByRoot: mapValues(data.expandedKeysByRoot, (keys) => new Immutable.Set(keys)),
-        rootKeys: data.rootKeys,
-        selectedKeysByRoot:
-          mapValues(data.selectedKeysByRoot, (keys) => new Immutable.OrderedSet(keys)),
-      },
+      childKeyMap: data.childKeyMap,
+      expandedKeysByRoot: mapValues(data.expandedKeysByRoot, (keys) => new Immutable.Set(keys)),
+      rootKeys: data.rootKeys,
+      selectedKeysByRoot:
+        mapValues(data.selectedKeysByRoot, (keys) => new Immutable.OrderedSet(keys)),
     };
     Object.keys(data.childKeyMap).forEach((nodeKey) => {
       this._addSubscription(nodeKey);
