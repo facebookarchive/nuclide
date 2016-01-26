@@ -18,12 +18,19 @@ export type Message = {
   level: Level;
 };
 
-export type Record = Message;
+export type Record = Message & {
+  source: string;
+};
 
 export type AppState = {
   records: Array<Record>;
+  providers: Map<string, OutputProvider>;
 };
 
 export type OutputProvider = {
   messages: Rx.Observable<Message>;
+
+  // The source can't be part of the message because we want to be able to populate a filter menu
+  // before we even have any messages.
+  source: string;
 };

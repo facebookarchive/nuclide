@@ -12,7 +12,7 @@
 import type {AppState, OutputProvider} from './types';
 
 import * as ActionTypes from './ActionTypes';
-import {CompositeDisposable} from 'atom';
+import {CompositeDisposable, Disposable} from 'atom';
 
 export default class Commands {
 
@@ -25,19 +25,38 @@ export default class Commands {
   }
 
   registerOutputProvider(outputProvider: OutputProvider): atom$IDisposable {
+    this._observer.onNext({
+      type: ActionTypes.PROVIDER_REGISTERED,
+      payload: {outputProvider},
+    });
+
     return new CompositeDisposable(
+      new Disposable(() => {
+        this.removeSource(outputProvider.source);
+      }),
+
       // Transform the messages into actions and merge them into the action stream.
+      // TODO: Add enabling/disabling of registered source and only subscribe when enabled. That
+      //       way, we won't trigger cold observer side-effects when we don't need the results.
       outputProvider.messages
         .map(message => ({
           type: ActionTypes.MESSAGE_RECEIVED,
           payload: {
             record: {
               ...message,
+              source: outputProvider.source,
             },
           },
         }))
         .subscribe(this._observer),
     );
+  }
+
+  removeSource(source: string): void {
+    this._observer.onNext({
+      type: ActionTypes.SOURCE_REMOVED,
+      payload: {source},
+    });
   }
 
 }

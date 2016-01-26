@@ -65,6 +65,7 @@ function deserializeAppState(rawState: ?Object): AppState {
   rawState = rawState || {};
   return {
     records: rawState.records || [],
+    providers: new Map(),
   };
 }
 
