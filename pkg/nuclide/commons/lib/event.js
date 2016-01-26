@@ -15,6 +15,8 @@ type Disposable = {
 
 import type {EventEmitter} from 'events';
 
+import {Observable} from 'rx';
+
 export function attachEvent(emitter: EventEmitter, eventName: string, callback: Function): Disposable {
   emitter.addListener(eventName, callback);
   return {
@@ -22,4 +24,11 @@ export function attachEvent(emitter: EventEmitter, eventName: string, callback: 
       emitter.removeListener(eventName, callback);
     },
   };
+}
+
+type SubscribeCallback<T> = (item: T) => mixed;
+type SubscribeFunction<T> = (callback: SubscribeCallback<T>) => atom$IDisposable;
+
+export function observableFromSubscribeFunction<T>(fn: SubscribeFunction<T>): Observable<T> {
+  return Observable.create(observer => fn(observer.onNext.bind(observer)));
 }
