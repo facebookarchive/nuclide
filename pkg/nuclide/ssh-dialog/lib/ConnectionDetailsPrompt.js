@@ -25,9 +25,8 @@ type Props = {
   // these props should be updated from the top-level by calling React.render()
   // again (with the new props) on the ConnectionDetailsPrompt.
   connectionProfiles: ?Array<NuclideRemoteConnectionProfile>;
-  // If there is >= 1 connection profile, this index indicates the initial
-  // profile to use.
-  indexOfInitiallySelectedConnectionProfile: ?number;
+  // If there is >= 1 connection profile, this index indicates the profile to use.
+  indexOfSelectedConnectionProfile: ?number;
   // Function to call when 'enter'/'confirm' is selected by the user in this view.
   onConfirm: () => mixed;
   // Function to call when 'cancel' is selected by the user in this view.
@@ -39,10 +38,7 @@ type Props = {
   // ** while a profile is selected **.
   // The user's intent is to delete the currently-selected profile.
   onDeleteProfileClicked: (indexOfSelectedConnectionProfile: number) => mixed;
-};
-
-type State = {
-  indexOfSelectedConnectionProfile: ?number;
+  onProfileClicked: (indexOfSelectedConnectionProfile: number) => mixed;
 };
 
 /**
@@ -54,8 +50,7 @@ type State = {
  * the form with the information associated with that profile.
  */
 /* eslint-disable react/prop-types */
-export default class ConnectionDetailsPrompt
-    extends React.Component<void, Props, State> {
+export default class ConnectionDetailsPrompt extends React.Component<void, Props, void> {
   _idToConnectionProfile: ?Map<string, NuclideRemoteConnectionProfile>;
   _boundOnProfileClicked: (profileId: string) => void;
   _boundOnDeleteProfileClicked: (profileId: ?string) => void;
@@ -64,9 +59,6 @@ export default class ConnectionDetailsPrompt
     super(props);
     this._boundOnProfileClicked = this._onProfileClicked.bind(this);
     this._boundOnDeleteProfileClicked = this._onDeleteProfileClicked.bind(this);
-    this.state = {
-      indexOfSelectedConnectionProfile: this.props.indexOfInitiallySelectedConnectionProfile,
-    };
   }
 
   getFormFields(): NuclideRemoteConnectionParamsWithPassword {
@@ -78,8 +70,8 @@ export default class ConnectionDetailsPrompt
     // specified selected profile.
     if (this.props.connectionProfiles &&
         this.props.connectionProfiles.length &&
-        this.state.indexOfSelectedConnectionProfile != null) {
-      let indexToSelect = this.state.indexOfSelectedConnectionProfile;
+        this.props.indexOfSelectedConnectionProfile != null) {
+      let indexToSelect = this.props.indexOfSelectedConnectionProfile;
       if (indexToSelect >= this.props.connectionProfiles.length) {
         // This logic protects us from incorrect indices passed from above, and
         // allows us to passively account for profiles being deleted.
@@ -122,9 +114,9 @@ export default class ConnectionDetailsPrompt
       listSelectorItems = [];
     }
 
-    const idOfSelectedItem = (this.state.indexOfSelectedConnectionProfile == null)
+    const idOfSelectedItem = (this.props.indexOfSelectedConnectionProfile == null)
       ? null
-      : String(this.state.indexOfSelectedConnectionProfile);
+      : String(this.props.indexOfSelectedConnectionProfile);
 
     return (
       <div className="nuclide-connection-details-prompt container-fluid">
@@ -160,7 +152,7 @@ export default class ConnectionDetailsPrompt
 
   _onProfileClicked(profileId: string): void {
     // The id of a profile is its index in the list of props.
-    this.setState({indexOfSelectedConnectionProfile: profileId});
+    this.props.onProfileClicked(parseInt(profileId, 10));
   }
 
   _onDeleteProfileClicked(profileId: ?string): void {

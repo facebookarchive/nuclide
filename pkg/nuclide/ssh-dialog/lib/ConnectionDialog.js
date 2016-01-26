@@ -32,12 +32,16 @@ import {
 } from '../../remote-connection';
 const logger = require('../../logging').getLogger();
 
+type DefaultProps = {
+  indexOfInitiallySelectedConnectionProfile: number;
+};
+
 type Props = {
   // The list of connection profiles that will be displayed.
   connectionProfiles: ?Array<NuclideRemoteConnectionProfile>;
   // If there is >= 1 connection profile, this index indicates the initial
   // profile to use.
-  indexOfInitiallySelectedConnectionProfile: ?number;
+  indexOfInitiallySelectedConnectionProfile: number;
   // Function that is called when the "+" button on the profiles list is clicked.
   // The user's intent is to create a new profile.
   onAddProfileClicked: () => mixed;
@@ -52,10 +56,11 @@ type Props = {
 };
 
 type State = {
-  mode: number;
+  indexOfSelectedConnectionProfile: number;
   instructions: string;
-  sshHandshake: SshHandshake;
   finish: (answers: Array<string>) => mixed;
+  mode: number;
+  sshHandshake: SshHandshake;
 };
 
 const REQUEST_CONNECTION_DETAILS = 1;
@@ -68,18 +73,17 @@ const WAITING_FOR_AUTHENTICATION = 4;
  * server.
  */
 /* eslint-disable react/prop-types */
-export default class ConnectionDialog extends React.Component<void, Props, State> {
+export default class ConnectionDialog extends React.Component<DefaultProps, Props, State> {
   _boundOk: () => void;
   _boundCancel: () => void;
 
+  static defaultProps = {
+    indexOfInitiallySelectedConnectionProfile: -1,
+  };
+
   constructor(props: Props) {
     super(props);
-    this.state = this._createInitialState();
-    this._boundOk = this.ok.bind(this);
-    this._boundCancel = this.cancel.bind(this);
-  }
 
-  _createInitialState(): State {
     const sshHandshake = new SshHandshake(decorateSshConnectionDelegateWithTracking({
       onKeyboardInteractive: (name, instructions, instructionsLang, prompts, finish)  => {
         // TODO: Display all prompts, not just the first one.
@@ -105,12 +109,35 @@ export default class ConnectionDialog extends React.Component<void, Props, State
       },
     }));
 
-    return {
-      mode: REQUEST_CONNECTION_DETAILS,
-      instructions: '',
-      sshHandshake: sshHandshake,
+    this.state = {
       finish: (answers) => {},
+      indexOfSelectedConnectionProfile: props.indexOfInitiallySelectedConnectionProfile,
+      instructions: '',
+      mode: REQUEST_CONNECTION_DETAILS,
+      sshHandshake: sshHandshake,
     };
+
+    this._boundCancel = this.cancel.bind(this);
+    this._boundOk = this.ok.bind(this);
+    this._boundOnProfileClicked = this.onProfileClicked.bind(this);
+  }
+
+  componentWillReceiveProps(nextProps: Props): void {
+    let indexOfSelectedConnectionProfile = this.state.indexOfSelectedConnectionProfile;
+    if (nextProps.connectionProfiles == null) {
+      indexOfSelectedConnectionProfile = -1;
+    } else if (
+      // The current selection is outside the bounds of the next profiles list
+      indexOfSelectedConnectionProfile > (nextProps.connectionProfiles.length - 1)
+      // The next profiles list is longer than before, a new one was added
+      || nextProps.connectionProfiles.length > this.props.connectionProfiles.length
+    ) {
+      // Select the final connection profile in the list because one of the above conditions means
+      // the current selected index is outdated.
+      indexOfSelectedConnectionProfile = nextProps.connectionProfiles.length - 1;
+    }
+
+    this.setState({indexOfSelectedConnectionProfile});
   }
 
   render(): ReactElement {
@@ -124,12 +151,12 @@ export default class ConnectionDialog extends React.Component<void, Props, State
         <ConnectionDetailsPrompt
           ref="connection-details"
           connectionProfiles={this.props.connectionProfiles}
-          indexOfInitiallySelectedConnectionProfile=
-            {this.props.indexOfInitiallySelectedConnectionProfile}
+          indexOfSelectedConnectionProfile={this.state.indexOfSelectedConnectionProfile}
           onAddProfileClicked={this.props.onAddProfileClicked}
           onDeleteProfileClicked={this.props.onDeleteProfileClicked}
           onConfirm={this._boundOk}
           onCancel={this._boundCancel}
+          onProfileClicked={this._boundOnProfileClicked}
         />
       );
       isOkDisabled = false;
@@ -267,6 +294,10 @@ export default class ConnectionDialog extends React.Component<void, Props, State
       pathToPrivateKey,
       authMethod,
     };
+  }
+
+  onProfileClicked(indexOfSelectedConnectionProfile: number): void {
+    this.setState({indexOfSelectedConnectionProfile});
   }
 }
 /* eslint-enable react/prop-types */

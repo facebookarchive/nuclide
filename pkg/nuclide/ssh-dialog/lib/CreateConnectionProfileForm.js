@@ -82,9 +82,9 @@ export default class CreateConnectionProfileForm extends React.Component<void, P
           <div className="form-group">
             <label>{PROFILE_NAME_LABEL}:</label>
             <AtomInput
-              className="nuclide-connections-dialog-input-unstyled"
               initialValue=""
               ref="profile-name"
+              unstyled={true}
             />
           </div>
           <ConnectionDetailsForm
