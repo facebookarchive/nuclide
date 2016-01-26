@@ -9,23 +9,38 @@
  * the root directory of this source tree.
  */
 
+/* eslint-disable react/prop-types */
+
 import type Commands from './Commands';
 import type {Gadget} from '../../gadgets-interfaces';
-import type {AppState} from './types';
+import type {AppState, Record} from './types';
 import type Rx from 'rx';
 
+import OutputTable from './OutputTable';
 import {React} from 'react-for-atom';
+
+type State = {
+  records: Array<Record>;
+};
 
 export default function createOutputGadget(
   state$: Rx.Observable<AppState>,
   commands: Commands,
 ): Gadget {
 
-  class OutputGadget extends React.Component {
+  class OutputGadget extends React.Component<void, void, State> {
 
     static gadgetId = 'nuclide-output';
+    static defaultLocation = 'bottom';
 
     _state$Subscription: rx$IDisposable;
+
+    constructor(props: mixed) {
+      super(props);
+      this.state = {
+        records: [],
+      };
+    }
 
     getTitle(): string {
       return 'Output';
@@ -41,29 +56,11 @@ export default function createOutputGadget(
 
     render(): ?ReactElement {
       return (
-        <div>
-          <button onClick={this.handleClearButtonClick}>Clear</button>
-          <table>
-            <tbody>
-              {this._renderRecords()}
-            </tbody>
-          </table>
-        </div>
+        <OutputTable
+          clearRecords={() => commands.clearRecords()}
+          records={this.state.records}
+        />
       );
-    }
-
-    _renderRecords(): Array<ReactElement> {
-      return this.state.records.map(record => (
-        <tr>
-          <td>{record.source}</td>
-          <td>{record.text}</td>
-        </tr>
-      ));
-    }
-
-    handleClearButtonClick(event: MouseEvent): void {
-      event.preventDefault();
-      commands.clearRecords();
     }
 
   }

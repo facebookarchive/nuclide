@@ -1,0 +1,73 @@
+@import "ui-variables";
+
+@border-size: 1px;
+@nuclide-output-table-background-color: @tab-background-color-active;
+@nuclide-output-record-background-color-normal: @base-background-color;
+@nuclide-output-record-text-color-normal: @text-color;
+@nuclide-output-record-border-color-normal: @base-border-color;
+@nuclide-output-record-background-color-error: lighten(@background-color-error, 25%);
+@nuclide-output-record-text-color-error: darken(@text-color-error, 40%);
+@nuclide-output-record-border-color-error: @background-color-error;
+@nuclide-output-record-background-color-warning: lighten(@background-color-warning, 25%);
+@nuclide-output-record-text-color-warning: darken(@text-color-warning, 40%);
+@nuclide-output-record-border-color-warning: @background-color-warning;
+
+.nuclide-output {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  background-color: @pane-item-background-color;
+}
+
+.nuclide-output-table-wrapper {
+  position: relative;
+  flex-grow: 1;
+  overflow: auto;
+}
+
+.nuclide-output-header {
+  flex-shrink: 0;
+  border-bottom: 1px solid @pane-item-border-color;
+}
+
+.nuclide-output-record {
+  display: block;
+  padding: 0.75em;
+  background-color: @nuclide-output-record-background-color-normal;
+  color: @nuclide-output-record-text-color-normal;
+  font-size: 90%; // Log text shouldn't be as huge as regular text.
+  border-radius: 0;
+  border-top: @border-size solid @nuclide-output-record-border-color-normal;
+
+  &:first-child {
+    border-top: none;
+  }
+
+  &:last-child {
+    border-bottom: @border-size solid @nuclide-output-record-border-color-normal;
+  }
+
+  &.level-warn {
+    background-color: @nuclide-output-record-background-color-warning;
+    border-color: @nuclide-output-record-border-color-warning;
+    color: @nuclide-output-record-text-color-warning;
+
+    // The border on both sides of the warning message should be the warning
+    // color unless it's a higher-level (error).
+    & + :not(.level-error) {
+      border-top-color: @nuclide-output-record-border-color-warning;
+    }
+  }
+
+  &.level-error {
+    background-color: @nuclide-output-record-background-color-error;
+    border-color: @nuclide-output-record-border-color-error;
+    color: @nuclide-output-record-text-color-error;
+
+    // The border on both sides of the error should be the error color.
+    & + .nuclide-output-record {
+      border-top-color: @nuclide-output-record-border-color-error;
+    }
+  }
+
+}
