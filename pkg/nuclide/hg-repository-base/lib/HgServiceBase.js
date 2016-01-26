@@ -296,29 +296,21 @@ class HgServiceBase {
     return await this._hgAsyncExecute(args, execOptions);
   }
 
-  async checkout(revision: string, create: boolean): Promise<boolean> {
+  async _runSimpleInWorkingDirectory(
+    action: string,
+    args: Array<string>,
+  ): Promise<boolean> {
     const options = {
       cwd: this.getWorkingDirectory(),
     };
+    const cmd = [action].concat(args);
     try {
-      await this._hgAsyncExecute(['checkout', revision], options);
-    } catch (e) {
-      return false;
-    }
-    return true;
-  }
-
-  async rename(oldFilePath: string, newFilePath: string): Promise<boolean> {
-    const options = {
-      cwd: this.getWorkingDirectory(),
-    };
-    try {
-      await this._hgAsyncExecute(['rename', oldFilePath, newFilePath], options);
+      await this._hgAsyncExecute(cmd, options);
     } catch (e) {
       getLogger().error(
-        'hg rename from %s to %s failed: %s',
-        oldFilePath,
-        newFilePath,
+        'hg %s failed with [%s] arguments: %s',
+        cmd,
+        args.toString(),
         e.toString(),
       );
       return false;
@@ -326,30 +318,23 @@ class HgServiceBase {
     return true;
   }
 
-  async remove(filePath: string): Promise<boolean> {
-    const options = {
-      cwd: this.getWorkingDirectory(),
-    };
-    try {
-      await this._hgAsyncExecute(['remove', filePath], options);
-    } catch (e) {
-      getLogger().error('hg remove failed on %s: %s', filePath, e.toString());
-      return false;
-    }
-    return true;
+  checkout(revision: string, create: boolean): Promise<boolean> {
+    return this._runSimpleInWorkingDirectory('checkout', [revision]);
   }
 
-  async add(filePath: string): Promise<boolean> {
-    const options = {
-      cwd: this.getWorkingDirectory(),
-    };
-    try {
-      await this._hgAsyncExecute(['add', filePath], options);
-    } catch (e) {
-      getLogger().error('hg add failed on %s: %s', filePath, e.toString());
-      return false;
-    }
-    return true;
+  rename(oldFilePath: string, newFilePath: string): Promise<boolean> {
+    return this._runSimpleInWorkingDirectory(
+      'rename',
+      [oldFilePath, newFilePath],
+    );
+  }
+
+  remove(filePath: string): Promise<boolean> {
+    return this._runSimpleInWorkingDirectory('remove', [filePath]);
+  }
+
+  add(filePath: string): Promise<boolean> {
+    return this._runSimpleInWorkingDirectory('add', [filePath]);
   }
 }
 
