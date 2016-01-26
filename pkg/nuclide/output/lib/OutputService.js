@@ -9,6 +9,18 @@
  * the root directory of this source tree.
  */
 
+import type Commands from './Commands';
+import type {OutputProvider} from './types';
+
 export default class OutputService {
+  _commands: Commands;
+
+  constructor(commands: Commands) {
+    this._commands = commands;
+  }
+
+  registerOutputProvider(outputProvider: OutputProvider): atom$IDisposable {
+    return this._commands.registerOutputProvider(outputProvider);
+  }
 
 }
