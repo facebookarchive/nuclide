@@ -23,18 +23,17 @@ type TypeHintComponentState = {
 
 /* eslint-disable react/prop-types */
 export class TypeHintComponent extends React.Component {
+  props: TypeHintComponentProps;
   state: TypeHintComponentState;
+
+  static defaultProps = {
+    content: '<type unavailable>',
+  };
 
   constructor(props: TypeHintComponentProps) {
     super(props);
     this.state = {
       expandedNodes: new Set(),
-    };
-  }
-
-  getDefaultProps(): TypeHintComponentProps {
-    return {
-      content: '<type unavailable>',
     };
   }
 
