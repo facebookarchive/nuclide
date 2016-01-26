@@ -10,6 +10,10 @@
  */
 
 import type ActivationType from './Activation';
+import type {GadgetsService} from '../../gadgets-interfaces';
+import type OutputService from './OutputService';
+
+import invariant from 'assert';
 
 let activation: ?ActivationType = null;
 
@@ -25,4 +29,16 @@ export function deactivate() {
     activation.dispose();
     activation = null;
   }
+}
+
+export function consumeGadgetsService(
+  gadgetsApi: GadgetsService,
+): atom$Disposable {
+  invariant(activation);
+  return activation.consumeGadgetsService(gadgetsApi);
+}
+
+export function provideOutputService(): OutputService {
+  invariant(activation);
+  return activation.provideOutputService();
 }

@@ -9,5 +9,19 @@
     "testRunner": "apm"
   },
   "activationCommands": {
+  },
+  "consumedServices": {
+    "nuclide-gadgets": {
+      "versions": {
+        "0.0.0": "consumeGadgetsService"
+      }
+    }
+  },
+  "providedServices": {
+    "nuclide-output": {
+      "versions": {
+        "0.0.0": "provideOutputService"
+      }
+    }
   }
 }

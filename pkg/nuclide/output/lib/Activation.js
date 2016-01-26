@@ -9,20 +9,34 @@
  * the root directory of this source tree.
  */
 
+import type {GadgetsService, Gadget} from '../../gadgets-interfaces';
+
 import {CompositeDisposable} from 'atom';
+import createOutputGadget from './createOutputGadget';
+import OutputService from './OutputService';
 
 class Activation {
   _disposables: CompositeDisposable;
+  _outputService: OutputService;
 
   constructor(rawState: ?Object) {
-    // TODO(matthewwithanm): Assign all fields here so they are
-    // non-nullable for the lifetime of Activation.
+    this._outputService = new OutputService();
     this._disposables = new CompositeDisposable();
   }
 
   dispose() {
     this._disposables.dispose();
   }
+
+  consumeGadgetsService(gadgetsApi: GadgetsService): atom$Disposable {
+    const OutputGadget = createOutputGadget();
+    return gadgetsApi.registerGadget(((OutputGadget: any): Gadget));
+
+  }
+  provideOutputService(): OutputService {
+    return this._outputService;
+  }
+
 }
 
 module.exports = Activation;
