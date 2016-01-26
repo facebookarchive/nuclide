@@ -10,8 +10,27 @@
  */
 
 import invariant from 'assert';
+import {EventEmitter} from 'events';
+import {attachEvent, observableFromSubscribeFunction} from '../lib/event';
 
-import {observableFromSubscribeFunction} from '../lib/event';
+describe('attachEvent', () => {
+
+  describe('the returned disposable', () => {
+
+    it("doesn't remove other listeners when disposed multiple times", () => {
+      const foo = jasmine.createSpy('foo');
+      const emitter = new EventEmitter();
+      const d1 = attachEvent(emitter, 'event', foo);
+      attachEvent(emitter, 'event', foo);
+      d1.dispose();
+      d1.dispose();
+      emitter.emit('event');
+      expect(foo).toHaveBeenCalled();
+    });
+
+  });
+
+});
 
 describe('observableFromSubscribeFunction', () => {
   let callback: ?((item: number) => mixed);

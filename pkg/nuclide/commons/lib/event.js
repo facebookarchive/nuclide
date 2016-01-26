@@ -9,21 +9,21 @@
  * the root directory of this source tree.
  */
 
-type Disposable = {
-  dispose: () => void;
-};
-
 import type {EventEmitter} from 'events';
 
+import {Disposable} from 'event-kit';
 import {Observable} from 'rx';
 
+/**
+ * Add an event listener an return a disposable for removing it. Note that this function assumes
+ * node EventEmitter semantics: namely, that adding the same combination of eventName and callback
+ * adds a second listener.
+ */
 export function attachEvent(emitter: EventEmitter, eventName: string, callback: Function): Disposable {
   emitter.addListener(eventName, callback);
-  return {
-    dispose() {
-      emitter.removeListener(eventName, callback);
-    },
-  };
+  return new Disposable(() => {
+    emitter.removeListener(eventName, callback);
+  });
 }
 
 type SubscribeCallback<T> = (item: T) => mixed;
