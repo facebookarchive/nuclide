@@ -85,6 +85,7 @@ export class DebuggerRpcService {
   async attach(pid: number): Promise<DebuggerConnection> {
     log(`attach process: ${pid}`);
     const lldbProcess = this._attachLLDBToProcess(pid);
+    this._lldbProcess = lldbProcess;
     const lldbWebSocket = await this._connectWithLLDB(lldbProcess);
     return new DebuggerConnection(lldbWebSocket);
   }
@@ -142,6 +143,10 @@ export class DebuggerRpcService {
     if (lldbWebSocket) {
       lldbWebSocket.terminate();
       this._lldbWebSocket = null;
+    }
+    const lldbProcess = this._lldbProcess;
+    if (lldbProcess) {
+      lldbProcess.kill();
     }
   }
 }
