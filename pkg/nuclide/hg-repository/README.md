@@ -17,7 +17,7 @@ the gutter next to lines that have been modified.
 number of added/removed lines of the currently active file, and the
 current Mercurial bookmark (note: not Mercurial branch).
 
-![Screenshot of features enabled by this feature](http://nuclide.io/images/Mercurial_features_screenshot.png)
+![Screenshot of features enabled by this feature](/static/images/Mercurial_features_screenshot.png)
 
 `nuclide-hg-repository` works on local and remote repositories.
 
