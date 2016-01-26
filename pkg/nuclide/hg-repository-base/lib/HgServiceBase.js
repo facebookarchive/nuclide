@@ -338,6 +338,19 @@ class HgServiceBase {
     }
     return true;
   }
+
+  async add(filePath: string): Promise<boolean> {
+    const options = {
+      cwd: this.getWorkingDirectory(),
+    };
+    try {
+      await this._hgAsyncExecute(['add', filePath], options);
+    } catch (e) {
+      getLogger().error('hg add failed on %s: %s', filePath, e.toString());
+      return false;
+    }
+    return true;
+  }
 }
 
 

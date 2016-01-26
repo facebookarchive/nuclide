@@ -169,4 +169,11 @@ export class HgService {
    * @return whether the call to `hg remove` succeeded.
    */
   remove(filePath: string): Promise<boolean> {}
+
+  /**
+   * Version a new file under Hg.
+   * @param filePath Which file should be versioned.
+   * @return whether the call to `hg add` succeeded.
+   */
+  add(filePath: string): Promise<boolean> {}
 }

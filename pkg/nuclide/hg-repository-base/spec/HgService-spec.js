@@ -183,6 +183,22 @@ describe('HgService', () => {
     });
   });
 
+  describe('::add', () => {
+    it('can add files', () => {
+      let wasCalled = false;
+      spyOn(hgService, '_hgAsyncExecute').andCallFake((args, options) => {
+        expect(args.length).toBe(2);
+        expect(args.pop()).toBe('file.txt');
+        expect(args.pop()).toBe('add');
+        wasCalled = true;
+      });
+      waitsForPromise(async () => {
+        await hgService.add('file.txt');
+        expect(wasCalled).toBeTruthy();
+      });
+    });
+  });
+
   describe('::destroy', () => {
     it('should do cleanup without throwing an exception.', () => {
       hgService && hgService.dispose();

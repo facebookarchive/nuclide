@@ -903,4 +903,8 @@ export default class HgRepositoryClient {
   remove(filePath: string): Promise<boolean> {
     return this._service.remove(filePath);
   }
+
+  add(filePath: string): Promise<boolean> {
+    return this._service.add(filePath);
+  }
 }
