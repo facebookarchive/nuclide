@@ -14,7 +14,7 @@ import type {ClangCursorExtent} from '../../clang';
 const {Range} = require('atom');
 
 // Matches something like: textA: or textA:textB:
-const OBJC_SELECTOR_NAME_REGEX = /([^\s:]+:)+/g;
+const OBJC_SELECTOR_NAME_REGEX = /([^\s:]+:)+$/g;
 
 /**
  * libclang doesn't seem to be able to return multiple ranges to define the location

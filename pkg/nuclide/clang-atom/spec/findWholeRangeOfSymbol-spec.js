@@ -34,6 +34,15 @@ describe('findWholeRangeOfSymbol', () => {
     expect(ranges).toEqualAtomRanges([textRangeInSample]);
   });
 
+  it('finds the range of a fully qualified non-selector symbol.', () => {
+    const text = 'name';
+    const spelling = 'namespace::name';
+    const textRangeInSample = new Range([8, 31], [8, 35]);
+    const extent = {start: {line: 8, column: 31}, end: {line: 8, column: 35}};
+    const ranges = findWholeRangeOfSymbol(editor, text, textRangeInSample, spelling, extent);
+    expect(ranges).toEqualAtomRanges([textRangeInSample]);
+  });
+
   it('finds the range of a selector with one argument.', () => {
     const text = 'cStringUsingEncoding';
     const spelling = 'cStringUsingEncoding:';
