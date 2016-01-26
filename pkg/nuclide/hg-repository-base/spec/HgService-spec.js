@@ -150,6 +150,23 @@ describe('HgService', () => {
     });
   });
 
+  describe('::rename', () => {
+    it('can rename files', () => {
+      let wasCalled = false;
+      spyOn(hgService, '_hgAsyncExecute').andCallFake((args, options) => {
+        expect(args.length).toBe(3);
+        expect(args.pop()).toBe('file_2.txt');
+        expect(args.pop()).toBe('file_1.txt');
+        expect(args.pop()).toBe('rename');
+        wasCalled = true;
+      });
+      waitsForPromise(async () => {
+        await hgService.rename('file_1.txt', 'file_2.txt');
+        expect(wasCalled).toBeTruthy();
+      });
+    });
+  });
+
   describe('::destroy', () => {
     it('should do cleanup without throwing an exception.', () => {
       hgService && hgService.dispose();

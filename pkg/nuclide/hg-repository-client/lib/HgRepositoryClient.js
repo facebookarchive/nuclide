@@ -895,4 +895,8 @@ export default class HgRepositoryClient {
   getSmartlog(ttyOutput: boolean, concise: boolean): Promise<Object> {
     return this._service.getSmartlog(ttyOutput, concise);
   }
+
+  rename(oldFilePath: string, newFilePath: string): Promise<boolean> {
+    return this._service.rename(oldFilePath, newFilePath);
+  }
 }

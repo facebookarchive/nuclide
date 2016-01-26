@@ -307,6 +307,24 @@ class HgServiceBase {
     }
     return true;
   }
+
+  async rename(oldFilePath: string, newFilePath: string): Promise<boolean> {
+    const options = {
+      cwd: this.getWorkingDirectory(),
+    };
+    try {
+      await this._hgAsyncExecute(['rename', oldFilePath, newFilePath], options);
+    } catch (e) {
+      getLogger().error(
+        'hg rename from %s to %s failed: %s',
+        oldFilePath,
+        newFilePath,
+        e.toString(),
+      );
+      return false;
+    }
+    return true;
+  }
 }
 
 

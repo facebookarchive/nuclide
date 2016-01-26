@@ -154,4 +154,12 @@ export class HgService {
    * @return whether the call to `hg checkout` succeeded.
    */
   checkout(revision: string, create: boolean): Promise<boolean> {}
+
+  /**
+   * Rename a file versioned under Hg.
+   * @param oldFilePath Which file should be renamed.
+   * @param newFilePath What should the file be renamed to.
+   * @return whether the call to `hg rename` succeeded.
+   */
+  rename(oldFilePath: string, newFilePath: string): Promise<boolean> {}
 }
