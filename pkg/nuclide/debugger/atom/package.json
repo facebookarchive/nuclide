@@ -17,7 +17,7 @@
     }
   },
   "consumedServices": {
-    "nuclide-debugger-lldb-service": {
+    "nuclide-debugger-lldb-client-service": {
       "versions": {
         "0.0.0": "consumeNuclideDebugger"
       }

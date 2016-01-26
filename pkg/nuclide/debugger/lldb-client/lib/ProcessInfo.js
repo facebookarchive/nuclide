@@ -51,8 +51,4 @@ export class ProcessInfo extends DebuggerProcessInfo {
   displayString(): string {
     return this._targetInfo.name + '(' + this._targetInfo.pid + ')';
   }
-
-  toString(): string {
-    return this.displayString();
-  }
 }
