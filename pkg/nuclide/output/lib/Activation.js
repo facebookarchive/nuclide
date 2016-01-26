@@ -16,6 +16,7 @@ import {CompositeDisposable} from 'atom';
 import Commands from './Commands';
 import createOutputGadget from './createOutputGadget';
 import createStateStream from './createStateStream';
+import featureConfig from '../../feature-config';
 import OutputService from './OutputService';
 import Rx from 'rx';
 
@@ -36,7 +37,12 @@ class Activation {
       () => this._state$.getValue(),
     );
     this._outputService = new OutputService(this._commands);
-    this._disposables = new CompositeDisposable();
+    this._disposables = new CompositeDisposable(
+      featureConfig.observe(
+        'nuclide-output.maximumMessageCount',
+        maxMessageCount => this._commands.setMaxMessageCount(maxMessageCount),
+      ),
+    );
   }
 
   dispose() {
@@ -66,6 +72,10 @@ function deserializeAppState(rawState: ?Object): AppState {
   return {
     records: rawState.records || [],
     providers: new Map(),
+
+    // This value will be replaced with the value form the config. We just use `POSITIVE_INFINITY`
+    // here to conform to the AppState type defintion.
+    maxMessageCount: Number.POSITIVE_INFINITY,
   };
 }
 

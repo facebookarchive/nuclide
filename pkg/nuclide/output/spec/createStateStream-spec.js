@@ -14,6 +14,7 @@ import createStateStream from '../lib/createStateStream';
 import Rx from 'rx';
 
 const emptyAppState = {
+  maxMessageCount: Number.POSITIVE_INFINITY,
   providers: new Map(),
   records: [],
 };
@@ -29,27 +30,39 @@ describe('createStateStream', () => {
         initialRecords = [];
         const initialState = {
           ...emptyAppState,
+          maxMessageCount: 2,
           records: initialRecords,
         };
         const action$ = new Rx.Subject();
         const state$ = createStateStream(action$, initialState).publishLast();
         state$.connect();
-        action$.onNext({
-          type: ActionTypes.MESSAGE_RECEIVED,
-          payload: {
-            record: {
-              level: 'info',
-              text: 'Hello World',
+        for (let i = 0; i < 5; i++) {
+          action$.onNext({
+            type: ActionTypes.MESSAGE_RECEIVED,
+            payload: {
+              record: {
+                level: 'info',
+                text: i.toString(),
+              },
             },
-          },
-        });
+          });
+        }
         action$.onCompleted();
         finalState = await state$.toPromise();
       });
     });
 
     it('adds records', () => {
-      expect(finalState.records.length).toBe(1);
+      expect(finalState.records.length).toBeGreaterThan(0);
+    });
+
+    it('truncates the record list using `maxMessageCount`', () => {
+      expect(finalState.records.length).toBe(2);
+    });
+
+    it('truncates the least recent records', () => {
+      expect(finalState.records.map(record => record.text))
+        .toEqual(['3', '4']);
     });
 
     it("doesn't mutate the original records list", () => {

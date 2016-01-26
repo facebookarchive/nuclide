@@ -5,6 +5,15 @@
   "version": "0.0.0",
   "description": "Aggregate and display output from various sources.",
   "nuclide": {
+    "config": {
+      "maximumMessageCount": {
+        "title": "Maximum Message Count",
+        "description": "The number of messages to save",
+        "type": "number",
+        "default": 9999,
+        "minimum": 1
+      }
+    },
     "packageType": "Atom",
     "testRunner": "apm"
   },

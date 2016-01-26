@@ -31,8 +31,18 @@ function accumulateState(state: AppState, action: Object): AppState {
       const {record} = action.payload;
       return {
         ...state,
-        // TODO: Trim array when we hit a (configurable) max
-        records: state.records.concat(record),
+        records: state.records.concat(record).slice(-state.maxMessageCount),
+      };
+    }
+    case ActionTypes.MAX_MESSAGE_COUNT_UPDATED: {
+      const {maxMessageCount} = action.payload;
+      if (maxMessageCount <= 0) {
+        return state;
+      }
+      return {
+        ...state,
+        maxMessageCount,
+        records: state.records.slice(-maxMessageCount),
       };
     }
     case ActionTypes.PROVIDER_REGISTERED: {

@@ -23,6 +23,7 @@ export type Record = Message & {
 };
 
 export type AppState = {
+  maxMessageCount: number;
   records: Array<Record>;
   providers: Map<string, OutputProvider>;
 };

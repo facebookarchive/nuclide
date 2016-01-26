@@ -59,4 +59,11 @@ export default class Commands {
     });
   }
 
+  setMaxMessageCount(maxMessageCount: number): void {
+    this._observer.onNext({
+      type: ActionTypes.MAX_MESSAGE_COUNT_UPDATED,
+      payload: {maxMessageCount},
+    });
+  }
+
 }

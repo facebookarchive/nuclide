@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+export const MAX_MESSAGE_COUNT_UPDATED = 'MAX_MESSAGE_COUNT_UPDATED';
 export const MESSAGE_RECEIVED = 'MESSAGE_RECEIVED';
 export const PROVIDER_REGISTERED = 'PROVIDER_REGISTERED';
 export const SOURCE_REMOVED = 'SOURCE_REMOVED';
