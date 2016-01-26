@@ -18,7 +18,7 @@ const logger = require('../../logging').getLogger();
 const invariant = require('assert');
 
 const {RemoteConnection} = require('./RemoteConnection');
-const {fsPromise} = require('../../commons');
+const {fsPromise, promises} = require('../../commons');
 
 // Sync word and regex pattern for parsing command stdout.
 const READY_TIMEOUT_MS = 60 * 1000;
@@ -313,10 +313,15 @@ export class SshHandshake {
           this._onSshConnectionError(err);
           return resolve(false);
         }
-        stream.on('close', (code, signal) => {
+        stream.on('close', async (code, signal) => {
           // Note: this code is probably the code from the child shell if one
           // is in use.
           if (code === 0) {
+            // Some servers have max channels set to 1, so add a delay to ensure
+            // the old channel has been cleaned up on the server.
+            // TODO(hansonw): Implement a proper retry mechanism.
+            // But first, we have to clean up this callback hell.
+            await promises.awaitMilliSeconds(100);
             this._connection.sftp(async (error, sftp) => {
               if (error) {
                 this._error(
