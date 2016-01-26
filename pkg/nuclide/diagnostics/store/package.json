@@ -30,7 +30,8 @@
     },
     "nuclide-diagnostics-provider": {
       "versions": {
-        "0.1.0": "consumeDiagnosticProvider"
+        "0.1.0": "consumeDiagnosticsProviderV1",
+        "0.2.0": "consumeDiagnosticsProviderV2"
       }
     }
   },

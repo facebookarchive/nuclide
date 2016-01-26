@@ -12,14 +12,15 @@
 import type {
   DiagnosticStore,
   DiagnosticUpdater,
-  DiagnosticProviderUpdate,
-  DiagnosticProvider,
-  InvalidationMessage,
+  CallbackDiagnosticProvider,
+  ObservableDiagnosticProvider,
 } from '../../base';
 import type {LinterProvider} from './LinterAdapter';
 
 import {Disposable, CompositeDisposable} from 'atom';
 import featureConfig from '../../../feature-config';
+import {event} from '../../../commons';
+const {observableFromSubscribeFunction} = event;
 
 const legacyLinterSetting = 'nuclide-diagnostics-store.consumeLegacyLinters';
 
@@ -97,7 +98,7 @@ module.exports = {
       adapter.setEnabled(consumeLegacyLinters);
       adapter.setLintOnFly(lintOnTheFly);
       allLinterAdapters.add(adapter);
-      const diagnosticDisposable = this.consumeDiagnosticProvider(adapter);
+      const diagnosticDisposable = this.consumeDiagnosticsProviderV1(adapter);
       const adapterDisposable = new Disposable(() => {
         diagnosticDisposable.dispose();
         adapter.dispose();
@@ -109,24 +110,33 @@ module.exports = {
     return adapterDisposables;
   },
 
-  consumeDiagnosticProvider(provider: DiagnosticProvider): atom$IDisposable {
-    const store = getDiagnosticStore();
+  consumeDiagnosticsProviderV1(provider: CallbackDiagnosticProvider): atom$IDisposable {
     // Register the diagnostic store for updates from the new provider.
+    const observableProvider = {
+      updates: observableFromSubscribeFunction(provider.onMessageUpdate.bind(provider)),
+      invalidations: observableFromSubscribeFunction(provider.onMessageInvalidation.bind(provider)),
+    };
+    const disposable = this.consumeDiagnosticsProviderV2(observableProvider);
+    addDisposable(disposable);
+    return disposable;
+  },
+
+  consumeDiagnosticsProviderV2(provider: ObservableDiagnosticProvider): atom$IDisposable {
     const compositeDisposable = new CompositeDisposable();
+    const store = getDiagnosticStore();
+
     compositeDisposable.add(
-      provider.onMessageUpdate((update: DiagnosticProviderUpdate) => {
-        store.updateMessages(provider, update);
-      })
+      provider.updates.subscribe(update => store.updateMessages(provider, update))
     );
     compositeDisposable.add(
-      provider.onMessageInvalidation((invalidationMessage: InvalidationMessage) => {
-        store.invalidateMessages(provider, invalidationMessage);
-      })
+      provider.invalidations.subscribe(
+        invalidation => store.invalidateMessages(provider, invalidation)
+      )
     );
     compositeDisposable.add(new Disposable(() => {
       store.invalidateMessages(provider, { scope: 'all' });
     }));
-    addDisposable(compositeDisposable);
+
     return compositeDisposable;
   },
 

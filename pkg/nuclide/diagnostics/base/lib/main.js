@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import type {Observable} from 'rx';
 import type {NuclideUri} from '../../../remote-uri';
 
 import type {TextEdit} from '../../../textedit';
@@ -28,10 +29,17 @@ export type MessageInvalidationCallback = (message: InvalidationMessage) => mixe
 // TODO figure out how to allow the diagnostic consumer to poll (for example, if
 // it was just activated and wants diagnostic messages without having to wait
 // for an event to occur)
-export type DiagnosticProvider = {
+export type CallbackDiagnosticProvider = {
   onMessageUpdate: (callback: MessageUpdateCallback) => atom$Disposable;
   onMessageInvalidation: (callback: MessageInvalidationCallback) => atom$Disposable;
 };
+
+export type ObservableDiagnosticProvider = {
+  updates: Observable<DiagnosticProviderUpdate>,
+  invalidations: Observable<InvalidationMessage>,
+}
+
+export type DiagnosticProvider = CallbackDiagnosticProvider | ObservableDiagnosticProvider;
 
 // Implicit invalidation semantics:
 //
