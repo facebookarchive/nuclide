@@ -167,6 +167,22 @@ describe('HgService', () => {
     });
   });
 
+  describe('::remove', () => {
+    it('can remove files', () => {
+      let wasCalled = false;
+      spyOn(hgService, '_hgAsyncExecute').andCallFake((args, options) => {
+        expect(args.length).toBe(2);
+        expect(args.pop()).toBe('file.txt');
+        expect(args.pop()).toBe('remove');
+        wasCalled = true;
+      });
+      waitsForPromise(async () => {
+        await hgService.remove('file.txt');
+        expect(wasCalled).toBeTruthy();
+      });
+    });
+  });
+
   describe('::destroy', () => {
     it('should do cleanup without throwing an exception.', () => {
       hgService && hgService.dispose();

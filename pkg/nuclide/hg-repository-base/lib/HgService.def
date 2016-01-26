@@ -162,4 +162,11 @@ export class HgService {
    * @return whether the call to `hg rename` succeeded.
    */
   rename(oldFilePath: string, newFilePath: string): Promise<boolean> {}
+
+  /**
+   * Remove a file versioned under Hg.
+   * @param filePath Which file should be removed.
+   * @return whether the call to `hg remove` succeeded.
+   */
+  remove(filePath: string): Promise<boolean> {}
 }

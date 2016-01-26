@@ -899,4 +899,8 @@ export default class HgRepositoryClient {
   rename(oldFilePath: string, newFilePath: string): Promise<boolean> {
     return this._service.rename(oldFilePath, newFilePath);
   }
+
+  remove(filePath: string): Promise<boolean> {
+    return this._service.remove(filePath);
+  }
 }

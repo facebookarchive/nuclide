@@ -325,6 +325,19 @@ class HgServiceBase {
     }
     return true;
   }
+
+  async remove(filePath: string): Promise<boolean> {
+    const options = {
+      cwd: this.getWorkingDirectory(),
+    };
+    try {
+      await this._hgAsyncExecute(['remove', filePath], options);
+    } catch (e) {
+      getLogger().error('hg remove failed on %s: %s', filePath, e.toString());
+      return false;
+    }
+    return true;
+  }
 }
 
 
