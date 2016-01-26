@@ -110,7 +110,10 @@ export type ClangCompileResult = {
       line: number;
     };
     ranges: any;
-  }>
+  }>,
+  // If defaultFlags was provided and used, this will be set to true.
+  // `diagnostics` is likely to be inaccurate if this was the case.
+  accurateFlags: boolean,
 };
 
 export type ClangCompletion = {
@@ -163,10 +166,11 @@ export const ClangCursorTypes: {[key: ClangCursorType]: ClangCursorType} =
  */
 export function compile(
   src: NuclideUri,
-  contents: string
+  contents: string,
+  defaultFlags?: Array<string>,
 ): Observable<?ClangCompileResult> {
   return Observable.fromPromise(
-    getClangServer(src).makeRequest('compile', {contents})
+    getClangServer(src).makeRequest('compile', defaultFlags, {contents})
   );
 }
 
@@ -177,8 +181,9 @@ export function getCompletions(
   column: number,
   tokenStartColumn: number,
   prefix: string,
+  defaultFlags?: Array<string>,
 ): Promise<?ClangCompletionsResult> {
-  return getClangServer(src).makeRequest('get_completions', {
+  return getClangServer(src).makeRequest('get_completions', defaultFlags, {
     contents,
     line,
     column,
@@ -187,9 +192,14 @@ export function getCompletions(
   });
 }
 
-export async function getDeclaration(src: NuclideUri, contents: string, line: number, column: number
+export async function getDeclaration(
+  src: NuclideUri,
+  contents: string,
+  line: number,
+  column: number,
+  defaultFlags?: Array<string>,
 ): Promise<?ClangDeclarationResult> {
-  const result = await getClangServer(src).makeRequest('get_declaration', {
+  const result = await getClangServer(src).makeRequest('get_declaration', defaultFlags, {
     contents,
     line,
     column,
@@ -215,9 +225,10 @@ export function getDeclarationInfo(
   src: NuclideUri,
   contents: string,
   line: number,
-  column: number
+  column: number,
+  defaultFlags: ?Array<string>,
 ): Promise<?ClangDeclarationInfoResult> {
-  return getClangServer(src).makeRequest('get_declaration_info', {
+  return getClangServer(src).makeRequest('get_declaration_info', defaultFlags, {
     contents,
     line,
     column,

@@ -177,7 +177,11 @@ export default class ClangServer {
     return this._flagsPromise;
   }
 
-  async makeRequest(method: ClangServerRequest, params: Object): Promise<?Object> {
+  async makeRequest(
+    method: ClangServerRequest,
+    defaultFlags: ?Array<string>,
+    params: Object,
+  ): Promise<?Object> {
     if (method === 'compile') {
       this._pendingCompileRequests++;
     } else if (this._pendingCompileRequests) {
@@ -185,7 +189,7 @@ export default class ClangServer {
       return null;
     }
     try {
-      return await this._makeRequestImpl(method, params);
+      return await this._makeRequestImpl(method, defaultFlags, params);
     } finally {
       if (method === 'compile') {
         this._pendingCompileRequests--;
@@ -193,10 +197,19 @@ export default class ClangServer {
     }
   }
 
-  async _makeRequestImpl(method: ClangServerRequest, params: Object): Promise<?Object> {
-    const flags = await this.getFlags();
+  async _makeRequestImpl(
+    method: ClangServerRequest,
+    defaultFlags: ?Array<string>,
+    params: Object,
+  ): Promise<?Object> {
+    let flags = await this.getFlags();
+    let accurateFlags = true;
     if (flags == null) {
-      return null;
+      if (defaultFlags == null) {
+        return null;
+      }
+      flags = defaultFlags;
+      accurateFlags = false;
     }
 
     const connection = await this._getAsyncConnection();
@@ -232,6 +245,10 @@ export default class ClangServer {
             response['error']);
         }
         this._lastProcessedRequestId = parseInt(reqid, 16);
+        if (method === 'compile') {
+          // Using default flags typically results in poor diagnostics, so let the caller know.
+          response.accurateFlags = accurateFlags;
+        }
         (isError ? reject : resolve)(response);
       });
     });

@@ -86,6 +86,7 @@ describe('ClangDiagnosticsProvider', () => {
               spelling: 'test error 2',
             },
           ],
+          accurateFlags: true,
         }, fakeEditor);
 
       expect(array.from(filePathToMessages)).toEqual([
