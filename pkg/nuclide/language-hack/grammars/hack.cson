@@ -701,7 +701,10 @@
     'patterns': [
       {
         'include': '#comments'
-      }
+      },
+      {
+        'include': '#xhp'
+      },
       {
         'match': '\\{'
         'name': 'punctuation.section.scope.begin.php'
@@ -2150,3 +2153,174 @@
         ]
       }
     ]
+  'xhp': {
+    "comment": "Uses the XHP syntax as decribed at http://facebook.github.io/xhp-lib/",
+    "comment": "Avoid < operator expressions as best we can using Zertosh's regex",
+    "patterns": [
+      {
+        "begin": "(?<=\\(|\\{|\\[|,|&&|\\|\\||\\?|:|=|=>|\\Wreturn|^return|^)\\s*(?=<[_\\p{L}])",
+        "end": "(?=.)",
+        "applyEndPatternLast": 1,
+        "patterns": [
+          { "include": "#xhp-tag-element-name" }
+        ]
+      }
+    ]
+  },
+  "xhp-tag-element-name": {
+    "patterns": [
+      {
+        "comment": "Trap tag <XHPElementName Where XHPElement Name = aaa.bbb",
+        "comment": "We use the tag name to form a completion for </XHPElementName>",
+        "comment": "as well as terminating a <XHPElementName /> form",
+        "comment": "Tags that end > are trapped in #xhp-tag-termination",
+        "begin": "\\s*(<)([_\\p{L}](?:[:\\p{L}\\p{Mn}\\p{Mc}\\p{Nd}\\p{Nl}\\p{Pc}-])*+)(?=[/>\\s])(?<![\\:])",
+        "end": "\\s*(?<=</)(\\2)(>)|(/>)|((?<=</)[\\S ]*?)>",
+        "beginCaptures": {
+          "1": { "name": "punctuation.definition.tag.xhp" },
+          "2": { "name": "entity.name.tag.open.xhp" }
+        },
+        "endCaptures": {
+          "1": { "name": "entity.name.tag.close.xhp" },
+          "2": { "name": "punctuation.definition.tag.xhp" },
+          "3": { "name": "punctuation.definition.tag.xhp" },
+          "4": { "name": "invalid.illegal.termination.xhp"}
+        },
+        "patterns": [
+          { "include": "#xhp-tag-termination" },
+          { "include": "#xhp-tag-attributes" }
+        ]
+      }
+    ]
+  },
+  "xhp-tag-termination": {
+    "patterns": [
+      {
+        "comment": "this matches the end > of an opening tag when in the form <tag> </tag>",
+        "comment": "uses non consuming search for </ in </tag>",
+        "begin": "(>)",
+        "end": "(</)",
+        "beginCaptures": {
+          "0": { "name": "punctuation.definition.tag.xhp" },
+          "1": { "name": "XHPStartTagEnd" }
+        },
+        "endCaptures": {
+          "0": { "name": "punctuation.definition.tag.xhp" },
+          "1": { "name": "XHPEndTagStart" }
+        },
+        "patterns": [
+          { "include": "#xhp-evaluated-code" },
+          { "include": "#xhp-entities" },
+          { "include": "#xhp-html-comments"},
+          { "include": "#xhp-tag-element-name" }
+        ]
+      }
+    ]
+  },
+  "xhp-tag-attributes": {
+    "patterns": [
+      { "include": "#xhp-attribute-name" },
+      { "include": "#xhp-assignment" },
+      { "include": "#xhp-string-double-quoted" },
+      { "include": "#xhp-string-single-quoted" },
+      { "include": "#xhp-evaluated-code" },
+      { "include": "#xhp-tag-element-name" },
+      { "include": "#comments" }
+    ]
+  },
+  "xhp-attribute-name": {
+    "patterns": [
+      {
+        "comment": "look for attribute name",
+        "match": "(?<!\\S)([_\\p{L}](?:[\\p{L}\\p{Mn}\\p{Mc}\\p{Nd}\\p{Nl}\\p{Pc}-](?<!\\.\\.))*+)(?<!\\.)(?=//|/\\*|=|\\s|>|/>)",
+        "captures": {
+          "0": { "name": "entity.other.attribute-name.xhp" }
+        }
+      }
+    ]
+  },
+  "xhp-assignment": {
+    "patterns": [
+      {
+        "comment": "look for attribute assignment",
+        "name": "keyword.operator.assignment.xhp",
+        "match": "=(?=\\s*(?:'|\"|{|/\\*|<|//|\\n))"
+      }
+    ]
+  },
+  "xhp-string-double-quoted": {
+    "name": "string.quoted.double.php",
+    "begin": "\"",
+    "end": "\"(?<!\\\\\")",
+    "beginCaptures": {
+      "0": { "name": "punctuation.definition.string.begin.xhp" }
+    },
+    "endCaptures": {
+      "0": { "name": "punctuation.definition.string.end.xhp" }
+    },
+    "patterns": [
+      { "include": "#xhp-entities" }
+    ]
+  },
+  "xhp-string-single-quoted": {
+    "name": "string.quoted.single.php",
+    "begin": "'",
+    "end": "'(?<!\\\\')",
+    "beginCaptures": {
+      "0": { "name": "punctuation.definition.string.begin.xhp" }
+    },
+    "endCaptures": {
+      "0": { "name": "punctuation.definition.string.end.xhp" }
+    },
+    "patterns": [
+      { "include": "#xhp-entities" }
+    ]
+  },
+  "xhp-evaluated-code": {
+    "name": "meta.embedded.expression.php",
+    "begin": "{",
+    "end": "}",
+    "beginCaptures": {
+      "0": { "name": "punctuation.section.embedded.begin.xhp" }
+    },
+    "endCaptures": {
+      "0": { "name": "punctuation.section.embedded.end.xhp" }
+    },
+    "contentName": "source.php.xhp",
+    "patterns": [
+      { "include": "#language" }
+    ]
+  },
+  "xhp-entities": {
+    "patterns" : [
+      {
+        "comment": "Embeded HTML entities &blah",
+        "match": "(&)([a-zA-Z0-9]+|#[0-9]+|#x[0-9a-fA-F]+)(;)",
+        "captures": {
+          "0": { "name": "constant.character.entity.xhp" },
+          "1": { "name": "punctuation.definition.entity.xhp" },
+          "2": { "name": "entity.name.tag.html.xhp" },
+          "3": { "name": "punctuation.definition.entity.xhp" }
+        }
+      },
+      {
+        "comment": "Entity with & and invalid name",
+        "match": "&\\S*;",
+        "name": "invalid.illegal.bad-ampersand.xhp"
+      }
+    ]
+  },
+  "xhp-html-comments": {
+    'begin': '<!--'
+    'captures':
+      '0':
+        'name': 'punctuation.definition.comment.html'
+    'end': '--\\s*>'
+    'name': 'comment.block.html'
+    'patterns': [
+      {
+        'match': '--(?!-*\\s*>)'
+        'name': 'invalid.illegal.bad-comments-or-CDATA.html'
+      }
+    ]
+  },
