@@ -9,5 +9,17 @@
     "testRunner": "apm"
   },
   "activationCommands": {
+    "atom-workspace": [
+      "nuclide-adb-logcat:start",
+      "nuclide-adb-logcat:stop",
+      "nuclide-adb-logcat:restart"
+    ]
+  },
+  "consumedServices": {
+    "nuclide-output": {
+      "versions": {
+        "0.0.0": "consumeOutputService"
+      }
+    }
   }
 }
