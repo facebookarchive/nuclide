@@ -212,11 +212,11 @@ class FlowDiagnosticsProvider {
     this._providerBase.setRunOnTheFly(runOnTheFly);
   }
 
-  onMessageUpdate(callback: MessageUpdateCallback): atom$Disposable {
+  onMessageUpdate(callback: MessageUpdateCallback): atom$IDisposable {
     return this._providerBase.onMessageUpdate(callback);
   }
 
-  onMessageInvalidation(callback: MessageInvalidationCallback): atom$Disposable {
+  onMessageInvalidation(callback: MessageInvalidationCallback): atom$IDisposable {
     return this._providerBase.onMessageInvalidation(callback);
   }
 

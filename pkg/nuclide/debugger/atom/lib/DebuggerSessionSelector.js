@@ -18,7 +18,7 @@ const {PropTypes} = React;
 type State = {
   selectedProcess: ?DebuggerProcessInfo;
   processes: Array<DebuggerProcessInfo>;
-  debuggerStoreChangeListener: ?atom$Disposable;
+  debuggerStoreChangeListener: ?atom$IDisposable;
 };
 
 /**

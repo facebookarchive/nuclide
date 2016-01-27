@@ -125,7 +125,7 @@ class TextEditorMouseListener {
    * Calls `fn` when the mouse moves onto another text editor screen position,
    * not pixel position.
    */
-  onDidPositionChange(fn: (event: PositionChangeEvent) => void): Disposable {
+  onDidPositionChange(fn: (event: PositionChangeEvent) => void): atom$IDisposable {
     return this._emitter.on('did-position-change', fn);
   }
 

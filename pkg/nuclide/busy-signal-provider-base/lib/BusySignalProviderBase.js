@@ -68,7 +68,7 @@ export class BusySignalProviderBase {
     );
   }
 
-  _displayMessage(message: string): atom$Disposable {
+  _displayMessage(message: string): atom$IDisposable {
     const {busy, done} = this._nextMessagePair(message);
     this._messages.onNext(busy);
     return new Disposable(() => {

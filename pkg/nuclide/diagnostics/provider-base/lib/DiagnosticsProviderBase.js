@@ -63,7 +63,7 @@ class DiagnosticsProviderBase {
   _grammarScopes: Set<string>;
   _allGrammarScopes: ?boolean;
 
-  _currentEventSubscription: ?atom$Disposable;
+  _currentEventSubscription: ?atom$IDisposable;
 
   _disposables: atom$CompositeDisposable;
 
@@ -147,13 +147,13 @@ class DiagnosticsProviderBase {
    * Clients should delegate to these
    */
 
-  onMessageUpdate(callback: MessageUpdateCallback): atom$Disposable {
+  onMessageUpdate(callback: MessageUpdateCallback): atom$IDisposable {
     const disposable = this._emitter.on(UPDATE_EVENT, callback);
     this._newUpdateSubscriberCallback(callback);
     return disposable;
   }
 
-  onMessageInvalidation(callback: MessageInvalidationCallback): atom$Disposable {
+  onMessageInvalidation(callback: MessageInvalidationCallback): atom$IDisposable {
     const disposable = this._emitter.on(INVALIDATE_EVENT, callback);
     this._newInvalidateSubscriberCallback(callback);
     return disposable;

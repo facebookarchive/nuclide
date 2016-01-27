@@ -339,21 +339,21 @@ class DiffViewModel {
 
   onDidChangeDirtyStatus(
     callback: (dirtyFileChanges: Map<NuclideUri, FileChangeStatusValue>) => void
-  ): atom$Disposable {
+  ): atom$IDisposable {
     return this._emitter.on(CHANGE_DIRTY_STATUS_EVENT, callback);
   }
 
   onDidChangeCompareStatus(
     callback: (compareFileChanges: Map<NuclideUri, FileChangeStatusValue>) => void
-  ): atom$Disposable {
+  ): atom$IDisposable {
     return this._emitter.on(CHANGE_COMPARE_STATUS_EVENT, callback);
   }
 
-  onRevisionsUpdate(callback: (state: ?RevisionsState) => void): atom$Disposable {
+  onRevisionsUpdate(callback: (state: ?RevisionsState) => void): atom$IDisposable {
     return this._emitter.on(CHANGE_REVISIONS_EVENT, callback);
   }
 
-  onActiveFileUpdates(callback: (state: FileChangeState) => void): atom$Disposable {
+  onActiveFileUpdates(callback: (state: FileChangeState) => void): atom$IDisposable {
     return this._emitter.on(ACTIVE_FILE_UPDATE_EVENT, callback);
   }
 

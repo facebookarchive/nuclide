@@ -9,7 +9,6 @@
  * the root directory of this source tree.
  */
 
-import type {Disposable} from 'atom';
 import type {
   NuclideRemoteConnectionProfile,
   NuclideSavedConnectionDialogConfig,
@@ -92,7 +91,7 @@ type ConnectionProfileChange = {
  */
 export function onSavedConnectionProfilesDidChange(
   callback: (newProfiles: ?Array<NuclideRemoteConnectionProfile>) => mixed
-): Disposable {
+): atom$IDisposable {
   return atom.config.onDidChange(
     CONNECTION_PROFILES_KEY,
     (event: ConnectionProfileChange) => {

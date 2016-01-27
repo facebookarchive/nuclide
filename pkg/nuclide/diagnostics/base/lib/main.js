@@ -30,8 +30,8 @@ export type MessageInvalidationCallback = (message: InvalidationMessage) => mixe
 // it was just activated and wants diagnostic messages without having to wait
 // for an event to occur)
 export type CallbackDiagnosticProvider = {
-  onMessageUpdate: (callback: MessageUpdateCallback) => atom$Disposable;
-  onMessageInvalidation: (callback: MessageInvalidationCallback) => atom$Disposable;
+  onMessageUpdate: (callback: MessageUpdateCallback) => atom$IDisposable;
+  onMessageInvalidation: (callback: MessageInvalidationCallback) => atom$IDisposable;
 };
 
 export type ObservableDiagnosticProvider = {
@@ -94,11 +94,11 @@ export type DiagnosticMessage = FileDiagnosticMessage | ProjectDiagnosticMessage
 
 export type DiagnosticUpdater = {
   onFileMessagesDidUpdate:
-    (callback: (update: FileMessageUpdate) => mixed, filePath: NuclideUri) => atom$Disposable;
+    (callback: (update: FileMessageUpdate) => mixed, filePath: NuclideUri) => atom$IDisposable;
   onProjectMessagesDidUpdate:
-    (callback: (messages: Array<ProjectDiagnosticMessage>) => mixed) => atom$Disposable;
+    (callback: (messages: Array<ProjectDiagnosticMessage>) => mixed) => atom$IDisposable;
   onAllMessagesDidUpdate:
-    (callback: (messages: Array<DiagnosticMessage>) => mixed) => atom$Disposable;
+    (callback: (messages: Array<DiagnosticMessage>) => mixed) => atom$IDisposable;
   applyFix: (message: FileDiagnosticMessage) => void;
   applyFixesForFile: (file: NuclideUri) => void;
 };

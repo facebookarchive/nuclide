@@ -947,7 +947,7 @@ class FileTreeStore {
     this._data = this._getDefaults();
   }
 
-  subscribe(listener: ChangeListener): Disposable {
+  subscribe(listener: ChangeListener): atom$IDisposable {
     return this._emitter.on('change', listener);
   }
 }

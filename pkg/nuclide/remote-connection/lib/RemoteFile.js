@@ -34,7 +34,7 @@ class RemoteFile {
   _realpath: ?string;
   _remote: RemoteConnection;
   _subscriptionCount: number;
-  _watchSubscription: ?atom$Disposable;
+  _watchSubscription: ?atom$IDisposable;
   _digest: ?string;
 
   constructor(remote: RemoteConnection, remotePath: string) {
@@ -48,17 +48,17 @@ class RemoteFile {
     this._deleted = false;
   }
 
-  onDidChange(callback: () => mixed): atom$Disposable {
+  onDidChange(callback: () => mixed): atom$IDisposable {
     this._willAddSubscription();
     return this._trackUnsubscription(this._emitter.on('did-change', callback));
   }
 
-  onDidRename(callback: () => mixed): atom$Disposable {
+  onDidRename(callback: () => mixed): atom$IDisposable {
     this._willAddSubscription();
     return this._trackUnsubscription(this._emitter.on('did-rename', callback));
   }
 
-  onDidDelete(callback: () => mixed): atom$Disposable {
+  onDidDelete(callback: () => mixed): atom$IDisposable {
     this._willAddSubscription();
     return this._trackUnsubscription(this._emitter.on('did-delete', callback));
   }
@@ -144,7 +144,7 @@ class RemoteFile {
    * Return a new Disposable that upon dispose, will remove the bound watch subscription.
    * When the number of subscriptions reach 0, the file is unwatched.
    */
-  _trackUnsubscription(subscription: atom$Disposable): atom$Disposable {
+  _trackUnsubscription(subscription: atom$IDisposable): atom$IDisposable {
     return new Disposable(() => {
       subscription.dispose();
       this._didRemoveSubscription();
@@ -167,7 +167,7 @@ class RemoteFile {
 
   onWillThrowWatchError(
     callback: (watchError: {error: Error, handle: () => void}) => mixed,
-  ): atom$Disposable {
+  ): atom$IDisposable {
     return this._emitter.on('will-throw-watch-error', callback);
   }
 

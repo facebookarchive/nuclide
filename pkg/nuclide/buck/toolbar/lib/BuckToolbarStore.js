@@ -18,7 +18,7 @@ function getLogger() {
 }
 
 const invariant = require('assert');
-const {Disposable, Emitter} = require('atom');
+const {Emitter} = require('atom');
 const path = require('path');
 const {Dispatcher} = require('flux');
 const {buckProjectRootForPath} = require('../../commons');
@@ -131,7 +131,7 @@ class BuckToolbarStore {
     }
   }
 
-  subscribe(callback: () => void): Disposable {
+  subscribe(callback: () => void): atom$IDisposable {
     return this._emitter.on('change', callback);
   }
 

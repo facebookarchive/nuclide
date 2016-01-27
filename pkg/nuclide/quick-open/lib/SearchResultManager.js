@@ -225,7 +225,7 @@ class SearchResultManager {
     this._emitter.emit(PROVIDERS_CHANGED);
   }
 
-  on(): atom$Disposable {
+  on(): atom$IDisposable {
     return this._emitter.on(...arguments);
   }
 

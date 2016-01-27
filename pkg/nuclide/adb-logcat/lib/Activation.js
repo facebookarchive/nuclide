@@ -100,7 +100,7 @@ class Activation {
     }
   }
 
-  consumeOutputService(api: OutputService): atom$Disposable {
+  consumeOutputService(api: OutputService): atom$IDisposable {
     return api.registerOutputProvider({
       source: 'adb logcat',
       messages: this._message$.asObservable(),

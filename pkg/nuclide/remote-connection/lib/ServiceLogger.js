@@ -55,7 +55,7 @@ export default class ServiceLogger {
     return this._buffer[Symbol.iterator]();
   }
 
-  onNewItem(callback: (item: Item) => mixed): atom$Disposable {
+  onNewItem(callback: (item: Item) => mixed): atom$IDisposable {
     return this._emitter.on(NEW_ITEM_EVENT, callback);
   }
 

@@ -9,7 +9,6 @@
  * the root directory of this source tree.
  */
 
-import type {Disposable} from 'atom';
 import {React} from 'react-for-atom';
 import ReactNativeServerActions from './ReactNativeServerActions';
 import ReactNativeServerStatus from './ReactNativeServerStatus';
@@ -22,7 +21,7 @@ type Props = {
 
 export default class ReactNativeServerPanel extends React.Component {
 
-  _storeSubscription: Disposable;
+  _storeSubscription: atom$IDisposable;
 
   constructor(props: Props) {
     super(props);

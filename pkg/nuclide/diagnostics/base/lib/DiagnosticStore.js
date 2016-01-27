@@ -245,7 +245,7 @@ class DiagnosticStore {
   onFileMessagesDidUpdate(
       callback: (update: FileMessageUpdate) => mixed,
       filePath: NuclideUri
-    ): atom$Disposable {
+    ): atom$IDisposable {
     // Use the filePath as the event name.
     const emitterDisposable = this._fileChangeEmitter.on(filePath, callback);
     this._incrementFileListenerCount(filePath);
@@ -282,7 +282,7 @@ class DiagnosticStore {
    */
   onProjectMessagesDidUpdate(
     callback: (messages: Array<ProjectDiagnosticMessage>) => mixed
-  ): atom$Disposable {
+  ): atom$IDisposable {
     const emitterDisposable = this._nonFileChangeEmitter.on(PROJECT_MESSAGE_CHANGE_EVENT, callback);
     this._projectListenersCount += 1;
 
@@ -303,7 +303,8 @@ class DiagnosticStore {
    * @param callback The function to message when any messages change. The array
    *   of messages is meant to completely replace any previous messages.
    */
-  onAllMessagesDidUpdate(callback: (messages: Array<DiagnosticMessage>) => mixed): atom$Disposable {
+  onAllMessagesDidUpdate(callback: (messages: Array<DiagnosticMessage>) => mixed):
+      atom$IDisposable {
     const emitterDisposable = this._nonFileChangeEmitter.on(ALL_CHANGE_EVENT, callback);
     this._allMessagesListenersCount += 1;
 

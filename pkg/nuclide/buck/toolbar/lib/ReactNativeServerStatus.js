@@ -21,7 +21,7 @@ export default class ReactNativeServerStatus {
     this._isRunning = false;
   }
 
-  subscribe(callback: () => void): atom$Disposable {
+  subscribe(callback: () => void): atom$IDisposable {
     return this._emitter.on('change', callback);
   }
 

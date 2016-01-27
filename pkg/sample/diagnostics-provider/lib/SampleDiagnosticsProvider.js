@@ -74,11 +74,11 @@ export default class SampleDiagnosticsProvider {
   // Delegate to these DiagnosticsProviderBase methods to satisfy the DiagnosticProvider interface.
   // These manage event subscriptions. A consumer of a diagnostics provider will subscribe to these
   // events. The DiagnosticsProviderBase takes care of the details of event subscription.
-  onMessageUpdate(callback: MessageUpdateCallback): atom$Disposable {
+  onMessageUpdate(callback: MessageUpdateCallback): atom$IDisposable {
     return this._providerBase.onMessageUpdate(callback);
   }
 
-  onMessageInvalidation(callback: MessageInvalidationCallback): atom$Disposable {
+  onMessageInvalidation(callback: MessageInvalidationCallback): atom$IDisposable {
     return this._providerBase.onMessageInvalidation(callback);
   }
 }

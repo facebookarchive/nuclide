@@ -84,7 +84,7 @@ class BreakpointStore {
   /**
    * Register a change handler that is invoked whenever the store changes.
    */
-  onChange(callback: (path: string) => void): atom$Disposable {
+  onChange(callback: (path: string) => void): atom$IDisposable {
     return this._emitter.on('change', callback);
   }
 }

@@ -19,9 +19,9 @@ const GRAMMAR_CHANGE_EVENT = 'grammar-change';
  */
 class GrammarForTextEditorsListener {
   _emitter: EventEmitter;
-  _grammarSubscriptionsMap: Map<TextEditor, atom$Disposable>;
-  _destroySubscriptionsMap: Map<TextEditor, atom$Disposable>;
-  _textEditorsSubscription: atom$Disposable;
+  _grammarSubscriptionsMap: Map<TextEditor, atom$IDisposable>;
+  _destroySubscriptionsMap: Map<TextEditor, atom$IDisposable>;
+  _textEditorsSubscription: atom$IDisposable;
 
   constructor() {
     this._emitter = new EventEmitter();

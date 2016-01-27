@@ -36,7 +36,7 @@ type Selection = {
 };
 
 const AtomInput = require('../../ui/atom-input');
-const {CompositeDisposable, Disposable, Emitter} = require('atom');
+const {CompositeDisposable, Emitter} = require('atom');
 const {
   debounce,
   object,
@@ -190,19 +190,19 @@ export default class QuickSelectionComponent extends React.Component {
     this.onUserDidChangeSelection();
   }
 
-  onCancellation(callback: () => void): Disposable {
+  onCancellation(callback: () => void): atom$IDisposable {
     return this._emitter.on('canceled', callback);
   }
 
-  onSelection(callback: (selection: any) => void): Disposable {
+  onSelection(callback: (selection: any) => void): atom$IDisposable {
     return this._emitter.on('selected', callback);
   }
 
-  onSelectionChanged(callback: (selectionIndex: any) => void): Disposable {
+  onSelectionChanged(callback: (selectionIndex: any) => void): atom$IDisposable {
     return this._emitter.on('selection-changed', callback);
   }
 
-  onItemsChanged(callback: (newItems: GroupedResult) => void): Disposable {
+  onItemsChanged(callback: (newItems: GroupedResult) => void): atom$IDisposable {
     return this._emitter.on('items-changed', callback);
   }
 

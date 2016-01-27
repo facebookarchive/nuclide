@@ -25,7 +25,7 @@ class LanguageTextEditorsListener {
   _grammarScopes: Set<string>;
   _emitter: EventEmitter;
   _observedTextEditors: Set<TextEditor>;
-  _destroySubscriptionsMap: Map<TextEditor, atom$Disposable>;
+  _destroySubscriptionsMap: Map<TextEditor, atom$IDisposable>;
   _grammarSubscription: atom$IDisposable;
 
   constructor(grammarScopes: Set<string>) {

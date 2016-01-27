@@ -395,19 +395,19 @@ export default class RepositoryStack {
 
   onDidChangeDirtyStatus(
     callback: (fileChanges: Map<NuclideUri, FileChangeStatusValue>) => void
-  ): atom$Disposable {
+  ): atom$IDisposable {
     return this._emitter.on(CHANGE_DIRTY_STATUS_EVENT, callback);
   }
 
   onDidChangeCompareStatus(
     callback: (fileChanges: Map<NuclideUri, FileChangeStatusValue>) => void
-  ): atom$Disposable {
+  ): atom$IDisposable {
     return this._emitter.on(CHANGE_COMPARE_STATUS_EVENT, callback);
   }
 
   onDidChangeRevisions(
     callback: (revisionsState: RevisionsState) => void
-  ): atom$Disposable {
+  ): atom$IDisposable {
     return this._emitter.on(CHANGE_REVISIONS_EVENT, callback);
   }
 

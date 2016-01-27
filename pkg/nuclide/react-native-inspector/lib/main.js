@@ -9,10 +9,9 @@
  * the root directory of this source tree.
  */
 
-import type {Disposable} from 'atom';
 import type {GadgetsService} from '../../gadgets-interfaces';
 
-export function consumeGadgetsService(api: GadgetsService): Disposable {
+export function consumeGadgetsService(api: GadgetsService): atom$IDisposable {
   const Inspector = require('./ui/Inspector');
   return api.registerGadget(Inspector);
 }

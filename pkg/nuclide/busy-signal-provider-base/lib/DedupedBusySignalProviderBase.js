@@ -19,7 +19,7 @@ import {BusySignalProviderBase} from './BusySignalProviderBase';
 
 type MessageRecord = {
   // The disposable to call to remove the message
-  disposable: atom$Disposable,
+  disposable: atom$IDisposable,
   // The number of messages outstanding
   count: number,
 }
@@ -34,7 +34,7 @@ export class DedupedBusySignalProviderBase extends BusySignalProviderBase {
     this._messageRecords = new Map();
   }
 
-  displayMessage(message: string, options?: MessageDisplayOptions): atom$Disposable {
+  displayMessage(message: string, options?: MessageDisplayOptions): atom$IDisposable {
     this._incrementCount(message, options);
     return new Disposable(() => {
       this._decrementCount(message, options);

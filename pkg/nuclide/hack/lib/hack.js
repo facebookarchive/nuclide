@@ -239,7 +239,7 @@ module.exports = {
   async onFinishedLoadingDependencies(
     editor: atom$TextEditor,
     callback: (() => mixed),
-  ): Promise<atom$Disposable> {
+  ): Promise<atom$IDisposable> {
     const hackLanguage = await getHackLanguageForUri(editor.getPath());
     if (hackLanguage == null) {
       callback();

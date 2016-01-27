@@ -40,9 +40,9 @@ async function findTruthyReturnValue(fns: Array<void | () => Promise<any>>): Pro
 class Hyperclick {
   _consumedProviders: Array<HyperclickProvider>;
   _suggestionList: SuggestionList;
-  _suggestionListViewSubscription: atom$Disposable;
+  _suggestionListViewSubscription: atom$IDisposable;
   _hyperclickForTextEditors: Set<HyperclickForTextEditor>;
-  _textEditorSubscription: atom$Disposable;
+  _textEditorSubscription: atom$IDisposable;
 
   constructor() {
     this._consumedProviders = [];

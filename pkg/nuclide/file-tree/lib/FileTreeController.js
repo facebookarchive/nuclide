@@ -54,7 +54,7 @@ class FileTreeController {
   _repositories: Immutable.Set<atom$Repository>;
   _store: FileTreeStore;
   _subscriptions: CompositeDisposable;
-  _subscriptionForRepository: Immutable.Map<atom$Repository, atom$Disposable>;
+  _subscriptionForRepository: Immutable.Map<atom$Repository, atom$IDisposable>;
   /**
    * True if a reveal was requested while the file tree is hidden. If so, we should apply it when
    * the tree is shown.

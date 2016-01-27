@@ -56,15 +56,15 @@ export class DbgpConnector {
     this._messageHandler = getDbgpMessageHandlerInstance();
   }
 
-  onAttach(callback: (params: {socket: Socket, message: Object}) => Promise): atom$Disposable {
+  onAttach(callback: (params: {socket: Socket, message: Object}) => Promise): atom$IDisposable {
     return this._emitter.on(DBGP_ATTACH_EVENT, callback);
   }
 
-  onClose(callback: () => void): atom$Disposable {
+  onClose(callback: () => void): atom$IDisposable {
     return this._emitter.on(DBGP_CLOSE_EVENT, callback);
   }
 
-  onError(callback: (error: string) => void): atom$Disposable {
+  onError(callback: (error: string) => void): atom$IDisposable {
     return this._emitter.on(DBGP_ERROR_EVENT, callback);
   }
 

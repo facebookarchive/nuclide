@@ -19,7 +19,6 @@ import {
 } from './connection-profile-utils';
 import {getLogger} from '../../logging';
 
-import type {Disposable} from 'atom';
 import type {RemoteConnection} from '../../remote-connection';
 import type {NuclideRemoteConnectionProfile} from './connection-types';
 import {extend, PromiseQueue} from '../../commons';
@@ -60,7 +59,7 @@ export function openConnectionDialog(props: Object): Promise<?RemoteConnection> 
     // We want to observe changes in the saved connection profiles during the
     // lifetime of this connection dialog, because the user can add/delete
     // a profile from a connection dialog.
-    let connectionProfilesSubscription: ?Disposable = null;
+    let connectionProfilesSubscription: ?atom$IDisposable = null;
     function cleanupSubscriptionFunc(): void {
       if (connectionProfilesSubscription) {
         connectionProfilesSubscription.dispose();
