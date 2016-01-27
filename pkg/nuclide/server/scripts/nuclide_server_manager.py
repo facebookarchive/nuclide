@@ -47,6 +47,12 @@ CERTS_DIR = os.path.join(HOME_FOLDER, '.certs')
 CERTS_EXPIRATION_DAYS = 7
 NODE_PATHS = EXTRA_NODE_PATHS + ['/opt/local/bin', '/usr/local/bin']
 
+
+# Default core dump location on Linux machines.
+CORE_DUMP_PATH = '/var/tmp/cores'
+MAX_CORE_DUMPS = 3
+
+
 # This class manages Nuclide servers.
 
 
@@ -336,7 +342,7 @@ def get_option_parser():
         '--dump-core',
         help='Dump core file when uncaught exception or abort',
         action="store_true",
-        default=False)
+        default=True)
     parser.add_option(
         '-j',
         '--json-output-file',
@@ -365,6 +371,21 @@ if __name__ == '__main__':
             resource.setrlimit(resource.RLIMIT_CORE, (resource.RLIM_INFINITY, hard_limit))
         except Exception as e:
             logger.warn('Failed to enable core dump', e)
+
+    # Clean up old core dumps. They're pretty large, so don't hog disk space.
+    try:
+        # By default, node core dumps are saved as 'node.<pid>'.
+        # We can't be sure that these were actually Nuclide dumps, but they're temporary anyway.
+        cores = filter(lambda x: x.startswith('node.'), os.listdir(CORE_DUMP_PATH))
+        if len(cores) > MAX_CORE_DUMPS:
+            cores = map(lambda f: os.path.join(CORE_DUMP_PATH, f), cores)
+            # Remove the oldest core dumps first.
+            cores.sort(key=lambda f: os.stat(f).st_ctime)
+            for core in cores[:len(cores) - MAX_CORE_DUMPS]:
+                os.remove(core)
+    except Exception as e:
+        logger.warn('Failed to clean up old core dumps', e)
+        pass
 
     if options.command == 'start':
         server_start_result = manager.start_nuclide()
