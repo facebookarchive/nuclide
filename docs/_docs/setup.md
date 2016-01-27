@@ -5,21 +5,120 @@ layout: docs
 permalink: /docs/setup/
 ---
 
-## Installation
+There are two supported platforms for Nuclide, Linux and Mac OS X. Nuclide can be installed on
+Windows, but it is not fully supported; work is in progress.
 
-The easiest way to get Nuclide is to install it from Atom itself.
-In Atom, open the **Settings** pane and navigate to the **Install** tab.
-From there, you can search for the `nuclide` package and click
-the corresponding **Install** button in the search result to install it.
+These instructions are for installing the released package of Nuclide. For advanced users, you can
+[build from source](/docs/setup/building-from-source), but this is not officially supported and
+stability is not guaranteed.
 
-Alternatively, if you are more comfortable using the command line,
-you can install it using `apm`:
+Assuming you have met all the prerequisites for your platform, culminating with **Atom 1.4.0 or
+greater** being installed, the easiest way to install Nuclide is either at the command line:
 
 ```bash
 $ apm install nuclide
 ```
 
-### Recommended Dependencies
+or within Atom itself:
+
+1. Open Atom.
+2. Choose `Atom | Preferences` to bring up the `Settings` pane. (on Linux this will be
+  `Edit | Preferences`).
+3. In the `Settings` pane, click on `Install`.
+4. In the search box, type *Nuclide* and press the *enter* key.
+5. The package you are looking for is called `nuclide` and should be version `0.111.0` or greater.
+6. Click the *Install* button for that package.
+
+Otherwise, choose your installation platform for detailed installation instructions, including
+prerequisites:
+
+- [Mac](#mac)
+- [Linux](#linux)
+- [Windows](#windows)
+
+## Mac
+
+### Prerequisites
+
+Nuclide requires Atom 1.4.0+. You can follow the [instructions on the Atom website](https://atom.io/docs/v0.191.0/getting-started-installing-atom#atom-on-mac). Essentially,
+if you go to Atom.io, there will be direct link to download Atom.
+
+### Installation
+
+Installing Nuclide is a one-line command at the command-line:
+
+```bash
+$ apm install nuclide
+```
+
+Or you can go through the Atom Packages UI to install Atom:
+
+1. Open Atom.
+2. Choose `Atom | Preferences` to bring up the `Settings` pane. (on Linux this will be
+  `Edit | Preferences`).
+3. In the `Settings` pane, click on `Install`.
+4. In the search box, type *Nuclide* and press the *enter* key.
+5. The package you are looking for is called `nuclide` and should be version `0.111.0` or greater.
+6. Click the *Install* button for that package.
+
+## Linux
+
+### Prerequisites
+
+Nuclide requires Atom 1.4.0+ (which requires Git). There are [instructions on the Atom website](https://atom.io/download/deb#atom-on-linux)
+to install Atom, but it doesn't mention the Git requirement.
+
+Instead, follow the command line process below which shows you the installation of all the
+necessary prerequisites, including Git.
+
+This is an installation on Ubuntu. If you are using an RPM-based distro, you will have replace the
+`apt-get` commands with the appropriate `rpm` or `yum` commands. Depending on your permissions, you
+may need to prefix these commands with `sudo`.
+
+```bash
+$ sudo apt-get update
+# optional
+$ sudo apt-get upgrade
+$ sudo apt-get install git
+$ wget https://atom.io/download/deb
+$ mv deb atom-amd64.deb  
+$ dpkg -i atom-amd64.deb
+# Run atom from the command line if you want
+$ atom
+```
+
+### Installation
+
+Installing Nuclide is a one-line command at the command-line:
+
+```bash
+$ apm install nuclide
+```
+
+Or you can go through the Atom Packages UI to install Atom:
+
+1. Open Atom.
+2. Choose `Edit | Preferences` to bring up the `Settings` pane. (on Linux this will be
+  `Edit | Preferences`).
+3. In the `Settings` pane, click on `Install`.
+4. In the search box, type *Nuclide* and press the *enter* key.
+5. The package you are looking for is called `nuclide` and should be version `0.111.0` or greater.
+6. Click the *Install* button for that package.
+
+## Windows
+
+Detailed instructions for Windows coming soon.
+
+## Post Installation
+
+After installation, running `Atom` will automatically load Nuclide.
+
+### Installing Nuclide Server
+
+If you want to use Nuclide for remote development, you'll also need to setup the NPM `nuclide`
+package. Instructions can be found in the [Remote Development docs](/docs/remote/).
+
+### Other Installations
 
 To benefit from all of Nuclide's features, we recommend you also install the following:
 
@@ -33,47 +132,22 @@ To benefit from all of Nuclide's features, we recommend you also install the fol
   [server](https://github.com/facebook/nuclide/tree/master/pkg/nuclide/server), and
   [quick-open](https://github.com/facebook/nuclide/tree/master/pkg/nuclide/quick-open) packages.
 
-### Building from Source
-
-If you want to build Nuclide from source, you must have the following tools installed:
-
-+ Atom 1.0.0 or later
-+ Node 0.12.0 or later
-+ `node`, `npm`, `apm`, and `git` must be on your `$PATH`
-
-1. Build and link the Nuclide package like you would other Atom packages:
-
-    ```bash
-    # Clone the source
-    $ git clone https://github.com/facebook/nuclide.git
-    $ cd nuclide
-    # Install dependencies
-    $ npm install
-    # Link the 'nuclide' package to Atom's package directory
-    $ apm link
-    ```
-2. Now open Atom. Nuclide feature settings are listed in the 'nuclide' package in Atom's settings
-   view.
-
-## Installing Nuclide Server
-
-If you want to use Nuclide for remote development, you'll also need to setup the NPM `nuclide`
-package. Instructions can be found in the [Remote Development docs](/docs/remote/).
-
 ## Troubleshooting Installation
 
 ### Incompatible native module error
 
-If you switch Atom versions, or if you `npm install nuclide` instead of `apm install nuclide`, you may find yourself with an "incompatible native module" error:
+If you switch Atom versions, or if you `npm install nuclide` instead of `apm install nuclide`, you
+may find yourself with an "incompatible native module" error:
 
 !["incompatible native module" error](/static/images/incompatible-native-module-error.png)
 
 #### (easy) Fixing via the "Incompatible Packages" tool
 
-From the Command Palette, search for "Incompatible Packages: view", or
-click the "bug" icon in the status bar. Then select "Rebuild Packages", and restart Atom.
+From the Command Palette, search for "Incompatible Packages: view", or click the "bug" icon in the
+status bar. Then select "Rebuild Packages", and restart Atom.
 
-_If you can't find "Incompatible Packages", make sure that the `incompatible-packages` package is enabled via `Settings` `->` `Packages`._
+_If you can't find "Incompatible Packages", make sure that the `incompatible-packages` package is
+enabled via `Settings` `->` `Packages`._
 
 ![incompatible packages view](/static/images/incompatible-packages-view.png)
 
@@ -93,8 +167,3 @@ Then, from your terminal:
 ```sh
 $ apm rebuild nuclide
 ```
-
-## Starting Nuclide
-
-Once you've installed or built Nuclide, just run `Atom` - the initial load after the build process
-may be a little slow because of the large number of Babel files that need to be transpiled.
