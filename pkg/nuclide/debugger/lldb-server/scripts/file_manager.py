@@ -106,7 +106,7 @@ class FunctionAssembly(FileLike):
     @property
     def client_url(self):
         # Not using urlparse here as it does not handle unknown schemes well.
-        return 'lldb://asm/' + urllib.quote(self.symbol.name)
+        return 'lldb://asm/' + ('default' if self.symbol.name is None else urllib.quote(self.symbol.name))
 
     @property
     def server_obj(self):
