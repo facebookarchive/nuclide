@@ -239,7 +239,10 @@ module.exports = {
         editor.getBuffer().file.path = `${uri}.to-close`;
         // Cleanup the old pane item on successful opening or when no connection could be
         // established.
-        const cleanupBuffer = () => pane.removeItem(editor);
+        const cleanupBuffer = () => {
+          pane.removeItem(editor);
+          editor.destroy();
+        };
         if (filePath === config.cwd) {
           cleanupBuffer();
         } else {
