@@ -11,6 +11,7 @@ from handler import HandlerDomain, UndefinedHandlerError, handler
 from remote_objects import ValueListRemoteObject
 import file_manager
 import serialize
+from logging_helper import log_debug
 
 
 CALL_STACK_OBJECT_GROUP = 'callstack'
@@ -30,9 +31,13 @@ class ModuleSourcePathUpdater:
 
     def modules_updated(self):
         for module in self._target.modules:
-            if module.uuid not in self._registered_modules:
-                self._register_source_paths_for_module(module)
-                self._registered_modules.add(module.uuid)
+            try:
+                if module.uuid not in self._registered_modules:
+                    self._register_source_paths_for_module(module)
+                    self._registered_modules.add(module.uuid)
+            except Exception as e:
+                # Some module does not have uuid.
+                log_debug('Can\'t register module: %s' % str(e))
 
     def _register_source_paths_for_module(self, module):
         for comp_unit in module.compile_units:
