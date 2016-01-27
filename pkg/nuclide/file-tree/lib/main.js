@@ -16,7 +16,6 @@ import type FileTreeControllerType from './FileTreeController';
 import {CompositeDisposable} from 'atom';
 
 import featureConfig from '../../feature-config';
-import nuclideFeatures from '../../../../lib/nuclideFeatures';
 
 /**
  * Minimum interval (in ms) between onChangeActivePaneItem events before revealing the active pane
