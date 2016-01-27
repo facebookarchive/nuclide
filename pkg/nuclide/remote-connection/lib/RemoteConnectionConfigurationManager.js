@@ -1,5 +1,13 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+
+var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
+
+exports.getConnectionConfig = getConnectionConfig;
+exports.setConnectionConfig = setConnectionConfig;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,30 +17,24 @@
  * the root directory of this source tree.
  */
 
-import invariant from 'assert';
-import {getLogger} from '../../logging';
-import type {RemoteConnectionConfiguration} from './RemoteConnection';
+var _assert = require('assert');
 
-const logger = getLogger();
+var _assert2 = _interopRequireDefault(_assert);
+
+var _logging = require('../../logging');
+
+var logger = (0, _logging.getLogger)();
 
 /**
  * Version of RemoteConnectionConfiguration that uses string instead of Buffer for fields so it can
  * be translated directly to/from JSON.
  */
-type SerializableRemoteConnectionConfiguration = {
-  host: string;
-  port: number;
-  cwd: string;
-  certificateAuthorityCertificate?: string;
-  clientCertificate?: string;
-  clientKey?: string;
-}
 
-const CONFIG_KEY_PREFIX = 'nuclide.nuclide-connection.config';
+var CONFIG_KEY_PREFIX = 'nuclide.nuclide-connection.config';
 
-export function getConnectionConfig(host: string): ?RemoteConnectionConfiguration {
+function getConnectionConfig(host) {
   // $FlowIssue
-  const storedConfig = atom.config.get(getAtomConfigKey(host));
+  var storedConfig = atom.config.get(getAtomConfigKey(host));
   // $UPFixMe: These settings should go through nuclide-feature-config
   if (!storedConfig) {
     return null;
@@ -40,21 +42,21 @@ export function getConnectionConfig(host: string): ?RemoteConnectionConfiguratio
   try {
     return decryptConfig(storedConfig);
   } catch (e) {
-    logger.error(`The configuration file for ${host} is corrupted.`, e);
+    logger.error('The configuration file for ' + host + ' is corrupted.', e);
     return null;
   }
 }
 
-export function setConnectionConfig(config: RemoteConnectionConfiguration): void {
+function setConnectionConfig(config) {
   try {
     atom.config.set(getAtomConfigKey(config.host), encryptConfig(config));
   } catch (e) {
-    logger.error(`Failed to store configuration file for ${config.host}.`, e);
+    logger.error('Failed to store configuration file for ' + config.host + '.', e);
   }
 }
 
-function getAtomConfigKey(host: string): string {
-  return `${CONFIG_KEY_PREFIX}.${host}`;
+function getAtomConfigKey(host) {
+  return CONFIG_KEY_PREFIX + '.' + host;
 }
 
 /**
@@ -62,26 +64,36 @@ function getAtomConfigKey(host: string): string {
  * @param remoteProjectConfig - The config with the clientKey we want encrypted.
  * @return returns the passed in config with the clientKey encrypted.
  */
-function encryptConfig(
-  remoteProjectConfig: RemoteConnectionConfiguration,
-): SerializableRemoteConnectionConfiguration {
-  const {replacePassword} = require('../../keytar-wrapper');
-  const crypto = require('crypto');
+function encryptConfig(remoteProjectConfig) {
+  var _require = require('../../keytar-wrapper');
 
-  const sha1 = crypto.createHash('sha1');
-  sha1.update(`${remoteProjectConfig.host}:${remoteProjectConfig.port}`);
-  const sha1sum = sha1.digest('hex');
+  var replacePassword = _require.replacePassword;
 
-  const {certificateAuthorityCertificate, clientCertificate, clientKey} = remoteProjectConfig;
-  invariant(clientKey);
-  const realClientKey = clientKey.toString(); // Convert from Buffer to string.
-  const {salt, password, encryptedString} = encryptString(realClientKey);
+  var crypto = require('crypto');
+
+  var sha1 = crypto.createHash('sha1');
+  sha1.update(remoteProjectConfig.host + ':' + remoteProjectConfig.port);
+  var sha1sum = sha1.digest('hex');
+
+  var certificateAuthorityCertificate = remoteProjectConfig.certificateAuthorityCertificate;
+  var clientCertificate = remoteProjectConfig.clientCertificate;
+  var clientKey = remoteProjectConfig.clientKey;
+
+  (0, _assert2['default'])(clientKey);
+  var realClientKey = clientKey.toString(); // Convert from Buffer to string.
+
+  var _encryptString = encryptString(realClientKey);
+
+  var salt = _encryptString.salt;
+  var password = _encryptString.password;
+  var encryptedString = _encryptString.encryptedString;
+
   replacePassword('nuclide.remoteProjectConfig', sha1sum, password);
 
-  const clientKeyWithSalt = encryptedString + '.' + salt;
+  var clientKeyWithSalt = encryptedString + '.' + salt;
 
-  invariant(certificateAuthorityCertificate);
-  invariant(clientCertificate);
+  (0, _assert2['default'])(certificateAuthorityCertificate);
+  (0, _assert2['default'])(clientCertificate);
 
   return {
     host: remoteProjectConfig.host,
@@ -89,7 +101,7 @@ function encryptConfig(
     cwd: remoteProjectConfig.cwd,
     certificateAuthorityCertificate: certificateAuthorityCertificate.toString(),
     clientCertificate: clientCertificate.toString(),
-    clientKey: clientKeyWithSalt,
+    clientKey: clientKeyWithSalt
   };
 }
 
@@ -98,88 +110,92 @@ function encryptConfig(
  * @param remoteProjectConfig - The config with the clientKey we want encrypted.
  * @return returns the passed in config with the clientKey encrypted.
  */
-function decryptConfig(
-  remoteProjectConfig: SerializableRemoteConnectionConfiguration,
-): RemoteConnectionConfiguration {
-  const {getPassword} = require('../../keytar-wrapper');
-  const crypto = require('crypto');
+function decryptConfig(remoteProjectConfig) {
+  var _require2 = require('../../keytar-wrapper');
 
-  const sha1 = crypto.createHash('sha1');
-  sha1.update(`${remoteProjectConfig.host}:${remoteProjectConfig.port}`);
-  const sha1sum = sha1.digest('hex');
+  var getPassword = _require2.getPassword;
 
-  const password = getPassword('nuclide.remoteProjectConfig', sha1sum);
+  var crypto = require('crypto');
+
+  var sha1 = crypto.createHash('sha1');
+  sha1.update(remoteProjectConfig.host + ':' + remoteProjectConfig.port);
+  var sha1sum = sha1.digest('hex');
+
+  var password = getPassword('nuclide.remoteProjectConfig', sha1sum);
 
   if (!password) {
     throw new Error('Cannot find password for encrypted client key');
   }
 
-  const {certificateAuthorityCertificate, clientCertificate, clientKey} = remoteProjectConfig;
-  invariant(clientKey);
-  const [encryptedString, salt] = clientKey.split('.');
+  var certificateAuthorityCertificate = remoteProjectConfig.certificateAuthorityCertificate;
+  var clientCertificate = remoteProjectConfig.clientCertificate;
+  var clientKey = remoteProjectConfig.clientKey;
+
+  (0, _assert2['default'])(clientKey);
+
+  var _clientKey$split = clientKey.split('.');
+
+  var _clientKey$split2 = _slicedToArray(_clientKey$split, 2);
+
+  var encryptedString = _clientKey$split2[0];
+  var salt = _clientKey$split2[1];
 
   if (!encryptedString || !salt) {
     throw new Error('Cannot decrypt client key');
   }
 
-  const restoredClientKey = decryptString(encryptedString, password, salt);
+  var restoredClientKey = decryptString(encryptedString, password, salt);
   //  "nolint" is to suppress ArcanistPrivateKeyLinter errors
-  if (!restoredClientKey.startsWith('-----BEGIN RSA PRIVATE KEY-----')) { /*nolint*/
-    getLogger().error(
-      `decrypted client key did not start with expected header: ${restoredClientKey}`);
+  if (!restoredClientKey.startsWith('-----BEGIN RSA PRIVATE KEY-----')) {
+    /*nolint*/
+    (0, _logging.getLogger)().error('decrypted client key did not start with expected header: ' + restoredClientKey);
   }
 
-  invariant(certificateAuthorityCertificate);
-  invariant(clientCertificate);
+  (0, _assert2['default'])(certificateAuthorityCertificate);
+  (0, _assert2['default'])(clientCertificate);
   return {
     host: remoteProjectConfig.host,
     port: remoteProjectConfig.port,
     cwd: remoteProjectConfig.cwd,
     certificateAuthorityCertificate: new Buffer(certificateAuthorityCertificate),
     clientCertificate: new Buffer(clientCertificate),
-    clientKey: new Buffer(restoredClientKey),
+    clientKey: new Buffer(restoredClientKey)
   };
 }
 
-function decryptString(text: string, password: string, salt: string): string {
-  const crypto = require('crypto');
+function decryptString(text, password, salt) {
+  var crypto = require('crypto');
 
-  const decipher = crypto.createDecipheriv(
-      'aes-128-cbc',
-      new Buffer(password, 'base64'),
-      new Buffer(salt, 'base64'));
+  var decipher = crypto.createDecipheriv('aes-128-cbc', new Buffer(password, 'base64'), new Buffer(salt, 'base64'));
 
-  let decryptedString = decipher.update(text, 'base64', 'utf8');
+  var decryptedString = decipher.update(text, 'base64', 'utf8');
   decryptedString += decipher.final('utf8');
 
   return decryptedString;
 }
 
-function encryptString(text: string): {password: string, salt: string, encryptedString: string} {
-  const crypto = require('crypto');
-  const password = crypto.randomBytes(16).toString('base64');
-  const salt = crypto.randomBytes(16).toString('base64');
+function encryptString(text) {
+  var crypto = require('crypto');
+  var password = crypto.randomBytes(16).toString('base64');
+  var salt = crypto.randomBytes(16).toString('base64');
 
-  const cipher = crypto.createCipheriv(
-    'aes-128-cbc',
-    new Buffer(password, 'base64'),
-    new Buffer(salt, 'base64'));
+  var cipher = crypto.createCipheriv('aes-128-cbc', new Buffer(password, 'base64'), new Buffer(salt, 'base64'));
 
-  let encryptedString = cipher.update(
-    text,
-    /* input_encoding */ 'utf8',
-    /* output_encoding */ 'base64',
-  );
+  var encryptedString = cipher.update(text,
+  /* input_encoding */'utf8',
+  /* output_encoding */'base64');
   encryptedString += cipher.final('base64');
 
   return {
-    password,
-    salt,
-    encryptedString,
+    password: password,
+    salt: salt,
+    encryptedString: encryptedString
   };
 }
 
-export const __test__ = {
-  decryptString,
-  encryptString,
+var __test__ = {
+  decryptString: decryptString,
+  encryptString: encryptString
 };
+exports.__test__ = __test__;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIlJlbW90ZUNvbm5lY3Rpb25Db25maWd1cmF0aW9uTWFuYWdlci5qcyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7Ozs7Ozs7Ozs7O3NCQVdzQixRQUFROzs7O3VCQUNOLGVBQWU7O0FBR3ZDLElBQU0sTUFBTSxHQUFHLHlCQUFXLENBQUM7Ozs7Ozs7QUFlM0IsSUFBTSxpQkFBaUIsR0FBRyxtQ0FBbUMsQ0FBQzs7QUFFdkQsU0FBUyxtQkFBbUIsQ0FBQyxJQUFZLEVBQWtDOztBQUVoRixNQUFNLFlBQVksR0FBRyxJQUFJLENBQUMsTUFBTSxDQUFDLEdBQUcsQ0FBQyxnQkFBZ0IsQ0FBQyxJQUFJLENBQUMsQ0FBQyxDQUFDOztBQUU3RCxNQUFJLENBQUMsWUFBWSxFQUFFO0FBQ2pCLFdBQU8sSUFBSSxDQUFDO0dBQ2I7QUFDRCxNQUFJO0FBQ0YsV0FBTyxhQUFhLENBQUMsWUFBWSxDQUFDLENBQUM7R0FDcEMsQ0FBQyxPQUFPLENBQUMsRUFBRTtBQUNWLFVBQU0sQ0FBQyxLQUFLLGlDQUErQixJQUFJLHFCQUFrQixDQUFDLENBQUMsQ0FBQztBQUNwRSxXQUFPLElBQUksQ0FBQztHQUNiO0NBQ0Y7O0FBRU0sU0FBUyxtQkFBbUIsQ0FBQyxNQUFxQyxFQUFRO0FBQy9FLE1BQUk7QUFDRixRQUFJLENBQUMsTUFBTSxDQUFDLEdBQUcsQ0FBQyxnQkFBZ0IsQ0FBQyxNQUFNLENBQUMsSUFBSSxDQUFDLEVBQUUsYUFBYSxDQUFDLE1BQU0sQ0FBQyxDQUFDLENBQUM7R0FDdkUsQ0FBQyxPQUFPLENBQUMsRUFBRTtBQUNWLFVBQU0sQ0FBQyxLQUFLLDZDQUEyQyxNQUFNLENBQUMsSUFBSSxRQUFLLENBQUMsQ0FBQyxDQUFDO0dBQzNFO0NBQ0Y7O0FBRUQsU0FBUyxnQkFBZ0IsQ0FBQyxJQUFZLEVBQVU7QUFDOUMsU0FBVSxpQkFBaUIsU0FBSSxJQUFJLENBQUc7Q0FDdkM7Ozs7Ozs7QUFPRCxTQUFTLGFBQWEsQ0FDcEIsbUJBQWtELEVBQ1A7aUJBQ2pC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QUFXLENBQUMsRUFBRSxDQUFDLENBQUMsUUFBUSxDQUFDLFFBQVEsQ0FBQyxDQUFDO0FBQzNELE1BQU0sSUFBSSxHQUFHLE1BQU0sQ0FBQyxXQUFXLENBQUMsRUFBRSxDQUFDLENBQUMsUUFBUSxDQUFDLFFBQVEsQ0FBQyxDQUFDOztBQUV2RCxNQUFNLE1BQU0sR0FBRyxNQUFNLENBQUMsY0FBYyxDQUNsQyxhQUFhLEVBQ2IsSUFBSSxNQUFNLENBQUMsUUFBUSxFQUFFLFFBQVEsQ0FBQyxFQUM5QixJQUFJLE1BQU0sQ0FBQyxJQUFJLEVBQUUsUUFBUSxDQUFDLENBQUMsQ0FBQzs7QUFFOUIsTUFBSSxlQUFlLEdBQUcsTUFBTSxDQUFDLE1BQU0sQ0FDakMsSUFBSTtzQkFDaUIsTUFBTTt1QkFDTCxRQUFRLENBQy9CLENBQUM7QUFDRixpQkFBZSxJQUFJLE1BQU0sQ0FBQyxLQUFLLENBQUMsUUFBUSxDQUFDLENBQUM7O0FBRTFDLFNBQU87QUFDTCxZQUFRLEVBQVIsUUFBUTtBQUNSLFFBQUksRUFBSixJQUFJO0FBQ0osbUJBQWUsRUFBZixlQUFlO0dBQ2hCLENBQUM7Q0FDSDs7QUFFTSxJQUFNLFFBQVEsR0FBRztBQUN0QixlQUFhLEVBQWIsYUFBYTtBQUNiLGVBQWEsRUFBYixhQUFhO0NBQ2QsQ0FBQyIsImZpbGUiOiJSZW1vdGVDb25uZWN0aW9uQ29uZmlndXJhdGlvbk1hbmFnZXIuanMiLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIGJhYmVsJztcbi8qIEBmbG93ICovXG5cbi8qXG4gKiBDb3B5cmlnaHQgKGMpIDIwMTUtcHJlc2VudCwgRmFjZWJvb2ssIEluYy5cbiAqIEFsbCByaWdodHMgcmVzZXJ2ZWQuXG4gKlxuICogVGhpcyBzb3VyY2UgY29kZSBpcyBsaWNlbnNlZCB1bmRlciB0aGUgbGljZW5zZSBmb3VuZCBpbiB0aGUgTElDRU5TRSBmaWxlIGluXG4gKiB0aGUgcm9vdCBkaXJlY3Rvcnkgb2YgdGhpcyBzb3VyY2UgdHJlZS5cbiAqL1xuXG5pbXBvcnQgaW52YXJpYW50IGZyb20gJ2Fzc2VydCc7XG5pbXBvcnQge2dldExvZ2dlcn0gZnJvbSAnLi4vLi4vbG9nZ2luZyc7XG5pbXBvcnQgdHlwZSB7UmVtb3RlQ29ubmVjdGlvbkNvbmZpZ3VyYXRpb259IGZyb20gJy4vUmVtb3RlQ29ubmVjdGlvbic7XG5cbmNvbnN0IGxvZ2dlciA9IGdldExvZ2dlcigpO1xuXG4vKipcbiAqIFZlcnNpb24gb2YgUmVtb3RlQ29ubmVjdGlvbkNvbmZpZ3VyYXRpb24gdGhhdCB1c2VzIHN0cmluZyBpbnN0ZWFkIG9mIEJ1ZmZlciBmb3IgZmllbGRzIHNvIGl0IGNhblxuICogYmUgdHJhbnNsYXRlZCBkaXJlY3RseSB0by9mcm9tIEpTT04uXG4gKi9cbnR5cGUgU2VyaWFsaXphYmxlUmVtb3RlQ29ubmVjdGlvbkNvbmZpZ3VyYXRpb24gPSB7XG4gIGhvc3Q6IHN0cmluZztcbiAgcG9ydDogbnVtYmVyO1xuICBjd2Q6IHN0cmluZztcbiAgY2VydGlmaWNhdGVBdXRob3JpdHlDZXJ0aWZpY2F0ZT86IHN0cmluZztcbiAgY2xpZW50Q2VydGlmaWNhdGU/OiBzdHJpbmc7XG4gIGNsaWVudEtleT86IHN0cmluZztcbn1cblxuY29uc3QgQ09ORklHX0tFWV9QUkVGSVggPSAnbnVjbGlkZS5udWNsaWRlLWNvbm5lY3Rpb24uY29uZmlnJztcblxuZXhwb3J0IGZ1bmN0aW9uIGdldENvbm5lY3Rpb25Db25maWcoaG9zdDogc3RyaW5nKTogP1JlbW90ZUNvbm5lY3Rpb25Db25maWd1cmF0aW9uIHtcbiAgLy8gJEZsb3dJc3N1ZVxuICBjb25zdCBzdG9yZWRDb25maWcgPSBhdG9tLmNvbmZpZy5nZXQoZ2V0QXRvbUNvbmZpZ0tleShob3N0KSk7XG4gIC8vICRVUEZpeE1lOiBUaGVzZSBzZXR0aW5ncyBzaG91bGQgZ28gdGhyb3VnaCBudWNsaWRlLWZlYXR1cmUtY29uZmlnXG4gIGlmICghc3RvcmVkQ29uZmlnKSB7XG4gICAgcmV0dXJuIG51bGw7XG4gIH1cbiAgdHJ5IHtcbiAgICByZXR1cm4gZGVjcnlwdENvbmZpZyhzdG9yZWRDb25maWcpO1xuICB9IGNhdGNoIChlKSB7XG4gICAgbG9nZ2VyLmVycm9yKGBUaGUgY29uZmlndXJhdGlvbiBmaWxlIGZvciAke2hvc3R9IGlzIGNvcnJ1cHRlZC5gLCBlKTtcbiAgICByZXR1cm4gbnVsbDtcbiAgfVxufVxuXG5leHBvcnQgZnVuY3Rpb24gc2V0Q29ubmVjdGlvbkNvbmZpZyhjb25maWc6IFJlbW90ZUNvbm5lY3Rpb25Db25maWd1cmF0aW9uKTogdm9pZCB7XG4gIHRyeSB7XG4gICAgYXRvbS5jb25maWcuc2V0KGdldEF0b21Db25maWdLZXkoY29uZmlnLmhvc3QpLCBlbmNyeXB0Q29uZmlnKGNvbmZpZykpO1xuICB9IGNhdGNoIChlKSB7XG4gICAgbG9nZ2VyLmVycm9yKGBGYWlsZWQgdG8gc3RvcmUgY29uZmlndXJhdGlvbiBmaWxlIGZvciAke2NvbmZpZy5ob3N0fS5gLCBlKTtcbiAgfVxufVxuXG5mdW5jdGlvbiBnZXRBdG9tQ29uZmlnS2V5KGhvc3Q6IHN0cmluZyk6IHN0cmluZyB7XG4gIHJldHVybiBgJHtDT05GSUdfS0VZX1BSRUZJWH0uJHtob3N0fWA7XG59XG5cbi8qKlxuICogRW5jcnlwdHMgdGhlIGNsaWVudEtleSBvZiBhIENvbm5lY3Rpb25Db25maWcuXG4gKiBAcGFyYW0gcmVtb3RlUHJvamVjdENvbmZpZyAtIFRoZSBjb25maWcgd2l0aCB0aGUgY2xpZW50S2V5IHdlIHdhbnQgZW5jcnlwdGVkLlxuICogQHJldHVybiByZXR1cm5zIHRoZSBwYXNzZWQgaW4gY29uZmlnIHdpdGggdGhlIGNsaWVudEtleSBlbmNyeXB0ZWQuXG4gKi9cbmZ1bmN0aW9uIGVuY3J5cHRDb25maWcoXG4gIHJlbW90ZVByb2plY3RDb25maWc6IFJlbW90ZUNvbm5lY3Rpb25Db25maWd1cmF0aW9uLFxuKTogU2VyaWFsaXphYmxlUmVtb3RlQ29ubmVjdGlvbkNvbmZpZ3VyYXRpb24ge1xuICBjb25zdCB7cmVwbGFjZVBhc3N3b3JkfSA9IHJlcXVpcmUoJy4uLy4uL2tleXRhci13cmFwcGVyJyk7XG4gIGNvbnN0IGNyeXB0byA9IHJlcXVpcmUoJ2NyeXB0bycpO1xuXG4gIGNvbnN0IHNoYTEgPSBjcnlwdG8uY3JlYXRlSGFzaCgnc2hhMScpO1xuICBzaGExLnVwZGF0ZShgJHtyZW1vdGVQcm9qZWN0Q29uZmlnLmhvc3R9OiR7cmVtb3RlUHJvamVjdENvbmZpZy5wb3J0fWApO1xuICBjb25zdCBzaGExc3VtID0gc2hhMS5kaWdlc3QoJ2hleCcpO1xuXG4gIGNvbnN0IHtjZXJ0aWZpY2F0ZUF1dGhvcml0eUNlcnRpZmljYXRlLCBjbGllbnRDZXJ0aWZpY2F0ZSwgY2xpZW50S2V5fSA9IHJlbW90ZVByb2plY3RDb25maWc7XG4gIGludmFyaWFudChjbGllbnRLZXkpO1xuICBjb25zdCByZWFsQ2xpZW50S2V5ID0gY2xpZW50S2V5LnRvU3RyaW5nKCk7IC8vIENvbnZlcnQgZnJvbSBCdWZmZXIgdG8gc3RyaW5nLlxuICBjb25zdCB7c2FsdCwgcGFzc3dvcmQsIGVuY3J5cHRlZFN0cmluZ30gPSBlbmNyeXB0U3RyaW5nKHJlYWxDbGllbnRLZXkpO1xuICByZXBsYWNlUGFzc3dvcmQoJ251Y2xpZGUucmVtb3RlUHJvamVjdENvbmZpZycsIHNoYTFzdW0sIHBhc3N3b3JkKTtcblxuICBjb25zdCBjbGllbnRLZXlXaXRoU2FsdCA9IGVuY3J5cHRlZFN0cmluZyArICcuJyArIHNhbHQ7XG5cbiAgaW52YXJpYW50KGNlcnRpZmljYXRlQXV0aG9yaXR5Q2VydGlmaWNhdGUpO1xuICBpbnZhcmlhbnQoY2xpZW50Q2VydGlmaWNhdGUpO1xuXG4gIHJldHVybiB7XG4gICAgaG9zdDogcmVtb3RlUHJvamVjdENvbmZpZy5ob3N0LFxuICAgIHBvcnQ6IHJlbW90ZVByb2plY3RDb25maWcucG9ydCxcbiAgICBjd2Q6IHJlbW90ZVByb2plY3RDb25maWcuY3dkLFxuICAgIGNlcnRpZmljYXRlQXV0aG9yaXR5Q2VydGlmaWNhdGU6IGNlcnRpZmljYXRlQXV0aG9yaXR5Q2VydGlmaWNhdGUudG9TdHJpbmcoKSxcbiAgICBjbGllbnRDZXJ0aWZpY2F0ZTogY2xpZW50Q2VydGlmaWNhdGUudG9TdHJpbmcoKSxcbiAgICBjbGllbnRLZXk6IGNsaWVudEtleVdpdGhTYWx0LFxuICB9O1xufVxuXG4vKipcbiAqIERlY3J5cHRzIHRoZSBjbGllbnRLZXkgb2YgYSBTZXJpYWxpemFibGVSZW1vdGVDb25uZWN0aW9uQ29uZmlndXJhdGlvbi5cbiAqIEBwYXJhbSByZW1vdGVQcm9qZWN0Q29uZmlnIC0gVGhlIGNvbmZpZyB3aXRoIHRoZSBjbGllbnRLZXkgd2Ugd2FudCBlbmNyeXB0ZWQuXG4gKiBAcmV0dXJuIHJldHVybnMgdGhlIHBhc3NlZCBpbiBjb25maWcgd2l0aCB0aGUgY2xpZW50S2V5IGVuY3J5cHRlZC5cbiAqL1xuZnVuY3Rpb24gZGVjcnlwdENvbmZpZyhcbiAgcmVtb3RlUHJvamVjdENvbmZpZzogU2VyaWFsaXphYmxlUmVtb3RlQ29ubmVjdGlvbkNvbmZpZ3VyYXRpb24sXG4pOiBSZW1vdGVDb25uZWN0aW9uQ29uZmlndXJhdGlvbiB7XG4gIGNvbnN0IHtnZXRQYXNzd29yZH0gPSByZXF1aXJlKCcuLi8uLi9rZXl0YXItd3JhcHBlcicpO1xuICBjb25zdCBjcnlwdG8gPSByZXF1aXJlKCdjcnlwdG8nKTtcblxuICBjb25zdCBzaGExID0gY3J5cHRvLmNyZWF0ZUhhc2goJ3NoYTEnKTtcbiAgc2hhMS51cGRhdGUoYCR7cmVtb3RlUHJvamVjdENvbmZpZy5ob3N0fToke3JlbW90ZVByb2plY3RDb25maWcucG9ydH1gKTtcbiAgY29uc3Qgc2hhMXN1bSA9IHNoYTEuZGlnZXN0KCdoZXgnKTtcblxuICBjb25zdCBwYXNzd29yZCA9IGdldFBhc3N3b3JkKCdudWNsaWRlLnJlbW90ZVByb2plY3RDb25maWcnLCBzaGExc3VtKTtcblxuICBpZiAoIXBhc3N3b3JkKSB7XG4gICAgdGhyb3cgbmV3IEVycm9yKCdDYW5ub3QgZmluZCBwYXNzd29yZCBmb3IgZW5jcnlwdGVkIGNsaWVudCBrZXknKTtcbiAgfVxuXG4gIGNvbnN0IHtjZXJ0aWZpY2F0ZUF1dGhvcml0eUNlcnRpZmljYXRlLCBjbGllbnRDZXJ0aWZpY2F0ZSwgY2xpZW50S2V5fSA9IHJlbW90ZVByb2plY3RDb25maWc7XG4gIGludmFyaWFudChjbGllbnRLZXkpO1xuICBjb25zdCBbZW5jcnlwdGVkU3RyaW5nLCBzYWx0XSA9IGNsaWVudEtleS5zcGxpdCgnLicpO1xuXG4gIGlmICghZW5jcnlwdGVkU3RyaW5nIHx8ICFzYWx0KSB7XG4gICAgdGhyb3cgbmV3IEVycm9yKCdDYW5ub3QgZGVjcnlwdCBjbGllbnQga2V5Jyk7XG4gIH1cblxuICBjb25zdCByZXN0b3JlZENsaWVudEtleSA9IGRlY3J5cHRTdHJpbmcoZW5jcnlwdGVkU3RyaW5nLCBwYXNzd29yZCwgc2FsdCk7XG4gIC8vICBcIm5vbGludFwiIGlzIHRvIHN1cHByZXNzIEFyY2FuaXN0UHJpdmF0ZUtleUxpbnRlciBlcnJvcnNcbiAgaWYgKCFyZXN0b3JlZENsaWVudEtleS5zdGFydHNXaXRoKCctLS0tLUJFR0lOIFJTQSBQUklWQVRFIEtFWS0tLS0tJykpIHsgLypub2xpbnQqL1xuICAgIGdldExvZ2dlcigpLmVycm9yKFxuICAgICAgYGRlY3J5cHRlZCBjbGllbnQga2V5IGRpZCBub3Qgc3RhcnQgd2l0aCBleHBlY3RlZCBoZWFkZXI6ICR7cmVzdG9yZWRDbGllbnRLZXl9YCk7XG4gIH1cblxuICBpbnZhcmlhbnQoY2VydGlmaWNhdGVBdXRob3JpdHlDZXJ0aWZpY2F0ZSk7XG4gIGludmFyaWFudChjbGllbnRDZXJ0aWZpY2F0ZSk7XG4gIHJldHVybiB7XG4gICAgaG9zdDogcmVtb3RlUHJvamVjdENvbmZpZy5ob3N0LFxuICAgIHBvcnQ6IHJlbW90ZVByb2plY3RDb25maWcucG9ydCxcbiAgICBjd2Q6IHJlbW90ZVByb2plY3RDb25maWcuY3dkLFxuICAgIGNlcnRpZmljYXRlQXV0aG9yaXR5Q2VydGlmaWNhdGU6IG5ldyBCdWZmZXIoY2VydGlmaWNhdGVBdXRob3JpdHlDZXJ0aWZpY2F0ZSksXG4gICAgY2xpZW50Q2VydGlmaWNhdGU6IG5ldyBCdWZmZXIoY2xpZW50Q2VydGlmaWNhdGUpLFxuICAgIGNsaWVudEtleTogbmV3IEJ1ZmZlcihyZXN0b3JlZENsaWVudEtleSksXG4gIH07XG59XG5cbmZ1bmN0aW9uIGRlY3J5cHRTdHJpbmcodGV4dDogc3RyaW5nLCBwYXNzd29yZDogc3RyaW5nLCBzYWx0OiBzdHJpbmcpOiBzdHJpbmcge1xuICBjb25zdCBjcnlwdG8gPSByZXF1aXJlKCdjcnlwdG8nKTtcblxuICBjb25zdCBkZWNpcGhlciA9IGNyeXB0by5jcmVhdGVEZWNpcGhlcml2KFxuICAgICAgJ2Flcy0xMjgtY2JjJyxcbiAgICAgIG5ldyBCdWZmZXIocGFzc3dvcmQsICdiYXNlNjQnKSxcbiAgICAgIG5ldyBCdWZmZXIoc2FsdCwgJ2Jhc2U2NCcpKTtcblxuICBsZXQgZGVjcnlwdGVkU3RyaW5nID0gZGVjaXBoZXIudXBkYXRlKHRleHQsICdiYXNlNjQnLCAndXRmOCcpO1xuICBkZWNyeXB0ZWRTdHJpbmcgKz0gZGVjaXBoZXIuZmluYWwoJ3V0ZjgnKTtcblxuICByZXR1cm4gZGVjcnlwdGVkU3RyaW5nO1xufVxuXG5mdW5jdGlvbiBlbmNyeXB0U3RyaW5nKHRleHQ6IHN0cmluZyk6IHtwYXNzd29yZDogc3RyaW5nLCBzYWx0OiBzdHJpbmcsIGVuY3J5cHRlZFN0cmluZzogc3RyaW5nfSB7XG4gIGNvbnN0IGNyeXB0byA9IHJlcXVpcmUoJ2NyeXB0bycpO1xuICBjb25zdCBwYXNzd29yZCA9IGNyeXB0by5yYW5kb21CeXRlcygxNikudG9TdHJpbmcoJ2Jhc2U2NCcpO1xuICBjb25zdCBzYWx0ID0gY3J5cHRvLnJhbmRvbUJ5dGVzKDE2KS50b1N0cmluZygnYmFzZTY0Jyk7XG5cbiAgY29uc3QgY2lwaGVyID0gY3J5cHRvLmNyZWF0ZUNpcGhlcml2KFxuICAgICdhZXMtMTI4LWNiYycsXG4gICAgbmV3IEJ1ZmZlcihwYXNzd29yZCwgJ2Jhc2U2NCcpLFxuICAgIG5ldyBCdWZmZXIoc2FsdCwgJ2Jhc2U2NCcpKTtcblxuICBsZXQgZW5jcnlwdGVkU3RyaW5nID0gY2lwaGVyLnVwZGF0ZShcbiAgICB0ZXh0LFxuICAgIC8qIGlucHV0X2VuY29kaW5nICovICd1dGY4JyxcbiAgICAvKiBvdXRwdXRfZW5jb2RpbmcgKi8gJ2Jhc2U2NCcsXG4gICk7XG4gIGVuY3J5cHRlZFN0cmluZyArPSBjaXBoZXIuZmluYWwoJ2Jhc2U2NCcpO1xuXG4gIHJldHVybiB7XG4gICAgcGFzc3dvcmQsXG4gICAgc2FsdCxcbiAgICBlbmNyeXB0ZWRTdHJpbmcsXG4gIH07XG59XG5cbmV4cG9ydCBjb25zdCBfX3Rlc3RfXyA9IHtcbiAgZGVjcnlwdFN0cmluZyxcbiAgZW5jcnlwdFN0cmluZyxcbn07XG4iXX0=

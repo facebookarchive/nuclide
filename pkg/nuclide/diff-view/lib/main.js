@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,27 +8,27 @@
  * the root directory of this source tree.
  */
 
-import type {HomeFragments} from '../../home-interfaces';
-import type DiffViewModelType from './DiffViewModel';
+var _atom = require('atom');
 
-import {CompositeDisposable} from 'atom';
-import invariant from 'assert';
-import nuclideFeatures from '../../../../lib/nuclideFeatures';
+var _assert = require('assert');
 
-let diffViewModel: ?DiffViewModelType = null;
-let activeDiffView: ?{
-  component: ReactComponent;
-  element: HTMLElement;
-}  = null;
+var _assert2 = _interopRequireDefault(_assert);
+
+var _libNuclideFeatures = require('../../../../lib/nuclideFeatures');
+
+var _libNuclideFeatures2 = _interopRequireDefault(_libNuclideFeatures);
+
+var diffViewModel = null;
+var activeDiffView = null;
 
 // This url style is the one Atom uses for the welcome and settings pages.
-const NUCLIDE_DIFF_VIEW_URI = 'atom://nuclide/diff-view';
-const uiProviders = [];
+var NUCLIDE_DIFF_VIEW_URI = 'atom://nuclide/diff-view';
+var uiProviders = [];
 
-let subscriptions: ?CompositeDisposable = null;
-let toolBar: ?any = null;
-let changeCountElement: ?HTMLElement = null;
-let logger = null;
+var subscriptions = null;
+var toolBar = null;
+var changeCountElement = null;
+var logger = null;
 
 function getLogger() {
   return logger || (logger = require('../../logging').getLogger());
@@ -37,58 +36,61 @@ function getLogger() {
 
 // To add a View as an Atom workspace pane, we return `DiffViewElement` which extends `HTMLElement`.
 // This pattetn is also followed with atom's TextEditor.
-function createView(entryPath: string): HTMLElement {
+function createView(entryPath) {
   if (activeDiffView) {
     activateFilePath(entryPath);
     return activeDiffView.element;
   }
 
-  const {React} = require('react-for-atom');
-  const DiffViewElement = require('./DiffViewElement');
-  const DiffViewComponent = require('./DiffViewComponent');
+  var _require = require('react-for-atom');
 
-  const diffModel = getDiffViewModel();
-  const hostElement = new DiffViewElement().initialize(diffModel, NUCLIDE_DIFF_VIEW_URI);
-  const component = React.render(
-    <DiffViewComponent diffModel={diffModel}/>,
-    hostElement,
-  );
+  var React = _require.React;
+
+  var DiffViewElement = require('./DiffViewElement');
+  var DiffViewComponent = require('./DiffViewComponent');
+
+  var diffModel = getDiffViewModel();
+  var hostElement = new DiffViewElement().initialize(diffModel, NUCLIDE_DIFF_VIEW_URI);
+  var component = React.render(React.createElement(DiffViewComponent, { diffModel: diffModel }), hostElement);
   activeDiffView = {
-    component,
-    element: hostElement,
+    component: component,
+    element: hostElement
   };
   diffModel.activate();
   activateFilePath(entryPath);
 
-  const destroySubscription = hostElement.onDidDestroy(() => {
+  var destroySubscription = hostElement.onDidDestroy(function () {
     React.unmountComponentAtNode(hostElement);
     diffModel.deactivate();
     destroySubscription.dispose();
-    invariant(subscriptions);
+    (0, _assert2['default'])(subscriptions);
     subscriptions.remove(destroySubscription);
     activeDiffView = null;
   });
 
-  invariant(subscriptions);
+  (0, _assert2['default'])(subscriptions);
   subscriptions.add(destroySubscription);
 
-  const {track} = require('../../analytics');
+  var _require2 = require('../../analytics');
+
+  var track = _require2.track;
+
   track('diff-view-open');
 
   return hostElement;
 }
 
-function getDiffViewModel(): DiffViewModelType {
+function getDiffViewModel() {
   if (!diffViewModel) {
-    const DiffViewModel = require('./DiffViewModel');
+    var DiffViewModel = require('./DiffViewModel');
     diffViewModel = new DiffViewModel(uiProviders);
-    invariant(subscriptions);
+    (0, _assert2['default'])(subscriptions);
     subscriptions.add(diffViewModel);
   }
   return diffViewModel;
 }
 
-function activateFilePath(filePath: string): void {
+function activateFilePath(filePath) {
   if (!filePath.length || !diffViewModel) {
     // The Diff View could be opened with no path at all.
     return;
@@ -96,11 +98,17 @@ function activateFilePath(filePath: string): void {
   diffViewModel.activateFile(filePath);
 }
 
-function projectsContainPath(checkPath: string): boolean {
-  const {isRemote} = require('../../remote-uri');
-  const {Directory} = require('atom');
-  return atom.project.getDirectories().some(directory => {
-    const directoryPath = directory.getPath();
+function projectsContainPath(checkPath) {
+  var _require3 = require('../../remote-uri');
+
+  var isRemote = _require3.isRemote;
+
+  var _require4 = require('atom');
+
+  var Directory = _require4.Directory;
+
+  return atom.project.getDirectories().some(function (directory) {
+    var directoryPath = directory.getPath();
     if (!checkPath.startsWith(directoryPath)) {
       return false;
     }
@@ -112,7 +120,7 @@ function projectsContainPath(checkPath: string): boolean {
   });
 }
 
-function updateToolbarCount(diffViewButton: HTMLElement, count: number): void {
+function updateToolbarCount(diffViewButton, count) {
   if (!changeCountElement) {
     changeCountElement = document.createElement('span');
     changeCountElement.className = 'diff-view-count';
@@ -123,84 +131,64 @@ function updateToolbarCount(diffViewButton: HTMLElement, count: number): void {
   } else {
     diffViewButton.classList.remove('positive-count');
   }
-  const {React} = require('react-for-atom');
-  const DiffCountComponent = require('./DiffCountComponent');
-  React.render(<DiffCountComponent count={count}/>, changeCountElement);
+
+  var _require5 = require('react-for-atom');
+
+  var React = _require5.React;
+
+  var DiffCountComponent = require('./DiffCountComponent');
+  React.render(React.createElement(DiffCountComponent, { count: count }), changeCountElement);
 }
 
 module.exports = {
 
-  activate(state: ?any): void {
-    subscriptions = new CompositeDisposable();
+  activate: function activate(state) {
+    subscriptions = new _atom.CompositeDisposable();
     // Listen for menu item workspace diff view open command.
-    subscriptions.add(atom.commands.add(
-      'atom-workspace',
-      'nuclide-diff-view:open',
-      () => atom.workspace.open(NUCLIDE_DIFF_VIEW_URI)
-    ));
+    subscriptions.add(atom.commands.add('atom-workspace', 'nuclide-diff-view:open', function () {
+      return atom.workspace.open(NUCLIDE_DIFF_VIEW_URI);
+    }));
     // Listen for in-editor context menu item diff view open command.
-    subscriptions.add(atom.commands.add(
-      'atom-text-editor',
-      'nuclide-diff-view:open',
-      () => {
-        const editor = atom.workspace.getActiveTextEditor();
-        if (!editor) {
-          return getLogger().warn('No active text editor for diff view!');
-        }
-        atom.workspace.open(NUCLIDE_DIFF_VIEW_URI + (editor.getPath() || ''));
+    subscriptions.add(atom.commands.add('atom-text-editor', 'nuclide-diff-view:open', function () {
+      var editor = atom.workspace.getActiveTextEditor();
+      if (!editor) {
+        return getLogger().warn('No active text editor for diff view!');
       }
-    ));
+      atom.workspace.open(NUCLIDE_DIFF_VIEW_URI + (editor.getPath() || ''));
+    }));
 
-    function getTargetFromEvent(event: Event): HTMLElement {
+    function getTargetFromEvent(event) {
       // Event target isn't necessarily an HTMLElement,
-      // but that's guranteed in the usages here.
-      const target: HTMLElement = (event.currentTarget: any);
-      return target.classList.contains('name')
-        ? target
-        : target.querySelector('.name');
+
+      var target = event.currentTarget;
+      return target.classList.contains('name') ? target : target.querySelector('.name');
     }
 
     // Listen for file tree context menu file item events to open the diff view.
-    subscriptions.add(atom.commands.add(
-      '.tree-view .entry.file.list-item',
-      'nuclide-diff-view:open-context',
-      (event) => {
-        const target = getTargetFromEvent(event);
-        atom.workspace.open(NUCLIDE_DIFF_VIEW_URI + (target.dataset.path || ''));
-      }
-    ));
+    subscriptions.add(atom.commands.add('.tree-view .entry.file.list-item', 'nuclide-diff-view:open-context', function (event) {
+      var target = getTargetFromEvent(event);
+      atom.workspace.open(NUCLIDE_DIFF_VIEW_URI + (target.dataset.path || ''));
+    }));
     subscriptions.add(atom.contextMenu.add({
-      '.tree-view .entry.file.list-item': [
-        {type: 'separator'},
-        {
-          label: 'Open in Diff View',
-          command: 'nuclide-diff-view:open-context',
-        },
-        {type: 'separator'},
-      ],
+      '.tree-view .entry.file.list-item': [{ type: 'separator' }, {
+        label: 'Open in Diff View',
+        command: 'nuclide-diff-view:open-context'
+      }, { type: 'separator' }]
     }));
 
     // Listen for file tree context menu directory item events to open the diff view.
-    subscriptions.add(atom.commands.add(
-      '.tree-view .entry.directory.list-nested-item',
-      'nuclide-diff-view:open-context',
-      (event) => {
-        atom.workspace.open(NUCLIDE_DIFF_VIEW_URI);
-      }
-    ));
+    subscriptions.add(atom.commands.add('.tree-view .entry.directory.list-nested-item', 'nuclide-diff-view:open-context', function (event) {
+      atom.workspace.open(NUCLIDE_DIFF_VIEW_URI);
+    }));
     subscriptions.add(atom.contextMenu.add({
-      '.tree-view .entry.directory.list-nested-item': [
-        {type: 'separator'},
-        {
-          label: 'Open in Diff View',
-          command: 'nuclide-diff-view:open-context',
-        },
-        {type: 'separator'},
-      ],
+      '.tree-view .entry.directory.list-nested-item': [{ type: 'separator' }, {
+        label: 'Open in Diff View',
+        command: 'nuclide-diff-view:open-context'
+      }, { type: 'separator' }]
     }));
 
     // The Diff View will open its main UI in a tab, like Atom's preferences and welcome pages.
-    subscriptions.add(atom.workspace.addOpener(uri => {
+    subscriptions.add(atom.workspace.addOpener(function (uri) {
       if (uri.startsWith(NUCLIDE_DIFF_VIEW_URI)) {
         return createView(uri.slice(NUCLIDE_DIFF_VIEW_URI.length));
       }
@@ -211,9 +199,9 @@ module.exports = {
     }
 
     // Wait for all source control providers to register.
-    subscriptions.add(nuclideFeatures.onDidActivateInitialFeatures(() => {
-      invariant(state);
-      const {activeFilePath} = state;
+    subscriptions.add(_libNuclideFeatures2['default'].onDidActivateInitialFeatures(function () {
+      (0, _assert2['default'])(state);
+      var activeFilePath = state.activeFilePath;
 
       // If it's a local directory, it must be loaded with packages activation.
       if (projectsContainPath(activeFilePath)) {
@@ -221,70 +209,82 @@ module.exports = {
         return;
       }
       // If it's a remote directory, it should come on a path change event.
-      const changePathsSubscription = atom.project.onDidChangePaths(() => {
+      var changePathsSubscription = atom.project.onDidChangePaths(function () {
         // try/catch here because in case of any error, Atom stops dispatching events to the
         // rest of the listeners, which can stop the remote editing from being functional.
         try {
           if (projectsContainPath(activeFilePath)) {
             atom.workspace.open(NUCLIDE_DIFF_VIEW_URI + activeFilePath);
             changePathsSubscription.dispose();
-            invariant(subscriptions);
+            (0, _assert2['default'])(subscriptions);
             subscriptions.remove(changePathsSubscription);
           }
         } catch (e) {
           getLogger().error('DiffView restore error', e);
         }
       });
-      invariant(subscriptions);
+      (0, _assert2['default'])(subscriptions);
       subscriptions.add(changePathsSubscription);
     }));
   },
 
-  consumeToolBar(getToolBar: (group: string) => Object): void {
+  consumeToolBar: function consumeToolBar(getToolBar) {
     toolBar = getToolBar('nuclide-diff-view');
-    const button = toolBar.addButton({
+    var button = toolBar.addButton({
       icon: 'git-branch',
       callback: 'nuclide-diff-view:open',
       tooltip: 'Open Diff View',
-      priority: 300,
+      priority: 300
     })[0];
-    const diffModel = getDiffViewModel();
+    var diffModel = getDiffViewModel();
     updateToolbarCount(button, diffModel.getDirtyFileChanges().size);
-    invariant(subscriptions);
-    subscriptions.add(diffModel.onDidChangeDirtyStatus(dirtyFileChanges => {
+    (0, _assert2['default'])(subscriptions);
+    subscriptions.add(diffModel.onDidChangeDirtyStatus(function (dirtyFileChanges) {
       updateToolbarCount(button, dirtyFileChanges.size);
     }));
   },
 
-  getHomeFragments(): HomeFragments {
-    const {React} = require('react-for-atom');
+  getHomeFragments: function getHomeFragments() {
+    var _require6 = require('react-for-atom');
+
+    var React = _require6.React;
+
     return {
       feature: {
         title: 'Diff View',
         icon: 'git-branch',
-        description: (
-          <span>
-            Launches an editable side-by-side view of the output of the Mercurial
-            <code>hg diff</code> command, showing pending changes to be committed.
-          </span>
+        description: React.createElement(
+          'span',
+          null,
+          'Launches an editable side-by-side view of the output of the Mercurial',
+          React.createElement(
+            'code',
+            null,
+            'hg diff'
+          ),
+          ' command, showing pending changes to be committed.'
         ),
-        command: 'nuclide-diff-view:open',
+        command: 'nuclide-diff-view:open'
       },
-      priority: 3,
+      priority: 3
     };
   },
 
-  serialize(): ?Object {
+  serialize: function serialize() {
     if (!activeDiffView || !diffViewModel) {
       return {};
     }
-    const {filePath} = diffViewModel.getActiveFileState();
+
+    var _diffViewModel$getActiveFileState = diffViewModel.getActiveFileState();
+
+    var filePath = _diffViewModel$getActiveFileState.filePath;
+
     return {
-      activeFilePath: filePath,
+      activeFilePath: filePath
     };
   },
 
-  deactivate(): void {
+  deactivate: function deactivate() {
     uiProviders.splice(0);
     if (subscriptions != null) {
       subscriptions.dispose();
@@ -308,9 +308,11 @@ module.exports = {
    * @return An array of InlineComments (defined above) to be rendered into the
    *         diff view
    */
-  consumeProvider(provider: Object) {
+  consumeProvider: function consumeProvider(provider) {
     // TODO(most): Fix UI rendering and re-introduce: t8174332
     // uiProviders.push(provider);
     return;
-  },
+  }
 };
+// but that's guranteed in the usages here.
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIm1haW4uanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7OztvQkFja0MsTUFBTTs7c0JBQ2xCLFFBQVE7Ozs7a0NBQ0YsaUNBQWlDOzs7O0FBRTdELElBQUksYUFBaUMsR0FBRyxJQUFJLENBQUM7QUFDN0MsSUFBSSxjQUdILEdBQUksSUFBSSxDQUFDOzs7QUFHVixJQUFNLHFCQUFxQixHQUFHLDBCQUEwQixDQUFDO0FBQ3pELElBQU0sV0FBVyxHQUFHLEVBQUUsQ0FBQzs7QUFFdkIsSUFBSSxhQUFtQyxHQUFHLElBQUksQ0FBQztBQUMvQyxJQUFJLE9BQWEsR0FBRyxJQUFJLENBQUM7QUFDekIsSUFBSSxrQkFBZ0MsR0FBRyxJQUFJLENBQUM7QUFDNUMsSUFBSSxNQUFNLEdBQUcsSUFBSSxDQUFDOztBQUVsQixTQUFTLFNBQVMsR0FBRztBQUNuQixTQUFPLE1BQU0sS0FBSyxNQUFNLEdBQUcsT0FBTyxDQUFDLGVBQWUsQ0FBQyxDQUFDLFNBQVMsRUFBRSxDQUFBLEFBQUMsQ0FBQztDQUNsRTs7OztBQUlELFNBQVMsVUFBVSxDQUFDLFNBQWlCLEVBQWU7QUFDbEQsTUFBSSxjQUFjLEVBQUU7QUFDbEIsb0JBQWdCLENBQUMsU0FBUyxDQUFDLENBQUM7QUFDNUIsV0FBTyxjQUFjLENBQUMsT0FBTyxDQUFDO0dBQy9COztpQkFFZSxPQUFPLENBQUMsZ0JBQWdCLENBQUM7O01BQWxDLEtBQUssWUFBTCxLQUFLOztBQUNaLE1BQU0sZUFBZSxHQUFHLE9BQU8sQ0FBQyxtQkFBbUIsQ0FBQyxDQUFDO0FBQ3JELE1BQU0saUJBQWlCLEdBQUcsT0FBTyxDQUFDLHFCQUFxQixDQUFDLENBQUM7O0FBRXpELE1BQU0sU0FBUyxHQUFHLGdCQUFnQixFQUFFLENBQUM7QUFDckMsTUFBTSxXQUFXLEdBQUcsSUFBSSxlQUFlLEVBQUUsQ0FBQyxVQUFVLENBQUMsU0FBUyxFQUFFLHFCQUFxQixDQUFDLENBQUM7QUFDdkYsTUFBTSxTQUFTLEdBQUcsS0FBSyxDQUFDLE1BQU0sQ0FDNUIsb0JBQUMsaUJBQWlCLElBQUMsU0FBUyxFQUFFLFNBQVMsQUFBQyxHQUFFLEVBQzFDLFdBQVcsQ0FDWixDQUFDO0FBQ0YsZ0JBQWMsR0FBRztBQUNmLGFBQVMsRUFBVCxTQUFTO0FBQ1QsV0FBTyxFQUFFLFdBQVc7R0FDckIsQ0FBQztBQUNGLFdBQVMsQ0FBQyxRQUFRLEVBQUUsQ0FBQztBQUNyQixrQkFBZ0IsQ0FBQyxTQUFTLENBQUMsQ0FBQzs7QUFFNUIsTUFBTSxtQkFBbUIsR0FBRyxXQUFXLENBQUMsWUFBWSxDQUFDLFlBQU07QUFDekQsU0FBSyxDQUFDLHNCQUFzQixDQUFDLFdBQVcsQ0FBQyxDQUFDO0FBQzFDLGFBQVMsQ0FBQyxVQUFVLEVBQUUsQ0FBQztBQUN2Qix1QkFBbUIsQ0FBQyxPQUFPLEVBQUUsQ0FBQztBQUM5Qiw2QkFBVSxhQUFhLENBQUMsQ0FBQztBQUN6QixpQkFBYSxDQUFDLE1BQU0sQ0FBQyxtQkFBbUIsQ0FBQyxDQUFDO0FBQzFDLGtCQUFjLEdBQUcsSUFBSSxDQUFDO0dBQ3ZCLENBQUMsQ0FBQzs7QUFFSCwyQkFBVSxhQUFhLENBQUMsQ0FBQztBQUN6QixlQUFhLENBQUMsR0FBRyxDQUFDLG1CQUFtQixDQUFDLENBQUM7O2tCQUV2QixPQUFPLENBQUMsaUJBQWlCLENBQUM7O01BQW5DLEtBQUssYUFBTCxLQUFLOztBQUNaLE9BQUssQ0FBQyxnQkFBZ0IsQ0FBQyxDQUFDOztBQUV4QixTQUFPLFdBQVcsQ0FBQztDQUNwQjs7QUFFRCxTQUFTLGdCQUFnQixHQUFzQjtBQUM3QyxNQUFJLENBQUMsYUFBYSxFQUFFO0FBQ2xCLFFBQU0sYUFBYSxHQUFHLE9BQU8sQ0FBQyxpQkFBaUIsQ0FBQyxDQUFDO0FBQ2pELGlCQUFhLEdBQUcsSUFBSSxhQUFhLENBQUMsV0FBVyxDQUFDLENBQUM7QUFDL0MsNkJBQVUsYUFBYSxDQUFDLENBQUM7QUFDekIsaUJBQWEsQ0FBQyxHQUFHLENBQUMsYUFBYSxDQUFDLENBQUM7R0FDbEM7QUFDRCxTQUFPLGFBQWEsQ0FBQztDQUN0Qjs7QUFFRCxTQUFTLGdCQUFnQixDQUFDLFFBQWdCLEVBQVE7QUFDaEQsTUFBSSxDQUFDLFFBQVEsQ0FBQyxNQUFNLElBQUksQ0FBQyxhQUFhLEVBQUU7O0FBRXRDLFdBQU87R0FDUjtBQUNELGVBQWEsQ0FBQyxZQUFZLENBQUMsUUFBUSxDQUFDLENBQUM7Q0FDdEM7O0FBRUQsU0FBUyxtQkFBbUIsQ0FBQyxTQUFpQixFQUFXO2tCQUNwQyxPQUFPLENBQUMsa0JBQWtCLENBQUM7O01BQXZDLFFBQVEsYUFBUixRQUFROztrQkFDSyxPQUFPLENBQUMsTUFBTSxDQUFDOztNQUE1QixTQUFTLGFBQVQsU0FBUzs7QUFDaEIsU0FBTyxJQUFJLENBQUMsT0FBTyxDQUFDLGNBQWMsRUFBRSxDQUFDLElBQUksQ0FBQyxVQUFBLFNBQVMsRUFBSTtBQUNyRCxRQUFNLGFBQWEsR0FBRyxTQUFTLENBQUMsT0FBTyxFQUFFLENBQUM7QUFDMUMsUUFBSSxDQUFDLFNBQVMsQ0FBQyxVQUFVLENBQUMsYUFBYSxDQUFDLEVBQUU7QUFDeEMsYUFBTyxLQUFLLENBQUM7S0FDZDs7QUFFRCxRQUFJLFFBQVEsQ0FBQyxTQUFTLENBQUMsSUFBSSxTQUFTLFlBQVksU0FBUyxFQUFFO0FBQ3pELGFBQU8sS0FBSyxDQUFDO0tBQ2Q7QUFDRCxXQUFPLElBQUksQ0FBQztHQUNiLENBQUMsQ0FBQztDQUNKOztBQUVELFNBQVMsa0JBQWtCLENBQUMsY0FBMkIsRUFBRSxLQUFhLEVBQVE7QUFDNUUsTUFBSSxDQUFDLGtCQUFrQixFQUFFO0FBQ3ZCLHNCQUFrQixHQUFHLFFBQVEsQ0FBQyxhQUFhLENBQUMsTUFBTSxDQUFDLENBQUM7QUFDcEQsc0JBQWtCLENBQUMsU0FBUyxHQUFHLGlCQUFpQixDQUFDO0FBQ2pELGtCQUFjLENBQUMsV0FBVyxDQUFDLGtCQUFrQixDQUFDLENBQUM7R0FDaEQ7QUFDRCxNQUFJLEtBQUssR0FBRyxDQUFDLEVBQUU7QUFDYixrQkFBYyxDQUFDLFNBQVMsQ0FBQyxHQUFHLENBQUMsZ0JBQWdCLENBQUMsQ0FBQztHQUNoRCxNQUFNO0FBQ0wsa0JBQWMsQ0FBQyxTQUFTLENBQUMsTUFBTSxDQUFDLGdCQUFnQixDQUFDLENBQUM7R0FDbkQ7O2tCQUNlLE9BQU8sQ0FBQyxnQkFBZ0IsQ0FBQzs7TUFBbEMsS0FBSyxhQUFMLEtBQUs7O0FBQ1osTUFBTSxrQkFBa0IsR0FBRyxPQUFPLENBQUMsc0JBQXNCLENBQUMsQ0FBQztBQUMzRCxPQUFLLENBQUMsTUFBTSxDQUFDLG9CQUFDLGtCQUFrQixJQUFDLEtBQUssRUFBRSxLQUFLLEFBQUMsR0FBRSxFQUFFLGtCQUFrQixDQUFDLENBQUM7Q0FDdkU7O0FBRUQsTUFBTSxDQUFDLE9BQU8sR0FBRzs7QUFFZixVQUFRLEVBQUEsa0JBQUMsS0FBVyxFQUFRO0FBQzFCLGlCQUFhLEdBQUcsK0JBQXlCLENBQUM7O0FBRTFDLGlCQUFhLENBQUMsR0FBRyxDQUFDLElBQUksQ0FBQyxRQUFRLENBQUMsR0FBRyxDQUNqQyxnQkFBZ0IsRUFDaEIsd0JBQXdCLEVBQ3hCO2FBQU0sSUFBSSxDQUFDLFNBQVMsQ0FBQyxJQUFJLENBQUMscUJBQXFCLENBQUM7S0FBQSxDQUNqRCxDQUFDLENBQUM7O0FBRUgsaUJBQWEsQ0FBQyxHQUFHLENBQUMsSUFBSSxDQUFDLFFBQVEsQ0FBQyxHQUFHLENBQ2pDLGtCQUFrQixFQUNsQix3QkFBd0IsRUFDeEIsWUFBTTtBQUNKLFVBQU0sTUFBTSxHQUFHLElBQUksQ0FBQyxTQUFTLENBQUMsbUJBQW1CLEVBQUUsQ0FBQztBQUNwRCxVQUFJLENBQUMsTUFBTSxFQUFFO0FBQ1gsZUFBTyxTQUFTLEVBQUUsQ0FBQyxJQUFJLENBQUMsc0NBQXNDLENBQUMsQ0FBQztPQUNqRTtBQUNELFVBQUksQ0FBQyxTQUFTLENBQUMsSUFBSSxDQUFDLHFCQUFxQixJQUFJLE1BQU0sQ0FBQyxPQUFPLEVBQUUsSUFBSSxFQUFFLENBQUEsQUFBQyxDQUFDLENBQUM7S0FDdkUsQ0FDRixDQUFDLENBQUM7O0FBRUgsYUFBUyxrQkFBa0IsQ0FBQyxLQUFZLEVBQWU7OztBQUdyRCxVQUFNLE1BQW1CLEdBQUksS0FBSyxDQUFDLGFBQWEsQUFBTSxDQUFDO0FBQ3ZELGFBQU8sTUFBTSxDQUFDLFNBQVMsQ0FBQyxRQUFRLENBQUMsTUFBTSxDQUFDLEdBQ3BDLE1BQU0sR0FDTixNQUFNLENBQUMsYUFBYSxDQUFDLE9BQU8sQ0FBQyxDQUFDO0tBQ25DOzs7QUFHRCxpQkFBYSxDQUFDLEdBQUcsQ0FBQyxJQUFJLENBQUMsUUFBUSxDQUFDLEdBQUcsQ0FDakMsa0NBQWtDLEVBQ2xDLGdDQUFnQyxFQUNoQyxVQUFDLEtBQUssRUFBSztBQUNULFVBQU0sTUFBTSxHQUFHLGtCQUFrQixDQUFDLEtBQUssQ0FBQyxDQUFDO0FBQ3pDLFVBQUksQ0FBQyxTQUFTLENBQUMsSUFBSSxDQUFDLHFCQUFxQixJQUFJLE1BQU0sQ0FBQyxPQUFPLENBQUMsSUFBSSxJQUFJLEVBQUUsQ0FBQSxBQUFDLENBQUMsQ0FBQztLQUMxRSxDQUNGLENBQUMsQ0FBQztBQUNILGlCQUFhLENBQUMsR0FBRyxDQUFDLElBQUksQ0FBQyxXQUFXLENBQUMsR0FBRyxDQUFDO0FBQ3JDLHdDQUFrQyxFQUFFLENBQ2xDLEVBQUMsSUFBSSxFQUFFLFdBQVcsRUFBQyxFQUNuQjtBQUNFLGFBQUssRUFBRSxtQkFBbUI7QUFDMUIsZUFBTyxFQUFFLGdDQUFnQztPQUMxQyxFQUNELEVBQUMsSUFBSSxFQUFFLFdBQVcsRUFBQyxDQUNwQjtLQUNGLENBQUMsQ0FBQyxDQUFDOzs7QUFHSixpQkFBYSxDQUFDLEdBQUcsQ0FBQyxJQUFJLENBQUMsUUFBUSxDQUFDLEdBQUcsQ0FDakMsOENBQThDLEVBQzlDLGdDQUFnQyxFQUNoQyxVQUFDLEtBQUssRUFBSztBQUNULFVBQUksQ0FBQyxTQUFTLENBQUMsSUFBSSxDQUFDLHFCQUFxQixDQUFDLENBQUM7S0FDNUMsQ0FDRixDQUFDLENBQUM7QUFDSCxpQkFBYSxDQUFDLEdBQUcsQ0FBQyxJQUFJLENBQUMsV0FBVyxDQUFDLEdBQUcsQ0FBQztBQUNyQyxvREFBOEMsRUFBRSxDQUM5QyxFQUFDLElBQUksRUFBRSxXQUFXLEVBQUMsRUFDbkI7QUFDRSxhQUFLLEVBQUUsbUJBQW1CO0FBQzFCLGVBQU8sRUFBRSxnQ0FBZ0M7T0FDMUMsRUFDRCxFQUFDLElBQUksRUFBRSxXQUFXLEVBQUMsQ0FDcEI7S0FDRixDQUFDLENBQUMsQ0FBQzs7O0FBR0osaUJBQWEsQ0FBQyxHQUFHLENBQUMsSUFBSSxDQUFDLFNBQVMsQ0FBQyxTQUFTLENBQUMsVUFBQSxHQUFHLEVBQUk7QUFDaEQsVUFBSSxHQUFHLENBQUMsVUFBVSxDQUFDLHFCQUFxQixDQUFDLEVBQUU7QUFDekMsZUFBTyxVQUFVLENBQUMsR0FBRyxDQUFDLEtBQUssQ0FBQyxxQkFBcUIsQ0FBQyxNQUFNLENBQUMsQ0FBQyxDQUFDO09BQzVEO0tBQ0YsQ0FBQyxDQUFDLENBQUM7O0FBRUosUUFBSSxDQUFDLEtBQUssSUFBSSxDQUFDLEtBQUssQ0FBQyxjQUFjLEVBQUU7QUFDbkMsYUFBTztLQUNSOzs7QUFHRCxpQkFBYSxDQUFDLEdBQUcsQ0FBQyxnQ0FBZ0IsNEJBQTRCLENBQUMsWUFBTTtBQUNuRSwrQkFBVSxLQUFLLENBQUMsQ0FBQztVQUNWLGNBQWMsR0FBSSxLQUFLLENBQXZCLGNBQWM7OztBQUdyQixVQUFJLG1CQUFtQixDQUFDLGNBQWMsQ0FBQyxFQUFFO0FBQ3ZDLFlBQUksQ0FBQyxTQUFTLENBQUMsSUFBSSxDQUFDLHFCQUFxQixHQUFHLGNBQWMsQ0FBQyxDQUFDO0FBQzVELGVBQU87T0FDUjs7QUFFRCxVQUFNLHVCQUF1QixHQUFHLElBQUksQ0FBQyxPQUFPLENBQUMsZ0JBQWdCLENBQUMsWUFBTTs7O0FBR2xFLFlBQUk7QUFDRixjQUFJLG1CQUFtQixDQUFDLGNBQWMsQ0FBQyxFQUFFO0FBQ3ZDLGdCQUFJLENBQUMsU0FBUyxDQUFDLElBQUksQ0FBQyxxQkFBcUIsR0FBRyxjQUFjLENBQUMsQ0FBQztBQUM1RCxtQ0FBdUIsQ0FBQyxPQUFPLEVBQUUsQ0FBQztBQUNsQyxxQ0FBVSxhQUFhLENBQUMsQ0FBQztBQUN6Qix5QkFBYSxDQUFDLE1BQU0sQ0FBQyx1QkFBdUIsQ0FBQyxDQUFDO1dBQy9DO1NBQ0YsQ0FBQyxPQUFPLENBQUMsRUFBRTtBQUNWLG1CQUFTLEVBQUUsQ0FBQyxLQUFLLENBQUMsd0JBQXdCLEVBQUUsQ0FBQyxDQUFDLENBQUM7U0FDaEQ7T0FDRixDQUFDLENBQUM7QUFDSCwrQkFBVSxhQUFhLENBQUMsQ0FBQztBQUN6QixtQkFBYSxDQUFDLEdBQUcsQ0FBQyx1QkFBdUIsQ0FBQyxDQUFDO0tBQzVDLENBQUMsQ0FBQyxDQUFDO0dBQ0w7O0FBRUQsZ0JBQWMsRUFBQSx3QkFBQyxVQUFxQyxFQUFRO0FBQzFELFdBQU8sR0FBRyxVQUFVLENBQUMsbUJBQW1CLENBQUMsQ0FBQztBQUMxQyxRQUFNLE1BQU0sR0FBRyxPQUFPLENBQUMsU0FBUyxDQUFDO0FBQy9CLFVBQUksRUFBRSxZQUFZO0FBQ2xCLGNBQVEsRUFBRSx3QkFBd0I7QUFDbEMsYUFBTyxFQUFFLGdCQUFnQjtBQUN6QixjQUFRLEVBQUUsR0FBRztLQUNkLENBQUMsQ0FBQyxDQUFDLENBQUMsQ0FBQztBQUNOLFFBQU0sU0FBUyxHQUFHLGdCQUFnQixFQUFFLENBQUM7QUFDckMsc0JBQWtCLENBQUMsTUFBTSxFQUFFLFNBQVMsQ0FBQyxtQkFBbUIsRUFBRSxDQUFDLElBQUksQ0FBQyxDQUFDO0FBQ2pFLDZCQUFVLGFBQWEsQ0FBQyxDQUFDO0FBQ3pCLGlCQUFhLENBQUMsR0FBRyxDQUFDLFNBQVMsQ0FBQyxzQkFBc0IsQ0FBQyxVQUFBLGdCQUFnQixFQUFJO0FBQ3JFLHdCQUFrQixDQUFDLE1BQU0sRUFBRSxnQkFBZ0IsQ0FBQyxJQUFJLENBQUMsQ0FBQztLQUNuRCxDQUFDLENBQUMsQ0FBQztHQUNMOztBQUVELGtCQUFnQixFQUFBLDRCQUFrQjtvQkFDaEIsT0FBTyxDQUFDLGdCQUFnQixDQUFDOztRQUFsQyxLQUFLLGFBQUwsS0FBSzs7QUFDWixXQUFPO0FBQ0wsYUFBTyxFQUFFO0FBQ1AsYUFBSyxFQUFFLFdBQVc7QUFDbEIsWUFBSSxFQUFFLFlBQVk7QUFDbEIsbUJBQVcsRUFDVDs7OztVQUVFOzs7O1dBQW9COztTQUNmLEFBQ1I7QUFDRCxlQUFPLEVBQUUsd0JBQXdCO09BQ2xDO0FBQ0QsY0FBUSxFQUFFLENBQUM7S0FDWixDQUFDO0dBQ0g7O0FBRUQsV0FBUyxFQUFBLHFCQUFZO0FBQ25CLFFBQUksQ0FBQyxjQUFjLElBQUksQ0FBQyxhQUFhLEVBQUU7QUFDckMsYUFBTyxFQUFFLENBQUM7S0FDWDs7NENBQ2tCLGFBQWEsQ0FBQyxrQkFBa0IsRUFBRTs7UUFBOUMsUUFBUSxxQ0FBUixRQUFROztBQUNmLFdBQU87QUFDTCxvQkFBYyxFQUFFLFFBQVE7S0FDekIsQ0FBQztHQUNIOztBQUVELFlBQVUsRUFBQSxzQkFBUztBQUNqQixlQUFXLENBQUMsTUFBTSxDQUFDLENBQUMsQ0FBQyxDQUFDO0FBQ3RCLFFBQUksYUFBYSxJQUFJLElBQUksRUFBRTtBQUN6QixtQkFBYSxDQUFDLE9BQU8sRUFBRSxDQUFDO0FBQ3hCLG1CQUFhLEdBQUcsSUFBSSxDQUFDO0tBQ3RCO0FBQ0QsUUFBSSxhQUFhLElBQUksSUFBSSxFQUFFO0FBQ3pCLG1CQUFhLENBQUMsT0FBTyxFQUFFLENBQUM7QUFDeEIsbUJBQWEsR0FBRyxJQUFJLENBQUM7S0FDdEI7QUFDRCxrQkFBYyxHQUFHLElBQUksQ0FBQztBQUN0QixRQUFJLE9BQU8sSUFBSSxJQUFJLEVBQUU7QUFDbkIsYUFBTyxDQUFDLFdBQVcsRUFBRSxDQUFDO0FBQ3RCLGFBQU8sR0FBRyxJQUFJLENBQUM7S0FDaEI7R0FDRjs7Ozs7Ozs7O0FBU0QsaUJBQWUsRUFBQSx5QkFBQyxRQUFnQixFQUFFOzs7QUFHaEMsV0FBTztHQUNSO0NBQ0YsQ0FBQyIsImZpbGUiOiJtYWluLmpzIiwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBiYWJlbCc7XG4vKiBAZmxvdyAqL1xuXG4vKlxuICogQ29weXJpZ2h0IChjKSAyMDE1LXByZXNlbnQsIEZhY2Vib29rLCBJbmMuXG4gKiBBbGwgcmlnaHRzIHJlc2VydmVkLlxuICpcbiAqIFRoaXMgc291cmNlIGNvZGUgaXMgbGljZW5zZWQgdW5kZXIgdGhlIGxpY2Vuc2UgZm91bmQgaW4gdGhlIExJQ0VOU0UgZmlsZSBpblxuICogdGhlIHJvb3QgZGlyZWN0b3J5IG9mIHRoaXMgc291cmNlIHRyZWUuXG4gKi9cblxuaW1wb3J0IHR5cGUge0hvbWVGcmFnbWVudHN9IGZyb20gJy4uLy4uL2hvbWUtaW50ZXJmYWNlcyc7XG5pbXBvcnQgdHlwZSBEaWZmVmlld01vZGVsVHlwZSBmcm9tICcuL0RpZmZWaWV3TW9kZWwnO1xuXG5pbXBvcnQge0NvbXBvc2l0ZURpc3Bvc2FibGV9IGZyb20gJ2F0b20nO1xuaW1wb3J0IGludmFyaWFudCBmcm9tICdhc3NlcnQnO1xuaW1wb3J0IG51Y2xpZGVGZWF0dXJlcyBmcm9tICcuLi8uLi8uLi8uLi9saWIvbnVjbGlkZUZlYXR1cmVzJztcblxubGV0IGRpZmZWaWV3TW9kZWw6ID9EaWZmVmlld01vZGVsVHlwZSA9IG51bGw7XG5sZXQgYWN0aXZlRGlmZlZpZXc6ID97XG4gIGNvbXBvbmVudDogUmVhY3RDb21wb25lbnQ7XG4gIGVsZW1lbnQ6IEhUTUxFbGVtZW50O1xufSAgPSBudWxsO1xuXG4vLyBUaGlzIHVybCBzdHlsZSBpcyB0aGUgb25lIEF0b20gdXNlcyBmb3IgdGhlIHdlbGNvbWUgYW5kIHNldHRpbmdzIHBhZ2VzLlxuY29uc3QgTlVDTElERV9ESUZGX1ZJRVdfVVJJID0gJ2F0b206Ly9udWNsaWRlL2RpZmYtdmlldyc7XG5jb25zdCB1aVByb3ZpZGVycyA9IFtdO1xuXG5sZXQgc3Vic2NyaXB0aW9uczogP0NvbXBvc2l0ZURpc3Bvc2FibGUgPSBudWxsO1xubGV0IHRvb2xCYXI6ID9hbnkgPSBudWxsO1xubGV0IGNoYW5nZUNvdW50RWxlbWVudDogP0hUTUxFbGVtZW50ID0gbnVsbDtcbmxldCBsb2dnZXIgPSBudWxsO1xuXG5mdW5jdGlvbiBnZXRMb2dnZXIoKSB7XG4gIHJldHVybiBsb2dnZXIgfHwgKGxvZ2dlciA9IHJlcXVpcmUoJy4uLy4uL2xvZ2dpbmcnKS5nZXRMb2dnZXIoKSk7XG59XG5cbi8vIFRvIGFkZCBhIFZpZXcgYXMgYW4gQXRvbSB3b3Jrc3BhY2UgcGFuZSwgd2UgcmV0dXJuIGBEaWZmVmlld0VsZW1lbnRgIHdoaWNoIGV4dGVuZHMgYEhUTUxFbGVtZW50YC5cbi8vIFRoaXMgcGF0dGV0biBpcyBhbHNvIGZvbGxvd2VkIHdpdGggYXRvbSdzIFRleHRFZGl0b3IuXG5mdW5jdGlvbiBjcmVhdGVWaWV3KGVudHJ5UGF0aDogc3RyaW5nKTogSFRNTEVsZW1lbnQge1xuICBpZiAoYWN0aXZlRGlmZlZpZXcpIHtcbiAgICBhY3RpdmF0ZUZpbGVQYXRoKGVudHJ5UGF0aCk7XG4gICAgcmV0dXJuIGFjdGl2ZURpZmZWaWV3LmVsZW1lbnQ7XG4gIH1cblxuICBjb25zdCB7UmVhY3R9ID0gcmVxdWlyZSgncmVhY3QtZm9yLWF0b20nKTtcbiAgY29uc3QgRGlmZlZpZXdFbGVtZW50ID0gcmVxdWlyZSgnLi9EaWZmVmlld0VsZW1lbnQnKTtcbiAgY29uc3QgRGlmZlZpZXdDb21wb25lbnQgPSByZXF1aXJlKCcuL0RpZmZWaWV3Q29tcG9uZW50Jyk7XG5cbiAgY29uc3QgZGlmZk1vZGVsID0gZ2V0RGlmZlZpZXdNb2RlbCgpO1xuICBjb25zdCBob3N0RWxlbWVudCA9IG5ldyBEaWZmVmlld0VsZW1lbnQoKS5pbml0aWFsaXplKGRpZmZNb2RlbCwgTlVDTElERV9ESUZGX1ZJRVdfVVJJKTtcbiAgY29uc3QgY29tcG9uZW50ID0gUmVhY3QucmVuZGVyKFxuICAgIDxEaWZmVmlld0NvbXBvbmVudCBkaWZmTW9kZWw9e2RpZmZNb2RlbH0vPixcbiAgICBob3N0RWxlbWVudCxcbiAgKTtcbiAgYWN0aXZlRGlmZlZpZXcgPSB7XG4gICAgY29tcG9uZW50LFxuICAgIGVsZW1lbnQ6IGhvc3RFbGVtZW50LFxuICB9O1xuICBkaWZmTW9kZWwuYWN0aXZhdGUoKTtcbiAgYWN0aXZhdGVGaWxlUGF0aChlbnRyeVBhdGgpO1xuXG4gIGNvbnN0IGRlc3Ryb3lTdWJzY3JpcHRpb24gPSBob3N0RWxlbWVudC5vbkRpZERlc3Ryb3koKCkgPT4ge1xuICAgIFJlYWN0LnVubW91bnRDb21wb25lbnRBdE5vZGUoaG9zdEVsZW1lbnQpO1xuICAgIGRpZmZNb2RlbC5kZWFjdGl2YXRlKCk7XG4gICAgZGVzdHJveVN1YnNjcmlwdGlvbi5kaXNwb3NlKCk7XG4gICAgaW52YXJpYW50KHN1YnNjcmlwdGlvbnMpO1xuICAgIHN1YnNjcmlwdGlvbnMucmVtb3ZlKGRlc3Ryb3lTdWJzY3JpcHRpb24pO1xuICAgIGFjdGl2ZURpZmZWaWV3ID0gbnVsbDtcbiAgfSk7XG5cbiAgaW52YXJpYW50KHN1YnNjcmlwdGlvbnMpO1xuICBzdWJzY3JpcHRpb25zLmFkZChkZXN0cm95U3Vic2NyaXB0aW9uKTtcblxuICBjb25zdCB7dHJhY2t9ID0gcmVxdWlyZSgnLi4vLi4vYW5hbHl0aWNzJyk7XG4gIHRyYWNrKCdkaWZmLXZpZXctb3BlbicpO1xuXG4gIHJldHVybiBob3N0RWxlbWVudDtcbn1cblxuZnVuY3Rpb24gZ2V0RGlmZlZpZXdNb2RlbCgpOiBEaWZmVmlld01vZGVsVHlwZSB7XG4gIGlmICghZGlmZlZpZXdNb2RlbCkge1xuICAgIGNvbnN0IERpZmZWaWV3TW9kZWwgPSByZXF1aXJlKCcuL0RpZmZWaWV3TW9kZWwnKTtcbiAgICBkaWZmVmlld01vZGVsID0gbmV3IERpZmZWaWV3TW9kZWwodWlQcm92aWRlcnMpO1xuICAgIGludmFyaWFudChzdWJzY3JpcHRpb25zKTtcbiAgICBzdWJzY3JpcHRpb25zLmFkZChkaWZmVmlld01vZGVsKTtcbiAgfVxuICByZXR1cm4gZGlmZlZpZXdNb2RlbDtcbn1cblxuZnVuY3Rpb24gYWN0aXZhdGVGaWxlUGF0aChmaWxlUGF0aDogc3RyaW5nKTogdm9pZCB7XG4gIGlmICghZmlsZVBhdGgubGVuZ3RoIHx8ICFkaWZmVmlld01vZGVsKSB7XG4gICAgLy8gVGhlIERpZmYgVmlldyBjb3VsZCBiZSBvcGVuZWQgd2l0aCBubyBwYXRoIGF0IGFsbC5cbiAgICByZXR1cm47XG4gIH1cbiAgZGlmZlZpZXdNb2RlbC5hY3RpdmF0ZUZpbGUoZmlsZVBhdGgpO1xufVxuXG5mdW5jdGlvbiBwcm9qZWN0c0NvbnRhaW5QYXRoKGNoZWNrUGF0aDogc3RyaW5nKTogYm9vbGVhbiB7XG4gIGNvbnN0IHtpc1JlbW90ZX0gPSByZXF1aXJlKCcuLi8uLi9yZW1vdGUtdXJpJyk7XG4gIGNvbnN0IHtEaXJlY3Rvcnl9ID0gcmVxdWlyZSgnYXRvbScpO1xuICByZXR1cm4gYXRvbS5wcm9qZWN0LmdldERpcmVjdG9yaWVzKCkuc29tZShkaXJlY3RvcnkgPT4ge1xuICAgIGNvbnN0IGRpcmVjdG9yeVBhdGggPSBkaXJlY3RvcnkuZ2V0UGF0aCgpO1xuICAgIGlmICghY2hlY2tQYXRoLnN0YXJ0c1dpdGgoZGlyZWN0b3J5UGF0aCkpIHtcbiAgICAgIHJldHVybiBmYWxzZTtcbiAgICB9XG4gICAgLy8gSWYgdGhlIHJlbW90ZSBkaXJlY3RvcnkgaGFzbid0IHlldCBsb2FkZWQuXG4gICAgaWYgKGlzUmVtb3RlKGNoZWNrUGF0aCkgJiYgZGlyZWN0b3J5IGluc3RhbmNlb2YgRGlyZWN0b3J5KSB7XG4gICAgICByZXR1cm4gZmFsc2U7XG4gICAgfVxuICAgIHJldHVybiB0cnVlO1xuICB9KTtcbn1cblxuZnVuY3Rpb24gdXBkYXRlVG9vbGJhckNvdW50KGRpZmZWaWV3QnV0dG9uOiBIVE1MRWxlbWVudCwgY291bnQ6IG51bWJlcik6IHZvaWQge1xuICBpZiAoIWNoYW5nZUNvdW50RWxlbWVudCkge1xuICAgIGNoYW5nZUNvdW50RWxlbWVudCA9IGRvY3VtZW50LmNyZWF0ZUVsZW1lbnQoJ3NwYW4nKTtcbiAgICBjaGFuZ2VDb3VudEVsZW1lbnQuY2xhc3NOYW1lID0gJ2RpZmYtdmlldy1jb3VudCc7XG4gICAgZGlmZlZpZXdCdXR0b24uYXBwZW5kQ2hpbGQoY2hhbmdlQ291bnRFbGVtZW50KTtcbiAgfVxuICBpZiAoY291bnQgPiAwKSB7XG4gICAgZGlmZlZpZXdCdXR0b24uY2xhc3NMaXN0LmFkZCgncG9zaXRpdmUtY291bnQnKTtcbiAgfSBlbHNlIHtcbiAgICBkaWZmVmlld0J1dHRvbi5jbGFzc0xpc3QucmVtb3ZlKCdwb3NpdGl2ZS1jb3VudCcpO1xuICB9XG4gIGNvbnN0IHtSZWFjdH0gPSByZXF1aXJlKCdyZWFjdC1mb3ItYXRvbScpO1xuICBjb25zdCBEaWZmQ291bnRDb21wb25lbnQgPSByZXF1aXJlKCcuL0RpZmZDb3VudENvbXBvbmVudCcpO1xuICBSZWFjdC5yZW5kZXIoPERpZmZDb3VudENvbXBvbmVudCBjb3VudD17Y291bnR9Lz4sIGNoYW5nZUNvdW50RWxlbWVudCk7XG59XG5cbm1vZHVsZS5leHBvcnRzID0ge1xuXG4gIGFjdGl2YXRlKHN0YXRlOiA/YW55KTogdm9pZCB7XG4gICAgc3Vic2NyaXB0aW9ucyA9IG5ldyBDb21wb3NpdGVEaXNwb3NhYmxlKCk7XG4gICAgLy8gTGlzdGVuIGZvciBtZW51IGl0ZW0gd29ya3NwYWNlIGRpZmYgdmlldyBvcGVuIGNvbW1hbmQuXG4gICAgc3Vic2NyaXB0aW9ucy5hZGQoYXRvbS5jb21tYW5kcy5hZGQoXG4gICAgICAnYXRvbS13b3Jrc3BhY2UnLFxuICAgICAgJ251Y2xpZGUtZGlmZi12aWV3Om9wZW4nLFxuICAgICAgKCkgPT4gYXRvbS53b3Jrc3BhY2Uub3BlbihOVUNMSURFX0RJRkZfVklFV19VUkkpXG4gICAgKSk7XG4gICAgLy8gTGlzdGVuIGZvciBpbi1lZGl0b3IgY29udGV4dCBtZW51IGl0ZW0gZGlmZiB2aWV3IG9wZW4gY29tbWFuZC5cbiAgICBzdWJzY3JpcHRpb25zLmFkZChhdG9tLmNvbW1hbmRzLmFkZChcbiAgICAgICdhdG9tLXRleHQtZWRpdG9yJyxcbiAgICAgICdudWNsaWRlLWRpZmYtdmlldzpvcGVuJyxcbiAgICAgICgpID0+IHtcbiAgICAgICAgY29uc3QgZWRpdG9yID0gYXRvbS53b3Jrc3BhY2UuZ2V0QWN0aXZlVGV4dEVkaXRvcigpO1xuICAgICAgICBpZiAoIWVkaXRvcikge1xuICAgICAgICAgIHJldHVybiBnZXRMb2dnZXIoKS53YXJuKCdObyBhY3RpdmUgdGV4dCBlZGl0b3IgZm9yIGRpZmYgdmlldyEnKTtcbiAgICAgICAgfVxuICAgICAgICBhdG9tLndvcmtzcGFjZS5vcGVuKE5VQ0xJREVfRElGRl9WSUVXX1VSSSArIChlZGl0b3IuZ2V0UGF0aCgpIHx8ICcnKSk7XG4gICAgICB9XG4gICAgKSk7XG5cbiAgICBmdW5jdGlvbiBnZXRUYXJnZXRGcm9tRXZlbnQoZXZlbnQ6IEV2ZW50KTogSFRNTEVsZW1lbnQge1xuICAgICAgLy8gRXZlbnQgdGFyZ2V0IGlzbid0IG5lY2Vzc2FyaWx5IGFuIEhUTUxFbGVtZW50LFxuICAgICAgLy8gYnV0IHRoYXQncyBndXJhbnRlZWQgaW4gdGhlIHVzYWdlcyBoZXJlLlxuICAgICAgY29uc3QgdGFyZ2V0OiBIVE1MRWxlbWVudCA9IChldmVudC5jdXJyZW50VGFyZ2V0OiBhbnkpO1xuICAgICAgcmV0dXJuIHRhcmdldC5jbGFzc0xpc3QuY29udGFpbnMoJ25hbWUnKVxuICAgICAgICA/IHRhcmdldFxuICAgICAgICA6IHRhcmdldC5xdWVyeVNlbGVjdG9yKCcubmFtZScpO1xuICAgIH1cblxuICAgIC8vIExpc3RlbiBmb3IgZmlsZSB0cmVlIGNvbnRleHQgbWVudSBmaWxlIGl0ZW0gZXZlbnRzIHRvIG9wZW4gdGhlIGRpZmYgdmlldy5cbiAgICBzdWJzY3JpcHRpb25zLmFkZChhdG9tLmNvbW1hbmRzLmFkZChcbiAgICAgICcudHJlZS12aWV3IC5lbnRyeS5maWxlLmxpc3QtaXRlbScsXG4gICAgICAnbnVjbGlkZS1kaWZmLXZpZXc6b3Blbi1jb250ZXh0JyxcbiAgICAgIChldmVudCkgPT4ge1xuICAgICAgICBjb25zdCB0YXJnZXQgPSBnZXRUYXJnZXRGcm9tRXZlbnQoZXZlbnQpO1xuICAgICAgICBhdG9tLndvcmtzcGFjZS5vcGVuKE5VQ0xJREVfRElGRl9WSUVXX1VSSSArICh0YXJnZXQuZGF0YXNldC5wYXRoIHx8ICcnKSk7XG4gICAgICB9XG4gICAgKSk7XG4gICAgc3Vic2NyaXB0aW9ucy5hZGQoYXRvbS5jb250ZXh0TWVudS5hZGQoe1xuICAgICAgJy50cmVlLXZpZXcgLmVudHJ5LmZpbGUubGlzdC1pdGVtJzogW1xuICAgICAgICB7dHlwZTogJ3NlcGFyYXRvcid9LFxuICAgICAgICB7XG4gICAgICAgICAgbGFiZWw6ICdPcGVuIGluIERpZmYgVmlldycsXG4gICAgICAgICAgY29tbWFuZDogJ251Y2xpZGUtZGlmZi12aWV3Om9wZW4tY29udGV4dCcsXG4gICAgICAgIH0sXG4gICAgICAgIHt0eXBlOiAnc2VwYXJhdG9yJ30sXG4gICAgICBdLFxuICAgIH0pKTtcblxuICAgIC8vIExpc3RlbiBmb3IgZmlsZSB0cmVlIGNvbnRleHQgbWVudSBkaXJlY3RvcnkgaXRlbSBldmVudHMgdG8gb3BlbiB0aGUgZGlmZiB2aWV3LlxuICAgIHN1YnNjcmlwdGlvbnMuYWRkKGF0b20uY29tbWFuZHMuYWRkKFxuICAgICAgJy50cmVlLXZpZXcgLmVudHJ5LmRpcmVjdG9yeS5saXN0LW5lc3RlZC1pdGVtJyxcbiAgICAgICdudWNsaWRlLWRpZmYtdmlldzpvcGVuLWNvbnRleHQnLFxuICAgICAgKGV2ZW50KSA9PiB7XG4gICAgICAgIGF0b20ud29ya3NwYWNlLm9wZW4oTlVDTElERV9ESUZGX1ZJRVdfVVJJKTtcbiAgICAgIH1cbiAgICApKTtcbiAgICBzdWJzY3JpcHRpb25zLmFkZChhdG9tLmNvbnRleHRNZW51LmFkZCh7XG4gICAgICAnLnRyZWUtdmlldyAuZW50cnkuZGlyZWN0b3J5Lmxpc3QtbmVzdGVkLWl0ZW0nOiBbXG4gICAgICAgIHt0eXBlOiAnc2VwYXJhdG9yJ30sXG4gICAgICAgIHtcbiAgICAgICAgICBsYWJlbDogJ09wZW4gaW4gRGlmZiBWaWV3JyxcbiAgICAgICAgICBjb21tYW5kOiAnbnVjbGlkZS1kaWZmLXZpZXc6b3Blbi1jb250ZXh0JyxcbiAgICAgICAgfSxcbiAgICAgICAge3R5cGU6ICdzZXBhcmF0b3InfSxcbiAgICAgIF0sXG4gICAgfSkpO1xuXG4gICAgLy8gVGhlIERpZmYgVmlldyB3aWxsIG9wZW4gaXRzIG1haW4gVUkgaW4gYSB0YWIsIGxpa2UgQXRvbSdzIHByZWZlcmVuY2VzIGFuZCB3ZWxjb21lIHBhZ2VzLlxuICAgIHN1YnNjcmlwdGlvbnMuYWRkKGF0b20ud29ya3NwYWNlLmFkZE9wZW5lcih1cmkgPT4ge1xuICAgICAgaWYgKHVyaS5zdGFydHNXaXRoKE5VQ0xJREVfRElGRl9WSUVXX1VSSSkpIHtcbiAgICAgICAgcmV0dXJuIGNyZWF0ZVZpZXcodXJpLnNsaWNlKE5VQ0xJREVfRElGRl9WSUVXX1VSSS5sZW5ndGgpKTtcbiAgICAgIH1cbiAgICB9KSk7XG5cbiAgICBpZiAoIXN0YXRlIHx8ICFzdGF0ZS5hY3RpdmVGaWxlUGF0aCkge1xuICAgICAgcmV0dXJuO1xuICAgIH1cblxuICAgIC8vIFdhaXQgZm9yIGFsbCBzb3VyY2UgY29udHJvbCBwcm92aWRlcnMgdG8gcmVnaXN0ZXIuXG4gICAgc3Vic2NyaXB0aW9ucy5hZGQobnVjbGlkZUZlYXR1cmVzLm9uRGlkQWN0aXZhdGVJbml0aWFsRmVhdHVyZXMoKCkgPT4ge1xuICAgICAgaW52YXJpYW50KHN0YXRlKTtcbiAgICAgIGNvbnN0IHthY3RpdmVGaWxlUGF0aH0gPSBzdGF0ZTtcblxuICAgICAgLy8gSWYgaXQncyBhIGxvY2FsIGRpcmVjdG9yeSwgaXQgbXVzdCBiZSBsb2FkZWQgd2l0aCBwYWNrYWdlcyBhY3RpdmF0aW9uLlxuICAgICAgaWYgKHByb2plY3RzQ29udGFpblBhdGgoYWN0aXZlRmlsZVBhdGgpKSB7XG4gICAgICAgIGF0b20ud29ya3NwYWNlLm9wZW4oTlVDTElERV9ESUZGX1ZJRVdfVVJJICsgYWN0aXZlRmlsZVBhdGgpO1xuICAgICAgICByZXR1cm47XG4gICAgICB9XG4gICAgICAvLyBJZiBpdCdzIGEgcmVtb3RlIGRpcmVjdG9yeSwgaXQgc2hvdWxkIGNvbWUgb24gYSBwYXRoIGNoYW5nZSBldmVudC5cbiAgICAgIGNvbnN0IGNoYW5nZVBhdGhzU3Vic2NyaXB0aW9uID0gYXRvbS5wcm9qZWN0Lm9uRGlkQ2hhbmdlUGF0aHMoKCkgPT4ge1xuICAgICAgICAvLyB0cnkvY2F0Y2ggaGVyZSBiZWNhdXNlIGluIGNhc2Ugb2YgYW55IGVycm9yLCBBdG9tIHN0b3BzIGRpc3BhdGNoaW5nIGV2ZW50cyB0byB0aGVcbiAgICAgICAgLy8gcmVzdCBvZiB0aGUgbGlzdGVuZXJzLCB3aGljaCBjYW4gc3RvcCB0aGUgcmVtb3RlIGVkaXRpbmcgZnJvbSBiZWluZyBmdW5jdGlvbmFsLlxuICAgICAgICB0cnkge1xuICAgICAgICAgIGlmIChwcm9qZWN0c0NvbnRhaW5QYXRoKGFjdGl2ZUZpbGVQYXRoKSkge1xuICAgICAgICAgICAgYXRvbS53b3Jrc3BhY2Uub3BlbihOVUNMSURFX0RJRkZfVklFV19VUkkgKyBhY3RpdmVGaWxlUGF0aCk7XG4gICAgICAgICAgICBjaGFuZ2VQYXRoc1N1YnNjcmlwdGlvbi5kaXNwb3NlKCk7XG4gICAgICAgICAgICBpbnZhcmlhbnQoc3Vic2NyaXB0aW9ucyk7XG4gICAgICAgICAgICBzdWJzY3JpcHRpb25zLnJlbW92ZShjaGFuZ2VQYXRoc1N1YnNjcmlwdGlvbik7XG4gICAgICAgICAgfVxuICAgICAgICB9IGNhdGNoIChlKSB7XG4gICAgICAgICAgZ2V0TG9nZ2VyKCkuZXJyb3IoJ0RpZmZWaWV3IHJlc3RvcmUgZXJyb3InLCBlKTtcbiAgICAgICAgfVxuICAgICAgfSk7XG4gICAgICBpbnZhcmlhbnQoc3Vic2NyaXB0aW9ucyk7XG4gICAgICBzdWJzY3JpcHRpb25zLmFkZChjaGFuZ2VQYXRoc1N1YnNjcmlwdGlvbik7XG4gICAgfSkpO1xuICB9LFxuXG4gIGNvbnN1bWVUb29sQmFyKGdldFRvb2xCYXI6IChncm91cDogc3RyaW5nKSA9PiBPYmplY3QpOiB2b2lkIHtcbiAgICB0b29sQmFyID0gZ2V0VG9vbEJhcignbnVjbGlkZS1kaWZmLXZpZXcnKTtcbiAgICBjb25zdCBidXR0b24gPSB0b29sQmFyLmFkZEJ1dHRvbih7XG4gICAgICBpY29uOiAnZ2l0LWJyYW5jaCcsXG4gICAgICBjYWxsYmFjazogJ251Y2xpZGUtZGlmZi12aWV3Om9wZW4nLFxuICAgICAgdG9vbHRpcDogJ09wZW4gRGlmZiBWaWV3JyxcbiAgICAgIHByaW9yaXR5OiAzMDAsXG4gICAgfSlbMF07XG4gICAgY29uc3QgZGlmZk1vZGVsID0gZ2V0RGlmZlZpZXdNb2RlbCgpO1xuICAgIHVwZGF0ZVRvb2xiYXJDb3VudChidXR0b24sIGRpZmZNb2RlbC5nZXREaXJ0eUZpbGVDaGFuZ2VzKCkuc2l6ZSk7XG4gICAgaW52YXJpYW50KHN1YnNjcmlwdGlvbnMpO1xuICAgIHN1YnNjcmlwdGlvbnMuYWRkKGRpZmZNb2RlbC5vbkRpZENoYW5nZURpcnR5U3RhdHVzKGRpcnR5RmlsZUNoYW5nZXMgPT4ge1xuICAgICAgdXBkYXRlVG9vbGJhckNvdW50KGJ1dHRvbiwgZGlydHlGaWxlQ2hhbmdlcy5zaXplKTtcbiAgICB9KSk7XG4gIH0sXG5cbiAgZ2V0SG9tZUZyYWdtZW50cygpOiBIb21lRnJhZ21lbnRzIHtcbiAgICBjb25zdCB7UmVhY3R9ID0gcmVxdWlyZSgncmVhY3QtZm9yLWF0b20nKTtcbiAgICByZXR1cm4ge1xuICAgICAgZmVhdHVyZToge1xuICAgICAgICB0aXRsZTogJ0RpZmYgVmlldycsXG4gICAgICAgIGljb246ICdnaXQtYnJhbmNoJyxcbiAgICAgICAgZGVzY3JpcHRpb246IChcbiAgICAgICAgICA8c3Bhbj5cbiAgICAgICAgICAgIExhdW5jaGVzIGFuIGVkaXRhYmxlIHNpZGUtYnktc2lkZSB2aWV3IG9mIHRoZSBvdXRwdXQgb2YgdGhlIE1lcmN1cmlhbFxuICAgICAgICAgICAgPGNvZGU+aGcgZGlmZjwvY29kZT4gY29tbWFuZCwgc2hvd2luZyBwZW5kaW5nIGNoYW5nZXMgdG8gYmUgY29tbWl0dGVkLlxuICAgICAgICAgIDwvc3Bhbj5cbiAgICAgICAgKSxcbiAgICAgICAgY29tbWFuZDogJ251Y2xpZGUtZGlmZi12aWV3Om9wZW4nLFxuICAgICAgfSxcbiAgICAgIHByaW9yaXR5OiAzLFxuICAgIH07XG4gIH0sXG5cbiAgc2VyaWFsaXplKCk6ID9PYmplY3Qge1xuICAgIGlmICghYWN0aXZlRGlmZlZpZXcgfHwgIWRpZmZWaWV3TW9kZWwpIHtcbiAgICAgIHJldHVybiB7fTtcbiAgICB9XG4gICAgY29uc3Qge2ZpbGVQYXRofSA9IGRpZmZWaWV3TW9kZWwuZ2V0QWN0aXZlRmlsZVN0YXRlKCk7XG4gICAgcmV0dXJuIHtcbiAgICAgIGFjdGl2ZUZpbGVQYXRoOiBmaWxlUGF0aCxcbiAgICB9O1xuICB9LFxuXG4gIGRlYWN0aXZhdGUoKTogdm9pZCB7XG4gICAgdWlQcm92aWRlcnMuc3BsaWNlKDApO1xuICAgIGlmIChzdWJzY3JpcHRpb25zICE9IG51bGwpIHtcbiAgICAgIHN1YnNjcmlwdGlvbnMuZGlzcG9zZSgpO1xuICAgICAgc3Vic2NyaXB0aW9ucyA9IG51bGw7XG4gICAgfVxuICAgIGlmIChkaWZmVmlld01vZGVsICE9IG51bGwpIHtcbiAgICAgIGRpZmZWaWV3TW9kZWwuZGlzcG9zZSgpO1xuICAgICAgZGlmZlZpZXdNb2RlbCA9IG51bGw7XG4gICAgfVxuICAgIGFjdGl2ZURpZmZWaWV3ID0gbnVsbDtcbiAgICBpZiAodG9vbEJhciAhPSBudWxsKSB7XG4gICAgICB0b29sQmFyLnJlbW92ZUl0ZW1zKCk7XG4gICAgICB0b29sQmFyID0gbnVsbDtcbiAgICB9XG4gIH0sXG5cbiAgLyoqIFRoZSBkaWZmLXZpZXcgcGFja2FnZSBjYW4gY29uc3VtZSBwcm92aWRlcnMgdGhhdCByZXR1cm4gUmVhY3QgY29tcG9uZW50cyB0b1xuICAgKiBiZSByZW5kZXJlZCBpbmxpbmUuXG4gICAqIEEgdWlQcm92aWRlciBtdXN0IGhhdmUgYSBtZXRob2QgY29tcG9zZVVpRWxlbWVudHMgd2l0aCB0aGUgZm9sbG93aW5nIHNwZWM6XG4gICAqIEBwYXJhbSBmaWxlUGF0aCBUaGUgcGF0aCBvZiB0aGUgZmlsZSB0aGUgZGlmZiB2aWV3IGlzIG9wZW5lZCBmb3JcbiAgICogQHJldHVybiBBbiBhcnJheSBvZiBJbmxpbmVDb21tZW50cyAoZGVmaW5lZCBhYm92ZSkgdG8gYmUgcmVuZGVyZWQgaW50byB0aGVcbiAgICogICAgICAgICBkaWZmIHZpZXdcbiAgICovXG4gIGNvbnN1bWVQcm92aWRlcihwcm92aWRlcjogT2JqZWN0KSB7XG4gICAgLy8gVE9ETyhtb3N0KTogRml4IFVJIHJlbmRlcmluZyBhbmQgcmUtaW50cm9kdWNlOiB0ODE3NDMzMlxuICAgIC8vIHVpUHJvdmlkZXJzLnB1c2gocHJvdmlkZXIpO1xuICAgIHJldHVybjtcbiAgfSxcbn07XG4iXX0=

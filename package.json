@@ -23,9 +23,6 @@
   "homepage": "http://nuclide.io/",
   "license": "SEE LICENSE IN LICENSE",
   "main": "./lib/main.js",
-  "bin": {
-    "nuclide-start-server": "./pkg/nuclide/server/nuclide-start-server"
-  },
   "repository": "https://github.com/facebook/nuclide",
   "scripts": {
     "lint": "eslint",
@@ -81,7 +78,6 @@
     "ssh2": "0.4.12",
     "strong-data-uri": "1.0.3",
     "temp": "0.8.3",
-    "thrift": "0.9.3",
     "url-join": "0.0.1",
     "urlregexp": "1.0.2",
     "uuid": "2.0.1",
@@ -107,7 +103,6 @@
   "engines": {
     "atom": ">=1.1.0"
   },
-  "private": true,
   "package-deps": [
     "haskell-grammar",
     "highlight-selected",

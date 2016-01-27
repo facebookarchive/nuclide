@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,10 +10,15 @@
  * the root directory of this source tree.
  */
 
-import type {LineRangesWithOffsets, OffsetMap} from './types';
+exports.buildLineRangesWithOffsets = buildLineRangesWithOffsets;
 
-import {array} from '../../commons';
-import invariant from 'assert';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var _commons = require('../../commons');
+
+var _assert = require('assert');
+
+var _assert2 = _interopRequireDefault(_assert);
 
 /*
  * @param screenLines The original screen lines before adding offsets.
@@ -21,47 +27,44 @@ import invariant from 'assert';
  * @param endBufferRow The buffer row at which the next range of screen lines is ended.
  * @param emptyLineFactory A custom function to create a new empty line, representing an offset screen line.
  */
-export function buildLineRangesWithOffsets(
-    screenLines: Array<any>,
-    lineOffsets: OffsetMap,
-    startBufferRow: number,
-    endBufferRow: number,
-    emptyLineFactory: () => any
-    ): LineRangesWithOffsets {
 
-  const offsetLineNumbers = array.from(lineOffsets.keys()).sort((x, y) => x - y);
-  let priorScreenLine = startBufferRow;
-  const newRegions = [];
-  const newScreenLines = [];
+function buildLineRangesWithOffsets(screenLines, lineOffsets, startBufferRow, endBufferRow, emptyLineFactory) {
 
-  const captureScreenLinesRegion = (toScreenLine: number) => {
+  var offsetLineNumbers = _commons.array.from(lineOffsets.keys()).sort(function (x, y) {
+    return x - y;
+  });
+  var priorScreenLine = startBufferRow;
+  var newRegions = [];
+  var newScreenLines = [];
+
+  var captureScreenLinesRegion = function captureScreenLinesRegion(toScreenLine) {
     if (toScreenLine < priorScreenLine) {
       return;
     }
-    const numberOfRows = toScreenLine - priorScreenLine;
+    var numberOfRows = toScreenLine - priorScreenLine;
     if (numberOfRows > 0) {
       // Add the portion of the original screenLines until toScreenLine.
       newScreenLines.push.apply(newScreenLines, screenLines.slice(priorScreenLine - startBufferRow, toScreenLine - startBufferRow));
       // This is normal 1 to 1 buffer to screen row region.
-      newRegions.push({bufferRows: numberOfRows, screenRows: numberOfRows});
+      newRegions.push({ bufferRows: numberOfRows, screenRows: numberOfRows });
     }
     priorScreenLine = toScreenLine + 1;
   };
 
   // Construct the new screen lines and regions, by adding empty lines at the offset lines
   // and returning ranges with screenRows = bufferRows + offsetLines.
-  for (const offsetLineNumber of offsetLineNumbers) {
+  for (var offsetLineNumber of offsetLineNumbers) {
     if (offsetLineNumber < priorScreenLine || offsetLineNumber >= endBufferRow) {
       continue;
     }
-    const offsetLines = lineOffsets.get(offsetLineNumber);
+    var offsetLines = lineOffsets.get(offsetLineNumber);
     captureScreenLinesRegion(offsetLineNumber - 1);
     // Add empty screen lines to represent offsets.
-    invariant(offsetLines);
-    for (let i = 0; i < offsetLines; i++) {
+    (0, _assert2['default'])(offsetLines);
+    for (var i = 0; i < offsetLines; i++) {
       newScreenLines.push(emptyLineFactory());
     }
-    const startOffsetBufferLineNumber = offsetLineNumber - startBufferRow - 1;
+    var startOffsetBufferLineNumber = offsetLineNumber - startBufferRow - 1;
     // TODO: fix when we have more control on the buffer to screen line mapping
     // Currently, if we have offsets at the begining of the file, the gutter numbering would be confusing
     // because it considers the first offset line is the line to be numbered.
@@ -73,11 +76,12 @@ export function buildLineRangesWithOffsets(
       newScreenLines.push(screenLines[0]);
       priorScreenLine++;
     }
-    newRegions.push({bufferRows: 1, screenRows: offsetLines + 1});
+    newRegions.push({ bufferRows: 1, screenRows: offsetLines + 1 });
   }
 
   // Capture a single region to the end of the screen lines.
   captureScreenLinesRegion(endBufferRow);
 
-  return {regions: newRegions, screenLines: newScreenLines};
+  return { regions: newRegions, screenLines: newScreenLines };
 }
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbImVkaXRvci11dGlscy5qcyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7Ozs7Ozs7O3VCQWFvQixlQUFlOztzQkFDYixRQUFROzs7Ozs7Ozs7Ozs7QUFTdkIsU0FBUywwQkFBMEIsQ0FDdEMsV0FBdUIsRUFDdkIsV0FBc0IsRUFDdEIsY0FBc0IsRUFDdEIsWUFBb0IsRUFDcEIsZ0JBQTJCLEVBQ0Y7O0FBRTNCLE1BQU0saUJBQWlCLEdBQUcsZUFBTSxJQUFJLENBQUMsV0FBVyxDQUFDLElBQUksRUFBRSxDQUFDLENBQUMsSUFBSSxDQUFDLFVBQUMsQ0FBQyxFQUFFLENBQUM7V0FBSyxDQUFDLEdBQUcsQ0FBQztHQUFBLENBQUMsQ0FBQztBQUMvRSxNQUFJLGVBQWUsR0FBRyxjQUFjLENBQUM7QUFDckMsTUFBTSxVQUFVLEdBQUcsRUFBRSxDQUFDO0FBQ3RCLE1BQU0sY0FBYyxHQUFHLEVBQUUsQ0FBQzs7QUFFMUIsTUFBTSx3QkFBd0IsR0FBRyxTQUEzQix3QkFBd0IsQ0FBSSxZQUFZLEVBQWE7QUFDekQsUUFBSSxZQUFZLEdBQUcsZUFBZSxFQUFFO0FBQ2xDLGFBQU87S0FDUjtBQUNELFFBQU0sWUFBWSxHQUFHLFlBQVksR0FBRyxlQUFlLENBQUM7QUFDcEQsUUFBSSxZQUFZLEdBQUcsQ0FBQyxFQUFFOztBQUVwQixvQkFBYyxDQUFDLElBQUksQ0FBQyxLQUFLLENBQUMsY0FBYyxFQUFFLFdBQVcsQ0FBQyxLQUFLLENBQUMsZUFBZSxHQUFHLGNBQWMsRUFBRSxZQUFZLEdBQUcsY0FBYyxDQUFDLENBQUMsQ0FBQzs7QUFFOUgsZ0JBQVUsQ0FBQyxJQUFJLENBQUMsRUFBQyxVQUFVLEVBQUUsWUFBWSxFQUFFLFVBQVUsRUFBRSxZQUFZLEVBQUMsQ0FBQyxDQUFDO0tBQ3ZFO0FBQ0QsbUJBQWUsR0FBRyxZQUFZLEdBQUcsQ0FBQyxDQUFDO0dBQ3BDLENBQUM7Ozs7QUFJRixPQUFLLElBQU0sZ0JBQWdCLElBQUksaUJBQWlCLEVBQUU7QUFDaEQsUUFBSSxnQkFBZ0IsR0FBRyxlQUFlLElBQUksZ0JBQWdCLElBQUksWUFBWSxFQUFFO0FBQzFFLGVBQVM7S0FDVjtBQUNELFFBQU0sV0FBVyxHQUFHLFdBQVcsQ0FBQyxHQUFHLENBQUMsZ0JBQWdCLENBQUMsQ0FBQztBQUN0RCw0QkFBd0IsQ0FBQyxnQkFBZ0IsR0FBRyxDQUFDLENBQUMsQ0FBQzs7QUFFL0MsNkJBQVUsV0FBVyxDQUFDLENBQUM7QUFDdkIsU0FBSyxJQUFJLENBQUMsR0FBRyxDQUFDLEVBQUUsQ0FBQyxHQUFHLFdBQVcsRUFBRSxDQUFDLEVBQUUsRUFBRTtBQUNwQyxvQkFBYyxDQUFDLElBQUksQ0FBQyxnQkFBZ0IsRUFBRSxDQUFDLENBQUM7S0FDekM7QUFDRCxRQUFNLDJCQUEyQixHQUFHLGdCQUFnQixHQUFHLGNBQWMsR0FBRyxDQUFDLENBQUM7Ozs7QUFJMUUsUUFBSSwyQkFBMkIsSUFBSSxDQUFDLEVBQUU7O0FBRXBDLG9CQUFjLENBQUMsTUFBTSxDQUFDLGNBQWMsQ0FBQyxNQUFNLEdBQUcsV0FBVyxFQUFFLENBQUMsRUFBRSxXQUFXLENBQUMsMkJBQTJCLENBQUMsQ0FBQyxDQUFDO0tBQ3pHLE1BQU07O0FBRUwsb0JBQWMsQ0FBQyxJQUFJLENBQUMsV0FBVyxDQUFDLENBQUMsQ0FBQyxDQUFDLENBQUM7QUFDcEMscUJBQWUsRUFBRSxDQUFDO0tBQ25CO0FBQ0QsY0FBVSxDQUFDLElBQUksQ0FBQyxFQUFDLFVBQVUsRUFBRSxDQUFDLEVBQUUsVUFBVSxFQUFFLFdBQVcsR0FBRyxDQUFDLEVBQUMsQ0FBQyxDQUFDO0dBQy9EOzs7QUFHRCwwQkFBd0IsQ0FBQyxZQUFZLENBQUMsQ0FBQzs7QUFFdkMsU0FBTyxFQUFDLE9BQU8sRUFBRSxVQUFVLEVBQUUsV0FBVyxFQUFFLGNBQWMsRUFBQyxDQUFDO0NBQzNEIiwiZmlsZSI6ImVkaXRvci11dGlscy5qcyIsInNvdXJjZXNDb250ZW50IjpbIid1c2UgYmFiZWwnO1xuLyogQGZsb3cgKi9cblxuLypcbiAqIENvcHlyaWdodCAoYykgMjAxNS1wcmVzZW50LCBGYWNlYm9vaywgSW5jLlxuICogQWxsIHJpZ2h0cyByZXNlcnZlZC5cbiAqXG4gKiBUaGlzIHNvdXJjZSBjb2RlIGlzIGxpY2Vuc2VkIHVuZGVyIHRoZSBsaWNlbnNlIGZvdW5kIGluIHRoZSBMSUNFTlNFIGZpbGUgaW5cbiAqIHRoZSByb290IGRpcmVjdG9yeSBvZiB0aGlzIHNvdXJjZSB0cmVlLlxuICovXG5cbmltcG9ydCB0eXBlIHtMaW5lUmFuZ2VzV2l0aE9mZnNldHMsIE9mZnNldE1hcH0gZnJvbSAnLi90eXBlcyc7XG5cbmltcG9ydCB7YXJyYXl9IGZyb20gJy4uLy4uL2NvbW1vbnMnO1xuaW1wb3J0IGludmFyaWFudCBmcm9tICdhc3NlcnQnO1xuXG4vKlxuICogQHBhcmFtIHNjcmVlbkxpbmVzIFRoZSBvcmlnaW5hbCBzY3JlZW4gbGluZXMgYmVmb3JlIGFkZGluZyBvZmZzZXRzLlxuICogQHBhcmFtIGxpbmVPZmZzZXRzIFRoZSBvZmZzZXQgbWFwIGZyb20gYnVmZmVyIGxpbmUgbnVtYmVycyB0byB0aGUgbnVtYmVyIG9mIGxpbmVzIG9mIG9mZnNldCByZXF1ZXN0ZWQgdGhlcmUuXG4gKiBAcGFyYW0gc3RhcnRCdWZmZXJSb3cgVGhlIGJ1ZmZlciByb3cgYXQgd2hpY2ggdGhlIG5leHQgcmFuZ2Ugb2Ygc2NyZWVuIGxpbmVzIGlzIHN0YXJ0ZWQuXG4gKiBAcGFyYW0gZW5kQnVmZmVyUm93IFRoZSBidWZmZXIgcm93IGF0IHdoaWNoIHRoZSBuZXh0IHJhbmdlIG9mIHNjcmVlbiBsaW5lcyBpcyBlbmRlZC5cbiAqIEBwYXJhbSBlbXB0eUxpbmVGYWN0b3J5IEEgY3VzdG9tIGZ1bmN0aW9uIHRvIGNyZWF0ZSBhIG5ldyBlbXB0eSBsaW5lLCByZXByZXNlbnRpbmcgYW4gb2Zmc2V0IHNjcmVlbiBsaW5lLlxuICovXG5leHBvcnQgZnVuY3Rpb24gYnVpbGRMaW5lUmFuZ2VzV2l0aE9mZnNldHMoXG4gICAgc2NyZWVuTGluZXM6IEFycmF5PGFueT4sXG4gICAgbGluZU9mZnNldHM6IE9mZnNldE1hcCxcbiAgICBzdGFydEJ1ZmZlclJvdzogbnVtYmVyLFxuICAgIGVuZEJ1ZmZlclJvdzogbnVtYmVyLFxuICAgIGVtcHR5TGluZUZhY3Rvcnk6ICgpID0+IGFueVxuICAgICk6IExpbmVSYW5nZXNXaXRoT2Zmc2V0cyB7XG5cbiAgY29uc3Qgb2Zmc2V0TGluZU51bWJlcnMgPSBhcnJheS5mcm9tKGxpbmVPZmZzZXRzLmtleXMoKSkuc29ydCgoeCwgeSkgPT4geCAtIHkpO1xuICBsZXQgcHJpb3JTY3JlZW5MaW5lID0gc3RhcnRCdWZmZXJSb3c7XG4gIGNvbnN0IG5ld1JlZ2lvbnMgPSBbXTtcbiAgY29uc3QgbmV3U2NyZWVuTGluZXMgPSBbXTtcblxuICBjb25zdCBjYXB0dXJlU2NyZWVuTGluZXNSZWdpb24gPSAodG9TY3JlZW5MaW5lOiBudW1iZXIpID0+IHtcbiAgICBpZiAodG9TY3JlZW5MaW5lIDwgcHJpb3JTY3JlZW5MaW5lKSB7XG4gICAgICByZXR1cm47XG4gICAgfVxuICAgIGNvbnN0IG51bWJlck9mUm93cyA9IHRvU2NyZWVuTGluZSAtIHByaW9yU2NyZWVuTGluZTtcbiAgICBpZiAobnVtYmVyT2ZSb3dzID4gMCkge1xuICAgICAgLy8gQWRkIHRoZSBwb3J0aW9uIG9mIHRoZSBvcmlnaW5hbCBzY3JlZW5MaW5lcyB1bnRpbCB0b1NjcmVlbkxpbmUuXG4gICAgICBuZXdTY3JlZW5MaW5lcy5wdXNoLmFwcGx5KG5ld1NjcmVlbkxpbmVzLCBzY3JlZW5MaW5lcy5zbGljZShwcmlvclNjcmVlbkxpbmUgLSBzdGFydEJ1ZmZlclJvdywgdG9TY3JlZW5MaW5lIC0gc3RhcnRCdWZmZXJSb3cpKTtcbiAgICAgIC8vIFRoaXMgaXMgbm9ybWFsIDEgdG8gMSBidWZmZXIgdG8gc2NyZWVuIHJvdyByZWdpb24uXG4gICAgICBuZXdSZWdpb25zLnB1c2goe2J1ZmZlclJvd3M6IG51bWJlck9mUm93cywgc2NyZWVuUm93czogbnVtYmVyT2ZSb3dzfSk7XG4gICAgfVxuICAgIHByaW9yU2NyZWVuTGluZSA9IHRvU2NyZWVuTGluZSArIDE7XG4gIH07XG5cbiAgLy8gQ29uc3RydWN0IHRoZSBuZXcgc2NyZWVuIGxpbmVzIGFuZCByZWdpb25zLCBieSBhZGRpbmcgZW1wdHkgbGluZXMgYXQgdGhlIG9mZnNldCBsaW5lc1xuICAvLyBhbmQgcmV0dXJuaW5nIHJhbmdlcyB3aXRoIHNjcmVlblJvd3MgPSBidWZmZXJSb3dzICsgb2Zmc2V0TGluZXMuXG4gIGZvciAoY29uc3Qgb2Zmc2V0TGluZU51bWJlciBvZiBvZmZzZXRMaW5lTnVtYmVycykge1xuICAgIGlmIChvZmZzZXRMaW5lTnVtYmVyIDwgcHJpb3JTY3JlZW5MaW5lIHx8IG9mZnNldExpbmVOdW1iZXIgPj0gZW5kQnVmZmVyUm93KSB7XG4gICAgICBjb250aW51ZTtcbiAgICB9XG4gICAgY29uc3Qgb2Zmc2V0TGluZXMgPSBsaW5lT2Zmc2V0cy5nZXQob2Zmc2V0TGluZU51bWJlcik7XG4gICAgY2FwdHVyZVNjcmVlbkxpbmVzUmVnaW9uKG9mZnNldExpbmVOdW1iZXIgLSAxKTtcbiAgICAvLyBBZGQgZW1wdHkgc2NyZWVuIGxpbmVzIHRvIHJlcHJlc2VudCBvZmZzZXRzLlxuICAgIGludmFyaWFudChvZmZzZXRMaW5lcyk7XG4gICAgZm9yIChsZXQgaSA9IDA7IGkgPCBvZmZzZXRMaW5lczsgaSsrKSB7XG4gICAgICBuZXdTY3JlZW5MaW5lcy5wdXNoKGVtcHR5TGluZUZhY3RvcnkoKSk7XG4gICAgfVxuICAgIGNvbnN0IHN0YXJ0T2Zmc2V0QnVmZmVyTGluZU51bWJlciA9IG9mZnNldExpbmVOdW1iZXIgLSBzdGFydEJ1ZmZlclJvdyAtIDE7XG4gICAgLy8gVE9ETzogZml4IHdoZW4gd2UgaGF2ZSBtb3JlIGNvbnRyb2wgb24gdGhlIGJ1ZmZlciB0byBzY3JlZW4gbGluZSBtYXBwaW5nXG4gICAgLy8gQ3VycmVudGx5LCBpZiB3ZSBoYXZlIG9mZnNldHMgYXQgdGhlIGJlZ2luaW5nIG9mIHRoZSBmaWxlLCB0aGUgZ3V0dGVyIG51bWJlcmluZyB3b3VsZCBiZSBjb25mdXNpbmdcbiAgICAvLyBiZWNhdXNlIGl0IGNvbnNpZGVycyB0aGUgZmlyc3Qgb2Zmc2V0IGxpbmUgaXMgdGhlIGxpbmUgdG8gYmUgbnVtYmVyZWQuXG4gICAgaWYgKHN0YXJ0T2Zmc2V0QnVmZmVyTGluZU51bWJlciA+PSAwKSB7XG4gICAgICAvLyBUaGUgYnVmZmVyIGxpbmUgc2hvdWxkIGJlIGluc2VydGVkIGFib3ZlIHRoZSBlbXB0eSBvZmZzZXQgbGluZXMgYWRkZWQuXG4gICAgICBuZXdTY3JlZW5MaW5lcy5zcGxpY2UobmV3U2NyZWVuTGluZXMubGVuZ3RoIC0gb2Zmc2V0TGluZXMsIDAsIHNjcmVlbkxpbmVzW3N0YXJ0T2Zmc2V0QnVmZmVyTGluZU51bWJlcl0pO1xuICAgIH0gZWxzZSB7XG4gICAgICAvLyBzdGFydE9mZnNldEJ1ZmZlckxpbmVOdW1iZXIgPSAtMSBpbiBjYXNlIHRoZSBvZmZzZXRzIGFyZSBpbiB0aGUgYmVnaW5pbmcgb2YgdGhlIGZpbGUuXG4gICAgICBuZXdTY3JlZW5MaW5lcy5wdXNoKHNjcmVlbkxpbmVzWzBdKTtcbiAgICAgIHByaW9yU2NyZWVuTGluZSsrO1xuICAgIH1cbiAgICBuZXdSZWdpb25zLnB1c2goe2J1ZmZlclJvd3M6IDEsIHNjcmVlblJvd3M6IG9mZnNldExpbmVzICsgMX0pO1xuICB9XG5cbiAgLy8gQ2FwdHVyZSBhIHNpbmdsZSByZWdpb24gdG8gdGhlIGVuZCBvZiB0aGUgc2NyZWVuIGxpbmVzLlxuICBjYXB0dXJlU2NyZWVuTGluZXNSZWdpb24oZW5kQnVmZmVyUm93KTtcblxuICByZXR1cm4ge3JlZ2lvbnM6IG5ld1JlZ2lvbnMsIHNjcmVlbkxpbmVzOiBuZXdTY3JlZW5MaW5lc307XG59XG4iXX0=

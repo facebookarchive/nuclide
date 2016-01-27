@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,21 +8,14 @@
  * the root directory of this source tree.
  */
 
-import type {Context, Lines, Print} from '../../types/common';
-import type {LogicalExpression} from 'ast-types-flow';
+var markers = require('../../constants/markers');
+var wrapExpression = require('../../wrappers/simple/wrapExpression');
 
-const markers = require('../../constants/markers');
-const wrapExpression = require('../../wrappers/simple/wrapExpression');
-
-function printLogicalExpression(
-  print: Print,
-  node: LogicalExpression,
-  context: Context,
-): Lines {
-  const path = context.path;
-  let needsScope = true;
-  for (let i = path.size - 1; i >= 0; i--) {
-    const curr = path.get(i);
+function printLogicalExpression(print, node, context) {
+  var path = context.path;
+  var needsScope = true;
+  for (var i = path.size - 1; i >= 0; i--) {
+    var curr = path.get(i);
     /**
      * Traverse the path until we see the first logical expression. If it has
      * the same kind of operator we do not need to open a new scope. If it has
@@ -35,21 +27,11 @@ function printLogicalExpression(
     }
   }
 
-  const wrap = (x) => wrapExpression(print, node, x);
-  return wrap([
-    needsScope
-      ? [markers.openScope, markers.scopeIndent, markers.scopeBreak]
-      : markers.empty,
-    print(node.left),
-    markers.noBreak,
-    markers.space,
-    node.operator,
-    markers.scopeSpaceBreak,
-    print(node.right),
-    needsScope
-      ? [markers.scopeBreak, markers.scopeDedent, markers.closeScope]
-      : markers.empty,
-  ]);
+  var wrap = function wrap(x) {
+    return wrapExpression(print, node, x);
+  };
+  return wrap([needsScope ? [markers.openScope, markers.scopeIndent, markers.scopeBreak] : markers.empty, print(node.left), markers.noBreak, markers.space, node.operator, markers.scopeSpaceBreak, print(node.right), needsScope ? [markers.scopeBreak, markers.scopeDedent, markers.closeScope] : markers.empty]);
 }
 
 module.exports = printLogicalExpression;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInByaW50TG9naWNhbEV4cHJlc3Npb24uanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7OztBQWNBLElBQU0sT0FBTyxHQUFHLE9BQU8sQ0FBQyx5QkFBeUIsQ0FBQyxDQUFDO0FBQ25ELElBQU0sY0FBYyxHQUFHLE9BQU8sQ0FBQyxzQ0FBc0MsQ0FBQyxDQUFDOztBQUV2RSxTQUFTLHNCQUFzQixDQUM3QixLQUFZLEVBQ1osSUFBdUIsRUFDdkIsT0FBZ0IsRUFDVDtBQUNQLE1BQU0sSUFBSSxHQUFHLE9BQU8sQ0FBQyxJQUFJLENBQUM7QUFDMUIsTUFBSSxVQUFVLEdBQUcsSUFBSSxDQUFDO0FBQ3RCLE9BQUssSUFBSSxDQUFDLEdBQUcsSUFBSSxDQUFDLElBQUksR0FBRyxDQUFDLEVBQUUsQ0FBQyxJQUFJLENBQUMsRUFBRSxDQUFDLEVBQUUsRUFBRTtBQUN2QyxRQUFNLElBQUksR0FBRyxJQUFJLENBQUMsR0FBRyxDQUFDLENBQUMsQ0FBQyxDQUFDOzs7Ozs7QUFNekIsUUFBSSxJQUFJLENBQUMsSUFBSSxLQUFLLG1CQUFtQixFQUFFO0FBQ3JDLGdCQUFVLEdBQUcsSUFBSSxDQUFDLFFBQVEsS0FBSyxJQUFJLENBQUMsUUFBUSxDQUFDO0FBQzdDLFlBQU07S0FDUDtHQUNGOztBQUVELE1BQU0sSUFBSSxHQUFHLFNBQVAsSUFBSSxDQUFJLENBQUM7V0FBSyxjQUFjLENBQUMsS0FBSyxFQUFFLElBQUksRUFBRSxDQUFDLENBQUM7R0FBQSxDQUFDO0FBQ25ELFNBQU8sSUFBSSxDQUFDLENBQ1YsVUFBVSxHQUNOLENBQUMsT0FBTyxDQUFDLFNBQVMsRUFBRSxPQUFPLENBQUMsV0FBVyxFQUFFLE9BQU8sQ0FBQyxVQUFVLENBQUMsR0FDNUQsT0FBTyxDQUFDLEtBQUssRUFDakIsS0FBSyxDQUFDLElBQUksQ0FBQyxJQUFJLENBQUMsRUFDaEIsT0FBTyxDQUFDLE9BQU8sRUFDZixPQUFPLENBQUMsS0FBSyxFQUNiLElBQUksQ0FBQyxRQUFRLEVBQ2IsT0FBTyxDQUFDLGVBQWUsRUFDdkIsS0FBSyxDQUFDLElBQUksQ0FBQyxLQUFLLENBQUMsRUFDakIsVUFBVSxHQUNOLENBQUMsT0FBTyxDQUFDLFVBQVUsRUFBRSxPQUFPLENBQUMsV0FBVyxFQUFFLE9BQU8sQ0FBQyxVQUFVLENBQUMsR0FDN0QsT0FBTyxDQUFDLEtBQUssQ0FDbEIsQ0FBQyxDQUFDO0NBQ0o7O0FBRUQsTUFBTSxDQUFDLE9BQU8sR0FBRyxzQkFBc0IsQ0FBQyIsImZpbGUiOiJwcmludExvZ2ljYWxFeHByZXNzaW9uLmpzIiwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBiYWJlbCc7XG4vKiBAZmxvdyAqL1xuXG4vKlxuICogQ29weXJpZ2h0IChjKSAyMDE1LXByZXNlbnQsIEZhY2Vib29rLCBJbmMuXG4gKiBBbGwgcmlnaHRzIHJlc2VydmVkLlxuICpcbiAqIFRoaXMgc291cmNlIGNvZGUgaXMgbGljZW5zZWQgdW5kZXIgdGhlIGxpY2Vuc2UgZm91bmQgaW4gdGhlIExJQ0VOU0UgZmlsZSBpblxuICogdGhlIHJvb3QgZGlyZWN0b3J5IG9mIHRoaXMgc291cmNlIHRyZWUuXG4gKi9cblxuaW1wb3J0IHR5cGUge0NvbnRleHQsIExpbmVzLCBQcmludH0gZnJvbSAnLi4vLi4vdHlwZXMvY29tbW9uJztcbmltcG9ydCB0eXBlIHtMb2dpY2FsRXhwcmVzc2lvbn0gZnJvbSAnYXN0LXR5cGVzLWZsb3cnO1xuXG5jb25zdCBtYXJrZXJzID0gcmVxdWlyZSgnLi4vLi4vY29uc3RhbnRzL21hcmtlcnMnKTtcbmNvbnN0IHdyYXBFeHByZXNzaW9uID0gcmVxdWlyZSgnLi4vLi4vd3JhcHBlcnMvc2ltcGxlL3dyYXBFeHByZXNzaW9uJyk7XG5cbmZ1bmN0aW9uIHByaW50TG9naWNhbEV4cHJlc3Npb24oXG4gIHByaW50OiBQcmludCxcbiAgbm9kZTogTG9naWNhbEV4cHJlc3Npb24sXG4gIGNvbnRleHQ6IENvbnRleHQsXG4pOiBMaW5lcyB7XG4gIGNvbnN0IHBhdGggPSBjb250ZXh0LnBhdGg7XG4gIGxldCBuZWVkc1Njb3BlID0gdHJ1ZTtcbiAgZm9yIChsZXQgaSA9IHBhdGguc2l6ZSAtIDE7IGkgPj0gMDsgaS0tKSB7XG4gICAgY29uc3QgY3VyciA9IHBhdGguZ2V0KGkpO1xuICAgIC8qKlxuICAgICAqIFRyYXZlcnNlIHRoZSBwYXRoIHVudGlsIHdlIHNlZSB0aGUgZmlyc3QgbG9naWNhbCBleHByZXNzaW9uLiBJZiBpdCBoYXNcbiAgICAgKiB0aGUgc2FtZSBraW5kIG9mIG9wZXJhdG9yIHdlIGRvIG5vdCBuZWVkIHRvIG9wZW4gYSBuZXcgc2NvcGUuIElmIGl0IGhhc1xuICAgICAqIGEgZGlmZmVyZW50IGtpbmQgb2Ygb3BlcmF0b3Igd2UgZm9yY2UgaXQgaW50byBhIG5ldyBzY29wZS5cbiAgICAgKi9cbiAgICBpZiAoY3Vyci50eXBlID09PSAnTG9naWNhbEV4cHJlc3Npb24nKSB7XG4gICAgICBuZWVkc1Njb3BlID0gY3Vyci5vcGVyYXRvciAhPT0gbm9kZS5vcGVyYXRvcjtcbiAgICAgIGJyZWFrO1xuICAgIH1cbiAgfVxuXG4gIGNvbnN0IHdyYXAgPSAoeCkgPT4gd3JhcEV4cHJlc3Npb24ocHJpbnQsIG5vZGUsIHgpO1xuICByZXR1cm4gd3JhcChbXG4gICAgbmVlZHNTY29wZVxuICAgICAgPyBbbWFya2Vycy5vcGVuU2NvcGUsIG1hcmtlcnMuc2NvcGVJbmRlbnQsIG1hcmtlcnMuc2NvcGVCcmVha11cbiAgICAgIDogbWFya2Vycy5lbXB0eSxcbiAgICBwcmludChub2RlLmxlZnQpLFxuICAgIG1hcmtlcnMubm9CcmVhayxcbiAgICBtYXJrZXJzLnNwYWNlLFxuICAgIG5vZGUub3BlcmF0b3IsXG4gICAgbWFya2Vycy5zY29wZVNwYWNlQnJlYWssXG4gICAgcHJpbnQobm9kZS5yaWdodCksXG4gICAgbmVlZHNTY29wZVxuICAgICAgPyBbbWFya2Vycy5zY29wZUJyZWFrLCBtYXJrZXJzLnNjb3BlRGVkZW50LCBtYXJrZXJzLmNsb3NlU2NvcGVdXG4gICAgICA6IG1hcmtlcnMuZW1wdHksXG4gIF0pO1xufVxuXG5tb2R1bGUuZXhwb3J0cyA9IHByaW50TG9naWNhbEV4cHJlc3Npb247XG4iXX0=
