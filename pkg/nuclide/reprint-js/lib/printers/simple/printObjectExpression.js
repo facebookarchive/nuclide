@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,28 +8,17 @@
  * the root directory of this source tree.
  */
 
-import type {Lines, Print} from '../../types/common';
-import type {ObjectExpression} from 'ast-types-flow';
+var markers = require('../../constants/markers');
+var wrapExpression = require('../../wrappers/simple/wrapExpression');
 
-const markers = require('../../constants/markers');
-const wrapExpression = require('../../wrappers/simple/wrapExpression');
-
-function printObjectExpression(print: Print, node: ObjectExpression): Lines {
-  const wrap = x => wrapExpression(print, node, x);
-  return wrap([
-    '{',
-    markers.openScope,
-    markers.scopeIndent,
-    markers.scopeBreak,
-    node.properties.map((propNode, i, arr) => [
-      print(propNode),
-      i === arr.length - 1 ? markers.scopeComma : ',',
-      i === arr.length - 1 ? markers.scopeBreak : markers.scopeSpaceBreak,
-    ]),
-    markers.scopeDedent,
-    markers.closeScope,
-    '}',
-  ]);
+function printObjectExpression(print, node) {
+  var wrap = function wrap(x) {
+    return wrapExpression(print, node, x);
+  };
+  return wrap(['{', markers.openScope, markers.scopeIndent, markers.scopeBreak, node.properties.map(function (propNode, i, arr) {
+    return [print(propNode), i === arr.length - 1 ? markers.scopeComma : ',', i === arr.length - 1 ? markers.scopeBreak : markers.scopeSpaceBreak];
+  }), markers.scopeDedent, markers.closeScope, '}']);
 }
 
 module.exports = printObjectExpression;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInByaW50T2JqZWN0RXhwcmVzc2lvbi5qcyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7O0FBY0EsSUFBTSxPQUFPLEdBQUcsT0FBTyxDQUFDLHlCQUF5QixDQUFDLENBQUM7QUFDbkQsSUFBTSxjQUFjLEdBQUcsT0FBTyxDQUFDLHNDQUFzQyxDQUFDLENBQUM7O0FBRXZFLFNBQVMscUJBQXFCLENBQUMsS0FBWSxFQUFFLElBQXNCLEVBQVM7QUFDMUUsTUFBTSxJQUFJLEdBQUcsU0FBUCxJQUFJLENBQUcsQ0FBQztXQUFJLGNBQWMsQ0FBQyxLQUFLLEVBQUUsSUFBSSxFQUFFLENBQUMsQ0FBQztHQUFBLENBQUM7QUFDakQsU0FBTyxJQUFJLENBQUMsQ0FDVixHQUFHLEVBQ0gsT0FBTyxDQUFDLFNBQVMsRUFDakIsT0FBTyxDQUFDLFdBQVcsRUFDbkIsT0FBTyxDQUFDLFVBQVUsRUFDbEIsSUFBSSxDQUFDLFVBQVUsQ0FBQyxHQUFHLENBQUMsVUFBQyxRQUFRLEVBQUUsQ0FBQyxFQUFFLEdBQUc7V0FBSyxDQUN4QyxLQUFLLENBQUMsUUFBUSxDQUFDLEVBQ2YsQ0FBQyxLQUFLLEdBQUcsQ0FBQyxNQUFNLEdBQUcsQ0FBQyxHQUFHLE9BQU8sQ0FBQyxVQUFVLEdBQUcsR0FBRyxFQUMvQyxDQUFDLEtBQUssR0FBRyxDQUFDLE1BQU0sR0FBRyxDQUFDLEdBQUcsT0FBTyxDQUFDLFVBQVUsR0FBRyxPQUFPLENBQUMsZUFBZSxDQUNwRTtHQUFBLENBQUMsRUFDRixPQUFPLENBQUMsV0FBVyxFQUNuQixPQUFPLENBQUMsVUFBVSxFQUNsQixHQUFHLENBQ0osQ0FBQyxDQUFDO0NBQ0o7O0FBRUQsTUFBTSxDQUFDLE9BQU8sR0FBRyxxQkFBcUIsQ0FBQyIsImZpbGUiOiJwcmludE9iamVjdEV4cHJlc3Npb24uanMiLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIGJhYmVsJztcbi8qIEBmbG93ICovXG5cbi8qXG4gKiBDb3B5cmlnaHQgKGMpIDIwMTUtcHJlc2VudCwgRmFjZWJvb2ssIEluYy5cbiAqIEFsbCByaWdodHMgcmVzZXJ2ZWQuXG4gKlxuICogVGhpcyBzb3VyY2UgY29kZSBpcyBsaWNlbnNlZCB1bmRlciB0aGUgbGljZW5zZSBmb3VuZCBpbiB0aGUgTElDRU5TRSBmaWxlIGluXG4gKiB0aGUgcm9vdCBkaXJlY3Rvcnkgb2YgdGhpcyBzb3VyY2UgdHJlZS5cbiAqL1xuXG5pbXBvcnQgdHlwZSB7TGluZXMsIFByaW50fSBmcm9tICcuLi8uLi90eXBlcy9jb21tb24nO1xuaW1wb3J0IHR5cGUge09iamVjdEV4cHJlc3Npb259IGZyb20gJ2FzdC10eXBlcy1mbG93JztcblxuY29uc3QgbWFya2VycyA9IHJlcXVpcmUoJy4uLy4uL2NvbnN0YW50cy9tYXJrZXJzJyk7XG5jb25zdCB3cmFwRXhwcmVzc2lvbiA9IHJlcXVpcmUoJy4uLy4uL3dyYXBwZXJzL3NpbXBsZS93cmFwRXhwcmVzc2lvbicpO1xuXG5mdW5jdGlvbiBwcmludE9iamVjdEV4cHJlc3Npb24ocHJpbnQ6IFByaW50LCBub2RlOiBPYmplY3RFeHByZXNzaW9uKTogTGluZXMge1xuICBjb25zdCB3cmFwID0geCA9PiB3cmFwRXhwcmVzc2lvbihwcmludCwgbm9kZSwgeCk7XG4gIHJldHVybiB3cmFwKFtcbiAgICAneycsXG4gICAgbWFya2Vycy5vcGVuU2NvcGUsXG4gICAgbWFya2Vycy5zY29wZUluZGVudCxcbiAgICBtYXJrZXJzLnNjb3BlQnJlYWssXG4gICAgbm9kZS5wcm9wZXJ0aWVzLm1hcCgocHJvcE5vZGUsIGksIGFycikgPT4gW1xuICAgICAgcHJpbnQocHJvcE5vZGUpLFxuICAgICAgaSA9PT0gYXJyLmxlbmd0aCAtIDEgPyBtYXJrZXJzLnNjb3BlQ29tbWEgOiAnLCcsXG4gICAgICBpID09PSBhcnIubGVuZ3RoIC0gMSA/IG1hcmtlcnMuc2NvcGVCcmVhayA6IG1hcmtlcnMuc2NvcGVTcGFjZUJyZWFrLFxuICAgIF0pLFxuICAgIG1hcmtlcnMuc2NvcGVEZWRlbnQsXG4gICAgbWFya2Vycy5jbG9zZVNjb3BlLFxuICAgICd9JyxcbiAgXSk7XG59XG5cbm1vZHVsZS5leHBvcnRzID0gcHJpbnRPYmplY3RFeHByZXNzaW9uO1xuIl19

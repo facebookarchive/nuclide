@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,20 +8,20 @@
  * the root directory of this source tree.
  */
 
-function extractWordAtPosition(
-    editor: atom$TextEditor,
-    position: atom$Point,
-    wordRegex: ?RegExp): ?{wordMatch: Array<string>; range: atom$Range} {
+function extractWordAtPosition(editor, position, wordRegex) {
   if (!wordRegex) {
     wordRegex = editor.getLastCursor().wordRegExp();
   }
-  const buffer = editor.getBuffer();
-  const {row, column} = position;
-  const rowRange = buffer.rangeForRow(row);
-  let matchData;
+  var buffer = editor.getBuffer();
+  var row = position.row;
+  var column = position.column;
+
+  var rowRange = buffer.rangeForRow(row);
+  var matchData = undefined;
   // Extract the expression from the row text.
-  buffer.scanInRange(wordRegex, rowRange, (data) => {
-    const {range} = data;
+  buffer.scanInRange(wordRegex, rowRange, function (data) {
+    var range = data.range;
+
     if (range.containsPoint(position)) {
       matchData = data;
     }
@@ -34,7 +33,7 @@ function extractWordAtPosition(
   if (matchData) {
     return {
       wordMatch: matchData.match,
-      range: matchData.range,
+      range: matchData.range
     };
   } else {
     return null;
@@ -42,3 +41,4 @@ function extractWordAtPosition(
 }
 
 module.exports = extractWordAtPosition;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbImV4dHJhY3Qtd29yZC1hdC1wb3NpdGlvbi5qcyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7O0FBV0EsU0FBUyxxQkFBcUIsQ0FDMUIsTUFBdUIsRUFDdkIsUUFBb0IsRUFDcEIsU0FBa0IsRUFBa0Q7QUFDdEUsTUFBSSxDQUFDLFNBQVMsRUFBRTtBQUNkLGFBQVMsR0FBRyxNQUFNLENBQUMsYUFBYSxFQUFFLENBQUMsVUFBVSxFQUFFLENBQUM7R0FDakQ7QUFDRCxNQUFNLE1BQU0sR0FBRyxNQUFNLENBQUMsU0FBUyxFQUFFLENBQUM7TUFDM0IsR0FBRyxHQUFZLFFBQVEsQ0FBdkIsR0FBRztNQUFFLE1BQU0sR0FBSSxRQUFRLENBQWxCLE1BQU07O0FBQ2xCLE1BQU0sUUFBUSxHQUFHLE1BQU0sQ0FBQyxXQUFXLENBQUMsR0FBRyxDQUFDLENBQUM7QUFDekMsTUFBSSxTQUFTLFlBQUEsQ0FBQzs7QUFFZCxRQUFNLENBQUMsV0FBVyxDQUFDLFNBQVMsRUFBRSxRQUFRLEVBQUUsVUFBQyxJQUFJLEVBQUs7UUFDekMsS0FBSyxHQUFJLElBQUksQ0FBYixLQUFLOztBQUNaLFFBQUksS0FBSyxDQUFDLGFBQWEsQ0FBQyxRQUFRLENBQUMsRUFBRTtBQUNqQyxlQUFTLEdBQUcsSUFBSSxDQUFDO0tBQ2xCOztBQUVELFFBQUksS0FBSyxDQUFDLEdBQUcsQ0FBQyxNQUFNLEdBQUcsTUFBTSxFQUFFO0FBQzdCLFVBQUksQ0FBQyxJQUFJLEVBQUUsQ0FBQztLQUNiO0dBQ0YsQ0FBQyxDQUFDO0FBQ0gsTUFBSSxTQUFTLEVBQUU7QUFDYixXQUFPO0FBQ0wsZUFBUyxFQUFFLFNBQVMsQ0FBQyxLQUFLO0FBQzFCLFdBQUssRUFBRSxTQUFTLENBQUMsS0FBSztLQUN2QixDQUFDO0dBQ0gsTUFBTTtBQUNMLFdBQU8sSUFBSSxDQUFDO0dBQ2I7Q0FDRjs7QUFFRCxNQUFNLENBQUMsT0FBTyxHQUFHLHFCQUFxQixDQUFDIiwiZmlsZSI6ImV4dHJhY3Qtd29yZC1hdC1wb3NpdGlvbi5qcyIsInNvdXJjZXNDb250ZW50IjpbIid1c2UgYmFiZWwnO1xuLyogQGZsb3cgKi9cblxuLypcbiAqIENvcHlyaWdodCAoYykgMjAxNS1wcmVzZW50LCBGYWNlYm9vaywgSW5jLlxuICogQWxsIHJpZ2h0cyByZXNlcnZlZC5cbiAqXG4gKiBUaGlzIHNvdXJjZSBjb2RlIGlzIGxpY2Vuc2VkIHVuZGVyIHRoZSBsaWNlbnNlIGZvdW5kIGluIHRoZSBMSUNFTlNFIGZpbGUgaW5cbiAqIHRoZSByb290IGRpcmVjdG9yeSBvZiB0aGlzIHNvdXJjZSB0cmVlLlxuICovXG5cbmZ1bmN0aW9uIGV4dHJhY3RXb3JkQXRQb3NpdGlvbihcbiAgICBlZGl0b3I6IGF0b20kVGV4dEVkaXRvcixcbiAgICBwb3NpdGlvbjogYXRvbSRQb2ludCxcbiAgICB3b3JkUmVnZXg6ID9SZWdFeHApOiA/e3dvcmRNYXRjaDogQXJyYXk8c3RyaW5nPjsgcmFuZ2U6IGF0b20kUmFuZ2V9IHtcbiAgaWYgKCF3b3JkUmVnZXgpIHtcbiAgICB3b3JkUmVnZXggPSBlZGl0b3IuZ2V0TGFzdEN1cnNvcigpLndvcmRSZWdFeHAoKTtcbiAgfVxuICBjb25zdCBidWZmZXIgPSBlZGl0b3IuZ2V0QnVmZmVyKCk7XG4gIGNvbnN0IHtyb3csIGNvbHVtbn0gPSBwb3NpdGlvbjtcbiAgY29uc3Qgcm93UmFuZ2UgPSBidWZmZXIucmFuZ2VGb3JSb3cocm93KTtcbiAgbGV0IG1hdGNoRGF0YTtcbiAgLy8gRXh0cmFjdCB0aGUgZXhwcmVzc2lvbiBmcm9tIHRoZSByb3cgdGV4dC5cbiAgYnVmZmVyLnNjYW5JblJhbmdlKHdvcmRSZWdleCwgcm93UmFuZ2UsIChkYXRhKSA9PiB7XG4gICAgY29uc3Qge3JhbmdlfSA9IGRhdGE7XG4gICAgaWYgKHJhbmdlLmNvbnRhaW5zUG9pbnQocG9zaXRpb24pKSB7XG4gICAgICBtYXRjaERhdGEgPSBkYXRhO1xuICAgIH1cbiAgICAvLyBTdG9wIHRoZSBzY2FuIGlmIHRoZSBzY2FubmVyIGhhcyBwYXNzZWQgb3VyIHBvc2l0aW9uLlxuICAgIGlmIChyYW5nZS5lbmQuY29sdW1uID4gY29sdW1uKSB7XG4gICAgICBkYXRhLnN0b3AoKTtcbiAgICB9XG4gIH0pO1xuICBpZiAobWF0Y2hEYXRhKSB7XG4gICAgcmV0dXJuIHtcbiAgICAgIHdvcmRNYXRjaDogbWF0Y2hEYXRhLm1hdGNoLFxuICAgICAgcmFuZ2U6IG1hdGNoRGF0YS5yYW5nZSxcbiAgICB9O1xuICB9IGVsc2Uge1xuICAgIHJldHVybiBudWxsO1xuICB9XG59XG5cbm1vZHVsZS5leHBvcnRzID0gZXh0cmFjdFdvcmRBdFBvc2l0aW9uO1xuIl19

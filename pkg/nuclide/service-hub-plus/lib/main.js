@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,9 +8,11 @@
  * the root directory of this source tree.
  */
 
-function consumeFirstProvider(keyPath: string, version: string = '0.0.0'): Promise {
-  return new Promise((resolve, reject) => {
-    const subscription = atom.packages.serviceHub.consume(keyPath, version, provider => {
+function consumeFirstProvider(keyPath) {
+  var version = arguments.length <= 1 || arguments[1] === undefined ? '0.0.0' : arguments[1];
+
+  return new Promise(function (resolve, reject) {
+    var subscription = atom.packages.serviceHub.consume(keyPath, version, function (provider) {
       resolve(provider);
       subscription.dispose();
     });
@@ -19,5 +20,6 @@ function consumeFirstProvider(keyPath: string, version: string = '0.0.0'): Promi
 }
 
 module.exports = {
-  consumeFirstProvider,
+  consumeFirstProvider: consumeFirstProvider
 };
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIm1haW4uanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7OztBQVdBLFNBQVMsb0JBQW9CLENBQUMsT0FBZSxFQUFzQztNQUFwQyxPQUFlLHlEQUFHLE9BQU87O0FBQ3RFLFNBQU8sSUFBSSxPQUFPLENBQUMsVUFBQyxPQUFPLEVBQUUsTUFBTSxFQUFLO0FBQ3RDLFFBQU0sWUFBWSxHQUFHLElBQUksQ0FBQyxRQUFRLENBQUMsVUFBVSxDQUFDLE9BQU8sQ0FBQyxPQUFPLEVBQUUsT0FBTyxFQUFFLFVBQUEsUUFBUSxFQUFJO0FBQ2xGLGFBQU8sQ0FBQyxRQUFRLENBQUMsQ0FBQztBQUNsQixrQkFBWSxDQUFDLE9BQU8sRUFBRSxDQUFDO0tBQ3hCLENBQUMsQ0FBQztHQUNKLENBQUMsQ0FBQztDQUNKOztBQUVELE1BQU0sQ0FBQyxPQUFPLEdBQUc7QUFDZixzQkFBb0IsRUFBcEIsb0JBQW9CO0NBQ3JCLENBQUMiLCJmaWxlIjoibWFpbi5qcyIsInNvdXJjZXNDb250ZW50IjpbIid1c2UgYmFiZWwnO1xuLyogQGZsb3cgKi9cblxuLypcbiAqIENvcHlyaWdodCAoYykgMjAxNS1wcmVzZW50LCBGYWNlYm9vaywgSW5jLlxuICogQWxsIHJpZ2h0cyByZXNlcnZlZC5cbiAqXG4gKiBUaGlzIHNvdXJjZSBjb2RlIGlzIGxpY2Vuc2VkIHVuZGVyIHRoZSBsaWNlbnNlIGZvdW5kIGluIHRoZSBMSUNFTlNFIGZpbGUgaW5cbiAqIHRoZSByb290IGRpcmVjdG9yeSBvZiB0aGlzIHNvdXJjZSB0cmVlLlxuICovXG5cbmZ1bmN0aW9uIGNvbnN1bWVGaXJzdFByb3ZpZGVyKGtleVBhdGg6IHN0cmluZywgdmVyc2lvbjogc3RyaW5nID0gJzAuMC4wJyk6IFByb21pc2Uge1xuICByZXR1cm4gbmV3IFByb21pc2UoKHJlc29sdmUsIHJlamVjdCkgPT4ge1xuICAgIGNvbnN0IHN1YnNjcmlwdGlvbiA9IGF0b20ucGFja2FnZXMuc2VydmljZUh1Yi5jb25zdW1lKGtleVBhdGgsIHZlcnNpb24sIHByb3ZpZGVyID0+IHtcbiAgICAgIHJlc29sdmUocHJvdmlkZXIpO1xuICAgICAgc3Vic2NyaXB0aW9uLmRpc3Bvc2UoKTtcbiAgICB9KTtcbiAgfSk7XG59XG5cbm1vZHVsZS5leHBvcnRzID0ge1xuICBjb25zdW1lRmlyc3RQcm92aWRlcixcbn07XG4iXX0=

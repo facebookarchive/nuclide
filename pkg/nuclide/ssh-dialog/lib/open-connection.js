@@ -1,5 +1,9 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
+exports.openConnectionDialog = openConnectionDialog;
+
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { var callNext = step.bind(null, 'next'); var callThrow = step.bind(null, 'throw'); function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(callNext, callThrow); } } callNext(); }); }; }
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,65 +13,59 @@
  * the root directory of this source tree.
  */
 
-import {
-  getDefaultConnectionProfile,
-  getOfficialRemoteServerCommand,
-  getSavedConnectionProfiles,
-  onSavedConnectionProfilesDidChange,
-  saveConnectionConfig,
-  saveConnectionProfiles,
-} from './connection-profile-utils';
-import {getLogger} from '../../logging';
+var _connectionProfileUtils = require('./connection-profile-utils');
 
-import type {Disposable} from 'atom';
-import type {RemoteConnection} from '../../remote-connection';
-import type {NuclideRemoteConnectionProfile} from './connection-types';
-import {extend, PromiseQueue} from '../../commons';
+var _logging = require('../../logging');
 
-const logger = getLogger();
-let dialogPromiseQueue: ?PromiseQueue = null;
+var _commons = require('../../commons');
+
+var logger = (0, _logging.getLogger)();
+var dialogPromiseQueue = null;
 
 /**
  * Opens the remote connection dialog flow, which includes asking the user
  * for connection parameters (e.g. username, server name, etc), and optionally
  * asking for additional (e.g. 2-fac) authentication.
  */
-export function openConnectionDialog(props: Object): Promise<?RemoteConnection> {
+
+function openConnectionDialog(props) {
   if (!dialogPromiseQueue) {
-    dialogPromiseQueue = new PromiseQueue();
+    dialogPromiseQueue = new _commons.PromiseQueue();
   }
 
-  return dialogPromiseQueue.submit((resolve, reject) => {
-    const {React} = require('react-for-atom');
-    const ConnectionDialog = require('./ConnectionDialog');
-    const workspaceEl = atom.views.getView(atom.workspace);
-    const hostEl = document.createElement('div');
+  return dialogPromiseQueue.submit(function (resolve, reject) {
+    var _require = require('react-for-atom');
+
+    var React = _require.React;
+
+    var ConnectionDialog = require('./ConnectionDialog');
+    var workspaceEl = atom.views.getView(atom.workspace);
+    var hostEl = document.createElement('div');
     workspaceEl.appendChild(hostEl);
 
     // During the lifetime of this 'openConnectionDialog' flow, the 'default'
     // connection profile should not change (even if it is reset by the user
     // connecting to a remote project from another Atom window).
-    const defaultConnectionProfile: NuclideRemoteConnectionProfile = getDefaultConnectionProfile();
+    var defaultConnectionProfile = (0, _connectionProfileUtils.getDefaultConnectionProfile)();
     // The `compositeConnectionProfiles` is the combination of the default connection
     // profile plus any user-created connection profiles. Initialize this to the
     // default connection profile. This array of profiles may change in the lifetime
     // of `openConnectionDialog` flow.
-    let compositeConnectionProfiles: Array<NuclideRemoteConnectionProfile> =
-        [defaultConnectionProfile];
+    var compositeConnectionProfiles = [defaultConnectionProfile];
     // Add any previously-created (saved) connection profiles.
-    compositeConnectionProfiles = compositeConnectionProfiles.concat(getSavedConnectionProfiles());
+    compositeConnectionProfiles = compositeConnectionProfiles.concat((0, _connectionProfileUtils.getSavedConnectionProfiles)());
 
     // We want to observe changes in the saved connection profiles during the
     // lifetime of this connection dialog, because the user can add/delete
     // a profile from a connection dialog.
-    let connectionProfilesSubscription: ?Disposable = null;
-    function cleanupSubscriptionFunc(): void {
+    var connectionProfilesSubscription = null;
+    function cleanupSubscriptionFunc() {
       if (connectionProfilesSubscription) {
         connectionProfilesSubscription.dispose();
       }
     }
 
-    function onDeleteProfileClicked(indexToDelete: number) {
+    function onDeleteProfileClicked(indexToDelete) {
       if (indexToDelete === 0) {
         // no-op: The default connection profile can't be deleted.
         // TODO jessicalin: Show this error message in a better place.
@@ -76,21 +74,19 @@ export function openConnectionDialog(props: Object): Promise<?RemoteConnection> 
       }
       if (compositeConnectionProfiles) {
         if (indexToDelete >= compositeConnectionProfiles.length) {
-          logger.fatal('Tried to delete a connection profile with an index that does not exist. ' +
-              'This should never happen.');
+          logger.fatal('Tried to delete a connection profile with an index that does not exist. ' + 'This should never happen.');
           return;
         }
         // Remove the index of the profile to delete.
-        let newConnectionProfiles = compositeConnectionProfiles.slice(0, indexToDelete).concat(
-            compositeConnectionProfiles.slice(indexToDelete + 1));
+        var newConnectionProfiles = compositeConnectionProfiles.slice(0, indexToDelete).concat(compositeConnectionProfiles.slice(indexToDelete + 1));
         // Remove the first index, because this is the default connection profile,
         // not a user-created profile.
         newConnectionProfiles = newConnectionProfiles.slice(1);
-        saveConnectionProfiles(newConnectionProfiles);
+        (0, _connectionProfileUtils.saveConnectionProfiles)(newConnectionProfiles);
       }
     }
 
-    let newProfileForm;
+    var newProfileForm = undefined;
     /*
      * When the "+" button is clicked (the user intends to add a new connection profile),
      * open a new dialog with a form to create one.
@@ -101,59 +97,57 @@ export function openConnectionDialog(props: Object): Promise<?RemoteConnection> 
       if (newProfileForm) {
         return;
       }
-      const hostElementForNewProfileForm = document.createElement('div');
+      var hostElementForNewProfileForm = document.createElement('div');
       workspaceEl.appendChild(hostElementForNewProfileForm);
 
       // Props
-      const closeNewProfileForm = () => {
+      var closeNewProfileForm = function closeNewProfileForm() {
         newProfileForm = null;
         React.unmountComponentAtNode(hostElementForNewProfileForm);
         hostElementForNewProfileForm.parentNode.removeChild(hostElementForNewProfileForm);
       };
-      const onSave = (newProfile: NuclideRemoteConnectionProfile) => {
+      var onSave = function onSave(newProfile) {
         // Don't include the default connection profile.
-        const userCreatedProfiles = compositeConnectionProfiles.slice(1).concat(newProfile);
-        saveConnectionProfiles(userCreatedProfiles);
+        var userCreatedProfiles = compositeConnectionProfiles.slice(1).concat(newProfile);
+        (0, _connectionProfileUtils.saveConnectionProfiles)(userCreatedProfiles);
         closeNewProfileForm();
       };
-      const initialDialogProps = {
+      var initialDialogProps = {
         onCancel: closeNewProfileForm,
-        onSave,
-        initialFormFields: defaultConnectionProfile.params,
+        onSave: onSave,
+        initialFormFields: defaultConnectionProfile.params
       };
 
       // Pop up a dialog that is pre-filled with the default params.
-      const CreateConnectionProfileForm = require('./CreateConnectionProfileForm');
-      newProfileForm = React.render(
-        <CreateConnectionProfileForm {...initialDialogProps} />,
-        hostElementForNewProfileForm,
-      );
+      var CreateConnectionProfileForm = require('./CreateConnectionProfileForm');
+      newProfileForm = React.render(React.createElement(CreateConnectionProfileForm, initialDialogProps), hostElementForNewProfileForm);
     }
 
     // The connection profiles could change, but the rest of the props passed
     // to the ConnectionDialog will not.
     // Note: the `cleanupSubscriptionFunc` is called when the dialog closes:
     // `onConnect`, `onError`, or `onCancel`.
-    const baseDialogProps = extend.immutableExtend({
+    var baseDialogProps = _commons.extend.immutableExtend({
       // Select the default connection profile, which should always be index 0.
       indexOfInitiallySelectedConnectionProfile: 0,
-      onAddProfileClicked,
-      onDeleteProfileClicked,
-      onConnect: async (connection, config) => {
+      onAddProfileClicked: onAddProfileClicked,
+      onDeleteProfileClicked: onDeleteProfileClicked,
+      onConnect: _asyncToGenerator(function* (connection, config) {
         resolve(connection);
-        saveConnectionConfig(config, getOfficialRemoteServerCommand());
+        (0, _connectionProfileUtils.saveConnectionConfig)(config, (0, _connectionProfileUtils.getOfficialRemoteServerCommand)());
+        cleanupSubscriptionFunc();
+      }),
+      onError: function onError(err, config) {
+        //eslint-disable-line handle-callback-err
+        resolve( /*connection*/null);
+        (0, _connectionProfileUtils.saveConnectionConfig)(config, (0, _connectionProfileUtils.getOfficialRemoteServerCommand)());
         cleanupSubscriptionFunc();
       },
-      onError: (err, config) => { //eslint-disable-line handle-callback-err
-        resolve(/*connection*/ null);
-        saveConnectionConfig(config, getOfficialRemoteServerCommand());
+      onCancel: function onCancel() {
+        resolve( /*connection*/null);
         cleanupSubscriptionFunc();
       },
-      onCancel: () => {
-        resolve(/*connection*/ null);
-        cleanupSubscriptionFunc();
-      },
-      onClosed: () => {
+      onClosed: function onClosed() {
         // Unmount the ConnectionDialog and clean up the host element.
         if (hostEl) {
           React.unmountComponentAtNode(hostEl);
@@ -161,27 +155,19 @@ export function openConnectionDialog(props: Object): Promise<?RemoteConnection> 
             hostEl.parentNode.removeChild(hostEl);
           }
         }
-      },
+      }
     }, props);
 
     // If/when the saved connection profiles change, we want to re-render the dialog
     // with the new set of connection profiles.
-    connectionProfilesSubscription = onSavedConnectionProfilesDidChange(
-      (newProfiles: ?Array<NuclideRemoteConnectionProfile>) => {
-        compositeConnectionProfiles = newProfiles ? [defaultConnectionProfile].concat(newProfiles) :
-            [defaultConnectionProfile];
-        const newDialogProps = extend.immutableExtend(
-          baseDialogProps,
-          {connectionProfiles: compositeConnectionProfiles},
-        );
-        React.render(<ConnectionDialog {...newDialogProps} />, hostEl);
-      }
-    );
+    connectionProfilesSubscription = (0, _connectionProfileUtils.onSavedConnectionProfilesDidChange)(function (newProfiles) {
+      compositeConnectionProfiles = newProfiles ? [defaultConnectionProfile].concat(newProfiles) : [defaultConnectionProfile];
+      var newDialogProps = _commons.extend.immutableExtend(baseDialogProps, { connectionProfiles: compositeConnectionProfiles });
+      React.render(React.createElement(ConnectionDialog, newDialogProps), hostEl);
+    });
 
-    const initialDialogProps = extend.immutableExtend(
-      baseDialogProps,
-      {connectionProfiles: compositeConnectionProfiles},
-    );
-    React.render(<ConnectionDialog {...initialDialogProps} />, hostEl);
+    var initialDialogProps = _commons.extend.immutableExtend(baseDialogProps, { connectionProfiles: compositeConnectionProfiles });
+    React.render(React.createElement(ConnectionDialog, initialDialogProps), hostEl);
   });
 }
+//# sourceMappingURL=data:application/json;base64,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QiwrQkFBdUIsRUFBRSxDQUFDO09BQzNCO0FBQ0QsY0FBUSxFQUFFLG9CQUFNOztBQUVkLFlBQUksTUFBTSxFQUFFO0FBQ1YsZUFBSyxDQUFDLHNCQUFzQixDQUFDLE1BQU0sQ0FBQyxDQUFDO0FBQ3JDLGNBQUksTUFBTSxDQUFDLFVBQVUsRUFBRTtBQUNyQixrQkFBTSxDQUFDLFVBQVUsQ0FBQyxXQUFXLENBQUMsTUFBTSxDQUFDLENBQUM7V0FDdkM7U0FDRjtPQUNGO0tBQ0YsRUFBRSxLQUFLLENBQUMsQ0FBQzs7OztBQUlWLGtDQUE4QixHQUFHLGdFQUMvQixVQUFDLFdBQVcsRUFBNkM7QUFDdkQsaUNBQTJCLEdBQUcsV0FBVyxHQUFHLENBQUMsd0JBQXdCLENBQUMsQ0FBQyxNQUFNLENBQUMsV0FBVyxDQUFDLEdBQ3RGLENBQUMsd0JBQXdCLENBQUMsQ0FBQztBQUMvQixVQUFNLGNBQWMsR0FBRyxnQkFBTyxlQUFlLENBQzNDLGVBQWUsRUFDZixFQUFDLGtCQUFrQixFQUFFLDJCQUEyQixFQUFDLENBQ2xELENBQUM7QUFDRixXQUFLLENBQUMsTUFBTSxDQUFDLG9CQUFDLGdCQUFnQixFQUFLLGNBQWMsQ0FBSSxFQUFFLE1BQU0sQ0FBQyxDQUFDO0tBQ2hFLENBQ0YsQ0FBQzs7QUFFRixRQUFNLGtCQUFrQixHQUFHLGdCQUFPLGVBQWUsQ0FDL0MsZUFBZSxFQUNmLEVBQUMsa0JBQWtCLEVBQUUsMkJBQTJCLEVBQUMsQ0FDbEQsQ0FBQztBQUNGLFNBQUssQ0FBQyxNQUFNLENBQUMsb0JBQUMsZ0JBQWdCLEVBQUssa0JBQWtCLENBQUksRUFBRSxNQUFNLENBQUMsQ0FBQztHQUNwRSxDQUFDLENBQUM7Q0FDSiIsImZpbGUiOiJvcGVuLWNvbm5lY3Rpb24uanMiLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIGJhYmVsJztcbi8qIEBmbG93ICovXG5cbi8qXG4gKiBDb3B5cmlnaHQgKGMpIDIwMTUtcHJlc2VudCwgRmFjZWJvb2ssIEluYy5cbiAqIEFsbCByaWdodHMgcmVzZXJ2ZWQuXG4gKlxuICogVGhpcyBzb3VyY2UgY29kZSBpcyBsaWNlbnNlZCB1bmRlciB0aGUgbGljZW5zZSBmb3VuZCBpbiB0aGUgTElDRU5TRSBmaWxlIGluXG4gKiB0aGUgcm9vdCBkaXJlY3Rvcnkgb2YgdGhpcyBzb3VyY2UgdHJlZS5cbiAqL1xuXG5pbXBvcnQge1xuICBnZXREZWZhdWx0Q29ubmVjdGlvblByb2ZpbGUsXG4gIGdldE9mZmljaWFsUmVtb3RlU2VydmVyQ29tbWFuZCxcbiAgZ2V0U2F2ZWRDb25uZWN0aW9uUHJvZmlsZXMsXG4gIG9uU2F2ZWRDb25uZWN0aW9uUHJvZmlsZXNEaWRDaGFuZ2UsXG4gIHNhdmVDb25uZWN0aW9uQ29uZmlnLFxuICBzYXZlQ29ubmVjdGlvblByb2ZpbGVzLFxufSBmcm9tICcuL2Nvbm5lY3Rpb24tcHJvZmlsZS11dGlscyc7XG5pbXBvcnQge2dldExvZ2dlcn0gZnJvbSAnLi4vLi4vbG9nZ2luZyc7XG5cbmltcG9ydCB0eXBlIHtEaXNwb3NhYmxlfSBmcm9tICdhdG9tJztcbmltcG9ydCB0eXBlIHtSZW1vdGVDb25uZWN0aW9ufSBmcm9tICcuLi8uLi9yZW1vdGUtY29ubmVjdGlvbic7XG5pbXBvcnQgdHlwZSB7TnVjbGlkZVJlbW90ZUNvbm5lY3Rpb25Qcm9maWxlfSBmcm9tICcuL2Nvbm5lY3Rpb24tdHlwZXMnO1xuaW1wb3J0IHtleHRlbmQsIFByb21pc2VRdWV1ZX0gZnJvbSAnLi4vLi4vY29tbW9ucyc7XG5cbmNvbnN0IGxvZ2dlciA9IGdldExvZ2dlcigpO1xubGV0IGRpYWxvZ1Byb21pc2VRdWV1ZTogP1Byb21pc2VRdWV1ZSA9IG51bGw7XG5cbi8qKlxuICogT3BlbnMgdGhlIHJlbW90ZSBjb25uZWN0aW9uIGRpYWxvZyBmbG93LCB3aGljaCBpbmNsdWRlcyBhc2tpbmcgdGhlIHVzZXJcbiAqIGZvciBjb25uZWN0aW9uIHBhcmFtZXRlcnMgKGUuZy4gdXNlcm5hbWUsIHNlcnZlciBuYW1lLCBldGMpLCBhbmQgb3B0aW9uYWxseVxuICogYXNraW5nIGZvciBhZGRpdGlvbmFsIChlLmcuIDItZmFjKSBhdXRoZW50aWNhdGlvbi5cbiAqL1xuZXhwb3J0IGZ1bmN0aW9uIG9wZW5Db25uZWN0aW9uRGlhbG9nKHByb3BzOiBPYmplY3QpOiBQcm9taXNlPD9SZW1vdGVDb25uZWN0aW9uPiB7XG4gIGlmICghZGlhbG9nUHJvbWlzZVF1ZXVlKSB7XG4gICAgZGlhbG9nUHJvbWlzZVF1ZXVlID0gbmV3IFByb21pc2VRdWV1ZSgpO1xuICB9XG5cbiAgcmV0dXJuIGRpYWxvZ1Byb21pc2VRdWV1ZS5zdWJtaXQoKHJlc29sdmUsIHJlamVjdCkgPT4ge1xuICAgIGNvbnN0IHtSZWFjdH0gPSByZXF1aXJlKCdyZWFjdC1mb3ItYXRvbScpO1xuICAgIGNvbnN0IENvbm5lY3Rpb25EaWFsb2cgPSByZXF1aXJlKCcuL0Nvbm5lY3Rpb25EaWFsb2cnKTtcbiAgICBjb25zdCB3b3Jrc3BhY2VFbCA9IGF0b20udmlld3MuZ2V0VmlldyhhdG9tLndvcmtzcGFjZSk7XG4gICAgY29uc3QgaG9zdEVsID0gZG9jdW1lbnQuY3JlYXRlRWxlbWVudCgnZGl2Jyk7XG4gICAgd29ya3NwYWNlRWwuYXBwZW5kQ2hpbGQoaG9zdEVsKTtcblxuICAgIC8vIER1cmluZyB0aGUgbGlmZXRpbWUgb2YgdGhpcyAnb3BlbkNvbm5lY3Rpb25EaWFsb2cnIGZsb3csIHRoZSAnZGVmYXVsdCdcbiAgICAvLyBjb25uZWN0aW9uIHByb2ZpbGUgc2hvdWxkIG5vdCBjaGFuZ2UgKGV2ZW4gaWYgaXQgaXMgcmVzZXQgYnkgdGhlIHVzZXJcbiAgICAvLyBjb25uZWN0aW5nIHRvIGEgcmVtb3RlIHByb2plY3QgZnJvbSBhbm90aGVyIEF0b20gd2luZG93KS5cbiAgICBjb25zdCBkZWZhdWx0Q29ubmVjdGlvblByb2ZpbGU6IE51Y2xpZGVSZW1vdGVDb25uZWN0aW9uUHJvZmlsZSA9IGdldERlZmF1bHRDb25uZWN0aW9uUHJvZmlsZSgpO1xuICAgIC8vIFRoZSBgY29tcG9zaXRlQ29ubmVjdGlvblByb2ZpbGVzYCBpcyB0aGUgY29tYmluYXRpb24gb2YgdGhlIGRlZmF1bHQgY29ubmVjdGlvblxuICAgIC8vIHByb2ZpbGUgcGx1cyBhbnkgdXNlci1jcmVhdGVkIGNvbm5lY3Rpb24gcHJvZmlsZXMuIEluaXRpYWxpemUgdGhpcyB0byB0aGVcbiAgICAvLyBkZWZhdWx0IGNvbm5lY3Rpb24gcHJvZmlsZS4gVGhpcyBhcnJheSBvZiBwcm9maWxlcyBtYXkgY2hhbmdlIGluIHRoZSBsaWZldGltZVxuICAgIC8vIG9mIGBvcGVuQ29ubmVjdGlvbkRpYWxvZ2AgZmxvdy5cbiAgICBsZXQgY29tcG9zaXRlQ29ubmVjdGlvblByb2ZpbGVzOiBBcnJheTxOdWNsaWRlUmVtb3RlQ29ubmVjdGlvblByb2ZpbGU+ID1cbiAgICAgICAgW2RlZmF1bHRDb25uZWN0aW9uUHJvZmlsZV07XG4gICAgLy8gQWRkIGFueSBwcmV2aW91c2x5LWNyZWF0ZWQgKHNhdmVkKSBjb25uZWN0aW9uIHByb2ZpbGVzLlxuICAgIGNvbXBvc2l0ZUNvbm5lY3Rpb25Qcm9maWxlcyA9IGNvbXBvc2l0ZUNvbm5lY3Rpb25Qcm9maWxlcy5jb25jYXQoZ2V0U2F2ZWRDb25uZWN0aW9uUHJvZmlsZXMoKSk7XG5cbiAgICAvLyBXZSB3YW50IHRvIG9ic2VydmUgY2hhbmdlcyBpbiB0aGUgc2F2ZWQgY29ubmVjdGlvbiBwcm9maWxlcyBkdXJpbmcgdGhlXG4gICAgLy8gbGlmZXRpbWUgb2YgdGhpcyBjb25uZWN0aW9uIGRpYWxvZywgYmVjYXVzZSB0aGUgdXNlciBjYW4gYWRkL2RlbGV0ZVxuICAgIC8vIGEgcHJvZmlsZSBmcm9tIGEgY29ubmVjdGlvbiBkaWFsb2cuXG4gICAgbGV0IGNvbm5lY3Rpb25Qcm9maWxlc1N1YnNjcmlwdGlvbjogP0Rpc3Bvc2FibGUgPSBudWxsO1xuICAgIGZ1bmN0aW9uIGNsZWFudXBTdWJzY3JpcHRpb25GdW5jKCk6IHZvaWQge1xuICAgICAgaWYgKGNvbm5lY3Rpb25Qcm9maWxlc1N1YnNjcmlwdGlvbikge1xuICAgICAgICBjb25uZWN0aW9uUHJvZmlsZXNTdWJzY3JpcHRpb24uZGlzcG9zZSgpO1xuICAgICAgfVxuICAgIH1cblxuICAgIGZ1bmN0aW9uIG9uRGVsZXRlUHJvZmlsZUNsaWNrZWQoaW5kZXhUb0RlbGV0ZTogbnVtYmVyKSB7XG4gICAgICBpZiAoaW5kZXhUb0RlbGV0ZSA9PT0gMCkge1xuICAgICAgICAvLyBuby1vcDogVGhlIGRlZmF1bHQgY29ubmVjdGlvbiBwcm9maWxlIGNhbid0IGJlIGRlbGV0ZWQuXG4gICAgICAgIC8vIFRPRE8gamVzc2ljYWxpbjogU2hvdyB0aGlzIGVycm9yIG1lc3NhZ2UgaW4gYSBiZXR0ZXIgcGxhY2UuXG4gICAgICAgIGF0b20ubm90aWZpY2F0aW9ucy5hZGRFcnJvcignVGhlIGRlZmF1bHQgY29ubmVjdGlvbiBwcm9maWxlIGNhbm5vdCBiZSBkZWxldGVkLicpO1xuICAgICAgICByZXR1cm47XG4gICAgICB9XG4gICAgICBpZiAoY29tcG9zaXRlQ29ubmVjdGlvblByb2ZpbGVzKSB7XG4gICAgICAgIGlmIChpbmRleFRvRGVsZXRlID49IGNvbXBvc2l0ZUNvbm5lY3Rpb25Qcm9maWxlcy5sZW5ndGgpIHtcbiAgICAgICAgICBsb2dnZXIuZmF0YWwoJ1RyaWVkIHRvIGRlbGV0ZSBhIGNvbm5lY3Rpb24gcHJvZmlsZSB3aXRoIGFuIGluZGV4IHRoYXQgZG9lcyBub3QgZXhpc3QuICcgK1xuICAgICAgICAgICAgICAnVGhpcyBzaG91bGQgbmV2ZXIgaGFwcGVuLicpO1xuICAgICAgICAgIHJldHVybjtcbiAgICAgICAgfVxuICAgICAgICAvLyBSZW1vdmUgdGhlIGluZGV4IG9mIHRoZSBwcm9maWxlIHRvIGRlbGV0ZS5cbiAgICAgICAgbGV0IG5ld0Nvbm5lY3Rpb25Qcm9maWxlcyA9IGNvbXBvc2l0ZUNvbm5lY3Rpb25Qcm9maWxlcy5zbGljZSgwLCBpbmRleFRvRGVsZXRlKS5jb25jYXQoXG4gICAgICAgICAgICBjb21wb3NpdGVDb25uZWN0aW9uUHJvZmlsZXMuc2xpY2UoaW5kZXhUb0RlbGV0ZSArIDEpKTtcbiAgICAgICAgLy8gUmVtb3ZlIHRoZSBmaXJzdCBpbmRleCwgYmVjYXVzZSB0aGlzIGlzIHRoZSBkZWZhdWx0IGNvbm5lY3Rpb24gcHJvZmlsZSxcbiAgICAgICAgLy8gbm90IGEgdXNlci1jcmVhdGVkIHByb2ZpbGUuXG4gICAgICAgIG5ld0Nvbm5lY3Rpb25Qcm9maWxlcyA9IG5ld0Nvbm5lY3Rpb25Qcm9maWxlcy5zbGljZSgxKTtcbiAgICAgICAgc2F2ZUNvbm5lY3Rpb25Qcm9maWxlcyhuZXdDb25uZWN0aW9uUHJvZmlsZXMpO1xuICAgICAgfVxuICAgIH1cblxuICAgIGxldCBuZXdQcm9maWxlRm9ybTtcbiAgICAvKlxuICAgICAqIFdoZW4gdGhlIFwiK1wiIGJ1dHRvbiBpcyBjbGlja2VkICh0aGUgdXNlciBpbnRlbmRzIHRvIGFkZCBhIG5ldyBjb25uZWN0aW9uIHByb2ZpbGUpLFxuICAgICAqIG9wZW4gYSBuZXcgZGlhbG9nIHdpdGggYSBmb3JtIHRvIGNyZWF0ZSBvbmUuXG4gICAgICogVGhpcyBuZXcgZGlhbG9nIHdpbGwgYmUgcHJlZmlsbGVkIHdpdGggdGhlIGluZm8gZnJvbSB0aGUgZGVmYXVsdCBjb25uZWN0aW9uIHByb2ZpbGUuXG4gICAgICovXG4gICAgZnVuY3Rpb24gb25BZGRQcm9maWxlQ2xpY2tlZCgpIHtcbiAgICAgIC8vIElmIHRoZXJlIGlzIGFscmVhZHkgYW4gb3BlbiBmb3JtLCBkb24ndCBvcGVuIGFub3RoZXIgb25lLlxuICAgICAgaWYgKG5ld1Byb2ZpbGVGb3JtKSB7XG4gICAgICAgIHJldHVybjtcbiAgICAgIH1cbiAgICAgIGNvbnN0IGhvc3RFbGVtZW50Rm9yTmV3UHJvZmlsZUZvcm0gPSBkb2N1bWVudC5jcmVhdGVFbGVtZW50KCdkaXYnKTtcbiAgICAgIHdvcmtzcGFjZUVsLmFwcGVuZENoaWxkKGhvc3RFbGVtZW50Rm9yTmV3UHJvZmlsZUZvcm0pO1xuXG4gICAgICAvLyBQcm9wc1xuICAgICAgY29uc3QgY2xvc2VOZXdQcm9maWxlRm9ybSA9ICgpID0+IHtcbiAgICAgICAgbmV3UHJvZmlsZUZvcm0gPSBudWxsO1xuICAgICAgICBSZWFjdC51bm1vdW50Q29tcG9uZW50QXROb2RlKGhvc3RFbGVtZW50Rm9yTmV3UHJvZmlsZUZvcm0pO1xuICAgICAgICBob3N0RWxlbWVudEZvck5ld1Byb2ZpbGVGb3JtLnBhcmVudE5vZGUucmVtb3ZlQ2hpbGQoaG9zdEVsZW1lbnRGb3JOZXdQcm9maWxlRm9ybSk7XG4gICAgICB9O1xuICAgICAgY29uc3Qgb25TYXZlID0gKG5ld1Byb2ZpbGU6IE51Y2xpZGVSZW1vdGVDb25uZWN0aW9uUHJvZmlsZSkgPT4ge1xuICAgICAgICAvLyBEb24ndCBpbmNsdWRlIHRoZSBkZWZhdWx0IGNvbm5lY3Rpb24gcHJvZmlsZS5cbiAgICAgICAgY29uc3QgdXNlckNyZWF0ZWRQcm9maWxlcyA9IGNvbXBvc2l0ZUNvbm5lY3Rpb25Qcm9maWxlcy5zbGljZSgxKS5jb25jYXQobmV3UHJvZmlsZSk7XG4gICAgICAgIHNhdmVDb25uZWN0aW9uUHJvZmlsZXModXNlckNyZWF0ZWRQcm9maWxlcyk7XG4gICAgICAgIGNsb3NlTmV3UHJvZmlsZUZvcm0oKTtcbiAgICAgIH07XG4gICAgICBjb25zdCBpbml0aWFsRGlhbG9nUHJvcHMgPSB7XG4gICAgICAgIG9uQ2FuY2VsOiBjbG9zZU5ld1Byb2ZpbGVGb3JtLFxuICAgICAgICBvblNhdmUsXG4gICAgICAgIGluaXRpYWxGb3JtRmllbGRzOiBkZWZhdWx0Q29ubmVjdGlvblByb2ZpbGUucGFyYW1zLFxuICAgICAgfTtcblxuICAgICAgLy8gUG9wIHVwIGEgZGlhbG9nIHRoYXQgaXMgcHJlLWZpbGxlZCB3aXRoIHRoZSBkZWZhdWx0IHBhcmFtcy5cbiAgICAgIGNvbnN0IENyZWF0ZUNvbm5lY3Rpb25Qcm9maWxlRm9ybSA9IHJlcXVpcmUoJy4vQ3JlYXRlQ29ubmVjdGlvblByb2ZpbGVGb3JtJyk7XG4gICAgICBuZXdQcm9maWxlRm9ybSA9IFJlYWN0LnJlbmRlcihcbiAgICAgICAgPENyZWF0ZUNvbm5lY3Rpb25Qcm9maWxlRm9ybSB7Li4uaW5pdGlhbERpYWxvZ1Byb3BzfSAvPixcbiAgICAgICAgaG9zdEVsZW1lbnRGb3JOZXdQcm9maWxlRm9ybSxcbiAgICAgICk7XG4gICAgfVxuXG4gICAgLy8gVGhlIGNvbm5lY3Rpb24gcHJvZmlsZXMgY291bGQgY2hhbmdlLCBidXQgdGhlIHJlc3Qgb2YgdGhlIHByb3BzIHBhc3NlZFxuICAgIC8vIHRvIHRoZSBDb25uZWN0aW9uRGlhbG9nIHdpbGwgbm90LlxuICAgIC8vIE5vdGU6IHRoZSBgY2xlYW51cFN1YnNjcmlwdGlvbkZ1bmNgIGlzIGNhbGxlZCB3aGVuIHRoZSBkaWFsb2cgY2xvc2VzOlxuICAgIC8vIGBvbkNvbm5lY3RgLCBgb25FcnJvcmAsIG9yIGBvbkNhbmNlbGAuXG4gICAgY29uc3QgYmFzZURpYWxvZ1Byb3BzID0gZXh0ZW5kLmltbXV0YWJsZUV4dGVuZCh7XG4gICAgICAvLyBTZWxlY3QgdGhlIGRlZmF1bHQgY29ubmVjdGlvbiBwcm9maWxlLCB3aGljaCBzaG91bGQgYWx3YXlzIGJlIGluZGV4IDAuXG4gICAgICBpbmRleE9mSW5pdGlhbGx5U2VsZWN0ZWRDb25uZWN0aW9uUHJvZmlsZTogMCxcbiAgICAgIG9uQWRkUHJvZmlsZUNsaWNrZWQsXG4gICAgICBvbkRlbGV0ZVByb2ZpbGVDbGlja2VkLFxuICAgICAgb25Db25uZWN0OiBhc3luYyAoY29ubmVjdGlvbiwgY29uZmlnKSA9PiB7XG4gICAgICAgIHJlc29sdmUoY29ubmVjdGlvbik7XG4gICAgICAgIHNhdmVDb25uZWN0aW9uQ29uZmlnKGNvbmZpZywgZ2V0T2ZmaWNpYWxSZW1vdGVTZXJ2ZXJDb21tYW5kKCkpO1xuICAgICAgICBjbGVhbnVwU3Vic2NyaXB0aW9uRnVuYygpO1xuICAgICAgfSxcbiAgICAgIG9uRXJyb3I6IChlcnIsIGNvbmZpZykgPT4geyAvL2VzbGludC1kaXNhYmxlLWxpbmUgaGFuZGxlLWNhbGxiYWNrLWVyclxuICAgICAgICByZXNvbHZlKC8qY29ubmVjdGlvbiovIG51bGwpO1xuICAgICAgICBzYXZlQ29ubmVjdGlvbkNvbmZpZyhjb25maWcsIGdldE9mZmljaWFsUmVtb3RlU2VydmVyQ29tbWFuZCgpKTtcbiAgICAgICAgY2xlYW51cFN1YnNjcmlwdGlvbkZ1bmMoKTtcbiAgICAgIH0sXG4gICAgICBvbkNhbmNlbDogKCkgPT4ge1xuICAgICAgICByZXNvbHZlKC8qY29ubmVjdGlvbiovIG51bGwpO1xuICAgICAgICBjbGVhbnVwU3Vic2NyaXB0aW9uRnVuYygpO1xuICAgICAgfSxcbiAgICAgIG9uQ2xvc2VkOiAoKSA9PiB7XG4gICAgICAgIC8vIFVubW91bnQgdGhlIENvbm5lY3Rpb25EaWFsb2cgYW5kIGNsZWFuIHVwIHRoZSBob3N0IGVsZW1lbnQuXG4gICAgICAgIGlmIChob3N0RWwpIHtcbiAgICAgICAgICBSZWFjdC51bm1vdW50Q29tcG9uZW50QXROb2RlKGhvc3RFbCk7XG4gICAgICAgICAgaWYgKGhvc3RFbC5wYXJlbnROb2RlKSB7XG4gICAgICAgICAgICBob3N0RWwucGFyZW50Tm9kZS5yZW1vdmVDaGlsZChob3N0RWwpO1xuICAgICAgICAgIH1cbiAgICAgICAgfVxuICAgICAgfSxcbiAgICB9LCBwcm9wcyk7XG5cbiAgICAvLyBJZi93aGVuIHRoZSBzYXZlZCBjb25uZWN0aW9uIHByb2ZpbGVzIGNoYW5nZSwgd2Ugd2FudCB0byByZS1yZW5kZXIgdGhlIGRpYWxvZ1xuICAgIC8vIHdpdGggdGhlIG5ldyBzZXQgb2YgY29ubmVjdGlvbiBwcm9maWxlcy5cbiAgICBjb25uZWN0aW9uUHJvZmlsZXNTdWJzY3JpcHRpb24gPSBvblNhdmVkQ29ubmVjdGlvblByb2ZpbGVzRGlkQ2hhbmdlKFxuICAgICAgKG5ld1Byb2ZpbGVzOiA/QXJyYXk8TnVjbGlkZVJlbW90ZUNvbm5lY3Rpb25Qcm9maWxlPikgPT4ge1xuICAgICAgICBjb21wb3NpdGVDb25uZWN0aW9uUHJvZmlsZXMgPSBuZXdQcm9maWxlcyA/IFtkZWZhdWx0Q29ubmVjdGlvblByb2ZpbGVdLmNvbmNhdChuZXdQcm9maWxlcykgOlxuICAgICAgICAgICAgW2RlZmF1bHRDb25uZWN0aW9uUHJvZmlsZV07XG4gICAgICAgIGNvbnN0IG5ld0RpYWxvZ1Byb3BzID0gZXh0ZW5kLmltbXV0YWJsZUV4dGVuZChcbiAgICAgICAgICBiYXNlRGlhbG9nUHJvcHMsXG4gICAgICAgICAge2Nvbm5lY3Rpb25Qcm9maWxlczogY29tcG9zaXRlQ29ubmVjdGlvblByb2ZpbGVzfSxcbiAgICAgICAgKTtcbiAgICAgICAgUmVhY3QucmVuZGVyKDxDb25uZWN0aW9uRGlhbG9nIHsuLi5uZXdEaWFsb2dQcm9wc30gLz4sIGhvc3RFbCk7XG4gICAgICB9XG4gICAgKTtcblxuICAgIGNvbnN0IGluaXRpYWxEaWFsb2dQcm9wcyA9IGV4dGVuZC5pbW11dGFibGVFeHRlbmQoXG4gICAgICBiYXNlRGlhbG9nUHJvcHMsXG4gICAgICB7Y29ubmVjdGlvblByb2ZpbGVzOiBjb21wb3NpdGVDb25uZWN0aW9uUHJvZmlsZXN9LFxuICAgICk7XG4gICAgUmVhY3QucmVuZGVyKDxDb25uZWN0aW9uRGlhbG9nIHsuLi5pbml0aWFsRGlhbG9nUHJvcHN9IC8+LCBob3N0RWwpO1xuICB9KTtcbn1cbiJdfQ==

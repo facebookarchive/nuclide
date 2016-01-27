@@ -1,2 +1,0 @@
-var {x, ...others} = props;
-var [x, ...others] = arr;

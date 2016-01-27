@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,16 +8,12 @@
  * the root directory of this source tree.
  */
 
-const util = require('util');
+var util = require('util');
 
-function layout(loggingEvent: any): Array<any> {
-  const eventInfo = util.format(
-    '[%s] [%s] %s - ',
-    loggingEvent.startTime.toISOString(),
-    loggingEvent.level,
-    loggingEvent.categoryName);
+function layout(loggingEvent) {
+  var eventInfo = util.format('[%s] [%s] %s - ', loggingEvent.startTime.toISOString(), loggingEvent.level, loggingEvent.categoryName);
 
-  const data = loggingEvent.data.slice();
+  var data = loggingEvent.data.slice();
 
   // Since console.log support string format as first parameter, we should preserve this behavior
   // by concating eventInfo with first parameter if it is string.
@@ -34,13 +29,14 @@ function layout(loggingEvent: any): Array<any> {
  * Comparing to log4js's console appender(https://fburl.com/69861669), you can expand and explore
  * the object in console logged by this Appender.
  */
-function consoleAppender(): (loggingEvent: any) => void {
-  return (loggingEvent) => {
+function consoleAppender() {
+  return function (loggingEvent) {
     console.log.apply(console, layout(loggingEvent)); // eslint-disable-line no-console
   };
 }
 
 module.exports = {
   appender: consoleAppender,
-  configure: consoleAppender,
+  configure: consoleAppender
 };
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbImNvbnNvbGVBcHBlbmRlci5qcyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7O0FBV0EsSUFBTSxJQUFJLEdBQUcsT0FBTyxDQUFDLE1BQU0sQ0FBQyxDQUFDOztBQUU3QixTQUFTLE1BQU0sQ0FBQyxZQUFpQixFQUFjO0FBQzdDLE1BQU0sU0FBUyxHQUFHLElBQUksQ0FBQyxNQUFNLENBQzNCLGlCQUFpQixFQUNqQixZQUFZLENBQUMsU0FBUyxDQUFDLFdBQVcsRUFBRSxFQUNwQyxZQUFZLENBQUMsS0FBSyxFQUNsQixZQUFZLENBQUMsWUFBWSxDQUFDLENBQUM7O0FBRTdCLE1BQU0sSUFBSSxHQUFHLFlBQVksQ0FBQyxJQUFJLENBQUMsS0FBSyxFQUFFLENBQUM7Ozs7QUFJdkMsTUFBSSxJQUFJLENBQUMsTUFBTSxHQUFHLENBQUMsSUFBSSxPQUFPLElBQUksQ0FBQyxDQUFDLENBQUMsS0FBSyxRQUFRLEVBQUU7QUFDbEQsUUFBSSxDQUFDLENBQUMsQ0FBQyxHQUFHLFNBQVMsR0FBRyxJQUFJLENBQUMsQ0FBQyxDQUFDLENBQUM7R0FDL0IsTUFBTTtBQUNMLFFBQUksQ0FBQyxPQUFPLENBQUMsU0FBUyxDQUFDLENBQUM7R0FDekI7QUFDRCxTQUFPLElBQUksQ0FBQztDQUNiOzs7Ozs7QUFNRCxTQUFTLGVBQWUsR0FBZ0M7QUFDdEQsU0FBTyxVQUFDLFlBQVksRUFBSztBQUN2QixXQUFPLENBQUMsR0FBRyxDQUFDLEtBQUssQ0FBQyxPQUFPLEVBQUUsTUFBTSxDQUFDLFlBQVksQ0FBQyxDQUFDLENBQUM7R0FDbEQsQ0FBQztDQUNIOztBQUVELE1BQU0sQ0FBQyxPQUFPLEdBQUc7QUFDZixVQUFRLEVBQUUsZUFBZTtBQUN6QixXQUFTLEVBQUUsZUFBZTtDQUMzQixDQUFDIiwiZmlsZSI6ImNvbnNvbGVBcHBlbmRlci5qcyIsInNvdXJjZXNDb250ZW50IjpbIid1c2UgYmFiZWwnO1xuLyogQGZsb3cgKi9cblxuLypcbiAqIENvcHlyaWdodCAoYykgMjAxNS1wcmVzZW50LCBGYWNlYm9vaywgSW5jLlxuICogQWxsIHJpZ2h0cyByZXNlcnZlZC5cbiAqXG4gKiBUaGlzIHNvdXJjZSBjb2RlIGlzIGxpY2Vuc2VkIHVuZGVyIHRoZSBsaWNlbnNlIGZvdW5kIGluIHRoZSBMSUNFTlNFIGZpbGUgaW5cbiAqIHRoZSByb290IGRpcmVjdG9yeSBvZiB0aGlzIHNvdXJjZSB0cmVlLlxuICovXG5cbmNvbnN0IHV0aWwgPSByZXF1aXJlKCd1dGlsJyk7XG5cbmZ1bmN0aW9uIGxheW91dChsb2dnaW5nRXZlbnQ6IGFueSk6IEFycmF5PGFueT4ge1xuICBjb25zdCBldmVudEluZm8gPSB1dGlsLmZvcm1hdChcbiAgICAnWyVzXSBbJXNdICVzIC0gJyxcbiAgICBsb2dnaW5nRXZlbnQuc3RhcnRUaW1lLnRvSVNPU3RyaW5nKCksXG4gICAgbG9nZ2luZ0V2ZW50LmxldmVsLFxuICAgIGxvZ2dpbmdFdmVudC5jYXRlZ29yeU5hbWUpO1xuXG4gIGNvbnN0IGRhdGEgPSBsb2dnaW5nRXZlbnQuZGF0YS5zbGljZSgpO1xuXG4gIC8vIFNpbmNlIGNvbnNvbGUubG9nIHN1cHBvcnQgc3RyaW5nIGZvcm1hdCBhcyBmaXJzdCBwYXJhbWV0ZXIsIHdlIHNob3VsZCBwcmVzZXJ2ZSB0aGlzIGJlaGF2aW9yXG4gIC8vIGJ5IGNvbmNhdGluZyBldmVudEluZm8gd2l0aCBmaXJzdCBwYXJhbWV0ZXIgaWYgaXQgaXMgc3RyaW5nLlxuICBpZiAoZGF0YS5sZW5ndGggPiAwICYmIHR5cGVvZiBkYXRhWzBdID09PSAnc3RyaW5nJykge1xuICAgIGRhdGFbMF0gPSBldmVudEluZm8gKyBkYXRhWzBdO1xuICB9IGVsc2Uge1xuICAgIGRhdGEudW5zaGlmdChldmVudEluZm8pO1xuICB9XG4gIHJldHVybiBkYXRhO1xufVxuXG4vKipcbiAqIENvbXBhcmluZyB0byBsb2c0anMncyBjb25zb2xlIGFwcGVuZGVyKGh0dHBzOi8vZmJ1cmwuY29tLzY5ODYxNjY5KSwgeW91IGNhbiBleHBhbmQgYW5kIGV4cGxvcmVcbiAqIHRoZSBvYmplY3QgaW4gY29uc29sZSBsb2dnZWQgYnkgdGhpcyBBcHBlbmRlci5cbiAqL1xuZnVuY3Rpb24gY29uc29sZUFwcGVuZGVyKCk6IChsb2dnaW5nRXZlbnQ6IGFueSkgPT4gdm9pZCB7XG4gIHJldHVybiAobG9nZ2luZ0V2ZW50KSA9PiB7XG4gICAgY29uc29sZS5sb2cuYXBwbHkoY29uc29sZSwgbGF5b3V0KGxvZ2dpbmdFdmVudCkpOyAvLyBlc2xpbnQtZGlzYWJsZS1saW5lIG5vLWNvbnNvbGVcbiAgfTtcbn1cblxubW9kdWxlLmV4cG9ydHMgPSB7XG4gIGFwcGVuZGVyOiBjb25zb2xlQXBwZW5kZXIsXG4gIGNvbmZpZ3VyZTogY29uc29sZUFwcGVuZGVyLFxufTtcbiJdfQ==

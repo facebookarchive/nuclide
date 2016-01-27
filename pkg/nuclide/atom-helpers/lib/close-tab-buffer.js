@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,9 +8,9 @@
  * the root directory of this source tree.
  */
 
-function closeTabForBuffer(buffer: atom$TextBuffer) {
-  atom.workspace.getPanes().forEach((pane) => {
-    pane.getItems().forEach((item) => {
+function closeTabForBuffer(buffer) {
+  atom.workspace.getPanes().forEach(function (pane) {
+    pane.getItems().forEach(function (item) {
       if (item.buffer === buffer) {
         pane.removeItem(item);
       }
@@ -20,3 +19,4 @@ function closeTabForBuffer(buffer: atom$TextBuffer) {
 }
 
 module.exports = closeTabForBuffer;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbImNsb3NlLXRhYi1idWZmZXIuanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7OztBQVdBLFNBQVMsaUJBQWlCLENBQUMsTUFBdUIsRUFBRTtBQUNsRCxNQUFJLENBQUMsU0FBUyxDQUFDLFFBQVEsRUFBRSxDQUFDLE9BQU8sQ0FBQyxVQUFDLElBQUksRUFBSztBQUMxQyxRQUFJLENBQUMsUUFBUSxFQUFFLENBQUMsT0FBTyxDQUFDLFVBQUMsSUFBSSxFQUFLO0FBQ2hDLFVBQUksSUFBSSxDQUFDLE1BQU0sS0FBSyxNQUFNLEVBQUU7QUFDMUIsWUFBSSxDQUFDLFVBQVUsQ0FBQyxJQUFJLENBQUMsQ0FBQztPQUN2QjtLQUNGLENBQUMsQ0FBQztHQUNKLENBQUMsQ0FBQztDQUNKOztBQUVELE1BQU0sQ0FBQyxPQUFPLEdBQUcsaUJBQWlCLENBQUMiLCJmaWxlIjoiY2xvc2UtdGFiLWJ1ZmZlci5qcyIsInNvdXJjZXNDb250ZW50IjpbIid1c2UgYmFiZWwnO1xuLyogQGZsb3cgKi9cblxuLypcbiAqIENvcHlyaWdodCAoYykgMjAxNS1wcmVzZW50LCBGYWNlYm9vaywgSW5jLlxuICogQWxsIHJpZ2h0cyByZXNlcnZlZC5cbiAqXG4gKiBUaGlzIHNvdXJjZSBjb2RlIGlzIGxpY2Vuc2VkIHVuZGVyIHRoZSBsaWNlbnNlIGZvdW5kIGluIHRoZSBMSUNFTlNFIGZpbGUgaW5cbiAqIHRoZSByb290IGRpcmVjdG9yeSBvZiB0aGlzIHNvdXJjZSB0cmVlLlxuICovXG5cbmZ1bmN0aW9uIGNsb3NlVGFiRm9yQnVmZmVyKGJ1ZmZlcjogYXRvbSRUZXh0QnVmZmVyKSB7XG4gIGF0b20ud29ya3NwYWNlLmdldFBhbmVzKCkuZm9yRWFjaCgocGFuZSkgPT4ge1xuICAgIHBhbmUuZ2V0SXRlbXMoKS5mb3JFYWNoKChpdGVtKSA9PiB7XG4gICAgICBpZiAoaXRlbS5idWZmZXIgPT09IGJ1ZmZlcikge1xuICAgICAgICBwYW5lLnJlbW92ZUl0ZW0oaXRlbSk7XG4gICAgICB9XG4gICAgfSk7XG4gIH0pO1xufVxuXG5tb2R1bGUuZXhwb3J0cyA9IGNsb3NlVGFiRm9yQnVmZmVyO1xuIl19
