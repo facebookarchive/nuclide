@@ -11,7 +11,7 @@
 
 import type {GadgetsService} from '../../gadgets-interfaces';
 
-export function consumeGadgetsService(api: GadgetsService): atom$IDisposable {
+export function consumeGadgetsService(api: GadgetsService): IDisposable {
   const Inspector = require('./ui/Inspector');
   return api.registerGadget(Inspector);
 }

@@ -225,11 +225,11 @@ class SearchResultManager {
     this._emitter.emit(PROVIDERS_CHANGED);
   }
 
-  on(): atom$IDisposable {
+  on(): IDisposable {
     return this._emitter.on(...arguments);
   }
 
-  registerProvider(service: Provider): atom$IDisposable {
+  registerProvider(service: Provider): IDisposable {
     if (!isValidProvider(service)) {
       const providerName = service.getName && service.getName() || '<unknown>';
       getLogger().error(`Quick-open provider ${providerName} is not a valid provider`);

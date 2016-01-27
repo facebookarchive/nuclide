@@ -72,7 +72,7 @@ class ProcessOutputStore {
    * The owner of the BufferedProcessStore should subscribe to this and handle
    * any errors.
    */
-  onWillThrowError(callback: (error: Error) => mixed): atom$IDisposable {
+  onWillThrowError(callback: (error: Error) => mixed): IDisposable {
     const listenerSubscription = this._emitter.on('will-throw-error', callback);
     this._listenerSubscriptions.add(listenerSubscription);
     return listenerSubscription;
@@ -81,7 +81,7 @@ class ProcessOutputStore {
   /**
    * Get notified when the process exits.
    */
-  onProcessExit(callback: (exitCode: number) => mixed): atom$IDisposable {
+  onProcessExit(callback: (exitCode: number) => mixed): IDisposable {
     const listenerSubscription = this._emitter.on('exit', callback);
     this._listenerSubscriptions.add(listenerSubscription);
     return listenerSubscription;
@@ -128,7 +128,7 @@ class ProcessOutputStore {
    * @return A Disposable that should be disposed to stop updates. This Disposable
    *   will also be automatically disposed when the process exits.
    */
-  observeStdout(callback: (data: string) => mixed): atom$IDisposable {
+  observeStdout(callback: (data: string) => mixed): IDisposable {
     if (this._stdout) {
       callback(this._stdout);
     }
@@ -143,7 +143,7 @@ class ProcessOutputStore {
    * @return A Disposable that should be disposed to stop updates. This Disposable
    *   will also be automatically disposed when the process exits.
    */
-  observeStderr(callback: (data: string) => mixed): atom$IDisposable {
+  observeStderr(callback: (data: string) => mixed): IDisposable {
     if (this._stderr) {
       callback(this._stderr);
     }

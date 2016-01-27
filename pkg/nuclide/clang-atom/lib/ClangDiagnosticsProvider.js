@@ -137,11 +137,11 @@ class ClangDiagnosticsProvider {
     }
   }
 
-  onMessageUpdate(callback: MessageUpdateCallback): atom$IDisposable {
+  onMessageUpdate(callback: MessageUpdateCallback): IDisposable {
     return this._providerBase.onMessageUpdate(callback);
   }
 
-  onMessageInvalidation(callback: MessageInvalidationCallback): atom$IDisposable {
+  onMessageInvalidation(callback: MessageInvalidationCallback): IDisposable {
     return this._providerBase.onMessageInvalidation(callback);
   }
 

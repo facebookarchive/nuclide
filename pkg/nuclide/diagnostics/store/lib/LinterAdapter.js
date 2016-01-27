@@ -227,11 +227,11 @@ export class LinterAdapter {
     return this._requestSerializer.isRunInProgress();
   }
 
-  onMessageUpdate(callback: MessageUpdateCallback): atom$IDisposable {
+  onMessageUpdate(callback: MessageUpdateCallback): IDisposable {
     return this._providerUtils.onMessageUpdate(callback);
   }
 
-  onMessageInvalidation(callback: MessageInvalidationCallback): atom$IDisposable {
+  onMessageInvalidation(callback: MessageInvalidationCallback): IDisposable {
     return this._providerUtils.onMessageInvalidation(callback);
   }
 }

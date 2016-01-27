@@ -17,7 +17,7 @@ import featureConfig from '../../feature-config';
 class Activation {
   _indentFeature: ObjectiveCColonIndenter;
   _bracketFeature: ObjectiveCBracketBalancer;
-  _configSubscription: atom$IDisposable;
+  _configSubscription: IDisposable;
 
   constructor() {
     const ObjectiveCColonIndenterCtr = require('./ObjectiveCColonIndenter');

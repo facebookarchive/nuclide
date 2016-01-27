@@ -83,7 +83,7 @@ class WebViewPane extends HTMLElement {
 
   // TabView checks for the existence of this method and uses it if it is available:
   // https://github.com/atom/tabs/blob/master/lib/tab-view.coffee.
-  onDidChangeTitle(callback: () => any): atom$IDisposable {
+  onDidChangeTitle(callback: () => any): IDisposable {
     return this._emitter.on('did-change-title', callback);
   }
 

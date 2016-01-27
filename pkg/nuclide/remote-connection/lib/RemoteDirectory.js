@@ -32,7 +32,7 @@ class RemoteDirectory {
     return directory[MARKER_PROPERTY_FOR_REMOTE_DIRECTORY] === true;
   }
 
-  _watchSubscription: ?atom$IDisposable;
+  _watchSubscription: ?IDisposable;
   _remote: RemoteConnection;
   _uri: string;
   _emitter: atom$Emitter;
@@ -61,7 +61,7 @@ class RemoteDirectory {
     this._hgRepositoryDescription = options ? options.hgRepositoryDescription : null;
   }
 
-  onDidChange(callback: () => any): atom$IDisposable {
+  onDidChange(callback: () => any): IDisposable {
     this._willAddSubscription();
     return this._trackUnsubscription(this._emitter.on('did-change', callback));
   }
@@ -98,7 +98,7 @@ class RemoteDirectory {
     this._emitter.emit('did-change');
   }
 
-  _trackUnsubscription(subscription: atom$IDisposable): atom$IDisposable {
+  _trackUnsubscription(subscription: IDisposable): IDisposable {
     return new Disposable(() => {
       subscription.dispose();
       this._didRemoveSubscription();

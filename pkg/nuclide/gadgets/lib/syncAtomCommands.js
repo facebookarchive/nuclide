@@ -20,8 +20,8 @@ import type Rx from 'rx';
 export default function syncAtomCommands(
   gadget$: Rx.Observable<Immutable.Map>,
   appCommands: Object,
-): rx$IDisposable {
-  let atomCommands: ?atom$IDisposable;
+): IDisposable {
+  let atomCommands: ?IDisposable;
 
   return gadget$
     .debounce(500)

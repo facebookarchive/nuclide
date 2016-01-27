@@ -59,7 +59,7 @@ export function openConnectionDialog(props: Object): Promise<?RemoteConnection> 
     // We want to observe changes in the saved connection profiles during the
     // lifetime of this connection dialog, because the user can add/delete
     // a profile from a connection dialog.
-    let connectionProfilesSubscription: ?atom$IDisposable = null;
+    let connectionProfilesSubscription: ?IDisposable = null;
     function cleanupSubscriptionFunc(): void {
       if (connectionProfilesSubscription) {
         connectionProfilesSubscription.dispose();

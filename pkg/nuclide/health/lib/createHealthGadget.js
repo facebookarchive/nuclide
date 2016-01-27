@@ -26,7 +26,7 @@ export default function createHealthGadget(state$: Rx.Observable<?State>): typeo
 
     static gadgetId = 'nuclide-health';
 
-    _stateSubscription: rx$IDisposable;
+    _stateSubscription: IDisposable;
 
     constructor(...args) {
       super(...args);

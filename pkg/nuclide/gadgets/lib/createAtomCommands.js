@@ -17,7 +17,7 @@ import normalizeEventString from './normalizeEventString';
 export default function createAtomCommands(
   gadgets: Immutable.Map,
   appCommands: Object,
-): atom$IDisposable {
+): IDisposable {
   const commands = gadgets
     .valueSeq()
     .flatMap(gadget => ([

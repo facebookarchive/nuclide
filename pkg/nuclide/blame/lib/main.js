@@ -35,7 +35,7 @@ class Activation {
   // Map of a TextEditor to its BlameGutter, if it exists.
   _textEditorToBlameGutter: Map<atom$TextEditor, BlameGutter>;
   // Map of a TextEditor to the subscription on its ::onDidDestroy.
-  _textEditorToDestroySubscription: Map<atom$TextEditor, atom$IDisposable>;
+  _textEditorToDestroySubscription: Map<atom$TextEditor, IDisposable>;
 
   constructor() {
     this._registeredProviders = new Set();
@@ -165,7 +165,7 @@ class Activation {
    * Section: Consuming Services
    */
 
-  consumeBlameGutterClass(blameGutterClass: BlameGutterClass): atom$IDisposable {
+  consumeBlameGutterClass(blameGutterClass: BlameGutterClass): IDisposable {
     // This package only expects one gutter UI. It will take the first one.
     if (this._blameGutterClass == null) {
       this._blameGutterClass = blameGutterClass;
@@ -177,7 +177,7 @@ class Activation {
     }
   }
 
-  consumeBlameProvider(provider: BlameProvider): atom$IDisposable {
+  consumeBlameProvider(provider: BlameProvider): IDisposable {
     this._registeredProviders.add(provider);
     return new Disposable(() => {
       if (this._registeredProviders) {
@@ -204,12 +204,12 @@ module.exports = {
     }
   },
 
-  consumeBlameGutterClass(blameGutter: BlameGutterClass): atom$IDisposable {
+  consumeBlameGutterClass(blameGutter: BlameGutterClass): IDisposable {
     invariant(activation);
     return activation.consumeBlameGutterClass(blameGutter);
   },
 
-  consumeBlameProvider(provider: BlameProvider): atom$IDisposable {
+  consumeBlameProvider(provider: BlameProvider): IDisposable {
     invariant(activation);
     return activation.consumeBlameProvider(provider);
   },

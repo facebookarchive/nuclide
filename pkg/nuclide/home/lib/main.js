@@ -54,7 +54,7 @@ function deactivate(): void {
   }
 }
 
-function consumeGadgetsService(api: GadgetsService): atom$IDisposable {
+function consumeGadgetsService(api: GadgetsService): IDisposable {
   const createHomePaneItem = require('./createHomePaneItem');
   gadgetsApi = api;
   const gadget = createHomePaneItem(allHomeFragmentsStream);

@@ -29,7 +29,7 @@ export class MessageStore {
     this._messageStream = new BehaviorSubject([]);
   }
 
-  consumeProvider(provider: BusySignalProvider): atom$IDisposable {
+  consumeProvider(provider: BusySignalProvider): IDisposable {
     const subscription =
       provider.messages.subscribe(message => this._processUpdate(provider, message));
     return new Disposable(() => {

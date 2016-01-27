@@ -29,7 +29,7 @@ export type RunCommandOptions = {
 };
 export type RunCommandFunctionAndCleanup = {
   runCommandInNewPane: (options: RunCommandOptions) => Promise<atom$TextEditor>;
-  disposable: atom$IDisposable;
+  disposable: IDisposable;
 };
 
 import {CompositeDisposable, Disposable} from 'atom';

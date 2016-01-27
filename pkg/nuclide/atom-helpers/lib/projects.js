@@ -55,18 +55,18 @@ class ProjectManager {
     this._projectPaths = newProjectPathSet;
   }
 
-  observeProjectPaths(callback: (projectPath: string) => void): atom$IDisposable {
+  observeProjectPaths(callback: (projectPath: string) => void): IDisposable {
     for (const projectPath of this._projectPaths) {
       callback(projectPath);
     }
     return this._emitter.on(ADD_PROJECT_EVENT, callback);
   }
 
-  onDidAddProjectPath(callback: (projectPath: string) => void): atom$IDisposable {
+  onDidAddProjectPath(callback: (projectPath: string) => void): IDisposable {
     return this._emitter.on(ADD_PROJECT_EVENT, callback);
   }
 
-  onDidRemoveProjectPath(callback: (projectPath: string) => void): atom$IDisposable {
+  onDidRemoveProjectPath(callback: (projectPath: string) => void): IDisposable {
     return this._emitter.on(REMOVE_PROJECT_EVENT, callback);
   }
 }
@@ -79,15 +79,15 @@ function getProjectManager(): ProjectManager {
 }
 
 module.exports = {
-  observeProjectPaths(callback: (projectPath: string) => void): atom$IDisposable {
+  observeProjectPaths(callback: (projectPath: string) => void): IDisposable {
     return getProjectManager().observeProjectPaths(callback);
   },
 
-  onDidAddProjectPath(callback: (projectPath: string) => void): atom$IDisposable {
+  onDidAddProjectPath(callback: (projectPath: string) => void): IDisposable {
     return getProjectManager().onDidAddProjectPath(callback);
   },
 
-  onDidRemoveProjectPath(callback: (projectPath: string) => void): atom$IDisposable {
+  onDidRemoveProjectPath(callback: (projectPath: string) => void): IDisposable {
     return getProjectManager().onDidRemoveProjectPath(callback);
   },
 

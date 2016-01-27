@@ -19,7 +19,7 @@ export default class OutputService {
     this._commands = commands;
   }
 
-  registerOutputProvider(outputProvider: OutputProvider): atom$IDisposable {
+  registerOutputProvider(outputProvider: OutputProvider): IDisposable {
     return this._commands.registerOutputProvider(outputProvider);
   }
 

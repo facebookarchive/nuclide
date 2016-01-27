@@ -193,18 +193,18 @@ class TextEventDispatcher {
     return disposables;
   }
 
-  onFileChange(grammarScopes: Iterable<string>, callback: EventCallback): atom$IDisposable {
+  onFileChange(grammarScopes: Iterable<string>, callback: EventCallback): IDisposable {
     return this._onEvents(grammarScopes, FILE_CHANGE_EVENTS, callback);
   }
-  onAnyFileChange(callback: EventCallback): atom$IDisposable {
+  onAnyFileChange(callback: EventCallback): IDisposable {
     return this._onEvents('all', FILE_CHANGE_EVENTS, callback);
   }
 
-  onFileSave(grammarScopes: Iterable<string>, callback: EventCallback): atom$IDisposable {
+  onFileSave(grammarScopes: Iterable<string>, callback: EventCallback): IDisposable {
     return this._onEvents(grammarScopes, FILE_SAVE_EVENTS, callback);
   }
 
-  onAnyFileSave(callback: EventCallback): atom$IDisposable {
+  onAnyFileSave(callback: EventCallback): IDisposable {
     return this._onEvents('all', FILE_SAVE_EVENTS, callback);
   }
 

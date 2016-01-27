@@ -27,7 +27,7 @@ export function attachEvent(emitter: EventEmitter, eventName: string, callback: 
 }
 
 type SubscribeCallback<T> = (item: T) => mixed;
-type SubscribeFunction<T> = (callback: SubscribeCallback<T>) => atom$IDisposable;
+type SubscribeFunction<T> = (callback: SubscribeCallback<T>) => IDisposable;
 
 export function observableFromSubscribeFunction<T>(fn: SubscribeFunction<T>): Observable<T> {
   return Observable.create(observer => fn(observer.onNext.bind(observer)));

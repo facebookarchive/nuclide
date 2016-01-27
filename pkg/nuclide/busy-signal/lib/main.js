@@ -31,7 +31,7 @@ class Activation {
     this._disposables.dispose();
   }
 
-  consumeStatusBar(statusBar: atom$StatusBar): atom$IDisposable {
+  consumeStatusBar(statusBar: atom$StatusBar): IDisposable {
     const {StatusBarTile} = require('./StatusBarTile');
     const statusBarTile = this._statusBarTile = new StatusBarTile();
     statusBarTile.consumeMessageStream(this._messageStore.getMessageStream());
@@ -46,7 +46,7 @@ class Activation {
     return disposable;
   }
 
-  consumeBusySignalProvider(provider: BusySignalProvider): atom$IDisposable {
+  consumeBusySignalProvider(provider: BusySignalProvider): IDisposable {
     const disposable = this._messageStore.consumeProvider(provider);
     this._disposables.add(disposable);
     return disposable;
@@ -60,12 +60,12 @@ export function activate(state: ?Object): void {
   activation = new Activation();
 }
 
-export function consumeStatusBar(statusBar: atom$StatusBar): atom$IDisposable {
+export function consumeStatusBar(statusBar: atom$StatusBar): IDisposable {
   invariant(activation);
   return activation.consumeStatusBar(statusBar);
 }
 
-export function consumeBusySignalProvider(provider: BusySignalProvider): atom$IDisposable {
+export function consumeBusySignalProvider(provider: BusySignalProvider): IDisposable {
   invariant(activation);
   return activation.consumeBusySignalProvider(provider);
 }

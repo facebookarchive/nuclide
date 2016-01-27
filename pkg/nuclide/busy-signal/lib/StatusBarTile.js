@@ -24,7 +24,7 @@ const STATUS_BAR_PRIORITY = 1000;
 export class StatusBarTile {
   _item: ?HTMLElement;
   _tile: ?atom$StatusBarTile;
-  _tooltip: ?atom$IDisposable;
+  _tooltip: ?IDisposable;
   _isMouseOver: boolean;
   _messages: Array<string>;
 

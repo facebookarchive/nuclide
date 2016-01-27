@@ -44,7 +44,7 @@ const CONNECTION_MUX_STATUS_EVENT = 'connection-mux-status';
 
 type ConnectionInfo = {
   connection: Connection;
-  onStatusDisposable: atom$IDisposable;
+  onStatusDisposable: IDisposable;
   status: string;
 };
 
@@ -115,7 +115,7 @@ export class ConnectionMultiplexer {
     this._breakpointStore = new BreakpointStore();
   }
 
-  onStatus(callback: (status: string) => mixed): atom$IDisposable {
+  onStatus(callback: (status: string) => mixed): IDisposable {
     return require('../../commons').event.attachEvent(this._emitter,
       CONNECTION_MUX_STATUS_EVENT, callback);
   }

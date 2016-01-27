@@ -27,7 +27,7 @@ const NUMBER_OF_PREVIOUS_LINES_TO_SEARCH_FOR_COLONS = 25;
  */
 class ObjectiveCColonIndenter {
   _subscriptions: ?CompositeDisposable;
-  _insertTextSubscriptionsMap: Map<TextEditor, atom$IDisposable>;
+  _insertTextSubscriptionsMap: Map<TextEditor, IDisposable>;
 
   enable(): void {
     if (this._subscriptions) {

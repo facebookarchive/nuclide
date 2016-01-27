@@ -50,7 +50,7 @@ module.exports = {
     keyPath: string,
     optionsOrCallback: (Object | (value: any) => void),
     callback?: (value: any) => void
-  ): atom$IDisposable {
+  ): IDisposable {
     return atom.config.observe(formatKeyPath(keyPath), ...Array.prototype.slice.call(arguments, 1));
   },
 
@@ -62,7 +62,7 @@ module.exports = {
     keyPath: string,
     optionsOrCallback: (Object | (event: Object) => void),
     callback?: (event: Object) => void
-  ): atom$IDisposable {
+  ): IDisposable {
     return atom.config.onDidChange(
       formatKeyPath(keyPath),
       ...Array.prototype.slice.call(arguments, 1)

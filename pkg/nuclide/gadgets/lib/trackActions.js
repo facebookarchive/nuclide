@@ -22,7 +22,7 @@ import {trackEvents} from '../../analytics';
 /**
  * Subscribe to the action stream and track things of interest.
  */
-export default function trackActions(action$: Rx.Observable<Action>): atom$IDisposable {
+export default function trackActions(action$: Rx.Observable<Action>): IDisposable {
   return trackEvents(createTrackingEventStream(action$));
 }
 

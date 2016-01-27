@@ -30,7 +30,7 @@ let disposables = null;
 let diagnosticStore = null;
 let diagnosticUpdater = null;
 
-function addDisposable(disposable: atom$IDisposable) {
+function addDisposable(disposable: IDisposable) {
   if (disposables) {
     disposables.add(disposable);
   } else {
@@ -90,7 +90,7 @@ module.exports = {
     });
   },
 
-  consumeLinterProvider(provider: LinterProvider | Array<LinterProvider>): atom$IDisposable {
+  consumeLinterProvider(provider: LinterProvider | Array<LinterProvider>): IDisposable {
     const {createAdapters} = require('./LinterAdapterFactory');
     const newAdapters = createAdapters(provider);
     const adapterDisposables = new CompositeDisposable();
@@ -110,7 +110,7 @@ module.exports = {
     return adapterDisposables;
   },
 
-  consumeDiagnosticsProviderV1(provider: CallbackDiagnosticProvider): atom$IDisposable {
+  consumeDiagnosticsProviderV1(provider: CallbackDiagnosticProvider): IDisposable {
     // Register the diagnostic store for updates from the new provider.
     const observableProvider = {
       updates: observableFromSubscribeFunction(provider.onMessageUpdate.bind(provider)),
@@ -121,7 +121,7 @@ module.exports = {
     return disposable;
   },
 
-  consumeDiagnosticsProviderV2(provider: ObservableDiagnosticProvider): atom$IDisposable {
+  consumeDiagnosticsProviderV2(provider: ObservableDiagnosticProvider): IDisposable {
     const compositeDisposable = new CompositeDisposable();
     const store = getDiagnosticStore();
 

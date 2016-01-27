@@ -346,7 +346,7 @@ class NuclideBridge {
     }
   }
 
-  onUnresolvedBreakpointsChanged(callback: () => void): atom$IDisposable {
+  onUnresolvedBreakpointsChanged(callback: () => void): IDisposable {
     return this._emitter.on('unresolved-breakpoints-changed', callback);
   }
 

@@ -25,8 +25,8 @@ class LanguageTextEditorsListener {
   _grammarScopes: Set<string>;
   _emitter: EventEmitter;
   _observedTextEditors: Set<TextEditor>;
-  _destroySubscriptionsMap: Map<TextEditor, atom$IDisposable>;
-  _grammarSubscription: atom$IDisposable;
+  _destroySubscriptionsMap: Map<TextEditor, IDisposable>;
+  _grammarSubscription: IDisposable;
 
   constructor(grammarScopes: Set<string>) {
     this._grammarScopes = grammarScopes;
@@ -102,7 +102,7 @@ module.exports =
 function observeLanguageTextEditors(
     grammarScopes: Array<string>,
     fn: (textEditor: TextEditor) => void,
-    cleanupFn?: (textEditor: TextEditor) => void): atom$IDisposable {
+    cleanupFn?: (textEditor: TextEditor) => void): IDisposable {
   const subscriptions = new CompositeDisposable();
   const listener = new LanguageTextEditorsListener(new Set(grammarScopes));
   subscriptions.add(listener);

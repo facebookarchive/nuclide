@@ -293,7 +293,7 @@ module.exports = {
     getActivation();
   },
 
-  registerProvider(service: Provider ): atom$IDisposable {
+  registerProvider(service: Provider ): IDisposable {
     return getSearchResultManager().registerProvider(service);
   },
 

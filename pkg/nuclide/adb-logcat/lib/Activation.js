@@ -21,7 +21,7 @@ import Rx from 'rx';
 class Activation {
   _disposables: CompositeDisposable;
   _process: ?child_process$ChildProcess;
-  _processDisposables: ?atom$IDisposable;
+  _processDisposables: ?IDisposable;
   _message$: Rx.Subject;
   _processKilledByUser: boolean;
 
@@ -100,7 +100,7 @@ class Activation {
     }
   }
 
-  consumeOutputService(api: OutputService): atom$IDisposable {
+  consumeOutputService(api: OutputService): IDisposable {
     return api.registerOutputProvider({
       source: 'adb logcat',
       messages: this._message$.asObservable(),

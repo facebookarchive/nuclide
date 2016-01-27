@@ -33,7 +33,7 @@ export default function createOutputGadget(
     static gadgetId = 'nuclide-output';
     static defaultLocation = 'bottom';
 
-    _state$Subscription: rx$IDisposable;
+    _state$Subscription: IDisposable;
 
     constructor(props: mixed) {
       super(props);

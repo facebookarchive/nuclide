@@ -8,10 +8,6 @@
 
 // FIXME(samgoldman) Remove top-level interface once Babel supports
 // `declare interface` syntax.
-interface rx$IDisposable {
-  dispose(): void;
-}
-
 // FIXME(samgoldman) Remove this once Subject<T> can mixin Observer<T>
 interface rx$IObserver<T> {
   onNext(value: T): mixed;
@@ -26,7 +22,7 @@ declare module 'rx' {
     static concat(...sources: Observable<T>[]): Observable<T>;
 
     static create(
-      subscribe: (observer: Observer<T>) => rx$IDisposable | Function | void
+      subscribe: (observer: Observer<T>) => IDisposable | Function | void
     ): Observable<T>;
 
     static from(iterable: Iterable<T>): Observable<T>;
@@ -55,7 +51,7 @@ declare module 'rx' {
     static throw(error: any): Observable<any>;
     static throwError(error: any): Observable<any>;
 
-    static using<Resource: rx$IDisposable>(
+    static using<Resource: IDisposable>(
       resourceFactory: () => Resource,
       observableFactory: (resource: Resource) => Observable<T>,
     ): Observable<T>;
@@ -94,7 +90,7 @@ declare module 'rx' {
       onNext?: (value: T) => mixed,
       onError?: (error: any) => mixed,
       onCompleted?: () => mixed,
-    ): rx$IDisposable;
+    ): IDisposable;
 
     map<U>(f: (value: T) => U): Observable<U>;
 
@@ -141,16 +137,16 @@ declare module 'rx' {
       onNext?: (value: T) => mixed,
       onError?: (error: any) => mixed,
       onCompleted?: () => mixed,
-    ): rx$IDisposable;
-    subscribe(observer: rx$IObserver<T>): rx$IDisposable;
+    ): IDisposable;
+    subscribe(observer: rx$IObserver<T>): IDisposable;
 
-    subscribeOnNext(onNext: (value: T) => mixed): rx$IDisposable;
-    subscribeOnError(onError: (error: any) => mixed): rx$IDisposable;
-    subscribeOnCompleted(onCompleted: () => mixed): rx$IDisposable;
+    subscribeOnNext(onNext: (value: T) => mixed): IDisposable;
+    subscribeOnError(onError: (error: any) => mixed): IDisposable;
+    subscribeOnCompleted(onCompleted: () => mixed): IDisposable;
   }
 
   declare class ConnectableObservable<T> extends Observable<T> {
-    connect(): rx$IDisposable;
+    connect(): IDisposable;
     refCount(): Observable<T>;
   }
 
@@ -197,6 +193,6 @@ declare module 'rx' {
   }
 
   declare class Disposable {
-    static create(action: () => mixed): rx$IDisposable;
+    static create(action: () => mixed): IDisposable;
   }
 }

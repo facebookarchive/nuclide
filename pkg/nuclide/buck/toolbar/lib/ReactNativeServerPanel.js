@@ -21,7 +21,7 @@ type Props = {
 
 export default class ReactNativeServerPanel extends React.Component {
 
-  _storeSubscription: atom$IDisposable;
+  _storeSubscription: IDisposable;
 
   constructor(props: Props) {
     super(props);

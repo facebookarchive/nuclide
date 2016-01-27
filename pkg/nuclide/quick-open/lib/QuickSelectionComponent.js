@@ -190,19 +190,19 @@ export default class QuickSelectionComponent extends React.Component {
     this.onUserDidChangeSelection();
   }
 
-  onCancellation(callback: () => void): atom$IDisposable {
+  onCancellation(callback: () => void): IDisposable {
     return this._emitter.on('canceled', callback);
   }
 
-  onSelection(callback: (selection: any) => void): atom$IDisposable {
+  onSelection(callback: (selection: any) => void): IDisposable {
     return this._emitter.on('selected', callback);
   }
 
-  onSelectionChanged(callback: (selectionIndex: any) => void): atom$IDisposable {
+  onSelectionChanged(callback: (selectionIndex: any) => void): IDisposable {
     return this._emitter.on('selection-changed', callback);
   }
 
-  onItemsChanged(callback: (newItems: GroupedResult) => void): atom$IDisposable {
+  onItemsChanged(callback: (newItems: GroupedResult) => void): IDisposable {
     return this._emitter.on('items-changed', callback);
   }
 

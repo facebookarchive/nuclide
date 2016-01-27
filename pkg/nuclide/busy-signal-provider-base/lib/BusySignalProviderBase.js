@@ -39,7 +39,7 @@ export class BusySignalProviderBase {
   /**
    * Displays the message until the returned disposable is disposed
    */
-  displayMessage(message: string, options?: MessageDisplayOptions): atom$IDisposable {
+  displayMessage(message: string, options?: MessageDisplayOptions): IDisposable {
     if (options == null || options.onlyForFile == null) {
       return this._displayMessage(message);
     }
@@ -68,7 +68,7 @@ export class BusySignalProviderBase {
     );
   }
 
-  _displayMessage(message: string): atom$IDisposable {
+  _displayMessage(message: string): IDisposable {
     const {busy, done} = this._nextMessagePair(message);
     this._messages.onNext(busy);
     return new Disposable(() => {

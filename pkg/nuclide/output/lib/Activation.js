@@ -49,7 +49,7 @@ class Activation {
     this._disposables.dispose();
   }
 
-  consumeGadgetsService(gadgetsApi: GadgetsService): atom$IDisposable {
+  consumeGadgetsService(gadgetsApi: GadgetsService): IDisposable {
     const OutputGadget = createOutputGadget(this._state$.asObservable(), this._commands);
     return gadgetsApi.registerGadget(((OutputGadget: any): Gadget));
   }

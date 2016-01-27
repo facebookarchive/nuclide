@@ -30,9 +30,6 @@ declare class atom$Package {
 /**
  * Essential Classes
  */
-interface atom$IDisposable {
-  dispose(): void;
-}
 
 type atom$CommandCallback = (event: Event) => mixed;
 
@@ -42,16 +39,16 @@ declare class atom$CommandRegistry {
     target: string | HTMLElement,
     commandNameOrCommands: string | {[commandName: string]: atom$CommandCallback},
     callback?: atom$CommandCallback
-  ): atom$IDisposable;
+  ): IDisposable;
   dispatch(target: HTMLElement, commandName: string): void;
 }
 
 declare class atom$CompositeDisposable {
-  constructor(...disposables: atom$IDisposable[]): void;
+  constructor(...disposables: IDisposable[]): void;
   dispose(): void;
 
-  add(disposable: atom$IDisposable): void;
-  remove(disposable: atom$IDisposable): void;
+  add(disposable: IDisposable): void;
+  remove(disposable: IDisposable): void;
   clear(): void;
 }
 
@@ -76,13 +73,13 @@ declare class atom$Config {
     keyPath: string,
     optionsOrCallback?: (Object | (value: any) => void),
     callback?: (value: any) => void
-  ): atom$IDisposable;
+  ): IDisposable;
 
   onDidChange(
     keyPathOrCallback: (string | (event: Object) => void),
     optionsOrCallback?: (Object | (event: Object) => void),
     callback?: (event: Object) => void
-  ): atom$IDisposable;
+  ): IDisposable;
 
   // Managing Settings
   get(
@@ -148,7 +145,7 @@ declare class atom$Decoration {
   destroy(): void;
   onDidChangeProperties(
     callback: (event: {oldProperties: Object; newProperties: Object}) => mixed
-    ): atom$IDisposable;
+    ): IDisposable;
   getMarker(): atom$Marker;
   getProperties(): Object;
   setProperties(properties: mixed): void;
@@ -161,9 +158,9 @@ declare class atom$Disposable {
 
 declare class atom$Emitter {
   dispose(): void;
-  on(name: string, callback: (v: any) => mixed): atom$IDisposable;
-  preempt(name: string, callback: (v: any) => void): atom$IDisposable;
-  emit(name: string, value: any): atom$IDisposable;
+  on(name: string, callback: (v: any) => mixed): IDisposable;
+  preempt(name: string, callback: (v: any) => void): IDisposable;
+  emit(name: string, value: any): IDisposable;
 }
 
 declare class atom$Gutter {
@@ -174,7 +171,7 @@ declare class atom$Gutter {
     options?: {'class'?: string; item?: Object | HTMLElement}): void;
   show(): void;
   hide(): void;
-  onDidDestroy(callback: () => void): atom$IDisposable;
+  onDidDestroy(callback: () => void): IDisposable;
 }
 
 declare class atom$Marker {
@@ -194,28 +191,28 @@ declare class atom$Marker {
 
     isValid: boolean;
     textChanged: boolean;
-  }) => void): atom$IDisposable;
+  }) => void): IDisposable;
   isValid(): boolean;
   isDestroyed(): boolean;
-  onDidDestroy(callback: () => void): atom$IDisposable;
+  onDidDestroy(callback: () => void): IDisposable;
 }
 
 declare class atom$ServiceHub {
-  provide<T>(keyPath: string, version: string, service: T): atom$IDisposable;
+  provide<T>(keyPath: string, version: string, service: T): IDisposable;
   consume<T>(
     keyPath: string,
     versionRange: string,
     callback: (provider: T) => mixed
-  ): atom$IDisposable;
+  ): IDisposable;
 }
 
 declare class atom$PackageManager {
   // Event Subscription
-  onDidLoadInitialPackages(callback: () => void): atom$IDisposable;
-  onDidActivateInitialPackages(callback: () => void): atom$IDisposable;
-  onDidActivatePackage(callback: (pkg: atom$Package) => mixed): atom$IDisposable;
-  onDidDeactivatePackage(callback: (pkg: atom$Package) => mixed): atom$IDisposable;
-  onDidLoadPackage(callback: (pkg: atom$Package) => mixed): atom$IDisposable;
+  onDidLoadInitialPackages(callback: () => void): IDisposable;
+  onDidActivateInitialPackages(callback: () => void): IDisposable;
+  onDidActivatePackage(callback: (pkg: atom$Package) => mixed): IDisposable;
+  onDidDeactivatePackage(callback: (pkg: atom$Package) => mixed): IDisposable;
+  onDidLoadPackage(callback: (pkg: atom$Package) => mixed): IDisposable;
 
   // Package system data
   getApmPath(): string;
@@ -314,8 +311,8 @@ declare class atom$Panel {
   destroy(): void;
 
   // Event Subscription
-  onDidChangeVisible(callback: (visible: boolean) => any): atom$IDisposable;
-  onDidDestroy(callback: (panel: atom$Panel) => any): atom$IDisposable;
+  onDidChangeVisible(callback: (visible: boolean) => any): IDisposable;
+  onDidDestroy(callback: (panel: atom$Panel) => any): IDisposable;
 
   // Panel Details
   getItem(): HTMLElement;
@@ -407,7 +404,7 @@ declare class atom$ThemeManager {
    * subscription on the 'did-reload-all' event (which is supposed to be deprecated) rather than the
    * 'did-change-active-themes' one.
    */
-  onDidChangeActiveThemes(callback: () => mixed): atom$IDisposable;
+  onDidChangeActiveThemes(callback: () => mixed): IDisposable;
 
   // Accessing Loaded Themes
   getLoadedThemeNames(): Array<string>;
@@ -421,7 +418,7 @@ declare class atom$ThemeManager {
   getEnabledThemeNames(): Array<string>;
 
   // Private
-  requireStylesheet(stylesheetPath: string): atom$IDisposable;
+  requireStylesheet(stylesheetPath: string): IDisposable;
 }
 
 declare class atom$TooltipManager {
@@ -432,7 +429,7 @@ declare class atom$TooltipManager {
       keyBindingCommand?: string,
       keyBindingTarget?: HTMLElement,
     }
-  ): atom$IDisposable;
+  ): IDisposable;
 }
 
 type InsertTextOptions = {
@@ -471,8 +468,8 @@ declare class atom$TextEditor extends atom$Model {
   id: number;
 
   // Event Subscription
-  onDidChange(callback: () => void): atom$IDisposable;
-  onDidStopChanging(callback: () => void): atom$IDisposable;
+  onDidChange(callback: () => void): IDisposable;
+  onDidStopChanging(callback: () => void): IDisposable;
   onDidChangeCursorPosition(callback: (event: {
     oldBufferPosition: atom$Point;
     oldScreenPosition: atom$Point;
@@ -480,15 +477,15 @@ declare class atom$TextEditor extends atom$Model {
     newScreenPosition: atom$Point;
     textChanged: boolean;
     cursor: atom$Cursor;
-  }) => mixed): atom$IDisposable;
-  onDidDestroy(callback: () => mixed): atom$IDisposable;
-  onDidSave(callback: (event: {path: string}) => mixed): atom$IDisposable;
+  }) => mixed): IDisposable;
+  onDidDestroy(callback: () => mixed): IDisposable;
+  onDidSave(callback: (event: {path: string}) => mixed): IDisposable;
   getBuffer(): atom$TextBuffer;
-  observeGrammar(callback: (grammar: atom$Grammar) => mixed): atom$IDisposable;
+  observeGrammar(callback: (grammar: atom$Grammar) => mixed): IDisposable;
   onWillInsertText(callback: (event: {cancel: () => void; text: string;}) => void):
-      atom$IDisposable;
+      IDisposable;
   // Note that the range property of the event is undocumented.
-  onDidInsertText(callback: (event: {text: string; range: atom$Range}) => mixed): atom$IDisposable;
+  onDidInsertText(callback: (event: {text: string; range: atom$Range}) => mixed): IDisposable;
 
   // File Details
   getTitle(): string;
@@ -647,7 +644,7 @@ declare class atom$TextEditor extends atom$Model {
   getLineHeightInPixels(): number;
   moveToTop(): void;
   tokenForBufferPosition(position: atom$Point | number[]): atom$Token;
-  onDidConflict(callback: () => void): atom$IDisposable;
+  onDidConflict(callback: () => void): IDisposable;
 }
 
 /**
@@ -685,9 +682,9 @@ declare class atom$TextEditorElement extends HTMLElement {
   };
 
   // Called when the editor is attached to the DOM.
-  onDidAttach(callback: () => mixed): atom$IDisposable;
+  onDidAttach(callback: () => mixed): IDisposable;
   // Called when the editor is detached from the DOM.
-  onDidDetach(callback: () => mixed): atom$IDisposable;
+  onDidDetach(callback: () => mixed): IDisposable;
 }
 
 declare class atom$ViewProvider {
@@ -699,7 +696,7 @@ declare class atom$ViewRegistry {
   addViewProvider(
     modelConstructor: any,
     createView?: (...args: any[]) => ?HTMLElement
-  ): atom$IDisposable;
+  ): IDisposable;
   getView(textEditor: atom$TextEditor): atom$TextEditorElement;
   getView(notification: atom$Notification): HTMLElement;
   getView(gutter: atom$Gutter): HTMLElement;
@@ -720,20 +717,20 @@ type atom$TextEditorParams = {
 
 declare class atom$Workspace {
   // Event Subscription
-  observeTextEditors(callback: (editor: atom$TextEditor) => mixed): atom$IDisposable;
-  onDidChangeActivePaneItem(callback: (item: mixed) => mixed): atom$IDisposable;
-  onDidDestroyPaneItem(callback: (event: mixed) => mixed): atom$IDisposable;
-  observeActivePaneItem(callback: (item: ?mixed) => mixed): atom$IDisposable;
-  observePaneItems(callback: (item: mixed) => mixed): atom$IDisposable;
+  observeTextEditors(callback: (editor: atom$TextEditor) => mixed): IDisposable;
+  onDidChangeActivePaneItem(callback: (item: mixed) => mixed): IDisposable;
+  onDidDestroyPaneItem(callback: (event: mixed) => mixed): IDisposable;
+  observeActivePaneItem(callback: (item: ?mixed) => mixed): IDisposable;
+  observePaneItems(callback: (item: mixed) => mixed): IDisposable;
   onWillDestroyPaneItem(
     callback: (event: {item: mixed, pane: mixed, index: number}) => mixed
-  ): atom$IDisposable;
+  ): IDisposable;
   onDidOpen(callback: (event: {
     uri: string,
     item: mixed,
     pane: atom$Pane,
     index: number,
-  }) => mixed): atom$IDisposable;
+  }) => mixed): IDisposable;
 
   // Opening
   open(
@@ -759,7 +756,7 @@ declare class atom$Workspace {
   /* Optional method because this was added post-1.0. */
   buildTextEditor?: ((params: atom$TextEditorParams) => atom$TextEditor);
   reopenItem(): Promise<?atom$TextEditor>;
-  addOpener(callback: (uri: string) => any): atom$IDisposable;
+  addOpener(callback: (uri: string) => any): IDisposable;
 
   // Pane Items
   getPaneItems(): Array<Object>;
@@ -806,7 +803,7 @@ declare class atom$BufferedProcess {
   // Event Subscription
   onWillThrowError(
     callback: (errorObject: {error: Object, handle: mixed}) => mixed
-  ): atom$IDisposable;
+  ): IDisposable;
   // Helper Methods
   kill(): void;
 }
@@ -822,7 +819,7 @@ declare class atom$Clipboard {
 }
 
 declare class atom$ContextMenuManager {
-  add(itemsBySelector: {[cssSelector: string]: Array<atom$ContextMenuItem>}): atom$IDisposable;
+  add(itemsBySelector: {[cssSelector: string]: Array<atom$ContextMenuItem>}): IDisposable;
   itemSets: Array<atom$ContextMenuItemSet>;
 }
 
@@ -847,7 +844,7 @@ declare class atom$Deserializer {
 }
 
 declare class atom$DeserializerManager {
-  add(...deserializers: atom$Deserializer[]): atom$IDisposable;
+  add(...deserializers: atom$Deserializer[]): IDisposable;
   deserialize(state: Object, params: Object): mixed;
 }
 
@@ -858,7 +855,7 @@ declare class atom$Directory {
   create(mode?: number): Promise<boolean>;
 
   // Event Subscription
-  onDidChange(callback: () => mixed): atom$IDisposable;
+  onDidChange(callback: () => mixed): IDisposable;
 
   // Directory Metadata
   isFile(): boolean;
@@ -871,8 +868,8 @@ declare class atom$Directory {
   relativize(fullPath: string): string;
 
   // Event Subscription
-  onDidRename(callback: () => void): atom$IDisposable;
-  onDidDelete(callback: () => void): atom$IDisposable;
+  onDidRename(callback: () => void): IDisposable;
+  onDidDelete(callback: () => void): IDisposable;
 
   // Traversing
   getParent(): atom$Directory;
@@ -889,7 +886,7 @@ declare class atom$File {
   create(): Promise<boolean>;
 
   // Event Subscription
-  onDidChange(callback: () => mixed): atom$IDisposable;
+  onDidChange(callback: () => mixed): IDisposable;
 
   // File Metadata
   isFile(): boolean;
@@ -899,9 +896,9 @@ declare class atom$File {
   getEncoding(): string;
 
   // Event Subscription
-  onDidRename(callback: () => void): atom$IDisposable;
-  onDidDelete(callback: () => void): atom$IDisposable;
-  onDidChange(callback: () => void): atom$IDisposable;
+  onDidRename(callback: () => void): IDisposable;
+  onDidDelete(callback: () => void): IDisposable;
+  onDidChange(callback: () => void): IDisposable;
 
   // Managing Paths
   getPath(): string;
@@ -932,7 +929,7 @@ type atom$GrammarToken = {
 
 declare class atom$GrammarRegistry {
   // Event Subscription
-  onDidAddGrammar(callback: (grammar: atom$Grammar) => void): atom$IDisposable;
+  onDidAddGrammar(callback: (grammar: atom$Grammar) => void): IDisposable;
 
   // Managing Grammars
   grammarForScopeName(scopeName: string): ?atom$Grammar;
@@ -950,24 +947,24 @@ declare class atom$KeymapManager {
     keystrokes: string;
     binding: atom$KeyBinding;
     keyboardEventTarget: HTMLElement;
-  }) => mixed): atom$IDisposable;
+  }) => mixed): IDisposable;
 
   onDidPartiallyMatchBinding(callback: (event: {
     keystrokes: string;
     partiallyMatchedBindings: atom$KeyBinding;
     keyboardEventTarget: HTMLElement;
-  }) => mixed): atom$IDisposable;
+  }) => mixed): IDisposable;
 
   onDidFailToMatchBinding(callback: (event: {
     keystrokes: string;
     partiallyMatchedBindings: atom$KeyBinding;
     keyboardEventTarget: HTMLElement;
-  }) => mixed): atom$IDisposable;
+  }) => mixed): IDisposable;
 
   onDidFailToReadFile(callback: (error: {
     message: string;
     stack: string;
-  }) => mixed): atom$IDisposable;
+  }) => mixed): IDisposable;
 
   // Adding and Removing Bindings
   add(source: string, bindings: Object): void;
@@ -1002,13 +999,13 @@ declare class atom$KeymapManager {
 }
 
 declare class atom$MenuManager {
-  add(items: Array<Object>): atom$IDisposable;
+  add(items: Array<Object>): IDisposable;
   update(): void;
 }
 
 declare class atom$Project {
   // Event Subscription
-  onDidChangePaths(callback: (projectPaths: Array<string>) => mixed): atom$IDisposable;
+  onDidChangePaths(callback: (projectPaths: Array<string>) => mixed): IDisposable;
 
   // Accessing the git repository
   getRepositories(): Array<?atom$Repository>;
@@ -1036,11 +1033,11 @@ declare class atom$TextBuffer {
   emitter: atom$Emitter;
 
   // Events
-  onDidChange(callback: () => mixed): atom$IDisposable;
-  onDidDestroy(callback: () => mixed): atom$IDisposable;
-  onDidStopChanging(callback: () => mixed): atom$IDisposable;
-  onDidSave(callback: () => mixed): atom$IDisposable;
-  onDidReload(callback: () => mixed): atom$IDisposable;
+  onDidChange(callback: () => mixed): IDisposable;
+  onDidDestroy(callback: () => mixed): IDisposable;
+  onDidStopChanging(callback: () => mixed): IDisposable;
+  onDidSave(callback: () => mixed): IDisposable;
+  onDidReload(callback: () => mixed): IDisposable;
 
   // File Details
   setPath(filePath: string): void;
@@ -1101,8 +1098,8 @@ declare class atom$TextBuffer {
 
 declare class atom$Notification {
   // Event Subscription
-  onDidDismiss(callback: () => mixed): atom$IDisposable;
-  onDidDisplay(callback: () => mixed): atom$IDisposable;
+  onDidDismiss(callback: () => mixed): IDisposable;
+  onDidDisplay(callback: () => mixed): IDisposable;
 
   // Methods
   getType(): string;
@@ -1112,7 +1109,7 @@ declare class atom$Notification {
 
 declare class atom$NotificationManager {
   // Events
-  onDidAddNotification(callback: (notification: atom$Notification) => void): atom$IDisposable;
+  onDidAddNotification(callback: (notification: atom$Notification) => void): IDisposable;
 
   // Adding Notifications
   addSuccess(message: string, options?: Object): atom$Notification;
@@ -1180,8 +1177,8 @@ type AtomGlobal = {
   devMode: boolean;
 
   // Event Subscription
-  onWillThrowError(callback: (event: atom$UnhandledErrorEvent) => mixed): atom$IDisposable;
-  onDidThrowError(callback: (event: atom$UnhandledErrorEvent) => mixed): atom$IDisposable;
+  onWillThrowError(callback: (event: atom$UnhandledErrorEvent) => mixed): IDisposable;
+  onDidThrowError(callback: (event: atom$UnhandledErrorEvent) => mixed): IDisposable;
 
   // Atom Details
   inDevMode(): boolean;
@@ -1214,7 +1211,7 @@ declare var atom: AtomGlobal;
  * ipc is used by webviews to communicate with the parent view.
  */
 declare module 'ipc' {
-  declare function on(channel: string, callback: (event: any) => void): atom$IDisposable;
+  declare function on(channel: string, callback: (event: any) => void): IDisposable;
   declare function send(channel: string, ...args: any[]): void;
   declare function sendToHost(channel: string, ...args: any[]): void;
 }
@@ -1241,8 +1238,8 @@ type RepositoryLineDiff = {
 // by HgRepositoryClient.
 declare class atom$Repository {
   // Event Subscription
-  onDidChangeStatus: (callback: RepositoryDidChangeStatusCallback) => atom$IDisposable;
-  onDidChangeStatuses: (callback: () => mixed) => atom$IDisposable;
+  onDidChangeStatus: (callback: RepositoryDidChangeStatusCallback) => IDisposable;
+  onDidChangeStatuses: (callback: () => mixed) => IDisposable;
 
   // Repository Details
   getType: () => string;

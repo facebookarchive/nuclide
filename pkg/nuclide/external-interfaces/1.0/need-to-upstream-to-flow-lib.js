@@ -12,6 +12,10 @@
 
 /* eslint-disable no-unused-vars */
 
+interface IDisposable {
+  dispose(): void;
+}
+
 declare class Worker {
   addEventListener(type: 'message', listener: (message: {data: mixed}) => mixed): void;
   addEventListener(type: 'error', listener: (error: Error) => mixed): void;

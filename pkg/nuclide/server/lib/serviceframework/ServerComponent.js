@@ -58,7 +58,7 @@ export default class ServerComponent {
   _objectRegistry: Map<number, RemoteObject>;
   _nextObjectId: number;
 
-  _subscriptions: Map<number, rx$IDisposable>;
+  _subscriptions: Map<number, IDisposable>;
 
   _server: NuclideServer;
 

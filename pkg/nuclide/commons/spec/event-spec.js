@@ -34,7 +34,7 @@ describe('attachEvent', () => {
 
 describe('observableFromSubscribeFunction', () => {
   let callback: ?((item: number) => mixed);
-  let disposable: ?atom$IDisposable;
+  let disposable: ?IDisposable;
 
   // The subscribe function will put the given callback and the returned disposable in the variables
   // above for inspection.

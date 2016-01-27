@@ -94,7 +94,7 @@ export function consumeToolBar(getToolBar: (group: string) => Object): void {
   }));
 }
 
-export function consumeGadgetsService(gadgetsApi: GadgetsService): atom$IDisposable {
+export function consumeGadgetsService(gadgetsApi: GadgetsService): IDisposable {
   invariant(paneItemState$);
   gadgets = gadgetsApi;
   const gadget: Gadget = (createHealthGadget(paneItemState$): any);

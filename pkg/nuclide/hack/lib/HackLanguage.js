@@ -178,7 +178,7 @@ module.exports = class HackLanguage {
     return this._isFinishedLoadingDependencies;
   }
 
-  onFinishedLoadingDependencies(callback: (() => mixed)): atom$IDisposable {
+  onFinishedLoadingDependencies(callback: (() => mixed)): IDisposable {
     return this._emitter.on(DEPENDENCIES_LOADED_EVENT, callback);
   }
 

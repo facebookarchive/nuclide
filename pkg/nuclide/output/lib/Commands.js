@@ -30,7 +30,7 @@ export default class Commands {
     });
   }
 
-  registerOutputProvider(outputProvider: OutputProvider): atom$IDisposable {
+  registerOutputProvider(outputProvider: OutputProvider): IDisposable {
     this._observer.onNext({
       type: ActionTypes.PROVIDER_REGISTERED,
       payload: {outputProvider},

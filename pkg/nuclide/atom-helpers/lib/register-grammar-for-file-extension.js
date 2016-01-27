@@ -19,7 +19,7 @@ import {CompositeDisposable} from 'atom';
  * @param extension when a file is opened that ends with this extension, its grammar will be updated
  *   to match that of the specified scopeName, if the grammar is available.
  */
-function registerGrammarForFileExtension(scopeName: string, extension: string): atom$IDisposable {
+function registerGrammarForFileExtension(scopeName: string, extension: string): IDisposable {
   const subscriptions = new CompositeDisposable();
 
   // If the grammar that corresponds to the scopeName is already registered, then start monitoring

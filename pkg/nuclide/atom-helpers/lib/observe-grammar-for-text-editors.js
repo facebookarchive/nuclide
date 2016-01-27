@@ -19,9 +19,9 @@ const GRAMMAR_CHANGE_EVENT = 'grammar-change';
  */
 class GrammarForTextEditorsListener {
   _emitter: EventEmitter;
-  _grammarSubscriptionsMap: Map<TextEditor, atom$IDisposable>;
-  _destroySubscriptionsMap: Map<TextEditor, atom$IDisposable>;
-  _textEditorsSubscription: atom$IDisposable;
+  _grammarSubscriptionsMap: Map<TextEditor, IDisposable>;
+  _destroySubscriptionsMap: Map<TextEditor, IDisposable>;
+  _textEditorsSubscription: IDisposable;
 
   constructor() {
     this._emitter = new EventEmitter();
@@ -84,7 +84,7 @@ module.exports =
  */
 function observeGrammarForTextEditors(
   fn: (textEditor: TextEditor, grammar: atom$Grammar) => void,
-): atom$IDisposable {
+): IDisposable {
   // The listener should be a global singleton but workspaces are destroyed
   // between each test run so we need to reinstantiate the listener to attach
   // to the current workspace.

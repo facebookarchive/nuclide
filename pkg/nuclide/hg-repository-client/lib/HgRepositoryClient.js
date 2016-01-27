@@ -97,7 +97,7 @@ export default class HgRepositoryClient {
   _service: HgService;
   _emitter: Emitter;
   // A map from a key (in most cases, a file path), to a related Disposable.
-  _disposables: {[key: string]: atom$IDisposable};
+  _disposables: {[key: string]: IDisposable};
   _hgStatusCache: {[filePath: NuclideUri]: StatusCodeIdValue};
   // Map of directory path to the number of modified files within that directory.
   _modifiedDirectoryCache: Map<string, number>;
@@ -189,17 +189,17 @@ export default class HgRepositoryClient {
    *
    */
 
-  onDidDestroy(callback: () => {}): atom$IDisposable {
+  onDidDestroy(callback: () => {}): IDisposable {
     return this._emitter.on('did-destroy', callback);
   }
 
   onDidChangeStatus(
     callback: (event: {path: string; pathStatus: StatusCodeNumberValue}) => {}
-  ): atom$IDisposable {
+  ): IDisposable {
     return this._emitter.on('did-change-status', callback);
   }
 
-  onDidChangeStatuses(callback: () => {}): atom$IDisposable {
+  onDidChangeStatuses(callback: () => {}): IDisposable {
     return this._emitter.on('did-change-statuses', callback);
   }
 

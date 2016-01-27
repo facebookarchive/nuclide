@@ -91,7 +91,7 @@ type ConnectionProfileChange = {
  */
 export function onSavedConnectionProfilesDidChange(
   callback: (newProfiles: ?Array<NuclideRemoteConnectionProfile>) => mixed
-): atom$IDisposable {
+): IDisposable {
   return atom.config.onDidChange(
     CONNECTION_PROFILES_KEY,
     (event: ConnectionProfileChange) => {

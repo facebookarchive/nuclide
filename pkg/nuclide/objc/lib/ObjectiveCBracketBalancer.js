@@ -22,8 +22,8 @@ const GRAMMARS = [
  * Clients must call `disable()` once they're done with an instance.
  */
 class ObjectiveCBracketBalancer {
-  _editingSubscriptionsMap: Map<TextEditor, atom$IDisposable>;
-  _languageListener: ?atom$IDisposable;
+  _editingSubscriptionsMap: Map<TextEditor, IDisposable>;
+  _languageListener: ?IDisposable;
 
   enable(): void {
     // The feature is already enabled.

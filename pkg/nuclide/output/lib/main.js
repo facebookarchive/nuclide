@@ -33,7 +33,7 @@ export function deactivate() {
 
 export function consumeGadgetsService(
   gadgetsApi: GadgetsService,
-): atom$IDisposable {
+): IDisposable {
   invariant(activation);
   return activation.consumeGadgetsService(gadgetsApi);
 }

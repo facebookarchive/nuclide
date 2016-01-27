@@ -131,7 +131,7 @@ class BuckToolbarStore {
     }
   }
 
-  subscribe(callback: () => void): atom$IDisposable {
+  subscribe(callback: () => void): IDisposable {
     return this._emitter.on('change', callback);
   }
 

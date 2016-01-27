@@ -35,7 +35,7 @@ export class Connection {
     return this._id;
   }
 
-  onStatus(callback: (status: string) => mixed): atom$IDisposable {
+  onStatus(callback: (status: string) => mixed): IDisposable {
     return this._socket.onStatus(callback);
   }
 
