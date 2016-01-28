@@ -338,6 +338,26 @@ a.blockButton {
       padding: 0.8em 0;
     }
 
+    ol {
+      list-style: decimal;
+    }
+
+    ul {
+      list-style: disc;
+    }
+
+    ol, ul {
+      padding-left: 24px;
+      li {
+        padding-bottom: 4px;
+        padding-left: 6px;
+      }
+    }
+
+    strong {
+      font-weight: bold;
+    }
+
     nav.toc {
       position: relative;
       section {
