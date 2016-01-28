@@ -14,6 +14,7 @@ import {
   copyMercurialFixture,
   deactivateAllPackages,
   dispatchKeyboardEvent,
+  jasmineIntegrationTestSetup,
   setLocalProject,
 } from '../pkg/nuclide/integration-test-helpers';
 
@@ -22,8 +23,7 @@ import path from 'path';
 describe('Clipboard path integration test', () => {
   it('correctly copies local paths', () => {
     waitsForPromise({timeout: 240000}, async () => {
-      // We will use the DOM because we are sending events.
-      jasmine.attachToDOM(atom.views.getView(atom.workspace));
+      jasmineIntegrationTestSetup();
       // Activate nuclide packages.
       await activateAllPackages();
       // Copy mercurial project to temp directory.

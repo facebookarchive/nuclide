@@ -13,13 +13,13 @@ import {
   activateAllPackages,
   copyMercurialFixture,
   deactivateAllPackages,
+  jasmineIntegrationTestSetup,
 } from '../pkg/nuclide/integration-test-helpers';
 
 describe('Blame context menu integration test', () => {
   it('has toggle blame option in the context menu', () => {
     waitsForPromise({timeout: 240000}, async () => {
-      // Allow jasmine to interact with the DOM.
-      jasmine.attachToDOM(atom.views.getView(atom.workspace));
+      jasmineIntegrationTestSetup();
       // Activate atom packages.
       await activateAllPackages();
       // Copy mercurial project to temporary directory.

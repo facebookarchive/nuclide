@@ -14,6 +14,7 @@ import {
   activateAllPackages,
   deactivateAllPackages,
   dispatchKeyboardEvent,
+  jasmineIntegrationTestSetup,
 } from '../../pkg/nuclide/integration-test-helpers';
 
 export function testMovePaneDirection(
@@ -21,7 +22,7 @@ export function testMovePaneDirection(
 ): void {
   it(`checks move pane direction -- ${direction}`, () => {
     waitsForPromise({timeout: 60000}, async () => {
-      jasmine.attachToDOM(atom.views.getView(atom.workspace));
+      jasmineIntegrationTestSetup();
       // Activate all packages.
       await activateAllPackages();
       // Set config.

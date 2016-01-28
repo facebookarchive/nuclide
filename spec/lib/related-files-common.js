@@ -18,6 +18,7 @@ import {
   addRemoteProject,
   deactivateAllPackages,
   dispatchKeyboardEvent,
+  jasmineIntegrationTestSetup,
   setLocalProject,
   startNuclideServer,
   stopNuclideServer,
@@ -35,6 +36,7 @@ export function runTest(remote: boolean) {
   const BAD_FILE = 'bad.txt'; // should not switch to this
 
   waitsForPromise({timeout: 60000}, async () => {
+    jasmineIntegrationTestSetup();
     // Activate nuclide packages.
     await activateAllPackages();
 

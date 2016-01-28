@@ -14,6 +14,7 @@ import {
   copyFixture,
   deactivateAllPackages,
   dispatchKeyboardEvent,
+  jasmineIntegrationTestSetup,
   waitsForFile,
 } from '../pkg/nuclide/integration-test-helpers';
 
@@ -36,10 +37,7 @@ describe('Clang Integration Test (objc)', () => {
     let textEditorView: HTMLElement;
     let busySignal: HTMLElement;
     waitsForPromise({timeout: 60000}, async () => {
-      // Allow jasmine to interact with the DOM.
-      jasmine.attachToDOM(atom.views.getView(atom.workspace));
-      // Unmock timer functions.
-      jasmine.useRealClock();
+      jasmineIntegrationTestSetup();
       // Activate atom packages.
       await activateAllPackages();
 
