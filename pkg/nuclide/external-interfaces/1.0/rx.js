@@ -25,6 +25,8 @@ declare module 'rx' {
       subscribe: (observer: Observer<T>) => IDisposable | Function | void
     ): Observable<T>;
 
+    static defer(observableFactory: () => Observable<T>): Observable<T>;
+
     static from(iterable: Iterable<T>): Observable<T>;
 
     static fromEvent(
