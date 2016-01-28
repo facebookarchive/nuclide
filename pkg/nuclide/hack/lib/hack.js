@@ -22,6 +22,7 @@ import {SymbolType} from '../../hack-common';
 import {getHackService} from './utils';
 import {RemoteConnection} from '../../remote-connection';
 import {compareHackCompletions} from './utils';
+import featureConfig from '../../feature-config';
 
 const HACK_WORD_REGEX = /[a-zA-Z0-9_$]+/g;
 
@@ -276,12 +277,23 @@ async function getHackLanguageForUri(uri: ?NuclideUri): Promise<?HackLanguage> {
   return await createHackLanguageIfNotExisting(key, uri);
 }
 
+type HackConfig = {
+  hhClientPath: string;
+};
+
+function getConfig(): HackConfig {
+  return (featureConfig.get('nuclide-hack'): any);
+}
+
 async function createHackLanguageIfNotExisting(
   key: string,
   fileUri: NuclideUri,
 ): Promise<HackLanguage> {
   if (!uriToHackLanguage.has(key)) {
-    const hackEnvironment = await getHackService(fileUri).getHackEnvironmentDetails(fileUri);
+    const service = getHackService(fileUri);
+    const hackEnvironment = await service.getHackEnvironmentDetails(
+      fileUri,
+      getConfig().hhClientPath);
     const isHHAvailable = hackEnvironment != null;
     const {hackRoot} = hackEnvironment || {};
 

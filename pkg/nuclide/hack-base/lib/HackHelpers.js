@@ -16,7 +16,7 @@ import type {SearchResultTypeValue, SymbolTypeValue} from '../../hack-common/lib
 import invariant from 'assert';
 import {checkOutput, PromiseQueue} from '../../commons';
 import {SearchResultType, SymbolType} from '../../hack-common/lib/constants';
-import {PATH_TO_HH_CLIENT, getHackExecOptions} from './hack-config';
+import {getHackExecOptions} from './hack-config';
 
 const HH_SERVER_INIT_MESSAGE = 'hh_server still initializing';
 const HH_SERVER_BUSY_MESSAGE = 'hh_server is busy';
@@ -53,7 +53,7 @@ export async function callHHClient(
   if (!hackExecOptions) {
     return null;
   }
-  const {hackRoot} = hackExecOptions;
+  const {hackRoot, hackCommand} = hackExecOptions;
 
   invariant(hhPromiseQueue);
   return hhPromiseQueue.submit(async (resolve, reject) => {
@@ -68,7 +68,8 @@ export async function callHHClient(
 
     let execResult = null;
     try {
-      execResult = await checkOutput(PATH_TO_HH_CLIENT, allArgs, {stdin: processInput});
+      logger.debug(`Calling Hack: ${hackCommand} with ${allArgs}`);
+      execResult = await checkOutput(hackCommand, allArgs, {stdin: processInput});
     } catch (err) {
       reject(err);
       return;

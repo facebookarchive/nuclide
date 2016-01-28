@@ -5,6 +5,14 @@
   "version": "0.0.0",
   "description": "Provides hack language support in Nuclide",
   "nuclide": {
+    "config": {
+      "hhClientPath": {
+        "title": "Overrides default path for hh_client.",
+        "type": "string",
+        "default": "",
+        "description": "Primarily for testing new versions of hh_client."
+      }
+    },
     "packageType": "Atom",
     "testRunner": "apm"
   },
