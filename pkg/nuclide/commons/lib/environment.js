@@ -20,7 +20,7 @@ module.exports = {
   },
 
   // Get home directory of the user who starts this process, supports both *nix and Windows.
-  get HOME() {
+  get HOME(): ?string {
     return process.env['HOME'] || process.env['USERPROFILE'];
   },
 };

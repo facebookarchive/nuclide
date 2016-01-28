@@ -501,6 +501,10 @@ class RemoteConnection {
     return `${this._config.host}:${this._config.port}`;
   }
 
+  getPort(): number {
+    return this._config.port;
+  }
+
   getRemoteHostname(): string {
     return this._config.host;
   }
