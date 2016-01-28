@@ -96,7 +96,7 @@
     "eslint-plugin-babel": "3.0.0",
     "eslint-plugin-jasmine": "1.6.0",
     "eslint-plugin-nuclide-internal": "file:resources/eslint-plugin-nuclide-internal",
-    "eslint-plugin-react": "3.11.3",
+    "eslint-plugin-react": "3.16.0",
     "jasmine-node": "1.14.5",
     "sabor": "0.5.0",
     "touch": "1.0.0"

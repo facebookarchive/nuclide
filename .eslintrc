@@ -158,6 +158,7 @@
     "react/jsx-no-undef": 1,                  // Disallow undeclared variables in JSX
     "react/jsx-uses-react": 1,                // Prevent React to be incorrectly marked as unused
     "react/jsx-uses-vars": 1,                 // Prevent variables used in JSX to be incorrectly marked as unused
+    "react/no-deprecated": 1,                 // Prevent usage of deprecated methods (like `React.render`)
     "react/no-unknown-property": 1,           // Prevent usage of unknown DOM property
     "react/prop-types": 1,                    // Prevent missing props validation in a React component definition
     "react/react-in-jsx-scope": 2,            // Prevent missing React when using JSX
