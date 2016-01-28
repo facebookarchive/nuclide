@@ -198,7 +198,7 @@ class PackageLinter(object):
         return package_name.startswith('fb-')
 
     def get_valid_package_prefixes(self):
-        return ['fb-', 'nuclide-', 'hyperclick']
+        return ['fb-', 'nuclide-', 'sample-', 'hyperclick']
 
     def report_error(self, message, *args):
         logging.error('PACKAGE ERROR (' + self._current_file_being_linted + '): ' + message, *args)
