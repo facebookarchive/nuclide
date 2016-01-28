@@ -1,12 +1,10 @@
 <!DOCTYPE html>
 <html>
   {% include head.html %}
-  <body>    
+  <body>
     {% include nav.html alwayson=true %}
-    <div class="navPusher">
-      {{ content }}
-      {% include footer.html %}
-    </div>
+    {{ content }}
+    {% include footer.html %}
   </body>
 
 </html>

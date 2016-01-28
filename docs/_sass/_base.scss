@@ -1,19 +1,19 @@
 body {
-	background: $footer-bg;
-	color: $text;
-	font: 300 #{$base-font-size}/#{$base-line-height} $base-font-family;
-	text-align: center;
-	text-rendering: optimizeLegibility;
+  background: $footer-bg;
+  color: $text;
+  font: 300 #{$base-font-size}/#{$base-line-height} $base-font-family;
+  text-align: center;
+  text-rendering: optimizeLegibility;
 }
 
 img {
-	max-width: 100%;
+  max-width: 100%;
 }
 
 a {
   border-bottom: 1px dotted $primary-bg;
-	color: $text;
-	text-decoration: none;
+  color: $text;
+  text-decoration: none;
   -webkit-transition: background 0.3s, color 0.3s;
   transition: background 0.3s, color 0.3s;
 }
@@ -26,36 +26,13 @@ h1, h2, h3, h4 {
   font-family: $header-font-family;
 }
 
-.navPusher {
-  ol {
-    list-style: decimal;
-  }
-
-  ul {
-    list-style: disc;
-  }
-
-  ol, ul {
-    padding-left: 24px;
-
-    li {
-      padding-bottom: 4px;
-      padding-left: 6px;
-    }
-  }
-
-  strong {
-    font-weight: bold;
-  }
-}
-
-.fixedHeaderContainer {
+// static positioning, by default.
+.headerBarContainer {
   background: $nav-bg;
   color: $header-text;
   height: $header-height;
   opacity: 0.0;
   padding: $header-ptop 0 $header-pbot;
-  position: fixed;
   -webkit-transition: opacity 0.2s ease-in-out;
   transition: opacity 0.2s ease-in-out;
   width: 100%;
@@ -103,8 +80,9 @@ h1, h2, h3, h4 {
     }
 
     &.navigationSlider {
-      position: absolute;
+      position:absolute;
       right: 12px;
+      z-index:99;
 
       .navSlideout {
         cursor: pointer;
@@ -158,44 +136,15 @@ h1, h2, h3, h4 {
   }
 }
 
-.navPusher {
-  border-top: $header-height + $header-ptop + $header-pbot solid $primary-bg;
-	position: relative;
-	left: 0;
-	z-index: 99;
-	height: 100%;
-
-  &::after {
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 0;
-    height: 0;
-    background: rgba(0,0,0,0.4);
-    content: '';
-    opacity: 0;
-    -webkit-transition: opacity 0.5s, width 0.1s 0.5s, height 0.1s 0.5s;
-    transition: opacity 0.5s, width 0.1s 0.5s, height 0.1s 0.5s;
-  }
-
-  .sliderActive &::after {
-    width: 100%;
-    height: 100%;
-    opacity: 1;
-    -webkit-transition: opacity 0.5s;
-    transition: opacity 0.5s;
-  }
-}
-
-.headerContainer {
-	background: $primary-bg;
+.homeContainer {
+  background: $primary-bg;
   color: $header-text;
 
   a {
     color: $header-text;
   }
 
-  .headerWrapper {
+  .homeWrapper {
     padding-top: 2em;
 
       h1#project_title {
@@ -216,9 +165,9 @@ h1, h2, h3, h4 {
 }
 
 .wrapper {
-	margin: 0px auto;
-	max-width: $content-width;
-	padding: 0 20px;
+  margin: 0px auto;
+  max-width: $content-width;
+  padding: 0 20px;
 }
 
 .footerContainer {
@@ -230,37 +179,38 @@ h1, h2, h3, h4 {
   }
 }
 
+
 img.projectLogo {
-	height: 100px;
+  height: 100px;
   margin-bottom: 0px;
 }
 
 section#intro {
-	margin: 70px 0;
+  margin: 70px 0;
 }
 
 .fbossFontLight {
-	font-family: $base-font-family;
-	font-weight: 300;
-	font-style: normal;
+  font-family: $base-font-family;
+  font-weight: 300;
+  font-style: normal;
 }
 
 .fb-like {
-	display: block;
-	margin-bottom: 50px;
-	width: 100%;
+  display: block;
+  margin-bottom: 50px;
+  width: 100%;
 }
 
 a.blockButton {
-	background: $primary-bg;
-	border-radius: 4px;
+  background: $primary-bg;
+  border-radius: 4px;
   border: 2px solid transparent;
-	clear: both;
-	color: $header-text;
-	display: inline-block;
+  clear: both;
+  color: $header-text;
+  display: inline-block;
   font-family: $header-font-family;
-	font-size: 120%;
-	padding: 10px 20px;
+  font-size: 120%;
+  padding: 10px 20px;
   position: relative;
   -webkit-transition: background-color 0.2s, color 0.2s, border 0.2s;
   transition: background-color 0.2s, color 0.2s, border 0.2s;
@@ -272,7 +222,7 @@ a.blockButton {
     color: $primary-bg;
   }
 
-  .headerContainer &{
+  .homeContainer &{
     background: $light-color;
     color: $light-text-color;
 
@@ -605,7 +555,7 @@ a.blockButton {
 }
 
 .gridBlock {
-	margin: 20px 0;
+  margin: 20px 0;
   padding: 2vh 0;
 
   .twoByGridBlock {
@@ -634,15 +584,15 @@ a.blockButton {
 }
 
 #integrations_title  {
-	font-size: 250%;
-	margin: 80px 0;
+  font-size: 250%;
+  margin: 80px 0;
 }
 
 .ytVideo {
   height: 0;
   overflow: hidden;
-	padding-bottom: 53.4%; /* 16:9 */
-	padding-top: 25px;
+  padding-bottom: 53.4%; /* 16:9 */
+  padding-top: 25px;
   position: relative;
 }
 
@@ -670,7 +620,7 @@ a.blockButton {
     height: 200px;
   }
 
-  .fixedHeaderContainer {
+  .headerBarContainer {
     .navigationWrapper {
       &.navigationSlider {
 
@@ -693,13 +643,13 @@ a.blockButton {
     }
   }
 
-	.headerWrapper {
-		padding-top: 8em;
-	}
+  .homeWrapper {
+    padding-top: 8em;
+  }
 
-	.gridBlock {
-		margin: -20px;
-		overflow: auto;
+  .gridBlock {
+    margin: -20px;
+    overflow: auto;
     padding: 1vh 0;
 
     .twoByGridBlock {
@@ -764,7 +714,7 @@ a.blockButton {
 }
 
 @media only screen and (min-width: 900px) {
-  .fixedHeaderContainer {
+  .headerBarContainer {
     .navigationWrapper {
 
       nav {
@@ -804,10 +754,6 @@ a.blockButton {
         display: none;
       }
     }
-  }
-
-  .navPusher::after {
-    display: none;
   }
 }
 
@@ -888,7 +834,7 @@ a.blockButton {
 }
 
 @media only screen and (min-width: 1200px) {
-  .fixedHeaderContainer {
+  .headerBarContainer {
     header {
       max-width: 1100px;
     }
@@ -898,7 +844,7 @@ a.blockButton {
     max-width: 1100px;
   }
 
-  .headerWrapper {
+  .homeWrapper {
     max-width: 900px;
   }
 
@@ -910,7 +856,7 @@ a.blockButton {
 }
 
 @media only screen and (min-width: 1500px) {
-  .fixedHeaderContainer {
+  .headerBarContainer {
     header {
       max-width: 1400px;
     }
@@ -920,7 +866,7 @@ a.blockButton {
     max-width: 1400px;
   }
 
-  .headerWrapper {
+  .homeWrapper {
     max-width: 900px;
   }
 
@@ -930,4 +876,3 @@ a.blockButton {
     }
   }
 }
-

@@ -1,17 +1,15 @@
 <!DOCTYPE html>
 <html>
   {% include head.html %}
-  <body>    
+  <body>
     {% include nav.html alwayson=true %}
-    <div class="navPusher">
-      {% include header.html %}
-      <div class="mainContainer">
-        <div id="main_wrap" class="wrapper mainWrapper">
-          {{ content }}
-        </div>
+    {% include homeContent.html %}
+    <div class="mainContainer">
+      <div id="main_wrap" class="wrapper mainWrapper">
+        {{ content }}
       </div>
-      {% include footer.html %}
     </div>
+    {% include footer.html %}
   </body>
 
 </html>
