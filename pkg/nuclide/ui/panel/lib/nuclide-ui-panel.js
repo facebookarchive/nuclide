@@ -10,11 +10,5 @@
  */
 
 module.exports = {
-  get PanelController() {
-    return require('./PanelController');
-  },
-
-  get PanelComponent() {
-    return require('./PanelComponent');
-  },
+  PanelComponent: require('./PanelComponent'),
 };
