@@ -14,7 +14,10 @@ const {EventEmitter} = require('events');
 const LazyTreeNode = require('./LazyTreeNode');
 const TreeNodeComponent = require('./TreeNodeComponent');
 const {forEachCachedNode} = require('./tree-node-traversals');
-const {React} = require('react-for-atom');
+const {
+  React,
+  ReactDOM,
+} = require('react-for-atom');
 
 const {PropTypes} = React;
 
@@ -133,7 +136,7 @@ const TreeRootComponent = React.createClass({
     if (!prevState || this.state.selectedKeys !== prevState.selectedKeys) {
       const firstSelectedDescendant = this.refs[FIRST_SELECTED_DESCENDANT_REF];
       if (firstSelectedDescendant !== undefined) {
-        React.findDOMNode(firstSelectedDescendant).scrollIntoViewIfNeeded(false);
+        ReactDOM.findDOMNode(firstSelectedDescendant).scrollIntoViewIfNeeded(false);
       }
     }
 

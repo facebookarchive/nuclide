@@ -10,12 +10,15 @@
  */
 
 import {CompositeDisposable, Disposable} from 'atom';
-import BuckIcon from './BuckIcon';
+import buckIcon from './BuckIcon';
 import BuckToolbar from './BuckToolbar';
 import BuckToolbarActions from './BuckToolbarActions';
 import BuckToolbarStore from './BuckToolbarStore';
 import {Dispatcher} from 'flux';
-import {React} from 'react-for-atom';
+import {
+  React,
+  ReactDOM,
+} from 'react-for-atom';
 
 class Activation {
   _actions: BuckToolbarActions;
@@ -44,7 +47,7 @@ class Activation {
     this._actions = new BuckToolbarActions(dispatcher);
 
     const container = document.createElement('div');
-    React.render(
+    ReactDOM.render(
       <BuckToolbar store={this._store} actions={this._actions} />,
       container,
     );
@@ -57,7 +60,7 @@ class Activation {
     });
     this._disposables.add(
       new Disposable(() => {
-        React.unmountComponentAtNode(container);
+        ReactDOM.unmountComponentAtNode(container);
         panel.destroy();
       }),
     );
@@ -71,7 +74,7 @@ class Activation {
       iconset: 'ion',
       priority: 500,
     })[0];
-    toolBarButton.innerHTML = React.renderToStaticMarkup(<BuckIcon />);
+    toolBarButton.innerHTML = buckIcon();
     this._disposables.add(
       new Disposable(() => { toolBar.removeItems(); }),
     );

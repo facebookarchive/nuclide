@@ -13,6 +13,7 @@ const LazyTreeNode = require('./LazyTreeNode');
 const {
   PureRenderMixin,
   React,
+  ReactDOM,
 } = require('react-for-atom');
 const classnames = require('classnames');
 
@@ -109,7 +110,7 @@ class TreeNodeComponent extends React.Component {
   }
 
   _onClick(event: SyntheticMouseEvent): void {
-    if (React.findDOMNode(this.refs['arrow']).contains(event.target)) {
+    if (ReactDOM.findDOMNode(this.refs['arrow']).contains(event.target)) {
       this.props.onClickArrow(event, this.props.node);
     } else {
       this.props.onClick(event, this.props.node);

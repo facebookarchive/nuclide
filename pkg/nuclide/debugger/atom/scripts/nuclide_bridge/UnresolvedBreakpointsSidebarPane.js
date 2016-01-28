@@ -11,6 +11,7 @@
 
 const NuclideBridge = require('./NuclideBridge');
 const React = require('react');
+const ReactDOM = require('react-dom');
 const path = require('path');
 const url = require('url');
 import invariant from 'assert';
@@ -81,9 +82,10 @@ class UnresolvedBreakpointsSidebarPane extends WebInspector.SidebarPane {
 
     this.registerRequiredCSS('components/breakpointsList.css');
 
-    React.render(
+    ReactDOM.render(
       <UnresolvedBreakpointsComponent />,
-      this.bodyElement);
+      this.bodyElement
+    );
 
     this.expand();
   }

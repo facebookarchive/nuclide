@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import {React} from 'react-for-atom';
+import {ReactDOM} from 'react-for-atom';
 
 /**
  * Create an object suitable for use as an Atom pane item from a React element.
@@ -23,7 +23,7 @@ export default function createComponentItem(reactElement: ?ReactElement): HTMLEl
   // (something clears it) so we add a class to style it instead.
   container.className = 'nuclide-gadgets--gadget-container';
 
-  const mountedComponent = React.render(reactElement, container);
+  const mountedComponent = ReactDOM.render(reactElement, container);
 
   // Add the element as a property of the mounted component. This is a special property that Atom's
   // view registry knows to look for. (See [View Resolution

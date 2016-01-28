@@ -18,7 +18,10 @@ import type {
 import FileTreeHelpers from './FileTreeHelpers';
 import FileTreeStore from './FileTreeStore';
 import FileDialogComponent from '../components/FileDialogComponent';
-import {React} from 'react-for-atom';
+import {
+  React,
+  ReactDOM,
+} from 'react-for-atom';
 import RemoteUri from '../../remote-uri';
 
 import fs from 'fs-plus';
@@ -218,7 +221,7 @@ const FileSystemActions = {
     this._closeDialog();
     dialogHostElement = document.createElement('div');
     atom.views.getView(atom.workspace).appendChild(dialogHostElement);
-    dialogComponent = React.render(
+    dialogComponent = ReactDOM.render(
       <FileDialogComponent {...props} />,
       dialogHostElement
     );
@@ -226,7 +229,7 @@ const FileSystemActions = {
 
   _closeDialog(): void {
     if (dialogComponent != null) {
-      React.unmountComponentAtNode(dialogHostElement);
+      ReactDOM.unmountComponentAtNode(dialogHostElement);
       dialogComponent = null;
     }
     if (dialogHostElement != null) {

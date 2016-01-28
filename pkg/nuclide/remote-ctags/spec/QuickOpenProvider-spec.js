@@ -14,6 +14,7 @@ import type {CtagsResult} from '../../remote-ctags-base';
 import invariant from 'assert';
 import {
   React,
+  ReactDOM,
   TestUtils,
 } from 'react-for-atom';
 import nuclideRemoteConnection from '../../remote-connection';
@@ -101,7 +102,7 @@ describe('QuickOpenProvider', () => {
       const reactElement = getComponentForItem(results[0]);
       expect(reactElement.props.title).toBe('class');
       const renderedComponent = TestUtils.renderIntoDocument(reactElement);
-      const renderedNode = React.findDOMNode(renderedComponent);
+      const renderedNode = ReactDOM.findDOMNode(renderedComponent);
 
       expect(renderedNode.querySelectorAll('.omnisearch-symbol-result-filename').length).toBe(1);
       expect(renderedNode.querySelectorAll('.icon-code').length).toBe(1);

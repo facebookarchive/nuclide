@@ -48,8 +48,7 @@ class Activation {
   }
 
   consumeToolBar(getToolBar: (group: string) => Object): void {
-    const {React} = require('react-for-atom');
-    const HhvmIcon = require('./HhvmIcon');
+    const hhvmIcon = require('./hhvmIcon');
     const {Disposable} = require('atom');
     const toolBar = getToolBar('nuclide-buck-toolbar');
     const toolBarButton = toolBar.addButton({
@@ -57,7 +56,7 @@ class Activation {
       tooltip: 'Toggle HHVM Toolbar',
       priority: 500,
     })[0];
-    toolBarButton.innerHTML = React.renderToStaticMarkup(<HhvmIcon />);
+    toolBarButton.innerHTML = hhvmIcon();
     this._disposables.add(
       new Disposable(() => { toolBar.removeItems(); }),
     );
@@ -67,9 +66,12 @@ class Activation {
     const NuclideToolbar = require('./NuclideToolbar');
     const item = document.createElement('div');
     const {Disposable} = require('atom');
-    const {React} = require('react-for-atom');
+    const {
+      React,
+      ReactDOM,
+    } = require('react-for-atom');
 
-    this._nuclideToolbar = React.render(
+    this._nuclideToolbar = ReactDOM.render(
       <NuclideToolbar
         projectStore={this._projectStore}
       />,
@@ -112,11 +114,11 @@ class Activation {
 
   dispose() {
     if (this._nuclideToolbar) {
-      const {React} = require('react-for-atom');
-      const toolbarNode = React.findDOMNode(this._nuclideToolbar);
+      const {ReactDOM} = require('react-for-atom');
+      const toolbarNode = ReactDOM.findDOMNode(this._nuclideToolbar);
       // If the toolbar is currently hidden for some reason, then toolbarNode will be null.
       if (toolbarNode) {
-        React.unmountComponentAtNode(toolbarNode.parentNode);
+        ReactDOM.unmountComponentAtNode(toolbarNode.parentNode);
       }
     }
     this._projectStore.dispose();

@@ -12,7 +12,10 @@
 const AtomInput = require('../../ui/atom-input');
 const {CompositeDisposable} = require('atom');
 const RadioGroup = require('../../ui/radiogroup');
-const {React} = require('react-for-atom');
+const {
+  React,
+  ReactDOM,
+} = require('react-for-atom');
 const {PropTypes} = React;
 const {SshHandshake} = require('../../remote-connection');
 
@@ -81,7 +84,7 @@ export default class ConnectionDetailsForm extends React.Component {
         selectedAuthMethodIndex: passwordAuthMethodIndex,
       },
       () => {
-        React.findDOMNode(this.refs['password']).focus();
+        ReactDOM.findDOMNode(this.refs['password']).focus();
       }
     );
   }
@@ -95,7 +98,7 @@ export default class ConnectionDetailsForm extends React.Component {
       () => {
         // when setting this immediately, Atom will unset the focus...
         setTimeout(() => {
-          React.findDOMNode(this.refs['pathToPrivateKey']).focus();
+          ReactDOM.findDOMNode(this.refs['pathToPrivateKey']).focus();
         }, 0);
       }
     );
@@ -206,7 +209,7 @@ export default class ConnectionDetailsForm extends React.Component {
   componentDidMount() {
     const disposables = new CompositeDisposable();
     this._disposables = disposables;
-    const root = React.findDOMNode(this);
+    const root = ReactDOM.findDOMNode(this);
 
     // Hitting enter when this panel has focus should confirm the dialog.
     disposables.add(atom.commands.add(
@@ -291,7 +294,7 @@ export default class ConnectionDetailsForm extends React.Component {
   }
 
   _getPassword(): string {
-    return (this.refs.password && React.findDOMNode(this.refs.password).value) || '';
+    return (this.refs.password && ReactDOM.findDOMNode(this.refs.password).value) || '';
   }
 
   clearPassword(): void {

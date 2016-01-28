@@ -14,7 +14,10 @@ import type {HighlightedLines, OffsetMap, InlineComponent} from './types';
 
 import {CompositeDisposable} from 'atom';
 import {debounce} from '../../commons';
-import {React} from 'react-for-atom';
+import {
+  React,
+  ReactDOM,
+} from 'react-for-atom';
 import DiffViewEditor from './DiffViewEditor';
 import invariant from 'assert';
 
@@ -177,7 +180,7 @@ export default class DiffViewEditorPane extends React.Component {
       }
       const editorWidth = this.getEditorDomElement().clientWidth;
       components.forEach(element => {
-        const domNode = React.findDOMNode(element.component);
+        const domNode = ReactDOM.findDOMNode(element.component);
         // get the height of the component after it has been rendered in the DOM
         const componentHeight = domNode.clientHeight;
         const lineHeight = diffViewEditor.getLineHeightInPixels();
@@ -206,6 +209,6 @@ export default class DiffViewEditorPane extends React.Component {
   }
 
   getEditorDomElement(): atom$TextEditorElement {
-    return React.findDOMNode(this.refs['editor']);
+    return ReactDOM.findDOMNode(this.refs['editor']);
   }
 }

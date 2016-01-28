@@ -11,7 +11,10 @@
 
 import {CompositeDisposable} from 'atom';
 import FileTreeStore from '../lib/FileTreeStore';
-import {React} from 'react-for-atom';
+import {
+  React,
+  ReactDOM,
+} from 'react-for-atom';
 import RootNodeComponent from './RootNodeComponent';
 import EmptyComponent from './EmptyComponent';
 import {track} from '../../analytics';
@@ -90,11 +93,11 @@ class FileTree extends React.Component {
   }
 
   focus(): void {
-    React.findDOMNode(this).focus();
+    ReactDOM.findDOMNode(this).focus();
   }
 
   hasFocus(): boolean {
-    return document.activeElement === React.findDOMNode(this);
+    return document.activeElement === ReactDOM.findDOMNode(this);
   }
 
   render(): ReactElement {

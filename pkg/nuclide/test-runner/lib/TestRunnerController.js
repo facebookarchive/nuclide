@@ -16,7 +16,10 @@ import invariant from 'assert';
 
 const Ansi = require('./Ansi');
 const {TextBuffer} = require('atom');
-const {React} = require('react-for-atom');
+const {
+  React,
+  ReactDOM,
+} = require('react-for-atom');
 const TestRunModel = require('./TestRunModel');
 const TestRunnerPanel = require('./ui/TestRunnerPanel');
 const TestSuiteModel = require('./TestSuiteModel');
@@ -88,7 +91,7 @@ class TestRunnerController {
   destroy() {
     this._stopListening();
     if (this._root) {
-      React.unmountComponentAtNode(this._root);
+      ReactDOM.unmountComponentAtNode(this._root);
       this._root = null;
     }
     if (this._panel) {
@@ -310,7 +313,7 @@ class TestRunnerController {
       progressValue = 100;
     }
 
-    this._testRunnerPanel = React.render(
+    this._testRunnerPanel = ReactDOM.render(
       <TestRunnerPanel
         buffer={this._buffer}
         executionState={this._executionState}

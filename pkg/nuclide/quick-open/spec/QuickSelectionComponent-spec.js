@@ -9,7 +9,10 @@
  * the root directory of this source tree.
  */
 
-import {React} from 'react-for-atom';
+import {
+  React,
+  ReactDOM,
+} from 'react-for-atom';
 import QuickSelectionComponent from '../lib/QuickSelectionComponent';
 
 class TestQuickSelectionProvider {
@@ -40,7 +43,7 @@ xdescribe('QuickSelectionComponent', () => {
     document.body.appendChild(componentRoot);
 
     const testProvider = new TestQuickSelectionProvider({});
-    component = React.render(
+    component = ReactDOM.render(
       <QuickSelectionComponent
         provider={testProvider}
       />,
@@ -49,7 +52,7 @@ xdescribe('QuickSelectionComponent', () => {
   });
 
   afterEach(() => {
-    React.unmountComponentAtNode(componentRoot);
+    ReactDOM.unmountComponentAtNode(componentRoot);
     document.body.removeChild(componentRoot);
   });
 
@@ -63,7 +66,7 @@ xdescribe('QuickSelectionComponent', () => {
       component.onItemsChanged((newItems) => {
         resolve(component);
       });
-      component = React.render(
+      component = ReactDOM.render(
         <QuickSelectionComponent
           provider={new TestQuickSelectionProvider(items)}
         />,
@@ -109,7 +112,7 @@ xdescribe('QuickSelectionComponent', () => {
 
     it('should select on the core:confirm command (enter)', () => {
       withItemsSetTo({testDirectory: {testProvider: Promise.resolve({results: [1, 2, 3]})}}, () => {
-        const componentNode = React.findDOMNode(component);
+        const componentNode = ReactDOM.findDOMNode(component);
 
         const selectedItemIndex = component.getSelectedIndex();
         expect(selectedItemIndex.selectedDirectory).toBe('');
@@ -145,7 +148,7 @@ xdescribe('QuickSelectionComponent', () => {
   describe('Cancellation', () => {
     it('should cancel on the core:cancel command (esc)', () => {
       withItemsSetTo({testDirectory: {testProvider: Promise.resolve({results: [1, 2, 3]})}}, () => {
-        const componentNode = React.findDOMNode(component);
+        const componentNode = ReactDOM.findDOMNode(component);
 
         waitsForPromise(() => new Promise((resolve, reject) => {
           component.onCancellation((item) => {
@@ -249,7 +252,7 @@ xdescribe('QuickSelectionComponent', () => {
 
     it('should move the selection appropriately on core:move* commands', () => {
       withItemsSetTo({testDirectory: {testProvider: Promise.resolve({results: [1, 2, 3]})}}, () => {
-        const componentNode = React.findDOMNode(component);
+        const componentNode = ReactDOM.findDOMNode(component);
 
         const steps = [
           {expectedIndex: 0, nextCommand: 'core:move-up'},

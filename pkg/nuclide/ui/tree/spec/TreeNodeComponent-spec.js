@@ -12,6 +12,7 @@
 const LazyTestTreeNode = require('./LazyTestTreeNode');
 const {
   React,
+  ReactDOM,
   TestUtils,
 } = require('react-for-atom');
 const TreeNodeComponent = require('../lib/TreeNodeComponent');
@@ -58,7 +59,7 @@ describe('TreeNodeComponent', () => {
     //
     // See: https://atom.io/packages/file-icons
     it('uses selectors necessary for the "file-icons" package', () => {
-      const domNode = React.findDOMNode(treeNodeComponent);
+      const domNode = ReactDOM.findDOMNode(treeNodeComponent);
 
       expect(domNode.classList.contains('entry')).toBe(true);
       expect(domNode.classList.contains('file')).toBe(true);
@@ -69,7 +70,7 @@ describe('TreeNodeComponent', () => {
         iconClassName
       );
 
-      expect(React.findDOMNode(iconComponent).dataset.name).toEqual(label);
+      expect(ReactDOM.findDOMNode(iconComponent).dataset.name).toEqual(label);
     });
 
   });
@@ -77,7 +78,7 @@ describe('TreeNodeComponent', () => {
   describe('clicking a node', () => {
 
     it('calls its `onClick` callback', () => {
-      const domNode = React.findDOMNode(treeNodeComponent);
+      const domNode = ReactDOM.findDOMNode(treeNodeComponent);
 
       TestUtils.Simulate.click(domNode);
       invariant(props);
@@ -105,7 +106,7 @@ describe('TreeNodeComponent', () => {
   describe('double clicking a node', () => {
 
     it('calls its `onDoubleClick` callback', () => {
-      const domNode = React.findDOMNode(treeNodeComponent);
+      const domNode = ReactDOM.findDOMNode(treeNodeComponent);
 
       TestUtils.Simulate.doubleClick(domNode);
       invariant(props);

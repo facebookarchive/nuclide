@@ -41,7 +41,10 @@ const {
   debounce,
   object,
 } = require('../../commons');
-const {React} = require('react-for-atom');
+const {
+  React,
+  ReactDOM,
+} = require('react-for-atom');
 
 import SearchResultManager from './SearchResultManager';
 const searchResultManager = SearchResultManager.getInstance();
@@ -135,7 +138,7 @@ export default class QuickSelectionComponent extends React.Component {
   }
 
   componentDidMount(): void {
-    this._modalNode = React.findDOMNode(this);
+    this._modalNode = ReactDOM.findDOMNode(this);
     this._subscriptions.add(
       atom.commands.add(
         this._modalNode,
@@ -390,7 +393,7 @@ export default class QuickSelectionComponent extends React.Component {
     if (!(this.refs && this.refs['selectionList'])) {
       return;
     }
-    const listNode =  React.findDOMNode(this.refs['selectionList']);
+    const listNode =  ReactDOM.findDOMNode(this.refs['selectionList']);
     const selectedNode = listNode.getElementsByClassName('selected')[0];
     // false is passed for @centerIfNeeded parameter, which defaults to true.
     // Passing false causes the minimum necessary scroll to occur, so the selection sticks to the
@@ -502,7 +505,7 @@ export default class QuickSelectionComponent extends React.Component {
   }
 
   getInputTextEditor(): atom$TextEditorElement {
-    return React.findDOMNode(this.refs['queryInput']);
+    return ReactDOM.findDOMNode(this.refs['queryInput']);
   }
 
   clear(): void {

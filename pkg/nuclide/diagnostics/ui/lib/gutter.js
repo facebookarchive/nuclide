@@ -20,7 +20,10 @@ import type {NuclideUri} from '../../../remote-uri';
 import invariant from 'assert';
 
 const {track} = require('../../../analytics');
-const {React} = require('react-for-atom');
+const {
+  React,
+  ReactDOM,
+} = require('react-for-atom');
 const {PropTypes} = React;
 
 const GUTTER_ID = 'nuclide-diagnostics-gutter';
@@ -166,7 +169,7 @@ function createGutterItem(
   };
   const dispose = () => {
     if (popupElement) {
-      React.unmountComponentAtNode(popupElement);
+      ReactDOM.unmountComponentAtNode(popupElement);
       popupElement.parentNode.removeChild(popupElement);
       popupElement = null;
     }
@@ -237,11 +240,12 @@ function showPopupFor(
   // Move it down vertically so it does not end up under the mouse pointer.
   const {top, left} = item.getBoundingClientRect();
 
-  React.render(
+  ReactDOM.render(
     <DiagnosticsPopup left={left} top={top}>
       {children}
     </DiagnosticsPopup>,
-    hostElement);
+    hostElement
+  );
 
   // Check to see whether the popup is within the bounds of the TextEditor. If not, display it above
   // the glyph rather than below it.

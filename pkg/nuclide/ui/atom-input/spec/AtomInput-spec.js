@@ -10,20 +10,23 @@
  */
 
 const AtomInput = require('../lib/AtomInput');
-const {React} = require('react-for-atom');
+const {
+  React,
+  ReactDOM,
+} = require('react-for-atom');
 
 let reactElement;
 
 function createWithProps(props: any) {
   const hostEl = document.createElement('div');
-  return React.render(<AtomInput {...props} />, hostEl);
+  return ReactDOM.render(<AtomInput {...props} />, hostEl);
 }
 
 describe('AtomInput', () => {
 
   afterEach(() => {
     if (reactElement) {
-      React.unmountComponentAtNode(React.findDOMNode(reactElement).parentNode);
+      ReactDOM.unmountComponentAtNode(ReactDOM.findDOMNode(reactElement).parentNode);
     }
     reactElement = null;
   });
@@ -71,7 +74,7 @@ describe('AtomInput', () => {
     textEditor.setText('the new text');
     expect(onDidChange.calls.length).toBe(1);
 
-    React.unmountComponentAtNode(React.findDOMNode(reactElement).parentNode);
+    ReactDOM.unmountComponentAtNode(ReactDOM.findDOMNode(reactElement).parentNode);
     reactElement = null;
 
     textEditor.setText('even more new text');

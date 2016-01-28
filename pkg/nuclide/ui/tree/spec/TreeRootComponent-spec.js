@@ -14,6 +14,7 @@ import type LazyTreeNode from '../lib/LazyTreeNode';
 const LazyTestTreeNode = require('./LazyTestTreeNode');
 const {
   React,
+  ReactDOM,
   TestUtils,
 } = require('react-for-atom');
 const TreeNodeComponent = require('../lib/TreeNodeComponent');
@@ -22,7 +23,7 @@ const invariant = require('assert');
 
 function clickNodeWithLabel(component: TreeRootComponent, label: string): void {
   const nodeComponents = getNodeComponents(component);
-  TestUtils.Simulate.click(React.findDOMNode(nodeComponents[label]));
+  TestUtils.Simulate.click(ReactDOM.findDOMNode(nodeComponents[label]));
 }
 
 /**
@@ -102,7 +103,7 @@ describe('TreeRootComponent', () => {
     hostEl = document.createElement('div');
     hostEl.className = 'test';
     renderComponent = (componentProps) => {
-      return React.render(
+      return ReactDOM.render(
         <TreeRootComponent {...componentProps} />,
         hostEl
       );
@@ -517,7 +518,7 @@ describe('TreeRootComponent', () => {
           expect(component.getExpandedNodes()).toEqual([nodes['G']]);
 
           const nodeComponents = getNodeComponents(component);
-          TestUtils.Simulate.click(React.findDOMNode(nodeComponents['G'].refs['arrow']));
+          TestUtils.Simulate.click(ReactDOM.findDOMNode(nodeComponents['G'].refs['arrow']));
 
           expect(component.getExpandedNodes()).toEqual([]);
           invariant(onConfirmSelection);
@@ -534,7 +535,7 @@ describe('TreeRootComponent', () => {
           expect(component.getSelectedNodes()).toEqual([]);
 
           const nodeComponents = getNodeComponents(component);
-          TestUtils.Simulate.click(React.findDOMNode(nodeComponents['G'].refs['arrow']));
+          TestUtils.Simulate.click(ReactDOM.findDOMNode(nodeComponents['G'].refs['arrow']));
 
           expect(component.getSelectedNodes()).toEqual([]);
           invariant(onConfirmSelection);
@@ -599,10 +600,10 @@ describe('TreeRootComponent', () => {
 
           const nodeComponents = getNodeComponents(component);
 
-          TestUtils.Simulate.click(React.findDOMNode(nodeComponents['G']));
+          TestUtils.Simulate.click(ReactDOM.findDOMNode(nodeComponents['G']));
           expect(component.isNodeKeyExpanded(nodes['G'].getKey())).toBe(false);
 
-          TestUtils.Simulate.click(React.findDOMNode(nodeComponents['G']));
+          TestUtils.Simulate.click(ReactDOM.findDOMNode(nodeComponents['G']));
           expect(component.isNodeKeyExpanded(nodes['G'].getKey())).toBe(true);
 
           invariant(onConfirmSelection);
@@ -621,7 +622,7 @@ describe('TreeRootComponent', () => {
           expect(component.getSelectedNodes()).toEqual([nodes['J']]);
 
           const nodeComponents = getNodeComponents(component);
-          TestUtils.Simulate.click(React.findDOMNode(nodeComponents['J']));
+          TestUtils.Simulate.click(ReactDOM.findDOMNode(nodeComponents['J']));
 
           invariant(onConfirmSelection);
           expect(onConfirmSelection).toHaveBeenCalledWith(nodes['J']);
@@ -641,7 +642,7 @@ describe('TreeRootComponent', () => {
           expect(component.isNodeKeyExpanded(nodes['G'].getKey())).toBe(true);
 
           const nodeComponents = getNodeComponents(component);
-          TestUtils.Simulate.click(React.findDOMNode(nodeComponents['G']));
+          TestUtils.Simulate.click(ReactDOM.findDOMNode(nodeComponents['G']));
 
           expect(component.getSelectedNodes()).toEqual([nodes['G']]);
           expect(component.isNodeKeyExpanded(nodes['G'].getKey())).toBe(true);
@@ -661,7 +662,7 @@ describe('TreeRootComponent', () => {
           expect(component.getSelectedNodes()).toEqual([]);
 
           const nodeComponents = getNodeComponents(component);
-          TestUtils.Simulate.click(React.findDOMNode(nodeComponents['J']));
+          TestUtils.Simulate.click(ReactDOM.findDOMNode(nodeComponents['J']));
           expect(component.getSelectedNodes()).toEqual([nodes['J']]);
 
           invariant(onConfirmSelection);
@@ -679,16 +680,16 @@ describe('TreeRootComponent', () => {
 
           const nodeComponents = getNodeComponents(component);
 
-          TestUtils.Simulate.mouseDown(React.findDOMNode(nodeComponents['G']), {button: 2});
+          TestUtils.Simulate.mouseDown(ReactDOM.findDOMNode(nodeComponents['G']), {button: 2});
           expect(component.getSelectedNodes()).toEqual([nodeComponents['G'].props.node]);
 
           TestUtils.Simulate.mouseDown(
-            React.findDOMNode(nodeComponents['H']),
+            ReactDOM.findDOMNode(nodeComponents['H']),
             {button: 0, ctrlKey: true}
           );
           expect(component.getSelectedNodes()).toEqual([nodeComponents['H'].props.node]);
 
-          TestUtils.Simulate.mouseDown(React.findDOMNode(nodeComponents['I']), {button: 0});
+          TestUtils.Simulate.mouseDown(ReactDOM.findDOMNode(nodeComponents['I']), {button: 0});
           expect(component.getSelectedNodes()).toEqual([nodeComponents['H'].props.node]);
 
           invariant(onConfirmSelection);

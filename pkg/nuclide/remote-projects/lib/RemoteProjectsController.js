@@ -11,7 +11,10 @@
 
 import invariant from 'assert';
 import {RemoteConnection} from '../../remote-connection';
-const {React} = require('react-for-atom');
+const {
+  React,
+  ReactDOM,
+} = require('react-for-atom');
 const {CompositeDisposable, Disposable} = require('atom');
 const StatusBarTile = require('./ui/StatusBarTile');
 const {isTextEditor} = require('../../atom-helpers');
@@ -107,7 +110,7 @@ class RemoteProjectsController {
       if (parentNode) {
         parentNode.removeChild(this._statusBarDiv);
       }
-      React.unmountComponentAtNode(this._statusBarDiv);
+      ReactDOM.unmountComponentAtNode(this._statusBarDiv);
       this._statusBarDiv = null;
       rightTile.destroy();
       tooltip.dispose();
@@ -124,7 +127,7 @@ class RemoteProjectsController {
       return;
     }
 
-    this._statusBarTile = React.render(
+    this._statusBarTile = ReactDOM.render(
       <StatusBarTile
         connectionState={connectionState}
         fileUri={fileUri}

@@ -12,7 +12,10 @@
 import type SuggestionListType from './SuggestionList';
 
 import {CompositeDisposable, Disposable} from 'atom';
-import {React} from 'react-for-atom';
+import {
+  React,
+  ReactDOM,
+} from 'react-for-atom';
 import invariant from 'assert';
 
 /**
@@ -28,11 +31,11 @@ class SuggestionListElement extends HTMLElement {
   }
 
   attachedCallback() {
-    React.render(<SuggestionList suggestionList={this._model} />, this);
+    ReactDOM.render(<SuggestionList suggestionList={this._model} />, this);
   }
 
   dispose() {
-    React.unmountComponentAtNode(this);
+    ReactDOM.unmountComponentAtNode(this);
     if (this.parentNode) {
       this.parentNode.removeChild(this);
     }
@@ -94,9 +97,10 @@ class SuggestionList extends React.Component {
 
     // Prevent scrolling the editor when scrolling the suggestion list.
     const stopPropagation = (event) => event.stopPropagation();
-    React.findDOMNode(this.refs['scroller']).addEventListener('mousewheel', stopPropagation);
+    ReactDOM.findDOMNode(this.refs['scroller']).addEventListener('mousewheel', stopPropagation);
     this._subscriptions.add(new Disposable(() => {
-      React.findDOMNode(this.refs['scroller']).removeEventListener('mousewheel', stopPropagation);
+      ReactDOM.findDOMNode(this.refs['scroller']).
+        removeEventListener('mousewheel', stopPropagation);
     }));
 
     const keydown = (event: Event) => {
@@ -200,7 +204,7 @@ class SuggestionList extends React.Component {
   }
 
   _updateScrollPosition() {
-    const listNode = React.findDOMNode(this.refs['selectionList']);
+    const listNode = ReactDOM.findDOMNode(this.refs['selectionList']);
     const selectedNode = listNode.getElementsByClassName('selected')[0];
     selectedNode.scrollIntoViewIfNeeded(false);
   }

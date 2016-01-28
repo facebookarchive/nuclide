@@ -15,6 +15,7 @@ import type {NuclideUri} from '../../remote-uri';
 import {HackSymbolProvider} from '../lib/HackSymbolProvider';
 import {
   React,
+  ReactDOM,
   TestUtils,
 } from 'react-for-atom';
 import {clearRequireCache, uncachedRequire} from '../../test-helpers';
@@ -162,7 +163,7 @@ describe('HackSymbolProvider', () => {
       const reactElement = HackSymbolProvider.getComponentForItem(mockResult);
       expect(reactElement.props.title).toBe('interface');
       const renderedComponent = TestUtils.renderIntoDocument(reactElement);
-      const renderedNode = React.findDOMNode(renderedComponent);
+      const renderedNode = ReactDOM.findDOMNode(renderedComponent);
 
       expect(renderedNode.querySelectorAll('.omnisearch-symbol-result-filename').length).toBe(1);
       expect(renderedNode.querySelectorAll('.icon-puzzle').length).toBe(1);

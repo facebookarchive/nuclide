@@ -13,8 +13,10 @@ import type {Observable} from 'rx';
 
 import type {BusySignalMessageBusy} from '../../busy-signal-interfaces';
 
-import {React} from 'react-for-atom';
-
+import {
+  React,
+  ReactDOM,
+} from 'react-for-atom';
 import {StatusBarTileComponent} from './StatusBarTileComponent';
 
 // We want to be the furthest left on the right side of the status bar so as not to leave a
@@ -79,7 +81,7 @@ export class StatusBarTile {
 
     const item = this._item;
     if (item) {
-      React.render(<StatusBarTileComponent {...props}/>, item);
+      ReactDOM.render(<StatusBarTileComponent {...props}/>, item);
       if (this._tooltip) {
         this._tooltip.dispose();
       }

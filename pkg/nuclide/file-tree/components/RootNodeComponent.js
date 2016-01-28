@@ -11,7 +11,10 @@
 
 const DirectoryEntryComponent = require('./DirectoryEntryComponent');
 const FileEntryComponent = require('./FileEntryComponent');
-const {React} = require('react-for-atom');
+const {
+  React,
+  ReactDOM,
+} = require('react-for-atom');
 
 import type FileTreeNode from '../lib/FileTreeNode';
 
@@ -72,7 +75,7 @@ class RootNodeComponent extends React.Component {
   scrollNodeIntoViewIfNeeded(nodeKey: string): void {
     const node = this.refs[nodeKey];
     if (node) {
-      React.findDOMNode(node).scrollIntoViewIfNeeded();
+      ReactDOM.findDOMNode(node).scrollIntoViewIfNeeded();
     }
   }
 }

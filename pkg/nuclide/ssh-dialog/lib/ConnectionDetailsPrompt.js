@@ -22,7 +22,7 @@ import type {
 type Props = {
   // The initial list of connection profiles that will be displayed.
   // Whenever a user add/removes profiles via the child NuclideListSelector,
-  // these props should be updated from the top-level by calling React.render()
+  // these props should be updated from the top-level by calling ReactDOM.render()
   // again (with the new props) on the ConnectionDetailsPrompt.
   connectionProfiles: ?Array<NuclideRemoteConnectionProfile>;
   // If there is >= 1 connection profile, this index indicates the profile to use.

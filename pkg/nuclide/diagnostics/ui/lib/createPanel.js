@@ -18,7 +18,10 @@ const invariant = require('assert');
 const {debounce} = require('../../../commons');
 const {compareMessagesByFile} = require('./paneUtils');
 const {isTextEditor} = require('../../../atom-helpers');
-const {React} = require('react-for-atom');
+const {
+  React,
+  ReactDOM,
+} = require('react-for-atom');
 const DiagnosticsPanel = require('./DiagnosticsPanel');
 
 const DEFAULT_TABLE_WIDTH = 600;
@@ -90,7 +93,7 @@ function createDiagnosticsPanel(
       diagnosticsNeedSorting = false;
     }
 
-    diagnosticsPanel = React.render(<DiagnosticsPanel {...props} />, item);
+    diagnosticsPanel = ReactDOM.render(<DiagnosticsPanel {...props} />, item);
   }
 
   const activePaneItemSubscription = atom.workspace.onDidChangeActivePaneItem(paneItem => {
@@ -155,7 +158,7 @@ function createDiagnosticsPanel(
     activePaneItemSubscription.dispose();
     messagesDidUpdateSubscription.dispose();
     win.removeEventListener('resize', resizeListener);
-    React.unmountComponentAtNode(item);
+    ReactDOM.unmountComponentAtNode(item);
   });
 
   return {

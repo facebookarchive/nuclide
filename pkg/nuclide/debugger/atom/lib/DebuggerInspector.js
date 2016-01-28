@@ -12,7 +12,10 @@
 const BreakpointStore = require('./BreakpointStore');
 const Bridge = require('./Bridge');
 const DebuggerActions = require('./DebuggerActions');
-const {React} = require('react-for-atom');
+const {
+  React,
+  ReactDOM,
+} = require('react-for-atom');
 const {PropTypes} = React;
 const path = require('path');
 const {PanelComponent} = require('../../../ui/panel');
@@ -63,7 +66,7 @@ const DebuggerInspector = React.createClass({
     webviewNode.classList.add('native-key-bindings'); // required to pass through certain key events
     webviewNode.classList.add('nuclide-debugger-webview');
     this._webviewNode = webviewNode;
-    const controlBarNode = React.findDOMNode(this.refs.controlBar);
+    const controlBarNode = ReactDOM.findDOMNode(this.refs.controlBar);
     controlBarNode.parentNode.insertBefore(webviewNode, controlBarNode.nextSibling);
     this.props.bridge.setWebviewElement(webviewNode);
   },

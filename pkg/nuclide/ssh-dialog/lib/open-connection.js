@@ -37,7 +37,10 @@ export function openConnectionDialog(props: Object): Promise<?RemoteConnection> 
   }
 
   return dialogPromiseQueue.submit((resolve, reject) => {
-    const {React} = require('react-for-atom');
+    const {
+      React,
+      ReactDOM,
+    } = require('react-for-atom');
     const ConnectionDialog = require('./ConnectionDialog');
     const workspaceEl = atom.views.getView(atom.workspace);
     const hostEl = document.createElement('div');
@@ -106,7 +109,7 @@ export function openConnectionDialog(props: Object): Promise<?RemoteConnection> 
       // Props
       const closeNewProfileForm = () => {
         newProfileForm = null;
-        React.unmountComponentAtNode(hostElementForNewProfileForm);
+        ReactDOM.unmountComponentAtNode(hostElementForNewProfileForm);
         hostElementForNewProfileForm.parentNode.removeChild(hostElementForNewProfileForm);
       };
       const onSave = (newProfile: NuclideRemoteConnectionProfile) => {
@@ -123,7 +126,7 @@ export function openConnectionDialog(props: Object): Promise<?RemoteConnection> 
 
       // Pop up a dialog that is pre-filled with the default params.
       const CreateConnectionProfileForm = require('./CreateConnectionProfileForm');
-      newProfileForm = React.render(
+      newProfileForm = ReactDOM.render(
         <CreateConnectionProfileForm {...initialDialogProps} />,
         hostElementForNewProfileForm,
       );
@@ -155,7 +158,7 @@ export function openConnectionDialog(props: Object): Promise<?RemoteConnection> 
       onClosed: () => {
         // Unmount the ConnectionDialog and clean up the host element.
         if (hostEl) {
-          React.unmountComponentAtNode(hostEl);
+          ReactDOM.unmountComponentAtNode(hostEl);
           if (hostEl.parentNode) {
             hostEl.parentNode.removeChild(hostEl);
           }
@@ -173,7 +176,7 @@ export function openConnectionDialog(props: Object): Promise<?RemoteConnection> 
           baseDialogProps,
           {connectionProfiles: compositeConnectionProfiles},
         );
-        React.render(<ConnectionDialog {...newDialogProps} />, hostEl);
+        ReactDOM.render(<ConnectionDialog {...newDialogProps} />, hostEl);
       }
     );
 
@@ -181,6 +184,6 @@ export function openConnectionDialog(props: Object): Promise<?RemoteConnection> 
       baseDialogProps,
       {connectionProfiles: compositeConnectionProfiles},
     );
-    React.render(<ConnectionDialog {...initialDialogProps} />, hostEl);
+    ReactDOM.render(<ConnectionDialog {...initialDialogProps} />, hostEl);
   });
 }

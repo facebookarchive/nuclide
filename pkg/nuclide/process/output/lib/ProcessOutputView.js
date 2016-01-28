@@ -14,7 +14,10 @@ import type {ProcessOutputHandler} from './types';
 
 const {CompositeDisposable, TextBuffer} = require('atom');
 const AtomTextEditor = require('../../../ui/atom-text-editor');
-const {React} = require('react-for-atom');
+const {
+  React,
+  ReactDOM,
+} = require('react-for-atom');
 
 const PROCESS_OUTPUT_PATH = 'nuclide-process-output.ansi';
 
@@ -63,7 +66,7 @@ class ProcessOutputView extends React.Component<DefaultProps, Props, State> {
   }
 
   _handleBufferChange(): void {
-    const el = React.findDOMNode(this);
+    const el = ReactDOM.findDOMNode(this);
     // TODO(natthu): Consider scrolling conditionally i.e. don't scroll if user has scrolled up the
     //               output pane.
     el.scrollTop = el.scrollHeight;
@@ -94,7 +97,7 @@ class ProcessOutputView extends React.Component<DefaultProps, Props, State> {
 
   static createView(props: ?Object): Object {
     const container = document.createElement('div');
-    const component = React.render(
+    const component = ReactDOM.render(
       <ProcessOutputView {...props} />,
       container,
     );

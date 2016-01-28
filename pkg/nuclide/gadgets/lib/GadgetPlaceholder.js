@@ -13,7 +13,10 @@
 
 import * as GadgetUri from './GadgetUri';
 import createComponentItem from './createComponentItem';
-import {React} from 'react-for-atom';
+import {
+  React,
+  ReactDOM,
+} from 'react-for-atom';
 
 type Props = {
   gadgetId: string;
@@ -33,7 +36,7 @@ class GadgetPlaceholder extends React.Component<void, Props, void> {
   }
 
   destroy() {
-    React.unmountComponentAtNode(this.element);
+    ReactDOM.unmountComponentAtNode(this.element);
   }
 
   getTitle(): string {

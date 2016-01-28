@@ -21,7 +21,10 @@ import FileTreeHelpers from './FileTreeHelpers';
 import FileTreeStore from './FileTreeStore';
 import Immutable from 'immutable';
 import {PanelComponent} from '../../ui/panel';
-import {React} from 'react-for-atom';
+import {
+  React,
+  ReactDOM,
+} from 'react-for-atom';
 import {track} from '../../analytics';
 
 import os from 'os';
@@ -158,7 +161,7 @@ class FileTreeController {
   }
 
   _render(initialWidth?: ?number): void {
-    this._fileTreePanel = React.render(
+    this._fileTreePanel = ReactDOM.render(
       <FileTreePanel
         initialWidth={initialWidth}
         store={this._store}
@@ -737,7 +740,7 @@ class FileTreeController {
       disposable.dispose();
     }
     this._store.reset();
-    React.unmountComponentAtNode(this._panelElement);
+    ReactDOM.unmountComponentAtNode(this._panelElement);
     this._panel.destroy();
     this._contextMenu.dispose();
   }

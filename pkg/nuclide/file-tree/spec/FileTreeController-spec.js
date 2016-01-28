@@ -12,7 +12,7 @@
 import FileTreeActions from '../lib/FileTreeActions';
 import FileTreeController from '../lib/FileTreeController';
 import FileTreeStore from '../lib/FileTreeStore';
-import {React} from 'react-for-atom';
+import {ReactDOM} from 'react-for-atom';
 
 import pathModule from 'path';
 
@@ -71,7 +71,7 @@ describe('FileTreeController', () => {
 
   describe('toggleVisibility', () => {
     it('focuses the file tree element when going from hidden to visible', () => {
-      const domNode = React.findDOMNode(controller._fileTreePanel.getFileTree());
+      const domNode = ReactDOM.findDOMNode(controller._fileTreePanel.getFileTree());
       controller.toggleVisibility();
       expect(domNode).not.toMatchSelector(':focus');
       controller.toggleVisibility();
@@ -79,7 +79,7 @@ describe('FileTreeController', () => {
     });
 
     it('blurs the file tree element when going from visible to hidden', () => {
-      const domNode = React.findDOMNode(controller._fileTreePanel.getFileTree());
+      const domNode = ReactDOM.findDOMNode(controller._fileTreePanel.getFileTree());
       controller.focusTree();
       expect(domNode).toMatchSelector(':focus');
       controller.toggleVisibility();
@@ -89,7 +89,7 @@ describe('FileTreeController', () => {
 
   describe('focusTree', () => {
     it('focuses the expected element', () => {
-      const domNode = React.findDOMNode(controller._fileTreePanel.getFileTree());
+      const domNode = ReactDOM.findDOMNode(controller._fileTreePanel.getFileTree());
       expect(domNode).not.toMatchSelector(':focus');
       controller.focusTree();
       expect(domNode).toMatchSelector(':focus');
@@ -98,7 +98,7 @@ describe('FileTreeController', () => {
 
   describe('blurTree', () => {
     it('sends focus to the workspace element to match Atom\'s tree-view API', () => {
-      const domNode = React.findDOMNode(controller._fileTreePanel.getFileTree());
+      const domNode = ReactDOM.findDOMNode(controller._fileTreePanel.getFileTree());
       controller.focusTree();
       expect(domNode).toMatchSelector(':focus');
       controller.blurTree();

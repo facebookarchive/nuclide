@@ -10,7 +10,10 @@
  */
 
 const {CompositeDisposable} = require('atom');
-const {React} = require('react-for-atom');
+const {
+  React,
+  ReactDOM,
+} = require('react-for-atom');
 
 const {PropTypes} = React;
 
@@ -113,7 +116,7 @@ class PanelComponent extends React.Component {
   }
 
   focus(): void {
-    React.findDOMNode(this.refs['child']).focus();
+    ReactDOM.findDOMNode(this.refs['child']).focus();
   }
 
   getChildComponent(): ReactComponent {
@@ -137,7 +140,7 @@ class PanelComponent extends React.Component {
   }
 
   _handleMouseMove(event: SyntheticMouseEvent): void {
-    const containerEl = React.findDOMNode(this.refs['container']);
+    const containerEl = ReactDOM.findDOMNode(this.refs['container']);
     let length = 0;
     if (this.props.dock === 'left') {
       length = event.pageX - containerEl.getBoundingClientRect().left;
@@ -165,8 +168,8 @@ class PanelComponent extends React.Component {
     this.setState({length: 0});
     this.forceUpdate(() => {
       let length = 0;
-      const childNode = React.findDOMNode(this.refs['child']);
-      const handle = React.findDOMNode(this.refs['handle']);
+      const childNode = ReactDOM.findDOMNode(this.refs['child']);
+      const handle = ReactDOM.findDOMNode(this.refs['handle']);
       if (this.props.dock === 'left' || this.props.dock === 'right') {
         length = childNode.offsetWidth + handle.offsetWidth;
       } else if (this.props.dock === 'bottom') {

@@ -12,6 +12,7 @@
 const Tabs = require('../lib/NuclideTabs');
 const {
   React,
+  ReactDOM,
   TestUtils,
 } = require('react-for-atom');
 
@@ -63,7 +64,7 @@ describe('NuclideCheckbox', () => {
     )[1];
 
     // `Simulate` does not currently support mouseEnter: https://github.com/facebook/react/issues/1297.
-    SimulateNative.mouseOver(React.findDOMNode(node));
+    SimulateNative.mouseOver(ReactDOM.findDOMNode(node));
 
     expect(onChange).toHaveBeenCalledWith(props.tabs[1]);
   });

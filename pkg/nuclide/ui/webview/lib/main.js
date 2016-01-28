@@ -12,7 +12,10 @@
 /*eslint-disable react/prop-types */
 
 import {CompositeDisposable, Disposable} from 'atom';
-import {React} from 'react-for-atom';
+import {
+  React,
+  ReactDOM,
+} from 'react-for-atom';
 
 type Props = {
   className: ?string;
@@ -31,7 +34,7 @@ export default class Webview extends React.Component<void, Props, void> {
   }
 
   componentDidMount() {
-    const element = React.findDOMNode(this);
+    const element = ReactDOM.findDOMNode(this);
 
     // Add event listeners. This has the drawbacks of 1) adding an event listener even when we don't
     // have a callback for it and 2) needing to add explicit support for each event type we want to
@@ -68,7 +71,7 @@ export default class Webview extends React.Component<void, Props, void> {
    * *sigh*
    */
   updateAttributes(prevProps: Object): void {
-    const element = React.findDOMNode(this);
+    const element = ReactDOM.findDOMNode(this);
     const specialProps = ['className', 'style', 'onDidFinishLoad'];
     const normalProps = Object.keys(this.props).filter(prop => specialProps.indexOf(prop) === -1);
     normalProps.forEach(prop => {

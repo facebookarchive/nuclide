@@ -12,13 +12,14 @@
 import NuclideCheckbox from '../lib/NuclideCheckbox';
 import {
   React,
+  ReactDOM,
   TestUtils,
 } from 'react-for-atom';
 
 let hostEl;
 
 function createWithProps(props: mixed) {
-  return React.render(<NuclideCheckbox {...props} />, hostEl);
+  return ReactDOM.render(<NuclideCheckbox {...props} />, hostEl);
 }
 
 describe('NuclideCheckbox', () => {
@@ -28,7 +29,7 @@ describe('NuclideCheckbox', () => {
   });
 
   afterEach(() => {
-    React.unmountComponentAtNode(hostEl);
+    ReactDOM.unmountComponentAtNode(hostEl);
     hostEl = null;
   });
 

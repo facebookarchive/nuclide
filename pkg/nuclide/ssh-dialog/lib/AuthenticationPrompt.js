@@ -10,7 +10,10 @@
  */
 
 import {CompositeDisposable} from 'atom';
-import {React} from 'react-for-atom';
+import {
+  React,
+  ReactDOM,
+} from 'react-for-atom';
 
 type DefaultProps = {};
 type Props = {
@@ -65,7 +68,7 @@ export default class AuthenticationPrompt extends React.Component<DefaultProps, 
 
   componentDidMount(): void {
     this._disposables = new CompositeDisposable();
-    const root = React.findDOMNode(this.refs['root']);
+    const root = ReactDOM.findDOMNode(this.refs['root']);
 
     // Hitting enter when this panel has focus should confirm the dialog.
     this._disposables.add(atom.commands.add(
@@ -79,7 +82,7 @@ export default class AuthenticationPrompt extends React.Component<DefaultProps, 
         'core:cancel',
         (event) => this.props.onCancel()));
 
-    React.findDOMNode(this.refs.password).focus();
+    ReactDOM.findDOMNode(this.refs.password).focus();
   }
 
   componentWillUnmount(): void {
@@ -90,7 +93,7 @@ export default class AuthenticationPrompt extends React.Component<DefaultProps, 
   }
 
   getPassword(): string {
-    return React.findDOMNode(this.refs.password).value;
+    return ReactDOM.findDOMNode(this.refs.password).value;
   }
 }
 /* eslint-enable react/prop-types */

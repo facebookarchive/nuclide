@@ -12,6 +12,7 @@
 const NuclideRadioGroup = require('../lib/NuclideRadioGroup');
 const {
   React,
+  ReactDOM,
   TestUtils,
 } = require('react-for-atom');
 
@@ -34,8 +35,8 @@ describe('NuclideRadioGroup', () => {
       component,
       'input'
     );
-    expect(React.findDOMNode(radioInputs[0]).hasAttribute('checked')).toBe(false);
-    expect(React.findDOMNode(radioInputs[1]).hasAttribute('checked')).toBe(true);
+    expect(ReactDOM.findDOMNode(radioInputs[0]).hasAttribute('checked')).toBe(false);
+    expect(ReactDOM.findDOMNode(radioInputs[1]).hasAttribute('checked')).toBe(true);
   });
 
 
@@ -49,8 +50,8 @@ describe('NuclideRadioGroup', () => {
       'input'
     );
     // Global uid is `1` as this point, since this is the second RadioGroup component to be created.
-    expect(React.findDOMNode(radioInputs[0]).getAttribute('name')).toEqual('radiogroup-1');
-    expect(React.findDOMNode(radioInputs[1]).getAttribute('name')).toEqual('radiogroup-1');
+    expect(ReactDOM.findDOMNode(radioInputs[0]).getAttribute('name')).toEqual('radiogroup-1');
+    expect(ReactDOM.findDOMNode(radioInputs[1]).getAttribute('name')).toEqual('radiogroup-1');
     const component2 = renderIntoDocument(
       <NuclideRadioGroup {...props} />
     );
@@ -58,8 +59,8 @@ describe('NuclideRadioGroup', () => {
       component2,
       'input'
     );
-    expect(React.findDOMNode(radioInputs2[0]).getAttribute('name')).toEqual('radiogroup-2');
-    expect(React.findDOMNode(radioInputs2[1]).getAttribute('name')).toEqual('radiogroup-2');
+    expect(ReactDOM.findDOMNode(radioInputs2[0]).getAttribute('name')).toEqual('radiogroup-2');
+    expect(ReactDOM.findDOMNode(radioInputs2[1]).getAttribute('name')).toEqual('radiogroup-2');
   });
 
 
@@ -79,7 +80,7 @@ describe('NuclideRadioGroup', () => {
       'input'
     );
 
-    Simulate.change(React.findDOMNode(radioInputs[1]));
+    Simulate.change(ReactDOM.findDOMNode(radioInputs[1]));
     expect(onSelectedChange.mostRecentCall.args[0]).toEqual(1);
   });
 

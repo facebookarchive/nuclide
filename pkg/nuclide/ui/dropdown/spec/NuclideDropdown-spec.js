@@ -12,6 +12,7 @@
 const NuclideDropdown = require('../lib/NuclideDropdown');
 const {
   React,
+  ReactDOM,
   TestUtils,
 } = require('react-for-atom');
 
@@ -37,8 +38,8 @@ describe('NuclideDropdown', () => {
     );
 
     const select = scryRenderedDOMComponentsWithTag(component, 'select');
-    expect(React.findDOMNode(select[0]).selectedIndex).toBe(1);
-    expect(React.findDOMNode(select[0]).value).toBe('vbar');
+    expect(ReactDOM.findDOMNode(select[0]).selectedIndex).toBe(1);
+    expect(ReactDOM.findDOMNode(select[0]).value).toBe('vbar');
   });
 
   it('calls the callback with the new index when a different menu item is selected', () => {
@@ -59,8 +60,8 @@ describe('NuclideDropdown', () => {
     );
 
     const select = scryRenderedDOMComponentsWithTag(component, 'select');
-    React.findDOMNode(select[0]).selectedIndex = 1;
-    Simulate.change(React.findDOMNode(select[0]));
+    ReactDOM.findDOMNode(select[0]).selectedIndex = 1;
+    Simulate.change(ReactDOM.findDOMNode(select[0]));
     expect(changedIndex).toBe(1);
   });
 });

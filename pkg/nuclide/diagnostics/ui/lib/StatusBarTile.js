@@ -15,7 +15,10 @@ import type {
 } from '../../base';
 
 import {CompositeDisposable} from 'atom';
-import {React} from 'react-for-atom';
+import {
+  React,
+  ReactDOM,
+} from 'react-for-atom';
 
 const {PropTypes} = React;
 
@@ -113,14 +116,14 @@ class StatusBarTile {
 
   _render(): void {
     if (this._item) {
-      React.render(<StatusBarTileComponent {...this._totalDiagnosticCount} />, this._item);
+      ReactDOM.render(<StatusBarTileComponent {...this._totalDiagnosticCount} />, this._item);
     }
   }
 
   dispose() {
     this._subscriptions.dispose();
     if (this._item) {
-      React.unmountComponentAtNode(this._item);
+      ReactDOM.unmountComponentAtNode(this._item);
       this._item = null;
     }
 

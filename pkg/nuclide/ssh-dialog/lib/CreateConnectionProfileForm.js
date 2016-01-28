@@ -16,7 +16,10 @@ import type {
 } from './connection-types';
 
 import AtomInput from '../../ui/atom-input';
-import {React} from 'react-for-atom';
+import {
+  React,
+  ReactDOM,
+} from 'react-for-atom';
 import invariant from 'assert';
 import {CompositeDisposable} from 'atom';
 import ConnectionDetailsForm from './ConnectionDetailsForm';
@@ -55,7 +58,7 @@ export default class CreateConnectionProfileForm extends React.Component<void, P
   }
 
   componentDidMount(): void {
-    const root = React.findDOMNode(this);
+    const root = ReactDOM.findDOMNode(this);
     this.disposables.add(
       // Hitting enter when this panel has focus should confirm the dialog.
       atom.commands.add(root, 'core:confirm', this._boundClickSave),

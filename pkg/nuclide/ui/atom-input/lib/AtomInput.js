@@ -11,7 +11,10 @@
 
 const classNames = require('classnames');
 const {CompositeDisposable} = require('atom');
-const {React} = require('react-for-atom');
+const {
+  React,
+  ReactDOM,
+} = require('react-for-atom');
 
 const {PropTypes} = React;
 
@@ -133,7 +136,7 @@ class AtomInput extends React.Component {
   }
 
   _getTextEditorElement(): atom$TextEditorElement {
-    return React.findDOMNode(this);
+    return ReactDOM.findDOMNode(this);
   }
 
   focus(): void {

@@ -23,7 +23,10 @@ import getContainerToHide from './getContainerToHide';
 import getResizableContainers from './getResizableContainers';
 import GadgetPlaceholder from './GadgetPlaceholder';
 import * as GadgetUri from './GadgetUri';
-import {React} from 'react-for-atom';
+import {
+  React,
+  ReactDOM,
+} from 'react-for-atom';
 import shallowEqual from 'shallowequal';
 import wrapGadget from './wrapGadget';
 
@@ -60,7 +63,7 @@ export default class Commands {
       return;
     }
 
-    React.unmountComponentAtNode(item.element);
+    ReactDOM.unmountComponentAtNode(item.element);
 
     this._observer.onNext({
       type: ActionTypes.DESTROY_PANE_ITEM,
@@ -196,7 +199,7 @@ export default class Commands {
           }
 
           // Re-render the item with the new props.
-          React.render(
+          ReactDOM.render(
             <GadgetComponent {...newProps} />,
             item.element,
           );

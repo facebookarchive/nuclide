@@ -15,7 +15,10 @@ import type {RevisionInfo} from '../../hg-repository-base/lib/hg-constants';
 
 import invariant from 'assert';
 import {CompositeDisposable} from 'atom';
-import {React} from 'react-for-atom';
+import {
+  React,
+  ReactDOM,
+} from 'react-for-atom';
 import DiffViewEditorPane from './DiffViewEditorPane';
 import DiffViewTree from './DiffViewTree';
 import SyncScroll from './SyncScroll';
@@ -125,7 +128,7 @@ class DiffViewComponent extends React.Component {
 
     this._renderDiffView();
 
-    React.findDOMNode(this.refs['paneContainer']).appendChild(
+    ReactDOM.findDOMNode(this.refs['paneContainer']).appendChild(
       atom.views.getView(this._paneContainer),
     );
 
@@ -156,7 +159,7 @@ class DiffViewComponent extends React.Component {
 
   _renderTree(): void {
     invariant(this._treePane);
-    this._treeComponent = React.render(
+    this._treeComponent = ReactDOM.render(
       (
         <div className={"nuclide-diff-view-tree"}>
           <DiffViewTree diffModel={this.props.diffModel} />
@@ -169,7 +172,7 @@ class DiffViewComponent extends React.Component {
   _renderEditors(): void {
     const {filePath, oldEditorState: oldState, newEditorState: newState} = this.state;
     invariant(this._oldEditorPane);
-    this._oldEditorComponent = React.render(
+    this._oldEditorComponent = ReactDOM.render(
         <DiffViewEditorPane
           filePath={filePath}
           offsets={oldState.offsets}
@@ -181,7 +184,7 @@ class DiffViewComponent extends React.Component {
         this._getPaneElement(this._oldEditorPane),
     );
     invariant(this._newEditorPane);
-    this._newEditorComponent = React.render(
+    this._newEditorComponent = ReactDOM.render(
         <DiffViewEditorPane
           filePath={filePath}
           offsets={newState.offsets}
@@ -197,7 +200,7 @@ class DiffViewComponent extends React.Component {
 
   _renderTimeline(): void {
     invariant(this._timelinePane);
-    this._timelineComponent = React.render(
+    this._timelineComponent = ReactDOM.render(
       <DiffTimelineView
         diffModel={this.props.diffModel}
         onSelectionChange={this._boundOnTimelineChangeRevision}/>,
@@ -211,7 +214,7 @@ class DiffViewComponent extends React.Component {
     const {offsets: oldOffsets, highlightedLines: oldLines, text: oldContents} = oldEditorState;
     const {offsets: newOffsets, highlightedLines: newLines, text: newContents} = newEditorState;
     const navigationPaneElement = this._getPaneElement(this._navigationPane);
-    this._navigationComponent = React.render(
+    this._navigationComponent = ReactDOM.render(
       <DiffNavigationBar
         elementHeight={navigationPaneElement.clientHeight}
         addedLines={newLines.added}
@@ -242,22 +245,22 @@ class DiffViewComponent extends React.Component {
       this._subscriptions = null;
     }
     if (this._oldEditorPane) {
-      React.unmountComponentAtNode(this._getPaneElement(this._oldEditorPane));
+      ReactDOM.unmountComponentAtNode(this._getPaneElement(this._oldEditorPane));
       this._oldEditorPane = null;
       this._oldEditorComponent = null;
     }
     if (this._newEditorPane) {
-      React.unmountComponentAtNode(this._getPaneElement(this._newEditorPane));
+      ReactDOM.unmountComponentAtNode(this._getPaneElement(this._newEditorPane));
       this._newEditorPane = null;
       this._newEditorComponent = null;
     }
     if (this._treePane) {
-      React.unmountComponentAtNode(this._getPaneElement(this._treePane));
+      ReactDOM.unmountComponentAtNode(this._getPaneElement(this._treePane));
       this._treePane = null;
       this._treeComponent = null;
     }
     if (this._timelinePane) {
-      React.unmountComponentAtNode(this._getPaneElement(this._timelinePane));
+      ReactDOM.unmountComponentAtNode(this._getPaneElement(this._timelinePane));
       this._timelinePane = null;
       this._timelineComponent = null;
     }

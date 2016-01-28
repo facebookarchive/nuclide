@@ -14,6 +14,7 @@ import DirectoryEntryComponent from '../components/DirectoryEntryComponent';
 import FileEntryComponent from '../components/FileEntryComponent';
 import {
   React,
+  ReactDOM,
   TestUtils,
 } from 'react-for-atom';
 
@@ -49,7 +50,7 @@ describe('DirectoryEntryComponent', () => {
           isSelected: true,
         }
       );
-      const domNode = React.findDOMNode(nodeComponent);
+      const domNode = ReactDOM.findDOMNode(nodeComponent);
       TestUtils.Simulate.click(domNode);
       expect(actions.expandNode).toHaveBeenCalled();
     });
@@ -69,7 +70,7 @@ describe('FileEntryComponent', () => {
         FileEntryComponent,
         {isSelected: true}
       );
-      const domNode = React.findDOMNode(nodeComponent);
+      const domNode = ReactDOM.findDOMNode(nodeComponent);
       TestUtils.Simulate.click(domNode);
       expect(actions.expandNode).not.toHaveBeenCalled();
     });
@@ -88,7 +89,7 @@ describe('FileEntryComponent', () => {
           usePreviewTabs: true,
         },
       );
-      const domNode = React.findDOMNode(nodeComponent);
+      const domNode = ReactDOM.findDOMNode(nodeComponent);
       TestUtils.Simulate.click(domNode);
       expect(actions.confirmNode).toHaveBeenCalled();
     });

@@ -9,7 +9,10 @@
  * the root directory of this source tree.
  */
 
-import {React} from 'react-for-atom';
+import {
+  React,
+  ReactDOM,
+} from 'react-for-atom';
 import {TextBuffer} from 'atom';
 import {createTextEditor} from '../../../atom-helpers';
 
@@ -74,7 +77,7 @@ class AtomTextEditor extends React.Component {
   }
 
   componentDidMount(): void {
-    const atomTextEditorElement = React.findDOMNode(this);
+    const atomTextEditorElement = ReactDOM.findDOMNode(this);
     atomTextEditorElement.setModel(this._textEditorModel);
 
     // HACK! This is a workaround for the ViewRegistry where Atom has a default view provider for

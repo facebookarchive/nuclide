@@ -13,7 +13,10 @@ import type {TypeHintProvider} from '../../type-hint-interfaces';
 
 import invariant from 'assert';
 import {CompositeDisposable, Disposable} from 'atom';
-import {React} from 'react-for-atom';
+import {
+  React,
+  ReactDOM,
+} from 'react-for-atom';
 
 import {array, debounce} from '../../commons';
 import {track, trackOperationTiming} from '../../analytics';
@@ -181,7 +184,7 @@ class TypeHintManager {
     const marker: atom$Marker = editor.markBufferRange(range, {invalidate: 'never'});
     this._marker = marker;
 
-    React.render(
+    ReactDOM.render(
       <TypeHintComponent content={hintTree || hint} />,
       this._typeHintElement
     );
@@ -228,7 +231,7 @@ class TypeHintManager {
 
   dispose() {
     this.hideTypehint();
-    React.unmountComponentAtNode(this._typeHintElement);
+    ReactDOM.unmountComponentAtNode(this._typeHintElement);
     this._typeHintElement.remove();
     this._subscriptions.dispose();
   }

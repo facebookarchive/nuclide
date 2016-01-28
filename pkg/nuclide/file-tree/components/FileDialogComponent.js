@@ -11,7 +11,10 @@
 
 import AtomInput from '../../ui/atom-input';
 import {CompositeDisposable} from 'atom';
-import {React} from 'react-for-atom';
+import {
+  React,
+  ReactDOM,
+} from 'react-for-atom';
 
 import pathModule from 'path';
 
@@ -49,7 +52,7 @@ class FileDialogComponent extends React.Component {
   componentDidMount(): void {
     const input = this.refs.input;
     this._subscriptions.add(atom.commands.add(
-      React.findDOMNode(input),
+      ReactDOM.findDOMNode(input),
       {
         'core:confirm': this._confirm,
         'core:cancel': this._close,

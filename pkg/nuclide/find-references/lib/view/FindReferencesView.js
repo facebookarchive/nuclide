@@ -11,7 +11,10 @@
 
 import type {FileReferences} from '../types';
 
-const {React} = require('react-for-atom');
+const {
+  React,
+  ReactDOM,
+} = require('react-for-atom');
 const {PropTypes} = React;
 const FileReferencesView = require('./FileReferencesView');
 const FindReferencesModel = require('../FindReferencesModel');
@@ -57,7 +60,7 @@ const FindReferencesView = React.createClass({
   },
 
   _onScroll(evt: Event) {
-    const root = React.findDOMNode(this.refs.root);
+    const root = ReactDOM.findDOMNode(this.refs.root);
     if (this.state.loading || root.clientHeight >= root.scrollHeight) {
       return;
     }

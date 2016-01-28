@@ -13,7 +13,7 @@ import type {InlineComponent, RenderedComponent, LineRangesWithOffsets, OffsetMa
 
 import {Range} from 'atom';
 import {buildLineRangesWithOffsets} from './editor-utils';
-import {React} from 'react-for-atom';
+import {ReactDOM} from 'react-for-atom';
 import {getLogger} from '../../logging';
 
 const logger = getLogger();
@@ -69,7 +69,7 @@ export default class DiffViewEditor {
       const container = document.createElement('div');
       let component;
       const didRenderPromise = new Promise((res, rej) => {
-        component = React.render(node, container, () => {
+        component = ReactDOM.render(node, container, () => {
           res();
         });
       });

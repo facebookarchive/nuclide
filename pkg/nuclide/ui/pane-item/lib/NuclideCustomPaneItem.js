@@ -10,7 +10,7 @@
  */
 
 import invariant from 'assert';
-import {React} from 'react-for-atom';
+import {ReactDOM} from 'react-for-atom';
 
 import type {NuclideCustomPaneItemOptions} from './types';
 
@@ -28,7 +28,7 @@ class NuclideCustomPaneItem extends HTMLElement {
     this._allowSplit = !!options.allowSplit;
 
     const component = this.__renderPaneItem(options);
-    React.render(component, this);
+    ReactDOM.render(component, this);
   }
 
   /**
@@ -36,7 +36,7 @@ class NuclideCustomPaneItem extends HTMLElement {
    * This method is invoked as part of initialize(), and so, it should be safe to invoke any of the
    * getter methods on this class in this method.
    *
-   * @return A React component that this element call React.render() on.
+   * @return A React component that this element call ReactDOM.render() on.
    */
   __renderPaneItem(options: NuclideCustomPaneItemOptions): ReactElement {
     throw new Error('Subclass should implement this method.');
@@ -60,7 +60,7 @@ class NuclideCustomPaneItem extends HTMLElement {
   }
 
   detachedCallback() {
-    React.unmountComponentAtNode(this);
+    ReactDOM.unmountComponentAtNode(this);
   }
 }
 

@@ -13,7 +13,10 @@ const Console = require('./Console');
 const NuclideUiDropdown = require('../../../ui/dropdown');
 const {PanelComponent} = require('../../../ui/panel');
 const {createPaneContainer} = require('../../../atom-helpers');
-const {React} = require('react-for-atom');
+const {
+  React,
+  ReactDOM,
+} = require('react-for-atom');
 const TestClassTree = require('./TestClassTree');
 
 const pathUtil = require('path');
@@ -83,7 +86,7 @@ class TestRunnerPanel extends React.Component {
     this.renderTree();
     this.renderConsole();
 
-    React.findDOMNode(this.refs['paneContainer']).appendChild(
+    ReactDOM.findDOMNode(this.refs['paneContainer']).appendChild(
       atom.views.getView(this._paneContainer)
     );
   }
@@ -102,8 +105,10 @@ class TestRunnerPanel extends React.Component {
   }
 
   componentWillUnmount() {
-    React.unmountComponentAtNode(atom.views.getView(this._rightPane).querySelector('.item-views'));
-    React.unmountComponentAtNode(atom.views.getView(this._leftPane).querySelector('.item-views'));
+    ReactDOM.unmountComponentAtNode(
+      atom.views.getView(this._rightPane).querySelector('.item-views'));
+    ReactDOM.unmountComponentAtNode(
+      atom.views.getView(this._leftPane).querySelector('.item-views'));
     this._paneContainer.destroy();
   }
 
@@ -230,7 +235,7 @@ class TestRunnerPanel extends React.Component {
   }
 
   renderTree() {
-    this._tree = React.render(
+    this._tree = ReactDOM.render(
       <TestClassTree
         isRunning={this.props.executionState === TestRunnerPanel.ExecutionState.RUNNING}
         testSuiteModel={this.props.testSuiteModel}
@@ -240,7 +245,7 @@ class TestRunnerPanel extends React.Component {
   }
 
   renderConsole() {
-    React.render(
+    ReactDOM.render(
       <Console textBuffer={this.props.buffer} />,
       atom.views.getView(this._rightPane).querySelector('.item-views')
     );

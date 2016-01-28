@@ -17,7 +17,10 @@ type ComboboxOption = {
 
 const {CompositeDisposable} = require('atom');
 const AtomInput = require('../../atom-input');
-const {React} = require('react-for-atom');
+const {
+  React,
+  ReactDOM,
+} = require('react-for-atom');
 
 const emptyfunction = require('emptyfunction');
 
@@ -79,7 +82,7 @@ class AtomComboBox extends React.Component {
   }
 
   componentDidMount() {
-    const node = React.findDOMNode(this);
+    const node = ReactDOM.findDOMNode(this);
     const _subscriptions = this._subscriptions = new CompositeDisposable();
     _subscriptions.add(
       atom.commands.add(node, 'core:move-up', this._handleMoveUp),
@@ -187,7 +190,7 @@ class AtomComboBox extends React.Component {
     this.selectValue(selectedValue, () => {
       // Focus the input again because the click will cause the input to blur. This mimics native
       // <select> behavior by keeping focus in the form being edited.
-      const input = React.findDOMNode(this.refs['freeformInput']);
+      const input = ReactDOM.findDOMNode(this.refs['freeformInput']);
       if (input) {
         input.focus();
       }
@@ -231,7 +234,7 @@ class AtomComboBox extends React.Component {
   }
 
   _scrollSelectedOptionIntoViewIfNeeded(): void {
-    const selectedOption = React.findDOMNode(this.refs['selectedOption']);
+    const selectedOption = ReactDOM.findDOMNode(this.refs['selectedOption']);
     if (selectedOption) {
       selectedOption.scrollIntoViewIfNeeded();
     }

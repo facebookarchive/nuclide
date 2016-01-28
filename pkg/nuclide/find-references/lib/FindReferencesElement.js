@@ -11,7 +11,10 @@
 
 import type FindReferencesModel from './FindReferencesModel';
 
-const {React} = require('react-for-atom');
+const {
+  React,
+  ReactDOM,
+} = require('react-for-atom');
 const FindReferencesView = require('./view/FindReferencesView');
 
 class FindReferencesElement extends HTMLElement {
@@ -27,14 +30,14 @@ class FindReferencesElement extends HTMLElement {
   }
 
   attachedCallback() {
-    React.render(
+    ReactDOM.render(
       <FindReferencesView model={this._model} />,
       this
     );
   }
 
   detachedCallback() {
-    React.unmountComponentAtNode(this);
+    ReactDOM.unmountComponentAtNode(this);
   }
 }
 

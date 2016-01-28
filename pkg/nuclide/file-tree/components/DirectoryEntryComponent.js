@@ -13,6 +13,7 @@ const FileTreeActions = require('../lib/FileTreeActions');
 const {
   PureRenderMixin,
   React,
+  ReactDOM,
 } = require('react-for-atom');
 const {StatusCodeNumber} = require('../../hg-repository-base').hgConstants;
 
@@ -97,8 +98,9 @@ class DirectoryEntryComponent extends React.Component {
   _onClick(event: SyntheticMouseEvent) {
     const deep = event.altKey;
     if (
-      React.findDOMNode(this.refs['arrowContainer']).contains(event.target)
-      && event.clientX < React.findDOMNode(this.refs['pathContainer']).getBoundingClientRect().left
+      ReactDOM.findDOMNode(this.refs['arrowContainer']).contains(event.target)
+      && event.clientX < ReactDOM.findDOMNode(
+        this.refs['pathContainer']).getBoundingClientRect().left
     ) {
       this._toggleNodeExpanded(deep);
       return;
