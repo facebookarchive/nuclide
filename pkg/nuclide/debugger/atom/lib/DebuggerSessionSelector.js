@@ -40,7 +40,7 @@ const DebuggerSessionSelector = React.createClass({
 
   componentWillMount() {
     this.setState({
-      debuggerStoreChangeListener: this.props.store.onChange(this._updateProcessList.bind(this)),
+      debuggerStoreChangeListener: this.props.store.onChange(this._updateProcessList),
     });
     this._updateProcessList();
   },
