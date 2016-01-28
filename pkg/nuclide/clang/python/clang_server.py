@@ -314,7 +314,10 @@ class Server:
         args = self._get_args_for_flags(flags)
         self.translation_unit = self.index.parse(
             self.src, args, self._make_files(unsaved_contents), options)
-        self.cached_contents = unsaved_contents
+        # Do not cache the contents after the initial compile!
+        # We need to trigger an immediate reparse for Clang to generate precompiled headers.
+        # TODO(#9832847): Use CXTranslationUnit_CreatePreambleOnFirstParse after Clang 3.8.
+        # self.cached_contents = unsaved_contents
         return self.translation_unit
 
     # Clang's API expects a list of (src, contents) pairs.
