@@ -59,14 +59,13 @@ module.exports = {
     }
 
     invariant(filePath);
-    const localPath = getPath(filePath);
     const contents = editor.getText();
 
     let diagnostics;
     if (hackLanguage.isHackAvailable()) {
       diagnostics = await hackLanguage.getServerDiagnostics(filePath);
     } else {
-      diagnostics = await hackLanguage.getDiagnostics(localPath, contents);
+      diagnostics = await hackLanguage.getDiagnostics(filePath, contents);
     }
     return diagnostics;
   },

@@ -221,12 +221,22 @@ module.exports = class HackLanguage {
   }
 
   async getDiagnostics(
-    path: string,
+    path: NuclideUri,
     contents: string,
   ): Promise<Array<{message: HackDiagnostic;}>> {
-    await this.updateFile(path, contents);
-    const webWorkerMessage = {cmd: 'hh_check_file', args: [path]};
+    const {hostname, port, path: localPath} = parse(path);
+    await this.updateFile(localPath, contents);
+    const webWorkerMessage = {cmd: 'hh_check_file', args: [localPath]};
     const {errors} = await this._hackWorker.runWorkerTask(webWorkerMessage);
+    if (hostname != null && port != null) {
+      errors.forEach(error => {
+        error.message.forEach(message => {
+          if (message.path != null) {
+            message.path = createRemoteUri(hostname, parseInt(port, 10), message.path);
+          }
+        });
+      });
+    }
     return errors;
   }
 
