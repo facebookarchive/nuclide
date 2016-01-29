@@ -9,3 +9,6 @@
   - id: flow
   - id: hack
   - id: hg
+- title: Advanced Topics
+  items:
+  - id: building-from-source

@@ -2,7 +2,7 @@
 id: building-from-source
 title: Building Nuclide From Source
 layout: docs
-permalink: /docs/setup/building-from-source/
+permalink: /docs/advanced-topics/building-from-source/
 ---
 
 It is generally recommended to [install the released package of Nuclide](/docs/setup), but for
