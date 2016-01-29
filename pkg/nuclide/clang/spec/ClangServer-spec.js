@@ -139,6 +139,29 @@ describe('ClangServer', () => {
     });
   });
 
+  it('stops retrying flags after a limit', () => {
+    waitsForPromise(async () => {
+      let calls = 0;
+      const flagsManager = ({
+        getFlagsForSrc: async () => {
+          calls++;
+          throw 'fail';
+        },
+      }: any);
+      const server = new ClangServer(flagsManager, TEST_FILE);
+      const retryLimit = 2;
+      for (let i = 0; i < retryLimit + 2; i++) {
+        /* eslint-disable babel/no-await-in-loop */
+        const response = await server.makeRequest('compile', null, {
+          contents: FILE_CONTENTS,
+        });
+        expect(response).toBe(null);
+      }
+      // Last call should not trigger flags.
+      expect(calls).toBe(retryLimit + 1);
+    });
+  });
+
   it('gracefully handles server crashes', () => {
     waitsForPromise(async () => {
       const server = new ClangServer(mockFlagsManager, TEST_FILE);

@@ -18,6 +18,9 @@ import {EventEmitter} from 'events';
 import {checkOutput, safeSpawn} from '../../commons';
 import {getLogger} from '../../logging';
 
+// Do not tie up the Buck server continuously retrying for flags.
+const FLAGS_RETRY_LIMIT = 2;
+
 const logger = getLogger();
 const pathToLibClangServer = path.join(__dirname, '../python/clang_server.py');
 
@@ -141,6 +144,7 @@ export default class ClangServer {
 
   // Cache the flags-fetching promise so we don't end up invoking Buck twice.
   _flagsPromise: ?Promise<?Array<string>>;
+  _flagsRetries: number;
 
   constructor(clangFlagsManager: ClangFlagsManager, src: string) {
     this._src = src;
@@ -149,6 +153,7 @@ export default class ClangServer {
     this._nextRequestId = 0;
     this._lastProcessedRequestId = -1;
     this._pendingCompileRequests = 0;
+    this._flagsRetries = 0;
   }
 
   dispose() {
@@ -170,9 +175,12 @@ export default class ClangServer {
     }
     this._flagsPromise = this._clangFlagsManager.getFlagsForSrc(this._src)
       .catch((e) => {
-        logger.error(`clang-server: Could not get flags for ${this._src}:`, e);
-        // Make sure this gets a retry.
-        this._flagsPromise = null;
+        logger.error(
+          `clang-server: Could not get flags for ${this._src} (retry ${this._flagsRetries})`, e);
+        if (this._flagsRetries < FLAGS_RETRY_LIMIT) {
+          this._flagsPromise = null;
+          this._flagsRetries++;
+        }
       });
     return this._flagsPromise;
   }
