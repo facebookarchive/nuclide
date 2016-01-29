@@ -160,7 +160,7 @@ class File(FileLike):
 
     @staticmethod
     def from_filespec(sbfilespec, basepath='.'):
-        abspath = os.path.normpath(os.path.join(basepath, sbfilespec.fullpath))
+        abspath = os.path.realpath(os.path.normpath(os.path.join(basepath, sbfilespec.fullpath)))
         return File(sbfilespec, abspath)
 
 

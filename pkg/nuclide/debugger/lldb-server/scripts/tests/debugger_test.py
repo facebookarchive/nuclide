@@ -62,7 +62,7 @@ class DebuggerTestCase(unittest.TestCase):
         self.debugger.handle('enable', {})
         self.debugger.handle('setBreakpointByUrl', {
             'lineNumber': 13,
-            'url': 'file://' + self.__class__.test_executable.source_path
+            'url': 'file://' + os.path.realpath(self.__class__.test_executable.source_path)
         })
 
         process.Continue()
