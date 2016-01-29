@@ -31,8 +31,31 @@ import {objectType, dateType, regExpType, bufferType, fsStatsType} from './built
  * the type they handle (eg: 'Date'). The second argument is the actual type object that represent
  * the value. Parameterized types like Array, or Object can use this to recursively call other
  * transformers.
+ *
+ * In the interest of a performance, a transformer should only return a Promise if necessary.
+ * (Promise objects and Promise.all are very expensive operations in large numbers).
  */
-export type Transformer = (value: any, type: Type) => Promise<any>;
+export type Transformer<T> = (value: T, type: Type) => (T | Promise<T>);
+export type NamedTransformer<T> = (value: T) => (T | Promise<T>);
+
+// Equivalent to Promise.all, but avoids wrappers if nothing is actually a promise.
+// Input must be homogenously typed.
+function smartPromiseAll<T>(arr: Array<T>): Array<T> | Promise<Array<T>> {
+  if (arr.length === 0 || !(arr[0] instanceof Promise)) {
+    return arr;
+  }
+  return Promise.all(arr);
+}
+
+// Same as the above, but works for non-homogenous input.
+function checkedSmartPromiseAll(arr: Array<any>): Array<any> | Promise<Array<any>> {
+  for (const elem of arr) {
+    if (elem instanceof Promise) {
+      return Promise.all(arr);
+    }
+  }
+  return arr;
+}
 
 function statsToObject(stats: fs.Stats): Object {
   const result = {
@@ -99,8 +122,8 @@ export default class TypeRegistry {
 
   /** Store marhsallers and and unmarshallers, index by the name of the type. */
   _namedMarshallers: Map<string, {
-      marshaller: (value: any) => Promise<any>;
-      unmarshaller: (value: any) => Promise<any>;
+      marshaller: NamedTransformer;
+      unmarshaller: NamedTransformer;
     }>;
 
   constructor() {
@@ -114,32 +137,32 @@ export default class TypeRegistry {
     this._registerUnions();
 
     // Register NullableType and NamedType
-    this._registerKind('nullable', async (value: any, type: Type) => {
+    this._registerKind('nullable', (value: any, type: Type) => {
       if (value === null || value === undefined || type.kind !== 'nullable') {
         return null;
       }
-      return await this.marshal(value, type.type);
-    }, async (value: any, type: Type) => {
+      return this._marshal(value, type.type);
+    }, (value: any, type: Type) => {
       if (value === null || value === undefined || type.kind !== 'nullable') {
         return null;
       }
-      return await this.unmarshal(value, type.type);
+      return this._unmarshal(value, type.type);
     });
 
-    this._registerKind('named', async (value: any, type: Type) => {
+    this._registerKind('named', (value: any, type: Type) => {
       invariant(type.kind === 'named');
       const namedMarshaller = this._namedMarshallers.get(type.name);
       if (namedMarshaller == null) {
         throw new Error(`No marshaller found for named type ${type.name}.`);
       }
-      return await namedMarshaller.marshaller(value);
-    }, async (value: any, type: Type) => {
+      return namedMarshaller.marshaller(value);
+    }, (value: any, type: Type) => {
       invariant(type.kind === 'named');
       const namedMarshaller = this._namedMarshallers.get(type.name);
       if (namedMarshaller == null) {
         throw new Error(`No marshaller found for named type ${type.name}.`);
       }
-      return await namedMarshaller.unmarshaller(value);
+      return namedMarshaller.unmarshaller(value);
     });
 
     this._registerKind(
@@ -161,8 +184,11 @@ export default class TypeRegistry {
    * @param marshaller - Serialize the type.
    * @param unmarshaller - Deserialize the type.
    */
-  registerType(typeName: string, marshaller: (value: any) => Promise<any>,
-      unmarshaller: (value: any) => Promise<any>): void {
+  registerType(
+    typeName: string,
+    marshaller: NamedTransformer,
+    unmarshaller: NamedTransformer,
+  ): void {
     if (this._namedMarshallers.has(typeName)) {
       throw new Error(`A type by the name ${typeName} has already been registered.`);
     }
@@ -175,16 +201,21 @@ export default class TypeRegistry {
    * @param type - The type the the alias represents.
    */
   registerAlias(name: string, type: Type): void {
-    this.registerType(name, value => this.marshal(value, type),
-      value => this.unmarshal(value, type));
+    this.registerType(name, value => this._marshal(value, type),
+      value => this._unmarshal(value, type));
   }
 
   /**
    * Marshal an object using the appropriate marshal function.
+   * Ensures the result is actually a Promise.
    * @param value - The value to be marshalled.
    * @param type - The type object (used to find the appropriate function).
    */
   marshal(value: any, type: Type): Promise<any> {
+    return Promise.resolve(this._marshal(value, type));
+  }
+
+  _marshal(value: any, type: Type): any {
     const kindMarshaller = this._kindMarshallers.get(type.kind);
     if (kindMarshaller == null) {
       throw new Error(`No marshaller found for type kind ${type.kind}.`);
@@ -194,10 +225,15 @@ export default class TypeRegistry {
 
   /**
    * Unmarshal and object using the appropriate unmarshal function.
+   * Ensures the result is actually a Promise.
    * @param value - The value to be marshalled.
    * @param type - The type object (used to find the appropriate function).
    */
   unmarshal(value: any, type: Type): Promise<any> {
+    return Promise.resolve(this._unmarshal(value, type));
+  }
+
+  _unmarshal(value: any, type: Type): any {
     const kindMarshaller = this._kindMarshallers.get(type.kind);
     if (kindMarshaller == null) {
       throw new Error(`No unmarshaller found for type kind ${type.kind}.`);
@@ -209,13 +245,13 @@ export default class TypeRegistry {
     // Since string, number, and boolean are JSON primitives,
     // they require no marshalling. Instead, simply create wrapped transformers
     // that assert the type of their argument.
-    const stringTransformer = async arg => {
+    const stringTransformer = arg => {
       // Unbox argument.
       arg = (arg instanceof String) ? arg.valueOf() : arg;
       assert(typeof arg === 'string', 'Expected a string argument');
       return arg;
     };
-    const numberTransformer = async arg => {
+    const numberTransformer = arg => {
       // Unbox argument.
       if (arg instanceof Number) {
         arg = arg.valueOf();
@@ -223,7 +259,7 @@ export default class TypeRegistry {
       assert(typeof arg === 'number', 'Expected a number argument');
       return arg;
     };
-    const booleanTransformer = async arg => {
+    const booleanTransformer = arg => {
       // Unbox argument
       if (arg instanceof Boolean) {
         arg = arg.valueOf();
@@ -232,7 +268,7 @@ export default class TypeRegistry {
       return arg;
     };
     // We assume an 'any' and 'mixed' types require no marshalling.
-    const identityTransformer = async arg => arg;
+    const identityTransformer = arg => arg;
 
     // Register these transformers
     this._registerKind('string', stringTransformer, stringTransformer);
@@ -243,7 +279,7 @@ export default class TypeRegistry {
   }
 
   _registerLiterals(): void {
-    const literalTransformer = async (arg, type) => {
+    const literalTransformer = (arg, type) => {
       invariant(type.kind === 'string-literal' || type.kind === 'number-literal' ||
           type.kind === 'boolean-literal');
       invariant(arg === type.value);
@@ -255,7 +291,7 @@ export default class TypeRegistry {
   }
 
   _registerUnions(): void {
-    const unionLiteralTransformer = async (arg, type) => {
+    const unionLiteralTransformer = (arg, type) => {
       invariant(type.kind === 'union');
       const alternate = array.find(type.types, element => {
         invariant(element.kind === 'string-literal' || element.kind === 'number-literal'
@@ -268,11 +304,11 @@ export default class TypeRegistry {
     };
     const unionObjectMarshaller = (arg, type) => {
       invariant(type.kind === 'union');
-      return this.marshal(arg, findAlternate(arg, type));
+      return this._marshal(arg, findAlternate(arg, type));
     };
     const unionObjectUnmarshaller = (arg, type) => {
       invariant(type.kind === 'union');
-      return this.unmarshal(arg, findAlternate(arg, type));
+      return this._unmarshal(arg, findAlternate(arg, type));
     };
     const unionMarshaller = (arg, type) => {
       invariant(type.kind === 'union');
@@ -295,19 +331,19 @@ export default class TypeRegistry {
 
   _registerSpecialTypes(): void {
     // Serialize / Deserialize any Object type
-    this.registerType(objectType.name, async object => {
+    this.registerType(objectType.name, object => {
       assert(object != null && typeof object === 'object', 'Expected Object argument.');
       return object;
-    }, async object => {
+    }, object => {
       assert(object != null && typeof object === 'object', 'Expected Object argument.');
       return object;
     });
 
     // Serialize / Deserialize Javascript Date objects
-    this.registerType(dateType.name, async date => {
+    this.registerType(dateType.name, date => {
       assert(date instanceof Date, 'Expected date argument.');
       return date.toJSON();
-    }, async dateStr => {
+    }, dateStr => {
       // Unbox argument.
       dateStr = (dateStr instanceof String) ? dateStr.valueOf() : dateStr;
 
@@ -316,10 +352,10 @@ export default class TypeRegistry {
     });
 
     // Serialize / Deserialize RegExp objects
-    this.registerType(regExpType.name, async regexp => {
+    this.registerType(regExpType.name, regexp => {
       assert(regexp instanceof RegExp, 'Expected a RegExp object as an argument');
       return regexp.toString();
-    }, async regStr => {
+    }, regStr => {
       // Unbox argument.
       regStr = (regStr instanceof String) ? regStr.valueOf() : regStr;
 
@@ -329,10 +365,10 @@ export default class TypeRegistry {
     });
 
     // Serialize / Deserialize Buffer objects through Base64 strings
-    this.registerType(bufferType.name, async buffer => {
+    this.registerType(bufferType.name, buffer => {
       assert(buffer instanceof Buffer, 'Expected a buffer argument.');
       return buffer.toString('base64');
-    }, async base64string => {
+    }, base64string => {
       // Unbox argument.
       base64string = (base64string instanceof String) ? base64string.valueOf() : base64string;
 
@@ -343,10 +379,10 @@ export default class TypeRegistry {
     });
 
     // fs.Stats
-    this.registerType(fsStatsType.name, async stats => {
+    this.registerType(fsStatsType.name, stats => {
       assert(stats instanceof fs.Stats);
       return JSON.stringify(statsToObject(stats));
-    }, async json => {
+    }, json => {
       assert(typeof json === 'string');
       return objectToStats(JSON.parse(json));
     });
@@ -354,98 +390,110 @@ export default class TypeRegistry {
 
   _registerContainers(): void {
     // Serialize / Deserialize Arrays.
-    this._registerKind('array', async (value: any, type: Type) => {
+    this._registerKind('array', (value: any, type: Type) => {
       assert(value instanceof Array, 'Expected an object of type Array.');
       invariant(type.kind === 'array');
       const elemType = type.type;
-      return await Promise.all(value.map(elem => this.marshal(elem, elemType)));
-    }, async (value: any, type: Type) => {
+      return smartPromiseAll(value.map(elem => this._marshal(elem, elemType)));
+    }, (value: any, type: Type) => {
       assert(value instanceof Array, 'Expected an object of type Array.');
       invariant(type.kind === 'array');
       const elemType = type.type;
-      return await Promise.all(value.map(elem => this.unmarshal(elem, elemType)));
+      return smartPromiseAll(value.map(elem => this._unmarshal(elem, elemType)));
     });
 
     // Serialize and Deserialize Objects.
-    this._registerKind('object', async (obj: any, type: Type) => {
+    this._registerKind('object', (obj: any, type: Type) => {
       assert(typeof obj === 'object', 'Expected an argument of type object.');
       invariant(type.kind === 'object');
       const newObj = {}; // Create a new object so we don't mutate the original one.
-      await Promise.all(type.fields.map(async prop => {
+      const promise = checkedSmartPromiseAll(type.fields.map(prop => {
         // Check if the source object has this key.
         if (obj.hasOwnProperty(prop.name)) {
-          newObj[prop.name] = await this.marshal(obj[prop.name], prop.type);
-        } else {
-          // If the property is optional, it's okay for it to be missing.
-          if (!prop.optional) {
-            throw new Error(`Source object is missing property ${prop.name}.`);
+          const value = this._marshal(obj[prop.name], prop.type);
+          if (value instanceof Promise) {
+            return value.then((result) => newObj[prop.name] = result);
+          } else {
+            newObj[prop.name] = value;
           }
+        } else if (!prop.optional) {
+          // If the property is optional, it's okay for it to be missing.
+          throw new Error(`Source object is missing property ${prop.name}.`);
         }
       }));
+      if (promise instanceof Promise) {
+        return promise.then(() => newObj);
+      }
       return newObj;
-    }, async (obj: any, type: Type) => {
+    }, (obj: any, type: Type) => {
       assert(typeof obj === 'object', 'Expected an argument of type object.');
       invariant(type.kind === 'object');
       const newObj = {}; // Create a new object so we don't mutate the original one.
-      await Promise.all(type.fields.map(async prop => {
+      const promise = checkedSmartPromiseAll(type.fields.map(prop => {
         // Check if the source object has this key.
         if (obj.hasOwnProperty(prop.name)) {
-          newObj[prop.name] = await this.unmarshal(obj[prop.name], prop.type);
-        } else {
-          // If the property is optional, it's okay for it to be missing.
-          if (!prop.optional) {
-            throw new Error(`Source object is missing property ${prop.name}.`);
+          const value = this._unmarshal(obj[prop.name], prop.type);
+          if (value instanceof Promise) {
+            return value.then((result) => newObj[prop.name] = result);
+          } else {
+            newObj[prop.name] = value;
           }
+        } else if (!prop.optional) {
+          // If the property is optional, it's okay for it to be missing.
+          throw new Error(`Source object is missing property ${prop.name}.`);
         }
       }));
+      if (promise instanceof Promise) {
+        return promise.then(() => newObj);
+      }
       return newObj;
     });
 
     // Serialize / Deserialize Sets.
-    this._registerKind('set', async (value: any, type: Type) => {
+    this._registerKind('set', (value: any, type: Type) => {
       invariant(type.kind === 'set');
       assert(value instanceof Set, 'Expected an object of type Set.');
       const serializePromises = [];
       for (const elem of value) {
-        serializePromises.push(this.marshal(elem, type.type));
+        serializePromises.push(this._marshal(elem, type.type));
       }
-      return await Promise.all(serializePromises);
+      return smartPromiseAll(serializePromises);
     }, async (value: any, type: Type) => {
       assert(value instanceof Array, 'Expected an object of type Array.');
       invariant(type.kind === 'set');
       const elemType = type.type;
-      const elements = await Promise.all(value.map(elem => this.unmarshal(elem, elemType)));
+      const elements = await smartPromiseAll(value.map(elem => this._unmarshal(elem, elemType)));
       return new Set(elements);
     });
 
     // Serialize / Deserialize Maps.
-    this._registerKind('map', async (map: Map, type: Type) => {
+    this._registerKind('map', (map: Map, type: Type) => {
       assert(map instanceof Map, 'Expected an object of type Set.');
       invariant(type.kind === 'map');
       const serializePromises = [];
       for (const [key, value] of map) {
-        serializePromises.push(Promise.all([
-          this.marshal(key, type.keyType),
-          this.marshal(value, type.valueType),
+        serializePromises.push(checkedSmartPromiseAll([
+          this._marshal(key, type.keyType),
+          this._marshal(value, type.valueType),
         ]));
       }
-      return await Promise.all(serializePromises);
+      return smartPromiseAll(serializePromises);
     }, async (serialized: any, type: Type) => {
       assert(serialized instanceof Array, 'Expected an object of type Array.');
       invariant(type.kind === 'map');
       const keyType = type.keyType;
       const valueType = type.valueType;
-      const entries = await Promise.all(
-        serialized.map(entry => Promise.all([
-          this.unmarshal(entry[0], keyType),
-          this.unmarshal(entry[1], valueType),
+      const entries = await smartPromiseAll(
+        serialized.map(entry => checkedSmartPromiseAll([
+          this._unmarshal(entry[0], keyType),
+          this._unmarshal(entry[1], valueType),
         ]))
       );
       return new Map(entries);
     });
 
     // Serialize / Deserialize Tuples.
-    this._registerKind('tuple', async (value: any, type: Type) => {
+    this._registerKind('tuple', (value: any, type: Type) => {
       // Assert the length of the array.
       assert(Array.isArray(value), 'Expected an object of type Array.');
       invariant(type.kind === 'tuple');
@@ -453,9 +501,8 @@ export default class TypeRegistry {
       assert(value.length === types.length, `Expected tuple of length ${types.length}.`);
 
       // Convert all of the elements through the correct marshaller.
-      return await Promise.all(value.map((elem, i) =>
-        this.marshal(elem, types[i])));
-    }, async (value: any, type: Type) => {
+      return checkedSmartPromiseAll(value.map((elem, i) => this._marshal(elem, types[i])));
+    }, (value: any, type: Type) => {
       // Assert the length of the array.
       assert(Array.isArray(value), 'Expected an object of type Array.');
       invariant(type.kind === 'tuple');
@@ -463,8 +510,7 @@ export default class TypeRegistry {
       assert(value.length === types.length, `Expected tuple of length ${types.length}.`);
 
       // Convert all of the elements through the correct unmarshaller.
-      return await Promise.all(value.map((elem, i) =>
-        this.unmarshal(elem, types[i])));
+      return checkedSmartPromiseAll(value.map((elem, i) => this._unmarshal(elem, types[i])));
     });
   }
 }

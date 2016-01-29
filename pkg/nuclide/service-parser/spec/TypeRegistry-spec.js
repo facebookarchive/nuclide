@@ -379,6 +379,34 @@ describe('TypeRegistry', () => {
       expect(thrown).toBe(true);
     });
   });
+
+  it('works for very large values', () => {
+    waitsForPromise(async () => {
+      unspy(Date, 'now');
+      const testArray = [];
+      for (let i = 0; i < 100000; i++) {
+        testArray.push('this is a test string');
+      }
+      const {heapUsed} = process.memoryUsage();
+      const startTime = Date.now();
+      const result = await typeRegistry.marshal(testArray, {
+        location: builtinLocation,
+        kind: 'array',
+        type: stringType,
+      });
+      const mem = process.memoryUsage().heapUsed - heapUsed;
+      /* eslint-disable no-console */
+      console.log('time taken: %d seconds', (Date.now() - startTime) / 1000);
+      console.log('memory used: %d', mem);
+      /* eslint-enable no-console */
+
+      // 10MB is a very reasonable upper bound.
+      // In contrast, using promises takes 152MB!
+      expect(result).toEqual(testArray);
+      expect(mem).toBeLessThan(10 * 1024 * 1024);
+    });
+  });
+
 });
 
 const a1 = {
