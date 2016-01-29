@@ -12,9 +12,9 @@
 import type {nuclide_debugger$DebuggerInstance} from '../../interfaces/service';
 
 import invariant from 'assert';
+import {DebuggerProcessInfo} from '../../atom';
 
-const {DebuggerProcessInfo} = require('../../atom');
-class ProcessInfo extends DebuggerProcessInfo {
+export class HhvmDebuggerProcessInfo extends DebuggerProcessInfo {
   _remoteDirectoryPath: string;
 
   constructor(remoteDirectoryPath: string) {
@@ -34,7 +34,7 @@ class ProcessInfo extends DebuggerProcessInfo {
   }
 
   compareDetails(other: DebuggerProcessInfo): number {
-    invariant(other instanceof ProcessInfo);
+    invariant(other instanceof HhvmDebuggerProcessInfo);
     return compareString(this._remoteDirectoryPath, other._remoteDirectoryPath);
   }
 
@@ -47,5 +47,3 @@ class ProcessInfo extends DebuggerProcessInfo {
 function compareString(value1: string, value2: string): number {
   return value1 === value2 ? 0 : (value1 < value2 ? -1 : 1);
 }
-
-module.exports = ProcessInfo;

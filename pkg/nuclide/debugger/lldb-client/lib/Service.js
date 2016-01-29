@@ -11,9 +11,8 @@
 
 import type {DebuggerProcessInfo} from '../../atom';
 
-async function getProcessInfoList():
-    Promise<Array<DebuggerProcessInfo>> {
-  const {ProcessInfo} = require('./ProcessInfo');
+async function getProcessInfoList(): Promise<Array<DebuggerProcessInfo>> {
+  const {LldbDebuggerProcessInfo} = require('./LldbDebuggerProcessInfo');
   // TODO: Currently first dir only.
   const debuggerServices = atom.project.getDirectories().map(directory => {
     return require('../../../client').
@@ -27,7 +26,7 @@ async function getProcessInfoList():
   await Promise.all(debuggerServices.map(async (service) => {
     const targetInfoList = await service.getAttachTargetInfoList();
     for (const targetInfo of targetInfoList) {
-      processes.push(new ProcessInfo(targetUri, targetInfo));
+      processes.push(new LldbDebuggerProcessInfo(targetUri, targetInfo));
     }
   }));
   return processes;

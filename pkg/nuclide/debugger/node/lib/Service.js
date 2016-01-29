@@ -67,7 +67,7 @@ class NodeDebuggerProcess extends DebuggerProcess {
   }
 }
 
-class ProcessInfo extends DebuggerProcessInfo {
+class NodeDebuggerProcessInfo extends DebuggerProcessInfo {
   pid: number;
   _command: string;
 
@@ -89,7 +89,7 @@ class ProcessInfo extends DebuggerProcessInfo {
   }
 
   compareDetails(other: DebuggerProcessInfo): number {
-    invariant(other instanceof ProcessInfo);
+    invariant(other instanceof NodeDebuggerProcessInfo);
     return this._command === other._command
         ? (this.pid - other.pid)
         : (this._command < other._command) ? -1 : 1;
@@ -114,7 +114,7 @@ function getProcessInfoList(): Promise<Array<DebuggerProcessInfo>> {
         if (name !== 'node') {
           return null;
         }
-        return new ProcessInfo(pid, command, name);
+        return new NodeDebuggerProcessInfo(pid, command, name);
       })
         .filter(item => item != null);
     },

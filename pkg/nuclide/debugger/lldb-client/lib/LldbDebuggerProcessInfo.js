@@ -17,7 +17,7 @@ import {DebuggerProcessInfo} from '../../atom';
 import invariant from 'assert';
 import {DebuggerProcess} from './DebuggerProcess';
 
-export class ProcessInfo extends DebuggerProcessInfo {
+export class LldbDebuggerProcessInfo extends DebuggerProcessInfo {
   _targetUri: NuclideUri;
   _targetInfo: AttachTargetInfo;
 
@@ -38,7 +38,7 @@ export class ProcessInfo extends DebuggerProcessInfo {
   }
 
   compareDetails(other: DebuggerProcessInfo): number {
-    invariant(other instanceof ProcessInfo);
+    invariant(other instanceof LldbDebuggerProcessInfo);
     return this.displayString() === other.displayString()
       ? (this.pid - other.pid)
       : (this.displayString() < other.displayString()) ? -1 : 1;

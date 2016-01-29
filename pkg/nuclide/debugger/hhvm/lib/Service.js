@@ -24,8 +24,8 @@ async function getProcessInfoList(): Promise<Array<DebuggerProcessInfo>> {
     .filter(directoryPath => remoteUri.isRemote(directoryPath))[0];
 
   if (remoteDirectoryPath) {
-    const ProcessInfo = require('./ProcessInfo');
-    return [(new ProcessInfo(remoteDirectoryPath): DebuggerProcessInfo)];
+    const {HhvmDebuggerProcessInfo} = require('./HhvmDebuggerProcessInfo');
+    return [(new HhvmDebuggerProcessInfo(remoteDirectoryPath): DebuggerProcessInfo)];
   } else {
     log('No remote dirs getting process info list');
     return [];
