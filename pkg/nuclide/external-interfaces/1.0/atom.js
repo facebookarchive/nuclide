@@ -1223,6 +1223,7 @@ declare class WebviewElement extends HTMLElement {
 
   executeJavaScript(code: string, userGesture: ?boolean): void;
   getTitle(): string;
+  getUrl(): string;
   send(): void;
 }
 
