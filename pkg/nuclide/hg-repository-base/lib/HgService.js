@@ -26,6 +26,11 @@ const WATCHMAN_SUBSCRIPTION_NAME_HGBOOKMARK = 'hg-repository-watchman-subscripti
 const WATCHMAN_SUBSCRIPTION_NAME_ARC_BUILD_LOCK = 'arc-build-lock';
 const EVENT_DELAY_IN_MS = 1000;
 
+// If Watchman reports that many files have changed, it's not really useful to report this.
+// This is typically caused by a large rebase or a Watchman re-crawl.
+// We'll just report that the repository state changed, which should trigger a full client refresh.
+const FILES_CHANGED_LIMIT = 10000;
+
 function getArcBuildLockFile(): ?string {
   let lockFile;
   try {
@@ -300,6 +305,11 @@ export class HgService extends HgServiceBase {
    * @param fileChanges The latest changed watchman files.
    */
   _filesDidChange(fileChanges: Array<any>): void {
+    if (fileChanges.length > FILES_CHANGED_LIMIT) {
+      this._emitHgRepoStateChanged();
+      return;
+    }
+
     const workingDirectory = this.getWorkingDirectory();
     const changedFiles = fileChanges.map(change => path.join(workingDirectory, change.name));
     this._filesDidChangeObserver.onNext(changedFiles);
