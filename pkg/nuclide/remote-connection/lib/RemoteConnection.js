@@ -43,6 +43,8 @@ const WATCHMAN_ERROR_MESSAGE_FOR_ENFORCE_ROOT_FILES_REGEX = /global config root_
 
 const FILE_WATCHER_SERVICE = 'FileWatcherService';
 
+const CONNECTION_ALREADY_EXISTS = 'A connection already exists for the specified directory.';
+
 type HeartbeatNotification = {
   notification: atom$Notification;
   code: string;
@@ -111,12 +113,20 @@ class RemoteConnection {
     if (!connectionConfig) {
       return;
     }
+    let connection;
     try {
       const config = {...connectionConfig, cwd};
-      const connection = new RemoteConnection(config);
+      connection = new RemoteConnection(config);
       await connection.initialize();
       return connection;
     } catch (e) {
+      if (e.message === CONNECTION_ALREADY_EXISTS) {
+        invariant(connection);
+        return RemoteConnection.getByHostnameAndPath(
+          connection.getRemoteHostname(),
+          connection.getPathForInitialWorkingDirectory(),
+        );
+      }
       logger.warn(`Failed to reuse connectionConfiguration for ${host}`, e);
       return null;
     }
@@ -370,15 +380,20 @@ class RemoteConnection {
           throw new Error(
             `Version mismatch. Client at ${clientVersion} while server at ${serverVersion}.`);
         }
+
+        const FileSystemService = this.getService('FileSystemService');
+        this._config.cwd = await FileSystemService.resolveRealPath(this._config.cwd);
+
+        // Now that we know the real path, it's possible this collides with an existing connection.
+        // If so, we should just stop immediately.
+        if (RemoteConnection.getByHostnameAndPath(this._config.host, this._config.cwd) != null) {
+          throw new Error(CONNECTION_ALREADY_EXISTS);
+        }
       } catch (e) {
         client.close();
         this._initialized = false;
         throw e;
       }
-
-
-      const FileSystemService = this.getService('FileSystemService');
-      this._config.cwd = await FileSystemService.resolveRealPath(this._config.cwd);
 
       // Store the configuration for future usage.
       setConnectionConfig(this._config);
