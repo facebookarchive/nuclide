@@ -13,31 +13,29 @@ import invariant from 'assert';
 import {DebuggerProcessInfo} from '../../atom';
 import {HhvmDebuggerInstance} from './HhvmDebuggerInstance';
 
+import type {NuclideUri} from '../../../remote-uri';
+
 export class HhvmDebuggerProcessInfo extends DebuggerProcessInfo {
-  _remoteDirectoryPath: string;
-
-  constructor(remoteDirectoryPath: string) {
-    super('hhvm');
-
-    this._remoteDirectoryPath = remoteDirectoryPath;
+  constructor(targetUri: NuclideUri) {
+    super('hhvm', targetUri);
   }
 
   attach(): HhvmDebuggerInstance {
-    return new HhvmDebuggerInstance(this._remoteDirectoryPath);
+    return new HhvmDebuggerInstance(this);
   }
 
   launch(launchTarget: string): HhvmDebuggerInstance {
-    return new HhvmDebuggerInstance(this._remoteDirectoryPath, launchTarget);
+    return new HhvmDebuggerInstance(this, launchTarget);
   }
 
   compareDetails(other: DebuggerProcessInfo): number {
     invariant(other instanceof HhvmDebuggerProcessInfo);
-    return compareString(this._remoteDirectoryPath, other._remoteDirectoryPath);
+    return compareString(this._targetUri, other._targetUri);
   }
 
   displayString(): string {
     const remoteUri = require('../../../remote-uri');
-    return remoteUri.getHostname(this._remoteDirectoryPath);
+    return remoteUri.getHostname(this._targetUri);
   }
 }
 

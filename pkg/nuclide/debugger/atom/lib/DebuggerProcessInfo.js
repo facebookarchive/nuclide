@@ -10,12 +10,15 @@
  */
 
 import type DebuggerInstance from './DebuggerInstance';
+import type {NuclideUri} from '../../../remote-uri';
 
 class DebuggerProcessInfo {
   _serviceName: string;
+  _targetUri: NuclideUri;
 
-  constructor(serviceName: string) {
+  constructor(serviceName: string, targetUri: NuclideUri) {
     this._serviceName = serviceName;
+    this._targetUri = targetUri;
   }
 
   toString(): string {
@@ -28,6 +31,10 @@ class DebuggerProcessInfo {
 
   getServiceName(): string {
     return this._serviceName;
+  }
+
+  getTargetUri(): NuclideUri {
+    return this._targetUri;
   }
 
   compareDetails(other: DebuggerProcessInfo): number {

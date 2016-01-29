@@ -14,17 +14,17 @@ const WebSocketServer = require('ws').Server;
 const Session = require('../VendorLib/node-inspector/lib/session');
 
 import invariant from 'assert';
-
 import {DebuggerInstance, DebuggerProcessInfo} from '../../atom';
 
+import type {NuclideUri} from '../../../remote-uri';
 
 class NodeDebuggerInstance extends DebuggerInstance {
   _debugPort: number;
   _server: ?WebSocketServer;
   _sessionEndCallback: ?() => void;
 
-  constructor(debugPort: number) {
-    super();
+  constructor(processInfo: DebuggerProcessInfo, debugPort: number) {
+    super(processInfo);
     this._debugPort = debugPort;
     this._server = null;
   }
@@ -70,8 +70,8 @@ class NodeDebuggerProcessInfo extends DebuggerProcessInfo {
   pid: number;
   _command: string;
 
-  constructor(pid: number, command: string) {
-    super('node');
+  constructor(pid: number, command: string, targetUri: NuclideUri) {
+    super('node', targetUri);
 
     this.pid = pid;
     this._command = command;
@@ -84,7 +84,7 @@ class NodeDebuggerProcessInfo extends DebuggerProcessInfo {
     // This is the port that the V8 debugger usually listens on.
     // TODO(natthu): Provide a way to override this in the UI.
     const debugPort = 5858;
-    return new NodeDebuggerInstance(debugPort);
+    return new NodeDebuggerInstance(this, debugPort);
   }
 
   compareDetails(other: DebuggerProcessInfo): number {
@@ -113,7 +113,9 @@ function getProcessInfoList(): Promise<Array<DebuggerProcessInfo>> {
         if (name !== 'node') {
           return null;
         }
-        return new NodeDebuggerProcessInfo(pid, command, name);
+        // TODO(jonaldislarry): currently first dir only
+        const targetUri = atom.project.getDirectories()[0].getPath();
+        return new NodeDebuggerProcessInfo(pid, command, targetUri);
       })
         .filter(item => item != null);
     },

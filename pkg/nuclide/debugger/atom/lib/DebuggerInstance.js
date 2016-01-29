@@ -9,7 +9,24 @@
  * the root directory of this source tree.
  */
 
+import type DebuggerProcessInfo from './DebuggerProcessInfo';
+import type {NuclideUri} from '../../../remote-uri';
+
 class DebuggerInstance {
+  _processInfo: DebuggerProcessInfo;
+
+  constructor(processInfo: DebuggerProcessInfo) {
+    this._processInfo = processInfo;
+  }
+
+  getDebuggerProcessInfo(): DebuggerProcessInfo {
+    return this._processInfo;
+  }
+
+  getTargetUri(): NuclideUri {
+    return this._processInfo.getTargetUri();
+  }
+
   dispose(): void {
     throw new Error('abstract method');
   }

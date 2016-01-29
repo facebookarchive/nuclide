@@ -9,12 +9,12 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../../remote-uri';
 import type {
   DebuggerRpcService as DebuggerRpcServiceType,
   DebuggerConnection as DebuggerConnectionType,
   AttachTargetInfo,
 } from '../../lldb-server/lib/DebuggerRpcServiceInterface';
+import type {DebuggerProcessInfo} from '../../atom';
 
 import invariant from 'assert';
 import {EventEmitter} from 'events';
@@ -30,7 +30,6 @@ const {stringifyError} = require('../../../commons').error;
 const SESSION_END_EVENT = 'session-end-event';
 
 export class LldbDebuggerInstance extends DebuggerInstance {
-  _targetUri: NuclideUri;
   _targetInfo: AttachTargetInfo;
   _rpcService: ?DebuggerRpcServiceType;
   _debuggerConnection: ?DebuggerConnectionType;
@@ -40,9 +39,8 @@ export class LldbDebuggerInstance extends DebuggerInstance {
   _disposables: atom$CompositeDisposable;
   _emitter: EventEmitter;
 
-  constructor(targetUri: NuclideUri, targetInfo: AttachTargetInfo) {
-    super();
-    this._targetUri = targetUri;
+  constructor(processInfo: DebuggerProcessInfo, targetInfo: AttachTargetInfo) {
+    super(processInfo);
     this._targetInfo = targetInfo;
     this._rpcService = null;
     this._debuggerConnection = null;
@@ -62,7 +60,7 @@ export class LldbDebuggerInstance extends DebuggerInstance {
   _getRpcService(): DebuggerRpcServiceType {
     if (!this._rpcService) {
       const {DebuggerRpcService} = require('../../../client').
-        getServiceByNuclideUri('LLDBDebuggerRpcService', this._targetUri);
+        getServiceByNuclideUri('LLDBDebuggerRpcService', this.getTargetUri());
       const rpcService = new DebuggerRpcService();
       this._rpcService = rpcService;
       this._disposables.add(rpcService);
@@ -148,10 +146,10 @@ export class LldbDebuggerInstance extends DebuggerInstance {
 
   _translateMessageIfNeeded(message: string): string {
     // TODO: do we really need isRemote() checking?
-    if (remoteUri.isRemote(this._targetUri)) {
+    if (remoteUri.isRemote(this.getTargetUri())) {
       message = translateMessageFromServer(
-        remoteUri.getHostname(this._targetUri),
-        remoteUri.getPort(this._targetUri),
+        remoteUri.getHostname(this.getTargetUri()),
+        remoteUri.getPort(this.getTargetUri()),
         message);
     }
     return message;

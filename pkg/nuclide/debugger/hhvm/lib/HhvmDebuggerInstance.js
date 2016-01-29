@@ -9,9 +9,9 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../../remote-uri';
 import utils from './utils';
 import type {ConnectionConfig} from '../../../debugger-hhvm-proxy';
+import type {DebuggerProcessInfo} from '../../atom';
 
 import type {HhvmDebuggerProxyService as HhvmDebuggerProxyServiceType,}
     from '../../../debugger-hhvm-proxy/lib/HhvmDebuggerProxyService';
@@ -44,7 +44,6 @@ function getConfig(): HhvmDebuggerConfig {
 }
 
 export class HhvmDebuggerInstance extends DebuggerInstance {
-  _remoteDirectoryUri: NuclideUri;
   _proxy: ?HhvmDebuggerProxyServiceType;
   _server: ?WebSocketServer;
   _webSocket: ?WebSocket;
@@ -52,9 +51,8 @@ export class HhvmDebuggerInstance extends DebuggerInstance {
   _launchScriptPath: ?string;
   _sessionEndCallback: ?() => void;
 
-  constructor(remoteDirectoryUri: NuclideUri, launchScriptPath: ?string) {
-    super();
-    this._remoteDirectoryUri = remoteDirectoryUri;
+  constructor(processInfo: DebuggerProcessInfo, launchScriptPath: ?string) {
+    super(processInfo);
     this._launchScriptPath = launchScriptPath;
     this._proxy = null;
     this._server = null;
@@ -67,9 +65,9 @@ export class HhvmDebuggerInstance extends DebuggerInstance {
   }
 
   getWebsocketAddress(): Promise<string> {
-    logInfo('Connecting to: ' + this._remoteDirectoryUri);
+    logInfo('Connecting to: ' + this.getTargetUri());
     const {HhvmDebuggerProxyService} = require('../../../client').
-      getServiceByNuclideUri('HhvmDebuggerProxyService', this._remoteDirectoryUri);
+      getServiceByNuclideUri('HhvmDebuggerProxyService', this.getTargetUri());
     const proxy = new HhvmDebuggerProxyService();
     this._proxy = proxy;
     this._disposables.add(proxy);
@@ -87,7 +85,7 @@ export class HhvmDebuggerInstance extends DebuggerInstance {
     const config = getConfig();
     const connectionConfig: ConnectionConfig = {
       xdebugPort: config.xdebugPort,
-      targetUri: remoteUri.getPath(this._remoteDirectoryUri),
+      targetUri: remoteUri.getPath(this.getTargetUri()),
       logLevel: config.logLevel,
     };
     logInfo('Connection config: ' + JSON.stringify(config));
@@ -164,8 +162,8 @@ export class HhvmDebuggerInstance extends DebuggerInstance {
     if (webSocket != null) {
       webSocket.send(
         translateMessageFromServer(
-          remoteUri.getHostname(this._remoteDirectoryUri),
-          remoteUri.getPort(this._remoteDirectoryUri),
+          remoteUri.getHostname(this.getTargetUri()),
+          remoteUri.getPort(this.getTargetUri()),
           message));
     }
   }

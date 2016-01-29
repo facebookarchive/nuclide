@@ -18,17 +18,15 @@ import invariant from 'assert';
 import {LldbDebuggerInstance} from './LldbDebuggerInstance';
 
 export class LldbDebuggerProcessInfo extends DebuggerProcessInfo {
-  _targetUri: NuclideUri;
   _targetInfo: AttachTargetInfo;
 
   constructor(targetUri: NuclideUri, targetInfo: AttachTargetInfo) {
-    super('lldb');
-    this._targetUri = targetUri;
+    super('lldb', targetUri);
     this._targetInfo = targetInfo;
   }
 
   attach(): DebuggerInstance {
-    const process = new LldbDebuggerInstance(this._targetUri, this._targetInfo);
+    const process = new LldbDebuggerInstance(this, this._targetInfo);
     process.attach();
     return process;
   }
