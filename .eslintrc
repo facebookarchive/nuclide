@@ -238,7 +238,9 @@
     "no-plusplus": 0,                 // disallow use of unary operators, ++ and -- (off by default)
 
   // Jasmine
-    "jasmine/no-spec-dupes": [1, "branch"],
+    "jasmine/no-spec-dupes": [1, "branch"],  // Disallow duplicate spec descriptions within a branch
+    "jasmine/no-suite-dupes": [1, "branch"], // Disallow duplicate suite descriptions within a branch
+    "jasmine/no-disabled-tests": 0,          // Allow disabled tests to quickly unblock master when needed
 
   // Custom
     "nuclide-internal/comment-style": 1,
