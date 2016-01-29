@@ -11,14 +11,6 @@
 
 import type {DebuggerProcessInfo} from '../atom';
 
-export type nuclide_debugger$DebuggerInstance = {
-  dispose(): void;
-  getWebsocketAddress(): Promise<string>;
-  onSessionEnd(callback: () => void): {
-    dispose(): void;
-  };
-};
-
 export type nuclide_debugger$Service = {
   name: string;
   getProcessInfoList(): Promise<Array<DebuggerProcessInfo>>;

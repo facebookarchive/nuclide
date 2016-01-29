@@ -15,11 +15,10 @@ const Session = require('../VendorLib/node-inspector/lib/session');
 
 import invariant from 'assert';
 
-import {DebuggerProcess} from '../../utils';
-import {DebuggerProcessInfo} from '../../atom';
+import {DebuggerInstance, DebuggerProcessInfo} from '../../atom';
 
 
-class NodeDebuggerProcess extends DebuggerProcess {
+class NodeDebuggerInstance extends DebuggerInstance {
   _debugPort: number;
   _server: ?WebSocketServer;
   _sessionEndCallback: ?() => void;
@@ -78,14 +77,14 @@ class NodeDebuggerProcessInfo extends DebuggerProcessInfo {
     this._command = command;
   }
 
-  attach(): DebuggerProcess {
+  attach(): DebuggerInstance {
     // Enable debugging in the process.
     process.kill(this.pid, 'SIGUSR1');
 
     // This is the port that the V8 debugger usually listens on.
     // TODO(natthu): Provide a way to override this in the UI.
     const debugPort = 5858;
-    return new NodeDebuggerProcess(debugPort);
+    return new NodeDebuggerInstance(debugPort);
   }
 
   compareDetails(other: DebuggerProcessInfo): number {

@@ -9,10 +9,9 @@
  * the root directory of this source tree.
  */
 
-import type {nuclide_debugger$DebuggerInstance} from '../../interfaces/service';
-
 import invariant from 'assert';
 import {DebuggerProcessInfo} from '../../atom';
+import {HhvmDebuggerInstance} from './HhvmDebuggerInstance';
 
 export class HhvmDebuggerProcessInfo extends DebuggerProcessInfo {
   _remoteDirectoryPath: string;
@@ -23,14 +22,12 @@ export class HhvmDebuggerProcessInfo extends DebuggerProcessInfo {
     this._remoteDirectoryPath = remoteDirectoryPath;
   }
 
-  attach(): nuclide_debugger$DebuggerInstance {
-    const DebuggerProcess = require('./DebuggerProcess');
-    return new DebuggerProcess(this._remoteDirectoryPath);
+  attach(): HhvmDebuggerInstance {
+    return new HhvmDebuggerInstance(this._remoteDirectoryPath);
   }
 
-  launch(launchTarget: string) {
-    const DebuggerProcess = require('./DebuggerProcess');
-    return new DebuggerProcess(this._remoteDirectoryPath, launchTarget);
+  launch(launchTarget: string): HhvmDebuggerInstance {
+    return new HhvmDebuggerInstance(this._remoteDirectoryPath, launchTarget);
   }
 
   compareDetails(other: DebuggerProcessInfo): number {

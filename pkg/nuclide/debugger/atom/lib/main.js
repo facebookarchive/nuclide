@@ -218,6 +218,7 @@ module.exports = {
     });
   },
   DebuggerProcessInfo: require('./DebuggerProcessInfo'),
+  DebuggerInstance: require('./DebuggerInstance'),
 
   consumeToolBar(getToolBar: (group: string) => Object): void {
     toolBar = getToolBar('nuclide-debugger');

@@ -16,6 +16,8 @@ import type {ConnectionConfig} from '../../../debugger-hhvm-proxy';
 import type {HhvmDebuggerProxyService as HhvmDebuggerProxyServiceType,}
     from '../../../debugger-hhvm-proxy/lib/HhvmDebuggerProxyService';
 
+import {DebuggerInstance} from '../../atom';
+
 const {log, logInfo, logError, setLogLevel} = utils;
 const featureConfig = require('../../../feature-config');
 const {translateMessageFromServer, translateMessageToServer} = require('./ChromeMessageRemoting');
@@ -41,7 +43,7 @@ function getConfig(): HhvmDebuggerConfig {
   return (featureConfig.get('nuclide-debugger-hhvm'): any);
 }
 
-class DebuggerProcess {
+export class HhvmDebuggerInstance extends DebuggerInstance {
   _remoteDirectoryUri: NuclideUri;
   _proxy: ?HhvmDebuggerProxyServiceType;
   _server: ?WebSocketServer;
@@ -51,6 +53,7 @@ class DebuggerProcess {
   _sessionEndCallback: ?() => void;
 
   constructor(remoteDirectoryUri: NuclideUri, launchScriptPath: ?string) {
+    super();
     this._remoteDirectoryUri = remoteDirectoryUri;
     this._launchScriptPath = launchScriptPath;
     this._proxy = null;
@@ -269,5 +272,3 @@ function isValidRegex(value: string): boolean {
 
   return true;
 }
-
-module.exports = DebuggerProcess;

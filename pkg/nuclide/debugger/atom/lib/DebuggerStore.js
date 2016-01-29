@@ -14,10 +14,8 @@ const {EventEmitter} = require('events');
 const Constants = require('./Constants');
 
 import type {Dispatcher} from 'flux';
-import type {
-  nuclide_debugger$DebuggerInstance,
-  nuclide_debugger$Service,
-} from '../../interfaces/service';
+import type {nuclide_debugger$Service} from '../../interfaces/service';
+import type DebuggerInstance from './DebuggerInstance';
 import type DebuggerProcessInfoType from './DebuggerProcessInfo';
 
 /**
@@ -29,7 +27,7 @@ class DebuggerStore {
   _dispatcherToken: any;
 
   // Stored values
-  _debuggerProcess: ?nuclide_debugger$DebuggerInstance;
+  _debuggerProcess: ?DebuggerInstance;
   _error: ?string;
   _services: Set<nuclide_debugger$Service>;
   _processSocket: ?string;
@@ -53,7 +51,7 @@ class DebuggerStore {
     }
   }
 
-  getDebuggerProcess(): ?nuclide_debugger$DebuggerInstance {
+  getDebuggerProcess(): ?DebuggerInstance {
     return this._debuggerProcess;
   }
 

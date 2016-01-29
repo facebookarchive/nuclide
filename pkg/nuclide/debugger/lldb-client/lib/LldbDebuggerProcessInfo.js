@@ -9,13 +9,13 @@
  * the root directory of this source tree.
  */
 
-import type {nuclide_debugger$DebuggerInstance} from '../../interfaces/service';
+import type {DebuggerInstance} from '../../atom';
 import type {NuclideUri} from '../../../remote-uri';
 import type {AttachTargetInfo} from '../../lldb-server/lib/DebuggerRpcServiceInterface';
 
 import {DebuggerProcessInfo} from '../../atom';
 import invariant from 'assert';
-import {DebuggerProcess} from './DebuggerProcess';
+import {LldbDebuggerInstance} from './LldbDebuggerInstance';
 
 export class LldbDebuggerProcessInfo extends DebuggerProcessInfo {
   _targetUri: NuclideUri;
@@ -27,8 +27,8 @@ export class LldbDebuggerProcessInfo extends DebuggerProcessInfo {
     this._targetInfo = targetInfo;
   }
 
-  attach(): nuclide_debugger$DebuggerInstance {
-    const process = new DebuggerProcess(this._targetUri, this._targetInfo);
+  attach(): DebuggerInstance {
+    const process = new LldbDebuggerInstance(this._targetUri, this._targetInfo);
     process.attach();
     return process;
   }

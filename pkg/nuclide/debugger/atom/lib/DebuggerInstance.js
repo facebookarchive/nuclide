@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-export class DebuggerProcess {
+class DebuggerInstance {
   dispose(): void {
     throw new Error('abstract method');
   }
@@ -24,3 +24,5 @@ export class DebuggerProcess {
     throw new Error('abstract method');
   }
 }
+
+module.exports = DebuggerInstance;

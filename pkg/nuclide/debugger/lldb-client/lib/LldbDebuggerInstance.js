@@ -19,6 +19,7 @@ import type {
 import invariant from 'assert';
 import {EventEmitter} from 'events';
 import utils from './utils';
+import {DebuggerInstance} from '../../atom';
 const {log, logInfo, logError} = utils;
 const {translateMessageFromServer, translateMessageToServer} = require('./ChromeMessageRemoting');
 const remoteUri = require('../../../remote-uri');
@@ -28,7 +29,7 @@ const {stringifyError} = require('../../../commons').error;
 
 const SESSION_END_EVENT = 'session-end-event';
 
-export class DebuggerProcess {
+export class LldbDebuggerInstance extends DebuggerInstance {
   _targetUri: NuclideUri;
   _targetInfo: AttachTargetInfo;
   _rpcService: ?DebuggerRpcServiceType;
@@ -40,6 +41,7 @@ export class DebuggerProcess {
   _emitter: EventEmitter;
 
   constructor(targetUri: NuclideUri, targetInfo: AttachTargetInfo) {
+    super();
     this._targetUri = targetUri;
     this._targetInfo = targetInfo;
     this._rpcService = null;

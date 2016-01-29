@@ -9,13 +9,7 @@
  * the root directory of this source tree.
  */
 
-// TODO(jeffreytan): This is duplicated what we have in
-// fbobjc/Tools/Nuclide/pkg/nuclide/debugger-utils/lib/main.js.
-// It seems like once we move everything over to Tools/Nuclide,
-// the nuclide-debugger-utils package can go away because then
-// nuclide-debugger-lldb can depend on this nuclide-debugger package directly.
-
-import type {nuclide_debugger$DebuggerInstance} from '../../interfaces/service';
+import type DebuggerInstance from './DebuggerInstance';
 
 class DebuggerProcessInfo {
   _serviceName: string;
@@ -40,11 +34,11 @@ class DebuggerProcessInfo {
     throw new Error('abstract method');
   }
 
-  attach(): nuclide_debugger$DebuggerInstance {
+  attach(): DebuggerInstance {
     throw new Error('abstract method');
   }
 
-  launch(launchTarget: string): nuclide_debugger$DebuggerInstance {
+  launch(launchTarget: string): DebuggerInstance {
     throw new Error('abstract method');
   }
 
