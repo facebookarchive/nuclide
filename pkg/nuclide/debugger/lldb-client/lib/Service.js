@@ -9,11 +9,10 @@
  * the root directory of this source tree.
  */
 
-import type {nuclide_debugger$DebuggerProcessInfo,}
-    from '../../interfaces/service';
+import type {DebuggerProcessInfo} from '../../atom';
 
 async function getProcessInfoList():
-    Promise<Array<nuclide_debugger$DebuggerProcessInfo>> {
+    Promise<Array<DebuggerProcessInfo>> {
   const {ProcessInfo} = require('./ProcessInfo');
   // TODO: Currently first dir only.
   const debuggerServices = atom.project.getDirectories().map(directory => {

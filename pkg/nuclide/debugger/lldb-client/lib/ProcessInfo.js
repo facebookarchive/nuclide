@@ -9,15 +9,11 @@
  * the root directory of this source tree.
  */
 
-import type{
-  nuclide_debugger$DebuggerInstance,
-  nuclide_debugger$DebuggerProcessInfo,
-} from '../../interfaces/service';
+import type {nuclide_debugger$DebuggerInstance} from '../../interfaces/service';
 import type {NuclideUri} from '../../../remote-uri';
-import type {AttachTargetInfo,}
-    from '../../lldb-server/lib/DebuggerRpcServiceInterface';
+import type {AttachTargetInfo} from '../../lldb-server/lib/DebuggerRpcServiceInterface';
 
-import {DebuggerProcessInfo} from '../../utils';
+import {DebuggerProcessInfo} from '../../atom';
 import invariant from 'assert';
 import {DebuggerProcess} from './DebuggerProcess';
 
@@ -41,7 +37,7 @@ export class ProcessInfo extends DebuggerProcessInfo {
     return this._targetInfo.pid;
   }
 
-  compareDetails(other: nuclide_debugger$DebuggerProcessInfo): number {
+  compareDetails(other: DebuggerProcessInfo): number {
     invariant(other instanceof ProcessInfo);
     return this.displayString() === other.displayString()
       ? (this.pid - other.pid)

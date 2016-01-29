@@ -9,16 +9,12 @@
  * the root directory of this source tree.
  */
 
-import type{
-  nuclide_debugger$DebuggerInstance,
-  nuclide_debugger$DebuggerProcessInfo,
-} from '../../interfaces/service';
+import type {nuclide_debugger$DebuggerInstance} from '../../interfaces/service';
 
 import invariant from 'assert';
 
-const {DebuggerProcessInfo} = require('../../utils');
-class ProcessInfo extends DebuggerProcessInfo
-{
+const {DebuggerProcessInfo} = require('../../atom');
+class ProcessInfo extends DebuggerProcessInfo {
   _remoteDirectoryPath: string;
 
   constructor(remoteDirectoryPath: string) {
@@ -37,7 +33,7 @@ class ProcessInfo extends DebuggerProcessInfo
     return new DebuggerProcess(this._remoteDirectoryPath, launchTarget);
   }
 
-  compareDetails(other: nuclide_debugger$DebuggerProcessInfo): number {
+  compareDetails(other: DebuggerProcessInfo): number {
     invariant(other instanceof ProcessInfo);
     return compareString(this._remoteDirectoryPath, other._remoteDirectoryPath);
   }

@@ -16,9 +16,8 @@ const Session = require('../VendorLib/node-inspector/lib/session');
 import invariant from 'assert';
 
 import {DebuggerProcess} from '../../utils';
+import {DebuggerProcessInfo} from '../../atom';
 
-import type {nuclide_debugger$DebuggerProcessInfo,}
-    from '../../interfaces/service';
 
 class NodeDebuggerProcess extends DebuggerProcess {
   _debugPort: number;
@@ -68,8 +67,6 @@ class NodeDebuggerProcess extends DebuggerProcess {
   }
 }
 
-const {DebuggerProcessInfo} = require('../../utils');
-
 class ProcessInfo extends DebuggerProcessInfo {
   pid: number;
   _command: string;
@@ -91,7 +88,7 @@ class ProcessInfo extends DebuggerProcessInfo {
     return new NodeDebuggerProcess(debugPort);
   }
 
-  compareDetails(other: nuclide_debugger$DebuggerProcessInfo): number {
+  compareDetails(other: DebuggerProcessInfo): number {
     invariant(other instanceof ProcessInfo);
     return this._command === other._command
         ? (this.pid - other.pid)
@@ -103,8 +100,7 @@ class ProcessInfo extends DebuggerProcessInfo {
   }
 }
 
-function getProcessInfoList():
-    Promise<Array<nuclide_debugger$DebuggerProcessInfo>> {
+function getProcessInfoList(): Promise<Array<DebuggerProcessInfo>> {
   const {asyncExecute} = require('../../../commons');
   return asyncExecute('ps', ['-e', '-o', 'pid,comm'], {})
     .then(result => {

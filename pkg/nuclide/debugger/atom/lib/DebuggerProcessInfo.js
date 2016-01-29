@@ -36,7 +36,7 @@ class DebuggerProcessInfo {
     return this._serviceName;
   }
 
-  compareDetails(other:DebuggerProcessInfo): number {
+  compareDetails(other: DebuggerProcessInfo): number {
     throw new Error('abstract method');
   }
 
@@ -49,7 +49,7 @@ class DebuggerProcessInfo {
   }
 
   // For debugLLDB().
-  pid: ?number;
+  pid: number;
   basepath: ?string;
 }
 
