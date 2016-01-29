@@ -53,13 +53,14 @@ function createSerializableRemoteConnectionConfiguration(
 async function createRemoteConnection(
   remoteProjectConfig: SerializableRemoteConnectionConfiguration,
 ): Promise<?RemoteConnection> {
+  const {host, cwd} = remoteProjectConfig;
+  let connection = RemoteConnection.getByHostnameAndPath(host, cwd);
+  if (connection != null) {
+    return connection;
+  }
 
-  const connection = await RemoteConnection.createConnectionBySavedConfig(
-    remoteProjectConfig.host,
-    remoteProjectConfig.cwd,
-  );
-
-  if (connection) {
+  connection = await RemoteConnection.createConnectionBySavedConfig(host, cwd);
+  if (connection != null) {
     return connection;
   }
 
@@ -207,6 +208,34 @@ function isRemoteBufferInitialized(editor: TextEditor): boolean {
   return false;
 }
 
+async function reloadRemoteProjects(
+  remoteProjects: Array<SerializableRemoteConnectionConfiguration>,
+): Promise<void> {
+  // This is intentionally serial.
+  // The 90% use case is to have multiple remote projects for a single connection;
+  // after the first one succeeds the rest should require no user action.
+  for (const config of remoteProjects) {
+    /* eslint-disable babel/no-await-in-loop */
+    const connection = await createRemoteConnection(config);
+    if (!connection) {
+      logger.info(
+        'No RemoteConnection returned on restore state trial:',
+        config.host,
+        config.cwd,
+      );
+    } else {
+      // It's fine the user connected to a different project on the same host:
+      // we should still be able to restore this using the new connection.
+      const {cwd, host} = config;
+      if (connection.getPathForInitialWorkingDirectory() !== cwd &&
+          connection.getRemoteHostname() === host) {
+        await RemoteConnection.createConnectionBySavedConfig(host, cwd);
+      }
+    }
+    /* eslint-enable babel/no-await-in-loop */
+  }
+}
+
 module.exports = {
   activate(state: ?{remoteProjectsConfig: SerializableRemoteConnectionConfiguration[]}): void {
     const subscriptions = new CompositeDisposable();
@@ -286,20 +315,11 @@ module.exports = {
     // real remote folder).
     deleteDummyRemoteRootDirectories();
 
-    // Remove remote projects added in case of reloads.
-    // We already have their connection config stored.
-    const remoteProjectsConfigAsDeserializedJson: SerializableRemoteConnectionConfiguration[] =
-      (state && state.remoteProjectsConfig) || [];
-    remoteProjectsConfigAsDeserializedJson.forEach(async config => {
-      const connection = await createRemoteConnection(config);
-      if (!connection) {
-        logger.info(
-          'No RemoteConnection returned on restore state trial:',
-          config.host,
-          config.cwd,
-        );
-      }
-    });
+    // Attempt to reload previously open projects.
+    const remoteProjectsConfig = state && state.remoteProjectsConfig;
+    if (remoteProjectsConfig != null) {
+      reloadRemoteProjects(remoteProjectsConfig);
+    }
     packageSubscriptions = subscriptions;
   },
 
