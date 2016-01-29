@@ -29,7 +29,8 @@ async function doFindReferences(
     return {type: 'error', message: 'Only classes/functions/methods are supported.'};
   }
 
-  let {baseUri, symbolName, references} = result;
+  const {baseUri} = result;
+  let {symbolName, references} = result;
 
   // Process this into the format nuclide-find-references expects.
   references = references.map(ref => {

@@ -14,7 +14,6 @@ const fs = require('fs');
 const path = require('path');
 const {Directory} = require('atom');
 const RemoteDirectory = require('../lib/RemoteDirectory');
-const RemoteFile = require('../lib/RemoteFile');
 const temp = require('temp').track();
 const connectionMock = require('./connection_mock');
 

@@ -49,4 +49,4 @@ module.exports = class MockHgService {
   dispose(): Promise<void> {
     return Promise.resolve();
   }
-}
+};

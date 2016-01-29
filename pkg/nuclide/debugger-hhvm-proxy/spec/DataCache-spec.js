@@ -86,13 +86,13 @@ describe('debugger-hhvm-proxy DataCache', () => {
     statusCallback(STATUS_RUNNING);
   }
 
-  it ('no enable', () => {
+  it('no enable', () => {
     waitsForPromise(
         {shouldReject: true, timeout: 0},
         async () => { await cache.getScopesForFrame(4); });
   });
 
-  it ('enable/disable', () => {
+  it('enable/disable', () => {
     waitsForPromise(
         {shouldReject: true, timeout: 0},
         async () => {

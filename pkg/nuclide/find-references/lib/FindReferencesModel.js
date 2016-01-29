@@ -191,7 +191,8 @@ class FindReferencesModel {
     const fileLines = fileContents.split('\n');
     const previewText = [];
     refGroups = refGroups.map(group => {
-      let {references, startLine, endLine} = group;
+      const {references} = group;
+      let {startLine, endLine} = group;
       // Expand start/end lines with context.
       startLine = Math.max(startLine - this.getPreviewContext(), 1);
       endLine = Math.min(endLine + this.getPreviewContext(), fileLines.length);

@@ -12,7 +12,6 @@
 
 /*eslint-disable no-var, prefer-const, no-console*/
 
-var assert = require('assert');
 var fs = require('fs');
 var path = require('path');
 

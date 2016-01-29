@@ -27,7 +27,7 @@ const FilePreview = React.createClass({
 
   componentDidMount() {
     const editor = this.refs.editor.getTextEditor();
-    const {grammar, references, startLine, endLine} = this.props;
+    const {grammar, references, startLine} = this.props;
 
     if (grammar) {
       editor.setGrammar(grammar);

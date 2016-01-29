@@ -10,7 +10,6 @@
  */
 
 import type {FileSystemService} from '../../server/lib/services/FileSystemServiceType';
-import type {Observable} from 'rx';
 import type {RemoteConnection} from './RemoteConnection';
 import type {HgRepositoryDescription} from '../../source-control-helpers';
 import type RemoteFile from './RemoteFile';

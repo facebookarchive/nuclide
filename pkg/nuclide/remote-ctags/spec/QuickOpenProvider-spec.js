@@ -13,7 +13,6 @@ import type {CtagsResult} from '../../remote-ctags-base';
 
 import invariant from 'assert';
 import {
-  React,
   ReactDOM,
   TestUtils,
 } from 'react-for-atom';
@@ -27,7 +26,6 @@ describe('QuickOpenProvider', () => {
     getPath: () => TEST_DIR,
   }: any);
 
-  let hackSpy;
   let QuickOpenProvider;
   beforeEach(() => {
     spyOn(nuclideRemoteConnection, 'getServiceByNuclideUri').andReturn({
@@ -56,7 +54,7 @@ describe('QuickOpenProvider', () => {
         };
       },
     });
-    hackSpy = spyOn(hackService, 'getHackService').andReturn(null);
+    spyOn(hackService, 'getHackService').andReturn(null);
     QuickOpenProvider = require('../lib/QuickOpenProvider');
   });
 

@@ -210,7 +210,7 @@ describe('HgRepositoryClient', () => {
       });
     });
 
-    it ('does not add "clean" files to the cache and removes them if they are in the cache.', () => {
+    it('does not add "clean" files to the cache and removes them if they are in the cache.', () => {
       const pathsWithCleanStatusReturned = [PATH_3, PATH_6];
       waitsForPromise(async () => {
         await repo._updateStatuses(pathsWithCleanStatusReturned, {hgStatusOption: HgStatusOption.ALL_STATUSES});
@@ -420,7 +420,7 @@ describe('HgRepositoryClient', () => {
       expect(repo.isStatusNew(status)).toBe(false);
     });
 
-    it ('retrieves cached hg ignore status.', () => {
+    it('retrieves cached hg ignore status.', () => {
       const status = repo.getCachedPathStatus(PATH_2);
       // The status codes have no meaning; just test the expected translated
       // meanings.
@@ -428,7 +428,7 @@ describe('HgRepositoryClient', () => {
       expect(repo.isStatusNew(status)).toBe(false);
     });
 
-    it ('returns a clean status by default.', () => {
+    it('returns a clean status by default.', () => {
       const status = repo.getCachedPathStatus('path-not-in-cache');
       // The status codes have no meaning; just test the expected translated
       // meanings.

@@ -11,7 +11,6 @@
 
 import type {HyperclickSuggestion} from '../../hyperclick-interfaces';
 
-import invariant from 'assert';
 import {goToLocation} from '../../atom-helpers';
 import {GRAMMAR_SET, PACKAGE_NAME} from './constants';
 import {getDeclaration} from './libclang';

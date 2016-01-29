@@ -132,7 +132,7 @@ function generateFunctionProxy(name: string, funcType: FunctionType): any {
   ]);
 
   let value, transformer, type;
-  var returnType = funcType.returnType;
+  const returnType = funcType.returnType;
   switch (returnType.kind) {
     case 'void':
       rpcCallExpression = thenPromise(argumentsPromise, t.arrowFunctionExpression(
@@ -318,7 +318,7 @@ function generateRemoteDispatch(methodName: string, funcType: FunctionType) {
     rpcCallExpression,
   ));
 
-  var returnType = funcType.returnType;
+  const returnType = funcType.returnType;
   switch (returnType.kind) {
     case 'void':
       break;

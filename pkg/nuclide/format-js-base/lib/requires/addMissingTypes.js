@@ -15,9 +15,6 @@ import type {SourceOptions} from '../options/SourceOptions';
 const FirstNode = require('../utils/FirstNode');
 
 const getUndeclaredTypes = require('../utils/getUndeclaredTypes');
-const jscs = require('jscodeshift');
-
-const {statement} = jscs.template;
 
 function addMissingTypes(root: Collection, options: SourceOptions): void {
   const first = FirstNode.get(root);

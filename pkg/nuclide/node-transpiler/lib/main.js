@@ -11,6 +11,7 @@
  * function to transpile .js files that start with either `'use babel'` or
  * `"use babel"`.
  */
+/*eslint-disable no-var */
 
 // Make sure the transpilation is loaded only once.
 var jsExtensions = Object.getOwnPropertyDescriptor(require.extensions, '.js');

@@ -300,7 +300,7 @@ describe('RemoteFile', () => {
       });
     });
 
-    it('exists resolves to true when the file exists', () => {
+    it('exists resolves to false when the file does not exist', () => {
       waitsForPromise(async () => {
         const notExistingFile = new RemoteFile(
           connectionMock,

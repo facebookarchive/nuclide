@@ -72,7 +72,7 @@ describe('HackLanguage', () => {
         const contents = `<?hh // strict
   // misplaced comment and class
   class HackClass {}`;
-        const newSource = await hackLanguage.formatSource(contents, 1, contents.length+1);
+        const newSource = await hackLanguage.formatSource(contents, 1, contents.length + 1);
         expect(newSource).toBe(`<?hh // strict
 // misplaced comment and class
 class HackClass {}

@@ -73,7 +73,7 @@ describe('nuclide-commons/process', () => {
         waitsForPromise(async () => {
           try {
             await processLib.asyncExecute(process.execPath, ['-e', 'process.exit(1)']);
-          } catch(error) {
+          } catch (error) {
             // `exit` with a non-zero error code should reject the Promise and return the generic
             // ENOENT (End Of ENTity) exit code.
             expect(error.exitCode).toEqual(1);
@@ -100,7 +100,7 @@ describe('nuclide-commons/process', () => {
                 'exit',
                 ['5'],
                 {env: process.env, pipedCommand: 'head', pipedArgs: ['-10']});
-            } catch(error) {
+            } catch (error) {
               // `exit` with a non-zero error code should reject the Promise and return the generic
               // ENOENT (End Of ENTity) exit code.
               expect(error.exitCode).toEqual('ENOENT');
@@ -120,7 +120,7 @@ describe('nuclide-commons/process', () => {
         waitsForPromise(async () => {
           try {
             await processLib.checkOutput('non_existing_command', /* args */ []);
-          } catch(error) {
+          } catch (error) {
             // `exit` with a non-zero error code should reject the Promise and return the generic
             // ENOENT (End Of ENTity) exit code.
             expect(error.exitCode).toBe('ENOENT');

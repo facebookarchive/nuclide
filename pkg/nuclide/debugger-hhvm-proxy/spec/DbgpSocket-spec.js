@@ -91,10 +91,6 @@ describe('debugger-hhvm-proxy DbgpSocket', () => {
     expect(onStatus).toHaveBeenCalledWith(STATUS_END);
   });
 
-  it('constructor', () => {
-    expect(socket.on).toHaveBeenCalledWith('data', jasmine.any(Function));
-  });
-
   it('getStatus', () => {
     waitsForPromise(() => {
       return testCall(

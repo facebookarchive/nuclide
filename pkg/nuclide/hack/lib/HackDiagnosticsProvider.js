@@ -155,8 +155,10 @@ class HackDiagnosticsProvider {
     const pathsForHackLanguage = new Set();
     this._hackLanguageToFilePaths.set(hackLanguage, pathsForHackLanguage);
     for (const diagnostic of diagnostics) {
-      /* Each message consists of several different components, each with its
-       * own text and path. */
+      /*
+       * Each message consists of several different components, each with its
+       * own text and path.
+       */
       for (const diagnosticMessage of diagnostic.message) {
         pathsForHackLanguage.add(diagnosticMessage.path);
       }

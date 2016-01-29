@@ -14,7 +14,6 @@ import type {NuclideUri} from '../../remote-uri';
 
 import {HackSymbolProvider} from '../lib/HackSymbolProvider';
 import {
-  React,
   ReactDOM,
   TestUtils,
 } from 'react-for-atom';

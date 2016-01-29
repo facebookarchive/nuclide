@@ -10,7 +10,9 @@
  */
 
 import type {TypeHint} from '../../type-hint-interfaces';
-import type {BusySignalProviderBase} from '../../busy-signal-provider-base';
+import type {
+  BusySignalProviderBase as BusySignalProviderBaseType,
+} from '../../busy-signal-provider-base';
 import type {HyperclickProvider} from '../../hyperclick-interfaces';
 
 import CodeHighlightProvider from './CodeHighlightProvider';
@@ -19,16 +21,6 @@ import {HACK_GRAMMARS} from '../../hack-common/lib/constants';
 
 const HACK_GRAMMARS_STRING = HACK_GRAMMARS.join(', ');
 const PACKAGE_NAME = 'nuclide-hack';
-
-// One of text or snippet is required.
-type Suggestion = {
-  text: ?string;
-  snippet: ?string;
-  replacementPrefix: ?string;
-  rightLabel: ?string;
-  rightLabelHTML: ?string;
-  className: ?string;
-};
 
 let subscriptions: ?CompositeDisposable = null;
 let hackDiagnosticsProvider;
@@ -128,7 +120,7 @@ module.exports = {
     };
   },
 
-  provideBusySignal(): BusySignalProviderBase {
+  provideBusySignal(): BusySignalProviderBaseType {
     if (busySignalProvider == null) {
       const {BusySignalProviderBase} = require('../../busy-signal-provider-base');
       busySignalProvider = new BusySignalProviderBase();

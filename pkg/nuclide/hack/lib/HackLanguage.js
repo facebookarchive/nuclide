@@ -603,7 +603,8 @@ function shouldDoServerCompletion(type: number): boolean {
 
 function processCompletions(completionsResponse: Array<HackCompletion>): Array<any> {
   return completionsResponse.map(completion => {
-    let {name, type, func_details: functionDetails} = completion;
+    const {name, func_details: functionDetails} = completion;
+    let {type} = completion;
     if (type && type.indexOf('(') === 0 && type.lastIndexOf(')') === type.length - 1) {
       type = type.substring(1, type.length - 1);
     }
@@ -611,7 +612,8 @@ function processCompletions(completionsResponse: Array<HackCompletion>): Array<a
     if (functionDetails) {
       const {params} = functionDetails;
       // Construct the snippet: e.g. myFunction(${1:$arg1}, ${2:$arg2});
-      const paramsString = params.map((param, index) => '${' + (index + 1) + ':' + param.name + '}').join(', ');
+      const paramsString = params.map(
+        (param, index) => '${' + (index + 1) + ':' + param.name + '}').join(', ');
       matchSnippet = name + '(' + paramsString + ')';
     }
     return {

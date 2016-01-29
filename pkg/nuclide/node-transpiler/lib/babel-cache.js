@@ -10,7 +10,7 @@
  * Because this file helps set up the transpiling, it must be written in ES5 because
  * it will be evaluated before the transpiling is in place.
  */
-/*eslint-disable no-console*/
+/*eslint-disable no-console, no-var */
 
 var babel = require('babel-core');
 var crypto = require('crypto');

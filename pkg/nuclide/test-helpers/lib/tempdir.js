@@ -20,11 +20,11 @@ const tempWithAutoCleanup = temp.track();
 export function mkdir(dirname: string): Promise<string> {
   return new Promise((resolve, reject) => {
     tempWithAutoCleanup.mkdir(dirname, (err: ?Error, dirPath) => {
-     if (err) {
-       reject(err);
-     } else {
-       resolve(dirPath);
-     }
+      if (err) {
+        reject(err);
+      } else {
+        resolve(dirPath);
+      }
     });
   });
 }

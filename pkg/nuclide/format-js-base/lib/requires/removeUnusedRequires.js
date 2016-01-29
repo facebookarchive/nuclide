@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {Collection, Node, NodePath} from '../types/ast';
+import type {Collection} from '../types/ast';
 import type {SourceOptions} from '../options/SourceOptions';
 
 const getDeclaredIdentifiers = require('../utils/getDeclaredIdentifiers');

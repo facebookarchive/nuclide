@@ -184,9 +184,7 @@ class DiffViewModel {
     }
     const filesystemContents = await getFileSystemContents(filePath);
     const {
-      savedContents,
       oldContents: committedContents,
-      filePath: activeFilePath,
     } = this._activeFileState;
     await this._updateDiffStateIfChanged(
       filePath,
@@ -321,7 +319,7 @@ class DiffViewModel {
     try {
       await this._saveFile(filePath, newContents);
       this._activeFileState.savedContents = newContents;
-    } catch(error) {
+    } catch (error) {
       notifyInternalError(error);
     }
   }

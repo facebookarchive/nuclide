@@ -82,7 +82,7 @@ describe('PromisePool', () => {
       const start = Date.now();
       await Promise.all(executors.map(executor => queue.submit(executor)));
       const end = Date.now();
-      expect(end - start < numDelayedExecutors * delayMs / (poolSize - 1));
+      expect(end - start).toBeLessThan(numDelayedExecutors * delayMs / (poolSize - 1));
     });
   });
 });

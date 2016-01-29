@@ -209,4 +209,4 @@ export default class DiffViewEditor {
   _scrollToRow(row: number): void {
     this._editor.scrollToBufferPosition([row, 0]);
   }
-};
+}

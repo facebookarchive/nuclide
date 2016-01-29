@@ -10,6 +10,7 @@
  * Because this file sets up the transpiling, it must be written in ES5 because
  * it will be evaluated before the transpiling is in place.
  */
+/*eslint-disable no-var */
 
 var fs = require('fs');
 var createOrFetchFromCache = require('./babel-cache').createOrFetchFromCache;

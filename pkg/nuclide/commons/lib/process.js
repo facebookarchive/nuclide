@@ -16,7 +16,7 @@ import {
 import path from 'path';
 import {PromiseQueue} from './PromiseExecutors';
 
-import type {Observable as ObservableType, Observer} from 'rx';
+import type {Observer} from 'rx';
 import type {ProcessMessage, process$asyncExecuteRet} from './main';
 
 import {observeStream, splitStream} from './stream';
@@ -201,7 +201,7 @@ function scriptSafeSpawnAndObserveOutput(
   command: string,
   args?: Array<string> = [],
   options?: Object = {},
-): ObservableType<{stderr?: string; stdout?: string;}> {
+): Observable<{stderr?: string; stdout?: string;}> {
   const {Observable} = require('rx');
   return Observable.create((observer: Observer) => {
     let childProcess;
@@ -257,7 +257,7 @@ class Process {
  * stdout and stderr are split by newlines.
  */
 function observeProcessExit(createProcess: () => child_process$ChildProcess):
-    ObservableType<number> {
+    Observable<number> {
   return Observable.using(
     () => new Process(createProcess()),
     process => {
@@ -269,7 +269,7 @@ function observeProcessExit(createProcess: () => child_process$ChildProcess):
  * Observe the stdout, stderr and exit code of a process.
  */
 function observeProcess(createProcess: () => child_process$ChildProcess):
-    ObservableType<ProcessMessage> {
+    Observable<ProcessMessage> {
   return Observable.using(
     () => new Process(createProcess()),
     ({process}) => {

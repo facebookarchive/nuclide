@@ -32,7 +32,6 @@ let paneItem: ?HTMLElement;
 let viewTimeout: ?number = null;
 let analyticsTimeout: ?number = null;
 let analyticsBuffer: Array<HealthStats> = [];
-let gadgets: ?GadgetsService = null;
 
 // Variables for tracking where and when a key was pressed, and the time before it had an effect.
 let activeEditorSubscriptions: ?CompositeDisposable = null;
@@ -96,7 +95,6 @@ export function consumeToolBar(getToolBar: (group: string) => Object): void {
 
 export function consumeGadgetsService(gadgetsApi: GadgetsService): IDisposable {
   invariant(paneItemState$);
-  gadgets = gadgetsApi;
   const gadget: Gadget = (createHealthGadget(paneItemState$): any);
   return gadgetsApi.registerGadget(gadget);
 }

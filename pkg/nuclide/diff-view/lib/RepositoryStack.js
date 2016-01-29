@@ -97,7 +97,7 @@ export default class RepositoryStack {
     try {
       this._updateDirtyFileChanges();
       await this._updateCompareFileChanges();
-    } catch(error) {
+    } catch (error) {
       notifyInternalError(error);
     }
   }

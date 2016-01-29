@@ -59,7 +59,7 @@ module.exports = new Set([
   'setInterval',
   'setTimeout',
   'window',
-  
+
   'Option',
 
   // Module built ins.

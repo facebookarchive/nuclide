@@ -307,7 +307,8 @@ module.exports = {
     }
   },
 
-  /** The diff-view package can consume providers that return React components to
+  /**
+   * The diff-view package can consume providers that return React components to
    * be rendered inline.
    * A uiProvider must have a method composeUiElements with the following spec:
    * @param filePath The path of the file the diff view is opened for

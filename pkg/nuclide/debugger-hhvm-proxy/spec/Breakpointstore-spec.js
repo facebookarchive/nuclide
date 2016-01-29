@@ -23,7 +23,7 @@ describe('debugger-hhvm-proxy BreakpointStore', () => {
     return () => {
       id++;
       return prefix + id;
-    }
+    };
   }
 
   beforeEach(() => {

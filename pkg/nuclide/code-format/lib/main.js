@@ -11,10 +11,10 @@
 
 const invariant = require('assert');
 
-import type CodeFormatManager from './CodeFormatManager';
+import type CodeFormatManagerType from './CodeFormatManager';
 import type {CodeFormatProvider} from './types';
 
-let codeFormatManager: ?CodeFormatManager = null;
+let codeFormatManager: ?CodeFormatManagerType = null;
 
 module.exports = {
 

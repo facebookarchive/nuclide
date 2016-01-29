@@ -356,12 +356,6 @@ describe('debugger-hhvm-proxy ConnectionMultiplexer', () => {
   //   break: are there any disabled connections in break status
   //   running: are there any connections in running status
   //
-  async function gotoTFF(): Promise {
-    await doAttach();
-    sendConnectionStatus(0, STATUS_BREAK);
-
-    expectEnabled(0);
-  }
   it('TFF: Break-Enabled', () => {
     waitsForPromise(async () => {
       await doAttach();
