@@ -32,6 +32,12 @@
   });
 
   headingNodes.forEach(function(node) {
+    // Only do anchors in articles. If there are
+    // h2, h3 elements in the navbar, etc. we don't
+    // want anchors there.
+    if (node.parentNode.localName !== 'article') {
+      return;
+    }
     var link;
     var id;
     var psib;
