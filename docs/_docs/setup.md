@@ -131,39 +131,3 @@ To benefit from all of Nuclide's features, we recommend you also install the fol
   [hg-repository](https://github.com/facebook/nuclide/tree/master/pkg/nuclide/hg-repository),
   [server](https://github.com/facebook/nuclide/tree/master/pkg/nuclide/server), and
   [quick-open](https://github.com/facebook/nuclide/tree/master/pkg/nuclide/quick-open) packages.
-
-## Troubleshooting Installation
-
-### Incompatible native module error
-
-If you switch Atom versions, or if you `npm install nuclide` instead of `apm install nuclide`, you
-may find yourself with an "incompatible native module" error:
-
-!["incompatible native module" error](/static/images/incompatible-native-module-error.png)
-
-#### (easy) Fixing via the "Incompatible Packages" tool
-
-From the Command Palette, search for "Incompatible Packages: view", or click the "bug" icon in the
-status bar. Then select "Rebuild Packages", and restart Atom.
-
-_If you can't find "Incompatible Packages", make sure that the `incompatible-packages` package is
-enabled via `Settings` `->` `Packages`._
-
-![incompatible packages view](/static/images/incompatible-packages-view.png)
-
-#### (hard) Fixing via the CLI
-
-From the Atom Developer Tools, give the incompatible modules storage a kick:
-
-```js
-localStorage.removeItem(
-  atom.packages.getLoadedPackage('nuclide')
-    .getIncompatibleNativeModulesStorageKey()
-)
-```
-
-Then, from your terminal:
-
-```sh
-$ apm rebuild nuclide
-```
