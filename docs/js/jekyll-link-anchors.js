@@ -22,22 +22,16 @@
   //   h2: Linux (#linux)
   //     h3: prerequisites (#linux__prerequisites)
 
-  var headingNodes = [];
+  // We don't want anchors for any random h2 or h3; only ones with an
+  // id attribute which aren't in h2's and h3's in the sidebar ToC and
+  // header bar.
+  var possibleNodeNames = ['h2', 'h3', 'h4', 'h5']; // Really try to only have up to h3, please
+  var tags = document.querySelectorAll('h2[id], h3[id], h4[id], h5[id]');
+  var headingNodes = Array.prototype.slice.call(tags);
   var results;
-  var tags = ['h2', 'h3']; // Avoid having 4+ levels of headings, linkable at least
-
-  tags.forEach(function(tag) {
-    results = document.getElementsByTagName(tag);
-    Array.prototype.push.apply(headingNodes, results);
-  });
 
   headingNodes.forEach(function(node) {
-    // Only do anchors in articles. If there are
-    // h2, h3 elements in the navbar, etc. we don't
-    // want anchors there.
-    if (node.parentNode.localName !== 'article') {
-      return;
-    }
+    var nameIdx = possibleNodeNames.indexOf(node.localName); // h2 = 0, h3 = 1, etc.
     var link;
     var id;
     var psib;
@@ -48,16 +42,16 @@
     // Avoid duplicate anchor links
     // If we are at an h3, go through the previous element siblings of this node, and find its
     // h2 parent and append it to the href text.
-    if (node.localName === 'h3') {
-      psib = node.previousElementSibling;
-      while (psib) {
-        // this should be an h2 99.9% of the time, but if not, we can still create the link.
-        if (headingNodes.indexOf(psib) !== -1) {
-          id += psib.getAttribute('id') + '__';
-          break;
-        }
-        psib = psib.previousElementSibling;
+    psib = node.previousElementSibling;
+    var idx;
+    while (psib) {
+      // Find the parent, if it exists.
+      idx = possibleNodeNames.indexOf(psib.localName);
+      if (idx !== -1 && idx === nameIdx - 1) { // if we are at h3, we want h2. That's why the - 1
+        id += psib.getAttribute('id') + '__';
+        break;
       }
+      psib = psib.previousElementSibling;
     }
     link.id = id + node.getAttribute('id');
     link.href = "#" + link.id;
