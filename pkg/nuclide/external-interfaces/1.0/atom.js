@@ -558,6 +558,12 @@ declare class atom$TextEditor extends atom$Model {
     persistent?: boolean;
     invalidate?: string;
   }): atom$Marker;
+  markScreenRange(range: atom$Range | Array<Array<number>>, properties?: {
+    maintainHistory?: boolean;
+    reversed?: boolean;
+    persistent?: boolean;
+    invalidate?: string;
+  }): atom$Marker;
 
   // Cursors
   getCursors(): Array<atom$Cursor>;
