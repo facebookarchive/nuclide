@@ -22,6 +22,9 @@ const {fsPromise} = require('../../../commons');
 
 import type {FileWithStats} from './FileSystemServiceType';
 
+// Attempting to read large files just crashes node, so just fail.
+// Atom can't handle files of this scale anyway.
+const READFILE_SIZE_LIMIT = 10 * 1024 * 1024;
 
 ///////////////////
 //
@@ -195,8 +198,12 @@ export function unlink(path: string): Promise {
  *
  *   Callers who want a string should call buffer.toString('utf8').
  */
-export function readFile(path: string, options?: {flag?: string}):
+export async function readFile(path: string, options?: {flag?: string}):
     Promise<Buffer> {
+  const stats = await fsPromise.stat(path);
+  if (stats.size > READFILE_SIZE_LIMIT) {
+    throw new Error(`File is too large (${stats.size} bytes)`);
+  }
   return fsPromise.readFile(path, options);
 }
 

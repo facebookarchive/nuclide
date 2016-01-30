@@ -188,6 +188,7 @@ async function createEditorForNuclide(
       await buffer.load();
     } catch (err) {
       logger.warn('buffer load issue:', err);
+      atom.notifications.addError(`Failed to open ${uri}: ${err.message}`);
       throw err;
     }
   }
