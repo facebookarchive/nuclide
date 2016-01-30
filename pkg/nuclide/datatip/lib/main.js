@@ -9,19 +9,36 @@
  * the root directory of this source tree.
  */
 
+import type {
+  DatatipProvider,
+} from '../../datatip-interfaces';
+
+const {Disposable} = require('atom');
+import invariant from 'assert';
+
 import {DatatipManager} from './DatatipManager';
 
-let manager: ?DatatipManager = null;
+let datatipManager: ?DatatipManager = null;
 
 export function activate(state: ?any): void {
-  if (manager == null) {
-    manager = new DatatipManager();
+  if (datatipManager == null) {
+    datatipManager = new DatatipManager();
   }
 }
 
+export function consumeDatatipProvider(provider: DatatipProvider): IDisposable {
+  invariant(datatipManager);
+  datatipManager.addProvider(provider);
+  return new Disposable(() => {
+    if (datatipManager != null) {
+      datatipManager.removeProvider(provider);
+    }
+  });
+}
+
 export function deactivate() {
-  if (manager != null) {
-    manager.dispose();
-    manager = null;
+  if (datatipManager != null) {
+    datatipManager.dispose();
+    datatipManager = null;
   }
 }
