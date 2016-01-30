@@ -81,7 +81,6 @@
     "ssh2": "0.4.12",
     "strong-data-uri": "1.0.3",
     "temp": "0.8.3",
-    "thrift": "0.9.3",
     "url-join": "0.0.1",
     "urlregexp": "1.0.2",
     "uuid": "2.0.1",
