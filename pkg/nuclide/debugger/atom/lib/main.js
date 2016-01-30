@@ -50,6 +50,20 @@ class Activation {
     this._disposables = new CompositeDisposable(
       this._model,
       atom.views.addViewProvider(DebuggerModel, createDebuggerView),
+
+      // Listen for removed projects and kill the associated debugger if it is attached.
+      atom.project.onDidChangePaths(projectPaths => {
+        const debuggerProcess = this._model.getStore().getDebuggerProcess();
+        if (debuggerProcess == null) {
+          return;
+        }
+        const debugeeProjectPath = debuggerProcess.getTargetUri();
+        if (projectPaths.indexOf(debugeeProjectPath) < 0) {
+          this._model.getActions().killDebugger();
+        }
+      }),
+
+      // Commands.
       atom.commands.add('atom-workspace', {
         'nuclide-debugger:toggle': this._toggle.bind(this),
       }),
