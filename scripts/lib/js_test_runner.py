@@ -31,8 +31,6 @@ class JsTestRunner(object):
         apm_tests = []
         npm_tests = []
         serial_only_tests = []
-        # Even if the npm/apm tests are disabled, we should still honor the Flow check.
-        flow_tests = [('flow', self._package_manager.get_nuclide_path(), 'nuclide')]
 
         for package_config in self._package_manager.get_configs():
             pkg_path = package_config['packageRootAbsolutePath']
@@ -65,14 +63,17 @@ class JsTestRunner(object):
             # We run all tests in serial on Windows because Python's multiprocessing library has issues:
             # https://docs.python.org/2/library/multiprocessing.html#windows
             parallel_tests = []
-            serial_tests = npm_tests + apm_tests + flow_tests
+            serial_tests = npm_tests + apm_tests
         else:
             # Currently, all tests appear to be able to be run in parallel. We keep this code
             # here in case we have to special-case any tests (on a short-term basis) to be run
             # serially after all of the parallel tests have finished.
-            parallel_tests = npm_tests + apm_tests + flow_tests
+            parallel_tests = npm_tests + apm_tests
             serial_tests = []
+
         serial_tests += serial_only_tests
+
+        serial_tests += [('flow', self._package_manager.get_nuclide_path(), 'nuclide')]
 
         if parallel_tests:
             pool = Pool(processes=max(1, cpu_count() - 2))
