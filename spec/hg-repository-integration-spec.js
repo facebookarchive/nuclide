@@ -13,8 +13,9 @@ import {
   activateAllPackages,
   copyMercurialFixture,
   deactivateAllPackages,
-} from '../../integration-test-helpers';
+} from '../pkg/nuclide/integration-test-helpers';
 import path from 'path';
+import invariant from 'assert';
 
 describe('Mercurial Repository Integration Tests', () => {
   beforeEach(() => {
@@ -32,6 +33,12 @@ describe('Mercurial Repository Integration Tests', () => {
       atom.project.setPaths([repoPath]);
       // Open a file within this project.
       await atom.workspace.open(path.join(repoPath, 'test.txt'));
+      // Verify mercurialness.
+      const respositories = atom.project.getRepositories();
+      expect(respositories.length).toBe(1);
+      const repository = respositories[0];
+      invariant(repository);
+      expect(repository.getPath().endsWith('/.hg')).toBe(true);
       // Remove project
       atom.project.removePath(repoPath);
       expect(console.error).not.toHaveBeenCalled(); // eslint-disable-line no-console
