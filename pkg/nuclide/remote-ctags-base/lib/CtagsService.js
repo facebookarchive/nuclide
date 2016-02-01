@@ -44,7 +44,7 @@ export class CtagsService {
   ): Promise<Array<CtagsResult>> {
     let ctags;
     try {
-      ctags = require('ctags');
+      ctags = require('../VendorLib/ctags-prebuilt');
     } catch (e) {
       getLogger().error('Could not load the ctags package:', e);
       return Promise.resolve([]);
