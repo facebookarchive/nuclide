@@ -12,7 +12,7 @@ from remote_objects import ValueListRemoteObject
 import file_manager
 import serialize
 from logging_helper import log_debug
-from thread_manager import CALL_STACK_OBJECT_GROUP
+from thread_manager import ThreadManager
 
 class ModuleSourcePathUpdater:
     """Register source paths in debug data of modules as they are loaded.
@@ -49,7 +49,7 @@ class LLDBListenerThread(Thread):
     should_quit = False
 
     def __init__(self, server, location_serializer, remote_object_manager,
-                 module_source_path_updater, process):
+                 module_source_path_updater, thread_manager, process):
       Thread.__init__(self)
       self.daemon = True
 
@@ -58,6 +58,7 @@ class LLDBListenerThread(Thread):
       self.remote_object_manager = remote_object_manager
       self.module_source_path_updater = module_source_path_updater
       self.listener = SBListener('Chrome Dev Tools Listener')
+      self.thread_manager = thread_manager
 
       self._add_listener_to_process(process)
       self._broadcast_process_state(process)
@@ -79,13 +80,14 @@ class LLDBListenerThread(Thread):
     def _broadcast_process_state(self, process):
         # Reset the object group so old frame variable objects don't linger
         # forever.
-        self.remote_object_manager.release_object_group(CALL_STACK_OBJECT_GROUP)
+        self.thread_manager.release()
         if process.state == eStateStepping or process.state == eStateRunning:
             self.server.send_notification('Debugger.resumed', None)
         else:
-            thread = process.selected_thread
+            thread = process.GetSelectedThread()
+            self.thread_manager.update(process)
             params = {
-              "callFrames": self._get_callstack(thread.frames),
+              "callFrames": self.thread_manager.get_thread_stack(thread),
               "reason": serialize.StopReason_to_string(thread.GetStopReason()),
               "data": {},
             }
@@ -117,31 +119,6 @@ class LLDBListenerThread(Thread):
                 elif SBWatchpoint.EventIsWatchpointEvent(event):
                     self._watchpoint_event(event)
 
-    def _get_callstack(self, frames):
-        """Return serialized callstack."""
-        result = []
-        for frame in frames:
-            # SBFrame.GetVariables(arguments, locals, statics, in_scope_only)
-            variables = frame.GetVariables(True, True, True, False)
-            local_variables = self.remote_object_manager.add_object(
-                ValueListRemoteObject(
-                    variables,
-                    self.remote_object_manager.get_add_object_func(CALL_STACK_OBJECT_GROUP)),
-                CALL_STACK_OBJECT_GROUP)
-            target = frame.GetThread().GetProcess().GetTarget()
-            offset = frame.GetPCAddress().GetLoadAddress(target) \
-                - frame.GetSymbol().GetStartAddress().GetLoadAddress(target)
-            result.append({
-                'callFrameId': "%d.%d" % (frame.thread.idx, frame.idx),
-                'functionName': "%s +%x" % (frame.name, offset),
-                'location': self.location_serializer.get_frame_location(frame),
-                'scopeChain': [{
-                    'object': local_variables.serialized_value,
-                    'type': 'local',
-                }],
-            })
-        return result
-
 
 class DebuggerDomain(HandlerDomain):
 
@@ -155,6 +132,7 @@ class DebuggerDomain(HandlerDomain):
             fileManager, basepath)
         self.moduleSourcePathUpdater = ModuleSourcePathUpdater(
             self.debugger.GetSelectedTarget(), fileManager, basepath)
+        self.thread_manager = ThreadManager(self.socket, self.locationSerializer, self.remoteObjectManager)
 
     @property
     def name(self):
@@ -186,6 +164,7 @@ class DebuggerDomain(HandlerDomain):
             location_serializer=self.locationSerializer,
             remote_object_manager=self.remoteObjectManager,
             module_source_path_updater=self.moduleSourcePathUpdater,
+            thread_manager = self.thread_manager,
             process=process)
         self.moduleSourcePathUpdater.modules_updated()
         self.event_thread.start()
@@ -224,6 +203,21 @@ class DebuggerDomain(HandlerDomain):
     def resume(self, params):
         self.debugger.GetSelectedTarget().process.Continue()
         return {}
+
+    @handler()
+    def selectThread(self, params):
+        threadId = params['threadId']
+        self.debugger.GetSelectedTarget().process.SetSelectedThreadByID(threadId)
+        return {}
+
+    @handler()
+    def getThreadStack(self, params):
+        threadId = params['threadId']
+        thread = self.debugger.GetSelectedTarget().process.GetThreadByID(threadId)
+        params = { "callFrames": [] }
+        if not thread == None:
+            params["callFrames"] = self.thread_manager.get_thread_stack(thread)
+        return params
 
     @handler()
     def searchInContent(self, params):

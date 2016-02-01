@@ -78,3 +78,6 @@ class ThreadManager(object):
                 }],
             })
         return result
+
+    def release(self):
+        self._remote_object_manager.release_object_group(CALL_STACK_OBJECT_GROUP)
