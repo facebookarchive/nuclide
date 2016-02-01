@@ -10,7 +10,7 @@
     Improve the quality of your JavaScript with built in support for [Flow](http://flowtype.org), 
     including autocomplete, jump-to-definition, and inline errors.  
     
-    [**Read More**](/docs/flow/)
+    [**Read More**](/docs/languages/flow/)
   image: images/docs/FlowClickDefine.gif
   
 - title: Developing Hack
@@ -18,7 +18,7 @@
     Nuclide is the first IDE with support for Hack, including autocomplete, jump-to-definition, 
     inline errors, and an omni-search bar for your project.     
     
-    [**Read More**](/docs/hack/)
+    [**Read More**](/docs/languages/hack/)
   image: images/docs/HackAutocomplete.gif
   
 - title: Mercurial Support
