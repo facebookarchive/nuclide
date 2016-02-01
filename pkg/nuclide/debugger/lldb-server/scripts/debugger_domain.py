@@ -12,10 +12,7 @@ from remote_objects import ValueListRemoteObject
 import file_manager
 import serialize
 from logging_helper import log_debug
-
-
-CALL_STACK_OBJECT_GROUP = 'callstack'
-
+from thread_manager import CALL_STACK_OBJECT_GROUP
 
 class ModuleSourcePathUpdater:
     """Register source paths in debug data of modules as they are loaded.
