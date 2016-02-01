@@ -1,5 +1,15 @@
 # Nuclide Changelog
 
+## 0.115.0
+
+* Fixed the OCaml Merlin path config setting
+* Fixed Clang autocomplete latency regression
+* Fixed diagnostics for local PHP files
+* Fixed diagnostics for Hack
+* Improved reloading multiple remote projects after a crash
+* Improved server reliability by handling invalid marshalling and Watchman recrawls
+* Prevent opening files larger than 10MB on the server to prevent crashes
+
 ## 0.114.0
 
 ### Added
