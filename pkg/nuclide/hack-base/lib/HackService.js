@@ -299,7 +299,7 @@ export async function getReferences(
 }
 
 export function getHackEnvironmentDetails(
-  localFile: string,
+  localFile: NuclideUri,
   hackCommand: string
 ): Promise<?{hackRoot: NuclideUri, hackCommand: string}> {
   setHackCommand(hackCommand);
