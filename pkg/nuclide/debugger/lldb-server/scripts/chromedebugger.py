@@ -13,13 +13,13 @@ import json
 import sys
 import traceback
 
-from console import ConsoleDomain
-from debugger import DebuggerDomain
+from console_domain import ConsoleDomain
+from debugger_domain import DebuggerDomain
 from file_manager import FileManager
 from handler import HandlerDomainSet, UndefinedDomainError, UndefinedHandlerError
 from page_domain import PageDomain
 from remote_objects import RemoteObjectManager
-from runtime import RuntimeDomain
+from runtime_domain import RuntimeDomain
 from logging_helper import log_debug, log_error
 
 

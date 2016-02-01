@@ -10,7 +10,7 @@ import unittest
 
 from mock_server import MockServer
 
-from ..console import ConsoleDomain
+from ..console_domain import ConsoleDomain
 
 class ConsoleDomainTestCase(unittest.TestCase):
     def setUp(self):

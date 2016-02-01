@@ -6,7 +6,7 @@
 
 from ..find_lldb import lldb
 
-from ..debugger import DebuggerDomain, CALL_STACK_OBJECT_GROUP
+from ..debugger_domain import DebuggerDomain, CALL_STACK_OBJECT_GROUP
 from ..file_manager import FileManager
 from ..remote_objects import RemoteObjectManager, RemoteObject
 from mock_server import MockServer

@@ -6,7 +6,7 @@
 
 from ..find_lldb import lldb
 from ..remote_objects import RemoteObjectManager
-from ..runtime import RuntimeDomain
+from ..runtime_domain import RuntimeDomain
 from mock_server import MockServer
 from mock_remote_objects import MockRemoteObject
 from pkg_resources import resource_string
