@@ -90,7 +90,7 @@
   },
   "devDependencies": {
     "ast-types-flow": "0.0.7",
-    "babel-eslint": "4.1.6",
+    "babel-eslint": "4.1.7",
     "eslint": "1.10.3",
     "eslint-plugin-babel": "3.0.0",
     "eslint-plugin-jasmine": "1.6.0",
