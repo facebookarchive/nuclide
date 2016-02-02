@@ -68,6 +68,12 @@ export function expressionForRevisionsBeforeHead(numberOfRevsBefore: number): st
 
 // Section: Revision Sets
 
+export function expressionForCommonAncestor(revision: string): string {
+  const commonAncestorExpression = `ancestor(${revision}, ${HG_CURRENT_WORKING_DIRECTORY_PARENT})`;
+  // shell-escape does not wrap ancestorExpression in quotes without this toString conversion.
+  return commonAncestorExpression.toString();
+}
+
 /**
  * @param revision The revision expression of a revision of interest.
  * @param workingDirectory The working directory of the Hg repository.
@@ -80,10 +86,7 @@ export async function fetchCommonAncestorOfHeadAndRevision(
 ): Promise<string> {
   const {asyncExecute} = require('../../commons');
 
-  let ancestorExpression = `ancestor(${revision}, ${HG_CURRENT_WORKING_DIRECTORY_PARENT})`;
-  // shell-escape does not wrap ancestorExpression in quotes without this toString conversion.
-  ancestorExpression = ancestorExpression.toString();
-
+  const ancestorExpression = expressionForCommonAncestor(revision);
   // shell-escape does not wrap '{rev}' in quotes unless it is double-quoted.
   const args = ['log', '--template', '{rev}', '--rev', ancestorExpression];
   const options = {

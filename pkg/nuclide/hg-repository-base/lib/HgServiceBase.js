@@ -16,7 +16,7 @@ import {Observable, Subject} from 'rx';
 import {parseHgBlameOutput} from './hg-blame-output-parser';
 import {parseMultiFileHgDiffUnifiedOutput} from './hg-diff-output-parser';
 import {
-  fetchCommonAncestorOfHeadAndRevision,
+  expressionForCommonAncestor,
   expressionForRevisionsBeforeHead,
   fetchRevisionInfoBetweenRevisions,
 } from './hg-revision-expression-helpers';
@@ -230,15 +230,8 @@ class HgServiceBase {
 
   async fetchRevisionInfoBetweenHeadAndBase(): Promise<?Array<RevisionInfo>> {
     const fokBaseName = await getForkBaseName(this._workingDirectory);
-    const commonAncestorRevision = await fetchCommonAncestorOfHeadAndRevision(
-      fokBaseName,
-      this._workingDirectory,
-    );
-    if (!commonAncestorRevision) {
-      return null;
-    }
     const revisionsInfo = await fetchRevisionInfoBetweenRevisions(
-      commonAncestorRevision,
+      expressionForCommonAncestor(fokBaseName),
       expressionForRevisionsBeforeHead(0),
       this._workingDirectory,
     );
