@@ -90,7 +90,8 @@ class ObjectiveCColonIndenter {
           const unindentedLine = line.trimLeft();
           // 2. Calculate the amount of indentation the line should end up with.
           const numberOfIndentCharacters = line.length - unindentedLine.length;
-          const unindentedCurrentColonColumn = currentColonPosition.column - numberOfIndentCharacters;
+          const unindentedCurrentColonColumn =
+            currentColonPosition.column - numberOfIndentCharacters;
           const totalIndentAmount = unindentedCurrentColonColumn >= colonColumn
             ? 0
             : colonColumn - unindentedCurrentColonColumn;

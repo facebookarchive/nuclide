@@ -59,7 +59,10 @@ describe('scribe_cat test suites', () => {
   it('Saves data to scribe category', () => {
     const localScribeProcess = scribeProcess = new ScribeProcess('test');
 
-    const messages = 'A nuclide is an atomic species characterized by the specific constitution of its nucleus.'.split(' ');
+    const messages = [
+      'A', 'nuclide', 'is', 'an', 'atomic', 'species', 'characterized', 'by', 'the', 'specific',
+      'constitution', 'of', 'its', 'nucleus.',
+    ];
     waitsForPromise(async () => {
       await Promise.all(messages.map(message => localScribeProcess.write(message)));
       // Wait for `scribe_cat_mock` to flush data into disk.

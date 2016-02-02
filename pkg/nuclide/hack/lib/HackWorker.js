@@ -27,8 +27,9 @@ type WorkerTask = {
 /**
  * HackWorker uses the hh_ide.js that's a translation from OCaml to JavaScript (not readable).
  * It's responsible for providing language services without hitting the server, if possible.
- * e.g. some autocompletions, go to definition, diagnostic requests and outline could be served locally.
- * This is done as a web worker not to block the main UI thread when executing language tasks.
+ * e.g. some autocompletions, go to definition, diagnostic requests and outline could be served
+ * locally. This is done as a web worker not to block the main UI thread when executing language
+ * tasks.
  */
 
 type HackWorkerOptions = {

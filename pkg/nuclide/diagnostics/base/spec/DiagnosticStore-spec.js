@@ -168,7 +168,8 @@ describe('DiagnosticStore', () => {
     expect(allMessages).toContain(projectMessageA);
   });
 
-  it('An update should notify listeners for the scope(s) of the update, and not affect other listeners.', () => {
+  it('An update should notify listeners for the scope(s) of the update, and not affect other'
+    + ' listeners.', () => {
     // Set the initial state of the store.
     addUpdateA();
 
@@ -230,7 +231,8 @@ describe('DiagnosticStore', () => {
     expect(allMessages).toContain(projectMessageB);
   });
 
-  it('An update from the same provider should overwrite previous messages from that provider.', () => {
+  it('An update from the same provider should overwrite previous messages from that'
+    + ' provider.', () => {
     // Set the initial state of the store.
     addUpdateA();
     addUpdateB();
@@ -281,7 +283,8 @@ describe('DiagnosticStore', () => {
   });
 
   describe('When an invalidation message is sent from one provider, ', () => {
-    it('if specifying file scope, it should only invalidate messages from that provider for that file.', () => {
+    it('if specifying file scope, it should only invalidate messages from that provider for that'
+      + ' file.', () => {
       // Set up the state of the store.
       addUpdateB();
       addUpdateA2();
@@ -327,7 +330,8 @@ describe('DiagnosticStore', () => {
       expect(allMessages).toContain(projectMessageB);
     });
 
-    it('if specifying project scope, it should only invalidate project-scope messages from that provider.', () => {
+    it('if specifying project scope, it should only invalidate project-scope messages from that'
+      + ' provider.', () => {
       // Set up the state of the store.
       addUpdateB();
       addUpdateA2();

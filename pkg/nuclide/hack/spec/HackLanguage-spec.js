@@ -49,7 +49,8 @@ describe('HackLanguage', () => {
         const fileContents = fs.readFileSync(filePath, 'utf8');
         const completionOffset = fileContents.indexOf('->') + 2;
 
-        const completions = await hackLanguage.getCompletions(filePath, fileContents, completionOffset);
+        const completions =
+          await hackLanguage.getCompletions(filePath, fileContents, completionOffset);
 
         expect(completions.length).toBe(2);
         expect(completions[0]).toEqual({
@@ -87,11 +88,14 @@ class HackClass {}
         const filePath = path.join(__dirname, 'fixtures', 'HackExample3.php');
         const fileContents = fs.readFileSync(filePath, 'utf8');
 
-        const nullType = await hackLanguage.getType(filePath, fileContents, 'WebSupportFormCountryTypeahead', 4, 14);
+        const nullType = await hackLanguage.getType(
+          filePath, fileContents, 'WebSupportFormCountryTypeahead', 4, 14);
         expect(nullType).toBeNull();
-        const timeZoneType = await hackLanguage.getType(filePath, fileContents, '$timezone_id', 7, 27);
+        const timeZoneType = await hackLanguage.getType(
+          filePath, fileContents, '$timezone_id', 7, 27);
         expect(timeZoneType).toBe('TimeZoneTypeType');
-        const groupedAdsType = await hackLanguage.getType(filePath, fileContents, '$grouped_ads', 9, 11);
+        const groupedAdsType = await hackLanguage.getType(
+          filePath, fileContents, '$grouped_ads', 9, 11);
         expect(groupedAdsType).toBe('[shape-like array]');
       });
     });
@@ -137,16 +141,20 @@ class HackClass {}
     });
 
     it('_parseStringForExpression returns an php expression from a line with < and >', () => {
-      const {search} = hackLanguage._parseStringForExpression('  $abc = $def <$lol && $x > $z;', 11);
+      const {search} =
+        hackLanguage._parseStringForExpression('  $abc = $def <$lol && $x > $z;', 11);
       expect(search).toEqual('$def');
     });
 
-    it('_parseStringForExpression returns an php expression from a line with php code and xhp expression', () => {
-      const {search} = hackLanguage._parseStringForExpression('  $abc = $get$Xhp() . <ui:button attr="cs">;', 25);
+    it('_parseStringForExpression returns an php expression from a line with php code and xhp'
+      + ' expression', () => {
+      const {search} =
+        hackLanguage._parseStringForExpression('  $abc = $get$Xhp() . <ui:button attr="cs">;', 25);
       expect(search).toEqual(':ui:button');
     });
 
-    it('_parseStringForExpression returns an php expression from a line with multiple xhp expression', () => {
+    it('_parseStringForExpression returns an php expression from a line with multiple xhp'
+      + ' expression', () => {
       const lineText = '  $abc = <ui:button attr="cs"> . <ui:radio>;';
       expect(hackLanguage._parseStringForExpression(lineText, 4).search).toBe('$abc');
       expect(hackLanguage._parseStringForExpression(lineText, 15).search).toBe(':ui:button');

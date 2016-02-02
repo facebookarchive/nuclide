@@ -54,13 +54,18 @@ describe('findWholeRangeOfSymbol', () => {
     expect(ranges).toEqualAtomRanges([expectedRange]);
   });
 
-  it('finds the range of a selector with multiple arguments, when any of the segments is the selected "text".', () => {
+  it('finds the range of a selector with multiple arguments, when any of the segments is the'
+    + ' selected "text".', () => {
     const spelling = 'createDirectoryAtPath:withIntermediateDirectories:attributes:error:';
     // The ranges returned should be all the ranges of all the segments, including the colons.
-    const expectedRange1 = new Range([17, 20], [17, 42]); // location of textRangeInSample1 + 1 colon
-    const expectedRange2 = new Range([18, 14], [18, 42]); // location of textRangeInSample2 + 1 colon
-    const expectedRange3 = new Range([19, 31], [19, 42]); // location of textRangeInSample3 + 1 colon
-    const expectedRange4 = new Range([19, 46], [19, 52]); // location of textRangeInSample4 + 1 colon
+    // location of textRangeInSample1 + 1 colon
+    const expectedRange1 = new Range([17, 20], [17, 42]);
+    // location of textRangeInSample2 + 1 colon
+    const expectedRange2 = new Range([18, 14], [18, 42]);
+    // location of textRangeInSample3 + 1 colon
+    const expectedRange3 = new Range([19, 31], [19, 42]);
+    // location of textRangeInSample4 + 1 colon
+    const expectedRange4 = new Range([19, 46], [19, 52]);
     const expectedRanges = [expectedRange1, expectedRange2, expectedRange3, expectedRange4];
     const extent = {start: {line: 17, column: 6}, end: {line: 19, column: 56}};
 

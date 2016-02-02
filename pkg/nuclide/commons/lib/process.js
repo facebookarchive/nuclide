@@ -202,7 +202,6 @@ function scriptSafeSpawnAndObserveOutput(
   args?: Array<string> = [],
   options?: Object = {},
 ): Observable<{stderr?: string; stdout?: string;}> {
-  const {Observable} = require('rx');
   return Observable.create((observer: Observer) => {
     let childProcess;
     scriptSafeSpawn(command, args, options).then(proc => {

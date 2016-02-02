@@ -79,8 +79,8 @@ function useRealClock(): void {
 }
 
 /**
- * unspy is a ported utility from Atom's `spec-helper.coffee` that restores the jasmine spied function
- * on an object to its original value.
+ * unspy is a ported utility from Atom's `spec-helper.coffee` that restores the jasmine spied
+ * function on an object to its original value.
  */
 function unspy(object: Object, methodName: string) {
   if (!object[methodName].hasOwnProperty('originalValue')) {
@@ -104,8 +104,9 @@ attributes['get'] = function() { return now; };
 Object.defineProperty(global, 'now', attributes);
 
 /**
- * This hook is a the first initialization code that happens before any jasmine test case is executed.
- * This allows to use the fake timing by default and is a direct port from Atom's `spec-helper.coffee`
+ * This hook is a the first initialization code that happens before any jasmine test case is
+ * executed. This allows to use the fake timing by default and is a direct port from Atom's
+ * `spec-helper.coffee`
  */
 beforeEach(() => {
   resetTimeouts();

@@ -42,7 +42,8 @@ function parseDevicesFromSimctlOutput(output: string): Device[] {
       return;
     }
 
-    const device = line.match(/^[ ]*([^()]+) \(([^()]+)\) \((Creating|Booting|Shutting Down|Shutdown|Booted)\)/);
+    const device =
+      line.match(/^[ ]*([^()]+) \(([^()]+)\) \((Creating|Booting|Shutting Down|Shutdown|Booted)\)/);
     if (device && currentOS) {
       const [, name, udid, state] = device;
       devices.push({name, udid, state, os: currentOS});

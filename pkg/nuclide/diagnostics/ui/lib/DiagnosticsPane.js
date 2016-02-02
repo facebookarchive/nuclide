@@ -38,7 +38,10 @@ function typeColumnCellDataGetter(cellDataKey: 'type', diagnostic: DiagnosticMes
   return diagnostic.type;
 }
 
-function sourceColumnCellDataGetter(cellDataKey: 'providerName', diagnostic: DiagnosticMessage): string {
+function sourceColumnCellDataGetter(
+  cellDataKey: 'providerName',
+  diagnostic: DiagnosticMessage
+): string {
   return diagnostic.providerName;
 }
 
@@ -88,7 +91,9 @@ function messageColumnCellRenderer(message: textAndType): ReactElement {
   if (message.isPlainText) {
     return plainTextColumnCellRenderer(message.text);
   } else {
-    return <span className="nuclide-fixed-data-cell" dangerouslySetInnerHTML={{__html: message.text}} />;
+    return (
+      <span className="nuclide-fixed-data-cell" dangerouslySetInnerHTML={{__html: message.text}} />
+    );
   }
 }
 

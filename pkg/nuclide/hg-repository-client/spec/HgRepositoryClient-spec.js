@@ -72,14 +72,16 @@ describe('HgRepositoryClient', () => {
   });
 
   describe('::getProjectDirectory', () => {
-    it('returns the path of the root project folder in Atom that this Client provides information about.', () => {
+    it('returns the path of the root project folder in Atom that this Client provides information'
+    + ' about.', () => {
       expect(repo.getProjectDirectory()).toBe(projectDirectory.getPath());
     });
   });
 
   describe('::getStatuses', () => {
     beforeEach(() => {
-      // Test setup: Mock out the dependency on HgRepository::_updateStatuses, and set up the cache state.
+      // Test setup: Mock out the dependency on HgRepository::_updateStatuses, and set up the cache
+      // state.
       const mockFetchedStatuses = {[PATH_1]: StatusCodeId.ADDED};
       spyOn(repo, '_updateStatuses').andCallFake((paths, options) => {
         const statuses = new Map();
@@ -94,7 +96,8 @@ describe('HgRepositoryClient', () => {
       };
     });
 
-    it('returns statuses from the cache when possible, and only fetches the status for cache misses.', () => {
+    it('returns statuses from the cache when possible, and only fetches the status for cache'
+      + ' misses.', () => {
       const hgStatusOptions = {hgStatusOption: HgStatusOption.ALL_STATUSES};
       waitsForPromise(async () => {
         const statusMap = await repo.getStatuses([PATH_1, PATH_2], hgStatusOptions);
@@ -181,15 +184,16 @@ describe('HgRepositoryClient', () => {
       });
     });
 
-    describe(`it removes a path from the cache if the fetch indicates its status is unknown but incorrect in the cache,
-        as informed by the hgStatusOption passed in`, () => {
+    describe('it removes a path from the cache if the fetch indicates its status is unknown but'
+      + ' incorrect in the cache, as informed by the hgStatusOption passed in', () => {
       const pathsWithNoStatusReturned = [PATH_4, PATH_5];
 
       it('Case 1: HgStatusOption.ONLY_NON_IGNORED', () => {
         waitsForPromise(async () => {
           await repo._updateStatuses(pathsWithNoStatusReturned, nonIgnoredOption);
           // PATH_4 was queried for but not returned, but the fetch was for non-ignored files.
-          //   We have no evidence that its status is out of date, so it should remain 'ignored' in the cache.
+          //   We have no evidence that its status is out of date, so it should remain 'ignored' in
+          //   the cache.
           // PATH_5 was queried for but not returned, and the fetch was for non-ignored files.
           //   This means its state is no longer 'modified', as it was listed in the cache.
           expect(repo._hgStatusCache[PATH_4]).toBe(StatusCodeId.IGNORED);
@@ -201,7 +205,8 @@ describe('HgRepositoryClient', () => {
         waitsForPromise(async () => {
           await repo._updateStatuses(pathsWithNoStatusReturned, onlyIgnoredOption);
           // PATH_5 was queried for but not returned, but the fetch was for ignored files.
-          //   We have no evidence that its status is out of date, so it should remain 'modified' in the cache.
+          //   We have no evidence that its status is out of date, so it should remain 'modified' in
+          //   the cache.
           // PATH_4 was queried for but not returned, and the fetch was for ignored files.
           //   This means its state is no longer 'ignored', as it was listed in the cache.
           expect(repo._hgStatusCache[PATH_5]).toBe(StatusCodeId.MODIFIED);
@@ -213,14 +218,16 @@ describe('HgRepositoryClient', () => {
     it('does not add "clean" files to the cache and removes them if they are in the cache.', () => {
       const pathsWithCleanStatusReturned = [PATH_3, PATH_6];
       waitsForPromise(async () => {
-        await repo._updateStatuses(pathsWithCleanStatusReturned, {hgStatusOption: HgStatusOption.ALL_STATUSES});
+        await repo._updateStatuses(
+          pathsWithCleanStatusReturned, {hgStatusOption: HgStatusOption.ALL_STATUSES});
         // PATH_3 was previously in the cache. PATH_6 was never in the cache.
         expect(repo._hgStatusCache[PATH_3]).toBeUndefined();
         expect(repo._hgStatusCache[PATH_6]).toBeUndefined();
       });
     });
 
-    it('triggers the callbacks registered through ::onDidChangeStatuses and ::onDidChangeStatus.', () => {
+    it('triggers the callbacks registered through ::onDidChangeStatuses and'
+      + ' ::onDidChangeStatus.', () => {
       const callbackSpyForStatuses = jasmine.createSpy('::onDidChangeStatuses spy');
       repo.onDidChangeStatuses(callbackSpyForStatuses);
       const callbackSpyForStatus = jasmine.createSpy('::onDidChangeStatus spy');
@@ -239,12 +246,16 @@ describe('HgRepositoryClient', () => {
       };
 
       waitsForPromise(async () => {
-        // We must pass in the updated filenames to catch the case when a cached status turns to 'clean'.
-        await repo._updateStatuses([PATH_1, PATH_2, PATH_6, PATH_7], {hgStatusOption: HgStatusOption.ALL_STATUSES});
+        // We must pass in the updated filenames to catch the case when a cached status turns to
+        // 'clean'.
+        await repo._updateStatuses(
+          [PATH_1, PATH_2, PATH_6, PATH_7], {hgStatusOption: HgStatusOption.ALL_STATUSES});
         expect(callbackSpyForStatuses.calls.length).toBe(1);
         expect(callbackSpyForStatus.calls.length).toBe(2);
-        // PATH_2 existed in the cache, and its status did not change, so it shouldn't generate an event.
-        // PATH_6 did not exist in the cache, but its status is clean, so it shouldn't generate an event.
+        // PATH_2 existed in the cache, and its status did not change, so it shouldn't generate an
+        // event.
+        // PATH_6 did not exist in the cache, but its status is clean, so it shouldn't generate an
+        // event.
         expect(callbackSpyForStatus).toHaveBeenCalledWith(expectedChangeEvent1);
         expect(callbackSpyForStatus).toHaveBeenCalledWith(expectedChangeEvent2);
       });
@@ -364,7 +375,8 @@ describe('HgRepositoryClient', () => {
       expect(repo.isPathIgnored(parsedPath.dir)).toBe(false);
     });
 
-    it('returns false if the path is null or undefined, but handles files with those names.', () => {
+    it('returns false if the path is null or undefined, but handles files with those'
+      + ' names.', () => {
       // Force the state of the cache.
       repo._hgStatusCache = {
         [PATH_CALLED_NULL]: StatusCodeId.IGNORED,
@@ -378,7 +390,8 @@ describe('HgRepositoryClient', () => {
   });
 
   describe('::isPathNew', () => {
-    it('returns false if the path is null or undefined, but handles files with those names.', () => {
+    it('returns false if the path is null or undefined, but handles files with those'
+      + ' names.', () => {
       // Force the state of the cache.
       repo._hgStatusCache = {
         [PATH_CALLED_NULL]: StatusCodeId.ADDED,
@@ -392,7 +405,8 @@ describe('HgRepositoryClient', () => {
   });
 
   describe('::isPathModified', () => {
-    it('returns false if the path is null or undefined, but handles files with those names.', () => {
+    it('returns false if the path is null or undefined, but handles files with those'
+      + ' names.', () => {
       // Force the state of the cache.
       repo._hgStatusCache = {
         [PATH_CALLED_NULL]: StatusCodeId.MODIFIED,
@@ -465,7 +479,8 @@ describe('HgRepositoryClient', () => {
       });
     });
 
-    xit('is updated when the active pane item changes to an editor, if the editor file is in the project.', () => {
+    xit('is updated when the active pane item changes to an editor, if the editor file is in the'
+      + ' project.', () => {
       spyOn(repo, '_updateDiffInfo');
       const file = tempWithAutoCleanup.openSync({dir: projectDirectory.getPath()});
       waitsForPromise(async () => {
@@ -475,7 +490,8 @@ describe('HgRepositoryClient', () => {
       });
     });
 
-    it('is not updated when the active pane item changes to an editor whose file is not in the repo.', () => {
+    it('is not updated when the active pane item changes to an editor whose file is not in the'
+      + ' repo.', () => {
       spyOn(repo, '_updateDiffInfo');
       const file = tempWithAutoCleanup.openSync();
       waitsForPromise(async () => {
@@ -484,7 +500,8 @@ describe('HgRepositoryClient', () => {
       });
     });
 
-    it('marks a file to be removed from the cache after its editor is closed, if the file is in the project.', () => {
+    it('marks a file to be removed from the cache after its editor is closed, if the file is in the'
+      + ' project.', () => {
       spyOn(repo, '_updateDiffInfo');
       const file = tempWithAutoCleanup.openSync({dir: projectDirectory.getPath()});
       waitsForPromise(async () => {
@@ -534,7 +551,8 @@ describe('HgRepositoryClient', () => {
     });
 
     describe('::getDiffStatsForPath', () => {
-      it('returns diff stats from the cache when possible, and only fetches new diff info for cache misses.', () => {
+      it('returns diff stats from the cache when possible, and only fetches new diff info for cache'
+        + ' misses.', () => {
         waitsForPromise(async () => {
           const diffInfo_1 = await repo.getDiffStatsForPath(PATH_1);
           expect(repo._updateDiffInfo).toHaveBeenCalledWith([PATH_1]);
@@ -547,7 +565,8 @@ describe('HgRepositoryClient', () => {
     });
 
     describe('::getLineDiffsForPath', () => {
-      it('returns line diffs from the cache when possible, and only fetches new diff info for cache misses.', () => {
+      it('returns line diffs from the cache when possible, and only fetches new diff info for cache'
+        + ' misses.', () => {
         waitsForPromise(async () => {
           const diffInfo_1 = await repo.getLineDiffsForPath(PATH_1);
           expect(repo._updateDiffInfo).toHaveBeenCalledWith([PATH_1]);
@@ -682,7 +701,8 @@ describe('HgRepositoryClient', () => {
   });
 
   describe('::getDiffStats', () => {
-    it('returns clean stats if the path is null or undefined, but handles paths with those names.', () => {
+    it('returns clean stats if the path is null or undefined, but handles paths with those'
+      + ' names.', () => {
       const mockDiffInfo = {
         added: 1,
         deleted: 1,
@@ -708,7 +728,8 @@ describe('HgRepositoryClient', () => {
   });
 
   describe('::getLineDiffs', () => {
-    it('returns an empty array if the path is null or undefined, but handles paths with those names.', () => {
+    it('returns an empty array if the path is null or undefined, but handles paths with those'
+      + ' names.', () => {
       const mockDiffInfo = {
         added: 1,
         deleted: 1,

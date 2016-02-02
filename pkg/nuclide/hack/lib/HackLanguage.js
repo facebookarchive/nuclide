@@ -543,12 +543,12 @@ module.exports = class HackLanguage {
   ): Promise<T> {
     const startTime = Date.now();
     while (!timeoutMs || Date.now() - startTime < timeoutMs) {
-      const result = await func();
+      const result = await func(); // eslint-disable-line babel/no-await-in-loop
       if ((acceptable && acceptable(result)) || this.isFinishedLoadingDependencies()) {
         return result;
       }
       // Wait for dependencies to finish loading - to avoid polling, we'll wait for the callback.
-      await new Promise(resolve => {
+      await new Promise(resolve => { // eslint-disable-line babel/no-await-in-loop
         const subscription = this.onFinishedLoadingDependencies(() => {
           subscription.dispose();
           resolve();

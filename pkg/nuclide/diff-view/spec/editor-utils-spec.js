@@ -14,7 +14,8 @@ import {buildLineRangesWithOffsets} from '../lib/editor-utils';
 describe('editor-utils', () => {
 
   describe('buildLineRangesWithOffsets()', () => {
-    it('returns adjusted regions and screen lines when offsets are in the middle of the lines', () => {
+    it('returns adjusted regions and screen lines when offsets are in the middle of the'
+      + ' lines', () => {
       const {regions, screenLines} = buildLineRangesWithOffsets(
         [1, 2, 3, 4], new Map([[2, 2]]), 0, 4, () => 0
       );
@@ -91,7 +92,8 @@ describe('editor-utils', () => {
       expect(screenLines).toEqual([0, 1, 2, 3, 4]);
     });
 
-    it('returns adjusted regions and screen lines the last offset is just before the last line requested', () => {
+    it('returns adjusted regions and screen lines the last offset is just before the last line'
+      + ' requested', () => {
       const {regions, screenLines} = buildLineRangesWithOffsets(
         [1, 2, 3, 4], new Map([[1, 1], [6, 1]]), 3, 7, () => 0
       );
@@ -103,7 +105,8 @@ describe('editor-utils', () => {
       expect(screenLines).toEqual([1, 2, 3, 0, 4]);
     });
 
-    it('returns adjusted regions and screen lines the last offset is the last line requested', () => {
+    it('returns adjusted regions and screen lines the last offset is the last line'
+      + ' requested', () => {
       const {regions, screenLines} = buildLineRangesWithOffsets(
         [1, 2, 3, 4], new Map([[1, 1], [7, 1]]), 3, 7, () => 0
       );

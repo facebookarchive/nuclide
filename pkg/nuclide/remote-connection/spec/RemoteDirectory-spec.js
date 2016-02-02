@@ -26,7 +26,8 @@ describe('RemoteDirectory', () => {
     expect(remoteDirectory.existsSync()).toBe(false);
   });
 
-  it('does not list the property used to mark the directory as remote as one of its enumerable properties.', () => {
+  it('does not list the property used to mark the directory as remote as one of its enumerable'
+    + ' properties.', () => {
     const remoteDirectory = new RemoteDirectory(connectionMock, 'nuclide://example.com:9090/');
     for (const property in remoteDirectory) {
       expect(property).not.toBe('__nuclide_remote_directory__');

@@ -102,7 +102,8 @@ function humanizeKey(key: string, platform: ?string): string | Array<string> {
   return platform === 'darwin' ? key : capitalize(key);
 }
 
-/** Humanize the keystroke according to platform conventions. This method
+/**
+ * Humanize the keystroke according to platform conventions. This method
  * attempts to mirror the text the given keystroke would have if displayed in
  * a system menu.
  *
@@ -116,7 +117,7 @@ function humanizeKeystroke(keystroke: string, platform: ?string): string {
   }
   platform = platform || process.platform;
   const separator = platform === 'darwin' ? '' : '+';
-  var key, keys, splitKeystroke;
+  let key, keys, splitKeystroke;
   const keystrokes = keystroke.split(' ');
   const humanizedKeystrokes = [];
   for (let i = 0; i < keystrokes.length; i++) {

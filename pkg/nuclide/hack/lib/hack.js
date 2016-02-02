@@ -82,9 +82,11 @@ module.exports = {
     const contents = editor.getText();
     const cursor = editor.getLastCursor();
     const offset = editor.getBuffer().characterIndexForPosition(cursor.getBufferPosition());
-    // The returned completions may have unrelated results, even though the offset is set on the end of the prefix.
+    // The returned completions may have unrelated results, even though the offset is set on the end
+    // of the prefix.
     const completions = await hackLanguage.getCompletions(filePath, contents, offset);
-    // Filter out the completions that do not contain the prefix as a token in the match text case insentively.
+    // Filter out the completions that do not contain the prefix as a token in the match text case
+    // insentively.
     const tokenLowerCase = prefix.toLowerCase();
 
     const hackCompletionsCompartor = compareHackCompletions(prefix);
@@ -92,7 +94,8 @@ module.exports = {
       .filter(completion => completion.matchText.toLowerCase().indexOf(tokenLowerCase) >= 0)
       // Sort the auto-completions based on a scoring function considering:
       // case sensitivity, position in the completion, private functions and alphabetical order.
-      .sort((completion1, completion2) => hackCompletionsCompartor(completion1.matchText, completion2.matchText));
+      .sort((completion1, completion2) =>
+        hackCompletionsCompartor(completion1.matchText, completion2.matchText));
   },
 
   async formatSourceFromEditor(editor: atom$TextEditor, range: atom$Range): Promise<string> {
@@ -149,7 +152,8 @@ module.exports = {
     const path = getPath(filePath);
     const contents = editor.getText();
 
-    const type = await hackLanguage.getType(path, contents, matchData.wordMatch[0], position.row + 1, position.column + 1);
+    const type = await hackLanguage.getType(
+      path, contents, matchData.wordMatch[0], position.row + 1, position.column + 1);
     if (!type || type === '_') {
       return null;
     } else {

@@ -16,10 +16,12 @@ import invariant from 'assert';
 
 /*
  * @param screenLines The original screen lines before adding offsets.
- * @param lineOffsets The offset map from buffer line numbers to the number of lines of offset requested there.
+ * @param lineOffsets The offset map from buffer line numbers to the number of lines of offset
+ *   requested there.
  * @param startBufferRow The buffer row at which the next range of screen lines is started.
  * @param endBufferRow The buffer row at which the next range of screen lines is ended.
- * @param emptyLineFactory A custom function to create a new empty line, representing an offset screen line.
+ * @param emptyLineFactory A custom function to create a new empty line, representing an offset
+ *   screen line.
  */
 export function buildLineRangesWithOffsets(
     screenLines: Array<any>,
@@ -41,7 +43,10 @@ export function buildLineRangesWithOffsets(
     const numberOfRows = toScreenLine - priorScreenLine;
     if (numberOfRows > 0) {
       // Add the portion of the original screenLines until toScreenLine.
-      newScreenLines.push.apply(newScreenLines, screenLines.slice(priorScreenLine - startBufferRow, toScreenLine - startBufferRow));
+      newScreenLines.push.apply(
+        newScreenLines,
+        screenLines.slice(priorScreenLine - startBufferRow, toScreenLine - startBufferRow)
+      );
       // This is normal 1 to 1 buffer to screen row region.
       newRegions.push({bufferRows: numberOfRows, screenRows: numberOfRows});
     }
@@ -63,11 +68,15 @@ export function buildLineRangesWithOffsets(
     }
     const startOffsetBufferLineNumber = offsetLineNumber - startBufferRow - 1;
     // TODO: fix when we have more control on the buffer to screen line mapping
-    // Currently, if we have offsets at the begining of the file, the gutter numbering would be confusing
-    // because it considers the first offset line is the line to be numbered.
+    // Currently, if we have offsets at the begining of the file, the gutter numbering would be
+    // confusing because it considers the first offset line is the line to be numbered.
     if (startOffsetBufferLineNumber >= 0) {
       // The buffer line should be inserted above the empty offset lines added.
-      newScreenLines.splice(newScreenLines.length - offsetLines, 0, screenLines[startOffsetBufferLineNumber]);
+      newScreenLines.splice(
+        newScreenLines.length - offsetLines,
+        0,
+        screenLines[startOffsetBufferLineNumber]
+      );
     } else {
       // startOffsetBufferLineNumber = -1 in case the offsets are in the begining of the file.
       newScreenLines.push(screenLines[0]);

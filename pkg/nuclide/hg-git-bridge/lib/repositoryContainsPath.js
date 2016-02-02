@@ -34,7 +34,8 @@ function repositoryContainsPath(repository: atom$Repository, filePath: NuclideUr
     const hgRepository = ((repository: any): HgRepositoryClient);
     return hgRepository._workingDirectory.contains(filePath);
   }
-  throw new Error('repositoryContainsPath: Received an unrecognized repository type. Expected git or hg.');
+  throw new Error(
+    'repositoryContainsPath: Received an unrecognized repository type. Expected git or hg.');
 }
 
 /**

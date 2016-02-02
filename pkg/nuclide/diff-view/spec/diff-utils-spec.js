@@ -57,7 +57,8 @@ adding a non-new-line line`
       );
 
       expect(addedLines).toEqual([2, 3, 7]); // 2 lines were added in the middle and one at the end.
-      expect(removedLines).toEqual([1, 2, 7]); // 2 lines were removed in the middle and last new-line replaced.
+      // 2 lines were removed in the middle and last new-line replaced.
+      expect(removedLines).toEqual([1, 2, 7]);
       expect(oldLineOffsets).toEqual(new Map([[4, 2]])); // offset 2 for the 2 lines added.
       expect(newLineOffsets).toEqual(new Map([[1, 2]])); // offset 2 for the 2 lines removed.
     });

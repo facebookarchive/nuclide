@@ -15,7 +15,8 @@ describe('utils', () => {
 
   describe('compareHackCompletions()', () => {
 
-    it('prefers prefix case sensitive matches to prefix case insensitive + alphabetical order', () => {
+    it('prefers prefix case sensitive matches to prefix case insensitive + alphabetical'
+      + ' order', () => {
       const matchTexts = ['GetAaa()', 'getAzzz()'];
       const compartor = compareHackCompletions('getA');
       expect(matchTexts.sort(compartor)).toEqual(
@@ -23,7 +24,8 @@ describe('utils', () => {
       );
     });
 
-    it('prefers prefix case insensitive matches to case insensitive non-prefix matches + alphabetical order', () => {
+    it('prefers prefix case insensitive matches to case insensitive non-prefix matches +'
+      + ' alphabetical order', () => {
       const matchTexts = ['aa_getAaa()', 'getAzzz()'];
       const compartor = compareHackCompletions('getA');
       expect(matchTexts.sort(compartor)).toEqual(
@@ -31,7 +33,8 @@ describe('utils', () => {
       );
     });
 
-    it('prefers non-prefix case sensitive matches to case insensitive non-prefix matches + alphabetical order', () => {
+    it('prefers non-prefix case sensitive matches to case insensitive non-prefix matches +'
+      + ' alphabetical order', () => {
       const matchTexts = ['aa_getaaa()', 'zz_getAaa()'];
       const compartor = compareHackCompletions('getA');
       expect(matchTexts.sort(compartor)).toEqual(
@@ -56,11 +59,23 @@ describe('utils', () => {
     });
 
     it('sorts the completion results in a meaningful order', () => {
-      const matchTexts = ['_getAbc()', '_getAab()', 'getAppend()', 'getAddendum()', 'doOrGetACup()', '_doOrGetACup()'];
+      const matchTexts = [
+        '_getAbc()',
+        '_getAab()',
+        'getAppend()',
+        'getAddendum()',
+        'doOrGetACup()',
+        '_doOrGetACup()',
+      ];
       const compartor = compareHackCompletions('getA');
-      expect(matchTexts.sort(compartor)).toEqual(
-        ['getAddendum()', 'getAppend()', 'doOrGetACup()', '_getAab()', '_getAbc()', '_doOrGetACup()']
-      );
+      expect(matchTexts.sort(compartor)).toEqual([
+        'getAddendum()',
+        'getAppend()',
+        'doOrGetACup()',
+        '_getAab()',
+        '_getAbc()',
+        '_doOrGetACup()',
+      ]);
     });
   });
 });

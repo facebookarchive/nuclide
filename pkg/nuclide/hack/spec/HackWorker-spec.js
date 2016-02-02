@@ -47,7 +47,8 @@ describe('HackWorker', () => {
       runs(() => {
         const error: {type: string; message: string;} = (taskHandler.argsForCall[0][0]: any);
         expect(error.type).toBe('error');
-        expect(error.message).toBe('Uncaught TypeError: Cannot read property \'apply\' of undefined');
+        expect(error.message).toBe(
+          'Uncaught TypeError: Cannot read property \'apply\' of undefined');
       });
     });
   });

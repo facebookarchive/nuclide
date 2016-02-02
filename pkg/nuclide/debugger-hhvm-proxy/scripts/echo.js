@@ -6,6 +6,9 @@
  * the root directory of this source tree.
  */
 
+/* Is not transpiled, allow `var` and console usage. */
+/* eslint-disable no-var, no-console */
+
 // Starts listening for xdebug connections on the given port.
 // Once connected you can enter xdebug commands, messages from the xdebug connection
 // are displayed on stdout.
@@ -43,7 +46,7 @@ var rl = readline.createInterface({
   terminal: false,
 });
 
-rl.on('line', function(line){
+rl.on('line', function(line) {
   if (socket) {
     if (line === 'b') {
       line = 'break -i 2\0';
@@ -53,6 +56,4 @@ rl.on('line', function(line){
       console.log('finished writing: ' + line);
     });
   }
-})
-
-
+});

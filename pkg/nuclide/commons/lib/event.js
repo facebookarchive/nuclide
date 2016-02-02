@@ -19,7 +19,11 @@ import {Observable} from 'rx';
  * node EventEmitter semantics: namely, that adding the same combination of eventName and callback
  * adds a second listener.
  */
-export function attachEvent(emitter: EventEmitter, eventName: string, callback: Function): Disposable {
+export function attachEvent(
+  emitter: EventEmitter,
+  eventName: string,
+  callback: Function
+): Disposable {
   emitter.addListener(eventName, callback);
   return new Disposable(() => {
     emitter.removeListener(eventName, callback);

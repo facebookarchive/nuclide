@@ -282,7 +282,8 @@ describe('promises::asyncFilter()', () => {
 
   beforeEach(() => window.useRealClock());
 
-  it('filters an array with an async iterator and maximum parallelization when no limit is specified', () => {
+  it('filters an array with an async iterator and maximum parallelization when no limit is'
+    + ' specified', () => {
     waitsForPromise(async () => {
       const {result: filtered, parallelismHistory} = await captureParallelismHistory(
           promises.asyncFilter,
@@ -317,7 +318,8 @@ describe('promises::asyncSome()', () => {
 
   beforeEach(() => window.useRealClock());
 
-  it('some an array with an async iterator and maximum parallelization when no limit is specified', () => {
+  it('some an array with an async iterator and maximum parallelization when no limit is'
+    + ' specified', () => {
     waitsForPromise(async () => {
       const {result, parallelismHistory} = await captureParallelismHistory(
           promises.asyncSome,

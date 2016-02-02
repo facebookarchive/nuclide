@@ -23,7 +23,8 @@ describe('parseRevisionFileChangeOutput', () => {
   const testOrig2 = path.join(testWorkingDirectory, 'test-orig2.js');
 
   it('correctly parses a revision with files added, deleted, copied, and modified.', () => {
-    // This output is in the form of the REVISION_FILE_CHANGES_TEMPLATE in hg-revision-state-helpers.
+    // This output is in the form of the REVISION_FILE_CHANGES_TEMPLATE in
+    // hg-revision-state-helpers.
     const testOutput =
 `files: test1.js test2.js test3.js test4.js test5.js
 file-adds: test1.js test2.js
@@ -47,7 +48,8 @@ file-mods: test4.js test5.js`;
   // While this isn't a technically possible situation, the parser doesn't care.
   // This lets us to test the null cases all at once.
   it('correctly parses a revision with no files added, deleted, copied, or modified.', () => {
-    // This output is in the form of the REVISION_FILE_CHANGES_TEMPLATE in hg-revision-state-helpers.
+    // This output is in the form of the REVISION_FILE_CHANGES_TEMPLATE in
+    // hg-revision-state-helpers.
     const testOutput =
 `files:
 file-adds:

@@ -6,6 +6,7 @@
  * the root directory of this source tree.
  */
 
+/*eslint-disable no-unused-vars */
 
 declare class ws$Server extends events$EventEmitter {
   constructor(options: {server: http$fixed$Server}): void;

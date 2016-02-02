@@ -183,7 +183,8 @@ class FindReferencesModel {
   async _makeFileReferences(
     fileReferences: [string, Array<ReferenceGroup>]
   ): Promise<?FileReferences> {
-    let [uri, refGroups] = fileReferences;
+    const uri = fileReferences[0];
+    let refGroups = fileReferences[1];
     const fileContents = await readFileContents(uri);
     if (!fileContents) {
       return null;

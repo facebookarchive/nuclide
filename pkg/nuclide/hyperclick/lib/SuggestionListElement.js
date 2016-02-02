@@ -210,4 +210,6 @@ class SuggestionList extends React.Component {
   }
 }
 
-module.exports = SuggestionListElement = document.registerElement('hyperclick-suggestion-list', {prototype: SuggestionListElement.prototype});
+module.exports = SuggestionListElement = document.registerElement('hyperclick-suggestion-list', {
+  prototype: SuggestionListElement.prototype,
+});

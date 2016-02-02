@@ -275,22 +275,26 @@ const promises = module.exports = {
   },
 
   /**
-   * A Promise utility that runs a maximum of limit async operations at a time iterating over an array
-   * and returning the result of executions.
+   * A Promise utility that runs a maximum of limit async operations at a time iterating over an
+   * array and returning the result of executions.
    * e.g. to limit the number of file reads to 5,
    * replace the code:
    *    var fileContents = await Promise.all(filePaths.map(fsPromise.readFile))
    * with:
    *    var fileContents = await asyncLimit(filePaths, 5, fsPromise.readFile)
    *
-   * This is particulrily useful to limit IO operations to a configurable maximum (to avoid blocking),
-   * while enjoying the configured level of parallelism.
+   * This is particulrily useful to limit IO operations to a configurable maximum (to avoid
+   * blocking), while enjoying the configured level of parallelism.
    *
    * @param array the array of items for iteration.
    * @param limit the configurable number of parallel async operations.
    * @param mappingFunction the async Promise function that could return a useful result.
    */
-  asyncLimit<T, V>(array: Array<T>, limit: number, mappingFunction: (item: T) => Promise<V>): Promise<Array<V>> {
+  asyncLimit<T, V>(
+    array: Array<T>,
+    limit: number,
+    mappingFunction: (item: T) => Promise<V>
+  ): Promise<Array<V>> {
     const result: Array<V> = new Array(array.length);
     let parallelPromises = 0;
     let index = 0;
@@ -339,10 +343,15 @@ const promises = module.exports = {
    *    var existingFilePaths = await asyncFilter(filePaths, fsPromise.exists, 5);
    *
    * @param array the array of items for `filter`ing.
-   * @param filterFunction the async `filter` function that returns a Promise that resolves to a boolean.
+   * @param filterFunction the async `filter` function that returns a Promise that resolves to a
+   *   boolean.
    * @param limit the configurable number of parallel async operations.
    */
-  async asyncFilter<T>(array: Array<T>, filterFunction: (item: T) => Promise<boolean>, limit?: number): Promise<Array<T>> {
+  async asyncFilter<T>(
+    array: Array<T>,
+    filterFunction: (item: T) => Promise<boolean>,
+    limit?: number
+  ): Promise<Array<T>> {
     const filteredList = [];
     await promises.asyncLimit(array, limit || array.length, async (item: T) => {
       if (await filterFunction(item)) {
@@ -369,10 +378,15 @@ const promises = module.exports = {
    *    var someFileExist = await asyncSome(filePaths, fsPromise.exists, 5);
    *
    * @param array the array of items for `some`ing.
-   * @param someFunction the async `some` function that returns a Promise that resolves to a boolean.
+   * @param someFunction the async `some` function that returns a Promise that resolves to a
+   *   boolean.
    * @param limit the configurable number of parallel async operations.
    */
-  async asyncSome<T>(array: Array<T>, someFunction: (item: T) => Promise<boolean>, limit?: number): Promise<boolean> {
+  async asyncSome<T>(
+    array: Array<T>,
+    someFunction: (item: T) => Promise<boolean>,
+    limit?: number
+  ): Promise<boolean> {
     let resolved = false;
     await promises.asyncLimit(array, limit || array.length, async (item: T) => {
       if (resolved) {

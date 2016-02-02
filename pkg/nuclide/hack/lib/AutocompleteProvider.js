@@ -25,7 +25,8 @@ class AutocompleteProvider {
     const {editor, bufferPosition} = request;
     const replacementPrefix = findHackPrefix(editor);
 
-    if (!replacementPrefix && !hasPrefix(editor, bufferPosition, FIELD_ACCESSORS, PREFIX_LOOKBACK)) {
+    if (!replacementPrefix
+      && !hasPrefix(editor, bufferPosition, FIELD_ACCESSORS, PREFIX_LOOKBACK)) {
       return [];
     }
 
@@ -50,8 +51,10 @@ function hasPrefix(
     checkPrefixes: Array<string>,
     prefixLookback: number,
   ): boolean {
-  const priorChars = editor.getTextInBufferRange(
-      new Range(new Point(bufferPosition.row, bufferPosition.column - prefixLookback), bufferPosition));
+  const priorChars = editor.getTextInBufferRange(new Range(
+    new Point(bufferPosition.row, bufferPosition.column - prefixLookback),
+    bufferPosition
+  ));
   return checkPrefixes.some(prefix => priorChars.endsWith(prefix));
 }
 

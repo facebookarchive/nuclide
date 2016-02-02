@@ -40,7 +40,8 @@ module.exports = {
 
     const result = await getDeclaration(textEditor, position.row, position.column);
     if (result) {
-      const wholeRange = findWholeRangeOfSymbol(textEditor, text, range, result.spelling, result.extent);
+      const wholeRange =
+        findWholeRangeOfSymbol(textEditor, text, range, result.spelling, result.extent);
       return {
         range: wholeRange,
         callback: () => goToLocation(result.file, result.line, result.column),

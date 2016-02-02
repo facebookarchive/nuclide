@@ -43,7 +43,8 @@ export default class DiffViewEditor {
     // $FlowFixMe use of non-official API.
     this._editor.displayBuffer.checkScreenLinesInvariant = () => {};
     // $FlowFixMe use of non-official API.
-    this._editor.displayBuffer.buildScreenLines = (...args) => this._buildScreenLinesWithOffsets.apply(this, args);
+    this._editor.displayBuffer.buildScreenLines =
+      (...args) => this._buildScreenLinesWithOffsets.apply(this, args);
 
     // There is no editor API to cancel foldability, but deep inside the line state creation,
     // it uses those functions to determine if a line is foldable or not.
@@ -136,11 +137,13 @@ export default class DiffViewEditor {
   *    Could be a value of: ['insert', 'delete'].
    */
   _createLineMarker(lineNumber: number, type: string): atom$Marker {
-    const screenPosition = this._editor.screenPositionForBufferPosition({row: lineNumber, column: 0});
+    const screenPosition =
+      this._editor.screenPositionForBufferPosition({row: lineNumber, column: 0});
     const range = new Range(
         screenPosition,
         [screenPosition.row, this._editor.lineTextForScreenRow(screenPosition.row).length],
-        // TODO: highlight the full line when the mapping between buffer lines to screen line is implemented.
+        // TODO: highlight the full line when the mapping between buffer lines to screen line is
+        //   implemented.
         // {row: screenPosition.row + 1, column: 0}
     );
     const marker = this._editor.markScreenRange(range, {invalidate: 'never'});
@@ -150,8 +153,8 @@ export default class DiffViewEditor {
 
   setOffsets(lineOffsets: OffsetMap): void {
     this._lineOffsets = lineOffsets;
-    // When the diff view is editable: upon edits in the new editor, the old editor needs to update its
-    // rendering state to show the offset wrapped lines.
+    // When the diff view is editable: upon edits in the new editor, the old editor needs to update
+    // its rendering state to show the offset wrapped lines.
     // This isn't a public API, but came from a discussion on the Atom public channel.
     this._editor.displayBuffer.updateAllScreenLines();
     const component = this._editorElement.component || {};
@@ -169,7 +172,10 @@ export default class DiffViewEditor {
     // and will auto-update.
   }
 
-  _buildScreenLinesWithOffsets(startBufferRow: number, endBufferRow: number): LineRangesWithOffsets {
+  _buildScreenLinesWithOffsets(
+    startBufferRow: number,
+    endBufferRow: number
+  ): LineRangesWithOffsets {
     // HACK! Enabling `softWrapped` lines would greatly complicate the offset screen line mapping
     // needed to render the offset lines for the Diff View.
     // Hence, we need to disable the original screen line from returning soft-wrapped lines.

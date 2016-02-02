@@ -13,7 +13,7 @@ describe('Fake timer test suite', () => {
   it('test setTimeout and clearTimeout', () => {
     let firstExecuted = false;
 
-    setTimeout(() => {firstExecuted = true}, 10);
+    setTimeout(() => {firstExecuted = true;}, 10);
 
     window.advanceClock(9);
 
@@ -24,8 +24,8 @@ describe('Fake timer test suite', () => {
     let secondExecuted = false;
     let thirdExecuted = false;
 
-    const secondId = setTimeout(() => {secondExecuted = true}, 20);
-    setTimeout(() => {thirdExecuted = true}, 30);
+    const secondId = setTimeout(() => {secondExecuted = true;}, 20);
+    setTimeout(() => {thirdExecuted = true;}, 30);
 
     window.advanceClock(19);
     clearTimeout(secondId);

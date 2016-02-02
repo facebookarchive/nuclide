@@ -51,7 +51,8 @@ module.exports = {
     return {
       selector: HACK_GRAMMARS.map(grammar => '.' + grammar).join(', '),
       inclusionPriority: 1,
-      suggestionPriority: 3, // The context-sensitive hack autocompletions are more relevant than snippets.
+      // The context-sensitive hack autocompletions are more relevant than snippets.
+      suggestionPriority: 3,
       excludeLowerPriority: false,
 
       getSuggestions(

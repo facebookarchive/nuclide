@@ -76,7 +76,7 @@ async function findNearestFile(fileName: string, pathToDirectory: string): Promi
   let currentPath = path.resolve(pathToDirectory);
   do { // eslint-disable-line no-constant-condition
     const fileToFind = path.join(currentPath, fileName);
-    const hasFile = await exists(fileToFind);
+    const hasFile = await exists(fileToFind); // eslint-disable-line babel/no-await-in-loop
     if (hasFile) {
       return currentPath;
     }

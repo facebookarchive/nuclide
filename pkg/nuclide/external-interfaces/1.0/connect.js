@@ -6,6 +6,8 @@
  * the root directory of this source tree.
  */
 
+/*eslint-disable no-unused-vars */
+
 declare class connect$Error extends Error {
   code?: number;
 }

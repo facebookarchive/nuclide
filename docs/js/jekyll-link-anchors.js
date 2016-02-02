@@ -6,6 +6,8 @@
  * the root directory of this source tree.
  */
 
+/* eslint-disable no-var */
+
 // Taken and modified from https://gist.github.com/SimplGy/a229d25cdb19d7f21231
 (function() {
   'use strict';
@@ -28,7 +30,6 @@
   var possibleNodeNames = ['h2', 'h3', 'h4', 'h5']; // Really try to only have up to h3, please
   var tags = document.querySelectorAll('h2[id], h3[id], h4[id], h5[id]');
   var headingNodes = Array.prototype.slice.call(tags);
-  var results;
 
   headingNodes.forEach(function(node) {
     var nameIdx = possibleNodeNames.indexOf(node.localName); // h2 = 0, h3 = 1, etc.
@@ -54,7 +55,7 @@
       psib = psib.previousElementSibling;
     }
     link.id = id + node.getAttribute('id');
-    link.href = "#" + link.id;
+    link.href = '#' + link.id;
     node.appendChild(link);
   });
 
