@@ -1,0 +1,11 @@
+{
+  "name": "nuclide-outline-view",
+  "repository": "https://github.com/facebook/nuclide",
+  "main": "./lib/main",
+  "version": "0.0.0",
+  "description": "Extensible UI to display an outline of the current file",
+  "nuclide": {
+    "packageType": "Atom",
+    "testRunner": "apm"
+  }
+}
