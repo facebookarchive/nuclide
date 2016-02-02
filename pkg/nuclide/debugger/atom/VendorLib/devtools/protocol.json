@@ -3212,6 +3212,17 @@
                 "description": "Collection entry."
             },
             {
+               "id": "Thread",
+               "type": "object",
+               "properties": [
+                   { "name": "threadId", "type": "string", "description": "Thread identifier. This identifier is only valid while process is paused." },
+                   { "name": "name", "type": "string", "optional": true, "description": "Name of the thread." },
+                   { "name": "location", "$ref": "Location", "description": "Thread current location in the source code." },
+                   { "name": "status", "type": "string", "description": "The status of the thread." }
+               ],
+               "description": "Native thread object in OS process."
+            },
+            {
                 "id": "CallFrame",
                 "type": "object",
                 "properties": [
@@ -3399,6 +3410,23 @@
             {
                 "name": "resume",
                 "description": "Resumes JavaScript execution."
+            },
+            {
+                "name": "selectThread",
+                "parameters": [
+                    { "name": "threadId", "type": "integer", "description": "The id of the thread to select." }
+                ],
+                "description": "Switch to a different thread context."
+            },
+            {
+                "name": "getThreadStack",
+                "parameters": [
+                    { "name": "threadId", "type": "integer", "description": "Target thread id." }
+                ],
+                "returns": [
+                    { "name": "callFrames", "type": "array", "items": { "$ref": "CallFrame" }, "description": "Call stack the thread stopped on." }
+                ],
+                "description": "Get stack frames of target thread."
             },
             {
                 "name": "stepIntoAsync",
@@ -3701,6 +3729,15 @@
                     { "name": "location", "$ref": "Location", "description": "Actual breakpoint location." }
                 ],
                 "description": "Fired when breakpoint is resolved to an actual script and location."
+            },
+            {
+                "name": "threadsUpdated",
+                "parameters": [
+                    { "name": "owningProcessId", "type": "string", "description": "Process unique identifier." },
+                    { "name": "stopThreadId", "type": "string", "description": "Unique identifier of the thread caused process to stop." },
+                    { "name": "threads", "type": "array", "items": { "$ref": "Thread" }, "description": "List of threads." }
+                ],
+                "description": "Fired when threads are updated."
             },
             {
                 "name": "paused",
