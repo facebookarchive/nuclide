@@ -15,9 +15,10 @@ import fs from 'fs';
 import path from 'path';
 import {track} from 'temp';
 const temp = track();
+import {Range} from 'atom';
 
 describe('ArcanistDiagnosticsProvider', () => {
-  let provider: any;
+  let provider: ArcanistDiagnosticsProvider = (null: any);
   let tempFile : string;
 
   beforeEach(() => {
@@ -62,6 +63,18 @@ describe('ArcanistDiagnosticsProvider', () => {
       // atom.workspace.onWillDestroyPaneItem.
       paneToSplit.destroy();
       expect(provider._providerBase.publishMessageInvalidation).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('_getRangeForFix', () => {
+    it('should work for single-line fixes', () => {
+      const range = provider._getRangeForFix(3, 4, 'asdf');
+      expect(range).toEqual(new Range([3, 4], [3, 8]));
+    });
+
+    it('should work for multi-line fixes', () => {
+      const range = provider._getRangeForFix(3, 4, '\nasdf\njdjdj\n');
+      expect(range).toEqual(new Range([3, 4], [6, 0]));
     });
   });
 });

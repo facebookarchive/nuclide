@@ -16,7 +16,7 @@ import type {
   MessageInvalidationCallback,
 } from '../../diagnostics/base';
 
-import {CompositeDisposable} from 'atom';
+import {CompositeDisposable, Range} from 'atom';
 import {DiagnosticsProviderBase} from '../../diagnostics/provider-base';
 
 import featureConfig from '../../feature-config';
@@ -85,7 +85,6 @@ export class ArcanistDiagnosticsProvider {
   async _runLint(textEditor: TextEditor): Promise<void> {
     const filePath = textEditor.getPath();
     invariant(filePath);
-    const {Range} = require('atom');
     try {
       const result = await this._requestSerializer.run(
         require('../../arcanist-client').findDiagnostics([filePath])
@@ -114,10 +113,7 @@ export class ArcanistDiagnosticsProvider {
         const maybeProperties = {};
         if (diagnostic.original != null && diagnostic.replacement != null) {
           maybeProperties.fix = {
-            oldRange: new Range(
-              [diagnostic.row, diagnostic.col],
-              [diagnostic.row, diagnostic.col + diagnostic.original.length],
-            ),
+            oldRange: this._getRangeForFix(diagnostic.row, diagnostic.col, diagnostic.original),
             newText: diagnostic.replacement,
             oldText: diagnostic.original,
           };
@@ -141,6 +137,25 @@ export class ArcanistDiagnosticsProvider {
       logger.error(error);
       return;
     }
+  }
+
+  _getRangeForFix(startRow: number, startCol: number, originalText: string): atom$Range {
+    let newlineCount = 0;
+    for (const char of originalText) {
+      if (char === '\n') {
+        newlineCount++;
+      }
+    }
+    const endRow = startRow + newlineCount;
+    const lastNewlineIndex = originalText.lastIndexOf('\n');
+    let endCol;
+    if (lastNewlineIndex === -1) {
+      endCol = startCol + originalText.length;
+    } else {
+      endCol = originalText.length - lastNewlineIndex - 1;
+    }
+
+    return new Range([startRow, startCol], [endRow, endCol]);
   }
 
   _receivedNewUpdateSubscriber(): void {
