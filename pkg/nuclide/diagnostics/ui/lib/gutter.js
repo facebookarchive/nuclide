@@ -288,7 +288,10 @@ function createElementForMessage(
   };
   let fixButton = null;
   if (message.fix != null) {
-    const applyFix = fixer.bind(null, message);
+    const applyFix = () => {
+      fixer(message);
+      track('diagnostics-gutter-autofix');
+    };
     fixButton = (
       <button className="btn btn-xs" onClick={applyFix}>Fix</button>
     );
