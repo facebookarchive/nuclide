@@ -129,13 +129,6 @@ function createOptions(filePath) {
   return {
     filename: filePath,
     sourceMap: 'inline',
-    // TODO(t8551215): Re-enable this when we shake out some more bugs.
-    // plugins: [
-    //   {
-    //     position: 'before',
-    //     transformer: require('nuclide-inline-imports'),
-    //   },
-    // ],
     blacklist: [
       'es6.forOf',
       'useStrict',
