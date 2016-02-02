@@ -1,5 +1,16 @@
-'use babel';
-/* @flow */
+
+
+/**
+ * Completely flattens an array of arrays.
+ */
+function flatten(arr) {
+  while (arr.some(function (el) {
+    return Array.isArray(el);
+  })) {
+    arr = Array.prototype.concat.apply([], arr);
+  }
+  return arr;
+}
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,16 +20,5 @@
  * the root directory of this source tree.
  */
 
-type NestedArray<T> = Array<T | NestedArray<T>>;
-
-/**
- * Completely flattens an array of arrays.
- */
-function flatten<T>(arr: NestedArray<T>): Array<T> {
-  while (arr.some(el => Array.isArray(el))) {
-    arr = Array.prototype.concat.apply([], arr);
-  }
-  return (arr: any);
-}
-
 module.exports = flatten;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbImZsYXR0ZW4uanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7QUFnQkEsU0FBUyxPQUFPLENBQUksR0FBbUIsRUFBWTtBQUNqRCxTQUFPLEdBQUcsQ0FBQyxJQUFJLENBQUMsVUFBQSxFQUFFO1dBQUksS0FBSyxDQUFDLE9BQU8sQ0FBQyxFQUFFLENBQUM7R0FBQSxDQUFDLEVBQUU7QUFDeEMsT0FBRyxHQUFHLEtBQUssQ0FBQyxTQUFTLENBQUMsTUFBTSxDQUFDLEtBQUssQ0FBQyxFQUFFLEVBQUUsR0FBRyxDQUFDLENBQUM7R0FDN0M7QUFDRCxTQUFRLEdBQUcsQ0FBTztDQUNuQjs7Ozs7Ozs7OztBQUVELE1BQU0sQ0FBQyxPQUFPLEdBQUcsT0FBTyxDQUFDIiwiZmlsZSI6ImZsYXR0ZW4uanMiLCJzb3VyY2VzQ29udGVudCI6WyIndXNlIGJhYmVsJztcbi8qIEBmbG93ICovXG5cbi8qXG4gKiBDb3B5cmlnaHQgKGMpIDIwMTUtcHJlc2VudCwgRmFjZWJvb2ssIEluYy5cbiAqIEFsbCByaWdodHMgcmVzZXJ2ZWQuXG4gKlxuICogVGhpcyBzb3VyY2UgY29kZSBpcyBsaWNlbnNlZCB1bmRlciB0aGUgbGljZW5zZSBmb3VuZCBpbiB0aGUgTElDRU5TRSBmaWxlIGluXG4gKiB0aGUgcm9vdCBkaXJlY3Rvcnkgb2YgdGhpcyBzb3VyY2UgdHJlZS5cbiAqL1xuXG50eXBlIE5lc3RlZEFycmF5PFQ+ID0gQXJyYXk8VCB8IE5lc3RlZEFycmF5PFQ+PjtcblxuLyoqXG4gKiBDb21wbGV0ZWx5IGZsYXR0ZW5zIGFuIGFycmF5IG9mIGFycmF5cy5cbiAqL1xuZnVuY3Rpb24gZmxhdHRlbjxUPihhcnI6IE5lc3RlZEFycmF5PFQ+KTogQXJyYXk8VD4ge1xuICB3aGlsZSAoYXJyLnNvbWUoZWwgPT4gQXJyYXkuaXNBcnJheShlbCkpKSB7XG4gICAgYXJyID0gQXJyYXkucHJvdG90eXBlLmNvbmNhdC5hcHBseShbXSwgYXJyKTtcbiAgfVxuICByZXR1cm4gKGFycjogYW55KTtcbn1cblxubW9kdWxlLmV4cG9ydHMgPSBmbGF0dGVuO1xuIl19

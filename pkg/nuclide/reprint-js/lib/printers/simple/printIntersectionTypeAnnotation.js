@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,27 +8,14 @@
  * the root directory of this source tree.
  */
 
-import type {IntersectionTypeAnnotation} from 'ast-types-flow';
-import type {Lines, Print} from '../../types/common';
+var flatten = require('../../utils/flatten');
+var markers = require('../../constants/markers');
 
-const flatten = require('../../utils/flatten');
-const markers = require('../../constants/markers');
-
-function printIntersectionTypeAnnotation(
-  print: Print,
-  node: IntersectionTypeAnnotation,
-): Lines {
-  return flatten([
-    markers.openScope,
-    markers.scopeIndent,
-    node.types.map((t, i, arr) => [
-      i === 0 ? markers.scopeBreak : markers.scopeSpaceBreak,
-      print(t),
-      i < arr.length - 1 ? [markers.space, '&'] : markers.empty,
-    ]),
-    markers.scopeDedent,
-    markers.closeScope,
-  ]);
+function printIntersectionTypeAnnotation(print, node) {
+  return flatten([markers.openScope, markers.scopeIndent, node.types.map(function (t, i, arr) {
+    return [i === 0 ? markers.scopeBreak : markers.scopeSpaceBreak, print(t), i < arr.length - 1 ? [markers.space, '&'] : markers.empty];
+  }), markers.scopeDedent, markers.closeScope]);
 }
 
 module.exports = printIntersectionTypeAnnotation;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInByaW50SW50ZXJzZWN0aW9uVHlwZUFubm90YXRpb24uanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7OztBQWNBLElBQU0sT0FBTyxHQUFHLE9BQU8sQ0FBQyxxQkFBcUIsQ0FBQyxDQUFDO0FBQy9DLElBQU0sT0FBTyxHQUFHLE9BQU8sQ0FBQyx5QkFBeUIsQ0FBQyxDQUFDOztBQUVuRCxTQUFTLCtCQUErQixDQUN0QyxLQUFZLEVBQ1osSUFBZ0MsRUFDekI7QUFDUCxTQUFPLE9BQU8sQ0FBQyxDQUNiLE9BQU8sQ0FBQyxTQUFTLEVBQ2pCLE9BQU8sQ0FBQyxXQUFXLEVBQ25CLElBQUksQ0FBQyxLQUFLLENBQUMsR0FBRyxDQUFDLFVBQUMsQ0FBQyxFQUFFLENBQUMsRUFBRSxHQUFHO1dBQUssQ0FDNUIsQ0FBQyxLQUFLLENBQUMsR0FBRyxPQUFPLENBQUMsVUFBVSxHQUFHLE9BQU8sQ0FBQyxlQUFlLEVBQ3RELEtBQUssQ0FBQyxDQUFDLENBQUMsRUFDUixDQUFDLEdBQUcsR0FBRyxDQUFDLE1BQU0sR0FBRyxDQUFDLEdBQUcsQ0FBQyxPQUFPLENBQUMsS0FBSyxFQUFFLEdBQUcsQ0FBQyxHQUFHLE9BQU8sQ0FBQyxLQUFLLENBQzFEO0dBQUEsQ0FBQyxFQUNGLE9BQU8sQ0FBQyxXQUFXLEVBQ25CLE9BQU8sQ0FBQyxVQUFVLENBQ25CLENBQUMsQ0FBQztDQUNKOztBQUVELE1BQU0sQ0FBQyxPQUFPLEdBQUcsK0JBQStCLENBQUMiLCJmaWxlIjoicHJpbnRJbnRlcnNlY3Rpb25UeXBlQW5ub3RhdGlvbi5qcyIsInNvdXJjZXNDb250ZW50IjpbIid1c2UgYmFiZWwnO1xuLyogQGZsb3cgKi9cblxuLypcbiAqIENvcHlyaWdodCAoYykgMjAxNS1wcmVzZW50LCBGYWNlYm9vaywgSW5jLlxuICogQWxsIHJpZ2h0cyByZXNlcnZlZC5cbiAqXG4gKiBUaGlzIHNvdXJjZSBjb2RlIGlzIGxpY2Vuc2VkIHVuZGVyIHRoZSBsaWNlbnNlIGZvdW5kIGluIHRoZSBMSUNFTlNFIGZpbGUgaW5cbiAqIHRoZSByb290IGRpcmVjdG9yeSBvZiB0aGlzIHNvdXJjZSB0cmVlLlxuICovXG5cbmltcG9ydCB0eXBlIHtJbnRlcnNlY3Rpb25UeXBlQW5ub3RhdGlvbn0gZnJvbSAnYXN0LXR5cGVzLWZsb3cnO1xuaW1wb3J0IHR5cGUge0xpbmVzLCBQcmludH0gZnJvbSAnLi4vLi4vdHlwZXMvY29tbW9uJztcblxuY29uc3QgZmxhdHRlbiA9IHJlcXVpcmUoJy4uLy4uL3V0aWxzL2ZsYXR0ZW4nKTtcbmNvbnN0IG1hcmtlcnMgPSByZXF1aXJlKCcuLi8uLi9jb25zdGFudHMvbWFya2VycycpO1xuXG5mdW5jdGlvbiBwcmludEludGVyc2VjdGlvblR5cGVBbm5vdGF0aW9uKFxuICBwcmludDogUHJpbnQsXG4gIG5vZGU6IEludGVyc2VjdGlvblR5cGVBbm5vdGF0aW9uLFxuKTogTGluZXMge1xuICByZXR1cm4gZmxhdHRlbihbXG4gICAgbWFya2Vycy5vcGVuU2NvcGUsXG4gICAgbWFya2Vycy5zY29wZUluZGVudCxcbiAgICBub2RlLnR5cGVzLm1hcCgodCwgaSwgYXJyKSA9PiBbXG4gICAgICBpID09PSAwID8gbWFya2Vycy5zY29wZUJyZWFrIDogbWFya2Vycy5zY29wZVNwYWNlQnJlYWssXG4gICAgICBwcmludCh0KSxcbiAgICAgIGkgPCBhcnIubGVuZ3RoIC0gMSA/IFttYXJrZXJzLnNwYWNlLCAnJiddIDogbWFya2Vycy5lbXB0eSxcbiAgICBdKSxcbiAgICBtYXJrZXJzLnNjb3BlRGVkZW50LFxuICAgIG1hcmtlcnMuY2xvc2VTY29wZSxcbiAgXSk7XG59XG5cbm1vZHVsZS5leHBvcnRzID0gcHJpbnRJbnRlcnNlY3Rpb25UeXBlQW5ub3RhdGlvbjtcbiJdfQ==

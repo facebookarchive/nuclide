@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+Object.defineProperty(exports, '__esModule', {
+  value: true
+});
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,47 +10,30 @@
  * the root directory of this source tree.
  */
 
-import type {ProcessOutputStore} from '../../output-store';
-import type {ProcessOutputHandler} from './types';
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-export type RunCommandOptions = {
-  /* A title for the tab of the newly opened pane. */
-  tabTitle: string;
-  /* The ProcessOutputStore that provides the data to display. */
-  processOutputStore: ProcessOutputStore;
-  /**
-   * An optional ProcessOutputHandler that is appropriate for the expected output. See the
-   * constructor of ProcessOutputView for more information.
-   */
-  processOutputHandler?: ProcessOutputHandler;
-  /* An optional React component that will be placed at the top of the process output view. */
-  processOutputViewTopElement?: ReactElement;
-  /* If true, before opening the new tab, it will close any existing tab with the same title. */
-  destroyExistingPane?: boolean;
-};
-export type RunCommandFunctionAndCleanup = {
-  runCommandInNewPane: (options: RunCommandOptions) => Promise<atom$TextEditor>;
-  disposable: IDisposable;
-};
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-import {CompositeDisposable, Disposable} from 'atom';
-import invariant from 'assert';
-import {destroyPaneItemWithTitle} from '../../../atom-helpers';
-import createBoundTextBuffer from './createBoundTextBuffer';
+var _atom = require('atom');
 
-const NUCLIDE_PROCESS_OUTPUT_VIEW_URI = 'atom://nuclide/process-output/';
-const PROCESS_OUTPUT_HANDLER_KEY = 'nuclide-processOutputHandler';
-const PROCESS_OUTPUT_STORE_KEY = 'nuclide-processOutputStore';
-const PROCESS_OUTPUT_VIEW_TOP_ELEMENT = 'nuclide-processOutputViewTopElement';
-type CreateProcessOutputViewOptions = {
-  'nuclide-processOutputHandler': ?ProcessOutputHandler;
-  'nuclide-processOutputStore': ProcessOutputStore;
-  'nuclide-processOutputViewTopElement': ?ReactElement;
-};
+var _assert = require('assert');
 
-let subscriptions: ?CompositeDisposable;
-let processOutputStores: ?Set<ProcessOutputStore>;
-let logger;
+var _assert2 = _interopRequireDefault(_assert);
+
+var _atomHelpers = require('../../../atom-helpers');
+
+var _createBoundTextBuffer = require('./createBoundTextBuffer');
+
+var _createBoundTextBuffer2 = _interopRequireDefault(_createBoundTextBuffer);
+
+var NUCLIDE_PROCESS_OUTPUT_VIEW_URI = 'atom://nuclide/process-output/';
+var PROCESS_OUTPUT_HANDLER_KEY = 'nuclide-processOutputHandler';
+var PROCESS_OUTPUT_STORE_KEY = 'nuclide-processOutputStore';
+var PROCESS_OUTPUT_VIEW_TOP_ELEMENT = 'nuclide-processOutputViewTopElement';
+
+var subscriptions = undefined;
+var processOutputStores = undefined;
+var logger = undefined;
 
 function getLogger() {
   if (!logger) {
@@ -65,34 +49,31 @@ function getLogger() {
  *   call that triggered this function. In this case, it should contain special
  *   Nuclide arguments (see `runCommandInNewPane`).
  */
-function createProcessOutputView(
-  uri: string,
-  openOptions: CreateProcessOutputViewOptions
-): HTMLElement {
-  const processOutputStore = openOptions[PROCESS_OUTPUT_STORE_KEY];
-  const processOutputHandler = openOptions[PROCESS_OUTPUT_HANDLER_KEY];
-  const processOutputViewTopElement = openOptions[PROCESS_OUTPUT_VIEW_TOP_ELEMENT];
-  const tabTitle = uri.slice(NUCLIDE_PROCESS_OUTPUT_VIEW_URI.length);
+function createProcessOutputView(uri, openOptions) {
+  var processOutputStore = openOptions[PROCESS_OUTPUT_STORE_KEY];
+  var processOutputHandler = openOptions[PROCESS_OUTPUT_HANDLER_KEY];
+  var processOutputViewTopElement = openOptions[PROCESS_OUTPUT_VIEW_TOP_ELEMENT];
+  var tabTitle = uri.slice(NUCLIDE_PROCESS_OUTPUT_VIEW_URI.length);
 
-  const ProcessOutputView = require('./ProcessOutputView');
-  const component = ProcessOutputView.createView({
+  var ProcessOutputView = require('./ProcessOutputView');
+  var component = ProcessOutputView.createView({
     title: tabTitle,
-    textBuffer: createBoundTextBuffer(processOutputStore, processOutputHandler),
-    processOutputStore,
-    processOutputViewTopElement,
+    textBuffer: (0, _createBoundTextBuffer2['default'])(processOutputStore, processOutputHandler),
+    processOutputStore: processOutputStore,
+    processOutputViewTopElement: processOutputViewTopElement
   });
 
-  invariant(processOutputStores);
+  (0, _assert2['default'])(processOutputStores);
   processOutputStores.add(processOutputStore);
 
   // When the process exits, we want to remove the reference to the process.
-  const handleProcessExit = () => {
+  var handleProcessExit = function handleProcessExit() {
     if (processOutputStores) {
-      processOutputStores.delete(processOutputStore);
+      processOutputStores['delete'](processOutputStore);
     }
   };
-  const handleProcessExitWithError = (error: Error) => {
-    getLogger().error(`runCommandInNewPane encountered an error running: ${tabTitle}`, error);
+  var handleProcessExitWithError = function handleProcessExitWithError(error) {
+    getLogger().error('runCommandInNewPane encountered an error running: ' + tabTitle, error);
     handleProcessExit();
   };
 
@@ -103,16 +84,14 @@ function createProcessOutputView(
 /**
  * @param options See definition of RunCommandOptions.
  */
-function runCommandInNewPane(options: RunCommandOptions): Promise<atom$TextEditor> {
-  const openOptions = {
-    [PROCESS_OUTPUT_HANDLER_KEY]: options.processOutputHandler,
-    [PROCESS_OUTPUT_STORE_KEY]: options.processOutputStore,
-    [PROCESS_OUTPUT_VIEW_TOP_ELEMENT]: options.processOutputViewTopElement,
-  };
+function runCommandInNewPane(options) {
+  var _openOptions;
 
-  const tabTitle = options.tabTitle;
+  var openOptions = (_openOptions = {}, _defineProperty(_openOptions, PROCESS_OUTPUT_HANDLER_KEY, options.processOutputHandler), _defineProperty(_openOptions, PROCESS_OUTPUT_STORE_KEY, options.processOutputStore), _defineProperty(_openOptions, PROCESS_OUTPUT_VIEW_TOP_ELEMENT, options.processOutputViewTopElement), _openOptions);
+
+  var tabTitle = options.tabTitle;
   if (options.destroyExistingPane) {
-    destroyPaneItemWithTitle(tabTitle);
+    (0, _atomHelpers.destroyPaneItemWithTitle)(tabTitle);
   }
   // Not documented: the 'options' passed to atom.workspace.open() are passed to the opener.
   // There's no other great way for a consumer of this service to specify a ProcessOutputHandler.
@@ -123,11 +102,11 @@ function runCommandInNewPane(options: RunCommandOptions): Promise<atom$TextEdito
  * Set up and Teardown of Atom Opener
  */
 
-function activateModule(): void {
+function activateModule() {
   if (!subscriptions) {
-    subscriptions = new CompositeDisposable();
+    subscriptions = new _atom.CompositeDisposable();
     // $FlowFixMe: the expando options argument is an undocumented hack.
-    subscriptions.add(atom.workspace.addOpener((uri, options) => {
+    subscriptions.add(atom.workspace.addOpener(function (uri, options) {
       if (uri.startsWith(NUCLIDE_PROCESS_OUTPUT_VIEW_URI)) {
         return createProcessOutputView(uri, options);
       }
@@ -136,13 +115,13 @@ function activateModule(): void {
   }
 }
 
-function disposeModule(): void {
+function disposeModule() {
   if (subscriptions) {
     subscriptions.dispose();
     subscriptions = null;
   }
   if (processOutputStores) {
-    for (const processStore of processOutputStores) {
+    for (var processStore of processOutputStores) {
       processStore.dispose();
     }
     processOutputStores = null;
@@ -153,7 +132,7 @@ function disposeModule(): void {
  * "Reference Counting"
  */
 
-let references: number = 0;
+var references = 0;
 function incrementReferences() {
   if (references === 0) {
     activateModule();
@@ -165,8 +144,7 @@ function decrementReferences() {
   references--;
   if (references < 0) {
     references = 0;
-    getLogger.error('getRunCommandInNewPane: number of decrementReferences() ' +
-      'calls has exceeded the number of incrementReferences() calls.');
+    getLogger.error('getRunCommandInNewPane: number of decrementReferences() ' + 'calls has exceeded the number of incrementReferences() calls.');
   }
   if (references === 0) {
     disposeModule();
@@ -180,12 +158,28 @@ function decrementReferences() {
  *   - disposable: A Disposable which should be disposed when this function is
  *       no longer needed by the caller.
  */
-function getRunCommandInNewPane(): RunCommandFunctionAndCleanup {
+function getRunCommandInNewPane() {
   incrementReferences();
   return {
-    runCommandInNewPane,
-    disposable: new Disposable(() => decrementReferences()),
+    runCommandInNewPane: runCommandInNewPane,
+    disposable: new _atom.Disposable(function () {
+      return decrementReferences();
+    })
   };
 }
 
 module.exports = getRunCommandInNewPane;
+
+/* A title for the tab of the newly opened pane. */
+
+/* The ProcessOutputStore that provides the data to display. */
+
+/**
+ * An optional ProcessOutputHandler that is appropriate for the expected output. See the
+ * constructor of ProcessOutputView for more information.
+ */
+
+/* An optional React component that will be placed at the top of the process output view. */
+
+/* If true, before opening the new tab, it will close any existing tab with the same title. */
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbImdldFJ1bkNvbW1hbmRJbk5ld1BhbmUuanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozs7Ozs7OztvQkFrQzhDLE1BQU07O3NCQUM5QixRQUFROzs7OzJCQUNTLHVCQUF1Qjs7cUNBQzVCLHlCQUF5Qjs7OztBQUUzRCxJQUFNLCtCQUErQixHQUFHLGdDQUFnQyxDQUFDO0FBQ3pFLElBQU0sMEJBQTBCLEdBQUcsOEJBQThCLENBQUM7QUFDbEUsSUFBTSx3QkFBd0IsR0FBRyw0QkFBNEIsQ0FBQztBQUM5RCxJQUFNLCtCQUErQixHQUFHLHFDQUFxQyxDQUFDOztBQU85RSxJQUFJLGFBQW1DLFlBQUEsQ0FBQztBQUN4QyxJQUFJLG1CQUE2QyxZQUFBLENBQUM7QUFDbEQsSUFBSSxNQUFNLFlBQUEsQ0FBQzs7QUFFWCxTQUFTLFNBQVMsR0FBRztBQUNuQixNQUFJLENBQUMsTUFBTSxFQUFFO0FBQ1gsVUFBTSxHQUFHLE9BQU8sQ0FBQyxrQkFBa0IsQ0FBQyxDQUFDLFNBQVMsRUFBRSxDQUFDO0dBQ2xEO0FBQ0QsU0FBTyxNQUFNLENBQUM7Q0FDZjs7Ozs7Ozs7O0FBU0QsU0FBUyx1QkFBdUIsQ0FDOUIsR0FBVyxFQUNYLFdBQTJDLEVBQzlCO0FBQ2IsTUFBTSxrQkFBa0IsR0FBRyxXQUFXLENBQUMsd0JBQXdCLENBQUMsQ0FBQztBQUNqRSxNQUFNLG9CQUFvQixHQUFHLFdBQVcsQ0FBQywwQkFBMEIsQ0FBQyxDQUFDO0FBQ3JFLE1BQU0sMkJBQTJCLEdBQUcsV0FBVyxDQUFDLCtCQUErQixDQUFDLENBQUM7QUFDakYsTUFBTSxRQUFRLEdBQUcsR0FBRyxDQUFDLEtBQUssQ0FBQywrQkFBK0IsQ0FBQyxNQUFNLENBQUMsQ0FBQzs7QUFFbkUsTUFBTSxpQkFBaUIsR0FBRyxPQUFPLENBQUMscUJBQXFCLENBQUMsQ0FBQztBQUN6RCxNQUFNLFNBQVMsR0FBRyxpQkFBaUIsQ0FBQyxVQUFVLENBQUM7QUFDN0MsU0FBSyxFQUFFLFFBQVE7QUFDZixj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QUksVUFBVSxLQUFLLENBQUMsRUFBRTtBQUNwQixpQkFBYSxFQUFFLENBQUM7R0FDakI7Q0FDRjs7Ozs7Ozs7O0FBU0QsU0FBUyxzQkFBc0IsR0FBaUM7QUFDOUQscUJBQW1CLEVBQUUsQ0FBQztBQUN0QixTQUFPO0FBQ0wsdUJBQW1CLEVBQW5CLG1CQUFtQjtBQUNuQixjQUFVLEVBQUUscUJBQWU7YUFBTSxtQkFBbUIsRUFBRTtLQUFBLENBQUM7R0FDeEQsQ0FBQztDQUNIOztBQUVELE1BQU0sQ0FBQyxPQUFPLEdBQUcsc0JBQXNCLENBQUMiLCJmaWxlIjoiZ2V0UnVuQ29tbWFuZEluTmV3UGFuZS5qcyIsInNvdXJjZXNDb250ZW50IjpbIid1c2UgYmFiZWwnO1xuLyogQGZsb3cgKi9cblxuLypcbiAqIENvcHlyaWdodCAoYykgMjAxNS1wcmVzZW50LCBGYWNlYm9vaywgSW5jLlxuICogQWxsIHJpZ2h0cyByZXNlcnZlZC5cbiAqXG4gKiBUaGlzIHNvdXJjZSBjb2RlIGlzIGxpY2Vuc2VkIHVuZGVyIHRoZSBsaWNlbnNlIGZvdW5kIGluIHRoZSBMSUNFTlNFIGZpbGUgaW5cbiAqIHRoZSByb290IGRpcmVjdG9yeSBvZiB0aGlzIHNvdXJjZSB0cmVlLlxuICovXG5cbmltcG9ydCB0eXBlIHtQcm9jZXNzT3V0cHV0U3RvcmV9IGZyb20gJy4uLy4uL291dHB1dC1zdG9yZSc7XG5pbXBvcnQgdHlwZSB7UHJvY2Vzc091dHB1dEhhbmRsZXJ9IGZyb20gJy4vdHlwZXMnO1xuXG5leHBvcnQgdHlwZSBSdW5Db21tYW5kT3B0aW9ucyA9IHtcbiAgLyogQSB0aXRsZSBmb3IgdGhlIHRhYiBvZiB0aGUgbmV3bHkgb3BlbmVkIHBhbmUuICovXG4gIHRhYlRpdGxlOiBzdHJpbmc7XG4gIC8qIFRoZSBQcm9jZXNzT3V0cHV0U3RvcmUgdGhhdCBwcm92aWRlcyB0aGUgZGF0YSB0byBkaXNwbGF5LiAqL1xuICBwcm9jZXNzT3V0cHV0U3RvcmU6IFByb2Nlc3NPdXRwdXRTdG9yZTtcbiAgLyoqXG4gICAqIEFuIG9wdGlvbmFsIFByb2Nlc3NPdXRwdXRIYW5kbGVyIHRoYXQgaXMgYXBwcm9wcmlhdGUgZm9yIHRoZSBleHBlY3RlZCBvdXRwdXQuIFNlZSB0aGVcbiAgICogY29uc3RydWN0b3Igb2YgUHJvY2Vzc091dHB1dFZpZXcgZm9yIG1vcmUgaW5mb3JtYXRpb24uXG4gICAqL1xuICBwcm9jZXNzT3V0cHV0SGFuZGxlcj86IFByb2Nlc3NPdXRwdXRIYW5kbGVyO1xuICAvKiBBbiBvcHRpb25hbCBSZWFjdCBjb21wb25lbnQgdGhhdCB3aWxsIGJlIHBsYWNlZCBhdCB0aGUgdG9wIG9mIHRoZSBwcm9jZXNzIG91dHB1dCB2aWV3LiAqL1xuICBwcm9jZXNzT3V0cHV0Vmlld1RvcEVsZW1lbnQ/OiBSZWFjdEVsZW1lbnQ7XG4gIC8qIElmIHRydWUsIGJlZm9yZSBvcGVuaW5nIHRoZSBuZXcgdGFiLCBpdCB3aWxsIGNsb3NlIGFueSBleGlzdGluZyB0YWIgd2l0aCB0aGUgc2FtZSB0aXRsZS4gKi9cbiAgZGVzdHJveUV4aXN0aW5nUGFuZT86IGJvb2xlYW47XG59O1xuZXhwb3J0IHR5cGUgUnVuQ29tbWFuZEZ1bmN0aW9uQW5kQ2xlYW51cCA9IHtcbiAgcnVuQ29tbWFuZEluTmV3UGFuZTogKG9wdGlvbnM6IFJ1bkNvbW1hbmRPcHRpb25zKSA9PiBQcm9taXNlPGF0b20kVGV4dEVkaXRvcj47XG4gIGRpc3Bvc2FibGU6IElEaXNwb3NhYmxlO1xufTtcblxuaW1wb3J0IHtDb21wb3NpdGVEaXNwb3NhYmxlLCBEaXNwb3NhYmxlfSBmcm9tICdhdG9tJztcbmltcG9ydCBpbnZhcmlhbnQgZnJvbSAnYXNzZXJ0JztcbmltcG9ydCB7ZGVzdHJveVBhbmVJdGVtV2l0aFRpdGxlfSBmcm9tICcuLi8uLi8uLi9hdG9tLWhlbHBlcnMnO1xuaW1wb3J0IGNyZWF0ZUJvdW5kVGV4dEJ1ZmZlciBmcm9tICcuL2NyZWF0ZUJvdW5kVGV4dEJ1ZmZlcic7XG5cbmNvbnN0IE5VQ0xJREVfUFJPQ0VTU19PVVRQVVRfVklFV19VUkkgPSAnYXRvbTovL251Y2xpZGUvcHJvY2Vzcy1vdXRwdXQvJztcbmNvbnN0IFBST0NFU1NfT1VUUFVUX0hBTkRMRVJfS0VZID0gJ251Y2xpZGUtcHJvY2Vzc091dHB1dEhhbmRsZXInO1xuY29uc3QgUFJPQ0VTU19PVVRQVVRfU1RPUkVfS0VZID0gJ251Y2xpZGUtcHJvY2Vzc091dHB1dFN0b3JlJztcbmNvbnN0IFBST0NFU1NfT1VUUFVUX1ZJRVdfVE9QX0VMRU1FTlQgPSAnbnVjbGlkZS1wcm9jZXNzT3V0cHV0Vmlld1RvcEVsZW1lbnQnO1xudHlwZSBDcmVhdGVQcm9jZXNzT3V0cHV0Vmlld09wdGlvbnMgPSB7XG4gICdudWNsaWRlLXByb2Nlc3NPdXRwdXRIYW5kbGVyJzogP1Byb2Nlc3NPdXRwdXRIYW5kbGVyO1xuICAnbnVjbGlkZS1wcm9jZXNzT3V0cHV0U3RvcmUnOiBQcm9jZXNzT3V0cHV0U3RvcmU7XG4gICdudWNsaWRlLXByb2Nlc3NPdXRwdXRWaWV3VG9wRWxlbWVudCc6ID9SZWFjdEVsZW1lbnQ7XG59O1xuXG5sZXQgc3Vic2NyaXB0aW9uczogP0NvbXBvc2l0ZURpc3Bvc2FibGU7XG5sZXQgcHJvY2Vzc091dHB1dFN0b3JlczogP1NldDxQcm9jZXNzT3V0cHV0U3RvcmU+O1xubGV0IGxvZ2dlcjtcblxuZnVuY3Rpb24gZ2V0TG9nZ2VyKCkge1xuICBpZiAoIWxvZ2dlcikge1xuICAgIGxvZ2dlciA9IHJlcXVpcmUoJy4uLy4uLy4uL2xvZ2dpbmcnKS5nZXRMb2dnZXIoKTtcbiAgfVxuICByZXR1cm4gbG9nZ2VyO1xufVxuXG4vKipcbiAqIEBwYXJhbSB1cmkgQSBTdHJpbmcgY29uc2lzdGluZyBvZiBOVUNMSURFX1BST0NFU1NfT1VUUFVUX1ZJRVdfVVJJIHBsdXMgYVxuICogICB0YWJUaXRsZSBmb3IgdGhlIG5ldyBwYW5lLlxuICogQHBhcmFtIG9wdGlvbnMgVGhlIHNhbWUgYXMgdGhlIGBvcHRpb25zYCBwYXNzZWQgdG8gdGhlIGF0b20ud29ya3NwYWNlLm9wZW4oKVxuICogICBjYWxsIHRoYXQgdHJpZ2dlcmVkIHRoaXMgZnVuY3Rpb24uIEluIHRoaXMgY2FzZSwgaXQgc2hvdWxkIGNvbnRhaW4gc3BlY2lhbFxuICogICBOdWNsaWRlIGFyZ3VtZW50cyAoc2VlIGBydW5Db21tYW5kSW5OZXdQYW5lYCkuXG4gKi9cbmZ1bmN0aW9uIGNyZWF0ZVByb2Nlc3NPdXRwdXRWaWV3KFxuICB1cmk6IHN0cmluZyxcbiAgb3Blbk9wdGlvbnM6IENyZWF0ZVByb2Nlc3NPdXRwdXRWaWV3T3B0aW9uc1xuKTogSFRNTEVsZW1lbnQge1xuICBjb25zdCBwcm9jZXNzT3V0cHV0U3RvcmUgPSBvcGVuT3B0aW9uc1tQUk9DRVNTX09VVFBVVF9TVE9SRV9LRVldO1xuICBjb25zdCBwcm9jZXNzT3V0cHV0SGFuZGxlciA9IG9wZW5PcHRpb25zW1BST0NFU1NfT1VUUFVUX0hBTkRMRVJfS0VZXTtcbiAgY29uc3QgcHJvY2Vzc091dHB1dFZpZXdUb3BFbGVtZW50ID0gb3Blbk9wdGlvbnNbUFJPQ0VTU19PVVRQVVRfVklFV19UT1BfRUxFTUVOVF07XG4gIGNvbnN0IHRhYlRpdGxlID0gdXJpLnNsaWNlKE5VQ0xJREVfUFJPQ0VTU19PVVRQVVRfVklFV19VUkkubGVuZ3RoKTtcblxuICBjb25zdCBQcm9jZXNzT3V0cHV0VmlldyA9IHJlcXVpcmUoJy4vUHJvY2Vzc091dHB1dFZpZXcnKTtcbiAgY29uc3QgY29tcG9uZW50ID0gUHJvY2Vzc091dHB1dFZpZXcuY3JlYXRlVmlldyh7XG4gICAgdGl0bGU6IHRhYlRpdGxlLFxuICAgIHRleHRCdWZmZXI6IGNyZWF0ZUJvdW5kVGV4dEJ1ZmZlcihwcm9jZXNzT3V0cHV0U3RvcmUsIHByb2Nlc3NPdXRwdXRIYW5kbGVyKSxcbiAgICBwcm9jZXNzT3V0cHV0U3RvcmUsXG4gICAgcHJvY2Vzc091dHB1dFZpZXdUb3BFbGVtZW50LFxuICB9KTtcblxuICBpbnZhcmlhbnQocHJvY2Vzc091dHB1dFN0b3Jlcyk7XG4gIHByb2Nlc3NPdXRwdXRTdG9yZXMuYWRkKHByb2Nlc3NPdXRwdXRTdG9yZSk7XG5cbiAgLy8gV2hlbiB0aGUgcHJvY2VzcyBleGl0cywgd2Ugd2FudCB0byByZW1vdmUgdGhlIHJlZmVyZW5jZSB0byB0aGUgcHJvY2Vzcy5cbiAgY29uc3QgaGFuZGxlUHJvY2Vzc0V4aXQgPSAoKSA9PiB7XG4gICAgaWYgKHByb2Nlc3NPdXRwdXRTdG9yZXMpIHtcbiAgICAgIHByb2Nlc3NPdXRwdXRTdG9yZXMuZGVsZXRlKHByb2Nlc3NPdXRwdXRTdG9yZSk7XG4gICAgfVxuICB9O1xuICBjb25zdCBoYW5kbGVQcm9jZXNzRXhpdFdpdGhFcnJvciA9IChlcnJvcjogRXJyb3IpID0+IHtcbiAgICBnZXRMb2dnZXIoKS5lcnJvcihgcnVuQ29tbWFuZEluTmV3UGFuZSBlbmNvdW50ZXJlZCBhbiBlcnJvciBydW5uaW5nOiAke3RhYlRpdGxlfWAsIGVycm9yKTtcbiAgICBoYW5kbGVQcm9jZXNzRXhpdCgpO1xuICB9O1xuXG4gIHByb2Nlc3NPdXRwdXRTdG9yZS5zdGFydFByb2Nlc3MoKS50aGVuKGhhbmRsZVByb2Nlc3NFeGl0LCBoYW5kbGVQcm9jZXNzRXhpdFdpdGhFcnJvcik7XG4gIHJldHVybiBjb21wb25lbnQ7XG59XG5cbi8qKlxuICogQHBhcmFtIG9wdGlvbnMgU2VlIGRlZmluaXRpb24gb2YgUnVuQ29tbWFuZE9wdGlvbnMuXG4gKi9cbmZ1bmN0aW9uIHJ1bkNvbW1hbmRJbk5ld1BhbmUob3B0aW9uczogUnVuQ29tbWFuZE9wdGlvbnMpOiBQcm9taXNlPGF0b20kVGV4dEVkaXRvcj4ge1xuICBjb25zdCBvcGVuT3B0aW9ucyA9IHtcbiAgICBbUFJPQ0VTU19PVVRQVVRfSEFORExFUl9LRVldOiBvcHRpb25zLnByb2Nlc3NPdXRwdXRIYW5kbGVyLFxuICAgIFtQUk9DRVNTX09VVFBVVF9TVE9SRV9LRVldOiBvcHRpb25zLnByb2Nlc3NPdXRwdXRTdG9yZSxcbiAgICBbUFJPQ0VTU19PVVRQVVRfVklFV19UT1BfRUxFTUVOVF06IG9wdGlvbnMucHJvY2Vzc091dHB1dFZpZXdUb3BFbGVtZW50LFxuICB9O1xuXG4gIGNvbnN0IHRhYlRpdGxlID0gb3B0aW9ucy50YWJUaXRsZTtcbiAgaWYgKG9wdGlvbnMuZGVzdHJveUV4aXN0aW5nUGFuZSkge1xuICAgIGRlc3Ryb3lQYW5lSXRlbVdpdGhUaXRsZSh0YWJUaXRsZSk7XG4gIH1cbiAgLy8gTm90IGRvY3VtZW50ZWQ6IHRoZSAnb3B0aW9ucycgcGFzc2VkIHRvIGF0b20ud29ya3NwYWNlLm9wZW4oKSBhcmUgcGFzc2VkIHRvIHRoZSBvcGVuZXIuXG4gIC8vIFRoZXJlJ3Mgbm8gb3RoZXIgZ3JlYXQgd2F5IGZvciBhIGNvbnN1bWVyIG9mIHRoaXMgc2VydmljZSB0byBzcGVjaWZ5IGEgUHJvY2Vzc091dHB1dEhhbmRsZXIuXG4gIHJldHVybiBhdG9tLndvcmtzcGFjZS5vcGVuKE5VQ0xJREVfUFJPQ0VTU19PVVRQVVRfVklFV19VUkkgKyB0YWJUaXRsZSwgb3Blbk9wdGlvbnMpO1xufVxuXG4vKipcbiAqIFNldCB1cCBhbmQgVGVhcmRvd24gb2YgQXRvbSBPcGVuZXJcbiAqL1xuXG5mdW5jdGlvbiBhY3RpdmF0ZU1vZHVsZSgpOiB2b2lkIHtcbiAgaWYgKCFzdWJzY3JpcHRpb25zKSB7XG4gICAgc3Vic2NyaXB0aW9ucyA9IG5ldyBDb21wb3NpdGVEaXNwb3NhYmxlKCk7XG4gICAgLy8gJEZsb3dGaXhNZTogdGhlIGV4cGFuZG8gb3B0aW9ucyBhcmd1bWVudCBpcyBhbiB1bmRvY3VtZW50ZWQgaGFjay5cbiAgICBzdWJzY3JpcHRpb25zLmFkZChhdG9tLndvcmtzcGFjZS5hZGRPcGVuZXIoKHVyaSwgb3B0aW9ucykgPT4ge1xuICAgICAgaWYgKHVyaS5zdGFydHNXaXRoKE5VQ0xJREVfUFJPQ0VTU19PVVRQVVRfVklFV19VUkkpKSB7XG4gICAgICAgIHJldHVybiBjcmVhdGVQcm9jZXNzT3V0cHV0Vmlldyh1cmksIG9wdGlvbnMpO1xuICAgICAgfVxuICAgIH0pKTtcbiAgICBwcm9jZXNzT3V0cHV0U3RvcmVzID0gbmV3IFNldCgpO1xuICB9XG59XG5cbmZ1bmN0aW9uIGRpc3Bvc2VNb2R1bGUoKTogdm9pZCB7XG4gIGlmIChzdWJzY3JpcHRpb25zKSB7XG4gICAgc3Vic2NyaXB0aW9ucy5kaXNwb3NlKCk7XG4gICAgc3Vic2NyaXB0aW9ucyA9IG51bGw7XG4gIH1cbiAgaWYgKHByb2Nlc3NPdXRwdXRTdG9yZXMpIHtcbiAgICBmb3IgKGNvbnN0IHByb2Nlc3NTdG9yZSBvZiBwcm9jZXNzT3V0cHV0U3RvcmVzKSB7XG4gICAgICBwcm9jZXNzU3RvcmUuZGlzcG9zZSgpO1xuICAgIH1cbiAgICBwcm9jZXNzT3V0cHV0U3RvcmVzID0gbnVsbDtcbiAgfVxufVxuXG4vKipcbiAqIFwiUmVmZXJlbmNlIENvdW50aW5nXCJcbiAqL1xuXG5sZXQgcmVmZXJlbmNlczogbnVtYmVyID0gMDtcbmZ1bmN0aW9uIGluY3JlbWVudFJlZmVyZW5jZXMoKSB7XG4gIGlmIChyZWZlcmVuY2VzID09PSAwKSB7XG4gICAgYWN0aXZhdGVNb2R1bGUoKTtcbiAgfVxuICByZWZlcmVuY2VzKys7XG59XG5cbmZ1bmN0aW9uIGRlY3JlbWVudFJlZmVyZW5jZXMoKSB7XG4gIHJlZmVyZW5jZXMtLTtcbiAgaWYgKHJlZmVyZW5jZXMgPCAwKSB7XG4gICAgcmVmZXJlbmNlcyA9IDA7XG4gICAgZ2V0TG9nZ2VyLmVycm9yKCdnZXRSdW5Db21tYW5kSW5OZXdQYW5lOiBudW1iZXIgb2YgZGVjcmVtZW50UmVmZXJlbmNlcygpICcgK1xuICAgICAgJ2NhbGxzIGhhcyBleGNlZWRlZCB0aGUgbnVtYmVyIG9mIGluY3JlbWVudFJlZmVyZW5jZXMoKSBjYWxscy4nKTtcbiAgfVxuICBpZiAocmVmZXJlbmNlcyA9PT0gMCkge1xuICAgIGRpc3Bvc2VNb2R1bGUoKTtcbiAgfVxufVxuXG4vKipcbiAqIEByZXR1cm4gYSBSdW5Db21tYW5kRnVuY3Rpb25BbmRDbGVhbnVwLCB3aGljaCBoYXMgdGhlIGZpZWxkczpcbiAqICAgLSBydW5Db21tYW5kSW5OZXdQYW5lOiBUaGUgZnVuY3Rpb24gd2hpY2ggY2FuIGJlIHVzZWQgdG8gY3JlYXRlIGEgbmV3IHBhbmVcbiAqICAgICAgIHdpdGggdGhlIG91dHB1dCBvZiBhIHByb2Nlc3MuXG4gKiAgIC0gZGlzcG9zYWJsZTogQSBEaXNwb3NhYmxlIHdoaWNoIHNob3VsZCBiZSBkaXNwb3NlZCB3aGVuIHRoaXMgZnVuY3Rpb24gaXNcbiAqICAgICAgIG5vIGxvbmdlciBuZWVkZWQgYnkgdGhlIGNhbGxlci5cbiAqL1xuZnVuY3Rpb24gZ2V0UnVuQ29tbWFuZEluTmV3UGFuZSgpOiBSdW5Db21tYW5kRnVuY3Rpb25BbmRDbGVhbnVwIHtcbiAgaW5jcmVtZW50UmVmZXJlbmNlcygpO1xuICByZXR1cm4ge1xuICAgIHJ1bkNvbW1hbmRJbk5ld1BhbmUsXG4gICAgZGlzcG9zYWJsZTogbmV3IERpc3Bvc2FibGUoKCkgPT4gZGVjcmVtZW50UmVmZXJlbmNlcygpKSxcbiAgfTtcbn1cblxubW9kdWxlLmV4cG9ydHMgPSBnZXRSdW5Db21tYW5kSW5OZXdQYW5lO1xuIl19

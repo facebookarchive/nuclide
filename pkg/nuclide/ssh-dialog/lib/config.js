@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,27 +8,29 @@
  * the root directory of this source tree.
  */
 
-const path = require('path');
-const {USER, HOME} = require('../../commons').env;
+var path = require('path');
 
-import type {NuclideRemoteConnectionParams} from './connection-types';
+var _require$env = require('../../commons').env;
 
+var USER = _require$env.USER;
+var HOME = _require$env.HOME;
 
-function getConnectionDialogDefaultSettings(): NuclideRemoteConnectionParams {
+function getConnectionDialogDefaultSettings() {
   return {
     server: '',
     username: USER,
     // Do not use path.join() because we assume that the remote machine is *nix,
     // so we always want to use `/` as the path separator for cwd, even if Atom
     // is running on Windows.
-    cwd: `/home/${USER}/`,
+    cwd: '/home/' + USER + '/',
     pathToPrivateKey: path.join(HOME, '.ssh', 'id_rsa'),
     remoteServerCommand: 'nuclide-start-server',
     authMethod: require('../../remote-connection').SshHandshake.SupportedMethods.PASSWORD,
-    sshPort: '22',
+    sshPort: '22'
   };
 }
 
 module.exports = {
-  getConnectionDialogDefaultSettings,
+  getConnectionDialogDefaultSettings: getConnectionDialogDefaultSettings
 };
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbImNvbmZpZy5qcyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7O0FBV0EsSUFBTSxJQUFJLEdBQUcsT0FBTyxDQUFDLE1BQU0sQ0FBQyxDQUFDOzttQkFDUixPQUFPLENBQUMsZUFBZSxDQUFDLENBQUMsR0FBRzs7SUFBMUMsSUFBSSxnQkFBSixJQUFJO0lBQUUsSUFBSSxnQkFBSixJQUFJOztBQUtqQixTQUFTLGtDQUFrQyxHQUFrQztBQUMzRSxTQUFPO0FBQ0wsVUFBTSxFQUFFLEVBQUU7QUFDVixZQUFRLEVBQUUsSUFBSTs7OztBQUlkLE9BQUcsYUFBVyxJQUFJLE1BQUc7QUFDckIsb0JBQWdCLEVBQUUsSUFBSSxDQUFDLElBQUksQ0FBQyxJQUFJLEVBQUUsTUFBTSxFQUFFLFFBQVEsQ0FBQztBQUNuRCx1QkFBbUIsRUFBRSxzQkFBc0I7QUFDM0MsY0FBVSxFQUFFLE9BQU8sQ0FBQyx5QkFBeUIsQ0FBQyxDQUFDLFlBQVksQ0FBQyxnQkFBZ0IsQ0FBQyxRQUFRO0FBQ3JGLFdBQU8sRUFBRSxJQUFJO0dBQ2QsQ0FBQztDQUNIOztBQUVELE1BQU0sQ0FBQyxPQUFPLEdBQUc7QUFDZixvQ0FBa0MsRUFBbEMsa0NBQWtDO0NBQ25DLENBQUMiLCJmaWxlIjoiY29uZmlnLmpzIiwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBiYWJlbCc7XG4vKiBAZmxvdyAqL1xuXG4vKlxuICogQ29weXJpZ2h0IChjKSAyMDE1LXByZXNlbnQsIEZhY2Vib29rLCBJbmMuXG4gKiBBbGwgcmlnaHRzIHJlc2VydmVkLlxuICpcbiAqIFRoaXMgc291cmNlIGNvZGUgaXMgbGljZW5zZWQgdW5kZXIgdGhlIGxpY2Vuc2UgZm91bmQgaW4gdGhlIExJQ0VOU0UgZmlsZSBpblxuICogdGhlIHJvb3QgZGlyZWN0b3J5IG9mIHRoaXMgc291cmNlIHRyZWUuXG4gKi9cblxuY29uc3QgcGF0aCA9IHJlcXVpcmUoJ3BhdGgnKTtcbmNvbnN0IHtVU0VSLCBIT01FfSA9IHJlcXVpcmUoJy4uLy4uL2NvbW1vbnMnKS5lbnY7XG5cbmltcG9ydCB0eXBlIHtOdWNsaWRlUmVtb3RlQ29ubmVjdGlvblBhcmFtc30gZnJvbSAnLi9jb25uZWN0aW9uLXR5cGVzJztcblxuXG5mdW5jdGlvbiBnZXRDb25uZWN0aW9uRGlhbG9nRGVmYXVsdFNldHRpbmdzKCk6IE51Y2xpZGVSZW1vdGVDb25uZWN0aW9uUGFyYW1zIHtcbiAgcmV0dXJuIHtcbiAgICBzZXJ2ZXI6ICcnLFxuICAgIHVzZXJuYW1lOiBVU0VSLFxuICAgIC8vIERvIG5vdCB1c2UgcGF0aC5qb2luKCkgYmVjYXVzZSB3ZSBhc3N1bWUgdGhhdCB0aGUgcmVtb3RlIG1hY2hpbmUgaXMgKm5peCxcbiAgICAvLyBzbyB3ZSBhbHdheXMgd2FudCB0byB1c2UgYC9gIGFzIHRoZSBwYXRoIHNlcGFyYXRvciBmb3IgY3dkLCBldmVuIGlmIEF0b21cbiAgICAvLyBpcyBydW5uaW5nIG9uIFdpbmRvd3MuXG4gICAgY3dkOiBgL2hvbWUvJHtVU0VSfS9gLFxuICAgIHBhdGhUb1ByaXZhdGVLZXk6IHBhdGguam9pbihIT01FLCAnLnNzaCcsICdpZF9yc2EnKSxcbiAgICByZW1vdGVTZXJ2ZXJDb21tYW5kOiAnbnVjbGlkZS1zdGFydC1zZXJ2ZXInLFxuICAgIGF1dGhNZXRob2Q6IHJlcXVpcmUoJy4uLy4uL3JlbW90ZS1jb25uZWN0aW9uJykuU3NoSGFuZHNoYWtlLlN1cHBvcnRlZE1ldGhvZHMuUEFTU1dPUkQsXG4gICAgc3NoUG9ydDogJzIyJyxcbiAgfTtcbn1cblxubW9kdWxlLmV4cG9ydHMgPSB7XG4gIGdldENvbm5lY3Rpb25EaWFsb2dEZWZhdWx0U2V0dGluZ3MsXG59O1xuIl19

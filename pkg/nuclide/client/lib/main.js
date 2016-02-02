@@ -1,5 +1,6 @@
-'use babel';
-/* @flow */
+
+
+// TODO: Remove this once all services have been moved to framework v3.
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,26 +10,18 @@
  * the root directory of this source tree.
  */
 
-import type {NuclideUri} from '../../remote-uri';
-import type {FileSystemService} from '../../server/lib/services/FileSystemServiceType';
+var _remoteConnection = require('../../remote-connection');
 
-const FILE_SYSTEM_SERVICE = 'FileSystemService';
-
-// TODO: Remove this once all services have been moved to framework v3.
-import {
-  getFileForPath,
-  getService,
-  getServiceLogger,
-  getServiceByNuclideUri,
-} from '../../remote-connection';
+var FILE_SYSTEM_SERVICE = 'FileSystemService';
 
 module.exports = {
-  getFileForPath,
-  getService,
-  getServiceLogger,
-  getServiceByNuclideUri,
+  getFileForPath: _remoteConnection.getFileForPath,
+  getService: _remoteConnection.getService,
+  getServiceLogger: _remoteConnection.getServiceLogger,
+  getServiceByNuclideUri: _remoteConnection.getServiceByNuclideUri,
 
-  getFileSystemServiceByNuclideUri(uri: NuclideUri): FileSystemService {
-    return getServiceByNuclideUri(FILE_SYSTEM_SERVICE, uri);
-  },
+  getFileSystemServiceByNuclideUri: function getFileSystemServiceByNuclideUri(uri) {
+    return (0, _remoteConnection.getServiceByNuclideUri)(FILE_SYSTEM_SERVICE, uri);
+  }
 };
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIm1haW4uanMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozs7O2dDQXNCTyx5QkFBeUI7O0FBUmhDLElBQU0sbUJBQW1CLEdBQUcsbUJBQW1CLENBQUM7O0FBVWhELE1BQU0sQ0FBQyxPQUFPLEdBQUc7QUFDZixnQkFBYyxrQ0FBQTtBQUNkLFlBQVUsOEJBQUE7QUFDVixrQkFBZ0Isb0NBQUE7QUFDaEIsd0JBQXNCLDBDQUFBOztBQUV0QixrQ0FBZ0MsRUFBQSwwQ0FBQyxHQUFlLEVBQXFCO0FBQ25FLFdBQU8sOENBQXVCLG1CQUFtQixFQUFFLEdBQUcsQ0FBQyxDQUFDO0dBQ3pEO0NBQ0YsQ0FBQyIsImZpbGUiOiJtYWluLmpzIiwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBiYWJlbCc7XG4vKiBAZmxvdyAqL1xuXG4vKlxuICogQ29weXJpZ2h0IChjKSAyMDE1LXByZXNlbnQsIEZhY2Vib29rLCBJbmMuXG4gKiBBbGwgcmlnaHRzIHJlc2VydmVkLlxuICpcbiAqIFRoaXMgc291cmNlIGNvZGUgaXMgbGljZW5zZWQgdW5kZXIgdGhlIGxpY2Vuc2UgZm91bmQgaW4gdGhlIExJQ0VOU0UgZmlsZSBpblxuICogdGhlIHJvb3QgZGlyZWN0b3J5IG9mIHRoaXMgc291cmNlIHRyZWUuXG4gKi9cblxuaW1wb3J0IHR5cGUge051Y2xpZGVVcml9IGZyb20gJy4uLy4uL3JlbW90ZS11cmknO1xuaW1wb3J0IHR5cGUge0ZpbGVTeXN0ZW1TZXJ2aWNlfSBmcm9tICcuLi8uLi9zZXJ2ZXIvbGliL3NlcnZpY2VzL0ZpbGVTeXN0ZW1TZXJ2aWNlVHlwZSc7XG5cbmNvbnN0IEZJTEVfU1lTVEVNX1NFUlZJQ0UgPSAnRmlsZVN5c3RlbVNlcnZpY2UnO1xuXG4vLyBUT0RPOiBSZW1vdmUgdGhpcyBvbmNlIGFsbCBzZXJ2aWNlcyBoYXZlIGJlZW4gbW92ZWQgdG8gZnJhbWV3b3JrIHYzLlxuaW1wb3J0IHtcbiAgZ2V0RmlsZUZvclBhdGgsXG4gIGdldFNlcnZpY2UsXG4gIGdldFNlcnZpY2VMb2dnZXIsXG4gIGdldFNlcnZpY2VCeU51Y2xpZGVVcmksXG59IGZyb20gJy4uLy4uL3JlbW90ZS1jb25uZWN0aW9uJztcblxubW9kdWxlLmV4cG9ydHMgPSB7XG4gIGdldEZpbGVGb3JQYXRoLFxuICBnZXRTZXJ2aWNlLFxuICBnZXRTZXJ2aWNlTG9nZ2VyLFxuICBnZXRTZXJ2aWNlQnlOdWNsaWRlVXJpLFxuXG4gIGdldEZpbGVTeXN0ZW1TZXJ2aWNlQnlOdWNsaWRlVXJpKHVyaTogTnVjbGlkZVVyaSk6IEZpbGVTeXN0ZW1TZXJ2aWNlIHtcbiAgICByZXR1cm4gZ2V0U2VydmljZUJ5TnVjbGlkZVVyaShGSUxFX1NZU1RFTV9TRVJWSUNFLCB1cmkpO1xuICB9LFxufTtcbiJdfQ==

@@ -1,6 +1,0 @@
-this is a test file
-line 2
-
-  indented line
-
-this line added on second commit
