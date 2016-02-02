@@ -14,6 +14,8 @@ import type {DiagnosticUpdater, FileMessageUpdate} from '../../base';
 import invariant from 'assert';
 import {CompositeDisposable} from 'atom';
 
+import {track} from '../../../analytics';
+
 import type DiagnosticsPanel from './DiagnosticsPanel';
 import type StatusBarTile from './StatusBarTile';
 import type {HomeFragments} from '../../../home-interfaces';
@@ -191,6 +193,7 @@ module.exports = {
       if (path == null) {
         return;
       }
+      track('diagnostics-autofix-all-in-file');
       diagnosticUpdater.applyFixesForFile(path);
     };
 
@@ -276,6 +279,5 @@ module.exports = {
 };
 
 function logPanelIsDisplayed() {
-  const {track} = require('../../../analytics');
   track('diagnostics-show-table');
 }
