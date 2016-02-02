@@ -9,19 +9,103 @@
  * the root directory of this source tree.
  */
 
-import {CompositeDisposable} from 'atom';
+import type {GadgetsService} from '../../gadgets-interfaces';
+
+import {Observable} from 'rx';
+
+import {CompositeDisposable, Disposable} from 'atom';
+
+import {event as commonsEvent} from '../../commons';
+const {observableFromSubscribeFunction} = commonsEvent;
+
+import {createOutlineViewClass} from './OutlineView';
+import {ProviderRegistry} from './ProviderRegistry';
+
+import invariant from 'assert';
+
+export type OutlineTree = {
+  displayText: string,
+  startPosition: atom$Point,
+  children: Array<OutlineTree>,
+};
+
+export type Outline = {
+  file: string,
+  outlineTrees: Array<OutlineTree>,
+}
+
+export type OutlineProvider = {
+  name: string,
+  // If there are multiple providers for a given grammar, the one with the highest priority will be
+  // used.
+  priority: number,
+  grammarScopes: Array<string>,
+  getOutline: (editor: TextEditor) => Promise<?Outline>,
+};
 
 class Activation {
   _disposables: CompositeDisposable;
 
+  _outline$: Observable<?Outline>;
+
+  _providers: ProviderRegistry<OutlineProvider>;
+
   constructor(state: ?Object) {
-    // TODO(nmote): Assign all fields here so they are
-    // non-nullable for the lifetime of Activation.
     this._disposables = new CompositeDisposable();
+
+    this._providers = new ProviderRegistry();
+
+    const textEvent$ = Observable.create(observer => {
+      const textEventDispatcher = require('../../text-event-dispatcher').getInstance();
+      return textEventDispatcher.onAnyFileChange(editor => observer.onNext(editor));
+    });
+
+    const paneChange$ = observableFromSubscribeFunction(
+        atom.workspace.observeActivePaneItem.bind(atom.workspace),
+      )
+      // Delay the work on tab switch to keep tab switches snappy and avoid doing a bunch of
+      // computation if there are a lot of consecutive tab switches.
+      .debounce(200);
+
+    // We are over-subscribing a little bit here, but since outlines are typically cheap and fast to
+    // generate that's okay for now.
+    this._outline$ = Observable.merge(
+        textEvent$,
+        paneChange$
+          .map(() => atom.workspace.getActiveTextEditor()),
+      )
+      .flatMap(async (editor) => {
+        if (editor == null) {
+          return null;
+        } else {
+          return this._outlineForEditor(editor);
+        }
+      });
   }
 
   dispose() {
     this._disposables.dispose();
+  }
+
+  consumeGadgetsService(gadgets: GadgetsService): IDisposable {
+    const OutlineView = createOutlineViewClass(this._outline$);
+    const disposable = gadgets.registerGadget((OutlineView: any));
+    return disposable;
+  }
+
+  consumeOutlineProvider(provider: OutlineProvider): IDisposable {
+    this._providers.addProvider(provider);
+    return new Disposable(() => this._providers.removeProvider(provider));
+  }
+
+  _outlineForEditor(editor: atom$TextEditor): Promise<?Outline> {
+    const scopeName = editor.getGrammar().scopeName;
+
+    const outlineProvider = this._providers.findProvider(scopeName);
+    if (outlineProvider == null) {
+      return Promise.resolve(null);
+    }
+    return outlineProvider.getOutline(editor);
   }
 }
 
@@ -38,4 +122,14 @@ export function deactivate() {
     activation.dispose();
     activation = null;
   }
+}
+
+export function consumeGadgetsService(gadgets: GadgetsService): IDisposable {
+  invariant(activation != null);
+  return activation.consumeGadgetsService(gadgets);
+}
+
+export function consumeOutlineProvider(provider: OutlineProvider): IDisposable {
+  invariant(activation != null);
+  return activation.consumeOutlineProvider(provider);
 }
