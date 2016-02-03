@@ -18,7 +18,7 @@ import type {HgRepositoryDescription} from './main';
  * This function returns HgRepositoryDescription filled with a repoPath and
  * originURL iff it finds that the given directory is within an Hg repository.
  */
-function findHgRepository(directoryPath: string): HgRepositoryDescription {
+function findHgRepository(directoryPath: string): ?HgRepositoryDescription {
   const fs = require('fs-plus');
   let workingDirectoryPath = directoryPath;
   let repoPath = path.join(workingDirectoryPath, '.hg');
@@ -37,7 +37,7 @@ function findHgRepository(directoryPath: string): HgRepositoryDescription {
       break;
     }
     if (isRootDir(workingDirectoryPath)) {
-      break;
+      return null;
     } else {
       workingDirectoryPath = getParentDir(workingDirectoryPath);
     }

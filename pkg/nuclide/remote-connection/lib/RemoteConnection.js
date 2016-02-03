@@ -135,8 +135,7 @@ class RemoteConnection {
   async _setHgRepoInfo(): Promise<void> {
     const remotePath = this.getPathForInitialWorkingDirectory();
     const {getHgRepository} = this.getService('SourceControlService');
-    const hgRepoDescription = await getHgRepository(remotePath);
-    this._setHgRepositoryDescription(hgRepoDescription);
+    this._setHgRepositoryDescription(await getHgRepository(remotePath));
   }
 
   _monitorConnectionHeartbeat() {
@@ -314,7 +313,7 @@ class RemoteConnection {
   }
 
   // A workaround before Atom 2.0: see ::getHgRepoInfo of main.js.
-  _setHgRepositoryDescription(hgRepositoryDescription: HgRepositoryDescription): void {
+  _setHgRepositoryDescription(hgRepositoryDescription: ?HgRepositoryDescription): void {
     this._hgRepositoryDescription = hgRepositoryDescription;
   }
 

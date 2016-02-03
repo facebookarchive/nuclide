@@ -16,7 +16,7 @@
 
 import type {HgRepositoryDescription} from '../../../source-control-helpers';
 
-export function getHgRepository(directoryPath: string): Promise<HgRepositoryDescription> {
+export function getHgRepository(directoryPath: string): Promise<?HgRepositoryDescription> {
   const {findHgRepository} = require('../../../source-control-helpers');
   return Promise.resolve(findHgRepository(directoryPath));
 }

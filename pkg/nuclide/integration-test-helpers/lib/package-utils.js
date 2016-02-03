@@ -36,7 +36,9 @@ export async function activateAllPackages(): Promise<Array<string>> {
 
   const packageNames = atom.packages.getAvailablePackageNames().filter(name => {
     const pack = atom.packages.loadPackage(name);
-    invariant(pack != null);
+    if (pack == null) {
+      return false;
+    }
     const isActivationDeferred = pack.hasActivationCommands() || pack.hasActivationHooks();
     const isLanguagePackage = name.startsWith('language-');
     const inWhitelist = whitelist.indexOf(name) >= 0;

@@ -63,6 +63,9 @@ function getRepositoryDescription(
   } else {
     const {findHgRepository} = require('../../source-control-helpers');
     const repositoryDescription = findHgRepository(directory.getPath());
+    if (repositoryDescription == null) {
+      return null;
+    }
     const {repoPath, originURL, workingDirectoryPath} = repositoryDescription;
     return {
       originURL,
