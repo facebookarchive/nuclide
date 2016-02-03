@@ -19,12 +19,14 @@ import {
   ReactDOM,
 } from 'react-for-atom';
 import DiffViewEditor from './DiffViewEditor';
+import AtomTextEditor from '../../ui/atom-text-editor';
 import invariant from 'assert';
 
 const CHANGE_DEBOUNCE_DELAY_MS = 100;
 
 type Props = {
   filePath: NuclideUri,
+  textBuffer: atom$TextBuffer,
   offsets: OffsetMap,
   highlightedLines: {
     added: Array<number>;
@@ -48,6 +50,7 @@ export default class DiffViewEditorPane extends React.Component {
 
   _diffViewEditor: ?DiffViewEditor;
   _subscriptions: CompositeDisposable;
+  _editorSubscriptions: ?CompositeDisposable;
   // TODO(most): move async code out of the view and deprecate the usage of `_isMounted`.
   // All view changes should be pushed from the model/store through subscriptions.
   _isMounted: boolean;
@@ -57,16 +60,27 @@ export default class DiffViewEditorPane extends React.Component {
     this.state = {
       textContent: this.props.initialTextContent,
     };
-    this._isMounted = false;
     this._subscriptions = new CompositeDisposable();
+    this._isMounted = false;
   }
 
   componentDidMount(): void {
     this._isMounted = true;
-    const diffViewEditor = this._diffViewEditor = new DiffViewEditor(this.getEditorDomElement());
+    this._setupDiffEditor();
+  }
+
+  _setupDiffEditor(): void {
+    const editorSubscriptions = this._editorSubscriptions = new CompositeDisposable();
+    this._subscriptions.add(editorSubscriptions);
+
+    this._diffViewEditor = new DiffViewEditor(this.getEditorDomElement());
     const textEditor = this.getEditorModel();
+
     const debouncedOnChange = debounce(
       () => {
+        if (!this._isMounted || textEditor !== this.getEditorModel()) {
+          return;
+        }
         const textContent = textEditor.getText();
         this.setState({textContent});
         if (this.props.onChange) {
@@ -76,29 +90,23 @@ export default class DiffViewEditorPane extends React.Component {
       CHANGE_DEBOUNCE_DELAY_MS,
       false,
     );
-    if (this.props.readOnly) {
-      diffViewEditor.setReadOnly();
-    }
-    this._subscriptions.add(textEditor.onDidChange(debouncedOnChange));
+    editorSubscriptions.add(textEditor.onDidChange(debouncedOnChange));
     /*
      * Those should have been synced automatically, but an implementation limitation of creating
      * a <atom-text-editor> element assumes default settings for those.
      * Filed: https://github.com/atom/atom/issues/10506
      */
-    this._subscriptions.add(atom.config.observe('editor.tabLength', tabLength => {
+    editorSubscriptions.add(atom.config.observe('editor.tabLength', tabLength => {
       textEditor.setTabLength(tabLength);
     }));
-    this._subscriptions.add(atom.config.observe('editor.softTabs', softTabs => {
+    editorSubscriptions.add(atom.config.observe('editor.softTabs', softTabs => {
       textEditor.setSoftTabs(softTabs);
     }));
-    this._updateDiffView(this.props, this.state);
   }
 
   componentWillUnmount(): void {
-    if (this._subscriptions) {
-      this._subscriptions.dispose();
-    }
-    if (this._diffViewEditor) {
+    this._subscriptions.dispose();
+    if (this._diffViewEditor != null) {
       const textEditor = this.getEditorModel();
       textEditor.destroy();
       this._diffViewEditor = null;
@@ -106,39 +114,51 @@ export default class DiffViewEditorPane extends React.Component {
     this._isMounted = false;
   }
 
-  shouldComponentUpdate(nextProps: Object, nextState: Object): boolean {
-    return false;
-  }
-
   render(): ReactElement {
     return (
-      <atom-text-editor ref="editor" style={{height: '100%', overflow: 'hidden'}} />
+      <AtomTextEditor
+        ref="editor"
+        readOnly={this.props.readOnly}
+        textBuffer={this.props.textBuffer} />
     );
   }
 
-  componentWillReceiveProps(newProps: Object): void {
-    let newState = this.state;
-    if (newProps.initialTextContent !== this.state.textContent) {
-      newState = {textContent: newProps.initialTextContent};
-      this.setState(newState);
-      this._setTextContent(newProps.filePath, newState.textContent, false /*clearHistory*/);
+  componentWillReceiveProps(nextProps: Props) {
+    if (this.props.initialTextContent !== nextProps.initialTextContent) {
+      this.setState({textContent: nextProps.initialTextContent});
     }
-    this._updateDiffView(newProps, newState);
   }
 
-  _updateDiffView(newProps: Object, newState: Object): void {
-    const oldProps = this.props;
-    if (oldProps.filePath !== newProps.filePath) {
+  componentDidUpdate(prevProps: Props, prevState: State): void {
+    if (prevProps.textBuffer !== this.props.textBuffer) {
+      const oldEditorSubscriptions = this._editorSubscriptions;
+      if (oldEditorSubscriptions != null) {
+        oldEditorSubscriptions.dispose();
+        this._subscriptions.remove(oldEditorSubscriptions);
+        this._editorSubscriptions = null;
+      }
+      this._setupDiffEditor();
+    }
+    this._updateDiffView(prevProps, prevState);
+  }
+
+  _updateDiffView(oldProps: Props, oldState: State): void {
+    const newProps = this.props;
+    const newState = this.state;
+    const diffEditorUpdated = oldProps.textBuffer !== newProps.textBuffer;
+    if (diffEditorUpdated || oldProps.filePath !== newProps.filePath) {
       // Loading a new file should clear the undo history.
       this._setTextContent(newProps.filePath, newState.textContent, true /*clearHistory*/);
+    } else if (newState.textContent !== oldState.textContent) {
+      this._setTextContent(newProps.filePath, newState.textContent, false /*clearHistory*/);
     }
-    if (oldProps.highlightedLines !== newProps.highlightedLines) {
+    if (diffEditorUpdated || oldProps.highlightedLines !== newProps.highlightedLines) {
       this._setHighlightedLines(newProps.highlightedLines);
     }
-    if (oldProps.offsets !== newProps.offsets) {
+    if (diffEditorUpdated || oldProps.offsets !== newProps.offsets) {
       this._setOffsets(newProps.offsets);
     }
-    if (oldProps.inlineElements !== newProps.inlineElements) {
+    if (diffEditorUpdated || oldProps.inlineElements !== newProps.inlineElements) {
       this._renderComponentsInline(newProps.inlineElements);
     }
   }
@@ -162,7 +182,7 @@ export default class DiffViewEditorPane extends React.Component {
     const diffViewEditor = this._diffViewEditor;
     invariant(diffViewEditor);
     const components = await diffViewEditor.renderInlineComponents(elements);
-    if (!this._isMounted) {
+    if (!this._isMounted || elements.length === 0) {
       return;
     }
 
@@ -204,11 +224,10 @@ export default class DiffViewEditorPane extends React.Component {
   }
 
   getEditorModel(): atom$TextEditor {
-    invariant(this._diffViewEditor);
-    return this._diffViewEditor.getModel();
+    return this.refs['editor'].getModel();
   }
 
   getEditorDomElement(): atom$TextEditorElement {
-    return ReactDOM.findDOMNode(this.refs['editor']);
+    return this.refs['editor'].getElement();
   }
 }

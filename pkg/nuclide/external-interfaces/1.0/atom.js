@@ -679,6 +679,7 @@ declare class atom$LinesComponent {
 declare class atom$TextEditorElement extends HTMLElement {
   component: ?atom$TextEditorComponent;
   getModel(): atom$TextEditor;
+  setModel(model: atom$TextEditor): void;
   pixelPositionForBufferPosition(
     bufferPosition: {row: number, column: number} | Array<number> | atom$Point,
   ): {top: number, left: number};

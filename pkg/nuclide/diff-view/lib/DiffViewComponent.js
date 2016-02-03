@@ -14,7 +14,7 @@ import type DiffViewModel from './DiffViewModel';
 import type {RevisionInfo} from '../../hg-repository-base/lib/hg-constants';
 
 import invariant from 'assert';
-import {CompositeDisposable} from 'atom';
+import {CompositeDisposable, TextBuffer} from 'atom';
 import {
   React,
   ReactDOM,
@@ -26,6 +26,7 @@ import DiffTimelineView from './DiffTimelineView';
 import DiffNavigationBar from './DiffNavigationBar';
 import {object} from '../../commons';
 import {createPaneContainer} from '../../atom-helpers';
+import {bufferForUri} from '../../atom-helpers';
 
 type Props = {
   diffModel: DiffViewModel;
@@ -63,6 +64,7 @@ class DiffViewComponent extends React.Component {
   _treeComponent: ?ReactComponent;
   _navigationPane: ?atom$Pane;
   _navigationComponent: ?DiffNavigationBar;
+  _readonlyBuffer: atom$TextBuffer;
 
   _boundHandleNewOffsets: Function;
   _boundUpdateLineDiffState: Function;
@@ -98,6 +100,7 @@ class DiffViewComponent extends React.Component {
     this._boundOnChangeNewTextEditor = this._onChangeNewTextEditor.bind(this);
     this._boundOnTimelineChangeRevision = this._onTimelineChangeRevision.bind(this);
     this._boundOnNavigationClick = this._onNavigationClick.bind(this);
+    this._readonlyBuffer = new TextBuffer();
   }
 
   componentDidMount(): void {
@@ -174,6 +177,7 @@ class DiffViewComponent extends React.Component {
     invariant(this._oldEditorPane);
     this._oldEditorComponent = ReactDOM.render(
         <DiffViewEditorPane
+          textBuffer={this._readonlyBuffer}
           filePath={filePath}
           offsets={oldState.offsets}
           highlightedLines={oldState.highlightedLines}
@@ -183,9 +187,11 @@ class DiffViewComponent extends React.Component {
           readOnly={true}/>,
         this._getPaneElement(this._oldEditorPane),
     );
+    const textBuffer = bufferForUri(filePath);
     invariant(this._newEditorPane);
     this._newEditorComponent = ReactDOM.render(
         <DiffViewEditorPane
+          textBuffer={textBuffer}
           filePath={filePath}
           offsets={newState.offsets}
           highlightedLines={newState.highlightedLines}

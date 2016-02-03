@@ -198,20 +198,6 @@ export default class DiffViewEditor {
     );
   }
 
-  setReadOnly(): void {
-    // Unfotunately, there is no other clean way to make an editor read only.
-    // Got this from Atom's code to make an editor read-only.
-    // Filed an issue: https://github.com/atom/atom/issues/6880
-    this._editor.getDecorations({class: 'cursor-line'})[0].destroy();
-    // Cancel insert events to prevent typing in the text editor and disallow editing (read-only).
-    this._editor.onWillInsertText(event => event.cancel());
-    // Swallow paste texts.
-    this._editor.pasteText = () => {};
-    // Swallow insert and delete calls on its buffer.
-    this._editor.getBuffer().delete = () => {};
-    this._editor.getBuffer().insert = () => {};
-  }
-
   _scrollToRow(row: number): void {
     this._editor.scrollToBufferPosition([row, 0]);
   }
