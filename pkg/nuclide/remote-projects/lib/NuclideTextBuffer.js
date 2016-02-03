@@ -20,7 +20,6 @@ const {CompositeDisposable, TextBuffer} = require('atom');
 
 class NuclideTextBuffer extends TextBuffer {
   connection: RemoteConnection;
-  cachedDiskContents: string;
   fileSubscriptions: CompositeDisposable;
   /* $FlowFixMe */
   file: ?RemoteFile;

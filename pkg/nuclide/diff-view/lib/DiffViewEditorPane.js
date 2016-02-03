@@ -22,18 +22,19 @@ import DiffViewEditor from './DiffViewEditor';
 import AtomTextEditor from '../../ui/atom-text-editor';
 import invariant from 'assert';
 
-const CHANGE_DEBOUNCE_DELAY_MS = 100;
+const CHANGE_DEBOUNCE_DELAY_MS = 5;
 
 type Props = {
   filePath: NuclideUri,
   textBuffer: atom$TextBuffer,
   offsets: OffsetMap,
   highlightedLines: {
-    added: Array<number>;
-    removed: Array<number>;
+    added: Array<number>,
+    removed: Array<number>,
   },
-  initialTextContent: string;
-  inlineElements: Array<InlineComponent>;
+  initialTextContent: string,
+  savedContents: string,
+  inlineElements: Array<InlineComponent>,
   handleNewOffsets: (newOffsets: OffsetMap) => any,
   readOnly: boolean,
   onChange: (newContents: string) => any,
@@ -83,6 +84,9 @@ export default class DiffViewEditorPane extends React.Component {
           return;
         }
         const textContent = textEditor.getText();
+        if (textContent === this.state.textContent) {
+          return;
+        }
         this.setState({textContent});
         if (this.props.onChange) {
           this.props.onChange(textContent);
@@ -151,6 +155,8 @@ export default class DiffViewEditorPane extends React.Component {
     const newProps = this.props;
     const newState = this.state;
     const diffEditorUpdated = oldProps.textBuffer !== newProps.textBuffer;
+    // Cache latest disk contents for an accurate `isModified` functionality.
+    newProps.textBuffer.cachedDiskContents = this.props.savedContents;
     if (diffEditorUpdated || oldProps.filePath !== newProps.filePath) {
       // Loading a new file should clear the undo history.
       this._setTextContent(newProps.filePath, newState.textContent, true /*clearHistory*/);
@@ -163,7 +169,7 @@ export default class DiffViewEditorPane extends React.Component {
     if (diffEditorUpdated || oldProps.offsets !== newProps.offsets) {
       this._setOffsets(newProps.offsets);
     }
-    if (diffEditorUpdated || oldProps.inlineElements !== newProps.inlineElements) {
+    if (oldProps.inlineElements !== newProps.inlineElements) {
       this._renderComponentsInline(newProps.inlineElements);
     }
   }

@@ -1042,6 +1042,7 @@ type TextBufferScanIterator = (arg: {
 
 declare class atom$TextBuffer {
   file: ?atom$File;
+  cachedDiskContents: ?string;
   emitter: atom$Emitter;
 
   // Events

@@ -34,6 +34,7 @@ type Props = {
 
 type EditorState = {
   text: string;
+  savedContents?: string;
   offsets: OffsetMap;
   highlightedLines: {
     added: Array<number>;
@@ -193,6 +194,7 @@ class DiffViewComponent extends React.Component {
           filePath={filePath}
           offsets={oldState.offsets}
           highlightedLines={oldState.highlightedLines}
+          savedContents={oldState.text}
           initialTextContent={oldState.text}
           inlineElements={oldState.inlineElements}
           handleNewOffsets={this._boundHandleNewOffsets}
@@ -208,6 +210,7 @@ class DiffViewComponent extends React.Component {
           offsets={newState.offsets}
           highlightedLines={newState.highlightedLines}
           initialTextContent={newState.text}
+          savedContents={newState.savedContents}
           inlineElements={newState.inlineElements}
           handleNewOffsets={this._boundHandleNewOffsets}
           onDidUpdateTextEditorElement={this._boundOnDidUpdateTextEditorElement}
@@ -320,7 +323,7 @@ class DiffViewComponent extends React.Component {
    * Updates the line diff state on active file state change.
    */
   _updateLineDiffState(fileState: FileChangeState): void {
-    const {oldContents, newContents, filePath, inlineComponents} = fileState;
+    const {oldContents, newContents, savedContents, filePath, inlineComponents} = fileState;
 
     const {computeDiff} = require('./diff-utils');
     const {addedLines, removedLines, oldLineOffsets, newLineOffsets} =
@@ -337,6 +340,7 @@ class DiffViewComponent extends React.Component {
     };
     const newEditorState = {
       text: newContents,
+      savedContents,
       offsets: newLineOffsets,
       highlightedLines: {
         added: addedLines,

@@ -19,7 +19,6 @@ import {CompositeDisposable, Emitter} from 'atom';
 import {repositoryForPath} from '../../hg-git-bridge';
 import {track, trackTiming} from '../../analytics';
 import {getFileSystemContents} from './utils';
-import {getFileForPath} from '../../client';
 import {array, map, debounce} from '../../commons';
 import RepositoryStack from './RepositoryStack';
 import {
@@ -32,7 +31,10 @@ const CHANGE_DIRTY_STATUS_EVENT = 'did-change-dirty-status';
 const CHANGE_COMPARE_STATUS_EVENT = 'did-change-compare-status';
 const ACTIVE_FILE_UPDATE_EVENT = 'active-file-update';
 const CHANGE_REVISIONS_EVENT = 'did-change-revisions';
-const FILE_CHANGE_DEBOUNCE_MS = 100;
+const ACTIVE_BUFFER_CHANGE_MODIFIED_EVENT = 'active-buffer-change-modified';
+
+const FILE_CHANGE_DEBOUNCE_MS = 200;
+const UI_CHANGE_DEBOUNCE_MS = 100;
 
 class DiffViewModel {
 
@@ -48,6 +50,7 @@ class DiffViewModel {
   _repositoryStacks: Map<HgRepositoryClient, RepositoryStack>;
   _repositorySubscriptions: Map<HgRepositoryClient, CompositeDisposable>;
   _isActive: boolean;
+  _debouncedEmitActiveFileUpdate: () => void;
 
   constructor(uiProviders: Array<Object>) {
     this._uiProviders = uiProviders;
@@ -60,6 +63,11 @@ class DiffViewModel {
     this._isActive = false;
     this._updateRepositories();
     this._subscriptions.add(atom.project.onDidChangePaths(this._updateRepositories.bind(this)));
+    this._debouncedEmitActiveFileUpdate = debounce(
+      this._emitActiveFileUpdate.bind(this),
+      UI_CHANGE_DEBOUNCE_MS,
+      false,
+    );
     this._setActiveFileState({
       filePath: '',
       oldContents: '',
@@ -163,14 +171,18 @@ class DiffViewModel {
     }
     const activeSubscriptions = this._activeSubscriptions = new CompositeDisposable();
     // TODO(most): Show progress indicator: t8991676
-    const file = getFileForPath(filePath);
-    if (file) {
+    const buffer = bufferForUri(filePath);
+    const {file} = buffer;
+    if (file != null) {
       activeSubscriptions.add(file.onDidChange(debounce(
         () => this._onDidFileChange(filePath).catch(notifyInternalError),
         FILE_CHANGE_DEBOUNCE_MS,
         false,
       )));
     }
+    activeSubscriptions.add(buffer.onDidChangeModified(
+      this._onDidBufferChangeModified.bind(this),
+    ));
     track('diff-view-open-file', {filePath});
     this._updateActiveDiffState(filePath).catch(notifyInternalError);
   }
@@ -189,6 +201,22 @@ class DiffViewModel {
       committedContents,
       filesystemContents,
     );
+  }
+
+  _onDidBufferChangeModified(): void {
+    this._emitter.emit(ACTIVE_BUFFER_CHANGE_MODIFIED_EVENT);
+  }
+
+  onDidActiveBufferChangeModified(
+    callback: () => mixed,
+  ): IDisposable {
+    return this._emitter.on(ACTIVE_BUFFER_CHANGE_MODIFIED_EVENT, callback);
+  }
+
+  isActiveBufferModified(): boolean {
+    const {filePath} = this._activeFileState;
+    const buffer = bufferForUri(filePath);
+    return buffer.isModified();
   }
 
   _updateDiffStateIfChanged(
@@ -276,7 +304,11 @@ class DiffViewModel {
 
   _setActiveFileState(state: FileChangeState): void {
     this._activeFileState = state;
-    this._emitter.emit(ACTIVE_FILE_UPDATE_EVENT, state);
+    this._debouncedEmitActiveFileUpdate();
+  }
+
+  _emitActiveFileUpdate(): void {
+    this._emitter.emit(ACTIVE_FILE_UPDATE_EVENT, this._activeFileState);
   }
 
   @trackTiming('diff-view.hg-state-update')

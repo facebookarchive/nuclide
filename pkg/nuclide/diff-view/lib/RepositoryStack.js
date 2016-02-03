@@ -356,17 +356,14 @@ export default class RepositoryStack {
 
   async fetchHgDiff(filePath: NuclideUri): Promise<HgDiffState> {
     const {compareCommitId} = await this.getCachedRevisionsStatePromise();
-    const committedContentsPromise = this._repository
+    const committedContents = await this._repository
       .fetchFileContentAtRevision(filePath, compareCommitId ? `${compareCommitId}` : null)
       // If the file didn't exist on the previous revision, return empty contents.
       .then(contents => contents || '', err => '');
 
-    const filesystemContentsPromise = getFileSystemContents(filePath);
-
-    const [
-      committedContents,
-      filesystemContents,
-    ] = await Promise.all([committedContentsPromise, filesystemContentsPromise]);
+    // Intentionally fetch the filesystem contents after getting the committed contents
+    // to make sure we have the latest filesystem version.
+    const filesystemContents = await getFileSystemContents(filePath);
     return {
       committedContents,
       filesystemContents,

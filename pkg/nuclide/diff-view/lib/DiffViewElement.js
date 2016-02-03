@@ -49,6 +49,14 @@ class DiffViewElement extends HTMLElement {
     this._diffModel.saveActiveFile();
   }
 
+  onDidChangeModified(callback: () => mixed): IDisposable {
+    return this._diffModel.onDidActiveBufferChangeModified(callback);
+  }
+
+  isModified(): boolean {
+    return this._diffModel.isActiveBufferModified();
+  }
+
   /**
    * Emits a destroy event that's used to unmount the attached React component
    * and invalidate the cached view instance of the Diff View.
