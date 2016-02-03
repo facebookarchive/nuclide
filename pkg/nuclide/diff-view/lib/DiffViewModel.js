@@ -19,13 +19,14 @@ import {CompositeDisposable, Emitter} from 'atom';
 import {repositoryForPath} from '../../hg-git-bridge';
 import {track, trackTiming} from '../../analytics';
 import {getFileSystemContents} from './utils';
-import {getFileForPath, getFileSystemServiceByNuclideUri} from '../../client';
+import {getFileForPath} from '../../client';
 import {array, map, debounce} from '../../commons';
 import RepositoryStack from './RepositoryStack';
 import {
   notifyInternalError,
   notifyFilesystemOverrideUserEdits,
 } from './notifications';
+import {bufferForUri} from '../../atom-helpers';
 
 const CHANGE_DIRTY_STATUS_EVENT = 'did-change-dirty-status';
 const CHANGE_COMPARE_STATUS_EVENT = 'did-change-compare-status';
@@ -111,7 +112,7 @@ class DiffViewModel {
       repositoryStack.onDidChangeDirtyStatus(this._updateDirtyChangedStatus.bind(this)),
       repositoryStack.onDidChangeCompareStatus(this._updateCompareChangedStatus.bind(this)),
       repositoryStack.onDidChangeRevisions(revisionsState => {
-        this._updateChangedRevisions(repositoryStack, revisionsState)
+        this._updateChangedRevisions(repositoryStack, revisionsState, true)
           .catch(notifyInternalError);
       }),
     );
@@ -134,6 +135,7 @@ class DiffViewModel {
   async _updateChangedRevisions(
     repositoryStack: RepositoryStack,
     revisionsState: RevisionsState,
+    reloadFileDiff: boolean,
   ): Promise<void> {
     if (repositoryStack === this._activeRepositoryStack) {
       track('diff-view-update-timeline-revisions', {
@@ -143,7 +145,7 @@ class DiffViewModel {
 
       // Update the active file, if changed.
       const {filePath} = this._activeFileState;
-      if (!filePath) {
+      if (!filePath || !reloadFileDiff) {
         return;
       }
       const {committedContents, filesystemContents} = await this._fetchHgDiff(filePath);
@@ -160,11 +162,7 @@ class DiffViewModel {
       this._activeSubscriptions.dispose();
     }
     const activeSubscriptions = this._activeSubscriptions = new CompositeDisposable();
-    this._setActiveFileState({
-      filePath: '',
-      oldContents: '',
-      newContents: '',
-    });
+    // TODO(most): Show progress indicator: t8991676
     const file = getFileForPath(filePath);
     if (file) {
       activeSubscriptions.add(file.onDidChange(debounce(
@@ -202,7 +200,7 @@ class DiffViewModel {
     if (filePath !== activeFilePath) {
       return Promise.resolve();
     }
-    if (savedContents === newContents) {
+    if (savedContents === newContents || filesystemContents === newContents) {
       return this._updateDiffState(filePath, {
         committedContents,
         filesystemContents,
@@ -308,30 +306,31 @@ class DiffViewModel {
     }
     this._activeRepositoryStack = repositoryStack;
     const revisionsState = await repositoryStack.getCachedRevisionsStatePromise();
-    this._updateChangedRevisions(repositoryStack, revisionsState);
+    this._updateChangedRevisions(repositoryStack, revisionsState, false);
   }
 
 
   @trackTiming('diff-view.save-file')
   async saveActiveFile(): Promise<void> {
-    const {filePath, newContents} = this._activeFileState;
+    const {filePath} = this._activeFileState;
     track('diff-view-save-file', {filePath});
     try {
-      await this._saveFile(filePath, newContents);
-      this._activeFileState.savedContents = newContents;
+      this._activeFileState.savedContents = await this._saveFile(filePath);
     } catch (error) {
       notifyInternalError(error);
     }
   }
 
-  async _saveFile(filePath: NuclideUri, newContents: string): Promise<void> {
-    const {getPath} = require('../../remote-uri');
+  async _saveFile(filePath: NuclideUri): Promise<string> {
+    const buffer = bufferForUri(filePath);
+    if (buffer == null) {
+      throw new Error(`Could not find file buffer to save: \`${filePath}\``);
+    }
     try {
-      // We don't use files, because `getFileForPath` returns the same remote file
-      // instance everytime, which could have an invalid filesystem contents cache.
-      await getFileSystemServiceByNuclideUri(filePath).writeFile(getPath(filePath), newContents);
+      await buffer.save();
+      return buffer.getText();
     } catch (err) {
-      throw new Error(`could not save file: \`${filePath}\` - ${err.toString()}`);
+      throw new Error(`Could not save file buffer: \`${filePath}\` - ${err.toString()}`);
     }
   }
 
