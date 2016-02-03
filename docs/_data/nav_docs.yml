@@ -1,5 +1,6 @@
 - title: Quick Start
   items:
+  - id: getting-started
   - id: setup
   - id: shortcuts
   - id: uninstall
