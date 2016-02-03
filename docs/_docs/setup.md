@@ -22,12 +22,12 @@ $ apm install nuclide
 or within Atom itself:
 
 1. Open Atom.
-+ Choose `Atom | Preferences` to bring up the `Settings` pane. (on Linux this will be
+2. Choose `Atom | Preferences` to bring up the `Settings` pane. (on Linux this will be
   `Edit | Preferences`).
-+ In the `Settings` pane, click on `Install`.
-+ In the search box, type *Nuclide* and press the *enter* key.
-+ The package you are looking for is called `nuclide` and should be version `0.111.0` or greater.
-+ Click the *Install* button for that package.
+3. In the `Settings` pane, click on `Install`.
+4. In the search box, type *Nuclide* and press the *enter* key.
+5. The package you are looking for is called `nuclide` and should be version `0.111.0` or greater.
+6. Click the *Install* button for that package.
 
 Otherwise, choose your installation platform for detailed installation instructions, including
 prerequisites:

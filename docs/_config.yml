@@ -10,8 +10,11 @@ url: "http://nuclide.io" # the base hostname & protocol for your site
 ghrepo: "facebook/nuclide"
 
 # Build settings
-markdown: redcarpet
-highlighter: pygments
+# Github pages now only supports Kramdown and Rouge
+# https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0
+# So no need to be explicit with respect to our markdown and highlighter settings since they
+# cannot change.
+# kramdown also automatically generates header ID's too
 
 collections:
   docs:
@@ -23,9 +26,6 @@ collections:
 
 sass:
   style: :compressed
-
-redcarpet:
-  extensions: [with_toc_data]
 
 color:
   # Provides colour for background of top header of homepage
