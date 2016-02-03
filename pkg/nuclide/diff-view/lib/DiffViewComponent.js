@@ -53,7 +53,8 @@ class DiffViewComponent extends React.Component {
   props: Props;
   state: State;
 
-  _subscriptions: ?CompositeDisposable;
+  _subscriptions: CompositeDisposable;
+  _syncScroll: SyncScroll;
   _oldEditorPane: ?atom$Pane;
   _oldEditorComponent: ?DiffViewEditorPane;
   _newEditorPane: ?atom$Pane;
@@ -69,6 +70,7 @@ class DiffViewComponent extends React.Component {
   _boundHandleNewOffsets: Function;
   _boundUpdateLineDiffState: Function;
   _boundOnNavigationClick: Function;
+  _boundOnDidUpdateTextEditorElement: Function;
 
   constructor(props: Props) {
     super(props);
@@ -100,13 +102,14 @@ class DiffViewComponent extends React.Component {
     this._boundOnChangeNewTextEditor = this._onChangeNewTextEditor.bind(this);
     this._boundOnTimelineChangeRevision = this._onTimelineChangeRevision.bind(this);
     this._boundOnNavigationClick = this._onNavigationClick.bind(this);
+    this._boundOnDidUpdateTextEditorElement = this._onDidUpdateTextEditorElement.bind(this);
     this._readonlyBuffer = new TextBuffer();
+    this._subscriptions = new CompositeDisposable();
   }
 
   componentDidMount(): void {
-    const diffModel = this.props.diffModel;
-    const subscriptions = this._subscriptions = new CompositeDisposable();
-    subscriptions.add(diffModel.onActiveFileUpdates(this._boundUpdateLineDiffState));
+    const {diffModel} = this.props;
+    this._subscriptions.add(diffModel.onActiveFileUpdates(this._boundUpdateLineDiffState));
 
     this._paneContainer = createPaneContainer();
     // The changed files status tree takes 1/5 of the width and lives on the right most,
@@ -135,18 +138,27 @@ class DiffViewComponent extends React.Component {
       atom.views.getView(this._paneContainer),
     );
 
+    this._updateLineDiffState(diffModel.getActiveFileState());
+  }
+
+  _setupSyncScroll(): void {
+    if (this._oldEditorComponent == null || this._newEditorComponent == null) {
+      return;
+    }
     invariant(this._oldEditorComponent);
     const oldTextEditorElement = this._oldEditorComponent.getEditorDomElement();
     invariant(this._newEditorComponent);
     const newTextEditorElement = this._newEditorComponent.getEditorDomElement();
-
-    subscriptions.add(new SyncScroll(
-        oldTextEditorElement,
-        newTextEditorElement,
-      )
+    const syncScroll = this._syncScroll;
+    if (syncScroll != null) {
+      syncScroll.dispose();
+      this._subscriptions.remove(syncScroll);
+    }
+    this._syncScroll = new SyncScroll(
+      oldTextEditorElement,
+      newTextEditorElement,
     );
-
-    this._updateLineDiffState(diffModel.getActiveFileState());
+    this._subscriptions.add(this._syncScroll);
   }
 
   _renderDiffView(): void {
@@ -198,10 +210,15 @@ class DiffViewComponent extends React.Component {
           initialTextContent={newState.text}
           inlineElements={newState.inlineElements}
           handleNewOffsets={this._boundHandleNewOffsets}
+          onDidUpdateTextEditorElement={this._boundOnDidUpdateTextEditorElement}
           readOnly={false}
           onChange={this._boundOnChangeNewTextEditor}/>,
         this._getPaneElement(this._newEditorPane),
     );
+  }
+
+  _onDidUpdateTextEditorElement(): void {
+    this._setupSyncScroll();
   }
 
   _renderTimeline(): void {
@@ -246,10 +263,7 @@ class DiffViewComponent extends React.Component {
   }
 
   componentWillUnmount(): void {
-    if (this._subscriptions) {
-      this._subscriptions.dispose();
-      this._subscriptions = null;
-    }
+    this._subscriptions.dispose();
     if (this._oldEditorPane) {
       ReactDOM.unmountComponentAtNode(this._getPaneElement(this._oldEditorPane));
       this._oldEditorPane = null;

@@ -37,6 +37,7 @@ type Props = {
   handleNewOffsets: (newOffsets: OffsetMap) => any,
   readOnly: boolean,
   onChange: (newContents: string) => any,
+  onDidUpdateTextEditorElement: () => mixed,
 };
 
 type State = {
@@ -102,6 +103,10 @@ export default class DiffViewEditorPane extends React.Component {
     editorSubscriptions.add(atom.config.observe('editor.softTabs', softTabs => {
       textEditor.setSoftTabs(softTabs);
     }));
+
+    if (this.props.onDidUpdateTextEditorElement) {
+      this.props.onDidUpdateTextEditorElement();
+    }
   }
 
   componentWillUnmount(): void {
