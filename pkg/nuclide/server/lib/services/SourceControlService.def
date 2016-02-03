@@ -4,4 +4,4 @@ export type HgRepositoryDescription = {
   workingDirectoryPath: string,
 };
 
-export function getHgRepository(directoryPath: string): Promise<HgRepositoryDescription> {}
+export function getHgRepository(directoryPath: string): Promise<?HgRepositoryDescription> {}
