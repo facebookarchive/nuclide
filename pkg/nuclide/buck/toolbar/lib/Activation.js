@@ -10,7 +10,7 @@
  */
 
 import {CompositeDisposable, Disposable} from 'atom';
-import buckIcon from './BuckIcon';
+import buckIcon from './buckIcon';
 import BuckToolbar from './BuckToolbar';
 import BuckToolbarActions from './BuckToolbarActions';
 import BuckToolbarStore from './BuckToolbarStore';
