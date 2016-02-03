@@ -103,7 +103,7 @@ export class BuckProject {
   _getBuckCommandAndOptions(): BuckCommandAndOptions {
     // $UPFixMe: This should use nuclide-features-config
     const pathToBuck =
-      global.atom && global.atom.config.get('nuclide-buck-files.pathToBuck') || 'buck';
+      global.atom && global.atom.config.get('nuclide.nuclide-buck-files.pathToBuck') || 'buck';
     const buckCommandOptions = {
       cwd: this._rootPath,
       queueName: this._serialQueueName,
