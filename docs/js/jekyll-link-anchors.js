@@ -36,10 +36,29 @@
     var link;
     var id;
     var psib;
+    var suffix;
+
+    // Remove automatic id suffix added by kramdown if heading with same name exists.
+    // e.g.,
+    //   h2: Mac
+    //     h3: prerequisites (id = prerequisites)
+    //   h2: Linux
+    //     h3: prerequisites (id = prerequisites-1)
+
+    // Only match at end of string since that is where auto suffix wil be added.
+    suffix = node.getAttribute('id').match(/-[0-9]+$/);
+    // If the -1, etc. suffix exists, make sure someone didn't purposely put the suffix there
+    // by checking against the actual text associated with the node
+    if (suffix !== null &&
+        node.getAttribute('id').substring(0, suffix.index) === node.textContent.toLowerCase()) {
+      node.setAttribute('id', node.textContent.toLowerCase());
+    }
+
     link = document.createElement('a');
     link.className = 'header-link';
     link.textContent = '#';
     id = '';
+
     // Avoid duplicate anchor links
     // If we are at an h3, go through the previous element siblings of this node, and find its
     // h2 parent and append it to the href text.

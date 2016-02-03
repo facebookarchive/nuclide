@@ -14,7 +14,8 @@ ghrepo: "facebook/nuclide"
 # https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0
 # So no need to be explicit with respect to our markdown and highlighter settings since they
 # cannot change.
-# kramdown also automatically generates header ID's too
+# kramdown also automatically generates header ID's too. But we remove any auto id suffix
+# in a post processing step (js/jekyll-link-anchors.js) to make the links more readable.
 
 # For local development and testing, explicitly set kramdown settings that GitHub does
 # https://help.github.com/articles/using-jekyll-with-pages/#defaults-you-can-change
