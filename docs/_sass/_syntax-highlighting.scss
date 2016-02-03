@@ -1,7 +1,7 @@
 /**
  * Syntax highlighting styles
  */
-.highlight {
+.highlighter-rouge {
   .c     { color: #998; font-style: italic } // Comment
   .err   { color: #a61717; background-color: #e3d2d2 } // Error
   .k     { font-weight: bold } // Keyword
@@ -63,7 +63,7 @@
   .il    { color: #099 } // Literal.Number.Integer.Long
 }
 
-.highlight pre code {
+.highlighter-rouge pre code {
   background: #f0f0f0;
   color: #000;
   display: block;
