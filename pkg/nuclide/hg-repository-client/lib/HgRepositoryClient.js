@@ -36,7 +36,7 @@ import {addAllParentDirectoriesToCache, removeAllParentDirectoriesFromCache} fro
 
 type HgRepositoryOptions = {
   /** The origin URL of this repository. */
-  originURL: string;
+  originURL: ?string;
 
   /** The working directory of this repository. */
   workingDirectory: atom$Directory | RemoteDirectory;
@@ -93,7 +93,7 @@ export default class HgRepositoryClient {
   _path: string;
   _workingDirectory: atom$Directory | RemoteDirectory;
   _projectDirectory: atom$Directory;
-  _originURL: string;
+  _originURL: ?string;
   _service: HgService;
   _emitter: Emitter;
   // A map from a key (in most cases, a file path), to a related Disposable.

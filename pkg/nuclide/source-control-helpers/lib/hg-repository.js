@@ -9,7 +9,8 @@
  * the root directory of this source tree.
  */
 
-const path = require('path');
+import path from 'path';
+import ini from 'ini';
 
 import type {HgRepositoryDescription} from './main';
 
@@ -20,26 +21,21 @@ import type {HgRepositoryDescription} from './main';
 function findHgRepository(directoryPath: string): HgRepositoryDescription {
   const fs = require('fs-plus');
   let workingDirectoryPath = directoryPath;
-  let repoPath = null;
+  let repoPath = path.join(workingDirectoryPath, '.hg');
   let originURL = null;
   /*eslint-disable no-constant-condition */
   while (true) {
     const dirToTest = path.join(workingDirectoryPath, '.hg');
-    if (fs.isDirectorySync(dirToTest) &&
-        fs.isFileSync(path.join(dirToTest, 'hgrc'))) {
-      const ini = require('ini');
-      // I'm not quite sure why this header is required, but I copied this
-      // from the npm page to make things work: https://www.npmjs.com/package/ini.
-      const header = 'scope = global\n';
-      const config = ini.parse(header +
-          fs.readFileSync(path.join(dirToTest, 'hgrc')));
-      if (typeof config.paths.default === 'string') {
-        repoPath = dirToTest;
-        originURL = config.paths.default;
-        break;
+    if (fs.isDirectorySync(dirToTest)) {
+      repoPath = dirToTest;
+      if (fs.isFileSync(path.join(dirToTest, 'hgrc'))) {
+        const config = ini.parse(fs.readFileSync(path.join(dirToTest, 'hgrc'), 'utf8'));
+        if (typeof config.paths === 'object' && typeof config.paths.default === 'string') {
+          originURL = config.paths.default;
+        }
       }
+      break;
     }
-
     if (isRootDir(workingDirectoryPath)) {
       break;
     } else {

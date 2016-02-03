@@ -34,7 +34,7 @@ function getLogger() {
 function getRepositoryDescription(
   directory: atom$Directory | RemoteDirectoryType,
 ): ?{
-  originURL: string,
+  originURL: ?string,
   repoPath: string,
   workingDirectory: atom$Directory | RemoteDirectoryType,
   workingDirectoryLocalPath: string,
@@ -63,10 +63,6 @@ function getRepositoryDescription(
   } else {
     const {findHgRepository} = require('../../source-control-helpers');
     const repositoryDescription = findHgRepository(directory.getPath());
-    if (repositoryDescription.repoPath == null || repositoryDescription.originURL == null) {
-      return null;
-    }
-
     const {repoPath, originURL, workingDirectoryPath} = repositoryDescription;
     return {
       originURL,
