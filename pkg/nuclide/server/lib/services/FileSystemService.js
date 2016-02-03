@@ -207,6 +207,13 @@ export async function readFile(path: string, options?: {flag?: string}):
   return fsPromise.readFile(path, options);
 }
 
+/**
+ * Returns true if the path being checked exists in a `NFS` mounted directory device.
+ */
+export function isNfs(path: string): Promise<boolean> {
+  return fsPromise.isNfs(path);
+}
+
 // TODO: Move to nuclide-commons
 function mvPromise(sourcePath: string, destinationPath: string): Promise<void> {
   return new Promise((resolve, reject) => {

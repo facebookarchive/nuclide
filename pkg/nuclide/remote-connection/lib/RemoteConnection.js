@@ -37,11 +37,8 @@ const HEARTBEAT_AWAY_REPORT_COUNT = 3;
 const HEARTBEAT_NOTIFICATION_ERROR = 1;
 const HEARTBEAT_NOTIFICATION_WARNING = 2;
 
-// Taken from the error message in
-// https://github.com/facebook/watchman/blob/99dde8ee3f13233be097c036147748b2d7f8bfa7/tests/integration/rootrestrict.php#L58
-const WATCHMAN_ERROR_MESSAGE_FOR_ENFORCE_ROOT_FILES_REGEX = /global config root_files/;
-
 const FILE_WATCHER_SERVICE = 'FileWatcherService';
+const FILE_SYSTEM_SERVICE = 'FileSystemService';
 
 const CONNECTION_ALREADY_EXISTS = 'A connection already exists for the specified directory.';
 
@@ -381,7 +378,7 @@ class RemoteConnection {
             `Version mismatch. Client at ${clientVersion} while server at ${serverVersion}.`);
         }
 
-        const FileSystemService = this.getService('FileSystemService');
+        const FileSystemService = this.getService(FILE_SYSTEM_SERVICE);
         this._config.cwd = await FileSystemService.resolveRealPath(this._config.cwd);
 
         // Now that we know the real path, it's possible this collides with an existing connection.
@@ -420,6 +417,7 @@ class RemoteConnection {
 
   _watchRootProjectDirectory(): void {
     const rootDirectoryUri = this.getUriForInitialWorkingDirectory();
+    const rootDirectotyPath = this.getPathForInitialWorkingDirectory();
     const FileWatcherService = this.getService(FILE_WATCHER_SERVICE);
     invariant(FileWatcherService);
     const {watchDirectoryRecursive} = FileWatcherService;
@@ -430,24 +428,30 @@ class RemoteConnection {
       // Nothing needs to be done if the root directory was watched correctly.
       // Let's just console log it anyway.
       logger.info(`Watcher Features Initialized for project: ${rootDirectoryUri}`, watchUpdate);
-    }, error => {
+    }, async error => {
       let warningMessageToUser = `You just connected to a remote project ` +
-        `(${rootDirectoryUri}), but we recommend you remove this directory now!` +
-        `<br/><br/> The directory you connected to could not be watched by watchman, ` +
-        `so crucial features like synced remote file editing, file search, ` +
-        `and Mercurial-related updates will not work.`;
+        `\`${rootDirectotyPath}\` but we recommend you remove this directory now ` +
+        `because crucial features like synced remote file editing, file search, ` +
+        `and Mercurial-related updates will not work.<br/>`;
+
       const loggedErrorMessage = error.message || error;
-      if (loggedErrorMessage.match(WATCHMAN_ERROR_MESSAGE_FOR_ENFORCE_ROOT_FILES_REGEX)) {
-        warningMessageToUser += `<br/><br/>You need to connect to a different root directory, ` +
-        `because the watchman on the server you are connecting to is configured to not allow ` +
-        `you to watch ${rootDirectoryUri}. You may have luck connecting to a deeper ` +
-        `directory, because often watchman is configured to only allow watching ` +
-        `certain subdirectories (often roots or subdirectories of source control repositories).`;
+      logger.error(
+        `Watcher failed to start - watcher features disabled! Error: ${loggedErrorMessage}`
+      );
+
+      const FileSystemService = this.getService(FILE_SYSTEM_SERVICE);
+      if (await FileSystemService.isNfs(rootDirectotyPath)) {
+        warningMessageToUser +=
+          `This project directory: \`${rootDirectotyPath}\` is on <b>\`NFS\`</b> filesystem. ` +
+          `Nuclide works best with local (non-NFS) root directory.` +
+          `e.g. \`/data/users/$USER\``;
+      } else {
+        warningMessageToUser +=
+          `<b><a href='https://facebook.github.io/watchman/'>Watchman</a> Error:</b>` +
+          loggedErrorMessage;
       }
       // Add a persistent warning message to make sure the user sees it before dismissing.
       atom.notifications.addWarning(warningMessageToUser, {dismissable: true});
-      logger.error(
-          `Watcher failed to start - watcher features disabled! Error: ${loggedErrorMessage}`);
     }, () => {
       // Nothing needs to be done if the root directory watch has ended.
       logger.info(`Watcher Features Ended for project: ${rootDirectoryUri}`);

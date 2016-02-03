@@ -113,3 +113,9 @@ export function readFile(path: string, options: ?{encoding?: string; flag?:strin
  */
 export function writeFile(path: string, data: string,
     options: ?{encoding?: string; mode?: number; flag?:string}): Promise<void> {}
+
+/**
+ * Returns true if the path being checked exists in a `NFS` mounted directory device.
+ */
+export function isNfs(path: string): Promise<boolean> {}
+

@@ -14,6 +14,7 @@ const path = require('path');
 const mkdirpLib = require('mkdirp');
 const rimraf = require('rimraf');
 
+import {checkOutput} from './process';
 import invariant from 'assert';
 
 function isRoot(filePath: string): boolean {
@@ -147,6 +148,21 @@ function expandHomeDir(filePath: string): string {
   return resolvedPath;
 }
 
+/** @return true only if we are sure directoryPath is on NFS. */
+async function isNfs(entityPath: string): Promise<boolean> {
+  if (process.platform === 'linux' || process.platform === 'darwin') {
+    const {stdout, exitCode} = await checkOutput('stat', ['-f', '-L', '-c', '%T', entityPath]);
+    if (exitCode === 0) {
+      return stdout.trim() === 'nfs';
+    } else {
+      return false;
+    }
+  } else {
+    // TODO Handle other platforms (windows?): t9917576.
+    return false;
+  }
+}
+
 /**
  * Takes a method from Node's fs module and returns a "denodeified" equivalent, i.e., an adapter
  * with the same functionality, but returns a Promise rather than taking a callback. This isn't
@@ -168,6 +184,7 @@ module.exports = {
   exists,
   findNearestFile,
   isRoot,
+  isNfs,
   lstat: denodeifyFsMethod('lstat'),
   mkdir: denodeifyFsMethod('mkdir'),
   mkdirp,
