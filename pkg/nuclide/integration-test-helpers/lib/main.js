@@ -11,7 +11,6 @@
 
 import {dispatchKeyboardEvent} from './event';
 import {copyFixture, copyMercurialFixture, setLocalProject} from './fixtures';
-import {startFlowServer, stopFlowServer} from './flow-utils';
 import {activateAllPackages, deactivateAllPackages} from './package-utils';
 import {addRemoteProject, startNuclideServer, stopNuclideServer} from './remote-utils';
 import {waitsForFile} from './waitsForFile';
@@ -44,8 +43,6 @@ module.exports = {
   dispatchKeyboardEvent,
   jasmineIntegrationTestSetup,
   setLocalProject,
-  startFlowServer,
-  stopFlowServer,
   startNuclideServer,
   stopNuclideServer,
   waitsForFile,

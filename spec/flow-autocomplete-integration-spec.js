@@ -13,8 +13,8 @@ import {
   activateAllPackages,
   copyFixture,
   deactivateAllPackages,
-  startFlowServer,
-  stopFlowServer,
+  jasmineIntegrationTestSetup,
+  setLocalProject,
 } from '../pkg/nuclide/integration-test-helpers';
 import path from 'path';
 
@@ -23,20 +23,33 @@ describe('Flow Autocomplete', () => {
     let textEditor: atom$TextEditor = (null : any);
     let textEditorView: HTMLElement = (null : any);
     let flowProjectPath: string = (null : any);
+    let busySignal: HTMLElement = (null : any);
 
     waitsForPromise({timeout: 240000}, async () => {
-      // Attach to DOM so we can select elements/send events/etc.
-      jasmine.attachToDOM(atom.views.getView(atom.workspace));
-      // Unmock timer functions.
-      jasmine.useRealClock();
+      jasmineIntegrationTestSetup();
       // Activate nuclide packages.
       await activateAllPackages();
       // Copy flow project to a temporary location.
       flowProjectPath = await copyFixture('flow_project_1');
-      // Start the flow server so we can query for autocomplete results later.
-      await startFlowServer(flowProjectPath);
+
+      busySignal = atom.views.getView(atom.workspace)
+        .querySelector('.nuclide-busy-signal-status-bar');
+
+      // Add this directory as an atom project.
+      setLocalProject(flowProjectPath);
       // Open a file in the flow project we copied, and get reference to the editor's HTML.
       textEditor = await atom.workspace.open(path.join(flowProjectPath, 'main.js'));
+    });
+
+    waitsFor('spinner to start', 10000, () => {
+      return busySignal.classList.contains('nuclide-busy-signal-status-bar-busy');
+    });
+
+    waitsFor('spinner to stop', 30000, () => {
+      return busySignal.classList.contains('nuclide-busy-signal-status-bar-idle');
+    });
+
+    runs(() => {
       textEditorView = atom.views.getView(textEditor);
       // Simulate a keypress to trigger the autocomplete menu.
       textEditor.moveToBottom();
@@ -70,7 +83,6 @@ describe('Flow Autocomplete', () => {
     });
 
     waitsForPromise(async () => {
-      await stopFlowServer(flowProjectPath);
       deactivateAllPackages();
     });
   });

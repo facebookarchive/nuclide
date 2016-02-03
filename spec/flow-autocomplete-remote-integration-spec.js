@@ -14,9 +14,8 @@ import {
   activateAllPackages,
   copyFixture,
   deactivateAllPackages,
-  startFlowServer,
+  jasmineIntegrationTestSetup,
   startNuclideServer,
-  stopFlowServer,
   stopNuclideServer,
 } from '../pkg/nuclide/integration-test-helpers';
 import {join} from '../pkg/nuclide/remote-uri';
@@ -30,25 +29,36 @@ describe('Remote Flow Autocomplete', () => {
     let textEditorView: HTMLElement = (null : any);
     let flowProjectPath: string = (null : any);
     let connection: ?RemoteConnection = (null : any);
+    let busySignal: HTMLElement = (null : any);
 
     waitsForPromise({timeout: 240000}, async () => {
-      // Attach to DOM so we can select elements/send events/etc.
-      jasmine.attachToDOM(atom.views.getView(atom.workspace));
-      // Unmock timer functions.
-      jasmine.useRealClock();
+      jasmineIntegrationTestSetup();
       // Activate nuclide packages.
       await activateAllPackages();
       // Copy flow project to a temporary location.
       flowProjectPath = await copyFixture('flow_project_1');
+
+      busySignal = atom.views.getView(atom.workspace)
+        .querySelector('.nuclide-busy-signal-status-bar');
+
       // Start the Nuclide server and add a remote project.
       await startNuclideServer();
       connection = await addRemoteProject(flowProjectPath);
       invariant(connection != null, 'connection was not established');
-      // Start the flow server so we can query for autocomplete results later.
-      await startFlowServer(flowProjectPath);
       // Open a remote file in the flow project we copied, and get reference to the editor's HTML.
       const remoteFileUri = join(connection.getUriForInitialWorkingDirectory(), 'main.js');
       textEditor = await atom.workspace.open(remoteFileUri);
+    });
+
+    waitsFor('spinner to start', 10000, () => {
+      return busySignal.classList.contains('nuclide-busy-signal-status-bar-busy');
+    });
+
+    waitsFor('spinner to stop', 30000, () => {
+      return busySignal.classList.contains('nuclide-busy-signal-status-bar-idle');
+    });
+
+    runs(() => {
       textEditorView = atom.views.getView(textEditor);
       // Simulate a keypress to trigger the autocomplete menu.
       textEditor.moveToBottom();
@@ -80,10 +90,9 @@ describe('Remote Flow Autocomplete', () => {
       const lineText = textEditor.lineTextForBufferRow(textEditor.getCursorBufferPosition().row);
       expect(lineText).toBe('num');
 
-      // Clean up -- kill flow and nuclide servers and deactivate packages.
+      // Clean up -- kill nuclide server and deactivate packages.
       invariant(connection != null);
       stopNuclideServer(connection);
-      await stopFlowServer(flowProjectPath);
       deactivateAllPackages();
     });
   });
