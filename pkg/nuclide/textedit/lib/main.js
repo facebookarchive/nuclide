@@ -20,7 +20,7 @@ export type TextEdit = {
 
 import invariant from 'assert';
 
-import {editorForPath} from '../../atom-helpers';
+import {existingEditorForUri} from '../../atom-helpers';
 
 /**
  * Attempts to apply the patch to the given file.
@@ -32,7 +32,7 @@ import {editorForPath} from '../../atom-helpers';
  * match).
  */
 export function applyTextEdit(path: NuclideUri, edit: TextEdit): boolean {
-  const editor = editorForPath(path);
+  const editor = existingEditorForUri(path);
   invariant(editor != null);
   const buffer = editor.getBuffer();
   if (edit.oldRange.start.row === edit.oldRange.end.row) {

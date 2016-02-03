@@ -12,7 +12,9 @@
 import {
   createTextEditor,
   isTextEditor,
-  editorForPath,
+  existingEditorForUri,
+  existingBufferForUri,
+  bufferForUri,
 } from '../lib/main';
 
 describe('isTextEditor', () => {
@@ -30,7 +32,7 @@ describe('isTextEditor', () => {
   });
 });
 
-describe('editorForPath', () => {
+describe('existingEditorForUri', () => {
   const file1 = '/tmp/file1.txt';
   const file2 = '/tmp/file2.txt';
   const file3 = '/tmp/file3.txt';
@@ -48,15 +50,61 @@ describe('editorForPath', () => {
   });
 
   it('should find the one editor for a file', () => {
-    expect(editorForPath(file1)).toBe(file1Editor);
+    expect(existingEditorForUri(file1)).toBe(file1Editor);
   });
 
   it('should find one of the editors for a file', () => {
-    const editor = editorForPath(file2);
+    const editor = existingEditorForUri(file2);
     expect(editor === file2Editor || editor === secondFile2Editor).toBeTruthy();
   });
 
   it('should return null if no editor exists', () => {
-    expect(editorForPath(file3)).toBeNull();
+    expect(existingEditorForUri(file3)).toBeNull();
+  });
+});
+
+describe('existingBufferForUri', () => {
+  const file1 = '/tmp/file1.txt';
+
+  it('should open an editor with the same buffer, if previously cached', () => {
+    const existingBuffer = existingBufferForUri(file1);
+    expect(existingBuffer).toBeUndefined();
+    waitsForPromise(async () => {
+      const secondFile1Buffer = (await atom.workspace.open(file1)).getBuffer();
+      expect(secondFile1Buffer).toBeDefined();
+      const bufferAfterCreation = existingBufferForUri(file1);
+      expect(bufferAfterCreation).toBeDefined();
+    });
+  });
+});
+
+describe('bufferForUri', () => {
+  const file1 = '/tmp/file1.txt';
+  const file2 = '/tmp/file2.txt';
+
+  let file1Buffer: atom$TextBuffer = (null: any);
+
+  beforeEach(() => {
+    file1Buffer = bufferForUri(file1);
+  });
+
+  it('should open an editor with the same buffer, if previously cached', () => {
+    waitsForPromise(async () => {
+      const secondFile1Buffer = (await atom.workspace.open(file1)).getBuffer();
+      expect(secondFile1Buffer).toBe(file1Buffer);
+    });
+  });
+
+  it('should return the same buffer after creating an editor for it', () => {
+    waitsForPromise(async () => {
+      const file2Buffer = (await atom.workspace.open(file2)).getBuffer();
+      expect(bufferForUri(file2)).toBe(file2Buffer);
+    });
+  });
+
+  it('should throw an error if remote connection not found', () => {
+    const uri = 'nuclide://host:1234/abc.txt';
+    expect(() => bufferForUri(uri))
+      .toThrow(`RemoteConnection cannot be found for uri: ${uri}`);
   });
 });

@@ -44,8 +44,20 @@ module.exports = {
     return requireFromCache('./text-editor').createTextEditor;
   },
 
-  get editorForPath() {
-    return requireFromCache('./text-editor').editorForPath;
+  get existingEditorForUri() {
+    return requireFromCache('./text-editor').existingEditorForUri;
+  },
+
+  get existingBufferForUri() {
+    return requireFromCache('./text-editor').existingBufferForUri;
+  },
+
+  get bufferForUri() {
+    return requireFromCache('./text-editor').bufferForUri;
+  },
+
+  get loadBufferForUri() {
+    return requireFromCache('./text-editor').loadBufferForUri;
   },
 
   get destroyPaneItemWithTitle() {

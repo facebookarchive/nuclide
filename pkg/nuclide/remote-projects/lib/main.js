@@ -13,11 +13,12 @@ import type {HomeFragments} from '../../home-interfaces';
 import type {
   RemoteConnectionConfiguration,
 } from '../../remote-connection/lib/RemoteConnection';
+import type {NuclideUri} from '../../remote-uri';
 import type RemoteDirectoryProviderT from './RemoteDirectoryProvider';
 import type RemoteDirectorySearcherT from './RemoteDirectorySearcher';
 import type RemoteProjectsControllerT from './RemoteProjectsController';
 
-import {createTextEditor} from '../../atom-helpers';
+import {createTextEditor, loadBufferForUri} from '../../atom-helpers';
 import {getLogger} from '../../logging';
 import {getOpenFileEditorForRemoteProject} from './utils';
 import featureConfig from '../../feature-config';
@@ -171,30 +172,16 @@ function deleteDummyRemoteRootDirectories() {
  */
 async function createEditorForNuclide(
   connection: RemoteConnection,
-  uri: string,
+  uri: NuclideUri,
 ): Promise<TextEditor> {
-  const existingEditor = atom.workspace.getTextEditors().filter(textEditor => {
-    return textEditor.getPath() === uri;
-  })[0];
-  let buffer = null;
-  if (existingEditor) {
-    buffer = existingEditor.getBuffer();
-  } else {
-    const NuclideTextBuffer = require('./NuclideTextBuffer');
-    buffer = new NuclideTextBuffer(connection, {filePath: uri});
-    buffer.setEncoding(global.atom.config.get('core.fileEncoding'));
-    try {
-      /* $FlowFixMe Private Atom API */
-      await buffer.load();
-    } catch (err) {
-      logger.warn('buffer load issue:', err);
-      atom.notifications.addError(`Failed to open ${uri}: ${err.message}`);
-      throw err;
-    }
+  try {
+    const buffer = await loadBufferForUri(uri);
+    return createTextEditor({buffer});
+  } catch (err) {
+    logger.warn('buffer load issue:', err);
+    atom.notifications.addError(`Failed to open ${uri}: ${err.message}`);
+    throw err;
   }
-
-  const textEditorParams = {buffer};
-  return createTextEditor(textEditorParams);
 }
 
 /**

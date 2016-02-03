@@ -1024,6 +1024,11 @@ declare class atom$Project {
   removePath(projectPath: string): void;
   getDirectories(): Array<atom$Directory>;
   relativizePath(): Array<string>; // [projectPath: ?string, relativePath: string]
+
+  // Private API
+  findBufferForPath(path: string): ?atom$TextBuffer;
+  addBuffer(buffer: atom$TextBuffer): void;
+  removeBuffer(buffer: atom$TextBuffer): void;
 }
 
 type TextBufferScanIterator = (arg: {
@@ -1098,6 +1103,7 @@ declare class atom$TextBuffer {
 
   // Buffer Operations
   reload(): void;
+  load(): Promise<void>;
 
   isInConflict(): boolean;
 }

@@ -30,6 +30,8 @@ class NuclideTextBuffer extends TextBuffer {
     super(params);
     this.connection = connection;
     this.setPath(params.filePath);
+    const encoding: string = (atom.config.get('core.fileEncoding'): any);
+    this.setEncoding(encoding);
   }
 
   setPath(filePath: string): void {

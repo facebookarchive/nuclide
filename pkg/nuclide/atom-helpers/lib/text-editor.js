@@ -11,6 +11,13 @@
 
 import type {NuclideUri} from '../../remote-uri';
 
+import invariant from 'assert';
+import {TextBuffer} from 'atom';
+// TODO(most): move to remote-connection/lib/RemoteTextBuffer.js
+import NuclideTextBuffer from '../../remote-projects/lib/NuclideTextBuffer';
+import {isLocal} from '../../remote-uri';
+import {RemoteConnection} from '../../remote-connection';
+
 export function isTextEditor(item: ?any): boolean {
   if (item == null) {
     return false;
@@ -45,7 +52,7 @@ export function createTextEditor(textEditorParams: atom$TextEditorParams): TextE
  * Returns a text editor that has the given path open, or null if none exists. If there are multiple
  * text editors for this path, one is chosen arbitrarily.
  */
-export function editorForPath(path: NuclideUri): ?atom$TextEditor {
+export function existingEditorForUri(path: NuclideUri): ?atom$TextEditor {
   // This isn't ideal but realistically iterating through even a few hundred editors shouldn't be a
   // real problem. And if you have more than a few hundred you probably have bigger problems.
   for (const editor of atom.workspace.getTextEditors()) {
@@ -55,4 +62,44 @@ export function editorForPath(path: NuclideUri): ?atom$TextEditor {
   }
 
   return null;
+}
+
+export async function loadBufferForUri(uri: NuclideUri): Promise<atom$TextBuffer> {
+  const buffer = bufferForUri(uri);
+  try {
+    await buffer.load();
+    return buffer;
+  } catch (error) {
+    atom.project.removeBuffer(buffer);
+    throw error;
+  }
+}
+
+/**
+ * Returns an existing buffer for that uri, or create one if not existing.
+ */
+export function bufferForUri(uri: NuclideUri): atom$TextBuffer {
+  let buffer = existingBufferForUri(uri);
+  if (buffer != null) {
+    return buffer;
+  }
+  if (isLocal(uri)) {
+    buffer = new TextBuffer({filePath: uri});
+  } else {
+    const connection = RemoteConnection.getForUri(uri);
+    if (connection == null) {
+      throw new Error(`RemoteConnection cannot be found for uri: ${uri}`);
+    }
+    buffer = new NuclideTextBuffer(connection, {filePath: uri});
+  }
+  atom.project.addBuffer(buffer);
+  invariant(buffer);
+  return buffer;
+}
+
+/**
+ * Returns an exsting buffer for that uri, or null if not existing.
+ */
+export function existingBufferForUri(uri: NuclideUri): ?atom$TextBuffer {
+  return atom.project.findBufferForPath(uri);
 }
