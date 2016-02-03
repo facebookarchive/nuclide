@@ -16,6 +16,12 @@ ghrepo: "facebook/nuclide"
 # cannot change.
 # kramdown also automatically generates header ID's too
 
+# For local development and testing, explicitly set kramdown settings that GitHub does
+# https://help.github.com/articles/using-jekyll-with-pages/#defaults-you-can-change
+kramdown:
+  input: GFM
+  hard_wrap: false
+
 collections:
   docs:
     output: true
