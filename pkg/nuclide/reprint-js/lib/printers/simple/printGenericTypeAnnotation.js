@@ -1,5 +1,4 @@
-'use babel';
-/* @flow */
+
 
 /*
  * Copyright (c) 2015-present, Facebook, Inc.
@@ -9,20 +8,12 @@
  * the root directory of this source tree.
  */
 
-import type {GenericTypeAnnotation} from 'ast-types-flow';
-import type {Lines, Print} from '../../types/common';
+var flatten = require('../../utils/flatten');
+var markers = require('../../constants/markers');
 
-const flatten = require('../../utils/flatten');
-const markers = require('../../constants/markers');
-
-function printGenericTypeAnnotation(
-  print: Print,
-  node: GenericTypeAnnotation,
-): Lines {
-  return flatten([
-    print(node.id),
-    node.typeParameters ? print(node.typeParameters) : markers.empty,
-  ]);
+function printGenericTypeAnnotation(print, node) {
+  return flatten([print(node.id), node.typeParameters ? print(node.typeParameters) : markers.empty]);
 }
 
 module.exports = printGenericTypeAnnotation;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbInByaW50R2VuZXJpY1R5cGVBbm5vdGF0aW9uLmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7QUFjQSxJQUFNLE9BQU8sR0FBRyxPQUFPLENBQUMscUJBQXFCLENBQUMsQ0FBQztBQUMvQyxJQUFNLE9BQU8sR0FBRyxPQUFPLENBQUMseUJBQXlCLENBQUMsQ0FBQzs7QUFFbkQsU0FBUywwQkFBMEIsQ0FDakMsS0FBWSxFQUNaLElBQTJCLEVBQ3BCO0FBQ1AsU0FBTyxPQUFPLENBQUMsQ0FDYixLQUFLLENBQUMsSUFBSSxDQUFDLEVBQUUsQ0FBQyxFQUNkLElBQUksQ0FBQyxjQUFjLEdBQUcsS0FBSyxDQUFDLElBQUksQ0FBQyxjQUFjLENBQUMsR0FBRyxPQUFPLENBQUMsS0FBSyxDQUNqRSxDQUFDLENBQUM7Q0FDSjs7QUFFRCxNQUFNLENBQUMsT0FBTyxHQUFHLDBCQUEwQixDQUFDIiwiZmlsZSI6InByaW50R2VuZXJpY1R5cGVBbm5vdGF0aW9uLmpzIiwic291cmNlc0NvbnRlbnQiOlsiJ3VzZSBiYWJlbCc7XG4vKiBAZmxvdyAqL1xuXG4vKlxuICogQ29weXJpZ2h0IChjKSAyMDE1LXByZXNlbnQsIEZhY2Vib29rLCBJbmMuXG4gKiBBbGwgcmlnaHRzIHJlc2VydmVkLlxuICpcbiAqIFRoaXMgc291cmNlIGNvZGUgaXMgbGljZW5zZWQgdW5kZXIgdGhlIGxpY2Vuc2UgZm91bmQgaW4gdGhlIExJQ0VOU0UgZmlsZSBpblxuICogdGhlIHJvb3QgZGlyZWN0b3J5IG9mIHRoaXMgc291cmNlIHRyZWUuXG4gKi9cblxuaW1wb3J0IHR5cGUge0dlbmVyaWNUeXBlQW5ub3RhdGlvbn0gZnJvbSAnYXN0LXR5cGVzLWZsb3cnO1xuaW1wb3J0IHR5cGUge0xpbmVzLCBQcmludH0gZnJvbSAnLi4vLi4vdHlwZXMvY29tbW9uJztcblxuY29uc3QgZmxhdHRlbiA9IHJlcXVpcmUoJy4uLy4uL3V0aWxzL2ZsYXR0ZW4nKTtcbmNvbnN0IG1hcmtlcnMgPSByZXF1aXJlKCcuLi8uLi9jb25zdGFudHMvbWFya2VycycpO1xuXG5mdW5jdGlvbiBwcmludEdlbmVyaWNUeXBlQW5ub3RhdGlvbihcbiAgcHJpbnQ6IFByaW50LFxuICBub2RlOiBHZW5lcmljVHlwZUFubm90YXRpb24sXG4pOiBMaW5lcyB7XG4gIHJldHVybiBmbGF0dGVuKFtcbiAgICBwcmludChub2RlLmlkKSxcbiAgICBub2RlLnR5cGVQYXJhbWV0ZXJzID8gcHJpbnQobm9kZS50eXBlUGFyYW1ldGVycykgOiBtYXJrZXJzLmVtcHR5LFxuICBdKTtcbn1cblxubW9kdWxlLmV4cG9ydHMgPSBwcmludEdlbmVyaWNUeXBlQW5ub3RhdGlvbjtcbiJdfQ==

@@ -1,3 +1,0 @@
-var one = require('one');
-
-var two: ?one = null;
