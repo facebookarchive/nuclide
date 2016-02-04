@@ -50,6 +50,23 @@ describe('nuclide-commons/process', () => {
         ).toEqual({foo: 'bar', PATH: process.env.PATH + path.delimiter + '/abc/def'});
       });
     });
+
+    // This is a regression test. Previously, we were doing simple string matching that would give
+    // us false positives when checking if paths were in PATH.
+    it('adds paths that are descendents of paths in PATH', () => {
+      waitsForPromise(async () => {
+        const oldPath = process.env.PATH;
+        process.env.PATH = '/abc/def';
+        let execEnv;
+        try {
+          execEnv = await processLib.createExecEnvironment(process.env, ['/abc']);
+        } finally {
+          process.env.PATH = oldPath;
+        }
+        expect(execEnv.PATH).toEqual(`/abc/def${path.delimiter}/abc`);
+      });
+    });
+
   });
 
   describe('OS X path_helper regexp', () => {

@@ -9,6 +9,7 @@
  * the root directory of this source tree.
  */
 
+import * as array from './array';
 import {
   execFile,
   spawn,
@@ -68,14 +69,6 @@ function getPlatformPath(): Promise<string> {
   return platformPathPromise;
 }
 
-function appendCommonBinaryPaths(env: Object, commonBinaryPaths: Array<string>): void {
-  commonBinaryPaths.forEach((binaryPath) => {
-    if (env.PATH.indexOf(binaryPath) === -1) {
-      env.PATH += path.delimiter + binaryPath;
-    }
-  });
-}
-
 /**
  * Since OS X apps don't inherit PATH when not launched from the CLI, this function creates a new
  * environment object given the original environment by modifying the env.PATH using following
@@ -109,8 +102,12 @@ async function createExecEnvironment(
   // binary paths.
   if (platformPath) {
     execEnv.PATH = platformPath;
-  } else {
-    appendCommonBinaryPaths(execEnv, commonBinaryPaths);
+  } else if (commonBinaryPaths.length) {
+    const paths = new Set([
+      ...execEnv.PATH.split(path.delimiter),
+      ...commonBinaryPaths,
+    ]);
+    execEnv.PATH = array.from(paths).join(path.delimiter);
   }
 
   return execEnv;
