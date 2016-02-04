@@ -2,7 +2,7 @@
 id: setup
 title: Setup
 layout: docs
-permalink: /docs/setup/
+permalink: /docs/editor/setup/
 ---
 
 There are two supported platforms for Nuclide, Linux and Mac OS X. Nuclide can be installed on

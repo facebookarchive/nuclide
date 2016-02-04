@@ -10,9 +10,9 @@ and productive quickly.
 
 ## Installation
 
-The [installation guides](/docs/setup/) will provide you detailed information to install Nuclide on
-your platform, but assuming you have met the [prerequisites](/docs/setup/#mac__prerequisites), you
-can install Nuclide with one command:
+The [installation guides](/docs/editor/setup/) will provide you detailed information to install Nuclide
+on your platform, but assuming you have met the [prerequisites](/docs/editor/setup/#mac__prerequisites),
+you can install Nuclide with one command:
 
 ```bash
 apm install nuclide

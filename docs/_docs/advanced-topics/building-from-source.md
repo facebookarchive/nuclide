@@ -16,8 +16,8 @@ those willing to live on the bleeding edge, you can install Nuclide from source.
 
 ### Prerequisites
 
-You must have the [general prerequisites](/docs/setup#mac__prerequisites) installed. In addition,
-you must have XCode and **Node 0.12.0** installed as well.
+You must have the [general prerequisites](/docs/editor/setup#mac__prerequisites) installed. In
+addition, you must have XCode and **Node 0.12.0** installed as well.
 
 XCode can be installed from the App Store. Installation can take a *long, long* time. So be patient.
 
@@ -81,8 +81,8 @@ Verify the installation by:
 
 ### Prerequisites
 
-You must have the [general prerequisites](/docs/setup#linux__prerequisites) installed. In addition,
-you must have **Node 0.12.0** installed as well.
+You must have the [general prerequisites](/docs/editor/setup#linux__prerequisites) installed. In
+addition, you must have **Node 0.12.0** installed as well.
 
 Some flavors of Linux (e.g., Ubuntu 14.04) comes with versions of Node less than 0.12.0:
 

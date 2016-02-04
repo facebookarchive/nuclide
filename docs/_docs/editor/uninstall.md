@@ -2,7 +2,7 @@
 id: uninstall
 title: Uninstalling
 layout: docs
-permalink: /docs/uninstall/
+permalink: /docs/editor/uninstall/
 ---
 
 The uninstallation process for Nuclide differs depending on which version you have installed.

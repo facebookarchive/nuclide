@@ -25,4 +25,4 @@ Have installation or other issues, check out our
 
 ### Uninstalling Nuclide
 
-To remove Nuclide and its dependencies, follow the [uninstall instructions](/docs/uninstall).
+To remove Nuclide and its dependencies, follow the [uninstall instructions](/docs/editor/uninstall).
