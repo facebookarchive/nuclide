@@ -80,10 +80,6 @@ module.exports = {
     return requireFromCache('./text-editor').isTextEditor;
   },
 
-  get closeTabForBuffer() {
-    return requireFromCache('./close-tab-buffer');
-  },
-
   get extractWordAtPosition() {
     return requireFromCache('./extract-word-at-position');
   },

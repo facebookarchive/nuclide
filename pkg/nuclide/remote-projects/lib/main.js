@@ -142,6 +142,7 @@ function closeOpenFilesForRemoteProject(remoteProjectConfig: RemoteConnectionCon
   for (const openInstance of openInstances) {
     const {editor, pane} = openInstance;
     pane.removeItem(editor);
+    editor.destroy();
   }
 }
 
