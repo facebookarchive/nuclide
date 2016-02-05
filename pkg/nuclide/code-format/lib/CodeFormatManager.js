@@ -61,9 +61,18 @@ class CodeFormatManager {
       );
     }
 
-    const codeReplacement = await matchingProviders[0].formatCode(editor, formatRange);
-    // TODO(most): save cursor location.
-    editor.setTextInBufferRange(formatRange, codeReplacement);
+    const provider = matchingProviders[0];
+    if (provider.formatCode != null) {
+      const codeReplacement = await provider.formatCode(editor, formatRange);
+      // TODO(most): save cursor location.
+      editor.setTextInBufferRange(formatRange, codeReplacement);
+    } else if (provider.formatEntireFile != null) {
+      const {newCursor, formatted} = await provider.formatEntireFile(editor, formatRange);
+      buffer.setTextViaDiff(formatted);
+      editor.setCursorBufferPosition(buffer.positionForCharacterIndex(newCursor));
+    } else {
+      throw new Error('code-format providers must implement formatCode or formatEntireFile');
+    }
   }
 
   _getMatchingProvidersForScopeName(scopeName: string): Array<CodeFormatProvider> {

@@ -1130,6 +1130,7 @@ declare class atom$TextBuffer {
 
   // Position/Index mapping
   characterIndexForPosition(position: atom$Point): number;
+  positionForCharacterIndex(index: number): atom$Point;
 
   // Buffer Operations
   reload(): void;
