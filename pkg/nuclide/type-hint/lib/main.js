@@ -19,6 +19,8 @@ const {Disposable} = require('atom');
 
 let typeHintManager: ?TypeHintManagerType = null;
 
+const PACKAGE_NAME = 'nuclide-type-hint';
+
 module.exports = {
 
   activate(state: ?any): void {
@@ -28,7 +30,7 @@ module.exports = {
     }
   },
 
-  consumeProvider(provider: TypeHintProvider): Disposable {
+  consumeTypehintProvider(provider: TypeHintProvider): IDisposable {
     invariant(typeHintManager);
     typeHintManager.addProvider(provider);
     return new Disposable(() => {
@@ -38,9 +40,19 @@ module.exports = {
     });
   },
 
+  createDatatipProvider(): Object {
+    invariant(typeHintManager);
+    const datatip = typeHintManager.datatip.bind(typeHintManager);
+    return {
+      validForScope: () => true, // TODO
+      providerName: PACKAGE_NAME,
+      inclusionPriority: 1,
+      datatip,
+    };
+  },
+
   deactivate() {
     if (typeHintManager) {
-      typeHintManager.dispose();
       typeHintManager = null;
     }
   },

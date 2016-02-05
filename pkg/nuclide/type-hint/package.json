@@ -11,7 +11,14 @@
   "consumedServices": {
     "nuclide-type-hint.provider": {
       "versions": {
-        "0.0.0": "consumeProvider"
+        "0.0.0": "consumeTypehintProvider"
+      }
+    }
+  },
+  "providedServices": {
+    "nuclide-datatip.provider": {
+      "versions": {
+        "0.0.0": "createDatatipProvider"
       }
     }
   }
