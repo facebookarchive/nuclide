@@ -49,11 +49,13 @@ function documentMouseUp$(): Rx.Observable<MouseEvent> {
 export class PinnedDatatip {
   _boundDispose: Function;
   _boundHandleMouseDown: Function;
+  _boundHandleMouseEnter: Function;
+  _boundHandleMouseLeave: Function;
   _hostElement: HTMLElement;
   _marker: ?atom$Marker;
+  _rangeDecoration: ?atom$Decoration;
   _mouseDisposable: ?IDisposable;
   _subscriptions: atom$CompositeDisposable;
-  _marker: ?atom$Marker;
   _range: atom$Range;
   _component: ReactElement;
   _editor: TextEditor;
@@ -62,6 +64,7 @@ export class PinnedDatatip {
   _dragOrigin: ?Position;
   _isDragging: boolean;
   _offset: Position;
+  _isHovering: boolean;
 
   constructor(
     datatip: Datatip,
@@ -77,15 +80,34 @@ export class PinnedDatatip {
     this._component = component;
     this._editor = editor;
     this._marker = null;
+    this._rangeDecoration = null;
     this._hostElement = document.createElement('div');
     this._hostElement.className = 'nuclide-datatip-overlay';
     this._boundDispose = this.dispose.bind(this);
-
+    this._boundHandleMouseDown = this.handleMouseDown.bind(this);
+    this._boundHandleMouseEnter = this.handleMouseEnter.bind(this);
+    this._boundHandleMouseLeave = this.handleMouseLeave.bind(this);
+    this._hostElement.addEventListener('mouseenter', this._boundHandleMouseEnter);
+    this._hostElement.addEventListener('mouseleave', this._boundHandleMouseLeave);
+    this._subscriptions.add(new Disposable(() => {
+      this._hostElement.removeEventListener('mouseenter', this._boundHandleMouseEnter);
+      this._hostElement.removeEventListener('mouseleave', this._boundHandleMouseLeave);
+    }));
     this._offset = {x: 0, y: 0};
     this._isDragging = false;
     this._dragOrigin = null;
+    this._isHovering = false;
 
-    this._boundHandleMouseDown = this.handleMouseDown.bind(this);
+    this.render();
+  }
+
+  handleMouseEnter(event: MouseEvent): void {
+    this._isHovering = true;
+    this.render();
+  }
+
+  handleMouseLeave(event: MouseEvent): void {
+    this._isHovering = false;
     this.render();
   }
 
@@ -103,11 +125,15 @@ export class PinnedDatatip {
   handleGlobalMouseUp(): void {
     this._isDragging = false;
     this._dragOrigin = null;
+    this._ensureMouseSubscriptionDisposed();
+    this.render();
+  }
+
+  _ensureMouseSubscriptionDisposed(): void {
     if (this._mouseDisposable != null) {
       this._mouseDisposable.dispose();
       this._mouseDisposable = null;
     }
-    this.render();
   }
 
   handleMouseDown(event: Event): void {
@@ -117,10 +143,7 @@ export class PinnedDatatip {
       x: evt.clientX - this._offset.x,
       y: evt.clientY - this._offset.y,
     };
-    if (this._mouseDisposable != null) {
-      this._mouseDisposable.dispose();
-      this._mouseDisposable = null;
-    }
+    this._ensureMouseSubscriptionDisposed();
     this._mouseDisposable =
       documentMouseMove$().takeUntil(documentMouseUp$()).subscribe(Rx.Observer.create(
       (e: MouseEvent) => {this.handleGlobalMouseMove(e);},
@@ -152,6 +175,7 @@ export class PinnedDatatip {
       _component,
       _hostElement,
       _isDragging,
+      _isHovering,
     } = this;
     this._updateHostElementPosition();
     ReactDOM.render(
@@ -166,6 +190,11 @@ export class PinnedDatatip {
       _hostElement,
     );
 
+    let rangeClassname = 'nuclide-datatip-highlight-region';
+    if (_isHovering) {
+      rangeClassname += ' nuclide-datatip-highlight-region-active';
+    }
+
     if (this._marker == null) {
       const marker: atom$Marker = _editor.markBufferRange(_range, {invalidate: 'never'});
       this._marker = marker;
@@ -177,13 +206,20 @@ export class PinnedDatatip {
           item: this._hostElement,
         }
       );
-      _editor.decorateMarker(
+      this._rangeDecoration = _editor.decorateMarker(
         marker,
         {
           type: 'highlight',
-          class: 'nuclide-datatip-highlight-region',
+          class: rangeClassname,
         }
       );
+    } else {
+      // `this._rangeDecoration` is guaranteed to exist iff `this._marker` exists.
+      invariant(this._rangeDecoration);
+      this._rangeDecoration.setProperties({
+        type: 'highlight',
+        class: rangeClassname,
+      });
     }
   }
 

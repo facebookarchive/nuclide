@@ -19,6 +19,10 @@
 .nuclide-datatip-container {
   display: flex;
   position: relative;
+  transition: background-color 0.15s ease;
+  &:hover {
+    background-color: fade(@background-color-highlight, 50%);
+  }
 }
 
 .nuclide-datatip-content {
@@ -30,11 +34,6 @@
   }
 }
 
-
-atom-text-editor::shadow .nuclide-datatip-highlight-region > .region {
-  background: @background-color-highlight;
-}
-
 .nuclide-datatip-pin-button {
   cursor: pointer;
   line-height: 2;
@@ -43,4 +42,25 @@ atom-text-editor::shadow .nuclide-datatip-highlight-region > .region {
   &:hover {
     color: @text-color-highlight;
   }
+}
+
+atom-text-editor::shadow {
+
+  .nuclide-datatip-highlight-region > .region {
+    background: @background-color-highlight;
+  }
+
+  .nuclide-datatip-highlight-region-active > .region {
+    // Animations such as `RotatingBackground` must be defined in a `*.atom-text-editor.less` file.
+    -webkit-animation: RotatingBackground 1s ease-in-out infinite reverse;
+    background: linear-gradient(
+      90deg,
+      fade(@background-color-selected, 100%),
+      fade(@background-color-selected, 0%),
+      fade(@background-color-selected, 100%),
+      fade(@background-color-selected, 0%)
+    );
+    background-size: 300% 100%;
+  }
+
 }
