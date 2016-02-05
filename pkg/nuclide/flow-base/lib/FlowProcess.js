@@ -94,7 +94,7 @@ export class FlowProcess {
     waitForServer?: boolean = false,
   ): Promise<?process$asyncExecuteRet> {
     const maxRetries = waitForServer ? EXEC_FLOW_RETRIES : 0;
-    if (this._serverStatus.getValue() === ServerStatus.failed) {
+    if (this._serverStatus.getValue() === ServerStatus.FAILED) {
       return null;
     }
     for (let i = 0; ; i++) {

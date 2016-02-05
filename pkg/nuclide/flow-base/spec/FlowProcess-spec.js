@@ -106,7 +106,9 @@ describe('FlowProcess', () => {
       it('should blacklist the root', () => {
         expect(event).toBe('exit');
         (require('../../commons').safeSpawn: any).reset();
-        waitsForPromise(async () => { await execFlow(); });
+        waitsForPromise(async () => {
+          expect(await execFlow()).toBeNull();
+        });
         expect(require('../../commons').safeSpawn).not.toHaveBeenCalled();
       });
     });
