@@ -6,6 +6,7 @@
   color: @text-color-subtle;
   font-family: Menlo, Monaco, Consolas, monospace;
   font-size: @font-size;
+  margin-top: -2px; // Compensate for shadow
   position: relative;
   white-space: nowrap;
 }
@@ -16,7 +17,7 @@
 }
 
 .nuclide-datatip-content {
-  padding: 0.25em 0.5em;
+  padding: 0em 0.5em;
 }
 
 
@@ -26,7 +27,8 @@ atom-text-editor::shadow .nuclide-datatip-highlight-region > .region {
 
 .nuclide-datatip-pin-button {
   cursor: pointer;
-  padding: 0.6em 0.4em 0 0.4em;
+  line-height: 2;
+  margin: 0.1em 0 0 0;
 
   &:hover {
     color: @text-color-highlight;

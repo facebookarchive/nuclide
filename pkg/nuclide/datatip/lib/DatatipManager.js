@@ -10,6 +10,7 @@
  */
 
 import type {
+  Datatip,
   DatatipProvider,
 } from '../../datatip-interfaces';
 
@@ -22,7 +23,7 @@ import {
 import {array, debounce} from '../../commons';
 import {track, trackOperationTiming} from '../../analytics';
 
-import {DatatipComponent} from './DatatipComponent';
+import {DatatipComponent, DATATIP_ACTIONS} from './DatatipComponent';
 
 const DATATIP_DELAY_MS = 50;
 
@@ -182,8 +183,18 @@ export class DatatipManager {
     const marker: atom$Marker = editor.markBufferRange(range, {invalidate: 'never'});
     this._marker = marker;
 
+    let action, actionTitle;
+    // Datatips are pinnable by default, unless explicitly specified otherwise.
+    if (pinnable !== false) {
+      action = DATATIP_ACTIONS.PIN;
+      actionTitle = 'Pin this Datatip';
+    }
+
     ReactDOM.render(
-      <DatatipComponent pinnable={pinnable !== false}>
+      <DatatipComponent
+        action={action}
+        actionTitle={actionTitle}
+        onActionClick={this._handlePinClicked.bind(this, editor, datatip)}>
         {component}
       </DatatipComponent>,
       this._ephemeralDatatipElement
@@ -211,6 +222,10 @@ export class DatatipManager {
         class: 'nuclide-datatip-highlight-region',
       }
     );
+  }
+
+  _handlePinClicked(editor: TextEditor, datatip: Datatip): void {
+    this.hideDatatip();
   }
 
   _getMatchingProvidersForScopeName(scopeName: string): Array<DatatipProvider> {

@@ -11,8 +11,20 @@
 
 import {React} from 'react-for-atom';
 
+export const DATATIP_ACTIONS = {
+  PIN: 'PIN',
+  CLOSE: 'CLOSE',
+};
+
+const IconsForAction = {
+  [DATATIP_ACTIONS.PIN]: 'pin',
+  [DATATIP_ACTIONS.CLOSE]: 'x',
+};
+
 type DatatipComponentProps = {
-  pinnable: boolean;
+  action: string;
+  actionTitle: string;
+  onActionClick: Function;
 }
 
 /* eslint-disable react/prop-types */
@@ -20,32 +32,36 @@ export class DatatipComponent extends React.Component {
 
   constructor(props: DatatipComponentProps) {
     super(props);
-    this.handlePinClick = this.handlePinClick.bind(this);
+    this.handleActionClick = this.handleActionClick.bind(this);
   }
 
-  handlePinClick(event: SyntheticEvent): void {
-    // TODO
-    console.log('Pin was clicked!');
+  handleActionClick(event: SyntheticEvent): void {
+    this.props.onActionClick();
   }
 
   render(): ReactElement {
     const {
       children,
-      pinnable,
+      action,
+      actionTitle,
     } = this.props;
-    const pinButton = pinnable
-      ? <div
-          className="nuclide-datatip-pin-button icon-pin"
-          onClick={this.handlePinClick}
-          title="Pin this datatip"
+    let actionButton;
+    if (action != null && IconsForAction[action] != null) {
+      const actionIcon = IconsForAction[action];
+      actionButton = (
+        <div
+          className={`nuclide-datatip-pin-button icon-${actionIcon}`}
+          onClick={this.handleActionClick}
+          title={actionTitle}
         />
-      : null;
+      );
+    }
     return (
       <div className="nuclide-datatip-container">
         <div className="nuclide-datatip-content">
           {children}
         </div>
-        {pinButton}
+        {actionButton}
       </div>
     );
   }
