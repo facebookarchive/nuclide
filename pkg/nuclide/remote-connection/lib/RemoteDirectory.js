@@ -240,7 +240,7 @@ class RemoteDirectory {
    * passed to `callback` is `null` to determine if there was an error.
    */
   async getEntries(
-    callback: (error: ?Error, entries: ?Array<RemoteDirectory | RemoteFile>) => any,
+    callback: (error: ?atom$GetEntriesError, entries: ?Array<RemoteDirectory | RemoteFile>) => any,
   ): Promise<void> {
     let entries;
     try {

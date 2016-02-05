@@ -874,6 +874,11 @@ declare class atom$DeserializerManager {
   deserialize(state: Object, params: Object): mixed;
 }
 
+// Apparently it can sometimes include a `code` property.
+declare class atom$GetEntriesError extends Error {
+  code?: string;
+}
+
 declare class atom$Directory {
   symlink: boolean;
 
@@ -901,7 +906,11 @@ declare class atom$Directory {
   getParent(): atom$Directory;
   getFile(filename: string): atom$File;
   getSubdirectory(dirname: string): atom$Directory;
-  getEntries(callback: (error: ?Error, entries: ?Array<atom$Directory | atom$File>) => mixed): void;
+  getEntries(
+    callback: (
+      error: ?atom$GetEntriesError,
+      entries: ?Array<atom$Directory | atom$File>,
+    ) => mixed): void;
   contains(path: string): boolean;
 }
 
