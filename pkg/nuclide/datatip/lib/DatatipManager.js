@@ -225,9 +225,13 @@ export class DatatipManager {
       );
     });
 
-    const bestRange = nonEmptyDatatips[0].range;
+    let combinedRange = nonEmptyDatatips[0].range;
+    for (let i = 1; i < nonEmptyDatatips.length; i++) {
+      combinedRange = combinedRange.union(nonEmptyDatatips[i].range);
+    }
+
     // Transform the matched element range to the hint range.
-    const marker: atom$Marker = editor.markBufferRange(bestRange, {invalidate: 'never'});
+    const marker: atom$Marker = editor.markBufferRange(combinedRange, {invalidate: 'never'});
     this._marker = marker;
 
     ReactDOM.render(
@@ -237,7 +241,7 @@ export class DatatipManager {
     // This relative positioning is to work around the issue that `position: 'head'`
     // doesn't work for overlay decorators are rendered on the bottom right of the given range.
     // Atom issue: https://github.com/atom/atom/issues/6695
-    const expressionLength = bestRange.end.column - bestRange.start.column;
+    const expressionLength = combinedRange.end.column - combinedRange.start.column;
     this._ephemeralDatatipElement.style.left =
       -(expressionLength * editor.getDefaultCharWidth()) +  'px';
     this._ephemeralDatatipElement.style.display = 'block';
