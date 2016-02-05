@@ -34,27 +34,32 @@ parser = optparse.OptionParser(usage='usage: %prog [options]',
                                description='Install Nuclide packages for development')
 parser.add_option('--no-atom', action='store_true', default=False,
                   help='Exclude packages that depend on Atom')
+parser.add_option('--nuke', action='store_true', default=False,
+                  help='Remove all Atom caches and state. '
+                       'NOTE: Serialized state and stored session data (like login '
+                       'tokens) will be lost, also Atom may be temporarily unresponsive '
+                       'during the first load while the caches are rebuilt')
 parser.add_option('--production', action='store_true', default=False,
                   help='Install only production dependencies')
-parser.add_option('--make-it-work', action='store_true', default=False,
-                  help='Perform additional steps to restore state.' +
-                  ' Useful when pulling changes with incompatible binary modules.' +
-                  ' NOTE: Can cause some lost atom state.')
 parser.add_option('--verbose', action='store_true', default=False,
                   help='Verbose output from npm install')
 atom.add_args_for_env_setup(parser)
 options, args = parser.parse_args(sys.argv[1:])
 
 # Don't do this by default as it destroys some saved user state.
-# Use this option when pulling a new build gets into a broken state.
-if options.make_it_work:
-    # TODO: Handle linux
+if options.nuke:
+    logging.info('Removing Atom caches...')
+    # v8 module cache
+    shutil.rmtree(os.path.expanduser('~/.atom/blob-store'), ignore_errors=True)
+    # transpile cache
+    shutil.rmtree(os.path.expanduser('~/.atom/compile-cache'), ignore_errors=True)
+    # serialized state
+    shutil.rmtree(os.path.expanduser('~/.atom/storage'), ignore_errors=True)
+    # cookies, localstorage, etc.
     if is_os_x():
-        try:
-            shutil.rmtree(os.path.expanduser('~/Library/Application Support/Atom'))
-        except Error as e:
-            None
-    subprocess.check_call(['apm', 'rebuild'], cwd=NUCLIDE_PATH)
+        shutil.rmtree(os.path.expanduser('~/Library/Application Support/Atom'), ignore_errors=True)
+    else:
+        shutil.rmtree(os.path.expanduser('~/.config/atom'), ignore_errors=True)
 
 # When installing the server packages, only `node` and `npm` need to be on the $PATH.
 include_apm = not options.no_atom
@@ -69,21 +74,30 @@ if fb_pre_setup and not options.no_atom:
     fb_pre_setup()
     logging.info('Development pre-setup scripts executed.')
 
+# Remove pre-existing node_modules.
+node_modules_dir = os.path.join(NUCLIDE_PATH, 'node_modules')
+if os.path.isdir(node_modules_dir):
+    logging.info('Removing %s...', node_modules_dir)
+    shutil.rmtree(node_modules_dir)
+
 # Install packages.
 if options.no_atom:
-    logging.info('Running "npm install" for %s...', NUCLIDE_PATH)
-    install_cmd = ['npm', 'install']
+    install_cmd = ['npm', 'install', '--ignore-scripts']
 else:
-    logging.info('Running "apm install" for %s...', NUCLIDE_PATH)
-    install_cmd = ['apm', 'install']
-
+    install_cmd = ['apm', 'install', '--ignore-scripts']
 if options.production:
     install_cmd.append('--production')
-
 if options.verbose:
     install_cmd.append('--verbose')
 
 start_install = datetime.now()
+logging.info('Running "%s" in %s...', ' '.join(install_cmd), NUCLIDE_PATH)
 subprocess.check_call(install_cmd, cwd=NUCLIDE_PATH)
 logging.info('"%s install" took %s seconds.',
              install_cmd[0], (datetime.now() - start_install).seconds)
+
+# "apm link" will fail if "~/.atom/packages/nuclide" is a directory, and
+# overwrite if it's a symlink.
+if not options.no_atom:
+    logging.info('Linking nuclide...')
+    subprocess.check_call(['apm', 'link'], cwd=NUCLIDE_PATH)
