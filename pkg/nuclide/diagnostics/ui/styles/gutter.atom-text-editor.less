@@ -16,9 +16,10 @@
 // Styles for popup triggered by mousing over the gutter glyph.
 
 .nuclide-diagnostics-gutter-ui-popup {
+  background: @app-background-color;
+  box-shadow: 0px 1px 4px 0px rgba(0,0,0,1);
   position: absolute;
-  padding-top: @glyph-height;
-  padding-bottom: @glyph-height;
+  padding: 4px 10px;
 
   // Many themes set the editor's scrollbars to z-index: 3. We wish to appear
   // above the scrollbars because we appear at the atom-workspace's root, which
@@ -27,27 +28,21 @@
 }
 
 .nuclide-diagnostics-gutter-ui-popup-header {
-  padding-top: 5px;
-  padding-bottom: 10px;
+  margin: -4px -10px 4px;
+  padding: 4px 10px;
 }
 
 .nuclide-diagnostics-gutter-ui-popup-diagnostic {
-  background-color: @app-background-color;
-  border-style: solid;
-  border-width: 1px 1px 0 1px;
   color: @text-color;
   font-family: Menlo, Consolas, 'DejaVu Sans Mono', monospace;
-  padding: 5px;
 }
 
-.nuclide-diagnostics-gutter-ui-popup-diagnostic:last-child {
-  border-bottom-width: 1px;
+.nuclide-diagnostics-gutter-ui-popup-error
+  .nuclide-diagnostics-gutter-ui-popup-header {
+    background-color: fade(@text-color-error, 20%);
 }
 
-.nuclide-diagnostics-gutter-ui-popup-error {
-  border-color: @text-color-error;
-}
-
-.nuclide-diagnostics-gutter-ui-popup-warning {
-  border-color: @text-color-warning;
+.nuclide-diagnostics-gutter-ui-popup-warning
+  .nuclide-diagnostics-gutter-ui-popup-header {
+    background-color: fade(@text-color-warning, 20%);
 }
