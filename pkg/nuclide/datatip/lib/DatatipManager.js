@@ -170,7 +170,7 @@ export class DatatipManager {
       return;
     }
 
-    const {component, range} = datatip;
+    const {pinnable, component, range} = datatip;
     // We track the timing above, but we still want to know the number of popups that are shown.
     track('datatip-popup', {
       'scope': scopeName,
@@ -183,7 +183,7 @@ export class DatatipManager {
     this._marker = marker;
 
     ReactDOM.render(
-      <DatatipComponent>
+      <DatatipComponent pinnable={pinnable !== false}>
         {component}
       </DatatipComponent>,
       this._ephemeralDatatipElement

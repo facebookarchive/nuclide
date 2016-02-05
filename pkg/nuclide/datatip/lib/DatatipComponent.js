@@ -11,18 +11,41 @@
 
 import {React} from 'react-for-atom';
 
+type DatatipComponentProps = {
+  pinnable: boolean;
+}
+
 /* eslint-disable react/prop-types */
 export class DatatipComponent extends React.Component {
+
+  constructor(props: DatatipComponentProps) {
+    super(props);
+    this.handlePinClick = this.handlePinClick.bind(this);
+  }
+
+  handlePinClick(event: SyntheticEvent): void {
+    // TODO
+    console.log('Pin was clicked!');
+  }
 
   render(): ReactElement {
     const {
       children,
+      pinnable,
     } = this.props;
+    const pinButton = pinnable
+      ? <div
+          className="nuclide-datatip-pin-button icon-pin"
+          onClick={this.handlePinClick}
+          title="Pin this datatip"
+        />
+      : null;
     return (
       <div className="nuclide-datatip-container">
         <div className="nuclide-datatip-content">
           {children}
         </div>
+        {pinButton}
       </div>
     );
   }
