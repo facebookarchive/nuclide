@@ -131,7 +131,7 @@ class NuclideTextBuffer extends TextBuffer {
     }));
 
     invariant(this.file);
-    this.fileSubscriptions.add(this.file.onWillThrowWatchError((errorObject) => {
+    this.fileSubscriptions.add(this.file.onWillThrowWatchError(errorObject => {
       this.emitter.emit('will-throw-watch-error', errorObject);
     }));
   }

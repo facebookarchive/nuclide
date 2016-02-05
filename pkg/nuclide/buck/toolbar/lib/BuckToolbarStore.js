@@ -437,7 +437,7 @@ class BuckToolbarStore {
     let buildId: ?string = null;
     let isFinished = false;
 
-    ws.onmessage = (e) => {
+    ws.onmessage = e => {
       let message;
       try {
         message = JSON.parse(e.data);

@@ -332,7 +332,7 @@ export class SshHandshake {
                 return resolve(false);
               }
               const localTempFile = await fsPromise.tempfile();
-              sftp.fastGet(remoteTempFile, localTempFile, async (sftpError) => {
+              sftp.fastGet(remoteTempFile, localTempFile, async sftpError => {
                 sftp.end();
                 if (sftpError) {
                   this._error(
@@ -490,7 +490,7 @@ export function decorateSshConnectionDelegateWithTracking(
         instructions,
         instructionsLang,
         prompts,
-        (answers) => {
+        answers => {
           invariant(connectionTracker);
           connectionTracker.trackFinishYubikeyInput();
           finish(answers);

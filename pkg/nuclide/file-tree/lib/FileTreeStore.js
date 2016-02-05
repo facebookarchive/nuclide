@@ -112,7 +112,7 @@ class FileTreeStore {
     const data = this._data;
     // Grab the child keys of only the expanded nodes.
     const childKeyMap = {};
-    Object.keys(data.expandedKeysByRoot).forEach((rootKey) => {
+    Object.keys(data.expandedKeysByRoot).forEach(rootKey => {
       const expandedKeySet = data.expandedKeysByRoot[rootKey];
       for (const nodeKey of expandedKeySet) {
         childKeyMap[nodeKey] = data.childKeyMap[nodeKey];
@@ -121,9 +121,9 @@ class FileTreeStore {
     return {
       version: VERSION,
       childKeyMap: childKeyMap,
-      expandedKeysByRoot: mapValues(data.expandedKeysByRoot, (keySet) => keySet.toArray()),
+      expandedKeysByRoot: mapValues(data.expandedKeysByRoot, keySet => keySet.toArray()),
       rootKeys: data.rootKeys,
-      selectedKeysByRoot: mapValues(data.selectedKeysByRoot, (keySet) => keySet.toArray()),
+      selectedKeysByRoot: mapValues(data.selectedKeysByRoot, keySet => keySet.toArray()),
     };
   }
 
@@ -138,12 +138,12 @@ class FileTreeStore {
     this._data = {
       ...this._getDefaults(),
       childKeyMap: data.childKeyMap,
-      expandedKeysByRoot: mapValues(data.expandedKeysByRoot, (keys) => new Immutable.Set(keys)),
+      expandedKeysByRoot: mapValues(data.expandedKeysByRoot, keys => new Immutable.Set(keys)),
       rootKeys: data.rootKeys,
       selectedKeysByRoot:
-        mapValues(data.selectedKeysByRoot, (keys) => new Immutable.OrderedSet(keys)),
+        mapValues(data.selectedKeysByRoot, keys => new Immutable.OrderedSet(keys)),
     };
-    Object.keys(data.childKeyMap).forEach((nodeKey) => {
+    Object.keys(data.childKeyMap).forEach(nodeKey => {
       this._addSubscription(nodeKey);
       this._fetchChildKeys(nodeKey);
     });
@@ -499,7 +499,7 @@ class FileTreeStore {
       return existingPromise;
     }
 
-    const promise = FileTreeHelpers.fetchChildren(nodeKey).catch((error) => {
+    const promise = FileTreeHelpers.fetchChildren(nodeKey).catch(error => {
       this._logger.error(`Unable to fetch children for "${nodeKey}".`);
       this._logger.error('Original error: ', error);
       // Collapse the node and clear its loading state on error so the user can retry expanding it.
@@ -593,7 +593,7 @@ class FileTreeStore {
   _expandNodeDeep(rootKey: string, nodeKey: string): Promise<void> {
     // Stop the traversal after 100 nodes were added to the tree
     const itNodes = new FileTreeStoreBfsIterator(this, rootKey, nodeKey, /* limit*/ 100);
-    const promise = new Promise((resolve) => {
+    const promise = new Promise(resolve => {
       const expand = () => {
         const traversedNodeKey = itNodes.traversedNode();
         if (traversedNodeKey) {
@@ -629,7 +629,7 @@ class FileTreeStore {
     let selectedKeys = this._data.selectedKeysByRoot[rootKey];
     const expandedChildKeys = [];
     if (childKeys) {
-      childKeys.forEach((childKey) => {
+      childKeys.forEach(childKey => {
         // Unselect each child.
         if (selectedKeys && selectedKeys.has(childKey)) {
           selectedKeys = selectedKeys.delete(childKey);
@@ -802,7 +802,7 @@ class FileTreeStore {
     const subscription = this._data.subscriptionMap[nodeKey];
 
     if (subscription != null) {
-      hasRemainingSubscribers = this._data.rootKeys.some((otherRootKey) => (
+      hasRemainingSubscribers = this._data.rootKeys.some(otherRootKey => (
         otherRootKey !== rootKey && this.isExpanded(otherRootKey, nodeKey)
       ));
       if (!hasRemainingSubscribers) {
@@ -848,7 +848,7 @@ class FileTreeStore {
   _purgeDirectoryWithinARoot(rootKey: string, nodeKey: string, unselect: boolean): void {
     const childKeys = this._data.childKeyMap[nodeKey];
     if (childKeys) {
-      childKeys.forEach((childKey) => {
+      childKeys.forEach(childKey => {
         if (FileTreeHelpers.isDirKey(childKey)) {
           this._purgeDirectoryWithinARoot(rootKey, childKey, /* unselect */ true);
         }
@@ -864,7 +864,7 @@ class FileTreeStore {
   _purgeDirectory(nodeKey: string): void {
     const childKeys = this._data.childKeyMap[nodeKey];
     if (childKeys) {
-      childKeys.forEach((childKey) => {
+      childKeys.forEach(childKey => {
         if (FileTreeHelpers.isDirKey(childKey)) {
           this._purgeDirectory(childKey);
         }
@@ -883,7 +883,7 @@ class FileTreeStore {
   _purgeRoot(rootKey: string): void {
     const expandedKeys = this._data.expandedKeysByRoot[rootKey];
     if (expandedKeys) {
-      expandedKeys.forEach((nodeKey) => {
+      expandedKeys.forEach(nodeKey => {
         this._removeSubscription(rootKey, nodeKey);
       });
       this._set('expandedKeysByRoot', deleteProperty(this._data.expandedKeysByRoot, rootKey));
@@ -892,7 +892,7 @@ class FileTreeStore {
     // Remove all child keys so that on re-addition of this root the children will be fetched again.
     const childKeys = this._data.childKeyMap[rootKey];
     if (childKeys) {
-      childKeys.forEach((childKey) => {
+      childKeys.forEach(childKey => {
         if (FileTreeHelpers.isDirKey(childKey)) {
           this._set('childKeyMap', deleteProperty(this._data.childKeyMap, childKey));
         }
@@ -977,7 +977,7 @@ function setProperty(object: Object, key: string, newValue: mixed): Object {
 // function on each one.
 function mapValues(object: Object, fn: Function): Object {
   const newObject = {};
-  Object.keys(object).forEach((key) => {
+  Object.keys(object).forEach(key => {
     newObject[key] = fn(object[key], key);
   });
   return newObject;

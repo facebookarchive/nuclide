@@ -44,7 +44,7 @@ describe('debugger-hhvm-proxy DataCache', () => {
 
   beforeEach(() => {
     socket = (({
-      onStatus: (callback) => {
+      onStatus: callback => {
         statusCallback = callback;
       },
       getContextsForFrame: jasmine.createSpy().andReturn(Promise.resolve([

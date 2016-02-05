@@ -42,7 +42,7 @@ function createSimpleServer(): Server {
 
   const connections = {};
 
-  server.on('connection', (conn) => {
+  server.on('connection', conn => {
     const key = conn.remoteAddress + ':' + conn.remotePort;
     connections[key] = conn;
     conn.on('close', () => {
@@ -50,7 +50,7 @@ function createSimpleServer(): Server {
     });
   });
 
-  server.destroy = (cb) => {
+  server.destroy = cb => {
     invariant(server);
     server.close(cb);
     for (const key in connections) {

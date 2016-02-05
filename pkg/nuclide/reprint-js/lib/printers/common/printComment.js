@@ -16,7 +16,7 @@ const markers = require('../../constants/markers');
 
 function printComment(node: any): Lines {
   if (node.type === 'CommentBlock') {
-    return flatten([('/*' + node.value + '*/').split('\n').map((part) => {
+    return flatten([('/*' + node.value + '*/').split('\n').map(part => {
       const trimmed = part.trim();
       return [
         trimmed.startsWith('*') ? ' ' + trimmed : trimmed,

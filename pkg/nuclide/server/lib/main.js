@@ -58,11 +58,11 @@ async function main(args) {
 }
 
 // This should never happen because the server must be started with stderr redirected to a log file.
-process.stderr.on('error', (error) => {
+process.stderr.on('error', error => {
   throw new Error('Can not write to stderr! :' + error);
 });
 
-process.on('uncaughtException', (err) => {
+process.on('uncaughtException', err => {
   // Log the error and continue the server crash.
   logger.fatal('uncaughtException:', err);
   // According to the docs, we need to close our server when this happens once we logged or

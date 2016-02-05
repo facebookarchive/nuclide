@@ -412,7 +412,7 @@ export default class TypeRegistry {
         if (obj.hasOwnProperty(prop.name)) {
           const value = this._marshal(obj[prop.name], prop.type);
           if (value instanceof Promise) {
-            return value.then((result) => newObj[prop.name] = result);
+            return value.then(result => newObj[prop.name] = result);
           } else {
             newObj[prop.name] = value;
           }
@@ -434,7 +434,7 @@ export default class TypeRegistry {
         if (obj.hasOwnProperty(prop.name)) {
           const value = this._unmarshal(obj[prop.name], prop.type);
           if (value instanceof Promise) {
-            return value.then((result) => newObj[prop.name] = result);
+            return value.then(result => newObj[prop.name] = result);
           } else {
             newObj[prop.name] = value;
           }

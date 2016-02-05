@@ -177,7 +177,7 @@ export default class HgRepositoryClient {
   destroy() {
     this._emitter.emit('did-destroy');
     this._emitter.dispose();
-    Object.keys(this._disposables).forEach((key) => {
+    Object.keys(this._disposables).forEach(key => {
       this._disposables[key].dispose();
     });
     this._service.dispose();
@@ -445,7 +445,7 @@ export default class HgRepositoryClient {
     // Check the cache.
     // Note: If paths is empty, a full `hg status` will be run, which follows the spec.
     const pathsWithCacheMiss = [];
-    paths.forEach((filePath) => {
+    paths.forEach(filePath => {
       const statusId = this._hgStatusCache[filePath];
       if (statusId) {
         if (!isRelavantStatus(statusId)) {
@@ -477,7 +477,7 @@ export default class HgRepositoryClient {
     filePaths: Array<string>,
     options: ?HgStatusCommandOptions,
   ): Promise<Map<NuclideUri, StatusCodeIdValue>> {
-    const pathsInRepo = filePaths.filter((filePath) => {
+    const pathsInRepo = filePaths.filter(filePath => {
       return this._isPathRelevant(filePath);
     });
     if (pathsInRepo.length === 0) {
@@ -520,7 +520,7 @@ export default class HgRepositoryClient {
     // Then we can send these events.
     const hasOptions = options && ('hgStatusOption' in options);
     if (hasOptions && (options.hgStatusOption === HgStatusOption.ONLY_IGNORED)) {
-      queriedFiles.forEach((filePath) => {
+      queriedFiles.forEach(filePath => {
         if (this._hgStatusCache[filePath] === StatusCodeId.IGNORED) {
           delete this._hgStatusCache[filePath];
         }
@@ -528,7 +528,7 @@ export default class HgRepositoryClient {
     } else if (hasOptions && (options.hgStatusOption === HgStatusOption.ALL_STATUSES)) {
       // If HgStatusOption.ALL_STATUSES was passed and a file does not appear in
       // the results, it must mean the file was removed from the filesystem.
-      queriedFiles.forEach((filePath) => {
+      queriedFiles.forEach(filePath => {
         const cachedStatusId = this._hgStatusCache[filePath];
         delete this._hgStatusCache[filePath];
         if (cachedStatusId === StatusCodeId.MODIFIED) {
@@ -536,7 +536,7 @@ export default class HgRepositoryClient {
         }
       });
     } else {
-      queriedFiles.forEach((filePath) => {
+      queriedFiles.forEach(filePath => {
         const cachedStatusId = this._hgStatusCache[filePath];
         if (cachedStatusId !== StatusCodeId.IGNORED) {
           delete this._hgStatusCache[filePath];
@@ -548,7 +548,7 @@ export default class HgRepositoryClient {
     }
 
     // Emit change events only after the cache has been fully updated.
-    statusChangeEvents.forEach((event) => {
+    statusChangeEvents.forEach(event => {
       this._emitter.emit('did-change-status', event);
     });
     this._emitter.emit('did-change-statuses');
@@ -699,7 +699,7 @@ export default class HgRepositoryClient {
    *   if it has no changes, or if there is a pending `hg diff` call for it already.
    */
   async _updateDiffInfo(filePaths: Array<NuclideUri>): Promise<?Map<NuclideUri, DiffInfo>> {
-    const pathsToFetch = filePaths.filter((aPath) => {
+    const pathsToFetch = filePaths.filter(aPath => {
       // Don't try to fetch information for this path if it's not in the repo.
       if (!this._isPathRelevant(aPath)) {
         return false;
@@ -726,7 +726,7 @@ export default class HgRepositoryClient {
     }
 
     // Remove files marked for deletion.
-    this._hgDiffCacheFilesToClear.forEach((fileToClear) => {
+    this._hgDiffCacheFilesToClear.forEach(fileToClear => {
       delete this._hgDiffCache[fileToClear];
     });
     this._hgDiffCacheFilesToClear.clear();

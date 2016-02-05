@@ -99,7 +99,7 @@ export async function newFile(filePath: string): Promise<boolean> {
  */
 export async function readdir(path: string): Promise<Array<FileWithStats>> {
   const files = await fsPromise.readdir(path);
-  const entries = await Promise.all(files.map(async (file) => {
+  const entries = await Promise.all(files.map(async file => {
     const fullpath = pathUtil.join(path, file);
     const lstats = await fsPromise.lstat(fullpath);
     if (!lstats.isSymbolicLink()) {
@@ -183,7 +183,7 @@ export function stat(path: string): Promise<fs.Stats> {
  * Removes files. Does not fail if the file doesn't exist.
  */
 export function unlink(path: string): Promise {
-  return fsPromise.unlink(path).catch((error) => {
+  return fsPromise.unlink(path).catch(error => {
     if (error.code !== 'ENOENT') {
       throw error;
     }

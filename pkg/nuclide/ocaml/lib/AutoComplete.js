@@ -50,7 +50,7 @@ module.exports = {
     if (!output) {
       return null;
     }
-    return output.entries.map((item) => {
+    return output.entries.map(item => {
       return {
         text: item.name,
         rightLabel: (item.desc === '' ? '(module)' : item.desc),

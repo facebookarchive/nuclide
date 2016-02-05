@@ -20,7 +20,7 @@ module.exports = {
     while (stack.length !== 0) {
       const node = stack.pop();
       callback(node);
-      (node.getCachedChildren() || []).forEach((childNode) => stack.push(childNode));
+      (node.getCachedChildren() || []).forEach(childNode => stack.push(childNode));
     }
   },
 };

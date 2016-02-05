@@ -32,7 +32,7 @@ describe('HyperclickProvider', () => {
     atomHelpers.goToLocation = jasmine.createSpy('goToLocation');
 
     // Mock the services we use.
-    spyOn(nuclideRemoteConnection, 'getServiceByNuclideUri').andCallFake((service) => {
+    spyOn(nuclideRemoteConnection, 'getServiceByNuclideUri').andCallFake(service => {
       if (service === 'FileSystemService') {
         return {
           readFile() {

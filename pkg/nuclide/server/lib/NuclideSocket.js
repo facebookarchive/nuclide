@@ -124,7 +124,7 @@ class NuclideSocket extends EventEmitter {
     };
     websocket.on('close', onSocketClose);
 
-    const onSocketError = (error) => {
+    const onSocketError = error => {
       if (this._websocket !== websocket) {
         return;
       }
@@ -204,7 +204,7 @@ class NuclideSocket extends EventEmitter {
     if (websocket == null) {
       return;
     }
-    websocket.send(JSON.stringify(data), (err) => {
+    websocket.send(JSON.stringify(data), err => {
       if (err) {
         logger.warn('WebSocket error, but caching the message:', err);
       } else {

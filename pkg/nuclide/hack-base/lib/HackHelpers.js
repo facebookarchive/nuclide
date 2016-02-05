@@ -169,7 +169,7 @@ function filterSearchResults(
   results: Array<HackSearchPosition>,
   filter: Array<SearchResultTypeValue>,
 ): Array<HackSearchPosition> {
-  return results.filter((result) => {
+  return results.filter(result => {
     const info = result.additionalInfo;
     const searchType = getSearchType(info);
     return filter.indexOf(searchType) !== -1;

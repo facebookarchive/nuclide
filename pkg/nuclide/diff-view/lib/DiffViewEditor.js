@@ -50,7 +50,7 @@ export default class DiffViewEditor {
     // it uses those functions to determine if a line is foldable or not.
     // For Diff View, folding breaks offsets, hence we need to make it unfoldable.
     // $FlowFixMe use of non-official API.
-    this._editor.isFoldableAtScreenRow = this._editor.isFoldableAtBufferRow = (row) => false;
+    this._editor.isFoldableAtScreenRow = this._editor.isFoldableAtBufferRow = row => false;
   }
 
   renderInlineComponents(elements: Array<InlineComponent>): Promise<Array<RenderedComponent>> {

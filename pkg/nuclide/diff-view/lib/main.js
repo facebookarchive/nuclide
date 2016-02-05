@@ -170,7 +170,7 @@ module.exports = {
     subscriptions.add(atom.commands.add(
       '.tree-view .entry.file.list-item',
       'nuclide-diff-view:open-context',
-      (event) => {
+      event => {
         const target = getTargetFromEvent(event);
         atom.workspace.open(NUCLIDE_DIFF_VIEW_URI + (target.dataset.path || ''));
       }
@@ -190,7 +190,7 @@ module.exports = {
     subscriptions.add(atom.commands.add(
       '.tree-view .entry.directory.list-nested-item',
       'nuclide-diff-view:open-context',
-      (event) => {
+      event => {
         atom.workspace.open(NUCLIDE_DIFF_VIEW_URI);
       }
     ));

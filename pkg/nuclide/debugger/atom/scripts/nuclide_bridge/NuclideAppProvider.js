@@ -46,7 +46,7 @@ class NuclideApp extends WebInspector.App {
       sourcesPanel._splitView.hideMain();
       rootView.attachToDocument(document);
     /*eslint-disable no-console */
-    }).catch((e) => console.error(e));
+    }).catch(e => console.error(e));
     /*eslint-enable no-console */
 
     // Clear breakpoints whenever they are saved to localStorage.

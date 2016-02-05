@@ -70,7 +70,7 @@ describe('Bridge', () => {
     for (const key in decorationArrays) {
       const result = array.find(
         decorationArrays[key],
-        (item) => item.getProperties().class === 'nuclide-current-line-highlight',
+        item => item.getProperties().class === 'nuclide-current-line-highlight',
       );
       if (result !== undefined) {
         return result;

@@ -204,12 +204,12 @@ function scriptSafeSpawnAndObserveOutput(
     scriptSafeSpawn(command, args, options).then(proc => {
       childProcess = proc;
 
-      childProcess.stdout.on('data', (data) => {
+      childProcess.stdout.on('data', data => {
         observer.onNext({stdout: data.toString()});
       });
 
       let stderr = '';
-      childProcess.stderr.on('data', (data) => {
+      childProcess.stderr.on('data', data => {
         stderr += data;
         observer.onNext({stderr: data.toString()});
       });

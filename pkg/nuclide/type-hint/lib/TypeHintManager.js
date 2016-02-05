@@ -63,7 +63,7 @@ class TypeHintManager {
 
       const editorView = atom.views.getView(editor);
       const mouseMoveListener = debounce(
-        (e) => {this._typehintForMouseEvent(((e: any): MouseEvent), editor, editorView);},
+        e => {this._typehintForMouseEvent(((e: any): MouseEvent), editor, editorView);},
         TYPEHINT_DELAY_MS,
         /* immediate */ false,
       );

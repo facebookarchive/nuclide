@@ -42,7 +42,7 @@ describe('HgRepositoryClient', () => {
 
   // Manufactures the absolute path of a file that should pass as being
   // within the repo.
-  const createFilePath = (filename) => {
+  const createFilePath = filename => {
     return path.join(projectDirectory.getPath(), filename);
   };
 
@@ -85,7 +85,7 @@ describe('HgRepositoryClient', () => {
       const mockFetchedStatuses = {[PATH_1]: StatusCodeId.ADDED};
       spyOn(repo, '_updateStatuses').andCallFake((paths, options) => {
         const statuses = new Map();
-        paths.forEach((filePath) => {
+        paths.forEach(filePath => {
           statuses.set(filePath, mockFetchedStatuses[filePath]);
         });
         return Promise.resolve(statuses);
@@ -153,7 +153,7 @@ describe('HgRepositoryClient', () => {
 
       spyOn(repo._service, 'fetchStatuses').andCallFake((paths, options) => {
         const statusMap = new Map();
-        paths.forEach((filePath) => {
+        paths.forEach(filePath => {
           const fetchedStatus = mockHgStatusFetchData.get(filePath);
           if (fetchedStatus) {
             statusMap.set(filePath, fetchedStatus);
@@ -162,7 +162,7 @@ describe('HgRepositoryClient', () => {
         return Promise.resolve(statusMap);
       });
       repo._hgStatusCache = {};
-      Object.keys(mockOldCacheState).forEach((filePath) => {
+      Object.keys(mockOldCacheState).forEach(filePath => {
         repo._hgStatusCache[filePath] = mockOldCacheState[filePath];
       });
       // Make it so all of the test paths are deemed within the repo.
@@ -459,7 +459,7 @@ describe('HgRepositoryClient', () => {
       // used in HgRepository) would fail a real 'contains' method. So we override
       // this to the expected path.
       const workingDirectoryClone = new Directory(tempDir);
-      spyOn(workingDirectory, 'contains').andCallFake((filePath) => {
+      spyOn(workingDirectory, 'contains').andCallFake(filePath => {
         const prefix = '/private';
         if (filePath.startsWith(prefix)) {
           const prefixRemovedPath = filePath.slice(prefix.length);
@@ -469,7 +469,7 @@ describe('HgRepositoryClient', () => {
       });
 
       const projectDirectoryClone = new Directory(tempSubDir);
-      spyOn(projectDirectory, 'contains').andCallFake((filePath) => {
+      spyOn(projectDirectory, 'contains').andCallFake(filePath => {
         const prefix = '/private';
         if (filePath.startsWith(prefix)) {
           const prefixRemovedPath = filePath.slice(prefix.length);
@@ -538,7 +538,7 @@ describe('HgRepositoryClient', () => {
         lineDiffs: mockLineDiffs,
       };
       const mockFetchedDiffInfo = {[PATH_1]: mockDiffInfo};
-      spyOn(repo, '_updateDiffInfo').andCallFake((filePaths) => {
+      spyOn(repo, '_updateDiffInfo').andCallFake(filePaths => {
         const mockFetchedPathToDiffInfo = new Map();
         for (const filePath of filePaths) {
           mockFetchedPathToDiffInfo.set(filePath, mockFetchedDiffInfo[filePath]);
@@ -592,7 +592,7 @@ describe('HgRepositoryClient', () => {
     };
 
     beforeEach(() => {
-      spyOn(repo._service, 'fetchDiffInfo').andCallFake((filePaths) => {
+      spyOn(repo._service, 'fetchDiffInfo').andCallFake(filePaths => {
         const mockFetchedPathToDiffInfo = new Map();
         for (const filePath of filePaths) {
           mockFetchedPathToDiffInfo.set(filePath, mockDiffInfo);

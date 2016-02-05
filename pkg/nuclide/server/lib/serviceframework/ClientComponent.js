@@ -44,7 +44,7 @@ export default class ClientComponent {
     this._objectRegistry = new Map();
 
     this.addServices(services);
-    this._socket.on('message', (message) => this._handleSocketMessage(message));
+    this._socket.on('message', message => this._handleSocketMessage(message));
   }
 
   addServices(services: Array<ConfigEntry>): void {

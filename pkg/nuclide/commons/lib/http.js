@@ -53,7 +53,7 @@ module.exports = {
       if (headers) {
         options.headers = headers;
       }
-      getProtocolModule(url).get(options, (response) => {
+      getProtocolModule(url).get(options, response => {
         if (response.statusCode < 200 || response.statusCode >= 300) {
           reject(`Bad status ${response.statusCode}`);
         } else {
@@ -74,7 +74,7 @@ module.exports = {
   download(url: string, dest: string): Promise<void> {
     return new Promise((resolve, reject) => {
       const file = fs.createWriteStream(dest);
-      getProtocolModule(url).get(url, (response) => {
+      getProtocolModule(url).get(url, response => {
         if (response.statusCode < 200 || response.statusCode >= 300) {
           reject(`Bad status ${response.statusCode}`);
         } else {

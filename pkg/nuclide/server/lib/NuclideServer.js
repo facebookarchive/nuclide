@@ -103,7 +103,7 @@ class NuclideServer {
 
   _attachUtilHandlers() {
     // Add specific method handlers.
-    ['get', 'post', 'delete', 'put'].forEach((methodName) => {
+    ['get', 'post', 'delete', 'put'].forEach(methodName => {
       // $FlowFixMe - Use map instead of computed property on library type.
       this._app[methodName] = (uri, handler) => {
         this._app.use(uri, (request, response, next) => {
@@ -120,8 +120,8 @@ class NuclideServer {
 
   _createWebSocketServer(): ws$Server {
     const webSocketServer = new WebSocketServer({server: this._webServer});
-    webSocketServer.on('connection', (socket) => this._onConnection(socket));
-    webSocketServer.on('error', (error) => logger.error('WebSocketServer Error:', error));
+    webSocketServer.on('connection', socket => this._onConnection(socket));
+    webSocketServer.on('error', error => logger.error('WebSocketServer Error:', error));
     return webSocketServer;
   }
 
@@ -168,7 +168,7 @@ class NuclideServer {
       this._webServer.on('listening', () => {
         resolve();
       });
-      this._webServer.on('error', (e) => {
+      this._webServer.on('error', e => {
         this._webServer.removeAllListeners();
         reject(e);
       });
@@ -228,7 +228,7 @@ class NuclideServer {
 
     let client = null;
 
-    socket.on('error', (e) =>
+    socket.on('error', e =>
       logger.error('Client #%s error: %s', client ? client.id : 'unkown', e.message));
 
     socket.once('message', (clientId: string) => {
@@ -244,7 +244,7 @@ class NuclideServer {
       client.socket = socket;
       client.messageQueue.splice(0).
           forEach(message => this._sendSocketMessage(localClient, message.data));
-      socket.on('message', (message) => this._onSocketMessage(localClient, message));
+      socket.on('message', message => this._onSocketMessage(localClient, message));
     });
 
     socket.on('close', () => {
@@ -274,7 +274,7 @@ class NuclideServer {
     if (!socket) {
       return;
     }
-    socket.send(JSON.stringify(data), (err) => {
+    socket.send(JSON.stringify(data), err => {
       if (err) {
         logger.warn('Failed sending socket message to client:', id, data);
       } else {

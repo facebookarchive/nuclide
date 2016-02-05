@@ -65,7 +65,7 @@ class Activation {
       atom.commands.add(
         '.tree-view .entry.file.list-item',
         'nuclide-test-runner:run-tests',
-        (event) => {
+        event => {
           const target = ((event.currentTarget: any): HTMLElement).querySelector('.name');
           this._controller.runTests(target.dataset.path);
         }
@@ -76,7 +76,7 @@ class Activation {
       atom.commands.add(
         '.tree-view .entry.directory.list-nested-item',
         'nuclide-test-runner:run-tests',
-        (event) => {
+        event => {
           const target = ((event.currentTarget: any): HTMLElement).querySelector('.name');
           this._controller.runTests(target.dataset.path);
         }
@@ -139,7 +139,7 @@ class Activation {
         this.command = 'nuclide-test-runner:run-tests';
         this.label = `${label} '${limitString(name)}'`;
       },
-      shouldDisplay: (event) => {
+      shouldDisplay: event => {
         // Don't show a testing option if there are no test runners.
         if (this._testRunners.size === 0) {
           return false;

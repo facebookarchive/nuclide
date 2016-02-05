@@ -46,7 +46,7 @@ const defaultBuiltInTypes = arrayFrom(formatJSBase.defaultBuiltInTypes);
  * Observes the relevant Nuclide package settings.
  */
 export function observeSettings(callback: (value: Settings) => void): IDisposable {
-  return featureConfig.observe('nuclide-format-js', (settings) =>
+  return featureConfig.observe('nuclide-format-js', settings =>
     callback({
       ...settings,
       aliases: fixAliases(settings.aliases),

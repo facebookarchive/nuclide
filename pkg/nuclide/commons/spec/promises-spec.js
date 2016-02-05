@@ -22,15 +22,15 @@ describe('promises::asyncFind()', () => {
     let observedError;
 
     const args = [];
-    const test = (value) => { throw new Error('Should not be called.'); };
+    const test = value => { throw new Error('Should not be called.'); };
 
     runs(() => {
       asyncFind(args, test)
-          .then((result) => {
+          .then(result => {
             observedResult = result;
             isResolved = true;
           })
-          .catch((error) => {
+          .catch(error => {
             observedError = error;
             isRejected = true;
           });
@@ -53,7 +53,7 @@ describe('promises::asyncFind()', () => {
     let observedError;
 
     const args = ['foo', 'bar', 'baz'];
-    const test = (value) => {
+    const test = value => {
       if (value === 'foo') {
         return null;
       } else if (value === 'bar') {
@@ -65,11 +65,11 @@ describe('promises::asyncFind()', () => {
 
     runs(() => {
       asyncFind(args, test)
-          .then((result) => {
+          .then(result => {
             observedResult = result;
             isResolved = true;
           })
-          .catch((error) => {
+          .catch(error => {
             observedError = error;
             isRejected = true;
           });
@@ -237,7 +237,7 @@ describe('promises::asyncLimit()', () => {
         [
             [1, 2, 3],
           1,
-          (item) => waitPromise(10, item + 1),
+          item => waitPromise(10, item + 1),
         ]
       );
       expect(parallelismHistory).toEqual([1, 1, 1]);
@@ -252,7 +252,7 @@ describe('promises::asyncLimit()', () => {
         [
             [1, 2, 3, 4, 5, 6, 7, 8, 9],
           3,
-          (item) => waitPromise(10 + item, item - 1),
+          item => waitPromise(10 + item, item - 1),
         ]
       );
       expect(result).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8]);
@@ -262,14 +262,14 @@ describe('promises::asyncLimit()', () => {
 
   it('works when the limit is bigger than the array length', () => {
     waitsForPromise(async () => {
-      const result = await promises.asyncLimit([1, 2, 3], 10, (item) => waitPromise(10, item * 2));
+      const result = await promises.asyncLimit([1, 2, 3], 10, item => waitPromise(10, item * 2));
       expect(result).toEqual([2, 4, 6]);
     });
   });
 
   it('a rejected promise rejects the whole call with the error', () => {
     waitsForPromise(async () => {
-      await expectAsyncFailure(promises.asyncLimit([1], 1, async (item) => {
+      await expectAsyncFailure(promises.asyncLimit([1], 1, async item => {
         throw new Error('rejected iterator promise');
       }), (error: Error) => {
         expect(error.message).toBe('rejected iterator promise');
@@ -289,7 +289,7 @@ describe('promises::asyncFilter()', () => {
           promises.asyncFilter,
         [
             [1, 2, 3, 4, 5],
-          (item) => waitPromise(10 + item, item > 2),
+          item => waitPromise(10 + item, item > 2),
         ]
       );
       expect(filtered).toEqual([3, 4, 5]);
@@ -303,7 +303,7 @@ describe('promises::asyncFilter()', () => {
           promises.asyncFilter,
         [
             [1, 2, 3, 4, 5],
-          (item) => waitPromise(10 + item, item > 2),
+          item => waitPromise(10 + item, item > 2),
           3,
         ]
       );
@@ -325,7 +325,7 @@ describe('promises::asyncSome()', () => {
           promises.asyncSome,
         [
             [1, 2, 3, 4, 5],
-          (item) => waitPromise(10, item === 6),
+          item => waitPromise(10, item === 6),
         ]
       );
       expect(result).toEqual(false);
@@ -339,7 +339,7 @@ describe('promises::asyncSome()', () => {
           promises.asyncSome,
         [
             [1, 2, 3, 4, 5],
-          (item) => waitPromise(10 + item, item === 5),
+          item => waitPromise(10 + item, item === 5),
           3,
         ]
       );
@@ -367,7 +367,7 @@ describe('promises::retryLimit()', () => {
             reject('ERROR');
           }
         });
-      }, (result) => {
+      }, result => {
         validationCalls++;
         return result === 'RESULT';
       }, 5);
@@ -386,7 +386,7 @@ describe('promises::retryLimit()', () => {
           calls++;
           return Promise.reject('ERROR');
         },
-        (result) => {
+        result => {
           validationCalls++;
           return result != null;
         },
@@ -414,7 +414,7 @@ describe('promises::retryLimit()', () => {
             return Promise.resolve('NOT_GOOD');
           }
         },
-        (result) => {
+        result => {
           validationCalls++;
           return result == null;
         },
@@ -432,7 +432,7 @@ describe('promises::retryLimit()', () => {
         () => {
           return Promise.resolve('A');
         },
-        (result) => {
+        result => {
           return result === 'B';
         },
         2,
@@ -506,7 +506,7 @@ async function captureParallelismHistory(
       return arg;
     }
     const func = arg;
-    return async (item) => {
+    return async item => {
       ++parralelism;
       parallelismHistory.push(parralelism);
       const value = await func(item);

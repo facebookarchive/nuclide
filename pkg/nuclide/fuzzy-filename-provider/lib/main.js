@@ -63,7 +63,7 @@ let projectRoots: Set<string> = new Set();
  */
 function initSearch(projectPaths: Array<string>): void {
   const newProjectRoots = new Set();
-  projectPaths.forEach((projectPath) => {
+  projectPaths.forEach(projectPath => {
     newProjectRoots.add(projectPath);
     if (projectRoots.has(projectPath)) {
       return;

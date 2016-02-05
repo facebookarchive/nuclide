@@ -35,7 +35,7 @@ function printLogicalExpression(
     }
   }
 
-  const wrap = (x) => wrapExpression(print, node, x);
+  const wrap = x => wrapExpression(print, node, x);
   return wrap([
     needsScope
       ? [markers.openScope, markers.scopeIndent, markers.scopeBreak]

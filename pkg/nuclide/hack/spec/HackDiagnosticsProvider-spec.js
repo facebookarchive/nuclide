@@ -30,7 +30,7 @@ describe('HackDiagnosticsProvider', () => {
     fakeHackLanguages = [];
     fakeHackLanguages.push(createFakeHackLanguage('/hack/root1'));
     fakeHackLanguages.push(createFakeHackLanguage('/hack/root2'));
-    require('../lib/hack').getCachedHackLanguageForUri = (uri) =>
+    require('../lib/hack').getCachedHackLanguageForUri = uri =>
       fakeHackLanguages.filter(fakeLanguage => uri.startsWith(fakeLanguage._uri))[0];
     class FakeProviderBase { }
     const HackDiagnosticsProvider = require('../lib/HackDiagnosticsProvider');

@@ -31,7 +31,7 @@ describe('LocalMerlinService', () => {
       waitsForPromise(async () => {
         const filename = 'some_module.ml';
         const merlinService = await getMockedMerlinService(
-          (command) => {
+          command => {
             if (command[1] === 'dot_merlin' && command[2][0] === filename) {
               return {cursor: {line: 1, col: 0}, marker: false};
             }
@@ -58,7 +58,7 @@ describe('LocalMerlinService', () => {
 
         let count = 0;
         const merlinService = await getMockedMerlinService(
-          (command) => {
+          command => {
             if (command[0] === 'reset' && command[2] === filename && count === 0) {
               ++count;
               return { cursor: {line: 1, col: 0}, marker: false };
@@ -84,7 +84,7 @@ describe('LocalMerlinService', () => {
         // within the same file; make sure we normalize this by
         // adding the path.
         const merlinService = await getMockedMerlinService(
-          (command) => { return {cursor: {line: 1 ,col: 0}, marker: false}; }
+          command => { return {cursor: {line: 1 ,col: 0}, marker: false}; }
         );
 
         const result = await merlinService.locate('derp.ml', 1, 1, 'ml');
@@ -96,7 +96,7 @@ describe('LocalMerlinService', () => {
     it('uses the given path if ocamlmerlin provides it', () => {
       waitsForPromise(async () => {
         const merlinService = await getMockedMerlinService(
-          (command) => {
+          command => {
             return {cursor: {line: 1 ,col: 0}, marker: false, file: 'notderp.ml'};
           }
         );
@@ -120,7 +120,7 @@ describe('LocalMerlinService', () => {
         ];
 
         const merlinService = await getMockedMerlinService(
-          (command) => {
+          command => {
             if (command[0] === 'complete' &&
                 command[1] === 'prefix' &&
                 command[2] === 'FoodTest.' &&

@@ -108,7 +108,7 @@ function parseRevisionFileChangeOutput(
   // be an empty string. Remove this.
   copiedFiles.pop();
   // Parse the lines, now in the form: new_file (previous_file)
-  copiedFiles = copiedFiles.map((filePathPair) => {
+  copiedFiles = copiedFiles.map(filePathPair => {
     const fileNameMatches = filePathPair.match(COPIED_FILE_PAIR_REGEX);
     invariant(fileNameMatches);
     return {

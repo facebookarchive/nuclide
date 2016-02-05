@@ -48,7 +48,7 @@ export function activate(state: ?Object) {
   paneItemState$ = new Rx.BehaviorSubject(null);
   subscriptions = new CompositeDisposable();
   subscriptions.add(
-    featureConfig.onDidChange('nuclide-health', (event) => {
+    featureConfig.onDidChange('nuclide-health', event => {
       currentConfig = event.newValue;
       // If user changes any config, update the health - and reset the polling cycles.
       updateViews();

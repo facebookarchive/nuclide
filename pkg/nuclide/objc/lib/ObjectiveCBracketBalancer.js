@@ -52,7 +52,7 @@ class ObjectiveCBracketBalancer {
   }
 
   _enableInTextEditor(textEditor: TextEditor): void {
-    const insertTextSubscription = textEditor.onDidInsertText((event) => {
+    const insertTextSubscription = textEditor.onDidInsertText(event => {
       trackOperationTiming('objc:balance-bracket', () => {
         const {range, text} = event;
         if (text === ']') {

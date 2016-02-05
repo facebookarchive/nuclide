@@ -244,7 +244,7 @@ export async function getDependencies(
     invariant(searchResponse);
     const {result: searchResults} = searchResponse;
     hackRoot = searchResponse.hackRoot;
-    await Promise.all(searchResults.map(async (location) => {
+    await Promise.all(searchResults.map(async location => {
       const {name, path} = location;
       if (name !== dependencyName || dependencyPaths.has(path)) {
         return;

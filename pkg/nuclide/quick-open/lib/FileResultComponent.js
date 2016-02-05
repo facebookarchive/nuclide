@@ -44,7 +44,7 @@ class FileResultComponent {
     // Split the path into it's path and directory, with matching characters pulled out and
     //  highlighted.
     // When there's no matches, the ouptut is equivalent to just calling path.dirname/basename.
-    importantIndexes.forEach((index) => {
+    importantIndexes.forEach(index => {
       // If the index is after the filename start, push the new text elements
       // into `filenameComponents`, otherwise push them into `folderComponents`.
       const target = index <= filenameStart ? folderComponents : filenameComponents;

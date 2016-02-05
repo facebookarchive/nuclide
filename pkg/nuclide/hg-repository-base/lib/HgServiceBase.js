@@ -105,7 +105,7 @@ class HgServiceBase {
     }
 
     const statuses = JSON.parse(output.stdout);
-    statuses.forEach((status) => {
+    statuses.forEach(status => {
       statusMap.set(this._absolutize(status.path), status.status);
     });
     return statusMap;

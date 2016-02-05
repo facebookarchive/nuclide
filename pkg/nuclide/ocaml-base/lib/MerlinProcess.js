@@ -165,7 +165,7 @@ export class MerlinProcess {
         terminal: false,
       });
 
-      reader.on('line', (line) => {
+      reader.on('line', line => {
         reader.close();
         let response;
         try {

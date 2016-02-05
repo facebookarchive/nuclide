@@ -96,7 +96,7 @@ class SuggestionList extends React.Component {
     this._subscriptions.add(textEditor.onDidChangeCursorPosition(boundClose));
 
     // Prevent scrolling the editor when scrolling the suggestion list.
-    const stopPropagation = (event) => event.stopPropagation();
+    const stopPropagation = event => event.stopPropagation();
     ReactDOM.findDOMNode(this.refs['scroller']).addEventListener('mousewheel', stopPropagation);
     this._subscriptions.add(new Disposable(() => {
       ReactDOM.findDOMNode(this.refs['scroller']).

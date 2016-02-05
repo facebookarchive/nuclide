@@ -74,7 +74,7 @@ class Activation {
         paneChange$
           .map(() => atom.workspace.getActiveTextEditor()),
       )
-      .flatMap(async (editor) => {
+      .flatMap(async editor => {
         if (editor == null) {
           return null;
         } else {

@@ -74,13 +74,13 @@ export default class AuthenticationPrompt extends React.Component<DefaultProps, 
     this._disposables.add(atom.commands.add(
         root,
         'core:confirm',
-        (event) => this.props.onConfirm()));
+        event => this.props.onConfirm()));
 
     // Hitting escape when this panel has focus should cancel the dialog.
     this._disposables.add(atom.commands.add(
         root,
         'core:cancel',
-        (event) => this.props.onCancel()));
+        event => this.props.onCancel()));
 
     ReactDOM.findDOMNode(this.refs.password).focus();
   }

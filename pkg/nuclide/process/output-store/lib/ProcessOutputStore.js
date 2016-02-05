@@ -48,10 +48,10 @@ class ProcessOutputStore {
       return this._processPromise;
     }
     const options = {
-      stdout: (data) => this._receiveStdout(data),
-      stderr: (data) => this._receiveStderr(data),
-      error: (error) => this._handleProcessError(error),
-      exit: (code) => this._handleProcessExit(code),
+      stdout: data => this._receiveStdout(data),
+      stderr: data => this._receiveStderr(data),
+      error: error => this._handleProcessError(error),
+      exit: code => this._handleProcessExit(code),
     };
     this._processPromise = new Promise((resolve, reject) => {
       // this._handleProcessExit() will emit this.

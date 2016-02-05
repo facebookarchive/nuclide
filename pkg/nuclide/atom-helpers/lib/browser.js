@@ -41,7 +41,7 @@ module.exports = {
         domain: domain,
         name: name,
         value: value,
-      }, (error) => {
+      }, error => {
         if (error) {
           reject(error);
         } else {

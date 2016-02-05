@@ -90,7 +90,7 @@ describe('ErrorServer', () => {
 
     o.subscribe(
       () => { expect(true).toBe(false); },
-      (e) => {
+      e => {
         expect(e.message).toBe('msg');
         completed = true;
       },
@@ -106,7 +106,7 @@ describe('ErrorServer', () => {
 
     o.subscribe(
       () => { expect(true).toBe(false); },
-      (e) => {
+      e => {
         expect(e).toBe('msg');
         completed = true;
       },
@@ -122,7 +122,7 @@ describe('ErrorServer', () => {
 
     o.subscribe(
       () => { expect(true).toBe(false); },
-      (e) => {
+      e => {
         expect(e).toBe(undefined);
         completed = true;
       },
@@ -138,7 +138,7 @@ describe('ErrorServer', () => {
 
     o.subscribe(
       () => { expect(true).toBe(false); },
-      (e) => {
+      e => {
         expect(e.code).toBe(42);
         completed = true;
       },

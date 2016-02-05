@@ -57,7 +57,7 @@ function aFileSearchShould(typename) {
 
     describe('a FileSearch at the root of a project', () => {
       function correctIndexes(indexes): Array<number> {
-        return indexes.map((index) => {
+        return indexes.map(index => {
           invariant(dirPath);
           return index + dirPath.length + 1;
         });
@@ -93,7 +93,7 @@ function aFileSearchShould(typename) {
 
     describe('a subdirectory FileSearch', () => {
       function correctIndexes(indexes): Array<number> {
-        return indexes.map((index) => {
+        return indexes.map(index => {
           invariant(uriSearch);
           return index + uriSearch.getLocalDirectory().length;
         });
@@ -125,7 +125,7 @@ function aFileSearchShould(typename) {
 
     describe('a FileSearch with a hostname', () => {
       function correctIndexes(indexes): Array<number> {
-        return indexes.map((index) => {
+        return indexes.map(index => {
           invariant(uriSearch);
           return index + uriSearch.getFullBaseUri().length + 1;
         });

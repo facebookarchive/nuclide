@@ -128,7 +128,7 @@ module.exports = {
           const crypto = require('crypto');
           const id = (crypto.randomBytes(8) || '').toString('hex');
           const uri = FIND_REFERENCES_URI + id;
-          const disposable = atom.workspace.addOpener((newUri) => {
+          const disposable = atom.workspace.addOpener(newUri => {
             if (uri === newUri) {
               return view;
             }
@@ -142,13 +142,13 @@ module.exports = {
 
     // Mark text editors with a working provider with a special CSS class.
     // This ensures the context menu option only appears in supported projects.
-    subscriptions.add(atom.workspace.observeTextEditors(async (editor) => {
+    subscriptions.add(atom.workspace.observeTextEditors(async editor => {
       const path = editor.getPath();
       if (!path || supportedProviders.get(editor)) {
         return;
       }
       let supported = await Promise.all(providers.map(
-        async (provider) => {
+        async provider => {
           if (await provider.isEditorSupported(editor)) {
             return provider;
           }

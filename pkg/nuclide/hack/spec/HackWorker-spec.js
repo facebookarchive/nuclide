@@ -56,7 +56,7 @@ describe('HackWorker', () => {
   describe('simulate queueing tasks with custom worker', () => {
     let hackWorker: HackWorker = (null: any);
     let worker: MockedWorkerEE = (null: any);
-    const workerReplyIn = (milliSeconds) => {
+    const workerReplyIn = milliSeconds => {
       // $FlowFixMe override instance method.
       worker.postMessage = message => {
         setTimeout(() => {

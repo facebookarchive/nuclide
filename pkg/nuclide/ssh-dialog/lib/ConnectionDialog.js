@@ -110,7 +110,7 @@ export default class ConnectionDialog extends React.Component<DefaultProps, Prop
     }));
 
     this.state = {
-      finish: (answers) => {},
+      finish: answers => {},
       indexOfSelectedConnectionProfile: props.indexOfInitiallySelectedConnectionProfile,
       instructions: '',
       mode: REQUEST_CONNECTION_DETAILS,

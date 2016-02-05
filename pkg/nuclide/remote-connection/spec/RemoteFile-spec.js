@@ -22,7 +22,7 @@ const connectionMock = require('./connection_mock');
 
 describe('RemoteFile', () => {
 
-  const computeDigest = (contents) => {
+  const computeDigest = contents => {
     const hash = crypto.createHash('sha1').update(contents || '');
     invariant(hash);
     return hash.digest('hex');
@@ -243,7 +243,7 @@ describe('RemoteFile', () => {
         );
         let skippedError;
         let handleError;
-        notExistingFile.onWillThrowWatchError((watchError) => {
+        notExistingFile.onWillThrowWatchError(watchError => {
           const {error, handle} = watchError;
           skippedError = error;
           handle();

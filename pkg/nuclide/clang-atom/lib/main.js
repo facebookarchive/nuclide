@@ -67,7 +67,7 @@ module.exports = {
       }),
     );
     // Invalidate all diagnostics when closing the project.
-    subscriptions.add(projects.onDidRemoveProjectPath((projectPath) => {
+    subscriptions.add(projects.onDidRemoveProjectPath(projectPath => {
       if (diagnosticProvider != null) {
         diagnosticProvider.invalidateProjectPath(projectPath);
       }

@@ -113,7 +113,7 @@ class FileTree extends React.Component {
     if (rootKeys.length === 0) {
       return <EmptyComponent />;
     }
-    return rootKeys.map((rootKey) => {
+    return rootKeys.map(rootKey => {
       return (
         <RootNodeComponent
           key={rootKey}

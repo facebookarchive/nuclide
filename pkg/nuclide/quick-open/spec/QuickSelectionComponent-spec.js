@@ -63,7 +63,7 @@ xdescribe('QuickSelectionComponent', () => {
     callback: (component: QuickSelectionComponent) => void) {
     waitsForPromise(() => new Promise((resolve: (component: any) => any, reject) => {
 
-      component.onItemsChanged((newItems) => {
+      component.onItemsChanged(newItems => {
         resolve(component);
       });
       component = ReactDOM.render(
@@ -99,7 +99,7 @@ xdescribe('QuickSelectionComponent', () => {
         expect(selectedItemIndex.selectedItemIndex).toBe(-1);
 
         waitsForPromise(() => new Promise((resolve, reject) => {
-          component.onSelection((item) => {
+          component.onSelection(item => {
             expect(item).toBe(1);
             resolve();
           });
@@ -120,7 +120,7 @@ xdescribe('QuickSelectionComponent', () => {
         expect(selectedItemIndex.selectedItemIndex).toBe(-1);
 
         waitsForPromise(() => new Promise((resolve, reject) => {
-          component.onSelection((item) => {
+          component.onSelection(item => {
             expect(item).toBe(1);
             resolve();
           });
@@ -135,7 +135,7 @@ xdescribe('QuickSelectionComponent', () => {
     it('should cancel instead of selecting when there are no items', () => {
       withItemsSetTo({}, () => {
         waitsForPromise(() => new Promise((resolve, reject) => {
-          component.onCancellation((item) => {
+          component.onCancellation(item => {
             resolve();
           });
 
@@ -151,7 +151,7 @@ xdescribe('QuickSelectionComponent', () => {
         const componentNode = ReactDOM.findDOMNode(component);
 
         waitsForPromise(() => new Promise((resolve, reject) => {
-          component.onCancellation((item) => {
+          component.onCancellation(item => {
             resolve();
           });
 
@@ -176,7 +176,7 @@ xdescribe('QuickSelectionComponent', () => {
         expect(component.getSelectedIndex().selectedItemIndex).toBe(-1);
 
         waitsForPromise(() => new Promise((resolve, reject) => {
-          component.onSelectionChanged((newIndex) => {
+          component.onSelectionChanged(newIndex => {
             resolve(newIndex);
           });
           component.moveSelectionDown();
@@ -185,7 +185,7 @@ xdescribe('QuickSelectionComponent', () => {
         }));
 
         waitsForPromise(() => new Promise((resolve, reject) => {
-          component.onSelectionChanged((newIndex) => {
+          component.onSelectionChanged(newIndex => {
             resolve(newIndex);
           });
           component.moveSelectionDown();
@@ -194,7 +194,7 @@ xdescribe('QuickSelectionComponent', () => {
         }));
 
         waitsForPromise(() => new Promise((resolve, reject) => {
-          component.onSelectionChanged((newIndex) => {
+          component.onSelectionChanged(newIndex => {
             resolve(newIndex);
           });
           component.moveSelectionDown();
@@ -203,7 +203,7 @@ xdescribe('QuickSelectionComponent', () => {
         }));
 
         waitsForPromise(() => new Promise((resolve, reject) => {
-          component.onSelectionChanged((newIndex) => {
+          component.onSelectionChanged(newIndex => {
             resolve(newIndex);
           });
           component.moveSelectionDown();
@@ -212,7 +212,7 @@ xdescribe('QuickSelectionComponent', () => {
         }));
 
         waitsForPromise(() => new Promise((resolve, reject) => {
-          component.onSelectionChanged((newIndex) => {
+          component.onSelectionChanged(newIndex => {
             resolve(newIndex);
           });
           component.moveSelectionUp();
@@ -221,7 +221,7 @@ xdescribe('QuickSelectionComponent', () => {
         }));
 
         waitsForPromise(() => new Promise((resolve, reject) => {
-          component.onSelectionChanged((newIndex) => {
+          component.onSelectionChanged(newIndex => {
             resolve(newIndex);
           });
           component.moveSelectionUp();
@@ -230,7 +230,7 @@ xdescribe('QuickSelectionComponent', () => {
         }));
 
         waitsForPromise(() => new Promise((resolve, reject) => {
-          component.onSelectionChanged((newIndex) => {
+          component.onSelectionChanged(newIndex => {
             resolve(newIndex);
           });
           component.moveSelectionUp();
@@ -239,7 +239,7 @@ xdescribe('QuickSelectionComponent', () => {
         }));
 
         waitsForPromise(() => new Promise((resolve, reject) => {
-          component.onSelectionChanged((newIndex) => {
+          component.onSelectionChanged(newIndex => {
             resolve(newIndex);
           });
           component.moveSelectionUp();
@@ -266,7 +266,7 @@ xdescribe('QuickSelectionComponent', () => {
 
         expect(component.getSelectedIndex().selectedItemIndex).toBe(-1);
         waitsForPromise(() => new Promise((resolve, reject) => {
-          component.onSelectionChanged((newIndex) => {
+          component.onSelectionChanged(newIndex => {
             if (index === steps.length - 1) {
               resolve();
             } else {
@@ -287,7 +287,7 @@ xdescribe('QuickSelectionComponent', () => {
         expect(component.getSelectedIndex().selectedItemIndex).toBe(-1);
 
         waitsForPromise(() => new Promise((resolve, reject) => {
-          component.onSelectionChanged((newIndex) => {
+          component.onSelectionChanged(newIndex => {
             resolve(newIndex);
           });
           component.moveSelectionDown();

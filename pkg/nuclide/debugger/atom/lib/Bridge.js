@@ -131,7 +131,7 @@ class Bridge {
       const path = remoteUri.uriToNuclideUri(options.sourceURL);
       if (path) { // only handle real files for now.
         atom.workspace.open(path)
-          .then((editor) => {
+          .then(editor => {
             editor.scrollToBufferPosition([options.lineNumber, 0]);
             editor.setCursorBufferPosition([options.lineNumber, 0]);
           });

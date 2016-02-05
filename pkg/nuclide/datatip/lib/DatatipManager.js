@@ -60,7 +60,7 @@ export class DatatipManager {
 
       const editorView = atom.views.getView(editor);
       const mouseMoveListener = debounce(
-        (e) => {this._datatipForMouseEvent(((e: any): MouseEvent), editor, editorView);},
+        e => {this._datatipForMouseEvent(((e: any): MouseEvent), editor, editorView);},
         DATATIP_DELAY_MS,
         /* immediate */ false,
       );

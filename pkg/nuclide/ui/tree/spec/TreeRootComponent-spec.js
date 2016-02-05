@@ -102,7 +102,7 @@ describe('TreeRootComponent', () => {
 
     hostEl = document.createElement('div');
     hostEl.className = 'test';
-    renderComponent = (componentProps) => {
+    renderComponent = componentProps => {
       return ReactDOM.render(
         <TreeRootComponent {...componentProps} />,
         hostEl
@@ -112,9 +112,9 @@ describe('TreeRootComponent', () => {
     props = {
       initialRoots: [],
       eventHandlerSelector: '.test',
-      labelClassNameForNode: (node) => node.getItem().label,
+      labelClassNameForNode: node => node.getItem().label,
       onKeepSelection() {},
-      rowClassNameForNode: (node) => '',
+      rowClassNameForNode: node => '',
       onConfirmSelection: () => {},
     };
   });

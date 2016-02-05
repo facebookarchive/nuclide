@@ -24,7 +24,7 @@ function repositoryForPath(aPath: NuclideUri): ?atom$Repository {
   const repositoryContainsPath = require('./repositoryContainsPath');
   return array.find(
     atom.project.getRepositories(),
-    (repo) => {
+    repo => {
       try {
         return repositoryContainsPath(repo, aPath);
       } catch (e) {

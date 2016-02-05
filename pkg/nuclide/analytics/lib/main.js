@@ -190,10 +190,10 @@ function trackOperationTiming<T>(eventName: string, operation: () => T): T {
       // invariant(result instanceof Promise);
 
       // For the method returning a Promise, track the time after the promise is resolved/rejected.
-      return (result: any).then((value) => {
+      return (result: any).then(value => {
         tracker.onSuccess();
         return value;
-      }, (reason) => {
+      }, reason => {
         tracker.onError(reason instanceof Error ? reason : new Error(reason));
         return Promise.reject(reason);
       });

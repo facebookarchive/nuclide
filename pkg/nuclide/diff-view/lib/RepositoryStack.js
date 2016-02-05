@@ -244,7 +244,7 @@ export default class RepositoryStack {
     // because the watchman-based Mercurial updates doesn't consider or wait while rebasing.
     const revisions = await promises.retryLimit(
       () => this._repository.fetchRevisionInfoBetweenHeadAndBase(),
-      (result) => result != null,
+      result => result != null,
       FETCH_REV_INFO_MAX_TRIES,
       FETCH_REV_INFO_RETRY_TIME_MS,
     );
@@ -266,7 +266,7 @@ export default class RepositoryStack {
     // Revision ids are unique and don't change, except when the revision is amended/rebased.
     // Hence, it's cached here to avoid service calls when working on a stack of commits.
     const revisionsFileHistory = await Promise.all(revisions
-      .map(async (revision) => {
+      .map(async revision => {
         const {id} = revision;
         let changes = null;
         if (this._revisionIdToFileChanges.has(id)) {

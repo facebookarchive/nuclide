@@ -68,7 +68,7 @@ function getCompletionBodyMultiLine(
   indentation: number
 ): ?string {
   // Filter out whitespace chunks.
-  const chunks = completion.chunks.filter((chunk) => chunk.spelling.trim());
+  const chunks = completion.chunks.filter(chunk => chunk.spelling.trim());
 
   // We only handle completions in which non-placeholder and placeholder
   // chunks alternate, starting with non-placeholder chunk.
@@ -133,7 +133,7 @@ function _convertArgsToMultiLineSnippet(
   //
 
   const colonPosition = Math.max.apply(null,
-    args.map((arg) => arg.offset + arg.text.length)
+    args.map(arg => arg.offset + arg.text.length)
   );
 
   return args.reduce((body, arg, index) => {
@@ -153,7 +153,7 @@ function _convertArgsToMultiLineSnippet(
 function getCompletionBodyInline(completion: ClangCompletion): string {
   let body = '';
   let placeHolderCnt = 0;
-  completion.chunks.forEach((chunk) => {
+  completion.chunks.forEach(chunk => {
     if (chunk.isPlaceHolder) {
       placeHolderCnt++;
       body += '${' + placeHolderCnt + ':' + chunk.spelling + '}';
@@ -197,7 +197,7 @@ class AutocompleteProvider {
       return [];
     }
 
-    return data.completions.map((completion) => {
+    return data.completions.map(completion => {
       const snippet = getCompletionBody(completion, column, indentation);
       const rightLabel = completion.cursor_kind ?
         ClangCursorToDeclarationTypes[completion.cursor_kind] : null;

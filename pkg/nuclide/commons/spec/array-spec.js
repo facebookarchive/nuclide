@@ -94,7 +94,7 @@ describe('Array.from()', () => {
 
   it('applies mapFn in the iterable case', () => {
     const set = new Set(['foo', 'bar', 'baz']);
-    const f = (arg) => arg + arg;
+    const f = arg => arg + arg;
     expect(es6Array.from(set, f)).toEqual(['foofoo', 'barbar', 'bazbaz']);
   });
 
@@ -104,7 +104,7 @@ describe('Array.from()', () => {
     arrayLike[1] = 'bar';
     arrayLike[2] = 'baz';
 
-    const f = (arg) => arg + arg;
+    const f = arg => arg + arg;
     expect(es6Array.from(arrayLike, f)).toEqual(['foofoo', 'barbar', 'bazbaz']);
   });
 
@@ -132,7 +132,7 @@ describe('Array.prototype.find()', () => {
   it('finds using ===', () => {
     const array = ['foo', 'baz', 'biz'];
     let count = 0;
-    const test = (item) => { count++; return item === 'baz'; };
+    const test = item => { count++; return item === 'baz'; };
     expect(es6Array.find(array, test)).toBe('baz');
     expect(count).toBe(2);
   });
@@ -140,7 +140,7 @@ describe('Array.prototype.find()', () => {
   it('returns undefined when element not found', () => {
     const array = ['foo', 'baz', 'biz'];
     let count = 0;
-    const test = (item) => { count++; return item === 'foobazbiz'; };
+    const test = item => { count++; return item === 'foobazbiz'; };
     expect(es6Array.find(array, test)).toBe(undefined);
     expect(count).toBe(3);
   });
@@ -202,7 +202,7 @@ describe('Array.prototype.findIndex()', () => {
   it('finds using ===', () => {
     const array = ['foo', 'baz', 'biz'];
     let count = 0;
-    const test = (item) => { count++; return item === 'baz'; };
+    const test = item => { count++; return item === 'baz'; };
     expect(es6Array.findIndex(array, test)).toBe(1);
     expect(count).toBe(2);
   });
@@ -210,7 +210,7 @@ describe('Array.prototype.findIndex()', () => {
   it('returns undefined when element not found', () => {
     const array = ['foo', 'baz', 'biz'];
     let count = 0;
-    const test = (item) => { count++; return item === 'foobazbiz'; };
+    const test = item => { count++; return item === 'foobazbiz'; };
     expect(es6Array.findIndex(array, test)).toBe(-1);
     expect(count).toBe(3);
   });

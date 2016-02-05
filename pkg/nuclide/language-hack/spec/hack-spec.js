@@ -1476,7 +1476,7 @@ describe('PHP grammar', () => {
      * @param  {string} xhp code to parse
      * @return {[object]}     the parsed xhp tokens
      */
-    const embedXHP = (xhp) => {
+    const embedXHP = xhp => {
       const tokens = grammar.tokenizeLines(
         `<?hh\nfunction render() { return ${xhp}}`
       );
@@ -1486,11 +1486,11 @@ describe('PHP grammar', () => {
       return flattened.slice(12, -1);
     };
 
-    const embedFBT = (content) => {
+    const embedFBT = content => {
       return embedXHP(`<fbt>${content}</fbt>`);
     };
 
-    const expectFBT = (tokens) => {
+    const expectFBT = tokens => {
       const [
         begin_open_tag,
         open_tag_name,

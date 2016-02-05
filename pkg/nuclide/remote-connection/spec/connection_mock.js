@@ -35,8 +35,8 @@ fsPromise.copy = async function(src, dst) {
 
 const connectionMock: RemoteConnection = ({
   getClient: () => fsPromise,
-  createDirectory: (uri) => new RemoteDirectory(connectionMock, uri),
-  createFile: (uri) => new RemoteFile(connectionMock, uri),
+  createDirectory: uri => new RemoteDirectory(connectionMock, uri),
+  createFile: uri => new RemoteFile(connectionMock, uri),
   getService: (serviceName: string) => {
     if (serviceName === 'FileSystemService') {
       return fsPromise;

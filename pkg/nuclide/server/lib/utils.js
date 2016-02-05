@@ -97,7 +97,7 @@ function parseRequestBody(httpRequest: http$fixed$IncomingMessage, isJson: ?bool
     Promise<string> {
   return new Promise((resolve, reject) => {
     let body = '';
-    httpRequest.on('data', (data) => {
+    httpRequest.on('data', data => {
       body += data;
       // too much POST data, kill the connection!
       if (body.length > MAX_REQUEST_LENGTH) {

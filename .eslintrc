@@ -242,10 +242,13 @@
     "jasmine/no-suite-dupes": [1, "branch"], // Disallow duplicate suite descriptions within a branch
     "jasmine/no-disabled-tests": 0,          // Allow disabled tests to quickly unblock master when needed
 
+  // Babel
+    "babel/arrow-parens": [1, "as-needed"], // Include arrow function parentheses only when needed
+    "babel/no-await-in-loop": 1,
+
   // Custom
     "nuclide-internal/comment-style": 1,
     "nuclide-internal/fb-license-header": 2,
-    "nuclide-internal/import-type-style": 1,
-    "babel/no-await-in-loop": 1
+    "nuclide-internal/import-type-style": 1
   }
 }

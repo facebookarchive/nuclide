@@ -98,7 +98,7 @@ class Activation {
 
     this._searchComponent = this._render();
 
-    this._searchComponent.onSelection((selection) => {
+    this._searchComponent.onSelection(selection => {
       const options = {};
       if (selection.line) {
         options.initialLine = selection.line;

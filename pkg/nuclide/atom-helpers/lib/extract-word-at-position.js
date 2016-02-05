@@ -21,7 +21,7 @@ function extractWordAtPosition(
   const rowRange = buffer.rangeForRow(row);
   let matchData;
   // Extract the expression from the row text.
-  buffer.scanInRange(wordRegex, rowRange, (data) => {
+  buffer.scanInRange(wordRegex, rowRange, data => {
     const {range} = data;
     if (range.containsPoint(position)) {
       matchData = data;

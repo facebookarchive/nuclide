@@ -106,7 +106,7 @@ const TreeRootComponent = React.createClass({
   },
 
   getInitialState(): any {
-    const rootKeys = this.props.initialRoots.map((root) => root.getKey());
+    const rootKeys = this.props.initialRoots.map(root => root.getKey());
 
     let selectedKeys;
     if (this.props.initialSelectedNodeKeys) {
@@ -230,7 +230,7 @@ const TreeRootComponent = React.createClass({
 
   addContextMenuItemGroup(menuItemDefinitions: Array<TreeMenuItemDefinition>): void {
     let items = menuItemDefinitions.slice();
-    items = items.map((definition) => {
+    items = items.map(definition => {
       definition.shouldDisplay = () => {
         if (this.state.roots.length === 0 && !definition.shouldDisplayIfTreeIsEmpty) {
           return false;
@@ -267,7 +267,7 @@ const TreeRootComponent = React.createClass({
     const allKeys: Array<string> = [];
     const keyToNode: { [key:string]: LazyTreeNode} = {};
 
-    this.state.roots.forEach((root) => {
+    this.state.roots.forEach(root => {
       const stack = [{node: root, depth: 0}];
 
       while (stack.length !== 0) {
@@ -323,7 +323,7 @@ const TreeRootComponent = React.createClass({
           // Push the node's children on the stack in reverse order so that when
           // they are popped off the stack, they are iterated in the original
           // order.
-          cachedChildren.reverse().forEach((childNode) => {
+          cachedChildren.reverse().forEach(childNode => {
             stack.push({node: childNode, depth});
           });
         }
@@ -409,12 +409,12 @@ const TreeRootComponent = React.createClass({
    * Returns a Promise that's resolved when the roots are rendered.
    */
   setRoots(roots: Array<LazyTreeNode>): Promise<void> {
-    this.state.roots.forEach((root) => {
+    this.state.roots.forEach(root => {
       this.removeStateForSubtree(root);
     });
 
     const expandedKeys = this.state.expandedKeys;
-    roots.forEach((root) => expandedKeys.add(root.getKey()));
+    roots.forEach(root => expandedKeys.add(root.getKey()));
 
     // We have to create the listener before setting the state so it can pick
     // up the changes from `setState`.
@@ -468,7 +468,7 @@ const TreeRootComponent = React.createClass({
     const expandedKeys = this.state.expandedKeys;
     const selectedKeys = this.state.selectedKeys;
 
-    forEachCachedNode(root, (node) => {
+    forEachCachedNode(root, node => {
       const cachedKey = node.getKey();
       expandedKeys.delete(cachedKey);
       selectedKeys.delete(cachedKey);
@@ -514,7 +514,7 @@ const TreeRootComponent = React.createClass({
 
     let selectedKey;
     if (this._allKeys != null) {
-      this._allKeys.every((key) => {
+      this._allKeys.every(key => {
         if (this.state.selectedKeys.has(key)) {
           selectedKey = key;
           return false;

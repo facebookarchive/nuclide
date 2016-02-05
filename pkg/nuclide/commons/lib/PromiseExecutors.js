@@ -47,7 +47,7 @@ export class PromisePool {
     const id = this._getNextRequestId();
     this._fifo.push({id: id, executor: executor});
     const promise = new Promise((resolve, reject) => {
-      this._emitter.once(id, (result) => {
+      this._emitter.once(id, result => {
         const {isSuccess, value} = result;
         (isSuccess ? resolve : reject)(value);
       });
@@ -67,11 +67,11 @@ export class PromisePool {
 
     const {id, executor} = this._fifo.shift();
     this._numPromisesRunning++;
-    new Promise(executor).then((result) => {
+    new Promise(executor).then(result => {
       this._emitter.emit(id, {isSuccess: true, value: result});
       this._numPromisesRunning--;
       this._run();
-    }, (error) => {
+    }, error => {
       this._emitter.emit(id, {isSuccess: false, value: error});
       this._numPromisesRunning--;
       this._run();

@@ -20,7 +20,7 @@ function printMemberExpression(
   node: MemberExpression,
   context: Context,
 ): Lines {
-  const wrap = (x) => wrapExpression(print, node, x);
+  const wrap = x => wrapExpression(print, node, x);
 
   if (node.computed) {
     return wrap([

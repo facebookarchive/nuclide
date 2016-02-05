@@ -63,7 +63,7 @@ class LazyTreeNode {
   fetchChildren(): Promise {
     let pendingFetch = this._pendingFetch;
     if (!pendingFetch) {
-      pendingFetch = this._fetchChildren(this).then((children) => {
+      pendingFetch = this._fetchChildren(this).then(children => {
         // Store the children before returning them from the Promise.
         this._children = children;
         this._isCacheValid = true;

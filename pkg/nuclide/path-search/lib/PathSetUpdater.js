@@ -53,7 +53,7 @@ export default class PathSetUpdater {
     const subscription = await this._addWatchmanSubscription(localDirectory);
     this._pathSetToSubscription.set(pathSet, subscription);
 
-    subscription.on('change', (files) => this._processWatchmanUpdate(
+    subscription.on('change', files => this._processWatchmanUpdate(
       subscription.pathFromSubscriptionRootToSubscriptionPath, pathSet, files
     ));
     return new Disposable(() => this._stopUpdatingPathSet(pathSet));

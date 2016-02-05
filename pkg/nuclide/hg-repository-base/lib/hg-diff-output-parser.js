@@ -35,7 +35,7 @@ function parseHgDiffUnifiedOutput(output: string): DiffInfo {
   }
   // $FlowFixMe match may return null
   const diffHunks = output.match(HUNK_DIFF_REGEX);
-  diffHunks.forEach((hunk) => {
+  diffHunks.forEach(hunk => {
     // `hunk` will look like: "@@ -a(,b) +c(,d) @@"
     const hunkParts = hunk.split(' ');
     // $FlowFixMe match may return null

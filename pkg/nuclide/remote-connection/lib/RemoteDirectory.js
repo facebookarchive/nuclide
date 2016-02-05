@@ -254,7 +254,7 @@ class RemoteDirectory {
     const files = [];
     entries.sort((a, b) => {
       return a.file.toLowerCase().localeCompare(b.file.toLowerCase());
-    }).forEach((entry) => {
+    }).forEach(entry => {
       invariant(entry);
       const uri = this._host + path.join(this._localPath, entry.file);
       if (entry.stats && entry.stats.isFile()) {

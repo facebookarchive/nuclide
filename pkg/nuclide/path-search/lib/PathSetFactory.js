@@ -33,7 +33,7 @@ function getFilesFromCommand(
     proc.on('error', reject);
 
     const filePaths = {};
-    proc.stdout.pipe(split()).on('data', (filePath) => {
+    proc.stdout.pipe(split()).on('data', filePath => {
       if (transform) {
         filePath = transform(filePath);
       }
@@ -44,11 +44,11 @@ function getFilesFromCommand(
     });
 
     let errorString = '';
-    proc.stderr.on('data', (data) => {
+    proc.stderr.on('data', data => {
       errorString += data;
     });
 
-    proc.on('close', (code) => {
+    proc.on('close', code => {
       if (code === 0) {
         resolve(filePaths);
       } else {
@@ -94,7 +94,7 @@ function getUntrackedHgFiles(localDirectory: string): Promise<FilePathsPseudoSet
  */
 function getFilesFromHg(localDirectory: string): Promise<FilePathsPseudoSet> {
   return Promise.all([getTrackedHgFiles(localDirectory), getUntrackedHgFiles(localDirectory)]).then(
-    (returnedFiles) => {
+    returnedFiles => {
       const [trackedFiles, untrackedFiles] = returnedFiles;
       return {...trackedFiles, ...untrackedFiles};
     }
@@ -124,7 +124,7 @@ function getUntrackedGitFiles(localDirectory: string): Promise<FilePathsPseudoSe
 function getFilesFromGit(localDirectory: string): Promise<FilePathsPseudoSet> {
   return Promise.all(
       [getTrackedGitFiles(localDirectory), getUntrackedGitFiles(localDirectory)]).then(
-    (returnedFiles) => {
+    returnedFiles => {
       const [trackedFiles, untrackedFiles] = returnedFiles;
       return {...trackedFiles, ...untrackedFiles};
     }

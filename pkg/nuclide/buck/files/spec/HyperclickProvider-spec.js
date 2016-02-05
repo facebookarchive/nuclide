@@ -88,7 +88,7 @@ describe('HyperclickProvider', () => {
         it('asks for a location of the target', () => {
           waitsForPromise(() => {
             return findTargetLocation({path: projectPath + file, name: targetName})
-            .then((location) => {
+            .then(location => {
               const line = targetsByFile[file][targetName];
               if (line !== -1) {
                 expect(location).toEqual(

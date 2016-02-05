@@ -97,7 +97,7 @@ async function createAsyncConnection(src: string): Promise<Connection> {
     });
     /* $FlowFixMe - update Flow defs for ChildProcess */
     const writableStream = child.stdio[3];
-    writableStream.on('error', (error) => {
+    writableStream.on('error', error => {
       logger.error('Error writing data', error);
     });
 
@@ -174,7 +174,7 @@ export default class ClangServer {
       return this._flagsPromise;
     }
     this._flagsPromise = this._clangFlagsManager.getFlagsForSrc(this._src)
-      .catch((e) => {
+      .catch(e => {
         logger.error(
           `clang-server: Could not get flags for ${this._src} (retry ${this._flagsRetries})`, e);
         if (this._flagsRetries < FLAGS_RETRY_LIMIT) {
@@ -244,7 +244,7 @@ export default class ClangServer {
     writableStream.write('\n');
 
     return new Promise((resolve, reject) => {
-      this._emitter.once(reqid, (response) => {
+      this._emitter.once(reqid, response => {
         logger.debug('LibClang response: ' + JSON.stringify(response));
         const isError = 'error' in response;
         if (isError) {
@@ -272,11 +272,11 @@ export default class ClangServer {
         const connection = await createAsyncConnection(this._src);
         connection.readableStream
           .pipe(split(JSON.parse))
-          .on('data', (response) => {
+          .on('data', response => {
             const id = response['reqid'];
             this._emitter.emit(id, response);
           })
-          .on('error', (error) => {
+          .on('error', error => {
             logger.error(
               'Failed to handle libclang output, most likely the libclang python'
               + ' server crashed.',

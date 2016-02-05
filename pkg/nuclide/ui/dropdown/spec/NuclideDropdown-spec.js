@@ -44,7 +44,7 @@ describe('NuclideDropdown', () => {
 
   it('calls the callback with the new index when a different menu item is selected', () => {
     let changedIndex;
-    const onChange = (index) => {
+    const onChange = index => {
       changedIndex = index;
     };
     const props = {

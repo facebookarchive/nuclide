@@ -37,7 +37,7 @@ class ObjectiveCColonIndenter {
 
     const subscriptions = this._subscriptions = new CompositeDisposable();
     subscriptions.add({dispose: () => {
-      this._insertTextSubscriptionsMap.forEach((subscription) => subscription.dispose());
+      this._insertTextSubscriptionsMap.forEach(subscription => subscription.dispose());
       this._insertTextSubscriptionsMap.clear();
     }});
 
@@ -56,7 +56,7 @@ class ObjectiveCColonIndenter {
   }
 
   _enableInTextEditor(textEditor: TextEditor): void {
-    this._insertTextSubscriptionsMap.set(textEditor, textEditor.onDidInsertText((event) => {
+    this._insertTextSubscriptionsMap.set(textEditor, textEditor.onDidInsertText(event => {
       trackOperationTiming(
         'objc:indent-colon',
         () => {

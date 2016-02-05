@@ -56,7 +56,7 @@ class FileSearch {
       };
       if (result.matchIndexes) {
         mappedResult.matchIndexes =
-          result.matchIndexes.map((index) => index + this._originalUri.length + 1);
+          result.matchIndexes.map(index => index + this._originalUri.length + 1);
       }
       return mappedResult;
     });

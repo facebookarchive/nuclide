@@ -56,8 +56,8 @@ class HackWorker {
     this._webWorkerTimeout = options.webWorkerTimeout || DEFAULT_WEBWORKER_TIMEOUT;
     this._poorPefTimeout = options.poorPerfTimeout || DEFAULT_POOR_PERF_TIMEOUT;
     this._worker = options.worker || startWebWorker();
-    this._worker.addEventListener('message', (e) => this._handleHackWorkerReply(e.data), false);
-    this._worker.addEventListener('error', (error) => this._handleHackWorkerError(error), false);
+    this._worker.addEventListener('message', e => this._handleHackWorkerReply(e.data), false);
+    this._worker.addEventListener('error', error => this._handleHackWorkerError(error), false);
   }
 
   /**
@@ -69,7 +69,7 @@ class HackWorker {
       const queue = options.isDependency ? this._depTaskQueue : this._taskQueue;
       queue.push({
         workerMessage,
-        onResponse: (response) => {
+        onResponse: response => {
           const internalError = response.internal_error;
           if (internalError) {
             logger.error('Hack Worker: Internal Error! - ' +
@@ -79,7 +79,7 @@ class HackWorker {
             resolve(response);
           }
         },
-        onFail: (error) => {
+        onFail: error => {
           logger.error('Hack Worker: Error!', error, JSON.stringify(workerMessage));
           reject(error);
         },

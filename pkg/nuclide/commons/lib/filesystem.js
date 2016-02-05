@@ -108,7 +108,7 @@ async function mkdirp(filePath: string): Promise<boolean> {
     return false;
   } else {
     return new Promise((resolve, reject) => {
-      mkdirpLib(filePath, (err) => {
+      mkdirpLib(filePath, err => {
         if (err) {
           reject(err);
         } else {
@@ -124,7 +124,7 @@ async function mkdirp(filePath: string): Promise<boolean> {
  */
 async function rmdir(filePath: string): Promise {
   return new Promise((resolve, reject) => {
-    rimraf(filePath, (err) => {
+    rimraf(filePath, err => {
       if (err) {
         reject(err);
       } else {

@@ -35,7 +35,7 @@ function layout(loggingEvent: any): Array<any> {
  * the object in console logged by this Appender.
  */
 function consoleAppender(): (loggingEvent: any) => void {
-  return (loggingEvent) => {
+  return loggingEvent => {
     console.log.apply(console, layout(loggingEvent)); // eslint-disable-line no-console
   };
 }

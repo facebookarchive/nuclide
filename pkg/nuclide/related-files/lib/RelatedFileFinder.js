@@ -38,10 +38,10 @@ export default class RelatedFileFinder {
     const listing = await getServiceByNuclideUri('FileSystemService', filePath)
       .readdir(getPath(dirName));
     const relatedFiles = listing
-      .filter((otherFilePath) => {
+      .filter(otherFilePath => {
         return otherFilePath.stats.isFile() && this._getPrefix(otherFilePath.file) === prefix;
       })
-      .map((otherFilePath) => join(dirName, otherFilePath.file))
+      .map(otherFilePath => join(dirName, otherFilePath.file))
       .sort();
 
     const index = relatedFiles.indexOf(filePath);
