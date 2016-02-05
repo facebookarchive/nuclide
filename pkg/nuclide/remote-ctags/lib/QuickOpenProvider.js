@@ -69,7 +69,8 @@ module.exports = ({
     return false;
   },
 
-  getComponentForItem(item: Result): ReactElement {
+  getComponentForItem(uncastedItem: FileResult): ReactElement {
+    const item = ((uncastedItem: any): Result);
     const path = relative(item.dir, item.path);
     let kind, icon;
     if (item.kind != null) {
@@ -85,7 +86,7 @@ module.exports = ({
     );
   },
 
-  async executeQuery(query: string, directory?: atom$Directory): Promise<Array<Result>> {
+  async executeQuery(query: string, directory?: atom$Directory): Promise<Array<FileResult>> {
     if (directory == null || query.length < MIN_QUERY_LENGTH) {
       return [];
     }
@@ -124,4 +125,4 @@ module.exports = ({
     }
   },
 
-}: Provider<Result>);
+}: Provider);

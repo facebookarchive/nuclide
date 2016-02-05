@@ -17,7 +17,7 @@ import type {
 
 import {getFuzzyFileSearchService} from './utils';
 
-const FuzzyFileNameProvider: Provider<FileResult> = {
+const FuzzyFileNameProvider: Provider = {
 
   getName(): string {
     return 'FuzzyFileNameProvider';

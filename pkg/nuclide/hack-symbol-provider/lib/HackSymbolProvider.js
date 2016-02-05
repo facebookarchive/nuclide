@@ -20,8 +20,6 @@ import {getHackService} from './getHackService';
 import path from 'path';
 import {React} from 'react-for-atom';
 
-export type HackFileResult = FileResult & HackSearchPosition;
-
 const ICONS = {
   'interface': 'icon-puzzle',
   'function': 'icon-zap',
@@ -36,7 +34,7 @@ const ICONS = {
   'unknown': 'icon-squirrel',
 };
 
-function bestIconForItem(item: HackFileResult): string {
+function bestIconForItem(item: HackSearchPosition): string {
   if (!item.additionalInfo) {
     return ICONS.default;
   }
@@ -53,7 +51,7 @@ function bestIconForItem(item: HackFileResult): string {
   return ICONS.unknown;
 }
 
-export const HackSymbolProvider: Provider<HackFileResult> = {
+export const HackSymbolProvider: Provider = {
 
   getName(): string {
     return 'HackSymbolProvider';
@@ -87,7 +85,7 @@ export const HackSymbolProvider: Provider<HackFileResult> = {
   async executeQuery(
     query: string,
     directory?: atom$Directory
-  ): Promise<Array<HackFileResult>> {
+  ): Promise<Array<FileResult>> {
     if (query.length === 0 || directory == null) {
       return [];
     }
@@ -99,10 +97,11 @@ export const HackSymbolProvider: Provider<HackFileResult> = {
 
     const directoryPath = directory.getPath();
     const results: Array<HackSearchPosition> = await service.queryHack(directoryPath, query);
-    return ((results: any): Array<HackFileResult>);
+    return ((results: any): Array<FileResult>);
   },
 
-  getComponentForItem(item: HackFileResult): ReactElement {
+  getComponentForItem(uncastedItem: FileResult): ReactElement {
+    const item = ((uncastedItem: any): HackSearchPosition);
     const filePath = item.path;
     const filename = path.basename(filePath);
     const name = item.name || '';

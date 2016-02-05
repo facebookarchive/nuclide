@@ -15,8 +15,8 @@ export type Store = {
 
 export type ProviderType = 'DIRECTORY' | 'GLOBAL';
 
-export type Provider<T : FileResult> = {
-  executeQuery(query: string, directory?: atom$Directory): Promise<Array<T>>;
+export type Provider = {
+  executeQuery(query: string, directory?: atom$Directory): Promise<Array<FileResult>>;
   getProviderType(): ProviderType;
   getName(): string;
   isRenderable(): boolean;
@@ -26,7 +26,7 @@ export type Provider<T : FileResult> = {
   getAction?: () => string;
   getDebounceDelay?: () => number;
   isEligibleForDirectory?: (directory: atom$Directory) => Promise<boolean>;
-  getComponentForItem?: (item: T) => ReactElement;
+  getComponentForItem?: (item: FileResult) => ReactElement;
 };
 
 export type FileResult = {
