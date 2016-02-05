@@ -41,9 +41,11 @@ export class DatatipComponent extends React.Component {
 
   render(): ReactElement {
     const {
+      className,
       children,
       action,
       actionTitle,
+      ...props,
     } = this.props;
     let actionButton;
     if (action != null && IconsForAction[action] != null) {
@@ -57,7 +59,9 @@ export class DatatipComponent extends React.Component {
       );
     }
     return (
-      <div className="nuclide-datatip-container">
+      <div
+        className={`${className} nuclide-datatip-container`}
+        {...props}>
         <div className="nuclide-datatip-content">
           {children}
         </div>
