@@ -32,12 +32,14 @@ class PanelComponent extends React.Component {
   static propTypes = {
     children: PropTypes.element.isRequired,
     dock: PropTypes.oneOf(['left', 'bottom', 'right']).isRequired,
+    hidden: PropTypes.bool.isRequired,
     initialLength: PropTypes.number.isRequired,
     onResize: PropTypes.func.isRequired,
     overflowX: PropTypes.string,
   };
 
   static defaultProps = {
+    hidden: false,
     initialLength: 200,
     onResize: emptyFunction,
   };
@@ -90,6 +92,7 @@ class PanelComponent extends React.Component {
     return (
       <div
         className={`nuclide-ui-panel-component ${this.props.dock}`}
+        hidden={this.props.hidden}
         ref="container"
         style={containerStyle}>
         <div className={`nuclide-ui-panel-component-resize-handle ${this.props.dock}`}

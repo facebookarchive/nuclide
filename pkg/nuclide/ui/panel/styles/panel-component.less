@@ -24,6 +24,14 @@
   }
 }
 
+/*
+ * The style must be added because the browser-provided style targets `[hidden]`, which is less
+ * specific than `.nuclide-ui-panel-component`.
+ */
+.nuclide-ui-panel-component[hidden] {
+  display: none;
+}
+
 .nuclide-ui-panel-component-scroller {
   display: flex;
   flex: 1 1 auto;
