@@ -35,11 +35,15 @@
 }
 
 .nuclide-datatip-pin-button {
+  align-items: center;
+  border-left: 1px solid fade(@text-color-highlight, 10%);
   cursor: pointer;
+  display: flex;
   line-height: 2;
   margin: 0.1em 0 0 0;
-
+  padding-left: 0.5em;
   &:hover {
+    background-color: rgba(255, 255, 255, 0.05);
     color: @text-color-highlight;
   }
 }
