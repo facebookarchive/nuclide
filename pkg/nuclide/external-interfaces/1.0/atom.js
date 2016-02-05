@@ -662,8 +662,18 @@ declare class atom$TextEditor extends atom$Model {
  */
 declare class atom$TextEditorComponent {
   domNode: HTMLElement;
+  presenter: atom$TextEditorPresenter;
   linesComponent: atom$LinesComponent;
   screenPositionForMouseEvent(event: MouseEvent): atom$Point;
+}
+
+/**
+ * This is not part of the official Atom 1.0 API. Nevertheless, we need to reach into this object
+ * via `atom$TextEditorComponent` to do some things that we have no other way to do.
+ */
+declare class atom$TextEditorPresenter {
+  startBlinkingCursors: () => void;
+  stopBlinkingCursors(visible: boolean): void;
 }
 
 /**

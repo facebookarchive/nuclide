@@ -19,6 +19,7 @@ import {TextBuffer} from 'atom';
 import {createTextEditor} from '../../../atom-helpers';
 
 const {PropTypes} = React;
+const doNothing = () => {};
 
 function setupTextEditor(props: Object): atom$TextEditor {
   const textBuffer = props.textBuffer || new TextBuffer();
@@ -42,8 +43,6 @@ function setupTextEditor(props: Object): atom$TextEditor {
     textEditor.onWillInsertText(event => {
       event.cancel();
     });
-
-    const doNothing = () => {};
 
     // Make pasting in the text editor a no-op to disallow editing (read-only).
     textEditor.pasteText = doNothing;
@@ -90,6 +89,7 @@ class AtomTextEditor extends React.Component {
 
   componentDidMount(): void {
     this._updateTextEditor(setupTextEditor(this.props));
+    this._onDidUpdateTextEditorElement();
   }
 
   _updateTextEditor(textEditor: atom$TextEditor): void {
@@ -119,6 +119,26 @@ class AtomTextEditor extends React.Component {
     if (nextProps.gutterHidden !== this.props.gutterHidden) {
       this.getModel().setLineNumberGutterVisible(nextProps.gutterHidden);
     }
+  }
+
+  componentDidUpdate(prevProps: Object, prevState: Object): void {
+    if (prevProps.textBuffer !== this.props.textBuffer) {
+      this._onDidUpdateTextEditorElement();
+    }
+  }
+
+  _onDidUpdateTextEditorElement(): void {
+    if (!this.props.readOnly) {
+      return;
+    }
+    // TODO(most): t9929679 Remove this hack when Atom has a blinking cursor configuration API.
+    const {component} = this.getElement();
+    if (component == null) {
+      return;
+    }
+    const {presenter} = component;
+    presenter.startBlinkingCursors = doNothing;
+    presenter.stopBlinkingCursors(false);
   }
 
   getTextBuffer(): atom$TextBuffer {
