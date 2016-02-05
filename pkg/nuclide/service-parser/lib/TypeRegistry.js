@@ -409,7 +409,7 @@ export default class TypeRegistry {
       const newObj = {}; // Create a new object so we don't mutate the original one.
       const promise = checkedSmartPromiseAll(type.fields.map(prop => {
         // Check if the source object has this key.
-        if (obj.hasOwnProperty(prop.name)) {
+        if (obj != null && obj.hasOwnProperty(prop.name)) {
           const value = this._marshal(obj[prop.name], prop.type);
           if (value instanceof Promise) {
             return value.then(result => newObj[prop.name] = result);
@@ -418,7 +418,9 @@ export default class TypeRegistry {
           }
         } else if (!prop.optional) {
           // If the property is optional, it's okay for it to be missing.
-          throw new Error(`Source object is missing property ${prop.name}.`);
+          throw new Error(
+            `Source object: ${JSON.stringify(obj)} is missing property ${prop.name}.`,
+          );
         }
       }));
       if (promise instanceof Promise) {
@@ -431,7 +433,7 @@ export default class TypeRegistry {
       const newObj = {}; // Create a new object so we don't mutate the original one.
       const promise = checkedSmartPromiseAll(type.fields.map(prop => {
         // Check if the source object has this key.
-        if (obj.hasOwnProperty(prop.name)) {
+        if (obj != null && obj.hasOwnProperty(prop.name)) {
           const value = this._unmarshal(obj[prop.name], prop.type);
           if (value instanceof Promise) {
             return value.then(result => newObj[prop.name] = result);
@@ -440,7 +442,9 @@ export default class TypeRegistry {
           }
         } else if (!prop.optional) {
           // If the property is optional, it's okay for it to be missing.
-          throw new Error(`Source object is missing property ${prop.name}.`);
+          throw new Error(
+            `Source object: ${JSON.stringify(obj)} is missing property ${prop.name}.`,
+          );
         }
       }));
       if (promise instanceof Promise) {
