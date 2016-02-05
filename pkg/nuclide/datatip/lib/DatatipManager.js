@@ -24,6 +24,7 @@ import {array, debounce} from '../../commons';
 import {track, trackOperationTiming} from '../../analytics';
 
 import {DatatipComponent, DATATIP_ACTIONS} from './DatatipComponent';
+import {PinnedDatatip} from './PinnedDatatip';
 
 const DATATIP_DELAY_MS = 50;
 
@@ -34,6 +35,7 @@ export class DatatipManager {
   _currentRange: ?atom$Range;
   _isHoveringDatatip: boolean;
   _datatipProviders: Array<DatatipProvider>;
+  _pinnedDatatips: Set<PinnedDatatip>;
   /**
    * This helps determine if we should show the datatip when toggling it via
    * command. The toggle command first negates this, and then if this is true
@@ -92,6 +94,7 @@ export class DatatipManager {
     this._datatipToggle = false;
     this._currentRange = null;
     this._isHoveringDatatip = false;
+    this._pinnedDatatips = new Set();
   }
 
   toggleDatatip(): void {
@@ -226,6 +229,9 @@ export class DatatipManager {
 
   _handlePinClicked(editor: TextEditor, datatip: Datatip): void {
     this.hideDatatip();
+    this._pinnedDatatips.add(new PinnedDatatip(datatip, editor, pinnedDatatip => {
+      this._pinnedDatatips.delete(pinnedDatatip);
+    }));
   }
 
   _getMatchingProvidersForScopeName(scopeName: string): Array<DatatipProvider> {
@@ -248,6 +254,7 @@ export class DatatipManager {
     this.hideDatatip();
     ReactDOM.unmountComponentAtNode(this._ephemeralDatatipElement);
     this._ephemeralDatatipElement.remove();
+    this._pinnedDatatips.forEach(pinnedDatatip => pinnedDatatip.dispose());
     this._subscriptions.dispose();
   }
 }
