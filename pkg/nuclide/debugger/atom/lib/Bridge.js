@@ -14,6 +14,11 @@ const {CompositeDisposable, Disposable} = require('atom');
 
 import type BreakpointStoreType from './BreakpointStore';
 
+const INJECTED_CSS = [
+  /* Force the inspector to scroll vertically on Atom ≥ 1.4.0 */
+  'body > .root-view {overflow-y: scroll;}',
+].join('');
+
 class Bridge {
   _breakpointStore: BreakpointStoreType;
   _disposables: CompositeDisposable;
@@ -89,6 +94,7 @@ class Bridge {
         switch (event.args[0]) {
           case 'ready':
             this._sendAllBreakpoints();
+            this._injectCSS();
             break;
           case 'CallFrameSelected':
             this._setSelectedCallFrameLine(event.args[1]);
@@ -199,6 +205,12 @@ class Bridge {
         });
       });
       webview.send('command', 'SyncBreakpoints', results);
+    }
+  }
+
+  _injectCSS() {
+    if (this._webview != null) {
+      this._webview.insertCSS(INJECTED_CSS);
     }
   }
 }
