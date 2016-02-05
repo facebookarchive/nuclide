@@ -30,6 +30,9 @@ const INITIAL_CHUNK_SIZE = 200;
  */
 const ERROR_CODE_CANCELED = 21;
 
+// Can't do `declare class` since this isn't a library definition file
+export type PathSetError = Error & {errorCode?: number};
+
 // TODO(mikeo): Replace this with nuclide-logging once #6378527 is fixed.
 const logger = {
   debug(...args) {
@@ -223,8 +226,7 @@ export default class PathSet {
             // Upon resuming, check whether this job has been canceled.
             if (job.canceled) {
               logger.debug(`canceling ${processor}`);
-              const error = Error(`canceled ${processor}`);
-              // $FlowFixMe: Remove the errorCode expando off the error.
+              const error: PathSetError = Error(`canceled ${processor}`);
               error.errorCode = ERROR_CODE_CANCELED;
               reject(error);
               return;

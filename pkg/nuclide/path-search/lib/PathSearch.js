@@ -10,6 +10,7 @@
  */
 
 import type {QueryScore} from './QueryScore';
+import type {PathSetError} from './PathSet';
 import QueryItem from './QueryItem';
 import PathSet from './PathSet';
 import TopScores from './TopScores';
@@ -148,7 +149,7 @@ export default class PathSearch {
       setTimeout(removePromise, PATH_SEARCH_TIMEOUT_MS);
       const result: ResultSet = {query, results};
       return result;
-    }, (error: Error) => {
+    }, (error: PathSetError) => {
       removePromise();
       if (error.errorCode === PathSet.ERROR_CODE_CANCELED) {
         // This request was canceled: resolve to an empty ResultSet.

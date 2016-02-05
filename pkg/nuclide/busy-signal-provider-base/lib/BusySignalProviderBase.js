@@ -39,7 +39,9 @@ export class BusySignalProviderBase {
   /**
    * Displays the message until the returned disposable is disposed
    */
-  displayMessage(message: string, options?: MessageDisplayOptions): IDisposable {
+  displayMessage(message: string, optionsArg?: MessageDisplayOptions): IDisposable {
+    // Reassign as const so the type refinement holds in the closure below
+    const options = optionsArg;
     if (options == null || options.onlyForFile == null) {
       return this._displayMessage(message);
     }

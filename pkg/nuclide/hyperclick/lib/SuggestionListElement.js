@@ -142,7 +142,7 @@ class SuggestionList extends React.Component {
     );
   }
 
-  componentDidUpdate(prevProps: mixed, prevState: mixed) {
+  componentDidUpdate(prevProps: Object, prevState: Object) {
     if (prevState.selectedIndex !== this.state.selectedIndex) {
       this._updateScrollPosition();
     }

@@ -67,6 +67,7 @@ export type ExportStoreData = {
   expandedKeysByRoot: { [key: string]: Array<string> };
   rootKeys: Array<string>;
   selectedKeysByRoot: { [key: string]: Array<string> };
+  version: number;
 };
 
 let instance: ?Object;
