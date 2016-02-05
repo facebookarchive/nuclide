@@ -154,58 +154,90 @@ export class DatatipManager {
     }
 
     const {scopeName} = editor.getGrammar();
-    const [provider] = this._getMatchingProvidersForScopeName(scopeName);
-    if (provider == null) {
+    const providers = this._getMatchingProvidersForScopeName(scopeName);
+    if (providers.length === 0) {
       return;
     }
-    let name;
-    if (provider.providerName != null) {
-      name = provider.providerName;
-    } else {
-      name = 'unknown';
-      const logger = require('../../logging').getLogger();
-      logger.error('Datatip provider has no name', provider);
-    }
-    const datatip = await trackOperationTiming(
-      name + '.datatip',
-      () => provider.datatip(editor, position),
+    const datatips = await Promise.all(
+      providers.map(async (provider: DatatipProvider): Promise<Object> => {
+        let name;
+        if (provider.providerName != null) {
+          name = provider.providerName;
+        } else {
+          name = 'unknown';
+          const logger = require('../../logging').getLogger();
+          logger.error('Datatip provider has no name', provider);
+        }
+        const datatip = await trackOperationTiming(
+          name + '.datatip',
+          () => provider.datatip(editor, position),
+        );
+        if (!datatip || this._marker) {
+          return;
+        }
+        const {pinnable, component, range} = datatip;
+        // We track the timing above, but we still want to know the number of popups that are shown.
+        track('datatip-popup', {
+          'scope': scopeName,
+          'providerName': name,
+          rangeStartRow: String(range.start.row),
+          rangeStartColumn: String(range.start.column),
+          rangeEndRow: String(range.end.row),
+          rangeEndColumn: String(range.end.column),
+        });
+        this._currentRange = range;
+        let action, actionTitle;
+        // Datatips are pinnable by default, unless explicitly specified otherwise.
+        if (pinnable !== false) {
+          action = DATATIP_ACTIONS.PIN;
+          actionTitle = 'Pin this Datatip';
+        }
+
+        return {
+          range,
+          component,
+          pinnable,
+          name,
+          action,
+          actionTitle,
+        };
+      })
     );
-    if (!datatip || this._marker) {
+    const nonEmptyDatatips = datatips.filter(datatip => datatip != null);
+    if (nonEmptyDatatips.length === 0) {
       return;
     }
-
-    const {pinnable, component, range} = datatip;
-    // We track the timing above, but we still want to know the number of popups that are shown.
-    track('datatip-popup', {
-      'scope': scopeName,
-      //TODO add more data to track call
+    const renderedProviders = nonEmptyDatatips.map(datatip => {
+      const {
+        component,
+        name,
+        action,
+        actionTitle,
+      } = datatip;
+      return (
+        <DatatipComponent
+          action={action}
+          actionTitle={actionTitle}
+          onActionClick={this._handlePinClicked.bind(this, editor, datatip)}
+          key={name}>
+          {component}
+        </DatatipComponent>
+      );
     });
-    this._currentRange = range;
 
+    const bestRange = nonEmptyDatatips[0].range;
     // Transform the matched element range to the hint range.
-    const marker: atom$Marker = editor.markBufferRange(range, {invalidate: 'never'});
+    const marker: atom$Marker = editor.markBufferRange(bestRange, {invalidate: 'never'});
     this._marker = marker;
 
-    let action, actionTitle;
-    // Datatips are pinnable by default, unless explicitly specified otherwise.
-    if (pinnable !== false) {
-      action = DATATIP_ACTIONS.PIN;
-      actionTitle = 'Pin this Datatip';
-    }
-
     ReactDOM.render(
-      <DatatipComponent
-        action={action}
-        actionTitle={actionTitle}
-        onActionClick={this._handlePinClicked.bind(this, editor, datatip)}>
-        {component}
-      </DatatipComponent>,
+      <div>{renderedProviders}</div>,
       this._ephemeralDatatipElement
     );
     // This relative positioning is to work around the issue that `position: 'head'`
     // doesn't work for overlay decorators are rendered on the bottom right of the given range.
     // Atom issue: https://github.com/atom/atom/issues/6695
-    const expressionLength = range.end.column - range.start.column;
+    const expressionLength = bestRange.end.column - bestRange.start.column;
     this._ephemeralDatatipElement.style.left =
       -(expressionLength * editor.getDefaultCharWidth()) +  'px';
     this._ephemeralDatatipElement.style.display = 'block';
