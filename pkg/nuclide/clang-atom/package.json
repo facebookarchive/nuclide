@@ -19,6 +19,11 @@
         "0.0.0": "getHyperclickProvider"
       }
     },
+    "nuclide-code-format.provider": {
+      "versions": {
+        "0.0.0": "provideCodeFormat"
+      }
+    },
     "nuclide-diagnostics-provider": {
       "versions": {
         "0.1.0": "provideDiagnostics"

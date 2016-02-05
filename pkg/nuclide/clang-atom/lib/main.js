@@ -15,6 +15,7 @@ import type {
   BusySignalProviderBase as BusySignalProviderBaseType,
 } from '../../busy-signal-provider-base';
 import type {DiagnosticProvider} from '../../diagnostics/base';
+import type {CodeFormatProvider} from '../../code-format/lib/types';
 import type ClangDiagnosticsProvider from './ClangDiagnosticsProvider';
 
 import {CompositeDisposable} from 'atom';
@@ -108,6 +109,10 @@ module.exports = {
 
   provideBusySignal(): BusySignalProviderBaseType {
     return getBusySignalProvider();
+  },
+
+  provideCodeFormat(): CodeFormatProvider {
+    return require('./CodeFormatProvider');
   },
 
   provideDiagnostics(): DiagnosticProvider {

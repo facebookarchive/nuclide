@@ -11,7 +11,7 @@
 
 import type {NuclideUri} from '../../remote-uri';
 
-import {fsPromise, object} from '../../commons';
+import {checkOutput, fsPromise, object} from '../../commons';
 import {BuckUtils} from '../../buck/base/lib/BuckUtils';
 import LRUCache from 'lru-cache';
 import {Observable} from 'rx';
@@ -233,6 +233,34 @@ export function getDeclarationInfo(
     line,
     column,
   });
+}
+
+export async function formatCode(
+  src: NuclideUri,
+  contents: string,
+  cursor: number,
+  offset?: number,
+  length?: number,
+): Promise<{newCursor: number, formatted: string}> {
+  const args = [
+    '-style=file',
+    `-assume-filename=${src}`,
+    `-cursor=${cursor}`,
+  ];
+  if (offset != null) {
+    args.push(`-offset=${offset}`);
+  }
+  if (length != null) {
+    args.push(`-length=${length}`);
+  }
+  const {stdout} = await checkOutput('clang-format', args, {stdin: contents});
+
+  // The first line is a JSON blob indicating the new cursor position.
+  const newLine = stdout.indexOf('\n');
+  return {
+    newCursor: JSON.parse(stdout.substring(0, newLine)).Cursor,
+    formatted: stdout.substring(newLine + 1),
+  };
 }
 
 /**

@@ -54,6 +54,20 @@ module.exports = {
         .getDeclaration(src, editor.getText(), line, column);
   },
 
+  formatCode(editor: atom$TextEditor, range: atom$Range): Promise<{
+    newCursor: number,
+    formatted: string,
+  }> {
+    const fileUri = editor.getPath();
+    const buffer = editor.getBuffer();
+    const cursor = buffer.characterIndexForPosition(editor.getLastCursor().getBufferPosition());
+    const startIndex = buffer.characterIndexForPosition(range.start);
+    const endIndex = buffer.characterIndexForPosition(range.end);
+
+    return getServiceByNuclideUri('ClangService', fileUri)
+        .formatCode(fileUri, editor.getText(), cursor, startIndex, endIndex - startIndex);
+  },
+
   reset(editor: atom$TextEditor) {
     const src = editor.getPath();
     if (src != null) {
