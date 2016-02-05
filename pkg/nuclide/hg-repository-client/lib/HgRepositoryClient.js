@@ -518,14 +518,14 @@ export default class HgRepositoryClient {
     // Note: we don't know the real updated status of the file, so don't send a change event.
     // TODO (jessicalin) Can we make the 'pathStatus' field in the change event optional?
     // Then we can send these events.
-    const hasOptions = options && ('hgStatusOption' in options);
-    if (hasOptions && (options.hgStatusOption === HgStatusOption.ONLY_IGNORED)) {
+    const hgStatusOption = this._getStatusOption(options);
+    if (hgStatusOption === HgStatusOption.ONLY_IGNORED) {
       queriedFiles.forEach(filePath => {
         if (this._hgStatusCache[filePath] === StatusCodeId.IGNORED) {
           delete this._hgStatusCache[filePath];
         }
       });
-    } else if (hasOptions && (options.hgStatusOption === HgStatusOption.ALL_STATUSES)) {
+    } else if (hgStatusOption === HgStatusOption.ALL_STATUSES) {
       // If HgStatusOption.ALL_STATUSES was passed and a file does not appear in
       // the results, it must mean the file was removed from the filesystem.
       queriedFiles.forEach(filePath => {
@@ -580,11 +580,11 @@ export default class HgRepositoryClient {
   _getPredicateForRelevantStatuses(
     options: ?HgStatusCommandOptions
   ): (code: StatusCodeIdValue) => boolean {
-    const hasOptions = options && ('hgStatusOption' in options);
+    const hgStatusOption = this._getStatusOption(options);
 
-    if (hasOptions && (options.hgStatusOption === HgStatusOption.ONLY_IGNORED)) {
+    if (hgStatusOption === HgStatusOption.ONLY_IGNORED) {
       return filterForOnlyIgnored;
-    } else if (hasOptions && (options.hgStatusOption === HgStatusOption.ALL_STATUSES)) {
+    } else if (hgStatusOption === HgStatusOption.ALL_STATUSES) {
       return filterForAllStatues;
     } else {
       return filterForOnlyNotIgnored;
@@ -906,5 +906,12 @@ export default class HgRepositoryClient {
 
   add(filePath: string): Promise<boolean> {
     return this._service.add(filePath);
+  }
+
+  _getStatusOption(options: ?HgStatusCommandOptions): ?HgStatusOptionValue {
+    if (options == null) {
+      return null;
+    }
+    return options.hgStatusOption;
   }
 }
