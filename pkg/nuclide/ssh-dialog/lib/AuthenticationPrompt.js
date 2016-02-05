@@ -56,7 +56,7 @@ export default class AuthenticationPrompt extends React.Component<DefaultProps, 
     );
   }
 
-  _onKeyUp(e: SyntheticEvent): void {
+  _onKeyUp(e: SyntheticKeyboardEvent): void {
     if (e.key === 'Enter') {
       this.props.onConfirm();
     }

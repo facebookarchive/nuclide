@@ -67,7 +67,7 @@ export default class ConnectionDetailsForm extends React.Component {
     });
   }
 
-  _onKeyUp(e: SyntheticEvent): void {
+  _onKeyUp(e: SyntheticKeyboardEvent): void {
     if (e.key === 'Enter') {
       this.props.onConfirm();
     }
