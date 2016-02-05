@@ -1,0 +1,25 @@
+@import "ui-variables";
+
+.nuclide-datatip-overlay {
+  background: @app-background-color;
+  box-shadow: 0px 1px 4px 0px rgba(0,0,0,1);
+  color: @text-color-subtle;
+  font-family: Menlo, Monaco, Consolas, monospace;
+  font-size: @font-size;
+  position: relative;
+  white-space: nowrap;
+}
+
+.nuclide-datatip-container {
+  display: flex;
+  position: relative;
+}
+
+.nuclide-datatip-content {
+  padding: 0.25em 0.5em;
+}
+
+
+atom-text-editor::shadow .nuclide-datatip-highlight-region > .region {
+  background: @background-color-highlight;
+}

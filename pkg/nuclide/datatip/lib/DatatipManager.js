@@ -15,11 +15,14 @@ import type {
 
 import {CompositeDisposable, Disposable} from 'atom';
 import {
+  React,
   ReactDOM,
 } from 'react-for-atom';
 
 import {array, debounce} from '../../commons';
 import {track, trackOperationTiming} from '../../analytics';
+
+import {DatatipComponent} from './DatatipComponent';
 
 const DATATIP_DELAY_MS = 50;
 
@@ -180,7 +183,9 @@ export class DatatipManager {
     this._marker = marker;
 
     ReactDOM.render(
-      component,
+      <DatatipComponent>
+        {component}
+      </DatatipComponent>,
       this._ephemeralDatatipElement
     );
     // This relative positioning is to work around the issue that `position: 'head'`
