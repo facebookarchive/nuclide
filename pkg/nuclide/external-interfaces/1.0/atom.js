@@ -299,6 +299,9 @@ declare class atom$Pane {
   setFlexScale(flexScale: number): number;
 }
 
+// TODO improve this type
+type atom$PaneItem = Object;
+
 // Undocumented class
 declare class atom$PaneAxis {
   getFlexScale(): number;
@@ -722,11 +725,17 @@ type atom$TextEditorParams = {
   lineNumberGutterVisible?: boolean,
 };
 
+type DestroyPaneItemEvent = {
+  item: atom$PaneItem,
+  pane: atom$Pane,
+  index: number,
+};
+
 declare class atom$Workspace {
   // Event Subscription
   observeTextEditors(callback: (editor: atom$TextEditor) => mixed): IDisposable;
   onDidChangeActivePaneItem(callback: (item: mixed) => mixed): IDisposable;
-  onDidDestroyPaneItem(callback: (event: mixed) => mixed): IDisposable;
+  onDidDestroyPaneItem(callback: (event: DestroyPaneItemEvent) => mixed): IDisposable;
   observeActivePaneItem(callback: (item: ?mixed) => mixed): IDisposable;
   observePaneItems(callback: (item: mixed) => mixed): IDisposable;
   onWillDestroyPaneItem(
