@@ -240,9 +240,7 @@ export class SshHandshake {
 
   _forwardSocket(socket: net.Socket): void {
     this._connection.forwardOut(
-      /* $FlowIssue t9212378 */
       socket.remoteAddress,
-      /* $FlowIssue t9212378 */
       socket.remotePort,
       'localhost',
       this._remotePort,

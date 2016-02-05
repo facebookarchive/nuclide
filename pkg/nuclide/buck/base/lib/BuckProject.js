@@ -265,7 +265,6 @@ export class BuckProject {
         }
         if (runOptions.appArgs) {
           args.push('--');
-          // $FlowIssue runOptions.run == true => appArgs must be set.
           args = args.concat(runOptions.appArgs);
         }
       }

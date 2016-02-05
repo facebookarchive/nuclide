@@ -59,6 +59,7 @@ function printImportDeclaration(print: Print, node: ImportDeclaration): Lines {
   return flatten([
     'import',
     markers.space,
+    // $FlowFixMe(kad): add importKind to ast-types-flow
     node.importKind === 'type' ? ['type', markers.space] : markers.empty,
     specifiers,
     markers.space,

@@ -131,6 +131,7 @@ class ModuleMap {
       );
     } else if (
       this._defaults.has(id) &&
+      // $FlowFixMe(kad)
       this._defaults.get(id).size === 1
     ) {
       // TODO: What's the best way to get the single thing out of a one element
@@ -143,6 +144,7 @@ class ModuleMap {
     } else if (
       options.sourcePath &&
       this._defaultsToRelativize.has(id) &&
+      // $FlowFixMe(kad)
       this._defaultsToRelativize.get(id).size === 1
     ) {
       const nonNullSourcePath = options.sourcePath;

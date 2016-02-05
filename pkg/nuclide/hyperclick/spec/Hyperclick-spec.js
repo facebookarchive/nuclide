@@ -65,7 +65,6 @@ describe('Hyperclick', () => {
   }
 
   function dispatch(
-      // $FlowIssue KeyboardEvent isn't defined.
       eventClass: typeof KeyboardEvent | typeof MouseEvent,
       type: string,
       position: atom$Point,

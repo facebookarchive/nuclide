@@ -8,6 +8,7 @@
 .*/node_modules/rx/.*
 # Annotated with `@flow` but has errors
 .*/node_modules/fixed-data-table/internal/.*
+.*/node_modules/sabor/.*
 
 [libs]
 ./pkg/nuclide/external-interfaces/1.0/
@@ -22,4 +23,4 @@ suppress_comment=.*\\$FlowIgnore.*
 unsafe.enable_getters_and_setters=true
 
 [version]
-0.20.1
+0.21.0

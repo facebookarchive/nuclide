@@ -77,7 +77,6 @@ describe('debugger-hhvm-proxy DbgpSocket', () => {
   it('dispose', () => {
     dbgpSocket.dispose();
     expect(socket.end).toHaveBeenCalled();
-    // $FlowIssue net.Socket.destroy not defined.
     expect(socket.destroy).toHaveBeenCalled();
   });
 

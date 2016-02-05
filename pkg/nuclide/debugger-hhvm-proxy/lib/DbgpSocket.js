@@ -309,7 +309,6 @@ class DbgpSocket {
       // end - Sends the FIN packet and closes writing.
       // destroy - closes for reading and writing.
       socket.end();
-      // $FlowIssue - t9258852
       socket.destroy();
       this._socket = null;
       this._isClosed = true;

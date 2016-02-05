@@ -18,6 +18,7 @@ const markers = require('../constants/markers');
 function resolveDuplicateCursors(lines: Array<any>): Array<any> {
   let seenCursor = false;
   return lines.map(line => {
+    // $FlowFixMe(kad, t9954160)
     if (line === markers.cursor) {
       if (seenCursor) {
         return markers.empty;

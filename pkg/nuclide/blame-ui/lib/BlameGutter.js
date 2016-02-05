@@ -64,7 +64,6 @@ export default class {
       // We also want to style the changeset differently if it is clickable.
       this._changesetSpanClassName += ' ' + CLICKABLE_CHANGESET_CSS_CLASS;
 
-      // $FlowIssue: https://github.com/facebook/flow/issues/1242
       const onClick: (evt: Event) => Promise<void> = this._onClick.bind(this);
       const gutterView: HTMLElement = atom.views.getView(this._gutter);
       gutterView.addEventListener('click', onClick);

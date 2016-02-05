@@ -501,7 +501,7 @@ declare class atom$TextEditor extends atom$Model {
   getPath(): ?string;
   isModified(): boolean;
   isEmpty(): boolean;
-  getEncoding(): string;
+  getEncoding(): buffer$Encoding;
   setEncoding(encoding: string): void;
 
   // File Operations

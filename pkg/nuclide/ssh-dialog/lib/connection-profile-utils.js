@@ -41,6 +41,7 @@ export function getDefaultConnectionProfile(): NuclideRemoteConnectionProfile {
   // Only use the user's last saved remote server command if there has been no
   // change (upgrade) in the official remote server command.
   let remoteServerCommand = currentOfficialRSC;
+  // $FlowFixMe
   if (lastConnectionDetails.lastOfficialRemoteServerCommand === currentOfficialRSC
       && lastConfig.remoteServerCommand) {
     remoteServerCommand = lastConfig.remoteServerCommand;

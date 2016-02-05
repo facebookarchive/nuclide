@@ -30,6 +30,7 @@ function printExportNamedDeclaration(
     parts = parts.concat([
       print(node.declaration),
     ]);
+  // $FlowFixMe(kad): add exportKind to ast-types-flow
   } else if (node.exportKind === 'type') {
     // If there is a declaration and the kind is 'type', the declaration must
     // be a type alias of some sort which already includes the word 'type'.

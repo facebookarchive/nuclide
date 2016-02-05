@@ -41,7 +41,6 @@ function startServer(args) {
       rejectUnauthorized: true,
     };
 
-    // $FlowIssue https://github.com/facebook/flow/issues/1137
     _webServer = https.createServer(webServerOptions, handleRequest);
     console.log('running in secure mode'); //eslint-disable-line no-console
   } else {

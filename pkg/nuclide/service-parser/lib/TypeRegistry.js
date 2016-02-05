@@ -360,7 +360,6 @@ export default class TypeRegistry {
       regStr = (regStr instanceof String) ? regStr.valueOf() : regStr;
 
       assert(typeof regStr === 'string', 'Expected a string argument.');
-      // $FlowIssue - flesh out the vm module.
       return vm.runInThisContext(regStr);
     });
 
