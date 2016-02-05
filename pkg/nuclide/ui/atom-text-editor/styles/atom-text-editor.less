@@ -31,3 +31,16 @@ atom-text-editor .ansi.intensive,
 atom-text-editor::shadow .ansi.intensive {
   font-weight: bold;
 }
+
+// Absolute positioning needed for editor scrollability.
+.nuclide-text-editor-container {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+
+  atom-text-editor {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+  }
+}

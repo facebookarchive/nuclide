@@ -106,8 +106,6 @@ class AtomTextEditor extends React.Component {
     atom.views.views.set(textEditor, textEditorElement);
     // Attach to DOM.
     container.innerHTML = '';
-    textEditorElement.style.height = '100%';
-    textEditorElement.style.overflow = 'hidden';
     container.appendChild(textEditorElement);
   }
 
@@ -138,7 +136,7 @@ class AtomTextEditor extends React.Component {
 
   render(): ReactElement {
     return (
-      <div />
+      <div className="nuclide-text-editor-container"/>
     );
   }
 
