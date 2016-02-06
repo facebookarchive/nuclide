@@ -58,6 +58,22 @@ async function _findClangServerArgs(): Promise<{
   }
 }
 
+let getDefaultFlags;
+async function augmentDefaultFlags(src: string, flags: Array<string>): Promise<Array<string>> {
+  if (getDefaultFlags === undefined) {
+    getDefaultFlags = null;
+    try {
+      getDefaultFlags = require('./fb/get-default-flags');
+    } catch (e) {
+      // Open-source version
+    }
+  }
+  if (getDefaultFlags != null) {
+    return flags.concat(await getDefaultFlags(src));
+  }
+  return flags;
+}
+
 type Connection = {
   dispose: () => any,
   readableStream: stream$Readable,
@@ -216,7 +232,7 @@ export default class ClangServer {
       if (defaultFlags == null) {
         return null;
       }
-      flags = defaultFlags;
+      flags = await augmentDefaultFlags(this._src, defaultFlags);
       accurateFlags = false;
     }
 
