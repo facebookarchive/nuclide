@@ -102,6 +102,18 @@ UI. Breakpoints are managed in the gutter to the left of your code and line numb
 | `shift-f11` | `shift-f11` | `nuclide-debugger:step-out` | If you have stepped into a piece of code, this will step out to the point on which you entered that piece of code. For example, if you stepped into a method, this will step out back to the method call itself. |
 | `shift-f5` | `shift-f5` | `nuclide-debugger:stop-debugging` | Stop the actual debugging process. |
 
+## Editor Panes
+
+These are keyboard shortcuts with respect to moving currently active files in the editor around the
+main panes.
+
+| Key (Mac) | Key (Linux) | Command | Description |
+|-----------|-------------|---------|-------------|
+| `cmd-k-down` | `ctrl-k-down` | `nuclide-move-pane:move-tab-to-new-pane-down` | Moves the currently active file in the editor to a bottom pane. |
+| `cmd-k-right` | `ctrl-k-right` | `nuclide-move-pane:move-tab-to-new-pane-right` | Moves the currently active file in the editor to a right pane. | |
+| `cmd-k-up` | `ctrl-k-up` | `nuclide-move-pane:move-tab-to-new-pane-up` | Moves the currently active file in the editor to a top pane. | |
+| `cmd-k-left` | `ctrl-k-left` | `nuclide-move-pane:move-tab-to-new-pane-left` | Moves the currently active file in the editor to a left pane. |
+
 ## Custom Bindings
 
 To add your own keybindings for Nuclide commands, edit your ~/.atom/keymap.cson. If you aren't
