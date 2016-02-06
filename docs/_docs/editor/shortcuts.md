@@ -127,6 +127,19 @@ main panes.
 | `cmd-k-up` | `ctrl-k-up` | `nuclide-move-pane:move-tab-to-new-pane-up` | Moves the currently active file in the editor to a top pane. | |
 | `cmd-k-left` | `ctrl-k-left` | `nuclide-move-pane:move-tab-to-new-pane-left` | Moves the currently active file in the editor to a left pane. |
 
+## Miscellaneous
+
+These are other key-based shortcuts that are included with Nuclide, including hyperclick, clipboard
+and Nuclide health actions.
+
+| Key (Mac) | Key (Linux) | Command | Description |
+|-----------|-------------|---------|-------------|
+| `option-cmd-enter` | `alt-ctrl-enter` | `hyperclick:confirm-cursor` | When using hyperclick, this will confirm the hyperclick action you want to take. |
+| `ctrl-option-shift-H` | `ctrl-alt-shift-H` | `nuclide-health:toggle` | Toggle the Nuclide health tab, which show details about the Nuclide process itself (how much CPU, memory is being used, etc.). |
+| `ctrl-option-shift-X` | `ctrl-alt-shift-X` | `nuclide-clipboard-path:copy-project-relative-path` | Copy the relative path of the current file to the clipboard. |
+| `ctrl-shift-X` | `ctrl-shift-X` | `nuclide-clipboard-path:copy-absolute-path` | Copy the absolute path of the current file to the clipboard. |
+| `ctrl-option-X` | `ctrl-alt-X` | `nuclide-clipboard-path:copy-repository-relative-path` | Copy the relative path of the current file starting at the root of the Mercurial repository. |
+
 ## Custom Bindings
 
 To add your own keybindings for Nuclide commands, edit your ~/.atom/keymap.cson. If you aren't
