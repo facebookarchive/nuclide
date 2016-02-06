@@ -72,6 +72,22 @@ The file tree is the left-hand side pane where a tree of all of your project fil
 | `cmd-|` | `ctrl-|` | `reveal-active-file` | Shows the file that is currently active in the main workspace in the file tree. | |
 | `ctrl-O` | `ctrl-O` | `toggle-focus` | Toggles the focus of the current active file. | |
 
+## Debugger
+
+The Nuclide debugger attaches to a running process. The UI is built upon the Chrome Developer Tools
+UI. Breakpoints are managed in the gutter to the left of your code and line numbers.
+
+| Key (Mac) | Key (Linux) | Command | Description |
+|-----------|-------------|---------|-------------|
+| `option-cmd-I` | `alt-ctrl-I` | `window:toggle-dev-tools` | Toggle the developer tools UI. |
+| `shift-cmd-Y` | `shift-ctrl-Y` | `nuclide-debugger:toggle` | Toggles the process attachment UI where you will choose the process on which you would like to debug (e.g., a Node process, etc.) |
+| `f8` | `f8` | `nuclide-debugger:continue-debugging` | After stopping at a breakpoint, and possibly stepping throughout code, this will enable debugging to continue to the next breakpoint or end of the process. |
+| `f9` | `f9` | `nuclide-debugger:toggle-breakpoint` | If a breakpoint is set, this will unset that breakpoint; and vice-versa. |
+| `f10` | `f10` | `nuclide-debugger:step-over` | Step over a piece of code. For example, if you are stopped at a method call, this will execute that method without stepping through it line-by-line. |
+| `f11` | `f11` | `nuclide-debugger:step-into` | Step into a piece of code. For example, if you are stopped at a method call, this will go into the first line of that method. |
+| `shift-f11` | `shift-f11` | `nuclide-debugger:step-out` | If you have stepped into a piece of code, this will step out to the point on which you entered that piece of code. For example, if you stepped into a method, this will step out back to the method call itself. |
+| `shift-f5` | `shift-f5` | `nuclide-debugger:stop-debugging` | Stop the actual debugging process. |
+
 ## Custom Bindings
 
 To add your own keybindings for Nuclide commands, edit your ~/.atom/keymap.cson. If you aren't
