@@ -18,6 +18,7 @@ import type {
   MessageInvalidationCallback,
 } from '../../diagnostics/base';
 
+import invariant from 'assert';
 import {GRAMMAR_SET} from './constants';
 import {DiagnosticsProviderBase} from '../../diagnostics/provider-base';
 import {trackTiming} from '../../analytics';
@@ -25,6 +26,10 @@ import {array} from '../../commons';
 import {getLogger} from '../../logging';
 import {getDiagnostics} from './libclang';
 import {CompositeDisposable, Range} from 'atom';
+
+const DEFAULT_FLAGS_WARNING =
+  'Diagnostics are disabled due to lack of compilation flags. ' +
+  'Build this file with Buck, or create a compile_commands.json file manually.';
 
 class ClangDiagnosticsProvider {
   _providerBase: DiagnosticsProviderBase;
@@ -96,46 +101,63 @@ class ClangDiagnosticsProvider {
     textEditor: atom$TextEditor,
   ): Map<NuclideUri, Array<FileDiagnosticMessage>> {
     const filePathToMessages = new Map();
-    data.diagnostics.forEach(diagnostic => {
-      // We show only warnings, errors and fatals (2, 3 and 4, respectively).
-      if (diagnostic.severity < 2) {
-        return;
-      }
+    if (data.accurateFlags) {
+      data.diagnostics.forEach(diagnostic => {
+        // We show only warnings, errors and fatals (2, 3 and 4, respectively).
+        if (diagnostic.severity < 2) {
+          return;
+        }
 
-      // Clang adds file-wide errors on line -1, so we put it on line 0 instead.
-      // The usual file-wide error is 'too many errors emitted, stopping now'.
-      const line = Math.max(0, diagnostic.location.line);
-      const col = 0;
-      let range;
-      if (diagnostic.ranges) {
-        // Use the first range from the diagnostic as the range for Linter.
-        const clangRange = diagnostic.ranges[0];
-        range = new Range(
-          [clangRange.start.line, clangRange.start.column],
-          [clangRange.end.line, clangRange.end.column]
-        );
-      } else {
-        range = new Range(
-          [line, col],
-          [line, textEditor.getBuffer().lineLengthForRow(line)]
-        );
-      }
+        // Clang adds file-wide errors on line -1, so we put it on line 0 instead.
+        // The usual file-wide error is 'too many errors emitted, stopping now'.
+        const line = Math.max(0, diagnostic.location.line);
+        const col = 0;
+        let range;
+        if (diagnostic.ranges) {
+          // Use the first range from the diagnostic as the range for Linter.
+          const clangRange = diagnostic.ranges[0];
+          range = new Range(
+            [clangRange.start.line, clangRange.start.column],
+            [clangRange.end.line, clangRange.end.column]
+          );
+        } else {
+          let endCol = 1000;
+          const buffer = textEditor.getBuffer();
+          if (line <= buffer.getLastRow()) {
+            endCol = buffer.lineLengthForRow(line);
+          }
+          range = new Range([line, col], [line, endCol]);
+        }
 
-      const {file: filePath} = diagnostic.location;
-      let messages = filePathToMessages.get(filePath);
-      if (messages == null) {
-        messages = [];
-        filePathToMessages.set(filePath, messages);
-      }
-      messages.push({
-        scope: 'file',
-        providerName: 'Clang',
-        type: diagnostic.severity === 2 ? 'Warning' : 'Error',
-        filePath,
-        text: diagnostic.spelling,
-        range,
+        const {file: filePath} = diagnostic.location;
+        let messages = filePathToMessages.get(filePath);
+        if (messages == null) {
+          messages = [];
+          filePathToMessages.set(filePath, messages);
+        }
+        messages.push({
+          scope: 'file',
+          providerName: 'Clang',
+          type: diagnostic.severity === 2 ? 'Warning' : 'Error',
+          filePath,
+          text: diagnostic.spelling,
+          range,
+        });
       });
-    });
+    } else {
+      const filePath = textEditor.getPath();
+      invariant(filePath);
+      filePathToMessages.set(filePath, [
+        {
+          scope: 'file',
+          providerName: 'Clang',
+          type: 'Warning',
+          filePath,
+          text: DEFAULT_FLAGS_WARNING,
+          range: new Range([0, 0], [1, 0]),
+        },
+      ]);
+    }
 
     return filePathToMessages;
   }
