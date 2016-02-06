@@ -72,6 +72,20 @@ The file tree is the left-hand side pane where a tree of all of your project fil
 | `cmd-|` | `ctrl-|` | `reveal-active-file` | Shows the file that is currently active in the main workspace in the file tree. | |
 | `ctrl-O` | `ctrl-O` | `toggle-focus` | Toggles the focus of the current active file. | |
 
+## Files
+
+Whether switching between or searching for or within files, there are some keyboard shortcuts to
+help accomplish file tasks a bit faster.
+
+| Key (Mac) | Key (Linux) | Command | Description |
+|-----------|-------------|---------|-------------|
+| `cmd-t` | `ctrl-t` | `nuclide-quick-open:find-anything-via-omni-search` | Use this for a global search of anything within your project, including all files, currently open files, etc. |
+| `option-cmd-o` | `alt-ctrl-o` | `nuclide-open-filenames-provider:toggle-provider` | This lets you switch between files that are currently open in the editor. Useful if you have a bunch of files open and you want quick access to them. |
+| `option-cmd-r` | `alt-ctrl-r` | `nuclide-recent-files-provider:toggle-provider` | This will show you files that you have recently opened and used in previous sessions of Nuclide.  |
+| `option-cmd-t`| `alt-ctrl-t` | `nuclide-fuzzy-filename-provider:toggle-provider` | This allows you to search for files based on patterns. |            
+| `option-cmd-n`| `alt-ctrl-n` | `nuclide-related-files:jump-to-next-related-file` | Find files related to the current file. A file is related if they have the same basename, but a different extension, for example. |
+
+
 ## Debugger
 
 The Nuclide debugger attaches to a running process. The UI is built upon the Chrome Developer Tools
