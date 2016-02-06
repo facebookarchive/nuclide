@@ -4,7 +4,7 @@
 - title: Editor
   items:
   - id: setup
-  - id: shortcuts
+  - id: keyboard-shortcuts
   - id: uninstall
 - title: Feature Guides
   items:

@@ -5,9 +5,9 @@ layout: docs
 permalink: /docs/advanced-topics/custom-keybindings/
 ---
 
-Nuclide has a bunch of built-in bindings to help you be productive from the keyboard. However, you
-may want to add your own keybindings for Nuclide commands as well. This is fairly easily done with
-some CSON editing.
+Nuclide has a bunch of [built-in bindings](/docs/editor/keyboard-shortcuts) to help you be
+productive from the keyboard. However, you may want to add your own keybindings for Nuclide
+commands as well. This is fairly easily done with some CSON editing.
 
 ## Keymap CSON
 

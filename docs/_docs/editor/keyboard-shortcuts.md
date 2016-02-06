@@ -1,8 +1,8 @@
 ---
-id: shortcuts
+id: keyboard-shortcuts
 title: Keyboard Shortcuts
 layout: docs
-permalink: /docs/editor/shortcuts/
+permalink: /docs/editor/keyboard-shortcuts/
 ---
 
 You can perform many tasks in Nuclide from the keyboard. Below are the various keyboard shortcuts
@@ -55,11 +55,11 @@ These shortcuts provide quick access to development features such as diff view, 
 
 | Key (Mac) | Key (Linux) | Command | Description |
 |-----------|-------------|---------|-------------|
-| `option-shift-cmd-D` | `alt-shift-ctrl-D` | `nuclide-diff-view:open` | This will open the diff view, which shows you the difference between the original version of a file and the current version of the file on which changes were made.
-| `option-shift-cmd-F` | `alt-shift-ctrl-F` | `nuclide-find-references:activate` | In projects such as Hack or Flow, this will allow you to find all the references to a selected, highlighted entity in your project.
-| `option-shift-D` | `alt-shift-D` | `nuclide-diagnostics-ui:toggle-table`  | Display the window showing you messages about your code. Possible messages include lint, compiler errors, etc.
-| `option-shift-A` | `option-shift-A` | `nuclide-diagnostics-ui:fix-all-in-current-file` | Nuclide can fix certain types of problems for you automatically, including various lint problems. This will allow all those to be fixed in the current file.
-| `option-cmd-y` | `alt-cmd-y` | `nuclide-hack-symbol-provider:toggle-provider` | Allows you to search for Hack function, classes and constants within you Hack project.
+| `option-shift-cmd-D` | `alt-shift-ctrl-D` | `nuclide-diff-view:open` | This will open the diff view, which shows you the difference between the original version of a file and the current version of the file on which changes were made. |
+| `option-shift-cmd-F` | `alt-shift-ctrl-F` | `nuclide-find-references:activate` | In projects such as Hack or Flow, this will allow you to find all the references to a selected, highlighted entity in your project. |
+| `option-shift-D` | `alt-shift-D` | `nuclide-diagnostics-ui:toggle-table`  | Display the window showing you messages about your code. Possible messages include lint, compiler errors, etc. |
+| `option-shift-A` | `option-shift-A` | `nuclide-diagnostics-ui:fix-all-in-current-file` | Nuclide can fix certain types of problems for you automatically, including various lint problems. This will allow all those to be fixed in the current file. |
+| `option-cmd-y` | `alt-cmd-y` | `nuclide-hack-symbol-provider:toggle-provider` | Allows you to search for Hack function, classes and constants within you Hack project. |
 
 ## File Tree
 
@@ -89,12 +89,12 @@ The file tree is the left-hand side pane where a tree of all of your project fil
 Whether switching between or searching for or within files, there are some keyboard shortcuts to
 help accomplish file tasks a bit faster.
 
-| Key (Mac) | Key (Linux) | Command | Description |
-|-----------|-------------|---------|-------------|
-| `cmd-t` | `ctrl-t` | `nuclide-quick-open:find-anything-via-omni-search` | Use this for a global search of anything within your project, including all files, currently open files, etc. |
+| Key (Mac) | Key (Linux) | Command | Description | Alternative |
+|-----------|-------------|---------|-------------|-------------|
+| `cmd-p` | `ctrl-p` | `nuclide-quick-open:find-anything-via-omni-search` | Use this for a global search of anything within your project, including all files, currently open files, etc. | `cmd-t` (Mac) or `ctrl-t` (Linux) |
 | `option-cmd-o` | `alt-ctrl-o` | `nuclide-open-filenames-provider:toggle-provider` | This lets you switch between files that are currently open in the editor. Useful if you have a bunch of files open and you want quick access to them. |
 | `option-cmd-r` | `alt-ctrl-r` | `nuclide-recent-files-provider:toggle-provider` | This will show you files that you have recently opened and used in previous sessions of Nuclide.  |
-| `option-cmd-t`| `alt-ctrl-t` | `nuclide-fuzzy-filename-provider:toggle-provider` | This allows you to search for files based on patterns. |            
+| `option-cmd-t`| `alt-ctrl-t` | `nuclide-fuzzy-filename-provider:toggle-provider` | This allows you to search for files based on patterns. |
 | `option-cmd-n`| `alt-ctrl-n` | `nuclide-related-files:jump-to-next-related-file` | Find files related to the current file. A file is related if they have the same basename, but a different extension, for example. |
 
 
