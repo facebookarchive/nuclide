@@ -32,22 +32,17 @@ sequence".
 
 ## Common Bindings
 
-To open a file in Nuclide, hit `⌘-p`, which will open a file finder dialog that does fuzzy
-matching on your input against file paths. This basically acts as an autocomplete for what you
-type, though it has some tolerance for misspellings.
+These are also described in their respective sections below, but this provides a quick access table
+for the most common shortcuts provided by Nuclide.
 
-To split editor panes in Nuclide, hit `⌘-k <arrow>` to split in the direction of arrow (i.e., ←,
-↑, →, or ↓). You will no longer be constrained to two panes as you are in Xcode! You can navigate
-between editor panes in Nuclide with `⌘-k ⌘-<arrow>`. You can also use `⌘-k ⌘-n` or `⌘-k ⌘-p`
-to focus the next or previous pane, respectively.
-
-To toggle the file tree view, hit `⌘-\`. Use `ctrl-0` to toggle focus between the tree view and
-your editor.
-
-To see what other commands Nuclide supports, hit `⌘-shift-p`. This performs fuzzy matching on your
-input to match commands that Nuclide can perform. As you can see, this also reveals whether there
-is already a keyboard shortcut associated with the command. For example, if you type focus as your
-query, you can see all of the commands associated with changing focus in Nuclide.
+| Key (Mac) | Key (Linux) | Description |
+|-----------|-------------|-------------|
+| `cmd-p` | `ctrl-p` | Use omnisearch to open files, etc. |
+| `cmd-\` | `ctrl-\` | Toggle the file tree. |
+| `ctrl-0` | `ctrl-0` | Toggle between the editor and the file tree. |
+| `cmd-k-<arrow>` | `ctrl-k-<arrow>` | Split the current file to the pane represented by `<arrow>`, where `<arrow>` is the down, up, left or right arrow. |
+| `option-shift-cmd-D` | `alt-shift-ctrl-D` | Open the diff view. |
+| `option-shift-D` | `alt-shift-D` | Open the code diagnostics window. |
 
 ## Development
 
