@@ -49,6 +49,19 @@ input to match commands that Nuclide can perform. As you can see, this also reve
 is already a keyboard shortcut associated with the command. For example, if you type focus as your
 query, you can see all of the commands associated with changing focus in Nuclide.
 
+## Development
+
+These shortcuts provide quick access to development features such as diff view, diagnostics
+(e.g, linting), etc.
+
+| Key (Mac) | Key (Linux) | Command | Description |
+|-----------|-------------|---------|-------------|
+| `option-shift-cmd-D` | `alt-shift-ctrl-D` | `nuclide-diff-view:open` | This will open the diff view, which shows you the difference between the original version of a file and the current version of the file on which changes were made.
+| `option-shift-cmd-F` | `alt-shift-ctrl-F` | `nuclide-find-references:activate` | In projects such as Hack or Flow, this will allow you to find all the references to a selected, highlighted entity in your project.
+| `option-shift-D` | `alt-shift-D` | `nuclide-diagnostics-ui:toggle-table`  | Display the window showing you messages about your code. Possible messages include lint, compiler errors, etc.
+| `option-shift-A` | `option-shift-A` | `nuclide-diagnostics-ui:fix-all-in-current-file` | Nuclide can fix certain types of problems for you automatically, including various lint problems. This will allow all those to be fixed in the current file.
+| `option-cmd-y` | `alt-cmd-y` | `nuclide-hack-symbol-provider:toggle-provider` | Allows you to search for Hack function, classes and constants within you Hack project.
+
 ## File Tree
 
 The file tree is the left-hand side pane where a tree of all of your project files are shown.
