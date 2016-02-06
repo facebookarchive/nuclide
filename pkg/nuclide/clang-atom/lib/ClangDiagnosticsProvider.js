@@ -24,16 +24,17 @@ import {trackTiming} from '../../analytics';
 import {array} from '../../commons';
 import {getLogger} from '../../logging';
 import {getDiagnostics} from './libclang';
-import {Range} from 'atom';
+import {CompositeDisposable, Range} from 'atom';
 
 class ClangDiagnosticsProvider {
   _providerBase: DiagnosticsProviderBase;
   _busySignalProvider: BusySignalProviderBase;
 
-  // Clang can often point out errors in other files (e.g. included header files).
-  // We need to keep track of all the error locations for each file so they can be cleared
-  // when diagnostics are updated.
-  _diagnosticPaths: Map<NuclideUri, Array<NuclideUri>>;
+  // Keep track of the diagnostics created by each text buffer.
+  // Diagnostics will be removed once the file is closed.
+  _bufferDiagnostics: WeakMap<atom$TextBuffer, Array<NuclideUri>>;
+  _hasSubscription: WeakMap<atom$TextBuffer, boolean>;
+  _subscriptions: atom$CompositeDisposable;
 
   constructor(busySignalProvider: BusySignalProviderBase) {
     const options = {
@@ -43,7 +44,10 @@ class ClangDiagnosticsProvider {
     };
     this._providerBase = new DiagnosticsProviderBase(options);
     this._busySignalProvider = busySignalProvider;
-    this._diagnosticPaths = new Map();
+
+    this._bufferDiagnostics = new WeakMap();
+    this._hasSubscription = new WeakMap();
+    this._subscriptions = new CompositeDisposable();
   }
 
   runDiagnostics(editor: atom$TextEditor): void {
@@ -60,15 +64,28 @@ class ClangDiagnosticsProvider {
       return;
     }
 
+    const buffer = textEditor.getBuffer();
+    if (!this._hasSubscription.get(buffer)) {
+      const disposable = buffer.onDidDestroy(() => {
+        this.invalidateBuffer(buffer);
+        this._hasSubscription.delete(buffer);
+        this._subscriptions.remove(disposable);
+        disposable.dispose();
+      });
+      this._hasSubscription.set(buffer, true);
+      this._subscriptions.add(disposable);
+    }
+
     try {
       const diagnostics = await getDiagnostics(textEditor);
-      if (diagnostics == null) {
+      // It's important to make sure that the buffer hasn't already been destroyed.
+      if (diagnostics == null || !this._hasSubscription.get(buffer)) {
         return;
       }
       const filePathToMessages = this._processDiagnostics(diagnostics, textEditor);
-      this.invalidatePath(filePath);
+      this.invalidateBuffer(buffer);
       this._providerBase.publishMessageUpdate({filePathToMessages});
-      this._diagnosticPaths.set(filePath, array.from(filePathToMessages.keys()));
+      this._bufferDiagnostics.set(buffer, array.from(filePathToMessages.keys()));
     } catch (error) {
       getLogger().error(error);
     }
@@ -123,8 +140,8 @@ class ClangDiagnosticsProvider {
     return filePathToMessages;
   }
 
-  invalidatePath(path: NuclideUri): void {
-    const filePaths = this._diagnosticPaths.get(path);
+  invalidateBuffer(buffer: atom$TextBuffer): void {
+    const filePaths = this._bufferDiagnostics.get(buffer);
     if (filePaths != null) {
       this._providerBase.publishMessageInvalidation({scope: 'file', filePaths});
     }
@@ -145,21 +162,9 @@ class ClangDiagnosticsProvider {
     return this._providerBase.onMessageInvalidation(callback);
   }
 
-  invalidateProjectPath(projectPath: NuclideUri): void {
-    const filePaths = new Set();
-    for (const [path, errorPaths] of this._diagnosticPaths) {
-      if (path.startsWith(projectPath)) {
-        errorPaths.forEach(x => filePaths.add(x));
-      }
-    }
-    this._providerBase.publishMessageInvalidation({
-      scope: 'file',
-      filePaths: array.from(filePaths),
-    });
-  }
-
   dispose() {
     this._providerBase.dispose();
+    this._subscriptions.dispose();
   }
 
 }

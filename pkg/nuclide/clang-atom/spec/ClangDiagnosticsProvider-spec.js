@@ -17,16 +17,20 @@ describe('ClangDiagnosticsProvider', () => {
 
   const TEST_PATH = '/path/test.cpp';
   const TEST_PATH2 = '/path/asdf';
+  const fakeBuffer = {
+    lineLengthForRow() {
+      return 1;
+    },
+    getLastRow() {
+      return 1000;
+    },
+  };
   const fakeEditor: any = {
     getPath() {
       return TEST_PATH;
     },
-    getBuffer() {
-      return {
-        lineLengthForRow() {
-          return 1;
-        },
-      };
+    getBuffer(): any {
+      return fakeBuffer;
     },
   };
 
@@ -128,20 +132,20 @@ describe('ClangDiagnosticsProvider', () => {
     });
   });
 
-  describe('invalidateProjectPath', () => {
-    it('should invalidate all errors in the directory', () => {
-      diagnosticsProvider._diagnosticPaths.set(TEST_PATH, [
+  describe('invalidateBuffer', () => {
+    it('should invalidate the specified text buffer', () => {
+      diagnosticsProvider._bufferDiagnostics.set(fakeEditor.getBuffer(), [
         TEST_PATH,
         TEST_PATH + '.test',
         '/asdf',
       ]);
       // Should not be invalidated
-      diagnosticsProvider._diagnosticPaths.set('/other/asdf', [
+      diagnosticsProvider._bufferDiagnostics.set(({}: any), [
         TEST_PATH + '.test2',
       ]);
 
       spyOn(diagnosticsProvider._providerBase, 'publishMessageInvalidation');
-      diagnosticsProvider.invalidateProjectPath('/path');
+      diagnosticsProvider.invalidateBuffer(fakeEditor.getBuffer());
       expect(diagnosticsProvider._providerBase.publishMessageInvalidation)
         .toHaveBeenCalledWith({
           scope: 'file',

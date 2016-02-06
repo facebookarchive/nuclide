@@ -44,7 +44,6 @@ function getDiagnosticsProvider(): ClangDiagnosticsProvider {
 
 module.exports = {
   activate() {
-    const {projects} = require('../../atom-helpers');
     subscriptions = new CompositeDisposable();
     // Provide a 'Clean and rebuild' command to restart the Clang server for the current file
     // and reset all compilation flags. Useful when BUCK targets or headers change,
@@ -62,17 +61,11 @@ module.exports = {
         const {reset} = require('./libclang');
         await reset(editor);
         if (diagnosticProvider != null) {
-          diagnosticProvider.invalidatePath(path);
+          diagnosticProvider.invalidateBuffer(editor.getBuffer());
           diagnosticProvider.runDiagnostics(editor);
         }
       }),
     );
-    // Invalidate all diagnostics when closing the project.
-    subscriptions.add(projects.onDidRemoveProjectPath(projectPath => {
-      if (diagnosticProvider != null) {
-        diagnosticProvider.invalidateProjectPath(projectPath);
-      }
-    }));
   },
 
   /** Provider for autocomplete service. */
