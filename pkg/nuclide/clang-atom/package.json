@@ -6,7 +6,24 @@
   "description": "Exposes features from nuclide-clang in Atom",
   "nuclide": {
     "packageType": "Atom",
-    "testRunner": "apm"
+    "testRunner": "apm",
+    "config": {
+      "enableDefaultFlags": {
+        "title": "Enable Default Compilation Flags",
+        "type": "boolean",
+        "default": "true",
+        "description": "Attempt to use Clang with *Default Compilation Flags* if they cannot be determined via Buck or `compile_commands.json`."
+      },
+      "defaultFlags": {
+        "title": "Default Compilation Flags",
+        "type": "array",
+        "default": ["-std=c++14", "-x", "c++"],
+        "description": "List of default flags to use with Clang, if enabled.",
+        "items": {
+          "type": "string"
+        }
+      }
+    }
   },
   "providedServices": {
     "autocomplete.provider": {

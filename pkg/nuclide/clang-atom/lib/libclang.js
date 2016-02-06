@@ -15,20 +15,35 @@ import type {
   ClangDeclarationResult,
 } from '../../clang';
 
+import featureConfig from '../../feature-config';
 import {getServiceByNuclideUri} from '../../remote-connection';
+
+type NuclideClangConfig = {
+  enableDefaultFlags: boolean,
+  defaultFlags: Array<string>,
+};
+
+function getDefaultFlags(): ?Array<string> {
+  const config: NuclideClangConfig = (featureConfig.get('nuclide-clang-atom'): any);
+  if (!config.enableDefaultFlags) {
+    return null;
+  }
+  return config.defaultFlags;
+}
 
 module.exports = {
 
-  getDiagnostics(editor: atom$TextEditor): Promise<?ClangCompileResult> {
+  async getDiagnostics(editor: atom$TextEditor): Promise<?ClangCompileResult> {
     const src = editor.getPath();
     const contents = editor.getText();
 
+    const defaultFlags = getDefaultFlags();
     return getServiceByNuclideUri('ClangService', src)
-        .compile(src, contents)
+        .compile(src, contents, defaultFlags)
         .toPromise();
   },
 
-  getCompletions(editor: atom$TextEditor, prefix: string): Promise<?ClangCompletionsResult> {
+  async getCompletions(editor: atom$TextEditor, prefix: string): Promise<?ClangCompletionsResult> {
     const src = editor.getPath();
     const cursor = editor.getLastCursor();
 
@@ -36,22 +51,32 @@ module.exports = {
     const column = cursor.getBufferColumn();
     const tokenStartColumn = column - prefix.length;
 
+    const defaultFlags = getDefaultFlags();
     return getServiceByNuclideUri('ClangService', src)
-        .getCompletions(src, editor.getText(), line, column, tokenStartColumn, prefix);
+      .getCompletions(
+        src,
+        editor.getText(),
+        line,
+        column,
+        tokenStartColumn,
+        prefix,
+        defaultFlags,
+      );
   },
 
   /**
    * If a location can be found for the declaration, it will be available via
    * the 'location' field on the returned object.
    */
-  getDeclaration(
+  async getDeclaration(
     editor: atom$TextEditor,
     line: number,
     column: number,
   ): Promise<?ClangDeclarationResult> {
     const src = editor.getPath();
+    const defaultFlags = getDefaultFlags();
     return getServiceByNuclideUri('ClangService', src)
-        .getDeclaration(src, editor.getText(), line, column);
+        .getDeclaration(src, editor.getText(), line, column, defaultFlags);
   },
 
   formatCode(editor: atom$TextEditor, range: atom$Range): Promise<{
