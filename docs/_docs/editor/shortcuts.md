@@ -9,7 +9,11 @@ You can perform many tasks in Nuclide from the keyboard. Below are the various k
 available for the sets of functionality that Nuclide has to offer.
 
 > **NOTE** Atom has many more keyboard shortcuts available above and beyond what Nuclide offers. To
-get a complete list of the keybindings, you can go to `Packages | Settings View | Show Keybindngs`.
+> get a complete list of the keybindings, you can go to
+> `Packages | Settings View | Show Keybindngs`.
+
+> You can create your own [custom keybindings](/docs/advanced-topics/custom-keybindings) beyond
+> those Nuclide provides.
 
 ## Symbols
 
@@ -134,36 +138,3 @@ and Nuclide health actions.
 | `ctrl-option-shift-X` | `ctrl-alt-shift-X` | `nuclide-clipboard-path:copy-project-relative-path` | Copy the relative path of the current file to the clipboard. |
 | `ctrl-shift-X` | `ctrl-shift-X` | `nuclide-clipboard-path:copy-absolute-path` | Copy the absolute path of the current file to the clipboard. |
 | `ctrl-option-X` | `ctrl-alt-X` | `nuclide-clipboard-path:copy-repository-relative-path` | Copy the relative path of the current file starting at the root of the Mercurial repository. |
-
-## Custom Bindings
-
-To add your own keybindings for Nuclide commands, edit your ~/.atom/keymap.cson. If you aren't
-familiar with CSON, it is the CoffeeScript equivalent of JSON. Here is an example
-~/.atom/keymap.cson file:
-
-```coffeescript
-'.editor:not(.mini)':
-  'cmd-d': 'editor:delete-line'
-  'cmd-home': 'core:move-to-top'
-  'cmd-end': 'core:move-to-bottom'
-  'cmd-l': 'go-to-line:toggle'
-```
-
-Because CSON is a superset of JSON this could also be written as:
-
-```coffeescript
-{
-   '.editor:not(.mini)': {
-     'cmd-d': 'editor:delete-line',
-     'cmd-home': 'core:move-to-top',
-     'cmd-end': 'core:move-to-bottom',
-     'cmd-l': 'go-to-line:toggle'
-   }
-}
-```
-
-It may not be obvious, but each key in the top-level map is a CSS selector. Values are pairs of
-commands and keybindings that are applicable in an element that matches the CSS selector. The
-selector .editor:not(.mini) matches an editor in Nuclide that is not used as a single-line input
-text box. Therefore, when you want to add a keyboard shortcut for an editor, add it to the
-.editor:not(.mini) map.
