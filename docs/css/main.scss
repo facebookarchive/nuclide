@@ -32,6 +32,12 @@ $header-pbot: 8px;
 // Width of the content area
 $content-width:     900px;
 
+// Table setting variables
+$lightergrey: #F8F8F8;
+$greyish: #E8E8E8;
+$lightgrey: #B0B0B0;
+$green: #2db04b;
+
 // Using media queries with like this:
 // @include media-query($on-palm) {
 //     .wrapper {
@@ -52,7 +58,8 @@ $content-width:     900px;
         "reset",
         "base",
         "slideshow",
-        "syntax-highlighting"
+        "syntax-highlighting",
+        "tables"
 ;
 
 // Anchor links
