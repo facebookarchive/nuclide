@@ -25,7 +25,6 @@ const logger = getLogger();
 /* Mostly implements https://atom.io/docs/api/latest/File */
 class RemoteFile {
 
-  _cachedContents: ?string;
   _deleted: boolean;
   _emitter: Emitter;
   _encoding: ?string;
@@ -44,7 +43,6 @@ class RemoteFile {
     this._path = remotePath;
     this._emitter = new Emitter();
     this._subscriptionCount = 0;
-    this._cachedContents = null;
     this._deleted = false;
   }
 
@@ -93,35 +91,12 @@ class RemoteFile {
   }
 
   async _handleNativeChangeEvent(): Promise {
-    const oldContents = this._cachedContents;
-    try {
-      const newContents = await this.read(/*flushCache*/ true);
-      if (oldContents !== newContents) {
-        this._emitter.emit('did-change');
-      }
-    } catch (error) {
-      // We can't read the file, so we cancel the watcher subscription.
-      this._unsubscribeFromNativeChangeEvents();
-      let handled = false;
-      const handle = () => {
-        handled = true;
-      };
-      error.eventType = 'change';
-      this._emitter.emit('will-throw-watch-error', {error, handle});
-      if (!handled) {
-        const newError = new Error(`Cannot read file after file change event: ${this._path}`);
-        // $FlowFixMe non-existing property.
-        newError.originalError = error;
-        // $FlowFixMe non-existing property.
-        newError.code = 'ENOENT';
-        throw newError;
-      }
-    }
+    // Don't bother checking the file - this can be very expensive.
+    this._emitter.emit('did-change');
   }
 
   _handleNativeRenameEvent(newPath: string): void {
     this._unsubscribeFromNativeChangeEvents();
-    this._cachedContents = null;
     const {protocol, host} = remoteUri.parse(this._path);
     this._localPath = newPath;
     invariant(protocol);
@@ -133,7 +108,6 @@ class RemoteFile {
 
   _handleNativeDeleteEvent(): void {
     this._unsubscribeFromNativeChangeEvents();
-    this._cachedContents = null;
     if (!this._deleted) {
       this._deleted = true;
       this._emitter.emit('did-delete');
@@ -273,13 +247,9 @@ class RemoteFile {
   }
 
   async read(flushCache?: boolean): Promise<string> {
-    // TODO: return cachedContents if exists and !flushCache
-    // This involves the reload scenario, where the same instance of the file is read(),
-    // but the file contents should reload.
     const data = await this._getFileSystemService().readFile(this._localPath);
     const contents = data.toString();
     this._setDigest(contents);
-    this._cachedContents = contents;
     // TODO: respect encoding
     return contents;
   }
@@ -291,7 +261,6 @@ class RemoteFile {
   async write(text: string): Promise<void> {
     const previouslyExisted = await this.exists();
     await this._getFileSystemService().writeFile(this._localPath, text);
-    this._cachedContents = text;
     if (!previouslyExisted && this._subscriptionCount > 0) {
       this._subscribeToNativeChangeEvents();
     }
