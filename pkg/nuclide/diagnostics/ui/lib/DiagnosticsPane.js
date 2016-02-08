@@ -17,7 +17,7 @@ const {PropTypes} = React;
 
 import {track} from '../../../analytics';
 
-const {fileColumnCellDataGetter} = require('./paneUtils');
+const {fileColumnCellDataGetter, getProjectRelativePathOfDiagnostic} = require('./paneUtils');
 
 type textAndType = {text: string, isPlainText: boolean};
 
@@ -140,7 +140,7 @@ class DiagnosticsPane extends React.Component {
   _rowHeightGetter(rowIndex: number): number {
     // TODO(t8055416): Improve this heuristic for determining the row height.
     const diagnostic = this._rowGetter(rowIndex);
-    const filePath = fileColumnCellDataGetter('filePath', diagnostic);
+    const filePath = getProjectRelativePathOfDiagnostic(diagnostic);
     const {text: message} = messageColumnCellDataGetter('message', diagnostic);
 
     // Note this will be an overestimate if the message is HTML instead of plaintext.
