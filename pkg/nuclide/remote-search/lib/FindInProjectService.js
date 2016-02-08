@@ -10,12 +10,23 @@
  */
 
 import type {NuclideUri} from '../../remote-uri';
-import type {search$FileResult} from './types';
 
 import {Observable} from 'rx';
 
 import path from 'path';
 import search from './scanhandler';
+
+export type search$Match = {
+  lineText: string;
+  lineTextOffset: number;
+  matchText: string;
+  range: Array<Array<number>>;
+};
+
+export type search$FileResult = {
+  filePath: NuclideUri;
+  matches: Array<search$Match>;
+}
 
 export function findInProjectSearch(directory: NuclideUri, regex: RegExp, subdirs: Array<string>):
     Observable<search$FileResult> {

@@ -17,6 +17,7 @@ import type {NuclideUri} from '../../remote-uri';
 import type RemoteDirectoryProviderT from './RemoteDirectoryProvider';
 import type RemoteDirectorySearcherT from './RemoteDirectorySearcher';
 import type RemoteProjectsControllerT from './RemoteProjectsController';
+import typeof * as FindInProjectService from '../../remote-search';
 
 import {createTextEditor, loadBufferForUri} from '../../atom-helpers';
 import {getLogger} from '../../logging';
@@ -357,7 +358,7 @@ module.exports = {
     const {RemoteDirectory} = require('../../remote-connection');
     const RemoteDirectorySearcher = require('./RemoteDirectorySearcher');
     return new RemoteDirectorySearcher((dir: RemoteDirectory) =>
-      getServiceByNuclideUri('FindInProjectService', dir.getPath()));
+      (getServiceByNuclideUri('FindInProjectService', dir.getPath()): FindInProjectService));
   },
 
   getHomeFragments(): HomeFragments {

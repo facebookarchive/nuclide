@@ -11,6 +11,7 @@
 
 import {Observable, ReplaySubject} from 'rx';
 const {RemoteDirectory} = require('../../remote-connection');
+import typeof * as FindInProjectService from '../../remote-search';
 
 type RemoteDirectorySearch = {
   then: (onFullfilled: any, onRejected: any) => Promise<any>;
@@ -18,11 +19,11 @@ type RemoteDirectorySearch = {
 }
 
 class RemoteDirectorySearcher {
-  _serviceProvider: (dir: RemoteDirectory) => any;
+  _serviceProvider: (dir: RemoteDirectory) => FindInProjectService;
 
   // When constructed, RemoteDirectorySearcher must be passed a function that
   // it can use to get a 'FindInProjectService' for a given remote path.
-  constructor(serviceProvider: (dir: RemoteDirectory) => any) {
+  constructor(serviceProvider: (dir: RemoteDirectory) => FindInProjectService) {
     this._serviceProvider = serviceProvider;
   }
 

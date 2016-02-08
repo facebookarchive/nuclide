@@ -9,7 +9,7 @@
  * the root directory of this source tree.
  */
 
-import type {search$FileResult} from '../lib/types';
+import type {search$FileResult} from '../lib/FindInProjectService';
 
 const {asyncExecute} = require('../../commons');
 const fs = require('fs');

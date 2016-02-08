@@ -12,7 +12,7 @@
 import type {
   search$FileResult,
   search$Match,
-} from './types';
+} from './FindInProjectService';
 
 import {Observable} from 'rx';
 

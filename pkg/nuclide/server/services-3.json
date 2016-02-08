@@ -41,7 +41,6 @@
     "implementation": "lib/services/InfoService.js"
   },
   {
-    "definition": "../remote-search/lib/FindInProjectService.def",
     "implementation": "../remote-search/lib/FindInProjectService.js",
     "name": "FindInProjectService"
   },
