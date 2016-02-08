@@ -1,5 +1,19 @@
 # Nuclide Changelog
 
+## 0.116.0
+
+* Datatips are now pinnable.
+* Make diagnostics look a bit more like datatips.
+* Improved arc lint autofix - handling multi-line.
+* Improvements to Diff View syncing.
+* Diff View supports opening revealing files in the file tree and directly in the editor.
+* Fixed specifying custom buck command.
+* Fix: Debugger scrolling works in Atom 1.4.x.
+* Added code formatting for clang.
+* Added custom clang flags in the settings page.
+* Minor improvements to remote file handling.
+* Disable blinking cursor from readonly editors in (Diff View, Test Runner & Smartlog).
+
 ## 0.115.0
 
 * Fixed the OCaml Merlin path config setting
