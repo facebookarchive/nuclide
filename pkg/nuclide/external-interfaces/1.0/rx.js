@@ -46,6 +46,8 @@ declare module 'rx' {
     static merge(sources: Observable<T>[]): Observable<T>;
     static merge(...sources: Observable<T>[]): Observable<T>;
 
+    static never(): Observable<void>;
+
     static of(...values: T[]): Observable<T>;
 
     static return(value: T): Observable<T>;
@@ -59,6 +61,8 @@ declare module 'rx' {
     ): Observable<T>;
 
     amb(other: Observable<T>): Observable<T>;
+
+    buffer(bufferBoundaries: Observable<any>): Observable<Array<T>>;
 
     doOnNext(f: (value: T) => mixed): Observable<T>;
 
@@ -116,6 +120,8 @@ declare module 'rx' {
     share(): Observable<T>;
 
     skip(count: number): Observable<T>;
+
+    skipUntil(other: Observable<any> | Promise<any>): Observable<T>;
 
     skipUntilWithTime(startTime: Date | number): Observable<T>;
 
