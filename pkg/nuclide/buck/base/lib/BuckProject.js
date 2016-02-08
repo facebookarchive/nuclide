@@ -9,22 +9,24 @@
  * the root directory of this source tree.
  */
 
+import type {NuclideUri} from '../../../remote-uri';
+
 const {asyncExecute, scriptSafeSpawnAndObserveOutput} = require('../../../commons');
 const {fsPromise} = require('../../../commons');
 const logger = require('../../../logging').getLogger();
 const path = require('path');
 
-type dontRunOptions = {
+export type dontRunOptions = {
   run: false;
 };
 
-type doRunOptions = {
+export type doRunOptions = {
   run: true;
   debug: boolean;
   appArgs: Array<string>;
 }
 
-type BuckRunOptions = dontRunOptions | doRunOptions;
+export type BuckRunOptions = dontRunOptions | doRunOptions;
 
 type BuckConfig = Object;
 type BaseBuckBuildOptions = {
@@ -75,11 +77,11 @@ export class BuckProject {
     this._serialQueueName = BLOCKING_BUCK_COMMAND_QUEUE_PREFIX + this._rootPath;
   }
 
-  dispose() {
+  dispose(): void {
     // This method is required by the service framework.
   }
 
-  getPath(): Promise<string> {
+  getPath(): Promise<NuclideUri> {
     return Promise.resolve(this._rootPath);
   }
 
@@ -111,7 +113,15 @@ export class BuckProject {
     return {pathToBuck, buckCommandOptions};
   }
 
-  async getOwner(filePath: string): Promise<Array<string>> {
+  /**
+   * Returns an array of strings (that are build targets) by running:
+   *
+   *     buck audit owner <path>
+   *
+   * @param filePath absolute path or a local or a remote file.
+   * @return Promise that resolves to an array of build targets.
+   */
+  async getOwner(filePath: NuclideUri): Promise<Array<string>> {
     const args = ['audit', 'owner', filePath];
     const result = await this._runBuckCommandFromProjectRoot(args);
     const stdout = result.stdout.trim();
@@ -121,6 +131,14 @@ export class BuckProject {
     return stdout.split('\n');
   }
 
+  /**
+   * Reads the configuration file for the Buck project and returns the requested property.
+   *
+   * @param section Section in the configuration file.
+   * @param property Configuration option within the section.
+   *
+   * @return Promise that resolves to the value, if it is set, else `null`.
+   */
   async getBuckConfig(section: string, property: string): Promise<?string> {
     let buckConfig = this._buckConfig;
     if (!buckConfig) {
@@ -147,14 +165,36 @@ export class BuckProject {
     return ini.parse(header + buckConfigContent);
   }
 
+  /**
+   * Runs `buck build --keep-going --build-report <tempfile>` with the specified targets. Regardless
+   * whether the build is successful, this returns the parsed version of the JSON report
+   * produced by the {@code --build-report} option:
+   * http://facebook.github.io/buck/command/build.html.
+   *
+   * An error should be thrown only if the specified targets are invalid.
+   * @return Promise that resolves to a build report.
+   */
   build(buildTargets: Array<string>): Promise<any> {
     return this._build(buildTargets, {install: false});
   }
 
+  /**
+   * Runs `buck install --keep-going --build-report <tempfile>` with the specified targets.
+   *
+   * @param run If set to 'true', appends the buck invocation with '--run' to run the
+   *   installed application.
+   * @param debug If set to 'true', appends the buck invocation with '--wait-for-debugger'
+   *   telling the launched application to stop at the loader breakpoint
+   *   waiting for debugger to connect
+   * @param simulator The UDID of the simulator to install the binary on.
+   * @param appArgs If 'run' is set to 'true', these are passed as the command line arguments to
+   *   the application being run.
+   * @return Promise that resolves to a build report.
+   */
   install(
     buildTargets: Array<string>,
     simulator: ?string,
-    runOptions: ?BuckRunOptions,
+    runOptions: ?BuckRunOptions
   ): Promise<any> {
     return this._build(buildTargets, {install: true, simulator, runOptions});
   }
@@ -196,12 +236,34 @@ export class BuckProject {
     }
   }
 
+  /**
+   * Same as `build`, but returns additional output via an Observable.
+   * @return An Observable with the following implementations:
+   *   onNext: Calls the Observer with successive strings from stdout and stderr.
+   *     Each update will be of the form: {stdout: string;} | {stderr: string;}
+   *     TODO: Use a union to exactly match `{stdout: string;} | {stderr: string;}` when the service
+   *     framework supports it. Use an object with optional keys to mimic the union.
+   *   onError: If the build fails, calls the Observer with the string output
+   *     from stderr.
+   *   onCompleted: Only called if the build completes successfully.
+   */
   buildWithOutput(
     buildTargets: Array<string>
   ): Observable<{stderr?: string; stdout?: string;}> {
     return this._buildWithOutput(buildTargets, {install: false});
   }
 
+  /**
+   * Same as `install`, but returns additional output via an Observable.
+   * @return An Observable with the following implementations:
+   *   onNext: Calls the Observer with successive strings from stdout and stderr.
+   *     Each update will be of the form: {stdout: string;} | {stderr: string;}
+   *     TODO: Use a union to exactly match `{stdout: string;} | {stderr: string;}` when the service
+   *     framework supports it. Use an object with optional keys to mimic the union.
+   *   onError: If the install fails, calls the Observer with the string output
+   *     from stderr.
+   *   onCompleted: Only called if the install completes successfully.
+   */
   installWithOutput(
     buildTargets: Array<string>,
     simulator: ?string,
@@ -327,6 +389,7 @@ export class BuckProject {
     return json['http.port'];
   }
 
+  /** Runs `buck query --json` with the specified query. */
   async query(query: string): Promise<Array<string>> {
     const args = ['query', '--json', query];
     const result = await this._runBuckCommandFromProjectRoot(args);
@@ -334,6 +397,15 @@ export class BuckProject {
     return json;
   }
 
+  /**
+   * Runs `buck query --json` with a query that contains placeholders and therefore expects
+   * arguments.
+   * @param query Should contain '%s' placeholders.
+   * @param args Should be a list of build targets or aliases. The query will be run for each arg.
+   *   It will be substituted for '%s' when it is run.
+   * @return object where each arg in args will be a key. Its corresponding value will be the list
+   *   of matching build targets in its results.
+   */
   async queryWithArgs(
     query: string,
     args: Array<string>,

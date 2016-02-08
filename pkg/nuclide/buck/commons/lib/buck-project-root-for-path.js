@@ -14,6 +14,7 @@ import type {BuckProject} from '../../base/lib/BuckProject';
 const {getPath} = require('../../../remote-uri');
 
 import typeof * as BuckUtilsService from '../../base/lib/BuckUtils';
+import typeof * as BuckProjectService from '../../base/lib/BuckProject';
 
 const buckProjectForBuckProjectDirectory: {[key: string]: BuckProject} = {};
 
@@ -37,7 +38,7 @@ async function buckProjectRootForPath(filePath: string): Promise<?BuckProject> {
 
   directory = getPath(directory);
 
-  const buckService = getServiceByNuclideUri('BuckProject', filePath);
+  const buckService: BuckProjectService = getServiceByNuclideUri('BuckProject', filePath);
   if (buckService) {
     buckProject = new buckService.BuckProject({rootPath: directory});
     buckProjectForBuckProjectDirectory[directory] = buckProject;

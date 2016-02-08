@@ -4,7 +4,6 @@
     "name": "ArcanistBaseService"
   },
   {
-    "definition": "../buck/base/lib/BuckProject.def",
     "implementation": "../buck/base/lib/BuckProject.js",
     "name": "BuckProject"
   },
