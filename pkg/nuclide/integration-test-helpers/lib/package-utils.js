@@ -10,7 +10,6 @@
  */
 
 import featureConfig from '../../feature-config';
-import invariant from 'assert';
 import path from 'path';
 import {__testUseOnly_removeFeature} from '../../../../';
 
