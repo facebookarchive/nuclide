@@ -166,6 +166,19 @@ module.exports = {
         : target.querySelector('.name');
     }
 
+    // Listen for switching to editor mode for the active file.
+    subscriptions.add(atom.commands.add(
+      'nuclide-diff-view',
+      'nuclide-diff-view:switch-to-editor',
+      () => {
+        const diffModel = getDiffViewModel();
+        const {filePath} = diffModel.getActiveFileState();
+        if (filePath != null && filePath.length) {
+          atom.workspace.open(filePath);
+        }
+      }
+    ));
+
     // Listen for file tree context menu file item events to open the diff view.
     subscriptions.add(atom.commands.add(
       '.tree-view .entry.file.list-item',
