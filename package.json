@@ -34,7 +34,7 @@
   },
   "dependencies": {
     "async": "1.5.2",
-    "atom-package-deps": "3.0.7",
+    "atom-package-deps": "3.0.8",
     "babel-core": "5.8.34",
     "babel-runtime": "5.8.34",
     "chalk": "1.1.1",
