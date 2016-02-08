@@ -34,14 +34,8 @@ describe('FileTreeController', () => {
     // the path is null or undefined. Here we mock it out so that we get normal behavior in our
     // tests.
     spyOn(atom.workspace, 'getActiveTextEditor').andReturn({
-      getBuffer() {
-        return {
-          file: {
-            getPath() {
-              return 'foo';
-            },
-          },
-        };
+      getPath() {
+        return 'foo';
       },
     });
   });

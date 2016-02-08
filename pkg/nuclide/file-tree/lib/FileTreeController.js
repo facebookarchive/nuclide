@@ -26,6 +26,7 @@ import {
   ReactDOM,
 } from 'react-for-atom';
 import {track} from '../../analytics';
+import {isTextEditor} from '../../atom-helpers';
 
 import os from 'os';
 import shell from 'shell';
@@ -95,6 +96,7 @@ class FileTreeController {
     this._subscriptions.add(
       atom.commands.add('atom-workspace', {
         // Pass undefined so the default parameter gets used.
+        'nuclide-file-tree:reveal-text-editor': this._revealTextEditor.bind(this),
         'nuclide-file-tree:reveal-active-file': this.revealActiveFile.bind(this, undefined),
         'nuclide-file-tree:toggle': this.toggleVisibility.bind(this),
         'nuclide-file-tree:toggle-focus': this.toggleTreeFocus.bind(this),
@@ -250,15 +252,30 @@ class FileTreeController {
     }
   }
 
+  _revealTextEditor(event: Event): void {
+    const editorElement = ((event.target: any): atom$TextEditorElement);
+    if (
+      editorElement == null
+        || typeof editorElement.getModel !== 'function'
+        || !isTextEditor(editorElement.getModel())
+      ) {
+      return;
+    }
+    const filePath = editorElement.getModel().getPath();
+    this._revealFilePath(filePath);
+  }
+
   /**
    * Reveal the file that currently has focus in the file tree. If showIfHidden is false,
    * this will enqueue a pending reveal to be executed when the file tree is shown again.
    */
   revealActiveFile(showIfHidden?: boolean = true): void {
     const editor = atom.workspace.getActiveTextEditor();
-    const file = editor ? editor.getBuffer().file : null;
-    const filePath = file ? file.getPath() : null;
+    const filePath = editor != null ? editor.getPath() : null;
+    this._revealFilePath(filePath, showIfHidden);
+  }
 
+  _revealFilePath(filePath: ?string, showIfHidden?: boolean = true): void {
     if (showIfHidden) {
       // Ensure the file tree is visible before trying to reveal a file in it. Even if the currently
       // active pane is not an ordinary editor, we still at least want to show the tree.

@@ -8,8 +8,8 @@
 ]
 
 'context-menu':
-  'atom-pane[data-active-item-path] atom-text-editor': [
-    {'command': 'nuclide-file-tree:reveal-active-file', 'label': 'Reveal in File Tree'}
+  'atom-pane atom-text-editor': [
+    {'command': 'nuclide-file-tree:reveal-text-editor', 'label': 'Reveal in File Tree'}
   ]
 
   '[is="tabs-tab"]': [
