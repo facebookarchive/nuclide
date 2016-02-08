@@ -100,8 +100,7 @@ class NuclideBridge {
          * @param {?Array.<!WebInspector.RemoteObjectProperty>} properties
          * @param {?Array.<!WebInspector.RemoteObjectProperty>} internalProperties
          */
-        function callback(properties, internalProperties)
-        {
+        function callback(properties, internalProperties) {
           treeElement.removeChildren();
           if (!properties) {
             return;

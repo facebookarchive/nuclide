@@ -169,7 +169,7 @@
     "key-spacing": 0,
     "comma-spacing": 0,
     "no-multi-spaces": 0,
-    "brace-style": 0,                     // enforce one true brace style (off by default)
+    "brace-style": [2, "1tbs", {"allowSingleLine": true}], // enforce one true brace style
     "camelcase": 0,                       // require camel case names
     "consistent-this": 1,                 // enforces consistent naming when capturing the current execution context (off by default)
     "eol-last": 1,                        // enforce newline at the end of file, with no multiple empty lines

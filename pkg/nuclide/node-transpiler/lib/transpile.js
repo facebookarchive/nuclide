@@ -24,9 +24,7 @@ function loadFile(module, filePath) {
   var js;
 
   if (!startsWith(sourceCode, '"use babel"') &&
-      /* eslint-disable quotes */
-      !startsWith(sourceCode, "'use babel'"))
-      /* eslint-enable quotes */ {
+      !startsWith(sourceCode, "'use babel'")) {
     js = sourceCode;
   } else {
     js = createOrFetchFromCache(sourceCode, filePath);

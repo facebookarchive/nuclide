@@ -142,10 +142,7 @@ class HgServiceBase {
   /**
    * See HgService.def::fetchDiffInfoForPaths for details.
    */
-  async fetchDiffInfo(
-    filePaths: Array<NuclideUri>,
-  ): Promise<?Map<NuclideUri, DiffInfo>>
-  {
+  async fetchDiffInfo(filePaths: Array<NuclideUri>): Promise<?Map<NuclideUri, DiffInfo>> {
     // '--unified 0' gives us 0 lines of context around each change (we don't
     // care about the context).
     // '--noprefix' omits the a/ and b/ prefixes from filenames.

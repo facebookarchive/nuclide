@@ -1035,8 +1035,7 @@ class FileTreeStoreBfsIterator {
 
       this._currentlyTraversedNode = this._nodesToTraverse.splice(0, 1)[0];
       this._promise = null;
-    }
-    else {
+    } else {
       this._currentlyTraversedNode = null;
       this._promise = null;
     }

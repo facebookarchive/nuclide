@@ -29,9 +29,11 @@ export class HyperclickProvider {
     this.providerName = 'url-hyperclick';
   }
 
-  async getSuggestionForWord(textEditor: atom$TextEditor, text: string, range: atom$Range):
-    Promise<?HyperclickSuggestion>
-  {
+  async getSuggestionForWord(
+    textEditor: atom$TextEditor,
+    text: string,
+    range: atom$Range
+  ): Promise<?HyperclickSuggestion> {
     // The match is an array that also has an index property, something that Flow does not appear to
     // understand.
     const match: any = text.match(urlregexp);
