@@ -741,11 +741,18 @@ type DestroyPaneItemEvent = {
   index: number,
 };
 
+type AddPaneItemEvent = {
+  item: atom$PaneItem,
+  pane: atom$Pane,
+  index: number,
+};
+
 declare class atom$Workspace {
   // Event Subscription
   observeTextEditors(callback: (editor: atom$TextEditor) => mixed): IDisposable;
   onDidChangeActivePaneItem(callback: (item: mixed) => mixed): IDisposable;
   onDidDestroyPaneItem(callback: (event: DestroyPaneItemEvent) => mixed): IDisposable;
+  onDidAddPaneItem(callback: (event: AddPaneItemEvent) => mixed): IDisposable;
   observeActivePaneItem(callback: (item: ?mixed) => mixed): IDisposable;
   observePaneItems(callback: (item: mixed) => mixed): IDisposable;
   onWillDestroyPaneItem(
