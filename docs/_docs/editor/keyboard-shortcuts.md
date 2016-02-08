@@ -8,7 +8,7 @@ permalink: /docs/editor/keyboard-shortcuts/
 You can perform many tasks in Nuclide from the keyboard. Below are the various keyboard shortcuts
 available for the sets of functionality that Nuclide has to offer.
 
-> **NOTE** Atom has many more keyboard shortcuts available above and beyond what Nuclide offers. To
+> Atom has many more keyboard shortcuts available above and beyond what Nuclide offers. To
 > get a complete list of the keybindings, you can go to
 > `Packages | Settings View | Show Keybindngs`.
 
