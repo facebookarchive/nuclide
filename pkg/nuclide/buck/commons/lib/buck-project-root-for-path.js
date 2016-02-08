@@ -13,14 +13,16 @@ import {getServiceByNuclideUri} from '../../../client';
 import type {BuckProject} from '../../base/lib/BuckProject';
 const {getPath} = require('../../../remote-uri');
 
-const buckProjectForBuckProjectDirectory: {[key: string]: mixed} = {};
+import typeof * as BuckUtilsService from '../../base/lib/BuckUtils';
+
+const buckProjectForBuckProjectDirectory: {[key: string]: BuckProject} = {};
 
 /**
  * @return Promise that resolves to buck project or null if the
  *     specified filePath is not part of a Buck project.
  */
 async function buckProjectRootForPath(filePath: string): Promise<?BuckProject> {
-  const service = getServiceByNuclideUri('BuckUtils', filePath);
+  const service: BuckUtilsService = getServiceByNuclideUri('BuckUtils', filePath);
   const buckUtils = new service.BuckUtils();
   let directory = await buckUtils.getBuckProjectRoot(filePath);
 

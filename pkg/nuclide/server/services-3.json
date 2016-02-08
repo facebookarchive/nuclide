@@ -30,7 +30,6 @@
     "name": "FuzzyFileSearchRxService"
   },
   {
-    "definition": "../buck/base/lib/BuckUtils.def",
     "implementation": "../buck/base/lib/BuckUtils.js",
     "name": "BuckUtils"
   },

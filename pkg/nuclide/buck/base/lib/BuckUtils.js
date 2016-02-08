@@ -15,6 +15,10 @@ const buckProjectDirectoryByPath: {[filePath: NuclideUri]: NuclideUri} = {};
 
 export class BuckUtils {
 
+  /**
+   * Given a file path, returns path to the Buck project root i.e. the directory containing
+   * '.buckconfig' file.
+   */
   async getBuckProjectRoot(filePath: NuclideUri): Promise<?NuclideUri> {
     let directory = buckProjectDirectoryByPath[filePath];
     if (!directory) {
