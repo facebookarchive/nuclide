@@ -53,7 +53,6 @@
     "name": "FileWatcherService"
   },
   {
-    "definition": "lib/services/SourceControlService.def",
     "implementation": "lib/services/SourceControlService.js",
     "name": "SourceControlService"
   },

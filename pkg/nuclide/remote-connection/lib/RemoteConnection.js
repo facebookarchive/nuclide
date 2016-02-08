@@ -13,6 +13,7 @@ import type {NuclideUri} from '../../remote-uri';
 import type {HgRepositoryDescription} from '../../source-control-helpers';
 
 import typeof * as FileWatcherServiceType from '../../filewatcher-base';
+import typeof * as SourceControlService from '../../server/lib/services/SourceControlService';
 
 import invariant from 'assert';
 import {trackEvent} from '../../analytics';
@@ -136,7 +137,7 @@ class RemoteConnection {
   // available when the new path is added. t6913624 tracks cleanup of this.
   async _setHgRepoInfo(): Promise<void> {
     const remotePath = this.getPathForInitialWorkingDirectory();
-    const {getHgRepository} = this.getService('SourceControlService');
+    const {getHgRepository} = (this.getService('SourceControlService'): SourceControlService);
     this._setHgRepositoryDescription(await getHgRepository(remotePath));
   }
 
