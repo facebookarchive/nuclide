@@ -12,6 +12,7 @@
 import type {RemoteConnection} from './RemoteConnection';
 import type RemoteDirectory from './RemoteDirectory';
 import type {FileSystemService} from '../../server/lib/services/FileSystemServiceType';
+import typeof * as FileWatcherService from '../../filewatcher-base';
 
 import invariant from 'assert';
 import pathUtil from 'path';
@@ -70,7 +71,7 @@ class RemoteFile {
     if (this._watchSubscription) {
       return;
     }
-    const {watchFile} = this._getService('FileWatcherService');
+    const {watchFile} = (this._getService('FileWatcherService'): FileWatcherService);
     const watchStream = watchFile(this._path);
     this._watchSubscription = watchStream.subscribe(watchUpdate => {
       logger.debug('watchFile update:', watchUpdate);

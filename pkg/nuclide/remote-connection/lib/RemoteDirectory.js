@@ -14,6 +14,8 @@ import type {RemoteConnection} from './RemoteConnection';
 import type {HgRepositoryDescription} from '../../source-control-helpers';
 import type RemoteFile from './RemoteFile';
 
+import typeof * as FileWatcherService from '../../filewatcher-base';
+
 import invariant from 'assert';
 import path from 'path';
 import {Disposable, Emitter} from 'atom';
@@ -78,7 +80,7 @@ class RemoteDirectory {
     if (this._watchSubscription) {
       return;
     }
-    const {watchDirectory} = this._getService('FileWatcherService');
+    const {watchDirectory} = (this._getService('FileWatcherService'): FileWatcherService);
     const watchStream = watchDirectory(this._uri);
     this._watchSubscription = watchStream.subscribe(watchUpdate => {
       logger.debug(`watchDirectory update:`, watchUpdate);

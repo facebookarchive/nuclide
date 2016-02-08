@@ -12,6 +12,8 @@
 import type {NuclideUri} from '../../remote-uri';
 import type {HgRepositoryDescription} from '../../source-control-helpers';
 
+import typeof * as FileWatcherServiceType from '../../filewatcher-base';
+
 import invariant from 'assert';
 import {trackEvent} from '../../analytics';
 import ClientComponent from '../../server/lib/serviceframework/ClientComponent';
@@ -417,7 +419,7 @@ class RemoteConnection {
   _watchRootProjectDirectory(): void {
     const rootDirectoryUri = this.getUriForInitialWorkingDirectory();
     const rootDirectotyPath = this.getPathForInitialWorkingDirectory();
-    const FileWatcherService = this.getService(FILE_WATCHER_SERVICE);
+    const FileWatcherService: FileWatcherServiceType = this.getService(FILE_WATCHER_SERVICE);
     invariant(FileWatcherService);
     const {watchDirectoryRecursive} = FileWatcherService;
     // Start watching the project for changes and initialize the root watcher

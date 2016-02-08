@@ -49,7 +49,6 @@
     "name": "HhvmDebuggerProxyService"
   },
   {
-    "definition": "../filewatcher-base/lib/FileWatcherService.def",
     "implementation": "../filewatcher-base/lib/FileWatcherService.js",
     "name": "FileWatcherService"
   },

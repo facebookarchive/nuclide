@@ -12,7 +12,6 @@
 import type {NuclideUri} from '../../remote-uri';
 import type WatchmanSubscription from '../../watchman-helpers/lib/WatchmanSubscription';
 import type {FileChange} from '../../watchman-helpers/lib/WatchmanClient';
-import type {watcher$WatchResult} from './types';
 
 import invariant from 'assert';
 import path from 'path';
@@ -39,6 +38,11 @@ function getWatchmanClient(): WatchmanClient {
   }
   return watchmanClient;
 }
+
+export type watcher$WatchResult = {
+  path: NuclideUri;
+  type: string;
+};
 
 export function watchFile(filePath: NuclideUri): Observable<watcher$WatchResult> {
   return watchEntity(watchedFiles, filePath, [CHANGE_EVENT_NAME, DELETE_EVENT_NAME]);
@@ -104,8 +108,9 @@ async function unwatchEntity(
   }
 }
 
+
 export function watchDirectoryRecursive(
-  directoryPath: NuclideUri
+  directoryPath: NuclideUri,
 ): Observable<string> {
   const client = getWatchmanClient();
   if (client.hasSubscription(directoryPath)) {
