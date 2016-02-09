@@ -1258,7 +1258,12 @@ describe('PHP grammar', () => {
         });
         expect(tokens[1][15]).toEqual({
           value: ' ',
-          scopes: ['text.html.hack', 'meta.embedded.block.php', 'source.hack'],
+          scopes: [
+            'text.html.hack',
+            'meta.embedded.block.php',
+            'source.hack',
+            'meta.function.php',
+          ],
         });
         expect(tokens[1][16]).toEqual({
           value: '{',
@@ -1435,7 +1440,12 @@ describe('PHP grammar', () => {
         });
         expect(tokens[1][14]).toEqual({
           value: ' ',
-          scopes: ['text.html.hack', 'meta.embedded.block.php', 'source.hack'],
+          scopes: [
+            'text.html.hack',
+            'meta.embedded.block.php',
+            'source.hack',
+            'meta.function.php',
+          ],
         });
         expect(tokens[1][15]).toEqual({
           value: '{',

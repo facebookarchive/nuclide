@@ -263,6 +263,24 @@
         ]
       }
     ]
+  'function-return-type':
+    'patterns': [
+      {
+        'begin': '(:)'
+        'beginCaptures':
+          '1':
+            'name': 'punctuation.definition.type.php'
+        'end': '(?=\\{)'
+        'patterns': [
+          {
+            'include': '#comments'
+          }
+          {
+            'include': '#class-name'
+          }
+        ]
+      }
+    ]
   'function-arguments':
     'patterns': [
       {
@@ -412,6 +430,27 @@
         'patterns': [
           {
             'include': '#parameter-default-types'
+          }
+        ]
+      }
+    ]
+  'literal-collections':
+    'patterns': [
+      {
+        'begin': '([A-Za-z_0-9]+)\\s*({)'
+        'end': '(})'
+        'beginCaptures':
+          '1':
+            'name': 'support.class.php'
+          '2':
+            'name': 'punctuation.section.array.begin.php'
+        'endCaptures':
+          '1':
+            'name': 'punctuation.section.array.end.php'
+        'name': 'meta.collection.literal.php'
+        'patterns': [
+          {
+            'include': '#language'
           }
         ]
       }
@@ -701,17 +740,9 @@
     'patterns': [
       {
         'include': '#comments'
-      },
-      {
-        'include': '#xhp'
-      },
-      {
-        'match': '\\{'
-        'name': 'punctuation.section.scope.begin.php'
       }
       {
-        'match': '\\}'
-        'name': 'punctuation.section.scope.end.php'
+        'include': '#xhp'
       }
       {
         'begin': '(?i)^\\s*(interface)\\s+([a-z0-9_]+)\\s*(extends)?\\s*'
@@ -991,7 +1022,7 @@
         ]
       }
       {
-        'begin': '(?x)\\s*\n\t\t\t\t\t    ((?:(?:final|abstract|public|private|protected|static)\\s+)*)\n\t\t\t\t        (function)\n\t\t\t\t        (?:\\s+|(\\s*&\\s*))\n\t\t\t\t        (?:\n\t\t\t\t            (__(?:call|construct|destruct|get|set|isset|unset|tostring|clone|set_state|sleep|wakeup|autoload|invoke|callStatic))\n\t\t\t\t            |([a-zA-Z0-9_]+)\n\t\t\t\t        )\n\t\t\t\t        \\s*\n\t\t\t\t        (\\()'
+        'begin': '(?x)\\s*\n\t\t\t\t\t    ((?:(?:final|abstract|public|private|protected|static)\\s+)*)\n\t\t\t\t        (function)\n\t\t\t\t        (?:\\s+|(\\s*&\\s*))\n\t\t\t\t        (?:\n\t\t\t\t            (__(?:call|construct|destruct|get|set|isset|unset|tostring|clone|set_state|sleep|wakeup|autoload|invoke|callStatic))\n\t\t\t\t            |([a-zA-Z0-9_]+)\n\t\t\t\t        )\n\t\t\t\t        \\s*\n\t\t\t\t        (?=\\()'
         'beginCaptures':
           '1':
             'patterns': [
@@ -1008,17 +1039,33 @@
             'name': 'support.function.magic.php'
           '5':
             'name': 'entity.name.function.php'
-          '6':
-            'name': 'punctuation.definition.parameters.begin.php'
-        'contentName': 'meta.function.arguments.php'
-        'end': '(\\))'
-        'endCaptures':
-          '1':
-            'name': 'punctuation.definition.parameters.end.php'
+        'end': '(?=\\{)'
         'name': 'meta.function.php'
         'patterns': [
           {
-            'include': '#function-arguments'
+            'begin': '(\\()'
+            'beginCaptures':
+              '1':
+                'name': 'punctuation.definition.parameters.begin.php'
+            'end': '(?=\\))'
+            'contentName': 'meta.function.arguments.php'
+            'patterns': [
+              {
+                'include': '#function-arguments'
+              }
+            ]
+          }
+          {
+            'begin': '(\\))'
+            'beginCaptures':
+              '1':
+                'name': 'punctuation.definition.parameters.end.php'
+            'end': '(?=\\{)'
+            'patterns': [
+              {
+                'include': '#function-return-type'
+              }
+            ]
           }
         ]
       }
@@ -1212,6 +1259,17 @@
             'include': '#language'
           }
         ]
+      }
+      {
+        'include': '#literal-collections'
+      }
+      {
+        'match': '\\{'
+        'name': 'punctuation.section.scope.begin.php'
+      }
+      {
+        'match': '\\}'
+        'name': 'punctuation.section.scope.end.php'
       }
       {
         'include': '#constants'
